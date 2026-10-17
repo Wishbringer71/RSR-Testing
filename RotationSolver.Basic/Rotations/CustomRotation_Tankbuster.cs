@@ -145,21 +145,26 @@ public partial class CustomRotation
 		// Before that, a bundle without a reserved member: Reprisal kept for the announced raidwide goes on the
 		// tankbuster only when nothing without it survives - the single-target defence's rule (A244), which the
 		// plan, pressing on its own path, did not know (K6, A302).
+		// Survived means left above the line at which the tank's own invulnerability is drawn ("The HP% for tank
+		// to use invulnerability", read by every tank's EmergencyAbility): a bundle that leaves him at or below it
+		// draws the invulnerability right after the hit anyway, so both are spent - and in the meantime he stands
+		// in front of the next auto-attack with almost nothing (A304). At the line 0 this is the old reckoning.
+		var budget = cast.Budget - Math.Max(0f, HealthForDyingTanks);
 		var reprisalKept = false;
-		var bestMask = BestBundle(candidates, predicted, cast.Budget, false, false, out var bestAfter);
+		var bestMask = BestBundle(candidates, predicted, budget, false, false, out var bestAfter);
 		if (bestMask >= 0)
 		{
-			reprisalKept = BestBundle(candidates, predicted, cast.Budget, false, true, out _) is var cheapest
+			reprisalKept = BestBundle(candidates, predicted, budget, false, true, out _) is var cheapest
 				&& cheapest >= 0 && cheapest != bestMask;
 		}
 		else
 		{
-			bestMask = BestBundle(candidates, predicted, cast.Budget, false, true, out bestAfter);
+			bestMask = BestBundle(candidates, predicted, budget, false, true, out bestAfter);
 		}
 
 		if (bestMask < 0)
 		{
-			bestMask = BestBundle(candidates, predicted, cast.Budget, true, true, out bestAfter);
+			bestMask = BestBundle(candidates, predicted, budget, true, true, out bestAfter);
 		}
 
 		// A refusal of the invulnerability never makes "everything" (the owner's note, 12.10.2026): what refuses it
@@ -170,7 +175,7 @@ public partial class CustomRotation
 		if (bestMask >= 0)
 		{
 			SetPlan(new TankbusterPlan(cast, Pick(candidates, bestMask), false, true, bestAfter, ReprisalKept: reprisalKept));
-			FindNeeded(candidates, bestMask, pending, standing, predicted, cast.Budget);
+			FindNeeded(candidates, bestMask, pending, standing, predicted, budget);
 			_invulnerabilityCanTakeOver = invulnerabilityAvailable;
 		}
 		else if (invulnerabilityAvailable)
@@ -670,7 +675,8 @@ public partial class CustomRotation
 						: Names(plan.Mitigations) + (plan.ReprisalKept ? " (Reprisal kept for the announced raidwide)" : string.Empty);
 		DefenseTrace.Line($"tankbuster plan for #{plan.Cast.ActionId} from {plan.Cast.Source.Name.TextValue}"
 			+ $" in {plan.Cast.Remaining:F1} s: {summary}"
-			+ (plan.Invulnerability ? string.Empty : $", leaving {plan.After:P0} against {plan.Cast.Budget:P0}"));
+			+ (plan.Invulnerability ? string.Empty : $", leaving {plan.After:P0} against {plan.Cast.Budget:P0}"
+				+ $" with the invulnerability line at {HealthForDyingTanks:P0}"));
 	}
 
 	private static string Names(IBaseAction[] actions)

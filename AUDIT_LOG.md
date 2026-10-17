@@ -7719,6 +7719,43 @@ intern statt privat.
 **Prüfgrad:** statisch (Helferliste → drei Erkennungen → Flaggen, Plan), Kompilieren im Prüflauf. Im Spiel nicht
 beobachtet.
 
+### A304 · Tankbuster-Plan: überlebt heißt über der Linie der Unverwundbarkeit (17.10.2026)
+
+Punkt der Reihenfolge nach A303 („keine Reserve nach einem knapp überlebten Treffer", offen seit A261). **Befund:**
+Der Plan wählte das billigste Bündel, mit dem der gemessene Tankbuster weniger nimmt, als der Tank hat; ein Treffer, der
+ihn knapp über 0 lässt, galt als überlebt.
+
+**Research.** Die vier Tanks ziehen ihre Unverwundbarkeit in `EmergencyAbility`, sobald `GetHealthRatio()` auf oder unter
+`HealthForDyingTanks` fällt („The HP% for tank to use invulnerability", ab Werk 0,15; Krieger, Dunkelritter,
+Revolverklinge, Paladin). Ein Bündel, das den Tank an oder unter dieser Linie lässt, zieht also unmittelbar nach dem
+Treffer die Unverwundbarkeit: beides verbraucht. Ein Maß für den Schadenseingang bis zur nächsten Heilung, wie der
+TODO-Eintrag es vorschlug, gibt es nicht verlässlich: `DataCenter.DPSTaken` zählt Treffer der letzten 5 ms
+(Upstream seit 2023, als Defekt in `TODO.md`).
+
+**Optionen.** Nullvariante; Reserve aus dem gemessenen Auto-Angriff des Bosses (neue Messung, ohne verlässliche Grundlage);
+Reserve als Linie der Unverwundbarkeit (gewählt: seine Einstellung, und genau die Linie, an der RSR den Tank selbst für
+sterbend hält); nach dem Treffer weiter zurückhalten (ändert nichts an den LP).
+
+**Umsetzung.** `UpdateTankbusterPlan` rechnet mit `budget = cast.Budget − HealthForDyingTanks` für die Bündelsuche und
+`FindNeeded`. Reicht kein Bündel bis über die Linie, folgt wie bisher die Unverwundbarkeit, sonst „alles". Die
+Protokollzeile nennt die Linie. `tankbuster_model.py` führt die Linie als Teil der Welt, prüft mit O9, dass ein
+geplantes Bündel den Tank über ihr lässt, und fängt im Selbsttest die Variante „Linie übersehen"; acht neue Szenarien.
+Zwei Fehler im ersten Modellstand behoben: die Linie aus dem Zufallsgenerator gezogen gab den Vergleichswelten von O7
+verschiedene Linien, und in allen Szenarien gesetzt verdeckte sie einen alten konstruierten Defekt.
+
+**Falsifikation.**
+- *Kein Defekt:* Der Plan rechnet ohnehin mit dem höchsten je gemessenen Treffer; knapp nach den Zahlen ist selten knapp
+  im Spiel. Zutreffend für den Treffer, nicht für das, was danach kommt – und die eigene Notfallregel zieht die
+  Unverwundbarkeit nach den LP, nicht nach dem Plan.
+- *Option falsch:* Der Plan zieht die Unverwundbarkeit öfter. Nur dort, wo kein Bündel über die Linie reicht – dort zog
+  sie die Notfallregel bisher nach dem Treffer, dazu das Bündel. Eine Heilung vor dem Treffer hebt B, und die Neurechnung
+  gibt das Bündel zurück.
+- *Ausgeliefert, nichts ändert sich:* bei voller Gesundheit und kleinem Tankbuster bindet die Linie nicht; gestellt auf 0
+  gilt die alte Rechnung.
+
+**Prüfgrad:** statisch, Modell (33 Szenarien × 300 Läufe, Selbsttest 9 von 9), Kompilieren im Prüflauf. Im Spiel nicht
+beobachtet.
+
 ---
 ## B · Commit-Register (Fork vs. `upstream/main`)
 

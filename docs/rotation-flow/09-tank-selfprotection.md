@@ -144,7 +144,7 @@ Wirken zurück, wenn die Deckung über jedes Wirken reicht.
    werden können – auch eines mit einem eben abgelehnten Glied.
 2. Steht eine Unverwundbarkeit über H oder ist sie für c gedrückt, geht für c keine Minderung mehr hinaus (Z1), auch
    nicht vom Plan selbst und auch ohne „Spend only …" (seine Präzisierung zu „alles"). Holmgang und Totenerweckung
-   eingeschlossen; wie viele LP nach ihrem Ende bleiben, ist offen (`TODO.md`, Reserve).
+   eingeschlossen; wie viele LP nach ihrem Ende bleiben, rechnet der Plan nicht.
 3. Das Zurückhalten trifft nie Heilung, Hilfe für andere, nach außen wirkende Flächenabwehr oder das Befohlene; ein
    Befehl gibt nur sich selbst frei.
 4. Ein Glied von S geht aus keinem Pfad vor seinem Fenster hinaus; fehlt im letzten GCD eines, endet das Zurückhalten.
@@ -164,7 +164,8 @@ Wirken zurück, wenn die Deckung über jedes Wirken reicht.
    (Ressourcen eingeschlossen), bis einen GCD vor dem Einschlag abgeklungen ist, eine bekannte Wirkdauer von mehr als
    zwei GCD hat, sich rechnen lässt – Minderung gegen diese Schadensart, Barriere oder Erhöhung der maximalen LP – und
    beim Einschlag nicht schon steht. Ein Knopf zählt einmal (Rachsucht/Verdammnis, Urinstinkt/Urimpuls).
-4. **Das geringste Mittel:** unter allen Bündeln dieser Abwehr das billigste, mit dem P unter B bleibt. Billig nach der
+4. **Das geringste Mittel:** unter allen Bündeln dieser Abwehr das billigste, mit dem P unter B bleibt, abzüglich der
+   Linie, an der die eigene Unverwundbarkeit gezogen wird (A304, siehe „Überlebt heißt: über der Linie"). Billig nach der
    Abklingzeit des Verbrauchten, bei Gleichstand das kleinere Bündel – was am wenigsten Abklingzeit kostet, lässt am
    meisten für den nächsten Tankbuster (meine Lesart von „geringstes notwendiges Mittel", nicht seine Regel). Reicht
    der Treffer schon ohne alles nicht zum Tod, ist das Bündel leer.
@@ -172,6 +173,14 @@ Wirken zurück, wenn die Deckung über jedes Wirken reicht.
 **H, der Horizont:** Restzeit des Wirkens R plus ein GCD für das Eintreffen des Treffers. *Offen (`TODO.md`, „der GCD
 als Ersatz"):* Nach dem Snapshot-Beleg (Mechanik) genügt das Ende des Wirkens samt Laufzeit; H ist bis zu einen GCD
 zu streng, die Richtung ist zu viel Mittel.
+
+**Überlebt heißt: über der Linie** (A304). Ein Bündel reicht nur, wenn es den Tank über „The HP% for tank to use
+invulnerability" (`HealthForDyingTanks`, ab Werk 15 %) zurücklässt. An oder unter dieser Linie zieht jeder der vier Tanks
+seine Unverwundbarkeit selbst (`EmergencyAbility`), sobald der Treffer gelandet ist – Bündel und Unverwundbarkeit wären
+dann beide weg, und bis dahin steht der Tank mit fast nichts vor dem nächsten Auto-Angriff. Reicht kein Bündel bis über
+die Linie, plant RSR gleich die Unverwundbarkeit, sonst „alles". Die Linie ist seine Einstellung, keine gewählte Zahl;
+auf 0 gestellt gilt die Rechnung bis zum Tod wie vor A304. Das Modell (`tankbuster_model.py`, Prüfung O9 und eigene
+Szenarien) hält fest, dass ein geplantes Bündel den Tank über der Linie lässt.
 
 **Ohne Risiko,** wie er es für jedes Mittel unterhalb der Unverwundbarkeit verlangt: der höchste gemessene Treffer,
 die LP jetzt und nur, was beim Einschlag steht. Eine Heilung, die bis dahin kommen könnte, zählt nicht – sie ist eine
@@ -427,8 +436,8 @@ auch mit allem" aus einem zu kleinen Wert ist erst recht richtig.
 - Ein Wert unter Verwundbarkeit aus weniger Stapeln als jetzt.
 - Ein zu niedrig gespeicherter Höchstwert (Konzept 13: eine unbezifferte Minderung beim Treffer). Mit „Spend only …"
   ist das schlimmer als ohne Tabelle: Der Plan wählt zu wenig und hält den Rest zurück.
-- Nach dem Einschlag zählt die Rechnung nicht weiter: Ein knapp überlebter Treffer lässt den Tank tief, und die
-  Abwehr ist wieder frei (`TODO.md`, Reserve).
+- Über der Linie der Unverwundbarkeit, aber knapp: Nach dem Einschlag zählt die Rechnung nicht weiter, die Abwehr ist
+  wieder frei, und die Linie ist seine Einstellung, nicht der gemessene Schadenseingang bis zur nächsten Heilung.
 
 **Die Unverwundbarkeit kommt eher zu oft:** nur, wenn kein Bündel reicht – bei LP jetzt. Ein Tank, der tief in den
 Tankbuster geht, bekommt sie eher, auch wenn ein Heiler ihn noch hochgeheilt hätte. Das ist der Preis von „ohne

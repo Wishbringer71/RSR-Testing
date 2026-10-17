@@ -16,7 +16,9 @@ Checked per run, against the true world state:
   O4  every member the plan pressed still stands at impact (pressed inside its window);
   O5  from the press until the hit, the plan never loses track of a pressed member;
   O8  "everything" (Z4) is planned only while the invulnerability is not available (option, cooldown),
-      never because it was refused: a stun or amnesia blocks every other ability alike (his note).
+      never because it was refused: a stun or amnesia blocks every other ability alike (his note);
+  O9  a planned bundle leaves the tank above the invulnerability line at impact - at or below it the tank's
+      own emergency rule draws the invulnerability right after the hit, and both are spent (A304).
 
 The self-test switches on, one at a time, the defects review rounds found in the built code
 (A263) and the refusal rule his note rejected (A267): each has to be caught by at least one check. A model that cannot find them would not
@@ -83,6 +85,7 @@ class Defects:
     help_free: bool = False       # Nascent Flash on a party member ignores the plan
     hold_off: bool = False        # the hold ignores the rotation's other paths
     invul_refusal_everything: bool = False  # a refusal of the invulnerability with no retry left makes Z4
+    line_ignored: bool = False    # a bundle counts as surviving down to zero, not down to the invulnerability line
 
 
 @dataclass
@@ -111,6 +114,7 @@ class World:
     lock_until: float = 0.0
     refused_until: dict = field(default_factory=dict)
     invul_pressed: bool = False
+    line: float = 0.0             # "The HP% for tank to use invulnerability" (0 = no line)
 
 
 def own_left(w, act, t):
@@ -213,7 +217,7 @@ def plan(w, d, t, read_t, R_read, H_read, P_read, B_read):
             for a, _ in combo:
                 f *= a.factor
                 b += a.barrier
-            if predicted * f < b:
+            if predicted * f < b - (0.0 if d.line_ignored else w.line):
                 cost = sum(a.recast for a, _ in combo)
                 refused = any(x for _, x in combo)
                 key = (refused, cost, len(combo))
@@ -269,7 +273,7 @@ def bundle_exists_true(w, t):
             for a in list(combo) + standing:
                 f *= a.factor
                 b += a.barrier
-            if w.hit * f < b:
+            if w.hit * f < b - w.line:
                 return True
     return False
 
@@ -395,6 +399,9 @@ def run(w, d):
     survived = any(s.act.invul and s.left(w.cast_time) >= 0 for s in w.statuses) or w.hit * f < b
     if last_state == 'Z2' and not survived:
         violations.append(('O1', w.seed, w.cast_time, 'survivable plan did not survive'))
+    if last_state == 'Z2' and not any(s.act.invul and s.left(w.cast_time) >= 0 for s in w.statuses) \
+            and b - w.hit * f <= w.line:
+        violations.append(('O9', w.seed, w.cast_time, 'the planned bundle left the tank at the invulnerability line'))
     for (tp, act, by) in w.pressed:
         if by.startswith('plan') and not act.invul and \
                 not any(s.act is act and s.left(w.cast_time) >= 0 for s in w.statuses) and \
@@ -443,6 +450,7 @@ def world(seed, scenario):
         opt_b=scenario.get('opt_b', True),
         other=bool(scenario.get('other')),
         cooldown_until={DAMNATION.name: 1e9} if scenario.get('no_damnation') else {},
+        line=scenario.get('line', 0.0),
     )
 
 
@@ -455,6 +463,10 @@ SCENARIOS = [
     {'other': True}, {'other': True, 'refuse': True}, {'other': True, 'tight': True}, {'other': True, 'invul': False},
     {'opt_b': False}, {'opt_a': False}, {'opt_a': False, 'tight': True}, {'opt_b': False, 'other': True},
     {'late_refusal': True}, {'late_refusal': True, 'other': True},
+    # the invulnerability line (A304): a bundle has to leave the tank above it
+    {'line': 0.15}, {'line': 0.3}, {'line': 0.15, 'tight': True}, {'line': 0.15, 'refuse': True},
+    {'line': 0.3, 'shake': True}, {'line': 0.15, 'help': True}, {'line': 0.3, 'invul': False},
+    {'line': 0.15, 'other': True},
 ]
 
 
@@ -488,6 +500,7 @@ def self_test():
         'help_free': Defects(help_free=True),
         'hold_off': Defects(hold_off=True),
         'invul_refusal_everything': Defects(invul_refusal_everything=True),
+        'line_ignored': Defects(line_ignored=True),
     }
     missed = []
     for name, d in variants.items():

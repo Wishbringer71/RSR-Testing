@@ -88,6 +88,14 @@ goes for Esuna:
 RSR no longer cleanses a member another healer is already casting Esuna on, unless more than that one effect is
 left.
 
+## Tanks: the tankbuster plan leaves you above the invulnerability line
+
+The tankbuster plan picked the cheapest set of own mitigations that kept a measured tankbuster from killing you, even
+if it left you at a few percent. Every tank's emergency rule then drew the invulnerability at once, because you were
+below `The HP% for tank to use invulnerability` - so both were spent, and until then you stood in front of the next
+auto-attack with almost nothing. A set now counts only if it leaves you above that line; if none does, the plan takes
+the invulnerability instead. At 0 the line changes nothing.
+
 ## Tankbusters and knockbacks cast by invisible helpers are read
 
 Many fights resolve tankbusters and knockbacks through invisible helpers. RSR already read their area casts, but not

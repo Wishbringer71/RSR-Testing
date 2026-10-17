@@ -8,25 +8,24 @@ Nach Wichtigkeit, also nach der Wirkung im Kampf: Sicherheit der Gruppe vor Scha
 Wahrscheinlichkeit, in seinem Profil (seine Vorgabe, 17.10.2026: „todo nach wichtigkeit abarbeiten. jeweils im loop
 bearbeiten"). Stand 17.10.2026; fortgeschrieben mit jedem Befund.
 
-1. Tankbuster-Plan: keine Reserve nach einem knapp überlebten Treffer.
-2. Tankbuster-Plan: Stun sperrt ein Glied einen GCD; Druck nach dem Snapshot möglich.
-3. Zielüberschreibung aus dem GCD-Lauf gilt in den Fähigkeiten weiter.
-4. Living Dead: Die Rückhaltung liest die gemessene Tankbuster-Höhe nicht.
-5. Tank-Unverwundbarkeit vor Tankbustern ohne Aktionsangabe oder ohne Messung weiter nur reaktiv.
-6. `IsValid()` prüft nicht, ob ein Objekt noch lebt – möglicher Absturz.
-7. Zustandsabfragen, die bei jedem Lesen neu über Gruppe oder Gegner laufen – Bildausfälle bis 70 ms.
-8. Die proaktive Minderung aller Jobs hat BossModReborn als einzige Quelle.
-9. Tankbuster-Tabelle misst auch an Nicht-Tanks.
-10. Sprungprüfung fester Sprünge: Signatur passt nicht zu BossModReborn – Schaden, nicht Sicherheit.
-11. Gelehrter: Recitation ohne Rückfall vor Ablauf.
-12. Tankbuster-Plan: der GCD als Ersatz für Zeiten, die das Spiel anders bestimmt.
-13. Wirkdauer unterhalb der Merkmalsstufe unbekannt.
-14. Astrologe: Synastry wählt ihr Ziel nach Trefferfläche.
-15. `NextBigSummonIsBurst`: die Geschichte kann das Urteil des Spiels überstimmen.
-16. Tankwechsel von der anderen Seite – seine Entscheidung nötig, nach dem Loop als Vorlage.
-17. Krieger: Nascent Flash; Tänzer: Improvised Finish; Rückstoß und Unterbrechung messen; DRK: Bruch von The
+1. Tankbuster-Plan: Stun sperrt ein Glied einen GCD; Druck nach dem Snapshot möglich.
+2. Zielüberschreibung aus dem GCD-Lauf gilt in den Fähigkeiten weiter.
+3. Living Dead: Die Rückhaltung liest die gemessene Tankbuster-Höhe nicht.
+4. Tank-Unverwundbarkeit vor Tankbustern ohne Aktionsangabe oder ohne Messung weiter nur reaktiv.
+5. `IsValid()` prüft nicht, ob ein Objekt noch lebt – möglicher Absturz.
+6. Zustandsabfragen, die bei jedem Lesen neu über Gruppe oder Gegner laufen – Bildausfälle bis 70 ms.
+7. Die proaktive Minderung aller Jobs hat BossModReborn als einzige Quelle.
+8. Tankbuster-Tabelle misst auch an Nicht-Tanks.
+9. Sprungprüfung fester Sprünge: Signatur passt nicht zu BossModReborn – Schaden, nicht Sicherheit.
+10. Gelehrter: Recitation ohne Rückfall vor Ablauf.
+11. Tankbuster-Plan: der GCD als Ersatz für Zeiten, die das Spiel anders bestimmt.
+12. Wirkdauer unterhalb der Merkmalsstufe unbekannt.
+13. Astrologe: Synastry wählt ihr Ziel nach Trefferfläche.
+14. `NextBigSummonIsBurst`: die Geschichte kann das Urteil des Spiels überstimmen.
+15. Tankwechsel von der anderen Seite – seine Entscheidung nötig, nach dem Loop als Vorlage.
+16. Krieger: Nascent Flash; Tänzer: Improvised Finish; Rückstoß und Unterbrechung messen; DRK: Bruch von The
     Blackest Night; Rotationen gegen The Balance.
-18. Offene Arbeit, dann technische Schuld, soweit ihre Auflösungsbedingung erfüllt ist.
+17. Offene Arbeit, dann technische Schuld, soweit ihre Auflösungsbedingung erfüllt ist.
 
 Warten auf Daten, nicht bearbeitbar: Treffer aus einer Quelle, die die Objekttabelle nicht hält (Protokoll); Samurai
 Feint und Tengentsu (Protokoll eines Samurai); BossModReborn-FATE-Modul in Occult Crescent (Adressat BossModReborn).
@@ -185,18 +184,6 @@ Walking Dead brächte. **Offen:** voller Loop, ob die Regel den Wert lesen soll.
 
 **Konzept:** `docs/rotation-flow/09-tank-selfprotection.md`
 
-### Tankbuster-Plan: keine Reserve nach einem knapp überlebten Treffer · N
-
-**Befund (A261):** Der Plan rechnet bis zum Einschlag: Er wählt das billigste Bündel, mit dem der gemessene
-Tankbuster weniger nimmt, als der Tank hat. Ein Treffer, der ihn knapp über 0 lässt, gilt als überlebt. Danach
-enden Plan und Zurückhalten, die Minderungen sind wieder frei, und die reaktive Unverwundbarkeit und die Heiler
-übernehmen – aber ein Auto-Angriff unmittelbar danach trifft einen Tank fast ohne LP. **Offen:** voller Loop, ob die
-Rechnung eine Reserve verlangen soll und woraus sie sich ableitet (gemessener Schadenseingang des Tanks über einen
-GCD, Konzept 08), ohne feste Zahl. **Im Kampf:** wie oft ein Plan so knapp ausgeht, schreibt das Protokoll mit
-(„leaving …% against …%").
-
-**Konzept:** `docs/rotation-flow/09-tank-selfprotection.md`
-
 ### Zielüberschreibung aus dem GCD-Lauf gilt in den Fähigkeiten weiter · N, R
 
 **Befund (A260, am Code):** `CustomRotation.Invoke` setzt `IBaseAction.TargetOverride` vor `GCD()` auf null, aber
@@ -268,6 +255,15 @@ Er fällt trotzdem kaum ins Gewicht, und der Grund liegt in der Wirkweise der Ak
 Betroffen sind Leser, die eine Liste außerhalb des Zyklus lesen, in dem sie gebaut wurde: Fenster, Effekt-Hooks und mit `MinUpdatingTime` > 0 übersprungene Zyklen (A199). Im Kampf hieße das: ein Zyklus mit Werten eines verschwundenen oder eines anderen Gegners, im ungünstigsten Fall ein nativer Absturz bei einer virtuellen Funktion aus freigegebenem Speicher. Beobachtet ist davon nichts. Ob das Spiel Objekte zwischen Dalamuds Framework-Aktualisierung und dem Zeichnen im selben Frame entfernt, ist unbelegt.
 
 Offen: voller Loop. Zu klären sind ein Lebendigkeitsmaß, das ohne Lesen des möglicherweise freigegebenen Objekts auskommt (etwa Tabellenplatz und Adresse gegen `IObjectTable.GetObjectAddress`, dazu die `GameObjectId`), welche der 33 Stellen außerhalb ihres Zyklus lesen und ob Upstream dasselbe Muster pflegt.
+
+### `DPSTaken` zählt Treffer der letzten 5 ms statt 5 s · N, R, U
+
+`DataCenter.DPSTaken` nimmt nur Einträge, die jünger als `TimeSpan.FromMilliseconds(5)` sind, und rechnet die Zeitspanne
+mit 2,5 ms Zuschlag; gemeint sind nach Form und Name Sekunden. Das Ergebnis ist fast immer 0. Gelesen wird es nur von
+der Debug-Anzeige (`MainWindow_Debug`), aber es ist öffentlich und damit für abgeleitete Rotationen lesbar. Im Kampf:
+keine Wirkung, solange niemand es liest. Gefunden bei der Suche nach einem Maß für den Schadenseingang des Tanks (A304).
+Herkunft: Upstream, seit 3d1f2ccb2 (15.04.2023, „add a api for DPSTaken"), dort unverändert. Offen: ob ein Leser es
+braucht; dann Einheit richten (Adressat auch Upstream).
 
 ### Treffer aus einer Quelle, die die Objekttabelle nicht hält, gehen ganz verloren · N (Verdacht)
 
