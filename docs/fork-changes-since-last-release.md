@@ -109,6 +109,13 @@ and the Paladin's emergency Intervention could go to the party member with the l
 of them now uses its own target rule. The Astrologian's Synastry, which relied on the leftover heal rule, now picks
 its target the way the single-target heal it copies does.
 
+## Tanks: the tankbuster table learns from tanks only
+
+The table of tankbuster sizes, which a tank's plan reads, also took hits on party members who were not tanks - a melee
+player standing in the hit, or whoever was next after the tank died. Such a hit lacks the tank trait's damage
+reduction and meets a smaller health pool, so it rated the tankbuster harder for every tank, and the plan spent more
+than it needed. Hits on tanks alone are stored now; `DefenseTrace.log` still names the others as "not stored".
+
 ## Tanks: a tankbuster marked on you and cast at no one is planned
 
 The tankbuster plan only saw tankbusters cast at you. Many fights put a tankbuster marker on the tank and let the boss

@@ -8,16 +8,15 @@ Nach Wichtigkeit, also nach der Wirkung im Kampf: Sicherheit der Gruppe vor Scha
 Wahrscheinlichkeit, in seinem Profil (seine Vorgabe, 17.10.2026: „todo nach wichtigkeit abarbeiten. jeweils im loop
 bearbeiten"). Stand 17.10.2026; fortgeschrieben mit jedem Befund.
 
-1. Tankbuster-Tabelle misst auch an Nicht-Tanks.
-2. Sprungprüfung fester Sprünge: Signatur passt nicht zu BossModReborn – Schaden, nicht Sicherheit.
-3. Gelehrter: Recitation ohne Rückfall vor Ablauf.
-4. Tankbuster-Plan: der GCD als Ersatz für Zeiten, die das Spiel anders bestimmt.
-5. Wirkdauer unterhalb der Merkmalsstufe unbekannt.
-6. `NextBigSummonIsBurst`: die Geschichte kann das Urteil des Spiels überstimmen.
-7. Tankwechsel von der anderen Seite – seine Entscheidung nötig, nach dem Loop als Vorlage.
-8. Frist vor dem Snapshot für Pfade außerhalb des Tankbuster-Plans (Beleg zu BossModReborn zuerst).
-9. Krieger: Nascent Flash; Tänzer: Improvised Finish; Rückstoß und Unterbrechung messen; DRK: Bruch von The Blackest Night; Rotationen gegen The Balance.
-10. Offene Arbeit, dann technische Schuld, soweit ihre Auflösungsbedingung erfüllt ist.
+1. Sprungprüfung fester Sprünge: Signatur passt nicht zu BossModReborn – Schaden, nicht Sicherheit.
+2. Gelehrter: Recitation ohne Rückfall vor Ablauf.
+3. Tankbuster-Plan: der GCD als Ersatz für Zeiten, die das Spiel anders bestimmt.
+4. Wirkdauer unterhalb der Merkmalsstufe unbekannt.
+5. `NextBigSummonIsBurst`: die Geschichte kann das Urteil des Spiels überstimmen.
+6. Tankwechsel von der anderen Seite – seine Entscheidung nötig, nach dem Loop als Vorlage.
+7. Frist vor dem Snapshot für Pfade außerhalb des Tankbuster-Plans (Beleg zu BossModReborn zuerst).
+8. Krieger: Nascent Flash; Tänzer: Improvised Finish; Rückstoß und Unterbrechung messen; DRK: Bruch von The Blackest Night; Rotationen gegen The Balance.
+9. Offene Arbeit, dann technische Schuld, soweit ihre Auflösungsbedingung erfüllt ist.
 
 Warten auf Daten, nicht bearbeitbar: Aktualisierungskosten je Teilschritt (Protokoll „update cost by step“, A310); Tankbuster nach einem Marker ohne Wirken (Protokoll „no cast taken for it“, A308); Treffer aus einer Quelle, die die Objekttabelle nicht hält (Protokoll); Samurai
 Feint und Tengentsu (Protokoll eines Samurai); BossModReborn-FATE-Modul in Occult Crescent (Adressat BossModReborn).
@@ -220,26 +219,6 @@ Protokoll stand kein Treffer auf ihn: Necrophobia (10.10.2026) und Düsterflare 
 Protokoll jeden solchen Treffer („hit you from a source the object table does not hold" bzw. „not read as an enemy").
 Auflösung: ein Protokoll aus einem solchen Kampf; zeigt es die Zeilen, folgt der Loop, wie ein Satz ohne Quelle
 verarbeitet wird.
-
-### Tankbuster-Tabelle misst auch an Nicht-Tanks · N
-
-**Konzept:** `docs/rotation-flow/13-aoe-damage-classification.md`, „Die Tankbuster-Tabelle"
-`Watcher.ActionFromEnemy` legt einen Tankbuster an jedem Spieler ab, den er trifft (`TankbusterTable.Record`), und
-rechnet nur die Minderung heraus, die ein Wirktext beziffert. Trifft er einen Nicht-Tank – einen Nahkämpfer in seiner
-Fläche, den Nächsten in der Feindschaftsliste nach dem Tod des Tanks –, gilt der Anteil an dessen kleinerer
-Maximalgesundheit, ohne die Minderung des Tank-Merkmals, die kein Status trägt, und ein Fehlschlag kann weit über der
-Maximalgesundheit liegen. Dieselbe Fehlerklasse wie die gelernten Flächenanteile aus Tötungsmechaniken (A298): ein
-Treffer auf jemanden, dem die Mechanik nicht galt, hebt den Wert für immer.
-
-**Im Kampf:** Der Plan eines Tanks rechnet mit einem zu großen Treffer und zieht Minderung oder die Unverwundbarkeit,
-wo weniger reichte – der Fehler, den die Tabelle laut ihrem Kommentar nicht machen darf.
-
-**Vorkommen nicht belegt.** In seinen Protokollen vom 13. bis 16.10.2026 wurden fünf Tankbuster an zwei oder drei
-verschiedenen Spielern gemessen, der höchste ungeminderte Wert lag bei 80 %; ob darunter Nicht-Tanks waren, sagte
-das Protokoll nicht. Seit A298 schreibt die Zeile „tankbuster measured" bei einem Nicht-Tank „(not a tank)".
-
-**Offen, noch nicht im Loop:** nur an Tanks messen (dann fehlt die Messung, wo ein Nicht-Tank selbst Ziel ist, etwa
-in Solo-Inhalten) oder je Rolle getrennt ablegen.
 
 ## Technische Schuld
 

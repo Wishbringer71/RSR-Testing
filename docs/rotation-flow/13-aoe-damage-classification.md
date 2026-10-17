@@ -627,8 +627,13 @@ Messung in `TankbusterTable`, Ablage über denselben gesicherten Weg wie die Fl�
 ### Was gemessen wird
 
 - **Welche Treffer:** jeder Treffer einer gegnerischen Aktion, die in der Tankbuster-Liste steht oder deren
-  Tankbuster-Marker bestätigt wurde (`TankbusterMarkerWatch.RecordHit`), auf **jeden Spieler**. Das schließt den
-  Co-Tank ein und in großen Inhalten Spieler anderer Gruppen. Die LP und Status anderer Spieler liegen vor.
+  Tankbuster-Marker bestätigt wurde (`TankbusterMarkerWatch.RecordHit`), auf **jeden Tank** unter den Spielern. Das
+  schließt den Co-Tank ein und in großen Inhalten Tanks anderer Gruppen. Die LP und Status anderer Spieler liegen vor.
+  Ein Treffer auf einen Nicht-Tank wird nicht abgelegt (A312): Jeder Leser rechnet für einen Tank – der Plan des
+  Spielers, der Tankwechsel –, und dem Nicht-Tank fehlen die Minderung des Tank-Merkmals, die kein Status trägt, und
+  die größere Maximalgesundheit; ein Fehlschlag an ihm höbe den Wert für jeden Tank, im Extremfall über die ganze
+  Gesundheit hinaus. Das Protokoll schreibt ihn mit „(not a tank) … not stored". Keiner der Leser liest die Tabelle für
+  einen Nicht-Tank, also fehlt dort nichts.
 - **Zurückgerechnet auf ungemindert:** Der gemessene Anteil wird durch die Minderung geteilt, die beim Einschlag
   stand.
   - Auf dem Getroffenen zählt sein eigener Anteil, auf dem Angreifer der Anteil nach Schadensart: physisch für
@@ -680,10 +685,9 @@ Protokoll schreibt „not stored, the attacker carried a damage-up status". Ein 
 ein, und auf ihm zöge die Regel aus Konzept 09 eine Unverwundbarkeit. Stärkungen unter anderem Namen bleiben
 unerkannt.
 
-**Nach oben offen:** ein Tankbuster auf einen Nicht-Tank, etwa einen Nahkämpfer in seiner Fläche. Gemessen wird an
-jedem getroffenen Spieler; bei einem Nicht-Tank gilt der Anteil an seiner kleineren Maximalgesundheit, ohne die
-Minderung des Tank-Merkmals, die kein Status trägt, und der Plan eines Tanks rechnete danach mit einem zu großen
-Treffer. Ob das vorkommt, ist nicht belegt (`TODO.md`); die Protokollzeile nennt einen solchen Treffer mit „(not a tank)".
+**Nach oben ausgeschlossen, seit A312:** ein Tankbuster auf einen Nicht-Tank (Abschnitt „Was gemessen wird"). Werte,
+die vorher an einem Nicht-Tank entstanden, sind in der Datei nicht als solche erkennbar und bleiben; in seinen
+Protokollen vom 13. bis 17.10.2026 ist keiner belegt (nur das vom 17.10. trug die Kennzeichnung).
 
 ### Wofür
 

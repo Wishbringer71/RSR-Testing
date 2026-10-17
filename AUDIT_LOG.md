@@ -8023,6 +8023,30 @@ Aktion (Zeit vom vorigen Cast bis zu diesem) – würde einen Kampfverlauf vorau
 
 **Prüfgrad:** statisch am Code.
 
+### A312 · Tankbuster-Tabelle: nur Treffer auf Tanks (17.10.2026)
+
+TODO-Punkt „Tankbuster-Tabelle misst auch an Nicht-Tanks" nach seiner Reihenfolge.
+
+**Erhoben:** Leser der Tabelle sind `TankbusterForecast` (nur für den Spieler als Tank), `TankSwapWatch.ExpectedShare`
+(Spieler und Empfänger, beides Tanks) und `IsLearned` (Erkennung als Tankbuster). Keiner rechnet für einen Nicht-Tank.
+Ein Treffer auf einen Nicht-Tank fehlt die Minderung des Tank-Merkmals, die kein Status trägt, und er gilt gegen eine
+kleinere Maximalgesundheit; als Höchstwert höbe er die Zahl für jeden Tank, ein Fehlschlag sogar über die ganze
+Gesundheit – dieselbe Klasse wie A298. In seinen Protokollen vom 13. bis 17.10.2026 ist kein solcher Treffer belegt
+(gekennzeichnet nur das vom 17.10.).
+
+**Optionen.** Nullvariante; je Rolle getrennt ablegen (kein Leser für die zweite Zahl); nur an Tanks messen (gewählt).
+
+**Umgesetzt:** `TankbusterTable.Record` legt einen Treffer auf einen Nicht-Tank nicht ab; die Zeile „tankbuster
+measured … (not a tank) … not stored" bleibt im Protokoll. Ein solcher Treffer macht die Aktion auch nicht mehr zu einem
+gelernten Tankbuster (`IsLearned`), was die Erkennung (A303, A308) betrifft – richtig, sie fragt nach Tankbustern.
+
+**Falsifikation.** *Kein Defekt:* Vorkommen unbelegt, Wirkung am Code klar (Höchstwert steigt nur). *Option falsch:* In
+Solo-Inhalten als Nicht-Tank fehlt die Messung – dort liest niemand die Tabelle. Treffer auf Nicht-Spieler (Tanks der
+Duty Support) misst die Tabelle ohnehin nicht. *Ausgeliefert, nichts ändert sich:* wenn Tankbuster nie Nicht-Tanks
+treffen; dann bleibt alles wie vorher. Ältere Werte aus Nicht-Tank-Treffern sind nicht erkennbar und bleiben.
+
+**Prüfgrad:** statisch, Prüfskripte, Kompilieren im Prüflauf.
+
 ---
 ## B · Commit-Register (Fork vs. `upstream/main`)
 

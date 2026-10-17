@@ -5,7 +5,7 @@ namespace RotationSolver.Basic.Helpers;
 
 /// <summary>
 /// The learned tankbuster table (<see cref="OtherConfiguration.TankbusterPotential"/>): what a tankbuster
-/// does unmitigated, measured on every player it is seen to hit, and what it is expected to do to a
+/// does unmitigated, measured on every tank it is seen to hit, and what it is expected to do to a
 /// given target now. The owner's request of 04.10.2026 (concept 13, "Die Tankbuster-Tabelle").
 /// </summary>
 /// <remarks>
@@ -45,6 +45,17 @@ internal static class TankbusterTable
 		{
 			// Nothing arrived: a hit turned away by invulnerability or evasion, or wholly absorbed. Zero
 			// says that something stopped it, not that the action is harmless.
+			return;
+		}
+
+		// Every reader rates the hit for a tank - the player's plan and the tank swap. A member who is not a tank lacks
+		// the tank trait's reduction, which no status carries, and has a smaller pool, so his share would raise the
+		// figure for every tank, and a failed mechanic on him could take it past his whole health (A312, as A298 for
+		// the area table). Not stored; the line stays for the trace.
+		if (!target.IsJobCategory(JobRole.Tank))
+		{
+			DefenseTrace.Line($"tankbuster measured: {name} #{actionId} on {target.Name.TextValue} (not a tank) for {share:P0}"
+				+ " of max HP - not stored, the table rates hits on tanks");
 			return;
 		}
 
@@ -90,10 +101,7 @@ internal static class TankbusterTable
 			}
 		}
 
-		// "(not a tank)": the table also learns from a buster on a member it was not aimed at, rated against his
-		// smaller pool and without the tank trait's reduction; whether that happens is open (TODO.md, A298).
-		DefenseTrace.Line($"tankbuster measured: {name} #{actionId} on {target.Name.TextValue}"
-			+ $"{(target.IsJobCategory(JobRole.Tank) ? string.Empty : " (not a tank)")} for {share:P0} of max HP,"
+		DefenseTrace.Line($"tankbuster measured: {name} #{actionId} on {target.Name.TextValue} for {share:P0} of max HP,"
 			+ $" mitigation factor {factor:F2}, unmitigated {unmitigated:P0}{(vulnerable ? " under a vulnerability" : string.Empty)}"
 			+ (raised ? " - stored" : " - not above the stored value"));
 

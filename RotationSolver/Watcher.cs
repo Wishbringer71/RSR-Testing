@@ -481,7 +481,8 @@ public static class Watcher
 						}
 
 						// The tankbuster table learns from every player it is seen to hit, not only from
-						// the user - the co-tank's busters, and other parties' in large content.
+						// the user - the co-tank's busters, and other parties' in large content; it keeps the
+						// hits on tanks (TankbusterTable.Record, A312).
 						if (isTankbuster
 							&& Svc.Objects.SearchById(effect.TargetID) is Dalamud.Game.ClientState.Objects.SubKinds.IPlayerCharacter struck)
 						{
