@@ -2,6 +2,37 @@
 
 Getrennt nach Defekt (Abweichung vom beabsichtigten Verhalten), technischer Schuld (bewusst eingegangener Kompromiss mit Auflösungsbedingung) und offener Arbeit. Je Eintrag der betroffene Personenkreis: **N** Endnutzer des Plugins · **R** Autoren abgeleiteter Rotationen, die gegen `RotationSolver.Basic` kompilieren (bis 7.5.6.13 als Paket, seither als DLL aus `latest.zip`) · **U** Upstream-Pflege.
 
+## Reihenfolge
+
+Nach Wichtigkeit, also nach der Wirkung im Kampf: Sicherheit der Gruppe vor Schaden, gewichtet mit der
+Wahrscheinlichkeit, in seinem Profil (seine Vorgabe, 17.10.2026: „todo nach wichtigkeit abarbeiten. jeweils im loop
+bearbeiten"). Stand 17.10.2026; fortgeschrieben mit jedem Befund.
+
+1. Tankbuster-Plan nimmt Reflexion, die für einen angesagten Raidwide gehalten würde – 10 % für die ganze Gruppe.
+2. Rückstoß- und Tankbuster-Casts unsichtbarer Helfer werden nicht gelesen – Tankabwehr fehlt.
+3. Tankbuster-Plan: keine Reserve nach einem knapp überlebten Treffer.
+4. Tankbuster-Plan: Stun sperrt ein Glied einen GCD; Druck nach dem Snapshot möglich.
+5. Zielüberschreibung aus dem GCD-Lauf gilt in den Fähigkeiten weiter.
+6. Living Dead: Die Rückhaltung liest die gemessene Tankbuster-Höhe nicht.
+7. Tank-Unverwundbarkeit vor Tankbustern ohne Aktionsangabe oder ohne Messung weiter nur reaktiv.
+8. `IsValid()` prüft nicht, ob ein Objekt noch lebt – möglicher Absturz.
+9. Zustandsabfragen, die bei jedem Lesen neu über Gruppe oder Gegner laufen – Bildausfälle bis 70 ms.
+10. Die proaktive Minderung aller Jobs hat BossModReborn als einzige Quelle.
+11. Tankbuster-Tabelle misst auch an Nicht-Tanks.
+12. Sprungprüfung fester Sprünge: Signatur passt nicht zu BossModReborn – Schaden, nicht Sicherheit.
+13. Gelehrter: Recitation ohne Rückfall vor Ablauf.
+14. Tankbuster-Plan: der GCD als Ersatz für Zeiten, die das Spiel anders bestimmt.
+15. Wirkdauer unterhalb der Merkmalsstufe unbekannt.
+16. Astrologe: Synastry wählt ihr Ziel nach Trefferfläche.
+17. `NextBigSummonIsBurst`: die Geschichte kann das Urteil des Spiels überstimmen.
+18. Tankwechsel von der anderen Seite – seine Entscheidung nötig, nach dem Loop als Vorlage.
+19. Krieger: Nascent Flash; Tänzer: Improvised Finish; Rückstoß und Unterbrechung messen; DRK: Bruch von The
+    Blackest Night; Rotationen gegen The Balance.
+20. Offene Arbeit, dann technische Schuld, soweit ihre Auflösungsbedingung erfüllt ist.
+
+Warten auf Daten, nicht bearbeitbar: Treffer aus einer Quelle, die die Objekttabelle nicht hält (Protokoll); Samurai
+Feint und Tengentsu (Protokoll eines Samurai); BossModReborn-FATE-Modul in Occult Crescent (Adressat BossModReborn).
+
 ## Defekte
 
 ### Sprungprüfung fester Sprünge: Signatur passt nicht zu BossModReborn · N, U
@@ -32,18 +63,6 @@ Adloquium, Concitation), das Fenster in der letzten Gelegenheit nutzen soll. Im 
 verschenkter kritischer Heilschub je Minute.
 
 **Konzept:** `docs/rotation-flow/14-action-dependency-matrix.md`
-
-### Weißmagier: bereite Abwehr bleibt aus, Grund unbekannt · N
-
-Protokoll vom 14.10.2026 (Build 43488aa24, A284): In vier Flächenlagen war Plenary Indulgence nach den Zeilen
-„used" seit über 60 s bereit und wurde nicht gewählt; um 10:42:33 ging Temperance allein hinaus, obwohl Plenary
-davor steht. Liturgy of the Bell kam in der ganzen Sitzung nie, auch in Lagen, in denen Plenary und Temperance
-abklangen und die Stufe für Temperance reichte. In vier Einzelabwehrlagen auf Tankbuster gegen den Tank blieben
-Divine Benison und Aquaveil aus, obwohl bereit. Statisch ausgeschlossen: Abklingzeit, Stufe, die Streckung, die
-Zielwahl `BeAttacked` ohne Einzelabwehr-Flagge, die Freund-Einstufung (Liturgy über die überschriebene
-Effektweite). Nicht messbar von hier: seine Einstellungen je Aktion. *Messmittel:* `DefenseTrace.log` schreibt
-jetzt zu jeder Abwehrentscheidung die abgelehnten Aktionen mit dem Grund aus `CanUse` und die stehenden
-Rückhaltungen; das nächste Protokoll eines Weißmagiers nennt die Ursache.
 
 ### Rückstoß- und Tankbuster-Casts unsichtbarer Helfer werden nicht gelesen · N
 
@@ -276,27 +295,6 @@ Er fällt trotzdem kaum ins Gewicht, und der Grund liegt in der Wirkweise der Ak
 Betroffen sind Leser, die eine Liste außerhalb des Zyklus lesen, in dem sie gebaut wurde: Fenster, Effekt-Hooks und mit `MinUpdatingTime` > 0 übersprungene Zyklen (A199). Im Kampf hieße das: ein Zyklus mit Werten eines verschwundenen oder eines anderen Gegners, im ungünstigsten Fall ein nativer Absturz bei einer virtuellen Funktion aus freigegebenem Speicher. Beobachtet ist davon nichts. Ob das Spiel Objekte zwischen Dalamuds Framework-Aktualisierung und dem Zeichnen im selben Frame entfernt, ist unbelegt.
 
 Offen: voller Loop. Zu klären sind ein Lebendigkeitsmaß, das ohne Lesen des möglicherweise freigegebenen Objekts auskommt (etwa Tabellenplatz und Adresse gegen `IObjectTable.GetObjectAddress`, dazu die `GameObjectId`), welche der 33 Stellen außerhalb ihres Zyklus lesen und ob Upstream dasselbe Muster pflegt.
-
-### `Skip mitigation for small area casts` hält nicht unter einer BossModReborn-Vorhersage · N
-
-**Konzept:** `docs/rotation-flow/08-mitigation-synergy.md`, „Wann eine BossModReborn-Vorhersage ihn betrifft";
-`docs/rotation-flow/13-aoe-damage-classification.md`
-Der Text der Einstellung: „A learned area cast whose measured damage would leave everybody above the level at which
-the tree heals anyway no longer raises the party mitigation." Der Cast-Weg hält das ein (`AreaCastIsWorthMitigating`).
-Der Zweig über BossModReborn in `StateUpdater.ShouldAddDefenseArea` öffnet die Flächenabwehr dagegen für jede
-vorhergesagte Raidwide im Fenster, ohne nach der Bewertung eines laufenden Casts zu fragen. Führt ein Modul den
-klein bewerteten Cast als Raidwide, geht die Minderung trotzdem hinaus. Der Text bindet; anzupassen ist der Code.
-
-**Im Kampf:** Vollkommener Ablass (8), Linderung (6), Schimmerschild (5) und Stumpfsinn (3) fielen auf Casts, die mit
-1 bis 23 % bewertet waren – 22 Abwehraktionen in seinen Protokollen vom 06. bis 16.10.2026. Ob der Cast-Weg einzelne davon
-wegen niedriger Gesundheit ohnehin geöffnet hätte, zeigt das Protokoll nicht.
-
-**Was eine Behebung beachten muss, noch nicht im Loop:** BossModReborn nennt zu einer Vorhersage keine Aktion; ob die
-Vorhersage den laufenden Cast meint, lässt sich nur am Zeitpunkt ablesen (Restzeit des Casts gegen den
-vorhergesagten Eintritt). Die Gefahr ist die Folge „klein, kurz danach groß": Eine Minderung, die beim kleinen
-Treffer fiele, deckte den großen mit; zurückgehalten, öffnet die Vorhersage des großen erst, wenn der kleine
-gelandet ist, und das Fenster kann zu kurz sein. `AnnouncedHitIsSmall` trägt dieselbe Annahme für die
-vorausschauende Auffrischung (C75) und ist dort ausdrücklich eine Heuristik.
 
 ### Treffer aus einer Quelle, die die Objekttabelle nicht hält, gehen ganz verloren · N (Verdacht)
 

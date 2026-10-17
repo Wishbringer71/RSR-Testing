@@ -4024,8 +4024,12 @@ internal static class DataCenter
 
 	private static bool AnnouncedHitDropsBelow(float threshold, bool unprotectedOnly, bool needsRoom, out string who)
 	{
+		return HitDropsBelow(AnnouncedAreaShare, threshold, unprotectedOnly, needsRoom, out who);
+	}
+
+	private static bool HitDropsBelow(float share, float threshold, bool unprotectedOnly, bool needsRoom, out string who)
+	{
 		who = string.Empty;
-		var share = AnnouncedAreaShare;
 		if (share <= 0f)
 		{
 			return false;
@@ -4143,6 +4147,22 @@ internal static class DataCenter
 			return true; // Unrated: behave exactly as before.
 		}
 
+		if (AreaShareCallsForMitigation(share))
+		{
+			return true;
+		}
+
+		AreaMitigationSkipped[actionId] = DateTime.Now;
+		return false;
+	}
+
+	/// <summary>
+	/// The size rule of <c>Skip mitigation for small area casts</c>, for a measured share: whether a hit of this
+	/// size calls for the party mitigation. Asked by the cast path and by the BossModReborn path (A301), so the
+	/// two cannot disagree about the same cast.
+	/// </summary>
+	private static bool AreaShareCallsForMitigation(float share)
+	{
 		// Above the size of a large shield the hit is a big one, whatever the party's health - the
 		// user's requirement says so in as many words, and the party's health does not change how
 		// hard it lands. Without this arm the rule asks only whether healing would be needed, and a
@@ -4162,13 +4182,7 @@ internal static class DataCenter
 		// Anyone the hit would push to where healing would be called for is reason enough - see
 		// AnnouncedHitDropsAnyoneBelow, including why the barrier counts here and not in the general
 		// healing threshold (A85). Healing before the hit asks a stricter line of its own (A292).
-		if (AnnouncedHitDropsAnyoneBelow(Service.Config.HealthAreaSpell))
-		{
-			return true;
-		}
-
-		AreaMitigationSkipped[actionId] = DateTime.Now;
-		return false;
+		return HitDropsBelow(share, Service.Config.HealthAreaSpell, false, false, out _);
 	}
 
 	/// <summary>
@@ -4640,6 +4654,165 @@ internal static class DataCenter
 	/// </summary>
 	public static bool? BMRRaidwideHitsPlayer { get; set; }
 
+	/// <summary>One enemy cast a BossModReborn raidwide prediction came with (A301).</summary>
+	internal readonly record struct BmrRaidwideCast(ulong CasterId, uint ActionId);
+
+	/// <summary>
+	/// The enemy casts the current BossModReborn raidwide prediction came with: those that began in the update in
+	/// which its landing time first appeared. Empty when it appeared at no cast's start.
+	/// </summary>
+	/// <remarks>
+	/// <para>BossModReborn names no action for a prediction. Its time does not tie it to a cast either: against a
+	/// running listed cast the predicted landing lay 0.4 to 2.9 s after the cast's end in his traces of 04. to
+	/// 16.10.2026, depending on the module. Its start does: a cast-bound raidwide component adds the prediction
+	/// when the cast begins and drops it when the cast ends (<c>Components.RaidwideCast</c>, landing
+	/// <c>CastFinishAt</c>), so a landing time that appears in the same update as a cast's start came with that
+	/// cast.</para>
+	///
+	/// <para>Every enemy cast that began then is kept, the untargetable helpers included whatever they cast: a
+	/// visual cast on the list and the real hit from a helper beside it must not read as the visual cast alone.
+	/// Recognition only; whether a cast kept here is worth a mitigation is asked by the reader.</para>
+	/// </remarks>
+	internal static IReadOnlyList<BmrRaidwideCast> BMRRaidwideCasts => _bmrRaidwideCasts;
+
+	private static List<BmrRaidwideCast> _bmrRaidwideCasts = [];
+	private static DateTime _bmrRaidwideLandsAt = DateTime.MinValue;
+	private static DateTime _bmrRaidwideReadAt = DateTime.MinValue;
+	private static TimeSpan _bmrRaidwideReadFrame = TimeSpan.Zero;
+
+	/// <summary>
+	/// Called with every reading of <see cref="BMRNextRaidwideIn"/>, after the hostile lists of the same update
+	/// are built: keeps <see cref="BMRRaidwideCasts"/> for the prediction it describes.
+	/// </summary>
+	internal static void NoteBmrRaidwide(float raidwideIn)
+	{
+		var now = DateTime.Now;
+		var frame = Svc.Framework.UpdateDelta;
+		var previousRead = _bmrRaidwideReadAt;
+		var previousFrame = _bmrRaidwideReadFrame;
+		_bmrRaidwideReadAt = now;
+		_bmrRaidwideReadFrame = frame;
+
+		if (raidwideIn is <= 0f or float.MaxValue)
+		{
+			_bmrRaidwideLandsAt = DateTime.MinValue;
+			_bmrRaidwideCasts = [];
+			return;
+		}
+
+		// The same prediction keeps its landing time; BossModReborn's own reading may lag RSR's by a frame.
+		var landsAt = now + TimeSpan.FromSeconds(raidwideIn);
+		var lag = frame > previousFrame ? frame : previousFrame;
+		if (_bmrRaidwideLandsAt != DateTime.MinValue && (landsAt - _bmrRaidwideLandsAt).Duration() <= lag)
+		{
+			return;
+		}
+
+		_bmrRaidwideLandsAt = landsAt;
+		_bmrRaidwideCasts = previousRead == DateTime.MinValue ? [] : CastsBegunBetween(previousRead - lag, now);
+	}
+
+	private static List<BmrRaidwideCast> CastsBegunBetween(DateTime after, DateTime until)
+	{
+		List<BmrRaidwideCast> begun = [];
+		HashSet<ulong> seen = [];
+		void Consider(IBattleChara h)
+		{
+			if (!h.IsCasting || !seen.Add(h.GameObjectId))
+			{
+				return;
+			}
+
+			var began = until - TimeSpan.FromSeconds(h.CurrentCastTime);
+			if (began > after && began <= until)
+			{
+				begun.Add(new BmrRaidwideCast(h.GameObjectId, h.CastActionId));
+			}
+		}
+
+		foreach (var h in AllHostileTargets)
+		{
+			if (h != null && h.HasNativeState())
+			{
+				Consider(h);
+			}
+		}
+
+		foreach (var obj in Svc.Objects)
+		{
+			if (obj is IBattleChara h && h.ObjectKind == Dalamud.Game.ClientState.Objects.Enums.ObjectKind.BattleNpc
+				&& !h.IsTargetable && h.HasNativeState()
+				&& h.GetBattleNPCSubKind() == Dalamud.Game.ClientState.Objects.Enums.BattleNpcSubKind.Combatant)
+			{
+				Consider(h);
+			}
+		}
+
+		return begun;
+	}
+
+	/// <summary>
+	/// Whether the current BossModReborn raidwide is the landing of listed area casts that are still being cast
+	/// and that the size rule of <c>Skip mitigation for small area casts</c> leaves unmitigated (A301).
+	/// <paramref name="largest"/> gives the largest of their measured shares and <paramref name="actionId"/> its
+	/// action.
+	/// </summary>
+	/// <remarks>
+	/// False whenever anything is unknown: no cast came with the prediction, one of them is not listed or not
+	/// measured, one has ended - after a cast ends a later hit may stand behind its prediction - or one calls
+	/// for mitigation.
+	/// </remarks>
+	internal static bool BmrRaidwideIsSmallListedCast(out float largest, out uint actionId)
+	{
+		largest = 0f;
+		actionId = 0;
+		var casts = _bmrRaidwideCasts;
+		if (casts.Count == 0)
+		{
+			return false;
+		}
+
+		foreach (var cast in casts)
+		{
+			if (Svc.Objects.SearchById(cast.CasterId) is not IBattleChara caster || !caster.HasNativeState()
+				|| !caster.IsCasting || caster.CastActionId != cast.ActionId
+				|| !OtherConfiguration.HostileCastingArea.Contains(cast.ActionId)
+				|| !OtherConfiguration.HostileCastingAreaPotential.TryGetValue(cast.ActionId, out var share)
+				|| share <= 0f || AreaShareCallsForMitigation(share))
+			{
+				return false;
+			}
+
+			if (share > largest)
+			{
+				largest = share;
+				actionId = cast.ActionId;
+			}
+		}
+
+		return true;
+	}
+
+	private static DateTime _bmrRaidwideHeldTracedFor = DateTime.MinValue;
+
+	/// <summary>
+	/// Records that the area defence was held for the current BossModReborn raidwide because it is the landing of
+	/// a small listed cast: the probe of the cast path, and one trace line per prediction.
+	/// </summary>
+	internal static void NoteBmrRaidwideHeld(float share, uint actionId)
+	{
+		AreaMitigationSkipped[actionId] = DateTime.Now;
+		if (_bmrRaidwideHeldTracedFor == _bmrRaidwideLandsAt)
+		{
+			return;
+		}
+
+		_bmrRaidwideHeldTracedFor = _bmrRaidwideLandsAt;
+		var name = Service.GetSheet<Action>().GetRow(actionId).Name.ExtractText();
+		DefenseTrace.Line($"area defence held: BossModReborn's raidwide in {BMRNextRaidwideIn:F1} s came with"
+			+ $" {name} #{actionId}, rated {share:P0}, which leaves everybody above the area heal line");
+	}
+
 	/// <summary>
 	/// Whether area damage on the party is announced, from any source, without asking how hard it lands:
 	/// an area marker on the party, a listed area cast reaching the party, a large measured one even when
@@ -4853,6 +5026,8 @@ internal static class DataCenter
 		BMRNextRaidwideIn = float.MaxValue;
 		BMRNextRaidwideSource = string.Empty;
 		BMRRaidwideHitsPlayer = null;
+		_bmrRaidwideCasts = [];
+		_bmrRaidwideLandsAt = DateTime.MinValue;
 		BMRNextTankbusterIn = float.MaxValue;
 		BMRNextKnockbackIn = float.MaxValue;
 		BMRNextDowntimeIn = float.MaxValue;

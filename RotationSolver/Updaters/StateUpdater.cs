@@ -192,6 +192,19 @@ internal static class StateUpdater
 			&& DataCenter.BMRNextRaidwideIn > 0.6f
 			&& DataCenter.BMRNextRaidwideIn <= Service.Config.BMRRaidwideMitWindow)
 		{
+			// "Skip mitigation for small area casts" promises that a learned area cast which leaves everybody
+			// above the area heal line no longer raises the party mitigation. The cast path keeps that; this
+			// branch opened for every prediction, so a module that predicts the same small cast raised the
+			// mitigation anyway - 22 times in his traces of 06. to 16.10.2026 (A299, A301). It holds now while
+			// the prediction is the landing of such casts and they are still being cast; after they end, a
+			// later hit may stand behind the prediction, and the branch answers as before.
+			if (Service.Config.SkipMitigationForSmallAreaCasts
+				&& DataCenter.BmrRaidwideIsSmallListedCast(out var share, out var actionId))
+			{
+				DataCenter.NoteBmrRaidwideHeld(share, actionId);
+				return false;
+			}
+
 			return true;
 		}
 

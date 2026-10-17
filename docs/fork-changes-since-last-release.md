@@ -88,6 +88,15 @@ goes for Esuna:
 RSR no longer cleanses a member another healer is already casting Esuna on, unless more than that one effect is
 left.
 
+## Small area casts stay unmitigated when BossModReborn predicts them
+
+`Skip mitigation for small area casts` kept a learned area cast that leaves everybody above the area heal line from
+raising the party mitigation - but only on RSR's own reading of the cast. When BossModReborn predicted the same cast
+as a raidwide, the prediction opened the area defence anyway, and Plenary Indulgence, Temperance, Radiant Aegis or
+Addle went out on hits of a few percent. A prediction that appears together with the start of such casts no longer
+opens the area defence while they are being cast; a prediction with any other cast beside it, an unmeasured one, or
+one that is left when the cast ends, is answered as before. `DefenseTrace.log` names each prediction held this way.
+
 ## Area casts: a member who missed a kill mechanic no longer sets its size
 
 RSR learns how hard each listed area cast hits, as the largest share of a member's maximum HP it has seen, and that

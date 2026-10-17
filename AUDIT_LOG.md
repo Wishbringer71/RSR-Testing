@@ -7583,6 +7583,73 @@ Abklingzeit, Stapel Finishing Fervor bei gemindertem Treffer; xivapi).
 **Prüfgrad:** Protokoll und Datei per Skript, Namen über xivapi, Mechanik an BossModReborn-Modulen (CE206 Dark
 Artistry, FATE Eye to Eye) und am Quelltext von ECommons; Code statisch, Messmittel im Prüflauf kompiliert.
 
+### A300 · Reihenfolge der offenen Arbeit; „Weißmagier: bereite Abwehr bleibt aus" geschlossen (17.10.2026)
+
+Seine Vorgabe (17.10.2026): „todo nach wichtigkeit abarbeiten. jeweils im loop bearbeiten." In `CLAUDE.md` unter
+„Archiv und TODO" eingetragen; die Reihenfolge steht oben in `TODO.md`. Maß ist die Wirkung im Kampf nach
+„Spielweise": Sicherheit der Gruppe vor Schaden, gewichtet mit der Wahrscheinlichkeit, in seinem Profil.
+
+**Geschlossen: „Weißmagier: bereite Abwehr bleibt aus, Grund unbekannt"** (offen seit A284, Protokoll 14.10.2026).
+Der Eintrag wartete auf ein Protokoll mit den abgelehnten Aktionen; die Protokolle bfd42ad9 (14.10.) und 7ee83f99
+(16.10.) tragen sie. Benutzt wurden am 16.10. Vollkommener Ablass 77-mal, Linderung 47, Göttlicher Segen 11,
+Wasserschleier 11, Schimmerschild 8, Stumpfsinn 4, Glockenspiel 3. Jede Ablehnung nennt einen der Gründe Abklingzeit
+(„Cooldown"), eigener Status steht noch („BasicCheck": Vollkommener Ablass legt Confession über `StatusProvide`, ebenso
+Linderung), kein Ziel („NoTarget"), Göttliche Umarmung ohne Divine Grace, oder „ProtectsOnlyYouAndTheHitMissesYou".
+Die Fehlbilder vom 14.10. – Glockenspiel nie, Göttlicher Segen und Wasserschleier am Tankbuster aus – kehrten nicht
+wieder. Gegenprobe „der Defekt besteht und trat nur nicht auf": In den 140 leeren Fenstern vom 16.10. (A297) steht kein
+unerklärter Grund, und die Einzelabwehr am Tankbuster ging elfmal hinaus. Die Ursache vom 14.10. selbst ist nicht mehr
+bestimmbar, weil jener Stand die Gründe nicht schrieb.
+
+**Prüfgrad:** Protokolle per Skript, `WhiteMageRotation.ModifyPlenaryIndulgencePvE` statisch.
+
+### A301 · `Skip mitigation for small area casts` unter einer BossModReborn-Vorhersage (17.10.2026)
+
+Punkt 1 der Reihenfolge (A300), Befund aus A299. **Befund:** Der Text der Einstellung sagt zu, dass ein gelernter
+Flächencast, nach dem alle über der Flächenheilschwelle bleiben, die Gruppenminderung nicht mehr auslöst.
+`StateUpdater.ShouldAddDefenseArea` öffnete im Zweig über BossModReborn für jede Vorhersage im Fenster; 22
+Abwehraktionen vom 06. bis 16.10.2026 auf gelistete Casts mit 1 bis 23 %. Der Text bindet.
+
+**Research.** Der Cast-Weg bewertet einen gelisteten Cast erst ein bis zwei GCDs vor dem Einschlag
+(`IsHostileCastingBase`), die Vorhersage öffnet bis zu `BMRRaidwideMitWindow` vorher; das Urteil des Cast-Wegs kommt
+also zu spät, um den Zweig zu tragen. Zeitliche Zuordnung trägt nicht: BossModReborn setzt den Eintritt eines
+Cast-Raidwides auf die Grundwirkzeit plus 0,3 s (`ActorCastInfo.NPCFinishDelay`, `CastFinishAt` mit
+`NPCRemainingTime`, Grundlage `BaseCastTime`), RSR liest `TotalCastTime`, und in seinen Protokollen lag die Vorhersage
+gegen einen laufenden gelisteten Cast 0,4 bis 2,9 s nach dessen Ende (Häufungen bei 0,5, 1,1 und 2,0 s; 420 Zeilen),
+weil Module verzögern oder Folgetreffer vorhersagen. Zuordnung über den Beginn trägt: `Components.RaidwideCast` legt
+die Vorhersage mit dem Beginn des Casts an und nimmt sie mit seinem Ende weg.
+
+**Optionen.** Nullvariante (Text bleibt gebrochen); Zuordnung über den Zeitpunkt mit Toleranz (widerlegt an den
+Messwerten: eine Toleranz bis 2,9 s nähme fremde Treffer mit); den Zweig während jedes klein bewerteten Casts sperren
+(nähme ein früheres großes Ereignis mit); Zuordnung über den Beginn, gehalten nur solange der Cast läuft (gewählt);
+Text anpassen (unzulässig, der Text bindet).
+
+**Umsetzung.** `DataCenter.NoteBmrRaidwide` merkt sich je Vorhersage ihren Eintrittszeitpunkt; erscheint ein neuer,
+werden alle gegnerischen Casts erfasst, die seit dem letzten Lesen begannen (`BMRRaidwideCasts`), anvisierbare und
+unsichtbare Kämpfer mit jeder Aktion. „Dieselbe Vorhersage" heißt: Eintritt gleich bis auf den Versatz eines Bildes
+(`UpdateDelta`, das größere der letzten beiden). `BmrRaidwideIsSmallListedCast` hält nur, wenn jeder erfasste Cast noch
+läuft, gelistet und gemessen ist und die Größenregel ihn nicht mindern lässt; die Größenregel ist dafür aus
+`AreaCastIsWorthMitigating` als `AreaShareCallsForMitigation` herausgelöst (Cast-Weg verhaltensgleich: dieselbe
+Rechnung, über `HitDropsBelow` mit ausdrücklichem Anteil statt des eben abgelegten). Gehalten wird hinter derselben
+Einstellung; Sonde `AreaMitigationSkipped` und eine Zeile je Vorhersage in `DefenseTrace.log`.
+
+**Falsifikation.**
+- *Kein Defekt:* Der Zweig sei ein bewusst eigenes Sicherheitsnetz. Widerlegt am Text der Einstellung, der ohne
+  Ausnahme für BossModReborn zusagt.
+- *Option falsch:* Ein Modul legt mit dem Beginn eines kleinen Casts zugleich einen großen, verzögerten Raidwide an.
+  Gehalten wird nur, solange der Cast läuft; danach öffnet der Zweig, und ein Eintritt später als 0,6 s nach dem
+  Ende bleibt erreichbar. Ein großer Helfer-Cast, der im selben Durchlauf beginnt, ist ungelistet oder groß bewertet
+  und verhindert das Halten. Verbleibend: eine hinter dem kleinen verdeckte große Vorhersage weniger als einen
+  Druckplatz nach dessen Ende (Konzept 08, Grenzen).
+- *Ausgeliefert, nichts ändert sich:* Legt ein Modul die Vorhersage nicht mit dem Beginn an (Zeitleiste mit anderem
+  Übergang), fehlt die Zuordnung, und der Zweig öffnet wie bisher; das Protokoll zeigt dann keine Zeile „held". Ob die
+  22 Fälle so liegen, war aus den Protokollen nicht bestimmbar, weil sie den Beginn der Vorhersage nicht schrieben.
+
+**Betroffene.** Alle Jobs mit Flächenabwehr unter `UseBmrTimeline`; die vorausschauende Auffrischung bleibt bei ihrer
+eigenen Einstellung (`HoldProactiveMitigationForSmallCast`).
+
+**Prüfgrad:** statisch (Wirkkette BossModReborn-Lesen → Zuordnung → Zweig → Flagge), BossModReborn-Quelltext, Messung an
+seinen Protokollen; Kompilieren im Prüflauf. Im Spiel nicht beobachtet.
+
 ---
 ## B · Commit-Register (Fork vs. `upstream/main`)
 

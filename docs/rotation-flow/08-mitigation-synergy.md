@@ -562,6 +562,30 @@ Treffer aus einer Quelle, die RSR nicht als Gegner liest. „Kein Treffer im Pro
 Maß für „Fehlvorhersage". Seine Frage vom 13.10.2026, ob es Raidwides waren oder Flächen, außerhalb
 derer er stand, führte zur Maske.
 
+**Eine Vorhersage, die mit einem kleinen Cast kam, öffnet die Flächenabwehr nicht** (A301,
+`DataCenter.BMRRaidwideCasts`, `BmrRaidwideIsSmallListedCast`, gelesen in `StateUpdater.ShouldAddDefenseArea`). Der Text
+von `Skip mitigation for small area casts` sagt zu, dass ein gelernter Flächencast, nach dem alle über der
+Flächenheilschwelle bleiben, die Gruppenminderung nicht mehr auslöst; der Cast-Weg hielt das ein, der Zweig über
+BossModReborn öffnete für jede Vorhersage. In seinen Protokollen vom 06. bis 16.10.2026 fielen so 22 Abwehraktionen
+(Vollkommener Ablass, Linderung, Schimmerschild, Stumpfsinn) auf gelistete Casts mit 1 bis 23 %.
+- *Zuordnung über den Beginn:* BossModReborn nennt zu einer Vorhersage keine Aktion, und ihr Zeitpunkt bindet sie
+  nicht an einen Cast – gegen einen laufenden gelisteten Cast lag er in seinen Protokollen 0,4 bis 2,9 s nach dessen
+  Ende, je nach Modul. Ein Raidwide-Baustein eines Moduls legt die Vorhersage aber an, wenn der Cast beginnt, und
+  nimmt sie mit seinem Ende weg (`Components.RaidwideCast`, Eintritt `CastFinishAt`). Taucht ein Eintrittszeitpunkt
+  in demselben Durchlauf auf, in dem ein Cast beginnt, kam er mit diesem Cast. Gezählt werden alle gegnerischen Casts,
+  die dann begannen, auch unsichtbare Helfer mit ungelisteten Aktionen.
+- *Gehalten wird nur*, wenn jeder dieser Casts gelistet und gemessen ist, keiner die Gruppenminderung verlangt
+  (dieselbe Größenregel wie der Cast-Weg, `AreaShareCallsForMitigation`) und alle noch gewirkt werden. Nach ihrem Ende
+  kann hinter der Vorhersage ein späterer Treffer stehen; dann antwortet der Zweig wie zuvor. Jeder unbekannte Fall –
+  kein Cast kam mit der Vorhersage, einer ist ungelistet oder ungemessen – öffnet wie bisher.
+- `DefenseTrace.log` schreibt je Vorhersage „area defence held: … came with …, rated …".
+- *Grenzen:* Verdeckt die Vorhersage des kleinen Casts eine spätere große, die BossModReborn erst danach nennt,
+  öffnet die Abwehr für die große erst, wenn der kleine Cast endet; liegen beide weniger als einen Druckplatz
+  auseinander, kann die Minderung zu spät kommen, die vorher beim kleinen gefallen wäre und den großen mitgedeckt
+  hätte. Ein Modul, das die Vorhersage nicht am Beginn anlegt, bleibt ohne Zuordnung, die Abwehr öffnet wie bisher.
+- *Abgrenzung:* Die vorausschauende Auffrischung (`BMRShouldRefreshBefore`) hat für dieselbe Frage ihre eigene
+  Einstellung (`HoldProactiveMitigationForSmallCast`, C75) und bleibt bei ihr.
+
 **Ausgeschlossen:**
 - *Die Vorhersagen eines Moduls nach ihrer Trefferquote beiseitelegen* — gebaut und zurückgenommen (A272, A275).
   BossModReborn nennt zu keiner Vorhersage eine Aktion. Eine Quote je Modul zählt deshalb Türme auf andere und echte
@@ -570,18 +594,8 @@ derer er stand, führte zur Maske.
   BossModReborn angekündigt hatte.
 - *Die Größe der Vorhersage aus dem Treffer lernen* — BossModReborn nennt keine Aktion zur Vorhersage, und die
   eingetroffenen streuen von 0 % bis über 40 %; der Höchstwert eines Moduls bewertete jede Vorhersage als groß.
-  Eingetroffene Vorhersagen von 0–1 % bekommen deshalb dieselbe Abwehr wie große. Auch ein sichtbarer, gelisteter
-  und klein bewerteter Cast hinter der Vorhersage ändert daran nichts: Der Zweig über BossModReborn
-  (`StateUpdater.ShouldAddDefenseArea`) öffnet die Flächenabwehr für jede vorhergesagte Raidwide; nach der Bewertung
-  eines laufenden Casts fragt nur die vorausschauende Auffrischung (`AnnouncedHitIsSmall`). Damit hält
-  `Skip mitigation for small area casts` nicht, was sein Text zusagt, sobald ein Modul den Cast als Raidwide führt –
-  ein Defekt (`TODO.md`). In seinen Protokollen ging das bis zu 22-mal so (vom 06. bis 16.10.2026: Abwehr unter einer
-  Vorhersage, während ein gelisteter Cast unter 25 % lief); ob der Cast-Weg einzelne davon wegen niedriger Gesundheit
-  ohnehin geöffnet hätte, zeigt das Protokoll nicht. Im FATE Eye to Eye (Occult Crescent, 17.10.2026) traf All Eyes
-  (Verfluchtes Facettenauge), ein Cast des Schreckensseher, ihn unter Abwehr mit 0 % und 3 %, und Abschütteln ging
-  hinaus; gelistet war der Cast nicht. Aufgenommen wird nur aus einer Gruppe ab vier, in der jedes Mitglied getroffen
-  wird (Konzept 13, „`Record AOE actions` und die Gruppengröße"), und aus Occult Crescent stand in keinem seiner
-  Protokolle ein Cast in der Liste. Ob es an der Gruppengröße lag, sagt seit A299 die Zeile am Ende jedes Kampfes.
+  Eingetroffene Vorhersagen von 0–1 % bekommen deshalb dieselbe Abwehr wie große, wenn kein klein bewerteter Cast
+  mit ihnen kam (siehe „Eine Vorhersage, die mit einem kleinen Cast kam").
 - *Vorhersagen eines Moduls verwerfen, in dessen Arena er nicht steht* — ändert in seinem Inhalt nichts. In
   Occult Crescent werden die Module der Critical Engagements (30 von 30) und des Forked Tower: Magic (4 von 4) nur
   aktiv, wenn er beim Pull in der Arena steht (`CheckPull`), und die Arena eines FATE-Moduls (24 von 24,

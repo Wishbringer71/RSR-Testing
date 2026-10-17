@@ -77,6 +77,10 @@ AREA_WORTH_CALL = re.compile(r'AreaCastIsWorthMitigating\(act\.RowId\)')
 AREA_UNRATED_FALLBACK = re.compile(
     r'TryGetValue\(actionId,\s*out\s+var\s+share\).{0,80}?return\s+true;', re.DOTALL)
 AREA_HEAL_THRESHOLD = re.compile(r'Service\.Config\.HealthAreaSpell')
+# Since A301 the size rule is its own method, asked by the cast path and by the BossModReborn path alike;
+# the threshold is then checked where the rule is.
+AREA_SIZE_RULE_METHOD = re.compile(r'bool\s+AreaShareCallsForMitigation\s*\(')
+AREA_SIZE_RULE_CALL = re.compile(r'AreaShareCallsForMitigation\(share\)')
 AREA_DYING_THRESHOLD = re.compile(r'HealthForDyingTanks')
 AREA_TOGGLE_DECL = re.compile(
     r'bool\s+SkipMitigationForSmallAreaCasts\s*\{\s*get;\s*set;\s*\}\s*=\s*(\w+)')
@@ -172,9 +176,15 @@ def check_area_worth(text):
     if AREA_UNRATED_FALLBACK.search(body) is None:
         problems.append('an unrated action no longer falls back to mitigating: the shipped entries '
                         'lose their mitigation until each one has been measured')
-    if AREA_HEAL_THRESHOLD.search(body) is None:
+    rule = body
+    if AREA_SIZE_RULE_CALL.search(body) is not None:
+        rule = body_of(text, AREA_SIZE_RULE_METHOD)
+        if rule is None:
+            problems.append('AreaShareCallsForMitigation is called but not found')
+            return problems
+    if AREA_HEAL_THRESHOLD.search(rule) is None:
         problems.append('the comparison no longer uses the area healing threshold')
-    if AREA_DYING_THRESHOLD.search(body) is not None:
+    if AREA_DYING_THRESHOLD.search(rule) is not None:
         problems.append('the comparison is back on HealthForDyingTanks, which practically never '
                         'fires - a thirty percent hit leaves a full player at seventy')
     if AREA_PROBE_WRITE.search(body) is None:
@@ -328,6 +338,38 @@ def self_test():
     if not any('no longer records that it withheld' in p for p in check_area_worth(
             good_area.replace('AreaMitigationSkipped[actionId] = DateTime.Now;\n', ''))):
         raise AssertionError('a decision that withholds mitigation unobservably went unnoticed')
+
+    split_area = '''
+        return OtherConfiguration.HostileCastingArea.Contains(act.RowId)
+            && AreaCastIsWorthMitigating(act.RowId);
+
+        private static bool AreaCastIsWorthMitigating(uint actionId)
+        {
+            if (!OtherConfiguration.HostileCastingAreaPotential.TryGetValue(actionId, out var share))
+            {
+                return true;
+            }
+            if (AreaShareCallsForMitigation(share))
+            {
+                return true;
+            }
+            AreaMitigationSkipped[actionId] = DateTime.Now;
+            return false;
+        }
+
+        private static bool AreaShareCallsForMitigation(float share)
+        {
+            return HitDropsBelow(share, Service.Config.HealthAreaSpell, false, false, out _);
+        }
+    '''
+    if check_area_worth(split_area):
+        raise AssertionError('the size rule as its own method was rejected: %s' % check_area_worth(split_area))
+    if not any('back on HealthForDyingTanks' in p for p in check_area_worth(
+            split_area.replace('Service.Config.HealthAreaSpell', 'Service.Config.HealthForDyingTanks'))):
+        raise AssertionError('the split size rule back on the dying threshold went unnoticed')
+    if not any('no longer uses the area healing threshold' in p for p in check_area_worth(
+            split_area.replace('Service.Config.HealthAreaSpell', 'threshold'))):
+        raise AssertionError('the split size rule without the area threshold went unnoticed')
 
     good_probe = '''
         ImGui.Text($"Mitigation withheld as too small, this session: "

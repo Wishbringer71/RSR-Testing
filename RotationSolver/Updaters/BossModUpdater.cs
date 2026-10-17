@@ -98,6 +98,7 @@ internal static class BossModUpdater
 				: DataCenter.BMRNextRaidwideIn == timelineRaidwide ? "timeline"
 				: DataCenter.BMRNextRaidwideIn == hintsRaidwide ? "hints"
 				: "generic";
+			DataCenter.NoteBmrRaidwide(DataCenter.BMRNextRaidwideIn);
 
 			// Known only when the raidwide in use is that entry; the timeline's raidwide names nobody.
 			DataCenter.BMRRaidwideHitsPlayer = raidwideMaskKnown && hintsRaidwide < float.MaxValue
