@@ -88,6 +88,14 @@ goes for Esuna:
 RSR no longer cleanses a member another healer is already casting Esuna on, unless more than that one effect is
 left.
 
+## Tanks: the tankbuster plan keeps Reprisal for the next raidwide
+
+The single-target defence keeps Reprisal off a tankbuster when the tank is covered and BossModReborn announces a
+raidwide after Reprisal would run out and before it is back. The tankbuster plan, which picks the cheapest set of own
+mitigations for a measured tankbuster, did not know that rule; from level 98 Reprisal was its cheapest member, so it
+went on the tankbuster and the whole party went without its 10 % at the raidwide. The plan now takes Reprisal only
+when no set without it survives the tankbuster.
+
 ## Small area casts stay unmitigated when BossModReborn predicts them
 
 `Skip mitigation for small area casts` kept a learned area cast that leaves everybody above the area heal line from

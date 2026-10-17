@@ -12,10 +12,15 @@ public partial class CustomRotation
 	/// <param name="Survivable">The plan survives the hit by the figures; false when even everything does not.</param>
 	/// <param name="After">Share of maximum HP the hit takes under the plan.</param>
 	/// <param name="Covered">The invulnerability already stands over the hit (Z1), rather than being planned (Z3).</param>
+	/// <param name="ReprisalKept">Reprisal was left out for the announced raidwide although it would have been cheaper
+	/// (K6).</param>
 	private sealed record TankbusterPlan(TankbusterForecast.Cast Cast, IBaseAction[] Mitigations, bool Invulnerability,
-		bool Survivable, float After, bool Covered = false);
+		bool Survivable, float After, bool Covered = false, bool ReprisalKept = false);
 
-	private readonly record struct PlanCandidate(IBaseAction Action, float Factor, float Barrier, float Cost, bool Refused);
+	// Reserved: a member another rule keeps for something else - Reprisal for the raidwide announced after its effect
+	// and before its recast (K6). It goes only when no bundle without it survives.
+	private readonly record struct PlanCandidate(IBaseAction Action, float Factor, float Barrier, float Cost, bool Refused,
+		bool Reserved = false);
 
 	private static readonly Dictionary<uint, StatusID[]> _statusesOfAction = [];
 
@@ -137,10 +142,24 @@ public partial class CustomRotation
 		// without a refused member is preferred; one with a member refused a moment ago still counts - the
 		// candidates keep a refused member only while its refusal runs out before the last GCD, so a retry is
 		// left before the fallback -, so a passing refusal never draws the invulnerability (invariant 1).
-		var bestMask = BestBundle(candidates, predicted, cast.Budget, false, out var bestAfter);
+		// Before that, a bundle without a reserved member: Reprisal kept for the announced raidwide goes on the
+		// tankbuster only when nothing without it survives - the single-target defence's rule (A244), which the
+		// plan, pressing on its own path, did not know (K6, A302).
+		var reprisalKept = false;
+		var bestMask = BestBundle(candidates, predicted, cast.Budget, false, false, out var bestAfter);
+		if (bestMask >= 0)
+		{
+			reprisalKept = BestBundle(candidates, predicted, cast.Budget, false, true, out _) is var cheapest
+				&& cheapest >= 0 && cheapest != bestMask;
+		}
+		else
+		{
+			bestMask = BestBundle(candidates, predicted, cast.Budget, false, true, out bestAfter);
+		}
+
 		if (bestMask < 0)
 		{
-			bestMask = BestBundle(candidates, predicted, cast.Budget, true, out bestAfter);
+			bestMask = BestBundle(candidates, predicted, cast.Budget, true, true, out bestAfter);
 		}
 
 		// A refusal of the invulnerability never makes "everything" (the owner's note, 12.10.2026): what refuses it
@@ -150,7 +169,7 @@ public partial class CustomRotation
 			&& InvulnerabilityReadyBy(cast.Remaining - gcd);
 		if (bestMask >= 0)
 		{
-			SetPlan(new TankbusterPlan(cast, Pick(candidates, bestMask), false, true, bestAfter));
+			SetPlan(new TankbusterPlan(cast, Pick(candidates, bestMask), false, true, bestAfter, ReprisalKept: reprisalKept));
 			FindNeeded(candidates, bestMask, pending, standing, predicted, cast.Budget);
 			_invulnerabilityCanTakeOver = invulnerabilityAvailable;
 		}
@@ -184,14 +203,14 @@ public partial class CustomRotation
 
 	// The cheapest bundle that leaves less than the budget, ties to the smaller one; -1 when none does.
 	private static int BestBundle(List<PlanCandidate> candidates, float predicted, float budget, bool withRefused,
-		out float bestAfter)
+		bool withReserved, out float bestAfter)
 	{
 		var bestMask = -1;
 		var bestCost = float.MaxValue;
 		bestAfter = 0f;
 		for (var mask = 0; mask < 1 << candidates.Count; mask++)
 		{
-			if (!withRefused && HasRefused(candidates, mask))
+			if ((!withRefused && HasRefused(candidates, mask)) || (!withReserved && HasReserved(candidates, mask)))
 			{
 				continue;
 			}
@@ -224,7 +243,7 @@ public partial class CustomRotation
 	{
 		for (var i = 0; i < candidates.Count; i++)
 		{
-			if ((bestMask & (1 << i)) != 0 && BestBundle(Without(candidates, i), predicted, budget, true, out _) < 0)
+			if ((bestMask & (1 << i)) != 0 && BestBundle(Without(candidates, i), predicted, budget, true, true, out _) < 0)
 			{
 				_needed.Add(candidates[i].Action);
 			}
@@ -234,7 +253,7 @@ public partial class CustomRotation
 		// barrier off the budget (a pending one was taken off the figure).
 		foreach (var c in pending)
 		{
-			if (c.Factor > 0f && BestBundle(candidates, (predicted + c.Barrier) / c.Factor, budget, true, out _) < 0)
+			if (c.Factor > 0f && BestBundle(candidates, (predicted + c.Barrier) / c.Factor, budget, true, true, out _) < 0)
 			{
 				_needed.Add(c.Action);
 			}
@@ -242,7 +261,7 @@ public partial class CustomRotation
 
 		foreach (var c in standing)
 		{
-			if (c.Factor > 0f && BestBundle(candidates, predicted / c.Factor, budget - c.Barrier, true, out _) < 0)
+			if (c.Factor > 0f && BestBundle(candidates, predicted / c.Factor, budget - c.Barrier, true, true, out _) < 0)
 			{
 				_needed.Add(c.Action);
 			}
@@ -360,6 +379,19 @@ public partial class CustomRotation
 		return false;
 	}
 
+	private static bool HasReserved(List<PlanCandidate> candidates, int mask)
+	{
+		for (var i = 0; i < candidates.Count; i++)
+		{
+			if ((mask & (1 << i)) != 0 && candidates[i].Reserved)
+			{
+				return true;
+			}
+		}
+
+		return false;
+	}
+
 	private static bool HasRefused(List<PlanCandidate> candidates, int mask)
 	{
 		for (var i = 0; i < candidates.Count; i++)
@@ -390,8 +422,9 @@ public partial class CustomRotation
 	/// on him whose status the forecast has not seen yet and that stand at the hit (<see cref="PendingStands"/>)
 	/// - asked before the status list, which can already show what the forecast's last reading did not count.
 	/// A cooldown would say neither who pressed nor on whom, and Vengeance and Damnation share one. Reprisal
-	/// states no duration in the table yet (TODO.md), so it is neither a candidate nor bridged; it counts once
-	/// its debuff is on the caster.
+	/// states its duration only through its trait, from level 98 (A266); below that it is neither a candidate
+	/// nor bridged and counts once its debuff is on the caster. From 98 it is a candidate, and the cheapest by
+	/// recast, so it is reserved while the single-target defence would keep it for an announced raidwide (K6).
 	/// </summary>
 	private List<PlanCandidate> PlanCandidates(TankbusterForecast.Cast cast, float gcd, out List<PlanCandidate> pending,
 		out List<PlanCandidate> standing)
@@ -433,7 +466,8 @@ public partial class CustomRotation
 
 			var refusal = RefusalLeft(cast, action.ID, gcd);
 			var candidate = new PlanCandidate(action, (1f - self) * (1f - enemy), barrier,
-				action.Cooldown.RecastTimeOneChargeRaw, refusal > 0f);
+				action.Cooldown.RecastTimeOneChargeRaw, refusal > 0f,
+				action.ID == ReprisalPvE.ID && RaidwideAfterEffectBeforeRecast(ReprisalPvE, MitigationDebuffDuration));
 
 			// One entry per button as the game casts it. What went out on the player is a fact whatever
 			// would make it a candidate - switched off, refused, pressed by command (invariant 6). Asked before
@@ -460,7 +494,7 @@ public partial class CustomRotation
 
 			// Invariant 5: its window (the hit no further away than its duration less a GCD) has to open before the
 			// last GCD, in which the hold ends for a missing member, so its duration has to be known and longer
-			// than two GCD. Reprisal and Sheltron state none in the table (TODO.md) and stay out until it is known.
+			// than two GCD. Below their trait level Reprisal and Sheltron state none (TODO.md) and stay out.
 			// A refused member stays only while its refusal runs out before the last GCD (invariant 1).
 			if (!action.EnoughLevel || !action.Config.IsEnabled || DefensiveValues.DurationOf(action.ID) - gcd <= gcd
 				|| (refusal > 0f && cast.Remaining - refusal <= gcd)
@@ -633,7 +667,7 @@ public partial class CustomRotation
 					? $"nothing survives it and no invulnerability, everything goes ({Names(plan.Mitigations)})"
 					: plan.Mitigations.Length == 0
 						? "survivable as it stands, nothing spent"
-						: Names(plan.Mitigations);
+						: Names(plan.Mitigations) + (plan.ReprisalKept ? " (Reprisal kept for the announced raidwide)" : string.Empty);
 		DefenseTrace.Line($"tankbuster plan for #{plan.Cast.ActionId} from {plan.Cast.Source.Name.TextValue}"
 			+ $" in {plan.Cast.Remaining:F1} s: {summary}"
 			+ (plan.Invulnerability ? string.Empty : $", leaving {plan.After:P0} against {plan.Cast.Budget:P0}"));

@@ -8,27 +8,26 @@ Nach Wichtigkeit, also nach der Wirkung im Kampf: Sicherheit der Gruppe vor Scha
 Wahrscheinlichkeit, in seinem Profil (seine Vorgabe, 17.10.2026: „todo nach wichtigkeit abarbeiten. jeweils im loop
 bearbeiten"). Stand 17.10.2026; fortgeschrieben mit jedem Befund.
 
-1. Tankbuster-Plan nimmt Reflexion, die für einen angesagten Raidwide gehalten würde – 10 % für die ganze Gruppe.
-2. Rückstoß- und Tankbuster-Casts unsichtbarer Helfer werden nicht gelesen – Tankabwehr fehlt.
-3. Tankbuster-Plan: keine Reserve nach einem knapp überlebten Treffer.
-4. Tankbuster-Plan: Stun sperrt ein Glied einen GCD; Druck nach dem Snapshot möglich.
-5. Zielüberschreibung aus dem GCD-Lauf gilt in den Fähigkeiten weiter.
-6. Living Dead: Die Rückhaltung liest die gemessene Tankbuster-Höhe nicht.
-7. Tank-Unverwundbarkeit vor Tankbustern ohne Aktionsangabe oder ohne Messung weiter nur reaktiv.
-8. `IsValid()` prüft nicht, ob ein Objekt noch lebt – möglicher Absturz.
-9. Zustandsabfragen, die bei jedem Lesen neu über Gruppe oder Gegner laufen – Bildausfälle bis 70 ms.
-10. Die proaktive Minderung aller Jobs hat BossModReborn als einzige Quelle.
-11. Tankbuster-Tabelle misst auch an Nicht-Tanks.
-12. Sprungprüfung fester Sprünge: Signatur passt nicht zu BossModReborn – Schaden, nicht Sicherheit.
-13. Gelehrter: Recitation ohne Rückfall vor Ablauf.
-14. Tankbuster-Plan: der GCD als Ersatz für Zeiten, die das Spiel anders bestimmt.
-15. Wirkdauer unterhalb der Merkmalsstufe unbekannt.
-16. Astrologe: Synastry wählt ihr Ziel nach Trefferfläche.
-17. `NextBigSummonIsBurst`: die Geschichte kann das Urteil des Spiels überstimmen.
-18. Tankwechsel von der anderen Seite – seine Entscheidung nötig, nach dem Loop als Vorlage.
-19. Krieger: Nascent Flash; Tänzer: Improvised Finish; Rückstoß und Unterbrechung messen; DRK: Bruch von The
+1. Rückstoß- und Tankbuster-Casts unsichtbarer Helfer werden nicht gelesen – Tankabwehr fehlt.
+2. Tankbuster-Plan: keine Reserve nach einem knapp überlebten Treffer.
+3. Tankbuster-Plan: Stun sperrt ein Glied einen GCD; Druck nach dem Snapshot möglich.
+4. Zielüberschreibung aus dem GCD-Lauf gilt in den Fähigkeiten weiter.
+5. Living Dead: Die Rückhaltung liest die gemessene Tankbuster-Höhe nicht.
+6. Tank-Unverwundbarkeit vor Tankbustern ohne Aktionsangabe oder ohne Messung weiter nur reaktiv.
+7. `IsValid()` prüft nicht, ob ein Objekt noch lebt – möglicher Absturz.
+8. Zustandsabfragen, die bei jedem Lesen neu über Gruppe oder Gegner laufen – Bildausfälle bis 70 ms.
+9. Die proaktive Minderung aller Jobs hat BossModReborn als einzige Quelle.
+10. Tankbuster-Tabelle misst auch an Nicht-Tanks.
+11. Sprungprüfung fester Sprünge: Signatur passt nicht zu BossModReborn – Schaden, nicht Sicherheit.
+12. Gelehrter: Recitation ohne Rückfall vor Ablauf.
+13. Tankbuster-Plan: der GCD als Ersatz für Zeiten, die das Spiel anders bestimmt.
+14. Wirkdauer unterhalb der Merkmalsstufe unbekannt.
+15. Astrologe: Synastry wählt ihr Ziel nach Trefferfläche.
+16. `NextBigSummonIsBurst`: die Geschichte kann das Urteil des Spiels überstimmen.
+17. Tankwechsel von der anderen Seite – seine Entscheidung nötig, nach dem Loop als Vorlage.
+18. Krieger: Nascent Flash; Tänzer: Improvised Finish; Rückstoß und Unterbrechung messen; DRK: Bruch von The
     Blackest Night; Rotationen gegen The Balance.
-20. Offene Arbeit, dann technische Schuld, soweit ihre Auflösungsbedingung erfüllt ist.
+19. Offene Arbeit, dann technische Schuld, soweit ihre Auflösungsbedingung erfüllt ist.
 
 Warten auf Daten, nicht bearbeitbar: Treffer aus einer Quelle, die die Objekttabelle nicht hält (Protokoll); Samurai
 Feint und Tengentsu (Protokoll eines Samurai); BossModReborn-FATE-Modul in Occult Crescent (Adressat BossModReborn).
@@ -152,19 +151,6 @@ Feint, Addle 98; Schiltron 74; Urflackern, Intervention 82) nennt kein Text die 
 Kandidat. Im Kampf, stufensynchron darunter: Der Plan wählt ein teureres Bündel oder die Unverwundbarkeit (Richtung:
 zu viel Mittel, nicht zu wenig). **Offen:** ob die Grunddauer irgendwo im Spiel steht (Status-Blatt, Job-Guide), voller
 Loop vor jedem Bau.
-
-**Konzept:** `docs/rotation-flow/09-tank-selfprotection.md`
-
-### Tankbuster-Plan nimmt Reflexion, die für einen angesagten Raidwide gehalten würde · N
-
-**Befund (12.10.2026, beim Umbau der Konzepte):** Die Einzelabwehr hält Reflexion am Tankbuster zurück, wenn der Tank
-selbst gedeckt ist und ein Raidwide nach ihrem Ende und vor ihrer neuen Bereitschaft angesagt ist
-(`HoldReprisalForRaidwide`, A244, Konzept 08, „Gegner-Debuffs am Tankbuster und am Raidwide"). Der Tankbuster-Plan
-drückt über `TankbusterPlanAbility` und kennt diese Regel nicht; er wählt das Bündel mit der geringsten Abklingzeit,
-und Reflexion (60 s) ist oft das billigste Glied. *Im Kampf:* Vor einem gemessenen Tankbuster geht Reflexion auf den
-Tank, obwohl Schutzwall oder die große Minderung ihn getragen hätte; am folgenden Raidwide fehlen jedem Mitglied 10 %.
-Gilt für alle vier Tanks. **Offen:** voller Loop – etwa Reflexion wie ein Glied, das eine andere Regel braucht, nur
-nehmen, wenn kein Bündel ohne sie reicht (dieselbe Form wie K2–K4).
 
 **Konzept:** `docs/rotation-flow/09-tank-selfprotection.md`
 

@@ -7650,6 +7650,40 @@ eigenen Einstellung (`HoldProactiveMitigationForSmallCast`).
 **Prüfgrad:** statisch (Wirkkette BossModReborn-Lesen → Zuordnung → Zweig → Flagge), BossModReborn-Quelltext, Messung an
 seinen Protokollen; Kompilieren im Prüflauf. Im Spiel nicht beobachtet.
 
+### A302 · Tankbuster-Plan hält Reflexion für den angesagten Raidwide (17.10.2026)
+
+Punkt 2 der Reihenfolge. **Befund:** Die Einzelabwehr hält Reflexion am Tankbuster zurück, wenn der Tank gedeckt ist
+und ein Raidwide nach ihrem Ende und vor ihrer neuen Bereitschaft angesagt ist (`HoldReprisalForRaidwide`, A244). Der
+Tankbuster-Plan drückt über `TankbusterPlanAbility` und kannte die Regel nicht. Am Code geprüft, dass es greift:
+Reflexion ist ab Stufe 98 Kandidat – ihre Dauer kommt seit A266 aus dem Merkmal (15 s), und mit 60 s ist sie das
+billigste Glied. Die beiden Kommentare in `PlanCandidates`, Reflexion sei ohne Dauer kein Kandidat, waren seit A266
+veraltet; der Code folgte ihrer Absicht (Kandidat, sobald die Dauer bekannt ist), sie sind auf den Stand gebracht.
+
+**Optionen.** Nullvariante (10 % für jeden am folgenden Raidwide); Reflexion ganz aus dem Plan nehmen (nimmt dem Tank
+das billigste Glied auch dort, wo kein Raidwide ansteht oder nichts ohne sie reicht); Reflexion als vorbehaltenes
+Glied wie K2–K4, nur genommen, wenn kein Bündel ohne sie überlebt (gewählt); den Plan `HoldReprisalForRaidwide` selbst
+fragen lassen (dessen Bedingung „gedeckt" liest den stehenden Status, nicht das Bündel, das der Plan erst wählt).
+
+**Umsetzung.** `PlanCandidate.Reserved` für Reflexion unter `RaidwideAfterEffectBeforeRecast(ReprisalPvE,
+MitigationDebuffDuration)`, dieselbe Bedingung wie die Einzelabwehr. `BestBundle` erhält `withReserved`; Reihenfolge der
+Suche: ohne vorbehaltenes und ohne abgelehntes Glied, dann mit vorbehaltenem, zuletzt mit allem. `FindNeeded` sucht wie
+bisher über alles. Die Protokollzeile des Plans schreibt „(Reprisal kept for the announced raidwide)", wenn das billigste
+Bündel sonst Reflexion enthalten hätte.
+
+**Falsifikation.**
+- *Kein Defekt:* Der Plan sei für den Tank, nicht die Gruppe. Widerlegt an seinem Kriterium (Konzept 08): wer ohne die
+  Fähigkeit in ernste Bedrängnis kommt, Tank am Tankbuster oder Gruppe am Raidwide – überlebt der Tank ohne Reflexion,
+  ist es die Gruppe.
+- *Option falsch:* Das Bündel ohne Reflexion kostet eine teurere Abklingzeit (Schutzwall 90 s statt 60 s), die beim
+  nächsten Tankbuster fehlen kann. Zutreffend; dieselbe Abwägung hat A244 für die Einzelabwehr getroffen, und der
+  nächste Tankbuster wird wieder geplant, mit der Unverwundbarkeit als Rückfall.
+- *Ausgeliefert, nichts ändert sich:* ohne Vorhersage von BossModReborn (dann gibt es keinen angesagten Raidwide),
+  unter Stufe 98 (Reflexion ist dort kein Kandidat) oder wenn nichts ohne Reflexion reicht. Das Modell
+  `tankbuster_model.py` bleibt gültig: seine Prüfungen O1–O8 betreffen Überleben, Fenster und Unverwundbarkeit, und die
+  Änderung ordnet nur unter überlebbaren Bündeln.
+
+**Prüfgrad:** statisch (Kandidaten → Bündelsuche → Plan → Druck), Kompilieren im Prüflauf. Im Spiel nicht beobachtet.
+
 ---
 ## B · Commit-Register (Fork vs. `upstream/main`)
 

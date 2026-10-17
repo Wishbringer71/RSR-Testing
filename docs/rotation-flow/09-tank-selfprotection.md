@@ -249,9 +249,15 @@ aus Einzelheilung und Flächenabwehr, die beide vom Zurückhalten frei sind (`WA
 
 **Befohlenes Objektziel (K5):** siehe Ausführung, „Ziel".
 
-**Reflexion für den Raidwide (K6, offen, Defekt in `TODO.md`):** Die Einzelabwehr hält Reflexion am Tankbuster
-zurück, wenn der Tank gedeckt ist und ein Raidwide nach ihrem Ende angesagt ist (Konzept 08, „Gegner-Debuffs am
-Tankbuster und am Raidwide"). Der Plan kennt diese Regel nicht und wählt Reflexion als billigstes Glied auch dann.
+**Reflexion für den Raidwide (K6, A302):** Die Einzelabwehr hält Reflexion am Tankbuster zurück, wenn der Tank
+gedeckt ist und ein Raidwide nach ihrem Ende und vor ihrer neuen Bereitschaft angesagt ist (Konzept 08, „Gegner-Debuffs
+am Tankbuster und am Raidwide"). Der Plan folgt derselben Regel in seiner eigenen Form: Reflexion ist dann ein
+vorbehaltenes Glied (`PlanCandidate.Reserved`, Bedingung `RaidwideAfterEffectBeforeRecast` wie in
+`HoldReprisalForRaidwide`). Gewählt wird zuerst das billigste Bündel ohne vorbehaltenes Glied, dann mit ihm, zuletzt
+mit einem eben abgelehnten. „Gedeckt" heißt hier: ein Bündel ohne Reflexion überlebt. Reicht keines ohne sie, geht sie –
+nach seinem Kriterium kommt dann der Tank ohne sie in ernste Bedrängnis. Vor A302 wählte der Plan Reflexion ab Stufe 98
+(Dauer aus dem Merkmal, A266) als billigstes Glied (60 s Wiederholzeit) auch dann, und am folgenden Raidwide fehlten
+jedem 10 %. Das Protokoll nennt es: „(Reprisal kept for the announced raidwide)".
 
 ### Spielerweite Sperre und Frist (geplant, nicht gebaut)
 
