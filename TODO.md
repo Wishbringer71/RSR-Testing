@@ -8,24 +8,21 @@ Nach Wichtigkeit, also nach der Wirkung im Kampf: Sicherheit der Gruppe vor Scha
 Wahrscheinlichkeit, in seinem Profil (seine Vorgabe, 17.10.2026: „todo nach wichtigkeit abarbeiten. jeweils im loop
 bearbeiten"). Stand 17.10.2026; fortgeschrieben mit jedem Befund.
 
-1. Tankbuster-Plan: Stun sperrt ein Glied einen GCD; Druck nach dem Snapshot möglich.
-2. Zielüberschreibung aus dem GCD-Lauf gilt in den Fähigkeiten weiter.
-3. Living Dead: Die Rückhaltung liest die gemessene Tankbuster-Höhe nicht.
-4. Tank-Unverwundbarkeit vor Tankbustern ohne Aktionsangabe oder ohne Messung weiter nur reaktiv.
-5. `IsValid()` prüft nicht, ob ein Objekt noch lebt – möglicher Absturz.
-6. Zustandsabfragen, die bei jedem Lesen neu über Gruppe oder Gegner laufen – Bildausfälle bis 70 ms.
-7. Die proaktive Minderung aller Jobs hat BossModReborn als einzige Quelle.
-8. Tankbuster-Tabelle misst auch an Nicht-Tanks.
-9. Sprungprüfung fester Sprünge: Signatur passt nicht zu BossModReborn – Schaden, nicht Sicherheit.
-10. Gelehrter: Recitation ohne Rückfall vor Ablauf.
-11. Tankbuster-Plan: der GCD als Ersatz für Zeiten, die das Spiel anders bestimmt.
-12. Wirkdauer unterhalb der Merkmalsstufe unbekannt.
-13. Astrologe: Synastry wählt ihr Ziel nach Trefferfläche.
-14. `NextBigSummonIsBurst`: die Geschichte kann das Urteil des Spiels überstimmen.
-15. Tankwechsel von der anderen Seite – seine Entscheidung nötig, nach dem Loop als Vorlage.
-16. Krieger: Nascent Flash; Tänzer: Improvised Finish; Rückstoß und Unterbrechung messen; DRK: Bruch von The
-    Blackest Night; Rotationen gegen The Balance.
-17. Offene Arbeit, dann technische Schuld, soweit ihre Auflösungsbedingung erfüllt ist.
+1. Living Dead: Die Rückhaltung liest die gemessene Tankbuster-Höhe nicht.
+2. Tankbuster-Plan: Stun sperrt ein Glied einen GCD; Druck nach dem Snapshot möglich. (nach hinten gerückt: groß, und im Tankbuster-Fenster selten; A305)
+3. Tank-Unverwundbarkeit vor Tankbustern ohne Aktionsangabe oder ohne Messung weiter nur reaktiv.
+4. `IsValid()` prüft nicht, ob ein Objekt noch lebt – möglicher Absturz.
+5. Zustandsabfragen, die bei jedem Lesen neu über Gruppe oder Gegner laufen – Bildausfälle bis 70 ms.
+6. Die proaktive Minderung aller Jobs hat BossModReborn als einzige Quelle.
+7. Tankbuster-Tabelle misst auch an Nicht-Tanks.
+8. Sprungprüfung fester Sprünge: Signatur passt nicht zu BossModReborn – Schaden, nicht Sicherheit.
+9. Gelehrter: Recitation ohne Rückfall vor Ablauf.
+10. Tankbuster-Plan: der GCD als Ersatz für Zeiten, die das Spiel anders bestimmt.
+11. Wirkdauer unterhalb der Merkmalsstufe unbekannt.
+12. `NextBigSummonIsBurst`: die Geschichte kann das Urteil des Spiels überstimmen.
+13. Tankwechsel von der anderen Seite – seine Entscheidung nötig, nach dem Loop als Vorlage.
+14. Krieger: Nascent Flash; Tänzer: Improvised Finish; Rückstoß und Unterbrechung messen; DRK: Bruch von The Blackest Night; Rotationen gegen The Balance.
+15. Offene Arbeit, dann technische Schuld, soweit ihre Auflösungsbedingung erfüllt ist.
 
 Warten auf Daten, nicht bearbeitbar: Treffer aus einer Quelle, die die Objekttabelle nicht hält (Protokoll); Samurai
 Feint und Tengentsu (Protokoll eines Samurai); BossModReborn-FATE-Modul in Occult Crescent (Adressat BossModReborn).
@@ -151,7 +148,7 @@ Loop vor jedem Bau.
 - *Vor dem Code offen:*
   - Ob die Totenerweckung, Heiliger Boden und Meteoritenfall am Snapshot oder beim Zufügen zählen.
   - Ob die Zeitangabe von BossModReborn den Snapshot oder das Zufügen meint (für die Klasse über den Plan hinaus).
-  - Die Modellerweiterung O9/O10.
+  - Die Modellerweiterung (eigene Prüfungen für Sperre und Frist; O9 ist seit A304 die Linie der Unverwundbarkeit).
 
 ### Tankbuster-Plan: der GCD als Ersatz für Zeiten, die das Spiel anders bestimmt · N
 
@@ -184,19 +181,6 @@ Walking Dead brächte. **Offen:** voller Loop, ob die Regel den Wert lesen soll.
 
 **Konzept:** `docs/rotation-flow/09-tank-selfprotection.md`
 
-### Zielüberschreibung aus dem GCD-Lauf gilt in den Fähigkeiten weiter · N, R
-
-**Befund (A260, am Code):** `CustomRotation.Invoke` setzt `IBaseAction.TargetOverride` vor `GCD()` auf null, aber
-nicht vor `Ability()`. Kehrt `GCD()` mitten aus einem Pfad zurück, der die Überschreibung gesetzt hat (Heilung,
-Abwehr `BeAttacked`, Wiederbelebung `Death`, `Provoke`), laufen Befehlsaktion, `EmergencyAbility` und alle
-Fähigkeiten bis zur nächsten Zuweisung mit dieser Überschreibung (`ActionSetting.TargetType` liest sie vor dem
-eigenen Typ). Eine Notfallaktion ohne eigene `targetOverride` sucht ihr Ziel dann nach fremder Art.
-`TankInvulnerabilityAbility` setzt sie deshalb für ihren Aufruf zurück.
-
-**Im Kampf:** unbelegt, ob es eine Aktion trifft. Fehlbild wäre eine Notfallfähigkeit, die kein Ziel findet oder
-auf das falsche geht. **Offen:** alle `EmergencyAbility`-Überschreibungen auf Aktionen ohne eigene Zielart prüfen;
-ob eine Rotation sich auf die geerbte Überschreibung verlässt, vor einem zentralen Zurücksetzen erheben.
-
 ### Tankwechsel von der anderen Seite: Herausforderung, wenn der Haupttank eine Verwundbarkeit trägt · N
 
 **Meine Ableitung, nicht seine Vorgabe (A255, A256):** Geteiltes Leid bewegt den Gegner nur, wenn der Co-Tank schon
@@ -208,10 +192,6 @@ Verwundbarkeit trägt oder eine Wiederholung nicht überlebt, ohne tief zu stehe
 Co-Tank-Provoke zog den Boss von einem Tank unter Unverwundbarkeit) gehört in die Bedingungen.
 
 **Konzept:** `docs/rotation-flow/09-tank-selfprotection.md`
-
-### Astrologe: Synastry wählt ihr Ziel nach Trefferfläche und aktueller Gesundheit, nicht nach der Heilung · N, U
-
-`AST_Reborn.CanCastSynastry` verlangt, dass Synastry und die folgende Einzelheilung (Aspected Benefic, Benefic II, Benefic) dasselbe Ziel haben. Laut Wirktext zählt jede Einzelheilung, „on yourself or a party member", die Gleichheit ist also kein Fehler. Synastry läuft aber in `EmergencyAbility` vor jedem Target-Override (Notfallslot in `CustomRotation.Ability`) und setzt keinen `TargetType`. Gewählt wird deshalb nach `Big`: größte Trefferfläche, bei Gleichstand, und Spieler haben gleiche Trefferflächen, das Mitglied mit der **meisten** aktuellen Gesundheit (`BigHp` aus, ab Werk; seit A225 liest der Zweig diese Einstellung). Die Heilung dagegen geht an den Bedürftigsten. Im Kampf (Schluss aus dem Code, nicht beobachtet): Synastry fällt nur, wenn der Geheilte zugleich der Gesündeste ist. Das trifft vor allem dann nicht zu, wenn der Tank unter die volle Gesundheit eines anderen Mitglieds gefallen ist, also genau im Bedarfsfall. Upstream-Bauform, gefunden in der Tiefenprüfung A221. Zu bearbeiten im vollen Loop: Zielwahl über das Heilziel (Override) oder Prüfung gegen das Ziel der nächsten GCD.
 
 ### Die proaktive Minderung aller Jobs hat BossModReborn als einzige Quelle · N, R
 

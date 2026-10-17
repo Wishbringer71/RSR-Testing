@@ -88,6 +88,15 @@ goes for Esuna:
 RSR no longer cleanses a member another healer is already casting Esuna on, unless more than that one effect is
 left.
 
+## Emergency abilities pick their own targets again
+
+A target rule set by the GCD - for a heal, a cleanse, a provoke, a raise or a defence - stayed in force for the
+abilities checked before the next one was set: the commanded action, the emergency abilities, the tankbuster plan and
+the tank swap. After a heal GCD, a damage ability among the emergency abilities went to the enemy with the least HP,
+and the Paladin's emergency Intervention could go to the party member with the least HP instead of the co-tank. Each
+of them now uses its own target rule. The Astrologian's Synastry, which relied on the leftover heal rule, now picks
+its target the way the single-target heal it copies does.
+
 ## Tanks: the tankbuster plan leaves you above the invulnerability line
 
 The tankbuster plan picked the cheapest set of own mitigations that kept a measured tankbuster from killing you, even

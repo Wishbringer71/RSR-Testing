@@ -1113,8 +1113,9 @@ bei der Zielwahl (`ActionSetting.HealsWithNextGcd`, gesetzt in den Basisrotation
 Mit dem kurzen Vorlauf lasen ihre Schwellen den Stand bei Ende der Ausfuehrungssperre, ihre Heilung
 landet aber einen GCD spaeter: Bei steilem Verlauf fielen sie zu spaet. In der Zielwahl wirkt das Merkmal
 nur, wo sie ueber das Heilziel waehlt: Krasis im Heilpfad (Override `Heal`) waehlt dann wie die Heil-GCD,
-die es verstaerkt. Synastry laeuft in `EmergencyAbility` vor jedem Override und ohne eigenen `TargetType`
-(Vorgabe `Big`); ihre Zielwahl liest den Vorlauf nicht. Beim
+die es verstaerkt. Synastry waehlt seit A305 mit eigenem `TargetType.Heal` wie die Einzelheilung, die sie
+wiederholt, und liest dabei den Vorlauf; vorher waehlte sie nach `Big` und traf das Heilziel nur ueber die
+Zielueberschreibung, die eine Heil-GCD stehen liess. Beim
 kurzen Vorlauf bleiben die oGCDs, die sofort wirken: Benediction, Essential Dignity, Taurochole,
 Druochole, Haima, Excogitation (liegt bereit und loest selbst aus), Aetherpact, Second Wind, Equilibrium,
 Thrill of Battle; ebenso Raw Intuition/Bloodwhetting und Nascent Flash, deren Minderung und Barriere

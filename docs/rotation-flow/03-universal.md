@@ -232,7 +232,10 @@ Stopmarker, die Gegner mit Vorrang (Angriffsmarker, Gegnerteile, Schatzkarten-Sy
 - Eine Rotation wirkt die Aktion ohne Statusprüfung — dann ist es keine Verteilung: Chaotic Spring und Chaos Thrust als
   Kombo-Abschluss des Dragoons, Iron Jaws des Barden, Dia/Aero im Upkeep-Modus des Weißmagiers. Ebenso, wenn die
   Statusprüfung der Aktion abgeschaltet ist.
-- Eine Rotation oder ein Befehl gibt das Ziel vor (Zielüberschreibung, Befehlsziel).
+- Eine Rotation oder ein Befehl gibt das Ziel vor (Zielüberschreibung, Befehlsziel). Die Zielüberschreibung eines
+  Pfads gilt nur in ihrem Lauf: Seit A305 setzt der Fähigkeitenlauf sie zu Beginn zurück, sodass Befehl,
+  Notfallfähigkeiten, Tankbuster-Plan und Tankwechsel nach ihrer eigenen Zielart suchen, nicht nach der der Heil-,
+  Reinigungs-, Provoke-, Wiederbelebungs- oder Abwehr-GCD davor.
 - Der Status macht keinen Schaden. Death's Design des Schnitters erhöht nur dessen eigenen Schaden auf diesem Ziel und
   gehört auf den Gegner, den er angreift.
 - Im manuellen Modus ist ohnehin nur das eigene Ziel Kandidat.

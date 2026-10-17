@@ -18,6 +18,13 @@ public partial class CustomRotation
 		// GCD() may have returned from inside its heal path.
 		IBaseAction.HealPathRunning = false;
 
+		// ... or from inside any path that set the target override - heal, dispel, provoke, raise, defence. The
+		// command, the emergency abilities, the tankbuster plan and the swap below run before the first path here
+		// sets its own, and searched their targets by the GCD's: after a heal GCD a damage ability went to the
+		// enemy with the least HP, and the paladin's emergency Intervention, which skips the stance check, to the
+		// member with the least (A305). Each of them searches by its own type now.
+		IBaseAction.TargetOverride = null;
+
 		if (Player == null)
 		{
 			return false;

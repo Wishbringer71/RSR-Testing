@@ -7756,6 +7756,42 @@ verschiedene Linien, und in allen Szenarien gesetzt verdeckte sie einen alten ko
 **Prüfgrad:** statisch, Modell (33 Szenarien × 300 Läufe, Selbsttest 9 von 9), Kompilieren im Prüflauf. Im Spiel nicht
 beobachtet.
 
+### A305 · Zielüberschreibung aus dem GCD-Lauf; Synastry wählt wie die Heilung (17.10.2026)
+
+Vorgezogen vor „Stun und Snapshot" (groß, und im Tankbuster-Fenster selten); erledigt zugleich „Astrologe: Synastry
+wählt ihr Ziel nach Trefferfläche". **Befund:** `CustomRotation.Invoke` setzt `IBaseAction.TargetOverride` vor `GCD()`
+zurück, nicht vor `Ability()`. `GCD()` kehrt aus Pfaden zurück, die sie gesetzt haben – Reinigung, Provoke,
+Wiederbelebung, Heilung, Abwehr –, und `Ability()` setzt sie erst nach Befehlsaktion, Gegenständen,
+`EmergencyAbility`, Tankbuster-Plan und Tankwechsel neu. `ActionSetting.TargetType` liest die Überschreibung vor dem
+eigenen Typ; für feindliche Aktionen fällt nur `BeAttacked` heraus.
+
+**Erhebung** (alle 42 Überschreibungen von `EmergencyAbility`): Schadensfähigkeiten (Revolverklinge, Viper, Ninja,
+Edge of Shadow, Stardiver, The Forbidden Chakra, Imperator und andere) suchten nach einer Heil-GCD ihr Ziel nach
+`Heal`, also den Gegner mit den wenigsten HP; nach einer Wiederbelebung nach `Death`, also keinen. Die Notfall-Intervention
+des Paladins läuft mit `skipTargetStatusNeedCheck` und ging nach Clemency an das Mitglied mit den wenigsten HP statt an
+den Co-Tank. Synastry dagegen traf das Heilziel nur über diese geerbte Überschreibung: ohne eigenen Typ (Vorgabe
+`Big`) wählte sie sonst das Mitglied mit den meisten HP (der TODO-Eintrag dazu übersah die Vererbung). Keine Rotation
+liest die Überschreibung selbst; der Tankbuster-Plan sichert sie um die Unverwundbarkeit und stellt sie wieder her.
+
+**Optionen.** Nullvariante; je Aufrufer zurücksetzen (sechs Stellen und jede künftige); zentral am Anfang von
+`Ability()` zurücksetzen, und Synastry einen eigenen Typ geben (gewählt); die geerbte Überschreibung für freundliche
+Aktionen belassen (nimmt der Intervention den Fehler nicht).
+
+**Umsetzung.** `Ability()` setzt `TargetOverride` zu Beginn auf null, wie schon `HealPathRunning`.
+`AstrologianRotation.ModifySynastryPvE` setzt `TargetType.Heal`: Synastry wählt damit wie die Einzelheilung, die sie
+wiederholt, mit dem GCD-Vorlauf (`HealsWithNextGcd`); `AST_Reborn.CanCastSynastry` prüft weiter, dass beide dasselbe
+Ziel haben.
+
+**Falsifikation.**
+- *Kein Defekt:* unbelegt im Spiel. Der Mechanismus ist am Code belegt, und die Intervention auf einen Nicht-Tank ist
+  eine sichtbare Fehlwirkung.
+- *Option falsch:* Eine Rotation brauchte die geerbte Überschreibung – erhoben: nur Synastry, und die hat jetzt ihren Typ.
+- *Ausgeliefert, nichts ändert sich:* in Durchläufen, deren GCD aus keinem überschreibenden Pfad kam (die meisten der
+  Schadensausteiler); dort ändert sich auch nichts.
+
+**Prüfgrad:** statisch (Invoke → GCD → Ability, `ActionSetting.TargetType`), Kompilieren im Prüflauf. Im Spiel nicht
+beobachtet.
+
 ---
 ## B · Commit-Register (Fork vs. `upstream/main`)
 
