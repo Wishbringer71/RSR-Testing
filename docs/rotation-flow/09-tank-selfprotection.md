@@ -360,23 +360,27 @@ Zeile, wenn eine Sperre über das Ende des Wirkens reicht.
 
 „Kandidat": kann Glied eines Bündels sein. „Gehalten": das Zurückhalten erfasst sie. Werte und Dauern aus den
 Wirktexten über den Generator (`DefensiveValues.g.cs`); wo der Wirktext die Dauer offen lässt, aus dem Merkmal, das
-sie setzt – zur Laufzeit aus dem Spiel (`TraitDurations`), sonst aus `trait_durations.json`. Reichweite, Radius,
+sie setzt – zur Laufzeit aus dem Spiel (`TraitDurations`), sonst aus `trait_durations.json`. Unterhalb der Stufe des
+Merkmals gilt die Dauer, die der Tooltip der Aktion auf dieser Stufe nennt: der Wirktext des Clients, von Dalamud
+ausgewertet wie im Spiel (`TraitDurations.TryBelowTrait`, A316). Übernommen wird sie nur, wenn sie kürzer ist als die
+des Merkmals – eine Auswertung, die die Synchronisation überginge, zeigte dessen Wert, und eine zu lang angenommene
+Dauer ließe die Minderung vor dem Treffer ablaufen. Reichweite, Radius,
 Abklingzeit und Gruppe aus den Spieldaten (xivapi, Blatt `Action`, 12.10.2026).
 
 | Job | Aktion | Wirkung laut Wirktext | Dauer | Reichweite/Radius | Abklingzeit, Gruppe | Rolle | Gehalten |
 |---|---|---|---|---|---|---|---|
 | alle | Schutzwall | −20 % | 20 | 0/0 | 90, 47 | Kandidat | ja |
-| alle | Reflexion | Gegner −10 % | 15 ab Stufe 98, darunter unbekannt | 0/5 | 60, 45 | Kandidat ab 98 | ja |
+| alle | Reflexion | Gegner −10 % | 15 ab Stufe 98, darunter laut Tooltip | 0/5 | 60, 45 | Kandidat | ja |
 | alle | Abtausch | Rückstoßschutz, Slow | – | 0/0 | 120, 49 | unbewertet | nein |
 | PLD | Sentinel / Guardian | −30 % / −40 % | 15 | 0/0 | 120, 20 | Kandidat | ja |
 | PLD | Bulwark | Block | 10 | 0/0 | 90, 16 | kein Kandidat (Block lässt sich nicht rechnen) | ja |
-| PLD | Sheltron / Holy Sheltron | −15 % (Zusatzwirkung nicht gezählt) | 6 ab Stufe 74 / 8 | 0/0 | 5, 3; Eid 50 | Kandidat | ja |
-| PLD | Intervention, Cover | Intervention −10 % auf ein anderes Mitglied (weitere −10 % mit Schutzwall oder Guardian, nicht gezählt); Cover übernimmt Treffer | 8 ab 82 / 12 | 30 bzw. 20/0 | 10 bzw. 120; Eid 50 | Hilfe für andere | nein |
+| PLD | Sheltron / Holy Sheltron | −15 % (Zusatzwirkung nicht gezählt) | 6 ab Stufe 74, darunter laut Tooltip / 8 | 0/0 | 5, 3; Eid 50 | Kandidat | ja |
+| PLD | Intervention, Cover | Intervention −10 % auf ein anderes Mitglied (weitere −10 % mit Schutzwall oder Guardian, nicht gezählt); Cover übernimmt Treffer | 8 ab 82, darunter laut Tooltip / 12 | 30 bzw. 20/0 | 10 bzw. 120; Eid 50 | Hilfe für andere | nein |
 | PLD | Divine Veil, Passage of Arms | Gruppe | – | 0/30 bzw. 8 | 90 / 120 | Gruppenwerkzeug | nein |
 | PLD | Heiliger Boden | unverwundbar | 10 | 0/0 | 420, 25 | Unverwundbarkeit | – |
 | WAR | Rachsucht / Verdammnis | −30 % / −40 % | 15 | 0/0 | 120, 22 | Kandidat | ja |
 | WAR | Urinstinkt / Urimpuls | −10 % | 6 / 8 | 0/0 | 25, 7 | Kandidat | ja |
-| WAR | Urflackern | −10 % auf ein anderes Mitglied | 8 ab 82 | 30/0 | 25, 7 | Hilfe für andere | nein |
+| WAR | Urflackern | −10 % auf ein anderes Mitglied | 8 ab 82, darunter laut Tooltip | 30/0 | 25, 7 | Hilfe für andere | nein |
 | WAR | Kampfrausch | maximale LP +20 % | 10 | 0/0 | 90, 16 | Kandidat | ja |
 | WAR | Abschütteln | Gruppenbarriere; hebt Kampfrausch, Rachsucht/Verdammnis, Urinstinkt/Urimpuls auf | – | 0/30 | 90, 15 | Gruppenwerkzeug | nein |
 | WAR | Holmgang | LP nicht unter 1 | 10 | 6/0 | 240, 25 | Unverwundbarkeit | – |
@@ -478,9 +482,10 @@ Risiko"; die Neurechnung gibt sie zurück, wenn die Heilung vor dem Ziehen kommt
 - *Zwei RSR-Tanks:* Jeder plant für die Tankbuster auf ihn; die Reflexion des anderen zählt, sobald sie steht; Hilfe
   zwischen ihnen regelt die Triage.
 - *BossModReborn ohne Modul:* unverändert; die Regel liest keine Vorhersage.
-- *Stufensynchron:* Abwehr zählt nur, wenn erlernt; Merkmalsdauern unterhalb ihrer Stufe sind unbekannt, die Aktion
-  dann kein Kandidat (`TODO.md`). Dass gemessene Anteile auf der Stufe ihres Inhalts vergleichbar bleiben, ist ein
-  Schluss, nicht gemessen.
+- *Stufensynchron:* Abwehr zählt nur, wenn erlernt; unterhalb der Stufe eines Merkmals gilt die Dauer aus dem
+  Tooltip (A316), sonst ist die Aktion kein Kandidat. Ob Dalamuds Auswertung der synchronisierten Stufe folgt, ist
+  nicht belegt; folgt sie nicht, zeigt sie den Wert des Merkmals, und der wird verworfen. Dass gemessene Anteile auf
+  der Stufe ihres Inhalts vergleichbar bleiben, ist ein Schluss, nicht gemessen.
 - *Mehrere Wirken auf dich:* geplant wird für das früheste gemessene; zurückgehalten wird dann nichts. Liegen zwei in
   einem GCD, deckt ein Minderungsplan nur das erste.
 - *Ein ungemessenes Wirken oder eine frühere BossModReborn-Vorhersage* neben einem gemessenen: Der Plan drückt, hält

@@ -23,6 +23,10 @@ internal static class TraitDurations
 {
 	private static readonly Regex Extends = new(@"Extends the duration of (?<name>.+?) to (?<seconds>\d{1,3}) seconds", RegexOptions.Compiled);
 	private static readonly Regex Improves = new(@"Improves (?<name>.+?)'s damage reduction effect to (?<percent>\d{1,2})%", RegexOptions.Compiled);
+	private static readonly Regex StatedDuration = new(@"Duration: (?<seconds>\d{1,3})s", RegexOptions.Compiled);
+
+	// The first duration an action's tooltip states, per action and synced level; 0 when it states none or cannot be read.
+	private static readonly Dictionary<(uint ActionId, int Level), float> _tooltipDuration = [];
 	private static readonly object _gate = new();
 
 	// English action name to the traits that set its duration, (seconds, level), lowest level first.
@@ -53,6 +57,47 @@ internal static class TraitDurations
 		var found = Pick(Of(actionId, true), out var picked);
 		trait = (picked.Seconds, picked.Level);
 		return found;
+	}
+
+	/// <summary>
+	/// Below the level of the trait that sets an action's duration: the duration its own tooltip states at the
+	/// player's synced level, read in the game - the client's effect text (ActionTransient, English sheet) evaluated by
+	/// Dalamud's SeString evaluator the way the tooltip shows it, its first "Duration" (A316). Taken only when it is
+	/// shorter than <paramref name="traitSeconds"/>: an evaluation that did not follow the sync would show the trait's
+	/// figure, and a duration taken too long has a mitigation pressed early and run out before the hit.
+	/// </summary>
+	public static bool TryBelowTrait(uint actionId, float traitSeconds, out float seconds)
+	{
+		var level = DataCenter.PlayerSyncedLevel();
+		lock (_gate)
+		{
+			if (!_tooltipDuration.TryGetValue((actionId, level), out seconds))
+			{
+				seconds = 0f;
+				try
+				{
+					var texts = Svc.Data.GetExcelSheet<ActionTransient>(ClientLanguage.English);
+					if (texts != null && texts.TryGetRow(actionId, out var row))
+					{
+						var text = Svc.SeStringEvaluator.Evaluate(row.Description, default, ClientLanguage.English).ExtractText();
+						var match = StatedDuration.Match(text);
+						if (match.Success)
+						{
+							seconds = float.Parse(match.Groups["seconds"].Value, System.Globalization.CultureInfo.InvariantCulture);
+						}
+					}
+				}
+				catch (Exception)
+				{
+					// A sheet or an evaluation that fails answers nothing; the duration stays unknown, as before.
+					seconds = 0f;
+				}
+
+				_tooltipDuration[(actionId, level)] = seconds;
+			}
+		}
+
+		return seconds > 0f && seconds < traitSeconds;
 	}
 
 	private static bool Pick(List<(float Seconds, int Level)>? traits, out (float Seconds, int Level) trait)

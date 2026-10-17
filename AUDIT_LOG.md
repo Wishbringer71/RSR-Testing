@@ -8127,6 +8127,33 @@ auf das Modell. *Ausgeliefert, nichts ändert sich:* entfällt.
 
 **Prüfgrad:** statisch, Protokollauswertung (drei Treffer).
 
+### A316 · Wirkdauer unterhalb der Merkmalsstufe aus dem Tooltip (17.10.2026)
+
+TODO-Punkt „Wirkdauer unterhalb der Merkmalsstufe unbekannt" (A266) nach seiner Reihenfolge. Offen war, ob die
+Grunddauer irgendwo im Spiel steht.
+
+**Erhoben:** Der Wirktext im Client (`ActionTransient`) enthält die Dauer als Makro, das nach der Stufe des Spielers
+auswertet; der Generator streicht Makros, daher „Duration: s" in `ActionId.resx`. xivapi wertet das Makro auf Höchststufe
+aus („Reprisal … Duration: 15s", 17.10.2026) und zeigt keinen Grundwert. Im Spiel wertet Dalamuds
+`ISeStringEvaluator` den Text aus wie der Tooltip; ECommons stellt ihn als `Svc.SeStringEvaluator` bereit (seit
+`b295d27`, 04.11.2025; die eingebundene 3.2.1.26 ist jünger).
+
+**Umgesetzt:** `TraitDurations.TryBelowTrait` liest den englischen Wirktext der Aktion, wertet ihn aus und nimmt die
+erste „Duration", je Aktion und synchronisierter Stufe zwischengespeichert. `DefensiveValues.DurationOf` (Generator
+`generate_defensive_values.py`) fragt ihn unterhalb der Merkmalsstufe. Übernommen wird nur ein Wert unter dem des
+Merkmals: Ob die Auswertung der synchronisierten Stufe folgt, ist nicht belegt; folgt sie nicht, zeigte sie den Wert des
+Merkmals, und eine zu lange Dauer ließe eine Minderung vor dem Treffer ablaufen.
+
+**Im Kampf, stufensynchron unterhalb von 98 (Reflexion), 82 (Urflackern, Intervention), 74 (Sheltron):** Diese Aktionen
+haben wieder eine Dauer. Reflexion wird Kandidat des Tankbuster-Plans und der Reflexionsregeln; die anderen gehen in die
+Hilfe-Triage und das Fenster ein. Vorher wählte der Plan ein teureres Bündel oder die Unverwundbarkeit.
+
+**Falsifikation.** *Kein Defekt:* belegt am Generator und an xivapi. *Option falsch:* Der Auswerter liest Parameter des
+Spielers; vor dem Laden oder ohne Spieler wirft er oder liefert nichts – gefangen, Dauer unbekannt wie vorher. *Ausgeliefert,
+nichts ändert sich:* auf Höchststufe, und wenn die Auswertung der Synchronisation nicht folgt (dann verworfen).
+
+**Prüfgrad:** statisch, Prüfskripte, Kompilieren im Prüflauf; die Auswertung im Spiel nicht beobachtet.
+
 ---
 ## B · Commit-Register (Fork vs. `upstream/main`)
 

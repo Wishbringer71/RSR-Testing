@@ -8,12 +8,11 @@ Nach Wichtigkeit, also nach der Wirkung im Kampf: Sicherheit der Gruppe vor Scha
 Wahrscheinlichkeit, in seinem Profil (seine Vorgabe, 17.10.2026: „todo nach wichtigkeit abarbeiten. jeweils im loop
 bearbeiten"). Stand 17.10.2026; fortgeschrieben mit jedem Befund.
 
-1. Wirkdauer unterhalb der Merkmalsstufe unbekannt.
-2. `NextBigSummonIsBurst`: die Geschichte kann das Urteil des Spiels überstimmen.
-3. Tankwechsel von der anderen Seite – seine Entscheidung nötig, nach dem Loop als Vorlage.
-4. Frist vor dem Snapshot für Pfade außerhalb des Tankbuster-Plans (Beleg zu BossModReborn zuerst).
-5. Krieger: Nascent Flash; Tänzer: Improvised Finish; Rückstoß und Unterbrechung messen; DRK: Bruch von The Blackest Night; Rotationen gegen The Balance.
-6. Offene Arbeit, dann technische Schuld, soweit ihre Auflösungsbedingung erfüllt ist.
+1. `NextBigSummonIsBurst`: die Geschichte kann das Urteil des Spiels überstimmen.
+2. Tankwechsel von der anderen Seite – seine Entscheidung nötig, nach dem Loop als Vorlage.
+3. Frist vor dem Snapshot für Pfade außerhalb des Tankbuster-Plans (Beleg zu BossModReborn zuerst).
+4. Krieger: Nascent Flash; Tänzer: Improvised Finish; Rückstoß und Unterbrechung messen; DRK: Bruch von The Blackest Night; Rotationen gegen The Balance.
+5. Offene Arbeit, dann technische Schuld, soweit ihre Auflösungsbedingung erfüllt ist.
 
 Warten auf Daten, nicht bearbeitbar: Aktualisierungskosten je Teilschritt (Protokoll „update cost by step“, A310); Tankbuster nach einem Marker ohne Wirken (Protokoll „no cast taken for it“, A308); Treffer aus einer Quelle, die die Objekttabelle nicht hält (Protokoll); Samurai
 Feint und Tengentsu (Protokoll eines Samurai); BossModReborn-FATE-Modul in Occult Crescent (Adressat BossModReborn).
@@ -86,17 +85,6 @@ Frist „ohne Risiko" trägt, ist ungeprüft – voller Loop vor jedem Bau. Eben
 als Damage Up benannt sind, werden beim Messen nicht erkannt; wie oft es sie gibt, ist nicht erhoben. Umgekehrt bleibt
 ein Gegner, der den ganzen Kampf ein Damage Up trägt, ohne Messung, und eine Vorhersage unter Damage Up unterschätzt
 (sichere Richtung; die Wirktexte nennen keine Stärke, mit der sich hochrechnen ließe).
-
-**Konzept:** `docs/rotation-flow/09-tank-selfprotection.md`
-
-### Wirkdauer unterhalb der Merkmalsstufe unbekannt (Reflexion, Schiltron, Urflackern, Intervention) · N, R
-
-**Befund (A266):** Wo der Wirktext die Dauer leer lässt („Duration: s"), liest der Plan sie aus dem Merkmal, das sie
-setzt – im Spiel (`TraitDurations`), sonst aus `trait_durations.json`. Unterhalb der Merkmalsstufe (Reflexion,
-Feint, Addle 98; Schiltron 74; Urflackern, Intervention 82) nennt kein Text die Dauer; die Aktion ist dann kein
-Kandidat. Im Kampf, stufensynchron darunter: Der Plan wählt ein teureres Bündel oder die Unverwundbarkeit (Richtung:
-zu viel Mittel, nicht zu wenig). **Offen:** ob die Grunddauer irgendwo im Spiel steht (Status-Blatt, Job-Guide), voller
-Loop vor jedem Bau.
 
 **Konzept:** `docs/rotation-flow/09-tank-selfprotection.md`
 

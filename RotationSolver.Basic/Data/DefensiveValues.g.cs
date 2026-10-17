@@ -806,8 +806,9 @@ public static class DefensiveValues
 	/// <summary>
 	/// The stated duration in seconds: from the effect text, or - where a trait sets it and the text
 	/// leaves the number blank - from that trait once the player's synced level has it, read in the
-	/// game first and from <see cref="TraitDurationByActionId"/> where the game gives nothing; 0
-	/// when none states one.
+	/// game first and from <see cref="TraitDurationByActionId"/> where the game gives nothing. Below
+	/// the trait's level, the duration the action's own tooltip states at that level, read in the game
+	/// (<see cref="TraitDurations.TryBelowTrait"/>, A316); 0 when none states one.
 	/// </summary>
 	public static float DurationOf(uint actionId)
 	{
@@ -816,10 +817,14 @@ public static class DefensiveValues
 			return seconds;
 		}
 
-		return (TraitDurations.TryInGame(actionId, out var trait) || TraitDurationByActionId.TryGetValue(actionId, out trait))
-			&& DataCenter.PlayerSyncedLevel() >= trait.Level
+		if (!TraitDurations.TryInGame(actionId, out var trait) && !TraitDurationByActionId.TryGetValue(actionId, out trait))
+		{
+			return 0f;
+		}
+
+		return DataCenter.PlayerSyncedLevel() >= trait.Level
 			? trait.Seconds
-			: 0f;
+			: TraitDurations.TryBelowTrait(actionId, trait.Seconds, out var stated) ? stated : 0f;
 	}
 
 	/// <summary>

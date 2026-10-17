@@ -116,6 +116,13 @@ and the Paladin's emergency Intervention could go to the party member with the l
 of them now uses its own target rule. The Astrologian's Synastry, which relied on the leftover heal rule, now picks
 its target the way the single-target heal it copies does.
 
+## Level-synced: Reprisal, Sheltron, Nascent Flash and Intervention have a duration again
+
+Below the level of the trait that sets their duration, these actions' effect texts leave the number out, and RSR
+treated their duration as unknown: the tankbuster plan could not count them and chose a more expensive set or the
+invulnerability. RSR now reads the duration the action's tooltip shows at your synced level, and takes it when it is
+shorter than the trait's.
+
 ## Movement abilities while BossModReborn runs
 
 With BossModReborn running, every fixed dash and every backstep was refused: RSR asked BossModReborn's fixed-dash
