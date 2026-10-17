@@ -67,26 +67,32 @@ public static class ObjectHelper
 		return false;
 	}
 
-	internal static bool CanProvoke(this IBattleChara target)
+	/// <summary>
+	/// Should this enemy be provoked? <paramref name="autoProvokeAllowed"/> answers the setting "Auto provoke
+	/// when there is another tank in party" for the cases it names - an enemy on a non-tank, and "Provoke
+	/// anything" - and is asked only when one of them applies (it walks the alliance). The rescue of a co-tank
+	/// at the invulnerability HP follows its own setting, which that text does not name.
+	/// </summary>
+	internal static bool CanProvoke(this IBattleChara target, Func<bool>? autoProvokeAllowed = null)
 	{
 		if (target == null)
 		{
 			return false;
 		}
 
-		if (Service.Config.ProvokeAnything)
+		// "Provoke anything not on the no provoke list": the list applies to it as well. It returned before
+		// the list was read, so a listed enemy was provoked all the same.
+		if (!Service.Config.ProvokeAnything)
 		{
-			return true;
-		}
+			if (!target.IsAttackable())
+			{
+				return false;
+			}
 
-		if (!target.IsAttackable())
-		{
-			return false;
-		}
-
-		if (DataCenter.PlayerFateId != 0 && target.FateId() == DataCenter.PlayerFateId)
-		{
-			return false;
+			if (DataCenter.PlayerFateId != 0 && target.FateId() == DataCenter.PlayerFateId)
+			{
+				return false;
+			}
 		}
 
 		// Removed the listed names.
@@ -101,36 +107,39 @@ public static class ObjectHelper
 			}
 		}
 
-		if (!Service.Config.ProvokeAnything)
+		if (Service.Config.ProvokeAnything)
 		{
-			// Target can move or too big and has a target
-			if ((target.GetObjectNPC()?.Unknown0 == 0 || target.HitboxRadius >= 5) // Unknown12 used to be the flag checked for the mobs ability to move, honestly just guessing on this one
-				&& (target.TargetObject?.IsValid() ?? false))
-			{
-				if (Svc.Objects.SearchById(target.TargetObjectId) is IBattleChara targetObject)
-				{
-					// The target is not a tank role
-					if (!targetObject.IsJobCategory(JobRole.Tank)
-						&& (Vector3.Distance(target.Position, Player.Object?.Position ?? Vector3.Zero) > 5))
-					{
-						return true;
-					}
+			return autoProvokeAllowed?.Invoke() ?? true;
+		}
 
-					// The co-tank is at the HP the user already set for a tank in danger, and is still
-					// being attacked - take it back, unless they are riding an invulnerability (Superbolide
-					// leaves them at 1 HP on purpose). No distance gate: any healthy tank should react.
-					// Not while the player himself is in danger after a tankbuster (TankSwapWatch): the
-					// owner's rule of 04.10.2026 - the enemy comes back only once his debuff and his
-					// critical state are over.
-					if (targetObject.IsJobCategory(JobRole.Tank)
-						&& !targetObject.IsDead
-						&& targetObject.GameObjectId != Player.Object?.GameObjectId
-						&& targetObject.CanBeHealed()
-						&& targetObject.GetEffectiveHpPercent() <= Service.Config.HealthForDyingTanks * 100f
-						&& !TankSwapWatch.PlayerInDanger)
-					{
-						return true;
-					}
+		// Target can move or too big and has a target
+		if ((target.GetObjectNPC()?.Unknown0 == 0 || target.HitboxRadius >= 5) // Unknown12 used to be the flag checked for the mobs ability to move, honestly just guessing on this one
+			&& (target.TargetObject?.IsValid() ?? false))
+		{
+			if (Svc.Objects.SearchById(target.TargetObjectId) is IBattleChara targetObject)
+			{
+				// The target is not a tank role
+				if (!targetObject.IsJobCategory(JobRole.Tank)
+					&& (Vector3.Distance(target.Position, Player.Object?.Position ?? Vector3.Zero) > 5))
+				{
+					return autoProvokeAllowed?.Invoke() ?? true;
+				}
+
+				// The co-tank is at the HP the user already set for a tank in danger, and is still
+				// being attacked - take it back, unless they are riding an invulnerability (Superbolide
+				// leaves them at 1 HP on purpose). No distance gate: any healthy tank should react.
+				// Not while the player himself is in danger after a tankbuster (TankSwapWatch): the
+				// owner's rule of 04.10.2026 - the enemy comes back only once his debuff and his
+				// critical state are over.
+				if (Service.Config.ProvokeOffDyingCoTank
+					&& targetObject.IsJobCategory(JobRole.Tank)
+					&& !targetObject.IsDead
+					&& targetObject.GameObjectId != Player.Object?.GameObjectId
+					&& targetObject.CanBeHealed()
+					&& targetObject.GetEffectiveHpPercent() <= Service.Config.HealthForDyingTanks * 100f
+					&& !TankSwapWatch.PlayerInDanger)
+				{
+					return true;
 				}
 			}
 		}
@@ -570,6 +579,32 @@ public static class ObjectHelper
 			}
 		}
 		return output.ToString();
+	}
+
+	/// <summary>
+	/// Whether the native object behind this character carries the cast and status state Dalamud's getters read.
+	/// <c>false</c> means <c>IsCasting</c>, the other cast getters and <c>StatusList</c> would throw.
+	/// </summary>
+	/// <remarks>
+	/// Dalamud reads both through virtual functions of the native object and checks neither result:
+	/// <c>IsCasting</c> is <c>Struct->GetCastInfo()->IsCasting</c>, <c>StatusList</c> wraps
+	/// <c>GetStatusManager()</c>. An object in the table without a virtual table, or of a class that returns no
+	/// cast info, throws a NullReferenceException wherever it is read. One did in
+	/// <c>TargetUpdater.UpdateAreaCasters</c>, and that ended the target update before the death, dispel, provoke
+	/// and interrupt targets and the time to kill were refreshed (A291). FFXIVClientStructs guards its own
+	/// <c>Character.IsCasting</c> against the same two cases (9ff7ae79, 03.03.2026). The check sits where the
+	/// target lists are built, so every reader of the lists gets objects that pass it.
+	/// </remarks>
+	internal static unsafe bool HasNativeState(this IBattleChara battleChara)
+	{
+		var gameObject = (FFXIVClientStructs.FFXIV.Client.Game.Object.GameObject*)battleChara.Address;
+		if (gameObject == null || gameObject->VirtualTable == null)
+		{
+			return false;
+		}
+
+		var character = (FFXIVClientStructs.FFXIV.Client.Game.Character.Character*)gameObject;
+		return character->GetCastInfo() != null && character->GetStatusManager() != null;
 	}
 
 	internal static unsafe bool IsEnemy(this IGameObject obj)
@@ -3930,10 +3965,11 @@ public static class ObjectHelper
 	/// invulnerability, and at or below <c>HealthForDyingTanks</c> in effective health carried forward
 	/// to the moment a heal begun now would land. One definition for every reader - the heal target
 	/// order, the defense holds and Lux Solaris - so they cannot disagree about who is in danger.
+	/// Unprotected as the heal decision reads it (<see cref="IsUnprotectedForHealing"/>).
 	/// </summary>
 	internal static bool IsInCriticalClass(this IBattleChara battleChara)
 	{
-		return battleChara.IsInCriticalClass(battleChara.CanBeHealed());
+		return battleChara.IsInCriticalClass(battleChara.IsUnprotectedForHealing());
 	}
 
 	/// <summary>
@@ -4294,6 +4330,51 @@ public static class ObjectHelper
 		return Service.Config != null
 			&& Service.Config.WithholdHealingForLivingDead
 			&& StatusHelper.PlayerInDeathTriggerWindow();
+	}
+
+	/// <summary>
+	/// Whether this member counts as unprotected for the heal decision - its threshold, the heal target
+	/// order, the critical class and the heal-first reading of an announced hit. That is
+	/// <see cref="StatusHelper.CanBeHealed"/>, except that with <c>WithholdHealingForLivingDead</c> off
+	/// Living Dead does not count as protection.
+	/// <para>
+	/// Living Dead does not spare its bearer the fall to zero, it turns it into Walking Dead, after which
+	/// healing worth his whole maximum HP has to go in within ten seconds or he is KO'd (ActionId.resx,
+	/// action 3638). The setting's text promises for Off that he is healed normally and the death never
+	/// happens. Read as an invulnerability, his threshold dropped to HealthProtectedRatio for the first
+	/// half of the effect, so a member RSR had just pulled above it at the last-ditch line - the very use
+	/// the text names as the reason for Off - was left there, and the next hit converted him (A306). With
+	/// the setting on, the hold (<see cref="IsHeldForDeathTrigger"/>) governs Living Dead, and this reads
+	/// as CanBeHealed.
+	/// </para>
+	/// <para>
+	/// The readers that ask whether a hit can kill him now keep CanBeHealed: the co-tank provoke, which
+	/// does not pull the enemy off a tank under Living Dead (451d9e90), and the own tankbuster cooldowns.
+	/// The setting speaks of healing.
+	/// </para>
+	/// </summary>
+	/// <remarks>
+	/// With the setting off, a member carrying no other invulnerability is unprotected; one who carries
+	/// another beside Living Dead is read by CanBeHealed over the whole list, as before.
+	/// </remarks>
+	public static bool IsUnprotectedForHealing(this IBattleChara battleChara)
+	{
+		return (Service.Config != null && !Service.Config.WithholdHealingForLivingDead
+				&& !battleChara.HasStatus(false, StatusHelper.NoNeedHealingStatusBesidesDeathTrigger))
+			|| battleChara.CanBeHealed();
+	}
+
+	/// <inheritdoc cref="IsUnprotectedForHealing(IBattleChara)"/>
+	public static bool PlayerIsUnprotectedForHealing()
+	{
+		if (Player.Object == null)
+		{
+			return false;
+		}
+
+		return (Service.Config != null && !Service.Config.WithholdHealingForLivingDead
+				&& !StatusHelper.PlayerHasStatus(false, StatusHelper.NoNeedHealingStatusBesidesDeathTrigger))
+			|| StatusHelper.PlayerCanBeHealed();
 	}
 
 	/// <summary>

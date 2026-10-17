@@ -1,263 +1,269 @@
-# Changes since 7.5.6.13+wsh1
+# Changes since 7.5.7.1+wsh1
 
 What this release changes in the fight. For the whole distance from upstream, see
 [`fork-changes-in-play.md`](fork-changes-in-play.md).
 
-## White Mage: the second Holy waits for the first stun to end
+## Scholar: Recitation no longer runs out unused
 
-`Stretch the Holy stun` (on by default) now does what it says on every pull: right after Holy, the
-next GCD goes to another spell while Holy's stun would still be running when a second Holy lands, so
-the second stun starts where the first ends instead of overwriting it. Four conditions used to let
-the second Holy go out at once: no DoT left to place, one enemy in the radius not yet stunned, fewer
-enemies than `Enemies in Holy's radius before holding`, and - the likeliest - a stun that had not yet
-reached the enemies when the next GCD was chosen, since Holy's cast and recast are equally long.
+When the reason Recitation was pressed for went away before its heal came - someone else healed the tank, or
+Excogitation found its target elsewhere - Recitation ran out after fifteen seconds and its free critical heal was lost.
+In its last moment it now goes into an Excogitation on the tank, which heals once he falls below half or when it runs
+out, or, with Excogitation on cooldown, into an Adloquium barrier on him.
 
-The held GCD goes to a DoT where one is due, otherwise to Glare: one GCD of Holy damage per pull for
-about 7 instead of 5.5 seconds of stun. `Enemies in Holy's radius before holding` now only applies to
-holding Holy for The Blackest Night and sits under that setting.
+## Scholar: Recitation only for an Excogitation that will follow
 
-## `DefenseTrace.log` keeps every session and names its build
+Recitation went out for any tank below `Minimum HP percent to use Excogitation as a heal instead of a defensive buff`,
+while the Excogitation it was pressed for waits for danger under `Excogitation as a heal only on a target in danger`
+(on by default). A tank low but not in danger - the off-tank after a swap - got Recitation and then no Excogitation:
+Recitation ran out unused, and its minute-long recast was missing at the next tankbuster. Recitation for a tank now asks
+for the same danger as the Excogitation that follows it.
 
-The trace is no longer replaced when the plugin loads, so a rebuild or reload keeps the sessions
-before it. Each session starts with its date and time and the commit the plugin was built from, so
-every section can be matched to the exact code that wrote it. Delete the file to start over. A chosen defence is followed by a
-`used` line when it actually goes out, so a choice the game did not carry out can be told from a second use.
+## Bard, Dancer, Pictomancer: mitigation in the burst by default
 
-## Own cooldowns stay for hits that reach you
+`Prevent the use of defense abilties during burst` is now off by default. The defence paths only run for an area hit
+or a tankbuster that is announced or measured, and the setting threw exactly those away while the burst ran, so a
+raidwide inside the burst got no Troubadour, Shield Samba, Tempera or Addle. The mitigation now goes out and takes
+one weave slot in the burst. Switched on, it still holds without exception.
 
-A tank's single-target defence opened for every tankbuster BossModReborn announced and for every cast an
-enemy aimed at its own target, whoever that was - so Damnation and Rampart went out for a buster on the
-other tank that BossModReborn had marked as not hitting you. Defences that protect only you - Rampart,
-Damnation, Raw Intuition, Arm's Length, a barrier on yourself - now go out only when the hit that opened
-the defence reaches you, in the single-target and the area defence alike and for every job. Help for others
-stays: Reprisal, Shake It Off, Intervention and Heart of Corundum on the tankbuster's target are not held
-back. An announced tankbuster whose targets BossModReborn does not name still counts as hitting a tank.
+## Healing: a healer being hit no longer waits behind a tank who stands higher
 
-Your own area defence command - "Def AoE" in the control window or the defence macro - is not second-guessed:
-it casts a self-only defence even when RSR does not see the hit reaching you. The Samurai's Tengentsu and Third
-Eye and the Summoner's Radiant Aegis checked the reach a second time and stayed back under that command; they
-now go out with it like every other job's, and the control window shows them.
+`Choose the heal target by danger` heals a healer or tank under their role threshold who is being attacked first. With
+the tank's threshold at 45 % and the healer's at 40 %, a tank at 44 % came before a healer at 42 % although both were
+being hit. Any healer or tank being attacked who stands as low as that pick or lower now joins it, and the lowest
+health goes first, a healer before a tank at equal health.
 
-`DefenseTrace.log` now also names the pull rule (enemies on you) and unlisted casts at a tank's target as
-sources, says whether the single hit reaches you, and records each landing of a listed area cast with
-whether it reached you. When the area or single-target defence is open but nothing it asks for can go out,
-it writes "open, nothing chosen" with the sources standing, so a defence that never opened and one that
-found nothing usable can be told apart.
+## Red Mage: raise in the burst, heal in the burst when the healers do not keep up
 
-## Tanks: Arm's Length no longer goes out on a boss's tankbuster
+`Prevent raising during burst combos` is now off by default: a dead member is raised at once, as on Summoner.
+`Prevent healing during burst combos` still holds Vercure in the burst, but no longer when no healer in the party is
+alive or a member is about to die because the healers do not keep up.
 
-Arm's Length does not soften the hit that strikes you; it slows the attacker. When the single-target
-defence found nothing else for an announced tankbuster, it cast Arm's Length anyway, with a boss alone in
-the arena, and the action was then missing for the next knockback. It now goes out from that path only
-for its Slow on a pack of ordinary enemies, as many as `Number of hostiles`, and bosses no longer count
-towards that pack in any tank's `Use Arm's Length on a pull for its Slow`. For Paladin, Warrior, Dark
-Knight and Gunbreaker that setting now has the last word: the defence no longer casts Arm's Length after
-the rotation has declined it.
+## Dark Knight: The Blackest Night and Oblation for the party find their target
 
-## Warrior: Thrill of Battle and Bloodwhetting before a tankbuster
+With `Use The Blackest Night on lowest HP party member during AOE scenarios` or the Oblation counterpart on, the
+member with the fewest HP was picked first and the health threshold checked after. When that member stood above the
+threshold - a damage dealer with a small pool, barely hurt - the barrier went to nobody, although another member was
+under it. The pick is now made among the members under the threshold.
 
-Before an announced tankbuster on you, the Warrior's single-target defence now casts Thrill of Battle
-(`Use Thrill of Battle before a tankbuster on you`, on by default). It raises your maximum HP by 20 %, and
-the healing that follows the hit is 20 % stronger. It stacks with Bloodwhetting instead of waiting behind
-it. Before, Thrill of Battle went out only as a heal below its threshold, after the hit.
-`Use Bloodwhetting/Raw intuition on single enemies` is now on by default, so Bloodwhetting also goes out
-for a lone boss's tankbuster, not only after it as a heal.
+## Gunbreaker: Aurora on full target usage goes by the heal order
 
-Bloodwhetting no longer holds the big mitigations back. While it ran, the defence stopped, and it counted
-as one of the big mitigations that Rampart and Damnation wait for: at the start of a pull Damnation and
-Reprisal came eight seconds late, and a tankbuster Bloodwhetting went out for got no Damnation or Rampart
-at all. Rampart and Damnation still stagger against each other.
+With `How to use Aurora` on `Full target usage`, Aurora went to whoever had the fewest HP points, often a barely hurt
+damage dealer rather than the member the heal was for. It now picks its target like every other heal, by danger.
 
-On a pull, Thrill of Battle now also goes out as soon as your health, falling at the measured rate, would
-pass `Thrill Of Battle Heal Threshold` within its ten seconds (`Use Thrill of Battle when your health will
-fall below its threshold within its duration`, on by default), so the extra health and the stronger healing
-are there while the pack is at full strength. Where the healers hold you steady, it waits as before.
+## HP potions: the emergency is a tankbuster on you, not on anyone
 
-## Tanks: one big mitigation per predicted tankbuster, first in line
+The emergency branch of the HP potions, which drops the potion's own HP threshold, opened for every tankbuster
+BossModReborn predicted, whoever it targeted. A White Mage at 60 % drank an Ultra-Potion for a tankbuster on the
+tank. It now opens only for a tankbuster that reaches you: one cast at you, or a predicted one whose targets name you;
+when BossModReborn names nobody, for a tank, or when the party has no tank alive. The same reading now decides when
+a rotation counts a tankbuster as on you (the Dark Knight's The Blackest Night on itself among them).
 
-When BossModReborn predicts a tankbuster on you, every tank now casts its big mitigation (Damnation,
-Guardian, Shadowed Vigil, Great Nebula and their lower forms) before the smaller ones, and Rampart only
-when the big one is not taking that tankbuster. Both used to go out on the same tankbuster: with
-tankbusters about a minute apart, one hit landed under both and the next under neither. Now they
-alternate, and the short mitigations come on top as before.
+## Damage over time on several enemies: most HP first, then by expiry
 
-Reprisal in the single-target defence now waits for an announced raidwide when the tankbuster is on you,
-your own big mitigation or Rampart is already running, and the raidwide lands after Reprisal would have
-run out and before it is back. Reprisal on the enemy covers every hit it deals for 15 s; it only waits
-when it cannot cover both.
+With several enemies in reach, the damage over time went on all of them in the order of the targeting type - by
+default lowest HP first, so the enemy that lives longest got it last. The enemies now get it in the order of their
+HP, most first, and once each carries it, it is renewed in the order it runs out. Direct single-target attacks
+without damage over time keep the targeting type you chose.
+This holds for every job's damage over time, recognised by the status's own text, and not where a rotation uses the
+action for something else (a combo finisher, an upkeep while moving) or names the target. `Spread damage over time
+by HP, then by expiry` (on by default) switches it off.
 
-## GCD length while no GCD is running
+## Healers: no area heal on full health before a raidwide
 
-Between GCDs - out of range, between pulls, before the first GCD - the plugin read the GCD length as 0.
-Everything measured in GCDs then collapsed: heal-ahead looked nowhere, the one-GCD window in which a
-running enemy cast is answered was closed, and the first-GCDs-of-combat guards did not hold. The last
-GCD length now stands in while none runs.
+Before an announced raidwide RSR raised the area heal whenever the hit would take someone below the area heal
+threshold, and from full health a hit of a quarter to a third of the health already did. The heal - Medica, Cure
+III, Afflatus Rapture or a heal over time - landed on a full party and was gone, and the same heal was needed again
+after the hit. It now heals ahead of the hit only when the hit would leave someone about to fall - a member at 55 %
+before a 45 % raidwide - and that member is missing health. Otherwise it heals after the hit, on health that is
+missing. `DefenseTrace.log` names each such heal ahead of a hit, the member it was for and the size of the hit.
 
-## Warrior: Shake It Off keeps your Damnation for the tankbuster
+The White Mage's Afflatus Rapture at full lilies now waits until an announced raidwide has landed, so the GCD spent
+to keep the lilies from overflowing heals what the raidwide took. It goes out at once when a fourth lily would
+otherwise be lost.
 
-Shake It Off dispels Damnation, Bloodwhetting and Thrill of Battle. As a heal for a single party member
-it now waits while Damnation or Bloodwhetting runs, or while a raidwide is announced after its barrier
-would end and before it is back. At a raidwide it waits only when a tankbuster on you lands before
-Damnation ends. Both give way when a party member is about to die. Dispelling Thrill of Battle is
-allowed: the barrier is sized on the raised maximum HP.
+## Healers: no raise race with another healer
 
-## Summoner: Searing Flash no longer expires unused
+A raise shows on its target only once it lands, so while another healer was hard-casting a raise, the body was
+still a candidate and RSR without Swiftcast started a raise of its own on it - two casts for one body, and the slower
+one was lost. RSR now reads the other player's cast and its target and leaves that body alone; another dead member
+gets the raise instead, and Swiftcast stays for a body nobody is raising. If the other cast is broken off, the body
+is a candidate again at once. When both raises are already being cast - the party list shows the cast bar at the
+target reddish then - RSR stops its own as soon as the other one lands first, instead of spending its MP on a body
+that is already up; at equal times it keeps casting. A body carrying the second form of the Raise status (id 1140)
+also counts as raised now. `DefenseTrace.log` notes each raise left to someone else and each one stopped. The same
+goes for Esuna:
+RSR no longer cleanses a member another healer is already casting Esuna on, unless more than that one effect is
+left.
 
-Outside a demi, Searing Flash waited for a dying boss. With other Summoners in the party, Searing Light
-can fall into a Titan or Ifrit block, the next demi is further off than Ruby's Glimmer lasts, and Searing
-Flash was lost. It now goes out in the last weave slot before Ruby's Glimmer runs out. As the only Summoner
-nothing changes: Searing Flash falls inside Solar Bahamut as before.
+## Living Dead with the hold off: the dark knight is healed normally
 
-## Summoner: Searing Light stays with Solar Bahamut until another Summoner takes it
+With `Withhold healing under Living Dead` off - the default - its text promises that the dark knight is healed
+normally and the death never happens. RSR still treated Living Dead like any invulnerability and healed him only
+below `Heal a target under an invulnerability only below this HP` for the first half of the effect. When RSR fired
+Living Dead as a last-ditch save at 15 %, the heal pulled him just above that line and left him there, and the damage
+that had brought him down took him to 0: Walking Dead, with his whole maximum HP to heal within ten seconds. With the
+hold off, Living Dead no longer counts as protection anywhere RSR decides on healing - threshold, heal order, the
+members about to fall, healing ahead of an announced hit, Excogitation and Nascent Flash - and the Scholar no longer
+breaks Aetherpact on him. With the hold on, nothing changes, except that the Scholar keeps the link once the hold has
+released before expiry. The invulnerability setting now says that Living Dead follows the other one.
 
-With another Summoner in the party, Searing Light could go out ahead of or inside every demi. When your charge
-came free after Solar Bahamut - the other Summoner playing by hand, their Searing Light off, or their cycle
-apart from yours - it went into Demi-Bahamut or Demi-Phoenix and stayed there for the rest of the fight, a weaker
-burst than Solar's. Bahamut and Phoenix now open only after another Summoner's Searing Light stood in your
-last Solar Bahamut window, or stands in the current one; otherwise the charge waits for the next Solar
-Bahamut, at most one demi longer. When the other Summoner does hold Solar, nothing changes.
+## Emergency abilities pick their own targets again
 
-## Reaper: Soulsow in a pause of the fight
+A target rule set by the GCD - for a heal, a cleanse, a provoke, a raise or a defence - stayed in force for the
+abilities checked before the next one was set: the commanded action, the emergency abilities, the tankbuster plan and
+the tank swap. After a heal GCD, a damage ability among the emergency abilities went to the enemy with the least HP,
+and the Paladin's emergency Intervention could go to the party member with the least HP instead of the co-tank. Each
+of them now uses its own target rule. The Astrologian's Synastry, which relied on the leftover heal rule, now picks
+its target the way the single-target heal it copies does.
 
-Soulsow was cast only out of combat, so after the first Harvest Moon every later one was missing until the
-fight ended. It now also goes out in combat while no enemy is within 25 yalms, the pause the fight rules use.
-With a BossModReborn module running and `Use BossModReborn timeline for proactive mitigation` on, it waits
-when its 5-second cast would not finish before the predicted end of the pause.
+## BossModReborn warnings: a press counts only if it arrives in time
 
-## Paladin: Passage of Arms holds until the hit lands, by default
+Defences pressed for a hit BossModReborn announces - the tankbuster, raidwide and knockback windows and the refresh
+before a predicted hit - used a fixed 0.6 s cut-off. They now go out only while a press made now still reaches the
+server before the announced moment (the end of the cast), from your measured round trip and the time until the next
+press can go out: a late press no longer spends a cooldown on a hit it cannot change, and a timely one is no longer
+held back by the fixed margin.
 
-`Lock actions when casting Passage Of Arms during AOE mitigations` is now on by default. Passage of Arms
-ends with the paladin's next action, and RSR casts it only for an announced area hit; without the lock the
-next GCD or weave ended the channel, often before the hit, and the cooldown was spent for nothing. With the
-lock, RSR holds its actions until the announced hit has landed and no longer. A configuration that was
-saved before keeps its value: switch the setting on under Extra if it shows off.
+## Tanks: provoke settings do what they say
 
-## Sage: the pull barrier on the tank is on by default
+- The rescue of a co-tank at your invulnerability HP has its own setting, "Provoke the enemy off a co-tank at the
+  invulnerability HP" (on by default). It ran under "Auto provoke when there is another tank in party", whose text
+  only names enemies on non-tanks: with that setting off, a co-tank about to die was not provoked off.
+- "Provoke anything not on the no provoke list." now respects the list; it provoked listed enemies as well.
 
-`Keep Eukrasian Diagnosis on the tank through a pull` is now on by default. In dungeons Eukrasian Diagnosis
-goes on the tank as they close in on a group and is renewed whenever it runs out or breaks, for as long as
-the pull lasts, never below the MP for Egeiro. In a large pull, where the barrier breaks within a few hits,
-that takes most of the sage's GCDs.
+## Summoner: Searing Light ahead of the right demi
 
-## Tanks: Shirk hands the boss to your co-tank when the next tankbuster would kill you
+Whether the next big summon is Solar Bahamut (Demi-Bahamut below level 100) decides whether Searing Light goes
+ahead of it. RSR read the summon button or the order of the demis it had seen, and either was enough - so when the
+two disagreed, for example after a demi summoned while RSR was off, Searing Light could go ahead of Bahamut or
+Phoenix and was still cooling down when Solar Bahamut came. RSR now asks the job gauge first, then the button, then
+the order, and checks each against the demi that actually comes; a source that named the wrong one is not asked
+again for the session.
 
-New setting `Shirk the co-tank after a tankbuster that leaves you in danger`, on by default. With another tank
-in the party, RSR Shirks that tank after a tankbuster on you if both hold:
-- the buster left you with a vulnerability debuff, or so low that a repeat of the hardest buster measured would
-  kill you;
-- your invulnerability is not ready.
+## Level-synced: Reprisal, Sheltron, Nascent Flash and Intervention have a duration again
 
-It does this only when the party's enmity on the boss shows the co-tank will take it over. Shirk moves a quarter
-of your enmity, so below half of yours nothing would change. A co-tank who is in danger himself - a
-vulnerability, or too low to survive the same buster - gets nothing, even if he just Shirked to you. With several
-candidates it picks the tank the fewest enemies are attacking, then the one with the most HP.
+Below the level of the trait that sets their duration, these actions' effect texts leave the number out, and RSR
+treated their duration as unknown: the tankbuster plan could not count them and chose a more expensive set or the
+invulnerability. RSR now reads the duration the action's tooltip shows at your synced level, and takes it when it is
+shorter than the trait's.
 
-Once your co-tank has taken the boss's next tankbuster, your debuff has run out, you are above that line again
-and your invulnerability is ready, RSR provokes the boss back. While you are still in danger, the automatic Provoke no longer takes the boss off a co-tank who drops
-low. `DefenseTrace.log` names every tankbuster on you,
-why a swap held, and whether the boss moved; a Shirk that did not move it raises the bar for the rest of the
-fight.
+## Movement abilities while BossModReborn runs
 
-The manual Shirk command no longer targets you yourself when you are the tank in stance.
+With BossModReborn running, every fixed dash and every backstep was refused: RSR asked BossModReborn's fixed-dash
+check with arguments it does not take, and the failed call read as "unsafe". Hell's Ingress and Hell's Egress, Hissatsu:
+Yaten, Displacement and Repelling Shot - on a move command, or Displacement under its Red Mage option - now go out
+when their landing point lies outside a danger zone. RSR computes that point from the distance in the effect text and
+asks BossModReborn about the path. Repelling Shot now jumps away from an enemy; it was aimed at you and never went out.
 
-## Tankbusters are learned, from every player they hit
+## Tanks: the tankbuster table learns from tanks only
 
-RSR now keeps a table of tankbusters, like the one for area attacks. Every hit of a listed tankbuster, or of one
-whose marker was confirmed, counts on any player: you, your co-tank, or other parties in large content.
-- Each hit is scaled back to unmitigated by the mitigation that stood on the target and on the boss, and stored
-  per action as a share of maximum HP.
-- A hit taken under a vulnerability debuff is kept apart.
+The table of tankbuster sizes, which a tank's plan reads, also took hits on party members who were not tanks - a melee
+player standing in the hit, or whoever was next after the tank died. Such a hit lacks the tank trait's damage
+reduction and meets a smaller health pool, so it rated the tankbuster harder for every tank, and the plan spent more
+than it needed. Hits on tanks alone are stored now; `DefenseTrace.log` still names the others as "not stored".
 
-The tank swap now also uses this table to judge whether a repeat would kill you, so it knows a tankbuster from an
-earlier evening or from your co-tank. The list shows each entry's figure and the store's state, and
-`DefenseTrace.log` names every measurement. To start over after a patch, delete `TankbusterPotential.json` while
-the game is closed.
+## Tanks: a tankbuster marked on you and cast at no one is planned
 
-Hits from an enemy carrying a Damage Up status are not stored: they would rate the action too high.
+The tankbuster plan only saw tankbusters cast at you. Many fights put a tankbuster marker on the tank and let the boss
+or an invisible helper cast without a target; then there was no plan, and the invulnerability came only once you were
+below `The HP% for tank to use invulnerability` - too late for a hit that kills from full health. A measured tankbuster
+cast at no other party member while a tankbuster marker stands on you is now planned like one cast at you, for as long
+as that cast runs. `DefenseTrace.log` marks such casts "by the marker on you", and a hit after a marker for which the
+plan had no cast "no cast taken for it".
 
-## Tanks: a measured tankbuster gets the mitigation it needs, and the invulnerability only when nothing less does
+## Tanks: the tankbuster plan after a stun, and before the snapshot
 
-New setting `Spend only the mitigation a measured tankbuster needs`, on by default. When a tankbuster the table
-has measured is cast at you, RSR works out what it takes under what will still stand when it lands - your own
-mitigation, a co-tank's Reprisal, a healer's mitigation or barrier - against your HP now, and spends the cheapest
-set of your own ready mitigations, by cooldown, that lets you survive it:
-- one if one is enough, two or more stacked if not - also two big ones at once, which the old defence never did;
-- none if the hit is survivable as it stands;
-- each one pressed late enough to still stand when the hit lands;
-- party tools such as Shake It Off or Divine Veil are left to the area defence.
+A stun or amnesia refused every press of the tankbuster plan, and the plan took that as an answer about the action:
+it left the mitigation out for a GCD. When that GCD reached into the last one before the hit, the plan drew the
+invulnerability, although the set would still have gone out after a short stun. A refusal under a block on every
+ability is now retried as soon as the block ends. The plan also pressed until the cast bar ended, and a mitigation
+pressed in the last moment reaches the server after the hit is locked in and only costs its cooldown. It now stops
+one measured round trip before the end. When the presses left after a stun are too few for the cheapest set, it
+takes the invulnerability, which it still presses until the cast ends; without one, "everything" sends the strongest
+mitigation first. `DefenseTrace.log` gives the round trip with each press of the plan.
 
-While that tankbuster is the only one known to be coming at you, everything else aimed at you - Rampart,
-Vengeance, your own barrier, Reprisal - is held for the next tankbuster,
-from whichever part of the rotation would have used it. Help for another party member, heals and area defence that
-reaches beyond you still go out. If a planned mitigation has not gone out by the last GCD before the hit, the hold
-opens. Under Hallowed Ground or Superbolide past the hit, nothing aimed at you is spent. As a healer, RSR spends no
-single-target mitigation for a tankbuster cast at a tank who stands under Hallowed Ground or Superbolide past the
-hit.
+## Tanks: the tankbuster plan leaves you above the invulnerability line
 
-New setting `Use the invulnerability before a tankbuster nothing less survives`, on by default. Only when no set of
-your mitigations would get you through does RSR use Hallowed Ground, Holmgang, Living Dead or Superbolide before
-the hit - no earlier than its ten seconds less one GCD. With the mitigation setting off, nothing presses such a set
-for you, so only what already stands counts. It does not depend on the dying-tank threshold: setting that
-to 0 switches off only the old reactive use. After Living Dead the healers still have to restore your full HP within
-Walking Dead. Only if nothing survives and the invulnerability is not there to use - on cooldown, switched off or
-refused with no retry left before the last GCD before the hit - does everything go, in the hope of someone else's debuff or barrier; never on top of the invulnerability.
+The tankbuster plan picked the cheapest set of own mitigations that kept a measured tankbuster from killing you, even
+if it left you at a few percent. Every tank's emergency rule then drew the invulnerability at once, because you were
+below `The HP% for tank to use invulnerability` - so both were spent, and until then you stood in front of the next
+auto-attack with almost nothing. A set now counts only if it leaves you above that line; if none does, the plan takes
+the invulnerability instead. At 0 the line changes nothing.
 
-The plan is recomputed all the time, so a heal or a Reprisal that lands before the hit makes it smaller. Tankbusters
-announced only by a marker or by BossModReborn, and actions not yet measured, keep the old behaviour.
-`DefenseTrace.log` writes the figures for every tankbuster cast at you, the plan and every press.
+## Tankbusters and knockbacks cast by invisible helpers are read
 
-## Healing: the order of the injured follows every announced area hit
+Many fights resolve tankbusters and knockbacks through invisible helpers. RSR already read their area casts, but not
+their tankbusters or knockbacks: a listed tankbuster a helper cast at the tank opened the tank's
+defence only through a marker or a BossModReborn prediction, and got no tankbuster plan; a listed knockback from a
+helper got no Arm's Length or Surecast without a module. Both are read now, from the same lists as any enemy's.
 
-While area damage is announced, the heal target is chosen by the hit points left after what is coming, not by
-the share of the bar. That counted only casts that RSR also judged worth mitigating, so a large cast that can be
-interrupted, an area marker on the party and a raidwide BossModReborn announces within the mitigation window
-left the order by share. They now count as well.
+## Tanks: the tankbuster plan keeps Reprisal for the next raidwide
 
-## Area defence: the hit that follows an empty wind-up counts
+The single-target defence keeps Reprisal off a tankbuster when the tank is covered and BossModReborn announces a
+raidwide after Reprisal would run out and before it is back. The tankbuster plan, which picks the cheapest set of own
+mitigations for a measured tankbuster, did not know that rule; from level 98 Reprisal was its cheapest member, so it
+went on the tankbuster and the whole party went without its 10 % at the raidwide. The plan now takes Reprisal only
+when no set without it survives the tankbuster.
 
-Some listed area casts land only on their caster and hurt nobody; where a hit follows, it comes under the
-same name right after, often from an invisible helper. The empty landing was taken as "it missed you", so with
-`Skip area defence for casts that missed you` on, the next cast opened no area defence for the hit that did
-come, and the cast was never rated. A same-named hit on the party after an empty landing now counts as that
-landing: it decides whether the cast reached you and how hard it hits. A wind-up that nothing follows stays
-skipped as before.
+## Small area casts stay unmitigated when BossModReborn predicts them
 
-## White Mage: Holy is held only while a stun runs
+`Skip mitigation for small area casts` kept a learned area cast that leaves everybody above the area heal line from
+raising the party mitigation - but only on RSR's own reading of the cast. When BossModReborn predicted the same cast
+as a raidwide, the prediction opened the area defence anyway, and Plenary Indulgence, Temperance, Radiant Aegis or
+Addle went out on hits of a few percent. A prediction that appears together with the start of such casts no longer
+opens the area defence while they are being cast; a prediction with any other cast beside it, an unmeasured one, or
+one that is left when the cast ends, is answered as before. `DefenseTrace.log` names each prediction held this way.
 
-`Stretch the Holy stun` held the next Holy whenever an enemy in range showed neither a stun nor a stun
-resistance. The game shows the shortening of repeated stuns as no status, so a pack that could no longer be
-stunned looked fresh, and every Holy was followed by Glare or a DoT for the rest of the pull. RSR now reads
-from the fight which enemies a stun landed on, how often, and which ones turned it away, and holds the next
-Holy only while the stun of the last one would outlast it. The same reading decides when the White Mage's
-other two Holy holds and the Dark Knight's barrier hold see nothing left to stun.
+## Area casts: a member who missed a kill mechanic no longer sets its size
 
-## BossModReborn raidwides: only those that reach you or your party
+RSR learns how hard each listed area cast hits, as the largest share of a member's maximum HP it has seen, and that
+figure only rises. A member who missed a kill mechanic set it for good: Megadeath (Forgall) was learned at 941 % from
+one without the zombie debuff, while it took 10 % from one who had it, and Necrohazard at 588 % from one near its
+centre. Every rule reading the figure then took the cast for a raidwide that kills: the heal ahead of it went out
+whenever anyone missed health, held defensives were released, mitigation was spent, and a tank's tankbuster plan
+counted the party dead. A hit that reaches a member's whole health and the barrier he carries is no longer measured;
+one he survived only behind his barrier counts as his whole health. Readings above a whole maximum HP from before are
+left out when the table loads and are no longer written back to the file, so such a cast is unrated until it lands
+again - and unrated casts are mitigated as before - and then rated by the members who survived it.
+`DefenseTrace.log` names each hit left out.
 
-BossModReborn calls more than raidwides "raidwide": towers, baits, spreads and charges on single players carry the
-same type, and each prediction names whom it hits. RSR now reads that list where it can (when that prediction is the
-next one): one that reaches neither you nor more than one party member opens nothing, and one that reaches the party
-but not you no longer spends Radiant Aegis or the other defences that protect only you. Where BossModReborn names
-nobody (its timeline, or another prediction comes first), the raidwide still counts as hitting everyone.
-`DefenseTrace.log` names, for each defence decision, the module, the BossModReborn source and whether the raidwide
-hits you.
+## A potion no longer counts as an action you used
 
-## No fall damage
+ECommons, which RSR reads the game's effects through, read an item used on a target as an action with the same
+number. RSR then booked that action as the last one you used, reported it to the tankbuster plan as your own and
+filed the potion's healing under it. RSR now uses ECommons 3.2.1.26, which tells items and actions apart again.
 
-New setting `No fall damage` under Extra, off by default. On, the game's fall damage function returns zero, so a
-fall deals no damage. The hook and its signature come from Henchman's hacks (AGPL-3.0, credited in the file). If
-the game version does not have that function, the setting switches itself off.
+## The target update no longer breaks off on an object without cast data
 
-## Area casts of invisible helpers open the defence
+The target update read the cast of every untargetable enemy, and Dalamud's cast reading fails on an object that
+carries no cast data. The update then stopped before it refreshed the raise, Esuna, provoke and interrupt targets and
+the time-to-kill estimate, which kept their old values for that frame; Dalamud's log showed it as
+`TargetUpdater.UpdateTargets Exception` in `IsCasting`. Such objects are now left out, there and where the target lists
+are built.
 
-Many raidwides are cast by untargetable helpers, or by a boss off the field - Shinryu's Meteor Impact comes from
-five light spheres, each hitting the whole party. RSR read area casts of targetable enemies only, so without a
-BossModReborn module such a raidwide opened no defence at all. The area recognition now also reads untargetable
-enemies while they cast an action on the AoE list, and their actions are added to the list and measured like any
-other. `DefenseTrace.log` marks such a caster "(untargetable)".
+## `DefenseTrace.log` says what the defence turned down
 
-## Summoner: Radiant Aegis is no longer chosen during a demi
+Each defence decision, and each "open, nothing chosen", now ends with the actions the defence refused on its way and
+the reason the game check gave, and with the holds that were standing. Each HP potion RSR chooses is written with the
+branch that allowed it and your HP at that moment. After each fight a line gives what RSR's update cost per frame during
+it: the number of cycles, the mean and the longest in milliseconds, its share of the frame time, and the party size. A second line splits it by step - targets, BossModReborn, state, rotation, action, the tank's watches and the rest - with the mean and the longest per step, and shows what the slowest cycle was made of and whether a garbage collection ran during it.
+A tankbuster measured on a player who is not a tank is marked "(not a tank)". A hit on you from a source RSR does not
+read as an enemy - one the game's object table does not hold, or a figure that is neither an enemy nor a combatant -
+is written as such; RSR drops those hits everywhere else.
 
-Radiant Aegis can only be cast while Carbuncle is summoned, and a demi takes Carbuncle's place for 15 s. RSR asked
-only for a pet, so during a demi the area defence kept choosing a shield the game does not allow then, and Addle
-behind it never went out. Now the shield waits for the demi to end, and Addle comes in its place. Each defence decision in
-`DefenseTrace.log` also names the game's status for the chosen action.
+The White Mage's Holy stretch line is now written when its decision changes or once a GCD, as it was meant to be. It
+counted the remaining stun time in every frame as a change and filled more than half of the file, about ten lines a
+second.
+
+## Tanks: a tankbuster that landed under Intervention or Taurochole is learned at its real size
+
+The learned tankbuster table, which a tank's mitigation plan reads, scales every hit back to unmitigated by the
+mitigation that stood when it landed. It did not know the reduction of Intervention, Taurochole, Third Eye, Magick
+Barrier or Fey Illumination, because their effect texts phrase it differently. A tankbuster that hit a tank under one of
+them was learned as smaller than it is, until a hit without it raised the figure, and a plan for that tankbuster could
+come out too small for a defensive to fire. They are counted now, and so are Troubadour, Tactician and Shield Samba
+at 15 % from level 98, which their effect texts leave blank because a trait sets the figure.
+
+The table also no longer divides the same mitigation out twice. It credited a mitigation to every status sharing the
+action's name, so a tank carrying Temperance's heal over time beside Temperance itself had Temperance divided out
+twice, and the tankbuster was learned larger than it is. Only a status whose own text reduces damage counts now.

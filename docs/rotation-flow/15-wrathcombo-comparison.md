@@ -9,10 +9,28 @@ Das Dokument gibt den geltenden Stand; die Prüfhistorie steht in `AUDIT_LOG.md`
 **Auftrag (seine Vorgabe, 27.09.2026):** „sind darin ideen zu rotationen und unseren bisherigen patches
 vorhanden, die den eigenen plugin verbessern könnten? im loop nach erledigter arbeit prüfen".
 
-**Quelle und ihr Status:** `PunishXIV/WrathCombo`, Stand 25.09.2026, BSD-3-Lizenz, nur gelesen
+**Quelle und ihr Status:** `PunishXIV/WrathCombo`, Stand 16.10.2026 (5365eb1ed), BSD-3-Lizenz, nur gelesen
 (Kopie unter `/home/user/punishxiv/wrathcombo`, keine Änderung dort). Ein anderes Rotations-Plugin, keine
 Spielquelle: Es zeigt, wie ein zweites Werkzeug entscheidet. Spielmechanik ist am offiziellen Job-Guide
 belegt, wo sie trägt. Code wird nicht übernommen.
+
+**Nachgeprüft am 16.10.2026: 33 Commits seit dem 25.09.2026 (A296).** Seine Frage: „bringen die änderungen inhaltlich
+sinn für rsr und bringt eine adaptierung was?"
+- *Gewinn, indirekt:* WrathCombo zieht ECommons nach. ECommons 3.2.1.26 (Commit 26d30b9, 15.10.2026) liest die
+  Aktionsart im Effektkopf als ein Byte und behebt damit einen offenen Defekt, den RSR nur für sich umgangen hatte
+  (Konzept 13). RSR bindet 3.2.1.26 ein. Im Kampf: Ein eigener Trank oder ein anderer Gegenstand mit Ziel galt bisher als
+  Aktion derselben Nummer — als zuletzt gewirkte Aktion verbucht, dem Tankbuster-Plan als eigene Aktion gemeldet und mit
+  seiner Heilmenge dieser falschen Aktion zugeschrieben. Jetzt zählt er nicht als Aktion.
+- *Schon vorhanden:* Ninjutsu unter Kassatsu nach synchronisierter Stufe (WrathCombo behebt, dass Goka Mekkyaku und Hyosho
+  Ranryu unter Stufe 76 gewählt wurden; `NIN_Reborn` fragt `EnoughLevel` und fällt auf Katon, Raiton, Huton zurück).
+  Divine Caress vor Ablauf von Divine Grace: WrathCombo wirkt es jetzt, sobald es bereit ist, ohne Gesundheitsprüfung;
+  `WHM_Reborn` wirkt es auf einen angekündigten Treffer hin und spätestens zwei GCDs vor Ablauf. Das bleibt, weil die
+  Barriere so den Schaden trifft.
+- *Ohne Gegenstück, das davon gewinnen würde:* PvP-Aktionen (außerhalb seines Profils); feste Opener (Samurai FRU, eine
+  7-s-Variante des Tänzers „only for coordinated use", der Trank im Opener); WrathComboS Hotbar-Ersetzung (Rückgabe der
+  Basis-Id statt `OriginalHook`, Bereitschaftsprüfung beim Abfangen, Zielumlenkung der Gelehrten-DoTs); Bedienung
+  (DTR-Klick, Chatausgabe, entfernte Zieleinstellung des Maschinisten); eine Mehrdeutigkeit mit ECommons' `HasStatus`,
+  die RSR mit eigener Signatur nicht trifft.
 
 **Übernommen, weil RSR dort auf etwas wartete, das nicht kommt (A169):**
 - **Maschinist:** Mit „Only use Wildfire on Boss targets" fällt Hypercharge auf einem Nicht-Boss wie ohne
@@ -97,7 +115,7 @@ in Gefahr war.
 | Weißmagier | Regen, auch im Countdown | vorhanden (`UsePreRegen`), über die gemeinsame Regel |
 | Astrologe | Aspected Benefic | vorhanden (`UsePreAspectedBenefic`), über die gemeinsame Regel |
 | Weiser | Eukrasia + Eukrasian Diagnosis, beide sofort | **neu** (`UsePreEukrasianDiagnosis`, ab Werk **an**, A251: Er hat die Erneuerung bei Ablauf und Verfall ausdrücklich verlangt, Wortlaut in der Tabelle oben). Rang in der Eukrasia-Wahl: nach Flächen- und Einzelabwehr, vor den DoTs. Nicht gelegt, solange der Tank Galvanize oder Eukrasian Prognosis trägt (laut Wirktext nicht stapelbar): Der Tank trägt dann schon eine Barriere, und die Pflege hält eine, nicht die größte. Die Einzelabwehr dagegen sperrt nur Eukrasian Diagnosis und Galvanize (Upstream) und legt über eine Eukrasian Prognosis hinweg — richtig, weil die neuere Barriere des Weisen die ältere ganz ersetzt (Wiki „Eukrasian Diagnosis", Community-Quelle, nicht offiziell) und die der Diagnose größer ist (Heilung 300 × 180 % gegen 100 × 320–360 %, Job-Guide); vor einem Tankbuster ist das Zugewinn, kein verschenkter GCD. Keine Gesundheitsuntergrenze: Anders als Regen ist Eukrasian Diagnosis selbst der beste Sofort-GCD im Notfall. Außerhalb des Kampfs erst, wenn ein Gegner in Reichweite des Weisen ist — sonst nimmt die bestehende Eukrasia-Bereinigung den Status wieder ab. |
-| Gelehrter | kein Sofortschild (Adloquium 2 s Wirkzeit) | nicht gebaut: Stehenbleiben erst am Ende des Wall-to-Wall (seine Präzisierung). Sein Vorschlag Aetherpact/Fey Union als Vorab-HoT bleibt offen; Gegenargumente: Jede andere Feenaktion (Whispering Dawn, Fey Illumination, Fey Blessing) beendet die Verbindung, und auf einem vollen Tank verbraucht Fey Union Feenanzeige ohne Heilung (Nachschub nur über Aetherflow-Aktionen, je +10). Die 30-y-Grenze zählt nicht, der Heiler folgt dem Tank (sein Hinweis). Ob die Fee während Fey Union Embrace aussetzt, ist nicht belegt. Er kollidiert zudem mit zwei bestehenden Einstellungstexten („Remove Aetherpact if … above 90 %", „Do not start Aetherpact if … above 80 %"); zur Entscheidung vorgelegt. |
+| Gelehrter | kein Sofortschild (Adloquium 2 s Wirkzeit) | nicht gebaut: Stehenbleiben erst am Ende des Wall-to-Wall (seine Präzisierung). Sein Vorschlag Aetherpact/Fey Union als Vorab-HoT ist geprüft und nicht gebaut (A283): Aetherpact ist ein sofortiger oGCD, beim ersten Schaden kostet er im Pull keinen GCD, anders als Regen und Aspected Benefic, deren Vorab-Wirkung genau den GCD spart; vorab gewirkt verbraucht Fey Union je Takt 10 Feenanzeige an einem vollen Tank (Job-Guide: „the Faerie Gauge drops by 10 periodically"), während die Fee ohnehin mit Embrace auf Schaden antwortet. Weitere Gegenargumente: Jede andere Feenaktion (Whispering Dawn, Fey Illumination, Fey Blessing) beendet die Verbindung; Nachschub an Feenanzeige gibt es nur über Aetherflow-Aktionen, je +10. Die 30-y-Grenze zählt nicht, der Heiler folgt dem Tank (sein Hinweis). Ob die Fee während Fey Union Embrace aussetzt, ist nicht belegt. Er kollidiert zudem mit zwei bestehenden Einstellungstexten („Remove Aetherpact if … above 90 %", „Do not start Aetherpact if … above 80 %"), deren Zweck genau dieser Verbrauch an einem gesunden Ziel ist. |
 
 ### Was die Erneuerung im Kampf kostet
 

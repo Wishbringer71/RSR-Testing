@@ -204,7 +204,10 @@ public partial class BardRotation
 	static partial void ModifyRepellingShotPvE(ref ActionSetting setting)
 	{
 		setting.UnlockedByQuestID = 65604;
-		setting.SpecialType = SpecialActionType.FixedDistanceMoveBackward;
+		// "Jump 10 yalms away from current target" (effect text): a backstep from an enemy, not a move along the
+		// facing. As a fixed backward move it was aimed at the player himself, which the action cannot take (A313).
+		setting.SpecialType = SpecialActionType.HostileAttackBackstep;
+		setting.BackstepDistance = 10;
 	}
 
 	static partial void ModifyQuickNockPvE(ref ActionSetting setting)

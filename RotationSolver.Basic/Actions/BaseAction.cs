@@ -360,6 +360,10 @@ public class BaseAction : IBaseAction
 				return false;
 			}
 
+			// An instant action pressed while no animation lock runs goes to the server at once: the press the
+			// tankbuster plan measures its round trip and spacing on (concept 09, "Spielerweite Sperre und Frist").
+			var timed = Player.AnimationLock <= 0f && Info.CastTime <= 0f && !Player.Object.IsCasting;
+
 			// Use ActionManagerEx for enhanced timing if tweaks are enabled
 			bool used;
 			if (Service.Config.RemoveAnimationLockDelay || Service.Config.RemoveCooldownDelay)
@@ -377,7 +381,7 @@ public class BaseAction : IBaseAction
 			// (concept 09, "Die Zustände je Wirken").
 			if (used)
 			{
-				TankbusterForecast.RecordOwnPress(adjustId, targetId);
+				TankbusterForecast.RecordOwnPress(adjustId, targetId, timed);
 			}
 
 			return used;

@@ -48,73 +48,33 @@ def remotes():
     return set(git('remote').split())
 
 
-def self_test():
-    """Construct the exact defect in a throwaway repository: a local branch left behind."""
-    import os
-    import tempfile
+def measure(do_fetch=True):
+    """Measure the working copy in the current directory and say so; 1 when no change may be made.
 
-    original = os.getcwd()
-    workspace = tempfile.mkdtemp()
-    try:
-        origin = os.path.join(workspace, 'origin')
-        clone = os.path.join(workspace, 'clone')
-        os.makedirs(origin)
-        os.chdir(origin)
-        git('init', '-q', '-b', 'main')
-        git('config', 'user.email', 't@t')
-        git('config', 'user.name', 't')
-        open('f', 'w').write('1')
-        git('add', 'f')
-        git('commit', '-qm', 'one')
-        os.chdir(workspace)
-        git('clone', '-q', origin, clone)
-        # origin moves on; the clone's local main does not.
-        os.chdir(origin)
-        open('f', 'w').write('2')
-        git('commit', '-qam', 'two')
-        os.chdir(clone)
-        git('config', 'user.email', 't@t')
-        git('config', 'user.name', 't')
-        git('fetch', '-q', 'origin')
-
-        behind_local, ahead_local = counts('origin/main', 'main')
-        if behind_local != 1:
-            raise AssertionError('the constructed lag was not seen: %d' % behind_local)
-        if ahead_local != 0:
-            raise AssertionError('local main should carry nothing of its own')
-
-        # Second case: a shallow clone has to be recognised as one, because its counts are worthless.
-        shallow = os.path.join(workspace, 'shallow')
-        os.chdir(workspace)
-        git('clone', '-q', '--depth', '1', 'file://' + origin, shallow)
-        os.chdir(shallow)
-        if git('rev-parse', '--is-shallow-repository') != 'true':
-            raise AssertionError('a --depth 1 clone has to report as shallow')
-
-        print('self-test ok: a local branch left behind by its remote is detected (behind 1), '
-              'and a shallow clone is recognised\n')
-    finally:
-        os.chdir(original)
-        subprocess.run(['rm', '-rf', workspace], capture_output=True)
-
-
-def main():
-    self_test()
-
-    do_fetch = '--no-fetch' not in sys.argv
+    Every verdict this script gives is made here, so the self-test can hold each one against a
+    constructed repository instead of testing git's own counting.
+    """
     present = remotes()
 
+    fetch_failed = []
     if do_fetch:
         for remote in ('origin', 'upstream'):
             if remote in present:
                 print('fetching %s ...' % remote)
-                git('fetch', '--prune', '--tags', remote, check=False)
+                result = subprocess.run(('git', 'fetch', '--prune', '--tags', remote),
+                                        capture_output=True, text=True)
+                # A fetch that fails leaves the refs of the last one, and every count below would
+                # describe that older state while reading exactly like a current one - the error this
+                # script exists to prevent. Say so and refuse the verdict.
+                if result.returncode != 0:
+                    fetch_failed.append(remote)
+                    print('  FETCH FAILED for %s: %s' % (remote, (result.stderr.strip().splitlines() or [''])[-1]))
         print()
 
     head = git('rev-parse', '--abbrev-ref', 'HEAD')
     print('checked out: %s (%s)' % (head, git('rev-parse', '--short', 'HEAD')))
 
-    failed = False
+    failed = bool(fetch_failed)
 
     # A shallow clone cannot answer this question at all: rev-list walks history that is not there,
     # and the count it returns is not wrong-looking, it is simply wrong. Found the hard way - a
@@ -153,12 +113,109 @@ def main():
         else:
             print('  %-34s up to date' % name)
 
+    if fetch_failed:
+        print('\nThe fetch of %s failed, so the figures above are those of the last fetch. No statement '
+              'about sync state.' % ' and '.join(fetch_failed))
+        return 1
+
     if failed:
         print('\nHEAD is behind upstream. Syncing is the precondition for changing code.')
         return 1
 
     print('\nHEAD is up to date with upstream/main.')
     return 0
+
+
+def self_test():
+    """Hold every verdict of measure() against a constructed repository.
+
+    The earlier self-test asked git whether it counts and whether it knows a shallow clone, which
+    git always does; a broken verdict in this script would have passed it (A286, C2).
+    """
+    import contextlib
+    import io
+    import os
+    import tempfile
+
+    def run(*args):
+        subprocess.run(('git',) + args, capture_output=True, text=True, check=True)
+
+    def verdict(do_fetch=True):
+        buffer = io.StringIO()
+        with contextlib.redirect_stdout(buffer):
+            code = measure(do_fetch)
+        return code, buffer.getvalue()
+
+    original = os.getcwd()
+    workspace = tempfile.mkdtemp()
+    try:
+        upstream = os.path.join(workspace, 'upstream')
+        clone = os.path.join(workspace, 'clone')
+        os.makedirs(upstream)
+        os.chdir(upstream)
+        run('init', '-q', '-b', 'main')
+        run('config', 'user.email', 't@t')
+        run('config', 'user.name', 't')
+        open('f', 'w').write('1')
+        run('add', 'f')
+        run('commit', '-qm', 'one')
+        os.chdir(workspace)
+        run('clone', '-q', '-o', 'upstream', upstream, clone)
+        os.chdir(clone)
+        run('config', 'user.email', 't@t')
+        run('config', 'user.name', 't')
+
+        code, text = verdict()
+        if code != 0 or '0 behind' not in text:
+            raise AssertionError('a synced copy was not reported synced:\n' + text)
+
+        # Upstream moves on: the copy is behind and may not change code.
+        os.chdir(upstream)
+        open('f', 'w').write('2')
+        run('commit', '-qam', 'two')
+        os.chdir(clone)
+        code, text = verdict()
+        if code != 1 or '1 behind' not in text:
+            raise AssertionError('a copy one commit behind was not refused:\n' + text)
+
+        # A local branch whose remote is gone is named as a deletion candidate.
+        run('merge', '-q', '--ff-only', 'upstream/main')
+        run('checkout', '-q', '-b', 'topic')
+        run('push', '-q', 'upstream', 'topic')
+        run('branch', '-q', '--set-upstream-to', 'upstream/topic')
+        os.chdir(upstream)
+        run('branch', '-q', '-D', 'topic')
+        os.chdir(clone)
+        code, text = verdict()
+        if 'GONE' not in text:
+            raise AssertionError('a branch whose remote is gone was not named:\n' + text)
+        run('checkout', '-q', 'main')
+
+        # The fetch fails: the old refs must not pass as current (C3).
+        run('remote', 'set-url', 'upstream', os.path.join(workspace, 'nowhere'))
+        code, text = verdict()
+        if code != 1 or 'FETCH FAILED' not in text:
+            raise AssertionError('a failed fetch was taken as a current measurement:\n' + text)
+
+        # A shallow clone gives no verdict at all.
+        shallow = os.path.join(workspace, 'shallow')
+        os.chdir(workspace)
+        run('clone', '-q', '--depth', '1', 'file://' + upstream, shallow)
+        os.chdir(shallow)
+        code, text = verdict(do_fetch=False)
+        if code != 1 or 'SHALLOW' not in text:
+            raise AssertionError('a shallow clone was measured:\n' + text)
+
+        print('self-test ok: synced, behind, a gone remote, a failed fetch and a shallow clone each '
+              'get their verdict\n')
+    finally:
+        os.chdir(original)
+        subprocess.run(['rm', '-rf', workspace], capture_output=True)
+
+
+def main():
+    self_test()
+    return measure('--no-fetch' not in sys.argv)
 
 
 if __name__ == '__main__':

@@ -1,5 +1,5 @@
 #!/usr/bin/env python3
-"""Validate the German-to-English name dictionary against the generated resources.
+"""Validate the German-to-English name dictionary against the generated resources and the game.
 
 The user plays a German client, so every name he states is a German game name while
 the tree speaks English identifiers. Looking each one up again costs a research pass
@@ -9,10 +9,12 @@ action_names_de.json and this script keeps them honest:
   * every entry resolves to an identifier that actually exists in the generated
     resources, so a typo or a renamed action fails the build instead of quietly
     pointing nowhere;
-  * every entry names its source, because a German name may only come from the job
-    guide or from the user - never from a translation or a search summary;
-  * duplicate German names are reported, and duplicate English ones are allowed but
-    listed, since that is exactly the Abtausch/Rückstoß case.
+  * every entry names an admissible source - the user, the job guide, or the game's own
+    sheets - never a translation or a search summary, and an entry that does not fails;
+  * every entry is held against the game's German sheets (xivapi v2, language=de): the
+    action, item or job its identifier names has to carry exactly that German name. A
+    contradiction fails; an unreachable xivapi skips this part, so an outage is not a defect;
+  * duplicate German names are reported, and duplicate English ones are allowed but listed.
 
 Run without arguments to validate and print the table.
 """
@@ -20,6 +22,7 @@ Run without arguments to validate and print the table.
 import json
 import os
 import re
+import subprocess
 import sys
 
 HERE = os.path.dirname(os.path.abspath(__file__))
@@ -31,8 +34,8 @@ VALID_KINDS = ('action', 'status', 'item', 'job')
 
 
 def load_identifiers(text):
-    """Every enum member name the generated resource declares."""
-    return set(re.findall(r'\n([A-Za-z][A-Za-z0-9_]*) = \d+,', text))
+    """Every enum member the generated resource declares, name to row id."""
+    return {name: int(row) for name, row in re.findall(r'\n([A-Za-z][A-Za-z0-9_]*) = (\d+),', text)}
 
 
 def load_dictionary(path=DICT_PATH):
@@ -40,12 +43,12 @@ def load_dictionary(path=DICT_PATH):
         return json.load(handle)
 
 
-# The naming rule admits two sources and no others: the Square Enix job guide, and the user's own
-# statement. Anything else - a web search, a translation, a derivation from the English name - is
-# not a source but a guess, and the rule exists because guessing produced "Armlänge" for an action
-# actually called Rückstoß. Checking only that *a* source is named measures the wrong thing: it
-# passes an entry that names an inadmissible one, which is exactly what the Reflexion entry does.
-ADMISSIBLE_SOURCES = ('user', 'job guide', 'jobguide')
+# The naming rule admits the user's own statement, the Square Enix job guide and the game's own
+# sheets in their German version - a name is never formed, translated or taken from a search
+# summary. The rule exists because guessing produced "Armlänge" for Arm's Length, which the German
+# client calls Abtausch. Checking only that *a* source is named would pass an entry that names an
+# inadmissible one.
+ADMISSIBLE_SOURCES = ('user', 'job guide', 'jobguide', 'game data', 'xivapi')
 
 
 def source_is_admissible(source):
@@ -128,57 +131,98 @@ def self_test(identifiers):
     if not source_is_admissible('Square Enix job guide'):
         raise AssertionError('the job guide was rejected as a source')
 
+    # The game check, against a constructed answer: a matching name passes, a different one is a
+    # problem, an unreachable xivapi skips (A286, G2).
+    some = sorted(identifiers)[0]
+    entries = {'entries': [{'de': 'Eins', 'en': 'One', 'identifier': some, 'kind': 'action', 'source': 'user'},
+                           {'de': 'Feder', 'en': 'Down', 'identifier': '4570', 'kind': 'item', 'source': 'user'},
+                           {'de': 'Paladin', 'en': 'Paladin', 'identifier': 'PLD', 'kind': 'job', 'source': 'user'}]}
+
+    def answer(name_of_action, name_of_item):
+        def fake(url):
+            if '/Action?' in url:
+                return {'rows': [{'row_id': identifiers[some], 'fields': {'Name': name_of_action}}]}
+            if '/Item?' in url:
+                return {'rows': [{'row_id': 4570, 'fields': {'Name': name_of_item}}]}
+            if 'language=en' in url:
+                return {'rows': [{'row_id': 19, 'fields': {'Abbreviation': 'PLD'}}]}
+            return {'rows': [{'row_id': 19, 'fields': {'Name': 'Paladin'}}]}
+        return fake
+
+    if check_against_game(entries, identifiers, answer('Eins', 'Feder')):
+        raise AssertionError('names the game confirms were reported')
+    if len(check_against_game(entries, identifiers, answer('Zwei', 'Feder')) or []) != 1:
+        raise AssertionError('a name the game contradicts was not reported')
+    if check_against_game(entries, identifiers, lambda url: None) is not None:
+        raise AssertionError('an unreachable xivapi was not told apart from a clean result')
+
     print('self-test ok: sound entry accepted; unknown identifier, missing source, '
           'an inadmissible source and '
-          'a clashing German name each caught')
+          'a clashing German name each caught; a game name confirmed, contradicted and unreachable '
+          'told apart')
     print()
 
 
-GAME_PATH = os.path.join(HERE, 'action_names_game.json')
+API = 'https://v2.xivapi.com/api'
 
 
-def check_against_game_data():
-    """Compare the hand-kept entries with the generated index, if it has been produced.
-
-    The generated file comes from the game files themselves and settles anything the hand-kept
-    file can only record: it is what decides whether the German client prints Abtausch or
-    Rückstoß. Until someone runs RotationSolver.GameData it is simply absent, which is not a
-    failure - the build environment cannot produce it, because it has no game installation.
-    """
-    if not os.path.exists(GAME_PATH):
-        print('action_names_game.json is not present: run RotationSolver.GameData on a machine')
-        print('with the game installed to generate the full index, all jobs included.')
-        print()
+def fetch_json(url):
+    """The parsed answer, or None when xivapi cannot be reached. curl, not urllib: the proxy and
+    certificate setup of the environments this runs in is configured for curl."""
+    try:
+        out = subprocess.run(['curl', '-sS', '--max-time', '30', url], capture_output=True, text=True)
+        return json.loads(out.stdout) if out.returncode == 0 and out.stdout else None
+    except (OSError, ValueError):
         return None
 
-    with open(GAME_PATH, encoding='utf-8') as handle:
-        game = json.load(handle)
 
-    by_de = {}
-    for entry in game.get('entries', []):
-        by_de.setdefault(entry['de'], []).append(entry)
+def game_names(entries, identifiers, fetch=fetch_json):
+    """German game name per entry (by position), or None when the game data cannot be read.
 
-    data = load_dictionary()
-    confirmed, contradicted, unknown = [], [], []
-    for entry in data.get('entries', []):
-        matches = by_de.get(entry['de'])
-        if not matches:
-            unknown.append(entry)
-        elif any(m['en'] == entry['en'] for m in matches):
-            confirmed.append(entry)
-        else:
-            contradicted.append((entry, matches))
+    Actions by the row id of their identifier, items by their id, jobs by the English
+    abbreviation. A missing row is an empty name, which then contradicts the entry.
+    """
+    wanted = {'action': {}, 'item': {}}
+    for i, entry in enumerate(entries):
+        if entry.get('kind') == 'action' and entry.get('identifier') in identifiers:
+            wanted['action'][i] = identifiers[entry['identifier']]
+        elif entry.get('kind') == 'item' and str(entry.get('identifier', '')).isdigit():
+            wanted['item'][i] = int(entry['identifier'])
 
-    print('against the generated index: %d confirmed, %d contradicted, %d not found'
-          % (len(confirmed), len(contradicted), len(unknown)))
-    for entry, matches in contradicted:
-        print('  %s is recorded as %s but the game data says %s'
-              % (entry['de'], entry['en'], ' / '.join(sorted({m['en'] for m in matches}))))
-    for entry in unknown:
-        print('  %s does not appear in the game data at all' % entry['de'])
-    print()
-    return {'confirmed': len(confirmed), 'contradicted': len(contradicted),
-            'unknown': len(unknown), 'total': len(game.get('entries', []))}
+    names = {}
+    for kind, sheet in (('action', 'Action'), ('item', 'Item')):
+        rows = sorted(set(wanted[kind].values()))
+        if not rows:
+            continue
+        answer = fetch(f'{API}/sheet/{sheet}?rows={",".join(map(str, rows))}&fields=Name&language=de')
+        if answer is None:
+            return None
+        by_row = {r['row_id']: r['fields'].get('Name', '') for r in answer.get('rows', [])}
+        for i, row in wanted[kind].items():
+            names[i] = by_row.get(row, '')
+
+    if any(e.get('kind') == 'job' for e in entries):
+        english = fetch(f'{API}/sheet/ClassJob?fields=Abbreviation&limit=100&language=en')
+        german = fetch(f'{API}/sheet/ClassJob?fields=Name&limit=100&language=de')
+        if english is None or german is None:
+            return None
+        row_of = {r['fields'].get('Abbreviation'): r['row_id'] for r in english.get('rows', [])}
+        name_of = {r['row_id']: r['fields'].get('Name', '') for r in german.get('rows', [])}
+        for i, entry in enumerate(entries):
+            if entry.get('kind') == 'job':
+                names[i] = name_of.get(row_of.get(entry.get('identifier')), '')
+    return names
+
+
+def check_against_game(data, identifiers, fetch=fetch_json):
+    """Problems where an entry's German name is not the game's; None when xivapi is unreachable."""
+    entries = data.get('entries', [])
+    names = game_names(entries, identifiers, fetch)
+    if names is None:
+        return None
+    return ['%s is recorded for %s, but the German game data names it %r'
+            % (entries[i]['de'], entries[i].get('identifier'), name)
+            for i, name in sorted(names.items()) if name != entries[i]['de']]
 
 
 def main():
@@ -189,8 +233,6 @@ def main():
         return 1
 
     self_test(identifiers)
-
-    generated = check_against_game_data()
 
     data = load_dictionary()
     problems = validate(data, identifiers)
@@ -206,19 +248,29 @@ def main():
     for entry in entries:
         print('%-*s  %-22s %s' % (width, entry['de'], entry['en'], entry['identifier']))
 
-    # An entry whose source the naming rule does not admit is not a build failure: while the job
-    # guide is blocked by the egress there is no way to replace it, and a check that is red for
-    # a reason nobody can act on gets ignored - which costs more than it buys. It is named on
-    # every run instead, so that using such a name in new text is a decision and not an oversight.
+    # An entry whose source the naming rule does not admit fails: the job guide and the game's
+    # German sheets are both reachable (since 27.09.2026), so such a name can always be replaced.
     inadmissible = [e for e in entries if not source_is_admissible(e.get('source'))]
     if inadmissible:
         print()
-        print('%d entr%s on a source the naming rule does not admit. Use the English '
-              'identifier' % (len(inadmissible),
-                              'y rests' if len(inadmissible) == 1 else 'ies rest'))
-        print('in new text until the user states the German name:')
+        print('%d entr%s on a source the naming rule does not admit:'
+              % (len(inadmissible), 'y rests' if len(inadmissible) == 1 else 'ies rest'))
         for entry in inadmissible:
             print('  %s = %s (source: %s)' % (entry['de'], entry['en'], entry.get('source')))
+        return 1
+
+    contradicted = check_against_game(data, identifiers)
+    print()
+    if contradicted is None:
+        print('xivapi is not reachable: the German names were not held against the game this run.')
+    elif contradicted:
+        print('%d entr%s the German game data contradicts:'
+              % (len(contradicted), 'y' if len(contradicted) == 1 else 'ies'))
+        for problem in contradicted:
+            print('  ' + problem)
+        return 1
+    else:
+        print('every German name matches the game data (xivapi v2, language=de).')
 
     # The same action under two German names is not an error, but it is worth seeing.
     by_en = {}
@@ -232,11 +284,7 @@ def main():
                   'identifier until the user settles it' % (en, ' and '.join(names)))
 
     print()
-    if generated:
-        print('%d hand-kept entries, all resolvable; %d pairs in the generated index.'
-              % (len(entries), generated['total']))
-    else:
-        print('%d hand-kept entries, all resolvable.' % len(entries))
+    print('%d hand-kept entries, all resolvable.' % len(entries))
     return 0
 
 

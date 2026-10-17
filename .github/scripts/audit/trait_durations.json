@@ -1,6 +1,6 @@
 {
   "source": "xivapi v2, sheets TraitTransient (Description) and Trait (Level)",
-  "fetched": "2026-10-12",
+  "fetched": "2026-10-14",
   "traits": [
     {
       "trait": "Enhanced Addle",
@@ -50,6 +50,29 @@
       "level": 98,
       "action": "the effect increasing HP recovered by healing actions",
       "seconds": 15
+    }
+  ],
+  "values": [
+    {
+      "trait": "Enhanced Shield Samba II",
+      "trait_row": 611,
+      "level": 98,
+      "action": "Shield Samba",
+      "percent": 15
+    },
+    {
+      "trait": "Enhanced Tactician II",
+      "trait_row": 607,
+      "level": 98,
+      "action": "Tactician",
+      "percent": 15
+    },
+    {
+      "trait": "Enhanced Troubadour II",
+      "trait_row": 601,
+      "level": 98,
+      "action": "Troubadour",
+      "percent": 15
     }
   ]
 }

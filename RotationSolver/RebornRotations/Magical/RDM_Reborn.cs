@@ -12,11 +12,19 @@ public sealed class RDM_Reborn : RedMageRotation
 	[RotationConfig(CombatType.PvE, Name = "Attempt to pool Black and White Mana for burst (Experimental)")]
 	public bool Pooling { get; set; } = false;
 
-	[RotationConfig(CombatType.PvE, Name = "Prevent healing during burst combos")]
+	// The owner's rule (14.10.2026): a damage dealer heals when it is needed and the healers are dead or cannot
+	// keep up, and raises during the burst as the Summoner does - own damage is worth nothing when others die (A283).
+	[RotationConfig(CombatType.PvE, Name = "Prevent healing during burst combos",
+		Tooltip = "Holds Vercure while Manafication, Embolden or the melee combo and its finishers run - unless no "
+			+ "healer in the party is alive, or a member is about to die because the healers do not keep up.\n"
+			+ "In a fight: the burst goes on while the healers hold the party; when they are dead or falling behind, "
+			+ "Vercure goes out in the burst as well.")]
 	public bool PreventHeal { get; set; } = true;
 
-	[RotationConfig(CombatType.PvE, Name = "Prevent raising during burst combos")]
-	public bool PreventRaising { get; set; } = true;
+	[RotationConfig(CombatType.PvE, Name = "Prevent raising during burst combos",
+		Tooltip = "Holds Verraise while Manafication, Embolden or the melee combo and its finishers run.\n"
+			+ "In a fight: on, a dead member waits until the burst is through; off, they are raised at once.")]
+	public bool PreventRaising { get; set; } = false;
 
 	[RotationConfig(CombatType.PvE, Name = "Use Vercure for Dualcast when out of combat.")]
 	public bool UseVercure { get; set; } = false;
@@ -289,7 +297,11 @@ public sealed class RDM_Reborn : RedMageRotation
 				|| ScorchPvE.CanUse(out _) || ResolutionPvE.CanUse(out _)
 				|| IsLastComboAction(ActionID.RipostePvE, ActionID.ZwerchhauPvE))
 			{
-				return base.HealSingleGCD(out act);
+				// The burst waits for the heal only while the healers hold the party (A283).
+				if (HoldPartyHeal(true, "Red Mage burst combo"))
+				{
+					return base.HealSingleGCD(out act);
+				}
 			}
 		}
 

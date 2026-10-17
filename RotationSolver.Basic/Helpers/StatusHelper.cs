@@ -223,6 +223,45 @@ public static class StatusHelper
 		{ 13938, [StatusID.IceWeakness] },
 	};
 
+	private static readonly System.Collections.Concurrent.ConcurrentDictionary<uint, bool> _damageOverTime = new();
+
+	/// <summary>
+	/// Whether any of these statuses deals damage over time, by its own text in the English status sheet
+	/// ("Sustaining damage over time.", "Toxins are causing damage over time.", "Sustaining lightning damage over
+	/// time."). Read from the game, so every job's damage over time counts, including those no rotation flags
+	/// (A295). A sheet that cannot be read answers no.
+	/// </summary>
+	internal static bool IsDamageOverTime(ReadOnlySpan<StatusID> statusIDs)
+	{
+		foreach (var id in statusIDs)
+		{
+			if (_damageOverTime.GetOrAdd((uint)id, static key =>
+			{
+				try
+				{
+					var sheet = Svc.Data.GetExcelSheet<Lumina.Excel.Sheets.Status>(Dalamud.Game.ClientLanguage.English);
+					return sheet != null && sheet.TryGetRow(key, out var row)
+						&& row.Description.ExtractText().Contains("damage over time", StringComparison.OrdinalIgnoreCase);
+				}
+				catch (Exception)
+				{
+					return false;
+				}
+			}))
+			{
+				return true;
+			}
+		}
+
+		return false;
+	}
+
+	/// <summary>
+	/// What a body carries once a raise has landed on it: "Raise" under two ids with the same name and text
+	/// ("Teetering on the brink of consciousness."). BossModReborn and DelvUI read both; RSR read 148 alone (A294).
+	/// </summary>
+	public static StatusID[] RaiseStatus { get; } = [StatusID.Raise, StatusID.Raise_1140];
+
 	/// <summary>
 	/// The elemental weakness statuses used in Occult Crescent
 	/// </summary>
@@ -652,6 +691,27 @@ public static class StatusHelper
 	[
 		StatusID.LivingDead,
 	];
+
+	/// <summary>
+	/// <see cref="NoNeedHealingStatus"/> without <see cref="DeathTriggeredStatus"/>: the protection the heal
+	/// decision reads while the death-triggered hold is switched off (ObjectHelper.IsUnprotectedForHealing).
+	/// Declared after both lists, which it is built from.
+	/// </summary>
+	internal static StatusID[] NoNeedHealingStatusBesidesDeathTrigger { get; } = Without(NoNeedHealingStatus, DeathTriggeredStatus);
+
+	private static StatusID[] Without(StatusID[] list, StatusID[] removed)
+	{
+		List<StatusID> kept = [];
+		foreach (var status in list)
+		{
+			if (Array.IndexOf(removed, status) < 0)
+			{
+				kept.Add(status);
+			}
+		}
+
+		return [.. kept];
+	}
 
 	/// <summary>
 	/// Whether <paramref name="battleChara"/> is inside a death-triggered window that still has room
@@ -1118,7 +1178,7 @@ public static class StatusHelper
 	}
 
 	/// <summary>
-	/// True when the player has no <see cref="NoNeedHealingStatus"/> (invuln, healing block) lasting beyond 2 GCDs.
+	/// True when the player has no <see cref="NoNeedHealingStatus"/> (an invulnerability) lasting beyond 2 GCDs.
 	/// </summary>
 	public static bool PlayerCanBeHealed()
 	{
@@ -1128,6 +1188,44 @@ public static class StatusHelper
 		}
 
 		return PlayerWillStatusEndGCD(2, 0, false, NoNeedHealingStatus);
+	}
+
+	private static HashSet<uint>? _amnesiaIds;
+
+	/// <summary>
+	/// Whether the player can use no ability right now, and for how much longer: a status whose row in the
+	/// client's status sheet locks actions (a stun, sleep, petrification and some 260 others), or Amnesia, which
+	/// blocks every ability without that flag ("Unable to use abilities"; rows 5, 1092 and 4210, recognised by the
+	/// generator's names from the English sheet, so the client language does not matter).
+	/// <paramref name="rest"/> is the longest remaining time among them, 0 when none names an end. Recognition
+	/// only: the readers decide (concept 09, "Spielerweite Sperre und Frist").
+	/// </summary>
+	internal static bool PlayerAbilitiesLocked(out float rest)
+	{
+		rest = 0f;
+		var list = Player.Object?.StatusList;
+		if (list == null)
+		{
+			return false;
+		}
+
+		_amnesiaIds ??= IdsByNamePrefix("Amnesia");
+		var locked = false;
+		foreach (var status in list)
+		{
+			if (status == null || status.StatusId == 0)
+			{
+				continue;
+			}
+
+			if (_amnesiaIds.Contains(status.StatusId) || (status.GameData.ValueNullable?.LockActions ?? false))
+			{
+				locked = true;
+				rest = Math.Max(rest, status.RemainingTime);
+			}
+		}
+
+		return locked;
 	}
 
 	private static HashSet<uint>? _vulnerabilityUpIds;
@@ -1207,7 +1305,9 @@ public static class StatusHelper
 
 
 	/// <summary>
-	/// True when the target has no <see cref="NoNeedHealingStatus"/> (invuln, healing block) lasting beyond 2 GCDs.
+	/// True when the target has no <see cref="NoNeedHealingStatus"/> (an invulnerability) lasting beyond 2 GCDs. The
+	/// list holds genuine invulnerabilities only; what blocks healing outright is <see cref="HealingIneffectiveStatus"/>,
+	/// which upstream keeps in this list (A280).
 	/// </summary>
 	public static bool CanBeHealed(this IBattleChara battleChara)
 	{

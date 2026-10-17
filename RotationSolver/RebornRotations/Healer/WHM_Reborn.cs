@@ -701,16 +701,22 @@ public sealed class WHM_Reborn : WhiteMageRotation
 	private string _lastStretchTrace = string.Empty;
 	private DateTime _lastStretchTraceAt = DateTime.MinValue;
 
+	// The figures in a stretch line (the stun left, the landing time) change every frame.
+	private static readonly System.Text.RegularExpressions.Regex StretchFigures = new(@"\d+(?:[.,]\d+)?");
+
 	// The GCD path asks every frame; a line is written when the outcome changes or once a GCD has passed.
+	// The outcome is compared without its figures: compared with them, every frame read as a change, and
+	// the trace of 16.10.2026 holds about ten such lines a second, over half the file (A297).
 	private void TraceStretch(string outcome)
 	{
 		var now = DateTime.Now;
-		if (outcome == _lastStretchTrace && (now - _lastStretchTraceAt).TotalSeconds < DataCenter.DefaultGCDTotal)
+		var kind = StretchFigures.Replace(outcome, "#");
+		if (kind == _lastStretchTrace && (now - _lastStretchTraceAt).TotalSeconds < DataCenter.DefaultGCDTotal)
 		{
 			return;
 		}
 
-		_lastStretchTrace = outcome;
+		_lastStretchTrace = kind;
 		_lastStretchTraceAt = now;
 		DefenseTrace.Line("White Mage, Holy stretch " + outcome);
 	}
@@ -964,14 +970,18 @@ public sealed class WHM_Reborn : WhiteMageRotation
 
 		if (AfflatusMiseryPvE.EnoughLevel && UseLilyWhenFull && (!IsInHighEndDuty || !UseOpenerHighEnd || (IsInHighEndDuty && UseOpenerHighEnd && !CombatElapsedLessGCD(13))) && (liliesNearlyFull || liliesFullNoBlood) && AfflatusMiseryPvE.EnoughLevel && BloodLily < 3)
 		{
-			if (AfflatusRapturePvE.CanUse(out act, skipAoeCheck: true))
+			// After an announced raidwide, not before it, unless a lily would be lost first (A292).
+			if (!HealForResourceWaitsForAreaHit(liliesFullNoBlood && LilyAfterGCD(1)))
 			{
-				return true;
-			}
+				if (AfflatusRapturePvE.CanUse(out act, skipAoeCheck: true))
+				{
+					return true;
+				}
 
-			if (AfflatusSolacePvE.CanUse(out act))
-			{
-				return true;
+				if (AfflatusSolacePvE.CanUse(out act))
+				{
+					return true;
+				}
 			}
 		}
 

@@ -835,6 +835,11 @@ internal partial class Configs : IPluginConfiguration, IM3Settings
 		Parent = nameof(UseAbility), PvEFilter = JobFilterType.Tank)]
 	private static readonly bool _autoProvokeForTank = true;
 
+	[ConditionBool, UI("Provoke the enemy off a co-tank at the invulnerability HP",
+		Description = "With another tank in the party: when an enemy keeps attacking a co-tank whose HP with shield are at or below the HP you set for a tank to use invulnerability, and who is not under an invulnerability, RSR provokes it - not while a tankbuster has left you in danger yourself.\nIn a fight: the enemy's next hits land on you instead of finishing the co-tank. Off: the co-tank is left to his healers and his own cooldowns.",
+		Parent = nameof(UseAbility), PvEFilter = JobFilterType.Tank)]
+	private static readonly bool _provokeOffDyingCoTank = true;
+
 	[ConditionBool, UI("Shirk the co-tank after a tankbuster that leaves you in danger",
 		Description = "With another tank in the party: after a tankbuster on you, if it left you with a vulnerability debuff or so low that a repeat of the hardest one measured would kill you, and your invulnerability is not ready, Shirk goes to the other tank - but only when the party's enmity on the enemy shows it will then attack that tank, because below that Shirk moves nothing, and never to a tank who is in danger himself. With several, the one fewest enemies are attacking, then the one with most HP. Once the co-tank has taken the enemy's next tankbuster, your debuff has run out, you could survive the buster again and your invulnerability is ready, RSR provokes the enemy back.\nIn a fight: the next hit goes to the co-tank instead of killing you, and you take the enemy back when you are safe. Off: you keep the enemy unless your co-tank provokes it.",
 		Parent = nameof(UseAbility), PvEFilter = JobFilterType.Tank)]
@@ -1000,11 +1005,14 @@ internal partial class Configs : IPluginConfiguration, IM3Settings
 	// one, and it governs the automatic decision only: a manual heal command and the Doom
 	// short-circuit still reach a protected target above this value, which is the point of both.
 	//
-	// Living Dead is the exception and this setting does not apply to it: with
-	// WithholdHealingForLivingDead on, the bearer is held in full rather than merely demoted,
-	// because there the death is the trigger and not the disaster. That hold releases on its own
-	// clock, measured on Living Dead alone (StatusHelper.InDeathTriggerWindow).
+	// Living Dead is the exception and this setting does not apply to it in either position of
+	// WithholdHealingForLivingDead. On, the bearer is held in full rather than merely demoted,
+	// because there the death is the trigger and not the disaster; that hold releases on its own
+	// clock, measured on Living Dead alone (StatusHelper.InDeathTriggerWindow). Off, he is healed
+	// like an unprotected member (ObjectHelper.IsUnprotectedForHealing): his fall to zero is not a
+	// spared hit but Walking Dead, and that setting's text promises he is healed normally (A306).
 	[UI("Heal a target under an invulnerability only below this HP.",
+		Description = "Living Dead follows \"Withhold healing under Living Dead\" instead.",
 		Filter = HealingActionCondition, Section = 1)]
 	[Range(0, 1, ConfigUnitType.Percent, 0.02f)]
 	public float HealthProtectedRatio { get; set; } = 0.15f;
@@ -1031,8 +1039,8 @@ internal partial class Configs : IPluginConfiguration, IM3Settings
 			+ "healing totalling his maximum HP has to go in within ten seconds or he is KO'd for real - "
 			+ "he contributes to that himself with every spell and weaponskill, and a Benediction covers "
 			+ "the rest on its own.\n"
-			+ "Off: he is healed normally, the death never happens, and Living Dead expires as plain "
-			+ "damage reduction.\n"
+			+ "Off: he is healed normally, the death never happens, and Living Dead runs out without "
+			+ "turning into Walking Dead.\n"
 			+ "Only switch this on if your group plays it that way. RSR also fires Living Dead by itself "
 			+ "as a last-ditch save on a dying tank, and in that use the death is not wanted at all.",
 		Filter = HealingActionCondition, Section = 1)]
@@ -1078,8 +1086,8 @@ internal partial class Configs : IPluginConfiguration, IM3Settings
 	// his own order of who is healed first; that it keeps more people alive is not shown in play.
 	[UI("Choose the heal target by danger",
 		Description = "Below a member who is about to fall, heal first a healer or tank who is under their "
-			+ "role threshold AND being attacked - lowest health first, a healer before a tank at equal "
-			+ "health. Everyone else after that: while an area cast is announced, the one with the fewest "
+			+ "role threshold AND being attacked, together with any healer or tank being attacked who stands as "
+			+ "low or lower - lowest health first, a healer before a tank at equal health. Everyone else after that: while an area cast is announced, the one with the fewest "
 			+ "hit points left first, because the hit takes the same number from everybody; otherwise the "
 			+ "lowest percentage.\n"
 			+ "In a fight: when the healer holds aggro and the tank does not, the healer comes first; a tank "
@@ -1117,26 +1125,31 @@ internal partial class Configs : IPluginConfiguration, IM3Settings
 	// one uses the same figure for the other half of the answer: whether to HEAL first.
 	//
 	// Every healing threshold reads the health a member has. None of them reads the health he will
-	// have when the cast already on screen lands, so a party at 60% in front of a 45% raidwide is
-	// above every threshold and dies to it. "Heal ahead of incoming damage" above does not cover
-	// this: it extrapolates the observed trend, and a cast that has not landed yet leaves no trend.
+	// have when the cast already on screen lands, so the hit counts for nothing until it has landed:
+	// a member at 55% in front of a 45% raidwide is left at ten percent before any threshold sees it.
+	// "Heal ahead of incoming damage" above does not cover this: it extrapolates the observed trend,
+	// and a cast that has not landed yet leaves no trend.
 	//
 	// The owner's rule, and the reason this comes before mitigation rather than after: "die aktuelle
 	// hp liegt unter dem schadenswert. dann wäre aber eine heilung sinnvoll bis max maxhp. wenn dann
 	// die hp unter dem schadenswert liegt, sollte zusätzlich geschildet werden."
 	//
-	// Asked at the same threshold the flag itself uses, one cast earlier - not at a stricter one, so
-	// it cannot heal where the tree would not have healed anyway. Area casts only: a hit that
-	// reaches everybody is answered by area healing.
+	// Asked where the hit would leave an unprotected member at or below HealthForDyingTanks (the
+	// critical class, concept 07) while he still has health to restore - the owner's "unter dem
+	// schadenswert", on the safe side as the holds' barrier reads it (A283). Asked
+	// at the area heal thresholds before, it fired on a full party before every raidwide big enough
+	// to cross them, and the heals landed on full health (A292). Area casts only: a hit that reaches
+	// everybody is answered by area healing.
 	//
 	// On by default - the owner's rule for defaults (29.09.2026). Nothing changes for an action whose
 	// size has never been measured.
 	[UI("Heal ahead of an announced area cast",
-		Description = "Raises the area healing flag when the area cast currently being announced would "
-			+ "put somebody below the level at which the tree heals anyway.\n"
-			+ "In a fight: the party is topped up BEFORE the raidwide lands instead of after it, so a "
-			+ "member at sixty percent in front of a forty-five percent hit is no longer treated as "
-			+ "healthy right up to the moment it kills him.\n"
+		Description = "Raises the area healing flags when the area cast currently being announced would "
+			+ "leave somebody about to fall - the members \"Choose the heal target by danger\" heals "
+			+ "first - and that member is missing health a heal can restore.\n"
+			+ "In a fight: a member at fifty-five percent in front of a forty-five percent hit is healed "
+			+ "BEFORE the raidwide lands instead of being left at ten percent by it. A hit that leaves "
+			+ "everybody above that line is healed after it lands; this setting sends no heal ahead of it.\n"
 			+ "Uses the measured size of that action and counts an existing barrier against it, since "
 			+ "the barrier absorbs this particular hit. An action whose size has never been measured "
 			+ "changes nothing - ratings arrive with play, one clear of the fight.",
@@ -1490,6 +1503,15 @@ internal partial class Configs : IPluginConfiguration, IM3Settings
 	Description = "Targets with attack markers will be prioritized for actions.",
 	Filter = TargetConfig)]
 	private static readonly bool _chooseAttackMark = true;
+
+	// The owner's rule (16.10.2026): "bei der dot-verteilung sollte immer geschaut werden, welcher gegner die
+	// aktuell höchsten hp hat, so dass der maximale effekt beim schaden erzielt werden kann. danach immer der
+	// reihe nach wie die dots auslaufen." Concept 03, "Wahl des DoT-Ziels" (A295). On by default - the owner's
+	// rule for defaults (29.09.2026).
+	[ConditionBool, UI("Spread damage over time by HP, then by expiry",
+	Description = "When a damage-over-time action can go on several enemies, it goes on one without it first, the one with the most HP left, so the damage over time ticks the longest. Once each carries it, it goes on the one whose damage over time runs out first.\nOff: the targeting type decides, as for every other attack.",
+	Filter = TargetConfig)]
+	private static readonly bool _dotTargetByHpThenExpiry = true;
 
 	[ConditionBool, UI("Prioritize enemy parts",
 	Description = "Enemy parts, such as Titan's Heart, will be prioritized as targets.",

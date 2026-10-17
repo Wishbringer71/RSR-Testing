@@ -23,6 +23,70 @@ are not reconstructed here.
 
 ## Unreleased
 
+### Dependency: ECommons 3.2.1.26
+
+RotationSolver.Basic now references ECommons 3.2.1.26. It reads the action type of an effect header as the one
+byte the game gives it; up to 3.2.1.25 it read four bytes, and an item used with a target came through
+`ActionEffectSet` as an action of the same number. A rotation built against RotationSolver.Basic needs ECommons
+3.2.1.26 or later.
+
+### Behaviour change: a damage over time chooses its target by HP, then by expiry
+
+`ActionTargetInfo.FindTarget` now orders the candidates of a damage-over-time action itself: the one whose own
+damage over time runs out first, a missing one counting as run out, and among equals the one with the most HP. The
+targeting type (`DataCenter.TargetingType`, by default "Low HP") no longer decides there. It applies only where the
+status check chose the candidates and no target override or command is given; `Configs.DotTargetByHpThenExpiry`
+switches it off.
+
+### Behaviour change: `TargetFilter.GetDeath` leaves out the dead someone else is raising
+
+`GetDeath` now also skips a dead member another player is casting a raise on at that moment, recognised by the
+action's `DeadTargetBehaviour`. The body was a candidate until the `Raise` status landed, which made two healers
+cast on it. A rotation that picks its raise target through `GetDeath` or `DataCenter.DeathTarget` leaves such a
+body to the other caster. `GetDeath` also leaves out a body carrying `Raise_1140`, the second id of the Raise
+status, through the new `StatusHelper.RaiseStatus`.
+
+### Behaviour change: the area heal flags rise ahead of an announced area hit only when it endangers someone
+
+`AutoStatus.HealAreaAbility` and `AutoStatus.HealAreaSpell` used to rise before an announced, measured area hit
+whenever it would push anyone below the area heal thresholds, which a raidwide of a quarter or a third of the
+health did from full health. They now rise ahead of it only when it would leave an unprotected member at or below
+`HealthForDyingTanks` with health still missing (`DataCenter.AnnouncedHitCallsForHealFirst`); otherwise the flags
+follow the health after the hit. A rotation that heals on these flags heals after such a hit, not before it.
+`CustomRotation.HealForResourceWaitsForAreaHit` is new: a heal spent only against a resource overflow can ask it
+to wait until an announced area hit has landed.
+
+### Behaviour change in RotationSolver.Basic: `CustomRotation.TankbusterOnMe` asks whom BossModReborn's tankbuster hits
+
+`TankbusterOnMe` was true for every tankbuster BossModReborn predicted inside the mitigation window, whoever it
+targeted. It now counts a prediction only when it reaches the player: BossModReborn's mask names him, or, without a
+mask for that event, the player is a tank or the party has no living tank. A cast at the player or a tankbuster
+marker on him counts as before. A derived rotation that spent a self-defence on `TankbusterOnMe` no longer does so
+for a tankbuster on the other tank. The signature is unchanged.
+
+### Behaviour change in RotationSolver.Basic: `DefensiveValues` reads four more mitigation phrasings
+
+The generator now reads a mitigation that names its bearer ahead of "damage taken" ("Reduces target party member's
+damage taken by 10%", "Reduces target's damage taken by 10%"), the one-hit form ("Reduces the amount of damage taken by
+the next attack"), and a mitigation of one damage type ("Reduces magic damage taken by 10%"), carried as
+`SelfPhysical`/`SelfMagical` with the other type at 0. `ByActionId` and `MitigationByStatusId` gain Intervention,
+Third Eye, Taurochole, Magick Barrier, Fey Illumination and their statuses, among others. `DurationOf` for Tengentsu is
+now 4 s, the duration of its own reduction, where it gave the 9 s of Tengentsu's Foresight; Lost Font of Magic and Lost
+Font of Power give 15 s instead of 30 s for the same reason. No signature changes.
+
+### Added to RotationSolver.Basic: trait-set damage reductions in `DefensiveValues`; statuses rated by their own text
+
+`DefensiveValues.For` now gives the share a trait sets where the effect text leaves it blank - Troubadour, Tactician and
+Shield Samba, 15 % from level 98 - read in the game first and from the new `TraitMitigationByActionId` otherwise
+(`TraitShareOf`). `DefensiveValues.TryStatus` answers for a status from `MitigationByStatusId` or, for those three
+actions' statuses (`TraitMitigatingActionByStatusId`), from the trait. `MitigationByStatusId` and
+`MitigatingStatusesByActionId` now hold only statuses whose own text states a reduction or a raised maximum HP; a
+status that merely shares an action's name (Temperance's heal over time, Aquaveil's barrier, Nebula's reflection, an
+older form of the action) no longer carries its figure. A derived rotation that read those statuses as the mitigation
+standing no longer does. No signature changes.
+
+## 7.5.7.1+wsh1
+
 ### Added to RotationSolver.Basic: `AttackType.Shot` and `DefensiveValues.MitigationByStatusId`
 
 `AttackType` gains `Shot = 4`, the game's AttackType row 4 (physical), which `ActionBasicInfo.AttackType`
@@ -63,6 +127,25 @@ unchanged.
 - **No package any more.** `RotationSolver.Basic` is `IsPackable=false`, so no `.nupkg` is built
   and the pre-release label described above has nothing to label at present. Compile against
   `RotationSolver.Basic.dll` from the plugin's `latest.zip`.
+
+### Renamed upstream in RotationSolver.Basic: `CanBeHealed`
+
+Upstream 7.5.7.1 renamed `StatusHelper.NoNeedHealingInvuln(this IBattleChara)` to `CanBeHealed` and
+`StatusHelper.PlayerNoNeedHealingInvuln()` to `PlayerCanBeHealed()`; the fork passes the rename on. The meaning
+is unchanged - true while no invulnerability lasts beyond two GCDs, so also when none is up at all - and the new
+name reads the way the method answers. A derived rotation that calls the old name no longer compiles; replace it
+by the new one without inverting anything. A caller that negated the old name because it read "needs no healing"
+was picking the protected members: read the call again rather than keep the negation.
+
+### Behaviour change in RotationSolver.Basic: `DataCenter.DefaultGCDTotal` between GCDs
+
+Between GCDs - out of range, between pulls, before the first GCD of a fight - the property returned 0, because
+the game reports the GCD group's total only while its timer runs. It now returns the last length the game
+reported, and before the first GCD the adjusted recast of a weaponskill. The signature is unchanged. Code that
+took 0 to mean "no GCD is running" has to ask `DefaultGCDRemain` or the recast timer instead; code that divides
+by it or measures windows in GCDs now gets a length where it used to get 0.
+
+## 7.5.6.9+wsh1
 
 ### Behaviour change in RotationSolver.Basic: the raise dispatch
 

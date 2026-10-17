@@ -50,14 +50,27 @@ internal static class DataCenter
 	public static List<IBattleChara> AllHostileTargets { get; set; } = [];
 
 	/// <summary>
-	/// The enemies whose casts the area recognition reads: <see cref="AllHostileTargets"/>, and the untargetable
-	/// enemies - the helpers that resolve many raidwides, a boss off the field - while they cast an action on the
-	/// area list (A277). Rebuilt with the hostile list in <c>TargetUpdater</c>.
+	/// The enemies whose casts the cast recognition reads: <see cref="AllHostileTargets"/>, and the untargetable
+	/// enemies - the helpers that resolve many raidwides, tankbusters and knockbacks, a boss off the field - while
+	/// they cast an action on the area list (A277) or on the tankbuster or knockback list, or a tankbuster the
+	/// table has measured (A303). Rebuilt with the hostile list in <c>TargetUpdater</c>. Every reader asks its own
+	/// list of the action, so a helper here for one list is nothing to the others.
 	/// </summary>
 	public static List<IBattleChara> AreaCasters { get; set; } = [];
 
 	/// <summary>The untargetable members of <see cref="AreaCasters"/>.</summary>
 	public static HashSet<ulong> AreaCastHelperIds { get; set; } = [];
+
+	/// <summary>
+	/// Whether an untargetable enemy casting this action is read as an enemy: the action is on the area,
+	/// tankbuster or knockback list, or the tankbuster table has measured it. The list itself is the evidence of
+	/// hostility - an id is there only once it hit the party, or by the shipped list (A277, A303).
+	/// </summary>
+	internal static bool IsListedHostileCast(uint actionId)
+		=> OtherConfiguration.HostileCastingArea.Contains(actionId)
+			|| OtherConfiguration.HostileCastingTank.Contains(actionId)
+			|| OtherConfiguration.HostileCastingKnockback.Contains(actionId)
+			|| TankbusterForecast.IsLearned(actionId);
 
 	/// <summary>
 	/// Whether <paramref name="h"/> counts as an enemy for the area recognition: targetable and hostile, or an
@@ -88,6 +101,19 @@ internal static class DataCenter
 	public static IBattleChara? DeathTarget { get; set; }
 
 	public static IBattleChara? DispelTarget { get; set; }
+
+	/// <summary>
+	/// The dead another player is casting a raise on right now, by object id: the caster whose raise lands
+	/// first and when it lands. Rebuilt each target update (<c>TargetUpdater.UpdateCastsByOthers</c>, A293).
+	/// <see cref="TargetFilter.GetDeath"/> leaves them out, and the player's own raise on such a body is broken
+	/// off when the other lands first (<c>CancelCastUpdater</c>, A294).
+	/// </summary>
+	internal static Dictionary<ulong, (string Caster, DateTime LandsAt)> RaisedByOthers { get; set; } = [];
+
+	/// <summary>
+	/// How many Esunas other players are casting on each party member right now, by object id (A293).
+	/// </summary>
+	internal static Dictionary<ulong, int> EsunasByOthers { get; set; } = [];
 
 	public static List<IBattleChara> AllTargets { get; set; } = [];
 	public static Dictionary<float, List<IBattleChara>> TargetsByRange { get; set; } = [];
@@ -1371,9 +1397,10 @@ internal static class DataCenter
 	/// for the player than for the party.
 	///
 	/// For another party member the level comes from ICharacter.Level, which is what the client shows
-	/// for them; whether that reports the synced level or the true one inside a synced duty is not
-	/// established here. Either way it is strictly better than the assumption it replaces, which was
-	/// that every healer, Summoner and Red Mage alive can raise.
+	/// for them. That it reports the synced level inside a synced duty is what WrathCombo assumes too
+	/// (its InFATE counts the player in a FATE only while LocalPlayer.Level is at most the FATE's
+	/// maximum) - another tool, not a game source. Were it the true level, an under-levelled raiser would
+	/// still count as living, which is the state before this check and no worse.
 	/// </summary>
 	private const byte RaiseLevel = 12;
 
@@ -2825,7 +2852,8 @@ internal static class DataCenter
 			// Unless the prediction names whom it hits and leaves him out (A273).
 			if (BMRRaidwideHitsPlayer ?? true)
 			{
-				if (Service.Config.UseBmrTimeline && BMRNextRaidwideIn > 0.6f && BMRNextRaidwideIn <= Service.Config.BMRRaidwideMitWindow)
+				if (Service.Config.UseBmrTimeline && BMRNextRaidwideIn <= Service.Config.BMRRaidwideMitWindow
+					&& PressReachesBeforeSnapshot(BMRNextRaidwideIn))
 				{
 					return true;
 				}
@@ -3141,14 +3169,19 @@ internal static class DataCenter
 
 	private static bool IsAnyHostileCastingTank()
 	{
-		if (AllHostileTargets == null)
+		// The helpers too (A303): a tankbuster resolved by an untargetable helper is cast at the tank by it. For a
+		// helper only a listed one counts - the fallback "casting at its own target" reads a targetable enemy's
+		// attack on whoever it fights, which a helper has no part in.
+		var casters = AreaCasters;
+		if (casters == null)
 		{
 			return false;
 		}
 
-		for (var i = 0; i < AllHostileTargets.Count; i++)
+		for (var i = 0; i < casters.Count; i++)
 		{
-			if (IsHostileCastingTank(AllHostileTargets[i]))
+			var h = casters[i];
+			if (AreaCastHelperIds.Contains(h.GameObjectId) ? IsHostileCastingListedTank(h) : IsHostileCastingTank(h))
 			{
 				return true;
 			}
@@ -3172,15 +3205,17 @@ internal static class DataCenter
 
 	private static bool IsAnyHostileCastingListedTankBusterAtMe()
 	{
-		if (AllHostileTargets == null || Player.Object == null)
+		// Over the helpers too (A303).
+		var casters = AreaCasters;
+		if (casters == null || Player.Object == null)
 		{
 			return false;
 		}
 
 		var playerId = Player.Object.GameObjectId;
-		for (var i = 0; i < AllHostileTargets.Count; i++)
+		for (var i = 0; i < casters.Count; i++)
 		{
-			var h = AllHostileTargets[i];
+			var h = casters[i];
 			if (h != null && h.CastTargetObjectId == playerId && IsHostileCastingListedTank(h))
 			{
 				return true;
@@ -3234,7 +3269,7 @@ internal static class DataCenter
 				return true;
 			}
 
-			return BMRTankbusterImminent && (BMRTankbusterHitsPlayer ?? (isTank || PartyTank == null));
+			return BMRTankbusterReachesPlayer;
 		}
 	}
 
@@ -3921,11 +3956,11 @@ internal static class DataCenter
 	/// unknown is not "harmless", it is simply no reason to act.
 	/// </summary>
 	/// <remarks>
-	/// <para>This is the owner's second stage, the one that needs a figure nothing else supplies:
-	/// "die aktuelle hp liegt unter dem schadenswert. dann wäre aber eine heilung sinnvoll bis max
-	/// maxhp." Every healing threshold in the tree reads the health a member HAS; none of them reads
-	/// the health he will have when the cast that is already on screen lands. A member at 60% in
-	/// front of a 45% raidwide is above every threshold and dies to it.</para>
+	/// <para>The mitigation side's question (<see cref="AreaCastIsWorthMitigating"/>,
+	/// <see cref="AnnouncedHitIsSmall"/>): does this hit create a need to heal. Every healing threshold in
+	/// the tree reads the health a member HAS; none of them reads the health he will have when the cast
+	/// that is already on screen lands. Whether to heal before the hit is a different question with a
+	/// different line, <see cref="AnnouncedHitCallsForHealFirst"/> (A292).</para>
 	///
 	/// <para>The barrier counts here, and that is not a contradiction of A85. A85 removed the
 	/// barrier from the general healing threshold, because a barrier does not restore health - a
@@ -3936,7 +3971,7 @@ internal static class DataCenter
 	/// </remarks>
 	public static bool AnnouncedHitDropsAnyoneBelow(float threshold)
 	{
-		return AnnouncedHitDropsBelow(threshold, false, out _);
+		return AnnouncedHitDropsBelow(threshold, false, false, out _);
 	}
 
 	/// <summary>
@@ -3946,7 +3981,32 @@ internal static class DataCenter
 	/// </summary>
 	internal static bool AnnouncedHitDropsUnprotectedBelow(float threshold, out string who)
 	{
-		return AnnouncedHitDropsBelow(threshold, true, out who);
+		return AnnouncedHitDropsBelow(threshold, true, false, out who);
+	}
+
+	/// <summary>
+	/// Whether to heal before the announced area hit lands: it would leave an unprotected member in the critical
+	/// class (<see cref="AnnouncedHitDropsUnprotectedBelow"/> at <c>HealthForDyingTanks</c>), and that member has
+	/// health a heal can restore. <paramref name="who"/> names the first such member.
+	/// </summary>
+	/// <remarks>
+	/// <para>The owner's second stage: "die aktuelle hp liegt unter dem schadenswert. dann wäre aber eine heilung
+	/// sinnvoll bis max maxhp." A heal comes first where the hit reaches the health a member has; concept 08's table
+	/// answers a hit below it with cover alone. Asked on the critical class's footing rather than at zero, as the
+	/// barrier of the holds is (A159, A283): a member the hit leaves at a few percent is lost to the next tick, so
+	/// the safe direction is to heal him first. The member is then missing at least one minus the hit's share minus
+	/// that line of his health - forty percent before a 45 % hit at the default line - so the heal lands on health
+	/// he lacks. Only a hit near his whole health leaves little to restore.</para>
+	///
+	/// <para>This was asked at the area heal threshold before. A 45 % raidwide crosses 65 % from full health, so
+	/// every area heal went out before it on a full party and healed nobody, direct heals included (A292).</para>
+	///
+	/// <para>A member at full health gains nothing from a heal before the hit. Barrier and mitigation are the
+	/// answer for him, and the barrier of the holds opens them for the same hit.</para>
+	/// </remarks>
+	internal static bool AnnouncedHitCallsForHealFirst(out string who)
+	{
+		return AnnouncedHitDropsBelow(Service.Config.HealthForDyingTanks, true, true, out who);
 	}
 
 	/// <summary>
@@ -3968,7 +4028,7 @@ internal static class DataCenter
 		for (var i = 0; i < party.Count; i++)
 		{
 			var member = party[i];
-			if (member == null || member.IsDead || member.MaxHp == 0 || !member.CanBeHealed())
+			if (member == null || member.IsDead || member.MaxHp == 0 || !member.IsUnprotectedForHealing())
 			{
 				continue;
 			}
@@ -3983,10 +4043,14 @@ internal static class DataCenter
 		return killed;
 	}
 
-	private static bool AnnouncedHitDropsBelow(float threshold, bool unprotectedOnly, out string who)
+	private static bool AnnouncedHitDropsBelow(float threshold, bool unprotectedOnly, bool needsRoom, out string who)
+	{
+		return HitDropsBelow(AnnouncedAreaShare, threshold, unprotectedOnly, needsRoom, out who);
+	}
+
+	private static bool HitDropsBelow(float share, float threshold, bool unprotectedOnly, bool needsRoom, out string who)
 	{
 		who = string.Empty;
-		var share = AnnouncedAreaShare;
 		if (share <= 0f)
 		{
 			return false;
@@ -3997,7 +4061,8 @@ internal static class DataCenter
 		{
 			var member = party[i];
 			if (member == null || member.IsDead || member.MaxHp == 0
-				|| (unprotectedOnly && !member.CanBeHealed()))
+				|| (unprotectedOnly && !member.IsUnprotectedForHealing())
+				|| (needsRoom && member.CurrentHp >= member.MaxHp))
 			{
 				continue;
 			}
@@ -4103,6 +4168,22 @@ internal static class DataCenter
 			return true; // Unrated: behave exactly as before.
 		}
 
+		if (AreaShareCallsForMitigation(share))
+		{
+			return true;
+		}
+
+		AreaMitigationSkipped[actionId] = DateTime.Now;
+		return false;
+	}
+
+	/// <summary>
+	/// The size rule of <c>Skip mitigation for small area casts</c>, for a measured share: whether a hit of this
+	/// size calls for the party mitigation. Asked by the cast path and by the BossModReborn path (A301), so the
+	/// two cannot disagree about the same cast.
+	/// </summary>
+	private static bool AreaShareCallsForMitigation(float share)
+	{
 		// Above the size of a large shield the hit is a big one, whatever the party's health - the
 		// user's requirement says so in as many words, and the party's health does not change how
 		// hard it lands. Without this arm the rule asks only whether healing would be needed, and a
@@ -4119,17 +4200,10 @@ internal static class DataCenter
 			return true;
 		}
 
-		// Anyone the hit would push to where healing would be called for is reason enough. The same
-		// question decides whether to heal ahead of the cast, so it is asked in one place - see
+		// Anyone the hit would push to where healing would be called for is reason enough - see
 		// AnnouncedHitDropsAnyoneBelow, including why the barrier counts here and not in the general
-		// healing threshold (A85).
-		if (AnnouncedHitDropsAnyoneBelow(Service.Config.HealthAreaSpell))
-		{
-			return true;
-		}
-
-		AreaMitigationSkipped[actionId] = DateTime.Now;
-		return false;
+		// healing threshold (A85). Healing before the hit asks a stricter line of its own (A292).
+		return HitDropsBelow(share, Service.Config.HealthAreaSpell, false, false, out _);
 	}
 
 	/// <summary>
@@ -4404,7 +4478,9 @@ internal static class DataCenter
 	{
 		get
 		{
-			var targets = AllHostileTargets;
+			// Over the helpers too (A303): a listed knockback resolved by an untargetable helper is the knockback
+			// "Automatically use Anti-Knockback role actions" promises to answer from the list.
+			var targets = AreaCasters;
 			for (int i = 0, n = targets.Count; i < n; i++)
 			{
 				var h = targets[i];
@@ -4601,6 +4677,165 @@ internal static class DataCenter
 	/// </summary>
 	public static bool? BMRRaidwideHitsPlayer { get; set; }
 
+	/// <summary>One enemy cast a BossModReborn raidwide prediction came with (A301).</summary>
+	internal readonly record struct BmrRaidwideCast(ulong CasterId, uint ActionId);
+
+	/// <summary>
+	/// The enemy casts the current BossModReborn raidwide prediction came with: those that began in the update in
+	/// which its landing time first appeared. Empty when it appeared at no cast's start.
+	/// </summary>
+	/// <remarks>
+	/// <para>BossModReborn names no action for a prediction. Its time does not tie it to a cast either: against a
+	/// running listed cast the predicted landing lay 0.4 to 2.9 s after the cast's end in his traces of 04. to
+	/// 16.10.2026, depending on the module. Its start does: a cast-bound raidwide component adds the prediction
+	/// when the cast begins and drops it when the cast ends (<c>Components.RaidwideCast</c>, landing
+	/// <c>CastFinishAt</c>), so a landing time that appears in the same update as a cast's start came with that
+	/// cast.</para>
+	///
+	/// <para>Every enemy cast that began then is kept, the untargetable helpers included whatever they cast: a
+	/// visual cast on the list and the real hit from a helper beside it must not read as the visual cast alone.
+	/// Recognition only; whether a cast kept here is worth a mitigation is asked by the reader.</para>
+	/// </remarks>
+	internal static IReadOnlyList<BmrRaidwideCast> BMRRaidwideCasts => _bmrRaidwideCasts;
+
+	private static List<BmrRaidwideCast> _bmrRaidwideCasts = [];
+	private static DateTime _bmrRaidwideLandsAt = DateTime.MinValue;
+	private static DateTime _bmrRaidwideReadAt = DateTime.MinValue;
+	private static TimeSpan _bmrRaidwideReadFrame = TimeSpan.Zero;
+
+	/// <summary>
+	/// Called with every reading of <see cref="BMRNextRaidwideIn"/>, after the hostile lists of the same update
+	/// are built: keeps <see cref="BMRRaidwideCasts"/> for the prediction it describes.
+	/// </summary>
+	internal static void NoteBmrRaidwide(float raidwideIn)
+	{
+		var now = DateTime.Now;
+		var frame = Svc.Framework.UpdateDelta;
+		var previousRead = _bmrRaidwideReadAt;
+		var previousFrame = _bmrRaidwideReadFrame;
+		_bmrRaidwideReadAt = now;
+		_bmrRaidwideReadFrame = frame;
+
+		if (raidwideIn is <= 0f or float.MaxValue)
+		{
+			_bmrRaidwideLandsAt = DateTime.MinValue;
+			_bmrRaidwideCasts = [];
+			return;
+		}
+
+		// The same prediction keeps its landing time; BossModReborn's own reading may lag RSR's by a frame.
+		var landsAt = now + TimeSpan.FromSeconds(raidwideIn);
+		var lag = frame > previousFrame ? frame : previousFrame;
+		if (_bmrRaidwideLandsAt != DateTime.MinValue && (landsAt - _bmrRaidwideLandsAt).Duration() <= lag)
+		{
+			return;
+		}
+
+		_bmrRaidwideLandsAt = landsAt;
+		_bmrRaidwideCasts = previousRead == DateTime.MinValue ? [] : CastsBegunBetween(previousRead - lag, now);
+	}
+
+	private static List<BmrRaidwideCast> CastsBegunBetween(DateTime after, DateTime until)
+	{
+		List<BmrRaidwideCast> begun = [];
+		HashSet<ulong> seen = [];
+		void Consider(IBattleChara h)
+		{
+			if (!h.IsCasting || !seen.Add(h.GameObjectId))
+			{
+				return;
+			}
+
+			var began = until - TimeSpan.FromSeconds(h.CurrentCastTime);
+			if (began > after && began <= until)
+			{
+				begun.Add(new BmrRaidwideCast(h.GameObjectId, h.CastActionId));
+			}
+		}
+
+		foreach (var h in AllHostileTargets)
+		{
+			if (h != null && h.HasNativeState())
+			{
+				Consider(h);
+			}
+		}
+
+		foreach (var obj in Svc.Objects)
+		{
+			if (obj is IBattleChara h && h.ObjectKind == Dalamud.Game.ClientState.Objects.Enums.ObjectKind.BattleNpc
+				&& !h.IsTargetable && h.HasNativeState()
+				&& h.GetBattleNPCSubKind() == Dalamud.Game.ClientState.Objects.Enums.BattleNpcSubKind.Combatant)
+			{
+				Consider(h);
+			}
+		}
+
+		return begun;
+	}
+
+	/// <summary>
+	/// Whether the current BossModReborn raidwide is the landing of listed area casts that are still being cast
+	/// and that the size rule of <c>Skip mitigation for small area casts</c> leaves unmitigated (A301).
+	/// <paramref name="largest"/> gives the largest of their measured shares and <paramref name="actionId"/> its
+	/// action.
+	/// </summary>
+	/// <remarks>
+	/// False whenever anything is unknown: no cast came with the prediction, one of them is not listed or not
+	/// measured, one has ended - after a cast ends a later hit may stand behind its prediction - or one calls
+	/// for mitigation.
+	/// </remarks>
+	internal static bool BmrRaidwideIsSmallListedCast(out float largest, out uint actionId)
+	{
+		largest = 0f;
+		actionId = 0;
+		var casts = _bmrRaidwideCasts;
+		if (casts.Count == 0)
+		{
+			return false;
+		}
+
+		foreach (var cast in casts)
+		{
+			if (Svc.Objects.SearchById(cast.CasterId) is not IBattleChara caster || !caster.HasNativeState()
+				|| !caster.IsCasting || caster.CastActionId != cast.ActionId
+				|| !OtherConfiguration.HostileCastingArea.Contains(cast.ActionId)
+				|| !OtherConfiguration.HostileCastingAreaPotential.TryGetValue(cast.ActionId, out var share)
+				|| share <= 0f || AreaShareCallsForMitigation(share))
+			{
+				return false;
+			}
+
+			if (share > largest)
+			{
+				largest = share;
+				actionId = cast.ActionId;
+			}
+		}
+
+		return true;
+	}
+
+	private static DateTime _bmrRaidwideHeldTracedFor = DateTime.MinValue;
+
+	/// <summary>
+	/// Records that the area defence was held for the current BossModReborn raidwide because it is the landing of
+	/// a small listed cast: the probe of the cast path, and one trace line per prediction.
+	/// </summary>
+	internal static void NoteBmrRaidwideHeld(float share, uint actionId)
+	{
+		AreaMitigationSkipped[actionId] = DateTime.Now;
+		if (_bmrRaidwideHeldTracedFor == _bmrRaidwideLandsAt)
+		{
+			return;
+		}
+
+		_bmrRaidwideHeldTracedFor = _bmrRaidwideLandsAt;
+		var name = Service.GetSheet<Action>().GetRow(actionId).Name.ExtractText();
+		DefenseTrace.Line($"area defence held: BossModReborn's raidwide in {BMRNextRaidwideIn:F1} s came with"
+			+ $" {name} #{actionId}, rated {share:P0}, which leaves everybody above the area heal line");
+	}
+
 	/// <summary>
 	/// Whether area damage on the party is announced, from any source, without asking how hard it lands:
 	/// an area marker on the party, a listed area cast reaching the party, a large measured one even when
@@ -4671,10 +4906,45 @@ internal static class DataCenter
 			: null;
 
 	/// <summary>
-	/// BMR predicts a tankbuster inside the user's single-target mitigation window.
+	/// Whether BossModReborn's imminent tankbuster reaches the player: its mask when the prediction is the next hit
+	/// (<see cref="BMRTankbusterHitsPlayer"/>), otherwise for a tank, and for anyone else only when no tank is in the
+	/// party (A220). <see cref="BMRTankbusterImminent"/> alone says that a tankbuster comes, not whom it hits: the
+	/// emergency HP potion read it so and a White Mage at 60 % drank for a tankbuster on the tank (A284).
+	/// </summary>
+	internal static bool BMRTankbusterReachesPlayer
+		=> BMRTankbusterImminent && (BMRTankbusterHitsPlayer ?? (Role == JobRole.Tank || PartyTank == null));
+
+	/// <summary>
+	/// BMR predicts a tankbuster inside the user's single-target mitigation window, early enough for a press made now
+	/// to count (<see cref="PressReachesBeforeSnapshot"/>).
 	/// </summary>
 	public static bool BMRTankbusterImminent =>
-		Service.Config.UseBmrTimeline && BMRNextTankbusterIn > 0.6f && BMRNextTankbusterIn <= Service.Config.BMRTankbusterMitWindow;
+		Service.Config.UseBmrTimeline && BMRNextTankbusterIn <= Service.Config.BMRTankbusterMitWindow
+		&& PressReachesBeforeSnapshot(BMRNextTankbusterIn);
+
+	/// <summary>
+	/// Would a press made now reach the server before a hit BossModReborn predicts <paramref name="hitIn"/> seconds
+	/// ahead? Its time is the end of the cast or the moment the action goes off (<c>CastFinishAt</c> in its components,
+	/// the transition of the flagged state in its timeline; BossModReborn be8ff77) - the snapshot, where a mitigation
+	/// has to stand. A press goes out once the animation lock, an own cast or a block on every ability ends, and takes
+	/// the measured round trip to arrive (concept 09, "Spielerweite Sperre und Frist", the deadline of the tankbuster
+	/// plan). Before the first measurement only the time until it can go out counts.
+	/// </summary>
+	internal static bool PressReachesBeforeSnapshot(float hitIn)
+	{
+		if (hitIn is <= 0f or >= float.MaxValue)
+		{
+			return false;
+		}
+
+		var free = ObjectHelper.GetInstantHealLeadTime();
+		if (StatusHelper.PlayerAbilitiesLocked(out var lockedFor))
+		{
+			free = Math.Max(free, lockedFor);
+		}
+
+		return hitIn - Math.Max(0f, TankbusterForecast.RoundTrip) > free;
+	}
 	public static float BMRSpecialModeIn { get; set; } = float.MaxValue;
 	public static SpecialMode BMRSpecialModeType { get; set; } = SpecialMode.Normal;
 
@@ -4719,7 +4989,9 @@ internal static class DataCenter
 	public static Func<Vector3, Vector3, bool>? BMRIsDashSafe { get; set; }
 
 	/// <summary>
-	/// Delegate wired up by BossModUpdater to the <c>Hints.IsFixedDashSafe</c> IPC endpoint.
+	/// Delegate wired up by BossModUpdater for a dash whose landing point the game fixes - a fixed distance along the
+	/// facing, or a backstep from the target - with the landing point RSR computes. It asks BossModReborn's
+	/// <c>Hints.IsDashSafe</c>: its own <c>Hints.IsFixedDashSafe</c> takes range and direction, not two points (A313).
 	/// When null, BossModReborn is not available and all fixed dashes are considered safe.
 	/// </summary>
 	public static Func<Vector3, Vector3, bool>? BMRIsFixedDashSafe { get; set; }
@@ -4805,6 +5077,8 @@ internal static class DataCenter
 		BMRNextRaidwideIn = float.MaxValue;
 		BMRNextRaidwideSource = string.Empty;
 		BMRRaidwideHitsPlayer = null;
+		_bmrRaidwideCasts = [];
+		_bmrRaidwideLandsAt = DateTime.MinValue;
 		BMRNextTankbusterIn = float.MaxValue;
 		BMRNextKnockbackIn = float.MaxValue;
 		BMRNextDowntimeIn = float.MaxValue;

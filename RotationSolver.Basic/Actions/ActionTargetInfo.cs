@@ -609,6 +609,41 @@ public struct ActionTargetInfo(IBaseAction action)
 	}
 
 	/// <summary>
+	/// The order in which this action spreads its damage over time, or null when it is not spreading one.
+	/// </summary>
+	/// <remarks>
+	/// The owner's rule (16.10.2026): "bei der dot-verteilung sollte immer geschaut werden, welcher gegner die
+	/// aktuell höchsten hp hat, so dass der maximale effekt beim schaden erzielt werden kann. danach immer der
+	/// reihe nach wie die dots auslaufen." First the candidate whose own damage over time runs out first - one
+	/// without it counts as run out, one just sent as never - and among equals the one with the most HP left,
+	/// so a fresh pack gets it highest HP first and a dotted one has it renewed in the order it falls off
+	/// (concept 03, "Wahl des DoT-Ziels", A295). The candidates are already those that need it
+	/// (<see cref="CheckStatus"/>), so the order applies only where the status check chose them: a rotation
+	/// that skips it uses the action for something else (a combo finisher, an upkeep while moving), and an
+	/// explicit target override or command keeps its own choice. Damage over time is read from the status's
+	/// own text (<see cref="StatusHelper.IsDamageOverTime"/>); a debuff such as Death's Design belongs on the
+	/// enemy being attacked and is not spread this way.
+	/// </remarks>
+	private readonly Comparison<IBattleChara>? DotSpreadOrder(bool skipStatusProvideCheck, TargetType targetOverride, TargetingType? commandTargeting)
+	{
+		var provides = action.Setting.TargetStatusProvide;
+		if (!Service.Config.DotTargetByHpThenExpiry || action.Setting.IsFriendly || provides == null
+			|| skipStatusProvideCheck || !action.Config.ShouldCheckStatus || targetOverride != default
+			|| commandTargeting.HasValue || !StatusHelper.IsDamageOverTime(provides))
+		{
+			return null;
+		}
+
+		StatusID[] statuses = provides;
+		var fromSelf = action.Setting.StatusFromSelf;
+		return (a, b) =>
+		{
+			var cmp = a.StatusTime(fromSelf, statuses).CompareTo(b.StatusTime(fromSelf, statuses));
+			return cmp != 0 ? cmp : b.CurrentHp.CompareTo(a.CurrentHp);
+		};
+	}
+
+	/// <summary>
 	/// Checks the time to kill of the specified game object to determine if it meets the criteria for the action.
 	/// </summary>
 	/// <param name="battleChara">The game object to check.</param>
@@ -844,9 +879,10 @@ public struct ActionTargetInfo(IBaseAction action)
 		List<IBattleChara> targetsList = [.. GetMostCanTargetObjects(canTargets, canAffects, skipAoeCheck ? 0 : action.Config.AoeCount)];
 
 		var commandTargeting = commandTarget?.TargetingType;
+		var dotOrder = DotSpreadOrder(skipStatusProvideCheck, targetOverride, commandTargeting);
 		var target = targetsList.Count > 0
-			? FindTargetByType(targetsList, type, action.Config.AutoHealRatio, action.Setting.SpecialType, targetOverride, action.Setting.IsFriendly, InstantHeal, commandTargeting)
-			: FindTargetByType([], type, action.Config.AutoHealRatio, action.Setting.SpecialType, targetOverride, action.Setting.IsFriendly, InstantHeal, commandTargeting);
+			? FindTargetByType(targetsList, type, action.Config.AutoHealRatio, action.Setting.SpecialType, targetOverride, action.Setting.IsFriendly, InstantHeal, commandTargeting, dotOrder)
+			: FindTargetByType([], type, action.Config.AutoHealRatio, action.Setting.SpecialType, targetOverride, action.Setting.IsFriendly, InstantHeal, commandTargeting, dotOrder);
 
 		IBattleChara[] affectedTargets;
 		if (target != null)
@@ -1141,9 +1177,25 @@ public struct ActionTargetInfo(IBaseAction action)
 		{
 			case SpecialActionType.FixedDistanceMoveForward:
 			case SpecialActionType.FixedDistanceMoveBackward:
-				// Fixed-distance moves: use IsFixedDashSafe
-				return DataCenter.IsFixedDashSafe(playerPos, destination)
+			{
+				// The game moves the character along its facing by the distance the effect text states ("Quickly
+				// dash 15 yalms forward"). The target is the player himself, so the destination handed in is where he
+				// stands; the landing point is computed here (A313). Without a known distance there is nothing to
+				// measure: refused while BossModReborn could answer, as before, allowed without it.
+				var distance = action.Setting.BackstepDistance;
+				if (distance <= 0f)
+				{
+					return DataCenter.BMRIsFixedDashSafe == null
+						|| Refused("the action's distance is not known, so its landing point is not either", measured: false);
+				}
+
+				var facing = Player.Object.Rotation;
+				var along = specialType == SpecialActionType.FixedDistanceMoveBackward ? -distance : distance;
+				var landingPoint = new Vector3(playerPos.X + (MathF.Sin(facing) * along), playerPos.Y,
+					playerPos.Z + (MathF.Cos(facing) * along));
+				return DataCenter.IsFixedDashSafe(playerPos, landingPoint)
 					|| Refused("the landing point is in a danger zone");
+			}
 
 			case SpecialActionType.HostileMovingForward:
 			case SpecialActionType.FriendlyMovingForward:
@@ -1922,10 +1974,12 @@ public struct ActionTargetInfo(IBaseAction action)
 	/// </summary>
 	public static IBattleChara? FindTargetByType(IEnumerable<IBattleChara> battleChara, TargetType type, float healRatio, SpecialActionType actionType, TargetType targetOverride, bool isFriendly, bool instantHeal)
 	{
-		return FindTargetByType(battleChara, type, healRatio, actionType, targetOverride, isFriendly, instantHeal, null);
+		return FindTargetByType(battleChara, type, healRatio, actionType, targetOverride, isFriendly, instantHeal, null, null);
 	}
 
-	private static IBattleChara? FindTargetByType(IEnumerable<IBattleChara> battleChara, TargetType type, float healRatio, SpecialActionType actionType, TargetType targetOverride, bool isFriendly, bool instantHeal, TargetingType? commandTargeting)
+	// hostileOrder: an order of its own for the hostile choice, ahead of the targeting type; null for none.
+	// Only DotSpreadOrder gives one.
+	private static IBattleChara? FindTargetByType(IEnumerable<IBattleChara> battleChara, TargetType type, float healRatio, SpecialActionType actionType, TargetType targetOverride, bool isFriendly, bool instantHeal, TargetingType? commandTargeting, Comparison<IBattleChara>? hostileOrder)
 	{
 		if (battleChara == null)
 		{
@@ -3439,7 +3493,7 @@ public struct ActionTargetInfo(IBaseAction action)
 					// Forecast health rather than current, so the ordering below answers "who will be
 					// worst off when a heal lands" instead of "who is worst off now". With the
 					// setting off the two are the same number.
-					ranked.Add((o, o.CanBeHealed(), o.GetForecastHealthRatio(instant)));
+					ranked.Add((o, o.IsUnprotectedForHealing(), o.GetForecastHealthRatio(instant)));
 				}
 
 				// Unprotected before protected, then lowest health first inside each group.
@@ -3635,6 +3689,34 @@ public struct ActionTargetInfo(IBaseAction action)
 
 			if (pressed != null)
 			{
+				// The role thresholds differ (tank 0.45, healer 0.40 by default), and they stand in for the damage
+				// rate: the tank takes the hits, the healer stands still. In this class both are being attacked, so
+				// that reason does not hold, and a healer at 42 % lost to a tank at 44 % - against the owner's
+				// triage, the one most likely to die first and a healer before a tank at equal health (concept 07).
+				// A threshold says when a role is low enough to come first, not that a lower member of the other
+				// role must wait: whoever is being attacked and stands as low as the pick or lower joins it (A283).
+				foreach (var r in ranked)
+				{
+					if (!r.Unprotected || r.Health > pressedHealth || !DataCenter.TargetedPartyMembers.Contains(r.Obj.GameObjectId))
+					{
+						continue;
+					}
+
+					var isHealer = r.Obj.IsJobCategory(JobRole.Healer);
+					if (!isHealer && !r.Obj.IsJobCategory(JobRole.Tank))
+					{
+						continue;
+					}
+
+					var role = isHealer ? 0 : 1;
+					if (r.Health < pressedHealth || (r.Health == pressedHealth && role < pressedRole))
+					{
+						pressed = r.Obj;
+						pressedHealth = r.Health;
+						pressedRole = role;
+					}
+				}
+
 				return pressed;
 			}
 
@@ -3757,6 +3839,14 @@ public struct ActionTargetInfo(IBaseAction action)
 
 			// Prepare a list to sort manually
 			List<IBattleChara> objects = [.. battleChara];
+
+			// A damage over time being spread orders the candidates itself (DotSpreadOrder), after the stop
+			// markers and the top-priority hostiles above have had their say; an explicit command still wins.
+			if (commandTargeting == null && hostileOrder != null && objects.Count > 0)
+			{
+				objects.Sort(hostileOrder);
+				return objects[0];
+			}
 
 			List<IBattleChara> filtered;
 			switch (commandTargeting ?? DataCenter.TargetingType)

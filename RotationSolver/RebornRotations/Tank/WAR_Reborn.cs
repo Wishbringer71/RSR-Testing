@@ -699,12 +699,12 @@ public sealed class WAR_Reborn : WarriorRotation
 			held = NeedsBloodwhettingHimself(out warriorAboutToDie);
 		}
 
-		// CanBeHealed is true while NO invulnerability is up: the candidate is unprotected. It
-		// read negated here, which let only the invulnerable through - Nascent Flash went to a tank under
+		// IsUnprotectedForHealing is CanBeHealed - true while NO invulnerability is up - with Living Dead not
+		// counted while its hold is off (A306): the candidate is unprotected. CanBeHealed read negated here, which let only the invulnerable through - Nascent Flash went to a tank under
 		// Holmgang, Superbolide, Hallowed Ground or Living Dead, and to nobody else (A226).
 		setting.CanTarget = t => canTarget(t)
 			&& t.GetForecastHealthRatio(true) < healRatio
-			&& t.CanBeHealed()
+			&& t.IsUnprotectedForHealing()
 			&& !t.HasStatus(false, StatusHelper.HealingIneffectiveStatus)
 			&& (!healersOnly || t.IsJobCategory(JobRole.Healer))
 			&& (!held || WinsTriageOverWarrior(t, warriorAboutToDie));

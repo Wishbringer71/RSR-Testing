@@ -90,6 +90,13 @@ zusaetzlich geschildet werden. bzw. der schadensoutput reduziert."
 | Treffer erreicht die aktuelle, bleibt unter der maximalen | **zuerst heilen**, Ziel ist die Maximalgesundheit — danach wieder Deckung |
 | Treffer uebersteigt auch die maximale Gesundheit | Heilung allein rettet nicht: Barriere **und** Minderung zusaetzlich, bis der Rest darunter liegt |
 
+**Zeile drei steht im Code über die allgemeine Schranke (A159):** Jede Rückhaltung weicht, sobald der
+gemessene angekündigte Treffer ein ungeschütztes Mitglied in Gefährdungsklasse 1 brächte, und ein Treffer über
+der Maximalgesundheit tut das immer. Die offene Abwehrkette gibt dann in jedem Einschiebeplatz das nächste
+bereite Mittel aus, Barriere und Minderung nebeneinander; die Stapelsperren (Streckung des Weißmagiers,
+Burst von Dunkelritter und Revolverklinge) sind genau die Rückhaltungen, die dort weichen. Die Schranke greift
+früher als Zeile drei (schon an `HealthForDyingTanks`, nicht erst an null), also in der sicheren Richtung (A283).
+
 **Das ist Vorgabe 2 dieses Konzepts, zu Ende gedacht.** „Heilung vor Minderung" allein sagt nur die
 Reihenfolge; die Tabelle sagt, **woran** sich entscheidet, ob der Fall ueberhaupt eintritt. Und sie
 loest die dritte Vorgabe ein: Die Barriere steht im Zaehler, also addiert sie sich in Zeile drei zur
@@ -140,7 +147,7 @@ Rückhaltung ein Job überhaupt kennt, bleibt seine Sonderregel.** Gebaut in
 | alle | **Streckungsbaustein:** Nach einer Auslöseraktion ruht die übrige eigene Abwehr, bis die Wirkung laut Wirktext ausläuft (die Dauer, die zur Minderung gehört), gezählt ab dem Einsatz laut Aktionsprotokoll. Hält der Auslöser noch eine Ladung (gelesen an seiner Wiederaufladegruppe, nicht am Knopf), streckt er nicht | derselbe Mechanismus stand zweimal mit festen Zahlen im Code (Weißmagier, Astrologe) |
 | Heiler | leer | Nur Weißmagier und Astrologe strecken; Gelehrter und Weiser nicht. Eine Heilerregel änderte zwei Jobs ohne belegten Nutzen |
 | Tanks | **Abtausch (Arm’s Length) im Pull für seine Verlangsamung** (`ArmsLengthSlowsPull`, A194): jeder Tank mit eigener Option „Use Arm's Length on a pull for its Slow", ab Werk an; ein Pull sind so viele Gegner in Reichweite wie die globale Zahl „Number of hostiles" der Abwehr (Dunkelritter: seine Barrierenzahl, dazu die Barrierenrückhaltung), **Bosse nicht mitgezählt** (`SlowableHostilesInRange`, A236): Abtausch mindert den Treffer nicht, der ihn auslöst, also bringt er an einem Boss-Tankbuster nichts — sein Hinweis vom 01.10.2026, Boss allein in der Arena; die zentrale Rückfallstufe der Einzelabwehr wirkt Abtausch nur noch für Rotationen ohne eigene Pull-Regel (`HasOwnArmsLengthPullRule`) und nur unter derselben Bedingung, vorher ohne jede Gegnerzahl; nicht, solange die Gruppe schon verlangsamt ist, und nicht, solange BossModReborn einen Rückstoß nach Wirkende und vor Ende der Abklingzeit ankündigt (A212, A219). Eine Rückhaltung gibt es auf dieser Stufe nicht: Burst-Rückhaltung nur bei Dunkelritter und Revolverklinge, bei beiden an ein eigenes Burstfenster gebunden | kostet nur die eigene Abklingzeit und wirkt bei jedem Tank gleich; die Beobachtung, auf die der TODO-Eintrag wartete, wäre eine Spielbestätigung als Aufgabe an ihn gewesen |
-| Damage Dealer | leer, eine Frage an ihn | Barde, Pictomancer und Tänzer führen dieselbe Einstellung „Prevent the use of defense abilties during burst" (ab Werk an), Maschinist, Dragoon und Viper feste Rückhaltungen. Eine gemeinsame Regel wäre möglich; ihr Einstellungstext bindet, siehe unten |
+| Damage Dealer | **Heilung für die Gruppe** (`HoldPartyHeal`, A283): eine strategische Rückhaltung einer Heilung für andere weicht, wenn kein Heiler lebt oder ein Mitglied in Gefährdungsklasse 1 steht; erster Leser der Rotmagier | seine Vorgabe vom 14.10.2026 gilt für jeden Schadensausteiler, der andere heilt. Abwehr: Barde, Pictomancer und Tänzer führen dieselbe Einstellung „Prevent the use of defense abilties during burst" (seit A283 ab Werk aus), Maschinist, Dragoon und Viper feste Rückhaltungen; siehe unten |
 | Job | die Auslöser und Rückhaltungen selbst | siehe nächste Tabelle |
 
 ### Die Sonderregeln je Job
@@ -170,8 +177,34 @@ Einstellung sind nur die zwei in der Tabelle (Revolverklinge, Dragoon).
   Burst-Einstellung von Barde, Pictomancer und Tänzer (unten). Der Text bindet.
 
 **Barde, Pictomancer, Tänzer:** Deren Einstellung „Prevent the use of defense abilties during burst" sagt
-ohne Ausnahme „verhindern". Ihr Text bindet; die Schranke greift dort deshalb nicht. Ob sie weichen
-soll, ist seine Entscheidung (Einstellungstext und Vorgabe).
+ohne Ausnahme „verhindern"; ihr Text bindet, die Schranke greift dort deshalb nicht. Sie steht seit A283 ab Werk
+**aus**, nach seiner Regel für Voreinstellungen und seiner Spielweise: Die Abwehrpfade laufen nur für einen
+angekündigten oder gemessenen Treffer, die Flagge ist also das Wahrscheinlichkeitsmaß. Die Einstellung verwirft
+genau diese Treffer im Burst, allein für Schaden. Der Preis von Troubadour, Shield Samba, Tempera und Addle im
+Burst ist ein Einschub, der Gewinn des Haltens Schaden im Promillebereich. Ausgeschlossen: die Einstellung an
+lassen und an der Schranke weichen lassen — das widerspräche ihrem Text; wer sie einschaltet, will sie ohne
+Ausnahme.
+
+**Rotmagier, Heilung und Wiederbelebung im Burst (seine Vorgabe, 14.10.2026):** „rezz während burst ist erlaubt"
+wie beim Beschwörer; „heilung wenn notwendig und heiler tot sind oder mit heilen nicht nachkommen (z.b. kein mana
+haben)". Sein Grund: „was nutzt eigener ausgeteilter schaden, wenn andere sterben und damit keinen schaden mehr
+verursachen?" Umgesetzt (A283): „Prevent raising during burst combos" ab Werk aus; „Prevent healing during burst
+combos" bleibt an und weicht über `HoldPartyHeal`, wenn kein Heiler lebt oder ein Mitglied in Gefährdungsklasse 1
+steht. Fehlendes Mana der Heiler misst die Regel an seiner Wirkung (ein Mitglied fällt in Klasse 1), nicht am
+Mana selbst: Welche Heilung ein Heiler mit seinem Rest noch wirken kann, hängt an Job und Stufe; die Wirkung
+antwortet für alle gleich. Außerhalb des Bursts entscheiden weiter die Heilschwellen und die globalen
+Nicht-Heiler-Einstellungen.
+
+### HP-Trank im Notfall
+
+Ein HP-Trank geht unter seiner eigenen HP-Schwelle aus (`CustomRotation.UseHpPotion`). Der Notfallzweig lässt
+die Schwelle fallen und behält nur die Prüfung, dass genug HP fehlen, damit der Trank nicht verpufft. Er gilt
+für einen Tankbuster, der den Spieler erreicht: ein Tankbuster-Cast auf ihn, oder ein von BossModReborn
+vorhergesagter, dessen Maske ihn nennt; ohne Maske für einen Tank oder ohne lebenden Tank in der Gruppe
+(`DataCenter.BMRTankbusterReachesPlayer`, dieselbe Regel wie die Einzelabwehr, A220). Bis A284 fragte der
+BossModReborn-Teil nur, ob ein Tankbuster kommt: Ein Weißmagier bei 60 % trank für einen Tankbuster auf den
+Tank — 40 % fehlten, der Ultratrank heilt 25 %, die Prüfung war erfüllt. `DefenseTrace.log` schreibt jeden
+gewählten Trank mit dem Zweig, der ihn freigab, und den HP.
 
 ### Was die Sperren im Spiel bewirken
 
@@ -254,7 +287,7 @@ wahrscheinlich ist. Die Regeln dieses Konzepts messen das so:
 |---|---|
 | Flächenabwehr (`AutoStatus.DefenseArea`) | ein laufender Flächenzauber; mit `MitigateBigAreaCastsEvenIfInterruptible` auch ein unterbrechbarer, dessen gemessener Anteil die größte Barriere übersteigt; ein BossMod-Raidwide im Fenster, dessen Maske ihn oder die Gruppe einschließt oder fehlt („Wann eine BossModReborn-Vorhersage ihn betrifft"); der Befehl „Defense Area" von Hand |
 | Einzelabwehr (`AutoStatus.DefenseSingle`) | ein Zauber auf einen Tank (Tankbuster) oder ein BossMod-Tankbuster im Fenster; beim Heiler zusätzlich, wie viele Gegner den Tank angreifen |
-| Heilung vor dem angekündigten Treffer | die vorausberechnete Gesundheit nach dem laufenden Cast — der Treffer ist angekündigt |
+| Heilung vor dem angekündigten Treffer | ein angekündigter, gemessener Treffer brächte ein ungeschütztes Mitglied mit fehlender Gesundheit in Gefährdungsklasse 1 — dieselbe Linie wie die Schranke |
 | Schranke der Rückhaltungen | Gefährdungsklasse 1 jetzt, oder ein angekündigter, gemessener Treffer brächte ein ungeschütztes Mitglied dorthin |
 | Burst-Rückhaltungen (Jobtabelle oben) | keine eigene: Sie halten ohne Blick auf die Wahrscheinlichkeit und weichen nur der Schranke |
 | Streckung | eine eigene Minderung liegt noch; der nächste Treffer wird von ihr getragen, bis sie ausläuft |
@@ -265,35 +298,78 @@ Die Regeln entscheiden selbst; ob eine zuletzt hielt oder warum sie wich, führt
 
 ## Heilung vor dem angekündigten Treffer
 
-**Jede Heilschwelle im Baum liest die Gesundheit, die ein Mitglied **hat**. Keine liest die, die es
-haben wird, wenn der bereits laufende Cast einschlaegt.** Ein Mitglied bei 60 % vor einem
-45-%-Raidwide steht ueber jeder Schwelle und stirbt daran. Das ist Stufe 2 der Vorgabe, woertlich:
-„die aktuelle hp liegt unter dem schadenswert. dann waere aber eine heilung sinnvoll bis max maxhp."
+**Vor einem angekündigten, gemessenen Flächentreffer wird geheilt, wenn er ein ungeschütztes Mitglied in
+Gefährdungsklasse 1 brächte und diesem Mitglied Gesundheit fehlt** (`DataCenter.AnnouncedHitCallsForHealFirst`,
+A292). Sonst heilt der Baum erst nach dem Einschlag, an seinen gewohnten Schwellen. Das ist Stufe 2 seiner
+Vorgabe, wörtlich: „die aktuelle hp liegt unter dem schadenswert. dann waere aber eine heilung sinnvoll bis max
+maxhp." In der Tabelle unter „Die Antwort auf einen eingehenden Treffer" ist das die zweite Zeile; einen Treffer
+unter der aktuellen Gesundheit beantwortet die erste mit Deckung, nicht mit Heilung.
 
-**Die Groesse dafuer wird gemessen (A99–A102, Konzept 13) und beantwortet zwei Fragen:** ob gemindert
-wird und ob **vorher** zu heilen ist. `DataCenter.AnnouncedHitDropsAnyoneBelow` stellt die Frage einmal,
-und beide Seiten lesen sie.
+**Nötig ist die Regel, weil jede Heilschwelle die Gesundheit liest, die ein Mitglied hat**, keine die, die es
+nach dem laufenden Cast haben wird. Ein Mitglied bei 55 % vor einem 45-%-Raidwide steht danach bei 10 %, bevor
+eine Schwelle den Treffer sieht.
+
+**Die Linie ist die der Gefährdungsklasse 1, nicht null.** Seine Bedingung ist der tödliche Treffer; gefragt
+wird wie bei der Schranke der Rückhaltungen (A159, A283) schon an `HealthForDyingTanks`, in der sicheren
+Richtung: Wer nach dem Treffer bei wenigen Prozent steht, fällt am nächsten Tick. Eine Heilung landet dann auf
+fehlender Gesundheit — dem Mitglied fehlen mindestens eins minus Trefferanteil minus Linie, vor einem
+45-%-Treffer bei der Voreinstellung 15 % also 40 %. Nur ein Treffer nahe seiner ganzen Gesundheit lässt wenig
+aufzufüllen. Ein Mitglied bei voller Gesundheit löst nichts aus; für es sind Barriere und Minderung die
+Antwort, und die Schranke öffnet sie für denselben Treffer.
+
+**Ausgeschlossen: die Heilschwellen der Flaggen als Linie** (`HealthAreaAbility`, `HealthAreaSpell`). So war
+die Regel bis A292 gebaut, mit der Begründung, sie heile nur, wo der Baum ohnehin heilen würde, einen Cast
+früher. Das trug nicht: Ein 45-%-Raidwide drückt eine volle Gruppe unter 65 %, also ging vor jedem solchen
+Treffer eine Flächenheilung auf volle Gesundheit — eine direkte ganz verschwendet, ein HoT um seinen
+Sofortanteil. Sein Hinweis (15.10.2026): „bei aoe-hots noch evtl. vertretbar, bei direkt aoe-heals jedoch
+verschwendung". Dieselbe Heilung nach dem Einschlag landet auf fehlender Gesundheit.
+
+**Ausgeschlossen: HoTs vor einem ungefährlichen Treffer gesondert zulassen.** Vor dem Treffer gewirkt, verliert
+ein HoT seinen Sofortanteil an volle Gesundheit; nach dem Treffer gewirkt, wirkt er ganz, und seine Ticks setzen
+etwa einen GCD später ein. Für einen Treffer, der niemanden gefährdet, gibt es keinen Grund, den Sofortanteil
+herzugeben. Barrieren vor dem Treffer kommen über die Abwehrkette, nicht über diese Regel.
 
 | Schalter | Frage | Stand |
 |---|---|---|
-| `Skip mitigation for small area casts` | Oeffnet der Treffer die Abwehrkette? | **an** als Vorgabewert |
+| `Skip mitigation for small area casts` | Öffnet der Treffer die Abwehrkette? | **an** als Vorgabewert |
 | `Heal ahead of an announced area cast` | Wird vor dem Treffer geheilt? | **an** als Vorgabewert (seine Regel für Voreinstellungen, 29.09.2026) |
 
-**Die Barriere zaehlt hier mit, und das widerspricht A85 nicht.** A85 hat die Barriere aus der
-allgemeinen Heilschwelle entfernt, weil sie keine Gesundheit herstellt — ein Tank bei 40 % hinter
-einem Schild steht bei 40 %, sobald der Schild ungenutzt ablaeuft. Hier ist die Frage eine andere:
-ueberlebt er **diesen** Treffer. Gegen ihn wird die Barriere verbraucht und faengt ihn ab; sie
-herauszurechnen hiesse, eine Heilung zu fordern, die der Schild bereits bezahlt hat.
+**Beide Fragen lesen dieselbe gemessene Größe (A99–A102, Konzept 13), an verschiedenen Linien.** Die Minderung
+fragt, ob der Treffer jemanden unter die Flächenheilschwelle drückt (`DataCenter.AnnouncedHitDropsAnyoneBelow`,
+gelesen von `AreaCastIsWorthMitigating` und `AnnouncedHitIsSmall`): Sie kostet eine Abklingzeit und lohnt, wo
+sonst eine Heilung nötig würde. Die Vorausheilung kostet Heilung, die auf voller Gesundheit verfällt, und lohnt
+nur, wo der Treffer gefährdet.
 
-**Gefragt wird an derselben Schwelle, die die Flagge ohnehin benutzt** (`HealthAreaAbility`,
-`HealthAreaSpell`), nur einen Cast frueher — nicht an einer schaerferen. Die Regel kann deshalb nicht dort
-heilen, wo der Baum ohnehin nicht geheilt haette. Sie stellt die Frage **selbst**
-(`StateUpdater.AnnouncedAreaCastIsUpForHealing`), statt einen anderswo abgelegten Wert zu lesen: Sonst haenge
-sie daran, ob der Verteidigungszweig im selben Bild vorher lief — und der steht hinter `UseAoeDefense`. Und
-sie fragt die **unbewerteten** Erkennungen (`IsHostileCastingAreaUnrated || IsHostileCastingLargeArea`),
-nicht `IsHostileCastingAOE`: Die trägt das Minderungsurteil an der niedrigeren Schwelle `HealthAreaSpell`,
-und ein Treffer, der die Gruppe auf 70 % bringt, gälte dort als zu klein, während die Heilflagge bei genau
-diesem Stand auslöst (Konzept 13, „Wen die Unterdrückung erreicht").
+**Die Barriere zählt hier mit, und das widerspricht A85 nicht.** A85 hat die Barriere aus der allgemeinen
+Heilschwelle entfernt, weil sie keine Gesundheit herstellt — ein Tank bei 40 % hinter einem Schild steht bei
+40 %, sobald der Schild ungenutzt abläuft. Hier ist die Frage eine andere: übersteht er **diesen** Treffer.
+Gegen ihn wird die Barriere verbraucht und fängt ihn ab; sie herauszurechnen hieße, eine Heilung zu fordern,
+die der Schild bereits bezahlt hat. Ungeschützt heißt ohne Unverwundbarkeit über zwei GCDs, wie die Heilkette es liest
+(`IsUnprotectedForHealing`: Living Dead mit abgeschalteter Rückhaltung zählt nicht, Konzept 09): Ein Tank unter
+Hallowed Ground steht absichtlich tief.
+
+**Die Regel stellt die Frage selbst** (`StateUpdater.AnnouncedAreaCastIsUpForHealing`), statt einen anderswo
+abgelegten Wert zu lesen: Sonst hinge sie daran, ob der Verteidigungszweig im selben Bild vorher lief — und der
+steht hinter `UseAoeDefense`. Und sie fragt die **unbewerteten** Erkennungen (`IsHostileCastingAreaUnrated ||
+IsHostileCastingLargeArea`), nicht `IsHostileCastingAOE`: Die trägt das Minderungsurteil samt seinem Schalter,
+und die Regel urteilt selbst über den Treffer (Konzept 13, „Wen die Unterdrückung erreicht").
+
+**Eine Heilung, die nur gegen Ressourcenüberlauf fällt, wartet bis nach dem angekündigten Treffer**
+(`CustomRotation.HealForResourceWaitsForAreaHit`, A292): solange Flächenschaden angekündigt und nicht gelandet
+ist (`DataCenter.AreaHitAnnounced`, die Erkennung ohne Minderungsurteil) und die Ressource nicht im nächsten
+GCD verloren geht. Im Profil hat nur der Weißmagier eine solche Heilung auf die Fläche: Afflatus Rapture bei vollen
+Lilien (`Use Lily at max stacks/about to overcap`). Kurz vor einem Raidwide gewirkt, landete sie auf voller
+Gesundheit; nach ihm heilt derselbe GCD, was der Raidwide nahm, und die Blutlilie füllt sich gleich. Verloren geht
+eine Lilie erst, wenn bei drei Lilien die nächste fällig ist; dann wird sofort verbraucht. Die übrigen Heiler
+brauchen die Regel nicht: Druochole des Weisen verbraucht erst im letzten GCD vor dem Verlust und auf ein Ziel, die
+dritte Ladung Essential Dignity des Astrologen fragt die Gesundheit. Afflatus Rapture zum Ablauf von Confession
+fällt nach einer Plenary Indulgence aus der Abwehrkette hinter den Treffer, weil diese höchstens das
+BossModReborn-Fenster vor ihm liegt (Voreinstellung 5 s, Confession 10 s); erst ein Fenster über 10 s ließe
+Confession vor dem Treffer enden. Schluss aus den Zeiten, im Spiel nicht beobachtet.
+
+**`DefenseTrace.log` schreibt jede ausgelöste Vorausheilung einmal je Ankündigung**: Aktion, das gefährdete
+Mitglied, Trefferanteil (A292). Das Protokoll vom 14.10.2026 zeigte Treffer und Abwehr, aber nicht die Heilungen
+davor.
 
 **Beim Beschwoerer gilt fuer Lux Solaris die eigene Regel** („Wann Lux Solaris zündet"), auch auf dem
 Heilpfad. Sie ist reaktiv; vor einem angekuendigten Treffer faellt sie nur, wenn ein Mitglied im Radius
@@ -302,8 +378,8 @@ oder das Fenster verfaellt.
 
 **Die Heil-oGCD nimmt den ersten Einschiebeplatz, die Minderung den naechsten (A140).** Die Regel setzt
 auch `HealAreaAbility`, und der Dispatch fragt Heil-Faehigkeiten vor `DefenseArea`. Das ist Vorgabe 2
-in der Reihenfolge, die sie verlangt: Die Vorausheilung faellt nur, wenn der Treffer jemanden unter
-die Schwelle druecken wuerde — genau der Fall, in dem zuerst zu heilen ist. Die Minderung eines
+in der Reihenfolge, die sie verlangt: Die Vorausheilung faellt nur, wenn der Treffer jemanden
+gefaehrden wuerde — genau der Fall, in dem zuerst zu heilen ist. Die Minderung eines
 grossen Treffers verliert dabei keinen Weg, nur einen Platz: Ein angekuendigter Cast laeuft in der
 Regel ueber mehrere GCDs, also ueber mehrere Einschiebeplaetze. **Verdraengt** wird sie nur, wenn die
 Ankuendigung kuerzer ist als ein GCD; fuer diese Lage steht die BossModReborn-Vorhersage bereit, die
@@ -341,10 +417,16 @@ die Gegner-Debuffs über die Gegnerzahl (`MitigationSustainHostileCount`) aufrec
 Aktion ist als **Ersatz** fuer die fehlende Verlaesslichkeit gedacht, nicht als Zusatz — und sie
 beantwortet zudem eine Frage, die BMR gar nicht stellt: wie hart der Treffer ist.
 
-**Die eigene Messung ist die einzige BMR-unabhaengige Vorhersagequelle im Baum**, und sie ist
-an genau einer Stelle proaktiv verdrahtet: `IsHostileCastingLargeArea` (Konzept 13) liest den
-gemessenen Anteil je Aktion und braucht dafuer kein fremdes Plugin. Dass dieselbe Quelle die
-proaktive Schicht der uebrigen Jobs tragen koennte, ist erfasst und nicht gebaut — `TODO.md`.
+**Die eigene Messung ersetzt BossModReborn dort, wo sie es kann: im Cast (A311).** Eine gemessene Größe sagt, wie hart
+ein Treffer ist, nicht wann er kommt. Den frühesten Zeitpunkt ohne BossModReborn liefert der Beginn des Casts; ab dort
+antwortet die reaktive Ebene, und sie liest die Messung bereits: das Zurückhalten kleiner gemessener Flächen („Skip
+mitigation for small area casts"), große unterbrechbare Casts (`IsHostileCastingLargeArea`, Konzept 13), die Vorausheilung
+und die Plan-Rechnung der Tanks (Konzept 09). Erhoben: Jede der acht Rotationen mit einem `BMRShouldRefreshBefore`-Zweig
+(vier Tanks, Barde, Maschinist, Tänzer, Beschwörer) hat dahinter einen Zweig, der beim laufenden Cast drückt; keine Regel
+hängt allein an der Vorhersage. Die proaktive Ebene vor dem Cast lässt sich aus der Messung nicht bauen, weil ihr der
+Zeitpunkt fehlt. **Grenze:** Ein Treffer ohne Wirkbalken und ohne Modul ist vorher nicht zu sehen; dort bleibt nur die
+Heilung danach. Einen Kampfverlauf zu lernen (Zeit vom Beginn oder von einem Cast bis zum Treffer) wäre ein eigenes
+Vorhaben, nicht beauftragt.
 
 ### BMR sagt wann, nicht wie hart — und daran wird die Abklingzeit verschenkt
 
@@ -476,10 +558,40 @@ Erklärungen sind am Quelltext belegt: Türme, Köder und Spreads auf andere (di
 Occult Crescent, das nach seinem Weggang weiterläuft (am Quelltext gefolgert, `TODO.md`, Adressat BossModReborn).
 Eine dritte ist offen: Im Kampf gegen Necrophobia (Forked Tower: Magic, 10.10.2026) steht von 12:32 bis 12:44 kein
 Treffer auf ihn, während sieben Raidwides vorhergesagt wurden und Necrophobias Tankbuster zweimal gemessen wurde.
-BossModReborn führt für diesen Kampf den Raidwide Hail of Hellflares, dessen Schaden von Hilfsfiguren kommt. Ob er
-dort nicht getroffen wurde oder das Protokoll diese Quelle nicht sieht, ist nicht bestimmt. „Kein Treffer im
-Protokoll" ist deshalb kein sicheres Maß für „Fehlvorhersage". Seine Frage vom 13.10.2026, ob es Raidwides waren oder Flächen, außerhalb
+BossModReborn führt für diesen Kampf den Raidwide Hail of Hellflares, dessen Schaden von Hilfsfiguren kommt. Dasselbe
+Bild im Critical Engagement Dark Artistry (Occult Crescent, 17.10.2026): vier Vorhersagen für Düsterflare (Dark Flare;
+im Modul ein Raidwide auf einen Cast des Bosses an sich selbst, den Schaden bringt eine Hilfsfigur ohne Cast),
+Abwehr, Abschütteln und Reflexion gingen hinaus, und im ganzen Kampf steht kein Treffer auf ihn. Ob er nicht
+getroffen wurde oder das Protokoll die Quelle nicht sieht, ist nicht bestimmt. Am Quelltext belegt ist ein Weg für
+das Zweite: ECommons löst die Quelle über die Objekttabelle auf, und einen Satz ohne auflösbare Quelle verwirft der
+Effekt-Handler ganz, ohne Zeile, Schadensaufnahme und Messung (`TODO.md`). Seit A299 schreibt das Protokoll jeden
+Treffer aus einer Quelle, die RSR nicht als Gegner liest. „Kein Treffer im Protokoll" ist bis dahin kein sicheres
+Maß für „Fehlvorhersage". Seine Frage vom 13.10.2026, ob es Raidwides waren oder Flächen, außerhalb
 derer er stand, führte zur Maske.
+
+**Eine Vorhersage, die mit einem kleinen Cast kam, öffnet die Flächenabwehr nicht** (A301,
+`DataCenter.BMRRaidwideCasts`, `BmrRaidwideIsSmallListedCast`, gelesen in `StateUpdater.ShouldAddDefenseArea`). Der Text
+von `Skip mitigation for small area casts` sagt zu, dass ein gelernter Flächencast, nach dem alle über der
+Flächenheilschwelle bleiben, die Gruppenminderung nicht mehr auslöst; der Cast-Weg hielt das ein, der Zweig über
+BossModReborn öffnete für jede Vorhersage. In seinen Protokollen vom 06. bis 16.10.2026 fielen so 22 Abwehraktionen
+(Vollkommener Ablass, Linderung, Schimmerschild, Stumpfsinn) auf gelistete Casts mit 1 bis 23 %.
+- *Zuordnung über den Beginn:* BossModReborn nennt zu einer Vorhersage keine Aktion, und ihr Zeitpunkt bindet sie
+  nicht an einen Cast – gegen einen laufenden gelisteten Cast lag er in seinen Protokollen 0,4 bis 2,9 s nach dessen
+  Ende, je nach Modul. Ein Raidwide-Baustein eines Moduls legt die Vorhersage aber an, wenn der Cast beginnt, und
+  nimmt sie mit seinem Ende weg (`Components.RaidwideCast`, Eintritt `CastFinishAt`). Taucht ein Eintrittszeitpunkt
+  in demselben Durchlauf auf, in dem ein Cast beginnt, kam er mit diesem Cast. Gezählt werden alle gegnerischen Casts,
+  die dann begannen, auch unsichtbare Helfer mit ungelisteten Aktionen.
+- *Gehalten wird nur*, wenn jeder dieser Casts gelistet und gemessen ist, keiner die Gruppenminderung verlangt
+  (dieselbe Größenregel wie der Cast-Weg, `AreaShareCallsForMitigation`) und alle noch gewirkt werden. Nach ihrem Ende
+  kann hinter der Vorhersage ein späterer Treffer stehen; dann antwortet der Zweig wie zuvor. Jeder unbekannte Fall –
+  kein Cast kam mit der Vorhersage, einer ist ungelistet oder ungemessen – öffnet wie bisher.
+- `DefenseTrace.log` schreibt je Vorhersage „area defence held: … came with …, rated …".
+- *Grenzen:* Verdeckt die Vorhersage des kleinen Casts eine spätere große, die BossModReborn erst danach nennt,
+  öffnet die Abwehr für die große erst, wenn der kleine Cast endet; liegen beide weniger als einen Druckplatz
+  auseinander, kann die Minderung zu spät kommen, die vorher beim kleinen gefallen wäre und den großen mitgedeckt
+  hätte. Ein Modul, das die Vorhersage nicht am Beginn anlegt, bleibt ohne Zuordnung, die Abwehr öffnet wie bisher.
+- *Abgrenzung:* Die vorausschauende Auffrischung (`BMRShouldRefreshBefore`) hat für dieselbe Frage ihre eigene
+  Einstellung (`HoldProactiveMitigationForSmallCast`, C75) und bleibt bei ihr.
 
 **Ausgeschlossen:**
 - *Die Vorhersagen eines Moduls nach ihrer Trefferquote beiseitelegen* — gebaut und zurückgenommen (A272, A275).
@@ -489,7 +601,8 @@ derer er stand, führte zur Maske.
   BossModReborn angekündigt hatte.
 - *Die Größe der Vorhersage aus dem Treffer lernen* — BossModReborn nennt keine Aktion zur Vorhersage, und die
   eingetroffenen streuen von 0 % bis über 40 %; der Höchstwert eines Moduls bewertete jede Vorhersage als groß.
-  Eingetroffene Vorhersagen von 0–1 % bekommen deshalb dieselbe Abwehr wie große.
+  Eingetroffene Vorhersagen von 0–1 % bekommen deshalb dieselbe Abwehr wie große, wenn kein klein bewerteter Cast
+  mit ihnen kam (siehe „Eine Vorhersage, die mit einem kleinen Cast kam").
 - *Vorhersagen eines Moduls verwerfen, in dessen Arena er nicht steht* — ändert in seinem Inhalt nichts. In
   Occult Crescent werden die Module der Critical Engagements (30 von 30) und des Forked Tower: Magic (4 von 4) nur
   aktiv, wenn er beim Pull in der Arena steht (`CheckPull`), und die Arena eines FATE-Moduls (24 von 24,
@@ -498,8 +611,9 @@ derer er stand, führte zur Maske.
 
 **Grenzen:**
 - Ein Raidwide hinter einem Einzelmechanismus auf einen anderen, der zur selben Zeit oder kurz davor fällt, ist bis
-  zu dessen Auflösung unsichtbar. Löst der Einzelmechanismus weniger als 0,6 s vor dem Raidwide auf (der
-  Mindestvorlauf der Leser), kommt der Raidwide über BossModReborn gar nicht mehr; der Cast-Weg bleibt.
+  zu dessen Auflösung unsichtbar. Löst der Einzelmechanismus so kurz vor dem Raidwide auf, dass ein Druck den
+  Snapshot nicht mehr erreicht (der Mindestvorlauf der Leser, `DataCenter.PressReachesBeforeSnapshot`, A319), kommt
+  der Raidwide über BossModReborn gar nicht mehr; der Cast-Weg bleibt.
 - Ohne Modul fehlt die Vorhersage ganz, und es bleibt der reaktive Weg.
 
 ### Gegner-Debuffs am Tankbuster und am Raidwide
@@ -776,7 +890,7 @@ Wirktext die Quelle.
 
 **Das gemessene Schadenspotential je Gegneraktion — wo es gelesen wird und wo nicht.** Es liegt seit
 A99 bis A102 vor (`13-aoe-damage-classification.md`). Gelesen wird es vom Minderungsurteil
-(`AreaCastIsWorthMitigating`), von der Vorausheilung (`AnnouncedHitDropsAnyoneBelow`), vom zweiten Weg für
+(`AreaCastIsWorthMitigating`), von der Vorausheilung (`AnnouncedHitCallsForHealFirst`), vom zweiten Weg für
 große unterbrechbare Casts (`IsHostileCastingLargeArea`), von der Zurückhaltung der proaktiven Minderung
 (`AnnouncedHitIsSmall`) und vom Tankbuster-Plan, wenn er gegen einen Raidwide abwägt (`AnnouncedHitKills`,
 Konzept 09). Offen:
@@ -1007,8 +1121,9 @@ bei der Zielwahl (`ActionSetting.HealsWithNextGcd`, gesetzt in den Basisrotation
 Mit dem kurzen Vorlauf lasen ihre Schwellen den Stand bei Ende der Ausfuehrungssperre, ihre Heilung
 landet aber einen GCD spaeter: Bei steilem Verlauf fielen sie zu spaet. In der Zielwahl wirkt das Merkmal
 nur, wo sie ueber das Heilziel waehlt: Krasis im Heilpfad (Override `Heal`) waehlt dann wie die Heil-GCD,
-die es verstaerkt. Synastry laeuft in `EmergencyAbility` vor jedem Override und ohne eigenen `TargetType`
-(Vorgabe `Big`); ihre Zielwahl liest den Vorlauf nicht. Beim
+die es verstaerkt. Synastry waehlt seit A305 mit eigenem `TargetType.Heal` wie die Einzelheilung, die sie
+wiederholt, und liest dabei den Vorlauf; vorher waehlte sie nach `Big` und traf das Heilziel nur ueber die
+Zielueberschreibung, die eine Heil-GCD stehen liess. Beim
 kurzen Vorlauf bleiben die oGCDs, die sofort wirken: Benediction, Essential Dignity, Taurochole,
 Druochole, Haima, Excogitation (liegt bereit und loest selbst aus), Aetherpact, Second Wind, Equilibrium,
 Thrill of Battle; ebenso Raw Intuition/Bloodwhetting und Nascent Flash, deren Minderung und Barriere

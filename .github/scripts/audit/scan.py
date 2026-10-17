@@ -268,12 +268,36 @@ def main():
 
     # A key starting with _ is surveyed, not reported: the class is real but every member of it
     # is correct code, and printing it would bury the findings that need a reader.
+    # Findings already settled, keyed by class, file and expression rather than line, with the
+    # reason. Listed apart so a new finding is not lost among them (A286, P5). Churin rotations
+    # carry no findings by the owner's rule (CLAUDE.md).
+    known = [
+        ('f_duplicate_consecutive_if', 'VPR_Reborn.cs', 'VicepitPvE.CanUse', 'A174: upstream, decides nothing in a fight'),
+        ('f_duplicate_consecutive_if', 'VPR_Reborn.cs', 'VicewinderPvE.CanUse', 'A174: upstream, decides nothing in a fight'),
+        ('f_duplicate_consecutive_if', 'RDM_Reborn.cs', 'ManaficationPvE.CanUse', 'A174: upstream, decides nothing in a fight'),
+        ('f_duplicate_consecutive_if', 'PCT_Reborn.cs', 'RetributionOfTheMadeenPvE.CanUse', 'A174: upstream, decides nothing in a fight'),
+        ('a_desc_not_in_body', 'SGE_Reborn.cs', 'EukrasianPrognosisIiPvE', 'A82: upstream description, cast through SetEukrasia'),
+        ('a_desc_not_in_body', 'BeirutaSGE.cs', 'EukrasianPrognosisIiPvE', 'A82: foreign rotation, same shape as SGE_Reborn'),
+    ]
+
+    def known_reason(key, item):
+        if '/Churin' in item:
+            return 'Churin rotation, no findings (CLAUDE.md)'
+        for k, path, fragment, reason in known:
+            if key == k and path in item.split(':', 1)[0] and fragment in item:
+                return reason
+        return None
+
     for k in sorted(k for k in R if not k.startswith('_')):
-        print(f'\n== {k} ({len(R[k])})')
-        for x in R[k][:80]:
+        open_items = [x for x in R[k] if known_reason(k, x) is None]
+        settled = [(x, known_reason(k, x)) for x in R[k] if known_reason(k, x) is not None]
+        print(f'\n== {k} ({len(open_items)} open, {len(settled)} known)')
+        for x in open_items[:80]:
             print('  ' + x)
-        if len(R[k]) > 80:
-            print(f'  ... {len(R[k]) - 80} more')
+        if len(open_items) > 80:
+            print(f'  ... {len(open_items) - 80} more')
+        for x, reason in settled:
+            print(f'  known: {x[:110]}  ({reason})')
 
     print(f'\nscanned {len(files)} files')
     for k in sorted(k for k in R if k.startswith('_')):

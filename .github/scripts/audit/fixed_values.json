@@ -101,14 +101,6 @@
   },
   {
    "file": "RotationSolver.Basic/DataCenter.cs",
-   "code": "Service.Config.UseBmrTimeline && BMRNextTankbusterIn > 0.6f && BMRNextTankbusterIn <= Service.Config.BMRTankbusterMitWindow;",
-   "values": [
-    "0.6"
-   ],
-   "status": "open"
-  },
-  {
-   "file": "RotationSolver.Basic/DataCenter.cs",
    "code": "private const byte RaiseLevel = 12;",
    "values": [
     "12"
@@ -128,14 +120,6 @@
    "code": "private static readonly TimeSpan AnnouncedAreaShareLifetime = TimeSpan.FromSeconds(2.5);",
    "values": [
     "2.5"
-   ],
-   "status": "open"
-  },
-  {
-   "file": "RotationSolver.Basic/Helpers/ObjectHelper.cs",
-   "code": "&& (Vector3.Distance(target.Position, Player.Object?.Position ?? Vector3.Zero) > 5))",
-   "values": [
-    "5"
    ],
    "status": "open"
   },
@@ -199,7 +183,7 @@
   },
   {
    "file": "RotationSolver.Basic/Rotations/CustomRotation_Items.cs",
-   "code": "if ((DataCenter.IsHostileCastingTankBusterAtMe || DataCenter.BMRTankbusterImminent) && a.ID != 47102 && a.ID != 22306 && a.ID != 20309 && a.CanUseEmergency(out _))",
+   "code": "if ((DataCenter.IsHostileCastingTankBusterAtMe || DataCenter.BMRTankbusterReachesPlayer) && a.ID != 47102 && a.ID != 22306 && a.ID != 20309 && a.CanUseEmergency(out _))",
    "values": [
     "47102",
     "22306",
@@ -237,14 +221,6 @@
    "code": "factor *= 0.95f;",
    "values": [
     "0.95"
-   ],
-   "status": "open"
-  },
-  {
-   "file": "RotationSolver.Basic/Rotations/CustomRotation_OtherInfo.cs",
-   "code": "if (!Service.Config.UseBmrTimeline || !BMRActive || predictedIn is not (> 0.6f and < float.MaxValue) || predictedIn > statusDuration)",
-   "values": [
-    "0.6"
    ],
    "status": "open"
   },
@@ -807,14 +783,6 @@
   },
   {
    "file": "RotationSolver.Basic/DataCenter.cs",
-   "code": "if (Service.Config.UseBmrTimeline && BMRNextRaidwideIn > 0.6f && BMRNextRaidwideIn <= Service.Config.BMRRaidwideMitWindow)",
-   "values": [
-    "0.6"
-   ],
-   "status": "open"
-  },
-  {
-   "file": "RotationSolver.Basic/DataCenter.cs",
    "code": "if (member != null && !member.IsDead && AreaCastReaches(h, act, member) && ++reached >= 2)",
    "values": [
     "2"
@@ -842,6 +810,46 @@
    "status": "exception",
    "loop": "A240",
    "reason": "Unit conversion, not a game value: GetAdjustedRecastTime returns milliseconds (ClientStructs; ActionCooldownInfo.RecastTimeOneChargeRaw divides the same way), the readers expect seconds."
+  },
+  {
+   "file": "RotationSolver.Basic/Helpers/TraitDurations.cs",
+   "code": "float.Parse(improves.Groups[\"percent\"].Value, System.Globalization.CultureInfo.InvariantCulture) / 100f, trait.Level);",
+   "values": [
+    "100"
+   ],
+   "status": "exception",
+   "loop": "A290",
+   "reason": "Percent to share: the trait text states the figure in percent and the table holds shares; the divisor is the definition of the unit, not a figure of the game"
+  },
+  {
+   "file": "RotationSolver.Basic/Rotations/Basic/ReaperRotation.cs",
+   "code": "setting.BackstepDistance = 15;",
+   "values": [
+    "15"
+   ],
+   "status": "exception",
+   "loop": "A313",
+   "reason": "The dash distance is stated only in the effect text (Hell's Ingress: \"Quickly dash 15 yalms forward\"; Hell's Egress: \"Quickly dash 15 yalms backwards\", ActionId.resx); no sheet carries it, so it cannot be read at runtime"
+  },
+  {
+   "file": "RotationSolver.Basic/Rotations/Basic/BardRotation.cs",
+   "code": "setting.BackstepDistance = 10;",
+   "values": [
+    "10"
+   ],
+   "status": "exception",
+   "loop": "A313",
+   "reason": "The jump distance is stated only in the effect text (Repelling Shot: \"Jump 10 yalms away from current target\", ActionId.resx); no sheet carries it, so it cannot be read at runtime"
+  },
+  {
+   "file": "RotationSolver/Updaters/TargetUpdater.cs",
+   "code": "bool AutoProvokeAllowed() => autoProvokeAllowed ??= Service.Config.AutoProvokeForTank || StateUpdater.CountAllianceTanks() < 2;",
+   "values": [
+    "2"
+   ],
+   "status": "exception",
+   "loop": "A318",
+   "reason": "The setting's own condition, \"Auto provoke when there is another tank in party\": another tank besides the player means two; a count named by the option text, not a tunable. Moved unchanged from StateUpdater.ShouldAddProvoke (upstream line)"
   }
  ]
 }

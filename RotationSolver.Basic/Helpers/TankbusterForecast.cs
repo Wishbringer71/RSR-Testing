@@ -36,8 +36,19 @@ internal static class TankbusterForecast
 	/// <param name="Horizon">Seconds until the hit can arrive: the cast's rest plus one GCD.</param>
 	/// <param name="Serial">Tells this cast from every other, also from a later cast of the same action
 	/// by the same enemy with the same cast time.</param>
+	/// <param name="Source">The enemy casting it.</param>
+	/// <param name="ActionId">The action being cast.</param>
+	/// <param name="AttackType">The action's attack type row in the game data, which decides which mitigation
+	/// counts against it; zero when the row is not readable.</param>
+	/// <param name="Remaining">Seconds of the cast still to run.</param>
+	/// <param name="Total">The cast's whole length in seconds.</param>
+	/// <param name="ByMarker">Not aimed at the player: taken for him by a tankbuster marker on him (see
+	/// <see cref="Update"/>).</param>
+	/// <param name="SourceId">The caster's id, read with the cast. A reader in a later frame resolves the caster from
+	/// the object table by it instead of trusting <paramref name="Source"/>: Dalamud keeps one object per table slot and
+	/// points it at whatever occupies the slot when anyone next walks the table (A309).</param>
 	internal sealed record Cast(int Serial, IBattleChara Source, uint ActionId, uint AttackType, float Remaining,
-		float Total, float Predicted, float Budget, float Horizon)
+		float Total, float Predicted, float Budget, float Horizon, bool ByMarker = false, ulong SourceId = 0)
 	{
 		/// <summary>Measured at all: the table has a figure for the action.</summary>
 		public bool Measured => Predicted > 0f;
@@ -67,6 +78,27 @@ internal static class TankbusterForecast
 	private static readonly List<Execution> _own = [];
 	private static long _readAt;
 
+	// The player's latest press of an instant action made while no animation lock ran - one the game sends at once
+	// instead of queuing it behind a lock -, for the two figures the plan's deadline needs (concept 09, "Spielerweite
+	// Sperre und Frist"): the round trip to its confirmation, and how long it kept the next press back.
+	private static uint _timedAction;
+	private static long _timedTick;
+	private static bool _timedConfirmed = true;
+	private static bool _timedLockSeen = true;
+
+	/// <summary>
+	/// Seconds from the player's latest timed press to the server's confirmation of it: how long before the end of
+	/// a cast, as the client shows it, a press has to go out to reach the server before the snapshot there. -1
+	/// before the first measurement.
+	/// </summary>
+	public static float RoundTrip { get; private set; } = -1f;
+
+	/// <summary>
+	/// Seconds the player's latest timed press kept the next one back: until the animation lock it set ran out,
+	/// the server's figure and the delay to it together. -1 before the first measurement.
+	/// </summary>
+	public static float PressSpacing { get; private set; } = -1f;
+
 	/// <summary>The clock of this forecast: high resolution, monotonic.</summary>
 	public static long Now => System.Diagnostics.Stopwatch.GetTimestamp();
 
@@ -89,6 +121,13 @@ internal static class TankbusterForecast
 	private static ICustomRotation? _statusesFor;
 	private static readonly Dictionary<(ulong Source, uint ActionId, float Total), (int Serial, float Elapsed)> _serials = [];
 	private static readonly HashSet<(ulong Source, uint ActionId, float Total)> _live = [];
+
+	// Casts taken for the player by a marker on him, with the elapsed time last seen: they stay his while they run,
+	// also once the marker has left the queue; a cast whose elapsed time went back is a new one.
+	private static readonly Dictionary<(ulong Source, uint ActionId, float Total), float> _byMarker = [];
+
+	// When each tankbuster action was last seen coming at the player, for the trace of the hit (TookCastFor).
+	private static readonly Dictionary<uint, long> _lastComing = [];
 	private static int _nextSerial;
 
 	/// <summary>Every known tankbuster now being cast at the player, the soonest first.</summary>
@@ -116,9 +155,19 @@ internal static class TankbusterForecast
 
 	/// <summary>
 	/// RSR executed one of the player's actions (<c>BaseAction.Use</c> succeeded). Called on the game thread.
+	/// <paramref name="timed"/>: an instant action pressed while no animation lock ran, which the game sends at
+	/// once - the press the round trip and the spacing are measured on.
 	/// </summary>
-	public static void RecordOwnPress(uint actionId, ulong targetId)
+	public static void RecordOwnPress(uint actionId, ulong targetId, bool timed)
 	{
+		if (timed)
+		{
+			_timedAction = actionId;
+			_timedTick = Now;
+			_timedConfirmed = false;
+			_timedLockSeen = false;
+		}
+
 		_ = Follow(actionId, targetId, false);
 	}
 
@@ -129,6 +178,12 @@ internal static class TankbusterForecast
 	public static void RecordOwnAction(uint actionId, ulong targetId)
 	{
 		var now = Now;
+		if (!_timedConfirmed && actionId == _timedAction && SecondsSince(_timedTick, now) <= DataCenter.DefaultGCDTotal)
+		{
+			RoundTrip = SecondsSince(_timedTick, now);
+			_timedConfirmed = true;
+		}
+
 		Execution? pressed = null;
 		foreach (var execution in _own)
 		{
@@ -493,11 +548,21 @@ internal static class TankbusterForecast
 		PlayerImpervious = false;
 		_readAt = Now;
 
+		// The timed press has stopped holding the next one back once its animation lock has run out; read once a
+		// frame, after the rotation, so the frame of the press itself still shows the lock the client set.
+		if (!_timedLockSeen && ECommons.GameHelpers.Player.AnimationLock <= 0f)
+		{
+			PressSpacing = SecondsSince(_timedTick, _readAt);
+			_timedLockSeen = true;
+		}
+
 		var player = Player.Object;
 		if (!DataCenter.InCombat || player == null || player.IsDead || DataCenter.Role != JobRole.Tank)
 		{
 			_own.Clear();
 			_serials.Clear();
+			_byMarker.Clear();
+			_lastComing.Clear();
 			return;
 		}
 
@@ -506,9 +571,11 @@ internal static class TankbusterForecast
 
 		var gcd = DataCenter.DefaultGCDTotal;
 		var maxHp = (float)Math.Max(1u, player.MaxHp);
-		foreach (var hostile in DataCenter.AllHostileTargets)
+		var markerOnPlayer = DataCenter.IsTankbusterVfxOnPlayer();
+		// The helpers too (A303): a tankbuster an untargetable helper casts at the player is planned like any other.
+		foreach (var hostile in DataCenter.AreaCasters)
 		{
-			if (hostile == null || !hostile.IsCasting || hostile.CastTargetObjectId != player.GameObjectId)
+			if (hostile == null || !hostile.IsCasting)
 			{
 				continue;
 			}
@@ -517,6 +584,23 @@ internal static class TankbusterForecast
 			if (!OtherConfiguration.HostileCastingTank.Contains(id) && !IsLearned(id))
 			{
 				continue;
+			}
+
+			// A tankbuster aimed at no other party member - at the caster itself, at the ground - while a tankbuster
+			// marker (not falsified) stands on the player is his: many fights mark the tank and let the boss or a
+			// helper cast without a target (A308). Once taken for him, the cast stays his while it runs.
+			var byMarker = false;
+			if (hostile.CastTargetObjectId != player.GameObjectId)
+			{
+				var marked = (hostile.GameObjectId, id, hostile.TotalCastTime);
+				byMarker = (_byMarker.TryGetValue(marked, out var seenAt) && hostile.CurrentCastTime >= seenAt)
+					|| (markerOnPlayer && !AimedAtOtherMember(hostile.CastTargetObjectId, player.GameObjectId));
+				if (!byMarker)
+				{
+					continue;
+				}
+
+				_byMarker[marked] = hostile.CurrentCastTime;
 			}
 
 			var left = hostile.TotalCastTime - hostile.CurrentCastTime;
@@ -540,8 +624,9 @@ internal static class TankbusterForecast
 			_serials[identity] = (serial, hostile.CurrentCastTime);
 
 			_ = _live.Add(identity);
+			_lastComing[id] = _readAt;
 			var cast = new Cast(serial, hostile, id, attackType, left, hostile.TotalCastTime, predicted,
-				(player.CurrentHp / maxHp) + barrier, horizon);
+				(player.CurrentHp / maxHp) + barrier, horizon, byMarker, hostile.GameObjectId);
 			_casts.Add(cast);
 			if (isNew)
 			{
@@ -568,6 +653,14 @@ internal static class TankbusterForecast
 			}
 		}
 
+		foreach (var identity in _byMarker.Keys)
+		{
+			if (!_live.Contains(identity))
+			{
+				_ = _byMarker.Remove(identity);
+			}
+		}
+
 		// Over every cast now coming at the player, or with none for at least one more GCD: a cover that ends
 		// between two casts keeps nothing back for the second.
 		var latest = gcd;
@@ -585,13 +678,43 @@ internal static class TankbusterForecast
 		var name = Service.GetSheet<Lumina.Excel.Sheets.Action>().TryGetRow(cast.ActionId, out var row)
 			? row.Name.ExtractText()
 			: $"#{cast.ActionId}";
-		DefenseTrace.Line($"tankbuster coming at you: {name} #{cast.ActionId} in {cast.Remaining:F1} s - "
+		DefenseTrace.Line($"tankbuster coming at you{(cast.ByMarker ? " (by the marker on you)" : string.Empty)}:"
+			+ $" {name} #{cast.ActionId} in {cast.Remaining:F1} s - "
 			+ (!cast.Measured
 				? "not in the tankbuster table"
 				: $"takes {cast.Predicted:P0} of max HP under what stands at impact, you have {cast.Budget:P0}"));
 	}
 
-	private static bool IsLearned(uint actionId)
+	/// <summary>
+	/// Whether a cast of <paramref name="actionId"/> was taken as coming at the player until at most one GCD ago -
+	/// the time the hit needs to arrive after its cast. For the trace of a hit after a tankbuster marker: one without
+	/// is a marker the plan had no cast for (TODO.md, "nur reaktiv").
+	/// </summary>
+	public static bool TookCastFor(uint actionId)
+	{
+		return _lastComing.TryGetValue(actionId, out var tick) && SecondsSince(tick, Now) <= DataCenter.DefaultGCDTotal;
+	}
+
+	// Whether a cast aimed at this object is aimed at a party member other than the player: then it is that member's.
+	private static bool AimedAtOtherMember(ulong targetId, ulong playerId)
+	{
+		if (targetId == 0 || targetId == playerId)
+		{
+			return false;
+		}
+
+		foreach (var member in DataCenter.PartyMembers)
+		{
+			if (member != null && member.GameObjectId == targetId)
+			{
+				return true;
+			}
+		}
+
+		return false;
+	}
+
+	internal static bool IsLearned(uint actionId)
 	{
 		lock (OtherConfiguration.TankbusterPotentialGate)
 		{

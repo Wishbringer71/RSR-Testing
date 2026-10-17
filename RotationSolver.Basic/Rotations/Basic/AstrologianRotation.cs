@@ -465,6 +465,10 @@ public partial class AstrologianRotation
 
 	static partial void ModifySynastryPvE(ref ActionSetting setting)
 	{
+		// Synastry repeats the next single-target heal on its target, so it searches the way that heal does. Without
+		// a type of its own it searched by Big - the most HP - and matched the heal only through the override a heal
+		// GCD left standing, which the ability path now clears (A305).
+		setting.TargetType = TargetType.Heal;
 		setting.TargetStatusProvide = [StatusID.Synastry_846];
 		setting.StatusProvide = [StatusID.Synastry];
 		setting.UnlockedByQuestID = 67554;

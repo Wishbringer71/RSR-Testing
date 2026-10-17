@@ -68,6 +68,8 @@ internal static class MajorUpdater
 			}
 
 			_timeSinceUpdate = TimeSpan.Zero;
+			UpdateCost.Begin();
+			UpdateCost.Step("gate");
 			_isValidThisCycle = IsValid;
 			_isActivatedThisCycle = DataCenter.IsActivated();
 			_shouldRunThisCycle = true;
@@ -97,6 +99,8 @@ internal static class MajorUpdater
 			return;
 		}
 
+		UpdateCost.Step("teaching");
+
 		if (Service.Config.TeachingMode)
 		{
 			try
@@ -116,6 +120,8 @@ internal static class MajorUpdater
 		{
 			return;
 		}
+
+		UpdateCost.Step("invalid");
 
 		if (!_isValidThisCycle)
 		{
@@ -148,6 +154,7 @@ internal static class MajorUpdater
 			|| Service.Config.StartOnPartyIsInCombat2) && !DataCenter.IsInDutyReplay();
 
 		// Only call UpdateTargets once — cover both the auto-on check and the activated path
+		UpdateCost.Step("targets");
 		if (autoOnEnabled || _isActivatedThisCycle)
 		{
 			try
@@ -166,6 +173,7 @@ internal static class MajorUpdater
 		}
 
 		// Target updater always needs to be first to update
+		UpdateCost.Step("macro and BossModReborn");
 		try
 		{
 			MacroUpdater.UpdateMacro();
@@ -196,6 +204,7 @@ internal static class MajorUpdater
 			}
 		}
 
+		UpdateCost.Step("state");
 		try
 		{
 			StateUpdater.UpdateState();
@@ -214,6 +223,7 @@ internal static class MajorUpdater
 			LogOnce("(RSRActivatedCore): AutoAttackUpdater.Update Exception", ex);
 		}
 
+		UpdateCost.Step("next action (rotation)");
 		try
 		{
 			ActionUpdater.UpdateNextAction();
@@ -223,6 +233,7 @@ internal static class MajorUpdater
 			LogOnce("(RSRActivatedCore): ActionUpdater.UpdateNextAction Exception", ex);
 		}
 
+		UpdateCost.Step("action");
 		var canDoAction = false;
 		try
 		{
@@ -298,6 +309,8 @@ internal static class MajorUpdater
 			return;
 		}
 
+		UpdateCost.Step("highlight");
+
 		if (!_isActivatedThisCycle)
 		{
 			HotbarHighlightManager.ClearElements();
@@ -366,6 +379,8 @@ internal static class MajorUpdater
 			return;
 		}
 
+		UpdateCost.Step("common");
+
 		try
 		{
 			// Update various combat tracking parameters,
@@ -399,6 +414,8 @@ internal static class MajorUpdater
 		{
 			return;
 		}
+
+		UpdateCost.Step("cleanup");
 
 		try
 		{
@@ -468,6 +485,7 @@ internal static class MajorUpdater
 			}
 
 			// After the cleanup, so a marker's watch sees it leave the queue in the cycle it does.
+			UpdateCost.Step("tank watches and forecast");
 			TankbusterMarkerWatch.Update();
 			TankSwapWatch.Update();
 			TankbusterForecast.Update();
@@ -485,6 +503,8 @@ internal static class MajorUpdater
 		{
 			return;
 		}
+
+		UpdateCost.Step("rotation load");
 
 		try
 		{
@@ -518,6 +538,8 @@ internal static class MajorUpdater
 		{
 			return;
 		}
+
+		UpdateCost.Step("misc");
 
 		try
 		{
@@ -579,6 +601,7 @@ internal static class MajorUpdater
 		}
 
 		_shouldRunThisCycle = false;
+		UpdateCost.End(framework);
 	}
 
 	private static void LogOnce(string context, Exception ex)

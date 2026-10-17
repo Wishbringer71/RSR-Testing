@@ -108,14 +108,14 @@ Gate gegen das negierte und gegen dasselbe in einem Kommentar.
 ## scan.py — vier Prüfungen, die Ähnlichkeit statt Merkmal gemessen haben
 
 Dieselbe Fehlerform wie bei `scan3.py`, und sie war größer: Über den bereinigten Baum meldete
-`scan.py` 105 Treffer in sechs Klassen, von denen **94 richtiger Code** waren. Die Verengungen sind
+`scan.py` am 12.09.2026 105 Treffer in sechs Klassen, von denen **94 richtiger Code** waren. Die Verengungen sind
 jeweils am Merkmal begründet, nicht am Ergebnis, und jede trägt ihren Selbsttest für beide Seiten.
 
 | Klasse | vorher | nachher | Was falsch gemessen wurde |
 |---|---|---|---|
 | (a) `RotationDesc` nennt eine Aktion, die der Rumpf nie benutzt | 10 | 2 | Der **unmittelbare** Rumpf statt des Wirkungsbereichs. Eine Rotation, die die Aktion in eine Hilfsmethode auslagert, wirkt sie trotzdem; die Beschreibung behauptet, die Methode *führe zu* der Aktion. Gelesen werden jetzt der Rumpf und die Rümpfe der von ihm gerufenen Methoden derselben Datei, zwei Sprünge tief. |
 | (b) `if (X.CanUse(out _)) { return true; }` | 5 | 0 | Das verworfene Ergebnis allein. `CanUse(out _)` als reine Prüfung neben einer Aktion, die eine frühere Zeile schon gewählt hat, ist richtig — der Revolverklinge prüft Demon Slice innerhalb eines Bow-Shock-Blocks, `CustomRotation_Ability` prüft eine Aktion nach, die sie **übergeben** bekommt. Defekt ist es nur, wo die umgebende Methode `act` nie zuweist. |
-| (d) Einstellung ohne Leser | 7 | 0 | Ein mehrzeiliges Label **ist** die Einstellung: die Rotationshinweise der Beiruta-Dateien tragen ihren ganzen Inhalt in `Name`, die Eigenschaft ist nur der Haken. Gegenprobe: Im ganzen Baum haben genau diese sieben mehrzeilige Attributargumente, die Verengung verdeckt also nichts. |
+| (d) Einstellung ohne Leser | 7 | 0 | Ein mehrzeiliges Label **ist** die Einstellung: die Rotationshinweise der Beiruta-Dateien tragen ihren ganzen Inhalt in `Name`, die Eigenschaft ist nur der Haken. Gegenprobe (14.10.2026): 38 `RotationConfig` tragen mehrzeilige Argumente, ungelesen sind davon nur diese sieben Anzeigetexte — die Verengung verdeckt heute nichts. Sie ist ein Surrogat: Eine mehrzeilig geschriebene, nie gelesene Einstellung, die kein Anzeigetext ist, fiele heraus (A286, P4). |
 | (e) `X.Target.Target.member` ohne Absicherung | 60 | 5 | Eine Zeile statt des Geltungsbereichs. `BaseAction.Target` ist ein nicht-nullbares `TargetResult`; null sein kann nur das `IBattleChara` darin, und die Absicherung steht nach Hausform eine Zeile höher in derselben Bedingung oder als umgebendes `if (X.CanUse(out act))`. Dass `CanUse` das Ziel wirklich herstellt, ist belegt: es liefert `false` bei leerem `PreviewTarget` und setzt `Target` andernfalls. |
 | (f) zwei gleiche `if`-Bedingungen in Folge | 6 | 4 | Ein `break` oder `else` zwischen den beiden. Dann stehen sie in zwei Zweigen eines `switch` beziehungsweise einer Verzweigung, und Steuerfluss geht nie von einem zum anderen. |
 | (h) Override, der nur `base` ruft | 17 | — | Nichts. Die Klasse ist verhaltensgleich zu gar keinem Override, es gibt also nichts zu beheben. Sie wird jetzt **gezählt statt gemeldet**; den Fall, der zählt — ein Passthrough auf die **falsche** Basismethode — deckt `check_base_calls.py` in der CI ab. |
@@ -311,7 +311,7 @@ Beides ist kein Beweis. Die Historie des *Gegenstands* ist zulässiger Inhalt �
 `06-fork-audit.md` existiert gerade, um zu sagen, wo die Fork-Änderungen sich als falsch
 erwiesen haben —, und Prosa darf zwei Codevarianten „die erste" und „die zweite" nennen;
 letzteres schließt der Scan über den Satzkontext aus. Gegen den Vor-Zustand gelaufen
-meldet er 43 Treffer, gegen den überarbeiteten Bestand keinen.
+meldet er (08.09.2026) 43 Treffer, gegen den überarbeiteten Bestand keinen.
 
 ## scan13.py — Barrieren, die in `StatusHelper.ShieldStatus` fehlen
 
@@ -415,40 +415,20 @@ Selbsttest: gegen einen konstruierten Rampart-Fall (Basis-Id geführt, Trait-Fas
 er das Geschwister, und die Gegenprobe stellt sicher, dass Reflexionstext und Minderungstext als
 verschiedene Anfänge gelten.
 
-## scan15.py — Codeverweise in den Dokumenten, die ihr Ziel verloren haben
+## Codeverweise in den Dokumenten: `check_doc_references.py` (CI)
 
-Die Konzepte zitieren den Baum nach Datei und Zeile — `WHM_Reborn.cs` samt Zeilennummer,
-`StatusHelper.cs` samt Zeilennummer —, und jeder Commit an diesen Dateien verschiebt das Ziel, ohne das
-Zitat anzufassen. Das Zitat sieht weiterhin richtig aus; wer ihm folgt, landet auf fremdem
-Code oder, schlimmer, auf Code, der sich plausibel wie der Gegenstand liest. Das ist dieselbe
-Alterung wie bei den Statuslisten, eine Ebene höher: bei der Niederschrift richtig, nach der
-nächsten Änderung anderswo still falsch.
+Die Konzepte zitierten den Baum nach Datei und Zeile, und jeder Commit an diesen Dateien verschiebt das Ziel, ohne das
+Zitat anzufassen. Prüfbar ist eine Zeilennummer für sich nicht — jede Zeile existiert —, prüfbar ist, ob **das, wovon
+der Satz spricht**, dort steht. `check_doc_references.py` paart jedes Zitat mit den Bezeichnern des Satzes: Der
+Bezeichner muss an der Zeile stehen (zwei Zeilen Spielraum) oder die Zeile im Rumpf des Members liegen, den er nennt;
+sonst schlägt die CI fehl. Das Archiv ist ausgenommen, es hält fest, was zum Prüfzeitpunkt galt.
 
-Prüfbar ist eine Zeilennummer für sich nicht — jede Zeile existiert. Prüfbar ist, ob **das,
-wovon der Satz spricht**, dort steht, wo der Satz es behauptet. Der Scan paart deshalb jedes
-Zitat mit den Bezeichnern in Backticks daneben und meldet `ok`, `moved` (Bezeichner in der
-Datei, aber anderswo — mit Fundstelle), `gone` (Bezeichner gar nicht mehr da) oder
-`no anchor` (kein prüfbarer Bezeichner; kein Befund, aber ausgewiesen, damit die Abdeckung
-des Laufs sichtbar bleibt).
+**Behoben wird nicht die Nummer, sondern die Bauform.** Wo ein eindeutiger Bezeichner existiert, steht er statt der
+Zeile. Eine Zeilennummer altert bei jedem Commit, ein Bezeichner erst bei einer Umbenennung, und die fällt beim
+Kompilieren auf.
 
-**`AUDIT_LOG.md` ist ausgenommen und wird getrennt ausgewiesen.** Das Archiv hält fest, was
-zum Prüfzeitpunkt galt; eine seither verschobene Zeile datiert den Befund, sie entwertet ihn
-nicht. Nur Dokumente, die den **geltenden** Stand behaupten, müssen stimmen.
-
-Erster Lauf: 122 Zitate, 26 Befunde. Zwei Fehler des Scans selbst kamen dabei heraus und sind
-behoben — in einer Tabellenzeile mit zwei Zitaten prüfte er jeden Bezeichner gegen beide
-Dateien, was als „Code ist weg" gelesen wurde, und das Abschneiden am Nachbarzitat zerlegte
-die Backtick-Paarung, sodass Prosa als Bezeichner gelesen wurde. Der Selbsttest deckt beides
-ab. Nach der Korrektur blieben zehn echte Befunde in den geltenden Dokumenten.
-
-**Behoben wurde nicht die Nummer, sondern die Bauform.** Wo ein eindeutiger Bezeichner
-existiert, steht jetzt er statt der Zeile — `WHM_Reborn.ShouldStretchHolyStun` statt einer
-Zeilenangabe in derselben Datei. Eine Zeilennummer altert bei jedem Commit, ein Bezeichner
-erst bei einer Umbenennung, und die fällt beim Kompilieren auf.
-
-*(Das Gegenbeispiel steht hier bewusst ohne Nummer: Als Zeilenangabe geschrieben altert es
-mit — und es hat genau das getan, bis das Prüfskript es als vermeintlich echte Referenz
-meldete.)*
+`scan15.py` führte dieselbe Aufgabe von Hand mit schwächerem Maß (nur `.cs`, Fenster von zwölf Zeilen) und ist
+entfernt (A286, C5); seine Geschichte steht im Archiv.
 
 ## scan16.py — Aktionen, deren zweite Wirkung niemand liest
 
@@ -521,6 +501,8 @@ eingehängt: Das ist eine Entscheidung über den Veröffentlichungspfad und lieg
 Bis dahin gehört das Skript in den Sync-Ablauf, gleich nach `git fetch --prune --tags upstream`.
 
 ## check_resource_lists.py — eine Änderung, die niemals geladen wird
+
+Läuft in der CI (seit A286, P2); vorher nur von Hand, und eine Änderung an `Resources/` blieb dazwischen unbemerkt.
 
 Die gepflegten Listen — welche Zauber Tankbuster sind, welche Flächenangriffe, welche Status
 Unverwundbarkeiten — werden **nicht aus dem Baum gelesen**. `OtherConfiguration.InitOne` nimmt die

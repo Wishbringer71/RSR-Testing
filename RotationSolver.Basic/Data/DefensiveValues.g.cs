@@ -78,10 +78,12 @@ public static class DefensiveValues
 		[3613] = new(0.1f, 0f, 0f, 0f), // CollectiveUnconsciousPvE
 		[3634] = new(0f, 0f, 0f, 0f) { SelfPhysical = 0.1f, SelfMagical = 0.2f }, // DarkMindPvE
 		[3636] = new(0.3f, 0f, 0f, 0f), // ShadowWallPvE
+		[7382] = new(0.1f, 0f, 0f, 0f), // InterventionPvE
 		[7388] = new(0f, 0f, 0f, 0.15f), // ShakeItOffPvE
 		[7393] = new(0f, 0f, 0f, 0.25f), // TheBlackestNightPvE
 		[7394] = new(0.2f, 0f, 0f, 0f), // RiddleOfEarthPvE
 		[7433] = new(0.1f, 0f, 0f, 0f), // PlenaryIndulgencePvE
+		[7498] = new(0.1f, 0f, 0f, 0f), // ThirdEyePvE
 		[7531] = new(0.2f, 0f, 0f, 0f), // RampartPvE
 		[7535] = new(0f, 0.1f, 0.1f, 0f), // ReprisalPvE
 		[7549] = new(0f, 0.1f, 0.05f, 0f), // FeintPvE
@@ -91,7 +93,12 @@ public static class DefensiveValues
 		[12960] = new(0.8f, 0f, 0f, 0f), // WisdomOfThePlatebearerPvE
 		[12961] = new(0.45f, 0f, 0f, 0f), // WisdomOfTheGuardianPvE
 		[12968] = new(0f, 0f, 0f, 0f) { MaxHp = 0.1f }, // SpiritOfTheRememberedPvE
+		[12969] = new(0f, 0f, 0f, 0f) { SelfPhysical = 0.22f }, // ProtectLPvE
+		[12970] = new(0f, 0f, 0f, 0f) { SelfMagical = 0.22f }, // ShellLPvE
 		[12991] = new(0f, 0f, 0f, 0.1f), // StoneskinLPvE
+		[12998] = new(0f, 0f, 0f, 0f) { SelfPhysical = 0.99f }, // SolidShieldLPvE
+		[12999] = new(0f, 0f, 0f, 0f) { SelfMagical = 0.99f }, // SpellShieldLPvE
+		[14477] = new(0f, 0f, 0f, 0f) { SelfMagical = 0.22f }, // WisdomOfTheElderPvE
 		[14480] = new(0.64f, 0f, 0f, 0f), // WisdomOfTheIndomitablePvE
 		[16140] = new(0.1f, 0f, 0f, 0f), // CamouflagePvE
 		[16148] = new(0.3f, 0f, 0f, 0f), // NebulaPvE
@@ -100,10 +107,16 @@ public static class DefensiveValues
 		[16464] = new(0.1f, 0f, 0f, 0f), // NascentFlashPvE
 		[16471] = new(0f, 0f, 0f, 0f) { SelfPhysical = 0.05f, SelfMagical = 0.1f }, // DarkMissionaryPvE
 		[16536] = new(0.1f, 0f, 0f, 0f), // TemperancePvE
+		[16538] = new(0f, 0f, 0f, 0f) { SelfMagical = 0.05f }, // FeyIlluminationPvE
+		[18315] = new(0.05f, 0f, 0f, 0f), // CactguardPvE
 		[18320] = new(0f, 0f, 0f, 0f) { MaxHp = 0.2f }, // DevourPvE
 		[20495] = new(0.5f, 0f, 0f, 0f), // AetherialAegisPvE
 		[20703] = new(0.9f, 0f, 0f, 0f), // LostManawallPvE
+		[20709] = new(0f, 0f, 0f, 0f) { SelfPhysical = 0.1f }, // LostProtectPvE
+		[20710] = new(0f, 0f, 0f, 0f) { SelfMagical = 0.1f }, // LostShellPvE
 		[20712] = new(0f, 0f, 0f, 0.15f), // LostStoneskinPvE
+		[20715] = new(0f, 0f, 0f, 0f) { SelfMagical = 0.5f }, // LostFontOfMagicPvE
+		[20717] = new(0f, 0f, 0f, 0f) { SelfPhysical = 0.5f }, // LostFontOfPowerPvE
 		[20722] = new(0.3f, 0f, 0f, 0f), // BannerOfTirelessConvictionPvE
 		[20723] = new(0.3f, 0.15f, 0.15f, 0f), // BannerOfFirmResolvePvE
 		[21611] = new(0.1f, 0f, 0f, 0f), // FixedSignPvE
@@ -112,9 +125,12 @@ public static class DefensiveValues
 		[23273] = new(0.2f, 0f, 0f, 0f), // ChelonianGatePvE
 		[23280] = new(0.2f, 0f, 0f, 0f), // DragonForcePvE
 		[23908] = new(0f, 0f, 0f, 0.1f), // LostStoneskinIiPvE
+		[23915] = new(0f, 0f, 0f, 0f) { SelfPhysical = 0.15f }, // LostProtectIiPvE
+		[23916] = new(0f, 0f, 0f, 0f) { SelfMagical = 0.15f }, // LostShellIiPvE
 		[23917] = new(0f, 0f, 0f, 0f) { MaxHp = 0.3f }, // LostBubblePvE
 		[23921] = new(0.05f, 0f, 0f, 0f), // LostBloodRagePvE
 		[24298] = new(0.1f, 0f, 0f, 0f), // KeracholePvE
+		[24303] = new(0.1f, 0f, 0f, 0f), // TaurocholePvE
 		[24310] = new(0.1f, 0f, 0f, 0f), // HolosPvE
 		[24404] = new(0f, 0f, 0f, 0.1f), // ArcaneCrestPvE
 		[25746] = new(0.15f, 0f, 0f, 0f), // HolySheltronPvE
@@ -122,11 +138,13 @@ public static class DefensiveValues
 		[25754] = new(0.1f, 0f, 0f, 0f), // OblationPvE
 		[25758] = new(0.15f, 0f, 0f, 0f), // HeartOfCorundumPvE
 		[25799] = new(0f, 0f, 0f, 0.2f), // RadiantAegisPvE
+		[25857] = new(0f, 0f, 0f, 0f) { SelfMagical = 0.1f }, // MagickBarrierPvE
 		[25861] = new(0.15f, 0f, 0f, 0f), // AquaveilPvE
 		[25867] = new(0f, 0f, 0f, 0f) { MaxHp = 0.1f }, // ProtractionPvE
 		[25868] = new(0.1f, 0f, 0f, 0f), // ExpedientPvE
 		[25873] = new(0.1f, 0f, 0f, 0f), // ExaltationPvE
 		[29733] = new(0.2f, 0f, 0f, 0f), // VariantRampartPvE
+		[34575] = new(0f, 0f, 0f, 0f) { SelfPhysical = 0.5f }, // ForceFieldPvE
 		[34685] = new(0f, 0f, 0f, 0.2f), // TemperaCoatPvE
 		[34686] = new(0f, 0f, 0f, 0.1f), // TemperaGrassaPvE
 		[36920] = new(0.4f, 0f, 0f, 0f), // GuardianPvE
@@ -137,8 +155,10 @@ public static class DefensiveValues
 		[37027] = new(0.1f, 0f, 0f, 0f), // TheBolePvE
 		[37031] = new(0.1f, 0f, 0f, 0f), // SunSignPvE
 		[37124] = new(0f, 0f, 0f, 0f) { MaxHp = 0.2f }, // LuwatenaPulsePvE
+		[41589] = new(0.1f, 0f, 0f, 0f), // PrayPvE
 		[41607] = new(0f, 0f, 0f, 0f) { MaxHp = 0.2f }, // MightyMarchPvE
 		[41610] = new(0.1f, 0f, 0f, 0f), // HerosRimePvE
+		[44896] = new(0f, 0f, 0f, 0f) { SelfPhysical = 0.25f }, // BeastskinPvE
 		[44899] = new(0f, 0.1f, 0.1f, 0f), // SeedsowerPvE
 		[46412] = new(0.6f, 0f, 0f, 0f), // ThickSkinPvE
 		[46590] = new(0f, 0f, 0f, 0.2f), // MagicShellPvE
@@ -150,10 +170,20 @@ public static class DefensiveValues
 		[49088] = new(0.2f, 0f, 0f, 0f), // OccultMightyGuardPvE
 	};
 
-	/// <summary>The figures for this action, or all zeroes when it states none.</summary>
+	/// <summary>
+	/// The figures for this action, or all zeroes when it states none. Where a trait raises a
+	/// damage reduction the effect text leaves blank (Troubadour), the trait's share once the
+	/// player's synced level has it (<see cref="TraitShareOf"/>).
+	/// </summary>
 	public static DefensiveValue For(uint actionId)
 	{
-		return ByActionId.TryGetValue(actionId, out var value) ? value : default;
+		if (ByActionId.TryGetValue(actionId, out var value))
+		{
+			return value;
+		}
+
+		var share = TraitShareOf(actionId);
+		return share > 0f ? new(share, 0f, 0f, 0f) : default;
 	}
 
 	/// <summary>
@@ -462,8 +492,8 @@ public static class DefensiveValues
 		[20712] = 60f, // LostStoneskinPvE
 		[20713] = 600f, // LostBraveryPvE
 		[20714] = 30f, // LostFocusPvE
-		[20715] = 30f, // LostFontOfMagicPvE
-		[20717] = 30f, // LostFontOfPowerPvE
+		[20715] = 15f, // LostFontOfMagicPvE
+		[20717] = 15f, // LostFontOfPowerPvE
 		[20720] = 15f, // BannerOfNobleEndsPvE
 		[20721] = 15f, // BannerOfHonoredSacrificePvE
 		[20722] = 180f, // BannerOfTirelessConvictionPvE
@@ -645,7 +675,7 @@ public static class DefensiveValues
 		[36955] = 30f, // SpiralBlowPvE
 		[36957] = 20f, // DokumoriPvE
 		[36958] = 15f, // KunaisBanePvE
-		[36962] = 9f, // TengentsuPvE
+		[36962] = 4f, // TengentsuPvE
 		[36965] = 30f, // TendoGokenPvE
 		[36966] = 30f, // TendoSetsugekkaPvE
 		[36970] = 60f, // ExecutionersGibbetPvE
@@ -776,8 +806,9 @@ public static class DefensiveValues
 	/// <summary>
 	/// The stated duration in seconds: from the effect text, or - where a trait sets it and the text
 	/// leaves the number blank - from that trait once the player's synced level has it, read in the
-	/// game first and from <see cref="TraitDurationByActionId"/> where the game gives nothing; 0
-	/// when none states one.
+	/// game first and from <see cref="TraitDurationByActionId"/> where the game gives nothing. Below
+	/// the trait's level, the duration the action's own tooltip states at that level, read in the game
+	/// (<see cref="TraitDurations.TryBelowTrait"/>, A316); 0 when none states one.
 	/// </summary>
 	public static float DurationOf(uint actionId)
 	{
@@ -786,10 +817,65 @@ public static class DefensiveValues
 			return seconds;
 		}
 
-		return (TraitDurations.TryInGame(actionId, out var trait) || TraitDurationByActionId.TryGetValue(actionId, out trait))
-			&& DataCenter.PlayerSyncedLevel() >= trait.Level
+		if (!TraitDurations.TryInGame(actionId, out var trait) && !TraitDurationByActionId.TryGetValue(actionId, out trait))
+		{
+			return 0f;
+		}
+
+		return DataCenter.PlayerSyncedLevel() >= trait.Level
 			? trait.Seconds
+			: TraitDurations.TryBelowTrait(actionId, trait.Seconds, out var stated) ? stated : 0f;
+	}
+
+	/// <summary>
+	/// Damage reductions a trait raises where the effect text leaves the figure blank ("by %"), with
+	/// the level the trait is learned at - "Improves Troubadour's damage reduction effect to 15%"
+	/// (fetch_trait_durations.py). Read in the game first (<see cref="TraitDurations"/>); below the
+	/// trait's level the figure is not stated anywhere and stays unknown (A286, G6).
+	/// </summary>
+	public static readonly Dictionary<uint, (float Share, int Level)> TraitMitigationByActionId = new()
+	{
+		[7405] = (0.15f, 98), // TroubadourPvE
+		[16012] = (0.15f, 98), // ShieldSambaPvE
+		[16889] = (0.15f, 98), // TacticianPvE
+	};
+
+	/// <summary>The statuses the actions of <see cref="TraitMitigationByActionId"/> put on their bearers.</summary>
+	public static readonly Dictionary<uint, uint> TraitMitigatingActionByStatusId = new()
+	{
+		[1826] = 16012, // ShieldSamba from ShieldSambaPvE
+		[1934] = 7405, // Troubadour from TroubadourPvE
+		[1951] = 16889, // Tactician_1951 from TacticianPvE
+		[2177] = 16889, // Tactician_2177 from TacticianPvE
+	};
+
+	/// <summary>
+	/// The damage reduction a trait sets for this action once the player's synced level has it: read
+	/// in the game first, from <see cref="TraitMitigationByActionId"/> where the game gives nothing;
+	/// 0 when no trait states one.
+	/// </summary>
+	public static float TraitShareOf(uint actionId)
+	{
+		return (TraitDurations.TryShareInGame(actionId, out var trait) || TraitMitigationByActionId.TryGetValue(actionId, out trait))
+			&& DataCenter.PlayerSyncedLevel() >= trait.Level
+			? trait.Share
 			: 0f;
+	}
+
+	/// <summary>
+	/// What a status takes off a hit: the figures of <see cref="MitigationByStatusId"/>, or for a
+	/// status whose action a trait rates (Troubadour), the trait's share. False when neither states one.
+	/// </summary>
+	public static bool TryStatus(uint statusId, out DefensiveValue value)
+	{
+		if (MitigationByStatusId.TryGetValue(statusId, out value))
+		{
+			return true;
+		}
+
+		var share = TraitMitigatingActionByStatusId.TryGetValue(statusId, out var actionId) ? TraitShareOf(actionId) : 0f;
+		value = share > 0f ? new(share, 0f, 0f, 0f) : default;
+		return share > 0f;
 	}
 
 	/// <summary>
@@ -821,82 +907,81 @@ public static class DefensiveValues
 		[74] = new(0.3f, 0f, 0f, 0f), // Sentinel from SentinelPvE
 		[87] = new(0f, 0f, 0f, 0f) { MaxHp = 0.2f }, // ThrillOfBattle from ThrillOfBattlePvE
 		[89] = new(0.3f, 0f, 0f, 0f), // Vengeance from VengeancePvE
-		[728] = new(0.15f, 0f, 0f, 0f), // Sheltron from SheltronPvE
+		[317] = new(0f, 0f, 0f, 0f) { SelfMagical = 0.05f }, // FeyIllumination from FeyIlluminationPvE
 		[735] = new(0.1f, 0f, 0f, 0f), // RawIntuition from RawIntuitionPvE
 		[746] = new(0f, 0f, 0f, 0f) { SelfPhysical = 0.1f, SelfMagical = 0.2f }, // DarkMind from DarkMindPvE
 		[747] = new(0.3f, 0f, 0f, 0f), // ShadowWall from ShadowWallPvE
 		[753] = new(0f, 0.1f, 0.1f, 0f), // Reprisal from ReprisalPvE
 		[830] = new(0.1f, 0f, 0f, 0f), // TheBole from TheBolePvE
-		[847] = new(0.1f, 0f, 0f, 0f), // CollectiveUnconscious from CollectiveUnconsciousPvE
-		[848] = new(0.1f, 0f, 0f, 0f), // CollectiveUnconscious_848 from CollectiveUnconsciousPvE
 		[849] = new(0.1f, 0f, 0f, 0f), // CollectiveUnconscious_849 from CollectiveUnconsciousPvE
 		[860] = new(0f, 0.1f, 0.1f, 0f), // Dismantled from DismantlePvE
+		[1174] = new(0.1f, 0f, 0f, 0f), // Intervention from InterventionPvE
 		[1179] = new(0.2f, 0f, 0f, 0f), // RiddleOfEarth from RiddleOfEarthPvE
 		[1191] = new(0.2f, 0f, 0f, 0f), // Rampart_1191 from RampartPvE
 		[1193] = new(0f, 0.1f, 0.1f, 0f), // Reprisal_1193 from ReprisalPvE
 		[1195] = new(0f, 0.1f, 0.05f, 0f), // Feint from FeintPvE
 		[1203] = new(0f, 0.05f, 0.1f, 0f), // Addle from AddlePvE
 		[1219] = new(0.1f, 0f, 0f, 0f), // Confession from PlenaryIndulgencePvE
-		[1310] = new(0.2f, 0f, 0f, 0f), // RiddleOfEarth_1310 from RiddleOfEarthPvE
+		[1232] = new(0.1f, 0f, 0f, 0f), // ThirdEye from ThirdEyePvE
 		[1339] = new(0.1f, 0f, 0f, 0f), // TheBole_1339 from TheBolePvE
 		[1633] = new(0.8f, 0f, 0f, 0f), // WisdomOfThePlatebearer from WisdomOfThePlatebearerPvE
 		[1634] = new(0.45f, 0f, 0f, 0f), // WisdomOfTheGuardian from WisdomOfTheGuardianPvE
 		[1641] = new(0f, 0f, 0f, 0f) { MaxHp = 0.1f }, // SpiritOfTheRemembered from SpiritOfTheRememberedPvE
+		[1642] = new(0f, 0f, 0f, 0f) { SelfPhysical = 0.22f }, // ProtectL from ProtectLPvE
+		[1643] = new(0f, 0f, 0f, 0f) { SelfMagical = 0.22f }, // ShellL from ShellLPvE
 		[1719] = new(0.4f, 0.4f, 0.4f, 0f), // MightyGuard from MightyGuardPvE
 		[1722] = new(0.9f, 0f, 0f, 0f), // Diamondback from DiamondbackPvE
+		[1739] = new(0f, 0f, 0f, 0f) { SelfMagical = 0.22f }, // WisdomOfTheElder from WisdomOfTheElderPvE
 		[1742] = new(0.64f, 0f, 0f, 0f), // WisdomOfTheIndomitable from WisdomOfTheIndomitablePvE
 		[1832] = new(0.1f, 0f, 0f, 0f), // Camouflage from CamouflagePvE
 		[1834] = new(0.3f, 0f, 0f, 0f), // Nebula from NebulaPvE
 		[1839] = new(0f, 0f, 0f, 0f) { SelfPhysical = 0.05f, SelfMagical = 0.1f }, // HeartOfLight from HeartOfLightPvE
 		[1840] = new(0.15f, 0f, 0f, 0f), // HeartOfStone from HeartOfStonePvE
 		[1856] = new(0.15f, 0f, 0f, 0f), // Sheltron_1856 from SheltronPvE
-		[1857] = new(0.1f, 0f, 0f, 0f), // NascentFlash from NascentFlashPvE
 		[1872] = new(0.1f, 0f, 0f, 0f), // Temperance from TemperancePvE
 		[1873] = new(0.1f, 0f, 0f, 0f), // Temperance_1873 from TemperancePvE
-		[1883] = new(0.1f, 0f, 0f, 0f), // TheBole_1883 from TheBolePvE
 		[1894] = new(0f, 0f, 0f, 0f) { SelfPhysical = 0.05f, SelfMagical = 0.1f }, // DarkMissionary from DarkMissionaryPvE
 		[1978] = new(0.2f, 0f, 0f, 0f), // Rampart_1978 from RampartPvE
 		[1988] = new(0f, 0.05f, 0.1f, 0f), // Addle_1988 from AddlePvE
 		[2000] = new(0f, 0f, 0f, 0f) { SelfPhysical = 0.05f, SelfMagical = 0.1f }, // HeartOfLight_2000 from HeartOfLightPvE
 		[2008] = new(0.2f, 0f, 0f, 0f), // RiddleOfEarth_2008 from RiddleOfEarthPvE
-		[2037] = new(0.1f, 0f, 0f, 0f), // Temperance_2037 from TemperancePvE
-		[2038] = new(0.1f, 0f, 0f, 0f), // Temperance_2038 from TemperancePvE
+		[2020] = new(0.1f, 0f, 0f, 0f), // Intervention_2020 from InterventionPvE
 		[2061] = new(0.1f, 0f, 0f, 0f), // NascentFlash_2061 from NascentFlashPvE
 		[2101] = new(0f, 0.1f, 0.1f, 0f), // Reprisal_2101 from ReprisalPvE
+		[2119] = new(0.05f, 0f, 0f, 0f), // Cactguard from CactguardPvE
 		[2120] = new(0f, 0f, 0f, 0f) { MaxHp = 0.2f }, // HpBoost_2120 from DevourPvE
 		[2171] = new(0f, 0f, 0f, 0f) { SelfPhysical = 0.05f, SelfMagical = 0.1f }, // DarkMissionary_2171 from DarkMissionaryPvE
-		[2185] = new(0f, 0.1f, 0.05f, 0f), // Feint_2185 from FeintPvE
-		[2227] = new(0.1f, 0f, 0f, 0f), // NascentFlash_2227 from NascentFlashPvE
 		[2283] = new(0.1f, 0f, 0f, 0f), // CollectiveUnconscious_2283 from CollectiveUnconsciousPvE
 		[2295] = new(0.5f, 0f, 0f, 0f), // AetherialAegis from AetherialAegisPvE
 		[2328] = new(0.3f, 0f, 0f, 0f), // BannerOfTirelessConviction from BannerOfTirelessConvictionPvE
 		[2329] = new(0.3f, 0.15f, 0.15f, 0f), // BannerOfFirmResolve from BannerOfFirmResolvePvE
+		[2333] = new(0f, 0f, 0f, 0f) { SelfPhysical = 0.1f }, // LostProtect from LostProtectPvE
+		[2334] = new(0f, 0f, 0f, 0f) { SelfMagical = 0.1f }, // LostShell from LostShellPvE
 		[2345] = new(0.9f, 0f, 0f, 0f), // LostManawall from LostManawallPvE
 		[2443] = new(0.3f, 0f, 0f, 0f), // LostAethershield from LostAethershieldPvE
 		[2484] = new(0f, 0.6f, 0.6f, 0f), // ClericStance_2484 from LostSeraphStrikePvE
 		[2496] = new(0.2f, 0f, 0f, 0f), // ChelonianGate from ChelonianGatePvE
 		[2500] = new(0.2f, 0f, 0f, 0f), // DragonForce from DragonForcePvE
+		[2561] = new(0f, 0f, 0f, 0f) { SelfPhysical = 0.15f }, // LostProtectIi from LostProtectIiPvE
+		[2562] = new(0f, 0f, 0f, 0f) { SelfMagical = 0.15f }, // LostShellIi from LostShellIiPvE
 		[2563] = new(0f, 0f, 0f, 0f) { MaxHp = 0.3f }, // LostBubble from LostBubblePvE
 		[2566] = new(0.05f, 0f, 0f, 0f), // LostBloodRage from LostBloodRagePvE
 		[2618] = new(0.1f, 0f, 0f, 0f), // Kerachole from KeracholePvE
+		[2619] = new(0.1f, 0f, 0f, 0f), // Taurochole from TaurocholePvE
 		[2639] = new(0.1f, 0f, 0f, 0f), // FixedSign from FixedSignPvE
 		[2640] = new(0.1f, 0f, 0f, 0f), // FixedSign_2640 from FixedSignPvE
-		[2641] = new(0.1f, 0f, 0f, 0f), // FixedSign_2641 from FixedSignPvE
 		[2674] = new(0.15f, 0f, 0f, 0f), // HolySheltron from HolySheltronPvE
 		[2678] = new(0.1f, 0f, 0f, 0f), // Bloodwhetting from BloodwhettingPvE
 		[2682] = new(0.1f, 0f, 0f, 0f), // Oblation from OblationPvE
 		[2683] = new(0.15f, 0f, 0f, 0f), // HeartOfCorundum from HeartOfCorundumPvE
+		[2707] = new(0f, 0f, 0f, 0f) { SelfMagical = 0.1f }, // MagickBarrier from MagickBarrierPvE
 		[2708] = new(0.15f, 0f, 0f, 0f), // Aquaveil from AquaveilPvE
 		[2710] = new(0f, 0f, 0f, 0f) { MaxHp = 0.1f }, // Protraction from ProtractionPvE
 		[2711] = new(0.1f, 0f, 0f, 0f), // DesperateMeasures from ExpedientPvE
-		[2712] = new(0.1f, 0f, 0f, 0f), // Expedience from ExpedientPvE
 		[2717] = new(0.1f, 0f, 0f, 0f), // Exaltation from ExaltationPvE
 		[3003] = new(0.1f, 0f, 0f, 0f), // Holos from HolosPvE
-		[3026] = new(0.15f, 0f, 0f, 0f), // HolySheltron_3026 from HolySheltronPvE
-		[3030] = new(0.1f, 0f, 0f, 0f), // Bloodwhetting_3030 from BloodwhettingPvE
-		[3051] = new(0.3f, 0f, 0f, 0f), // Nebula_3051 from NebulaPvE
-		[3086] = new(0.15f, 0f, 0f, 0f), // Aquaveil_3086 from AquaveilPvE
 		[3185] = new(0f, 0f, 0f, 0f) { MaxHp = 0.2f }, // ThrillOfBattle_3185 from ThrillOfBattlePvE
+		[3240] = new(0f, 0f, 0f, 0f) { SelfMagical = 0.1f }, // MagickBarrier_3240 from MagickBarrierPvE
 		[3360] = new(0.2f, 0f, 0f, 0f), // VulnerabilityDown_3360 from VariantRampartPvE
 		[3785] = new(0f, 0f, 0f, 0f) { MaxHp = 0.2f }, // LuwatenaPulse from LuwatenaPulsePvE
 		[3829] = new(0.4f, 0f, 0f, 0f), // Guardian from GuardianPvE
@@ -906,17 +991,16 @@ public static class DefensiveValues
 		[3853] = new(0.1f, 0f, 0f, 0f), // Tengentsu from TengentsuPvE
 		[3890] = new(0.1f, 0f, 0f, 0f), // TheBole_3890 from TheBolePvE
 		[3896] = new(0.1f, 0f, 0f, 0f), // SunSign from SunSignPvE
-		[3984] = new(0.1f, 0f, 0f, 0f), // Temperance_3984 from TemperancePvE
 		[3985] = new(0.1f, 0f, 0f, 0f), // Temperance_3985 from TemperancePvE
 		[4168] = new(0.2f, 0f, 0f, 0f), // Rampart_4168 from RampartPvE
 		[4246] = new(0f, 0f, 0f, 0f) { MaxHp = 0.2f }, // MightyMarch from MightyMarchPvE
 		[4249] = new(0.1f, 0f, 0f, 0f), // HerosRime from HerosRimePvE
 		[4264] = new(0f, 0.1f, 0.1f, 0f), // SilverSickness from MesmerizePvE
 		[4295] = new(0.15f, 0f, 0f, 0f), // HeartOfCorundum_4295 from HeartOfCorundumPvE
+		[4621] = new(0f, 0f, 0f, 0f) { SelfPhysical = 0.25f }, // Beastskin from BeastskinPvE
 		[4622] = new(0f, 0.1f, 0.1f, 0f), // SeedsSown from SeedsowerPvE
 		[4792] = new(0.5f, 0f, 0f, 0f), // Defend from DefendPvE
 		[4801] = new(0f, 0.1f, 0.1f, 0f), // Enamored from MesmerizePvE
-		[5317] = new(0f, 0.99f, 0.99f, 0f), // OccultToad from OccultToadPvE
 		[5321] = new(0.2f, 0f, 0f, 0f), // OccultMightyGuard from OccultMightyGuardPvE
 	};
 
@@ -930,51 +1014,64 @@ public static class DefensiveValues
 		[40] = [87, 3185], // ThrillOfBattlePvE
 		[44] = [89], // VengeancePvE
 		[2887] = [860], // DismantlePvE
-		[3542] = [728, 1856], // SheltronPvE
+		[3542] = [1856], // SheltronPvE
 		[3551] = [735], // RawIntuitionPvE
-		[3613] = [847, 848, 849, 2283], // CollectiveUnconsciousPvE
+		[3613] = [849, 2283], // CollectiveUnconsciousPvE
 		[3634] = [746], // DarkMindPvE
 		[3636] = [747], // ShadowWallPvE
-		[7394] = [1179, 1310, 2008], // RiddleOfEarthPvE
+		[7382] = [1174, 2020], // InterventionPvE
+		[7394] = [1179, 2008], // RiddleOfEarthPvE
 		[7433] = [1219], // PlenaryIndulgencePvE
+		[7498] = [1232], // ThirdEyePvE
 		[7531] = [71, 1191, 1978, 4168], // RampartPvE
 		[7535] = [753, 1193, 2101], // ReprisalPvE
-		[7549] = [1195, 2185], // FeintPvE
+		[7549] = [1195], // FeintPvE
 		[7560] = [1203, 1988], // AddlePvE
 		[11417] = [1719], // MightyGuardPvE
 		[11424] = [1722], // DiamondbackPvE
 		[12960] = [1633], // WisdomOfThePlatebearerPvE
 		[12961] = [1634], // WisdomOfTheGuardianPvE
 		[12968] = [1641], // SpiritOfTheRememberedPvE
+		[12969] = [1642], // ProtectLPvE
+		[12970] = [1643], // ShellLPvE
+		[14477] = [1739], // WisdomOfTheElderPvE
 		[14480] = [1742], // WisdomOfTheIndomitablePvE
 		[16140] = [1832], // CamouflagePvE
-		[16148] = [1834, 3051], // NebulaPvE
+		[16148] = [1834], // NebulaPvE
 		[16160] = [1839, 2000], // HeartOfLightPvE
 		[16161] = [1840], // HeartOfStonePvE
-		[16464] = [1857, 2061, 2227], // NascentFlashPvE
+		[16464] = [2061], // NascentFlashPvE
 		[16471] = [1894, 2171], // DarkMissionaryPvE
-		[16536] = [1872, 1873, 2037, 2038, 3984, 3985], // TemperancePvE
+		[16536] = [1872, 1873, 3985], // TemperancePvE
+		[16538] = [317], // FeyIlluminationPvE
+		[18315] = [2119], // CactguardPvE
 		[18320] = [2120], // DevourPvE
 		[20495] = [2295], // AetherialAegisPvE
 		[20703] = [2345], // LostManawallPvE
+		[20709] = [2333], // LostProtectPvE
+		[20710] = [2334], // LostShellPvE
 		[20722] = [2328], // BannerOfTirelessConvictionPvE
 		[20723] = [2329], // BannerOfFirmResolvePvE
-		[21611] = [2639, 2640, 2641], // FixedSignPvE
+		[21611] = [2639, 2640], // FixedSignPvE
 		[22354] = [2484], // LostSeraphStrikePvE
 		[22355] = [2443], // LostAethershieldPvE
 		[23273] = [2496], // ChelonianGatePvE
 		[23280] = [2500], // DragonForcePvE
+		[23915] = [2561], // LostProtectIiPvE
+		[23916] = [2562], // LostShellIiPvE
 		[23917] = [2563], // LostBubblePvE
 		[23921] = [2566], // LostBloodRagePvE
 		[24298] = [2618], // KeracholePvE
+		[24303] = [2619], // TaurocholePvE
 		[24310] = [3003], // HolosPvE
-		[25746] = [2674, 3026], // HolySheltronPvE
-		[25751] = [2678, 3030], // BloodwhettingPvE
+		[25746] = [2674], // HolySheltronPvE
+		[25751] = [2678], // BloodwhettingPvE
 		[25754] = [2682], // OblationPvE
 		[25758] = [2683, 4295], // HeartOfCorundumPvE
-		[25861] = [2708, 3086], // AquaveilPvE
+		[25857] = [2707, 3240], // MagickBarrierPvE
+		[25861] = [2708], // AquaveilPvE
 		[25867] = [2710], // ProtractionPvE
-		[25868] = [2711, 2712], // ExpedientPvE
+		[25868] = [2711], // ExpedientPvE
 		[25873] = [2717], // ExaltationPvE
 		[29733] = [3360], // VariantRampartPvE
 		[36920] = [3829], // GuardianPvE
@@ -982,15 +1079,15 @@ public static class DefensiveValues
 		[36927] = [3835], // ShadowedVigilPvE
 		[36935] = [3838], // GreatNebulaPvE
 		[36962] = [3853], // TengentsuPvE
-		[37027] = [830, 1339, 1883, 3890], // TheBolePvE
+		[37027] = [830, 1339, 3890], // TheBolePvE
 		[37031] = [3896], // SunSignPvE
 		[37124] = [3785], // LuwatenaPulsePvE
 		[41607] = [4246], // MightyMarchPvE
 		[41610] = [4249], // HerosRimePvE
+		[44896] = [4621], // BeastskinPvE
 		[44899] = [4622], // SeedsowerPvE
 		[46595] = [4792], // DefendPvE
 		[46605] = [4264, 4801], // MesmerizePvE
-		[49075] = [5317], // OccultToadPvE
 		[49088] = [5321], // OccultMightyGuardPvE
 	};
 }

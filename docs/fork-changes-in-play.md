@@ -1,6 +1,6 @@
 # What this fork does differently in a fight
 
-The whole distance from upstream **7.5.6.13**, as of release `7.5.6.13+wsh1`. What a single
+The whole distance from upstream **7.5.7.1**, as of release `7.5.7.1+wsh1`. What a single
 release changed is in [`fork-changes-since-last-release.md`](fork-changes-since-last-release.md),
 which is the text of the release description; this document is the standing picture and takes
 each release's text over once it has shipped.
@@ -26,32 +26,50 @@ absorbs — not set by hand. Below it the buffer comparison decides, so small re
 cooldown while the party is healthy. Hits and heals above 65,535 points are read in full; before,
 the low 16 bits only, and a raidwide that hit a tank harder than that could be rated small.
 
-- **An interruptible cast can be mitigated too** — `Mitigate a big area cast even when it is
-  interruptible`, **on by default**. Area questions drop interruptible casts, because those are
-  meant to be interrupted. In a dungeon where nobody does — and a Summoner has no interrupt — the
-  hit lands unanswered. A cast measured at the large-barrier figure raises the defence anyway,
-  within a GCD of landing.
-- **A predicted mitigation is not spent on the small hit before the big one** — `Hold a predicted
-  mitigation while a small cast is running`, **on by default**. BossMod gives the timing of the
-  next event, not its size, so in an opening with a small cast ahead of a heavy one the barrier is
-  eaten by the first. It waits while a measured small cast runs.
-- **Area defence asks whether the party is hit; self-shields ask whether you are.** Whom a cast
-  from the AoE list reaches is read from the game data's shape: a single-target action with a cast
-  range reaches only its target, a circle cast at a player is measured around that player, a line
-  only reaches what lies inside its width, and a circle around the caster is measured from the
+-  **An interruptible cast can be mitigated too** —
+  `Mitigate a big area cast even when it is interruptible`, **on by default**. Area questions drop
+  interruptible casts, because those are meant to be interrupted. In a dungeon where nobody does —
+  and a Summoner has no interrupt — the hit lands unanswered. A cast measured at the large-barrier
+  figure raises the defence anyway, within a GCD of landing.
+-  **A predicted mitigation is not spent on the small hit before the big one** —
+  `Hold a predicted mitigation while a small cast is running`, **on by default**. BossMod gives the
+  timing of the next event, not its size, so in an opening with a small cast ahead of a heavy one
+  the barrier is eaten by the first. It waits while a measured small cast runs.
+- **Area casts of invisible helpers count.** Many raidwides are cast by untargetable helpers, or by
+  a boss off the field — Shinryu's Meteor Impact comes from five light spheres, each hitting the
+  whole party. The area recognition reads untargetable enemies too while they cast an action on the
+  AoE list, so such a raidwide opens the defence without a BossModReborn module.
+- **Area defence asks whether the party is hit; your own cooldowns ask whether you are.** Whom a
+  cast from the AoE list reaches is read from the game data's shape: a single-target action with a
+  cast range reaches only its target, a circle cast at a player is measured around that player, a
+  line only reaches what lies inside its width, and a circle around the caster is measured from the
   caster's centre, as BossModReborn draws it (a large boss's hitbox used to be added, so a 10-yalm
-  point-blank reached players 18 yalms away). The area defence opens party mitigations when the hit
-  reaches you or at least two party members. Radiant Aegis, Samurai's Tengentsu and Third Eye, and a
-  damage dealer's single-target defence under the area flag ask whether it reaches you, so a
-  tankbuster circle on the tank no longer spends a Summoner's Radiant Aegis. Tempera Coat is
-  unchanged, being what Tempera Grassa needs first. Ground-targeted circles, cones and charges are
-  still measured from the caster: the game data does not state where they land or how wide they open.
+  point-blank reached players 18 yalms away). Ground-targeted circles, cones and charges are still
+  measured from the caster: the game data does not state where they land or how wide they open. The
+  area defence opens party mitigations when the hit reaches you or at least two party members.
+  Defences that protect only you — Rampart, Damnation, Raw Intuition, Arm's Length, a barrier on
+  yourself, Radiant Aegis, Tempera Coat, Samurai's Tengentsu and Third Eye — go out only when the hit
+  that opened the defence reaches you, in the area and the single-target defence alike and for every
+  job, so a tankbuster circle on the tank no longer spends a Summoner's Radiant Aegis. Help for others
+  stays: Reprisal, Shake It Off, Intervention and Heart of Corundum on the tankbuster's target are not
+  held back. Your own area defence command — "Def AoE" in the control window or the defence macro —
+  is not second-guessed: it casts a self-only defence even when RSR does not see the hit reaching you.
+- **BossModReborn's raidwides count where they reach you or your party.** BossModReborn calls more
+  than raidwides "raidwide": towers, baits, spreads and charges on single players carry the same type,
+  and each prediction names whom it hits. Where RSR can read that list (the prediction is the next
+  one), a raidwide that reaches neither you nor more than one party member opens nothing, and one that
+  reaches the party but not you spends no defence that protects only you. Where BossModReborn names
+  nobody (its timeline, or another prediction comes first), the raidwide counts as hitting everyone.
 - **Markers count only on you or your own party** (Duty Support companions included); a stack
   marker in another alliance group no longer opens your mitigations.
 - **Skip area defence for casts that missed you** — **on by default**. An area cast that landed last
   time without reaching you does not open your area defence the next time; once it reaches you
   again, it counts again. Blocked, parried, absorbed or taken under invulnerability counts as
-  reaching you. Healing ahead and the party's threat check are unaffected.
+  reaching you. Healing ahead and the party's threat check are unaffected. Some listed casts land
+  only on their caster and hurt nobody, and the hit comes under the same name right after, often from
+  an invisible helper: a same-named hit on the party after such an empty landing counts as that
+  landing, both for whether the cast reached you and for how hard it hits. A wind-up that nothing
+  follows stays skipped.
 
 ## Healing — when it lands
 
@@ -70,6 +88,10 @@ the low 16 bits only, and a raidwide that hit a tank harder than that could be r
   and Emergency Tactics heal with the next GCD and look ahead like a GCD heal. The rate is net of
   mitigation, barrier and healing, and each prediction is held against the actual course every
   second and corrected.
+- **The GCD length holds between GCDs.** Out of range, between pulls and before the first GCD the
+  game reports no GCD length, and everything measured in GCDs collapsed: heal-ahead looked nowhere,
+  the one-GCD window in which a running enemy cast is answered was closed, and the first-GCDs-of-combat
+  guards did not hold. The last GCD length now stands in while none runs.
 - **Healing ahead of an announced area cast** — `Heal ahead of an announced area cast`, **on by
   default**. 60 % in front of a 45 % raidwide is not healthy. An existing barrier counts against
   the hit it absorbs.
@@ -95,19 +117,22 @@ the low 16 bits only, and a raidwide that hit a tank harder than that could be r
 
 - **Choose the heal target by danger** — **on by default**. Below anyone about to fall, a healer
   or tank under their role threshold who is being attacked comes first, lowest health first and a
-  healer before a tank at equal health; then everyone else — by fewest hit points while an area cast
-  is announced, otherwise by lowest percentage. A damage dealer at 10 % is no longer passed over
-  because the tank sits at 44 %.
+  healer before a tank at equal health; then everyone else — while area damage is announced by the
+  hit points left after what is coming, otherwise by lowest percentage. Area damage counts as
+  announced from any source: a listed area cast reaching the party, a large one even when it can be
+  interrupted, an area marker on the party, or a raidwide BossModReborn announces within the
+  mitigation window. A damage dealer at 10 % is no longer passed over because the tank sits at 44 %.
 - **A party member behind the camera can be healed again** — the "only targets in view"
   filter applied to heal targets as well.
 - **A target under invulnerability** gets healing at a lowered threshold and the normal one
   shortly before the status ends, instead of none at all.
-- **Warrior: Nascent Flash reaches the party.** Its target filter read the invulnerability check
+-  **Warrior: Nascent Flash reaches the party.** Its target filter read the invulnerability check
   the wrong way round and picked only invulnerable members. It goes to members who need it, never to
-  one whose healing is nullified. `Nascent Flash target priority` defaults to `Most in danger of
-  dying first…`. `Keep Bloodwhetting for yourself when you need it` (**on by default**) keeps it
-  while a tankbuster on you comes before the shared cooldown is back, or while you are about to die —
-  unless the member is about to die and is a healer, or another tank while you are not.
+  one whose healing is nullified. `Nascent Flash target priority` defaults to
+  `Most in danger of dying first…`. `Keep Bloodwhetting for yourself when you need it` (**on by
+  default**) keeps it while a tankbuster on you comes before the shared cooldown is back, or while
+  you are about to die — unless the member is about to die and is a healer, or another tank while
+  you are not.
 - **"Prioritize Low HP … Big Target" takes effect**; among equally big targets the setting for
   small targets was read.
 
@@ -117,10 +142,13 @@ the low 16 bits only, and a raidwide that hit a tank harder than that could be r
   and The Blackest Night.
 - **A shield is not credited against the healing threshold.** A shield prevents damage, it does
   not restore health: a tank at 40 % stands at 40 % whether a barrier is running or not.
-- **Sage: a barrier on the tank through a dungeon pull** — `Keep Eukrasian Diagnosis on the tank
-  through a pull`, off by default. Renewed whenever the barrier runs out or breaks; each renewal
-  takes a GCD from Dosis. White Mage, Astrologian and Sage share one rule for this upkeep, and none of
-  them spends the MP their raise needs on it.
+-  **Sage: a barrier on the tank through a dungeon pull** —
+  `Keep Eukrasian Diagnosis on the tank through a pull`, **on by default**. In dungeons Eukrasian
+  Diagnosis goes on the tank as they close in on a group and is renewed whenever the barrier runs
+  out or breaks, for as long as the pull lasts; each renewal takes a GCD from Dosis, and in a large
+  pull, where the barrier breaks within a few hits, that is most of the sage's GCDs. White Mage,
+  Astrologian and Sage share one rule for this upkeep, and none of them spends the MP their raise
+  needs on it.
 - **Dancer: Improvisation ends with its barrier.** Improvised Finish was never cast, so the party
   got the regen but not the 5 % barrier.
 
@@ -159,13 +187,66 @@ the low 16 bits only, and a raidwide that hit a tank harder than that could be r
   more party-stack markers. A marker after which no enemy action reaches the marked member goes on
   `TankbusterMarkerWithoutHit.json` and is no longer treated as a tankbuster; a later hit takes it
   off again.
-- **Channel locks** (`Lock actions when casting Passage Of Arms/Collective Unconscious during AOE
-  mitigations`, off by default) hold weaponskills and spells only until the announced hit lands.
+-  **Channel locks hold actions only until the announced hit lands.**
+  `Lock actions when casting Passage Of Arms during AOE mitigations` is **on by default**: Passage
+  of Arms ends with the paladin's next action, and RSR casts it only for an announced area hit, so
+  without the lock the next GCD or weave often ended the channel before the hit.
+  `Lock actions when casting Collective Unconscious during AOE mitigations` stays off by default.
 - **Paladin: Intervention on the other tank works** — it accepts the tank stance from any source.
 - **The BossModReborn timeline is only read when it is switched on.**
 
 ## Tank self-protection
 
+- **A tankbuster on the other tank no longer spends your own cooldowns.** The single-target defence
+  opened for every tankbuster BossModReborn announced and for every cast an enemy aimed at its own
+  target, so Damnation and Rampart went out for a buster BossModReborn had marked as not hitting you.
+  It now spends a defence that protects only you only when the hit reaches you (see "Area defence asks
+  whether the party is hit"); an announced tankbuster whose targets BossModReborn does not name still
+  counts as hitting a tank.
+-  **A measured tankbuster gets the mitigation it needs** —
+  `Spend only the mitigation a measured tankbuster needs`, **on by default**. When a tankbuster the
+  table has measured is cast at you, RSR works out what it takes under what will still stand when it
+  lands — your own mitigation, a co-tank's Reprisal, a healer's mitigation or barrier — against your
+  HP now, and spends the cheapest set of your own ready mitigations, by cooldown, that lets you
+  survive it: one if one is enough, two or more stacked if not, none if the hit is survivable as it
+  stands, each pressed late enough to still stand when the hit lands. Party tools such as Shake It
+  Off or Divine Veil are left to the area defence. While that tankbuster is the only one known to be
+  coming at you, everything else aimed at you is held for the next one, from whichever part of the
+  rotation would have used it; help for another party member, heals and area defence that reaches
+  beyond you still go out. If a planned mitigation has not gone out by the last GCD before the hit,
+  the hold opens. The plan is recomputed all the time, so a heal or a Reprisal that lands before the
+  hit makes it smaller. Tankbusters announced only by a marker or by BossModReborn, and actions not
+  yet measured, keep the ordinary single-target defence.
+-  **The invulnerability only when nothing less survives** —
+  `Use the invulnerability before a tankbuster nothing less survives`, **on by default**. Only when
+  no set of your mitigations would get you through does RSR use Hallowed Ground, Holmgang, Living
+  Dead or Superbolide before the hit — no earlier than its ten seconds less one GCD. With the
+  mitigation setting off, only what already stands counts. It does not depend on the dying-tank
+  threshold: setting that to 0 switches off only the old reactive use. Only if nothing survives and
+  the invulnerability is not there to use — on cooldown, switched off or refused with no retry left
+  before the last GCD before the hit — does everything go, in the hope of someone else's debuff or
+  barrier; never on top of the invulnerability. Under Hallowed Ground or Superbolide past the hit,
+  nothing aimed at you is spent, and a healer spends no single-target mitigation for a tankbuster on
+  a tank standing under one of them past the hit.
+- **One big mitigation per predicted tankbuster, first in line.** For a tankbuster BossModReborn
+  predicts on you, every tank casts its big mitigation (Damnation, Guardian, Shadowed Vigil, Great
+  Nebula and their lower forms) before the smaller ones, and Rampart only when the big one is not
+  taking that tankbuster, so with tankbusters about a minute apart they alternate instead of both
+  landing on one hit and neither on the next. Reprisal in the single-target defence waits for an
+  announced raidwide when the tankbuster is on you, your big mitigation or Rampart already runs, and
+  the raidwide lands after Reprisal would have run out and before it is back.
+-  **Shirk hands the boss to your co-tank when the next tankbuster would kill you** —
+  `Shirk the co-tank after a tankbuster that leaves you in danger`, **on by default**. With another
+  tank in the party, RSR Shirks that tank after a tankbuster on you when the buster left you with a
+  vulnerability debuff or so low that a repeat of the hardest buster measured would kill you, and
+  your invulnerability is not ready. It does so only when the party's enmity on the boss shows the
+  co-tank will take it over: Shirk moves a quarter of your enmity, so below half of yours nothing
+  would change. A co-tank in danger themselves gets nothing; of several candidates it picks the one
+  the fewest enemies are attacking, then the one with the most HP. Once your co-tank has taken the
+  next tankbuster, your debuff has run out, you are above that line again and your invulnerability
+  is ready, RSR provokes the boss back; while you are still in danger, the automatic Provoke no
+  longer takes the boss off a co-tank who drops low. A Shirk that did not move the boss raises the
+  bar for the rest of the fight. The manual Shirk command no longer targets you yourself.
 - **The Blackest Night** repays its 3000 MP only when the barrier is fully absorbed.
   `BlackestNightUsage` defaults to a tankbuster, a big pull with no other mitigation, or below the
   health threshold. On a pull it waits while a White Mage's Holy keeps the pack stunned — one GCD
@@ -179,10 +260,30 @@ the low 16 bits only, and a raidwide that hit a tank harder than that could be r
   by attacking: healers give him a HoT, and full healing starts once the timer runs out, no enemy is
   in reach, BossMod announces a downtime, a tank limit break is up, or his own course will not reach
   full health in time.
-- **Arm's Length on a pull for its Slow** (`UseArmsLengthOnPull`, all four tanks, **on by
-  default**): +20 % recast on every enemy that strikes you. A pull is the global "Number of
-  hostiles" for defensive abilities; a slowed pack is left alone, and a BossModReborn knockback in
-  the gap keeps it.
+-  **Warrior: Thrill of Battle and Bloodwhetting before the hit.**
+  `Use Thrill of Battle before a tankbuster on you` (**on by default**) casts it ahead of an
+  announced tankbuster on you: 20 % more maximum HP, and the healing after the hit 20 % stronger; it
+  stacks with Bloodwhetting instead of waiting behind it. On a pull,
+  `Use Thrill of Battle when your health will fall below its threshold within its duration` (**on by
+  default**) casts it as soon as your health, falling at the measured rate, would pass
+  `Thrill Of Battle Heal Threshold` within its ten seconds; where the healers hold you steady, it
+  waits. `Use Bloodwhetting/Raw intuition on single enemies` is **on by default**, so Bloodwhetting
+  also goes out for a lone boss's tankbuster. A running Bloodwhetting no longer stops the defence or
+  counts as one of the big mitigations Rampart and Damnation wait for; those two still stagger
+  against each other.
+- **Warrior: Shake It Off keeps your Damnation for the tankbuster.** Shake It Off dispels Damnation,
+  Bloodwhetting and Thrill of Battle. As a heal for a single party member it waits while Damnation or
+  Bloodwhetting runs, or while a raidwide is announced after its barrier would end and before it is
+  back; at a raidwide it waits only when a tankbuster on you lands before Damnation ends. Both give way
+  when a party member is about to die. Dispelling Thrill of Battle is allowed: the barrier is sized on
+  the raised maximum HP.
+- **Arm's Length goes out for its Slow, not for a boss's tankbuster** (`UseArmsLengthOnPull`, all
+  four tanks, **on by default**): +20 % recast on every enemy that strikes you. A pull is the global
+  "Number of hostiles" for defensive abilities, counted on ordinary enemies only — bosses do not count;
+  a slowed pack is left alone, and a BossModReborn knockback in the gap keeps it. The single-target
+  defence no longer casts it as a last resort on a boss alone in the arena, where it softens nothing and
+  is then missing for the next knockback, and for Paladin, Warrior, Dark Knight and Gunbreaker this
+  setting has the last word.
 - **The co-tank Provoke** no longer pulls the boss off a tank standing under Superbolide,
   Living Dead or Holmgang.
 
@@ -196,17 +297,31 @@ With `Use BMR intergration to verify safety of movement actions…` (off by defa
 - **Backsteps are checked**: Red Mage's Displacement and Samurai's Hissatsu: Yaten are not used
   when the spot they jump back to lies in a danger zone.
 
+`No fall damage` under Extra (off by default): the game's fall damage function returns zero, so a
+fall from a height costs no HP. The hook and its signature come from Henchman's hacks (AGPL-3.0,
+credited in the file). If the game version does not have that function, the setting switches itself
+off.
+
 ## The learned lists
 
 - **The damage table measures at all.** The effect handler read the action type four bytes wide,
   so no area action was ever rated. Measuring no longer depends on `Record AOE actions` or on the
-  party size; that setting decides only whether new actions are added.
+  party size; that setting decides only whether new actions are added. The actions of invisible
+  helpers are added and measured like any other.
+- **Tankbusters are learned, from every player they hit.** Every hit of a listed tankbuster, or of
+  one whose marker was confirmed, counts on any player — you, your co-tank, or other parties in large
+  content — scaled back to unmitigated by the mitigation that stood on the target and on the boss, and
+  stored per action as a share of maximum HP; a hit taken under a vulnerability debuff is kept apart,
+  and hits from an enemy carrying a Damage Up status are not stored. The tank swap and the tankbuster
+  plan read this table, so a tankbuster from an earlier evening or from your co-tank is known. The list
+  shows each entry's figure and the store's state.
 - **No reading is lost on the way to disk.** Every save merges memory and file and keeps the higher
   reading; a file that cannot be read is left alone; a list whose load did not finish is not written
-  on unload. The AoE, knockback and tankbuster marker lists are saved the same way.
+  on unload. The AoE, knockback, tankbuster and tankbuster marker lists are saved the same way.
 - **The AoE list window** shows the store state under `Store:`, `Casts this session` by what decided
   them, `Last hit:` with the reason a cast was or was not rated, and the effect handler's counts.
-- To start over after a patch, delete `HostileCastingAreaPotential.json` while the game is closed.
+- To start over after a patch, delete `HostileCastingAreaPotential.json` or `TankbusterPotential.json`
+  while the game is closed.
 - **A failed download no longer leaves an empty list for good**; the next start tries again, and an
   unreadable list file is set aside and downloaded afresh.
 
@@ -215,11 +330,20 @@ With `Use BMR intergration to verify safety of movement actions…` (off by defa
 - **Summoner: Searing Light stays with the burst.** It is released as soon as the summon will be
   ready by the next GCD, and the summon waits for it when it cannot go out ahead; a buff that fell
   behind is pulled back. As the only Summoner the slot ahead opens only for the burst demi (Solar
-  Bahamut; Demi-Bahamut below level 100). With other Summoners holding every burst phase it falls
-  back to Titan — or Ifrit when you stand at your current target — and never waits for a buff blocked
-  by theirs. `PreferTitanWhileMoving` (**on by default**) brings Titan forward while you are moving.
+  Bahamut; Demi-Bahamut below level 100). With other Summoners the charge stays with Solar Bahamut
+  until another Summoner takes it: Bahamut and Phoenix open only after another Summoner's Searing Light
+  stood in your last Solar Bahamut window, or stands in the current one; otherwise the charge waits for
+  the next Solar Bahamut, at most one demi longer. With other Summoners holding every burst phase it
+  falls back to Titan — or Ifrit when you stand at your current target — and never waits for a buff
+  blocked by theirs. `PreferTitanWhileMoving` (**on by default**) brings Titan forward while you are
+  moving.
+- **Summoner: Searing Flash no longer expires unused.** Outside a demi it no longer waits for a dying
+  boss but goes out in the last weave slot before Ruby's Glimmer runs out — the case beside other
+  Summoners, where Searing Light can fall into a Titan or Ifrit block and the next demi is further off
+  than Ruby's Glimmer lasts. As the only Summoner it falls inside Solar Bahamut as before.
 - **Summoner: Radiant Aegis goes out before a demi**, which replaces Carbuncle for 15 seconds; the
-  big summon waits for a due shield.
+  big summon waits for a due shield. During a demi it is not chosen, since the game allows it only
+  while Carbuncle is summoned, and Addle comes in its place.
 - **Summoner: Lux Solaris** goes out only when it does some good inside its radius, the same way on
   every path: never under Scalebound or Shackled Healing with others near, or while a Dark Knight in
   its radius waits for Living Dead to trigger; when as many are hurt as its AoE count asks; when your
@@ -235,15 +359,24 @@ With `Use BMR intergration to verify safety of movement actions…` (off by defa
 - **Machinist:** with `Only use Wildfire on Boss targets`, Heat is not held for Wildfire on trash;
   Wildfire cannot go out as Detonator; Queen Overdrive lands before a predicted untargetable phase.
 - **Samurai:** Meditate when no enemy is within 25 yalms in combat.
-- **Reaper:** Hell's Ingress and Egress cannot go out as Regress.
+- **Reaper:** Hell's Ingress and Egress cannot go out as Regress. Soulsow also goes out in combat
+  while no enemy is within 25 yalms, so every Harvest Moon after the first is there; with a
+  BossModReborn module running and `Use BossModReborn timeline for proactive mitigation` on, it waits
+  when its 5-second cast would not finish before the predicted end of the pause.
 - **Dark Knight:** Blood is pooled for the burst — Bloodspiller and Quietus under Delirium, in the
   two-minute window or above 70 Blood.
 - **Sage:** Addersgall is spent on Druochole just before it overflows.
 - **Dancer:** when the dance partner dies or carries a raise's weakness, Closed Position picks a
   partner within range; a partner chosen by name is replaced only for death or weakness.
-- **White mage, Holy.** `StretchHolyStun` (**on by default**) does not overwrite the stun while it
-  runs; Holy is held while the dark knight's barrier is meant to be filled, and while more than half
-  the enemies in radius are slowed (`HoldHolyWhilePackSlowed`).
+- **White mage, Holy.** `Stretch the Holy stun` (**on by default**): right after Holy, the next GCD
+  goes to a DoT where one is due, otherwise to Glare, while Holy's stun would still be running when a
+  second Holy lands, so the second stun starts where the first ends — about 7 instead of 5.5 seconds of
+  stun per pull for one GCD of Holy damage. RSR reads from the fight which enemies a stun landed on, how
+  often, and which turned it away, and holds only while the last stun would outlast the next Holy; a
+  pack the game no longer stuns is not held for. The same reading decides when the White Mage's other
+  two Holy holds and the Dark Knight's barrier hold see nothing left to stun. Holy is held while the
+  dark knight's barrier is meant to be filled (`Enemies in Holy's radius before holding` applies to
+  that hold only), and while more than half the enemies in radius are slowed (`HoldHolyWhilePackSlowed`).
 - **Thin Air** is only spent under real MP pressure that Lucid Dreaming cannot answer
   (`ThinAirOnMpPressureOnly`, **on by default**). A raise still takes a charge regardless.
 
@@ -254,8 +387,16 @@ With `Use BMR intergration to verify safety of movement actions…` (off by defa
   weighed, the last movement action withheld, why each HP potion is or is not used, and per hold
   whether it last held or gave way. Its close button, Escape and the gamepad back button turn it off;
   Escape and the back button turn the Control window off the same way.
-- **`DefenseTrace.log`** in the plugin's config folder records, for one session, every action the
-  defensive chain chose with every source standing at that moment, and every enemy hit on you.
+- **`DefenseTrace.log`** in the plugin's config folder records every action the defensive chain chose,
+  with every source standing at that moment and the game's status for that action, and every enemy hit
+  on you. It keeps every session; each starts with its date and time and the commit the plugin was built
+  from. Delete the file to start over. A chosen defence is followed by a `used` line when it actually
+  goes out. It names the pull rule and unlisted casts at a tank's target as sources, marks an
+  untargetable caster "(untargetable)", says whether the single hit reaches you, records each landing of
+  a listed area cast with whether it reached you, and writes "open, nothing chosen" with the sources
+  standing when a defence is open but nothing it asks for can go out. For a BossModReborn raidwide it
+  names the module, the source and whether the raidwide hits you; for a tankbuster the measurement, the
+  plan and every press, and for a tank swap why it held and whether the boss moved.
 
 ## For rotation authors
 
@@ -264,6 +405,17 @@ With `Use BMR intergration to verify safety of movement actions…` (off by defa
 - `ObjectHelper.GetForecastHealthRatio` is public, with an `instant` overload for off-GCD heals;
   `ActionSetting.HealsWithNextGcd` marks an off-GCD action whose healing lands with the next GCD.
 - `SpecialActionType.HostileAttackBackstep` with `ActionSetting.BackstepDistance`.
+- `StunWatch` (`StunLeft`, `CanStillBeStunned`, `Applications`) reads from the fight which enemies a
+  stun landed on and which can still be stunned; recognition only, no option and no threshold.
+- `DataCenter.AreaHitAnnounced` answers whether area damage on the party is announced from any source,
+  without rating it; `DataCenter.SingleHitReachesPlayer` whether the single hit reaches the player;
+  `DataCenter.AreaCasters` holds the hostile list plus the untargetable enemies casting a listed area
+  action. `DataCenter.DefaultGCDTotal` keeps the last GCD length between GCDs instead of 0, and
+  before the first GCD it is the adjusted recast of a weaponskill.
+- `CanUse` refuses a defence aimed at the player with no effect radius while the hit that opened the
+  defence does not reach him (`ProtectsOnlyYouAndTheHitMissesYou`), and a rated defence aimed at him
+  while the tankbuster plan holds them (`HeldForTheInvulnerability`) — in a derived rotation as in the
+  shipped ones.
 
 **Defects of the original that were costing something in the fight:**
 

@@ -283,6 +283,8 @@ public partial class ReaperRotation
 		setting.ActionCheck = () => !RegressPvEIngressReady;
 		setting.IsFriendly = true;
 		setting.SpecialType = SpecialActionType.FixedDistanceMoveForward;
+		// "Quickly dash 15 yalms forward" (effect text).
+		setting.BackstepDistance = 15;
 	}
 
 	static partial void ModifyHellsEgressPvE(ref ActionSetting setting)
@@ -292,6 +294,8 @@ public partial class ReaperRotation
 		setting.ActionCheck = () => !RegressPvEEgressReady;
 		setting.IsFriendly = true;
 		setting.SpecialType = SpecialActionType.FixedDistanceMoveBackward;
+		// "Quickly dash 15 yalms backwards" (effect text).
+		setting.BackstepDistance = 15;
 	}
 
 	static partial void ModifySpinningScythePvE(ref ActionSetting setting)

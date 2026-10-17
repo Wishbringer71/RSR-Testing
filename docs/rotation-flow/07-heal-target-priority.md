@@ -57,7 +57,7 @@ kleineren Heilungen — und die kommen von selbst, weil der Zweig ohne die Vollh
 Divine Benison und Tetragrammaton weiterläuft und der GCD-Pfad Regen und Cure II behält. Das Ziel
 wird also nicht übergangen, nur die teuerste Antwort darauf.
 
-**Gilt für jeden Heiler, nicht nur den Weißmagier** (A180, sein Profil umfasst alle Kampfjobs). Dieselbe Prüfung (`ObjectHelper.IsUnderThreat`) steht vor der teuersten Einzelheilung jedes Heilers, jeweils hinter einer eigenen Einstellung, ab Werk an: Benediction (Weißmagier), Excogitation als Heilung (Gelehrter, auch unter Recitation), Taurochole als Heilung (Weiser) und die **letzte** Ladung Essential Dignity (Astrologe). Bei Essential Dignity nur die letzte: Die ersten Ladungen laden hintereinander nach, eine davon auszugeben lässt den Tank nicht ohne Antwort; die letzte schon. Die Verteidigungspfade (Excogitation, Taurochole, Haima) bleiben unberührt — sie laufen nur, wenn eine Abwehr angefordert ist, also bei Gefahr.
+**Gilt für jeden Heiler, nicht nur den Weißmagier** (A180, sein Profil umfasst alle Kampfjobs). Dieselbe Prüfung (`ObjectHelper.IsUnderThreat`) steht vor der teuersten Einzelheilung jedes Heilers, jeweils hinter einer eigenen Einstellung, ab Werk an: Benediction (Weißmagier), Excogitation als Heilung (Gelehrter, auch unter Recitation; der Auslöser von Recitation für Excogitation fragt dasselbe, sonst ginge Recitation für einen Tank ohne Gefahr raus und verfiele, A280), Taurochole als Heilung (Weiser) und die **letzte** Ladung Essential Dignity (Astrologe). Bei Essential Dignity nur die letzte: Die ersten Ladungen laden hintereinander nach, eine davon auszugeben lässt den Tank nicht ohne Antwort; die letzte schon. Die Verteidigungspfade (Excogitation, Taurochole, Haima) bleiben unberührt — sie laufen nur, wenn eine Abwehr angefordert ist, also bei Gefahr.
 
 **Auch die Heilschwellen der Jobs lesen die Vorausschau** (A191): Regen, Essential Dignity, Synastry,
 Aspected Benefic, Taurochole, Krasis, Soteria, Pneuma, Kardia, Benediction, Excogitation, Emergency Tactics,
@@ -190,7 +190,7 @@ unter der Schwelle steht, an der der Baum selbst „dieser Spieler fällt gleich
 Tank vor Schadensausteiler — gilt bei **gleicher** Gefährdung, und 10 % gegen 44 % ist keine gleiche
 Gefährdung.
 
-### Die Schwellen 45/40 kehren die Rangfolge um (offen)
+### Die Schwellen 45/40 und die Rangfolge in Klasse 2
 
 Die Prüfreihenfolge stellt den Heiler vor den Tank, wie die Vorgabe es verlangt. Die Zahlen tun es
 nicht: Der Tank löst bei ≤ 45 % aus, der Heiler erst bei ≤ 40 %. **Im Band zwischen 40 % und 45 %
@@ -221,8 +221,13 @@ fünf Prozentpunkte später versorgt als der Tank, der in diesem Moment gar nich
 gilt für den Wall-to-Wall-Pull vor dem Einsammeln und für jeden ungerichteten Flächenschaden, der
 beide gleich trifft.
 
-**Heute gilt davon:** Mit `HealTargetByDanger` greift die Umkehr nur noch, wenn Heiler und Tank beide unter
-Beschuss stehen und beide im Band liegen (TODO „Rollenschwellen 45/40“).
+**Heute gilt davon:** Mit `HealTargetByDanger` stand die Umkehr nur noch, wenn Heiler und Tank beide unter
+Beschuss standen und beide im Band lagen — und genau dort trägt die Begründung der Differenz nicht, denn
+Klasse 2 verlangt den Beschuss für beide. Seit A283 kommt deshalb in Klasse 2 zum gewählten Kandidaten jeder
+beschossene Heiler oder Tank hinzu, der gleich tief oder tiefer steht; dann entscheidet die niedrigste
+vorausberechnete Gesundheit, bei Gleichstand der Heiler. Die Schwellen bleiben, was ihr Text sagt: hinreichende
+Bedingung, dass eine Rolle zuerst kommt, kein Verbot für ein tieferes Mitglied der anderen Rolle. Ohne
+`HealTargetByDanger` entscheiden die Rollenschwellen weiter allein, wie ihr Text es sagt.
 
 **Damit ist das keine falsche Zahl, sondern eine fehlende Bedingung.** Die Schwellendifferenz
 ersetzt eine Messung, die es nicht gibt. Solange die Rate je Mitglied fehlt, ist jede feste Zahl an
@@ -264,7 +269,9 @@ das Maß, das für diese Lage das richtige ist; bei Gleichstand die Rolle.**
 unverändert: Wer eine Unverwundbarkeit trägt, wird nach hinten gestellt, nicht ausgeschlossen. Ohne
 diesen äußersten Schlüssel kehrt sich Klasse 1 gegen sich selbst — ein Krieger der Dunkelheit unter
 Superbolide steht auf 1 Trefferpunkt, hätte also die wenigsten absoluten Punkte von allen und stünde
-vor jedem echten Notfall. Die Klassenordnung wirkt innerhalb der Ungeschützten.
+vor jedem echten Notfall. Die Klassenordnung wirkt innerhalb der Ungeschützten. Living Dead mit abgeschalteter
+Rückhaltung zählt dabei nicht als Unverwundbarkeit (`ObjectHelper.IsUnprotectedForHealing`, Konzept 09, A306): Sein
+Fall auf 0 ist Walking Dead, kein verschonter Treffer.
 
 **Die Gesundheitsschranke in Klasse 2 ist nicht schmückendes Beiwerk, sondern trägt die Klasse.**
 Ohne sie wäre jeder Tank dauerhaft in Klasse 2, denn er trägt seine Tankhaltung immer — und ein Tank
@@ -295,12 +302,12 @@ Vorgabe, und nur dort, wo sie hingehört, nämlich bei gleicher Gefährdung.
   BossModReborn nennt Art und Zeitpunkt des nächsten Einschlags (`BMRNextDamageType`,
   `BMRNextDamageIn`), **nicht seine Höhe**.
 
-**Was die Klassenordnung nicht löst:** Die Schwellendifferenz 45/40 ist in
-jeder Fassung entweder wirksam — dann kehrt sie im Band zwischen den beiden Werten die Rangfolge um —
-oder unwirksam, dann ist eine Einstellung des Nutzers stillgelegt. Die Klassenordnung entschärft sie,
-weil Klasse 1 und die Aggro davorstehen, aber sie beseitigt sie nicht. Ob die beiden Werte
-vereinheitlicht werden, ist eine Wertentscheidung über eine Konfiguration und gehört dem
-Auftraggeber.
+**Die Schwellendifferenz 45/40 in Klasse 2 (A283):** Die Werte bleiben wirksam und unverändert — sie sagen,
+ab wann eine Rolle zuerst kommt. Die Umkehr im Band ist trotzdem weg: Steht ein beschossener Heiler gleich tief
+oder tiefer als der Tank, den seine Schwelle in Klasse 2 bringt, kommt er dazu und gewinnt nach der Gesundheit.
+Ausgeschlossen: eine gemeinsame Schwelle für beide Rollen (sie legte eine Einstellung des Nutzers still) und
+eine neue Voreinstellung für den Heiler (globale Einstellungen bleiben in einer gespeicherten Konfiguration
+stehen, sie erreichte ihn nicht).
 
 **Gebaut (A183):** Klassen 2 und 3 hinter `HealTargetByDanger` („Choose the heal target by danger"), Vorgabewert an (seine Regel für Voreinstellungen, 29.09.2026), in `ActionTargetInfo.DangerClassTarget`. „Unter Beschuss" liest `DataCenter.TargetedPartyMembers` (je Bild aus den Zielen der Gegner). Klasse 1 und der Selbst-Kurzschluss stehen unverändert davor; die Geschützten bleiben zuletzt. Klasse 3 reiht nur Verletzte: Nach Punkten gereiht gewann sonst ein Unverletzter mit kleinem Pool, und niemand wurde geheilt (A210).
 
@@ -443,13 +450,13 @@ die Frage nach dem Mittel, dann die nach dem Ziel.
 
 ## Grenzen des Nachweises
 
-Am Quelltext belegt (02.10.2026): die Rangfolge samt Vorgabewerten, die Klassenordnung, die Umkehr im Band
-40–45 % unter Beschuss, die Gleichheit der drei Werte mit `upstream/main`. Der Prüfgrad ist statische
+Am Quelltext belegt (02.10.2026, für Klasse 2 am 14.10.2026): die Rangfolge samt Vorgabewerten, die
+Klassenordnung, die Gleichheit der drei Werte mit `upstream/main`; die Umkehr im Band 40–45 % unter Beschuss
+ist seit A283 aufgehoben. Der Prüfgrad ist statische
 Selbstprüfung am Quelltext.
 
-Nicht belegbar: welche Reihenfolge im Kampf die bessere ist, und wie oft das Band 40–45 % mit einem
-gleich tief stehenden Heiler überhaupt erreicht wird. Das entscheidet sich an einer Beobachtung — ob
-ein Mitglied stirbt, während ein besser geschütztes zuerst versorgt wurde. Ebenfalls nicht messbar:
+Nicht belegbar: wie oft das Band 40–45 % mit einem gleich tief stehenden, beschossenen Heiler überhaupt
+erreicht wird. Ebenfalls nicht messbar:
 die tatsächliche Konfiguration des Auftraggebers.
 
 ## Offene Punkte

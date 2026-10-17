@@ -126,6 +126,21 @@ SAM `HissatsuYatenPvE` liegt in `SAM_Reborn.MoveBackAbility` (f90c7bf7, A7). Es 
 Bewegungsfähigkeit, sondern eine Schadensaktion mit Rücksprung, die zusätzlich Enhanced Enpi gewährt. Im
 Rückzugsslot fällt es nur bei gesetztem `AutoStatus.MoveBack`, also nur, wenn ein Rückzug ohnehin gewollt ist.
 
+**Sicherheit des Landepunkts (A313).** Vor jeder Bewegungsaktion fragt RSR BossModReborn, ob der Weg in eine
+Gefahrenzone führt (`ActionTargetInfo.CheckMovementSafety`, Schalter „Skip position safety check" je Aktion). Den
+Landepunkt rechnet RSR selbst und fragt `Hints.IsDashSafe(from, to)`:
+- Sprung auf ein Ziel: bis zum Rand seiner Trefferfläche; steht der Spieler schon dort (0 Yalm), nichts zu prüfen.
+- fester Sprung entlang der Blickrichtung (Hell's Ingress, Hell's Egress): die Weite aus dem Wirktext
+  („Quickly dash 15 yalms forward/backwards", `ActionSetting.BackstepDistance`). Ohne bekannte Weite – die PvP- und
+  Sonderaktionen – kein Landepunkt: mit BossModReborn abgelehnt, ohne es erlaubt.
+- Rücksprung vom Ziel (Displacement 15, Hissatsu: Yaten 10, Repelling Shot 10 Yalm, Wirktexte): weg vom Ziel um diese
+  Weite. Repelling Shot („Jump 10 yalms away from current target") ist seit A313 ein solcher Rücksprung; als fester
+  Rückwärtssprung zielte es auf den Spieler selbst, was die Aktion nicht annimmt.
+
+BossModReborns eigener Endpunkt `Hints.IsFixedDashSafe` nimmt Weite und Richtung aus der Blickrichtung, nicht zwei Punkte.
+Abonniert als `(Vector3, Vector3)` schlug jeder Aufruf fehl, und der sichere Wrapper lieferte „unsicher": Solange
+BossModReborn lief, lehnte RSR jeden festen Sprung und jeden Rücksprung ab (seit `33e6acb1f`, Upstream, 07.05.2026).
+
 ## Verbleibender Rest — offene Kandidaten
 
 Nach Abzug von Limit Breaks, Pet-Aktionen, Stance-Abbrüchen,

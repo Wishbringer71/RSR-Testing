@@ -85,7 +85,7 @@ Auftraggebers Schaden angerichtet hat und vollständig zurückgenommen wurde (`A
 |---|---|---|
 | GCD-Pfad | meldete die Wiederbelebung als nächsten GCD | unverändert |
 | Dispatcher | endete im Wiederbelebungsblock vor Heilung und Schaden | läuft normal durch |
-| `nextGCD` | wurde zur Wiederbelebung umgeschrieben — **447 Fundstellen** im Baum lesen ihn, darunter Schimmerschild beim Beschwörer | unverändert |
+| `nextGCD` | wurde zur Wiederbelebung umgeschrieben — **447 Fundstellen** im Baum lasen ihn (gezählt 10.09.2026), darunter Schimmerschild beim Beschwörer | unverändert |
 | Dauer | griff dauerhaft, solange ein Toter dalag | höchstens ein Frame je Gelegenheit, danach durch `HasSwift` gesperrt |
 
 Die daraus folgende Regel: Wer eine Meldebedingung lockert, misst ihre Wirkung an beiden Pfaden und
@@ -238,10 +238,11 @@ Heiler und Beschwörer, 64 für den Rotmagier. Für alle anderen wurde sie nicht
 Rotmagier unter 64 — jeder stufensynchronisierte Durchgang durch ältere Inhalte — als lebender Rezzer
 zählte und die Feder zurückhielt, die dort der einzige Weg war. Beide Stellen teilen sich
 dieselben zwei Konstanten; das ist die Konstruktion, die nicht wieder auseinanderläuft. Die Stufe
-eines Gruppenmitglieds stammt aus `ICharacter.Level`; ob der Wert in einem synchronisierten Inhalt
-die synchronisierte oder die wahre Stufe meldet, ist von hier nicht entschieden. In beiden Fällen ist
-er besser als die bisherige Annahme, jeder lebende Heiler, Beschwörer und Rotmagier könne
-wiederbeleben.
+eines Gruppenmitglieds stammt aus `ICharacter.Level`. Dass der Wert in einem synchronisierten Inhalt
+die synchronisierte Stufe meldet, setzt WrathCombo voraus: Es zählt den Spieler nur dann als Teilnehmer
+einer FATE, wenn `LocalPlayer.Level` höchstens deren Höchststufe ist (`InFATE`) — ein anderes Werkzeug,
+keine Spielquelle. Meldete er die wahre Stufe, zählte ein unterstufiger Rezzer weiter als lebender
+Rezzer; das ist der Stand vor der Stufenprüfung, nicht schlechter.
 
 ### Die Phönixfeder
 
@@ -283,19 +284,48 @@ Drei Zeitpunkte sind zu unterscheiden, und nur der mittlere ist für die Auswahl
 
 | Zeitpunkt | Was RSR sieht | Folge für die Zielmenge |
 |---|---|---|
-| Wirken beginnt | nichts Besonderes; der Leichnam bleibt Kandidat | ein zweiter Rezzer kann denselben wählen |
-| Wirkung landet | das Ziel trägt `StatusID.Raise` | `GetDeath` schließt es aus (`TargetFilter.cs:105`) |
+| Wirken beginnt | den Cast des Wirkenden samt Ziel (`CastTargetObjectId`) | `GetDeath` schließt das Ziel aus, solange ein anderer Spieler den Cast führt (A293) |
+| Wirkung landet | das Ziel trägt `Raise` (148 oder 1140, `StatusHelper.RaiseStatus`) | `GetDeath` schließt es aus (`TargetFilter.cs:105`) |
 | Der Tote nimmt an | keine eigene Meldung nötig | schon vorher ausgeschlossen |
 
 Die Zeit bis zur Annahme durch den Gefallenen ist für die Entscheidung damit ohne Bedeutung: Der
 Status trägt den Ausschluss, nicht die Annahme. Läuft der Status ungenutzt ab, wird der Leichnam
 wieder Kandidat — richtig so.
 
-Zwei Lücken bleiben, beide zwischen Absenden und Statusrückmeldung:
+**Wirkt ein anderer Spieler gerade eine Wiederbelebung auf einen Leichnam, wählt RSR ihn nicht**
+(`TargetUpdater.UpdateCastsByOthers`, `DataCenter.RaisedByOthers`, A293). Der `Raise`-Status erscheint erst, wenn
+die Wiederbelebung landet; während eines acht Sekunden langen Hartwirkens blieb der Leichnam Kandidat, und RSR ohne
+Spontanität begann eine eigene Wiederbelebung auf ihn — zwei Casts für einen Leichnam, der langsamere verloren (seine
+Meldung vom 15.10.2026). Den fremden Cast samt Ziel führt der Client für Gruppenmitglieder; BossModReborn liest ihn
+ebenso, um ein Mitglied der Esuna eines anderen Heilers zu überlassen (`PartyHealth.Update`, ein anderes Werkzeug,
+keine Spielquelle). Für NPC-Heiler (Trust, Duty Support) ist das ein Schluss, nicht belegt; fehlt der Cast, bleibt
+das Verhalten wie vorher. Erkannt wird die Wiederbelebung an den Spieldaten wie die eigene
+(`DeadTargetBehaviour` 1), also für jeden Job und jede Sonderaktion. Bricht der andere ab, ist der Leichnam beim nächsten
+Durchlauf wieder Kandidat; landet seine Wiederbelebung, schließt ihn der Status aus. Gilt auch mit eigener Spontanität:
+Swiftcast bleibt für einen Leichnam, den niemand versorgt. Jede Zurückstellung schreibt eine Zeile in
+`DefenseTrace.log` („raise left to …", mit Ziel und Restzeit). Dieselbe Erhebung zählt fremde Esuna-Casts je Mitglied;
+die eigene Esuna nimmt nur, was nach ihnen an entfernbaren Effekten übrig bleibt.
 
-- **Gleiches Ziel, mehrere Wirker.** Während eines acht Sekunden langen Hartwirkens trägt das Ziel
-  noch keinen Status. Ein zweiter Rezzer in derselben Gruppe kann es wählen. Jeder Client entscheidet
-  allein; das ist ein Abstimmungsproblem und kein Fehler der Auswahl.
+**Wirken beide schon, bricht RSR die eigene Wiederbelebung ab, sobald die fremde auf denselben Leichnam früher
+landet** (`CancelCastUpdater.RaiseLandsFirstElsewhere`, A294). Das ist der Fall, den das Gruppenfenster mit einem
+rötlich gefärbten Cast-Balken in der Zielanzeige zeigt (sein Hinweis, 15.10.2026). Die Färbung selbst beschreibt
+keine Quelle — weder Patchnotes (6.0 führt nur die Zielanzeige der Casts im Gruppenfenster ein) noch Handbuch,
+FFXIVClientStructs oder die Meldungsblätter des Spiels; ein eigenes Datenfeld dafür gibt es in den bekannten
+Strukturen nicht. Der Client kann sie nur aus den beiden Casts mit gleichem Ziel ableiten (Schluss), und genau die
+liest RSR. Die eigene Wiederbelebung landete bis dahin bis zum Ende und verbrauchte ihr MP an einem Leichnam, der
+schon stand; abgebrochen wurde erst, wenn der `Raise`-Status sichtbar war. Gleiche Landezeit lässt den eigenen
+Cast laufen: Der fremde Cast erreicht diesen Client später, als er begann, liest sich also als später landend
+(Schluss); zwei Clients, die beide warteten, ließen den Leichnam liegen. Bricht der andere nach unserem Abbruch ab,
+ist der Leichnam beim nächsten Durchlauf wieder Kandidat. `DefenseTrace.log` schreibt „raise stopped: …" mit dem
+anderen Wirker und dem Vorsprung.
+
+**`Raise` steht unter zwei Ids** (148 und 1140, gleicher Name, gleicher Wirktext „Teetering on the brink of
+consciousness."; xivapi v2). BossModReborn und DelvUI lesen beide; RSR las in `GetDeath` und im Abbruch nur 148
+(A294). Beide Stellen lesen jetzt `StatusHelper.RaiseStatus`.
+
+Zwei Lücken bleiben:
+
+- **Gleiche Landezeit.** Beginnen zwei Wirker im selben Augenblick, laufen beide Casts zu Ende.
 - **Die eigene Feder.** Sie hat keine Wirkzeit, die Statusrückmeldung braucht dennoch einen
   Serverumlauf. In dieser Spanne liest der Leichnam auf unserer Seite weiter als tot. Genau dagegen
   steht die neue Zieleignung: Sie fragt nicht die eigene Buchführung, sondern den Client, der den
@@ -339,14 +369,6 @@ von Ids: Eine solche Liste (vier Ids, ohne Verraise und Angel Whisper) war diese
 Hauptursache des Wiederbelebungsdefekts. Im Kampf änderte die Umstellung nichts, weil der zweite Zweig
 (`RaisePendingAndCastable`) diese Jobs schon über `Raise` erreichte; ein künftiger Rezzer-Job fällt
 nicht mehr still heraus.
-
-### Was aus dem Quelltext nicht zu entscheiden ist
-
-Ob `HardCastOnlyHealer` bei einem einzigen Heiler greifen *soll*, folgt weder aus dem Code noch aus
-dem Optionstext. Der Optionstext verspricht zusätzlich „while Swiftcast is on cooldown", was dieser
-Zweig nicht prüft; ob der Vorbehalt in die Bedingung gehört oder aus dem Text zu streichen ist, ist
-eine Festlegung über die Bedeutung der Einstellung. Die Existenz von
-`HardCastOnlyHealerSwiftCooldown` spricht dafür, dass er gemeint war.
 
 ## Ausgeschlossen
 
@@ -408,10 +430,12 @@ anvisiertem Leichnam fällt die Wiederbelebung sofort.
 Für den Kernpfad liegt die Laufzeitbestätigung vor (A73): teils sofortige, teils um
 wenige Sekunden verzögerte Wiederbelebung, ohne Ausfall anderer Fähigkeiten. Kein Vier-Augen-Prinzip.
 
-**Ungemessen bleiben die drei einstellungsabhängigen Eingriffe desselben Zweigs** — Federverdrahtung,
-Zieleignung über den Item-Status und Stufenprüfung der Rezzereigenschaft sowie die Hartwirk-Korrektur
-und die Bezugsmenge der Nur-Heiler-Modi. Sie liegen hinter Vorgaben, die im Spieltest nicht verändert
-wurden, und sind in `TODO.md` als offener Nachweis geführt.
+**Die einstellungsabhängigen Eingriffe sind statisch belegt, nicht im Spiel beobachtet:** Federverdrahtung,
+Zieleignung über den Gegenstandsstatus, Stufenprüfung der Rezzereigenschaft, Hartwirk-Korrektur, Bezugsmenge und
+Swiftcast-Vorbehalt der Nur-Heiler-Modi. Ihre Wirkketten sind am Code nachvollzogen (A286, K7); dass
+`GetActionStatus` für einen verwendbaren Gegenstand genau `0` liefert, nimmt WrathCombo ebenso an
+(`Items.cs`, Prüfung `== 0` vor dem Trank) — ein anderes Werkzeug, keine Spielquelle. Sie liegen hinter Einstellungen,
+die ab Werk aus oder anders stehen; eine Spielbeobachtung ist keine offene Aufgabe.
 
 ## Offene Punkte
 

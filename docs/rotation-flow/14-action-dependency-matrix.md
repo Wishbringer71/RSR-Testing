@@ -166,8 +166,16 @@ beendet es seinen eigenen Kanal also mit dem nächsten GCD oder der nächsten F�
   wenig; deshalb steht sie ab Werk aus.
 - **Tänzer:** `DNC_Reborn` schließt den Tanz sofort mit Improvised Finish ab: 5 % Barriere für 30 s für
   die Gruppe in 8 y (0 Stapel, Job-Guide); verloren geht höchstens der Rest eines GCDs Regen, den die
-  nächste Aktion ohnehin beendet hätte. Offen, als Verbesserung mit eigener Option: bei angekündigtem
-  Treffer Stapel bis 10 % aufbauen — kostet je Stapel drei Sekunden ohne Aktion (TODO).
+  nächste Aktion ohnehin beendet hätte.
+  *Stapel vor einem angekündigten Treffer aufbauen entfällt (A320).* Die Barriere wächst je Stapel um einen Prozentpunkt
+  der maximalen LP, der vierte um zwei (6, 7, 8, 10 %); ein Stapel kostet drei Sekunden ohne jede Aktion und ohne
+  Bewegung („Effect ends upon using another action or moving", `ActionId.resx`). Ob der Zuwachs einen Tod verhindert,
+  ist nur rechenbar, wo die Größe des Treffers bekannt ist – beim laufenden, gemessenen Wirken
+  (`AnnouncedAreaShare`). Dort bleiben bis zum Snapshot drei bis fünf Sekunden, also höchstens ein Stapel: ein
+  Prozentpunkt mehr, gegen drei Sekunden ohne Aktion, und nur, wenn Improvisation gerade läuft – RSR beginnt sie für
+  die Heilung nach einem Treffer, nicht vor ihm. Eine Ansage von BossModReborn nennt keine Größe, dort wäre jeder
+  Stapel eine Wette. Die Wahrscheinlichkeit, dass die Regel einen Tod verhindert, ist nicht messbar und nach der
+  Rechnung klein; die Kosten fallen sicher an.
 
 **Umgekehrt, Abwehr beendet Angriff:** Flamethrower (Machinist) ist ebenfalls ein Kanal; RSR wirkt ihn
 nicht. Meditate (Samurai) wirkt RSR nur in der Pause. Dort beendet ihn jede Abwehr oder Heilung, die
@@ -308,6 +316,13 @@ unberührt.
 - **Ninja:** Phantom Kamaitachi wartet auf das Trick-Attack- oder Mug-Fenster; Bunshin läuft auf eigener
   Abklingzeit. Öffnet sich kein Fenster vor Ablauf, fällt es im letzten GCD, nicht während einer
   Mudra-Ausführung.
+- **Gelehrter:** Recitation wird für einen Verbraucher gedrückt (Excogitation, Indomitability, Adloquium,
+  Succor/Concitation). Fällt der Anlass weg, bevor er greift – ein anderer heilt den Tank, die Flagge fällt –, oder
+  findet Excogitation ihr Heilziel woanders, nimmt kein Verbraucher Recitation, und sie verfiele nach 15 s (A314). In
+  der letzten Gelegenheit geht dann Excogitation auf den Tank: Sie heilt, wenn er unter die Hälfte fällt oder wenn sie
+  ausläuft, ist also nie verschenkt. Liegt sie auf Abklingzeit, ein kritisches Adloquium auf ihn, dessen Barriere die
+  nächsten Treffer aufbrauchen. Indomitability nicht: Auf voller Gruppe verfiele die Heilung, und die Fähigkeit fehlte
+  dann 30 s lang.
 
 **Weiser, Addersgall (A203):** Bei drei Stapeln und dem nächsten innerhalb eines GCD fällt Druochole (7 % MP
 und eine Heilung, Wirktext) — kein Zielkonflikt, weil der Stapel sonst verloren ginge und nach dem Nachwachsen

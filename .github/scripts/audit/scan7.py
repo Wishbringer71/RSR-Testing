@@ -28,8 +28,11 @@ PROJECT = 'RotationSolver.Basic/'
 MEMBER = re.compile(
     r'^\s*(?:public|protected)(?:\s+(?:static|virtual|abstract|override|sealed|readonly|const|'
     r'partial|unsafe|new|async))*\s+'
-    r'(?P<type>[\w<>,\.\s\[\]?]+?)\s+(?P<name>\w+)\s*(?P<tail>\(|\{|=>|=|;)'
+    r'(?P<type>[\w<>,\.\s\[\]?]+?)\s+(?P<name>\w+)\s*(?P<tail>\(|\{|=>|=|;|\s*$)'
 )
+# The end of the line counts as a tail: a property whose body opens on the next line
+# (`public static float DefaultGCDTotal`, then `{`) was read on neither side, so its removal would
+# have gone unreported (A279).
 # Inside an interface every member is public and carries no visibility modifier of its own, so the
 # pattern above cannot see them. ICustomRotation is exactly such a case: dropping a member from it
 # breaks any rotation that implements the interface instead of deriving from CustomRotation.
@@ -45,6 +48,17 @@ IFACE_NOT_PUBLIC = re.compile(r'^\s*(?:internal|private|protected)\b')
 TYPE_NAME = re.compile(r'\b(?:class|struct|interface|record)\s+(\w+)')
 TYPE_DECL = re.compile(r'\b(?:class|struct|interface|enum|record)\b')
 NOT_A_MEMBER = {'if', 'while', 'for', 'foreach', 'switch', 'catch', 'lock', 'return', 'using'}
+# Literals are blanked before a line is searched for a type: a setting text such as "A scrolling record of
+# the actions you use" read as the declaration of a type "of" and mis-owned every member below it - 56
+# phantom removals in Configs against 7.5.6.13+wsh1 (A279). Same class as the comment case below.
+CHAR_LITERAL = re.compile(r"'(?:[^'\\\n]|\\.)'")
+STRING_LITERAL = re.compile(r'"(?:[^"\\\n]|\\.)*"')
+
+
+def _code_only(raw):
+    """The line without character and string literals and without a trailing comment."""
+    line = STRING_LITERAL.sub('""', CHAR_LITERAL.sub("''", raw))
+    return line.split('//', 1)[0]
 
 
 def _key(name, tail, line):
@@ -90,8 +104,9 @@ def surface(revision=None):
             # "class" would otherwise be read as a declaration and mis-own every member below it,
             # and a comment added on one side of the comparison alone turns that into 55 phantom
             # removals - which is how this was found.
+            code = _code_only(raw)
             line = raw.split('//', 1)[0] if raw.lstrip().startswith('//') else raw
-            named = TYPE_NAME.search(line)
+            named = TYPE_NAME.search(code)
             if named:
                 owner = named.group(1)
             if in_interface:
@@ -99,7 +114,7 @@ def surface(revision=None):
                 if depth <= 0:
                     in_interface = False
                 m = IFACE_MEMBER.match(line)
-                if (m and m.group('name') not in NOT_A_MEMBER and not TYPE_DECL.search(line)
+                if (m and m.group('name') not in NOT_A_MEMBER and not TYPE_DECL.search(code)
                         and not IFACE_NOT_PUBLIC.match(line)):
                     found.setdefault(f'{owner}.{_key(m.group("name"), m.group("tail"), line)}',
                                      (path, line.strip()))
@@ -109,7 +124,7 @@ def surface(revision=None):
                 depth = line.count('{') - line.count('}')
                 continue
             m = MEMBER.match(line)
-            if not m or m.group('name') in NOT_A_MEMBER or TYPE_DECL.search(line):
+            if not m or m.group('name') in NOT_A_MEMBER or TYPE_DECL.search(code):
                 continue
             found.setdefault(f'{owner}.{_key(m.group("name"), m.group("tail"), line)}',
                              (path, line.strip()))
@@ -129,13 +144,14 @@ def self_test():
         '    protected float Duration => 10f;',
         '    private int Hidden { get; set; }',
         '    public void NoArgs()',
+        '    public static float MultiLine',
     ]
     got = {}
     for line in src:
         m = MEMBER.match(line)
         if m and m.group('name') not in NOT_A_MEMBER and not TYPE_DECL.search(line):
             got[_key(m.group('name'), m.group('tail'), line)] = line
-    assert set(got) == {'Helper/2', 'Duration', 'NoArgs/0'}, sorted(got)
+    assert set(got) == {'Helper/2', 'Duration', 'NoArgs/0', 'MultiLine'}, sorted(got)
 
     # An interface member carries no visibility modifier of its own, so MEMBER cannot see it, while
     # one marked internal is not package surface at all. ICustomRotation holds both kinds, and
@@ -162,13 +178,23 @@ def self_test():
     # The class declaration must not be read as a member, and a private one must stay out.
     assert 'Thing' not in got and 'Hidden' not in got, sorted(got)
 
+    # A type is read from code only: a literal or a comment naming "record" or "class" declares nothing,
+    # while a real declaration with a trailing comment still does.
+    assert not TYPE_NAME.search(_code_only('\t\tDescription = "A scrolling record of the actions you use",')), \
+        'a string literal must not declare a type'
+    assert not TYPE_NAME.search(_code_only("\tchar quote = '\"'; // the class of it")), \
+        'a char literal holding a quote must not open a string, and a comment declares nothing'
+    named = TYPE_NAME.search(_code_only('internal partial class Configs : IPluginConfiguration // record'))
+    assert named and named.group(1) == 'Configs', 'a declaration with a trailing comment is still read'
+
     try:
         live = surface()
     except (subprocess.CalledProcessError, RuntimeError):
         live = None
     if live is not None:
         assert len(live) > 200, f'working tree yielded only {len(live)} members'
-    print('self-test ok: arity kept, private members and type declarations excluded\n')
+    print('self-test ok: arity kept, private members and type declarations excluded, literals and '
+          'comments declare no type\n')
 
 
 if __name__ == '__main__':

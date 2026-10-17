@@ -142,7 +142,7 @@ Gelten in jeder Stufe. Eine Aussage, die eine davon verletzt, ist unbelegt.
 # Der Auftraggeber
 
 **Spielweise**
-- Sicherheit der Gruppe geht vor Schaden — gewichtet mit der Wahrscheinlichkeit, dass der Schaden eintritt (seine Präzisierung). Eine Schutzmaßnahme, die Schaden kostet, lohnt, wo ein Treffer angekündigt oder wahrscheinlich ist; bei geringer Wahrscheinlichkeit verhindert sie im Extrem den Sieg, weil ohne Schaden der Kampf nicht endet. Jede Sicherheitsregel nennt deshalb, woran sie die Wahrscheinlichkeit misst.
+- Sicherheit der Gruppe geht vor Schaden — gewichtet mit der Wahrscheinlichkeit, dass der Schaden eintritt (seine Präzisierung). Grund (seine Worte): Was nutzt eigener Schaden, wenn andere sterben und damit keinen mehr verursachen? Eine Schutzmaßnahme, die Schaden kostet, lohnt, wo ein Treffer angekündigt oder wahrscheinlich ist; bei geringer Wahrscheinlichkeit verhindert sie im Extrem den Sieg, weil ohne Schaden der Kampf nicht endet. Jede Sicherheitsregel nennt deshalb, woran sie die Wahrscheinlichkeit misst.
 - Weniger Schaden aus einer Sicherheitsregel ist gewollt (seine Präzisierung): Eine Rotation, die deshalb unter der Erwartung von FFLogs oder xivanalysis bleibt, ist nicht schlechter. Ein Abgleich mit solchen Maßstäben nennt die Abweichung und ihren Grund, er behebt sie nicht.
 - Swiftcast bleibt für Wiederbelebungen. Vorschläge, die es in der Rotation verbrauchen (`AddSwiftcastOnGaruda`, `AddSwiftcastOnRuby` u. ä.), mache ich nicht.
 - Nichts empfehlen, was ihn für Schaden aus einer sicheren Position holt. Ausgeschlossen ist die Bewegung, nicht die Aktion: Steht er bei 0 Yalm am Ziel, ist ein Gapcloser nur Schaden.
@@ -276,6 +276,8 @@ Gelten in jeder Stufe. Eine Aussage, die eine davon verletzt, ist unbelegt.
 **Archiv und TODO**
 - `AUDIT_LOG.md` (A: Prüfungen, C: widerrufene Aussagen) vor jeder Neuprüfung eines Bereichs lesen.
 - `TODO.md` führt nur offene Arbeit, Defekte getrennt von technischer Schuld (Kompromiss mit Begründung, Kosten, Auflösungsbedingung). Abgeschlossenes wandert ins Archiv; neu erkannte Defekte sofort erfassen, auch außerhalb des Auftrags.
+- Offene Arbeit arbeite ich nach Wichtigkeit ab, jeden Punkt im vollen Loop, ohne Zwischenfrage (seine Vorgabe, 17.10.2026). Wichtigkeit ist die Wirkung im Kampf nach „Spielweise“ in seinem Profil; die Reihenfolge steht oben in `TODO.md` und wird mit jedem Befund fortgeschrieben.
+- Ein Eintrag gilt erst als seine Entscheidung, wenn der Loop durch ist und die Vorlage darin steht (→ „Vorlagen an ihn"); eine Kennzeichnung „zur Entscheidung" ohne sie ist meine offene Arbeit, und ich gebe sie nicht als seine aus (seine Rüge, 14.10.2026).
 - Fehler sachlich am System dokumentieren, im Archiv und in Commit-Nachrichten, nicht im Bericht.
 
 **Prüfmittel und Zahlen**
@@ -294,9 +296,9 @@ Gelten in jeder Stufe. Eine Aussage, die eine davon verletzt, ist unbelegt.
 
 **Namen**
 - Er spielt mit deutschem Client: seine Namen sind deutsche Spielnamen, die Bezeichner englisch. Vor jeder Suche oder Aussage über ein Fehlen die Zuordnung belegen.
-- Zuerst nachschlagen: `.github/scripts/audit/action_names_de.json` (geprüft von `check_action_names.py`) und, falls erzeugt, `action_names_game.json` aus `RotationSolver.GameData` (braucht die Spieldateien; Pfad über `FFXIV_GAME_PATH` oder Programmargument).
+- Zuerst nachschlagen: `.github/scripts/audit/action_names_de.json`; `check_action_names.py` hält jeden Eintrag in der CI gegen die deutschen Spielblätter (xivapi v2, `language=de`).
 - Was dort steht, nicht erneut fragen. Einen neuen Namen von ihm im selben Zug eintragen.
-- Einen deutschen Namen nie selbst bilden. Belegt ist er nur durch seine Angabe, den deutschen Job-Guide (`de.finalfantasyxiv.com/jobguide/`) oder den erzeugten Index; sonst den englischen Bezeichner benutzen.
+- Einen deutschen Namen nie selbst bilden. Belegt ist er nur durch seine Angabe, den deutschen Job-Guide (`de.finalfantasyxiv.com/jobguide/`) oder die deutschen Spielblätter (xivapi v2, `language=de`, mit Zeilen-Id); sonst den englischen Bezeichner benutzen.
 
 # Versionskontrolle und Umgebung
 

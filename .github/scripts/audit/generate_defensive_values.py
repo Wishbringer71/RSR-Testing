@@ -49,7 +49,15 @@ PROVIDE = re.compile(r"(Target)?StatusProvide\s*=\s*([^;]+);")
 # 50 yalms by 10%" (Temperance), "Reduces damage taken by a party member or self by 15%" (Aquaveil),
 # "by self and nearby party members by 10%" (Kerachole). Matching only the short form left every
 # party mitigation of that shape out of the table.
-SELF_MITIGATION = re.compile(r"[Rr]educ(?:es|ing) damage taken by (?:[^%.]{0,80}? by )?(\d{1,2})\s*%")
+# The bearer can also be named ahead of "damage taken": "Reduces target party member's damage taken
+# by 10%" (Intervention), "Reduces target's damage taken by 10%" (Taurochole), and the one-hit form
+# "Reduces the amount of damage taken by the next attack by 10%" (Third Eye). Without these the
+# table carried no figure for them, and a tankbuster that landed under one was learned as smaller
+# than it is (A286, G6).
+SELF_MITIGATION = re.compile(
+    r"[Rr]educ(?:es|ing) (?:the amount of )?(?:target(?: party member)?'s )?damage taken by "
+    r"(?:[^%.]{0,80}? by )?(\d{1,2})\s*%"
+)
 # "Reduces damage dealt by nearby enemies by 10%", "Lowers target's damage dealt by 10%"
 ENEMY_MITIGATION = re.compile(r"(?:[Rr]educes|[Ll]owers)[^.]{0,60}?damage dealt[^.]{0,40}? by (\d{1,2})\s*%")
 # A self mitigation split by damage type: "Reduces physical damage taken by 10% and magic damage
@@ -57,6 +65,13 @@ ENEMY_MITIGATION = re.compile(r"(?:[Rr]educes|[Ll]owers)[^.]{0,60}?damage dealt[
 # so Dark Mind was neither a means of the tankbuster plan nor held under an invulnerability (A266).
 SELF_SPLIT_MITIGATION = re.compile(
     r"[Rr]educ(?:es|ing) physical damage taken by (\d{1,2})\s*% and magic(?:al)? damage taken by (\d{1,2})\s*%"
+)
+# One damage type alone: "Reduces magic damage taken by self and nearby party members by 10%"
+# (Magick Barrier), "reducing magic damage taken by all nearby party members by 5%" (Fey
+# Illumination). Carried as the split form with the other type at 0, so a reader that cannot tell the
+# damage type takes the smaller figure, 0, and errs low (A286, G6).
+SELF_TYPED_MITIGATION = re.compile(
+    r"[Rr]educ(?:es|ing) (physical|magic(?:al)?) damage taken by (?:[^%.]{0,80}? by )?(\d{1,2})\s*%"
 )
 # "Increases maximum HP by 20% and restores the amount increased" (Thrill of Battle), "Increases
 # maximum HP of a party member or self by 10%": the hit stays as large, the bearer's pool grows. For a
@@ -97,6 +112,16 @@ ENMITY_TRANSFER = re.compile(r"Diverts (\d{1,3})\s*% of enmity")
 # "Duration: 30s" - how long the effect stands. A trait that changes the figure leaves the text
 # with an empty number ("Duration: s"), and then nothing is stated and nothing is carried.
 DURATION = re.compile(r"Duration: (\d{1,3})s")
+
+# Whether a status's own text says it reduces damage or raises the pool. A status that only shares the
+# action's name - Temperance's heal over time, Aquaveil's barrier, Nebula's reflection, an older form
+# of the same action - does not carry the action's figure: given it, a hit under both would have the
+# figure divided out twice, and a heal over time would read as the mitigation standing (A286, G6).
+STATUS_REDUCES = re.compile(
+    r"damage[^.]{0,40}(?:reduc|lower|decreas|diminish)|(?:reduc|lower|decreas|diminish)\w*[^.]{0,40}damage"
+    r"|defense[^.]{0,60}increas|maximum hp[^.]{0,60}increas",
+    re.I,
+)
 
 PARA = re.compile(r"&lt;para&gt;(.*?)&lt;/para&gt;")
 ASSIGNMENT = re.compile(r"^(\w+PvE)\s*=\s*(\d+),")
@@ -144,8 +169,8 @@ def figure_end(text):
     """Where the first defensive figure in the text ends, or 0 when it states none."""
     ends = [
         match.end()
-        for pattern in (SPLIT_MITIGATION, ENEMY_MITIGATION, SELF_MITIGATION, SELF_SPLIT_MITIGATION, BARRIER_SHARE,
-                        MAX_HP_UP, GUARDS)
+        for pattern in (SPLIT_MITIGATION, ENEMY_MITIGATION, SELF_MITIGATION, SELF_SPLIT_MITIGATION,
+                        SELF_TYPED_MITIGATION, BARRIER_SHARE, MAX_HP_UP, GUARDS)
         for match in [pattern.search(text)]
         if match
     ]
@@ -190,6 +215,12 @@ def extract(text):
     if own_split:
         values["SelfPhysical"] = int(own_split.group(1)) / 100
         values["SelfMagical"] = int(own_split.group(2)) / 100
+    else:
+        typed = SELF_TYPED_MITIGATION.search(text)
+        if typed:
+            physical = typed.group(1) == "physical"
+            values["SelfPhysical"] = int(typed.group(2)) / 100 if physical else 0.0
+            values["SelfMagical"] = 0.0 if physical else int(typed.group(2)) / 100
 
     raised = MAX_HP_UP.search(text)
     if raised:
@@ -270,6 +301,7 @@ def status_mitigation(table):
     the hit. A status two actions claim keeps the first action's figures in row order.
     """
     ids = status_ids()
+    texts = status_texts()
     provided = provided_statuses()
     result = {}
     for row, (identifier, values) in table.items():
@@ -282,7 +314,8 @@ def status_mitigation(table):
         if not names:
             names = [n for n in provided.get(identifier, []) if n in ids]
         for name in names:
-            result.setdefault(ids[name], (name, identifier, figures))
+            if STATUS_REDUCES.search(texts.get(ids[name], "")):
+                result.setdefault(ids[name], (name, identifier, figures))
     return dict(sorted(result.items()))
 
 
@@ -303,6 +336,57 @@ def trait_durations(identifiers):
                 if current is None or trait["level"] > current[2]:
                     found[row] = (identifier, trait["seconds"], trait["level"])
     return dict(sorted(found.items()))
+
+
+def trait_values(identifiers):
+    """Row id to (identifier, share, level) for every action whose damage reduction a trait raises and
+    whose effect text leaves the figure blank - "Improves Troubadour's damage reduction effect to 15%"
+    (fetch_trait_durations.py, "values"). A later trait for the same action supersedes an earlier one."""
+    if not TRAIT_DURATIONS.exists():
+        return {}
+    import json
+    found = {}
+    for trait in json.loads(TRAIT_DURATIONS.read_text(encoding="utf-8")).get("values", []):
+        identifier = re.sub(r"\W", "", trait["action"]) + "PvE"
+        for row, known in identifiers.items():
+            if known == identifier:
+                current = found.get(row)
+                if current is None or trait["level"] > current[2]:
+                    found[row] = (identifier, trait["percent"] / 100, trait["level"])
+    return dict(sorted(found.items()))
+
+
+def trait_value_statuses(values):
+    """Status row id to (status name, action row, action identifier) for the actions trait_values()
+    rates, found by name as in status_mitigation()."""
+    ids = status_ids()
+    texts = status_texts()
+    result = {}
+    for row, (identifier, _, _) in values.items():
+        base = identifier[:-3]
+        for name in sorted(n for n in ids if n == base or n.startswith(base + "_")):
+            # A status of the same name that does not reduce damage is another effect of an older
+            # form (Tactician 1197 regenerates TP) and must not carry the share.
+            if STATUS_REDUCES.search(texts.get(ids[name], "")):
+                result.setdefault(ids[name], (name, row, identifier))
+    return dict(sorted(result.items()))
+
+
+def status_texts():
+    """Status row id to its effect text from Status.resx."""
+    if not STATUS_SHEET.exists():
+        return {}
+    texts, pending = {}, None
+    for line in STATUS_SHEET.read_text(encoding="utf-8", errors="replace").splitlines():
+        para = PARA.search(line)
+        if para:
+            pending = unescape(para.group(1))
+            continue
+        assignment = STATUS_ASSIGNMENT.match(line.strip())
+        if assignment:
+            texts[int(assignment.group(2))] = pending or ""
+            pending = None
+    return texts
 
 
 def collect():
@@ -336,7 +420,7 @@ def extras(values):
     return " { " + ", ".join(parts) + " }" if parts else ""
 
 
-def render(table, durations, enmity=None, statuses=None, traits=None):
+def render(table, durations, enmity=None, statuses=None, traits=None, trait_shares=None):
     lines = [
         "// <auto-generated>",
         "//     Generated by .github/scripts/audit/generate_defensive_values.py from the effect",
@@ -428,10 +512,20 @@ def render(table, durations, enmity=None, statuses=None, traits=None):
         [
             "\t};",
             "",
-            "\t/// <summary>The figures for this action, or all zeroes when it states none.</summary>",
+            "\t/// <summary>",
+            "\t/// The figures for this action, or all zeroes when it states none. Where a trait raises a",
+            "\t/// damage reduction the effect text leaves blank (Troubadour), the trait's share once the",
+            "\t/// player's synced level has it (<see cref=\"TraitShareOf\"/>).",
+            "\t/// </summary>",
             "\tpublic static DefensiveValue For(uint actionId)",
             "\t{",
-            "\t\treturn ByActionId.TryGetValue(actionId, out var value) ? value : default;",
+            "\t\tif (ByActionId.TryGetValue(actionId, out var value))",
+            "\t\t{",
+            "\t\t\treturn value;",
+            "\t\t}",
+            "",
+            "\t\tvar share = TraitShareOf(actionId);",
+            "\t\treturn share > 0f ? new(share, 0f, 0f, 0f) : default;",
             "\t}",
             "",
             "\t/// <summary>",
@@ -485,8 +579,9 @@ def render(table, durations, enmity=None, statuses=None, traits=None):
             "\t/// <summary>",
             "\t/// The stated duration in seconds: from the effect text, or - where a trait sets it and the text",
             "\t/// leaves the number blank - from that trait once the player's synced level has it, read in the",
-            "\t/// game first and from <see cref=\"TraitDurationByActionId\"/> where the game gives nothing; 0",
-            "\t/// when none states one.",
+            "\t/// game first and from <see cref=\"TraitDurationByActionId\"/> where the game gives nothing. Below",
+            "\t/// the trait's level, the duration the action's own tooltip states at that level, read in the game",
+            "\t/// (<see cref=\"TraitDurations.TryBelowTrait\"/>, A316); 0 when none states one.",
             "\t/// </summary>",
             "\tpublic static float DurationOf(uint actionId)",
             "\t{",
@@ -495,10 +590,60 @@ def render(table, durations, enmity=None, statuses=None, traits=None):
             "\t\t\treturn seconds;",
             "\t\t}",
             "",
-            "\t\treturn (TraitDurations.TryInGame(actionId, out var trait) || TraitDurationByActionId.TryGetValue(actionId, out trait))",
-            "\t\t\t&& DataCenter.PlayerSyncedLevel() >= trait.Level",
+            "\t\tif (!TraitDurations.TryInGame(actionId, out var trait) && !TraitDurationByActionId.TryGetValue(actionId, out trait))",
+            "\t\t{",
+            "\t\t\treturn 0f;",
+            "\t\t}",
+            "",
+            "\t\treturn DataCenter.PlayerSyncedLevel() >= trait.Level",
             "\t\t\t? trait.Seconds",
+            "\t\t\t: TraitDurations.TryBelowTrait(actionId, trait.Seconds, out var stated) ? stated : 0f;",
+            "\t}",
+            "",
+            "\t/// <summary>",
+            "\t/// Damage reductions a trait raises where the effect text leaves the figure blank (\"by %\"), with",
+            "\t/// the level the trait is learned at - \"Improves Troubadour's damage reduction effect to 15%\"",
+            "\t/// (fetch_trait_durations.py). Read in the game first (<see cref=\"TraitDurations\"/>); below the",
+            "\t/// trait's level the figure is not stated anywhere and stays unknown (A286, G6).",
+            "\t/// </summary>",
+            "\tpublic static readonly Dictionary<uint, (float Share, int Level)> TraitMitigationByActionId = new()",
+            "\t{",
+            "\t\t@@TRAIT_VALUES@@",
+            "\t};",
+            "",
+            "\t/// <summary>The statuses the actions of <see cref=\"TraitMitigationByActionId\"/> put on their bearers.</summary>",
+            "\tpublic static readonly Dictionary<uint, uint> TraitMitigatingActionByStatusId = new()",
+            "\t{",
+            "\t\t@@TRAIT_STATUSES@@",
+            "\t};",
+            "",
+            "\t/// <summary>",
+            "\t/// The damage reduction a trait sets for this action once the player's synced level has it: read",
+            "\t/// in the game first, from <see cref=\"TraitMitigationByActionId\"/> where the game gives nothing;",
+            "\t/// 0 when no trait states one.",
+            "\t/// </summary>",
+            "\tpublic static float TraitShareOf(uint actionId)",
+            "\t{",
+            "\t\treturn (TraitDurations.TryShareInGame(actionId, out var trait) || TraitMitigationByActionId.TryGetValue(actionId, out trait))",
+            "\t\t\t&& DataCenter.PlayerSyncedLevel() >= trait.Level",
+            "\t\t\t? trait.Share",
             "\t\t\t: 0f;",
+            "\t}",
+            "",
+            "\t/// <summary>",
+            "\t/// What a status takes off a hit: the figures of <see cref=\"MitigationByStatusId\"/>, or for a",
+            "\t/// status whose action a trait rates (Troubadour), the trait's share. False when neither states one.",
+            "\t/// </summary>",
+            "\tpublic static bool TryStatus(uint statusId, out DefensiveValue value)",
+            "\t{",
+            "\t\tif (MitigationByStatusId.TryGetValue(statusId, out value))",
+            "\t\t{",
+            "\t\t\treturn true;",
+            "\t\t}",
+            "",
+            "\t\tvar share = TraitMitigatingActionByStatusId.TryGetValue(statusId, out var actionId) ? TraitShareOf(actionId) : 0f;",
+            "\t\tvalue = share > 0f ? new(share, 0f, 0f, 0f) : default;",
+            "\t\treturn share > 0f;",
             "\t}",
             "",
             "\t/// <summary>",
@@ -565,7 +710,14 @@ def render(table, durations, enmity=None, statuses=None, traits=None):
             "",
         ]
     )
-    return "\n".join(lines)
+    value_lines = [f"\t\t[{row}] = ({share:g}f, {level}), // {identifier}"
+                   for row, (identifier, share, level) in (trait_shares or {}).items()]
+    status_lines = [f"\t\t[{status}] = {row}, // {name} from {identifier}"
+                    for status, (name, row, identifier) in trait_value_statuses(trait_shares or {}).items()]
+    text = "\n".join(lines)
+    text = text.replace("\t\t@@TRAIT_VALUES@@\n", "".join(line + "\n" for line in value_lines))
+    text = text.replace("\t\t@@TRAIT_STATUSES@@\n", "".join(line + "\n" for line in status_lines))
+    return text
 
 
 def self_test():
@@ -633,6 +785,26 @@ def self_test():
             "Reduces physical damage taken by 10% and magic damage taken by 20%. Duration: 10s",
             {"SelfPhysical": 0.1, "SelfMagical": 0.2},
         ),
+        # The bearer named ahead of "damage taken", and the one-hit form (A286, G6).
+        (
+            "Reduces target party member's damage taken by 10%. Duration: 8s Additional Effect: Increases "
+            "damage reduction by an additional 10% if Rampart or are active",
+            {"Self": 0.1},
+        ),
+        ("Reduces target's damage taken by 10%. Duration: 15s", {"Self": 0.1}),
+        ("Reduces the amount of damage taken by the next attack by 10%. Duration: 4s", {"Self": 0.1}),
+        # One damage type alone; the other stays 0.
+        (
+            "Reduces magic damage taken by self and nearby party members by 10%. Duration: 10s",
+            {"SelfPhysical": 0.0, "SelfMagical": 0.1},
+        ),
+        (
+            "Summons a dragon, reducing magic damage taken by all nearby party members by 5%.",
+            {"SelfPhysical": 0.0, "SelfMagical": 0.05},
+        ),
+        ("Reduces physical damage taken by 22%. Duration: 30m", {"SelfPhysical": 0.22, "SelfMagical": 0.0}),
+        # A raise of damage taken is not a mitigation.
+        ("Reduces damage dealt by 10% and increases damage taken by 5%.", {"EnemyPhysical": 0.1, "EnemyMagical": 0.1}),
         # Thrill of Battle and a raise on a party member: the pool grows, the hit does not shrink.
         (
             "Increases maximum HP by 20% and restores the amount increased. Additional Effect: Increases HP "
@@ -696,6 +868,23 @@ def self_test():
         got = match.group(1) if match else None
         if got != expected:
             return f"enmity transfer of {text!r} read as {got}, expected {expected}"
+
+    # A status carries its action's figure only when its own text reduces damage or raises the pool
+    # (A286, G6): the texts below are the ones the game gives, the first five reduce, the rest do not.
+    for text, expected in (
+        ("Damage taken is reduced.", True),
+        ("Physical and magic damage are reduced.", True),
+        ("Magic defense and healing magic potency are increased.", True),
+        ("Sins are confessed partially diminishing damage accrued.", True),
+        ("Maximum HP and HP recovery via healing actions are increased.", True),
+        ("Regenerating HP over time.", False),
+        ("A magicked barrier is nullifying damage.", False),
+        ("Inflicting a portion of sustained damage back to its source.", False),
+        ("Damage dealt is increased.", False),
+        ("Sustaining increased damage from target who executed Feint.", False),
+    ):
+        if bool(STATUS_REDUCES.search(text)) != expected:
+            return f"status text {text!r} read as {'reducing' if not expected else 'not reducing'}"
     return None
 
 
@@ -729,7 +918,11 @@ def main():
         print("No trait in trait_durations.json names an action of the sheets - the names have changed.")
         return 1
 
-    rendered = render(table, durations, enmity, statuses, traits)
+    trait_shares = trait_values(collect.identifiers)
+    if TRAIT_DURATIONS.exists() and not trait_shares:
+        print("No reduction trait in trait_durations.json names an action of the sheets - the names have changed.")
+        return 1
+    rendered = render(table, durations, enmity, statuses, traits, trait_shares)
     checking = "--check" in sys.argv
 
     if checking:

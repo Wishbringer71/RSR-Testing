@@ -231,6 +231,7 @@ public partial class CustomRotation
 	private static bool UseHpPotion(IAction nextGCD, out IAction? act)
 	{
 		HpPotionItem? best = null;
+		var bestIsEmergency = false;
 		foreach (var a in HpPotions)
 		{
 			// More healing wins; at EQUAL healing the lower grade wins, and both halves are stated
@@ -259,18 +260,21 @@ public partial class CustomRotation
 				if (best == null || a.MaxHp > best.MaxHp || (a.MaxHp == best.MaxHp && a.ItemLevel < best.ItemLevel))
 				{
 					best = a;
+					bestIsEmergency = false;
 				}
 			}
 
-			// A confirmed tankbuster, or one BMR predicts within Config.BMRTankbusterMitWindow, can
-			// exceed current HP even above the normal reactive threshold - any role, not just tanks,
-			// can be caught under-margin. CanUseEmergency drops the HP% gate but keeps the same
-			// missing-HP guard against wasting the potion via overheal.
-			if ((DataCenter.IsHostileCastingTankBusterAtMe || DataCenter.BMRTankbusterImminent) && a.ID != 47102 && a.ID != 22306 && a.ID != 20309 && a.CanUseEmergency(out _))
+			// A confirmed tankbuster on the player, or one BMR predicts within Config.BMRTankbusterMitWindow
+			// that reaches him, can exceed current HP even above the normal reactive threshold - any role, not
+			// just tanks, can be caught under-margin. CanUseEmergency drops the HP% gate but keeps the same
+			// missing-HP guard against wasting the potion via overheal. The BMR half used to ask only whether a
+			// tankbuster comes, so a healer at 60 % drank for one on the tank (A284).
+			if ((DataCenter.IsHostileCastingTankBusterAtMe || DataCenter.BMRTankbusterReachesPlayer) && a.ID != 47102 && a.ID != 22306 && a.ID != 20309 && a.CanUseEmergency(out _))
 			{
 				if (best == null || a.MaxHp > best.MaxHp || (a.MaxHp == best.MaxHp && a.ItemLevel < best.ItemLevel))
 				{
 					best = a;
+					bestIsEmergency = !a.CanUse(out _, true);
 				}
 			}
 
@@ -299,6 +303,11 @@ public partial class CustomRotation
 			}
 		}
 		act = best;
+		if (best != null)
+		{
+			DefenseTrace.Potion(best, bestIsEmergency);
+		}
+
 		return act != null;
 	}
 	#endregion

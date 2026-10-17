@@ -18,6 +18,13 @@ public partial class CustomRotation
 		// GCD() may have returned from inside its heal path.
 		IBaseAction.HealPathRunning = false;
 
+		// ... or from inside any path that set the target override - heal, dispel, provoke, raise, defence. The
+		// command, the emergency abilities, the tankbuster plan and the swap below run before the first path here
+		// sets its own, and searched their targets by the GCD's: after a heal GCD a damage ability went to the
+		// enemy with the least HP, and the paladin's emergency Intervention, which skips the stance check, to the
+		// member with the least (A305). Each of them searches by its own type now.
+		IBaseAction.TargetOverride = null;
+
 		if (Player == null)
 		{
 			return false;
@@ -308,6 +315,7 @@ public partial class CustomRotation
 			IBaseAction.SelfProtectionHitsMe = DataCenter.CommandStatus.HasFlag(AutoStatus.DefenseArea)
 				|| DataCenter.AreaHitReachesPlayer;
 			IBaseAction.AreaDefenceRunning = true;
+			DefenseTrace.BeginPath();
 			if (DataCenter.CurrentDutyRotation?.DefenseAreaAbility(nextGCD, out act) == true)
 			{
 				IBaseAction.SelfProtectionHitsMe = null;
@@ -342,6 +350,7 @@ public partial class CustomRotation
 			IBaseAction.SelfProtectionHitsMe = DataCenter.CommandStatus.HasFlag(AutoStatus.DefenseSingle)
 				|| DataCenter.SingleHitReachesPlayer;
 			IBaseAction.CommandedDefenceRunning = DataCenter.CommandStatus.HasFlag(AutoStatus.DefenseSingle);
+			DefenseTrace.BeginPath();
 			try
 			{
 				if (DataCenter.CurrentDutyRotation?.DefenseSingleAbility(nextGCD, out act) == true)
@@ -813,7 +822,7 @@ public partial class CustomRotation
 		// Asking about the pending raise here instead of about nextGCD is deliberate. Naming the
 		// raise as the next GCD was tried and reverted (AUDIT_LOG C37): it ends the GCD dispatcher
 		// ahead of healing and damage, and it rewrites nextGCD for every branch that reads it -
-		// 447 occurrences in this tree, among them Radiant Aegis on Summoner, which stopped coming
+		// several hundred in this tree, among them Radiant Aegis on Summoner, which stopped coming
 		// out. This condition leaves the GCD path untouched and only adds one weave.
 		//
 		// The raise is the job's own Raise, not a list of four ids: the list had no Verraise and no

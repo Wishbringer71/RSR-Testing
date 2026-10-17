@@ -1701,7 +1701,8 @@ public partial class CustomRotation
 
 	/// <summary>
 	/// Whether a tankbuster is aimed at the player: a lock-on VFX or a cast from the learned list
-	/// landing now, or one BMR predicts inside the mitigation window.
+	/// landing now, or one BMR predicts inside the mitigation window that reaches him (its mask; without one,
+	/// for a tank, A220). The prediction alone does not say whom it hits (A284).
 	/// <para>
 	/// Deliberately not <c>IsHostileCastingToTank</c>. That one falls back to "the enemy is casting
 	/// at its own target", which for a tank holding the pull matches any uninterruptible trash cast -
@@ -1709,7 +1710,7 @@ public partial class CustomRotation
 	/// </para>
 	/// </summary>
 	public static bool TankbusterOnMe
-		=> DataCenter.IsHostileCastingTankBusterAtMe || DataCenter.BMRTankbusterImminent;
+		=> DataCenter.IsHostileCastingTankBusterAtMe || DataCenter.BMRTankbusterReachesPlayer;
 
 	/// <summary>
 	/// Whether a party tool used now would miss the raidwide BossModReborn announces: the raidwide lands after
@@ -1817,7 +1818,8 @@ public partial class CustomRotation
 	/// <param name="statusIDs">The status or statuses whose remaining time decides the refresh.</param>
 	public static bool BMRShouldRefreshBefore(float predictedIn, float statusDuration, bool statusFromSelf, IBattleChara? target, IBaseAction? action, params StatusID[] statusIDs)
 	{
-		if (!Service.Config.UseBmrTimeline || !BMRActive || predictedIn is not (> 0.6f and < float.MaxValue) || predictedIn > statusDuration)
+		if (!Service.Config.UseBmrTimeline || !BMRActive || predictedIn > statusDuration
+			|| !DataCenter.PressReachesBeforeSnapshot(predictedIn))
 		{
 			return false;
 		}

@@ -207,6 +207,16 @@ public sealed class SCH_Reborn : ScholarRotation
 			}
 		}
 
+		// Recitation about to run out with none of its heals taken - its reason gone between press and use, or the
+		// Excogitation's heal target found elsewhere (A314): its free critical heal goes where it holds, an
+		// Excogitation on the tank, which restores HP when he falls below half or when it runs out and so is never
+		// wasted. On cooldown, the GCD fallback in GeneralGCD puts Adloquium on him.
+		if (HasRecitation && IsLastChanceBeforeStatusEnds(ExcogitationPvE, StatusID.Recitation)
+			&& ExcogitationPvE.CanUse(out act, targetOverride: TargetType.Tank))
+		{
+			return true;
+		}
+
 		// Burn Consolation if about to run out of time on Seraph and still have charges
 		return SeraphTime < 3 && ConsolationPvE.CanUse(out act, usedUp: true) || base.EmergencyAbility(nextGCD, out act);
 	}
@@ -286,13 +296,15 @@ public sealed class SCH_Reborn : ScholarRotation
 		var haveLinkDRK = false;
 		foreach (var p in PartyMembers)
 		{
-			if (p.HasStatus(true, StatusID.FeyUnion_1223) && p.HasStatus(false, StatusID.LivingDead))
+			// Only while healing is held for his death (A306): with the hold off he is healed normally, and once
+			// it releases before expiry the link's healing is what he needs.
+			if (p.HasStatus(true, StatusID.FeyUnion_1223) && p.IsHeldForDeathTrigger())
 			{
 				haveLinkDRK = true;
 				break;
 			}
 		}
-		// remove link if the party member has link and also has Living Dead status
+		// remove link if the party member has link and healing is held for his Living Dead
 		if (AetherpactPvE.CanUse(out act) && haveLinkDRK)
 		{
 			return true;
@@ -662,6 +674,15 @@ public sealed class SCH_Reborn : ScholarRotation
 			return base.GeneralGCD(out act);
 		}
 
+		// Recitation about to run out, Excogitation on cooldown (EmergencyAbility): a critical Adloquium on the tank,
+		// whose barrier the next hits on him use up (A314).
+		if (HasRecitation && ExcogitationPvE.Cooldown.IsCoolingDown
+			&& IsLastChanceBeforeStatusEnds(AdloquiumPvE, StatusID.Recitation)
+			&& AdloquiumPvE.CanUse(out act, targetOverride: TargetType.Tank))
+		{
+			return true;
+		}
+
 		var nearbyHostiles = NumberOfHostilesInRangeOf(5);
 
 		var expectedHPToLive12Seconds = 1f;
@@ -843,14 +864,22 @@ public sealed class SCH_Reborn : ScholarRotation
 			{
 				// CanBeHealed() (NoNeedHealingInvuln before 7.5.7.1) returns true when NO protective status is up, so the
 				// negation asked for a tank that is currently invulnerable - the opposite of the
-				// "looks dangerous" this block is written for.
+				// "looks dangerous" this block is written for. It is read as IsUnprotectedForHealing, which does
+				// not count Living Dead while its hold is off (A306).
 				//
 				// IsDead has to be checked explicitly here: a corpse has ratio 0 and, with its
 				// statuses cleared, no protective status either, so it would satisfy both halves
 				// and spend Recitation on an Excogitation that cannot land. The inverted form
 				// happened to mask that. The tank searches in ActionTargetInfo carry the same
 				// guard at the same place.
-				if (!member.IsDead && member.GetForecastHealthRatio(true) <= ExcogHeal && member.CanBeHealed())
+				//
+				// The rest asks what the Excogitation under Recitation in HealSingleAbility asks, so the
+				// Recitation pressed here is one that heal can take: below ExcogHeal, and in danger while
+				// ExcogitationNeedsThreat is on. That gate came with A180 on the heal alone, so a tank low
+				// but not in danger - the off-tank after a swap - got Recitation and then no Excogitation,
+				// and its 60 s recast was gone for the next tankbuster (A280).
+				if (!member.IsDead && member.GetForecastHealthRatio(true) < ExcogHeal && member.IsUnprotectedForHealing()
+					&& (!ExcogitationNeedsThreat || member.IsUnderThreat()))
 				{
 					tankNeedsExcog = true;
 					break;

@@ -74,6 +74,7 @@ den Puffer. Dieselbe Größe, zwei Fragen, zwei Antworten — nachzulesen in
 |---|---|
 | Aufnahme einer Flächenaktion in die Liste | vorhanden, Upstream (`Watcher.ActionFromEnemy`) |
 | Messung: höchster Anteil an der Maximalgesundheit je Effektsatz | umgesetzt |
+| Treffer über der ganzen Gesundheit samt Barriere nicht gemessen, Ablage höchstens die ganze Maximalgesundheit | umgesetzt (A298) |
 | Ablage je Aktion (`HostileCastingAreaPotential`, Parallelspeicher) | umgesetzt |
 | Höchstwert-Fortschreibung, auch für bekannte Ids, mit gelockerter Bedingung | umgesetzt |
 | Entscheidung beim Verbrauch (`DataCenter.AreaCastIsWorthMitigating`) | umgesetzt, hinter `SkipMitigationForSmallAreaCasts`, Standard an |
@@ -332,6 +333,17 @@ stammt. Eine Aktion, von der noch niemand getroffen wurde, trägt keine Zahl und
 wurde. Die Grobheit musste deshalb der Vorfilter allein tragen. Das ist der Grund, warum dieselbe
 Frage heute anders zu beantworten ist als im September.
 
+**Das Zeitfenster des Vorfilters ist nicht der Engpass, gemessen an seinen Protokollen (A283).** Ein gelisteter
+Cast von höchstens einem GCD Gesamtzeit öffnet über diesen Weg nie. Ausgezählt wurden die Flächentreffer auf ihn
+ab 5 % mit mindestens zwei Zielen und ob in den zehn Sekunden davor eine Flächenabwehr-Entscheidung stand: im
+Protokoll 04.–10.10.2026 285 Treffer, 181 ohne Entscheidung — 3 davon gelistet mit kurzer Wirkzeit, 42 ohne
+Wirkzeit (keinem Cast vorhersehbar, nur BossModReborn oder ein Marker kündigt sie an), 41 nicht auf der
+ausgelieferten Liste, 62 gelistet mit langer Wirkzeit, aus älteren Builds, deren Ursachen A272 und A277 behoben
+haben (leere Landungen, Helfer); im Protokoll vom 13.10.2026 30 Treffer, 14 ohne Entscheidung, davon 10
+Meteoreinschlag von Helfern (A277), kein kurzer Cast. Das Fenster zu weiten träfe alle Jobs und die Notfallheilung
+über `IsUnderThreat` für keinen gemessenen Fall; es bleibt. Ebenso bleibt die Tankbuster-Einschränkung für
+Magier aus A9/C10, seiner Meldung, sie feuere zu oft.
+
 **Getrennt gehalten statt gelockert, und das ist Absicht:** `IsHostileCastingAOE` speist auch
 `ObjectHelper.IsUnderThreat` und darüber die Notfallheilung des Weißmagiers. Ein Lockern dort
 verschöbe zwei Pfade auf einmal. Der neue Weg hängt allein an der Verteidigungsflagge.
@@ -365,6 +377,40 @@ Genau danach fragt die Entscheidung.
 
 **Fortgeschrieben wird als Höchstwert über alle Durchläufe.** Der Wert kann nur steigen, und jeder
 Anstieg wirkt beim nächsten Verbrauch sofort.
+
+**Gemessen wird nur ein Treffer, den das Mitglied überleben kann; abgelegt wird höchstens seine ganze
+Maximalgesundheit** (A298, `Watcher.TryAreaShare`). Ein Treffer, der die ganze Gesundheit samt der Barriere
+erreicht, die das Mitglied beim Treffer trägt, tötet aus voller Gesundheit, was immer Heilung und Minderung tun.
+Er sagt nicht, wie hart der Cast die Gruppe trifft, sondern dass dieses Mitglied die Mechanik verfehlt hat.
+Belege aus seinen Protokollen: Megatod (#6090, Forgall) traf ihn ohne Debuff mit 941 % der Maximalgesundheit und
+mit Debuff 41 Sekunden später mit 10 % (DefenseTrace cf840808); Nekrotische Gefahr (#40646, Forschungsleiter
+Kanilokka, Schaden fällt zum Rand hin ab) traf ihn am Rand mit 6 %, gespeichert waren 588 %. Sein Hinweis
+(16.10.2026): „megatod tritt mit tot ein, wenn man nicht einen debuff auf sich hat, der durch betreten einer
+schadensfläche entsteht. heilung dagegen ist unmöglich." Gespeichert hielt der eine Fehlschlag den Wert für immer,
+und jeder Leser nahm den Cast für einen tödlichen Raidwide: Vorausheilung, sobald jemandem Gesundheit fehlte,
+weichende Rückhaltungen, Minderung, und der Tankbuster-Plan zählte die Gruppe als tot. Ein solcher Treffer zählt
+weiter für die Aufnahme in die Liste und für „hat dich erreicht", nicht für den Anteil; `DefenseTrace.log` nennt
+ihn („hit beyond max HP and barrier … not measured"). Ein Treffer, den das Mitglied nur hinter seiner Barriere
+überlebt, wird als ganze Maximalgesundheit abgelegt: Er nimmt ihm alles, was Heilung herstellen kann, und weil
+kein abgelegter Wert darüber liegt, erkennt das Laden einen älteren.
+
+- *Barriere:* gelesen, wenn der Effekt eintrifft. Das ist das Einrasten der Aktion; angerechnet wird der Schaden
+  danach (cactbot LogGuide, Zeile 37). Eine Barriere zählt, wenn sie in diesem Moment steht, eine danach gelegte
+  nicht (Community-Anleitungen, keine Spielquelle). Ob der Betrag des Spiels den von ihr aufgefangenen Teil
+  enthält, ist nicht belegt. Enthält er ihn, ist die Grenze genau; enthält er ihn nicht, legt sie einige tödliche
+  Treffer als ganze Maximalgesundheit ab – ein Fehler in Richtung Ablegen, also wie vor A298, nur gedeckelt.
+- *Ein Cast, den niemand überlebt,* bleibt unbewertet, und unbewertet heißt mindern wie vor der Tabelle. Eine
+  Kennzeichnung „Mechanik, nicht mindern" ist verworfen: Ein Raidwide, der alle nur mangels Minderung tötete,
+  würde danach nicht mehr gemindert, tötete im nächsten Versuch wieder und würde nie gemessen.
+- *Ältere Werte:* Was über der ganzen Maximalgesundheit steht, lässt das Laden aus, und das Speichern holt es
+  nicht aus der Datei zurück (`OtherConfiguration.IsWithinWholeHealth`) – sonst höbe es jede neue Messung derselben
+  Aktion wieder an. In seiner Datei vom 16.10.2026 betrifft das Megatod, Nekrotische Gefahr, Bestialisches
+  Brüllen (#40610, 169 %) und Voller Schwinger (#7378, 109 %). Bis zu ihrer nächsten Landung sind sie unbewertet.
+  War Voller Schwinger ein Raidwide, den jemand hinter seiner Barriere überlebte, steht er danach wieder bei der
+  ganzen Maximalgesundheit; war es ein Fehlschlag, beim Treffer der Überlebenden.
+- *Die Tankbuster-Tabelle* hat diese Grenze bewusst nicht. Dort ist ein Treffer über der Maximalgesundheit die
+  Auskunft, die der Plan braucht – ungemindert tödlich, also Minderung oder Unverwundbarkeit –, und abgelegt wird
+  ohnehin der ungeminderte Wert.
 
 **Ein vollständig absorbierter Treffer wird übersprungen, nicht als null gewertet.** Der Lernpfad
 (`Watcher`) zählt einen Treffer für die Aufnahme, wenn `FullAmount(damageEffect) > 0 || (damageEffect.param0 & 6) == 6`;
@@ -472,11 +518,11 @@ verschwinden kann.
 
 **Die Messung hat sechs Tore**, jedes einzeln hinreichend, um sie zu verhindern: der Effekt-Hook liefert überhaupt Treffer; die Quelle ist ein Gegner, anvisierbar oder ein nicht anvisierbarer Kämpfer (Helfer, Boss außerhalb des Felds, A277); eine Aktion mit Wirkzeit; eine reguläre Aktion der Kategorie Zauber, Waffenfertigkeit oder Fähigkeit; ihre Id in der Flächenliste; ein Betrag über null bei einem Gruppenmitglied.
 
-**`Record AOE actions` und die Gruppengröße gelten nur der Aufnahme in die Liste, nicht der Messung.** Die Option stammt von Upstream (2023) und entscheidet, ob neue Ids in die Liste kommen; wer sie ausschaltet, will die kuratierte Liste so behalten, wie sie geliefert wurde. Die Mindestgröße von vier ist die kleinste Gruppenzusammensetzung des Spiels (`ContentMemberType`, Zeile 2: je ein Tank, Heiler, Nahkämpfer, Fernkämpfer); darunter trifft auch ein Kegel oder ein kleiner Kreis alle, und „alle getroffen" belegt keinen Gruppentreffer mehr. Für eine bereits gelistete Id beantwortet die Messung nur, wie hart sie trifft — das hängt an keiner der beiden Bedingungen. Stünde die Messung dahinter, fiele sie für jeden aus, der die Option abschaltet oder mit Duty Support ohne NPC-Gruppenoption spielt, und mit ihr alle drei Leser: das Auslassen kleiner Casts, das Heilen vor einem großen und das Aufheben einer Zurückhaltung. Ein Wert aus einem Lauf ohne Stufensynchronisation fällt zu klein aus; er korrigiert sich wie jede Unterschätzung beim nächsten ungemilderten Treffer, und die Höchstwert-Regel lässt ihn einen höheren Stand nie senken.
+**`Record AOE actions` und die Gruppengröße gelten nur der Aufnahme in die Liste, nicht der Messung.** Die Option stammt von Upstream (2023) und entscheidet, ob neue Ids in die Liste kommen; wer sie ausschaltet, will die kuratierte Liste so behalten, wie sie geliefert wurde. Die Mindestgröße von vier ist die kleinste Gruppenzusammensetzung des Spiels (`ContentMemberType`, Zeile 2: je ein Tank, Heiler, Nahkämpfer, Fernkämpfer); darunter trifft auch ein Kegel oder ein kleiner Kreis alle, und „alle getroffen" belegt keinen Gruppentreffer mehr. Für eine bereits gelistete Id beantwortet die Messung nur, wie hart sie trifft — das hängt an keiner der beiden Bedingungen. Stünde die Messung dahinter, fiele sie für jeden aus, der die Option abschaltet oder mit Duty Support ohne NPC-Gruppenoption spielt, und mit ihr alle drei Leser: das Auslassen kleiner Casts, das Heilen vor einem großen und das Aufheben einer Zurückhaltung. Ein Wert aus einem Lauf ohne Stufensynchronisation fällt zu klein aus; er korrigiert sich wie jede Unterschätzung beim nächsten ungemilderten Treffer, und die Höchstwert-Regel lässt ihn einen höheren Stand nie senken. Aus Occult Crescent stand in keinem seiner Protokolle bis zum 17.10.2026 ein Cast in der Liste (A299); ob es an der Gruppengröße lag, nennt seit A299 die Zeile am Ende jedes Kampfes („party of …").
 
 **Woran die Messung hängenbleibt, zählt das Listenfenster** seit dem Laden je Grund: wie oft ein gegnerischer Cast den Spieler traf und an welchem Tor er hängenblieb („Casts this session"), und davor, was der Effekt-Handler überhaupt erhält („Effect handler": Effektsätze, davon von Gegnern, davon mit Schaden am Spieler, dazu Fehler und der erste Fehlertext). Null Sätze heißt: Der Hook liefert nichts. Sätze ohne Gegnertreffer heißen: Der Filter vor der Messung verwirft sie. Fehler heißen: Der Handler bricht vor der Messung ab.
 
-**Die Aktionsart wird als ein Byte gelesen** (A177, belegt an seinem Protokoll vom 27.09.2026). ECommons führt `EffectHeader.ActionType` an Offset 0x1F mit dem Enum `ActionType` der ClientStructs, und dessen zugrunde liegender Typ ist `uint` (aus der Assembly gelesen). Das Spielfeld ist ein Byte; ClientStructs legt `Flags` an 0x20 und `NumTargets` an 0x21. Vier Bytes breit gelesen ergab sich `0x00NN0001`: im niedrigen Byte die Aktionsart, im dritten die Zahl der Ziele — in allen 422 Protokollzeilen. Der Vergleich mit `ActionType.Action` schlug damit genau für jeden Satz fehl, der jemanden traf: Die Tabelle blieb leer, und ebenso wenig wurden neue Ids aufgenommen, auch bei Upstream. Ob ECommons selbst betroffen ist: Sein `ActionEffectSet` wählt mit demselben Feld zwischen Aktion, Gegenstand und Reittier; mit Zielen fällt jeder Gegenstand in den Zweig „Aktion" (offen in `TODO.md`).
+**Die Aktionsart wird als ein Byte gelesen** (A177, belegt an seinem Protokoll vom 27.09.2026). ECommons führt `EffectHeader.ActionType` an Offset 0x1F mit dem Enum `ActionType` der ClientStructs, und dessen zugrunde liegender Typ ist `uint` (aus der Assembly gelesen). Das Spielfeld ist ein Byte; ClientStructs legt `Flags` an 0x20 und `NumTargets` an 0x21. Vier Bytes breit gelesen ergab sich `0x00NN0001`: im niedrigen Byte die Aktionsart, im dritten die Zahl der Ziele — in allen 422 Protokollzeilen. Der Vergleich mit `ActionType.Action` schlug damit genau für jeden Satz fehl, der jemanden traf: Die Tabelle blieb leer, und ebenso wenig wurden neue Ids aufgenommen, auch bei Upstream. ECommons las das Feld bis 3.2.1.25 so; sein `ActionEffectSet` wählte damit zwischen Aktion, Gegenstand und Reittier, und mit Zielen fiel jeder Gegenstand in den Zweig „Aktion". ECommons 3.2.1.26 liest das Byte selbst (`ActionTypeByte`, Commit 26d30b9, 15.10.2026), und RSR bindet 3.2.1.26 ein (A296); RSRs eigene Lesung über das niedrige Byte bleibt und ist damit gleichwertig.
 
 **Addle und Radiant Aegis beim Beschwörer** (seine Beobachtung, A181: „es scheint, als ob addle immer zusammen mit schimmerschild gecasted wird beim beschwörer"): Beide stehen im selben Verteidigungspfad, erst Radiant Aegis, im nächsten Einschiebeplatz Addle; ausgelöst durch die Verteidigungsflagge, die für einen gelisteten Cast nur fällt, wenn er als „lohnt Minderung" gilt. Unbewertet heißt „lohnt" — solange die Tabelle leer war, war also jeder gelistete Flächencast ein Anlass für beide. Radiant Aegis trägt zwei Ladungen je 60 s, Addle 90 s Abklingzeit (Job-Guide): Nach dem ersten Paar lädt Radiant Aegis nach, Addle nicht. Ein eigener Defekt der Paarung liegt nicht vor — die beiden schützen Verschiedenes (Radiant Aegis nur den Beschwörer, 20 % seiner Maximalgesundheit; Addle die ganze Gruppe gegen diesen Gegner, 10 % magisch, 5 % physisch), und bei einem großen Treffer sind beide richtig. Mit laufender Messung lösen als klein bewertete Casts die Flagge nicht aus, und Addle bleibt für die großen. Grenze: Der Weg über erkannte Flächen-VFX liest die Tabelle nicht.
 
@@ -507,8 +553,19 @@ Fläche liegt.
 **Grenzen:** Ein Helfertreffer ohne eigene Wirkzeit (Schaden „no cast", etwa Hail of Hellflares bei Necrophobia)
 bleibt unsichtbar für die Casterkennung; sein sichtbarer Cast bleibt unbewertet, die Zählung weist ihn aus. Der
 Messwert gilt je Aktion, nicht je Welle: Treffen mehrere Helfer zugleich mit derselben Id, steht der höchste
-Einzelanteil in der Tabelle, nicht ihre Summe. Rückstoß- und Tankbuster-Casts von Helfern liest die Erkennung noch
-nicht (`TODO.md`).
+Einzelanteil in der Tabelle, nicht ihre Summe.
+
+**Tankbuster und Rückstöße von Helfern zählen ebenso** (A303). `AreaCasters` nimmt einen nicht anvisierbaren Kämpfer
+auch auf, solange er eine Aktion der Tankbuster- oder der Rückstoßliste wirkt oder einen Tankbuster, den die
+Tankbuster-Tabelle gemessen hat (`DataCenter.IsListedHostileCast`); auch hier ist die Liste der Beleg der
+Feindseligkeit. Darüber lesen die Tankbuster-Erkennung (`IsHostileCastingToTank`, `IsHostileCastingTankBusterAtMe`),
+die Vorhersage des Tankbuster-Plans (`TankbusterForecast`) und die Rückstoßerkennung (`AreHostilesCastingKnockback`).
+Für einen Helfer zählt nur ein gelisteter Tankbuster: Der Rückfall „ein Gegner wirkt auf sein eigenes Ziel" liest den
+Angriff eines anvisierbaren Gegners auf den, den er bekämpft, und ein Helfer hat daran keinen Teil. Den Rückstoß
+beantwortet RSR damit, wie der Text von „Automatically use Anti-Knockback role actions" zusagt, nach der Liste; der Weg
+über BossModReborn tat das für angekündigte Rückstöße von Helfern schon vorher. Ein Rückstoß, den die Mechanik
+braucht, ist durch die Liste so wenig geschützt wie bei einem anvisierbaren Gegner; die Liste ist von Hand
+bearbeitbar.
 
 **Das Zurücksetzen der Liste lässt die Werte stehen** — Vorgabe des Auftraggebers: „es wäre schade,
 wenn dann auch die Erfahrungswerte weg wären." Die kuratierte Liste neu zu laden ist ein Download, die
@@ -537,7 +594,7 @@ Fall zu lösen, der selten ist (ein Patch, der eine alte Aktion abschwächt) und
 überflüssige Minderung ist. Dazu braucht die zweite Form eine neue feste Zahl. Das Löschen von Hand
 deckt den Fall ohne dieses Risiko.
 
-**Seit A172 kann kein Speichern mehr verlieren, was die Datei hält.** Die Tabelle wächst von selbst nur; also ist jeder Stand der Datei eine Untergrenze, und ein Speichern nimmt je Aktion das Höhere aus Speicher und Datei. Damit ist die Fehlerklasse geschlossen, nicht der Einzelfall: Gleich aus welchem Grund der Speicher leer oder unvollständig ist — Laden gescheitert, abgebrochen, ein künftiger Defekt —, die Datei behält ihren Stand. Dazu wird ein Speicher, dessen Laden in dieser Sitzung nicht zu Ende lief, gar nicht geschrieben: Das Entladen schreibt alle Listen, und ein abgebrochener Start hätte sie sonst alle geleert.
+**Seit A172 kann kein Speichern mehr verlieren, was die Datei hält.** Die Tabelle wächst von selbst nur; also ist jeder Stand der Datei eine Untergrenze, und ein Speichern nimmt je Aktion das Höhere aus Speicher und Datei. Damit ist die Fehlerklasse geschlossen, nicht der Einzelfall: Gleich aus welchem Grund der Speicher leer oder unvollständig ist — Laden gescheitert, abgebrochen, ein künftiger Defekt —, die Datei behält ihren Stand. Dazu wird ein Speicher, dessen Laden in dieser Sitzung nicht zu Ende lief, gar nicht geschrieben: Das Entladen schreibt alle Listen, und ein abgebrochener Start hätte sie sonst alle geleert. Ausgenommen ist nur ein Wert, den die Messung selbst nicht ablegt, über der ganzen Maximalgesundheit (A298, Abschnitt „Was gemessen wird, und was nicht").
 
 **Der schwerste Weg war keiner der erhobenen, sondern das Ausbleiben des Ladens** (A121). Der Speicher
 stand nur in `OtherConfiguration.Init()`, und die ruft niemand; gerufen wird `InitAsync`. Die Tabelle
@@ -570,8 +627,13 @@ Messung in `TankbusterTable`, Ablage über denselben gesicherten Weg wie die Fl�
 ### Was gemessen wird
 
 - **Welche Treffer:** jeder Treffer einer gegnerischen Aktion, die in der Tankbuster-Liste steht oder deren
-  Tankbuster-Marker bestätigt wurde (`TankbusterMarkerWatch.RecordHit`), auf **jeden Spieler**. Das schließt den
-  Co-Tank ein und in großen Inhalten Spieler anderer Gruppen. Die LP und Status anderer Spieler liegen vor.
+  Tankbuster-Marker bestätigt wurde (`TankbusterMarkerWatch.RecordHit`), auf **jeden Tank** unter den Spielern. Das
+  schließt den Co-Tank ein und in großen Inhalten Tanks anderer Gruppen. Die LP und Status anderer Spieler liegen vor.
+  Ein Treffer auf einen Nicht-Tank wird nicht abgelegt (A312): Jeder Leser rechnet für einen Tank – der Plan des
+  Spielers, der Tankwechsel –, und dem Nicht-Tank fehlen die Minderung des Tank-Merkmals, die kein Status trägt, und
+  die größere Maximalgesundheit; ein Fehlschlag an ihm höbe den Wert für jeden Tank, im Extremfall über die ganze
+  Gesundheit hinaus. Das Protokoll schreibt ihn mit „(not a tank) … not stored". Keiner der Leser liest die Tabelle für
+  einen Nicht-Tank, also fehlt dort nichts.
 - **Zurückgerechnet auf ungemindert:** Der gemessene Anteil wird durch die Minderung geteilt, die beim Einschlag
   stand.
   - Auf dem Getroffenen zählt sein eigener Anteil, auf dem Angreifer der Anteil nach Schadensart: physisch für
@@ -579,6 +641,17 @@ Messung in `TankbusterTable`, Ablage über denselben gesicherten Weg wie die Fl�
   - Die Werte kommen aus den Wirktexten der Aktionen, die den Status legen (`DefensiveValues.MitigationByStatusId`).
     Der Generator verknüpft die Status über den gemeinsamen Namen oder über die Statusangabe im Code.
     Sammellisten wie die von Schutzwall, die die Sperrgruppe aller großen Minderungen sind, bleiben dabei außen vor.
+  - Er liest auch die Formen, die den Träger vor „damage taken" nennen („Reduces target party member's damage taken by
+    10%", Intervention; „Reduces target's damage taken", Taurochole), die Form für den nächsten Treffer (Third Eye) und
+    eine Minderung nur einer Schadensart („Reduces magic damage taken by …", Magick Barrier, Fey Illumination). Die
+    zweite Art steht dann auf 0; bei unbekannter Schadensart zählt die kleinere, also 0. Bis A286 fehlten diese Werte,
+    und ein Treffer unter ihnen wurde zu klein gelernt.
+  - Setzt ein Merkmal die Zahl und lässt der Wirktext sie leer („Improves Troubadour's damage reduction effect to 15%",
+    Troubadour, Tactician, Shield Samba ab Stufe 98), gilt der Anteil des Merkmals — zur Laufzeit aus dem Spiel
+    (`TraitDurations`), sonst aus `trait_durations.json` (`DefensiveValues.TryStatus`).
+  - Einen Wert trägt nur ein Status, dessen eigener Text eine Minderung oder einen größeren Lebenspool nennt. Ein Status,
+    der nur den Namen der Aktion teilt — der HoT von Temperance, die Barriere von Aquaveil, die Rückstrahlung von Nebula,
+    eine ältere Form derselben Aktion —, trägt keinen; sonst würde dieselbe Minderung doppelt herausgerechnet.
   - Damit drückt ein gut geminderter Treffer die Aktion nicht nach unten – die Schwäche des Höchstwerts der
     Flächentabelle (Abschnitt „Grenzen der Messung") entfällt hier.
 - **Unter Verwundbarkeit getrennt:** Trägt der Getroffene eine Verwundbarkeit, geht der Wert in die zweite Zahl.
@@ -590,7 +663,7 @@ Messung in `TankbusterTable`, Ablage über denselben gesicherten Weg wie die Fl�
   etwas ihn aufhielt, nicht, dass er harmlos ist.
 
 **Fehler nur nach unten:**
-- Eine Minderung, die kein Wirktext beziffert (Merkmal, unverknüpfter Status), wird nicht herausgerechnet.
+- Eine Minderung, die kein Text beziffert (unverknüpfter Status, Merkmalswert unterhalb der Merkmalsstufe), wird nicht herausgerechnet.
 - Eine Barriere wird nicht herausgerechnet: Ob die Schadenszahl des Spiels den absorbierten Teil enthält, ist hier
   nicht belegt.
 - Treffer unsichtbarer Helfer tragen die Debuffs des Bosses nicht.
@@ -611,6 +684,10 @@ keinen Wert.
 Protokoll schreibt „not stored, the attacker carried a damage-up status". Ein solcher Wert stufte die Aktion zu hoch
 ein, und auf ihm zöge die Regel aus Konzept 09 eine Unverwundbarkeit. Stärkungen unter anderem Namen bleiben
 unerkannt.
+
+**Nach oben ausgeschlossen, seit A312:** ein Tankbuster auf einen Nicht-Tank (Abschnitt „Was gemessen wird"). Werte,
+die vorher an einem Nicht-Tank entstanden, sind in der Datei nicht als solche erkennbar und bleiben; in seinen
+Protokollen vom 13. bis 17.10.2026 ist keiner belegt (nur das vom 17.10. trug die Kennzeichnung).
 
 ### Wofür
 
@@ -676,6 +753,14 @@ Minderung und nicht Absorption, während „Puffer minus Einschlag" Absorption b
 unauflösbar — aber folgenlos: Die Rechnung sagt nicht die Wirkung der Minderung voraus, sondern
 beantwortet, **ob** dieser Einschlag jemanden in Gefahr bringt. Prozentuale Minderung wirkt zudem bei
 großem Schaden am stärksten, also dort, wo die Rechnung sie auslöst.
+
+**Ein verfehlter, aber überlebbarer Treffer bewertet den Cast zu hoch.** Seit A298 bleibt nur der Treffer außen
+vor, der die ganze Gesundheit samt Barriere erreicht. Wer eine Mechanik verfehlt und überlebt – zu weit innen
+bei Nekrotische Gefahr, deren Schaden zum Rand hin abfällt, oder zu nah am Einschlag von Bestialisches Brüllen, das
+BossModReborn als Raidwide und zugleich als Fläche von 25 Yalm um den Einschlag führt –, setzt den Anteil mit seinem
+Treffer; die Gruppe bekommt dann Vorausheilung und Minderung für
+einen Treffer, den ein gut Stehender nicht braucht. Fehlerrichtung sicher. Ein Abschlag ließe sich nicht ohne
+erfundene Zahl bilden, und welcher Treffer der richtig stehende war, sagt das Spiel nicht.
 
 **Serien kleiner Einschläge bleiben ungelöst.** Mehrere kleine Treffer kurz hintereinander summieren
 sich; jeder einzeln unter jeder Schwelle, zusammen tödlich. Eine Einzelwertprüfung sieht das nicht.

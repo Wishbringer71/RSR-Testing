@@ -28,8 +28,14 @@ public sealed class PCT_Reborn : PictomancerRotation
 	[RotationConfig(CombatType.PvE, Name = "Which Motif to use swiftcast on")]
 	public CanvasFlags MotifSwiftCast { get; set; } = CanvasFlags.Weapon;
 
-	[RotationConfig(CombatType.PvE, Name = "Prevent the use of defense abilties during burst")]
-	private bool BurstDefense { get; set; } = true;
+	// Off by default (A283): the defence paths run only for an announced or measured hit, so holding them in the
+	// burst trades the mitigation of a hit that is coming for one weave slot of damage - against the owner's
+	// rule that the party's safety goes before damage, weighted by how likely the hit is.
+	[RotationConfig(CombatType.PvE, Name = "Prevent the use of defense abilties during burst",
+		Tooltip = "Holds Tempera Coat, Tempera Grassa and Addle while your burst runs, even when an area hit or a tankbuster is announced.\n"
+			+ "In a fight: on, a hit that lands inside your burst gets no mitigation from you; off, the mitigation "
+			+ "goes out and takes one weave slot in the burst.")]
+	private bool BurstDefense { get; set; } = false;
 
 	#endregion
 

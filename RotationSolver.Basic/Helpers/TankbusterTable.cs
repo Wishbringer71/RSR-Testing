@@ -5,19 +5,22 @@ namespace RotationSolver.Basic.Helpers;
 
 /// <summary>
 /// The learned tankbuster table (<see cref="OtherConfiguration.TankbusterPotential"/>): what a tankbuster
-/// does unmitigated, measured on every player it is seen to hit, and what it is expected to do to a
+/// does unmitigated, measured on every tank it is seen to hit, and what it is expected to do to a
 /// given target now. The owner's request of 04.10.2026 (concept 13, "Die Tankbuster-Tabelle").
 /// </summary>
 /// <remarks>
 /// <para>Whether a tankbuster kills cannot be known ahead of the hit from any public source (A258);
 /// it can be learned. A hit is scaled back to unmitigated by the mitigation that stood at that moment
 /// - on the one hit, and on the attacker by damage type - with the figures the actions' own effect
-/// texts state (<see cref="DefensiveValues.MitigationByStatusId"/>). A well-mitigated hit therefore
-/// does not rate the action low, which is the weakness of the area table's raw observation.</para>
+/// texts state, or a trait where the text leaves the figure blank (Troubadour), given only to a status
+/// whose own text says it reduces damage (<see cref="DefensiveValues.TryStatus"/>). A well-mitigated hit
+/// therefore does not rate the action low, which is the weakness of the area table's raw observation.</para>
 ///
-/// <para>What is left out errs on the low side, never on the high one: a mitigation no effect text
-/// rates (a trait, a status not tied to an action) is not divided out, so the unmitigated figure is
-/// at most underestimated, and every later hit can only raise it. A barrier is not divided out
+/// <para>What is left out errs on the low side, never on the high one: a mitigation no text rates
+/// (a status not tied to an action, a trait figure below the trait's level) is not divided out, so the
+/// unmitigated figure is at most underestimated, and every later hit can only raise it; and a status
+/// that only shares an action's name (its heal over time) carries no figure, so nothing is divided out
+/// twice. A barrier is not divided out
 /// either: whether the game's damage figure counts the part a barrier absorbed is not established
 /// here. An underestimate means a defensive that does not fire - the behaviour before the table.</para>
 ///
@@ -42,6 +45,17 @@ internal static class TankbusterTable
 		{
 			// Nothing arrived: a hit turned away by invulnerability or evasion, or wholly absorbed. Zero
 			// says that something stopped it, not that the action is harmless.
+			return;
+		}
+
+		// Every reader rates the hit for a tank - the player's plan and the tank swap. A member who is not a tank lacks
+		// the tank trait's reduction, which no status carries, and has a smaller pool, so his share would raise the
+		// figure for every tank, and a failed mechanic on him could take it past his whole health (A312, as A298 for
+		// the area table). Not stored; the line stays for the trace.
+		if (!target.IsJobCategory(JobRole.Tank))
+		{
+			DefenseTrace.Line($"tankbuster measured: {name} #{actionId} on {target.Name.TextValue} (not a tank) for {share:P0}"
+				+ " of max HP - not stored, the table rates hits on tanks");
 			return;
 		}
 
@@ -134,7 +148,7 @@ internal static class TankbusterTable
 		var raised = 1f;
 		foreach (var status in StatusesOf(target, horizon))
 		{
-			if (DefensiveValues.MitigationByStatusId.TryGetValue(status, out var value) && value.MaxHp > 0f)
+			if (DefensiveValues.TryStatus(status, out var value) && value.MaxHp > 0f)
 			{
 				raised *= 1f + value.MaxHp;
 			}
@@ -159,7 +173,7 @@ internal static class TankbusterTable
 		var factor = 1f;
 		foreach (var status in StatusesOf(target, horizon))
 		{
-			if (DefensiveValues.MitigationByStatusId.TryGetValue(status, out var value))
+			if (DefensiveValues.TryStatus(status, out var value))
 			{
 				var reduction = value.SelfAgainst(attackType);
 				if (reduction > 0f)
@@ -173,7 +187,7 @@ internal static class TankbusterTable
 		{
 			foreach (var status in StatusesOf(attacker, horizon))
 			{
-				if (!DefensiveValues.MitigationByStatusId.TryGetValue(status, out var value))
+				if (!DefensiveValues.TryStatus(status, out var value))
 				{
 					continue;
 				}

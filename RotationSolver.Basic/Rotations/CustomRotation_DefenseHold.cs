@@ -73,6 +73,50 @@ public partial class CustomRotation
 	}
 
 	/// <summary>
+	/// Whether a strategic hold of a heal the player casts on the party stands. It yields when no
+	/// healer in the party is alive, or when the healers do not keep up: a living member stands in the
+	/// critical class. The owner's rule for a damage dealer's heal (14.10.2026): heal when it is needed
+	/// and the healers are dead or cannot keep up, for instance without mana - own damage is worth
+	/// nothing when others die and deal none. A healer short of mana shows here by its effect, a member
+	/// falling into the critical class, not by reading the mana itself.
+	/// </summary>
+	/// <param name="wanted">The job rule's own verdict that the heal should wait.</param>
+	/// <param name="rule">What the hold is, in a few words, for the diagnostics window.</param>
+	/// <returns>True while the hold stands.</returns>
+	protected static bool HoldPartyHeal(bool wanted, string rule)
+	{
+		if (!wanted)
+		{
+			return false;
+		}
+
+		var healerAlive = false;
+		foreach (var member in PartyMembers)
+		{
+			if (member != null && !member.IsDead && member.IsJobCategory(JobRole.Healer))
+			{
+				healerAlive = true;
+				break;
+			}
+		}
+
+		if (!healerAlive)
+		{
+			return Record("party heal", rule, false, "no healer in the party is alive");
+		}
+
+		foreach (var member in PartyMembers)
+		{
+			if (member != null && !member.IsDead && member.MaxHp > 0 && member.IsInCriticalClass())
+			{
+				return Record("party heal", rule, false, $"{member.Name} is in the critical class");
+			}
+		}
+
+		return Record("party heal", rule, true, string.Empty);
+	}
+
+	/// <summary>
 	/// The stretching of a job's own defense: after one of <paramref name="triggers"/> the rest waits
 	/// until that trigger's effect has run out, so two hits in a row both get something instead of
 	/// the first getting everything. Area scope; yields like <see cref="HoldAreaDefense"/>.
@@ -255,5 +299,25 @@ public partial class CustomRotation
 
 		why = string.Empty;
 		return false;
+	}
+
+	/// <summary>
+	/// Whether a heal spent to keep a resource from overflowing, not because anyone lacks health, should
+	/// wait: area damage on the party is announced and has not landed, and the resource is not lost within
+	/// the next GCD (<paramref name="lostWithinGcd"/>).
+	/// </summary>
+	/// <remarks>
+	/// Such a heal - the White Mage's lilies at the cap - goes out whatever the party's health. Spent just
+	/// before a raidwide it lands on full health and is gone; spent after it, the same GCD heals what the
+	/// raidwide took. His note of 15.10.2026: "bei direkt aoe-heals jedoch verschwendung" (A292). Read from
+	/// the recognition (<see cref="DataCenter.AreaHitAnnounced"/>), not from the mitigation verdict: any area
+	/// hit leaves health to restore. Not a strategic hold of the kind above, so it does not yield to danger;
+	/// a member in danger is healed through the heal flags, where the same action is the first choice.
+	/// The other healers have no such heal on the area: the Sage's Druochole spends its stack only one GCD
+	/// before it is lost, and the Astrologian's third Essential Dignity asks for health.
+	/// </remarks>
+	protected static bool HealForResourceWaitsForAreaHit(bool lostWithinGcd)
+	{
+		return !lostWithinGcd && DataCenter.AreaHitAnnounced;
 	}
 }

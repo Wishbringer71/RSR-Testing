@@ -102,7 +102,14 @@ public static class TargetFilter
 				continue;
 			}
 
-			if (item.HasStatus(false, StatusID.Raise))
+			if (item.HasStatus(false, StatusHelper.RaiseStatus))
+			{
+				continue;
+			}
+
+			// Raise lands as a status only once the cast is through; while another player is still
+			// casting one on him, a second raise would only race it (A293).
+			if (DataCenter.RaisedByOthers.ContainsKey(item.GameObjectId))
 			{
 				continue;
 			}
