@@ -109,6 +109,15 @@ and the Paladin's emergency Intervention could go to the party member with the l
 of them now uses its own target rule. The Astrologian's Synastry, which relied on the leftover heal rule, now picks
 its target the way the single-target heal it copies does.
 
+## Tanks: a tankbuster marked on you and cast at no one is planned
+
+The tankbuster plan only saw tankbusters cast at you. Many fights put a tankbuster marker on the tank and let the boss
+or an invisible helper cast without a target; then there was no plan, and the invulnerability came only once you were
+below `The HP% for tank to use invulnerability` - too late for a hit that kills from full health. A measured tankbuster
+cast at no other party member while a tankbuster marker stands on you is now planned like one cast at you, for as long
+as that cast runs. `DefenseTrace.log` marks such casts "by the marker on you", and a hit after a marker for which the
+plan had no cast "no cast taken for it".
+
 ## Tanks: the tankbuster plan after a stun, and before the snapshot
 
 A stun or amnesia refused every press of the tankbuster plan, and the plan took that as an answer about the action:

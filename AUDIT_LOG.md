@@ -7895,6 +7895,43 @@ läge der Snapshot später, unterbliebe ein wirksamer Druck).
 **Prüfgrad:** Modell, Prüfskripte, Kompilieren im Prüflauf. Im Spiel nicht beobachtet; das Protokoll zeigt Laufzeit und
 Plätze je Druck.
 
+### A308 · Tankbuster-Plan: Marker auf dir und ein zielloses Wirken einer gemessenen Aktion (17.10.2026)
+
+TODO-Punkt „Tank-Unverwundbarkeit vor Tankbustern ohne Aktionsangabe oder ohne Messung weiter nur reaktiv" nach seiner
+Reihenfolge; offen war, ob sich ein Marker einer Aktion zuordnen lässt.
+
+**Befund.** `TankbusterForecast.Update` nahm nur Casts, deren Ziel der Spieler ist. Ein Tankbuster, den Boss oder Helfer
+ohne Ziel wirkt (auf sich selbst, auf den Boden), während ein Marker auf dem Tank steht, bekam keinen Plan – auch wenn
+die Aktion gemessen war und den Tank auch bei vollen LP mit allen Minderungen tötet. Dann blieb nur die reaktive
+Unverwundbarkeit unter `HealthForDyingTanks`, die ein Treffer von voller Gesundheit in einem Schritt überspringt.
+In seinen Protokollen vom 13. bis 16.10.2026 hatte etwa die Hälfte der gemessenen Tankbuster (29 von 61) einen Marker auf
+dem Getroffenen innerhalb von zwölf Sekunden davor; wie viele davon zusätzlich auf den Tank gewirkt waren, zeigt das
+Protokoll nicht (für andere Tanks schreibt es keine Casts).
+
+**Optionen.** Nullvariante; Marker → Aktion lernen samt Zeit vom Marker bis zum Treffer, ohne Wirken (eine gelernte
+Frist trägt „ohne Risiko" nicht ungeprüft, je Marker und Ort zu lernen; zurückgestellt); ein zielloses Wirken einer
+gelisteten oder gemessenen Aktion dem markierten Spieler zurechnen (gewählt: Zeit und Höhe kommen aus Cast und Tabelle).
+
+**Umsetzung.** Ein solcher Cast gilt als Treffer auf den Spieler, wenn er auf kein anderes Gruppenmitglied gerichtet ist
+und ein nicht falsifizierter Tankbuster-Marker auf dem Spieler steht (`DataCenter.IsTankbusterVfxOnPlayer`, dieselbe
+Warteschlange wie die übrigen Marker-Leser). Einmal zugerechnet, bleibt er seiner, solange er läuft; ein neuer Cast
+derselben Aktion (Wirkzeit springt zurück) braucht den Marker wieder. Protokoll: „tankbuster coming at you (by the
+marker on you)"; ein Treffer auf dich nach einem Marker, für den der Plan kein Wirken hatte, endet mit „after a
+tankbuster marker, no cast taken for it" (nur als Tank) – das Messmittel für die verbleibende Lücke.
+
+**Falsifikation.**
+- *Kein Defekt:* am Code belegt; die Häufigkeit des ziellosen Wirkens ist unbelegt, die neue Zeile zeigt sie.
+- *Option falsch:* Zurechnung an den falschen Tank – ein Cast auf ein anderes Mitglied bleibt dessen; ein zielloser
+  Doppel-Tankbuster mit Markern auf beiden ist für beide richtig. Eine gelernte Fläche, die während eines Markers einen
+  markierten Tank traf, steht als Tankbuster in der Tabelle (die Marker-Bestätigung nimmt jeden Treffer); wird sie
+  ziellos gewirkt, während ein Marker auf dir steht, plant der Plan für sie – sie trifft dich mit ihrer gemessenen Höhe,
+  die Planung ist dann richtig, nur ihr Name nicht.
+- *Ausgeliefert, nichts ändert sich:* wenn die Marker-Tankbuster ohnehin auf den Tank gewirkt sind, oder der Treffer ohne
+  Wirkbalken kommt; dann zeigt das Protokoll „no cast taken for it".
+
+**Prüfgrad:** statisch, Prüfskripte, Kompilieren im Prüflauf. Das Modell bleibt unberührt (die Erkennung ändert nur,
+welche Casts der Plan sieht). Im Spiel nicht beobachtet.
+
 ---
 ## B · Commit-Register (Fork vs. `upstream/main`)
 

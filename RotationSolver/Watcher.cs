@@ -508,7 +508,10 @@ public static class Watcher
 				if (hitPlayer)
 				{
 					DefenseTrace.Line($"hit you: {marked.Name.ExtractText()} #{marked.RowId} from {source.Name.TextValue}"
-						+ $" for {hitShare:P0} of max HP, {set.TargetEffects.Length} targets");
+						+ $" for {hitShare:P0} of max HP, {set.TargetEffects.Length} targets"
+						+ (!markedForPlayer ? string.Empty
+							: DataCenter.Role != JobRole.Tank || TankbusterForecast.TookCastFor(marked.RowId) ? ", after a tankbuster marker"
+							: ", after a tankbuster marker, no cast taken for it"));
 					TankSwapWatch.RecordHitOnPlayer(marked.RowId, marked.Name.ExtractText(), source.GameObjectId, hitShare,
 						markedForPlayer, StatusesAppliedTo(set, playerObject.GameObjectId));
 				}

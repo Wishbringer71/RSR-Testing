@@ -11,9 +11,10 @@ Abschnitt C.
 - **Gemessener Tankbuster:** das billigste Bündel eigener Abwehr, mit dem der Tank ihn übersteht; die
   Unverwundbarkeit nur, wenn keines reicht; „alles" nur, wenn auch sie nicht verfügbar ist. Was der Plan nicht
   braucht, hält RSR auf allen Pfaden zurück. Zwei Optionen, ab Werk an.
-- **Tankbuster ohne Messung** (Marker, Vorhersage, nie gemessene Aktion): die Einzelabwehr der Tank-Rotationen, je
-  vorhergesagtem Tankbuster eine große Minderung oder Schutzwall und die kurzen dazu; die Unverwundbarkeit reaktiv
-  unter `HealthForDyingTanks`.
+- **Tankbuster ohne Messung** (Marker oder Vorhersage ohne Wirken, nie gemessene Aktion): die Einzelabwehr der
+  Tank-Rotationen, je vorhergesagtem Tankbuster eine große Minderung oder Schutzwall und die kurzen dazu; die
+  Unverwundbarkeit reaktiv unter `HealthForDyingTanks`. Ein Marker auf dir neben dem Wirken einer gemessenen Aktion,
+  die auf niemanden gerichtet ist, gilt als gemessener Tankbuster auf dich.
 - **Krieger:** Urflackern geht an ein anderes Mitglied, wenn er Urimpuls nicht selbst braucht oder das Mitglied die
   Triage gewinnt; Abschütteln wartet, solange es ihm laufende oder vom Plan gebrauchte eigene Minderungen nähme.
 - **Tankwechsel:** Geteiltes Leid auf den anderen Tank nach einem Tankbuster, der dich in Gefahr lässt; zurück
@@ -71,6 +72,12 @@ Der Heiler-Teil sitzt auf der Stufe Heiler; Damage Dealer betrifft sie nicht.
 - Erkennung in `TankbusterForecast`: Sie liest keine Option und wählt keine Aktion. Sie liest die Casts aller Gegner,
   auch unsichtbarer Helfer, die einen gelisteten oder gemessenen Tankbuster auf ihn wirken (`DataCenter.AreaCasters`,
   A303); vorher sah sie nur anvisierbare Gegner.
+  - Dazu ein solcher Cast, der auf kein anderes Gruppenmitglied gerichtet ist – auf den Wirkenden selbst, auf den
+    Boden –, während ein Tankbuster-Marker auf ihm steht, der nicht als falsifiziert gelernt ist (A308). Viele Kämpfe
+    markieren den Tank und lassen Boss oder Helfer ohne Ziel wirken. Einmal ihm zugerechnet, bleibt der Cast seiner,
+    solange er läuft, auch wenn der Marker die Warteschlange verlassen hat; ein neuer Cast derselben Aktion (Wirkzeit
+    springt zurück) braucht den Marker wieder. Ein Cast auf ein anderes Mitglied ist dessen Tankbuster.
+  - Das Protokoll schreibt solche Casts als „tankbuster coming at you (by the marker on you)".
 - Entscheidung in `CustomRotation_Tankbuster.cs`: `UpdateTankbusterPlan` (je Durchlauf), `TankbusterPlanAbility`
   (Ausführung, Fähigkeiten-Slot 9), `HoldDefenceForTankbuster` (Zurückhalten über `IBaseAction.HoldDefenceOnSelf`,
   Gatter in `BaseAction.CanUse`, Ablehnung „HeldForTheInvulnerability").
@@ -470,9 +477,11 @@ Risiko"; die Neurechnung gibt sie zurück, wenn die Heilung vor dem Ziehen kommt
   einem GCD, deckt ein Minderungsplan nur das erste.
 - *Ein ungemessenes Wirken oder eine frühere BossModReborn-Vorhersage* neben einem gemessenen: Der Plan drückt, hält
   aber nichts zurück.
-- *Ein Tankbuster nur als Marker oder Vorhersage, oder eine noch nie gemessene Aktion:* kein Plan; dann gilt die
-  Abwehr ohne Messung (Abschnitt „Krieger: die übrige Abwehr", Staffelung) und die reaktive Unverwundbarkeit unter
-  `HealthForDyingTanks`.
+- *Ein Tankbuster nur als Marker oder Vorhersage ohne Wirken einer gemessenen Aktion, oder eine noch nie gemessene
+  Aktion:* kein Plan; dann gilt die Abwehr ohne Messung (Abschnitt „Krieger: die übrige Abwehr", Staffelung) und die
+  reaktive Unverwundbarkeit unter `HealthForDyingTanks`. Ein Marker neben dem zielosen Wirken einer gemessenen Aktion
+  ist geplant (Erkennung, A308). Die Marker-Zeit ist die der Warteschlange (fünf Sekunden ohne bekannte Dauer, Upstream);
+  ein Cast, der erst danach beginnt, wird ihm nicht zugerechnet.
 - *Tankwechsel:* hält bei bereiter Unverwundbarkeit, die RSR für jeden nächsten Treffer nutzen würde
   (`CustomRotation.InvulnerabilityUsable`).
 - *Der Boss trägt den ganzen Kampf ein Damage Up:* kein Treffer wird gespeichert, kein Plan.

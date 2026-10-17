@@ -8,22 +8,21 @@ Nach Wichtigkeit, also nach der Wirkung im Kampf: Sicherheit der Gruppe vor Scha
 Wahrscheinlichkeit, in seinem Profil (seine Vorgabe, 17.10.2026: „todo nach wichtigkeit abarbeiten. jeweils im loop
 bearbeiten"). Stand 17.10.2026; fortgeschrieben mit jedem Befund.
 
-1. Tank-Unverwundbarkeit vor Tankbustern ohne Aktionsangabe oder ohne Messung weiter nur reaktiv.
-2. `IsValid()` prüft nicht, ob ein Objekt noch lebt – möglicher Absturz.
-3. Zustandsabfragen, die bei jedem Lesen neu über Gruppe oder Gegner laufen – Bildausfälle bis 70 ms.
-4. Die proaktive Minderung aller Jobs hat BossModReborn als einzige Quelle.
-5. Tankbuster-Tabelle misst auch an Nicht-Tanks.
-6. Sprungprüfung fester Sprünge: Signatur passt nicht zu BossModReborn – Schaden, nicht Sicherheit.
-7. Gelehrter: Recitation ohne Rückfall vor Ablauf.
-8. Tankbuster-Plan: der GCD als Ersatz für Zeiten, die das Spiel anders bestimmt.
-9. Wirkdauer unterhalb der Merkmalsstufe unbekannt.
-10. `NextBigSummonIsBurst`: die Geschichte kann das Urteil des Spiels überstimmen.
-11. Tankwechsel von der anderen Seite – seine Entscheidung nötig, nach dem Loop als Vorlage.
-12. Frist vor dem Snapshot für Pfade außerhalb des Tankbuster-Plans (Beleg zu BossModReborn zuerst).
-13. Krieger: Nascent Flash; Tänzer: Improvised Finish; Rückstoß und Unterbrechung messen; DRK: Bruch von The Blackest Night; Rotationen gegen The Balance.
-14. Offene Arbeit, dann technische Schuld, soweit ihre Auflösungsbedingung erfüllt ist.
+1. `IsValid()` prüft nicht, ob ein Objekt noch lebt – möglicher Absturz.
+2. Zustandsabfragen, die bei jedem Lesen neu über Gruppe oder Gegner laufen – Bildausfälle bis 70 ms.
+3. Die proaktive Minderung aller Jobs hat BossModReborn als einzige Quelle.
+4. Tankbuster-Tabelle misst auch an Nicht-Tanks.
+5. Sprungprüfung fester Sprünge: Signatur passt nicht zu BossModReborn – Schaden, nicht Sicherheit.
+6. Gelehrter: Recitation ohne Rückfall vor Ablauf.
+7. Tankbuster-Plan: der GCD als Ersatz für Zeiten, die das Spiel anders bestimmt.
+8. Wirkdauer unterhalb der Merkmalsstufe unbekannt.
+9. `NextBigSummonIsBurst`: die Geschichte kann das Urteil des Spiels überstimmen.
+10. Tankwechsel von der anderen Seite – seine Entscheidung nötig, nach dem Loop als Vorlage.
+11. Frist vor dem Snapshot für Pfade außerhalb des Tankbuster-Plans (Beleg zu BossModReborn zuerst).
+12. Krieger: Nascent Flash; Tänzer: Improvised Finish; Rückstoß und Unterbrechung messen; DRK: Bruch von The Blackest Night; Rotationen gegen The Balance.
+13. Offene Arbeit, dann technische Schuld, soweit ihre Auflösungsbedingung erfüllt ist.
 
-Warten auf Daten, nicht bearbeitbar: Treffer aus einer Quelle, die die Objekttabelle nicht hält (Protokoll); Samurai
+Warten auf Daten, nicht bearbeitbar: Tankbuster nach einem Marker ohne Wirken (Protokoll „no cast taken for it“, A308); Treffer aus einer Quelle, die die Objekttabelle nicht hält (Protokoll); Samurai
 Feint und Tengentsu (Protokoll eines Samurai); BossModReborn-FATE-Modul in Occult Crescent (Adressat BossModReborn).
 
 ## Defekte
@@ -108,20 +107,21 @@ Die Eigenschaft antwortet „ja", wenn das Spiel Solar als nächste Demi anzeigt
 
 ### Tank-Unverwundbarkeit vor Tankbustern ohne Aktionsangabe oder ohne Messung weiter nur reaktiv · N
 
-**Stand (A260):** Vor einem gewirkten Tankbuster, den die Tankbuster-Tabelle selbst bei vollen LP und mit allen
-eigenen Minderungen für tödlich hält, geht die Unverwundbarkeit vorher aus, und die übrige Abwehr auf den Tank wird
-zurückgehalten (Konzept 09, „Gemessener Tankbuster: das geringste Mittel"). Weiter nur reaktiv, also erst unter
-`HealthForDyingTanks`, bleibt sie
-- bei Tankbustern, die nur ein Marker oder BossModReborn ankündigt: Beide nennen die Aktion nicht, also gibt es
-  keinen Tabellenwert;
+**Stand (A260, A308):** Vor einem gewirkten Tankbuster, den die Tankbuster-Tabelle selbst bei vollen LP und mit allen
+eigenen Minderungen für tödlich hält, geht die Unverwundbarkeit vorher aus (Konzept 09, „Gemessener Tankbuster: das
+geringste Mittel"). Seit A308 zählt dazu auch das Wirken einer gemessenen Aktion ohne Ziel, während ein Tankbuster-Marker
+auf dir steht. Weiter nur reaktiv, also erst unter `HealthForDyingTanks`, bleibt sie
+- bei einem Marker ohne Wirken einer gemessenen Aktion (der Treffer kommt ohne Wirkbalken, oder das Wirken beginnt erst,
+  nachdem der Marker die Warteschlange verlassen hat);
+- bei Tankbustern, die nur BossModReborn ankündigt: Die Vorhersage nennt die Aktion nicht;
 - beim ersten Auftreten einer Aktion, solange kein Spieler davon getroffen wurde.
 
-**Offen:** Ob sich ein Marker einer Aktion zuordnen lässt – etwa über das Wirken, das während des Markers beginnt,
-wie es `TankbusterMarkerWatch` für die Bestätigung schon tut –, ist ungeprüft. Voller Loop vor jedem Bau.
-Ebenfalls offen: Stärkungen des Gegners, die nicht als Damage Up benannt sind, werden beim Messen nicht erkannt;
-wie oft es sie gibt, ist nicht erhoben. Umgekehrt bleibt ein Gegner, der den ganzen Kampf ein Damage Up trägt, ohne
-Messung, und eine Vorhersage unter Damage Up unterschätzt (sichere Richtung; die Wirktexte nennen keine Stärke, mit
-der sich hochrechnen ließe).
+**Offen:** Wie oft die Zuordnung greift, zeigt das Protokoll („tankbuster coming at you (by the marker on you)"). Für
+einen Marker ohne Wirken bräuchte es eine gelernte Zeit vom Marker bis zum Treffer je Marker und Ort; ob eine solche
+Frist „ohne Risiko" trägt, ist ungeprüft – voller Loop vor jedem Bau. Ebenfalls offen: Stärkungen des Gegners, die nicht
+als Damage Up benannt sind, werden beim Messen nicht erkannt; wie oft es sie gibt, ist nicht erhoben. Umgekehrt bleibt
+ein Gegner, der den ganzen Kampf ein Damage Up trägt, ohne Messung, und eine Vorhersage unter Damage Up unterschätzt
+(sichere Richtung; die Wirktexte nennen keine Stärke, mit der sich hochrechnen ließe).
 
 **Konzept:** `docs/rotation-flow/09-tank-selfprotection.md`
 
