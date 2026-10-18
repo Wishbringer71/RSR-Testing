@@ -8558,6 +8558,41 @@ als eigener Punkt in `TODO.md`: Ordnung, keine Laufzeitfrage.
 **Prüfgrad:** statisch am Code und an Dalamuds Quelltext, Prüfskripte; Compile im Prüflauf. Die Wirkung zeigt die
 Kostenzeile des nächsten Protokolls.
 
+### A326 · Release 7.5.7.3+wsh1, Übergabe der Release-Texte (18.10.2026)
+
+Auftrag: „branch nach main, release, dann neuen branch für zukünftige änderungen."
+
+- *Vorab:* Upstream 0 ausstehend (7.5.7.3, A324). CHANGELOG: „Unreleased" als „7.5.7.3+wsh1" geführt, „Unreleased"
+  leer (a8361ad5d). Paketoberfläche gegen 7.5.7.1+wsh1 (`scan7.py`): 16 Meldungen, alle in `TankSwapWatch` und
+  `TankbusterForecast` – beide Typen `internal`, kein Vertrag. Release-Text inhaltlich geprüft.
+- *Zusammenführen:* `main` trug drei Commits, die der Zweig inhaltlich schon hatte (Upstream-Merge, Korrektur der
+  festen Werte, Versionsliterale). `main` in den Zweig gemergt (98976a500): ein Konflikt, die Zeile von Black
+  Lantern, mit der Fassung des Zweigs; der Baum blieb unverändert. Prüfungen nach dem Merge-Commit lokal und auf
+  GitHub grün (Lauf 39113494847). `main` per Vorspulen auf 98976a500, kein Merge über die API; PR #14 steht damit als
+  gemergt.
+- *Release:* `publish.yaml` per `workflow_dispatch` mit `7.5.7.3+wsh1`, Lauf 39126334173 erfolgreich; Release auf
+  98976a500 mit `latest.zip` (4 711 470 Bytes), SHA-256 der heruntergeladenen Datei gleich dem Digest des Assets;
+  dieselben zwölf Dateien wie 7.5.7.1+wsh1.
+- *Übergabe:* `fork-changes-in-play.md` steht auf Upstream 7.5.7.3 und hat die Abschnitte des Release-Texts in seine
+  Themen eingearbeitet. Ersetzt statt ergänzt: die Barden-/Maler-/Tänzer-Einstellung „left as it reads" (jetzt aus ab
+  Werk), die Tankbuster-Tabelle „from every player" (jetzt nur Tanks), Living Dead (Rückhalt aus: keine Schutzwirkung
+  mehr bei der Heilung), Rückschritte „Backsteps are checked" (jetzt samt festen Sprüngen). Nicht übernommen, weil kein
+  Unterschied zu Upstream mehr: der Trank als Aktion (Upstream nutzt ECommons 3.2.1.26 ebenso) und der Abbruch der
+  Zielaktualisierung (ein Fehler im eigenen Code des Forks). Neu der Abschnitt „Frame time". „For rotation authors"
+  nennt die Einträge des CHANGELOG zu 7.5.7.3+wsh1. `fork-changes-since-last-release.md` beginnt mit „Changes since
+  7.5.7.3+wsh1".
+- *`check_concept_defaults.py` las über die Grenze eines Listenpunkts:* Das Fenster von 200 Zeichen nach einem Namen
+  reichte in den nächsten Punkt und las dessen „**Off by default.**" (Phoenix Down) als Vorgabe der Rotmagier-Einstellung
+  im Punkt davor; dieselbe Lücke meldete `HasTankStance` in Konzept 09 als unbekannte Einstellung. Ein Treffer über
+  einen Listenpunkt oder Absatz hinweg gilt jetzt als mehrdeutig; Selbsttest um den Fall erweitert. 32 Angaben gelesen,
+  alle stimmen.
+- *Zweige:* `claude/fixes-after-7.5.7.3` von `main` (98976a500), nach seiner Namensvorgabe; die Sitzungsumgebung gab
+  `claude/repo-privacy-settings-f06dqh` vor. `claude/fixes-after-7.5.7.1` ist vollständig in `main` enthalten und ein
+  Löschfall; Ref-Löschungen enden hier mit 403.
+
+**Prüfgrad:** Release-API und Workflow-Lauf gelesen, Asset heruntergeladen und geprüft; Prüfskripte; statischer
+Abgleich der Übergabe mit dem Release-Text. Nichts davon ändert das Spielgeschehen.
+
 ---
 ## B · Commit-Register (Fork vs. `upstream/main`)
 

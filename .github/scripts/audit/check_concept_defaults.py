@@ -68,6 +68,16 @@ LABEL_DEFINITION = re.compile(r'(?:\bUI\(\s*|\bName\s*=\s*)"(?P<label>[^"]{6,})"
 # unmatched rather than guess which one it meant.
 ANOTHER_NAME = re.compile(r'`[A-Z][A-Za-z0-9_]{3,}`')
 
+# The 200-character window must not reach into the next list item or paragraph: there the default
+# belongs to whatever that item names. It read a Phoenix Down's "**Off by default.**" as the default
+# of the Red Mage setting named in the bullet above it (A326).
+BOUNDARY = re.compile(r'\n[ \t]*(?:[-*+]|\d+\.)[ \t]|\n[ \t]*\n')
+
+
+def ambiguous(between):
+    """Whether the text between a name and a default names another setting or crosses an item."""
+    return bool(ANOTHER_NAME.search(between) or BOUNDARY.search(between))
+
 # The same ageing with numbers, and there are more of them: thresholds like HealthAreaSpell 0,65 or
 # BlackestNightMinHostiles 4 are quoted in the concepts and shipped in the code. German decimal
 # commas are the written form here, so both separators have to be read.
@@ -162,7 +172,7 @@ def check_labels(text, labels):
     wrong = []
     for m in LABEL_CLAIM.finditer(text):
         entry = labels.get(label_key(m.group('label')))
-        if entry is None or ANOTHER_NAME.search(m.group('between')):
+        if entry is None or ambiguous(m.group('between')):
             continue
         stated = 'off' if re.search(OFF, m.group('value'), re.IGNORECASE) else 'on'
         if (stated == 'on') != (entry[1] == 'true'):
@@ -174,7 +184,7 @@ def claims(text):
     """Returns [(setting, 'on'|'off')] stated in `text`, skipping ambiguous sentences."""
     out = []
     for m in CLAIM.finditer(text):
-        if ANOTHER_NAME.search(m.group('between')):
+        if ambiguous(m.group('between')):
             continue
         stated = 'off' if re.search(OFF, m.group('value'), re.IGNORECASE) else 'on'
         out.append((m.group(1), stated))
@@ -251,6 +261,11 @@ def selftest():
     wrong, unknown = check('`AlphaSetting` haengt an `BetaSetting`, **Standard an**.', defaults)
     if wrong or unknown:
         raise AssertionError('an ambiguous sentence was scored anyway: %s %s' % (wrong, unknown))
+
+    # A default in the next list item belongs to that item, not to the name in this one.
+    wrong, unknown = check('- `AlphaSetting` waits in the burst.\n- **Phoenix Down** works. **Standard an**.', defaults)
+    if wrong or unknown:
+        raise AssertionError('a default in the next list item was scored: %s %s' % (wrong, unknown))
 
     # A method carries no default, however close the word stands.
     _, unknown = check('`SurveyStuns` liefert das, Voreinstellung aus.', defaults, {'SurveyStuns'})
