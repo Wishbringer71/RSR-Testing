@@ -1,6 +1,6 @@
 # GNB — Abhängigkeitsmatrix
 
-Erzeugt von `.github/scripts/audit/generate_action_matrix.py` am 2026-09-29; nicht von Hand bearbeiten. Methode und Grenzen: `docs/rotation-flow/14-action-dependency-matrix.md`.
+Erzeugt von `.github/scripts/audit/generate_action_matrix.py` am 2026-10-18; nicht von Hand bearbeiten. Methode und Grenzen: `docs/rotation-flow/14-action-dependency-matrix.md`.
 
 - Basisrotation: `GunbreakerRotation`
 - Rotation: `RotationSolver/RebornRotations/Tank/GNB_Reborn.cs`
@@ -106,16 +106,45 @@ direkt: 44 · nur gelesen: 1 · ungenutzt: 1
 | Aurora | Regel sperrt vorher | Gnashing Fang |
 | Aurora | Regel sperrt vorher | No Mercy |
 | Blasting Zone | Regel prüft | Bloodfest |
+| Blasting Zone | Regel sperrt vorher | Bloodfest |
+| Blasting Zone | Regel sperrt vorher | Brutal Shell |
+| Blasting Zone | Regel sperrt vorher | Burst Strike |
 | Blasting Zone | Regel sperrt vorher | Danger Zone |
+| Blasting Zone | Regel sperrt vorher | Demon Slaughter |
 | Blasting Zone | Regel sperrt vorher | Demon Slice |
 | Blasting Zone | Regel prüft | Double Down |
+| Blasting Zone | Regel sperrt vorher | Double Down |
+| Blasting Zone | Regel sperrt vorher | Fated Circle |
 | Blasting Zone | Regel sperrt vorher | Gnashing Fang |
+| Blasting Zone | Regel sperrt vorher | Keen Edge |
 | Blasting Zone | Regel prüft | No Mercy |
 | Blasting Zone | Regel sperrt vorher | No Mercy |
+| Blasting Zone | Regel sperrt vorher | Reign of Beasts |
+| Blasting Zone | Regel sperrt vorher | Solid Barrel |
 | Blasting Zone | Regel sperrt vorher | Sonic Break |
+| Bloodfest | Regel sperrt vorher | Brutal Shell |
+| Bloodfest | Regel sperrt vorher | Burst Strike |
+| Bloodfest | Regel sperrt vorher | Demon Slaughter |
+| Bloodfest | Regel sperrt vorher | Demon Slice |
+| Bloodfest | Regel sperrt vorher | Double Down |
+| Bloodfest | Regel sperrt vorher | Fated Circle |
+| Bloodfest | Regel sperrt vorher | Gnashing Fang |
+| Bloodfest | Regel sperrt vorher | Keen Edge |
+| Bloodfest | Regel sperrt vorher | Reign of Beasts |
+| Bloodfest | Regel sperrt vorher | Solid Barrel |
+| Bow Shock | Regel sperrt vorher | Bloodfest |
+| Bow Shock | Regel sperrt vorher | Brutal Shell |
+| Bow Shock | Regel sperrt vorher | Burst Strike |
 | Bow Shock | Regel sperrt vorher | Danger Zone |
+| Bow Shock | Regel sperrt vorher | Demon Slaughter |
+| Bow Shock | Regel sperrt vorher | Demon Slice |
+| Bow Shock | Regel sperrt vorher | Double Down |
+| Bow Shock | Regel sperrt vorher | Fated Circle |
 | Bow Shock | Regel sperrt vorher | Gnashing Fang |
+| Bow Shock | Regel sperrt vorher | Keen Edge |
 | Bow Shock | Regel sperrt vorher | No Mercy |
+| Bow Shock | Regel sperrt vorher | Reign of Beasts |
+| Bow Shock | Regel sperrt vorher | Solid Barrel |
 | Brutal Shell | Regel sperrt vorher | Bloodfest |
 | Brutal Shell | Regel sperrt vorher | Gnashing Fang |
 | Brutal Shell | Regel sperrt vorher | Keen Edge |
@@ -124,9 +153,19 @@ direkt: 44 · nur gelesen: 1 · ungenutzt: 1
 | Burst Strike | Regel sperrt vorher | No Mercy |
 | Camouflage | Regel sperrt vorher | Gnashing Fang |
 | Camouflage | Regel sperrt vorher | No Mercy |
+| Danger Zone | Regel sperrt vorher | Bloodfest |
+| Danger Zone | Regel sperrt vorher | Brutal Shell |
+| Danger Zone | Regel sperrt vorher | Burst Strike |
+| Danger Zone | Regel sperrt vorher | Demon Slaughter |
+| Danger Zone | Regel sperrt vorher | Demon Slice |
 | Danger Zone | Regel prüft | Double Down |
+| Danger Zone | Regel sperrt vorher | Double Down |
+| Danger Zone | Regel sperrt vorher | Fated Circle |
 | Danger Zone | Regel sperrt vorher | Gnashing Fang |
+| Danger Zone | Regel sperrt vorher | Keen Edge |
 | Danger Zone | Regel sperrt vorher | No Mercy |
+| Danger Zone | Regel sperrt vorher | Reign of Beasts |
+| Danger Zone | Regel sperrt vorher | Solid Barrel |
 | Demon Slaughter | Regel sperrt vorher | Bloodfest |
 | Demon Slaughter | Regel sperrt vorher | Brutal Shell |
 | Demon Slaughter | Regel sperrt vorher | Gnashing Fang |
@@ -135,12 +174,18 @@ direkt: 44 · nur gelesen: 1 · ungenutzt: 1
 | Demon Slice | Regel sperrt vorher | Bloodfest |
 | Demon Slice | Regel prüft | Bow Shock |
 | Demon Slice | Regel sperrt vorher | Brutal Shell |
+| Demon Slice | Regel sperrt vorher | Burst Strike |
 | Demon Slice | Regel sperrt vorher | Danger Zone |
+| Demon Slice | Regel sperrt vorher | Demon Slaughter |
 | Demon Slice | Regel prüft | Double Down |
+| Demon Slice | Regel sperrt vorher | Double Down |
+| Demon Slice | Regel sperrt vorher | Fated Circle |
 | Demon Slice | Regel sperrt vorher | Gnashing Fang |
 | Demon Slice | Regel sperrt vorher | Keen Edge |
 | Demon Slice | Regel prüft | No Mercy |
 | Demon Slice | Regel sperrt vorher | No Mercy |
+| Demon Slice | Regel sperrt vorher | Reign of Beasts |
+| Demon Slice | Regel sperrt vorher | Solid Barrel |
 | Double Down | Regel sperrt vorher | Bloodfest |
 | Double Down | Regel sperrt vorher | No Mercy |
 | Eye Gouge | StatusNeed ReadyToGouge | Status ReadyToGouge |
@@ -182,16 +227,13 @@ direkt: 44 · nur gelesen: 1 · ungenutzt: 1
 | Nebula | Regel prüft | Great Nebula |
 | Nebula | Regel sperrt vorher | No Mercy |
 | Nebula | Regel prüft | Rampart |
-| No Mercy | Regel prüft | Brutal Shell |
-| No Mercy | Regel prüft | Burst Strike |
-| No Mercy | Regel prüft | Demon Slaughter |
-| No Mercy | Regel prüft | Demon Slice |
-| No Mercy | Regel prüft | Double Down |
-| No Mercy | Regel prüft | Fated Circle |
-| No Mercy | Regel prüft | Gnashing Fang |
-| No Mercy | Regel prüft | Keen Edge |
-| No Mercy | Regel prüft | Reign of Beasts |
-| No Mercy | Regel prüft | Solid Barrel |
+| No Mercy | Regel sperrt vorher | Bloodfest |
+| No Mercy | Regel sperrt vorher | Brutal Shell |
+| No Mercy | Regel sperrt vorher | Burst Strike |
+| No Mercy | Regel sperrt vorher | Gnashing Fang |
+| No Mercy | Regel sperrt vorher | Keen Edge |
+| No Mercy | Regel sperrt vorher | Reign of Beasts |
+| No Mercy | Regel sperrt vorher | Solid Barrel |
 | Noble Blood | Regel sperrt vorher | Bloodfest |
 | Noble Blood | Regel prüft | Double Down |
 | Noble Blood | Regel prüft | Gnashing Fang |

@@ -1,6 +1,6 @@
 # RPR — Abhängigkeitsmatrix
 
-Erzeugt von `.github/scripts/audit/generate_action_matrix.py` am 2026-09-27; nicht von Hand bearbeiten. Methode und Grenzen: `docs/rotation-flow/14-action-dependency-matrix.md`.
+Erzeugt von `.github/scripts/audit/generate_action_matrix.py` am 2026-10-18; nicht von Hand bearbeiten. Methode und Grenzen: `docs/rotation-flow/14-action-dependency-matrix.md`.
 
 - Basisrotation: `ReaperRotation`
 - Rotation: `RotationSolver/RebornRotations/Melee/RPR_Reborn.cs`
@@ -189,6 +189,7 @@ Aus den Wirktexten; Art je Aktion: Abwehr (bewertet in `DefensiveValues` oder Wi
 Jeder Aufruf der Aktion trägt eine eigene Bedingung; hält sie an, verfällt das Fenster (Konzept 14, „Werden die Fenster genutzt"). Kandidaten, von Hand bewertet.
 
 - Communio: 1 Aufruf(e), **ohne Rückfall vor Ablauf**
+- Enshroud: 1 Aufruf(e), **ohne Rückfall vor Ablauf**
 - Executioner's Gallows: 5 Aufruf(e), **ohne Rückfall vor Ablauf**
 - Executioner's Gibbet: 5 Aufruf(e), **ohne Rückfall vor Ablauf**
 - Executioner's Guillotine: 1 Aufruf(e), **ohne Rückfall vor Ablauf**

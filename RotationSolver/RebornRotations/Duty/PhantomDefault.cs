@@ -565,11 +565,6 @@ public sealed class PhantomDefault : PhantomRotation
 			return true;
 		}
 
-		if (OccultChakraPvE.CanUse(out act))
-		{
-			return true;
-		}
-
 		if (OccultPotionPvE.CanUse(out act) && InCombat)
 		{
 			if (!OccultPotionSelf)
@@ -1232,23 +1227,13 @@ public sealed class PhantomDefault : PhantomRotation
 			}
 
 			// logic if neither cannons effects can be used on target
-			if (CannoneerLevel < 4 || DarkShockCannonImmuneUsage == DarkShockCannonImmuneStrategy.DarkCannon)
+			if ((CannoneerLevel < 4 || DarkShockCannonImmuneUsage == DarkShockCannonImmuneStrategy.DarkCannon) && CanUseOnHighHP(DarkCannonPvE, out act))
 			{
-				DarkCannonPvE.Setting.TargetType = TargetType.HighHP; // Set the target type to HighHP so we can use it on targets that are immune to both blind and paralysis
-				if (DarkCannonPvE.CanUse(out act))
-				{
-					DarkCannonPvE.Setting.TargetType = TargetType.DarkCannon; // Reset the target type to DarkCannon for next time
-					return true;
-				}
+				return true;
 			}
-			if (DarkShockCannonImmuneUsage == DarkShockCannonImmuneStrategy.ShockCannon)
+			if (DarkShockCannonImmuneUsage == DarkShockCannonImmuneStrategy.ShockCannon && CanUseOnHighHP(ShockCannonPvE, out act))
 			{
-				ShockCannonPvE.Setting.TargetType = TargetType.HighHP; // Set the target type to HighHP so we can use it on targets that are immune to both blind and paralysis
-				if (ShockCannonPvE.CanUse(out act))
-				{
-					ShockCannonPvE.Setting.TargetType = TargetType.ShockCannon; // Reset the target type to ShockCannon for next time
-					return true;
-				}
+				return true;
 			}
 		}
 
@@ -1478,5 +1463,20 @@ public sealed class PhantomDefault : PhantomRotation
 		}
 
 		return !InBurstWindow();
+	}
+
+	// For targets immune to the cannon's blind/paralysis: target by HP for this call only.
+	private static bool CanUseOnHighHP(IBaseAction action, out IAction? act)
+	{
+		var targetType = action.Setting.TargetType;
+		action.Setting.TargetType = TargetType.HighHP;
+		try
+		{
+			return action.CanUse(out act);
+		}
+		finally
+		{
+			action.Setting.TargetType = targetType;
+		}
 	}
 }

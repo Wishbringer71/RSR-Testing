@@ -2,7 +2,7 @@ using System.ComponentModel;
 
 namespace RotationSolver.RebornRotations.Healer;
 
-[Rotation("Reborn", CombatType.PvE, GameVersion = "7.55")]
+[Rotation("Reborn", CombatType.PvE, GameVersion = "7.57")]
 [SourceCode(Path = "main/RebornRotations/Healer/SCH_Reborn.cs")]
 
 public sealed class SCH_Reborn : ScholarRotation
@@ -200,9 +200,8 @@ public sealed class SCH_Reborn : ScholarRotation
 				continue;
 			}
 
-			if (item.GetForecastHealthRatio(true) >= AetherpactRemove)
+			if (item.GetForecastHealthRatio(true) >= AetherpactRemove && DissolveUnionPvE.CanUse(out act))
 			{
-				act = AetherpactPvE;
 				return true;
 			}
 		}
@@ -304,8 +303,9 @@ public sealed class SCH_Reborn : ScholarRotation
 				break;
 			}
 		}
-		// remove link if the party member has link and healing is held for his Living Dead
-		if (AetherpactPvE.CanUse(out act) && haveLinkDRK)
+		// remove link if the party member has link and healing is held for his Living Dead; the link is ended
+		// by Dissolve Union ("Dissolves current Fey Union"), as the removal above it does (A324)
+		if (DissolveUnionPvE.CanUse(out act) && haveLinkDRK)
 		{
 			return true;
 		}

@@ -8395,8 +8395,9 @@ hatte die Ordnung in Abschnitt 4 gelegt, hinter Prüfungen, die ihn brauchen; di
 für die zwei bekannten Leser fest, lokal besteht der Remote. Erhoben: fünf Prüfungen lesen ihn (Identitäten, feste
 Werte, Version, Release-Text, Einstellungstexte). Der Abruf ist jetzt Abschnitt 0, die Reihenfolge für alle fünf geprüft.
 
-**Laufzeit:** lokal gemessen 15 s statt rund 18 min (18.10.2026); der Prüfjob auf GitHub, erwartet unter einer Minute
-solange kein Modell geändert ist, wird nach dem Push gemessen.
+**Laufzeit (gemessen 18.10.2026):** lokal 15 s statt rund 18 min. Auf GitHub (Lauf 39109715184, 511cabf7e, kein
+Modell geändert) der Prüfjob 33 s, davon die Prüfungen selbst 14 s; der Build-Job läuft daneben 1 min 51 s und
+bestimmt jetzt die Dauer des Laufs.
 
 **Falsifikation.** *Kein Defekt:* die Messung oben. *Option falsch (ein Modell sieht etwas, wenn der Code sich
 ändert):* Keines liest Code (geprüft: keine Dateizugriffe, `smn_phase_potency` nennt `SMN_Reborn.cs` nur im Kommentar);
@@ -8404,7 +8405,77 @@ dass ein Modell vom Code abdriftet, sah die CI nie – dafür steht die Auflösu
 Abdeckungsmodell …"). *Ausgeliefert, nichts ändert sich:* Bei `pull_request` gilt `paths` für den ganzen Zweig, darum
 der Vergleich je Push im Schritt statt eines Pfadfilters; ein Push mit Modelländerung lässt nur dieses Modell laufen.
 
-**Prüfgrad:** statisch, YAML-Vergleich, lokaler Lauf; der GitHub-Lauf nach dem Push.
+**Prüfgrad:** statisch, YAML-Vergleich, lokaler Lauf, GitHub-Lauf 39109715184 grün.
+
+### A324 · Upstream-Sync 1e36abb05 (PR #1400, 17.10.2026): ausgewertet je Fork-Stelle (18.10.2026)
+
+**Anlass:** `check_sync_state.py` vor dem nächsten Auftrag: zwei Upstream-Commits ausstehend (8153eea2c und sein Merge),
+62 Dateien, davon 39 auch vom Fork geändert; zwölf Konflikte.
+
+**Wo Upstream denselben Befund hatte wie der Fork — Fork-Fassung bleibt, sie ist die genauere:**
+- *Benötigter Status* (`ActionBasicInfo`): Upstream liest `StatusRefreshGcdCount` dort nicht mehr, wie der Fork. Der
+  Fork verlangt den Status bis zum Ende des eigenen Casts (`NeededStatusMargin`), Upstream nur bis zum nächsten GCD;
+  bei einem Cast liefe er sonst vor dem Ende aus.
+- *`HasWeaved`*: beide lesen jetzt `IsLastActionAbility`; der Fork behält den Schutz für eine leere Aktionshistorie.
+- *Einheiten Prozent gegen Anteil* (Phantom Drain Touch, Blaumagier Devour und Missile): beide behoben, der Fork über die
+  effektiven HP.
+- *Abwehrsperre Astrologe:* Upstream entfernt die Sperre in der Einzelabwehr samt falschem Basisaufruf; der Fork hat
+  dort die Sperre aus Konzept 08 („Die Abwehrsperren") mit richtigem Basisaufruf.
+- *Dunkelritter `BlackLantern`*: Upstream verdrahtet die Option, wie der Fork in A157, und fügt eine Burst-Sperre hinzu.
+  Der Fork hält keine, weil der Text der Einstellung keine Ausnahme nennt (A157). `UseBlood`: Upstream löscht die alte
+  ungelesene Fassung, der Fork liest seine eigene (A197).
+- *Pictomancer, Schwarzmagier:* Upstream korrigiert Basisaufruf und Statusliste; der Fork hatte beides, dazu Addle in der
+  Einzelabwehr und die Thunder-II-Prüfung.
+
+**Wo Upstream dem Fork widerspricht — Fork-Fassung bleibt, Grund dokumentiert:**
+- *Weißmagier Divine Caress:* Upstream zieht es vor die Abwehrsperre, auf denselben Treffer wie Temperance. Konzept 08
+  („Was die Sperren im Spiel bewirken") hat genau diese Abwägung entschieden: strecken statt verdoppeln, Preis
+  benannt. Das Zusammenführen hatte die Zeile an der alten Stelle gelöscht und die neue in den Konflikt gelegt; ohne
+  Wiederherstellung wäre Divine Caress ganz entfallen.
+- *Beschwörer `RadiantOnCooldownSpam`*: Upstream liest die Option wieder, der Fork hatte sie als ungelesen entfernt
+  (75b7af001). Radiant Aegis geht im Fork vor einem angekündigten Raidwide und vor jeder Demi-Beschwörung
+  (7ef489a37); Dauereinsatz verbrauchte die Ladungen, die dort fehlen. Die entfernten Bahamut-Zeilen von Upstream
+  betreffen eine Struktur, die der Fork in eigene Methoden umgebaut hat (A317).
+
+**Wo Upstream recht hat — übernommen:**
+- *Gelehrter, Aetherpact lösen:* Upstream setzte bisher `act = AetherpactPvE` ohne `CanUse`, jetzt
+  `DissolveUnionPvE.CanUse`. Übernommen mit dem Maß des Forks (Vorhersage-HP). Dieselbe Form stand an einer
+  Fork-Stelle: das Lösen vor Living Dead (A306) drückte `AetherpactPvE`; jetzt auch dort Dissolve Union („Dissolves
+  current Fey Union", 7869). Ob das Spiel den Aetherpact-Befehl während einer Verbindung über die angepasste Id als
+  Lösen ausführte, ist unbelegt; Aetherpacts eigene Prüfung (Feenanzeige ≥ 10, Zielwahl eines Heilziels) passte nicht
+  zum Lösen. Konzept 14 führte Dissolve Union als nicht automatisiert; berichtigt.
+- *Samurai, Obergrenze des Meikyo-Countdowns:* Der Fork hatte 15 s als Wirkdauer gesetzt (ebaa44c79); der Wirktext
+  nennt 20 s („Duration: 20s", 7499). Upstreams 20 übernommen, in `fixed_values.json` als Ausnahme geführt (ein
+  Attributargument muss eine Konstante sein).
+- *Phantom:* doppelter Occult-Chakra-Aufruf ohne Kampfprüfung entfernt.
+
+**Stiller Bruch, den kein Konflikt zeigte — Klasse geprüft:** Der Fork hatte elf ungelesene Rotationsoptionen entfernt
+(232d472e9), darunter Monk `AutoFormShift`. Upstream liest sie jetzt im Countdown; das Zusammenführen übernahm die
+Lesestelle ohne die Deklaration, der Build wäre gescheitert. Der Grund der Entfernung („liest niemand") gilt nicht
+mehr: Deklaration mit Upstreams Text und Vorgabe wiederhergestellt; der Text („Use Form Shift") deckt die einzige
+Verwendung. Die übrigen zehn und `RadiantOnCooldownSpam`: keine Lesestelle im zusammengeführten Baum.
+
+**Upstream-Änderungen ohne Fork-Regel an derselben Stelle — übernommen, Wirkung im Kampf:**
+- *True North:* Automatisch erst im letzten Einschiebeplatz vor dem Positional-GCD (`WeaponRemain` ≤ 1,35 s, fester
+  Wert von Upstream), damit eine andere Fähigkeit es nicht hinausschiebt; auf Befehl sofort. Alle Nahkämpfer.
+- *Positionals:* auf der Bodenebene gemessen; „nicht ablesbar" gilt nicht mehr als verfehlt, ein sterbendes Ziel auch
+  nicht.
+- *Dunkelritter:* Dark Arts macht Edge und Flood of Shadow kostenlos (`MPOverride`), nach einem gebrochenen The
+  Blackest Night also auch unter 3000 MP; die MP-Reserve für The Blackest Night greift jetzt im Burst-Abbau (vorher
+  wirkungslos, 8500 > 6000).
+- Rotationsfehler in Abschnitten ohne Fork-Regel: Revolverklinge No Mercy, Maschinist Hypercharge (Hitze statt
+  Batterie) und Queen-Schritte, Barde DoT-Prüfungen und Soul Voice, Tänzer, Dragoon, Monk, Ninja (`CombatMudra` jetzt
+  aus), Schnitter Enshroud (Shroud-Anzeige), Rotmagier Scorch-Kombo, Weise Rhizomata, Pictomancer Thunder in Magenta,
+  Paladin Guardian, Weißmagier Thin Air und Medica III. ECommons 3.2.1.26.
+- Abhängigkeitsmatrix neu erzeugt (28 Dateien).
+
+**Falsifikation.** *Kein Defekt:* Ohne Sync darf kein Code geändert werden; die zwölf Konflikte und die fehlende
+Deklaration hätten den Build gebrochen. *Option falsch:* Jede Fork-Fassung, die blieb, hat ihren Grund in einem
+Archiveintrag oder Konzept; wo der Fork falsch lag (Samurai), gilt Upstream. *Ausgeliefert, nichts ändert sich:* Die
+Klasse „entfernte Option, wieder gelesen" ist vollständig erhoben; ein Kompilierfehler anderer Art zeigt erst der
+Build-Job.
+
+**Prüfgrad:** statisch, Prüfskripte lokal grün; Compile im GitHub-Lauf nach dem Push.
 
 ---
 ## B · Commit-Register (Fork vs. `upstream/main`)

@@ -1,6 +1,6 @@
 # SCH — Abhängigkeitsmatrix
 
-Erzeugt von `.github/scripts/audit/generate_action_matrix.py` am 2026-10-17; nicht von Hand bearbeiten. Methode und Grenzen: `docs/rotation-flow/14-action-dependency-matrix.md`.
+Erzeugt von `.github/scripts/audit/generate_action_matrix.py` am 2026-10-18; nicht von Hand bearbeiten. Methode und Grenzen: `docs/rotation-flow/14-action-dependency-matrix.md`.
 
 - Basisrotation: `ScholarRotation`
 - Rotation: `RotationSolver/RebornRotations/Healer/SCH_Reborn.cs`
@@ -8,7 +8,7 @@ Erzeugt von `.github/scripts/audit/generate_action_matrix.py` am 2026-10-17; nic
 
 ## Nutzung
 
-direkt: 44 · ungenutzt: 5 · über andere Aktion: 2
+direkt: 45 · ungenutzt: 4 · über andere Aktion: 2
 
 | Stufe | Aktion | Id | Art | Nutzung |
 |---|---|---|---|---|
@@ -38,7 +38,7 @@ direkt: 44 · ungenutzt: 5 · über andere Aktion: 2
 | Job | Consolation (`ConsolationPvE`) | 16546 | Ability | direkt |
 | Job | Deployment Tactics (`DeploymentTacticsPvE`) | 3585 | Ability | direkt |
 | Job | Dissipation (`DissipationPvE`) | 3587 | Ability | direkt |
-| Job | Dissolve Union (`DissolveUnionPvE`) | 7869 | Ability | ungenutzt |
+| Job | Dissolve Union (`DissolveUnionPvE`) | 7869 | Ability | direkt |
 | Job | Embrace (`EmbracePvE`) | 802 | Spell | ungenutzt — nicht zuweisbar: Begleiter oder Automatik |
 | Job | Emergency Tactics (`EmergencyTacticsPvE`) | 3586 | Ability | direkt |
 | Job | Emergency Tactics (`EmergencyTacticsPvE_37037`) | 37037 | Ability | über gleichnamige Aktion `EmergencyTacticsPvE` |
@@ -171,7 +171,6 @@ Ohne Eintrag in `ActionId.resx` und ohne Wirktext; RSR castet keine PvE-Limit-Br
 
 Maschinelle Liste; die Bewertung je Eintrag steht im Konzept.
 
-- Dissolve Union (`DissolveUnionPvE`, Ability): ungenutzt
 - Embrace (`EmbracePvE`, Spell): ungenutzt — nicht zuweisbar: Begleiter oder Automatik
 - Repose (`ReposePvE`, Spell): ungenutzt
 - Rescue (`RescuePvE`, Ability): ungenutzt

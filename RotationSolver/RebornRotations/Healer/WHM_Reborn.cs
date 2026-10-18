@@ -2,7 +2,7 @@ using System.ComponentModel;
 
 namespace RotationSolver.RebornRotations.Healer;
 
-[Rotation("Reborn", CombatType.PvE, GameVersion = "7.55")]
+[Rotation("Reborn", CombatType.PvE, GameVersion = "7.57")]
 [SourceCode(Path = "main/RebornRotations/Healer/WHM_Reborn.cs")]
 
 public sealed class WHM_Reborn : WhiteMageRotation
@@ -497,7 +497,7 @@ public sealed class WHM_Reborn : WhiteMageRotation
 		var hasMedica2 = 0;
 		foreach (var n in PartyMembers)
 		{
-			if (n.HasStatus(true, StatusID.MedicaIi))
+			if (n.HasStatus(true, StatusID.MedicaIi, StatusID.MedicaIii))
 			{
 				hasMedica2++;
 			}

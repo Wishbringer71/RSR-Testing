@@ -1,6 +1,6 @@
 # Abhängigkeitsmatrix je Job
 
-Erzeugt am 2026-10-01 von `.github/scripts/audit/generate_action_matrix.py`. Methode, Grenzen und Bewertung: `docs/rotation-flow/14-action-dependency-matrix.md`.
+Erzeugt am 2026-10-18 von `.github/scripts/audit/generate_action_matrix.py`. Methode, Grenzen und Bewertung: `docs/rotation-flow/14-action-dependency-matrix.md`.
 
 | Job | Aktionen | direkt | über andere Aktion | nur geprüft | nur gelesen | ungenutzt | unvollständig beschrieben | Wechselwirkungen | Verlängerungen | Selbsterhaltung |
 |---|---|---|---|---|---|---|---|---|---|---|
@@ -21,7 +21,7 @@ Erzeugt am 2026-10-01 von `.github/scripts/audit/generate_action_matrix.py`. Met
 | [RDM](RDM.md) | 52 | 44 | 2 | 0 | 5 | 1 | 22 | 0 | 0 | 0 |
 | [RPR](RPR.md) | 45 | 42 | 3 | 0 | 0 | 0 | 16 | 1 | 2 | 2 |
 | [SAM](SAM.md) | 46 | 43 | 1 | 0 | 2 | 0 | 13 | 1 | 0 | 0 |
-| [SCH](SCH.md) | 51 | 44 | 2 | 0 | 0 | 5 | 3 | 0 | 0 | 0 |
+| [SCH](SCH.md) | 51 | 45 | 2 | 0 | 0 | 4 | 3 | 0 | 0 | 0 |
 | [SGE](SGE.md) | 47 | 40 | 5 | 0 | 0 | 2 | 14 | 0 | 0 | 0 |
 | [SMN](SMN.md) | 86 | 72 | 3 | 0 | 1 | 10 | 15 | 0 | 0 | 0 |
 | [VPR](VPR.md) | 52 | 49 | 0 | 0 | 0 | 3 | 14 | 0 | 0 | 0 |

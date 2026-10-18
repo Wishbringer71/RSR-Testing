@@ -1,6 +1,6 @@
 namespace RotationSolver.RebornRotations.Melee;
 
-[Rotation("Reborn", CombatType.PvE, GameVersion = "7.55")]
+[Rotation("Reborn", CombatType.PvE, GameVersion = "7.57")]
 [SourceCode(Path = "main/RebornRotations/Melee/DRG_Reborn.cs")]
 
 public sealed class DRG_Reborn : DragoonRotation
@@ -169,12 +169,12 @@ public sealed class DRG_Reborn : DragoonRotation
 		{
 			var lsOnBigHit =
 				nextGCD.IsTheSameTo(true, HeavensThrustPvE, DrakesbanePvE) &&
-				(HasBattleLitany || LOTDEndAfter(1000) ||
+				(HasBattleLitany || LOTDTime > 0 ||
 				 LanceChargePvE.Cooldown.IsCoolingDown || BattleLitanyPvE.Cooldown.IsCoolingDown);
 
 			var lsOnAltFinishersDuringBuff =
 				HasBattleLitany &&
-				LOTDEndAfter(1000) &&
+				LOTDTime > 0 &&
 				nextGCD.IsTheSameTo(true, ChaoticSpringPvE, LanceBarragePvE, WheelingThrustPvE, FangAndClawPvE);
 
 			var lsLowLevel =
@@ -183,12 +183,13 @@ public sealed class DRG_Reborn : DragoonRotation
 				(!LanceChargePvE.EnoughLevel && nextGCD.IsTheSameTo(true, DisembowelPvE, FullThrustPvE)) ||
 				(!BattleLitanyPvE.EnoughLevel && nextGCD.IsTheSameTo(true, FullThrustPvE)) ||
 				(!HeavensThrustPvE.EnoughLevel && !DrakesbanePvE.EnoughLevel &&
-				 HasBattleLitany && HasLanceCharge && LOTDEndAfter(1000) &&
+				 HasBattleLitany && HasLanceCharge && LOTDTime > 0 &&
 				 nextGCD.IsTheSameTo(true, ChaoticSpringPvE, LanceBarragePvE, WheelingThrustPvE, FangAndClawPvE));
 
 			var lifeSurgeReady = lsOnBigHit || lsOnAltFinishersDuringBuff || lsLowLevel;
 
-			if ((!BattleLitanyPvE.Cooldown.ElapsedAfter(60) || !BattleLitanyPvE.EnoughLevel)
+			// Hold Lance Charge briefly so it lines up with Battle Litany.
+			if ((!BattleLitanyPvE.EnoughLevel || !BattleLitanyPvE.Cooldown.IsCoolingDown || !BattleLitanyPvE.Cooldown.WillHaveOneCharge(10))
 				&& LanceChargePvE.CanUse(out act))
 			{
 				return true;
@@ -221,7 +222,7 @@ public sealed class DRG_Reborn : DragoonRotation
 			}
 		}
 
-		if (HasBattleLitany || LOTDEndAfter(1000)
+		if (HasBattleLitany || LOTDTime > 0
 			|| nextGCD.IsTheSameTo(true, RaidenThrustPvE, DraconianFuryPvE))
 		{
 			if (WyrmwindThrustPvE.CanUse(out act, usedUp: true))
@@ -289,14 +290,14 @@ public sealed class DRG_Reborn : DragoonRotation
 		{
 			if (HasDraconianFire)
 			{
-				if (DraconianFuryPvE.CanUse(out act, skipComboCheck: doomSpikeRightNow))
+				if (DraconianFuryPvE.CanUse(out act))
 				{
 					return true;
 				}
 			}
 			if (!HasDraconianFire)
 			{
-				if (DoomSpikePvE.CanUse(out act, skipComboCheck: doomSpikeRightNow))
+				if (DoomSpikePvE.CanUse(out act))
 				{
 					return true;
 				}
@@ -304,7 +305,7 @@ public sealed class DRG_Reborn : DragoonRotation
 		}
 		if (!LanceMasteryTrait.EnoughLevel)
 		{
-			if (DoomSpikePvE.CanUse(out act, skipComboCheck: doomSpikeRightNow))
+			if (DoomSpikePvE.CanUse(out act))
 			{
 				return true;
 			}
@@ -405,6 +406,31 @@ public sealed class DRG_Reborn : DragoonRotation
 		if (!LanceMasteryTrait.EnoughLevel)
 		{
 			if (TrueThrustPvE.CanUse(out act))
+			{
+				return true;
+			}
+		}
+
+		if (LanceMasteryTrait.EnoughLevel)
+		{
+			if (HasDraconianFire)
+			{
+				if (DraconianFuryPvE.CanUse(out act, skipComboCheck: doomSpikeRightNow))
+				{
+					return true;
+				}
+			}
+			if (!HasDraconianFire)
+			{
+				if (DoomSpikePvE.CanUse(out act, skipComboCheck: doomSpikeRightNow))
+				{
+					return true;
+				}
+			}
+		}
+		if (!LanceMasteryTrait.EnoughLevel)
+		{
+			if (DoomSpikePvE.CanUse(out act, skipComboCheck: doomSpikeRightNow))
 			{
 				return true;
 			}

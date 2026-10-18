@@ -1,6 +1,6 @@
 # RDM — Abhängigkeitsmatrix
 
-Erzeugt von `.github/scripts/audit/generate_action_matrix.py` am 2026-09-27; nicht von Hand bearbeiten. Methode und Grenzen: `docs/rotation-flow/14-action-dependency-matrix.md`.
+Erzeugt von `.github/scripts/audit/generate_action_matrix.py` am 2026-10-18; nicht von Hand bearbeiten. Methode und Grenzen: `docs/rotation-flow/14-action-dependency-matrix.md`.
 
 - Basisrotation: `RedMageRotation`
 - Rotation: `RotationSolver/RebornRotations/Magical/RDM_Reborn.cs`
@@ -181,7 +181,7 @@ direkt: 44 · nur gelesen: 5 · ungenutzt: 1 · über andere Aktion: 2
 | Scatter | Regel prüft | Impact |
 | Scorch | Regel prüft | Resolution |
 | Scorch | Regel prüft | Riposte |
-| Scorch | ComboIds | Verfire |
+| Scorch | ComboIds | Verflare |
 | Scorch | ComboIds | Verholy |
 | Scorch | Regel prüft | Zwerchhau |
 | Swiftcast | Regel prüft | Acceleration |
