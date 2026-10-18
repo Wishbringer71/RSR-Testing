@@ -59,6 +59,7 @@ erben die Selbstkorrektur.
 | Rueckstoss auch **als** Minderungswerkzeug wirken | umgesetzt (A194, A236): Abtausch im Pull fuer seine Verlangsamung, nicht vor einem angekuendigten Rueckstoss (A212, A219), nicht auf einen Boss |
 | Wirksamkeitsmessung im Spiel | ersetzt durch die Selbstkorrektur der Vorausschau (`ScoreTtkForecast`); keine Ablesung als Aufgabe an ihn |
 | **Sonde der Flächenbewertung**: `DataCenter.AreaMitigationSkipped` nennt je Aktions-Id, wo die Bewertung eine Minderung verworfen hat (Listenverwaltung) | in Betrieb |
+| **Schlaf gegen ein Flächenwirken** (seine Vorgabe, 18.10.2026): Heiler und Magier schläfern einen Gegner ein, der kein Boss ist und eine Fläche auf die Gruppe wirkt | umgesetzt (A329), experimentell, ab Werk an; Abschnitt „Schlaf gegen ein Flächenwirken" |
 
 ## Die Antwort auf einen eingehenden Treffer
 
@@ -924,6 +925,113 @@ multiplikativ — „Strecken statt stapeln“ ist hier die **Vorgabe**, nicht d
 den Vergleich beider Strategien kann ein Modell ohne Stapeln nicht fuehren. Uebertragbar ist der
 Kern: Zeitschritt-Simulation mit Quellen, Dauer, Wiederholzeit und Zuendregel. Eine
 Zweitverwendung verlangt also, Quellenliste und Stapelverhalten zu Parametern zu machen.
+
+## Schlaf gegen ein Flächenwirken
+
+**Seine Vorgabe (18.10.2026), im Wortlaut:** „kann sleep der magiewirkenden klassen unterbrechen? falls dazu eine
+chance besteht, einbauen. bzw. als experimentelle option einbauen mit logging, ob damit gegner aoes gestoppt werden
+können, und welche". Einordnung: Prüfauftrag mit Vorgabe – bei einer Chance bauen, als experimentelle Option mit
+Protokoll.
+
+**Sachstand (A329):** Heiler und Magier setzen Schlummer bzw. Schlaf auf einen Gegner, der kein Boss ist und eine
+Fläche auf die Gruppe wirkt, solange von seinem Wirken genug übrig ist. Option „Use Sleep or Repose to stop an enemy's
+area attack (experimental)", ab Werk an. Jeder Versuch und sein Ausgang stehen in `DefenseTrace.log`.
+
+**Im Kampf:** Ein Flächenangriff eines Gegners, der kein Boss ist, kann abbrechen, bevor er landet; das kostet einen
+GCD. Der Gegner wacht beim nächsten Treffer auf. Ob es wirkt und gegen welche Angriffe, zeigt das Protokoll; wo es
+nicht wirkt, hört die Regel für den Rest der Sitzung auf.
+
+### Mechanik
+
+Belege abgerufen 18.10.2026 (xivapi v2, Blätter `Action` und `Status`, englisch und deutsch).
+
+| | Schlaf (Sleep, #25880) | Schlummer (Repose, #16560) |
+|---|---|---|
+| Rolle, Stufe | Magier, 10 | Heiler, 8 |
+| Wirkzeit, Wiederholzeit | 2,5 s, GCD | 2,5 s, GCD |
+| Reichweite, Wirkbereich | 30 y; das Ziel und Gegner bis 5 y um es | 30 y; nur das Ziel |
+| Wirktext | „Puts target and all nearby enemies to sleep. Duration: 30s" | „Afflicts target with Sleep. Duration: 30s" |
+
+- *Status Schlaf (#3):* „Overwhelming drowsiness is preventing the execution of actions"; sperrt Aktionen und
+  Bewegung (`LockActions`, `LockMovement`) wie Betäubung (#2). Immun macht „Sleep Resistance" (#1354, „Immune to sleep
+  effects").
+- *Unterbrechung:* Kein Wirktext und kein Job-Guide sagt, dass Schlaf ein Wirken abbricht. Gemeinschaftsquellen sagen
+  es: Final Fantasy Wiki (fandom), „Sleep can potentially be used to interrupt casting if the target is vulnerable to
+  the status … interrupting non-boss mobs during dungeons"; Spielerbeiträge (Steam und Square-Enix-Forum, 2022) nennen
+  es für aufladende Flächenangriffe, auch unter laufendem Schaden. Schluss: Dieselbe Sperre bricht als Betäubung das
+  Wirken eines nicht immunen Gegners ab, darauf baut die Tiefschlag-Regel des Baums. Status: Gemeinschaftsquelle und
+  Schluss, nicht offiziell; deshalb experimentell und gemessen.
+- *Aufwachen:* Schaden weckt den Gegner (Gemeinschaftsquelle, fandom). Ob die Unterbrechung dennoch gilt, misst die
+  Regel.
+- *Feindseligkeit durch Schlaf:* unbelegt; die gefundene Quelle stammt aus Version 1.0.
+
+### Erkennung
+
+`SleepInterruptWatch`, ohne Option und ohne Schwelle:
+- ein Gegner der Feindesliste, kein Boss (Rang 2 und 6 im Blatt BNpcBase, wie bei Tiefschlag), ohne Sleep Resistance,
+  dessen Art in dieser Sitzung keinem Schlaf widerstanden hat;
+- er wirkt eine Fläche – Wirkbereich über null oder eine andere Form als Einzelziel –, die dich oder zwei lebende
+  Mitglieder erreicht (`DataCenter.AreaCastReachesParty`, dieselbe Formprüfung wie die Flächenabwehr, hier für jedes
+  Wirken, gelistet oder nicht);
+- seine Aktion ist in dieser Sitzung nicht trotz eines liegenden Schlafs losgegangen.
+
+### Entscheidung
+
+`CustomRotation.SleepToStopAreaCast`, für Heiler und Magier zusammen – die Rollen mit einem Schlaf und ohne
+Unterbrechung:
+- im GCD-Pfad nach Notfall und Unterbrechung, vor Reinigung, Herausforderung, Wiederbelebung und Heilung;
+- nur, wenn vom Wirken mehr übrig ist, als der Schlaf braucht: seine Wirkzeit (null unter Dualcast oder Triplecast),
+  der laufende GCD und die zuletzt gemessene Zeit vom Ende seines Wirkens bis zur Wirkung, vor der ersten Messung die
+  gemessene Laufzeit eines Drucks (`TankbusterForecast.RoundTrip`);
+- nicht unter Spontanzauber: Swiftcast bleibt für Wiederbelebungen (seine Vorgabe);
+- beim Heiler nicht, solange ein Mitglied in der kritischen Klasse steht – sein GCD gehört dann der Heilung;
+- unter mehreren das Wirken, das zuerst endet.
+
+### Nachsteuerung und Protokoll
+
+| Ausgang | erkannt an | gelernt für die Sitzung | Zeile in `DefenseTrace.log` |
+|---|---|---|---|
+| widerstanden | „Resist" oder unverwundbar am Ziel | die Gegnerart nicht mehr | „sleep resisted by …: immune" |
+| Wirken bricht ab | der Wirkbalken endet früher als Laufzeit plus Bilddauer vor seinem Ende | – | „sleep stopped … of …" |
+| Wirken geht los | die Aktion des Gegners löst aus, nachdem der Schlaf lag | die Aktion nicht mehr | „sleep did not stop …" |
+| zu spät | beim Eintreffen wirkte der Gegner die Aktion nicht mehr | – | „sleep landed on … after … had ended" |
+| zugleich betäubt | eine Betäubung läuft beim Abbruch (`StunWatch`) | – | „… a stun landed on it too - not counted" |
+| Gegner fällt | tot vor der Auflösung | – | „… it fell …" |
+
+Jede Wahl schreibt „sleep to stop a cast -> …" mit Gegner, Art, Aktion, Restzeit, Unterbrechbarkeit und der Zeit, die
+der Schlaf braucht; jede Landung die gemessene Zeit vom Ende des eigenen Wirkens bis zur Wirkung. Die Kopfzeile des
+Protokolls nennt die Option.
+
+### Warum so
+
+- Seine Spielweise: Sicherheit der Gruppe vor Schaden, gewichtet mit der Wahrscheinlichkeit. Ein laufendes
+  Flächenwirken, das die Gruppe erreicht, landet, wenn niemand es abbricht; der Preis ist ein GCD.
+- Universell zuerst: Die Regel gilt für jede Rolle mit einem Schlaf. Tanks, Nahkämpfer und physische Fernkämpfer haben
+  Unterbrechung und Betäubung.
+- Auch unterbrechbares Wirken: Ob ein anderer Spieler es unterbricht, ist eine Annahme über ihn, kein tragender Grund.
+- Voreinstellung an, nach seiner Regel (29.09.2026): Neue Regeln sollen getestet werden.
+
+### Ausgeschlossen
+
+- Swiftcast für den Schlaf (seine Vorgabe).
+- Bosse, wie bei Tiefschlag.
+- Einzelzielwirken: Gefragt sind Flächenangriffe; ein Einzelzauber auf ein Mitglied bleibt Sache der Heilung.
+- Das Gelernte über die Sitzung hinaus zu speichern: Nach einem Neustart kostet jede immune Art und jede nicht
+  stoppbare Aktion wieder einen Versuch – ein GCD je Fall.
+
+### Grenzen und Lagen
+
+- *Kurzes Wirken:* Schlaf braucht seine Wirkzeit, den laufenden GCD und die Laufzeit; ein kurzes Wirken lässt keinen
+  Platz. Rotmagier mit Dualcast und Schwarzmagier mit Triplecast schlafen sofort und verbrauchen dafür den
+  Sofortzauber – Schaden, der der Sicherheit weicht.
+- *Weitere Gegner:* Schlaf trifft bis 5 y um das Ziel; Gruppenschaden weckt sie.
+- *Wiederholtes Wirken:* Wirkt der geweckte Gegner dieselbe Fläche erneut, kostet jeder Abbruch wieder einen GCD.
+- *Vierer-Instanz:* die Hauptlage. *Allianzraid:* gezählt wird die eigene Gruppe.
+- *Stufensynchron:* ab Stufe 10 bzw. 8 (`EnoughLevel`).
+- *BossModReborn:* unbeteiligt.
+
+**Prüfgrad:** statisch, Prüfskripte, Compile über die CI; im Spiel nicht beobachtet. Die Antwort fällt im Kampf; die
+Regel lernt daraus selbst, das Protokoll zeigt sie.
 
 ## Die Vorgaben des Auftraggebers
 

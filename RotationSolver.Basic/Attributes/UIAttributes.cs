@@ -69,6 +69,7 @@ public enum JobFilterType : byte
 	Dispel,
 	Tank,
 	Melee,
+	Sleep,
 }
 #pragma warning restore CS1591 // Missing XML comment for publicly visible type or member
 

@@ -605,6 +605,13 @@ internal partial class Configs : IPluginConfiguration, IM3Settings
 		PvPFilter = JobFilterType.NoJob)]
 	private static readonly bool _interruptibleMoreCheck = true;
 
+	[ConditionBool, UI("Use Sleep or Repose to stop an enemy's area attack (experimental)",
+		Description = "As a healer or a caster, who have no interrupt: when an enemy that is not a boss casts an area attack that reaches you or two party members, and enough of its cast is left for the sleep to land - its own cast time, the GCD still running and the measured time to its effect -, Repose or Sleep goes on that enemy. No game text says that a sleep interrupts; its status locks actions as a stun does, and community sources report that it stops casts. Swiftcast is not spent on it, Dualcast and Triplecast are. A healer does not use it while a party member is about to die. An enemy kind that resists, and an attack that goes off although the sleep landed, are not tried again this session. Every attempt and what came of it is written to DefenseTrace.log.\nIn a fight: an enemy's area attack can stop before it lands, for one GCD of yours; the enemy wakes at the next hit. Whether it works, and against which attacks, the log shows.",
+		Filter = AutoActionUsage, Section = 3,
+		PvEFilter = JobFilterType.Sleep,
+		PvPFilter = JobFilterType.NoJob)]
+	private static readonly bool _sleepToStopAreaCasts = true;
+
 	[ConditionBool, UI("Provoke anything not on the no provoke list.",
 		Filter = AutoActionUsage, Section = 3)]
 	private static readonly bool _provokeAnything = false;

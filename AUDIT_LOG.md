@@ -8695,6 +8695,64 @@ angekündigt, auf den Wirker selbst gewirkt oder nie gemessen ist – alles im K
 **Prüfgrad:** statisch am Code und an der Versionsgeschichte; Prüfskripte; Compile im Prüflauf; im Spiel nicht
 beobachtet. Die Protokollzeilen „single defence -> …" mit den Quellen zeigen die Wirkung.
 
+### A329 · Schlaf gegen ein Flächenwirken, experimentell (18.10.2026)
+
+Seine Vorgabe vom 18.10.2026: „kann sleep der magiewirkenden klassen unterbrechen? falls dazu eine chance besteht,
+einbauen. bzw. als experimentelle option einbauen mit logging, ob damit gegner aoes gestoppt werden können, und welche".
+Konzept 08, „Schlaf gegen ein Flächenwirken".
+
+- *Research:*
+  - Spieldaten, xivapi v2: Schlaf #25880 (Magier, Stufe 10, 2,5 s, GCD, 30 y, 5 y um das Ziel); Schlummer #16560
+    (Heiler, Stufe 8, 2,5 s, GCD, Einzelziel). Status Schlaf #3 und Betäubung #2 tragen beide `LockActions` und
+    `LockMovement`. „Sleep Resistance" #1354 heißt „Immune to sleep effects". Die deutschen Namen stammen aus
+    `language=de` und stehen im Namensverzeichnis.
+  - Kein Wirktext und kein Job-Guide nennt eine Unterbrechung. Gemeinschaftsquellen nennen sie: Final Fantasy Wiki
+    (fandom, über die API gelesen), Steam 2022 und Square-Enix-Forum 2022. WrathCombo setzt Schlaf nie gegen ein
+    Wirken ein. Die Quelle zur Feindseligkeit stammt aus Version 1.0 und trägt nichts.
+  - Code: Unterbrechung gibt es nur für unterbrechbares Wirken (`CanInterrupt`, Zwischenruf, Kopftreffer, Fegefeger).
+    Tiefschlag betäubt Trash bei nicht unterbrechbarem Wirken (`ModifyLowBlowPvE`). `SleepPvE` und `ReposePvE` sind
+    erzeugt, aber keine Rotation liest sie; BLU hat eigene Schlafzauber.
+  - Die Effektliste meldet angewandte und widerstandene Status (Muster `ObserveStuns`); der Abbruch eines Wirkens
+    zeigt sich am Wirkbalken.
+- *Optionen:*
+  - (0) nichts;
+  - (1) nur ein Protokoll ohne Regel – beantwortet nichts, weil niemand Schlaf drückt;
+  - (2) Regel hinter einer experimentellen Option, mit Selbstnachsteuerung und Protokoll;
+  - (3) ohne Option.
+
+  Gewählt ist (2) nach seiner Vorgabe; die Voreinstellung „an" folgt seiner Regel vom 29.09.2026.
+- *Umgesetzt:*
+  - `SleepInterruptWatch` (Erkennung und Messung):
+    - kein Boss, keine Sleep Resistance, Art nicht als immun gelernt;
+    - Fläche, die die Gruppe erreicht (`AreaCastReachesParty`, jetzt intern sichtbar);
+    - Aktion nicht als „ging trotz Schlaf los" gelernt;
+    - die Zeit vom Ende des eigenen Wirkens bis zur Wirkung wird gemessen;
+    - die Ausgänge werden ins Protokoll geschrieben.
+  - `CustomRotation.SleepToStopAreaCast` steht im GCD-Pfad nach der Unterbrechung:
+    - Wirkzeit, laufender GCD und die gemessene Zeit müssen ins Wirken passen;
+    - nicht unter Swiftcast;
+    - beim Heiler nicht neben der kritischen Klasse.
+  - Option „Use Sleep or Repose to stop an enemy's area attack (experimental)", Filter `JobFilterType.Sleep` (Heiler,
+    Magier).
+  - `CHANGELOG.md` trägt den Eintrag dazu und den in A328 versäumten über die geänderten Zieltypen.
+- *Verworfen vor dem Commit:* Feste Faktoren („zwei GCD" als Frist, „ein Viertel GCD" als Schwelle für den Abbruch)
+  verstießen gegen „Keine festen Werte". Ersetzt durch die Einheit „ein GCD bis zum Eintreffen", wie überall bei einem
+  Wirken, und durch gemessene Größen: die Laufzeit (`RoundTrip`) und die Bilddauer (`UpdateDelta`).
+- *Nebenbefund, behoben:* Der Kommentar im Namensverzeichnis ließ nur zwei Quellen zu; CLAUDE.md nennt drei, die
+  deutschen Spielblätter eingeschlossen, und das Prüfskript liest sie.
+
+**Falsifikation.**
+- *Kein Defekt bzw. keine Chance:* nicht widerlegbar ohne Kampf. Die Spieldaten zeigen dieselbe Sperre wie
+  Betäubung, die Gemeinschaftsquellen sprechen dafür, also besteht die Chance.
+- *Option falsch:* Ein GCD je Versuch. Immune Arten und nicht stoppbare Aktionen kosten je einen Versuch je Sitzung.
+  Ein geweckter Gegner, der erneut wirkt, kostet erneut einen GCD. Bei Rotmagier und Schwarzmagier verbraucht ein
+  Schlaf Dualcast bzw. Triplecast. Alles das ist im Konzept als Grenze benannt.
+- *Ausgeliefert, nichts ändert sich:* Bei kurzem Wirken passen Wirkzeit, GCD und Laufzeit nicht hinein; dann schreibt
+  das Protokoll keine Zeile „sleep to stop a cast". Möglich ist auch, dass Schlaf nicht unterbricht; dann schreibt es
+  „sleep did not stop …", und die Regel hört je Aktion auf.
+
+**Prüfgrad:** statisch, Prüfskripte, Compile im Prüflauf; im Spiel nicht beobachtet.
+
 ---
 ## B · Commit-Register (Fork vs. `upstream/main`)
 

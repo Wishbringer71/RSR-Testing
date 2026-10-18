@@ -82,6 +82,15 @@ internal readonly struct JobFilter
 					JobRole.Melee,
 				];
 				break;
+
+			// The roles with a sleep: Repose for healers, Sleep for casters.
+			case JobFilterType.Sleep:
+				JobRoles =
+				[
+					JobRole.Healer,
+					JobRole.RangedMagical,
+				];
+				break;
 		}
 	}
 

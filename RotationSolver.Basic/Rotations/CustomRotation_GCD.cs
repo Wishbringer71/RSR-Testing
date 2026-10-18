@@ -94,6 +94,13 @@ public partial class CustomRotation
 				}
 			}
 
+			// The owner's experiment of 18.10.2026: a sleep on an enemy's area cast (concept 08, "Schlaf gegen ein
+			// Flächenwirken").
+			if (SleepToStopAreaCast(out act))
+			{
+				return act;
+			}
+
 			IBaseAction.TargetOverride = TargetType.Dispel;
 			if (DataCenter.MergedStatus.HasFlag(AutoStatus.Dispel))
 			{
@@ -598,6 +605,98 @@ public partial class CustomRotation
 
 		act = null;
 		return false;
+	}
+
+	/// <summary>
+	/// Sleep or Repose on an enemy that is not a boss and casts an area attack reaching the party, while enough of
+	/// the cast is left for the sleep to land - the owner's experiment of 18.10.2026, "kann sleep der magiewirkenden
+	/// klassen unterbrechen?" (concept 08, "Schlaf gegen ein Flächenwirken"). Healers and casters together: the roles
+	/// with a sleep and no interrupt. What came of it, and what it learns, is SleepInterruptWatch's.
+	/// </summary>
+	private bool SleepToStopAreaCast(out IAction? act)
+	{
+		act = null;
+		var role = DataCenter.Role;
+		if (!Service.Config.SleepToStopAreaCasts || DataCenter.IsPvP || !DataCenter.InCombat
+			|| role is not (JobRole.Healer or JobRole.RangedMagical))
+		{
+			return false;
+		}
+
+		// His rule: Swiftcast stays for raises, and a sleep under it would spend it. Dualcast and Triplecast are
+		// spent on whatever spell comes next, so a sleep may take them.
+		if (StatusHelper.PlayerHasStatus(true, StatusID.Swiftcast))
+		{
+			return false;
+		}
+
+		var sleep = role == JobRole.Healer ? ReposePvE : SleepPvE;
+		if (!sleep.EnoughLevel)
+		{
+			return false;
+		}
+
+		// What the sleep needs of the enemy's cast: its own cast and the GCD still running, and the time from the
+		// end of its cast to its effect as last measured - before the first sleep, the measured round trip of a press.
+		var lag = SleepInterruptWatch.Lag >= 0f ? SleepInterruptWatch.Lag : Math.Max(0f, TankbusterForecast.RoundTrip);
+		var needed = sleep.Info.NeededStatusMargin + lag;
+
+		// The cast that ends soonest first: the others leave time for the next GCD. The time left is read first;
+		// the shape of the cast, which looks up the action and where its target stands, only for one that fits.
+		IBattleChara? chosen = null;
+		var chosenLeft = float.MaxValue;
+		foreach (var enemy in DataCenter.AllHostileTargets)
+		{
+			if (enemy == null || !enemy.IsCasting)
+			{
+				continue;
+			}
+
+			var left = enemy.TotalCastTime - enemy.CurrentCastTime;
+			if (left > needed && left < chosenLeft
+				&& SleepInterruptWatch.CanStillBeSlept(enemy) && SleepInterruptWatch.IsAreaCastToStop(enemy))
+			{
+				chosen = enemy;
+				chosenLeft = left;
+			}
+		}
+
+		if (chosen == null)
+		{
+			return false;
+		}
+
+		// A healer's GCD belongs to the member about to die.
+		if (role == JobRole.Healer)
+		{
+			foreach (var member in DataCenter.PartyMembers)
+			{
+				if (member != null && !member.IsDead && member.IsInCriticalClass())
+				{
+					return false;
+				}
+			}
+		}
+
+		// The target filter is swapped in for this call only and restored afterwards, as for Nascent Flash.
+		var setting = sleep.Setting;
+		var canTarget = setting.CanTarget;
+		var chosenId = chosen.GameObjectId;
+		setting.CanTarget = t => canTarget(t) && t.GameObjectId == chosenId;
+		try
+		{
+			if (!sleep.CanUse(out act, skipAoeCheck: true, skipTTKCheck: true))
+			{
+				return false;
+			}
+		}
+		finally
+		{
+			setting.CanTarget = canTarget;
+		}
+
+		SleepInterruptWatch.AimAt(chosen, sleep, chosenLeft, needed);
+		return true;
 	}
 
 	/// <summary>

@@ -493,6 +493,7 @@ internal static class MajorUpdater
 			TankSwapWatch.Update();
 			TankbusterForecast.Update();
 			StunWatch.Update();
+			SleepInterruptWatch.Update();
 		}
 		catch (Exception ex)
 		{

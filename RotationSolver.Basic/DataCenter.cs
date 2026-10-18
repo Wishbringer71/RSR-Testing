@@ -4366,9 +4366,10 @@ internal static class DataCenter
 	/// The flag opens party mitigations - Reprisal, Divine Veil, Sacred Soil, Addle, Feint - and a flag
 	/// is measured by the paths it opens, not by whom it is set for. Measured by the player alone, a
 	/// healer standing clear of a cleave on the tank and the melee gave them no party mitigation. The
-	/// actions that protect only the player ask <see cref="AreaHitReachesPlayer"/> instead.
+	/// actions that protect only the player ask <see cref="AreaHitReachesPlayer"/> instead. The sleep that
+	/// stops an area cast asks the same of any cast, listed or not (SleepInterruptWatch).
 	/// </remarks>
-	private static bool AreaCastReachesParty(IBattleChara h, Action act)
+	internal static bool AreaCastReachesParty(IBattleChara h, Action act)
 	{
 		if (AreaCastCanReachPlayer(h, act))
 		{

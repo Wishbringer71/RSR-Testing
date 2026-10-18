@@ -18,7 +18,8 @@ public static class Watcher
 		DefenseTrace.Start($"version {typeof(Watcher).Assembly.GetName().Version} | commit {SourceCommit()} | area defence {config.UseAoeDefense}"
 			+ $" | single defence {config.UseStDefense} | skip casts that missed you {config.SkipAreaCastsThatMissedMe}"
 			+ $" | big interruptible casts {config.MitigateBigAreaCastsEvenIfInterruptible} | BMR timeline {config.UseBmrTimeline}"
-			+ $" | AoE list {OtherConfiguration.HostileCastingArea.Count} | tankbuster list {OtherConfiguration.HostileCastingTank.Count}");
+			+ $" | AoE list {OtherConfiguration.HostileCastingArea.Count} | tankbuster list {OtherConfiguration.HostileCastingTank.Count}"
+			+ $" | sleep to stop area casts {config.SleepToStopAreaCasts}");
 
 		ActionEffect.ActionEffectEvent += ActionFromEnemy;
 		ActionEffect.ActionEffectEvent += ActionFromSelf;
@@ -234,6 +235,49 @@ public static class Watcher
 		}
 	}
 
+	// What the player's Sleep or Repose did to its targets, and every action of another source resolving - the
+	// watched cast going off - for SleepInterruptWatch (concept 08, "Schlaf gegen ein Flächenwirken").
+	private static void ObserveSleep(ActionEffectSet set, ulong playerId)
+	{
+		if (set.Action is not { } action || set.Source is not IBattleChara source)
+		{
+			return;
+		}
+
+		if (source.GameObjectId != playerId)
+		{
+			SleepInterruptWatch.ObserveEnemyAction(source.GameObjectId, action.RowId);
+			return;
+		}
+
+		if (!SleepInterruptWatch.IsSleepAction(action.RowId))
+		{
+			return;
+		}
+
+		List<SleepInterruptWatch.Observation> found = [];
+		foreach (var effect in set.TargetEffects)
+		{
+			bool applied = false, resisted = false;
+			effect.ForEach(e =>
+			{
+				if (e.type == ActionEffectType.ApplyStatusEffectTarget)
+				{
+					applied = true;
+				}
+				// A resisted status (52, 55), a resisted action, or a target that cannot be affected.
+				else if (e.type is ActionEffectType.FullResistStatus or ActionEffectType.FullResistStatus2
+					or ActionEffectType.FullResist or ActionEffectType.Invulnerable)
+				{
+					resisted = true;
+				}
+			});
+			found.Add(new SleepInterruptWatch.Observation(effect.TargetID, applied, resisted));
+		}
+
+		SleepInterruptWatch.ObserveOwnSleep(action.RowId, found);
+	}
+
 	private static bool IsStun(uint statusId)
 	{
 		foreach (var stun in StatusHelper.StunStatus)
@@ -440,6 +484,7 @@ public static class Watcher
 			// Every set, from any source: the stuns that matter come from the party, so this sits before
 			// every filter below.
 			ObserveStuns(set);
+			ObserveSleep(set, playerObject.GameObjectId);
 
 			TraceHitFromUnreadSource(set, playerObject);
 

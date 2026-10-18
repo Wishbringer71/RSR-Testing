@@ -382,6 +382,7 @@ public class BaseAction : IBaseAction
 			if (used)
 			{
 				TankbusterForecast.RecordOwnPress(adjustId, targetId, timed);
+				SleepInterruptWatch.RecordPress(adjustId, Info.CastTime);
 			}
 
 			return used;

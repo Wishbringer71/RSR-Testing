@@ -23,6 +23,26 @@ are not reconstructed here.
 
 ## Unreleased
 
+### Behaviour change in RotationSolver.Basic: tankbuster targets follow whom a tankbuster is aimed at
+
+`TargetType.Tankbuster` picks, among the action's own candidates, a member a known tankbuster is aimed at - a
+tankbuster marker on him, a cast at him of a listed or measured tankbuster, or for the player BossModReborn's mask -,
+the player first. It used to read only the marker list, which for a tank held only a marker on himself, and fell back
+to a list entry the action could not take. `TargetType.BeAttacked`, which the single-target and area defence set for
+every friendly action without its own target, narrows to such a member when one is among the candidates; otherwise it
+chooses as before. Under `Configs.HoldMitigationUnderInvulnerability` both leave out a member who takes every
+tankbuster aimed at him under Hallowed Ground or Superbolide. A derived rotation whose friendly single-target
+mitigation goes through these target types now puts it on the tankbuster's target. `CustomRotation.HelpTankbusterTarget`
+is new: an action on another member a tankbuster is aimed at, never on the player.
+
+### Added to RotationSolver.Basic: a sleep on an enemy's area cast (experimental)
+
+The GCD path of a healer or caster puts Repose or Sleep on an enemy that is not a boss and casts an area attack
+reaching the party, while enough of the cast is left, under `Configs.SleepToStopAreaCasts` (on by default). It runs
+before dispel, provoke, raise and heal; a derived rotation that wants the GCD for something else can switch the
+option off. `SleepInterruptWatch` is new and public: what such a sleep did, which enemy kinds resisted and which casts
+went on. `JobFilterType.Sleep` is appended to the enum.
+
 ## 7.5.7.3+wsh1
 
 ### Dependency: ECommons 3.2.1.26

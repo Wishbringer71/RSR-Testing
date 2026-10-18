@@ -2,8 +2,9 @@
   "_comment": [
     "German game names the user has stated, paired with the English identifier used in the code.",
     "Rules for this file, from CLAUDE.md: a German name is never formed here - not translated, not",
-    "derived from the English name, not taken from a search-engine summary. Only two sources count:",
-    "the Square Enix job guide and the user's own statement.",
+    "derived from the English name, not taken from a search-engine summary. Three sources count:",
+    "the user's own statement, the Square Enix job guide, and the game's German sheets (xivapi v2,",
+    "language=de, with the row id).",
     "Anything else belongs in 'note', not in 'de'.",
     "Validated by check_action_names.py, which resolves every 'en' against the generated resources."
   ],
@@ -418,6 +419,22 @@
       "identifier": "LiturgyOfTheBellPvE",
       "kind": "action",
       "source": "German job guide (de.finalfantasyxiv.com/jobguide/whitemage/), 2026-10-13, paired by row with the English guide; also the names his client wrote into DefenseTrace.log"
+    },
+    {
+      "de": "Schlaf",
+      "en": "Sleep",
+      "identifier": "SleepPvE",
+      "kind": "action",
+      "source": "game data, xivapi v2 Action 25880 language=de, 2026-10-18",
+      "note": "Role action of the casters, level 10; target and enemies within 5 y. Status 3 carries the same name."
+    },
+    {
+      "de": "Schlummer",
+      "en": "Repose",
+      "identifier": "ReposePvE",
+      "kind": "action",
+      "source": "game data, xivapi v2 Action 16560 language=de, 2026-10-18",
+      "note": "Role action of the healers, level 8; puts the target to sleep (status 3, Schlaf)."
     }
   ]
 }
