@@ -516,7 +516,7 @@ Tankbuster zwei braucht, und dann ist der nächste mit der Unverwundbarkeit oder
 
 ### Prüfmittel
 
-- `tankbuster_model.py` (CI) setzt die Regeln dieses Abschnitts um – nicht den Code – und lässt sie gegen eine
+- `tankbuster_model.py` (CI, sobald sich das Skript ändert; A323) setzt die Regeln dieses Abschnitts um – nicht den Code – und lässt sie gegen eine
   simulierte Welt laufen: Bilder unterschiedlicher Länge mit Rucklern, Erhebung nach der Rotation, Laufzeit zum
   Server, Status vor oder nach der Bestätigung, Ablehnungen, ein Stun beim Druck der Unverwundbarkeit, Abschütteln und
   Urflackern als freie Pfade, andere Pfade, die jederzeit drücken wollen, alle vier Schalterstellungen, knappe

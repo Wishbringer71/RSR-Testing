@@ -8358,6 +8358,49 @@ Loop über die Prüfläufe (sein nächster Auftrag), nicht ein weiterer Schritt 
 
 **Prüfgrad:** statisch (Text gegen Code, Konzepte, Archiv).
 
+### A323 · Prüfläufe: was notwendig ist, was sie kosten, wie sie geordnet laufen (18.10.2026)
+
+**Sein Auftrag (18.10.2026):** „warum werden die ci prüfläufe immer umfangreicher? kannst du die nicht strukturierter
+organisieren? was ist davon überhaupt notwendig. ebenfalls kritisch im vollständigen loop prüfen."
+
+**Gemessen:** GitHub-Lauf 39053322996 (17.10.2026): Prüfjob 6:54 min, davon Tankbuster-Modell 5:37, Searing-Light-
+Modell 0:30, `check_fork_version` 0:27; die übrigen 28 Prüfungen zusammen etwa 20 s. Build-Job 1:45. Lokal je Skript
+(18.10.2026): 27 Prüfungen unter 3 s, `check_fork_version` 37 s, Searing-Light-Modell 28 s, Tankbuster-Modell rund 15 min.
+
+**Warum es wuchs:** Die Zahl der Schritte wächst mit jeder Fehlerklasse, die einmal auftrat (Regel: Behebung zielt auf
+die Wiederholbarkeit, Prüfskript mit Selbsttest); jede der 28 schnellen Prüfungen ist im Archiv mit ihrem Anlass belegt
+und liest den Code oder die Dokumente, die sie hält. Die Laufzeit wuchs dagegen mit drei Modellen (`smn_phase_potency`,
+`searing_light_coverage`, `tankbuster_model`), die keinen Plugin-Code lesen: Sie simulieren die Regeln, aus denen sie
+geschrieben sind, und halten nur ihre eigenen Annahmen – ihr Ergebnis ändert sich nur, wenn sich das Modell ändert.
+Aufgenommen wurden sie, weil sie nur von Hand liefen und Änderungen am Modell unbemerkt blieben.
+
+**Notwendig:** alle 28 schnellen Prüfungen (Anlass je Skriptkopf und Archiv; zusammen etwa 20 s); keine ohne Beleg zu
+entfernen. Die Modelle nur, wenn sich ihr Skript ändert. `check_fork_version` ja, aber nicht mit zwei Prozessen je
+Upstream-Tag.
+
+**Umgesetzt:**
+- `build.yaml`, Prüfjob nach Gegenstand geordnet: 1. Code (Struktur und Invarianten der Regeln), 2. erzeugte Dateien
+  und Spieldaten, 3. Dokumente, 4. Repository (Tags, Identitäten, Version), 5. Modelle. Die drei Modellschritte sind ein
+  Schritt, der je Modell nur läuft, wenn dessen Skript in diesem Push geändert wurde (Vergleich `before`…`head`), und
+  alle bei manuellem Lauf oder unbekanntem Vorstand. Alle übrigen Schritte unverändert (mit einem YAML-Parser gegen die
+  vorige Fassung geprüft: genau die drei Modellschritte ersetzt, Build-Job und Auslöser gleich).
+- `check_fork_version`: `git tag --merged HEAD` statt `rev-list` und `merge-base` je Tag – dieselbe Menge, 1 s statt
+  37 s, gleiches Ergebnis.
+- `run_ci_checks.py`: liest die Modellliste aus derselben Zeile des Workflows, führt ein Modell nur aus, wenn sein Skript
+  gegenüber dem Upstream-Zweig geändert ist (`--models`: alle), und zeigt jeden Schritt beim Start.
+- CLAUDE.md, „Prüfmittel und Zahlen": ein Modell ohne Codebezug läuft nur bei eigener Änderung.
+
+**Laufzeit:** lokal gemessen 15 s statt rund 18 min (18.10.2026); der Prüfjob auf GitHub, erwartet unter einer Minute
+solange kein Modell geändert ist, wird nach dem Push gemessen.
+
+**Falsifikation.** *Kein Defekt:* die Messung oben. *Option falsch (ein Modell sieht etwas, wenn der Code sich
+ändert):* Keines liest Code (geprüft: keine Dateizugriffe, `smn_phase_potency` nennt `SMN_Reborn.cs` nur im Kommentar);
+dass ein Modell vom Code abdriftet, sah die CI nie – dafür steht die Auflösungsbedingung im TODO („Searing-Light-
+Abdeckungsmodell …"). *Ausgeliefert, nichts ändert sich:* Bei `pull_request` gilt `paths` für den ganzen Zweig, darum
+der Vergleich je Push im Schritt statt eines Pfadfilters; ein Push mit Modelländerung lässt nur dieses Modell laufen.
+
+**Prüfgrad:** statisch, YAML-Vergleich, lokaler Lauf; der GitHub-Lauf nach dem Push.
+
 ---
 ## B · Commit-Register (Fork vs. `upstream/main`)
 

@@ -48,14 +48,10 @@ def upstream_tags(remote):
         if len(parts) == 2 and NUMERIC_TAG.match(parts[1]):
             names.add(parts[1])
 
-    reachable = []
-    for tag in names:
-        sha = run('git', 'rev-list', '-n', '1', tag)
-        if not sha:
-            continue
-        if subprocess.run(['git', 'merge-base', '--is-ancestor', sha, 'HEAD'],
-                          capture_output=True).returncode == 0:
-            reachable.append(tag)
+    # One question to git for all of them: the tags whose commit HEAD contains. It asked two per tag
+    # (rev-list, merge-base) before, several hundred processes and most of a minute per run (A323).
+    merged = set(run('git', 'tag', '--merged', 'HEAD').split('\n'))
+    reachable = [tag for tag in names if tag in merged]
     return sorted(reachable, key=key, reverse=True)
 
 

@@ -21,12 +21,23 @@ jobs:
           # this code sits on, and the default checkout is one commit deep.
           fetch-depth: 0
 
+      # ---- 1. The code: does it parse, and do the rules keep their invariants. Each reads the C# the plugin is built from
+      # and stands for a defect class that happened here (its comment names it).
+
       # First, because it is the cheapest answer to the most expensive failure: a file that does not
       # parse fails the Windows build after a minute and a half, and there is no local .NET here to
       # catch it sooner. A move that left two method bodies without their signatures cost exactly
       # that round trip.
       - name: Check the C# files are structurally intact
         run: python3 .github/scripts/audit/check_cs_structure.py
+
+      # MSBuild imports these before compiling anything, so a parse error fails every project.
+      # Catching it here costs a second; the same finding in the Windows job costs a minute.
+      - name: Check the MSBuild files are well-formed XML
+        run: python3 .github/scripts/audit/check_msbuild_xml.py
+
+      - name: Check base call targets
+        run: python3 .github/scripts/check_base_calls.py
 
       # The heal target ranking is upstream code with one fork change in it: a critical rank ahead of
       # the three role short-cuts. Nothing fails when that order is lost - a merge bringing the
@@ -54,85 +65,18 @@ jobs:
       - name: Check the heal target measure matches the action
         run: python3 .github/scripts/audit/check_heal_target_measure.py
 
-      # What a defensive action takes off a hit is stated in its own effect text and generated into
-      # DefensiveValues.g.cs. Checked rather than trusted: the generated file is committed, so a
-      # game patch that restates a figure, or a parser that quietly stops matching, would otherwise
-      # leave a stale table behind that nothing reads as wrong.
-      - name: Check the generated defensive values still match the effect texts
-        run: python3 .github/scripts/audit/generate_defensive_values.py --check
-
-      # The per-job action dependency matrix (concept 14) is generated from the same sheets and from
-      # the rotations. A rotation change or an upstream sync that is not followed by a regeneration
-      # would leave a matrix that says what the code no longer does.
-      - name: Check the action dependency matrix is up to date
-        run: python3 .github/scripts/audit/generate_action_matrix.py --check
-
-      # Depth alone is not enough: this fork's own remote carries no upstream tags at all, only
-      # 7.5.5.41+wsh1 and 7.5.6.1+wsh1, and this environment cannot push tags to fix that. So the
-      # release tags have to come from upstream directly, or `git describe` finds nothing to
-      # compare against.
-      - name: Fetch the upstream release tags
-        run: |
-          git remote add upstream https://github.com/FFXIV-CombatReborn/RotationSolverReborn.git || true
-          git fetch --tags --no-recurse-submodules upstream
-          git fetch --no-recurse-submodules upstream main
-
-      # Second line behind .githooks/pre-commit, for a clone that has no core.hooksPath set. Six
-      # commits went out carrying the owner's real name and his private address in this public
-      # repository, and GitHub's own "block pushes that expose my email" did not stop them: it
-      # only recognises addresses listed on the pushing account, and that one was not. Reporting
-      # here is late - a commit is permanent - but it names them while the number is small.
-      # It needs upstream/main, fetched in the step above, to tell the fork's commits from
-      # upstream's.
-      - name: Check the commit identities
-        run: python3 .github/scripts/audit/check_commit_identity.py
-
-      # The version literals in Directory.Build.props name the upstream release the code contains.
-      # Nothing updates them on a merge - upstream carries no version in its source tree - so they
-      # age silently, and that number is what the settings window shows the user. It said 7.5.6.1
-      # after upstream 7.5.6.2 had already been merged in.
-      #
-      # --require-tags turns "no tag found" from a pass into a failure. Without it the check would
-      # wave the run through in exactly the situation it cannot answer, which is worse than not
-      # checking: a silent pass is indistinguishable from a clean tree.
-      - name: Check the fork version names the upstream release it sits on
-        run: python3 .github/scripts/audit/check_fork_version.py --require-tags
-
-      - name: Check base call targets
-        run: python3 .github/scripts/check_base_calls.py
+      # The once-per-cooldown full heal has to be tied to actual danger, or it goes out on whoever
+      # happens to stand lowest - a player who was just raised, most visibly - and is missing when a
+      # tank needs it. Nothing fails when the condition is lost; an upstream merge simply brings the
+      # unguarded branch back.
+      - name: Check the emergency heal asks whether the target is in danger
+        run: python3 .github/scripts/audit/check_emergency_heal_threat.py
 
       # Fails when a barrier whose PvE action creates one is missing from ShieldStatus. That list
       # ages by omission: an unlisted barrier counts as none at all, so the gap is invisible in the
       # code and only shows as a healer topping up a target that was already covered.
       - name: Check ShieldStatus covers every PvE barrier
         run: python3 .github/scripts/audit/scan13.py
-
-      # MSBuild imports these before compiling anything, so a parse error fails every project.
-      # Catching it here costs a second; the same finding in the Windows job costs a minute.
-      - name: Check the MSBuild files are well-formed XML
-        run: python3 .github/scripts/audit/check_msbuild_xml.py
-
-      # The user plays a German client, so every name he states has to be translated back to an
-      # identifier before anything can be searched for. Getting that wrong has produced both a false
-      # "not in the tree" report and an invented German name, so the pairs are recorded rather than
-      # looked up again; this keeps each one pointing at something that exists and holds its German
-      # name against the game's German sheets (xivapi), skipping that part when xivapi is unreachable.
-      - name: Check the German action-name dictionary resolves
-        run: python3 .github/scripts/audit/check_action_names.py
-
-      # A line reference is the cheapest way to make a concept verifiable and the first thing to
-      # rot, because any edit above the cited line moves it and nothing fails. This fails the run
-      # for a line that cannot exist or holds no code, for a reference no identifier vouches for,
-      # and for one whose identifier is neither at the line nor the member whose body holds it.
-      - name: Check the documentation's line references still exist
-        run: python3 .github/scripts/audit/check_doc_references.py
-
-      # The plugin downloads its curated lists (tankbusters, area attacks, invulnerabilities) from
-      # upstream's repository and never reads the fork's Resources/ copies, so an edit made only
-      # here would change nothing and nothing would fail. Skipped, not failed, when GitHub is
-      # unreachable, so an outage does not read as a defect (A286, P2).
-      - name: Check the fork's resource lists match what the plugin loads
-        run: python3 .github/scripts/audit/check_resource_lists.py
 
       # Fails when the GCD path picks an ability inside the window the execution gate refuses.
       # Nothing fails at runtime when it does - the action shows up in the preview and is silently
@@ -156,12 +100,65 @@ jobs:
       - name: Check every saved list is loaded on the path that runs
         run: python3 .github/scripts/audit/check_config_store_roundtrip.py
 
-      # The once-per-cooldown full heal has to be tied to actual danger, or it goes out on whoever
-      # happens to stand lowest - a player who was just raised, most visibly - and is missing when a
-      # tank needs it. Nothing fails when the condition is lost; an upstream merge simply brings the
-      # unguarded branch back.
-      - name: Check the emergency heal asks whether the target is in danger
-        run: python3 .github/scripts/audit/check_emergency_heal_threat.py
+      # A setting with a label and a default promises the user it does something. When nothing
+      # reads it the promise fails silently and forever. Two such settings sat in the raise path
+      # alone, so this guards against the next one rather than against those two.
+      - name: Check every user setting has a reader
+        run: python3 .github/scripts/audit/scan18.py
+
+      # The sibling of the check below: that one asks whether a setting is read at all, this one
+      # whether the user can tell what it does. A fork setting with no explanation leaves them
+      # guessing what a slider does to their fight, and for the rotation settings a missing tooltip
+      # also means the "(?)" marker is never drawn - so there is nothing to hover and no sign that
+      # an explanation was ever intended. Nothing fails when one is added without it.
+      - name: Check every fork setting explains its effect in the fight
+        run: python3 .github/scripts/audit/check_setting_tooltips.py
+
+      # The owner's rule: no fixed values in the code, everything derived from the game, and an
+      # exception only after a loop that asked whether the game can supply the value after all.
+      # Every number on a line the fork added has to be listed - as an exception with its loop in
+      # AUDIT_LOG.md, or as a loop still open. A new number listed nowhere fails here.
+      - name: Check no fixed value entered without a loop
+        run: python3 .github/scripts/audit/check_fixed_values.py
+
+      # ---- 2. Generated files and game data: what the code takes from the game sheets and from upstream's lists.
+
+      # What a defensive action takes off a hit is stated in its own effect text and generated into
+      # DefensiveValues.g.cs. Checked rather than trusted: the generated file is committed, so a
+      # game patch that restates a figure, or a parser that quietly stops matching, would otherwise
+      # leave a stale table behind that nothing reads as wrong.
+      - name: Check the generated defensive values still match the effect texts
+        run: python3 .github/scripts/audit/generate_defensive_values.py --check
+
+      # The per-job action dependency matrix (concept 14) is generated from the same sheets and from
+      # the rotations. A rotation change or an upstream sync that is not followed by a regeneration
+      # would leave a matrix that says what the code no longer does.
+      - name: Check the action dependency matrix is up to date
+        run: python3 .github/scripts/audit/generate_action_matrix.py --check
+
+      # The user plays a German client, so every name he states has to be translated back to an
+      # identifier before anything can be searched for. Getting that wrong has produced both a false
+      # "not in the tree" report and an invented German name, so the pairs are recorded rather than
+      # looked up again; this keeps each one pointing at something that exists and holds its German
+      # name against the game's German sheets (xivapi), skipping that part when xivapi is unreachable.
+      - name: Check the German action-name dictionary resolves
+        run: python3 .github/scripts/audit/check_action_names.py
+
+      # The plugin downloads its curated lists (tankbusters, area attacks, invulnerabilities) from
+      # upstream's repository and never reads the fork's Resources/ copies, so an edit made only
+      # here would change nothing and nothing would fail. Skipped, not failed, when GitHub is
+      # unreachable, so an outage does not read as a defect (A286, P2).
+      - name: Check the fork's resource lists match what the plugin loads
+        run: python3 .github/scripts/audit/check_resource_lists.py
+
+      # ---- 3. The documents: concepts and release text against the code and against each other.
+
+      # A line reference is the cheapest way to make a concept verifiable and the first thing to
+      # rot, because any edit above the cited line moves it and nothing fails. This fails the run
+      # for a line that cannot exist or holds no code, for a reference no identifier vouches for,
+      # and for one whose identifier is neither at the line nor the member whose body holds it.
+      - name: Check the documentation's line references still exist
+        run: python3 .github/scripts/audit/check_doc_references.py
 
       # The concepts answer neighbouring questions, so a rule written into one of them is invisible
       # to the others. After a context compaction the next pass reads whichever file it opens first,
@@ -198,41 +195,62 @@ jobs:
       - name: Check the release description describes the next release
         run: python3 .github/scripts/audit/check_release_note.py
 
-      # The sibling of the check below: that one asks whether a setting is read at all, this one
-      # whether the user can tell what it does. A fork setting with no explanation leaves them
-      # guessing what a slider does to their fight, and for the rotation settings a missing tooltip
-      # also means the "(?)" marker is never drawn - so there is nothing to hover and no sign that
-      # an explanation was ever intended. Nothing fails when one is added without it.
-      - name: Check every fork setting explains its effect in the fight
-        run: python3 .github/scripts/audit/check_setting_tooltips.py
+      # ---- 4. The repository: identities and the version the fork claims.
 
-      # A setting with a label and a default promises the user it does something. When nothing
-      # reads it the promise fails silently and forever. Two such settings sat in the raise path
-      # alone, so this guards against the next one rather than against those two.
-      - name: Check every user setting has a reader
-        run: python3 .github/scripts/audit/scan18.py
+      # Depth alone is not enough: this fork's own remote carries no upstream tags at all, only
+      # 7.5.5.41+wsh1 and 7.5.6.1+wsh1, and this environment cannot push tags to fix that. So the
+      # release tags have to come from upstream directly, or `git describe` finds nothing to
+      # compare against.
+      - name: Fetch the upstream release tags
+        run: |
+          git remote add upstream https://github.com/FFXIV-CombatReborn/RotationSolverReborn.git || true
+          git fetch --tags --no-recurse-submodules upstream
+          git fetch --no-recurse-submodules upstream main
 
-      # The figures concept 12 stands on come from these two models, and both carry self-tests
-      # against constructed defects. They ran only by hand, so a change to the model - or a model
-      # that had drifted from the plugin it describes, which is how the V8 figures came to measure a
-      # book the plugin never kept - went unnoticed.
-      - name: Check the Summoner phase potency model
-        run: python3 .github/scripts/audit/smn_phase_potency.py
-      - name: Check the Searing Light coverage model
-        run: python3 .github/scripts/audit/searing_light_coverage.py
+      # Second line behind .githooks/pre-commit, for a clone that has no core.hooksPath set. Six
+      # commits went out carrying the owner's real name and his private address in this public
+      # repository, and GitHub's own "block pushes that expose my email" did not stop them: it
+      # only recognises addresses listed on the pushing account, and that one was not. Reporting
+      # here is late - a commit is permanent - but it names them while the number is small.
+      # It needs upstream/main, fetched in the step above, to tell the fork's commits from
+      # upstream's.
+      - name: Check the commit identities
+        run: python3 .github/scripts/audit/check_commit_identity.py
 
-      # The tankbuster plan's rules (concept 09) against a simulated world with the game's timing.
-      # Its self-test switches on the defects seven review rounds found in the built code; each must
-      # be caught, so a passing run says the method would have found them before the code (A266).
-      - name: Check the tankbuster plan model
-        run: python3 .github/scripts/audit/tankbuster_model.py
+      # The version literals in Directory.Build.props name the upstream release the code contains.
+      # Nothing updates them on a merge - upstream carries no version in its source tree - so they
+      # age silently, and that number is what the settings window shows the user. It said 7.5.6.1
+      # after upstream 7.5.6.2 had already been merged in.
+      #
+      # --require-tags turns "no tag found" from a pass into a failure. Without it the check would
+      # wave the run through in exactly the situation it cannot answer, which is worse than not
+      # checking: a silent pass is indistinguishable from a clean tree.
+      - name: Check the fork version names the upstream release it sits on
+        run: python3 .github/scripts/audit/check_fork_version.py --require-tags
 
-      # The owner's rule: no fixed values in the code, everything derived from the game, and an
-      # exception only after a loop that asked whether the game can supply the value after all.
-      # Every number on a line the fork added has to be listed - as an exception with its loop in
-      # AUDIT_LOG.md, or as a loop still open. A new number listed nowhere fails here.
-      - name: Check no fixed value entered without a loop
-        run: python3 .github/scripts/audit/check_fixed_values.py
+      # ---- 5. The models (concepts 09 and 12). They read no plugin code: each simulates the rules it was written
+      # from and holds its own invariants and self-test against constructed defects. A run therefore says something
+      # new only when the model itself changed - and on every push the tankbuster model alone took 5:37 of the
+      # job's 6:54 (run of 17.10.2026, A323). Each runs when its own script changed in this push, and all of them
+      # on a manual run or when the previous head is unknown (a new pull request, a force push).
+      - name: Run the models whose script changed
+        shell: bash
+        run: |
+          MODELS="smn_phase_potency searing_light_coverage tankbuster_model"
+          before="${{ github.event.before }}"
+          after="${{ github.event.pull_request.head.sha || github.sha }}"
+          if [ "${{ github.event_name }}" != "pull_request" ] || [ -z "$before" ] || ! git cat-file -e "$before^{commit}" 2>/dev/null; then
+            changed="all"
+          else
+            changed="$(git diff --name-only "$before" "$after" -- .github/scripts/audit/)"
+          fi
+          for model in $MODELS; do
+            if [ "$changed" = "all" ] || printf '%s\n' "$changed" | grep -qx ".github/scripts/audit/$model.py"; then
+              python3 ".github/scripts/audit/$model.py"
+            else
+              echo "$model.py unchanged in this push - not run"
+            fi
+          done
 
   Build:
     runs-on: windows-latest

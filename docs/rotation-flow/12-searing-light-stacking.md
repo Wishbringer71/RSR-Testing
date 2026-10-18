@@ -813,7 +813,7 @@ Light überschreibt statt zu stapeln, ist die Angabe des Auftraggebers; eine sch
 nicht gefunden.
 
 **Die Abdeckungszahlen sind eine Messung am Modell, keine am Spiel**
-(`.github/scripts/audit/searing_light_coverage.py`, in der CI mit Selbsttest). Das Modell:
+(`.github/scripts/audit/searing_light_coverage.py`, mit Selbsttest; in der CI, sobald sich das Skript ändert, A323). Das Modell:
 - kennt keinen Standort: Der Ausweichblock ist immer Titan, der Ifrit-Block am Ziel ist nicht abgebildet;
 - zählt Sekunden mit Buff, nicht Schaden, außer in den potenzgewichteten Tabellen;
 - teilt Fenster gierig zu: Wer zuerst darf, zündet. Real entscheidet der Zufall des Sekundenbruchteils;
