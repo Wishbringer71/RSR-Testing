@@ -2,7 +2,7 @@ using System.ComponentModel;
 
 namespace RotationSolver.RebornRotations.Tank;
 
-[Rotation("Reborn", CombatType.PvE, GameVersion = "7.55")]
+[Rotation("Reborn", CombatType.PvE, GameVersion = "7.57")]
 [SourceCode(Path = "main/RebornRotations/Tank/DRK_Reborn.cs")]
 
 public sealed class DRK_Reborn : DarkKnightRotation
@@ -829,12 +829,13 @@ public sealed class DRK_Reborn : DarkKnightRotation
 				return true;
 			}
 
-			if (InTwoMIsBurst && BloodWeaponPvE.Cooldown.IsCoolingDown && LivingShadowPvE.Cooldown.IsCoolingDown && SaltedEarthPvE.Cooldown.IsCoolingDown && ShadowbringerPvE.Cooldown.CurrentCharges == 0 && CarveAndSpitPvE.Cooldown.IsCoolingDown)
+			if (InTwoMIsBurst && BloodWeaponPvE.Cooldown.IsCoolingDown && LivingShadowPvE.Cooldown.IsCoolingDown && SaltedEarthPvE.Cooldown.IsCoolingDown && ShadowbringerPvE.Cooldown.CurrentCharges == 0 && CarveAndSpitPvE.Cooldown.IsCoolingDown
+				&& (!TheBlackestNight || CurrentMp >= 6000))
 			{
 				return true;
 			}
 
-			return (!TheBlackestNight || CurrentMp >= 6000) && CurrentMp >= 8500;
+			return CurrentMp >= 8500;
 		}
 	}
 	#endregion

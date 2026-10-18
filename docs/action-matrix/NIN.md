@@ -1,6 +1,6 @@
 # NIN — Abhängigkeitsmatrix
 
-Erzeugt von `.github/scripts/audit/generate_action_matrix.py` am 2026-09-27; nicht von Hand bearbeiten. Methode und Grenzen: `docs/rotation-flow/14-action-dependency-matrix.md`.
+Erzeugt von `.github/scripts/audit/generate_action_matrix.py` am 2026-10-18; nicht von Hand bearbeiten. Methode und Grenzen: `docs/rotation-flow/14-action-dependency-matrix.md`.
 
 - Basisrotation: `NinjaRotation`
 - Rotation: `RotationSolver/RebornRotations/Melee/NIN_Reborn.cs`
@@ -160,6 +160,7 @@ direkt: 54 · nur gelesen: 1 · ungenutzt: 1 · über andere Aktion: 6
 | Death Blossom | Regel prüft | Chi |
 | Death Blossom | Regel prüft | Fuma Shuriken |
 | Death Blossom | Regel prüft | Fuma Shuriken |
+| Death Blossom | Regel prüft | Goka Mekkyaku |
 | Death Blossom | Regel prüft | Hakke Mujinsatsu |
 | Death Blossom | Regel prüft | Huton |
 | Death Blossom | Regel prüft | Hyosho Ranryu |
@@ -179,6 +180,7 @@ direkt: 54 · nur gelesen: 1 · ungenutzt: 1 · über andere Aktion: 6
 | Hakke Mujinsatsu | Regel prüft | Chi |
 | Hakke Mujinsatsu | ComboIds | Death Blossom |
 | Hakke Mujinsatsu | Regel prüft | Death Blossom |
+| Hakke Mujinsatsu | Regel prüft | Goka Mekkyaku |
 | Hakke Mujinsatsu | Regel prüft | Hyosho Ranryu |
 | Hakke Mujinsatsu | Regel prüft | Jin |
 | Hakke Mujinsatsu | Regel prüft | Katon |

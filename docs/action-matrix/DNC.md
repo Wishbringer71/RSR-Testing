@@ -1,6 +1,6 @@
 # DNC — Abhängigkeitsmatrix
 
-Erzeugt von `.github/scripts/audit/generate_action_matrix.py` am 2026-09-29; nicht von Hand bearbeiten. Methode und Grenzen: `docs/rotation-flow/14-action-dependency-matrix.md`.
+Erzeugt von `.github/scripts/audit/generate_action_matrix.py` am 2026-10-18; nicht von Hand bearbeiten. Methode und Grenzen: `docs/rotation-flow/14-action-dependency-matrix.md`.
 
 - Basisrotation: `DancerRotation`
 - Rotation: `RotationSolver/RebornRotations/Ranged/DNC_Reborn.cs`
@@ -199,7 +199,6 @@ Jeder Aufruf der Aktion trägt eine eigene Bedingung; hält sie an, verfällt da
 - Quadruple Technical Finish: 1 Aufruf(e), mit Rückfall vor Ablauf
 - Reverse Cascade: 1 Aufruf(e), **ohne Rückfall vor Ablauf**
 - Rising Windmill: 1 Aufruf(e), **ohne Rückfall vor Ablauf**
-- Starfall Dance: 3 Aufruf(e), **ohne Rückfall vor Ablauf**
 - Technical Step: 2 Aufruf(e), **ohne Rückfall vor Ablauf**
 
 ### Unvollständige Beschreibungen

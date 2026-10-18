@@ -1,7 +1,7 @@
 ﻿namespace RotationSolver.RebornRotations.Magical;
 
-[Rotation("Reborn", CombatType.PvE, GameVersion = "7.55")]
-[SourceCode(Path = "main/BasicRotations/Magical/BLM_Default.cs")]
+[Rotation("Reborn", CombatType.PvE, GameVersion = "7.57")]
+[SourceCode(Path = "main/RebornRotations/Magical/BLM_Default.cs")]
 
 public class BLM_Default : BlackMageRotation
 {
@@ -222,7 +222,7 @@ public class BLM_Default : BlackMageRotation
 
 		if (TriplecastPvE.CanUse(out act))
 		{
-			if (nextGCD.Equals(ActionID.OccultCometPvE))
+			if (nextGCD.IsTheSameTo(true, ActionID.OccultCometPvE))
 			{
 				return true;
 			}
@@ -544,7 +544,6 @@ public class BLM_Default : BlackMageRotation
 				break;
 		}
 
-
 		return false;
 	}
 
@@ -569,8 +568,7 @@ public class BLM_Default : BlackMageRotation
 			return true;
 		}
 
-		if (AddThunder(out act, 0) && StatusHelper.PlayerWillStatusEndGCD(1, 0, true,
-			StatusID.Thundercloud))
+		if (AddThunder(out act, 0))
 		{
 			return true;
 		}

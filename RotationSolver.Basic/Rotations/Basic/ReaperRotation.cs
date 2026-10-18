@@ -382,7 +382,7 @@ public partial class ReaperRotation
 
 	static partial void ModifyEnshroudPvE(ref ActionSetting setting)
 	{
-		setting.ActionCheck = () => !HasEnshrouded && !HasSoulReaver && Soul >= 50;
+		setting.ActionCheck = () => !HasEnshrouded && !HasSoulReaver && (Shroud >= 50 || HasIdealHost);
 		setting.UnlockedByQuestID = 69614;
 	}
 

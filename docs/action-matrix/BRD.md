@@ -1,6 +1,6 @@
 # BRD — Abhängigkeitsmatrix
 
-Erzeugt von `.github/scripts/audit/generate_action_matrix.py` am 2026-09-27; nicht von Hand bearbeiten. Methode und Grenzen: `docs/rotation-flow/14-action-dependency-matrix.md`.
+Erzeugt von `.github/scripts/audit/generate_action_matrix.py` am 2026-10-18; nicht von Hand bearbeiten. Methode und Grenzen: `docs/rotation-flow/14-action-dependency-matrix.md`.
 
 - Basisrotation: `BardRotation`
 - Rotation: `RotationSolver/RebornRotations/Ranged/BRD_Reborn.cs`
@@ -98,14 +98,12 @@ direkt: 39 · ungenutzt: 2
 | Bloodletter | Regel sperrt vorher | Empyreal Arrow |
 | Bloodletter | Regel sperrt vorher | Radiant Finale |
 | Burst Shot | Regel sperrt vorher | Barrage |
-| Burst Shot | Regel sperrt vorher | Blast Arrow |
 | Burst Shot | Regel sperrt vorher | Caustic Bite |
 | Burst Shot | Regel sperrt vorher | Iron Jaws |
 | Burst Shot | Regel sperrt vorher | Stormbite |
 | Burst Shot | Regel sperrt vorher | Venomous Bite |
 | Burst Shot | Regel sperrt vorher | Windbite |
 | Caustic Bite | Regel sperrt vorher | Barrage |
-| Caustic Bite | Regel sperrt vorher | Blast Arrow |
 | Caustic Bite | Regel sperrt vorher | Stormbite |
 | Empyreal Arrow | Regel sperrt vorher | Battle Voice |
 | Empyreal Arrow | Regel sperrt vorher | Radiant Finale |
@@ -115,19 +113,16 @@ direkt: 39 · ungenutzt: 2
 | Heartbreak Shot | Regel sperrt vorher | Empyreal Arrow |
 | Heartbreak Shot | Regel sperrt vorher | Radiant Finale |
 | Heavy Shot | Regel sperrt vorher | Barrage |
-| Heavy Shot | Regel sperrt vorher | Blast Arrow |
 | Heavy Shot | Regel sperrt vorher | Caustic Bite |
 | Heavy Shot | Regel sperrt vorher | Iron Jaws |
 | Heavy Shot | Regel sperrt vorher | Stormbite |
 | Heavy Shot | Regel sperrt vorher | Venomous Bite |
 | Heavy Shot | Regel sperrt vorher | Windbite |
 | Ladonsbite | Regel sperrt vorher | Barrage |
-| Ladonsbite | Regel sperrt vorher | Blast Arrow |
 | Ladonsbite | Regel sperrt vorher | Quick Nock |
 | Pitch Perfect | Regel sperrt vorher | Battle Voice |
 | Pitch Perfect | Regel sperrt vorher | Radiant Finale |
 | Quick Nock | Regel sperrt vorher | Barrage |
-| Quick Nock | Regel sperrt vorher | Blast Arrow |
 | Radiant Encore | StatusNeed RadiantEncoreReady | Radiant Finale |
 | Radiant Finale | Regel prüft | Mage's Ballad |
 | Raging Strikes | Regel prüft | Battle Voice |
@@ -140,7 +135,6 @@ direkt: 39 · ungenutzt: 2
 | Rain of Death | Regel sperrt vorher | Radiant Finale |
 | Refulgent Arrow | Regel sperrt vorher | Barrage |
 | Refulgent Arrow | StatusNeed Barrage | Barrage |
-| Refulgent Arrow | Regel sperrt vorher | Blast Arrow |
 | Refulgent Arrow | StatusNeed HawksEye_3861 | Burst Shot |
 | Refulgent Arrow | Regel sperrt vorher | Caustic Bite |
 | Refulgent Arrow | StatusNeed HawksEye_3861 | Caustic Bite |
@@ -156,7 +150,6 @@ direkt: 39 · ungenutzt: 2
 | Resonant Arrow | StatusNeed ResonantArrowReady | Barrage |
 | Shadowbite | Regel sperrt vorher | Barrage |
 | Shadowbite | StatusNeed Barrage | Barrage |
-| Shadowbite | Regel sperrt vorher | Blast Arrow |
 | Shadowbite | StatusNeed HawksEye_3861 | Burst Shot |
 | Shadowbite | StatusNeed HawksEye_3861 | Caustic Bite |
 | Shadowbite | StatusNeed HawksEye_3861 | Heavy Shot |
@@ -171,10 +164,8 @@ direkt: 39 · ungenutzt: 2
 | Sidewinder | Regel sperrt vorher | Radiant Finale |
 | Sidewinder | Regel prüft | Raging Strikes |
 | Stormbite | Regel sperrt vorher | Barrage |
-| Stormbite | Regel sperrt vorher | Blast Arrow |
 | Straight Shot | Regel sperrt vorher | Barrage |
 | Straight Shot | StatusNeed Barrage | Barrage |
-| Straight Shot | Regel sperrt vorher | Blast Arrow |
 | Straight Shot | StatusNeed HawksEye_3861 | Burst Shot |
 | Straight Shot | Regel sperrt vorher | Caustic Bite |
 | Straight Shot | StatusNeed HawksEye_3861 | Caustic Bite |
@@ -189,14 +180,12 @@ direkt: 39 · ungenutzt: 2
 | Straight Shot | Regel sperrt vorher | Venomous Bite |
 | Straight Shot | Regel sperrt vorher | Windbite |
 | Venomous Bite | Regel sperrt vorher | Barrage |
-| Venomous Bite | Regel sperrt vorher | Blast Arrow |
 | Venomous Bite | Regel prüft | Caustic Bite |
 | Venomous Bite | Regel sperrt vorher | Caustic Bite |
 | Venomous Bite | Regel sperrt vorher | Iron Jaws |
 | Venomous Bite | Regel sperrt vorher | Stormbite |
 | Venomous Bite | Regel sperrt vorher | Windbite |
 | Wide Volley | Regel sperrt vorher | Barrage |
-| Wide Volley | Regel sperrt vorher | Blast Arrow |
 | Wide Volley | StatusNeed HawksEye_3861 | Burst Shot |
 | Wide Volley | StatusNeed HawksEye_3861 | Caustic Bite |
 | Wide Volley | StatusNeed HawksEye_3861 | Heavy Shot |
@@ -205,7 +194,6 @@ direkt: 39 · ungenutzt: 2
 | Wide Volley | StatusNeed HawksEye_3861 | Quick Nock |
 | Wide Volley | StatusNeed HawksEye_3861 | Stormbite |
 | Windbite | Regel sperrt vorher | Barrage |
-| Windbite | Regel sperrt vorher | Blast Arrow |
 | Windbite | Regel sperrt vorher | Caustic Bite |
 | Windbite | Regel prüft | Stormbite |
 | Windbite | Regel sperrt vorher | Stormbite |

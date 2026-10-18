@@ -1,7 +1,7 @@
 namespace RotationSolver.RebornRotations.Magical;
 
-[Rotation("Reborn", CombatType.PvE, GameVersion = "7.55")]
-[SourceCode(Path = "main/BasicRotations/Limited Jobs/BLU_Reborn.cs")]
+[Rotation("Reborn", CombatType.PvE, GameVersion = "7.57")]
+[SourceCode(Path = "main/RebornRotations/Limited Jobs/BLU_Reborn.cs")]
 
 public sealed class BLU_Reborn : BlueMageRotation
 {

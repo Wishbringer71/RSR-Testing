@@ -2,7 +2,7 @@ using System.ComponentModel;
 
 namespace RotationSolver.RebornRotations.Healer;
 
-[Rotation("Reborn", CombatType.PvE, GameVersion = "7.55")]
+[Rotation("Reborn", CombatType.PvE, GameVersion = "7.57")]
 [SourceCode(Path = "main/RebornRotations/Healer/SCH_Reborn.cs")]
 
 public sealed class SCH_Reborn : ScholarRotation
@@ -200,9 +200,8 @@ public sealed class SCH_Reborn : ScholarRotation
 				continue;
 			}
 
-			if (item.GetForecastHealthRatio(true) >= AetherpactRemove)
+			if (item.GetForecastHealthRatio(true) >= AetherpactRemove && DissolveUnionPvE.CanUse(out act))
 			{
-				act = AetherpactPvE;
 				return true;
 			}
 		}

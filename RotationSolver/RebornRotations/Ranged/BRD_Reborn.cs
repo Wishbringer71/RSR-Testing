@@ -1,6 +1,6 @@
 namespace RotationSolver.RebornRotations.Ranged;
 
-[Rotation("Reborn", CombatType.PvE, GameVersion = "7.55",
+[Rotation("Reborn", CombatType.PvE, GameVersion = "7.57",
 	Description = "Please make sure that the three song times add up to 120 seconds, Wanderers default first song for now.")]
 [SourceCode(Path = "main/RebornRotations/Ranged/BRD_Reborn.cs")]
 
@@ -486,11 +486,6 @@ public sealed class BRD_Reborn : BardRotation
 			{
 				return true;
 			}
-
-			if (BlastArrowPvE.Target.Target?.WillStatusEndGCD(1, 0.5f, true, StatusID.Windbite, StatusID.Stormbite, StatusID.VenomousBite, StatusID.CausticBite) ?? false)
-			{
-				return false;
-			}
 		}
 
 		//aoe
@@ -533,7 +528,7 @@ public sealed class BRD_Reborn : BardRotation
 			{
 				if ((DOTBoss && CausticBitePvE.Target.Target.IsBossFromIcon()) || !DOTBoss)
 				{
-					if (CausticBitePvE.Target.Target.HasStatus(true, StatusID.VenomousBite) == false)
+					if (CausticBitePvE.Target.Target.HasStatus(true, StatusID.CausticBite) == false)
 					{
 						return true;
 					}
@@ -564,7 +559,7 @@ public sealed class BRD_Reborn : BardRotation
 			{
 				if ((DOTBoss && VenomousBitePvE.Target.Target.IsBossFromIcon()) || !DOTBoss)
 				{
-					if (IronJawsPvE.EnoughLevel && VenomousBitePvE.Target.Target.HasStatus(true, StatusID.CausticBite) == false)
+					if (IronJawsPvE.EnoughLevel && VenomousBitePvE.Target.Target.HasStatus(true, StatusID.VenomousBite) == false)
 					{
 						return true;
 					}
@@ -608,12 +603,12 @@ public sealed class BRD_Reborn : BardRotation
 			return false;
 		}
 
-		if (QuickNockPvE.CanUse(out _) && SoulVoice == SoulVoiceConfig)
+		if (QuickNockPvE.CanUse(out _) && SoulVoice >= SoulVoiceConfig)
 		{
 			return true;
 		}
 
-		if (LadonsbitePvE.CanUse(out _) && SoulVoice == SoulVoiceConfig)
+		if (LadonsbitePvE.CanUse(out _) && SoulVoice >= SoulVoiceConfig)
 		{
 			return true;
 		}
@@ -628,7 +623,7 @@ public sealed class BRD_Reborn : BardRotation
 			return false;
 		}
 
-		if (SoulVoice == SoulVoiceConfig && BattleVoicePvE.Cooldown.WillHaveOneCharge(25))
+		if (SoulVoice >= SoulVoiceConfig && BattleVoicePvE.Cooldown.WillHaveOneCharge(25))
 		{
 			return false;
 		}
@@ -638,7 +633,7 @@ public sealed class BRD_Reborn : BardRotation
 			return true;
 		}
 
-		if (SoulVoice == SoulVoiceConfig && HasRagingStrikes && HasBattleVoice)
+		if (SoulVoice >= SoulVoiceConfig && HasRagingStrikes && HasBattleVoice)
 		{
 			return true;
 		}
@@ -648,7 +643,7 @@ public sealed class BRD_Reborn : BardRotation
 			return true;
 		}
 
-		if (!HasRagingStrikes && SoulVoice == SoulVoiceConfig)
+		if (!HasRagingStrikes && SoulVoice >= SoulVoiceConfig)
 		{
 			return true;
 		}
