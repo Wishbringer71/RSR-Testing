@@ -565,8 +565,13 @@ Abwehr, Abschütteln und Reflexion gingen hinaus, und im ganzen Kampf steht kein
 getroffen wurde oder das Protokoll die Quelle nicht sieht, ist nicht bestimmt. Am Quelltext belegt ist ein Weg für
 das Zweite: ECommons löst die Quelle über die Objekttabelle auf, und einen Satz ohne auflösbare Quelle verwirft der
 Effekt-Handler ganz, ohne Zeile, Schadensaufnahme und Messung (`TODO.md`). Seit A299 schreibt das Protokoll jeden
-Treffer aus einer Quelle, die RSR nicht als Gegner liest. „Kein Treffer im Protokoll" ist bis dahin kein sicheres
-Maß für „Fehlvorhersage". Seine Frage vom 13.10.2026, ob es Raidwides waren oder Flächen, außerhalb
+Treffer aus einer Quelle, die RSR nicht als Gegner liest. Sein Protokoll vom 18.10.2026 belegt einen zweiten Weg: Alle
+47 Treffer des Dungeonbosses Hammerschädel kamen aus Figuren in der Objekttabelle, die der Handler nur nicht las – er
+nahm von nicht anvisierbaren Figuren nur Kämpfer an, und Teile eines Gegners oder Figuren ohne Unterart fielen heraus.
+Seit A327 liest er jede Figur der Gegnerseite (`ObjectHelper.IsEnemySideFigure`), und die Protokollzeile nennt bei
+einem verbliebenen Fall Unterart und Anvisierbarkeit. Ob Necrophobia und Düsterflare derselbe Fall waren, ist nicht
+bestimmt (Schluss naheliegend, nicht belegt). „Kein Treffer im Protokoll" ist bis dahin kein sicheres Maß für
+„Fehlvorhersage". Seine Frage vom 13.10.2026, ob es Raidwides waren oder Flächen, außerhalb
 derer er stand, führte zur Maske.
 
 **Eine Vorhersage, die mit einem kleinen Cast kam, öffnet die Flächenabwehr nicht** (A301,

@@ -4771,8 +4771,7 @@ internal static class DataCenter
 		foreach (var obj in Svc.Objects)
 		{
 			if (obj is IBattleChara h && h.ObjectKind == Dalamud.Game.ClientState.Objects.Enums.ObjectKind.BattleNpc
-				&& !h.IsTargetable && h.HasNativeState()
-				&& h.GetBattleNPCSubKind() == Dalamud.Game.ClientState.Objects.Enums.BattleNpcSubKind.Combatant)
+				&& !h.IsTargetable && h.HasNativeState() && h.IsEnemySideFigure())
 			{
 				Consider(h);
 			}

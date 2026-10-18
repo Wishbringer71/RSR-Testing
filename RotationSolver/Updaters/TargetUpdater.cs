@@ -83,7 +83,9 @@ internal static partial class TargetUpdater
 	/// evidence of hostility here: an area id enters it only after it damaged every party member, a knockback only
 	/// after it knocked someone, a tankbuster by the shipped list or a measured hit, and an untargetable caster
 	/// carries no other. Tankbusters and knockbacks of helpers went unread until A303. Range and line of sight are left to the reach check of each cast,
-	/// because a helper stands where its area is, not where an enemy can be attacked.
+	/// because a helper stands where its area is, not where an enemy can be attacked. A helper is any untargetable
+	/// figure of the enemy side, of each of its kinds - combatant, part of an enemy, or none (ObjectHelper.IsEnemySideFigure);
+	/// read as combatants only, a dungeon boss's parts cast and hit unread (A327).
 	/// </remarks>
 	private static void UpdateAreaCasters()
 	{
@@ -96,7 +98,7 @@ internal static partial class TargetUpdater
 		{
 			if (obj is not IBattleChara caster || caster.ObjectKind != Dalamud.Game.ClientState.Objects.Enums.ObjectKind.BattleNpc
 				|| caster.IsTargetable || !caster.HasNativeState() || !caster.IsCasting
-				|| caster.GetBattleNPCSubKind() != Dalamud.Game.ClientState.Objects.Enums.BattleNpcSubKind.Combatant
+				|| !caster.IsEnemySideFigure()
 				|| !DataCenter.IsListedHostileCast(caster.CastActionId))
 			{
 				continue;

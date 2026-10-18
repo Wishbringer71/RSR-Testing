@@ -151,6 +151,18 @@ public static class Watcher
 		return reached;
 	}
 
+	// Whether a set comes from the enemy side: an enemy on the hostile list, or a figure of the enemy side
+	// (ObjectHelper.IsEnemySideFigure) that nobody can target - the helpers that resolve casts, a boss off the
+	// field - or whose action reached a party member. A guard is a combatant as well, and is told apart by the
+	// second: it never reaches the party. Read as untargetable combatants only, the parts and helpers of other
+	// kinds went unread everywhere below (trace of 18.10.2026, A327).
+	private static bool IsHostileSource(ActionEffectSet set)
+	{
+		return set.Source is IBattleChara source
+			&& (source.IsEnemy()
+				|| (source.IsEnemySideFigure() && (!source.IsTargetable || DamagedPartyMembers(set) > 0)));
+	}
+
 	// How many party members this set reached, for the trace line of an area landing: "missed you" with
 	// party members reached says he stood out of it; with none, the set carried no hit at all and the
 	// damage came another way (trace of 01.10.2026, A242).
@@ -391,9 +403,8 @@ public static class Watcher
 		}
 
 		var source = set.Source;
-		if (source is IBattleChara known && (known.IsEnemy()
-			|| known.GetBattleNPCSubKind() == Dalamud.Game.ClientState.Objects.Enums.BattleNpcSubKind.Combatant
-			|| known.GameObjectId == player.GameObjectId || known.IsParty()))
+		if (IsHostileSource(set)
+			|| (source is IBattleChara known && (known.GameObjectId == player.GameObjectId || known.IsParty())))
 		{
 			return;
 		}
@@ -403,7 +414,10 @@ public static class Watcher
 			if (effect.TargetID == player.GameObjectId && TryGetDamageEntry(effect, out _))
 			{
 				DefenseTrace.Line("hit you from "
-					+ (source == null ? "a source the object table does not hold" : $"{source.Name.TextValue}, not read as an enemy ({source.ObjectKind})")
+					+ (source == null ? "a source the object table does not hold"
+						: $"{source.Name.TextValue}, not read as an enemy ({source.ObjectKind}"
+							+ (source is IBattleChara figure ? $", {figure.GetBattleNPCSubKind()}{(figure.IsTargetable ? string.Empty : ", untargetable")}" : string.Empty)
+							+ ")")
 					+ $": {action.Name.ExtractText()} #{action.RowId} for {DamageShareOn(set, player.GameObjectId, Math.Max(1u, player.MaxHp)):P0}"
 					+ $" of max HP, {set.TargetEffects.Length} targets");
 				return;
@@ -460,8 +474,7 @@ public static class Watcher
 			// targetable enemy or from one of the invisible helpers that resolve many of them - so this
 			// comes before the source filter below. Auto-attacks do not count: the tank takes them
 			// anyway, and they would confirm every marker on him.
-			if (set.Source is IBattleChara source
-				&& (source.IsEnemy() || source.GetBattleNPCSubKind() == Dalamud.Game.ClientState.Objects.Enums.BattleNpcSubKind.Combatant)
+			if (IsHostileSource(set) && set.Source is IBattleChara source
 				&& set.Action is { } marked && marked.GetActionCate() != ActionCate.Autoattack)
 			{
 				var markedForPlayer = false;
@@ -526,12 +539,10 @@ public static class Watcher
 			var maxHp = playerObject.MaxHp;
 			var denom = Math.Max(1u, maxHp); // avoid division by zero
 
-			// An enemy nobody can target - the invisible helpers that resolve many raidwides, or a boss
-			// while it is off the field - counts as an enemy here: the area recognition reads its casts
-			// (DataCenter.AreaCasters, A277), so its actions are listed and measured like any other.
-			if (set.Source is not IBattleChara battle
-				|| !(set.Source.IsEnemy() || (battle.IsValid() && !battle.IsTargetable
-					&& battle.GetBattleNPCSubKind() == Dalamud.Game.ClientState.Objects.Enums.BattleNpcSubKind.Combatant)))
+			// An enemy nobody can target - the invisible helpers that resolve many raidwides, the parts of a
+			// boss, or a boss while it is off the field - counts as an enemy here: the area recognition reads
+			// its casts (DataCenter.AreaCasters, A277, A327), so its actions are listed and measured like any other.
+			if (!IsHostileSource(set) || set.Source is not IBattleChara battle)
 			{
 				return;
 			}

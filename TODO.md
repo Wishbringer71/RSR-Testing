@@ -228,11 +228,12 @@ nebeneinander gebraucht werden.
 - **Samurai nutzt Feint und Tengentsu nicht** (fremde Meldung, PR #11, unbestätigt; statisch geprüft A265). Auflösung:
   ein Protokoll eines Samurai-Kampfs („area defence open, nothing chosen" gegen „hit you"). Konzept 13.
 - **Treffer aus einer Quelle, die die Objekttabelle nicht hält** (Verdacht; Necrophobia 10.10., Düsterflare 17.10.).
+  Der Fall „in der Tabelle, aber keine Figur der Gegnerseite" ist seit A327 gelesen; offen bleibt der ohne Objekt.
   Auflösung: Protokollzeilen „hit you from a source the object table does not hold". Konzept 08.
 - **BossModReborn: FATE-Modul in Occult Crescent läuft nach dem Weggang weiter** (am Quelltext `be8ff77` gefolgert).
   Adressat BossModReborn. Konzept 08, „Wann eine BossModReborn-Vorhersage ihn betrifft".
-- **Laufzeitkosten nach A325** (Protokoll „update cost by step", A310): was je Schritt bleibt. Trägt „next action
-  (rotation)" weiter den größten Teil, ist die Zielsuche je `CanUse` an der Reihe; fällt eine Bereinigung in die
-  langsamste Runde, Dalamuds Statuslisten. Konzept 03, „Was ein Frame kostet".
+- **Laufzeitkosten nach A325** (Protokoll „update cost by step", A310): Im Protokoll vom 18.10.2026 trägt „highlight"
+  1,04 von 1,56 ms, die Rotation 0,32 ms (A327). Seit A327 steht die Rotfärbung als eigener Schritt „hotbar tint";
+  das nächste Protokoll trennt sie vom Lehrmodus, und danach richtet sich der Umbau. Konzept 03, „Was ein Frame kostet".
 - **Tankbuster nach einem Marker ohne Wirken** (Protokoll „no cast taken for it", A308) – Eingang für
   „Tank-Unverwundbarkeit … nur reaktiv".

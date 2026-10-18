@@ -101,9 +101,15 @@ Form, nicht die Zahl der Regeln: Teuer war, was bei jedem Lesen neu sucht, nicht
   eine Bereinigung mit der langsamsten Runde zusammenfällt, zeigt die Kostenzeile.
 - *Die Zielsuche je `CanUse`* (Upstreams Aufbau): ein Umbau des Kerns ohne Messung, welcher Teil trägt.
 
-**Prüfgrad:** statisch am Code und an Dalamuds Quelltext (master, 17.10.2026); Compile im Prüflauf. Die Wirkung zeigt
-die Kostenzeile des nächsten Protokolls; die Annahme über die Zahl der Effekte im Critical Engagement ist ein Schluss,
-nicht gemessen.
+**Gemessen nach dem Umbau** (sein Protokoll vom 18.10.2026, Build 274ef44de, 84 Kämpfe in Vierer-Instanzen): im
+Mittel 1,56 ms je Durchlauf, 9,2 % der Framezeit. Davon trägt die Hotbar-Anzeige („highlight") 1,04 ms, die
+Rotationsentscheidung mit allen Sonderregeln 0,32 ms, die Flags 0,05 ms. Die Regeln sind damit nicht mehr der größte
+Posten; ob die Rotfärbung gesperrter Aktionen oder der Lehrmodus die Hotbar-Zeit trägt, trennt seit A327 der eigene
+Schritt „hotbar tint". Eine Messung im Critical Engagement nach dem Umbau liegt nicht vor.
+
+**Prüfgrad:** statisch am Code und an Dalamuds Quelltext (master, 17.10.2026); Compile im Prüflauf; Kostenzeilen
+seines Protokolls vom 18.10.2026. Die Annahme über die Zahl der Effekte im Critical Engagement ist ein Schluss, nicht
+gemessen.
 
 ---
 

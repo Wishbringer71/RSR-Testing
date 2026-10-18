@@ -8593,6 +8593,47 @@ Auftrag: „branch nach main, release, dann neuen branch für zukünftige änder
 **Prüfgrad:** Release-API und Workflow-Lauf gelesen, Asset heruntergeladen und geprüft; Prüfskripte; statischer
 Abgleich der Übergabe mit dem Release-Text. Nichts davon ändert das Spielgeschehen.
 
+### A327 · Auswertung DefenseTrace ae74ce67 und HostileCastingAreaPotential e162d2d0 (18.10.2026, Build 274ef44de)
+
+Sein Protokoll vom 18.10.2026, 10:55–13:16, Build mit A325: Beschwörer, Dunkelritter und Weißmagier in
+Vierer-Instanzen und einer Prüfung (Garuda), 84 Kämpfe.
+
+- *Rechenlast nach A325:* 203 394 Durchläufe, im Mittel 1,56 ms, 9,2 % der Framezeit. Je Schritt: „highlight" 1,04 ms,
+  „next action (rotation)" 0,32 ms, „state" 0,05 ms, der Rest darunter. Spitzen 34,2 ms (Rotation 28,5) und 14,8 ms
+  (Flags 8,8, mit einer Bereinigung). Dalamud ruft die zehn Handler eines Plugins unmittelbar nacheinander auf
+  (`Framework.ProfileAndInvoke`, master 17.10.2026), „highlight" ist also die Hotbar-Anzeige selbst; ohne Lehrmodus und
+  ohne Rotfärbung kostet sie nahezu nichts, eine der beiden ist bei ihm an. Umgesetzt: eigener Schritt „hotbar tint"
+  vor der Rotfärbung, damit das nächste Protokoll sie vom Lehrmodus trennt. Vergleich mit den Messungen vor A325 nicht
+  gleichartig (dort Critical Engagements).
+- *Defekt, behoben: Treffer von Figuren der Gegnerseite, die keine Kämpfer sind, ungelesen.* 47 Zeilen „hit you from …,
+  not read as an enemy (BattleNpc)", alle aus benannten Figuren in der Objekttabelle (Hammerschädel, Therion, Steinfaust,
+  Garuda, Raktapaksa), darunter Hitzesublimierung mit 81 und 89 %, Feuersturm 67 % auf acht Ziele, Angststurm 73 %.
+  Ursache am Code: Der Effekt-Handler (`Watcher.ActionFromEnemy`, drei Filter) und die Wirkendenerkennung
+  (`TargetUpdater.UpdateAreaCasters`, `DataCenter.CastsBegunBetween`) nahmen von nicht anvisierbaren Figuren nur
+  `BattleNpcSubKind.Combatant` an; FFXIVClientStructs kennt auf Gegnerseite dazu `BNpcPart` (Teile eines Gegners) und
+  `None`. Folgen im Kampf: Keiner dieser Treffer wurde gemessen oder als Treffer gezählt, Impakt und Bebende Walze
+  kamen nie in die Flächenliste, und der Marker `tank_lockonae_6m_5s_01t` vor der 89-%-Hitzesublimierung steht als
+  „falsified" (Marker ohne Treffer), weil die Marker-Beobachtung den Treffer nicht sah. Behoben: `IsEnemySideFigure`
+  (Combatant, BNpcPart oder ohne Unterart, kein Gruppenmitglied) als eine Erkennung; die Wirkendenerkennung belegt die
+  Feindseligkeit weiter über die Liste, der Effekt-Handler über „nicht anvisierbar" oder eine Aktion, die ein
+  Gruppenmitglied erreicht (eine Wache ist auch ein Kämpfer, erreicht die Gruppe aber nie). Ein falsch gelernter
+  Marker heilt sich selbst: Der nächste Treffer nach ihm nimmt ihn von der Liste. Die Protokollzeile eines
+  verbliebenen Falls nennt jetzt Unterart und Anvisierbarkeit.
+- *Gelernte Flächenanteile:* 136 Einträge, der höchste 0,894 (#7474); kein Wert über einer vollen LP – die Regel aus
+  A298 hält. Die Tötungsmechaniken des Protokolls (556, 558 und 697 %) stehen nicht in der Tabelle.
+- *Sonst:* zwei Wiederbelebungen einem anderen Heiler überlassen (A293 wirkt); zwei Tankbuster gemessen, beide auf
+  Tanks gespeichert.
+
+**Falsifikation.** *Kein Defekt:* widerlegt – 47 Treffer verworfen, ein Marker trotz Treffer abgelernt. *Option falsch:*
+Die erweiterte Erkennung nähme eine freundliche Figur auf, wenn sie die Gruppe träfe; das gibt es in PvE nicht, und
+gegnerische Spieler in PvP sind keine Kampf-NPCs. Eine nicht anvisierbare freundliche Figur, die eine gelistete Aktion
+wirkt, kommt in den Listen nicht vor, weil eine Id erst nach einem Treffer auf die ganze Gruppe hineinkommt.
+*Ausgeliefert, nichts ändert sich:* möglich, wenn die Quellen der Unterart nach Haustier, Begleiter oder Gruppen-NPC
+wären – für Boss-Figuren ausgeschlossen; die neue Protokollzeile zeigte es.
+
+**Prüfgrad:** Protokoll und Tabelle gelesen; Ursache statisch am Code, an FFXIVClientStructs und Dalamud belegt;
+Compile im Prüflauf. Die Wirkung im Kampf zeigt das nächste Protokoll.
+
 ---
 ## B · Commit-Register (Fork vs. `upstream/main`)
 

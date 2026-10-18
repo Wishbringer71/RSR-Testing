@@ -836,6 +836,27 @@ public static class ObjectHelper
 		return battleChara.GameObjectId == Svc.Buddies.PetBuddy.GameObject?.GameObjectId;
 	}
 
+	/// <summary>
+	/// Whether this figure stands on the enemy side without having to be on the hostile list: a battle NPC of an
+	/// enemy kind - a combatant, a part of an enemy, or one without a kind - that is no party member.
+	/// </summary>
+	/// <remarks>
+	/// The hostile list holds what can be targeted and attacked. The invisible helpers that cast and resolve many
+	/// raidwides, tankbusters and knockbacks, the parts of a large boss and a boss off the field are not on it, and
+	/// they come in all three kinds (FFXIVClientStructs <c>BattleNpcSubKind</c>: <c>Combatant</c> "Enemies, Guards",
+	/// <c>BNpcPart</c> "Weak Spots"). Read as combatants only, a dungeon boss's every hit on the party went unread,
+	/// among them one of 89 % right after a tankbuster marker, and the marker was learned as followed by no hit
+	/// (trace of 18.10.2026, A327). Guards are combatants too, so the kind alone is no proof of hostility: the caller
+	/// adds its own evidence - a listed hostile cast, or an action that reached a party member.
+	/// </remarks>
+	internal static bool IsEnemySideFigure(this IBattleChara battleChara)
+	{
+		return battleChara != null
+			&& battleChara.ObjectKind == ObjectKind.BattleNpc
+			&& battleChara.GetBattleNPCSubKind() is BattleNpcSubKind.Combatant or BattleNpcSubKind.BNpcPart or BattleNpcSubKind.None
+			&& !battleChara.IsParty();
+	}
+
 	internal static bool IsNpcPartyMember(this IBattleChara battleChara)
 	{
 		if (battleChara.IsPet())

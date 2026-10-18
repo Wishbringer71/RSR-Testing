@@ -537,12 +537,17 @@ anvisierbarer Helfer aus, oft mit einer anderen Id als der sichtbare Cast des Bo
 Fundamentals“, 02.10.2026: bei Zaubern, deren Wirkung später eintritt oder weiterläuft, sind „often invisible,
 untargetable entities responsible“; ein Debuff auf dem Boss wie Reflexion mindert deren Schaden „usually“ nicht —
 Folge für die Gegner-Debuffs in Konzept 08). Ebenso wirkt ein Boss außerhalb des Felds seine Raidwides nicht
-anvisierbar. Die Flächenerkennung liest deshalb neben der Gegnerliste jeden nicht anvisierbaren Kämpfer
-(`BattleNpcSubKind.Combatant`), solange er eine Aktion der Flächenliste wirkt (`DataCenter.AreaCasters`, gebaut in
+anvisierbar. Die Flächenerkennung liest deshalb neben der Gegnerliste jede nicht anvisierbare Figur der
+Gegnerseite – Kämpfer (`BattleNpcSubKind.Combatant`), Teil eines Gegners (`BNpcPart`) oder ohne Unterart, und kein
+Gruppenmitglied (`ObjectHelper.IsEnemySideFigure`, A327) –, solange sie eine Aktion der Flächenliste wirkt (`DataCenter.AreaCasters`, gebaut in
 `TargetUpdater.UpdateAreaCasters`); alle Leser gehen darüber: die Flächenflagge, „erreicht ihn", der große Cast, die
 unbewertete Erkennung, die eigene Flächenabwehr und das Protokoll („(untargetable)"). Der Effekt-Handler lässt
-dieselben Quellen durch, also wird ihre Aktion aufgenommen, sobald sie jedes Gruppenmitglied trifft, und gemessen
-wie jede andere. Im Kampf, sein Protokoll vom 13.10.2026: Shinryus Meteoreinschlag (#50283, 5 s Wirkzeit, Kreis
+dieselben Quellen durch und dazu jede anvisierbare Figur der Gegnerseite, deren Aktion ein Gruppenmitglied erreicht
+(eine Wache ist auch ein Kämpfer, trifft aber nie die Gruppe); also wird ihre Aktion aufgenommen, sobald sie jedes
+Gruppenmitglied trifft, und gemessen wie jede andere. Bis A327 las beides nur Kämpfer: Im Protokoll vom 18.10.2026
+kamen alle 47 Treffer des Dungeonbosses Hammerschädel aus Figuren, die keine Kämpfer waren – keiner wurde gemessen,
+Impakt und Bebende Walze kamen nie in die Liste, und der Tankbuster-Marker vor Hitzesublimierung (89 % seiner LP)
+galt als Marker ohne Treffer. Im Kampf, sein Protokoll vom 13.10.2026: Shinryus Meteoreinschlag (#50283, 5 s Wirkzeit, Kreis
 60 y) wirken fünf Lichtsphären, jede trifft die ganze Gruppe; ihn trafen je Welle bis zu 65 % zusammen, und keine
 Abwehr öffnete, weil die Sphären nicht anvisierbar sind und es für Shinryu Unreal kein BossModReborn-Modul gibt.
 Jetzt kommt die Aktion unter „Record AOE actions" beim ersten Treffer auf alle in die Liste, und ab der nächsten

@@ -359,6 +359,9 @@ internal static class MajorUpdater
 			HotbarHighlightManager.ClearElements();
 		}
 
+		// Its own step: "highlight" carried two thirds of the cycle in the trace of 18.10.2026, and the teaching
+		// highlight and the tint are two features with two settings (A327).
+		UpdateCost.Step("hotbar tint");
 		if (Service.Config.ReddenDisabledHotbarActions || HotbarDisabledColor.HasTint)
 		{
 			try
