@@ -21,6 +21,19 @@ jobs:
           # this code sits on, and the default checkout is one commit deep.
           fetch-depth: 0
 
+      # ---- 0. Prerequisite: the upstream remote. Five checks read it (commit identities, fixed values, fork
+      # version, release note, setting tooltips); it has to come before all of them, whatever their section.
+      #
+      # Depth alone is not enough: this fork's own remote carries no upstream tags at all, only
+      # 7.5.5.41+wsh1 and 7.5.6.1+wsh1, and this environment cannot push tags to fix that. So the
+      # release tags have to come from upstream directly, or `git describe` finds nothing to
+      # compare against.
+      - name: Fetch the upstream release tags
+        run: |
+          git remote add upstream https://github.com/FFXIV-CombatReborn/RotationSolverReborn.git || true
+          git fetch --tags --no-recurse-submodules upstream
+          git fetch --no-recurse-submodules upstream main
+
       # ---- 1. The code: does it parse, and do the rules keep their invariants. Each reads the C# the plugin is built from
       # and stands for a defect class that happened here (its comment names it).
 
@@ -195,17 +208,7 @@ jobs:
       - name: Check the release description describes the next release
         run: python3 .github/scripts/audit/check_release_note.py
 
-      # ---- 4. The repository: identities and the version the fork claims.
-
-      # Depth alone is not enough: this fork's own remote carries no upstream tags at all, only
-      # 7.5.5.41+wsh1 and 7.5.6.1+wsh1, and this environment cannot push tags to fix that. So the
-      # release tags have to come from upstream directly, or `git describe` finds nothing to
-      # compare against.
-      - name: Fetch the upstream release tags
-        run: |
-          git remote add upstream https://github.com/FFXIV-CombatReborn/RotationSolverReborn.git || true
-          git fetch --tags --no-recurse-submodules upstream
-          git fetch --no-recurse-submodules upstream main
+      # ---- 4. The repository: identities and the version the fork claims (the remote is fetched in 0).
 
       # Second line behind .githooks/pre-commit, for a clone that has no core.hooksPath set. Six
       # commits went out carrying the owner's real name and his private address in this public

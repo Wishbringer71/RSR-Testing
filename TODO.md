@@ -9,25 +9,24 @@ Betroffene: **N** Endnutzer · **R** Autoren abgeleiteter Rotationen (`RotationS
 
 Nach der Wirkung im Kampf: Sicherheit der Gruppe vor Schaden, gewichtet mit der Wahrscheinlichkeit, in seinem Profil
 (seine Vorgabe, 17.10.2026: „todo nach wichtigkeit abarbeiten. jeweils im loop bearbeiten"). Seine Aufträge vom
-18.10.2026 gehen vor: TODO berichtigen (A322), dann die Prüfläufe, dann die Laufzeitkosten.
+18.10.2026 gehen vor: TODO berichtigt (A322), Prüfläufe geordnet (A323), offen die Laufzeitkosten.
 
-1. Prüfläufe: Notwendigkeit, Gliederung, Laufzeit (sein Auftrag)
-2. Laufzeitkosten: Sonderabfragen statt geordneter Regeln (sein Auftrag)
-3. Revolverklinge: „Only use on tankbuster targets prioritizing self" erreicht den Co-Tank nie
-4. Tanks: Hilfe für den Co-Tank vor seinem Tankbuster
-5. Tank-Unverwundbarkeit vor Tankbustern ohne Aktionsangabe oder Messung nur reaktiv
-6. Tanks: Reflexion und Gruppenbarriere auf demselben Raidwide
-7. DRK: Bruch von The Blackest Night zählen
-8. Rückstoß und Stopp-Casts: Größe messen
-9. Vorausschau vor dem ersten Treffer
-10. Flächenheilung um den Wirkenden: Radius gegen Trefferfläche
-11. Einstellungen ohne Leser, deren Text eine Wirkung verspricht
-12. Feste Werte: jeder offene Wert braucht seinen Loop
-13. Rotationen gegen The Balance abgleichen
-14. Six-sided Star und Flamethrower
-15. Vorlauf: Dragoon und Viper
-16. Audit der gesamten Codebasis
-17. `DPSTaken` zählt 5 ms statt 5 s
+1. Laufzeitkosten: Sonderabfragen statt geordneter Regeln (sein Auftrag)
+2. Revolverklinge: „Only use on tankbuster targets prioritizing self" erreicht den Co-Tank nie
+3. Tanks: Hilfe für den Co-Tank vor seinem Tankbuster
+4. Tank-Unverwundbarkeit vor Tankbustern ohne Aktionsangabe oder Messung nur reaktiv
+5. Tanks: Reflexion und Gruppenbarriere auf demselben Raidwide
+6. DRK: Bruch von The Blackest Night zählen
+7. Rückstoß und Stopp-Casts: Größe messen
+8. Vorausschau vor dem ersten Treffer
+9. Flächenheilung um den Wirkenden: Radius gegen Trefferfläche
+10. Einstellungen ohne Leser, deren Text eine Wirkung verspricht
+11. Feste Werte: jeder offene Wert braucht seinen Loop
+12. Rotationen gegen The Balance abgleichen
+13. Six-sided Star und Flamethrower
+14. Vorlauf: Dragoon und Viper
+15. Audit der gesamten Codebasis
+16. `DPSTaken` zählt 5 ms statt 5 s
 
 Danach technische Schuld, soweit ihre Auflösungsbedingung erfüllt ist. Warten auf Daten: unten.
 
@@ -58,12 +57,6 @@ oder Entfernung mit Grund. *Konzept:* 11 (`SwiftcastBuffer`).
 Adressat auch Upstream.
 
 ## Offene Arbeit
-
-### Prüfläufe: Notwendigkeit, Gliederung, Laufzeit (sein Auftrag) · U
-
-*Sein Auftrag (18.10.2026):* warum die Prüfläufe immer umfangreicher werden, was davon notwendig ist, wie sie
-geordnet laufen. Ein lokaler Lauf dauert rund 18 Minuten, fast nur das Tankbuster-Modell. *Nächster Schritt:* voller
-Loop über alle Schritte (was jeder schützt, was er kostet, was davon ein Modell statt einer Prüfung ist).
 
 ### Laufzeitkosten: Sonderabfragen statt geordneter Regeln (sein Auftrag) · N, R
 

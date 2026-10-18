@@ -8390,6 +8390,11 @@ Upstream-Tag.
   gegenüber dem Upstream-Zweig geändert ist (`--models`: alle), und zeigt jeden Schritt beim Start.
 - CLAUDE.md, „Prüfmittel und Zahlen": ein Modell ohne Codebezug läuft nur bei eigener Änderung.
 
+**Erster Lauf nach dem Umbau gescheitert (39109500115):** `check_setting_tooltips` fand keinen Upstream-Remote. Den Abruf
+hatte die Ordnung in Abschnitt 4 gelegt, hinter Prüfungen, die ihn brauchen; die YAML-Prüfung hielt die Reihenfolge nur
+für die zwei bekannten Leser fest, lokal besteht der Remote. Erhoben: fünf Prüfungen lesen ihn (Identitäten, feste
+Werte, Version, Release-Text, Einstellungstexte). Der Abruf ist jetzt Abschnitt 0, die Reihenfolge für alle fünf geprüft.
+
 **Laufzeit:** lokal gemessen 15 s statt rund 18 min (18.10.2026); der Prüfjob auf GitHub, erwartet unter einer Minute
 solange kein Modell geändert ist, wird nach dem Push gemessen.
 
