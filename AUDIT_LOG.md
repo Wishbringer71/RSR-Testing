@@ -8446,8 +8446,10 @@ der Vergleich je Push im Schritt statt eines Pfadfilters; ein Push mit Modellän
   Lösen ausführte, ist unbelegt; Aetherpacts eigene Prüfung (Feenanzeige ≥ 10, Zielwahl eines Heilziels) passte nicht
   zum Lösen. Konzept 14 führte Dissolve Union als nicht automatisiert; berichtigt.
 - *Samurai, Obergrenze des Meikyo-Countdowns:* Der Fork hatte 15 s als Wirkdauer gesetzt (ebaa44c79); der Wirktext
-  nennt 20 s („Duration: 20s", 7499). Upstreams 20 übernommen, in `fixed_values.json` als Ausnahme geführt (ein
-  Attributargument muss eine Konstante sein).
+  nennt 20 s („Duration: 20s", 7499). Upstreams 20 übernommen; die Zeile ist damit wortgleich Upstreams, und der
+  offene Eintrag in `fixed_values.json` entfällt. Lokal war die Prüfung vor dem Merge-Commit grün, weil die
+  Merge-Basis noch die alte war und die Zeile als Fork-Zeile zählte; der GitHub-Lauf danach (39110495618) meldete den
+  Eintrag als veraltet. Die Prüfung auf feste Werte gilt erst nach dem Commit eines Merges.
 - *Phantom:* doppelter Occult-Chakra-Aufruf ohne Kampfprüfung entfernt.
 
 **Stiller Bruch, den kein Konflikt zeigte — Klasse geprüft:** Der Fork hatte elf ungelesene Rotationsoptionen entfernt

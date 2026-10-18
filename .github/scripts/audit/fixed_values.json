@@ -403,16 +403,6 @@
    "status": "open"
   },
   {
-   "file": "RotationSolver/RebornRotations/Melee/SAM_Reborn.cs",
-   "code": "[Range(0, 20, ConfigUnitType.Seconds)]",
-   "values": [
-    "20"
-   ],
-   "status": "exception",
-   "loop": "A324",
-   "reason": "Slider bound of the Meikyo Shisui countdown option: an attribute argument must be a compile-time constant, so it cannot be read from the game; it is the duration the effect text states (Meikyo Shisui 7499, 'Duration: 20s'), the value upstream set in 8153eea2c"
-  },
-  {
    "file": "RotationSolver/RebornRotations/Ranged/BRD_Reborn.cs",
    "code": "&& BMRShouldRefreshBefore(BMRRaidwideIn, 15f, true, null, StatusID.Troubadour)",
    "values": [
