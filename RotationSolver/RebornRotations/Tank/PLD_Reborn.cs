@@ -46,8 +46,10 @@ public sealed class PLD_Reborn : PaladinRotation
 	[RotationConfig(CombatType.PvE, Name = "Health threshold for Intervention (Set to 0 to disable)")]
 	private float InterventionRatio { get; set; } = 0.6f;
 
-	[RotationConfig(CombatType.PvE, Name = "Use Intervention on CoTank during tankbusters")]
-	private bool InterventionTank { get; set; } = false;
+	[RotationConfig(CombatType.PvE, Name = "Use Intervention on CoTank during tankbusters",
+		Tooltip = "Intervention goes on the other tank when a tankbuster is aimed at him: a tankbuster marker on him, "
+			+ "or an enemy casting a tankbuster at him. It costs 50 Oath Gauge, which Holy Sheltron also needs.")]
+	private bool InterventionTank { get; set; } = true;
 
 	[Range(0, 1, ConfigUnitType.Percent)]
 	[RotationConfig(CombatType.PvE, Name = "Health threshold for using Intervention to attempt to save someone")]
@@ -247,11 +249,6 @@ public sealed class PLD_Reborn : PaladinRotation
 			return true;
 		}
 
-		if (InterventionTank && InterventionPvE.CanUse(out act))
-		{
-			return true;
-		}
-
 		// If the player has the Hallowed Ground status, don't use any abilities.
 		if (!StatusHelper.PlayerHasStatus(true, StatusID.HallowedGround))
 		{
@@ -331,6 +328,17 @@ public sealed class PLD_Reborn : PaladinRotation
 				return true;
 			}
 		}
+
+		// On the other tank a tankbuster is aimed at, as the setting says, after his own defence: what protects only
+		// him is refused when the hit misses him (A233), so for a tankbuster on the other tank alone this comes at
+		// once. Until A328 Intervention went to whoever his own target attacks whenever this path opened, a pull
+		// included, and only to a tank in stance - its own status condition, a stand-in for "a tank" that the
+		// off-tank taking a swap tankbuster rarely meets.
+		if (InterventionTank && HelpTankbusterTarget(InterventionPvE, out act, tanksOnly: true, skipTargetStatusNeedCheck: true))
+		{
+			return true;
+		}
+
 		return base.DefenseSingleAbility(nextGCD, out act);
 	}
 	#endregion

@@ -423,6 +423,36 @@ public partial class CustomRotation
 		return member.IsJobCategory(JobRole.Tank) && _invulnerabilityCanTakeOver && !(Player?.IsInCriticalClass() ?? false);
 	}
 
+	/// <summary>
+	/// <paramref name="help"/> on another party member a tankbuster is aimed at - marker or targeted cast
+	/// (DataCenter.IsTankbusterAimedAt) -, never on the player, whom his own defence and its options cover. The level
+	/// "Tanks" of concept 09, "Hilfe für das Ziel eines Tankbusters": each tank names its help and the option it
+	/// stands under; the triage against his own measured need runs in <c>BaseAction.CanUse</c> (K2-K4).
+	/// </summary>
+	/// <param name="help">The action that protects another member.</param>
+	/// <param name="act">The action, when it can be used.</param>
+	/// <param name="tanksOnly">Only another tank, where the setting text says co-tank.</param>
+	/// <param name="alsoTakes">A further condition of the rotation on the member, such as its own triage.</param>
+	/// <param name="skipTargetStatusNeedCheck">Skip the action's own status condition on the target.</param>
+	protected static bool HelpTankbusterTarget(IBaseAction help, out IAction? act, bool tanksOnly = false,
+		Func<IBattleChara, bool>? alsoTakes = null, bool skipTargetStatusNeedCheck = false)
+	{
+		// The target filter is swapped in for this call only and restored afterwards, as for Nascent Flash.
+		var setting = help.Setting;
+		var canTarget = setting.CanTarget;
+		var playerId = Player?.GameObjectId ?? 0;
+		setting.CanTarget = t => canTarget(t) && t.GameObjectId != playerId
+			&& (!tanksOnly || t.IsJobCategory(JobRole.Tank)) && (alsoTakes == null || alsoTakes(t));
+		try
+		{
+			return help.CanUse(out act, skipTargetStatusNeedCheck: skipTargetStatusNeedCheck, targetOverride: TargetType.Tankbuster);
+		}
+		finally
+		{
+			setting.CanTarget = canTarget;
+		}
+	}
+
 	/// <summary>Whether a plan stands for a measured tankbuster cast at you (any state).</summary>
 	protected static bool TankbusterPlanActive => _tankbusterPlan != null;
 

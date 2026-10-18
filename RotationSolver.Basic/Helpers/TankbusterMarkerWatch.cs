@@ -11,7 +11,8 @@ namespace RotationSolver.Basic.Helpers;
 /// <para>Every marker that the tankbuster paths catch on a party member opens a watch. An enemy action
 /// that reaches the marked member - damage of any amount, blocked, parried or swallowed by a barrier,
 /// or a hit turned away by invulnerability or evasion; auto-attacks excluded - confirms it. A watch that closes without such a hit falsifies the path, and it goes on
-/// the list; the decision (DataCenter.IsCastingTankVfx, IsTankbusterVfxOnPlayer) then ignores it.</para>
+/// the list; the recognition (DataCenter.UpdateTankbusterTargets, IsTankbusterVfxOn) then ignores it, and with it
+/// every reader of the two.</para>
 ///
 /// <para>The watch keeps running for listed paths: a later hit after the same marker takes the path off
 /// the list again. A wrong entry therefore costs one missed mitigation, on the next occurrence, and

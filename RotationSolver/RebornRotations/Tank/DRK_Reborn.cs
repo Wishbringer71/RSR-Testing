@@ -21,6 +21,14 @@ public sealed class DRK_Reborn : DarkKnightRotation
 	[RotationConfig(CombatType.PvE, Name = "Target health threshold needed to use Blackest Night with above option", Parent = nameof(BlackLantern))]
 	private float BlackLanternRatio { get; set; } = 0.5f;
 
+	[RotationConfig(CombatType.PvE, Name = "Use The Blackest Night on another party member a tankbuster is aimed at",
+		Tooltip = "The Blackest Night goes on the member a tankbuster is aimed at - a tankbuster marker on them, or an "
+			+ "enemy casting a tankbuster at them -, most often the other tank.\n"
+			+ "In a fight: the barrier takes a quarter of their maximum HP off the tankbuster. A tankbuster nearly "
+			+ "always breaks it, and a broken barrier returns its 3000 MP as Dark Arts. Your own setting for The "
+			+ "Blackest Night on yourself goes first.")]
+	public bool BlackestNightOnTankbusterTarget { get; set; } = true;
+
 	[RotationConfig(CombatType.PvE, Name = "Use Oblation on lowest HP party member during AOE scenarios")]
 	public bool OblationLantern { get; set; } = false;
 
@@ -589,6 +597,14 @@ public sealed class DRK_Reborn : DarkKnightRotation
 		}
 
 		if (!HoldReprisalForRaidwide() && !HoldMitigationForBarrier(false) && ReprisalPvE.CanUse(out act, skipAoeCheck: true))
+		{
+			return true;
+		}
+
+		// On another member a tankbuster is aimed at, after his own defence and the barrier on himself (concept 09,
+		// "Hilfe für das Ziel eines Tankbusters"). The Balance: a tankbuster in a raid or trial almost never fails to
+		// break it, and the break refunds the MP as Dark Arts.
+		if (BlackestNightOnTankbusterTarget && HelpTankbusterTarget(TheBlackestNightPvE, out act))
 		{
 			return true;
 		}

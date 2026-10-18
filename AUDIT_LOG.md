@@ -8634,6 +8634,67 @@ wären – für Boss-Figuren ausgeschlossen; die neue Protokollzeile zeigte es.
 **Prüfgrad:** Protokoll und Tabelle gelesen; Ursache statisch am Code, an FFXIVClientStructs und Dalamud belegt;
 Compile im Prüflauf. Die Wirkung im Kampf zeigt das nächste Protokoll.
 
+### A328 · Hilfe für das Ziel eines Tankbusters; Tankbuster-Ziele für jede Rolle (18.10.2026)
+
+TODO 1 und 2 seiner Reihenfolge („Revolverklinge: … erreicht den Co-Tank nie", „Tanks: Hilfe für den Co-Tank vor
+seinem Tankbuster"), zusammen, weil beide dieselbe Erkennung brauchen. Konzept 09, „Hilfe für das Ziel eines
+Tankbusters".
+
+- *Research:* `TankbusterTargets` entstand in Upstream `e34a801fe` (06.03.2026) als Nebenwirkung von
+  `IsCastingTankVfx` und erbte dessen Bedingung `!isTank || isPlayerTarget` (Upstream `a89f402d0`, älter als die
+  Liste; `cbcc9d537` nur umgeformt). Der Kommentar der Liste („Players currently targeted by tankbuster VFX markers")
+  widersprach dem Code für Tanks. Folgen: Herz des Korunds und Aurora „Only use on tankbuster targets prioritizing
+  self" (ab Werk) erreichten den Co-Tank nie und den Spieler nur mit Marker, nie bei einem gewirkten Tankbuster; die
+  Liste wurde nur neu gebaut, wenn `ShouldAddDefenseSingle` die Antwort abfragte (nicht für Schadensausteiler, nicht
+  bei ausgeschalteter Einzelabwehr, nicht nach der Pull-Regel). Klasse erhoben: Jede freundliche Aktion der Einzel-
+  und Flächenabwehr ohne eigene Zielangabe nimmt den Zieltyp „angegriffen" (`ActionSetting.TargetType`, statische
+  Überschreibung) – die Einzelabwehr der Heiler (Aquaveil, Divine Benison, Exaltation, Celestial Intersection,
+  Protraction, Excogitation, Haima, Taurochole) und Intervention gingen an den, den sein eigenes Ziel angreift, auch
+  wenn der Marker den anderen Tank nannte. Intervention unter „Use Intervention on CoTank during tankbusters" ging
+  zudem bei jedem Öffnen der Einzelabwehr, ein Pull eingeschlossen, und nur an einen Tank mit Haltung
+  (`TargetStatusNeed`). Urflackern und The Blackest Night kannten keinen Tankbuster auf einem anderen.
+- *Optionen:* (0) nichts; (1) nur die Liste für Tanks öffnen (TODO 1 allein: Revolverklinge, nur mit Marker, und nur,
+  wenn die Einzelabwehr aus einem anderen Grund offen ist); (2) Erkennung „Tankbuster zielt auf X" auf Stufe „alle",
+  Flagge und Zielwahl zentral, je Tank seine Hilfe unter seiner Option; (3) wie 2 mit einer zentralen Option für alle
+  Tanks – doppelte Schalter bei Paladin und Revolverklinge, deren Optionen genau das sagen. Gewählt 2.
+- *Umgesetzt:* `DataCenter.UpdateTankbusterTargets` je Bild nach der Gruppenliste (Marker auf Gruppenmitgliedern,
+  jede Rolle, gelernte Marker ohne Treffer ausgenommen, gegen die Gruppe statt die Objekttabelle);
+  `IsCastingTankVfx` = ein Marker in der Gruppe, beim Tank auch auf dem anderen; `IsTankbusterAimedAt` (Marker,
+  Wirken einer gelisteten oder gemessenen Tankbuster-Aktion auf ihn im Fenster der Wirk-Erkennung, für den Spieler die
+  BossModReborn-Maske); `ImperviousPastAimedTankbuster` für „Hold mitigation under invulnerability". Zielwahl:
+  `FindTankbusterTarget` unter den Kandidaten der Aktion, der Spieler zuerst, kein Rückfall auf einen Eintrag außerhalb
+  der Kandidaten; „angegriffen" engt auf Tankbuster-Ziele ein, wenn eines unter den Kandidaten steht.
+  `CustomRotation.HelpTankbusterTarget` (Stufe „Tanks", nie auf den Spieler). Paladin: Intervention darüber, nur auf
+  Tanks, ohne die Haltungsbedingung, Option ab Werk an. Krieger: Urflackern, mit der Triage, neue Option ab Werk an.
+  Dunkelritter: The Blackest Night, neue Option ab Werk an. Alle drei am Ende der Einzelabwehr: Bei einem Tankbuster
+  auf beide kommt die eigene Abwehr zuerst; die erste Fassung setzte Intervention an die alte Stelle vor die eigene
+  Abwehr und die beiden anderen vor Teile davon, die Aktionsmatrix zeigte es („Regel sperrt vorher"). Trifft der
+  Tankbuster nur den anderen, kostet die Stelle nichts – die eigenen Aktionen werden abgelehnt. Revolverklinge:
+  unverändert, wirkt über den Zieltyp, sich zuerst.
+- *Verworfen im selben Zug, vor dem Commit:* Die erste Fassung der Erkennung zählte beim Tank auch die Lesart „ein
+  Gegner wirkt auf den, den er angreift". Sie trifft jeden ununterbrechbaren Trash-Zauber auf den Tank eines Pulls;
+  für eine Hilfe mit MP- oder Eid-Kosten ist das die Lage von C10 (`TankbusterOnMe` liest sie deshalb nicht). Jetzt
+  nur bekannte Tankbuster; eine gemessene Aktion ab ihrem zweiten Wirken.
+- *Quellen:* The Balance, Dunkelritter-, Revolverklingen- und Paladin-Leitfaden (abgerufen 18.10.2026): Makros für
+  The Blackest Night und Intervention auf den Co-Tank (`<2>`); „facing down a tankbuster in a high-end raid or trial,
+  it's almost impossible for it not to break"; der Revolverklingen-Leitfaden nennt keinen Einsatz am Co-Tank.
+- *Betroffene:* N alle vier Tanks und alle Heiler in der Einzelabwehr. R: `HelpTankbusterTarget` ist neu und
+  geschützt (Erweiterung); `TargetType.Tankbuster` und „angegriffen" liefern jetzt andere Ziele, auch für abgeleitete
+  Rotationen und die Heiler unter `ExtraRotations`, deren Einzelabwehr ohne eigene Zielangabe wirkt. U: der Defekt
+  der Liste und die Einengung sind Upstream-Fragen.
+
+**Falsifikation.** *Kein Defekt:* widerlegt am Code – die Liste eines Tanks enthielt nur ihn selbst, `FindTankbusterTarget`
+las nur die Liste. *Option falsch:* Öffnet die Flagge des Tanks nun auf einen Marker am Co-Tank Selbstschutz? Nein:
+Aktionen, die nur ihn schützen, fragen `SingleHitReachesPlayer` (A233); frei bleiben Hilfe und Reflexion – die
+Reflexion gilt dem Gegner und hilft dem Getroffenen. Engt „angegriffen" den Selbstschutz ein? Nein: Selbstschutz ohne
+Gruppenziel ist nicht freundlich (`IsFriendly`) und behält seinen eigenen Zieltyp; liegt kein Tankbuster-Ziel unter den
+Kandidaten, gilt die alte Wahl. *Ausgeliefert, nichts ändert sich:* wenn sein Paladin die Option ausgeschaltet hat, die
+Revolverklinge eine andere Strategie fährt, die Einzelabwehr aus ist, oder der Tankbuster nur von BossModReborn
+angekündigt, auf den Wirker selbst gewirkt oder nie gemessen ist – alles im Konzept als Lage benannt.
+
+**Prüfgrad:** statisch am Code und an der Versionsgeschichte; Prüfskripte; Compile im Prüflauf; im Spiel nicht
+beobachtet. Die Protokollzeilen „single defence -> …" mit den Quellen zeigen die Wirkung.
+
 ---
 ## B · Commit-Register (Fork vs. `upstream/main`)
 
@@ -8928,3 +8989,4 @@ Die offene Arbeit dazu — Reihenfolge und Abbruchbedingung der Nachprüfung —
 | C112 | A118, Konzept 08, `Configs.HealAheadOfAnnouncedHit`, Kommentare in `StateUpdater` und `DataCenter`: Die Vorausheilung frage „an derselben Schwelle, die die Flagge ohnehin benutzt, nur einen Cast früher" und könne „nicht dort heilen, wo der Baum ohnehin nicht geheilt hätte"; Beispiel „ein Mitglied bei 60 % vor einem 45-%-Raidwide … stirbt daran" | Dieselbe Heilung landet vor dem Treffer auf voller, nachher auf fehlender Gesundheit; die Regel löste bei voller Gruppe ab 25 % bzw. 35 % Trefferanteil aus. Seine Vorgabe verlangt die Vorausheilung erst, wo der Treffer die aktuelle Gesundheit erreicht, und das Beispiel ist falsch gerechnet: 60 % minus 45 % lässt 15 % | A292: Linie der Gefährdungsklasse 1, Texte berichtigt |
 | C113 | Konzept 03 und Bericht vom 16.10.2026, „Gegenposition, geprüft": Die Zeit bis zum Tod messe den Ertrag eines DoTs genauer als die Gesundheit | Seine Frage nach dem Widerspruch zu The Balance: In den Lagen, in denen DoTs überhaupt verteilt werden, ist die Reihenfolge der HP die der Lebensdauer; die Lebensdauerschwelle von The Balance beantwortet eine andere Frage (ersetzt der DoT einen Füllzauber) und gilt nur im Stand. Ein Widerspruch zu seiner Regel bestand nicht; die Formulierung legte einen nahe | Konzept 03 berichtigt (A295) |
 | C114 | Bericht vom 17.10.2026 im Chat: das FATE hinter dem Schreckensseher heiße „Augenschrecken" | Selbst gebildeter deutscher Name, gegen die Regel „Namen". Belegt sind nur der englische Name des FATE im BossModReborn-Modul (Eye to Eye) und der deutsche Name des Gegners (Schreckensseher, BNpcName 14726, xivapi `language=de`) | Im Archiv und in den Konzepten steht „FATE Eye to Eye"; im Bericht korrigiert (A299) |
+| C115 | A201, „Im Kampf": Mit „Use Intervention on CoTank during tankbusters" an schütze der Paladin den anderen Tank vor dessen Tankbuster | Das Ziel war der, den sein eigenes Ziel angreift, nicht der Empfänger des Tankbusters; nur ein Tank mit Haltung; die Einzelabwehr öffnete auch ein Pull. Zutreffend nur, wenn der andere Tank mit Haltung den Boss hielt und den Tankbuster nahm; ein Marker auf dem anderen Tank öffnete die Einzelabwehr des Paladins gar nicht | A328: Ziel des Tankbusters, nur Tanks, ohne Haltungsbedingung |

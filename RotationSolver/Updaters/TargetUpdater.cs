@@ -34,6 +34,7 @@ internal static partial class TargetUpdater
 			DataCenter.AllianceMembers.Clear();
 			DataCenter.AllHostileTargets.Clear();
 			UpdateAreaCasters();
+			DataCenter.UpdateTankbusterTargets();
 			DataCenter.RaisedByOthers = [];
 			DataCenter.EsunasByOthers = [];
 			// Cleared with the rest, or it keeps naming whoever was last under fire. Nothing fails
@@ -51,6 +52,8 @@ internal static partial class TargetUpdater
 
 		UpdateLists();
 		UpdateAreaCasters();
+		// Whom a tankbuster marker names, after the party list it is matched against (A328).
+		DataCenter.UpdateTankbusterTargets();
 		UpdateCastsByOthers();
 		DataCenter.DeathTarget = GetDeathTarget();
 		DataCenter.DispelTarget = GetDispelTarget();

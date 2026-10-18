@@ -17,6 +17,9 @@ Abschnitt C.
   die auf niemanden gerichtet ist, gilt als gemessener Tankbuster auf dich.
 - **Krieger:** Urflackern geht an ein anderes Mitglied, wenn er Urimpuls nicht selbst braucht oder das Mitglied die
   Triage gewinnt; Abschütteln wartet, solange es ihm laufende oder vom Plan gebrauchte eigene Minderungen nähme.
+- **Hilfe für das Ziel eines Tankbusters:** Trägt ein anderes Mitglied – meist der andere Tank – einen
+  Tankbuster-Marker oder wirkt ein Gegner einen bekannten Tankbuster auf ihn, setzt jeder Tank seine Hilfe für andere
+  auf ihn, und die Heiler setzen ihre Einzelabwehr auf ihn. Je Tank eine Option, ab Werk an.
 - **Tankwechsel:** Geteiltes Leid auf den anderen Tank nach einem Tankbuster, der dich in Gefahr lässt; zurück
   provoziert, wenn er den nächsten Tankbuster genommen hat und du wieder sicher bist. Option, ab Werk an.
 - **Schutzmechaniken mit Auslöser und die Heilung:** Geschützte Tanks sind nachrangige, nicht ausgeschlossene
@@ -625,7 +628,8 @@ wirken würde — dieselbe Bedingung an derselben Stelle (`BloodwhettingForDefen
 - In allen drei Fällen nur, solange sein Ziel ihn anvisiert: Das ist die eigene Prüfung von Raw
   Intuition/Bloodwhetting (`PlayerIsTargetOnSelf`). Ein Off-Tank mit Tankbuster-Marker bekommt Bloodwhetting aus
   der Einzelabwehr nicht, die Zurückhaltung hielte dort umsonst. Dass Bloodwhetting dann fehlt, ist eine
-  Upstream-Bauform der Aktion, nicht dieser Regel (TODO „Tanks: Hilfe für den Co-Tank vor seinem Tankbuster“).
+  Upstream-Bauform der Aktion, nicht dieser Regel; der andere Tank kann ihm dann mit seiner Hilfe beistehen
+  (Abschnitt „Hilfe für das Ziel eines Tankbusters").
 Ohne BossModReborn-Modul bleibt nur der sichtbare Zauber oder Marker; die Zurückhaltung greift dann nur Sekunden
 vorher. Das ist eine Grenze, kein stiller Ausfall: Die Regel hält dann seltener, nie falsch.
 
@@ -702,12 +706,10 @@ Umgesetzt mit A226.
 - Vierte Zielwahl **„By danger"**, ab Werk gewählt (angehängt; Rotationseinstellungen speichern den Namen).
 - Heilung-wirkungslos-Ausschluss in allen vier Zielwahlen.
 - Der Zielfilter liest `CanBeHealed()` (bis Upstream 7.5.7.1 `NoNeedHealingInvuln()`) mit der richtigen Polarität (belegter Defekt, ohne Schalter).
-- **Nicht gebaut, mit Quelle:** Nascent Flash als Minderung für den **anderen Tank vor dessen Tankbuster**.
-  The Balance, Warrior Basic Guide, Abschnitt Makros (abgerufen 02.10.2026): „Nascent Flash goes on a friend. Most
-  often on the co-tank of your eight-person party." Damit ist der Einsatz am anderen Tank die Regelanwendung der
-  Referenz, kein Schluss mehr. Gebaut ist er nicht: Er braucht die Erkennung „Tankbuster auf dem anderen Tank"
-  (Marker oder Vorhersage mit Zielangabe) und die Abwägung gegen den eigenen Bedarf, die die Triage oben schon
-  führt. Steht im TODO als offene Arbeit.
+- **Nascent Flash vor dem Tankbuster eines anderen** (A328): Option „Use Nascent Flash on another party member a
+  tankbuster is aimed at", ab Werk an; in der Einzelabwehr nach Urimpuls für sich, mit der Triage oben (Abschnitt
+  „Hilfe für das Ziel eines Tankbusters"). The Balance, Warrior Basic Guide, Abschnitt Makros (abgerufen 02.10.2026):
+  „Nascent Flash goes on a friend. Most often on the co-tank of your eight-person party."
 
 ## Krieger: die übrige Abwehr
 
@@ -944,6 +946,110 @@ liefert die Kampfdaten, keine Regeln; ein Report von ihm würde zeigen, welche M
 - Hat er „single enemies" selbst auf aus gestellt, bleibt Urimpuls gegen den Boss reaktiv.
 - Mit „Heal ahead of incoming damage" aus bleibt die Pull-Regel von Kampfrausch wirksam; sie liest den Verlauf
   unabhängig davon.
+
+## Hilfe für das Ziel eines Tankbusters
+
+**Sachstand (A328):** Vor einem Tankbuster auf ein anderes Mitglied – meist den anderen Tank – setzt jeder Tank seine
+Hilfe für andere auf dieses Mitglied: Paladin Intervention, Krieger Urflackern, Dunkelritter The Blackest Night,
+Revolverklinge Herz des Korunds. Die Heiler setzen ihre Einzelabwehr auf dasselbe Mitglied.
+
+**Im Kampf:** Trägt der andere Tank einen Tankbuster-Marker oder wirkt ein Gegner einen bekannten Tankbuster auf ihn,
+bekommt er vor dem Einschlag deine Hilfe, und von den Heilern ihre Einzelabwehr statt dessen, den der Boss gerade
+angreift. Bis A328 erreichte ihn keine dieser Hilfen gezielt: Herz des Korunds ging in der Einstellung ab Werk („Only
+use on tankbuster targets prioritizing self") nie an ihn und an dich selbst nur mit Marker; Intervention ging an den,
+den sein eigenes Ziel angreift, auch bei einem Pull, und nur an einen Tank mit Haltung; Urflackern und The Blackest
+Night gingen nur nach Gesundheitsschwellen; Aquaveil, Exaltation und die übrige Einzelabwehr der Heiler gingen an den
+Angegriffenen, auch wenn der Marker den anderen Tank nannte.
+
+**Erkennung** (Stufe „alle", ohne Option, `DataCenter.IsTankbusterAimedAt`): ein bekannter Tankbuster zielt auf das
+Mitglied –
+- ein Tankbuster-Marker auf ihm, der nicht auf der Liste der Marker ohne Treffer steht (`TankbusterTargets`, je Bild
+  neu im `TargetUpdater`, für jede Rolle, nur Mitglieder der Gruppe);
+- ein Gegner, auch eine Hilfsfigur, wirkt auf ihn eine Aktion der Tankbuster-Liste oder eine, die die
+  Tankbuster-Tabelle gemessen hat, im Fenster der Wirk-Erkennung (der vorletzte GCD vor dem Ende des Wirkens). Das Ziel
+  eines gezielten Wirkens steht ab Wirkbeginn fest (Abschnitt „Mechanik" des Tankwechsels);
+- für dich auch eine BossModReborn-Vorhersage, deren Maske dich nennt.
+
+Nicht gezählt wird die Lesart „ein Gegner wirkt auf den, den er angreift", die die Einzelabwehr eines Tanks öffnet: Sie
+trifft jeden ununterbrechbaren Trash-Zauber auf den Tank eines Pulls und ist für eine Hilfe, die MP oder Eid kostet,
+falsch (C10, wie `TankbusterOnMe`). Eine gemessene Aktion ist ab ihrem zweiten Wirken bekannt.
+
+**Flagge:** Ein Tankbuster-Marker auf einem Mitglied der Gruppe öffnet die Einzelabwehr (`IsCastingTankVfx`), beim Tank
+auch auf dem anderen Tank. Bis A328 zählte beim Tank nur ein Marker auf ihm selbst (Upstream `a89f402d0`), eine
+Bedingung aus der Zeit, als seine Einzelabwehr nur seine eigene Minderung war; seit A233 fragt, was nur ihn schützt, ob
+der Treffer ihn erreicht (`SingleHitReachesPlayer`), und die Flagge trägt die Hilfe für andere und Reflexion. Ein
+Marker außerhalb der Gruppe – auf einem anderen Allianztrupp – öffnet nichts, wie bei den Flächenmarkern (A220). Die
+Liste entstand bis A328 als Nebenwirkung dieser Antwort und nur, wenn der Zustand sie abfragte (Upstream `e34a801fe`);
+ein Schadensausteiler, ausgeschaltete Einzelabwehr oder eine vorher greifende Pull-Regel ließen sie veralten.
+
+**Zielwahl** (zentral, `ActionTargetInfo`):
+- Zieltyp `Tankbuster`: unter den Mitgliedern, die die Aktion nehmen kann (Reichweite, eigene Filter, Prüfung des
+  Spiels), eines, auf das ein Tankbuster zielt; du zuerst, wie „prioritizing self" sagt.
+- Zieltyp „angegriffen", den die Einzel- und die Flächenabwehr für jede freundliche Aktion ohne eigene Zielangabe
+  setzen: Steht unter den Kandidaten eines, auf das ein Tankbuster zielt, nur diese; sonst wie bisher, wen sein eigenes
+  Ziel angreift.
+- Unter „Hold mitigation under invulnerability" fällt ein Mitglied heraus, das jeden auf es gerichteten Tankbuster
+  unter Heiligem Boden oder Meteoritenfall nimmt (sein Vorschlag vom 04.10.2026). Bei einem Marker oder einer
+  Vorhersage gilt das nicht, beide nennen hier keine Einschlagszeit.
+
+**Entscheidung** (Stufe „Tanks", `CustomRotation.HelpTankbusterTarget`): in der Einzelabwehr, nie auf dich – deine
+eigene Abwehr und ihre Optionen decken dich –, je Tank unter seiner Option:
+
+| Tank | Hilfe | Option | ab Werk | Reihenfolge und Triage |
+|---|---|---|---|---|
+| PLD | Intervention, nur auf einen Tank (Text: „CoTank"), ohne die Haltungsbedingung der Aktion | „Use Intervention on CoTank during tankbusters" | an | nach der eigenen Abwehr |
+| WAR | Urflackern | „Use Nascent Flash on another party member a tankbuster is aimed at" | an | nach der eigenen Abwehr und Urimpuls; „Keep Bloodwhetting for yourself when you need it" mit Triage; „Only use Nascent Flash if Tank Stance is off" gilt |
+| DRK | The Blackest Night | „Use The Blackest Night on another party member a tankbuster is aimed at" | an | nach der eigenen Abwehr und der Barriere für sich („When to use The Blackest Night on yourself") |
+| GNB | Herz des Korunds, darunter Heart of Stone; Aurora im Heilpfad | „How to use Heart Of Stone/Heart Of Corundum", „How to use Aurora": „Only use on tankbuster targets prioritizing self" | gewählt | du zuerst; Zieltyp `Tankbuster` direkt |
+
+„Nach der eigenen Abwehr" kostet keine Zeit, wenn der Tankbuster nur den anderen trifft: Was nur dich schützt, lehnt
+die Einzelabwehr dann ab (A233), und die Hilfe fällt im selben Durchlauf; vor ihr kann nur Reflexion gehen. Trifft er
+beide, kommt deine eigene Abwehr zuerst – Rangstufe 1, das Überleben des Tanks. Gegen den eigenen gemessenen Bedarf
+entscheidet die Triage K2–K4 (Abschnitt „Andere Pfade, die dem Plan ein Glied nehmen").
+
+**Warum so:**
+- Seine Spielweise: Sicherheit der Gruppe vor Schaden, gewichtet mit der Wahrscheinlichkeit. Ein Marker oder ein
+  bekannter Tankbuster ist angekündigt. Der Preis ist eine kurze Abklingzeit (Urflackern, Herz des Korunds), 50 Eid
+  oder 3000 MP, die The Blackest Night beim Bruch als Dark Arts zurückgibt.
+- Referenz, The Balance (abgerufen 18.10.2026; Krieger 02.10.2026): Krieger „Nascent Flash goes on a friend. Most often
+  on the co-tank"; Dunkelritter Makros für The Blackest Night auf den Co-Tank (`<2>`) und „facing down a tankbuster in
+  a high-end raid or trial, it's almost impossible for it not to break"; Paladin Co-Tank-Makros für Intervention. Der
+  Basic Guide der Revolverklinge nennt keinen Einsatz am Co-Tank; Herz des Korunds auf Tankbuster-Ziele ist die
+  Upstream-Einstellung.
+- Universell zuerst: Erkennung und Zielwahl gelten für jede Rolle; Heiler und Tanks lesen dieselbe. Die Optionen
+  stehen je Tank, weil jede Hilfe einen anderen Preis hat; Paladin und Revolverklinge hatten ihre schon.
+- Ein Wirken zählt im Fenster der Wirk-Erkennung, nicht ab Wirkbeginn: Die Hilfen wirken 7 bis 8 s (Wirktexte,
+  Tabelle „Die Abwehr der vier Tanks"), ein längeres Wirken überdauerte sie, wenn sie bei seinem Beginn fielen. Im
+  Fenster liegt der Druck vor dem Snapshot, und es ist dasselbe, in dem das Wirken die Einzelabwehr öffnet.
+- Voreinstellung nach seiner Regel (29.09.2026): an. Die Paladin-Option stand bis A328 aus; sie wirkte bis A201 nie
+  und danach nicht nach ihrem Text.
+
+**Ausgeschlossen:**
+- Die Lesart „Wirken auf sein Ziel" als Erkennung (oben, C10).
+- BossModReborn für andere: Nur Bit 0 der Maske ist belegt (Konzept 07). Ein nur von BossModReborn angekündigter
+  Tankbuster auf den anderen Tank öffnet deine Einzelabwehr, nennt aber kein Ziel; dann bleibt die Hilfe aus.
+- Cover: übernimmt den Treffer, der Paladin nähme den Tankbuster selbst; bleibt Notfall unter seiner Schwelle.
+- Oblation auf den anderen Tank: nicht gebaut; The Blackest Night ist die größere Hilfe und refinanziert sich.
+
+**Lagen:**
+- *Zwei RSR-Tanks:* Der Getroffene schützt sich, der andere hilft ihm. Dieselbe Hilfe zweimal verhindert die
+  Bereitstellungsprüfung (`TargetStatusProvide`: Nascent Glint, The Blackest Night, Intervention); bei Herz des
+  Korunds prüft sie nur den Wirker.
+- *Tankbuster auf beide:* Jeder Tank zuerst auf sich: die Revolverklinge über „prioritizing self", der Krieger behält
+  Urimpuls nach der Triage, der Dunkelritter folgt erst seiner Einstellung für sich, der Paladin gibt Intervention erst
+  nach Holy Sheltron und seinen großen Minderungen.
+- *Allein, Vierer-Instanz, Allianzraid:* kein anderer Tank in der Gruppe. Hilfe nur, wenn ein Tankbuster ein anderes
+  Mitglied trifft (Tank tot, Marker auf einem anderen); der Paladin dann nicht (Text: CoTank).
+- *Stufensynchron:* jede Hilfe erst ab ihrer Stufe (`EnoughLevel`), Herz des Korunds darunter als Heart of Stone.
+- *BossModReborn ohne Modul:* unverändert, Marker und Wirken tragen.
+- *Tankbuster ohne Marker, auf den Wirker selbst gewirkt oder nie gemessen:* nicht erkannt, keine Hilfe; eine
+  gemessene Aktion, die auf das Mitglied gewirkt wird, ab ihrem zweiten Wirken.
+
+**Messmittel:** `DefenseTrace.log` schreibt „single defence -> Intervention" (Urflackern, The Blackest Night, Herz des
+Korunds) mit den Quellen der Abwehr – Marker auf wem, Wirken auf wen – und danach die „used"-Zeile. Keine
+Selbstnachsteuerung nötig: Die Entscheidung fällt aus Marker und Wirken, nicht aus einer Vorhersage.
+
+**Prüfgrad:** statisch, Prüfskripte, Compile über die CI; im Spiel nicht beobachtet.
 
 ## Tankwechsel nach einem Tankbuster: Geteiltes Leid auf den anderen Tank
 

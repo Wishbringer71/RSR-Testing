@@ -39,6 +39,16 @@ public sealed class WAR_Reborn : WarriorRotation
 			+ "Bloodwhetting does. What you keep is its damage reduction and barrier.")]
 	public bool HoldNascentFlashForOwnNeed { get; set; } = true;
 
+	[RotationConfig(CombatType.PvE, Name = "Use Nascent Flash on another party member a tankbuster is aimed at",
+		Tooltip = "Nascent Flash goes on the member a tankbuster is aimed at - a tankbuster marker on them, or an enemy "
+			+ "casting a tankbuster at them -, most often the other tank.\n"
+			+ "In a fight: they take the tankbuster with its damage reduction and barrier, and you heal yourself with "
+			+ "your weaponskills as with Bloodwhetting. It shares its cooldown with Bloodwhetting, so Bloodwhetting for "
+			+ "yourself goes first; with \"Keep Bloodwhetting for yourself when you need it\" on, it is not given away "
+			+ "while you need Bloodwhetting yourself, unless they win the triage. \"Only use Nascent Flash if Tank "
+			+ "Stance is off\" holds here too.")]
+	public bool NascentFlashOnTankbusterTarget { get; set; } = true;
+
 	[RotationConfig(CombatType.PvE, Name = "Use Arm's Length on a pull for its Slow",
 		Tooltip = "Arm's Length is used on a group pull for its Slow, not only as knockback "
 			+ "protection.\n"
@@ -389,6 +399,15 @@ public sealed class WAR_Reborn : WarriorRotation
 			return true;
 		}
 
+		// Nascent Flash on another member a tankbuster is aimed at, after his own defence and Bloodwhetting, with
+		// which it shares the cooldown (concept 09, "Hilfe für das Ziel eines Tankbusters"). The Balance: "Most often
+		// on the co-tank".
+		if (NascentFlashOnTankbusterTarget && (!NeverscentFlash || !StatusHelper.PlayerHasStatus(true, StatusID.Defiance))
+			&& NascentFlashForTankbuster(out act))
+		{
+			return true;
+		}
+
 		return base.DefenseSingleAbility(nextGCD, out act);
 	}
 
@@ -679,6 +698,21 @@ public sealed class WAR_Reborn : WarriorRotation
 		}
 
 		return member.IsJobCategory(JobRole.Tank) && !warriorAboutToDie;
+	}
+
+	// Nascent Flash on another member a tankbuster is aimed at: while he needs Bloodwhetting himself, only on a
+	// member who wins the triage, as for the heal path.
+	private bool NascentFlashForTankbuster(out IAction? act)
+	{
+		var held = false;
+		var warriorAboutToDie = false;
+		if (HoldNascentFlashForOwnNeed)
+		{
+			held = NeedsBloodwhettingHimself(out warriorAboutToDie);
+		}
+
+		return HelpTankbusterTarget(NascentFlashPvE, out act,
+			alsoTakes: t => !held || WinsTriageOverWarrior(t, warriorAboutToDie));
 	}
 
 	// Picks a party member under the Nascent Flash threshold: by the lowest HP%, optionally healers only,

@@ -392,7 +392,8 @@ internal static class DataCenter
 	internal static ConcurrentQueue<VfxNewData> VfxDataQueue { get; } = new();
 
 	/// <summary>
-	/// Players currently targeted by tankbuster VFX markers (populated from VFX queue).
+	/// Living party members a tankbuster marker stands on, for every role (<see cref="UpdateTankbusterTargets"/>,
+	/// once per frame).
 	/// </summary>
 	internal static List<IBattleChara> TankbusterTargets { get; } = [];
 
@@ -3508,24 +3509,47 @@ internal static class DataCenter
 		});
 	}
 
+	/// <summary>
+	/// Whether a tankbuster marker stands on a member of the party (<see cref="TankbusterTargets"/>).
+	/// </summary>
+	/// <remarks>
+	/// For every role, a tank too: his single-target defence also carries his help for the marked member -
+	/// Intervention, Nascent Flash, The Blackest Night, Heart of Corundum, Reprisal - and what protects only himself
+	/// asks <see cref="SingleHitReachesPlayer"/> (A233). Until A328 a tank counted only a marker on himself, a
+	/// condition from the time his single-target defence was his own mitigation alone (upstream a89f402d0), and a
+	/// marker on the co-tank opened nothing. A marker on someone outside the party - another alliance group's tank -
+	/// hits none of us, as for the area markers (A220).
+	/// </remarks>
 	public static bool IsCastingTankVfx()
 	{
-		// Populate TankbusterTargets from the VFX queue and return whether any tankbuster VFX was found.
+		lock (_tankbusterLock)
+		{
+			return TankbusterTargets.Count > 0;
+		}
+	}
+
+	/// <summary>
+	/// Rebuilds <see cref="TankbusterTargets"/>: every living party member a tankbuster marker stands on that is not
+	/// on the learned list of markers without a hit. Once per frame, after the party list (TargetUpdater).
+	/// </summary>
+	/// <remarks>
+	/// Recognition only - whom the marker names, for every role. Until A328 the list was filled as a side effect of
+	/// <see cref="IsCastingTankVfx"/> under its condition that a tank counts only a marker on himself (upstream
+	/// e34a801fe built the list into that answer): a tank's list never held the co-tank, so Heart of Corundum and
+	/// Aurora "on tankbuster targets" never reached him. It was also rebuilt only when the state updater asked that
+	/// answer - not for a damage dealer, not with single-target defence off, not after the pull rule had opened the
+	/// flag - and could name a marker that had gone.
+	/// </remarks>
+	internal static void UpdateTankbusterTargets()
+	{
 		lock (_tankbusterLock)
 		{
 			TankbusterTargets.Clear();
-			if (!Player.Available || Player.Object == null)
+			var party = PartyMembers;
+			if (VfxDataQueue == null || VfxDataQueue.IsEmpty || party == null || party.Count == 0)
 			{
-				return false;
+				return;
 			}
-
-			if (VfxDataQueue == null || VfxDataQueue.IsEmpty)
-			{
-				return false;
-			}
-
-			var found = false;
-			var isTank = TargetFilter.PlayerJobCategory(JobRole.Tank);
 
 			foreach (var s in VfxDataQueue)
 			{
@@ -3537,40 +3561,142 @@ internal static class DataCenter
 						continue;
 					}
 
-					foreach (var p in TankbusterPaths)
+					// Against the party, a handful of members, not the object table, which is searched in full for
+					// every id (A325).
+					for (var i = 0; i < party.Count; i++)
 					{
-						if (!s.Path.StartsWith(p, PathCmp))
+						var member = party[i];
+						if (member.GameObjectId == s.ObjectId)
 						{
-							continue;
-						}
-
-						var isPlayerTarget = s.ObjectId == Player.Object.GameObjectId;
-
-						if (!isTank || isPlayerTarget)
-						{
-							if (Service.Config.InDebug)
+							if (!member.IsDead && !TankbusterTargets.Contains(member))
 							{
-								PluginLog.Debug($"Tank lock-on VFX triggered: {s.Path}, ObjectId: {s.ObjectId}");
+								TankbusterTargets.Add(member);
 							}
 
-							// Try to resolve the object id to a party/alliance member and add to the list
-							if (Svc.Objects.SearchById(s.ObjectId) is IBattleChara obj && obj.IsParty() && !obj.IsDead && !TankbusterTargets.Contains(obj))
-							{
-								TankbusterTargets.Add(obj);
-							}
-
-							found = true;
+							break;
 						}
 					}
 				}
 				catch (AccessViolationException ex)
 				{
-					PluginLog.Warning($"AccessViolation in IsCastingTankVfx while scanning VFX: {ex.Message}");
+					PluginLog.Warning($"AccessViolation in UpdateTankbusterTargets while scanning VFX: {ex.Message}");
 				}
 			}
-
-			return found;
 		}
+	}
+
+	/// <summary>
+	/// Whether a known tankbuster is aimed at <paramref name="member"/>: a tankbuster marker on him
+	/// (<see cref="TankbusterTargets"/>), or an enemy casting at him an action on the tankbuster list or one the
+	/// tankbuster table has measured; for the player also a BossModReborn tankbuster whose mask names him.
+	/// </summary>
+	/// <remarks>
+	/// Recognition: whom the tankbuster is aimed at, decided by no option and no threshold. A targeted cast keeps
+	/// the target it had at its start (concept 09, "Wann eine Herausforderung den Treffer noch umlenkt"); it counts
+	/// in the window of every cast-based tankbuster (<see cref="IsHostileCastingBase"/>, the GCD before the last), so
+	/// a press made in it reaches the server before the snapshot. Not the unlisted reading that opens a tank's
+	/// single-target defence - an enemy casting at the one it attacks: it matches every uninterruptible trash cast at
+	/// the tank holding a pull, harmless for his free mitigation, wrong for help that costs MP or gauge (C10,
+	/// <c>CustomRotation.TankbusterOnMe</c>). A measured tankbuster is known from its second cast on.
+	/// BossModReborn's mask is read for the player only: bit 0 is fixed to him, the other bits would need a mapping of
+	/// its party slots to this tree's list, an unverified contract (<see cref="BMRNextDamageHitsPlayer"/>).
+	/// </remarks>
+	internal static bool IsTankbusterAimedAt(IBattleChara member)
+	{
+		if (member == null)
+		{
+			return false;
+		}
+
+		var id = member.GameObjectId;
+		lock (_tankbusterLock)
+		{
+			for (var i = 0; i < TankbusterTargets.Count; i++)
+			{
+				if (TankbusterTargets[i].GameObjectId == id)
+				{
+					return true;
+				}
+			}
+		}
+
+		var casters = AreaCasters;
+		if (casters != null)
+		{
+			for (var i = 0; i < casters.Count; i++)
+			{
+				if (IsKnownTankbusterCastAt(casters[i], id))
+				{
+					return true;
+				}
+			}
+		}
+
+		return Player.Object is { } player && player.GameObjectId == id && BMRTankbusterHitsPlayer == true;
+	}
+
+	/// <summary>
+	/// Whether every tankbuster aimed at <paramref name="member"/> lands while he stands under Hallowed Ground or
+	/// Superbolide: each is a cast whose hit is timed, and the invulnerability lasts past it. False with a marker or a
+	/// BossModReborn prediction on him - neither states a landing time here -, and when nothing is aimed at him.
+	/// </summary>
+	/// <remarks>
+	/// For the decision under "hold mitigation under invulnerability" (his proposal of 04.10.2026: a tank the hit
+	/// cannot touch gets nothing from a mitigation on him), as the healer's own hold reads it (StateUpdater): the
+	/// end of the cast plus one GCD for the hit to arrive.
+	/// </remarks>
+	internal static bool ImperviousPastAimedTankbuster(IBattleChara member)
+	{
+		if (member == null)
+		{
+			return false;
+		}
+
+		var id = member.GameObjectId;
+		lock (_tankbusterLock)
+		{
+			for (var i = 0; i < TankbusterTargets.Count; i++)
+			{
+				if (TankbusterTargets[i].GameObjectId == id)
+				{
+					return false;
+				}
+			}
+		}
+
+		if (Player.Object is { } player && player.GameObjectId == id && BMRTankbusterHitsPlayer == true)
+		{
+			return false;
+		}
+
+		var latest = -1f;
+		var casters = AreaCasters;
+		if (casters != null)
+		{
+			for (var i = 0; i < casters.Count; i++)
+			{
+				var h = casters[i];
+				if (IsKnownTankbusterCastAt(h, id))
+				{
+					latest = Math.Max(latest, h.TotalCastTime - h.CurrentCastTime + DefaultGCDTotal);
+				}
+			}
+		}
+
+		return latest >= 0f && member.ImperviousThrough(latest);
+	}
+
+	// An enemy - a helper too - casting at the member with this id an action on the tankbuster list or one the
+	// tankbuster table has measured, in the window of the cast recognition.
+	private static bool IsKnownTankbusterCastAt(IBattleChara? h, ulong id)
+	{
+		if (h == null || h.CastTargetObjectId != id)
+		{
+			return false;
+		}
+
+		return IsHostileCastingBase(h, act => OtherConfiguration.HostileCastingTank.Contains(act.RowId)
+			|| TankbusterForecast.IsLearned(act.RowId));
 	}
 
 	// Improved shared AOE detection using cached sets, covers both regular and multi-hit stack markers

@@ -286,7 +286,7 @@ wahrscheinlich ist. Die Regeln dieses Konzepts messen das so:
 | Regel | Maß der Wahrscheinlichkeit |
 |---|---|
 | Flächenabwehr (`AutoStatus.DefenseArea`) | ein laufender Flächenzauber; mit `MitigateBigAreaCastsEvenIfInterruptible` auch ein unterbrechbarer, dessen gemessener Anteil die größte Barriere übersteigt; ein BossMod-Raidwide im Fenster, dessen Maske ihn oder die Gruppe einschließt oder fehlt („Wann eine BossModReborn-Vorhersage ihn betrifft"); der Befehl „Defense Area" von Hand |
-| Einzelabwehr (`AutoStatus.DefenseSingle`) | ein Zauber auf einen Tank (Tankbuster) oder ein BossMod-Tankbuster im Fenster; beim Heiler zusätzlich, wie viele Gegner den Tank angreifen |
+| Einzelabwehr (`AutoStatus.DefenseSingle`) | ein Zauber auf einen Tank (Tankbuster), ein Tankbuster-Marker auf einem Mitglied der Gruppe – beim Tank seit A328 auch auf dem anderen Tank, dem seine Hilfe gilt (Konzept 09, „Hilfe für das Ziel eines Tankbusters") – oder ein BossMod-Tankbuster im Fenster; beim Heiler zusätzlich, wie viele Gegner den Tank angreifen |
 | Heilung vor dem angekündigten Treffer | ein angekündigter, gemessener Treffer brächte ein ungeschütztes Mitglied mit fehlender Gesundheit in Gefährdungsklasse 1 — dieselbe Linie wie die Schranke |
 | Schranke der Rückhaltungen | Gefährdungsklasse 1 jetzt, oder ein angekündigter, gemessener Treffer brächte ein ungeschütztes Mitglied dorthin |
 | Burst-Rückhaltungen (Jobtabelle oben) | keine eigene: Sie halten ohne Blick auf die Wahrscheinlichkeit und weichen nur der Schranke |

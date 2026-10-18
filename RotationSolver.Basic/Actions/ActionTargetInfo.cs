@@ -4081,12 +4081,26 @@ public struct ActionTargetInfo(IBaseAction action)
 				return null;
 			}
 
+			// A tankbuster aimed at one of them names whom the help is for (IsTankbusterTargetToProtect): a healer's
+			// Aquaveil or Exaltation in the single-target defence went to whoever their own target attacks - the main
+			// tank - while the marker or the cast named the off-tank (A328). Without one among them, as before.
 			List<IBattleChara> attachedT = [];
 			foreach (var t in battleChara)
 			{
-				if (ObjectHelper.IsTargetOnSelf(t))
+				if (IsTankbusterTargetToProtect(t))
 				{
 					attachedT.Add(t);
+				}
+			}
+
+			if (attachedT.Count == 0)
+			{
+				foreach (var t in battleChara)
+				{
+					if (ObjectHelper.IsTargetOnSelf(t))
+					{
+						attachedT.Add(t);
+					}
 				}
 			}
 
@@ -4243,34 +4257,44 @@ public struct ActionTargetInfo(IBaseAction action)
 			return RandomPickByJobs(others, JobRole.Tank);
 		}
 
+		// A member a tankbuster is aimed at (DataCenter.IsTankbusterAimedAt), unless, under "hold mitigation under
+		// invulnerability", every such tankbuster lands while he stands impervious - his proposal of 04.10.2026: a
+		// tank the hit cannot touch gets nothing from a mitigation on him (concept 09).
+		static bool IsTankbusterTargetToProtect(IBattleChara t)
+		{
+			return DataCenter.IsTankbusterAimedAt(t)
+				&& !(Service.Config.HoldMitigationUnderInvulnerability && DataCenter.ImperviousPastAimedTankbuster(t));
+		}
+
 		IBattleChara? FindTankbusterTarget()
 		{
-			// Use DataCenter.TankbusterTargets (populated from VFX) when available
-			if (DataCenter.TankbusterTargets == null || DataCenter.TankbusterTargets.Count == 0 || Player.Object == null)
+			// Whom a tankbuster is aimed at - marker, targeted cast, BossModReborn's mask for the player
+			// (DataCenter.IsTankbusterAimedAt) - among the members this action can take: in range, its own filters
+			// passed. The player first, as "prioritizing self" says. Until A328 this read only the marker list, which
+			// for a tank held only a marker on himself, so a cast at him or any tankbuster on the co-tank found no one,
+			// and it returned a list entry the action could not take when none was usable.
+			if (battleChara == null || Player.Object == null)
 			{
 				return null;
 			}
 
-			// Prefer self first if player is the target of the boss
-			foreach (var t in DataCenter.TankbusterTargets)
+			IBattleChara? other = null;
+			foreach (var t in battleChara)
 			{
-				if (ObjectHelper.IsAlive(t) && !t.IsConditionCannotTarget() && t.GameObjectId == Player.Object.GameObjectId)
+				if (!ObjectHelper.IsAlive(t) || t.IsConditionCannotTarget() || !IsTankbusterTargetToProtect(t))
+				{
+					continue;
+				}
+
+				if (t.GameObjectId == Player.Object.GameObjectId)
 				{
 					return t;
 				}
+
+				other ??= t;
 			}
 
-			// Prefer alive, targetable party members
-			foreach (var t in DataCenter.TankbusterTargets)
-			{
-				if (ObjectHelper.IsAlive(t) && !t.IsConditionCannotTarget())
-				{
-					return t;
-				}
-			}
-
-			// Fallback to first entry
-			return DataCenter.TankbusterTargets[0];
+			return other;
 		}
 
 		//TODO: Capture

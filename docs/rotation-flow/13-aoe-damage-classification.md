@@ -192,9 +192,9 @@ Tankbuster-Ziel, Nascent Flash. Ein Befehl des Spielers (Makro „Defense") wird
   unbekannt, zählt sie beim Tank als Treffer — die Wahrscheinlichkeit ist dann nicht gemessen, und Sicherheit geht
   vor —, bei allen anderen nur ohne lebenden Tank (wie A220).
 - *Warum nicht die Flagge sperren:* Die Einzelabwehr eines Tanks trägt auch die Hilfe am anderen Tank —
-  Intervention („Use Intervention on CoTank during tankbusters"), Heart of Corundum mit Ziel `Tankbuster`,
-  Reflexion auf den Gegner. Ein Flag wird an den Pfaden gemessen, die es öffnet; gesperrt wird deshalb die
-  Selbstschutz-Aktion, nicht der Pfad.
+  Intervention, Urflackern, The Blackest Night und Herz des Korunds auf das Ziel eines Tankbusters (Konzept 09,
+  „Hilfe für das Ziel eines Tankbusters", A328), Reflexion auf den Gegner. Ein Flag wird an den Pfaden gemessen, die
+  es öffnet; gesperrt wird deshalb die Selbstschutz-Aktion, nicht der Pfad.
 
 **Anlass, sein Protokoll vom 30.09.2026 (Krieger, Build ad73a6a5c):** Bei angekündigten Tankbustern auf Josy Akuma
 und Lyx Parsingreen, die BossModReborn mit „hits you False" meldete, fielen Verdammnis und Schutzwall (19:47:08)

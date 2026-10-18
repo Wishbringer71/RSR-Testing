@@ -11,34 +11,24 @@ Nach der Wirkung im Kampf: Sicherheit der Gruppe vor Schaden, gewichtet mit der 
 (seine Vorgabe, 17.10.2026: „todo nach wichtigkeit abarbeiten. jeweils im loop bearbeiten"). Seine Aufträge vom
 18.10.2026 sind erledigt: TODO berichtigt (A322), Prüfläufe geordnet (A323), Laufzeitkosten umgestellt (A325).
 
-1. Revolverklinge: „Only use on tankbuster targets prioritizing self" erreicht den Co-Tank nie
-2. Tanks: Hilfe für den Co-Tank vor seinem Tankbuster
-3. Tank-Unverwundbarkeit vor Tankbustern ohne Aktionsangabe oder Messung nur reaktiv
-4. Tanks: Reflexion und Gruppenbarriere auf demselben Raidwide
-5. DRK: Bruch von The Blackest Night zählen
-6. Rückstoß und Stopp-Casts: Größe messen
-7. Vorausschau vor dem ersten Treffer
-8. Flächenheilung um den Wirkenden: Radius gegen Trefferfläche
-9. Einstellungen ohne Leser, deren Text eine Wirkung verspricht
-10. Feste Werte: jeder offene Wert braucht seinen Loop
-11. Rotationen gegen The Balance abgleichen
-12. Six-sided Star und Flamethrower
-13. Vorlauf: Dragoon und Viper
-14. AoE-Schwelle an drei Orten
-15. Audit der gesamten Codebasis
-16. `DPSTaken` zählt 5 ms statt 5 s
+1. Tank-Unverwundbarkeit vor Tankbustern ohne Aktionsangabe oder Messung nur reaktiv
+2. Tanks: Reflexion und Gruppenbarriere auf demselben Raidwide
+3. DRK: Bruch von The Blackest Night zählen
+4. Rückstoß und Stopp-Casts: Größe messen
+5. Vorausschau vor dem ersten Treffer
+6. Flächenheilung um den Wirkenden: Radius gegen Trefferfläche
+7. Einstellungen ohne Leser, deren Text eine Wirkung verspricht
+8. Feste Werte: jeder offene Wert braucht seinen Loop
+9. Rotationen gegen The Balance abgleichen
+10. Six-sided Star und Flamethrower
+11. Vorlauf: Dragoon und Viper
+12. AoE-Schwelle an drei Orten
+13. Audit der gesamten Codebasis
+14. `DPSTaken` zählt 5 ms statt 5 s
 
 Danach technische Schuld, soweit ihre Auflösungsbedingung erfüllt ist. Warten auf Daten: unten.
 
 ## Defekte
-
-### Revolverklinge: „Only use on tankbuster targets prioritizing self" erreicht den Co-Tank nie · N, U
-
-*Im Kampf:* Herz des Korunds und Aurora gehen in der ab Werk gewählten Einstellung nie auf einen anderen Tank mit
-Tankbuster-Marker. *Ort:* `DataCenter.IsCastingTankVfx` füllt `TankbusterTargets` für einen Tank nur mit Markern auf
-ihm selbst (`if (!isTank || isPlayerTarget)`, upstream `cbcc9d537`); die Bedingung gehört zur Frage „betrifft der
-Marker den Spieler", nicht zur Liste. *Nächster Schritt:* Liste und Antwort trennen; zusammen mit „Tanks: Hilfe für
-den Co-Tank vor seinem Tankbuster", die dieselbe Erkennung braucht. Text bindet. *Konzept:* 09.
 
 ### Einstellungen ohne Leser, deren Text eine Wirkung verspricht · N
 
@@ -57,15 +47,6 @@ oder Entfernung mit Grund. *Konzept:* 11 (`SwiftcastBuffer`).
 Adressat auch Upstream.
 
 ## Offene Arbeit
-
-### Tanks: Hilfe für den Co-Tank vor seinem Tankbuster · N, U
-
-*Im Kampf:* Kein Tank setzt seine Hilfe für andere (Nascent Flash, Intervention, The Blackest Night, Herz des
-Korunds) vor dem Tankbuster auf den Co-Tank; The Balance tut es beim Krieger „most often on the co-tank". *Bausteine:*
-Erkennung auf Stufe „alle" (Marker auf ihm, gezieltes Wirken auf ihn ab Wirkbeginn; BossModReborn nur mit Maske – belegt
-ist nur Bit 0 = Spieler); Entscheidung auf Stufe „Tanks" mit der Frist vor dem Snapshot (A319) und der Triage gegen den
-eigenen Bedarf (Krieger: `NeedsBloodwhettingHimself`). Bloodwhetting fällt upstream nur, solange das Ziel den Krieger
-anvisiert (`PlayerIsTargetOnSelf`). *Konzept:* 09, „Krieger: Urimpuls für sich oder Urflackern für andere".
 
 ### Tank-Unverwundbarkeit vor Tankbustern ohne Aktionsangabe oder Messung nur reaktiv · N
 
