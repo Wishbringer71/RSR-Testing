@@ -299,8 +299,8 @@ sich die Regel daran, wer zuerst und wer zuletzt einen DoT trägt.
 | U1 | `GeneralGCD` ist Sammelbecken ohne Untergliederung | 7–81 Zweige auf einer Ebene, Median ~19 | für die fünf größten Dateien behoben (`04` A4a); MCH bewusst ausgelassen |
 | U2 | Proaktive Logik steht in drei Methoden | Heiler-Sustain | **keine Schwäche.** Die Bedingung liegt in genau einem Helfer je Job; dreifach steht nur die **Position**, und die ist je Dispatch-Slot eine eigene Prioritätsaussage. Herleitung in `04-concept.md` unter A1 |
 | U3 | Level-Ketten von Hand | 2 Schreibweisen, 1 realer Bug daraus | Fehlerklasse durch den Wächter A2′ geschlossen; die Ketten selbst bleiben |
-| U4 | Hook-Belegung ohne Regel | Dragoon und Viper ohne `CountDownAction` | offen (TODO „Vorlauf"); die Slot-Lücken der Fernkämpfer und der Heilslot des Mönchs sind geschlossen (`04` B4/B5); ohne eigenen Notfall sind Schnitter und Samurai, und das ist keine Lücke (`04`, „Was offen bleibt") |
-| U5 | Gleiche Rolle, verschiedene Orte | AoE-Schwelle an drei Orten (C3) | offen; die Platzierung der Reflexion ist vereinheitlicht (`04` B3) |
+| U4 | Hook-Belegung ohne Regel | Dragoon und Viper ohne `CountDownAction` | offen (TODO „Vorlauf: Dragoon und Viper"); die Slot-Lücken der Fernkämpfer und der Heilslot des Mönchs sind geschlossen (`04` B4/B5); ohne eigenen Notfall sind Schnitter und Samurai, und das ist keine Lücke (`04`, „Was offen bleibt") |
+| U5 | Gleiche Rolle, verschiedene Orte | AoE-Schwelle an drei Orten (C3) | offen (TODO „Laufzeitkosten: Sonderabfragen statt geordneter Regeln“); die Platzierung der Reflexion ist vereinheitlicht (`04` B3) |
 | U6 | Kein Job kann sagen „ich bin fertig" | jede Ebene muss `base.X` aufrufen; Vergessen oder Vertauschen war mit neun Fällen die häufigste Fehlerklasse im AUDIT_LOG | Fehlerklasse durch den Wächter A3 in der CI geschlossen; die Kette selbst bleibt |
 
 U6 war der unauffälligste und teuerste Punkt: Die Kette wird über

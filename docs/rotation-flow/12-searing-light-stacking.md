@@ -335,7 +335,7 @@ Flächenheilung aus einer laufenden Demi, und die kann **vor** der Beschwörung 
 `ModifyLuxSolarisPvE` setzt `StatusNeed = [StatusID.RefulgentLux]`, `ModifyRekindlePvE` prüft `InPhoenix`
 — beides entsteht **aus** der Phase. Addle fällt bei gesetzter Verteidigungsflagge; der Schild geht dort
 absichtlich vor. Nimmt einer davon den Platz, wartet die Beschwörung einen GCD, und der Buff fällt in dessen
-Platz. Eine Absicherung über `CanUse` als Prüfung scheidet aus; das ist eine Defektklasse aus `TODO.md`.
+Platz. Eine Absicherung über `CanUse` als Prüfung scheidet aus; Grund in `TODO.md`, „`CanUse` als Prüfung weist `Target` zu“.
 
 **Warum die Beschwörung wartet: sonst bleibt ein Rückstand für immer.** Gemeldet: „cooldown von searing
 light ist später nicht fertig, wenn burst phase läuft." Die Abklingzeiten der Beschwörung und des Buffs

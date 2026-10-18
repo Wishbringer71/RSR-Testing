@@ -69,8 +69,8 @@ richtig und nicht lückenhaft, dass `ArtOfWarIiPvE`, `HighFireIiPvE`,
 
 **Die echte Fehlerklasse liegt woanders**, und der Fork hat sie schon zweimal
 getroffen: nicht die *Aktion*, sondern die **Annahme über sie** veraltet mit
-dem Upgrade. Der Status heißt nach dem Upgrade anders (Thunder → High Thunder,
-AUDIT_LOG/TODO #44), die Potenz ändert sich, die Combo-Bedingung kann sich
+dem Upgrade. Der Status heißt nach dem Upgrade anders (Thunder → High Thunder),
+die Potenz ändert sich, die Combo-Bedingung kann sich
 ändern. Wer nach `X` sucht, findet solche Fehler nicht; wer nach „Statusliste
 neben `X.CanUse` vollständig?" sucht, schon.
 

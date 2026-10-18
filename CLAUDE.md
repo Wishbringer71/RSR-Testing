@@ -275,7 +275,8 @@ Gelten in jeder Stufe. Eine Aussage, die eine davon verletzt, ist unbelegt.
 
 **Archiv und TODO**
 - `AUDIT_LOG.md` (A: Prüfungen, C: widerrufene Aussagen) vor jeder Neuprüfung eines Bereichs lesen.
-- `TODO.md` führt nur offene Arbeit, Defekte getrennt von technischer Schuld (Kompromiss mit Begründung, Kosten, Auflösungsbedingung). Abgeschlossenes wandert ins Archiv; neu erkannte Defekte sofort erfassen, auch außerhalb des Auftrags.
+- `TODO.md` führt nur offene Arbeit, getrennt in Defekte (Verhalten weicht von Absicht oder Einstellungstext ab), offene Arbeit, technische Schuld (Kompromiss, Kosten, Auflösungsbedingung) und Warten auf Daten. Je Eintrag nur Wirkung im Kampf, Ort, nächster Schritt oder Auflösungsbedingung, Konzept; Begründung, Messung und Geschichte stehen im Konzept und im Archiv – sonst wächst die Datei mit jedem Loop, veraltet und widerspricht den Konzepten (seine Rüge, 18.10.2026). Neu erkannte Defekte sofort erfassen, auch außerhalb des Auftrags.
+- Schließt ein Loop einen Punkt: Eintrag entfernen, im selben Zug jede Konzeptstelle nachziehen, die ihn offen nennt (Suche nach seinem Titel und nach „offen"), und die Reihenfolge fortschreiben. Ein Verweis auf das TODO nennt den Eintrag mit seinem Titel.
 - Offene Arbeit arbeite ich nach Wichtigkeit ab, jeden Punkt im vollen Loop, ohne Zwischenfrage (seine Vorgabe, 17.10.2026). Wichtigkeit ist die Wirkung im Kampf nach „Spielweise“ in seinem Profil; die Reihenfolge steht oben in `TODO.md` und wird mit jedem Befund fortgeschrieben.
 - Ein Eintrag gilt erst als seine Entscheidung, wenn der Loop durch ist und die Vorlage darin steht (→ „Vorlagen an ihn"); eine Kennzeichnung „zur Entscheidung" ohne sie ist meine offene Arbeit, und ich gebe sie nicht als seine aus (seine Rüge, 14.10.2026).
 - Fehler sachlich am System dokumentieren, im Archiv und in Commit-Nachrichten, nicht im Bericht.

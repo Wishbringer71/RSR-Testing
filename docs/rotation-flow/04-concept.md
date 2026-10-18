@@ -175,7 +175,7 @@ Nach der Zuordnung zu A4a bleibt von C ein einziger eigenständiger Punkt.
 | BLU · PhantomDefault · PCT · SAM · SMN | 80 / 33 / 32 / 27 / 23 Zweige | A4a, umgesetzt |
 | MCH | 23 Zweige | A4a, bewusst ausgelassen |
 | DRG | 6 `Trait.EnoughLevel`/`!Trait…`-Paare (gezählt am 02.10.2026) | Vereinfachung verworfen |
-| DRG · VPR | kein `CountDownAction` | offen, prüfen ob Lücke oder Absicht |
+| DRG · VPR | kein `CountDownAction` | offen, prüfen ob Lücke oder Absicht (TODO „Vorlauf: Dragoon und Viper“) |
 | RPR · SAM · WAR | kein `EmergencyAbility` in der Reborn-Datei | keine Lücke: WAR in der Basisschicht, RPR/SAM ohne eigene Notfallaktion |
 
 ### C1 · DRG-Trait-Paare — der Fund, der die Vereinfachung blockiert
@@ -258,7 +258,7 @@ weil sie verhaltensgleich sind. B3, B4 und B5 schließen je eine Lücke, in der 
 
 ## Was offen bleibt
 
-In der Tabelle unter C: Dragoon und Viper haben kein `CountDownAction` (TODO „Vorlauf“). Ob das eine Lücke ist, ist
+In der Tabelle unter C: Dragoon und Viper haben kein `CountDownAction` (TODO „Vorlauf: Dragoon und Viper“). Ob das eine Lücke ist, ist
 aus den Openern der Referenz und den Wirktexten zu klären, nicht im Spiel.
 
 Der Notfallslot ist keine Lücke. Der Krieger hat ihn in der Basisschicht (`WarriorRotation.EmergencyAbility`,

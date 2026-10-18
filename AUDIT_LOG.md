@@ -8319,6 +8319,45 @@ Die Vorlage nahm außerdem ungekennzeichnet an, seine Haltung sei aus.
 
 **Prüfgrad:** statisch, Prüfskripte, Kompilieren im Prüflauf; im Spiel nicht beobachtet.
 
+### A322 · TODO berichtigt: Gliederung, veraltete Stände, Widersprüche zu Konzepten und Archiv (18.10.2026)
+
+**Sein Auftrag (18.10.2026):** „wie kommt es, dass die todo immer weiter wächst, während du sie abarbeitest? warum ist
+die todo vollkommen unstrukturiert und enthält alte informationsstände? warum widersprechen sich todo und konzepte und
+abgearbeitete fälle? … berichtige es im vollständigen kritischen loop."
+
+**Befund am Artefakt (vor der Berichtigung, 452 Zeilen):**
+- *Falsch eingeordnet:* Unter „Defekte" standen offene Arbeit (Abgleich mit The Balance, Hilfe für den Co-Tank), eine
+  Grenze („Tank-Unverwundbarkeit … nur reaktiv"), Fälle, die auf Daten warten (Samurai, Objekttabelle), ein fremder
+  Defekt (BossModReborn-FATE) und ein Eintrag „Dieselbe Frage …", dessen Bezug gelöscht war.
+- *Chronik statt Stand:* „Stand …", „Seit A310 …", „Gemessen …" wuchsen mit jedem Loop; „Zustandsabfragen" sagte
+  zugleich „Empfehlung: erfassen" und „Umbau ist offene Arbeit". Der DRK-Eintrag trug erledigte Umsetzung und Verworfenes.
+- *Alte Regeln:* `InterruptDelay`/`ProvokeDelay` und `Configs.Migrate` argumentierten mit „bisheriges Standardverhalten
+  als Vorgabe" – seit seiner Vorgabe vom 29.09.2026 gilt der im Kampf sinnvollere Wert; Einstellungen ohne Leser waren
+  als technische Schuld geführt, obwohl ihr Text nach seiner Vorgabe bindet (Defekt).
+- *Veraltet:* `EnhancedReprisalLevel` (gibt es nicht mehr); das Audit-Dokument „14-…" (die Nummer ist vergeben).
+- *Widersprüche zu Konzepten:* Konzept 08 nannte den Reflexion-Defekt des Tankbuster-Plans offen (geschlossen A302);
+  Konzept 13 nannte die dritte Stufe der Mittelwahl offen (erledigt A159); Konzept 07 verwies auf „Flächenheilung nach
+  Pegel statt Rate" (entschieden A117, kein Eintrag mehr); Konzept 01 auf „Vorlauf und Notfallslot", Konzept 05 auf
+  „TODO #44" (beide nicht vorhanden); Konzept 03 führte die AoE-Schwelle an drei Orten offen ohne TODO-Eintrag.
+
+**Ursache, am System:** Jeder Loop erfasste neue Befunde (Regel „sofort erfassen"), aber beim Schließen eines Punkts
+wurden weder die übrigen Einträge noch die Konzeptstellen nachgezogen, die ihn offen nannten. Für die Form eines
+Eintrags gab es keine Regel; Begründungen und Messungen landeten im TODO statt im Konzept. Regeländerungen
+(Voreinstellungen 29.09., Text bindet) wurden nicht gegen bestehende Einträge gehalten.
+
+**Berichtigt:** `TODO.md` neu aufgebaut (245 Zeilen am 18.10.2026): Reihenfolge nach Wirkung im Kampf mit seinen Aufträgen vom
+18.10. vorn; je Eintrag Wirkung, Ort, nächster Schritt, Konzept; Klassen Defekte, offene Arbeit, technische Schuld, Warten
+auf Daten. Entfernte Analysen stehen im Archiv (A43, A85, A117, A179, A279, A286, A299, A310, C55) oder in den Konzepten.
+Die sieben Konzeptstellen oben berichtigt; jeder TODO-Verweis in einem Konzept nennt einen bestehenden Titel. CLAUDE.md,
+„Archiv und TODO": Form eines Eintrags und Pflicht beim Schließen.
+
+**Falsifikation.** *Kein Defekt:* widerlegt durch die Liste oben. *Option falsch (verdichten verliert Wissen):* vor jedem
+Entfernen geprüft, wo die Begründung steht. *Ausgeliefert, nichts ändert sich:* wenn das Schließen weiter ohne Nachziehen
+läuft – deshalb die Pflicht in CLAUDE.md; ob eine Prüfung die TODO-Titel in den Konzepten halten soll, entscheidet der
+Loop über die Prüfläufe (sein nächster Auftrag), nicht ein weiterer Schritt vorab.
+
+**Prüfgrad:** statisch (Text gegen Code, Konzepte, Archiv).
+
 ---
 ## B · Commit-Register (Fork vs. `upstream/main`)
 

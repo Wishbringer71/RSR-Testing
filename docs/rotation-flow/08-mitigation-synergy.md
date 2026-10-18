@@ -690,10 +690,9 @@ Raidwide 10 % jedes Mitglieds.
 - Die gemessene Tankbuster-Höhe als Voraussetzung. Die eigene Deckung beantwortet die Frage seines Kriteriums ohne
   sie, auch für ungemessene Tankbuster.
 
-**Offen (Defekt, `TODO.md`):** Der Tankbuster-Plan (Konzept 09) kennt diese Regel nicht. Für einen gemessenen
-Tankbuster wählt er das Bündel mit der geringsten Abklingzeit, und Reflexion (60 s) ist oft das billigste Glied – auch
-wenn ein Raidwide nach ihrem Ende und vor ihrer neuen Bereitschaft angesagt ist. Dann fehlen der Gruppe am Raidwide
-10 %, obwohl ein Bündel ohne Reflexion den Tank getragen hätte.
+**Im Tankbuster-Plan dieselbe Regel (A302):** Für einen gemessenen Tankbuster ist Reflexion dann ein vorbehaltenes Glied;
+gewählt wird zuerst das billigste Bündel ohne sie, und nur wenn keines ohne sie überlebt, geht sie (Konzept 09,
+„Reflexion für den Raidwide"). Vorher nahm der Plan sie als billigstes Glied, und am Raidwide fehlten jedem 10 %.
 
 ## Wann Lux Solaris zündet
 

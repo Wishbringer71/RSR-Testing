@@ -164,8 +164,8 @@ der Heilschwelle verlangte. Jetzt fällt sie, sobald im Radius genug Verletzte s
 - Die AoE-Einstellung (Full/Cleave/Off) gilt nur Angriffen, seine Lesart (A147): Unter „Cleave" und
   „Off" gehen Gruppenheilungen und Gruppenminderungen wie unter „Full".
 - Ob überhaupt geheilt wird, entscheidet weiter die Flagge. Deren Streuungsbedingung hält die Flagge
-  unten, wenn ein einzelner Spieler getroffen ist — das ist eine eigene Frage (TODO „Flächenheilung nach
-  Pegel statt Rate").
+  unten, wenn ein einzelner Spieler getroffen ist — für den teuren Flächenzauber eines Heilers richtig,
+  kein Defekt (A117).
 
 **Betroffene:** alle Heiler dieses Baums einschließlich der fremden Rotationen, die dieselben Aktionen
 über den Heilpfad rufen; die Autoren abgeleiteter Rotationen, weil `CanUse` dieser Aktionen

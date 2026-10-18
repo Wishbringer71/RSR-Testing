@@ -625,7 +625,7 @@ wirken würde — dieselbe Bedingung an derselben Stelle (`BloodwhettingForDefen
 - In allen drei Fällen nur, solange sein Ziel ihn anvisiert: Das ist die eigene Prüfung von Raw
   Intuition/Bloodwhetting (`PlayerIsTargetOnSelf`). Ein Off-Tank mit Tankbuster-Marker bekommt Bloodwhetting aus
   der Einzelabwehr nicht, die Zurückhaltung hielte dort umsonst. Dass Bloodwhetting dann fehlt, ist eine
-  Upstream-Bauform der Aktion, nicht dieser Regel (TODO).
+  Upstream-Bauform der Aktion, nicht dieser Regel (TODO „Tanks: Hilfe für den Co-Tank vor seinem Tankbuster“).
 Ohne BossModReborn-Modul bleibt nur der sichtbare Zauber oder Marker; die Zurückhaltung greift dann nur Sekunden
 vorher. Das ist eine Grenze, kein stiller Ausfall: Die Regel hält dann seltener, nie falsch.
 

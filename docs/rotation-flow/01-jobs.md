@@ -413,7 +413,7 @@ Shieldsplitter, Axeblade Bite und Smash Axe. Begrenzter Job, außerhalb seines P
 |---|---|---|
 | Rotationsdateien mit `GeneralGCD`-Override | 24 / 24 | einziger wirklich universeller Hook |
 | Rotationsdateien mit `AttackAbility`-Override | 24 / 24 | zweiter universeller Hook |
-| Jobs ohne `CountDownAction` | 2 (DRG, VPR) | offen, TODO „Vorlauf und Notfallslot“ |
+| Jobs ohne `CountDownAction` | 2 (DRG, VPR) | offen, TODO „Vorlauf: Dragoon und Viper“ |
 | Jobs ohne `EmergencyAbility` in der Reborn-Datei | 3 (RPR, SAM, WAR) | keine Lücke: WAR in der Basisschicht, RPR/SAM ohne eigene Notfallaktion (Konzept 04) |
 | Echte Aufstiegsketten | 65 in 16 Dateien, davon 25 sauber gleichförmig (Zählung vom 20.08.2026) | siehe 04, Punkt A2 |
 | Redundantes `X.EnoughLevel && X.CanUse` | 56, davon 44 außerhalb `ExtraRotations` | `CanUse` prüft das bereits selbst |

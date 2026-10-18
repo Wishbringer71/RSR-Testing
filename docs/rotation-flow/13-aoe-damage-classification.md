@@ -816,8 +816,9 @@ anpassen, dass die geeignete schadensverringerung bzw. das geeignete schild bei 
 gewählt wird." Für Flächen ist die Zuordnung „kleiner Treffer, billiges Mittel; großer Treffer, starkes"
 geprüft und widerlegt (A118): Minderungen kennen kein „zu groß", sie skalieren mit dem Treffer, und kein
 Job hält zwei Anteilsbarrieren zur Wahl. Gebaut ist die zweite Stufe, Heilung vor dem angekündigten
-Treffer; offen ist die dritte, Barriere und Minderung zusätzlich bei Treffern über der Maximalgesundheit
-(`TODO.md`). Für Tankbuster wählt der Tankbuster-Plan das geringste Bündel, das den gemessenen Treffer
+Treffer; die dritte, Barriere und Minderung zusätzlich bei Treffern über der Maximalgesundheit, trägt seit A159 die
+Schranke: Sie lässt jede Rückhaltung weichen, sobald der gemessene Treffer ein ungeschütztes Mitglied in Klasse 1
+brächte, und ein Treffer über der Maximalgesundheit tut das immer (Konzept 08). Für Tankbuster wählt der Tankbuster-Plan das geringste Bündel, das den gemessenen Treffer
 übersteht (Konzept 09). Die Messgröße dieses Konzepts trägt beides: Abgelegt wird der **höchste** Anteil
 im Effektsatz, bei gleichem absolutem Schaden der des Spielers mit der geringsten Maximalgesundheit —
 die Bezugsgröße, die seine Vorgabe zur Deckung nennt.
