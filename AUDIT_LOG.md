@@ -8431,7 +8431,8 @@ der Vergleich je Push im Schritt statt eines Pfadfilters; ein Push mit Modellän
 - *Weißmagier Divine Caress:* Upstream zieht es vor die Abwehrsperre, auf denselben Treffer wie Temperance. Konzept 08
   („Was die Sperren im Spiel bewirken") hat genau diese Abwägung entschieden: strecken statt verdoppeln, Preis
   benannt. Das Zusammenführen hatte die Zeile an der alten Stelle gelöscht und die neue in den Konflikt gelegt; ohne
-  Wiederherstellung wäre Divine Caress ganz entfallen.
+  Wiederherstellung fehlte Divine Caress in der Flächenabwehr und käme nur noch über `UseDivine` oder in den letzten
+  zwei GCDs von Divine Grace. `main` (40d7eade6) mit denselben Entscheidungen zusammengeführt.
 - *Beschwörer `RadiantOnCooldownSpam`*: Upstream liest die Option wieder, der Fork hatte sie als ungelesen entfernt
   (75b7af001). Radiant Aegis geht im Fork vor einem angekündigten Raidwide und vor jeder Demi-Beschwörung
   (7ef489a37); Dauereinsatz verbrauchte die Ladungen, die dort fehlen. Die entfernten Bahamut-Zeilen von Upstream
