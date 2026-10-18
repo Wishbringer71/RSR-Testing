@@ -962,6 +962,20 @@ die höchste gesundheit."
 - *Präzisierung dazu:* „am besten, wenn auch unverwundbarkeit wieder bereitsteht."
 - *Präzisierung (als Frage gestellt, geprüft und übernommen):* „müsste das zurückprovozieren nicht erst dann
   erfolgen, wenn auch der andere tank einen tankbuster bekommen hat?"
+- *Hinweis (17.10.2026, zur Vorlage „Tankwechsel von der anderen Seite"):* „der andere tank kann ebenfalls aggro
+  abgeben und auf mich übertragen." Mechanik belegt (Geteiltes Leid, unten): Sein Geteiltes Leid gibt dir 25 % seiner
+  Feindseligkeit und bewegt den Gegner nur, wenn du schon über der Hälfte seiner liegst. Auf deiner Seite war es
+  bedacht (kein Zurückgeben an einen Tank in Gefahr; seine Geste steht nur im Protokoll), in der Vorlage für die andere
+  Seite nicht; dort jetzt eingearbeitet (`TODO.md`).
+- *Hinweis (17.10.2026):* „aktives agieren des anderen tanks wäre eigentlich ein hinweis darauf, dass er den
+  tankbuster nicht nehmen will, weil z.b. sein invul noch nicht wieder da ist." Seine Geste ist damit das Zeichen für
+  einen gewollten Wechsel; eingearbeitet in die Vorlage (Variante D).
+- *Frage (17.10.2026), geprüft:* „ist es bei beginnendem wirken eines tankbusters nicht bereits zu spät, das ziel zu
+  wechseln?" Ja, für das gezielte Wirken und den Marker (unten, Mechanik „Wann eine Herausforderung den Treffer noch
+  umlenkt"). Seine eigene Angabe vom 15.08.2026 (Archiv, B2b) sagte dasselbe: ein angekündigter Tankbuster ist nicht
+  mehr umlenkbar, bei mehreren Einschlägen bleibt zwischen ihnen rund 1 s.
+- *Frage (17.10.2026):* „wer sagt, dass meine haltung aus ist?" Niemand – die Vorlage hatte es ungekennzeichnet
+  angenommen. Die Regel liest die Haltung (`HasTankStance`), statt sie anzunehmen.
 
 **Gebaut (A255–A257), Option „Shirk the co-tank after a tankbuster that leaves you in danger", ab Werk an:**
 Erkennung in `TankSwapWatch`, Entscheidung in `CustomRotation.TankSwapAbility`, für alle Tanks an einer Stelle (Stufe
@@ -1034,6 +1048,15 @@ Belege abgerufen 04.10.2026.
   `CanTargetSelf`, `CanTargetAlliance` falsch). In Allianzraids ist der andere Tank also nie erreichbar.
 - **Herausforderung** (Provoke, #7533) setzt den Wirker an die Spitze der Feindseligkeitsliste – das Werkzeug der
   *anderen* Seite eines Tankwechsels.
+- **Wann eine Herausforderung den Treffer noch umlenkt** (BossModReborn `be8ff77`, 17.10.2026, Gemeinschaftsquelle;
+  dazu seine Angabe B2b): Ein gezieltes Wirken trifft das Ziel, das es beim Wirkbeginn hatte – `SingleTargetCast`
+  sagt den Treffer auf `CastInfo.TargetID` voraus; nur ein Wirken auf den Wirker selbst rechnet es dem aktuellen Ziel
+  des Gegners zu („assume self-targeted casts actually hit main target", Annahme des Autors). Ein Marker legt das Ziel
+  fest (Bausteine mit Marker sagen den Treffer auf dem markierten Mitglied voraus). Bei mehreren Einschlägen nimmt den
+  ersten das beim Beginn festgelegte Ziel, jeden weiteren, wen der Gegner dann anvisiert (`TankSwap`: „target of the
+  first hit is locked when mechanic starts, then subsequent targets are selected based on who the boss targets";
+  Hinweis „Provoke!" zwischen den Einschlägen). Eine Herausforderung wirkt also auf den nächsten Treffer nur, wenn sie
+  vor dessen Wirkbeginn oder Marker liegt, oder zwischen den Einschlägen eines mehrfachen.
 - **Wann Geteiltes Leid allein den Gegner bewegt:** Danach hältst du (1 − s) deiner Feindseligkeit, der Empfänger
   gewinnt s davon. Er wird zum Ziel, wenn er danach vor dir und vor allen anderen liegt; von dir aus gerechnet
   braucht er vorher mehr als 1 − 2s, bei s = 25 % also mehr als die Hälfte deiner Feindseligkeit. s kommt aus dem
