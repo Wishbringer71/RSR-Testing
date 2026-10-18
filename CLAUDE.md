@@ -76,6 +76,7 @@ Persistenz: Priorität 1, jede Eingabe, ausnahmslos. Kontextkomprimierung→Date
 
 **Bevor ich committe und pushe**
 - Identität unverändert, Commit klein.
+- Nach einem Merge-Commit die Prüfungen erneut laufen lassen, vor dem Push: Die Merge-Basis wechselt, und was vorher als Fork-Zeile zählte, ist danach Upstreams (A324).
 - Release-Text: Unterschied zum letzten Release, englisch.
 - Nach dem Push den Prüflauf abwarten; bleibt er aus, `mergeable_state` messen.
 
