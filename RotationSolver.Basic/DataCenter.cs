@@ -3315,17 +3315,26 @@ internal static class DataCenter
 	public static bool IsTankbusterVfxOnPlayer()
 	{
 		var player = Player.Object;
-		if (player == null || VfxDataQueue == null || VfxDataQueue.IsEmpty)
+		return player != null && IsTankbusterVfxOn(player.GameObjectId);
+	}
+
+	/// <summary>
+	/// Whether a tankbuster lock-on VFX that is not on the learned list of markers without a hit sits on
+	/// <paramref name="objectId"/>. A marker fixes whom its tankbuster hits, whatever the enmity (concept 09,
+	/// "Wann eine Herausforderung den Treffer noch umlenkt").
+	/// </summary>
+	internal static bool IsTankbusterVfxOn(ulong objectId)
+	{
+		if (VfxDataQueue == null || VfxDataQueue.IsEmpty)
 		{
 			return false;
 		}
 
-		var playerId = player.GameObjectId;
 		foreach (var s in VfxDataQueue)
 		{
 			try
 			{
-				if (s.ObjectId != playerId || string.IsNullOrEmpty(s.Path))
+				if (s.ObjectId != objectId || string.IsNullOrEmpty(s.Path))
 				{
 					continue;
 				}
@@ -3337,7 +3346,7 @@ internal static class DataCenter
 			}
 			catch (AccessViolationException ex)
 			{
-				PluginLog.Warning($"AccessViolation in IsTankbusterVfxOnPlayer while scanning VFX: {ex.Message}");
+				PluginLog.Warning($"AccessViolation in IsTankbusterVfxOn while scanning VFX: {ex.Message}");
 			}
 		}
 		return false;

@@ -126,9 +126,16 @@ held back by the fixed margin.
 
 ## Tanks: provoke settings do what they say
 
-- The rescue of a co-tank at your invulnerability HP has its own setting, "Provoke the enemy off a co-tank at the
-  invulnerability HP" (on by default). It ran under "Auto provoke when there is another tank in party", whose text
-  only names enemies on non-tanks: with that setting off, a co-tank about to die was not provoked off.
+- Taking the enemy from a co-tank in danger has its own setting, "Take the enemy from a co-tank in danger" (on by
+  default). Its first case, the co-tank at your invulnerability HP, ran under "Auto provoke when there is another tank
+  in party", whose text only names enemies on non-tanks: with that setting off, a co-tank about to die was not
+  provoked off.
+- The same setting now also takes the enemy when BossModReborn announces its next tankbuster and the co-tank would take
+  it still vulnerable or would not survive it by his HP trend - at once, since a cast already aimed at him or a marker
+  on him cannot be turned away - and when he shirks to you. Not while you are in danger or vulnerable yourself, not
+  while he is impervious, and not when the announced tankbuster hits you anyway. Your tank stance goes on first if it
+  is off. If the enemy's next tankbuster still hits him after a take-over, RSR stops taking that enemy on an
+  announcement for the rest of the fight.
 - "Provoke anything not on the no provoke list." now respects the list; it provoked listed enemies as well.
 
 ## Summoner: Searing Light ahead of the right demi

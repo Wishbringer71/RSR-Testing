@@ -38,6 +38,8 @@ ACCEPTED = [
      "with its hold off counts, since its fall to zero is Walking Dead (A306)"),
     ("RotationSolver.Basic/Rotations/CustomRotation_OtherInfo.cs", "player == null || !player.CanBeHealed()",
      "TankbusterOnMeWithin: no own cooldown for a tankbuster while an invulnerability covers the player"),
+    ("RotationSolver.Basic/Helpers/TankSwapWatch.cs", "asked ? !holder.CanBeHealed()",
+     "TakeOverHeld: the enemy is not taken from a co-tank an invulnerability protects (A321)"),
 ]
 
 

@@ -11,8 +11,6 @@ bearbeiten"). Stand 17.10.2026; fortgeschrieben mit jedem Befund.
 1. Tanks: Hilfe für den Co-Tank vor seinem Tankbuster (mit dem Defekt der Revolverklinge); Rückstoß und Unterbrechung messen; DRK: Bruch von The Blackest Night; Rotationen gegen The Balance.
 2. Offene Arbeit, dann technische Schuld, soweit ihre Auflösungsbedingung erfüllt ist.
 
-Wartet auf seine Entscheidung (Loop durch, Vorlage im Eintrag): Tankwechsel von der anderen Seite.
-
 Warten auf Daten, nicht bearbeitbar: Aktualisierungskosten je Teilschritt (Protokoll „update cost by step“, A310); Tankbuster nach einem Marker ohne Wirken (Protokoll „no cast taken for it“, A308); Treffer aus einer Quelle, die die Objekttabelle nicht hält (Protokoll); Samurai
 Feint und Tengentsu (Protokoll eines Samurai); BossModReborn-FATE-Modul in Occult Crescent (Adressat BossModReborn).
 
@@ -97,96 +95,6 @@ Frist „ohne Risiko" trägt, ist ungeprüft – voller Loop vor jedem Bau. Eben
 als Damage Up benannt sind, werden beim Messen nicht erkannt; wie oft es sie gibt, ist nicht erhoben. Umgekehrt bleibt
 ein Gegner, der den ganzen Kampf ein Damage Up trägt, ohne Messung, und eine Vorhersage unter Damage Up unterschätzt
 (sichere Richtung; die Wirktexte nennen keine Stärke, mit der sich hochrechnen ließe).
-
-**Konzept:** `docs/rotation-flow/09-tank-selfprotection.md`
-
-### Tankwechsel von der anderen Seite: Herausforderung, wenn der Haupttank nach einem Tankbuster in Gefahr ist · N · zur Entscheidung (Vorlage)
-
-**Kontext.** Hält der Co-Tank den Gegner und lässt ihn ein Tankbuster mit einer Verwundbarkeit zurück oder so tief, dass
-eine Wiederholung ihn tötet, ohne dass er unter `HealthForDyingTanks` fällt, tut RSR auf deiner Seite nichts. Seine
-eigene Hälfte des Wechsels (Geteiltes Leid auf dich) drückt er selbst; spielt RSR für dich den zweiten Tank, fehlt bei
-einer Tankwechsel-Mechanik die Herausforderung, und der nächste Treffer trifft ihn. Meine Ableitung, nicht seine Vorgabe
-(A255, A256). Seit A318 gilt: Unter `HealthForDyingTanks` provoziert RSR unter eigener Option („Provoke the enemy off a
-co-tank at the invulnerability HP", ab Werk an).
-
-**Betroffene Stellen.** `ObjectHelper.CanProvoke` (Rettungszweig), `TankSwapWatch` (Gefahr eines anderen Tanks: dieselbe
-Messung, die heute prüft, ob der Empfänger deines Geteilten Leids selbst in Gefahr ist – Verwundbarkeit aus dem
-Tankbuster oder LP mit Schild unter dem erwarteten Anteil einer Wiederholung), die Option aus A318.
-
-**Mechanik (belegt).** Herausforderung: „placing yourself at the top of a target's enmity list while gaining additional
-enmity" (`ActionId.resx`). *Zu spät ist sie ab dem Wirkbeginn oder Marker des nächsten Tankbusters* (seine Frage vom
-17.10.2026, geprüft; Konzept 09, „Wann eine Herausforderung den Treffer noch umlenkt"): Das gezielte Wirken trifft das
-Ziel vom Wirkbeginn, der Marker das markierte Mitglied (BossModReborn `be8ff77`; seine Angabe B2b, 15.08.2026). Offen
-bleiben nur das Wirken auf den Wirker selbst (BMR nimmt das aktuelle Ziel an, unbelegt) und die weiteren Einschläge eines
-mehrfachen Tankbusters. Die Herausforderung muss also vor dem nächsten Wirkbeginn liegen – in der Praxis gleich nach dem
-Treffer, der den Co-Tank in Gefahr bringt. Haltung: „Significantly increases enmity generation"; RSR schaltet sie nur
-ein, wenn kein anderer Tank sie trägt. Ob deine an ist, liest die Regel (`HasTankStance`); die Vorlage hatte bis zu seiner
-Frage „wer sagt, dass meine haltung aus ist?" ungekennzeichnet angenommen, sie sei aus. Laut Icy Veins (nur als
-Suchauszug gelesen, die Seite weist Skripte ab) gehört die Haltung vor die Herausforderung, weil deren Zusatz an
-Feindseligkeit von ihr abhängt.
-
-**Sein Geteiltes Leid auf dich (sein Hinweis, 17.10.2026).** Der Co-Tank kann seine Hälfte zuerst drücken: Geteiltes Leid
-gibt dir 25 % seiner Feindseligkeit. Danach greift der Gegner dich an, wenn du vorher über der Hälfte seiner
-Feindseligkeit lagst (dieselbe Rechnung wie bei deinem Geteilten Leid, Konzept 09); sonst bleibt er bei ihm.
-- *Er bewegt den Gegner selbst:* Der Gegner greift dich an; jede Variante unten provoziert nur einen Gegner, der ihn
-  angreift, wirkt dann also nicht. Kein doppelter Einsatz. Den nächsten Tankbuster nimmst du, dein Tankbuster-Plan
-  rechnet ihn.
-- *Er bewegt ihn nicht* (du liegst unter der Hälfte seiner Feindseligkeit – etwa ohne Haltung; mit Haltung ist das
-  weniger wahrscheinlich, aber nicht ausgeschlossen): Der Gegner bleibt bei ihm, obwohl er ihn abgeben will. Heute schreibt RSR nur „… shirked to you" ins Protokoll und tut nichts; erst deine Herausforderung
-  vollendet den Wechsel. Seine Geste ist das stärkste Zeichen, das es für einen gewollten Wechsel gibt – stärker als
-  Verwundbarkeit oder Ankündigung, denn es ist seine Entscheidung.
-- *Ob die Geste bei dir ankommt,* ist nicht beobachtet: Der Effektsatz von Geteiltem Leid mit dir als Ziel wird gelesen
-  (`Watcher`), in deinen sechs Protokollen steht keine solche Zeile; ob dort ein Co-Tank Geteiltes Leid auf dich
-  wirkte, zeigen sie nicht.
-- *Ihr seid beide in Gefahr:* keiner gibt ab, keiner provoziert – wie auf deiner Seite.
-
-**Optionen und Konsequenzen über den Kampf.**
-- *0 – Nullvariante (wie jetzt):* Rettung erst unter `HealthForDyingTanks`. Bei einer Tankwechsel-Mechanik musst du
-  selbst provozieren; tust du es nicht, nimmt der Co-Tank den zweiten Treffer mit Verwundbarkeit und stirbt, wenn seine
-  Unverwundbarkeit nicht bereit ist.
-- *A – Herausforderung bei Gefahr allein:* Jede Verwundbarkeit aus einem Tankbuster löst sie aus. Wahrscheinlichkeit
-  gemessen nur an der Verwundbarkeit selbst: Sie sagt, dass ein zweiter Treffer tödlich wäre, nicht, ob er kommt. In
-  Kämpfen ohne Wechselmechanik läuft sie meist vor dem nächsten Tankbuster ab. Folge je Auslösung ohne zweiten Treffer:
-  der Gegner dreht sich (eine Frontalattacke streicht dabei über die Gruppe), der Co-Tank verliert ihn, du hältst ihn
-  ohne Haltung nicht, und Herausforderung fehlt 30 s für einen Gegner auf einem Heiler.
-- *B – Herausforderung bei Gefahr, wenn ein nächster Tankbuster desselben Gegners vor dem Ende der Verwundbarkeit
-  angekündigt ist:* gleich nach dem Treffer, der ihn in Gefahr bringt, nicht erst zum Wirken – das Wirken oder der
-  Marker des nächsten ist zu spät (oben). Wahrscheinlichkeit gemessen an der Ankündigung, die vor dem Wirken liegt:
-  BossModReborns Zeitleiste (`Timeline.NextTankbusterIn`, Übergang des markierten Zustands). Ohne BMR-Modul gibt es
-  diese Ankündigung nicht; dann bliebe nur das Wirken auf den Wirker selbst (Umlenkbarkeit unbelegt) – B ist ohne Modul
-  praktisch die Nullvariante. Nicht bei Unverwundbarkeit des Co-Tanks (`451d9e90`) und nicht, solange du selbst in
-  Gefahr bist.
-- *C – wie B, zusätzlich mit Haltung:* Ist deine Haltung aus, schaltet RSR sie vor der Herausforderung ein (Icy Veins,
-  oben); ist sie an, ändert C nichts. Zwei Haltungen gleichzeitig, bis der Co-Tank seine ablegt.
-- *D – wie B, zusätzlich auf seine Geste:* Hat der Co-Tank Geteiltes Leid auf dich gewirkt und greift der Gegner ihn
-  weiter an, provoziert RSR sofort, ohne auf eine Ankündigung zu warten. Die Geste gilt, bis der nächste Tankbuster
-  dieses Gegners jemanden trifft oder der Gegner dich angreift (Ereignisse, keine Frist). Nicht, solange du selbst in
-  Gefahr bist, und nicht bei seiner Unverwundbarkeit. Kommt die Geste nicht an, ist D gleich B. Seine Geste ist das
-  Zeichen, dass er den Treffer nicht nehmen will (sein Hinweis); sie trägt auch ohne BMR-Modul. Liegt sie erst nach dem
-  Wirkbeginn des nächsten Tankbusters, trifft dieser ihn trotzdem – die Herausforderung zählt dann für die Treffer danach.
-- *Rückbau:* jede Variante hinter der Option aus A318 (erweiterter Text) oder einer eigenen; aus = Nullvariante.
-
-**Gegenproben gegen meine Empfehlung (B).**
-1. *Der Co-Tank plant für den zweiten Treffer seine Unverwundbarkeit* (Holmgang u. a.). RSR kann fremde Abklingzeiten
-   nicht lesen und nähme ihm den Gegner; du stündest im Treffer ohne Vorbereitung – dein Tankbuster-Plan sieht ihn erst,
-   wenn das Wirken auf dich zeigt. Hält: Das ist der stärkste Einwand, und er lässt sich am Code nicht ausräumen.
-   Deshalb nur mit angekündigtem Treffer und als Option, nicht als feste Regel.
-2. *BossModReborn ist keine verlässliche Quelle* (kein Modul und keine Ankündigung sehen gleich aus). Folge: B tut dann
-   nichts – gleich der Nullvariante, kein Schaden.
-3. *Er gibt den Gegner selbst ab* (Geteiltes Leid auf dich, ob Mensch oder RSR). Bewegt es den Gegner, wirkt B nicht
-   (oben). Bewegt es ihn nicht, wartet B auf eine Ankündigung, obwohl er den Wechsel schon will – deshalb D. Gegen D
-   hält Einwand 1 nicht: Wer abgibt, plant den zweiten Treffer nicht selbst.
-4. *Mehrere Gegner greifen ihn an:* BossModReborn nennt den Wirker eines Tankbusters nicht. B provoziert dann nur den
-   Gegner, dessen Wirken sichtbar ist; D den Gegner, den er angreift, wenn es genau einer ist. Grenze.
-5. *Tankbuster auf die ersten beiden der Feindseligkeit:* Ein Wechsel ändert dort nichts; er nimmt den Treffer weiter
-   als Zweiter. Kein Einwand gegen B oder D – sie kosten dann eine Herausforderung, nicht mehr.
-
-**Empfehlung:** B mit C und D zusammen – Herausforderung gleich nach dem Treffer, wenn BossModReborn den nächsten vor
-Ende der Verwundbarkeit ankündigt, oder sofort auf seine Geste; die Haltung vorher ein, falls sie aus ist. Hinter der
-Option aus A318, deren Text dann alle Fälle nennt; ab Werk an (Sicherheit vor Schaden, gewichtet mit Ankündigung oder
-seiner Entscheidung). Seine Einschätzung (17.10.2026): „b, c die wahrscheinlichste option", die Geste als Hinweis.
-
-**Seine Entscheidung:** welche Kombination aus B, C, D (oder 0/A), und ob ab Werk an.
 
 **Konzept:** `docs/rotation-flow/09-tank-selfprotection.md`
 

@@ -70,8 +70,8 @@ public static class ObjectHelper
 	/// <summary>
 	/// Should this enemy be provoked? <paramref name="autoProvokeAllowed"/> answers the setting "Auto provoke
 	/// when there is another tank in party" for the cases it names - an enemy on a non-tank, and "Provoke
-	/// anything" - and is asked only when one of them applies (it walks the alliance). The rescue of a co-tank
-	/// at the invulnerability HP follows its own setting, which that text does not name.
+	/// anything" - and is asked only when one of them applies (it walks the alliance). Taking the enemy from a
+	/// co-tank in danger follows its own setting (<see cref="TakesEnemyFromCoTank"/>), which that text does not name.
 	/// </summary>
 	internal static bool CanProvoke(this IBattleChara target, Func<bool>? autoProvokeAllowed = null)
 	{
@@ -109,41 +109,57 @@ public static class ObjectHelper
 
 		if (Service.Config.ProvokeAnything)
 		{
-			return autoProvokeAllowed?.Invoke() ?? true;
+			return (autoProvokeAllowed?.Invoke() ?? true) || TakesEnemyFromCoTank(target);
 		}
 
 		// Target can move or too big and has a target
 		if ((target.GetObjectNPC()?.Unknown0 == 0 || target.HitboxRadius >= 5) // Unknown12 used to be the flag checked for the mobs ability to move, honestly just guessing on this one
 			&& (target.TargetObject?.IsValid() ?? false))
 		{
-			if (Svc.Objects.SearchById(target.TargetObjectId) is IBattleChara targetObject)
+			// The target is not a tank role
+			if (Svc.Objects.SearchById(target.TargetObjectId) is IBattleChara targetObject
+				&& !targetObject.IsJobCategory(JobRole.Tank)
+				&& (Vector3.Distance(target.Position, Player.Object?.Position ?? Vector3.Zero) > 5))
 			{
-				// The target is not a tank role
-				if (!targetObject.IsJobCategory(JobRole.Tank)
-					&& (Vector3.Distance(target.Position, Player.Object?.Position ?? Vector3.Zero) > 5))
-				{
-					return autoProvokeAllowed?.Invoke() ?? true;
-				}
-
-				// The co-tank is at the HP the user already set for a tank in danger, and is still
-				// being attacked - take it back, unless they are riding an invulnerability (Superbolide
-				// leaves them at 1 HP on purpose). No distance gate: any healthy tank should react.
-				// Not while the player himself is in danger after a tankbuster (TankSwapWatch): the
-				// owner's rule of 04.10.2026 - the enemy comes back only once his debuff and his
-				// critical state are over.
-				if (Service.Config.ProvokeOffDyingCoTank
-					&& targetObject.IsJobCategory(JobRole.Tank)
-					&& !targetObject.IsDead
-					&& targetObject.GameObjectId != Player.Object?.GameObjectId
-					&& targetObject.CanBeHealed()
-					&& targetObject.GetEffectiveHpPercent() <= Service.Config.HealthForDyingTanks * 100f
-					&& !TankSwapWatch.PlayerInDanger)
-				{
-					return true;
-				}
+				return autoProvokeAllowed?.Invoke() ?? true;
 			}
+
+			return TakesEnemyFromCoTank(target);
 		}
 		return false;
+	}
+
+	/// <summary>
+	/// The setting "Take the enemy from a co-tank in danger" (concept 09, "Tankwechsel von der anderen Seite").
+	/// Two readings, both of the co-tank the enemy attacks:
+	/// <list type="bullet">
+	/// <item>At the HP the user set for a tank in danger, unless he rides an invulnerability (Superbolide leaves him
+	/// at 1 HP on purpose), and not while the player himself is in danger after a tankbuster - the owner's rule of
+	/// 04.10.2026: the enemy comes back only once his debuff and his critical state are over.</item>
+	/// <item>What <see cref="TankSwapWatch"/> names to be taken: he shirked to the player, or BossModReborn announces
+	/// the next tankbuster and he would take it vulnerable or not survive it - before its target is fixed.</item>
+	/// </list>
+	/// No distance gate: any healthy tank should react.
+	/// </summary>
+	private static bool TakesEnemyFromCoTank(IBattleChara enemy)
+	{
+		if (!Service.Config.TakeEnemyFromCoTankInDanger)
+		{
+			return false;
+		}
+
+		if (enemy.GameObjectId == TankSwapWatch.TakeOverSourceId)
+		{
+			return true;
+		}
+
+		return Svc.Objects.SearchById(enemy.TargetObjectId) is IBattleChara holder
+			&& holder.IsJobCategory(JobRole.Tank)
+			&& !holder.IsDead
+			&& holder.GameObjectId != Player.Object?.GameObjectId
+			&& holder.CanBeHealed()
+			&& holder.GetEffectiveHpPercent() <= Service.Config.HealthForDyingTanks * 100f
+			&& !TankSwapWatch.PlayerInDanger;
 	}
 
 	internal static bool HasPositional(this IBattleChara battleChara)

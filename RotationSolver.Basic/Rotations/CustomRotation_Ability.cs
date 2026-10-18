@@ -295,7 +295,20 @@ public partial class CustomRotation
 			}
 
 			IBaseAction.TargetOverride = TargetType.Provoke;
-			if (ProvokePvE.CanUse(out act) || ProvokeAbility(nextGCD, out act))
+			if (ProvokePvE.CanUse(out act))
+			{
+				// A take-over from a co-tank in danger (TankSwapWatch) goes into the trace with its reason, and its
+				// outcome is settled by the enemy's next tankbuster.
+				if (TankSwapWatch.TakeOverSourceId != 0 && ProvokePvE.Target.Target?.GameObjectId == TankSwapWatch.TakeOverSourceId)
+				{
+					TankSwapWatch.TakeOverChosen();
+					DefenseTrace.Decision($"take over {ProvokePvE.Target.Target?.Name.TextValue} ({TankSwapWatch.TakeOverReason})", act);
+				}
+
+				return true;
+			}
+
+			if (ProvokeAbility(nextGCD, out act))
 			{
 				return true;
 			}

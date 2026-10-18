@@ -8280,6 +8280,45 @@ sich:* Verhalten unverändert, nur das Konzept hält die Entscheidung.
 
 **Prüfgrad:** statisch (Wirktexte, Code).
 
+### A321 · Tankwechsel von der anderen Seite: den Gegner einem Co-Tank in Gefahr abnehmen (18.10.2026)
+
+**Seine Entscheidung (17.10.2026):** „die kombination im loop genau prüfen und umsetzen" – B, C, D der Vorlage. Seine
+Hinweise davor: Der Co-Tank kann selbst mit Geteiltem Leid abgeben; seine Geste heißt, er will den Treffer nicht; die
+Haltung ist nicht als aus anzunehmen; ein begonnenes Wirken ist zu spät (geprüft: BossModReborn `be8ff77`
+`SingleTargetCast`, `TankSwap`; seine Angabe B2b).
+
+**Befund am Code im Loop:** C war schon gebaut – der Pfad der Herausforderung schaltet die Haltung vorher ein, wenn sie
+aus ist (`CustomRotation_Ability`). „Provoke anything" kehrte vor der Rettung zurück und schloss sie mit „Auto provoke …"
+aus (A318-Folge); jetzt gilt die Übernahme dort ebenso. Der Effektsatz seines Geteilten Leids auf dich wurde nur ins
+Protokoll geschrieben.
+
+**Umgesetzt:** `TankSwapWatch.UpdateTakeOver` (Erkennung, ohne Option): je anderem Tank, den ein Gegner angreift – dein
+Ziel unter ihnen, sonst der einzige –, die Übernahme bei seiner Geste (D) oder bei angekündigtem Tankbuster, den er
+verwundbar nähme oder nach `GetHealthRatioIn` nicht überlebte (B), mit den Sperren aus Konzept 09. `ObjectHelper.
+TakesEnemyFromCoTank` (Entscheidung) unter der umbenannten Option „Take the enemy from a co-tank in danger" (A318 war noch
+nicht veröffentlicht; der alte Name wird zurückgesetzt, Voreinstellung an). Die tatsächlich gedrückte Herausforderung
+schreibt ihren Grund; der nächste Tankbuster des Gegners entscheidet „held"/„did not move" und sperrt B für einen Gegner,
+der trotz Übernahme den Co-Tank traf. Die Sperre „Ziel fest" liest jedes Wirken mit ihm als Ziel ab Wirkbeginn: die
+Tankbuster-Erkennung (`IsHostileCastingTank`) antwortet erst im letzten GCD, eine Herausforderung davor wäre verpufft und
+hätte den Gegner fälschlich gesperrt (im Loop gefunden). Neu: `StatusHelper.VulnerabilityUpRemaining`,
+`DataCenter.IsTankbusterVfxOn`.
+
+**Im Kampf:** Bei einem Wechselmechanismus nimmst du den nächsten Tankbuster, wenn BossModReborn ihn ankündigt oder der
+Co-Tank dir abgibt – mit Haltung, gleich nach dem gefährlichen Treffer.
+
+**Falsifikation.** *Kein Defekt:* Die Lücke stand in der Vorlage, bestätigt durch seine Hinweise. *Option falsch:*
+Zwei Haltungen – der Co-Tank holt den Gegner zurück; erkannt („undone") und nicht als feste Zielwahl gezählt. Der
+LP-Verlauf direkt nach dem Treffer ist steil – B nimmt früher als nötig, sichere Richtung. Ein Treffer auf die ersten
+beiden der Feindseligkeit trifft ihn trotzdem – kostet eine Herausforderung. Mehrere Gegner ohne dein Ziel: keine
+Übernahme (Grenze). *Ausgeliefert, nichts ändert sich:* ohne BossModReborn-Modul und ohne ankommende Geste (nicht
+beobachtet) bleibt es bei der Rettung unter `HealthForDyingTanks`.
+
+**Arbeitsweise, sachlich:** Die Vorlage fragte nach der Voreinstellung, obwohl seine Vorgabe vom 29.09.2026 sie
+entscheidet; er nannte das eine Beleidigung. CLAUDE.md nennt diesen Fall jetzt als Beispiel unter „Bevor ich ihn frage".
+Die Vorlage nahm außerdem ungekennzeichnet an, seine Haltung sei aus.
+
+**Prüfgrad:** statisch, Prüfskripte, Kompilieren im Prüflauf; im Spiel nicht beobachtet.
+
 ---
 ## B · Commit-Register (Fork vs. `upstream/main`)
 

@@ -1266,6 +1266,32 @@ public static class StatusHelper
 		return Carries(battleChara, IsVulnerabilityUp);
 	}
 
+	/// <summary>
+	/// Seconds the longest vulnerability debuff on <paramref name="battleChara"/> still runs: 0 without one,
+	/// <see cref="float.MaxValue"/> for one that names no end.
+	/// </summary>
+	internal static float VulnerabilityUpRemaining(this IBattleChara battleChara)
+	{
+		var statuses = battleChara.StatusList;
+		if (statuses == null)
+		{
+			return 0f;
+		}
+
+		var longest = 0f;
+		foreach (var status in statuses)
+		{
+			if (status == null || status.StatusId == 0 || !IsVulnerabilityUp(status.StatusId))
+			{
+				continue;
+			}
+
+			longest = Math.Max(longest, status.RemainingTime > 0f ? status.RemainingTime : float.MaxValue);
+		}
+
+		return longest;
+	}
+
 	private static HashSet<uint>? _damageUpIds;
 
 	/// <summary>

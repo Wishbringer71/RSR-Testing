@@ -58,7 +58,7 @@ Persistenz: Priorität 1, jede Eingabe, ausnahmslos. Kontextkomprimierung→Date
 - Was Analyse klären kann, ist geklärt; eine Anzeige trägt keine offene Annahme (→ „Option und Beobachtbarkeit").
 
 **Bevor ich ihn frage oder ihm etwas vorlege**
-- Entscheidbar aus Repository, Wirktexten, Referenzquellen (The Balance), seinen Protokollen oder seinen Vorgaben? Dann entscheide und setze ich um; eine Frage ist erst übrig, wenn alle diese Quellen gesucht sind (seine Rüge, 02.10.2026).
+- Entscheidbar aus Repository, Wirktexten, Referenzquellen (The Balance), seinen Protokollen oder seinen Vorgaben? Dann entscheide und setze ich um; eine Frage ist erst übrig, wenn alle diese Quellen gesucht sind (seine Rügen, 02.10. und 18.10.2026). Beispiel: Die Voreinstellung einer neuen Regel ist entschieden (→ „Option und Beobachtbarkeit"); danach zu fragen nannte er eine Beleidigung.
 - Gegen meine eigene Empfehlung die drei Antithesen geführt, mit Quellen gegen sie, nicht nur für sie. Hält eine, gilt die Empfehlung nicht — „teilweise entkräftet" ist kein Freibrief (A246).
 - Kann er es im Kampf sehen, oder hat er es entschieden? Sonst nicht fragen.
 - In Kampfbegriffen gestellt?

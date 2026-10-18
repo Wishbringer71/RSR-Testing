@@ -429,7 +429,7 @@ public static class Watcher
 
 			TraceHitFromUnreadSource(set, playerObject);
 
-			// A party member's Shirk on the player, for the trace.
+			// A party member's Shirk on the player: his request to take the enemy he holds (TankSwapWatch).
 			if (set.Source is IBattleChara shirker && shirker.GameObjectId != playerObject.GameObjectId && shirker.IsParty()
 				&& set.Action is { RowId: (uint)ActionID.ShirkPvE })
 			{
@@ -437,7 +437,7 @@ public static class Watcher
 				{
 					if (effect.TargetID == playerObject.GameObjectId)
 					{
-						TankSwapWatch.RecordShirkOnPlayer(shirker.Name.TextValue);
+						TankSwapWatch.RecordShirkOnPlayer(shirker.GameObjectId, shirker.Name.TextValue);
 						break;
 					}
 				}
@@ -477,7 +477,7 @@ public static class Watcher
 						}
 						else if (isTankbuster)
 						{
-							TankSwapWatch.RecordBusterOnOther(source.GameObjectId, effect.TargetID, marked.Name.ExtractText());
+							TankSwapWatch.RecordBusterOnOther(source.GameObjectId, effect.TargetID, marked.Name.ExtractText(), marked.RowId);
 						}
 
 						// The tankbuster table learns from every player it is seen to hit, not only from

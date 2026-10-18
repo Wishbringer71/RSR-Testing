@@ -1026,8 +1026,8 @@ provoziert hatte. Hat er ihn ohne dein Geteiltes Leid übernommen, holt RSR ihn 
 Wechsel.
 
 **Kein Zurückholen, solange du in Gefahr bist:** Die automatische Herausforderung nimmt einem Co-Tank den Gegner ab,
-der unter `HealthForDyingTanks` fällt (`ObjectHelper.CanProvoke`, Option „Provoke the enemy off a co-tank at the
-invulnerability HP"). Solange du selbst nach einem Tankbuster in Gefahr
+der unter `HealthForDyingTanks` fällt (`ObjectHelper.CanProvoke`, Option „Take the enemy from a co-tank in danger").
+Solange du selbst nach einem Tankbuster in Gefahr
 bist, tut sie das nicht mehr. Ohne diese Sperre hätte sie dir den Gegner zurückgeholt, während dein Debuff noch
 läuft – genau das, was seine Vorgabe ausschließt. Diese Sperre gilt unabhängig von der Option, weil sie eine
 bestehende Regel an seine Vorgabe bindet.
@@ -1038,6 +1038,48 @@ angreifen, bei Gleichstand der mit den meisten LP. „Am wenigsten Aggro" lese i
 Ableitung, nicht seine Regel): Wörtlich – die geringste Feindseligkeit auf diesem Gegner – wäre es genau der Tank, bei
 dem Geteiltes Leid am wenigsten bewirkt. Die Frage stellt sich nur bei drei und mehr Tanks in einer Gruppe; in Achter-
 Inhalten gibt es genau einen anderen.
+
+### Die andere Seite: den Gegner einem Co-Tank in Gefahr abnehmen
+
+**Seine Entscheidung (17.10.2026):** „die kombination im loop genau prüfen und umsetzen" – B, C und D der Vorlage; ab
+Werk an nach seiner Regel für Voreinstellungen. Gebaut mit A321 unter der Option **„Take the enemy from a co-tank in
+danger"** (bis A321 „Provoke the enemy off a co-tank at the invulnerability HP", nur die Rettung unter
+`HealthForDyingTanks`). Erkennung in `TankSwapWatch` (Stufe „alle", ohne Option), Entscheidung in
+`ObjectHelper.CanProvoke` (Stufe „Tanks"), gedrückt über die Herausforderung des Baums.
+
+RSR nimmt einem anderen Tank der Gruppe den Gegner, der ihn angreift, wenn
+1. **seine LP mit Schild auf oder unter `HealthForDyingTanks`** liegen (die Rettung seit `4e62dc3a5`);
+2. **(B) BossModReborn den nächsten Tankbuster ankündigt** und er ihn noch mit Verwundbarkeit nähme (Restzeit der
+   längsten Verwundbarkeit über der angekündigten Zeit) oder ihn nach seinem LP-Verlauf nicht überlebte: LP zur
+   angekündigten Zeit (`GetHealthRatioIn`, der korrigierte Verlauf) mit Schild nicht über dem, was die
+   Tankbuster-Tabelle für den Tankbuster erwartet, mit dem dieser Gegner zuletzt traf. Sofort, sobald das gilt – nicht
+   erst zum Wirken (Mechanik, „Wann eine Herausforderung den Treffer noch umlenkt");
+3. **(D) er Geteiltes Leid auf dich gewirkt hat** und der Gegner ihn weiter angreift – sein Hinweis: Wer abgibt, will
+   den nächsten Treffer nicht nehmen. Die Bitte gilt, bis der nächste Tankbuster jemanden trifft oder ihn kein Gegner
+   mehr angreift.
+
+**(C) Die Haltung zuerst:** Der Pfad der Herausforderung schaltet sie vorher ein, wenn sie aus ist
+(`CustomRotation_Ability`, Herausforderung); das galt schon für jede automatische Herausforderung. Ob sie an ist,
+liest RSR (`HasTankStance`).
+
+**Nicht** – für B und D: solange du selbst nach einem Tankbuster in Gefahr bist oder eine Verwundbarkeit trägst (bei B:
+noch zur angekündigten Zeit), solange er unverwundbar ist (bei B: über die angekündigte Zeit, `ImperviousThrough`; bei
+D: wie die Rettung, `CanBeHealed`), und wenn mehrere Gegner ihn angreifen, ohne dass dein Ziel darunter ist
+(BossModReborn nennt keinen Wirker). Zusätzlich nur für B: ohne Ankündigung; wenn du den angekündigten Treffer selbst
+nicht überlebtest; wenn die Ansage dich als Ziel nennt (Maske des ersten Eintrags); wenn der Gegner schon irgendein Wirken auf ihn
+richtet – ab Wirkbeginn, nicht erst im letzten GCD wie die Tankbuster-Erkennung – oder ein Tankbuster-Marker auf ihm
+steht (Ziel fest); und für einen Gegner, dessen Tankbuster ihn nach einer
+Übernahme trotzdem traf. D hält bei Wirken, Marker und dieser Lernliste nicht – es ist seine Bitte, keine Lesart.
+
+**Warum so:** Der gefährliche Treffer ist der nächste; umlenken lässt er sich nur vor seinem Wirkbeginn oder Marker.
+Die Wahrscheinlichkeit misst B an der Ankündigung, D an seiner Entscheidung (seine Regel „Sicherheit … gewichtet mit
+der Wahrscheinlichkeit"). Die Verwundbarkeit allein (Variante A) sagt nicht, ob ein Treffer kommt, und blieb verworfen.
+
+**Selbst nachgesteuert:** Greift der Gegner nach der Herausforderung dich an, ist die Übernahme offen; der nächste
+Tankbuster dieses Gegners entscheidet. Trifft er dich: gehalten. Trifft er weiter ihn, war sein Ziel anders festgelegt
+(Marker, feste Zuweisung) – für diesen Gegner gibt es in diesem Kampf keine Übernahme mehr auf eine Ankündigung. Springt
+der Gegner vorher zu ihm zurück (seine Haltung wog schwerer), zählt das nicht gegen den Gegner; eine weiter bestehende
+Gefahr öffnet eine neue Übernahme.
 
 ### Mechanik
 
@@ -1082,14 +1124,21 @@ Leid sofort und festigt den Wechsel, wie es die Referenz vorsieht.
   Verwundbarkeit trägst oder eine Wiederholung nicht überlebst – ein Tank in Gefahr ist kein Empfänger. Sind beide
   in Gefahr, wirkt keiner, und keiner provoziert.
 - **Haltung:** RSR schaltet die Haltung nur ein, wenn kein anderer Tank sie trägt. Ein RSR-Co-Tank liegt daher
-  meist weit unter der Hälfte, und die Regel hält. Das ist richtig: Ohne Haltung behielte er den Gegner nicht.
+  meist weit unter der Hälfte, und die Regel hält. Das ist richtig: Ohne Haltung behielte er den Gegner nicht. Vor
+  einer Herausforderung schaltet RSR deine Haltung ein, wenn sie aus ist; zwei Haltungen stehen dann, bis der Co-Tank
+  seine ablegt. Behält er sie und holt den Gegner mit seinem Schaden zurück, steht „take-over undone" im Protokoll.
 - **Automatische Herausforderung** (`ObjectHelper.CanProvoke`): Gegner auf Nicht-Tanks nach „Auto provoke when there
-  is another tank in party" (bei zwei Tanks nur mit ihr), und – unter eigener Option „Provoke the enemy off a co-tank
-  at the invulnerability HP", ab Werk an (A318) – einem Co-Tank unter `HealthForDyingTanks`, der keine
-  Unverwundbarkeit trägt. Bis A318 hing diese Rettung an der ersten Option, deren Text sie nicht nennt. Den zweiten
-  Fall sperrt die Regel, solange du selbst in Gefahr bist (oben, „Kein Zurückholen").
+  is another tank in party" (bei zwei Tanks nur mit ihr), und – unter eigener Option „Take the enemy from a co-tank in
+  danger", ab Werk an (A318, A321) – der Gegner eines Co-Tanks in Gefahr (oben, „Die andere Seite"). Bis A318 hing die
+  Rettung an der ersten Option, deren Text sie nicht nennt. Mit „Provoke anything" gilt die Übernahme ebenso. Sie
+  ruht, solange du selbst in Gefahr bist (oben, „Kein Zurückholen").
+- **Zwei RSR-Tanks, die andere Seite:** Er wirkt Geteiltes Leid auf dich (seine Regel), du provozierst (B oder D) –
+  beide schieben den Gegner zu dir. Zurück holt er ihn nach seiner eigenen Regel, weil sein Geteiltes Leid ihn bewegt
+  hat; nach deiner Herausforderung allein holst du ihn nicht zurück, du gibst ihn nach deinem nächsten gefährlichen
+  Treffer mit Geteiltem Leid ab.
 - **Allein, Vierer-Instanz, Allianzraid:** Es gibt keinen anderen Tank in der Gruppe, die Regel ist still.
-- **BossMod ohne Modul:** Die Regel liest keine Vorhersage; Erkennung über Liste, Marker und Effektsatz.
+- **BossMod ohne Modul:** Dein Geteiltes Leid liest keine Vorhersage; Erkennung über Liste, Marker und Effektsatz. Die
+  Übernahme nach B braucht die Ankündigung und ruht ohne Modul; die Rettung und D gelten weiter.
 - **Stufensynchron:** Geteiltes Leid erst ab St. 48 (`EnoughLevel`), darunter still.
 
 ### Begründung und Grenzen
@@ -1099,10 +1148,11 @@ Leid sofort und festigt den Wechsel, wie es die Referenz vorsieht.
   Male ohne vorher gewählte Abwehr; die 30 bis 39 % davor und danach kamen nach Verdammnis und Schutzwall. Dass beim
   85-%-Treffer keine Minderung bereit war, ist geschlossen, nicht gemessen; ob dort ein zweiter Tank in der Gruppe war,
   zeigt das Protokoll nicht. Wie oft der Fall vorkommt, ist offen.
-- Die Herausforderung des Co-Tanks wirkt sicherer, aber die drückt der andere Spieler. Die Gegenseite gibt es zum
-  Teil: Fällt der Co-Tank unter `HealthForDyingTanks`, provoziert RSR (Option „Provoke the enemy off a co-tank at the
-  invulnerability HP"). Trägt er nach einem Tankbuster eine Verwundbarkeit, ohne tief zu stehen, fehlt sie; die
-  Entscheidung dazu liegt ihm vor (`TODO.md`, „Tankwechsel von der anderen Seite").
+- Die Herausforderung des Co-Tanks wirkt sicherer, aber die drückt der andere Spieler. Die Gegenseite baut A321
+  (oben, „Die andere Seite"). Ohne BossModReborn-Modul und ohne seine Geste nimmt RSR ihm den Gegner erst unter
+  `HealthForDyingTanks`. Unmittelbar nach einem Treffer kann sein LP-Verlauf steiler sein als nach der Heilung; B nimmt
+  dann früher als nötig – die sichere Richtung. Ein Tankbuster auf die ersten beiden der Feindseligkeit trifft ihn auch
+  nach einem Wechsel; dann kostet B eine Herausforderung.
 - Spielt der Co-Tank ohne Haltung, wirkt die Regel nie, weil sie dort nichts bewirken könnte. Das Protokoll schreibt je
   Tankbuster den Grund; eine falsche Prognose zieht die Regel selbst nach (unten).
 - Das Zurückholen folgt dem Takt der Tankbuster (oben). Dass der Wechsel bei bereiter Unverwundbarkeit hält, trägt auch
@@ -1123,7 +1173,12 @@ der Wechsel sofort als gelungen. Wartet das Zurückholen, steht einmal je Wechse
 (der Co-Tank hat noch keinen Tankbuster genommen, Unverwundbarkeit noch nicht bereit, Herausforderung im
 Abklingen oder außer Reichweite); trifft der Tankbuster den Co-Tank, steht „tankbuster on …; holt RSR zurück, steht
 „tank swap back … -> Provoke". Ob die Geste des Co-Tanks (Geteiltes Leid auf dich) als eigener Effektsatz bei dir
-ankommt, ist nicht belegt; fehlt die Zeile, ändert das nichts an der Entscheidung.
+ankommt, ist nicht beobachtet; fehlt die Zeile „… shirked to you", entfällt D, B bleibt.
+
+Die andere Seite schreibt: „take-over from … held: …; …" einmal je Co-Tank und Grund (kein Angekündigtes, Ziel fest,
+du selbst in Gefahr …), „take over … (…)" mit der Herausforderung, „took … over from …" sobald der Gegner dich angreift,
+dann je nach nächstem Tankbuster „take-over held" oder „take-over did not move …", und „take-over undone", wenn er vorher
+zurückspringt.
 
 **Prüfgrad:** statisch, Prüfskripte, Compile über die CI; im Spiel nicht beobachtet.
 

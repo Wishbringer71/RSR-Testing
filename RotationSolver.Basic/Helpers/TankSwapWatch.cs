@@ -46,6 +46,16 @@ internal static class TankSwapWatch
 		public required float Ratio { get; init; }
 	}
 
+	private sealed class TakeOver
+	{
+		public required ulong Source { get; init; }
+		public required string SourceName { get; init; }
+		public required ulong Holder { get; init; }
+		public required string HolderName { get; init; }
+		public required string Reason { get; init; }
+		public required bool ByGesture { get; init; }
+	}
+
 	// The effect handler records from the game thread, the update reads on the framework thread.
 	private static readonly object _gate = new();
 	private static Buster? _last;
@@ -60,6 +70,27 @@ internal static class TankSwapWatch
 	// The after-transfer ratio receiver/player that last failed to move the source; a swap needs more.
 	private static float _failedRatio = 1f;
 	private static DateTime _heldWritten = DateTime.MinValue;
+
+	// The other side of a swap (concept 09, "Tankwechsel von der anderen Seite"): the tankbuster each enemy last hit
+	// somebody with, a co-tank's Shirk on the player while an enemy still attacks him, and the take-over chosen,
+	// carried out and waiting for the enemy's next tankbuster.
+	private static readonly Dictionary<ulong, uint> _lastActionBySource = [];
+	private static ulong _shirkFrom;
+	private static TakeOver? _takeOverNow;
+	private static TakeOver? _takeOverPlanned;
+	private static TakeOver? _takeOverOpen;
+	// Enemies whose next tankbuster still hit the holder after a take-over: something other than the enmity fixed it.
+	private static readonly HashSet<ulong> _takeOverIgnored = [];
+	private static string _takeOverHeldWritten = string.Empty;
+
+	/// <summary>
+	/// The enemy to take from a co-tank in danger, or who handed it over with Shirk; 0 when none. Facts only - the
+	/// setting is the consumer's (<c>ObjectHelper.CanProvoke</c>).
+	/// </summary>
+	public static ulong TakeOverSourceId { get; private set; }
+
+	/// <summary>Why <see cref="TakeOverSourceId"/> is to be taken, for the trace.</summary>
+	public static string TakeOverReason { get; private set; } = string.Empty;
 
 	/// <summary>The tank a Shirk would hand the buster's source to, or null when none would hold it.</summary>
 	public static IBattleChara? Target { get; private set; }
@@ -99,6 +130,9 @@ internal static class TankSwapWatch
 			{
 				return;
 			}
+
+			_lastActionBySource[source] = actionId;
+			SettleTakeOver(source, Player.Object?.GameObjectId ?? 0, name);
 
 			List<uint> vulnerabilities = [];
 			foreach (var status in appliedStatuses)
@@ -176,10 +210,13 @@ internal static class TankSwapWatch
 	/// rhythm of the busters, and taking it back before the holder's buster would hand the player the
 	/// next one himself and leave the co-tank's cooldowns unspent (the owner's question of 04.10.2026).
 	/// </summary>
-	public static void RecordBusterOnOther(ulong source, ulong target, string name)
+	public static void RecordBusterOnOther(ulong source, ulong target, string name, uint actionId)
 	{
 		lock (_gate)
 		{
+			_lastActionBySource[source] = actionId;
+			SettleTakeOver(source, target, name);
+
 			// The holder: the receiver, or whoever the enemy attacks now if it has moved on.
 			if (_swappedAway is { } away && away.Source == source && !_holderTookBuster
 				&& (target == away.Receiver || Svc.Objects.SearchById(source) is IBattleChara enemy && enemy.TargetObjectId == target))
@@ -192,12 +229,55 @@ internal static class TankSwapWatch
 	}
 
 	/// <summary>
-	/// A party member's Shirk reached the player. Written to the trace only: whether to hand the enemy
-	/// back is decided by that member's measured danger, which covers the case without this signal.
+	/// A party member's Shirk reached the player. Handing the enemy back to him is decided by his measured
+	/// danger, which covers the case without this signal. While an enemy still attacks him it is his request to
+	/// take it (the owner's note of 17.10.2026: acting himself, he does not want the next tankbuster).
 	/// </summary>
-	public static void RecordShirkOnPlayer(string from)
+	public static void RecordShirkOnPlayer(ulong from, string name)
 	{
-		DefenseTrace.Line($"{from} shirked to you");
+		lock (_gate)
+		{
+			_shirkFrom = from;
+		}
+
+		DefenseTrace.Line($"{name} shirked to you");
+	}
+
+	/// <summary>The consumer pressed Provoke on <see cref="TakeOverSourceId"/>.</summary>
+	public static void TakeOverChosen()
+	{
+		lock (_gate)
+		{
+			_takeOverPlanned = _takeOverNow;
+		}
+	}
+
+	// The enemy's next tankbuster after a take-over shows whether it followed the enmity. One that still hit the
+	// holder had its target fixed some other way; on an announcement that enemy is not taken again this fight. His
+	// own Shirk still counts - it is his request, not a reading of the fight.
+	private static void SettleTakeOver(ulong source, ulong struck, string name)
+	{
+		_shirkFrom = 0;
+		if (_takeOverOpen is not { } open || open.Source != source)
+		{
+			return;
+		}
+
+		_takeOverOpen = null;
+		if (struck == Player.Object?.GameObjectId)
+		{
+			DefenseTrace.Line($"take-over held: you took {name} instead of {open.HolderName}");
+		}
+		else if (struck == open.Holder)
+		{
+			if (!open.ByGesture)
+			{
+				_ = _takeOverIgnored.Add(source);
+			}
+
+			DefenseTrace.Line($"take-over did not move {name}: it still hit {open.HolderName}, its target was fixed some other way"
+				+ (open.ByGesture ? string.Empty : $"; no further take-over from {open.SourceName} on an announcement this fight"));
+		}
 	}
 
 	/// <summary>Writes why the enemy is not yet taken back, once per reason and swap.</summary>
@@ -265,6 +345,8 @@ internal static class TankSwapWatch
 			Detail = string.Empty;
 			PlayerInDanger = false;
 			ReclaimSource = null;
+			TakeOverSourceId = 0;
+			TakeOverReason = string.Empty;
 
 			if (!DataCenter.InCombat)
 			{
@@ -274,11 +356,33 @@ internal static class TankSwapWatch
 				_swappedAway = null;
 				_hardestShare.Clear();
 				_failedRatio = 1f;
+				_lastActionBySource.Clear();
+				_shirkFrom = 0;
+				_takeOverNow = _takeOverPlanned = _takeOverOpen = null;
+				_takeOverIgnored.Clear();
+				_takeOverHeldWritten = string.Empty;
 				return;
 			}
 
 			var player = Player.Object;
-			if (player == null || _last == null || player.IsDead)
+			if (player == null || player.IsDead)
+			{
+				return;
+			}
+
+			// The same reading as below, needed before it for the take-over: nothing goes to a player in danger.
+			if (_last != null && Svc.Objects.SearchById(_last.Source) is IBattleChara lastSource && !lastSource.IsDead
+				&& lastSource.IsTargetable && !player.HasStatus(false, StatusHelper.NoNeedHealingStatus) && !player.HasStatus(false, StatusID.WalkingDead))
+			{
+				PlayerInDanger = DangerOf(player).Length > 0;
+			}
+
+			if (DataCenter.Role == JobRole.Tank)
+			{
+				UpdateTakeOver(player);
+			}
+
+			if (_last == null)
 			{
 				return;
 			}
@@ -463,6 +567,259 @@ internal static class TankSwapWatch
 		}
 
 		ReclaimSource = source;
+	}
+
+	/// <summary>
+	/// The other side of a swap (concept 09, "Tankwechsel von der anderen Seite", the owner's decision of 17.10.2026):
+	/// an enemy attacking another tank of the party is to be taken from him when he shirked to the player (D), or when
+	/// BossModReborn announces the next tankbuster and he would take it still vulnerable or not survive it by his
+	/// health trend (B). Only before the hit's target is fixed: a cast at him or a marker on him can no longer be
+	/// turned away, so B holds then - his own request does not.
+	/// </summary>
+	private static void UpdateTakeOver(IBattleChara player)
+	{
+		_takeOverNow = null;
+
+		// A request lasts while an enemy still attacks him; once it moved - to the player or anyone - it is done.
+		if (_shirkFrom != 0 && (Svc.Objects.SearchById(_shirkFrom) is not IBattleChara shirker || shirker.IsDead
+			|| !AnyAttacking(shirker)))
+		{
+			_shirkFrom = 0;
+		}
+
+		// A take-over carried out: open once the enemy attacks the player, gone with the enemy.
+		if (_takeOverPlanned is { } planned)
+		{
+			if (Svc.Objects.SearchById(planned.Source) is not IBattleChara taken || taken.IsDead)
+			{
+				_takeOverPlanned = null;
+			}
+			else if (taken.TargetObjectId == player.GameObjectId)
+			{
+				_takeOverOpen = planned;
+				_takeOverPlanned = null;
+				DefenseTrace.Line($"took {planned.SourceName} over from {planned.HolderName} ({planned.Reason})");
+			}
+		}
+
+		// Back on the holder before its next tankbuster - his stance outweighed the provoke, or he took it back: no
+		// reading about its target, so it is not counted against the enemy; a danger left opens a new take-over.
+		if (_takeOverOpen is { } open)
+		{
+			if (Svc.Objects.SearchById(open.Source) is not IBattleChara kept || kept.IsDead)
+			{
+				_takeOverOpen = null;
+			}
+			else if (kept.TargetObjectId == open.Holder)
+			{
+				_takeOverOpen = null;
+				DefenseTrace.Line($"take-over undone: {open.SourceName} went back to {open.HolderName} before its next tankbuster");
+			}
+		}
+
+		var hitIn = Service.Config.UseBmrTimeline && DataCenter.BMRNextTankbusterIn is > 0f and < float.MaxValue
+			? DataCenter.BMRNextTankbusterIn
+			: float.MaxValue;
+
+		var anyHeld = false;
+		foreach (var member in DataCenter.PartyMembers)
+		{
+			if (member == null || member.GameObjectId == player.GameObjectId || member.IsDead || !member.IsJobCategory(JobRole.Tank))
+			{
+				continue;
+			}
+
+			var source = AttackerOf(member, player, out var several);
+			if (source == null && !several)
+			{
+				continue;
+			}
+
+			var asked = member.GameObjectId == _shirkFrom;
+			var reason = asked ? $"{member.Name.TextValue} shirked to you" : DangerAt(member, source, hitIn);
+			if (reason.Length == 0)
+			{
+				continue;
+			}
+
+			var held = TakeOverHeld(member, source, player, asked, hitIn, several);
+			if (held.Length > 0)
+			{
+				anyHeld = true;
+				// Once per holder and reason: the danger line carries times that change every frame.
+				var key = $"{member.GameObjectId}:{held}";
+				if (_takeOverHeldWritten != key)
+				{
+					_takeOverHeldWritten = key;
+					DefenseTrace.Line($"take-over from {member.Name.TextValue} held: {reason}; {held}");
+				}
+
+				continue;
+			}
+
+			_takeOverNow = new TakeOver
+			{
+				Source = source!.GameObjectId,
+				SourceName = source.Name.TextValue,
+				Holder = member.GameObjectId,
+				HolderName = member.Name.TextValue,
+				Reason = reason,
+				ByGesture = asked,
+			};
+			TakeOverSourceId = source.GameObjectId;
+			TakeOverReason = reason;
+			_takeOverHeldWritten = string.Empty;
+			return;
+		}
+
+		// Nothing held this cycle: the next hold is written again.
+		if (!anyHeld)
+		{
+			_takeOverHeldWritten = string.Empty;
+		}
+	}
+
+	// The enemy attacking the holder: the player's own target when it is one of them, otherwise the only one. Several
+	// without the player's target among them leave it open - BossModReborn names no caster for its announcement.
+	private static IBattleChara? AttackerOf(IBattleChara holder, IBattleChara player, out bool several)
+	{
+		several = false;
+		IBattleChara? only = null;
+		var count = 0;
+		foreach (var hostile in DataCenter.AllHostileTargets)
+		{
+			if (hostile == null || hostile.IsDead || hostile.TargetObjectId != holder.GameObjectId)
+			{
+				continue;
+			}
+
+			if (hostile.GameObjectId == player.TargetObjectId)
+			{
+				return hostile;
+			}
+
+			only = hostile;
+			count++;
+		}
+
+		several = count > 1;
+		return count == 1 ? only : null;
+	}
+
+	private static bool AnyAttacking(IBattleChara holder)
+	{
+		foreach (var hostile in DataCenter.AllHostileTargets)
+		{
+			if (hostile != null && !hostile.IsDead && hostile.TargetObjectId == holder.GameObjectId)
+			{
+				return true;
+			}
+		}
+
+		return false;
+	}
+
+	// Why the holder is in danger at the announced tankbuster, or empty. Vulnerable when it lands; or, for the
+	// tankbuster this enemy last hit with, his health at that moment by its measured trend (GetHealthRatioIn) with
+	// his shield not above what the table expects it to take from him. A vulnerability with nothing announced is
+	// returned too, so the trace can say why nothing happens.
+	private static string DangerAt(IBattleChara holder, IBattleChara? source, float hitIn)
+	{
+		var vulnerable = holder.VulnerabilityUpRemaining();
+		if (hitIn == float.MaxValue)
+		{
+			return vulnerable > 0f ? $"{holder.Name.TextValue} is vulnerable" : string.Empty;
+		}
+
+		if (vulnerable > hitIn)
+		{
+			return $"{holder.Name.TextValue} would take the tankbuster announced in {hitIn:F1} s still vulnerable";
+		}
+
+		if (source != null && _lastActionBySource.TryGetValue(source.GameObjectId, out var action))
+		{
+			var share = TankbusterTable.PredictedShare(action, holder, source);
+			var maxHp = Math.Max(1u, holder.MaxHp);
+			var standing = (holder.GetHealthRatioIn(hitIn) * maxHp) + holder.GetObjectShield();
+			if (share > 0f && standing <= share * maxHp)
+			{
+				return $"{holder.Name.TextValue} would not survive a repeat of #{action} ({share:P0} of max HP) in {hitIn:F1} s"
+					+ $" at {standing / maxHp:P0}";
+			}
+		}
+
+		return string.Empty;
+	}
+
+	// Why the take-over does not go, or empty.
+	private static string TakeOverHeld(IBattleChara holder, IBattleChara? source, IBattleChara player, bool asked, float hitIn, bool several)
+	{
+		if (source == null)
+		{
+			return several ? $"several enemies attack {holder.Name.TextValue}, and BossModReborn names no caster" : "no enemy attacks him";
+		}
+
+		if (asked ? !holder.CanBeHealed() : holder.ImperviousThrough(hitIn))
+		{
+			return $"{holder.Name.TextValue} is impervious through it";
+		}
+
+		// Both in danger: neither hands over, neither provokes - as on the player's side.
+		if (PlayerInDanger)
+		{
+			return "you are in danger yourself";
+		}
+
+		if (asked ? player.CarriesVulnerabilityUp() : player.VulnerabilityUpRemaining() > hitIn)
+		{
+			return "you are vulnerable yourself";
+		}
+
+		if (asked)
+		{
+			return string.Empty;
+		}
+
+		if (hitIn == float.MaxValue)
+		{
+			return "no next tankbuster announced";
+		}
+
+		if (_lastActionBySource.TryGetValue(source.GameObjectId, out var action))
+		{
+			var share = TankbusterTable.PredictedShare(action, player, source);
+			var maxHp = Math.Max(1u, player.MaxHp);
+			if (share > 0f && (player.GetHealthRatioIn(hitIn) * maxHp) + player.GetObjectShield() <= share * maxHp)
+			{
+				return "you would not survive it yourself";
+			}
+		}
+
+		if (DataCenter.BMRNextDamageType == PredictedDamageType.Tankbuster && DataCenter.BMRNextDamageIn is > 0f and < float.MaxValue
+			&& DataCenter.BMRNextDamageHitsPlayer)
+		{
+			return "the announced tankbuster hits you anyway";
+		}
+
+		// Any cast aimed at him, from its start: its target is fixed until it resolves. The tankbuster recognition
+		// (DataCenter.IsHostileCastingTank) answers only in the last GCD before the hit, too late to hold here - a
+		// provoke during the cast would change nothing about it and its hit would count against the enemy below.
+		if (source.IsCasting && source.CastTargetObjectId == holder.GameObjectId)
+		{
+			return $"{source.Name.TextValue} is already casting at him, and that cast's target is fixed";
+		}
+
+		if (DataCenter.IsTankbusterVfxOn(holder.GameObjectId))
+		{
+			return $"a tankbuster marker on {holder.Name.TextValue} fixes its target";
+		}
+
+		if (_takeOverIgnored.Contains(source.GameObjectId))
+		{
+			return $"{source.Name.TextValue}'s tankbuster still hit him after the last take-over";
+		}
+
+		return string.Empty;
 	}
 
 	private static float HardestShare()
