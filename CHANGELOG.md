@@ -23,6 +23,8 @@ are not reconstructed here.
 
 ## Unreleased
 
+## 7.5.7.3+wsh1
+
 ### Dependency: ECommons 3.2.1.26
 
 RotationSolver.Basic now references ECommons 3.2.1.26. It reads the action type of an effect header as the one
