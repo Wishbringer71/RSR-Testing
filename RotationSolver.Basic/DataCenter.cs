@@ -2816,6 +2816,27 @@ internal static class DataCenter
 		return false;
 	}
 
+	// The lock-on effects the debug view lists (MainWindow_Debug, "Casting Vfx").
+	private const string LockOnEffectPrefix = "vfx/lockon/eff/";
+
+	/// <summary>
+	/// Whether anything reads an actor effect with this path: the four marker lists - tankbuster, multi-hit
+	/// shared, shared and spread - and the lock-on effects of the debug view. Only these enter
+	/// <see cref="VfxDataQueue"/>; a new reader of the queue matches its paths through these lists, or adds its
+	/// own here.
+	/// </summary>
+	/// <remarks>
+	/// The hook used to queue every effect of every character for five seconds, and every reader walked all of
+	/// them on every read - one asked the object table for each before looking at its path. In a Critical
+	/// Engagement that is every skill effect of 48 players (A325).
+	/// </remarks>
+	internal static bool IsReadVfxPath(string path)
+		=> path.StartsWith(LockOnEffectPrefix, PathCmp)
+			|| StartsWithAny(path, TankbusterPaths)
+			|| StartsWithAny(path, MultiHitSharedPaths)
+			|| StartsWithAny(path, SharedDamagePaths)
+			|| StartsWithAny(path, SpreadDamagePaths);
+
 	/// <summary>Whether the fight has shown this marker path not to be followed by a hit.</summary>
 	internal static bool IsFalsifiedTankbusterMarker(string path)
 		=> OtherConfiguration.TankbusterMarkerWithoutHit.Contains(path.ToLowerInvariant());
@@ -3510,7 +3531,8 @@ internal static class DataCenter
 			{
 				try
 				{
-					if (string.IsNullOrEmpty(s.Path) || IsFalsifiedTankbusterMarker(s.Path))
+					// The path first: the learned list is looked up in lower case, a new string per effect.
+					if (string.IsNullOrEmpty(s.Path) || !IsTankbusterMarkerPath(s.Path) || IsFalsifiedTankbusterMarker(s.Path))
 					{
 						continue;
 					}
@@ -3566,41 +3588,17 @@ internal static class DataCenter
 				return false;
 			}
 
-			// A marker on someone outside the party - another alliance group's stack - hits none of us,
-			// and the flag this raises opens the party's mitigations (concept 13, A220).
-			if (!IsOwnPartyMarker(s.ObjectId))
+			// Multi-hit markers (treated as area/stack mechanics), regular shared and spread markers.
+			if (!StartsWithAny(s.Path, MultiHitSharedPaths) && !StartsWithAny(s.Path, SharedDamagePaths)
+				&& !StartsWithAny(s.Path, SpreadDamagePaths))
 			{
 				return false;
 			}
 
-			// Multi-hit markers (treated as area/stack mechanics)
-			foreach (var p in MultiHitSharedPaths)
-			{
-				if (s.Path.StartsWith(p, PathCmp))
-				{
-					return true;
-				}
-			}
-
-			// Regular shared markers
-			foreach (var p in SharedDamagePaths)
-			{
-				if (s.Path.StartsWith(p, PathCmp))
-				{
-					return true;
-				}
-			}
-
-			// Regular spread markers
-			foreach (var p in SpreadDamagePaths)
-			{
-				if (s.Path.StartsWith(p, PathCmp))
-				{
-					return true;
-				}
-			}
-
-			return false;
+			// A marker on someone outside the party - another alliance group's stack - hits none of us,
+			// and the flag this raises opens the party's mitigations (concept 13, A220). Asked after the path:
+			// it searches the object table, and asked first it did so for every queued effect (A325).
+			return IsOwnPartyMarker(s.ObjectId);
 		});
 	}
 

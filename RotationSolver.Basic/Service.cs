@@ -73,7 +73,9 @@ internal class Service : IDisposable
 		try
 		{
 			var path = Dalamud.Memory.MemoryHelper.ReadString(new nint(a1), Encoding.ASCII, 256);
-			if (Svc.Objects.CreateObjectReference(a2) is not IBattleChara battleChara || string.IsNullOrEmpty(path))
+			// Only the effects a reader looks at are queued (DataCenter.IsReadVfxPath, A325).
+			if (string.IsNullOrEmpty(path) || !DataCenter.IsReadVfxPath(path)
+				|| Svc.Objects.CreateObjectReference(a2) is not IBattleChara battleChara)
 			{
 				return actorVfxCreateHook!.Original(a1, a2, a3, a4, a5, a6, a7);
 			}

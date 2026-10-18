@@ -64,6 +64,47 @@ den Durchläufen und lesen die Gruppenliste des letzten; sie vergleichen erst di
 des Effekts und lesen nur dann LP oder Barriere – zeigt die Referenz auf einen anderen Spieler, passt die Id nicht. Die
 Fenster lesen die Listen nur zur Anzeige.
 
+### Was ein Frame kostet
+
+Jeder Frame rechnet die ganze Entscheidung neu: Ziele, Flags, die GCD-Kette und im Einschiebefenster die
+Fähigkeitenkette, je `CanUse` die Zielsuche über alle Kandidaten. Gemessen sind im Mittel 1,55 bis 3,63 ms je
+Durchlauf, 7 bis 15 % der Framezeit, Spitzen bis 70 ms in einem Critical Engagement (Protokolle 16. und 17.10.2026,
+A286, A299). Was davon trägt, sagt seit A310 die Kostenzeile je Schritt nach jedem Kampf.
+
+Drei Regeln halten die Kosten eines Frames unabhängig davon, wie oft eine Frage gestellt wird (A325):
+- **Keine Suche in der Objekttabelle pro Eintrag oder pro Lesen.** `SearchById` und `Status.SourceObject` laufen
+  linear über jeden Platz der Tabelle (Dalamud, `ObjectTable.SearchById`); ein fehlendes Objekt kostet die ganze
+  Tabelle. Was eine Schleife oder eine oft gelesene Abfrage von Objekten wissen muss, wird einmal je Frame erhoben
+  (`StatusHelper.IsFromPlayer`: die Objekte des Spielers für die Prüfung „vom Spieler") oder nach dem billigen Test
+  gefragt (`IsOwnPartyMarker` erst nach dem Pfad des Markers).
+- **Erkennen, wo die Tatsache entsteht.** Ein Effekt ist ein Marker oder keiner, wenn er entsteht; die Warteschlange
+  nimmt nur auf, was ein Leser abfragt (`DataCenter.IsReadVfxPath`: die vier Markerlisten und die Lock-on-Effekte der
+  Fehlersuche). Vorher standen dort alle Effekte aller Figuren fünf Sekunden lang, und jeder Leser lief bei jedem Lesen
+  über alle – im Critical Engagement die Skill-Effekte von 48 Spielern.
+- **Eine Antwort aus der Historie einmal je Frame und Objekt.** `GetTTK` läuft über die ganze Gesundheitshistorie
+  (240 Proben); die Zielsuche fragt es für jeden feindlichen Kandidaten bei jedem geprüften Angriff. Es merkt sich
+  die Antwort für den Frame, eine neue Probe verwirft sie (`ObjectHelper.ForgetTimeToKill`).
+
+Woher die Kosten kamen: Upstream speichert alle Effekte und prüft die Herkunft eines Status über die Objekttabelle; der
+Fork hat beides vervielfacht – die Gruppenprüfung der Marker (A220) vor den Pfadvergleich gesetzt, jede Regel mit
+Statusabfragen mehr Lesungen. Sein Verdacht, Sonderfälle als eigene Abfragen trieben die Rechenlast, trifft damit die
+Form, nicht die Zahl der Regeln: Teuer war, was bei jedem Lesen neu sucht, nicht dass es viele Regeln gibt.
+
+**Nicht umgestellt, mit Grund:**
+- *Die Erkennungsabfragen von `DataCenter` je Frame merken* (`IsHostileCastingAOE`, `AreaHitAnnounced` und
+  Verwandte): Nach dem Filter laufen sie über wenige Marker und die Wirkenden; A310 hat das Merken öffentlicher
+  Eigenschaften ohne Beleg verworfen, und ein Beleg liegt nicht vor.
+- *`HostileTarget` je Frame merken:* eine Suche bis zu den Gegnerplätzen je Lesen; eine zeitbasierte Merkhilfe könnte
+  über die Frame-Grenze greifen, wovor die dritte Invariante warnt.
+- *Dalamuds Statuslisten:* Jeder Zugriff legt eine Liste und je Status ein Objekt an. Kurzlebiger Müll, den die
+  Bereinigung der jüngsten Generation räumt, ohne ihn weiterzureichen – Schluss aus der Lebensdauer, nicht gemessen; ob
+  eine Bereinigung mit der langsamsten Runde zusammenfällt, zeigt die Kostenzeile.
+- *Die Zielsuche je `CanUse`* (Upstreams Aufbau): ein Umbau des Kerns ohne Messung, welcher Teil trägt.
+
+**Prüfgrad:** statisch am Code und an Dalamuds Quelltext (master, 17.10.2026); Compile im Prüflauf. Die Wirkung zeigt
+die Kostenzeile des nächsten Protokolls; die Annahme über die Zahl der Effekte im Critical Engagement ist ein Schluss,
+nicht gemessen.
+
 ---
 
 ## B · Die Slot-Kette (identisch für jeden Job)
@@ -300,7 +341,7 @@ sich die Regel daran, wer zuerst und wer zuletzt einen DoT trägt.
 | U2 | Proaktive Logik steht in drei Methoden | Heiler-Sustain | **keine Schwäche.** Die Bedingung liegt in genau einem Helfer je Job; dreifach steht nur die **Position**, und die ist je Dispatch-Slot eine eigene Prioritätsaussage. Herleitung in `04-concept.md` unter A1 |
 | U3 | Level-Ketten von Hand | 2 Schreibweisen, 1 realer Bug daraus | Fehlerklasse durch den Wächter A2′ geschlossen; die Ketten selbst bleiben |
 | U4 | Hook-Belegung ohne Regel | Dragoon und Viper ohne `CountDownAction` | offen (TODO „Vorlauf: Dragoon und Viper"); die Slot-Lücken der Fernkämpfer und der Heilslot des Mönchs sind geschlossen (`04` B4/B5); ohne eigenen Notfall sind Schnitter und Samurai, und das ist keine Lücke (`04`, „Was offen bleibt") |
-| U5 | Gleiche Rolle, verschiedene Orte | AoE-Schwelle an drei Orten (C3) | offen (TODO „Laufzeitkosten: Sonderabfragen statt geordneter Regeln“); die Platzierung der Reflexion ist vereinheitlicht (`04` B3) |
+| U5 | Gleiche Rolle, verschiedene Orte | AoE-Schwelle an drei Orten (C3) | offen (TODO „AoE-Schwelle an drei Orten“); keine Laufzeitfrage – je Lesen eine Zählung über die Gegnerliste, ohne Suche in der Objekttabelle (A325); die Platzierung der Reflexion ist vereinheitlicht (`04` B3) |
 | U6 | Kein Job kann sagen „ich bin fertig" | jede Ebene muss `base.X` aufrufen; Vergessen oder Vertauschen war mit neun Fällen die häufigste Fehlerklasse im AUDIT_LOG | Fehlerklasse durch den Wächter A3 in der CI geschlossen; die Kette selbst bleibt |
 
 U6 war der unauffälligste und teuerste Punkt: Die Kette wird über

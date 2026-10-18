@@ -9,22 +9,22 @@ Betroffene: **N** Endnutzer · **R** Autoren abgeleiteter Rotationen (`RotationS
 
 Nach der Wirkung im Kampf: Sicherheit der Gruppe vor Schaden, gewichtet mit der Wahrscheinlichkeit, in seinem Profil
 (seine Vorgabe, 17.10.2026: „todo nach wichtigkeit abarbeiten. jeweils im loop bearbeiten"). Seine Aufträge vom
-18.10.2026 gehen vor: TODO berichtigt (A322), Prüfläufe geordnet (A323), offen die Laufzeitkosten.
+18.10.2026 sind erledigt: TODO berichtigt (A322), Prüfläufe geordnet (A323), Laufzeitkosten umgestellt (A325).
 
-1. Laufzeitkosten: Sonderabfragen statt geordneter Regeln (sein Auftrag)
-2. Revolverklinge: „Only use on tankbuster targets prioritizing self" erreicht den Co-Tank nie
-3. Tanks: Hilfe für den Co-Tank vor seinem Tankbuster
-4. Tank-Unverwundbarkeit vor Tankbustern ohne Aktionsangabe oder Messung nur reaktiv
-5. Tanks: Reflexion und Gruppenbarriere auf demselben Raidwide
-6. DRK: Bruch von The Blackest Night zählen
-7. Rückstoß und Stopp-Casts: Größe messen
-8. Vorausschau vor dem ersten Treffer
-9. Flächenheilung um den Wirkenden: Radius gegen Trefferfläche
-10. Einstellungen ohne Leser, deren Text eine Wirkung verspricht
-11. Feste Werte: jeder offene Wert braucht seinen Loop
-12. Rotationen gegen The Balance abgleichen
-13. Six-sided Star und Flamethrower
-14. Vorlauf: Dragoon und Viper
+1. Revolverklinge: „Only use on tankbuster targets prioritizing self" erreicht den Co-Tank nie
+2. Tanks: Hilfe für den Co-Tank vor seinem Tankbuster
+3. Tank-Unverwundbarkeit vor Tankbustern ohne Aktionsangabe oder Messung nur reaktiv
+4. Tanks: Reflexion und Gruppenbarriere auf demselben Raidwide
+5. DRK: Bruch von The Blackest Night zählen
+6. Rückstoß und Stopp-Casts: Größe messen
+7. Vorausschau vor dem ersten Treffer
+8. Flächenheilung um den Wirkenden: Radius gegen Trefferfläche
+9. Einstellungen ohne Leser, deren Text eine Wirkung verspricht
+10. Feste Werte: jeder offene Wert braucht seinen Loop
+11. Rotationen gegen The Balance abgleichen
+12. Six-sided Star und Flamethrower
+13. Vorlauf: Dragoon und Viper
+14. AoE-Schwelle an drei Orten
 15. Audit der gesamten Codebasis
 16. `DPSTaken` zählt 5 ms statt 5 s
 
@@ -57,15 +57,6 @@ oder Entfernung mit Grund. *Konzept:* 11 (`SwiftcastBuffer`).
 Adressat auch Upstream.
 
 ## Offene Arbeit
-
-### Laufzeitkosten: Sonderabfragen statt geordneter Regeln (sein Auftrag) · N, R
-
-*Sein Verdacht (18.10.2026):* Die vielen eingebauten Sonderfälle laufen als eigene Abfragen statt als geordnete Regeln
-und treiben den Rechenbedarf. *Gemessen:* rund ein Zehntel der Framezeit der Frames, in denen RSR läuft, Einzelschritte
-bis 70 ms (seine Protokolle 16. und 17.10.2026, A299). Seit A310 schreibt das Protokoll die Kosten je Teilschritt.
-Dazu gehört `DataCenter` mit Gettern, die bei jedem Lesen über Gruppe oder Gegner laufen, und die AoE-Schwelle an drei
-Orten (Konzept 03, U5). *Nächster Schritt:* voller Loop – erheben, welche Abfragen je Frame laufen und wie oft, dann
-zentral ordnen. *Konzept:* 03.
 
 ### Tanks: Hilfe für den Co-Tank vor seinem Tankbuster · N, U
 
@@ -136,6 +127,13 @@ seine Spielweise nur bei stehendem Rudel ohne angesagte Fläche. *Konzept:* 14, 
 
 *Im Kampf:* Beide wirken im Countdown nichts, auch keinen Trank (kein `CountDownAction`). *Nächster Schritt:* an den
 Openern von The Balance klären, ob eine Vorlaufaktion fällig ist. *Konzept:* 04.
+
+### AoE-Schwelle an drei Orten · R, U
+
+*Im Kampf:* nichts, solange die drei Wege dieselbe Schwelle meinen – die meisten Jobs über `AoeCount` im Zielsystem, der
+Samurai über `NumberOfHostilesInRange >= n`, Blaumagier und Viper über eigene Zählungen. Eine Änderung an einem Weg
+erreicht die anderen nicht. Keine Laufzeitfrage (A325). *Nächster Schritt:* je Job prüfen, ob die eigene Zählung
+dieselbe Menge zählt wie `AoeCount`; erst dann zusammenführen. *Konzept:* 03, U5.
 
 ### Audit der gesamten Codebasis · N, R, U
 
@@ -233,6 +231,8 @@ nebeneinander gebraucht werden.
   Auflösung: Protokollzeilen „hit you from a source the object table does not hold". Konzept 08.
 - **BossModReborn: FATE-Modul in Occult Crescent läuft nach dem Weggang weiter** (am Quelltext `be8ff77` gefolgert).
   Adressat BossModReborn. Konzept 08, „Wann eine BossModReborn-Vorhersage ihn betrifft".
-- **Kosten je Teilschritt** (Protokoll „update cost by step", A310) – Eingang für „Laufzeitkosten".
+- **Laufzeitkosten nach A325** (Protokoll „update cost by step", A310): was je Schritt bleibt. Trägt „next action
+  (rotation)" weiter den größten Teil, ist die Zielsuche je `CanUse` an der Reihe; fällt eine Bereinigung in die
+  langsamste Runde, Dalamuds Statuslisten. Konzept 03, „Was ein Frame kostet".
 - **Tankbuster nach einem Marker ohne Wirken** (Protokoll „no cast taken for it", A308) – Eingang für
   „Tank-Unverwundbarkeit … nur reaktiv".

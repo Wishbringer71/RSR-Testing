@@ -1827,6 +1827,45 @@ public static class StatusHelper
 		}
 	}
 
+	// The objects the player owns - pet, summons, companions - by id, gathered once per frame. The "from self" test
+	// asked Status.SourceObject for every status whose source is not the player himself, and that getter is a
+	// linear search over every slot of the object table (Dalamud's ObjectTable.SearchById); a source that is no
+	// longer there, or none at all, costs the whole table. A check that does not find its status visits every
+	// status on the character, and the rotations make hundreds of such checks a frame (A325).
+	private static readonly HashSet<ulong> _playerOwned = [];
+	private static long _playerOwnedTick = long.MinValue;
+	private static ulong _playerOwnedFor;
+
+	/// <summary>
+	/// Whether <paramref name="status"/> comes from the player or from an object he owns - the same test as
+	/// <c>SourceId == playerId || SourceObject?.OwnerId == playerId</c>, without a search of the object table per status.
+	/// </summary>
+	private static bool IsFromPlayer(IStatus status, ulong playerId)
+	{
+		if (status.SourceId == playerId)
+		{
+			return true;
+		}
+
+		var now = Environment.TickCount64;
+		if (_playerOwnedTick == long.MinValue || now - _playerOwnedTick >= DataCenter.FrameCacheMs || _playerOwnedFor != playerId)
+		{
+			_playerOwned.Clear();
+			foreach (var obj in Svc.Objects)
+			{
+				if (obj.OwnerId == playerId)
+				{
+					_ = _playerOwned.Add(obj.GameObjectId);
+				}
+			}
+
+			_playerOwnedTick = now;
+			_playerOwnedFor = playerId;
+		}
+
+		return _playerOwned.Contains(status.SourceId);
+	}
+
 	/// <summary>
 	/// Returns true if any of <paramref name="statusIDs"/> is present on <paramref name="battleChara"/>.
 	/// </summary>
@@ -1846,7 +1885,7 @@ public static class StatusHelper
 				continue;
 			}
 
-			if (isFromSelf && status.SourceId != playerId && status.SourceObject?.OwnerId != playerId)
+			if (isFromSelf && !IsFromPlayer(status, playerId))
 			{
 				continue;
 			}
@@ -1881,7 +1920,7 @@ public static class StatusHelper
 				continue;
 			}
 
-			if (isFromSelf && status.SourceId != playerId && status.SourceObject?.OwnerId != playerId)
+			if (isFromSelf && !IsFromPlayer(status, playerId))
 			{
 				continue;
 			}
@@ -1921,7 +1960,7 @@ public static class StatusHelper
 				continue;
 			}
 
-			if (isFromSelf && status.SourceId != playerId && status.SourceObject?.OwnerId != playerId)
+			if (isFromSelf && !IsFromPlayer(status, playerId))
 			{
 				continue;
 			}

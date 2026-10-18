@@ -3608,6 +3608,40 @@ public static class ObjectHelper
 			return 999.99f;
 		}
 
+		// Once per character and frame: the target selection asks it of every hostile candidate on every attack
+		// it checks, and each answer walks the whole recorded history (A325). Within a frame the history does
+		// not change, except where a new sample is recorded, and that clears the memo (ForgetTimeToKill).
+		var now = Environment.TickCount64;
+		if (_ttkMemoTick == long.MinValue || now - _ttkMemoTick >= DataCenter.FrameCacheMs)
+		{
+			_ttkMemo.Clear();
+			_ttkMemoTick = now;
+		}
+
+		var key = (battleChara.GameObjectId, wholeTime);
+		if (_ttkMemo.TryGetValue(key, out var known))
+		{
+			return known;
+		}
+
+		var ttk = ComputeTTK(battleChara, wholeTime);
+		_ttkMemo[key] = ttk;
+		return ttk;
+	}
+
+	private static readonly Dictionary<(ulong Id, bool WholeTime), float> _ttkMemo = [];
+	private static long _ttkMemoTick = long.MinValue;
+
+	/// <summary>
+	/// Drops the time-to-kill answers of this frame; called when a new health sample is recorded.
+	/// </summary>
+	internal static void ForgetTimeToKill()
+	{
+		_ttkMemo.Clear();
+	}
+
+	private static float ComputeTTK(IBattleChara battleChara, bool wholeTime)
+	{
 		const int movingAverageWindow = 5;
 		var objId = battleChara.GameObjectId;
 
@@ -3615,7 +3649,7 @@ public static class ObjectHelper
 		var initialHpRatio = 0f;
 
 		// Small fixed-size window for last ratios without copying the whole queue
-		var window = new float[movingAverageWindow];
+		Span<float> window = stackalloc float[movingAverageWindow];
 		var wCount = 0;
 
 		foreach ((var time, var hpRatiosDict) in DataCenter.RecordedHP)
@@ -3634,8 +3668,8 @@ public static class ObjectHelper
 				}
 				else
 				{
-					// shift left by one; window is very small so this is cheap
-					Array.Copy(window, 1, window, 0, movingAverageWindow - 1);
+					// shift left by one; window is very small so this is cheap (CopyTo handles the overlap)
+					window[1..].CopyTo(window);
 					window[movingAverageWindow - 1] = ratio;
 				}
 			}

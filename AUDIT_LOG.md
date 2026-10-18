@@ -8432,7 +8432,8 @@ der Vergleich je Push im Schritt statt eines Pfadfilters; ein Push mit Modellän
   („Was die Sperren im Spiel bewirken") hat genau diese Abwägung entschieden: strecken statt verdoppeln, Preis
   benannt. Das Zusammenführen hatte die Zeile an der alten Stelle gelöscht und die neue in den Konflikt gelegt; ohne
   Wiederherstellung fehlte Divine Caress in der Flächenabwehr und käme nur noch über `UseDivine` oder in den letzten
-  zwei GCDs von Divine Grace. `main` (40d7eade6) mit denselben Entscheidungen zusammengeführt.
+  zwei GCDs von Divine Grace. `main` (40d7eade6) mit denselben Entscheidungen zusammengeführt. Upstream hat den
+  zusammengeführten Commit als 7.5.7.3 getaggt; die Versionsliterale folgen (b52abf6c4, auf `main` 70c7ccb59).
 - *Beschwörer `RadiantOnCooldownSpam`*: Upstream liest die Option wieder, der Fork hatte sie als ungelesen entfernt
   (75b7af001). Radiant Aegis geht im Fork vor einem angekündigten Raidwide und vor jeder Demi-Beschwörung
   (7ef489a37); Dauereinsatz verbrauchte die Ladungen, die dort fehlen. Die entfernten Bahamut-Zeilen von Upstream
@@ -8479,6 +8480,83 @@ Klasse „entfernte Option, wieder gelesen" ist vollständig erhoben; ein Kompil
 Build-Job.
 
 **Prüfgrad:** statisch, Prüfskripte lokal grün; Compile im GitHub-Lauf nach dem Push.
+
+### A325 · Laufzeitkosten: was je Lesen neu sucht, nicht wie viele Regeln es gibt (18.10.2026)
+
+**Auftrag (seine Worte):** „vielleicht sind auch deine ganzen eingebauten sonderfälle, die randbereiche betreffen der
+grund für die erhöhten rechenbedarfe im plugin. anstelle die darin enthaltenden regeln strukuriert zu organisieren
+werden es sonderformabfragen, die zeit in anspruch nehmen. prüfen nach den aktuellen aufgaben dies kritisch im loop."
+
+**Gemessen vorher:** im Mittel 1,55 bis 3,63 ms je Durchlauf, 7 bis 15 % der Framezeit, Spitzen 70, 43, 29 ms
+(Protokolle 16. und 17.10.2026, A286, A299; die 70 ms im Critical Engagement Dark Artistry). Die Kosten je Teilschritt
+(A310) lagen nicht vor.
+
+**Erhoben (statisch; Dalamud-Quelltext master, 17.10.2026):**
+- Jeder Frame rechnet alles neu: Ziele, Flags, die GCD-Kette, im Einschiebefenster die Fähigkeitenkette; je `CanUse`,
+  das Grund- und Abklingprüfung besteht, die Zielsuche über alle Kandidaten (`ActionTargetInfo.GetCanTargets`).
+- `ObjectTable.SearchById` läuft linear über jeden Platz der Tabelle (`foreach (var e in this.cachedObjectTable)`),
+  ein fehlendes Objekt über alle. `Status.SourceObject` ist genau diese Suche.
+- **VFX-Warteschlange:** Der Hook (`Service.ActorVfxCreateDetour`) nahm jeden Effekt jeder Figur auf; die Bereinigung
+  hält Einträge ohne bekannte Dauer fünf Sekunden. Alle Leser – `IsCastingAreaVfx`, `IsCastingMultiHit`,
+  `IsCastingTankVfx`, `IsTankbusterVfxOn`, `IsAreaVfxReachingPlayer`, `TankbusterMarkerWatch`,
+  `DescribeDefenseSources`, die Fehlersuche – fragen nur Pfade der vier Markerlisten oder `vfx/lockon/eff/`. Seit A220
+  (a73dbf8b3) fragte `IsCastingAreaVfx` für **jeden** Eintrag zuerst `IsOwnPartyMarker`, eine Suche in der Objekttabelle,
+  und erst dann den Pfad; `IsCastingTankVfx` legte für jeden Eintrag eine kleingeschriebene Kopie des Pfads an
+  (gelernte Liste vor dem Pfadvergleich). Gelesen wird `IsCastingAreaVfx` über `IsHostileCastingAOE` (Flags je Frame) und
+  `AreaHitAnnounced` – das liest die Heilzielwahl bei jeder Heilaktion, die bis zur Zielsuche kommt.
+- **Prüfung „vom Spieler" (Upstream):** `AnyStatusMatches`, `MinStatusRemainingTime`, `MinStatusStack` fragten für jeden
+  Status, dessen Quelle nicht der Spieler ist, `status.SourceObject?.OwnerId`. Eine Prüfung, die ihren Status nicht
+  findet, besucht jeden Status der Figur; 274 Stellen `PlayerHasStatus(true, …)` und 285 `HasStatus(true, …)` in der
+  Bibliothek, viele davon in `ActionCheck`-Lambdas, die jedes `CanUse` auswertet.
+- **`GetTTK` (Upstream):** läuft über alle 240 Proben der Historie und legt ein Fenster auf dem Heap an;
+  `CheckTimeToKill` fragt es für jeden feindlichen Kandidaten bei jeder Angriffsprüfung, `IsDying` und
+  `IsBossFromTTK` je Lesen. Nur `AverageTTK` war je Frame gemerkt.
+- **Ohne Gewicht:** die Vorhersagen über die Historie (`GetCorrectedTTK` liest den einmal je Sekunde abgelegten Wert),
+  die Sichtlinie (gemerkt), die Listen der Zielaktualisierung (ein Durchlauf je Frame), die Tank-Beobachtungen (je Frame
+  über Gruppe und Gegner), `NumberOfHostilesInRange` (Zählung über die Gegnerliste), `IsValid` (prüft nur, ob der
+  Spieler geladen ist).
+
+**Optionen:** (0) nichts ändern, die Kostenzeile abwarten; (1) die Erkennungsabfragen von `DataCenter` je Frame merken;
+(2) an der Quelle erkennen und je Frame erheben, was wiederholt gesucht wird: Effekte beim Entstehen filtern, die
+Objekte des Spielers einmal je Frame sammeln, `GetTTK` je Frame und Objekt merken; (3) die Zielsuche je `CanUse` auf
+einen Schnappschuss je Frame umbauen; (4) Statuslisten nativ lesen statt über Dalamuds Objekte. Rückbau jeweils durch
+Rücknahme des Commits.
+
+**Abwägung:** (0) lässt drei am Code belegte Suchen über die ganze Tabelle je Lesen stehen, deren Wegfall nichts im
+Kampf ändert. (1) merkt öffentliche Eigenschaften (A310 verworfen ohne Beleg); nach (2) laufen sie über wenige Marker
+und die Wirkenden. (3) ist ein Umbau von Upstreams Kern ohne Messung, welcher Teil trägt. (4) betrifft kurzlebige
+Objekte; ob Bereinigungen die Spitzen tragen, zeigt die Kostenzeile (Anzahl je langsamster Runde). Gewählt: (2).
+
+**Umgesetzt:**
+- `DataCenter.IsReadVfxPath`: die vier Markerlisten und `vfx/lockon/eff/`; der Hook nimmt nur diese Effekte auf und
+  legt erst dann die Objektreferenz an. `IsCastingAreaVfx` fragt die Gruppe nach dem Pfad, `IsCastingTankVfx` die
+  gelernte Liste nach dem Pfad.
+- `StatusHelper.IsFromPlayer`: dieselbe Prüfung wie `SourceId == playerId || SourceObject?.OwnerId == playerId`, über die
+  Objekte mit `OwnerId == playerId`, einmal je Frame gesammelt (`DataCenter.FrameCacheMs`, wie die übrigen Frame-Merker).
+- `ObjectHelper.GetTTK`: je Objekt und Art (`wholeTime`) einmal je Frame; `TargetUpdater.UpdateTimeToKill` verwirft die
+  Antworten nach jeder neuen Probe (`ForgetTimeToKill`), damit die Bewertung der Vorhersage die Probe sieht; das Fenster
+  liegt auf dem Stack.
+- Nicht gemerkt: `HostileTarget` (Suche bis zu den Gegnerplätzen; eine Merkhilfe nach Zeit könnte über die Frame-Grenze
+  greifen, dritte Invariante in Konzept 03).
+
+**Falsifikation.** *Kein Defekt:* Die Suchen sind am Code und an Dalamuds Quelltext belegt, ihre Zahl je Frame nicht
+gemessen; ihr Anteil an den 1,5 bis 3,6 ms ist ein Schluss. *Option falsch:* Der Filter könnte einem Leser einen Effekt
+nehmen – erhoben: Alle Leser fragen nur Pfade aus den gefilterten Listen; ein neuer Leser muss seine Pfade dort führen
+(Kommentar an `IsReadVfxPath`). Die Merker ändern innerhalb eines Frames nichts: `IsFromPlayer` ist dasselbe Prädikat,
+`GetTTK` liest innerhalb eines Frames dieselbe Historie, eine neue Probe verwirft den Merker. *Ausgeliefert, nichts
+ändert sich:* möglich, wenn die Zielsuche je `CanUse` oder Bereinigungen den Hauptteil tragen; die Kostenzeile zeigt es
+je Schritt, und die nächsten Kandidaten sind benannt (TODO, „Warten auf Daten").
+
+**Sein Verdacht, beantwortet:** Die Zahl der Sonderfälle ist nicht der Treiber; teuer ist die Form einzelner Abfragen,
+die bei jedem Lesen über die Objekttabelle oder die ganze Historie laufen. Eine davon hat der Fork eingeführt (A220, die
+Gruppenprüfung vor dem Pfad), die anderen stammen von Upstream und werden durch die Regeln des Forks öfter gelesen.
+
+**Betroffene:** Endnutzer (Framezeit); Autoren abgeleiteter Rotationen: keine öffentliche Signatur geändert; Upstream-
+Pflege: Änderungen in Upstreams `Service`, `StatusHelper`, `ObjectHelper`. AoE-Schwelle an drei Orten (Konzept 03, U5)
+als eigener Punkt in `TODO.md`: Ordnung, keine Laufzeitfrage.
+
+**Prüfgrad:** statisch am Code und an Dalamuds Quelltext, Prüfskripte; Compile im Prüflauf. Die Wirkung zeigt die
+Kostenzeile des nächsten Protokolls.
 
 ---
 ## B · Commit-Register (Fork vs. `upstream/main`)

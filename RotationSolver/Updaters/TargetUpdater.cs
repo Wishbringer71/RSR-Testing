@@ -703,6 +703,8 @@ internal static partial class TargetUpdater
 		}
 
 		DataCenter.RecordedHP.Enqueue((now, currentHPs));
+		// Answers given earlier in this frame read the history without this sample.
+		ObjectHelper.ForgetTimeToKill();
 
 		// Scoring the estimate against what actually happened. A second ago GetTTK said "this one
 		// reaches zero in N seconds"; the sample just enqueued says what the health really did since.

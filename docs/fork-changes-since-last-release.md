@@ -274,3 +274,12 @@ at 15 % from level 98, which their effect texts leave blank because a trait sets
 The table also no longer divides the same mitigation out twice. It credited a mitigation to every status sharing the
 action's name, so a tank carrying Temperance's heal over time beside Temperance itself had Temperance divided out
 twice, and the tankbuster was learned larger than it is. Only a status whose own text reduces damage counts now.
+
+## Less frame time, most of all in alliance content
+
+RSR kept every visual effect of every character for five seconds and walked all of them each time it asked whether a
+stack, spread or tankbuster marker was up; one of these checks also searched the whole object table for each effect.
+In a Critical Engagement that is every skill effect of 48 players, several times a frame. Only the marker effects are
+kept now. The check whether a status is your own no longer searches the object table for every status from someone
+else, and the time-to-kill estimate is worked out once per enemy and frame instead of for every attack considered.
+The decisions are the same as before.
