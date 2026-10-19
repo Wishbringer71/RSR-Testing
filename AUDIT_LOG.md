@@ -8753,6 +8753,28 @@ Konzept 08, „Schlaf gegen ein Flächenwirken".
 
 **Prüfgrad:** statisch, Prüfskripte, Compile im Prüflauf; im Spiel nicht beobachtet.
 
+### A330 · Upstream-Sync 7.5.7.4 (d89339db1) in Arbeitszweig und main (19.10.2026)
+
+Sein Auftrag vom 19.10.2026: „fork mit upstream syncen."
+
+- *Stand:* Seit dem letzten Sync waren zwei Upstream-Commits neu: `edf68cfe1` und der Merge `d89339db1`, der den Tag
+  7.5.7.4 trägt. 7.5.7.4 umfasst damit nur diese Änderung.
+- *Die Änderung:* `DutyRotation.GetPhantomJob()` gibt außerhalb von Occult Crescent (`DataCenter.IsInOccultCrescentOp`)
+  sofort `PhantomJob.None` zurück. Laut Nachricht kostete die Auswertung ein Drittel der Zeichenzeit.
+- *Leser:*
+  - das Hauptfenster: Navigation mit dem Phantom-Abzeichen, Duty-Tab, `IconSet.GetOccultIcon`;
+  - `ActivePhantomJob` mit der Oracle-Abfrage in `PhantomDefault`, die nur in Occult Crescent läuft;
+  - die Debug-Anzeige der Duty-Rotation.
+- *Im Kampf:* keine Änderung. Außerhalb von Occult Crescent gab es keinen Phantomjob. Darin ist das Ergebnis dasselbe.
+- *Fork-Abschnitte:* Der Fork hat `DutyRotation.cs` nicht geändert, es gibt also keine Wechselwirkung mit eigenen
+  Regeln. Den in A327 gemessenen Schritt „highlight" betrifft die Änderung nicht: Die Leser zeichnen das Hauptfenster
+  und laufen nicht im Bild-Update der Aktionsleiste.
+- *Fork-Version:* `check_fork_version.py` meldete nach dem Merge „behind" (7.5.7.3 gegen den Tag 7.5.7.4). Die Angaben
+  sind auf 7.5.7.4, 7.5.7.4+wsh1 und 7.5.7.4-wsh1 gehoben, im Arbeitszweig und auf main, wie in A324. Die Prüfungen
+  liefen nach dem Merge-Commit erneut, nach der Regel aus A324.
+
+**Prüfgrad:** statisch am Diff und an den Lesern; Prüfskripte nach dem Merge; Compile im Prüflauf.
+
 ---
 ## B · Commit-Register (Fork vs. `upstream/main`)
 
