@@ -93,6 +93,8 @@ internal static class DataCenter
 	/// Empty out of combat.
 	/// </remarks>
 	public static HashSet<ulong> TargetedPartyMembers { get; set; } = [];
+	// Kept in step with AllHostileTargets for O(1) membership checks.
+	internal static HashSet<ulong> AllHostileTargetIds { get; } = [];
 
 	public static IBattleChara? InterruptTarget { get; set; }
 
@@ -137,7 +139,19 @@ internal static class DataCenter
 	/// <summary>
 	///
 	/// </summary>
-	public unsafe static Buddy.BuddyMember? ActivePet => *UIState.Instance()->Buddy.PetInfo.Pet;
+	public unsafe static Buddy.BuddyMember? ActivePet
+	{
+		get
+		{
+			var uiState = UIState.Instance();
+			if (uiState == null || uiState->Buddy.PetInfo.Pet == null)
+			{
+				return null;
+			}
+
+			return *uiState->Buddy.PetInfo.Pet;
+		}
+	}
 
 	// XBMPet is static game data; indexed once on first use instead of scanning the whole Excel sheet on every access.
 	private static Dictionary<int, XBMPet>? _xbmPetByDataId;
@@ -364,10 +378,33 @@ internal static class DataCenter
 		return Svc.GameConfig.UiControl.GetUInt(UiControlOption.MoveMode.ToString());
 	}
 
+	private static int _hostileTargetIndex = -1;
+
+	// Never hold the object itself: Dalamud reuses one wrapper per table slot, and a held one keeps pointing at freed
+	// memory once the target despawns. The slot is remembered so the usual read is O(1), but it is re-read every time.
 	internal static IBattleChara? HostileTarget
 	{
-		get => Svc.Objects.SearchById(_hostileTargetId) as IBattleChara;
-		set => _hostileTargetId = value?.GameObjectId ?? 0;
+		get
+		{
+			if (_hostileTargetId == 0)
+			{
+				return null;
+			}
+
+			if (_hostileTargetIndex >= 0 && Svc.Objects[_hostileTargetIndex] is IBattleChara inSlot && inSlot.GameObjectId == _hostileTargetId)
+			{
+				return inSlot;
+			}
+
+			var target = Svc.Objects.SearchById(_hostileTargetId) as IBattleChara;
+			_hostileTargetIndex = target?.ObjectIndex ?? -1;
+			return target;
+		}
+		set
+		{
+			_hostileTargetId = value?.GameObjectId ?? 0;
+			_hostileTargetIndex = -1;
+		}
 	}
 
 	internal static List<uint> PrioritizedNameIds { get; set; } = [];
@@ -392,10 +429,10 @@ internal static class DataCenter
 	internal static ConcurrentQueue<VfxNewData> VfxDataQueue { get; } = new();
 
 	/// <summary>
-	/// Living party members a tankbuster marker stands on, for every role (<see cref="UpdateTankbusterTargets"/>,
-	/// once per frame).
+	/// Ids of the living party members a tankbuster marker stands on, for every role (<see cref="UpdateTankbusterTargets"/>,
+	/// once per frame). Kept as ids so a despawned object is never reused.
 	/// </summary>
-	internal static List<IBattleChara> TankbusterTargets { get; } = [];
+	internal static List<ulong> TankbusterTargetIds { get; } = [];
 
 	private static readonly Lock _tankbusterLock = new();
 
@@ -731,6 +768,9 @@ internal static class DataCenter
 	// Additionally, only Weaponskill/Spell actions can actually be part of a combo chain; other
 	// categories (e.g. general/system actions like Sprint/Return, action ID 4) can end up in
 	// Combo.Action without representing a real combo step, so they must be filtered out as well.
+	private static uint _comboRawId = uint.MaxValue;
+	private static ActionID _comboAction = ActionID.None;
+
 	public static unsafe ActionID LastComboAction
 	{
 		get
@@ -741,12 +781,17 @@ internal static class DataCenter
 				return ActionID.None;
 			}
 
+			// The sheet lookup only reruns when the combo action changes.
 			var id = manager->Combo.Action;
-			var action = Svc.Data.GetExcelSheet<Action>()?.GetRowOrDefault(id);
-			var cate = action?.GetActionCate() ?? ActionCate.None;
-			return cate is ActionCate.Weaponskill or ActionCate.Spell
-				? (ActionID)id
-				: ActionID.None;
+			if (id != _comboRawId)
+			{
+				var action = Svc.Data.GetExcelSheet<Action>()?.GetRowOrDefault(id);
+				var cate = action?.GetActionCate() ?? ActionCate.None;
+				_comboAction = cate is ActionCate.Weaponskill or ActionCate.Spell ? (ActionID)id : ActionID.None;
+				_comboRawId = id;
+			}
+
+			return _comboAction;
 		}
 	}
 
@@ -896,6 +941,7 @@ internal static class DataCenter
 	}
 
 	private static float _avgTTK = float.PositiveInfinity;
+	private static bool _avgTTKKnown;
 	private static long _avgTTKCacheTick = long.MinValue;
 	private const long AverageTtkTtlMs = 15;
 
@@ -926,9 +972,23 @@ internal static class DataCenter
 			// No target has an estimate yet for the first ~2.5s of a pull (GetTTK returns NaN until it
 			// has hit-history). Every consumer reads a low value as "fight ending soon, skip it", so
 			// "unknown" must be PositiveInfinity, not 0 - all of them compare via > or >=.
-			_avgTTK = count > 0 ? total / count : float.PositiveInfinity;
+			_avgTTKKnown = count > 0;
+			_avgTTK = _avgTTKKnown ? total / count : float.PositiveInfinity;
 			_avgTTKCacheTick = now;
 			return _avgTTK;
+		}
+	}
+
+	/// <summary>
+	/// False while no hostile has a time to kill yet, e.g. early in a pull or during downtime. <see cref="AverageTTK"/> is
+	/// PositiveInfinity then, so a consumer comparing it with > or >= lets the action through.
+	/// </summary>
+	public static bool IsAverageTTKKnown
+	{
+		get
+		{
+			_ = AverageTTK;
+			return _avgTTKKnown;
 		}
 	}
 
@@ -1297,6 +1357,27 @@ internal static class DataCenter
 	#region Job Info
 	public static Job Job => Player.Job;
 
+	/// <summary>
+	/// Whether the player is in the Reborn or Evolved mode. Always Reborn until Evercold adds a way to switch.
+	/// </summary>
+	public static RotationType PlayerRotationType => RotationType.Reborn;
+
+	// TODO: add the two Evercold jobs once they exist in ecommons.
+	private static readonly HashSet<Job> EvolvedOnlyJobs = [];
+
+	/// <summary>
+	/// Whether rotations of <paramref name="type"/> can be loaded for <paramref name="job"/>.
+	/// </summary>
+	public static bool IsRotationTypeAllowed(Job job, RotationType type)
+	{
+		if (job is Job.BLU or Job.BST)
+		{
+			return true;
+		}
+
+		return type == (EvolvedOnlyJobs.Contains(job) ? RotationType.Evolved : PlayerRotationType);
+	}
+
 	private static readonly BaseItem PhoenixDownItem = new(4570);
 	/// <summary>
 	/// Is someone alive who could raise, in the set the current raise settings draw targets from?
@@ -1447,6 +1528,9 @@ internal static class DataCenter
 		return false;
 	}
 
+	private static Job _roleJob = Job.ADV;
+	private static JobRole _role = JobRole.None;
+
 	public static JobRole Role
 	{
 		get
@@ -1456,8 +1540,16 @@ internal static class DataCenter
 				return BlueMageRotation.Role;
 			}
 
-			var classJob = Service.GetSheet<ClassJob>().GetRow((uint)Job);
-			return classJob.RowId != 0 ? classJob.GetJobRole() : JobRole.None;
+			// The sheet lookup only reruns when the job changes.
+			var job = Job;
+			if (job != _roleJob || job == Job.ADV)
+			{
+				var classJob = Service.GetSheet<ClassJob>().GetRowOrDefault((uint)job);
+				_role = classJob is { RowId: not 0 } row ? row.GetJobRole() : JobRole.None;
+				_roleJob = job;
+			}
+
+			return _role;
 		}
 	}
 
@@ -1475,7 +1567,8 @@ internal static class DataCenter
 			{
 				case JobRole.Tank:
 				case JobRole.Melee:
-					radius = 3;
+					// PvP melee actions reach 5y.
+					radius = IsPvP ? 5 : 3;
 					break;
 			}
 
@@ -1629,31 +1722,11 @@ internal static class DataCenter
 	{
 		return Svc.Buddies.PetBuddy?.GameObject as IBattleChara;
 	}
-
-	/// <summary>
-	/// The distance from <paramref name="battleChara"/> to the player's pet
-	/// </summary>
-	/// <param name="battleChara"></param>
-	/// <returns></returns>
-	public static float DistanceToPet(IBattleChara battleChara)
-	{
-		if (battleChara == null)
-		{
-			return float.MaxValue;
-		}
-		var pet = GetPet();
-		if (pet == null)
-		{
-			return float.MaxValue;
-		}
-
-		return Vector3.Distance(pet.Position, battleChara.Position) - (battleChara.HitboxRadius);
-	}
 	#endregion
 
 	#region HP
 
-	private static Dictionary<ulong, float> _refinedHpCache = [];
+	private static readonly Dictionary<ulong, float> _refinedHpCache = [];
 	private static long _refinedHpCacheTick = long.MinValue;
 
 	// Party HP is read many times per decision pass (once per potential heal target),
@@ -1670,28 +1743,20 @@ internal static class DataCenter
 				return _refinedHpCache;
 			}
 
-			Dictionary<ulong, float> refinedHP = [];
+			// Refilled in place rather than reallocated every frame.
+			_refinedHpCache.Clear();
 			foreach (var member in PartyMembers)
 			{
-				try
+				if (member == null || !member.IsValid() || member.GameObjectId == 0)
 				{
-					if (member == null || !member.IsValid() || member.GameObjectId == 0)
-					{
-						continue; // Skip invalid or null members
-					}
+					continue;
+				}
 
-					refinedHP[member.GameObjectId] = GetPartyMemberHPRatio(member);
-				}
-				catch (AccessViolationException ex)
-				{
-					PluginLog.Error($"AccessViolationException in RefinedHP: {ex.Message}");
-					continue; // Skip problematic members
-				}
+				_refinedHpCache[member.GameObjectId] = GetPartyMemberHPRatio(member);
 			}
 
-			_refinedHpCache = refinedHP;
 			_refinedHpCacheTick = now;
-			return refinedHP;
+			return _refinedHpCache;
 		}
 	}
 
@@ -1723,12 +1788,14 @@ internal static class DataCenter
 		{
 			_ = _lastHp.TryGetValue(id, out var lastHp);
 
-			if (currentHp - lastHp >= healedHp)
+			if (HealPrediction.HasLanded(currentHp, ref lastHp, healedHp))
 			{
 				_ = HealHP.Remove(id);
 				_lastHp[id] = currentHp;
 				return (float)currentHp / member.MaxHp;
 			}
+
+			_lastHp[id] = lastHp;
 
 			return Math.Min(1, (healedHp + currentHp) / (float)member.MaxHp);
 		}
@@ -1739,7 +1806,8 @@ internal static class DataCenter
 	/// <summary>How long a party-wide reading counts as the same frame's, in milliseconds.</summary>
 	internal static long FrameCacheMs => PartyHpStatsTtlMs;
 
-	private static readonly float[] _hpBuffer = new float[8];
+	// Room for a full party plus chocobos and NPC members, so nobody is left out of the stats.
+	private static readonly float[] _hpBuffer = new float[16];
 	private static long _partyHpStatsCacheTick = long.MinValue;
 	private static float _minHpCache, _avgHpCache, _stdDevHpCache, _lowestAvgHpCache, _lowestStdDevHpCache;
 	private const long PartyHpStatsTtlMs = 15;
@@ -1765,17 +1833,10 @@ internal static class DataCenter
 		{
 			if (member.IsValid() && member.GameObjectId != 0 && hpCount < _hpBuffer.Length)
 			{
-				try
+				var hp = GetPartyMemberHPRatio(member);
+				if (hp > 0)
 				{
-					var hp = GetPartyMemberHPRatio(member);
-					if (hp > 0)
-					{
-						_hpBuffer[hpCount++] = hp;
-					}
-				}
-				catch (AccessViolationException ex)
-				{
-					PluginLog.Error($"AccessViolationException in Party HP computation: {ex.Message}");
+					_hpBuffer[hpCount++] = hp;
 				}
 			}
 		}
@@ -1995,31 +2056,18 @@ internal static class DataCenter
 	{
 		get
 		{
-			var hpList = new List<float>();
 			foreach (var member in PartyMembers)
 			{
-				try
+				if (member == null || !member.IsValid() || member.GameObjectId == 0)
 				{
-					if (member == null || !member.IsValid() || member.GameObjectId == 0)
-					{
-						continue;
-					}
-
-					var hp = GetPartyMemberHPRatio(member);
-					if (hp > 0)
-					{
-						hpList.Add(hp);
-					}
+					continue;
 				}
-				catch (AccessViolationException ex)
+
+				var hp = GetPartyMemberHPRatio(member);
+				if (hp > 0)
 				{
-					PluginLog.Error($"AccessViolationException in PartyMembersHP: {ex.Message}");
+					yield return hp;
 				}
-			}
-
-			foreach (var hp in hpList)
-			{
-				yield return hp;
 			}
 		}
 	}
@@ -2041,29 +2089,26 @@ internal static class DataCenter
 		{
 			try
 			{
-				List<DamageRec> recs = [];
+				// Damage over the last 5 seconds; the extra 2.5 seconds keeps a single hit from reading as a huge rate.
+				var now = DateTime.Now;
+				float damages = 0;
+				DateTime? first = null, last = null;
 				foreach (var rec in _damages)
 				{
-					if (DateTime.Now - rec.ReceiveTime < TimeSpan.FromMilliseconds(5))
+					if (now - rec.ReceiveTime < TimeSpan.FromSeconds(5))
 					{
-						recs.Add(rec);
+						damages += rec.Ratio;
+						first ??= rec.ReceiveTime;
+						last = rec.ReceiveTime;
 					}
 				}
 
-				if (recs.Count == 0)
+				if (first == null || last == null)
 				{
 					return 0;
 				}
 
-				float damages = 0;
-				for (var i = 0; i < recs.Count; i++)
-				{
-					damages += recs[i].Ratio;
-				}
-				var first = recs[0].ReceiveTime;
-				var last = recs[^1].ReceiveTime;
-				var time = last - first + TimeSpan.FromMilliseconds(2.5f);
-
+				var time = last.Value - first.Value + TimeSpan.FromSeconds(2.5);
 				return damages / (float)time.TotalSeconds;
 			}
 			catch
@@ -2146,7 +2191,12 @@ internal static class DataCenter
 
 		while (VfxDataQueue.TryDequeue(out _))
 		{ }
+		lock (_tankbusterLock)
+		{
+			TankbusterTargetIds.Clear();
+		}
 		AllHostileTargets.Clear();
+		AllHostileTargetIds.Clear();
 		AllianceMembers.Clear();
 		PartyMembers.Clear();
 		AllTargets.Clear();
@@ -2238,284 +2288,91 @@ internal static class DataCenter
 	#region Hostile Casting
 
 	/// <summary>
-	/// Determines whether any currently casting hostile action is classified as magical.
+	/// Determines whether any hostile is casting an action whose attack type is magical (<c>AttackType.RowId == 5</c>).
 	/// </summary>
-	/// <returns>
-	/// True if at least one hostile target is casting an action whose <c>AttackType.RowId == 5</c> (interpreted as magical); otherwise false.
-	/// </returns>
-	/// <remarks>
-	/// Scans all hostile entities with a non-zero <c>CastActionId</c>, looks up the action row, and inspects the attack type.
-	/// Returns early on the first confirmed magical cast.
-	/// If the action sheet cannot be loaded or no valid casts exist, returns false.
-	/// </remarks>
 	public static bool IsMagicalDamageIncoming()
 	{
-		var hostileEnum = AllHostileTargets;
-		if (hostileEnum == null)
-		{
-			return false;
-		}
-
-		var actionSheet = Service.GetSheet<Action>();
-		if (actionSheet == null)
-		{
-			return false;
-		}
-
-		for (int i = 0, n = hostileEnum.Count; i < n; i++)
-		{
-			var hostile = hostileEnum[i];
-			if (hostile == null || !hostile.IsValid())
-			{
-				continue;
-			}
-
-			try
-			{
-				if (hostile.CastActionId == 0)
-				{
-					continue;
-				}
-
-				var action = actionSheet.GetRow(hostile.CastActionId);
-				if (action.RowId == 0)
-				{
-					continue;
-				}
-
-				// AttackType row id 5 interpreted as magical.
-				if (action.AttackType.RowId == 5)
-				{
-					return true;
-				}
-			}
-			catch (AccessViolationException ex)
-			{
-				PluginLog.Warning($"AccessViolation in IsMagicalDamageIncoming for obj {hostile?.GameObjectId}: {ex.Message}");
-			}
-		}
-		return false;
+		return AnyHostileCasting(static action => action.AttackType.RowId == 5);
 	}
 
 	/// <summary>
-	/// Determines whether any currently casting hostile action is classified as physical.
+	/// Determines whether any hostile is casting an action whose attack type is slashing, piercing, blunt or shot
+	/// (<c>AttackType</c> rows 1 to 4).
 	/// </summary>
-	/// <returns>
-	/// True if at least one hostile target is casting an action whose attack type is slashing,
-	/// piercing, blunt or shot (<c>AttackType</c> rows 1 to 4); otherwise false.
-	/// </returns>
 	/// <remarks>
-	/// Scans all hostile entities with a non-zero <c>CastActionId</c>, looks up the action row, and inspects the attack type.
-	/// Returns early on the first confirmed magical cast.
-	/// If the action sheet cannot be loaded or no valid casts exist, returns false.
 	/// The sheet's rows, read 27.09.2026 through v2.xivapi.com: 1 slashing, 2 piercing, 3 blunt, 4 shot,
 	/// 5 magic, 6 breath, 7 sound, 8 limit break. This used to test row 7 as physical, which is sound.
 	/// </remarks>
 	public static bool IsPhysicalDamageIncoming()
 	{
-		var hostileEnum = AllHostileTargets;
-		if (hostileEnum == null)
-		{
-			return false;
-		}
+		return AnyHostileCasting(static action => action.AttackType.RowId is >= 1 and <= 4);
+	}
 
-		var actionSheet = Service.GetSheet<Action>();
-		if (actionSheet == null)
-		{
-			return false;
-		}
-
-		for (int i = 0, n = hostileEnum.Count; i < n; i++)
-		{
-			var hostile = hostileEnum[i];
-			if (hostile == null || !hostile.IsValid())
-			{
-				continue;
-			}
-
-			try
-			{
-				if (hostile.CastActionId == 0)
-				{
-					continue;
-				}
-
-				var action = actionSheet.GetRow(hostile.CastActionId);
-				if (action.RowId == 0)
-				{
-					continue;
-				}
-
-				// Slashing, piercing, blunt and shot are the physical rows of the AttackType sheet.
-				if (action.AttackType.RowId is >= 1 and <= 4)
-				{
-					return true;
-				}
-			}
-			catch (AccessViolationException ex)
-			{
-				PluginLog.Warning($"AccessViolation in IsPhysicalDamageIncoming for obj {hostile?.GameObjectId}: {ex.Message}");
-			}
-		}
-		return false;
+	private static bool AnyHostileCasting(Func<Action, bool> check)
+	{
+		return AnyHostile(h => h != null && h.CastActionId != 0 && TryGetCastAction(h, out var action) && check(action));
 	}
 
 	/// <summary>
-	/// True if any hostile is currently casting action 46553 or 46554.
+	/// True if any hostile in M10S is currently casting action 46553 or 46554.
 	/// </summary>
 	public static bool IsExtremeCastingSpecialIndicator()
 	{
-		if (IsInM10S)
-		{
-			var hostileEnum = AllHostileTargets;
-			if (hostileEnum == null)
-			{
-				return false;
-			}
-
-			for (int i = 0, n = hostileEnum.Count; i < n; i++)
-			{
-				var hostile = hostileEnum[i];
-				if (hostile == null || !hostile.IsValid())
-				{
-					continue;
-				}
-
-				try
-				{
-					if (hostile.CastActionId == 46553 || hostile.CastActionId == 46554)
-					{
-						return true;
-					}
-				}
-				catch (AccessViolationException ex)
-				{
-					PluginLog.Warning($"AccessViolation in IsHostileCastingSpecialIndicator for obj {hostile?.GameObjectId}: {ex.Message}");
-				}
-			}
-		}
-
-		return false;
+		return IsInM10S && AnyHostile(static h => h?.CastActionId is 46553 or 46554);
 	}
 
 	/// <summary>
-	/// True if any hostile is currently casting action 46553 or 46554.
+	/// True if any hostile in M11S is currently casting Charybdistopia (46117).
 	/// </summary>
 	public static bool IsTyrantCastingSpecialIndicator()
 	{
-		if (IsInM11S)
-		{
-			var hostileEnum = AllHostileTargets;
-			if (hostileEnum == null)
-			{
-				return false;
-			}
-
-			for (int i = 0, n = hostileEnum.Count; i < n; i++)
-			{
-				var hostile = hostileEnum[i];
-				if (hostile == null || !hostile.IsValid())
-				{
-					continue;
-				}
-
-				try
-				{
-					if (hostile.CastActionId == 46117)
-					{
-						return true;
-					}
-				}
-				catch (AccessViolationException ex)
-				{
-					PluginLog.Warning($"AccessViolation in IsTyrantCastingSpecialIndicator for obj {hostile?.GameObjectId}: {ex.Message}");
-				}
-			}
-		}
-
-		return false;
+		return IsInM11S && AnyHostile(static h => h?.CastActionId == 46117);
 	}
 
 	/// <summary>
-	/// 
+	/// True from the moment the Tyrant has cast both Scythe (46115) and Axe (46114) until its next Charybdistopia (46117) finishes.
 	/// </summary>
 	public static bool IsTyrantCastingSpecialIndicator2()
 	{
-		if (!IsInM11S)
-		{
-			// Not in the relevant duty, ensure flags are cleared
-			_hasCastScythe = false;
-			_hasCastAxe = false;
-			_wasCastingCharyb = false;
-			_tyrantShouldStopHealing = false;
-			return false;
-		}
-
-		// If combat hasn't started, reset everything
-		if (CombatTimeRaw == 0)
+		// Outside the duty or before the pull, start over.
+		if (!IsInM11S || CombatTimeRaw == 0)
 		{
 			_hasCastScythe = false;
 			_hasCastAxe = false;
 			_wasCastingCharyb = false;
 			_tyrantShouldStopHealing = false;
-			return false;
-		}
-
-		var hostileEnum = AllHostileTargets;
-		if (hostileEnum == null)
-		{
 			return false;
 		}
 
 		var anyCurrentlyCastingCharyb = false;
-
-		for (int i = 0, n = hostileEnum.Count; i < n; i++)
+		foreach (var hostile in AllHostileTargets)
 		{
-			var hostile = hostileEnum[i];
-			if (hostile == null || !hostile.IsValid())
+			if (hostile == null || !hostile.IsValid() || !hostile.IsCasting)
 			{
 				continue;
 			}
 
-			try
+			switch (hostile.CastActionId)
 			{
-				if (!hostile.IsCasting)
-				{
-					anyCurrentlyCastingCharyb = false;
-					continue;
-				}
-
-				var castId = hostile.CastActionId;
-				if (castId == 46115)
-				{
+				case 46115:
 					_hasCastScythe = true;
-					continue;
-				}
-				else if (castId == 46114)
-				{
+					break;
+				case 46114:
 					_hasCastAxe = true;
-					continue;
-				}
-				else if (castId == 46117)
-				{
+					break;
+				case 46117:
 					anyCurrentlyCastingCharyb = true;
 					_wasCastingCharyb = true;
-					continue;
-				}
-			}
-			catch (AccessViolationException ex)
-			{
-				PluginLog.Warning($"AccessViolation in IsTyrantCastingSpecialIndicator for obj {hostile?.GameObjectId}: {ex.Message}");
+					break;
 			}
 		}
 
-		// If we've observed both scythe and axe, flip the stop-healing flag
 		if (_hasCastScythe && _hasCastAxe)
 		{
 			_tyrantShouldStopHealing = true;
 		}
 
-		// If Charybdistopia was casting and now finished, clear everything
+		// Charybdistopia finished, so clear everything.
 		if (_wasCastingCharyb && !anyCurrentlyCastingCharyb)
 		{
 			_hasCastScythe = false;
@@ -2528,214 +2385,56 @@ internal static class DataCenter
 	}
 
 	/// <summary>
-	/// 
+	/// True while Agrias's Judgment Blade (14423) in Orbonne resolves within 2.5 seconds.
 	/// </summary>
 	public static bool IsAgriasCastingSpecialIndicator()
 	{
-		if (!Orbonne)
-		{
-			return false;
-		}
-
-		var hostileEnum = AllHostileTargets;
-		if (hostileEnum == null)
-		{
-			return false;
-		}
-
-		for (int i = 0, n = hostileEnum.Count; i < n; i++)
-		{
-			var hostile = hostileEnum[i];
-			if (hostile == null || !hostile.IsValid())
-			{
-				continue;
-			}
-
-			try
-			{
-				// Ensure the hostile is actually casting
-				if (!hostile.IsCasting)
-				{
-					continue;
-				}
-
-				// We're only interested in this specific cast id
-				if (hostile.CastActionId != 14423)
-				{
-					continue;
-				}
-
-				// Remaining cast time is exposed as CurrentCastTime (units consistent with other checks)
-				var remaining = hostile.TotalCastTime - hostile.CurrentCastTime;
-
-				// If the remaining cast time is less than or equal to the player's remaining GCD,
-				// trigger as close to the last second as possible.
-				if (remaining <= 2.5f)
-				{
-					if (Service.Config.InDebug)
-					{
-						PluginLog.Debug($"Agrias cast detected on obj {hostile.GameObjectId} - remaining: {remaining:F3}s, GCD remain: {DefaultGCDRemain:F3}s");
-					}
-					return true;
-				}
-			}
-			catch (AccessViolationException ex)
-			{
-				PluginLog.Warning($"AccessViolation in IsHostileCastingSpecialIndicator for obj {hostile?.GameObjectId}: {ex.Message}");
-			}
-		}
-
-		return false;
+		return Orbonne && AnyHostile(static h => IsCastResolving(h, 2.5f, "Agrias", 14423));
 	}
 
 	/// <summary>
-	/// 
+	/// True while the Lich's Alexandrian Quake (46419, 46427) in the quest battle resolves within 3 seconds.
 	/// </summary>
 	public static bool IsLichCastingSpecialIndicator()
 	{
-		if (!IsInQuestBattle)
-		{
-			return false;
-		}
-
-		var hostileEnum = AllHostileTargets;
-		if (hostileEnum == null)
-		{
-			return false;
-		}
-
-		for (int i = 0, n = hostileEnum.Count; i < n; i++)
-		{
-			var hostile = hostileEnum[i];
-			if (hostile == null || !hostile.IsValid())
-			{
-				continue;
-			}
-
-			try
-			{
-				// Ensure the hostile is actually casting
-				if (!hostile.IsCasting)
-				{
-					continue;
-				}
-
-				// Alexandrian Quake - 46419
-				var castId = hostile.CastActionId;
-
-				// Remaining cast time is exposed as CurrentCastTime (units consistent with other checks)
-				var remaining = hostile.TotalCastTime - hostile.CurrentCastTime;
-
-				if (castId == 46419 || castId == 46427)
-				{
-					if (remaining <= 3f)
-					{
-						if (Service.Config.InDebug)
-						{
-							PluginLog.Debug($"Lich Cast Detected");
-						}
-						return true;
-					}
-				}
-			}
-			catch (AccessViolationException ex)
-			{
-				PluginLog.Warning($"AccessViolation in IsHostileCastingSpecialIndicator for obj {hostile?.GameObjectId}: {ex.Message}");
-			}
-		}
-
-		return false;
+		return IsInQuestBattle && AnyHostile(static h => IsCastResolving(h, 3f, "Lich", 46419, 46427));
 	}
 
 	/// <summary>
-	/// 
+	/// True while one of Lakshmi's raid-wide casts resolves within 3 seconds. In the Extreme version, The Path of Light (8539)
+	/// and The Pull of Light (8543) only count while she has Chanchala.
 	/// </summary>
 	public static bool IsLakshmiCastingSpecialIndicator()
 	{
-		if (!EmanationEX && !Emanation)
+		if (Emanation)
+		{
+			return AnyHostile(static h => IsCastResolving(h, 3f, "Lakshmi", 9349));
+		}
+
+		return EmanationEX && AnyHostile(static h => IsCastResolving(h, 3f, "Lakshmi", 8519, 8521, 8522, 8523)
+			|| (h != null && h.HasStatus(false, StatusID.Chanchala_1410) && IsCastResolving(h, 3f, "Lakshmi", 8539, 8543)));
+	}
+
+	// True when the hostile is casting one of the ids and the cast resolves within the given seconds.
+	private static bool IsCastResolving(IBattleChara? hostile, float seconds, string source, params ReadOnlySpan<uint> castIds)
+	{
+		if (hostile == null || !hostile.IsCasting || !castIds.Contains(hostile.CastActionId))
 		{
 			return false;
 		}
 
-		var hostileEnum = AllHostileTargets;
-		if (hostileEnum == null)
+		var remaining = hostile.TotalCastTime - hostile.CurrentCastTime;
+		if (remaining > seconds)
 		{
 			return false;
 		}
 
-		for (int i = 0, n = hostileEnum.Count; i < n; i++)
+		if (Service.Config.InDebug)
 		{
-			var hostile = hostileEnum[i];
-			if (hostile == null || !hostile.IsValid())
-			{
-				continue;
-			}
-
-			try
-			{
-				// Ensure the hostile is actually casting
-				if (!hostile.IsCasting)
-				{
-					continue;
-				}
-
-				// We're only interested in a specific set of Lakshmi cast ids
-				// Known special casts (from duty):
-				// Stotram - 8519 (Raidwide DOT)
-				// Divine Denial - 8521 (Raidwide knockback)
-				// Divine Doubt - 8522 (Raidwide confuse)
-				// Divine Desire - 8523 (Raidwide pull and bleed)
-				// The Path of Light - 8539 (high damage when Chanchala buffed)
-				// The Pull of Light - 8543 (high damage when Chanchala buffed)
-				var castId = hostile.CastActionId;
-
-				if (EmanationEX)
-				{
-					if (hostile.HasStatus(false, StatusID.Chanchala_1410))
-					{
-						if (castId != 8519 && castId != 8521 && castId != 8522 && castId != 8523 && castId != 8539 && castId != 8543)
-						{
-							continue;
-						}
-					}
-					if (!hostile.HasStatus(false, StatusID.Chanchala_1410))
-					{
-						if (castId != 8519 && castId != 8521 && castId != 8522 && castId != 8523)
-						{
-							continue;
-						}
-					}
-				}
-
-				if (Emanation)
-				{
-					if (castId != 9349)
-					{
-						continue;
-					}
-				}
-
-				// Remaining cast time is exposed as CurrentCastTime (units consistent with other checks)
-				var remaining = hostile.TotalCastTime - hostile.CurrentCastTime;
-
-				// If the remaining cast time is less than or equal to the player's remaining GCD,
-				// trigger as close to the last second as possible.
-				if (remaining <= 3f)
-				{
-					if (Service.Config.InDebug)
-					{
-						PluginLog.Debug($"Lakshmi cast detected on obj {hostile.GameObjectId} - remaining: {remaining:F3}s, GCD remain: {DefaultGCDRemain:F3}s");
-					}
-					return true;
-				}
-			}
-			catch (AccessViolationException ex)
-			{
-				PluginLog.Warning($"AccessViolation in IsHostileCastingSpecialIndicator for obj {hostile?.GameObjectId}: {ex.Message}");
-			}
+			PluginLog.Debug($"{source} cast detected on obj {hostile.GameObjectId} - remaining: {remaining:F3}s, GCD remain: {DefaultGCDRemain:F3}s");
 		}
 
-		return false;
+		return true;
 	}
 
 	// Cached, case-insensitive path sets modeled after WrathCombo VFX.cs
@@ -2842,8 +2541,35 @@ internal static class DataCenter
 	internal static bool IsFalsifiedTankbusterMarker(string path)
 		=> OtherConfiguration.TankbusterMarkerWithoutHit.Contains(path.ToLowerInvariant());
 
-	public static bool IsHostileCastingAOE =>
-		InCombat && (IsCastingAreaVfx() || (AllHostileTargets != null && IsAnyHostileCastingArea()));
+	// Read by several updaters and rotations each frame, so each is computed once per frame.
+	private static readonly FrameCached<bool> _isHostileCastingAoe = new(() => InCombat && (IsCastingAreaVfx() || IsAnyHostileCastingArea()));
+	private static readonly FrameCached<bool> _isHostileCastingToTank = new(() => InCombat && (IsCastingTankVfx() || IsAnyHostileCastingTank()));
+	private static readonly FrameCached<bool> _isHostileCastingStop = new(() => InCombat && Service.Config.CastingStop && AnyHostile(IsHostileStop));
+	private static readonly FrameCached<bool> _areHostilesCastingKnockback = new(IsAnyHostileCastingKnockback);
+
+	public static bool IsHostileCastingAOE => _isHostileCastingAoe.Value;
+
+	public static bool IsHostileCastingToTank => _isHostileCastingToTank.Value;
+
+	public static bool IsHostileCastingStop => _isHostileCastingStop.Value;
+
+	public static bool AreHostilesCastingKnockback => _areHostilesCastingKnockback.Value;
+
+	// Over the targetable enemies; a reader that must see the untargetable helpers too walks AreaCasters (A277, A303).
+	private static bool AnyHostile(Func<IBattleChara, bool> predicate)
+	{
+		var targets = AllHostileTargets;
+		for (var i = 0; i < targets.Count; i++)
+		{
+			var h = targets[i];
+			if (h != null && h.IsValid() && predicate(h))
+			{
+				return true;
+			}
+		}
+
+		return false;
+	}
 
 	/// <summary>
 	/// Whether the area hit that opens the area defence reaches the player himself - the question for
@@ -3186,9 +2912,6 @@ internal static class DataCenter
 		return false;
 	}
 
-	public static bool IsHostileCastingToTank =>
-		InCombat && (IsCastingTankVfx() || (AllHostileTargets != null && IsAnyHostileCastingTank()));
-
 	private static bool IsAnyHostileCastingTank()
 	{
 		// The helpers too (A303): a tankbuster resolved by an untargetable helper is cast at the tank by it. For a
@@ -3331,7 +3054,7 @@ internal static class DataCenter
 
 	/// <summary>
 	/// Whether a tankbuster lock-on VFX currently sits on the player. Read-only counterpart to
-	/// <see cref="IsCastingTankVfx"/>, which also rebuilds <see cref="TankbusterTargets"/> and
+	/// <see cref="IsCastingTankVfx"/>, which also rebuilds <see cref="TankbusterTargetIds"/> and
 	/// answers for the party rather than for the player alone.
 	/// </summary>
 	public static bool IsTankbusterVfxOnPlayer()
@@ -3374,94 +3097,36 @@ internal static class DataCenter
 		return false;
 	}
 
-	public static bool IsHostileCastingStop =>
-		InCombat && Service.Config.CastingStop && AllHostileTargets != null && IsAnyHostileStop();
-
-	private static bool IsAnyHostileStop()
-	{
-		if (AllHostileTargets == null)
-		{
-			return false;
-		}
-
-		for (var i = 0; i < AllHostileTargets.Count; i++)
-		{
-			if (IsHostileStop(AllHostileTargets[i]))
-			{
-				return true;
-			}
-		}
-		return false;
-	}
-
 	public static bool IsHostileStop(IBattleChara h)
 	{
-		return IsHostileCastingStopBase(h,
-			(act) =>
-			{
-				if (act.RowId == 0)
-				{
-					return false;
-				}
-
-				return OtherConfiguration.HostileCastingStop.Contains(act.RowId);
-			});
+		return IsHostileCastingStopBase(h, static act => OtherConfiguration.HostileCastingStop.Contains(act.RowId));
 	}
 
 	public static bool IsHostileCastingStopBase(IBattleChara h, Func<Action, bool> check)
 	{
-		if (h == null || !h.IsValid() || check == null)
+		if (h == null || !h.IsValid() || check == null || h.GameObjectId == 0)
 		{
 			return false;
 		}
 
-		try
+		if (!h.IsCasting || h.IsCastInterruptible)
 		{
-			if (h.GameObjectId == 0)
-			{
-				return false;
-			}
-
-			// Check if the hostile character is casting
-			if (!h.IsCasting)
-			{
-				return false;
-			}
-
-			// Check if the cast is interruptible
-			if (h.IsCastInterruptible)
-			{
-				return false;
-			}
-
-			// Validate the cast time
-			if ((h.TotalCastTime - h.CurrentCastTime) > (Service.Config.CastingStopCalculate ? 100 : Service.Config.CastingStopTime))
-			{
-				return false;
-			}
-
-			// Get the action sheet
-			var actionSheet = Service.GetSheet<Action>();
-			if (actionSheet == null)
-			{
-				return false; // Check if actionSheet is null
-			}
-
-			// Get the action being cast
-			var action = actionSheet.GetRow(h.CastActionId);
-			if (action.RowId == 0)
-			{
-				return false; // Check if action is not initialized
-			}
-
-			// Invoke the check function on the action and return the result
-			return check(action);
-		}
-		catch (AccessViolationException ex)
-		{
-			PluginLog.Warning($"AccessViolation in IsHostileCastingStopBase for obj {h?.GameObjectId}: {ex.Message}");
 			return false;
 		}
+
+		if ((h.TotalCastTime - h.CurrentCastTime) > (Service.Config.CastingStopCalculate ? 100 : Service.Config.CastingStopTime))
+		{
+			return false;
+		}
+
+		return TryGetCastAction(h, out var action) && check(action);
+	}
+
+	private static bool TryGetCastAction(IBattleChara h, out Action action)
+	{
+		var row = Service.GetSheet<Action>().GetRowOrDefault(h.CastActionId);
+		action = row ?? default;
+		return row is { RowId: not 0 };
 	}
 
 	public static bool IsCastingVfx(ConcurrentQueue<VfxNewData> vfxData, Func<VfxNewData, bool> isVfx)
@@ -3510,7 +3175,7 @@ internal static class DataCenter
 	}
 
 	/// <summary>
-	/// Whether a tankbuster marker stands on a member of the party (<see cref="TankbusterTargets"/>).
+	/// Whether a tankbuster marker stands on a member of the party (<see cref="TankbusterTargetIds"/>).
 	/// </summary>
 	/// <remarks>
 	/// For every role, a tank too: his single-target defence also carries his help for the marked member -
@@ -3524,12 +3189,12 @@ internal static class DataCenter
 	{
 		lock (_tankbusterLock)
 		{
-			return TankbusterTargets.Count > 0;
+			return TankbusterTargetIds.Count > 0;
 		}
 	}
 
 	/// <summary>
-	/// Rebuilds <see cref="TankbusterTargets"/>: every living party member a tankbuster marker stands on that is not
+	/// Rebuilds <see cref="TankbusterTargetIds"/>: every living party member a tankbuster marker stands on that is not
 	/// on the learned list of markers without a hit. Once per frame, after the party list (TargetUpdater).
 	/// </summary>
 	/// <remarks>
@@ -3544,7 +3209,7 @@ internal static class DataCenter
 	{
 		lock (_tankbusterLock)
 		{
-			TankbusterTargets.Clear();
+			TankbusterTargetIds.Clear();
 			var party = PartyMembers;
 			if (VfxDataQueue == null || VfxDataQueue.IsEmpty || party == null || party.Count == 0)
 			{
@@ -3568,9 +3233,9 @@ internal static class DataCenter
 						var member = party[i];
 						if (member.GameObjectId == s.ObjectId)
 						{
-							if (!member.IsDead && !TankbusterTargets.Contains(member))
+							if (!member.IsDead && !TankbusterTargetIds.Contains(member.GameObjectId))
 							{
-								TankbusterTargets.Add(member);
+								TankbusterTargetIds.Add(member.GameObjectId);
 							}
 
 							break;
@@ -3587,7 +3252,7 @@ internal static class DataCenter
 
 	/// <summary>
 	/// Whether a known tankbuster is aimed at <paramref name="member"/>: a tankbuster marker on him
-	/// (<see cref="TankbusterTargets"/>), or an enemy casting at him an action on the tankbuster list or one the
+	/// (<see cref="TankbusterTargetIds"/>), or an enemy casting at him an action on the tankbuster list or one the
 	/// tankbuster table has measured; for the player also a BossModReborn tankbuster whose mask names him.
 	/// </summary>
 	/// <remarks>
@@ -3611,12 +3276,9 @@ internal static class DataCenter
 		var id = member.GameObjectId;
 		lock (_tankbusterLock)
 		{
-			for (var i = 0; i < TankbusterTargets.Count; i++)
+			if (TankbusterTargetIds.Contains(id))
 			{
-				if (TankbusterTargets[i].GameObjectId == id)
-				{
-					return true;
-				}
+				return true;
 			}
 		}
 
@@ -3655,12 +3317,9 @@ internal static class DataCenter
 		var id = member.GameObjectId;
 		lock (_tankbusterLock)
 		{
-			for (var i = 0; i < TankbusterTargets.Count; i++)
+			if (TankbusterTargetIds.Contains(id))
 			{
-				if (TankbusterTargets[i].GameObjectId == id)
-				{
-					return false;
-				}
+				return false;
 			}
 		}
 
@@ -3730,11 +3389,8 @@ internal static class DataCenter
 
 	public static bool IsHostileCastingTank(IBattleChara h)
 	{
-		return h != null && IsHostileCastingBase(h, (act) =>
-		{
-			return OtherConfiguration.HostileCastingTank.Contains(act.RowId)
-				|| h.CastTargetObjectId == h.TargetObjectId;
-		});
+		return h != null && IsHostileCastingBase(h, act => OtherConfiguration.HostileCastingTank.Contains(act.RowId)
+			|| h.CastTargetObjectId == h.TargetObjectId);
 	}
 
 	public static bool IsHostileCastingArea(IBattleChara h)
@@ -4608,49 +4264,30 @@ internal static class DataCenter
 		return false;
 	}
 
-	public static bool AreHostilesCastingKnockback
+	private static bool IsAnyHostileCastingKnockback()
 	{
-		get
+		// Over the helpers too (A303): a listed knockback resolved by an untargetable helper is the knockback
+		// "Automatically use Anti-Knockback role actions" promises to answer from the list.
+		var targets = AreaCasters;
+		for (var i = 0; i < targets.Count; i++)
 		{
-			// Over the helpers too (A303): a listed knockback resolved by an untargetable helper is the knockback
-			// "Automatically use Anti-Knockback role actions" promises to answer from the list.
-			var targets = AreaCasters;
-			for (int i = 0, n = targets.Count; i < n; i++)
+			if (IsHostileCastingKnockback(targets[i]))
 			{
-				var h = targets[i];
-				try
-				{
-					if (IsHostileCastingKnockback(h))
-					{
-						return true;
-					}
-				}
-				catch (AccessViolationException ex)
-				{
-					PluginLog.Warning($"AccessViolation when checking knockback for obj {h?.GameObjectId}: {ex.Message}");
-				}
+				return true;
 			}
-			return false;
 		}
+
+		return false;
 	}
 
 	public static bool IsHostileCastingKnockback(IBattleChara h)
 	{
-		return IsHostileCastingBase(h,
-			(act) =>
-			{
-				if (act.RowId == 0)
-				{
-					return false;
-				}
-
-				return OtherConfiguration.HostileCastingKnockback.Contains(act.RowId);
-			});
+		return IsHostileCastingBase(h, static act => OtherConfiguration.HostileCastingKnockback.Contains(act.RowId));
 	}
 
 	public static bool IsHostileCastingBase(IBattleChara h, Func<Action, bool> check)
 	{
-		if (h == null || check == null)
+		if (h == null || check == null || h.GameObjectId == 0)
 		{
 			return false;
 		}
@@ -4663,134 +4300,44 @@ internal static class DataCenter
 			}
 		}
 
-		try
+		if (!IsAreaCastEnemy(h) || !h.IsCasting || h.IsCastInterruptible)
 		{
-			if (h.GameObjectId == 0)
-			{
-				return false;
-			}
-
-			if (!IsAreaCastEnemy(h))
-			{
-				return false;
-			}
-
-			if (!h.IsCasting)
-			{
-				return false;
-			}
-
-			// Check if the cast is interruptible
-			if (h.IsCastInterruptible)
-			{
-				return false;
-			}
-
-			// Calculate the time since the cast started
-			var last = h.TotalCastTime - h.CurrentCastTime;
-			var t = last - DefaultGCDTotal;
-
-			// Check if the total cast time is greater than the minimum cast time and if the calculated time is within a valid range
-			if (!(h.TotalCastTime > DefaultGCDTotal && t > 0 && t < GCDTime(1)))
-			{
-				return false;
-			}
-
-			// Get the action sheet
-			var actionSheet = Service.GetSheet<Action>();
-			if (actionSheet == null)
-			{
-				PluginLog.Error("IsHostileCastingBase: Action sheet is null.");
-				return false;
-			}
-
-			// Get the action being cast
-			var action = actionSheet.GetRow(h.CastActionId);
-			if (action.RowId == 0)
-			{
-				PluginLog.Error("IsHostileCastingBase: Action is not initialized.");
-				return false;
-			}
-
-			// Invoke the check function on the action and return the result
-			return check(action);
-		}
-		catch (AccessViolationException ex)
-		{
-			PluginLog.Warning($"AccessViolation in IsHostileCastingBase for obj {h?.GameObjectId}: {ex.Message}");
 			return false;
 		}
+
+		// Only casts longer than a GCD that resolve between one and two GCDs from now.
+		var t = h.TotalCastTime - h.CurrentCastTime - DefaultGCDTotal;
+		if (!(h.TotalCastTime > DefaultGCDTotal && t > 0 && t < GCDTime(1)))
+		{
+			return false;
+		}
+
+		return TryGetCastAction(h, out var action) && check(action);
 	}
 	#endregion
 
 	#region BossModReborn Timeline Integration
 
-	private static bool _bmrEnabledCache;
-	private static long _bmrEnabledCacheTick = long.MinValue;
-	private const long BmrEnabledTtlMs = 1000;
+	// Installed-plugin state only changes when the user (de)activates a plugin, so it is re-checked once a second.
+	private static readonly FrameCached<bool> _bmrEnabled = new(() => IsPluginLoaded("BossModReborn", "BossModReborn"), 1000);
+	private static readonly FrameCached<bool> _autoPvpSeriesGrindEnabled = new(() => IsPluginLoaded("Auto PVP Series Grind", "AutoPvpSeriesGrind"), 1000);
 
-	// Installed-plugin state changes only when the user (de)activates a plugin, so this is
-	// re-checked at most once a second instead of walking InstalledPlugins on every access.
-	public static bool BMREnabled
+	public static bool BMREnabled => _bmrEnabled.Value;
+
+	public static bool AutoPvpSeriesGrindEnabled => _autoPvpSeriesGrindEnabled.Value;
+
+	private static bool IsPluginLoaded(string name, string internalName)
 	{
-		get
+		foreach (var x in Svc.PluginInterface.InstalledPlugins)
 		{
-			var now = Environment.TickCount64;
-			if (_bmrEnabledCacheTick != long.MinValue && now - _bmrEnabledCacheTick < BmrEnabledTtlMs)
+			if ((x.Name.Equals(name, StringComparison.OrdinalIgnoreCase) || x.InternalName.Equals(internalName, StringComparison.OrdinalIgnoreCase)) && x.IsLoaded)
 			{
-				return _bmrEnabledCache;
+				return true;
 			}
-
-			var name = "BossModReborn";
-			var installedPlugins = Svc.PluginInterface.InstalledPlugins;
-			var enabled = false;
-			foreach (var x in installedPlugins)
-			{
-				if ((x.Name.Equals(name, StringComparison.OrdinalIgnoreCase) || x.InternalName.Equals(name, StringComparison.OrdinalIgnoreCase)) && x.IsLoaded)
-				{
-					enabled = true;
-					break;
-				}
-			}
-
-			_bmrEnabledCache = enabled;
-			_bmrEnabledCacheTick = now;
-			return enabled;
 		}
+
+		return false;
 	}
-
-	private static bool _autoPvpSeriesGrindCache;
-	private static long _autoPvpSeriesGrindCacheTick = long.MinValue;
-	private const long AutoPvpSeriesGrindTtlMs = 1000;
-
-	public static bool AutoPvpSeriesGrindEnabled
-	{
-		get
-		{
-			var now = Environment.TickCount64;
-			if (_autoPvpSeriesGrindCacheTick != long.MinValue && now - _autoPvpSeriesGrindCacheTick < AutoPvpSeriesGrindTtlMs)
-			{
-				return _autoPvpSeriesGrindCache;
-			}
-
-			var enabled = false;
-			var installedPlugins = Svc.PluginInterface.InstalledPlugins;
-			foreach (var x in installedPlugins)
-			{
-				if ((x.Name.Equals("Auto PVP Series Grind", StringComparison.OrdinalIgnoreCase)
-					|| x.InternalName.Equals("AutoPvpSeriesGrind", StringComparison.OrdinalIgnoreCase)) && x.IsLoaded)
-				{
-					enabled = true;
-					break;
-				}
-			}
-
-			_autoPvpSeriesGrindCache = enabled;
-			_autoPvpSeriesGrindCacheTick = now;
-			return enabled;
-		}
-	}
-
 	public static bool PvPAutomationBlocked => IsPvP && AutoPvpSeriesGrindEnabled;
 
 	public static bool BMRHasActiveModule { get; set; }
@@ -5107,7 +4654,6 @@ internal static class DataCenter
 	public static bool BMRDebugTimelineTbFunc { get; set; }
 	public static bool BMRDebugHintsRwFunc { get; set; }
 	public static bool BMRDebugHintsTbFunc { get; set; }
-	public static string? BMRDebugTimelineWalk { get; set; }
 
 	/// <summary>
 	/// Delegate wired up by BossModUpdater to the <c>Hints.IsPositionSafe</c> IPC endpoint.
@@ -5148,7 +4694,11 @@ internal static class DataCenter
 			var action = actions[i];
 			if (action.ActionId == actionId && action.ActivationIn <= 0f && action.WindowEndIn > 0f)
 			{
-				PluginLog.Information($"GetActivePlannedAction: Found active planned action {action.ActionId} with ActivationIn {action.ActivationIn} and WindowEndIn {action.WindowEndIn}");
+				if (Service.Config.InDebug)
+				{
+					PluginLog.Debug($"GetActivePlannedAction: Found active planned action {action.ActionId} with ActivationIn {action.ActivationIn} and WindowEndIn {action.WindowEndIn}");
+				}
+
 				return action;
 			}
 		}
@@ -5235,7 +4785,6 @@ internal static class DataCenter
 		BMRDebugTimelineTbFunc = false;
 		BMRDebugHintsRwFunc = false;
 		BMRDebugHintsTbFunc = false;
-		BMRDebugTimelineWalk = null;
 		BMRIsPositionSafe = null;
 		BMRIsDashSafe = null;
 		BMRIsFixedDashSafe = null;

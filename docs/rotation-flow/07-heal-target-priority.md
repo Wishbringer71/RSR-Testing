@@ -318,8 +318,9 @@ ist kein Ordnungsmerkmal innerhalb von Klasse 2, sondern die vorausberechnete Ge
 siehe „Die Rate geht über die vorausberechnete Gesundheit ein".
 
 **Die schwächere Alternative ist verworfen und bleibt es:** `DataCenter.DPSTaken` misst die Gruppe
-als Ganzes, `DamageRec` trägt Zeitpunkt und Anteil, **kein Ziel**, und ihr Fenster von fünf
-Millisekunden sieht bei einem Bild von rund sechzehn fast immer nichts.
+als Ganzes, `DamageRec` trägt Zeitpunkt und Anteil, **kein Ziel**. Ihr Fenster umfasst seit upstream 7.5.7.5
+fünf Sekunden (vorher fünf Millisekunden, A331); am Grund ändert das nichts, denn eine Rate der Gruppe sagt nicht,
+wen der Strom trifft.
 
 **Die Aggro steht ebenfalls.** `DataCenter.TargetedPartyMembers` wird in `TargetUpdater.UpdateLists` einmal
 je Bild aus den `TargetObjectId` der Gegner gefüllt — ein Durchlauf über die Gegner, danach ist „wird

@@ -109,7 +109,6 @@ internal static class BossModUpdater
 
 			DataCenter.BMRSpecialModeIn = BMRTimeline_IPCSubscriber.SpecialModeIn?.Invoke() ?? float.MaxValue;
 			DataCenter.BMRSpecialModeType = (SpecialMode)(BMRTimeline_IPCSubscriber.SpecialModeType?.Invoke() ?? 0);
-			DataCenter.BMRDebugTimelineWalk = BMRTimeline_IPCSubscriber.DebugTimelineWalk?.Invoke();
 
 			DataCenter.BMRIsPositionSafe = BMRTimeline_IPCSubscriber.IsPositionSafe != null
 				? pos => BMRTimeline_IPCSubscriber.IsPositionSafe.Invoke(pos)

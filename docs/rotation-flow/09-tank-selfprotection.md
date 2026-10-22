@@ -963,8 +963,8 @@ Angegriffenen, auch wenn der Marker den anderen Tank nannte.
 
 **Erkennung** (Stufe „alle", ohne Option, `DataCenter.IsTankbusterAimedAt`): ein bekannter Tankbuster zielt auf das
 Mitglied –
-- ein Tankbuster-Marker auf ihm, der nicht auf der Liste der Marker ohne Treffer steht (`TankbusterTargets`, je Bild
-  neu im `TargetUpdater`, für jede Rolle, nur Mitglieder der Gruppe);
+- ein Tankbuster-Marker auf ihm, der nicht auf der Liste der Marker ohne Treffer steht (`TankbusterTargetIds`, je Bild
+  neu im `TargetUpdater`, für jede Rolle, nur Mitglieder der Gruppe, als Ids, damit kein verschwundenes Objekt weiterlebt);
 - ein Gegner, auch eine Hilfsfigur, wirkt auf ihn eine Aktion der Tankbuster-Liste oder eine, die die
   Tankbuster-Tabelle gemessen hat, im Fenster der Wirk-Erkennung (der vorletzte GCD vor dem Ende des Wirkens). Das Ziel
   eines gezielten Wirkens steht ab Wirkbeginn fest (Abschnitt „Mechanik" des Tankwechsels);

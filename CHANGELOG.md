@@ -43,6 +43,26 @@ before dispel, provoke, raise and heal; a derived rotation that wants the GCD fo
 option off. `SleepInterruptWatch` is new and public: what such a sleep did, which enemy kinds resisted and which casts
 went on. `JobFilterType.Sleep` is appended to the enum.
 
+### Removed upstream in RotationSolver.Basic: members folded into upstream's 7.5.7.5 rework
+
+Upstream 7.5.7.5 (merged into this fork on 22.10.2026) removed these public members; the fork passes the removal on.
+A derived rotation that uses one of them no longer compiles.
+
+- `BaseAction.AnimationLockTime` - read `Player.AnimationLock` (ECommons) instead.
+- `ActionManagerEx.UpdateTweaks`, `UseActionWithTweaks` and `UseActionLocationWithTweaks`, and the struct
+  `OffsetDelay`. The animation lock and cooldown delay tweaks now hook the client's action manager, so they apply to
+  every action, whoever uses it; an ordinary `ActionManager.UseAction` is enough.
+- `ActionConfig.GCDSingleHeal` is `ActionSetting.GCDSingleHeal` now: set it in the action's `Modify…` method rather
+  than through `CreateConfig`. Saved action settings that still carry the key load as before - the serializer ignores
+  it.
+- `TargetHelper.GetTargetsByCastAndEffect` and both `GetTargetsUsableByAction` overloads - use `GetTargetsByRange`.
+- The 30 encounter immunity extensions on `ObjectHelper` (`IsYmirImmune`, `IsM9SavageImmune`, `IsTOPImmune` and the
+  rest) - `ObjectHelper.IsSpecialImmune` answers for all of them - and `ObjectHelper.IsBroPriority`, the M10S target
+  priority, which the target selection now reads internally.
+
+`TargetType.Capture`, also removed upstream, stays in this fork, unused: without it the value of `TargetType.TankSwap`
+after it would shift for a rotation built against this package.
+
 ## 7.5.7.3+wsh1
 
 ### Dependency: ECommons 3.2.1.26

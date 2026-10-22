@@ -606,9 +606,10 @@ stand nur in `OtherConfiguration.Init()`, und die ruft niemand; gerufen wird `In
 begann damit jede Sitzung leer, und weil ein Speichervorgang **die ganze** Tabelle schreibt, legte die
 erste Messung des Abends — spätestens das Entladen des Plugins — die leere Fassung über den
 gespeicherten Stand. Im Kampf war das Bild identisch mit „noch nichts gemessen": jede Aktion
-unbewertet, beide Stufen der Rechnung wirkungslos. **Beide Einstiegspunkte teilen sich eine
-einzige Ladeliste**, und `check_config_store_roundtrip.py` hält in der CI fest, dass kein Speicher
-einen Schreibweg ohne erreichbaren Leseweg hat. Die Lehre daran ist allgemeiner als der Fall: Ein
+unbewertet, beide Stufen der Rechnung wirkungslos. **Laden und Speichern laufen über eine einzige Liste
+aller Speicher** (`OtherConfiguration.Files`, seit upstream 7.5.7.5, A331): `InitAsync` lädt genau ihre
+Einträge, `Save()` und `SaveList` schreiben genau sie, und `check_config_store_roundtrip.py` hält in der CI
+fest, dass kein Speicher an ihr vorbei geschrieben wird. Die Lehre daran ist allgemeiner als der Fall: Ein
 Speicher, der geschrieben, aber nicht gelesen wird, ist gefährlicher als gar keiner — er ersetzt den
 Bestand durch das Nichts, das er für richtig hält.
 
@@ -713,16 +714,17 @@ Messung („tankbuster measured: … mitigation factor …, unmitigated … - st
 
 ### Speichern: welche Fehler der Flächentabelle hier ausgeschlossen sind
 
-Gemeinsamer Weg, nicht kopiert: Laden über `LoadLearned`, Speichern über `SaveTracked<T>` mit einer
-Zusammenführung je Speicher. Die Flächentabelle nutzt seit A259 denselben Weg.
+Gemeinsamer Weg, nicht kopiert: ein Eintrag `LearnedFile` in der Liste aller Speicher (`Files`), Laden über
+`InitOne` mit einem Bericht für das Listenfenster, Speichern über `SaveTracked<T>` mit einer Zusammenführung je
+Speicher. Die Flächentabelle nutzt denselben Weg.
 
 | Fehler der Flächentabelle | Hier |
 |---|---|
-| Nicht geladen, weil nur in `Init` eingetragen (A121) | in der einzigen Ladeliste `LoadSteps`; `check_config_store_roundtrip.py` prüft das. Dabei gefunden: Das Skript erkannte die gesicherte Speicherung `SaveTracked` gar nicht und prüfte die Flächentabelle deshalb nie; behoben, mit Selbsttest |
+| Nicht geladen, weil nur in `Init` eingetragen (A121) | in der einen Liste `Files`, die Laden und Speichern beide durchlaufen; `check_config_store_roundtrip.py` prüft, dass nichts an ihr vorbei gespeichert wird |
 | Speichern überschreibt die Datei mit weniger (A172) | jedes Speichern führt Datei und Speicher zusammen, je Wert das Höhere |
 | Datei beim Speichern unlesbar | nicht überschrieben, „NOT SAVED" |
 | Laden nicht zu Ende gelaufen, dann Entladen | nicht geschrieben |
-| Unlesbare Datei beim Start | als `.corrupt` beiseitegelegt und gemeldet |
+| Unlesbare Datei beim Start | als `.corrupt` beiseitegelegt, im Protokoll gemeldet, im Listenfenster „LOAD FAILED" |
 | Halb geschriebene Datei nach Absturz | über eine temporäre Datei geschrieben |
 | Zwei Speicherungen gleichzeitig auf dieselbe `.tmp` | eine Sperre je Speicher |
 | Kopie auf dem Pool-Thread, während der Effekt-Handler schreibt (A224) | Kopie auf dem aufrufenden Thread, unter der Sperre der Tabelle, auch im Gesamtspeichern |

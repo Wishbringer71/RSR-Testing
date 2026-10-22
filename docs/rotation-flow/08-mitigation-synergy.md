@@ -1285,11 +1285,12 @@ Wirkung mit den hier verfuegbaren Mitteln nicht — statische Pruefung und Kompi
 der Tank steht. Bei ausgeschalteter Einstellung liefern alle vier Getter die Werte ohne Vorausschau, die
 Nullvariante ist also eingebaut.
 
-**Die Groesse, die den Anspruch unmittelbar erfuellen wuerde, existiert bereits — und ist unbrauchbar
-gebaut.** `DataCenter.DPSTaken` misst den **tatsaechlich angekommenen** Schaden, also bereits nach
-allen Minderungen und Mitigationen; hochrechnen muesste man dafuer gar nichts. Ihr Zeitfenster
-betraegt jedoch fuenf Millisekunden, waehrend ein Bild rund sechzehn dauert — die Groesse sieht damit
-fast immer nichts. Sie ist Upstream-Code, und ihr einziger Leser im Baum ist die Diagnoseanzeige (Stand 12.10.2026).
+**Eine Groesse, die angekommenen Schaden schon misst, gibt es — sie traegt den Anspruch aber nicht.**
+`DataCenter.DPSTaken` misst den **tatsaechlich angekommenen** Schaden, also bereits nach allen Minderungen und
+Mitigationen, ueber die letzten fuenf Sekunden (seit upstream 7.5.7.5; vorher fuenf Millisekunden und damit fast
+immer nichts, A331). Sie misst aber die Gruppe als Ganzes — `DamageRec` traegt kein Ziel — und sagt deshalb nicht,
+wem der Strom gilt; die Vorausschau braucht die Rate je Mitglied. Sie ist Upstream-Code, und ihr einziger Leser im
+Baum ist die Diagnoseanzeige (Stand 22.10.2026).
 
 **Eine Barriere gehoert in den Zaehler, nicht in den Nenner.** The Blackest Night senkt die Rate
 nicht, es absorbiert eine Menge: Der Strom laeuft unveraendert weiter, er trifft nur zuerst den
@@ -1497,7 +1498,7 @@ sind erfasst statt bearbeitet.
 Zweite, unabhängig belegte Fundstelle: Im Schadenszweig steht der Sanctus-Block
 **vor** dem DoT-Block. Sobald `AoeCount = 3` erfüllt ist, greift Sanctus und der DoT
 wird nie gesetzt — bei einem Boss mit zwei Adds läuft also nie Dia. Dass das nicht
-gewollt ist, zeigt der DoT selbst: `ModifyDiaPvE` (`WhiteMageRotation.cs:306-317`)
+gewollt ist, zeigt der DoT selbst: `ModifyDiaPvE` (`WhiteMageRotation.cs:300-311`)
 setzt `TargetStatusProvide` gegen Nachlegen und `IsRestrictedDOT` gegen ungeeignete
 Ziele — beide Vorkehrungen laufen bei AoE ins Leere, weil der Zweig nicht erreicht
 wird. Seit A231 fällt der GCD nach einem Sanctus auf den fälligen DoT (Abschnitt „Die Regel“).

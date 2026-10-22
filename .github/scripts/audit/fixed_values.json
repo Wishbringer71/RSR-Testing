@@ -635,7 +635,7 @@
   },
   {
    "file": "RotationSolver.Basic/DataCenter.cs",
-   "code": "if (action.AttackType.RowId is >= 1 and <= 4)",
+   "code": "return AnyHostileCasting(static action => action.AttackType.RowId is >= 1 and <= 4);",
    "values": [
     "4"
    ],
@@ -835,13 +835,13 @@
   },
   {
    "file": "RotationSolver/Updaters/TargetUpdater.cs",
-   "code": "bool AutoProvokeAllowed() => autoProvokeAllowed ??= Service.Config.AutoProvokeForTank || StateUpdater.CountAllianceTanks() < 2;",
+   "code": "bool AutoProvokeAllowed() => autoProvokeAllowed ??= Service.Config.AutoProvokeForTank || StateUpdater.CountPartyTanks() < 2;",
    "values": [
     "2"
    ],
    "status": "exception",
    "loop": "A318",
-   "reason": "The setting's own condition, \"Auto provoke when there is another tank in party\": another tank besides the player means two; a count named by the option text, not a tunable. Moved unchanged from StateUpdater.ShouldAddProvoke (upstream line)"
+   "reason": "The setting's own condition, \"Auto provoke when there is another tank in party\": another tank besides the player means two; a count named by the option text, not a tunable. Moved unchanged from StateUpdater.ShouldAddProvoke (upstream line); counts the party since upstream 7.5.7.5 (A331)"
   }
  ]
 }

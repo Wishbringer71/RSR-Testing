@@ -2,27 +2,27 @@
 """Guard against a stored list that is written but never read back.
 
 OtherConfiguration keeps every persistent list as a static field, loads it at login and writes the
-whole in-memory table back to its file on every save. That pairing is the entire contract, and it is
-held together by nothing but two hand-written lists that have to agree.
+whole in-memory table back to its file on every save. That pairing is the entire contract.
 
-They did not. `HostileCastingAreaPotential` - the learned damage share of each area action - was
-entered into `Init` alone, while `InitAsync` is the entry point the plugin actually calls. The table
-therefore started every session empty, and the first save of the session wrote that empty table over
-the file. Nothing threw, nothing was logged, and in play the only symptom was every area action
-reading as *unrated* again: mitigation behaved exactly as it had before the measurement existed, so
-the loss looked like the feature simply not doing much. What it cost was the reason the store exists
-- a fight progged over several evenings can only ever be rated across sessions.
+It once rested on two hand-written lists that had to agree, and they did not.
+`HostileCastingAreaPotential` - the learned damage share of each area action - was entered into `Init`
+alone, while `InitAsync` is the entry point the plugin actually calls. The table therefore started every
+session empty, and the first save of the session wrote that empty table over the file. Nothing threw,
+nothing was logged, and in play the only symptom was every area action reading as *unrated* again.
 
-The check is the round trip, in the direction that loses data: a field written by `Save(x, nameof(x))`
-must also be loaded by `InitOne(ref x, nameof(x)` **in `LoadSteps`**. The other direction is harmless
-- a list that is loaded and never saved simply stays as it was shipped.
+Since upstream 7.5.7.5 (merged in A331) one array, `Files`, carries every store: `InitAsync` loads exactly
+its entries, `Save()` and `SaveList(name)` write exactly its entries, and `SaveList` looks a name up in it
+(`GetFile`, which throws for a name it does not hold). A store can therefore not reach a save path
+without a load path - provided nothing goes around the array. That proviso is what this check measures:
 
-The qualifier is the whole check. The first version of this script asked only whether the file held a
-load line for the field anywhere, and run against the broken tree it reported it clean: the load line
-existed, in the `Init` nobody calls. A load path that is never taken is not a load path, so the
-reachable one - the single list both entry points now iterate - is what gets measured, and a stray
-`InitOne` back inside `Init` or `InitAsync` is reported as the return of the two-lists construction
-that caused this.
+- every name a save asks for - `SaveList(nameof(X))`, a direct `SaveTracked(..., nameof(X)` - is in `Files`;
+- every list the list window draws and saves by name (`nameof(OtherConfiguration.X)` in MainWindow_List)
+  is in `Files`, since `SaveList` throws for any other;
+- `InitAsync` and `Save()` both walk `Files`, and `InitAsync` carries no load line of its own - a stray
+  `InitOne` there is the return of the two-lists construction.
+
+A load path that is never taken is not a load path: the first version of this check asked only whether a
+load line existed anywhere, and run against the broken tree it reported it clean.
 """
 
 import re
@@ -30,105 +30,120 @@ import sys
 from pathlib import Path
 
 TARGET = Path('RotationSolver.Basic/Configuration/OtherConfiguration.cs')
+LIST_WINDOW = Path('RotationSolver/UI/MainWindow/MainWindow_List.cs')
 
-# Save(value, nameof(Field)) - the store is named by the nameof, which is the file written. The value is
-# usually the field itself; a store changed on the game thread passes a copy taken there
-# (TankbusterMarkerWithoutHit), and keying on the first argument would miss it.
-# SaveTracked(...) is the guarded save of the tables learned in play - the stores this check exists for;
-# matching only Save( left exactly those out of it (found while adding the tankbuster table, A259).
-SAVED = re.compile(r'\bSave(?:Tracked)?\(\s*\w+\s*,\s*nameof\(\s*(\w+)\s*\)')
-# InitOne(ref Field, nameof(Field) - trailing arguments (download flags) vary and do not matter here.
-# LoadLearned(ref Field, nameof(Field), ...) loads a learned table through InitOne and reports the outcome.
-LOADED = re.compile(r'\b(?:InitOne|LoadLearned)\(\s*ref\s+(\w+)\s*,\s*nameof\(\s*\1\s*\)')
-# The one list both entry points iterate, from its signature to the closing bracket of the array.
-STEPS = re.compile(r'private\s+static\s+Action\[\]\s+LoadSteps\(\)\s*=>\s*\[(?P<body>.*?)\n\t\];',
-                   re.DOTALL)
-# Init and InitAsync must carry no load lines of their own; the Reset* methods legitimately do.
-ENTRY = re.compile(r'public\s+static\s+(?:async\s+Task|void)\s+Init(?:Async)?\s*\([^)]*\)\s*\{'
-                   r'(?P<body>.*?)\n\t\}', re.DOTALL)
+# The one array, from its declaration to the closing bracket.
+FILES = re.compile(r'private\s+static\s+readonly\s+ListFile\[\]\s+Files\s*=\s*\[(?P<body>.*?)\n\t\];', re.DOTALL)
+# An entry of it: new ListFile<T>(nameof(X), ... or new LearnedFile<T>(nameof(X), ...
+ENTRY = re.compile(r'new\s+(?:ListFile|LearnedFile)<[^(]*?>\(\s*nameof\(\s*(\w+)\s*\)')
+# A save by name. SaveList(nameof(X)) is the ordinary path; a SaveTracked with a nameof would go around it.
+SAVED = re.compile(r'\b(?:SaveList|SaveTracked)\(\s*(?:\w+\s*,\s*)?nameof\(\s*(\w+)\s*\)')
+# A load line of its own.
+LOAD_LINE = re.compile(r'\b(?:InitOne|LoadLearned)\s*\(')
+# The two entry points and their bodies.
+INIT_ASYNC = re.compile(r'public\s+static\s+async\s+Task\s+InitAsync\s*\([^)]*\)\s*\{(?P<body>.*?)\n\t\}', re.DOTALL)
+SAVE_ALL = re.compile(r'public\s+static\s+Task\s+Save\s*\(\s*\)\s*\{(?P<body>.*?)\n\t\}', re.DOTALL)
+# Lists the list window draws by name; each of those draws saves through SaveList(name).
+WINDOW_NAME = re.compile(r'nameof\(\s*OtherConfiguration\.(\w+)\s*\)')
 
 
-def check(text):
+def check(text, window_text=''):
     """Returns a list of complaints; empty means every saved store is loaded on the path taken."""
     problems = []
 
-    steps = STEPS.search(text)
-    if not steps:
-        return ['LoadSteps() not found - the single load list is what this check measures, so its '
+    files = FILES.search(text)
+    if not files:
+        return ['the Files array was not found - the single list of stores is what this check measures, so its '
                 'absence is the defect, not a reason to pass']
 
-    saved = {m.group(1) for m in SAVED.finditer(text)}
-    loaded = {m.group(1) for m in LOADED.finditer(steps.group('body'))}
+    listed = {m.group(1) for m in ENTRY.finditer(files.group('body'))}
 
-    for name in sorted(saved - loaded):
-        problems.append('%s is written to disk but is not in LoadSteps - the first save of a session '
-                        'overwrites the stored file with the empty table' % name)
+    for name in sorted({m.group(1) for m in SAVED.finditer(text)} - listed):
+        problems.append('%s is saved by name but is not in Files - it has no load path, and SaveList throws '
+                        'for it' % name)
 
-    for m in ENTRY.finditer(text):
-        for stray in LOADED.finditer(m.group('body')):
-            problems.append('%s is loaded inside an entry point instead of LoadSteps - that is the '
-                            'two-lists construction this check exists to prevent' % stray.group(1))
+    for name in sorted({m.group(1) for m in WINDOW_NAME.finditer(window_text)} - listed):
+        problems.append('the list window saves %s by name, but it is not in Files - SaveList throws for it' % name)
+
+    init = INIT_ASYNC.search(text)
+    if not init:
+        problems.append('InitAsync not found - the entry point the plugin calls')
+    else:
+        if 'Files' not in init.group('body'):
+            problems.append('InitAsync does not walk Files - the stores in it are not loaded')
+        if LOAD_LINE.search(init.group('body')):
+            problems.append('InitAsync carries a load line of its own - that is the two-lists construction this '
+                            'check exists to prevent')
+
+    save = SAVE_ALL.search(text)
+    if not save:
+        problems.append('Save() not found')
+    elif 'Files' not in save.group('body'):
+        problems.append('Save() does not walk Files - a store would be loaded and never written, or written '
+                        'by a path of its own')
 
     return problems
 
 
-def tree(steps, saves='', entry=''):
+def tree(entries, saves='', init_body='\t\tforeach (var file in Files) { file.Load(false); }',
+         save_body='\t\tforeach (var file in Files) { file.PrepareWrite(); }\n\t\treturn Task.CompletedTask;'):
     """A miniature OtherConfiguration, tabbed the way the real file is."""
-    return ('\tprivate static Action[] LoadSteps() =>\n\t[\n%s\n\t];\n\n'
-            '\tpublic static void Init()\n\t{\n%s\n\t}\n\n%s' % (steps, entry, saves))
+    return ('\tprivate static readonly ListFile[] Files =\n\t[\n%s\n\t];\n\n'
+            '\tpublic static async Task InitAsync(CancellationToken cancellationToken = default)\n\t{\n%s\n\t}\n\n'
+            '\tpublic static Task Save()\n\t{\n%s\n\t}\n\n%s' % (entries, init_body, save_body, saves))
 
 
 def self_test():
     """Constructed defects, because a silent pass is otherwise indistinguishable from a clean tree."""
-    both = ('\t\t() => InitOne(ref HostileCastingArea, nameof(HostileCastingArea)),\n'
-            '\t\t() => InitOne(ref HostileCastingAreaPotential, '
-            'nameof(HostileCastingAreaPotential), false),')
-    saves = ('\tpublic static Task SaveHostileCastingArea()\n'
-             '\t\t=> Task.Run(() => Save(HostileCastingArea, nameof(HostileCastingArea)));\n'
-             '\tpublic static Task SaveHostileCastingAreaPotential()\n'
-             '\t\t=> Task.Run(() => Save(HostileCastingAreaPotential, '
-             'nameof(HostileCastingAreaPotential)));')
+    both = ('\t\tnew ListFile<HashSet<uint>>(nameof(HostileCastingArea), () => HostileCastingArea, v => HostileCastingArea = v),\n'
+            '\t\tnew LearnedFile<float>(nameof(HostileCastingAreaPotential),\n'
+            '\t\t\t() => new Dictionary<uint, float>(HostileCastingAreaPotential), v => HostileCastingAreaPotential = v,\n'
+            '\t\t\tMath.Max, state => AreaPotentialStoreState = state, "rated action(s)"),')
+    saves = ('\tpublic static Task SaveHostileCastingArea() => SaveList(nameof(HostileCastingArea));\n'
+             '\tpublic static Task SaveHostileCastingAreaPotential() => SaveList(nameof(HostileCastingAreaPotential));\n')
 
     paired = tree(both, saves)
-    if check(paired):
+    if check(paired, 'DrawActionsList(nameof(OtherConfiguration.HostileCastingArea), x);'):
         raise AssertionError('a correctly paired store was rejected: %s' % check(paired))
 
-    # The actual defect, in the shape it had: the potentials are saved, and the only load line for
-    # them sits in an entry point rather than in the list both entry points run.
-    only = '\t\t() => InitOne(ref HostileCastingArea, nameof(HostileCastingArea)),'
-    stray = '\t\t_ = Task.Run(() => InitOne(ref HostileCastingAreaPotential, ' \
-            'nameof(HostileCastingAreaPotential), false));'
-    found = check(tree(only, saves, stray))
-    if not any('is written to disk' in p and 'HostileCastingAreaPotential' in p for p in found):
-        raise AssertionError('a store saved without a reachable load path went unnoticed: %s' % found)
-    if not any('inside an entry point' in p for p in found):
-        raise AssertionError('a load line back inside an entry point went unnoticed: %s' % found)
-
-    # Saved with nothing loading it at all - the same loss, without the misleading load line.
+    # The original defect in the new shape: the potentials are saved, but nothing loads them.
+    only = '\t\tnew ListFile<HashSet<uint>>(nameof(HostileCastingArea), () => HostileCastingArea, v => HostileCastingArea = v),'
     found = check(tree(only, saves))
-    if not any('HostileCastingAreaPotential' in p for p in found):
-        raise AssertionError('a store that is saved but never loaded went unnoticed: %s' % found)
+    if not any('HostileCastingAreaPotential' in p and 'not in Files' in p for p in found):
+        raise AssertionError('a store saved without a load path went unnoticed: %s' % found)
 
-    # The guarded save of a learned table is a save too, and its loader is a load (A259).
-    tracked = ('\tpublic static Task SaveTankbusterPotential()\n'
-               '\t\t=> Task.Run(() => SaveTracked(snapshot, nameof(TankbusterPotential), Higher));')
-    if not any('TankbusterPotential' in p for p in check(tree(only, tracked))):
-        raise AssertionError('a tracked save without a load went unnoticed')
-    learned = only + '\n\t\t() => LoadLearned(ref TankbusterPotential, nameof(TankbusterPotential), report, "x"),'
-    if check(tree(learned, tracked)):
-        raise AssertionError('a tracked save loaded through LoadLearned was rejected: %s' % check(tree(learned, tracked)))
+    # A save that goes around the array.
+    around = saves + '\tpublic static void X() => SaveTracked(snapshot, nameof(TankbusterPotential), Higher);\n'
+    if not any('TankbusterPotential' in p for p in check(tree(both, around))):
+        raise AssertionError('a direct tracked save of a store outside Files went unnoticed')
 
-    # Loaded but not saved is legitimate - a curated list the user never edits - and must not fail.
-    if check(tree('\t\t() => InitOne(ref DangerousStatus, nameof(DangerousStatus)),')):
-        raise AssertionError('a load without a save was reported as a defect')
+    # A load line back in the entry point, and an entry point that does not walk the array.
+    stray = '\t\tvalue = InitOne(new T(), nameof(HostileCastingAreaPotential), false, false);'
+    found = check(tree(both, saves, init_body=stray))
+    if not any('load line of its own' in p for p in found) or not any('does not walk Files' in p for p in found):
+        raise AssertionError('a load line in InitAsync, or InitAsync not walking Files, went unnoticed: %s' % found)
 
-    # No single list at all is the construction this check requires, so its absence is a complaint.
+    # Save() writing by a path of its own.
+    found = check(tree(both, saves, save_body='\t\treturn SaveHostileCastingArea();'))
+    if not any('Save() does not walk Files' in p for p in found):
+        raise AssertionError('a Save() that does not walk Files went unnoticed: %s' % found)
+
+    # The list window saving a list the array does not hold.
+    found = check(paired, 'DrawStatusList(nameof(OtherConfiguration.NoCastingStatus), x);')
+    if not any('list window saves NoCastingStatus' in p for p in found):
+        raise AssertionError('a list window name outside Files went unnoticed: %s' % found)
+
+    # A store in Files that nobody saves by name is legitimate - Save() still writes it.
+    if check(tree(both)):
+        raise AssertionError('a listed store without a named save was reported as a defect')
+
+    # No array at all is the construction this check requires, so its absence is a complaint.
     if not check(saves):
-        raise AssertionError('a file without LoadSteps passed')
+        raise AssertionError('a file without Files passed')
 
-    print('self-test ok: a paired store is accepted; a saved store with no reachable load path is\n'
-          '  caught, whether its load line is missing or stranded in an entry point; a loaded store\n'
-          '  with no save path is not reported; and a missing LoadSteps is itself a complaint')
+    print('self-test ok: a listed store is accepted; a store saved by name outside Files is caught, through\n'
+          '  SaveList, a direct tracked save or the list window; a load line in InitAsync, and an InitAsync or\n'
+          '  Save() that does not walk Files, are caught; and a missing Files array is itself a complaint')
 
 
 def main():
@@ -139,16 +154,19 @@ def main():
         return 1
 
     text = TARGET.read_text(encoding='utf-8')
-    problems = check(text)
+    window_text = LIST_WINDOW.read_text(encoding='utf-8') if LIST_WINDOW.exists() else ''
+    problems = check(text, window_text)
 
-    saved = len({m.group(1) for m in SAVED.finditer(text)})
+    files = FILES.search(text)
+    listed = len({m.group(1) for m in ENTRY.finditer(files.group('body'))}) if files else 0
     if problems:
-        print('%s: %d of %d stored lists have no load path' % (TARGET, len(problems), saved))
+        print('%s: %d problem(s) with %d listed store(s)' % (TARGET, len(problems), listed))
         for p in problems:
             print('  %s' % p)
         return 1
 
-    print('%s: all %d stored lists are loaded as well as saved' % (TARGET, saved))
+    print('%s: all %d stores are in Files, which both entry points walk, and every save by name finds its store'
+          % (TARGET, listed))
     return 0
 
 

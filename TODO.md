@@ -24,7 +24,6 @@ Nach der Wirkung im Kampf: Sicherheit der Gruppe vor Schaden, gewichtet mit der 
 11. Vorlauf: Dragoon und Viper
 12. AoE-Schwelle an drei Orten
 13. Audit der gesamten Codebasis
-14. `DPSTaken` zählt 5 ms statt 5 s
 
 Danach technische Schuld, soweit ihre Auflösungsbedingung erfüllt ist. Warten auf Daten: unten.
 
@@ -39,12 +38,6 @@ ist der Code anzupassen. *Gegen das einfache Verdrahten steht je Stelle:* Die Un
 des Zaubers verbrauchen; `SwiftcastBuffer` baute den in Konzept 11 behobenen Defekt neu; für `TargetColor` ist kein
 Zeichenort bekannt. *Nächster Schritt:* je Einstellung ein Loop, Ergebnis Verdrahtung mit sinnvoller Voreinstellung
 oder Entfernung mit Grund. *Konzept:* 11 (`SwiftcastBuffer`).
-
-### `DPSTaken` zählt 5 ms statt 5 s · N, R, U
-
-*Im Kampf:* keine – nur die Debug-Anzeige liest es; öffentlich und damit für abgeleitete Rotationen falsch. *Ort:*
-`DataCenter.DPSTaken`, `TimeSpan.FromMilliseconds(5)` (upstream seit `3d1f2ccb2`). *Nächster Schritt:* Einheit richten,
-Adressat auch Upstream.
 
 ## Offene Arbeit
 

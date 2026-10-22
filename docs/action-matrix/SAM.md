@@ -1,6 +1,6 @@
 # SAM — Abhängigkeitsmatrix
 
-Erzeugt von `.github/scripts/audit/generate_action_matrix.py` am 2026-10-18; nicht von Hand bearbeiten. Methode und Grenzen: `docs/rotation-flow/14-action-dependency-matrix.md`.
+Erzeugt von `.github/scripts/audit/generate_action_matrix.py` am 2026-10-22; nicht von Hand bearbeiten. Methode und Grenzen: `docs/rotation-flow/14-action-dependency-matrix.md`.
 
 - Basisrotation: `SamuraiRotation`
 - Rotation: `RotationSolver/RebornRotations/Melee/SAM_Reborn.cs`
@@ -84,8 +84,8 @@ direkt: 43 · nur gelesen: 2 · über andere Aktion: 1
 | Kasha | Combo nach | Shifu |
 | Ogi Namikiri | braucht Ogi Namikiri Ready | Eigenschaft Enhanced Ikishoten |
 | Ogi Namikiri | Knopf wird zu | Kaeshi: Namikiri |
-| Tendo Goken | braucht Tendo and after accumulating 2 Sen (Erzeuger nicht im Text) | Tendo and after accumulating 2 Sen |
-| Tendo Setsugekka | braucht Tendo and after accumulating 3 Sen (Erzeuger nicht im Text) | Tendo and after accumulating 3 Sen |
+| Tendo Goken | braucht Tendo, and after accumulating 2 Sen (Erzeuger nicht im Text) | Tendo, and after accumulating 2 Sen |
+| Tendo Setsugekka | braucht Tendo, and after accumulating 3 Sen (Erzeuger nicht im Text) | Tendo, and after accumulating 3 Sen |
 | Third Eye | Ausbau (Third Eye Mastery) | Tengentsu |
 | Tsubame-gaeshi | braucht Tsubame-gaeshi Ready | Eigenschaft Enhanced Iaijutsu |
 | Tsubame-gaeshi | Knopf wird zu | Kaeshi: Goken |

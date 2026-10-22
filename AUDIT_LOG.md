@@ -8775,6 +8775,153 @@ Sein Auftrag vom 19.10.2026: „fork mit upstream syncen."
 
 **Prüfgrad:** statisch am Diff und an den Lesern; Prüfskripte nach dem Merge; Compile im Prüflauf.
 
+### A331 · Upstream-Sync 7.5.7.5 und 7.5.7.6 (79f60d87c) in Arbeitszweig und main (22.10.2026)
+
+Sein Auftrag vom 22.10.2026: „fork mit upstream syncen."
+
+- *Stand:* Seit A330 vier Upstream-Commits:
+  - `6b52e1dfd` ist ein Sammel-Commit über 142 Dateien („just check in plugin changelog"), Tag 7.5.7.5 laut Changelog;
+  - `3c7f28ade` behebt einen seltenen Absturz durch ein verschwundenes Objekt;
+  - dazu zwei Merges, `79f60d87c` trägt den Tag 7.5.7.6.
+  
+  20 Dateien hatten Konflikte. Zusammengeführt wurde nach einer Regel: die Struktur und die Leistungsarbeit von
+  Upstream übernehmen, jede Fork-Regel darauf wieder einsetzen. Sie stand vorher dort, wo Upstream umgebaut hat.
+- *Werkzeug:* Erstmals lokal kompiliert (.NET SDK 10.0.402 und Dalamud unter `$HOME/.xlcore/dalamud/Hooks/dev` in
+  dieser Umgebung). Erst so wurden zwei stille Brüche sichtbar, die keinen Konflikt erzeugt hatten:
+  - `Watcher.cs` verlor das `using` für `ActionType`;
+  - `StateUpdater` las die entfernte `TankbusterTargets`.
+  
+  Danach baut es mit den Warnstufen der CI fehlerfrei.
+
+**Was im Kampf anders wird (Upstream), und wie es in die Fork-Regeln greift:**
+
+- *Auto-Provokation und Auto-Haltung zählen die eigene Gruppe.*
+  - Früher zählten `CountAllianceTanks` und `AnyAllianceTankWithStance` nur `AllianceMembers`, und die enthalten die
+    eigene Gruppe nie (`TargetUpdater.UpdateLists` hält sie getrennt). „Auto provoke when there is another tank in
+    party" griff damit in einer Gruppe mit zwei Tanks nie.
+  - Ab jetzt nimmt ein Tank mit der Einstellung aus einem Nicht-Tank keinen Gegner mehr ab, wenn ein zweiter Tank in
+    der Gruppe ist.
+  - Die Auto-Haltung legt sich nicht mehr an, wenn der andere Tank der Gruppe sie trägt.
+  - Fork-Seite: Die Zählung hatte A318 nach `TargetUpdater` verlegt. Sie heißt dort jetzt `CountPartyTanks`, die Regel
+    selbst ist unverändert. Die Rettung des Co-Tanks hängt an ihrer eigenen Option (A318) und ist nicht betroffen.
+- *Tweaks für Animationssperre und Abklingzeit über Hooks.*
+  - `ActionManagerEx` hängt sich jetzt an `UseActionLocation`, `Update` und `ReceiveActionEffect`. Die beiden Optionen
+    wirken damit auf jede Aktion, auch auf eigene Drücke des Spielers.
+  - Vorher lief nur ein Wrapper ohne nennenswerte Wirkung, den der Fork in `BaseAction.Use` umging. Beide Optionen sind
+    ab Werk aus.
+  - Mit ihnen an fällt die nächste Aktion früher. Die gemessene Laufzeit eines Drucks im Tankbuster-Plan
+    (`TankbusterForecast.RoundTrip`) misst ab dem Druck und steuert sich selbst nach. *Inferenz, nicht gemessen:* Sie
+    bleibt deshalb gültig.
+- *Kampfinformationen vor der Entscheidung.* `MajorUpdater` ist ein einziger Rahmen-Handler.
+  `ActionUpdater.UpdateCombatInfo` und der Rotationswechsel laufen jetzt vor Zielen, Status und Aktion; vorher liefen
+  sie danach, die Entscheidung las also den Stand des vorigen Bildes.
+- *Heilvorhersage.* `HealPrediction.HasLanded` misst eine vorhergesagte Heilung von der niedrigsten Gesundheit seit dem
+  Druck aus. Trifft Schaden vor der Heilung ein, erkennt sie die gelandete Heilung jetzt. Vorher blieb die Vorhersage
+  bis zum Ablauf stehen, und das Mitglied galt als besser geheilt, als es war. Der Fork-Weg `ConfirmPendingHeal` läuft
+  davor und bleibt.
+- *Statusprüfung von Fähigkeiten.* `GetActionStatus` für Fähigkeiten wird jetzt mit `ActionType.Action` gefragt statt
+  mit `EventAction`. Fähigkeiten, die das Spiel verweigert (Voraussetzung fehlt, nicht gelernt, falsche Klasse), fallen
+  damit schon in `CanUse` heraus.
+- *Abfangen eigener Drücke.* Ein Druck wird gemerkt, wenn eine Ladung innerhalb von `InterceptActionTime` zurückkommt.
+  Vorher entschied eine Zahl von GCDs.
+- *DPSTaken.* Das Fenster ist jetzt fünf Sekunden statt fünf Millisekunden. Damit schließt der TODO-Eintrag
+  „`DPSTaken` zählt 5 ms statt 5 s".
+  - Der Eintrag ist entfernt.
+  - Die Konzepte 07 und 08 nennen den neuen Stand. Am Grund, warum die Größe dort nicht trägt, ändert das nichts:
+    `DamageRec` trägt kein Ziel.
+  - Einziger Leser bleibt die Diagnoseanzeige.
+- *Weiteres ohne Fork-Berührung:*
+  - Encounter-Immunitäten als Tabelle (`EncounterImmunity`);
+  - Zielwahl in einem Durchlauf (`PickByTargeting`);
+  - Karten-, Tanzpartner- und Kardia-Ziele über `FirstByJobPriority` und `FindCardTarget`;
+  - `PartyBuffDuration` liest Buffs aller Quellen; im Baum ohne Leser außerhalb von Churin;
+  - Pugilist zählt zu den Nahkämpfern, Archer nicht mehr zu den Magiern;
+  - der Schalter „Auto-use duty actions" (ab Werk an, `ActiveDutyRotation`);
+  - Reborn/Evolved-Kennung an Rotationen, die bis Evercold immer Reborn ist;
+  - Listen und Einstellungen im Fenster;
+  - der Crucible-Sirenen-Schalter.
+
+**Fork-Regeln, an Upstreams Umbau neu eingesetzt:**
+
+- *`OtherConfiguration`:* Upstreams Liste `Files` trägt jetzt jeden Speicher, auch die drei gelernten (Flächentabelle,
+  Tankbuster-Tabelle, Marker ohne Treffer, als `LearnedFile` bzw. `ListFile`).
+  - Laden und Speichern laufen beide über sie, die Lehre aus A121 ist damit im Aufbau verankert.
+  - Erhalten bleiben:
+    - die Sperre gegen das Schreiben ungeladener Speicher (`WasLoaded`, A196);
+    - das Beiseitelegen unlesbarer Dateien als `.corrupt` mit erneutem Laden kuratierter Listen;
+    - die Zusammenführung mit der Datei (`SaveTracked`) samt Rücklesen und Bericht;
+    - die Kopie auf dem aufrufenden Thread (A224);
+    - die Ladefrist.
+  - Von Upstream übernommen:
+    - atomares Schreiben;
+    - Download erst nach erfolgreichem Parsen schreiben;
+    - Zurücksetzen im Hintergrund;
+    - Speichern einzelner Listen.
+  - Fehlschlag beim Zurücksetzen: Die Liste bleibt, und mit ihr ihr Ladezustand. Vorher galt eine nie geladene Liste
+    danach als geladen, und das nächste Speichern hätte ihren leeren Stand geschrieben.
+  - Nebenbefund im Fork-Code, behoben: Ein gelernter Speicher, dessen Datei unlesbar war, schrieb sofort eine leere
+    Datei nach. Der Bericht meldete deshalb „loaded 0" statt „LOAD FAILED". Upstreams Weg schreibt keinen Leerstand; die
+    Meldung stimmt jetzt.
+  - `check_config_store_roundtrip.py` misst jetzt den neuen Aufbau, mit Selbsttest:
+    - jeder Speichername steht in `Files`, auch die aus dem Listenfenster;
+    - `InitAsync` und `Save()` durchlaufen `Files`.
+- *`DataCenter`:*
+  - Upstreams Rahmen-Cache (`FrameCached`) für `IsHostileCastingAOE`, `IsHostileCastingToTank`, `IsHostileCastingStop`
+    und `AreHostilesCastingKnockback` ist übernommen.
+  - Die Fork-Erkennung bleibt: die Erkenner der Flächen, Tankbuster und Rückstöße lesen weiter `AreaCasters` mit den
+    Helfern (A277, A303).
+  - `AnyHostile` prüft zentral `IsValid` (A199, A309).
+  - Die Erkennung physischen Schadens liest weiter die Zeilen 1–4 (A179); Upstream fragt noch Zeile 7, das ist Schall.
+  - Tankbuster-Ziele sind wie bei Upstream Ids (`TankbusterTargetIds`), gefüllt weiter durch
+    `UpdateTankbusterTargets` (A328).
+  - `AverageTTK` bleibt im Unbekannten unendlich (der Fork-Grund steht am Code); Upstreams `IsAverageTTKKnown` ist dazu
+    übernommen.
+- *`ActionTargetInfo`:*
+  - Heilzielwahl (Konzept 07), Tankbuster-Hilfe (A328), Tank-Ziel ohne den Spieler und `TankSwap` sind unverändert aus
+    dem Fork.
+  - Tanzpartner nur in Reichweite (A223) und „Big HP" mit eigener Einstellung (A225) sitzen jetzt in Upstreams neuen
+    Funktionen.
+  - Die DoT-Verteilung (`DotSpreadOrder`) geht über Upstreams `MinBy`.
+- *`CustomRotation_GCD`:* Upstreams `TryRaise` und `CanCastHeals` tragen die Fork-Regeln:
+  - die Swiftcast-Reserve und „kein anderer Heiler lebt" (Konzept 11);
+  - `PlayerHealingPunished`;
+  - Schlaf gegen ein Flächenwirken (A329);
+  - die Pfad-Flags der Verteidigung;
+  - die Kanal-Sperren nur bis zum Treffer.
+  
+  Upstreams `AllOtherHealersDead` verlangt mindestens einen toten Heiler. Ein allein spielender Heiler wirkte damit nie
+  hart; dieser Fehler ist im Fork längst behoben und bleibt es.
+- *`MajorUpdater`:* Upstreams Einzel-Handler mit den Kostenschritten von `UpdateCost` (A310, A327). Die Wachen
+  (Tankbuster-Marker, Tankwechsel, Plan, Betäubung, Schlaf) laufen nach der Bereinigung, jede für sich abgesichert.
+  In Upstreams Bereinigung hätten sie hinter deren vorzeitigem `return` bei leerer Effekt-Warteschlange gestanden.
+- *BossModReborn:* Upstream abonniert `Hints.IsFixedDashSafe` weiter mit `Func<Vector3,Vector3,bool>`. BossModReborn
+  registriert `(float range, bool backwards)` (A313). Der Fork bleibt dabei, es nicht zu abonnieren.
+- *Fremde Rotationen:* In `RabbsBLM` bleibt die Fork-Behebung der Wegwerf-Aktion, in `ChurinDNC` die
+  `UseBmrTimeline`-Freigabe.
+
+**Verträge (R):**
+
+- Upstream entfernt öffentliche Teile des Pakets:
+  - `BaseAction.AnimationLockTime`;
+  - `TargetHelper.GetTargetsByCastAndEffect` und `GetTargetsUsableByAction`;
+  - `ActionConfig.GCDSingleHeal`, jetzt `ActionSetting.GCDSingleHeal`;
+  - `TargetType.Capture`.
+- `Capture` bleibt im Fork, unbenutzt: Ohne den Wert verschöbe sich der Zahlenwert des Fork-Werts `TankSwap` für
+  Rotationen, die gegen das Fork-Paket gebaut sind.
+- `TargetType` wird nicht gespeichert und nicht gecastet (gemessen).
+
+**Version:** `Directory.Build.props` auf 7.5.7.6, 7.5.7.6+wsh1 und 7.5.7.6-wsh1, im Arbeitszweig und auf main. Die
+Prüfungen liefen nach dem Merge-Commit erneut (A324).
+
+**Prüfgrad:**
+- statisch je Konflikt und je Upstream-Änderung an Fork-Abschnitten;
+- Compile lokal mit den Warnstufen der CI;
+- 27 Prüfschritte grün;
+- Aktionsmatrix neu erzeugt: nur Wirktexte aus den neu erzeugten Spieldaten.
+
+Im Spiel nicht beobachtet. Die Laufzeitwege mit Selbstnachsteuerung (Tankbuster-Plan, TTK-Korrektur) sind unverändert
+verdrahtet.
+
 ---
 ## B · Commit-Register (Fork vs. `upstream/main`)
 

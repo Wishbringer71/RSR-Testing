@@ -2,7 +2,7 @@ using System.ComponentModel;
 
 namespace RotationSolver.ExtraRotations.Healer;
 
-[Rotation("BeirutaSGE", CombatType.PvE, GameVersion = "7.45", Description = "Semi-Automatic Savage/Ultimate rotation, need to used with CD planner or manual inputs")]
+[Rotation("BeirutaSGE", CombatType.PvE, GameVersion = "7.45", RotationType = RotationType.Reborn, Description = "Semi-Automatic Savage/Ultimate rotation, need to used with CD planner or manual inputs")]
 [SourceCode(Path = "main/ExtraRotations/Healer/BeirutaSGE.cs")]
 [ExtraRotation]
 
@@ -107,13 +107,24 @@ public sealed class BeirutaSGE : SageRotation
 	{
 		get
 		{
-			if (PartyMembers == null) return false;
+			if (PartyMembers == null)
+			{
+				return false;
+			}
+
 			foreach (var member in PartyMembers)
 			{
-				if (member?.StatusList == null) continue;
+				if (member?.StatusList == null)
+				{
+					continue;
+				}
+
 				foreach (var status in member.StatusList)
 				{
-					if (status.StatusId == (uint)StatusID.Medicated) return true;
+					if (status.StatusId == (uint)StatusID.Medicated)
+					{
+						return true;
+					}
 				}
 			}
 			return false;
@@ -141,15 +152,19 @@ public sealed class BeirutaSGE : SageRotation
 	private int GetEnemiesAroundTarget(float radius)
 	{
 		if (CurrentTarget == null || AllHostileTargets == null)
+		{
 			return 0;
+		}
 
-		int count = 0;
+		var count = 0;
 		foreach (var enemy in AllHostileTargets)
 		{
 			if (enemy != null &&
 				Vector3.Distance(CurrentTarget.Position, enemy.Position) <
 				(radius + enemy.HitboxRadius))
+			{
 				count++;
+			}
 		}
 		return count;
 	}
@@ -185,7 +200,9 @@ public sealed class BeirutaSGE : SageRotation
 	private static bool HasSingleHealLockoutStatus(IBattleChara? target)
 	{
 		if (target == null)
+		{
 			return true;
+		}
 
 		try
 		{
@@ -287,7 +304,10 @@ public sealed class BeirutaSGE : SageRotation
 	{
 		foreach (var member in PartyMembers)
 		{
-			if (member.GetHealthRatio() < threshold) return true;
+			if (member.GetHealthRatio() < threshold)
+			{
+				return true;
+			}
 		}
 		return false;
 	}
@@ -460,7 +480,9 @@ public sealed class BeirutaSGE : SageRotation
 		act = null;
 
 		if (HasHealingLockout)
+		{
 			return false;
+		}
 
 		if (!MergedStatus.HasFlag(AutoStatus.DefenseArea)
 			&& !MergedStatus.HasFlag(AutoStatus.DefenseSingle)
@@ -496,34 +518,45 @@ public sealed class BeirutaSGE : SageRotation
 		act = null;
 
 		if (HasHealingLockout)
+		{
 			return false;
+		}
 
-		IBattleChara? taurocholeTarget = TaurocholePvE.Target.Target;
-		IBattleChara? druocholeTarget = DruocholePvE.Target.Target;
-		IBattleChara? kardiaTarget = KardiaPvE.Target.Target;
+		var taurocholeTarget = TaurocholePvE.Target.Target;
+		var druocholeTarget = DruocholePvE.Target.Target;
+		var kardiaTarget = KardiaPvE.Target.Target;
 
 		// Krasis always first
 		if (KrasisPvE.CanUse(out act))
+		{
 			return true;
+		}
 
 		// Addersgall > 2: spend freely, prefer Taurochole first, but do not use it under Kerachole
 		if (Addersgall > 2)
 		{
 			if (!HasKerachole && TaurocholePvE.CanUse(out act))
+			{
 				return true;
+			}
 
 			if (DruocholePvE.CanUse(out act))
+			{
 				return true;
+			}
 		}
 
 		// Prevent immediately chaining another single-target heal after Taurochole
 		if (IsLastAction(ActionID.TaurocholePvE))
+		{
 			return base.HealSingleAbility(nextGCD, out act);
+		}
 
 		IBattleChara? soteriaTarget = null;
 		foreach (var member in PartyMembers)
 		{
-			if (member.HasStatus(true, StatusID.Kardion)) { soteriaTarget = member; break; }
+			if (member.HasStatus(true, StatusID.Kardion))
+			{ soteriaTarget = member; break; }
 		}
 
 		if (PartyMembersAverHP > 0.85f &&
@@ -595,7 +628,8 @@ public sealed class BeirutaSGE : SageRotation
 		IBattleChara? soteriaTarget = null;
 		foreach (var member in PartyMembers)
 		{
-			if (member.HasStatus(true, StatusID.Kardion)) { soteriaTarget = member; break; }
+			if (member.HasStatus(true, StatusID.Kardion))
+			{ soteriaTarget = member; break; }
 		}
 
 		if (PartyMembersAverHP > 0.8f &&
@@ -647,7 +681,7 @@ public sealed class BeirutaSGE : SageRotation
 	private bool ChoiceEukrasia(out IAction? act)
 	{
 		act = null;
-		bool selected = false;
+		var selected = false;
 
 		if (EukrasianPrognosisIiPvE.EnoughLevel
 			&& EukrasianPrognosisIiPvE.IsEnabled
@@ -938,7 +972,9 @@ public sealed class BeirutaSGE : SageRotation
 		act = null;
 
 		if (HasHealingLockout || HasBuffs)
+		{
 			return false;
+		}
 
 		if (ShouldDeferToRaise())
 		{
@@ -975,7 +1011,9 @@ public sealed class BeirutaSGE : SageRotation
 		act = null;
 
 		if (HasHealingLockout)
+		{
 			return false;
+		}
 
 		if (ShouldDeferToRaise())
 		{

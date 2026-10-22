@@ -12,6 +12,7 @@ namespace RotationSolver.Commands
 	public static partial class RSCommands
 	{
 		private static DateTime _lastClickTime = DateTime.MinValue;
+		private static TimeSpan _clickDelay = TimeSpan.Zero;
 		private static bool _lastState;
 		private static bool started = false;
 		internal static DateTime _lastUsedTime = DateTime.MinValue;
@@ -33,18 +34,14 @@ namespace RotationSolver.Commands
 			}
 			_lastState = currentState;
 
-			var minDelayMs = (int)(Service.Config.ClickingDelay.X * 1000);
-			var maxDelayMs = (int)(Service.Config.ClickingDelay.Y * 1000);
-			var delayRange = TimeSpan.FromMilliseconds(random.Next(
-				Math.Min(minDelayMs, maxDelayMs),
-				Math.Max(minDelayMs, maxDelayMs)));
-
-			if (DateTime.Now - _lastClickTime < delayRange)
+			if (DateTime.Now - _lastClickTime < _clickDelay)
 			{
 				return false;
 			}
 
+			// Rolled once per click; re-rolling every frame would bias the wait toward the minimum.
 			_lastClickTime = DateTime.Now;
+			_clickDelay = RandomSeconds(Service.Config.ClickingDelay.X, Service.Config.ClickingDelay.Y);
 
 			if (!isGCD && DataCenter.DefaultGCDRemain <= 0.5f && DataCenter.DefaultGCDRemain > 0f)
 			{
@@ -146,13 +143,14 @@ namespace RotationSolver.Commands
 
 				if (nextAction is BaseAction finalAct)
 				{
+					if (Service.Config.EnableClickingCount)
+					{
+						OtherConfiguration.RotationSolverRecord.ClickingCount++;
+					}
+
 					if (Service.Config.KeyboardNoise)
 					{
 						PulseSimulation(nextAction.AdjustedID);
-						if (Service.Config.EnableClickingCount)
-						{
-							OtherConfiguration.RotationSolverRecord.ClickingCount++;
-						}
 					}
 
 					if (finalAct.Setting.EndSpecial)
@@ -167,6 +165,11 @@ namespace RotationSolver.Commands
 			}
 		}
 
+		private static TimeSpan RandomSeconds(float min, float max)
+		{
+			return TimeSpan.FromSeconds(Math.Min(min, max) + (random.NextDouble() * Math.Abs(max - min)));
+		}
+
 		private static void PulseSimulation(uint id)
 		{
 			if (started)
@@ -174,23 +177,12 @@ namespace RotationSolver.Commands
 				return;
 			}
 
+			var presses = Service.Config.KeyboardNoisePresses;
 			started = true;
-			try
-			{
-				var pulseCount = random.Next(Service.Config.KeyboardNoisePresses.X, Service.Config.KeyboardNoisePresses.Y);
-				PulseAction(id, pulseCount);
-			}
-			catch (Exception ex)
-			{
-				PluginLog.Warning($"Pulse Failed!: {ex.Message}");
-				BasicWarningHelper.AddSystemWarning($"Action bar failed to pulse because: {ex.Message}");
-			}
-			finally
-			{
-				started = false;
-			}
+			PulseAction(id, random.Next(Math.Min(presses.X, presses.Y), Math.Max(presses.X, presses.Y) + 1));
 		}
 
+		// started stays set until the chain ends, so a new action can't start a second chain.
 		private static void PulseAction(uint id, int remainingPulses)
 		{
 			if (remainingPulses <= 0)
@@ -199,12 +191,18 @@ namespace RotationSolver.Commands
 				return;
 			}
 
-			MiscUpdater.PulseActionBar(id);
-			var time = Service.Config.ClickingDelay.X + (random.NextDouble() * (Service.Config.ClickingDelay.Y - Service.Config.ClickingDelay.X));
-			_ = Svc.Framework.RunOnTick(() =>
+			try
 			{
-				PulseAction(id, remainingPulses - 1);
-			}, TimeSpan.FromSeconds(time));
+				MiscUpdater.PulseActionBar(id);
+				_ = Svc.Framework.RunOnTick(() => PulseAction(id, remainingPulses - 1),
+					RandomSeconds(Service.Config.ClickingDelay.X, Service.Config.ClickingDelay.Y));
+			}
+			catch (Exception ex)
+			{
+				started = false;
+				PluginLog.Warning($"Pulse Failed!: {ex.Message}");
+				BasicWarningHelper.AddSystemWarning($"Action bar failed to pulse because: {ex.Message}");
+			}
 		}
 
 		internal static void ResetSpecial()
@@ -383,12 +381,6 @@ namespace RotationSolver.Commands
 					{
 						targetedIds ??= CollectHostileTargetObjectIds();
 
-						_hostileIds.Clear();
-						foreach (var hostile in DataCenter.AllHostileTargets)
-						{
-							_ = _hostileIds.Add(hostile.GameObjectId);
-						}
-
 						var targets = TargetHelper.GetTargetsByRange(30f);
 						for (var i = 0; i < targets.Count; i++)
 						{
@@ -400,11 +392,11 @@ namespace RotationSolver.Commands
 							// field op zone has one standing at its camp.
 							//
 							// Three reasons to skip, and the merge needs all three: upstream added the
-							// null guard and the id set (a lookup instead of a walk over the hostile
-							// list), this fork added the dummy. Upstream's form skipped a hostile only
-							// while it was NOT a dummy, which is the exemption that put the dummy back
-							// in as a trigger.
-							if (t == null || _hostileIds.Contains(t.GameObjectId) || ObjectHelper.IsDummy(t))
+							// null guard and the id set (DataCenter.AllHostileTargetIds, a lookup instead
+							// of a walk over the hostile list), this fork added the dummy. Upstream's form
+							// skipped a hostile only while it was NOT a dummy, which is the exemption that
+							// put the dummy back in as a trigger.
+							if (t == null || DataCenter.AllHostileTargetIds.Contains(t.GameObjectId) || ObjectHelper.IsDummy(t))
 							{
 								continue;
 							}
@@ -475,9 +467,8 @@ namespace RotationSolver.Commands
 			}
 		}
 
-		// Scratch sets reused by UpdateRotationState, which runs every frame.
+		// Scratch set reused by UpdateRotationState, which runs every frame.
 		private static readonly HashSet<ulong> _targetedIds = [];
-		private static readonly HashSet<ulong> _hostileIds = [];
 
 		/// <summary>
 		/// Collects the ids of everything a hostile is currently targeting.

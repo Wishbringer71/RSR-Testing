@@ -1,6 +1,6 @@
 # MNK — Abhängigkeitsmatrix
 
-Erzeugt von `.github/scripts/audit/generate_action_matrix.py` am 2026-10-18; nicht von Hand bearbeiten. Methode und Grenzen: `docs/rotation-flow/14-action-dependency-matrix.md`.
+Erzeugt von `.github/scripts/audit/generate_action_matrix.py` am 2026-10-22; nicht von Hand bearbeiten. Methode und Grenzen: `docs/rotation-flow/14-action-dependency-matrix.md`.
 
 - Basisrotation: `MonkRotation`
 - Rotation: `RotationSolver/RebornRotations/Melee/MNK_Reborn.cs`
@@ -93,7 +93,7 @@ direkt: 45 · nur gelesen: 1 · ungenutzt: 1 · über andere Aktion: 1
 | Masterful Blitz | Knopf wird zu | Phantom Rush |
 | Masterful Blitz | Knopf wird zu | Rising Phoenix |
 | Masterful Blitz | Knopf wird zu | Tornado Kick |
-| Phantom Rush | braucht Lunar Nadi and Solar Nadi as well as three Beast Chakra (Erzeuger nicht im Text) | Lunar Nadi and Solar Nadi as well as three Beast Chakra |
+| Phantom Rush | braucht Lunar Nadi and Solar Nadi, as well as three Beast Chakra (Erzeuger nicht im Text) | Lunar Nadi and Solar Nadi, as well as three Beast Chakra |
 | Pouncing Coeurl | Bedingung (kein Status) | coeurl form |
 | Rising Phoenix | Bedingung (kein Status) | three distinct Beast Chakra |
 | Rising Raptor | Bedingung (kein Status) | raptor form |
@@ -105,7 +105,7 @@ direkt: 45 · nur gelesen: 1 · ungenutzt: 1 · über andere Aktion: 1
 | Steeled Meditation | Ausbau (Steel Peak Mastery) | Forbidden Meditation |
 | Steeled Meditation | Bedingung (kein Status) | less than five chakra are open |
 | the Forbidden Chakra | Bedingung (kein Status) | combat and under the effect of five Chakra |
-| Tornado Kick | braucht Lunar Nadi and Solar Nadi as well as three Beast Chakra (Erzeuger nicht im Text) | Lunar Nadi and Solar Nadi as well as three Beast Chakra |
+| Tornado Kick | braucht Lunar Nadi and Solar Nadi, as well as three Beast Chakra (Erzeuger nicht im Text) | Lunar Nadi and Solar Nadi, as well as three Beast Chakra |
 | Tornado Kick | Ausbau (Tornado Kick Mastery) | Phantom Rush |
 | True Strike | Ausbau (Beast Chakra Mastery) | Rising Raptor |
 | True Strike | Bedingung (kein Status) | raptor form |
