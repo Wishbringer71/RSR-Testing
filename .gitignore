@@ -10,8 +10,7 @@ RotationSolver.sln.DotSettings.user
 /RotationSolver.GameData/RotationSolver.GameData.csproj.user
 /doc
 .vscode/
-
-# Leftovers from SDK upgrade tooling
+*.csproj.user
 *.csproj.Backup.tmp
 
 # Python bytecode: every `git add` on a script directory picks it up otherwise.

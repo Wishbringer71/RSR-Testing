@@ -16,18 +16,7 @@ public partial class CustomRotation
 		try
 		{
 			UpdateInfo(); // Rotation specific info updates
-			IBaseAction.ActionPreview = true;
-			try
-			{
-				if (DataCenter.DrawingActions)
-				{
-					UpdateActions(Role);
-				}
-			}
-			finally
-			{
-				IBaseAction.ActionPreview = false;
-			}
+			UpdatePreview();
 
 			CountingOfLastUsing = CountingOfCombatTimeUsing = 0;
 			// The defence paths set this and clear it on the way out; an exception in one of them would
@@ -90,13 +79,52 @@ public partial class CustomRotation
 				ex = ex.InnerException;
 			}
 
-			// Log the exception details
-			PluginLog.Error(WhyNotValid);
+			LogErrorOnce(WhyNotValid);
 
 			IsValid = false;
 		}
+		finally
+		{
+			IBaseAction.ResetOverrides();
+		}
 
 		return newAction != null;
+	}
+
+	private string? _lastLoggedError;
+
+	private void LogErrorOnce(string message)
+	{
+		if (message == _lastLoggedError)
+		{
+			return;
+		}
+
+		_lastLoggedError = message;
+		PluginLog.Error(message);
+	}
+
+	private void UpdatePreview()
+	{
+		if (!DataCenter.DrawingActions)
+		{
+			return;
+		}
+
+		IBaseAction.ActionPreview = true;
+		try
+		{
+			UpdateActions(Role);
+		}
+		catch (Exception ex)
+		{
+			LogErrorOnce($"Failed to preview the actions: {ex}");
+		}
+		finally
+		{
+			IBaseAction.ActionPreview = false;
+			IBaseAction.ResetOverrides();
+		}
 	}
 
 	private void UpdateActions(JobRole role)
@@ -247,6 +275,9 @@ public partial class CustomRotation
 			gcdAction = GCD();
 			IBaseAction.IgnoreClipping = false;
 
+			IBaseAction.TargetOverride = null;
+			IBaseAction.ShouldEndSpecial = false;
+
 			// If a GCD action is available, determine if it can be used or if an ability should be used instead
 			if (gcdAction != null)
 			{
@@ -267,13 +298,12 @@ public partial class CustomRotation
 		}
 		catch (Exception ex)
 		{
-			PluginLog.Error($"Exception in Invoke method: {ex.Message}");
+			LogErrorOnce($"Exception in Invoke method: {ex.Message}");
 			return null;
 		}
 		finally
 		{
-			// Ensure IgnoreClipping is reset
-			IBaseAction.IgnoreClipping = false;
+			IBaseAction.ResetOverrides();
 			IBaseAction.HoldDefenceOnSelf = false;
 			IBaseAction.AllowedDefenceOnSelf = null;
 		}

@@ -578,7 +578,7 @@ public static class Watcher
 							// over the set followed by an insertion. Upstream now carries that form too,
 							// so the second Add this fork used to have here would always report false
 							// - the id having just been inserted - and the store would never be saved.
-							_ = OtherConfiguration.Save();
+							_ = OtherConfiguration.SaveHostileCastingKnockback();
 						}
 					}
 					break;
@@ -834,14 +834,7 @@ public static class Watcher
 				return;
 			}
 
-			// Only process real actions/items. Mounts and other non-action types (e.g. ActionType.Mount)
-			// reuse the Action sheet's row IDs, which can collide with unrelated GCDs/abilities and
-			// corrupt LastAction/LastComboAction tracking if not filtered out here.
-			//if (set.Header.ActionType is not ActionType.Action and not ActionType.Item)
-			//{
-			//	return;
-			//}
-
+			// ECommons leaves Action null for items and mounts, so this also keeps mount IDs out of combo tracking.
 			if (set.Action == null)
 			{
 				//PluginLog.Debug("ActionFromSelf: set.Action is null. Exiting.");

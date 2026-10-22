@@ -19,6 +19,9 @@ internal static partial class TargetUpdater
 	private static readonly List<IBattleChara> _raiseCandidates = [];
 	private static readonly List<IBattleChara> _dispelCandidates = [];
 
+	// Other players outside duties, only gathered for RaiseType.AllOutOfDuty.
+	private static List<IBattleChara> _outOfDutyPlayers = [];
+
 	private static DateTime _lastUpdateTimeToKill = DateTime.MinValue;
 	private static readonly TimeSpan TimeToKillUpdateInterval = TimeSpan.FromSeconds(1);
 
@@ -41,6 +44,8 @@ internal static partial class TargetUpdater
 			// as the party stays out of combat, and the emergency heal treats them accordingly the
 			// next time they drop.
 			DataCenter.TargetedPartyMembers.Clear();
+			DataCenter.AllHostileTargetIds.Clear();
+			_outOfDutyPlayers.Clear();
 			DataCenter.DeathTarget = null;
 			DataCenter.DispelTarget = null;
 			DataCenter.ProvokeTarget = null;
@@ -54,10 +59,10 @@ internal static partial class TargetUpdater
 		UpdateCastsByOthers();
 		DataCenter.DeathTarget = GetDeathTarget();
 		DataCenter.DispelTarget = GetDispelTarget();
-		// "Auto provoke when there is another tank in party" covers the cases its text names; the alliance
+		// "Auto provoke when there is another tank in party" covers the cases its text names; the party
 		// walk behind it runs only when one of them comes up.
 		bool? autoProvokeAllowed = null;
-		bool AutoProvokeAllowed() => autoProvokeAllowed ??= Service.Config.AutoProvokeForTank || StateUpdater.CountAllianceTanks() < 2;
+		bool AutoProvokeAllowed() => autoProvokeAllowed ??= Service.Config.AutoProvokeForTank || StateUpdater.CountPartyTanks() < 2;
 		DataCenter.ProvokeTarget = (DataCenter.Role == JobRole.Tank || StatusHelper.PlayerHasStatus(true, StatusID.VariantUltimatumSet))
 			? GetFirstHostileTarget(target => target.CanProvoke(AutoProvokeAllowed))
 			: null; // Calculating this per frame rather than on-demand is actually a fair amount worse
@@ -178,19 +183,12 @@ internal static partial class TargetUpdater
 	private static unsafe void UpdateLists()
 	{
 		var allTargets = DataCenter.AllTargets;
-		if (allTargets == null || allTargets.Count == 0)
-		{
-			// Defensive: ensure lists are empty if no targets
-			DataCenter.PartyMembers.Clear();
-			DataCenter.AllianceMembers.Clear();
-			DataCenter.AllHostileTargets.Clear();
-			return;
-		}
 
 		// Pre-size lists to reduce reallocations
 		List<IBattleChara> partyMembers = new(capacity: allTargets.Count);
 		List<IBattleChara> allianceMembers = new(capacity: allTargets.Count);
 		List<IBattleChara> hostileTargets = new(capacity: allTargets.Count);
+		List<IBattleChara> outOfDutyPlayers = [];
 
 		var raisetype = Service.Config.RaiseType;
 		var ignoreInvincibility = DataCenter.IsPvP && Service.Config.IgnorePvPInvincibility;
@@ -253,27 +251,15 @@ internal static partial class TargetUpdater
 						partyMembers.Add(member);
 					}
 				}
-				else // Not a party member or hostile, so check alliance status
+				else if (member.Character() != null)
 				{
-					// Alliance members are based on the raise settings
-					if (raisetype == RaiseType.PartyOnly)
+					if (member.IsAllianceMember())
 					{
-						// No alliance member checks
+						allianceMembers.Add(member);
 					}
-					else if (raisetype == RaiseType.AllOutOfDuty)
+					else if (raisetype == RaiseType.AllOutOfDuty && member.IsOtherPlayerOutOfDuty())
 					{
-						if (member.IsOtherPlayerOutOfDuty() && member.Character() != null)
-						{
-							allianceMembers.Add(member);
-						}
-					}
-					else if (member.IsAllianceMember())
-					{
-						var character = member.Character();
-						if (character != null)
-						{
-							allianceMembers.Add(member);
-						}
+						outOfDutyPlayers.Add(member);
 					}
 				}
 			}
@@ -333,6 +319,13 @@ internal static partial class TargetUpdater
 			}
 		}
 		DataCenter.TargetedPartyMembers = targeted;
+		_outOfDutyPlayers = outOfDutyPlayers;
+
+		DataCenter.AllHostileTargetIds.Clear();
+		foreach (var hostile in hostileTargets)
+		{
+			_ = DataCenter.AllHostileTargetIds.Add(hostile.GameObjectId);
+		}
 	}
 
 	private static List<IBattleChara> GetAllTargets()
@@ -443,6 +436,14 @@ internal static partial class TargetUpdater
 					{
 						validRaiseTargets.Add(target);
 					}
+				}
+			}
+
+			if (raisetype == RaiseType.AllOutOfDuty)
+			{
+				foreach (var target in _outOfDutyPlayers.GetDeath())
+				{
+					validRaiseTargets.Add(target);
 				}
 			}
 

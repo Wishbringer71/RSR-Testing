@@ -281,7 +281,7 @@ internal static class StateUpdater
 					if (hostile.TargetObjectId == playerId && hostile.DistanceToPlayer() <= 3)
 					{
 						tarOnMeCount++;
-						if (!attacked && ObjectHelper.IsAttacked(hostile))
+						if (!attacked && hostile.IsEngagedByPlayer())
 						{
 							attacked = true;
 						}
@@ -343,7 +343,7 @@ internal static class StateUpdater
 	/// </summary>
 	private static bool TankbusterTargetsAllImpervious()
 	{
-		if (DataCenter.TankbusterTargets.Count > 0)
+		if (DataCenter.IsCastingTankVfx())
 		{
 			return false;
 		}
@@ -433,18 +433,6 @@ internal static class StateUpdater
 	// The announced action the last "heal ahead" trace line was written for; 0 once the rule stops firing.
 	private static uint _healAheadTraced;
 
-	private static readonly StatusID[] HellInACellStatuses =
-	[
-		StatusID.HellInACell,
-		StatusID.HellInACell_4732,
-		StatusID.HellInACell_4733,
-		StatusID.HellInACell_4734,
-		StatusID.HellInACell_4735,
-		StatusID.HellInACell_4736,
-		StatusID.HellInACell_4737,
-		StatusID.HellInACell_4738,
-	];
-
 	private static AutoStatus StatusFromHealing()
 	{
 		// Preconditions shared by every heal flag, evaluated once per update instead of once per flag.
@@ -471,7 +459,7 @@ internal static class StateUpdater
 		}
 
 		// Heal spells are held while the player is inside a Hell in a Cell in M9S.
-		var canUseHealSpell = !DataCenter.IsInM9S || !StatusHelper.PlayerHasStatus(false, HellInACellStatuses);
+		var canUseHealSpell = !DataCenter.IsInM9S || !StatusHelper.PlayerHasStatus(false, StatusHelper.HellInACellStatus);
 
 		// The ability flags look ahead only as far as the animation lock, the spell flags by the rest
 		// of the GCD and a cast: an off-GCD heal decided now lands now (A213).
@@ -635,7 +623,7 @@ internal static class StateUpdater
 
 	private static bool ShouldAddTankStance()
 	{
-		return Service.Config.AutoTankStance && DataCenter.Role == JobRole.Tank && !CustomRotation.HasTankStance && !AnyAllianceTankWithStance();
+		return Service.Config.AutoTankStance && DataCenter.Role == JobRole.Tank && !CustomRotation.HasTankStance && !AnyOtherPartyTankWithStance();
 	}
 
 	private static bool ShouldAddSpeed()
@@ -866,10 +854,10 @@ internal static class StateUpdater
 		return status;
 	}
 
-	internal static int CountAllianceTanks()
+	internal static int CountPartyTanks()
 	{
 		var count = 0;
-		foreach (var member in DataCenter.AllianceMembers)
+		foreach (var member in DataCenter.PartyMembers)
 		{
 			if (member.IsJobCategory(JobRole.Tank))
 			{
@@ -879,11 +867,13 @@ internal static class StateUpdater
 		return count;
 	}
 
-	private static bool AnyAllianceTankWithStance()
+	private static bool AnyOtherPartyTankWithStance()
 	{
-		foreach (var member in DataCenter.AllianceMembers)
+		var playerId = Player.Object?.GameObjectId ?? 0;
+		foreach (var member in DataCenter.PartyMembers)
 		{
-			if (member.IsJobCategory(JobRole.Tank) && member.CurrentHp != 0 && member.HasStatus(false, StatusHelper.TankStanceStatus))
+			if (member.GameObjectId != playerId && member.IsJobCategory(JobRole.Tank) && member.CurrentHp != 0
+				&& member.HasStatus(false, StatusHelper.TankStanceStatus))
 			{
 				return true;
 			}

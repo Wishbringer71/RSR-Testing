@@ -1,6 +1,6 @@
 # BLM — Abhängigkeitsmatrix
 
-Erzeugt von `.github/scripts/audit/generate_action_matrix.py` am 2026-10-18; nicht von Hand bearbeiten. Methode und Grenzen: `docs/rotation-flow/14-action-dependency-matrix.md`.
+Erzeugt von `.github/scripts/audit/generate_action_matrix.py` am 2026-10-22; nicht von Hand bearbeiten. Methode und Grenzen: `docs/rotation-flow/14-action-dependency-matrix.md`.
 
 - Basisrotation: `BlackMageRotation`
 - Rotation: `RotationSolver/RebornRotations/Magical/BLM_Default.cs`, `RotationSolver/RebornRotations/Magical/BLM_RP.cs`
@@ -73,7 +73,7 @@ direkt: 37 · ungenutzt: 1 · über andere Aktion: 2
 | Freeze | braucht Umbral Ice | Blizzard |
 | Manafont | braucht Astral Fire | Fire |
 | Paradox | braucht Paradox (Erzeuger nicht im Text) | Paradox |
-| Retrace | braucht Ley Lines and the effect duration will not be reset | Ley Lines |
+| Retrace | braucht Ley Lines, and the effect duration will not be reset | Ley Lines |
 | Thunder II | Ausbau (Thunder Mastery II) | Thunder IV |
 | Thunder III | Ausbau (Thunder Mastery III) | High Thunder |
 | Thunder IV | Ausbau (Thunder Mastery III) | High Thunder II |

@@ -146,8 +146,8 @@ internal static class BMRPlanUpdater
 			return;
 		}
 
-		var rotationActions = RotationUpdater.CurrentRotationActions ?? [];
-		var dutyActions = DataCenter.CurrentDutyRotation?.AllActions ?? [];
+		var rotationActions = RotationUpdater.CurrentRotationActions;
+		var dutyActions = RotationUpdater.CurrentDutyRotationActions;
 
 		foreach (var planned in actions)
 		{

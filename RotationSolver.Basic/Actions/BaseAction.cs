@@ -48,9 +48,6 @@ public class BaseAction : IBaseAction
 	public uint AdjustedID => Info.AdjustedID;
 
 	/// <inheritdoc/>
-	public static float AnimationLockTime => Player.AnimationLock;
-
-	/// <inheritdoc/>
 	public uint SortKey => Cooldown.CoolDownGroup;
 
 	/// <inheritdoc/>
@@ -316,7 +313,8 @@ public class BaseAction : IBaseAction
 
 	private bool IsTimeToKillValid()
 	{
-		return DataCenter.AverageTTK >= Config.TimeToKill;
+		// Unknown TTK passes, like the per-target check.
+		return Config.TimeToKill <= 0 || !DataCenter.IsAverageTTKKnown || DataCenter.AverageTTK >= Config.TimeToKill;
 	}
 
 	/// <inheritdoc/>
@@ -327,9 +325,15 @@ public class BaseAction : IBaseAction
 			return false;
 		}
 
+		var actionManager = ActionManager.Instance();
+		if (actionManager == null)
+		{
+			return false;
+		}
+
+		// The timing tweaks hook the action manager itself, so they apply to these calls too.
 		var target = Target;
 		var adjustId = AdjustedID;
-
 		if (TargetInfo.IsTargetArea)
 		{
 			if (adjustId != ID || !target.Position.HasValue)
@@ -338,54 +342,29 @@ public class BaseAction : IBaseAction
 			}
 
 			var loc = target.Position.Value;
-
-			// Use ActionManagerEx for enhanced timing if tweaks are enabled
-			if (Service.Config.RemoveAnimationLockDelay || Service.Config.RemoveCooldownDelay)
-			{
-				return ActionManagerEx.Instance.UseActionLocationWithTweaks(ActionType.Action, ID, Player.Object.GameObjectId, &loc);
-			}
-			else
-			{
-				var actionManager = ActionManager.Instance();
-				return actionManager != null &&
-					   actionManager->UseActionLocation(ActionType.Action, ID, Player.Object.GameObjectId, &loc);
-			}
+			return actionManager->UseActionLocation(ActionType.Action, ID, Player.Object.GameObjectId, &loc);
 		}
-		else
+
+		var targetId = target.Target?.GameObjectId ?? Player.Object.GameObjectId;
+		if (targetId == 0 || Svc.Objects.SearchById(targetId) == null)
 		{
-			var targetId = target.Target?.GameObjectId ?? Player.Object.GameObjectId;
-
-			if (targetId == 0 || Svc.Objects.SearchById(targetId) == null)
-			{
-				return false;
-			}
-
-			// An instant action pressed while no animation lock runs goes to the server at once: the press the
-			// tankbuster plan measures its round trip and spacing on (concept 09, "Spielerweite Sperre und Frist").
-			var timed = Player.AnimationLock <= 0f && Info.CastTime <= 0f && !Player.Object.IsCasting;
-
-			// Use ActionManagerEx for enhanced timing if tweaks are enabled
-			bool used;
-			if (Service.Config.RemoveAnimationLockDelay || Service.Config.RemoveCooldownDelay)
-			{
-				used = ActionManagerEx.Instance.UseActionWithTweaks(ActionType.Action, adjustId, targetId);
-			}
-			else
-			{
-				var actionManager = ActionManager.Instance();
-				used = actionManager != null &&
-					   actionManager->UseAction(ActionType.Action, adjustId, targetId);
-			}
-
-			// The tankbuster plan counts its own press from this moment, before the server confirms it
-			// (concept 09, "Die Zustände je Wirken").
-			if (used)
-			{
-				TankbusterForecast.RecordOwnPress(adjustId, targetId, timed);
-			}
-
-			return used;
+			return false;
 		}
+
+		// An instant action pressed while no animation lock runs goes to the server at once: the press the
+		// tankbuster plan measures its round trip and spacing on (concept 09, "Spielerweite Sperre und Frist").
+		var timed = Player.AnimationLock <= 0f && Info.CastTime <= 0f && !Player.Object.IsCasting;
+
+		var used = actionManager->UseAction(ActionType.Action, adjustId, targetId);
+
+		// The tankbuster plan counts its own press from this moment, before the server confirms it
+		// (concept 09, "Die Zustände je Wirken").
+		if (used)
+		{
+			TankbusterForecast.RecordOwnPress(adjustId, targetId, timed);
+		}
+
+		return used;
 	}
 
 	/// <inheritdoc/>

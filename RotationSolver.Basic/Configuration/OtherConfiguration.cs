@@ -10,7 +10,7 @@ internal class OtherConfiguration
 	private static readonly HttpClient Http = CreateHttpClient();
 	private static HttpClient CreateHttpClient()
 	{
-		var c = new HttpClient();
+		var c = new HttpClient { Timeout = TimeSpan.FromSeconds(15) };
 		try
 		{
 			c.DefaultRequestHeaders.UserAgent.ParseAdd("RotationSolver");
@@ -21,7 +21,7 @@ internal class OtherConfiguration
 	}
 	/// <markdown file="List" name="AoE" section="Actions">
 	/// **`It is recommended to click on the reset button after every patch.`**
-	/// 
+	///
 	/// RSR will use group mitigation if any enemy in the enmity list is casting
 	/// one of the listed actions. Usually those actions are raid-wides.
 	/// </markdown>
@@ -29,7 +29,7 @@ internal class OtherConfiguration
 
 	/// <markdown file="List" name="Tank Buster" section="Actions">
 	/// **`It is recommended to click on the reset button after every patch.`**
-	/// 
+	///
 	/// RSR will use mitigation on target (heal) or self (tank) if the target is currently
 	/// being targeted by one of the listed actions.
 	/// </markdown>
@@ -40,7 +40,7 @@ internal class OtherConfiguration
 	///
 	/// **Click on "Record knockback actions" at your own peril. Some duties expect you take the
 	/// knockback in order to reach a proper safe-spot, like in Sil'dihn Subterrane (Savage).**
-	/// 
+	///
 	/// RSR will use anti-knockback actions when you would be hit by one of the listed actions.
 	/// </markdown>
 	public static HashSet<uint> HostileCastingKnockback = [];
@@ -54,7 +54,7 @@ internal class OtherConfiguration
 
 	/// <markdown file="List" name="Gaze/Stop" section="Actions">
 	/// **`It is recommended to click on the reset button after every patch.`**
-	/// 
+	///
 	/// If the target is casting one of the listed actions, RSR will stop casting
 	/// in the seconds before the action is resolved
 	/// <see cref="RotationSolver.Basic.Configuration.Configs._castingStop">here</see>.
@@ -83,7 +83,7 @@ internal class OtherConfiguration
 
 	/// <markdown file="List" name="Dispellable Debuffs" section="Statuses">
 	/// **`It is recommended to click on the reset button after every patch.`**
-	/// 
+	///
 	/// Listed statuses will be dispelled (Esuna) first before any
 	/// other dispellable statuses.
 	/// </markdown>
@@ -91,7 +91,7 @@ internal class OtherConfiguration
 
 	/// <markdown file="List" name="Priority" section="Statuses">
 	/// **`It is recommended to click on the reset button after every patch.`**
-	/// 
+	///
 	/// If running in auto mode, if any enemy in your enmity list has this status,
 	/// it will target them as priority.
 	/// </markdown>
@@ -99,14 +99,14 @@ internal class OtherConfiguration
 
 	/// <markdown file="List" name="Invulnerability" section="Statuses">
 	/// **`It is recommended to click on the reset button after every patch.`**
-	/// 
+	///
 	/// Ignores target if they have one of the statuses listed.
 	/// </markdown>
 	public static HashSet<uint> InvincibleStatus = [];
 
 	/// <markdown file="List" name="No-Casting Debuffs" section="Statuses">
 	/// **`It is recommended to click on the reset button after every patch.`**
-	/// 
+	///
 	/// If you have any of the statuses listed, RSR will stop taking any actions.
 	/// </markdown>
 	public static HashSet<uint> NoCastingStatus = [];
@@ -168,74 +168,159 @@ internal class OtherConfiguration
 
 	public static RotationSolverRecord RotationSolverRecord = new();
 
-	/// <summary>
-	/// Every stored list this plugin loads, in one place.
-	/// </summary>
-	/// <remarks>
-	/// <see cref="Init"/> and <see cref="InitAsync"/> used to carry a copy of this list each, and they
-	/// drifted: <see cref="HostileCastingAreaPotential"/> was entered into Init only, while InitAsync
-	/// is the one the plugin actually calls. The learned damage potentials were therefore never read
-	/// back at login, and the first save of the session wrote the empty table over the file - so a
-	/// measurement bought with a clear survived until the next logout and no further. Nothing failed,
-	/// nothing was logged, and the only symptom in play was mitigation falling back to "unrated".
-	///
-	/// One list instead of two removes the failure mode rather than the instance of it: a store added
-	/// here cannot reach a save path without a load path.
-	/// </remarks>
-	private static Action[] LoadSteps() =>
-	[
-		() => InitOne(ref DangerousStatus, nameof(DangerousStatus)),
-		() => InitOne(ref PriorityStatus, nameof(PriorityStatus)),
-		() => InitOne(ref InvincibleStatus, nameof(InvincibleStatus)),
-		() => InitOne(ref DancePartnerPriority, nameof(DancePartnerPriority)),
-		() => InitOne(ref TheSpearPriority, nameof(TheSpearPriority)),
-		() => InitOne(ref TheBalancePriority, nameof(TheBalancePriority)),
-		() => InitOne(ref KardiaTankPriority, nameof(KardiaTankPriority)),
-		() => InitOne(ref NoHostileNames, nameof(NoHostileNames)),
-		() => InitOne(ref NoProvokeNames, nameof(NoProvokeNames)),
-		() => InitOne(ref HostileCastingArea, nameof(HostileCastingArea)),
-		// No download: this one is learned in play and has no shipped counterpart to fetch.
-		// The outcome is recorded for the list window: "loaded 0" and "file unreadable" and "no file
-		// yet" all leave an empty table behind, and only the first of them is harmless.
-		() => LoadLearned(ref HostileCastingAreaPotential, nameof(HostileCastingAreaPotential),
-			state => AreaPotentialStoreState = state, "rated action(s)", DropBeyondWholeHealth),
-		// Learned in play like the area table, through the same load.
-		() => LoadLearned(ref TankbusterPotential, nameof(TankbusterPotential),
-			state => TankbusterStoreState = state, "rated tankbuster(s)"),
-		() => InitOne(ref HostileCastingTank, nameof(HostileCastingTank)),
-		() => InitOne(ref BeneficialPositions, nameof(BeneficialPositions)),
-		() => InitOne(ref RotationSolverRecord, nameof(RotationSolverRecord), false),
-		() => InitOne(ref NoCastingStatus, nameof(NoCastingStatus)),
-		() => InitOne(ref HostileCastingKnockback, nameof(HostileCastingKnockback)),
-		// No download: learned in play, like the damage table.
-		() => InitOne(ref TankbusterMarkerWithoutHit, nameof(TankbusterMarkerWithoutHit), false),
-		() => InitOne(ref HostileCastingStop, nameof(HostileCastingStop)),
-		() => InitOne(ref NorthHornWeaknessRecords, nameof(NorthHornWeaknessRecords), false),
-		() => InitOne(ref SouthHornWeaknessRecords, nameof(SouthHornWeaknessRecords), false),
-	];
+	private abstract class ListFile(string name, bool download)
+	{
+		public string Name { get; } = name;
+		public bool Download { get; } = download;
+
+		public abstract void Load(bool forceDownload);
+
+		/// <summary>
+		/// Takes what is to be written on the caller's thread and returns the write for a pool thread.
+		/// </summary>
+		/// <remarks>
+		/// The game thread changes several of these stores during play. Copied on a pool thread, a store
+		/// could be read while the game thread adds to it - "Collection was modified" thrown out of the
+		/// copy, and the save lost without a retry (A224).
+		/// </remarks>
+		public abstract Action PrepareWrite();
+	}
+
+	private sealed class ListFile<T>(string name, Func<T> get, Action<T> set, bool download = true) : ListFile(name, download) where T : new()
+	{
+		public override void Load(bool forceDownload)
+		{
+			set(InitOne(get(), Name, Download, forceDownload));
+		}
+
+		public override Action PrepareWrite()
+		{
+			if (!WasLoaded(Name))
+			{
+				return static () => { };
+			}
+
+			var path = GetFilePath(Name);
+			var json = JsonConvert.SerializeObject(get(), Formatting.Indented, SerializerSettings);
+			return () => WriteFile(path, json);
+		}
+	}
 
 	/// <summary>
-	/// Loads a store learned in play - nothing to download - and says what the load found: "loaded
-	/// 0", "file unreadable" and "no file yet" all leave an empty table behind, and only the first of
-	/// them is harmless.
+	/// A table learned in play: nothing to download, merged with its file on every save
+	/// (<see cref="SaveTracked{T}"/>), and its load and save reported in words for the list window.
 	/// </summary>
 	/// <remarks>
 	/// <paramref name="prune"/> removes what the table's own measurement would not store, and returns how
-	/// many it removed; it runs in the same step as the load, because the steps run in parallel.
+	/// many it removed; it runs in the same step as the load, because the loads run in parallel.
 	/// </remarks>
-	private static void LoadLearned<T>(ref T value, string name, Action<string> report, string noun,
-		Func<T, int>? prune = null) where T : System.Collections.ICollection, new()
+	private sealed class LearnedFile<TValue>(string name, Func<Dictionary<uint, TValue>> copy,
+		Action<Dictionary<uint, TValue>> set, Func<TValue, TValue, TValue> higher, Action<string> report,
+		string noun, Func<TValue, bool>? keep = null, Func<Dictionary<uint, TValue>, int>? prune = null)
+		: ListFile(name, false)
 	{
-		var path = GetFilePath(name);
-		var existed = File.Exists(path);
-		InitOne(ref value, name, false);
-		var pruned = prune?.Invoke(value) ?? 0;
-		report(!existed
-			? $"loaded {DateTime.Now:HH:mm:ss}: no file yet, started empty"
-			: !File.Exists(path)
-				? $"LOAD FAILED {DateTime.Now:HH:mm:ss}: file unreadable, set aside as .corrupt, started empty"
-				: $"loaded {DateTime.Now:HH:mm:ss}: {value.Count} {noun} from file"
-					+ (pruned > 0 ? $", {pruned} above a whole max HP left out" : string.Empty));
+		// One writer at a time. Every save of a store uses the same "<name>.json.tmp", and two pool
+		// tasks writing it at once made the second one fail on the locked file - retried twice, and
+		// on the third failure dropped.
+		private readonly object _gate = new();
+
+		public override void Load(bool forceDownload)
+		{
+			// "loaded 0", "file unreadable" and "no file yet" all leave an empty table behind, and only
+			// the first of them is harmless - so the outcome is recorded for the list window.
+			var path = GetFilePath(Name);
+			var existed = File.Exists(path);
+			var value = InitOne(new Dictionary<uint, TValue>(), Name, false, false);
+			var pruned = prune?.Invoke(value) ?? 0;
+			set(value);
+			report(!existed
+				? $"loaded {DateTime.Now:HH:mm:ss}: no file yet, started empty"
+				: !File.Exists(path)
+					? $"LOAD FAILED {DateTime.Now:HH:mm:ss}: file unreadable, set aside as .corrupt, started empty"
+					: $"loaded {DateTime.Now:HH:mm:ss}: {value.Count} {noun} from file"
+						+ (pruned > 0 ? $", {pruned} above a whole max HP left out" : string.Empty));
+		}
+
+		public override Action PrepareWrite()
+		{
+			var snapshot = copy();
+			return () => SaveTracked(snapshot, Name, higher, report, _gate, noun, keep);
+		}
+	}
+
+	private static readonly JsonSerializerSettings SerializerSettings = new()
+	{
+		TypeNameHandling = TypeNameHandling.None,
+	};
+
+	private static readonly JsonSerializerSettings DeserializerSettings = new()
+	{
+		TypeNameHandling = TypeNameHandling.None,
+		Converters = [new StringEnumConverter()],
+	};
+
+	/// <summary>
+	/// Every stored list this plugin keeps, in one place: <see cref="InitAsync"/> loads exactly these,
+	/// <see cref="Save()"/> and <see cref="SaveList"/> write exactly these.
+	/// </summary>
+	/// <remarks>
+	/// Load and save once carried a list each, and they drifted: <see cref="HostileCastingAreaPotential"/>
+	/// was saved but loaded only in an entry point the plugin never called. The learned damage potentials
+	/// were therefore never read back at login, and the first save of the session wrote the empty table
+	/// over the file - nothing failed, nothing was logged, and the only symptom in play was mitigation
+	/// falling back to "unrated". One list for both removes the failure mode rather than the instance of
+	/// it: a store cannot reach a save path without a load path.
+	/// </remarks>
+	private static readonly ListFile[] Files =
+	[
+		new ListFile<HashSet<uint>>(nameof(DangerousStatus), () => DangerousStatus, v => DangerousStatus = v),
+		new ListFile<HashSet<uint>>(nameof(PriorityStatus), () => PriorityStatus, v => PriorityStatus = v),
+		new ListFile<HashSet<uint>>(nameof(InvincibleStatus), () => InvincibleStatus, v => InvincibleStatus = v),
+		new ListFile<List<Job>>(nameof(DancePartnerPriority), () => DancePartnerPriority, v => DancePartnerPriority = v),
+		new ListFile<List<Job>>(nameof(TheSpearPriority), () => TheSpearPriority, v => TheSpearPriority = v),
+		new ListFile<List<Job>>(nameof(TheBalancePriority), () => TheBalancePriority, v => TheBalancePriority = v),
+		new ListFile<List<Job>>(nameof(KardiaTankPriority), () => KardiaTankPriority, v => KardiaTankPriority = v),
+		new ListFile<Dictionary<uint, string[]>>(nameof(NoHostileNames), () => NoHostileNames, v => NoHostileNames = v),
+		new ListFile<Dictionary<uint, string[]>>(nameof(NoProvokeNames), () => NoProvokeNames, v => NoProvokeNames = v),
+		new ListFile<HashSet<uint>>(nameof(HostileCastingArea), () => HostileCastingArea, v => HostileCastingArea = v),
+		// The game thread is the only writer of this table, and the copy is taken there.
+		new LearnedFile<float>(nameof(HostileCastingAreaPotential),
+			() => new Dictionary<uint, float>(HostileCastingAreaPotential), v => HostileCastingAreaPotential = v,
+			Math.Max, state => AreaPotentialStoreState = state, "rated action(s)", IsWithinWholeHealth, DropBeyondWholeHealth),
+		new LearnedFile<TankbusterReading>(nameof(TankbusterPotential), CopyTankbusterPotential,
+			v => { lock (TankbusterPotentialGate) { TankbusterPotential = v; } },
+			TankbusterReading.Higher, state => TankbusterStoreState = state, "rated tankbuster(s)"),
+		new ListFile<HashSet<uint>>(nameof(HostileCastingTank), () => HostileCastingTank, v => HostileCastingTank = v),
+		new ListFile<Dictionary<uint, Vector3[]>>(nameof(BeneficialPositions), () => BeneficialPositions, v => BeneficialPositions = v),
+		new ListFile<RotationSolverRecord>(nameof(RotationSolverRecord), () => RotationSolverRecord, v => RotationSolverRecord = v, false),
+		new ListFile<HashSet<uint>>(nameof(NoCastingStatus), () => NoCastingStatus, v => NoCastingStatus = v),
+		new ListFile<HashSet<uint>>(nameof(HostileCastingKnockback), () => HostileCastingKnockback, v => HostileCastingKnockback = v),
+		// No download: learned in play, like the damage tables.
+		new ListFile<HashSet<string>>(nameof(TankbusterMarkerWithoutHit), () => TankbusterMarkerWithoutHit, v => TankbusterMarkerWithoutHit = v, false),
+		new ListFile<HashSet<uint>>(nameof(HostileCastingStop), () => HostileCastingStop, v => HostileCastingStop = v),
+		new ListFile<Dictionary<uint, List<string>>>(nameof(NorthHornWeaknessRecords), () => NorthHornWeaknessRecords, v => NorthHornWeaknessRecords = v, false),
+		new ListFile<Dictionary<uint, List<string>>>(nameof(SouthHornWeaknessRecords), () => SouthHornWeaknessRecords, v => SouthHornWeaknessRecords = v, false),
+	];
+
+	private static Dictionary<uint, TankbusterReading> CopyTankbusterPotential()
+	{
+		lock (TankbusterPotentialGate)
+		{
+			return new Dictionary<uint, TankbusterReading>(TankbusterPotential);
+		}
+	}
+
+	private static ListFile GetFile(string name)
+	{
+		foreach (var file in Files)
+		{
+			if (file.Name == name)
+			{
+				return file;
+			}
+		}
+
+		throw new ArgumentException($"Unknown list file {name}", nameof(name));
 	}
 
 	/// <summary>
@@ -269,145 +354,82 @@ internal class OtherConfiguration
 		return beyond.Count;
 	}
 
-	private static void EnsureConfigDirectory()
+	public static async Task InitAsync(CancellationToken cancellationToken = default)
 	{
 		if (!Directory.Exists(Svc.PluginInterface.ConfigDirectory.FullName))
 		{
 			_ = Directory.CreateDirectory(Svc.PluginInterface.ConfigDirectory.FullName);
 		}
-	}
 
-	public static void Init()
-	{
-		EnsureConfigDirectory();
-
-		foreach (var step in LoadSteps())
-		{
-			_ = Task.Run(step);
-		}
-	}
-
-	public static async Task InitAsync(CancellationToken cancellationToken = default)
-	{
-		EnsureConfigDirectory();
 		_loadToken = cancellationToken;
 
-		var steps = LoadSteps();
-		var running = new Task[steps.Length];
-		for (var i = 0; i < steps.Length; i++)
+		var tasks = new Task[Files.Length];
+		for (var i = 0; i < Files.Length; i++)
 		{
-			running[i] = Task.Run(steps[i], cancellationToken);
+			var file = Files[i];
+			tasks[i] = Task.Run(() => file.Load(false), cancellationToken);
 		}
 
-		await Task.WhenAll(running);
+		await Task.WhenAll(tasks);
 	}
 
 	public static Task Save()
 	{
-		// The stores the game thread writes during play are started here, on the caller's thread: each
-		// takes its copy before its write moves to the pool. Started inside the Task.Run below, the copy
-		// was taken on a pool thread while the game thread could be adding to the same set - "Collection
-		// was modified" thrown out of the copy, not caught by the write, and every save after it in this
-		// sequence skipped, silently, since callers discard the task (A224).
-		Task[] writtenInPlay =
-		[
-			SaveHostileCastingArea(),
-			SaveHostileCastingAreaPotential(),
-			SaveTankbusterPotential(),
-			SaveHostileCastingKnockback(),
-			SaveTankbusterMarkerWithoutHit(),
-		];
-
-		return Task.Run(async () =>
+		var writes = new Action[Files.Length];
+		for (var i = 0; i < Files.Length; i++)
 		{
-			await SavePriorityStatus();
-			await SaveDangerousStatus();
-			await SaveInvincibleStatus();
-			await SaveDancePartnerPriority();
-			await SaveTheSpearPriority();
-			await SaveTheBalancePriority();
-			await SaveKardiaTankPriority();
-			await SaveNoHostileNames();
-			await SaveHostileCastingTank();
-			await SaveBeneficialPositions();
-			await SaveRotationSolverRecord();
-			await SaveNoProvokeNames();
-			await SaveNoCastingStatus();
-			await SaveHostileCastingStop();
-			await SaveNorthHornWeaknessRecords();
-			await SaveSouthHornWeaknessRecords();
-			await Task.WhenAll(writtenInPlay);
-		});
-	}
-	#region Action Tab
-	public static void ResetHostileCastingArea()
-	{
-		InitOne(ref HostileCastingArea, nameof(HostileCastingArea), true, true);
-		SaveHostileCastingArea().Wait();
-	}
-
-	public static void ResetHostileCastingTank()
-	{
-		InitOne(ref HostileCastingTank, nameof(HostileCastingTank), true, true);
-		SaveHostileCastingTank().Wait();
-	}
-
-	public static void ResetHostileCastingKnockback()
-	{
-		InitOne(ref HostileCastingKnockback, nameof(HostileCastingKnockback), true, true);
-		SaveHostileCastingKnockback().Wait();
-	}
-
-	public static void ResetHostileCastingStop()
-	{
-		InitOne(ref HostileCastingStop, nameof(HostileCastingStop), true, true);
-		SaveHostileCastingStop().Wait();
-	}
-
-	public static Task SaveHostileCastingArea()
-	{
-		// Copied on the caller's thread: the effect handler adds to this list on the game thread (A224).
-		var snapshot = new HashSet<uint>(HostileCastingArea);
-		return Task.Run(() => Save(snapshot, nameof(HostileCastingArea)));
-	}
-
-	public static Task SaveHostileCastingAreaPotential()
-	{
-		// The snapshot is taken HERE, on the caller's thread, and only the copy goes to the pool.
-		//
-		// The caller is the effect handler on the game thread, which is also the only writer of
-		// this table. Handing the live dictionary to Task.Run serialised it on a pool thread while
-		// the game thread could be adding the next reading: a Dictionary does not survive being
-		// enumerated during a write, the serializer throws "Collection was modified", SavePath's
-		// general catch logs a warning and returns - and that save is gone without a retry. The
-		// reading stayed in memory, so it looked recorded, and reached the file only if a later
-		// save came along. The last reading of a session had no later save.
-		var snapshot = new Dictionary<uint, float>(HostileCastingAreaPotential);
-		return Task.Run(() => SaveTracked(snapshot, nameof(HostileCastingAreaPotential), Math.Max,
-			state => AreaPotentialStoreState = state, _areaPotentialSaveLock, "rated action(s)", IsWithinWholeHealth));
-	}
-
-	/// <summary>
-	/// Saves the tankbuster table. The copy is taken here, under the table's lock, on the caller's
-	/// thread - the effect handler writes the table on the game thread - and only the copy goes to the
-	/// pool (the lesson of A224 for the area table).
-	/// </summary>
-	public static Task SaveTankbusterPotential()
-	{
-		Dictionary<uint, TankbusterReading> snapshot;
-		lock (TankbusterPotentialGate)
-		{
-			snapshot = new Dictionary<uint, TankbusterReading>(TankbusterPotential);
+			writes[i] = Files[i].PrepareWrite();
 		}
 
-		return Task.Run(() => SaveTracked(snapshot, nameof(TankbusterPotential), TankbusterReading.Higher,
-			state => TankbusterStoreState = state, _tankbusterSaveLock, "rated tankbuster(s)"));
+		return Task.Run(() =>
+		{
+			foreach (var write in writes)
+			{
+				// One failed write must not cost the ones after it: callers discard this task, so a
+				// throw here would end the sequence without a trace (A224).
+				try
+				{
+					write();
+				}
+				catch (Exception ex)
+				{
+					PluginLog.Warning($"Failed to save a list: {ex.Message}");
+				}
+			}
+		});
 	}
+
+	// Writes one list file, so editing a list doesn't rewrite all of them.
+	internal static Task SaveList(string name)
+	{
+		var write = GetFile(name).PrepareWrite();
+		return Task.Run(write);
+	}
+
+	// Downloads in the background so the game thread isn't blocked by the request.
+	private static void ResetFile(string name)
+	{
+		var file = GetFile(name);
+		_ = Task.Run(() => file.Load(true));
+	}
+
+	#region Action Tab
+	public static void ResetHostileCastingArea() => ResetFile(nameof(HostileCastingArea));
+
+	public static void ResetHostileCastingTank() => ResetFile(nameof(HostileCastingTank));
+
+	public static void ResetHostileCastingKnockback() => ResetFile(nameof(HostileCastingKnockback));
+
+	public static void ResetHostileCastingStop() => ResetFile(nameof(HostileCastingStop));
+
+	public static Task SaveHostileCastingArea() => SaveList(nameof(HostileCastingArea));
+
+	public static Task SaveHostileCastingAreaPotential() => SaveList(nameof(HostileCastingAreaPotential));
+
+	public static Task SaveTankbusterPotential() => SaveList(nameof(TankbusterPotential));
 
 	/// <summary>What the last save and load of the tankbuster table did, in words.</summary>
 	public static string TankbusterStoreState { get; private set; } = "not loaded yet";
-
-	private static readonly object _tankbusterSaveLock = new();
 
 	/// <summary>
 	/// What the last save and the last load of the learned damage table did, in words. Read by the
@@ -415,8 +437,6 @@ internal class OtherConfiguration
 	/// measured anything yet.
 	/// </summary>
 	public static string AreaPotentialStoreState { get; private set; } = "not loaded yet";
-
-	private static readonly object _areaPotentialSaveLock = new();
 
 	/// <summary>
 	/// The guarded save of a table learned in play. <paramref name="higher"/> merges a value in memory
@@ -434,10 +454,6 @@ internal class OtherConfiguration
 			return;
 		}
 
-		// One writer at a time. Every save of a store uses the same "<name>.json.tmp", and two pool
-		// tasks writing it at once made the second one fail on the locked file - retried twice, and
-		// on the third failure dropped. Serialising them costs nothing here: a save is a few
-		// hundred entries, and the order they land in is the order the readings were taken.
 		lock (gate)
 		{
 			// The table only ever grows by itself, so what is on disk is never less than true: a save
@@ -470,7 +486,7 @@ internal class OtherConfiguration
 				}
 			}
 
-			var ok = SavePath(snapshot, GetFilePath(name));
+			var ok = WriteFile(GetFilePath(name), JsonConvert.SerializeObject(snapshot, Formatting.Indented, SerializerSettings));
 
 			// Read back what is on disk rather than trusting the call. A save that "succeeded" but
 			// left a file the loader cannot read, or one with fewer entries than were written, is
@@ -525,168 +541,61 @@ internal class OtherConfiguration
 		}
 	}
 
-	public static Task SaveHostileCastingTank()
-	{
-		return Task.Run(() => Save(HostileCastingTank, nameof(HostileCastingTank)));
-	}
+	public static Task SaveHostileCastingTank() => SaveList(nameof(HostileCastingTank));
 
-	private static Task SaveHostileCastingKnockback()
-	{
-		// Copied on the caller's thread: the effect handler adds to this list on the game thread (A224).
-		var snapshot = new HashSet<uint>(HostileCastingKnockback);
-		return Task.Run(() => Save(snapshot, nameof(HostileCastingKnockback)));
-	}
+	public static Task SaveHostileCastingKnockback() => SaveList(nameof(HostileCastingKnockback));
 
-	/// <summary>
-	/// Saves the falsified tankbuster markers. The set is changed on the game thread; the copy is taken
-	/// there, before the write moves to a pool thread, so the write never walks a set being changed.
-	/// </summary>
-	public static Task SaveTankbusterMarkerWithoutHit()
-	{
-		var snapshot = new HashSet<string>(TankbusterMarkerWithoutHit);
-		return Task.Run(() => Save(snapshot, nameof(TankbusterMarkerWithoutHit)));
-	}
-
-	private static Task SaveHostileCastingStop()
-	{
-		return Task.Run(() => Save(HostileCastingStop, nameof(HostileCastingStop)));
-	}
+	public static Task SaveTankbusterMarkerWithoutHit() => SaveList(nameof(TankbusterMarkerWithoutHit));
 	#endregion
 
 	#region Status Tab
+	public static void ResetPriorityStatus() => ResetFile(nameof(PriorityStatus));
 
-	public static void ResetPriorityStatus()
-	{
-		InitOne(ref PriorityStatus, nameof(PriorityStatus), true, true);
-		SavePriorityStatus().Wait();
-	}
+	public static void ResetInvincibleStatus() => ResetFile(nameof(InvincibleStatus));
 
-	public static void ResetInvincibleStatus()
-	{
-		InitOne(ref InvincibleStatus, nameof(InvincibleStatus), true, true);
-		SaveInvincibleStatus().Wait();
-	}
+	public static void ResetDangerousStatus() => ResetFile(nameof(DangerousStatus));
 
-	public static void ResetDangerousStatus()
-	{
-		InitOne(ref DangerousStatus, nameof(DangerousStatus), true, true);
-		SaveDangerousStatus().Wait();
-	}
-
-	public static void ResetNoCastingStatus()
-	{
-		InitOne(ref NoCastingStatus, nameof(NoCastingStatus), true, true);
-		SaveNoCastingStatus().Wait();
-	}
-
-	public static Task SavePriorityStatus()
-	{
-		return Task.Run(() => Save(PriorityStatus, nameof(PriorityStatus)));
-	}
-
-	public static Task SaveInvincibleStatus()
-	{
-		return Task.Run(() => Save(InvincibleStatus, nameof(InvincibleStatus)));
-	}
-
-	public static Task SaveDangerousStatus()
-	{
-		return Task.Run(() => Save(DangerousStatus, nameof(DangerousStatus)));
-	}
-
-	public static Task SaveNoCastingStatus()
-	{
-		return Task.Run(() => Save(NoCastingStatus, nameof(NoCastingStatus)));
-	}
-
+	public static void ResetNoCastingStatus() => ResetFile(nameof(NoCastingStatus));
 	#endregion
-	public static Task SaveRotationSolverRecord()
-	{
-		return Task.Run(() => Save(RotationSolverRecord, nameof(RotationSolverRecord)));
-	}
 
-	public static Task SaveNoProvokeNames()
-	{
-		return Task.Run(() => Save(NoProvokeNames, nameof(NoProvokeNames)));
-	}
+	public static Task SaveRotationSolverRecord() => SaveList(nameof(RotationSolverRecord));
 
-	public static Task SaveBeneficialPositions()
-	{
-		return Task.Run(() => Save(BeneficialPositions, nameof(BeneficialPositions)));
-	}
+	public static Task SaveNoProvokeNames() => SaveList(nameof(NoProvokeNames));
 
-	public static void ResetDancePartnerPriority()
-	{
-		InitOne(ref DancePartnerPriority, nameof(DancePartnerPriority), true, true);
-		SaveDancePartnerPriority().Wait();
-	}
+	public static Task SaveBeneficialPositions() => SaveList(nameof(BeneficialPositions));
 
-	public static void ResetTheSpearPriority()
-	{
-		InitOne(ref TheSpearPriority, nameof(TheSpearPriority), true, true);
-		SaveTheSpearPriority().Wait();
-	}
+	public static void ResetDancePartnerPriority() => ResetFile(nameof(DancePartnerPriority));
 
-	public static void ResetTheBalancePriority()
-	{
-		InitOne(ref TheBalancePriority, nameof(TheBalancePriority), true, true);
-		SaveTheBalancePriority().Wait();
-	}
+	public static void ResetTheSpearPriority() => ResetFile(nameof(TheSpearPriority));
 
-	public static void ResetKardiaTankPriority()
-	{
-		InitOne(ref KardiaTankPriority, nameof(KardiaTankPriority), true, true);
-		SaveKardiaTankPriority().Wait();
-	}
+	public static void ResetTheBalancePriority() => ResetFile(nameof(TheBalancePriority));
 
-	public static Task SaveDancePartnerPriority()
-	{
-		return Task.Run(() => Save(DancePartnerPriority, nameof(DancePartnerPriority)));
-	}
+	public static void ResetKardiaTankPriority() => ResetFile(nameof(KardiaTankPriority));
 
-	public static Task SaveTheSpearPriority()
-	{
-		return Task.Run(() => Save(TheSpearPriority, nameof(TheSpearPriority)));
-	}
+	public static Task SaveDancePartnerPriority() => SaveList(nameof(DancePartnerPriority));
 
-	public static Task SaveTheBalancePriority()
-	{
-		return Task.Run(() => Save(TheBalancePriority, nameof(TheBalancePriority)));
-	}
+	public static Task SaveTheSpearPriority() => SaveList(nameof(TheSpearPriority));
 
-	public static Task SaveKardiaTankPriority()
-	{
-		return Task.Run(() => Save(KardiaTankPriority, nameof(KardiaTankPriority)));
-	}
+	public static Task SaveTheBalancePriority() => SaveList(nameof(TheBalancePriority));
 
-	public static Task SaveNoHostileNames()
-	{
-		return Task.Run(() => Save(NoHostileNames, nameof(NoHostileNames)));
-	}
+	public static Task SaveKardiaTankPriority() => SaveList(nameof(KardiaTankPriority));
+
+	public static Task SaveNoHostileNames() => SaveList(nameof(NoHostileNames));
 
 	#region Occult Crescent Weakness Tracking
 
-	public static Task SaveNorthHornWeaknessRecords()
-	{
-		return Task.Run(() => Save(NorthHornWeaknessRecords, nameof(NorthHornWeaknessRecords)));
-	}
+	public static Task SaveNorthHornWeaknessRecords() => SaveList(nameof(NorthHornWeaknessRecords));
 
-	public static Task SaveSouthHornWeaknessRecords()
-	{
-		return Task.Run(() => Save(SouthHornWeaknessRecords, nameof(SouthHornWeaknessRecords)));
-	}
+	public static Task SaveSouthHornWeaknessRecords() => SaveList(nameof(SouthHornWeaknessRecords));
 
 	public static void ResetOccultWeaknessRecords()
 	{
-		NorthHornWeaknessRecords.Clear();
-		SouthHornWeaknessRecords.Clear();
-		SaveNorthHornWeaknessRecords().Wait();
-		SaveSouthHornWeaknessRecords().Wait();
+		NorthHornWeaknessRecords = [];
+		SouthHornWeaknessRecords = [];
+		_ = SaveNorthHornWeaknessRecords();
+		_ = SaveSouthHornWeaknessRecords();
 	}
 
-	/// <summary>
-	///
-	/// </summary>
 	public static bool RecordOccultWeakness(uint nameId, StatusID weakness)
 	{
 		if (nameId == 0)
@@ -724,23 +633,19 @@ internal class OtherConfiguration
 		}
 
 		list.Add(weaknessName);
-
 		return true;
 	}
 
 	#endregion
 
-
 	private static string GetFilePath(string name)
 	{
-		var directory = Svc.PluginInterface.ConfigDirectory.FullName;
-
-		return directory + $"\\{name}.json";
+		return Path.Combine(Svc.PluginInterface.ConfigDirectory.FullName, $"{name}.json");
 	}
 
 	/// <summary>
-	/// Stores whose load step has run to an end in this session. A store that was never loaded holds
-	/// its empty default, and writing that default would replace the file with nothing.
+	/// Stores whose load has run to an end in this session. A store that was never loaded holds its
+	/// empty default, and writing that default would replace the file with nothing.
 	/// </summary>
 	private static readonly System.Collections.Concurrent.ConcurrentDictionary<string, bool> _loadedStores = new();
 
@@ -751,59 +656,35 @@ internal class OtherConfiguration
 			return true;
 		}
 
-		// The load did not finish - cancelled by the plugin's load timeout, or it threw - and the
-		// unload writes every store. Without this every list and the learned table were emptied on
-		// disk by a load that merely failed.
+		// The load did not finish - cancelled by the plugin's load timeout, a download that failed, or
+		// it threw - and the unload writes every store. Without this every list and the learned table
+		// were emptied on disk by a load that merely failed.
 		PluginLog.Warning($"Not saving {name}: it was not loaded in this session, and its file is left as it is.");
 		return false;
 	}
 
-	private static void Save<T>(T value, string name)
+	// Written to a temp file first, so a crash mid-write can't leave a half-written list.
+	private static bool WriteFile(string path, string json)
 	{
-		if (!WasLoaded(name))
-		{
-			return;
-		}
-
-		_ = SavePath(value, GetFilePath(name));
-	}
-
-	private static bool SavePath<T>(T value, string path)
-	{
-		var retryCount = 3;
-		var delay = 1000; // 1 second delay
-
+		const int retryCount = 3;
 		for (var i = 0; i < retryCount; i++)
 		{
 			try
 			{
-				// Written to a temporary file and then moved into place, so an interruption cannot
-				// leave a half-written file behind. WriteAllText truncates first and fills after: a
-				// crash in between leaves JSON that no longer parses, and InitOne answers an
-				// unreadable file by silently starting from empty - it does not re-download, because
-				// the file exists.
-				//
-				// For the curated lists that costs a button press. For HostileCastingAreaPotential it
-				// costs everything that was learned in play, and that store is written during combat,
-				// on every new highest reading - which is exactly when a crash is most likely.
-				var temp = path + ".tmp";
-				File.WriteAllText(temp,
-				JsonConvert.SerializeObject(value, Formatting.Indented, new JsonSerializerSettings()
-				{
-					TypeNameHandling = TypeNameHandling.None,
-				}));
-				File.Move(temp, path, true);
-				return true; // Exit the method if successful
+				var tempPath = path + ".tmp";
+				File.WriteAllText(tempPath, json);
+				File.Move(tempPath, path, true);
+				return true;
 			}
 			catch (IOException ex) when (i < retryCount - 1)
 			{
-				PluginLog.Warning($"Failed to save the file to {path}. Retrying in {delay}ms...: {ex.Message}");
-				Thread.Sleep(delay); // Wait before retrying
+				PluginLog.Warning($"Failed to save the file to {path}. Retrying in 1s...: {ex.Message}");
+				Thread.Sleep(1000);
 			}
 			catch (Exception ex)
 			{
 				PluginLog.Warning($"Failed to save the file to {path}: {ex.Message}");
-				return false; // Exit the method if an unexpected exception occurs
+				return false;
 			}
 		}
 
@@ -812,12 +693,11 @@ internal class OtherConfiguration
 
 	/// <summary>
 	/// The plugin's load timeout, handed in by <see cref="InitAsync"/>. A download at load is bounded
-	/// by it rather than by the client's own 100 s: without a network every list waited that long,
-	/// and the load gave up first anyway.
+	/// by it as well as by the client's own timeout, so a load that has given up does not wait on it.
 	/// </summary>
 	private static CancellationToken _loadToken;
 
-	private static void InitOne<T>(ref T value, string name, bool download = true, bool forceDownload = false) where T : new()
+	private static T InitOne<T>(T current, string name, bool download, bool forceDownload) where T : new()
 	{
 		var path = GetFilePath(name);
 		PluginLog.Information($"Initializing {name} from {path}");
@@ -826,19 +706,15 @@ internal class OtherConfiguration
 		{
 			try
 			{
-				value = JsonConvert.DeserializeObject<T>(File.ReadAllText(path), new JsonSerializerSettings
-				{
-					TypeNameHandling = TypeNameHandling.None,
-					Converters = [new StringEnumConverter()] // Add this line
-				})! ?? throw new Exception("Deserialized value is null.");
+				var value = JsonConvert.DeserializeObject<T>(File.ReadAllText(path), DeserializerSettings)
+					?? throw new Exception("Deserialized value is null.");
 				PluginLog.Information($"Loaded {name} from local file.");
 				_loadedStores[name] = true;
-				return;
+				return value;
 			}
 			catch (Exception ex)
 			{
 				PluginLog.Warning($"Failed to load {name} from local file. Reinitializing to default: {ex.Message}");
-				value = new T(); // Reinitialize to default
 
 				// Keep the unreadable file instead of letting the next save overwrite it, and say so.
 				// Losing a curated list this way is recoverable with the reset button; losing the
@@ -858,57 +734,52 @@ internal class OtherConfiguration
 
 			// An unreadable curated list is fetched again below, the same as a missing one (A196). It
 			// used to start empty and stay so: the empty default was saved, and a file that exists is
-			// never downloaded. A learned store has nothing to fetch and starts empty, as before.
+			// never downloaded.
 		}
 
-		if (download || forceDownload)
+		if (!download && !forceDownload)
 		{
-			try
-			{
-				var url = $"https://raw.githubusercontent.com/{Service.USERNAME}/{Service.REPO}/main/Resources/{name}.json";
-				var str = Http.GetStringAsync(url, forceDownload ? CancellationToken.None : _loadToken).Result;
-
-				File.WriteAllText(path, str);
-				value = JsonConvert.DeserializeObject<T>(str, new JsonSerializerSettings
-				{
-					TypeNameHandling = TypeNameHandling.None,
-					Converters = [new StringEnumConverter()] // Add this line
-				})! ?? throw new Exception("Deserialized value is null.");
-
-				PluginLog.Information($"Downloaded and loaded {name} from GitHub.");
-			}
-			catch (Exception ex)
-			{
-				_ = BasicWarningHelper.AddSystemWarning($"Github download failed.");
-
-				// A reset asked to replace a working list with a fresh one. When the fresh one cannot
-				// be had, the working one stays: emptying it here wrote an empty list over the file,
-				// which switched off every rule reading it - and the damage measurement with it,
-				// since only listed actions are measured - until a later reset happened to succeed.
-				if (forceDownload && File.Exists(path))
-				{
-					PluginLog.Warning($"Failed to download {name} from GitHub. Keeping the current list. Exception: {ex.Message}");
-					_loadedStores[name] = true;
-					return;
-				}
-
-				// No list could be had. Nothing is written and the store does not count as loaded, so
-				// no save writes the empty default either: an empty file would be read as the list on
-				// every later start and never be fetched again - for the AoE list that meant no party
-				// mitigation by list and no damage measurement until a reset happened to succeed
-				// (A196). The next start tries again. The cost: changes made to this list in this
-				// session are not saved; a warning in the log says so at every save.
-				PluginLog.Warning($"Failed to download {name} from GitHub. Starting empty for this session, and trying again at the next start. Exception: {ex.Message}");
-				value = new T();
-				return;
-			}
+			// Nothing to fetch: a store learned or recorded in play starts empty. No default is written,
+			// so a store set aside above reads as "file unreadable" in the list window, not as "loaded 0".
+			_loadedStores[name] = true;
+			return new T();
 		}
-		else
+
+		try
 		{
-			value = new T(); // Reinitialize to default
-			_ = SavePath(value, path); // Save the default value
-		}
+			var url = $"https://raw.githubusercontent.com/{Service.USERNAME}/{Service.REPO}/main/Resources/{name}.json";
+			var str = Http.GetStringAsync(url, forceDownload ? CancellationToken.None : _loadToken).GetAwaiter().GetResult();
+			var value = JsonConvert.DeserializeObject<T>(str, DeserializerSettings)
+				?? throw new Exception("Deserialized value is null.");
 
-		_loadedStores[name] = true;
+			// Only a list that parsed is written, so a bad download never replaces the local copy.
+			_ = WriteFile(path, str);
+			PluginLog.Information($"Downloaded and loaded {name} from GitHub.");
+			_loadedStores[name] = true;
+			return value;
+		}
+		catch (Exception ex)
+		{
+			_ = BasicWarningHelper.AddSystemWarning($"Github download failed.");
+
+			// A reset asked to replace a working list with a fresh one. When the fresh one cannot be had,
+			// the working one stays, and with it whether it counts as loaded: emptying it here wrote an
+			// empty list over the file, which switched off every rule reading it - and the damage
+			// measurement with it, since only listed actions are measured.
+			if (forceDownload)
+			{
+				PluginLog.Warning($"Failed to download {name} from GitHub. Keeping the current list. Exception: {ex.Message}");
+				return current;
+			}
+
+			// No list could be had. Nothing is written and the store does not count as loaded, so no
+			// save writes the empty default either: an empty file would be read as the list on every
+			// later start and never be fetched again - for the AoE list that meant no party mitigation
+			// by list and no damage measurement until a reset happened to succeed (A196). The next start
+			// tries again. The cost: changes made to this list in this session are not saved; a warning
+			// in the log says so at every save.
+			PluginLog.Warning($"Failed to download {name} from GitHub. Starting empty for this session, and trying again at the next start. Exception: {ex.Message}");
+			return new T();
+		}
 	}
 }

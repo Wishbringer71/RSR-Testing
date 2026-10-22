@@ -38,6 +38,16 @@ public interface IBaseAction : IAction
 	// that path - he commanded a defence, not every one (concept 09).
 	internal static bool CommandedDefenceRunning { get; set; } = false;
 
+	internal static void ResetOverrides()
+	{
+		TargetOverride = null;
+		ForceEnable = false;
+		AutoHealCheck = false;
+		IgnoreClipping = false;
+		AllEmpty = false;
+		ShouldEndSpecial = false;
+	}
+
 	/// <summary>
 	/// The action itself.
 	/// </summary>

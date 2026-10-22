@@ -8,7 +8,9 @@ namespace RotationSolver.Updaters;
 
 internal static class CancelCastUpdater
 {
-	private static readonly RandomDelay _tarStopCastDelay = new(() => Service.Config.StopCastingDelay);
+#pragma warning disable IDE0044
+	private static RandomDelay _tarStopCastDelay = new(() => Service.Config.StopCastingDelay);
+#pragma warning restore IDE0044
 
 	// The raise last broken off because another lands first, so the trace names it once.
 	private static (uint Action, ulong Target, float Total) _raiseStopTraced;

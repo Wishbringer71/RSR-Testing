@@ -4,7 +4,7 @@ using Dalamud.Plugin.Services;
 namespace RotationSolver.Updaters;
 
 /// <summary>
-/// What one RSR update cycle costs, measured from the first framework handler to the last on the same
+/// What one RSR update cycle costs, measured from the start of the framework handler to its end on the same
 /// frame, and written to <c>DefenseTrace.log</c> once a fight ends.
 /// </summary>
 /// <remarks>
@@ -34,7 +34,7 @@ internal static class UpdateCost
 	private static readonly Dictionary<string, (double Total, double Max)> _fight = [];
 	private static string _slowest = string.Empty;
 
-	/// <summary>Called by the first handler of a cycle that runs.</summary>
+	/// <summary>Called when a cycle that runs begins.</summary>
 	public static void Begin()
 	{
 		_start = Stopwatch.GetTimestamp();
@@ -72,7 +72,7 @@ internal static class UpdateCost
 		_phase = null;
 	}
 
-	/// <summary>Called by the last handler of the same cycle.</summary>
+	/// <summary>Called when the same cycle ends.</summary>
 	public static void End(IFramework framework)
 	{
 		if (_start == 0)

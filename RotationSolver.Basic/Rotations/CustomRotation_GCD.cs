@@ -14,18 +14,22 @@ public partial class CustomRotation
 	private static DateTime _nextTimeToHeal = DateTime.MinValue;
 	private static readonly Random _random = new();
 
+	// Quest battle kits replace the whole hotbar, so they ignore the duty action toggle.
+	private static Duties.DutyRotation? ActiveDutyRotation =>
+		Service.Config.UseDutyActions || DataCenter.IsInQuestBattle ? DataCenter.CurrentDutyRotation : null;
+
 	private IAction? GCD()
 	{
 		var act = DataCenter.CommandNextAction;
 
-		IBaseAction.ForceEnable = true;
-		if (act is IBaseAction a && a.Info.IsRealGCD
-			&& a.CanUse(out _, usedUp: true, skipAoeCheck: true, skipStatusProvideCheck: true))
+		using (new ForceEnableScope())
 		{
-			return act;
+			if (act is IBaseAction a && a.Info.IsRealGCD
+				&& a.CanUse(out _, usedUp: true, skipAoeCheck: true, skipStatusProvideCheck: true))
+			{
+				return act;
+			}
 		}
-
-		IBaseAction.ForceEnable = false;
 
 		if (DataCenter.MergedStatus.HasFlag(AutoStatus.NoCasting))
 		{
@@ -73,7 +77,7 @@ public partial class CustomRotation
 		try
 		{
 			IBaseAction.ShouldEndSpecial = false;
-			if (DataCenter.CurrentDutyRotation?.EmergencyGCD(act, out act) == true)
+			if (ActiveDutyRotation?.EmergencyGCD(act, out act) == true)
 			{
 				return act;
 			}
@@ -84,7 +88,7 @@ public partial class CustomRotation
 
 			if (DataCenter.MergedStatus.HasFlag(AutoStatus.Interrupt))
 			{
-				if (DataCenter.CurrentDutyRotation?.MyInterruptGCD(out act) == true)
+				if (ActiveDutyRotation?.MyInterruptGCD(out act) == true)
 				{
 					return act;
 				}
@@ -97,7 +101,7 @@ public partial class CustomRotation
 			IBaseAction.TargetOverride = TargetType.Dispel;
 			if (DataCenter.MergedStatus.HasFlag(AutoStatus.Dispel))
 			{
-				if (DataCenter.CurrentDutyRotation?.DispelGCD(out act) == true)
+				if (ActiveDutyRotation?.DispelGCD(out act) == true)
 				{
 					return act;
 				}
@@ -110,7 +114,7 @@ public partial class CustomRotation
 			IBaseAction.TargetOverride = TargetType.Provoke;
 			if (DataCenter.MergedStatus.HasFlag(AutoStatus.Provoke))
 			{
-				if (DataCenter.CurrentDutyRotation?.ProvokeGCD(out act) == true)
+				if (ActiveDutyRotation?.ProvokeGCD(out act) == true)
 				{
 					return act;
 				}
@@ -121,67 +125,16 @@ public partial class CustomRotation
 			}
 
 			IBaseAction.TargetOverride = TargetType.Death;
-
-			var hardcastraisetype = Service.Config.HardCastRaiseType;
-
-			if (DataCenter.MergedStatus.HasFlag(AutoStatus.Raise) && DataCenter.CanRaise() && Service.Config.RaisePlayerFirst)
+			if (Service.Config.RaisePlayerFirst && TryRaise(out act))
 			{
-				if (RaiseSpell(out act, false))
-				{
-					return act;
-				}
-
-				if (hardcastraisetype == HardCastRaiseType.HardCastNormal && !SwiftcastComingForRaise)
-				{
-					if (RaiseSpell(out act, true))
-					{
-						return act;
-					}
-				}
-
-				if (hardcastraisetype == HardCastRaiseType.HardCastSwiftCooldown)
-				{
-					if (HardCastBeatsWaitingForSwiftcast)
-					{
-						if (RaiseSpell(out act, true))
-						{
-							return act;
-						}
-					}
-				}
-
-				// The Swiftcast reservation belongs here too. All four hard cast modes promise it -
-				// every description starts "Raise while Swiftcast is on cooldown" - and the other
-				// three check it: HardCastNormal in the plain form, the two SwiftCooldown modes in
-				// the form that also weighs the cast time. This mode is to HardCastNormal what
-				// HardCastOnlyHealerSwiftCooldown is to HardCastSwiftCooldown, namely plus "the
-				// other raisers are dead", so it inherits the plain form rather than the weighing
-				// one. Without it, choosing this mode hard cast even with Swiftcast ready.
-				if (hardcastraisetype == HardCastRaiseType.HardCastOnlyHealer && !SwiftcastComingForRaise)
-				{
-					if (!AnyOtherLivingRaiser() && RaiseSpell(out act, true))
-					{
-						return act;
-					}
-				}
-
-				if (hardcastraisetype == HardCastRaiseType.HardCastOnlyHealerSwiftCooldown)
-				{
-					if (HardCastBeatsWaitingForSwiftcast)
-					{
-						if (!AnyOtherLivingRaiser() && RaiseSpell(out act, true))
-						{
-							return act;
-						}
-					}
-				}
+				return act;
 			}
 
 			IBaseAction.TargetOverride = null;
 
 			if (DataCenter.MergedStatus.HasFlag(AutoStatus.MoveForward))
 			{
-				if (DataCenter.CurrentDutyRotation?.MoveForwardGCD(out act) == true)
+				if (ActiveDutyRotation?.MoveForwardGCD(out act) == true)
 				{
 					if (act is IBaseAction b && ObjectHelper.DistanceToPlayer(b.Target.Target) > 5)
 					{
@@ -203,40 +156,28 @@ public partial class CustomRotation
 			if (DataCenter.CommandStatus.HasFlag(AutoStatus.HealAreaSpell))
 			{
 				IBaseAction.AutoHealCheck = true;
-				if (DataCenter.CurrentDutyRotation?.HealAreaGCD(out act) == true)
+				if (ActiveDutyRotation?.HealAreaGCD(out act) == true)
 				{
 					return act;
 				}
 
-				if (!StatusHelper.PlayerHealingPunished())
+				if (CanCastHeals && HealAreaGCD(out var action))
 				{
-					if (HealAreaGCD(out var action))
-					{
-						return action;
-					}
+					return action;
 				}
 				IBaseAction.AutoHealCheck = false;
 			}
 			if (DataCenter.AutoStatus.HasFlag(AutoStatus.HealAreaSpell))
 			{
 				IBaseAction.AutoHealCheck = true;
-				// Unconditional like the other three heal branches. The condition that used to sit here
-				// enumerated the duty heal sources that existed when it was written, and Bozja's area
-				// cures arrived later without being added, which left them unreachable on this path.
-				if (DataCenter.CurrentDutyRotation?.HealAreaGCD(out act) == true)
+				if (ActiveDutyRotation?.HealAreaGCD(out act) == true)
 				{
 					return act;
 				}
 
-				if (CanHealAreaSpell)
+				if (CanHealAreaSpell && CanCastHeals && HealAreaGCD(out var action))
 				{
-					if (!StatusHelper.PlayerHealingPunished())
-					{
-						if (HealAreaGCD(out var action))
-						{
-							return action;
-						}
-					}
+					return action;
 				}
 
 				IBaseAction.AutoHealCheck = false;
@@ -245,37 +186,28 @@ public partial class CustomRotation
 			if (DataCenter.CommandStatus.HasFlag(AutoStatus.HealSingleSpell))
 			{
 				IBaseAction.AutoHealCheck = true;
-				if (DataCenter.CurrentDutyRotation?.HealSingleGCD(out act) == true)
+				if (ActiveDutyRotation?.HealSingleGCD(out act) == true)
 				{
 					return act;
 				}
 
-				if (!StatusHelper.PlayerHealingPunished())
+				if (CanCastHeals && HealSingleGCD(out var action))
 				{
-					if (HealSingleGCD(out var action))
-					{
-						return action;
-					}
+					return action;
 				}
 				IBaseAction.AutoHealCheck = false;
 			}
 			if (DataCenter.AutoStatus.HasFlag(AutoStatus.HealSingleSpell))
 			{
 				IBaseAction.AutoHealCheck = true;
-				if (DataCenter.CurrentDutyRotation?.HealSingleGCD(out act) == true)
+				if (ActiveDutyRotation?.HealSingleGCD(out act) == true)
 				{
 					return act;
 				}
 
-				if (CanHealSingleSpell)
+				if (CanHealSingleSpell && CanCastHeals && HealSingleGCD(out var action))
 				{
-					if (!StatusHelper.PlayerHealingPunished())
-					{
-						if (HealSingleGCD(out var action))
-						{
-							return action;
-						}
-					}
+					return action;
 				}
 
 				IBaseAction.AutoHealCheck = false;
@@ -289,7 +221,7 @@ public partial class CustomRotation
 				IBaseAction.AreaDefenceRunning = true;
 				try
 				{
-					if (DataCenter.CurrentDutyRotation?.DefenseAreaGCD(out act) == true)
+					if (ActiveDutyRotation?.DefenseAreaGCD(out act) == true)
 					{
 						return act;
 					}
@@ -312,7 +244,7 @@ public partial class CustomRotation
 				IBaseAction.CommandedDefenceRunning = DataCenter.CommandStatus.HasFlag(AutoStatus.DefenseSingle);
 				try
 				{
-					if (DataCenter.CurrentDutyRotation?.DefenseSingleGCD(out act) == true)
+					if (ActiveDutyRotation?.DefenseSingleGCD(out act) == true)
 					{
 						return act;
 					}
@@ -329,62 +261,17 @@ public partial class CustomRotation
 			}
 
 			IBaseAction.TargetOverride = TargetType.Death;
-
-			if (DataCenter.MergedStatus.HasFlag(AutoStatus.Raise) && DataCenter.CanRaise() && !Service.Config.RaisePlayerFirst)
+			if (!Service.Config.RaisePlayerFirst && TryRaise(out act))
 			{
-				if (RaiseSpell(out act, false))
-				{
-					return act;
-				}
-
-				if (hardcastraisetype == HardCastRaiseType.HardCastNormal && !SwiftcastComingForRaise)
-				{
-					if (RaiseSpell(out act, true))
-					{
-						return act;
-					}
-				}
-
-				if (hardcastraisetype == HardCastRaiseType.HardCastSwiftCooldown)
-				{
-					if (HardCastBeatsWaitingForSwiftcast)
-					{
-						if (RaiseSpell(out act, true))
-						{
-							return act;
-						}
-					}
-				}
-
-				// Same reservation as in the branch above; see the comment there.
-				if (hardcastraisetype == HardCastRaiseType.HardCastOnlyHealer && !SwiftcastComingForRaise)
-				{
-					if (!AnyOtherLivingRaiser() && RaiseSpell(out act, true))
-					{
-						return act;
-					}
-				}
-
-				if (hardcastraisetype == HardCastRaiseType.HardCastOnlyHealerSwiftCooldown)
-				{
-					if (HardCastBeatsWaitingForSwiftcast)
-					{
-						if (!AnyOtherLivingRaiser() && RaiseSpell(out act, true))
-						{
-							return act;
-						}
-					}
-				}
+				return act;
 			}
-
-			IBaseAction.TargetOverride = null;
 
 			IBaseAction.ShouldEndSpecial = false;
 			IBaseAction.TargetOverride = null;
 
 			if (!DataCenter.MergedStatus.HasFlag(AutoStatus.NoCasting))
 			{
-				if (DataCenter.CurrentDutyRotation?.GeneralGCD(out act) == true)
+				if (ActiveDutyRotation?.GeneralGCD(out act) == true)
 				{
 					return act;
 				}
@@ -423,7 +310,7 @@ public partial class CustomRotation
 									count++;
 								}
 							}
-							if (count > 2 && DataCenter.CurrentDutyRotation?.HealAreaGCD(out act) == true)
+							if (count > 2 && ActiveDutyRotation?.HealAreaGCD(out act) == true)
 							{
 								return act;
 							}
@@ -432,7 +319,7 @@ public partial class CustomRotation
 								return act;
 							}
 						}
-						if (DataCenter.CurrentDutyRotation?.HealSingleGCD(out act) == true)
+						if (ActiveDutyRotation?.HealSingleGCD(out act) == true)
 						{
 							return act;
 						}
@@ -459,6 +346,38 @@ public partial class CustomRotation
 		}
 
 		return null;
+	}
+
+	/// <summary>
+	/// Healing is held under Scalebound, and under Shackled Healing unless the player is alone.
+	/// </summary>
+	private static bool CanCastHeals => !StatusHelper.PlayerHealingPunished();
+
+	private bool TryRaise(out IAction? act)
+	{
+		act = null;
+		if (!DataCenter.MergedStatus.HasFlag(AutoStatus.Raise) || !DataCenter.CanRaise())
+		{
+			return false;
+		}
+
+		if (RaiseSpell(out act, false))
+		{
+			return true;
+		}
+
+		// The two "only healer" modes are the two others plus "the other healers are dead"; the plain one inherits
+		// the Swiftcast reservation of HardCastNormal - every mode's text starts "Raise while Swiftcast is on cooldown".
+		var mayHardCast = Service.Config.HardCastRaiseType switch
+		{
+			HardCastRaiseType.HardCastNormal => !SwiftcastComingForRaise,
+			HardCastRaiseType.HardCastSwiftCooldown => HardCastBeatsWaitingForSwiftcast,
+			HardCastRaiseType.HardCastOnlyHealer => !SwiftcastComingForRaise && !AnyOtherLivingRaiser(),
+			HardCastRaiseType.HardCastOnlyHealerSwiftCooldown => HardCastBeatsWaitingForSwiftcast && !AnyOtherLivingRaiser(),
+			_ => false,
+		};
+
+		return mayHardCast && RaiseSpell(out act, true);
 	}
 
 	/// <summary>
@@ -540,7 +459,7 @@ public partial class CustomRotation
 			if (DataCenter.CommandStatus.HasFlag(AutoStatus.Raise))
 			{
 				IBaseAction.ShouldEndSpecial = true;
-				if (DataCenter.CurrentDutyRotation?.RaiseGCD(out act) == true)
+				if (ActiveDutyRotation?.RaiseGCD(out act) == true)
 				{
 					return true;
 				}
@@ -554,7 +473,7 @@ public partial class CustomRotation
 
 			if (DataCenter.AutoStatus.HasFlag(AutoStatus.Raise))
 			{
-				if (DataCenter.CurrentDutyRotation?.RaiseGCD(out act) == true)
+				if (ActiveDutyRotation?.RaiseGCD(out act) == true)
 				{
 					return true;
 				}
@@ -591,12 +510,6 @@ public partial class CustomRotation
 	protected virtual bool MyInterruptGCD(out IAction? act)
 	{
 		act = null;
-		if (ShouldSkipAction())
-		{
-			return false;
-		}
-
-		act = null;
 		return false;
 	}
 
@@ -607,12 +520,6 @@ public partial class CustomRotation
 	/// <returns>True if the action can be used; otherwise, false.</returns>
 	protected virtual bool RaiseGCD(out IAction? act)
 	{
-		if (DataCenter.CommandStatus.HasFlag(AutoStatus.Raise))
-		{
-			IBaseAction.ShouldEndSpecial = true;
-		}
-
-		IBaseAction.ShouldEndSpecial = false;
 		act = null;
 		return false;
 	}
@@ -648,12 +555,6 @@ public partial class CustomRotation
 	/// </summary>
 	protected virtual bool ProvokeGCD(out IAction? act)
 	{
-		if (DataCenter.CommandStatus.HasFlag(AutoStatus.Provoke))
-		{
-			IBaseAction.ShouldEndSpecial = true;
-		}
-
-		IBaseAction.ShouldEndSpecial = false;
 		act = null;
 		return false;
 	}
@@ -666,65 +567,7 @@ public partial class CustomRotation
 	/// <returns>True if the action can be used; otherwise, false.</returns>
 	protected virtual bool EmergencyGCD(IAction? nextGCD, out IAction? act)
 	{
-		act = null;
-		if (DataCenter.IsPvP)
-		{
-			if (DataCenter.Job != Job.BRD && DataCenter.Job != Job.WHM && PurifyPvP.CanUse(out act))
-			{
-				if (Service.Config.PvpPurifyStun && StatusHelper.PlayerHasStatus(false, StatusID.Stun_1343))
-				{
-					return true;
-				}
-
-				if (Service.Config.PvpPurifyHeavy && StatusHelper.PlayerHasStatus(false, StatusID.Heavy_1344))
-				{
-					return true;
-				}
-
-				if (Service.Config.PvpPurifyBind && StatusHelper.PlayerHasStatus(false, StatusID.Bind_1345))
-				{
-					return true;
-				}
-
-				if (Service.Config.PvpPurifySilence && StatusHelper.PlayerHasStatus(false, StatusID.Silence_1347))
-				{
-					return true;
-				}
-
-				if (Service.Config.PvpPurifyDeepFreeze && StatusHelper.PlayerHasStatus(false, StatusID.DeepFreeze_3219))
-				{
-					return true;
-				}
-
-				if (Service.Config.PvpPurifyMiracleOfNature && StatusHelper.PlayerHasStatus(false, StatusID.MiracleOfNature))
-				{
-					return true;
-				}
-			}
-
-			if (GuardPvP.CanUse(out act) && Player?.GetHealthRatio() <= Service.Config.HealthForGuard && !StatusHelper.PlayerHasStatus(true, StatusID.UndeadRedemption) && !StatusHelper.PlayerHasStatus(true, StatusID.InnerRelease_1303))
-			{
-				return true;
-			}
-
-			if (RecuperatePvP.CanUse(out act))
-			{
-				return true;
-			}
-
-			if (StandardissueElixirPvP.CanUse(out act))
-			{
-				return true;
-			}
-		}
-
-		if (ShouldSkipAction())
-		{
-			return false;
-		}
-
-		act = null!;
-		return false;
+		return TryPvPEmergency(out act);
 	}
 
 	/// <summary>
@@ -735,18 +578,6 @@ public partial class CustomRotation
 	[RotationDesc(DescType.MoveForwardGCD)]
 	protected virtual bool MoveForwardGCD(out IAction? act)
 	{
-		act = null;
-		if (ShouldSkipAction())
-		{
-			return false;
-		}
-
-		if (DataCenter.CommandStatus.HasFlag(AutoStatus.MoveForward))
-		{
-			IBaseAction.ShouldEndSpecial = true;
-		}
-
-		IBaseAction.ShouldEndSpecial = false;
 		act = null;
 		return false;
 	}
@@ -760,18 +591,6 @@ public partial class CustomRotation
 	protected virtual bool HealSingleGCD(out IAction? act)
 	{
 		act = null;
-		if (ShouldSkipAction())
-		{
-			return false;
-		}
-
-		if (DataCenter.CommandStatus.HasFlag(AutoStatus.HealSingleSpell))
-		{
-			IBaseAction.ShouldEndSpecial = true;
-		}
-
-		IBaseAction.ShouldEndSpecial = false;
-		act = null;
 		return false;
 	}
 
@@ -784,18 +603,6 @@ public partial class CustomRotation
 	protected virtual bool HealAreaGCD(out IAction? action)
 	{
 		action = null;
-		if (ShouldSkipAction())
-		{
-			return false;
-		}
-
-		if (DataCenter.CommandStatus.HasFlag(AutoStatus.HealAreaSpell))
-		{
-			IBaseAction.ShouldEndSpecial = true;
-		}
-
-		IBaseAction.ShouldEndSpecial = false;
-		action = null!;
 		return false;
 	}
 
@@ -808,18 +615,6 @@ public partial class CustomRotation
 	protected virtual bool DefenseSingleGCD(out IAction? act)
 	{
 		act = null;
-		if (ShouldSkipAction())
-		{
-			return false;
-		}
-
-		if (DataCenter.CommandStatus.HasFlag(AutoStatus.DefenseSingle))
-		{
-			IBaseAction.ShouldEndSpecial = true;
-		}
-
-		IBaseAction.ShouldEndSpecial = false;
-		act = null!;
 		return false;
 	}
 
@@ -832,18 +627,6 @@ public partial class CustomRotation
 	protected virtual bool DefenseAreaGCD(out IAction? act)
 	{
 		act = null;
-		if (ShouldSkipAction())
-		{
-			return false;
-		}
-
-		if (DataCenter.CommandStatus.HasFlag(AutoStatus.DefenseArea))
-		{
-			IBaseAction.ShouldEndSpecial = true;
-		}
-
-		IBaseAction.ShouldEndSpecial = false;
-		act = null;
 		return false;
 	}
 
@@ -854,12 +637,6 @@ public partial class CustomRotation
 	/// <returns>True if the action can be used; otherwise, false.</returns>
 	protected virtual bool GeneralGCD(out IAction? act)
 	{
-		act = null;
-		if (ShouldSkipAction())
-		{
-			return false;
-		}
-
 		act = null;
 		return false;
 	}

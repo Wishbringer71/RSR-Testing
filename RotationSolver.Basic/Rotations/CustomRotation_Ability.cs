@@ -63,12 +63,13 @@ public partial class CustomRotation
 			return false;
 		}
 
-		IBaseAction.ForceEnable = true;
-		if (act is IBaseAction a && a != null && !a.Info.IsRealGCD && a.CanUse(out _, usedUp: true, skipAoeCheck: true, skipStatusProvideCheck: true))
+		using (new ForceEnableScope())
 		{
-			return true;
+			if (act is IBaseAction a && !a.Info.IsRealGCD && a.CanUse(out _, usedUp: true, skipAoeCheck: true, skipStatusProvideCheck: true))
+			{
+				return true;
+			}
 		}
-		IBaseAction.ForceEnable = false;
 
 		if (DataCenter.Job == Job.NIN && StatusHelper.PlayerHasStatus(true, StatusID.Mudra))
 		{
@@ -91,7 +92,7 @@ public partial class CustomRotation
 			return false;
 		}
 
-		if (!DataCenter.MergedStatus.HasFlag(AutoStatus.NoCasting) && DataCenter.CurrentDutyRotation?.EmergencyAbility(nextGCD, out act) == true)
+		if (!DataCenter.MergedStatus.HasFlag(AutoStatus.NoCasting) && ActiveDutyRotation?.EmergencyAbility(nextGCD, out act) == true)
 		{
 			return true;
 		}
@@ -119,7 +120,7 @@ public partial class CustomRotation
 		IBaseAction.TargetOverride = TargetType.Interrupt;
 		if (DataCenter.MergedStatus.HasFlag(AutoStatus.Interrupt) && !StatusHelper.PlayerHasStatus(true, StatusID.Mudra))
 		{
-			if (DataCenter.CurrentDutyRotation?.InterruptAbility(nextGCD, out act) == true)
+			if (ActiveDutyRotation?.InterruptAbility(nextGCD, out act) == true)
 			{
 				return true;
 			}
@@ -132,7 +133,7 @@ public partial class CustomRotation
 		IBaseAction.TargetOverride = TargetType.Dispel;
 		if (DataCenter.MergedStatus.HasFlag(AutoStatus.Dispel))
 		{
-			if (DataCenter.CurrentDutyRotation?.DispelAbility(nextGCD, out act) == true)
+			if (ActiveDutyRotation?.DispelAbility(nextGCD, out act) == true)
 			{
 				return true;
 			}
@@ -170,7 +171,7 @@ public partial class CustomRotation
 		}
 		if (DataCenter.MergedStatus.HasFlag(AutoStatus.AntiKnockback) && !StatusHelper.PlayerHasStatus(true, StatusID.Mudra))
 		{
-			if (DataCenter.CurrentDutyRotation?.AntiKnockbackAbility(nextGCD, out act) == true)
+			if (ActiveDutyRotation?.AntiKnockbackAbility(nextGCD, out act) == true)
 			{
 				return true;
 			}
@@ -200,11 +201,11 @@ public partial class CustomRotation
 		{
 			IBaseAction.AllEmpty = true;
 			IBaseAction.ShouldEndSpecial = true;
-			if (DataCenter.CurrentDutyRotation?.HealAreaAbility(nextGCD, out act) == true)
+			if (ActiveDutyRotation?.HealAreaAbility(nextGCD, out act) == true)
 			{
 				return true;
 			}
-			if (!StatusHelper.PlayerHealingPunished())
+			if (CanCastHeals)
 			{
 				if (HealAreaAbility(nextGCD, out act))
 				{
@@ -218,11 +219,11 @@ public partial class CustomRotation
 		if (DataCenter.AutoStatus.HasFlag(AutoStatus.HealAreaAbility) && (CanHealAreaAbility || DataCenter.IsInOccultCrescentOp))
 		{
 			IBaseAction.AutoHealCheck = true;
-			if (DataCenter.CurrentDutyRotation?.HealAreaAbility(nextGCD, out act) == true)
+			if (ActiveDutyRotation?.HealAreaAbility(nextGCD, out act) == true)
 			{
 				return true;
 			}
-			if (!StatusHelper.PlayerHealingPunished())
+			if (CanCastHeals)
 			{
 				if (HealAreaAbility(nextGCD, out act))
 				{
@@ -236,11 +237,11 @@ public partial class CustomRotation
 		{
 			IBaseAction.AllEmpty = true;
 			IBaseAction.ShouldEndSpecial = true;
-			if (DataCenter.CurrentDutyRotation?.HealSingleAbility(nextGCD, out act) == true)
+			if (ActiveDutyRotation?.HealSingleAbility(nextGCD, out act) == true)
 			{
 				return true;
 			}
-			if (!StatusHelper.PlayerHealingPunished())
+			if (CanCastHeals)
 			{
 				if (HealSingleAbility(nextGCD, out act))
 				{
@@ -254,11 +255,11 @@ public partial class CustomRotation
 		if (DataCenter.AutoStatus.HasFlag(AutoStatus.HealSingleAbility) && (CanHealSingleAbility || DataCenter.IsInOccultCrescentOp))
 		{
 			IBaseAction.AutoHealCheck = true;
-			if (DataCenter.CurrentDutyRotation?.HealSingleAbility(nextGCD, out act) == true)
+			if (ActiveDutyRotation?.HealSingleAbility(nextGCD, out act) == true)
 			{
 				return true;
 			}
-			if (!StatusHelper.PlayerHealingPunished())
+			if (CanCastHeals)
 			{
 				if (HealSingleAbility(nextGCD, out act))
 				{
@@ -277,7 +278,7 @@ public partial class CustomRotation
 		}
 		if (DataCenter.CommandStatus.HasFlag(AutoStatus.Speed))
 		{
-			if (DataCenter.CurrentDutyRotation?.SpeedAbility(nextGCD, out act) == true)
+			if (ActiveDutyRotation?.SpeedAbility(nextGCD, out act) == true)
 			{
 				return true;
 			}
@@ -334,7 +335,7 @@ public partial class CustomRotation
 				|| DataCenter.AreaHitReachesPlayer;
 			IBaseAction.AreaDefenceRunning = true;
 			DefenseTrace.BeginPath();
-			if (DataCenter.CurrentDutyRotation?.DefenseAreaAbility(nextGCD, out act) == true)
+			if (ActiveDutyRotation?.DefenseAreaAbility(nextGCD, out act) == true)
 			{
 				IBaseAction.SelfProtectionHitsMe = null;
 				IBaseAction.AreaDefenceRunning = false;
@@ -371,7 +372,7 @@ public partial class CustomRotation
 			DefenseTrace.BeginPath();
 			try
 			{
-				if (DataCenter.CurrentDutyRotation?.DefenseSingleAbility(nextGCD, out act) == true)
+				if (ActiveDutyRotation?.DefenseSingleAbility(nextGCD, out act) == true)
 				{
 					IBaseAction.SelfProtectionHitsMe = null;
 					DefenseTrace.Decision("single defence (duty)", act);
@@ -407,7 +408,7 @@ public partial class CustomRotation
 		IBaseAction.AllEmpty = true;
 		if (DataCenter.MergedStatus.HasFlag(AutoStatus.MoveForward) && Player != null && !StatusHelper.PlayerHasStatus(true, StatusID.Bind))
 		{
-			if (DataCenter.CurrentDutyRotation?.MoveForwardAbility(nextGCD, out act) == true)
+			if (ActiveDutyRotation?.MoveForwardAbility(nextGCD, out act) == true)
 			{
 				return true;
 			}
@@ -424,7 +425,7 @@ public partial class CustomRotation
 		}
 		if (DataCenter.MergedStatus.HasFlag(AutoStatus.MoveBack))
 		{
-			if (DataCenter.CurrentDutyRotation?.MoveBackAbility(nextGCD, out act) == true)
+			if (ActiveDutyRotation?.MoveBackAbility(nextGCD, out act) == true)
 			{
 				return true;
 			}
@@ -477,7 +478,7 @@ public partial class CustomRotation
 			return true;
 		}
 
-		if (HasHostilesInRange && DataCenter.CurrentDutyRotation?.AttackAbility(nextGCD, out act) == true)
+		if (HasHostilesInRange && ActiveDutyRotation?.AttackAbility(nextGCD, out act) == true)
 		{
 			return true;
 		}
@@ -486,7 +487,7 @@ public partial class CustomRotation
 			return true;
 		}
 
-		if (DataCenter.CurrentDutyRotation?.GeneralAbility(nextGCD, out act) == true)
+		if (ActiveDutyRotation?.GeneralAbility(nextGCD, out act) == true)
 		{
 			return true;
 		}
@@ -751,58 +752,10 @@ public partial class CustomRotation
 	/// <returns>True if the emergency ability can be used; otherwise, false.</returns>
 	protected virtual bool EmergencyAbility(IAction nextGCD, out IAction? act)
 	{
-		#region PvP
-		if (DataCenter.IsPvP)
+		if (TryPvPEmergency(out act))
 		{
-			if (DataCenter.Job != Job.BRD && DataCenter.Job != Job.WHM && PurifyPvP.CanUse(out act))
-			{
-				if (Service.Config.PvpPurifyStun && StatusHelper.PlayerHasStatus(false, StatusID.Stun_1343))
-				{
-					return true;
-				}
-
-				if (Service.Config.PvpPurifyHeavy && StatusHelper.PlayerHasStatus(false, StatusID.Heavy_1344))
-				{
-					return true;
-				}
-
-				if (Service.Config.PvpPurifyBind && StatusHelper.PlayerHasStatus(false, StatusID.Bind_1345))
-				{
-					return true;
-				}
-
-				if (Service.Config.PvpPurifySilence && StatusHelper.PlayerHasStatus(false, StatusID.Silence_1347))
-				{
-					return true;
-				}
-
-				if (Service.Config.PvpPurifyDeepFreeze && StatusHelper.PlayerHasStatus(false, StatusID.DeepFreeze_3219))
-				{
-					return true;
-				}
-
-				if (Service.Config.PvpPurifyMiracleOfNature && StatusHelper.PlayerHasStatus(false, StatusID.MiracleOfNature))
-				{
-					return true;
-				}
-			}
-
-			if (GuardPvP.CanUse(out act) && Player?.GetHealthRatio() <= Service.Config.HealthForGuard && !StatusHelper.PlayerHasStatus(true, StatusID.UndeadRedemption) && !StatusHelper.PlayerHasStatus(true, StatusID.InnerRelease_1303))
-			{
-				return true;
-			}
-
-			if (RecuperatePvP.CanUse(out act))
-			{
-				return true;
-			}
-
-			if (StandardissueElixirPvP.CanUse(out act))
-			{
-				return true;
-			}
+			return true;
 		}
-		#endregion
 
 		if (nextGCD is BaseAction action)
 		{
@@ -855,24 +808,43 @@ public partial class CustomRotation
 			}
 		}
 
-		if (Role is JobRole.Melee && StatusHelper.PlayerHasStatus(false, StatusHelper.DoomHealStatus))
+		if (Role is JobRole.Melee or JobRole.RangedPhysical && StatusHelper.PlayerHasStatus(false, StatusHelper.DoomHealStatus)
+			&& SecondWindPvE.CanUse(out act))
 		{
-			if (SecondWindPvE.CanUse(out act))
-			{
-				return true;
-			}
-		}
-
-		if (Role is JobRole.RangedPhysical && StatusHelper.PlayerHasStatus(false, StatusHelper.DoomHealStatus))
-		{
-			if (SecondWindPvE.CanUse(out act))
-			{
-				return true;
-			}
+			return true;
 		}
 
 		act = null;
 		return false;
+	}
+
+	// PvP Purify, Guard, Recuperate and Elixir, shared by the emergency GCD and ability passes.
+	private bool TryPvPEmergency(out IAction? act)
+	{
+		act = null;
+		if (!DataCenter.IsPvP)
+		{
+			return false;
+		}
+
+		if (DataCenter.Job != Job.BRD && DataCenter.Job != Job.WHM && PurifyPvP.CanUse(out act)
+			&& ((Service.Config.PvpPurifyStun && StatusHelper.PlayerHasStatus(false, StatusID.Stun_1343))
+				|| (Service.Config.PvpPurifyHeavy && StatusHelper.PlayerHasStatus(false, StatusID.Heavy_1344))
+				|| (Service.Config.PvpPurifyBind && StatusHelper.PlayerHasStatus(false, StatusID.Bind_1345))
+				|| (Service.Config.PvpPurifySilence && StatusHelper.PlayerHasStatus(false, StatusID.Silence_1347))
+				|| (Service.Config.PvpPurifyDeepFreeze && StatusHelper.PlayerHasStatus(false, StatusID.DeepFreeze_3219))
+				|| (Service.Config.PvpPurifyMiracleOfNature && StatusHelper.PlayerHasStatus(false, StatusID.MiracleOfNature))))
+		{
+			return true;
+		}
+
+		if (GuardPvP.CanUse(out act) && Player?.GetHealthRatio() <= Service.Config.HealthForGuard
+			&& !StatusHelper.PlayerHasStatus(true, StatusID.UndeadRedemption) && !StatusHelper.PlayerHasStatus(true, StatusID.InnerRelease_1303))
+		{
+			return true;
+		}
+
+		return RecuperatePvP.CanUse(out act) || StandardissueElixirPvP.CanUse(out act);
 	}
 
 	/// <summary>
