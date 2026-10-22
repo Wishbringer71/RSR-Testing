@@ -227,11 +227,12 @@ den Spieler mit, weil ein lebender Rezzer statt ihrer den Zauber wirkt. Die Nur-
 „kann es außer mir jemand", und dort ist der Spieler der Entscheidende.
 
 Die Bezugsmenge folgt `RaiseType`. Bei `PartyOnly` und `PartyHealersOnly` bleibt es die Gruppe. Unter
-den Allianzmodi und `All` zählt die Allianz mit, weil die anderen Allianzen echte Gruppen mit eigenen
-Rezzern sind: Solange dort einer lebt, ist die Wiederbelebung deren Sache; lebt keiner mehr, ist
-Hartwirken oder die Feder der einzige Weg, dass dort jemand hochkommt. `AllOutOfDuty` ist ausgenommen
-— Fremde in der offenen Welt sind keine Reserve, und sie mitzuzählen blockierte beides praktisch
-immer.
+den Allianzmodi, `All` und `AllOutOfDuty` („Raise All.") zählt die Allianz mit, weil die anderen Allianzen echte
+Gruppen mit eigenen Rezzern sind: Solange dort einer lebt, ist die Wiederbelebung deren Sache; lebt keiner mehr, ist
+Hartwirken oder die Feder der einzige Weg, dass dort jemand hochkommt. Fremde in der offenen Welt zählen nie — sie
+sind keine Reserve, und sie mitzuzählen blockierte beides praktisch immer. Upstream führt sie seit 7.5.7.5 in einer
+eigenen Liste (`TargetUpdater._outOfDutyPlayers`); vorher standen sie unter `AllOutOfDuty` mit der Allianz in
+`AllianceMembers`, und der Modus fiel deshalb ganz aus der Bezugsmenge (A332).
 
 **Die Stufe gehört zur Rezzereigenschaft.** `CanRaise()` prüft sie für den Spieler seit jeher: 12 für
 Heiler und Beschwörer, 64 für den Rotmagier. Für alle anderen wurde sie nicht geprüft, sodass ein

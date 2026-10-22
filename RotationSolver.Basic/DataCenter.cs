@@ -1390,8 +1390,10 @@ internal static class DataCenter
 	/// The reference set follows <see cref="Configs.RaiseType"/>, because that is what decides
 	/// where a corpse may come from. Under the alliance modes the other alliances are real parties
 	/// with their own raisers: while one of them is alive the raise is theirs to take. AllOutOfDuty
-	/// is deliberately excluded - strangers in the open world are not a raise reserve, and counting
-	/// them would suppress raising almost always.
+	/// raises the alliance too and counts it the same way. Strangers in the open world stay out - they
+	/// are not a raise reserve, and counting them would suppress raising almost always; since upstream
+	/// 7.5.7.5 they are kept apart from <see cref="AllianceMembers"/>, which before held them under
+	/// that mode and was left out for it (A332).
 	/// </summary>
 	/// <param name="excludeSelf">Skip the player, for callers asking whether anyone *else* can.</param>
 	public static bool AnyLivingRaiser(bool excludeSelf)
@@ -1426,6 +1428,7 @@ internal static class DataCenter
 		return Service.Config.RaiseType is RaiseType.PartyAndAllianceSupports
 				or RaiseType.PartyAndAllianceHealers
 				or RaiseType.All
+				or RaiseType.AllOutOfDuty
 			&& HasLivingRaiser(AllianceMembers, excludeSelf, healersOnly);
 	}
 

@@ -309,6 +309,10 @@ Glieder bis dahin hineinpassen.
    - Gemessen an jedem eigenen Druck einer Aktion ohne Wirkzeit, der hinausgeht, während keine Animationssperre läuft
      und der Spieler nicht wirkt – ein solcher Druck geht sofort zum Server, ein in die Warteschlange gestellter
      verlängerte die Messung. Es gilt die letzte Messung.
+   - Druck und Bestätigung paart die Messung nach Aktions-Id innerhalb eines GCDs, nur für RSR-Drücke. Seit Upstream
+     7.5.7.5 trägt jede hinausgehende Anfrage eine Sequenz und jede eigene Wirkung sie zurück; darüber wäre die Paarung
+     exakt und schlösse abgewiesene Drücke aus (offen, `TODO.md`, „Tankbuster-Plan: Umlauf über die Sequenz jedes
+     Drucks", A332).
    - *Für die Unverwundbarkeit keine Frist vor dem Ende des Wirkens:* Holmgangs Untergrenze zählt beim Zufügen, nach
      dem Snapshot (Mechanik); für Heiligen Boden, Meteoritenfall und Totenerweckung ist es unbelegt. Bis zum Ende des
      Wirkens gedrückt, kann sie noch halten; ein Tod, den sie nicht verhindert, kostet nichts weiter. Nach dem Ende
@@ -1229,15 +1233,22 @@ Leid sofort und festigt den Wechsel, wie es die Referenz vorsieht.
 - **Zwei RSR-Tanks:** Nur der Getroffene wirkt. Der Empfänger gibt dir den Gegner nicht zurück, solange du eine
   Verwundbarkeit trägst oder eine Wiederholung nicht überlebst – ein Tank in Gefahr ist kein Empfänger. Sind beide
   in Gefahr, wirkt keiner, und keiner provoziert.
-- **Haltung:** RSR schaltet die Haltung nur ein, wenn kein anderer Tank sie trägt. Ein RSR-Co-Tank liegt daher
-  meist weit unter der Hälfte, und die Regel hält. Das ist richtig: Ohne Haltung behielte er den Gegner nicht. Vor
-  einer Herausforderung schaltet RSR deine Haltung ein, wenn sie aus ist; zwei Haltungen stehen dann, bis der Co-Tank
-  seine ablegt. Behält er sie und holt den Gegner mit seinem Schaden zurück, steht „take-over undone" im Protokoll.
+- **Haltung:** RSR schaltet die Haltung nur ein, wenn kein anderer lebender Tank der eigenen Gruppe sie trägt
+  (`StateUpdater.AnyOtherPartyTankWithStance`). Ein RSR-Co-Tank liegt daher meist weit unter der Hälfte, und die
+  Regel hält. Das ist richtig: Ohne Haltung behielte er den Gegner nicht. Vor einer Herausforderung schaltet RSR deine
+  Haltung ein, wenn sie aus ist; zwei Haltungen stehen dann, bis der Co-Tank seine ablegt. Behält er sie und holt den
+  Gegner mit seinem Schaden zurück, steht „take-over undone" im Protokoll. Stirbt der Haupttank, legt RSR die Haltung
+  an. Gezählt wird so erst seit Upstream 7.5.7.5: Vorher las die Prüfung die Allianzliste, die die eigene Gruppe nie
+  enthält – in einer Gruppe mit zwei Tanks legten beide die Haltung an, und im Allianzraid hielt die Haltung eines
+  Tanks aus einer anderen Gruppe deine zurück, sobald `RaiseType` die Allianz einschloss (A332).
 - **Automatische Herausforderung** (`ObjectHelper.CanProvoke`): Gegner auf Nicht-Tanks nach „Auto provoke when there
-  is another tank in party" (bei zwei Tanks nur mit ihr), und – unter eigener Option „Take the enemy from a co-tank in
-  danger", ab Werk an (A318, A321) – der Gegner eines Co-Tanks in Gefahr (oben, „Die andere Seite"). Bis A318 hing die
-  Rettung an der ersten Option, deren Text sie nicht nennt. Mit „Provoke anything" gilt die Übernahme ebenso. Sie
-  ruht, solange du selbst in Gefahr bist (oben, „Kein Zurückholen").
+  is another tank in party" (bei zwei Tanks in der eigenen Gruppe nur mit ihr, ab Werk an), und – unter eigener Option
+  „Take the enemy from a co-tank in danger", ab Werk an (A318, A321) – der Gegner eines Co-Tanks in Gefahr (oben, „Die
+  andere Seite"). Mit der ersten Option aus nimmt RSR in einer Gruppe mit zwei Tanks keinem Nicht-Tank den Gegner ab;
+  das überlässt du dann dem anderen Tank, so sagt es ihr Text. Wirksam ist das erst seit Upstream 7.5.7.5 – vorher zählte
+  dieselbe Allianzliste, fand den zweiten Tank nie und provozierte trotzdem (A332). Eine Rettung des Nicht-Tanks gegen
+  die ausgeschaltete Option ist nicht gebaut: Sie fiele genau in den Fall, den ihr Text ausschließt. Mit „Provoke
+  anything" gilt die Übernahme ebenso. Sie ruht, solange du selbst in Gefahr bist (oben, „Kein Zurückholen").
 - **Zwei RSR-Tanks, die andere Seite:** Er wirkt Geteiltes Leid auf dich (seine Regel), du provozierst (B oder D) –
   beide schieben den Gegner zu dir. Zurück holt er ihn nach seiner eigenen Regel, weil sein Geteiltes Leid ihn bewegt
   hat; nach deiner Herausforderung allein holst du ihn nicht zurück, du gibst ihn nach deinem nächsten gefährlichen

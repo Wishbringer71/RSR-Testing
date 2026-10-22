@@ -745,6 +745,16 @@ internal static class StateUpdater
 		return h < threshold;
 	}
 
+	/// <summary>
+	/// Whether <paramref name="member"/> calls for a single-target heal spell, by the decision that sets
+	/// <see cref="AutoStatus.HealSingleSpell"/> for him - for a reader that weighs one cast against its target.
+	/// </summary>
+	internal static bool NeedsSingleHealSpell(IBattleChara member)
+	{
+		return ShouldHealSingle(member, StatusHelper.SingleHots, Service.Config.HealthSingleSpell,
+			Service.Config.HealthSingleSpellHot, false);
+	}
+
 	private static bool ShouldHealSingle(IBattleChara target, StatusID[] hotStatus, float healSingle, float healSingleHot, bool instant)
 	{
 		if (target == null)

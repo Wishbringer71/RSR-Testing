@@ -19,11 +19,12 @@ Nach der Wirkung im Kampf: Sicherheit der Gruppe vor Schaden, gewichtet mit der 
 6. Flächenheilung um den Wirkenden: Radius gegen Trefferfläche
 7. Einstellungen ohne Leser, deren Text eine Wirkung verspricht
 8. Feste Werte: jeder offene Wert braucht seinen Loop
-9. Rotationen gegen The Balance abgleichen
-10. Six-sided Star und Flamethrower
-11. Vorlauf: Dragoon und Viper
-12. AoE-Schwelle an drei Orten
-13. Audit der gesamten Codebasis
+9. Tankbuster-Plan: Umlauf über die Sequenz jedes Drucks
+10. Rotationen gegen The Balance abgleichen
+11. Six-sided Star und Flamethrower
+12. Vorlauf: Dragoon und Viper
+13. AoE-Schwelle an drei Orten
+14. Audit der gesamten Codebasis
 
 Danach technische Schuld, soweit ihre Auflösungsbedingung erfüllt ist. Warten auf Daten: unten.
 
@@ -85,6 +86,15 @@ Solaris zündet".
 `check_fixed_values.py` beziffert sie. *Zuerst:* `MitigationDebuffDuration` (fest 98, 15 s, 10 s) neben
 `DefensiveValues.DurationOf`, das dieselbe Dauer aus dem Spiel liest – dieselbe Aufgabe an zwei Stellen. Danach die
 Vorlaufzeiten der vorausschauenden Abwehr (Barde, Tänzer, Maschinist, Tanks) und die Jobs, die er spielt.
+
+### Tankbuster-Plan: Umlauf über die Sequenz jedes Drucks · N
+
+*Im Kampf:* Die Frist, bis zu der eine Abwehr vor dem Snapshot hinausgehen muss, rechnet mit dem gemessenen Umlauf
+(`TankbusterForecast.RoundTrip`). Er paart Druck und Wirkung nach Aktions-Id innerhalb eines GCDs und kennt nur
+RSR-Drücke; ein abgewiesener oder eingereihter Druck kann als Probe zählen, eigene Drücke des Spielers fehlen. Seit
+Upstream 7.5.7.5 sieht `ActionManagerEx` jede Anfrage, die hinausgeht (Sequenz), und jede eigene Wirkung trägt sie
+(`SourceSequence`). *Nächster Schritt:* Loop – klären, ob die exakte Paarung die Frist im Kampf früher oder sicherer
+setzt, und dann die Messung darauf umstellen. *Konzept:* 09 (A332).
 
 ### Rotationen gegen The Balance abgleichen · N
 

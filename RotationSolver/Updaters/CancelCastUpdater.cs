@@ -15,11 +15,15 @@ internal static class CancelCastUpdater
 	// The raise last broken off because another lands first, so the trace names it once.
 	private static (uint Action, ulong Target, float Total) _raiseStopTraced;
 
+	// The single-target heal being cast: whether its target needed it and the target's HP when it began.
+	private static (uint Action, ulong Target, float Elapsed, bool NeededAtStart, uint HpAtStart, bool Traced) _singleHealCast;
+
 	internal static unsafe void UpdateCancelCast()
 	{
 		var player = Player.Object;
 		if (player == null || !player.IsCasting)
 		{
+			_singleHealCast = default;
 			return;
 		}
 
@@ -64,7 +68,7 @@ internal static class CancelCastUpdater
 		var bmrForceCancelCast = Service.Config.UseBmrTimeline
 			&& (DataCenter.BMRForceCancelCast || DataCenter.BMRForceCancelCastAI);
 
-		if (stopForDeadTarget || hasNoCastingStatus || tarHasRaise || raiseLandsFirstElsewhere || tarHasGuard || bmrForceCancelCast || ShouldStopHealing(player))
+		if (stopForDeadTarget || hasNoCastingStatus || tarHasRaise || raiseLandsFirstElsewhere || tarHasGuard || bmrForceCancelCast || ShouldStopHealing(player, castTarget))
 		{
 			var uiState = UIState.Instance();
 			if (uiState != null)
@@ -110,14 +114,51 @@ internal static class CancelCastUpdater
 		return true;
 	}
 
-	private static bool ShouldStopHealing(IPlayerCharacter player)
+	/// <summary>
+	/// "Stop single target GCD healing after reaching threshold": the target of the heal being cast needed it
+	/// when the cast began, has been healed since, and no longer needs it.
+	/// </summary>
+	/// <remarks>
+	/// It used to ask whether anybody still called for a heal spell. That flag reads the forecast as well, and the
+	/// forecast drops out as soon as a falling trend levels off - with nobody healed, a heal begun for a predicted
+	/// danger was broken off and begun again at the next hit. It also broke off casts that are no threshold heal at
+	/// all: a barrier on a tank at full health, such as the Adloquium before Recitation runs out (A314). Both stayed
+	/// hidden while the setting had no effect; it only reaches the casts since upstream 7.5.7.5 (A332).
+	/// </remarks>
+	private static bool ShouldStopHealing(IPlayerCharacter player, IBattleChara? castTarget)
 	{
-		return Service.Config.StopHealingAfterThresholdExperimental2
-			&& DataCenter.InCombat
+		if (!Service.Config.StopHealingAfterThresholdExperimental2 || castTarget == null
+			|| ((ActionID)player.CastActionId).GetActionFromID(true, RotationUpdater.CurrentRotationActions)
+				is not IBaseAction { Setting.GCDSingleHeal: true })
+		{
+			return false;
+		}
+
+		var needed = StateUpdater.NeedsSingleHealSpell(castTarget);
+
+		// A cast is new when it is not the one recorded or its bar has started over.
+		if (_singleHealCast.Action != player.CastActionId || _singleHealCast.Target != castTarget.GameObjectId
+			|| player.CurrentCastTime < _singleHealCast.Elapsed)
+		{
+			_singleHealCast = (player.CastActionId, castTarget.GameObjectId, player.CurrentCastTime, needed, castTarget.CurrentHp, false);
+			return false;
+		}
+
+		_singleHealCast.Elapsed = player.CurrentCastTime;
+
+		var stop = DataCenter.InCombat
 			&& !CustomRotation.HealingWhileDoingNothing
 			&& DataCenter.CommandNextAction?.AdjustedID != player.CastActionId
-			&& ((ActionID)player.CastActionId).GetActionFromID(true, RotationUpdater.CurrentRotationActions)
-				is IBaseAction { Setting.GCDSingleHeal: true }
-			&& (DataCenter.MergedStatus & (AutoStatus.HealAreaSpell | AutoStatus.HealSingleSpell)) == 0;
+			&& _singleHealCast.NeededAtStart && !needed
+			&& castTarget.CurrentHp > _singleHealCast.HpAtStart;
+
+		if (stop && !_singleHealCast.Traced)
+		{
+			_singleHealCast.Traced = true;
+			DefenseTrace.Line($"heal stopped: {castTarget.Name.TextValue} healed from {_singleHealCast.HpAtStart} to "
+				+ $"{castTarget.CurrentHp} HP during the cast, above the single heal threshold");
+		}
+
+		return stop;
 	}
 }

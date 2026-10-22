@@ -8922,6 +8922,133 @@ Prüfungen liefen nach dem Merge-Commit erneut (A324).
 Im Spiel nicht beobachtet. Die Laufzeitwege mit Selbstnachsteuerung (Tankbuster-Plan, TTK-Korrektur) sind unverändert
 verdrahtet.
 
+### A332 · Upstream 7.5.7.5/7.5.7.6 inhaltlich gegen seine Vorgaben und die Konzepte (22.10.2026)
+
+Sein Auftrag vom 22.10.2026: „du hast formal aber nicht inhaltlich geprüft: ergeben sich abweichungen, die meinen
+vorgaben widersprechen? beispiel tank: ist es gewünscht, dass cotank keine aggro von anderen nichttank-spielern mehr
+abnimmt? alle änerungen mit den konzepten und wünschen abgleichen. im vollen kritischen loop. bringen die änderungen
+für die eigenen konzepte, die vorher nicht umsetzbar oder schlechter umsetzbar waren?"
+
+A331 hatte die Zusammenführung geprüft: ob jede Fork-Regel an Upstreams Umbau wieder sitzt. Nicht geprüft war, was
+die Upstream-Änderungen selbst im Kampf tun und ob das zu seinen Vorgaben passt. Am schwersten wiegen dabei
+Einstellungen, die bisher wirkungslos waren und jetzt wirken: Mit ihnen sind Fork-Regeln nie zusammen gelaufen. Erhoben
+je Änderung an allen Lesern, gegen den Optionstext („Text bindet"), seine Spielweise und das tragende Konzept.
+
+**1 · Automatische Herausforderung (seine Frage).**
+- *Stand:* „Auto provoke when there is another tank in party" (ab Werk an) zählt die Tanks der eigenen Gruppe.
+  - Mit der Option an nimmt der Tank Nicht-Tanks den Gegner ab wie bisher.
+  - Mit ihr aus und zwei Tanks in der Gruppe nimmt er ihn nicht mehr ab, wie ihr Text sagt („while there is more than
+    one tank in party").
+- *Vorher:* Die Zählung las `AllianceMembers`, und die enthalten die eigene Gruppe nie. In einer Gruppe mit zwei Tanks
+  war die Option deshalb wirkungslos. Im Allianzraid zählte sie die Tanks fremder Gruppen, sobald `RaiseType` die
+  Allianz einschloss.
+- *Gegen „Sicherheit vor Schaden":* Der Text nennt genau diesen Fall, und ausgeschaltet heißt: den Gegner dem anderen
+  Tank überlassen. Ein zweiter RSR-Tank mit Voreinstellung nimmt ihn. Eine Rettung des Nicht-Tanks gegen die
+  ausgeschaltete Option widerspräche dem Text, den er gewählt hat.
+- *Ergebnis:* kein Defekt und keine Vorlage, sein Schalter entscheidet. Hat er die Option aus, ändert sich für ihn
+  sichtbar etwas.
+- Die Rettung des Co-Tanks hängt an ihrer eigenen Option (A318) und ist unberührt.
+
+**2 · Automatische Haltung.** RSR legt sie nur an, wenn kein anderer lebender Tank der eigenen Gruppe sie trägt.
+- Vorher las auch diese Prüfung die Allianzliste:
+  - in Gruppen mit zwei Tanks legten beide die Haltung an;
+  - im Allianzraid mit Allianz-Wiederbelebungsmodus unterblieb sie wegen eines Tanks einer anderen Gruppe.
+- Konzept 09 beschrieb schon das jetzige Verhalten, ungeprüft an der Liste.
+- Im Kampf: Ein RSR-Co-Tank bleibt ohne Haltung, bis er provoziert (der Pfad legt sie vorher an) oder der Haupttank
+  stirbt.
+
+**3 · „Stop single target GCD healing after reaching threshold. (EXTREMELY Experimental)" (ab Werk aus) — behoben.**
+- Bis 7.5.7.5 wirkungslos: Die Kennung `GCDSingleHeal` stand in `ActionConfig`, gelesen wurde `ActionSetting`.
+- Seitdem brach sie ab, sobald nach den Flaggen niemand mehr eine Einzel- oder Flächenheilung brauchte. Das stößt mit
+  zwei Fork-Regeln zusammen:
+  - *Vorausschau* (Konzept 08, ab Werk an): Sie setzt die Flagge über den Trend. Flacht er ab, fällt die Flagge, ohne
+    dass jemand geheilt wurde, und eine Heilung für vorhergesagte Gefahr brach ab. Sie begann erst einen Treffer
+    später neu.
+  - *Casts, die keine Schwellenheilung sind:* Das Adloquium vor Ablauf von Recitation (A314) geht auf einen Tank ohne
+    Heilbedarf. Die Flagge stand nie, also brach der Cast sofort ab, und im nächsten Bild begann er neu. Der Gelehrte
+    stand damit bis zum Ablauf von Recitation still.
+- *Umgesetzt (Text bindet, `CancelCastUpdater.ShouldStopHealing`):* Abgebrochen wird nur, wenn drei Dinge gelten:
+  - das Ziel des Casts brauchte die Heilung bei Beginn, nach derselben Entscheidung wie die Flagge
+    (`StateUpdater.NeedsSingleHealSpell`);
+  - es wurde seitdem geheilt, seine Gesundheit liegt also über dem Stand bei Beginn;
+  - es braucht die Heilung jetzt nicht mehr.
+  
+  Jeder Abbruch steht im Protokoll („heal stopped").
+- *Abweichung zur Upstream-Fassung:* Ein anderes heilbedürftiges Mitglied hält den Cast nicht mehr. Der Cast auf das
+  geheilte Ziel bricht ab, und der nächste GCD geht an das Mitglied, das ihn braucht. Das ist früher als nach einem
+  überflüssigen Cast.
+
+**4 · „Stop casting if the target dies." (ab Werk aus).**
+- Seit `8eba51387` (19.09.2026, Upstream) lag die Verzögerung als veränderlicher Struct in einem `readonly`-Feld. Jeder
+  Aufruf lief auf einer Kopie, die Verzögerung lief nie ab, und der Abbruch kam nie.
+- Upstream behebt das. Mit der Option an bricht ein Cast auf einen toten Gegner wieder nach 0,5 bis 1 s ab.
+- Nur feindliche Ziele (Konzept 11), eine Wiederbelebung ist nicht betroffen.
+
+**5 · Allianzliste.** `AllianceMembers` enthält jetzt immer die Allianz, gleich welcher `RaiseType`. Fremde außerhalb
+von Inhalten stehen in einer eigenen Liste. Die Leser:
+- *Ziele der Wiederbelebung:* nach `RaiseType` gefiltert, unverändert.
+- *`AnyLivingRaiser`* (Bezugsmenge für Hartwirken und Phönixfeder):
+  - Ausnahme bisher: `AllOutOfDuty` war ausgenommen, weil die Liste dort Fremde enthielt.
+  - Der Grund ist entfallen: „Raise All." zieht Leichen der Allianz und zählt deren Rezzer jetzt wie `All`
+    (umgesetzt, Konzept 11).
+  - Im Kampf, unter „Raise All" im Allianzraid: In den Nur-Heiler-Modi wirkt der Heiler nicht hart, solange ein
+    Heiler der Allianz lebt; die Feder wartet ebenso.
+- *„Auto turn on auto mode when alliance is in combat."* (ab Werk aus): Bisher wirkte sie nur mit einem
+  Allianz-Wiederbelebungsmodus, jetzt immer, wie ihr Text sagt.
+
+**6 · Klickverzögerung.**
+- Die Wartezeit wird jetzt einmal je Klick gezogen, nicht mehr in jedem Bild. Vorher lag sie praktisch am unteren
+  Rand, jetzt gleichverteilt in `ClickingDelay` (0,1–0,2 s).
+- Wirkung hat das nur, wenn zwei Drücke enger als 0,2 s folgen; dazwischen liegt aber die Animationssperre.
+- Der Umlauf im Tankbuster-Plan misst ab dem Druck.
+
+**7 · Übrige Änderungen aus A331**, ohne Widerspruch zu Vorgaben oder Konzepten:
+- Kampfinformationen vor der Entscheidung: `UpdateCombatInfo` liest keine Zielliste, gelesen 22.10.2026;
+- Heilvorhersage;
+- `GetActionStatus` für Fähigkeiten;
+- `InterceptActionTime`;
+- Tweaks über Hooks, ab Werk aus;
+- RabbsBLM: nutzt Swiftcast, aber der Schwarzmagier hat keine Wiederbelebung, seine Swiftcast-Regel ist nicht berührt.
+
+**Was die Änderungen für eigene Konzepte möglich machen:**
+- *Jeder eigene Druck mit Sequenz:*
+  - `ActionManagerEx` sieht jede Anfrage, die tatsächlich hinausgeht (die Sequenz ändert sich), auch eigene Drücke des
+    Spielers, und `ReceiveActionEffect` ordnet die Wirkung über `SourceSequence` zu.
+  - Der Umlauf im Tankbuster-Plan (`TankbusterForecast.RoundTrip`) paart heute nach Aktions-Id innerhalb eines GCDs
+    und nur RSR-Drücke.
+  - Über die Sequenz wäre er exakt, und abgewiesene oder eingereihte Drücke fielen heraus.
+  - In `TODO.md` als „Tankbuster-Plan: Umlauf über die Sequenz jedes Drucks".
+- *Zählung in der eigenen Gruppe:* trägt die Haltungsregel aus Konzept 09, die bis dahin nur auf dem Papier galt.
+- *Allianzliste unabhängig vom Wiederbelebungsmodus:* trägt die Bezugsmenge der Rezzer unter „Raise All" (umgesetzt).
+  Die Konzepte 12 und 13 lesen bewusst die eigene Gruppe.
+- *`GetActionStatus` mit `ActionType.Action`:* Fähigkeiten, die das Spiel verweigert, fallen schon in `CanUse` heraus.
+  Wo der Tankbuster-Plan eine bereite Fähigkeit annimmt, stützt er sich damit auf den Client.
+- *Nicht übernommen:*
+  - `IsAverageTTKKnown`: Die Fork-Leser behandeln „unbekannt" schon über `PositiveInfinity`.
+  - Upstreams Latenzschätzung (`GetAnimationLockDelayEstimate`): Sie wird nur bei eingeschalteter
+    „Remove animation lock delay" gemessen. Als Vorlauf der Fristen (A319) hinge sie an einer fremden Freigabe
+    (Regel „Erkennung und Entscheidung trennen").
+
+**Widerrufen:** A318 und Konzept 09 zur Wirkung von „Auto provoke …" (C116).
+
+**Falsifikation:**
+- *Kein Defekt (3):* Der Abbruch des A314-Adloquium folgt aus dem Code: Die Flagge steht bei einem Tank ohne
+  Heilbedarf nicht, und der Pfad drückt neu, solange Recitation in der letzten Frist ist.
+- *Option falsch (3):* Brauchte das Ziel die Heilung bei Beginn nicht (Schild, Vorausschau oberhalb der Schwelle),
+  bricht nichts ab. Brauchte es sie und wurde nicht geheilt, bricht ebenfalls nichts ab. Ein Abbruch ohne Grund ist
+  damit ausgeschlossen. Hebt ein Ticken einer Regeneration das Ziel über die Schwelle, bricht der Cast ebenfalls ab;
+  auch das ist der Fall des Texts („above the healing threshold").
+- *Option falsch (5):* Unter `All` zählt die Allianz schon so (Konzept 11). „Raise All." schließt die Allianz ein,
+  also gilt dort dasselbe.
+- *Ausgeliefert, nichts ändert sich:* Beide Einstellungen und `AllOutOfDuty` sind ab Werk aus. Mit seiner
+  Konfiguration ändert sich nur etwas, wenn er sie gesetzt hat. Seine Konfiguration ist von hier nicht messbar.
+
+**Prüfgrad:**
+- statisch je Leser;
+- Compile lokal mit den Warnstufen der CI, 0 Warnungen;
+- Prüfschritte;
+- im Spiel nicht beobachtet.
+
 ---
 ## B · Commit-Register (Fork vs. `upstream/main`)
 
@@ -9217,3 +9344,4 @@ Die offene Arbeit dazu — Reihenfolge und Abbruchbedingung der Nachprüfung —
 | C113 | Konzept 03 und Bericht vom 16.10.2026, „Gegenposition, geprüft": Die Zeit bis zum Tod messe den Ertrag eines DoTs genauer als die Gesundheit | Seine Frage nach dem Widerspruch zu The Balance: In den Lagen, in denen DoTs überhaupt verteilt werden, ist die Reihenfolge der HP die der Lebensdauer; die Lebensdauerschwelle von The Balance beantwortet eine andere Frage (ersetzt der DoT einen Füllzauber) und gilt nur im Stand. Ein Widerspruch zu seiner Regel bestand nicht; die Formulierung legte einen nahe | Konzept 03 berichtigt (A295) |
 | C114 | Bericht vom 17.10.2026 im Chat: das FATE hinter dem Schreckensseher heiße „Augenschrecken" | Selbst gebildeter deutscher Name, gegen die Regel „Namen". Belegt sind nur der englische Name des FATE im BossModReborn-Modul (Eye to Eye) und der deutsche Name des Gegners (Schreckensseher, BNpcName 14726, xivapi `language=de`) | Im Archiv und in den Konzepten steht „FATE Eye to Eye"; im Bericht korrigiert (A299) |
 | C115 | A201, „Im Kampf": Mit „Use Intervention on CoTank during tankbusters" an schütze der Paladin den anderen Tank vor dessen Tankbuster | Das Ziel war der, den sein eigenes Ziel angreift, nicht der Empfänger des Tankbusters; nur ein Tank mit Haltung; die Einzelabwehr öffnete auch ein Pull. Zutreffend nur, wenn der andere Tank mit Haltung den Boss hielt und den Tankbuster nahm; ein Marker auf dem anderen Tank öffnete die Einzelabwehr des Paladins gar nicht | A328: Ziel des Tankbusters, nur Tanks, ohne Haltungsbedingung |
+| C116 | A318 („Mit der Option aus blieb ein sterbender Co-Tank ohne Rettung"; im Kampf: „Mit ‚Auto provoke …' aus nimmt RSR einem Co-Tank … den Gegner jetzt ab") und Konzept 09 („bei zwei Tanks nur mit ihr") | Die Zählung las `AllianceMembers`, die die eigene Gruppe nie enthalten; in einer Gruppe mit zwei Tanks war „Auto provoke …" bis Upstream 7.5.7.5 wirkungslos, die Rettung lief also schon vor A318. Bewertet war die Bedingung, nicht die Liste, aus der ihre Zahl kommt — Werte über eine Schnittstelle an ihrer Quelle prüfen | A332; die Option wirkt seit 7.5.7.5 wie ihr Text, A318s Aufteilung bleibt richtig |

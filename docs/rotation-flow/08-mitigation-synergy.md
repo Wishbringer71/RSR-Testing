@@ -1278,7 +1278,11 @@ an der er sie haben will: **bei gleicher Gefaehrdung**, nicht davor.
 - *Kein Flatterschutz.* Greift die Heilung, steigt die Gesundheit, die Restzeit wird `NaN` und die
   Vorausschau faellt weg. Ein begonnener Cast wird davon nicht abgebrochen, und „heilen, bis es
   reicht" ist das gewollte Verhalten — eine Hysterese ist deshalb nicht gebaut, aber auch nicht
-  gemessen.
+  gemessen. Abbrechen kann ihn nur „Stop single target GCD healing after reaching threshold" (ab Werk aus), und
+  nur so, wie ihr Text sagt: Das Ziel brauchte die Heilung beim Beginn, ist seitdem geheilt worden und braucht sie
+  nicht mehr (`CancelCastUpdater.ShouldStopHealing`, A332). Flacht nur der Trend ab, ohne dass jemand heilt, laeuft
+  der Cast weiter. Seit Upstream 7.5.7.5 wirkt diese Einstellung ueberhaupt; bis A332 fragte sie, ob noch irgendwer
+  eine Heilung braucht, und brach damit eine Heilung fuer vorhergesagte Gefahr ab, sobald der Trend abflachte.
 
 **Standard an** (seit 29.09.2026, seine Regel: Voreinstellung ist der im Kampf sinnvollere Wert). Belegt ist die
 Wirkung mit den hier verfuegbaren Mitteln nicht — statische Pruefung und Kompilierung sagen nichts darueber, ob
