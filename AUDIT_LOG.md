@@ -9049,6 +9049,67 @@ von Inhalten stehen in einer eigenen Liste. Die Leser:
 - Prüfschritte;
 - im Spiel nicht beobachtet.
 
+### A333 · Release 7.5.7.6+wsh1, Übergabe der Release-Texte (22.10.2026)
+
+Auftrag vom 22.10.2026: „danach branch to main, release, neuer branch".
+
+- *Vorab:*
+  - Upstream: 0 ausstehend.
+  - CHANGELOG: „Unreleased" als „7.5.7.6+wsh1" geführt, „Unreleased" leer.
+  - Paketoberfläche gegen 7.5.7.3+wsh1 (`scan7.py 7.5.7.3+wsh1`): 91 Meldungen. Echte Entfernungen stammen alle von
+    Upstream 7.5.7.5. Sieben fehlten im Eintrag und sind nachgetragen:
+    - `ActionHelper.AnimationLockTime` und `ActionManagerHelper.AnimationLock`;
+    - `DataCenter.DistanceToPet` (jetzt `ObjectHelper`);
+    - `OtherConfiguration.Init`;
+    - `ConfigurationHelper.BadStatusAbility` und `BadStatusGCD`;
+    - `DataCenter.BMRDebugTimelineWalk`;
+    - `Service.AUTOCOMMAND` und `OFFCOMMAND`.
+  - Die übrigen Meldungen haben eine unveränderte Signatur und einen geänderten Rumpf. Die Paketoberfläche ist dagegen
+    gemessen, nicht aus dem Diff geschlossen.
+  - Ohne Angabe nimmt `scan7.py` den jüngsten Tag auf `origin`. Das war hier der gespiegelte Upstream-Tag 7.5.7.6, kein
+    Fork-Tag; deshalb lief der Vergleich mit expliziter Basis.
+  - Release-Text um A332 und um das, was Upstream 7.5.7.4 bis 7.5.7.6 im Kampf ändert, ergänzt.
+- *Zusammenführen:*
+  - `main` war Vorfahr des Zweigs (Rückmerge in A331).
+  - `main` per Vorspulen auf 01048265d, nach grünem Prüflauf auf dem Zweig.
+  - PR #15 steht damit als gemergt.
+- *Release:*
+  - `publish.yaml` per `workflow_dispatch` mit `7.5.7.6+wsh1`, Lauf 39853957812 erfolgreich.
+  - Release auf 01048265d mit `latest.zip` (4 722 544 Bytes). Der SHA-256 der heruntergeladenen Datei ist gleich dem
+    Digest des Assets.
+  - Dieselben zwölf Dateien wie 7.5.7.3+wsh1.
+- *Fehler im veröffentlichten Text:* Der Abschnitt aus A328 nennt die Einstellung „Hold mitigation under
+  invulnerability". Eine Einstellung dieses Namens gibt es nicht. Gemeint ist `_holdMitigationUnderInvulnerability`,
+  in der Oberfläche „Spend only the mitigation a measured tankbuster needs".
+  - Das Bearbeiten des Release endet hier mit 403 („Creating, editing, or deleting releases is not permitted for this
+    session type").
+  - In `fork-changes-in-play.md` steht der richtige Name.
+  - `check_concept_defaults.py` prüft Vorgaben, nicht, ob ein genannter Einstellungsname existiert.
+- *Übergabe:* `fork-changes-in-play.md` steht auf Upstream 7.5.7.6. Der Release-Text ist in seine Themen eingearbeitet:
+  - die Abbruch-Option in „Healing — when it lands";
+  - „Raise All." in „Raising";
+  - die Hilfe für den Empfänger eines Tankbusters und der Schlaf gegen Flächenwirken in „Mitigation and defensives".
+    Die Hilfe ersetzt den Punkt „Intervention … accepts the tank stance from any source"; seit A328 fragt Intervention
+    keine Haltung.
+  - alle Gegnerfiguren in „The learned lists";
+  - die Paketeinträge in „For rotation authors".
+  
+  Nicht übernommen ist der Upstream-Abschnitt: Er ist kein Abstand zu Upstream. `fork-changes-since-last-release.md`
+  beginnt mit „Changes since 7.5.7.6+wsh1".
+- *Zweige:*
+  - `claude/fixes-after-7.5.7.6` von `main` (01048265d), nach seiner Namensvorgabe. Die Sitzungsumgebung gab
+    `claude/repo-privacy-settings-f06dqh` vor.
+  - `claude/fixes-after-7.5.7.3` ist vollständig in `main` enthalten und ein Löschfall. Ref-Löschungen enden hier
+    mit 403.
+
+**Prüfgrad:**
+- Release-API und Workflow-Lauf gelesen;
+- Asset heruntergeladen und geprüft;
+- Prüfskripte;
+- statischer Abgleich der Übergabe mit dem Release-Text.
+
+Nichts davon ändert das Spielgeschehen.
+
 ---
 ## B · Commit-Register (Fork vs. `upstream/main`)
 
