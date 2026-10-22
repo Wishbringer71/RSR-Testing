@@ -23,6 +23,8 @@ are not reconstructed here.
 
 ## Unreleased
 
+## 7.5.7.6+wsh1
+
 ### Behaviour change in RotationSolver.Basic: tankbuster targets follow whom a tankbuster is aimed at
 
 `TargetType.Tankbuster` picks, among the action's own candidates, a member a known tankbuster is aimed at - a
@@ -48,7 +50,12 @@ went on. `JobFilterType.Sleep` is appended to the enum.
 Upstream 7.5.7.5 (merged into this fork on 22.10.2026) removed these public members; the fork passes the removal on.
 A derived rotation that uses one of them no longer compiles.
 
-- `BaseAction.AnimationLockTime` - read `Player.AnimationLock` (ECommons) instead.
+- `BaseAction.AnimationLockTime`, `ActionHelper.AnimationLockTime` and `ActionManagerHelper.AnimationLock` - read
+  `Player.AnimationLock` (ECommons) or `DataCenter.AnimationLock` instead.
+- `DataCenter.DistanceToPet` is `ObjectHelper.DistanceToPet` now.
+- `OtherConfiguration.Init` - `InitAsync` is the entry point.
+- `ConfigurationHelper.BadStatusAbility` and `BadStatusGCD`, `DataCenter.BMRDebugTimelineWalk`, and the constants
+  `Service.AUTOCOMMAND` and `OFFCOMMAND`, without replacement.
 - `ActionManagerEx.UpdateTweaks`, `UseActionWithTweaks` and `UseActionLocationWithTweaks`, and the struct
   `OffsetDelay`. The animation lock and cooldown delay tweaks now hook the client's action manager, so they apply to
   every action, whoever uses it; an ordinary `ActionManager.UseAction` is enough.
@@ -62,6 +69,13 @@ A derived rotation that uses one of them no longer compiles.
 
 `TargetType.Capture`, also removed upstream, stays in this fork, unused: without it the value of `TargetType.TankSwap`
 after it would shift for a rotation built against this package.
+
+### Behaviour change in RotationSolver.Basic: `DataCenter.AnyLivingRaiser` counts the alliance under `AllOutOfDuty`
+
+Since upstream 7.5.7.5 `DataCenter.AllianceMembers` holds the alliance whatever `RaiseType` is set, and strangers
+outside a duty are kept apart. `AnyLivingRaiser` left `RaiseType.AllOutOfDuty` out because the list held them; under
+that mode it now counts living alliance raisers as it does under `RaiseType.All`. A derived rotation that holds a hard
+cast or a Phoenix Down on it waits for them as well.
 
 ## 7.5.7.3+wsh1
 
