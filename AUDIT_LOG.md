@@ -9251,6 +9251,73 @@ Liste.
 - Compile lokal ohne Warnungen, 27 Prüfschritte;
 - im Spiel nicht beobachtet.
 
+### A335 · DefenseTrace 18.–22.10.2026: die übrigen Zeilenarten (23.10.2026)
+
+Seine Frage: „wurden logs nur auf schlaf geprüft, oder generell?" A334 hatte Schlaf, Helfer, Rechenlast, Heiltränke,
+abgebrochene Einzelheilungen, Flächentabelle und Konfliktkopie ausgewertet, Wiederbelebungen und verworfene Marker nur
+gezählt (C119). Nachgeholt je Zeilenart des Protokolls (3589 Zeilen, 14 Sitzungen):
+
+- *Sanctus-Streckung* (338 Zeilen): 82 gehalten, 78 davon nach der ersten Betäubung; 132 nicht gehalten, weil die
+  Betäubung vor der Landung endete; 124 ohne laufende Betäubung. Einmal nach der zweiten Betäubung gehalten (2,0 s
+  Betäubung gegen 1,9 s Landung unter Presence of Mind – nach seiner Regel richtig), dreimal eine fremde oder schon
+  abgenutzte Betäubung. Wo eine frische Betäubung erst Bilder nach der Landung erschien, war der GCD noch nicht frei.
+  Ohne Befund.
+- *Flächenabwehr:* 232 Wahlen, 599 „open, nothing chosen", drei Haltungen nach BossModReborn. Ablehnungen nach
+  Abklingzeit, Stufe oder fehlendem Status (Divine Caress ohne Divine Grace, Schimmerschild während einer Demi).
+  Glockenspiel wurde außerhalb mehrfacher Treffer nie gefragt – das Verhalten mit „Limit Liturgy Of The Bell to
+  multihit party stacks" an. *Schluss, nicht belegt:* So ist es bei ihm eingestellt; die Voreinstellung ist aus.
+- *Große Gruppentreffer ohne eigene Minderung* (ab 20 % der LP, mindestens zwei Ziele): 63.
+  - 35 bei offener Abwehr: 32-mal waren alle Mittel abgeklungen, gesperrt (Status, Demi) oder auf Synchronstufe nicht
+    erlernt (Prätorium: der Weißmagier hat auf Stufe 50 keine Flächenminderung), zweimal fehlte Stumpfsinn ein Ziel,
+    einmal hielt die Größenregel unter BossModReborn (Größter Irrgarten, bewertet 2 %, traf 29 %; die Tabelle steht
+    jetzt auf 29 %).
+  - 8 gelistete Casts ohne Abwehrzeile. Schriller Kreischer traf zweimal mit 32 und 24 %, beim dritten Mal öffnete die
+    Abwehr mit dem nachgelernten Anteil von 37 %: die Größenregel, die sich selbst nachsteuert. Für die übrigen sagt das
+    Protokoll nicht, welche Regel hielt; neu schreibt die Größenregel je Cast „area defence skipped: …".
+  - 20 nicht gelistete Aktionen: örtliche Flächen auf einen Teil der Gruppe, Fallen, eine Tötungsmechanik, ein Raidwide
+    mit einem nicht getroffenen Mitglied. Die Aufnahme verlangt jedes Mitglied (Konzept 13; offen als „Die Aufnahme in
+    die AoE-Liste trennt Raidwide und ausweichbare Fläche nicht").
+  - *Widerlegt:* die Hypothese, das Fenster von einem bis zwei GCDs falle in einen eigenen langen Cast und lasse die
+    Abwehr aus. Die Entscheidungskette läuft in jedem Bild, auch während eines eigenen Casts
+    (`CustomRotation.TryInvoke`, `Ability`), und schreibt dann ihre Zeile.
+- *Einzelabwehr:* 48 Wahlen, 92 ohne bereites Mittel. Wen Göttlicher Segen oder Wasserschleier traf, stand nicht in der
+  Zeile; jetzt steht das Ziel in jeder Entscheidungszeile, wenn es nicht der Spieler ist.
+- *Heilung vor dem Treffer* (13), *BossModReborn-Raidwides* (15, Radiant Aegis 2,4 bis 7,1 s vor dem ersten Treffer):
+  ohne Befund.
+- *Wiederbelebungen* (42 Übergaben an 23 Tote): An einem Toten begann derselbe Heiler nach dem Kampf zweimal neu; RSR
+  wartete jedes Mal, außerhalb des Kampfes ohne Gefahr.
+- *Verworfene Tankbuster-Marker:* fünf Pfade wechselten im Protokoll zwischen bestätigt und verworfen,
+  `tank_lockon02k1` viermal. Zwei Ursachen am Code:
+  - *Defekt, behoben: Die Dauer eines Markers war die Restwirkzeit des markierten Mitglieds.* Der Effekt-Hook
+    (`Service.ActorVfxCreateDetour`, Upstream 88c1d0e9f) speichert die Restwirkzeit der Figur, auf der der Effekt
+    liegt; die Warteschlange hält den Effekt so lange, unter 0,5 s fünf Sekunden (`MajorUpdater`). Ein Marker liegt auf
+    dem Mitglied, das er nennt: Wirkte es, galt seine eigene Restwirkzeit. Folgen: Ein Tankbuster-Marker auf einem
+    Heiler mit 1,5 s Restwirkzeit galt 1,5 s statt fünf – für die Abwehr, die Tankbuster-Ziele und die
+    Marker-Beobachtung, deren Fenster dann einen GCD danach schloss. Behoben: die Restwirkzeit nur bei einer Figur der
+    Gegnerseite (`IsEnemySideFigure`), sonst unbekannt. Konzept 15, 09.
+  - *Defekt, behoben: Das Fenster der Marker-Beobachtung zählte die Casts der Helfer nicht.* `LongestEnemyCastRemaining`
+    las nur die Gegnerliste; Konzept 15 sagt „jeder gegnerische Zauber". Ein Treffer, den ein Helfer nach dem Marker
+    wirkte, fiel einen GCD nach dem Marker hinter das Fenster, und der Marker galt als ohne Treffer. Behoben: Die
+    Wirkendenerkennung (`TargetUpdater.UpdateAreaCasters`) hält die längste Restwirkzeit jeder unsichtbaren Figur der
+    Gegnerseite fest, gelistet oder nicht (`DataCenter.LongestHelperCastRemaining`); die Beobachtung nimmt das Maximum.
+  - Welche der beiden und die ungelesenen Helfer (A334) die Wechsel im Protokoll verursachten, zeigt es nicht; alle drei
+    wirken in dieselbe Richtung.
+
+**Falsifikation.**
+- *Kein Defekt:* widerlegt für beide Marker-Befunde am Code; ob ein Mitglied beim Marker wirkte, sagt das Protokoll
+  nicht, die Wirkkette ist aber bei jedem wirkenden Heiler und Magier und beim Spieler selbst gegeben.
+- *Option falsch:* Fünf Sekunden sind zu lang für einen kürzeren Marker – dann hält die Erkennung die Ankündigung bis
+  zu zwei Sekunden über den Treffer. Das galt schon für jedes nicht wirkende Mitglied; der Fehler liegt auf der sicheren
+  Seite. Ein Helfer mit einem langen fremden Cast verlängert das Fenster; anderer Schaden bestätigt dann den Marker, er
+  bleibt Tankbuster wie vorher.
+- *Ausgeliefert, nichts ändert sich:* Tanks wirken selten; auf Tanks ändert sich die Marker-Dauer kaum. Ein schon
+  verworfener Pfad bleibt verworfen, bis ein Treffer nach ihm gelesen wird (Selbstkorrektur, Konzept 15).
+
+**Betroffene:** alle Jobs; Autoren abgeleiteter Rotationen über `VfxNewData.Duration` (Wert, nicht Signatur);
+Upstream-Pflege (`Service.cs`).
+
+**Prüfgrad:** Protokoll je Zeilenart ausgewertet; statisch, Prüfskripte, Compile lokal; im Spiel nicht beobachtet.
+
 ---
 ## B · Commit-Register (Fork vs. `upstream/main`)
 
@@ -9549,3 +9616,4 @@ Die offene Arbeit dazu — Reihenfolge und Abbruchbedingung der Nachprüfung —
 | C116 | A318 („Mit der Option aus blieb ein sterbender Co-Tank ohne Rettung"; im Kampf: „Mit ‚Auto provoke …' aus nimmt RSR einem Co-Tank … den Gegner jetzt ab") und Konzept 09 („bei zwei Tanks nur mit ihr") | Die Zählung las `AllianceMembers`, die die eigene Gruppe nie enthalten; in einer Gruppe mit zwei Tanks war „Auto provoke …" bis Upstream 7.5.7.5 wirkungslos, die Rettung lief also schon vor A318. Bewertet war die Bedingung, nicht die Liste, aus der ihre Zahl kommt — Werte über eine Schnittstelle an ihrer Quelle prüfen | A332; die Option wirkt seit 7.5.7.5 wie ihr Text, A318s Aufteilung bleibt richtig |
 | C117 | A327 und Konzept 08/13: Seit A327 lese der Effekt-Handler jede Figur der Gegnerseite; „Ausgeliefert, nichts ändert sich" sei „für Boss-Figuren ausgeschlossen" | Die Helfer von Prüfungen, Raids und Dungeons haben die Unterart 11, die weder FFXIVClientStructs noch A327 kannte; 273 Treffer blieben auf den Builds danach ungelesen. Die Arten waren aus der Aufzählung des Enums geschlossen, nicht an den Figuren gemessen | A334: Unterart 11 aufgenommen |
 | C118 | Konzept 10 und das Archiv (Tabelle der Betäubungen): „Fußfeger" für Leg Sweep; im Chat am 23.10.2026 „der Heilige" für Holy und „kein belegter deutscher Name" für Leg Sweep | Selbst gebildet. Gesucht war nur in `action_names_de.json`, nicht im Job-Guide und in den Spielblättern, wie die Regel „Namen" verlangt. Belegt: Stolperfalle, Haarscharfer Schuss, Sanctus, Sanctga | Namen eingetragen, Texte berichtigt (A334) |
+| C119 | A334 und der Bericht vom 23.10.2026: das Protokoll vom 18.–22.10.2026 ausgewertet | Ausgewertet waren Schlaf, Helfer, Rechenlast, Heiltränke, Einzelheilungsabbrüche, Flächentabelle und Konfliktkopie; Flächen- und Einzelabwehr, Sanctus-Streckung, Heilung vor dem Treffer, BossModReborn-Raidwides und Tankbuster-Marker nicht, Wiederbelebungen nur gezählt | nachgeholt in A335, zwei Defekte behoben |

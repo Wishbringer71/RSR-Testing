@@ -10,6 +10,14 @@ so none of their hits was measured: in a few evenings 127 of their actions went 
 eight party members, their raidwides never joined the AoE list, and tankbuster markers before their hits were learned
 as markers no hit follows. They are read now, and the next hit takes such a marker off that list again.
 
+## A tankbuster marker on a casting member is no longer cut short
+
+A marker counted only for as long as the marked member's own cast still ran: on a healer with 1.5 s of a spell left,
+1.5 s instead of five. Defences reading the marker saw it go early, and the watch that learns which markers no hit
+follows could close before the hit and learn a real tankbuster away. The marker now keeps its full window, and the
+watch also waits for the casts of the boss's invisible helpers. DefenseTrace.log now names whom a chosen defence goes
+to, and writes a line whenever a small area cast is let through without party mitigation.
+
 ## Healers and casters: an enemy's cast is stopped by the job's stun first
 
 "Stop an enemy's cast with the job's stun or a sleep (experimental)", on by default, replaces the sleep-only setting.
