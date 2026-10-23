@@ -1050,8 +1050,9 @@ entscheidet die Triage K2–K4 (Abschnitt „Andere Pfade, die dem Plan ein Glie
 - *Tankbuster ohne Marker, auf den Wirker selbst gewirkt oder nie gemessen:* nicht erkannt, keine Hilfe; eine
   gemessene Aktion, die auf das Mitglied gewirkt wird, ab ihrem zweiten Wirken.
 
-**Messmittel:** `DefenseTrace.log` schreibt „single defence -> Intervention" (Urflackern, The Blackest Night, Herz des
-Korunds) mit den Quellen der Abwehr – Marker auf wem, Wirken auf wen – und danach die „used"-Zeile. Keine
+**Messmittel:** `DefenseTrace.log` schreibt „single defence -> Intervention … on <Mitglied>" (Urflackern, The Blackest
+Night, Herz des Korunds; das Ziel seit A335, wenn es nicht der Spieler ist) mit den Quellen der Abwehr – Marker auf wem,
+Wirken auf wen – und danach die „used"-Zeile. Keine
 Selbstnachsteuerung nötig: Die Entscheidung fällt aus Marker und Wirken, nicht aus einer Vorhersage.
 
 **Prüfgrad:** statisch, Prüfskripte, Compile über die CI; im Spiel nicht beobachtet.

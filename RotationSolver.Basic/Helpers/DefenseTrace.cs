@@ -1,4 +1,5 @@
 using ECommons.DalamudServices;
+using ECommons.GameHelpers;
 using ECommons.Logging;
 
 namespace RotationSolver.Basic.Helpers;
@@ -97,7 +98,16 @@ internal static class DefenseTrace
 			_lastDecisionWritten = now;
 		}
 
-		Line($"{path} -> {act.Name} #{act.ID}{GameStatus(act)} | {DataCenter.DescribeDefenseSources()}{tail}");
+		Line($"{path} -> {act.Name} #{act.ID}{ChosenTarget(act)}{GameStatus(act)} | {DataCenter.DescribeDefenseSources()}{tail}");
+	}
+
+	// Whom the choice goes to, when that is someone else: the single defence picks a member, and a line without the
+	// member left the trace of 18.-22.10.2026 unable to say who got Divine Benison or Aquaveil (A334).
+	private static string ChosenTarget(IAction act)
+	{
+		return act is IBaseAction { Target.Target: { } target } && target.GameObjectId != Player.Object?.GameObjectId
+			? $" on {target.Name}"
+			: string.Empty;
 	}
 
 	/// <summary>

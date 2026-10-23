@@ -92,6 +92,13 @@ antwortet auf die Frage, die zählt: für wie viele der bewerteten Aktionen hat 
 eine Abklingzeit gespart. Der Vermerk ist Diagnose und wird bewusst **nicht** gespeichert — nach einem
 Neustart lautet die ehrliche Antwort „in dieser Sitzung noch nicht gesehen".
 
+**Jedes Auslassen steht in `DefenseTrace.log`**, eine Zeile je Cast („area defence skipped: … rated …, which leaves
+everybody above the area heal line"), wie der BossModReborn-Pfad je Vorhersage eine schreibt („area defence held").
+Ohne sie sahen in seinen Protokollen vom 18.–22.10.2026 ein Cast, den die Größenregel durchließ, und einer, den die
+Erkennung nie sah, gleich aus: Schriller Kreischer traf zweimal mit 32 und 24 % ohne Zeile, beim dritten Mal öffnete
+die Abwehr mit dem nachgelernten Anteil von 37 % (A334). Die Regel steuert sich selbst nach – die nächste ungeminderte
+Landung hebt den Anteil –, die Zeile macht das Auslassen nur lesbar.
+
 **Null ist zwei verschiedene Antworten**, und deshalb nennt die Anzeige den Schalter mit: Ist
 `SkipMitigationForSmallAreaCasts` aus, *kann* die Regel nicht greifen; ist er an, war jede bewertete
 Aktion der bisher gespielten Inhalte ihre Minderung wert. Ohne diese Unterscheidung hätte die Sonde

@@ -3972,7 +3972,18 @@ internal static class DataCenter
 			return true;
 		}
 
-		AreaMitigationSkipped[actionId] = DateTime.Now;
+		// One trace line per cast, as the BossModReborn path writes one per prediction (NoteBmrRaidwideHeld): the
+		// predicate is asked every frame, so a skip less than a GCD after the last is the same cast. Without it a cast
+		// the size rule let through and one the recognition never saw looked alike in the trace of 18.-22.10.2026 (A334).
+		var now = DateTime.Now;
+		if (!AreaMitigationSkipped.TryGetValue(actionId, out var last) || (now - last).TotalSeconds > DefaultGCDTotal)
+		{
+			var name = Service.GetSheet<Action>().GetRow(actionId).Name.ExtractText();
+			DefenseTrace.Line($"area defence skipped: {name} #{actionId}, rated {share:P0}, which leaves everybody above"
+				+ " the area heal line");
+		}
+
+		AreaMitigationSkipped[actionId] = now;
 		return false;
 	}
 
