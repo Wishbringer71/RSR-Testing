@@ -9071,8 +9071,10 @@ Auftrag vom 22.10.2026: „danach branch to main, release, neuer branch".
   - Release-Text um A332 und um das, was Upstream 7.5.7.4 bis 7.5.7.6 im Kampf ändert, ergänzt. Der Abschnitt zu
     Upstream widerspricht seiner Vorgabe vom 23.10.2026 („ausserdem brauch ich keine changelog des upstreams in meinem
     releasetext. hier sind nur die eigenen änderungen aufzuführen"); die bisherige Form nannte Upstream auch nicht
-    (A229). Regel in `CLAUDE.md`, „Release-Texte"; aus dem veröffentlichten Text entfernt er ihn, die Sitzung kann
-    Releases nicht bearbeiten.
+    (A229). Regel in `CLAUDE.md`, „Release-Texte".
+  - Seine Entscheidung vom 23.10.2026: Der veröffentlichte Text bleibt unverändert stehen, samt Upstream-Abschnitt und
+    falschem Einstellungsnamen, als Warnung („ich werde deine fehler als warnung stehen lassen und nicht was ändern").
+    Beides ist keine offene Aufgabe mehr. Den richtigen Namen nennt `fork-changes-in-play.md`.
 - *Zusammenführen:*
   - `main` war Vorfahr des Zweigs (Rückmerge in A331).
   - `main` per Vorspulen auf 01048265d, nach grünem Prüflauf auf dem Zweig.
