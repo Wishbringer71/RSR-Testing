@@ -223,12 +223,11 @@ nebeneinander gebraucht werden.
   Auflösung: Protokollzeilen „hit you from a source the object table does not hold". Konzept 08.
 - **BossModReborn: FATE-Modul in Occult Crescent läuft nach dem Weggang weiter** (am Quelltext `be8ff77` gefolgert).
   Adressat BossModReborn. Konzept 08, „Wann eine BossModReborn-Vorhersage ihn betrifft".
-- **Laufzeitkosten nach A325** (Protokoll „update cost by step", A310): Im Protokoll vom 18.10.2026 trägt „highlight"
-  1,04 von 1,56 ms, die Rotation 0,32 ms (A327). Seit A327 steht die Rotfärbung als eigener Schritt „hotbar tint";
-  das nächste Protokoll trennt sie vom Lehrmodus, und danach richtet sich der Umbau. Konzept 03, „Was ein Frame kostet".
 - **Tankbuster nach einem Marker ohne Wirken** (Protokoll „no cast taken for it", A308) – Eingang für
   „Tank-Unverwundbarkeit … nur reaktiv". Im Protokoll vom 18.10.2026 kein Fall.
-- **Schlaf gegen ein Flächenwirken: welche Angriffe er stoppt** (experimentell, seine Vorgabe 18.10.2026, A329). Die
-  Regel lernt selbst, wo es nicht wirkt; seine Frage „welche" beantworten die Protokollzeilen „sleep stopped …",
-  „sleep did not stop …", „sleep resisted by …". Auflösung: ein Protokoll mit Heiler oder Magier in Instanzen, danach
-  die Bewertung, ob die Regel experimentell bleibt. Konzept 08, „Schlaf gegen ein Flächenwirken".
+- **Ein gegnerisches Wirken stoppen: was die gespeicherten Tabellen lernen** (experimentell, seine Vorgaben 18.10. und
+  23.10.2026, A329, A334). Offen: ob Schlaf unterbrechbares Wirken stoppt, welchen Rest beim Eintreffen und welche
+  Anzahl bis zur Immunität die Regel lernt, und wie oft der Weißmagier dafür Sanctga wirkt (Zeilen „stop a cast ->",
+  „sleep stopped …", „sleep did not stop …", „sleep resisted by …", Kopfzeile „sleep knowledge"). Auflösung: ein
+  Protokoll mit Heiler oder Magier in Instanzen, danach die Bewertung, ob die Regel experimentell bleibt. Konzept 08,
+  „Ein gegnerisches Wirken stoppen".

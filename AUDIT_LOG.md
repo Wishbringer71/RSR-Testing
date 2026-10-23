@@ -1482,7 +1482,7 @@ Gegner. Du arbeitest zu oberflächlich." Die Kritik trifft; die Bedingung war zw
 | Heiler | Sanctus (Holy), Holy III — **nur Weißmagier** | Fläche, 8 Yalm | 4 s |
 | Tank | Schildhieb — nur Paladin | Einzelziel | 6 s |
 | Tank | **Tiefschlag — alle Tanks, auch der Dunkelritter** | Einzelziel | 5 s |
-| Nahkampf | Fußfeger | Einzelziel | 3 s |
+| Nahkampf | Stolperfalle | Einzelziel | 3 s |
 | Occult Crescent | Occult Falcon, Mineuchi, Variant Ultimatum | Fläche / Einzelziel | 4–6 s |
 
 Gelehrter, Astrologe und Weiser haben keine. Eine Fallunterscheidung nach Gruppenzusammensetzung
@@ -9126,6 +9126,131 @@ Auftrag vom 22.10.2026: „danach branch to main, release, neuer branch".
 
 Nichts davon ändert das Spielgeschehen.
 
+### A334 · Auswertung DefenseTrace 18.–22.10.2026; Helfer der Unterart 11; ein gegnerisches Wirken stoppen, neu konzipiert (23.10.2026)
+
+Sein Upload vom 23.10.2026 (OneDrive-Archiv, ohne Text) und seine Angaben dazu:
+- Fragen: „evtl hilft das für die evaluation von gegnercast-unterbrechungen mit sleep. wie ist die unterbrechung bei
+  anderen klassen in rsr oder bmr geregelt?", `sourpuh/ffxiv_interjection` („das ebenfalls für sleep prüfen"),
+  „bringt denn schlaf was auf nicht unterbrechbare casts?".
+- Präzisierungen: „schlaf sollte doch als meleependant für unterbrechungen genutzt werden, also auch auf unterbrechbare
+  casts, solange das zeitfenster reicht." – „ausserdem steht sleep nicht in konkurenz zu holy beim whm. wenn holy
+  stunnen kann, ist das vorzuziehen. speziell bei gruppen."
+- Vorgaben: „und die speicherung des gewonnenen wissens ingame wird ingame nicht ausgewertet und persistent genutzt" –
+  „nimm dir ein beispiel an der aoe schadenspotentialspeicherung" – „wichtig ist zu wissen, wo sleep nicht wirkt, damit
+  es nicht immer wieder neu versucht wird".
+- Hinweis: „und auch gegen sleep werden gegner mit der zeit immun. recherchiere endlich korrekt".
+- Rüge: „ich habe das gefühl, dass deine konzeptionierung viel zu oberflächlich war und nicht im vollen kritischen loop
+  erfolgte und nicht den allgemeinen arbeitsregeln entsprach"; dazu zu selbst gebildeten Namen „lüge nicht".
+
+**Inhalt des Uploads:**
+- `DefenseTrace.log`, 18.10. 13:39 bis 22.10. 21:42, 14 Sitzungen. Builds 98976a500 (7.5.7.3+wsh1), c645d0b8d,
+  e012fbcd7, 19658b5e7 und 01048265d (7.5.7.6+wsh1).
+- Beschwörer und Weißmagier in Occult Crescent, Dungeons, Prüfungen und Allianzraids.
+- Flächentabelle mit 189 Einträgen (A327: 136), höchster Wert 0,894, keiner über einer vollen LP.
+- Konfliktkopie eines zweiten Rechners: Protokoll vom 14.10. (Builds e7f60354e, f9e710bd7, Weißmagier und
+  Beschwörer). *Schluss:* derselbe Datensatz wie in A292. Ihre Flächentabelle stammt von vor A298 (Werte bis 9,4); der
+  heutige Stand verwirft beim Laden Werte über einer vollen LP.
+
+**Defekt, behoben: Helfer der Unterart 11 ungelesen.**
+- 273 Zeilen „hit you from …, not read as an enemy (BattleNpc, 11, untargetable)" auf den Builds nach A327.
+- 127 Aktionen, 78 davon mit mindestens 20 % der maximalen LP, darunter:
+  - Flutwelle von Shinryu (88 %, acht Ziele);
+  - Ewiger Atem von Prim-Eden (62 %, acht Ziele);
+  - Supra-Blitzschlag (66 %), nach dem er bei 5 % einen Trank nahm.
+- FFXIVClientStructs kennt keine Unterart 11; BossModReborn nennt sie `Helper` (`ActorType.Helper = 0x20B`,
+  `ae64e3309`, 20.10.2026).
+- Folgen im Kampf:
+  - Keiner dieser Treffer wurde gemessen, keiner kam in die Flächenliste, und ihre Wirken öffneten die
+    Flächenerkennung nicht.
+  - Tankbuster-Marker vor ihren Treffern galten als „falsified" (fünf Marker, `tank_lockon02k1` mit 41 Zeilen).
+- Behoben: `ObjectHelper.IsEnemySideFigure` nimmt die Unterart 11 mit; als Wert des Spiels in `fixed_values.json`.
+  Der nächste gelesene Treffer nimmt einen falsch gelernten Marker von der Liste (A327).
+- Widerruf von A327: C117.
+
+**Was die Protokolle zum Schlaf zeigen** (Einzelheiten Konzept 08, „Ein gegnerisches Wirken stoppen"):
+- Er wirkt auf nicht unterbrechbares Wirken, wenn er früh genug landet. Drei Wirken endeten deutlich früher, vier knapp,
+  zwei gingen los. Jedes deutlich abgebrochene endete 0,7 bis 1,2 s nach der Landung; beide Fehlschläge landeten 0,5 s
+  vor dem Ende.
+- 13 Gegnerarten widerstanden.
+- Messfehler:
+  - Die Laufzeit stand in allen 19 Landungen auf −1. Gemessen wurde nur, wenn `BaseAction.Use` den Druck als
+    ausgeführt meldete; warum das nie zutraf, ist statisch nicht zu klären.
+  - 38 der 70 Wahlen hatten keinen Ausgang; sie waren Wahlen, aus denen kein Schlaf hinausging.
+  - Ein zweiter Schlaf ging auf dasselbe Wirken, 11 ms nach der ersten Landung.
+  - Ein Fehlschlag mit zu wenig Rest sperrte die Aktion für die Sitzung.
+
+**Lücken des Konzepts aus A329, von ihm gefunden.** Nach der Definition of Ready hätte es sie finden müssen; deshalb ist
+das ganze Konzept neu aufgesetzt, nicht die Stellen geflickt.
+- Nicht erhoben waren die Regeln, die denselben GCD und dasselbe Ziel nutzen. Sanctus bzw. Sanctga betäubt jeden Gegner
+  im Umkreis und stoppt damit sein Wirken. Er ist für den Weißmagier der bessere Stopper; der Schlaf trat in Konkurrenz
+  zu ihm.
+- Nicht recherchiert war die Immunität nach wiederholtem Schlaf. Gemeinschaftsquellen: Square-Enix-Forum, Threads
+  104440 (10.10.2013) und 290466 (22.04.2016): 30 s, 15 s, etwa 8 s, danach widerstanden, getrennt von der
+  Betäubung gezählt. Fandom: Schaden weckt; oberhalb Stufe 50 sind Gegner in Inhalten über die Inhaltssuche „typically
+  immune". Keine offizielle Quelle.
+- Das Gelernte endete mit der Sitzung, als meine Ableitung unter „Ausgeschlossen"; ebenso „Einzelzielwirken".
+- „Don't attack new mobs by AoE." galt für den Schlaf (Wirkbereich 5 y) nicht.
+- Selbst gebildete Namen: „Fußfeger" in Konzept 10 und im Archiv, im Chat „der Heilige". Belegt sind Stolperfalle (Leg
+  Sweep), Haarscharfer Schuss (Head Graze), Sanctus und Sanctga (Job-Guide, xivapi `language=de`). Eingetragen in
+  `action_names_de.json`; C118.
+
+**Neues Konzept, umgesetzt** (Konzept 08, „Ein gegnerisches Wirken stoppen"):
+- `CustomRotation.StopEnemyCast`: Heiler und Magier stoppen das Wirken eines Nicht-Bosses, das eine Fläche auf die Gruppe
+  oder unterbrechbar ist, nach derselben Erkennung wie Stolperfalle (`ObjectHelper.CanInterrupt`).
+  - Zuerst der Stopper des Jobs (`StopEnemyCastByJob`). `WhiteMageRotation` setzt Sanctus bzw. Sanctga ein, wenn der
+    Gegner im Umkreis steht und sich noch betäuben lässt (`StunWatch`). Die Sanctus-Anzahl und die Zurückhaltungen der
+    Rotation gelten dafür nicht.
+  - Sonst Schlummer bzw. Schlaf.
+  - Beide nur, wenn die Zeit reicht, nicht unter Swiftcast, beim Heiler nicht bei einem Mitglied in der kritischen
+    Klasse, und unter „Don't attack new mobs by AoE." nicht auf einen Gegner, der noch nicht kämpft.
+- Gespeichertes Wissen nach dem Vorbild der Flächentabelle: drei gelernte Tabellen in `OtherConfiguration.Files`, beim
+  Speichern mit der Datei zusammengeführt.
+  - `SleepOutcomes`: je Aktion Abbrüche mit längster Zeit bis zum Abbruch, Fehlschläge mit größtem Rest.
+  - `SleepResistantKinds`: Arten, die als Status oder Aktion widerstanden.
+  - `SleepDiminishing`: je Art die wenigsten Schlafe vor einem Widerstand.
+- Ausgewertet bei jeder Entscheidung: Haltezeit, nötiger Rest, nicht stoppbare Aktionen (sperren nur den Schlaf, nicht
+  Sanctga: eine Betäubung bricht auch solches Wirken ab); Arten, die widerstehen;
+  Gegner, die in diesem Kampf so oft geschlafen haben, wie ihre Art oder irgendeine verträgt.
+- Ein Widerstand nach vorherigem Schlaf zählt als Abnutzung, nicht als Immunität der Art. „Unverwundbar" sperrt nur für
+  die Sitzung. Jeder Schlaf zählt, wer ihn auch wirkte.
+- Laufzeit vom Ende des Wirkbalkens gemessen. Wahl ohne Schlaf: „sleep not cast on …". Kopfzeile des Protokolls:
+  „sleep knowledge".
+- Option „Stop an enemy's cast with the job's stun or a sleep (experimental)", Name der gespeicherten Einstellung
+  unverändert, ab Werk an.
+
+**Seine Fragen:**
+- *Unterbrechung in RSR:*
+  - `DataCenter.InterruptTarget` ist der erste Gegner, dessen Wirken das Spiel als unterbrechbar führt: mindestens 2 s,
+    kein Kegel, kein Ring, keine Fläche unter 8 y; Option „Use interrupt abilities if possible.".
+  - Darauf gehen Zwischenruf (Tank), Stolperfalle (Nahkampf) oder Haarscharfer Schuss (physischer Fernkampf); eine
+    Job-Regel geht vor.
+  - Tiefschlag betäubt einen Nicht-Boss, dessen Wirken nicht unterbrechbar ist oder während Zwischenruf abklingt.
+- *Unterbrechung in BossModReborn:*
+  - Bossmodule markieren Wirken mit `CastInterruptHint` (`ShouldBeInterrupted`, `ShouldBeStunned`; 86 Module,
+    `be8ff771c`); seine eigene Autorotation folgt dem.
+  - Schlaf und Schlummer sind dort nur manuell geplant.
+  - Über IPC gibt BossModReborn die Markierungen nicht heraus (`ae64e3309`). Die Wirken, auf die sein Schlaf ging, führt
+    BossModReborn nicht.
+- *`sourpuh/ffxiv_interjection`* (`5ce8bde`): eine Anzeige. Sie färbt den Wirkbalken in der Gegnerliste, wenn das Spiel
+  ein Wirken als unterbrechbar führt, und den Feindseligkeits-Edelstein, wenn ein Gegner einen anderen Tank angreift.
+  Für den Schlaf ohne Nutzen, weil er gerade nicht unterbrechbares Wirken stoppt.
+
+**Sonst:**
+- *Rechenlast:* „hotbar tint" trug 0,78 ms, weil `CustomRotation.AllActions` je Bild die Liste neu baute; seit Upstream
+  7.5.7.5 im Mittel 0,48 ms, 3,3 %. Konzept 03; Warte-Eintrag entfernt.
+- *Abbruch einer Einzelheilung (A332, bei ihm an):* sieben Abbrüche, wie der Text der Option sagt.
+- *Ohne Befund:* 25 Ultratränke unter der eigenen Schwelle, 42 Wiederbelebungen einem anderen Heiler überlassen.
+
+**Falsifikation:** Konzept 08, „Ein gegnerisches Wirken stoppen". Zusätzlich zur Unterart 11: Ein freundlicher Helfer
+derselben Art ginge als feindliche Quelle durch, trüge aber keine Schadenszeilen, und seine Aktionen stehen auf keiner
+Liste.
+
+**Prüfgrad:**
+- Protokolle, Tabellen, BossModReborn, FFXIVClientStructs und WrathCombo gelesen;
+- Gemeinschaftsquellen zum Schlaf als solche gekennzeichnet;
+- Compile lokal ohne Warnungen, 27 Prüfschritte;
+- im Spiel nicht beobachtet.
+
 ---
 ## B · Commit-Register (Fork vs. `upstream/main`)
 
@@ -9422,3 +9547,5 @@ Die offene Arbeit dazu — Reihenfolge und Abbruchbedingung der Nachprüfung —
 | C114 | Bericht vom 17.10.2026 im Chat: das FATE hinter dem Schreckensseher heiße „Augenschrecken" | Selbst gebildeter deutscher Name, gegen die Regel „Namen". Belegt sind nur der englische Name des FATE im BossModReborn-Modul (Eye to Eye) und der deutsche Name des Gegners (Schreckensseher, BNpcName 14726, xivapi `language=de`) | Im Archiv und in den Konzepten steht „FATE Eye to Eye"; im Bericht korrigiert (A299) |
 | C115 | A201, „Im Kampf": Mit „Use Intervention on CoTank during tankbusters" an schütze der Paladin den anderen Tank vor dessen Tankbuster | Das Ziel war der, den sein eigenes Ziel angreift, nicht der Empfänger des Tankbusters; nur ein Tank mit Haltung; die Einzelabwehr öffnete auch ein Pull. Zutreffend nur, wenn der andere Tank mit Haltung den Boss hielt und den Tankbuster nahm; ein Marker auf dem anderen Tank öffnete die Einzelabwehr des Paladins gar nicht | A328: Ziel des Tankbusters, nur Tanks, ohne Haltungsbedingung |
 | C116 | A318 („Mit der Option aus blieb ein sterbender Co-Tank ohne Rettung"; im Kampf: „Mit ‚Auto provoke …' aus nimmt RSR einem Co-Tank … den Gegner jetzt ab") und Konzept 09 („bei zwei Tanks nur mit ihr") | Die Zählung las `AllianceMembers`, die die eigene Gruppe nie enthalten; in einer Gruppe mit zwei Tanks war „Auto provoke …" bis Upstream 7.5.7.5 wirkungslos, die Rettung lief also schon vor A318. Bewertet war die Bedingung, nicht die Liste, aus der ihre Zahl kommt — Werte über eine Schnittstelle an ihrer Quelle prüfen | A332; die Option wirkt seit 7.5.7.5 wie ihr Text, A318s Aufteilung bleibt richtig |
+| C117 | A327 und Konzept 08/13: Seit A327 lese der Effekt-Handler jede Figur der Gegnerseite; „Ausgeliefert, nichts ändert sich" sei „für Boss-Figuren ausgeschlossen" | Die Helfer von Prüfungen, Raids und Dungeons haben die Unterart 11, die weder FFXIVClientStructs noch A327 kannte; 273 Treffer blieben auf den Builds danach ungelesen. Die Arten waren aus der Aufzählung des Enums geschlossen, nicht an den Figuren gemessen | A334: Unterart 11 aufgenommen |
+| C118 | Konzept 10 und das Archiv (Tabelle der Betäubungen): „Fußfeger" für Leg Sweep; im Chat am 23.10.2026 „der Heilige" für Holy und „kein belegter deutscher Name" für Leg Sweep | Selbst gebildet. Gesucht war nur in `action_names_de.json`, nicht im Job-Guide und in den Spielblättern, wie die Regel „Namen" verlangt. Belegt: Stolperfalle, Haarscharfer Schuss, Sanctus, Sanctga | Namen eingetragen, Texte berichtigt (A334) |

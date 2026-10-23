@@ -59,7 +59,7 @@ erben die Selbstkorrektur.
 | Rueckstoss auch **als** Minderungswerkzeug wirken | umgesetzt (A194, A236): Abtausch im Pull fuer seine Verlangsamung, nicht vor einem angekuendigten Rueckstoss (A212, A219), nicht auf einen Boss |
 | Wirksamkeitsmessung im Spiel | ersetzt durch die Selbstkorrektur der Vorausschau (`ScoreTtkForecast`); keine Ablesung als Aufgabe an ihn |
 | **Sonde der Flächenbewertung**: `DataCenter.AreaMitigationSkipped` nennt je Aktions-Id, wo die Bewertung eine Minderung verworfen hat (Listenverwaltung) | in Betrieb |
-| **Schlaf gegen ein Flächenwirken** (seine Vorgabe, 18.10.2026): Heiler und Magier schläfern einen Gegner ein, der kein Boss ist und eine Fläche auf die Gruppe wirkt | umgesetzt (A329), experimentell, ab Werk an; Abschnitt „Schlaf gegen ein Flächenwirken" |
+| **Ein gegnerisches Wirken stoppen** (seine Vorgaben 18.10.2026 und 23.10.2026): Heiler und Magier stoppen das Wirken eines Gegners, der kein Boss ist – beim Weißmagier mit Sanctga, sonst mit Schlaf –, und speichern, was sie dabei lernen | umgesetzt (A329, A334), experimentell, ab Werk an; Abschnitt „Ein gegnerisches Wirken stoppen" |
 
 ## Die Antwort auf einen eingehenden Treffer
 
@@ -570,7 +570,9 @@ Treffer aus einer Quelle, die RSR nicht als Gegner liest. Sein Protokoll vom 18.
 47 Treffer des Dungeonbosses Hammerschädel kamen aus Figuren in der Objekttabelle, die der Handler nur nicht las – er
 nahm von nicht anvisierbaren Figuren nur Kämpfer an, und Teile eines Gegners oder Figuren ohne Unterart fielen heraus.
 Seit A327 liest er jede Figur der Gegnerseite (`ObjectHelper.IsEnemySideFigure`), und die Protokollzeile nennt bei
-einem verbliebenen Fall Unterart und Anvisierbarkeit. Ob Necrophobia und Düsterflare derselbe Fall waren, ist nicht
+einem verbliebenen Fall Unterart und Anvisierbarkeit. So zeigten seine Protokolle vom 19.–22.10.2026 die letzte
+Lücke: Die Helfer von Prüfungen, Raids und Dungeons haben die Unterart 11, die A327 nicht kannte; 127 ihrer Aktionen
+trafen ungelesen, bis 88 % auf acht Mitglieder. Seit A334 zählen sie mit. Ob Necrophobia und Düsterflare derselbe Fall waren, ist nicht
 bestimmt (Schluss naheliegend, nicht belegt). „Kein Treffer im Protokoll" ist bis dahin kein sicheres Maß für
 „Fehlvorhersage". Seine Frage vom 13.10.2026, ob es Raidwides waren oder Flächen, außerhalb
 derer er stand, führte zur Maske.
@@ -926,20 +928,46 @@ den Vergleich beider Strategien kann ein Modell ohne Stapeln nicht fuehren. Uebe
 Kern: Zeitschritt-Simulation mit Quellen, Dauer, Wiederholzeit und Zuendregel. Eine
 Zweitverwendung verlangt also, Quellenliste und Stapelverhalten zu Parametern zu machen.
 
-## Schlaf gegen ein Flächenwirken
+## Ein gegnerisches Wirken stoppen
 
-**Seine Vorgabe (18.10.2026), im Wortlaut:** „kann sleep der magiewirkenden klassen unterbrechen? falls dazu eine
-chance besteht, einbauen. bzw. als experimentelle option einbauen mit logging, ob damit gegner aoes gestoppt werden
-können, und welche". Einordnung: Prüfauftrag mit Vorgabe – bei einer Chance bauen, als experimentelle Option mit
-Protokoll.
+**Seine Angaben, im Wortlaut:**
+- Vorgabe (18.10.2026): „kann sleep der magiewirkenden klassen unterbrechen? falls dazu eine chance besteht, einbauen.
+  bzw. als experimentelle option einbauen mit logging, ob damit gegner aoes gestoppt werden können, und welche".
+- Präzisierung (23.10.2026): „schlaf sollte doch als meleependant für unterbrechungen genutzt werden, also auch auf
+  unterbrechbare casts, solange das zeitfenster reicht."
+- Präzisierung (23.10.2026): „ausserdem steht sleep nicht in konkurenz zu holy beim whm. wenn holy stunnen kann, ist
+  das vorzuziehen. speziell bei gruppen."
+- Vorgabe (23.10.2026): „und die speicherung des gewonnenen wissens ingame wird ingame nicht ausgewertet und persistent
+  genutzt" – „nimm dir ein beispiel an der aoe schadenspotentialspeicherung" – „wichtig ist zu wissen, wo sleep nicht
+  wirkt, damit es nicht immer wieder neu versucht wird".
 
-**Sachstand (A329):** Heiler und Magier setzen Schlummer bzw. Schlaf auf einen Gegner, der kein Boss ist und eine
-Fläche auf die Gruppe wirkt, solange von seinem Wirken genug übrig ist. Option „Use Sleep or Repose to stop an enemy's
-area attack (experimental)", ab Werk an. Jeder Versuch und sein Ausgang stehen in `DefenseTrace.log`.
+**Sachstand (A329, A334):** Heiler und Magier stoppen das Wirken eines Gegners, der kein Boss ist, wenn es eine
+Fläche auf die Gruppe ist oder ein Wirken, das das Spiel als unterbrechbar führt – das, was ein Nahkämpfer mit
+Stolperfalle stoppt –, solange es lang genug läuft. Zuerst mit dem eigenen Stopper des Jobs: beim Weißmagier Sanctus bzw.
+Sanctga, der jeden nicht immunen Gegner im Umkreis betäubt. Wo der nicht reicht, mit Schlummer bzw. Schlaf. Was die
+Versuche zeigen, speichert RSR über die Sitzung hinaus und richtet jede weitere Entscheidung danach. Option „Stop an
+enemy's cast with the job's stun or a sleep (experimental)", ab Werk an. Jeder Versuch steht in `DefenseTrace.log`.
 
-**Im Kampf:** Ein Flächenangriff eines Gegners, der kein Boss ist, kann abbrechen, bevor er landet; das kostet einen
-GCD. Der Gegner wacht beim nächsten Treffer auf. Ob es wirkt und gegen welche Angriffe, zeigt das Protokoll; wo es
-nicht wirkt, hört die Regel für den Rest der Sitzung auf.
+**Im Kampf:** Ein Angriff eines Gegners, der kein Boss ist, bricht ab, bevor er landet. Der Weißmagier wirkt dafür
+Sanctga statt eines Schlafs, betäubt damit jeden Gegner im Umkreis und macht dabei Schaden; die anderen kostet es
+einen GCD ohne Schaden. Gegen Gegnerarten, die widerstanden haben, und Aktionen, die trotz rechtzeitigem Schlaf
+losgingen, versucht RSR es nicht mehr, auch nicht nach einem Neustart.
+
+### Was seine Protokolle zeigen
+
+Seine Protokolle vom 19.–22.10.2026 (Weißmagier, A334):
+
+- *Schlaf wirkt auf nicht unterbrechbares Wirken.* Alle Versuche bis auf einen galten Wirken, das das Spiel als nicht
+  unterbrechbar führt. Drei endeten deutlich vor ihrer Zeit (0,8, 1,3 und 2,1 s früher), vier knapp (0,1 bis 0,3 s).
+- *Der Zeitpunkt entscheidet.* Jedes deutlich abgebrochene Wirken endete 0,7 bis 1,2 s, nachdem der Schlaf gelandet
+  war. Beide, die trotzdem losgingen, hatten beim Eintreffen 0,5 s Rest. Sechs liefen mit 0,6 bis 0,9 s Rest ohne
+  Wirkung zu Ende – abgebrochen oder ins Leere gegangen, das Protokoll zeigt es nicht. *Schluss, nicht belegt:* Der
+  Status greift einen Augenblick nach dem Eintreffen der Wirkung.
+- *Widerstand:* 13 Gegnerarten, darunter nicht als Boss markierte Gegner von Allianzraids und Prüfungen.
+- *Unterbrechbares Wirken:* ein Versuch, ohne Ausgang.
+- *Was fehlte:* Ein Weißmagier schlief Gegner ein, die ein Sanctga mit betäubt hätte; das Gelernte begann jede Sitzung
+  leer, sodass jede immune Art und jede nicht stoppbare Aktion wieder einen GCD kostete.
+
 
 ### Mechanik
 
@@ -965,73 +993,145 @@ Belege abgerufen 18.10.2026 (xivapi v2, Blätter `Action` und `Status`, englisch
   Regel.
 - *Feindseligkeit durch Schlaf:* unbelegt; die gefundene Quelle stammt aus Version 1.0.
 
+- *Sanctus und Sanctga* (Wirktexte, `ActionId.resx`): „Deals unaspected damage … to all nearby enemies. Additional
+  Effect: Stun Duration: 4s", Potenz 140 bzw. 150, Umkreis 8 y um den Weißmagier, Wirkzeit wie Schlummer. Eine
+  Betäubung bricht das Wirken eines nicht immunen Gegners ab (Grundlage der Tiefschlag-Regel). Jede weitere
+  Betäubung halbiert sich, bis der Gegner vorübergehend immun ist (`StunWatch`, A272).
+- *Abnutzung:* Wiederholter Schlaf auf denselben Gegner hält kürzer, bis er eine Weile widersteht, getrennt von der
+  Betäubung gezählt. Gemeinschaftsquellen (Square-Enix-Forum, Threads 104440 vom 10.10.2013 und 290466 vom
+  22.04.2016): 30 s, 15 s, etwa 8 s, danach widerstanden; das Ende der Immunität nennen sie mit 30 bis 60 s, uneinig.
+  Keine offizielle Quelle und kein Status zeigt es; deshalb lernt die Regel die Anzahl, statt sie einzutragen. Fandom
+  („Sleep (Final Fantasy XIV)"): Oberhalb Stufe 50 sind Gegner in Inhalten über die Inhaltssuche „typically immune".
+- *Ziehen:* Schlaf trifft bis 5 y um das Ziel, Sanctga 8 y um den Weißmagier – auch Gegner, die noch nicht kämpfen.
+  „Don't attack new mobs by AoE." (ab Werk aus) verbietet das für jede Flächenaktion; die Regel hält sich daran.
+
+### Mitwirkende Regeln (derselbe GCD, dasselbe Ziel)
+
+| Regel | Berührung | Wie sie zusammenwirken |
+|---|---|---|
+| Sanctus-Einsatz des Weißmagiers (ab drei Gegnern, `AoeCount`) | derselbe Zauber | Der Stopp wirkt Sanctga auch gegen einen einzelnen Gegner; die Anzahl gilt dort nicht, weil der Abbruch der Grund ist, nicht der Schaden. |
+| Sanctus-Streckung (A50, A272) | dieselbe Betäubung | Ein wirkender Gegner ist nicht betäubt; liegt die Betäubung des letzten Sanctga schon auf ihm, ist sein Wirken ohnehin gestoppt. Kein Konflikt. |
+| Sanctus-Zurückhaltung für die Barriere des Dunkelritters und bei verlangsamter Gruppe | hält Sanctus zurück | Der Stopp geht vor: Ein laufender Angriff ist sicher, die Gründe der Zurückhaltung sind spätere oder Ressourcen-Gründe (seine Spielweise). |
+| Heilung, Notfall | der GCD des Heilers | Steht ein Mitglied in der kritischen Klasse, gehört der GCD der Heilung. |
+| Wiederbelebung, Swiftcast | der GCD, Spontanzauber | Swiftcast wird nie für den Stopp verbraucht (seine Vorgabe). |
+| Unterbrechung und Betäubung anderer Spieler | dasselbe Wirken | Annahme über fremde Spieler, kein Grund zu warten; bei unterbrechbarem Wirken sagt die Protokollzeile, dass ein anderer es gewesen sein kann. |
+| BossModReborn | – | Seine Module markieren Wirken zum Unterbrechen oder Betäuben, geben das aber nicht über IPC heraus (Stand 20.10.2026). |
+
 ### Erkennung
 
 `SleepInterruptWatch`, ohne Option und ohne Schwelle:
-- ein Gegner der Feindesliste, kein Boss (Rang 2 und 6 im Blatt BNpcBase, wie bei Tiefschlag), ohne Sleep Resistance,
-  dessen Art in dieser Sitzung keinem Schlaf widerstanden hat;
-- er wirkt eine Fläche – Wirkbereich über null oder eine andere Form als Einzelziel –, die dich oder zwei lebende
-  Mitglieder erreicht (`DataCenter.AreaCastReachesParty`, dieselbe Formprüfung wie die Flächenabwehr, hier für jedes
-  Wirken, gelistet oder nicht);
-- seine Aktion ist in dieser Sitzung nicht trotz eines liegenden Schlafs losgegangen.
+- ein Gegner der Feindesliste, kein Boss (Rang 2 und 6 im Blatt BNpcBase), dessen Wirken eine Fläche ist, die dich
+  oder zwei lebende Mitglieder erreicht (`DataCenter.AreaCastReachesParty`), **oder** das das Spiel als unterbrechbar
+  führt, nach derselben Erkennung wie Stolperfalle der Nahkämpfer (`ObjectHelper.CanInterrupt`; mindestens 2 s, kein
+  Kegel, kein Ring, keine Fläche unter 8 y);
+- für den Schlaf: ohne Sleep Resistance, nicht von einer gespeicherten widerstehenden Art, in diesem Kampf seltener
+  eingeschläfert, als seine Art (sonst irgendeine Art) vor einem Widerstand vertrug, und nicht gerade von einem Schlaf
+  getroffen (sein Status zeigt sich erst später; am 21.10.2026 gingen zwei Schlafe auf dasselbe Wirken). Gezählt wird
+  jeder Schlaf auf den Gegner, wer ihn auch wirkte; und seine Aktion ist nicht als vom Schlaf nicht stoppbar
+  gespeichert (unten). Für die Betäubung gilt diese Sperre nicht: Eine Betäubung bricht auch ein Wirken ab, das unter
+  Schlaf weiterläuft (`IsCastWorthStopping` ohne, `IsCastToStop` mit der Sperre).
 
 ### Entscheidung
 
-`CustomRotation.SleepToStopAreaCast`, für Heiler und Magier zusammen – die Rollen mit einem Schlaf und ohne
-Unterbrechung:
-- im GCD-Pfad nach Notfall und Unterbrechung, vor Reinigung, Herausforderung, Wiederbelebung und Heilung;
-- nur, wenn vom Wirken mehr übrig ist, als der Schlaf braucht: seine Wirkzeit (null unter Dualcast oder Triplecast),
-  der laufende GCD und die zuletzt gemessene Zeit vom Ende seines Wirkens bis zur Wirkung, vor der ersten Messung die
-  gemessene Laufzeit eines Drucks (`TankbusterForecast.RoundTrip`);
-- nicht unter Spontanzauber: Swiftcast bleibt für Wiederbelebungen (seine Vorgabe);
-- beim Heiler nicht, solange ein Mitglied in der kritischen Klasse steht – sein GCD gehört dann der Heilung;
-- unter mehreren das Wirken, das zuerst endet.
+`CustomRotation.StopEnemyCast`, für Heiler und Magier zusammen, im GCD-Pfad nach Notfall und Unterbrechung, vor
+Reinigung, Herausforderung, Wiederbelebung und Heilung. Unter mehreren das Wirken, das zuerst endet:
 
-### Nachsteuerung und Protokoll
+1. *Der eigene Stopper des Jobs* (`CustomRotation.StopEnemyCastByJob`; Stufe „Job", weil nur der Weißmagier unter
+   Heilern und Magiern eine Betäubung hat): Sanctga, wenn der Gegner im Umkreis steht, sich noch betäuben lässt
+   (`StunWatch.CanStillBeStunned`, kein Boss) und die Zeit reicht.
+2. *Sonst der Schlaf*, wenn die Zeit reicht.
 
-| Ausgang | erkannt an | gelernt für die Sitzung | Zeile in `DefenseTrace.log` |
+„Die Zeit reicht" heißt für beide: Vom Wirken ist mehr übrig als die eigene Wirkzeit (null unter Dualcast oder
+Triplecast), der laufende GCD, die gemessene Zeit vom Ende des eigenen Wirkens bis zur Wirkung (vor der ersten Messung
+die Laufzeit eines Drucks) und der gelernte Rest beim Eintreffen. Nicht unter Swiftcast. Beim Heiler nicht, solange ein
+Mitglied in der kritischen Klasse steht. Nicht, wenn die Flächenaktion unter „Don't attack new mobs by AoE." einen
+Gegner träfe, der noch nicht kämpft.
+
+### Gespeichertes Wissen
+
+Nach dem Vorbild der gelernten Flächentabelle (`HostileCastingAreaPotential`): drei gelernte Tabellen in
+`OtherConfiguration.Files`, beim Start geladen, bei jedem Ausgang gespeichert, beim Speichern mit der Datei
+zusammengeführt (jeder Wert nur höher), nie geschrieben, wenn das Laden nicht fertig wurde, unlesbar als `.corrupt`
+beiseitegelegt. Ohne Knopf zum Verwerfen: Die Datei löscht er bei geschlossenem Spiel. Der Ladezustand steht in der
+Kopfzeile des Protokolls.
+
+| Tabelle | Schlüssel | Inhalt | Wofür |
 |---|---|---|---|
-| widerstanden | „Resist" oder unverwundbar am Ziel | die Gegnerart nicht mehr | „sleep resisted by …: immune" |
-| Wirken bricht ab | der Wirkbalken endet früher als Laufzeit plus Bilddauer vor seinem Ende | – | „sleep stopped … of …" |
-| Wirken geht los | die Aktion des Gegners löst aus, nachdem der Schlaf lag | die Aktion nicht mehr | „sleep did not stop …" |
-| zu spät | beim Eintreffen wirkte der Gegner die Aktion nicht mehr | – | „sleep landed on … after … had ended" |
-| zugleich betäubt | eine Betäubung läuft beim Abbruch (`StunWatch`) | – | „… a stun landed on it too - not counted" |
-| Gegner fällt | tot vor der Auflösung | – | „… it fell …" |
+| `SleepResistantKinds.json` | Gegnerart (BaseId) | wie oft sie einen ersten Schlaf als Status oder Aktion abwehrte | Die Art wird nicht mehr eingeschläfert. |
+| `SleepDiminishing.json` | Gegnerart (BaseId) | die wenigsten Schlafe in einem Kampf, nach denen sie widerstand (beim Zusammenführen die kleinere Zahl) | Ein Gegner wird in einem Kampf höchstens so oft eingeschläfert. |
+| `SleepOutcomes.json` | Aktion des Gegners | Abbrüche und die längste Zeit von der Landung bis zum Abbruch; Fehlschläge und der größte Rest, mit dem der Schlaf trotzdem zu spät kam | Die Regel liest daraus bei jeder Entscheidung die Haltezeit, den nötigen Rest und die nicht stoppbaren Aktionen. |
 
-Jede Wahl schreibt „sleep to stop a cast -> …" mit Gegner, Art, Aktion, Restzeit, Unterbrechbarkeit und der Zeit, die
-der Schlaf braucht; jede Landung die gemessene Zeit vom Ende des eigenen Wirkens bis zur Wirkung. Die Kopfzeile des
-Protokolls nennt die Option.
+Ausgewertet wird bei jeder Entscheidung:
+- *Haltezeit:* die längste Zeit von der Landung bis zum Abbruch über alle Aktionen.
+- *Nicht stoppbar:* eine Aktion ohne Abbruch, die losging, obwohl der Schlaf mindestens die Haltezeit vor ihrem Ende lag.
+- *Nötiger Rest:* der größte Rest eines Fehlschlags, der unter der Haltezeit lag, plus ein Bild. Ein solcher Schlaf kam
+  zu spät; die Aktion bleibt erlaubt.
+
+Ein Widerstand wird gespeichert, wenn das Spiel den Status oder die ganze Aktion als widerstanden meldet – seine
+Vorgabe: Wo Schlaf nicht wirkt, soll er nicht immer wieder versucht werden. Lag in diesem Kampf schon ein Schlaf auf
+dem Gegner, ist es die Abnutzung (sein Hinweis vom 23.10.2026), nicht die Immunität der Art: Gespeichert wird dann
+die Anzahl, und der Gegner ruht für diesen Kampf. „Unverwundbar" (etwa in einer
+Übergangsphase) sperrt die Art nur für die Sitzung, weil es keine Immunität gegen Schlaf beweist. Die Laufzeit vom
+Wirken zur Wirkung hängt an der Verbindung und wird in jeder Sitzung neu gemessen.
+
+### Protokoll
+
+| Ausgang | Zeile in `DefenseTrace.log` |
+|---|---|
+| Stopper des Jobs gewählt | „stop a cast -> Sanctga …" |
+| Schlaf gewählt | „sleep to stop a cast -> …" (Gegner, Art, Aktion, Restzeit, Unterbrechbarkeit, benötigte Zeit) |
+| gewählt, aber nicht gewirkt | „sleep not cast on …" |
+| widerstanden | „sleep resisted by …: immune, its kind is stored" bzw. „… after N sleep(s) in this fight: worn down" |
+| unverwundbar | „sleep did not reach …" (nur für die Sitzung) |
+| Wirken bricht ab | „sleep stopped …" mit der Zeit seit der Landung |
+| zu spät | „sleep did not stop …; too late" mit dem neuen nötigen Rest |
+| nicht stoppbar | „sleep did not stop …; … not tried on it again" |
+| nach dem Ende gelandet, Gegner gefallen, zugleich betäubt | wie bisher |
 
 ### Warum so
 
-- Seine Spielweise: Sicherheit der Gruppe vor Schaden, gewichtet mit der Wahrscheinlichkeit. Ein laufendes
-  Flächenwirken, das die Gruppe erreicht, landet, wenn niemand es abbricht; der Preis ist ein GCD.
-- Universell zuerst: Die Regel gilt für jede Rolle mit einem Schlaf. Tanks, Nahkämpfer und physische Fernkämpfer haben
-  Unterbrechung und Betäubung.
-- Auch unterbrechbares Wirken: Ob ein anderer Spieler es unterbricht, ist eine Annahme über ihn, kein tragender Grund.
-- Voreinstellung an, nach seiner Regel (29.09.2026): Neue Regeln sollen getestet werden.
+- Seine Spielweise: Sicherheit der Gruppe vor Schaden, gewichtet mit der Wahrscheinlichkeit. Ein laufendes Wirken
+  landet, wenn niemand es abbricht.
+- Sanctga vor dem Schlaf (seine Präzisierung): Er betäubt jeden Gegner im Umkreis, macht Schaden und kostet weniger MP;
+  der Schlaf kostet einen GCD ohne Schaden und wird vom nächsten Treffer geweckt.
+- Universell zuerst: Die Regel gilt für jede Rolle mit einem Schlaf; der Stopper des Jobs ist ein Einhängepunkt, den
+  bisher nur der Weißmagier füllt.
+- Ein Fehlschlag mit wenig Rest beweist den falschen Zeitpunkt, nicht eine nicht stoppbare Aktion.
+- Voreinstellung an, nach seiner Regel (29.09.2026).
 
 ### Ausgeschlossen
 
-- Swiftcast für den Schlaf (seine Vorgabe).
-- Bosse, wie bei Tiefschlag.
-- Einzelzielwirken: Gefragt sind Flächenangriffe; ein Einzelzauber auf ein Mitglied bleibt Sache der Heilung.
-- Das Gelernte über die Sitzung hinaus zu speichern: Nach einem Neustart kostet jede immune Art und jede nicht
-  stoppbare Aktion wieder einen Versuch – ein GCD je Fall.
+- Swiftcast für den Stopp (seine Vorgabe).
+- Bosse.
 
 ### Grenzen und Lagen
 
-- *Kurzes Wirken:* Schlaf braucht seine Wirkzeit, den laufenden GCD und die Laufzeit; ein kurzes Wirken lässt keinen
-  Platz. Rotmagier mit Dualcast und Schwarzmagier mit Triplecast schlafen sofort und verbrauchen dafür den
-  Sofortzauber – Schaden, der der Sicherheit weicht.
-- *Weitere Gegner:* Schlaf trifft bis 5 y um das Ziel; Gruppenschaden weckt sie.
-- *Wiederholtes Wirken:* Wirkt der geweckte Gegner dieselbe Fläche erneut, kostet jeder Abbruch wieder einen GCD.
+- *Kurzes Wirken:* Beide brauchen ihre Wirkzeit, den laufenden GCD, die Laufzeit und den Rest; ein kurzes Wirken lässt
+  keinen Platz. Rotmagier mit Dualcast und Schwarzmagier mit Triplecast schlafen sofort und verbrauchen den Sofortzauber.
+- *Betäubung erschöpft:* Nach wiederholter Betäubung ist ein Gegner vorübergehend immun (`StunWatch`); dann bleibt der
+  Schlaf.
+- *Lange Kämpfe:* Die Abnutzung endet nach einer Weile wieder; die Regel sperrt den Gegner trotzdem bis zum Kampfende,
+  weil die Dauer unbelegt ist. Das kostet höchstens einen möglichen Schlaf auf einem langlebigen Gegner.
+- *Wiederholtes Wirken:* Wirkt der geweckte Gegner erneut, kostet jeder Abbruch wieder einen GCD.
 - *Vierer-Instanz:* die Hauptlage. *Allianzraid:* gezählt wird die eigene Gruppe.
-- *Stufensynchron:* ab Stufe 10 bzw. 8 (`EnoughLevel`).
-- *BossModReborn:* unbeteiligt.
+- *Stufensynchron:* Schlaf ab Stufe 10, Schlummer ab 8, Sanctus ab 45, Sanctga ab 82 (`EnoughLevel`).
+- *Zwei Rechner:* Beide Tabellen werden beim Speichern mit der Datei zusammengeführt; gleichzeitig laufende Spiele
+  verlieren keine Messung.
 
-**Prüfgrad:** statisch, Prüfskripte, Compile über die CI; im Spiel nicht beobachtet. Die Antwort fällt im Kampf; die
-Regel lernt daraus selbst, das Protokoll zeigt sie.
+**Falsifikation.**
+- *Kein Defekt:* widerlegt – ein Schlaf, wo Sanctga betäubt hätte, kostet einen GCD und den Schaden; jede Sitzung
+  begann leer.
+- *Option falsch:*
+  - Sanctga gegen einen einzelnen Gegner kostet gegenüber Blendka rund 160 Potenz; der Schlaf kostet den ganzen GCD.
+  - Eine verbrauchte Betäubung fehlt der Streckung später; ein laufender Angriff wiegt schwerer (seine Spielweise).
+  - Eine falsch gespeicherte nicht stoppbare Aktion bliebe für den Schlaf gesperrt; Sanctga versucht sie weiter. Sie
+    wird nur gespeichert, wenn der Schlaf mindestens die gemessene Haltezeit vor dem Ende lag und kein Abbruch der
+    Aktion bekannt ist.
+- *Ausgeliefert, nichts ändert sich:* Steht ein Wirkender außerhalb von 8 y, bleibt es beim Schlaf; ohne Fehlschlag
+  bleibt der nötige Rest null. Beides zeigt das Protokoll.
+
+**Prüfgrad:** Protokolle gelesen; statisch, Prüfskripte, Compile lokal; im Spiel nicht beobachtet. Die Regel lernt
+selbst, das Protokoll zeigt es.
 
 ## Die Vorgaben des Auftraggebers
 
@@ -1502,7 +1602,7 @@ sind erfasst statt bearbeitet.
 Zweite, unabhängig belegte Fundstelle: Im Schadenszweig steht der Sanctus-Block
 **vor** dem DoT-Block. Sobald `AoeCount = 3` erfüllt ist, greift Sanctus und der DoT
 wird nie gesetzt — bei einem Boss mit zwei Adds läuft also nie Dia. Dass das nicht
-gewollt ist, zeigt der DoT selbst: `ModifyDiaPvE` (`WhiteMageRotation.cs:300-311`)
+gewollt ist, zeigt der DoT selbst: `ModifyDiaPvE` (`WhiteMageRotation.cs:334-345`)
 setzt `TargetStatusProvide` gegen Nachlegen und `IsRestrictedDOT` gegen ungeeignete
 Ziele — beide Vorkehrungen laufen bei AoE ins Leere, weil der Zweig nicht erreicht
 wird. Seit A231 fällt der GCD nach einem Sanctus auf den fälligen DoT (Abschnitt „Die Regel“).

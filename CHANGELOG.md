@@ -23,6 +23,24 @@ are not reconstructed here.
 
 ## Unreleased
 
+### Behaviour change in RotationSolver.Basic: an enemy's cast is stopped by the job's stun first, and what sleeps show is kept
+
+The healers' and casters' stop of an enemy cast (`Configs.SleepToStopAreaCasts`, name unchanged) now also covers casts
+the game marks interruptible, and asks the job first: `CustomRotation.StopEnemyCastByJob` is new and protected virtual,
+and `WhiteMageRotation` overrides it with Holy or Holy III. `CustomRotation.AreaReachesNewMob` is new: whether an area
+action would reach an enemy that is not fighting yet while `Configs.NoNewHostiles` is on.
+
+`SleepInterruptWatch` keeps what it learns over every session, in three learned tables beside the area table, and works
+out its conclusions from them at each decision. New public members: `IsCastWorthStopping` (any stop), `IsCastToStop`
+(a sleep), `IsUnstoppable` and `LandingMargin`. `CanStillBeSlept` also refuses an enemy of a kind that resisted, an enemy slept as often in this fight
+as its kind takes, and one a sleep has just landed on. `IsAreaCastToStop` refuses an action stored as unstoppable
+instead of one that went off this session.
+
+### Behaviour change in RotationSolver.Basic: a boss's invisible helpers are read as the enemy side
+
+The enemy-side recognition behind the effect handler and `DataCenter.AreaCasters` takes battle NPCs of sub kind 11, the
+kind BossModReborn calls Helper. A derived rotation reading `DataCenter.AreaCasters` sees their casts.
+
 ## 7.5.7.6+wsh1
 
 ### Behaviour change in RotationSolver.Basic: tankbuster targets follow whom a tankbuster is aimed at

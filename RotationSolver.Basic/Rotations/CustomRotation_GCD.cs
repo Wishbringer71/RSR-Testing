@@ -98,9 +98,9 @@ public partial class CustomRotation
 				}
 			}
 
-			// The owner's experiment of 18.10.2026: a sleep on an enemy's area cast (concept 08, "Schlaf gegen ein
-			// Flächenwirken").
-			if (SleepToStopAreaCast(out act))
+			// The owner's experiment of 18.10.2026 and his rules of 23.10.2026: an enemy's cast stopped by the job's own
+			// stun or a sleep (concept 08, "Ein gegnerisches Wirken stoppen").
+			if (StopEnemyCast(out act))
 			{
 				return act;
 			}
@@ -521,12 +521,14 @@ public partial class CustomRotation
 	}
 
 	/// <summary>
-	/// Sleep or Repose on an enemy that is not a boss and casts an area attack reaching the party, while enough of
-	/// the cast is left for the sleep to land - the owner's experiment of 18.10.2026, "kann sleep der magiewirkenden
-	/// klassen unterbrechen?" (concept 08, "Schlaf gegen ein Flächenwirken"). Healers and casters together: the roles
-	/// with a sleep and no interrupt. What came of it, and what it learns, is SleepInterruptWatch's.
+	/// Stops the cast of an enemy that is not a boss - an area attack reaching the party, or a cast the game marks
+	/// interruptible - while enough of it is left: first with the job's own stopper (<see cref="StopEnemyCastByJob"/>),
+	/// otherwise with Sleep or Repose. The owner's experiment of 18.10.2026, "kann sleep der magiewirkenden klassen
+	/// unterbrechen?", and his rules of 23.10.2026: the stop is the melee interrupt's counterpart, and "wenn holy stunnen
+	/// kann, ist das vorzuziehen" (concept 08, "Ein gegnerisches Wirken stoppen"). Healers and casters together: the
+	/// roles without an interrupt. What came of each sleep, and what it learns, is SleepInterruptWatch's.
 	/// </summary>
-	private bool SleepToStopAreaCast(out IAction? act)
+	private bool StopEnemyCast(out IAction? act)
 	{
 		act = null;
 		var role = DataCenter.Role;
@@ -536,48 +538,33 @@ public partial class CustomRotation
 			return false;
 		}
 
-		// His rule: Swiftcast stays for raises, and a sleep under it would spend it. Dualcast and Triplecast are
-		// spent on whatever spell comes next, so a sleep may take them.
+		// His rule: Swiftcast stays for raises, and a stop under it would spend it. Dualcast and Triplecast are
+		// spent on whatever spell comes next, so a stop may take them.
 		if (StatusHelper.PlayerHasStatus(true, StatusID.Swiftcast))
 		{
 			return false;
 		}
 
-		var sleep = role == JobRole.Healer ? ReposePvE : SleepPvE;
-		if (!sleep.EnoughLevel)
-		{
-			return false;
-		}
-
-		// What the sleep needs of the enemy's cast: its own cast and the GCD still running, and the time from the
-		// end of its cast to its effect as last measured - before the first sleep, the measured round trip of a press.
+		// The time from the end of an own cast to its effect, as last measured for a sleep - before the first, the
+		// measured round trip of a press.
 		var lag = SleepInterruptWatch.Lag >= 0f ? SleepInterruptWatch.Lag : Math.Max(0f, TankbusterForecast.RoundTrip);
-		var needed = sleep.Info.NeededStatusMargin + lag;
 
-		// The cast that ends soonest first: the others leave time for the next GCD. The time left is read first;
-		// the shape of the cast, which looks up the action and where its target stands, only for one that fits.
-		IBattleChara? chosen = null;
-		var chosenLeft = float.MaxValue;
+		// The casts worth stopping, the one that ends soonest first: the others leave time for the next GCD.
+		List<(IBattleChara Enemy, float Left)> casts = [];
 		foreach (var enemy in DataCenter.AllHostileTargets)
 		{
-			if (enemy == null || !enemy.IsCasting)
+			if (enemy != null && enemy.IsCasting && !enemy.IsBossFromIcon() && SleepInterruptWatch.IsCastWorthStopping(enemy))
 			{
-				continue;
-			}
-
-			var left = enemy.TotalCastTime - enemy.CurrentCastTime;
-			if (left > needed && left < chosenLeft
-				&& SleepInterruptWatch.CanStillBeSlept(enemy) && SleepInterruptWatch.IsAreaCastToStop(enemy))
-			{
-				chosen = enemy;
-				chosenLeft = left;
+				casts.Add((enemy, enemy.TotalCastTime - enemy.CurrentCastTime));
 			}
 		}
 
-		if (chosen == null)
+		if (casts.Count == 0)
 		{
 			return false;
 		}
+
+		casts.Sort((a, b) => a.Left.CompareTo(b.Left));
 
 		// A healer's GCD belongs to the member about to die.
 		if (role == JobRole.Healer)
@@ -591,25 +578,89 @@ public partial class CustomRotation
 			}
 		}
 
-		// The target filter is swapped in for this call only and restored afterwards, as for Nascent Flash.
-		var setting = sleep.Setting;
-		var canTarget = setting.CanTarget;
-		var chosenId = chosen.GameObjectId;
-		setting.CanTarget = t => canTarget(t) && t.GameObjectId == chosenId;
-		try
+		var sleep = role == JobRole.Healer ? ReposePvE : SleepPvE;
+
+		// What a sleep needs of the enemy's cast: its own cast and the GCD still running, the time to its effect, and
+		// what has to be left of the cast when it lands, learned from sleeps that came too late.
+		var needed = sleep.Info.NeededStatusMargin + lag + SleepInterruptWatch.LandingMargin;
+		foreach (var (enemy, left) in casts)
 		{
-			if (!sleep.CanUse(out act, skipAoeCheck: true, skipTTKCheck: true))
+			if (StopEnemyCastByJob(enemy, left, lag, out act))
 			{
-				return false;
+				return true;
 			}
-		}
-		finally
-		{
-			setting.CanTarget = canTarget;
+
+			if (!sleep.EnoughLevel || left <= needed || SleepInterruptWatch.IsUnstoppable(enemy.CastActionId)
+				|| !SleepInterruptWatch.CanStillBeSlept(enemy) || AreaReachesNewMob(enemy, sleep.Info.EffectRange))
+			{
+				continue;
+			}
+
+			// The target filter is swapped in for this call only and restored afterwards, as for Nascent Flash.
+			var setting = sleep.Setting;
+			var canTarget = setting.CanTarget;
+			var chosenId = enemy.GameObjectId;
+			setting.CanTarget = t => canTarget(t) && t.GameObjectId == chosenId;
+			try
+			{
+				if (!sleep.CanUse(out act, skipAoeCheck: true, skipTTKCheck: true))
+				{
+					continue;
+				}
+			}
+			finally
+			{
+				setting.CanTarget = canTarget;
+			}
+
+			SleepInterruptWatch.AimAt(enemy, sleep, left, needed);
+			return true;
 		}
 
-		SleepInterruptWatch.AimAt(chosen, sleep, chosenLeft, needed);
-		return true;
+		act = null;
+		return false;
+	}
+
+	/// <summary>
+	/// The job's own way to stop <paramref name="enemy"/>'s cast, tried before a sleep: a stun that reaches it in time
+	/// (concept 08, "Ein gegnerisches Wirken stoppen"). Among the healers and casters only the White Mage has one.
+	/// </summary>
+	/// <param name="enemy">The casting enemy, not a boss.</param>
+	/// <param name="left">Seconds left on its cast.</param>
+	/// <param name="lag">Seconds from the end of an own cast to its effect, as measured.</param>
+	/// <param name="act">The action that stops it.</param>
+	/// <returns>True when the job stops the cast itself.</returns>
+	protected virtual bool StopEnemyCastByJob(IBattleChara enemy, float left, float lag, out IAction? act)
+	{
+		act = null;
+		return false;
+	}
+
+	/// <summary>
+	/// Whether an area action of <paramref name="radius"/> around <paramref name="center"/> would reach an enemy that is
+	/// not fighting yet while "Don't attack new mobs by AoE." is on - the setting's own test, a hostile without a
+	/// target. A stop is an area action like any other, and the setting says "never".
+	/// </summary>
+	/// <param name="center">The centre of the area.</param>
+	/// <param name="radius">Its radius, zero for a single target.</param>
+	/// <returns>True when the setting forbids the action.</returns>
+	protected static bool AreaReachesNewMob(IBattleChara center, float radius)
+	{
+		if (!Service.Config.NoNewHostiles || radius <= 0f || center == null)
+		{
+			return false;
+		}
+
+		foreach (var hostile in DataCenter.AllHostileTargets)
+		{
+			if (hostile != null && hostile.TargetObject == null
+				&& Vector3.Distance(hostile.Position, center.Position) - hostile.HitboxRadius <= radius)
+			{
+				return true;
+			}
+		}
+
+		return false;
 	}
 
 	/// <summary>

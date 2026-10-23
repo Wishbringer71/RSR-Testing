@@ -17,6 +17,40 @@ public partial class WhiteMageRotation
 		return false;
 	}
 
+	/// <summary>
+	/// Holy or Holy III stops an enemy's cast by stunning it - and every other enemy in its radius that can still be
+	/// stunned. The owner's rule of 23.10.2026: "ausserdem steht sleep nicht in konkurenz zu holy beim whm. wenn holy
+	/// stunnen kann, ist das vorzuziehen. speziell bei gruppen." (concept 08, "Ein gegnerisches Wirken stoppen").
+	/// </summary>
+	/// <remarks>
+	/// It goes where the enemy stands in the radius, can still be stunned (StunWatch: no Stun Resistance, not worn
+	/// down by repeated stuns) and enough of its cast is left: Holy's own cast, the GCD still running, the time to its
+	/// effect and the margin a status needs before the cast ends - learned from sleeps, the same kind of status
+	/// (inference). Holy's area count does not apply here, the stop is the reason; neither do the White Mage
+	/// rotation's holds for the stun stretch, the Dark Knight's barrier or a slowed pack, which weigh later or
+	/// resource reasons against an attack that is coming now (his rule: the party's safety first).
+	/// </remarks>
+	protected override bool StopEnemyCastByJob(IBattleChara enemy, float left, float lag, out IAction? act)
+	{
+		act = null;
+		var holy = HolyIiiPvE.EnoughLevel ? HolyIiiPvE : HolyPvE;
+		if (!holy.EnoughLevel || !StunWatch.CanStillBeStunned(enemy) || enemy.DistanceToPlayer() > holy.Info.EffectRange
+			|| Player is not { } player)
+		{
+			return false;
+		}
+
+		var needed = holy.Info.NeededStatusMargin + lag + SleepInterruptWatch.LandingMargin;
+		if (left <= needed || AreaReachesNewMob(player, holy.Info.EffectRange)
+			|| !holy.CanUse(out act, skipAoeCheck: true, skipTTKCheck: true))
+		{
+			return false;
+		}
+
+		SleepInterruptWatch.JobStop(enemy, holy, left, needed);
+		return true;
+	}
+
 	/// <inheritdoc/>
 	public static bool ThinAirState()
 	{
