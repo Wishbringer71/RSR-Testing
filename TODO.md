@@ -102,7 +102,8 @@ setzt, und dann die Messung darauf umstellen. *Konzept:* 09 (A332).
 *Im Kampf:* Auf einen einzelnen Treffer heilt Glockenspiel 400 Potenz sofort und die übrigen 800 erst nach 20 s, weil
 RSR nie ein zweites Mal drückt; deshalb lohnt es nur auf Mehrfachtreffern. Gedrückt gleich nach dem letzten erwarteten
 Treffer kämen 1200 sofort. *Nächster Schritt:* voller Loop – woran „kein weiterer Treffer" zu messen ist (Flächenliste,
-BossModReborn-Vorhersage, Mehrfachmarker), wer im Umkreis Heilung braucht, Zusammenspiel mit der Streckung. *Konzept:*
+BossModReborn-Vorhersage, Mehrfachmarker), wie viel der Gruppe im Umkreis fehlt (sein Vorschlag vom 23.10.2026, für den
+zweiten Druck), Zusammenspiel mit der Streckung. *Konzept:*
 08, „Was die Sperren im Spiel bewirken".
 
 ### Rotationen gegen The Balance abgleichen · N

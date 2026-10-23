@@ -236,6 +236,13 @@ gewählten Trank mit dem Zweig, der ihn freigab, und den HP.
     bekommt es nie. Am 18.–22.10.2026: zwei Einsätze.
   - *Ohne die Einstellung* kommt es zuletzt, wenn Plenary, Temperance und Divine Caress nicht bereit sind, und
     hält danach die übrige Abwehr 20 s zurück (Streckung).
+  - *Sein Vorschlag (23.10.2026):* „es würde sich also nur lohnen, wenn die gesundheit der gruppe weit unten ist, so
+    dass 2000 potenz heilung voll heilt, aber nicht überheilt, oder nur minimal". Geprüft: Für die Platzierung trägt
+    die Bedingung nicht. Die 2000 sind kein einzelner Heilstoß, sondern fünf Auslösungen zu 400, jede erst nach einem
+    Schaden am Weißmagier; die Glocke muss also vor den Treffern stehen, wenn die Gruppe meist noch voll ist, und
+    jede Auslösung heilt frischen Schaden. Überheilt wird, wenn nur der Weißmagier getroffen wurde (etwa ein Schaden
+    über Zeit auf ihm allein) – das hängt an der Art des Schadens, nicht an der Gesundheit beim Setzen. Für den
+    zweiten Druck trägt sie: Die übrigen Stapel (200 je Stapel) lohnen nur, solange der Gruppe so viel fehlt.
   - Offen in `TODO.md`: „Weißmagier: Glockenspiel nach einem einzelnen Treffer auslösen".
 - **Dunkelritter:** Herkunft ist die Balance-Rotation 6.38 (c97be9ec5).
   - Früher hieß Burst „mindestens die Hälfte der Gruppe im Zwei-Minuten-Burst"
