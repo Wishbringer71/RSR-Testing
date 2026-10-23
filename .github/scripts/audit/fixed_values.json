@@ -842,6 +842,16 @@
    "status": "exception",
    "loop": "A318",
    "reason": "The setting's own condition, \"Auto provoke when there is another tank in party\": another tank besides the player means two; a count named by the option text, not a tunable. Moved unchanged from StateUpdater.ShouldAddProvoke (upstream line); counts the party since upstream 7.5.7.5 (A331)"
+  },
+  {
+   "file": "RotationSolver.Basic/Helpers/ObjectHelper.cs",
+   "code": "private const BattleNpcSubKind HelperSubKind = (BattleNpcSubKind)11;",
+   "values": [
+    "11"
+   ],
+   "status": "exception",
+   "loop": "A334",
+   "reason": "The game's battle NPC sub kind of a boss's invisible helpers, read from the object as a byte and compared; FFXIVClientStructs names no member for it, BossModReborn calls it Helper (ActorType 0x20B). A kind of the game, not a tunable"
   }
  ]
 }

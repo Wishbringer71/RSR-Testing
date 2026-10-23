@@ -538,8 +538,9 @@ Fundamentals“, 02.10.2026: bei Zaubern, deren Wirkung später eintritt oder we
 untargetable entities responsible“; ein Debuff auf dem Boss wie Reflexion mindert deren Schaden „usually“ nicht —
 Folge für die Gegner-Debuffs in Konzept 08). Ebenso wirkt ein Boss außerhalb des Felds seine Raidwides nicht
 anvisierbar. Die Flächenerkennung liest deshalb neben der Gegnerliste jede nicht anvisierbare Figur der
-Gegnerseite – Kämpfer (`BattleNpcSubKind.Combatant`), Teil eines Gegners (`BNpcPart`) oder ohne Unterart, und kein
-Gruppenmitglied (`ObjectHelper.IsEnemySideFigure`, A327) –, solange sie eine Aktion der Flächenliste wirkt (`DataCenter.AreaCasters`, gebaut in
+Gegnerseite – Kämpfer (`BattleNpcSubKind.Combatant`), Teil eines Gegners (`BNpcPart`), Helfer (Unterart 11, in
+FFXIVClientStructs ohne Namen, bei BossModReborn `Helper`) oder ohne Unterart, und kein Gruppenmitglied
+(`ObjectHelper.IsEnemySideFigure`, A327, A334) –, solange sie eine Aktion der Flächenliste wirkt (`DataCenter.AreaCasters`, gebaut in
 `TargetUpdater.UpdateAreaCasters`); alle Leser gehen darüber: die Flächenflagge, „erreicht ihn", der große Cast, die
 unbewertete Erkennung, die eigene Flächenabwehr und das Protokoll („(untargetable)"). Der Effekt-Handler lässt
 dieselben Quellen durch und dazu jede anvisierbare Figur der Gegnerseite, deren Aktion ein Gruppenmitglied erreicht
