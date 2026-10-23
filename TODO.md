@@ -20,11 +20,12 @@ Nach der Wirkung im Kampf: Sicherheit der Gruppe vor Schaden, gewichtet mit der 
 7. Einstellungen ohne Leser, deren Text eine Wirkung verspricht
 8. Feste Werte: jeder offene Wert braucht seinen Loop
 9. Tankbuster-Plan: Umlauf über die Sequenz jedes Drucks
-10. Rotationen gegen The Balance abgleichen
-11. Six-sided Star und Flamethrower
-12. Vorlauf: Dragoon und Viper
-13. AoE-Schwelle an drei Orten
-14. Audit der gesamten Codebasis
+10. Weißmagier: Glockenspiel nach einem einzelnen Treffer auslösen
+11. Rotationen gegen The Balance abgleichen
+12. Six-sided Star und Flamethrower
+13. Vorlauf: Dragoon und Viper
+14. AoE-Schwelle an drei Orten
+15. Audit der gesamten Codebasis
 
 Danach technische Schuld, soweit ihre Auflösungsbedingung erfüllt ist. Warten auf Daten: unten.
 
@@ -95,6 +96,14 @@ RSR-Drücke; ein abgewiesener oder eingereihter Druck kann als Probe zählen, ei
 Upstream 7.5.7.5 sieht `ActionManagerEx` jede Anfrage, die hinausgeht (Sequenz), und jede eigene Wirkung trägt sie
 (`SourceSequence`). *Nächster Schritt:* Loop – klären, ob die exakte Paarung die Frist im Kampf früher oder sicherer
 setzt, und dann die Messung darauf umstellen. *Konzept:* 09 (A332).
+
+### Weißmagier: Glockenspiel nach einem einzelnen Treffer auslösen · N
+
+*Im Kampf:* Auf einen einzelnen Treffer heilt Glockenspiel 400 Potenz sofort und die übrigen 800 erst nach 20 s, weil
+RSR nie ein zweites Mal drückt; deshalb lohnt es nur auf Mehrfachtreffern. Gedrückt gleich nach dem letzten erwarteten
+Treffer kämen 1200 sofort. *Nächster Schritt:* voller Loop – woran „kein weiterer Treffer" zu messen ist (Flächenliste,
+BossModReborn-Vorhersage, Mehrfachmarker), wer im Umkreis Heilung braucht, Zusammenspiel mit der Streckung. *Konzept:*
+08, „Was die Sperren im Spiel bewirken".
 
 ### Rotationen gegen The Balance abgleichen · N
 

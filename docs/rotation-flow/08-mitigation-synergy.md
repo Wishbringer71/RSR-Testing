@@ -222,6 +222,21 @@ gewählten Trank mit dem Zweig, der ihn freigab, und den HP.
     10 s nutzbar. Kommt dort kein Treffer, ist es verloren. Ohne Streckung fiele es auf denselben
     Treffer wie Temperance; welches von beiden mehr wert ist, hängt am Abstand der Treffer. Die
     Schranke deckt den Fall, in dem es auf den ersten Treffer ankommt.
+- **Glockenspiel (Liturgy of the Bell) ist reaktive Heilung, keine Minderung** (Wirktext, The Balance, Basic Guide,
+  23.10.2026): fünf Stapel für 20 s; jeder Schaden am Weißmagier, höchstens einmal je Sekunde, heilt alle im
+  Umkreis von 20 y um die Glocke mit 400 Potenz; was übrig ist, heilt mit 200 je Stapel beim Ablauf oder beim zweiten
+  Druck. Abklingzeit 180 s.
+  - *Auf einen einzelnen Treffer* (sein Hinweis vom 23.10.2026: „die haupteigenschaft würde da ja nicht genutzt
+    werden"): 400 Potenz gleich nach dem Treffer, 800 erst nach 20 s – zusammen 1200 von höchstens 2000. RSR drückt
+    nie ein zweites Mal: Glockenspiel steht nur in der Flächenabwehr, und die hält während seiner Wirkung (Streckung);
+    die 800 fallen also auf eine Gruppe, die bis dahin meist geheilt ist (*Schluss, nicht gemessen*).
+  - *Mit „Limit Liturgy Of The Bell to multihit party stacks"* (bei ihm an, belegt durch die Reihenfolge der
+    Ablehnungen am 22.10.2026, A335) geht Glockenspiel nur auf einen Mehrfach-Sammelmarker, dann vor allen anderen.
+    Erkannt werden sieben Markerpfade (`MultiHitSharedPaths`); ein mehrfach treffender Raidwide ohne solchen Marker
+    bekommt es nie. Am 18.–22.10.2026: zwei Einsätze.
+  - *Ohne die Einstellung* kommt es zuletzt, wenn Plenary, Temperance und Divine Caress nicht bereit sind, und
+    hält danach die übrige Abwehr 20 s zurück (Streckung).
+  - Offen in `TODO.md`: „Weißmagier: Glockenspiel nach einem einzelnen Treffer auslösen".
 - **Dunkelritter:** Herkunft ist die Balance-Rotation 6.38 (c97be9ec5).
   - Früher hieß Burst „mindestens die Hälfte der Gruppe im Zwei-Minuten-Burst"
     (`RatioOfMembersIn2minsBurst`, früher). Heute zählen nur die eigenen Abklingzeiten: Delirium kühlt ab

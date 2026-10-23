@@ -9264,8 +9264,10 @@ gezählt (C119). Nachgeholt je Zeilenart des Protokolls (3589 Zeilen, 14 Sitzung
   Ohne Befund.
 - *Flächenabwehr:* 232 Wahlen, 599 „open, nothing chosen", drei Haltungen nach BossModReborn. Ablehnungen nach
   Abklingzeit, Stufe oder fehlendem Status (Divine Caress ohne Divine Grace, Schimmerschild während einer Demi).
-  Glockenspiel wurde außerhalb mehrfacher Treffer nie gefragt – das Verhalten mit „Limit Liturgy Of The Bell to
-  multihit party stacks" an. *Schluss, nicht belegt:* So ist es bei ihm eingestellt; die Voreinstellung ist aus.
+  Glockenspiel wurde außerhalb mehrfacher Treffer nie gefragt und auf einem Mehrfach-Sammelmarker vor Vollkommener
+  Ablass – diese Reihenfolge hat nur der Zweig, der „Limit Liturgy Of The Bell to multihit party stacks" an
+  voraussetzt (`WHM_Reborn.DefenseAreaAbility`). Bei ihm ist sie also an; die Voreinstellung ist aus. Seine Frage
+  dazu (23.10.2026) beantwortet Konzept 08, „Was die Sperren im Spiel bewirken".
 - *Große Gruppentreffer ohne eigene Minderung* (ab 20 % der LP, mindestens zwei Ziele): 63.
   - 35 bei offener Abwehr: 32-mal waren alle Mittel abgeklungen, gesperrt (Status, Demi) oder auf Synchronstufe nicht
     erlernt (Prätorium: der Weißmagier hat auf Stufe 50 keine Flächenminderung), zweimal fehlte Stumpfsinn ein Ziel,
