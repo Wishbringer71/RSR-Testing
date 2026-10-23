@@ -182,9 +182,11 @@ internal static class TankbusterMarkerWatch
 		return false;
 	}
 
+	// The targetable enemies and the untargetable helpers: a helper often casts the hit a marker announces, and read
+	// from the hostile list alone the window closed one GCD after the marker left the queue, before such a hit (A334).
 	private static float LongestEnemyCastRemaining()
 	{
-		var longest = 0f;
+		var longest = DataCenter.LongestHelperCastRemaining;
 		foreach (var hostile in DataCenter.AllHostileTargets)
 		{
 			if (hostile != null && hostile.IsValid() && hostile.IsCasting)

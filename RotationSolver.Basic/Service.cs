@@ -78,7 +78,12 @@ internal class Service : IDisposable
 				return actorVfxCreateHook!.Original(a1, a2, a3, a4, a5, a6, a7);
 			}
 
-			VfxNewData newVfx = new(battleChara.GameObjectId, path, battleChara.RemainingCastTime);
+			// The remaining cast time of the figure the effect sits on says how long it announces something only when
+			// that figure casts the attack: an enemy. A marker sits on the party member it names, and that member's
+			// cast is their own spell - a tankbuster marker on a healer with 1.5 s of a cast left was dropped after
+			// 1.5 s instead of the default window, and the marker watch could close before the hit (A334).
+			var duration = battleChara.IsEnemySideFigure() ? battleChara.RemainingCastTime : 0f;
+			VfxNewData newVfx = new(battleChara.GameObjectId, path, duration);
 			DataCenter.VfxDataQueue.Enqueue(newVfx);
 		}
 		catch (Exception ex)

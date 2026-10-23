@@ -184,7 +184,9 @@ Pfade sind Spieldaten (Asset-Namen), kein übernommener Code.
   nächsten Auftreten und korrigiert sich dann. Deshalb genügt eine Beobachtung, und es gibt keine feste Zahl.
 - **Wann eine Beobachtung endet:** wenn der Marker die VFX-Warteschlange verlassen hat — dieselbe Warteschlange,
   aus der die Entscheidung liest — und jeder gegnerische Zauber, der lief, solange der Marker stand, geendet
-  hat, plus ein GCD für das Eintreffen. Ein zu langes Fenster lässt anderen Schaden den Marker bestätigen, er
+  hat, plus ein GCD für das Eintreffen. Gezählt werden die anvisierbaren Gegner und die unsichtbaren Helfer, was
+  diese auch wirken (`DataCenter.LongestHelperCastRemaining`); bis A334 nur die Gegnerliste, und ein Treffer, den ein
+  Helfer nach dem Marker wirkte, fiel nach einem GCD hinter das Fenster. Ein zu langes Fenster lässt anderen Schaden den Marker bestätigen, er
   bleibt Tankbuster wie bisher — der Fehler liegt auf der sicheren Seite. Bis A211 zählten nur Zauber, die schon
   beim Erscheinen liefen; ein Zauber, der erst nach dem Marker begann, lag außerhalb des Fensters. Belegter Fall
   (BossModReborn, Kam'lanaut, Princely Blow): Marker, 0,3 s später beginnt der sichtbare Cast des Bosses (8,0 s),
@@ -197,10 +199,14 @@ Pfade sind Spieldaten (Asset-Namen), kein übernommener Code.
   beiseitegelegt statt überschrieben. Geändert wird die Liste nur im Spielthread, geschrieben wird eine dort
   gezogene Kopie — seit A224 auch im Gesamtspeichern, das sie vorher erst auf dem Pool-Thread zog. Zurücksetzen: Datei löschen („Keine Funktion ohne Bedarf").
 
-**Grenze:** Die Warteschlange hält einen Marker ohne bekannte Dauer fünf Sekunden (bestehender Wert in
-`MajorUpdater`). Ein Tankbuster, der später als fünf Sekunden plus ein GCD nach dem Marker fällt und dessen Zauber
-nicht beginnt, solange der Marker steht, würde fälschlich widerlegt — und beim nächsten Treffer nach demselben
-Marker korrigiert. Das kostet einmal eine ausgelassene Abwehr gegen einen Tankbuster.
+**Grenze:** Die Warteschlange hält einen Marker auf einem Gruppenmitglied fünf Sekunden (bestehender Wert in
+`MajorUpdater` für eine unbekannte Dauer). Als Dauer übernimmt sie die Restwirkzeit der Figur, auf der der Effekt
+liegt, nur bei einer gegnerischen Figur, die den Angriff selbst wirkt (`Service.ActorVfxCreateDetour`). Bis A334
+galt die Restwirkzeit auch für das markierte Mitglied – dessen eigener Zauber: Ein Marker auf einem Heiler mit 1,5 s
+Restwirkzeit zählte 1,5 s statt fünf, für die Abwehr und für diese Beobachtung. Ein Tankbuster, der später als fünf
+Sekunden plus ein GCD nach dem Marker fällt und dessen Zauber weder von einem Gegner noch von einem Helfer läuft,
+solange der Marker steht, würde fälschlich widerlegt — und beim nächsten Treffer nach demselben Marker korrigiert.
+Das kostet einmal eine ausgelassene Abwehr gegen einen Tankbuster.
 
 ## V3: Begegnungsdaten
 

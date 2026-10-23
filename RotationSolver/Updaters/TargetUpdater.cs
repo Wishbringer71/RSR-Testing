@@ -102,13 +102,22 @@ internal static partial class TargetUpdater
 		List<IBattleChara> casters = new(capacity: hostiles.Count);
 		casters.AddRange(hostiles);
 		HashSet<ulong> helperIds = [];
+		var longestHelperCast = 0f;
 
 		foreach (var obj in Svc.Objects)
 		{
 			if (obj is not IBattleChara caster || caster.ObjectKind != Dalamud.Game.ClientState.Objects.Enums.ObjectKind.BattleNpc
 				|| caster.IsTargetable || !caster.HasNativeState() || !caster.IsCasting
-				|| !caster.IsEnemySideFigure()
-				|| !DataCenter.IsListedHostileCast(caster.CastActionId))
+				|| !caster.IsEnemySideFigure())
+			{
+				continue;
+			}
+
+			// Every helper's cast, listed or not: the tankbuster marker watch waits for the casts that run while a
+			// marker stands, and a helper casting the hit after it is the common case, its action not yet listed.
+			longestHelperCast = Math.Max(longestHelperCast, caster.TotalCastTime - caster.CurrentCastTime);
+
+			if (!DataCenter.IsListedHostileCast(caster.CastActionId))
 			{
 				continue;
 			}
@@ -121,6 +130,7 @@ internal static partial class TargetUpdater
 
 		DataCenter.AreaCastHelperIds = helperIds;
 		DataCenter.AreaCasters = casters;
+		DataCenter.LongestHelperCastRemaining = longestHelperCast;
 	}
 
 	/// <summary>

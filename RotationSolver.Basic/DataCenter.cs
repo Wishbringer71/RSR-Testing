@@ -62,6 +62,13 @@ internal static class DataCenter
 	public static HashSet<ulong> AreaCastHelperIds { get; set; } = [];
 
 	/// <summary>
+	/// The most cast time left on any untargetable enemy-side figure, whatever it casts, in seconds - zero when none
+	/// casts. Rebuilt with <see cref="AreaCasters"/>; read by the tankbuster marker watch, which waits for every enemy
+	/// cast that runs while a marker stands, the helpers' included (A334).
+	/// </summary>
+	internal static float LongestHelperCastRemaining { get; set; }
+
+	/// <summary>
 	/// Whether an untargetable enemy casting this action is read as an enemy: the action is on the area,
 	/// tankbuster or knockback list, or the tankbuster table has measured it. The list itself is the evidence of
 	/// hostility - an id is there only once it hit the party, or by the shipped list (A277, A303).

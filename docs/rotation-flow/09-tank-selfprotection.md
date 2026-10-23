@@ -509,8 +509,9 @@ Risiko"; die Neurechnung gibt sie zurück, wenn die Heilung vor dem Ziehen kommt
 - *Ein Tankbuster nur als Marker oder Vorhersage ohne Wirken einer gemessenen Aktion, oder eine noch nie gemessene
   Aktion:* kein Plan; dann gilt die Abwehr ohne Messung (Abschnitt „Krieger: die übrige Abwehr", Staffelung) und die
   reaktive Unverwundbarkeit unter `HealthForDyingTanks`. Ein Marker neben dem zielosen Wirken einer gemessenen Aktion
-  ist geplant (Erkennung, A308). Die Marker-Zeit ist die der Warteschlange (fünf Sekunden ohne bekannte Dauer, Upstream);
-  ein Cast, der erst danach beginnt, wird ihm nicht zugerechnet.
+  ist geplant (Erkennung, A308). Die Marker-Zeit ist die der Warteschlange (fünf Sekunden für einen Marker auf einem
+  Gruppenmitglied, Upstream; seit A334 nicht mehr dessen eigene Restwirkzeit); ein Cast, der erst danach beginnt, wird
+  ihm nicht zugerechnet.
 - *Tankwechsel:* hält bei bereiter Unverwundbarkeit, die RSR für jeden nächsten Treffer nutzen würde
   (`CustomRotation.InvulnerabilityUsable`).
 - *Der Boss trägt den ganzen Kampf ein Damage Up:* kein Treffer wird gespeichert, kein Plan.

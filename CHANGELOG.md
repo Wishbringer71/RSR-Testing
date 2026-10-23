@@ -41,6 +41,13 @@ instead of one that went off this session.
 The enemy-side recognition behind the effect handler and `DataCenter.AreaCasters` takes battle NPCs of sub kind 11, the
 kind BossModReborn calls Helper. A derived rotation reading `DataCenter.AreaCasters` sees their casts.
 
+### Behaviour change in RotationSolver.Basic: a marker on a party member keeps the default window
+
+`VfxNewData.Duration` is the remaining cast time of the figure an effect sits on only when that figure is on the enemy
+side; for a party member or another player it is zero, so `DataCenter.VfxDataQueue` keeps the effect for the default
+window. Before, a marker on a member who was casting lasted only for the rest of that member's own cast. A derived
+rotation reading the queue sees such markers for the full window.
+
 ## 7.5.7.6+wsh1
 
 ### Behaviour change in RotationSolver.Basic: tankbuster targets follow whom a tankbuster is aimed at
