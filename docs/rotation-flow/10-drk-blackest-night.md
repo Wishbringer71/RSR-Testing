@@ -195,7 +195,7 @@ Wer betäuben kann, entscheidet über die Reichweite der Regel:
 | Heiler | Sanctus, Sanctga — **nur Weißmagier** | Fläche, 8 Yalm | 4 s |
 | Tank | Schildhieb — nur Paladin | Einzelziel | 6 s |
 | Tank | **Tiefschlag — alle Tanks, auch der Dunkelritter** | Einzelziel | 5 s |
-| Nahkampf | Fußfeger | Einzelziel | 3 s |
+| Nahkampf | Stolperfalle | Einzelziel | 3 s |
 | Occult Crescent | Occult Falcon, Mineuchi, Variant Ultimatum | Fläche / Einzelziel | 4–6 s |
 
 Gelehrter, Astrologe und Weiser haben keine. Eine Fallunterscheidung nach Gruppenzusammensetzung

@@ -435,6 +435,43 @@
       "kind": "action",
       "source": "game data, xivapi v2 Action 16560 language=de, 2026-10-18",
       "note": "Role action of the healers, level 8; puts the target to sleep (status 3, Schlaf)."
+    },
+    {
+      "de": "Stolperfalle",
+      "en": "Leg Sweep",
+      "identifier": "LegSweepPvE",
+      "kind": "action",
+      "source": "German job guide (de.finalfantasyxiv.com/jobguide/monk/) and game data, xivapi v2 Action 7863 language=de, 2026-10-23",
+      "note": "Role action of the melee, stuns the target for 3 s. Self-formed \"Fußfeger\" stood in concept 10 and the archive until 23.10.2026."
+    },
+    {
+      "de": "Haarscharfer Schuss",
+      "en": "Head Graze",
+      "identifier": "HeadGrazePvE",
+      "kind": "action",
+      "source": "German job guide (de.finalfantasyxiv.com/jobguide/bard/) and game data, xivapi v2 Action 7551 language=de, 2026-10-23",
+      "note": "Role action of the physical ranged, interrupts the target."
+    },
+    {
+      "de": "Blendung",
+      "en": "Glare",
+      "identifier": "GlarePvE",
+      "kind": "action",
+      "source": "game data, xivapi v2 Action 16533 language=de, 2026-10-23"
+    },
+    {
+      "de": "Blendga",
+      "en": "Glare III",
+      "identifier": "GlareIiiPvE",
+      "kind": "action",
+      "source": "German job guide (de.finalfantasyxiv.com/jobguide/whitemage/) and game data, xivapi v2 Action 25859 language=de, 2026-10-23"
+    },
+    {
+      "de": "Blendka",
+      "en": "Glare IV",
+      "identifier": "GlareIvPvE",
+      "kind": "action",
+      "source": "German job guide (de.finalfantasyxiv.com/jobguide/whitemage/) and game data, xivapi v2 Action 37009 language=de, 2026-10-23"
     }
   ]
 }
