@@ -287,7 +287,7 @@ Gelten in jeder Stufe. Eine Aussage, die eine davon verletzt, ist unbelegt.
 - Gemessene Zahlen stehen in Dokumenten nur datiert oder gar nicht, weil sie sonst unbemerkt altern.
 
 **Release-Texte**
-- Englisch; sie beschreiben den Unterschied zum letzten Release, nicht den Bestand.
+- Englisch; sie beschreiben, was der Fork seit dem letzten Release selbst geändert hat — nicht den Bestand und nicht die Änderungen von Upstream (seine Vorgabe, 23.10.2026: „hier sind nur die eigenen änderungen aufzuführen").
 - `docs/fork-changes-since-last-release.md` mit dem Ausgangs-Release im Titel; nach Veröffentlichung übernimmt `docs/fork-changes-in-play.md` den Text (`check_release_note.py`).
 - Keine Rechenschaft über eigene Fehler darin.
 - Die Längengrenze ist die des tatsächlichen Wegs (Release-API über `body_path`).
