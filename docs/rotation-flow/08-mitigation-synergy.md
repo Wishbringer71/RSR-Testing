@@ -951,7 +951,7 @@ enemy's cast with the job's stun or a sleep (experimental)", ab Werk an. Jeder V
 **Im Kampf:** Ein Angriff eines Gegners, der kein Boss ist, bricht ab, bevor er landet. Der Weißmagier wirkt dafür
 Sanctga statt eines Schlafs, betäubt damit jeden Gegner im Umkreis und macht dabei Schaden; die anderen kostet es
 einen GCD ohne Schaden. Gegen Gegnerarten, die widerstanden haben, und Aktionen, die trotz rechtzeitigem Schlaf
-losgingen, versucht RSR es nicht mehr, auch nicht nach einem Neustart.
+losgingen, versucht RSR keinen Schlaf mehr, auch nicht nach einem Neustart; Sanctga betäubt sie weiter.
 
 ### Was seine Protokolle zeigen
 
@@ -1051,8 +1051,8 @@ Gegner träfe, der noch nicht kämpft.
 
 Nach dem Vorbild der gelernten Flächentabelle (`HostileCastingAreaPotential`): drei gelernte Tabellen in
 `OtherConfiguration.Files`, beim Start geladen, bei jedem Ausgang gespeichert, beim Speichern mit der Datei
-zusammengeführt (jeder Wert nur höher), nie geschrieben, wenn das Laden nicht fertig wurde, unlesbar als `.corrupt`
-beiseitegelegt. Ohne Knopf zum Verwerfen: Die Datei löscht er bei geschlossenem Spiel. Der Ladezustand steht in der
+zusammengeführt (Zählungen und Zeiten nur höher, die Anzahl bis zur Abnutzung nur niedriger), nie geschrieben, wenn
+das Laden nicht fertig wurde, unlesbar als `.corrupt` beiseitegelegt. Ohne Knopf zum Verwerfen: Die Datei löscht er bei geschlossenem Spiel. Der Ladezustand steht in der
 Kopfzeile des Protokolls.
 
 | Tabelle | Schlüssel | Inhalt | Wofür |
@@ -1065,13 +1065,14 @@ Ausgewertet wird bei jeder Entscheidung:
 - *Haltezeit:* die längste Zeit von der Landung bis zum Abbruch über alle Aktionen.
 - *Nicht stoppbar:* eine Aktion ohne Abbruch, die losging, obwohl der Schlaf mindestens die Haltezeit vor ihrem Ende lag.
 - *Nötiger Rest:* der größte Rest eines Fehlschlags, der unter der Haltezeit lag, plus ein Bild. Ein solcher Schlaf kam
-  zu spät; die Aktion bleibt erlaubt.
+  zu spät; die Aktion bleibt erlaubt. Vor dem ersten Abbruch gibt es keine Haltezeit: Dann zählt jeder Fehlschlag zum
+  nötigen Rest, und erst ein Abbruch sortiert die Fehlschläge mit großem Rest zu den nicht stoppbaren Aktionen.
 
 Ein Widerstand wird gespeichert, wenn das Spiel den Status oder die ganze Aktion als widerstanden meldet – seine
 Vorgabe: Wo Schlaf nicht wirkt, soll er nicht immer wieder versucht werden. Lag in diesem Kampf schon ein Schlaf auf
 dem Gegner, ist es die Abnutzung (sein Hinweis vom 23.10.2026), nicht die Immunität der Art: Gespeichert wird dann
-die Anzahl, und der Gegner ruht für diesen Kampf. „Unverwundbar" (etwa in einer
-Übergangsphase) sperrt die Art nur für die Sitzung, weil es keine Immunität gegen Schlaf beweist. Die Laufzeit vom
+die Anzahl, und der Gegner ruht für diesen Kampf. „Unverwundbar" (etwa in einer Übergangsphase) sperrt die Art nur
+für die Sitzung, weil es keine Immunität gegen Schlaf beweist. Die Laufzeit vom
 Wirken zur Wirkung hängt an der Verbindung und wird in jeder Sitzung neu gemessen.
 
 ### Protokoll
