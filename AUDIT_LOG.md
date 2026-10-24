@@ -9720,6 +9720,15 @@ angekündigter, noch nie gemessener Treffer bleibt beim ersten Auftreten unvorhe
 - *Deutsche Namen eingetragen:* Göttliche Umarmung, Refugium.
 - *Prüfgrad:* statisch, Statusblatt, Compile; im Spiel nicht beobachtet. Konzept 08.
 
+**Punkt: Flächenheilung um den Wirkenden, Radius gegen Trefferfläche.** Geschlossen ohne Code. Leser erhoben:
+`ActionTargetInfo` zählt Flächenheilungen um den Wirkenden (Medica, Helios, Succor, Lux Solaris …) über
+`GetCanAffects` → `TargetHelper.GetTargetsByRange`, Kante zu Kante; ein Mitglied bis etwa einen Yalm jenseits des
+Radius zählt mit. Die Spielregel für eigene Heilungen ist unbelegt (Suche 24.10.2026: nur Radien und Spielerangaben;
+Akhmorning gilt für gegnerische Flächen; WrathCombo zählt die Trefferfläche des Ziels, keine Spielquelle). Ohne Beleg
+bleibt die Zählung: eine engere könnte einen Erreichten auslassen. Selbstkorrektur ist nicht baubar: Die Bewegung
+zwischen Festlegung des Wirkbereichs beim Server und Effekt beim Client übersteigt das fragliche Yalm. Konzept 08,
+„Wann Lux Solaris zündet".
+
 ---
 ## B · Commit-Register (Fork vs. `upstream/main`)
 

@@ -15,14 +15,13 @@ steht seit seinem Hinweis vom 24.10.2026 vor der Flächenheilung: Es heilt eine 
 alles nimmt.
 
 1. Weißmagier: Glockenspiel auch vor großen Einzeltreffern (seine Entscheidung)
-2. Flächenheilung um den Wirkenden: Radius gegen Trefferfläche
-3. Feste Werte: jeder offene Wert braucht seinen Loop
-4. Tankbuster-Plan: Umlauf über die Sequenz jedes Drucks
-5. Rotationen gegen The Balance abgleichen
-6. Six-sided Star und Flamethrower
-7. Vorlauf: Dragoon und Viper
-8. AoE-Schwelle an drei Orten
-9. Audit der gesamten Codebasis
+2. Feste Werte: jeder offene Wert braucht seinen Loop
+3. Tankbuster-Plan: Umlauf über die Sequenz jedes Drucks
+4. Rotationen gegen The Balance abgleichen
+5. Six-sided Star und Flamethrower
+6. Vorlauf: Dragoon und Viper
+7. AoE-Schwelle an drei Orten
+8. Audit der gesamten Codebasis
 
 Danach technische Schuld, soweit ihre Auflösungsbedingung erfüllt ist. Warten auf Daten: unten.
 
@@ -31,13 +30,6 @@ Danach technische Schuld, soweit ihre Auflösungsbedingung erfüllt ist. Warten 
 Keine bekannt.
 
 ## Offene Arbeit
-
-### Flächenheilung um den Wirkenden: Radius gegen Trefferfläche · N
-
-*Im Kampf:* `GetCanAffects` zählt ein Mitglied am Rand um seinen Trefferkreis zu großzügig mit; ob ein Spieler in einer
-Fläche steht, entscheidet der Mittelpunkt seines Modells. Lux Solaris kann eine Anzahl erreicht sehen, die sie nicht
-heilt. *Nächster Schritt:* alle Leser von `GetCanAffects` für freundliche Flächen erheben. *Konzept:* 08, „Wann Lux
-Solaris zündet".
 
 ### Feste Werte: jeder offene Wert braucht seinen Loop · N, R
 

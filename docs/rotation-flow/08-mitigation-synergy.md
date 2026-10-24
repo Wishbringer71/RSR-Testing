@@ -841,11 +841,15 @@ diese, weil ihr Einstellungstext jede Verwendung bindet.
 - Ein Dunkelritter unter Walking Dead steht bei 1 HP in Gefaehrdungsklasse 1; Lux faellt dann sofort.
   Das ist gewollt (Punkt 1, seine Entscheidung): die aufgehobene Heilung fuer mehrere, einschliesslich
   des Tanks.
-- Ob ein Spieler in einer Flaeche steht, entscheidet der Mittelpunkt seines Modells (Akhmorning, „Raiding
-  Fundamentals", 02.10.2026: „A player's position is determined by the direct center of their player
-  model"). Die Zielwahl rechnet dagegen Trefferflaeche zu Trefferflaeche (`GetCanAffects`) und zaehlt ein
-  Mitglied am Rand mit, das der Mittelpunkt schon ausserhalb hat — um den Trefferkreis des Mitglieds zu
-  grosszuegig. Im Kampf: Lux kann einen Randstehenden mitzaehlen, den sie nicht heilt (TODO).
+- **Der Rand des Radius bleibt großzügig gezählt** (A340). Die Zielwahl rechnet Trefferfläche zu Trefferfläche
+  (`GetCanAffects` über `TargetHelper.GetTargetsByRange`, Leser: die Flächenheilungen um den Wirkenden samt Lux Solaris
+  und der Zielwahl daraus) und zählt ein Mitglied bis etwa einen Yalm jenseits des Radius mit. Für gegnerische Flächen
+  auf Spielern entscheidet der Mittelpunkt des Modells (Akhmorning, „Raiding fundamentals"); ob dasselbe für eine
+  eigene Heilung auf Mitglieder gilt oder ob deren Trefferfläche zählt, belegt keine Quelle (gesucht 24.10.2026). Ohne
+  Beleg ändert RSR die Zählung nicht – sie könnte sonst einen Erreichten auslassen. Selbst nachmessen lässt es sich
+  nicht verlässlich: Zwischen dem Moment, in dem der Server den Wirkbereich festlegt, und dem Effekt beim Client bewegen
+  sich Mitglieder um mehr als dieses eine Yalm (Laufgeschwindigkeit rund 6 y/s, unbelegt). Im Kampf: Ein Mitglied am
+  äußersten Rand kann mitgezählt werden, ohne geheilt zu werden.
 
 **Die Heilmenge ist gemessen, nicht aus der Potenz gerechnet, und es zaehlt die kleinste.** 500 Potenz
 sind von hier nicht in Lebenspunkte umzurechnen; der Effekt-Handler sieht jede eigene Heilung mit ihrem
