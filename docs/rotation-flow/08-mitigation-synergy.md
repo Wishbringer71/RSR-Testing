@@ -450,7 +450,9 @@ ein Modul, das Raidwides nicht fuehrt — erreichen den Baum als `float.MaxValue
 gegen ein Zeitfenster liest das als „es kommt nichts". Eine ausbleibende Minderung sieht damit aus
 wie ein ruhiger Kampf. Die Diagnoseseite „BMR Data" nennt das aktive Modul und, je
 Ereignisart, ob es dafuer ueberhaupt eine Vorhersage liefert. Ohne Modul hält `ShouldSustainMitigationDebuff`
-die Gegner-Debuffs über die Gegnerzahl (`MitigationSustainHostileCount`) aufrecht, weil Trash meist kein Modul hat.
+die Gegner-Debuffs über die Gegnerzahl (`MitigationSustainHostileCount`) aufrecht, weil Trash meist kein Modul hat:
+sobald der Debuff auf dem Ziel fehlt oder in so vielen GCDs endet, wie die Einstellung der Aktion nennt („Number of
+GCDs before the DOT/Status effect is reapplied"; bis A340 fest zwei, an der Einstellung vorbei).
 
 **Seine Begruendung, woertlich:** „daher die eigene liste mit dem aoe-schadensausmaß.“ Die Messung je
 Aktion ist als **Ersatz** fuer die fehlende Verlaesslichkeit gedacht, nicht als Zusatz — und sie

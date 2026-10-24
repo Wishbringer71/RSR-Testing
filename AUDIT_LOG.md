@@ -9752,6 +9752,50 @@ keine abgeleitet:
   (33e6acb1f); die Zahlen gehören Upstreams Regel, und nur hier abgeleitet liefe der Spiegel auseinander.
 Offen: 40. Nicht im Profil und deshalb nicht bearbeitet: Blaumagier, Phantom-Jobs (Occult Crescent).
 
+**Feste Werte, dritte Gruppe – Kern und die übrigen Rotationen; Punkt geschlossen.** 36 Zeilen, je Zeile ein Loop.
+- *Aus dem Spiel abgeleitet, heute ohne Änderung im Kampf* (Spielblätter über xivapi v2 am 24.10.2026 gegengeprüft):
+  Stufen von Wiederbelebung und Verraise aus `ClassJobLevel` (Raise 12, Verraise 64; die Heiler-Wiederbelebungen
+  teilen Raises Stufe; ein unlesbares Blatt antwortet 1 – jeder zählt, der Stand vor der Prüfung); Reichweite der
+  Tank-Annäherungen aus `Range` (Intervene, Onslaught, Shadowstride, Trajectory je 20 y); die Drosselfaktoren von
+  Reprisal, Feint, Addle und Dismantle in `HostileOutputPercent` aus der physischen Spalte der erzeugten Werte (10, 10,
+  5, 10 %); die Verlangsamung von Abtausch (Arm's Length) aus seinem Wirktext im Spiel (englisches Blatt, wie die
+  Trait-Dauern; unlesbar antwortet 0 – die größere Gegnerleistung, die die einzige Obergrenze, die sie liest, freigibt
+  statt Sanctus auf eine Annahme zu halten); der Bildzwischenspeicher der Heilvorlaufzeit liest den gemeinsamen Wert
+  (`DataCenter.FrameCacheMs`, 15 ms) statt einer Kopie.
+- *Abgeleitet, mit kleiner Änderung:* Die Lebensdauer des gemessenen Anteils eines angekündigten Flächentreffers ist
+  „ein GCD" laut eigenem Kommentar; sie liest jetzt den GCD des Spielers (`DefaultGCDTotal`) statt 2,5 s. Mit
+  Schnelligkeit endet sie ein paar Zehntel früher, die Abwehr desselben Fensters liest ihn weiterhin.
+- *Defekt behoben, Einstellungstext bindet:* Der Gegnerzahl-Zweig von `ShouldSustainMitigationDebuff` (Reprisal, Feint,
+  Addle ohne Vorhersage) frischte auf, sobald der Debuff in zwei GCDs endete – eine Kopie der Voreinstellung von
+  „Number of GCDs before the DOT/Status effect is reapplied". Die Aufrufer überspringen die Statusprüfung von `CanUse`
+  wegen des Vorhersagezweigs; eine geänderte Einstellung der Aktion erreichte diesen Zweig nie (5bb4d39f, 05.09.2026,
+  „the same test the plain reactive lines make through CanUse"). Er liest jetzt die Einstellung der Aktion der
+  aktuellen Rotation, die diese Status legt; ohne sie die Voreinstellung einer frischen Aktionskonfiguration. Im Kampf
+  nur anders, wenn er die Einstellung für eine der drei Aktionen geändert hat. *Falsifikation:* Mehrere Aktionen
+  derselben Status – die erste der Rotation gilt; in den Rollenaktionen legt je eine die ihren. Kosten: ein Durchlauf
+  der Aktionsliste, nur wenn genug Gegner stehen.
+- *Entfernt:* die Größenschranke vor dem Aufräumen der TTK-Selbstkorrektur (24 Einträge). Das Aufräumen läuft einmal je
+  Verlaufsprobe über eine Tabelle in Gruppengröße; die Schranke hielt nur veraltete Einträge länger. Im Kampf ohne
+  Wirkung.
+- *Ausnahmen, begründet im Register:* Einheitenumrechnungen (Prozent ↔ Anteil, A154/A290); der HQ-Versatz der
+  Gegenstands-Ids und die Ids der Inhaltstränke (Clientkonvention, Identitäten); die Rollenreihenfolge im Gleichstand;
+  Voreinstellungen und Reglergrenzen seiner Einstellungen (`HealthProtectedRatio` – A83 fand den Wert nicht aus dem Code
+  begründbar –, `MitigationSustainHostileCount`, `BlackestNightHealthRatio`, `BlackestNightMinHostiles`, Schritt und
+  Obergrenzen wie die der Upstream-Regler daneben); die Parameter der TTK-Selbstkorrektur (Glättung, Grenzen, Frische in
+  Runden der 1-Hz-Aufzeichnung) – sie bestimmen, wie schnell und wie weit sie lernt, nicht was; der Living-Dead-Vorlauf
+  von zwei GCDs (laufender GCD plus ein Wirken; jede Heilzauber-Wirkzeit der Heiler liegt unter einem GCD, Spielblatt);
+  der Quantor „mindestens zwei, mindestens die Hälfte" (A48, A195) für verlangsamte Gruppe, Gruppenbetäubung und
+  Sanctus-Reichweite; Upstreams Zahlen auf Zeilen, die der Fork aus anderem Grund berührt oder verschoben hat (Radius von
+  Shackled Healing, Tempera Grassa, Lux Solaris, Rekindle, Bloodwhetting, Effektbits, die Doom-Gesundheit – diese ist
+  unerreichbar, weil beide Aufrufer Doom zuvor entscheiden, auch bei Upstream).
+- *Technische Schuld geschlossen:* „Der erzeugte Merkmalssatz enthält keine Rollenmerkmale". Ihre Kosten waren Stufen
+  als Zahl im Code; die letzte (Reprisal 98) liest seit A338 `TraitDurations` aus dem Spiel, mit `trait_durations.json`
+  als Rückfall. Kein Leser braucht die Rollenmerkmale im erzeugten Satz.
+- *Bleibt offen, außerhalb seines Profils:* vier Zeilen in Blaumagier und Phantom-Jobs (Register „open", bis er sie
+  nennt). Der TODO-Eintrag ist geschlossen.
+- *Prüfgrad:* statisch, Spielblätter, Prüfskript, Compile; im Spiel nicht beobachtet. Konzept 08 (Gegner-Debuffs über
+  die Gegnerzahl).
+
 ---
 ## B · Commit-Register (Fork vs. `upstream/main`)
 

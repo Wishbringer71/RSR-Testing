@@ -76,6 +76,12 @@ module.
 since upstream dropped their wiring in 2024. They delay again what their text says; the default is now no delay, and an
 interrupt never waits past the cast it is meant to stop. A configuration saved earlier keeps its 0.5 to 1 s.
 
+## Enemy debuffs on a pull follow their refresh setting
+
+Without a BossModReborn prediction, Reprisal, Feint and Addle are kept up on a pull of enough enemies, renewed once the
+debuff on the target is about to run out. How early was fixed at two GCDs; the action's own "Number of GCDs before the
+DOT/Status effect is reapplied" did not reach it. It does now; with that setting at its default nothing changes.
+
 ## Two settings that did nothing are removed
 
 "How early before next GCD should RSR use swiftcast for raise" and "Target color" were removed. Nothing had read them

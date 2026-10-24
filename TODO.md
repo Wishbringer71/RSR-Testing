@@ -15,13 +15,12 @@ steht seit seinem Hinweis vom 24.10.2026 vor der Flächenheilung: Es heilt eine 
 alles nimmt.
 
 1. Weißmagier: Glockenspiel auch vor großen Einzeltreffern (seine Entscheidung)
-2. Feste Werte: jeder offene Wert braucht seinen Loop
-3. Tankbuster-Plan: Umlauf über die Sequenz jedes Drucks
-4. Rotationen gegen The Balance abgleichen
-5. Six-sided Star und Flamethrower
-6. Vorlauf: Dragoon und Viper
-7. AoE-Schwelle an drei Orten
-8. Audit der gesamten Codebasis
+2. Tankbuster-Plan: Umlauf über die Sequenz jedes Drucks
+3. Rotationen gegen The Balance abgleichen
+4. Six-sided Star und Flamethrower
+5. Vorlauf: Dragoon und Viper
+6. AoE-Schwelle an drei Orten
+7. Audit der gesamten Codebasis
 
 Danach technische Schuld, soweit ihre Auflösungsbedingung erfüllt ist. Warten auf Daten: unten.
 
@@ -30,14 +29,6 @@ Danach technische Schuld, soweit ihre Auflösungsbedingung erfüllt ist. Warten 
 Keine bekannt.
 
 ## Offene Arbeit
-
-### Feste Werte: jeder offene Wert braucht seinen Loop · N, R
-
-*Im Kampf:* Jede offene Zahl ist eine ungeprüfte Annahme über das Spiel; ein Patch ändert sie, der Code nicht.
-`check_fixed_values.py` beziffert sie (40 offen, 24.10.2026). *Als Nächstes:* der Kern (`CustomRotation_OtherInfo`,
-`ObjectHelper`, `DataCenter`, `Configs`), dann Dunkelritter, Beschwörer, Pictomancer. Aus dem Spiel kommen seit A338 die
-Dauer von Reprisal, Feint und Addle, seit A340 die Vorlaufzeiten der vorausschauenden Abwehr; Weißmagier, Astrologe und
-Maschinist sind als Ausnahmen begründet (A340). Blaumagier und Phantom-Jobs liegen außerhalb seines Profils.
 
 ### Tankbuster-Plan: Umlauf über die Sequenz jedes Drucks · N
 
@@ -110,11 +101,6 @@ jede solche Änderung trägt im selben Commit die Anpassung des Modus „plugin"
 ### Status-Einstellungen auf der falschen Seite der Aktion · N, U
 Vier Fundstellen in PvP und Bozja (`scan11.py`), außerhalb seines Profils; je eine Richtungsentscheidung, die eine
 Beobachtung im Inhalt verlangt. *Auflösung:* erst, wenn er diese Inhalte nennt.
-
-### Der erzeugte Merkmalssatz enthält keine Rollenmerkmale · N, R
-`TraitRotationGetter.AddToList` verwirft Merkmale mit `ClassJob.RowId == 0`; Rollenmerkmale (Enhanced Reprisal, Feint,
-Addle …) fehlen, ihre Stufen stehen als Zahl im Code. *Auflösung:* zusammen mit „Feste Werte"; vorher klären, ob
-`RowId == 0` das Kennzeichen von Rollenmerkmalen ist.
 
 ### `CanUse` als Prüfung weist `Target` zu · N, R
 *Kosten:* Code, der `X.Target` liest, ohne `X.CanUse` in derselben Entscheidung, liest das Ziel des letzten Erfolgs (55
