@@ -9978,6 +9978,30 @@ Option, ab Werk aus.
 
 *Prüfgrad:* statisch, Compile; im Spiel nicht beobachtet.
 
+### A344 · AoE-Schwellen aller Jobs gegen The Balance; Foul ab zwei Gegnern; ein Potenzvergleich für alle (24.10.2026)
+
+TODO-Punkt „Rotationen gegen The Balance abgleichen", als Schnitt über alle Jobs: die Basic Guides aller 21 Kampfjobs
+geladen (24.10.2026) und ihre AoE-Schwellen gegen die AoE-Zahlen in `RotationSolver.Basic/Rotations/Basic` gestellt;
+abweichende mit den Potenzen des offiziellen Job-Guides (Patch 7.5) nachgerechnet.
+
+- *Ergebnis je Job:* Konzept 14, „AoE-Schwellen aller Jobs". Deckungsgleich die meisten (3+). Tanks bei 2 mit Grund
+  (Feindseligkeit, The Balance selbst für Dungeons). Reaper: Abweichungen bis 20 Potenz, nicht geändert. Ninja: mehrere
+  Paare mit Schwelle 2 oder 4 nach den Potenzen von 7.5 (The Balance steht dort auf 7.05); offen, weil `NIN_Reborn` die
+  AoE-Wahl an einer Weiche umschaltet.
+- *Black Mage, Foul:* AoE-Zahl 3 → 2; beide Rotationen (`BLM_Default`, `BLM_RP`) prüfen dazu
+  `ActionTooltip.AreaOutdamagesSingle(Foul, Ziele, Xenoglossy)`. Im Kampf: bei zwei Gegnern 1050 statt 890 Potenz je
+  Polyglott-Stapel. Folge: Upstreams Abgleich der Vorgaben (`BaseAction.Config`) setzt eine selbst gesetzte AoE-Zahl
+  von Foul einmal auf 2 – sein Wert für diese eine Aktion, falls er einen gesetzt hat.
+- *Baustein:* `ActionTooltip.TryPotencyOn` (Potenz über n Gegner mit dem angegebenen Abschlag) und
+  `AreaOutdamagesSingle`; der Maschinist (A342) rechnet seitdem über dieselbe Stelle, sein Verhalten bleibt.
+
+**Falsifikation.** *Kein Defekt:* Für Foul widerlegt durch die Rechnung und The Balance. *Option falsch:* Gewinnt
+Xenoglossy auf einer Stufe, hält der Vergleich Foul zurück; ist eine Zahl unlesbar, gilt die AoE-Zahl 2 – auf Stufe 100
+richtig. Die Tanks bleiben bei 2: Die stärkste Gegenposition ist der Schaden bei zwei Gegnern, aber ein Gegner ohne
+Feindseligkeit gefährdet die Gruppe. *Ausgeliefert, nichts ändert sich:* wenn er Foul selbst auf 3 stellt.
+
+*Prüfgrad:* statisch, Compile; Rechnung mit den Job-Guide-Potenzen; im Spiel nicht beobachtet.
+
 ---
 ## B · Commit-Register (Fork vs. `upstream/main`)
 

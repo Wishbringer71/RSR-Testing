@@ -127,8 +127,6 @@ public partial class MachinistRotation
 	#endregion
 
 	#region Auto Crossbow against Blazing Shot
-	private static readonly Regex StatedPotency = new(@"potency of (?<value>\d[\d,]*)", RegexOptions.Compiled);
-	private static readonly Regex StatedFalloff = new(@"(?<value>\d{1,2})% less for all remaining enemies", RegexOptions.Compiled);
 	private static readonly Regex StatedRecastCut = new(@"recast time of both .+? by (?<value>\d{1,3})s", RegexOptions.Compiled);
 	private static readonly Regex StatedOverheatBonus = new(@"potency of single-target weaponskills by (?<value>\d{1,3})", RegexOptions.Compiled);
 
@@ -159,8 +157,8 @@ public partial class MachinistRotation
 		var trace = level != _crossbowTracedLevel;
 		_crossbowTracedLevel = level;
 
-		if (!ActionTooltip.TryStated(AutoCrossbowPvE.ID, StatedPotency, out var crossbow)
-			|| !ActionTooltip.TryStated(shotAction.ID, StatedPotency, out var shot)
+		if (!ActionTooltip.TryPotencyOn(AutoCrossbowPvE.ID, coneTargets, out var crossbow)
+			|| !ActionTooltip.TryPotencyOn(shotAction.ID, 1, out var shot)
 			|| !ActionTooltip.TryStated(shotAction.ID, StatedRecastCut, out var recastCut))
 		{
 			if (trace)
@@ -173,7 +171,7 @@ public partial class MachinistRotation
 
 		_ = ActionTooltip.TryStated(HyperchargePvE.ID, StatedOverheatBonus, out var overheat);
 		var withShot = shot + overheat;
-		var read = $"Auto Crossbow {crossbow}, {shotAction.Name} {shot} +{overheat}, recast cut {recastCut} s";
+		var read = $"Auto Crossbow {crossbow} on {coneTargets}, {shotAction.Name} {shot} +{overheat}, recast cut {recastCut} s";
 
 		foreach (var action in cut)
 		{
@@ -182,8 +180,15 @@ public partial class MachinistRotation
 				continue;
 			}
 
+			// How many enemies it reaches: its own target selection, for an action that hits around its target.
+			var reached = 1;
+			if (action.Info.EffectRange > 0 && action.TargetInfo.FindTarget(true, true, true, default) is { } hit)
+			{
+				reached = Math.Max(1, hit.AffectedTargets.Length);
+			}
+
 			var recast = action.Cooldown.RecastTimeOneChargeRaw;
-			if (recast <= 0f || !ActionTooltip.TryStated(action.ID, StatedPotency, out var first))
+			if (recast <= 0f || !ActionTooltip.TryPotencyOn(action.ID, reached, out var hits))
 			{
 				if (trace)
 				{
@@ -193,19 +198,8 @@ public partial class MachinistRotation
 				return true;
 			}
 
-			var reached = 1;
-			var rest = 0f;
-			if (ActionTooltip.TryStated(action.ID, StatedFalloff, out var falloff))
-			{
-				rest = first * (1f - (falloff / 100f));
-				if (action.TargetInfo.FindTarget(true, true, true, default) is { } hit)
-				{
-					reached = Math.Max(1, hit.AffectedTargets.Length);
-				}
-			}
-
-			withShot += Math.Min(1f, recastCut / recast) * (first + (rest * (reached - 1)));
-			read += $", {action.Name} {first} -{falloff}% per {recast} s";
+			withShot += Math.Min(1f, recastCut / recast) * hits;
+			read += $", {action.Name} {hits} on {reached} per {recast} s";
 		}
 
 		if (trace)
@@ -213,7 +207,7 @@ public partial class MachinistRotation
 			DefenseTrace.Line($"Machinist, level {level}: {read}");
 		}
 
-		return crossbow * coneTargets > withShot;
+		return crossbow > withShot;
 	}
 	#endregion
 

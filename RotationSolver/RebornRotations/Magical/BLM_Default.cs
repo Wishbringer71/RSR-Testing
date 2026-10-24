@@ -721,7 +721,9 @@ public class BLM_Default : BlackMageRotation
 
 		if (gcdCount == 0 || (IsPolyglotStacksMaxed && (EnochianEndAfterGCD(gcdCount) || AmplifierPvE.Cooldown.WillHaveOneChargeGCD(gcdCount))))
 		{
-			if (FoulPvE.CanUse(out act, skipAoeCheck: !XenoglossyPvE.EnoughLevel))
+			// Foul from its AoE count where it also out-damages Xenoglossy by the tooltips' potencies (A344).
+			if (FoulPvE.CanUse(out act, skipAoeCheck: !XenoglossyPvE.EnoughLevel) && (!XenoglossyPvE.EnoughLevel
+				|| ActionTooltip.AreaOutdamagesSingle(FoulPvE.ID, FoulPvE.Target.AffectedTargets.Length, XenoglossyPvE.ID)))
 			{
 				return true;
 			}

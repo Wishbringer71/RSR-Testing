@@ -79,6 +79,13 @@ Checkmate would reach. With all of them in reach, Auto Crossbow goes from six en
 thresholds The Balance gives. The action's AoE count stays the lower limit; where a figure cannot be read, Auto
 Crossbow goes by it as before. DefenseTrace.log notes once per level what was read.
 
+## Black Mage: Foul from two enemies
+
+Foul went out from three enemies, Xenoglossy below that. On two enemies Foul deals 600 and 450 against Xenoglossy's
+890, as The Balance says ("Foul is now a gain in 2-target situations"). Its AoE count is now two, and both Black Mage
+rotations also weigh the potencies the tooltips state, which keeps Xenoglossy at levels where it still deals more. A
+Foul AoE count you set yourself is set to two once: RSR carries a changed default over into saved settings.
+
 ## Viper: the experimental potion also in the opener
 
 "Experimental Pot Usage(used up to 5 seconds before SerpentsIre comes off cooldown)", off by default, took the potion

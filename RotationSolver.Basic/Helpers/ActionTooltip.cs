@@ -22,6 +22,9 @@ internal static class ActionTooltip
 	private static readonly Dictionary<(uint ActionId, int Level), string> _texts = [];
 	private static readonly object _gate = new();
 
+	private static readonly Regex StatedPotency = new(@"potency of (?<value>\d[\d,]*)", RegexOptions.Compiled);
+	private static readonly Regex StatedFalloff = new(@"(?<value>\d{1,2})% less for all remaining enemies", RegexOptions.Compiled);
+
 	/// <summary>
 	/// The evaluated effect text of <paramref name="actionId"/>, empty when the sheet has no row for it or the
 	/// evaluation fails.
@@ -66,5 +69,38 @@ internal static class ActionTooltip
 		var match = pattern.Match(Text(actionId));
 		return match.Success && float.TryParse(match.Groups["value"].Value.Replace(",", string.Empty),
 			NumberStyles.Float, CultureInfo.InvariantCulture, out value);
+	}
+
+	/// <summary>
+	/// The potency one use of <paramref name="actionId"/> deals over <paramref name="targets"/> enemies, as its tooltip
+	/// states it: the first enemy's potency, every further one less by the stated falloff ("30% less for all remaining
+	/// enemies"), every one alike where the text states none. False when the text states no potency.
+	/// </summary>
+	/// <remarks>
+	/// Only the first stated potency counts: a bonus under a status ("Meisui Bonus: Potency is increased to 550") and a
+	/// damage over time are left out, and a reader whose comparison hinges on them weighs them itself.
+	/// </remarks>
+	public static bool TryPotencyOn(uint actionId, int targets, out float total)
+	{
+		total = 0f;
+		if (targets < 1 || !TryStated(actionId, StatedPotency, out var first))
+		{
+			return false;
+		}
+
+		var rest = TryStated(actionId, StatedFalloff, out var falloff) ? first * (1f - (falloff / 100f)) : first;
+		total = first + (rest * (targets - 1));
+		return true;
+	}
+
+	/// <summary>
+	/// Whether <paramref name="area"/> on <paramref name="targets"/> enemies deals more than <paramref name="single"/>
+	/// on one, by the potencies their tooltips state (<see cref="TryPotencyOn"/>). True when either cannot be read, so
+	/// a caller falls back to what it did without the comparison.
+	/// </summary>
+	public static bool AreaOutdamagesSingle(uint area, int targets, uint single)
+	{
+		return !TryPotencyOn(area, targets, out var areaTotal) || !TryPotencyOn(single, 1, out var singleTotal)
+			|| areaTotal > singleTotal;
 	}
 }

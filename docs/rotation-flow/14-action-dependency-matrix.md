@@ -481,6 +481,31 @@ unter Stufe 68 Heat Blast an die von Blazing Shot.
 | Automatenkönigin | 60 im Opener, 90 nach einer Minute, danach 100 direkt nach Air Anchor in jedem Zwei-Minuten-Fenster | dieselben ersten beiden; danach ruft sie der Schutz gegen das Überlaufen der Batterie | Modell über zehn Minuten (24.10.2026): keine Batterie verloren, die Königinnen verlassen nach der zweiten Minute die Zwei-Minuten-Fenster. Ihr Schaden zieht aus keinem eigenen Buff des Maschinisten Nutzen (Wildfire zählt nur seine Waffenfertigkeiten); der Gewinn der Ausrichtung kommt allein aus den Buffs der anderen. Nach seiner Regel ist fremdes Verhalten kein tragender Grund – derselbe Schluss wie für Reassemble (Konzept 17). Nicht gebaut |
 | Flamethrower | Einsatzregel belegt | nicht gewirkt | TODO, „Six-sided Star und Flamethrower" |
 
+### AoE-Schwellen aller Jobs
+
+Erhoben am 24.10.2026 (A344): die Schwellen, die The Balance je Job nennt, gegen die AoE-Zahlen der Aktionen, wo nötig
+mit den Potenzen von 7.5 aus dem Job-Guide nachgerechnet. Den Potenzvergleich führt `ActionTooltip.TryPotencyOn` und
+`AreaOutdamagesSingle` für alle Jobs an einer Stelle; er liest die Tooltips zur Laufzeit und fällt auf die AoE-Zahl
+zurück, wo eine Zahl fehlt.
+
+- *Deckt sich (3+):* Dragoon, Viper, Samurai, Red Mage, Summoner, Bard, Black Mage (AoE-Rotation), Reaper bis auf die
+  Fälle unten. Ohne ausdrückliche Zahl im Guide: Monk, Pictomancer, Dancer und die Heiler; nicht nachgerechnet.
+- *Tanks (2 statt 3):* RSR wirkt die AoE-Kombos von Paladin, Krieger, Dark Knight und Gunbreaker ab 2 Gegnern, The
+  Balance nennt für den Schaden 3 (Dark Knight unter Stufe 94: 2). Bleibt: Der zweite Gegner hält sonst nur die
+  Feindseligkeit vom Pull, und The Balance selbst rät für Dungeons „In multi-target situations, use AoE so that you can
+  keep aggro on all mobs" (Dark Knight Basic Guide). Sicherheit der Gruppe vor Schaden (seine Regel).
+- *Black Mage, Foul:* schlägt Xenoglossy ab 2 Gegnern (600 + 450 gegen 890; The Balance: „Foul is now a gain in
+  2-target situations over Xenoglossy"). RSR wirkte es ab 3. Jetzt AoE-Zahl 2, und beide Rotationen prüfen den
+  Potenzvergleich dazu, der auf Stufen entscheidet, auf denen Xenoglossy noch gewinnt.
+- *Reaper:* Grim Swathe (140 je Gegner) gegen Unveiled Gibbet/Gallows (440) erst ab 4, gegen Blood Stalk (340) ab 3;
+  Guillotine und Grim Reaping mit liegendem Enhanced-Buff ebenso knapp. Die Abweichung liegt bei höchstens 20 Potenz
+  je Einsatz. Nicht geändert.
+- *Ninja (offen):* Nach den Potenzen von 7.5 schlagen Hellfrog Medium (250 je Gegner) Bhavacakra (400) und Deathfrog
+  Medium (400) Zesho Meppo (700) schon ab 2 Gegnern, ohne Meisui; Goka Mekkyaku (850) Hyosho Ranryu (1300) ab 2; Death
+  Blossom und Hakke Mujinsatsu die Einzelkombo erst ab 4 (mit Doton ab 3). The Balance (Stand 7.05) nennt teils andere
+  Zahlen, weil die Potenzen seither geändert sind. RSR nimmt überall 3, und `NIN_Reborn` schaltet die ganze AoE-Wahl
+  – Goka, Katon, Doton, Huton – an der AoE-Zahl von Death Blossom um. Das braucht einen Umbau dieser Weiche (TODO).
+
 ### Dragoon und Viper: Opener
 
 Geprüft ist bisher nur der Vorlauf (A343); Burst und Prioritäten sind offen.

@@ -23,6 +23,12 @@ are not reconstructed here.
 
 ## Unreleased
 
+### Behaviour change in RotationSolver.Basic: Foul's AoE count is two
+
+`BlackMageRotation`'s Foul now defaults to an AoE count of two instead of three: on two enemies it out-damages
+Xenoglossy at level 100. A rotation that calls `FoulPvE.CanUse` before Xenoglossy uses it on two enemies; the two
+bundled Black Mage rotations also compare the tooltips' potencies before they do.
+
 ### RotationSolver.Basic: the Machinist weighs Auto Crossbow against Blazing Shot
 
 `MachinistRotation.AutoCrossbowOutdamagesBlazingShot(int coneTargets)` is new and protected: true when Auto Crossbow on

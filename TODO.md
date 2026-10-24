@@ -48,7 +48,8 @@ ansteht. *Konzept:* 08, „Was die Sperren im Spiel bewirken".
 ### Rotationen gegen The Balance abgleichen · N
 
 *Im Kampf:* Schaden – je Job Opener, Burstausrichtung und Prioritäten gegen den Guide. Der Maschinist ist abgeglichen
-(A342), von Dragoon und Viper der Opener (A343). *Nächster Schritt:* die übrigen Jobs; ausgeblendete Werte liest `ActionTooltip` zur Laufzeit aus den Tooltips,
+(A342), von Dragoon und Viper der Opener (A343), die AoE-Schwellen aller Jobs (A344). *Nächster Schritt:* Ninja – die AoE-Weiche in
+`NIN_Reborn` hängt an Death Blossom, die Paare brauchen nach 7.5 verschiedene Schwellen; danach die übrigen Jobs; ausgeblendete Werte liest `ActionTooltip` zur Laufzeit aus den Tooltips,
 die deutschen Namen gehören in `action_names_de.json`. *Konzept:* 14, „Vergleich mit The Balance".
 
 ### Six-sided Star und Flamethrower · N
