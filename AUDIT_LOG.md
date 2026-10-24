@@ -9359,8 +9359,10 @@ Prüflauf.
 Sein Upload vom 24.10.2026: `DefenseTrace.log` (23.10.2026, 17:00–19:41, zwei Sitzungen, die zweite auf 0e8bd69a8)
 und `HostileCastingAreaPotential.json`. Seine Frage: „wo sind die sleep-findings? in welcher json?" – Antwort:
 `SleepOutcomes.json`, `SleepResistantKinds.json`, `SleepDiminishing.json` im Konfigurationsordner neben der
-Flächentabelle; jede entsteht beim ersten Eintrag. Nach diesem Protokoll: vier widerstehende Arten, zwei abgebrochene
-und eine zu spät geschlafene Aktion; keine Abnutzung, also noch keine `SleepDiminishing.json`. Weißmagier in Occult
+Flächentabelle; jede wird beim ersten Eintrag geschrieben und beim Entladen des Plugins ohnehin, dann auch leer
+(`OtherConfiguration.Save`). Nach diesem Protokoll: vier widerstehende Arten, zwei abgebrochene und eine zu spät
+geschlafene Aktion; keine Abnutzung, `SleepDiminishing.json` also leer. Seine hochgeladenen Dateien vom 24.10.2026
+stimmen damit Wert für Wert überein (Haltezeit 0,84 s, nötiger Rest 0,45 s plus ein Bild; C120). Weißmagier in Occult
 Crescent, einem Dungeon und den Allianzraids von Shadowbringers und Heavensward.
 
 Je Zeilenart:
@@ -9704,3 +9706,4 @@ Die offene Arbeit dazu — Reihenfolge und Abbruchbedingung der Nachprüfung —
 | C117 | A327 und Konzept 08/13: Seit A327 lese der Effekt-Handler jede Figur der Gegnerseite; „Ausgeliefert, nichts ändert sich" sei „für Boss-Figuren ausgeschlossen" | Die Helfer von Prüfungen, Raids und Dungeons haben die Unterart 11, die weder FFXIVClientStructs noch A327 kannte; 273 Treffer blieben auf den Builds danach ungelesen. Die Arten waren aus der Aufzählung des Enums geschlossen, nicht an den Figuren gemessen | A334: Unterart 11 aufgenommen |
 | C118 | Konzept 10 und das Archiv (Tabelle der Betäubungen): „Fußfeger" für Leg Sweep; im Chat am 23.10.2026 „der Heilige" für Holy und „kein belegter deutscher Name" für Leg Sweep | Selbst gebildet. Gesucht war nur in `action_names_de.json`, nicht im Job-Guide und in den Spielblättern, wie die Regel „Namen" verlangt. Belegt: Stolperfalle, Haarscharfer Schuss, Sanctus, Sanctga | Namen eingetragen, Texte berichtigt (A334) |
 | C119 | A334 und der Bericht vom 23.10.2026: das Protokoll vom 18.–22.10.2026 ausgewertet | Ausgewertet waren Schlaf, Helfer, Rechenlast, Heiltränke, Einzelheilungsabbrüche, Flächentabelle und Konfliktkopie; Flächen- und Einzelabwehr, Sanctus-Streckung, Heilung vor dem Treffer, BossModReborn-Raidwides und Tankbuster-Marker nicht, Wiederbelebungen nur gezählt | nachgeholt in A335, zwei Defekte behoben |
+| C120 | A337 und der Bericht vom 24.10.2026: jede Schlaf-Datei entstehe erst beim ersten Eintrag, `SleepDiminishing.json` gebe es noch nicht | `OtherConfiguration.Save` schreibt beim Entladen des Plugins jede geladene Datei, auch leer; seine `SleepDiminishing.json` vom 24.10.2026 ist `{}` | A337 berichtigt |
