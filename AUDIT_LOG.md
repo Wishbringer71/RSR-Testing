@@ -9860,6 +9860,18 @@ vor dem weiteren Code, weil er dessen Vorbedingung ist.
   rechnet `GetCorrectedTTK` heraus. Alle drei als Ausnahme ins Register. *Gegenposition:* Upstreams 30-s-Gerade wäre
   für einen dauerhaft angeschlagenen Tank reaktiver als der Vier-Minuten-Mittelwert – sie begänne aber bei jeder Heilung
   neu und hielte für die Gruppe nichts; der Unterschied ist die Lücke, die die Selbstkorrektur schließt.
+- *Gegner-TTK in eigenen Sicherheitsregeln.* Einziger Leser mit Sicherheitsbezug ist `InvulnerabilityReadyBy` im
+  Tankbuster-Plan: Er rechnet die Unverwundbarkeit nur ein, wenn `AverageTTK` die TTK-Schwelle der Aktion erreicht –
+  dieselbe Prüfung, mit der die Aktion selbst den Druck verweigert (`BaseAction`). Die Schwelle steht für alle vier
+  Unverwundbarkeiten ab Werk auf 0, die Regel bleibt dann unberührt. Setzt er eine Schwelle, kürzt Upstreams 30-s-Gerade
+  die Schätzung im Burst und verweigert die Unverwundbarkeit öfter als der frühere Mittelwert; der Plan wählt dann
+  Milderung, wie sonst bei einer verweigerten Aktion. Kein Eingriff, weil die Schwelle seine Einstellung ist und Plan
+  und Druck dieselbe Antwort geben.
+- *Möglichkeitssinn zum neuen `ActorControl`-Hook.* Kategorie 15 meldet einen abgebrochenen Cast; Upstream liest sie
+  nur für den Spieler. Für die Stopp-Regel (Konzept 08) beantwortet sie keine offene Frage: Das vorzeitige Ende erkennt
+  `SleepInterruptWatch` schon, den Tod prüft es vorher, und wer den Abbruch auslöste – Schlaf, Betäubung, ein anderer
+  Spieler –, sagt auch das Ereignis nicht. Ob 0x605 auch Heilticks auf Gruppenmitgliedern meldet, ist unbelegt; die
+  Heilvorausschau braucht es nicht, weil die Gesundheitshistorie netto misst.
 - *Fork-Version:* Der Merge-Stand ist Upstreams Tag 7.5.7.7; die Versionsliterale folgen ihm (7.5.7.7+wsh1), der
   Release-Text bleibt „Changes since 7.5.7.6+wsh1", weil das letzte Fork-Release unverändert ist.
 - *DoT-Planer.* `DotPlanner` frischt einen DoT mit Potenzangaben (`ActionSetting.Dot`: Weißmagier, Astrologe, Gelehrter,
