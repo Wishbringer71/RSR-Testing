@@ -243,7 +243,18 @@ gewählten Trank mit dem Zweig, der ihn freigab, und den HP.
     jede Auslösung heilt frischen Schaden. Überheilt wird, wenn nur der Weißmagier getroffen wurde (etwa ein Schaden
     über Zeit auf ihm allein) – das hängt an der Art des Schadens, nicht an der Gesundheit beim Setzen. Für den
     zweiten Druck trägt sie: Die übrigen Stapel (200 je Stapel) lohnen nur, solange der Gruppe so viel fehlt.
-  - Offen in `TODO.md`: „Weißmagier: Glockenspiel nach einem einzelnen Treffer auslösen".
+  - *Sein Vorschlag und Hinweis (24.10.2026):* „es gibt neben den mehrfachhits doch hits, die die gesundheit stark
+    senken (z.b. auf eins). wenn die bekannt sind, und glockenspiel vorher gewirkt wird, kommt der schaden, danach der
+    automatische heal und danach dann der zweite teil aktiviert, der weiter hochheilt." Der Hinweis ist belegt: Seine
+    gelernte Flächentabelle vom 24.10.2026 führt fünf Gruppentreffer ab 80 % der maximalen Gesundheit (Uneven Footing
+    95 %, Thirty Souls 89 %, Divine Judgment 87 %, Panzer Vor 84 %, Hollow Omen 83 %) und 23 weitere ab 60 %. Ob einer
+    davon die Gesundheit auf eins setzt statt Schaden zu machen, zeigt die Tabelle nicht. Der Vorschlag trägt: Auf einen
+    solchen Treffer kommen 400 Potenz durch den Treffer selbst und gleich danach 800 durch den zweiten Druck
+    (`LiturgyOfTheBellPvE_28509`, Folgeaktion, 1 s Abklingzeit) – 1200 sofort auf eine Gruppe, der fast alles fehlt,
+    statt 800 nach 20 s auf eine meist geheilte. Bedingungen: Der Weißmagier wird getroffen (nur Schaden an ihm löst
+    aus), die Gruppe steht im Umkreis der Glocke, und der Treffer ist vorher bekannt (gelernte Flächentabelle,
+    BossModReborn-Vorhersage).
+  - Offen in `TODO.md`: „Weißmagier: Glockenspiel vor großen Treffern und zweiter Druck".
 - **Dunkelritter:** Herkunft ist die Balance-Rotation 6.38 (c97be9ec5).
   - Früher hieß Burst „mindestens die Hälfte der Gruppe im Zwei-Minuten-Burst"
     (`RatioOfMembersIn2minsBurst`, früher). Heute zählen nur die eigenen Abklingzeiten: Delirium kühlt ab

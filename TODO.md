@@ -9,17 +9,20 @@ Betroffene: **N** Endnutzer · **R** Autoren abgeleiteter Rotationen (`RotationS
 
 Nach der Wirkung im Kampf: Sicherheit der Gruppe vor Schaden, gewichtet mit der Wahrscheinlichkeit, in seinem Profil
 (seine Vorgabe, 17.10.2026: „todo nach wichtigkeit abarbeiten. jeweils im loop bearbeiten"). Seine Aufträge vom
-18.10.2026 sind erledigt: TODO berichtigt (A322), Prüfläufe geordnet (A323), Laufzeitkosten umgestellt (A325).
+18.10.2026 sind erledigt: TODO berichtigt (A322), Prüfläufe geordnet (A323), Laufzeitkosten umgestellt (A325). Sein
+Auftrag vom 24.10.2026 läuft: die einfachen Punkte zuerst (A338), die schweren wichtigen danach ebenso. Glockenspiel
+steht seit seinem Hinweis vom 24.10.2026 vor der Flächenheilung: Es heilt eine Gruppe nach einem Treffer, der ihr fast
+alles nimmt.
 
 1. Tank-Unverwundbarkeit vor Tankbustern ohne Aktionsangabe oder Messung nur reaktiv
 2. Tanks: Reflexion und Gruppenbarriere auf demselben Raidwide
 3. DRK: Bruch von The Blackest Night zählen
 4. Rückstoß und Stopp-Casts: Größe messen
 5. Vorausschau vor dem ersten Treffer
-6. Flächenheilung um den Wirkenden: Radius gegen Trefferfläche
-7. Feste Werte: jeder offene Wert braucht seinen Loop
-8. Tankbuster-Plan: Umlauf über die Sequenz jedes Drucks
-9. Weißmagier: Glockenspiel nach einem einzelnen Treffer auslösen
+6. Weißmagier: Glockenspiel vor großen Treffern und zweiter Druck
+7. Flächenheilung um den Wirkenden: Radius gegen Trefferfläche
+8. Feste Werte: jeder offene Wert braucht seinen Loop
+9. Tankbuster-Plan: Umlauf über die Sequenz jedes Drucks
 10. Rotationen gegen The Balance abgleichen
 11. Six-sided Star und Flamethrower
 12. Vorlauf: Dragoon und Viper
@@ -87,14 +90,15 @@ Upstream 7.5.7.5 sieht `ActionManagerEx` jede Anfrage, die hinausgeht (Sequenz),
 (`SourceSequence`). *Nächster Schritt:* Loop – klären, ob die exakte Paarung die Frist im Kampf früher oder sicherer
 setzt, und dann die Messung darauf umstellen. *Konzept:* 09 (A332).
 
-### Weißmagier: Glockenspiel nach einem einzelnen Treffer auslösen · N
+### Weißmagier: Glockenspiel vor großen Treffern und zweiter Druck · N
 
-*Im Kampf:* Auf einen einzelnen Treffer heilt Glockenspiel 400 Potenz sofort und die übrigen 800 erst nach 20 s, weil
-RSR nie ein zweites Mal drückt; deshalb lohnt es nur auf Mehrfachtreffern. Gedrückt gleich nach dem letzten erwarteten
-Treffer kämen 1200 sofort. *Nächster Schritt:* voller Loop – woran „kein weiterer Treffer" zu messen ist (Flächenliste,
-BossModReborn-Vorhersage, Mehrfachmarker), wie viel der Gruppe im Umkreis fehlt (sein Vorschlag vom 23.10.2026, für den
-zweiten Druck), Zusammenspiel mit der Streckung. *Konzept:*
-08, „Was die Sperren im Spiel bewirken".
+*Im Kampf:* RSR drückt Glockenspiel nie ein zweites Mal: Auf einen einzelnen Treffer kommen 400 Potenz sofort und 800
+erst nach 20 s. Vor einem bekannten großen Treffer gesetzt und gleich danach ein zweites Mal gedrückt, kämen 1200 sofort
+auf eine Gruppe, der fast alles fehlt (sein Vorschlag, 24.10.2026). Mit „Limit Liturgy Of The Bell to multihit party
+stacks" (bei ihm an) geht die Glocke heute nur auf Mehrfach-Sammelmarker. *Nächster Schritt:* voller Loop – wann der
+zweite Druck lohnt (Fehlbetrag der Gruppe im Umkreis gegen 200 je Stapel, sein Vorschlag vom 23.10.2026; kein weiterer
+Treffer erwartet), woran ein großer Treffer vorher erkannt wird, Zusammenspiel mit der Streckung und der Einstellung.
+*Konzept:* 08, „Was die Sperren im Spiel bewirken".
 
 ### Rotationen gegen The Balance abgleichen · N
 
