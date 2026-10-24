@@ -189,6 +189,27 @@ Konsequenzen, die im ganzen AUDIT_LOG immer wieder auftauchen:
   `HealSingleGCD` **wiederholen**, sonst greift sie im Heilfall nicht. Genau
   das war die Ursache der „HoT wird nicht aufrechterhalten"-Meldungen.
 
+### Status, unter denen nicht gehandelt werden soll („No-casting debuffs")
+
+Die Liste `OtherConfiguration.NoCastingStatus` hat in der Oberfläche den Text „Do not take action if you have one of
+these debuffs". Ihr Leser ist nicht die NoCasting-Sperre der Slot-Kette (die hängt an der Stopp-Liste gegnerischer
+Casts), sondern der Druck selbst (Upstream, `RSCommands_Actions`, `CancelCastUpdater`, `AutoAttackUpdater`):
+- Kein Druck und Abbruch eines laufenden Zaubers erst, wenn ein gelisteter Status in weniger als 3 s endet
+  (`NoCastingStatusHelper.ResolveWindow`); ein Status ohne Restzeit zählt als endlos und sperrt nie.
+- Auto-Angriffe ruhen, solange irgendein gelisteter Status liegt.
+- Daneben sperren eigene Wege den Druck für die ganze Dauer: Motion Tracker und BossModReborns Sondermodus Pyretic.
+
+Die Liste enthält zwei Arten (Spielblätter, 24.10.2026): Status, deren Strafe beim Ablauf fällt (Acceleration Bomb,
+Extreme Caution, Glossomorph, Flesh Forward und Back, Directed Grotesquerie, Buyer's Remorse), und Status, unter denen
+jede Aktion Schaden macht (Pyretic in fünf Fassungen, seit Upstream 42cb3a7dd auch Causality, 514). Für die erste Art
+trägt das Fenster vor dem Ablauf; für die zweite verfehlt es den Text: Unter Pyretic drückt RSR bis 3 s vor dem Ende
+weiter, unter Causality und den Pyretic-Fassungen ohne Restzeit immer – jede Aktion kostet Leben, sofern kein
+BossModReborn-Modul den Sondermodus Pyretic meldet. Kein Feld der Spielblätter trennt die beiden Arten. Offen in
+`TODO.md`: „No-casting debuffs: Schaden je Aktion wird nur vor dem Ablauf beachtet".
+
+Die Liste lädt aus Upstreams Repository und nur, wenn die Datei im Konfigurationsordner fehlt oder die Liste
+zurückgesetzt wird; ein neuer Eintrag von Upstream erreicht eine bestehende Datei nicht von selbst.
+
 ---
 
 ## C · Muster, die in jedem Job wiederkehren

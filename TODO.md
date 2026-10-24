@@ -12,20 +12,21 @@ Nach der Wirkung im Kampf: Sicherheit der Gruppe vor Schaden, gewichtet mit der 
 18.10.2026 sind erledigt: TODO berichtigt (A322), Prüfläufe geordnet (A323), Laufzeitkosten umgestellt (A325).
 
 1. Tank-Unverwundbarkeit vor Tankbustern ohne Aktionsangabe oder Messung nur reaktiv
-2. Tanks: Reflexion und Gruppenbarriere auf demselben Raidwide
-3. DRK: Bruch von The Blackest Night zählen
-4. Rückstoß und Stopp-Casts: Größe messen
-5. Vorausschau vor dem ersten Treffer
-6. Flächenheilung um den Wirkenden: Radius gegen Trefferfläche
-7. Einstellungen ohne Leser, deren Text eine Wirkung verspricht
-8. Feste Werte: jeder offene Wert braucht seinen Loop
-9. Tankbuster-Plan: Umlauf über die Sequenz jedes Drucks
-10. Weißmagier: Glockenspiel nach einem einzelnen Treffer auslösen
-11. Rotationen gegen The Balance abgleichen
-12. Six-sided Star und Flamethrower
-13. Vorlauf: Dragoon und Viper
-14. AoE-Schwelle an drei Orten
-15. Audit der gesamten Codebasis
+2. No-casting debuffs: Schaden je Aktion wird nur vor dem Ablauf beachtet
+3. Tanks: Reflexion und Gruppenbarriere auf demselben Raidwide
+4. DRK: Bruch von The Blackest Night zählen
+5. Rückstoß und Stopp-Casts: Größe messen
+6. Vorausschau vor dem ersten Treffer
+7. Flächenheilung um den Wirkenden: Radius gegen Trefferfläche
+8. Einstellungen ohne Leser, deren Text eine Wirkung verspricht
+9. Feste Werte: jeder offene Wert braucht seinen Loop
+10. Tankbuster-Plan: Umlauf über die Sequenz jedes Drucks
+11. Weißmagier: Glockenspiel nach einem einzelnen Treffer auslösen
+12. Rotationen gegen The Balance abgleichen
+13. Six-sided Star und Flamethrower
+14. Vorlauf: Dragoon und Viper
+15. AoE-Schwelle an drei Orten
+16. Audit der gesamten Codebasis
 
 Danach technische Schuld, soweit ihre Auflösungsbedingung erfüllt ist. Warten auf Daten: unten.
 
@@ -40,6 +41,15 @@ ist der Code anzupassen. *Gegen das einfache Verdrahten steht je Stelle:* Die Un
 des Zaubers verbrauchen; `SwiftcastBuffer` baute den in Konzept 11 behobenen Defekt neu; für `TargetColor` ist kein
 Zeichenort bekannt. *Nächster Schritt:* je Einstellung ein Loop, Ergebnis Verdrahtung mit sinnvoller Voreinstellung
 oder Entfernung mit Grund. *Konzept:* 11 (`SwiftcastBuffer`).
+
+### No-casting debuffs: Schaden je Aktion wird nur vor dem Ablauf beachtet · N, U
+
+*Im Kampf:* Unter Pyretic oder Causality (Schaden bei jeder Aktion) drückt RSR weiter – bis 3 s vor dem Ende, bei einem
+Status ohne Restzeit immer –, obwohl der Text der Liste sagt „Do not take action if you have one of these debuffs".
+Nur ein BossModReborn-Modul mit dem Sondermodus Pyretic hält es an. *Nächster Schritt:* voller Loop – wie die Art
+„Schaden je Aktion" von der Art „Strafe beim Ablauf" zu trennen ist (kein Feld der Spielblätter tut es), was ein
+Heiler unter Pyretic noch darf, Vertrag der gespeicherten Liste. *Konzept:* 03, „Status, unter denen nicht gehandelt
+werden soll".
 
 ## Offene Arbeit
 

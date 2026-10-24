@@ -9320,6 +9320,40 @@ Upstream-Pflege (`Service.cs`).
 
 **Prüfgrad:** Protokoll je Zeilenart ausgewertet; statisch, Prüfskripte, Compile lokal; im Spiel nicht beobachtet.
 
+### A336 · Upstream-Sync 42cb3a7dd (NoCastingStatus.json) in main und Arbeitszweig (24.10.2026)
+
+Sein Auftrag: „sync zu upstream. änderungen upstream kritisch prüfen, ob interferenzen zu eigenen patches bzw. ob
+eigene verbesserungen damit noch besser werden könnten (also ob sie hilfreich sind). im vollen loop".
+
+- *Inhalt:* ein Commit, `Resources/NoCastingStatus.json` um Status 514 ergänzt – Causality, de „Kausalität": „Damage is
+  taken each time an action is used", ohne Restzeit (`IsPermanent`), Garland Tools: Patch 4.56. Aus welchem Inhalt,
+  nennen weder BossModReborn (`ae64e3309`) noch die gefundenen Quellen.
+- *Merge:* konfliktfrei in `main` (97ae3943f) und den Zweig (ea7d98ad8); der Fork ändert die Datei nicht. Prüfläufe
+  nach dem Merge: im Zweig 27/27; in `main` 26/27 – `check_release_note` meldet den Text von 7.5.7.6+wsh1, der dort
+  steht, bis PR #16 ihn ablöst; der Merge berührt ihn nicht.
+- *Wirkung im Kampf:* bei ihm keine. Die Liste lädt aus Upstreams Repository nur, wenn die Datei fehlt oder die Liste
+  zurückgesetzt wird. Selbst dann sperrt der Eintrag nur die Auto-Angriffe: Der Druck (`RSCommands_Actions`) und der
+  Abbruch (`CancelCastUpdater`, seit Upstream 1ca8e9454 im selben Fenster) greifen erst 3 s vor dem Ablauf, und ein
+  Status ohne Restzeit zählt als endlos.
+- *Interferenz mit eigenen Änderungen:* keine. Kein Fork-Code liest die Liste; der Stopp eines gegnerischen Wirkens,
+  die Abwehr und die Heilung drücken über denselben Weg und stehen damit unter derselben Sperre.
+- *Hilfreich für eigene Regeln:* nein, aus dem Grund des Befunds.
+- *Befund, Defekt (Upstream):* Die Liste trägt zwei Arten. Für Status mit Strafe beim Ablauf (Acceleration Bomb,
+  Extreme Caution, Glossomorph, Flesh Forward und Back, Directed Grotesquerie, Buyer's Remorse) trägt das Fenster vor
+  dem Ablauf. Für Pyretic (fünf Fassungen) und Causality, unter denen jede Aktion Schaden macht, verfehlt es den Text der
+  Oberfläche, „Do not take action if you have one of these debuffs": RSR drückt weiter, außer ein BossModReborn-Modul
+  meldet den Sondermodus Pyretic. Kein Feld der Spielblätter (LockActions, Flags, Kategorie) trennt die Arten. TODO
+  „No-casting debuffs: Schaden je Aktion wird nur vor dem Ablauf beachtet", Position 2; Konzept 03.
+
+**Falsifikation.**
+- *Kein Defekt:* widerlegt am Code: `minStatusTime < ResolveWindow` sperrt nur vor dem Ablauf, ein Status ohne
+  Restzeit nie.
+- *Befund falsch, weil die Spieler ohnehin stehen bleiben:* Das Verhalten anderer ist kein Grund; RSR drückt selbst.
+- *Ausgeliefert, nichts ändert sich:* für diesen Commit zutreffend, siehe Wirkung.
+
+**Prüfgrad:** statisch am Code, Spielblätter (xivapi v2, englisch und deutsch); Prüfskripte nach dem Merge; Compile im
+Prüflauf.
+
 ---
 ## B · Commit-Register (Fork vs. `upstream/main`)
 
