@@ -23,6 +23,14 @@ are not reconstructed here.
 
 ## Unreleased
 
+### RotationSolver.Basic: the Machinist weighs Auto Crossbow against Blazing Shot
+
+`MachinistRotation.AutoCrossbowOutdamagesBlazingShot(int coneTargets)` is new and protected: true when Auto Crossbow on
+that many enemies deals more than Blazing Shot (Heat Blast below its level) with the recast it takes off Double Check
+and Checkmate (Gauss Round and Ricochet), reaching as many enemies as their own target selection finds. The figures
+come from the tooltips at the synced level; where one cannot be read it answers true. `MCH_Reborn` asks it after
+`AutoCrossbowPvE.CanUse`.
+
 ### Behaviour change in RotationSolver.Basic: `DataCenter.DPSTaken` counts only hits that did damage
 
 The damage record behind `DataCenter.DPSTaken` no longer takes a zero for every enemy action that missed the player. Its

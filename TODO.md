@@ -48,8 +48,9 @@ ansteht. *Konzept:* 08, „Was die Sperren im Spiel bewirken".
 
 ### Rotationen gegen The Balance abgleichen · N
 
-*Im Kampf:* Schaden – je Job Opener, Burstausrichtung und Prioritäten gegen den Guide. Dazu die von `ActionId.resx`
-ausgeblendeten Werte aus dem Job-Guide in den Generator und die deutschen Namen in `action_names_de.json`. *Konzept:* 14.
+*Im Kampf:* Schaden – je Job Opener, Burstausrichtung und Prioritäten gegen den Guide. Der Maschinist ist abgeglichen
+(A342). *Nächster Schritt:* die übrigen Jobs; ausgeblendete Werte liest `ActionTooltip` zur Laufzeit aus den Tooltips,
+die deutschen Namen gehören in `action_names_de.json`. *Konzept:* 14, „Vergleich mit The Balance".
 
 ### Six-sided Star und Flamethrower · N
 
@@ -147,6 +148,11 @@ Veröffentlichungspfad prüfbar ist.
 ### Das Aktionsfenster rechnet die Bewegungssicherheit ein zweites Mal · U
 `MainWindow.GetMovementSafetyStatus` neben `ActionTargetInfo.CheckMovementSafety`; die Regel „am Ziel ist ein Sprint nur
 Schaden" fehlt im Fenster. *Auflösung:* `CheckMovementSafety` gibt Ergebnis und Grund heraus, das Fenster zeigt sie.
+
+### Das Maschinisten-Modell bildet `MCH_Reborn` von Hand nach · R
+*Kosten:* Ändert sich der Ruf der Königin oder die GCD-Folge in `MCH_Reborn`, rechnet `machinist_balance_model.py`
+weiter die alte Regel, und Konzept 14 nennt seine Ergebnisse. *Auflösung:* jede solche Änderung trägt im selben Commit
+die Anpassung des Modells. *Konzept:* 14.
 
 ### Plugin-Identität ist die des Upstreams · N
 `manifest.json` unverändert (`InternalName`, URLs). *Auflösung:* seine Entscheidung, wenn beide Installationen

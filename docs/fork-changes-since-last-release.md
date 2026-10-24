@@ -70,6 +70,15 @@ party healed by then. Once the bell has healed at least once and the party is be
 second press now releases the rest at once - after a hard hit, the bell's own heal comes with the hit and the rest right
 after it. Setting: "Press Liturgy of the Bell a second time when the party needs an area heal", on by default.
 
+## Machinist: Auto Crossbow only where it out-damages Blazing Shot
+
+Auto Crossbow went out from three enemies in its cone. Blazing Shot, though, takes 15 s off Double Check and Checkmate,
+which hit every enemy around their target: on three gathered enemies it brings 692 potency against Auto Crossbow's 540.
+RSR now weighs the two with the potencies the game's tooltips state and with how many enemies Double Check and
+Checkmate would reach. With all of them in reach, Auto Crossbow goes from six enemies, with one outside from four - the
+thresholds The Balance gives. The action's AoE count stays the lower limit; where a figure cannot be read, Auto
+Crossbow goes by it as before. DefenseTrace.log notes once per level what was read.
+
 ## A raidwide during a tankbuster marker is no longer learned as the tankbuster
 
 Any enemy action that struck a marked member while the marker stood counted as its tankbuster, so a raidwide landing

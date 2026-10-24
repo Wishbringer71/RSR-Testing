@@ -229,7 +229,7 @@ jobs:
       - name: Check the fork version names the upstream release it sits on
         run: python3 .github/scripts/audit/check_fork_version.py --require-tags
 
-      # ---- 5. The models (concepts 09 and 12). They read no plugin code: each simulates the rules it was written
+      # ---- 5. The models (concepts 09, 12 and 14). They read no plugin code: each simulates the rules it was written
       # from and holds its own invariants and self-test against constructed defects. A run therefore says something
       # new only when the model itself changed - and on every push the tankbuster model alone took 5:37 of the
       # job's 6:54 (run of 17.10.2026, A323). Each runs when its own script changed in this push, and all of them
@@ -237,7 +237,7 @@ jobs:
       - name: Run the models whose script changed
         shell: bash
         run: |
-          MODELS="smn_phase_potency searing_light_coverage tankbuster_model"
+          MODELS="smn_phase_potency searing_light_coverage tankbuster_model machinist_balance_model"
           before="${{ github.event.before }}"
           after="${{ github.event.pull_request.head.sha || github.sha }}"
           if [ "${{ github.event_name }}" != "pull_request" ] || [ -z "$before" ] || ! git cat-file -e "$before^{commit}" 2>/dev/null; then

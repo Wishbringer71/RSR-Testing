@@ -248,8 +248,8 @@ tatsächlich genutzt werden — „für alle im Loop".
 
 **Sachstand:** Geprüft ist, ob ein gewährtes Fenster — ein Status, der eine Aktion für eine Zeit
 freigibt (Proc, „Ready", Stapel), oder eine Ressource mit Obergrenze — verbraucht wird, bevor es
-verfällt oder überläuft. Ob eine Abfolge die beste ist, prüft dieser Abschnitt nicht; der Abgleich mit
-The Balance ist offene Arbeit (TODO, „Rotationen gegen The Balance abgleichen"). Die Dauern der
+verfällt oder überläuft. Ob eine Abfolge die beste ist, prüft dieser Abschnitt nicht; das prüft „Vergleich mit
+The Balance", bisher für den Maschinisten (TODO, „Rotationen gegen The Balance abgleichen"). Die Dauern der
 Fenster, die `ActionId.resx` ausblendet, belegt der offizielle Job-Guide: Ready to Break, Ready to
 Reign, Ogi Namikiri Ready, Hypercharged, Full Metal Machinist je 30 s, Phantom Kamaitachi Ready 45 s,
 Silken Symmetry und Silken Flow 30 s. Der Code braucht sie nicht: Er liest die Restzeit zur Laufzeit.
@@ -432,3 +432,51 @@ Werk an).
 - Kehrt das Ziel ohne Modul während der 5 s von Soulsow zurück, kommt der erste GCD danach bis zu einer Wirkzeit
   später. Läuft der Schnitter nur aus 25 Yalm heraus, fällt Soulsow wie Meditate, sobald er steht, und bricht bei
   der ersten Bewegung ab; dafür steht danach Harvest Moon für den nächsten Rückzug bereit.
+
+## Vergleich mit The Balance
+
+**Sachstand:** Abgeglichen ist der Maschinist (24.10.2026) gegen The Balance, Machinist Basic Guide und Openers
+(beide „Patch Applicable: 7.3", zuletzt geändert am 05.08.2025); die Potenzen nennt der offizielle Job-Guide (Patch
+7.5). Die übrigen Jobs sind offen (TODO, „Rotationen gegen The Balance abgleichen"). Abweichungen, die nur Schaden
+betreffen, werden behoben, wo sich die bessere Wahl aus dem Spiel ableiten lässt und keine seiner Regeln dagegen steht;
+die übrigen nennt der Abgleich mit Grund. Weniger Schaden aus einer Sicherheitsregel bleibt (seine Präzisierung).
+
+### Maschinist
+
+**Auto Crossbow fällt nur, wo es mehr bringt als Blazing Shot samt dem, was Blazing Shot nach sich zieht**
+(`MachinistRotation.AutoCrossbowOutdamagesBlazingShot`, gelesen von `MCH_Reborn`, A342). Blazing Shot nimmt Double
+Check und Checkmate je 15 s Wiederholzeit ab, und beide treffen jeden Gegner im Umkreis von 5 Yalm um ihr Ziel; Auto
+Crossbow nimmt ihnen nichts ab. Verglichen wird Auto Crossbow auf den Gegnern im Kegel mit Blazing Shot samt
+Überhitzungsbonus und dem Anteil an Double Check und Checkmate, den die gekürzte Wiederholzeit kauft – auf so vielen
+Gegnern, wie diese beiden von ihrem Ziel aus erreichen. Unter Stufe 92 treten Gauss Round und Ricochet an ihre Stelle,
+unter Stufe 68 Heat Blast an die von Blazing Shot.
+
+- *Woher die Zahlen kommen:* Potenzen, Abschlag je weiterem Gegner, die 15 s und der Überhitzungsbonus aus den
+  Tooltips zur Laufzeit (`ActionTooltip`, englisches Blatt `ActionTransient` über Dalamuds SeString-Auswertung),
+  die Wiederholzeit aus dem Spiel, die Zahl der erreichten Gegner aus der Zielwahl der beiden Aktionen. Damit folgt die
+  Schwelle dem laufenden Patch und dem Stand der Gegner.
+- *Was es im Kampf ergibt* (Job-Guide 7.5, `machinist_balance_model.py`): Stehen alle Gegner im Umkreis von Double Check
+  und Checkmate, fällt Auto Crossbow ab 6 Gegnern; bei 3 Gegnern bringt Blazing Shot 692 gegen 540. Steht einer außerhalb,
+  ab 4, stehen zwei außerhalb, ab 3. The Balance nennt dieselben Schwellen („Blazing Shot on 1-5, Auto Crossbow on 6+";
+  „If 1 target is out of range, Auto Crossbow is a gain on 4+ targets"). Vorher fiel Auto Crossbow ab 3 Gegnern im
+  Kegel – im gesammelten Rudel bis zu 22 % weniger je Hypercharge-GCD.
+- *Seine Einstellung bleibt die Untergrenze:* Die AoE-Zahl der Aktion (ab Werk 3) muss erfüllt sein, bevor verglichen
+  wird. Unter 3 Gegnern gewinnt Auto Crossbow nie.
+- *Rückfall:* Lässt sich eine Zahl nicht lesen, geht Auto Crossbow wie vorher nach seiner AoE-Zahl. `DefenseTrace.log`
+  schreibt je Stufe einmal, was gelesen wurde oder was fehlte.
+- *Grenzen, bewusst hingenommen:* Ob die SeString-Auswertung einer Stufensynchronisierung folgt, ist nicht belegt;
+  folgt sie nicht, rechnet die Regel mit den Potenzen der vollen Stufe. Der Vergleich nimmt an, dass Double Check und
+  Checkmate ihre gewonnene Zeit auch nutzen – am Ende eines Rudels, wenn Ladungen verfallen oder Gegner sterben,
+  überschätzt er Blazing Shot.
+
+**Weitere Punkte, gegen The Balance geprüft:**
+
+| Punkt | The Balance | RSR | Stand |
+|---|---|---|---|
+| Opener | Reassemble vor dem Pull, Air Anchor zum Pull; Variante mit dem zweiten Drill nach dem Hypercharge-Fenster | Reassemble ab 4,75 s, Air Anchor bei 0,1 s, danach dieselbe Folge | deckt sich mit der Variante (Modell, A342) |
+| Trank im Opener | 2 s vor dem Pull | ab 1 s, nur mit „Use burst medicine in countdown (requires auto burst option on)" (Option der Rotation, ab Werk aus) | Ob 1 s Air Anchor verzögert, hängt an der Animationssperre des Tranks, die keine der Quellen nennt; nicht geändert |
+| Hypercharge vor einem Werkzeug | nicht, wenn Air Anchor, Drill oder Chain Saw in unter 8 s bereit wird (drei GCDs Überhitzung, 7,5 s) | `ToolChargeSoon`: dieselben 8 s; bei Drill erst, wenn beide Ladungen voll würden | deckt sich; Drill hat zwei Ladungen, verloren geht erst eine volle |
+| Scattergun | ab 3 Gegnern | AoE-Zahl 3 | deckt sich |
+| Bioblaster | schlägt Drill ab 3, Air Anchor ab 4, nie Chain Saw/Excavator | vor Air Anchor, Drill, Excavator und Chain Saw, ab 3 Gegnern | Bei genau drei Gegnern und gleichzeitig bereitem Air Anchor kommt Bioblaster einen GCD früher. Beide fallen innerhalb zweier GCDs; gleich ist die Potenz, nur Air Anchor oder Chain Saw rückt einen GCD nach hinten. Die Grenze 4 hängt am Wert der Batterie, den kein Tooltip nennt (The Balance: 266 Potenz je 10 Batterie, Stand 7.3). Nicht gebaut |
+| Automatenkönigin | 60 im Opener, 90 nach einer Minute, danach 100 direkt nach Air Anchor in jedem Zwei-Minuten-Fenster | dieselben ersten beiden; danach ruft sie der Schutz gegen das Überlaufen der Batterie | Modell über zehn Minuten (24.10.2026): keine Batterie verloren, die Königinnen verlassen nach der zweiten Minute die Zwei-Minuten-Fenster. Ihr Schaden zieht aus keinem eigenen Buff des Maschinisten Nutzen (Wildfire zählt nur seine Waffenfertigkeiten); der Gewinn der Ausrichtung kommt allein aus den Buffs der anderen. Nach seiner Regel ist fremdes Verhalten kein tragender Grund – derselbe Schluss wie für Reassemble (Konzept 17). Nicht gebaut |
+| Flamethrower | Einsatzregel belegt | nicht gewirkt | TODO, „Six-sided Star und Flamethrower" |

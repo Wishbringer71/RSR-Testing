@@ -9914,6 +9914,41 @@ leer; ein abgebrochenes Laden schriebe leere Listen). Lösung falsch: Ein Mitgli
 
 *Prüfgrad:* statisch, Compile, Prüfskripte; im Spiel nicht beobachtet.
 
+### A342 · Maschinist gegen The Balance; Auto Crossbow nach Potenz und Stand der Gegner (24.10.2026)
+
+TODO, Punkt 2 der Reihenfolge („Rotationen gegen The Balance abgleichen"), Maschinist zuerst nach seinem Profil.
+Quellen: The Balance, Machinist Basic Guide und Openers (Patch 7.3, geändert 05.08.2025, gelesen 24.10.2026); der
+offizielle Job-Guide (Patch 7.5) für die Potenzen; `MCH_Reborn` am Stand 262c292bd.
+
+- *Befund Auto Crossbow:* RSR wirkt es ab 3 Gegnern im Kegel (AoE-Zahl, Upstreams Vorgabe). Blazing Shot nimmt Double
+  Check und Checkmate je 15 s ab, beide treffen 5 Yalm um ihr Ziel mit 30 % Abschlag je weiterem Gegner. Mit den
+  Potenzen von 7.5 (Auto Crossbow 180, Blazing Shot 240 +20 unter Überhitzung, Double Check und Checkmate 180, Wiederholzeit
+  30 s) gewinnt Auto Crossbow erst ab 6 Gegnern, wenn alle im Umkreis stehen, ab 4 mit einem außerhalb – genau die
+  Schwellen von The Balance. Bei 3 gesammelten Gegnern 540 gegen 692.
+- *Optionen:* (0) so lassen; (a) Vorgabe der AoE-Zahl auf 6 – deckt den gesammelten Fall, verfehlt den verteilten, und
+  Upstreams Abgleich der Vorgaben setzt dabei seinen gespeicherten Wert einmal zurück (`BaseAction.Config`); (b) der
+  Vergleich zur Laufzeit mit den Potenzen aus den Tooltips und der Zahl der Gegner, die Double Check und Checkmate
+  erreichen. Gewählt (b): Er trifft beide Fälle, folgt dem Patch und lässt seine AoE-Zahl unberührt als Untergrenze.
+- *Baustein:* Die Tooltips lieferten bisher nur Dauern (A316) und die Verlangsamung von Arm's Length (A340), je mit
+  eigener Auswertung. `ActionTooltip` führt beide und die neue Regel über eine Stelle (Text je Aktion und Stufe,
+  zwischengespeichert). Verhalten der beiden alten Leser unverändert.
+- *Modell:* `machinist_balance_model.py` (aus dem Prototyp dieser Prüfung) rechnet die Schwellen und den Ruf der Königin
+  über zehn Minuten nach, mit Selbsttest gegen einen abgeschalteten Überlaufschutz; in der Modellliste des Workflows.
+- *Weitere Punkte:* Opener, Scattergun und die 8 s vor Hypercharge decken sich. Bioblaster einen GCD vor Air Anchor bei
+  genau drei Gegnern und der Takt der Königin weichen ab; beide nicht gebaut – der erste verschiebt nur eine
+  Abklingzeit um einen GCD und hängt am Wert der Batterie, den kein Tooltip nennt; der zweite gewönne nur aus fremden
+  Buffs (Konzept 17). Begründung in Konzept 14, „Vergleich mit The Balance".
+
+**Falsifikation.** *Kein Defekt:* widerlegt durch die Rechnung, die The Balance in beiden Schwellen bestätigt. *Option
+falsch:* Liest die Auswertung eine Zahl nicht, fällt die Regel auf die AoE-Zahl zurück – kein Verlust gegen vorher;
+folgt sie keiner Stufensynchronisierung, rechnet sie mit den Potenzen der vollen Stufe, die Schwelle verschiebt sich
+höchstens um einen Gegner. Verfallen Ladungen von Double Check und Checkmate, überschätzt der Vergleich Blazing Shot.
+*Ausgeliefert, nichts ändert sich:* wenn die Tooltips keine Zahl liefern; deshalb schreibt `DefenseTrace.log` je Stufe,
+was gelesen wurde. Mit „Cleave" oder ausgeschalteter AoE fällt Auto Crossbow ohnehin nicht.
+
+*Prüfgrad:* statisch, Compile, Modell mit Selbsttest; dass die Tooltips im Spiel die Potenzen ausgeben, ist ein Schluss
+aus dem Weg der Dauern (A316), im Spiel nicht beobachtet.
+
 ---
 ## B · Commit-Register (Fork vs. `upstream/main`)
 

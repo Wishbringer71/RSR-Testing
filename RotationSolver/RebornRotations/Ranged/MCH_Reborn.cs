@@ -423,8 +423,8 @@ public sealed class MCH_Reborn : MachinistRotation
 			}
 		}
 
-		// Overheated AOE
-		if (AutoCrossbowPvE.CanUse(out act))
+		// Overheated AOE, where it out-damages Blazing Shot and the Double Check and Checkmate recast that brings
+		if (AutoCrossbowPvE.CanUse(out act) && AutoCrossbowOutdamagesBlazingShot(AutoCrossbowPvE.Target.AffectedTargets.Length))
 		{
 			return true;
 		}
