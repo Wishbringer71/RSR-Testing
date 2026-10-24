@@ -166,7 +166,7 @@ public sealed class GNB_Reborn : GunbreakerRotation
 		// A predicted tankbuster on the player gets its big mitigation first - or Rampart while that one is
 		// spent - ahead of the short ones: the window opens a few seconds before the hit, and with the cheap ones
 		// ahead the big one landed last (trace of 01.10.2026: Damnation 0.7 s before the hit, A241, A243).
-		if (BMRShouldRefreshBefore(BMRTankbusterIn, 15f, true, null, GreatNebulaPvE.EnoughLevel ? StatusID.GreatNebula : StatusID.Nebula)
+		if (BMRShouldRefreshBefore(BMRTankbusterIn, DefensiveValues.DurationOf(GreatNebulaPvE.EnoughLevel ? GreatNebulaPvE.ID : NebulaPvE.ID), true, null, GreatNebulaPvE.EnoughLevel ? StatusID.GreatNebula : StatusID.Nebula)
 			&& (GreatNebulaPvE.EnoughLevel ? GreatNebulaPvE.CanUse(out act, skipStatusProvideCheck: true) : NebulaPvE.CanUse(out act, skipStatusProvideCheck: true)))
 		{
 			return true;

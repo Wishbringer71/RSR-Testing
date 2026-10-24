@@ -9729,6 +9729,14 @@ bleibt die Zählung: eine engere könnte einen Erreichten auslassen. Selbstkorre
 zwischen Festlegung des Wirkbereichs beim Server und Effekt beim Client übersteigt das fragliche Yalm. Konzept 08,
 „Wann Lux Solaris zündet".
 
+**Punkt: Feste Werte, erste Gruppe – Vorlaufzeiten der vorausschauenden Abwehr.** Zehn Zeilen in Barde, Tänzer,
+Maschinist und den vier Tanks übergaben `BMRShouldRefreshBefore` 15 s als `statusDuration`, die Wirkdauer der
+jeweiligen Minderung. Die Spieldaten nennen für alle elf beteiligten Aktionen 15 s (Troubadour, Shield Samba, Tactician,
+Shadowed Vigil/Shadow Wall, Great Nebula/Nebula, Guardian/Sentinel, Damnation/Vengeance; `DefensiveValues.g.cs`).
+Ersetzt durch `DefensiveValues.DurationOf` der Aktion, die die Zeile wirkt, bei zwei Stufen der jeweils erlernten.
+Heute keine Änderung im Kampf; ändert ein Patch eine Dauer, folgt RSR. Offene Werte: 55 (vorher 65). Prüfgrad: statisch,
+Prüfskript, Compile.
+
 ---
 ## B · Commit-Register (Fork vs. `upstream/main`)
 

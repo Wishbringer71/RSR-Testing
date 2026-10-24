@@ -322,7 +322,7 @@ public sealed class WAR_Reborn : WarriorRotation
 		// A predicted tankbuster on the player gets its big mitigation first - or Rampart while that one is
 		// spent - ahead of the short ones: the window opens a few seconds before the hit, and with the cheap ones
 		// ahead the big one landed last (trace of 01.10.2026: Damnation 0.7 s before the hit, A241, A243).
-		if (BMRShouldRefreshBefore(BMRTankbusterIn, 15f, true, null, DamnationPvE.EnoughLevel ? StatusID.Damnation : StatusID.Vengeance)
+		if (BMRShouldRefreshBefore(BMRTankbusterIn, DefensiveValues.DurationOf(DamnationPvE.EnoughLevel ? DamnationPvE.ID : VengeancePvE.ID), true, null, DamnationPvE.EnoughLevel ? StatusID.Damnation : StatusID.Vengeance)
 			&& (DamnationPvE.EnoughLevel ? DamnationPvE.CanUse(out act, skipStatusProvideCheck: true) : VengeancePvE.CanUse(out act, skipStatusProvideCheck: true)))
 		{
 			return true;

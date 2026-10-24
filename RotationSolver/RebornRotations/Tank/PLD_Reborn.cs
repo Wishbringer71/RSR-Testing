@@ -261,7 +261,7 @@ public sealed class PLD_Reborn : PaladinRotation
 			// A predicted tankbuster on the player gets its big mitigation first - or Rampart while that one is
 			// spent - ahead of the short ones: the window opens a few seconds before the hit, and with the cheap ones
 			// ahead the big one landed last (trace of 01.10.2026: Damnation 0.7 s before the hit, A241, A243).
-			if (BMRShouldRefreshBefore(BMRTankbusterIn, 15f, true, null, GuardianPvE.EnoughLevel ? StatusID.Guardian : StatusID.Sentinel)
+			if (BMRShouldRefreshBefore(BMRTankbusterIn, DefensiveValues.DurationOf(GuardianPvE.EnoughLevel ? GuardianPvE.ID : SentinelPvE.ID), true, null, GuardianPvE.EnoughLevel ? StatusID.Guardian : StatusID.Sentinel)
 				&& (GuardianPvE.EnoughLevel ? GuardianPvE.CanUse(out act, skipStatusProvideCheck: true) : SentinelPvE.CanUse(out act, skipStatusProvideCheck: true)))
 			{
 				return true;

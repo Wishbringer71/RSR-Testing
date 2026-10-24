@@ -557,7 +557,7 @@ public sealed class DRK_Reborn : DarkKnightRotation
 		// A predicted tankbuster on the player gets its big mitigation first - or Rampart while that one is
 		// spent - ahead of the short ones: the window opens a few seconds before the hit, and with the cheap ones
 		// ahead the big one landed last (trace of 01.10.2026: Damnation 0.7 s before the hit, A241, A243).
-		if (BMRShouldRefreshBefore(BMRTankbusterIn, 15f, true, null, ShadowedVigilPvE.EnoughLevel ? StatusID.ShadowedVigil : StatusID.ShadowWall)
+		if (BMRShouldRefreshBefore(BMRTankbusterIn, DefensiveValues.DurationOf(ShadowedVigilPvE.EnoughLevel ? ShadowedVigilPvE.ID : ShadowWallPvE.ID), true, null, ShadowedVigilPvE.EnoughLevel ? StatusID.ShadowedVigil : StatusID.ShadowWall)
 			&& (ShadowedVigilPvE.EnoughLevel ? ShadowedVigilPvE.CanUse(out act, skipStatusProvideCheck: true) : ShadowWallPvE.CanUse(out act, skipStatusProvideCheck: true)))
 		{
 			return true;

@@ -34,8 +34,9 @@ Keine bekannt.
 ### Feste Werte: jeder offene Wert braucht seinen Loop · N, R
 
 *Im Kampf:* Jede offene Zahl ist eine ungeprüfte Annahme über das Spiel; ein Patch ändert sie, der Code nicht.
-`check_fixed_values.py` beziffert sie. *Zuerst:* die Vorlaufzeiten der vorausschauenden Abwehr (Barde, Tänzer,
-Maschinist, Tanks), dann die Jobs, die er spielt. Die Dauer von Reprisal, Feint und Addle kommt seit A338 aus dem Spiel.
+`check_fixed_values.py` beziffert sie. *Als Nächstes:* die Jobs, die er spielt (Weißmagier, Maschinist), dann der Kern
+(`CustomRotation_OtherInfo`, `ObjectHelper`). Aus dem Spiel kommen seit A338 die Dauer von Reprisal, Feint und Addle,
+seit A340 die Vorlaufzeiten der vorausschauenden Abwehr (Barde, Tänzer, Maschinist, Tanks).
 
 ### Tankbuster-Plan: Umlauf über die Sequenz jedes Drucks · N
 
