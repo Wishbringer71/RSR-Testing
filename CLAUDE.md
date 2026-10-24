@@ -68,6 +68,7 @@ Persistenz: Priorität 1, jede Eingabe, ausnahmslos. Kontextkomprimierung→Date
 **Bevor ich etwas als fertig melde**
 - Wirkkette am Code, Richtigkeit am Spielgeschehen, Nachsteuerung, wo die Antwort erst zur Laufzeit fällt (→ „Definition of Done").
 - Konzept, `TODO.md` und Archiv fortgeschrieben.
+- Am Auftragsende Upstream erneut synchronisiert und ausgewertet (→ „Upstream“).
 - Prüfgrad benannt.
 
 **Bevor ich einen Zug beende**
@@ -313,6 +314,7 @@ Gelten in jeder Stufe. Eine Aussage, die eine davon verletzt, ist unbelegt.
 - `main` halte ich selbst synchron: `upstream/main` in `main` mergen und pushen, ohne Freigabe und ohne auf einen PR-Merge zu warten.
 - `upstream` ist read-only.
 - Einen Sync werte ich aus, statt ihn nur einzupflegen: je fremder Änderung an einem Fork-Abschnitt — was ändert sie im Kampf, wie greift sie in die eigenen Änderungen, was wird daraus (trägt sie eine Regel, schärft sie einen Vertrag, beantwortet sie eine offene Frage)?
+- Nach dem Abarbeiten eines Auftrags synchronisiere ich erneut und prüfe die neuen Upstream-Änderungen im kritischen Loop auf Probleme mit eigenem Code und Konzepten (seine Vorgabe, 24.10.2026). Grund: Während der Arbeit kommt Upstream weiter, und erst der Sync danach zeigt, ob das Gebaute noch trägt.
 
 **Commits und Zweige**
 - Der Arbeitszweig heißt `claude/fixes-after-<letztes Fork-Release>`, etwa `claude/fixes-after-7.5.6.13` (seine Vorgabe); nach einem neuen Release ein neuer Zweig mit dessen Nummer. Grund: Der Name sagt, auf welchem Release-Stand gearbeitet wird. Gibt die Sitzungsumgebung einen anderen Namen vor, gilt seine Vorgabe, und ich sage es ihm.
