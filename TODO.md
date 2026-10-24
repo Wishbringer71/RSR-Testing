@@ -15,12 +15,11 @@ steht seit seinem Hinweis vom 24.10.2026 vor der Flächenheilung: Es heilt eine 
 alles nimmt.
 
 1. Weißmagier: Glockenspiel auch vor großen Einzeltreffern (seine Entscheidung)
-2. Tankbuster-Plan: Umlauf über die Sequenz jedes Drucks
-3. Rotationen gegen The Balance abgleichen
-4. Six-sided Star und Flamethrower
-5. Vorlauf: Dragoon und Viper
-6. AoE-Schwelle an drei Orten
-7. Audit der gesamten Codebasis
+2. Rotationen gegen The Balance abgleichen
+3. Six-sided Star und Flamethrower
+4. Vorlauf: Dragoon und Viper
+5. AoE-Schwelle an drei Orten
+6. Audit der gesamten Codebasis
 
 Danach technische Schuld, soweit ihre Auflösungsbedingung erfüllt ist. Warten auf Daten: unten.
 
@@ -29,15 +28,6 @@ Danach technische Schuld, soweit ihre Auflösungsbedingung erfüllt ist. Warten 
 Keine bekannt.
 
 ## Offene Arbeit
-
-### Tankbuster-Plan: Umlauf über die Sequenz jedes Drucks · N
-
-*Im Kampf:* Die Frist, bis zu der eine Abwehr vor dem Snapshot hinausgehen muss, rechnet mit dem gemessenen Umlauf
-(`TankbusterForecast.RoundTrip`). Er paart Druck und Wirkung nach Aktions-Id innerhalb eines GCDs und kennt nur
-RSR-Drücke; ein abgewiesener oder eingereihter Druck kann als Probe zählen, eigene Drücke des Spielers fehlen. Seit
-Upstream 7.5.7.5 sieht `ActionManagerEx` jede Anfrage, die hinausgeht (Sequenz), und jede eigene Wirkung trägt sie
-(`SourceSequence`). *Nächster Schritt:* Loop – klären, ob die exakte Paarung die Frist im Kampf früher oder sicherer
-setzt, und dann die Messung darauf umstellen. *Konzept:* 09 (A332).
 
 ### Weißmagier: Glockenspiel auch vor großen Einzeltreffern (seine Entscheidung) · N
 

@@ -9796,6 +9796,34 @@ Offen: 40. Nicht im Profil und deshalb nicht bearbeitet: Blaumagier, Phantom-Job
 - *Prüfgrad:* statisch, Spielblätter, Prüfskript, Compile; im Spiel nicht beobachtet. Konzept 08 (Gegner-Debuffs über
   die Gegnerzahl).
 
+**Punkt: Umlauf im Tankbuster-Plan über die Sequenz jeder Anfrage.**
+- *Befund am Code:* `BaseAction.Use` zählte einen Druck als Messprobe, wenn keine Animationssperre lief, die Aktion
+  keine Wirkzeit hatte und der Spieler nicht wirkte. Die Wiederholzeit des GCDs prüfte es nicht. RSR drückt den nächsten
+  GCD, sobald höchstens `CalculatedActionAhead` von ihr übrig ist (`ActionHelper.CanUseGCD`; ab Werk 0,25 GCD,
+  `_action6head`), und `UseAction` reiht eine Aktion ein, die kurz vor ihrer Verfügbarkeit gedrückt wird (ClientStructs,
+  Dokumentation von `UseAction`). Ob `UseAction` dabei Erfolg meldet, nennt keine Quelle (ClientStructs ohne Angabe zum
+  Rückgabewert; BossMod umgeht `UseAction` mit einer eigenen Warteschlange) – *unbelegt*. Meldet es Erfolg, war bei
+  Tanks fast jede letzte Probe ein eingereihter GCD: Der Umlauf enthielt die Wartezeit, die Frist lag entsprechend
+  früher, und `PressSpacing` wurde im selben Bild gelesen, bevor die Sperre gesetzt war – ein Bild statt der Sperre, und
+  `PressSlots` zählte beliebig viele Druckplätze. *Im Kampf:* Der Plan hielt eine Minderung zurück, die den Snapshot
+  noch erreicht hätte, und wählte Bündel, deren Glieder nicht mehr alle hinausgingen, statt der Unverwundbarkeit.
+  Laufzeitbelege fehlen: In seinen Protokollen seit A307 steht keine Zeile mit „round trip" (kein Tank seit 17.10.2026).
+- *Optionen:* (0) nichts; (a) die Wiederholzeit in die Bedingung aufnehmen – bleibt an der unbelegten Rückgabe hängen
+  und misst weiter nur RSR-Drücke; (b) an der Anfrage messen: Sequenzwechsel in `UseActionLocation` (der Moment, in dem
+  sie hinausgeht, auch aus der Warteschlange und bei eigenen Drücken des Spielers), Ende an der Wirkung mit derselben
+  `SourceSequence` – so behandelt BossMod Anfragen (`HandleActionRequest`). *Gewählt (b).* Ohne Wirkzeit heißt: nach
+  dem Absenden läuft kein Wirken (`CastSpellId == 0`); BossMod liest unmittelbar nach dem Absenden ebenso
+  `CastTimeRemaining`, um seine Abklingkorrektur auf Wirken oder Sperre zu verteilen.
+- *Falsifikation.* Kein Defekt: Meldet `UseAction` beim Einreihen keinen Erfolg, war die alte Messung richtig und nur
+  seltener; (b) ist in beiden Fällen richtig, der Punkt verlangte die exakte Paarung ohnehin. Option falsch: Eine
+  Anfrage ohne Antwort (vom Server abgewiesen) misst nichts, die nächste ersetzt sie; mehrere Anfragen im Flug – es
+  zählt die letzte, wie vorher „die letzte Messung". Ausgeliefert, nichts ändert sich: wenn `UseAction` beim Einreihen
+  scheitert; als Nicht-Tank (der Plan ist eine Tank-Regel; die Frist auf Stufe „alle", `PressReachesBeforeSnapshot`,
+  liest denselben Umlauf und wird ebenso genauer).
+- *Prüfgrad:* statisch, Fremdcode (BossMod), Compile; im Spiel nicht beobachtet. Messmittel: die Plan-Zeile im
+  `DefenseTrace.log` nennt „round trip … s" je Druck. Konzept 09, „Spielerweite Sperre und Frist". Der TODO-Eintrag ist
+  geschlossen.
+
 ---
 ## B · Commit-Register (Fork vs. `upstream/main`)
 

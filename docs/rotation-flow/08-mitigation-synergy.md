@@ -1087,7 +1087,7 @@ Reinigung, Herausforderung, Wiederbelebung und Heilung. Unter mehreren das Wirke
 
 „Die Zeit reicht" heißt für beide: Vom Wirken ist mehr übrig als die eigene Wirkzeit (null unter Dualcast oder
 Triplecast), der laufende GCD, die gemessene Zeit vom Ende des eigenen Wirkens bis zur Wirkung (vor der ersten Messung
-die Laufzeit eines Drucks) und der gelernte Rest beim Eintreffen. Nicht unter Swiftcast. Beim Heiler nicht, solange ein
+die Laufzeit einer Anfrage) und der gelernte Rest beim Eintreffen. Nicht unter Swiftcast. Beim Heiler nicht, solange ein
 Mitglied in der kritischen Klasse steht. Nicht, wenn die Flächenaktion unter „Don't attack new mobs by AoE." einen
 Gegner träfe, der noch nicht kämpft.
 

@@ -33,6 +33,14 @@ the measurement. It now learns, per area and marker, which hit followed and how 
 tankbuster with a cast: the least mitigation that survives it, or the invulnerability if nothing less does. Mitigation
 is held back only under a planned invulnerability, as the marker may announce another hit this time.
 
+## Tanks: the time a press needs to reach the server is measured on the request
+
+A tankbuster plan presses its mitigation only while it can still reach the server before the hit is decided there,
+and counts how many presses fit until then. Both figures were measured from RSR's own press, which for a weaponskill
+pressed shortly before the global cooldown ran out could include its wait in the game's queue - the plan then gave
+up on a mitigation too early, or counted presses that no longer fit. They are now measured from the moment a request
+actually leaves, matched to the effect that answers it, and every press counts, also your own.
+
 ## Tanks: Reprisal and the party tool take turns over area attacks
 
 All four tanks put their party tool and Reprisal on the same area attack, one weave after the other, and had nothing

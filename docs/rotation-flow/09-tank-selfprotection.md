@@ -305,17 +305,20 @@ Glieder bis dahin hineinpassen.
    sie als jetzt endend. Die Erkennung urteilt nicht.
 2. *Ablehnung unter Sperre:* wie unter der Animationssperre keine Antwort; Neuversuch im nächsten Durchlauf, für jedes
    Glied und für die Unverwundbarkeit.
-3. *Frist für eine Minderung* (`MitigationDeadline`): Ende des Wirkens weniger der gemessenen Laufzeit von Druck bis
-   Bestätigung (`TankbusterForecast.RoundTrip`). Der Client sieht das Ende einen halben Umlauf nach dem Server, ein
+3. *Frist für eine Minderung* (`MitigationDeadline`): Ende des Wirkens weniger der gemessenen Laufzeit von Anfrage bis
+   Wirkung (`TankbusterForecast.RoundTrip`). Der Client sieht das Ende einen halben Umlauf nach dem Server, ein
    Druck braucht einen halben Umlauf hin; also muss er einen ganzen Umlauf vor dem gezeigten Ende hinaus. Vor der
    ersten Messung liegt die Frist am Ende des Wirkens.
-   - Gemessen an jedem eigenen Druck einer Aktion ohne Wirkzeit, der hinausgeht, während keine Animationssperre läuft
-     und der Spieler nicht wirkt – ein solcher Druck geht sofort zum Server, ein in die Warteschlange gestellter
-     verlängerte die Messung. Es gilt die letzte Messung.
-   - Druck und Bestätigung paart die Messung nach Aktions-Id innerhalb eines GCDs, nur für RSR-Drücke. Seit Upstream
-     7.5.7.5 trägt jede hinausgehende Anfrage eine Sequenz und jede eigene Wirkung sie zurück; darüber wäre die Paarung
-     exakt und schlösse abgewiesene Drücke aus (offen, `TODO.md`, „Tankbuster-Plan: Umlauf über die Sequenz jedes
-     Drucks", A332).
+   - Gemessen an jeder eigenen Anfrage ohne Wirkzeit in dem Moment, in dem sie zum Server hinausgeht – gedrückt von
+     RSR, vom Spieler oder aus der Warteschlange des Spiels: Ihre Sequenz ändert sich (`ActionManagerEx`), und die
+     Wirkung, die dieselbe Sequenz zurückträgt (`SourceSequence`), beendet die Messung. Eine eingereihte oder
+     abgewiesene Anfrage ändert keine Sequenz und zählt nicht. Es gilt die letzte Messung.
+   - Bis A340 maß RSR ab dem eigenen Druck, wenn keine Animationssperre lief, und paarte nach Aktions-Id. Die
+     Wiederholzeit des GCDs prüfte das nicht: RSR drückt den nächsten GCD bis `CalculatedActionAhead` vor ihrem Ende
+     (ab Werk ein Viertel GCD), das Spiel reiht ihn dann ein (ClientStructs: „action is queued"). Meldet `UseAction`
+     dabei Erfolg – unbelegt, keine Quelle nennt den Rückgabewert –, zählte die Wartezeit zum Umlauf, und der Abstand
+     (Punkt 5) wurde gelesen, bevor die Sperre gesetzt war: ein Bild statt der Sperre, also beliebig viele
+     Druckplätze. Die Messung an der Anfrage ist in beiden Fällen richtig.
    - *Für die Unverwundbarkeit keine Frist vor dem Ende des Wirkens:* Holmgangs Untergrenze zählt beim Zufügen, nach
      dem Snapshot (Mechanik); für Heiligen Boden, Meteoritenfall und Totenerweckung ist es unbelegt. Bis zum Ende des
      Wirkens gedrückt, kann sie noch halten; ein Tod, den sie nicht verhindert, kostet nichts weiter. Nach dem Ende
@@ -325,7 +328,7 @@ Glieder bis dahin hineinpassen.
    endet (Z2). Was die anderen Pfade danach drücken, drücken sie mit eigenen Gründen für die Treffer danach.
 5. *Druckplätze* (`PressSlots`): Von dem Moment an, in dem Animationssperre, eigener Zauber oder Sperre enden
    (`ObjectHelper.GetInstantHealLeadTime`, Restzeit der Sperre), passt bis zur Frist je gemessenem Abstand ein Druck
-   (`TankbusterForecast.PressSpacing`: Zeit vom gemessenen Druck, bis seine Animationssperre abgelaufen ist).
+   (`TankbusterForecast.PressSpacing`: Zeit von der gemessenen Anfrage, bis ihre Animationssperre abgelaufen ist).
    - Ein Bündel ist nur wählbar, wenn seine ungedrückten Glieder hineinpassen; sonst die Unverwundbarkeit (ein
      Druck, bis zum Ende des Wirkens), ohne sie „alles", das Glied zuerst, das allein am meisten vom Treffer nimmt.
    - Ein Ersatz für ein Glied, das eine Hilfe für andere nähme (K2–K4), zählt nur, wenn er hineinpasst.
@@ -366,8 +369,8 @@ einer, der noch rechtzeitig ankommt, geht auch unter 0,6 s. *Grenze:* Für Barri
 Rückstoß zählt vermutlich das Zufügen, das nach dem Snapshot liegt (unbelegt); dort ist die Frist um diesen Abstand zu
 früh – dieselbe Richtung wie die alte Grenze, nur kürzer.
 
-**Grenzen:** Vor der ersten gemessenen Laufzeit und dem ersten gemessenen Abstand – praktisch nur bis zum ersten Druck
-nach dem Laden des Plugins – gilt das alte Verhalten. Die letzte Messung schwankt mit dem Netz; eine zu lange macht die
+**Grenzen:** Vor der ersten gemessenen Laufzeit und dem ersten gemessenen Abstand – praktisch nur bis zur ersten Anfrage
+ohne Wirkzeit nach dem Laden des Plugins – gilt das alte Verhalten. Die letzte Messung schwankt mit dem Netz; eine zu lange macht die
 Frist zu früh, eine zu kurze zu spät. Die Plätze rechnen nicht mit Fenstern, die sich erst nach dem ersten Platz öffnen;
 nach Invariante 5 öffnet sich jedes Fenster mehr als einen GCD vor dem Einschlag.
 
