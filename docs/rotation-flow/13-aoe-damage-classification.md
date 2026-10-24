@@ -831,9 +831,12 @@ offene Punkte zugleich schließt, steht in `08-mitigation-synergy.md`, Abschnitt
 mehrfach trägt“.
 
 **Für die Tankbuster ist dieselbe Frage beantwortet** (Abschnitt „Die Tankbuster-Tabelle").
-`HostileCastingKnockback` und `HostileCastingStop` haben dieselbe Struktur; dort fehlen ein eigener
-Speicher und eine Rechnung, und keine Regel fragt nach der Größe eines Rückstoßes oder eines
-Stopp-Casts.
+`HostileCastingKnockback` und `HostileCastingStop` haben dieselbe Struktur, aber keinen eigenen Speicher und keine
+Rechnung, und sie brauchen keine (A340): Die Rückstoßliste öffnet nur den Rückstoßschutz (`AutoStatus.AntiKnockback`),
+die Stoppliste nur das Innehalten (`AutoStatus.NoCasting`). Beide antworten auf die Mechanik – verschoben werden,
+während eines Blicks oder Stopps handeln –, nicht auf den Schaden; ein Rückstoß verschiebt, ob er viel oder wenig
+Schaden macht. Keine Schadensabwehr liest die beiden Listen. Macht ein Rückstoß auch Schaden an der Gruppe, steht er
+auf der Flächenliste und wird dort gemessen.
 
 **Die Wahl des Mittels nach der Treffergröße — Vorgabe des Auftraggebers:** „man könnte es auch so
 anpassen, dass die geeignete schadensverringerung bzw. das geeignete schild bei dem eintreffenden schaden

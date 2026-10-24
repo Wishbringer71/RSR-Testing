@@ -9677,6 +9677,15 @@ Aktionsangabe oder Messung); beim Lesen der Marker-Beobachtung fiel ein Defekt a
   die Schwelle ohnehin erreicht (dann kommt die Barriere wie bisher); mit der Option aus.
 - *Prüfgrad:* statisch, Compile; im Spiel nicht beobachtet. Messmittel: die Protokollzeile je Barriere. Konzept 10.
 
+**Punkt: Rückstoß und Stopp-Casts, Größe messen.** Geschlossen ohne Code. Die Rückstoßliste setzt nur
+`AutoStatus.AntiKnockback` (`StateUpdater.ShouldAddAntiKnockback`), die Stoppliste nur `AutoStatus.NoCasting`
+(`ShouldAddNoCasting`); dazu erkennt `IsListedHostileCast` unsichtbare Helfer über die Rückstoßliste. Keine
+Schadensabwehr liest die beiden. Was dort entscheidet, ist die Mechanik (verschoben werden, im Blick handeln), nicht
+die Schadenshöhe: Eine gemessene Größe beantwortete keine Entscheidung. Ein Rückstoß, der die Gruppe auch beschädigt,
+steht auf der Flächenliste und wird dort gemessen. *Falsifikation:* Ausgeliefert, nichts ändert sich – gewollt; die
+Frage, ob ein Rückstoß schadet (Rand der Arena, Wirkfläche), ist eine Ortsfrage, die BossModReborn beantwortet, keine
+Größenfrage. Konzept 13.
+
 ---
 ## B · Commit-Register (Fork vs. `upstream/main`)
 

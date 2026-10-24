@@ -14,17 +14,16 @@ Auftrag vom 24.10.2026 läuft: die einfachen Punkte zuerst (A338), die schweren 
 steht seit seinem Hinweis vom 24.10.2026 vor der Flächenheilung: Es heilt eine Gruppe nach einem Treffer, der ihr fast
 alles nimmt.
 
-1. Rückstoß und Stopp-Casts: Größe messen
-2. Vorausschau vor dem ersten Treffer
-3. Weißmagier: Glockenspiel vor großen Treffern und zweiter Druck
-4. Flächenheilung um den Wirkenden: Radius gegen Trefferfläche
-5. Feste Werte: jeder offene Wert braucht seinen Loop
-6. Tankbuster-Plan: Umlauf über die Sequenz jedes Drucks
-7. Rotationen gegen The Balance abgleichen
-8. Six-sided Star und Flamethrower
-9. Vorlauf: Dragoon und Viper
-10. AoE-Schwelle an drei Orten
-11. Audit der gesamten Codebasis
+1. Vorausschau vor dem ersten Treffer
+2. Weißmagier: Glockenspiel vor großen Treffern und zweiter Druck
+3. Flächenheilung um den Wirkenden: Radius gegen Trefferfläche
+4. Feste Werte: jeder offene Wert braucht seinen Loop
+5. Tankbuster-Plan: Umlauf über die Sequenz jedes Drucks
+6. Rotationen gegen The Balance abgleichen
+7. Six-sided Star und Flamethrower
+8. Vorlauf: Dragoon und Viper
+9. AoE-Schwelle an drei Orten
+10. Audit der gesamten Codebasis
 
 Danach technische Schuld, soweit ihre Auflösungsbedingung erfüllt ist. Warten auf Daten: unten.
 
@@ -33,12 +32,6 @@ Danach technische Schuld, soweit ihre Auflösungsbedingung erfüllt ist. Warten 
 Keine bekannt.
 
 ## Offene Arbeit
-
-### Rückstoß und Stopp-Casts: Größe messen · N
-
-*Im Kampf:* Für Tankbuster misst die Tankbuster-Tabelle jeden Treffer; `HostileCastingKnockback` und
-`HostileCastingStop` haben keinen eigenen Speicher und keine Rechnung, also wirkt jede Abwehr dafür ohne Größe. *Nächster
-Schritt:* je Liste klären, was die Größe dort entscheidet (ein Rückstoß verschiebt oft nur). *Konzept:* 08, 13.
 
 ### Vorausschau vor dem ersten Treffer · N
 
