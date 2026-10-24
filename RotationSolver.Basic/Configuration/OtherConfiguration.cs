@@ -2,25 +2,13 @@
 using ECommons.ExcelServices;
 using ECommons.Logging;
 using Newtonsoft.Json.Converters;
+using RotationSolver.Basic.Resources;
 
 namespace RotationSolver.Basic.Configuration;
 
 internal class OtherConfiguration
 {
-	private static readonly HttpClient Http = CreateHttpClient();
-	private static HttpClient CreateHttpClient()
-	{
-		var c = new HttpClient { Timeout = TimeSpan.FromSeconds(15) };
-		try
-		{
-			c.DefaultRequestHeaders.UserAgent.ParseAdd("RotationSolver");
-			c.DefaultRequestHeaders.Accept.ParseAdd("application/json");
-		}
-		catch { /* best-effort headers */ }
-		return c;
-	}
 	/// <markdown file="List" name="AoE" section="Actions">
-	/// **`It is recommended to click on the reset button after every patch.`**
 	///
 	/// RSR will use group mitigation if any enemy in the enmity list is casting
 	/// one of the listed actions. Usually those actions are raid-wides.
@@ -28,7 +16,6 @@ internal class OtherConfiguration
 	public static HashSet<uint> HostileCastingArea = [];
 
 	/// <markdown file="List" name="Tank Buster" section="Actions">
-	/// **`It is recommended to click on the reset button after every patch.`**
 	///
 	/// RSR will use mitigation on target (heal) or self (tank) if the target is currently
 	/// being targeted by one of the listed actions.
@@ -36,7 +23,6 @@ internal class OtherConfiguration
 	public static HashSet<uint> HostileCastingTank = [];
 
 	/// <markdown file="List" name="Knockback" section="Actions">
-	/// **`It is recommended to click on the reset button after every patch.`**
 	///
 	/// **Click on "Record knockback actions" at your own peril. Some duties expect you take the
 	/// knockback in order to reach a proper safe-spot, like in Sil'dihn Subterrane (Savage).**
@@ -61,7 +47,6 @@ internal class OtherConfiguration
 	public static Dictionary<string, TankbusterMarkerHit> TankbusterMarkerHits = [];
 
 	/// <markdown file="List" name="Gaze/Stop" section="Actions">
-	/// **`It is recommended to click on the reset button after every patch.`**
 	///
 	/// If the target is casting one of the listed actions, RSR will stop casting
 	/// in the seconds before the action is resolved
@@ -90,7 +75,6 @@ internal class OtherConfiguration
 	public static Dictionary<uint, Vector3[]> BeneficialPositions = [];
 
 	/// <markdown file="List" name="Dispellable Debuffs" section="Statuses">
-	/// **`It is recommended to click on the reset button after every patch.`**
 	///
 	/// Listed statuses will be dispelled (Esuna) first before any
 	/// other dispellable statuses.
@@ -98,7 +82,6 @@ internal class OtherConfiguration
 	public static HashSet<uint> DangerousStatus = [];
 
 	/// <markdown file="List" name="Priority" section="Statuses">
-	/// **`It is recommended to click on the reset button after every patch.`**
 	///
 	/// If running in auto mode, if any enemy in your enmity list has this status,
 	/// it will target them as priority.
@@ -106,14 +89,12 @@ internal class OtherConfiguration
 	public static HashSet<uint> PriorityStatus = [];
 
 	/// <markdown file="List" name="Invulnerability" section="Statuses">
-	/// **`It is recommended to click on the reset button after every patch.`**
 	///
 	/// Ignores target if they have one of the statuses listed.
 	/// </markdown>
 	public static HashSet<uint> InvincibleStatus = [];
 
 	/// <markdown file="List" name="No-Casting Debuffs" section="Statuses">
-	/// **`It is recommended to click on the reset button after every patch.`**
 	///
 	/// If you have any of the statuses listed, RSR will stop taking any actions.
 	/// </markdown>
@@ -204,12 +185,17 @@ internal class OtherConfiguration
 
 	public static RotationSolverRecord RotationSolverRecord = new();
 
-	private abstract class ListFile(string name, bool download)
+	private abstract class ListFile(string name)
 	{
 		public string Name { get; } = name;
-		public bool Download { get; } = download;
 
-		public abstract void Load(bool forceDownload);
+		public abstract string FilePath { get; }
+
+		public abstract void Load();
+
+		public abstract void Reset();
+
+		public abstract string Serialize();
 
 		/// <summary>
 		/// Takes what is to be written on the caller's thread and returns the write for a pool thread.
@@ -217,28 +203,285 @@ internal class OtherConfiguration
 		/// <remarks>
 		/// The game thread changes several of these stores during play. Copied on a pool thread, a store
 		/// could be read while the game thread adds to it - "Collection was modified" thrown out of the
-		/// copy, and the save lost without a retry (A224).
+		/// copy, and the save lost without a retry (A224). A store whose load did not finish is not
+		/// written: it holds its empty default, and for a built-in list that diffs to "every entry
+		/// removed" - the next start would read every list as empty (A196, A341).
 		/// </remarks>
-		public abstract Action PrepareWrite();
-	}
-
-	private sealed class ListFile<T>(string name, Func<T> get, Action<T> set, bool download = true) : ListFile(name, download) where T : new()
-	{
-		public override void Load(bool forceDownload)
-		{
-			set(InitOne(get(), Name, Download, forceDownload));
-		}
-
-		public override Action PrepareWrite()
+		public virtual Action PrepareWrite()
 		{
 			if (!WasLoaded(Name))
 			{
 				return static () => { };
 			}
 
-			var path = GetFilePath(Name);
-			var json = JsonConvert.SerializeObject(get(), Formatting.Indented, SerializerSettings);
+			var path = FilePath;
+			var json = Serialize();
 			return () => WriteFile(path, json);
+		}
+	}
+
+	// A list that only exists in the user's config folder.
+	private sealed class LocalFile<T>(string name, Func<T> get, Action<T> set) : ListFile(name) where T : class, new()
+	{
+		public override string FilePath => GetFilePath(Name);
+
+		public override void Load()
+		{
+			set(ReadFile<T>(FilePath) ?? new T());
+			MarkLoaded(Name);
+		}
+
+		public override void Reset() => set(new T());
+
+		public override string Serialize() => JsonConvert.SerializeObject(get(), Formatting.Indented, SerializerSettings);
+	}
+
+	private abstract class BuiltInList<T, TChanges>(string name, T builtInList, Func<T> get, Action<T> set) : ListFile(name)
+		where T : class, new()
+		where TChanges : class
+	{
+		private T BuiltIn { get; } = builtInList;
+
+		public override string FilePath => GetChangesPath(Name);
+
+		public override void Load()
+		{
+			var changes = ReadFile<TChanges>(FilePath) ?? MigrateLegacyFile();
+			set(changes == null ? Copy(BuiltIn) : Apply(BuiltIn, changes));
+			MarkLoaded(Name);
+		}
+
+		public override void Reset() => set(Copy(BuiltIn));
+
+		public override string Serialize() => JsonConvert.SerializeObject(Diff(BuiltIn, get()), Formatting.Indented, SerializerSettings);
+
+		protected abstract T Copy(T value);
+
+		protected abstract T Apply(T builtIn, TChanges changes);
+
+		protected abstract TChanges Diff(T builtIn, T current);
+
+		protected virtual TChanges? Migrate(T builtIn, T legacy) => null;
+
+		private TChanges? MigrateLegacyFile()
+		{
+			var legacyPath = GetFilePath(Name);
+			if (!File.Exists(legacyPath))
+			{
+				return null;
+			}
+
+			var legacy = ReadFile<T>(legacyPath);
+			var changes = legacy == null ? null : Migrate(BuiltIn, legacy);
+			if (changes != null)
+			{
+				WriteFile(FilePath, JsonConvert.SerializeObject(changes, Formatting.Indented, SerializerSettings));
+				if (!File.Exists(FilePath))
+				{
+					return changes;
+				}
+			}
+
+			try
+			{
+				File.Delete(legacyPath);
+				PluginLog.Information($"Moved {Name} to the built-in list{(changes == null ? string.Empty : " and kept your additions")}.");
+			}
+			catch (Exception ex)
+			{
+				PluginLog.Warning($"Failed to delete the old {legacyPath}: {ex.Message}");
+			}
+
+			return changes;
+		}
+	}
+
+	private sealed class SetChanges
+	{
+		public HashSet<uint> Added { get; set; } = [];
+		public HashSet<uint> Removed { get; set; } = [];
+	}
+
+	private sealed class SetList(string name, uint[] builtInIds, Func<HashSet<uint>> get, Action<HashSet<uint>> set, params uint[] retired)
+		: BuiltInList<HashSet<uint>, SetChanges>(name, [.. builtInIds], get, set)
+	{
+		protected override HashSet<uint> Copy(HashSet<uint> value) => [.. value];
+
+		protected override HashSet<uint> Apply(HashSet<uint> builtIn, SetChanges changes)
+		{
+			var result = new HashSet<uint>(builtIn);
+			result.ExceptWith(changes.Removed);
+			result.UnionWith(changes.Added);
+			return result;
+		}
+
+		protected override SetChanges Diff(HashSet<uint> builtIn, HashSet<uint> current)
+		{
+			var changes = new SetChanges();
+			foreach (var id in current)
+			{
+				if (!builtIn.Contains(id))
+				{
+					_ = changes.Added.Add(id);
+				}
+			}
+
+			foreach (var id in builtIn)
+			{
+				if (!current.Contains(id))
+				{
+					_ = changes.Removed.Add(id);
+				}
+			}
+
+			return changes;
+		}
+
+		// A missing id may have joined the built-in list after the old file was downloaded, so only additions carry over.
+		// Retired ids were once built in and later dropped, so an old file holding them got them from a download.
+		protected override SetChanges Migrate(HashSet<uint> builtIn, HashSet<uint> legacy)
+		{
+			var changes = Diff(builtIn, legacy);
+			changes.Removed.Clear();
+			changes.Added.ExceptWith(retired);
+			return changes;
+		}
+	}
+
+	private sealed class MapChanges<TItem>
+	{
+		public Dictionary<uint, TItem[]> Added { get; set; } = [];
+		public Dictionary<uint, TItem[]> Removed { get; set; } = [];
+	}
+
+	// Per-territory lists.
+	private sealed class MapList<TItem>(string name, Dictionary<uint, TItem[]> builtInMap, Func<Dictionary<uint, TItem[]>> get, Action<Dictionary<uint, TItem[]>> set)
+		: BuiltInList<Dictionary<uint, TItem[]>, MapChanges<TItem>>(name, builtInMap, get, set)
+	{
+		protected override Dictionary<uint, TItem[]> Copy(Dictionary<uint, TItem[]> value)
+		{
+			var result = new Dictionary<uint, TItem[]>(value.Count);
+			foreach (var (key, items) in value)
+			{
+				result[key] = [.. items];
+			}
+
+			return result;
+		}
+
+		protected override Dictionary<uint, TItem[]> Apply(Dictionary<uint, TItem[]> builtIn, MapChanges<TItem> changes)
+		{
+			var result = Copy(builtIn);
+			foreach (var (key, removed) in changes.Removed)
+			{
+				if (result.TryGetValue(key, out var items))
+				{
+					result[key] = Except(items, removed, false);
+				}
+			}
+
+			foreach (var (key, added) in changes.Added)
+			{
+				result[key] = result.TryGetValue(key, out var items) ? [.. items, .. Except(added, items, true)] : [.. added];
+			}
+
+			return result;
+		}
+
+		protected override MapChanges<TItem> Diff(Dictionary<uint, TItem[]> builtIn, Dictionary<uint, TItem[]> current)
+		{
+			var changes = new MapChanges<TItem>();
+			foreach (var (key, items) in current)
+			{
+				var added = Except(items, builtIn.GetValueOrDefault(key), true);
+				if (added.Length > 0)
+				{
+					changes.Added[key] = added;
+				}
+			}
+
+			foreach (var (key, items) in builtIn)
+			{
+				var removed = Except(items, current.GetValueOrDefault(key), true);
+				if (removed.Length > 0)
+				{
+					changes.Removed[key] = removed;
+				}
+			}
+
+			return changes;
+		}
+
+		protected override MapChanges<TItem> Migrate(Dictionary<uint, TItem[]> builtIn, Dictionary<uint, TItem[]> legacy)
+		{
+			var changes = Diff(builtIn, legacy);
+			changes.Removed.Clear();
+			return changes;
+		}
+
+		private static TItem[] Except(TItem[] items, TItem[]? other, bool skipBlank)
+		{
+			var result = new List<TItem>(items.Length);
+			foreach (var item in items)
+			{
+				if ((skipBlank && item is null or string { Length: 0 })
+					|| (other != null && Array.IndexOf(other, item) >= 0)
+					|| result.Contains(item))
+				{
+					continue;
+				}
+
+				result.Add(item);
+			}
+
+			return [.. result];
+		}
+	}
+
+	private sealed class OrderList(string name, Job[] builtInOrder, Func<List<Job>> get, Action<List<Job>> set)
+		: BuiltInList<List<Job>, List<Job>>(name, [.. builtInOrder], get, set)
+	{
+		protected override List<Job> Copy(List<Job> value) => [.. value];
+
+		protected override List<Job> Apply(List<Job> builtIn, List<Job> changes)
+		{
+			var result = new List<Job>(builtIn.Count);
+			foreach (var job in changes)
+			{
+				if (builtIn.Contains(job) && !result.Contains(job))
+				{
+					result.Add(job);
+				}
+			}
+
+			foreach (var job in builtIn)
+			{
+				if (!result.Contains(job))
+				{
+					result.Add(job);
+				}
+			}
+
+			return result;
+		}
+
+		protected override List<Job> Diff(List<Job> builtIn, List<Job> current)
+		{
+			if (current.Count == builtIn.Count)
+			{
+				var same = true;
+				for (var i = 0; i < current.Count && same; i++)
+				{
+					same = current[i] == builtIn[i];
+				}
+
+				if (same)
+				{
+					return [];
+				}
+			}
+
+			return [.. current];
 		}
 	}
 
@@ -253,20 +496,23 @@ internal class OtherConfiguration
 	private sealed class LearnedFile<TValue>(string name, Func<Dictionary<uint, TValue>> copy,
 		Action<Dictionary<uint, TValue>> set, Func<TValue, TValue, TValue> higher, Action<string> report,
 		string noun, Func<TValue, bool>? keep = null, Func<Dictionary<uint, TValue>, int>? prune = null)
-		: ListFile(name, false)
+		: ListFile(name)
 	{
 		// One writer at a time. Every save of a store uses the same "<name>.json.tmp", and two pool
 		// tasks writing it at once made the second one fail on the locked file - retried twice, and
 		// on the third failure dropped.
 		private readonly object _gate = new();
 
-		public override void Load(bool forceDownload)
+		public override string FilePath => GetFilePath(Name);
+
+		public override void Load()
 		{
 			// "loaded 0", "file unreadable" and "no file yet" all leave an empty table behind, and only
 			// the first of them is harmless - so the outcome is recorded for the list window.
-			var path = GetFilePath(Name);
+			var path = FilePath;
 			var existed = File.Exists(path);
-			var value = InitOne(new Dictionary<uint, TValue>(), Name, false, false);
+			var value = ReadFile<Dictionary<uint, TValue>>(path) ?? [];
+			MarkLoaded(Name);
 			var pruned = prune?.Invoke(value) ?? 0;
 			set(value);
 			report(!existed
@@ -276,6 +522,13 @@ internal class OtherConfiguration
 					: $"loaded {DateTime.Now:HH:mm:ss}: {value.Count} {noun} from file"
 						+ (pruned > 0 ? $", {pruned} above a whole max HP left out" : string.Empty));
 		}
+
+		// Learned in play, never reset: there is no built-in table to return to, and no button discards it.
+		public override void Reset()
+		{
+		}
+
+		public override string Serialize() => JsonConvert.SerializeObject(copy(), Formatting.Indented, SerializerSettings);
 
 		public override Action PrepareWrite()
 		{
@@ -309,16 +562,16 @@ internal class OtherConfiguration
 	/// </remarks>
 	private static readonly ListFile[] Files =
 	[
-		new ListFile<HashSet<uint>>(nameof(DangerousStatus), () => DangerousStatus, v => DangerousStatus = v),
-		new ListFile<HashSet<uint>>(nameof(PriorityStatus), () => PriorityStatus, v => PriorityStatus = v),
-		new ListFile<HashSet<uint>>(nameof(InvincibleStatus), () => InvincibleStatus, v => InvincibleStatus = v),
-		new ListFile<List<Job>>(nameof(DancePartnerPriority), () => DancePartnerPriority, v => DancePartnerPriority = v),
-		new ListFile<List<Job>>(nameof(TheSpearPriority), () => TheSpearPriority, v => TheSpearPriority = v),
-		new ListFile<List<Job>>(nameof(TheBalancePriority), () => TheBalancePriority, v => TheBalancePriority = v),
-		new ListFile<List<Job>>(nameof(KardiaTankPriority), () => KardiaTankPriority, v => KardiaTankPriority = v),
-		new ListFile<Dictionary<uint, string[]>>(nameof(NoHostileNames), () => NoHostileNames, v => NoHostileNames = v),
-		new ListFile<Dictionary<uint, string[]>>(nameof(NoProvokeNames), () => NoProvokeNames, v => NoProvokeNames = v),
-		new ListFile<HashSet<uint>>(nameof(HostileCastingArea), () => HostileCastingArea, v => HostileCastingArea = v),
+		new SetList(nameof(DangerousStatus), StatusLists.DangerousStatus, () => DangerousStatus, v => DangerousStatus = v),
+		new SetList(nameof(PriorityStatus), StatusLists.PriorityStatus, () => PriorityStatus, v => PriorityStatus = v, 861, 1323, 2654, 3202),
+		new SetList(nameof(InvincibleStatus), StatusLists.InvincibleStatus, () => InvincibleStatus, v => InvincibleStatus = v, 151, 198, 350, 385, 945, 1303, 3054),
+		new OrderList(nameof(DancePartnerPriority), JobPriorityLists.DancePartnerPriority, () => DancePartnerPriority, v => DancePartnerPriority = v),
+		new OrderList(nameof(TheSpearPriority), JobPriorityLists.TheSpearPriority, () => TheSpearPriority, v => TheSpearPriority = v),
+		new OrderList(nameof(TheBalancePriority), JobPriorityLists.TheBalancePriority, () => TheBalancePriority, v => TheBalancePriority = v),
+		new OrderList(nameof(KardiaTankPriority), JobPriorityLists.KardiaTankPriority, () => KardiaTankPriority, v => KardiaTankPriority = v),
+		new MapList<string>(nameof(NoHostileNames), TerritoryLists.NoHostileNames, () => NoHostileNames, v => NoHostileNames = v),
+		new MapList<string>(nameof(NoProvokeNames), TerritoryLists.NoProvokeNames, () => NoProvokeNames, v => NoProvokeNames = v),
+		new SetList(nameof(HostileCastingArea), ActionLists.HostileCastingArea, () => HostileCastingArea, v => HostileCastingArea = v, 41147, 41763),
 		// The game thread is the only writer of this table, and the copy is taken there.
 		new LearnedFile<float>(nameof(HostileCastingAreaPotential),
 			() => new Dictionary<uint, float>(HostileCastingAreaPotential), v => HostileCastingAreaPotential = v,
@@ -335,17 +588,18 @@ internal class OtherConfiguration
 		new LearnedFile<int>(nameof(SleepDiminishing), () => CopySleepStore(SleepDiminishing),
 			v => { lock (SleepStoreGate) { SleepDiminishing = v; } },
 			Math.Min, state => SleepDiminishingStoreState = state, "enemy kind(s) with a sleep limit"),
-		new ListFile<HashSet<uint>>(nameof(HostileCastingTank), () => HostileCastingTank, v => HostileCastingTank = v),
-		new ListFile<Dictionary<uint, Vector3[]>>(nameof(BeneficialPositions), () => BeneficialPositions, v => BeneficialPositions = v),
-		new ListFile<RotationSolverRecord>(nameof(RotationSolverRecord), () => RotationSolverRecord, v => RotationSolverRecord = v, false),
-		new ListFile<HashSet<uint>>(nameof(NoCastingStatus), () => NoCastingStatus, v => NoCastingStatus = v),
-		new ListFile<HashSet<uint>>(nameof(HostileCastingKnockback), () => HostileCastingKnockback, v => HostileCastingKnockback = v),
-		// No download: learned in play, like the damage tables.
-		new ListFile<HashSet<string>>(nameof(TankbusterMarkerWithoutHit), () => TankbusterMarkerWithoutHit, v => TankbusterMarkerWithoutHit = v, false),
-		new ListFile<Dictionary<string, TankbusterMarkerHit>>(nameof(TankbusterMarkerHits), () => TankbusterMarkerHits, v => TankbusterMarkerHits = v, false),
-		new ListFile<HashSet<uint>>(nameof(HostileCastingStop), () => HostileCastingStop, v => HostileCastingStop = v),
-		new ListFile<Dictionary<uint, List<string>>>(nameof(NorthHornWeaknessRecords), () => NorthHornWeaknessRecords, v => NorthHornWeaknessRecords = v, false),
-		new ListFile<Dictionary<uint, List<string>>>(nameof(SouthHornWeaknessRecords), () => SouthHornWeaknessRecords, v => SouthHornWeaknessRecords = v, false),
+		new SetList(nameof(HostileCastingTank), ActionLists.HostileCastingTank, () => HostileCastingTank, v => HostileCastingTank = v,
+			13364, 13365, 13367, 13371, 13375, 13385, 13388, 13438, 13444, 13452, 13454, 13462, 13475),
+		new MapList<Vector3>(nameof(BeneficialPositions), TerritoryLists.BeneficialPositions, () => BeneficialPositions, v => BeneficialPositions = v),
+		new LocalFile<RotationSolverRecord>(nameof(RotationSolverRecord), () => RotationSolverRecord, v => RotationSolverRecord = v),
+		new SetList(nameof(NoCastingStatus), StatusLists.NoCastingStatus, () => NoCastingStatus, v => NoCastingStatus = v),
+		new SetList(nameof(HostileCastingKnockback), ActionLists.HostileCastingKnockback, () => HostileCastingKnockback, v => HostileCastingKnockback = v),
+		// Learned in play, like the damage tables: no built-in list.
+		new LocalFile<HashSet<string>>(nameof(TankbusterMarkerWithoutHit), () => TankbusterMarkerWithoutHit, v => TankbusterMarkerWithoutHit = v),
+		new LocalFile<Dictionary<string, TankbusterMarkerHit>>(nameof(TankbusterMarkerHits), () => TankbusterMarkerHits, v => TankbusterMarkerHits = v),
+		new SetList(nameof(HostileCastingStop), ActionLists.HostileCastingStop, () => HostileCastingStop, v => HostileCastingStop = v, 3715, 3719, 3720, 3721, 3722),
+		new LocalFile<Dictionary<uint, List<string>>>(nameof(NorthHornWeaknessRecords), () => NorthHornWeaknessRecords, v => NorthHornWeaknessRecords = v),
+		new LocalFile<Dictionary<uint, List<string>>>(nameof(SouthHornWeaknessRecords), () => SouthHornWeaknessRecords, v => SouthHornWeaknessRecords = v),
 	];
 
 	private static Dictionary<uint, T> CopySleepStore<T>(Dictionary<uint, T> store)
@@ -410,18 +664,13 @@ internal class OtherConfiguration
 
 	public static async Task InitAsync(CancellationToken cancellationToken = default)
 	{
-		if (!Directory.Exists(Svc.PluginInterface.ConfigDirectory.FullName))
-		{
-			_ = Directory.CreateDirectory(Svc.PluginInterface.ConfigDirectory.FullName);
-		}
-
-		_loadToken = cancellationToken;
+		_ = Directory.CreateDirectory(GetChangesPath(string.Empty));
 
 		var tasks = new Task[Files.Length];
 		for (var i = 0; i < Files.Length; i++)
 		{
 			var file = Files[i];
-			tasks[i] = Task.Run(() => file.Load(false), cancellationToken);
+			tasks[i] = Task.Run(file.Load, cancellationToken);
 		}
 
 		await Task.WhenAll(tasks);
@@ -460,11 +709,13 @@ internal class OtherConfiguration
 		return Task.Run(write);
 	}
 
-	// Downloads in the background so the game thread isn't blocked by the request.
 	private static void ResetFile(string name)
 	{
 		var file = GetFile(name);
-		_ = Task.Run(() => file.Load(true));
+		file.Reset();
+		// A reset is a state of its own, the built-in list: written even where the load did not finish.
+		MarkLoaded(file.Name);
+		_ = SaveList(name);
 	}
 
 	#region Action Tab
@@ -714,6 +965,46 @@ internal class OtherConfiguration
 		return Path.Combine(Svc.PluginInterface.ConfigDirectory.FullName, $"{name}.json");
 	}
 
+	private static string GetChangesPath(string name)
+	{
+		var directory = Path.Combine(Svc.PluginInterface.ConfigDirectory.FullName, "ListChanges");
+		return name.Length == 0 ? directory : Path.Combine(directory, $"{name}.json");
+	}
+
+	private static T? ReadFile<T>(string path) where T : class
+	{
+		if (!File.Exists(path))
+		{
+			return null;
+		}
+
+		try
+		{
+			return JsonConvert.DeserializeObject<T>(File.ReadAllText(path), DeserializerSettings);
+		}
+		catch (Exception ex)
+		{
+			PluginLog.Warning($"Failed to load {path}: {ex.Message}");
+
+			// Keep the unreadable file instead of letting the next save overwrite it, and say so. A curated list
+			// returns to its built-in entries; the learned damage potentials could not be had back, so the loss
+			// must not be silent.
+			try
+			{
+				var kept = path + ".corrupt";
+				File.Move(path, kept, true);
+				PluginLog.Warning($"Kept the unreadable {path} as {kept}.");
+				_ = BasicWarningHelper.AddSystemWarning($"{Path.GetFileNameWithoutExtension(path)} could not be read and was set aside.");
+			}
+			catch (Exception moveEx)
+			{
+				PluginLog.Warning($"Could not set aside the unreadable {path}: {moveEx.Message}");
+			}
+
+			return null;
+		}
+	}
+
 	/// <summary>
 	/// Stores whose load has run to an end in this session. A store that was never loaded holds its
 	/// empty default, and writing that default would replace the file with nothing.
@@ -727,11 +1018,16 @@ internal class OtherConfiguration
 			return true;
 		}
 
-		// The load did not finish - cancelled by the plugin's load timeout, a download that failed, or
-		// it threw - and the unload writes every store. Without this every list and the learned table
-		// were emptied on disk by a load that merely failed.
+		// The load did not finish - cancelled by the plugin's load timeout, or it threw - and the unload
+		// writes every store. Without this every list and the learned table were emptied on disk by a load
+		// that merely failed.
 		PluginLog.Warning($"Not saving {name}: it was not loaded in this session, and its file is left as it is.");
 		return false;
+	}
+
+	private static void MarkLoaded(string name)
+	{
+		_loadedStores[name] = true;
 	}
 
 	// Written to a temp file first, so a crash mid-write can't leave a half-written list.
@@ -760,97 +1056,5 @@ internal class OtherConfiguration
 		}
 
 		return false;
-	}
-
-	/// <summary>
-	/// The plugin's load timeout, handed in by <see cref="InitAsync"/>. A download at load is bounded
-	/// by it as well as by the client's own timeout, so a load that has given up does not wait on it.
-	/// </summary>
-	private static CancellationToken _loadToken;
-
-	private static T InitOne<T>(T current, string name, bool download, bool forceDownload) where T : new()
-	{
-		var path = GetFilePath(name);
-		PluginLog.Information($"Initializing {name} from {path}");
-
-		if (File.Exists(path) && !forceDownload)
-		{
-			try
-			{
-				var value = JsonConvert.DeserializeObject<T>(File.ReadAllText(path), DeserializerSettings)
-					?? throw new Exception("Deserialized value is null.");
-				PluginLog.Information($"Loaded {name} from local file.");
-				_loadedStores[name] = true;
-				return value;
-			}
-			catch (Exception ex)
-			{
-				PluginLog.Warning($"Failed to load {name} from local file. Reinitializing to default: {ex.Message}");
-
-				// Keep the unreadable file instead of letting the next save overwrite it, and say so.
-				// Losing a curated list this way is recoverable with the reset button; losing the
-				// learned damage potentials is not, so the loss must not be silent.
-				try
-				{
-					var kept = path + ".corrupt";
-					File.Move(path, kept, true);
-					PluginLog.Warning($"Kept the unreadable {name} as {kept}.");
-					_ = BasicWarningHelper.AddSystemWarning($"{name} could not be read and was set aside.");
-				}
-				catch (Exception moveEx)
-				{
-					PluginLog.Warning($"Could not set aside the unreadable {name}: {moveEx.Message}");
-				}
-			}
-
-			// An unreadable curated list is fetched again below, the same as a missing one (A196). It
-			// used to start empty and stay so: the empty default was saved, and a file that exists is
-			// never downloaded.
-		}
-
-		if (!download && !forceDownload)
-		{
-			// Nothing to fetch: a store learned or recorded in play starts empty. No default is written,
-			// so a store set aside above reads as "file unreadable" in the list window, not as "loaded 0".
-			_loadedStores[name] = true;
-			return new T();
-		}
-
-		try
-		{
-			var url = $"https://raw.githubusercontent.com/{Service.USERNAME}/{Service.REPO}/main/Resources/{name}.json";
-			var str = Http.GetStringAsync(url, forceDownload ? CancellationToken.None : _loadToken).GetAwaiter().GetResult();
-			var value = JsonConvert.DeserializeObject<T>(str, DeserializerSettings)
-				?? throw new Exception("Deserialized value is null.");
-
-			// Only a list that parsed is written, so a bad download never replaces the local copy.
-			_ = WriteFile(path, str);
-			PluginLog.Information($"Downloaded and loaded {name} from GitHub.");
-			_loadedStores[name] = true;
-			return value;
-		}
-		catch (Exception ex)
-		{
-			_ = BasicWarningHelper.AddSystemWarning($"Github download failed.");
-
-			// A reset asked to replace a working list with a fresh one. When the fresh one cannot be had,
-			// the working one stays, and with it whether it counts as loaded: emptying it here wrote an
-			// empty list over the file, which switched off every rule reading it - and the damage
-			// measurement with it, since only listed actions are measured.
-			if (forceDownload)
-			{
-				PluginLog.Warning($"Failed to download {name} from GitHub. Keeping the current list. Exception: {ex.Message}");
-				return current;
-			}
-
-			// No list could be had. Nothing is written and the store does not count as loaded, so no
-			// save writes the empty default either: an empty file would be read as the list on every
-			// later start and never be fetched again - for the AoE list that meant no party mitigation
-			// by list and no damage measurement until a reset happened to succeed (A196). The next start
-			// tries again. The cost: changes made to this list in this session are not saved; a warning
-			// in the log says so at every save.
-			PluginLog.Warning($"Failed to download {name} from GitHub. Starting empty for this session, and trying again at the next start. Exception: {ex.Message}");
-			return new T();
-		}
 	}
 }

@@ -68,9 +68,9 @@ public static class ObjectHelper
 	}
 
 	/// <summary>
-	/// Should this enemy be provoked? <paramref name="autoProvokeAllowed"/> answers the setting "Auto provoke
-	/// when there is another tank in party" for the cases it names - an enemy on a non-tank, and "Provoke
-	/// anything" - and is asked only when one of them applies (it walks the alliance). Taking the enemy from a
+	/// Should this enemy be provoked? <paramref name="autoProvokeAllowed"/> answers the setting "Provoke when
+	/// there is another tank in the party" for the cases it names - an enemy on a non-tank, and "Provoke any
+	/// enemy not on the Don't provoke list" - and is asked only when one of them applies (it walks the alliance). Taking the enemy from a
 	/// co-tank in danger follows its own setting (<see cref="TakesEnemyFromCoTank"/>), which that text does not name.
 	/// </summary>
 	internal static bool CanProvoke(this IBattleChara target, Func<bool>? autoProvokeAllowed = null)
@@ -80,7 +80,7 @@ public static class ObjectHelper
 			return false;
 		}
 
-		// "Provoke anything not on the no provoke list": the list applies to it as well. It returned before
+		// "Provoke any enemy not on the Don't provoke list": the list applies to it as well. It returned before
 		// the list was read, so a listed enemy was provoked all the same.
 		if (!Service.Config.ProvokeAnything)
 		{
@@ -2288,10 +2288,9 @@ public static class ObjectHelper
 		}
 	}
 
-	private static readonly TimeSpan CheckSpan = TimeSpan.FromSeconds(2.5);
-
 	/// <summary>
-	/// Calculates the estimated time to kill the specified battle character. Only applicable after the first 2.5 seconds, and uses a moving average of the last 15 seconds of health ratios
+	/// Calculates the estimated time to kill the specified battle character from its damage rate over the last 30 seconds. Known once it has taken damage for about 2 seconds.
+	/// A party member is read from the party's own health history instead (<see cref="DataCenter.RecordedHP"/>).
 	/// </summary>
 	/// <param name="battleChara">The battle character to calculate the time to kill for.</param>
 	/// <param name="wholeTime">If set to <c>true</c>, calculates the total time to kill; otherwise, calculates the remaining time to kill.</param>
@@ -2310,25 +2309,34 @@ public static class ObjectHelper
 			return 999.99f;
 		}
 
-		// Once per character and frame: the target selection asks it of every hostile candidate on every attack
-		// it checks, and each answer walks the whole recorded history (A325). Within a frame the history does
-		// not change, except where a new sample is recorded, and that clears the cache (ForgetTimeToKill). Both
-		// readings come out of the same walk, so both are kept.
-		var now = Environment.TickCount64;
+		// A party member is read from the fork's own history - four minutes, net of every heal (A91), which the heal
+		// forecast and its self-correction rest on. Upstream's tracker keeps hostiles only and starts over at every
+		// rise in health, so for a member being healed it would hold nothing to read (A341).
 		var id = battleChara.GameObjectId;
-		if (_ttkCache.TryGetValue(id, out var cached) && now - cached.Tick < DataCenter.FrameCacheMs)
+		if (DataCenter.RecordedPartyIds.Contains(id))
 		{
-			return wholeTime ? cached.Whole : cached.Remaining;
+			// Once per member and frame: the heal target selection asks it several times per member, and each answer
+			// walks the whole recorded history (A325). Within a frame the history does not change, except where a
+			// new sample is recorded, and that clears the cache (ForgetTimeToKill). Both readings come out of the
+			// same walk, so both are kept.
+			var now = Environment.TickCount64;
+			if (_ttkCache.TryGetValue(id, out var cached) && now - cached.Tick < DataCenter.FrameCacheMs)
+			{
+				return wholeTime ? cached.Whole : cached.Remaining;
+			}
+
+			var whole = ComputeTTK(battleChara, out var remaining);
+			_ttkCache[id] = (now, whole, remaining);
+			return wholeTime ? whole : remaining;
 		}
 
-		if (_ttkCache.Count > 512)
+		var rate = TimeToKillTracker.GetRate(id);
+		if (float.IsNaN(rate))
 		{
-			_ttkCache.Clear();
+			return float.NaN;
 		}
 
-		var whole = ComputeTTK(battleChara, out var remaining);
-		_ttkCache[id] = (now, whole, remaining);
-		return wholeTime ? whole : remaining;
+		return wholeTime ? 1f / rate : battleChara.GetHealthRatio() / rate;
 	}
 
 	private static readonly Dictionary<ulong, (long Tick, float Whole, float Remaining)> _ttkCache = [];
@@ -2340,6 +2348,10 @@ public static class ObjectHelper
 	{
 		_ttkCache.Clear();
 	}
+
+	// The party history's own start-up: no time to death before a member has been losing health this long.
+	// Upstream's former figure, kept with the history it belonged to (A341).
+	private static readonly TimeSpan CheckSpan = TimeSpan.FromSeconds(2.5);
 
 	private static float ComputeTTK(IBattleChara battleChara, out float remaining)
 	{
@@ -2406,6 +2418,38 @@ public static class ObjectHelper
 		var whole = elapsedTime / hpRatioDifference;
 		remaining = whole * currentHealthRatio;
 		return whole;
+	}
+
+	/// <summary>
+	/// Seconds until the next DoT tick on the target, or <see cref="float.NaN"/> until one of its ticks has been seen.
+	/// </summary>
+	/// <param name="battleChara">The target.</param>
+	public static float TimeToNextDotTick(this IBattleChara battleChara)
+	{
+		if (battleChara == null)
+		{
+			return float.NaN;
+		}
+
+		var now = Environment.TickCount64;
+		return DotTickTracker.TryGetNextTick(battleChara.GameObjectId, now, out var next) ? (next - now) / 1000f : float.NaN;
+	}
+
+	/// <summary>
+	/// DoT ticks on the target between two times in seconds from now. Exact once one of its ticks has been seen, otherwise one per 3 seconds on average.
+	/// </summary>
+	/// <param name="battleChara">The target.</param>
+	/// <param name="fromSeconds">Start of the window; a tick exactly at this time is not counted.</param>
+	/// <param name="toSeconds">End of the window; a tick exactly at this time is counted.</param>
+	public static float DotTicksBetween(this IBattleChara battleChara, float fromSeconds, float toSeconds)
+	{
+		if (battleChara == null || !float.IsFinite(fromSeconds) || !float.IsFinite(toSeconds))
+		{
+			return float.NaN;
+		}
+
+		var now = Environment.TickCount64;
+		return DotTickTracker.CountTicks(battleChara.GameObjectId, now + (long)(fromSeconds * 1000), now + (long)(toSeconds * 1000));
 	}
 
 	private static readonly ConcurrentDictionary<ulong, (DateTime At, float Ttk, float Ratio)> _ttkForecast = [];

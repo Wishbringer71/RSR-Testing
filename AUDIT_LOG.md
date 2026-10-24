@@ -9824,6 +9824,72 @@ Offen: 40. Nicht im Profil und deshalb nicht bearbeitet: Blaumagier, Phantom-Job
   `DefenseTrace.log` nennt „round trip … s" je Druck. Konzept 09, „Spielerweite Sperre und Frist". Der TODO-Eintrag ist
   geschlossen.
 
+
+### A341 · Upstream-Sync 3c6ce9ee2 (TTK, DoT-Planer, eingebaute Listen, Einstellungstexte) in Arbeitszweig und main (24.10.2026)
+
+Seine Vorgabe vom 24.10.2026: „nach dem arbeiten wieder sync mit upstream und die änderungen inhaltlich bewerten und
+auf probleme mit den eigenen code und konzepten prüfen im kritischen loop" (in `CLAUDE.md`, „Upstream"). Der Sync kam
+vor dem weiteren Code, weil er dessen Vorbedingung ist.
+
+- *Stand:* Seit A336 zwei Upstream-Commits, `64413ccef` („Reworked TTK calculations, DoT timings, and reorganized some
+  settings", 57 Dateien) und der Merge `3c6ce9ee2`. Konflikte in sechs Dateien (`Configs`, `OtherConfiguration`,
+  `ObjectHelper`, `WhiteMageRotation`, `TargetUpdater`, `Watcher`). Regel wie A331: Struktur und Leistungsarbeit von
+  Upstream übernehmen, jede Fork-Regel darauf wieder einsetzen. Lokal kompiliert, Prüfläufe grün.
+
+**Was im Kampf anders wird, wie es in eigene Regeln greift, was daraus wird:**
+
+- *Zeit bis zum Tod der Gegner.* `TimeToKillTracker` legt eine Ausgleichsgerade über die letzten 30 s und beginnt bei
+  jedem Anstieg der Gesundheit neu; vorher galt der Abfall seit dem ersten Schaden (bis vier Minuten). Leser: `IsDying`,
+  `IsBossFromTTK`, `AverageTTK` (Heilstopp für Nicht-Heiler, Schwelle je Aktion, die Unverwundbarkeit im Tankbuster-Plan),
+  `CheckTimeToKill`, der DoT-Planer. Im Kampf folgt die Schätzung den letzten 30 s – sie reagiert auf Burst und Phasen,
+  statt sie über den ganzen Kampf zu mitteln. Die eigenen Regeln lesen dieselbe Größe, ihre Logik bleibt.
+- *Zeit bis zum Tod der Gruppe – Konflikt mit eigenem Baustein.* Upstream entfernt `RecordedHP`, die vierminütige
+  Historie, auf der Heilvorausschau, `ScoreTtkForecast`/`GetCorrectedTTK`, `AnyPartyMemberFallingWithinHealWindow` und
+  der Sanctus-Halt ruhen (in `CLAUDE.md` als vorhandene Stärke geführt). Upstreams Tracker kennt nur Gegner und begänne
+  bei einem geheilten Mitglied bei jeder Heilung neu: Er hielte nichts, und alles darauf fiele auf „kein Tod absehbar".
+  Die Historie bleibt deshalb, nur noch für die Gruppe (`DataCenter.RecordedHP`, `RecordedPartyIds`); `GetTTK` liest für
+  ein Mitglied der letzten Probe die eigene Reihe, für alle anderen Upstreams Rate. Im Kampf für die Gruppe unverändert.
+  `HP_RECORD_TIME` (240) und `CheckSpan` (2,5 s) gehören damit dem Fork; Upstreams frühere Werte, mitgeführt.
+- *DoT-Planer.* `DotPlanner` frischt einen DoT mit Potenzangaben (`ActionSetting.Dot`: Weißmagier, Astrologe, Gelehrter,
+  Weiser, Schwarzmagier, Schnitter) auf dem letzten GCD auf, der keinen Tick verliert, und lässt ihn weg, wenn das Ziel
+  stirbt, bevor er mehr bringt als der Füller; die Tickuhr je Ziel liest ein neuer `ActorControl`-Hook (0x605) im
+  `Watcher`. Hinter der neuen Einstellung „Time DoT refreshes from DoT ticks and time to kill (Experimental)", bei
+  Upstream aus. *Hier ab Werk an* – seine Regel für Voreinstellungen (29.09.2026), kein Kampfgrund dagegen. Die eigene
+  DoT-Zielreihenfolge (A295) ordnet unter den Zielen, die die Statusprüfung durchlässt, und bleibt verträglich.
+  *Gegenposition:* In einer Burstphase fällt die TTK kürzer aus, ein DoT kann kurz auslaufen, bis die nächste Prüfung
+  (jeden GCD) die längere Restzeit sieht – klein und selbstkorrigierend. Konzept 03.
+- *Kuratierte Listen eingebaut.* `Resources/*.json` und der Download sind entfernt; die Listen stehen im Code
+  (`ActionLists`, `StatusLists`, `TerritoryLists`, `JobPriorityLists`), die Datei `ListChanges/<Name>.json` hält nur
+  Ergänzungen und Entfernungen. Beim ersten Start wird die alte Datei einmal übernommen: Ergänzungen (auch
+  aufgezeichnete Ids) bleiben, Entfernungen nicht, die alte Datei wird gelöscht. Wieder eingesetzt:
+  - *Kein Speichern ohne Laden (A196):* Bricht das Laden ab (Ladezeitlimit), bliebe eine eingebaute Liste leer, und
+    das Speichern beim Entladen schriebe „alles entfernt" – jeder spätere Start läse sie leer. Upstream hat diese
+    Sperre nicht (Befund für Upstream, nicht gemeldet). `ListFile.PrepareWrite` prüft `WasLoaded`; ein Zurücksetzen
+    gilt als geladen.
+  - *Unlesbare Datei als `.corrupt` beiseite* (`ReadFile`), statt sie beim nächsten Speichern zu überschreiben.
+  - *Gelernte Tabellen* (`LearnedFile`: Flächen-, Tankbuster-, Schlaftabellen) mit Zusammenführen beim Speichern;
+    Marker-Listen als `LocalFile`.
+  - `check_resource_lists.py` ist entfernt: Es prüfte, dass eine Änderung an `Resources/` geladen wird; seit die
+    Listen eingebaut sind, lädt das Plugin den Code dieses Baums. `check_config_store_roundtrip.py` kennt die neuen
+    Listenklassen (Selbsttest erweitert). Konzept 13.
+- *Einstellungen neu betextet und umsortiert.* Feldnamen gleich, gespeicherte Konfiguration bleibt gültig; entfernt
+  `_setBluActions2`, die Cactbot-Felder und `TargetColor` (hier seit A339 fort), neu `_useDotTickTiming`. Weil der Text
+  bindet: 20 neu beschriebene Einstellungen, die eigener Code liest, gegen das Verhalten geprüft – alle Aussagen decken
+  sich (darunter „Provoke any enemy not on the Don't provoke list": überspringt Angreifbarkeit, FATE und die
+  Lohnt-sich-Prüfung). 35 Zitate alter Texte in Code-Kommentaren, Konzepten und Release-Texten nachgezogen.
+  Abweichungen: „Tankbuster mitigation lead time" bleibt für alle Rollen sichtbar (Upstream: nur Tanks) – Einzelabwehr
+  der Heiler und Notfalltrank lesen sie; `SwiftcastBuffer` bleibt entfernt (A339), auch wenn Upstream sie neu betextet.
+- *Zeilenenden:* e270c6a71 (Glockenspiel) hatte `WhiteMageRotation.cs` von CRLF auf LF umgestellt – ein Fehler meines
+  Schreibwegs, der den Ganzdatei-Konflikt erzeugte. Mit dem Merge zurückgestellt; alle übrigen Fork-Dateien geprüft,
+  keine weitere betroffen.
+
+**Falsifikation.** Kein Problem: widerlegt am Code (die Gruppen-TTK wäre ohne eigene Historie für geheilte Mitglieder
+leer; ein abgebrochenes Laden schriebe leere Listen). Lösung falsch: Ein Mitglied, das in der letzten Probe fehlt
+(gerade beigetreten, tot), liest Upstreams Rate und erhält `NaN` – wie vorher ohne Historie. Ausgeliefert, nichts
+ändert sich: für die Gruppe gewollt; die Gegner-TTK ändert ihre Bedeutung, wie Upstream es will.
+
+*Prüfgrad:* statisch, Compile, Prüfskripte; im Spiel nicht beobachtet.
+
 ---
 ## B · Commit-Register (Fork vs. `upstream/main`)
 

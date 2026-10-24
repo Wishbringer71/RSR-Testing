@@ -638,7 +638,7 @@ public partial class CustomRotation
 
 	/// <summary>
 	/// Whether an area action of <paramref name="radius"/> around <paramref name="center"/> would reach an enemy that is
-	/// not fighting yet while "Don't attack new mobs by AoE." is on - the setting's own test, a hostile without a
+	/// not fighting yet while "Don't pull new enemies with AoE" is on - the setting's own test, a hostile without a
 	/// target. A stop is an area action like any other, and the setting says "never".
 	/// </summary>
 	/// <param name="center">The centre of the area.</param>

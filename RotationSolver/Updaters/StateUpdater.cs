@@ -609,7 +609,7 @@ internal static class StateUpdater
 
 	private static bool ShouldAddProvoke()
 	{
-		// "Auto provoke when there is another tank in party" is asked where ProvokeTarget is chosen, for the
+		// "Provoke when there is another tank in the party" is asked where ProvokeTarget is chosen, for the
 		// cases it names (ObjectHelper.CanProvoke); the co-tank rescue follows its own setting.
 		return DataCenter.ProvokeTarget != null
 			&& (DataCenter.InCombat || Service.Config.ProvokeAnything)

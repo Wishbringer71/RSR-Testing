@@ -33,6 +33,13 @@ the measurement. It now learns, per area and marker, which hit followed and how 
 tankbuster with a cast: the least mitigation that survives it, or the invulnerability if nothing less does. Mitigation
 is held back only under a planned invulnerability, as the marker may announce another hit this time.
 
+## DoTs are refreshed by their ticks, on by default
+
+"Time DoT refreshes from DoT ticks and time to kill (Experimental)", new and off by default in upstream, is on by
+default here. White Mage, Astrologian, Scholar, Sage, Black Mage and Reaper then refresh their damage over time on the
+last GCD that loses no tick, and leave it off a target that will die before it out-damages the filler. Off, a DoT is
+refreshed a set number of GCDs before it runs out, as before.
+
 ## Tanks: the time a press needs to reach the server is measured on the request
 
 A tankbuster plan presses its mitigation only while it can still reach the server before the hit is decided there,
@@ -80,7 +87,7 @@ module.
 
 ## Interrupt and provoke delays work again
 
-"The range of random delay before interrupting hostile targets." and "Provoke random delay range." had done nothing
+"Interrupt delay range" and "Provoke delay range" had done nothing
 since upstream dropped their wiring in 2024. They delay again what their text says; the default is now no delay, and an
 interrupt never waits past the cast it is meant to stop. A configuration saved earlier keeps its 0.5 to 1 s.
 
@@ -101,7 +108,7 @@ since upstream dropped their code in 2025 and 2024, so moving them changed nothi
 It stops an area attack reaching the party, and now also a cast the game marks interruptible - what a melee stops with
 Leg Sweep. A White Mage uses Holy when the caster stands in its radius and can still be stunned: it stuns every enemy
 around and deals damage, where a sleep costs a GCD without. Otherwise Repose or Sleep goes on the enemy. With "Don't
-attack new mobs by AoE." on, no area stop reaches an enemy that is not fighting yet.
+pull new enemies with AoE" on, no area stop reaches an enemy that is not fighting yet.
 
 What sleeps show is now kept over every session, like the AoE damage table: enemy kinds that resist a sleep are not
 slept again, nor an enemy slept in a fight as often as its kind takes before it resists, nor an attack that went off

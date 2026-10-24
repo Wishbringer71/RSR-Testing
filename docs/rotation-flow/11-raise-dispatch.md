@@ -431,7 +431,7 @@ nicht messbar. Wer sie an hat, konnte ohne Swiftcast niemanden hochholen.
 - **`Configs.Migrate` ist ein Zurücksetzen, kein Migrationspfad.** Eine Korrektur, die einen Vorgabewert ändert, um
   das bisherige Verhalten zu erhalten, erreicht gespeicherte Konfigurationen nicht.
 - **`InterruptDelay` und `ProvokeDelay` sind wieder verdrahtet** (A338). Ihre Texte („The range of random delay before
-  interrupting hostile targets.", „Provoke random delay range.") versprechen eine Verzögerung vom Erscheinen des Ziels
+  interrupting hostile targets.", „Provoke delay range") versprechen eine Verzögerung vom Erscheinen des Ziels
   bis zur Wahl; Upstream hatte sie beim Umbau der Zielsuche entfernt (527414d60, 2024). Der Text bindet (seine
   Vorgabe), also gilt jetzt der Wert, der in seiner Konfiguration steht – ohne Migration der alte Vorgabewert 0,5 bis
   1 s, sofern er ihn nicht geändert hat. Neue Vorgabe: keine Verzögerung, weil eine wartende Unterbrechung ihr Wirken

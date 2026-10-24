@@ -104,7 +104,7 @@ public struct ActionTargetInfo(IBaseAction action)
 			// then => Check target is in the view && ActionManager.CanUse on target && CanSee Target && action.setting predicate is true of target
 			if (!DataCenter.IsManual || IsTargetFriendly || target.GameObjectId == Svc.Targets.Target?.GameObjectId || target.GameObjectId == Player.Object.GameObjectId)
 			{
-				// "Only attack targets in view" is about attacking; a party member behind the camera is
+				// "Only attack targets on screen" is about attacking; a party member behind the camera is
 				// still on the party list and still needs the heal.
 				if ((IsTargetFriendly || TargetOnScreen(target)) && CanUseTo(target) && action.Setting.CanTarget(target)
 					&& (!action.MinHPFeature || target.GetHealthRatio() > action.MinHPPercent))
@@ -358,13 +358,21 @@ public struct ActionTargetInfo(IBaseAction action)
 		// redundancy, so it stays in force either way.
 		if (action.Setting.TargetStatusProvide != null && !skipStatusProvideCheck && action.Config.ShouldCheckStatus)
 		{
-			if (!battleChara.WillStatusEndGCD(action.Config.StatusRefreshGcdCount, 0, action.Setting.StatusFromSelf, action.Setting.TargetStatusProvide) || (Service.Config.Statuscap2 && StatusHelper.IsStatusCapped(battleChara)))
+			if (!NeedsTargetStatus(battleChara) || (Service.Config.Statuscap2 && StatusHelper.IsStatusCapped(battleChara)))
 			{
 				return false;
 			}
 		}
 
 		return true;
+	}
+
+	private readonly bool NeedsTargetStatus(IBattleChara battleChara)
+	{
+		var setting = action.Setting;
+		return Service.Config.UseDotTickTiming && setting.Dot != null
+			? DotPlanner.ShouldApply(action, battleChara)
+			: battleChara.WillStatusEndGCD(action.Config.StatusRefreshGcdCount, 0, setting.StatusFromSelf, setting.TargetStatusProvide);
 	}
 
 	/// <summary>

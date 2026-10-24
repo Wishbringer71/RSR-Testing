@@ -81,9 +81,10 @@ Drei Regeln halten die Kosten eines Frames unabhängig davon, wie oft eine Frage
   nimmt nur auf, was ein Leser abfragt (`DataCenter.IsReadVfxPath`: die vier Markerlisten und die Lock-on-Effekte der
   Fehlersuche). Vorher standen dort alle Effekte aller Figuren fünf Sekunden lang, und jeder Leser lief bei jedem Lesen
   über alle – im Critical Engagement die Skill-Effekte von 48 Spielern.
-- **Eine Antwort aus der Historie einmal je Frame und Objekt.** `GetTTK` läuft über die ganze Gesundheitshistorie
-  (240 Proben); die Zielsuche fragt es für jeden feindlichen Kandidaten bei jedem geprüften Angriff. Es merkt sich
-  die Antwort für den Frame, eine neue Probe verwirft sie (`ObjectHelper.ForgetTimeToKill`).
+- **Eine Antwort aus der Historie einmal je Frame und Mitglied.** Für ein Gruppenmitglied läuft `GetTTK` über die
+  ganze Gesundheitshistorie der Gruppe (240 Proben); die Heilzielwahl fragt es mehrmals je Mitglied. Es merkt sich die
+  Antwort für den Frame, eine neue Probe verwirft sie (`ObjectHelper.ForgetTimeToKill`). Für Gegner liest es seit
+  Upstream 3c6ce9ee2 die Rate aus `TimeToKillTracker`, einen Wörterbuchzugriff ohne Lauf über eine Historie (A341).
 
 Woher die Kosten kamen: Upstream speichert alle Effekte und prüft die Herkunft eines Status über die Objekttabelle; der
 Fork hat beides vervielfacht – die Gruppenprüfung der Marker (A220) vor den Pfadvergleich gesetzt, jede Regel mit
@@ -319,9 +320,14 @@ Einzelzielangriffe ohne DoT bleibt die Zielart, wie er sie wählt; bei Flächena
 weil mehrere Gegner in der Fläche stehen, und auch ein Flächen-DoT wie High Thunder II wird unter den Zielen mit der
 größten Abdeckung nur zusätzlich geordnet.
 
-**Wer Kandidat ist, bleibt unverändert** (`CheckStatus`, `CheckTimeToKill`): Gegner, denen der eigene DoT fehlt oder in
-`Number of GCDs before the DoT is reapplied` GCDs ausläuft, mit einer Zeit bis zum Tod über der Schwelle der Aktion,
-nicht unverwundbar, nicht auf der Liste eingeschränkter DoTs. Die Rangfolge davor bleibt ebenfalls: ein Befehl, die
+**Wer Kandidat ist, entscheidet die Statusprüfung** (`CheckStatus`, `CheckTimeToKill`): Gegner, denen der eigene DoT
+fehlt oder bald ausläuft, mit einer Zeit bis zum Tod über der Schwelle der Aktion, nicht unverwundbar, nicht auf der
+Liste eingeschränkter DoTs. „Bald" heißt bei einem DoT mit Potenzangaben (`ActionSetting.Dot`, Upstream 3c6ce9ee2 für
+Weißmagier, Astrologe, Gelehrter, Weiser, Schwarzmagier und Schnitter) und an „Time DoT refreshes from DoT ticks and
+time to kill (Experimental)": auf dem letzten GCD, der keinen Tick des Ziels verliert, und gar nicht, wenn das Ziel
+stirbt, bevor der DoT mehr bringt als der Füller (`DotPlanner`, Tickuhr des Ziels aus `ActorControl` 0x605). Ab Werk
+an, anders als bei Upstream – seine Regel für Voreinstellungen (A341). Sonst und bei den übrigen DoTs: in `Number of
+GCDs before the DOT/Status effect is reapplied` GCDs. Die Rangfolge davor bleibt ebenfalls: ein Befehl, die
 Stopmarker, die Gegner mit Vorrang (Angriffsmarker, Gegnerteile, Schatzkarten-Symbole). Erst unter dem, was danach
 übrig ist, ordnet die Regel.
 

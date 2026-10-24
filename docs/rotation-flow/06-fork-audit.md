@@ -136,7 +136,7 @@ warum dieser Fork überhaupt existiert.
 | `ChurinDRK` Oblation | Der Guard aus 7b8a2f5 fehlte in der Extra-Rotation | Beide Ladungen konnten auf dasselbe Ziel gehen |
 | PLD/WAR Reprisal | Nur in `DefenseSingleAbility`; WARs eigene `RotationDesc` versprach es für Area | Raidwides ohne Reprisal, anders als bei DRK/GNB |
 | MCH/BRD Second Wind, MNK `HealSingleAbility`, DNC `DefenseSingleAbility` | Rollenaktionen deklariert, nie genutzt | Kein Selbstheil bzw. keine Antwort auf einen Buster |
-| `ActionTargetInfo.GetCanTargets` | „Only attack targets in view" galt auch für Heilziele | Mit eingeschalteter Option war ein Mitspieler hinter der Kamera nicht heilbar |
+| `ActionTargetInfo.GetCanTargets` | „Only attack targets on screen" galt auch für Heilziele | Mit eingeschalteter Option war ein Mitspieler hinter der Kamera nicht heilbar |
 
 Drei dieser Klassen sind zusätzlich per CI ausgeschlossen, damit sie nicht
 wiederkehren (`.github/scripts/check_base_calls.py`): falsches `base.`-Ziel,

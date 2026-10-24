@@ -263,7 +263,7 @@ Andere Flächenbetäuber als der Weißmagier liegen außerhalb seines Profils (O
 nur die GCD-Frist. Ebenso für einen Heiler der Gefährtenunterstützung: Erkannt werden nur die Spieleraktionen
 Holy (139) und Holy III (25860). Die Spieldaten führen dazu zahlreiche Nicht-Spieler-Zeilen gleichen Namens (etwa
 17614: 1,5 s, 8 y; 38085: 1,0 s, 8 y; xivapi, abgerufen 29.09.2026). Welche davon ein NPC der Gruppe wirkt und ob sie
-betäubt, ist nicht belegt; zudem steht ein NPC nur mit „Heal and raise Party NPCs" in der Gruppenliste.
+betäubt, ist nicht belegt; zudem steht ein NPC nur mit „Heal and raise party NPCs" in der Gruppenliste.
 
 **Reprisal zuerst.** Der Pfad gibt je Gelegenheit **eine** Aktion zurück und arbeitet von oben nach
 unten (Einzelpfad, Stand 02.10.2026): große Minderung und Rampart für einen vorhergesagten Tankbuster (A241, A243) ·
