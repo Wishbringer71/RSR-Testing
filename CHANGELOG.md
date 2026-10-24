@@ -41,6 +41,11 @@ instead of one that went off this session.
 The enemy-side recognition behind the effect handler and `DataCenter.AreaCasters` takes battle NPCs of sub kind 11, the
 kind BossModReborn calls Helper. A derived rotation reading `DataCenter.AreaCasters` sees their casts.
 
+### Behaviour change in RotationSolver.Basic: `InterruptDelay` and `ProvokeDelay` default to no delay
+
+Both settings are read again (the target update applies them before choosing `DataCenter.InterruptTarget` and
+`DataCenter.ProvokeTarget`); their defaults change from 0.5–1 s to 0–0 s. A configuration saved earlier keeps its value.
+
 ### RotationSolver.Basic: the enemy mitigation debuffs' duration comes from the game
 
 `CustomRotation.MitigationDebuffDurationOf(params StatusID[])` is new: the duration at the player's synced level of the

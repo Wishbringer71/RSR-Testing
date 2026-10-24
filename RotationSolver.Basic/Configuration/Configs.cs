@@ -1369,11 +1369,14 @@ internal partial class Configs : IPluginConfiguration, IM3Settings
 		Filter = AutoActionUsage, Section = 3,
 		PvEFilter = JobFilterType.Interrupt, PvPFilter = JobFilterType.NoJob)]
 	[Range(0, 3, ConfigUnitType.Seconds, 0.002f)]
-	public Vector2 InterruptDelay { get; set; } = new(0.5f, 1);
+	// Default none: an interrupt that waits can miss its cast, and the setting exists to look less mechanical, not to
+	// play better (concept 11, A338).
+	public Vector2 InterruptDelay { get; set; } = new(0, 0);
 
 	[UI("Provoke random delay range.", Parent = nameof(AutoProvokeForTank))]
 	[Range(0, 10, ConfigUnitType.Seconds, 0.05f)]
-	public Vector2 ProvokeDelay { get; set; } = new(0.5f, 1);
+	// Default none, as for InterruptDelay: a provoke that waits leaves the enemy on whoever took it longer.
+	public Vector2 ProvokeDelay { get; set; } = new(0, 0);
 
 	[UI("Not In Combat random delay range.",
 		Filter = BasicParams)]

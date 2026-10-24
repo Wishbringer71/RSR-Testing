@@ -33,6 +33,12 @@ Bomb), not Pyretic or Causality, where every action costs health. Under these RS
 running cast for as long as the debuff lasts, recognised by the debuff's own text, with or without a BossModReborn
 module.
 
+## Interrupt and provoke delays work again
+
+"The range of random delay before interrupting hostile targets." and "Provoke random delay range." had done nothing
+since upstream dropped their wiring in 2024. They delay again what their text says; the default is now no delay, and an
+interrupt never waits past the cast it is meant to stop. A configuration saved earlier keeps its 0.5 to 1 s.
+
 ## Healers and casters: an enemy's cast is stopped by the job's stun first
 
 "Stop an enemy's cast with the job's stun or a sleep (experimental)", on by default, replaces the sleep-only setting.

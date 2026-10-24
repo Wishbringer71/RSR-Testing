@@ -9476,6 +9476,25 @@ Sequenz, Glockenspiel, Abgleich mit The Balance, Six-sided Star, Vorlauf, AoE-Sc
 - *Falsifikation:* Ein Name ohne Signalwort und ohne Ähnlichkeit zu einem Text bleibt unerkannt; ein zitierter Satz
   nahe „setting", der kein Name ist, schlüge an und wäre umzuformulieren. *Prüfgrad:* Selbsttest, Lauf über beide Texte.
 
+**5. Einstellungen ohne Leser** (Defekt seit A322).
+- *`InterruptDelay`, `ProvokeDelay`:* Upstream entfernte die Verdrahtung beim Umbau der Zielsuche (527414d60, 2024);
+  die Definitionen blieben – Kennzeichen einer Änderung ohne Verständnis. Wiederhergestellt in `TargetUpdater` über
+  `RandomDelay`, wie vorher. Konzept 11 hielt das bisher zurück, weil gespeicherte Konfigurationen den alten Vorgabewert
+  0,5 bis 1 s tragen und `Configs.Migrate` nicht migriert; seine Vorgabe „der Text bindet" geht vor. Neue Vorgabe 0 bis
+  0 s (im Kampf sinnvoller); außerhalb des Kampfes werden die Verzögerungen zurückgesetzt. Die Unterbrechung wartet nie
+  über das Wirken hinaus: Bleibt ihm ein GCD, geht sie sofort.
+- *Im Kampf:* Wer den alten Wert gespeichert hat – vermutlich er, falls er ihn nie änderte –, unterbricht und
+  provoziert 0,5 bis 1 s nach dem Erscheinen des Ziels, die Unterbrechung spätestens einen GCD vor dem Ende des Wirkens.
+- *`SwiftcastBuffer`, `TargetColor`:* Loop durch, Vorlage in `TODO.md` (Entfernen empfohlen, seine Entscheidung).
+- *Falsifikation.* Option falsch: Eine Verzögerung kann eine Unterbrechung zu spät setzen – durch die Grenze am Ende
+  des Wirkens begrenzt; eine Provokation 1 s später lässt einen Gegner bis zu einen Autoangriff länger auf dem
+  Falschen. Ausgeliefert, nichts ändert sich: bei Wert 0, der neuen Vorgabe.
+- *Prüfgrad:* statisch, Versionsgeschichte, Compile. Konzept 11.
+
+**Stand der Reihenfolge danach:** Tank-Unverwundbarkeit ohne Messung, Reflexion und Gruppenbarriere, Bruch von The
+Blackest Night, Größe von Rückstoß und Stopp-Casts, Vorausschau vor dem ersten Treffer – jeweils mit vollem Loop vor dem
+Bau.
+
 ---
 ## B · Commit-Register (Fork vs. `upstream/main`)
 

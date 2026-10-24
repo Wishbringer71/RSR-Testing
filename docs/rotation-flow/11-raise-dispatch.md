@@ -415,11 +415,18 @@ nicht messbar. Wer sie an hat, konnte ohne Swiftcast niemanden hochholen.
 - **`IBaseAction.IgnoreClipping` wird geschrieben und nirgends gelesen** (fünf Schreibzugriffe in
   `CustomRotation_Invoke.cs`, Definition `IBaseAction.IgnoreClipping`). Wirkungsbereich zu groß für diesen
   Vorgang: Ein Leser in `DoAction` hebelte die Anti-Clipping-Regel überall aus.
-- **`Configs.Migrate` ist ein Zurücksetzen, kein Migrationspfad.** Das ist nicht
-  nur unbequem, es **sperrt andere Behebungen**: Jede Korrektur, die einen Vorgabewert ändern muss,
-  um das bisherige Verhalten zu erhalten, ist ohne Feldmigration nicht durchführbar. Daran ist die
-  Verdrahtung von `InterruptDelay` und `ProvokeDelay` gescheitert.
-- **`TargetColor` hat keinen Leser.**
+- **`Configs.Migrate` ist ein Zurücksetzen, kein Migrationspfad.** Eine Korrektur, die einen Vorgabewert ändert, um
+  das bisherige Verhalten zu erhalten, erreicht gespeicherte Konfigurationen nicht.
+- **`InterruptDelay` und `ProvokeDelay` sind wieder verdrahtet** (A338). Ihre Texte („The range of random delay before
+  interrupting hostile targets.", „Provoke random delay range.") versprechen eine Verzögerung vom Erscheinen des Ziels
+  bis zur Wahl; Upstream hatte sie beim Umbau der Zielsuche entfernt (527414d60, 2024). Der Text bindet (seine
+  Vorgabe), also gilt jetzt der Wert, der in seiner Konfiguration steht – ohne Migration der alte Vorgabewert 0,5 bis
+  1 s, sofern er ihn nicht geändert hat. Neue Vorgabe: keine Verzögerung, weil eine wartende Unterbrechung ihr Wirken
+  verpassen und eine wartende Provokation den Gegner länger beim Falschen lassen kann. Die Unterbrechung wartet nie
+  über das Wirken hinaus: Bleibt ihm nur noch ein GCD, geht sie sofort (`TargetUpdater`).
+- **`SwiftcastBuffer` und `TargetColor` haben keinen Leser;** zur Entscheidung in `TODO.md`, „Einstellungen ohne Leser,
+  deren Text eine Wirkung verspricht". `TargetColor` verlor seinen Leser mit der Zeichenbibliothek XIVPainter (Upstream
+  72f43cbcf, 2024); RSR zeichnet seither nichts mehr in die Welt.
 
 ## Grenzen des Nachweises
 

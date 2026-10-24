@@ -16,6 +16,13 @@ internal static partial class TargetUpdater
 
 
 	// Scratch lists reused every update; ObjectListDelay copies what it needs.
+	// "The range of random delay before interrupting hostile targets." and "Provoke random delay range.": the delay their
+	// texts promise, from the moment a target appears until it is chosen. Wired here until upstream's refactor of the
+	// target update dropped it (527414d60, 2024) and left both settings without a reader (A338). Not readonly: the
+	// struct keeps its timer.
+	private static RandomDelay _interruptDelay = new(() => Service.Config.InterruptDelay);
+	private static RandomDelay _provokeDelay = new(() => Service.Config.ProvokeDelay);
+
 	private static readonly List<IBattleChara> _raiseCandidates = [];
 	private static readonly List<IBattleChara> _dispelCandidates = [];
 
@@ -49,8 +56,9 @@ internal static partial class TargetUpdater
 			_outOfDutyPlayers.Clear();
 			DataCenter.DeathTarget = null;
 			DataCenter.DispelTarget = null;
-			DataCenter.ProvokeTarget = null;
-			DataCenter.InterruptTarget = null;
+			// Through the delays, so their timers start again with the next target instead of carrying this one over.
+			DataCenter.ProvokeTarget = _provokeDelay.Delay<IBattleChara>(null);
+			DataCenter.InterruptTarget = _interruptDelay.Delay<IBattleChara>(null);
 			UpdateTimeToKill();
 			return;
 		}
@@ -66,10 +74,15 @@ internal static partial class TargetUpdater
 		// walk behind it runs only when one of them comes up.
 		bool? autoProvokeAllowed = null;
 		bool AutoProvokeAllowed() => autoProvokeAllowed ??= Service.Config.AutoProvokeForTank || StateUpdater.CountPartyTanks() < 2;
-		DataCenter.ProvokeTarget = (DataCenter.Role == JobRole.Tank || StatusHelper.PlayerHasStatus(true, StatusID.VariantUltimatumSet))
+		DataCenter.ProvokeTarget = _provokeDelay.Delay((DataCenter.Role == JobRole.Tank || StatusHelper.PlayerHasStatus(true, StatusID.VariantUltimatumSet))
 			? GetFirstHostileTarget(target => target.CanProvoke(AutoProvokeAllowed))
-			: null; // Calculating this per frame rather than on-demand is actually a fair amount worse
-		DataCenter.InterruptTarget = GetFirstHostileTarget(ObjectHelper.CanInterrupt); // Tanks, Melee, RDM, and various phantom and duty actions can interrupt so just deal with it
+			: null); // Calculating this per frame rather than on-demand is actually a fair amount worse
+		// Tanks, Melee, RDM, and various phantom and duty actions can interrupt so just deal with it. The delay never outlasts
+		// the cast: with one GCD of it left the interrupt goes now, since one that waits past the cast's end is no interrupt.
+		var interruptCandidate = GetFirstHostileTarget(ObjectHelper.CanInterrupt);
+		DataCenter.InterruptTarget = _interruptDelay.Delay(interruptCandidate)
+			?? (interruptCandidate is { } caster && caster.TotalCastTime - caster.CurrentCastTime <= DataCenter.DefaultGCDTotal
+				? interruptCandidate : null);
 
 		if (DataCenter.IsInOccultCrescentOp && Service.Config.ElementalWeaknessTracking)
 		{
