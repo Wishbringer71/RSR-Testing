@@ -9564,7 +9564,7 @@ Einstellung wieder gelesen wird oder nicht mehr besteht, mit Selbsttest; der ers
 
 **Prüfgrad:** statisch, Versionsgeschichte, Spielblätter (xivapi v2), Prüfskripte mit Selbsttest, Compile. Konzept 11.
 
-### A340 · Schwere TODO-Punkte: zweite Beobachtung desselben Markers (Defekt) (24.10.2026)
+### A340 · Schwere TODO-Punkte: zweite Beobachtung desselben Markers (Defekt), Marker ohne Wirken (24.10.2026)
 
 Seine Präzisierung zum Auftrag vom 24.10.2026: „ausserdem war die priorisierung in der todo: was ist wichtig und was ist
 davon einfach umsetzbar. das heißt nicht dass schwer umsetzbare wichtige dinge weggelassen werden sollten." In
@@ -9601,6 +9601,36 @@ Aktionsangabe oder Messung); beim Lesen der Marker-Beobachtung fiel ein Defekt a
   bleibt als Schutz gegen einen solchen Kampf (Schluss, kein Fall belegt); er kostet nur das erneute Lernen je Gebiet,
   in der sicheren Richtung.
 - *Prüfgrad:* statisch, Protokoll, Compile; im Spiel nicht beobachtet. Konzept 15.
+
+**Punkt 1: Tank-Unverwundbarkeit vor Tankbustern ohne Aktionsangabe oder Messung.**
+- *Befund:* Der Plan las nur Wirken (`TankbusterForecast.Update` über `DataCenter.AreaCasters`). Ein Marker ganz ohne
+  Wirken bekam nie einen Plan, obwohl die Tabelle den Treffer danach maß (der bestätigende Treffer zählt als
+  Tankbuster): Die Staffelung gab eine große Minderung, die Unverwundbarkeit kam erst unter der Linie. Am 23.10.2026
+  (Heiler) kamen 8 von 14 Markern auf Tanks ohne Wirken in der Entscheidungszeile, darunter vor Blitzga und Blitzbogen.
+  Der bisherige nächste Schritt – das Protokoll zählt die Fälle, dann ein Loop – wartete auf seine Daten; seit dem
+  17.10.2026 spielte er keinen Tank, kein Fall kam.
+- *Optionen:* (0) nichts; (a) lernen, welcher Treffer einem Marker im Gebiet folgte, und ihn beim nächsten Auftreten als
+  Tankbuster planen; (b) die Unverwundbarkeit vor jedem ungemessenen Tankbuster – verworfen (Konzept 09: „eine
+  Unverwundbarkeit bei jedem Tankbuster wäre schädlich"); (c) für eine BossModReborn-Vorhersage den größten Tankbuster
+  des Gebiets annehmen – verworfen, ohne Aktion bliebe es eine Annahme, und die Unverwundbarkeit fiele oft auf einen
+  kleinen Treffer.
+- *Gewählt (a):* `TankbusterMarkerWatch` lernt beim Bestätigen Aktion und Zeit (erster Treffer, keine Aktion, die die
+  ganze Gruppe traf), `TankbusterMarkerHits.json`; gleiche Aktion behält die kürzere Zeit, eine andere ersetzt.
+  `TankbusterForecast` legt bei einem Marker ohne Wirken einen Eintrag `Learned` an: ohne Debuffs am Gegner, Ziel des
+  Spielers als Bezug, sonst kein Plan. Zurückgehalten wird nur unter geplanter Unverwundbarkeit. Die Option „Use the
+  invulnerability before a tankbuster nothing less survives" wirkt damit auch hier, wie ihr Text sagt.
+- *Falsifikation.* Kein Defekt: widerlegt am Code (die gemessene Zahl erreichte den Plan nicht) und am Protokoll (8 von
+  14). Option falsch: Ein Marker, der im Gebiet zwei Tankbuster ankündigt, plant den zuletzt gelernten; hält dann nur
+  unter Unverwundbarkeit zurück, die jeden Treffer abhält, sonst nichts. Ein früher erster Treffer statt des
+  Tankbusters würde gelernt; der nächste Treffer derselben Art ersetzt ihn nicht, ein anderer schon. Ausgeliefert,
+  nichts ändert sich: als Heiler (Tank-Regel), beim ersten Auftreten je Gebiet, ohne Ziel, wenn die gelernte Zeit
+  abgelaufen ist, und wo das Bündel nicht mehr verlangt als die Staffelung schon gibt.
+- *Nicht lösbar ohne Annahme:* eine BossModReborn-Vorhersage ohne Aktion und das erste Auftreten einer Aktion – dort
+  bleibt die Unverwundbarkeit reaktiv (Konzept 09, „Grenzen"). Der TODO-Eintrag und „Warten auf Daten: Tankbuster nach
+  einem Marker ohne Wirken" sind geschlossen.
+- *Prüfgrad:* statisch, Protokoll, Compile; im Spiel nicht beobachtet. Messmittel: „tankbuster coming at you (learned
+  from the marker on you)" und weiter „no cast taken for it" für die Fälle ohne beides. Konzept 09, „Ein Marker ohne
+  Wirken".
 
 ---
 ## B · Commit-Register (Fork vs. `upstream/main`)

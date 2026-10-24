@@ -11,10 +11,11 @@ Abschnitt C.
 - **Gemessener Tankbuster:** das billigste Bündel eigener Abwehr, mit dem der Tank ihn übersteht; die
   Unverwundbarkeit nur, wenn keines reicht; „alles" nur, wenn auch sie nicht verfügbar ist. Was der Plan nicht
   braucht, hält RSR auf allen Pfaden zurück. Zwei Optionen, ab Werk an.
-- **Tankbuster ohne Messung** (Marker oder Vorhersage ohne Wirken, nie gemessene Aktion): die Einzelabwehr der
-  Tank-Rotationen, je vorhergesagtem Tankbuster eine große Minderung oder Schutzwall und die kurzen dazu; die
-  Unverwundbarkeit reaktiv unter `HealthForDyingTanks`. Ein Marker auf dir neben dem Wirken einer gemessenen Aktion,
-  die auf niemanden gerichtet ist, gilt als gemessener Tankbuster auf dich.
+- **Tankbuster ohne Messung** (Vorhersage ohne Wirken, nie gemessene Aktion, erstes Auftreten eines Markers im
+  Gebiet): die Einzelabwehr der Tank-Rotationen, je vorhergesagtem Tankbuster eine große Minderung oder Schutzwall und
+  die kurzen dazu; die Unverwundbarkeit reaktiv unter `HealthForDyingTanks`. Ein Marker auf dir neben dem Wirken einer
+  gemessenen Aktion, die auf niemanden gerichtet ist, gilt als gemessener Tankbuster auf dich. Ein Marker ganz ohne
+  Wirken wird mit dem Treffer geplant, der ihm im selben Gebiet schon einmal folgte (A340, „Ein Marker ohne Wirken").
 - **Krieger:** Urflackern geht an ein anderes Mitglied, wenn er Urimpuls nicht selbst braucht oder das Mitglied die
   Triage gewinnt; Abschütteln wartet, solange es ihm laufende oder vom Plan gebrauchte eigene Minderungen nähme.
 - **Hilfe für das Ziel eines Tankbusters:** Trägt ein anderes Mitglied – meist der andere Tank – einen
@@ -506,10 +507,12 @@ Risiko"; die Neurechnung gibt sie zurück, wenn die Heilung vor dem Ziehen kommt
   einem GCD, deckt ein Minderungsplan nur das erste.
 - *Ein ungemessenes Wirken oder eine frühere BossModReborn-Vorhersage* neben einem gemessenen: Der Plan drückt, hält
   aber nichts zurück.
-- *Ein Tankbuster nur als Marker oder Vorhersage ohne Wirken einer gemessenen Aktion, oder eine noch nie gemessene
-  Aktion:* kein Plan; dann gilt die Abwehr ohne Messung (Abschnitt „Krieger: die übrige Abwehr", Staffelung) und die
-  reaktive Unverwundbarkeit unter `HealthForDyingTanks`. Ein Marker neben dem zielosen Wirken einer gemessenen Aktion
-  ist geplant (Erkennung, A308). Die Marker-Zeit ist die der Warteschlange (fünf Sekunden für einen Marker auf einem
+- *Ein Tankbuster nur als BossModReborn-Vorhersage, eine noch nie gemessene Aktion, ein Marker beim ersten Auftreten
+  im Gebiet oder ohne Ziel des Spielers:* kein Plan; dann gilt die Abwehr ohne Messung (Abschnitt „Krieger: die übrige
+  Abwehr", Staffelung) und die reaktive Unverwundbarkeit unter `HealthForDyingTanks`. Die Vorhersage nennt keine
+  Aktion, und beim ersten Auftreten ist nichts gemessen – mehr als die reaktive Unverwundbarkeit gibt es dort ohne
+  Annahme nicht. Ein Marker neben dem zielosen Wirken einer gemessenen Aktion ist geplant (Erkennung, A308), ein
+  Marker ganz ohne Wirken mit dem gelernten Treffer (nächster Abschnitt). Die Marker-Zeit ist die der Warteschlange (fünf Sekunden für einen Marker auf einem
   Gruppenmitglied, Upstream; seit A334 nicht mehr dessen eigene Restwirkzeit); ein Cast, der erst danach beginnt, wird
   ihm nicht zugerechnet.
 - *Tankwechsel:* hält bei bereiter Unverwundbarkeit, die RSR für jeden nächsten Treffer nutzen würde
@@ -521,6 +524,38 @@ tötet damit – seine Präzisierung nennt genau das –, und die reaktive Unver
 Sterbe-Schwelle, die ein Treffer von voller Gesundheit in einem Schritt überspringt. Die Staffelung aus seinem
 Protokoll vom 01.10.2026 (zwei große auf einen Tankbuster, nichts auf den nächsten) entsteht im Plan nur, wenn jeder
 Tankbuster zwei braucht, und dann ist der nächste mit der Unverwundbarkeit oder mit allem geplant.
+
+### Ein Marker ohne Wirken
+
+**Ein Tankbustermarker auf dir, zu dem kein Wirken kommt, wird mit dem Treffer geplant, der demselben Marker im selben
+Gebiet zuletzt folgte** (A340). Die Tabelle maß solche Treffer schon (der Treffer nach einem Marker zählt als
+Tankbuster), der Plan las aber nur Wirken: Gegen einen Marker allein gab es nie mehr als die Staffelung und die
+Unverwundbarkeit unter der Linie, die ein Treffer von voller Gesundheit in einem Schritt überspringt. In seinem
+Protokoll vom 23.10.2026 (Heiler) kamen 8 von 14 Markern auf Tanks ohne Wirken in der Entscheidungszeile, darunter vor
+Blitzga und Blitzbogen, die danach gemessen wurden.
+
+- **Gelernt** (`TankbusterMarkerWatch`, `TankbusterMarkerHits.json`, kein Download): Bestätigt ein Treffer einen
+  Marker auf einem Gruppenmitglied, gleich welchem, merkt RSR für Gebiet und Pfad die Aktion des ersten Treffers und
+  die Zeit vom Erscheinen des Markers bis zu ihm. Eine Aktion, die schon die ganze Gruppe traf, bestätigt den Marker,
+  wird aber nicht gelernt (Raidwide-Regel, A337). Folgt beim nächsten Mal eine andere Aktion, ersetzt sie den Eintrag;
+  dieselbe Aktion behält die kürzere Zeit, damit eine danach getaktete Abwehr eher früh als spät kommt.
+- **Genutzt** (`TankbusterForecast`, `Learned`): Steht ein nicht verworfener Marker auf dir, kommt kein Wirken auf dich
+  zu und hat die Tabelle die gelernte Aktion gemessen, gilt sie als Tankbuster auf dich, fällig nach der gelernten
+  Zeit ab dem Erscheinen des Markers. Gerechnet wird ohne Debuffs am Gegner – der Treffer kann von einem Helfer kommen,
+  den ein Debuff auf dem Boss nicht erreicht –; Reprisal und Ähnliches zählen nicht und werden nicht geplant. Der Plan
+  wählt Bündel oder Unverwundbarkeit wie sonst. Ohne Ziel des Spielers oder nach Ablauf der gelernten Zeit kein Plan.
+- **Zurückgehalten wird nur unter der geplanten Unverwundbarkeit,** die jeden Treffer abhält. Ein Bündel hält die
+  Staffelung nicht zurück: Kündigt der Marker diesmal einen anderen Treffer an, ließe ein Bündel für den gelernten den
+  Tank mit weniger als der Abwehr des Markers. Damit gibt RSR hier mehr aus, als „Spend only the mitigation a measured
+  tankbuster needs" verspricht – der Text gilt dem gemessenen Tankbuster, und welcher kommt, ist hier eine Vorhersage,
+  kein Wirken (Stufe 3 der Rangordnung gegen Stufe 1).
+- **Was geschieht, wenn die Annahme nicht stimmt:** Folgt diesmal ein kleinerer Treffer, war die Unverwundbarkeit
+  vielleicht vergeudet, und der Eintrag ersetzt sich. Folgt ein größerer, steht wenigstens die Staffelung, wie ohne
+  Plan. Kommt der Treffer früher als je zuvor, kann die Unverwundbarkeit noch ausstehen, während die Staffelung
+  zurückgehalten wird – nur beim frühesten Auftreten, weil die kürzeste Zeit gilt. Die Zeit ist auf Seite des Clients
+  gemessen (Erscheinen des Effekts bis zum Effekt-Handler).
+- **Im Protokoll:** „tankbuster coming at you (learned from the marker on you)". Ein Treffer nach einem Marker, für den
+  weder Wirken noch gelernter Treffer vorlag, schreibt weiter „no cast taken for it".
 
 ### Prüfmittel
 

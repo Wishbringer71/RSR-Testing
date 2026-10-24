@@ -14,20 +14,19 @@ Auftrag vom 24.10.2026 läuft: die einfachen Punkte zuerst (A338), die schweren 
 steht seit seinem Hinweis vom 24.10.2026 vor der Flächenheilung: Es heilt eine Gruppe nach einem Treffer, der ihr fast
 alles nimmt.
 
-1. Tank-Unverwundbarkeit vor Tankbustern ohne Aktionsangabe oder Messung nur reaktiv
-2. Tanks: Reflexion und Gruppenbarriere auf demselben Raidwide
-3. DRK: Bruch von The Blackest Night zählen
-4. Rückstoß und Stopp-Casts: Größe messen
-5. Vorausschau vor dem ersten Treffer
-6. Weißmagier: Glockenspiel vor großen Treffern und zweiter Druck
-7. Flächenheilung um den Wirkenden: Radius gegen Trefferfläche
-8. Feste Werte: jeder offene Wert braucht seinen Loop
-9. Tankbuster-Plan: Umlauf über die Sequenz jedes Drucks
-10. Rotationen gegen The Balance abgleichen
-11. Six-sided Star und Flamethrower
-12. Vorlauf: Dragoon und Viper
-13. AoE-Schwelle an drei Orten
-14. Audit der gesamten Codebasis
+1. Tanks: Reflexion und Gruppenbarriere auf demselben Raidwide
+2. DRK: Bruch von The Blackest Night zählen
+3. Rückstoß und Stopp-Casts: Größe messen
+4. Vorausschau vor dem ersten Treffer
+5. Weißmagier: Glockenspiel vor großen Treffern und zweiter Druck
+6. Flächenheilung um den Wirkenden: Radius gegen Trefferfläche
+7. Feste Werte: jeder offene Wert braucht seinen Loop
+8. Tankbuster-Plan: Umlauf über die Sequenz jedes Drucks
+9. Rotationen gegen The Balance abgleichen
+10. Six-sided Star und Flamethrower
+11. Vorlauf: Dragoon und Viper
+12. AoE-Schwelle an drei Orten
+13. Audit der gesamten Codebasis
 
 Danach technische Schuld, soweit ihre Auflösungsbedingung erfüllt ist. Warten auf Daten: unten.
 
@@ -36,13 +35,6 @@ Danach technische Schuld, soweit ihre Auflösungsbedingung erfüllt ist. Warten 
 Keine bekannt.
 
 ## Offene Arbeit
-
-### Tank-Unverwundbarkeit vor Tankbustern ohne Aktionsangabe oder Messung nur reaktiv · N
-
-*Im Kampf:* Vor einem Marker ohne Wirken, einem nur von BossModReborn angekündigten Tankbuster und dem ersten
-Auftreten einer Aktion zündet die Unverwundbarkeit erst unter `HealthForDyingTanks` (vor einem gemessenen Wirken
-vorher, A260, A308). *Nächster Schritt:* Das Protokoll zählt die Fälle („no cast taken for it"); für den Marker ohne
-Wirken bräuchte es eine gelernte Zeit vom Marker zum Treffer – voller Loop vor dem Bau. *Konzept:* 09.
 
 ### Tanks: Reflexion und Gruppenbarriere auf demselben Raidwide · N
 
@@ -220,8 +212,6 @@ nebeneinander gebraucht werden.
   Auflösung: Protokollzeilen „hit you from a source the object table does not hold". Konzept 08.
 - **BossModReborn: FATE-Modul in Occult Crescent läuft nach dem Weggang weiter** (am Quelltext `be8ff77` gefolgert).
   Adressat BossModReborn. Konzept 08, „Wann eine BossModReborn-Vorhersage ihn betrifft".
-- **Tankbuster nach einem Marker ohne Wirken** (Protokoll „no cast taken for it", A308) – Eingang für
-  „Tank-Unverwundbarkeit … nur reaktiv". Im Protokoll vom 18.10.2026 kein Fall.
 - **Ein gegnerisches Wirken stoppen: was die gespeicherten Tabellen lernen** (experimentell, seine Vorgaben 18.10. und
   23.10.2026, A329, A334, A337). Erstes Protokoll mit der Regel (23.10.2026): Sanctga 19-mal gewählt, Schlummer
   dreimal gelandet, vier Arten als immun gespeichert. Offen: ob Schlaf unterbrechbares Wirken stoppt (ein Versuch, nicht

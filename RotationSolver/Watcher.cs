@@ -545,7 +545,7 @@ public static class Watcher
 				{
 					if (ReachedTarget(effect))
 					{
-						var isMarked = TankbusterMarkerWatch.RecordHit(effect.TargetID) && !partyWide;
+						var isMarked = TankbusterMarkerWatch.RecordHit(effect.TargetID, marked.RowId, partyWide) && !partyWide;
 						var isTankbuster = isMarked || OtherConfiguration.HostileCastingTank.Contains(marked.RowId);
 						if (effect.TargetID == playerObject.GameObjectId)
 						{

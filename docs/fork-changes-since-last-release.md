@@ -25,6 +25,14 @@ hit it went on the list of markers no hit follows. Its next appearance then got 
 alone, and that hit took it off the list again - every other time, for healers and tanks alike. A confirmed marker is
 now watched until it has gone.
 
+## Tanks: a marker without a cast is met with the hit that followed it before
+
+A tankbuster marker on the tank with no cast at all got one big mitigation, and the invulnerability only once the tank
+had fallen below its line - too late for a hit that takes a full tank under it. RSR measured that hit but never used
+the measurement. It now learns, per area and marker, which hit followed and how soon, and plans the next one like a
+tankbuster with a cast: the least mitigation that survives it, or the invulnerability if nothing less does. Mitigation
+is held back only under a planned invulnerability, as the marker may announce another hit this time.
+
 ## A raidwide during a tankbuster marker is no longer learned as the tankbuster
 
 Any enemy action that struck a marked member while the marker stood counted as its tankbuster, so a raidwide landing

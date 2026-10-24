@@ -177,8 +177,9 @@ Pfade sind Spieldaten (Asset-Namen), kein übernommener Code.
   anvisierbar oder unsichtbarer Helfer —, ist der Marker bestätigt. Endet die Beobachtung ohne solchen Treffer,
   ist der Pfad widerlegt und kommt auf die Liste. Die Erkennung (`UpdateTankbusterTargets`, `IsTankbusterVfxOn`)
   überspringt Pfade auf der Liste; was sie liest – `IsCastingTankVfx`, `IsTankbusterAimedAt` –, sieht sie nicht. Dieselbe Bestätigung sagt dem Tankwechsel, ob ein Treffer ein Tankbuster war
-  (`RecordHit` meldet einen Marker, der nicht auf der Liste steht; Konzept 09). Bis A211 zählte nur die Effektart „Damage": Ein unter Sheltron geblockter oder
-  unter Hallowed Ground abgewiesener Tankbuster widerlegte seinen Marker.
+  (`RecordHit` meldet einen Marker, der nicht auf der Liste steht; Konzept 09), und sie lernt, welcher Treffer dem
+  Marker folgte (`TankbusterMarkerHits`, Konzept 09, „Ein Marker ohne Wirken"). Bis A211 zählte nur die Effektart
+  „Damage": Ein unter Sheltron geblockter oder unter Hallowed Ground abgewiesener Tankbuster widerlegte seinen Marker.
 - **Je Gebiet, nicht je Pfad:** Ein Eintrag ist Gebiet und Pfad (`DataCenter.TankbusterMarkerKey`). Derselbe Pfad
   dient in vielen Kämpfen (`tank_lockon02k1` am 23.10.2026 vor Blitzbogen, Goldene Klauen, Deftige Dachtel, Magieschock
   β und Energetische Ballung); ein Kampf, in dem

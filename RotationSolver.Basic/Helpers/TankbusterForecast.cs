@@ -47,8 +47,12 @@ internal static class TankbusterForecast
 	/// <param name="SourceId">The caster's id, read with the cast. A reader in a later frame resolves the caster from
 	/// the object table by it instead of trusting <paramref name="Source"/>: Dalamud keeps one object per table slot and
 	/// points it at whatever occupies the slot when anyone next walks the table (A309).</param>
+	/// <param name="Learned">No cast at all: a tankbuster marker on the player, met with the hit learned after it before
+	/// (<see cref="TankbusterMarkerWatch.LearnedHitOn"/>, A340). <paramref name="Source"/> is then the player's target,
+	/// not known to be the hitter, so nothing laid on it counts; <paramref name="Remaining"/> is the learned time.</param>
 	internal sealed record Cast(int Serial, IBattleChara Source, uint ActionId, uint AttackType, float Remaining,
-		float Total, float Predicted, float Budget, float Horizon, bool ByMarker = false, ulong SourceId = 0)
+		float Total, float Predicted, float Budget, float Horizon, bool ByMarker = false, ulong SourceId = 0,
+		bool Learned = false)
 	{
 		/// <summary>Measured at all: the table has a figure for the action.</summary>
 		public bool Measured => Predicted > 0f;
@@ -606,16 +610,8 @@ internal static class TankbusterForecast
 			var left = hostile.TotalCastTime - hostile.CurrentCastTime;
 			var horizon = left + gcd;
 			var predicted = TankbusterTable.PredictedShare(id, player, hostile, horizon);
-
-			// The barrier counts only when it still stands then; the earliest barrier's end decides, so a
-			// short one beside a long one counts none, and one without a known status counts none (as in
-			// StatusHelper.HasSurvivingShield). Read from the status list itself, like every status here.
-			var barrier = player.GetObjectShield() > 0 && ShortestCopy(player, StatusHelper.ShieldStatus) >= horizon
-				? player.GetObjectShield() / maxHp
-				: 0f;
-			var attackType = Service.GetSheet<Lumina.Excel.Sheets.Action>().TryGetRow(id, out var row)
-				? row.AttackType.RowId
-				: 0u;
+			var barrier = BarrierAt(player, horizon, maxHp);
+			var attackType = AttackTypeOf(id);
 			// A cast whose elapsed time went back is a new cast of the same action, even without a frame
 			// between the two.
 			var identity = (hostile.GameObjectId, id, hostile.TotalCastTime);
@@ -632,6 +628,14 @@ internal static class TankbusterForecast
 			{
 				Trace(cast);
 			}
+		}
+
+		// A marker on the player with no cast coming at him at all: met with the hit that followed the same marker
+		// before, once the table has measured it (A340). Before, the table learned such a hit and the plan never used it,
+		// and the invulnerability came only below the line - too late for a hit that takes a full tank under it.
+		if (_casts.Count == 0 && markerOnPlayer)
+		{
+			AddLearnedCast(player, gcd, maxHp);
 		}
 
 		_casts.Sort((a, b) => a.Remaining.CompareTo(b.Remaining));
@@ -672,13 +676,71 @@ internal static class TankbusterForecast
 		PlayerImpervious = LongestCopy(player, StatusHelper.ImperviousStatus, false) >= latest;
 	}
 
+	// The learned hit as a cast for the plan. Its hitter is not known - the boss, or a helper no debuff on the boss
+	// reaches -, so it is looked at from the player's target, and only for the plan's figures: nothing on the target
+	// counts against the hit (TankbusterTable.PredictedShare without an attacker), so the plan errs to more mitigation.
+	// Without a target there is no plan, as before.
+	private static void AddLearnedCast(IBattleChara player, float gcd, float maxHp)
+	{
+		if (!TankbusterMarkerWatch.LearnedHitOn(player.GameObjectId, out var id, out var remaining, out var delay)
+			|| Svc.Targets.Target is not IBattleChara aim || !aim.IsEnemy())
+		{
+			return;
+		}
+
+		// Past the learned time the hit is due any moment, or the marker announced something else this time: nothing to
+		// plan for, and the defence of the marker goes on as without a plan.
+		if (remaining <= 0f)
+		{
+			return;
+		}
+
+		var horizon = remaining + gcd;
+		var predicted = TankbusterTable.PredictedShare(id, player, null, horizon);
+		if (predicted <= 0f)
+		{
+			return;
+		}
+
+		var identity = (player.GameObjectId, id, delay);
+		var elapsed = delay - remaining;
+		var isNew = !_serials.TryGetValue(identity, out var known) || elapsed < known.Elapsed;
+		var serial = isNew ? ++_nextSerial : known.Serial;
+		_serials[identity] = (serial, elapsed);
+		_ = _live.Add(identity);
+		_lastComing[id] = _readAt;
+
+		var cast = new Cast(serial, aim, id, AttackTypeOf(id), remaining, delay, predicted,
+			(player.CurrentHp / maxHp) + BarrierAt(player, horizon, maxHp), horizon, true, aim.GameObjectId, true);
+		_casts.Add(cast);
+		if (isNew)
+		{
+			Trace(cast);
+		}
+	}
+
+	// The barrier counts only when it still stands at the horizon; the earliest barrier's end decides, so a short one
+	// beside a long one counts none, and one without a known status counts none (as in StatusHelper.HasSurvivingShield).
+	// Read from the status list itself, like every status here.
+	private static float BarrierAt(IBattleChara player, float horizon, float maxHp)
+	{
+		return player.GetObjectShield() > 0 && ShortestCopy(player, StatusHelper.ShieldStatus) >= horizon
+			? player.GetObjectShield() / maxHp
+			: 0f;
+	}
+
+	private static uint AttackTypeOf(uint actionId)
+	{
+		return Service.GetSheet<Lumina.Excel.Sheets.Action>().TryGetRow(actionId, out var row) ? row.AttackType.RowId : 0u;
+	}
+
 	// One line per cast, written when it is first seen, so the file shows what the plan was built on.
 	private static void Trace(Cast cast)
 	{
 		var name = Service.GetSheet<Lumina.Excel.Sheets.Action>().TryGetRow(cast.ActionId, out var row)
 			? row.Name.ExtractText()
 			: $"#{cast.ActionId}";
-		DefenseTrace.Line($"tankbuster coming at you{(cast.ByMarker ? " (by the marker on you)" : string.Empty)}:"
+		DefenseTrace.Line($"tankbuster coming at you{(cast.Learned ? " (learned from the marker on you)" : cast.ByMarker ? " (by the marker on you)" : string.Empty)}:"
 			+ $" {name} #{cast.ActionId} in {cast.Remaining:F1} s - "
 			+ (!cast.Measured
 				? "not in the tankbuster table"
@@ -688,7 +750,7 @@ internal static class TankbusterForecast
 	/// <summary>
 	/// Whether a cast of <paramref name="actionId"/> was taken as coming at the player until at most one GCD ago -
 	/// the time the hit needs to arrive after its cast. For the trace of a hit after a tankbuster marker: one without
-	/// is a marker the plan had no cast for (TODO.md, "nur reaktiv").
+	/// is a marker the plan had neither a cast nor a learned hit for (concept 09, "Ein Marker ohne Wirken").
 	/// </summary>
 	public static bool TookCastFor(uint actionId)
 	{

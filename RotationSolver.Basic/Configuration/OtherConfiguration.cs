@@ -52,6 +52,14 @@ internal class OtherConfiguration
 	/// </summary>
 	public static HashSet<string> TankbusterMarkerWithoutHit = [];
 
+	/// <summary>
+	/// What hit after a tankbuster marker, per marker entry (area and path, <see cref="DataCenter.TankbusterMarkerKey"/>):
+	/// lets the tank plan meet a marker that no cast accompanies with the hit measured after it before (concept 09,
+	/// A340). Learned in play, never downloaded; a confirmation by another action replaces an entry, one by the same
+	/// action keeps the shorter time.
+	/// </summary>
+	public static Dictionary<string, TankbusterMarkerHit> TankbusterMarkerHits = [];
+
 	/// <markdown file="List" name="Gaze/Stop" section="Actions">
 	/// **`It is recommended to click on the reset button after every patch.`**
 	///
@@ -334,6 +342,7 @@ internal class OtherConfiguration
 		new ListFile<HashSet<uint>>(nameof(HostileCastingKnockback), () => HostileCastingKnockback, v => HostileCastingKnockback = v),
 		// No download: learned in play, like the damage tables.
 		new ListFile<HashSet<string>>(nameof(TankbusterMarkerWithoutHit), () => TankbusterMarkerWithoutHit, v => TankbusterMarkerWithoutHit = v, false),
+		new ListFile<Dictionary<string, TankbusterMarkerHit>>(nameof(TankbusterMarkerHits), () => TankbusterMarkerHits, v => TankbusterMarkerHits = v, false),
 		new ListFile<HashSet<uint>>(nameof(HostileCastingStop), () => HostileCastingStop, v => HostileCastingStop = v),
 		new ListFile<Dictionary<uint, List<string>>>(nameof(NorthHornWeaknessRecords), () => NorthHornWeaknessRecords, v => NorthHornWeaknessRecords = v, false),
 		new ListFile<Dictionary<uint, List<string>>>(nameof(SouthHornWeaknessRecords), () => SouthHornWeaknessRecords, v => SouthHornWeaknessRecords = v, false),
@@ -606,6 +615,8 @@ internal class OtherConfiguration
 	public static Task SaveHostileCastingKnockback() => SaveList(nameof(HostileCastingKnockback));
 
 	public static Task SaveTankbusterMarkerWithoutHit() => SaveList(nameof(TankbusterMarkerWithoutHit));
+
+	public static Task SaveTankbusterMarkerHits() => SaveList(nameof(TankbusterMarkerHits));
 	#endregion
 
 	#region Status Tab
