@@ -9407,6 +9407,34 @@ markiertes Mitglied traf, solange dessen Marker stand, galt als dessen Tankbuste
 **Prüfgrad:** Protokoll je Zeilenart ausgewertet, Tabellen verglichen; statisch, Prüfskripte, Compile lokal; im Spiel
 nicht beobachtet.
 
+### A338 · TODO nach Wichtigkeit, einfache Punkte umgesetzt (24.10.2026)
+
+Sein Auftrag: „todo nach prioritäten sortieren und prüfen, was davon einfach umgesetzt werden kann. zugehörige konzepte
+verbessern und umsetzen. umsetzung prüfen. alles in loops".
+
+**Reihenfolge und Aufwand.** Maß ist die Wirkung im Kampf nach „Spielweise". Einfach heißt: Ursache am Code belegt,
+Lösung ohne Richtungsentscheidung von ihm, kleiner Eingriff, prüfbar. Einfach waren: No-casting debuffs (Defekt),
+Marker-Negativliste je Kampf, die feste Dauer von Reprisal, Feint und Addle, die Prüfung genannter Einstellungsnamen,
+die Einstellungen ohne Leser. Nicht einfach, weil sie eine gelernte Größe, Fallarbeit je Job oder eine Entscheidung
+brauchen: Tank-Unverwundbarkeit ohne Messung, Reflexion und Gruppenbarriere, Bruch von The Blackest Night, Größe von
+Rückstoß und Stopp-Casts, Vorausschau vor dem ersten Treffer, Flächenheilung gegen Trefferfläche, Umlauf über die
+Sequenz, Glockenspiel, Abgleich mit The Balance, Six-sided Star, Vorlauf, AoE-Schwelle, Audit.
+
+**1. No-casting debuffs: Schaden bei jeder Aktion** (Defekt aus A336).
+- *Optionen:* (0) nichts; (a) eine zweite Liste für die Art „Schaden bei jeder Aktion" – Vertrag einer gespeicherten
+  Liste, die er pflegen müsste; (b) die Art am Wirktext des Status erkennen; (c) alle gelisteten Status über die ganze
+  Dauer sperren – ein Heiler stünde während jeder Acceleration Bomb still.
+- *Gewählt (b):* Die englische Fassung des Wirktexts im Blatt des Clients nennt „with every action" (Pyretic, sechs
+  Zeilen) oder „each time an action" (Causality). In allen Statusblättern vom 24.10.2026 trifft das genau diese sieben
+  Zeilen (xivapi v2, Suche über `Description`). Unter einem solchen Status drückt RSR nichts und bricht einen laufenden
+  Zauber ab (`NoCastingStatusHelper.DamagesEveryAction`, `RSCommands_Actions`, `CancelCastUpdater`); die übrigen
+  behalten das Fenster vor dem Ablauf.
+- *Falsifikation.* Kein Defekt: widerlegt (A336). Option falsch: Ein Heiler heilt unter Pyretic nicht; jede Heilung
+  kostete ihn selbst Leben, und die Mechanik verlangt Stillstand – BossModReborns Sondermodus tut dasselbe. Ein
+  künftiger Status mit anderer Formulierung fiele in das Fenster wie bisher. Ausgeliefert, nichts ändert sich: wenn die
+  Liste den Status nicht führt – sie lädt aus Upstream nur ohne Datei oder beim Zurücksetzen (Konzept 03).
+- *Prüfgrad:* statisch, Spielblätter, Compile; im Spiel nicht beobachtet. Konzept 03.
+
 ---
 ## B · Commit-Register (Fork vs. `upstream/main`)
 

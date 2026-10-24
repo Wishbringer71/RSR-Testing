@@ -25,6 +25,14 @@ at that moment went into the tankbuster table and to the tank swap as one, besid
 raidwides of an alliance raid. An action that has hit the whole party once is no longer taken for the marker's hit, and
 what the table already holds for it is passed over.
 
+## Under Pyretic and similar debuffs RSR stops acting
+
+The "No-casting debuffs" list says "Do not take action if you have one of these debuffs", but RSR only held back in the
+last 3 s before such a debuff ran out, and never under one without a timer. That fits a penalty on expiry (Acceleration
+Bomb), not Pyretic or Causality, where every action costs health. Under these RSR now takes no action and cancels a
+running cast for as long as the debuff lasts, recognised by the debuff's own text, with or without a BossModReborn
+module.
+
 ## Healers and casters: an enemy's cast is stopped by the job's stun first
 
 "Stop an enemy's cast with the job's stun or a sleep (experimental)", on by default, replaces the sleep-only setting.

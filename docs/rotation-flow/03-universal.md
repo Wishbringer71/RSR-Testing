@@ -193,19 +193,22 @@ Konsequenzen, die im ganzen AUDIT_LOG immer wieder auftauchen:
 
 Die Liste `OtherConfiguration.NoCastingStatus` hat in der Oberfläche den Text „Do not take action if you have one of
 these debuffs". Ihr Leser ist nicht die NoCasting-Sperre der Slot-Kette (die hängt an der Stopp-Liste gegnerischer
-Casts), sondern der Druck selbst (Upstream, `RSCommands_Actions`, `CancelCastUpdater`, `AutoAttackUpdater`):
-- Kein Druck und Abbruch eines laufenden Zaubers erst, wenn ein gelisteter Status in weniger als 3 s endet
-  (`NoCastingStatusHelper.ResolveWindow`); ein Status ohne Restzeit zählt als endlos und sperrt nie.
-- Auto-Angriffe ruhen, solange irgendein gelisteter Status liegt.
-- Daneben sperren eigene Wege den Druck für die ganze Dauer: Motion Tracker und BossModReborns Sondermodus Pyretic.
+Casts), sondern der Druck selbst (`RSCommands_Actions`, `CancelCastUpdater`, `AutoAttackUpdater`). Die Liste enthält
+zwei Arten, und RSR behandelt sie getrennt (A338):
+- *Schaden bei jeder Aktion* (Pyretic in fünf Fassungen, seit Upstream 42cb3a7dd auch Causality, 514): kein Druck,
+  solange der Status liegt, und ein laufender Zauber wird abgebrochen. Erkannt am eigenen Wirktext des Status im
+  englischen Blatt des Clients, gleich welche Sprache er zeigt: „with every action" (Pyretic, alle sechs Zeilen des
+  Spiels) oder „each time an action" (Causality) – in den Spielblättern vom 24.10.2026 trifft das genau diese sieben
+  Zeilen (`NoCastingStatusHelper.DamagesEveryAction`). Kein Feld der Blätter trennt die Arten.
+- *Strafe beim Ablauf* (Acceleration Bomb, Extreme Caution, Glossomorph, Flesh Forward und Back, Directed Grotesquerie,
+  Buyer's Remorse): kein Druck und Abbruch erst, wenn der Status in weniger als 3 s endet
+  (`NoCastingStatusHelper.ResolveWindow`, Upstream); ein Status ohne Restzeit zählt als endlos und sperrt so nie.
+- Auto-Angriffe ruhen, solange irgendein gelisteter Status liegt. Daneben sperren eigene Wege den Druck für die ganze
+  Dauer: Motion Tracker und BossModReborns Sondermodus Pyretic.
 
-Die Liste enthält zwei Arten (Spielblätter, 24.10.2026): Status, deren Strafe beim Ablauf fällt (Acceleration Bomb,
-Extreme Caution, Glossomorph, Flesh Forward und Back, Directed Grotesquerie, Buyer's Remorse), und Status, unter denen
-jede Aktion Schaden macht (Pyretic in fünf Fassungen, seit Upstream 42cb3a7dd auch Causality, 514). Für die erste Art
-trägt das Fenster vor dem Ablauf; für die zweite verfehlt es den Text: Unter Pyretic drückt RSR bis 3 s vor dem Ende
-weiter, unter Causality und den Pyretic-Fassungen ohne Restzeit immer – jede Aktion kostet Leben, sofern kein
-BossModReborn-Modul den Sondermodus Pyretic meldet. Kein Feld der Spielblätter trennt die beiden Arten. Offen in
-`TODO.md`: „No-casting debuffs: Schaden je Aktion wird nur vor dem Ablauf beachtet".
+Im Kampf: Unter Pyretic oder Causality steht RSR, wie der Text der Liste sagt und wie die Mechanik es verlangt, auch ohne
+BossModReborn-Modul. Ein Heiler heilt in dieser Zeit nicht; jede Heilung kostete ihn selbst Leben. Bis A338 drückte RSR
+unter Pyretic bis 3 s vor dem Ende weiter, unter Causality und den Fassungen ohne Restzeit immer.
 
 Die Liste lädt aus Upstreams Repository und nur, wenn die Datei im Konfigurationsordner fehlt oder die Liste
 zurückgesetzt wird; ein neuer Eintrag von Upstream erreicht eine bestehende Datei nicht von selbst.
