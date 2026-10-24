@@ -2545,8 +2545,9 @@ public static class ObjectHelper
 
 	// Same frame cache as DataCenter's party HP statistics, and for the same reason: the heal target
 	// selection asks this several times per member per frame, and each read of the GCD figures goes
-	// to the action manager. One value per frame is as current as the question can be.
-	private const long HealLeadTtlMs = 15;
+	// to the action manager. One value per frame is as current as the question can be - read from the
+	// shared figure instead of a copy of it (A340).
+	private static long HealLeadTtlMs => DataCenter.FrameCacheMs;
 
 	/// <summary>
 	/// How long a heal decided on now takes to land: what is left of this GCD, plus one GCD for the
@@ -2814,13 +2815,8 @@ public static class ObjectHelper
 	/// </remarks>
 	internal static void ForgetStaleTtkForecasts()
 	{
-		// Nothing to do while the table is the size of a party; the scan only earns its keep once
-		// entries have accumulated across duties.
-		if (_ttkForecast.Count <= 24)
-		{
-			return;
-		}
-
+		// Runs once per history sample over a table about the size of the party; a size below which the
+		// scan was skipped only kept stale entries longer (A340).
 		var cutoff = DateTime.Now - TtkForecastLifetime;
 		foreach ((var id, var entry) in _ttkForecast)
 		{

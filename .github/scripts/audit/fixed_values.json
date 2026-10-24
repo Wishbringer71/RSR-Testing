@@ -7,7 +7,9 @@
    "values": [
     "2"
    ],
-   "status": "open"
+   "status": "exception",
+   "loop": "A340",
+   "reason": "Rank of a role in a tie-break order (healer 0, tank 1, others 2) beside the 0 and 1 above it; an ordinal of a tie-break order for equal points, not a figure of the game (A340)."
   },
   {
    "file": "RotationSolver.Basic/Actions/PheonixDownItem.cs",
@@ -15,7 +17,9 @@
    "values": [
     "1000000"
    ],
-   "status": "open"
+   "status": "exception",
+   "loop": "A340",
+   "reason": "The client's offset for the high-quality form of an item id, used the same way by upstream's BaseItem for every HQ use and status query; a convention of the game client, stated in no sheet (A340)."
   },
   {
    "file": "RotationSolver.Basic/Configuration/Configs.cs",
@@ -23,7 +27,9 @@
    "values": [
     "0.02"
    ],
-   "status": "open"
+   "status": "exception",
+   "loop": "A340",
+   "reason": "Slider step of a share the owner sets, the step of upstream's heal sliders beside it (HealthTankRatio, HealthHealerRatio, HealthSelfRatio); a property of the setting, not a figure of the game (A340)."
   },
   {
    "file": "RotationSolver.Basic/Configuration/Configs.cs",
@@ -31,7 +37,9 @@
    "values": [
     "8"
    ],
-   "status": "open"
+   "status": "exception",
+   "loop": "A340",
+   "reason": "Upper slider bound of an enemy count the owner sets, the bound of upstream's AutoDefenseNumber beside it; bounds of a setting, not a figure of the game (A340)."
   },
   {
    "file": "RotationSolver.Basic/Configuration/Configs.cs",
@@ -39,7 +47,9 @@
    "values": [
     "0.15"
    ],
-   "status": "open"
+   "status": "exception",
+   "loop": "A340",
+   "reason": "Default of the owner's setting for healing under an invulnerability; A83 found the right value not derivable from the code and left the setting as the lever. No sheet states how far a protected target may fall (A340)."
   },
   {
    "file": "RotationSolver.Basic/Configuration/Configs.cs",
@@ -47,7 +57,9 @@
    "values": [
     "4"
    ],
-   "status": "open"
+   "status": "exception",
+   "loop": "A340",
+   "reason": "Enemy count of a pull worth keeping the enemy debuffs up without a prediction, a user setting (00a426b14 made the fixed 4 configurable); no sheet says how many enemies make a pull, the reasoning of A184 (A340)."
   },
   {
    "file": "RotationSolver.Basic/Data/AttackType.cs",
@@ -100,36 +112,14 @@
    "reason": "IPC ordinal contract with BossModReborn: the value arrives as a bare int without a name, so it cannot be derived at runtime; mapping verified against BMR's source in A119"
   },
   {
-   "file": "RotationSolver.Basic/DataCenter.cs",
-   "code": "private const byte RaiseLevel = 12;",
-   "values": [
-    "12"
-   ],
-   "status": "open"
-  },
-  {
-   "file": "RotationSolver.Basic/DataCenter.cs",
-   "code": "private const byte VerraiseLevel = 64;",
-   "values": [
-    "64"
-   ],
-   "status": "open"
-  },
-  {
-   "file": "RotationSolver.Basic/DataCenter.cs",
-   "code": "private static readonly TimeSpan AnnouncedAreaShareLifetime = TimeSpan.FromSeconds(2.5);",
-   "values": [
-    "2.5"
-   ],
-   "status": "open"
-  },
-  {
    "file": "RotationSolver.Basic/Helpers/ObjectHelper.cs",
    "code": "&& holder.GetEffectiveHpPercent() <= Service.Config.HealthForDyingTanks * 100f",
    "values": [
     "100"
    ],
-   "status": "open"
+   "status": "exception",
+   "loop": "A340",
+   "reason": "Unit conversion, not a game value: GetEffectiveHpPercent answers in percent and HealthForDyingTanks is a share, as in the critical class beside it (A154, A340)."
   },
   {
    "file": "RotationSolver.Basic/Helpers/ObjectHelper.cs",
@@ -138,23 +128,9 @@
     "0.25",
     "4"
    ],
-   "status": "open"
-  },
-  {
-   "file": "RotationSolver.Basic/Helpers/ObjectHelper.cs",
-   "code": "if (_ttkForecast.Count <= 24)",
-   "values": [
-    "24"
-   ],
-   "status": "open"
-  },
-  {
-   "file": "RotationSolver.Basic/Helpers/ObjectHelper.cs",
-   "code": "private const long HealLeadTtlMs = 15;",
-   "values": [
-    "15"
-   ],
-   "status": "open"
+   "status": "exception",
+   "loop": "A340",
+   "reason": "Bounds of the TTK self-correction against a runaway ratio when a long forecast meets a burst; they limit how far the learned bias may move, the bias itself is measured. No figure of the game (A340)."
   },
   {
    "file": "RotationSolver.Basic/Helpers/ObjectHelper.cs",
@@ -162,7 +138,9 @@
    "values": [
     "3"
    ],
-   "status": "open"
+   "status": "exception",
+   "loop": "A340",
+   "reason": "Tolerance counted in rounds of upstream's 1 Hz health history (TargetUpdater.TimeToKillUpdateInterval): two missed rounds before a forecast counts as stale. A cadence of the plugin's own sampling; the exact test 'filed in the latest round' would still need a bound for when sampling stops (A340)."
   },
   {
    "file": "RotationSolver.Basic/Helpers/ObjectHelper.cs",
@@ -171,7 +149,9 @@
     "3",
     "4"
    ],
-   "status": "open"
+   "status": "exception",
+   "loop": "A340",
+   "reason": "Weight of the TTK self-correction's moving average (a sample counts a quarter), so one spike does not take over; it sets how fast the bias learns, not what it learns. No figure of the game (A340)."
   },
   {
    "file": "RotationSolver.Basic/Helpers/StatusHelper.cs",
@@ -179,7 +159,9 @@
    "values": [
     "2"
    ],
-   "status": "open"
+   "status": "exception",
+   "loop": "A340",
+   "reason": "Structural count measured to the decision: the running GCD plus one cast, and every healer's healing GCD casts within one GCD (Cure 1.5 s, Cure II 2.0 s, Benefic II 1.5 s, Adloquium 2.0 s, Diagnosis 1.5 s against 2.5 s recast, xivapi 24.10.2026); scaled by the player's real GCD (A340)."
   },
   {
    "file": "RotationSolver.Basic/Rotations/CustomRotation_Items.cs",
@@ -189,47 +171,9 @@
     "22306",
     "20309"
    ],
-   "status": "open"
-  },
-  {
-   "file": "RotationSolver.Basic/Rotations/CustomRotation_OtherInfo.cs",
-   "code": "&& (HostileTarget?.WillStatusEndGCD(2, 0, false, statusIDs) ?? false));",
-   "values": [
-    "2"
-   ],
-   "status": "open"
-  },
-  {
-   "file": "RotationSolver.Basic/Rotations/CustomRotation_OtherInfo.cs",
-   "code": "factor *= 0.90f;",
-   "values": [
-    "0.90"
-   ],
-   "status": "open"
-  },
-  {
-   "file": "RotationSolver.Basic/Rotations/CustomRotation_OtherInfo.cs",
-   "code": "factor *= 0.95f;",
-   "values": [
-    "0.95"
-   ],
-   "status": "open"
-  },
-  {
-   "file": "RotationSolver.Basic/Rotations/CustomRotation_OtherInfo.cs",
-   "code": "private const float SlowDelayIncrease = 0.20f;",
-   "values": [
-    "0.20"
-   ],
-   "status": "open"
-  },
-  {
-   "file": "RotationSolver.Basic/Rotations/CustomRotation_OtherInfo.cs",
-   "code": "private const float TankGapCloserRangeYalms = 20f;",
-   "values": [
-    "20"
-   ],
-   "status": "open"
+   "status": "exception",
+   "loop": "A340",
+   "reason": "Item identities (Pilgrim's Potion 47102, Eurekan Potion 22306, Sustaining Potion 20309, xivapi 24.10.2026), the content potions upstream's list excludes from ordinary use in the same file; identities, not tunables (A340)."
   },
   {
    "file": "RotationSolver.Basic/Rotations/CustomRotation_OtherInfo.cs",
@@ -237,7 +181,9 @@
    "values": [
     "100"
    ],
-   "status": "open"
+   "status": "exception",
+   "loop": "A340",
+   "reason": "Unit conversion, not a game value: the factor is a share and the method answers in percent (A340)."
   },
   {
    "file": "RotationSolver/RebornRotations/Duty/PhantomDefault.cs",
@@ -409,7 +355,9 @@
    "values": [
     "2"
    ],
-   "status": "open"
+   "status": "exception",
+   "loop": "A340",
+   "reason": "Upstream's lead for turning Tempera Coat into Tempera Grassa before it runs out; the fork changed the line only for the burst guard. Upstream's rule, derived nowhere else (A340)."
   },
   {
    "file": "RotationSolver/RebornRotations/Ranged/MCH_Reborn.cs",
@@ -439,7 +387,9 @@
    "values": [
     "8"
    ],
-   "status": "open"
+   "status": "exception",
+   "loop": "A340",
+   "reason": "Upper slider bound of an enemy count the owner sets ('Hostiles that make a pull big enough for The Blackest Night'), as AutoDefenseNumber's; bounds of a setting, not a figure of the game (A340)."
   },
   {
    "file": "RotationSolver/RebornRotations/Tank/DRK_Reborn.cs",
@@ -448,7 +398,9 @@
     "2",
     "2"
    ],
-   "status": "open"
+   "status": "exception",
+   "loop": "A340",
+   "reason": "Quantor of A48: at least two stunned (an area stun, not one's own interrupt) and at least half of the enemies in reach; the half rule was recorded as an exception with A195. No figure of the game (A340)."
   },
   {
    "file": "RotationSolver/RebornRotations/Tank/DRK_Reborn.cs",
@@ -456,7 +408,9 @@
    "values": [
     "0.6"
    ],
-   "status": "open"
+   "status": "exception",
+   "loop": "A340",
+   "reason": "Default of the owner's emergency line for The Blackest Night (concept 10, 'Vorgabe 60 %'); a share he sets, no sheet states one (A340)."
   },
   {
    "file": "RotationSolver/RebornRotations/Tank/DRK_Reborn.cs",
@@ -464,7 +418,9 @@
    "values": [
     "4"
    ],
-   "status": "open"
+   "status": "exception",
+   "loop": "A340",
+   "reason": "Default of the owner's pull size for The Blackest Night; its text decides when a pull is big enough, and the measured stream now checks it in a fight (A340). No sheet says how many enemies make a pull, the reasoning of A184."
   },
   {
    "file": "RotationSolver.Basic/Rotations/CustomRotation_OtherInfo.cs",
@@ -473,7 +429,9 @@
     "2",
     "2"
    ],
-   "status": "open"
+   "status": "exception",
+   "loop": "A340",
+   "reason": "Quantor of A48: at least two (only an area effect reaches more than one) and at least half of the enemies in reach (the throttled part no smaller than the rest); the same share rule as the stun condition. No figure of the game (A340)."
   },
   {
    "file": "RotationSolver/Updaters/StateUpdater.cs",
@@ -481,7 +439,9 @@
    "values": [
     "0.2"
    ],
-   "status": "open"
+   "status": "exception",
+   "loop": "A340",
+   "reason": "Upstream's health stand-in for a doomed player, on a line the fork changed only for the forecast. Unreachable in practice: both callers decide Doom first (selfDoomed ||, upstream likewise); removing it would only widen the distance to upstream (A340)."
   },
   {
    "file": "RotationSolver/Watcher.cs",
@@ -490,7 +450,9 @@
     "6",
     "6"
    ],
-   "status": "open"
+   "status": "exception",
+   "loop": "A340",
+   "reason": "Upstream's protocol bits of the action effect for a hit that landed at zero, moved unchanged; stated in no game sheet, as the 0x40 bit beside it (A144, A340)."
   },
   {
    "file": "RotationSolver/RebornRotations/Magical/SMN_Reborn.cs",
@@ -498,7 +460,9 @@
    "values": [
     "3"
    ],
-   "status": "open"
+   "status": "exception",
+   "loop": "A340",
+   "reason": "Upstream's lead for Rekindle before the Phoenix phase ends - the longer of its two branches, which the fork merged into one (d67ae59af); upstream's timing, derived nowhere else (A340)."
   },
   {
    "file": "RotationSolver/Watcher.cs",
@@ -526,7 +490,9 @@
    "values": [
     "21"
    ],
-   "status": "open"
+   "status": "exception",
+   "loop": "A340",
+   "reason": "Upstream's radius for Shackled Healing, moved unchanged from CustomRotation_GCD so every heal path obeys one test; the status text says only 'those nearby', no sheet states the radius (A340)."
   },
   {
    "file": "RotationSolver/RebornRotations/Magical/SMN_Reborn.cs",
@@ -534,7 +500,9 @@
    "values": [
     "3"
    ],
-   "status": "open"
+   "status": "exception",
+   "loop": "A340",
+   "reason": "Upstream's lead for Lux Solaris before Refulgent Lux runs out; the fork reordered the block around it. Upstream's rule, derived nowhere else (A340)."
   },
   {
    "file": "RotationSolver.Basic/Helpers/ObjectHelper.cs",
@@ -704,7 +672,9 @@
     "2",
     "2"
    ],
-   "status": "open"
+   "status": "exception",
+   "loop": "A340",
+   "reason": "Same quantor as the stun condition beside it (A48), for the enemies a party member's Holy will reach; no figure of the game (A340)."
   },
   {
    "file": "RotationSolver.Basic/DataCenter.cs",
@@ -722,9 +692,9 @@
    "values": [
     "2"
    ],
-   "status": "open",
-   "loop": "A226",
-   "reason": "Upstream's pull size for Raw Intuition/Bloodwhetting in the single-target defence (since d566eda86), moved unchanged into one property so the Nascent Flash hold reads the same condition. Derivable candidate: more than the global 'Number of hostiles' (AutoDefenseNumber, default 2) - equal at the default, different for anyone who changed it, so not switched without a decision."
+   "status": "exception",
+   "loop": "A340",
+   "reason": "Upstream's enemy count for Bloodwhetting in the defence beside its option (RawSingleTargets, here SoloIntuition), drawn into one property so two paths cannot disagree (A226); upstream's rule (A340)."
   },
   {
    "file": "RotationSolver.Basic/Helpers/ActionManagerHelper.cs",
@@ -785,6 +755,16 @@
    "status": "exception",
    "loop": "A334",
    "reason": "The game's battle NPC sub kind of a boss's invisible helpers, read from the object as a byte and compared; FFXIVClientStructs names no member for it, BossModReborn calls it Helper (ActorType 0x20B). A kind of the game, not a tunable"
+  },
+  {
+   "file": "RotationSolver.Basic/Rotations/CustomRotation_OtherInfo.cs",
+   "code": "return float.Parse(match.Groups[\"percent\"].Value, System.Globalization.CultureInfo.InvariantCulture) / 100f;",
+   "values": [
+    "100"
+   ],
+   "status": "exception",
+   "loop": "A340",
+   "reason": "Percent to share: the effect text states the slow in percent and the reader needs a share; the divisor is the definition of the unit, as for the trait texts (A290, A340)."
   }
  ]
 }

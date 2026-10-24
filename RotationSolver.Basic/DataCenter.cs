@@ -1494,10 +1494,21 @@ internal static class DataCenter
 	/// maximum) - another tool, not a game source. Were it the true level, an under-levelled raiser would
 	/// still count as living, which is the state before this check and no worse.
 	/// </summary>
-	private const byte RaiseLevel = 12;
+	private static byte RaiseLevel => _raiseLevel ??= LevelOf(ActionID.RaisePvE);
 
 	/// <inheritdoc cref="RaiseLevel"/>
-	private const byte VerraiseLevel = 64;
+	private static byte VerraiseLevel => _verraiseLevel ??= LevelOf(ActionID.VerraisePvE);
+
+	private static byte? _raiseLevel;
+	private static byte? _verraiseLevel;
+
+	// The level an action is learned at, from the action sheet (Raise 12, Verraise 64 today). The healers' raises all
+	// share Raise's level; a sheet that cannot be read answers 1, so the level check then lets every member count, the
+	// state before this check (A340).
+	private static byte LevelOf(ActionID action)
+		=> Service.GetSheet<Lumina.Excel.Sheets.Action>().TryGetRow((uint)action, out var row) && row.ClassJobLevel > 0
+			? row.ClassJobLevel
+			: (byte)1;
 
 	public static bool CanRaise()
 	{
@@ -3599,9 +3610,10 @@ internal static class DataCenter
 	// anonymously. Carried with the share and subject to the same lifetime.
 	private static uint _lastAnnouncedAreaAction;
 
-	// One GCD's worth. The figure describes the cast that is landing now, so it must not outlive it
-	// and steer the next decision; long enough for the defensive branch of the same window to read it.
-	private static readonly TimeSpan AnnouncedAreaShareLifetime = TimeSpan.FromSeconds(2.5);
+	// One GCD's worth - the player's, as the game reports it (A340). The figure describes the cast that is
+	// landing now, so it must not outlive it and steer the next decision; long enough for the defensive
+	// branch of the same window to read it.
+	private static TimeSpan AnnouncedAreaShareLifetime => TimeSpan.FromSeconds(DefaultGCDTotal);
 
 	/// <summary>
 	/// The share of the weakest party member's maximum health carried by the area cast that is

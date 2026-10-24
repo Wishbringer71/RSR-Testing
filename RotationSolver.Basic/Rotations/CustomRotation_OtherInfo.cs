@@ -590,7 +590,40 @@ public partial class CustomRotation
 	/// How much longer a slowed enemy takes between attacks. Arm's Length (7548) afflicts
 	/// "Slow +20%", and the sign is the point: the delay grows, the hit does not shrink.
 	/// </summary>
-	private const float SlowDelayIncrease = 0.20f;
+	/// <remarks>
+	/// Read from the action's effect text in the game, the English sheet evaluated like the tooltip, as the trait
+	/// durations are (A340). A text that cannot be read answers 0: the slow then leaves an enemy's output whole, the
+	/// larger figure, which releases the one ceiling that reads it rather than holding Holy on a guess.
+	/// </remarks>
+	private static float SlowDelayIncrease => _slowDelayIncrease ??= StatedSlow(ActionID.ArmsLengthPvE);
+
+	private static float? _slowDelayIncrease;
+
+	private static readonly System.Text.RegularExpressions.Regex StatedSlowPercent =
+		new(@"Slow \+(?<percent>\d{1,3})%", System.Text.RegularExpressions.RegexOptions.Compiled);
+
+	private static float StatedSlow(ActionID action)
+	{
+		try
+		{
+			var texts = Svc.Data.GetExcelSheet<ActionTransient>(ClientLanguage.English);
+			if (texts != null && texts.TryGetRow((uint)action, out var row))
+			{
+				var text = Svc.SeStringEvaluator.Evaluate(row.Description, default, ClientLanguage.English).ExtractText();
+				var match = StatedSlowPercent.Match(text);
+				if (match.Success)
+				{
+					return float.Parse(match.Groups["percent"].Value, System.Globalization.CultureInfo.InvariantCulture) / 100f;
+				}
+			}
+		}
+		catch (Exception)
+		{
+			// A sheet or an evaluation that fails answers nothing, as for the trait durations.
+		}
+
+		return 0f;
+	}
 
 	/// <summary>
 	/// What share of its damage output a hostile still has, in percent, given the throttles on it.
@@ -642,24 +675,25 @@ public partial class CustomRotation
 			factor *= 1f / (1f + SlowDelayIncrease);
 		}
 
+		// The physical column of each effect text, through the generated figures (A340).
 		if (hostile.HasStatus(false, StatusHelper.ReprisalStatus))
 		{
-			factor *= 0.90f;
+			factor *= 1f - DefensiveValues.For((uint)ActionID.ReprisalPvE).EnemyPhysical;
 		}
 
 		if (hostile.HasStatus(false, StatusID.Feint))
 		{
-			factor *= 0.90f;
+			factor *= 1f - DefensiveValues.For((uint)ActionID.FeintPvE).EnemyPhysical;
 		}
 
 		if (hostile.HasStatus(false, StatusID.Addle))
 		{
-			factor *= 0.95f;
+			factor *= 1f - DefensiveValues.For((uint)ActionID.AddlePvE).EnemyPhysical;
 		}
 
 		if (hostile.HasStatus(false, StatusID.Dismantled))
 		{
-			factor *= 0.90f;
+			factor *= 1f - DefensiveValues.For((uint)ActionID.DismantlePvE).EnemyPhysical;
 		}
 
 		return (int)Math.Round(factor * 100f);
@@ -1094,9 +1128,28 @@ public partial class CustomRotation
 	protected static IBattleChara? PartyTank => DataCenter.PartyTank;
 
 	/// <summary>
-	/// All four tank gap closers (Intervene, Onslaught, Shadowstride, Trajectory) have a 20-yalm range.
+	/// The reach of the four tank gap closers (Intervene, Onslaught, Shadowstride, Trajectory), the longest of them from
+	/// the action sheet - 20 yalms for each today (A340).
 	/// </summary>
-	private const float TankGapCloserRangeYalms = 20f;
+	private static float TankGapCloserRangeYalms => _tankGapCloserRange ??= LongestRange(
+		ActionID.IntervenePvE, ActionID.OnslaughtPvE, ActionID.ShadowstridePvE, ActionID.TrajectoryPvE);
+
+	private static float? _tankGapCloserRange;
+
+	private static float LongestRange(params ActionID[] actions)
+	{
+		var sheet = Service.GetSheet<Lumina.Excel.Sheets.Action>();
+		float longest = 0;
+		foreach (var action in actions)
+		{
+			if (sheet.TryGetRow((uint)action, out var row))
+			{
+				longest = Math.Max(longest, row.Range);
+			}
+		}
+
+		return longest;
+	}
 
 	/// <summary>
 	/// Whether the party's tank is within gap-closer range of enough hostiles to be pulling them, used
@@ -1925,7 +1978,39 @@ public partial class CustomRotation
 	{
 		return BMRShouldRefreshBefore(BMRDamageIn, MitigationDebuffDurationOf(statusIDs), false, HostileTarget, statusIDs)
 			|| (NumberOfHostilesInRange >= Service.Config.MitigationSustainHostileCount
-				&& (HostileTarget?.WillStatusEndGCD(2, 0, false, statusIDs) ?? false));
+				&& (HostileTarget?.WillStatusEndGCD(StatusRefreshGcdCountOf(statusIDs), 0, false, statusIDs) ?? false));
+	}
+
+	/// <summary>
+	/// The horizon the action laying these statuses names in its own setting, "Number of GCDs before the DOT/Status
+	/// effect is reapplied" - the test CanUse makes when its status check is not skipped. The count branch above skips
+	/// it for the prediction branch's sake and asked a copy of the default instead, so a changed setting did not reach
+	/// it (A340). Without a rotation that lays them, the default of a fresh action configuration.
+	/// </summary>
+	private static uint StatusRefreshGcdCountOf(StatusID[] statusIDs)
+	{
+		var actions = DataCenter.CurrentRotation?.AllBaseActions;
+		if (actions != null)
+		{
+			foreach (var action in actions)
+			{
+				var provided = action.Setting.TargetStatusProvide;
+				if (provided == null)
+				{
+					continue;
+				}
+
+				foreach (var status in provided)
+				{
+					if (Array.IndexOf(statusIDs, status) >= 0)
+					{
+						return action.Config.StatusRefreshGcdCount;
+					}
+				}
+			}
+		}
+
+		return new ActionConfig().StatusRefreshGcdCount;
 	}
 	#endregion
 
