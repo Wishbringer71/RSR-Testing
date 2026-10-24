@@ -140,7 +140,7 @@
    ],
    "status": "exception",
    "loop": "A340",
-   "reason": "Tolerance counted in rounds of upstream's 1 Hz health history (TargetUpdater.TimeToKillUpdateInterval): two missed rounds before a forecast counts as stale. A cadence of the plugin's own sampling; the exact test 'filed in the latest round' would still need a bound for when sampling stops (A340)."
+   "reason": "Tolerance counted in rounds of upstream's 1 Hz health history (TargetUpdater.TimeToKillUpdateIntervalMs): two missed rounds before a forecast counts as stale. A cadence of the plugin's own sampling; the exact test 'filed in the latest round' would still need a bound for when sampling stops (A340)."
   },
   {
    "file": "RotationSolver.Basic/Helpers/ObjectHelper.cs",
@@ -765,6 +765,36 @@
    "status": "exception",
    "loop": "A340",
    "reason": "Percent to share: the effect text states the slow in percent and the reader needs a share; the divisor is the definition of the unit, as for the trait texts (A290, A340)."
+  },
+  {
+   "file": "RotationSolver.Basic/DataCenter.cs",
+   "code": "public const int HP_RECORD_TIME = 240;",
+   "values": [
+    "240"
+   ],
+   "status": "exception",
+   "loop": "A341",
+   "reason": "Length of the party's own health history in samples of the 1 Hz sampling (four minutes), upstream's former figure, fork-owned since upstream 3c6ce9ee2 removed the history. The readers measure from a member's first sample below full, so the bound only reaches a member never at full for four minutes; the TTK self-correction (ScoreTtkForecast, GetCorrectedTTK) measures what an old trend costs and divides it out. A memory length of the plugin, no figure of the game (A341)."
+  },
+  {
+   "file": "RotationSolver.Basic/Helpers/ObjectHelper.cs",
+   "code": "private static readonly TimeSpan CheckSpan = TimeSpan.FromSeconds(2.5);",
+   "values": [
+    "2.5"
+   ],
+   "status": "exception",
+   "loop": "A341",
+   "reason": "Least span of a member's fall before a trend is read: three samples of the 1 Hz history, the same minimum upstream's TimeToKillTracker sets (MinSamples = 3); with two, one hit would be read as a rate. Upstream's former figure, fork-owned since 3c6ce9ee2. A statistical guard of the plugin's own estimate, no figure of the game; a GCD would match it only by chance (A341)."
+  },
+  {
+   "file": "RotationSolver.Basic/Helpers/ObjectHelper.cs",
+   "code": "const int movingAverageWindow = 5;",
+   "values": [
+    "5"
+   ],
+   "status": "exception",
+   "loop": "A341",
+   "reason": "Smoothing of the trend's end point over the latest five samples, so one hit moves it by a fifth. Upstream's former figure, fork-owned since 3c6ce9ee2. The lag it brings on a steady fall makes the forecast late, which the TTK self-correction measures and divides out. No figure of the game (A341)."
   }
  ]
 }

@@ -9849,7 +9849,19 @@ vor dem weiteren Code, weil er dessen Vorbedingung ist.
   bei einem geheilten Mitglied bei jeder Heilung neu: Er hielte nichts, und alles darauf fiele auf „kein Tod absehbar".
   Die Historie bleibt deshalb, nur noch für die Gruppe (`DataCenter.RecordedHP`, `RecordedPartyIds`); `GetTTK` liest für
   ein Mitglied der letzten Probe die eigene Reihe, für alle anderen Upstreams Rate. Im Kampf für die Gruppe unverändert.
-  `HP_RECORD_TIME` (240) und `CheckSpan` (2,5 s) gehören damit dem Fork; Upstreams frühere Werte, mitgeführt.
+  `HP_RECORD_TIME` (240), `CheckSpan` (2,5 s) und das Glättungsfenster in `ComputeTTK` (5) gehören damit dem Fork;
+  Upstreams frühere Werte, mitgeführt. *Loop zu den drei Zahlen* (nach dem Merge-Commit von `check_fixed_values`
+  gemeldet, weil die Merge-Basis wechselte): Keine ist eine Größe des Spiels. 240 ist die Gedächtnislänge der
+  1-Hz-Historie; die Leser messen ab der ersten Probe unter voller Gesundheit, die Grenze trifft also nur ein Mitglied,
+  das vier Minuten nie voll war, und die Selbstkorrektur misst, was der alte Trend kostet. 2,5 s sind drei Proben, das
+  Minimum, das auch Upstreams neuer Tracker setzt (`MinSamples = 3`) – mit zweien läse die Schätzung einen Treffer als
+  Rate; eine Ableitung aus der GCD-Länge träfe den Wert nur zufällig. 5 glättet den Endpunkt, ein Treffer verschiebt ihn
+  um ein Fünftel; die Verzögerung auf einem gleichmäßigen Abfall macht die Vorhersage zu spät, und genau diesen Fehler
+  rechnet `GetCorrectedTTK` heraus. Alle drei als Ausnahme ins Register. *Gegenposition:* Upstreams 30-s-Gerade wäre
+  für einen dauerhaft angeschlagenen Tank reaktiver als der Vier-Minuten-Mittelwert – sie begänne aber bei jeder Heilung
+  neu und hielte für die Gruppe nichts; der Unterschied ist die Lücke, die die Selbstkorrektur schließt.
+- *Fork-Version:* Der Merge-Stand ist Upstreams Tag 7.5.7.7; die Versionsliterale folgen ihm (7.5.7.7+wsh1), der
+  Release-Text bleibt „Changes since 7.5.7.6+wsh1", weil das letzte Fork-Release unverändert ist.
 - *DoT-Planer.* `DotPlanner` frischt einen DoT mit Potenzangaben (`ActionSetting.Dot`: Weißmagier, Astrologe, Gelehrter,
   Weiser, Schwarzmagier, Schnitter) auf dem letzten GCD auf, der keinen Tick verliert, und lässt ihn weg, wenn das Ziel
   stirbt, bevor er mehr bringt als der Füller; die Tickuhr je Ziel liest ein neuer `ActorControl`-Hook (0x605) im

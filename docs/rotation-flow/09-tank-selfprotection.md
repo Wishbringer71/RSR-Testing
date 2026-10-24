@@ -1861,7 +1861,7 @@ Schleife neben der bestehenden, kein Ringpuffer und kein dritter Effekt-Handler.
 | Restzeit des Status | **ja** | `StatusHelper.StatusTime(…)` |
 | Historie der Gesundheit über die Zeit | **für Gegner und Gruppe** | `DataCenter.RecordedHP` für die Gruppe, gefüllt in `TargetUpdater.UpdateTimeToKill` aus `PartyMembers`; Gegner in Upstreams `TimeToKillTracker` (30 s, seit 3c6ce9ee2, A341) |
 | Zeit bis zum Tod eines Gruppenmitglieds | **ja** | `ObjectHelper.GetCorrectedTTK`, gegen den eigenen Vorhersagefehler kalibriert |
-| Abtastrate der Historie | **1 Hz** | `TimeToKillUpdateInterval` |
+| Abtastrate der Historie | **1 Hz** | `TargetUpdater.TimeToKillUpdateIntervalMs` |
 | Eingehende Heilung auf ein Party-Mitglied | **nicht gesondert ausgewertet, und nicht nötig** | Der Gesundheitsverlauf ist bereits netto: Eine fremde Heilung zeigt sich als steigender Anteil, `GetTTK` antwortet dann `NaN` |
 | Schadensbetrag eines Gegnertreffers | **verfügbar und gelesen** | `Watcher.FullAmount`, voller Betrag auch über 65.535 Punkte (A140, A144) |
 
