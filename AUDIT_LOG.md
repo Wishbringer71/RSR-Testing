@@ -9737,6 +9737,21 @@ Ersetzt durch `DefensiveValues.DurationOf` der Aktion, die die Zeile wirkt, bei 
 Heute keine Änderung im Kampf; ändert ein Patch eine Dauer, folgt RSR. Offene Werte: 55 (vorher 65). Prüfgrad: statisch,
 Prüfskript, Compile.
 
+**Feste Werte, zweite Gruppe – Weißmagier, Astrologe, Maschinist.** Fünfzehn Zeilen als begründete Ausnahmen geführt,
+keine abgeleitet:
+- *Gegnerzahlen der Vorab-Heilung* (Weißmagier `PreRegenMin*`, Astrologe `PreAspectedBeneficMin*`, je Vorgabe und
+  Schieberegler): dieselbe Begründung wie A184 für den Weisen – eine Gegnerzahl, die einen Pull ausmacht, nennt kein
+  Spielblatt; der Weißmagier ist die Vorlage der Heilerregel.
+- *Sanctus-Aufschub bei verlangsamter Gruppe*: „mehr als die Hälfte" und die Mindestzahl 3 sind seine Angabe (Konzept
+  08, „Die Aussetzbedingung ist ein Anteil"); der Einstellungstext nennt den Anteil und bindet.
+- *Sanctus unter The Blackest Night* (`StretchHolyMinHostiles` 3): Gegnerzahl eines Gruppenpulls nach seiner
+  Einschränkung „nur Gruppenpulls" (Konzept 10).
+- *Schieberegler* (2 bis 8, 0 bis 1200): Grenzen von Einstellungen, die er setzt; seine Eckwerte 300 und 900 liegen im
+  zweiten.
+- *Maschinist, `BurstWeaveSlotContested`*: spiegelt Upstreams Auslöser für Wildfire und Barrel Stabilizer
+  (33e6acb1f); die Zahlen gehören Upstreams Regel, und nur hier abgeleitet liefe der Spiegel auseinander.
+Offen: 40. Nicht im Profil und deshalb nicht bearbeitet: Blaumagier, Phantom-Jobs (Occult Crescent).
+
 ---
 ## B · Commit-Register (Fork vs. `upstream/main`)
 

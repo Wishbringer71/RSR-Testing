@@ -261,7 +261,9 @@
    "values": [
     "12"
    ],
-   "status": "open"
+   "status": "exception",
+   "loop": "A340",
+   "reason": "Enemy count that marks a dungeon pull, a player's judgement and a user setting: no sheet says how many enemies make a pull. The white mage's Regen is the reference of the healers' pre-pull rule (A184, concept 15, V1); its default and range are the ones the shield healers and the astrologian copy (A340)."
   },
   {
    "file": "RotationSolver/RebornRotations/Healer/AST_Reborn.cs",
@@ -269,7 +271,9 @@
    "values": [
     "8"
    ],
-   "status": "open"
+   "status": "exception",
+   "loop": "A340",
+   "reason": "Enemy count that marks a dungeon pull, a player's judgement and a user setting: no sheet says how many enemies make a pull. The white mage's Regen is the reference of the healers' pre-pull rule (A184, concept 15, V1); its default and range are the ones the shield healers and the astrologian copy (A340)."
   },
   {
    "file": "RotationSolver/RebornRotations/Healer/AST_Reborn.cs",
@@ -277,7 +281,9 @@
    "values": [
     "2"
    ],
-   "status": "open"
+   "status": "exception",
+   "loop": "A340",
+   "reason": "Enemy count that marks a dungeon pull, a player's judgement and a user setting: no sheet says how many enemies make a pull. The white mage's Regen is the reference of the healers' pre-pull rule (A184, concept 15, V1); its default and range are the ones the shield healers and the astrologian copy (A340)."
   },
   {
    "file": "RotationSolver/RebornRotations/Healer/AST_Reborn.cs",
@@ -285,7 +291,9 @@
    "values": [
     "3"
    ],
-   "status": "open"
+   "status": "exception",
+   "loop": "A340",
+   "reason": "Enemy count that marks a dungeon pull, a player's judgement and a user setting: no sheet says how many enemies make a pull. The white mage's Regen is the reference of the healers' pre-pull rule (A184, concept 15, V1); its default and range are the ones the shield healers and the astrologian copy (A340)."
   },
   {
    "file": "RotationSolver/RebornRotations/Healer/WHM_Reborn.cs",
@@ -294,7 +302,9 @@
     "1200",
     "100"
    ],
-   "status": "open"
+   "status": "exception",
+   "loop": "A340",
+   "reason": "Slider of an optional cap the owner sets, off at 0 by default; his own corner values 300 and 900 lie inside it (concept 08, 'Wozu die Aussetzbedingungen da sind'). Bounds of a setting, not a figure of the game (A340)."
   },
   {
    "file": "RotationSolver/RebornRotations/Healer/WHM_Reborn.cs",
@@ -302,7 +312,9 @@
    "values": [
     "12"
    ],
-   "status": "open"
+   "status": "exception",
+   "loop": "A340",
+   "reason": "Enemy count that marks a dungeon pull, a player's judgement and a user setting: no sheet says how many enemies make a pull. The white mage's Regen is the reference of the healers' pre-pull rule (A184, concept 15, V1); its default and range are the ones the shield healers and the astrologian copy (A340)."
   },
   {
    "file": "RotationSolver/RebornRotations/Healer/WHM_Reborn.cs",
@@ -310,7 +322,9 @@
    "values": [
     "8"
    ],
-   "status": "open"
+   "status": "exception",
+   "loop": "A340",
+   "reason": "Enemy count that marks a dungeon pull, a player's judgement and a user setting: no sheet says how many enemies make a pull. The white mage's Regen is the reference of the healers' pre-pull rule (A184, concept 15, V1); its default and range are the ones the shield healers and the astrologian copy (A340)."
   },
   {
    "file": "RotationSolver/RebornRotations/Healer/WHM_Reborn.cs",
@@ -319,7 +333,9 @@
     "2",
     "8"
    ],
-   "status": "open"
+   "status": "exception",
+   "loop": "A340",
+   "reason": "Slider bounds of two enemy counts the owner sets - the slowed minimum of his Holy rule and the group pull for holding Holy under The Blackest Night; bounds of a setting, not a figure of the game (A340)."
   },
   {
    "file": "RotationSolver/RebornRotations/Healer/WHM_Reborn.cs",
@@ -327,7 +343,9 @@
    "values": [
     "2"
    ],
-   "status": "open"
+   "status": "exception",
+   "loop": "A340",
+   "reason": "The owner's rule for holding Holy while the pack is slowed: more than half of the enemies in radius slowed (concept 08, 'Die Aussetzbedingung ist ein Anteil': both parts are his statement); the setting's own text names it, and the text binds. A share of enemies is no game figure (A340)."
   },
   {
    "file": "RotationSolver/RebornRotations/Healer/WHM_Reborn.cs",
@@ -335,7 +353,9 @@
    "values": [
     "3"
    ],
-   "status": "open"
+   "status": "exception",
+   "loop": "A340",
+   "reason": "The owner's minimum of slowed enemies for holding Holy (concept 08, 'Die Aussetzbedingung ist ein Anteil': his statement), a user setting; no sheet states an enemy count (A340)."
   },
   {
    "file": "RotationSolver/RebornRotations/Healer/WHM_Reborn.cs",
@@ -343,7 +363,9 @@
    "values": [
     "2"
    ],
-   "status": "open"
+   "status": "exception",
+   "loop": "A340",
+   "reason": "Enemy count that marks a dungeon pull, a player's judgement and a user setting: no sheet says how many enemies make a pull. The white mage's Regen is the reference of the healers' pre-pull rule (A184, concept 15, V1); its default and range are the ones the shield healers and the astrologian copy (A340)."
   },
   {
    "file": "RotationSolver/RebornRotations/Healer/WHM_Reborn.cs",
@@ -351,7 +373,9 @@
    "values": [
     "3"
    ],
-   "status": "open"
+   "status": "exception",
+   "loop": "A340",
+   "reason": "Enemy count that marks a dungeon pull, a player's judgement and a user setting: no sheet says how many enemies make a pull. The white mage's Regen is the reference of the healers' pre-pull rule (A184, concept 15, V1); its default and range are the ones the shield healers and the astrologian copy (A340)."
   },
   {
    "file": "RotationSolver/RebornRotations/Healer/WHM_Reborn.cs",
@@ -359,7 +383,9 @@
    "values": [
     "3"
    ],
-   "status": "open"
+   "status": "exception",
+   "loop": "A340",
+   "reason": "Enemy count that marks a group pull for holding Holy under The Blackest Night - the owner's qualification 'group pulls only' (concept 10), a player's judgement and a user setting; no sheet says how many enemies make a pull (A340)."
   },
   {
    "file": "RotationSolver/RebornRotations/Limited Jobs/BLU_Reborn.cs",
@@ -393,7 +419,9 @@
     "50",
     "2"
    ],
-   "status": "open"
+   "status": "exception",
+   "loop": "A340",
+   "reason": "Mirror of upstream's own burst triggers in MCH_Reborn.AttackAbility (Wildfire: no downtime within 10 s, Heat 50 or Hypercharged, under half a GCD left; Barrel Stabilizer: no downtime within two GCDs, upstream 33e6acb1f), so the timed Tactician sees the weave slot those take. The figures belong to upstream's rule; deriving them here alone would split the mirror from what it mirrors (A340)."
   },
   {
    "file": "RotationSolver/RebornRotations/Ranged/MCH_Reborn.cs",
@@ -401,7 +429,9 @@
    "values": [
     "2"
    ],
-   "status": "open"
+   "status": "exception",
+   "loop": "A340",
+   "reason": "Mirror of upstream's own burst triggers in MCH_Reborn.AttackAbility (Wildfire: no downtime within 10 s, Heat 50 or Hypercharged, under half a GCD left; Barrel Stabilizer: no downtime within two GCDs, upstream 33e6acb1f), so the timed Tactician sees the weave slot those take. The figures belong to upstream's rule; deriving them here alone would split the mirror from what it mirrors (A340)."
   },
   {
    "file": "RotationSolver/RebornRotations/Tank/DRK_Reborn.cs",
