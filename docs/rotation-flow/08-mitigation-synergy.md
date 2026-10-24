@@ -147,7 +147,7 @@ Rückhaltung ein Job überhaupt kennt, bleibt seine Sonderregel.** Gebaut in
 | alle | **Schranke:** Eine Rückhaltung weicht bei Gefährdungsklasse 1 (`ObjectHelper.IsInCriticalClass`: ungeschützt, vorausgerechnete effektive Gesundheit auf oder unter `HealthForDyingTanks`, Konzept 07). Flächenabwehr: irgendein lebendes Mitglied dort, oder der angekündigte, gemessene Flächentreffer brächte ein ungeschütztes dorthin. Einzelabwehr: der Spieler selbst oder ein Tank dort | Konzept 09 verlangt es für den Tank („jede Rückhaltung erst, wenn Stufe 1 gesichert ist"); der Grund gilt für jede Rolle |
 | alle | **Streckungsbaustein:** Nach einer Auslöseraktion ruht die übrige eigene Abwehr, bis die Wirkung laut Wirktext ausläuft (die Dauer, die zur Minderung gehört), gezählt ab dem Einsatz laut Aktionsprotokoll. Hält der Auslöser noch eine Ladung (gelesen an seiner Wiederaufladegruppe, nicht am Knopf), streckt er nicht | derselbe Mechanismus stand zweimal mit festen Zahlen im Code (Weißmagier, Astrologe) |
 | Heiler | leer | Nur Weißmagier und Astrologe strecken; Gelehrter und Weiser nicht. Eine Heilerregel änderte zwei Jobs ohne belegten Nutzen |
-| Tanks | **Abtausch (Arm’s Length) im Pull für seine Verlangsamung** (`ArmsLengthSlowsPull`, A194): jeder Tank mit eigener Option „Use Arm's Length on a pull for its Slow", ab Werk an; ein Pull sind so viele Gegner in Reichweite wie die globale Zahl „Number of hostiles" der Abwehr (Dunkelritter: seine Barrierenzahl, dazu die Barrierenrückhaltung), **Bosse nicht mitgezählt** (`SlowableHostilesInRange`, A236): Abtausch mindert den Treffer nicht, der ihn auslöst, also bringt er an einem Boss-Tankbuster nichts — sein Hinweis vom 01.10.2026, Boss allein in der Arena; die zentrale Rückfallstufe der Einzelabwehr wirkt Abtausch nur noch für Rotationen ohne eigene Pull-Regel (`HasOwnArmsLengthPullRule`) und nur unter derselben Bedingung, vorher ohne jede Gegnerzahl; nicht, solange die Gruppe schon verlangsamt ist, und nicht, solange BossModReborn einen Rückstoß nach Wirkende und vor Ende der Abklingzeit ankündigt (A212, A219). Eine Rückhaltung gibt es auf dieser Stufe nicht: Burst-Rückhaltung nur bei Dunkelritter und Revolverklinge, bei beiden an ein eigenes Burstfenster gebunden | kostet nur die eigene Abklingzeit und wirkt bei jedem Tank gleich; die Beobachtung, auf die der TODO-Eintrag wartete, wäre eine Spielbestätigung als Aufgabe an ihn gewesen |
+| Tanks | **Abtausch (Arm’s Length) im Pull für seine Verlangsamung** (`ArmsLengthSlowsPull`, A194): jeder Tank mit eigener Option „Use Arm's Length on a pull for its Slow", ab Werk an; ein Pull sind so viele Gegner in Reichweite wie die globale Zahl „Use tank mitigation when this many enemies target you" der Abwehr (Dunkelritter: seine Barrierenzahl, dazu die Barrierenrückhaltung), **Bosse nicht mitgezählt** (`SlowableHostilesInRange`, A236): Abtausch mindert den Treffer nicht, der ihn auslöst, also bringt er an einem Boss-Tankbuster nichts — sein Hinweis vom 01.10.2026, Boss allein in der Arena; die zentrale Rückfallstufe der Einzelabwehr wirkt Abtausch nur noch für Rotationen ohne eigene Pull-Regel (`HasOwnArmsLengthPullRule`) und nur unter derselben Bedingung, vorher ohne jede Gegnerzahl; nicht, solange die Gruppe schon verlangsamt ist, und nicht, solange BossModReborn einen Rückstoß nach Wirkende und vor Ende der Abklingzeit ankündigt (A212, A219). Eine Rückhaltung gibt es auf dieser Stufe nicht: Burst-Rückhaltung nur bei Dunkelritter und Revolverklinge, bei beiden an ein eigenes Burstfenster gebunden | kostet nur die eigene Abklingzeit und wirkt bei jedem Tank gleich; die Beobachtung, auf die der TODO-Eintrag wartete, wäre eine Spielbestätigung als Aufgabe an ihn gewesen |
 | Damage Dealer | **Heilung für die Gruppe** (`HoldPartyHeal`, A283): eine strategische Rückhaltung einer Heilung für andere weicht, wenn kein Heiler lebt oder ein Mitglied in Gefährdungsklasse 1 steht; erster Leser der Rotmagier | seine Vorgabe vom 14.10.2026 gilt für jeden Schadensausteiler, der andere heilt. Abwehr: Barde, Pictomancer und Tänzer führen dieselbe Einstellung „Prevent the use of defense abilties during burst" (seit A283 ab Werk aus), Maschinist, Dragoon und Viper feste Rückhaltungen; siehe unten |
 | Job | die Auslöser und Rückhaltungen selbst | siehe nächste Tabelle |
 
@@ -1111,12 +1111,14 @@ auffiel:
 ist der Weg mit dem kleinsten Eingriff und der groessten Deckung, weil die Maschinerie dafuer bereits im
 Baum stand; sie war nur nicht auf die Gruppe angewandt.
 
-`DataCenter.RecordedHP` ist eine Zeitreihe von Gesundheitsanteilen **je Objekt-Id**: einmal je
+`DataCenter.RecordedHP` ist eine Zeitreihe von Gesundheitsanteilen der Gruppe **je Objekt-Id**: einmal je
 Sekunde ein Eintrag, 240 tief, also vier Minuten Historie. `ObjectHelper.GetTTK` liest daraus fuer
-eine beliebige Id den Verlauf, bildet einen gleitenden Mittelwert und schaetzt die Zeit bis auf null.
-Die Methode fragt nichts weiter als `GameObjectId` — sie ist generisch. `TargetUpdater.UpdateTimeToKill`
-fuellt die Reihe fuer die Gegner und fuer die Gruppe (A91); vorher lieferte sie fuer ein Gruppenmitglied
-`NaN`.
+ein Mitglied den Verlauf, bildet einen gleitenden Mittelwert und schaetzt die Zeit bis auf null.
+`TargetUpdater.UpdateTimeToKill` fuellt die Reihe fuer die Gruppe (A91); vorher lieferte sie fuer ein
+Gruppenmitglied `NaN`. Gegner fuehrt seit Upstream 3c6ce9ee2 `TimeToKillTracker`: eine Ausgleichsgerade ueber
+die letzten 30 s, die bei jedem Anstieg der Gesundheit neu beginnt. Fuer ein Mitglied, das geheilt wird,
+hielte sie nichts, und mit ihr fielen Vorausschau und Selbstkorrektur aus; die Gruppe bleibt deshalb in der
+eigenen Reihe (A341).
 
 **Was ein beobachteter Verlauf leistet, das eine Hochrechnung nicht leistet:** Er ist bereits netto.
 Jede Minderung, jede Mitigation, jede Barriere und jede fremde Heilung stecken darin, ohne dass
@@ -1502,10 +1504,10 @@ sind erfasst statt bearbeitet.
 Zweite, unabhängig belegte Fundstelle: Im Schadenszweig steht der Sanctus-Block
 **vor** dem DoT-Block. Sobald `AoeCount = 3` erfüllt ist, greift Sanctus und der DoT
 wird nie gesetzt — bei einem Boss mit zwei Adds läuft also nie Dia. Dass das nicht
-gewollt ist, zeigt der DoT selbst: `ModifyDiaPvE` (`WhiteMageRotation.cs:300-311`)
+gewollt ist, zeigt der DoT selbst: `ModifyDiaPvE` (`WhiteMageRotation.cs:331-349`)
 setzt `TargetStatusProvide` gegen Nachlegen und `IsRestrictedDOT` gegen ungeeignete
-Ziele — beide Vorkehrungen laufen bei AoE ins Leere, weil der Zweig nicht erreicht
-wird. Seit A231 fällt der GCD nach einem Sanctus auf den fälligen DoT (Abschnitt „Die Regel“).
+Ziele, seit Upstream 3c6ce9ee2 dazu die Potenzen für den DoT-Planer — alle Vorkehrungen
+laufen bei AoE ins Leere, weil der Zweig nicht erreicht wird. Seit A231 fällt der GCD nach einem Sanctus auf den fälligen DoT (Abschnitt „Die Regel“).
 
 ## Die Regel
 

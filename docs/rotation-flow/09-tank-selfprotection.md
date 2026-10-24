@@ -757,8 +757,8 @@ weil sie für den nächsten Raidwide fehlen kann.
 ### Wie RSR sie nutzt, und was davon richtig ist
 
 Die Einzelabwehr des Kriegers (`WAR_Reborn.DefenseSingleAbility`) öffnet zweimal: für einen Tankbuster oder Zauber
-auf ihn (Marker, gelisteter Zauber, Vorhersage innerhalb von „Seconds before tankbuster to use single mitigation",
-ab Werk 3 s) und für einen Pull (`TankPullOnPlayer`: mindestens „Number of hostiles" Gegner auf ihm in 3 Yalm, er wird
+auf ihn (Marker, gelisteter Zauber, Vorhersage innerhalb von „Tankbuster mitigation lead time",
+ab Werk 3 s) und für einen Pull (`TankPullOnPlayer`: mindestens „Use tank mitigation when this many enemies target you" Gegner auf ihm in 3 Yalm, er wird
 getroffen). Je Einwebeplatz fällt die erste passende Fähigkeit in dieser Reihenfolge:
 
 0. Unter **Holmgang** und unter 30 % Gesundheit fällt nichts weiter (Upstream).
@@ -1796,7 +1796,7 @@ Schleife neben der bestehenden, kein Ringpuffer und kein dritter Effekt-Handler.
 | Größe | Vorhanden? | Beleg |
 |---|---|---|
 | Restzeit des Status | **ja** | `StatusHelper.StatusTime(…)` |
-| Historie der Gesundheit über die Zeit | **für Gegner und Gruppe** | `DataCenter.RecordedHP`, gefüllt in `TargetUpdater.UpdateTimeToKill` aus `AllHostileTargets` **und** `PartyMembers` |
+| Historie der Gesundheit über die Zeit | **für Gegner und Gruppe** | `DataCenter.RecordedHP` für die Gruppe, gefüllt in `TargetUpdater.UpdateTimeToKill` aus `PartyMembers`; Gegner in Upstreams `TimeToKillTracker` (30 s, seit 3c6ce9ee2, A341) |
 | Zeit bis zum Tod eines Gruppenmitglieds | **ja** | `ObjectHelper.GetCorrectedTTK`, gegen den eigenen Vorhersagefehler kalibriert |
 | Abtastrate der Historie | **1 Hz** | `TimeToKillUpdateInterval` |
 | Eingehende Heilung auf ein Party-Mitglied | **nicht gesondert ausgewertet, und nicht nötig** | Der Gesundheitsverlauf ist bereits netto: Eine fremde Heilung zeigt sich als steigender Anteil, `GetTTK` antwortet dann `NaN` |

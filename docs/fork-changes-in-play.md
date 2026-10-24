@@ -148,7 +148,7 @@ the low 16 bits only, and a raidwide that hit a tank harder than that could be r
   you are not.
 - **Gunbreaker: Aurora on `Full target usage`** picks its target like every other heal, by danger,
   not by the fewest HP points.
-- **"Prioritize Low HP … Big Target" takes effect**; among equally big targets the setting for
+- **"Prefer lower-HP targets with the Big targeting type" takes effect**; among equally big targets the setting for
   small targets was read.
 
 ## Shields and barriers
@@ -212,10 +212,10 @@ the low 16 bits only, and a raidwide that hit a tank harder than that could be r
   `TankbusterMarkerWithoutHit.json` and is no longer treated as a tankbuster; a later hit takes it
   off again.
 -  **Channel locks hold actions only until the announced hit lands.**
-  `Lock actions when casting Passage Of Arms during AOE mitigations` is **on by default**: Passage
+  `Don't break Passage of Arms` is **on by default**: Passage
   of Arms ends with the paladin's next action, and RSR casts it only for an announced area hit, so
   without the lock the next GCD or weave often ended the channel before the hit.
-  `Lock actions when casting Collective Unconscious during AOE mitigations` stays off by default.
+  `Don't break Collective Unconscious` stays off by default.
 - **Paladin: Intervention on the other tank works** — it accepts the tank stance from any source.
 - **The BossModReborn timeline is only read when it is switched on**, and a defence pressed for a hit
   it announces goes out only while a press made now still reaches the server before the end of the
@@ -317,7 +317,7 @@ the low 16 bits only, and a raidwide that hit a tank harder than that could be r
   the raised maximum HP.
 - **Arm's Length goes out for its Slow, not for a boss's tankbuster** (`UseArmsLengthOnPull`, all
   four tanks, **on by default**): +20 % recast on every enemy that strikes you. A pull is the global
-  "Number of hostiles" for defensive abilities, counted on ordinary enemies only — bosses do not count;
+  "Use tank mitigation when this many enemies target you" for defensive abilities, counted on ordinary enemies only — bosses do not count;
   a slowed pack is left alone, and a BossModReborn knockback in the gap keeps it. The single-target
   defence no longer casts it as a last resort on a boss alone in the arena, where it softens nothing and
   is then missing for the next knockback, and for Paladin, Warrior, Dark Knight and Gunbreaker this
@@ -331,7 +331,7 @@ the low 16 bits only, and a raidwide that hit a tank harder than that could be r
   you. Not while you are in danger or vulnerable, not while he is impervious, not when the announced
   tankbuster hits you anyway. Your stance goes on first if it is off. If the enemy's next tankbuster
   still hits him, RSR stops taking that enemy on an announcement for the rest of the fight.
-  `Auto provoke when there is another tank in party` does only what its text names, and `Provoke
+  `Provoke when there is another tank in the party` does only what its text names, and `Provoke
   anything not on the no provoke list.` respects the list.
 
 ## Movement safety
@@ -353,7 +353,7 @@ off.
 ## The learned lists
 
 - **The damage table measures at all.** The effect handler read the action type four bytes wide,
-  so no area action was ever rated. Measuring no longer depends on `Record AOE actions` or on the
+  so no area action was ever rated. Measuring no longer depends on `Record enemy AoE actions` or on the
   party size; that setting decides only whether new actions are added. The actions of invisible
   helpers are added and measured like any other.
 - **Tankbusters are learned, from every tank they hit.** Every hit of a listed tankbuster, or of
@@ -375,8 +375,8 @@ off.
   them, `Last hit:` with the reason a cast was or was not rated, and the effect handler's counts.
 - To start over after a patch, delete `HostileCastingAreaPotential.json` or `TankbusterPotential.json`
   while the game is closed.
-- **A failed download no longer leaves an empty list for good**; the next start tries again, and an
-  unreadable list file is set aside and downloaded afresh.
+- **A list whose load did not finish is not saved**, so a cancelled start cannot write "every entry removed"
+  over your list changes; an unreadable list file is set aside and the built-in list stands.
 
 ## Damage and rotation
 
@@ -421,7 +421,7 @@ off.
 - **Samurai:** Meditate when no enemy is within 25 yalms in combat.
 - **Reaper:** Hell's Ingress and Egress cannot go out as Regress. Soulsow also goes out in combat
   while no enemy is within 25 yalms, so every Harvest Moon after the first is there; with a
-  BossModReborn module running and `Use BossModReborn timeline for proactive mitigation` on, it waits
+  BossModReborn module running and `Use BossModReborn's timeline for proactive mitigation` on, it waits
   when its 5-second cast would not finish before the predicted end of the pause.
 - **Dark Knight:** Blood is pooled for the burst — Bloodspiller and Quietus under Delirium, in the
   two-minute window or above 70 Blood.

@@ -34,8 +34,10 @@ LIST_WINDOW = Path('RotationSolver/UI/MainWindow/MainWindow_List.cs')
 
 # The one array, from its declaration to the closing bracket.
 FILES = re.compile(r'private\s+static\s+readonly\s+ListFile\[\]\s+Files\s*=\s*\[(?P<body>.*?)\n\t\];', re.DOTALL)
-# An entry of it: new ListFile<T>(nameof(X), ... or new LearnedFile<T>(nameof(X), ...
-ENTRY = re.compile(r'new\s+(?:ListFile|LearnedFile)<[^(]*?>\(\s*nameof\(\s*(\w+)\s*\)')
+# An entry of it: new SetList(nameof(X), ..., new LocalFile<T>(nameof(X), ..., new LearnedFile<T>(nameof(X), ... - the
+# built-in lists since upstream 3c6ce9ee2 (SetList, MapList<T>, OrderList), the user's own (LocalFile<T>), the learned
+# tables (LearnedFile<T>); ListFile<T> is the form before it.
+ENTRY = re.compile(r'new\s+(?:ListFile|LearnedFile|LocalFile|SetList|MapList|OrderList)(?:<[^(]*?>)?\(\s*nameof\(\s*(\w+)\s*\)')
 # A save by name. SaveList(nameof(X)) is the ordinary path; a SaveTracked with a nameof would go around it.
 SAVED = re.compile(r'\b(?:SaveList|SaveTracked)\(\s*(?:\w+\s*,\s*)?nameof\(\s*(\w+)\s*\)')
 # A load line of its own.
@@ -95,19 +97,27 @@ def tree(entries, saves='', init_body='\t\tforeach (var file in Files) { file.Lo
 
 def self_test():
     """Constructed defects, because a silent pass is otherwise indistinguishable from a clean tree."""
-    both = ('\t\tnew ListFile<HashSet<uint>>(nameof(HostileCastingArea), () => HostileCastingArea, v => HostileCastingArea = v),\n'
+    both = ('\t\tnew SetList(nameof(HostileCastingArea), ActionLists.HostileCastingArea, () => HostileCastingArea, v => HostileCastingArea = v, 41147),\n'
             '\t\tnew LearnedFile<float>(nameof(HostileCastingAreaPotential),\n'
             '\t\t\t() => new Dictionary<uint, float>(HostileCastingAreaPotential), v => HostileCastingAreaPotential = v,\n'
-            '\t\t\tMath.Max, state => AreaPotentialStoreState = state, "rated action(s)"),')
+            '\t\t\tMath.Max, state => AreaPotentialStoreState = state, "rated action(s)"),\n'
+            '\t\tnew LocalFile<Dictionary<string, TankbusterMarkerHit>>(nameof(TankbusterMarkerHits), () => TankbusterMarkerHits, v => TankbusterMarkerHits = v),\n'
+            '\t\tnew MapList<string>(nameof(NoProvokeNames), TerritoryLists.NoProvokeNames, () => NoProvokeNames, v => NoProvokeNames = v),\n'
+            '\t\tnew OrderList(nameof(KardiaTankPriority), JobPriorityLists.KardiaTankPriority, () => KardiaTankPriority, v => KardiaTankPriority = v),\n'
+            '\t\tnew ListFile<HashSet<uint>>(nameof(HostileCastingStop), () => HostileCastingStop, v => HostileCastingStop = v),')
     saves = ('\tpublic static Task SaveHostileCastingArea() => SaveList(nameof(HostileCastingArea));\n'
-             '\tpublic static Task SaveHostileCastingAreaPotential() => SaveList(nameof(HostileCastingAreaPotential));\n')
+             '\tpublic static Task SaveHostileCastingAreaPotential() => SaveList(nameof(HostileCastingAreaPotential));\n'
+             '\tpublic static Task SaveTankbusterMarkerHits() => SaveList(nameof(TankbusterMarkerHits));\n'
+             '\tpublic static Task SaveNoProvokeNames() => SaveList(nameof(NoProvokeNames));\n'
+             '\tpublic static Task SaveKardiaTankPriority() => SaveList(nameof(KardiaTankPriority));\n'
+             '\tpublic static Task SaveHostileCastingStop() => SaveList(nameof(HostileCastingStop));\n')
 
     paired = tree(both, saves)
     if check(paired, 'DrawActionsList(nameof(OtherConfiguration.HostileCastingArea), x);'):
         raise AssertionError('a correctly paired store was rejected: %s' % check(paired))
 
     # The original defect in the new shape: the potentials are saved, but nothing loads them.
-    only = '\t\tnew ListFile<HashSet<uint>>(nameof(HostileCastingArea), () => HostileCastingArea, v => HostileCastingArea = v),'
+    only = both.split('\t\tnew LearnedFile')[0] + '\t\tnew LocalFile' + both.split('\t\tnew LocalFile')[1]
     found = check(tree(only, saves))
     if not any('HostileCastingAreaPotential' in p and 'not in Files' in p for p in found):
         raise AssertionError('a store saved without a load path went unnoticed: %s' % found)

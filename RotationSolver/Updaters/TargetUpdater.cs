@@ -22,8 +22,8 @@ internal static partial class TargetUpdater
 	// Other players outside duties, only gathered for RaiseType.AllOutOfDuty.
 	private static List<IBattleChara> _outOfDutyPlayers = [];
 
-	private static DateTime _lastUpdateTimeToKill = DateTime.MinValue;
-	private static readonly TimeSpan TimeToKillUpdateInterval = TimeSpan.FromSeconds(1);
+	private static long _lastUpdateTimeToKill;
+	private const long TimeToKillUpdateIntervalMs = 1000;
 
 	internal static void UpdateTargets()
 	{
@@ -62,7 +62,7 @@ internal static partial class TargetUpdater
 		UpdateCastsByOthers();
 		DataCenter.DeathTarget = GetDeathTarget();
 		DataCenter.DispelTarget = GetDispelTarget();
-		// "Auto provoke when there is another tank in party" covers the cases its text names; the party
+		// "Provoke when there is another tank in the party" covers the cases its text names; the party
 		// walk behind it runs only when one of them comes up.
 		bool? autoProvokeAllowed = null;
 		bool AutoProvokeAllowed() => autoProvokeAllowed ??= Service.Config.AutoProvokeForTank || StateUpdater.CountPartyTanks() < 2;
@@ -650,18 +650,18 @@ internal static partial class TargetUpdater
 		}
 	}
 
-	// Recording new entries at 1/second and dequeuing old values to keep only the last DataCenter.HP_RECORD_TIME worth of combat time
-	// Has performance implications for keeping too much data for too many targets as they're also all evaluated multiple times a frame for expected TTK
 	private static void UpdateTimeToKill()
 	{
-		var now = DateTime.Now;
-		if (now - _lastUpdateTimeToKill < TimeToKillUpdateInterval)
+		var now = Environment.TickCount64;
+		if (now - _lastUpdateTimeToKill < TimeToKillUpdateIntervalMs)
 		{
 			return;
 		}
 
 		_lastUpdateTimeToKill = now;
+		TimeToKillTracker.Record(DataCenter.AllHostileTargets, now);
 
+		// The party's own history (A91, A341): upstream's tracker above keeps hostiles only.
 		var hostiles = DataCenter.AllHostileTargets;
 		if (hostiles == null || hostiles.Count == 0)
 		{
@@ -673,10 +673,10 @@ internal static partial class TargetUpdater
 			_ = DataCenter.RecordedHP.Dequeue();
 		}
 
-		// Party members are recorded alongside the hostiles, which is what lets GetTTK answer for
-		// them at all. The method never cared who it was asked about - it looks an id up in this
-		// history and reads the trend - so the only reason it returned NaN for a healer or a tank was
-		// that nobody ever put them in here.
+		// Party members are recorded here, which is what lets GetTTK answer for them at all. The
+		// method never cared who it was asked about - it looks an id up in this history and reads the
+		// trend - so the only reason it returned NaN for a healer or a tank was that nobody ever put
+		// them in here.
 		//
 		// What that buys is a damage rate per member that needs no list of any kind: the observed
 		// fall is already net of every reduction, mitigation, barrier and foreign heal, including the
@@ -689,26 +689,19 @@ internal static partial class TargetUpdater
 		// ever right because the answer was NaN.
 		var party = DataCenter.PartyMembers;
 
-		Dictionary<ulong, float> currentHPs = new(hostiles.Count + party.Count);
-		for (var i = 0; i < hostiles.Count; i++)
-		{
-			var target = hostiles[i];
-			if (target != null && target.CurrentHp != 0)
-			{
-				currentHPs[target.GameObjectId] = target.GetHealthRatio();
-			}
-		}
-
+		Dictionary<ulong, float> currentHPs = new(party.Count);
+		DataCenter.RecordedPartyIds.Clear();
 		for (var i = 0; i < party.Count; i++)
 		{
 			var member = party[i];
 			if (member != null && member.CurrentHp != 0)
 			{
 				currentHPs[member.GameObjectId] = member.GetHealthRatio();
+				_ = DataCenter.RecordedPartyIds.Add(member.GameObjectId);
 			}
 		}
 
-		DataCenter.RecordedHP.Enqueue((now, currentHPs));
+		DataCenter.RecordedHP.Enqueue((DateTime.Now, currentHPs));
 		// Answers given earlier in this frame read the history without this sample.
 		ObjectHelper.ForgetTimeToKill();
 

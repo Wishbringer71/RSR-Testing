@@ -12,7 +12,7 @@ public sealed class PLD_Reborn : PaladinRotation
 			+ "In a fight: the Slow +20% lands on every enemy that strikes you and delays "
 			+ "auto-attacks as well as casts, so in a standing pack it throttles the whole incoming "
 			+ "stream for fifteen seconds. It costs nothing but its own cooldown. A pull is as many "
-			+ "enemies in reach as the global \"Number of hostiles\" for defensive abilities, bosses not "
+			+ "enemies in reach as the global \"Use tank mitigation when this many enemies target you\" for defensive abilities, bosses not "
 			+ "counted - Arm's Length does not soften the hit that strikes you, so a boss's tankbuster "
 			+ "gains nothing from it; a pack "
 			+ "that is already slowed is left alone.\n"

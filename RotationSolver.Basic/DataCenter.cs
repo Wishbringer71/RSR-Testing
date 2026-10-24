@@ -437,12 +437,22 @@ internal static class DataCenter
 	private static readonly Lock _tankbusterLock = new();
 
 	/// <summary>
-	/// Only recorded 15s hps.
+	/// How many one-second samples of the party's health are kept: four minutes.
 	/// </summary>
 	public const int HP_RECORD_TIME = 240;
 
+	/// <summary>
+	/// The party's health, one sample a second (TargetUpdater): what a member's time to death, the heal forecast and
+	/// its self-correction read (A91). Hostiles are kept by <see cref="TimeToKillTracker"/> since upstream 3c6ce9ee2,
+	/// which starts over at every rise in health and so holds nothing for a member being healed (A341).
+	/// </summary>
 	internal static Queue<(DateTime time, Dictionary<ulong, float> hpRatios)> RecordedHP { get; } =
 		new(HP_RECORD_TIME + 1);
+
+	/// <summary>
+	/// The members in the latest sample of <see cref="RecordedHP"/>: whose time to death GetTTK reads from it.
+	/// </summary>
+	internal static HashSet<ulong> RecordedPartyIds { get; } = [];
 
 	public static ICustomRotation? CurrentRotation { get; internal set; }
 	public static DutyRotation? CurrentDutyRotation { get; internal set; }
@@ -945,8 +955,7 @@ internal static class DataCenter
 	private static long _avgTTKCacheTick = long.MinValue;
 	private const long AverageTtkTtlMs = 15;
 
-	// GetTTK() walks the RecordedHP history per hostile target, so this is cached for a
-	// single frame rather than recomputed on every CanUse()/condition check that reads it.
+	// Cached for a single frame rather than recomputed on every CanUse()/condition check that reads it.
 	public static float AverageTTK
 	{
 		get
@@ -2178,6 +2187,8 @@ internal static class DataCenter
 		// Unknown, not "fight over" - see AverageTTK.
 		_avgTTK = float.PositiveInfinity;
 		_avgTTKCacheTick = long.MinValue;
+		TimeToKillTracker.Clear();
+		DotTickTracker.Clear();
 		_partyHpStatsCacheTick = long.MinValue;
 		_timeLastActionUsed = DateTime.Now;
 		_actions.Clear();

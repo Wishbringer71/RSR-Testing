@@ -147,7 +147,7 @@ Tankbuster als Raidwide meldet). Welche Quelle in seinen Kämpfen die Abwehr öf
 `DefenseTrace.log` (unten); die Zeilen nennen auch, ob der Treffer ihn erreicht.
 
 **Marker:** Es zählen nur Marker auf ihm oder einem Mitglied seiner eigenen Gruppe, Duty-Support-Begleiter
-eingeschlossen, gleich wie „Heal and raise Party NPCs" steht (A220). Das gilt für die Flagge
+eingeschlossen, gleich wie „Heal and raise party NPCs" steht (A220). Das gilt für die Flagge
 (`IsCastingAreaVfx`, eine Upstream-Erkennung, die bis dahin jeden Marker in Reichweite las) und für den
 Selbstschutz. Ein Stack auf einem Mitglied einer anderen Allianzgruppe traf keinen von ihnen und öffnete doch
 ihre Gruppenminderungen und seinen Selbstschutz. Für den Selbstschutz zählt ein Stack-Marker in der eigenen
@@ -167,7 +167,7 @@ selbst: Die Maske des Eintrags nennt die Getroffenen, Bit 0 ist immer der Spiele
 IPC `Hints.PredictedDamagePlayers`; die Liste ist nach Zeitpunkt sortiert, BossModReborn-Quelle 29.09.2026).
 Gehört die Maske zu einem anderen Ereignis, gilt die bisherige Näherung: kein lebender Tank in der Gruppe. Allein
 diese Näherung öffnete Radiant Aegis für einen Tankbuster auf einem Tank, den RSR nicht als Gruppenmitglied
-zählte — ein Duty-Support-Tank bei ausgeschaltetem „Heal and raise Party NPCs". Ob RSR Duty-Support-Tanks über
+zählte — ein Duty-Support-Tank bei ausgeschaltetem „Heal and raise party NPCs". Ob RSR Duty-Support-Tanks über
 ihren `ClassJob` überhaupt als Tank erkennt, ist nicht belegt. WrathCombo liest den Job solcher NPCs aus
 `InfoProxyPartyMember` (FFXIVClientStructs) statt aus `ClassJob`; das ist ein Hinweis, keine Spielquelle. Mit der Maske hängt die
 Entscheidung daran nicht mehr.
@@ -499,12 +499,11 @@ verschwinden kann.
 
 | Weg | Wirkung |
 |---|---|
-| „Reset and Update AOE List" (lädt die kuratierte Liste vom Server) | Werte bleiben |
+| „Reset AOE List" (setzt die Liste auf die eingebaute zurück) | Werte bleiben |
 | „Reset RSR Plugin Settings" (globaler Knopf) | Werte bleiben — setzt nur `Service.Config` zurück |
 | Speichern, während der Speicher weniger hält als die Datei (Laden gescheitert, Tabelle aus irgendeinem Grund leer begonnen) | Werte bleiben — jedes Speichern führt Speicher und Datei zusammen und nimmt je Aktion den höheren Wert |
 | Datei vorhanden, aber beim Speichern nicht lesbar (gesperrt, beschädigt) | Werte bleiben — das Speichern unterbleibt, „Store:" meldet es rot, der Messwert geht mit dem nächsten Speichern hinaus |
 | Laden beim Start abgebrochen oder gescheitert, danach Entladen des Plugins | Werte bleiben — ein Speicher, dessen Laden nicht zu Ende lief, wird nicht geschrieben; das gilt für alle Listen, nicht nur für diese Tabelle |
-| „Reset and Update AOE List", wenn der Download scheitert | die bisherige Liste bleibt; vorher wurde sie durch eine leere ersetzt, und ohne Liste wird nichts gemessen |
 | Unlesbare Datei beim Start | Werte bleiben, die Datei wird als `.corrupt` beiseitegelegt und gemeldet |
 | Kampfende, Zustandswechsel, Laden und Entladen (`DataCenter.ResetAllRecords`) | Werte bleiben — die Methode räumt das Laufzeitgedächtnis eines Kampfes ab und fasst keinen Speicher an |
 | **Speicher wird beim Start nicht geladen** | **Totalverlust**, still — behoben, s. u. |
@@ -518,7 +517,7 @@ verschwinden kann.
 
 **Die Messung hat sechs Tore**, jedes einzeln hinreichend, um sie zu verhindern: der Effekt-Hook liefert überhaupt Treffer; die Quelle ist ein Gegner, anvisierbar oder ein nicht anvisierbarer Kämpfer (Helfer, Boss außerhalb des Felds, A277); eine Aktion mit Wirkzeit; eine reguläre Aktion der Kategorie Zauber, Waffenfertigkeit oder Fähigkeit; ihre Id in der Flächenliste; ein Betrag über null bei einem Gruppenmitglied.
 
-**`Record AOE actions` und die Gruppengröße gelten nur der Aufnahme in die Liste, nicht der Messung.** Die Option stammt von Upstream (2023) und entscheidet, ob neue Ids in die Liste kommen; wer sie ausschaltet, will die kuratierte Liste so behalten, wie sie geliefert wurde. Die Mindestgröße von vier ist die kleinste Gruppenzusammensetzung des Spiels (`ContentMemberType`, Zeile 2: je ein Tank, Heiler, Nahkämpfer, Fernkämpfer); darunter trifft auch ein Kegel oder ein kleiner Kreis alle, und „alle getroffen" belegt keinen Gruppentreffer mehr. Für eine bereits gelistete Id beantwortet die Messung nur, wie hart sie trifft — das hängt an keiner der beiden Bedingungen. Stünde die Messung dahinter, fiele sie für jeden aus, der die Option abschaltet oder mit Duty Support ohne NPC-Gruppenoption spielt, und mit ihr alle drei Leser: das Auslassen kleiner Casts, das Heilen vor einem großen und das Aufheben einer Zurückhaltung. Ein Wert aus einem Lauf ohne Stufensynchronisation fällt zu klein aus; er korrigiert sich wie jede Unterschätzung beim nächsten ungemilderten Treffer, und die Höchstwert-Regel lässt ihn einen höheren Stand nie senken. Aus Occult Crescent stand in keinem seiner Protokolle bis zum 17.10.2026 ein Cast in der Liste (A299); ob es an der Gruppengröße lag, nennt seit A299 die Zeile am Ende jedes Kampfes („party of …").
+**`Record enemy AoE actions` und die Gruppengröße gelten nur der Aufnahme in die Liste, nicht der Messung.** Die Option stammt von Upstream (2023) und entscheidet, ob neue Ids in die Liste kommen; wer sie ausschaltet, will die kuratierte Liste so behalten, wie sie geliefert wurde. Die Mindestgröße von vier ist die kleinste Gruppenzusammensetzung des Spiels (`ContentMemberType`, Zeile 2: je ein Tank, Heiler, Nahkämpfer, Fernkämpfer); darunter trifft auch ein Kegel oder ein kleiner Kreis alle, und „alle getroffen" belegt keinen Gruppentreffer mehr. Für eine bereits gelistete Id beantwortet die Messung nur, wie hart sie trifft — das hängt an keiner der beiden Bedingungen. Stünde die Messung dahinter, fiele sie für jeden aus, der die Option abschaltet oder mit Duty Support ohne NPC-Gruppenoption spielt, und mit ihr alle drei Leser: das Auslassen kleiner Casts, das Heilen vor einem großen und das Aufheben einer Zurückhaltung. Ein Wert aus einem Lauf ohne Stufensynchronisation fällt zu klein aus; er korrigiert sich wie jede Unterschätzung beim nächsten ungemilderten Treffer, und die Höchstwert-Regel lässt ihn einen höheren Stand nie senken. Aus Occult Crescent stand in keinem seiner Protokolle bis zum 17.10.2026 ein Cast in der Liste (A299); ob es an der Gruppengröße lag, nennt seit A299 die Zeile am Ende jedes Kampfes („party of …").
 
 **Woran die Messung hängenbleibt, zählt das Listenfenster** seit dem Laden je Grund: wie oft ein gegnerischer Cast den Spieler traf und an welchem Tor er hängenblieb („Casts this session"), und davor, was der Effekt-Handler überhaupt erhält („Effect handler": Effektsätze, davon von Gegnern, davon mit Schaden am Spieler, dazu Fehler und der erste Fehlertext). Null Sätze heißt: Der Hook liefert nichts. Sätze ohne Gegnertreffer heißen: Der Filter vor der Messung verwirft sie. Fehler heißen: Der Handler bricht vor der Messung ab.
 
@@ -530,7 +529,7 @@ verschwinden kann.
 
 **Sofortaktionen zählen nicht mit:** Sie werden nie bewertet und erscheinen nicht in der Zählung je Grund — sonst überschriebe jeder Auto-Attack binnen einer Sekunde den Grund eines Raidwides.
 
-**Eine leere Flächenliste misst nichts**, gleich wie der Kampf verläuft; beide Fenster melden sie rot. Sie entsteht, wenn der Download beim ersten Start scheitert. Seit A196 bleibt sie auf diese Sitzung beschränkt: `InitOne` schreibt dann keine leere Datei mehr, die Liste gilt als nicht geladen (kein Speichern), und der nächste Start lädt erneut; eine unlesbare Liste wird beiseitegelegt und ebenfalls neu geladen. Downloads beim Laden sind an das Ladezeitlimit des Plugins gebunden.
+**Eine leere Flächenliste misst nichts**, gleich wie der Kampf verläuft; beide Fenster melden sie rot. Seit Upstream 3c6ce9ee2 ist die kuratierte Liste ins Plugin eingebaut (`ActionLists.HostileCastingArea`), und die Datei `ListChanges/HostileCastingArea.json` hält nur seine Ergänzungen und Entfernungen; leer wird die Liste nur, wenn er alles entfernt oder das Laden abbricht. Ein abgebrochenes Laden wird nicht gespeichert (A196, A341): Die leere Liste ergäbe sonst „alles entfernt“ in der Änderungsdatei, und jeder spätere Start läse die Liste leer. Eine unlesbare Änderungsdatei wird als `.corrupt` beiseitegelegt; dann gilt die eingebaute Liste. Beim ersten Start mit dieser Fassung wird die alte Datei mit der ganzen Liste einmal übernommen: Seine Ergänzungen (auch aufgezeichnete Ids) bleiben, Entfernungen nicht, und die alte Datei wird gelöscht (Upstreams Migration).
 
 **Casts unsichtbarer Helfer zählen wie die sichtbarer Gegner** (A277). Viele Raidwides löst ein nicht
 anvisierbarer Helfer aus, oft mit einer anderen Id als der sichtbare Cast des Bosses (Akhmorning, „Raiding
@@ -550,7 +549,7 @@ Impakt und Bebende Walze kamen nie in die Liste, und der Tankbuster-Marker vor H
 galt als Marker ohne Treffer. Im Kampf, sein Protokoll vom 13.10.2026: Shinryus Meteoreinschlag (#50283, 5 s Wirkzeit, Kreis
 60 y) wirken fünf Lichtsphären, jede trifft die ganze Gruppe; ihn trafen je Welle bis zu 65 % zusammen, und keine
 Abwehr öffnete, weil die Sphären nicht anvisierbar sind und es für Shinryu Unreal kein BossModReborn-Modul gibt.
-Jetzt kommt die Aktion unter „Record AOE actions" beim ersten Treffer auf alle in die Liste, und ab der nächsten
+Jetzt kommt die Aktion unter „Record enemy AoE actions" beim ersten Treffer auf alle in die Liste, und ab der nächsten
 Welle öffnet der Cast die Abwehr. Als Beleg der Feindseligkeit dient die Liste selbst: Eine Id steht dort erst, wenn sie die ganze Gruppe
 beschädigt hat; Reichweite und Sicht prüft die Reichweitenprüfung des Casts, weil ein Helfer dort steht, wo seine
 Fläche liegt.
@@ -573,7 +572,7 @@ braucht, ist durch die Liste so wenig geschützt wie bei einem anvisierbaren Geg
 bearbeitbar.
 
 **Das Zurücksetzen der Liste lässt die Werte stehen** — Vorgabe des Auftraggebers: „es wäre schade,
-wenn dann auch die Erfahrungswerte weg wären." Die kuratierte Liste neu zu laden ist ein Download, die
+wenn dann auch die Erfahrungswerte weg wären." Die kuratierte Liste zurückzusetzen kostet nichts, die
 Messungen kosten Spielzeit; sie mit dem Listen-Reset zu verwerfen hieße, nach jedem Patch bei null
 anzufangen, wegen der wenigen Aktionen, die sich tatsächlich geändert haben. Ein Wert, der zu einer
 nicht mehr gelisteten Id stehenbleibt, kostet nichts: Jede Leseroute geht zuerst über die Liste.
@@ -715,7 +714,7 @@ Messung („tankbuster measured: … mitigation factor …, unmitigated … - st
 ### Speichern: welche Fehler der Flächentabelle hier ausgeschlossen sind
 
 Gemeinsamer Weg, nicht kopiert: ein Eintrag `LearnedFile` in der Liste aller Speicher (`Files`), Laden über
-`InitOne` mit einem Bericht für das Listenfenster, Speichern über `SaveTracked<T>` mit einer Zusammenführung je
+`ReadFile` mit einem Bericht für das Listenfenster, Speichern über `SaveTracked<T>` mit einer Zusammenführung je
 Speicher. Die Flächentabelle nutzt denselben Weg.
 
 | Fehler der Flächentabelle | Hier |

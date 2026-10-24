@@ -1,10 +1,12 @@
-﻿using ECommons.DalamudServices;
+﻿using Dalamud.Hooking;
+using ECommons.DalamudServices;
 using ECommons.GameHelpers;
 using ECommons.Hooks;
 using ECommons.Hooks.ActionEffectTypes;
 using ECommons.Logging;
 using FFXIVClientStructs.FFXIV.Client.Game;
 using Lumina.Excel.Sheets;
+using RotationSolver.ActionTimeline;
 using RotationSolver.Basic.Configuration;
 using System.Text.RegularExpressions;
 
@@ -12,6 +14,12 @@ namespace RotationSolver;
 
 public static class Watcher
 {
+	private const uint CancelAbilityCategory = 15;
+	private const uint EnemyDotTickCategory = 0x605;
+
+	private delegate void ActorControlDelegate(uint entityId, uint category, uint p1, uint p2, uint p3, uint p4, uint p5, uint p6, uint p7, uint p8, ulong targetId, byte replaying);
+	private static Hook<ActorControlDelegate>? _actorControlHook;
+
 	public static void Enable()
 	{
 		var config = Service.Config;
@@ -23,6 +31,16 @@ public static class Watcher
 
 		ActionEffect.ActionEffectEvent += ActionFromEnemy;
 		ActionEffect.ActionEffectEvent += ActionFromSelf;
+
+		try
+		{
+			_actorControlHook = Svc.Hook.HookFromSignature<ActorControlDelegate>("E8 ?? ?? ?? ?? 0F B7 0B 83 E9 64", ActorControlDetour);
+			_actorControlHook.Enable();
+		}
+		catch (Exception ex)
+		{
+			PluginLog.Error($"[Watcher] Failed to hook ActorControl: {ex}");
+		}
 	}
 
 	// The commit this build was made from, so an uploaded trace can be matched to the code that wrote it:
@@ -45,6 +63,30 @@ public static class Watcher
 		ActionEffect.ActionEffectEvent -= ActionFromEnemy;
 		ActionEffect.ActionEffectEvent -= ActionFromSelf;
 		DefenseTrace.Stop("effect handler unhooked");
+
+		_actorControlHook?.Dispose();
+		_actorControlHook = null;
+	}
+
+	private static void ActorControlDetour(uint entityId, uint category, uint p1, uint p2, uint p3, uint p4, uint p5, uint p6, uint p7, uint p8, ulong targetId, byte replaying)
+	{
+		_actorControlHook!.Original(entityId, category, p1, p2, p3, p4, p5, p6, p7, p8, targetId, replaying);
+
+		try
+		{
+			if (category == EnemyDotTickCategory)
+			{
+				DotTickTracker.RecordTick(entityId, Environment.TickCount64);
+			}
+			else if (category == CancelAbilityCategory && entityId == Player.Object?.EntityId)
+			{
+				ActionTimelineManager.Current?.CancelInterruptedCast(DateTime.Now);
+			}
+		}
+		catch (Exception ex)
+		{
+			PluginLog.Error($"Error in ActorControlDetour: {ex.Message}");
+		}
 	}
 
 	public static string ShowStrSelf { get; private set; } = string.Empty;
@@ -644,7 +686,7 @@ public static class Watcher
 			var partyMembers = DataCenter.PartyMembers;
 			var partyMemberCount = partyMembers.Count;
 
-			// New ids enter the AoE list only under "Record AOE actions" and only from a party of at
+			// New ids enter the AoE list only under "Record enemy AoE actions" and only from a party of at
 			// least a light party, where hitting every member marks a party-wide hit. Neither condition
 			// concerns measuring an id that is already listed.
 			var intakeOpen = Service.Config.RecordCastingArea && partyMemberCount >= 4;
@@ -672,14 +714,14 @@ public static class Watcher
 				{
 					DataCenter.RecordAreaMeasurementOutcome(actionId, "not measured - not in the AoE list",
 						!Service.Config.RecordCastingArea
-							? " (Record AOE actions is off, so it is not added either)"
+							? " (Record enemy AoE actions is off, so it is not added either)"
 							: intakeOpen
 								? " (added once it hits every member)"
 								: $" (party counted as {partyMemberCount}, too small to add it)");
 				}
 			}
 
-			// "Record AOE actions" decides whether new ids enter the list - its text and its origin
+			// "Record enemy AoE actions" decides whether new ids enter the list - its text and its origin
 			// upstream say that, and a user may switch it off to keep the curated list as shipped. It
 			// does not decide whether listed actions are measured: measuring answers how hard a listed
 			// cast hits, and the rules that read the answer - skipping small casts, healing ahead of a

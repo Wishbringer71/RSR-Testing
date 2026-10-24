@@ -157,13 +157,6 @@ jobs:
       - name: Check the German action-name dictionary resolves
         run: python3 .github/scripts/audit/check_action_names.py
 
-      # The plugin downloads its curated lists (tankbusters, area attacks, invulnerabilities) from
-      # upstream's repository and never reads the fork's Resources/ copies, so an edit made only
-      # here would change nothing and nothing would fail. Skipped, not failed, when GitHub is
-      # unreachable, so an outage does not read as a defect (A286, P2).
-      - name: Check the fork's resource lists match what the plugin loads
-        run: python3 .github/scripts/audit/check_resource_lists.py
-
       # ---- 3. The documents: concepts and release text against the code and against each other.
 
       # A line reference is the cheapest way to make a concept verifiable and the first thing to
