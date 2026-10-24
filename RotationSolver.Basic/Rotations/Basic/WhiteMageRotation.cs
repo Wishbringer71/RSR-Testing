@@ -400,6 +400,24 @@ public partial class WhiteMageRotation
 		};
 	}
 
+	// The second press: the button the game shows while the bell stands. It releases every stack left at once
+	// (effect text: 200 potency per stack), so it is only ever there while the bell's own status is - and only once the
+	// bell has healed at least once: pressed before, it would trade the hit's 400 per stack for 200 ahead of the hit the
+	// bell was placed for (the owner's sequence, 24.10.2026: the hit, the bell's own heal, then the rest).
+	static partial void ModifyLiturgyOfTheBellPvE_28509(ref ActionSetting setting)
+	{
+		setting.StatusNeed = [StatusID.LiturgyOfTheBell];
+		setting.IsFriendly = true;
+		setting.ActionCheck = () => Player != null && LiturgyMaxStacks > 0
+			&& Player.StatusStack(true, StatusID.LiturgyOfTheBell) < LiturgyMaxStacks;
+	}
+
+	// How many stacks the bell starts with, from the game's status sheet; zero when the sheet does not say.
+	private static byte LiturgyMaxStacks => _liturgyMaxStacks ??=
+		Service.GetSheet<Lumina.Excel.Sheets.Status>().TryGetRow((uint)StatusID.LiturgyOfTheBell, out var row) ? row.MaxStacks : (byte)0;
+
+	private static byte? _liturgyMaxStacks;
+
 	static partial void ModifyGlareIvPvE(ref ActionSetting setting)
 	{
 		setting.ActionCheck = () => SacredSightStacks > 0;

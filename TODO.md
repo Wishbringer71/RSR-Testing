@@ -14,7 +14,7 @@ Auftrag vom 24.10.2026 läuft: die einfachen Punkte zuerst (A338), die schweren 
 steht seit seinem Hinweis vom 24.10.2026 vor der Flächenheilung: Es heilt eine Gruppe nach einem Treffer, der ihr fast
 alles nimmt.
 
-1. Weißmagier: Glockenspiel vor großen Treffern und zweiter Druck
+1. Weißmagier: Glockenspiel auch vor großen Einzeltreffern (seine Entscheidung)
 2. Flächenheilung um den Wirkenden: Radius gegen Trefferfläche
 3. Feste Werte: jeder offene Wert braucht seinen Loop
 4. Tankbuster-Plan: Umlauf über die Sequenz jedes Drucks
@@ -54,15 +54,22 @@ Upstream 7.5.7.5 sieht `ActionManagerEx` jede Anfrage, die hinausgeht (Sequenz),
 (`SourceSequence`). *Nächster Schritt:* Loop – klären, ob die exakte Paarung die Frist im Kampf früher oder sicherer
 setzt, und dann die Messung darauf umstellen. *Konzept:* 09 (A332).
 
-### Weißmagier: Glockenspiel vor großen Treffern und zweiter Druck · N
+### Weißmagier: Glockenspiel auch vor großen Einzeltreffern (seine Entscheidung) · N
 
-*Im Kampf:* RSR drückt Glockenspiel nie ein zweites Mal: Auf einen einzelnen Treffer kommen 400 Potenz sofort und 800
-erst nach 20 s. Vor einem bekannten großen Treffer gesetzt und gleich danach ein zweites Mal gedrückt, kämen 1200 sofort
-auf eine Gruppe, der fast alles fehlt (sein Vorschlag, 24.10.2026). Mit „Limit Liturgy Of The Bell to multihit party
-stacks" (bei ihm an) geht die Glocke heute nur auf Mehrfach-Sammelmarker. *Nächster Schritt:* voller Loop – wann der
-zweite Druck lohnt (Fehlbetrag der Gruppe im Umkreis gegen 200 je Stapel, sein Vorschlag vom 23.10.2026; kein weiterer
-Treffer erwartet), woran ein großer Treffer vorher erkannt wird, Zusammenspiel mit der Streckung und der Einstellung.
-*Konzept:* 08, „Was die Sperren im Spiel bewirken".
+*Kontext:* Sein Vorschlag vom 24.10.2026: die Glocke vor einen bekannten Treffer setzen, der die Gruppe stark senkt;
+der Treffer löst 400 Potenz aus, der zweite Druck den Rest. Der zweite Druck ist gebaut (A340). Die Glocke vor einem
+Einzeltreffer verhindert seine Einstellung „Limit Liturgy Of The Bell to multihit party stacks" (bei ihm an): Ihr Text
+lässt nur Mehrfach-Sammelmarker zu, und der Text bindet. *Betroffen:* `WHM_Reborn.DefenseAreaAbility`. *Optionen:*
+(a) so lassen – große Einzeltreffer bekommen die Glocke nur mit der Einstellung aus; dann kommt sie als letzte nach
+Vollkommener Ablass, Linderung und Göttliche Umarmung, und auf einen Treffer, der ein Mitglied in Gefahr brächte, gehen alle
+zusammen (Schranke), samt zweitem Druck; (b) die Einstellung erweitern auf „Mehrfach-Sammelmarker und Treffer, die
+gemessen ein Mitglied in die Gefährdungsklasse brächten" – dieselbe Messung wie die Schranke; (c) er stellt sie aus.
+*Konsequenzen über den Kampf* (Abklingzeit 180 s): (a) die Glocke wartet auf den Sammelmarker, ein großer Einzeltreffer
+davor bekommt keine; (b) ein großer Einzeltreffer vor einem Sammelmarker nimmt sie diesem: 1200 Potenz sofort nach dem
+gefährlichen Treffer statt bis zu 2000 über den Sammelmarker verteilt; (c) wie (b), dazu jeder Raidwide, wenn die
+übrigen Werkzeuge abklingen. *Empfehlung:* (b) – ein Treffer, der Mitglieder in die Gefährdungsklasse bringt, ist die
+akutere Gefahr, und die Heilung kommt dann, wenn sie fehlt; der Sammelmarker bleibt vorrangig, wo kein solcher Treffer
+ansteht. *Konzept:* 08, „Was die Sperren im Spiel bewirken".
 
 ### Rotationen gegen The Balance abgleichen · N
 

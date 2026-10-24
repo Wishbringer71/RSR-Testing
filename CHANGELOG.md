@@ -34,8 +34,10 @@ widen it; in a large party the fixed-size record now covers more than a few seco
 `CustomRotation.TankAreaDefenseStretched(params IBaseAction[] partyTools)` is new and protected: true while Reprisal or
 one of the given party tools still works, with "Spread Reprisal and the party mitigation over a run of area attacks"
 on and no member in danger. The four tank rotations ask it before Reprisal and their party tool.
-`AreaDefenseStretched` now ends a pure barrier's stretch once the barrier is gone from the player, a GCD after the
-press, instead of after the duration its text states.
+`AreaDefenseStretched` now ends a stretch once the trigger's effect is gone from the player - a beneficial status named
+like the action, a GCD after the press -, instead of always after the duration its text states: a barrier used up, Liturgy
+of the Bell released by its second press. An action without such a status, Reprisal on the enemy, keeps its duration;
+`SingleDefenseStretched` is unchanged.
 
 ### Behaviour change in RotationSolver.Basic: an enemy's cast is stopped by the job's stun first, and what sleeps show is kept
 

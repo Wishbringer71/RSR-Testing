@@ -145,7 +145,7 @@ Rückhaltung ein Job überhaupt kennt, bleibt seine Sonderregel.** Gebaut in
 | Stufe | Regel | Warum hier |
 |---|---|---|
 | alle | **Schranke:** Eine Rückhaltung weicht bei Gefährdungsklasse 1 (`ObjectHelper.IsInCriticalClass`: ungeschützt, vorausgerechnete effektive Gesundheit auf oder unter `HealthForDyingTanks`, Konzept 07). Flächenabwehr: irgendein lebendes Mitglied dort, oder der angekündigte, gemessene Flächentreffer brächte ein ungeschütztes dorthin. Einzelabwehr: der Spieler selbst oder ein Tank dort | Konzept 09 verlangt es für den Tank („jede Rückhaltung erst, wenn Stufe 1 gesichert ist"); der Grund gilt für jede Rolle |
-| alle | **Streckungsbaustein:** Nach einer Auslöseraktion ruht die übrige eigene Abwehr, bis die Wirkung laut Wirktext ausläuft (die Dauer, die zur Minderung gehört), gezählt ab dem Einsatz laut Aktionsprotokoll; eine reine Barriere nur, bis sie verbraucht ist (ihr Status fehlt beim Spieler einen GCD nach dem Druck, A340). Hält der Auslöser noch eine Ladung (gelesen an seiner Wiederaufladegruppe, nicht am Knopf), streckt er nicht | derselbe Mechanismus stand zweimal mit festen Zahlen im Code (Weißmagier, Astrologe) |
+| alle | **Streckungsbaustein:** Nach einer Auslöseraktion ruht die übrige eigene Abwehr, bis die Wirkung laut Wirktext ausläuft (die Dauer, die zur Minderung gehört), gezählt ab dem Einsatz laut Aktionsprotokoll. In der Flächenabwehr endet sie früher, sobald die Wirkung beim Spieler fehlt: ein positiver Status vom Namen der Aktion, einen GCD nach dem Druck (eine verbrauchte Barriere, Glockenspiel nach dem zweiten Druck; A340); Reflexion liegt auf dem Gegner und behält ihre Dauer. Hält der Auslöser noch eine Ladung (gelesen an seiner Wiederaufladegruppe, nicht am Knopf), streckt er nicht | derselbe Mechanismus stand zweimal mit festen Zahlen im Code (Weißmagier, Astrologe) |
 | Heiler | leer | Nur Weißmagier und Astrologe strecken; Gelehrter und Weiser nicht. Eine Heilerregel änderte zwei Jobs ohne belegten Nutzen |
 | Tanks | **Reflexion und Gruppenwerkzeug im Wechsel** (`TankAreaDefenseStretched`, A340): die Streckung zwischen Reflexion und Heiliger Quell/Waffengang, Abschütteln, Dunkler Bote, Wackeres Herz; Option „Spread Reprisal and the party mitigation over a run of area attacks“, ab Werk an (Konzept 09, Regel 9). **Abtausch (Arm’s Length) im Pull für seine Verlangsamung** (`ArmsLengthSlowsPull`, A194): jeder Tank mit eigener Option „Use Arm's Length on a pull for its Slow", ab Werk an; ein Pull sind so viele Gegner in Reichweite wie die globale Zahl „Number of hostiles" der Abwehr (Dunkelritter: seine Barrierenzahl, dazu die Barrierenrückhaltung), **Bosse nicht mitgezählt** (`SlowableHostilesInRange`, A236): Abtausch mindert den Treffer nicht, der ihn auslöst, also bringt er an einem Boss-Tankbuster nichts — sein Hinweis vom 01.10.2026, Boss allein in der Arena; die zentrale Rückfallstufe der Einzelabwehr wirkt Abtausch nur noch für Rotationen ohne eigene Pull-Regel (`HasOwnArmsLengthPullRule`) und nur unter derselben Bedingung, vorher ohne jede Gegnerzahl; nicht, solange die Gruppe schon verlangsamt ist, und nicht, solange BossModReborn einen Rückstoß nach Wirkende und vor Ende der Abklingzeit ankündigt (A212, A219). Eine Rückhaltung gibt es auf dieser Stufe nicht: Burst-Rückhaltung nur bei Dunkelritter und Revolverklinge, bei beiden an ein eigenes Burstfenster gebunden | kostet nur die eigene Abklingzeit und wirkt bei jedem Tank gleich; die Beobachtung, auf die der TODO-Eintrag wartete, wäre eine Spielbestätigung als Aufgabe an ihn gewesen |
 | Damage Dealer | **Heilung für die Gruppe** (`HoldPartyHeal`, A283): eine strategische Rückhaltung einer Heilung für andere weicht, wenn kein Heiler lebt oder ein Mitglied in Gefährdungsklasse 1 steht; erster Leser der Rotmagier | seine Vorgabe vom 14.10.2026 gilt für jeden Schadensausteiler, der andere heilt. Abwehr: Barde, Pictomancer und Tänzer führen dieselbe Einstellung „Prevent the use of defense abilties during burst" (seit A283 ab Werk aus), Maschinist, Dragoon und Viper feste Rückhaltungen; siehe unten |
@@ -226,10 +226,14 @@ gewählten Trank mit dem Zweig, der ihn freigab, und den HP.
   23.10.2026): fünf Stapel für 20 s; jeder Schaden am Weißmagier, höchstens einmal je Sekunde, heilt alle im
   Umkreis von 20 y um die Glocke mit 400 Potenz; was übrig ist, heilt mit 200 je Stapel beim Ablauf oder beim zweiten
   Druck. Abklingzeit 180 s.
-  - *Auf einen einzelnen Treffer* (sein Hinweis vom 23.10.2026: „die haupteigenschaft würde da ja nicht genutzt
-    werden"): 400 Potenz gleich nach dem Treffer, 800 erst nach 20 s – zusammen 1200 von höchstens 2000. RSR drückt
-    nie ein zweites Mal: Glockenspiel steht nur in der Flächenabwehr, und die hält während seiner Wirkung (Streckung);
-    die 800 fallen also auf eine Gruppe, die bis dahin meist geheilt ist (*Schluss, nicht gemessen*).
+  - *Der zweite Druck* (A340, Option „Press Liturgy of the Bell a second time when the party needs an area heal", ab
+    Werk an): Auf dem Weg der Flächenheilung, vor Refugium, sobald die Glocke mindestens einmal geheilt hat (weniger als
+    die fünf Stapel des Statusblatts) und die Gruppe unter seinen Flächenschwellen steht. Damit kommen auf einen
+    einzelnen großen Treffer 400 Potenz mit dem Treffer und die übrigen 800 gleich danach, statt nach 20 s auf eine meist
+    schon geheilte Gruppe. Vor der ersten Auslösung drückt RSR nicht: Das tauschte 400 je Stapel gegen 200, vor dem
+    Treffer, für den die Glocke liegt. Mit dem zweiten Druck endet auch die Streckung von Linderung (Glockenspiel ist
+    fort). Beides folgt seinem Ablauf vom 24.10.2026 und seinem Vorschlag vom 23.10.2026 (lohnt nur, solange der Gruppe
+    so viel fehlt – gemessen an seinen Flächenschwellen statt an einer neuen Zahl).
   - *Mit „Limit Liturgy Of The Bell to multihit party stacks"* (bei ihm an, belegt durch die Reihenfolge der
     Ablehnungen am 22.10.2026, A335) geht Glockenspiel nur auf einen Mehrfach-Sammelmarker, dann vor allen anderen.
     Erkannt werden sieben Markerpfade (`MultiHitSharedPaths`); ein mehrfach treffender Raidwide ohne solchen Marker
@@ -254,7 +258,8 @@ gewählten Trank mit dem Zweig, der ihn freigab, und den HP.
     statt 800 nach 20 s auf eine meist geheilte. Bedingungen: Der Weißmagier wird getroffen (nur Schaden an ihm löst
     aus), die Gruppe steht im Umkreis der Glocke, und der Treffer ist vorher bekannt (gelernte Flächentabelle,
     BossModReborn-Vorhersage).
-  - Offen in `TODO.md`: „Weißmagier: Glockenspiel vor großen Treffern und zweiter Druck".
+  - Zur Entscheidung in `TODO.md`: „Weißmagier: Glockenspiel auch vor großen Einzeltreffern (seine Entscheidung)" – mit
+    „Limit Liturgy Of The Bell to multihit party stacks" an (bei ihm) setzt RSR die Glocke vor keinen Einzeltreffer.
 - **Dunkelritter:** Herkunft ist die Balance-Rotation 6.38 (c97be9ec5).
   - Früher hieß Burst „mindestens die Hälfte der Gruppe im Zwei-Minuten-Burst"
     (`RatioOfMembersIn2minsBurst`, früher). Heute zählen nur die eigenen Abklingzeiten: Delirium kühlt ab

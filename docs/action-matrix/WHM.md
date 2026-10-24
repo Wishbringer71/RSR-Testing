@@ -1,6 +1,6 @@
 # WHM — Abhängigkeitsmatrix
 
-Erzeugt von `.github/scripts/audit/generate_action_matrix.py` am 2026-10-22; nicht von Hand bearbeiten. Methode und Grenzen: `docs/rotation-flow/14-action-dependency-matrix.md`.
+Erzeugt von `.github/scripts/audit/generate_action_matrix.py` am 2026-10-24; nicht von Hand bearbeiten. Methode und Grenzen: `docs/rotation-flow/14-action-dependency-matrix.md`.
 
 - Basisrotation: `WhiteMageRotation`
 - Rotation: `RotationSolver/RebornRotations/Healer/WHM_Reborn.cs`
@@ -8,7 +8,7 @@ Erzeugt von `.github/scripts/audit/generate_action_matrix.py` am 2026-10-22; nic
 
 ## Nutzung
 
-direkt: 41 · ungenutzt: 2 · über andere Aktion: 1
+direkt: 42 · ungenutzt: 2
 
 | Stufe | Aktion | Id | Art | Nutzung |
 |---|---|---|---|---|
@@ -41,7 +41,7 @@ direkt: 41 · ungenutzt: 2 · über andere Aktion: 1
 | Job | Holy (`HolyPvE`) | 139 | Spell | direkt |
 | Job | Holy III (`HolyIiiPvE`) | 25860 | Spell | direkt |
 | Job | Liturgy of the Bell (`LiturgyOfTheBellPvE`) | 25862 | Ability | direkt |
-| Job | Liturgy of the Bell (`LiturgyOfTheBellPvE_28509`) | 28509 | Ability | über gleichnamige Aktion `LiturgyOfTheBellPvE` |
+| Job | Liturgy of the Bell (`LiturgyOfTheBellPvE_28509`) | 28509 | Ability | direkt |
 | Job | Medica (`MedicaPvE`) | 124 | Spell | direkt |
 | Job | Medica II (`MedicaIiPvE`) | 133 | Spell | direkt |
 | Job | Medica III (`MedicaIiiPvE`) | 37010 | Spell | direkt |
@@ -97,6 +97,7 @@ direkt: 41 · ungenutzt: 2 · über andere Aktion: 1
 | Holy III | Regel prüft | Holy |
 | Holy | Regel prüft | Holy III |
 | Liturgy of the Bell | Regel sperrt vorher | Temperance |
+| Liturgy of the Bell | StatusNeed LiturgyOfTheBell | Status LiturgyOfTheBell |
 | Medica II | Regel prüft | Medica III |
 | Medica III | Regel prüft | Medica II |
 | Plenary Indulgence | Regel prüft | Afflatus Rapture |
@@ -139,7 +140,9 @@ keine im Wirktext
 
 ### Fenster, deren Verbraucher an Bedingungen hängt
 
-keine
+Jeder Aufruf der Aktion trägt eine eigene Bedingung; hält sie an, verfällt das Fenster (Konzept 14, „Werden die Fenster genutzt"). Kandidaten, von Hand bewertet.
+
+- Liturgy of the Bell: 1 Aufruf(e), **ohne Rückfall vor Ablauf**
 
 ### Unvollständige Beschreibungen
 

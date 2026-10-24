@@ -500,6 +500,20 @@
       "identifier": "PassageOfArmsPvE",
       "kind": "action",
       "source": "game data, xivapi v2 Action 7385 language=de, 2026-10-24"
+    },
+    {
+      "de": "Göttliche Umarmung",
+      "en": "Divine Caress",
+      "identifier": "DivineCaressPvE",
+      "kind": "action",
+      "source": "game data, xivapi v2 Action 37011 language=de, 2026-10-24"
+    },
+    {
+      "de": "Refugium",
+      "en": "Asylum",
+      "identifier": "AsylumPvE",
+      "kind": "action",
+      "source": "game data, xivapi v2 Action 3569 language=de, 2026-10-24"
     }
   ]
 }

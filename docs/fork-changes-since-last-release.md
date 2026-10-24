@@ -48,6 +48,13 @@ the damage you took over the barrier's duration reached the share its text names
 Shadow; tankbusters and low health are not affected. DefenseTrace.log notes for each of your barriers whether it broke.
 Setting: "In a pull, use The Blackest Night only once the damage you take would break it", on by default.
 
+## White Mage: Liturgy of the Bell is pressed a second time
+
+RSR never pressed the bell again, so the stacks a single hit left healed only when the bell ran out, mostly onto a
+party healed by then. Once the bell has healed at least once and the party is below your area-heal thresholds, the
+second press now releases the rest at once - after a hard hit, the bell's own heal comes with the hit and the rest right
+after it. Setting: "Press Liturgy of the Bell a second time when the party needs an area heal", on by default.
+
 ## A raidwide during a tankbuster marker is no longer learned as the tankbuster
 
 Any enemy action that struck a marked member while the marker stood counted as its tankbuster, so a raidwide landing

@@ -9564,7 +9564,7 @@ Einstellung wieder gelesen wird oder nicht mehr besteht, mit Selbsttest; der ers
 
 **Prüfgrad:** statisch, Versionsgeschichte, Spielblätter (xivapi v2), Prüfskripte mit Selbsttest, Compile. Konzept 11.
 
-### A340 · Schwere TODO-Punkte: zweite Beobachtung desselben Markers (Defekt), Marker ohne Wirken, Tank-Streckung, Blackest Night (24.10.2026)
+### A340 · Schwere TODO-Punkte: zweite Beobachtung desselben Markers (Defekt), Marker ohne Wirken, Tank-Streckung, Blackest Night, Glockenspiel (24.10.2026)
 
 Seine Präzisierung zum Auftrag vom 24.10.2026: „ausserdem war die priorisierung in der todo: was ist wichtig und was ist
 davon einfach umsetzbar. das heißt nicht dass schwer umsetzbare wichtige dinge weggelassen werden sollten." In
@@ -9696,6 +9696,29 @@ wäre eine neue Vorhersage für 2,5 s, in denen die Heilschwellen schon auf die 
 Tanks ihre Pull-Abwehr nach der Gegnerzahl setzen – nicht gebaut, Grund im Konzept 08. *Falsifikation:* Ein
 angekündigter, noch nie gemessener Treffer bleibt beim ersten Auftreten unvorhergesagt; danach misst ihn die Tabelle
 (Selbstkorrektur).
+
+**Punkt: Glockenspiel vor großen Treffern und zweiter Druck** (sein Vorschlag vom 24.10.2026, sein Vorschlag vom
+23.10.2026 zum zweiten Druck).
+- *Gebaut, zweiter Druck:* `WhiteMageRotation.ModifyLiturgyOfTheBellPvE_28509` (Folgeaktion, nur unter dem Status der
+  Glocke, erst wenn ein Stapel verbraucht ist – höchste Stapelzahl aus dem Statusblatt, 5), gedrückt in
+  `WHM_Reborn.HealAreaAbility` vor Refugium, also wenn die Gruppe unter seinen Flächenschwellen steht. Option „Press
+  Liturgy of the Bell a second time when the party needs an area heal", ab Werk an (Nutzen begründet, nicht gemessen).
+  Der Maßstab seines Vorschlags vom 23.10. („solange der Gruppe so viel fehlt") ist damit seine eigene Schwelle, keine
+  neue Zahl.
+- *Streckungsbaustein verallgemeinert:* Die Flächenstreckung endet, sobald ein positiver Status vom Namen des Auslösers
+  beim Spieler fehlt (einen GCD nach dem Druck) – vorher nur für reine Barrieren. Damit ist Linderung nach dem zweiten
+  Druck wieder frei. Beim ersten Entwurf galt das auch für die Einzelstreckung; dort liegt der Status auf dem Ziel
+  (Göttlicher Segen auf dem Tank), und die Streckung wäre nach einem GCD geendet – vor dem Bau gefunden und auf die
+  Fläche begrenzt. Reflexion (negativer Status, auf dem Gegner) behält ihre Dauer.
+- *Nicht ohne ihn:* die Glocke vor einem großen Einzeltreffer. Seine Einstellung „Limit Liturgy Of The Bell to
+  multihit party stacks" ist an und lässt nur Sammelmarker zu; ihr Text bindet. Vorlage in `TODO.md` (Empfehlung:
+  die Einstellung auf Treffer erweitern, die gemessen ein Mitglied in die Gefährdungsklasse brächten).
+- *Falsifikation.* Option falsch: Ein zweiter Druck vor weiteren Treffern verschenkt 200 je Stapel gegenüber 400 – nur,
+  wenn die Gruppe jetzt unter seiner Flächenschwelle steht; dann zählt die Heilung jetzt (Sicherheit vor Ertrag).
+  Ausgeliefert, nichts ändert sich: als Nicht-Weißmagier; mit der Einstellung an, solange kein Sammelmarker mit weniger
+  als fünf Treffern kommt (bei fünf ist nichts übrig); wenn die Gruppe nach dem Treffer über den Schwellen bleibt.
+- *Deutsche Namen eingetragen:* Göttliche Umarmung, Refugium.
+- *Prüfgrad:* statisch, Statusblatt, Compile; im Spiel nicht beobachtet. Konzept 08.
 
 ---
 ## B · Commit-Register (Fork vs. `upstream/main`)

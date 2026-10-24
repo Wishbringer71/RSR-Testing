@@ -14,6 +14,14 @@ public sealed class WHM_Reborn : WhiteMageRotation
 	[RotationConfig(CombatType.PvE, Name = "Limit Liturgy Of The Bell to multihit party stacks")]
 	public bool MultiHitRestrict { get; set; } = false;
 
+	[RotationConfig(CombatType.PvE, Name = "Press Liturgy of the Bell a second time when the party needs an area heal",
+		Tooltip = "While the bell still holds stacks, its second press heals with every stack left at once; otherwise "
+			+ "they heal only when the bell runs out, often onto a party that is healed by then. It goes out on the "
+			+ "area-heal path - once the party is below your area-heal thresholds -, before Asylum.\n"
+			+ "In a fight: after a hit that drops the party, the bell's first heal comes with the hit and the rest right "
+			+ "after it, instead of when the bell runs out.")]
+	public bool LiturgySecondPress { get; set; } = true;
+
 	[RotationConfig(CombatType.PvE, Name = "Use Tincture/Gemdraught when about to use Presence of Mind")]
 	public bool UseMedicine { get; set; } = true;
 
@@ -396,9 +404,17 @@ public sealed class WHM_Reborn : WhiteMageRotation
 		return base.DefenseSingleAbility(nextGCD, out act);
 	}
 
-	[RotationDesc(ActionID.AsylumPvE)]
+	[RotationDesc(ActionID.LiturgyOfTheBellPvE_28509, ActionID.AsylumPvE)]
 	protected override bool HealAreaAbility(IAction nextGCD, out IAction? act)
 	{
+		// The owner's proposals (23. and 24.10.2026, concept 08): the rest of the bell's stacks pays only while the party
+		// lacks that much - read here by the area-heal path opening at his thresholds -, and after a hit that drops the
+		// party it heals at once instead of when the bell runs out. A free oGCD heal ahead of the ones that cost.
+		if (LiturgySecondPress && LiturgyOfTheBellPvE_28509.CanUse(out act, skipAoeCheck: true))
+		{
+			return true;
+		}
+
 		if (AsylumPvE.CanUse(out act))
 		{
 			return true;

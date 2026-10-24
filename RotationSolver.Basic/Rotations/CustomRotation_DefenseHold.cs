@@ -126,7 +126,7 @@ public partial class CustomRotation
 	/// <returns>True while the stretch holds.</returns>
 	protected static bool AreaDefenseStretched(string rule, params IBaseAction[] triggers)
 	{
-		return HoldAreaDefense(AnyTriggerInEffect(triggers), rule);
+		return HoldAreaDefense(AnyTriggerInEffect(triggers, true), rule);
 	}
 
 	/// <summary>
@@ -158,7 +158,7 @@ public partial class CustomRotation
 	/// <returns>True while the stretch holds.</returns>
 	protected static bool SingleDefenseStretched(string rule, params IBaseAction[] triggers)
 	{
-		return HoldSingleDefense(AnyTriggerInEffect(triggers), rule);
+		return HoldSingleDefense(AnyTriggerInEffect(triggers, false), rule);
 	}
 
 	// A trigger is in effect from its use until the duration its own effect text states, and only
@@ -168,7 +168,7 @@ public partial class CustomRotation
 	// action while the effect runs (Liturgy of the Bell's second press, Macrocosmos and Microcosmos),
 	// and that other action's cooldown is not the trigger's. A text that states no duration never
 	// stretches - a figure the game did not give is not invented.
-	private static bool AnyTriggerInEffect(IBaseAction[] triggers)
+	private static bool AnyTriggerInEffect(IBaseAction[] triggers, bool area)
 	{
 		foreach (var trigger in triggers)
 		{
@@ -192,7 +192,7 @@ public partial class CustomRotation
 				continue;
 			}
 
-			if (UsedWithin(trigger.ID, duration) && !BarrierUsedUp(trigger))
+			if (UsedWithin(trigger.ID, duration) && !(area && EffectGoneFromPlayer(trigger)))
 			{
 				return true;
 			}
@@ -201,31 +201,32 @@ public partial class CustomRotation
 		return false;
 	}
 
-	// A barrier works until it is used up, not for the time its text states: Shake It Off and Divine Veil give 30 s, and
-	// the area attack they were pressed for takes the barrier with it. Read on the player, who is in its range: gone from
-	// him after its status had time to show - a GCD from the press -, it is used up. A trigger that lowers damage besides,
-	// or whose barrier status cannot be found by its name among the shields, keeps its stated time.
-	private static bool BarrierUsedUp(IBaseAction trigger)
+	// An effect works until it is gone, not always for the time its text states: Shake It Off and Divine Veil give 30 s,
+	// and the area attack they were pressed for takes the barrier with it; Liturgy of the Bell ends at its second press or
+	// its last stack. Read on the player, who is in the effect's range: the game names such an effect after the action,
+	// and once a beneficial status of that name - laid by the player - is gone from him, a GCD after the press so it had
+	// time to show, the effect is over and nothing is left to stretch (A340). An action without such a status keeps its
+	// stated time: Reprisal lies on the enemy, a detrimental status, and is left alone. Asked for the area stretch only,
+	// whose effect reaches the player; a single-target one lies on its target (Divine Benison on the tank). This can only
+	// end a stretch early.
+	private static bool EffectGoneFromPlayer(IBaseAction trigger)
 	{
-		var value = DefensiveValues.For(trigger.ID);
-		if (value.Barrier <= 0f || value.Self > 0f || value.SelfPhysical > 0f || value.SelfMagical > 0f
-			|| value.EnemyPhysical > 0f || value.EnemyMagical > 0f || Player == null)
+		if (Player == null)
 		{
 			return false;
 		}
 
-		var statuses = BarrierStatusesOf(trigger.ID);
+		var statuses = OwnEffectStatusesOf(trigger.ID);
 		return statuses.Length > 0 && !UsedWithin(trigger.ID, DataCenter.DefaultGCDTotal)
 			&& !Player.HasStatus(true, statuses);
 	}
 
-	private static readonly Dictionary<uint, StatusID[]> _barrierStatuses = [];
+	private static readonly Dictionary<uint, StatusID[]> _effectStatuses = [];
 
-	// The shields bearing the action's own name, read from the English sheets: the game names a party barrier after the
-	// action that lays it (Shake It Off, Divine Veil), and the shield list holds every id of each.
-	private static StatusID[] BarrierStatusesOf(uint actionId)
+	// The beneficial statuses bearing the action's own name, read once from the English sheets.
+	private static StatusID[] OwnEffectStatusesOf(uint actionId)
 	{
-		if (_barrierStatuses.TryGetValue(actionId, out var known))
+		if (_effectStatuses.TryGetValue(actionId, out var known))
 		{
 			return known;
 		}
@@ -236,17 +237,17 @@ public partial class CustomRotation
 		if (actions.TryGetRow(actionId, out var action))
 		{
 			var name = action.Name.ExtractText();
-			foreach (var status in StatusHelper.ShieldStatus)
+			foreach (var row in statuses)
 			{
-				if (statuses.TryGetRow((uint)status, out var row) && row.Name.ExtractText() == name)
+				if (row.StatusCategory == (byte)StatusCategory.Beneficial && row.Name.ExtractText() == name)
 				{
-					found.Add(status);
+					found.Add((StatusID)row.RowId);
 				}
 			}
 		}
 
 		known = [.. found];
-		_barrierStatuses[actionId] = known;
+		_effectStatuses[actionId] = known;
 		return known;
 	}
 
