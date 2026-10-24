@@ -157,7 +157,7 @@ einzuziehen: keine neue Vererbungsebene, keine neuen Dispatch-Slots, keine
 | Erweiterung | Umfang | Aufhängung |
 |---|---|---|
 | `BMRShouldRefreshBefore` — Status vor einem vorhergesagten Ereignis erneuern | 1 Helfer, 13 Aufrufstellen | Alle 13 Horizonte gegen die Wirkdauer aus den Spieldaten geprüft, kein einziger Abweichler (s. `AUDIT_LOG.md`) |
-| `ShouldSustainMitigationDebuff` — Addle/Feint/Reprisal aufrechterhalten | 1 Helfer statt 25 Kopien der Bedingung | `MitigationDebuffDuration` folgt dem Enhanced-Trait auf Stufe 98 |
+| `ShouldSustainMitigationDebuff` — Addle/Feint/Reprisal aufrechterhalten | 1 Helfer statt 25 Kopien der Bedingung | die Dauer je Debuff aus dem Spiel (`MitigationDebuffDurationOf` über `DefensiveValues.DurationOf`: Merkmal, darunter der Wirktext auf der synchronisierten Stufe; A338) |
 | `TankApproachingMobGroup` — Tank-Sustain im Wall-to-Wall | 1 Helfer, 2 Heiler | Im Spiel vom Nutzer verifiziert; Schwellen als Job-Config, nicht fest verdrahtet |
 | Schild auf Effective-HP anrechnen | 2 Properties in `StateUpdater` | Nur wenn ein Grund für erwarteten Schaden vorliegt, sonst zählt ein frischer Schild ewig |
 | DPS-Selbstschutz (Second Wind / Bloodbath) | je 3–4 Zeilen bei 10 Jobs | Füllt `HealSingleAbility`, die dort leer war |

@@ -201,15 +201,6 @@
   },
   {
    "file": "RotationSolver.Basic/Rotations/CustomRotation_OtherInfo.cs",
-   "code": "DataCenter.PlayerSyncedLevel() >= EnhancedMitigationDebuffLevel ? 15f : 10f;",
-   "values": [
-    "15",
-    "10"
-   ],
-   "status": "open"
-  },
-  {
-   "file": "RotationSolver.Basic/Rotations/CustomRotation_OtherInfo.cs",
    "code": "factor *= 0.90f;",
    "values": [
     "0.90"
@@ -237,14 +228,6 @@
    "code": "private const float TankGapCloserRangeYalms = 20f;",
    "values": [
     "20"
-   ],
-   "status": "open"
-  },
-  {
-   "file": "RotationSolver.Basic/Rotations/CustomRotation_OtherInfo.cs",
-   "code": "private const int EnhancedMitigationDebuffLevel = 98;",
-   "values": [
-    "98"
    ],
    "status": "open"
   },

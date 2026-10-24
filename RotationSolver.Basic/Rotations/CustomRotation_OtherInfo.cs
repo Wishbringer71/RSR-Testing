@@ -587,19 +587,6 @@ public partial class CustomRotation
 	}
 
 	/// <summary>
-	/// Level at which the Enhanced traits of Addle, Feint and Reprisal extend those debuffs from 10s
-	/// to 15s.
-	/// </summary>
-	/// <remarks>
-	/// Duration only. The reduction each of them applies does not change with the trait - the user
-	/// checked the Lodestone entry after this code had briefly priced an end-game Reprisal at 15%,
-	/// on the strength of a note in <see cref="StatusHelper.ReprisalStatus"/> that named no source.
-	/// The effect texts agree: action 7535 states 10% and leaves only the duration blank, which is
-	/// how the game data marks a trait-modified figure.
-	/// </remarks>
-	private const int EnhancedMitigationDebuffLevel = 98;
-
-	/// <summary>
 	/// How much longer a slowed enemy takes between attacks. Arm's Length (7548) afflicts
 	/// "Slow +20%", and the sign is the point: the delay grows, the hit does not shrink.
 	/// </summary>
@@ -1884,15 +1871,48 @@ public partial class CustomRotation
 	}
 
 	/// <summary>
-	/// Shared duration of the enemy mitigation debuffs Addle, Feint and Reprisal, whose Enhanced traits
-	/// extend all three from 10s to 15s.
+	/// The duration of Reprisal's debuff at the player's synced level, from the game - the figure Addle and Feint share
+	/// with it today (<see cref="MitigationDebuffDurationOf"/>).
 	/// </summary>
 	/// <remarks>
-	/// The trait changes the duration and nothing else - not the reduction, which stays at each
-	/// debuff's base figure whatever the level.
+	/// The Enhanced traits extend the three debuffs and change nothing else - not the reduction, which stays at each
+	/// debuff's base figure whatever the level (the user checked the Lodestone entry after this code had briefly priced
+	/// an end-game Reprisal at 15%; action 7535 states 10% and leaves only the duration blank, which is how the game
+	/// data marks a trait-modified figure). The duration used to be written in here as 10 s, 15 s from level 98 - the
+	/// same task <see cref="DefensiveValues.DurationOf"/> answers from the trait and the tooltip at the synced level
+	/// (A338).
 	/// </remarks>
-	protected static float MitigationDebuffDuration =>
-		DataCenter.PlayerSyncedLevel() >= EnhancedMitigationDebuffLevel ? 15f : 10f;
+	protected static float MitigationDebuffDuration => MitigationDebuffDurationOf(StatusHelper.ReprisalStatus);
+
+	/// <summary>
+	/// The duration at the player's synced level of the enemy mitigation debuff the given statuses belong to: the
+	/// action that lays them (<see cref="DefensiveValues.MitigatingStatusesByActionId"/>) and its duration from the game
+	/// (<see cref="DefensiveValues.DurationOf"/>). Where the game answers nothing below the trait's level, the trait's
+	/// figure - a duration taken too long has a refresh come early, one of zero would hold Reprisal for a raidwide it
+	/// already covers.
+	/// </summary>
+	/// <param name="statusIDs">The statuses of one debuff: Addle's, Feint's or Reprisal's.</param>
+	/// <returns>The duration in seconds; zero when no action lays any of them.</returns>
+	protected static float MitigationDebuffDurationOf(params StatusID[] statusIDs)
+	{
+		foreach (var (actionId, statuses) in DefensiveValues.MitigatingStatusesByActionId)
+		{
+			foreach (var statusId in statusIDs)
+			{
+				if (Array.IndexOf(statuses, (uint)statusId) < 0)
+				{
+					continue;
+				}
+
+				var seconds = DefensiveValues.DurationOf(actionId);
+				return seconds > 0f
+					? seconds
+					: DefensiveValues.TraitDurationByActionId.TryGetValue(actionId, out var trait) ? trait.Seconds : 0f;
+			}
+		}
+
+		return 0f;
+	}
 
 	/// <summary>
 	/// Whether an enemy mitigation debuff (Addle/Feint/Reprisal) is due for a proactive refresh: either
@@ -1903,7 +1923,7 @@ public partial class CustomRotation
 	/// </summary>
 	protected static bool ShouldSustainMitigationDebuff(params StatusID[] statusIDs)
 	{
-		return BMRShouldRefreshBefore(BMRDamageIn, MitigationDebuffDuration, false, HostileTarget, statusIDs)
+		return BMRShouldRefreshBefore(BMRDamageIn, MitigationDebuffDurationOf(statusIDs), false, HostileTarget, statusIDs)
 			|| (NumberOfHostilesInRange >= Service.Config.MitigationSustainHostileCount
 				&& (HostileTarget?.WillStatusEndGCD(2, 0, false, statusIDs) ?? false));
 	}

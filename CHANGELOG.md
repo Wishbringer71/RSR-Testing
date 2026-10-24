@@ -41,6 +41,12 @@ instead of one that went off this session.
 The enemy-side recognition behind the effect handler and `DataCenter.AreaCasters` takes battle NPCs of sub kind 11, the
 kind BossModReborn calls Helper. A derived rotation reading `DataCenter.AreaCasters` sees their casts.
 
+### RotationSolver.Basic: the enemy mitigation debuffs' duration comes from the game
+
+`CustomRotation.MitigationDebuffDurationOf(params StatusID[])` is new: the duration at the player's synced level of the
+debuff the statuses belong to, read through `DefensiveValues.DurationOf` of the action that lays them.
+`MitigationDebuffDuration` stays and returns Reprisal's; it no longer carries the 10 s / 15 s from level 98 written in.
+
 ### Behaviour change in RotationSolver.Basic: a marker on a party member keeps the default window
 
 `VfxNewData.Duration` is the remaining cast time of the figure an effect sits on only when that figure is on the enemy

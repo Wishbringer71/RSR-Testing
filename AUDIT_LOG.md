@@ -9448,6 +9448,22 @@ Sequenz, Glockenspiel, Abgleich mit The Balance, Six-sided Star, Vorlauf, AoE-Sc
   mit); die Wirkung ist auf diese Fälle begrenzt.
 - *Prüfgrad:* statisch, Compile; im Spiel nicht beobachtet. Konzept 15.
 
+**3. Die Dauer von Reprisal, Feint und Addle aus dem Spiel** (TODO „Feste Werte", erster Punkt).
+- *Befund:* `MitigationDebuffDuration` rechnete 10 s, ab Stufe 98 15 s (fest), neben `DefensiveValues.DurationOf`, das
+  dieselbe Dauer aus Merkmal und Wirktext liest – dieselbe Aufgabe an zwei Stellen.
+- *Umsetzung:* `MitigationDebuffDurationOf(Status)` findet die Aktion, die den Status legt
+  (`DefensiveValues.MitigatingStatusesByActionId`), und nimmt deren Dauer aus dem Spiel: ab Stufe des Merkmals dessen
+  Zahl, darunter den Wirktext auf der synchronisierten Stufe. Liefert das Spiel unterhalb nichts, gilt die Zahl des
+  Merkmals: Zu lang lässt eine Auffrischung früh kommen; null hielte Reprisal für einen Raidwide zurück, den es schon
+  deckt (`RaidwideAfterEffectBeforeRecast`). `MitigationDebuffDuration` (geschützt, Paketvertrag) bleibt und liest die
+  Dauer von Reprisal; `ShouldSustainMitigationDebuff` die des übergebenen Debuffs. Die Konstante 98 und ihr Eintrag in
+  `fixed_values.json` entfallen.
+- *Im Kampf:* heute dieselben Zahlen (Spielblätter: alle drei Merkmale 15 s auf Stufe 98, darunter 10 s); ändert ein
+  Patch eine Dauer, folgt RSR ihm.
+- *Falsifikation.* Option falsch: Ein Debuff, den keine Aktion der Tabelle legt, hätte Dauer null – die Aufrufer übergeben
+  nur Addle, Feint und Reprisal. Ausgeliefert, nichts ändert sich: richtig für heute, gewollt.
+- *Prüfgrad:* statisch, Prüfskripte (feste Werte), Compile. Konzept 06.
+
 ---
 ## B · Commit-Register (Fork vs. `upstream/main`)
 
