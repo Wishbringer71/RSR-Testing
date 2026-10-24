@@ -52,7 +52,7 @@ erben die Selbstkorrektur.
 | **Selbstkorrektur** der Schaetzung gegen ihren eigenen Fehler | umgesetzt (`ScoreTtkForecast`, `GetCorrectedTTK`) |
 | **Vorausschau** als Ersatzgroesse an allen Heilentscheidungen | umgesetzt (`GetForecastSurvivingShare` und die drei davon abgeleiteten Getter), hinter `HealAheadOfDamage`, Standard an |
 | Vorausschau auch in der **Flaechenheilung** | umgesetzt (A182): die Flaechenschwellen lesen eigene vorausberechnete Gruppenwerte (`DataCenter.ComputeForecastAreaStats`); `PartyMembersAverHP` und Geschwister bleiben unveraendert, weil sie viele Leser ausserhalb der Heilkette haben (Konzept 07) |
-| Minderungen des Tanks **rechnerisch** erfassen (Vorausschau vor dem ersten Treffer) | nicht gebaut; die Saetze je Aktion liegen in `DefensiveValues.g.cs` (TODO „Vorausschau vor dem ersten Treffer“) |
+| Minderungen des Tanks **rechnerisch** erfassen (Vorausschau vor dem ersten Treffer) | nicht nötig (A340): Vor dem ersten Treffer gibt es keine Rate, die eine Minderung skalieren könnte; einen angekündigten, gemessenen Treffer sagt der gemessene Anteil voraus (Abschnitt „Was ein Baustein mehrfach trägt“) |
 | **Derselbe Satz je Aktion traegt zwei Zwecke**: die Vorausschau in der Zeile darueber **und** die Wahl des Mittels nach Treffergroesse (Vorgabe 5) | Saetze erzeugt (`generate_defensive_values.py`); die Wahl nach Treffergroesse ist zurueckgebaut, weil kein Job zwei Barrieren zur Wahl haelt (A118, Abschnitt unten) |
 | Restzeit der Barriere (`HasSurvivingShield` misst die kuerzeste statt der laengsten) | offen, siehe `TODO.md` |
 | Erhebung der uebrigen Doppelnutzen-Aktionen | umgesetzt als `scan16.py`; ein Fund im Tank-/Heilerprofil (Rueckstoss) |
@@ -899,7 +899,7 @@ gemeinsam zu lesen und nicht einzeln.
 
 | Offener Punkt | Konzept | Was der Wert dort beantwortet |
 |---|---|---|
-| Vorausschau vor dem **ersten** Treffer | hier; offen (TODO „Vorausschau vor dem ersten Treffer“) | Wieviel Schaden der angekuendigte Einschlag traegt, bevor eine Beobachtung vorliegt |
+| Vorausschau vor dem **ersten** Treffer | hier; für angekündigte, gemessene Treffer gedeckt durch den gemessenen Anteil (A340) | Wieviel Schaden der angekuendigte Einschlag traegt, bevor eine Beobachtung vorliegt |
 | Wahl des Mittels nach Treffergroesse (Vorgabe 5) | hier; zurueckgebaut, kein Job haelt zwei Barrieren zur Wahl (A118) | Welche Barriere, welche Minderung den Treffer deckt |
 | Die Minderungsbilanz kennt Betaeubung und Verlangsamung nicht | hier, „Die Luecke" | Um wieviel eine Drosselung den Strom senkt — am Code: `GetCurrentMitigationPercent` rechnet auf Gegnerseite Addle, Feint, Dismantle und Reprisal, dazu die Gruppenminderungen auf den Mitgliedern; Betaeubung und Verlangsamung nicht |
 | Rueckstoss auch **als** Minderungswerkzeug | umgesetzt (A194, A236) | Dass seine Verlangsamung in derselben Groessenordnung wirkt wie Rampart |
@@ -937,8 +937,8 @@ Konzept 09). Offen:
 
 | Frage | Konzept | Stand |
 |---|---|---|
-| Wie steht es vor dem ersten Treffer eines Pulls? | hier | blind; die Beobachtung braucht 2,5 s Anlauf |
-| Wie hart schlaegt ein Rueckstoss, ein Stopp-Cast? | `13-…`, Abschnitt „Was der Baustein eroeffnet" | dieselbe Messstruktur, je Liste fehlt der eigene Speicher; fuer Tankbuster gebaut (A259) |
+| Wie steht es vor dem ersten Treffer eines Pulls? | hier | angekündigt und gemessen: vorhergesagt (Vorausheilung `AnnouncedHitCallsForHealFirst`, Minderung, Schranke, Tankbuster-Plan); unangekündigt (Trash-Auftakt): blind für den Verlauf, 2,5 s Anlauf, ohne Annahme nicht vorhersagbar (A340) |
+| Wie hart schlaegt ein Rueckstoss, ein Stopp-Cast? | `13-…`, Abschnitt „Was der Baustein eroeffnet" | keine Entscheidung liest es: beide Listen öffnen nur Rückstoßschutz und Innehalten (A340) |
 
 **Die Sonden sind der gemeinsame Nachweisweg, und sie haben selbst zu entscheiden.** Keine Regel
 dieser Familie ist am Code zu belegen — ob sie im Kampf greift, zeigt erst die Laufzeit. Daraus folgt
@@ -1278,10 +1278,14 @@ der Tank gar nicht erst fallen soll. Was die Groesse nicht kann:
   `NaN`, und abgetastet wird einmal je Sekunde. Der Eroeffnungsschlag eines Pulls ist daraus nicht
   vorhersehbar — dafuer bleibt die Vorhersage von BossModReborn zustaendig. Ab dem zweiten Treffer
   hat die Reihe eine Rate, und die Vorausschau steht.
-  **Diese Grenze ist adressierbar, ebenfalls aus Beobachtung:** Ein angekuendigter Cast, dessen
+  **Für angekündigte Treffer ist die Grenze geschlossen, aus Beobachtung:** Ein angekuendigter Cast, dessen
   Schadenspotential aus frueheren Einschlaegen bekannt ist, sagt den ersten Treffer voraus, bevor er
-  faellt (Konzept 13); das ersetzt die verworfene Statussatz-Tabelle durch gemessene Einschlaege und
-  braucht keine gepflegte Tabelle.
+  faellt (Konzept 13), und die Vorausheilung, das Minderungsurteil, die Schranke und der Tankbuster-Plan lesen ihn,
+  ohne auf den Verlauf zu warten (A340). Offen bleibt der Auftakt eines Pulls ohne Ankündigung: Dort fehlt jede
+  Größe außer der Gegnerzahl. Eine gelernte Rate je Gegner wäre eine neue Vorhersage für 2,5 s, in denen die
+  Schwellen der Heilkette schon auf die aktuelle Gesundheit antworten und die Tanks ihre Pull-Abwehr nach der
+  Gegnerzahl setzen – nicht gebaut. Die eigenen Minderungen einzurechnen hülfe hier nicht: Vor dem ersten Treffer
+  gibt es keine Rate, die sie skalieren könnten.
 - **Traegheit, und sie ist gemessen.** `GetTTK` misst den Abfall seit dem **ersten** beobachteten
   Wert geteilt durch die **gesamte** verstrichene Zeit — eine Durchschnittsrate ueber den Kampf,
   keine Momentanrate. Ein ploetzlicher Einbruch wird darin verwaessert, und der Fehler geht in die

@@ -9686,6 +9686,17 @@ steht auf der Flächenliste und wird dort gemessen. *Falsifikation:* Ausgeliefer
 Frage, ob ein Rückstoß schadet (Rand der Arena, Wirkfläche), ist eine Ortsfrage, die BossModReborn beantwortet, keine
 Größenfrage. Konzept 13.
 
+**Punkt: Vorausschau vor dem ersten Treffer.** Geschlossen ohne Code. Geklärt, was der Eintrag fragte: Der
+gemessene Anteil eines angekündigten Treffers schließt die Lücke dort, wo es etwas vorherzusagen gibt – die
+Vorausheilung (`DataCenter.AnnouncedHitCallsForHealFirst`, `StateUpdater`), das Minderungsurteil, die Schranke
+(`AnnouncedHitDropsUnprotectedBelow`) und der Tankbuster-Plan lesen ihn, ohne auf den Verlauf zu warten. Der zweite
+Weg des Eintrags, die eigenen laufenden Minderungen einzurechnen, hilft vor dem ersten Treffer nicht: Es gibt keine
+Rate, die sie skalieren könnten. Offen bleibt der Auftakt eines Pulls ohne Ankündigung; eine gelernte Rate je Gegner
+wäre eine neue Vorhersage für 2,5 s, in denen die Heilschwellen schon auf die aktuelle Gesundheit antworten und die
+Tanks ihre Pull-Abwehr nach der Gegnerzahl setzen – nicht gebaut, Grund im Konzept 08. *Falsifikation:* Ein
+angekündigter, noch nie gemessener Treffer bleibt beim ersten Auftreten unvorhergesagt; danach misst ihn die Tabelle
+(Selbstkorrektur).
+
 ---
 ## B · Commit-Register (Fork vs. `upstream/main`)
 

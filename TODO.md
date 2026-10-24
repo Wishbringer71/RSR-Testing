@@ -14,16 +14,15 @@ Auftrag vom 24.10.2026 läuft: die einfachen Punkte zuerst (A338), die schweren 
 steht seit seinem Hinweis vom 24.10.2026 vor der Flächenheilung: Es heilt eine Gruppe nach einem Treffer, der ihr fast
 alles nimmt.
 
-1. Vorausschau vor dem ersten Treffer
-2. Weißmagier: Glockenspiel vor großen Treffern und zweiter Druck
-3. Flächenheilung um den Wirkenden: Radius gegen Trefferfläche
-4. Feste Werte: jeder offene Wert braucht seinen Loop
-5. Tankbuster-Plan: Umlauf über die Sequenz jedes Drucks
-6. Rotationen gegen The Balance abgleichen
-7. Six-sided Star und Flamethrower
-8. Vorlauf: Dragoon und Viper
-9. AoE-Schwelle an drei Orten
-10. Audit der gesamten Codebasis
+1. Weißmagier: Glockenspiel vor großen Treffern und zweiter Druck
+2. Flächenheilung um den Wirkenden: Radius gegen Trefferfläche
+3. Feste Werte: jeder offene Wert braucht seinen Loop
+4. Tankbuster-Plan: Umlauf über die Sequenz jedes Drucks
+5. Rotationen gegen The Balance abgleichen
+6. Six-sided Star und Flamethrower
+7. Vorlauf: Dragoon und Viper
+8. AoE-Schwelle an drei Orten
+9. Audit der gesamten Codebasis
 
 Danach technische Schuld, soweit ihre Auflösungsbedingung erfüllt ist. Warten auf Daten: unten.
 
@@ -32,12 +31,6 @@ Danach technische Schuld, soweit ihre Auflösungsbedingung erfüllt ist. Warten 
 Keine bekannt.
 
 ## Offene Arbeit
-
-### Vorausschau vor dem ersten Treffer · N
-
-*Im Kampf:* Vor dem ersten Treffer eines Pulls ist die Vorausschau blind (2,5 s Anlauf). *Nächster Schritt:* klären, ob
-der gemessene Anteil eines angekündigten Treffers (Konzept 13) die Lücke schon schließt, sonst die eigenen laufenden
-Minderungen aus `DefensiveValues.g.cs` einrechnen. *Konzept:* 08.
 
 ### Flächenheilung um den Wirkenden: Radius gegen Trefferfläche · N
 
