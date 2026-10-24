@@ -82,24 +82,26 @@ internal static class TankbusterForecast
 	private static readonly List<Execution> _own = [];
 	private static long _readAt;
 
-	// The player's latest press of an instant action made while no animation lock ran - one the game sends at once
-	// instead of queuing it behind a lock -, for the two figures the plan's deadline needs (concept 09, "Spielerweite
-	// Sperre und Frist"): the round trip to its confirmation, and how long it kept the next press back.
-	private static uint _timedAction;
+	// The player's latest request without a cast, at the moment it left for the server - pressed by RSR, by the player
+	// or sent from the game's queue -, for the two figures the plan's deadline needs (concept 09, "Spielerweite Sperre
+	// und Frist"): the round trip to the effect that carries its sequence back, and how long it kept the next press back.
+	// Timed from the press instead, a GCD pressed ahead of the recast's end (CalculatedActionAhead) counted the time it
+	// waited in the queue, and its lock was not set yet when the spacing was read (A340).
+	private static ushort _timedSequence;
 	private static long _timedTick;
 	private static bool _timedConfirmed = true;
 	private static bool _timedLockSeen = true;
 
 	/// <summary>
-	/// Seconds from the player's latest timed press to the server's confirmation of it: how long before the end of
-	/// a cast, as the client shows it, a press has to go out to reach the server before the snapshot there. -1
-	/// before the first measurement.
+	/// Seconds from the player's latest request without a cast leaving to the effect that answers it: how long before
+	/// the end of a cast, as the client shows it, a press has to go out to reach the server before the snapshot there.
+	/// -1 before the first measurement.
 	/// </summary>
 	public static float RoundTrip { get; private set; } = -1f;
 
 	/// <summary>
-	/// Seconds the player's latest timed press kept the next one back: until the animation lock it set ran out,
-	/// the server's figure and the delay to it together. -1 before the first measurement.
+	/// Seconds the player's latest request without a cast kept the next one back: until the animation lock it set ran
+	/// out, the server's figure and the delay to it together. -1 before the first measurement.
 	/// </summary>
 	public static float PressSpacing { get; private set; } = -1f;
 
@@ -159,20 +161,36 @@ internal static class TankbusterForecast
 
 	/// <summary>
 	/// RSR executed one of the player's actions (<c>BaseAction.Use</c> succeeded). Called on the game thread.
-	/// <paramref name="timed"/>: an instant action pressed while no animation lock ran, which the game sends at
-	/// once - the press the round trip and the spacing are measured on.
 	/// </summary>
-	public static void RecordOwnPress(uint actionId, ulong targetId, bool timed)
+	public static void RecordOwnPress(uint actionId, ulong targetId)
 	{
-		if (timed)
-		{
-			_timedAction = actionId;
-			_timedTick = Now;
-			_timedConfirmed = false;
-			_timedLockSeen = false;
-		}
-
 		_ = Follow(actionId, targetId, false);
+	}
+
+	/// <summary>
+	/// A request of the player left for the server without starting a cast (<see cref="ActionManagerEx"/>: its sequence
+	/// changed) - the moment the round trip and the spacing are measured from. A queued or refused press changes no
+	/// sequence and is not one. Called on the game thread.
+	/// </summary>
+	internal static void RecordRequest(ushort sequence)
+	{
+		_timedSequence = sequence;
+		_timedTick = Now;
+		_timedConfirmed = false;
+		_timedLockSeen = false;
+	}
+
+	/// <summary>
+	/// The effect of one of the player's requests arrived and carries its sequence back: the round trip of the latest
+	/// request, if it is that one. Called on the game thread.
+	/// </summary>
+	internal static void RecordRequestAnswered(ushort sequence)
+	{
+		if (!_timedConfirmed && sequence == _timedSequence)
+		{
+			RoundTrip = SecondsSince(_timedTick, Now);
+			_timedConfirmed = true;
+		}
 	}
 
 	/// <summary>
@@ -182,12 +200,6 @@ internal static class TankbusterForecast
 	public static void RecordOwnAction(uint actionId, ulong targetId)
 	{
 		var now = Now;
-		if (!_timedConfirmed && actionId == _timedAction && SecondsSince(_timedTick, now) <= DataCenter.DefaultGCDTotal)
-		{
-			RoundTrip = SecondsSince(_timedTick, now);
-			_timedConfirmed = true;
-		}
-
 		Execution? pressed = null;
 		foreach (var execution in _own)
 		{
