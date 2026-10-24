@@ -2553,10 +2553,10 @@ internal static class DataCenter
 
 	/// <summary>
 	/// The entry of a marker in <see cref="OtherConfiguration.TankbusterMarkerWithoutHit"/>: the area and the path. One
-	/// path serves many fights and is not a tankbuster in all of them - `tank_lockon02k1` changed between confirmed and
-	/// falsified six times in his traces of 19.-23.10.2026, and each change to falsified cost the marker's defence in the
-	/// next fight where it was one (A338). An entry of the path alone, from before, matches no area and is passed over:
-	/// the marker counts as a tankbuster again until a fight in the area shows otherwise.
+	/// path serves many fights - `tank_lockon02k1` came before five different tankbusters on 23.10.2026 - and a fight in
+	/// which it announces no hit on the marked member would otherwise take it from all the others (A338, A340). An entry
+	/// of the path alone, from before, matches no area and is passed over: the marker counts as a tankbuster again until
+	/// a fight in the area shows otherwise.
 	/// </summary>
 	internal static string TankbusterMarkerKey(string path) => $"{TerritoryID}:{path.ToLowerInvariant()}";
 

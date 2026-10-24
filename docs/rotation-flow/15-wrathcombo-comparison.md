@@ -180,11 +180,22 @@ Pfade sind Spieldaten (Asset-Namen), kein übernommener Code.
   (`RecordHit` meldet einen Marker, der nicht auf der Liste steht; Konzept 09). Bis A211 zählte nur die Effektart „Damage": Ein unter Sheltron geblockter oder
   unter Hallowed Ground abgewiesener Tankbuster widerlegte seinen Marker.
 - **Je Gebiet, nicht je Pfad:** Ein Eintrag ist Gebiet und Pfad (`DataCenter.TankbusterMarkerKey`). Derselbe Pfad
-  dient in vielen Kämpfen, nicht in allen für einen Tankbuster: `tank_lockon02k1` wechselte in seinen Protokollen vom
-  19.–23.10.2026 sechsmal zwischen bestätigt und verworfen, und jeder Wechsel zu „verworfen" kostete im nächsten Kampf
-  mit echtem Tankbuster die Abwehr, die nur am Marker hing (A338). Einträge nur mit Pfad aus der Zeit davor treffen kein
-  Gebiet und bleiben unbeachtet in der Datei; der Marker gilt dort wieder als Tankbuster, bis ein Kampf im Gebiet anderes
-  zeigt.
+  dient in vielen Kämpfen (`tank_lockon02k1` am 23.10.2026 vor Blitzbogen, Goldene Klauen, Deftige Dachtel, Magieschock
+  β und Energetische Ballung); ein Kampf, in dem
+  er keinen Treffer auf dem Markierten ankündigt, nähme ihn sonst allen anderen (*Schluss, kein solcher Kampf belegt*).
+  Die sechs Wechsel zwischen bestätigt und verworfen in diesen Protokollen, die A338 dafür anführte, hatten zwei
+  andere Ursachen: Treffer unsichtbarer Helfer, die bis A334 ungelesen blieben, und die zweite Beobachtung desselben
+  Markers nach seinem Treffer (nächster Punkt, A340). Einträge nur mit Pfad aus der Zeit davor treffen kein Gebiet und
+  bleiben unbeachtet in der Datei; der Marker gilt dort wieder als Tankbuster, bis ein Kampf im Gebiet anderes zeigt.
+- **Eine bestätigte Beobachtung bleibt, bis ihr Marker die Warteschlange verlassen hat** (A340). Die meisten Treffer
+  kommen vor dem Ende der fünf Sekunden, die die Warteschlange einen Marker hält (in seinem Protokoll vom 23.10.2026
+  3,1 bis 4,95 s nach der ersten Protokollzeile des Markers). Bis A340 endete die Beobachtung mit dem Treffer; der noch
+  stehende Marker öffnete im
+  nächsten Durchlauf eine zweite, die kein weiterer Treffer bestätigte, und der Pfad kam auf die Liste. Beim nächsten
+  Auftreten galt der Marker als verworfen, sein Treffer nahm ihn wieder herunter: Jeder zweite Marker eines echten
+  Tankbusters bekam keine Abwehr, die nur an ihm hing (Hitzesublimierung um 17:56:58 und 17:58:46 desselben Kampfes,
+  dazwischen verworfen). Wo ein anderer Treffer den Markierten im Fenster der zweiten Beobachtung erreichte oder der
+  Marker die Warteschlange vor dem Treffer verließ, blieb es aus. Spätere Treffer zählen seit A340 nicht mehr als die des Markers – wie vorher, als die Beobachtung schon fort war.
 - **Selbstkorrektur statt Zählschwelle:** Die Beobachtung läuft für gelistete Pfade weiter; ein späterer Treffer
   nach demselben Marker im selben Gebiet nimmt den Eintrag wieder heraus. Ein falscher Eintrag kostet eine ausgelassene Abwehr beim
   nächsten Auftreten und korrigiert sich dann. Deshalb genügt eine Beobachtung, und es gibt keine feste Zahl.

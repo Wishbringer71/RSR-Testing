@@ -18,6 +18,13 @@ follows could close before the hit and learn a real tankbuster away. The marker 
 watch also waits for the casts of the boss's invisible helpers. DefenseTrace.log now names whom a chosen defence goes
 to, and writes a line whenever a small area cast is let through without party mitigation.
 
+## A tankbuster marker is no longer dropped every other time
+
+When a marker's tankbuster had confirmed it, the same marker, still showing, was watched a second time; with no second
+hit it went on the list of markers no hit follows. Its next appearance then got no defence that hung on the marker
+alone, and that hit took it off the list again - every other time, for healers and tanks alike. A confirmed marker is
+now watched until it has gone.
+
 ## A raidwide during a tankbuster marker is no longer learned as the tankbuster
 
 Any enemy action that struck a marked member while the marker stood counted as its tankbuster, so a raidwide landing

@@ -9564,6 +9564,44 @@ Einstellung wieder gelesen wird oder nicht mehr besteht, mit Selbsttest; der ers
 
 **Prüfgrad:** statisch, Versionsgeschichte, Spielblätter (xivapi v2), Prüfskripte mit Selbsttest, Compile. Konzept 11.
 
+### A340 · Schwere TODO-Punkte: zweite Beobachtung desselben Markers (Defekt) (24.10.2026)
+
+Seine Präzisierung zum Auftrag vom 24.10.2026: „ausserdem war die priorisierung in der todo: was ist wichtig und was ist
+davon einfach umsetzbar. das heißt nicht dass schwer umsetzbare wichtige dinge weggelassen werden sollten." In
+`CLAUDE.md` eingearbeitet („Archiv und TODO"). Begonnen mit Punkt 1 (Tank-Unverwundbarkeit vor Tankbustern ohne
+Aktionsangabe oder Messung); beim Lesen der Marker-Beobachtung fiel ein Defekt auf, der vorgeht.
+
+**Defekt: Jeder zweite Marker eines echten Tankbusters galt als verworfen.**
+- *Fehlerbild:* In seinem Protokoll vom 23.10.2026 bestätigt Hitzesublimierung um 17:56:58 den Marker
+  `tank_lockonae_6m_5s_01t` (4,75 s nach dem Marker). Beim nächsten Auftreten um 17:58:42 steht derselbe Marker als
+  „(falsified)" im Protokoll, um 17:58:46 trifft wieder Hitzesublimierung. Dazwischen kein weiterer Marker; der nächste
+  Treffer anderer Art auf dem Markierten erst um 17:57:11. Dasselbe Muster bei Blitzbogen (17:31:57, verworfen um
+  17:35:14).
+- *Ursache am Code:* `TankbusterMarkerWatch.Update` entfernte eine Beobachtung im Durchlauf nach ihrem Treffer. Der
+  Marker stand dann noch in der Warteschlange (fünf Sekunden; die Treffer kamen 3,1 bis 4,95 s nach der ersten
+  Protokollzeile des Markers, die nach seinem Erscheinen geschrieben wird), und
+  `IsWatched` fand ihn nicht mehr: Der nächste Durchlauf öffnete eine zweite Beobachtung für denselben Marker. Ohne
+  zweiten Treffer im Fenster (Rest der Warteschlange, laufende Zauber, ein GCD) kam der Pfad auf die Liste. Eingeführt
+  mit der Liste selbst (51a9a9895, 28.09.2026).
+- *Im Kampf:* Beim nächsten Auftreten fehlte jede Abwehr, die nur am Marker hing – Heiler und Tanks, Einzelabwehr –;
+  ein Wirken daneben öffnete sie weiter. Der Treffer nahm den Pfad wieder herunter, und das Spiel begann von vorn.
+- *Optionen:* (0) nichts; (a) die bestätigte Beobachtung halten, bis ihr Marker die Warteschlange verlassen hat;
+  (b) bestätigte Marker (Ziel, Zeit, Pfad) in einer eigenen Menge merken, die `IsWatched` mitliest – dieselbe Wirkung
+  mit einer zweiten Buchführung. *Gewählt (a).* Spätere Treffer zählen nicht als die des Markers (`Confirmed`), wie
+  vorher, als die Beobachtung schon fort war: Der Tankwechsel und die Tankbuster-Tabelle sehen dieselben Treffer wie
+  bisher.
+- *Falsifikation.* Kein Defekt: widerlegt durch den Fall Hitzesublimierung (kein anderer Marker, kein Tod, kein
+  Kampfende dazwischen). Option falsch: Ein neuer Marker auf demselben Mitglied, solange die alte Beobachtung steht,
+  öffnet eine eigene (andere Zeit); ein Treffer bestätigt beide, wie vorher. Ausgeliefert, nichts ändert sich: wo ein
+  anderer Treffer den Markierten im Fenster der zweiten Beobachtung erreichte oder der Marker die Warteschlange vor dem
+  Treffer verließ, trat der Defekt nicht auf – zwischen 18:16:57 und 18:20:57 am 23.10.2026 blieb der Marker
+  bestätigt; welcher Fall es war, zeigt das Protokoll nicht.
+- *Widerruf (C122):* A338 führte die Wechsel von `tank_lockon02k1` als Beleg dafür an, dass ein Pfad in verschiedenen
+  Kämpfen Verschiedenes bedeutet. Sie hatten diese Ursache und die bis A334 ungelesenen Helfer. Der Schlüssel je Gebiet
+  bleibt als Schutz gegen einen solchen Kampf (Schluss, kein Fall belegt); er kostet nur das erneute Lernen je Gebiet,
+  in der sicheren Richtung.
+- *Prüfgrad:* statisch, Protokoll, Compile; im Spiel nicht beobachtet. Konzept 15.
+
 ---
 ## B · Commit-Register (Fork vs. `upstream/main`)
 
@@ -9865,3 +9903,4 @@ Die offene Arbeit dazu — Reihenfolge und Abbruchbedingung der Nachprüfung —
 | C119 | A334 und der Bericht vom 23.10.2026: das Protokoll vom 18.–22.10.2026 ausgewertet | Ausgewertet waren Schlaf, Helfer, Rechenlast, Heiltränke, Einzelheilungsabbrüche, Flächentabelle und Konfliktkopie; Flächen- und Einzelabwehr, Sanctus-Streckung, Heilung vor dem Treffer, BossModReborn-Raidwides und Tankbuster-Marker nicht, Wiederbelebungen nur gezählt | nachgeholt in A335, zwei Defekte behoben |
 | C120 | A337 und der Bericht vom 24.10.2026: jede Schlaf-Datei entstehe erst beim ersten Eintrag, `SleepDiminishing.json` gebe es noch nicht | `OtherConfiguration.Save` schreibt beim Entladen des Plugins jede geladene Datei, auch leer; seine `SleepDiminishing.json` vom 24.10.2026 ist `{}` | A337 berichtigt |
 | C121 | A54, Konzept 11 („Ausgeschlossen") und die Vorlage in A338: `SwiftcastBuffer` bedeute, Spontanität erst bei so viel Restzeit einzuschieben, und kollidiere deshalb mit der Ausführungssperre | Gelesen war die Dokumentation, nicht der Code. Upstreams Leser (4919e1ad5) schob nur bei **mehr** Restzeit ein, ein Mindestabstand ganz oberhalb der Sperre; die Dokumentation widersprach ihrem Code. Folge: Die Empfehlung, sie zu entfernen, stand auf einem falschen Grund | A339: neu geprüft, mit richtigem Grund entfernt |
+| C122 | A338 und Konzept 15 („Je Gebiet"): `tank_lockon02k1` habe sechsmal zwischen bestätigt und verworfen gewechselt, weil ein Pfad in verschiedenen Kämpfen Verschiedenes bedeute | Die Wechsel kamen aus der zweiten Beobachtung desselben Markers nach seinem Treffer und aus den bis A334 ungelesenen Helfern; ein Kampf, in dem der Pfad keinen Tankbuster ankündigt, ist nicht belegt | A340: Defekt behoben, Begründung des Schlüssels berichtigt |

@@ -23,7 +23,8 @@ namespace RotationSolver.Basic.Helpers;
 /// marker counts as announcing a hit, and the decision reads the same queue - and every enemy cast that
 /// ran while the marker stood has ended, plus one GCD for the hit to arrive. Both errors lean
 /// the safe way: a window that is too long lets other damage confirm a marker, so it stays a
-/// tankbuster, as before.</para>
+/// tankbuster, as before. A confirmed watch stays until its marker has left the queue, so the same marker
+/// does not open a second one (A340).</para>
 ///
 /// <para>Inconclusive, and dropped without a verdict: the marked member dead or gone when the window
 /// closes, and the fight ending first.</para>
@@ -44,6 +45,9 @@ internal static class TankbusterMarkerWatch
 		public required DateTime CastEnds { get; set; }
 		public DateTime? LeftQueue { get; set; }
 		public bool Hit { get; set; }
+
+		// The hit has taken the path off the list; later hits are no longer this marker's.
+		public bool Confirmed { get; set; }
 	}
 
 	private static readonly List<Watch> _open = [];
@@ -93,8 +97,21 @@ internal static class TankbusterMarkerWatch
 
 			if (watch.Hit)
 			{
-				changed |= OtherConfiguration.TankbusterMarkerWithoutHit.Remove(watch.Key);
-				_open.RemoveAt(i);
+				if (!watch.Confirmed)
+				{
+					changed |= OtherConfiguration.TankbusterMarkerWithoutHit.Remove(watch.Key);
+					watch.Confirmed = true;
+				}
+
+				// Kept until its marker has left the queue. Dropped at once, the same marker - still in the queue,
+				// as most hits come before its five seconds are up - opened a new watch on the next cycle, no second
+				// hit confirmed that one, and the path went on the list after the tankbuster that had just confirmed
+				// it: every other time the marker came, it was taken for no tankbuster (trace of 23.10.2026, A340).
+				if (!InQueue(queue, watch))
+				{
+					_open.RemoveAt(i);
+				}
+
 				continue;
 			}
 
@@ -149,7 +166,7 @@ internal static class TankbusterMarkerWatch
 		var marked = false;
 		foreach (var watch in _open)
 		{
-			if (watch.Target == targetId)
+			if (watch.Target == targetId && !watch.Confirmed)
 			{
 				watch.Hit = true;
 				marked |= !OtherConfiguration.TankbusterMarkerWithoutHit.Contains(watch.Key);
