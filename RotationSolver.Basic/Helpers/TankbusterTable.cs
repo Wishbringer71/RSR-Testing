@@ -31,6 +31,14 @@ namespace RotationSolver.Basic.Helpers;
 internal static class TankbusterTable
 {
 	/// <summary>
+	/// Whether <paramref name="actionId"/> is on the area list: it has hit every party member at least once, so it is a
+	/// raidwide, whatever the table holds for it. Until A337 a raidwide landing on a marked tank while the marker stood
+	/// was stored here as the marker's tankbuster (Feldgeschrei, Wehklagen); the file keeps such entries, since a save
+	/// merges with it, and every reader passes them over through this.
+	/// </summary>
+	internal static bool IsPartyWide(uint actionId) => OtherConfiguration.HostileCastingArea.Contains(actionId);
+
+	/// <summary>
 	/// A tankbuster from <paramref name="attacker"/> reached <paramref name="target"/>, a player, for
 	/// <paramref name="share"/> of the target's maximum HP. Called from the effect handler, on the game
 	/// thread. <paramref name="appliedByHit"/>: the statuses this very hit put on the target - a
@@ -121,6 +129,11 @@ internal static class TankbusterTable
 	/// </summary>
 	public static float PredictedShare(uint actionId, IBattleChara target, IBattleChara? attacker, float horizon = 0f)
 	{
+		if (IsPartyWide(actionId))
+		{
+			return 0f;
+		}
+
 		TankbusterReading? reading;
 		lock (OtherConfiguration.TankbusterPotentialGate)
 		{

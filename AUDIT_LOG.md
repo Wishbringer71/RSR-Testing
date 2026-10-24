@@ -9354,6 +9354,57 @@ eigene verbesserungen damit noch besser werden könnten (also ob sie hilfreich s
 **Prüfgrad:** statisch am Code, Spielblätter (xivapi v2, englisch und deutsch); Prüfskripte nach dem Merge; Compile im
 Prüflauf.
 
+### A337 · Auswertung DefenseTrace 23.10.2026 (Build 0e8bd69a8) und Flächentabelle; Raidwides in der Tankbuster-Tabelle (24.10.2026)
+
+Sein Upload vom 24.10.2026: `DefenseTrace.log` (23.10.2026, 17:00–19:41, zwei Sitzungen, die zweite auf 0e8bd69a8)
+und `HostileCastingAreaPotential.json`. Seine Frage: „wo sind die sleep-findings? in welcher json?" – Antwort:
+`SleepOutcomes.json`, `SleepResistantKinds.json`, `SleepDiminishing.json` im Konfigurationsordner neben der
+Flächentabelle; jede entsteht beim ersten Eintrag. Nach diesem Protokoll: vier widerstehende Arten, zwei abgebrochene
+und eine zu spät geschlafene Aktion; keine Abnutzung, also noch keine `SleepDiminishing.json`. Weißmagier in Occult
+Crescent, einem Dungeon und den Allianzraids von Shadowbringers und Heavensward.
+
+Je Zeilenart:
+- *Ein gegnerisches Wirken stoppen:* Sanctga bzw. Sanctus 19-mal gewählt. Ein Ausgang steht für die Betäubung nicht im
+  Protokoll; belegt ist er am Umfeld: Nach der Wahl zeigen die Zeilen der Streckung die erste und zweite Betäubung, und
+  der Gegner begann sein Wirken neu (Nebeltrift-Coeurl dreimal, danach immun). Schlummer dreimal gelandet: zwei
+  Abbrüche (0,5 und 0,8 s nach der Landung), einmal zu spät (0,5 s Rest; nötiger Rest jetzt 0,5 s). Laufzeit gemessen
+  0,00 s: Die Wirkung kommt im selben Bild, in dem der eigene Wirkbalken endet. Vier Arten widerstanden – 2Ps
+  Flugeinheit, Xun-Zi, Meng-Zi, Ferdiad-Narr: Bosse der Allianzraids ohne Boss-Rang im Blatt; je Art ein Schlummer, dann
+  gespeichert. Fünfmal „sleep not cast": viermal sprang die Wahl zwischen zwei gleichzeitig wirkenden 2P, einmal ging
+  6 s kein Schlummer hinaus (Grund nicht im Protokoll).
+- *Flächenabwehr:* Die neue Zeile „area defence skipped" sechsmal; die ausgelassenen Casts trafen danach mit 10 bis
+  23 %, die Tabelle hob ihre Anteile (Nichts-Eiska von 9 auf 43 %). Große Treffer ohne eigene Minderung: 18-mal auf
+  Stufe 60 synchronisiert (Allianzraids von Heavensward; der Weißmagier hat dort keine Flächenminderung), 12-mal alles
+  abgeklungen, 17 ohne Erkennung (nicht gelistet oder Tötungsmechanik mit 950 %).
+- *Einzelabwehr:* zehn Wahlen, jede mit Ziel (A335).
+- *Sanctus-Streckung:* 25 gehalten, 24 davon nach der ersten Betäubung. Ohne Befund.
+- *Wiederbelebungen:* 37 Übergaben an 24 Tote, fünf Neustarts desselben Heilers binnen 30 s. *Heiltränke:* acht, alle
+  unter der eigenen Schwelle. *Abgebrochene Einzelheilungen:* 14, wie der Text der Option sagt.
+- *Flächentabelle:* 205 Einträge (vorher 189), 16 neu, 9 angehoben, keiner gesenkt, höchster 0,951, keiner über einer
+  vollen LP.
+- *Tankbuster-Marker:* `tank_lockon02k1` wechselte zweimal, `tank_lockonae_6m_5s_01t` und `m0742trg_b1t1` je einmal zu
+  „verworfen" – auch mit den Korrekturen aus A334 und A335. Ein Pfad dient in vielen Kämpfen, die Liste kennt nur den
+  Pfad: TODO „Marker-Negativliste kennt nur den Pfad, nicht den Kampf".
+
+**Defekt, behoben: Raidwides in der Tankbuster-Tabelle.** Jede gegnerische Aktion außer Auto-Angriffen, die ein
+markiertes Mitglied traf, solange dessen Marker stand, galt als dessen Tankbuster (`Watcher.ActionFromEnemy`).
+- Ein Raidwide im selben Augenblick wie der echte Tankbuster ging mit hinein: Feldgeschrei (#23670, #23671; bis 25
+  Ziele) und Wehklagen (#23668), alle in der Flächenliste, in seinen Protokollen vom 22. und 23.10.2026 gespeichert –
+  neben Verkrüppelnder Schlag, dem echten Tankbuster. Ebenso gingen sie als Tankbuster an den Tankwechsel
+  (`TankSwapWatch.RecordBusterOnOther`, `RecordHitOnPlayer`).
+- Folgen im Kampf: Der Plan und die Hilfe für den markierten Tank lasen für diese Aktionen einen Tankbuster-Anteil; der
+  Tankwechsel wertete einen Raidwide als Tankbuster auf dem anderen Tank oder auf ihm selbst.
+- Behoben: Eine Aktion der Flächenliste ist nie der Tankbuster eines Markers (`TankbusterTable.IsPartyWide`); den
+  Marker bestätigt sie weiter (Konzept 15). Die Datei behält die falschen Einträge, weil ein Speichern zusammenführt;
+  `TankbusterForecast.IsLearned` und `TankbusterTable.PredictedShare` übergehen sie. Konzept 13.
+- *Falsifikation.* Kein Defekt: widerlegt durch die gespeicherten Werte. Option falsch: Eine Aktion, die einmal jedes
+  Mitglied traf und anderswo als Tankbuster dient, verlöre ihren Plan; dann bleibt die Abwehr ohne Messung. Ein
+  ungelisteter Raidwide kommt beim ersten Mal noch hinein und wird übergangen, sobald die Liste ihn aufnimmt.
+  Ausgeliefert, nichts ändert sich: Greift kein Leser für ein solches Wirken, ändert sich nur der Tankwechsel.
+
+**Prüfgrad:** Protokoll je Zeilenart ausgewertet, Tabellen verglichen; statisch, Prüfskripte, Compile lokal; im Spiel
+nicht beobachtet.
+
 ---
 ## B · Commit-Register (Fork vs. `upstream/main`)
 

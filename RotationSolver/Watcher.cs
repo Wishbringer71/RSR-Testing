@@ -535,12 +535,17 @@ public static class Watcher
 			if (IsHostileSource(set) && set.Source is IBattleChara source
 				&& set.Action is { } marked && marked.GetActionCate() != ActionCate.Autoattack)
 			{
+				// An action on the area list has hit every party member at least once: a raidwide, not the
+				// tankbuster a marker names, even when it lands on the marked member while the marker stands -
+				// Feldgeschrei and Wehklagen went into the tankbuster table and to the tank swap that way (traces of
+				// 22. and 23.10.2026, A337). It still confirms the marker; that error leans the safe way (concept 15).
+				var partyWide = TankbusterTable.IsPartyWide(marked.RowId);
 				var markedForPlayer = false;
 				foreach (var effect in set.TargetEffects)
 				{
 					if (ReachedTarget(effect))
 					{
-						var isMarked = TankbusterMarkerWatch.RecordHit(effect.TargetID);
+						var isMarked = TankbusterMarkerWatch.RecordHit(effect.TargetID) && !partyWide;
 						var isTankbuster = isMarked || OtherConfiguration.HostileCastingTank.Contains(marked.RowId);
 						if (effect.TargetID == playerObject.GameObjectId)
 						{

@@ -18,6 +18,13 @@ follows could close before the hit and learn a real tankbuster away. The marker 
 watch also waits for the casts of the boss's invisible helpers. DefenseTrace.log now names whom a chosen defence goes
 to, and writes a line whenever a small area cast is let through without party mitigation.
 
+## A raidwide during a tankbuster marker is no longer learned as the tankbuster
+
+Any enemy action that struck a marked member while the marker stood counted as its tankbuster, so a raidwide landing
+at that moment went into the tankbuster table and to the tank swap as one, beside the real tankbuster - seen with three
+raidwides of an alliance raid. An action that has hit the whole party once is no longer taken for the marker's hit, and
+what the table already holds for it is passed over.
+
 ## Healers and casters: an enemy's cast is stopped by the job's stun first
 
 "Stop an enemy's cast with the job's stun or a sleep (experimental)", on by default, replaces the sleep-only setting.

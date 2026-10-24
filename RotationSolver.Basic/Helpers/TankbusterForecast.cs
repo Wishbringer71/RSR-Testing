@@ -716,6 +716,13 @@ internal static class TankbusterForecast
 
 	internal static bool IsLearned(uint actionId)
 	{
+		// A raidwide the table took in before A337 stays in the file - a save merges with it and never removes -
+		// and is passed over here instead (TankbusterTable.IsPartyWide).
+		if (TankbusterTable.IsPartyWide(actionId))
+		{
+			return false;
+		}
+
 		lock (OtherConfiguration.TankbusterPotentialGate)
 		{
 			return OtherConfiguration.TankbusterPotential.ContainsKey(actionId);

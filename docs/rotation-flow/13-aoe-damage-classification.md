@@ -648,6 +648,15 @@ Messung in `TankbusterTable`, Ablage über denselben gesicherten Weg wie die Fl�
   die größere Maximalgesundheit; ein Fehlschlag an ihm höbe den Wert für jeden Tank, im Extremfall über die ganze
   Gesundheit hinaus. Das Protokoll schreibt ihn mit „(not a tank) … not stored". Keiner der Leser liest die Tabelle für
   einen Nicht-Tank, also fehlt dort nichts.
+- **Kein Raidwide:** Eine Aktion der Flächenliste hat schon einmal jedes Mitglied getroffen; sie ist nicht der
+  Tankbuster eines Markers, auch wenn sie das markierte Mitglied trifft, solange der Marker steht
+  (`TankbusterTable.IsPartyWide`). Bis A337 zählte jede Aktion in diesem Fenster: In seinen Protokollen vom 22. und
+  23.10.2026 kamen Feldgeschrei (zwei Fassungen, bis 25 Ziele) und Wehklagen so in die Tabelle, zusammen mit dem
+  echten Tankbuster, der im selben Augenblick traf, und ebenso als Tankbuster zum Tankwechsel. Den Marker bestätigt ein
+  Raidwide weiter (Konzept 15, der Fehler liegt auf der sicheren Seite). Was die Datei davon schon hält, bleibt dort,
+  weil ein Speichern mit ihr zusammenführt und nie entfernt; jeder Leser übergeht es (`IsLearned`, `PredictedShare`).
+  Ein Raidwide, der noch nicht in der Liste steht, kommt beim ersten Mal noch hinein und wird übergangen, sobald die
+  Liste ihn aufnimmt.
 - **Zurückgerechnet auf ungemindert:** Der gemessene Anteil wird durch die Minderung geteilt, die beim Einschlag
   stand.
   - Auf dem Getroffenen zählt sein eigener Anteil, auf dem Angreifer der Anteil nach Schadensart: physisch für

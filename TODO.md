@@ -15,18 +15,19 @@ Nach der Wirkung im Kampf: Sicherheit der Gruppe vor Schaden, gewichtet mit der 
 2. No-casting debuffs: Schaden je Aktion wird nur vor dem Ablauf beachtet
 3. Tanks: Reflexion und Gruppenbarriere auf demselben Raidwide
 4. DRK: Bruch von The Blackest Night zählen
-5. Rückstoß und Stopp-Casts: Größe messen
-6. Vorausschau vor dem ersten Treffer
-7. Flächenheilung um den Wirkenden: Radius gegen Trefferfläche
-8. Einstellungen ohne Leser, deren Text eine Wirkung verspricht
-9. Feste Werte: jeder offene Wert braucht seinen Loop
-10. Tankbuster-Plan: Umlauf über die Sequenz jedes Drucks
-11. Weißmagier: Glockenspiel nach einem einzelnen Treffer auslösen
-12. Rotationen gegen The Balance abgleichen
-13. Six-sided Star und Flamethrower
-14. Vorlauf: Dragoon und Viper
-15. AoE-Schwelle an drei Orten
-16. Audit der gesamten Codebasis
+5. Marker-Negativliste kennt nur den Pfad, nicht den Kampf
+6. Rückstoß und Stopp-Casts: Größe messen
+7. Vorausschau vor dem ersten Treffer
+8. Flächenheilung um den Wirkenden: Radius gegen Trefferfläche
+9. Einstellungen ohne Leser, deren Text eine Wirkung verspricht
+10. Feste Werte: jeder offene Wert braucht seinen Loop
+11. Tankbuster-Plan: Umlauf über die Sequenz jedes Drucks
+12. Weißmagier: Glockenspiel nach einem einzelnen Treffer auslösen
+13. Rotationen gegen The Balance abgleichen
+14. Six-sided Star und Flamethrower
+15. Vorlauf: Dragoon und Viper
+16. AoE-Schwelle an drei Orten
+17. Audit der gesamten Codebasis
 
 Danach technische Schuld, soweit ihre Auflösungsbedingung erfüllt ist. Warten auf Daten: unten.
 
@@ -71,6 +72,14 @@ gemessene Größe je Raidwide. *Konzept:* 09, „Krieger: die übrige Abwehr".
 *Im Kampf:* Ob die Barriere unter den engeren Stufen von `BlackestNightUsage` bricht (Annahmen: vier Gegner erreichen
 3,6 % der maximalen LP je Sekunde; ein Tankbuster nimmt die angehobene Schwelle mit), sieht niemand. *Nächster
 Schritt:* Die Regel zählt ihren Bruch selbst (Dark Arts danach) und steuert `BlackestNightMinHostiles` nach. *Konzept:* 10.
+
+### Marker-Negativliste kennt nur den Pfad, nicht den Kampf · N
+
+*Im Kampf:* `tank_lockon02k1` dient in vielen Kämpfen als Marker, nicht überall für einen Tankbuster. Die Liste der
+Marker ohne Treffer führt nur den Pfad: Er wechselte in seinen Protokollen vom 19.–23.10.2026 sechsmal zwischen
+bestätigt und verworfen, und jeder Wechsel zu „verworfen" kostet im nächsten Kampf mit echtem Tankbuster die Abwehr,
+die nur am Marker hängt. *Nächster Schritt:* voller Loop – Schlüssel Pfad und Gebiet (`TerritoryType`), Migration der
+gespeicherten Liste (`TankbusterMarkerWithoutHit.json`). *Konzept:* 15, „V2: Tankbuster-Marker breiter erkennen".
 
 ### Rückstoß und Stopp-Casts: Größe messen · N
 
@@ -246,8 +255,8 @@ nebeneinander gebraucht werden.
 - **Tankbuster nach einem Marker ohne Wirken** (Protokoll „no cast taken for it", A308) – Eingang für
   „Tank-Unverwundbarkeit … nur reaktiv". Im Protokoll vom 18.10.2026 kein Fall.
 - **Ein gegnerisches Wirken stoppen: was die gespeicherten Tabellen lernen** (experimentell, seine Vorgaben 18.10. und
-  23.10.2026, A329, A334). Offen: ob Schlaf unterbrechbares Wirken stoppt, welchen Rest beim Eintreffen und welche
-  Anzahl bis zur Immunität die Regel lernt, und wie oft der Weißmagier dafür Sanctga wirkt (Zeilen „stop a cast ->",
-  „sleep stopped …", „sleep did not stop …", „sleep resisted by …", Kopfzeile „sleep knowledge"). Auflösung: ein
-  Protokoll mit Heiler oder Magier in Instanzen, danach die Bewertung, ob die Regel experimentell bleibt. Konzept 08,
+  23.10.2026, A329, A334, A337). Erstes Protokoll mit der Regel (23.10.2026): Sanctga 19-mal gewählt, Schlummer
+  dreimal gelandet, vier Arten als immun gespeichert. Offen: ob Schlaf unterbrechbares Wirken stoppt (ein Versuch, nicht
+  gewirkt), welche Anzahl bis zur Immunität die Regel lernt, welchen Rest beim Eintreffen. Auflösung: weitere
+  Protokolle mit Heiler oder Magier in Instanzen, danach die Bewertung, ob die Regel experimentell bleibt. Konzept 08,
   „Ein gegnerisches Wirken stoppen".
