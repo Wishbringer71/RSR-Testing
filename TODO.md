@@ -17,9 +17,8 @@ alles nimmt.
 1. Weißmagier: Glockenspiel auch vor großen Einzeltreffern (seine Entscheidung)
 2. Rotationen gegen The Balance abgleichen
 3. Six-sided Star und Flamethrower
-4. Vorlauf: Dragoon und Viper
-5. AoE-Schwelle an drei Orten
-6. Audit der gesamten Codebasis
+4. AoE-Schwelle an drei Orten
+5. Audit der gesamten Codebasis
 
 Danach technische Schuld, soweit ihre Auflösungsbedingung erfüllt ist. Warten auf Daten: unten.
 
@@ -49,7 +48,7 @@ ansteht. *Konzept:* 08, „Was die Sperren im Spiel bewirken".
 ### Rotationen gegen The Balance abgleichen · N
 
 *Im Kampf:* Schaden – je Job Opener, Burstausrichtung und Prioritäten gegen den Guide. Der Maschinist ist abgeglichen
-(A342). *Nächster Schritt:* die übrigen Jobs; ausgeblendete Werte liest `ActionTooltip` zur Laufzeit aus den Tooltips,
+(A342), von Dragoon und Viper der Opener (A343). *Nächster Schritt:* die übrigen Jobs; ausgeblendete Werte liest `ActionTooltip` zur Laufzeit aus den Tooltips,
 die deutschen Namen gehören in `action_names_de.json`. *Konzept:* 14, „Vergleich mit The Balance".
 
 ### Six-sided Star und Flamethrower · N
@@ -57,11 +56,6 @@ die deutschen Namen gehören in `action_names_de.json`. *Konzept:* 14, „Vergle
 *Im Kampf:* Schaden. Werte und Einsatzregeln belegt (Job-Guide, The Balance, 02.10.2026), nicht gebaut. Six-sided Star
 braucht die vorhergesagte Pause oder die Zeit bis zum Tod; Flamethrower bindet 11 s an Ort und Blickrichtung, gegen
 seine Spielweise nur bei stehendem Rudel ohne angesagte Fläche. *Konzept:* 14, „Pausen und Phasenenden".
-
-### Vorlauf: Dragoon und Viper · N
-
-*Im Kampf:* Beide wirken im Countdown nichts, auch keinen Trank (kein `CountDownAction`). *Nächster Schritt:* an den
-Openern von The Balance klären, ob eine Vorlaufaktion fällig ist. *Konzept:* 04.
 
 ### AoE-Schwelle an drei Orten · R, U
 

@@ -79,6 +79,12 @@ Checkmate would reach. With all of them in reach, Auto Crossbow goes from six en
 thresholds The Balance gives. The action's AoE count stays the lower limit; where a figure cannot be read, Auto
 Crossbow goes by it as before. DefenseTrace.log notes once per level what was read.
 
+## Viper: the experimental potion also in the opener
+
+"Experimental Pot Usage(used up to 5 seconds before SerpentsIre comes off cooldown)", off by default, took the potion
+only in the last 5 s of Serpent's Ire's cooldown, never while Serpent's Ire stood ready - so never in the opener. As
+its text says, it now goes from 5 s before Serpent's Ire is back and while it stands ready.
+
 ## A raidwide during a tankbuster marker is no longer learned as the tankbuster
 
 Any enemy action that struck a marked member while the marker stood counted as its tankbuster, so a raidwide landing

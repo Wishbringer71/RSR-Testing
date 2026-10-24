@@ -480,3 +480,16 @@ unter Stufe 68 Heat Blast an die von Blazing Shot.
 | Bioblaster | schlägt Drill ab 3, Air Anchor ab 4, nie Chain Saw/Excavator | vor Air Anchor, Drill, Excavator und Chain Saw, ab 3 Gegnern | Bei genau drei Gegnern und gleichzeitig bereitem Air Anchor kommt Bioblaster einen GCD früher. Beide fallen innerhalb zweier GCDs; gleich ist die Potenz, nur Air Anchor oder Chain Saw rückt einen GCD nach hinten. Die Grenze 4 hängt am Wert der Batterie, den kein Tooltip nennt (The Balance: 266 Potenz je 10 Batterie, Stand 7.3). Nicht gebaut |
 | Automatenkönigin | 60 im Opener, 90 nach einer Minute, danach 100 direkt nach Air Anchor in jedem Zwei-Minuten-Fenster | dieselben ersten beiden; danach ruft sie der Schutz gegen das Überlaufen der Batterie | Modell über zehn Minuten (24.10.2026): keine Batterie verloren, die Königinnen verlassen nach der zweiten Minute die Zwei-Minuten-Fenster. Ihr Schaden zieht aus keinem eigenen Buff des Maschinisten Nutzen (Wildfire zählt nur seine Waffenfertigkeiten); der Gewinn der Ausrichtung kommt allein aus den Buffs der anderen. Nach seiner Regel ist fremdes Verhalten kein tragender Grund – derselbe Schluss wie für Reassemble (Konzept 17). Nicht gebaut |
 | Flamethrower | Einsatzregel belegt | nicht gewirkt | TODO, „Six-sided Star und Flamethrower" |
+
+### Dragoon und Viper: Opener
+
+Geprüft ist bisher nur der Vorlauf (A343); Burst und Prioritäten sind offen.
+
+- *Dragoon* (The Balance, Openers, Patch 7.5): kein Vorlauf im Standard-Opener; der Trank nach dem zweiten GCD, mit
+  Lance Charge, vor Battle Litany. RSR nimmt ihn, sobald Battle Litany liegt – einen GCD später; der Trank wirkt 30 s
+  und deckt das Fenster weiter. Nicht geändert.
+- *Viper* (Openers, Patch 7.55): Slither bei −0,5 s ist Bewegung und bleibt aus (Konzept 04, „Countdown und
+  Notfallslot"); der Trank fällt nach dem dritten GCD. RSR nahm ihn mit „Experimental Pot Usage(used up to 5 seconds
+  before SerpentsIre comes off cooldown)" nur in den letzten 5 s vor dem Ende der Abklingzeit von Serpent's Ire, nie
+  solange Serpent's Ire bereit lag, also nie im Opener. Der Text schließt das ein; der Code folgt ihm jetzt
+  (`WillHaveOneCharge`). Ohne die Option (ab Werk aus) ändert sich nichts.

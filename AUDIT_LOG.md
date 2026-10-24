@@ -9949,6 +9949,35 @@ was gelesen wurde. Mit „Cleave" oder ausgeschalteter AoE fällt Auto Crossbow 
 *Prüfgrad:* statisch, Compile, Modell mit Selbsttest; dass die Tooltips im Spiel die Potenzen ausgeben, ist ein Schluss
 aus dem Weg der Dauern (A316), im Spiel nicht beobachtet.
 
+### A343 · Vorlauf von Dragoon und Viper gegen The Balance; Trank des Vipers im Opener (24.10.2026)
+
+TODO-Punkt „Vorlauf: Dragoon und Viper", nächster Schritt laut Eintrag: an den Openern von The Balance klären, ob eine
+Vorlaufaktion fällig ist. Quellen: The Balance, Openers (Dragoon: Patch 7.5, zuletzt 27.06.2026; Viper: Patch 7.55,
+zuletzt 06.08.2026), die Grafiken über raw.githubusercontent.com geladen und gelesen.
+
+- *Dragoon:* Standard-Opener ohne Vorlauf, True Thrust zum Pull, Trank nach dem zweiten GCD. Die Variante mit Piercing
+  Talon vor dem Pull gilt nur bei einem Ziel, das vorher nicht erreichbar ist, und ist laut The Balance gleichwertig.
+  Ergebnis: kein `CountDownAction` fällig.
+- *Viper:* Vorlauf ist Slither bei −0,5 s – Bewegung, die seine Regel ausschließt; am Ziel stehend bringt sie nichts.
+  Trank nach dem dritten GCD. Ergebnis: kein `CountDownAction` fällig.
+- *Nebenbefund, Viper:* „Experimental Pot Usage(used up to 5 seconds before SerpentsIre comes off cooldown)" lief nur
+  bei laufender Abklingzeit von Serpent's Ire mit mindestens 115 s vergangen (`ElapsedAfter(115)`, Upstream d566eda86);
+  lag Serpent's Ire bereit – im Opener und wann immer es gehalten wird –, kam kein Trank. Der Text schließt diese Zeit
+  ein und bindet. Jetzt `WillHaveOneCharge(5)`: ab 5 s vor dem Ende und solange es bereit liegt. Im Kampf: mit der
+  Option fällt der Trank auch im Opener, vor Serpent's Ire statt zwei GCDs danach; seine 30 s decken das Fenster. Ohne
+  Option keine Änderung. Die 5 sind die des Optionstexts (Register).
+- *Dragoon, Trank:* RSR nimmt ihn mit liegendem Battle Litany, einen GCD nach The Balance. Kein Eingriff: Der Trank deckt
+  das Fenster weiter, der Unterschied liegt in einem GCD am Ende seiner Wirkzeit.
+
+TODO-Punkt geschlossen; Konzepte 01, 02, 03, 04 und 14 nachgezogen.
+
+**Falsifikation.** *Kein Defekt:* Für den Vorlauf zutreffend – es fehlt keiner. Für den Trank widerlegt: Der Text nennt
+den Zeitpunkt ab 5 s vor dem Ende, der Code schloss die Zeit danach aus. *Option falsch:* Hält die Rotation Serpent's
+Ire länger zurück, fällt der Trank nun ohne es; das erlaubt der Text. *Ausgeliefert, nichts ändert sich:* ohne die
+Option, ab Werk aus.
+
+*Prüfgrad:* statisch, Compile; im Spiel nicht beobachtet.
+
 ---
 ## B · Commit-Register (Fork vs. `upstream/main`)
 

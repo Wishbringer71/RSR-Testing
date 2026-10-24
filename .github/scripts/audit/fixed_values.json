@@ -805,6 +805,16 @@
    "status": "exception",
    "loop": "A342",
    "reason": "Unit conversion, not a game value: the tooltip states the falloff in percent (\"30% less for all remaining enemies\"), the potency of a further enemy is the share left (A342)."
+  },
+  {
+   "file": "RotationSolver/RebornRotations/Melee/VPR_Reborn.cs",
+   "code": "if (NoAbilityReady && BurstMed && SerpentsIrePvE.EnoughLevel && SerpentsIrePvE.Cooldown.WillHaveOneCharge(5)",
+   "values": [
+    "5"
+   ],
+   "status": "exception",
+   "loop": "A343",
+   "reason": "The setting's own condition, \"Experimental Pot Usage(used up to 5 seconds before SerpentsIre comes off cooldown)\": a span named by the option text, not a tunable; it replaces the elapsed 115 s of the 120 s recast, which left out the time Serpent's Ire stands ready (A343)."
   }
  ]
 }
