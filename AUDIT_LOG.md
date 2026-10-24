@@ -9464,6 +9464,18 @@ Sequenz, Glockenspiel, Abgleich mit The Balance, Six-sided Star, Vorlauf, AoE-Sc
   nur Addle, Feint und Reprisal. Ausgeliefert, nichts ändert sich: richtig für heute, gewollt.
 - *Prüfgrad:* statisch, Prüfskripte (feste Werte), Compile. Konzept 06.
 
+**4. Genannte Einstellungsnamen werden geprüft** (technische Schuld aus A333).
+- `check_setting_names.py`, in der CI nach der Prüfung der Vorgaben: Ein zitierter Text in `docs/fork-changes-*.md`
+  gilt als Einstellungsname, wenn „setting", „option" oder „switch" im selben Satz steht oder wenn er einem
+  Einstellungstext fast gleicht, ohne ihm zu gleichen. Er muss dann einem Text des Einstellungsfensters entsprechen
+  (`UI(…)`, deren `Description`, `RotationConfig(Name = …)`, `[Description(…)]` in `UiString`); eine Auslassung steht
+  für beliebigen Text, und ein gekürzter Name darf vor dem Ende aufhören. Selbsttest gegen einen falschen und einen fast
+  richtigen Namen, dazu fünf, die stehen bleiben müssen.
+- Erster Lauf: ein Fund, „Prioritize Low HP … Big Target", eine gekürzte Nennung – danach die Kürzungsregel. Heute
+  stimmt jeder genannte Name.
+- *Falsifikation:* Ein Name ohne Signalwort und ohne Ähnlichkeit zu einem Text bleibt unerkannt; ein zitierter Satz
+  nahe „setting", der kein Name ist, schlüge an und wäre umzuformulieren. *Prüfgrad:* Selbsttest, Lauf über beide Texte.
+
 ---
 ## B · Commit-Register (Fork vs. `upstream/main`)
 

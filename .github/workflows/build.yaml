@@ -193,6 +193,11 @@ jobs:
       - name: Check the stated defaults still match the code
         run: python3 .github/scripts/audit/check_concept_defaults.py
 
+      # A release text that names a setting by a text no setting has sends the reader to look for something the
+      # settings window does not show; the description of 7.5.7.6+wsh1 did that (A333).
+      - name: Check the setting names quoted in the release texts
+        run: python3 .github/scripts/audit/check_setting_names.py
+
       # A concept laid out as the loop that produced it (Antithesen, Falsifikation, Abgleich), or carrying
       # its own history in headings (Befunde, "(A238)", dates), keeps the state of the day it was written
       # beside the current one; and one subject twice under one parent is two places, one of which ages.

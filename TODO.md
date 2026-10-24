@@ -138,13 +138,6 @@ nächste freie.
 
 Ohne Wirkung im Kampf oder bewusst eingegangen; je Kosten und Auflösungsbedingung.
 
-### Genannte Einstellungsnamen werden nicht geprüft · N
-*Kosten:* Ein Release- oder Standtext kann eine Einstellung unter einem Namen nennen, den es nicht gibt; der Text zu
-7.5.7.6+wsh1 nennt „Hold mitigation under invulnerability" statt „Spend only the mitigation a measured tankbuster
-needs" (A333). `check_concept_defaults.py` prüft nur die genannten Vorgaben. *Auflösung:* eine Prüfung, die jeden in
-`docs/fork-changes-*.md` zitierten Einstellungsnamen gegen die Texte von `UI(…)` und `RotationConfig(Name = …)` hält,
-mit Selbsttest.
-
 ### Searing-Light-Abdeckungsmodell bildet die Phasenbuchung von Hand nach · R
 *Kosten:* Ändert sich die Buchung in `UpdateSearingPhaseBook`, `AllSearingPhasesHeld` oder `BurstPhaseHeldByAnother`,
 rechnet `searing_light_coverage.py` weiter die alte Regel, und Konzept 12 argumentiert mit ihren Zahlen. *Auflösung:*
