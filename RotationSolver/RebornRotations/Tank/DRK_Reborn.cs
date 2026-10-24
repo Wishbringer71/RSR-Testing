@@ -226,21 +226,25 @@ public sealed class DRK_Reborn : DarkKnightRotation
 		// universal layer, so it yields when the party is in danger (concept 08, "Die Abwehrsperren").
 		var burstHold = HoldAreaDefense(InTwoMIsBurst, "Dark Knight: burst window");
 
-		if (!burstHold && DarkMissionaryPvE.CanUse(out act))
+		// Tanks' stage: Reprisal and the party tool take turns over a run of area attacks (concept 09, rule 9); Oblation
+		// and The Blackest Night are no party tools and stay out of it.
+		var stretched = TankAreaDefenseStretched(DarkMissionaryPvE);
+
+		if (!burstHold && !stretched && DarkMissionaryPvE.CanUse(out act))
 		{
 			return true;
 		}
 
 		// Held while a barrier waits to be spent - see HoldMitigationForBarrier. Reprisal takes 10%
 		// off the stream that has to break The Blackest Night within its seven seconds.
-		if (!burstHold && !HoldMitigationForBarrier(true)
+		if (!burstHold && !stretched && !HoldMitigationForBarrier(true)
 			&& ShouldSustainMitigationDebuff(StatusHelper.ReprisalStatus)
 			&& ReprisalPvE.CanUse(out act, skipAoeCheck: true, skipStatusProvideCheck: true))
 		{
 			return true;
 		}
 
-		if (!burstHold && !HoldMitigationForBarrier(true) && ReprisalPvE.CanUse(out act, skipAoeCheck: true))
+		if (!burstHold && !stretched && !HoldMitigationForBarrier(true) && ReprisalPvE.CanUse(out act, skipAoeCheck: true))
 		{
 			return true;
 		}

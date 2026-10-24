@@ -216,6 +216,12 @@ public sealed class PLD_Reborn : PaladinRotation
 	[RotationDesc(ActionID.DivineVeilPvE, ActionID.PassageOfArmsPvE, ActionID.ReprisalPvE)]
 	protected override bool DefenseAreaAbility(IAction nextGCD, out IAction? act)
 	{
+		// Tanks' stage: Reprisal and the party tools take turns over a run of area attacks (concept 09, rule 9).
+		if (TankAreaDefenseStretched(DivineVeilPvE, PassageOfArmsPvE))
+		{
+			return base.DefenseAreaAbility(nextGCD, out act);
+		}
+
 		if (DivineVeilPvE.CanUse(out act))
 		{
 			return true;

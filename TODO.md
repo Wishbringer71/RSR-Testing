@@ -14,19 +14,18 @@ Auftrag vom 24.10.2026 läuft: die einfachen Punkte zuerst (A338), die schweren 
 steht seit seinem Hinweis vom 24.10.2026 vor der Flächenheilung: Es heilt eine Gruppe nach einem Treffer, der ihr fast
 alles nimmt.
 
-1. Tanks: Reflexion und Gruppenbarriere auf demselben Raidwide
-2. DRK: Bruch von The Blackest Night zählen
-3. Rückstoß und Stopp-Casts: Größe messen
-4. Vorausschau vor dem ersten Treffer
-5. Weißmagier: Glockenspiel vor großen Treffern und zweiter Druck
-6. Flächenheilung um den Wirkenden: Radius gegen Trefferfläche
-7. Feste Werte: jeder offene Wert braucht seinen Loop
-8. Tankbuster-Plan: Umlauf über die Sequenz jedes Drucks
-9. Rotationen gegen The Balance abgleichen
-10. Six-sided Star und Flamethrower
-11. Vorlauf: Dragoon und Viper
-12. AoE-Schwelle an drei Orten
-13. Audit der gesamten Codebasis
+1. DRK: Bruch von The Blackest Night zählen
+2. Rückstoß und Stopp-Casts: Größe messen
+3. Vorausschau vor dem ersten Treffer
+4. Weißmagier: Glockenspiel vor großen Treffern und zweiter Druck
+5. Flächenheilung um den Wirkenden: Radius gegen Trefferfläche
+6. Feste Werte: jeder offene Wert braucht seinen Loop
+7. Tankbuster-Plan: Umlauf über die Sequenz jedes Drucks
+8. Rotationen gegen The Balance abgleichen
+9. Six-sided Star und Flamethrower
+10. Vorlauf: Dragoon und Viper
+11. AoE-Schwelle an drei Orten
+12. Audit der gesamten Codebasis
 
 Danach technische Schuld, soweit ihre Auflösungsbedingung erfüllt ist. Warten auf Daten: unten.
 
@@ -35,12 +34,6 @@ Danach technische Schuld, soweit ihre Auflösungsbedingung erfüllt ist. Warten 
 Keine bekannt.
 
 ## Offene Arbeit
-
-### Tanks: Reflexion und Gruppenbarriere auf demselben Raidwide · N
-
-*Im Kampf:* Abschütteln und Reflexion fallen fast immer auf denselben Raidwide (seine Protokolle 01.10.2026). The
-Balance: stapeln für große Treffer, verteilen über mehrere. *Nächster Schritt:* Fallarbeit für alle vier Tanks über die
-gemessene Größe je Raidwide. *Konzept:* 09, „Krieger: die übrige Abwehr".
 
 ### DRK: Bruch von The Blackest Night zählen · N, U
 

@@ -472,6 +472,34 @@
       "identifier": "GlareIvPvE",
       "kind": "action",
       "source": "German job guide (de.finalfantasyxiv.com/jobguide/whitemage/) and game data, xivapi v2 Action 37009 language=de, 2026-10-23"
+    },
+    {
+      "de": "Heiliger Quell",
+      "en": "Divine Veil",
+      "identifier": "DivineVeilPvE",
+      "kind": "action",
+      "source": "game data, xivapi v2 Action 3540 language=de, 2026-10-24"
+    },
+    {
+      "de": "Dunkler Bote",
+      "en": "Dark Missionary",
+      "identifier": "DarkMissionaryPvE",
+      "kind": "action",
+      "source": "game data, xivapi v2 Action 16471 language=de, 2026-10-24"
+    },
+    {
+      "de": "Wackeres Herz",
+      "en": "Heart of Light",
+      "identifier": "HeartOfLightPvE",
+      "kind": "action",
+      "source": "game data, xivapi v2 Action 16160 language=de, 2026-10-24"
+    },
+    {
+      "de": "Waffengang",
+      "en": "Passage of Arms",
+      "identifier": "PassageOfArmsPvE",
+      "kind": "action",
+      "source": "game data, xivapi v2 Action 7385 language=de, 2026-10-24"
     }
   ]
 }

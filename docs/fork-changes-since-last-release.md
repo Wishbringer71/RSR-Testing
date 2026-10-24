@@ -33,6 +33,13 @@ the measurement. It now learns, per area and marker, which hit followed and how 
 tankbuster with a cast: the least mitigation that survives it, or the invulnerability if nothing less does. Mitigation
 is held back only under a planned invulnerability, as the marker may announce another hit this time.
 
+## Tanks: Reprisal and the party tool take turns over area attacks
+
+All four tanks put their party tool and Reprisal on the same area attack, one weave after the other, and had nothing
+for the next. Now the second waits while the first still works - a barrier until it is used up -, so two area attacks
+in a row each get one. Both still go together when a member is in danger or the attack, as measured, would put an
+unprotected member there. Setting: "Spread Reprisal and the party mitigation over a run of area attacks", on by default.
+
 ## A raidwide during a tankbuster marker is no longer learned as the tankbuster
 
 Any enemy action that struck a marked member while the marker stood counted as its tankbuster, so a raidwide landing

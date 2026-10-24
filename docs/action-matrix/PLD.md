@@ -1,6 +1,6 @@
 # PLD — Abhängigkeitsmatrix
 
-Erzeugt von `.github/scripts/audit/generate_action_matrix.py` am 2026-10-22; nicht von Hand bearbeiten. Methode und Grenzen: `docs/rotation-flow/14-action-dependency-matrix.md`.
+Erzeugt von `.github/scripts/audit/generate_action_matrix.py` am 2026-10-24; nicht von Hand bearbeiten. Methode und Grenzen: `docs/rotation-flow/14-action-dependency-matrix.md`.
 
 - Basisrotation: `PaladinRotation`
 - Rotation: `RotationSolver/RebornRotations/Tank/PLD_Reborn.cs`
@@ -106,6 +106,7 @@ direkt: 43 · ungenutzt: 1 · über andere Aktion: 3
 | Confiteor | ActionCheck liest | Imperator |
 | Confiteor | ActionCheck liest | Requiescat |
 | Cover | Regel sperrt vorher | Intervention |
+| Divine Veil | Regel sperrt vorher | Passage of Arms |
 | Expiacion | Regel prüft | Fight or Flight |
 | Expiacion | Regel prüft | Imperator |
 | Fast Blade | Regel prüft | Rage of Halone |
@@ -130,6 +131,7 @@ direkt: 43 · ungenutzt: 1 · über andere Aktion: 3
 | Intervention | StatusNeed Grit | Status Grit |
 | Intervention | StatusNeed IronWill | Status IronWill |
 | Intervention | StatusNeed RoyalGuard_1833 | Status RoyalGuard_1833 |
+| Passage of Arms | Regel sperrt vorher | Divine Veil |
 | Prominence | ComboIds | Total Eclipse |
 | Rage of Halone | ComboIds | Riot Blade |
 | Rage of Halone | Regel prüft | Royal Authority |
@@ -137,6 +139,8 @@ direkt: 43 · ungenutzt: 1 · über andere Aktion: 3
 | Rage of Halone | Regel prüft | Supplication |
 | Rampart | Regel prüft | Guardian |
 | Rampart | Regel prüft | Sentinel |
+| Reprisal | Regel sperrt vorher | Divine Veil |
+| Reprisal | Regel sperrt vorher | Passage of Arms |
 | Requiescat | Regel prüft | Fight or Flight |
 | Requiescat | Regel prüft | Holy Circle |
 | Requiescat | Regel sperrt vorher | Intervention |

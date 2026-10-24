@@ -130,6 +130,26 @@ public partial class CustomRotation
 	}
 
 	/// <summary>
+	/// The tanks' stage of the stretch: Reprisal and the job's party mitigation take turns over a run of area attacks
+	/// instead of both falling on the first - The Balance stacks them for a big hit and spreads them over several, and
+	/// the measured size decides which through the danger yield (concept 09, "Krieger: die übrige Abwehr", rule 9). Read
+	/// only with "Spread Reprisal and the party mitigation over a run of area attacks" on.
+	/// </summary>
+	/// <param name="partyTools">The job's party mitigation: Divine Veil and Passage of Arms, Shake It Off, Dark
+	/// Missionary, Heart of Light.</param>
+	/// <returns>True while Reprisal and the party tools wait.</returns>
+	protected bool TankAreaDefenseStretched(params IBaseAction[] partyTools)
+	{
+		if (!Service.Config.SpreadTankAreaDefense)
+		{
+			return false;
+		}
+
+		IBaseAction[] triggers = [ReprisalPvE, .. partyTools];
+		return AreaDefenseStretched("Tank: Reprisal or the party mitigation still in effect", triggers);
+	}
+
+	/// <summary>
 	/// <see cref="AreaDefenseStretched"/> for single-target defense; yields like
 	/// <see cref="HoldSingleDefense"/>.
 	/// </summary>
@@ -172,13 +192,62 @@ public partial class CustomRotation
 				continue;
 			}
 
-			if (UsedWithin(trigger.ID, duration))
+			if (UsedWithin(trigger.ID, duration) && !BarrierUsedUp(trigger))
 			{
 				return true;
 			}
 		}
 
 		return false;
+	}
+
+	// A barrier works until it is used up, not for the time its text states: Shake It Off and Divine Veil give 30 s, and
+	// the area attack they were pressed for takes the barrier with it. Read on the player, who is in its range: gone from
+	// him after its status had time to show - a GCD from the press -, it is used up. A trigger that lowers damage besides,
+	// or whose barrier status cannot be found by its name among the shields, keeps its stated time.
+	private static bool BarrierUsedUp(IBaseAction trigger)
+	{
+		var value = DefensiveValues.For(trigger.ID);
+		if (value.Barrier <= 0f || value.Self > 0f || value.SelfPhysical > 0f || value.SelfMagical > 0f
+			|| value.EnemyPhysical > 0f || value.EnemyMagical > 0f || Player == null)
+		{
+			return false;
+		}
+
+		var statuses = BarrierStatusesOf(trigger.ID);
+		return statuses.Length > 0 && !UsedWithin(trigger.ID, DataCenter.DefaultGCDTotal)
+			&& !Player.HasStatus(true, statuses);
+	}
+
+	private static readonly Dictionary<uint, StatusID[]> _barrierStatuses = [];
+
+	// The shields bearing the action's own name, read from the English sheets: the game names a party barrier after the
+	// action that lays it (Shake It Off, Divine Veil), and the shield list holds every id of each.
+	private static StatusID[] BarrierStatusesOf(uint actionId)
+	{
+		if (_barrierStatuses.TryGetValue(actionId, out var known))
+		{
+			return known;
+		}
+
+		List<StatusID> found = [];
+		var actions = ECommons.DalamudServices.Svc.Data.GetExcelSheet<Lumina.Excel.Sheets.Action>(Dalamud.Game.ClientLanguage.English);
+		var statuses = ECommons.DalamudServices.Svc.Data.GetExcelSheet<Lumina.Excel.Sheets.Status>(Dalamud.Game.ClientLanguage.English);
+		if (actions.TryGetRow(actionId, out var action))
+		{
+			var name = action.Name.ExtractText();
+			foreach (var status in StatusHelper.ShieldStatus)
+			{
+				if (statuses.TryGetRow((uint)status, out var row) && row.Name.ExtractText() == name)
+				{
+					found.Add(status);
+				}
+			}
+		}
+
+		known = [.. found];
+		_barrierStatuses[actionId] = known;
+		return known;
 	}
 
 	// The record is newest first and ordered by time, so the walk stops at the first entry older

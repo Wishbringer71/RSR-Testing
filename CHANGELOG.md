@@ -23,6 +23,14 @@ are not reconstructed here.
 
 ## Unreleased
 
+### RotationSolver.Basic: tanks spread Reprisal and the party tool over area attacks
+
+`CustomRotation.TankAreaDefenseStretched(params IBaseAction[] partyTools)` is new and protected: true while Reprisal or
+one of the given party tools still works, with "Spread Reprisal and the party mitigation over a run of area attacks"
+on and no member in danger. The four tank rotations ask it before Reprisal and their party tool.
+`AreaDefenseStretched` now ends a pure barrier's stretch once the barrier is gone from the player, a GCD after the
+press, instead of after the duration its text states.
+
 ### Behaviour change in RotationSolver.Basic: an enemy's cast is stopped by the job's stun first, and what sleeps show is kept
 
 The healers' and casters' stop of an enemy cast (`Configs.SleepToStopAreaCasts`, name unchanged) now also covers casts

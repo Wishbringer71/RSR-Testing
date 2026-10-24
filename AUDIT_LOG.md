@@ -9564,7 +9564,7 @@ Einstellung wieder gelesen wird oder nicht mehr besteht, mit Selbsttest; der ers
 
 **Prüfgrad:** statisch, Versionsgeschichte, Spielblätter (xivapi v2), Prüfskripte mit Selbsttest, Compile. Konzept 11.
 
-### A340 · Schwere TODO-Punkte: zweite Beobachtung desselben Markers (Defekt), Marker ohne Wirken (24.10.2026)
+### A340 · Schwere TODO-Punkte: zweite Beobachtung desselben Markers (Defekt), Marker ohne Wirken, Tank-Streckung (24.10.2026)
 
 Seine Präzisierung zum Auftrag vom 24.10.2026: „ausserdem war die priorisierung in der todo: was ist wichtig und was ist
 davon einfach umsetzbar. das heißt nicht dass schwer umsetzbare wichtige dinge weggelassen werden sollten." In
@@ -9635,6 +9635,27 @@ Aktionsangabe oder Messung); beim Lesen der Marker-Beobachtung fiel ein Defekt a
 - *Prüfgrad:* statisch, Protokoll, Compile; im Spiel nicht beobachtet. Messmittel: „tankbuster coming at you (learned
   from the marker on you)" und weiter „no cast taken for it" für die Fälle ohne beides. Konzept 09, „Ein Marker ohne
   Wirken".
+
+**Punkt: Reflexion und Gruppenbarriere auf demselben Raidwide.**
+- *Befund am Code:* Alle vier Tank-Rotationen wirkten in der Flächenabwehr ihr Gruppenwerkzeug und im nächsten
+  Einwebeplatz Reflexion – beide auf denselben Raidwide, wie sein Protokoll vom 01.10.2026 zeigte.
+- *Optionen:* (0) nichts; (a) die allgemeine Streckung (Konzept 08) auf der Stufe Tanks: nach dem einen wartet das
+  andere, solange es wirkt, Schranke wie bei den Heilern; (b) eine feste Sperre gegeneinander (WrathCombo: je 10 s,
+  keine Spielquelle) – eine Zahl ohne Bezug zur Wirkdauer; (c) je Raidwide nach Größe entscheiden ohne Streckung – die
+  Schranke tut das schon, in derselben Messung.
+- *Gewählt (a), hinter einer Option, ab Werk an:* Der Nutzen folgt aus The Balance und seinem Grundsatz, gemessen ist er
+  nicht. Eine reine Barriere (Abschütteln, Heiliger Quell) streckte im Baustein bisher ihre 30 s, auch wenn der Raidwide
+  sie schon verbraucht hatte; jetzt endet die Streckung, sobald ihr Status beim Spieler fehlt (einen GCD nach dem
+  Druck). Der Baustein liest dafür die Schilde gleichen Namens wie die Aktion aus der Schildliste (englische Blätter).
+- *Falsifikation.* Kein Defekt: widerlegt am Code. Option falsch: Kommen Raidwides seltener als die Wirkdauer, ändert
+  die Streckung nichts; kommen sie dichter, bekommt jeder etwas. Ein großer Treffer bekommt beide, weil die Schranke die
+  stehende Minderung nicht abzieht. Ob Reflexion auf dem Boss den Treffer eines Helfers mindert, ist unbelegt (Konzept
+  09, Regel 9, Grenzen). Ausgeliefert, nichts ändert sich: als Heiler; wo die Schranke immer weicht (jeder Raidwide
+  groß); mit der Option aus.
+- *Deutsche Namen eingetragen* (xivapi v2, `language=de`): Heiliger Quell, Dunkler Bote, Wackeres Herz, Waffengang.
+- *Prüfgrad:* statisch, Compile; im Spiel nicht beobachtet. Messmittel: `DefenseTrace.log` schreibt „holding: Tank:
+  Reprisal or the party mitigation still in effect (area)" in die Zeile der offenen Flächenabwehr, wie jede Streckung.
+  Konzepte 08 und 09.
 
 ---
 ## B · Commit-Register (Fork vs. `upstream/main`)

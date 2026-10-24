@@ -129,6 +129,9 @@ public sealed class GNB_Reborn : GunbreakerRotation
 
 		var noMercyHold = HoldAreaDefense(HasNoMercy, "Gunbreaker: No Mercy window");
 
+		// Tanks' stage: Reprisal and the party tool take turns over a run of area attacks (concept 09, rule 9).
+		noMercyHold |= TankAreaDefenseStretched(HeartOfLightPvE);
+
 		if (!noMercyHold && HeartOfLightPvE.CanUse(out act, skipAoeCheck: true))
 		{
 			return true;

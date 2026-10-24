@@ -414,6 +414,12 @@ public sealed class WAR_Reborn : WarriorRotation
 	[RotationDesc(ActionID.ShakeItOffPvE, ActionID.ReprisalPvE)]
 	protected override bool DefenseAreaAbility(IAction nextGCD, out IAction? act)
 	{
+		// Tanks' stage: Reprisal and the party tool take turns over a run of area attacks (concept 09, rule 9).
+		if (TankAreaDefenseStretched(ShakeItOffPvE))
+		{
+			return base.DefenseAreaAbility(nextGCD, out act);
+		}
+
 		if (!HoldShakeItOffForTankbuster() && ShakeItOffPvE.CanUse(out act, skipAoeCheck: true))
 		{
 			return true;

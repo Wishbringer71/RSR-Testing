@@ -954,6 +954,27 @@ Vorhersage wenige Sekunden vorher, und die kleinen Minderungen standen vorn. Des
 vorhergesagten Tankbuster bei allen vier Tanks am Anfang. Zusammen mit Befund 5 fällt dort je Tankbuster eine große
 Minderung oder Schutzwall, dann die kurzen.
 
+**9. Reflexion und Gruppenwerkzeug wechseln sich über eine Folge von Raidwides ab** (alle vier Tanks,
+`TankAreaDefenseStretched`, A340). Nach Reflexion oder dem Gruppenwerkzeug des Jobs – Heiliger Quell und Waffengang,
+Abschütteln, Dunkler Bote, Wackeres Herz – wartet das andere, solange das erste wirkt: eine Minderung für die Dauer
+aus dem Wirktext, eine Barriere, bis sie verbraucht ist (fehlt ihr Status beim Tank einen GCD nach dem Druck). Beide
+gehen zusammen, wenn ein Mitglied in Gefährdungsklasse 1 steht oder der angekündigte Treffer, wie gemessen, ein
+ungeschütztes dorthin brächte – die Schranke der allgemeinen Streckung (Konzept 08, „Die Abwehrsperren"). Option „Spread
+Reprisal and the party mitigation over a run of area attacks", ab Werk an.
+- *Befund:* Alle vier Rotationen wirkten das Gruppenwerkzeug und im nächsten Einwebeplatz Reflexion, beide auf
+  denselben Raidwide (sein Protokoll vom 01.10.2026; am Code bis A340 unverändert).
+- *Referenz:* The Balance stapelt beide für einen großen Treffer und verteilt sie über mehrere. Die Größe misst die
+  Flächentabelle; die Schranke liest sie, ohne die schon stehende Minderung abzuziehen, also bekommt ein großer Treffer
+  weiter beide. Sein Grundsatz (Konzept 08, „Wozu die Aussetzbedingungen da sind"): die Dauer der Drosselung zählt,
+  strecken statt verdoppeln, solange die Gruppe hält.
+- *Im Kampf:* Zwei Raidwides kurz nacheinander bekommen je ein Werkzeug statt der erste beide und der zweite keines. Ein
+  ungemessener Raidwide bekommt eines – beim ersten Auftreten weiß RSR nicht, dass er groß ist; danach misst ihn die
+  Tabelle.
+- *Grenzen:* Ob Reflexion auf dem Boss den Treffer eines unsichtbaren Helfers mindert, ist unbelegt; hält sie das
+  Gruppenwerkzeug zurück und trifft der Helfer, fehlt dem Raidwide eine Minderung, außer die Schranke weicht. Eine
+  Reflexion aus der Einzelabwehr (Tankbuster) hält das Gruppenwerkzeug ebenso, solange sie wirkt. Die Reflexion eines
+  anderen Tanks zählt nicht: Die Streckung liest nur die eigenen Aktionen.
+
 **Ohne eigene Regel:**
 - *Äquilibrium* (reaktiv, unter Kampfrausch), *Holmgang* (Notfall bei „Health of dying tank", ab Werk 15 %; vorbeugend
   vor einem gemessenen Tankbuster, den nichts Geringeres trägt, über den Plan).
@@ -970,7 +991,7 @@ Stand 02.10.2026.
 | Kampfrausch vor dem Tankbuster | in den Stapeln, mit Verdammnis wie mit Rampart („The 60s“) | nur ohne andere große oder mit Rampart, sonst Notfall | zählt nur die Nutzung | auf jeden Tankbuster, für den er bereit ist (A237); WrathCombos Ausrichtung verworfen (A248) |
 | Reflexion am Tankbuster | Gruppenwerkzeuge auf Raidwides | im Bosskampf nur bei angesagtem Gruppenschaden | — | wartet, wenn der Tank gedeckt ist (A244) |
 | Abschütteln | Barriere an erhöhter Gesundheit | im Bosskampf bei Gruppenschaden, nicht innerhalb 10 s nach Reflexion; außerhalb nur ohne Kampfrausch, Verdammnis, Vengeance, Urimpuls | zählt nur die Nutzung | wartet bei Verdammnis/Urimpuls (A245) und für gebrauchte Glieder des Plans |
-| Reflexion und Abschütteln auf demselben Raidwide | mal stapeln, mal verteilen, je nach Größe | verteilt (je 10 s Sperre gegeneinander) | — | **beide auf denselben** — offen (TODO) |
+| Reflexion und Abschütteln auf demselben Raidwide | mal stapeln, mal verteilen, je nach Größe | verteilt (je 10 s Sperre gegeneinander) | — | verteilt, solange das erste wirkt; beide bei Gefahr nach der gemessenen Größe (A340) |
 
 *xivanalysis* bewertet Abwehr nur danach, ob sie genutzt wurde („find helpful times"), ohne Zeitpunktregel. *FFLogs*
 liefert die Kampfdaten, keine Regeln; ein Report von ihm würde zeigen, welche Minderung auf welchem Treffer lag.
