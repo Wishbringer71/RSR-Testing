@@ -179,8 +179,14 @@ Pfade sind Spieldaten (Asset-Namen), kein übernommener Code.
   überspringt Pfade auf der Liste; was sie liest – `IsCastingTankVfx`, `IsTankbusterAimedAt` –, sieht sie nicht. Dieselbe Bestätigung sagt dem Tankwechsel, ob ein Treffer ein Tankbuster war
   (`RecordHit` meldet einen Marker, der nicht auf der Liste steht; Konzept 09). Bis A211 zählte nur die Effektart „Damage": Ein unter Sheltron geblockter oder
   unter Hallowed Ground abgewiesener Tankbuster widerlegte seinen Marker.
+- **Je Gebiet, nicht je Pfad:** Ein Eintrag ist Gebiet und Pfad (`DataCenter.TankbusterMarkerKey`). Derselbe Pfad
+  dient in vielen Kämpfen, nicht in allen für einen Tankbuster: `tank_lockon02k1` wechselte in seinen Protokollen vom
+  19.–23.10.2026 sechsmal zwischen bestätigt und verworfen, und jeder Wechsel zu „verworfen" kostete im nächsten Kampf
+  mit echtem Tankbuster die Abwehr, die nur am Marker hing (A338). Einträge nur mit Pfad aus der Zeit davor treffen kein
+  Gebiet und bleiben unbeachtet in der Datei; der Marker gilt dort wieder als Tankbuster, bis ein Kampf im Gebiet anderes
+  zeigt.
 - **Selbstkorrektur statt Zählschwelle:** Die Beobachtung läuft für gelistete Pfade weiter; ein späterer Treffer
-  nach demselben Marker nimmt den Pfad wieder heraus. Ein falscher Eintrag kostet eine ausgelassene Abwehr beim
+  nach demselben Marker im selben Gebiet nimmt den Eintrag wieder heraus. Ein falscher Eintrag kostet eine ausgelassene Abwehr beim
   nächsten Auftreten und korrigiert sich dann. Deshalb genügt eine Beobachtung, und es gibt keine feste Zahl.
 - **Wann eine Beobachtung endet:** wenn der Marker die VFX-Warteschlange verlassen hat — dieselbe Warteschlange,
   aus der die Entscheidung liest — und jeder gegnerische Zauber, der lief, solange der Marker stand, geendet

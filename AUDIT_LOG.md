@@ -9435,6 +9435,19 @@ Sequenz, Glockenspiel, Abgleich mit The Balance, Six-sided Star, Vorlauf, AoE-Sc
   Liste den Status nicht führt – sie lädt aus Upstream nur ohne Datei oder beim Zurücksetzen (Konzept 03).
 - *Prüfgrad:* statisch, Spielblätter, Compile; im Spiel nicht beobachtet. Konzept 03.
 
+**2. Marker-Negativliste je Gebiet** (offen seit A337).
+- *Optionen:* (0) nichts – jeder Wechsel kostet eine Markerabwehr; (a) Schlüssel Gebiet und Pfad; (b) eine Zählschwelle
+  je Pfad – widerspricht Konzept 15 („Selbstkorrektur statt Zählschwelle") und bliebe global.
+- *Gewählt (a):* `DataCenter.TankbusterMarkerKey` = `TerritoryType:Pfad`, geschrieben und gelesen von
+  `TankbusterMarkerWatch` und `IsFalsifiedTankbusterMarker`. Der Typ der Datei bleibt `HashSet<string>`, kein Vertrag
+  ändert sich. Alte Einträge nur mit Pfad treffen kein Gebiet: Der Marker gilt dort wieder als Tankbuster – die sichere
+  Richtung –, bis ein Kampf im Gebiet anderes zeigt.
+- *Falsifikation.* Kein Defekt: widerlegt durch sechs Wechsel desselben Pfads (A334, A337). Option falsch: Ein Pfad,
+  der in einem Gebiet zweierlei bedeutet (zwei Bosse eines Dungeons), wechselt weiter, nun begrenzt auf das Gebiet.
+  Ausgeliefert, nichts ändert sich: Die Abwehr hängt selten am Marker allein (Wirken und BossModReborn öffnen sie oft
+  mit); die Wirkung ist auf diese Fälle begrenzt.
+- *Prüfgrad:* statisch, Compile; im Spiel nicht beobachtet. Konzept 15.
+
 ---
 ## B · Commit-Register (Fork vs. `upstream/main`)
 

@@ -8,7 +8,8 @@ namespace RotationSolver.Basic.Helpers;
 /// ingame aufbauen, wenn ein vfx nachträglich als tankbuster falsifiziert wurde. (sicher speichern ...)".
 /// </summary>
 /// <remarks>
-/// <para>Every marker that the tankbuster paths catch on a party member opens a watch. An enemy action
+/// <para>Every marker that the tankbuster paths catch on a party member opens a watch, for the area it appears in:
+/// one path serves many fights (DataCenter.TankbusterMarkerKey, A338). An enemy action
 /// that reaches the marked member - damage of any amount, blocked, parried or swallowed by a barrier,
 /// or a hit turned away by invulnerability or evasion; auto-attacks excluded - confirms it. A watch that closes without such a hit falsifies the path, and it goes on
 /// the list; the recognition (DataCenter.UpdateTankbusterTargets, IsTankbusterVfxOn) then ignores it, and with it
@@ -36,6 +37,9 @@ internal static class TankbusterMarkerWatch
 	{
 		public required ulong Target { get; init; }
 		public required string Path { get; init; }
+
+		// The list entry: the area the marker appeared in and its path (DataCenter.TankbusterMarkerKey).
+		public required string Key { get; init; }
 		public required DateTime Seen { get; init; }
 		public required DateTime CastEnds { get; set; }
 		public DateTime? LeftQueue { get; set; }
@@ -75,6 +79,7 @@ internal static class TankbusterMarkerWatch
 			{
 				Target = vfx.ObjectId,
 				Path = vfx.Path.ToLowerInvariant(),
+				Key = DataCenter.TankbusterMarkerKey(vfx.Path),
 				Seen = vfx.Time,
 				CastEnds = now + TimeSpan.FromSeconds(LongestEnemyCastRemaining()),
 			});
@@ -88,7 +93,7 @@ internal static class TankbusterMarkerWatch
 
 			if (watch.Hit)
 			{
-				changed |= OtherConfiguration.TankbusterMarkerWithoutHit.Remove(watch.Path);
+				changed |= OtherConfiguration.TankbusterMarkerWithoutHit.Remove(watch.Key);
 				_open.RemoveAt(i);
 				continue;
 			}
@@ -124,7 +129,7 @@ internal static class TankbusterMarkerWatch
 			_open.RemoveAt(i);
 			if (Svc.Objects.SearchById(watch.Target) is IBattleChara target && !target.IsDead && target.IsParty())
 			{
-				changed |= OtherConfiguration.TankbusterMarkerWithoutHit.Add(watch.Path);
+				changed |= OtherConfiguration.TankbusterMarkerWithoutHit.Add(watch.Key);
 			}
 		}
 
@@ -147,7 +152,7 @@ internal static class TankbusterMarkerWatch
 			if (watch.Target == targetId)
 			{
 				watch.Hit = true;
-				marked |= !OtherConfiguration.TankbusterMarkerWithoutHit.Contains(watch.Path);
+				marked |= !OtherConfiguration.TankbusterMarkerWithoutHit.Contains(watch.Key);
 			}
 		}
 

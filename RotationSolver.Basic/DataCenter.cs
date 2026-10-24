@@ -2547,9 +2547,18 @@ internal static class DataCenter
 			|| StartsWithAny(path, SharedDamagePaths)
 			|| StartsWithAny(path, SpreadDamagePaths);
 
-	/// <summary>Whether the fight has shown this marker path not to be followed by a hit.</summary>
+	/// <summary>Whether a fight in this area has shown this marker path not to be followed by a hit.</summary>
 	internal static bool IsFalsifiedTankbusterMarker(string path)
-		=> OtherConfiguration.TankbusterMarkerWithoutHit.Contains(path.ToLowerInvariant());
+		=> OtherConfiguration.TankbusterMarkerWithoutHit.Contains(TankbusterMarkerKey(path));
+
+	/// <summary>
+	/// The entry of a marker in <see cref="OtherConfiguration.TankbusterMarkerWithoutHit"/>: the area and the path. One
+	/// path serves many fights and is not a tankbuster in all of them - `tank_lockon02k1` changed between confirmed and
+	/// falsified six times in his traces of 19.-23.10.2026, and each change to falsified cost the marker's defence in the
+	/// next fight where it was one (A338). An entry of the path alone, from before, matches no area and is passed over:
+	/// the marker counts as a tankbuster again until a fight in the area shows otherwise.
+	/// </summary>
+	internal static string TankbusterMarkerKey(string path) => $"{TerritoryID}:{path.ToLowerInvariant()}";
 
 	// Read by several updaters and rotations each frame, so each is computed once per frame.
 	private static readonly FrameCached<bool> _isHostileCastingAoe = new(() => InCombat && (IsCastingAreaVfx() || IsAnyHostileCastingArea()));

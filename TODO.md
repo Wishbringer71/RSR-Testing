@@ -14,19 +14,18 @@ Nach der Wirkung im Kampf: Sicherheit der Gruppe vor Schaden, gewichtet mit der 
 1. Tank-Unverwundbarkeit vor Tankbustern ohne Aktionsangabe oder Messung nur reaktiv
 2. Tanks: Reflexion und Gruppenbarriere auf demselben Raidwide
 3. DRK: Bruch von The Blackest Night zählen
-4. Marker-Negativliste kennt nur den Pfad, nicht den Kampf
-5. Rückstoß und Stopp-Casts: Größe messen
-6. Vorausschau vor dem ersten Treffer
-7. Flächenheilung um den Wirkenden: Radius gegen Trefferfläche
-8. Einstellungen ohne Leser, deren Text eine Wirkung verspricht
-9. Feste Werte: jeder offene Wert braucht seinen Loop
-10. Tankbuster-Plan: Umlauf über die Sequenz jedes Drucks
-11. Weißmagier: Glockenspiel nach einem einzelnen Treffer auslösen
-12. Rotationen gegen The Balance abgleichen
-13. Six-sided Star und Flamethrower
-14. Vorlauf: Dragoon und Viper
-15. AoE-Schwelle an drei Orten
-16. Audit der gesamten Codebasis
+4. Rückstoß und Stopp-Casts: Größe messen
+5. Vorausschau vor dem ersten Treffer
+6. Flächenheilung um den Wirkenden: Radius gegen Trefferfläche
+7. Einstellungen ohne Leser, deren Text eine Wirkung verspricht
+8. Feste Werte: jeder offene Wert braucht seinen Loop
+9. Tankbuster-Plan: Umlauf über die Sequenz jedes Drucks
+10. Weißmagier: Glockenspiel nach einem einzelnen Treffer auslösen
+11. Rotationen gegen The Balance abgleichen
+12. Six-sided Star und Flamethrower
+13. Vorlauf: Dragoon und Viper
+14. AoE-Schwelle an drei Orten
+15. Audit der gesamten Codebasis
 
 Danach technische Schuld, soweit ihre Auflösungsbedingung erfüllt ist. Warten auf Daten: unten.
 
@@ -62,14 +61,6 @@ gemessene Größe je Raidwide. *Konzept:* 09, „Krieger: die übrige Abwehr".
 *Im Kampf:* Ob die Barriere unter den engeren Stufen von `BlackestNightUsage` bricht (Annahmen: vier Gegner erreichen
 3,6 % der maximalen LP je Sekunde; ein Tankbuster nimmt die angehobene Schwelle mit), sieht niemand. *Nächster
 Schritt:* Die Regel zählt ihren Bruch selbst (Dark Arts danach) und steuert `BlackestNightMinHostiles` nach. *Konzept:* 10.
-
-### Marker-Negativliste kennt nur den Pfad, nicht den Kampf · N
-
-*Im Kampf:* `tank_lockon02k1` dient in vielen Kämpfen als Marker, nicht überall für einen Tankbuster. Die Liste der
-Marker ohne Treffer führt nur den Pfad: Er wechselte in seinen Protokollen vom 19.–23.10.2026 sechsmal zwischen
-bestätigt und verworfen, und jeder Wechsel zu „verworfen" kostet im nächsten Kampf mit echtem Tankbuster die Abwehr,
-die nur am Marker hängt. *Nächster Schritt:* voller Loop – Schlüssel Pfad und Gebiet (`TerritoryType`), Migration der
-gespeicherten Liste (`TankbusterMarkerWithoutHit.json`). *Konzept:* 15, „V2: Tankbuster-Marker breiter erkennen".
 
 ### Rückstoß und Stopp-Casts: Größe messen · N
 
