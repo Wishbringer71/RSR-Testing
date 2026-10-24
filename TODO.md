@@ -14,18 +14,17 @@ Auftrag vom 24.10.2026 läuft: die einfachen Punkte zuerst (A338), die schweren 
 steht seit seinem Hinweis vom 24.10.2026 vor der Flächenheilung: Es heilt eine Gruppe nach einem Treffer, der ihr fast
 alles nimmt.
 
-1. DRK: Bruch von The Blackest Night zählen
-2. Rückstoß und Stopp-Casts: Größe messen
-3. Vorausschau vor dem ersten Treffer
-4. Weißmagier: Glockenspiel vor großen Treffern und zweiter Druck
-5. Flächenheilung um den Wirkenden: Radius gegen Trefferfläche
-6. Feste Werte: jeder offene Wert braucht seinen Loop
-7. Tankbuster-Plan: Umlauf über die Sequenz jedes Drucks
-8. Rotationen gegen The Balance abgleichen
-9. Six-sided Star und Flamethrower
-10. Vorlauf: Dragoon und Viper
-11. AoE-Schwelle an drei Orten
-12. Audit der gesamten Codebasis
+1. Rückstoß und Stopp-Casts: Größe messen
+2. Vorausschau vor dem ersten Treffer
+3. Weißmagier: Glockenspiel vor großen Treffern und zweiter Druck
+4. Flächenheilung um den Wirkenden: Radius gegen Trefferfläche
+5. Feste Werte: jeder offene Wert braucht seinen Loop
+6. Tankbuster-Plan: Umlauf über die Sequenz jedes Drucks
+7. Rotationen gegen The Balance abgleichen
+8. Six-sided Star und Flamethrower
+9. Vorlauf: Dragoon und Viper
+10. AoE-Schwelle an drei Orten
+11. Audit der gesamten Codebasis
 
 Danach technische Schuld, soweit ihre Auflösungsbedingung erfüllt ist. Warten auf Daten: unten.
 
@@ -34,12 +33,6 @@ Danach technische Schuld, soweit ihre Auflösungsbedingung erfüllt ist. Warten 
 Keine bekannt.
 
 ## Offene Arbeit
-
-### DRK: Bruch von The Blackest Night zählen · N, U
-
-*Im Kampf:* Ob die Barriere unter den engeren Stufen von `BlackestNightUsage` bricht (Annahmen: vier Gegner erreichen
-3,6 % der maximalen LP je Sekunde; ein Tankbuster nimmt die angehobene Schwelle mit), sieht niemand. *Nächster
-Schritt:* Die Regel zählt ihren Bruch selbst (Dark Arts danach) und steuert `BlackestNightMinHostiles` nach. *Konzept:* 10.
 
 ### Rückstoß und Stopp-Casts: Größe messen · N
 

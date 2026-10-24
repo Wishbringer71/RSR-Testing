@@ -2128,6 +2128,26 @@ internal static class DataCenter
 		}
 	}
 
+	/// <summary>
+	/// The share of the player's maximum HP that enemy actions took within the last <paramref name="seconds"/>, after
+	/// the mitigation that stood, from the effect handler's damage records - what a barrier pressed then would have had
+	/// to absorb. For The Blackest Night, whose reward needs its barrier spent within its duration (concept 10, A340).
+	/// </summary>
+	internal static float DamageTakenWithin(float seconds)
+	{
+		var now = DateTime.Now;
+		float taken = 0;
+		foreach (var rec in _damages)
+		{
+			if ((now - rec.ReceiveTime).TotalSeconds < seconds)
+			{
+				taken += rec.Ratio;
+			}
+		}
+
+		return taken;
+	}
+
 	public static ActionRec[] RecordActions
 	{
 		get
@@ -2215,6 +2235,13 @@ internal static class DataCenter
 
 	internal static void AddDamageRec(float damageRatio)
 	{
+		// Only what did damage: the queue keeps a fixed number of records, and every enemy action that missed the
+		// player filled it with zeros - in a large party a few seconds' worth, too short for DamageTakenWithin (A340).
+		if (damageRatio <= 0f)
+		{
+			return;
+		}
+
 		if (_damages.Count >= QUEUECAPACITY)
 		{
 			_ = _damages.Dequeue();

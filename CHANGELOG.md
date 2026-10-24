@@ -23,6 +23,12 @@ are not reconstructed here.
 
 ## Unreleased
 
+### Behaviour change in RotationSolver.Basic: `DataCenter.DPSTaken` counts only hits that did damage
+
+The damage record behind `DataCenter.DPSTaken` no longer takes a zero for every enemy action that missed the player. Its
+span runs from the first to the last damaging hit within five seconds, so the rate reads higher where misses used to
+widen it; in a large party the fixed-size record now covers more than a few seconds.
+
 ### RotationSolver.Basic: tanks spread Reprisal and the party tool over area attacks
 
 `CustomRotation.TankAreaDefenseStretched(params IBaseAction[] partyTools)` is new and protected: true while Reprisal or

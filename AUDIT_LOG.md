@@ -9564,7 +9564,7 @@ Einstellung wieder gelesen wird oder nicht mehr besteht, mit Selbsttest; der ers
 
 **Prüfgrad:** statisch, Versionsgeschichte, Spielblätter (xivapi v2), Prüfskripte mit Selbsttest, Compile. Konzept 11.
 
-### A340 · Schwere TODO-Punkte: zweite Beobachtung desselben Markers (Defekt), Marker ohne Wirken, Tank-Streckung (24.10.2026)
+### A340 · Schwere TODO-Punkte: zweite Beobachtung desselben Markers (Defekt), Marker ohne Wirken, Tank-Streckung, Blackest Night (24.10.2026)
 
 Seine Präzisierung zum Auftrag vom 24.10.2026: „ausserdem war die priorisierung in der todo: was ist wichtig und was ist
 davon einfach umsetzbar. das heißt nicht dass schwer umsetzbare wichtige dinge weggelassen werden sollten." In
@@ -9656,6 +9656,26 @@ Aktionsangabe oder Messung); beim Lesen der Marker-Beobachtung fiel ein Defekt a
 - *Prüfgrad:* statisch, Compile; im Spiel nicht beobachtet. Messmittel: `DefenseTrace.log` schreibt „holding: Tank:
   Reprisal or the party mitigation still in effect (area)" in die Zeile der offenen Flächenabwehr, wie jede Streckung.
   Konzepte 08 und 09.
+
+**Punkt: Bruch von The Blackest Night.**
+- *Befund:* Der Pull-Zweig setzte voraus, dass vier Gegner 25 % der Maximalgesundheit in 7 s (Wirktext) erreichen;
+  niemand prüfte das. Konzept 10 hatte das Messen ausgeschlossen: ein eigener Ringpuffer koste in jedem Kampf, und der
+  Strom der letzten Sekunden sage nichts über die nächsten sieben (C123). Den Puffer führt Upstream seit 2023
+  (`DataCenter.AddDamageRec`, `DPSTaken`); die Gegnerzahl schließt ebenso aus der Gegenwart, nur gröber.
+- *Optionen:* (0) nichts; (a) den Ausgang zählen und `BlackestNightMinHostiles` nachsteuern – die Zahl ist seine
+  Einstellung, ihr Text bestimmt, ab wann ein Pull groß genug ist, eine Nachsteuerung überginge ihn; (b) den Strom messen
+  und als weitere Bedingung lesen; (c) eine feste Mehrheitsschwelle über gezählte Ausgänge – eine Zahl ohne Spielbezug.
+- *Gewählt (b), hinter einer Option, ab Werk an:* `StreamWouldBreakBarrier` liest `DataCenter.DamageTakenWithin` über
+  die Wirkdauer gegen den Barrierenanteil, beide aus dem Wirktext. `AddDamageRec` nimmt keine Nullen mehr auf: Jede
+  gegnerische Aktion, die den Spieler verfehlte, füllte die 48 Plätze, in großen Gruppen blieben wenige Sekunden.
+  `DefenseTrace.log` schreibt je eigener Barriere, ob sie brach, mit Strom und Gegnerzahl davor – der Zähler, den der
+  TODO-Eintrag verlangte, als Prüfung der Regel.
+- *Falsifikation.* Kein Defekt: Die Annahme ist am Code unbelegt, das Konzept nannte sie selbst so. Option falsch: Am
+  Pullbeginn wartet die Barriere, bis der Strom gemessen ist; sie wartet dort schon auf Reflexion und Abtausch, und der
+  Notfall bei niedriger Gesundheit wartet auf nichts. Der Strom misst Schaden nach der Minderung, die stand – genau
+  das, was die Barriere getroffen hätte. Ausgeliefert, nichts ändert sich: als Nicht-Dunkelritter; in Pulls, deren Strom
+  die Schwelle ohnehin erreicht (dann kommt die Barriere wie bisher); mit der Option aus.
+- *Prüfgrad:* statisch, Compile; im Spiel nicht beobachtet. Messmittel: die Protokollzeile je Barriere. Konzept 10.
 
 ---
 ## B · Commit-Register (Fork vs. `upstream/main`)
@@ -9959,3 +9979,4 @@ Die offene Arbeit dazu — Reihenfolge und Abbruchbedingung der Nachprüfung —
 | C120 | A337 und der Bericht vom 24.10.2026: jede Schlaf-Datei entstehe erst beim ersten Eintrag, `SleepDiminishing.json` gebe es noch nicht | `OtherConfiguration.Save` schreibt beim Entladen des Plugins jede geladene Datei, auch leer; seine `SleepDiminishing.json` vom 24.10.2026 ist `{}` | A337 berichtigt |
 | C121 | A54, Konzept 11 („Ausgeschlossen") und die Vorlage in A338: `SwiftcastBuffer` bedeute, Spontanität erst bei so viel Restzeit einzuschieben, und kollidiere deshalb mit der Ausführungssperre | Gelesen war die Dokumentation, nicht der Code. Upstreams Leser (4919e1ad5) schob nur bei **mehr** Restzeit ein, ein Mindestabstand ganz oberhalb der Sperre; die Dokumentation widersprach ihrem Code. Folge: Die Empfehlung, sie zu entfernen, stand auf einem falschen Grund | A339: neu geprüft, mit richtigem Grund entfernt |
 | C122 | A338 und Konzept 15 („Je Gebiet"): `tank_lockon02k1` habe sechsmal zwischen bestätigt und verworfen gewechselt, weil ein Pfad in verschiedenen Kämpfen Verschiedenes bedeute | Die Wechsel kamen aus der zweiten Beobachtung desselben Markers nach seinem Treffer und aus den bis A334 ungelesenen Helfern; ein Kampf, in dem der Pfad keinen Tankbuster ankündigt, ist nicht belegt | A340: Defekt behoben, Begründung des Schlüssels berichtigt |
+| C123 | Konzept 10, „Ausgeschlossen": den Verbrauch von The Blackest Night zu messen brauche einen eigenen Ringpuffer, der in jedem Kampf koste, und der Schadensfluss der letzten Sekunden sage nichts über die nächsten sieben | Die Schadensaufzeichnung des Effekt-Handlers führt Upstream seit 2023 (`AddDamageRec`); die Gegnerzahl, die stattdessen galt, schließt ebenso aus der Gegenwart auf die nächsten sieben Sekunden, nur ohne den Schaden zu sehen | A340: Strom gemessen, Bedingung im Pull-Zweig |

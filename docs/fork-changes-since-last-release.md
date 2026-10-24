@@ -40,6 +40,14 @@ for the next. Now the second waits while the first still works - a barrier until
 in a row each get one. Both still go together when a member is in danger or the attack, as measured, would put an
 unprotected member there. Setting: "Spread Reprisal and the party mitigation over a run of area attacks", on by default.
 
+## Dark Knight: The Blackest Night in a pull only when the damage would break it
+
+On a pull, the barrier went up once four enemies stood in range and no other mitigation ran - an assumption that four
+enemies hit hard enough to break it within its duration and return the 3000 MP as Dark Arts. It now also waits until
+the damage you took over the barrier's duration reached the share its text names. A soft pack keeps the MP for Edge of
+Shadow; tankbusters and low health are not affected. DefenseTrace.log notes for each of your barriers whether it broke.
+Setting: "In a pull, use The Blackest Night only once the damage you take would break it", on by default.
+
 ## A raidwide during a tankbuster marker is no longer learned as the tankbuster
 
 Any enemy action that struck a marked member while the marker stood counted as its tankbuster, so a raidwide landing
