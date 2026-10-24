@@ -67,7 +67,9 @@ Sie hier ebenfalls umzustellen wäre eine zweite, größere Änderung.
 **Sachstand:** Für einen gewirkten Tankbuster, dessen Höhe die Tankbuster-Tabelle kennt (Konzept 13), plant RSR je
 Durchlauf das billigste Bündel eigener Minderungen, mit dem der Tank den Treffer übersteht. Die Unverwundbarkeit
 kommt nur, wenn kein Bündel reicht. „Alles" geht nur hinaus, wenn auch sie nicht verfügbar ist. Was der Plan nicht
-braucht, hält RSR auf allen Pfaden zurück. Zwei Optionen, ab Werk an:
+braucht, hält RSR auf allen Pfaden zurück. Ein Marker ohne Wirken wird mit dem dort zuletzt gemessenen Treffer
+geplant, ohne Zurückhalten außer unter der Unverwundbarkeit (Abschnitt „Ein Marker ohne Wirken"); beide
+Einstellungstexte nennen das. Zwei Optionen, ab Werk an:
 - „Spend only the mitigation a measured tankbuster needs": Minderungsdrücke und Zurückhalten; Tanks und Heiler.
 - „Use the invulnerability before a tankbuster nothing less survives": die Unverwundbarkeit vor dem Treffer; nur Tanks.
 

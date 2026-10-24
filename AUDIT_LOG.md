@@ -9617,8 +9617,12 @@ Aktionsangabe oder Messung); beim Lesen der Marker-Beobachtung fiel ein Defekt a
 - *Gewählt (a):* `TankbusterMarkerWatch` lernt beim Bestätigen Aktion und Zeit (erster Treffer, keine Aktion, die die
   ganze Gruppe traf), `TankbusterMarkerHits.json`; gleiche Aktion behält die kürzere Zeit, eine andere ersetzt.
   `TankbusterForecast` legt bei einem Marker ohne Wirken einen Eintrag `Learned` an: ohne Debuffs am Gegner, Ziel des
-  Spielers als Bezug, sonst kein Plan. Zurückgehalten wird nur unter geplanter Unverwundbarkeit. Die Option „Use the
-  invulnerability before a tankbuster nothing less survives" wirkt damit auch hier, wie ihr Text sagt.
+  Spielers als Bezug, sonst kein Plan. Zurückgehalten wird nur unter geplanter Unverwundbarkeit.
+- *Einstellungstexte:* Die Beschreibung von „Use the invulnerability before a tankbuster nothing less survives" schloss
+  Marker aus, mit dem Grund „none of them names a measured action". Der Grund ist geprüft und gilt für einen Marker mit
+  gelerntem Treffer nicht mehr; die Beschreibung nennt jetzt diesen Fall und behält den Ausschluss für Vorhersage,
+  ungemessene Aktion und ersten Marker. Die Beschreibung von „Spend only the mitigation a measured tankbuster needs"
+  nennt die Ausnahme vom Zurückhalten. Beide im Commit danach, weil der erste sie nicht mitzog.
 - *Falsifikation.* Kein Defekt: widerlegt am Code (die gemessene Zahl erreichte den Plan nicht) und am Protokoll (8 von
   14). Option falsch: Ein Marker, der im Gebiet zwei Tankbuster ankündigt, plant den zuletzt gelernten; hält dann nur
   unter Unverwundbarkeit zurück, die jeden Treffer abhält, sonst nichts. Ein früher erster Treffer statt des
