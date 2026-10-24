@@ -587,23 +587,30 @@ public partial class CustomRotation
 	}
 
 	/// <summary>
-	/// Level at which the Enhanced traits of Addle, Feint and Reprisal extend those debuffs from 10s
-	/// to 15s.
-	/// </summary>
-	/// <remarks>
-	/// Duration only. The reduction each of them applies does not change with the trait - the user
-	/// checked the Lodestone entry after this code had briefly priced an end-game Reprisal at 15%,
-	/// on the strength of a note in <see cref="StatusHelper.ReprisalStatus"/> that named no source.
-	/// The effect texts agree: action 7535 states 10% and leaves only the duration blank, which is
-	/// how the game data marks a trait-modified figure.
-	/// </remarks>
-	private const int EnhancedMitigationDebuffLevel = 98;
-
-	/// <summary>
 	/// How much longer a slowed enemy takes between attacks. Arm's Length (7548) afflicts
 	/// "Slow +20%", and the sign is the point: the delay grows, the hit does not shrink.
 	/// </summary>
-	private const float SlowDelayIncrease = 0.20f;
+	/// <remarks>
+	/// Read from the action's effect text in the game, the English sheet evaluated like the tooltip, as the trait
+	/// durations are (A340). A text that cannot be read answers 0: the slow then leaves an enemy's output whole, the
+	/// larger figure, which releases the one ceiling that reads it rather than holding Holy on a guess.
+	/// </remarks>
+	private static float SlowDelayIncrease => _slowDelayIncrease ??= StatedSlow(ActionID.ArmsLengthPvE);
+
+	private static float? _slowDelayIncrease;
+
+	private static readonly System.Text.RegularExpressions.Regex StatedSlowPercent =
+		new(@"Slow \+(?<value>\d{1,3})%", System.Text.RegularExpressions.RegexOptions.Compiled);
+
+	private static float StatedSlow(ActionID action)
+	{
+		if (ActionTooltip.TryStated((uint)action, StatedSlowPercent, out var percent))
+		{
+			return percent / 100f;
+		}
+
+		return 0f;
+	}
 
 	/// <summary>
 	/// What share of its damage output a hostile still has, in percent, given the throttles on it.
@@ -655,24 +662,25 @@ public partial class CustomRotation
 			factor *= 1f / (1f + SlowDelayIncrease);
 		}
 
+		// The physical column of each effect text, through the generated figures (A340).
 		if (hostile.HasStatus(false, StatusHelper.ReprisalStatus))
 		{
-			factor *= 0.90f;
+			factor *= 1f - DefensiveValues.For((uint)ActionID.ReprisalPvE).EnemyPhysical;
 		}
 
 		if (hostile.HasStatus(false, StatusID.Feint))
 		{
-			factor *= 0.90f;
+			factor *= 1f - DefensiveValues.For((uint)ActionID.FeintPvE).EnemyPhysical;
 		}
 
 		if (hostile.HasStatus(false, StatusID.Addle))
 		{
-			factor *= 0.95f;
+			factor *= 1f - DefensiveValues.For((uint)ActionID.AddlePvE).EnemyPhysical;
 		}
 
 		if (hostile.HasStatus(false, StatusID.Dismantled))
 		{
-			factor *= 0.90f;
+			factor *= 1f - DefensiveValues.For((uint)ActionID.DismantlePvE).EnemyPhysical;
 		}
 
 		return (int)Math.Round(factor * 100f);
@@ -1107,9 +1115,28 @@ public partial class CustomRotation
 	protected static IBattleChara? PartyTank => DataCenter.PartyTank;
 
 	/// <summary>
-	/// All four tank gap closers (Intervene, Onslaught, Shadowstride, Trajectory) have a 20-yalm range.
+	/// The reach of the four tank gap closers (Intervene, Onslaught, Shadowstride, Trajectory), the longest of them from
+	/// the action sheet - 20 yalms for each today (A340).
 	/// </summary>
-	private const float TankGapCloserRangeYalms = 20f;
+	private static float TankGapCloserRangeYalms => _tankGapCloserRange ??= LongestRange(
+		ActionID.IntervenePvE, ActionID.OnslaughtPvE, ActionID.ShadowstridePvE, ActionID.TrajectoryPvE);
+
+	private static float? _tankGapCloserRange;
+
+	private static float LongestRange(params ActionID[] actions)
+	{
+		var sheet = Service.GetSheet<Lumina.Excel.Sheets.Action>();
+		float longest = 0;
+		foreach (var action in actions)
+		{
+			if (sheet.TryGetRow((uint)action, out var row))
+			{
+				longest = Math.Max(longest, row.Range);
+			}
+		}
+
+		return longest;
+	}
 
 	/// <summary>
 	/// Whether the party's tank is within gap-closer range of enough hostiles to be pulling them, used
@@ -1884,15 +1911,48 @@ public partial class CustomRotation
 	}
 
 	/// <summary>
-	/// Shared duration of the enemy mitigation debuffs Addle, Feint and Reprisal, whose Enhanced traits
-	/// extend all three from 10s to 15s.
+	/// The duration of Reprisal's debuff at the player's synced level, from the game - the figure Addle and Feint share
+	/// with it today (<see cref="MitigationDebuffDurationOf"/>).
 	/// </summary>
 	/// <remarks>
-	/// The trait changes the duration and nothing else - not the reduction, which stays at each
-	/// debuff's base figure whatever the level.
+	/// The Enhanced traits extend the three debuffs and change nothing else - not the reduction, which stays at each
+	/// debuff's base figure whatever the level (the user checked the Lodestone entry after this code had briefly priced
+	/// an end-game Reprisal at 15%; action 7535 states 10% and leaves only the duration blank, which is how the game
+	/// data marks a trait-modified figure). The duration used to be written in here as 10 s, 15 s from level 98 - the
+	/// same task <see cref="DefensiveValues.DurationOf"/> answers from the trait and the tooltip at the synced level
+	/// (A338).
 	/// </remarks>
-	protected static float MitigationDebuffDuration =>
-		DataCenter.PlayerSyncedLevel() >= EnhancedMitigationDebuffLevel ? 15f : 10f;
+	protected static float MitigationDebuffDuration => MitigationDebuffDurationOf(StatusHelper.ReprisalStatus);
+
+	/// <summary>
+	/// The duration at the player's synced level of the enemy mitigation debuff the given statuses belong to: the
+	/// action that lays them (<see cref="DefensiveValues.MitigatingStatusesByActionId"/>) and its duration from the game
+	/// (<see cref="DefensiveValues.DurationOf"/>). Where the game answers nothing below the trait's level, the trait's
+	/// figure - a duration taken too long has a refresh come early, one of zero would hold Reprisal for a raidwide it
+	/// already covers.
+	/// </summary>
+	/// <param name="statusIDs">The statuses of one debuff: Addle's, Feint's or Reprisal's.</param>
+	/// <returns>The duration in seconds; zero when no action lays any of them.</returns>
+	protected static float MitigationDebuffDurationOf(params StatusID[] statusIDs)
+	{
+		foreach (var (actionId, statuses) in DefensiveValues.MitigatingStatusesByActionId)
+		{
+			foreach (var statusId in statusIDs)
+			{
+				if (Array.IndexOf(statuses, (uint)statusId) < 0)
+				{
+					continue;
+				}
+
+				var seconds = DefensiveValues.DurationOf(actionId);
+				return seconds > 0f
+					? seconds
+					: DefensiveValues.TraitDurationByActionId.TryGetValue(actionId, out var trait) ? trait.Seconds : 0f;
+			}
+		}
+
+		return 0f;
+	}
 
 	/// <summary>
 	/// Whether an enemy mitigation debuff (Addle/Feint/Reprisal) is due for a proactive refresh: either
@@ -1903,9 +1963,41 @@ public partial class CustomRotation
 	/// </summary>
 	protected static bool ShouldSustainMitigationDebuff(params StatusID[] statusIDs)
 	{
-		return BMRShouldRefreshBefore(BMRDamageIn, MitigationDebuffDuration, false, HostileTarget, statusIDs)
+		return BMRShouldRefreshBefore(BMRDamageIn, MitigationDebuffDurationOf(statusIDs), false, HostileTarget, statusIDs)
 			|| (NumberOfHostilesInRange >= Service.Config.MitigationSustainHostileCount
-				&& (HostileTarget?.WillStatusEndGCD(2, 0, false, statusIDs) ?? false));
+				&& (HostileTarget?.WillStatusEndGCD(StatusRefreshGcdCountOf(statusIDs), 0, false, statusIDs) ?? false));
+	}
+
+	/// <summary>
+	/// The horizon the action laying these statuses names in its own setting, "Number of GCDs before the DOT/Status
+	/// effect is reapplied" - the test CanUse makes when its status check is not skipped. The count branch above skips
+	/// it for the prediction branch's sake and asked a copy of the default instead, so a changed setting did not reach
+	/// it (A340). Without a rotation that lays them, the default of a fresh action configuration.
+	/// </summary>
+	private static uint StatusRefreshGcdCountOf(StatusID[] statusIDs)
+	{
+		var actions = DataCenter.CurrentRotation?.AllBaseActions;
+		if (actions != null)
+		{
+			foreach (var action in actions)
+			{
+				var provided = action.Setting.TargetStatusProvide;
+				if (provided == null)
+				{
+					continue;
+				}
+
+				foreach (var status in provided)
+				{
+					if (Array.IndexOf(statusIDs, status) >= 0)
+					{
+						return action.Config.StatusRefreshGcdCount;
+					}
+				}
+			}
+		}
+
+		return new ActionConfig().StatusRefreshGcdCount;
 	}
 	#endregion
 

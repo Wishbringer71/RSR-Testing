@@ -50,10 +50,11 @@ internal static class CancelCastUpdater
 		// already up. Both casts and their target are on screen, the party list shows them side by side.
 		var raiseLandsFirstElsewhere = RaiseLandsFirstElsewhere(player, castTarget);
 
-		// Cancel if a NoCastingStatus is about to resolve - same window and PvP exemption as DoAction, which still starts casts outside of it
+		// Cancel if a NoCastingStatus is about to resolve - same window and PvP exemption as DoAction, which still starts casts outside of it -
+		// or at once under one that damages every action, which DoAction does not act under at all (A338)
 		var hasNoCastingStatus = !DataCenter.IsPvP
-			&& NoCastingStatusHelper.PlayerHasNoCastingStatus(out var noCastingRemaining)
-			&& noCastingRemaining < NoCastingStatusHelper.ResolveWindow;
+			&& NoCastingStatusHelper.PlayerHasNoCastingStatus(out var noCastingRemaining, out var damagesEveryAction)
+			&& (damagesEveryAction || noCastingRemaining < NoCastingStatusHelper.ResolveWindow);
 
 		// Cancel cast in PvP if an enemy target gains Guard and the action does not ignore Guard
 		var tarHasGuard = DataCenter.IsPvP && Service.Config.PvpGuardCancel

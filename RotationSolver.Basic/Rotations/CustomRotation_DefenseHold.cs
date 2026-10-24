@@ -126,7 +126,27 @@ public partial class CustomRotation
 	/// <returns>True while the stretch holds.</returns>
 	protected static bool AreaDefenseStretched(string rule, params IBaseAction[] triggers)
 	{
-		return HoldAreaDefense(AnyTriggerInEffect(triggers), rule);
+		return HoldAreaDefense(AnyTriggerInEffect(triggers, true), rule);
+	}
+
+	/// <summary>
+	/// The tanks' stage of the stretch: Reprisal and the job's party mitigation take turns over a run of area attacks
+	/// instead of both falling on the first - The Balance stacks them for a big hit and spreads them over several, and
+	/// the measured size decides which through the danger yield (concept 09, "Krieger: die übrige Abwehr", rule 9). Read
+	/// only with "Spread Reprisal and the party mitigation over a run of area attacks" on.
+	/// </summary>
+	/// <param name="partyTools">The job's party mitigation: Divine Veil and Passage of Arms, Shake It Off, Dark
+	/// Missionary, Heart of Light.</param>
+	/// <returns>True while Reprisal and the party tools wait.</returns>
+	protected bool TankAreaDefenseStretched(params IBaseAction[] partyTools)
+	{
+		if (!Service.Config.SpreadTankAreaDefense)
+		{
+			return false;
+		}
+
+		IBaseAction[] triggers = [ReprisalPvE, .. partyTools];
+		return AreaDefenseStretched("Tank: Reprisal or the party mitigation still in effect", triggers);
 	}
 
 	/// <summary>
@@ -138,7 +158,7 @@ public partial class CustomRotation
 	/// <returns>True while the stretch holds.</returns>
 	protected static bool SingleDefenseStretched(string rule, params IBaseAction[] triggers)
 	{
-		return HoldSingleDefense(AnyTriggerInEffect(triggers), rule);
+		return HoldSingleDefense(AnyTriggerInEffect(triggers, false), rule);
 	}
 
 	// A trigger is in effect from its use until the duration its own effect text states, and only
@@ -148,7 +168,7 @@ public partial class CustomRotation
 	// action while the effect runs (Liturgy of the Bell's second press, Macrocosmos and Microcosmos),
 	// and that other action's cooldown is not the trigger's. A text that states no duration never
 	// stretches - a figure the game did not give is not invented.
-	private static bool AnyTriggerInEffect(IBaseAction[] triggers)
+	private static bool AnyTriggerInEffect(IBaseAction[] triggers, bool area)
 	{
 		foreach (var trigger in triggers)
 		{
@@ -172,13 +192,63 @@ public partial class CustomRotation
 				continue;
 			}
 
-			if (UsedWithin(trigger.ID, duration))
+			if (UsedWithin(trigger.ID, duration) && !(area && EffectGoneFromPlayer(trigger)))
 			{
 				return true;
 			}
 		}
 
 		return false;
+	}
+
+	// An effect works until it is gone, not always for the time its text states: Shake It Off and Divine Veil give 30 s,
+	// and the area attack they were pressed for takes the barrier with it; Liturgy of the Bell ends at its second press or
+	// its last stack. Read on the player, who is in the effect's range: the game names such an effect after the action,
+	// and once a beneficial status of that name - laid by the player - is gone from him, a GCD after the press so it had
+	// time to show, the effect is over and nothing is left to stretch (A340). An action without such a status keeps its
+	// stated time: Reprisal lies on the enemy, a detrimental status, and is left alone. Asked for the area stretch only,
+	// whose effect reaches the player; a single-target one lies on its target (Divine Benison on the tank). This can only
+	// end a stretch early.
+	private static bool EffectGoneFromPlayer(IBaseAction trigger)
+	{
+		if (Player == null)
+		{
+			return false;
+		}
+
+		var statuses = OwnEffectStatusesOf(trigger.ID);
+		return statuses.Length > 0 && !UsedWithin(trigger.ID, DataCenter.DefaultGCDTotal)
+			&& !Player.HasStatus(true, statuses);
+	}
+
+	private static readonly Dictionary<uint, StatusID[]> _effectStatuses = [];
+
+	// The beneficial statuses bearing the action's own name, read once from the English sheets.
+	private static StatusID[] OwnEffectStatusesOf(uint actionId)
+	{
+		if (_effectStatuses.TryGetValue(actionId, out var known))
+		{
+			return known;
+		}
+
+		List<StatusID> found = [];
+		var actions = ECommons.DalamudServices.Svc.Data.GetExcelSheet<Lumina.Excel.Sheets.Action>(Dalamud.Game.ClientLanguage.English);
+		var statuses = ECommons.DalamudServices.Svc.Data.GetExcelSheet<Lumina.Excel.Sheets.Status>(Dalamud.Game.ClientLanguage.English);
+		if (actions.TryGetRow(actionId, out var action))
+		{
+			var name = action.Name.ExtractText();
+			foreach (var row in statuses)
+			{
+				if (row.StatusCategory == (byte)StatusCategory.Beneficial && row.Name.ExtractText() == name)
+				{
+					found.Add((StatusID)row.RowId);
+				}
+			}
+		}
+
+		known = [.. found];
+		_effectStatuses[actionId] = known;
+		return known;
 	}
 
 	// The record is newest first and ordered by time, so the walk stops at the first entry older

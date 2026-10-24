@@ -384,13 +384,26 @@ nicht mehr still heraus.
   weit über die Wiederbelebung hinaus. Bleibt als eigener Punkt erfasst.
 - **Ausführungssperre für Spontanität ausnehmen.** Behandelte das Symptom in der falschen Schicht und
   öffnete das Einschiebefenster für eine Aktion, die dort nicht hingehört.
-- **`SwiftcastBuffer` verdrahten.** Die Einstellung (0,6 s, eigene Oberfläche, eigene Dokumentation
-  „how early before next GCD should RSR use swiftcast for raise") kommt im ganzen Baum genau einmal
-  vor: in ihrer Definition. Sie bleibt unverdrahtet, weil ihre dokumentierte Bedeutung mit der
-  Ausführungssperre unvereinbar ist — sie besagt, Spontanität solle erst fallen, wenn nur noch
-  `SwiftcastBuffer` Restzeit auf dem GCD liegt, und das ist bei 0,6 s fast vollständig und bei 0
-  vollständig der Bereich, den `DoAction` sperrt. Sie zu verdrahten hieße, denselben Defekt ein
-  zweites Mal zu bauen. Ihre Auflösung ist ein eigener Vorgang und in `TODO.md` erfasst.
+- **`SwiftcastBuffer` verdrahten.** Die Einstellung („How early before next GCD should RSR use swiftcast
+  for raise", 0 bis 1 s, Vorgabe 0,6) ist entfernt (A339). Upstream führte sie im Januar 2025 als
+  „(Experimental)" ein (4919e1ad5): Spontanität für die Wiederbelebung nur einschieben, solange vom GCD
+  **mehr** als dieser Wert übrig ist – ein Mindestabstand, damit die Animationssperre von Spontanität den
+  folgenden GCD nicht hinauszögert. Ihre Dokumentation behauptete das Gegenteil (warten, bis nur noch so viel
+  übrig ist); dieses Konzept hatte bis A339 die Dokumentation gelesen statt des Codes (C121). Den Leser
+  entfernte Upstream im Juni 2025 (22fca7d86), fünfzehn Monate vor dem Umbau dieses Konzepts – an den
+  ausbleibenden Wiederbelebungen hatte sie keinen Anteil.
+  Wieder verdrahtet, gewönne sie wenig und kostete viel. Bis 0,5 s deckt die Ausführungssperre denselben
+  Abstand. Darüber verhindert sie ein Hinauszögern um höchstens den Teil der Animationssperre, der über 0,5 s
+  hinausreicht – Zehntelsekunden; die Sperre einer Aktion steht in keinem Spielblatt, die Größe ist unbelegt. Dafür
+  wartet die Wiederbelebung in jedem Fenster zwischen 0,5 s und dem Wert einen ganzen GCD, weil
+  `SwiftcastComingForRaise` das harte Wirken zurückhält, solange Spontanität bereitsteht. Nach einem gewirkten
+  Zauber ist das Fenster ohnehin klein: Glare III wirkt 1,5 s bei 2,5 s Abklingzeit (Spielblatt, ohne
+  Zaubertempo), es bleibt etwa 1 s abzüglich der Sperre nach dem Wirken. Ab einem Wert in dieser Größe
+  (geschätzt um 0,9 s) schöbe ein Heiler, der nur wirkt, Spontanität nie ein, und die Wiederbelebung käme erst
+  nach einem sofortigen GCD oder einer Bewegung. Ein Mindestabstand aus dem Spiel statt aus der Einstellung
+  hätte dieselbe Kostenseite; gehört er irgendwohin, dann in die Ausführungssperre für alle Fähigkeiten.
+  Die dokumentierte Bedeutung, auf den Mitheiler zu warten, hängt am Verhalten anderer Spieler und ist durch
+  die Übergabe an einen schon wirkenden Heiler gedeckt (A293, A294).
 - **Ein eigenes Gedächtnis gegen doppelte Federn.** Ein Vermerk „Ziel X wurde gerade bedient" wäre
   eine zweite Buchführung neben der des Spielclients und veraltet auf dieselbe Weise. Die Frage an
   `GetActionStatus` mit dem Ziel leistet dasselbe, ohne einen eigenen Zustand zu führen.
@@ -415,11 +428,20 @@ nicht messbar. Wer sie an hat, konnte ohne Swiftcast niemanden hochholen.
 - **`IBaseAction.IgnoreClipping` wird geschrieben und nirgends gelesen** (fünf Schreibzugriffe in
   `CustomRotation_Invoke.cs`, Definition `IBaseAction.IgnoreClipping`). Wirkungsbereich zu groß für diesen
   Vorgang: Ein Leser in `DoAction` hebelte die Anti-Clipping-Regel überall aus.
-- **`Configs.Migrate` ist ein Zurücksetzen, kein Migrationspfad.** Das ist nicht
-  nur unbequem, es **sperrt andere Behebungen**: Jede Korrektur, die einen Vorgabewert ändern muss,
-  um das bisherige Verhalten zu erhalten, ist ohne Feldmigration nicht durchführbar. Daran ist die
-  Verdrahtung von `InterruptDelay` und `ProvokeDelay` gescheitert.
-- **`TargetColor` hat keinen Leser.**
+- **`Configs.Migrate` ist ein Zurücksetzen, kein Migrationspfad.** Eine Korrektur, die einen Vorgabewert ändert, um
+  das bisherige Verhalten zu erhalten, erreicht gespeicherte Konfigurationen nicht.
+- **`InterruptDelay` und `ProvokeDelay` sind wieder verdrahtet** (A338). Ihre Texte („The range of random delay before
+  interrupting hostile targets.", „Provoke delay range") versprechen eine Verzögerung vom Erscheinen des Ziels
+  bis zur Wahl; Upstream hatte sie beim Umbau der Zielsuche entfernt (527414d60, 2024). Der Text bindet (seine
+  Vorgabe), also gilt jetzt der Wert, der in seiner Konfiguration steht – ohne Migration der alte Vorgabewert 0,5 bis
+  1 s, sofern er ihn nicht geändert hat. Neue Vorgabe: keine Verzögerung, weil eine wartende Unterbrechung ihr Wirken
+  verpassen und eine wartende Provokation den Gegner länger beim Falschen lassen kann. Die Unterbrechung wartet nie
+  über das Wirken hinaus: Bleibt ihm nur noch ein GCD, geht sie sofort (`TargetUpdater`).
+- **`TargetColor` ist entfernt** (A339), zusammen mit `SwiftcastBuffer` (unter „Ausgeschlossen"). Sie färbte einen
+  Kreis um das Ziel der nächsten Aktion und verlor ihren Leser mit der Zeichenbibliothek XIVPainter (Upstream
+  72f43cbcf, 2024, mit dem Verweis auf BossModReborn); RSR zeichnet seither nichts in die Welt. Eine Zeichnung neu zu
+  bauen wäre eine Funktion ohne Bedarf: Ein Angriffsziel setzt RSR als Spielziel, das das Spiel selbst markiert;
+  BossModReborn zeichnet die Mechaniken; wen RSR mit einer Abwehr bedient, schreibt `DefenseTrace.log`.
 
 ## Grenzen des Nachweises
 

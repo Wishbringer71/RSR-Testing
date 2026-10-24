@@ -77,15 +77,25 @@ Größe ist die passende Antwort auf einen Treffer dieser Größe, nicht auf jed
 | `TankbusterOrHeavyPull` | `TankbusterOnMe` **oder** der gestaffelte Pull |
 | `TankbusterHeavyPullOrLowHealth` (Voreinstellung) | zusätzlich Gesundheit ≤ `BlackestNightHealthRatio` (Vorgabe 60 %) |
 
-Der **gestaffelte Pull** verlangt fünf Dinge gleichzeitig:
+Der **gestaffelte Pull** verlangt sechs Dinge gleichzeitig:
 
 | Bedingung | Grund |
 |---|---|
-| `NumberOfHostilesInRange >= BlackestNightMinHostiles` (Vorgabe 4) | erst ab genug Gegnern erreicht der Schadensstrom die Verbrauchsrate |
+| `NumberOfHostilesInRange >= BlackestNightMinHostiles` (Vorgabe 4) | erst ab genug Gegnern kann der Schadensstrom die Verbrauchsrate erreichen |
 | `!HasMajorMitigation` | eine große Minderung senkt den Strom unter diese Rate |
 | `!GroupStunRunning()` | eine Gruppenbetäubung hält den Strom ganz an |
 | `!PackSlowed()` | eine verlangsamte Gruppe verdünnt ihn für die Dauer des Debuffs |
 | Reprisal ist erledigt | die kostenlose Gruppenminderung gehört zuerst gewirkt |
+| der Schaden der letzten 7 s erreicht 25 % der Maximalgesundheit (`StreamWouldBreakBarrier`, A340) | gemessen, was die Barriere hätte aufzehren müssen; Option „In a pull, use The Blackest Night only once the damage you take would break it", ab Werk an |
+
+**Die letzte Bedingung misst, was die Gegnerzahl nur annimmt** (A340). Ob vier Gegner 25 % in 7 s erreichen, hängt an
+ihrer Stärke, an Stufe und Synchronisation; niemand prüfte es. Gelesen wird die Schadensaufzeichnung des
+Effekt-Handlers (`DataCenter.DamageTakenWithin`, über `AddDamageRec`, Upstream seit 2023): der Anteil der
+Maximalgesundheit, den gegnerische Aktionen in der Wirkdauer der Barriere nahmen, nach der Minderung, die stand –
+genau das, was die Barriere getroffen hätte. Beide Zahlen kommen aus dem Wirktext. Der Preis: Am Pullbeginn, solange
+der Strom noch anläuft, wartet die Barriere einige Sekunden – sie wartet dort ohnehin auf Reflexion und Abtausch –, und
+der Notfall bei niedriger Gesundheit wartet auf nichts. `DefenseTrace.log` schreibt je eigener Barriere, ob sie brach
+(„broke (Dark Arts)") oder auslief, mit dem Strom davor und der Gegnerzahl.
 
 Beim Tankbuster gilt **keine** davon, und der Notfallzweig bei niedriger Gesundheit wartet ebenfalls
 auf nichts. Der zentrale Auslöser `AutoStatus.DefenseSingle` bleibt unangetastet; er bedient alle
@@ -144,7 +154,7 @@ Andere **Barrieren** sind in beiden Lagen kein Hindernis: Die Verbrauchsreihenfo
 The Blackest Night auf Rang 3, Eukrasian Diagnosis auf 4 und Divine Benison auf 12 (A36,
 Spielerdokumentation). Ein Heilerschild wird nach der eigenen Barriere aufgezehrt.
 
-### Die fünf Bedingungen des Pull-Zweigs
+### Die sechs Bedingungen des Pull-Zweigs
 
 **Genug Gegner.** Die Schwelle steht als eigene Rotationsoption, nicht als Ableitung der
 Mitigations-Sustain-Zahl: Dort geht es um die Aufrechterhaltung eines Debuffs, hier um eine
@@ -152,8 +162,8 @@ Verbrauchsrate. Was die Zahl leisten kann, ist, die Fähigkeit aus Lagen herausz
 sicher zu wenig Schaden kommt — zwei Gegner erreichen 3,6 % pro Sekunde nur, wenn jeder 1,8 %
 beiträgt, was für gewöhnlichen Trash unplausibel ist. Was sie **nicht** leisten kann, ist eine
 Garantie: Dafür müsste der Schaden je Gegner bekannt sein, und der hängt an Inhalt, Stufe und
-Gegnertyp. Die Vorgabe 4 entspricht rund 0,9 % je Gegner und Sekunde und ist eine Annahme; deshalb
-ist die Zahl einstellbar, und die Beobachtung im Spiel entscheidet.
+Gegnertyp. Die Vorgabe 4 entspricht rund 0,9 % je Gegner und Sekunde und ist eine Annahme. Die Garantie
+liefert seit A340 die Messung (sechste Bedingung, Sachstand); die Zahl bleibt als seine Untergrenze.
 
 **Keine große Minderung.** In der harten Fassung — keine andere Verteidigung darf laufen — ist die
 Forderung nicht erfüllbar. Die Dauern summieren sich, jede Fähigkeit nur einmal gewirkt:
@@ -195,7 +205,7 @@ Wer betäuben kann, entscheidet über die Reichweite der Regel:
 | Heiler | Sanctus, Sanctga — **nur Weißmagier** | Fläche, 8 Yalm | 4 s |
 | Tank | Schildhieb — nur Paladin | Einzelziel | 6 s |
 | Tank | **Tiefschlag — alle Tanks, auch der Dunkelritter** | Einzelziel | 5 s |
-| Nahkampf | Fußfeger | Einzelziel | 3 s |
+| Nahkampf | Stolperfalle | Einzelziel | 3 s |
 | Occult Crescent | Occult Falcon, Mineuchi, Variant Ultimatum | Fläche / Einzelziel | 4–6 s |
 
 Gelehrter, Astrologe und Weiser haben keine. Eine Fallunterscheidung nach Gruppenzusammensetzung
@@ -374,9 +384,10 @@ Stand 02.10.2026.
 
 - *The Balance, Dark Knight Basic Guide:* The Blackest Night „can be used liberally (at least once per mob pack)";
   „in a large dungeon pull or facing down a tankbuster … it's almost impossible for it not to break". Das stützt den
-  Pull-Zweig im Grundsatz. Seine fünf Bedingungen verzögern die Barriere im Pull, verhindern sie aber nicht: Sie
-  kommt, sobald Reflexion und Abtausch liegen und keine große Minderung läuft. Die Gegnerzahl 4
-  (`BlackestNightMinHostiles`) ist eine Annahme; The Balance nennt keine Zahl, nur „mob pack" und „large pull".
+  Pull-Zweig im Grundsatz. Seine sechs Bedingungen verzögern die Barriere im Pull, verhindern sie aber nicht: Sie
+  kommt, sobald Reflexion und Abtausch liegen, keine große Minderung läuft und der gemessene Strom sie aufgezehrt
+  hätte. Die Gegnerzahl 4 (`BlackestNightMinHostiles`) bleibt Mindestbedingung, als seine Einstellung; The Balance
+  nennt keine Zahl, nur „mob pack" und „large pull".
   Seine Vorgabe (keine Minderung, solange die Barriere steht) bleibt davon unberührt.
 - *The Balance zu Living Dead:* „an inexperienced healer may heal too much during Living Dead, preventing Walking
   Dead from activating" — dieselbe Lage, die die Living-Dead-Rückhaltung der Heiler regelt (Konzept 09).
@@ -389,13 +400,11 @@ Stand 02.10.2026.
 `IsHostileCastingTank` entfernen. Das öffnet und schließt die Verteidigungskette **aller** Tanks;
 C9 belegt, wie weit eine an einer Stelle plausible Änderung an diesem Flag reicht.
 
-**Den Verbrauch messen statt die Lage zu prüfen.** Der eingehende Schaden ist im Effekt-Handler
-sichtbar (`Watcher`, `damageEffect.value`). Ein eigener Ringpuffer dafür bleibt verworfen — er liefe
-in jedem Kampf für jeden Nutzer, während der Nutzen bei einem Job in einer Fähigkeit entstünde.
-**Eine Rate steht ohne diesen Aufwand zur Verfügung:** `GetCorrectedTTK` liest
-sie aus der Gesundheitshistorie, die ohnehin geführt wird (A91–A93). Gegen ihren Einsatz **hier**
-spricht nicht die Kostenseite, sondern die Sache: Der Schadensfluss der letzten
-Sekunden sagt nichts über die nächsten sieben, und die Barriere ist eine Wette auf diese sieben.
+**Die Rate aus der Gesundheitshistorie** (`GetCorrectedTTK`). Sie ist netto, nach jeder Heilung; die Barriere
+trifft den Schaden vor der Heilung. Gelesen wird deshalb die Schadensaufzeichnung des Effekt-Handlers (Sachstand). Bis
+A340 stand hier, das Messen brauche einen eigenen Ringpuffer und der Strom der letzten Sekunden sage nichts über die
+nächsten sieben (C123): Den Puffer führt Upstream ohnehin, und die Gegnerzahl schließt ebenso aus der Gegenwart auf
+die nächsten sieben Sekunden, nur gröber.
 
 **Eine reine MP-Schwelle.** Begrenzt, wie oft die Fähigkeit ausfällt, nicht ob sie sich lohnt. Bei
 vollem Vorrat bliebe das beanstandete Verhalten unverändert.

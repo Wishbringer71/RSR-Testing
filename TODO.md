@@ -9,108 +9,54 @@ Betroffene: **N** Endnutzer · **R** Autoren abgeleiteter Rotationen (`RotationS
 
 Nach der Wirkung im Kampf: Sicherheit der Gruppe vor Schaden, gewichtet mit der Wahrscheinlichkeit, in seinem Profil
 (seine Vorgabe, 17.10.2026: „todo nach wichtigkeit abarbeiten. jeweils im loop bearbeiten"). Seine Aufträge vom
-18.10.2026 sind erledigt: TODO berichtigt (A322), Prüfläufe geordnet (A323), Laufzeitkosten umgestellt (A325).
+18.10.2026 sind erledigt: TODO berichtigt (A322), Prüfläufe geordnet (A323), Laufzeitkosten umgestellt (A325). Sein
+Auftrag vom 24.10.2026 läuft: die einfachen Punkte zuerst (A338), die schweren wichtigen danach ebenso. Glockenspiel
+steht seit seinem Hinweis vom 24.10.2026 vor der Flächenheilung: Es heilt eine Gruppe nach einem Treffer, der ihr fast
+alles nimmt.
 
-1. Tank-Unverwundbarkeit vor Tankbustern ohne Aktionsangabe oder Messung nur reaktiv
-2. Tanks: Reflexion und Gruppenbarriere auf demselben Raidwide
-3. DRK: Bruch von The Blackest Night zählen
-4. Rückstoß und Stopp-Casts: Größe messen
-5. Vorausschau vor dem ersten Treffer
-6. Flächenheilung um den Wirkenden: Radius gegen Trefferfläche
-7. Einstellungen ohne Leser, deren Text eine Wirkung verspricht
-8. Feste Werte: jeder offene Wert braucht seinen Loop
-9. Tankbuster-Plan: Umlauf über die Sequenz jedes Drucks
-10. Rotationen gegen The Balance abgleichen
-11. Six-sided Star und Flamethrower
-12. Vorlauf: Dragoon und Viper
-13. AoE-Schwelle an drei Orten
-14. Audit der gesamten Codebasis
+1. Weißmagier: Glockenspiel auch vor großen Einzeltreffern (seine Entscheidung)
+2. Rotationen gegen The Balance abgleichen
+3. Six-sided Star und Flamethrower
+4. AoE-Schwelle an drei Orten
+5. Audit der gesamten Codebasis
 
 Danach technische Schuld, soweit ihre Auflösungsbedingung erfüllt ist. Warten auf Daten: unten.
 
 ## Defekte
 
-### Einstellungen ohne Leser, deren Text eine Wirkung verspricht · N
-
-*Im Kampf:* keine Wirkung – aber die Oberfläche verspricht eine. `InterruptDelay` und `ProvokeDelay` („random delay"),
-`SwiftcastBuffer` („how early before next GCD should RSR use swiftcast for raise"), `TargetColor` („Target color",
-dazu `Parent` auf sich selbst). Keine hat einen Leser (gemessen 18.10.2026). Nach seiner Vorgabe bindet der Text, also
-ist der Code anzupassen. *Gegen das einfache Verdrahten steht je Stelle:* Die Unterbrechungsverzögerung kann das Fenster
-des Zaubers verbrauchen; `SwiftcastBuffer` baute den in Konzept 11 behobenen Defekt neu; für `TargetColor` ist kein
-Zeichenort bekannt. *Nächster Schritt:* je Einstellung ein Loop, Ergebnis Verdrahtung mit sinnvoller Voreinstellung
-oder Entfernung mit Grund. *Konzept:* 11 (`SwiftcastBuffer`).
+Keine bekannt.
 
 ## Offene Arbeit
 
-### Tank-Unverwundbarkeit vor Tankbustern ohne Aktionsangabe oder Messung nur reaktiv · N
+### Weißmagier: Glockenspiel auch vor großen Einzeltreffern (seine Entscheidung) · N
 
-*Im Kampf:* Vor einem Marker ohne Wirken, einem nur von BossModReborn angekündigten Tankbuster und dem ersten
-Auftreten einer Aktion zündet die Unverwundbarkeit erst unter `HealthForDyingTanks` (vor einem gemessenen Wirken
-vorher, A260, A308). *Nächster Schritt:* Das Protokoll zählt die Fälle („no cast taken for it"); für den Marker ohne
-Wirken bräuchte es eine gelernte Zeit vom Marker zum Treffer – voller Loop vor dem Bau. *Konzept:* 09.
-
-### Tanks: Reflexion und Gruppenbarriere auf demselben Raidwide · N
-
-*Im Kampf:* Abschütteln und Reflexion fallen fast immer auf denselben Raidwide (seine Protokolle 01.10.2026). The
-Balance: stapeln für große Treffer, verteilen über mehrere. *Nächster Schritt:* Fallarbeit für alle vier Tanks über die
-gemessene Größe je Raidwide. *Konzept:* 09, „Krieger: die übrige Abwehr".
-
-### DRK: Bruch von The Blackest Night zählen · N, U
-
-*Im Kampf:* Ob die Barriere unter den engeren Stufen von `BlackestNightUsage` bricht (Annahmen: vier Gegner erreichen
-3,6 % der maximalen LP je Sekunde; ein Tankbuster nimmt die angehobene Schwelle mit), sieht niemand. *Nächster
-Schritt:* Die Regel zählt ihren Bruch selbst (Dark Arts danach) und steuert `BlackestNightMinHostiles` nach. *Konzept:* 10.
-
-### Rückstoß und Stopp-Casts: Größe messen · N
-
-*Im Kampf:* Für Tankbuster misst die Tankbuster-Tabelle jeden Treffer; `HostileCastingKnockback` und
-`HostileCastingStop` haben keinen eigenen Speicher und keine Rechnung, also wirkt jede Abwehr dafür ohne Größe. *Nächster
-Schritt:* je Liste klären, was die Größe dort entscheidet (ein Rückstoß verschiebt oft nur). *Konzept:* 08, 13.
-
-### Vorausschau vor dem ersten Treffer · N
-
-*Im Kampf:* Vor dem ersten Treffer eines Pulls ist die Vorausschau blind (2,5 s Anlauf). *Nächster Schritt:* klären, ob
-der gemessene Anteil eines angekündigten Treffers (Konzept 13) die Lücke schon schließt, sonst die eigenen laufenden
-Minderungen aus `DefensiveValues.g.cs` einrechnen. *Konzept:* 08.
-
-### Flächenheilung um den Wirkenden: Radius gegen Trefferfläche · N
-
-*Im Kampf:* `GetCanAffects` zählt ein Mitglied am Rand um seinen Trefferkreis zu großzügig mit; ob ein Spieler in einer
-Fläche steht, entscheidet der Mittelpunkt seines Modells. Lux Solaris kann eine Anzahl erreicht sehen, die sie nicht
-heilt. *Nächster Schritt:* alle Leser von `GetCanAffects` für freundliche Flächen erheben. *Konzept:* 08, „Wann Lux
-Solaris zündet".
-
-### Feste Werte: jeder offene Wert braucht seinen Loop · N, R
-
-*Im Kampf:* Jede offene Zahl ist eine ungeprüfte Annahme über das Spiel; ein Patch ändert sie, der Code nicht.
-`check_fixed_values.py` beziffert sie. *Zuerst:* `MitigationDebuffDuration` (fest 98, 15 s, 10 s) neben
-`DefensiveValues.DurationOf`, das dieselbe Dauer aus dem Spiel liest – dieselbe Aufgabe an zwei Stellen. Danach die
-Vorlaufzeiten der vorausschauenden Abwehr (Barde, Tänzer, Maschinist, Tanks) und die Jobs, die er spielt.
-
-### Tankbuster-Plan: Umlauf über die Sequenz jedes Drucks · N
-
-*Im Kampf:* Die Frist, bis zu der eine Abwehr vor dem Snapshot hinausgehen muss, rechnet mit dem gemessenen Umlauf
-(`TankbusterForecast.RoundTrip`). Er paart Druck und Wirkung nach Aktions-Id innerhalb eines GCDs und kennt nur
-RSR-Drücke; ein abgewiesener oder eingereihter Druck kann als Probe zählen, eigene Drücke des Spielers fehlen. Seit
-Upstream 7.5.7.5 sieht `ActionManagerEx` jede Anfrage, die hinausgeht (Sequenz), und jede eigene Wirkung trägt sie
-(`SourceSequence`). *Nächster Schritt:* Loop – klären, ob die exakte Paarung die Frist im Kampf früher oder sicherer
-setzt, und dann die Messung darauf umstellen. *Konzept:* 09 (A332).
+*Kontext:* Sein Vorschlag vom 24.10.2026: die Glocke vor einen bekannten Treffer setzen, der die Gruppe stark senkt;
+der Treffer löst 400 Potenz aus, der zweite Druck den Rest. Der zweite Druck ist gebaut (A340). Die Glocke vor einem
+Einzeltreffer verhindert seine Einstellung „Limit Liturgy Of The Bell to multihit party stacks" (bei ihm an): Ihr Text
+lässt nur Mehrfach-Sammelmarker zu, und der Text bindet. *Betroffen:* `WHM_Reborn.DefenseAreaAbility`. *Optionen:*
+(a) so lassen – große Einzeltreffer bekommen die Glocke nur mit der Einstellung aus; dann kommt sie als letzte nach
+Vollkommener Ablass, Linderung und Göttliche Umarmung, und auf einen Treffer, der ein Mitglied in Gefahr brächte, gehen alle
+zusammen (Schranke), samt zweitem Druck; (b) die Einstellung erweitern auf „Mehrfach-Sammelmarker und Treffer, die
+gemessen ein Mitglied in die Gefährdungsklasse brächten" – dieselbe Messung wie die Schranke; (c) er stellt sie aus.
+*Konsequenzen über den Kampf* (Abklingzeit 180 s): (a) die Glocke wartet auf den Sammelmarker, ein großer Einzeltreffer
+davor bekommt keine; (b) ein großer Einzeltreffer vor einem Sammelmarker nimmt sie diesem: 1200 Potenz sofort nach dem
+gefährlichen Treffer statt bis zu 2000 über den Sammelmarker verteilt; (c) wie (b), dazu jeder Raidwide, wenn die
+übrigen Werkzeuge abklingen. *Empfehlung:* (b) – ein Treffer, der Mitglieder in die Gefährdungsklasse bringt, ist die
+akutere Gefahr, und die Heilung kommt dann, wenn sie fehlt; der Sammelmarker bleibt vorrangig, wo kein solcher Treffer
+ansteht. *Konzept:* 08, „Was die Sperren im Spiel bewirken".
 
 ### Rotationen gegen The Balance abgleichen · N
 
-*Im Kampf:* Schaden – je Job Opener, Burstausrichtung und Prioritäten gegen den Guide. Dazu die von `ActionId.resx`
-ausgeblendeten Werte aus dem Job-Guide in den Generator und die deutschen Namen in `action_names_de.json`. *Konzept:* 14.
+*Im Kampf:* Schaden – je Job Opener, Burstausrichtung und Prioritäten gegen den Guide. Der Maschinist ist abgeglichen
+(A342), von Dragoon und Viper der Opener (A343), die AoE-Schwellen aller Jobs (A344). *Nächster Schritt:* Ninja – die AoE-Weiche in
+`NIN_Reborn` hängt an Death Blossom, die Paare brauchen nach 7.5 verschiedene Schwellen; danach die übrigen Jobs; ausgeblendete Werte liest `ActionTooltip` zur Laufzeit aus den Tooltips,
+die deutschen Namen gehören in `action_names_de.json`. *Konzept:* 14, „Vergleich mit The Balance".
 
 ### Six-sided Star und Flamethrower · N
 
 *Im Kampf:* Schaden. Werte und Einsatzregeln belegt (Job-Guide, The Balance, 02.10.2026), nicht gebaut. Six-sided Star
 braucht die vorhergesagte Pause oder die Zeit bis zum Tod; Flamethrower bindet 11 s an Ort und Blickrichtung, gegen
 seine Spielweise nur bei stehendem Rudel ohne angesagte Fläche. *Konzept:* 14, „Pausen und Phasenenden".
-
-### Vorlauf: Dragoon und Viper · N
-
-*Im Kampf:* Beide wirken im Countdown nichts, auch keinen Trank (kein `CountDownAction`). *Nächster Schritt:* an den
-Openern von The Balance klären, ob eine Vorlaufaktion fällig ist. *Konzept:* 04.
 
 ### AoE-Schwelle an drei Orten · R, U
 
@@ -141,11 +87,6 @@ jede solche Änderung trägt im selben Commit die Anpassung des Modus „plugin"
 ### Status-Einstellungen auf der falschen Seite der Aktion · N, U
 Vier Fundstellen in PvP und Bozja (`scan11.py`), außerhalb seines Profils; je eine Richtungsentscheidung, die eine
 Beobachtung im Inhalt verlangt. *Auflösung:* erst, wenn er diese Inhalte nennt.
-
-### Der erzeugte Merkmalssatz enthält keine Rollenmerkmale · N, R
-`TraitRotationGetter.AddToList` verwirft Merkmale mit `ClassJob.RowId == 0`; Rollenmerkmale (Enhanced Reprisal, Feint,
-Addle …) fehlen, ihre Stufen stehen als Zahl im Code. *Auflösung:* zusammen mit „Feste Werte"; vorher klären, ob
-`RowId == 0` das Kennzeichen von Rollenmerkmalen ist.
 
 ### `CanUse` als Prüfung weist `Target` zu · N, R
 *Kosten:* Code, der `X.Target` liest, ohne `X.CanUse` in derselben Entscheidung, liest das Ziel des letzten Erfolgs (55
@@ -203,6 +144,11 @@ Veröffentlichungspfad prüfbar ist.
 `MainWindow.GetMovementSafetyStatus` neben `ActionTargetInfo.CheckMovementSafety`; die Regel „am Ziel ist ein Sprint nur
 Schaden" fehlt im Fenster. *Auflösung:* `CheckMovementSafety` gibt Ergebnis und Grund heraus, das Fenster zeigt sie.
 
+### Das Maschinisten-Modell bildet `MCH_Reborn` von Hand nach · R
+*Kosten:* Ändert sich der Ruf der Königin oder die GCD-Folge in `MCH_Reborn`, rechnet `machinist_balance_model.py`
+weiter die alte Regel, und Konzept 14 nennt seine Ergebnisse. *Auflösung:* jede solche Änderung trägt im selben Commit
+die Anpassung des Modells. *Konzept:* 14.
+
 ### Plugin-Identität ist die des Upstreams · N
 `manifest.json` unverändert (`InternalName`, URLs). *Auflösung:* seine Entscheidung, wenn beide Installationen
 nebeneinander gebraucht werden.
@@ -216,12 +162,9 @@ nebeneinander gebraucht werden.
   Auflösung: Protokollzeilen „hit you from a source the object table does not hold". Konzept 08.
 - **BossModReborn: FATE-Modul in Occult Crescent läuft nach dem Weggang weiter** (am Quelltext `be8ff77` gefolgert).
   Adressat BossModReborn. Konzept 08, „Wann eine BossModReborn-Vorhersage ihn betrifft".
-- **Laufzeitkosten nach A325** (Protokoll „update cost by step", A310): Im Protokoll vom 18.10.2026 trägt „highlight"
-  1,04 von 1,56 ms, die Rotation 0,32 ms (A327). Seit A327 steht die Rotfärbung als eigener Schritt „hotbar tint";
-  das nächste Protokoll trennt sie vom Lehrmodus, und danach richtet sich der Umbau. Konzept 03, „Was ein Frame kostet".
-- **Tankbuster nach einem Marker ohne Wirken** (Protokoll „no cast taken for it", A308) – Eingang für
-  „Tank-Unverwundbarkeit … nur reaktiv". Im Protokoll vom 18.10.2026 kein Fall.
-- **Schlaf gegen ein Flächenwirken: welche Angriffe er stoppt** (experimentell, seine Vorgabe 18.10.2026, A329). Die
-  Regel lernt selbst, wo es nicht wirkt; seine Frage „welche" beantworten die Protokollzeilen „sleep stopped …",
-  „sleep did not stop …", „sleep resisted by …". Auflösung: ein Protokoll mit Heiler oder Magier in Instanzen, danach
-  die Bewertung, ob die Regel experimentell bleibt. Konzept 08, „Schlaf gegen ein Flächenwirken".
+- **Ein gegnerisches Wirken stoppen: was die gespeicherten Tabellen lernen** (experimentell, seine Vorgaben 18.10. und
+  23.10.2026, A329, A334, A337). Erstes Protokoll mit der Regel (23.10.2026): Sanctga 19-mal gewählt, Schlummer
+  dreimal gelandet, vier Arten als immun gespeichert. Offen: ob Schlaf unterbrechbares Wirken stoppt (ein Versuch, nicht
+  gewirkt), welche Anzahl bis zur Immunität die Regel lernt, welchen Rest beim Eintreffen. Auflösung: weitere
+  Protokolle mit Heiler oder Magier in Instanzen, danach die Bewertung, ob die Regel experimentell bleibt. Konzept 08,
+  „Ein gegnerisches Wirken stoppen".

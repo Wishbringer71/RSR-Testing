@@ -148,7 +148,7 @@ public sealed class BRD_Reborn : BardRotation
 	protected override bool DefenseAreaAbility(IAction nextGCD, out IAction? act)
 	{
 		if ((!BurstDefense || (BurstDefense && !InBurstStatus))
-			&& BMRShouldRefreshBefore(BMRRaidwideIn, 15f, true, null, StatusID.Troubadour)
+			&& BMRShouldRefreshBefore(BMRRaidwideIn, DefensiveValues.DurationOf(TroubadourPvE.ID), true, null, StatusID.Troubadour)
 			&& TroubadourPvE.CanUse(out act, skipStatusProvideCheck: true))
 		{
 			return true;
@@ -165,7 +165,7 @@ public sealed class BRD_Reborn : BardRotation
 	protected override bool DefenseSingleAbility(IAction nextGCD, out IAction? act)
 	{
 		if ((!BurstDefense || (BurstDefense && !InBurstStatus))
-			&& BMRShouldRefreshBefore(BMRTankbusterIn, 15f, true, null, StatusID.Troubadour)
+			&& BMRShouldRefreshBefore(BMRTankbusterIn, DefensiveValues.DurationOf(TroubadourPvE.ID), true, null, StatusID.Troubadour)
 			&& TroubadourPvE.CanUse(out act, skipStatusProvideCheck: true))
 		{
 			return true;

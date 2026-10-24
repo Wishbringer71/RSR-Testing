@@ -11,10 +11,11 @@ Abschnitt C.
 - **Gemessener Tankbuster:** das billigste Bündel eigener Abwehr, mit dem der Tank ihn übersteht; die
   Unverwundbarkeit nur, wenn keines reicht; „alles" nur, wenn auch sie nicht verfügbar ist. Was der Plan nicht
   braucht, hält RSR auf allen Pfaden zurück. Zwei Optionen, ab Werk an.
-- **Tankbuster ohne Messung** (Marker oder Vorhersage ohne Wirken, nie gemessene Aktion): die Einzelabwehr der
-  Tank-Rotationen, je vorhergesagtem Tankbuster eine große Minderung oder Schutzwall und die kurzen dazu; die
-  Unverwundbarkeit reaktiv unter `HealthForDyingTanks`. Ein Marker auf dir neben dem Wirken einer gemessenen Aktion,
-  die auf niemanden gerichtet ist, gilt als gemessener Tankbuster auf dich.
+- **Tankbuster ohne Messung** (Vorhersage ohne Wirken, nie gemessene Aktion, erstes Auftreten eines Markers im
+  Gebiet): die Einzelabwehr der Tank-Rotationen, je vorhergesagtem Tankbuster eine große Minderung oder Schutzwall und
+  die kurzen dazu; die Unverwundbarkeit reaktiv unter `HealthForDyingTanks`. Ein Marker auf dir neben dem Wirken einer
+  gemessenen Aktion, die auf niemanden gerichtet ist, gilt als gemessener Tankbuster auf dich. Ein Marker ganz ohne
+  Wirken wird mit dem Treffer geplant, der ihm im selben Gebiet schon einmal folgte (A340, „Ein Marker ohne Wirken").
 - **Krieger:** Urflackern geht an ein anderes Mitglied, wenn er Urimpuls nicht selbst braucht oder das Mitglied die
   Triage gewinnt; Abschütteln wartet, solange es ihm laufende oder vom Plan gebrauchte eigene Minderungen nähme.
 - **Hilfe für das Ziel eines Tankbusters:** Trägt ein anderes Mitglied – meist der andere Tank – einen
@@ -66,7 +67,9 @@ Sie hier ebenfalls umzustellen wäre eine zweite, größere Änderung.
 **Sachstand:** Für einen gewirkten Tankbuster, dessen Höhe die Tankbuster-Tabelle kennt (Konzept 13), plant RSR je
 Durchlauf das billigste Bündel eigener Minderungen, mit dem der Tank den Treffer übersteht. Die Unverwundbarkeit
 kommt nur, wenn kein Bündel reicht. „Alles" geht nur hinaus, wenn auch sie nicht verfügbar ist. Was der Plan nicht
-braucht, hält RSR auf allen Pfaden zurück. Zwei Optionen, ab Werk an:
+braucht, hält RSR auf allen Pfaden zurück. Ein Marker ohne Wirken wird mit dem dort zuletzt gemessenen Treffer
+geplant, ohne Zurückhalten außer unter der Unverwundbarkeit (Abschnitt „Ein Marker ohne Wirken"); beide
+Einstellungstexte nennen das. Zwei Optionen, ab Werk an:
 - „Spend only the mitigation a measured tankbuster needs": Minderungsdrücke und Zurückhalten; Tanks und Heiler.
 - „Use the invulnerability before a tankbuster nothing less survives": die Unverwundbarkeit vor dem Treffer; nur Tanks.
 
@@ -302,17 +305,20 @@ Glieder bis dahin hineinpassen.
    sie als jetzt endend. Die Erkennung urteilt nicht.
 2. *Ablehnung unter Sperre:* wie unter der Animationssperre keine Antwort; Neuversuch im nächsten Durchlauf, für jedes
    Glied und für die Unverwundbarkeit.
-3. *Frist für eine Minderung* (`MitigationDeadline`): Ende des Wirkens weniger der gemessenen Laufzeit von Druck bis
-   Bestätigung (`TankbusterForecast.RoundTrip`). Der Client sieht das Ende einen halben Umlauf nach dem Server, ein
+3. *Frist für eine Minderung* (`MitigationDeadline`): Ende des Wirkens weniger der gemessenen Laufzeit von Anfrage bis
+   Wirkung (`TankbusterForecast.RoundTrip`). Der Client sieht das Ende einen halben Umlauf nach dem Server, ein
    Druck braucht einen halben Umlauf hin; also muss er einen ganzen Umlauf vor dem gezeigten Ende hinaus. Vor der
    ersten Messung liegt die Frist am Ende des Wirkens.
-   - Gemessen an jedem eigenen Druck einer Aktion ohne Wirkzeit, der hinausgeht, während keine Animationssperre läuft
-     und der Spieler nicht wirkt – ein solcher Druck geht sofort zum Server, ein in die Warteschlange gestellter
-     verlängerte die Messung. Es gilt die letzte Messung.
-   - Druck und Bestätigung paart die Messung nach Aktions-Id innerhalb eines GCDs, nur für RSR-Drücke. Seit Upstream
-     7.5.7.5 trägt jede hinausgehende Anfrage eine Sequenz und jede eigene Wirkung sie zurück; darüber wäre die Paarung
-     exakt und schlösse abgewiesene Drücke aus (offen, `TODO.md`, „Tankbuster-Plan: Umlauf über die Sequenz jedes
-     Drucks", A332).
+   - Gemessen an jeder eigenen Anfrage ohne Wirkzeit in dem Moment, in dem sie zum Server hinausgeht – gedrückt von
+     RSR, vom Spieler oder aus der Warteschlange des Spiels: Ihre Sequenz ändert sich (`ActionManagerEx`), und die
+     Wirkung, die dieselbe Sequenz zurückträgt (`SourceSequence`), beendet die Messung. Eine eingereihte oder
+     abgewiesene Anfrage ändert keine Sequenz und zählt nicht. Es gilt die letzte Messung.
+   - Bis A340 maß RSR ab dem eigenen Druck, wenn keine Animationssperre lief, und paarte nach Aktions-Id. Die
+     Wiederholzeit des GCDs prüfte das nicht: RSR drückt den nächsten GCD bis `CalculatedActionAhead` vor ihrem Ende
+     (ab Werk ein Viertel GCD), das Spiel reiht ihn dann ein (ClientStructs: „action is queued"). Meldet `UseAction`
+     dabei Erfolg – unbelegt, keine Quelle nennt den Rückgabewert –, zählte die Wartezeit zum Umlauf, und der Abstand
+     (Punkt 5) wurde gelesen, bevor die Sperre gesetzt war: ein Bild statt der Sperre, also beliebig viele
+     Druckplätze. Die Messung an der Anfrage ist in beiden Fällen richtig.
    - *Für die Unverwundbarkeit keine Frist vor dem Ende des Wirkens:* Holmgangs Untergrenze zählt beim Zufügen, nach
      dem Snapshot (Mechanik); für Heiligen Boden, Meteoritenfall und Totenerweckung ist es unbelegt. Bis zum Ende des
      Wirkens gedrückt, kann sie noch halten; ein Tod, den sie nicht verhindert, kostet nichts weiter. Nach dem Ende
@@ -322,7 +328,7 @@ Glieder bis dahin hineinpassen.
    endet (Z2). Was die anderen Pfade danach drücken, drücken sie mit eigenen Gründen für die Treffer danach.
 5. *Druckplätze* (`PressSlots`): Von dem Moment an, in dem Animationssperre, eigener Zauber oder Sperre enden
    (`ObjectHelper.GetInstantHealLeadTime`, Restzeit der Sperre), passt bis zur Frist je gemessenem Abstand ein Druck
-   (`TankbusterForecast.PressSpacing`: Zeit vom gemessenen Druck, bis seine Animationssperre abgelaufen ist).
+   (`TankbusterForecast.PressSpacing`: Zeit von der gemessenen Anfrage, bis ihre Animationssperre abgelaufen ist).
    - Ein Bündel ist nur wählbar, wenn seine ungedrückten Glieder hineinpassen; sonst die Unverwundbarkeit (ein
      Druck, bis zum Ende des Wirkens), ohne sie „alles", das Glied zuerst, das allein am meisten vom Treffer nimmt.
    - Ein Ersatz für ein Glied, das eine Hilfe für andere nähme (K2–K4), zählt nur, wenn er hineinpasst.
@@ -363,8 +369,8 @@ einer, der noch rechtzeitig ankommt, geht auch unter 0,6 s. *Grenze:* Für Barri
 Rückstoß zählt vermutlich das Zufügen, das nach dem Snapshot liegt (unbelegt); dort ist die Frist um diesen Abstand zu
 früh – dieselbe Richtung wie die alte Grenze, nur kürzer.
 
-**Grenzen:** Vor der ersten gemessenen Laufzeit und dem ersten gemessenen Abstand – praktisch nur bis zum ersten Druck
-nach dem Laden des Plugins – gilt das alte Verhalten. Die letzte Messung schwankt mit dem Netz; eine zu lange macht die
+**Grenzen:** Vor der ersten gemessenen Laufzeit und dem ersten gemessenen Abstand – praktisch nur bis zur ersten Anfrage
+ohne Wirkzeit nach dem Laden des Plugins – gilt das alte Verhalten. Die letzte Messung schwankt mit dem Netz; eine zu lange macht die
 Frist zu früh, eine zu kurze zu spät. Die Plätze rechnen nicht mit Fenstern, die sich erst nach dem ersten Platz öffnen;
 nach Invariante 5 öffnet sich jedes Fenster mehr als einen GCD vor dem Einschlag.
 
@@ -506,11 +512,14 @@ Risiko"; die Neurechnung gibt sie zurück, wenn die Heilung vor dem Ziehen kommt
   einem GCD, deckt ein Minderungsplan nur das erste.
 - *Ein ungemessenes Wirken oder eine frühere BossModReborn-Vorhersage* neben einem gemessenen: Der Plan drückt, hält
   aber nichts zurück.
-- *Ein Tankbuster nur als Marker oder Vorhersage ohne Wirken einer gemessenen Aktion, oder eine noch nie gemessene
-  Aktion:* kein Plan; dann gilt die Abwehr ohne Messung (Abschnitt „Krieger: die übrige Abwehr", Staffelung) und die
-  reaktive Unverwundbarkeit unter `HealthForDyingTanks`. Ein Marker neben dem zielosen Wirken einer gemessenen Aktion
-  ist geplant (Erkennung, A308). Die Marker-Zeit ist die der Warteschlange (fünf Sekunden ohne bekannte Dauer, Upstream);
-  ein Cast, der erst danach beginnt, wird ihm nicht zugerechnet.
+- *Ein Tankbuster nur als BossModReborn-Vorhersage, eine noch nie gemessene Aktion, ein Marker beim ersten Auftreten
+  im Gebiet oder ohne Ziel des Spielers:* kein Plan; dann gilt die Abwehr ohne Messung (Abschnitt „Krieger: die übrige
+  Abwehr", Staffelung) und die reaktive Unverwundbarkeit unter `HealthForDyingTanks`. Die Vorhersage nennt keine
+  Aktion, und beim ersten Auftreten ist nichts gemessen – mehr als die reaktive Unverwundbarkeit gibt es dort ohne
+  Annahme nicht. Ein Marker neben dem zielosen Wirken einer gemessenen Aktion ist geplant (Erkennung, A308), ein
+  Marker ganz ohne Wirken mit dem gelernten Treffer (nächster Abschnitt). Die Marker-Zeit ist die der Warteschlange (fünf Sekunden für einen Marker auf einem
+  Gruppenmitglied, Upstream; seit A334 nicht mehr dessen eigene Restwirkzeit); ein Cast, der erst danach beginnt, wird
+  ihm nicht zugerechnet.
 - *Tankwechsel:* hält bei bereiter Unverwundbarkeit, die RSR für jeden nächsten Treffer nutzen würde
   (`CustomRotation.InvulnerabilityUsable`).
 - *Der Boss trägt den ganzen Kampf ein Damage Up:* kein Treffer wird gespeichert, kein Plan.
@@ -520,6 +529,38 @@ tötet damit – seine Präzisierung nennt genau das –, und die reaktive Unver
 Sterbe-Schwelle, die ein Treffer von voller Gesundheit in einem Schritt überspringt. Die Staffelung aus seinem
 Protokoll vom 01.10.2026 (zwei große auf einen Tankbuster, nichts auf den nächsten) entsteht im Plan nur, wenn jeder
 Tankbuster zwei braucht, und dann ist der nächste mit der Unverwundbarkeit oder mit allem geplant.
+
+### Ein Marker ohne Wirken
+
+**Ein Tankbustermarker auf dir, zu dem kein Wirken kommt, wird mit dem Treffer geplant, der demselben Marker im selben
+Gebiet zuletzt folgte** (A340). Die Tabelle maß solche Treffer schon (der Treffer nach einem Marker zählt als
+Tankbuster), der Plan las aber nur Wirken: Gegen einen Marker allein gab es nie mehr als die Staffelung und die
+Unverwundbarkeit unter der Linie, die ein Treffer von voller Gesundheit in einem Schritt überspringt. In seinem
+Protokoll vom 23.10.2026 (Heiler) kamen 8 von 14 Markern auf Tanks ohne Wirken in der Entscheidungszeile, darunter vor
+Blitzga und Blitzbogen, die danach gemessen wurden.
+
+- **Gelernt** (`TankbusterMarkerWatch`, `TankbusterMarkerHits.json`, kein Download): Bestätigt ein Treffer einen
+  Marker auf einem Gruppenmitglied, gleich welchem, merkt RSR für Gebiet und Pfad die Aktion des ersten Treffers und
+  die Zeit vom Erscheinen des Markers bis zu ihm. Eine Aktion, die schon die ganze Gruppe traf, bestätigt den Marker,
+  wird aber nicht gelernt (Raidwide-Regel, A337). Folgt beim nächsten Mal eine andere Aktion, ersetzt sie den Eintrag;
+  dieselbe Aktion behält die kürzere Zeit, damit eine danach getaktete Abwehr eher früh als spät kommt.
+- **Genutzt** (`TankbusterForecast`, `Learned`): Steht ein nicht verworfener Marker auf dir, kommt kein Wirken auf dich
+  zu und hat die Tabelle die gelernte Aktion gemessen, gilt sie als Tankbuster auf dich, fällig nach der gelernten
+  Zeit ab dem Erscheinen des Markers. Gerechnet wird ohne Debuffs am Gegner – der Treffer kann von einem Helfer kommen,
+  den ein Debuff auf dem Boss nicht erreicht –; Reprisal und Ähnliches zählen nicht und werden nicht geplant. Der Plan
+  wählt Bündel oder Unverwundbarkeit wie sonst. Ohne Ziel des Spielers oder nach Ablauf der gelernten Zeit kein Plan.
+- **Zurückgehalten wird nur unter der geplanten Unverwundbarkeit,** die jeden Treffer abhält. Ein Bündel hält die
+  Staffelung nicht zurück: Kündigt der Marker diesmal einen anderen Treffer an, ließe ein Bündel für den gelernten den
+  Tank mit weniger als der Abwehr des Markers. Damit gibt RSR hier mehr aus, als „Spend only the mitigation a measured
+  tankbuster needs" verspricht – der Text gilt dem gemessenen Tankbuster, und welcher kommt, ist hier eine Vorhersage,
+  kein Wirken (Stufe 3 der Rangordnung gegen Stufe 1).
+- **Was geschieht, wenn die Annahme nicht stimmt:** Folgt diesmal ein kleinerer Treffer, war die Unverwundbarkeit
+  vielleicht vergeudet, und der Eintrag ersetzt sich. Folgt ein größerer, steht wenigstens die Staffelung, wie ohne
+  Plan. Kommt der Treffer früher als je zuvor, kann die Unverwundbarkeit noch ausstehen, während die Staffelung
+  zurückgehalten wird – nur beim frühesten Auftreten, weil die kürzeste Zeit gilt. Die Zeit ist auf Seite des Clients
+  gemessen (Erscheinen des Effekts bis zum Effekt-Handler).
+- **Im Protokoll:** „tankbuster coming at you (learned from the marker on you)". Ein Treffer nach einem Marker, für den
+  weder Wirken noch gelernter Treffer vorlag, schreibt weiter „no cast taken for it".
 
 ### Prüfmittel
 
@@ -916,6 +957,27 @@ Vorhersage wenige Sekunden vorher, und die kleinen Minderungen standen vorn. Des
 vorhergesagten Tankbuster bei allen vier Tanks am Anfang. Zusammen mit Befund 5 fällt dort je Tankbuster eine große
 Minderung oder Schutzwall, dann die kurzen.
 
+**9. Reflexion und Gruppenwerkzeug wechseln sich über eine Folge von Raidwides ab** (alle vier Tanks,
+`TankAreaDefenseStretched`, A340). Nach Reflexion oder dem Gruppenwerkzeug des Jobs – Heiliger Quell und Waffengang,
+Abschütteln, Dunkler Bote, Wackeres Herz – wartet das andere, solange das erste wirkt: eine Minderung für die Dauer
+aus dem Wirktext, eine Barriere, bis sie verbraucht ist (fehlt ihr Status beim Tank einen GCD nach dem Druck). Beide
+gehen zusammen, wenn ein Mitglied in Gefährdungsklasse 1 steht oder der angekündigte Treffer, wie gemessen, ein
+ungeschütztes dorthin brächte – die Schranke der allgemeinen Streckung (Konzept 08, „Die Abwehrsperren"). Option „Spread
+Reprisal and the party mitigation over a run of area attacks", ab Werk an.
+- *Befund:* Alle vier Rotationen wirkten das Gruppenwerkzeug und im nächsten Einwebeplatz Reflexion, beide auf
+  denselben Raidwide (sein Protokoll vom 01.10.2026; am Code bis A340 unverändert).
+- *Referenz:* The Balance stapelt beide für einen großen Treffer und verteilt sie über mehrere. Die Größe misst die
+  Flächentabelle; die Schranke liest sie, ohne die schon stehende Minderung abzuziehen, also bekommt ein großer Treffer
+  weiter beide. Sein Grundsatz (Konzept 08, „Wozu die Aussetzbedingungen da sind"): die Dauer der Drosselung zählt,
+  strecken statt verdoppeln, solange die Gruppe hält.
+- *Im Kampf:* Zwei Raidwides kurz nacheinander bekommen je ein Werkzeug statt der erste beide und der zweite keines. Ein
+  ungemessener Raidwide bekommt eines – beim ersten Auftreten weiß RSR nicht, dass er groß ist; danach misst ihn die
+  Tabelle.
+- *Grenzen:* Ob Reflexion auf dem Boss den Treffer eines unsichtbaren Helfers mindert, ist unbelegt; hält sie das
+  Gruppenwerkzeug zurück und trifft der Helfer, fehlt dem Raidwide eine Minderung, außer die Schranke weicht. Eine
+  Reflexion aus der Einzelabwehr (Tankbuster) hält das Gruppenwerkzeug ebenso, solange sie wirkt. Die Reflexion eines
+  anderen Tanks zählt nicht: Die Streckung liest nur die eigenen Aktionen.
+
 **Ohne eigene Regel:**
 - *Äquilibrium* (reaktiv, unter Kampfrausch), *Holmgang* (Notfall bei „Health of dying tank", ab Werk 15 %; vorbeugend
   vor einem gemessenen Tankbuster, den nichts Geringeres trägt, über den Plan).
@@ -932,7 +994,7 @@ Stand 02.10.2026.
 | Kampfrausch vor dem Tankbuster | in den Stapeln, mit Verdammnis wie mit Rampart („The 60s“) | nur ohne andere große oder mit Rampart, sonst Notfall | zählt nur die Nutzung | auf jeden Tankbuster, für den er bereit ist (A237); WrathCombos Ausrichtung verworfen (A248) |
 | Reflexion am Tankbuster | Gruppenwerkzeuge auf Raidwides | im Bosskampf nur bei angesagtem Gruppenschaden | — | wartet, wenn der Tank gedeckt ist (A244) |
 | Abschütteln | Barriere an erhöhter Gesundheit | im Bosskampf bei Gruppenschaden, nicht innerhalb 10 s nach Reflexion; außerhalb nur ohne Kampfrausch, Verdammnis, Vengeance, Urimpuls | zählt nur die Nutzung | wartet bei Verdammnis/Urimpuls (A245) und für gebrauchte Glieder des Plans |
-| Reflexion und Abschütteln auf demselben Raidwide | mal stapeln, mal verteilen, je nach Größe | verteilt (je 10 s Sperre gegeneinander) | — | **beide auf denselben** — offen (TODO) |
+| Reflexion und Abschütteln auf demselben Raidwide | mal stapeln, mal verteilen, je nach Größe | verteilt (je 10 s Sperre gegeneinander) | — | verteilt, solange das erste wirkt; beide bei Gefahr nach der gemessenen Größe (A340) |
 
 *xivanalysis* bewertet Abwehr nur danach, ob sie genutzt wurde („find helpful times"), ohne Zeitpunktregel. *FFLogs*
 liefert die Kampfdaten, keine Regeln; ein Report von ihm würde zeigen, welche Minderung auf welchem Treffer lag.
@@ -1049,8 +1111,9 @@ entscheidet die Triage K2–K4 (Abschnitt „Andere Pfade, die dem Plan ein Glie
 - *Tankbuster ohne Marker, auf den Wirker selbst gewirkt oder nie gemessen:* nicht erkannt, keine Hilfe; eine
   gemessene Aktion, die auf das Mitglied gewirkt wird, ab ihrem zweiten Wirken.
 
-**Messmittel:** `DefenseTrace.log` schreibt „single defence -> Intervention" (Urflackern, The Blackest Night, Herz des
-Korunds) mit den Quellen der Abwehr – Marker auf wem, Wirken auf wen – und danach die „used"-Zeile. Keine
+**Messmittel:** `DefenseTrace.log` schreibt „single defence -> Intervention … on <Mitglied>" (Urflackern, The Blackest
+Night, Herz des Korunds; das Ziel seit A335, wenn es nicht der Spieler ist) mit den Quellen der Abwehr – Marker auf wem,
+Wirken auf wen – und danach die „used"-Zeile. Keine
 Selbstnachsteuerung nötig: Die Entscheidung fällt aus Marker und Wirken, nicht aus einer Vorhersage.
 
 **Prüfgrad:** statisch, Prüfskripte, Compile über die CI; im Spiel nicht beobachtet.
@@ -1798,7 +1861,7 @@ Schleife neben der bestehenden, kein Ringpuffer und kein dritter Effekt-Handler.
 | Restzeit des Status | **ja** | `StatusHelper.StatusTime(…)` |
 | Historie der Gesundheit über die Zeit | **für Gegner und Gruppe** | `DataCenter.RecordedHP` für die Gruppe, gefüllt in `TargetUpdater.UpdateTimeToKill` aus `PartyMembers`; Gegner in Upstreams `TimeToKillTracker` (30 s, seit 3c6ce9ee2, A341) |
 | Zeit bis zum Tod eines Gruppenmitglieds | **ja** | `ObjectHelper.GetCorrectedTTK`, gegen den eigenen Vorhersagefehler kalibriert |
-| Abtastrate der Historie | **1 Hz** | `TimeToKillUpdateInterval` |
+| Abtastrate der Historie | **1 Hz** | `TargetUpdater.TimeToKillUpdateIntervalMs` |
 | Eingehende Heilung auf ein Party-Mitglied | **nicht gesondert ausgewertet, und nicht nötig** | Der Gesundheitsverlauf ist bereits netto: Eine fremde Heilung zeigt sich als steigender Anteil, `GetTTK` antwortet dann `NaN` |
 | Schadensbetrag eines Gegnertreffers | **verfügbar und gelesen** | `Watcher.FullAmount`, voller Betrag auch über 65.535 Punkte (A140, A144) |
 

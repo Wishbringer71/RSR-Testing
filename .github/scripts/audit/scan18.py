@@ -7,9 +7,14 @@ build. The user turns the knob, nothing happens, and the only way to find out is
 tree.
 
 Two of these turned up inside a single code path while tracking down why raises were never cast:
-`SwiftcastBuffer`, whose own documentation describes exactly the timing that was broken, and
-`IBaseAction.IgnoreClipping`, which names the mechanism that was missing. Neither had a reader.
-That is a defect class, not two accidents.
+`SwiftcastBuffer` (removed since, A339) and `IBaseAction.IgnoreClipping`, which names the mechanism
+that was missing. Neither had a reader. That is a defect class, not two accidents.
+
+An accepted entry goes stale twice over: when its setting is read again, and when the setting is
+gone. Both are reported, because a stale reason reads like a current one - the entries for the
+interrupt and provoke delays still said "blocked on Configs.Migrate" after both were wired, and the
+one for LastSeenChangelog called its changelog prompt gone after upstream brought it back (7e539f3a5,
+A339).
 
 Scope, and why it is drawn narrowly: only properties **declared** in Configs.cs as
 `public <type> <Name> { get; ... }` are checked. Settings that exist as private `[UI]` backing
@@ -35,29 +40,14 @@ PROP_RE = re.compile(
 # Settings with no reader that are known and accepted, with the reason they are not a finding.
 # Anything not listed here and not read is reported.
 ACCEPTED = {
-    'SwiftcastBuffer':
-        'recorded in TODO.md: its documented meaning puts Swiftcast inside the window the '
-        'execution gate refuses, so wiring it would rebuild the defect it belongs to',
-    'InterruptDelay':
-        'recorded in TODO.md: blocked on Configs.Migrate being a reset rather than a migration - '
-        'wiring it cannot keep the current no-delay behaviour for existing configurations',
-    'ProvokeDelay':
-        'recorded in TODO.md: same shape as InterruptDelay, blocked on the same missing migration',
-    'TargetColor':
-        'recorded in TODO.md: no reader, and where the colour should be drawn does not follow '
-        'from the code (its self-referential UI parent is harmless - only checkboxes become '
-        'parents, so the entry just sorts to the top level)',
     'RotationLibs':
-        'recorded in TODO.md: external rotation library paths; LoadCustomRotationGroup takes its '
-        'assemblies from elsewhere, so the feature this configured is gone rather than broken',
+        'stored state without a label: the paths of external rotation libraries, whose loader and '
+        'input fields upstream replaced with its reworked rotation loading (d566eda86, 2025)',
     'ActionSequencerIndex':
         'internal persisted index, no UI and no label - stored state, not a promise to the user',
     'UiPaddingScale':
         'read outside this tree: Configs implements RebornMaterial.IM3Settings, and the package '
         '(7.5.6.2, upstream 27f6acb41) reads it through that interface (name found in its DLL)',
-    'LastSeenChangelog':
-        'internal persisted marker for a changelog prompt that no longer exists - stored state, '
-        'not a promise to the user',
 }
 
 
@@ -86,6 +76,11 @@ def unread(names, blob):
     return out
 
 
+def stale(accepted, names, orphans):
+    """Accepted entries whose reason no longer holds: the setting is read now, or no longer declared."""
+    return sorted(n for n in accepted if n not in names or n not in orphans)
+
+
 def self_test():
     cfg = ('public float Wired { get; set; } = 1f;\n'
            'public float Orphan { get; set; } = 2f;\n'
@@ -105,8 +100,11 @@ def self_test():
     only_self = [(pathlib.Path('Configs.cs'), 'Wired Orphan')]
     assert unread(names, only_self) == ['Orphan', 'Wired'], \
         'self-references in the declaration file must not count as readers'
+    accepted = {'Orphan': 'reason', 'Wired': 'reason', 'Gone': 'reason'}
+    assert stale(accepted, names, ['Orphan']) == ['Gone', 'Wired'], \
+        'an accepted entry for a setting read again or no longer declared must be reported'
     print('self-test ok: orphan caught, wired accepted, private fields excluded, '
-          'self-reference ignored\n')
+          'self-reference ignored, stale acceptances caught\n')
 
 
 def main():
@@ -143,6 +141,13 @@ def main():
         print('\nA setting with a label and a default promises the user that it does something.\n'
               'Either wire it up, remove it with a migration path for stored configuration, or\n'
               'add it to ACCEPTED in this script with the reason it stays.')
+        return 1
+
+    old = stale(ACCEPTED, names, orphans)
+    if old:
+        print('\nAccepted as unread, but read again or no longer declared - remove the entry:')
+        for name in old:
+            print(f'  {name}')
         return 1
 
     print('Every declared setting is read, or recorded as knowingly accepted.')

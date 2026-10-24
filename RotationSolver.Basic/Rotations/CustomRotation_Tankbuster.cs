@@ -569,12 +569,16 @@ public partial class CustomRotation
 			// Own mitigation for this hit's damage type (Dark Mind halves differ by type), and what enlarges
 			// the pool the hit meets: a barrier, or a raise of the maximum HP (Thrill of Battle, Great Nebula)
 			// - the hit stays as large, so the raise works like a barrier of that share (concept 09, A266).
+			// Against a learned hit after a marker the hitter is not known - a debuff on the target may not reach it -,
+			// so a debuff is no member of the plan (A340).
 			var self = canSelf ? value.SelfAgainst(cast.AttackType) : 0f;
-			var enemy = cast.AttackType is >= (uint)AttackType.Slashing and <= (uint)AttackType.Shot
-				? value.EnemyPhysical
-				: cast.AttackType == (uint)AttackType.Magic
-					? value.EnemyMagical
-					: Math.Min(value.EnemyPhysical, value.EnemyMagical);
+			var enemy = cast.Learned
+				? 0f
+				: cast.AttackType is >= (uint)AttackType.Slashing and <= (uint)AttackType.Shot
+					? value.EnemyPhysical
+					: cast.AttackType == (uint)AttackType.Magic
+						? value.EnemyMagical
+						: Math.Min(value.EnemyPhysical, value.EnemyMagical);
 			var barrier = canSelf ? value.Barrier + value.MaxHp : 0f;
 			if (self <= 0f && enemy <= 0f && barrier <= 0f)
 			{
@@ -660,7 +664,7 @@ public partial class CustomRotation
 		}
 
 		return TankbusterForecast.LongestCopy(player, statuses, false) >= cast.Horizon
-			|| TankbusterForecast.LongestCopy(cast.Source, statuses, false) >= cast.Horizon;
+			|| (!cast.Learned && TankbusterForecast.LongestCopy(cast.Source, statuses, false) >= cast.Horizon);
 	}
 
 	private static float After(float predicted, List<PlanCandidate> candidates, int mask, out float cost, out int count)
@@ -1003,7 +1007,10 @@ public partial class CustomRotation
 			return plan.Cast.Remaining > gcd && InvulnerabilityReadyBy(plan.Cast.Remaining - gcd);
 		}
 
-		if (!plan.Survivable)
+		// A learned hit after a marker holds nothing but under the invulnerability, which keeps any hit off: the marker
+		// may have announced another hit this time, and a bundle sized for the learned one would then leave the tank
+		// with less than the marker's own defence gives him (A340).
+		if (!plan.Survivable || plan.Cast.Learned)
 		{
 			return false;
 		}

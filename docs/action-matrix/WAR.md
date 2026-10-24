@@ -1,6 +1,6 @@
 # WAR — Abhängigkeitsmatrix
 
-Erzeugt von `.github/scripts/audit/generate_action_matrix.py` am 2026-10-22; nicht von Hand bearbeiten. Methode und Grenzen: `docs/rotation-flow/14-action-dependency-matrix.md`.
+Erzeugt von `.github/scripts/audit/generate_action_matrix.py` am 2026-10-24; nicht von Hand bearbeiten. Methode und Grenzen: `docs/rotation-flow/14-action-dependency-matrix.md`.
 
 - Basisrotation: `WarriorRotation`
 - Rotation: `RotationSolver/RebornRotations/Tank/WAR_Reborn.cs`
@@ -118,6 +118,7 @@ direkt: 40 · ungenutzt: 1
 | Rampart | Regel prüft | Damnation |
 | Rampart | Regel prüft | Vengeance |
 | Raw Intuition | Regel prüft | Bloodwhetting |
+| Reprisal | Regel sperrt vorher | Shake It Off |
 | Steel Cyclone | Regel prüft | Decimate |
 | Steel Cyclone | Regel sperrt vorher | Primal Rend |
 | Steel Cyclone | Regel prüft | Storm's Eye |

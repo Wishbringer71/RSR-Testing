@@ -162,7 +162,7 @@ public sealed class MCH_Reborn : MachinistRotation
 	{
 		if ((!MultiTact || (MultiTact && NumberOfAllHostilesInMaxRange > 1))
 			&& !HoldAreaDefense(IsOverheated || BurstWeaveSlotContested, "Machinist: Overheat or burst weave slot")
-			&& BMRShouldRefreshBefore(BMRRaidwideIn, 15f, true, null, StatusID.Tactician_1951, StatusID.Tactician_2177)
+			&& BMRShouldRefreshBefore(BMRRaidwideIn, DefensiveValues.DurationOf(TacticianPvE.ID), true, null, StatusID.Tactician_1951, StatusID.Tactician_2177)
 			&& TacticianPvE.CanUse(out act, skipStatusProvideCheck: true))
 		{
 			return true;
@@ -201,7 +201,7 @@ public sealed class MCH_Reborn : MachinistRotation
 	{
 		if ((!MultiTact || (MultiTact && NumberOfAllHostilesInMaxRange > 1))
 			&& !HoldSingleDefense(IsOverheated || BurstWeaveSlotContested, "Machinist: Overheat or burst weave slot")
-			&& BMRShouldRefreshBefore(BMRTankbusterIn, 15f, true, null, StatusID.Tactician_1951, StatusID.Tactician_2177)
+			&& BMRShouldRefreshBefore(BMRTankbusterIn, DefensiveValues.DurationOf(TacticianPvE.ID), true, null, StatusID.Tactician_1951, StatusID.Tactician_2177)
 			&& TacticianPvE.CanUse(out act, skipStatusProvideCheck: true))
 		{
 			return true;
@@ -423,8 +423,8 @@ public sealed class MCH_Reborn : MachinistRotation
 			}
 		}
 
-		// Overheated AOE
-		if (AutoCrossbowPvE.CanUse(out act))
+		// Overheated AOE, where it out-damages Blazing Shot and the Double Check and Checkmate recast that brings
+		if (AutoCrossbowPvE.CanUse(out act) && AutoCrossbowOutdamagesBlazingShot(AutoCrossbowPvE.Target.AffectedTargets.Length))
 		{
 			return true;
 		}

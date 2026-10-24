@@ -8,7 +8,8 @@ namespace RotationSolver.Basic.Helpers;
 /// ingame aufbauen, wenn ein vfx nachträglich als tankbuster falsifiziert wurde. (sicher speichern ...)".
 /// </summary>
 /// <remarks>
-/// <para>Every marker that the tankbuster paths catch on a party member opens a watch. An enemy action
+/// <para>Every marker that the tankbuster paths catch on a party member opens a watch, for the area it appears in:
+/// one path serves many fights (DataCenter.TankbusterMarkerKey, A338). An enemy action
 /// that reaches the marked member - damage of any amount, blocked, parried or swallowed by a barrier,
 /// or a hit turned away by invulnerability or evasion; auto-attacks excluded - confirms it. A watch that closes without such a hit falsifies the path, and it goes on
 /// the list; the recognition (DataCenter.UpdateTankbusterTargets, IsTankbusterVfxOn) then ignores it, and with it
@@ -22,7 +23,8 @@ namespace RotationSolver.Basic.Helpers;
 /// marker counts as announcing a hit, and the decision reads the same queue - and every enemy cast that
 /// ran while the marker stood has ended, plus one GCD for the hit to arrive. Both errors lean
 /// the safe way: a window that is too long lets other damage confirm a marker, so it stays a
-/// tankbuster, as before.</para>
+/// tankbuster, as before. A confirmed watch stays until its marker has left the queue, so the same marker
+/// does not open a second one (A340).</para>
 ///
 /// <para>Inconclusive, and dropped without a verdict: the marked member dead or gone when the window
 /// closes, and the fight ending first.</para>
@@ -36,10 +38,20 @@ internal static class TankbusterMarkerWatch
 	{
 		public required ulong Target { get; init; }
 		public required string Path { get; init; }
+
+		// The list entry: the area the marker appeared in and its path (DataCenter.TankbusterMarkerKey).
+		public required string Key { get; init; }
 		public required DateTime Seen { get; init; }
 		public required DateTime CastEnds { get; set; }
 		public DateTime? LeftQueue { get; set; }
 		public bool Hit { get; set; }
+
+		// The hit has taken the path off the list; later hits are no longer this marker's.
+		public bool Confirmed { get; set; }
+
+		// The first hit that is not a party-wide action, and its time after the marker: what the marker announced.
+		public uint HitAction { get; set; }
+		public float HitDelay { get; set; }
 	}
 
 	private static readonly List<Watch> _open = [];
@@ -75,6 +87,7 @@ internal static class TankbusterMarkerWatch
 			{
 				Target = vfx.ObjectId,
 				Path = vfx.Path.ToLowerInvariant(),
+				Key = DataCenter.TankbusterMarkerKey(vfx.Path),
 				Seen = vfx.Time,
 				CastEnds = now + TimeSpan.FromSeconds(LongestEnemyCastRemaining()),
 			});
@@ -82,14 +95,29 @@ internal static class TankbusterMarkerWatch
 
 		var gcd = TimeSpan.FromSeconds(DataCenter.DefaultGCDTotal);
 		var changed = false;
+		var learned = false;
 		for (var i = _open.Count - 1; i >= 0; i--)
 		{
 			var watch = _open[i];
 
 			if (watch.Hit)
 			{
-				changed |= OtherConfiguration.TankbusterMarkerWithoutHit.Remove(watch.Path);
-				_open.RemoveAt(i);
+				if (!watch.Confirmed)
+				{
+					changed |= OtherConfiguration.TankbusterMarkerWithoutHit.Remove(watch.Key);
+					learned |= Learn(watch);
+					watch.Confirmed = true;
+				}
+
+				// Kept until its marker has left the queue. Dropped at once, the same marker - still in the queue,
+				// as most hits come before its five seconds are up - opened a new watch on the next cycle, no second
+				// hit confirmed that one, and the path went on the list after the tankbuster that had just confirmed
+				// it: every other time the marker came, it was taken for no tankbuster (trace of 23.10.2026, A340).
+				if (!InQueue(queue, watch))
+				{
+					_open.RemoveAt(i);
+				}
+
 				continue;
 			}
 
@@ -124,7 +152,7 @@ internal static class TankbusterMarkerWatch
 			_open.RemoveAt(i);
 			if (Svc.Objects.SearchById(watch.Target) is IBattleChara target && !target.IsDead && target.IsParty())
 			{
-				changed |= OtherConfiguration.TankbusterMarkerWithoutHit.Add(watch.Path);
+				changed |= OtherConfiguration.TankbusterMarkerWithoutHit.Add(watch.Key);
 			}
 		}
 
@@ -132,22 +160,91 @@ internal static class TankbusterMarkerWatch
 		{
 			_ = OtherConfiguration.SaveTankbusterMarkerWithoutHit();
 		}
+
+		if (learned)
+		{
+			_ = OtherConfiguration.SaveTankbusterMarkerHits();
+		}
+	}
+
+	// What hit after the marker, for the tank plan to meet the marker when no cast comes with it (concept 09, A340). By
+	// another action than stored, the entry is replaced: the marker announced something else this time. By the same one,
+	// the shorter time stays, so a defence timed by it comes early rather than late.
+	private static bool Learn(Watch watch)
+	{
+		if (watch.HitAction == 0)
+		{
+			return false;
+		}
+
+		var hits = OtherConfiguration.TankbusterMarkerHits;
+		if (hits.TryGetValue(watch.Key, out var known) && known.ActionId == watch.HitAction && known.Delay <= watch.HitDelay)
+		{
+			return false;
+		}
+
+		hits[watch.Key] = new TankbusterMarkerHit { ActionId = watch.HitAction, Delay = watch.HitDelay };
+		return true;
+	}
+
+	/// <summary>
+	/// The hit learned for a tankbuster marker standing on <paramref name="objectId"/> (not on the list of markers without
+	/// a hit), with the seconds left until it by the learned time - the marker whose hit comes first when several stand.
+	/// For the tank plan when no cast comes with the marker (concept 09, A340).
+	/// </summary>
+	public static bool LearnedHitOn(ulong objectId, out uint actionId, out float remaining, out float delay)
+	{
+		actionId = 0;
+		remaining = float.MaxValue;
+		delay = 0f;
+		var queue = DataCenter.VfxDataQueue;
+		if (queue == null || queue.IsEmpty)
+		{
+			return false;
+		}
+
+		var now = DateTime.Now;
+		foreach (var vfx in queue)
+		{
+			if (vfx.ObjectId != objectId || string.IsNullOrEmpty(vfx.Path) || !DataCenter.IsTankbusterMarkerPath(vfx.Path)
+				|| DataCenter.IsFalsifiedTankbusterMarker(vfx.Path)
+				|| !OtherConfiguration.TankbusterMarkerHits.TryGetValue(DataCenter.TankbusterMarkerKey(vfx.Path), out var hit))
+			{
+				continue;
+			}
+
+			var left = hit.Delay - (float)(now - vfx.Time).TotalSeconds;
+			if (left < remaining)
+			{
+				actionId = hit.ActionId;
+				remaining = left;
+				delay = hit.Delay;
+			}
+		}
+
+		return actionId != 0;
 	}
 
 	/// <summary>
 	/// An enemy action that is not an auto-attack damaged <paramref name="targetId"/>. Called from the
 	/// effect handler, on the game thread. Returns whether a marker on that member stood for the hit
-	/// that is not on the learned list of markers without one - the hit was a tankbuster on them.
+	/// that is not on the learned list of markers without one - the hit was a tankbuster on them. A party-wide
+	/// action (<paramref name="partyWide"/>) still confirms the marker but is not learned as what it announced.
 	/// </summary>
-	public static bool RecordHit(ulong targetId)
+	public static bool RecordHit(ulong targetId, uint actionId, bool partyWide)
 	{
 		var marked = false;
 		foreach (var watch in _open)
 		{
-			if (watch.Target == targetId)
+			if (watch.Target == targetId && !watch.Confirmed)
 			{
 				watch.Hit = true;
-				marked |= !OtherConfiguration.TankbusterMarkerWithoutHit.Contains(watch.Path);
+				marked |= !OtherConfiguration.TankbusterMarkerWithoutHit.Contains(watch.Key);
+				if (!partyWide && watch.HitAction == 0)
+				{
+					watch.HitAction = actionId;
+					watch.HitDelay = (float)(DateTime.Now - watch.Seen).TotalSeconds;
+				}
 			}
 		}
 
@@ -182,9 +279,11 @@ internal static class TankbusterMarkerWatch
 		return false;
 	}
 
+	// The targetable enemies and the untargetable helpers: a helper often casts the hit a marker announces, and read
+	// from the hostile list alone the window closed one GCD after the marker left the queue, before such a hit (A334).
 	private static float LongestEnemyCastRemaining()
 	{
-		var longest = 0f;
+		var longest = DataCenter.LongestHelperCastRemaining;
 		foreach (var hostile in DataCenter.AllHostileTargets)
 		{
 			if (hostile != null && hostile.IsValid() && hostile.IsCasting)

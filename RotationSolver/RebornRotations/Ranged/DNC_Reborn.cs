@@ -149,7 +149,7 @@ public sealed class DNC_Reborn : DancerRotation
 	protected override bool DefenseAreaAbility(IAction nextGCD, out IAction? act)
 	{
 		if ((!BurstDefense || (BurstDefense && !InBurstStatus))
-			&& BMRShouldRefreshBefore(BMRRaidwideIn, 15f, true, null, StatusID.ShieldSamba)
+			&& BMRShouldRefreshBefore(BMRRaidwideIn, DefensiveValues.DurationOf(ShieldSambaPvE.ID), true, null, StatusID.ShieldSamba)
 			&& ShieldSambaPvE.CanUse(out act, skipStatusProvideCheck: true))
 		{
 			return true;
@@ -167,7 +167,7 @@ public sealed class DNC_Reborn : DancerRotation
 	protected override bool DefenseSingleAbility(IAction nextGCD, out IAction? act)
 	{
 		if ((!BurstDefense || (BurstDefense && !InBurstStatus))
-			&& BMRShouldRefreshBefore(BMRTankbusterIn, 15f, true, null, StatusID.ShieldSamba)
+			&& BMRShouldRefreshBefore(BMRTankbusterIn, DefensiveValues.DurationOf(ShieldSambaPvE.ID), true, null, StatusID.ShieldSamba)
 			&& ShieldSambaPvE.CanUse(out act, skipStatusProvideCheck: true))
 		{
 			return true;

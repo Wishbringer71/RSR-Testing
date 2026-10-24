@@ -92,6 +92,13 @@ antwortet auf die Frage, die zählt: für wie viele der bewerteten Aktionen hat 
 eine Abklingzeit gespart. Der Vermerk ist Diagnose und wird bewusst **nicht** gespeichert — nach einem
 Neustart lautet die ehrliche Antwort „in dieser Sitzung noch nicht gesehen".
 
+**Jedes Auslassen steht in `DefenseTrace.log`**, eine Zeile je Cast („area defence skipped: … rated …, which leaves
+everybody above the area heal line"), wie der BossModReborn-Pfad je Vorhersage eine schreibt („area defence held").
+Ohne sie sahen in seinen Protokollen vom 18.–22.10.2026 ein Cast, den die Größenregel durchließ, und einer, den die
+Erkennung nie sah, gleich aus: Schriller Kreischer traf zweimal mit 32 und 24 % ohne Zeile, beim dritten Mal öffnete
+die Abwehr mit dem nachgelernten Anteil von 37 % (A334). Die Regel steuert sich selbst nach – die nächste ungeminderte
+Landung hebt den Anteil –, die Zeile macht das Auslassen nur lesbar.
+
 **Null ist zwei verschiedene Antworten**, und deshalb nennt die Anzeige den Schalter mit: Ist
 `SkipMitigationForSmallAreaCasts` aus, *kann* die Regel nicht greifen; ist er an, war jede bewertete
 Aktion der bisher gespielten Inhalte ihre Minderung wert. Ohne diese Unterscheidung hätte die Sonde
@@ -537,8 +544,9 @@ Fundamentals“, 02.10.2026: bei Zaubern, deren Wirkung später eintritt oder we
 untargetable entities responsible“; ein Debuff auf dem Boss wie Reflexion mindert deren Schaden „usually“ nicht —
 Folge für die Gegner-Debuffs in Konzept 08). Ebenso wirkt ein Boss außerhalb des Felds seine Raidwides nicht
 anvisierbar. Die Flächenerkennung liest deshalb neben der Gegnerliste jede nicht anvisierbare Figur der
-Gegnerseite – Kämpfer (`BattleNpcSubKind.Combatant`), Teil eines Gegners (`BNpcPart`) oder ohne Unterart, und kein
-Gruppenmitglied (`ObjectHelper.IsEnemySideFigure`, A327) –, solange sie eine Aktion der Flächenliste wirkt (`DataCenter.AreaCasters`, gebaut in
+Gegnerseite – Kämpfer (`BattleNpcSubKind.Combatant`), Teil eines Gegners (`BNpcPart`), Helfer (Unterart 11, in
+FFXIVClientStructs ohne Namen, bei BossModReborn `Helper`) oder ohne Unterart, und kein Gruppenmitglied
+(`ObjectHelper.IsEnemySideFigure`, A327, A334) –, solange sie eine Aktion der Flächenliste wirkt (`DataCenter.AreaCasters`, gebaut in
 `TargetUpdater.UpdateAreaCasters`); alle Leser gehen darüber: die Flächenflagge, „erreicht ihn", der große Cast, die
 unbewertete Erkennung, die eigene Flächenabwehr und das Protokoll („(untargetable)"). Der Effekt-Handler lässt
 dieselben Quellen durch und dazu jede anvisierbare Figur der Gegnerseite, deren Aktion ein Gruppenmitglied erreicht
@@ -639,6 +647,15 @@ Messung in `TankbusterTable`, Ablage über denselben gesicherten Weg wie die Fl�
   die größere Maximalgesundheit; ein Fehlschlag an ihm höbe den Wert für jeden Tank, im Extremfall über die ganze
   Gesundheit hinaus. Das Protokoll schreibt ihn mit „(not a tank) … not stored". Keiner der Leser liest die Tabelle für
   einen Nicht-Tank, also fehlt dort nichts.
+- **Kein Raidwide:** Eine Aktion der Flächenliste hat schon einmal jedes Mitglied getroffen; sie ist nicht der
+  Tankbuster eines Markers, auch wenn sie das markierte Mitglied trifft, solange der Marker steht
+  (`TankbusterTable.IsPartyWide`). Bis A337 zählte jede Aktion in diesem Fenster: In seinen Protokollen vom 22. und
+  23.10.2026 kamen Feldgeschrei (zwei Fassungen, bis 25 Ziele) und Wehklagen so in die Tabelle, zusammen mit dem
+  echten Tankbuster, der im selben Augenblick traf, und ebenso als Tankbuster zum Tankwechsel. Den Marker bestätigt ein
+  Raidwide weiter (Konzept 15, der Fehler liegt auf der sicheren Seite). Was die Datei davon schon hält, bleibt dort,
+  weil ein Speichern mit ihr zusammenführt und nie entfernt; jeder Leser übergeht es (`IsLearned`, `PredictedShare`).
+  Ein Raidwide, der noch nicht in der Liste steht, kommt beim ersten Mal noch hinein und wird übergangen, sobald die
+  Liste ihn aufnimmt.
 - **Zurückgerechnet auf ungemindert:** Der gemessene Anteil wird durch die Minderung geteilt, die beim Einschlag
   stand.
   - Auf dem Getroffenen zählt sein eigener Anteil, auf dem Angreifer der Anteil nach Schadensart: physisch für
@@ -813,9 +830,12 @@ offene Punkte zugleich schließt, steht in `08-mitigation-synergy.md`, Abschnitt
 mehrfach trägt“.
 
 **Für die Tankbuster ist dieselbe Frage beantwortet** (Abschnitt „Die Tankbuster-Tabelle").
-`HostileCastingKnockback` und `HostileCastingStop` haben dieselbe Struktur; dort fehlen ein eigener
-Speicher und eine Rechnung, und keine Regel fragt nach der Größe eines Rückstoßes oder eines
-Stopp-Casts.
+`HostileCastingKnockback` und `HostileCastingStop` haben dieselbe Struktur, aber keinen eigenen Speicher und keine
+Rechnung, und sie brauchen keine (A340): Die Rückstoßliste öffnet nur den Rückstoßschutz (`AutoStatus.AntiKnockback`),
+die Stoppliste nur das Innehalten (`AutoStatus.NoCasting`). Beide antworten auf die Mechanik – verschoben werden,
+während eines Blicks oder Stopps handeln –, nicht auf den Schaden; ein Rückstoß verschiebt, ob er viel oder wenig
+Schaden macht. Keine Schadensabwehr liest die beiden Listen. Macht ein Rückstoß auch Schaden an der Gruppe, steht er
+auf der Flächenliste und wird dort gemessen.
 
 **Die Wahl des Mittels nach der Treffergröße — Vorgabe des Auftraggebers:** „man könnte es auch so
 anpassen, dass die geeignete schadensverringerung bzw. das geeignete schild bei dem eintreffenden schaden

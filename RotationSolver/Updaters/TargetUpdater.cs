@@ -16,6 +16,13 @@ internal static partial class TargetUpdater
 
 
 	// Scratch lists reused every update; ObjectListDelay copies what it needs.
+	// "Interrupt delay range" and "Provoke delay range": the delay their
+	// texts promise, from the moment a target appears until it is chosen. Wired here until upstream's refactor of the
+	// target update dropped it (527414d60, 2024) and left both settings without a reader (A338). Not readonly: the
+	// struct keeps its timer.
+	private static RandomDelay _interruptDelay = new(() => Service.Config.InterruptDelay);
+	private static RandomDelay _provokeDelay = new(() => Service.Config.ProvokeDelay);
+
 	private static readonly List<IBattleChara> _raiseCandidates = [];
 	private static readonly List<IBattleChara> _dispelCandidates = [];
 
@@ -49,8 +56,9 @@ internal static partial class TargetUpdater
 			_outOfDutyPlayers.Clear();
 			DataCenter.DeathTarget = null;
 			DataCenter.DispelTarget = null;
-			DataCenter.ProvokeTarget = null;
-			DataCenter.InterruptTarget = null;
+			// Through the delays, so their timers start again with the next target instead of carrying this one over.
+			DataCenter.ProvokeTarget = _provokeDelay.Delay<IBattleChara>(null);
+			DataCenter.InterruptTarget = _interruptDelay.Delay<IBattleChara>(null);
 			UpdateTimeToKill();
 			return;
 		}
@@ -66,10 +74,15 @@ internal static partial class TargetUpdater
 		// walk behind it runs only when one of them comes up.
 		bool? autoProvokeAllowed = null;
 		bool AutoProvokeAllowed() => autoProvokeAllowed ??= Service.Config.AutoProvokeForTank || StateUpdater.CountPartyTanks() < 2;
-		DataCenter.ProvokeTarget = (DataCenter.Role == JobRole.Tank || StatusHelper.PlayerHasStatus(true, StatusID.VariantUltimatumSet))
+		DataCenter.ProvokeTarget = _provokeDelay.Delay((DataCenter.Role == JobRole.Tank || StatusHelper.PlayerHasStatus(true, StatusID.VariantUltimatumSet))
 			? GetFirstHostileTarget(target => target.CanProvoke(AutoProvokeAllowed))
-			: null; // Calculating this per frame rather than on-demand is actually a fair amount worse
-		DataCenter.InterruptTarget = GetFirstHostileTarget(ObjectHelper.CanInterrupt); // Tanks, Melee, RDM, and various phantom and duty actions can interrupt so just deal with it
+			: null); // Calculating this per frame rather than on-demand is actually a fair amount worse
+		// Tanks, Melee, RDM, and various phantom and duty actions can interrupt so just deal with it. The delay never outlasts
+		// the cast: with one GCD of it left the interrupt goes now, since one that waits past the cast's end is no interrupt.
+		var interruptCandidate = GetFirstHostileTarget(ObjectHelper.CanInterrupt);
+		DataCenter.InterruptTarget = _interruptDelay.Delay(interruptCandidate)
+			?? (interruptCandidate is { } caster && caster.TotalCastTime - caster.CurrentCastTime <= DataCenter.DefaultGCDTotal
+				? interruptCandidate : null);
 
 		if (DataCenter.IsInOccultCrescentOp && Service.Config.ElementalWeaknessTracking)
 		{
@@ -92,8 +105,9 @@ internal static partial class TargetUpdater
 	/// after it knocked someone, a tankbuster by the shipped list or a measured hit, and an untargetable caster
 	/// carries no other. Tankbusters and knockbacks of helpers went unread until A303. Range and line of sight are left to the reach check of each cast,
 	/// because a helper stands where its area is, not where an enemy can be attacked. A helper is any untargetable
-	/// figure of the enemy side, of each of its kinds - combatant, part of an enemy, or none (ObjectHelper.IsEnemySideFigure);
-	/// read as combatants only, a dungeon boss's parts cast and hit unread (A327).
+	/// figure of the enemy side, of each of its kinds - combatant, part of an enemy, helper, or none
+	/// (ObjectHelper.IsEnemySideFigure); read as combatants only, a dungeon boss's parts cast and hit unread (A327), and
+	/// without the helper kind the helpers of trials and raids (A334).
 	/// </remarks>
 	private static void UpdateAreaCasters()
 	{
@@ -101,13 +115,22 @@ internal static partial class TargetUpdater
 		List<IBattleChara> casters = new(capacity: hostiles.Count);
 		casters.AddRange(hostiles);
 		HashSet<ulong> helperIds = [];
+		var longestHelperCast = 0f;
 
 		foreach (var obj in Svc.Objects)
 		{
 			if (obj is not IBattleChara caster || caster.ObjectKind != Dalamud.Game.ClientState.Objects.Enums.ObjectKind.BattleNpc
 				|| caster.IsTargetable || !caster.HasNativeState() || !caster.IsCasting
-				|| !caster.IsEnemySideFigure()
-				|| !DataCenter.IsListedHostileCast(caster.CastActionId))
+				|| !caster.IsEnemySideFigure())
+			{
+				continue;
+			}
+
+			// Every helper's cast, listed or not: the tankbuster marker watch waits for the casts that run while a
+			// marker stands, and a helper casting the hit after it is the common case, its action not yet listed.
+			longestHelperCast = Math.Max(longestHelperCast, caster.TotalCastTime - caster.CurrentCastTime);
+
+			if (!DataCenter.IsListedHostileCast(caster.CastActionId))
 			{
 				continue;
 			}
@@ -120,6 +143,7 @@ internal static partial class TargetUpdater
 
 		DataCenter.AreaCastHelperIds = helperIds;
 		DataCenter.AreaCasters = casters;
+		DataCenter.LongestHelperCastRemaining = longestHelperCast;
 	}
 
 	/// <summary>

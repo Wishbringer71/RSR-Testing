@@ -80,8 +80,14 @@ namespace RotationSolver.Commands
 
 			var player = Player.Object;
 			if (player != null && !DataCenter.IsPvP
-				&& NoCastingStatusHelper.PlayerHasNoCastingStatus(out var minStatusTime))
+				&& NoCastingStatusHelper.PlayerHasNoCastingStatus(out var minStatusTime, out var damagesEveryAction))
 			{
+				// Pyretic, Causality: every action costs health for as long as the status lasts, so none goes out (A338).
+				if (damagesEveryAction)
+				{
+					return;
+				}
+
 				var remainingCastTime = player.TotalCastTime - player.CurrentCastTime;
 				if (minStatusTime > remainingCastTime && minStatusTime < NoCastingStatusHelper.ResolveWindow)
 				{

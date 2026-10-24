@@ -62,6 +62,13 @@ internal static class DataCenter
 	public static HashSet<ulong> AreaCastHelperIds { get; set; } = [];
 
 	/// <summary>
+	/// The most cast time left on any untargetable enemy-side figure, whatever it casts, in seconds - zero when none
+	/// casts. Rebuilt with <see cref="AreaCasters"/>; read by the tankbuster marker watch, which waits for every enemy
+	/// cast that runs while a marker stands, the helpers' included (A334).
+	/// </summary>
+	internal static float LongestHelperCastRemaining { get; set; }
+
+	/// <summary>
 	/// Whether an untargetable enemy casting this action is read as an enemy: the action is on the area,
 	/// tankbuster or knockback list, or the tankbuster table has measured it. The list itself is the evidence of
 	/// hostility - an id is there only once it hit the party, or by the shipped list (A277, A303).
@@ -1496,10 +1503,21 @@ internal static class DataCenter
 	/// maximum) - another tool, not a game source. Were it the true level, an under-levelled raiser would
 	/// still count as living, which is the state before this check and no worse.
 	/// </summary>
-	private const byte RaiseLevel = 12;
+	private static byte RaiseLevel => _raiseLevel ??= LevelOf(ActionID.RaisePvE);
 
 	/// <inheritdoc cref="RaiseLevel"/>
-	private const byte VerraiseLevel = 64;
+	private static byte VerraiseLevel => _verraiseLevel ??= LevelOf(ActionID.VerraisePvE);
+
+	private static byte? _raiseLevel;
+	private static byte? _verraiseLevel;
+
+	// The level an action is learned at, from the action sheet (Raise 12, Verraise 64 today). The healers' raises all
+	// share Raise's level; a sheet that cannot be read answers 1, so the level check then lets every member count, the
+	// state before this check (A340).
+	private static byte LevelOf(ActionID action)
+		=> Service.GetSheet<Lumina.Excel.Sheets.Action>().TryGetRow((uint)action, out var row) && row.ClassJobLevel > 0
+			? row.ClassJobLevel
+			: (byte)1;
 
 	public static bool CanRaise()
 	{
@@ -2130,6 +2148,26 @@ internal static class DataCenter
 		}
 	}
 
+	/// <summary>
+	/// The share of the player's maximum HP that enemy actions took within the last <paramref name="seconds"/>, after
+	/// the mitigation that stood, from the effect handler's damage records - what a barrier pressed then would have had
+	/// to absorb. For The Blackest Night, whose reward needs its barrier spent within its duration (concept 10, A340).
+	/// </summary>
+	internal static float DamageTakenWithin(float seconds)
+	{
+		var now = DateTime.Now;
+		float taken = 0;
+		foreach (var rec in _damages)
+		{
+			if ((now - rec.ReceiveTime).TotalSeconds < seconds)
+			{
+				taken += rec.Ratio;
+			}
+		}
+
+		return taken;
+	}
+
 	public static ActionRec[] RecordActions
 	{
 		get
@@ -2219,6 +2257,13 @@ internal static class DataCenter
 
 	internal static void AddDamageRec(float damageRatio)
 	{
+		// Only what did damage: the queue keeps a fixed number of records, and every enemy action that missed the
+		// player filled it with zeros - in a large party a few seconds' worth, too short for DamageTakenWithin (A340).
+		if (damageRatio <= 0f)
+		{
+			return;
+		}
+
 		if (_damages.Count >= QUEUECAPACITY)
 		{
 			_ = _damages.Dequeue();
@@ -2551,9 +2596,18 @@ internal static class DataCenter
 			|| StartsWithAny(path, SharedDamagePaths)
 			|| StartsWithAny(path, SpreadDamagePaths);
 
-	/// <summary>Whether the fight has shown this marker path not to be followed by a hit.</summary>
+	/// <summary>Whether a fight in this area has shown this marker path not to be followed by a hit.</summary>
 	internal static bool IsFalsifiedTankbusterMarker(string path)
-		=> OtherConfiguration.TankbusterMarkerWithoutHit.Contains(path.ToLowerInvariant());
+		=> OtherConfiguration.TankbusterMarkerWithoutHit.Contains(TankbusterMarkerKey(path));
+
+	/// <summary>
+	/// The entry of a marker in <see cref="OtherConfiguration.TankbusterMarkerWithoutHit"/>: the area and the path. One
+	/// path serves many fights - `tank_lockon02k1` came before five different tankbusters on 23.10.2026 - and a fight in
+	/// which it announces no hit on the marked member would otherwise take it from all the others (A338, A340). An entry
+	/// of the path alone, from before, matches no area and is passed over: the marker counts as a tankbuster again until
+	/// a fight in the area shows otherwise.
+	/// </summary>
+	internal static string TankbusterMarkerKey(string path) => $"{TerritoryID}:{path.ToLowerInvariant()}";
 
 	// Read by several updaters and rotations each frame, so each is computed once per frame.
 	private static readonly FrameCached<bool> _isHostileCastingAoe = new(() => InCombat && (IsCastingAreaVfx() || IsAnyHostileCastingArea()));
@@ -3567,9 +3621,10 @@ internal static class DataCenter
 	// anonymously. Carried with the share and subject to the same lifetime.
 	private static uint _lastAnnouncedAreaAction;
 
-	// One GCD's worth. The figure describes the cast that is landing now, so it must not outlive it
-	// and steer the next decision; long enough for the defensive branch of the same window to read it.
-	private static readonly TimeSpan AnnouncedAreaShareLifetime = TimeSpan.FromSeconds(2.5);
+	// One GCD's worth - the player's, as the game reports it (A340). The figure describes the cast that is
+	// landing now, so it must not outlive it and steer the next decision; long enough for the defensive
+	// branch of the same window to read it.
+	private static TimeSpan AnnouncedAreaShareLifetime => TimeSpan.FromSeconds(DefaultGCDTotal);
 
 	/// <summary>
 	/// The share of the weakest party member's maximum health carried by the area cast that is
@@ -3976,7 +4031,18 @@ internal static class DataCenter
 			return true;
 		}
 
-		AreaMitigationSkipped[actionId] = DateTime.Now;
+		// One trace line per cast, as the BossModReborn path writes one per prediction (NoteBmrRaidwideHeld): the
+		// predicate is asked every frame, so a skip less than a GCD after the last is the same cast. Without it a cast
+		// the size rule let through and one the recognition never saw looked alike in the trace of 18.-22.10.2026 (A334).
+		var now = DateTime.Now;
+		if (!AreaMitigationSkipped.TryGetValue(actionId, out var last) || (now - last).TotalSeconds > DefaultGCDTotal)
+		{
+			var name = Service.GetSheet<Action>().GetRow(actionId).Name.ExtractText();
+			DefenseTrace.Line($"area defence skipped: {name} #{actionId}, rated {share:P0}, which leaves everybody above"
+				+ " the area heal line");
+		}
+
+		AreaMitigationSkipped[actionId] = now;
 		return false;
 	}
 

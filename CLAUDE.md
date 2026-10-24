@@ -68,6 +68,7 @@ Persistenz: Priorität 1, jede Eingabe, ausnahmslos. Kontextkomprimierung→Date
 **Bevor ich etwas als fertig melde**
 - Wirkkette am Code, Richtigkeit am Spielgeschehen, Nachsteuerung, wo die Antwort erst zur Laufzeit fällt (→ „Definition of Done").
 - Konzept, `TODO.md` und Archiv fortgeschrieben.
+- Am Auftragsende Upstream erneut synchronisiert und ausgewertet (→ „Upstream“).
 - Prüfgrad benannt.
 
 **Bevor ich einen Zug beende**
@@ -278,7 +279,7 @@ Gelten in jeder Stufe. Eine Aussage, die eine davon verletzt, ist unbelegt.
 - `AUDIT_LOG.md` (A: Prüfungen, C: widerrufene Aussagen) vor jeder Neuprüfung eines Bereichs lesen.
 - `TODO.md` führt nur offene Arbeit, getrennt in Defekte (Verhalten weicht von Absicht oder Einstellungstext ab), offene Arbeit, technische Schuld (Kompromiss, Kosten, Auflösungsbedingung) und Warten auf Daten. Je Eintrag nur Wirkung im Kampf, Ort, nächster Schritt oder Auflösungsbedingung, Konzept; Begründung, Messung und Geschichte stehen im Konzept und im Archiv – sonst wächst die Datei mit jedem Loop, veraltet und widerspricht den Konzepten (seine Rüge, 18.10.2026). Neu erkannte Defekte sofort erfassen, auch außerhalb des Auftrags.
 - Schließt ein Loop einen Punkt: Eintrag entfernen, im selben Zug jede Konzeptstelle nachziehen, die ihn offen nennt (Suche nach seinem Titel und nach „offen"), und die Reihenfolge fortschreiben. Ein Verweis auf das TODO nennt den Eintrag mit seinem Titel.
-- Offene Arbeit arbeite ich nach Wichtigkeit ab, jeden Punkt im vollen Loop, ohne Zwischenfrage (seine Vorgabe, 17.10.2026). Wichtigkeit ist die Wirkung im Kampf nach „Spielweise“ in seinem Profil; die Reihenfolge steht oben in `TODO.md` und wird mit jedem Befund fortgeschrieben.
+- Offene Arbeit arbeite ich nach Wichtigkeit ab, jeden Punkt im vollen Loop, ohne Zwischenfrage (seine Vorgabe, 17.10.2026). Wichtigkeit ist die Wirkung im Kampf nach „Spielweise“ in seinem Profil; die Reihenfolge steht oben in `TODO.md` und wird mit jedem Befund fortgeschrieben. „Einfach umsetzbar“ in einem Auftrag sortiert, es schränkt nicht ein: Nach den einfachen kommen die schweren wichtigen Punkte ebenso dran, im selben Auftrag (seine Präzisierung, 24.10.2026).
 - Ein Eintrag gilt erst als seine Entscheidung, wenn der Loop durch ist und die Vorlage darin steht (→ „Vorlagen an ihn"); eine Kennzeichnung „zur Entscheidung" ohne sie ist meine offene Arbeit, und ich gebe sie nicht als seine aus (seine Rüge, 14.10.2026).
 - Fehler sachlich am System dokumentieren, im Archiv und in Commit-Nachrichten, nicht im Bericht.
 
@@ -287,7 +288,7 @@ Gelten in jeder Stufe. Eine Aussage, die eine davon verletzt, ist unbelegt.
 - Gemessene Zahlen stehen in Dokumenten nur datiert oder gar nicht, weil sie sonst unbemerkt altern.
 
 **Release-Texte**
-- Englisch; sie beschreiben den Unterschied zum letzten Release, nicht den Bestand.
+- Englisch; sie beschreiben, was der Fork seit dem letzten Release selbst geändert hat — nicht den Bestand und nicht die Änderungen von Upstream (seine Vorgabe, 23.10.2026: „hier sind nur die eigenen änderungen aufzuführen").
 - `docs/fork-changes-since-last-release.md` mit dem Ausgangs-Release im Titel; nach Veröffentlichung übernimmt `docs/fork-changes-in-play.md` den Text (`check_release_note.py`).
 - Keine Rechenschaft über eigene Fehler darin.
 - Die Längengrenze ist die des tatsächlichen Wegs (Release-API über `body_path`).
@@ -313,6 +314,7 @@ Gelten in jeder Stufe. Eine Aussage, die eine davon verletzt, ist unbelegt.
 - `main` halte ich selbst synchron: `upstream/main` in `main` mergen und pushen, ohne Freigabe und ohne auf einen PR-Merge zu warten.
 - `upstream` ist read-only.
 - Einen Sync werte ich aus, statt ihn nur einzupflegen: je fremder Änderung an einem Fork-Abschnitt — was ändert sie im Kampf, wie greift sie in die eigenen Änderungen, was wird daraus (trägt sie eine Regel, schärft sie einen Vertrag, beantwortet sie eine offene Frage)?
+- Nach dem Abarbeiten eines Auftrags synchronisiere ich erneut und prüfe die neuen Upstream-Änderungen im kritischen Loop auf Probleme mit eigenem Code und Konzepten (seine Vorgabe, 24.10.2026). Grund: Während der Arbeit kommt Upstream weiter, und erst der Sync danach zeigt, ob das Gebaute noch trägt.
 
 **Commits und Zweige**
 - Der Arbeitszweig heißt `claude/fixes-after-<letztes Fork-Release>`, etwa `claude/fixes-after-7.5.6.13` (seine Vorgabe); nach einem neuen Release ein neuer Zweig mit dessen Nummer. Grund: Der Name sagt, auf welchem Release-Stand gearbeitet wird. Gibt die Sitzungsumgebung einen anderen Namen vor, gilt seine Vorgabe, und ich sage es ihm.
@@ -322,7 +324,7 @@ Gelten in jeder Stufe. Eine Aussage, die eine davon verletzt, ist unbelegt.
 - Commit-Identität nicht überschreiben (`user.name = Claude`, `user.email = noreply@anthropic.com`; kein `git -c user.name=… -c user.email=…`). Sein Klarname und seine private Adresse gehören in keinen Commit; `.githooks/pre-commit` und `check_commit_identity.py` sperren fremde Adressen.
 
 **Grenzen und Löschungen**
-- Tags, Ref-Löschungen und Releases auf `origin` enden hier mit 403. Release-Tags setzt er; ich lege den fertigen Befehl mit Zielcommit vor.
+- Tags, Ref-Löschungen und Releases auf `origin` sind dieser Sitzungsart gesperrt (403, beim Release „not permitted for this session type", 22.10.2026). Release-Tags setzt er; ich lege Zielcommit, Tag und Release-Text fertig vor. Auch über `publish.yaml` (`workflow_dispatch`) erzeuge ich kein Release: Der Lauf legt Tag und Release an, also genau das Gesperrte, und eine Sperre der Umgebung umgehe ich nicht (A333).
 - Auf `origin` erzeuge ich nichts ohne geprüften Rückweg.
 - Destruktive Operationen sind freigabepflichtig, auch `git branch -D`; geringes Risiko ist ein Argument, keine Freigabe.
 - Ausnahme: Reste der Sitzungsumgebung räume ich selbst auf, sobald sie als risikofrei gemessen sind (lokal, ohne Gegenstelle, ohne eigenen Commit, `git branch -d`), und melde es.

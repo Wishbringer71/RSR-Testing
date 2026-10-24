@@ -612,8 +612,8 @@ internal partial class Configs : IPluginConfiguration, IM3Settings
 		PvPFilter = JobFilterType.NoJob)]
 	private static readonly bool _interruptibleMoreCheck = true;
 
-	[ConditionBool, UI("Use Sleep or Repose to stop an enemy's area attack (experimental)",
-		Description = "As a healer or a caster, who have no interrupt: when an enemy that is not a boss casts an area attack that reaches you or two party members, and enough of its cast is left for the sleep to land - its own cast time, the GCD still running and the measured time to its effect -, Repose or Sleep goes on that enemy. No game text says that a sleep interrupts; its status locks actions as a stun does, and community sources report that it stops casts. Swiftcast is not spent on it, Dualcast and Triplecast are. A healer does not use it while a party member is about to die. An enemy kind that resists, and an attack that goes off although the sleep landed, are not tried again this session. Every attempt and what came of it is written to DefenseTrace.log.\nIn a fight: an enemy's area attack can stop before it lands, for one GCD of yours; the enemy wakes at the next hit. Whether it works, and against which attacks, the log shows.",
+	[ConditionBool, UI("Stop an enemy's cast with the job's stun or a sleep (experimental)",
+		Description = "As a healer or a caster, who have no interrupt: when an enemy that is not a boss casts an area attack that reaches you or two party members, or a cast the game marks interruptible - what a melee would stop with Leg Sweep -, and enough of its cast is left to land in time - the own cast time, the GCD still running, the measured time to the effect and what a cast has to have left when the status lands -, RSR stops it. A White Mage uses Holy when the enemy stands in its radius and can still be stunned, which stuns every enemy around; otherwise Repose or Sleep goes on the enemy. Swiftcast is not spent on it, Dualcast and Triplecast are. A healer does not use it while a party member is about to die. With \"Don't pull new enemies with AoE\" on, no area stop reaches an enemy that is not fighting yet. What sleeps show is kept over every session: enemy kinds that resist a sleep, how many sleeps a kind takes in a fight before it resists, and per enemy action whether a sleep stops it and how early it has to land - so an enemy or an attack it does not work on is not tried again. Every attempt and what came of it is written to DefenseTrace.log.\nIn a fight: an enemy's attack can stop before it lands, for one GCD of yours; the enemy wakes at the next hit. Bosses and many elite enemies resist.",
 		Filter = AutoActionUsage, Section = 3,
 		PvEFilter = JobFilterType.Sleep,
 		PvPFilter = JobFilterType.NoJob)]
@@ -892,12 +892,17 @@ internal partial class Configs : IPluginConfiguration, IM3Settings
 	private static readonly bool _shirkToSwapAfterTankbuster = true;
 
 	[ConditionBool, UI("Use the invulnerability before a tankbuster nothing less survives",
-		Description = "When a tankbuster is cast at you that the learned tankbuster table has measured, and no set of your own mitigations that is ready by the hit would let you survive it - at your HP now, with only what still stands when it lands, a co-tank's Reprisal or a healer's barrier included -, your invulnerability goes out before it lands, no earlier than its own duration less one GCD before the hit. With \"Spend only the mitigation a measured tankbuster needs\" off, nothing presses such a set for you, so only what already stands or has gone out counts. It needs the invulnerability enabled, learned and off cooldown, not the dying-tank threshold. A tankbuster marker, a BossModReborn prediction and an action not yet measured get nothing: none of them names a measured action. Living Dead included: after the hit, the healers have to restore your full HP within Walking Dead, or you fall.\nIn a fight: you survive a hit that no mitigation of yours would have let you survive, instead of the invulnerability firing only once your HP is already under the threshold - and it is not spent where mitigation does the job.",
+		Description = "When a tankbuster is cast at you that the learned tankbuster table has measured, and no set of your own mitigations that is ready by the hit would let you survive it - at your HP now, with only what still stands when it lands, a co-tank's Reprisal or a healer's barrier included -, your invulnerability goes out before it lands, no earlier than its own duration less one GCD before the hit. With \"Spend only the mitigation a measured tankbuster needs\" off, nothing presses such a set for you, so only what already stands or has gone out counts. It needs the invulnerability enabled, learned and off cooldown, not the dying-tank threshold. A tankbuster marker with no cast counts once the same marker in the same area has been followed by a hit the table measured: that hit is taken as coming, timed from the marker. A BossModReborn prediction, an action not yet measured and a marker seen for the first time get nothing: none of them names a measured action. Living Dead included: after the hit, the healers have to restore your full HP within Walking Dead, or you fall.\nIn a fight: you survive a hit that no mitigation of yours would have let you survive, instead of the invulnerability firing only once your HP is already under the threshold - and it is not spent where mitigation does the job.",
 		Parent = nameof(UseAbility), PvEFilter = JobFilterType.Tank)]
 	private static readonly bool _invulnerabilityBeforeLethalTankbuster = true;
 
+	[ConditionBool, UI("Spread Reprisal and the party mitigation over a run of area attacks",
+		Description = "As a tank: after Reprisal or your party mitigation - Divine Veil, Passage of Arms, Shake It Off, Dark Missionary, Heart of Light -, the other waits while the first still works, a barrier until it is used up, so the next area attack gets one as well. Both go together when a party member is in danger, or the announced area attack, as measured, would put an unprotected member there.\nIn a fight: two area attacks in a row each get a tool instead of the first getting both and the second none; a big one still gets both.",
+		Parent = nameof(UseAbility), PvEFilter = JobFilterType.Tank)]
+	private static readonly bool _spreadTankAreaDefense = true;
+
 	[ConditionBool, UI("Spend only the mitigation a measured tankbuster needs",
-		Description = "As a tank: against a tankbuster the table has measured, RSR spends the cheapest set of your own mitigations - by their cooldown - that lets you survive it at your HP now, with only what still stands when it lands; several at once if one is not enough, none if the hit is survivable as it stands. While that tankbuster is the only one known to be coming at you, every other mitigation, barrier or Reprisal aimed at yourself is held for the next one, from any part of the rotation; help for another member, heals and area defence that reaches beyond you stay. Party tools such as Shake It Off or Divine Veil stay with the area defence. Only when nothing survives it and the invulnerability is not there to use - on cooldown, switched off, or refused with no retry left before the last GCD before the hit - does everything go, never on top of the invulnerability. If a planned mitigation has not gone out by the last GCD before the hit, the hold opens. Under Hallowed Ground or Superbolide past the hit nothing aimed at you is spent. As a healer: no single-target mitigation for a tankbuster cast at a tank who stands under Hallowed Ground or Superbolide past the hit; a BossModReborn prediction still opens it.\nIn a fight: a tankbuster that needs two mitigations gets both, one that needs one gets one, and Rampart, Vengeance and the like stay ready for the next.",
+		Description = "As a tank: against a tankbuster the table has measured, RSR spends the cheapest set of your own mitigations - by their cooldown - that lets you survive it at your HP now, with only what still stands when it lands; several at once if one is not enough, none if the hit is survivable as it stands. While that tankbuster is the only one known to be coming at you, every other mitigation, barrier or Reprisal aimed at yourself is held for the next one, from any part of the rotation; help for another member, heals and area defence that reaches beyond you stay. Party tools such as Shake It Off or Divine Veil stay with the area defence. Only when nothing survives it and the invulnerability is not there to use - on cooldown, switched off, or refused with no retry left before the last GCD before the hit - does everything go, never on top of the invulnerability. If a planned mitigation has not gone out by the last GCD before the hit, the hold opens. Against a tankbuster marker with no cast, met with the hit measured after the same marker before, nothing else is held except under a planned invulnerability: the marker may announce another hit this time. Under Hallowed Ground or Superbolide past the hit nothing aimed at you is spent. As a healer: no single-target mitigation for a tankbuster cast at a tank who stands under Hallowed Ground or Superbolide past the hit; a BossModReborn prediction still opens it.\nIn a fight: a tankbuster that needs two mitigations gets both, one that needs one gets one, and Rampart, Vengeance and the like stay ready for the next.",
 		Parent = nameof(UseAbility))]
 	private static readonly bool _holdMitigationUnderInvulnerability = true;
 
@@ -1318,17 +1323,6 @@ internal partial class Configs : IPluginConfiguration, IM3Settings
 		Filter = RaiseActionCondition)]
 	private static readonly bool _offRaiserRaise = false;
 
-	/// <markdown file="Auto" name="Swiftcast raise lead time" section="Raise Usage and Control">
-	/// If your cast a GCD and your cooldown is of 2.5 seconds, if a teammate dies when your cooldown starts, the Swiftcast action will wait
-	/// the specified amount of time before your cooldown ends to cast Swiftcast. This is to prevent using your Swiftcast too early and waste it
-	/// if your co-healer manages to raise your target within your global cooldown period.
-	/// </markdown>
-	[JobConfig, UI("Swiftcast raise lead time",
-		Description = "How long before your next GCD RSR uses Swiftcast to raise. Waiting gives a co-healer time to raise first, so your Swiftcast isn't wasted.",
-		Filter = RaiseActionCondition, Section = 1)]
-	[Range(0, 1.0f, ConfigUnitType.Seconds, 0.01f)]
-	public float SwiftcastBuffer { get; set; } = 0.6f;
-
 	/// <markdown file="Auto" name="Raise delay range" section="Raise Usage and Control">
 	/// In order to not make is so obvious that you use RSR, casting a raise action will be delayed by a random amount of seconds
 	/// between the two values.
@@ -1402,11 +1396,14 @@ internal partial class Configs : IPluginConfiguration, IM3Settings
 	[UI("Interrupt delay range", Parent = nameof(InterruptibleMoreCheck),
 		PvEFilter = JobFilterType.Interrupt, PvPFilter = JobFilterType.NoJob)]
 	[Range(0, 3, ConfigUnitType.Seconds, 0.002f)]
-	public Vector2 InterruptDelay { get; set; } = new(0.5f, 1);
+	// Default none: an interrupt that waits can miss its cast, and the setting exists to look less mechanical, not to
+	// play better (concept 11, A338).
+	public Vector2 InterruptDelay { get; set; } = new(0, 0);
 
 	[UI("Provoke delay range", Parent = nameof(AutoProvokeForTank))]
 	[Range(0, 10, ConfigUnitType.Seconds, 0.05f)]
-	public Vector2 ProvokeDelay { get; set; } = new(0.5f, 1);
+	// Default none, as for InterruptDelay: a provoke that waits leaves the enemy on whoever took it longer.
+	public Vector2 ProvokeDelay { get; set; } = new(0, 0);
 
 	[UI("Downtime healing delay range", Parent = nameof(HealWhenNothingTodo))]
 	[Range(0, 5, ConfigUnitType.Seconds, 0.05f)]

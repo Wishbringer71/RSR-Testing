@@ -104,6 +104,12 @@ public sealed unsafe class ActionManagerEx : IDisposable
 			return result;
 		}
 
+		// The moment a request without a cast leaves, for the tankbuster plan's round trip (concept 09, A340).
+		if (self->CastSpellId == 0)
+		{
+			TankbusterForecast.RecordRequest(self->LastUsedActionSequence);
+		}
+
 		try
 		{
 			var adjustment = CooldownDelayTweak.Adjustment;
@@ -144,6 +150,11 @@ public sealed unsafe class ActionManagerEx : IDisposable
 		var prevAnimLock = actionManager == null ? 0 : actionManager->AnimationLock;
 
 		_receiveActionEffectHook!.Original(casterEntityId, casterPtr, targetPos, header, effects, targetEntityIds);
+
+		if (header->SourceSequence != 0 && casterEntityId == Player.Object?.EntityId)
+		{
+			TankbusterForecast.RecordRequestAnswered(header->SourceSequence);
+		}
 
 		// Only the player's own requests carry a source sequence.
 		if (!Service.Config.RemoveAnimationLockDelay || actionManager == null || header->SourceSequence == 0

@@ -23,10 +23,8 @@ internal static class TraitDurations
 {
 	private static readonly Regex Extends = new(@"Extends the duration of (?<name>.+?) to (?<seconds>\d{1,3}) seconds", RegexOptions.Compiled);
 	private static readonly Regex Improves = new(@"Improves (?<name>.+?)'s damage reduction effect to (?<percent>\d{1,2})%", RegexOptions.Compiled);
-	private static readonly Regex StatedDuration = new(@"Duration: (?<seconds>\d{1,3})s", RegexOptions.Compiled);
+	private static readonly Regex StatedDuration = new(@"Duration: (?<value>\d{1,3})s", RegexOptions.Compiled);
 
-	// The first duration an action's tooltip states, per action and synced level; 0 when it states none or cannot be read.
-	private static readonly Dictionary<(uint ActionId, int Level), float> _tooltipDuration = [];
 	private static readonly object _gate = new();
 
 	// English action name to the traits that set its duration, (seconds, level), lowest level first.
@@ -68,35 +66,7 @@ internal static class TraitDurations
 	/// </summary>
 	public static bool TryBelowTrait(uint actionId, float traitSeconds, out float seconds)
 	{
-		var level = DataCenter.PlayerSyncedLevel();
-		lock (_gate)
-		{
-			if (!_tooltipDuration.TryGetValue((actionId, level), out seconds))
-			{
-				seconds = 0f;
-				try
-				{
-					var texts = Svc.Data.GetExcelSheet<ActionTransient>(ClientLanguage.English);
-					if (texts != null && texts.TryGetRow(actionId, out var row))
-					{
-						var text = Svc.SeStringEvaluator.Evaluate(row.Description, default, ClientLanguage.English).ExtractText();
-						var match = StatedDuration.Match(text);
-						if (match.Success)
-						{
-							seconds = float.Parse(match.Groups["seconds"].Value, System.Globalization.CultureInfo.InvariantCulture);
-						}
-					}
-				}
-				catch (Exception)
-				{
-					// A sheet or an evaluation that fails answers nothing; the duration stays unknown, as before.
-					seconds = 0f;
-				}
-
-				_tooltipDuration[(actionId, level)] = seconds;
-			}
-		}
-
+		_ = ActionTooltip.TryStated(actionId, StatedDuration, out seconds);
 		return seconds > 0f && seconds < traitSeconds;
 	}
 

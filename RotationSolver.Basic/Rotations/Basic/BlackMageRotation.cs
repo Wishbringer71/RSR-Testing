@@ -434,7 +434,10 @@ public partial class BlackMageRotation
 		setting.UnlockedByQuestID = 68128;
 		setting.CreateConfig = () => new ActionConfig()
 		{
-			AoeCount = 3,
+			// Two: Foul on two enemies (600, then 25% less) out-damages Xenoglossy (890) at level 100 - The Balance,
+			// "Foul is now a gain in 2-target situations over Xenoglossy". The rotations weigh the tooltips' potencies
+			// on top, which decides at levels where Xenoglossy still wins (A344).
+			AoeCount = 2,
 		};
 	}
 

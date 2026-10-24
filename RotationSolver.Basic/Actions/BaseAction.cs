@@ -351,17 +351,14 @@ public class BaseAction : IBaseAction
 			return false;
 		}
 
-		// An instant action pressed while no animation lock runs goes to the server at once: the press the
-		// tankbuster plan measures its round trip and spacing on (concept 09, "Spielerweite Sperre und Frist").
-		var timed = Player.AnimationLock <= 0f && Info.CastTime <= 0f && !Player.Object.IsCasting;
-
 		var used = actionManager->UseAction(ActionType.Action, adjustId, targetId);
 
 		// The tankbuster plan counts its own press from this moment, before the server confirms it
-		// (concept 09, "Die Zustände je Wirken").
+		// (concept 09, "Die Zustände je Wirken"). Its round trip is measured on the request itself, when it
+		// leaves (ActionManagerEx).
 		if (used)
 		{
-			TankbusterForecast.RecordOwnPress(adjustId, targetId, timed);
+			TankbusterForecast.RecordOwnPress(adjustId, targetId);
 			SleepInterruptWatch.RecordPress(adjustId, Info.CastTime);
 		}
 

@@ -38,6 +38,14 @@ internal class OtherConfiguration
 	/// </summary>
 	public static HashSet<string> TankbusterMarkerWithoutHit = [];
 
+	/// <summary>
+	/// What hit after a tankbuster marker, per marker entry (area and path, <see cref="DataCenter.TankbusterMarkerKey"/>):
+	/// lets the tank plan meet a marker that no cast accompanies with the hit measured after it before (concept 09,
+	/// A340). Learned in play, never downloaded; a confirmation by another action replaces an entry, one by the same
+	/// action keeps the shorter time.
+	/// </summary>
+	public static Dictionary<string, TankbusterMarkerHit> TankbusterMarkerHits = [];
+
 	/// <markdown file="List" name="Gaze/Stop" section="Actions">
 	///
 	/// If the target is casting one of the listed actions, RSR will stop casting
@@ -146,6 +154,34 @@ internal class OtherConfiguration
 
 	/// <summary>Guards <see cref="TankbusterPotential"/> between the effect handler and its readers.</summary>
 	public static readonly object TankbusterPotentialGate = new();
+
+	/// <summary>
+	/// What sleeps did to each enemy action they were put on, keyed by action id - learned in play over every session
+	/// (concept 08, "Ein gegnerisches Wirken stoppen").
+	/// </summary>
+	/// <remarks>
+	/// Stored like <see cref="HostileCastingAreaPotential"/>, his model for it (23.10.2026): merged with the file on
+	/// every save, every figure only rising, never written when its load did not finish, set aside as .corrupt when
+	/// unreadable. Changed on the game thread under <see cref="SleepStoreGate"/>, read there by the rule. No button
+	/// discards it: the file is deleted by hand with the game closed.
+	/// </remarks>
+	internal static Dictionary<uint, SleepReading> SleepOutcomes = [];
+
+	/// <summary>
+	/// Enemy kinds (base id) that resisted a sleep as a status, with how often - learned in play over every session.
+	/// Stored like <see cref="SleepOutcomes"/>.
+	/// </summary>
+	internal static Dictionary<uint, int> SleepResistantKinds = [];
+
+	/// <summary>
+	/// Per enemy kind (base id), the fewest sleeps it had taken in a fight before it resisted the next one - the
+	/// point where the halving of repeated sleeps ends in a temporary immunity. Learned in play over every session,
+	/// stored like <see cref="SleepOutcomes"/>; merged with the file by the lower count.
+	/// </summary>
+	internal static Dictionary<uint, int> SleepDiminishing = [];
+
+	/// <summary>Guards <see cref="SleepOutcomes"/>, <see cref="SleepResistantKinds"/> and <see cref="SleepDiminishing"/>.</summary>
+	internal static readonly object SleepStoreGate = new();
 
 	public static RotationSolverRecord RotationSolverRecord = new();
 
@@ -543,6 +579,15 @@ internal class OtherConfiguration
 		new LearnedFile<TankbusterReading>(nameof(TankbusterPotential), CopyTankbusterPotential,
 			v => { lock (TankbusterPotentialGate) { TankbusterPotential = v; } },
 			TankbusterReading.Higher, state => TankbusterStoreState = state, "rated tankbuster(s)"),
+		new LearnedFile<SleepReading>(nameof(SleepOutcomes), () => CopySleepStore(SleepOutcomes),
+			v => { lock (SleepStoreGate) { SleepOutcomes = v; } },
+			SleepReading.Higher, state => SleepStoreState = state, "slept action(s)"),
+		new LearnedFile<int>(nameof(SleepResistantKinds), () => CopySleepStore(SleepResistantKinds),
+			v => { lock (SleepStoreGate) { SleepResistantKinds = v; } },
+			Math.Max, state => SleepKindsStoreState = state, "resistant enemy kind(s)"),
+		new LearnedFile<int>(nameof(SleepDiminishing), () => CopySleepStore(SleepDiminishing),
+			v => { lock (SleepStoreGate) { SleepDiminishing = v; } },
+			Math.Min, state => SleepDiminishingStoreState = state, "enemy kind(s) with a sleep limit"),
 		new SetList(nameof(HostileCastingTank), ActionLists.HostileCastingTank, () => HostileCastingTank, v => HostileCastingTank = v,
 			13364, 13365, 13367, 13371, 13375, 13385, 13388, 13438, 13444, 13452, 13454, 13462, 13475),
 		new MapList<Vector3>(nameof(BeneficialPositions), TerritoryLists.BeneficialPositions, () => BeneficialPositions, v => BeneficialPositions = v),
@@ -551,10 +596,19 @@ internal class OtherConfiguration
 		new SetList(nameof(HostileCastingKnockback), ActionLists.HostileCastingKnockback, () => HostileCastingKnockback, v => HostileCastingKnockback = v),
 		// Learned in play, like the damage tables: no built-in list.
 		new LocalFile<HashSet<string>>(nameof(TankbusterMarkerWithoutHit), () => TankbusterMarkerWithoutHit, v => TankbusterMarkerWithoutHit = v),
+		new LocalFile<Dictionary<string, TankbusterMarkerHit>>(nameof(TankbusterMarkerHits), () => TankbusterMarkerHits, v => TankbusterMarkerHits = v),
 		new SetList(nameof(HostileCastingStop), ActionLists.HostileCastingStop, () => HostileCastingStop, v => HostileCastingStop = v, 3715, 3719, 3720, 3721, 3722),
 		new LocalFile<Dictionary<uint, List<string>>>(nameof(NorthHornWeaknessRecords), () => NorthHornWeaknessRecords, v => NorthHornWeaknessRecords = v),
 		new LocalFile<Dictionary<uint, List<string>>>(nameof(SouthHornWeaknessRecords), () => SouthHornWeaknessRecords, v => SouthHornWeaknessRecords = v),
 	];
+
+	private static Dictionary<uint, T> CopySleepStore<T>(Dictionary<uint, T> store)
+	{
+		lock (SleepStoreGate)
+		{
+			return new Dictionary<uint, T>(store);
+		}
+	}
 
 	private static Dictionary<uint, TankbusterReading> CopyTankbusterPotential()
 	{
@@ -679,6 +733,21 @@ internal class OtherConfiguration
 
 	public static Task SaveTankbusterPotential() => SaveList(nameof(TankbusterPotential));
 
+	internal static Task SaveSleepOutcomes() => SaveList(nameof(SleepOutcomes));
+
+	internal static Task SaveSleepResistantKinds() => SaveList(nameof(SleepResistantKinds));
+
+	internal static Task SaveSleepDiminishing() => SaveList(nameof(SleepDiminishing));
+
+	/// <summary>What the last save and load of <see cref="SleepDiminishing"/> did, in words.</summary>
+	internal static string SleepDiminishingStoreState { get; private set; } = "not loaded yet";
+
+	/// <summary>What the last save and load of <see cref="SleepOutcomes"/> did, in words.</summary>
+	internal static string SleepStoreState { get; private set; } = "not loaded yet";
+
+	/// <summary>What the last save and load of <see cref="SleepResistantKinds"/> did, in words.</summary>
+	internal static string SleepKindsStoreState { get; private set; } = "not loaded yet";
+
 	/// <summary>What the last save and load of the tankbuster table did, in words.</summary>
 	public static string TankbusterStoreState { get; private set; } = "not loaded yet";
 
@@ -797,6 +866,8 @@ internal class OtherConfiguration
 	public static Task SaveHostileCastingKnockback() => SaveList(nameof(HostileCastingKnockback));
 
 	public static Task SaveTankbusterMarkerWithoutHit() => SaveList(nameof(TankbusterMarkerWithoutHit));
+
+	public static Task SaveTankbusterMarkerHits() => SaveList(nameof(TankbusterMarkerHits));
 	#endregion
 
 	#region Status Tab

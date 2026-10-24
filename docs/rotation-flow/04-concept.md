@@ -175,7 +175,7 @@ Nach der Zuordnung zu A4a bleibt von C ein einziger eigenständiger Punkt.
 | BLU · PhantomDefault · PCT · SAM · SMN | 80 / 33 / 32 / 27 / 23 Zweige | A4a, umgesetzt |
 | MCH | 23 Zweige | A4a, bewusst ausgelassen |
 | DRG | 6 `Trait.EnoughLevel`/`!Trait…`-Paare (gezählt am 02.10.2026) | Vereinfachung verworfen |
-| DRG · VPR | kein `CountDownAction` | offen, prüfen ob Lücke oder Absicht (TODO „Vorlauf: Dragoon und Viper“) |
+| DRG · VPR | kein `CountDownAction` | keine Lücke: Die Opener von The Balance sehen keine Vorlaufaktion vor, die seine Regeln zulassen (unten, A343) |
 | RPR · SAM · WAR | kein `EmergencyAbility` in der Reborn-Datei | keine Lücke: WAR in der Basisschicht, RPR/SAM ohne eigene Notfallaktion |
 
 ### C1 · DRG-Trait-Paare — der Fund, der die Vereinfachung blockiert
@@ -256,10 +256,15 @@ Lesen ein Sprung in die Basisklasse für eine Information, die vorher direkt das
 Alle Zahlen sind aus dem Code gezählt, alle Wirkungen statisch hergeleitet. Für A3, A2′, A4a und B1 genügt das,
 weil sie verhaltensgleich sind. B3, B4 und B5 schließen je eine Lücke, in der vorher keine Aktion fiel.
 
-## Was offen bleibt
+## Countdown und Notfallslot
 
-In der Tabelle unter C: Dragoon und Viper haben kein `CountDownAction` (TODO „Vorlauf: Dragoon und Viper“). Ob das eine Lücke ist, ist
-aus den Openern der Referenz und den Wirktexten zu klären, nicht im Spiel.
+Dragoon und Viper wirken im Countdown nichts, und das ist richtig (A343). The Balance, Openers (Dragoon: Patch 7.5,
+Viper: Patch 7.55, gelesen 24.10.2026):
+- *Dragoon:* Der Standard-Opener beginnt mit True Thrust zum Pull; der Trank fällt nach dem zweiten GCD, im Kampf.
+  Die Variante mit Piercing Talon vor dem Pull gilt dort nur, wenn das Ziel vor dem Kampf nicht erreichbar ist, und
+  bringt laut The Balance vergleichbaren Schaden („The damage output from both openers are comparable"). Nicht gebaut.
+- *Viper:* Einzige Vorlaufaktion ist Slither bei −0,5 s, ein Sprung ans Ziel. Seine Regel schließt Bewegung für Schaden
+  aus, und steht er schon am Ziel, bringt Slither nichts. Der Trank fällt nach dem dritten GCD, im Kampf.
 
 Der Notfallslot ist keine Lücke. Der Krieger hat ihn in der Basisschicht (`WarriorRotation.EmergencyAbility`,
 Holmgang). Schnitter und Samurai haben keine eigene Notfallaktion; ihre Abwehr läuft über die Abwehrslots, und den

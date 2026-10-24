@@ -1,6 +1,6 @@
 # What this fork does differently in a fight
 
-The whole distance from upstream **7.5.7.3**, as of release `7.5.7.3+wsh1`. What a single
+The whole distance from upstream **7.5.7.6**, as of release `7.5.7.6+wsh1`. What a single
 release changed is in [`fork-changes-since-last-release.md`](fork-changes-since-last-release.md),
 which is the text of the release description; this document is the standing picture and takes
 each release's text over once it has shipped.
@@ -118,6 +118,13 @@ the low 16 bits only, and a raidwide that hit a tank harder than that could be r
   that follows it (`Excogitation as a heal only on a target in danger`). If its reason goes away before
   its heal comes, it goes in its last moment into an Excogitation on the tank, or with Excogitation on
   cooldown into an Adloquium barrier on him.
+- **A single-target heal is broken off only once its target has been healed** —
+  `Stop single-target GCD heals once the target is above the threshold (Experimental)`, **off by default**.
+  It stops a cast when its target needed the heal as the cast began, has been healed since, and no
+  longer needs it. A heal begun for a falling trend runs on when the trend levels out with nobody
+  healed, and a barrier on a tank without need, such as the Adloquium before Recitation runs out, is
+  not broken off. When the healed target was not the only one in need, the next GCD goes to the one
+  still in need. `DefenseTrace.log` records each stop.
 - **HP potions answer to their own settings**: the global setting, the per-item enable, its own HP
   percentage, the missing-health guard, having one in the bag, and being in combat — not the
   healing-action flag, which a damage dealer with a living healer in the party never gets. A
@@ -182,6 +189,9 @@ the low 16 bits only, and a raidwide that hit a tank harder than that could be r
   the burst, Vercure still waits under `Prevent healing during burst combos`, but no longer when no
   healer is alive or a member is about to die because the healers do not keep up.
 - **Phoenix Down** is wired up and checks target eligibility. **Off by default.**
+- **`Raise All.` counts the alliance's living raisers** the way `Raise All In Duty.` does: the
+  healer-only hard-cast modes and the Phoenix Down wait while one of them lives. Strangers outside a
+  duty never count.
 - **The healer-only hard-cast modes** hold the Swiftcast reservation their text promises:
   with Swiftcast ready, nothing is hard-cast any more.
 - Swiftcast is not spent for damage in the Summoner rotation; it stays reserved for raises —
@@ -216,7 +226,22 @@ the low 16 bits only, and a raidwide that hit a tank harder than that could be r
   of Arms ends with the paladin's next action, and RSR casts it only for an announced area hit, so
   without the lock the next GCD or weave often ended the channel before the hit.
   `Don't break Collective Unconscious` stays off by default.
-- **Paladin: Intervention on the other tank works** — it accepts the tank stance from any source.
+- **Help for the one a tankbuster is aimed at.** When a tankbuster marker sits on another party
+  member — most often the other tank — or an enemy casts a known tankbuster at them, every tank puts
+  its help for others on them before the hit: Intervention (`Use Intervention on CoTank during
+  tankbusters`), Nascent Flash (`Use Nascent Flash on another party member a tankbuster is aimed at`),
+  The Blackest Night (`Use The Blackest Night on another party member a tankbuster is aimed at`), all
+  **on by default**, and Heart of Corundum. Healers put their single-target mitigation on the same
+  member instead of whoever the boss is attacking, and Heart of Corundum and Aurora on `Only use on
+  tankbuster targets prioritizing self` reach the other tank. Intervention needs no tank stance on its
+  target. Help is not given to a member who takes the hit under Hallowed Ground or Superbolide while
+  `Spend only the mitigation a measured tankbuster needs` is on.
+- **Sleep against an enemy's area attack (experimental)** — `Use Sleep or Repose to stop an enemy's
+  area attack (experimental)`, **on by default**. Healers and casters put Repose or Sleep on an enemy
+  that is not a boss while it casts an area attack reaching you or two party members, if enough of the
+  cast is left for the sleep to land. Each attempt costs one GCD; an enemy kind that resists, and an
+  attack that goes off although the sleep landed, are not tried again in that session; Swiftcast is
+  never spent on it. `DefenseTrace.log` records every attempt and whether the attack stopped.
 - **The BossModReborn timeline is only read when it is switched on**, and a defence pressed for a hit
   it announces goes out only while a press made now still reaches the server before the end of the
   cast, from your measured round trip — no fixed margin.
@@ -354,8 +379,9 @@ off.
 
 - **The damage table measures at all.** The effect handler read the action type four bytes wide,
   so no area action was ever rated. Measuring no longer depends on `Record enemy AoE actions` or on the
-  party size; that setting decides only whether new actions are added. The actions of invisible
-  helpers are added and measured like any other.
+  party size; that setting decides only whether new actions are added. Every enemy-side figure is
+  read, casts and hits alike — the helpers and parts through which many bosses hit included — so their
+  raidwides join the AoE list and their tankbusters are measured.
 - **Tankbusters are learned, from every tank they hit.** Every hit of a listed tankbuster, or of
   one whose marker was confirmed, counts on any tank — you, your co-tank, or tanks of other parties in
   large content — scaled back to unmitigated by the mitigation that stood on the target and on the boss
@@ -489,6 +515,11 @@ alliance content, where 24 or 48 players' effects used to be walked several time
   someone; `CustomRotation.TankbusterOnMe` asks whom BossModReborn's tankbuster hits;
   `DefensiveValues` reads four more mitigation phrasings and the trait-set reductions, and rates a status
   by its own text. RotationSolver.Basic references ECommons 3.2.1.26 (see `CHANGELOG.md`).
+- `TargetType.Tankbuster` and `TargetType.BeAttacked` follow whom a tankbuster is aimed at;
+  `CustomRotation.HelpTankbusterTarget` puts an action on another member a tankbuster is aimed at.
+  `Configs.SleepToStopAreaCasts` and `SleepInterruptWatch` carry the sleep on an enemy's area cast.
+  `DataCenter.AnyLivingRaiser` counts the alliance under `RaiseType.AllOutOfDuty`. The members upstream
+  7.5.7.5 removed are listed in `CHANGELOG.md` under 7.5.7.6+wsh1.
 - `CanUse` refuses a defence aimed at the player with no effect radius while the hit that opened the
   defence does not reach him (`ProtectsOnlyYouAndTheHitMissesYou`), and a rated defence aimed at him
   while the tankbuster plan holds them (`HeldForTheInvulnerability`) — in a derived rotation as in the

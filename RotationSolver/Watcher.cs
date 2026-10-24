@@ -27,7 +27,9 @@ public static class Watcher
 			+ $" | single defence {config.UseStDefense} | skip casts that missed you {config.SkipAreaCastsThatMissedMe}"
 			+ $" | big interruptible casts {config.MitigateBigAreaCastsEvenIfInterruptible} | BMR timeline {config.UseBmrTimeline}"
 			+ $" | AoE list {OtherConfiguration.HostileCastingArea.Count} | tankbuster list {OtherConfiguration.HostileCastingTank.Count}"
-			+ $" | sleep to stop area casts {config.SleepToStopAreaCasts}");
+			+ $" | stop enemy casts {config.SleepToStopAreaCasts}"
+			+ $" | sleep knowledge {OtherConfiguration.SleepOutcomes.Count} action(s), {OtherConfiguration.SleepResistantKinds.Count} resistant kind(s),"
+			+ $" {OtherConfiguration.SleepDiminishing.Count} kind limit(s) ({OtherConfiguration.SleepStoreState})");
 
 		ActionEffect.ActionEffectEvent += ActionFromEnemy;
 		ActionEffect.ActionEffectEvent += ActionFromSelf;
@@ -198,7 +200,8 @@ public static class Watcher
 	// (ObjectHelper.IsEnemySideFigure) that nobody can target - the helpers that resolve casts, a boss off the
 	// field - or whose action reached a party member. A guard is a combatant as well, and is told apart by the
 	// second: it never reaches the party. Read as untargetable combatants only, the parts and helpers of other
-	// kinds went unread everywhere below (trace of 18.10.2026, A327).
+	// kinds went unread everywhere below (trace of 18.10.2026, A327); without the helper kind, the helpers of trials
+	// and raids still did (A334).
 	private static bool IsHostileSource(ActionEffectSet set)
 	{
 		return set.Source is IBattleChara source
@@ -277,8 +280,9 @@ public static class Watcher
 		}
 	}
 
-	// What the player's Sleep or Repose did to its targets, and every action of another source resolving - the
-	// watched cast going off - for SleepInterruptWatch (concept 08, "Schlaf gegen ein Flächenwirken").
+	// What every Sleep or Repose did to its targets - the player's own in full, anyone's towards the halving of repeated
+	// sleeps - and every other action of another source resolving - the watched cast going off - for
+	// SleepInterruptWatch (concept 08, "Ein gegnerisches Wirken stoppen").
 	private static void ObserveSleep(ActionEffectSet set, ulong playerId)
 	{
 		if (set.Action is not { } action || set.Source is not IBattleChara source)
@@ -286,38 +290,47 @@ public static class Watcher
 			return;
 		}
 
-		if (source.GameObjectId != playerId)
-		{
-			SleepInterruptWatch.ObserveEnemyAction(source.GameObjectId, action.RowId);
-			return;
-		}
-
 		if (!SleepInterruptWatch.IsSleepAction(action.RowId))
 		{
+			if (source.GameObjectId != playerId)
+			{
+				SleepInterruptWatch.ObserveEnemyAction(source.GameObjectId, action.RowId);
+			}
+
 			return;
 		}
 
 		List<SleepInterruptWatch.Observation> found = [];
 		foreach (var effect in set.TargetEffects)
 		{
-			bool applied = false, resisted = false;
+			bool applied = false, resisted = false, unaffected = false;
 			effect.ForEach(e =>
 			{
 				if (e.type == ActionEffectType.ApplyStatusEffectTarget)
 				{
 					applied = true;
 				}
-				// A resisted status (52, 55), a resisted action, or a target that cannot be affected.
+				// A resisted status (52, 55) or a resisted action: the kind is immune, and that is stored.
 				else if (e.type is ActionEffectType.FullResistStatus or ActionEffectType.FullResistStatus2
-					or ActionEffectType.FullResist or ActionEffectType.Invulnerable)
+					or ActionEffectType.FullResist)
 				{
 					resisted = true;
 				}
+				// A target that cannot be affected right now - an invulnerable phase, not an immunity of the kind.
+				else if (e.type == ActionEffectType.Invulnerable)
+				{
+					unaffected = true;
+				}
 			});
-			found.Add(new SleepInterruptWatch.Observation(effect.TargetID, applied, resisted));
+			found.Add(new SleepInterruptWatch.Observation(effect.TargetID, applied, resisted, unaffected));
 		}
 
-		SleepInterruptWatch.ObserveOwnSleep(action.RowId, found);
+		// Every sleep counts towards the halving, whoever put it on (SleepInterruptWatch.CanStillBeSlept).
+		SleepInterruptWatch.CountApplications(found);
+		if (source.GameObjectId == playerId)
+		{
+			SleepInterruptWatch.ObserveOwnSleep(action.RowId, found);
+		}
 	}
 
 	private static bool IsStun(uint statusId)
@@ -564,12 +577,17 @@ public static class Watcher
 			if (IsHostileSource(set) && set.Source is IBattleChara source
 				&& set.Action is { } marked && marked.GetActionCate() != ActionCate.Autoattack)
 			{
+				// An action on the area list has hit every party member at least once: a raidwide, not the
+				// tankbuster a marker names, even when it lands on the marked member while the marker stands -
+				// Feldgeschrei and Wehklagen went into the tankbuster table and to the tank swap that way (traces of
+				// 22. and 23.10.2026, A337). It still confirms the marker; that error leans the safe way (concept 15).
+				var partyWide = TankbusterTable.IsPartyWide(marked.RowId);
 				var markedForPlayer = false;
 				foreach (var effect in set.TargetEffects)
 				{
 					if (ReachedTarget(effect))
 					{
-						var isMarked = TankbusterMarkerWatch.RecordHit(effect.TargetID);
+						var isMarked = TankbusterMarkerWatch.RecordHit(effect.TargetID, marked.RowId, partyWide) && !partyWide;
 						var isTankbuster = isMarked || OtherConfiguration.HostileCastingTank.Contains(marked.RowId);
 						if (effect.TargetID == playerObject.GameObjectId)
 						{

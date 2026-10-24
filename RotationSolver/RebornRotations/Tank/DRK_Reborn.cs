@@ -95,6 +95,15 @@ public sealed class DRK_Reborn : DarkKnightRotation
 			+ "as unmitigated, so The Blackest Night is not spent into a stream that has been thinned.")]
 	private bool UseArmsLengthOnPull { get; set; } = true;
 
+	[RotationConfig(CombatType.PvE, Name = "In a pull, use The Blackest Night only once the damage you take would break it",
+		Tooltip = "The barrier pays its 3000 MP back as Dark Arts only when it is absorbed in full within its "
+			+ "duration - its effect text gives the share of your maximum HP and the seconds. In a pull the barrier "
+			+ "now also waits until the damage you took over that many seconds, after the mitigation that stood, "
+			+ "reached that share. Tankbusters and the low-health case are not affected.\n"
+			+ "In a fight: a pack that hits too softly to break the barrier no longer gets it, and keeps the MP for "
+			+ "Edge of Shadow; a pack that does hit that hard gets it as before, a few seconds into the pull.")]
+	private bool BlackestNightWaitsForStream { get; set; } = true;
+
 	protected override bool HasOwnArmsLengthPullRule => true;
 
 	[Range(0, 1, ConfigUnitType.Percent)]
@@ -226,21 +235,25 @@ public sealed class DRK_Reborn : DarkKnightRotation
 		// universal layer, so it yields when the party is in danger (concept 08, "Die Abwehrsperren").
 		var burstHold = HoldAreaDefense(InTwoMIsBurst, "Dark Knight: burst window");
 
-		if (!burstHold && DarkMissionaryPvE.CanUse(out act))
+		// Tanks' stage: Reprisal and the party tool take turns over a run of area attacks (concept 09, rule 9); Oblation
+		// and The Blackest Night are no party tools and stay out of it.
+		var stretched = TankAreaDefenseStretched(DarkMissionaryPvE);
+
+		if (!burstHold && !stretched && DarkMissionaryPvE.CanUse(out act))
 		{
 			return true;
 		}
 
 		// Held while a barrier waits to be spent - see HoldMitigationForBarrier. Reprisal takes 10%
 		// off the stream that has to break The Blackest Night within its seven seconds.
-		if (!burstHold && !HoldMitigationForBarrier(true)
+		if (!burstHold && !stretched && !HoldMitigationForBarrier(true)
 			&& ShouldSustainMitigationDebuff(StatusHelper.ReprisalStatus)
 			&& ReprisalPvE.CanUse(out act, skipAoeCheck: true, skipStatusProvideCheck: true))
 		{
 			return true;
 		}
 
-		if (!burstHold && !HoldMitigationForBarrier(true) && ReprisalPvE.CanUse(out act, skipAoeCheck: true))
+		if (!burstHold && !stretched && !HoldMitigationForBarrier(true) && ReprisalPvE.CanUse(out act, skipAoeCheck: true))
 		{
 			return true;
 		}
@@ -460,6 +473,45 @@ public sealed class DRK_Reborn : DarkKnightRotation
 			// question.
 			&& !HoldMitigationForBarrier(false);
 
+	// The barrier breaks, and grants Dark Arts, only when it absorbs its share of maximum HP within its duration (effect
+	// text: 25 % in 7 s). What the player took over the last such span answers whether this pull's stream does that,
+	// after whatever mitigation already stood - which is what the barrier would meet. It replaces the assumption that
+	// enough enemies reach that rate, which nothing checked (concept 10, A340). Without a figure from the game it does
+	// not hold the barrier back.
+	private bool StreamWouldBreakBarrier()
+	{
+		var share = DefensiveValues.For(TheBlackestNightPvE.ID).Barrier;
+		var lasts = DefensiveValues.DurationOf(TheBlackestNightPvE.ID);
+		return share <= 0f || lasts <= 0f || DataCenter.DamageTakenWithin(lasts) >= share;
+	}
+
+	private bool _barrierOnSelf;
+	private bool _darkArtsBeforeBarrier;
+	private float _streamBeforeBarrier;
+
+	// Whether the player's own barrier broke: Dark Arts comes with the break, so it is read when the barrier goes. One
+	// line per barrier in DefenseTrace.log, with the stream that came before it - the check on the rule above, without
+	// a reading by the owner as part of it.
+	protected override void UpdateInfo()
+	{
+		base.UpdateInfo();
+		var on = Player != null && Player.HasStatus(true, StatusHelper.FullAbsorbRewardStatus);
+		var lasts = DefensiveValues.DurationOf(TheBlackestNightPvE.ID);
+		if (on && !_barrierOnSelf)
+		{
+			_darkArtsBeforeBarrier = HasDarkArts;
+			_streamBeforeBarrier = DataCenter.DamageTakenWithin(lasts);
+		}
+		else if (!on && _barrierOnSelf && DataCenter.InCombat)
+		{
+			DefenseTrace.Line("The Blackest Night on you "
+				+ (_darkArtsBeforeBarrier ? "ended, Dark Arts was already held" : HasDarkArts ? "broke (Dark Arts)" : "ran out unbroken")
+				+ $"; {_streamBeforeBarrier:P0} of max HP taken in the {lasts:F0} s before it, {NumberOfHostilesInRange} enemies in range");
+		}
+
+		_barrierOnSelf = on;
+	}
+
 	private bool ShouldUseBlackestNightOnSelf()
 	{
 		// The free mitigations first. Both cost nothing but their cooldown and sit at or near the
@@ -485,7 +537,8 @@ public sealed class DRK_Reborn : DarkKnightRotation
 			&& !GroupStunRunning()
 			&& !PackSlowed()
 			&& reprisalDone
-			&& armsLengthDone;
+			&& armsLengthDone
+			&& (!BlackestNightWaitsForStream || StreamWouldBreakBarrier());
 
 		return BlackestNightUsage switch
 		{
@@ -504,7 +557,7 @@ public sealed class DRK_Reborn : DarkKnightRotation
 		// A predicted tankbuster on the player gets its big mitigation first - or Rampart while that one is
 		// spent - ahead of the short ones: the window opens a few seconds before the hit, and with the cheap ones
 		// ahead the big one landed last (trace of 01.10.2026: Damnation 0.7 s before the hit, A241, A243).
-		if (BMRShouldRefreshBefore(BMRTankbusterIn, 15f, true, null, ShadowedVigilPvE.EnoughLevel ? StatusID.ShadowedVigil : StatusID.ShadowWall)
+		if (BMRShouldRefreshBefore(BMRTankbusterIn, DefensiveValues.DurationOf(ShadowedVigilPvE.EnoughLevel ? ShadowedVigilPvE.ID : ShadowWallPvE.ID), true, null, ShadowedVigilPvE.EnoughLevel ? StatusID.ShadowedVigil : StatusID.ShadowWall)
 			&& (ShadowedVigilPvE.EnoughLevel ? ShadowedVigilPvE.CanUse(out act, skipStatusProvideCheck: true) : ShadowWallPvE.CanUse(out act, skipStatusProvideCheck: true)))
 		{
 			return true;

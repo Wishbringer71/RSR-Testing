@@ -866,24 +866,34 @@ public static class ObjectHelper
 
 	/// <summary>
 	/// Whether this figure stands on the enemy side without having to be on the hostile list: a battle NPC of an
-	/// enemy kind - a combatant, a part of an enemy, or one without a kind - that is no party member.
+	/// enemy kind - a combatant, a part of an enemy, a helper, or one without a kind - that is no party member.
 	/// </summary>
 	/// <remarks>
 	/// The hostile list holds what can be targeted and attacked. The invisible helpers that cast and resolve many
 	/// raidwides, tankbusters and knockbacks, the parts of a large boss and a boss off the field are not on it, and
-	/// they come in all three kinds (FFXIVClientStructs <c>BattleNpcSubKind</c>: <c>Combatant</c> "Enemies, Guards",
-	/// <c>BNpcPart</c> "Weak Spots"). Read as combatants only, a dungeon boss's every hit on the party went unread,
-	/// among them one of 89 % right after a tankbuster marker, and the marker was learned as followed by no hit
-	/// (trace of 18.10.2026, A327). Guards are combatants too, so the kind alone is no proof of hostility: the caller
-	/// adds its own evidence - a listed hostile cast, or an action that reached a party member.
+	/// they come in several kinds (FFXIVClientStructs <c>BattleNpcSubKind</c>: <c>Combatant</c> "Enemies, Guards",
+	/// <c>BNpcPart</c> "Weak Spots"; <see cref="HelperSubKind"/>). Read as combatants only, a dungeon boss's every hit
+	/// on the party went unread, among them one of 89 % right after a tankbuster marker, and the marker was learned as
+	/// followed by no hit (trace of 18.10.2026, A327); read without helpers, 127 actions of helpers in trials, raids
+	/// and dungeons still did, up to 88 % on eight members (traces of 19.-22.10.2026, A334). Guards are combatants too,
+	/// so the kind alone is no proof of hostility: the caller adds its own evidence - a listed hostile cast, or an
+	/// action that reached a party member.
 	/// </remarks>
 	internal static bool IsEnemySideFigure(this IBattleChara battleChara)
 	{
 		return battleChara != null
 			&& battleChara.ObjectKind == ObjectKind.BattleNpc
-			&& battleChara.GetBattleNPCSubKind() is BattleNpcSubKind.Combatant or BattleNpcSubKind.BNpcPart or BattleNpcSubKind.None
+			&& battleChara.GetBattleNPCSubKind() is BattleNpcSubKind.Combatant or BattleNpcSubKind.BNpcPart
+				or BattleNpcSubKind.None or HelperSubKind
 			&& !battleChara.IsParty();
 	}
+
+	/// <summary>
+	/// The battle NPC kind of a boss's invisible helpers. FFXIVClientStructs names no kind 11; BossModReborn calls it
+	/// <c>Helper</c> (<c>ActorType.Helper = 0x20B</c>, battle NPC kind 11), and every unread hit on the player in his
+	/// traces of 19.-22.10.2026 came from an untargetable figure of this kind (A334).
+	/// </summary>
+	private const BattleNpcSubKind HelperSubKind = (BattleNpcSubKind)11;
 
 	internal static bool IsNpcPartyMember(this IBattleChara battleChara)
 	{
@@ -2579,8 +2589,9 @@ public static class ObjectHelper
 
 	// Same frame cache as DataCenter's party HP statistics, and for the same reason: the heal target
 	// selection asks this several times per member per frame, and each read of the GCD figures goes
-	// to the action manager. One value per frame is as current as the question can be.
-	private const long HealLeadTtlMs = 15;
+	// to the action manager. One value per frame is as current as the question can be - read from the
+	// shared figure instead of a copy of it (A340).
+	private static long HealLeadTtlMs => DataCenter.FrameCacheMs;
 
 	/// <summary>
 	/// How long a heal decided on now takes to land: what is left of this GCD, plus one GCD for the
@@ -2848,13 +2859,8 @@ public static class ObjectHelper
 	/// </remarks>
 	internal static void ForgetStaleTtkForecasts()
 	{
-		// Nothing to do while the table is the size of a party; the scan only earns its keep once
-		// entries have accumulated across duties.
-		if (_ttkForecast.Count <= 24)
-		{
-			return;
-		}
-
+		// Runs once per history sample over a table about the size of the party; a size below which the
+		// scan was skipped only kept stale entries longer (A340).
 		var cutoff = DateTime.Now - TtkForecastLifetime;
 		foreach ((var id, var entry) in _ttkForecast)
 		{

@@ -198,8 +198,9 @@ public sealed class VPR_Reborn : ViperRotation
 			return true;
 		}
 
-		// Use burst medicine if cooldown for Serpents Ire has elapsed sufficiently
-		if (NoAbilityReady && BurstMed && SerpentsIrePvE.EnoughLevel && SerpentsIrePvE.Cooldown.ElapsedAfter(115)
+		// Burst medicine from the setting's "5 seconds before SerpentsIre comes off cooldown" on - and while it stands
+		// ready, which the setting's text includes: the opener's Serpent's Ire. Elapsed recast alone left that out (A342).
+		if (NoAbilityReady && BurstMed && SerpentsIrePvE.EnoughLevel && SerpentsIrePvE.Cooldown.WillHaveOneCharge(5)
 			&& UseBurstMedicine(out act))
 		{
 			return true;

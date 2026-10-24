@@ -23,6 +23,72 @@ are not reconstructed here.
 
 ## Unreleased
 
+### Behaviour change in RotationSolver.Basic: Foul's AoE count is two
+
+`BlackMageRotation`'s Foul now defaults to an AoE count of two instead of three: on two enemies it out-damages
+Xenoglossy at level 100. A rotation that calls `FoulPvE.CanUse` before Xenoglossy uses it on two enemies; the two
+bundled Black Mage rotations also compare the tooltips' potencies before they do.
+
+### RotationSolver.Basic: the Machinist weighs Auto Crossbow against Blazing Shot
+
+`MachinistRotation.AutoCrossbowOutdamagesBlazingShot(int coneTargets)` is new and protected: true when Auto Crossbow on
+that many enemies deals more than Blazing Shot (Heat Blast below its level) with the recast it takes off Double Check
+and Checkmate (Gauss Round and Ricochet), reaching as many enemies as their own target selection finds. The figures
+come from the tooltips at the synced level; where one cannot be read it answers true. `MCH_Reborn` asks it after
+`AutoCrossbowPvE.CanUse`.
+
+### Behaviour change in RotationSolver.Basic: `DataCenter.DPSTaken` counts only hits that did damage
+
+The damage record behind `DataCenter.DPSTaken` no longer takes a zero for every enemy action that missed the player. Its
+span runs from the first to the last damaging hit within five seconds, so the rate reads higher where misses used to
+widen it; in a large party the fixed-size record now covers more than a few seconds.
+
+### RotationSolver.Basic: tanks spread Reprisal and the party tool over area attacks
+
+`CustomRotation.TankAreaDefenseStretched(params IBaseAction[] partyTools)` is new and protected: true while Reprisal or
+one of the given party tools still works, with "Spread Reprisal and the party mitigation over a run of area attacks"
+on and no member in danger. The four tank rotations ask it before Reprisal and their party tool.
+`AreaDefenseStretched` now ends a stretch once the trigger's effect is gone from the player - a beneficial status named
+like the action, a GCD after the press -, instead of always after the duration its text states: a barrier used up, Liturgy
+of the Bell released by its second press. An action without such a status, Reprisal on the enemy, keeps its duration;
+`SingleDefenseStretched` is unchanged.
+
+### Behaviour change in RotationSolver.Basic: an enemy's cast is stopped by the job's stun first, and what sleeps show is kept
+
+The healers' and casters' stop of an enemy cast (`Configs.SleepToStopAreaCasts`, name unchanged) now also covers casts
+the game marks interruptible, and asks the job first: `CustomRotation.StopEnemyCastByJob` is new and protected virtual,
+and `WhiteMageRotation` overrides it with Holy or Holy III. `CustomRotation.AreaReachesNewMob` is new: whether an area
+action would reach an enemy that is not fighting yet while `Configs.NoNewHostiles` is on.
+
+`SleepInterruptWatch` keeps what it learns over every session, in three learned tables beside the area table, and works
+out its conclusions from them at each decision. New public members: `IsCastWorthStopping` (any stop), `IsCastToStop`
+(a sleep), `IsUnstoppable` and `LandingMargin`. `CanStillBeSlept` also refuses an enemy of a kind that resisted, an enemy slept as often in this fight
+as its kind takes, and one a sleep has just landed on. `IsAreaCastToStop` refuses an action stored as unstoppable
+instead of one that went off this session.
+
+### Behaviour change in RotationSolver.Basic: a boss's invisible helpers are read as the enemy side
+
+The enemy-side recognition behind the effect handler and `DataCenter.AreaCasters` takes battle NPCs of sub kind 11, the
+kind BossModReborn calls Helper. A derived rotation reading `DataCenter.AreaCasters` sees their casts.
+
+### Behaviour change in RotationSolver.Basic: `InterruptDelay` and `ProvokeDelay` default to no delay
+
+Both settings are read again (the target update applies them before choosing `DataCenter.InterruptTarget` and
+`DataCenter.ProvokeTarget`); their defaults change from 0.5–1 s to 0–0 s. A configuration saved earlier keeps its value.
+
+### RotationSolver.Basic: the enemy mitigation debuffs' duration comes from the game
+
+`CustomRotation.MitigationDebuffDurationOf(params StatusID[])` is new: the duration at the player's synced level of the
+debuff the statuses belong to, read through `DefensiveValues.DurationOf` of the action that lays them.
+`MitigationDebuffDuration` stays and returns Reprisal's; it no longer carries the 10 s / 15 s from level 98 written in.
+
+### Behaviour change in RotationSolver.Basic: a marker on a party member keeps the default window
+
+`VfxNewData.Duration` is the remaining cast time of the figure an effect sits on only when that figure is on the enemy
+side; for a party member or another player it is zero, so `DataCenter.VfxDataQueue` keeps the effect for the default
+window. Before, a marker on a member who was casting lasted only for the rest of that member's own cast. A derived
+rotation reading the queue sees such markers for the full window.
+
 ## 7.5.7.6+wsh1
 
 ### Behaviour change in RotationSolver.Basic: tankbuster targets follow whom a tankbuster is aimed at

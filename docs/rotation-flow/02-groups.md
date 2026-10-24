@@ -246,6 +246,6 @@ Job-Komplexität; A4a hat PCT und SMN deshalb in benannte Stufen zerlegt.
 |---|---|---|---|
 | Heiler | Kurzschluss → Sustain → Ressource → AoE → DoT → Filler | Eukrasia, Pet, Karten | Gelehrter ohne Pflege im Pull (kein Sofortschild, Konzept 15) |
 | Tanks | Ressource → AoE/ST → Combo → Ranged-Fallback | – | Unverwundbarkeit an zwei Orten (Konzept 05) |
-| Melee | Burst → Combo → AoE → Ranged-Fallback | Mudra, Formen, Positionals | DRG/VPR ohne CountDown (TODO „Vorlauf: Dragoon und Viper“) |
+| Melee | Burst → Combo → AoE → Ranged-Fallback | Mudra, Formen, Positionals | DRG/VPR ohne CountDown – keine Lücke (`04`, „Countdown und Notfallslot“) |
 | Phys. Ranged | DoT/Ressource → Burst → AoE/ST | Tänze (DNC) | – |
 | Mag. Ranged | Automat → Filler | Elementphasen | Automat mal ausgelagert, mal inline |

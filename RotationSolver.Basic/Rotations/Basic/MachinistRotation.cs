@@ -1,4 +1,5 @@
 using Dalamud.Interface.Colors;
+using System.Text.RegularExpressions;
 
 namespace RotationSolver.Basic.Rotations.Basic;
 
@@ -123,6 +124,91 @@ public partial class MachinistRotation
 	/// 
 	/// </summary>
 	public static bool ExcavatorPvEReady => Service.GetAdjustedActionId(ActionID.ChainSawPvE) == ActionID.ExcavatorPvE;
+	#endregion
+
+	#region Auto Crossbow against Blazing Shot
+	private static readonly Regex StatedRecastCut = new(@"recast time of both .+? by (?<value>\d{1,3})s", RegexOptions.Compiled);
+	private static readonly Regex StatedOverheatBonus = new(@"potency of single-target weaponskills by (?<value>\d{1,3})", RegexOptions.Compiled);
+
+	private int _crossbowTracedLevel = -1;
+
+	/// <summary>
+	/// Whether Auto Crossbow on <paramref name="coneTargets"/> enemies deals more than Blazing Shot (Heat Blast below
+	/// its level) with what it brings: its own hit, raised by Overheated, and the recast it takes off both Double Check
+	/// and Checkmate (Gauss Round and Ricochet below their level), whose hits reach the enemies around their target.
+	/// Auto Crossbow takes nothing off them. The Balance (Machinist Basic Guide, 7.3): "Blazing Shot on 1-5, Auto
+	/// Crossbow on 6+" while every target stands in their 5 y, on 4+ with one outside, on 2+ with two or more outside.
+	/// </summary>
+	/// <remarks>
+	/// The potencies, the falloff, the recast cut and the Overheated bonus are read from the tooltips at the synced level
+	/// (<see cref="ActionTooltip"/>), the recasts from the game, how many enemies the cut actions reach from their own
+	/// target selection - so the breakpoint follows the patch and where the enemies stand (concept 14, "Vergleich mit The
+	/// Balance"). A figure that cannot be read answers true: Auto Crossbow then goes by its AoE count, as before.
+	/// DefenseTrace.log notes once per level what was read.
+	/// </remarks>
+	/// <param name="coneTargets">The enemies Auto Crossbow would hit.</param>
+	/// <returns>True when Auto Crossbow deals more, or the figures are not known.</returns>
+	protected bool AutoCrossbowOutdamagesBlazingShot(int coneTargets)
+	{
+		var shotAction = BlazingShotPvE.EnoughLevel ? BlazingShotPvE : HeatBlastPvE;
+		IBaseAction[] cut = DoubleCheckPvE.EnoughLevel ? [DoubleCheckPvE, CheckmatePvE] : [GaussRoundPvE, RicochetPvE];
+
+		var level = DataCenter.PlayerSyncedLevel();
+		var trace = level != _crossbowTracedLevel;
+		_crossbowTracedLevel = level;
+
+		if (!ActionTooltip.TryPotencyOn(AutoCrossbowPvE.ID, coneTargets, out var crossbow)
+			|| !ActionTooltip.TryPotencyOn(shotAction.ID, 1, out var shot)
+			|| !ActionTooltip.TryStated(shotAction.ID, StatedRecastCut, out var recastCut))
+		{
+			if (trace)
+			{
+				DefenseTrace.Line($"Machinist, level {level}: the potencies of Auto Crossbow or {shotAction.Name} could not be read from the tooltips - Auto Crossbow goes by its AoE count");
+			}
+
+			return true;
+		}
+
+		_ = ActionTooltip.TryStated(HyperchargePvE.ID, StatedOverheatBonus, out var overheat);
+		var withShot = shot + overheat;
+		var read = $"Auto Crossbow {crossbow} on {coneTargets}, {shotAction.Name} {shot} +{overheat}, recast cut {recastCut} s";
+
+		foreach (var action in cut)
+		{
+			if (!action.EnoughLevel)
+			{
+				continue;
+			}
+
+			// How many enemies it reaches: its own target selection, for an action that hits around its target.
+			var reached = 1;
+			if (action.Info.EffectRange > 0 && action.TargetInfo.FindTarget(true, true, true, default) is { } hit)
+			{
+				reached = Math.Max(1, hit.AffectedTargets.Length);
+			}
+
+			var recast = action.Cooldown.RecastTimeOneChargeRaw;
+			if (recast <= 0f || !ActionTooltip.TryPotencyOn(action.ID, reached, out var hits))
+			{
+				if (trace)
+				{
+					DefenseTrace.Line($"Machinist, level {level}: {read}; {action.Name} could not be read - Auto Crossbow goes by its AoE count");
+				}
+
+				return true;
+			}
+
+			withShot += Math.Min(1f, recastCut / recast) * hits;
+			read += $", {action.Name} {hits} on {reached} per {recast} s";
+		}
+
+		if (trace)
+		{
+			DefenseTrace.Line($"Machinist, level {level}: {read}");
+		}
+
+		return crossbow > withShot;
+	}
 	#endregion
 
 	#region Debug Display
