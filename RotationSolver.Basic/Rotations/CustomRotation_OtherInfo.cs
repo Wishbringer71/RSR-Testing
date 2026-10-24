@@ -600,26 +600,13 @@ public partial class CustomRotation
 	private static float? _slowDelayIncrease;
 
 	private static readonly System.Text.RegularExpressions.Regex StatedSlowPercent =
-		new(@"Slow \+(?<percent>\d{1,3})%", System.Text.RegularExpressions.RegexOptions.Compiled);
+		new(@"Slow \+(?<value>\d{1,3})%", System.Text.RegularExpressions.RegexOptions.Compiled);
 
 	private static float StatedSlow(ActionID action)
 	{
-		try
+		if (ActionTooltip.TryStated((uint)action, StatedSlowPercent, out var percent))
 		{
-			var texts = Svc.Data.GetExcelSheet<ActionTransient>(ClientLanguage.English);
-			if (texts != null && texts.TryGetRow((uint)action, out var row))
-			{
-				var text = Svc.SeStringEvaluator.Evaluate(row.Description, default, ClientLanguage.English).ExtractText();
-				var match = StatedSlowPercent.Match(text);
-				if (match.Success)
-				{
-					return float.Parse(match.Groups["percent"].Value, System.Globalization.CultureInfo.InvariantCulture) / 100f;
-				}
-			}
-		}
-		catch (Exception)
-		{
-			// A sheet or an evaluation that fails answers nothing, as for the trait durations.
+			return percent / 100f;
 		}
 
 		return 0f;

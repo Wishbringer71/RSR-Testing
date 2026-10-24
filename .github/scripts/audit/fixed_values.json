@@ -758,7 +758,7 @@
   },
   {
    "file": "RotationSolver.Basic/Rotations/CustomRotation_OtherInfo.cs",
-   "code": "return float.Parse(match.Groups[\"percent\"].Value, System.Globalization.CultureInfo.InvariantCulture) / 100f;",
+   "code": "return percent / 100f;",
    "values": [
     "100"
    ],
@@ -795,6 +795,16 @@
    "status": "exception",
    "loop": "A341",
    "reason": "Smoothing of the trend's end point over the latest five samples, so one hit moves it by a fifth. Upstream's former figure, fork-owned since 3c6ce9ee2. The lag it brings on a steady fall makes the forecast late, which the TTK self-correction measures and divides out. No figure of the game (A341)."
+  },
+  {
+   "file": "RotationSolver.Basic/Rotations/Basic/MachinistRotation.cs",
+   "code": "rest = first * (1f - (falloff / 100f));",
+   "values": [
+    "100"
+   ],
+   "status": "exception",
+   "loop": "A342",
+   "reason": "Unit conversion, not a game value: the tooltip states the falloff in percent (\"30% less for all remaining enemies\"), the potency of a further enemy is the share left (A342)."
   }
  ]
 }
