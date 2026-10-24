@@ -9495,6 +9495,75 @@ Sequenz, Glockenspiel, Abgleich mit The Balance, Six-sided Star, Vorlauf, AoE-Sc
 Blackest Night, Größe von Rückstoß und Stopp-Casts, Vorausschau vor dem ersten Treffer – jeweils mit vollem Loop vor dem
 Bau.
 
+### A339 · `SwiftcastBuffer` und `TargetColor` entfernt, kritischer Loop (24.10.2026)
+
+Sein Auftrag: „ist der swiftcastbuffer upstream? falls ja: wir haben danach rezzes umgebaut, da diese teilweise gar
+nicht rausgingen. bedeutet also in dem zusammenhang upstream war keine sinnvolle vorgabe, sondern fehlerhaft. daher
+halte ich nicht unbedingt an dieser einstellung fest. antithese aufbauen, warum diese einstellung sinnvoll ist und
+versuchen zu widerlegen. im kritischen loop" und zu `TargetColor`: „Bossmod zeichnet im spiel. mir selbst ist diese
+einstellung von rsr nie aufgefallen. kritisch prüfen, ob sie nicht doch irgendwo verschachtelt genutzt wird. ansonsten
+antithese aufstellen und versuchen zu widerlegen."
+
+**1. `SwiftcastBuffer`.**
+- *Herkunft:* Upstream, 4919e1ad5 (15.01.2025), als „(Experimental)". Der Leser stand im Einschiebezweig:
+  `IsLastActionGCD() && DefaultGCDRemain > SwiftcastBuffer && nextGCD` ist eine Wiederbelebung – Spontanität nur,
+  solange **mehr** als der Wert vom GCD übrig ist, ein Mindestabstand gegen das Hinauszögern des folgenden GCD. Die
+  Dokumentation daneben beschreibt das Gegenteil (warten, bis nur noch so viel übrig ist). Upstream entfernte den
+  Leser am 02.06.2025 (22fca7d86); der Einschiebezweig blieb ohne die Bedingung.
+- *Seine Prämisse, berichtigt:* Upstreams Wiederbelebung war fehlerhaft, aber nicht wegen dieser Einstellung. Sie war
+  fünfzehn Monate vor dem Umbau (a4ac770df, 10.09.2026, A54) ohne Leser. Ursache war der GCD-Pfad, der Spontanität nur
+  bei höchstens 0,5 s Rest wählte, im selben Fenster, in dem `DoAction` jede Fähigkeit sperrt (seit 92f109d3).
+- *Eigener Fehler, berichtigt (C121):* A54, Konzept 11 und die Vorlage in A338 lasen die Dokumentation statt des Codes
+  und folgerten, eine Verdrahtung kollidiere mit der Sperre. Mit der Bedeutung des Codes kollidiert sie nicht: Bei
+  Werten ab 0,5 s liegt die Bedingung ganz oberhalb der Sperre. Die Empfehlung, sie zu entfernen, stützte sich also
+  auf einen falschen Grund und war neu zu prüfen.
+- *Antithese:* (T1) Der Abstand verhindert, dass die Animationssperre von Spontanität die Wiederbelebung hinauszögert.
+  (T2) Ein einstellbarer Wert gleicht die Latenz des Spielers aus. (T3, Bedeutung der Dokumentation) Spät einschieben
+  spart Spontanität, wenn der Mitheiler das Ziel innerhalb des GCD hebt.
+- *Widerlegung:* T1 – bis 0,5 s deckt die Ausführungssperre denselben Abstand; darüber gewinnt der Wert höchstens den
+  Teil der Animationssperre über 0,5 s (Zehntelsekunden; die Sperre einer Aktion steht in keinem Spielblatt,
+  unbelegt) und kostet in jedem Fenster zwischen 0,5 s und dem Wert einen ganzen GCD Wartezeit, weil
+  `SwiftcastComingForRaise` das harte Wirken zurückhält, solange Spontanität bereitsteht. Nach einem gewirkten Zauber
+  bleibt wenig: Glare III 1,5 s Wirkzeit bei 2,5 s Abklingzeit (xivapi v2, Action 25859, ohne Zaubertempo), also etwa
+  1 s Rest abzüglich der Sperre nach dem Wirken. Ab etwa 0,9 s (geschätzt) schöbe ein Heiler, der nur wirkt,
+  Spontanität nie ein; die Wiederbelebung käme erst nach einem sofortigen GCD oder einer Bewegung. Der Tote zählt nach
+  „Spielweise" schwerer als eine Zehntelsekunde. T2 – ein Latenzausgleich träfe jede Fähigkeit, gehört also in die
+  allgemeine Sperre und aus dem Spiel abgeleitet, nicht in einen Wert nur für die Wiederbelebung. T3 – hängt am
+  Verhalten anderer Spieler, das nach seinen Regeln nie ein tragender Grund ist; den sichtbaren Fall decken A293 und
+  A294. Keine Antithese hält: Bis 0,5 s ist der Wert wirkungslos, darüber schadet er im Kampf.
+- *Gewählt:* entfernt, samt Dokumentation.
+
+**2. `TargetColor`.**
+- *Verschachtelte Nutzung gesucht, keine gefunden:* kein Leser im ganzen Baum (alle Projekte, auch Rotationen); nicht
+  Teil von `IM3Settings`, die `RebornMaterial` 7.5.6.2 liest (in der DLL stehen nur `UiPaddingScale` und
+  `UiAccentColor`); die IPC (`OtherCommand`, `Settings`) und der Chatbefehl schreiben Einstellungen über ihren Namen,
+  lesen sie aber nicht; `Parent = nameof(TargetColor)` ist folgenlos (nur Schalter werden Eltern), und mit leerem
+  `Filter` erscheint sie auf keiner Seite, nur in der Suche des Einstellungsfensters.
+- *Was sie tat:* Sie färbte einen Kreis um das Ziel der nächsten Aktion. Upstream entfernte die Zeichnung mit
+  XIVPainter (72f43cbcf, 13.05.2024) und verwies dafür auf BossModReborn.
+- *Antithese:* Ein Kreis um RSRs Ziel zeigte, wen RSR als Nächstes angreift oder heilt. *Widerlegung:* eine Funktion
+  ohne Bedarf (seine Vorgabe) – er hat sie nie vermisst; ein Angriffsziel setzt RSR als Spielziel, das das Spiel selbst
+  markiert; BossModReborn zeichnet die Mechaniken, ein zweites Bild konkurriert darum; als Messmittel taugt eine Anzeige
+  nach seinen Vorgaben nicht, und wen eine Abwehr bedient, schreibt `DefenseTrace.log` (A338).
+- *Gewählt:* entfernt.
+
+**Verträge.** `Configs` ist intern (sichtbar nur für `RotationSolver`), kein Paketvertrag, kein CHANGELOG-Eintrag.
+Newtonsoft übergeht unbekannte Felder beim Laden; der gespeicherte Wert verschwindet beim nächsten Speichern, ohne
+Wirkung, weil ihn nichts las. Ein anderes Plugin, das einen der Namen über die IPC setzt, bewirkt weiterhin nichts.
+
+**Falsifikation.** Kein Defekt: widerlegt – beide Texte versprechen eine Wirkung, die es nicht gibt, und er testet mit
+eigenen Werten. Option falsch: die Antithesen oben. Ausgeliefert, nichts ändert sich: im Kampf gewollt; im
+Einstellungsfenster fehlt der Regler unter „Healing Usage and Control" und der Farbwähler in der Suche.
+
+**Befund an den eigenen Prüfmitteln.** `scan18.py` führte vier Begründungen, die nicht mehr stimmten: `InterruptDelay`
+und `ProvokeDelay` „blocked on Configs.Migrate" nach ihrer Verdrahtung (A338), `LastSeenChangelog` „prompt that no
+longer exists", obwohl Upstream ihn mit 7e539f3a5 wieder liest, und `RotationLibs` „recorded in TODO.md", was es nie
+war (abgelöst durch Upstreams neues Laden der Rotationen, d566eda86). Das Skript meldet jetzt jede Annahme, deren
+Einstellung wieder gelesen wird oder nicht mehr besteht, mit Selbsttest; der erste Lauf fand `LastSeenChangelog`.
+`check_setting_names.py` übergeht einen Namen in einem Satz mit „removed", weil der Leser ihn nicht mehr suchen soll.
+
+**Prüfgrad:** statisch, Versionsgeschichte, Spielblätter (xivapi v2), Prüfskripte mit Selbsttest, Compile. Konzept 11.
+
 ---
 ## B · Commit-Register (Fork vs. `upstream/main`)
 
@@ -9795,3 +9864,4 @@ Die offene Arbeit dazu — Reihenfolge und Abbruchbedingung der Nachprüfung —
 | C118 | Konzept 10 und das Archiv (Tabelle der Betäubungen): „Fußfeger" für Leg Sweep; im Chat am 23.10.2026 „der Heilige" für Holy und „kein belegter deutscher Name" für Leg Sweep | Selbst gebildet. Gesucht war nur in `action_names_de.json`, nicht im Job-Guide und in den Spielblättern, wie die Regel „Namen" verlangt. Belegt: Stolperfalle, Haarscharfer Schuss, Sanctus, Sanctga | Namen eingetragen, Texte berichtigt (A334) |
 | C119 | A334 und der Bericht vom 23.10.2026: das Protokoll vom 18.–22.10.2026 ausgewertet | Ausgewertet waren Schlaf, Helfer, Rechenlast, Heiltränke, Einzelheilungsabbrüche, Flächentabelle und Konfliktkopie; Flächen- und Einzelabwehr, Sanctus-Streckung, Heilung vor dem Treffer, BossModReborn-Raidwides und Tankbuster-Marker nicht, Wiederbelebungen nur gezählt | nachgeholt in A335, zwei Defekte behoben |
 | C120 | A337 und der Bericht vom 24.10.2026: jede Schlaf-Datei entstehe erst beim ersten Eintrag, `SleepDiminishing.json` gebe es noch nicht | `OtherConfiguration.Save` schreibt beim Entladen des Plugins jede geladene Datei, auch leer; seine `SleepDiminishing.json` vom 24.10.2026 ist `{}` | A337 berichtigt |
+| C121 | A54, Konzept 11 („Ausgeschlossen") und die Vorlage in A338: `SwiftcastBuffer` bedeute, Spontanität erst bei so viel Restzeit einzuschieben, und kollidiere deshalb mit der Ausführungssperre | Gelesen war die Dokumentation, nicht der Code. Upstreams Leser (4919e1ad5) schob nur bei **mehr** Restzeit ein, ein Mindestabstand ganz oberhalb der Sperre; die Dokumentation widersprach ihrem Code. Folge: Die Empfehlung, sie zu entfernen, stand auf einem falschen Grund | A339: neu geprüft, mit richtigem Grund entfernt |

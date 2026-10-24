@@ -13,7 +13,8 @@ the slip this exists to catch. It must then match one of the texts the owner see
 its `Description = "..."`, a rotation's `RotationConfig(Name = "...")`, or a window text
 (`[Description("...")]` in `UiString`). Compared with whitespace collapsed, case ignored and without a
 closing full stop; an ellipsis stands for any text. Quotation marks carry far more than setting names -
-log lines, action names - and those are left alone.
+log lines, action names - and those are left alone. So is a name in a sentence that says "removed": the
+reader is told not to look for it, and the settings window no longer holds its text (A339).
 
 Usage: python3 .github/scripts/audit/check_setting_names.py
 Exit code 1 when a release text names a setting by a text no setting has.
@@ -30,6 +31,7 @@ LABEL = re.compile(r'(?:\bUI\(\s*|\bName\s*=\s*|\bDescription\s*=\s*|\[Descripti
 # Backticks stay on one line; straight quotes may wrap, as the documents break at a fixed width.
 QUOTED = re.compile(r'`(?P<b>[^`\n]{6,160})`|"(?P<q>[^"]{6,200})"')
 SETTING_WORD = re.compile(r'\b(?:settings?|options?|switch(?:es|ed)?)\b', re.IGNORECASE)
+REMOVED_WORD = re.compile(r'\bremoved\b', re.IGNORECASE)
 SENTENCE_END = re.compile(r'[.!?](?:\s|$)|\n\s*\n|\n\s*[-*+]\s')
 NEAR = 0.8
 
@@ -86,10 +88,13 @@ def findings(text, known):
         # A setting text starts with a capital and has words; identifiers, file names, log lines do not.
         if not candidate[:1].isupper() or ' ' not in candidate or matches(candidate, known):
             continue
+        sentence = sentence_around(text, m.start(), m.end())
+        if REMOVED_WORD.search(sentence):
+            continue
         close = difflib.get_close_matches(key(candidate), known, n=1, cutoff=NEAR)
         if close:
             out.append((candidate, f'nearly the setting text "{close[0]}"'))
-        elif SETTING_WORD.search(sentence_around(text, m.start(), m.end())):
+        elif SETTING_WORD.search(sentence):
             out.append((candidate, 'named as a setting, but no setting has this text'))
     return out
 
@@ -106,6 +111,8 @@ def self_test():
         ('The option "Skip mitigation … small" is on.', 0),
         ('The option "Skip healing … small" is on.', 1),
         ('The trace line "Sleep resisted by an enemy" names it.\n\nThe setting is on.', 0),
+        ('The setting "Target colour of the ring" was removed.', 0),
+        ('The setting "Target colour of the ring" is on.', 1),
     ]
     for text, expected in cases:
         got = len(findings(text, known))
@@ -113,7 +120,7 @@ def self_test():
             print(f'self-test FAILED: {text!r} gave {got} finding(s), expected {expected}')
             return False
     print('self-test ok: a wrong and a nearly right setting name are caught; a right one, an abbreviated one,'
-          ' a window text and a quoted log line are left alone')
+          ' a window text, a quoted log line and a removed setting are left alone')
     return True
 
 

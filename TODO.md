@@ -17,38 +17,20 @@ Nach der Wirkung im Kampf: Sicherheit der Gruppe vor Schaden, gewichtet mit der 
 4. Rückstoß und Stopp-Casts: Größe messen
 5. Vorausschau vor dem ersten Treffer
 6. Flächenheilung um den Wirkenden: Radius gegen Trefferfläche
-7. Einstellungen ohne Leser, deren Text eine Wirkung verspricht
-8. Feste Werte: jeder offene Wert braucht seinen Loop
-9. Tankbuster-Plan: Umlauf über die Sequenz jedes Drucks
-10. Weißmagier: Glockenspiel nach einem einzelnen Treffer auslösen
-11. Rotationen gegen The Balance abgleichen
-12. Six-sided Star und Flamethrower
-13. Vorlauf: Dragoon und Viper
-14. AoE-Schwelle an drei Orten
-15. Audit der gesamten Codebasis
+7. Feste Werte: jeder offene Wert braucht seinen Loop
+8. Tankbuster-Plan: Umlauf über die Sequenz jedes Drucks
+9. Weißmagier: Glockenspiel nach einem einzelnen Treffer auslösen
+10. Rotationen gegen The Balance abgleichen
+11. Six-sided Star und Flamethrower
+12. Vorlauf: Dragoon und Viper
+13. AoE-Schwelle an drei Orten
+14. Audit der gesamten Codebasis
 
 Danach technische Schuld, soweit ihre Auflösungsbedingung erfüllt ist. Warten auf Daten: unten.
 
 ## Defekte
 
-### Einstellungen ohne Leser, deren Text eine Wirkung verspricht · N
-
-*Im Kampf:* keine Wirkung – aber die Oberfläche verspricht eine. `InterruptDelay` und `ProvokeDelay` sind seit A338
-verdrahtet. Offen, mit Vorlage zur Entscheidung:
-- **`SwiftcastBuffer`** („How early before next GCD should RSR use swiftcast for raise", 0 bis 1 s, Vorgabe 0,6).
-  *Kontext:* kein Leser seit seiner Einführung im Baum; der Text verlangt, dass Swiftcast für die Wiederbelebung erst
-  fällt, wenn nur noch so viel vom GCD übrig ist. *Mechanismus:* `DoAction` sperrt Fähigkeiten, wenn vom GCD 0,5 s oder
-  weniger übrig sind; bei 0,6 s bliebe ein Fenster von 0,1 s, darunter keines – die Wiederbelebung fiele aus (Konzept
-  11). *Optionen:* (a) wörtlich verdrahten – zerbrechlich, unter 0,5 s keine Wiederbelebung; (b) verdrahten, aber nie
-  unter die Sperre – die Wiederbelebung kommt bis zu einen GCD später, der Gewinn (ein Mitheiler hebt in der Zeit selbst)
-  ist durch die Übergabe an einen schon wirkenden Heiler (A293) weitgehend gedeckt; (c) die Einstellung entfernen.
-  *Empfehlung:* (c) – ihr Zweck ist gedeckt, ihr Wortlaut kollidiert mit der Sperre, und jede Verzögerung lässt einen
-  Toten länger liegen.
-- **`TargetColor`** („Target color", `Parent` auf sich selbst). *Kontext:* Leser verloren mit XIVPainter (Upstream
-  72f43cbcf, 2024); RSR zeichnet nichts in die Welt. *Optionen:* (a) eine Zeichnung neu bauen – eine Funktion ohne
-  Bedarf; (b) die Einstellung entfernen. *Empfehlung:* (b).
-
-*Konzept:* 11, „Bekannte Mängel neben diesem Konzept".
+Keine bekannt.
 
 ## Offene Arbeit
 

@@ -39,6 +39,11 @@ module.
 since upstream dropped their wiring in 2024. They delay again what their text says; the default is now no delay, and an
 interrupt never waits past the cast it is meant to stop. A configuration saved earlier keeps its 0.5 to 1 s.
 
+## Two settings that did nothing are removed
+
+"How early before next GCD should RSR use swiftcast for raise" and "Target color" were removed. Nothing had read them
+since upstream dropped their code in 2025 and 2024, so moving them changed nothing, and raises behave as before.
+
 ## Healers and casters: an enemy's cast is stopped by the job's stun first
 
 "Stop an enemy's cast with the job's stun or a sleep (experimental)", on by default, replaces the sleep-only setting.

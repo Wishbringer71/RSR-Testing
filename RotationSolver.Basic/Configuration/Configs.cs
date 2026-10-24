@@ -1282,16 +1282,6 @@ internal partial class Configs : IPluginConfiguration, IM3Settings
 
 	#endregion
 
-	/// <markdown file="Auto" name="How early before next GCD should RSR use swiftcast for raise" section="Healing Usage and Control">
-	/// If your cast a GCD and your cooldown is of 2.5 seconds, if a teammate dies when your cooldown starts, the Swiftcast action will wait
-	/// the specified amount of time before your cooldown ends to cast Swiftcast. This is to prevent using your Swiftcast too early and waste it
-	/// if your co-healer manages to raise your target within your global cooldown period.
-	/// </markdown>
-	[JobConfig, UI("How early before next GCD should RSR use swiftcast for raise",
-		Filter = HealingActionCondition, Section = 2)]
-	[Range(0, 1.0f, ConfigUnitType.Seconds, 0.01f)]
-	public float SwiftcastBuffer { get; set; } = 0.6f;
-
 	/// <markdown file="Auto" name="Random delay range for resurrecting players" section="Healing Usage and Control">
 	/// In order to not make is so obvious that you use RSR, casting a raise action will be delayed by a random amount of seconds
 	/// between the two values.
@@ -1498,9 +1488,6 @@ internal partial class Configs : IPluginConfiguration, IM3Settings
 
 	[UI("Highlight color.", Parent = nameof(TeachingMode))]
 	public Vector4 TeachingModeColor { get; set; } = new(0f, 1f, 0f, 1f);
-
-	[UI("Target color", Parent = nameof(TargetColor))]
-	public Vector4 TargetColor { get; set; } = new(1f, 0.2f, 0f, 0.8f);
 
 	[UI("Locked Control Window's Background", Parent = nameof(ShowControlWindow))]
 	public Vector4 ControlWindowLockBg { get; set; } = new(0, 0, 0, 0.55f);
