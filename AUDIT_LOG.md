@@ -10868,6 +10868,34 @@ hat – dann wird jede gelistete Aktion gemindert, wie ihr Text sagt.
 
 *Prüfgrad:* statisch an seinen Protokollen und am Code, Compile; im Spiel nicht beobachtet.
 
+### A367 · Release 7.5.7.7+wsh1 mit dem Zweig auf `main`, Zweig weitergeführt (25.10.2026)
+
+Sein Auftrag (25.10.2026): „nach auswertung und möglichen änderungen an konzepten und umsetzung code im loop: branch zu
+main, compile, release, neuer branch".
+
+- *Vorab:* 7.5.7.7+wsh1 war nicht veröffentlicht (jüngstes Release auf `origin`: 7.5.7.6+wsh1, gemessen über die
+  Release-API). Das Release geht deshalb mit dem Stand dieses Zweigs hinaus statt mit 73bed2e8d (A363): Die vier
+  Verhaltensänderungen seit A363 (A364–A366) stehen im CHANGELOG unter „7.5.7.7+wsh1", „Unreleased" ist leer; der
+  Release-Text „Changes since 7.5.7.6+wsh1" trägt sie schon. Upstream 0 ausstehend. Paketoberfläche gegen 7.5.7.6+wsh1
+  (`scan7.py`): dieselben sieben Meldungen wie in A363, keine neue.
+- *Kompilieren:* Der erste Lauf auf b25600eba scheiterte vor dem Bauen: Die aka.ms-Links für .NET leiteten auf
+  `dotnetorigin.blob.core.windows.net`, der öffentliche Zugriffe ablehnte (409 „PublicAccessNotPermitted", auch für das
+  ältere SDK 10.0.402), und das Installationsskript nimmt bei einem Kanal wie `10.0.x` nur den aka.ms-Link
+  (`dotnet-install.ps1`, „aka.ms links can only be used if the user did not request a specific version"). Gegen
+  20:22 UTC leitete aka.ms wieder auf `builds.dotnet.microsoft.com`; der dritte Versuch war grün. Danach kam A366 dazu,
+  und der Lauf auf 79b4acf24 war grün (Build, DispatchChain).
+- *Zusammenführen:* `main` war Vorfahr des Zweigs und auf 79b4acf24 vorgespult. PR #17 steht damit als gemergt.
+- *Release:* nicht erzeugt – Tags und Releases sind dieser Sitzungsart gesperrt, und `publish.yaml` stoße ich nicht an.
+  Fertig für ihn: `publish.yaml` per „Run workflow" auf `main` mit dem Tag `7.5.7.7+wsh1`; der Lauf baut 79b4acf24 und
+  nimmt `docs/fork-changes-since-last-release.md` (rund 21 600 Zeichen, unter der Grenze der Release-API) als Text. Nach
+  der Veröffentlichung übernimmt `fork-changes-in-play.md` den Text, und `fork-changes-since-last-release.md` beginnt neu.
+- *Zweig:* Sein Namensschema nennt das letzte Fork-Release; das bleibt 7.5.7.7+wsh1, also bleibt
+  `claude/fixes-after-7.5.7.7` der Arbeitszweig, weitergeführt von `main` aus. Ein neuer Name käme erst mit einem
+  Release, das danach entsteht. Löschfälle zur Freigabe unverändert: die lokalen `claude/fixes-after-7.5.7.3` und
+  `claude/fixes-after-7.5.7.6` (Gegenstellen weg).
+
+*Prüfgrad:* Zustand gemessen (Fetch beider Gegenstellen, Release-API, Prüfläufe auf GitHub).
+
 ---
 ## B · Commit-Register (Fork vs. `upstream/main`)
 
