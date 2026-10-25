@@ -244,7 +244,10 @@ gewählten Trank mit dem Zweig, der ihn freigab, und den HP.
       nach Vollkommener Ablass, Linderung und Göttliche Umarmung, die den Treffer selbst mindern.
     - „Also into an enemy attack that hits in a series": beim ersten Treffer eines Angriffs, der ihn und ein weiteres
       Mitglied gemessen mehr als einmal hintereinander getroffen hat (`HitSeries`, `LiturgyTriggersLeft`), im
-      allgemeinen oGCD-Platz, solange noch Auslösungen ausstehen.
+      allgemeinen oGCD-Platz, solange noch Auslösungen ausstehen. Kündigt ein gegnerischer Cast dieser Aktion den
+      ersten Treffer an – er erreicht ihn und landet innerhalb des nächsten GCD –, schon davor (A365): Dann löst auch der
+      erste Treffer aus. Innerhalb eines GCD kommt ein Einschubfenster, und je später die Glocke fällt, desto mehr ihrer
+      20 s bleiben für den Rest der Serie.
   - *Ohne die Einstellung* kommt es zuletzt, wenn Plenary, Temperance und Divine Caress nicht bereit sind, und
     hält danach die übrige Abwehr 20 s zurück (Streckung).
   - *Sein Vorschlag (23.10.2026):* „es würde sich also nur lohnen, wenn die gesundheit der gruppe weit unten ist, so
@@ -269,9 +272,19 @@ gewählten Trank mit dem Zweig, der ihn freigab, und den HP.
     weiteres Mitglied, höchstens einer je Sekunde („can only be triggered once per second", Wirktext), innerhalb der
     Dauer der Glocke ab dem ersten (`DefensiveValues`, 20 s). Gelernt je Gegneraktion über alle Sitzungen
     (`HitSeriesOnPlayer`), nur steigend; das erste Treffen lehrt. Eine Serie auf ihm allein zählt nicht – die Glocke
-    heilt die Gruppe. Die meisten Serien in seinen Kämpfen sind Sofortaktionen ohne Wirkzeit, die die Flächentabelle gar
-    nicht misst (Konzept 13, „Serien kleiner Einschläge"). Unter Stufe 90 gibt es die Glocke nicht (Job-Guide); dort
-    ändert keine Regel zu ihr etwas.
+    heilt die Gruppe. Ein Treffer, den eine Barriere ganz schluckt, löst die Glocke nicht aus („The healing blossom will
+    not heal if damage is entirely absorbed by barriers", Fan-Wiki consolegameswiki, gelesen 25.10.2026) und zählt
+    deshalb nicht. Die meisten Serien in seinen Kämpfen sind Sofortaktionen ohne Wirkzeit, die die Flächentabelle gar
+    nicht misst (Konzept 13, „Serien kleiner Einschläge"); für sie bleibt der erste Treffer der früheste Zeitpunkt. Unter
+    Stufe 90 gibt es die Glocke nicht (Job-Guide); dort ändert keine Regel zu ihr etwas.
+  - *Erkennen und speichern* (seine Frage vom 25.10.2026, wie solche Mechaniken als anwendbar abgelegt werden): Das tut
+    `HitSeries` im Kampf selbst. Jeder Treffer einer Gegneraktion, der ihn mit Schaden trifft und dazu ein weiteres
+    Mitglied, zählt in die laufende Serie dieser Aktion; zählt sie mehr als einen, schreibt RSR die Zahl in
+    `HitSeriesOnPlayer.json`, je Aktion den Höchstwert über alle Sitzungen. Ab dem nächsten Treffen weiß die Regel, dass
+    diese Aktion in Folge trifft, und wie oft. *Ausgeschlossen:* eine Serie schon beim ersten Sehen aus mehreren Casts
+    derselben Aktion abzuleiten. Ob solche Casts zusammen genommen werden (Türme) oder einzeln auszuweichen sind
+    (nacheinander fallende Flächen), zeigt der Cast nicht, und eine Glocke vor einer ausgewichenen Folge heilt niemanden,
+    bei 180 s Abklingzeit. Gelernt wird nur, was ihn und die Gruppe tatsächlich getroffen hat.
   - *Was die Ergänzungen in seinen Kämpfen ändern* (Protokolle 18.–23.10.2026, A348; vorher fiel die Glocke zweimal,
     beide Male auf einen Mehrfach-Sammelmarker, einmal im Moment des Bosstods):
     - *Allianzraid Stufe 100, 22.10.2026, Alexander der Wiedererweckte:* Mehrfach-Sammelmarker auf ihm, die Glocke
@@ -286,6 +299,19 @@ gewählten Trank mit dem Zweig, der ihn freigab, und den HP.
     - *Prüfung ab Stufe 90, 22.10.2026, Tosender Donner:* Tosende Hyperkanone traf zehnmal im Sekundentakt mit bis zu
       6 % – kein Marker, je Treffer klein. Gelernt, fällt die Glocke beim ersten Treffer, und die fünf folgenden mit
       Schaden lösen aus: 2000 Potenz über die Serie statt keiner.
+    - *Dungeon Stufe 100, 25.10.2026, Chort im Klyteum* (sein Protokoll und sein ACT-Mitschnitt, A365): vier Türme,
+      Ersticken des Fleisches (#48882), jeder aus einem eigenen 5,7-s-Cast eines unsichtbaren Helfers, 3 s versetzt; alle
+      vier Mitglieder standen darin. Je Turm 17–19 % der Maximalgesundheit bei ihm und den Angreifern, beim Tank 2–7 %;
+      den zweiten schluckte bei ihm und beim Tank Göttliche Umarmung ganz. Die Glocke blieb den ganzen Kampf liegen
+      (Chort fiel 70 s nach den Türmen). Grund: Die Aktion war ungelernt – das erste Treffen lehrte (gelernt: 3, ohne
+      den geschluckten Turm) –, und auf dem Weg der Flächenabwehr hielt die Streckung nach Linderung sie bei jedem Turm
+      zurück; gemessen am Turm (18 %) war keiner gefährlich. Beim nächsten Treffen fällt sie vor dem ersten Turm, sobald
+      dessen Cast ihn erreicht und im nächsten GCD landet, sonst mit dem ersten Turm. Gemessen in diesem Kampf: Seine
+      Heilung mit 400 Potenz auf die Gruppe (Afflatus laetitiae) brachte je Mitglied 32 000–36 000 LP, unter Linderung
+      38 000–40 000; ein Turm nahm einem Angreifer rund 33 000. Jede Auslösung heilt also etwa einen Turm, und die
+      Türme lagen höchstens 9 y vom ersten entfernt, alle im Umkreis einer dort gesetzten Glocke. Göttliche Umarmung
+      zwischen den Türmen kostet eine Auslösung (der Stapel heilt dann am Ende mit 200 statt mit 400), ihre Barriere
+      verhindert aber 31 000–34 000 je Mitglied; sie bringt mehr, als sie nimmt, und bleibt ohne eigene Regel.
   - *Warum so:* Die Glocke ist reine Heilung; liegt sie, schützt sie niemanden. Nachgespielt über seine
     Weißmagier-Kämpfe hätte keine der Ergänzungen einem späteren Mehrfach-Sammelmarker die Glocke genommen (A348).
     Gegenpositionen: *The Balance* will möglichst viele Auslösungen je Einsatz – ein Einzeltreffer bringt eine; das

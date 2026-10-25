@@ -16,7 +16,8 @@ Defekt daraus behoben (A356). Sein Auftrag vom 25.10.2026 nachmittags: nach Prio
 der Tank-Punkt ist entschieden (A357), sein Auftrag zu den Einstellungen ist erledigt (A358, Konzept 18), der Punkt
 daraus gebaut (A359). Sein Auftrag vom 25.10.2026 abends wiederholt beide: das TODO weiter, danach ein zweiter
 Durchgang des Einstellungs-Audits, Rotationseinstellung für Rotationseinstellung. Seine Frage vom 25.10.2026 abends zur
-Abwehr ohne Heiler ist umgesetzt (A361); die Phönixfeder daraus kommt als Sicherheitspunkt vor den Schaden.
+Abwehr ohne Heiler ist umgesetzt (A361); die Phönixfeder daraus kommt als Sicherheitspunkt vor den Schaden. Seine Frage
+vom 25.10.2026 abends zu Chorts Türmen und dem Glockenspiel ist beantwortet und umgesetzt (A365).
 
 1. Phönixfeder seit 7.3: 8 s Wirken statt Einschub
 2. Heiler-Hilfe auf einen kleinen gemessenen Tankbuster

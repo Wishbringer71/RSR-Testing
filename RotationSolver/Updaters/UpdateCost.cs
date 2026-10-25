@@ -23,6 +23,11 @@ internal static class UpdateCost
 	private static double _frameMs;
 	private static bool _wasInCombat;
 
+	// The largest party seen in the fight. Read at the first cycle out of combat, the party was empty after any fight in
+	// which an enemy was attacked: the state update before it clears the party with the fight's records
+	// (DataCenter.ResetAllRecords) - 210 of 216 fights in the traces of 24.-25.10.2026 showed "party of 0" (A365).
+	private static int _party;
+
 	// Which steps of the cycle carry the time (TODO, "erst erheben, welche Teile des Schritts die Zeit tragen", A310):
 	// the time since the last step began goes to that step. Per fight the sum and the longest per step, and the
 	// steps of the slowest cycle with the garbage collections that ran during it - a collection stops every managed
@@ -91,6 +96,7 @@ internal static class UpdateCost
 			_cycles++;
 			_totalMs += elapsed;
 			_frameMs += framework.UpdateDelta.TotalMilliseconds;
+			_party = Math.Max(_party, DataCenter.PartyMembers.Count);
 			foreach (var (name, ms) in _cycle)
 			{
 				var known = _fight.TryGetValue(name, out var f) ? f : default;
@@ -112,10 +118,11 @@ internal static class UpdateCost
 			// entries only from a party of four or more, which a trace of a fight alone could not show (A299).
 			var share = _frameMs > 0 ? _totalMs / _frameMs : 0;
 			DefenseTrace.Line($"update cost over the fight: {_cycles} cycles, mean {_totalMs / _cycles:F2} ms, "
-				+ $"max {_maxMs:F2} ms, {share:P1} of the frame time, party of {DataCenter.PartyMembers.Count}");
+				+ $"max {_maxMs:F2} ms, {share:P1} of the frame time, party of {_party}");
 			DefenseTrace.Line($"update cost by step, mean/max ms: {Steps(_fight, s => s.Total, _cycles, s => s.Max)}; {_slowest}");
 			_cycles = 0;
 			_totalMs = _maxMs = _frameMs = 0;
+			_party = 0;
 			_fight.Clear();
 			_slowest = string.Empty;
 		}

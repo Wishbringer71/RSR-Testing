@@ -23,6 +23,13 @@ are not reconstructed here.
 
 ## Unreleased
 
+### Behaviour change in RotationSolver.Basic: `LiturgyTriggersLeft` counts an announced series
+
+`WhiteMageRotation.LiturgyTriggersLeft` also counts a series learned in `HitSeriesOnPlayer` whose first hit is announced:
+an enemy cast of that action that reaches the player and lands within the next GCD gives its learned count, unless a
+series of the same action already runs. A derived White Mage rotation that lays Liturgy of the Bell on it now lays it
+just before the first hit instead of at it.
+
 ### Behaviour change in RotationSolver.Basic: several tankbuster targets, the help goes to the least protected
 
 `TargetType.Tankbuster` and `TargetType.BeAttacked` pick, among several members a tankbuster is aimed at, the one with

@@ -4157,6 +4157,15 @@ internal static class DataCenter
 	}
 
 	/// <summary>
+	/// Whether the enemy cast <paramref name="h"/> is casting reaches the player, from the shape the game data gives it -
+	/// listed or not. Read by <see cref="HitSeries"/> for the first hit of a series that is announced by a cast.
+	/// </summary>
+	internal static bool CastReachesPlayer(IBattleChara h)
+	{
+		return h != null && h.IsValid() && h.IsCasting && TryGetCastAction(h, out var act) && AreaCastCanReachPlayer(h, act);
+	}
+
+	/// <summary>
 	/// Whether a listed area cast reaches the party in the sense the area-defence flag needs: the
 	/// player, or at least two living party members - more than a single target (concept 13, A218).
 	/// </summary>

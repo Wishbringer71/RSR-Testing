@@ -105,8 +105,11 @@ cases where it heals when the party needs it: "Also before a hit that would put 
 after Plenary Indulgence, Temperance and Divine Caress, before an announced hit that by its measured size would leave a
 member in critical health and that reaches you - its first heal comes with the hit, the rest right after. "Also into an
 enemy attack that hits in a series" learns which enemy attacks hit you and the party several times in a row, one
-trigger a second, and lays the bell at the first hit of one: a ten-hit attack a second apart heals the party after each
-of the next five.
+trigger a second, and lays the bell at the first hit of one - or just before it, when an enemy cast of that attack
+reaching you lands within the next GCD: a ten-hit attack a second apart heals the party after each of the next five, and
+four cast towers in a row heal after all four instead of the last three. An attack teaches the first time it is met.
+DefenseTrace.log names each bell laid into a series, and its line on the update cost now gives the size of the party in
+the fight instead of the empty party after it.
 
 ## A series of hits counts as one attack in the area damage table
 

@@ -509,6 +509,13 @@
       "source": "game data, xivapi v2 Action 37011 language=de, 2026-10-24"
     },
     {
+      "de": "Afflatus laetitiae",
+      "en": "Afflatus Rapture",
+      "identifier": "AfflatusRapturePvE",
+      "kind": "action",
+      "source": "game data, xivapi v2 Action 16534 language=de, 2026-10-25; also the German job guide (whitemage)"
+    },
+    {
       "de": "Refugium",
       "en": "Asylum",
       "identifier": "AsylumPvE",

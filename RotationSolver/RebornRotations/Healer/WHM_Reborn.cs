@@ -27,9 +27,10 @@ public sealed class WHM_Reborn : WhiteMageRotation
 	[RotationConfig(CombatType.PvE, Name = "Also into an enemy attack that hits in a series", Parent = nameof(MultiHitRestrict),
 		Tooltip = "With the limit to multihit party stacks on, the bell also goes out at the first hit of an enemy attack "
 			+ "that has been seen to hit you and the party several times in a row - one trigger a second, within the bell's "
-			+ "duration. Learned per enemy action over every session; the first time an attack is met it teaches.\n"
+			+ "duration -, or just before that hit when an enemy cast of it that reaches you lands within the next GCD. "
+			+ "Learned per enemy action over every session; the first time an attack is met it teaches.\n"
 			+ "In a fight: an attack of ten hits a second apart heals the party after each of the next five, instead of "
-			+ "the bell staying unused.")]
+			+ "the bell staying unused; four cast towers in a row heal after all four instead of the last three.")]
 	public bool LiturgyOnSeries { get; set; } = true;
 
 	[RotationConfig(CombatType.PvE, Name = "Press Liturgy of the Bell a second time when the party needs an area heal",
@@ -350,10 +351,12 @@ public sealed class WHM_Reborn : WhiteMageRotation
 
 	protected override bool GeneralAbility(IAction nextGCD, out IAction? act)
 	{
-		// The bell into a series already hitting: every further hit of it triggers the bell (A349).
-		if (MultiHitRestrict && LiturgyOnSeries && LiturgyTriggersLeft > 0
+		// The bell into a series already hitting, or just before its first hit when a cast announces it: every further
+		// hit of it triggers the bell (A349, A365).
+		if (MultiHitRestrict && LiturgyOnSeries && LiturgyTriggersLeft is var triggers and > 0
 			&& LiturgyOfTheBellPvE.CanUse(out act, skipAoeCheck: true))
 		{
+			DefenseTrace.Decision($"bell into a hit series, {triggers} trigger(s) to come", act);
 			return true;
 		}
 

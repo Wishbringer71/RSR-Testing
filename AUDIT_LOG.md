@@ -10763,6 +10763,68 @@ er Schlaf als Stopper nicht nutzt, oder kein doppelter Tankbuster kommt.
 
 *Prüfgrad:* statisch am Code und am Protokoll, Compile; im Spiel nicht beobachtet.
 
+### A365 · Chorts Türme und das Glockenspiel; Auswertung DefenseTrace ab 25.10.2026 18:43 (Build 8368ec3f7) (25.10.2026)
+
+Seine Frage: „im klyteum gibt es den zwischenboss chort. der macht hintereinander vier tower, wo man stacken muss. das
+wäre ein ideales ziel für glockenspiel. oder etwa nicht? … wie kann man solche mechaniken erkennen und als anwendbar
+abspeichern?" Dazu sein FFLogs-Bericht, sein ACT-Netzwerkprotokoll (`Network_30304_20261025`, 46,8 MB) und der
+RSR-Upload mit `DefenseTrace.log` und den gelernten Tabellen. Namen anderer Spieler stehen in den Protokollen und
+nirgends im Repository.
+
+- *Mechanik, gemessen am ACT-Protokoll:* Ersticken des Fleisches (#48878, Raidwide 7–8 %), dann vier Türme mit derselben
+  Bezeichnung (#48882, deutscher Name xivapi v2 Action 48882), je ein 5,7-s-Bodencast eines unsichtbaren Helfers, 3 s
+  versetzt; alle vier Mitglieder in jedem Turm. Schaden je Turm 17–19 % bei ihm und den Angreifern, 2–7 % beim Tank; den
+  zweiten nahm Göttliche Umarmung bei ihm und beim Tank ganz, bei den Angreifern bis auf 2–4 %. Die vier Turmmitten
+  lagen 3,6–10,6 y von seinem Standort am ersten Turm, die Mitglieder bei den Treffern höchstens 8,7 y – alle im Umkreis
+  von 20 y um eine dort gesetzte Glocke (deutscher Job-Guide: „um das Glockenspiel").
+- *Warum keine Glocke:* Bei ihm ist „Limit Liturgy Of The Bell to multihit party stacks" an (A335). Auf dem Weg der
+  Flächenabwehr hielt die Streckung nach Linderung (47,6 s, vor dem BossModReborn-Raidwide) die Glocke bei jedem Turm
+  zurück („holding: White Mage: Temperance or Liturgy still in effect"), und gemessen am einzelnen Turm (18 %) war keiner
+  gefährlich. Der Serienweg kannte #48882 nicht: Die Sitzung lud zwei gelernte Serien, keine davon diese. Nach dem
+  Kampf steht `"48882": 3` in `HitSeriesOnPlayer.json` – die Serienerkennung lief im Spiel, der geschluckte Turm zählte
+  nicht. Die Glocke blieb den ganzen Kampf liegen; Chort fiel 70 s nach den Türmen.
+- *Ideales Ziel?* Ja, gemessen: Afflatus laetitiae (400 Potenz auf die Gruppe, wie eine Auslösung) brachte im selben Kampf
+  32 000–36 000 LP je Mitglied, unter Linderung 38 000–40 000; ein Turm nahm einem Angreifer rund 33 000. Vier
+  Auslösungen heilen die vier Türme etwa auf, statt dass ein GCD (Afflatus laetitiae nach dem vierten Turm) und Göttlicher
+  Segen sie auffangen. *Gegenposition:* Die Gruppe stand nach den Türmen noch bei 66–69 % und war nie in Gefahr; der
+  Gewinn ist eine gesparte GCD-Heilung und Reserve vor dem nächsten Raidwide, keine verhinderte Niederlage. Ein
+  besseres Ziel gab es im Kampf nicht: Dunkelschlag ist ein Einzeltreffer (eine Auslösung, Rest 4 × 200).
+- *Erkennen und speichern:* besteht seit A349 (`HitSeries`): jeder Treffer derselben Gegneraktion mit Schaden an ihm und
+  an einem weiteren Mitglied, höchstens einer je Sekunde, innerhalb der 20 s der Glocke; gespeichert je Aktion als
+  Höchstwert über alle Sitzungen. Laut Fan-Wiki löst ein ganz von einer Barriere geschluckter Treffer die Glocke nicht
+  aus – die Zählregel stimmt damit.
+- *Optionen:* (0) nichts – beim nächsten Treffen fällt die Glocke mit dem ersten Turm; (1) vor dem ersten Treffer, wenn
+  ein Cast der gelernten Aktion ihn erreicht und im nächsten GCD landet; (2) eine Serie schon beim ersten Sehen aus
+  mehreren gleichzeitigen Casts einer Aktion erkennen; (3) Göttliche Umarmung zurückhalten, solange eine Glocke auf
+  eine Serie wartet. *Abwägung:* (1) bringt je Serie eine Auslösung zu 400 mit dem ersten Treffer statt 200 am Ende und
+  eine zweite Gelegenheit, wenn das Einschubfenster direkt nach dem ersten Treffer fehlt (3 s bis zum zweiten). (2)
+  verworfen: Ob mehrere Casts zusammen genommen oder einzeln ausgewichen werden, zeigt der Cast nicht; eine Glocke vor
+  einer ausgewichenen Folge heilt niemanden, bei 180 s Abklingzeit. (3) verworfen: Die Barriere verhindert 31 000–34 000
+  je Mitglied und kostet eine Auslösung, deren Stapel am Ende noch 200 heilt – sie bringt mehr, als sie nimmt.
+  *Umgesetzt:* (1) in `HitSeries.TriggersLeft` (neu `DataCenter.CastReachesPlayer`), Tooltip von „Also into an enemy
+  attack that hits in a series" nachgezogen, Protokollzeile „bell into a hit series, N trigger(s) to come".
+- *Weitere Befunde im Protokoll:* „update cost over the fight … party of 0" stand bei 210 von 216 Kämpfen: Die Zeile las
+  die Gruppe im ersten Bild nach dem Kampf, nachdem `ResetAllRecords` sie geleert hatte. Defekt im eigenen Messmittel,
+  behoben: die größte Gruppe des Kampfes (`UpdateCost._party`). „no healer alive" um 19:51:20 im Allianzraid (Angra
+  Mainyu): Er selbst war da schon tot (seine Status fielen laut ACT um 19:51:21 ab, die Zeiten liegen rund 1,2 s
+  auseinander), der andere Heiler auch – richtig, ohne Wirkung. Schlaf, Sanctus-Streckung, Vorausheilung, Wiederbelebung
+  durch andere: ohne Befund. Laufzeit im Mittel unter 0,75 ms je Bild, höchstens 4,5 % der Bildzeit.
+- *FFLogs:* Der angegebene Wert ist kein v1-Schlüssel (401 „Invalid key specified") und für die v2-API nur die Client-ID;
+  der Token-Abruf verlangt das Client-Secret (400, „Check the `client_secret` parameter"). Der Wert steht nirgends im
+  Repository. Für diese Auswertung war die API nicht nötig – das ACT-Protokoll trägt dieselben Ereignisse.
+
+**Falsifikation.** *Kein Defekt:* Beim ersten Treffen lehrt die Serie absichtlich (Tooltip); das bleibt so. Die
+Verbesserung betrifft das zweite Treffen und jedes danach. *Option falsch:* Die gelernte Aktion könnte einmal anders
+eingesetzt werden, ohne ihn zu treffen – geprüft wird, dass der Cast ihn erreicht; bleibt der Treffer trotzdem aus,
+heilen die fünf Stapel am Ende mit 1000 Potenz, nicht nichts. Ein Cast einer Aktion, deren Serie schon läuft, zählt
+nicht noch einmal als Ankündigung – sonst bekäme der letzte Turm einer Serie eine Glocke für sich allein. *Ausgeliefert,
+nichts ändert sich:* bei Serien aus Sofortaktionen ohne Cast (die meisten gelernten: #3216, #26208) bleibt der erste
+Treffer der früheste Zeitpunkt; wenn die Unteroption oder die Begrenzung aus ist; wenn ein Angriffseinschub (Assize,
+Presence of Mind) das Fenster vor dem Treffer nimmt – dann fällt die Glocke wie bisher mit dem ersten Treffer.
+
+*Prüfgrad:* statisch am Code, an seinen beiden Protokollen und an den Wirktexten (Job-Guide, Fan-Wiki), Compile; im Spiel
+nicht beobachtet.
+
 ---
 ## B · Commit-Register (Fork vs. `upstream/main`)
 
