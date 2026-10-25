@@ -157,6 +157,9 @@ Gelten in jeder Stufe. Eine Aussage, die eine davon verletzt, ist unbelegt.
 - Churin-Rotationen (`ExtraRotations/*/Churin*`) sind für ihn uninteressant: keine Befunde dazu erfassen.
 - Vor dem Spielen kompiliert er den aktuellen Zweig (seine Angabe). Sein Stand ist der Zweig zur Zeit seiner Beobachtung, nie ein Release; maßgeblich ist das Datum seiner Beobachtung oder Datei.
 - Er zeichnet seine Kämpfe mit ACT auf (seine Angabe); FFLogs-Reports sind also möglich.
+- Was er hochlädt – `DefenseTrace.log`, die gelernten Dateien, ACT-Mitschnitte –, werte ich jedes Mal auch allgemein aus,
+  wenn er eine bestimmte Frage dazu stellt (seine Vorgabe, 25.10.2026): erst seine Frage, dann alle übrigen Kämpfe,
+  Zeilenarten und Dateien. Grund: Eine Frage zu einem Boss lässt den Rest des Abends ungeprüft.
 - Er ist Tester und nutzt selten die Voreinstellungen. Eine Aussage über einen Vorgabewert ist keine über seine Konfiguration, und die kann ich nicht messen. Jede Regel hinter einem Schalter denke ich für beide Stellungen.
 
 **Als was seine Angaben gelten**

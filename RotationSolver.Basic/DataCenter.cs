@@ -4064,8 +4064,8 @@ internal static class DataCenter
 	// to every cast whenever the switch was off.
 	private static void RecordAnnouncedAreaShare(uint actionId)
 	{
-		if (OtherConfiguration.HostileCastingAreaPotential.TryGetValue(actionId, out var share)
-			&& share > 0f)
+		// A rating of 0 is a landing measured without damage (A366), and announces exactly that.
+		if (OtherConfiguration.HostileCastingAreaPotential.TryGetValue(actionId, out var share))
 		{
 			_announcedAreaShare = share;
 			_announcedAreaShareTime = DateTime.Now;
@@ -4082,10 +4082,10 @@ internal static class DataCenter
 			return true;
 		}
 
-		if (!OtherConfiguration.HostileCastingAreaPotential.TryGetValue(actionId, out var share)
-			|| share <= 0f)
+		// Unrated: behave exactly as before. A rating of 0 is a landing measured without damage (A366), a small cast.
+		if (!OtherConfiguration.HostileCastingAreaPotential.TryGetValue(actionId, out var share))
 		{
-			return true; // Unrated: behave exactly as before.
+			return true;
 		}
 
 		if (AreaShareCallsForMitigation(share))
@@ -4639,7 +4639,7 @@ internal static class DataCenter
 				|| !caster.IsCasting || caster.CastActionId != cast.ActionId
 				|| !OtherConfiguration.HostileCastingArea.Contains(cast.ActionId)
 				|| !OtherConfiguration.HostileCastingAreaPotential.TryGetValue(cast.ActionId, out var share)
-				|| share <= 0f || AreaShareCallsForMitigation(share))
+				|| AreaShareCallsForMitigation(share))
 			{
 				return false;
 			}

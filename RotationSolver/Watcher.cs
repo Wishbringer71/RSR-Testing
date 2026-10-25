@@ -822,6 +822,10 @@ public static class Watcher
 					var beyondHealth = 0;
 					var hardestBeyond = 0f;
 
+					// Damage entries on party members, and those of them at zero on a member who carried no barrier.
+					var damageEntries = 0;
+					var zeroWithoutBarrier = 0;
+
 					foreach (var effect in set.TargetEffects)
 					{
 						if (!partyById.TryGetValue(effect.TargetID, out var member))
@@ -840,9 +844,16 @@ public static class Watcher
 							damageEffectCount++;
 						}
 
-						// Only a real amount measures anything. A hit that arrived at zero was
-						// swallowed by a barrier or blocked outright, and zero does not mean the
-						// action is harmless - it means something absorbed it. Such a set is skipped
+						damageEntries++;
+						if (!landed && member.GetObjectShield() == 0)
+						{
+							zeroWithoutBarrier++;
+						}
+
+						// Only a real amount measures anything. A hit that arrived at zero under a
+						// barrier was swallowed by it, and zero does not mean the action is harmless -
+						// it means something absorbed it (at zero with no barrier on anyone reached, see
+						// zeroWithoutBarrier below, the action dealt nothing). Such a set is skipped
 						// for the measurement while still counting for the intake above, so a
 						// raidwide does not fall out of the list just because the party was shielded.
 						// Nor does a hit beyond the member's whole health and barrier (TryAreaShare):
@@ -955,7 +966,7 @@ public static class Watcher
 						// without ever being recorded can be told from one that keeps reaching him.
 						DefenseTrace.Line($"area cast landed: {landedName} #{set.Action!.Value.RowId}"
 							+ $" from {battle.Name.TextValue}, reached you {reachedPlayer}, {set.TargetEffects.Length} targets"
-							+ $" ({damagedMembers} party members damaged)");
+							+ $" ({damagedMembers} party members reached)");
 					}
 
 					if (highestShare > 0f && OtherConfiguration.HostileCastingArea.Contains(set.Action!.Value.RowId))
@@ -967,6 +978,21 @@ public static class Watcher
 							OtherConfiguration.HostileCastingAreaPotential[id] = highestShare;
 							_ = OtherConfiguration.SaveHostileCastingAreaPotential();
 						}
+					}
+					else if (highestShare == 0f && beyondHealth == 0 && zeroWithoutBarrier > 1 && zeroWithoutBarrier == damageEntries
+						&& OtherConfiguration.HostileCastingArea.Contains(set.Action!.Value.RowId)
+						&& !OtherConfiguration.HostileCastingAreaPotential.ContainsKey(set.Action!.Value.RowId))
+					{
+						// A landing that dealt nothing to members nobody shielded: zero here is not a hit something
+						// absorbed but an action without damage - Impakt (#36794, Eliminator) put a damage entry of
+						// zero on all four, and unrated it drew Temperance at every cast (owner's log of 25.10.2026,
+						// A366). Rated 0, it is a small cast; a later landing with damage raises it, as any rating.
+						var id = set.Action!.Value.RowId;
+						OtherConfiguration.HostileCastingAreaPotential[id] = 0f;
+						_ = OtherConfiguration.SaveHostileCastingAreaPotential();
+						DataCenter.RecordAreaMeasurementOutcome(id, "measured", $" at no damage on {zeroWithoutBarrier} party members without a barrier");
+						DefenseTrace.Line($"area cast {set.Action!.Value.Name.ExtractText()} #{id}: no damage on {zeroWithoutBarrier}"
+							+ " party members without a barrier - rated 0 %");
 					}
 				}
 			}

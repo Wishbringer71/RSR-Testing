@@ -10825,6 +10825,49 @@ Presence of Mind) das Fenster vor dem Treffer nimmt – dann fällt die Glocke w
 *Prüfgrad:* statisch am Code, an seinen beiden Protokollen und an den Wirktexten (Job-Guide, Fan-Wiki), Compile; im Spiel
 nicht beobachtet.
 
+### A366 · Allgemeine Auswertung seines Uploads vom 25.10.2026: alle Kämpfe, gelernte Dateien, ACT-Mitschnitt (25.10.2026)
+
+Seine Vorgabe dazu (25.10.2026): „Logs und andere Dateien danach auch wieder allgemein auswerten" – eingetragen in
+CLAUDE.md („Nutzungsprofil"). Grundlage wie A365; der ACT-Mitschnitt deckt 19:07–20:31 ab: Alexandria und Vanguard
+(Dungeons, Stufe 100), World of Darkness (Allianzraid, Stufe 50 synchronisiert), Klyteum.
+
+- *Gelernte Dateien gegen den Upload vom Nachmittag:* Flächentabelle zehn neue Werte, drei gestiegen; Augen auf mich
+  (#3358, Angra Mainyus Daewa) steht bei 100 %: zwei Landungen 3,6 s auseinander, kürzer als ihre 4 s Wirkzeit, also
+  eine Serie (40 % und 55 % bei ihm), gedeckelt auf die ganze Gesundheit – richtig, die Gruppe starb daran. Tankbuster
+  vier neue Werte und vier neue Marker (Gebiete 1198, 1199, 1345); Schlaf drei neue Abbrüche, drei neue immune Arten
+  (Daewa, Protuberanz, Pulsierende Wolke). Keine Auffälligkeit.
+- *Todesfälle:* Vanguard ein Viper durch Bewegungssensor und zwei Strahlenkanonen in 5 s (34 %, 35 %, 40 %) – keine
+  Lücke für eine Heilung, die Mechanik bestraft Bewegung. World of Darkness 75 Tode in drei Wipes an Angra Mainyu
+  (Blick des Zorns/Leids, danach Augen auf mich auf eine geschwächte Allianz). RSR als Weißmagier: Spontaneität und
+  Wiederbeleben zuerst auf einen Gelehrten einer anderen Gruppe, dann hart auf die eigene Ninja, eine fremde
+  Weißmagierin und den eigenen Gelehrten – Heiler zuerst, wie seine Raise-Einstellung es zulässt; Vorausheilung vor
+  Augen auf mich; drei Heiltränke, alle im Allianzraid, wo die Phönixfeder im Kampf ohnehin nicht geht. „heal stopped"
+  um 19:51:00 brach eine Selbstheilung bei 52 % ab, während Blitz ihn alle 10–13 s mit 37–64 % traf: so lautet der Text
+  von „Stop single target GCD healing after reaching threshold", keine Änderung; tödlich war Blitz 20 s später nach
+  Augen auf mich. In den Dungeons fiel kein Mitglied unter 35 % außer direkt nach einer Wiederbelebung.
+- *Jede Abwehrentscheidung gegen den Treffer danach:* 38 Entscheidungen, alle vor einem Treffer, bis auf zwei mit 0 %:
+  Quarantäne (Sammelmarker auf ihm, 0 % bei ihm, gelernt 38 %) und Impakt.
+- *Defekt, behoben:* Impakt (#36794, Eliminator, Grundliste) setzte bei allen vier einen Schadenseintrag von null, ohne
+  Barriere bei irgendwem. Die Tabelle legt nur Werte über null ab (Null heißt sonst „absorbiert"), also blieb Impakt
+  unbewertet, und „unbewertet heißt mindern" gab Linderung aus. Klasse: jede gelistete Aktion ohne Schaden – die
+  Aufnahme in die Liste zählt Schadenseinträge jeder Höhe. Jetzt: null bei mindestens zwei erreichten Mitgliedern ohne
+  Barriere legt 0 ab; `AreaCastIsWorthMitigating`, die BossModReborn-Rückhaltung (A301) und die Ankündigung des Anteils
+  lesen 0 als kleinen Cast, ein fehlender Eintrag bleibt unbewertet. Die Trace-Zeile „party members damaged" heißt jetzt
+  „reached" – sie zählte schon immer jeden erreichten.
+- *Ohne Änderung:* Sanctus betäubte Daewa und Xandes Klon (Effektart 14), auf Schrei-Atomos und der Pulsierenden Wolke
+  meldete das Spiel volle Resistenz (Effektart 55); `StunWatch` lernt das je Gegner im Kampf. Ein Sanctus auf einen
+  immunen Boss kostet auf Stufe 100 einmal je Kampf gut 200 Potenz gegenüber Blendga IV – Promillebereich, keine
+  Regel. Sanctus-Streckung, Laufzeit (unter 0,75 ms je Bild): ohne Befund.
+
+**Falsifikation.** *Kein Defekt:* Null kann ein geschluckter Treffer sein – deshalb zählt nur null ohne Barriere, und
+Unverwundbarkeit, Ausweichen und Widerstand sind keine Schadenseinträge. *Option falsch:* Eine Aktion, deren Schaden an
+einem Zustand hängt (erst mit einem Debuff), könnte einmal null machen und dann treffen; mit „Skip mitigation for small
+area casts" bliebe sie einmal ungemindert, und ihre erste Landung mit Schaden hebt den Wert. *Ausgeliefert, nichts
+ändert sich:* wenn die Aktion schon einen Wert über null hat, oder wenn er „Skip mitigation for small area casts" aus
+hat – dann wird jede gelistete Aktion gemindert, wie ihr Text sagt.
+
+*Prüfgrad:* statisch an seinen Protokollen und am Code, Compile; im Spiel nicht beobachtet.
+
 ---
 ## B · Commit-Register (Fork vs. `upstream/main`)
 

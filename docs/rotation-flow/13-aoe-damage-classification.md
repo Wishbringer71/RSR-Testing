@@ -222,7 +222,7 @@ bis er ihn wieder trifft; ein auf ihn gewirkter Cast zählt immer. Nur die Abweh
 Messwert gilt je Sitzung.
 
 **Eine Landung, die niemanden aus der Gruppe traf, trägt keinen Treffer** (A272). Zehn gelistete Aktionen landen
-auf dem Wirkenden selbst (`CastType` 1, `EffectRange` 0; „1 targets, 0 party members damaged"). Bei Head-splitting
+auf dem Wirkenden selbst (`CastType` 1, `EffectRange` 0; „1 targets, 0 party members reached", bis A366 „damaged" geschrieben, gezählt wird jeder erreichte). Bei Head-splitting
 Roar (43578) trifft eine halbe Sekunde später die gleichnamige 43579 die Gruppe mit 1–22 %; bei den übrigen neun
 trifft niemanden etwas. Eine solche Landung steht deshalb zunächst als „verfehlt"; folgt vor der nächsten Landung
 derselben Aktion und vor Kampfende eine gleichnamige Aktion mit Treffer auf die Gruppe, gilt sie als ihre Landung:
@@ -434,6 +434,15 @@ die zweite Hälfte zählt einen Treffer, bei dem kein Schaden ankam. Gemessen wi
 wird nicht behauptet — sicher ist nur, dass `value` dann nicht der Einschlag ist. Für die **Messung**
 ist ein solcher Satz wertlos: Null heißt nicht harmlos, sondern absorbiert. Für die **Aufnahme** zählt
 er weiter, sonst fiele ein Raidwide aus der Liste, nur weil die Gruppe gut geschildet war.
+
+**Null ohne Barriere ist kein Schaden** (A366). Trägt jedes erreichte Mitglied einen Schadenseintrag von null und keines
+eine Barriere (`GetObjectShield`), hat nichts den Treffer geschluckt: Die Aktion macht keinen Schaden. Eine gelistete,
+noch unbewertete Aktion bekommt dann den Wert 0 – ab zwei erreichten Mitgliedern, damit ein Einzelner nicht für die
+Gruppe spricht. Ungeschützt geschluckt wird nichts; Unverwundbarkeit, Ausweichen und Widerstand kommen als eigene
+Effektarten, nicht als Schadenseintrag. Anlass: Impakt (#36794, Eliminator in Alexandria) traf am 25.10.2026 alle vier
+mit null und blieb unbewertet; „unbewertet heißt mindern" gab bei jedem Cast Linderung aus. Mit 0 ist es ein kleiner
+Cast, den „Skip mitigation for small area casts" auslässt; trifft er später mit Schaden, hebt die Höchstwertregel den
+Wert wie jeden anderen. Die Leser unterscheiden seitdem „nicht bewertet" (kein Eintrag) von 0.
 
 **Aufnahme und Fortschreibung haben verschiedene Bedingungen.** Aufgenommen wird nur, wenn **jedes**
 Gruppenmitglied im selben Effektsatz getroffen wurde — richtig, denn das ist der Grund, warum die

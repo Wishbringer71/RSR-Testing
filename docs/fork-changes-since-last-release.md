@@ -117,6 +117,14 @@ A listed area cast that lands several times right after one cast was rated by it
 four times for up to 24 % each counted as a small hit, and "Skip mitigation for small area casts" left the party
 mitigation out against it. Hits that follow faster than the enemy could cast again are now added up per member.
 
+## An area cast without damage is no longer mitigated every time
+
+An area cast that lands with no damage on anyone - Impakt in Alexandria put a hit of zero on all four - was never rated,
+as zero is usually a hit a barrier swallowed, and an unrated cast is mitigated: each Impakt cost a Temperance. A landing
+at zero on at least two members of whom none carried a barrier now rates the cast at zero, so "Skip mitigation for small
+area casts" lets it through; a later landing with damage rates it again. DefenseTrace.log says "party members reached"
+where it said "damaged", as it always counted every member reached.
+
 ## Healers: the heal forecast no longer goes blind after a hard first hit
 
 The forecast of how a party member will stand when a heal lands measured his fall from the first moment he was below

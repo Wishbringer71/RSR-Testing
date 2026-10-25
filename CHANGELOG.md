@@ -25,6 +25,12 @@ are not reconstructed here.
 
 ## 7.5.7.7+wsh1
 
+### Behaviour change in RotationSolver.Basic: an area share of 0 means measured without damage
+
+`OtherConfiguration.HostileCastingAreaPotential` now holds 0 for a listed area cast whose landing put a damage entry of
+zero on at least two party members, none of them carrying a barrier. A missing entry still means unrated; before, 0 was
+never stored and read as unrated too.
+
 ### Behaviour change in RotationSolver.Basic: `LiturgyTriggersLeft` counts an announced series
 
 `WhiteMageRotation.LiturgyTriggersLeft` also counts a series learned in `HitSeriesOnPlayer` whose first hit is announced:
