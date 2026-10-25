@@ -535,3 +535,9 @@ Geprüft ist bisher nur der Vorlauf (A343); Burst und Prioritäten sind offen.
   off cooldown)" nur in den letzten 5 s vor dem Ende der Abklingzeit von Serpent's Ire, nie solange Serpent's Ire
   bereit lag, also nie im Opener. Der Text schließt das ein; der Code folgt ihm jetzt (`WillHaveOneCharge`). Ohne die
   Option (ab Werk aus) ändert sich nichts.
+- *Viper, Restzeit der Buffs vor Reawaken* (je 10 s, Einstellungen „How long on the status time for Swift/Hunt needs to
+  be to allow reawaken use"): Die Folge bis zum Druck auf Ouroboros dauert unter Swiftscaled 8,7 s – Reawaken 2,2 s und
+  vier Generationen zu je 2,0 s Wiederholzeit, je um 15 % gekürzt (Job-Guide, abgerufen am 25.10.2026). 10 s decken sie
+  mit Puffer, Hunter's Instinct liegt also auf allen Treffern der Folge. Dass ein Buff danach bis zur nächsten
+  Erneuerung ausläuft, ist die Abwägung, die die Einstellung dem Spieler lässt (früher Reawaken gegen kurze Lücke); The
+  Balance nennt keinen Wert (Basic Guide, abgerufen am 25.10.2026). Nicht geändert.
