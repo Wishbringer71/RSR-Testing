@@ -11,27 +11,20 @@ Nach der Wirkung im Kampf: Sicherheit der Gruppe vor Schaden, gewichtet mit der 
 (seine Vorgabe, 17.10.2026: „todo nach wichtigkeit abarbeiten. jeweils im loop bearbeiten"). Seine Aufträge vom
 18.10.2026 sind erledigt: TODO berichtigt (A322), Prüfläufe geordnet (A323), Laufzeitkosten umgestellt (A325). Sein
 Auftrag vom 24.10.2026 läuft: die einfachen Punkte zuerst (A338), die schweren wichtigen danach ebenso. Sein Auftrag vom
-25.10.2026, Upstream der letzten zehn Tage mit den eigenen Patches inhaltlich abzugleichen, ist erledigt (A354); der
-Defekt daraus steht vorn.
+25.10.2026, Upstream der letzten zehn Tage mit den eigenen Patches inhaltlich abzugleichen, ist erledigt (A354), der
+Defekt daraus behoben (A356). Sein Auftrag vom 25.10.2026 nachmittags: nach Priorität und Umsetzbarkeit, je im Loop.
 
-1. Zeit bis zum Tod eines Mitglieds nach hartem erstem Treffer blind
-2. Tank: ein neues Rudel ohne Warten binden
-3. Rotationen gegen The Balance abgleichen
-4. Six-sided Star und Flamethrower
-5. AoE-Schwelle an drei Orten
-6. Audit der gesamten Codebasis
+1. Tank: ein neues Rudel ohne Warten binden
+2. Rotationen gegen The Balance abgleichen
+3. Six-sided Star und Flamethrower
+4. AoE-Schwelle an drei Orten
+5. Audit der gesamten Codebasis
 
 Danach technische Schuld, soweit ihre Auflösungsbedingung erfüllt ist. Warten auf Daten: unten.
 
 ## Defekte
 
-### Zeit bis zum Tod eines Mitglieds nach hartem erstem Treffer blind · N
-
-*Im Kampf:* Nimmt ein Mitglied in der ersten Sekunde eines Pulls viel Schaden und steht danach höher, sieht die
-Heilvorausschau für ihn nichts – bis zu vier Minuten; Heilungen reagieren dann nur auf die aktuelle Gesundheit.
-*Ort:* `ObjectHelper.ComputeTTK` (Abfall seit der ersten beschädigten Probe). *Nächster Schritt:* Schätzer im Modell
-mit Rückkopplung wählen; `party_ttk_model.py` vergleicht die eigene Schätzung, Upstreams Gerade, das stärkere Gefälle
-beider und einen wandernden Anker – jede tauscht blinde Sekunden gegen Fehlalarme (A354). *Konzept:* 08.
+Keine bekannt.
 
 ## Offene Arbeit
 

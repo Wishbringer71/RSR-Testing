@@ -1,13 +1,13 @@
 #!/usr/bin/env python3
 """A party member's time to death: the fork's own history against upstream's regression (concept 08, "Der Grenzwert
-gilt für den gesamten Schadenseingang", A354).
+gilt für den gesamten Schadenseingang", A354, A356).
 
 Not a code scanner - a model calculator. The heal forecast reads a member's time to death (GetCorrectedTTK) and
 carries his health forward by the heal's lead time: share = 1 - lead / ttk, so the health expected when the heal
 lands is ratio - lead * rate. Two estimators of the rate, both on the member's health ratio sampled once a second and
 net of every heal, both scored and corrected the same way afterwards (ScoreTtkForecast: bias smoothed 3:1, bounded
 0.25-4):
-  SINCE  the fork's ComputeTTK (upstream's estimator before 64413ccef, kept for the party in A341): the fall from the
+  SINCE  ComputeTTK until A356 (upstream's estimator before 64413ccef, kept for the party in A341): the fall from the
          first sample below full health in the last 240 s to the mean of the last five such samples, over the time
          since; no answer within 2.5 s of that first sample, and none while the mean is not below it
   REG    upstream's TimeToKillTracker since 64413ccef: a least-squares line through the last 30 s, at least three
@@ -15,13 +15,16 @@ net of every heal, both scored and corrected the same way afterwards (ScoreTtkFo
   REG0   REG without the correction
   MAX    the larger rate of SINCE and REG, then corrected - whichever sees the steeper fall
   ANCHOR SINCE whose first sample moves on to any later one at or above it - the fall since health last stood that
-         high, so a level above the first damaged sample no longer blinds it
+         high, so a level above the first damaged sample no longer blinds it; ComputeTTK since A356
 
 Measured per estimator over constructed fights, in the seconds of danger - the health at the landing below 60 % and
 more than 10 points below now: blind seconds, where the estimator gives no rate and the forecast sees nothing, and the
 mean optimism, expected minus actual health at the landing (positive is the dangerous direction); and false alarms -
-seconds the forecast puts the member 20 points lower than he will be while he does not fall. Open loop: the heals in a trace do
-not react to the forecast. ASSUMPTIONS, not from a source: lead 3 s (rest of a GCD and a cast); the traces below.
+seconds the forecast puts the member 20 points lower than he will be while he does not fall. Open loop: the heals in a
+trace do not react to the forecast. ASSUMPTIONS, not from a source: lead 3 s (rest of a GCD and a cast); the traces
+below. The closed loop further down has the healer act on the forecast, which the open loop cannot show: a false alarm
+costs a heal only where the forecast crosses the threshold, and a blind second costs only where the health is above
+it; over 300 random tank fights it decides between the estimators (SINCE30: SINCE over 30 s; NONE: forecast off).
 
 Usage: python3 .github/scripts/audit/party_ttk_model.py
 """
@@ -39,9 +42,9 @@ DANGER_LEVEL = 0.6
 DANGER_FALL = 0.10
 
 
-def since_rate(hist, t):
-    """hist: list of (time, ratio), oldest first, the last HISTORY seconds."""
-    recent = [(at, r) for at, r in hist if t - at < HISTORY]
+def since_rate(hist, t, history=HISTORY):
+    """hist: list of (time, ratio), oldest first; the last `history` seconds count."""
+    recent = [(at, r) for at, r in hist if t - at < history]
     damaged = [(at, r) for at, r in recent if r != 1.0]
     if not damaged:
         return math.nan
@@ -226,6 +229,176 @@ def tank_hard_first_hit():
     return out
 
 
+# --- Closed loop: a healer who acts on the forecast -------------------------------------------------------------
+# The member's health is what the damage takes and the healer's heals give back; the healer reads the forecast as RSR
+# does. ASSUMPTIONS, not from a source: one healer, GCD 2.5 s; a GCD heal decided at the start of a GCD when the
+# forecast health a GCD ahead (GetHealLeadTime: rest of the GCD plus one) is below 65 % ("Heal single target with a
+# spell", default), cast 1.5 s, 18 % of the pool; an instant heal of 25 % on a 20 s recast when the forecast health an
+# animation lock (0.6 s) ahead is below 70 % ("... with an ability", default). A member who reaches 0 counts as dead and
+# is raised to half for the rest of the run.
+
+T_SPELL = 0.65
+T_ABILITY = 0.70
+GCD = 2.5
+CAST = 1.5
+HEAL_GCD = 0.18
+HEAL_OGCD = 0.25
+OGCD_RECAST = 20.0
+ANIMATION_LOCK = 0.6
+DT = 0.1
+CLOSED = ("NONE", "SINCE", "SINCE30", "ANCHOR", "REG", "MAX")
+
+
+class Forecaster:
+    """The corrected time to death of one member, filed once a second like ScoreTtkForecast."""
+
+    def __init__(self, name):
+        self.name = name
+        self.hist = []
+        self.reg = []
+        self.bias = 1.0
+        self.last = None
+        self.ttk = math.nan
+
+    def sample(self, t, ratio):
+        if self.name == "NONE":
+            return
+        self.hist.append((t, ratio))
+        self.hist = [(a, r) for a, r in self.hist if t - a < HISTORY]
+        if ratio >= 1.0:
+            self.reg = []
+        else:
+            self.reg.append((t, ratio))
+            self.reg = [(a, r) for a, r in self.reg if t - a <= REG_WINDOW]
+        name = self.name
+        if name == "SINCE":
+            rate = since_rate(self.hist, t)
+        elif name == "SINCE30":
+            rate = since_rate(self.hist, t, REG_WINDOW)
+        elif name == "ANCHOR":
+            rate = anchor_rate(self.hist, t)
+        elif name == "MAX":
+            rates = [x for x in (since_rate(self.hist, t), reg_rate(self.reg)) if x == x]
+            rate = max(rates) if rates else math.nan
+        else:
+            rate = reg_rate(self.reg)
+        ttk = ratio / rate if rate == rate and rate > 0 else math.nan
+        if self.last is not None:
+            l_ratio, l_ttk = self.last
+            fall = l_ratio - ratio
+            if l_ttk == l_ttk and l_ttk > 0 and fall > 0:
+                expected = l_ratio / l_ttk
+                self.bias = min(4.0, max(0.25, (self.bias * 3 + fall / expected) / 4))
+        self.last = (ratio, ttk)
+        self.ttk = ttk / self.bias if ttk == ttk else ttk
+
+    def forecast(self, ratio, lead):
+        """GetForecastSurvivingShare times the health now."""
+        if not (self.ttk == self.ttk) or self.ttk <= 0:
+            return ratio
+        return ratio * max(0.0, 1.0 - lead / self.ttk)
+
+
+def closed_loop(scenario, name):
+    """Returns (deaths, seconds below 30 %, lowest health, GCD heals, instant heals)."""
+    rate, hits, seconds = scenario
+    f = Forecaster(name)
+    r = 1.0
+    next_gcd = 0.0
+    ogcd_ready = 0.0
+    pending = []
+    deaths = heals = ogcds = 0
+    below = 0.0
+    lowest = 1.0
+    hit_times = sorted(hits)
+    for step in range(int(seconds / DT)):
+        t = step * DT
+        r -= rate(t) * DT
+        while hit_times and hit_times[0] <= t:
+            r -= hits[hit_times.pop(0)]
+        for land, amount in [p for p in pending if p[0] <= t]:
+            r = min(1.0, r + amount)
+            pending.remove((land, amount))
+        if r <= 0:
+            deaths += 1
+            r = 0.5
+        if step % round(1 / DT) == 0:
+            f.sample(round(t), r)
+        if t >= ogcd_ready and f.forecast(r, ANIMATION_LOCK) < T_ABILITY:
+            r = min(1.0, r + HEAL_OGCD)
+            ogcd_ready = t + OGCD_RECAST
+            ogcds += 1
+        if t >= next_gcd:
+            if f.forecast(r, GCD) < T_SPELL:
+                pending.append((t + CAST, HEAL_GCD))
+                heals += 1
+            next_gcd = t + GCD
+        if r < 0.3:
+            below += DT
+        lowest = min(lowest, r)
+    return deaths, below, lowest, heals, ogcds
+
+
+def _pull(t):
+    if t < 60:
+        return 0.05
+    if t < 75:
+        return 0.10
+    return max(0.0, 0.05 * (1 - (t - 75) / 45))
+
+
+CLOSED_SCENARIOS = [
+    ("tank, pull with a hard first second (35 %), second pack 60-75 s", (_pull, {0.5: 0.35}, 150)),
+    ("tank, pull without it, second pack 40-55 s",
+     (lambda t: 0.09 if 40 <= t < 55 else 0.045, {}, 120)),
+    ("tank, boss: autos 2.5 %/s, tankbusters of 40 % at 30 and 90 s", (lambda t: 0.025, {30: 0.40, 90: 0.40}, 120)),
+    ("damage dealer: raidwide of 30 % every 25 s", (lambda t: 0.005, {k * 25.0: 0.30 for k in range(1, 5)}, 120)),
+    ("tank, bursts of 10 %/s for 6 s every 30 s over 2 %/s",
+     (lambda t: 0.10 if t % 30 >= 24 else 0.02, {}, 150)),
+    ("the same after a hard first second (35 %)",
+     (lambda t: 0.10 if t % 30 >= 24 else 0.02, {0.5: 0.35}, 150)),
+    ("the same, bursts of 14 %/s",
+     (lambda t: 0.14 if t % 30 >= 24 else 0.02, {0.5: 0.35}, 150)),
+]
+
+
+def random_fight(seed):
+    """A tank fight drawn at random: a first hit of 0-40 %, autos 1.5-4 %/s, bursts of 6-14 %/s for 4-8 s every
+    20-40 s at a random phase, 150 s."""
+    import random
+    rng = random.Random(seed)
+    first = rng.uniform(0.0, 0.40)
+    base = rng.uniform(0.015, 0.04)
+    burst = rng.uniform(0.06, 0.14)
+    length = rng.uniform(4.0, 8.0)
+    every = rng.uniform(20.0, 40.0)
+    phase = rng.uniform(0.0, every)
+
+    def rate(t):
+        return burst if (t + phase) % every < length else base
+    return rate, {0.5: first} if first > 0 else {}, 150, first
+
+
+def random_summary(runs=300):
+    """Per estimator, over `runs` random fights, split by the first hit (below / at least 20 %): deaths, seconds below
+    30 %, mean lowest health, GCD and instant heals - sums and means."""
+    out = {}
+    for name in CLOSED:
+        rows = {"soft": [0, 0.0, 0.0, 0, 0, 0], "hard": [0, 0.0, 0.0, 0, 0, 0]}
+        for seed in range(runs):
+            rate, hits, seconds, first = random_fight(seed)
+            d, below, low, heals, ogcds = closed_loop((rate, hits, seconds), name)
+            row = rows["hard" if first >= 0.20 else "soft"]
+            row[0] += d
+            row[1] += below
+            row[2] += low
+            row[3] += heals
+            row[4] += ogcds
+            row[5] += 1
+        out[name] = rows
+    return out
+
+
 SCENARIOS = [
     ("tank, dungeon pull, second pack at 60 s", tank_pull),
     ("tank, boss, tankbusters at 90 and 150 s", tank_boss),
@@ -263,3 +436,23 @@ if __name__ == "__main__":
             parts.append(f"{name:5s} {blind:3d}/{falling:3d} {opt * 100:+5.1f} {alarms:3d}")
         print(f"  {title}:")
         print("    " + "   ".join(parts))
+    print("closed loop - a healer acting on the forecast; per estimator: deaths / seconds below 30 % / lowest health /")
+    print("GCD heals + instant heals (NONE: the forecast off, the health now)")
+    for title, scenario in CLOSED_SCENARIOS:
+        print(f"  {title}:")
+        parts = []
+        for name in CLOSED:
+            d, below, low, heals, ogcds = closed_loop(scenario, name)
+            parts.append(f"{name:7s} {d} {below:4.1f}s {low * 100:3.0f}% {heals:2d}+{ogcds}")
+        print("    " + "  ".join(parts))
+    print("closed loop over 300 random tank fights (first hit 0-40 %, autos 1.5-4 %/s, bursts 6-14 %/s for 4-8 s every")
+    print("20-40 s), split by the first hit; per estimator: deaths, seconds below 30 % per fight, mean lowest health,")
+    print("GCD + instant heals per fight")
+    summary = random_summary()
+    for kind, title in (("soft", "first hit below 20 %"), ("hard", "first hit 20 % or more")):
+        print(f"  {title}:")
+        parts = []
+        for name in CLOSED:
+            d, below, low, heals, ogcds, n = summary[name][kind]
+            parts.append(f"{name:7s} {d:3d} {below / n:4.2f}s {low / n * 100:3.0f}% {heals / n:4.1f}+{ogcds / n:3.1f}")
+        print("    " + "  ".join(parts))

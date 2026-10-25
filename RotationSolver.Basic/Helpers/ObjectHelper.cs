@@ -2370,7 +2370,10 @@ public static class ObjectHelper
 		{
 			if (hpRatiosDict != null && hpRatiosDict.TryGetValue(objId, out var ratio) && ratio != 1f)
 			{
-				if (startTime == DateTime.MinValue)
+				// The fall is measured from the last time the member stood this high: a sample at or above the start moves
+				// it on. Kept at the first one, a hard first hit of a pull left every later level above it, and no fall
+				// was seen for the four minutes that sample stayed in the history (A356).
+				if (startTime == DateTime.MinValue || ratio >= initialHpRatio)
 				{
 					startTime = time;
 					initialHpRatio = ratio;

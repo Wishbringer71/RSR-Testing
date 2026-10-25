@@ -1292,16 +1292,26 @@ Baum stand; sie war nur nicht auf die Gruppe angewandt.
 
 `DataCenter.RecordedHP` ist eine Zeitreihe von Gesundheitsanteilen der Gruppe **je Objekt-Id**: einmal je
 Sekunde ein Eintrag, 240 tief, also vier Minuten Historie. `ObjectHelper.GetTTK` liest daraus fuer
-ein Mitglied den Verlauf, bildet einen gleitenden Mittelwert und schaetzt die Zeit bis auf null.
+ein Mitglied den Abfall seit dem letzten Mal, da es mindestens so hoch stand, bis zum gleitenden Mittelwert der
+letzten fuenf Proben und schaetzt die Zeit bis auf null.
 `TargetUpdater.UpdateTimeToKill` fuellt die Reihe fuer die Gruppe (A91); vorher lieferte sie fuer ein
 Gruppenmitglied `NaN`. Gegner fuehrt seit Upstream 3c6ce9ee2 `TimeToKillTracker`: eine Ausgleichsgerade ueber
 die letzten 30 s, die bei jedem Anstieg der Gesundheit neu beginnt. Fuer ein Mitglied, das geheilt wird,
 hielte sie nichts, und mit ihr fielen Vorausschau und Selbstkorrektur aus; die Gruppe bleibt deshalb in der
-eigenen Reihe (A341). Die eigene Reihe hat einen blinden Fleck (Defekt, `TODO.md`, A354): Sie misst den Abfall seit
-der ersten Probe unter voller Gesundheit; steht das Mitglied danach höher – nach einem harten ersten Treffer eines
-Pulls –, gibt sie bis zu vier Minuten keinen Wert, und die Vorausschau sieht für ihn nichts. Upstreams Gerade sieht
-diesen Fall, ist aber in anderen Lagen blind oder schlägt öfter falschen Alarm; keine der im Modell verglichenen
-Schätzungen überwiegt überall (`party_ttk_model.py`).
+eigenen Reihe (A341). Der Bezugspunkt des Abfalls rückt zu jeder späteren Probe vor, die mindestens so hoch steht
+(A356): Bis dahin blieb er bei der ersten beschädigten Probe der vier Minuten, und nach einem harten ersten Treffer
+eines Pulls lag jede spätere Gesundheit darüber – die Vorausschau sah für dieses Mitglied bis zu vier Minuten nichts.
+*Bilanz im Kampf* (`party_ttk_model.py`, Regelkreis mit einem Heiler, der nach der Vorausschau heilt, 300 zufällige
+Tank-Kämpfe je Schwellenpaar): Der wandernde Bezugspunkt ist nie schlechter als der feste und braucht nicht mehr
+Heilungen; nach hartem erstem Treffer mit hohen Schwellen (80/85 %) 0,26 statt 0,30 s je Kampf unter 30 %. Der
+Unterschied ist klein, weil der blinde Fleck meist in Sekunden fiel, in denen der Heiler ohnehin heilte. Was
+überwiegt, ist die Vorausschau selbst: Gegen abgeschaltete Vorausschau halbiert sie bei Schwellen von 50/55 % die
+Tode (in 200 Kämpfen 13 und 16 statt 27 und 38, je nach Härte des ersten Treffers) und senkt bei den
+Voreinstellungen die Zeit unter 30 % um ein Drittel.
+*Verworfen:* Upstreams Gerade für die Gruppe (verliert die Reihe bei voller Gesundheit, sieht im Wechsel aus Schaden
+und Heilung kaum ein Gefälle – im Regelkreis die schwächste Schätzung, mit Toten) und das stärkere Gefälle beider
+(etwas weniger Zeit unter 30 %, aber mehr Heilungen und vereinzelt ein Toter); im offenen Vergleich schlug der
+wandernde Bezugspunkt öfter falschen Alarm, im Regelkreis kostete das keine Heilung.
 
 **Was ein beobachteter Verlauf leistet, das eine Hochrechnung nicht leistet:** Er ist bereits netto.
 Jede Minderung, jede Mitigation, jede Barriere und jede fremde Heilung stecken darin, ohne dass

@@ -114,6 +114,15 @@ A listed area cast that lands several times right after one cast was rated by it
 four times for up to 24 % each counted as a small hit, and "Skip mitigation for small area casts" left the party
 mitigation out against it. Hits that follow faster than the enemy could cast again are now added up per member.
 
+## Healers: the heal forecast no longer goes blind after a hard first hit
+
+The forecast of how a party member will stand when a heal lands measured his fall from the first moment he was below
+full health in the last four minutes. After a hard first hit of a pull every later level stood above that moment, and
+the forecast saw no fall at all for that member - heals answered only his health at the time. The fall is now measured
+from the last time he stood at least as high. In a model of a healer acting on the forecast over 300 random tank
+fights, the change is never worse and needs no more heals; the forecast itself halves the deaths against no forecast
+at low heal thresholds. Setting: "Heal ahead of incoming damage" (unchanged).
+
 ## Damage areas wait until the pack stays
 
 Salted Earth and Doton went out as soon as you stood, so a tank's pause in a wall-to-wall pull was enough to lay them

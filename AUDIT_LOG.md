@@ -10411,6 +10411,43 @@ ausweiten."
 - *Gegen die ganze Datei geprüft:* zehn Stufen, vier Querschnittsanforderungen unverändert; Verweise nennen Titel;
   „Sicherheit vor Schaden gewichtet mit der Wahrscheinlichkeit" ist dieselbe Gewichtung, kein Widerspruch.
 
+### A356 · Zeit bis zum Tod eines Mitglieds nach hartem erstem Treffer blind – behoben (25.10.2026)
+
+Sein Auftrag (25.10.2026): „todo wieder nach priorität und umsetzbarkeit im jeweiligen loop abarbeiten, dazu passende
+konzepte verbessern und umsetzen". Erster Punkt, Defekt aus A354.
+
+- *Defekt gegen den Einstellungstext:* „Heal ahead of incoming damage" verspricht, die Vorausschau erscheine, sobald
+  der Netto-Trend fällt. `ComputeTTK` maß den Abfall seit der ersten beschädigten Probe der 240-s-Historie; lag die
+  Gesundheit darüber (nach einem harten ersten Treffer eines Pulls), gab es keinen Wert, bis zu vier Minuten.
+- *Optionen:* (0) lassen; ANCHOR – der Bezugspunkt rückt zu jeder späteren Probe vor, die mindestens so hoch steht;
+  SINCE30 – dieselbe Schätzung über 30 s; REG – Upstreams Ausgleichsgerade für die Gruppe (ohne Neubeginn beim
+  Anstieg); MAX – das stärkere Gefälle von SINCE und REG.
+- *Modell* (`party_ttk_model.py`, neu: Regelkreis – ein Heiler entscheidet nach der Vorausschau, GCD-Heilung unter 65 %
+  mit einem GCD Vorlauf, Fähigkeit unter 70 % mit Animationssperre; 300 zufällige Tank-Kämpfe mit erstem Treffer 0–40 %,
+  Grundschaden 1,5–4 %/s, Schüben 6–14 %/s für 4–8 s alle 20–40 s; zusätzlich je 200 Kämpfe mit Schwellen 50/55 und
+  80/85 %). Im offenen Vergleich (A354) war SINCE nach hartem erstem Treffer 4 von 4 Gefahrensekunden blind. Im
+  Regelkreis: SINCE und ANCHOR fast gleich, ANCHOR nie schlechter (80/85 %, harter erster Treffer: 0,26 statt 0,30 s je
+  Kampf unter 30 %), gleiche Zahl Heilungen; REG am schwächsten unter den Schätzungen (bei den Voreinstellungen 2 und 3
+  Tote, SINCE und ANCHOR keine); MAX etwas weniger Zeit unter 30 %, aber mehr Heilungen und ein Toter. Die Vorausschau
+  selbst gegen keine: bei 50/55 % 13 und 16 statt 27 und 38 Tote, bei den Voreinstellungen ein Drittel weniger Zeit unter
+  30 %.
+- *Bilanz (A355):* Stärke – die Vorausschau sieht den Fall nach hartem erstem Treffer, wie ihr Text verspricht; im
+  Regelkreis nie schlechter. Schwäche – im offenen Vergleich mehr Fehlalarme nach einer kleinen Delle hinter einem
+  Hochpunkt (34 statt 10 s im Raidwide-Verlauf); im Regelkreis keine zusätzliche Heilung, im Spiel kostete ein
+  Fehlalarm einen Schadens-GCD des Heilers. Bedrohung – ein Mitglied mit vielen kleinen Hochpunkten (Regeneration)
+  verschöbe den Bezugspunkt oft: Der Punkt rückt nur zu Proben, die mindestens so hoch stehen wie er, und in den ersten
+  2,5 s nach ihm gibt es keinen Wert, also kein Ausschlag aus einer einzelnen Delle. Überwiegt: der Nutzen, klein.
+- *Umgesetzt:* eine Bedingung in `ObjectHelper.ComputeTTK` (`ratio >= initialHpRatio` setzt den Bezugspunkt neu).
+  Konzept 08, Release-Text, `TODO.md` (Defekt entfernt, Reihenfolge fortgeschrieben).
+
+**Falsifikation.** *Kein Defekt:* widerlegt – Selbsttest des Modells und der Einstellungstext. *Option falsch:* REG und
+MAX geprüft und im Regelkreis unterlegen; die Wahl hängt nicht an den Voreinstellungen (drei Schwellenpaare). *Ausgeliefert,
+nichts ändert sich:* wahrscheinlich in den meisten Kämpfen – der blinde Fleck fiel meist in Sekunden, in denen der
+Heiler ohnehin heilte; die Änderung zielt auf den Rest.
+
+*Prüfgrad:* statisch, Modell mit Selbsttest im Regelkreis, Compile; im Spiel nicht beobachtet. Messmittel: die
+Selbstkorrektur (`ScoreTtkForecast`) läuft unverändert auf der neuen Schätzung.
+
 ---
 ## B · Commit-Register (Fork vs. `upstream/main`)
 
