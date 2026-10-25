@@ -23,6 +23,8 @@ are not reconstructed here.
 
 ## Unreleased
 
+## 7.5.7.7+wsh1
+
 ### Behaviour change in RotationSolver.Basic: `LiturgyTriggersLeft` counts an announced series
 
 `WhiteMageRotation.LiturgyTriggersLeft` also counts a series learned in `HitSeriesOnPlayer` whose first hit is announced:
@@ -41,8 +43,6 @@ landing on one.
 
 `SleepInterruptWatch` waits a GCD after a cast bar that ends early: the cast's effect means it went off. Before, an
 early end alone counted as a stop, and client cast bars end early on their own.
-
-## 7.5.7.7+wsh1
 
 ### Removed in RotationSolver.Basic: two settings without a reader
 
