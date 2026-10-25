@@ -14,6 +14,11 @@ Abschnitt C.
 - **Pull:** Die Gegnerzahl öffnet die Einzelabwehr; kurze Minderung, Abtausch und Reflexion fallen sofort, die große
   Minderung und Schutzwall erst, wenn seine Gesundheit beim gemessenen Verlauf innerhalb ihrer Wirkdauer unter die
   eingestellte Linie fiele (ab Werk 30 %). Option, ab Werk an (Abschnitt „Die Abwehr im Pull").
+- **Kein Heiler lebt:** In diesem Kampf stellt niemand mehr her, was er verliert; jede Sekunde, die er länger lebt, ist
+  Zeit für eine Phönixfeder oder eine Wiederbelebung. Seine Einzelabwehr öffnet, sobald ein Gegner ihn angreift; eine
+  Minderung geht, sobald sie bis zum nächsten fälligen Tankbuster wieder bereit ist. Pull-Rückhaltung, feste Staffel und
+  die Reserve des Tankbuster-Plans entfallen. Jede Rolle, Option, ab Werk an (Abschnitt „Ohne Heiler: den eigenen Tod
+  hinauszögern").
 - **Tankbuster ohne Messung** (Vorhersage ohne Wirken, nie gemessene Aktion, erstes Auftreten eines Markers im
   Gebiet): die Einzelabwehr der Tank-Rotationen, je vorhergesagtem Tankbuster eine große Minderung oder Schutzwall und
   die kurzen dazu; die Unverwundbarkeit reaktiv unter `HealthForDyingTanks`. Ein Marker auf dir neben dem Wirken einer
@@ -253,6 +258,9 @@ Freigegeben ist in Z2 ein Glied von S ab seinem Fenster.
 - **Frei bleiben** Hilfe für ein anderes Mitglied, die Heilpfade (Herz des Korunds heilt einen Tank, den Meteoritenfall
   auf 1 LP setzte; erkannt an einem eigenen Schalter), in der Flächenabwehr, was über dich hinaus wirkt (Reflexion,
   Abschütteln für einen Raidwide), und was du befiehlst.
+- **Kein Heiler lebt:** Die Reserve entfällt; neben dem Plan geht der Rest mit auf den Tankbuster (Abschnitt „Ohne
+  Heiler: den eigenen Tod hinauszögern"). Die Rückhaltung unter einer Unverwundbarkeit bleibt – unter ihr trifft der
+  Tankbuster nicht.
 - **Heiler:** keine Einzelabwehr für einen gewirkten Tankbuster, wenn jedes seiner Ziele unter Heiligem Boden oder
   Meteoritenfall über den Einschlag hinaus steht. Eine BossModReborn-Vorhersage öffnet sie weiterhin – sie sagt nicht,
   wen sie trifft –, ein Tankbuster-Marker ebenso, er nennt keinen Zeitpunkt. Den Plan des Tanks kennt der Heiler nicht.
@@ -611,7 +619,8 @@ gebraucht wird; feste Abstände gibt es dann nicht mehr, sie schließen einander
 Die Rückhaltung gilt nur, wenn allein der Pull die Abwehr geöffnet hat. Ein Tankbuster-Marker oder gelistetes Wirken auf
 ihn, ein gelistetes Wirken auf einen Tank, eine Tankbuster-Vorhersage von BossModReborn oder sein Befehl öffnen sie ohne
 Rückhaltung und mit der alten Staffel. Als strategische Rückhaltung läuft sie über die universelle Schicht
-(`HoldSingleDefense`): Steht er oder ein Tank in der kritischen Klasse, fällt sie weg.
+(`HoldSingleDefense`): Steht er oder ein Tank in der kritischen Klasse, fällt sie weg. Lebt kein Heiler, entfallen
+Rückhaltung und Staffel ganz (Abschnitt „Ohne Heiler: den eigenen Tod hinauszögern").
 
 Eine Methode für alle vier Tanks: `StaggeredBigMitigation(big, upgraded)` trägt, was Paladin, Krieger, Dunkelritter und
 Revolverklinge als je eigene, wortgleiche Kopie führten; die vier Rotationen rufen sie mit ihren Aktionen auf.
@@ -661,6 +670,98 @@ modelliert, also nicht einbezogen; Kampfrausch hat seine eigene Verlaufsregel.
 Selbstheilung des Tanks, keine Barrieren. Die Richtung hielt in allen vier Fällen. *Prüfgrad:* Modell mit Selbsttest,
 statisch, Compile; im Spiel nicht beobachtet. Messmittel ist die Selbstkorrektur der Zeit bis zum Tod
 (`ScoreTtkForecast`), auf der die Rückhaltung urteilt.
+
+## Ohne Heiler: den eigenen Tod hinauszögern
+
+**Sachstand.** Lebt in der Gruppe kein Heiler (`DataCenter.AnyLivingHealer`; der Spieler zählt, wenn er selbst Heiler
+ist), gilt mit der Option „Without a living healer, spend your defence to stay alive longer" (ab Werk an), für jede
+Rolle:
+
+1. *Die Einzelabwehr öffnet*, sobald ein Gegner den Spieler als Ziel hat (`StateUpdater.ShouldAddDefenseSingle`,
+   `DataCenter.UnhealedUnderAttack`) – nicht erst bei einem Tankbuster oder ab der Pull-Zahl. Die übrigen Quellen
+   bleiben, wie sie sind.
+2. *Eine Minderung auf ihn geht, sobald sie bis zum nächsten fälligen Tankbuster wieder bereit ist*: eine Ladung bleibt
+   übrig, oder die Abklingzeit einer Ladung ist vorbei, bevor ihr Fenster vor dem Treffer beginnt (Wirkdauer weniger ein
+   GCD). Sonst wartet sie (`BaseAction`, Ablehnung „KeptForTheNextTankbuster"). Fällig ist der nächste Tankbuster nach
+   der Vorhersage von BossModReborn, sonst nach dem Abstand in diesem Kampf: letzter Treffer plus kürzester Abstand, der
+   vom Kampfbeginn bis zum ersten eingerechnet (`TankbusterForecast.NextOnPlayerIn`, gefüttert aus `Watcher`). Ohne
+   Tankbuster in diesem Kampf ist keiner fällig, und nichts wartet; blieb er zwei Abstände lang aus, gilt der Kampf als
+   weitergegangen (Ausnahme im Register, A361). Öffnet ein Tankbuster selbst die Abwehr – Wirken auf ihn oder einen
+   Tank, Vorhersage, sein Befehl (`DataCenter.TankbusterOpensDefence`) –, gilt diese Prüfung nicht: Was dann geht, ist
+   für diesen Treffer.
+3. *Tank:* Die große Minderung und Schutzwall warten weder auf den Verlauf (Pull-Rückhaltung) noch auf die feste Staffel;
+   sie schließen einander nur über ihren Status aus (`DefenceSpentWithoutHealer` in `StaggeredBigMitigation`).
+4. *Tank, gemessener Tankbuster:* Der Plan drückt sein billigstes Bündel wie sonst; den Rest hält er nicht mehr für den
+   nächsten zurück (`HoldDefenceForTankbuster`), er geht über die Einzelabwehr mit auf diesen. Unter einer
+   Unverwundbarkeit über den Treffer bleibt alles zurückgehalten.
+
+Ein lebender Wiederbeleber ändert daran nichts. Die Prüfung gilt je Kampf: Ein Toter kann erst zum Startpunkt der
+Instanz zurück, wenn niemand mehr im Kampf ist (Return), also kehrt der Heiler zwischen zwei Kämpfen zurück – nach jedem
+Trash-Pull ebenso wie nach einem Boss, auch im Allianz-Raid. In Prüfungen und Normal-Raids ist der Bosskampf ein
+durchgehender Kampf, Trash ist dort selten.
+
+**Seine Angaben** (25.10.2026). *Hinweis:* „ist berücksichtigt, dass der tank mehr minderungen nehmen muss, wenn heiler
+tot ist und kein rezzer für heiler bereitsteht?" – ohne Heilung bleibt jeder Schaden. *Hinweis:* „vielleicht hat ja ein
+anderer spieler eine phoenixfeder oder man selbst. dann muss man das eigene sterben lange genug hinauszögern, bis sich die
+möglichkeit bietet, zu rezzen." – das Maß ist die Zeit, die er nach dem Heiler noch lebt. *Hinweis:* „es geht um EINEN
+kampf. zwischen den kämpfen kann der heiler zurück zum ausgang bei instanzen gehen. auch bei ally-raids. also muss nicht
+zwischen trashmob-pulls und boss unterschieden werden. nur bei prüfungen und normal-raids ist es ein durchgehender kampf,
+da sind dann aber seltener trashmobs."
+
+**Mechanik** (Status je Quelle). *Return:* in PvE nicht nutzbar, solange man selbst oder ein Gruppenmitglied im Kampf
+ist; in einer Instanz zum Startpunkt (Fan-Wiki consolegameswiki, „Return"; deckt sich mit seiner Angabe). *Phönixfeder*
+seit Patch 7.3 (05.08.2025): im Kampf nutzbar in 4er-Dungeons, 4er-Prüfungen, Feldoperationen und weiteren Inhalten, nicht
+in 8er-Prüfungen und Raids; 8 s Wirkzeit, 15 Yalm, 360 s Wiederverwendung, geteilt mit den Arzneien (Fan-Wiki
+consolegameswiki, „Phoenix Down", Patch-Historie dort; kein offizieller Text gesichtet). Ob ein anderer Spieler eine Feder
+trägt, sieht der Client nicht.
+
+**Warum.** Mit Heiler füllt sich, was er verliert, wieder auf; eine Minderung lohnt dort, wo der Heiler nicht
+hinterherkommt – das messen Pull-Rückhaltung und Plan. Ohne Heiler ist jeder Treffer endgültig, und wie lange er lebt,
+hängt an der Summe dessen, was seine Minderungen über den Kampf abfangen. Eine Minderung, die bereit liegt, ohne dass
+sie gebraucht wird, verschenkt Laufzeit – außer, ein Tankbuster kommt in ihrer Abklingzeit: Er nimmt mehr als die
+Autoattacken im selben Fenster, und was ihn abdeckt, deckt die Autoattacken danach mit. Daher die Prüfung auf den
+nächsten fälligen Tankbuster statt einer Rückhaltung nach Gesundheit.
+
+**Modell** (`tank_pull_defense_model.py`, Abschnitt ohne Heiler; der Heiler stirbt zu einem zufälligen Zeitpunkt des
+Kampfs; Selbstheilung des Tanks pauschal 15 % alle 25 s unter 75 %, Unverwundbarkeit bei 15 %; gerechnet am 25.10.2026).
+*Großer Pull*, Heiler stirbt in den ersten 60 %, 400 Pulls: Der Tank stirbt heute in 142, gebaut in 133, mit Staffel statt
+ohne in 163; gebaut rettet ihn in 9 Pulls, in denen er heute stirbt, und verliert ihn in keinem, den er heute übersteht.
+*Boss*, Sekunden, die er nach dem Heiler lebt, je 200 Kämpfe:
+
+| Fall | heute | Plan ohne Reserve | dazu Öffnen ohne Prüfung | gebaut | mit bekanntem nächstem Tankbuster |
+|---|---|---|---|---|---|
+| Heiler stirbt nach 40–120 s | 62,1 | 79,4 | 72,5 | 79,4 (+28 %) | 79,7 |
+| dasselbe, 25 % mehr Schaden | 48,9 | 63,3 | 57,5 | 63,3 | 63,6 |
+| Heiler stirbt vor dem ersten Tankbuster | 62,4 | 80,9 | 62,6 | 66,8 | 80,9 |
+| Boss ohne Tankbuster | 135,8 | 135,8 | 183,3 | 185,9 (+37 %) | 185,9 |
+
+**Bilanz im Kampf.** *Stärke:* Er lebt nach dem Tod des Heilers länger – im großen Pull übersteht er mehr, gegen einen
+Boss mit Tankbustern gut ein Viertel länger, gegen einen ohne gut ein Drittel –, Zeit für eine Feder oder eine
+Wiederbelebung. *Schwäche:* Stirbt der Heiler vor dem ersten Tankbuster eines Bosses und sagt kein BossModReborn-Modul ihn
+voraus, findet der erste weniger bereit (66,8 statt 80,9 s, noch über heute). *Chance:* Mit laufendem Modul kennt die
+Regel den nächsten Tankbuster; die Spalte „bekannt" zeigt, dass dann nichts verloren geht. *Bedrohung:* Mit „Heal and raise
+Party NPCs" aus zählt der Heiler einer Begleitgruppe nicht als Mitglied – dann gilt die Regel trotz lebendem Heiler; das
+kostet bereitliegende Abklingzeiten, keinen Schaden außer dem MP des Dunkelritters für The Blackest Night, die auch dann
+nur fällt, wenn der Schaden sie brechen würde (A338). Allein unterwegs gilt sie ebenso, mit denselben Kosten.
+*Überwiegt:* der Nutzen, in jedem gerechneten Fall gleich oder besser als heute.
+
+**Ausgeschlossen.** *Nur ohne lebenden Wiederbeleber:* ob und wann er wiederbelebt, ist das Verhalten eines anderen
+Spielers, nach seiner Regel nie ein tragender Grund; eine Feder in fremder Tasche ist unsichtbar; und bis ein
+Wiederbelebter heilt, vergehen Wirken, Annehmen und Schwäche. *Trash und Boss getrennt behandeln:* seine Angabe, eine
+Regel je Kampf; im Pull ist kein Tankbuster fällig, also greift dort nichts zurück. *Die Abwehr öffnen ohne Prüfung auf
+den nächsten Tankbuster:* mit Tankbustern schlechter als nur die Reserve aufzuheben (72,5 statt 79,4 s). *Die Staffel
+behalten:* im Pull 163 statt 133 Tote. *Eine erste Fassung, die die Pulls eines Dungeons als eine Kette mit
+dauerhaft totem Heiler rechnete* und die Pull-Rückhaltung deshalb unverändert ließ, ist auf seinen Hinweis verworfen
+(A361). *Flächenabwehr:* unverändert – das Strecken verteilt Abdeckung auf mehrere Treffer, was ohne Heiler ebenso gilt,
+und „Skip mitigation for small area casts" misst den Treffer an der Gesundheit der Mitglieder (`HitDropsBelow`), mindert
+also wieder, sobald die Gruppe ohne Heilung tiefer steht.
+*Living Dead, Holmgang, Superbolide:* unverändert; Walking Dead trägt der Dunkelritter mit seinen eigenen Angriffen
+(Abschnitt „Living Dead ist ein Zeitproblem").
+
+**Grenzen.** Das Modell trägt Annahmen ohne Quelle (Selbstheilung pauschal, Bosswerte, Zeitpunkt des Heilertods); ein
+Tankbuster in mehreren Teilen zählt als einer, wenn die Teile innerhalb eines GCD fallen. *Prüfgrad:* Modell mit
+Selbsttest, statisch, Compile; im Spiel nicht beobachtet. Die Abwehr schreibt in `DefenseTrace.log`, warum sie offen
+steht und wann der nächste Tankbuster fällig ist; der Plan vermerkt, wenn er ohne Heiler nichts zurückhält.
 
 ## Krieger: Urimpuls für sich oder Urflackern für andere
 

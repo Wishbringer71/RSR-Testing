@@ -271,6 +271,12 @@ public partial class CustomRotation
 			UpdateTankbusterPlan();
 			IBaseAction.HoldDefenceOnSelf = HoldDefenceForTankbuster();
 
+			// No healer alive and no tankbuster opening the defence: a mitigation on the player waits only while it would
+			// not be back before the next tankbuster on him is due (A361).
+			IBaseAction.KeepDefenceForTankbusterIn = DataCenter.UnhealedUnderAttack && !DataCenter.TankbusterOpensDefence
+				? TankbusterForecast.NextOnPlayerIn
+				: null;
+
 			// Attempt to get the GCD action
 			gcdAction = GCD();
 			IBaseAction.IgnoreClipping = false;
@@ -306,6 +312,7 @@ public partial class CustomRotation
 			IBaseAction.ResetOverrides();
 			IBaseAction.HoldDefenceOnSelf = false;
 			IBaseAction.AllowedDefenceOnSelf = null;
+			IBaseAction.KeepDefenceForTankbusterIn = null;
 		}
 	}
 

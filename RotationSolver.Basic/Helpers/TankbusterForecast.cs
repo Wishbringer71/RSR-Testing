@@ -556,6 +556,78 @@ internal static class TankbusterForecast
 		return (float)((double)(now - tick) / System.Diagnostics.Stopwatch.Frequency);
 	}
 
+	// The tankbuster hits on the player in this fight, on this forecast's clock; a hit in several parts within a GCD
+	// is one. Any role: a damage dealer holding an enemy takes its tankbusters too. Cleared out of combat (A361).
+	private static readonly List<long> _hitsOnPlayer = [];
+	private static readonly object _hitsGate = new();
+
+	/// <summary>
+	/// A tankbuster reached the player: a listed one, or any enemy action after a tankbuster marker on him. Called from
+	/// the effect handler, on the game thread.
+	/// </summary>
+	internal static void RecordHitOnPlayer()
+	{
+		var now = Now;
+		lock (_hitsGate)
+		{
+			if (_hitsOnPlayer.Count == 0 || SecondsSince(_hitsOnPlayer[^1], now) > DataCenter.DefaultGCDTotal)
+			{
+				_hitsOnPlayer.Add(now);
+			}
+		}
+	}
+
+	/// <summary>
+	/// Seconds until the next tankbuster on the player is due. BossModReborn's prediction while it has one - for a tank,
+	/// or for anyone else while its mask names him or no tank is in the party, as everywhere its tankbuster is read
+	/// (A220); otherwise the spacing measured in this fight: the last hit plus the shortest gap seen, the one from the
+	/// start of the fight to the first hit included. Positive infinity when none is due - none in this fight yet, or
+	/// none for two such gaps after the last, the fight having moved on -, zero when one is due now.
+	/// </summary>
+	/// <remarks>
+	/// Detection only: the reader decides what a mitigation does with it (<c>BaseAction</c>, "KeptForTheNextTankbuster").
+	/// The fight's own record before any prediction would serve the owner's preference for what the game shows at
+	/// runtime; BossModReborn comes first only because a prediction names this fight's next hit, and the record only
+	/// its past. Without either, nothing is known, and nothing is held: in the model the cost of that guess falls only
+	/// where the healer died before the boss's first tankbuster (tank_pull_defense_model.py).
+	/// </remarks>
+	internal static float NextOnPlayerIn
+	{
+		get
+		{
+			var predicted = DataCenter.BMRNextTankbusterIn;
+			if (Service.Config.UseBmrTimeline && predicted is > 0f and < float.MaxValue
+				&& (DataCenter.BMRTankbusterHitsPlayer ?? (DataCenter.Role == JobRole.Tank || DataCenter.PartyTank == null)))
+			{
+				return predicted;
+			}
+
+			var now = Now;
+			lock (_hitsGate)
+			{
+				if (_hitsOnPlayer.Count == 0)
+				{
+					return float.PositiveInfinity;
+				}
+
+				// The start of the fight, on the same clock: the combat time is the plugin's own count of it.
+				var gap = SecondsSince(now - (long)(DataCenter.CombatTimeRaw * System.Diagnostics.Stopwatch.Frequency), _hitsOnPlayer[0]);
+				for (var i = 1; i < _hitsOnPlayer.Count; i++)
+				{
+					gap = Math.Min(gap, SecondsSince(_hitsOnPlayer[i - 1], _hitsOnPlayer[i]));
+				}
+
+				if (gap <= 0f)
+				{
+					return float.PositiveInfinity;
+				}
+
+				var since = SecondsSince(_hitsOnPlayer[^1], now);
+				return since > 2f * gap ? float.PositiveInfinity : Math.Max(0f, gap - since);
+			}
+		}
+	}
+
 	/// <summary>Recomputes the figures. Called once per framework cycle, on the game thread.</summary>
 	public static void Update()
 	{
@@ -563,6 +635,14 @@ internal static class TankbusterForecast
 		SoonestMeasured = null;
 		PlayerImpervious = false;
 		_readAt = Now;
+
+		if (!DataCenter.InCombat)
+		{
+			lock (_hitsGate)
+			{
+				_hitsOnPlayer.Clear();
+			}
+		}
 
 		// The timed press has stopped holding the next one back once its animation lock has run out; read once a
 		// frame, after the rotation, so the frame of the press itself still shows the lock the client set.

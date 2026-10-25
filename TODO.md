@@ -15,12 +15,14 @@ Auftrag vom 24.10.2026 läuft: die einfachen Punkte zuerst (A338), die schweren 
 Defekt daraus behoben (A356). Sein Auftrag vom 25.10.2026 nachmittags: nach Priorität und Umsetzbarkeit, je im Loop;
 der Tank-Punkt ist entschieden (A357), sein Auftrag zu den Einstellungen ist erledigt (A358, Konzept 18), der Punkt
 daraus gebaut (A359). Sein Auftrag vom 25.10.2026 abends wiederholt beide: das TODO weiter, danach ein zweiter
-Durchgang des Einstellungs-Audits, Rotationseinstellung für Rotationseinstellung.
+Durchgang des Einstellungs-Audits, Rotationseinstellung für Rotationseinstellung. Seine Frage vom 25.10.2026 abends zur
+Abwehr ohne Heiler ist umgesetzt (A361); die Phönixfeder daraus kommt als Sicherheitspunkt vor den Schaden.
 
-1. Rotationen gegen The Balance abgleichen
-2. Six-sided Star und Flamethrower
-3. AoE-Schwelle an drei Orten
-4. Audit der gesamten Codebasis
+1. Phönixfeder seit 7.3: 8 s Wirken statt Einschub
+2. Rotationen gegen The Balance abgleichen
+3. Six-sided Star und Flamethrower
+4. AoE-Schwelle an drei Orten
+5. Audit der gesamten Codebasis
 
 Danach technische Schuld, soweit ihre Auflösungsbedingung erfüllt ist. Warten auf Daten: unten.
 
@@ -29,6 +31,15 @@ Danach technische Schuld, soweit ihre Auflösungsbedingung erfüllt ist. Warten 
 Keine bekannt.
 
 ## Offene Arbeit
+
+### Phönixfeder seit 7.3: 8 s Wirken statt Einschub · N
+
+*Im Kampf:* Wiederbelebung. Mit „Use Phoenix Down (Experimental)" setzt RSR die Feder im Fähigkeitenpfad, als koste sie
+ein Einschiebefenster; seit Patch 7.3 wirkt sie 8 s, teilt ihre 360 s mit den Arzneien und ist nur in einem Teil der
+Inhalte im Kampf erlaubt (Fan-Wiki). *Nächster Schritt:* am Code klären, ob ein Gegenstand mit Wirkzeit aus dem
+Fähigkeitenpfad den GCD blockiert, ob Bewegung oder eine angesagte Mechanik das Wirken abbricht, was in den 8 s an
+Abwehr fehlt, und ob eine Tinktur im Burst die Feder für ihre Wiederverwendung sperrt (und umgekehrt). *Konzept:* 11,
+„Die Phönixfeder".
 
 ### Rotationen gegen The Balance abgleichen · N
 

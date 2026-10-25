@@ -27,6 +27,11 @@ public interface IBaseAction : IAction
 	// The planned mitigations that stay free while HoldDefenceOnSelf holds the rest; null holds all.
 	internal static HashSet<uint>? AllowedDefenceOnSelf { get; set; } = null;
 
+	// Set for a cycle while the single defence is open only because no healer is alive and an enemy attacks the
+	// player: seconds until the next tankbuster on him is due (positive infinity: none). A rated defence aimed at him
+	// goes only once it is back before then (A361). Null otherwise.
+	internal static float? KeepDefenceForTankbusterIn { get; set; } = null;
+
 	// Set while the area defence path runs: the hold above then spares what reaches beyond the player.
 	internal static bool AreaDefenceRunning { get; set; } = false;
 

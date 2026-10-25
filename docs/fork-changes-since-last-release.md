@@ -135,6 +135,20 @@ dungeon runs the deaths fell from 19 to 5 and the time under 30 % to a third; wi
 same direction. Setting: "Hold the big mitigation and Rampart in a pull until your health needs them" (on), with
 "Health the big mitigation waits for" (30 %).
 
+## Without a living healer, your defence is spent to keep you alive
+
+Once your healer has died in a fight, nothing restores what you lose until it ends, and every second you stay alive is
+time for a Phoenix Down or a raise. Until now RSR kept its rules as if a healer were there: a single enemy opened your
+defence only for a tankbuster, the big mitigation and Rampart waited in a pull for your health to fall, and against a
+measured tankbuster everything beyond the cheapest set was kept for the next one. Now, with no healer alive, your
+single-target defence opens while an enemy attacks you, whatever your role, and a mitigation goes as soon as it will be
+ready again before the next tankbuster on you is due - by BossModReborn's prediction, otherwise by the spacing of the
+tankbusters on you in this fight. As a tank, the pull hold and the fixed spacing are dropped, and against a tankbuster
+everything ready goes on it. A living raiser does not change this. In a model the tank lived through 9 of 400 big pulls
+he died in before and none the other way, lived 28 % longer against a boss with tankbusters and 37 % longer against one
+without; if the healer dies before a boss's first tankbuster and no BossModReborn module predicts it, the first one can
+find less ready. Setting: "Without a living healer, spend your defence to stay alive longer" (on).
+
 ## GCD heals no longer wait on another healer while someone is about to fall
 
 "Use GCDs to heal" off - the default for Astrologian and Sage - left GCD heals entirely to a second living healer, and

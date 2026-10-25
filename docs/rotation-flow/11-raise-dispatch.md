@@ -248,9 +248,16 @@ Rezzer; das ist der Stand vor der Stufenprüfung, nicht schlechter.
 ### Die Phönixfeder
 
 Verdrahtet im Fähigkeitenpfad (`CustomRotation.Ability`, nach `UseHpPotion`), hinter der Heilung und vor den
-Angriffsfähigkeiten: Jemanden am Leben zu halten geht vor, jemanden aufzuheben kostet ein
-Einschiebefenster. Die Ausführungssperre schluckt sie nicht, weil diese auf `nextAction is BaseAction`
-prüft und ein Gegenstand keiner ist.
+Angriffsfähigkeiten: Jemanden am Leben zu halten geht vor. Die Ausführungssperre schluckt sie nicht, weil diese auf
+`nextAction is BaseAction` prüft und ein Gegenstand keiner ist.
+
+**Seit Patch 7.3 (05.08.2025) ist die Feder kein Einschub mehr.** Sie wirkt 8 s, reicht 15 Yalm, hat 360 s
+Wiederverwendung, geteilt mit den Arzneien, und ist im Kampf nur in einem Teil der Inhalte erlaubt – 4er-Dungeons,
+4er-Prüfungen, Feldoperationen und weitere, nicht 8er-Prüfungen und Raids (Fan-Wiki consolegameswiki, „Phoenix Down";
+kein offizieller Text gesichtet). Die Annahme „kostet ein Einschiebefenster", auf der die Stelle im Fähigkeitenpfad
+steht, ist damit widerlegt; was das für Bewegung, Abwehr während des Wirkens und die geteilte Wiederverwendung mit
+Tinkturen heißt, ist offen (`TODO.md`, „Phönixfeder seit 7.3: 8 s Wirken statt Einschub"). Inhaltsverbot und
+Wiederverwendung beantwortet weiter der Spielclient (unten).
 
 Die Bedingung stand schon vollständig im Code (`PhoenixDownItem.CanUseThis`) und entspricht der
 Vorgabe des Auftraggebers: Lebt in der Bezugsmenge kein Rezzer mehr, wirft, wer eine Feder hat. Das

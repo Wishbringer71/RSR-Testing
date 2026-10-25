@@ -677,6 +677,12 @@ public static class Watcher
 							: ", after a tankbuster marker, no cast taken for it"));
 					TankSwapWatch.RecordHitOnPlayer(marked.RowId, marked.Name.ExtractText(), source.GameObjectId, hitShare,
 						markedForPlayer, StatusesAppliedTo(set, playerObject.GameObjectId));
+
+					// When the next one is due, from the spacing in this fight; turned away or absorbed, it still came.
+					if (markedForPlayer || (!partyWide && OtherConfiguration.HostileCastingTank.Contains(marked.RowId)))
+					{
+						TankbusterForecast.RecordHitOnPlayer();
+					}
 					HitSeries.RecordHit(marked.RowId, hitShare > 0f, DamagedPartyMembers(set) > 1);
 				}
 

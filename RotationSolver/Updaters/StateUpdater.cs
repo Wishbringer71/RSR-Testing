@@ -218,11 +218,19 @@ internal static class StateUpdater
 		// Recorded where it is decided, for SingleHitReachesPlayer and the defence trace: the pull
 		// rule is the one source of this flag that is about the player and no cast or marker shows.
 		DataCenter.TankPullOnPlayer = false;
+		DataCenter.UnhealedUnderAttack = false;
 
 		if (!DataCenter.InCombat || !Service.Config.UseStDefense || DataCenter.IsTyrantCastingSpecialIndicator())
 		{
 			return false;
 		}
+
+		// No healer alive: nothing restores what the player loses but his own heals, so every hit on him is for good,
+		// and the time he stays alive is the time left for a Phoenix Down or a raise (the owner's note, 25.10.2026) -
+		// within this fight; a dead player can return to the start only once nobody is in combat. Asked before the
+		// other sources, which stay as they are, so that the pull rule and the hold reader see it too (A361).
+		DataCenter.UnhealedUnderAttack = Service.Config.SpendDefenceWithoutHealer && !DataCenter.AnyLivingHealer(false)
+			&& EnemyAttacksPlayer();
 
 		if (DataCenter.Role == JobRole.Healer)
 		{
@@ -333,6 +341,32 @@ internal static class StateUpdater
 			}
 		}
 
+		// Without a healer the player's own defence opens while an enemy attacks him, any role, not only for a
+		// tankbuster or a pull; outside a tankbuster a mitigation on him goes only once it is back before the next one
+		// on him is due (BaseAction, "KeptForTheNextTankbuster"): a tankbuster takes more than the auto-attacks in the
+		// same window, and what covers it covers those too (A361).
+		return DataCenter.UnhealedUnderAttack;
+	}
+
+	// An enemy holding the player as its target: it attacks him, or is on its way to. Whether its hits land is the
+	// health history's question, which the defence does not need to ask - a mitigation pressed a moment early still
+	// covers most of its window.
+	private static bool EnemyAttacksPlayer()
+	{
+		var playerId = Player.Object?.GameObjectId ?? 0;
+		if (playerId == 0)
+		{
+			return false;
+		}
+
+		foreach (var hostile in DataCenter.AllHostileTargets)
+		{
+			if (hostile.TargetObjectId == playerId)
+			{
+				return true;
+			}
+		}
+
 		return false;
 	}
 
@@ -370,22 +404,9 @@ internal static class StateUpdater
 		return any;
 	}
 
-	// Helper: Returns true if there are any healers in the party with HP > 0
-	private static bool AnyLivingHealerInParty()
-	{
-		foreach (var member in DataCenter.PartyMembers)
-		{
-			if (member.IsJobCategory(JobRole.Healer) && !member.IsDead)
-			{
-				return true;
-			}
-		}
-		return false;
-	}
-
 	private static bool NonHealerHealLogic()
 	{
-		if (Service.Config.OnlyHealAsNonHealIfNoHealers && DataCenter.Role != JobRole.Healer && AnyLivingHealerInParty())
+		if (Service.Config.OnlyHealAsNonHealIfNoHealers && DataCenter.Role != JobRole.Healer && DataCenter.AnyLivingHealer(false))
 		{
 			return false;
 		}

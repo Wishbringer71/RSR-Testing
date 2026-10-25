@@ -292,6 +292,20 @@ public class BaseAction : IBaseAction
 			return ActionTracer.Reject(this, "HeldForTheInvulnerability");
 		}
 
+		// No healer alive and nothing but an attack on the player opening the defence: a rated defence aimed at him
+		// goes only once it is back before the next tankbuster on him is due - the hit takes more than the auto-attacks
+		// in the same window, and what covers it covers those too (A361). The same exceptions as the hold above.
+		if (IBaseAction.KeepDefenceForTankbusterIn is { } due && !IBaseAction.ForceEnable
+			&& !IBaseAction.HealPathRunning && !IBaseAction.CommandedDefenceRunning
+			&& (Info.EffectRange == 0 || !IBaseAction.AreaDefenceRunning)
+			&& PreviewTarget.Value.Target is { } keptOne && Player.Object is { } keeper
+			&& keptOne.GameObjectId == keeper.GameObjectId
+			&& DefensiveValues.For(ID) != default
+			&& !BackBefore(due))
+		{
+			return ActionTracer.Reject(this, "KeptForTheNextTankbuster");
+		}
+
 		// Help aimed at another member that takes away what the tankbuster plan cannot do without - the
 		// same button, recast group or gauge - waits for the plan's member, unless the member it helps wins
 		// the triage of the owner's rule: a healer in the critical class, or a tank there while the player
@@ -322,6 +336,21 @@ public class BaseAction : IBaseAction
 
 		ActionTracer.Accept(this);
 		return true;
+	}
+
+	// Whether this action, pressed now, is ready again before the next tankbuster on the player needs it: a charge left
+	// after the press, or one charge's recast over before the hit less what of the action's own duration must stand
+	// before it (pressed later than that, it would run out before the hit). Positive infinity: no tankbuster is due.
+	private bool BackBefore(float due)
+	{
+		if (float.IsPositiveInfinity(due) || Cooldown.CurrentCharges > 1)
+		{
+			return true;
+		}
+
+		var lasts = DefensiveValues.DurationOf(ID);
+		var window = lasts > 0f ? Math.Max(0f, lasts - DataCenter.DefaultGCDTotal) : 0f;
+		return Cooldown.RecastTimeOneChargeRaw <= due - window;
 	}
 
 	private bool IsTimeToKillValid()

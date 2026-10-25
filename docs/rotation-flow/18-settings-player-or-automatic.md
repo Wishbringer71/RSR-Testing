@@ -199,6 +199,12 @@ mitigation a measured tankbuster needs") urteilen selbst und sind ab Werk an; ih
   Heilschwellen. Im Regelkreis-Modell in jedem gerechneten Fall weniger Tote und weniger Zeit unter 30 % als die reine
   Zählung (Konzept 09, „Die Abwehr im Pull"). Die Gegnerzahl bleibt, weil vor dem ersten Treffer nichts anderes
   vorhersagt; „Use tank mitigation below this HP" (ab Werk 100 %, also immer) bleibt als Pegel über der ganzen Abwehr.
+- **Ohne Heiler.** „Without a living healer, spend your defence to stay alive longer" (ab Werk an) ist eine Regel, die
+  selbst urteilt: Lebt kein Heiler, öffnet die Einzelabwehr bei jedem Angriff auf ihn, und eine Minderung geht, sobald
+  sie bis zum nächsten fälligen Tankbuster wieder bereit ist – fällig nach BossModReborn oder nach dem Abstand der
+  Tankbuster in diesem Kampf (Konzept 09, „Ohne Heiler: den eigenen Tod hinauszögern"). Keine Zahl für ihn: Ob ein
+  Heiler lebt, wann der nächste Tankbuster fällig ist und wie lange eine Abklingzeit läuft, liefert das Spiel. Der
+  Schalter ist Notausschalter.
 - **„Use invulnerability below this HP"** ist die letzte Stufe unter dem Tankbuster-Plan; die Stufe darüber urteilt
   am gemessenen Treffer (Konzept 09). Haltung, nicht geändert.
 - **Vorlaufzeiten der BossModReborn-Zeitleiste** (Fläche 5 s, Tankbuster 3 s, Rückstoß 3 s; nur mit „Use BossModReborn's

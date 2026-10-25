@@ -23,6 +23,16 @@ are not reconstructed here.
 
 ## Unreleased
 
+### Behaviour change in RotationSolver.Basic: without a living healer the defence is spent to stay alive
+
+New on `DataCenter`: `AnyLivingHealer(excludeSelf)` and `UnhealedUnderAttack`. With "Without a living healer, spend your
+defence to stay alive longer" on (default), and no healer of the party alive, the single-target defence opens while an
+enemy attacks the player, for every role; outside a tankbuster a rated defence aimed at the player is refused while it
+would not be back before the next tankbuster on him is due (`ActionTracer` reason "KeptForTheNextTankbuster"). For
+tanks `StaggeredBigMitigation` drops the pull hold and the fixed spacing then, and the tankbuster plan no longer holds
+the rest of the defence beside its set. A derived rotation's defence path runs more often in that situation, through
+the same `CanUse` checks.
+
 ### RotationSolver.Basic: a rotation's GCD heals yield to danger
 
 New on `CustomRotation`: `GcdHealsAllowed(useGcdHeals)`, for a rotation that leaves its GCD heals to the healers - true

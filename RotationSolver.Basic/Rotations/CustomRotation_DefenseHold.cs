@@ -90,17 +90,7 @@ public partial class CustomRotation
 			return false;
 		}
 
-		var healerAlive = false;
-		foreach (var member in PartyMembers)
-		{
-			if (member != null && !member.IsDead && member.IsJobCategory(JobRole.Healer))
-			{
-				healerAlive = true;
-				break;
-			}
-		}
-
-		if (!healerAlive)
+		if (!DataCenter.AnyLivingHealer(false))
 		{
 			return Record("party heal", rule, false, "no healer in the party is alive");
 		}
@@ -133,16 +123,7 @@ public partial class CustomRotation
 			return true;
 		}
 
-		var playerId = Player?.GameObjectId ?? 0;
-		foreach (var member in PartyMembers)
-		{
-			if (member != null && !member.IsDead && member.GameObjectId != playerId && member.IsJobCategory(JobRole.Healer))
-			{
-				return !HoldPartyHeal(true, "GCD heals left to the healers");
-			}
-		}
-
-		return true;
+		return !DataCenter.AnyLivingHealer(true) || !HoldPartyHeal(true, "GCD heals left to the healers");
 	}
 
 	/// <summary>
@@ -416,9 +397,17 @@ public partial class CustomRotation
 	/// Whether the single-target defence stands open by the tank's pull rule alone: no tankbuster or listed cast aimed
 	/// at a tank, no BossModReborn tankbuster, and no command of the player's.
 	/// </summary>
-	private static bool PullDefenseOnly =>
-		DataCenter.TankPullOnPlayer && !DataCenter.CommandStatus.HasFlag(AutoStatus.DefenseSingle)
-		&& !DataCenter.IsHostileCastingToTank && !DataCenter.IsHostileCastingTankBusterAtMe && !DataCenter.BMRTankbusterImminent;
+	private static bool PullDefenseOnly => DataCenter.TankPullOnPlayer && !DataCenter.TankbusterOpensDefence;
+
+	/// <summary>
+	/// No healer alive, with "Without a living healer, spend your defence to stay alive longer" on: nothing restores what
+	/// the player loses, so neither the pull hold below nor the fixed spacing of the big mitigation and Rampart keeps
+	/// anything - a tool goes once it is back before the next tankbuster on him is due (BaseAction,
+	/// "KeptForTheNextTankbuster"). In the model the tank lives through 9 of 400 big pulls he died in before, and none
+	/// the other way (A361, tank_pull_defense_model.py).
+	/// </summary>
+	private static bool DefenceSpentWithoutHealer =>
+		Service.Config.SpendDefenceWithoutHealer && !DataCenter.AnyLivingHealer(false);
 
 	/// <summary>
 	/// Whether the tank's big mitigation or Rampart waits in a pull: "Hold the big mitigation and Rampart in a pull until
@@ -432,7 +421,7 @@ public partial class CustomRotation
 	/// <returns>True while it waits.</returns>
 	protected static bool BigMitigationHeldInPull(IBaseAction mitigation)
 	{
-		if (!Service.Config.HoldBigTankMitigationInPull || !PullDefenseOnly || Player == null)
+		if (!Service.Config.HoldBigTankMitigationInPull || !PullDefenseOnly || Player == null || DefenceSpentWithoutHealer)
 		{
 			return false;
 		}
@@ -445,9 +434,9 @@ public partial class CustomRotation
 	/// The tank's big mitigation - <paramref name="upgraded"/> once learned, else <paramref name="big"/> - and Rampart
 	/// outside an announced hit, the part every tank rotation carried as its own copy. The two exclude each other through
 	/// their statuses. In a pull under <see cref="BigMitigationHeldInPull"/> each goes once the measured fall would cross
-	/// the line within its own duration; in the model a fixed spacing on top only cost (A359). Otherwise spaced as
-	/// before: the big one while Rampart is ready or 60 s past, Rampart 30 s after the big one; below the big one's
-	/// level Rampart alone.
+	/// the line within its own duration; in the model a fixed spacing on top only cost (A359). With no healer alive
+	/// neither holds (<see cref="DefenceSpentWithoutHealer"/>). Otherwise spaced as before: the big one while Rampart is
+	/// ready or 60 s past, Rampart 30 s after the big one; below the big one's level Rampart alone.
 	/// </summary>
 	/// <param name="big">The job's big mitigation (Sentinel, Vengeance, Shadow Wall, Nebula).</param>
 	/// <param name="upgraded">Its upgrade (Guardian, Damnation, Shadowed Vigil, Great Nebula).</param>
@@ -456,7 +445,7 @@ public partial class CustomRotation
 	protected bool StaggeredBigMitigation(IBaseAction big, IBaseAction upgraded, out IAction? act)
 	{
 		var current = upgraded.EnoughLevel ? upgraded : big;
-		var measured = Service.Config.HoldBigTankMitigationInPull && PullDefenseOnly;
+		var measured = (Service.Config.HoldBigTankMitigationInPull && PullDefenseOnly) || DefenceSpentWithoutHealer;
 
 		if (current.EnoughLevel
 			&& (measured || !RampartPvE.Cooldown.IsCoolingDown || RampartPvE.Cooldown.ElapsedAfter(60))

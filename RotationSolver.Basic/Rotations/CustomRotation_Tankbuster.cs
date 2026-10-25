@@ -56,6 +56,9 @@ public partial class CustomRotation
 	// The cast for which the line "blocked until after the hit" was written.
 	private static int _blockedTraced;
 
+	// The cast for which the line "no healer alive, nothing held" was written.
+	private static int _unhealedTraced;
+
 
 	/// <summary>
 	/// The owner's rule of 04.10.2026 (concept 09, "Gemessener Tankbuster: das geringste
@@ -1012,6 +1015,21 @@ public partial class CustomRotation
 		// with less than the marker's own defence gives him (A340).
 		if (!plan.Survivable || plan.Cast.Learned)
 		{
+			return false;
+		}
+
+		// No healer alive: what the hit takes beyond the cheapest set is lost for good, and the next tankbuster meets
+		// the tank with that much less - the reserve kept for it buys nothing then. The rest goes on this one too, where
+		// it also covers the auto-attacks after it; the plan's own set still goes first. In the model he lives 28 %
+		// longer after the healer's death against a boss with tankbusters (A361, tank_pull_defense_model.py).
+		if (Service.Config.SpendDefenceWithoutHealer && !DataCenter.AnyLivingHealer(false))
+		{
+			if (_unhealedTraced != plan.Cast.Serial)
+			{
+				_unhealedTraced = plan.Cast.Serial;
+				DefenseTrace.Line($"tankbuster #{plan.Cast.ActionId}: no healer alive, nothing held beside the plan");
+			}
+
 			return false;
 		}
 

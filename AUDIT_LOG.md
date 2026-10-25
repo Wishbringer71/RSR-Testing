@@ -10619,6 +10619,51 @@ in die kritische Klasse fällt, solange ein zweiter Heiler lebt.
 
 *Prüfgrad:* statisch an jedem Leser, Compile; im Spiel nicht beobachtet.
 
+### A361 · Ohne Heiler: den eigenen Tod hinauszögern (25.10.2026)
+
+Seine Frage (25.10.2026 abends): „ist berücksichtigt, dass der tank mehr minderungen nehmen muss, wenn heiler tot ist und
+kein rezzer für heiler bereitsteht?" – *Hinweis*. Während der Arbeit zwei weitere *Hinweise*: eine Phönixfeder bei
+einem anderen Spieler oder einem selbst, „dann muss man das eigene sterben lange genug hinauszögern"; und „es geht um
+EINEN kampf" – zwischen den Kämpfen kehrt der Heiler zum Startpunkt zurück, Trash und Boss sind nicht zu unterscheiden.
+Antwort an ihn, Satz 1: nein, bisher nicht ausdrücklich.
+
+- *Erhoben:* Ohne lebenden Heiler galten alle Regeln wie mit. Ein einzelner Gegner öffnete die Einzelabwehr nur für
+  einen Tankbuster; die Pull-Rückhaltung (A359) wartete auf den Verlauf; der Tankbuster-Plan hielt alles außer dem
+  billigsten Bündel für den nächsten zurück. Nur die Heilungen kannten die Lage (`HoldPartyHeal`, `GcdHealsAllowed`,
+  „Only heal as non-healer if no healers") – mit drei eigenen Schleifen für dieselbe Frage. Spielregeln (Fan-Wiki, kein
+  offizieller Text): Return in PvE nicht im Kampf; Phönixfeder seit 7.3 im Kampf in 4er-Inhalten, nicht in 8er-Prüfungen
+  und Raids, 8 s Wirken, 360 s geteilt mit den Arzneien. Living Dead trägt sich unter Walking Dead durch eigene Angriffe
+  (Konzept 09), bleibt unverändert.
+- *Erste Fassung verworfen:* Das Modell rechnete die Pulls eines Dungeons als Kette mit dauerhaft totem Heiler; danach
+  hätte die Pull-Rückhaltung nichts geändert. Auf seinen dritten Hinweis neu gerechnet, je Kampf. Ebenfalls verworfen
+  vor dem Code: die Abwehr gegen Autoattacken ohne Prüfung zu öffnen – das Modell zeigte, dass sie dann beim Tankbuster
+  fehlt (Boss mit Tankbustern 72,5 statt 79,4 s).
+- *Modell* (`tank_pull_defense_model.py`, Abschnitt ohne Heiler, Heiler stirbt zufällig im Kampf): großer Pull 142 →
+  133 Tote von 400 (9 gerettet, keiner verloren; mit Staffel 163); Boss mit Tankbustern 62,1 → 79,4 s (+28 %), ohne
+  62,4 → 66,8 s, wenn der Heiler vor dem ersten stirbt (bekannt wie mit Modul: 80,9); Boss ohne Tankbuster 135,8 →
+  185,9 s (+37 %).
+- *Umgesetzt:* `DataCenter.AnyLivingHealer` statt der drei Schleifen; `TankbusterForecast.RecordHitOnPlayer` und
+  `NextOnPlayerIn` (Vorhersage von BossModReborn, sonst Abstand in diesem Kampf); `StateUpdater` setzt
+  `UnhealedUnderAttack` und öffnet die Einzelabwehr; `BaseAction` lehnt außerhalb eines Tankbusters eine Minderung auf
+  den Spieler ab, die bis zum nächsten nicht zurück ist („KeptForTheNextTankbuster"); `DefenceSpentWithoutHealer` hebt
+  Pull-Rückhaltung und Staffel auf; `HoldDefenceForTankbuster` hält neben dem Plan nichts mehr. Option „Without a living
+  healer, spend your defence to stay alive longer", ab Werk an. Die Zahl 2 (zwei Abstände ohne Tankbuster: der Kampf ist
+  weiter) als Ausnahme registriert.
+- *Nebenbefund:* Konzept 11 und der Kommentar im Fähigkeitenpfad führen die Feder als Einschub – seit 7.3 widerlegt.
+  Konzept berichtigt, Punkt in `TODO.md` („Phönixfeder seit 7.3: 8 s Wirken statt Einschub"), Kommentar bleibt bis dahin.
+- *Nebenbefund:* Konzept 06 zitierte `BaseAction.cs:308` für die Zuweisung von `Target`; nach dem Einschub steht sie in
+  Zeile 335, nachgezogen und am Inhalt geprüft.
+
+**Falsifikation.** *Kein Defekt:* Die Regeln hielten, was ihre Texte sagten; ihre Begründung – eine Heilung füllt auf –
+trug ohne Heiler nicht, und das Modell zeigt den Preis. *Option falsch:* Die Prüfung auf den nächsten Tankbuster kostet,
+wenn der Heiler vor dem ersten stirbt und kein Modul läuft (66,8 statt 80,9 s); die Alternative, große Mittel bis zum
+ersten Tankbuster zu halten, kostet ohne Tankbuster 15 s (gerechnet in der Arbeitsfassung) – der seltenere Fall trägt
+den Preis. *Ausgeliefert, nichts ändert sich:* wenn sein Heiler nie vor ihm stirbt, oder wenn er „Use single-target
+defensive abilities" aus hat.
+
+*Prüfgrad:* Modell mit Selbsttest, statisch, Compile; im Spiel nicht beobachtet. `DefenseTrace.log` nennt, warum die
+Abwehr offen steht und wann der nächste Tankbuster fällig ist.
+
 ---
 ## B · Commit-Register (Fork vs. `upstream/main`)
 

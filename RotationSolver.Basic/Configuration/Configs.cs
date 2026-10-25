@@ -913,6 +913,26 @@ internal partial class Configs : IPluginConfiguration, IM3Settings
 	[Range(0, 1, ConfigUnitType.Percent, 0.01f)]
 	public float HoldBigTankMitigationBelow { get; set; } = 0.3f;
 
+	// With no healer alive nothing restores what the player loses until the fight ends - a dead player returns to the
+	// start only once nobody is in combat -, and the time he stays alive is the time left for a Phoenix Down or a raise
+	// (the owner's question and note of 25.10.2026). In the model (tank_pull_defense_model.py) the tank lived through 9 of
+	// 400 big pulls he died in before and none the other way, 28 % longer against a boss with tankbusters and 37 % longer
+	// against one without (A361). Every role, as the rule holds for whoever is attacked. On by default: the owner's rule
+	// for new rules (29.09.2026).
+	[ConditionBool, UI("Without a living healer, spend your defence to stay alive longer",
+		Description = "When no healer in the party is alive, your single-target defence opens while an enemy attacks you, "
+			+ "not only for a tankbuster or a pull. A mitigation on yourself then goes as soon as it will be ready again "
+			+ "before the next tankbuster on you is due - by BossModReborn's prediction, otherwise by the spacing of the "
+			+ "tankbusters on you in this fight; with none seen yet, at once. As a tank, the big mitigation and Rampart no "
+			+ "longer wait for your health in a pull nor for the fixed spacing, and against a tankbuster everything ready "
+			+ "goes on it, not only the cheapest set that survives it. A living raiser does not change this: whether and "
+			+ "when he raises is up to him.\n"
+			+ "In a fight: after your healer falls you stay alive longer - the time a Phoenix Down or a raise needs -, and a "
+			+ "tankbuster still finds your mitigation ready. If your healer dies before the first tankbuster of a boss and "
+			+ "no BossModReborn module predicts it, the first one can find less ready.",
+		Parent = nameof(UseDefenseAbility))]
+	private static readonly bool _spendDefenceWithoutHealer = true;
+
 	[ConditionBool, UI("Use tank stance", Parent = nameof(UseAbility),
 		PvEFilter = JobFilterType.Tank)]
 	private static readonly bool _autoTankStance = true;

@@ -1395,6 +1395,49 @@ internal static class DataCenter
 	}
 
 	private static readonly BaseItem PhoenixDownItem = new(4570);
+
+	/// <summary>
+	/// Whether a healer in the party is alive, the player counted unless <paramref name="excludeSelf"/>. Without one
+	/// nothing restores what a member loses but his own heals: the heals a tank or damage dealer holds back for the
+	/// healers go (<c>CustomRotation.HoldPartyHeal</c>, <c>GcdHealsAllowed</c>), and so does the defence the player
+	/// keeps (<see cref="UnhealedUnderAttack"/>, A361). A living raiser does not count here: whether he raises, and
+	/// when, is another player's doing, and a Phoenix Down in someone's bag cannot be seen at all (the owner's note,
+	/// 25.10.2026). One definition for the three callers that carried it as their own loop.
+	/// </summary>
+	/// <param name="excludeSelf">Skip the player, for a healer asking whether another healer is there.</param>
+	/// <returns>True when a healer of the party is alive.</returns>
+	public static bool AnyLivingHealer(bool excludeSelf)
+	{
+		var playerId = Player.Object?.GameObjectId ?? 0;
+		foreach (var member in PartyMembers)
+		{
+			if (member != null && !member.IsDead && member.IsJobCategory(JobRole.Healer)
+				&& !(excludeSelf && member.GameObjectId == playerId))
+			{
+				return true;
+			}
+		}
+
+		return false;
+	}
+
+	/// <summary>
+	/// No healer is alive and an enemy attacks the player, with "Without a living healer, spend your defence to stay
+	/// alive longer" on: the single-target defence stands open for it (<c>StateUpdater.ShouldAddDefenseSingle</c>,
+	/// A361). Unless a tankbuster opens it as well (<see cref="TankbusterOpensDefence"/>), a mitigation on the player
+	/// goes only once it is back before the next tankbuster on him (<see cref="TankbusterForecast.NextOnPlayerIn"/>).
+	/// </summary>
+	public static bool UnhealedUnderAttack { get; set; }
+
+	/// <summary>
+	/// A tankbuster, or the player, opens the single-target defence this frame: his command, a listed tankbuster cast
+	/// at him, BossModReborn's imminent one, or for a tank any cast an enemy aims at a tank. What the defence spends then
+	/// is for that hit; the pull rule and an attack on an unhealed player are the other sources.
+	/// </summary>
+	internal static bool TankbusterOpensDefence =>
+		CommandStatus.HasFlag(AutoStatus.DefenseSingle) || IsHostileCastingTankBusterAtMe || BMRTankbusterImminent
+		|| (Role == JobRole.Tank && IsHostileCastingToTank);
+
 	/// <summary>
 	/// Is someone alive who could raise, in the set the current raise settings draw targets from?
 	///
@@ -3095,6 +3138,12 @@ internal static class DataCenter
 				return true;
 			}
 
+			// An enemy attacking him with no healer alive, any role: the hit is his (A361).
+			if (UnhealedUnderAttack)
+			{
+				return true;
+			}
+
 			return BMRTankbusterReachesPlayer;
 		}
 	}
@@ -4308,6 +4357,13 @@ internal static class DataCenter
 		if (TankPullOnPlayer)
 		{
 			parts.Add($"pull on you: at least {Service.Config.AutoDefenseNumber} enemies within reach attacking you");
+		}
+
+		if (UnhealedUnderAttack)
+		{
+			var due = TankbusterForecast.NextOnPlayerIn;
+			parts.Add("no healer alive, an enemy attacks you: mitigation that is back before the next tankbuster"
+				+ (float.IsPositiveInfinity(due) ? " (none due)" : $" (due in {due:F1} s)"));
 		}
 
 		if (BMRNextRaidwideIn is > 0f and < float.MaxValue)
