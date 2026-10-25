@@ -2647,6 +2647,48 @@ public partial class CustomRotation
 	}
 
 	/// <summary>
+	/// Whether a damage area laid now would hold its enemies: at least one enemy stands within the area's radius of
+	/// <paramref name="centre"/> - or of the player, where none is given - and none of them has moved within the last GCD
+	/// (<see cref="HostileMovement"/>). Owner's rule
+	/// (25.10.2026): "bei allen Klassen mit Schadensflächen: erst dann, wenn Bewegung nach walltowall stoppt" - an area
+	/// stays where it is laid, and a pack still following its tank walks out of it (concept 04, A350).
+	/// </summary>
+	/// <param name="area">The action that lays the area; its radius is the game's effect range.</param>
+	/// <param name="centre">Where the area is laid: the target of an area laid around it, none for one at the player's feet.</param>
+	/// <returns>True when the enemies in the area stand still.</returns>
+	protected static bool DamageAreaSettled(IBaseAction area, IBattleChara? centre = null)
+	{
+		return DamageAreaSettled((centre ?? Player)?.Position, area.Info.EffectRange);
+	}
+
+	internal static bool DamageAreaSettled(Vector3? centre, float radius)
+	{
+		if (centre is not { } at)
+		{
+			return false;
+		}
+
+		// Reach as the game's area check has it for a circle: the enemy's hitbox inside the radius.
+		var holds = false;
+		foreach (var enemy in DataCenter.AllHostileTargets)
+		{
+			if (enemy == null || enemy.IsDead || Vector3.Distance(at, enemy.Position) - enemy.HitboxRadius > radius)
+			{
+				continue;
+			}
+
+			if (HostileMovement.IsMoving(enemy))
+			{
+				return false;
+			}
+
+			holds = true;
+		}
+
+		return holds;
+	}
+
+	/// <summary>
 	/// 
 	/// </summary>
 	[Description("Health of Area Ability")]

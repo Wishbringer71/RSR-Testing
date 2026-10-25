@@ -312,3 +312,39 @@ Wahrscheinlichkeit, vor; Frontalangriffe von Trash-Gruppen sind im Dungeon häuf
 Der Notfallslot ist keine Lücke. Der Krieger hat ihn in der Basisschicht (`WarriorRotation.EmergencyAbility`,
 Holmgang). Schnitter und Samurai haben keine eigene Notfallaktion; ihre Abwehr läuft über die Abwehrslots, und den
 Rollen-Notfall stellt `CustomRotation.EmergencyAbility`.
+
+## Schadensflächen erst, wenn die Gegner stehen
+
+**Eine Schadensfläche fällt erst, wenn die Gegner in ihrem Radius stehen: mindestens einer darin, und keiner hat sich im
+letzten GCD bewegt** (`CustomRotation.DamageAreaSettled`, `HostileMovement`, A350). Betroffen sind die Aktionen, deren
+Wirktext eine Fläche legt, die „any enemies who enter" trifft: Salted Earth (Dunkelritter, um die eigenen Füße), Doton
+(Ninja, um die eigenen Füße), Slipstream (Beschwörer, Sturm um das Ziel). Radius ist der Wirkbereich aus dem
+Aktionsblatt (je 5 y), gemessen wie die Flächenprüfung des Spiels: Trefferkreis im Radius. Einstellung „Lay damage
+areas only once the enemies in them stand still", ab Werk an: Die Bedingung ist seine, das Maß „still seit einem GCD"
+meine Ableitung und im Kampf noch nicht gesehen; ausgeschaltet fällt die Fläche, sobald er selbst steht.
+
+- *Seine Angabe (25.10.2026):* „Wichtig bei allen Klassen mit Schadensflächen: erst dann, wenn Bewegung nach
+  walltowall stoppt. Prüfen im Loop" – Hinweis (eine Fläche bleibt liegen, ein Rudel, das seinem Tank folgt, läuft
+  hinaus) und Vorschlag für die Bedingung, hier geprüft.
+- *Im Kampf:* Beim Wall-to-wall zieht der Tank Rudel hinter sich her; hält er kurz, laufen sie noch auf ihn zu, und zieht
+  er weiter, folgen sie. Bisher fiel die Fläche, sobald der Spieler selbst stand – eine Pause des Tanks genügte, und
+  Salted Earth (90 s Abklingzeit) oder Doton lagen dort, wo das Rudel nicht blieb. Jetzt fällt sie, wenn das Rudel
+  angekommen ist und steht. Ein Boss, der nicht wandert, steht ohnehin; wandert er, wartet die Fläche, bis er hält.
+- *Gemessen:* Das Spiel gibt nur für den Spieler an, ob er sich bewegt. Für Gegner liest RSR die Position bei jeder
+  Zielaktualisierung; jede Änderung ist Bewegung, ohne gewählte Strecke. „Still" heißt still seit einem GCD: Eine Pause
+  zwischen zwei Rudeln ist kein Halt, und der nächste Platz für die Fläche kommt ohnehin einen GCD später. Ein Gegner,
+  der eben erst erscheint, gilt als bewegt.
+- *Wo entschieden wird:* Salted Earth in `BaseAction.CanUse` für jede Rotation, die es drückt. Doton beim Beginn der
+  Mudras (`NIN_Reborn`): Laufen die Gegner noch, kommt Katon, Doton mit der nächsten Ladung, wenn sie stehen.
+  Slipstream (`SMN_Reborn`): Bei Slipstream ist der Sturm nur Zusatzwirkung eines Treffers (520 Potenz auf das Ziel);
+  es wartet, solange sein Ziel sich bewegt und Emerald Rites übrig sind, und fällt spätestens, wenn sie verbraucht sind.
+  Eine Aktion, die nicht auf einer Leiste liegen kann (Aktionsblatt `IsPlayerAction` – ein Ninjutsu, ein Schritt von
+  Ten Chi Jin), prüft `CanUse` nicht: Sie ist dort entschieden, wo ihre Folge beginnt.
+- *Nicht einbezogen:* Earthly Star (Astrologe) – vor allem eine Heilung; sie wartet nicht auf stehende Gegner, das
+  hielte eine Heilung für Schaden zurück. Ley Lines (Schwarzmagier) ist keine Schadensfläche; ob sie fällt, hängt an der
+  Bewegung des Spielers selbst. Ten Chi Jin: Die Folge steht mit ihrem ersten Schritt fest und dauert Sekunden; Doton
+  darin bleibt, wie es ist.
+- *Grenzen:* Ein Gegner im Radius, der nie stehen bleibt, hält die Fläche auch für die übrigen zurück; seine Protokolle
+  zeigen dazu nichts, sie schreiben keine Positionen.
+  Fremde Rotationen, die Salted Earth drücken, folgen der Prüfung mit; Doton und Slipstream nur in den
+  Standardrotationen.

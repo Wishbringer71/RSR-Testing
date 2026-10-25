@@ -10139,6 +10139,79 @@ ohne Folge. *Ausgeliefert, nichts ändert sich:* unter Stufe 90 (keine Glocke), 
 
 Kein Code geändert. *Prüfgrad:* statisch (Code, Wirktexte, Protokolle).
 
+### A349 · Glockenspiel nach seiner Entscheidung; Serien in der Flächentabelle (25.10.2026)
+
+Seine Entscheidung (25.10.2026): „whm nach deiner empfehlung umsetzen" – (b) und (d) aus A348, je als Unteroption.
+
+- *Umgesetzt (b):* „Also before a hit that would put a party member in danger" (`WHM_Reborn`, Unteroption von „Limit
+  Liturgy Of The Bell to multihit party stacks", ab Werk an). In `DefenseAreaAbility` als letzte der vier, wenn
+  `AreaDefenseDanger` und `AreaHitOnMe`; die Bedingung für den Marker bleibt.
+- *Umgesetzt (d):* „Also into an enemy attack that hits in a series". `HitSeries` zählt je Gegneraktion die Treffer auf
+  ihn mit Schaden, die zugleich ein weiteres Mitglied treffen (`DamagedPartyMembers > 1`), höchstens einen je Sekunde,
+  innerhalb der Dauer der Glocke ab dem ersten (`DefensiveValues.DurationOf`, 20 s); gelernt in
+  `HitSeriesOnPlayer.json` (LearnedFile, höchster Wert), nur Serien ab zwei. `WhiteMageRotation.LiturgyTriggersLeft`:
+  größter gelernter Rest einer laufenden Serie. `WHM_Reborn.GeneralAbility` legt die Glocke, solange er größer null ist.
+  Die Sekunde steht als Konstante mit dem Wirktext im Kommentar (der Prüfer zählt die 1 nicht).
+- *Defekt behoben: Serien in der Flächentabelle* (TODO „Mehrfachtreffer gelten in der Flächentabelle als kleiner
+  Treffer"). `Watcher.SeriesShare` addiert je Mitglied die Anteile von Landungen derselben gelisteten Aktion, die der
+  vorigen schneller folgen als ihre Wirkzeit laut Aktionsblatt (`Cast100ms`); abgelegt wird der höchste Summenanteil,
+  höchstens 1. Beide Messpfade (Landung der Aktion, Folge einer leeren Landung). Die Umrechnung der Zehntelsekunden ist
+  im Register. Im Kampf: Ersticken des Fleisches (19.10.2026: viermal im Abstand von 3 s, bei ihm 49 und 54 %) gälte
+  mit dem Einzeltreffer (bis 24 %) als klein, und „Skip mitigation for small area casts" ließe die Gruppenminderung aus;
+  jetzt zählt die Serie.
+- *Spieldaten nachgeprüft (xivapi v2, 25.10.2026):* Wicked Hypercannon (Tosende Hyperkanone), Sable Thread
+  (Pechschwarzer Pfad), Dimension Zero, Xtreme Spectacular, Deep Thunder, Battle Dance, Comet, Impact: Cast100ms 0;
+  Bodyweight Exorcism (Ersticken des Fleisches) 60, Shockwave 65. Sofortaktionen misst die Flächentabelle nicht
+  (`Watcher`, Bedingung `Cast100ms > 0`) – C125.
+
+**Falsifikation.** *Kein Defekt (Serien):* widerlegt – der Text der Einstellung mindert voll, wenn nach dem Treffer
+Heilung fällig wird; eine Serie mit Einzeltreffern um 20 % lässt das nach dem dritten zu. *Option falsch:* Zwei
+getrennte Einsätze derselben Aktion innerhalb ihrer Wirkzeit gibt es von einem Gegner nicht; von mehreren Gegnern
+zählen sie zusammen – sie treffen die Gruppe zusammen, der Fehler ginge Richtung Mindern. Die Glocke in einer Serie:
+lernt erst beim ersten Treffen; eine Serie, die mal von Schilden geschluckt wird, lernt die kleinere Zahl nicht zurück
+(nur steigend) – dann fällt die Glocke, und die Stapel heilen beim Ablauf. *Ausgeliefert, nichts ändert sich:* unter
+Stufe 90 (keine Glocke); er hat „Limit Liturgy Of The Bell to multihit party stacks" aus (dann gelten die Unteroptionen
+nicht, die Glocke folgt der Flächenabwehr wie bisher); eine Serie, deren Aktion bei jedem Treffer eine andere Id trägt,
+zählt je Id.
+
+*Prüfgrad:* statisch, Compile, Prüfskripte; im Spiel nicht beobachtet.
+
+### A350 · Schadensflächen erst, wenn die Gegner stehen (25.10.2026)
+
+Seine Angabe (25.10.2026): „Wichtig bei allen Klassen mit Schadensflächen: erst dann, wenn Bewegung nach walltowall
+stoppt. Prüfen im Loop". Einordnung: Hinweis (Mechanik) und Vorschlag (Bedingung).
+
+- *Erhoben:* alle Job-Guides 7.5 (25.10.2026) nach Flächen, die „any enemies who enter" treffen: Salted Earth (DRK, um
+  die Füße, 15 s, 90 s Abklingzeit), Doton (NIN, um die Füße, 18 s), Slipstream (SMN, Sturm um das Ziel als
+  Zusatzwirkung, 15 s). Earthly Star (AST) ist eine verzögerte Explosion mit Heilung, Ley Lines (BLM) ein Buff; beide
+  nicht. Bisher: Salted Earth und Doton nur mit `!IsMoving` des Spielers, Slipstream ohne Bedingung. WrathCombo
+  (keine Spielquelle) nimmt dafür die Zeit, die der Spieler steht, und beim Dunkelritter eine Kampfdauer von 7 s.
+- *Gemessen:* Das Spiel gibt für Gegner keinen Bewegungszustand (ClientStructs: `MoveController` ohne solches Feld; nur
+  `AgentMap.IsPlayerMoving` für den Spieler). `HostileMovement` liest die Positionen der Feindliste bei jeder
+  Zielaktualisierung; still heißt unverändert seit einem GCD (`DataCenter.DefaultGCDTotal`).
+- *Umgesetzt:* `CustomRotation.DamageAreaSettled` (mindestens ein Gegner im Radius des Aktionsblatts, keiner bewegt);
+  `ActionTooltip.LaysDamageArea` (Wirktext, ohne Zusatzwirkung eines Treffers); zentral in `BaseAction.CanUse` für
+  Aktionen, die auf einer Leiste liegen können (`IsPlayerAction`) – Salted Earth. Doton beim Beginn der Mudras in
+  `NIN_Reborn` (sonst Katon), Slipstream in `SMN_Reborn` (wartet, solange Emerald Rites übrig sind). Ten Chi Jin
+  unverändert: Seine Folge steht mit dem ersten Schritt fest.
+- *Optionen erwogen:* (0) Spielerbewegung wie bisher; (1) die Zeit, die der Spieler steht (WrathCombo); (2) Bewegung der
+  Gegner im Radius, sofort; (3) wie (2), still seit einem GCD. Gewählt (3): (0) und (1) messen ein Surrogat – der Tank,
+  der hält, ist nicht das Rudel, das ankommt; (2) nähme eine Pause zwischen zwei Rudeln für den Halt und hinge davon ab,
+  wie oft der Client die Position eines Laufenden fortschreibt.
+- *Einstellung:* „Lay damage areas only once the enemies in them stand still", ab Werk an (seine Regel zur
+  Voreinstellung). Die Bedingung ist seine; das Maß „still seit einem GCD" ist meine Ableitung und im Kampf nicht
+  belegt – also Option, für beide Stellungen gedacht: aus fällt die Fläche, sobald er steht, wie bisher.
+
+**Falsifikation.** *Kein Defekt:* Eine Fläche bleibt liegen (Wirktext: um die Füße, um das Ziel gelegt); folgt das Rudel
+weiter dem Tank, verlässt es sie – trägt. *Option falsch:* Ein Gegner, der nie steht, hält die Fläche auch für die
+übrigen zurück (nicht beobachtbar, seine Protokolle schreiben keine Positionen); ein Gegner, der nur am Rand des Radius
+läuft und hinausgeht, ebenso – vertretbar. Slipstream bis zum Ende der Emerald Rites zu halten kostet nichts, solange
+die Garuda-Phase die Rites erlaubt; Garuda's Favor endet nicht mit der Zeit (Job-Guide). *Ausgeliefert, nichts ändert
+sich:* außerhalb von Wall-to-wall stehen die Gegner ohnehin; eine Rotation, die ihre Fläche über einen Befehl drückt
+(`ForceEnable`), wird nicht geprüft; fremde Rotationen mit Doton oder Slipstream folgen nicht.
+
+*Prüfgrad:* statisch, Compile; im Spiel nicht beobachtet.
+
 ---
 ## B · Commit-Register (Fork vs. `upstream/main`)
 
@@ -10443,3 +10516,4 @@ Die offene Arbeit dazu — Reihenfolge und Abbruchbedingung der Nachprüfung —
 | C122 | A338 und Konzept 15 („Je Gebiet"): `tank_lockon02k1` habe sechsmal zwischen bestätigt und verworfen gewechselt, weil ein Pfad in verschiedenen Kämpfen Verschiedenes bedeute | Die Wechsel kamen aus der zweiten Beobachtung desselben Markers nach seinem Treffer und aus den bis A334 ungelesenen Helfern; ein Kampf, in dem der Pfad keinen Tankbuster ankündigt, ist nicht belegt | A340: Defekt behoben, Begründung des Schlüssels berichtigt |
 | C123 | Konzept 10, „Ausgeschlossen": den Verbrauch von The Blackest Night zu messen brauche einen eigenen Ringpuffer, der in jedem Kampf koste, und der Schadensfluss der letzten Sekunden sage nichts über die nächsten sieben | Die Schadensaufzeichnung des Effekt-Handlers führt Upstream seit 2023 (`AddDamageRec`); die Gegnerzahl, die stattdessen galt, schließt ebenso aus der Gegenwart auf die nächsten sieben Sekunden, nur ohne den Schaden zu sehen | A340: Strom gemessen, Bedingung im Pull-Zweig |
 | C124 | A343, A346 und die Vorlage im TODO: Slither des Vipers bei −0,5 s sei Bewegung, die seine Regel ausschließe, und Thunderclap des Monk im Countdown Bewegung für Schaden | Seine Regel schließt aus, ihn für Schaden aus einer sicheren Position zu holen; zum Pull ist die Position eines Nahkämpfers am Ziel (sein Hinweis, 25.10.2026), und The Balance springt dort selbst. Folge: Viper und Dragoon fehlte der Sprung, die Empfehlung für den Monk stand auf einem falschen Grund | A347: Sprung außerhalb der Reichweite für alle drei |
+| C125 | A348 und der TODO-Eintrag „Mehrfachtreffer gelten in der Flächentabelle als kleiner Treffer": die sechs Serienangriffe kämen, seit die unsichtbaren Helfer gelesen werden, in die Flächenliste | Die Flächentabelle misst und listet nur Aktionen mit Wirkzeit (`Cast100ms > 0`); fünf der sechs sind Sofortaktionen (xivapi v2, 25.10.2026) und bleiben unbewertet, also gemindert. Der Defekt betraf Serien mit Wirkzeit, etwa Ersticken des Fleisches | A349: Serien mit Wirkzeit summiert; Sofortserien zählt `HitSeries` für die Glocke |

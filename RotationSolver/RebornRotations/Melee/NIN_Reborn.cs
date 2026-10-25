@@ -385,12 +385,14 @@ public sealed class NIN_Reborn : NinjaRotation
 				if ((!HasDoton && !IsMoving && !IsLastGCD(true, DotonPvE) && (!TenChiJinPvE.Cooldown.WillHaveOneCharge(6)) && DotonPvE.EnoughLevel)
 					|| (!HasDoton && !IsLastGCD(true, DotonPvE) && !TenChiJinPvE.Cooldown.IsCoolingDown && DotonPvE.EnoughLevel))
 				{
-					// Doton only where the enemies live through it, else Katon (A345).
-					if (DotonOutlived && JinPvE.CanUse(out _) && DotonPvE.IsEnabled && JinPvE.Info.IsQuestUnlocked())
+					// Doton only where the enemies live through it (A345) and stand still - a pack still following its
+					// tank walks out of the area (A350); else Katon.
+					var dotonHolds = DotonOutlived && (!Service.Config.DamageAreasWhenEnemiesStand || DamageAreaSettled(DotonPvE));
+					if (dotonHolds && JinPvE.CanUse(out _) && DotonPvE.IsEnabled && JinPvE.Info.IsQuestUnlocked())
 					{
 						SetNinjutsu(DotonPvE);
 					}
-					else if (!DotonOutlived && KatonPvE.EnoughLevel && KatonPvE.IsEnabled && ChiPvE.Info.IsQuestUnlocked())
+					else if (!dotonHolds && KatonPvE.EnoughLevel && KatonPvE.IsEnabled && ChiPvE.Info.IsQuestUnlocked())
 					{
 						SetNinjutsu(KatonPvE);
 					}

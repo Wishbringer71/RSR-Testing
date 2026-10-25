@@ -23,6 +23,27 @@ are not reconstructed here.
 
 ## Unreleased
 
+### Behaviour change in RotationSolver.Basic: damage areas wait for the enemies in them to stand still
+
+`BaseAction.CanUse` refuses an action whose effect text lays a damage area of its own ("any enemies who enter") and that
+can sit on a hotbar - Salted Earth - while the enemies within its effect range of where it lands have moved within the
+last GCD, or none stands there. Governed by the new setting `DamageAreasWhenEnemiesStand` ("Lay damage areas only once
+the enemies in them stand still", on by default). `CustomRotation.DamageAreaSettled(IBaseAction area, IBattleChara?
+centre = null)` is new and protected for rotations that decide such an area elsewhere: `NIN_Reborn` asks it when the
+mudras for Doton begin, `SMN_Reborn` before Slipstream while Emerald Rites are left.
+
+### RotationSolver.Basic: Liturgy of the Bell into a series of hits
+
+`WhiteMageRotation.LiturgyTriggersLeft` is new and protected: the triggers a bell laid now would still collect from an
+enemy attack hitting the player and another party member in a series, learned per action in `HitSeriesOnPlayer.json`.
+`WHM_Reborn` gains two sub-options of its multihit limit, both on.
+
+### Behaviour change in RotationSolver.Basic: the area table rates a series of hits
+
+A listed area cast that lands again within its own cast time adds its shares per member; the table stores the highest
+sum, at most a whole maximum HP. Readers of `HostileCastingAreaPotential` and `DataCenter.AnnouncedAreaShare` see the
+larger figure for such casts.
+
 ### Behaviour change in RotationSolver.Basic: a melee's dash at the end of a countdown
 
 `CustomRotation.PullGapCloser(float remainTime, IBaseAction dash, IBaseAction reach, out IAction? act)` is new and

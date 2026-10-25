@@ -43,6 +43,7 @@ internal static partial class TargetUpdater
 			DataCenter.PartyMembers.Clear();
 			DataCenter.AllianceMembers.Clear();
 			DataCenter.AllHostileTargets.Clear();
+			HostileMovement.Clear();
 			UpdateAreaCasters();
 			DataCenter.UpdateTankbusterTargets();
 			DataCenter.RaisedByOthers = [];
@@ -301,6 +302,8 @@ internal static partial class TargetUpdater
 		DataCenter.PartyMembers = partyMembers;
 		DataCenter.AllianceMembers = allianceMembers;
 		DataCenter.AllHostileTargets = hostileTargets;
+		// Which of them moved since the last update, for the damage areas (A350).
+		HostileMovement.Update(hostileTargets);
 
 		// Which party members an enemy is pointing at, collected once here rather than asked per
 		// member later. The hostile list is built in this loop anyway and each enemy names its

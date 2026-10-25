@@ -357,7 +357,9 @@ Rückfall-Horizont die Wirkzeit deckt, prüft die Liste nicht; das steht je Fall
   Encore, Reawaken, Starfall Dance, Technical Step, Flourish), Tanzschritte vor den Procs (Tänzer: Reverse
   Cascade, Fountainfall, Rising Windmill, Bloodshower warten, solange ein Schritt bereit ist; die Procs
   gelten 30 s laut Job-Guide, ein Tanz ist kürzer), Lux Solaris (Konzept 08, „Wann Lux Solaris zündet“), Ruin IV
-  (Konzept 16, „Jobs in seinem Schwerpunkt“). Searing Flash fällt
+  (Konzept 16, „Jobs in seinem Schwerpunkt“), Slipstream (wartet, solange sein Ziel sich bewegt, und fällt, sobald die
+  Emerald Rites verbraucht sind; Garuda's Favor endet nicht mit der Zeit, nur mit bestimmten Beschwörer-Aktionen,
+  Job-Guide – Konzept 04, „Schadensflächen erst, wenn die Gegner stehen"). Searing Flash fällt
   vor dem Ende von Ruby's Glimmer im Rückfall: Mit weiteren Beschwörern fällt Searing Light auch in
   einen Titan- oder Ifrit-Block, und die nächste Demi kommt nach dem Ende des Status (Konzept 16).
 - *Sicherheit:* Krieger Primal Rend auf Distanz nur mit den Sprung-Optionen — seine Vorgabe zu Bewegung.
@@ -517,7 +519,8 @@ zurück, wo eine Zahl fehlt. `DefenseTrace.log` nennt einmal je Aktion und Stufe
   - *Unverändert, gerechnet:* Katon statt Raiton ab 3 (350 je Gegner gegen 740 plus den Raiju, den Raiton gewährt, 700
     statt eines Kombo-GCDs); Huton statt Suiton ab 3; Doton statt Raiton ab 3. *Unverändert, nicht gebaut:* Death
     Blossom und Hakke Mujinsatsu lohnen ohne liegendes Doton erst ab 4 (110 je Gegner gegen rund 410 der
-    Einzelkombo); RSR legt Doton ab 3 Gegnern selbst, sobald der Ninja steht, die Lücke ist der Anlauf eines Rudels.
+    Einzelkombo); RSR legt Doton ab 3 Gegnern selbst, sobald der Ninja und die Gegner stehen (Konzept 04,
+    „Schadensflächen erst, wenn die Gegner stehen"); im Anlauf eines Rudels kommt Katon.
 
 ### Dragoon und Viper: Opener
 

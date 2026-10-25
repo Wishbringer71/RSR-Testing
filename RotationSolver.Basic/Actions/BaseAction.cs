@@ -304,6 +304,19 @@ public class BaseAction : IBaseAction
 			return ActionTracer.Reject(this, "TakesWhatTheTankbusterPlanNeeds");
 		}
 
+		// A damage area of its own stays where it is laid; a pack still on the move walks out of it (the owner's rule,
+		// 25.10.2026, concept 04, A350). Laid at the player's feet or around the target, as the action's range says. An
+		// action reached only through another button - a ninjutsu, a step of Ten Chi Jin - cannot sit on a hotbar
+		// (IsPlayerAction): it is decided where its sequence begins, and the rotation asks there. An area that is only the
+		// additional effect of a hit is weighed by the rotation against the hit (ActionTooltip.LaysDamageArea).
+		if (Service.Config.DamageAreasWhenEnemiesStand && !IBaseAction.ForceEnable && Action.IsPlayerAction
+			&& ActionTooltip.LaysDamageArea(ID)
+			&& !CustomRotation.DamageAreaSettled(Info.Range > 0 ? PreviewTarget.Value.Target?.Position : Player.Object?.Position,
+				Info.EffectRange))
+		{
+			return ActionTracer.Reject(this, "EnemiesInTheAreaStillMoving");
+		}
+
 		// Set in preview too: rotations read Target right after CanUse, and a skipped update leaves a despawned object there.
 		Target = PreviewTarget.Value;
 

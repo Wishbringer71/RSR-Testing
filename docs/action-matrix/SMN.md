@@ -1,6 +1,6 @@
 # SMN — Abhängigkeitsmatrix
 
-Erzeugt von `.github/scripts/audit/generate_action_matrix.py` am 2026-10-22; nicht von Hand bearbeiten. Methode und Grenzen: `docs/rotation-flow/14-action-dependency-matrix.md`.
+Erzeugt von `.github/scripts/audit/generate_action_matrix.py` am 2026-10-25; nicht von Hand bearbeiten. Methode und Grenzen: `docs/rotation-flow/14-action-dependency-matrix.md`.
 
 - Basisrotation: `SummonerRotation`
 - Rotation: `RotationSolver/RebornRotations/Magical/SMN_Reborn.cs`
@@ -340,6 +340,7 @@ Jeder Aufruf der Aktion trägt eine eigene Bedingung; hält sie an, verfällt da
 - Lux Solaris: 1 Aufruf(e), **ohne Rückfall vor Ablauf**
 - Ruin IV: 1 Aufruf(e), **ohne Rückfall vor Ablauf**
 - Searing Flash: 2 Aufruf(e), mit Rückfall vor Ablauf
+- Slipstream: 1 Aufruf(e), **ohne Rückfall vor Ablauf**
 
 ### Unvollständige Beschreibungen
 

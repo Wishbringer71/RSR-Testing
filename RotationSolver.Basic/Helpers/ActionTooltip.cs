@@ -25,6 +25,8 @@ internal static class ActionTooltip
 	private static readonly Regex StatedPotency = new(@"potency of (?<value>\d[\d,]*)", RegexOptions.Compiled);
 	private static readonly HashSet<(uint ActionId, int Level)> _unreadPotency = [];
 	private static readonly Regex StatedFalloff = new(@"(?<value>\d{1,2})% less for all remaining enemies", RegexOptions.Compiled);
+	private const string DamageAreaText = "enemies who enter";
+	private static readonly Regex AdditionalDamageArea = new(@"Additional Effect: Creates [^.]*enemies who enter", RegexOptions.Compiled);
 
 	/// <summary>
 	/// The evaluated effect text of <paramref name="actionId"/>, empty when the sheet has no row for it or the
@@ -110,6 +112,17 @@ internal static class ActionTooltip
 		var rest = TryStated(actionId, StatedFalloff, out var falloff) ? first * (1f - (falloff / 100f)) : first;
 		total = first + (rest * (targets - 1));
 		return true;
+	}
+
+	/// <summary>
+	/// Whether <paramref name="actionId"/> lays a damage area as its own effect: an area that stays where it is laid and
+	/// damages "any enemies who enter" it - Salted Earth, Doton - and not as the additional effect of a hit, as Slipstream's
+	/// windstorm (concept 04, "Schadensflächen erst, wenn die Gegner stehen", A350).
+	/// </summary>
+	public static bool LaysDamageArea(uint actionId)
+	{
+		var text = Text(actionId);
+		return text.Contains(DamageAreaText, StringComparison.Ordinal) && !AdditionalDamageArea.IsMatch(text);
 	}
 
 	/// <summary>

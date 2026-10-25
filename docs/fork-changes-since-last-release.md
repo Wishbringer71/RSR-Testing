@@ -97,6 +97,30 @@ Foul went out from three enemies, Xenoglossy below that. On two enemies Foul dea
 rotations also weigh the potencies the tooltips state, which keeps Xenoglossy at levels where it still deals more. A
 Foul AoE count you set yourself is set to two once: RSR carries a changed default over into saved settings.
 
+## White Mage: Liturgy of the Bell before a dangerous hit and into a series of hits
+
+Under "Limit Liturgy Of The Bell to multihit party stacks" (off by default), the bell went only on seven known multihit
+stack markers - twice in five evenings - and sat unused through fights without one. Two sub-options, both on by default, add the two
+cases where it heals when the party needs it: "Also before a hit that would put a party member in danger" lays it, last
+after Plenary Indulgence, Temperance and Divine Caress, before an announced hit that by its measured size would leave a
+member in critical health and that reaches you - its first heal comes with the hit, the rest right after. "Also into an
+enemy attack that hits in a series" learns which enemy attacks hit you and the party several times in a row, one
+trigger a second, and lays the bell at the first hit of one: a ten-hit attack a second apart heals the party after each
+of the next five.
+
+## A series of hits counts as one attack in the area damage table
+
+A listed area cast that lands several times right after one cast was rated by its largest single hit, so a cast that hit
+four times for up to 24 % each counted as a small hit, and "Skip mitigation for small area casts" left the party
+mitigation out against it. Hits that follow faster than the enemy could cast again are now added up per member.
+
+## Damage areas wait until the enemies in them stand still
+
+Salted Earth and Doton went out as soon as you stood, so a tank's pause in a wall-to-wall pull was enough to lay them
+where the pack did not stay. Now they wait until at least one enemy stands in their radius and none of those has moved
+for a GCD; Doton gives way to Katon meanwhile. Slipstream waits likewise while its target moves and Emerald Rites are
+left. Setting: "Lay damage areas only once the enemies in them stand still", on by default.
+
 ## Monk, Viper and Dragoon: a dash to the target at the pull, only from out of range
 
 At the end of a countdown the Monk used Thunderclap whatever the distance - standing at the boss, a charge for nothing -

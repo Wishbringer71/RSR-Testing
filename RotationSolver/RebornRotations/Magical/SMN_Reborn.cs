@@ -1090,7 +1090,11 @@ public sealed class SMN_Reborn : SummonerRotation
 
 	private bool UsePrimalFollowUps(out IAction? act)
 	{
-		if (SlipstreamPvE.CanUse(out act, skipCastingCheck: AddSwiftcastOnGaruda && ((!SwiftcastPvE.Cooldown.IsCoolingDown && IsMoving) || HasSwift)))
+		// Slipstream's windstorm stays where it is laid; while its target still moves it waits for the Emerald Rites
+		// left, and goes once they are spent - the hit outweighs the area (A350).
+		if (SlipstreamPvE.CanUse(out act, skipCastingCheck: AddSwiftcastOnGaruda && ((!SwiftcastPvE.Cooldown.IsCoolingDown && IsMoving) || HasSwift))
+			&& (!Service.Config.DamageAreasWhenEnemiesStand || !EmeraldAttunement
+				|| DamageAreaSettled(SlipstreamPvE, SlipstreamPvE.Target.Target)))
 		{
 			return true;
 		}
