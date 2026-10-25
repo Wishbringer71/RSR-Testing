@@ -18,8 +18,11 @@ value:
 - It reports every local branch that is behind its remote, and every one whose remote is gone.
 
 Exit code 1 when HEAD is behind upstream/main, because that is the precondition for changing code.
-Stale and orphaned branches are printed but do not fail the run: deleting them needs approval, so
-the script's job is to surface them, not to act.
+Stale and orphaned branches are printed but do not fail the run; the script surfaces them and does not
+act. A branch whose remote is gone and that holds no commit missing from every remote branch is a
+remnant of the session's environment: CLAUDE.md ("Grenzen und Löschungen") has it deleted with
+`git branch -d` and reported, without approval. One with a commit found only here needs approval -
+before A368 the script said so of both, and two merged branches were held for an approval nobody needed.
 
 Not part of CI. In CI the clone is fresh and every ref is current, so there would be nothing to
 find; the failure this guards against belongs to a persistent working copy.
@@ -105,7 +108,11 @@ def measure(do_fetch=True):
         if not tracked:
             print('  %-34s no remote-tracking branch' % name)
         elif 'gone' in track:
-            print('  %-34s remote is GONE - deletion candidate, needs approval' % name)
+            only_here = int(git('rev-list', '--count', name, '--not', '--remotes') or 0)
+            if only_here:
+                print('  %-34s remote is GONE, %d commit(s) only here - deletion needs approval' % (name, only_here))
+            else:
+                print('  %-34s remote is GONE, nothing only here - session remnant: git branch -d, then report it' % name)
         elif 'behind' in track:
             print('  %-34s %s - stale, do not measure against it' % (name, track))
         elif track:
@@ -187,8 +194,16 @@ def self_test():
         run('branch', '-q', '-D', 'topic')
         os.chdir(clone)
         code, text = verdict()
-        if 'GONE' not in text:
-            raise AssertionError('a branch whose remote is gone was not named:\n' + text)
+        if 'GONE, nothing only here' not in text:
+            raise AssertionError('a merged branch whose remote is gone was not named a session remnant:\n' + text)
+
+        # The same with a commit that no remote holds: that one needs approval.
+        open('g', 'w').write('x')
+        run('add', 'g')
+        run('commit', '-qm', 'local only')
+        code, text = verdict()
+        if '1 commit(s) only here - deletion needs approval' not in text:
+            raise AssertionError('a branch with a commit found only here was not held for approval:\n' + text)
         run('checkout', '-q', 'main')
 
         # The fetch fails: the old refs must not pass as current (C3).
@@ -206,8 +221,8 @@ def self_test():
         if code != 1 or 'SHALLOW' not in text:
             raise AssertionError('a shallow clone was measured:\n' + text)
 
-        print('self-test ok: synced, behind, a gone remote, a failed fetch and a shallow clone each '
-              'get their verdict\n')
+        print('self-test ok: synced, behind, a gone remote with and without a commit only here, a failed '
+              'fetch and a shallow clone each get their verdict\n')
     finally:
         os.chdir(original)
         subprocess.run(['rm', '-rf', workspace], capture_output=True)

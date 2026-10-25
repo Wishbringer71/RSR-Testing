@@ -10896,6 +10896,24 @@ main, compile, release, neuer branch".
 
 *Prüfgrad:* Zustand gemessen (Fetch beider Gegenstellen, Release-API, Prüfläufe auf GitHub).
 
+### A368 · „Wieso offen für mich?" – Zweige selbst gelöscht, Release-Sperre neu gemessen (25.10.2026)
+
+Seine Frage zu meiner Meldung, das Release und die Löschung zweier Zweige seien für ihn offen.
+
+- *Zweige, mein Fehler:* `claude/fixes-after-7.5.7.3` und `claude/fixes-after-7.5.7.6` waren lokal, ohne Gegenstelle und
+  ohne einen Commit, den nicht `origin/main` trägt – Reste der Sitzungsumgebung, die CLAUDE.md („Grenzen und Löschungen")
+  mich selbst mit `git branch -d` löschen und melden lässt. Ich hatte sie seit A363 als freigabepflichtig geführt, weil
+  `check_sync_state.py` jeden Zweig ohne Gegenstelle „needs approval" nannte. Gelöscht; das Skript unterscheidet jetzt
+  „nichts nur hier" (Sitzungsrest) von „Commits nur hier" (freigabepflichtig), mit Selbsttest für beide Fälle.
+- *Release:* Freigegeben hat er es mit seinem Auftrag („branch zu main, compile, release, neuer branch"); offen blieb es
+  nur wegen der Sperre dieser Sitzungsart (403 am 22.10.2026). Neu gemessen: Der Push des Tags `7.5.7.7+wsh1` auf
+  79b4acf24 – er hätte `publish.yaml` über dessen Tag-Eingang ausgelöst – wurde schon von der Rechteprüfung der Sitzung
+  abgewiesen („Create Public Surface"), ebenso eine lesende Abfrage nach dem Tag („Production Deploy"). Kein Tag
+  entstanden. Die Sperre gilt also weiter; aufheben kann er sie über eine Erlaubnisregel für diese Sitzung, sonst setzt
+  er den Tag oder startet `publish.yaml` selbst.
+
+*Prüfgrad:* Zustand gemessen (lokale Zweige gegen `origin/main`, Rechteprüfung der Sitzung).
+
 ---
 ## B · Commit-Register (Fork vs. `upstream/main`)
 
