@@ -202,7 +202,7 @@ public sealed class AST_Reborn : AstrologianRotation
 
 		if (nextGCD.IsTheSameTo(false, HeliosConjunctionPvE, HeliosPvE))
 		{
-			if (PartyMembersAverHP < HoroscopeHeal && HoroscopePvE.CanUse(out act))
+			if (PartyMembersForecastAverHP(true) < HoroscopeHeal && HoroscopePvE.CanUse(out act))
 			{
 				return true;
 			}
@@ -373,12 +373,12 @@ public sealed class AST_Reborn : AstrologianRotation
 			return true;
 		}
 
-		if (PartyMembersAverHP < HoroscopeHeal && HoroscopePvE_16558.CanUse(out act))
+		if (PartyMembersForecastAverHP(true) < HoroscopeHeal && HoroscopePvE_16558.CanUse(out act))
 		{
 			return true;
 		}
 
-		if (PartyMembersAverHP < HoroscopeHeal && HoroscopePvE.CanUse(out act))
+		if (PartyMembersForecastAverHP(true) < HoroscopeHeal && HoroscopePvE.CanUse(out act))
 		{
 			return true;
 		}
@@ -401,7 +401,7 @@ public sealed class AST_Reborn : AstrologianRotation
 			}
 		}
 
-		if (PartyMembersAverHP < LadyOfHeals && LadyOfCrownsPvE.CanUse(out act))
+		if (PartyMembersForecastAverHP(true) < LadyOfHeals && LadyOfCrownsPvE.CanUse(out act))
 		{
 			return true;
 		}

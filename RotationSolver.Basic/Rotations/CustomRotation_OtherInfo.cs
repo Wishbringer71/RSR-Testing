@@ -479,6 +479,20 @@ public partial class CustomRotation
 	public static float PartyMembersAverHP => DataCenter.PartyMembersAverHP;
 
 	/// <summary>
+	/// <see cref="PartyMembersAverHP"/> carried forward to the moment a heal begun now would land, each member at the
+	/// health he is heading for - what a healing threshold on the party's average reads, as "Heal ahead of incoming
+	/// damage" states for every healing threshold. With that setting off it equals <see cref="PartyMembersAverHP"/>
+	/// (A358).
+	/// </summary>
+	/// <param name="instant">An off-GCD heal, which looks ahead only as far as the current animation lock.</param>
+	/// <returns>The forecast average health ratio.</returns>
+	public static float PartyMembersForecastAverHP(bool instant = false)
+	{
+		DataCenter.ComputeForecastAreaStats(instant, out var avgHp, out _, out _, out _);
+		return avgHp;
+	}
+
+	/// <summary>
 	/// 
 	/// </summary>
 	public static IBattleChara? LowestHealthPartyMember

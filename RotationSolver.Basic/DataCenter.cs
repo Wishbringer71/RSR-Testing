@@ -1946,6 +1946,17 @@ internal static class DataCenter
 	private static readonly float[] _forecastStdDevCache = new float[_forecastStatsCacheTick.Length];
 	private static readonly float[] _forecastLowestAvgCache = new float[_forecastStatsCacheTick.Length];
 	private static readonly float[] _forecastLowestStdDevCache = new float[_forecastStatsCacheTick.Length];
+	private static readonly float[] _forecastMinCache = new float[_forecastStatsCacheTick.Length];
+
+	/// <summary>
+	/// The lowest forecast health in the party, from the same members and the same moment as
+	/// <see cref="ComputeForecastAreaStats"/>: what the downtime heal's threshold reads (A358).
+	/// </summary>
+	internal static float ForecastMinHp(bool instant)
+	{
+		ComputeForecastAreaStats(instant, out _, out _, out _, out _);
+		return _forecastMinCache[instant ? 1 : 0];
+	}
 
 	/// <summary>
 	/// The area-heal statistics on forecast health: each member's health carried forward to the moment
@@ -1996,9 +2007,11 @@ internal static class DataCenter
 		}
 
 		avgHp = stdDevHp = lowestAvgHp = lowestStdDevHp = 0;
+		_forecastMinCache[kind] = 0;
 		if (count > 0)
 		{
 			Array.Sort(_forecastHpBuffer, 0, count);
+			_forecastMinCache[kind] = _forecastHpBuffer[0];
 			var lowestCount = Math.Min(count, LightPartySize);
 
 			float sum = 0, lowestSum = 0;

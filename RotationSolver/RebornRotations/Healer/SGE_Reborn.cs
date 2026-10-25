@@ -338,7 +338,7 @@ public sealed class SGE_Reborn : SageRotation
 			return true;
 		}
 
-		if (HolosPvE.CanUse(out act) && PartyMembersAverHP < HolosHeal && HolosHealOption)
+		if (HolosPvE.CanUse(out act) && PartyMembersForecastAverHP(true) < HolosHeal && HolosHealOption)
 		{
 			return true;
 		}
@@ -795,7 +795,7 @@ public sealed class SGE_Reborn : SageRotation
 			}
 		}
 
-		if (PartyMembersAverHP < PneumaAOEPartyHeal || (DyskrasiaPvE.CanUse(out _) && tankBelowThreshold))
+		if (PartyMembersForecastAverHP() < PneumaAOEPartyHeal || (DyskrasiaPvE.CanUse(out _) && tankBelowThreshold))
 		{
 			if (PneumaPvE.CanUse(out act))
 			{

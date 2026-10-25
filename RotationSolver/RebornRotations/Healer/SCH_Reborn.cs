@@ -236,7 +236,7 @@ public sealed class SCH_Reborn : ScholarRotation
 		}
 
 		// This is normally an inefficient choice, but there are *some* mechanics where it can be a good idea to burst heal at lower efficiency (likely triggering GCD Succors as well)
-		if (PartyMembersAverHP < EmergencyHealPercent)
+		if (PartyMembersForecastAverHP(true) < EmergencyHealPercent)
 		{
 			if (FeyBlessingPvE.CanUse(out act))
 			{
@@ -892,7 +892,7 @@ public sealed class SCH_Reborn : ScholarRotation
 		}
 
 		// Check average hp as a quick check on whether we're in a raid wide healing situation
-		if (!IndomitabilityPvE.Cooldown.IsCoolingDown && PartyMembersAverHP <= ReciteIndomitability)
+		if (!IndomitabilityPvE.Cooldown.IsCoolingDown && PartyMembersForecastAverHP(true) <= ReciteIndomitability)
 		{
 			return true;
 		}

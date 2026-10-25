@@ -302,12 +302,16 @@ public partial class CustomRotation
 				{
 					_nextTimeToHeal = DateTime.Now;
 
-					if (PartyMembersMinHP < Service.Config.HealWhenNothingTodoBelow)
+					// A healing threshold, so it reads the health heading for the moment the heal lands, as "Heal ahead of
+					// incoming damage" states for every one - and so does the spread weighed with it, as in the area
+					// thresholds (A182, A358). With that setting off both are the levels.
+					DataCenter.ComputeForecastAreaStats(false, out _, out var forecastSpread, out _, out _);
+					if (DataCenter.ForecastMinHp(false) < Service.Config.HealWhenNothingTodoBelow)
 					{
 						IBaseAction.TargetOverride = TargetType.Heal;
 						IBaseAction.HealPathRunning = true;
 
-						if (DataCenter.PartyMembersDifferHP < Service.Config.HealthDifference)
+						if (forecastSpread < Service.Config.HealthDifference)
 						{
 							var count = 0;
 							foreach (var hp in DataCenter.PartyMembersHP)
