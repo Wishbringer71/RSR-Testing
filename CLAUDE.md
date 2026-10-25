@@ -66,7 +66,7 @@ Persistenz: Priorität 1, jede Eingabe, ausnahmslos. Kontextkomprimierung→Date
 - Sonst gebündelt, mit durchgerechneten Konsequenzen und Empfehlung (→ „Vorlagen an ihn").
 
 **Bevor ich etwas als fertig melde**
-- Wirkkette am Code, Richtigkeit am Spielgeschehen, Nachsteuerung, wo die Antwort erst zur Laufzeit fällt (→ „Definition of Done").
+- Wirkkette am Code, Richtigkeit und Bilanz am Spielgeschehen, Nachsteuerung, wo die Antwort erst zur Laufzeit fällt (→ „Definition of Done").
 - Konzept, `TODO.md` und Archiv fortgeschrieben.
 - Am Auftragsende Upstream erneut synchronisiert und ausgewertet (→ „Upstream“).
 - Prüfgrad benannt.
@@ -91,9 +91,9 @@ Pflicht für jede nicht-triviale Aufgabe; die REGEL steht darüber.
 |---|---|---|
 | 1 | Research | Fehlerbild vom Fehler trennen; Ursache am Artefakt belegen (Code, Versionsgeschichte, Laufzeitdaten, Fremddokumentation). Erinnerung ist keine Quelle. |
 | 2 | Optionen | Lösungsraum vollständig, mit Nullvariante und Rückbau. Noch nicht bewerten. |
-| 3 | Abwägung | Je Option: was sie im Kampf ändert, Schweregrad, Dringlichkeit, Aufwand, Blast Radius, Folgekosten. |
+| 3 | Abwägung | Je Option als SWOT im Spielgeschehen: Stärken und Schwächen (was sie selbst im Kampf bewirkt), Chancen und Bedrohungen (Lagen und fremde Einflüsse, unter denen sie nützt oder schadet – Inhalt, andere Spieler, BossMod, Patch); dazu Schweregrad, Dringlichkeit, Aufwand, Blast Radius, Folgekosten; Bilanz, was überwiegt (→ „Maßstab: das Spielgeschehen"). |
 | 4 | Abgleich | Gegen die tatsächliche Anforderung prüfen, nicht gegen das Thema: Scope Creep und stille Verengung. |
-| 5 | Review | Problemdefinition und Option gegen Annahmen, Randfälle, Wechselwirkungen. |
+| 5 | Review | Problemdefinition und Option gegen Annahmen, Randfälle, Wechselwirkungen. Schwächen und Bedrohungen der gewählten Option beseitigen; was bleibt, mit Preis und Wahrscheinlichkeit benennen. |
 | 6 | Falsifikation | Drei Hypothesen vertreten: kein Defekt · Option falsch · **ausgeliefert, und nichts ändert sich — warum?** Hält eine, zurück zu 2. |
 | 7 | Umsetzung | Nur was die Falsifikation überstanden hat; kleinster wirksamer Eingriff. |
 | 8 | Nachweis | Verifikation (Spezifikation erfüllt) und Validierung (gemeldetes Verhalten behoben); Prüfgrad benennen. |
@@ -123,7 +123,7 @@ Gelten in jeder Stufe. Eine Aussage, die eine davon verletzt, ist unbelegt.
 - Jeder Defekt gilt als Klasse, bis das Gegenteil belegt ist: alle gleichen Stellen erheben, dann begründet einschränken; die Behebung zielt auf die Wiederholbarkeit.
 
 **Möglichkeitssinn**
-- Zu jeder Stelle fragen: Welche vorhandene Stärke trifft hier auf welche offene Frage? Grund: Der Loop misst Kosten und Risiko, nie Ertrag, und ohne Defekt läuft er gar nicht — alle bisherigen Fälle dieser Art hat er eingebracht, keinen der Loop.
+- Zu jeder Stelle fragen: Welche vorhandene Stärke trifft hier auf welche offene Frage? Grund: Ohne Defekt läuft der Loop gar nicht — alle bisherigen Fälle dieser Art hat er eingebracht, keinen der Loop; die Abwägung (Stufe 3) wägt nur Optionen, die schon auf dem Tisch liegen.
 - Vorhandene Stärken: Gesundheitshistorie über vier Minuten, Effekt-Handler für jeden Treffer, Vorhersage fremder Casts.
 - Ein Baustein ist nicht Vorratsarbeit, nur weil ihn heute keine Regel liest; fragen, was er beantwortbar macht (`docs/method/01-loop-evaluation-methods.md`).
 
@@ -136,6 +136,7 @@ Gelten in jeder Stufe. Eine Aussage, die eine davon verletzt, ist unbelegt.
 # Maßstab: das Spielgeschehen
 
 - Jede Begründung, Beurteilung und Frage sagt, was im Kampf anders wird: wer wann wie viel Schaden nimmt, welche Aktion früher oder später fällt, wer überlebt, was er am Bildschirm sieht. Codestellen und Prüfgrade belegen das, sie ersetzen es nicht.
+- Jede Entscheidung – meine, Upstreams, eine Option für ihn – verfolge ich in der kausalen Kette bis ins Spielgeschehen, gesamtheitlich: alle Rollen, Jobs, Lagen und Regeln, die sie berührt, auch die Folgen zweiter Ordnung (was sie an Zeitpunkten, Ressourcen und anderen Regeln verschiebt). Daraus die Bilanz als SWOT: wo sie im Kampf nützt, wo sie schadet, jeweils gewichtet mit der Wahrscheinlichkeit, und was überwiegt; Schwächen und Bedrohungen beseitige ich, bevor ich ausliefere (seine Vorgabe, 25.10.2026). Grund: Eine Wirkung, die nur in ihrer gewollten Richtung geprüft ist, verschweigt ihren Preis.
 - „Die Wirkkette ist am Code belegt" heißt nur, dass etwas wirkt. Ob es im Spiel richtig ist, beantworte ich gesondert.
 - Eine Spielgröße kläre ich in ihrer Bedeutung, bevor ich sie verrechne: Ein Schild verhindert Schaden und heilt nicht; Unverwundbarkeit verhindert den Tod und heilt nicht; ein Debuff drosselt den Schadensstrom und beendet ihn nicht.
 - Befunde formuliere ich als Wirkung: „die Beschwörung kommt einen GCD später und mit ihr jede weitere Demi", nicht „`searingSettled` liest die Bedingung nicht".
@@ -251,14 +252,14 @@ Gelten in jeder Stufe. Eine Aussage, die eine davon verletzt, ist unbelegt.
 
 **Definition of Done**
 - Wirkkette am Code belegt (Flag, Dispatch, `CanUse`, Zielwahl).
-- Richtigkeit am Spielgeschehen begründet.
+- Richtigkeit am Spielgeschehen begründet, mit Bilanz: was im Kampf besser, was schlechter wird, was überwiegt; Schwächen und Bedrohungen beseitigt oder mit Preis benannt (→ „Maßstab: das Spielgeschehen").
 - Fällt die Antwort erst zur Laufzeit: die Regel steuert selbst nach; Analysefragen sind vorher beantwortet, nicht auf später verwiesen.
 - Keine offene Spielbestätigung als Aufgabe an ihn.
 
 # Vorlagen an ihn
 
 - Keine Hinweise auf Grundlagen, die er kennt (seine Vorgabe): weder meine Arbeitsweise („erst Konzept, dann Code“, „voller Loop“) noch den Umgang mit seinem System (eine Plugin-Datei nur bei geschlossenem Spiel löschen).
-- Entscheidungsbedarf gebündelt am Ende, nach ADR-Struktur (Kontext, betroffene Stellen, Mechanismus, Konsequenzen), mit begründeter Empfehlung und durchgerechneten Konsequenzen — je Fall getrennt, wo sie sich unterscheiden.
+- Entscheidungsbedarf gebündelt am Ende, nach ADR-Struktur (Kontext, betroffene Stellen, Mechanismus, Konsequenzen als Bilanz im Spielgeschehen – was besser, was schlechter wird, was überwiegt), mit begründeter Empfehlung und durchgerechneten Konsequenzen — je Fall getrennt, wo sie sich unterscheiden.
 - Alles ohne Entscheidungsabhängigkeit ist vorher fertig; keine Zwischenrückfragen.
 - Er entscheidet, was ihn trifft: Verhalten im Kampf, Voreinstellungen, Optionen, Umfang und Reihenfolge der Arbeit, Freigabe und Veröffentlichung.
 - Meine Hilfsmittel (Prüfskripte, Selbsttests, Berichtsformat) stehen nicht zur Abstimmung; einen Defekt darin melde ich mit der getroffenen Entscheidung.

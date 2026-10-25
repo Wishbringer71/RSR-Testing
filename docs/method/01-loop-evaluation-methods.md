@@ -22,8 +22,9 @@ Auftraggeber, nicht aus dem Loop:
 | Schadenspotential der Flächenaktionen | Nullvariante aus Kostengründen | der Auftraggeber, ausgearbeitet mit Höchstwert-Fortschreibung |
 | Grenze „bewältigbar" | von mir gesetzt: 600 | der Auftraggeber („wo könnte Automation die Entscheidung übernehmen?") |
 
-**Drei Werkzeuge schließen die belegten Lücken; drei weitere sind geprüft und nicht aufgenommen.**
-Aufgenommen sind die Chancenfrage aus SWOT/TOWS als vierte Querschnittsanforderung, das Premortem als
+**Vier Werkzeuge schließen die belegten Lücken; drei weitere sind geprüft und nicht aufgenommen.**
+Aufgenommen sind die SWOT-Bilanz als Form der Abwägung (Stufe 3) und der Auslieferung (seine Vorgabe,
+25.10.2026), die Chancenfrage aus SWOT/TOWS als vierte Querschnittsanforderung, das Premortem als
 dritte Hypothese der Falsifikationsstufe und Cynefin als Einordnung, welcher Prüfgrad überhaupt
 erreichbar ist.
 
@@ -54,12 +55,33 @@ beworben.
 
 ## Was aufgenommen wird, und wogegen es belegt ist
 
+### Die SWOT-Bilanz — als Form der Abwägung und Bedingung der Auslieferung
+
+**Das Werkzeug.** Jede Option und jede Entscheidung wird in ihrer kausalen Kette bis ins Spielgeschehen
+verfolgt und als SWOT gelesen: Stärken und Schwächen sind, was sie selbst im Kampf bewirkt; Chancen
+und Bedrohungen die Lagen und fremden Einflüsse, unter denen sie nützt oder schadet – Inhalt, andere
+Spieler, BossMod, Patch. Jede Wirkung trägt ihre Wahrscheinlichkeit; daraus folgt, was überwiegt.
+Schwächen und Bedrohungen werden vor der Auslieferung beseitigt, was bleibt, mit Preis benannt
+(`CLAUDE.md`, „Maßstab: das Spielgeschehen", Stufen 3 und 5, „Definition of Done").
+
+**Warum vollständig.** Bis 25.10.2026 galt hier allein die Zelle *Opportunities*: Die übrigen drei
+schienen durch die Kosten- und Risikogrößen der Abwägung abgedeckt. Sie waren es nicht. Diese Größen
+messen den Preis einer Änderung, nicht ihre Wirkung im Kampf in beide Richtungen; eine Regel, die nur
+in ihrer gewollten Richtung geprüft war, ging mit verschwiegenem Preis hinaus. Der Auftraggeber hat das
+als allgemeine Regel gesetzt: „immer mit kausaler kette, welche auswirkungen hat entscheidung …
+wo sind sie negativ, wo positiv? was überwiegt? (SWOT-Analyse und beseitigung von threats und
+weaknesses)". Belegt am selben Tag: Die Schadensflächen-Regel A352 lag an jedem Aggro-Halt des Tanks
+falsch (C128), und die Fassung für den Aggro-Halt hielt im ersten Wurf in jedem Bosskampf mit
+Add-Wellen und bei einem passiven Gegner am Tank im Freien die Fläche zurück (A354) – beides
+Bedrohungen, die die Abwägung ohne Gegenrichtung nicht gesucht hatte.
+
 ### Die Chancenfrage — als vierte Querschnittsanforderung
 
-**Das Werkzeug.** Von der SWOT-Analyse ist allein die Zelle *Opportunities* hier von Wert, und sie
-allein erzeugt nichts: Eine Liste von Chancen ist kein Ergebnis. Was etwas erzeugt, ist die
+**Das Werkzeug.** Eine Liste von Chancen allein ist kein Ergebnis. Was etwas erzeugt, ist die
 **TOWS-Matrix** (Heinz Weihrich, 1982), die Strategien aus Kreuzungen ableitet — insbesondere die
-Zelle **Stärke × Chance**: *Welche vorhandene Stärke trifft hier auf welche neue Möglichkeit?*
+Zelle **Stärke × Chance**: *Welche vorhandene Stärke trifft hier auf welche neue Möglichkeit?* Sie
+bleibt neben der SWOT-Bilanz eine eigene Anforderung, weil die Bilanz nur Optionen wägt, die schon auf
+dem Tisch liegen, und der Loop ohne Defekt gar nicht anspringt.
 
 **Warum genau diese Zelle.** Dieses Projekt hat eine ungewöhnlich große Stärkenseite, die im Loop
 nicht vorkommt: eine Gesundheitshistorie über vier Minuten, ein Effekt-Handler, der jeden Treffer
@@ -140,16 +162,18 @@ in der Querschnittsanforderung Kausalität enthalten.
 
 ## Konsequenzen
 
-**Für den Loop.** Drei Ergänzungen, keine neue Stufe. Die Chancenfrage als vierte
-Querschnittsanforderung, das Premortem als dritte Hypothese in Stufe 6, die Domänenfrage in der
-Aufwandsregel der REGEL. Alle drei stehen in `CLAUDE.md`.
+**Für den Loop.** Vier Ergänzungen, keine neue Stufe. Die SWOT-Bilanz in Stufe 3, im Review (Stufe 5)
+und in der Definition of Done, die Chancenfrage als vierte Querschnittsanforderung, das Premortem als
+dritte Hypothese in Stufe 6, die Domänenfrage in der Aufwandsregel der REGEL. Alle vier stehen in
+`CLAUDE.md`.
 
 **Für die Kosten je Vorgang.** Die Chancenfrage und das Premortem sind je ein Satz Denkarbeit und
-kosten nichts an Werkzeug. Die Domänenfrage kostet etwas: Sie verlangt bei Verhaltensänderungen ein
-mitgeliefertes Messmittel. Das ist der einzige Punkt mit Aufwand, und er ersetzt Aufwand an anderer
-Stelle — nämlich das nachträgliche Beantworten von Fragen, die im Spiel längst hätten sichtbar sein
-können.
+kosten nichts an Werkzeug. Die SWOT-Bilanz kostet je Option die Gegenrichtung – die Lagen, in denen
+sie schadet –, oft mit einem Modell; sie ersetzt die Nachbesserung, wenn er die Schwäche im Spiel
+findet. Die Domänenfrage kostet etwas: Sie verlangt bei Verhaltensänderungen ein mitgeliefertes
+Messmittel, und sie ersetzt Aufwand an anderer Stelle — nämlich das nachträgliche Beantworten von
+Fragen, die im Spiel längst hätten sichtbar sein können.
 
 **Für den Auftraggeber.** Die Ergänzungen betreffen meine Arbeitsweise, nicht das Verhalten des
 Plugins. Sie sind in `CLAUDE.md` eingetragen, weil das die Datei ist, die die Arbeitsweise trägt; wer
-sie zurücknehmen will, streicht drei Absätze.
+sie zurücknehmen will, streicht die Absätze, die sie tragen.
