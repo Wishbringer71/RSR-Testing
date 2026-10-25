@@ -12,9 +12,10 @@ Nach der Wirkung im Kampf: Sicherheit der Gruppe vor Schaden, gewichtet mit der 
 18.10.2026 sind erledigt: TODO berichtigt (A322), Prüfläufe geordnet (A323), Laufzeitkosten umgestellt (A325). Sein
 Auftrag vom 24.10.2026 läuft: die einfachen Punkte zuerst (A338), die schweren wichtigen danach ebenso. Sein Auftrag vom
 25.10.2026, Upstream der letzten zehn Tage mit den eigenen Patches inhaltlich abzugleichen, ist erledigt (A354), der
-Defekt daraus behoben (A356). Sein Auftrag vom 25.10.2026 nachmittags: nach Priorität und Umsetzbarkeit, je im Loop.
+Defekt daraus behoben (A356). Sein Auftrag vom 25.10.2026 nachmittags: nach Priorität und Umsetzbarkeit, je im Loop;
+der Tank-Punkt ist entschieden (A357), danach kommt sein Auftrag zu den Einstellungen.
 
-1. Tank: ein neues Rudel ohne Warten binden
+1. Einstellungen: Entscheidung des Spielers oder Automatik
 2. Rotationen gegen The Balance abgleichen
 3. Six-sided Star und Flamethrower
 4. AoE-Schwelle an drei Orten
@@ -28,14 +29,16 @@ Keine bekannt.
 
 ## Offene Arbeit
 
-### Tank: ein neues Rudel ohne Warten binden · N
+### Einstellungen: Entscheidung des Spielers oder Automatik · N, R
 
-*Im Kampf:* Sicherheit – hält er als Tank bei einem neuen Rudel, wartet er bis zu einem GCD auf seinen Flächenangriff,
-während das mitgebrachte Rudel auf ihn einschlägt (sein Hinweis, 25.10.2026). `HostileMovement` weiß, welche Gegner in
-seiner Reichweite noch ungebunden sind; eine Fähigkeit mit Flächenschaden um ihn könnte sie sofort binden. *Nächster
-Schritt:* Loop – welche Fähigkeiten je Tank Fläche und Feindschaft bringen, was sie kosten (Ressourcen, Abklingzeit,
-Burst), ob die Rotation den Flächenangriff schon vorzieht. *Konzept:* 04, „Schadensflächen erst, wo die Gegner
-bleiben".
+*Im Kampf:* je Einstellung – sein Auftrag (25.10.2026): „bei allen einstellungen, wo entscheidungen zu treffen sind
+(an/aus, werte in ui einzutragen), ob dies richtige entscheidungen für den spieler sind, oder ob einige davon eher
+automatismen im spiel sind, die durch routinen und ingame auswertungen besser geregelt werden können. das kritisch in
+einem konzept mit audit durchgehen." Erster belegter Fall: „Engage settings" (je Job, ab Werk für jeden Job „All
+targets when solo in duty, or previously engaged") lässt einen Tank in der Gruppe ungebundene Gegner nicht zählen; beim
+Aggro-Halt bleibt er unter seiner Flächenschwelle, bis sein Rudel nachkommt (A357). *Nächster Schritt:* Bestand aller
+Einstellungen (`Configs`, Rotationseinstellungen) erheben, je Einstellung einordnen und im Loop bewerten. *Konzept:*
+neu, weil keines der bestehenden den Gegenstand trägt.
 
 ### Rotationen gegen The Balance abgleichen · N
 

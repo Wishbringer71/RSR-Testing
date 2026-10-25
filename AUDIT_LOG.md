@@ -10448,6 +10448,31 @@ Heiler ohnehin heilte; die Änderung zielt auf den Rest.
 *Prüfgrad:* statisch, Modell mit Selbsttest im Regelkreis, Compile; im Spiel nicht beobachtet. Messmittel: die
 Selbstkorrektur (`ScoreTtkForecast`) läuft unverändert auf der neuen Schätzung.
 
+### A357 · Tank: ein neues Rudel ohne Warten binden – entschieden, Ursache in einer Einstellung (25.10.2026)
+
+Offener Punkt aus A353 (Möglichkeitssinn): Hält er als Tank bei einem neuen Rudel, wartet er auf seinen Flächenangriff,
+während das mitgebrachte Rudel auf ihn einschlägt.
+
+- *Erhoben:* Die Fähigkeiten mit Flächenschaden um den Tank sind in den Standardrotationen an den Burst gebunden –
+  Circle of Scorn erst bei laufender Abklingzeit von Fight or Flight (`PLD_Reborn`), Bow Shock nur unter No Mercy
+  (`GNB_Reborn`); Orogeny folgt der Anzeige (`WAR_Reborn`), Abyssal Drain ab drei Gegnern (`DRK_Reborn`). Die
+  Flächenschwelle der Tanks zählt die getroffenen Gegner über `TargetHelper.GetTargetsByRange`, das nicht angreifbare
+  verwirft; „Engage settings" (je Job, ab Werk „All targets when solo in duty, or previously engaged") macht einen
+  ungebundenen Gegner in der Gruppe nicht angreifbar.
+- *Im Kampf:* Kommt das mitgebrachte Rudel verzögert nach, zählt der RSR-Tank am neuen Rudel weniger als zwei Gegner
+  und schlägt zuerst einzeln zu; erst wenn das Rudel gebunden oder sein eigenes nachgekommen ist, folgt die Fläche.
+- *Optionen und Bilanz:* (1) Circle of Scorn und Bow Shock für den Halt aus dem Burst lösen – Stärke: Bindung bis zu
+  einem GCD früher, wenn die Fähigkeit gerade bereit ist; Schwäche: sicherer Schadensverlust (Burstbonus) und ein
+  verschobener nächster Burst, bei 30 bzw. 60 s Abklingzeit nur an einem Teil der Halte bereit; überwiegt nicht –
+  verworfen. (2) Ungebundene Gegner in Reichweite des Tanks für seine Flächenschwelle zählen – Stärke: die Fläche
+  kommt mit dem nächsten GCD; Bedrohung: widerspricht dem Text von „Engage settings", den er je Job wählt. Das ist die
+  Frage seines Auftrags vom selben Tag, ob eine Einstellung eine Entscheidung des Spielers oder eine Automatik ist –
+  dorthin übergeben (`TODO.md`, „Einstellungen: Entscheidung des Spielers oder Automatik"), als erster belegter Fall.
+  (0) Nichts tun – gilt bis zu diesem Audit.
+- *Fortgeschrieben:* `TODO.md` (Punkt ersetzt), Konzept 04 („Bilanz im Kampf", Chancen).
+
+*Prüfgrad:* statisch.
+
 ---
 ## B · Commit-Register (Fork vs. `upstream/main`)
 

@@ -362,9 +362,10 @@ er selbst steht.
   - *Schwächen:* Bleibt der Tank, wo er gebunden hat, kommt die Fläche nach seinem Flächenangriff und einem GCD (Modell:
     3,6 s später, dieselben Treffer, solange keiner stirbt); der Ninja wirft so lange Katon statt Doton. Das Kampf-Flag
     ist durch WrathCombo belegt, nicht durch eine Spielquelle.
-  - *Chancen:* Die Zeile in `DefenseTrace.log` zeigt in seinen Kämpfen, ob Flächen noch verlassen werden; derselbe
-    Kampfzustand je Gegner kann dem Tank sagen, wann ein neues Rudel ungebunden in seiner Reichweite steht (`TODO.md`,
-    „Tank: ein neues Rudel ohne Warten binden").
+  - *Chancen:* Die Zeile in `DefenseTrace.log` zeigt in seinen Kämpfen, ob Flächen noch verlassen werden. Für den
+    Tank selbst, der ein neues Rudel schneller binden soll, ist der Kampfzustand nicht der Engpass: Mit der
+    Voreinstellung von „Engage settings" (je Job) zählt er ungebundene Gegner in der Gruppe nicht für seine
+    Flächenschwelle (A357; `TODO.md`, „Einstellungen: Entscheidung des Spielers oder Automatik").
   - *Bedrohungen, beseitigt:* Add-Wellen im Bosskampf und ein passiver Gegner am Tank im Freien hielten im ersten Wurf
     jede Fläche zurück – jetzt zählen nur Gegner in der Fläche oder am Tank, der Ungebundene am Tank nur in Instanzen;
     ein außer Sicht gezogenes Rudel blieb unerkannt – jetzt zählt das erste Sehen im Kampf. *Verbleibend:* ein passiver
