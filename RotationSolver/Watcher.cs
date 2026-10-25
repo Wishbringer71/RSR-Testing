@@ -1028,6 +1028,16 @@ public static class Watcher
 
 			// The trace writes what the defence chose; this line says that it went out.
 			DefenseTrace.Executed(action.Value.RowId, action.Value.Name.ExtractText());
+
+			// A damage area grades itself over its duration: did the enemies stay in it (A353).
+			if (ActionTooltip.LeavesDamageArea(action.Value.RowId)
+				&& ActionTooltip.TryStatedDuration(action.Value.RowId, out var areaDuration)
+				&& (action.Value.Range > 0 ? tar?.Position : playerObject.Position) is { } areaCentre)
+			{
+				HostileMovement.AreaLaid(action.Value.Name.ExtractText(), areaCentre, action.Value.EffectRange, areaDuration,
+					DataCenter.AllHostileTargets);
+			}
+
 			if (action.Value.RowId == (uint)ActionID.ShirkPvE)
 			{
 				TankSwapWatch.ShirkLanded();

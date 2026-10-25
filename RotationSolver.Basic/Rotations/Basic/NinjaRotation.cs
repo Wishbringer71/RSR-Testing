@@ -173,9 +173,6 @@ public partial class NinjaRotation
 	private static readonly System.Text.RegularExpressions.Regex MeisuiBonus =
 		new(@"Meisui Bonus: Potency is increased to (?<value>\d[\d,]*)", System.Text.RegularExpressions.RegexOptions.Compiled);
 
-	private static readonly System.Text.RegularExpressions.Regex StatedDuration =
-		new(@"Duration: (?<value>\d{1,3})s", System.Text.RegularExpressions.RegexOptions.Compiled);
-
 	/// <summary>
 	/// Whether Hellfrog Medium (Deathfrog Medium under Higi) on <paramref name="targets"/> enemies deals more than
 	/// Bhavacakra (Zesho Meppo) on one - raised under Meisui to the figure its tooltip names. Both cost the same 50
@@ -231,7 +228,7 @@ public partial class NinjaRotation
 	/// hostiles; true while that is unknown or the duration cannot be read, as before.
 	/// </summary>
 	protected bool DotonOutlived => !DataCenter.IsAverageTTKKnown
-		|| !ActionTooltip.TryStated(DotonPvE.ID, StatedDuration, out var duration)
+		|| !ActionTooltip.TryStatedDuration(DotonPvE.ID, out var duration)
 		|| DataCenter.AverageTTK >= duration;
 	#endregion
 

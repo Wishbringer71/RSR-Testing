@@ -23,7 +23,6 @@ internal static class TraitDurations
 {
 	private static readonly Regex Extends = new(@"Extends the duration of (?<name>.+?) to (?<seconds>\d{1,3}) seconds", RegexOptions.Compiled);
 	private static readonly Regex Improves = new(@"Improves (?<name>.+?)'s damage reduction effect to (?<percent>\d{1,2})%", RegexOptions.Compiled);
-	private static readonly Regex StatedDuration = new(@"Duration: (?<value>\d{1,3})s", RegexOptions.Compiled);
 
 	private static readonly object _gate = new();
 
@@ -66,7 +65,7 @@ internal static class TraitDurations
 	/// </summary>
 	public static bool TryBelowTrait(uint actionId, float traitSeconds, out float seconds)
 	{
-		_ = ActionTooltip.TryStated(actionId, StatedDuration, out seconds);
+		_ = ActionTooltip.TryStatedDuration(actionId, out seconds);
 		return seconds > 0f && seconds < traitSeconds;
 	}
 

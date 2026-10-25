@@ -314,7 +314,7 @@ public class BaseAction : IBaseAction
 			&& !CustomRotation.DamageAreaSettled(Info.Range > 0 ? PreviewTarget.Value.Target?.Position : Player.Object?.Position,
 				Info.EffectRange))
 		{
-			return ActionTracer.Reject(this, "EnemiesInTheAreaStillMoving");
+			return ActionTracer.Reject(this, "EnemiesInTheAreaNotSettled");
 		}
 
 		// Set in preview too: rotations read Target right after CanUse, and a skipped update leaves a despawned object there.

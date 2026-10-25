@@ -119,8 +119,12 @@ mitigation out against it. Hits that follow faster than the enemy could cast aga
 Salted Earth and Doton went out as soon as you stood, so a tank's pause in a wall-to-wall pull was enough to lay them
 where the pack did not stay. Now they wait until at least one enemy has been in their radius for a GCD and no fewer are
 in it than, of those still alive, were at the start of that GCD: enemies shifting about inside it, one pushing in for
-another at its edge in a big pull, one arriving or one dying leave it open, a pack moving on closes it. Doton gives way
-to Katon meanwhile. Slipstream waits likewise around its target while Emerald Rites are left.
+another at its edge in a big pull, one arriving or one dying leave it open, a pack moving on closes it. They also wait
+while an enemy not yet in combat stands in the area or within a tank's reach, and for a GCD after one came into combat:
+a tank who stops to pull the next group with his area attack moves on as soon as it lands, and the area is not laid
+onto a group nobody has pulled. Doton gives way to Katon meanwhile. Slipstream waits likewise around its target while
+Emerald Rites are left. Each area you lay writes one line to `DefenseTrace.log`: how long enemies stood in it, and how
+long the ones it was laid on were alive outside it.
 Setting: "Lay damage areas only where the enemies stay", on by default.
 
 ## Monk, Viper and Dragoon: a dash to the target at the pull, only from out of range

@@ -845,6 +845,17 @@
    "status": "exception",
    "loop": "A349",
    "reason": "Unit conversion, not a game value: the Action sheet states cast times in tenths of a second (Cast100ms), and the series window of the area measurement is the action's own cast time in seconds (A349)."
+  },
+  {
+   "file": "RotationSolver.Basic/Helpers/HostileMovement.cs",
+   "code": "return enemy.InCombat() || enemy.TargetObjectId is not 0 and not 0xE0000000;",
+   "values": [
+    "0",
+    "0xE0000000"
+   ],
+   "status": "exception",
+   "loop": "A353",
+   "reason": "The client's ids for 'no object' in a target field (0 and InvalidGameObjectId), as upstream reads them in ObjectHelper and ActionQueueManager; a convention of the client, not a figure of the game (A353)."
   }
  ]
 }

@@ -10269,6 +10269,50 @@ GCD lang hält. *Ausgeliefert, nichts ändert sich:* kleine Rudel (alle Regeln g
 
 *Prüfgrad:* statisch, Modell, Compile; im Spiel nicht beobachtet.
 
+### A353 · Schadensflächen: der Aggro-Halt des Tanks (25.10.2026)
+
+Sein Hinweis (25.10.2026): „ein tank hält zwischendurch mal an, um einen flächenschaden MIT AGGRO zu generieren und die
+neue gruppe zu aggroen. da die rotation aber da gerade an anderer stelle sein kann, muss er einen augenblick warten, bis
+der aoe-flächenschaden MIT aggro gewirkt ist, bevor er weiterziehen kann." Er trifft A352 (C128): Das neue Rudel stand
+bis zum Flächenangriff still und galt nach seiner Spur als geblieben.
+
+- *Erhoben:* `DataCenter.AllHostileTargets` führt jeden feindlichen Gegner bis 48 y in Sicht, auch ungebundene. Kampfzustand
+  je Gegner: `Character.InCombat` (`ObjectHelper.InCombat`), dazu `TargetObjectId`. WrathCombo (keine Spielquelle) liest
+  das Flag für „Only Attack Targets Already In Combat", „Prioritise Targets Not in Combat" und den nächsten Gegner im
+  Kampf. Die Rotationen verlangen ohnehin, dass der Spieler steht (`DRK_Reborn` Salted Earth, `NIN_Reborn` Doton:
+  `!IsMoving`), Slipstream hat eine Wirkzeit. Erste Flächenangriffe der Tanks im Aktionsblatt (xivapi, 25.10.2026): Total
+  Eclipse, Overpower, Unleash, Demon Slice – CastType 2, EffectRange 5.
+- *Modell* (`damage_area_model.py`, erweitert um ungebundene Gegner und den Aggro-Halt, alle Regeln mit „der Spieler
+  steht"): FLOW legt an jedem der 16 Halte (0–9 von 45 Treffern). GATHER (FLOW, kein Ungebundener in der Fläche, keiner
+  im letzten GCD gebunden) legt an der Wand (45 von 45) – außer, wenn das neue Rudel außerhalb der Fläche eines
+  Nahkämpfers steht (0–3 von 45). GATHT (GATHER und kein Ungebundener in Reichweite eines Tanks) legt in beiden Lagen an
+  der Wand (44–45 von 45). Bleibt der Tank, wo er gebunden hat: 3,6 s später, dieselben Treffer. Bisherige Szenarien
+  unverändert.
+- *Umgesetzt (GATHT):* `HostileMovement` führt die Gegner, die außerhalb des Kampfes gesehen wurden, und den Zeitpunkt
+  des letzten Bindens; `AreaHolds` sperrt bei einem Ungebundenen in der Fläche oder in Reichweite eines lebenden Tanks
+  der Gruppe (Wirkbereich der vier Aktionen aus dem Blatt) und einen GCD nach dem letzten Binden. Übungsziele
+  ausgenommen. Einstellungstext nachgezogen; Ablehnungsgrund in `BaseAction` heißt `EnemiesInTheAreaNotSettled`.
+- *Messmittel:* `HostileMovement.AreaLaid`, gerufen aus `Watcher.ActionFromSelf` für jede Aktion, deren Wirktext eine
+  Fläche hinterlässt (`ActionTooltip.LeavesDamageArea`, auch als Zusatzwirkung): über die Dauer aus dem Wirktext
+  (`ActionTooltip.TryStatedDuration`, ersetzt die gleichlautenden Muster in `NinjaRotation` und `TraitDurations`) eine
+  Zeile in `DefenseTrace.log` – Zeit mit Gegnern in der Fläche, Zeit, in der die Belegten außerhalb noch lebten.
+- *Feste Werte:* keine Spielgröße neu; die Kennungen für „kein Objekt" im Zielfeld (0, 0xE0000000) sind eine Konvention
+  des Clients, wie Upstream sie in `ObjectHelper` und `ActionQueueManager` liest – als Ausnahme registriert.
+- *Erwogen, nicht gebaut:* die Wartezeit aus verlassenen Flächen lernen. Im Modell (Pausen von 3, 4 und 5 s ohne Binden,
+  zwei Startlagen) lernte die Regel mit einem Beobachtungszeitraum von einem GCD in fünf von sechs Fällen nichts: Das
+  Rudel verließ die Fläche später. Ein längerer Zeitraum hielte ein Rudel, das nach 10 s Kampf weitergezogen wird, für eine Pause
+  und ließe jede spätere Fläche so lange warten; wo die Grenze liegt, ist eine Abwägung ohne Beleg.
+
+**Falsifikation.** *Kein Defekt:* widerlegt – ein ungebundenes Rudel steht still und gilt nach der Spur als geblieben;
+FLOW legte an jedem Halt im Modell. *Option falsch:* Ein ungebundener Gegner, den der Tank nicht ziehen will, in der
+Fläche oder 5 y an ihm, hält sie zurück – sein Flächenangriff zöge ihn ohnehin, die Fläche auch; Gegner, die erst bei
+Annäherung ziehen, werden beim Vorbeilaufen gebunden und sperren einen GCD. Mehrere Gruppen nebeneinander auf
+Übungszielen: ausgenommen. *Ausgeliefert, nichts ändert sich:* Wenn das Flag für ungebundene Gegner doch gesetzt ist
+oder sie ein Ziel führen, bleibt es bei FLOW – nicht schlechter als vorher; die Zeile im `DefenseTrace.log` zeigt dann
+weiter Flächen, die das Rudel verlässt. Bindet der Tank aus der Entfernung, sperrt nur der GCD danach.
+
+*Prüfgrad:* statisch, Modell, Compile; im Spiel nicht beobachtet, Messmittel geliefert.
+
 ---
 ## B · Commit-Register (Fork vs. `upstream/main`)
 
@@ -10576,3 +10620,4 @@ Die offene Arbeit dazu — Reihenfolge und Abbruchbedingung der Nachprüfung —
 | C125 | A348 und der TODO-Eintrag „Mehrfachtreffer gelten in der Flächentabelle als kleiner Treffer": die sechs Serienangriffe kämen, seit die unsichtbaren Helfer gelesen werden, in die Flächenliste | Die Flächentabelle misst und listet nur Aktionen mit Wirkzeit (`Cast100ms > 0`); fünf der sechs sind Sofortaktionen (xivapi v2, 25.10.2026) und bleiben unbewertet, also gemindert. Der Defekt betraf Serien mit Wirkzeit, etwa Ersticken des Fleisches | A349: Serien mit Wirkzeit summiert; Sofortserien zählt `HitSeries` für die Glocke |
 | C126 | A350 und die Fassung von 1feaf6201: eine Schadensfläche fällt erst, wenn keiner der Gegner in ihrem Radius sich im letzten GCD bewegt hat | Gegner bewegen sich in der Fläche, ohne sie zu verlassen (sein Hinweis, 25.10.2026); verschwendet wird sie nur von einem, der hinausgeht. Folge: Unter einem Rudel, das sich am Tank verschiebt, wäre die Fläche nie gefallen (Modell), Doton dauernd Katon gewichen | A351: Bedingung „seit einem GCD darin, keiner hat sie verlassen" |
 | C127 | A351 und die Fassung von eb2bbf95c: eine Schadensfläche fällt erst, wenn keiner, der im letzten GCD in ihr war, sie verlassen hat | Im großen Pull drängt ein Nachrückender einen anderen hinaus und nimmt seinen Platz ein (sein Hinweis, 25.10.2026); die Fläche bleibt voll. Folge: Im Modell war sie solange das Rudel blieb nur 14–51 % der Zeit frei | A352: Vergleich der Lebenden zu Beginn des GCD mit den jetzt Drinnen |
+| C128 | A352 und der Einstellungstext von 3962e53e7: „im Wall-to-wall fällt die Fläche, wo das Rudel sich gesammelt hat, nicht wo der Tank hielt" | Hält der Tank, um ein neues Rudel zu binden, steht dieses bis zu seinem Flächenangriff still und gilt nach seiner Spur als geblieben (sein Hinweis, 25.10.2026). Folge: Im Modell fiel die Fläche an jedem solchen Halt, 0–9 von 45 Treffern | A353: kein ungebundener Gegner in der Fläche oder in Reichweite eines Tanks, keiner im letzten GCD gebunden |

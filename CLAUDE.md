@@ -313,7 +313,7 @@ Gelten in jeder Stufe. Eine Aussage, die eine davon verletzt, ist unbelegt.
 - Upstream-Sync ist Vorbedingung jeder Codeänderung: null ausstehende Commits gegen `upstream/main`. Prüfen, ob Upstream den Defekt schon behoben hat.
 - `main` halte ich selbst synchron: `upstream/main` in `main` mergen und pushen, ohne Freigabe und ohne auf einen PR-Merge zu warten.
 - `upstream` ist read-only.
-- Einen Sync werte ich aus, statt ihn nur einzupflegen: je fremder Änderung an einem Fork-Abschnitt — was ändert sie im Kampf, wie greift sie in die eigenen Änderungen, was wird daraus (trägt sie eine Regel, schärft sie einen Vertrag, beantwortet sie eine offene Frage)?
+- Einen Sync werte ich aus, statt ihn nur einzupflegen: je fremder Änderung an einem Fork-Abschnitt — was ändert sie im Kampf, wie greift sie in die eigenen Änderungen, was wird daraus (trägt sie eine Regel, schärft sie einen Vertrag, beantwortet sie eine offene Frage)? Inhaltlich, nicht formal (seine Rüge, 25.10.2026): Upstream-Code und eigene Patches gemeinsam auf Doppelungen, Widersprüche, ungenutzte Synergien und kompaktere Lösungen prüfen, nicht nur auf Konflikte und Kompilierbarkeit.
 - Nach dem Abarbeiten eines Auftrags synchronisiere ich erneut und prüfe die neuen Upstream-Änderungen im kritischen Loop auf Probleme mit eigenem Code und Konzepten (seine Vorgabe, 24.10.2026). Grund: Während der Arbeit kommt Upstream weiter, und erst der Sync danach zeigt, ob das Gebaute noch trägt.
 
 **Commits und Zweige**

@@ -27,6 +27,7 @@ internal static class ActionTooltip
 	private static readonly Regex StatedFalloff = new(@"(?<value>\d{1,2})% less for all remaining enemies", RegexOptions.Compiled);
 	private const string DamageAreaText = "enemies who enter";
 	private static readonly Regex AdditionalDamageArea = new(@"Additional Effect: Creates [^.]*enemies who enter", RegexOptions.Compiled);
+	private static readonly Regex StatedDuration = new(@"Duration: (?<value>\d{1,3})s", RegexOptions.Compiled);
 
 	/// <summary>
 	/// The evaluated effect text of <paramref name="actionId"/>, empty when the sheet has no row for it or the
@@ -123,6 +124,23 @@ internal static class ActionTooltip
 	{
 		var text = Text(actionId);
 		return text.Contains(DamageAreaText, StringComparison.Ordinal) && !AdditionalDamageArea.IsMatch(text);
+	}
+
+	/// <summary>
+	/// Whether <paramref name="actionId"/> leaves a damage area behind, as its own effect or as the additional effect of a
+	/// hit - Salted Earth, Doton, Slipstream's windstorm.
+	/// </summary>
+	public static bool LeavesDamageArea(uint actionId)
+	{
+		return Text(actionId).Contains(DamageAreaText, StringComparison.Ordinal);
+	}
+
+	/// <summary>
+	/// The first "Duration" the text of <paramref name="actionId"/> states, in seconds; false when it states none.
+	/// </summary>
+	public static bool TryStatedDuration(uint actionId, out float seconds)
+	{
+		return TryStated(actionId, StatedDuration, out seconds);
 	}
 
 	/// <summary>

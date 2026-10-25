@@ -316,15 +316,17 @@ Rollen-Notfall stellt `CustomRotation.EmergencyAbility`.
 ## Schadensflächen erst, wo die Gegner bleiben
 
 **Eine Schadensfläche fällt erst, wenn mindestens ein Gegner seit einem GCD in ihrem Radius ist und jetzt nicht weniger
-Gegner darin sind, als von den noch lebenden zu Beginn dieses GCD darin waren** (`CustomRotation.DamageAreaSettled`,
-`HostileMovement.AreaHolds`, A350–A352). Wer sich in der Fläche bewegt, wer am Rand einen anderen hinausdrängt und
-dessen Platz einnimmt, wer dazukommt und wer stirbt, hält sie nicht auf; ein Rudel, das weiterzieht oder hindurchläuft,
-senkt die Zahl und schließt sie. Betroffen sind die Aktionen, deren Wirktext eine Fläche legt, die „any enemies who
-enter" trifft: Salted Earth (Dunkelritter, um die eigenen Füße), Doton (Ninja, um die eigenen Füße), Slipstream
-(Beschwörer, Sturm um das Ziel). Radius ist der Wirkbereich aus dem Aktionsblatt (je 5 y), gemessen wie die
-Flächenprüfung des Spiels: Trefferkreis im Radius. Einstellung „Lay damage areas only where the enemies stay", ab Werk
-an: Die Bedingung ist seine, das Maß „ein GCD in der Fläche" meine Ableitung und im Kampf noch nicht gesehen;
-ausgeschaltet fällt die Fläche, sobald er selbst steht.
+Gegner darin sind, als von den noch lebenden zu Beginn dieses GCD darin waren – und der Tank das Rudel eingesammelt
+hat: kein Gegner außerhalb des Kampfes in der Fläche oder in Reichweite eines Tanks, keiner in diesem GCD in den Kampf
+gekommen** (`CustomRotation.DamageAreaSettled`, `HostileMovement.AreaHolds`, A350–A353). Wer sich in der Fläche bewegt,
+wer am Rand einen anderen hinausdrängt und dessen Platz einnimmt, wer dazukommt und wer stirbt, hält sie nicht auf; ein
+Rudel, das weiterzieht oder hindurchläuft, senkt die Zahl und schließt sie, ebenso ein Halt des Tanks, um das nächste
+Rudel zu binden. Betroffen sind die Aktionen, deren Wirktext eine Fläche legt, die „any enemies who enter" trifft:
+Salted Earth (Dunkelritter, um die eigenen Füße), Doton (Ninja, um die eigenen Füße), Slipstream (Beschwörer, Sturm um
+das Ziel). Radius ist der Wirkbereich aus dem Aktionsblatt (je 5 y), gemessen wie die Flächenprüfung des Spiels:
+Trefferkreis im Radius. Einstellung „Lay damage areas only where the enemies stay", ab Werk an: Die Bedingung ist seine,
+das Maß „ein GCD in der Fläche" meine Ableitung und im Kampf noch nicht gesehen; ausgeschaltet fällt die Fläche, sobald
+er selbst steht.
 
 - *Seine Angaben (25.10.2026):* „Wichtig bei allen Klassen mit Schadensflächen: erst dann, wenn Bewegung nach
   walltowall stoppt. Prüfen im Loop" – Hinweis (eine Fläche bleibt liegen, ein Rudel, das seinem Tank folgt, läuft
@@ -333,7 +335,20 @@ ausgeschaltet fällt die Fläche, sobald er selbst steht.
   begrenzte schadensfläche passen. dass ein nachdrängender gegner einen vorhandenen rausdrängt und seinen platz
   einnimmt. aber es sterben auch gegner mit der zeit, also kann es nicht einfach nur ein zähler der gegner innerhalb der
   schadensfläche sein." Was eine Fläche verschwendet, ist das Rudel, das weiterzieht – nicht ein Gegner, der in ihr den
-  Platz wechselt, ein Tausch am Rand oder ein Toter.
+  Platz wechselt, ein Tausch am Rand oder ein Toter. Und als Hinweis: „ein tank hält zwischendurch mal an, um einen
+  flächenschaden MIT AGGRO zu generieren und die neue gruppe zu aggroen. da die rotation aber da gerade an anderer
+  stelle sein kann, muss er einen augenblick warten, bis der aoe-flächenschaden MIT aggro gewirkt ist, bevor er
+  weiterziehen kann."
+- *Warum der Kampfzustand der Gegner zählt:* Beim Aggro-Halt steht das neue Rudel bis zum Flächenangriff des Tanks
+  still, wo es stand – nach seiner Spur ist es geblieben –, und das mitgebrachte Rudel sammelt sich um den Tank, während
+  er wartet; danach zieht er sofort weiter. Ein Gegner außerhalb des Kampfes in der Fläche oder in Reichweite des Tanks
+  ist einer, den er gleich bindet; ein eben gebundenes Rudel ist eines, mit dem er weiterzieht. Darum wartet die Fläche,
+  bis kein ungebundener Gegner mehr dort steht und seit dem letzten Gebundenen ein GCD vergangen ist. Nebenbei legt sie
+  sich so nie auf ein Rudel, das niemand gezogen hat – sie würde es ziehen. Außerhalb des Kampfes heißt: Kampf-Flag des
+  Gegners aus und kein Ziel; WrathCombo (keine Spielquelle) liest dasselbe Flag für „Only Attack Targets Already In
+  Combat" und für die Wahl des nächsten Gegners im Kampf. Reichweite des Tanks ist der Wirkbereich der ersten
+  Flächenangriffe der vier Tanks aus dem Aktionsblatt (Total Eclipse, Overpower, Unleash, Demon Slice, je 5 y um den
+  Tank), für jeden lebenden Tank der Gruppe. Ein Übungsziel bewegt sich nie und zählt nicht.
 - *Warum ein Vergleich derselben Gegner und kein Zähler:* Gezählt werden zu Beginn des GCD nur die, die jetzt noch
   leben. Ein Tausch am Rand lässt die Zahl gleich (einer hinaus, einer hinein), ein Toter fällt auf beiden Seiten heraus,
   ein Nachzügler erhöht sie; ein abziehendes Rudel senkt sie, weil die, die drin waren, draußen sind und niemand
@@ -341,7 +356,9 @@ ausgeschaltet fällt die Fläche, sobald er selbst steht.
 - *Im Kampf:* Beim Wall-to-wall zieht der Tank Rudel hinter sich her; hält er kurz, laufen sie noch auf ihn zu, und zieht
   er weiter, folgen sie. Früher fiel die Fläche, sobald der Spieler selbst stand – eine Pause des Tanks genügte, und
   Salted Earth (90 s Abklingzeit) oder Doton lagen dort, wo das Rudel nicht blieb. Jetzt fällt sie, wenn das Rudel
-  angekommen ist und bleibt, auch wenn es sich am Tank zurechtschiebt, am Rand tauscht oder ausdünnt.
+  angekommen ist und bleibt, auch wenn es sich am Tank zurechtschiebt, am Rand tauscht oder ausdünnt – und nicht beim
+  Halt, an dem der Tank das nächste Rudel bindet. Bleibt der Tank dort, wo er gebunden hat, kommt die Fläche nach seinem
+  Flächenangriff und einem GCD.
 - *Modell* (`damage_area_model.py`, Annahmen im Kopf des Skripts: 6 y/s, Gegner wechseln alle 1–2 s ihren Platz am Tank,
   im großen Pull 16 Gegner auf 1–7 y, Fläche 5 y für 15 s):
   - Tank hält 1,5 s und zieht weiter: früher an der Pause gelegt, 0 von 25 Treffern; jetzt nach der Ankunft an der Wand,
@@ -354,10 +371,26 @@ ausgeschaltet fällt die Fläche, sobald er selbst steht.
     Regeln, die nur verlangen, dass die meisten oder der Schwerpunkt bleiben, wären zwar immer frei, solange das Rudel
     bleibt, aber im GCD nach dem Abzug 51–67 % – sie legten die Fläche öfter auf ein abziehendes Rudel. Eine Verzögerung
     kostet wenig (die Fläche wirkt danach ihre volle Dauer), eine Fläche auf einem abziehenden Rudel ganz.
+  - Aggro-Halt (Tank bringt 5 Gegner, hält bei einem ungebundenen Rudel von 4, wartet 0,8–3,2 s auf seinen
+    Flächenangriff, zieht 0,3 s danach zur Wand; der Spieler ist der Tank oder ein Nahkämpfer 0,6 s und 2 y hinter ihm):
+    ohne den Kampfzustand an jedem dieser 16 Halte gelegt, 0 bis 9 von 45 Treffern; mit ihm an der Wand, 45 von 45. Steht
+    das neue Rudel 5 y jenseits des Tanks, außerhalb der Fläche eines Nahkämpfers 3 y hinter ihm, legt auch die Prüfung nur
+    der eigenen Fläche am Halt (0 bis 3 von 45); erst die Reichweite des Tanks hält sie bis zur Wand (44–45 von 45).
+    Bleibt der Tank, wo er gebunden hat, fällt die Fläche 3,6 s später als ohne die Prüfung, mit denselben Treffern.
+    Annahme, keine Quelle: Wartezeit aus dem Rest seines GCD und einem eingeschobenen Angriff.
 - *Gemessen:* Das Spiel gibt nur für den Spieler an, ob er sich bewegt. Für Gegner führt RSR eine Spur der Positionen
   über den letzten GCD, einen Punkt bei jeder Änderung. Ein GCD in der Fläche unterscheidet den Halt von der Pause: Ein
   Rudel, das seinem Tank mit Laufgeschwindigkeit folgt, durchquert 5 y in unter einer Sekunde. Ein Gegner, der eben erst
-  erscheint, ist noch nirgends geblieben. Tote und Gegner, die aus der Feindliste fallen, zählen nicht.
+  erscheint, ist noch nirgends geblieben. Tote und Gegner, die aus der Feindliste fallen, zählen nicht. Gebunden heißt:
+  bei einer Zielaktualisierung außerhalb des Kampfes gesehen, bei einer späteren im Kampf; wer schon im Kampf erscheint,
+  zählt nicht als eben gebunden.
+- *Selbstbewertung:* Jede Fläche, die der Spieler legt (Wirktext „enemies who enter", auch als Zusatzwirkung), bewertet
+  sich über ihre Dauer und schreibt eine Zeile in `DefenseTrace.log`: wie lange Gegner in ihr standen, und wie lange die
+  Gegner, auf die sie gelegt wurde, außerhalb von ihr noch lebten – ein Rudel, das weiterzog. Die Regel steuert die
+  Wartezeit daraus nicht selbst nach: Ein Lernen der Pausenlänge müsste festlegen, ab welcher Verweildauer ein
+  Weiterziehen noch als Pause gilt. Im Modell verließ das Rudel die Fläche meist erst mehr als einen GCD nach dem
+  Legen; ein so langer Zeitraum hielte auch ein Rudel, das nach 10 s Kampf weitergezogen wird, für eine Pause und ließe
+  danach jede Fläche so lange warten. Diese Grenze ist eine Abwägung ohne Beleg.
 - *Wo entschieden wird:* Salted Earth in `BaseAction.CanUse` für jede Rotation, die es drückt. Doton beim Beginn der
   Mudras (`NIN_Reborn`): Bleibt das Rudel noch nicht, kommt Katon, Doton mit der nächsten Ladung. Slipstream
   (`SMN_Reborn`): Der Sturm ist nur Zusatzwirkung eines Treffers (520 Potenz auf das Ziel); es wartet, bis die Gegner um
@@ -368,8 +401,11 @@ ausgeschaltet fällt die Fläche, sobald er selbst steht.
   Heilung für Schaden zurück. Ley Lines (Schwarzmagier) ist keine Schadensfläche; ob sie fällt, hängt an der Bewegung des
   Spielers selbst. Ten Chi Jin: Die Folge steht mit ihrem ersten Schritt fest und dauert Sekunden; Doton darin bleibt,
   wie es ist.
-- *Grenzen:* Eine Pause des Tanks, die länger als ein GCD dauert, sieht aus wie ein Halt; zieht er danach weiter, liegt
-  die Fläche, wo er war (Modell: 4 bis 5 von 25 Treffern, wie früher). Steht der Spieler, während der Tank das Rudel
+- *Grenzen:* Eine Pause des Tanks, die länger als ein GCD dauert und kein neues Rudel bindet, sieht aus wie ein Halt;
+  zieht er danach weiter, liegt die Fläche, wo er war (Modell: 4 bis 5 von 25 Treffern, wie früher). Bindet der Tank
+  aus der Entfernung (ein Fernangriff, dann laufen sie zu ihm), wartet die Fläche nur den GCD nach dem Binden. Ein
+  Gegner, der im Kampf ist, aber kein Ziel hat und dessen Flag aus ist, hielte die Fläche zurück, solange er in ihr oder
+  am Tank steht – nicht beobachtet. Steht der Spieler, während der Tank das Rudel
   weiterzieht, kann die Fläche im ersten Teil des GCD danach noch fallen (Modell: bis 39 % der Zeit); der Dunkelritter
   als Tank bewegt sich dann selbst, und das sperrt. Fremde Rotationen, die Salted Earth drücken, folgen der Prüfung mit;
   Doton und Slipstream nur in den Standardrotationen.

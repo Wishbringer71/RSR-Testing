@@ -1,13 +1,16 @@
 #!/usr/bin/env python3
 """Damage areas and moving enemies: when a placed area should go out (concept 04, "Schadensflächen erst, wo die
-Gegner bleiben", A350-A352).
+Gegner bleiben", A350-A353).
 
 Not a code scanner - a model calculator. The owner's rule (25.10.2026): "bei allen Klassen mit Schadensflaechen: erst
 dann, wenn Bewegung nach walltowall stoppt", and his two hints the same day: enemies move about inside an area without
 leaving it; and in a big pull not every enemy fits into the area, one pushing in pushes another out and takes its
 place, and enemies die over time - "es kann nicht einfach nur ein zaehler der gegner innerhalb der schadensflaeche
 sein". An area stays where it is laid (Salted Earth, Doton: around the player's feet, 5 y; Slipstream: around the
-target); what wastes it is the pack moving on, not an enemy shifting inside it, a swap at its edge or a death.
+target); what wastes it is the pack moving on, not an enemy shifting inside it, a swap at its edge or a death. His
+further hint: a tank stops on the way to pick up the next group with an area attack that draws enmity, and since his
+rotation may be elsewhere just then, he waits until it has gone out before he moves on. That group stood idle where it
+was - it has "stayed" by its track - and the pack he brought settles around him while he waits.
 
 Rules for "lay it now", compared over constructed pulls:
   OLD    the player stands (RSR before A350)
@@ -22,6 +25,10 @@ Rules for "lay it now", compared over constructed pulls:
   MOST   like FLOW's first half, and more than half of those still alive that were inside at the start of the GCD are
          inside now (considered: as DRIFT)
   ALL    every enemy inside now has been inside throughout the last GCD (stricter variant)
+  GATHER FLOW, and no enemy inside the area is out of combat, and none entered combat within the last GCD: an idle
+         group in it is one the tank is about to pick up, and a group just picked up is one he moves on with
+  GATHT  GATHER, and also no enemy out of combat within the tank's area attack reach (5 y around him): the group he
+         stopped for may stand outside the player's area
 
 Measured besides: the share of the time a pack stays at the wall in which a rule would lay the area (how soon a rotation
 that misses one moment finds the next), and the share of the GCD after the tank drags the pack on in which it still
@@ -31,11 +38,13 @@ Measured per rule: when it first lays the area after the pull starts, and the da
 inside it over its duration (a tick every 3 s, as a server tick). ASSUMPTIONS, not from a source: run speed 6 y/s;
 enemies follow the tank to a slot around him and take a new slot every 1-2 s - 1-3 y in a small pack, 1-7 y in a big
 pull, where many do not fit into 5 y and cross its edge both ways; GCD 2.5 s; area 5 y for 15 s (Salted Earth's job
-guide figures).
+guide figures). At an aggro stop the tank waits 0.8-3.2 s for his area attack (what is left of his GCD and a weave),
+then 0.3 s more before he runs on; a melee player follows him 0.6 s behind and 2 y back.
 
 The self-test checks the geometry and the rules on hand-built tracks: an enemy pacing inside the circle stays, one
 walking through it leaves, a newcomer does not block STAYS or FLOW, a swap at the edge blocks STAYS but not FLOW, a
-death blocks neither, a pack that moves on blocks both.
+death blocks neither, a pack that moves on blocks both; an idle enemy in the area and a fresh pickup block GATHER but
+not FLOW, an idle enemy by the tank only GATHT.
 
 Usage: python3 .github/scripts/audit/damage_area_model.py
 """
@@ -48,7 +57,8 @@ RADIUS = 5.0
 DURATION = 15.0
 TICK = 3.0
 SPEED = 6.0
-RULES = ("OLD", "STILL", "STAYS", "FLOW", "DRIFT", "MOST", "ALL")
+TANK_REACH = 5.0
+RULES = ("OLD", "STILL", "STAYS", "FLOW", "DRIFT", "MOST", "ALL", "GATHER", "GATHT")
 
 
 def dist(a, b):
@@ -60,7 +70,7 @@ def inside(pos, centre, hitbox):
 
 
 class Enemy:
-    def __init__(self, pos, hitbox, rng, delay=0.0, slots=(1.0, 3.0), dies=None, follows=True):
+    def __init__(self, pos, hitbox, rng, delay=0.0, slots=(1.0, 3.0), dies=None, follows=True, joins=0.0):
         self.pos = pos
         self.hitbox = hitbox
         self.rng = rng
@@ -70,13 +80,17 @@ class Enemy:
         self.slots = slots
         self.dies = dies        # time it dies, None for never
         self.follows = follows  # False: it stands where it is (a caster that does not follow the tank)
+        self.joins = joins      # time it enters combat; before that it stands idle where it is
         self.track = [(0.0, pos)]
 
     def alive(self, t):
         return self.dies is None or t < self.dies
 
+    def engaged(self, t):
+        return t >= self.joins
+
     def step(self, t, tank):
-        if t < self.delay or not self.follows:
+        if t < self.delay or t < self.joins or not self.follows:
             self.track.append((t, self.pos))
             return
         if t >= self.next_shift:
@@ -105,11 +119,19 @@ def window(track, t):
     return base, later
 
 
-def rule(name, enemies, centre, t, player_moving):
-    """Whether rule `name` lays the area now; `enemies` are the living ones, as the hostile list holds them."""
+def rule(name, enemies, centre, t, player_moving, tank=None):
+    """Whether rule `name` lays the area now; `enemies` are the living ones, as the hostile list holds them; `tank` is
+    where the tank stands."""
     if name == "OLD":
         return not player_moving
     now_in = [e for e in enemies if inside(e.track[-1][1], centre, e.hitbox)]
+    if name in ("GATHER", "GATHT"):
+        if any(not e.engaged(t) for e in now_in) or any(t - GCD < e.joins <= t for e in enemies):
+            return False
+        if name == "GATHT" and tank is not None and any(
+                not e.engaged(t) and dist(e.track[-1][1], tank) - e.hitbox <= TANK_REACH for e in enemies):
+            return False
+        name = "FLOW"
     if name == "STILL":
         if not now_in:
             return False
@@ -185,7 +207,9 @@ def pull(tank_path, n=5, seed=3, delays=None, slots=(1.0, 3.0), deaths=None, pla
                          or (leave is not None and leave <= t < leave + GCD))
         phase_steps += settled_phase
         for name in RULES:
-            if (name not in results or settled_phase) and t >= GCD and rule(name, living, player, t, moving):
+            # Every rotation that lays one asks the player to stand first (Salted Earth, Doton), or casts it (Slipstream).
+            if (name not in results or settled_phase) and t >= GCD and not moving and rule(name, living, player, t,
+                                                                                            moving, tank):
                 results.setdefault(name, (t, player))
                 open_steps[name] += settled_phase
         t += DT
@@ -232,6 +256,24 @@ SCENARIOS = [
 ]
 
 
+def aggro_stop(wait, seed, melee, stays=False, far=False):
+    """The tank runs with a pack of 5 to an idle group of 4, waits `wait` seconds for his area attack to go out, and -
+    unless he `stays` there - runs on to the wall 0.3 s after it lands. `melee`: the player follows him 0.6 s behind and
+    2 y back (a Ninja); otherwise the player is the tank (a Dark Knight). `far`: the group stands 5 y beyond the tank,
+    within his reach but out of the area of a melee 3 y behind him."""
+    lands = 2 + wait
+    tank_path = ([(0, (0, 0)), (2, (12, 0)), (60, (12, 0))] if stays else
+                 [(0, (0, 0)), (2, (12, 0)), (lands + 0.3, (12, 0)), (lands + 3.3, (30, 0)), (60, (30, 0))])
+    rng = random.Random(seed + 100)
+    gx, spread, back = (17, (1.0, 2.0), 3) if far else (15, (1.5, 2.5), 2)
+    group = [Enemy((gx + rng.uniform(-spread[0], spread[0]), rng.uniform(-spread[1], spread[1])), rng.uniform(0.5, 1.5),
+                   rng, joins=lands) for _ in range(4)]
+    player_path = None
+    if melee:
+        player_path = [(0, (-back, 0))] + [(t + 0.6, (x - back, y)) for t, (x, y) in tank_path]
+    return pull(tank_path, seed=seed, extra=group, player_path=player_path)
+
+
 def self_test():
     rng = random.Random(0)
     # Geometry: hitbox counts.
@@ -270,8 +312,21 @@ def self_test():
     # Nobody there long enough: no rule but OLD lays it.
     fresh = track([(2.0, (1.0, 1.0)), (3.0, (1.0, 1.0))])
     assert not any(rule(n, [fresh], centre, t, False) for n in ("STILL", "STAYS", "FLOW", "ALL"))
+    # An idle enemy in the area has stayed by its track: FLOW lays, GATHER waits for the tank to pick it up.
+    idle = track([(0.0, (2.0, 0.0)), (3.0, (2.0, 0.0))])
+    idle.joins = 99.0
+    assert rule("FLOW", [idle], centre, t, False) and not rule("GATHER", [idle], centre, t, False)
+    # Picked up within the GCD: GATHER waits a GCD from the pickup, then lays as FLOW does.
+    idle.joins = 2.0
+    assert not rule("GATHER", [idle], centre, t, False) and rule("GATHER", [idle], centre, t + GCD, False)
+    # An idle group by the tank, outside the player's area: only GATHT waits.
+    by_tank = track([(0.0, (9.0, 0.0)), (3.0, (9.0, 0.0))])
+    by_tank.joins = 99.0
+    assert rule("GATHER", [pacer, by_tank], centre, t, False, tank=(8.0, 0.0))
+    assert not rule("GATHT", [pacer, by_tank], centre, t, False, tank=(8.0, 0.0))
     print("self-test ok: hitbox geometry, pacing inside, walking through, a newcomer, a swap at the edge, a death,"
-          " a pack moving on and a fresh enemy each get their verdict")
+          " a pack moving on, a fresh enemy, an idle enemy, a fresh pickup and an idle group by the tank each get"
+          " their verdict")
 
 
 if __name__ == "__main__":
@@ -292,3 +347,17 @@ if __name__ == "__main__":
     print("  the player stands by a caster that does not follow; the tank drags 5 enemies past and on:")
     print("    " + show(pull([(0, (0, 0)), (8, (48, 0)), (60, (48, 0))], player_path=[(0, (22, 0)), (60, (22, 0))],
                              extra=[stationary])))
+    print("  aggro stop: the tank brings 5, stops by an idle group of 4 at 2 s, waits for his area attack, runs on to the")
+    print("  wall 0.3 s after it lands (there from about 3.3 s later; a lay before that is a waste):")
+    for who, melee in (("player is the tank", False), ("player is a melee behind him", True)):
+        for wait in (0.8, 1.6, 2.4, 3.2):
+            for seed in (3, 11):
+                print(f"    {who}, wait {wait:.1f} s, seed {seed:2d}  " + show(aggro_stop(wait, seed, melee)))
+    print("  the same, the idle group 5 y beyond the tank - in his reach, out of the area of a melee 3 y behind him:")
+    for wait in (1.6, 2.4, 3.2):
+        for seed in (3, 11):
+            print(f"    wait {wait:.1f} s, seed {seed:2d}  " + show(aggro_stop(wait, seed, True, far=True)))
+    print("  the same, but the tank stays where he picked them up (the cost of waiting):")
+    for who, melee in (("player is the tank", False), ("player is a melee behind him", True)):
+        for seed in (3, 11):
+            print(f"    {who}, wait 1.6 s, seed {seed:2d}  " + show(aggro_stop(1.6, seed, melee, stays=True)))

@@ -10,12 +10,15 @@ Betroffene: **N** Endnutzer · **R** Autoren abgeleiteter Rotationen (`RotationS
 Nach der Wirkung im Kampf: Sicherheit der Gruppe vor Schaden, gewichtet mit der Wahrscheinlichkeit, in seinem Profil
 (seine Vorgabe, 17.10.2026: „todo nach wichtigkeit abarbeiten. jeweils im loop bearbeiten"). Seine Aufträge vom
 18.10.2026 sind erledigt: TODO berichtigt (A322), Prüfläufe geordnet (A323), Laufzeitkosten umgestellt (A325). Sein
-Auftrag vom 24.10.2026 läuft: die einfachen Punkte zuerst (A338), die schweren wichtigen danach ebenso.
+Auftrag vom 24.10.2026 läuft: die einfachen Punkte zuerst (A338), die schweren wichtigen danach ebenso. Sein Auftrag vom
+25.10.2026 kommt davor: Upstream der letzten zehn Tage mit den eigenen Patches inhaltlich abgleichen.
 
-1. Rotationen gegen The Balance abgleichen
-2. Six-sided Star und Flamethrower
-3. AoE-Schwelle an drei Orten
-4. Audit der gesamten Codebasis
+1. Upstream und eigene Patches inhaltlich abgleichen
+2. Tank: ein neues Rudel ohne Warten binden
+3. Rotationen gegen The Balance abgleichen
+4. Six-sided Star und Flamethrower
+5. AoE-Schwelle an drei Orten
+6. Audit der gesamten Codebasis
 
 Danach technische Schuld, soweit ihre Auflösungsbedingung erfüllt ist. Warten auf Daten: unten.
 
@@ -24,6 +27,22 @@ Danach technische Schuld, soweit ihre Auflösungsbedingung erfüllt ist. Warten 
 Keine bekannt.
 
 ## Offene Arbeit
+
+### Upstream und eigene Patches inhaltlich abgleichen · N, R, U
+
+*Im Kampf:* je nach Fund – Doppelungen und Widersprüche zwischen Upstreams Änderungen der letzten zehn Tage und den
+eigenen Patches, ungenutzte Synergien, kompaktere Lösungen (sein Auftrag, 25.10.2026: bisher eher formal als
+inhaltlich abgeglichen). *Nächster Schritt:* je Upstream-Commit seit 15.10.2026 die berührten Stellen mit den
+Fork-Abschnitten derselben Aufgabe lesen, im vollen Loop. *Konzept:* je Bereich.
+
+### Tank: ein neues Rudel ohne Warten binden · N
+
+*Im Kampf:* Sicherheit – hält er als Tank bei einem neuen Rudel, wartet er bis zu einem GCD auf seinen Flächenangriff,
+während das mitgebrachte Rudel auf ihn einschlägt (sein Hinweis, 25.10.2026). `HostileMovement` weiß, welche Gegner in
+seiner Reichweite noch ungebunden sind; eine Fähigkeit mit Flächenschaden um ihn könnte sie sofort binden. *Nächster
+Schritt:* Loop – welche Fähigkeiten je Tank Fläche und Feindschaft bringen, was sie kosten (Ressourcen, Abklingzeit,
+Burst), ob die Rotation den Flächenangriff schon vorzieht. *Konzept:* 04, „Schadensflächen erst, wo die Gegner
+bleiben".
 
 ### Rotationen gegen The Balance abgleichen · N
 

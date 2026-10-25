@@ -2650,9 +2650,11 @@ public partial class CustomRotation
 	/// Whether a damage area laid now would hold its enemies: around <paramref name="centre"/> - or the player, where none
 	/// is given - at least one enemy has been inside the area's radius throughout the last GCD, and no fewer are inside it
 	/// now than, of those still alive, were inside at its start (<see cref="HostileMovement.AreaHolds"/>). Enemies moving
-	/// about inside it, a swap at its edge and a death leave it open; a pack moving on closes it. Owner's rule
-	/// (25.10.2026): "bei allen Klassen mit Schadensflächen: erst dann, wenn Bewegung nach walltowall stoppt", with his
-	/// hints of the same day on enemies moving inside an area, swaps in a big pull and deaths (concept 04, A350-A352).
+	/// about inside it, a swap at its edge and a death leave it open; a pack moving on closes it, and so do an enemy not
+	/// yet in combat in the area or within a tank's reach and a group picked up within that GCD - a tank stopping for the
+	/// next group. Owner's rule (25.10.2026): "bei allen Klassen mit Schadensflächen: erst dann, wenn Bewegung nach
+	/// walltowall stoppt", with his hints of the same day on enemies moving inside an area, swaps in a big pull, deaths and
+	/// the tank's stop to pick up the next group (concept 04, A350-A353).
 	/// </summary>
 	/// <param name="area">The action that lays the area; its radius is the game's effect range.</param>
 	/// <param name="centre">Where the area is laid: the target of an area laid around it, none for one at the player's feet.</param>
