@@ -235,9 +235,15 @@ gewählten Trank mit dem Zweig, der ihn freigab, und den HP.
     fort). Beides folgt seinem Ablauf vom 24.10.2026 und seinem Vorschlag vom 23.10.2026 (lohnt nur, solange der Gruppe
     so viel fehlt – gemessen an seinen Flächenschwellen statt an einer neuen Zahl).
   - *Mit „Limit Liturgy Of The Bell to multihit party stacks"* (bei ihm an, belegt durch die Reihenfolge der
-    Ablehnungen am 22.10.2026, A335) geht Glockenspiel nur auf einen Mehrfach-Sammelmarker, dann vor allen anderen.
-    Erkannt werden sieben Markerpfade (`MultiHitSharedPaths`); ein mehrfach treffender Raidwide ohne solchen Marker
-    bekommt es nie. Am 18.–22.10.2026: zwei Einsätze.
+    Ablehnungen am 22.10.2026, A335) geht Glockenspiel auf einen Mehrfach-Sammelmarker, dann vor allen anderen; erkannt
+    werden sieben Markerpfade (`MultiHitSharedPaths`). Dazu, je als Unteroption, ab Werk an (seine Entscheidung vom
+    25.10.2026 nach der Vorlage in A348, umgesetzt A349):
+    - „Also before a hit that would put a party member in danger": vor einem angekündigten Flächentreffer, den die
+      Schranke als gefährlich misst (`AreaDefenseDanger`) und der den Weißmagier erreicht (`AreaHitOnMe`) – als letzte
+      nach Vollkommener Ablass, Linderung und Göttliche Umarmung, die den Treffer selbst mindern.
+    - „Also into an enemy attack that hits in a series": beim ersten Treffer eines Angriffs, der ihn und ein weiteres
+      Mitglied gemessen mehr als einmal hintereinander getroffen hat (`HitSeries`, `LiturgyTriggersLeft`), im
+      allgemeinen oGCD-Platz, solange noch Auslösungen ausstehen.
   - *Ohne die Einstellung* kommt es zuletzt, wenn Plenary, Temperance und Divine Caress nicht bereit sind, und
     hält danach die übrige Abwehr 20 s zurück (Streckung).
   - *Sein Vorschlag (23.10.2026):* „es würde sich also nur lohnen, wenn die gesundheit der gruppe weit unten ist, so
@@ -258,42 +264,36 @@ gewählten Trank mit dem Zweig, der ihn freigab, und den HP.
     statt 800 nach 20 s auf eine meist geheilte. Bedingungen: Der Weißmagier wird getroffen (nur Schaden an ihm löst
     aus), die Gruppe steht im Umkreis der Glocke, und der Treffer ist vorher bekannt (gelernte Flächentabelle,
     BossModReborn-Vorhersage).
-  - *Wo die Glocke heute liegen bleibt* (seine Protokolle 18.–23.10.2026, A348): Mit der Einstellung fiel sie vom 18. bis
-    23.10. zweimal, beide Male auf einen Mehrfach-Sammelmarker; einmal starb der Boss im selben Moment. Sechs Arten von
-    Gruppenangriffen trafen dagegen drei- bis zehnmal hintereinander, je mindestens eine Sekunde auseinander, ohne
-    Marker – die Glocke hätte dort drei- bis fünfmal ausgelöst, The Balance nennt genau das ihren Zweck („aim to
-    maximize Bell procs per usage"). Die Flächentabelle misst je Treffer, nicht je Angriff, und kennt keine Zahl der
-    Treffer. Unter Stufe 90 gibt es die Glocke nicht (Job-Guide); dort ändert keine Regel zu ihr etwas.
-  - *Zur Entscheidung* in `TODO.md`, „Weißmagier: Glockenspiel vor großen Einzeltreffern und Mehrfachtreffern (seine
-    Entscheidung)". Die Fälle aus seinen Kämpfen, je Option:
+  - *Die Serie, wie die Glocke sie zählt:* ein Treffer derselben Gegneraktion, der ihn mit Schaden trifft und dazu ein
+    weiteres Mitglied, höchstens einer je Sekunde („can only be triggered once per second", Wirktext), innerhalb der
+    Dauer der Glocke ab dem ersten (`DefensiveValues`, 20 s). Gelernt je Gegneraktion über alle Sitzungen
+    (`HitSeriesOnPlayer`), nur steigend; das erste Treffen lehrt. Eine Serie auf ihm allein zählt nicht – die Glocke
+    heilt die Gruppe. Die meisten Serien in seinen Kämpfen sind Sofortaktionen ohne Wirkzeit, die die Flächentabelle gar
+    nicht misst (Konzept 13, „Serien kleiner Einschläge"). Unter Stufe 90 gibt es die Glocke nicht (Job-Guide); dort
+    ändert keine Regel zu ihr etwas.
+  - *Was die Ergänzungen in seinen Kämpfen ändern* (Protokolle 18.–23.10.2026, A348; vorher fiel die Glocke zweimal,
+    beide Male auf einen Mehrfach-Sammelmarker, einmal im Moment des Bosstods):
     - *Allianzraid Stufe 100, 22.10.2026, Alexander der Wiedererweckte:* Mehrfach-Sammelmarker auf ihm, die Glocke
       sofort; Super-Sanctus traf dreimal in drei Sekunden (2 %, 29 %, 31 %) – drei Heilungen zu 400 zwischen den
       Treffern, der Rest zwei mal 200. 63 s später Göttliches Urteil, gemessen 87 %: Vollkommener Ablass, Linderung,
-      Göttliche Umarmung, gelandet mit 36 %; die Glocke lag in der Abklingzeit. In jeder Option gleich, weil der Marker
-      zuerst kam. Käme das Urteil zuerst, nähme ihm (b) die Glocke ab: 400 mit dem Treffer und 800 gleich danach, und
-      der Marker eine Minute später stünde ohne sie.
+      Göttliche Umarmung, gelandet mit 36 %; die Glocke lag in der Abklingzeit. Unverändert, weil der Marker zuerst kam.
+      Käme das Urteil zuerst, bekäme es die Glocke – 400 mit dem Treffer und 800 gleich danach –, und der Marker eine
+      Minute später stünde ohne sie.
     - *Dungeon Stufe 100, 19.10.2026, Panzerauge:* Augen auf, alle 30–60 s, zuletzt angekündigt mit „würde ein Mitglied
-      in Gefahr bringen" (58 %). Kein Mehrfach-Sammelmarker im Kampf – mit (a) blieb die Glocke den ganzen Kampf
-      liegen; (b) setzt sie vor diesen Treffer.
+      in Gefahr bringen" (58 %). Kein Mehrfach-Sammelmarker im Kampf: Die Glocke blieb liegen; jetzt fällt sie vor
+      diesen Treffer.
     - *Prüfung ab Stufe 90, 22.10.2026, Tosender Donner:* Tosende Hyperkanone traf zehnmal im Sekundentakt mit bis zu
-      6 % – volle fünf Auslösungen, 2000 Potenz über zehn Sekunden. Weder (a) noch (b) sehen den Angriff: kein Marker,
-      je Treffer klein. Mit (d) nach dem ersten Treffer gesetzt: die fünf folgenden Treffer mit Schaden lösen aus, 2000.
-  - *Die Optionen:* (a) so lassen; (b) zusätzlich vor einem Treffer, den die Schranke als gefährlich misst und der den
-    Weißmagier erreicht – nach Vollkommener Ablass, Linderung und Göttliche Umarmung, die den Treffer selbst mindern;
-    (c) er stellt die Einstellung ab – dann kommt die Glocke als letzte Flächenabwehr auf jeden Raidwide, für den die
-    anderen nicht bereit sind, und Marker verlieren ihren Vorrang; (d) zusätzlich beim ersten Treffer eines Angriffs,
-    der ihn gemessen mehr als einmal auslösen ließe (je Gegneraktion gelernt: Treffer an ihm mit Schaden, je
-    mindestens eine Sekunde auseinander). (b) und (d) je als Unteroption der Einstellung, ab Werk an; ihr Text bleibt
-    wahr, die Unteroption nennt, was sie hinzufügt.
-  - *Empfehlung (b) und (d).* Die Glocke ist reine Heilung; liegt sie, schützt sie niemanden. In seinen Kämpfen hätte
-    keine der beiden Ergänzungen einem späteren Mehrfach-Sammelmarker die Glocke genommen, und beide setzen sie dort,
-    wo die Gruppe sie braucht: nach einem Treffer, der sie fast leert, oder zwischen den Treffern einer Serie.
+      6 % – kein Marker, je Treffer klein. Gelernt, fällt die Glocke beim ersten Treffer, und die fünf folgenden mit
+      Schaden lösen aus: 2000 Potenz über die Serie statt keiner.
+  - *Warum so:* Die Glocke ist reine Heilung; liegt sie, schützt sie niemanden. Nachgespielt über seine
+    Weißmagier-Kämpfe hätte keine der Ergänzungen einem späteren Mehrfach-Sammelmarker die Glocke genommen (A348).
     Gegenpositionen: *The Balance* will möglichst viele Auslösungen je Einsatz – ein Einzeltreffer bringt eine; das
-    trägt in Inhalten mit häufigen Mehrfach-Sammelmarkern, wo er (b) abstellt, und (d) erfüllt es besser als (a).
-    *Die Schranke misst pessimistisch* – den größten je gelandeten Anteil, vor der Minderung, die sie selbst auslöst
-    (Urteil: 87 % gemessen, 36 % gelandet); der zweite Druck folgt seinen Flächenschwellen, auf einen mild gelandeten
-    Treffer bleiben die Stapel für den nächsten Schaden. *Ohne Wirkung* bliebe (b), wenn der Treffer den Weißmagier
-    nicht erreicht oder ein Schild ihn ganz schluckt – deshalb nur mit Treffer auf ihn.
+    trägt in Inhalten mit häufigen Mehrfach-Sammelmarkern, dort schaltet er die erste Unteroption ab, und die Serie
+    erfüllt den Grundsatz besser als der Marker allein. *Die Schranke misst pessimistisch* – den größten je gelandeten
+    Anteil, vor der Minderung, die sie selbst auslöst (Urteil: 87 % gemessen, 36 % gelandet); der zweite Druck folgt
+    seinen Flächenschwellen, auf einen mild gelandeten Treffer bleiben die Stapel für den nächsten Schaden. *Ohne
+    Wirkung* bliebe die Glocke, wenn der Treffer den Weißmagier nicht erreicht oder ein Schild ihn ganz schluckt –
+    deshalb nur mit Treffer auf ihn, und in der Serie zählt nur ein Treffer mit Schaden.
 - **Dunkelritter:** Herkunft ist die Balance-Rotation 6.38 (c97be9ec5).
   - Früher hieß Burst „mindestens die Hälfte der Gruppe im Zwei-Minuten-Burst"
     (`RatioOfMembersIn2minsBurst`, früher). Heute zählen nur die eigenen Abklingzeiten: Delirium kühlt ab

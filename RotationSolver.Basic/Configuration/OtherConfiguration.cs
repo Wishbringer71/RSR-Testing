@@ -183,6 +183,20 @@ internal class OtherConfiguration
 	/// <summary>Guards <see cref="SleepOutcomes"/>, <see cref="SleepResistantKinds"/> and <see cref="SleepDiminishing"/>.</summary>
 	internal static readonly object SleepStoreGate = new();
 
+	/// <summary>
+	/// How many times each enemy action has been seen to hit the player in a row, counted the way Liturgy of the Bell
+	/// counts its triggers (<see cref="HitSeries"/>), keyed by action id - learned in play over every session.
+	/// </summary>
+	/// <remarks>
+	/// Stored like <see cref="SleepResistantKinds"/>: merged with the file on every save by the higher count, never
+	/// written when its load did not finish, set aside as .corrupt when unreadable. Changed on the game thread under
+	/// <see cref="HitSeriesGate"/>. No button discards it: the file is deleted by hand with the game closed.
+	/// </remarks>
+	internal static Dictionary<uint, int> HitSeriesOnPlayer = [];
+
+	/// <summary>Guards <see cref="HitSeriesOnPlayer"/>.</summary>
+	internal static readonly object HitSeriesGate = new();
+
 	public static RotationSolverRecord RotationSolverRecord = new();
 
 	private abstract class ListFile(string name)
@@ -588,6 +602,9 @@ internal class OtherConfiguration
 		new LearnedFile<int>(nameof(SleepDiminishing), () => CopySleepStore(SleepDiminishing),
 			v => { lock (SleepStoreGate) { SleepDiminishing = v; } },
 			Math.Min, state => SleepDiminishingStoreState = state, "enemy kind(s) with a sleep limit"),
+		new LearnedFile<int>(nameof(HitSeriesOnPlayer), CopyHitSeries,
+			v => { lock (HitSeriesGate) { HitSeriesOnPlayer = v; } },
+			Math.Max, state => HitSeriesStoreState = state, "enemy action(s) hitting in series"),
 		new SetList(nameof(HostileCastingTank), ActionLists.HostileCastingTank, () => HostileCastingTank, v => HostileCastingTank = v,
 			13364, 13365, 13367, 13371, 13375, 13385, 13388, 13438, 13444, 13452, 13454, 13462, 13475),
 		new MapList<Vector3>(nameof(BeneficialPositions), TerritoryLists.BeneficialPositions, () => BeneficialPositions, v => BeneficialPositions = v),
@@ -607,6 +624,14 @@ internal class OtherConfiguration
 		lock (SleepStoreGate)
 		{
 			return new Dictionary<uint, T>(store);
+		}
+	}
+
+	private static Dictionary<uint, int> CopyHitSeries()
+	{
+		lock (HitSeriesGate)
+		{
+			return new Dictionary<uint, int>(HitSeriesOnPlayer);
 		}
 	}
 
@@ -738,6 +763,11 @@ internal class OtherConfiguration
 	internal static Task SaveSleepResistantKinds() => SaveList(nameof(SleepResistantKinds));
 
 	internal static Task SaveSleepDiminishing() => SaveList(nameof(SleepDiminishing));
+
+	internal static Task SaveHitSeriesOnPlayer() => SaveList(nameof(HitSeriesOnPlayer));
+
+	/// <summary>What the last save and load of <see cref="HitSeriesOnPlayer"/> did, in words.</summary>
+	internal static string HitSeriesStoreState { get; private set; } = "not loaded yet";
 
 	/// <summary>What the last save and load of <see cref="SleepDiminishing"/> did, in words.</summary>
 	internal static string SleepDiminishingStoreState { get; private set; } = "not loaded yet";

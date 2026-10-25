@@ -456,6 +456,14 @@ public partial class WhiteMageRotation
 
 	private static byte? _liturgyMaxStacks;
 
+	/// <summary>
+	/// The triggers a Liturgy of the Bell laid now would still collect from an enemy attack that is hitting the player
+	/// and another party member in a series: what that action has been seen to reach in a row - one trigger a second,
+	/// within the bell's duration - less what has landed so far. 0 when no such series runs or none is learned yet
+	/// (concept 08, "Glockenspiel", A349).
+	/// </summary>
+	protected static int LiturgyTriggersLeft => HitSeries.TriggersLeft();
+
 	static partial void ModifyGlareIvPvE(ref ActionSetting setting)
 	{
 		setting.ActionCheck = () => SacredSightStacks > 0;

@@ -10,48 +10,21 @@ Betroffene: **N** Endnutzer · **R** Autoren abgeleiteter Rotationen (`RotationS
 Nach der Wirkung im Kampf: Sicherheit der Gruppe vor Schaden, gewichtet mit der Wahrscheinlichkeit, in seinem Profil
 (seine Vorgabe, 17.10.2026: „todo nach wichtigkeit abarbeiten. jeweils im loop bearbeiten"). Seine Aufträge vom
 18.10.2026 sind erledigt: TODO berichtigt (A322), Prüfläufe geordnet (A323), Laufzeitkosten umgestellt (A325). Sein
-Auftrag vom 24.10.2026 läuft: die einfachen Punkte zuerst (A338), die schweren wichtigen danach ebenso. Glockenspiel
-steht seit seinem Hinweis vom 24.10.2026 vor der Flächenheilung: Es heilt eine Gruppe nach einem Treffer, der ihr fast
-alles nimmt. Der Defekt der Mehrfachtreffer steht davor: Er nähme allen Rollen die Gruppenminderung gegen Serienangriffe.
+Auftrag vom 24.10.2026 läuft: die einfachen Punkte zuerst (A338), die schweren wichtigen danach ebenso.
 
-1. Mehrfachtreffer gelten in der Flächentabelle als kleiner Treffer (Defekt)
-2. Weißmagier: Glockenspiel vor großen Einzeltreffern und Mehrfachtreffern (seine Entscheidung)
-3. Rotationen gegen The Balance abgleichen
-4. Six-sided Star und Flamethrower
-5. AoE-Schwelle an drei Orten
-6. Audit der gesamten Codebasis
+1. Rotationen gegen The Balance abgleichen
+2. Six-sided Star und Flamethrower
+3. AoE-Schwelle an drei Orten
+4. Audit der gesamten Codebasis
 
 Danach technische Schuld, soweit ihre Auflösungsbedingung erfüllt ist. Warten auf Daten: unten.
 
 ## Defekte
 
-### Mehrfachtreffer gelten in der Flächentabelle als kleiner Treffer · N
-
-*Wirkung im Kampf:* Ein Gruppenangriff, der in Serie trifft, wird mit seinem größten Einzeltreffer bewertet (Tosende
-Hyperkanone: zehn Treffer zu bis 6 %). Mit „Skip mitigation for small area casts" (ab Werk an) gilt er dann als klein,
-und die Gruppenminderung aller Rollen bleibt aus – gegen den Text der Einstellung, der Treffer, nach denen Heilung
-fällig wird, voll mindert. Bisher in seinen Protokollen nicht eingetreten: keiner der sechs Serienangriffe vom
-18.–23.10.2026 stand in der Flächenliste; seit die unsichtbaren Helfer gelesen werden, kommen sie hinein. *Ort:*
-`Watcher` (Messung je Effektpaket), `DataCenter.AreaCastIsWorthMitigating`, `AnnouncedHitIsSmall`. *Nächster Schritt:*
-Treffer einer Aktion zu einem Angriff zusammenfassen und je Mitglied aufsummieren; dieselbe Zusammenfassung zählt die
-Auslösungen der Glocke (offene Arbeit „Weißmagier: Glockenspiel vor großen Einzeltreffern und Mehrfachtreffern"). *Konzept:* 08,
-„Glockenspiel"; Messung: A348.
+Keine bekannt.
 
 ## Offene Arbeit
 
-### Weißmagier: Glockenspiel vor großen Einzeltreffern und Mehrfachtreffern (seine Entscheidung) · N
-
-*Kontext:* Mit „Limit Liturgy Of The Bell to multihit party stacks" (bei ihm an) fällt die Glocke nur auf sieben
-Markerpfade – vom 18. bis 23.10.2026 zweimal. Sein Vorschlag vom 24.10.2026: auch vor bekannte Treffer, die die Gruppe
-stark senken; der zweite Druck ist gebaut (A340). Serienangriffe ohne Marker (sechs Arten in seinen Protokollen) sieht
-heute keine Regel. *Betroffen:* `WHM_Reborn.DefenseAreaAbility`. *Optionen:* (a) so lassen; (b) zusätzlich vor einem
-Treffer, den die Schranke als gefährlich misst und der den Weißmagier erreicht, nach den drei Minderungen; (c) er
-stellt die Einstellung ab; (d) zusätzlich beim ersten Treffer eines Angriffs, der gemessen mehr als einmal auslöst.
-(b) und (d) je als Unteroption, ab Werk an. *Konsequenzen* (Abklingzeit 180 s): (a) die Glocke liegt in Kämpfen ohne
-Marker ungenutzt (Panzerauge, 19.10.); (b) 400 mit dem gefährlichen Treffer und 800 gleich danach, ein Marker in den
-drei Minuten danach geht leer aus – in seinen Kämpfen kein solcher Fall; (c) jeder Raidwide, für den die übrigen
-Werkzeuge abklingen, bekommt sie, Marker verlieren ihren Vorrang; (d) Tosende Hyperkanone: 2000 über die Serie statt
-nichts. *Empfehlung:* (b) und (d). *Konzept:* 08, „Glockenspiel", mit den Fällen aus seinen Kämpfen.
 ### Rotationen gegen The Balance abgleichen · N
 
 *Im Kampf:* Schaden – je Job Opener, Burstausrichtung und Prioritäten gegen den Guide. Der Maschinist ist abgeglichen

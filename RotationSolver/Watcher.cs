@@ -29,7 +29,8 @@ public static class Watcher
 			+ $" | AoE list {OtherConfiguration.HostileCastingArea.Count} | tankbuster list {OtherConfiguration.HostileCastingTank.Count}"
 			+ $" | stop enemy casts {config.SleepToStopAreaCasts}"
 			+ $" | sleep knowledge {OtherConfiguration.SleepOutcomes.Count} action(s), {OtherConfiguration.SleepResistantKinds.Count} resistant kind(s),"
-			+ $" {OtherConfiguration.SleepDiminishing.Count} kind limit(s) ({OtherConfiguration.SleepStoreState})");
+			+ $" {OtherConfiguration.SleepDiminishing.Count} kind limit(s) ({OtherConfiguration.SleepStoreState})"
+			+ $" | hit series {OtherConfiguration.HitSeriesOnPlayer.Count} action(s) ({OtherConfiguration.HitSeriesStoreState})");
 
 		ActionEffect.ActionEffectEvent += ActionFromEnemy;
 		ActionEffect.ActionEffectEvent += ActionFromSelf;
@@ -134,6 +135,47 @@ public static class Watcher
 		share = Math.Min(amount, maxHp) / (float)maxHp;
 		return true;
 	}
+
+	// A listed cast that lands several times - a series of hits after one cast, Bodyweight Exorcism's four in three-second
+	// steps - is rated by what the whole series takes from a member, not by its largest hit: one hit of it leaves
+	// everybody above the area heal line, the series does not, and "Skip mitigation for small area casts" mitigates
+	// in full a hit after which healing is called for (A349). A landing belongs to the series while it follows the
+	// previous one sooner than the action's own cast time: the caster could not have cast it again in between, so it
+	// is the same use or another caster's at the same moment, and both reach the party together. A member's sum
+	// stops at his whole health, the most the table holds (IsWithinWholeHealth).
+	private sealed class AreaSeries
+	{
+		public DateTime Last;
+		public readonly Dictionary<ulong, float> Sums = [];
+	}
+
+	private static readonly Dictionary<uint, AreaSeries> _areaSeries = [];
+
+	private static float SeriesShare(uint listed, Dictionary<ulong, float> shares)
+	{
+		var now = DateTime.Now;
+		var castSeconds = Service.GetSheet<Lumina.Excel.Sheets.Action>().TryGetRow(listed, out var row)
+			? row.Cast100ms / CastUnitsPerSecond : 0f;
+		if (!_areaSeries.TryGetValue(listed, out var series) || (now - series.Last).TotalSeconds > castSeconds)
+		{
+			series = new AreaSeries();
+			_areaSeries[listed] = series;
+		}
+
+		series.Last = now;
+		var highest = 0f;
+		foreach (var (member, share) in shares)
+		{
+			var sum = Math.Min(1f, series.Sums.GetValueOrDefault(member) + share);
+			series.Sums[member] = sum;
+			highest = Math.Max(highest, sum);
+		}
+
+		return highest;
+	}
+
+	// The Action sheet states cast times in tenths of a second (Cast100ms).
+	private const float CastUnitsPerSecond = 10f;
 
 	private static Dictionary<ulong, uint> AmountsByTarget(ActionEffectSet set, ActionEffectType type)
 	{
@@ -394,7 +436,7 @@ public static class Watcher
 			DataCenter.AreaCastReachedPlayer[listed] = true;
 		}
 
-		var highestShare = 0f;
+		var shares = new Dictionary<ulong, float>();
 		var beyondHealth = 0;
 		foreach (var member in DataCenter.PartyMembers)
 		{
@@ -410,7 +452,7 @@ public static class Watcher
 				{
 					if (TryAreaShare(FullAmount(entry), member, out var share))
 					{
-						highestShare = Math.Max(highestShare, share);
+						shares[member.GameObjectId] = Math.Max(shares.GetValueOrDefault(member.GameObjectId), share);
 					}
 					else
 					{
@@ -419,6 +461,8 @@ public static class Watcher
 				}
 			}
 		}
+
+		var highestShare = SeriesShare(listed, shares);
 
 		// Same rule as a listed landing: only a real amount a member can survive measures, and only an increase
 		// is written.
@@ -633,6 +677,7 @@ public static class Watcher
 							: ", after a tankbuster marker, no cast taken for it"));
 					TankSwapWatch.RecordHitOnPlayer(marked.RowId, marked.Name.ExtractText(), source.GameObjectId, hitShare,
 						markedForPlayer, StatusesAppliedTo(set, playerObject.GameObjectId));
+					HitSeries.RecordHit(marked.RowId, hitShare > 0f, DamagedPartyMembers(set) > 1);
 				}
 
 				// Before the source filter below: the follow-up often comes from an untargetable helper.
@@ -767,7 +812,7 @@ public static class Watcher
 					// that member's maximum HP. The share does not age with item level or content
 					// sync the way an amount would, and the highest share belongs to whoever is worst
 					// off against it - which is what a decision about mitigating it would ask.
-					var highestShare = 0f;
+					var shares = new Dictionary<ulong, float>();
 					var beyondHealth = 0;
 					var hardestBeyond = 0f;
 
@@ -800,7 +845,7 @@ public static class Watcher
 						{
 							if (TryAreaShare(FullAmount(damageEffect), member, out var share))
 							{
-								highestShare = Math.Max(highestShare, share);
+								shares[member.GameObjectId] = Math.Max(shares.GetValueOrDefault(member.GameObjectId), share);
 							}
 							else
 							{
@@ -816,6 +861,10 @@ public static class Watcher
 					{
 						_ = OtherConfiguration.SaveHostileCastingArea();
 					}
+
+					// A listed action is rated by its series (SeriesShare); an unlisted one is not measured at all.
+					var highestShare = OtherConfiguration.HostileCastingArea.Contains(set.Action!.Value.RowId)
+						? SeriesShare(set.Action!.Value.RowId, shares) : 0f;
 
 					// Recording how hard it hits. DataCenter.AreaCastIsWorthMitigating reads this, and
 					// the store is what carries a reading past the end of a session: without it every

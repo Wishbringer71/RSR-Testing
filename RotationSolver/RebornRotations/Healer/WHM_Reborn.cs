@@ -14,6 +14,24 @@ public sealed class WHM_Reborn : WhiteMageRotation
 	[RotationConfig(CombatType.PvE, Name = "Limit Liturgy Of The Bell to multihit party stacks")]
 	public bool MultiHitRestrict { get; set; } = false;
 
+	// The owner's decision of 25.10.2026 (concept 08, "Glockenspiel"): beside the stacks, the bell also goes before a hit
+	// the measured size says would put a member in danger, and into an attack that hits in a series without a marker.
+	[RotationConfig(CombatType.PvE, Name = "Also before a hit that would put a party member in danger", Parent = nameof(MultiHitRestrict),
+		Tooltip = "With the limit to multihit party stacks on, the bell also goes before an announced area hit that, by its "
+			+ "measured size, would leave an unprotected member in the critical class and that reaches you - after Plenary "
+			+ "Indulgence, Temperance and Divine Caress, which lessen the hit itself.\n"
+			+ "In a fight: the bell's first heal comes with that hit and the rest right after it, on a party the hit has "
+			+ "nearly emptied; a multihit stack in the three minutes after goes without it.")]
+	public bool LiturgyBeforeDanger { get; set; } = true;
+
+	[RotationConfig(CombatType.PvE, Name = "Also into an enemy attack that hits in a series", Parent = nameof(MultiHitRestrict),
+		Tooltip = "With the limit to multihit party stacks on, the bell also goes out at the first hit of an enemy attack "
+			+ "that has been seen to hit you and the party several times in a row - one trigger a second, within the bell's "
+			+ "duration. Learned per enemy action over every session; the first time an attack is met it teaches.\n"
+			+ "In a fight: an attack of ten hits a second apart heals the party after each of the next five, instead of "
+			+ "the bell staying unused.")]
+	public bool LiturgyOnSeries { get; set; } = true;
+
 	[RotationConfig(CombatType.PvE, Name = "Press Liturgy of the Bell a second time when the party needs an area heal",
 		Tooltip = "While the bell still holds stacks, its second press heals with every stack left at once; otherwise "
 			+ "they heal only when the bell runs out, often onto a party that is healed by then. It goes out on the "
@@ -328,6 +346,13 @@ public sealed class WHM_Reborn : WhiteMageRotation
 
 	protected override bool GeneralAbility(IAction nextGCD, out IAction? act)
 	{
+		// The bell into a series already hitting: every further hit of it triggers the bell (A349).
+		if (MultiHitRestrict && LiturgyOnSeries && LiturgyTriggersLeft > 0
+			&& LiturgyOfTheBellPvE.CanUse(out act, skipAoeCheck: true))
+		{
+			return true;
+		}
+
 		if (UseDivine && DivineCaressPvE.CanUse(out act))
 		{
 			return true;
@@ -370,7 +395,9 @@ public sealed class WHM_Reborn : WhiteMageRotation
 			return true;
 		}
 
-		if ((MultiHitRestrict && IsCastingMultiHit) || !MultiHitRestrict)
+		// Last of the four: the bell heals after the hit, the three before it lessen the hit itself.
+		if (!MultiHitRestrict || IsCastingMultiHit
+			|| (LiturgyBeforeDanger && AreaHitOnMe && AreaDefenseDanger(out _)))
 		{
 			if (LiturgyOfTheBellPvE.CanUse(out act, skipAoeCheck: true))
 			{

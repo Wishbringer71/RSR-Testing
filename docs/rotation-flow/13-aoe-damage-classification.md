@@ -73,7 +73,7 @@ den Puffer. Dieselbe Größe, zwei Fragen, zwei Antworten — nachzulesen in
 | Baustein | Stand |
 |---|---|
 | Aufnahme einer Flächenaktion in die Liste | vorhanden, Upstream (`Watcher.ActionFromEnemy`) |
-| Messung: höchster Anteil an der Maximalgesundheit je Effektsatz | umgesetzt |
+| Messung: höchster Anteil an der Maximalgesundheit je Effektsatz, eine Serie je Mitglied summiert | umgesetzt (Serie: A349) |
 | Treffer über der ganzen Gesundheit samt Barriere nicht gemessen, Ablage höchstens die ganze Maximalgesundheit | umgesetzt (A298) |
 | Ablage je Aktion (`HostileCastingAreaPotential`, Parallelspeicher) | umgesetzt |
 | Höchstwert-Fortschreibung, auch für bekannte Ids, mit gelockerter Bedingung | umgesetzt |
@@ -381,6 +381,15 @@ niemandem auf; in einem Savage-Kampf ist sie der Unterschied zwischen Durchkomme
 verschiedener Maximalgesundheit und verschiedener eigener Minderung; der höchste Anteil gehört
 typischerweise dem Stoffträger und sagt, wie hart die Aktion den am stärksten Betroffenen trifft.
 Genau danach fragt die Entscheidung.
+
+**Eine Serie zählt als ein Angriff** (A349, `Watcher.SeriesShare`). Landet eine gelistete Aktion mehrmals, folgt jede
+Landung der vorigen also schneller, als der Gegner sie noch einmal wirken könnte (ihre Wirkzeit laut Aktionsblatt),
+werden die Anteile je Mitglied addiert und der höchste Summenanteil abgelegt, höchstens die ganze Maximalgesundheit.
+Ersticken des Fleisches (6 s Wirkzeit) traf ihn am 19.10.2026 zweimal je viermal im Abstand von 3 s, mit bis zu 24 %
+je Treffer und zusammen 49 und 54 %: einzeln ein Treffer, der ihn über der Flächenheilschwelle lässt, zusammen nicht. Der Text von „Skip mitigation for small area casts"
+mindert voll, wenn nach dem Treffer Heilung fällig wird; mit dem Einzeltreffer hätte die Regel die Minderung gegen die
+ganze Serie gespart. Zwei Gegner, die dieselbe Aktion im selben Moment wirken, zählen ebenso zusammen – sie treffen die
+Gruppe zusammen.
 
 **Fortgeschrieben wird als Höchstwert über alle Durchläufe.** Der Wert kann nur steigen, und jeder
 Anstieg wirkt beim nächsten Verbrauch sofort.
@@ -785,9 +794,11 @@ Treffer; die Gruppe bekommt dann Vorausheilung und Minderung für
 einen Treffer, den ein gut Stehender nicht braucht. Fehlerrichtung sicher. Ein Abschlag ließe sich nicht ohne
 erfundene Zahl bilden, und welcher Treffer der richtig stehende war, sagt das Spiel nicht.
 
-**Serien kleiner Einschläge bleiben ungelöst.** Mehrere kleine Treffer kurz hintereinander summieren
-sich; jeder einzeln unter jeder Schwelle, zusammen tödlich. Eine Einzelwertprüfung sieht das nicht.
-Benannte Grenze, nicht behoben.
+**Serien kleiner Einschläge:** Eine gelistete Aktion mit Wirkzeit wird als Serie gemessen („Eine Serie zählt als ein
+Angriff"). Die meisten Serien in seinen Kämpfen sind aber Sofortaktionen ohne Wirkzeit (Tosende Hyperkanone,
+Pechschwarzer Pfad, Dimension Null; Aktionsblatt, Cast100ms 0): Die misst die Tabelle gar nicht, sie kommen nicht in
+die Liste und bleiben unbewertet, also gemindert wie vor der Tabelle. Angekündigt werden sie nur über
+BossModReborn. Was die Glocke des Weißmagiers aus ihnen macht, zählt `HitSeries` getrennt (Konzept 08).
 
 **Der VFX-Zweig umgeht die Rechnung.** `IsHostileCastingAOE` erkennt auch Stack- und Spread-Marker
 über Effektpfade statt über Aktions-Ids; für die gibt es kein Potential, also greift die Rechnung dort
