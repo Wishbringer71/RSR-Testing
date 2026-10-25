@@ -10100,6 +10100,45 @@ geschlossen), Release-Text und CHANGELOG nachgezogen.
 
 *Prüfgrad:* statisch, Modell, Compile; im Spiel nicht beobachtet.
 
+### A348 · Glockenspiel: Vorlage mit Fällen aus seinen Kämpfen; Mehrfachtreffer als Defekt erkannt (25.10.2026)
+
+Sein Auftrag (25.10.2026): „Whm Glockenspiel entscheidungsvorlage mit ingame fällen erklären und
+entscheidungsempfehlung genauso begründen. Ebenfalls kritischer voller Loop". Quellen: Job-Guide 7.5 (Glockenspiel
+Stufe 90, 180 s, 400 je Auslösung, höchstens einmal je Sekunde, 200 je Reststapel; Assize Stufe 56, 400; Göttliche
+Umarmung Stufe 100), The Balance, White Mage Basic Guide („aim to maximize Bell procs per usage"; keine Auslösung bei
+null Schaden durch Schilde), seine `DefenseTrace.log` vom 18.–23.10.2026 (Builds 98976a500 bis 0e8bd69a8).
+
+- *Ausgewertet:* je Kampf Glockeneinsätze, Mehrfach-Sammelmarker, „heal ahead … in danger"-Zeilen (dieselbe Messung wie
+  die Schranke, nur für Mitglieder mit fehlender Gesundheit) und Serienangriffe (dieselbe Aktion trifft ihn mindestens
+  dreimal mit Schaden, je mindestens 1 s auseinander). Stufe belegt nur, wo Göttliche Umarmung (100) oder die Glocke
+  (ab 90) im Kampf stehen; für die übrigen Kämpfe ist sie offen, die Zählung dort eine Obergrenze.
+- *Ergebnis:* Glocke zweimal, beide auf Mehrfach-Sammelmarker (22.10., Allianzraid Stufe 100 und Dungeon ab Stufe 90,
+  dort im Moment des Bosstods). Ein dritter Marker (22.10., Prüfung ab Stufe 90) fand sie in der Ausführungssperre, und
+  sie fiel nicht mehr; im Protokoll nicht geklärt, warum (keine weitere Zeile bis zum Treffer). Sechs Serienangriffe ohne
+  Marker (Ersticken des Fleisches, Pechschwarzer Pfad, Ultimatives Extremmanöver, Tosende Hyperkanone, Bebende Walze,
+  Dimension Null), drei bis fünf mögliche Auslösungen. Nachgespielt über alle Weißmagier-Kämpfe (Obergrenze, Stufe nicht
+  überall belegt): (a) 4 Einsätze, (b) 16, (d) 17, (b)+(d) 27; kein Mehrfach-Sammelmarker verlor die Glocke an eine
+  Ergänzung.
+- *Vorlage:* Konzept 08, „Glockenspiel"; TODO „Weißmagier: Glockenspiel vor großen Einzeltreffern und Mehrfachtreffern
+  (seine Entscheidung)". Empfehlung (b) und (d) als Unteroptionen, ab Werk an (seine Regel zur Voreinstellung; Nutzen
+  hängt an der Reihenfolge der Ereignisse im Kampf, also Option). Gegenüber der Vorlage vom 24.10.: (b) jetzt mit
+  Treffer auf den Weißmagier als Bedingung und als Unteroption statt Erweiterung des Texts; (d) neu.
+- *Defekt, erfasst:* Die Flächentabelle misst je Effektpaket den größten Einzeltreffer (`Watcher`, nur Erhöhungen); ein
+  Serienangriff gilt als so klein wie ein Treffer, und „Skip mitigation for small area casts" (ab Werk an) ließe die
+  Gruppenminderung aus, obwohl ihr Text Treffer, nach denen Heilung fällig wird, voll mindert. In seinen Protokollen
+  noch nicht eingetreten (keiner der sechs in der Liste); aufgenommen werden Aktionen, die jedes Gruppenmitglied
+  treffen, seit dieser Version auch von den unsichtbaren Helfern. TODO „Mehrfachtreffer gelten in der Flächentabelle
+  als kleiner Treffer".
+
+**Falsifikation der Empfehlung.** *The Balance* (möglichst viele Auslösungen) spricht gegen (b): trägt in Inhalten mit
+häufigen Mehrfach-Sammelmarkern; in seinen Kämpfen kein Konflikt, und (d) folgt dem Grundsatz besser als (a). *Die
+Schranke misst pessimistisch* (Göttliches Urteil 87 % gemessen, 36 % gelandet): Der zweite Druck folgt seinen
+Flächenschwellen, auf einen mild gelandeten Treffer warten die Stapel; Preis ist die Verfügbarkeit, in seinen Kämpfen
+ohne Folge. *Ausgeliefert, nichts ändert sich:* unter Stufe 90 (keine Glocke), Treffer erreicht den Weißmagier nicht
+(daher Bedingung), Schild schluckt den Schaden ganz.
+
+Kein Code geändert. *Prüfgrad:* statisch (Code, Wirktexte, Protokolle).
+
 ---
 ## B · Commit-Register (Fork vs. `upstream/main`)
 

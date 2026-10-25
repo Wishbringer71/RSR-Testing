@@ -12,39 +12,46 @@ Nach der Wirkung im Kampf: Sicherheit der Gruppe vor Schaden, gewichtet mit der 
 18.10.2026 sind erledigt: TODO berichtigt (A322), Prüfläufe geordnet (A323), Laufzeitkosten umgestellt (A325). Sein
 Auftrag vom 24.10.2026 läuft: die einfachen Punkte zuerst (A338), die schweren wichtigen danach ebenso. Glockenspiel
 steht seit seinem Hinweis vom 24.10.2026 vor der Flächenheilung: Es heilt eine Gruppe nach einem Treffer, der ihr fast
-alles nimmt.
+alles nimmt. Der Defekt der Mehrfachtreffer steht davor: Er nähme allen Rollen die Gruppenminderung gegen Serienangriffe.
 
-1. Weißmagier: Glockenspiel auch vor großen Einzeltreffern (seine Entscheidung)
-2. Rotationen gegen The Balance abgleichen
-3. Six-sided Star und Flamethrower
-4. AoE-Schwelle an drei Orten
-5. Audit der gesamten Codebasis
+1. Mehrfachtreffer gelten in der Flächentabelle als kleiner Treffer (Defekt)
+2. Weißmagier: Glockenspiel vor großen Einzeltreffern und Mehrfachtreffern (seine Entscheidung)
+3. Rotationen gegen The Balance abgleichen
+4. Six-sided Star und Flamethrower
+5. AoE-Schwelle an drei Orten
+6. Audit der gesamten Codebasis
 
 Danach technische Schuld, soweit ihre Auflösungsbedingung erfüllt ist. Warten auf Daten: unten.
 
 ## Defekte
 
-Keine bekannt.
+### Mehrfachtreffer gelten in der Flächentabelle als kleiner Treffer · N
+
+*Wirkung im Kampf:* Ein Gruppenangriff, der in Serie trifft, wird mit seinem größten Einzeltreffer bewertet (Tosende
+Hyperkanone: zehn Treffer zu bis 6 %). Mit „Skip mitigation for small area casts" (ab Werk an) gilt er dann als klein,
+und die Gruppenminderung aller Rollen bleibt aus – gegen den Text der Einstellung, der Treffer, nach denen Heilung
+fällig wird, voll mindert. Bisher in seinen Protokollen nicht eingetreten: keiner der sechs Serienangriffe vom
+18.–23.10.2026 stand in der Flächenliste; seit die unsichtbaren Helfer gelesen werden, kommen sie hinein. *Ort:*
+`Watcher` (Messung je Effektpaket), `DataCenter.AreaCastIsWorthMitigating`, `AnnouncedHitIsSmall`. *Nächster Schritt:*
+Treffer einer Aktion zu einem Angriff zusammenfassen und je Mitglied aufsummieren; dieselbe Zusammenfassung zählt die
+Auslösungen der Glocke (offene Arbeit „Weißmagier: Glockenspiel vor großen Einzeltreffern und Mehrfachtreffern"). *Konzept:* 08,
+„Glockenspiel"; Messung: A348.
 
 ## Offene Arbeit
 
-### Weißmagier: Glockenspiel auch vor großen Einzeltreffern (seine Entscheidung) · N
+### Weißmagier: Glockenspiel vor großen Einzeltreffern und Mehrfachtreffern (seine Entscheidung) · N
 
-*Kontext:* Sein Vorschlag vom 24.10.2026: die Glocke vor einen bekannten Treffer setzen, der die Gruppe stark senkt;
-der Treffer löst 400 Potenz aus, der zweite Druck den Rest. Der zweite Druck ist gebaut (A340). Die Glocke vor einem
-Einzeltreffer verhindert seine Einstellung „Limit Liturgy Of The Bell to multihit party stacks" (bei ihm an): Ihr Text
-lässt nur Mehrfach-Sammelmarker zu, und der Text bindet. *Betroffen:* `WHM_Reborn.DefenseAreaAbility`. *Optionen:*
-(a) so lassen – große Einzeltreffer bekommen die Glocke nur mit der Einstellung aus; dann kommt sie als letzte nach
-Vollkommener Ablass, Linderung und Göttliche Umarmung, und auf einen Treffer, der ein Mitglied in Gefahr brächte, gehen alle
-zusammen (Schranke), samt zweitem Druck; (b) die Einstellung erweitern auf „Mehrfach-Sammelmarker und Treffer, die
-gemessen ein Mitglied in die Gefährdungsklasse brächten" – dieselbe Messung wie die Schranke; (c) er stellt sie aus.
-*Konsequenzen über den Kampf* (Abklingzeit 180 s): (a) die Glocke wartet auf den Sammelmarker, ein großer Einzeltreffer
-davor bekommt keine; (b) ein großer Einzeltreffer vor einem Sammelmarker nimmt sie diesem: 1200 Potenz sofort nach dem
-gefährlichen Treffer statt bis zu 2000 über den Sammelmarker verteilt; (c) wie (b), dazu jeder Raidwide, wenn die
-übrigen Werkzeuge abklingen. *Empfehlung:* (b) – ein Treffer, der Mitglieder in die Gefährdungsklasse bringt, ist die
-akutere Gefahr, und die Heilung kommt dann, wenn sie fehlt; der Sammelmarker bleibt vorrangig, wo kein solcher Treffer
-ansteht. *Konzept:* 08, „Was die Sperren im Spiel bewirken".
-
+*Kontext:* Mit „Limit Liturgy Of The Bell to multihit party stacks" (bei ihm an) fällt die Glocke nur auf sieben
+Markerpfade – vom 18. bis 23.10.2026 zweimal. Sein Vorschlag vom 24.10.2026: auch vor bekannte Treffer, die die Gruppe
+stark senken; der zweite Druck ist gebaut (A340). Serienangriffe ohne Marker (sechs Arten in seinen Protokollen) sieht
+heute keine Regel. *Betroffen:* `WHM_Reborn.DefenseAreaAbility`. *Optionen:* (a) so lassen; (b) zusätzlich vor einem
+Treffer, den die Schranke als gefährlich misst und der den Weißmagier erreicht, nach den drei Minderungen; (c) er
+stellt die Einstellung ab; (d) zusätzlich beim ersten Treffer eines Angriffs, der gemessen mehr als einmal auslöst.
+(b) und (d) je als Unteroption, ab Werk an. *Konsequenzen* (Abklingzeit 180 s): (a) die Glocke liegt in Kämpfen ohne
+Marker ungenutzt (Panzerauge, 19.10.); (b) 400 mit dem gefährlichen Treffer und 800 gleich danach, ein Marker in den
+drei Minuten danach geht leer aus – in seinen Kämpfen kein solcher Fall; (c) jeder Raidwide, für den die übrigen
+Werkzeuge abklingen, bekommt sie, Marker verlieren ihren Vorrang; (d) Tosende Hyperkanone: 2000 über die Serie statt
+nichts. *Empfehlung:* (b) und (d). *Konzept:* 08, „Glockenspiel", mit den Fällen aus seinen Kämpfen.
 ### Rotationen gegen The Balance abgleichen · N
 
 *Im Kampf:* Schaden – je Job Opener, Burstausrichtung und Prioritäten gegen den Guide. Der Maschinist ist abgeglichen
