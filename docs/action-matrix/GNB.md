@@ -1,6 +1,6 @@
 # GNB — Abhängigkeitsmatrix
 
-Erzeugt von `.github/scripts/audit/generate_action_matrix.py` am 2026-10-22; nicht von Hand bearbeiten. Methode und Grenzen: `docs/rotation-flow/14-action-dependency-matrix.md`.
+Erzeugt von `.github/scripts/audit/generate_action_matrix.py` am 2026-10-25; nicht von Hand bearbeiten. Methode und Grenzen: `docs/rotation-flow/14-action-dependency-matrix.md`.
 
 - Basisrotation: `GunbreakerRotation`
 - Rotation: `RotationSolver/RebornRotations/Tank/GNB_Reborn.cs`
@@ -199,7 +199,6 @@ direkt: 44 · nur gelesen: 1 · ungenutzt: 1
 | Great Nebula | Regel sperrt vorher | Gnashing Fang |
 | Great Nebula | Regel prüft | Nebula |
 | Great Nebula | Regel sperrt vorher | No Mercy |
-| Great Nebula | Regel prüft | Rampart |
 | Heart of Corundum | Regel sperrt vorher | Gnashing Fang |
 | Heart of Corundum | Regel prüft | Heart of Stone |
 | Heart of Corundum | Regel sperrt vorher | No Mercy |
@@ -226,7 +225,6 @@ direkt: 44 · nur gelesen: 1 · ungenutzt: 1
 | Nebula | Regel sperrt vorher | Gnashing Fang |
 | Nebula | Regel prüft | Great Nebula |
 | Nebula | Regel sperrt vorher | No Mercy |
-| Nebula | Regel prüft | Rampart |
 | No Mercy | Regel sperrt vorher | Bloodfest |
 | No Mercy | Regel sperrt vorher | Brutal Shell |
 | No Mercy | Regel sperrt vorher | Burst Strike |

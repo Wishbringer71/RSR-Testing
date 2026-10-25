@@ -353,38 +353,10 @@ public sealed class WAR_Reborn : WarriorRotation
 			return true;
 		}
 
-		if ((!RampartPvE.Cooldown.IsCoolingDown || RampartPvE.Cooldown.ElapsedAfter(60)) && DamnationPvE.CanUse(out act) && DamnationPvE.EnoughLevel)
+		// The big mitigation and Rampart, spaced, or in a pull held until the measured fall needs them (A359).
+		if (StaggeredBigMitigation(VengeancePvE, DamnationPvE, out act))
 		{
 			return true;
-		}
-
-		if ((!RampartPvE.Cooldown.IsCoolingDown || RampartPvE.Cooldown.ElapsedAfter(60)) && VengeancePvE.CanUse(out act) && !DamnationPvE.EnoughLevel)
-		{
-			return true;
-		}
-
-		if (!VengeancePvE.EnoughLevel)
-		{
-			if (RampartPvE.CanUse(out act))
-			{
-				return true;
-			}
-		}
-
-		if (VengeancePvE.EnoughLevel && !DamnationPvE.EnoughLevel)
-		{
-			if (VengeancePvE.Cooldown.IsCoolingDown && VengeancePvE.Cooldown.ElapsedAfter(30) && RampartPvE.CanUse(out act))
-			{
-				return true;
-			}
-		}
-
-		if (DamnationPvE.EnoughLevel)
-		{
-			if (DamnationPvE.Cooldown.IsCoolingDown && DamnationPvE.Cooldown.ElapsedAfter(30) && RampartPvE.CanUse(out act))
-			{
-				return true;
-			}
 		}
 
 		if (!HoldReprisalForRaidwide()

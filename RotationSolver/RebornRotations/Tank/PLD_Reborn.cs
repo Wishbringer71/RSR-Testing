@@ -286,39 +286,10 @@ public sealed class PLD_Reborn : PaladinRotation
 				return true;
 			}
 
-			// If Rampart is not cooling down or has been cooling down for more than 60 seconds, and Sentinel can be used, use Sentinel and return true.
-			if ((!RampartPvE.Cooldown.IsCoolingDown || RampartPvE.Cooldown.ElapsedAfter(60)) && GuardianPvE.CanUse(out act) && GuardianPvE.EnoughLevel)
+			// The big mitigation and Rampart, spaced, or in a pull held until the measured fall needs them (A359).
+			if (StaggeredBigMitigation(SentinelPvE, GuardianPvE, out act))
 			{
 				return true;
-			}
-
-			if ((!RampartPvE.Cooldown.IsCoolingDown || RampartPvE.Cooldown.ElapsedAfter(60)) && SentinelPvE.CanUse(out act) && !GuardianPvE.EnoughLevel)
-			{
-				return true;
-			}
-
-			if (!SentinelPvE.EnoughLevel)
-			{
-				if (RampartPvE.CanUse(out act))
-				{
-					return true;
-				}
-			}
-
-			if (SentinelPvE.EnoughLevel && !GuardianPvE.EnoughLevel)
-			{
-				if (SentinelPvE.Cooldown.IsCoolingDown && SentinelPvE.Cooldown.ElapsedAfter(30) && RampartPvE.CanUse(out act))
-				{
-					return true;
-				}
-			}
-
-			if (GuardianPvE.EnoughLevel)
-			{
-				if (GuardianPvE.Cooldown.IsCoolingDown && GuardianPvE.Cooldown.ElapsedAfter(30) && RampartPvE.CanUse(out act))
-				{
-					return true;
-				}
 			}
 
 			if (!HoldReprisalForRaidwide()

@@ -123,6 +123,18 @@ from the last time he stood at least as high. In a model of a healer acting on t
 fights, the change is never worse and needs no more heals; the forecast itself halves the deaths against no forecast
 at low heal thresholds. Setting: "Heal ahead of incoming damage" (unchanged).
 
+## Tanks: the big mitigation waits in a pull until your health needs it
+
+In a pull the defence opened by the number of enemies on you, and every pull of two or more got the big mitigation and
+Rampart at once - also a small pack your healer carries you through, so it was missing at the wall-to-wall pull after.
+Your short mitigation, Arm's Length and Reprisal still go at once. The big mitigation and Rampart now wait until your
+health, at the rate measured net of every heal and mitigation, would fall below 30 % within their duration; then each
+goes as soon as it is needed, no longer spaced by fixed times. A tankbuster, a cast aimed at you or a BossModReborn
+tankbuster opens them as before, and so does danger to you or a tank. In a model of a healer and a tank over 100 random
+dungeon runs the deaths fell from 19 to 5 and the time under 30 % to a third; with more damage or a weaker healer the
+same direction. Setting: "Hold the big mitigation and Rampart in a pull until your health needs them" (on), with
+"Health the big mitigation waits for" (30 %).
+
 ## Healers: party heals on the group's average read the forecast too
 
 "Heal ahead of incoming damage" promises every healing threshold the health a member is heading for when the heal

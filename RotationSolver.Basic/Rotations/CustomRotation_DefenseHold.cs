@@ -382,4 +382,67 @@ public partial class CustomRotation
 	{
 		return !lostWithinGcd && DataCenter.AreaHitAnnounced;
 	}
+
+	/// <summary>
+	/// Whether the single-target defence stands open by the tank's pull rule alone: no tankbuster or listed cast aimed
+	/// at a tank, no BossModReborn tankbuster, and no command of the player's.
+	/// </summary>
+	private static bool PullDefenseOnly =>
+		DataCenter.TankPullOnPlayer && !DataCenter.CommandStatus.HasFlag(AutoStatus.DefenseSingle)
+		&& !DataCenter.IsHostileCastingToTank && !DataCenter.IsHostileCastingTankBusterAtMe && !DataCenter.BMRTankbusterImminent;
+
+	/// <summary>
+	/// Whether the tank's big mitigation or Rampart waits in a pull: "Hold the big mitigation and Rampart in a pull until
+	/// your health needs them" is on, the defence stands open by the pull alone, and the player's health, at the rate
+	/// measured net of every heal and mitigation, stays at or above "Health the big mitigation waits for" through
+	/// <paramref name="mitigation"/>'s own duration. Before a pull has a rate, it waits. A strategic hold, so it yields
+	/// while the player or a tank is in danger (<see cref="HoldSingleDefense"/>). Modelled in
+	/// tank_pull_defense_model.py (concept 09, "Die Abwehr im Pull", A359).
+	/// </summary>
+	/// <param name="mitigation">The big mitigation or Rampart.</param>
+	/// <returns>True while it waits.</returns>
+	protected static bool BigMitigationHeldInPull(IBaseAction mitigation)
+	{
+		if (!Service.Config.HoldBigTankMitigationInPull || !PullDefenseOnly || Player == null)
+		{
+			return false;
+		}
+
+		var heading = Player.GetHealthRatioIn(DefensiveValues.DurationOf(mitigation.ID));
+		return HoldSingleDefense(heading >= Service.Config.HoldBigTankMitigationBelow, "pull: big mitigation waits for the measured fall");
+	}
+
+	/// <summary>
+	/// The tank's big mitigation - <paramref name="upgraded"/> once learned, else <paramref name="big"/> - and Rampart
+	/// outside an announced hit, the part every tank rotation carried as its own copy. The two exclude each other through
+	/// their statuses. In a pull under <see cref="BigMitigationHeldInPull"/> each goes once the measured fall would cross
+	/// the line within its own duration; in the model a fixed spacing on top only cost (A359). Otherwise spaced as
+	/// before: the big one while Rampart is ready or 60 s past, Rampart 30 s after the big one; below the big one's
+	/// level Rampart alone.
+	/// </summary>
+	/// <param name="big">The job's big mitigation (Sentinel, Vengeance, Shadow Wall, Nebula).</param>
+	/// <param name="upgraded">Its upgrade (Guardian, Damnation, Shadowed Vigil, Great Nebula).</param>
+	/// <param name="act">The action to use.</param>
+	/// <returns>True when one goes.</returns>
+	protected bool StaggeredBigMitigation(IBaseAction big, IBaseAction upgraded, out IAction? act)
+	{
+		var current = upgraded.EnoughLevel ? upgraded : big;
+		var measured = Service.Config.HoldBigTankMitigationInPull && PullDefenseOnly;
+
+		if (current.EnoughLevel
+			&& (measured || !RampartPvE.Cooldown.IsCoolingDown || RampartPvE.Cooldown.ElapsedAfter(60))
+			&& !BigMitigationHeldInPull(current) && current.CanUse(out act))
+		{
+			return true;
+		}
+
+		if ((!big.EnoughLevel || measured || (current.Cooldown.IsCoolingDown && current.Cooldown.ElapsedAfter(30)))
+			&& !BigMitigationHeldInPull(RampartPvE) && RampartPvE.CanUse(out act))
+		{
+			return true;
+		}
+
+		act = null;
+		return false;
+	}
 }

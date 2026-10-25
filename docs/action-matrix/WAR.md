@@ -1,6 +1,6 @@
 # WAR — Abhängigkeitsmatrix
 
-Erzeugt von `.github/scripts/audit/generate_action_matrix.py` am 2026-10-24; nicht von Hand bearbeiten. Methode und Grenzen: `docs/rotation-flow/14-action-dependency-matrix.md`.
+Erzeugt von `.github/scripts/audit/generate_action_matrix.py` am 2026-10-25; nicht von Hand bearbeiten. Methode und Grenzen: `docs/rotation-flow/14-action-dependency-matrix.md`.
 
 - Basisrotation: `WarriorRotation`
 - Rotation: `RotationSolver/RebornRotations/Tank/WAR_Reborn.cs`
@@ -95,7 +95,6 @@ direkt: 40 · ungenutzt: 1
 | Berserk | ActionCheck liest | Inner Release |
 | Berserk | Regel prüft | Inner Release |
 | Berserk | Regel prüft | Storm's Eye |
-| Damnation | Regel prüft | Rampart |
 | Damnation | Regel prüft | Vengeance |
 | Decimate | Regel sperrt vorher | Primal Rend |
 | Decimate | Regel prüft | Storm's Eye |
@@ -129,7 +128,6 @@ direkt: 40 · ungenutzt: 1
 | Tomahawk | Regel sperrt vorher | Primal Rend |
 | Upheaval | StatusNeed SurgingTempest | Storm's Eye |
 | Vengeance | Regel prüft | Damnation |
-| Vengeance | Regel prüft | Rampart |
 
 ## Wechselwirkungen und Zeit
 

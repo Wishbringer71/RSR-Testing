@@ -602,40 +602,10 @@ public sealed class DRK_Reborn : DarkKnightRotation
 			return true;
 		}
 
-		//30-40
-		if ((!RampartPvE.Cooldown.IsCoolingDown || RampartPvE.Cooldown.ElapsedAfter(60)) && ShadowedVigilPvE.CanUse(out act) && ShadowedVigilPvE.EnoughLevel)
+		// The big mitigation and Rampart, spaced, or in a pull held until the measured fall needs them (A359).
+		if (StaggeredBigMitigation(ShadowWallPvE, ShadowedVigilPvE, out act))
 		{
 			return true;
-		}
-
-		if ((!RampartPvE.Cooldown.IsCoolingDown || RampartPvE.Cooldown.ElapsedAfter(60)) && ShadowWallPvE.CanUse(out act) && !ShadowedVigilPvE.EnoughLevel)
-		{
-			return true;
-		}
-
-		//20
-		if (!ShadowWallPvE.EnoughLevel)
-		{
-			if (RampartPvE.CanUse(out act))
-			{
-				return true;
-			}
-		}
-
-		if (ShadowWallPvE.EnoughLevel && !ShadowedVigilPvE.EnoughLevel)
-		{
-			if (ShadowWallPvE.Cooldown.IsCoolingDown && ShadowWallPvE.Cooldown.ElapsedAfter(30) && RampartPvE.CanUse(out act))
-			{
-				return true;
-			}
-		}
-
-		if (ShadowedVigilPvE.EnoughLevel)
-		{
-			if (ShadowedVigilPvE.Cooldown.IsCoolingDown && ShadowedVigilPvE.Cooldown.ElapsedAfter(30) && RampartPvE.CanUse(out act))
-			{
-				return true;
-			}
 		}
 
 		// Same hold as in the area path, and for the same reason: on a group pull the barrier's

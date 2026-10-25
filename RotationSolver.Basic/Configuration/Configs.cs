@@ -889,6 +889,30 @@ internal partial class Configs : IPluginConfiguration, IM3Settings
 		PvEFilter = JobFilterType.Tank)]
 	private readonly float _healthForAutoDefense = 1;
 
+	// The enemy count says a pull has come, not whether it needs the big cooldowns; the measured fall says that,
+	// net of every heal and mitigation (concept 08, "bewältigbar wird gemessen"). In the closed-loop model
+	// (tank_pull_defense_model.py) holding them until the fall would cross 30 % within their duration, without the old
+	// 60 s / 30 s stagger, had the fewest deaths and the least time under 30 % in every case, the opening of a big pull
+	// no worse than before (A359). On by default: the owner's rule for new rules (29.09.2026).
+	[ConditionBool, UI("Hold the big mitigation and Rampart in a pull until your health needs them",
+		Description = "In a pull - the defence opened by the number of enemies on you, with no tankbuster or listed cast "
+			+ "aimed at a tank and no BossModReborn tankbuster announced - your short mitigation, Arm's Length and Reprisal "
+			+ "still go at once. The big mitigation (Guardian, Damnation, Shadowed Vigil, Great Nebula and their lower "
+			+ "versions) and Rampart wait until your health, at the rate measured net of every heal and mitigation, would "
+			+ "fall below the health set below within their own duration; the first seconds of a pull, before there is a "
+			+ "rate, they wait too. Each then goes as soon as it is needed, no longer spaced by fixed times; they still "
+			+ "never run together. Not while you or a tank is in danger.\n"
+			+ "In a fight: a pack your healer holds you through costs no big cooldown, so it is ready for the pull that "
+			+ "needs it; a pull that takes you down fast gets it as soon as the fall shows. Off: they go at the start of "
+			+ "every pull of enough enemies, the big one and Rampart spaced 60 and 30 s apart, as before.",
+		Parent = nameof(UseDefenseAbility), PvEFilter = JobFilterType.Tank)]
+	private static readonly bool _holdBigTankMitigationInPull = true;
+
+	[UI("Health the big mitigation waits for", Parent = nameof(HoldBigTankMitigationInPull),
+		PvEFilter = JobFilterType.Tank)]
+	[Range(0, 1, ConfigUnitType.Percent, 0.01f)]
+	public float HoldBigTankMitigationBelow { get; set; } = 0.3f;
+
 	[ConditionBool, UI("Use tank stance", Parent = nameof(UseAbility),
 		PvEFilter = JobFilterType.Tank)]
 	private static readonly bool _autoTankStance = true;

@@ -24,9 +24,9 @@ sind, die durch routinen und ingame auswertungen besser geregelt werden können.
   Nutzen im Kampf; ab Werk jetzt 0 bis 0 s (unten, „Tarnung"; Konzept 11).
 - **Alles Übrige ist eingeordnet, ohne Änderung.** Die übrigen Zahlen, die eine Spieltatsache tragen, haben entweder
   keinen messbaren Gewinn (Vorlaufzeiten der BossModReborn-Zeitleiste, Lucid Dreaming), oder ihre Ableitung gehört in
-  den Abgleich mit The Balance (Leisten- und Statusgrenzen der Rotationen). Die Abwehr der Tanks nach der Gegnerzahl
-  ist der eine Fall, in dem eine Auswertung zur Laufzeit die Einstellung ergänzen könnte; offen in `TODO.md`, „Tank:
-  Pull-Abwehr nach gemessenem Schadenseingang".
+  den Abgleich mit The Balance (Leisten- und Statusgrenzen der Rotationen).
+- **Die Pull-Abwehr der Tanks liest jetzt den gemessenen Verlauf.** Die Gegnerzahl öffnet sie weiter, die große
+  Minderung und Schutzwall warten aber, bis der Verlauf sie braucht (Konzept 09, „Die Abwehr im Pull").
 - **„Engage settings" bleibt seine Entscheidung** (der Fall, an dem der Auftrag entstand, Konzept 04): Wen RSR angreift,
   entscheidet, welche Gruppe gezogen wird – im Dungeon die Frage, ob ein zweites Rudel mitkommt.
 
@@ -188,12 +188,13 @@ the lowest party HP is below") über das vorausberechnete Minimum.
 Die Regeln des Forks (Tankbuster-Plan, Übernahme vom Mit-Tank, Streckung der Gruppenwerkzeuge, „Spend only the
 mitigation a measured tankbuster needs") urteilen selbst und sind ab Werk an; ihr Schalter ist Notausschalter.
 
-- **Pull-Abwehr nach der Gegnerzahl** („Use tank mitigation when this many enemies target you", ab Werk 2;
-  „… below this HP", ab Werk 100 %, also immer). Sie zählt Gegner, die den Tank innerhalb von 3 Yalm angreifen. Die
-  Gegnerzahl ist vor dem ersten Treffer eines Pulls der einzige Vorbote (Konzept 08, „Blind für den ersten Treffer");
-  danach misst RSR den Verlauf, und Konzept 08 hat für die Drosselung schon entschieden, dass „bewältigbar gemessen,
-  nicht gesetzt" wird. Für die Pull-Abwehr der Tanks ist das nicht gebaut: zwei schwache Gegner kosten eine Minderung,
-  ein einzelner starker keine. Offen, mit Modell vor dem Code.
+- **Pull-Abwehr: Gegnerzahl als Vorbote, der Verlauf für die großen Abklingzeiten.** „Use tank mitigation when this
+  many enemies target you" (ab Werk 2) öffnet die Einzelabwehr; kurze Minderung, Abtausch und Reflexion fallen sofort.
+  Die große Minderung und Schutzwall warten, bis seine Gesundheit beim gemessenen Verlauf innerhalb ihrer Wirkdauer
+  unter „Health the big mitigation waits for" (ab Werk 30 %) fiele – eine Haltung mit Laufzeiturteil wie die
+  Heilschwellen. Im Regelkreis-Modell in jedem gerechneten Fall weniger Tote und weniger Zeit unter 30 % als die reine
+  Zählung (Konzept 09, „Die Abwehr im Pull"). Die Gegnerzahl bleibt, weil vor dem ersten Treffer nichts anderes
+  vorhersagt; „Use tank mitigation below this HP" (ab Werk 100 %, also immer) bleibt als Pegel über der ganzen Abwehr.
 - **„Use invulnerability below this HP"** ist die letzte Stufe unter dem Tankbuster-Plan; die Stufe darüber urteilt
   am gemessenen Treffer (Konzept 09). Haltung, nicht geändert.
 - **Vorlaufzeiten der BossModReborn-Zeitleiste** (Fläche 5 s, Tankbuster 3 s, Rückstoß 3 s; nur mit „Use BossModReborn's

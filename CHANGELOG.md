@@ -23,6 +23,13 @@ are not reconstructed here.
 
 ## Unreleased
 
+### RotationSolver.Basic: a tank's big mitigation and Rampart in one place
+
+New on `CustomRotation`: `StaggeredBigMitigation(big, upgraded, out act)`, the big mitigation and Rampart outside an
+announced hit as the four default tank rotations carried them, and `BigMitigationHeldInPull(mitigation)`, the hold of
+"Hold the big mitigation and Rampart in a pull until your health needs them". A derived tank rotation that keeps its
+own copy of the old block is not affected by the setting; calling the method gives it the hold.
+
 ### Behaviour change in RotationSolver.Basic: Intervene keeps to the damaging gap closer distance
 
 `PaladinRotation` gives `IntervenePvE` a `Setting.CanTarget` that admits a target only closer than "Only use damaging gap

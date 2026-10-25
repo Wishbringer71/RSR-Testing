@@ -14,13 +14,13 @@ Auftrag vom 24.10.2026 läuft: die einfachen Punkte zuerst (A338), die schweren 
 25.10.2026, Upstream der letzten zehn Tage mit den eigenen Patches inhaltlich abzugleichen, ist erledigt (A354), der
 Defekt daraus behoben (A356). Sein Auftrag vom 25.10.2026 nachmittags: nach Priorität und Umsetzbarkeit, je im Loop;
 der Tank-Punkt ist entschieden (A357), sein Auftrag zu den Einstellungen ist erledigt (A358, Konzept 18), der Punkt
-daraus steht oben, weil er die Abwehr betrifft.
+daraus gebaut (A359). Sein Auftrag vom 25.10.2026 abends wiederholt beide: das TODO weiter, danach ein zweiter
+Durchgang des Einstellungs-Audits, Rotationseinstellung für Rotationseinstellung.
 
-1. Tank: Pull-Abwehr nach gemessenem Schadenseingang
-2. Rotationen gegen The Balance abgleichen
-3. Six-sided Star und Flamethrower
-4. AoE-Schwelle an drei Orten
-5. Audit der gesamten Codebasis
+1. Rotationen gegen The Balance abgleichen
+2. Six-sided Star und Flamethrower
+3. AoE-Schwelle an drei Orten
+4. Audit der gesamten Codebasis
 
 Danach technische Schuld, soweit ihre Auflösungsbedingung erfüllt ist. Warten auf Daten: unten.
 
@@ -29,15 +29,6 @@ Danach technische Schuld, soweit ihre Auflösungsbedingung erfüllt ist. Warten 
 Keine bekannt.
 
 ## Offene Arbeit
-
-### Tank: Pull-Abwehr nach gemessenem Schadenseingang · N
-
-*Im Kampf:* Die Pull-Abwehr eines Tanks fällt nach der Gegnerzahl („Use tank mitigation when this many enemies target
-you", ab Werk 2): Zwei schwache Gegner kosten eine Minderung, die beim nächsten großen Pull fehlt; ein einzelner starker
-Gegner löst keine aus. Die Gegnerzahl bleibt der Vorbote vor dem ersten Treffer; danach misst RSR den Netto-Verlauf des
-Tanks, wie Konzept 08 ihn für die Drosselung schon liest. *Ort:* `StateUpdater` (Einzelabwehr der Tanks). *Nächster
-Schritt:* Modell im Regelkreis (wie `party_ttk_model.py`): Zählung allein gegen Zählung mit Verlauf als Freigabe oder
-als zusätzlicher Auslöser – Tote, Zeit unter 30 %, verbrauchte Minderungen je Pull. *Konzept:* 18, „Abwehr"; 09.
 
 ### Rotationen gegen The Balance abgleichen · N
 

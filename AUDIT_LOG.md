@@ -10548,6 +10548,44 @@ Heilschwellen ändert sich bei Fähigkeiten fast nichts (Vorausschau über die A
 
 *Prüfgrad:* statisch an jedem Leser, Versionsgeschichte, Job-Guide, Compile; im Spiel nicht beobachtet.
 
+### A359 · Tank: große Minderung im Pull nach gemessenem Bedarf (25.10.2026)
+
+Offener Punkt aus A358; sein Auftrag (25.10.2026 abends): „todo wieder nach priorität und umsetzbarkeit im jeweiligen
+loop abarbeiten, dazu passende konzepte verbessern und umsetzen".
+
+- *Erhoben:* Die Einzelabwehr öffnet im Pull ab „Use tank mitigation when this many enemies target you" (2) Gegnern; alle
+  vier Tanks drücken dann Abtausch, kurze Minderung, die große Minderung (bereit oder Schutzwall vor 60 s) und
+  Schutzwall (große vor 30 s) und Reflexion – unabhängig davon, ob der Pull sie braucht. Den Verlauf lasen nur
+  Kampfrausch (A239) und The Blackest Night (A338). Der Block „große Minderung und Schutzwall" stand in allen vier
+  Rotationen als wortgleiche Kopie.
+- *Optionen:* (0) Zählung wie bisher; ADD – zusätzlich öffnen, wenn der Verlauf bei weniger Gegnern fällt; HOLD – große
+  und Schutzwall erst, wenn die Gesundheit beim Verlauf innerhalb ihrer Wirkdauer unter eine Linie fiele; HOLD6 – dazu ab
+  sechs Gegnern sofort; HOLDNS – HOLD ohne die feste Staffel.
+- *Modell* (`tank_pull_defense_model.py`, neu, Regelkreis wie `party_ttk_model.py`, dessen Vorausschau es nutzt; je
+  Fall 100 Läufe zu 20 Pulls). Die erste Fassung war falsch kalibriert (ein Tod alle drei Pulls); Schaden je Gegner auf
+  0,6–1,2 %/s durch die Haltung gesenkt, ADD von der Rückhaltung getrennt. Ergebnis: HOLDNS in allen vier Fällen –
+  Grundfall, 25 % mehr Schaden, schwächerer Heiler, doppelt harter Auftakt – mit den wenigsten oder fast wenigsten Toten
+  und der kürzesten Zeit unter 30 % (Grundfall 5 statt 19 Tote, 180 statt 506 s), die ersten 5 s großer Pulls wie heute;
+  ADD überall schlechter als die Zählung; die alte Staffel unter der Rückhaltung nur Kosten. Linie 15/30/45/65 %:
+  30 % mit der kürzesten Zeit unter 30 % bei fast den wenigsten Toten.
+- *Abgleich mit seinen Regeln:* „vorab eingreifen" (Konzept 08) – die billigen Mittel fallen weiter vor dem ersten
+  Treffer, die Rückhaltung urteilt auf einer Vorhersage, nicht auf tiefer Gesundheit. „Erkennung und Entscheidung
+  trennen" – die Linie ist eine eigene Einstellung, nicht die Heil- oder Unverwundbarkeitsschwelle. „Universell zuerst" –
+  eine Methode für alle Tanks statt vier Kopien. Voreinstellung an nach seiner Regel für neue Regeln.
+- *Umgesetzt:* `CustomRotation.StaggeredBigMitigation` und `BigMitigationHeldInPull` (über `HoldSingleDefense`, weicht
+  bei Gefahr), Option „Hold the big mitigation and Rampart in a pull until your health needs them" mit „Health the big
+  mitigation waits for" (30 %); die vier Rotationen rufen die Methode. 60 s und 30 s als Ausnahme registriert (Upstreams
+  Staffel für den Weg ohne Rückhaltung). Abhängigkeitsmatrix der vier Tanks neu erzeugt: Die Kante „große Minderung
+  prüft Schutzwall" ist hinter der Methode nicht mehr sichtbar (Grenze des Generators, Konzept 14).
+
+**Falsifikation.** *Kein Defekt:* richtig, eine Verbesserung – deshalb hinter einer Option. *Option falsch:* HOLD6 war
+im harten Auftakt besser, sonst schlechter, und braucht eine Zahl ohne Ableitung; die Richtung hielt in allen Fällen,
+die Größe hängt an den Annahmen. *Ausgeliefert, nichts ändert sich:* wenn seine Heiler ihn in jedem Pull über 30 % halten
+und die großen ohnehin selten brauchen – dann bleiben sie öfter bereit, was im Kampf erst bei einem schweren Pull
+sichtbar wird; in Bosskämpfen ändert sich nichts (Tankbuster, Vorhersage und Wirken öffnen ohne Rückhaltung).
+
+*Prüfgrad:* Modell mit Selbsttest, statisch, Compile; im Spiel nicht beobachtet.
+
 ---
 ## B · Commit-Register (Fork vs. `upstream/main`)
 

@@ -1,6 +1,6 @@
 # PLD — Abhängigkeitsmatrix
 
-Erzeugt von `.github/scripts/audit/generate_action_matrix.py` am 2026-10-24; nicht von Hand bearbeiten. Methode und Grenzen: `docs/rotation-flow/14-action-dependency-matrix.md`.
+Erzeugt von `.github/scripts/audit/generate_action_matrix.py` am 2026-10-25; nicht von Hand bearbeiten. Methode und Grenzen: `docs/rotation-flow/14-action-dependency-matrix.md`.
 
 - Basisrotation: `PaladinRotation`
 - Rotation: `RotationSolver/RebornRotations/Tank/PLD_Reborn.cs`
@@ -121,7 +121,6 @@ direkt: 43 · ungenutzt: 1 · über andere Aktion: 3
 | Fight or Flight | Regel prüft | Royal Authority |
 | Fight or Flight | Regel prüft | Total Eclipse |
 | Goring Blade | StatusNeed GoringBladeReady | Fight or Flight |
-| Guardian | Regel prüft | Rampart |
 | Guardian | Regel prüft | Sentinel |
 | Holy Sheltron | Regel sperrt vorher | Intervention |
 | Holy Spirit | Regel prüft | Supplication |
@@ -150,7 +149,6 @@ direkt: 43 · ungenutzt: 1 · über andere Aktion: 3
 | Riot Blade | Regel prüft | Total Eclipse |
 | Royal Authority | ComboIds | Riot Blade |
 | Sentinel | Regel prüft | Guardian |
-| Sentinel | Regel prüft | Rampart |
 | Sepulchre | Regel prüft | Rage of Halone |
 | Sheltron | Regel prüft | Holy Sheltron |
 | Sheltron | Regel sperrt vorher | Intervention |

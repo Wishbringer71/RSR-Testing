@@ -232,40 +232,10 @@ public sealed class GNB_Reborn : GunbreakerRotation
 			}
 		}
 
-		//30
-		if ((!RampartPvE.Cooldown.IsCoolingDown || RampartPvE.Cooldown.ElapsedAfter(60)) && GreatNebulaPvE.CanUse(out act) && GreatNebulaPvE.EnoughLevel)
+		// The big mitigation and Rampart, spaced, or in a pull held until the measured fall needs them (A359).
+		if (StaggeredBigMitigation(NebulaPvE, GreatNebulaPvE, out act))
 		{
 			return true;
-		}
-
-		if ((!RampartPvE.Cooldown.IsCoolingDown || RampartPvE.Cooldown.ElapsedAfter(60)) && NebulaPvE.CanUse(out act) && !GreatNebulaPvE.EnoughLevel)
-		{
-			return true;
-		}
-
-		//20
-		if (!NebulaPvE.EnoughLevel)
-		{
-			if (RampartPvE.CanUse(out act))
-			{
-				return true;
-			}
-		}
-
-		if (NebulaPvE.EnoughLevel && !GreatNebulaPvE.EnoughLevel)
-		{
-			if (NebulaPvE.Cooldown.IsCoolingDown && NebulaPvE.Cooldown.ElapsedAfter(30) && RampartPvE.CanUse(out act))
-			{
-				return true;
-			}
-		}
-
-		if (GreatNebulaPvE.EnoughLevel)
-		{
-			if (GreatNebulaPvE.Cooldown.IsCoolingDown && GreatNebulaPvE.Cooldown.ElapsedAfter(30) && RampartPvE.CanUse(out act))
-			{
-				return true;
-			}
 		}
 
 		if (!HoldReprisalForRaidwide()

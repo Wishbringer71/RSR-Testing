@@ -1344,8 +1344,9 @@ der Tank gar nicht erst fallen soll. Was die Groesse nicht kann:
   faellt (Konzept 13), und die Vorausheilung, das Minderungsurteil, die Schranke und der Tankbuster-Plan lesen ihn,
   ohne auf den Verlauf zu warten (A340). Offen bleibt der Auftakt eines Pulls ohne Ankündigung: Dort fehlt jede
   Größe außer der Gegnerzahl. Eine gelernte Rate je Gegner wäre eine neue Vorhersage für 2,5 s, in denen die
-  Schwellen der Heilkette schon auf die aktuelle Gesundheit antworten und die Tanks ihre Pull-Abwehr nach der
-  Gegnerzahl setzen – nicht gebaut. Die eigenen Minderungen einzurechnen hülfe hier nicht: Vor dem ersten Treffer
+  Schwellen der Heilkette schon auf die aktuelle Gesundheit antworten und die Tanks ihre schnellen Pull-Mittel nach der
+  Gegnerzahl setzen – nicht gebaut. Die großen Abklingzeiten der Tanks warten im Pull auf den Verlauf (Konzept 09, „Die
+  Abwehr im Pull"). Die eigenen Minderungen einzurechnen hülfe hier nicht: Vor dem ersten Treffer
   gibt es keine Rate, die sie skalieren könnten.
 - **Traegheit, und sie ist gemessen.** `GetTTK` misst den Abfall seit dem **ersten** beobachteten
   Wert geteilt durch die **gesamte** verstrichene Zeit — eine Durchschnittsrate ueber den Kampf,

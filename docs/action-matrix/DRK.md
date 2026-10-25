@@ -112,9 +112,7 @@ direkt: 41 · ungenutzt: 1 · über andere Aktion: 1
 | Rampart | Regel prüft | Shadowed Vigil |
 | Reprisal | Regel sperrt vorher | Oblation |
 | Salt and Darkness | StatusNeed SaltedEarth | Status SaltedEarth |
-| Shadow Wall | Regel prüft | Rampart |
 | Shadow Wall | Regel prüft | Shadowed Vigil |
-| Shadowed Vigil | Regel prüft | Rampart |
 | Shadowed Vigil | Regel prüft | Shadow Wall |
 | Shadowstride | Regel sperrt vorher | Provoke |
 | Souleater | ComboIds | Syphon Strike |

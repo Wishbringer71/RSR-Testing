@@ -856,6 +856,46 @@
    "status": "exception",
    "loop": "A353",
    "reason": "The client's ids for 'no object' in a target field (0 and InvalidGameObjectId), as upstream reads them in ObjectHelper and ActionQueueManager; a convention of the client, not a figure of the game (A353)."
+  },
+  {
+   "file": "RotationSolver.Basic/Configuration/Configs.cs",
+   "code": "[Range(0, 1, ConfigUnitType.Percent, 0.01f)]",
+   "values": [
+    "0.01"
+   ],
+   "status": "exception",
+   "loop": "A359",
+   "reason": "Slider step of a health share the owner sets (\"Health the big mitigation waits for\"); a step of the settings window, not a figure of the game (A359)."
+  },
+  {
+   "file": "RotationSolver.Basic/Configuration/Configs.cs",
+   "code": "public float HoldBigTankMitigationBelow { get; set; } = 0.3f;",
+   "values": [
+    "0.3"
+   ],
+   "status": "exception",
+   "loop": "A359",
+   "reason": "Default of the line a tank's big mitigation waits for in a pull - the owner's posture, which the setting leaves to him. No sheet states it; chosen in tank_pull_defense_model.py, where 30 % had the fewest deaths or least time under 30 % against 15, 45 and 65 % (A359)."
+  },
+  {
+   "file": "RotationSolver.Basic/Rotations/CustomRotation_DefenseHold.cs",
+   "code": "&& (measured || !RampartPvE.Cooldown.IsCoolingDown || RampartPvE.Cooldown.ElapsedAfter(60))",
+   "values": [
+    "60"
+   ],
+   "status": "exception",
+   "loop": "A359",
+   "reason": "Upstream's spacing of the big mitigation after Rampart, moved unchanged from the four tank rotations into one place for the path with the pull hold off or the defence opened by something else than the pull. With the hold on in a pull the measured fall replaces it - the model found the spacing only cost there (A359)."
+  },
+  {
+   "file": "RotationSolver.Basic/Rotations/CustomRotation_DefenseHold.cs",
+   "code": "if ((!big.EnoughLevel || measured || (current.Cooldown.IsCoolingDown && current.Cooldown.ElapsedAfter(30)))",
+   "values": [
+    "30"
+   ],
+   "status": "exception",
+   "loop": "A359",
+   "reason": "Upstream's spacing of Rampart after the big mitigation, moved unchanged from the four tank rotations for the same paths as the 60 s beside it; replaced by the measured fall under the pull hold (A359)."
   }
  ]
 }

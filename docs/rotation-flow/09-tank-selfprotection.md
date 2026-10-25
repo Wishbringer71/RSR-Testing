@@ -11,6 +11,9 @@ Abschnitt C.
 - **Gemessener Tankbuster:** das billigste Bündel eigener Abwehr, mit dem der Tank ihn übersteht; die
   Unverwundbarkeit nur, wenn keines reicht; „alles" nur, wenn auch sie nicht verfügbar ist. Was der Plan nicht
   braucht, hält RSR auf allen Pfaden zurück. Zwei Optionen, ab Werk an.
+- **Pull:** Die Gegnerzahl öffnet die Einzelabwehr; kurze Minderung, Abtausch und Reflexion fallen sofort, die große
+  Minderung und Schutzwall erst, wenn seine Gesundheit beim gemessenen Verlauf innerhalb ihrer Wirkdauer unter die
+  eingestellte Linie fiele (ab Werk 30 %). Option, ab Werk an (Abschnitt „Die Abwehr im Pull").
 - **Tankbuster ohne Messung** (Vorhersage ohne Wirken, nie gemessene Aktion, erstes Auftreten eines Markers im
   Gebiet): die Einzelabwehr der Tank-Rotationen, je vorhergesagtem Tankbuster eine große Minderung oder Schutzwall und
   die kurzen dazu; die Unverwundbarkeit reaktiv unter `HealthForDyingTanks`. Ein Marker auf dir neben dem Wirken einer
@@ -592,6 +595,73 @@ Blitzga und Blitzbogen, die danach gemessen wurden.
   rechnet je Durchlauf neu.
 - Prüfgrad: Modell, Prüfskripte, Compile über die CI; im Spiel nicht beobachtet.
 
+## Die Abwehr im Pull
+
+**Sachstand.** Die Einzelabwehr öffnet im Pull nach der Gegnerzahl: mindestens „Use tank mitigation when this many
+enemies target you" (ab Werk 2) Gegner in 3 Yalm, die ihn anvisieren, und mindestens einen davon hat er selbst
+angegriffen. Kurze Minderung,
+Abtausch und Reflexion fallen sofort. Die große Minderung – Guardian oder Sentinel, Damnation oder Vengeance, Shadowed
+Vigil oder Shadow Wall, Great Nebula oder Nebula – und Schutzwall warten, bis seine Gesundheit beim gemessenen
+Netto-Verlauf innerhalb ihrer eigenen Wirkdauer unter „Health the big mitigation waits for" (ab Werk 30 %) fiele
+(`CustomRotation.BigMitigationHeldInPull`, `GetHealthRatioIn` mit der selbstkorrigierten Zeit bis zum Tod; Wirkdauer aus
+den Wirktexten). Vor dem ersten Verlauf eines Pulls – die ersten 2,5 s – warten sie auch. Danach geht jede, sobald sie
+gebraucht wird; feste Abstände gibt es dann nicht mehr, sie schließen einander nur noch über ihren Status aus. Option
+„Hold the big mitigation and Rampart in a pull until your health needs them", ab Werk an.
+
+Die Rückhaltung gilt nur, wenn allein der Pull die Abwehr geöffnet hat. Ein Tankbuster-Marker oder gelistetes Wirken auf
+ihn, ein gelistetes Wirken auf einen Tank, eine Tankbuster-Vorhersage von BossModReborn oder sein Befehl öffnen sie ohne
+Rückhaltung und mit der alten Staffel. Als strategische Rückhaltung läuft sie über die universelle Schicht
+(`HoldSingleDefense`): Steht er oder ein Tank in der kritischen Klasse, fällt sie weg.
+
+Eine Methode für alle vier Tanks: `StaggeredBigMitigation(big, upgraded)` trägt, was Paladin, Krieger, Dunkelritter und
+Revolverklinge als je eigene, wortgleiche Kopie führten; die vier Rotationen rufen sie mit ihren Aktionen auf.
+
+**Warum.** Die Gegnerzahl sagt, dass ein Pull da ist, nicht, ob er die großen Abklingzeiten braucht – zwei schwache
+Gegner kosteten eine große Minderung, die beim nächsten großen Pull fehlte. Ob ein Pull bewältigbar ist, misst der
+Verlauf, netto nach jeder Heilung und Minderung (Konzept 08, „bewältigbar wird gemessen, nicht gesetzt"). Die
+Gegnerzahl bleibt der Vorbote für das, was vor dem ersten Treffer fallen muss und wenig kostet: kurze Minderung,
+Abtausch, Reflexion. Die Linie ist seine Haltung – wie nah am Rand er die großen Abklingzeiten zurückhält –, also eine
+Einstellung; die Laufzeit urteilt, ob die Lage sie erreicht (Konzept 18, „Haltung mit Laufzeiturteil").
+
+**Modell** (`tank_pull_defense_model.py`, Regelkreis: ein Heiler heilt nach der Vorausschau, der Tank antwortet nach der
+Regel; je Fall 100 zufällige Dungeon-Läufe zu 20 Pulls – kleine Rudel, Wall-to-Wall-Pulls von 6 bis 12 Gegnern,
+einzelne starke Gegner; Summen, gerechnet am 25.10.2026):
+
+| Fall | heute: Tote / s unter 30 % | gebaut: Tote / s unter 30 % | große + Schutzwall heute / gebaut | GCD-Heilungen heute / gebaut |
+|---|---|---|---|---|
+| Grundfall | 19 / 506 | 5 / 180 | 1161 / 783 | 5824 / 5845 |
+| 25 % mehr Schaden | 147 / 2086 | 83 / 1292 | 1161 / 929 | 7696 / 7687 |
+| schwächerer Heiler | 78 / 1584 | 36 / 948 | 1161 / 863 | 7086 / 7167 |
+| großer Pull, die ersten 4 s doppelt hart | 64 / 1352 | 27 / 768 | 1161 / 846 | 6872 / 6826 |
+
+In den ersten 5 s eines großen Pulls ist die Zeit unter 30 % gleich (harter Auftakt: 72 s wie heute): Die Rückhaltung
+kostet den Auftakt nichts, weil dort die kurzen Mittel fallen und der Verlauf nach 2,5 s steht. Die Linie, gerechnet im
+Grundfall: 15 % – 3 Tote, 248 s; 30 % – 5 Tote, 180 s; 45 % – 8, 274; 65 % – 13, 355. Je tiefer die Linie, desto mehr
+Abklingzeit bleibt für den Moment, in dem sie gebraucht wird; bei 15 % steht er schon länger tief und der Heiler heilt
+mehr.
+
+**Bilanz im Kampf.** *Stärke:* Ein Rudel, durch das ihn sein Heiler trägt, kostet keine große Abklingzeit; der
+Wall-to-Wall-Pull danach hat sie. Fällt er schnell, kommt sie, sobald der Verlauf es zeigt, und die zweite ohne Wartezeit
+nach der ersten. *Schwäche:* Die ersten 2,5 s eines Pulls ohne große Minderung; im Modell ohne Folge, weil die kurzen
+Mittel dort liegen. Leicht mehr GCD-Heilungen des Heilers (0,4 % im Grundfall, 1,1 % beim
+schwächeren Heiler). *Chance:* Ein menschlicher Heiler, der
+spät heilt, löst sie über den Verlauf früher aus – die Regel misst das Ergebnis, nicht seine Absicht. *Bedrohung:* Ein
+Rudel, das in den ersten Sekunden sehr hart zuschlägt (Zauber aller Gegner zugleich); gerechnet als doppelter Auftakt,
+dort nicht schlechter als heute, mit der Gefahrenklasse als Netz. *Überwiegt:* der Nutzen, deutlich – weniger Tote und
+weniger Zeit tief in jedem gerechneten Fall.
+
+**Ausgeschlossen.** *Ein zusätzlicher Auslöser bei weniger Gegnern* (die Abwehr öffnet auch bei einem Gegner, wenn der
+Verlauf fällt): im Modell in jedem Fall schlechter, weil er Abklingzeiten an einzelnen starken Gegnern verbraucht, die
+der Heiler trägt. *Die große sofort ab sechs Gegnern:* im harten Auftakt etwas besser (24 statt 27 Tote), sonst gleich
+oder schlechter; die Sechs leitet sich aus nichts ab. *Die alte Staffel unter der Rückhaltung behalten:* im Modell nur
+Kosten (Grundfall 10 statt 5 Tote). *Die mittleren Abklingzeiten* (Camouflage, Dark Mind, Bulwark, Kampfrausch): nicht
+modelliert, also nicht einbezogen; Kampfrausch hat seine eigene Verlaufsregel.
+
+**Grenzen.** Das Modell trägt Annahmen ohne Quelle (Schaden je Gegner, Heiler nach Vorausschau, Pullmischung); keine
+Selbstheilung des Tanks, keine Barrieren. Die Richtung hielt in allen vier Fällen. *Prüfgrad:* Modell mit Selbsttest,
+statisch, Compile; im Spiel nicht beobachtet. Messmittel ist die Selbstkorrektur der Zeit bis zum Tod
+(`ScoreTtkForecast`), auf der die Rückhaltung urteilt.
+
 ## Krieger: Urimpuls für sich oder Urflackern für andere
 
 **Seine Vorgabe (29.09.2026), im Wortlaut:** „nascent flash dahingehend im vollständigen loop bewerten: ist der
@@ -811,9 +881,11 @@ getroffen). Je Einwebeplatz fällt die erste passende Fähigkeit in dieser Reihe
 3. **Urimpuls/Urinstinkt** mit „single enemies" (ab Werk an, A237) oder mehr als zwei Gegnern. *Richtig:* Er ist der
    Kern jedes Stapels und heilt im Pull je Treffer.
 4. **Kampfrausch** vor einem Tankbuster auf ihn innerhalb seiner Wirkdauer (A237).
-5. **Verdammnis/Rachsucht** und **Schutzwall** ohne Vorhersage, gestaffelt: Verdammnis, wenn Schutzwall bereit ist
-   oder vor mehr als 60 s fiel; Schutzwall, wenn Verdammnis vor mehr als 30 s fiel (unterhalb der Stufe von Rachsucht
-   ohne Bedingung). Beide schließen einander über `StatusHelper.RampartStatus` aus.
+5. **Verdammnis/Rachsucht** und **Schutzwall** ohne Vorhersage, über die gemeinsame Methode aller Tanks
+   (`StaggeredBigMitigation`, Abschnitt „Die Abwehr im Pull"): im Pull erst, wenn der gemessene Verlauf sie braucht;
+   sonst gestaffelt wie bisher – Verdammnis, wenn Schutzwall bereit ist oder vor mehr als 60 s fiel; Schutzwall, wenn
+   Verdammnis vor mehr als 30 s fiel (unterhalb der Stufe von Rachsucht ohne Bedingung). Beide schließen einander über
+   `StatusHelper.RampartStatus` aus.
 6. **Reflexion**, nachgeführt oder sobald sie fehlt; am Tankbuster zurückgehalten, wenn er gedeckt ist und ein
    Raidwide nach ihrem Ende ansteht (`HoldReprisalForRaidwide`, A244).
 
