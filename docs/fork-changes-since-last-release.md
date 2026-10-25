@@ -135,6 +135,15 @@ dungeon runs the deaths fell from 19 to 5 and the time under 30 % to a third; wi
 same direction. Setting: "Hold the big mitigation and Rampart in a pull until your health needs them" (on), with
 "Health the big mitigation waits for" (30 %).
 
+## GCD heals no longer wait on another healer while someone is about to fall
+
+"Use GCDs to heal" off - the default for Astrologian and Sage - left GCD heals entirely to a second living healer, and
+for Paladin, Red Mage and Summoner to the healers, even for a party member about to fall. The rotation now heals
+whenever a member is in the critical class, whatever the other healer does; otherwise the setting holds as before.
+Settings: "Use GCDs to heal. (Ignored if you are the only healer in party, or while a party member is about to fall)"
+for the healers, "... (Ignored if there are no healers alive in party, or while a party member is about to fall)" for
+the others.
+
 ## Healers: party heals on the group's average read the forecast too
 
 "Heal ahead of incoming damage" promises every healing threshold the health a member is heading for when the heal

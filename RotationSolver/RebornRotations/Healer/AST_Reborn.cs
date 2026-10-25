@@ -21,7 +21,11 @@ public sealed class AST_Reborn : AstrologianRotation
 	[RotationConfig(CombatType.PvE, Name = "Use both stacks of Lightspeed while moving")]
 	public bool LightspeedMove { get; set; } = true;
 
-	[RotationConfig(CombatType.PvE, Name = "Use GCDs to heal. (Ignored if you are the only healer in party)")]
+	[RotationConfig(CombatType.PvE, Name = "Use GCDs to heal. (Ignored if you are the only healer in party, or while a party member is about to fall)",
+		Tooltip = "Off: while another healer is alive your GCD heals are left to them and you deal damage instead, with "
+		+ "your abilities still healing - except while a party member is in the critical class, about to fall by the "
+		+ "time a heal lands, when your GCD heals go anyway. On: GCD heals whenever the healing thresholds call for them.\n"
+		+ "In a fight: off, a member about to fall still gets your GCD heal, whatever the other healer does.")]
 	public bool GCDHeal { get; set; } = false;
 
 	[RotationConfig(CombatType.PvE, Name = "Prioritize Microcosmos over all other healing when available")]
@@ -727,39 +731,7 @@ public sealed class AST_Reborn : AstrologianRotation
 	#endregion
 
 	#region Extra Methods
-	public override bool CanHealSingleSpell
-	{
-		get
-		{
-			var aliveHealerCount = 0;
-			var healers = PartyMembers.GetJobCategory(JobRole.Healer);
-			foreach (var h in healers)
-			{
-				if (!h.IsDead)
-				{
-					aliveHealerCount++;
-				}
-			}
-
-			return base.CanHealSingleSpell && (GCDHeal || aliveHealerCount == 1);
-		}
-	}
-	public override bool CanHealAreaSpell
-	{
-		get
-		{
-			var aliveHealerCount = 0;
-			var healers = PartyMembers.GetJobCategory(JobRole.Healer);
-			foreach (var h in healers)
-			{
-				if (!h.IsDead)
-				{
-					aliveHealerCount++;
-				}
-			}
-
-			return base.CanHealAreaSpell && (GCDHeal || aliveHealerCount == 1);
-		}
-	}
+	public override bool CanHealSingleSpell => base.CanHealSingleSpell && GcdHealsAllowed(GCDHeal);
+	public override bool CanHealAreaSpell => base.CanHealAreaSpell && GcdHealsAllowed(GCDHeal);
 	#endregion
 }

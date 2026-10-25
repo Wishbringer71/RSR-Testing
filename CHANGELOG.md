@@ -23,6 +23,12 @@ are not reconstructed here.
 
 ## Unreleased
 
+### RotationSolver.Basic: a rotation's GCD heals yield to danger
+
+New on `CustomRotation`: `GcdHealsAllowed(useGcdHeals)`, for a rotation that leaves its GCD heals to the healers - true
+when no other healer is alive or a living member is in the critical class. The seven default rotations with
+"Use GCDs to heal" read it.
+
 ### RotationSolver.Basic: a tank's big mitigation and Rampart in one place
 
 New on `CustomRotation`: `StaggeredBigMitigation(big, upgraded, out act)`, the big mitigation and Rampart outside an

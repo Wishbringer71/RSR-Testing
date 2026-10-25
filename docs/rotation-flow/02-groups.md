@@ -37,8 +37,10 @@ flowchart TD
    irgendeine Rotationsentscheidung fällt.
 2. **Reihenfolge AoE → DoT → Filler.** Ohne Ausnahme.
 3. **Filler ist immer eine Level-Kette** (Glare/Malefic/Dosis/Broil).
-4. **`CanHealSingleSpell`/`CanHealAreaSpell`** mit identischem Ausdruck
-   `base && (GCDHeal || aliveHealerCount == 1)` — vier wortgleiche Kopien.
+4. **`CanHealSingleSpell`/`CanHealAreaSpell`** lesen dieselbe Methode, `base && GcdHealsAllowed(GCDHeal)`: Mit
+   „Use GCDs to heal" aus gehen GCD-Heilungen, wenn kein anderer Heiler lebt oder ein Mitglied in der kritischen Klasse
+   steht – die universelle Schicht, der jede strategische Rückhaltung weicht (Konzept 08, A360). Paladin, Rotmagier und
+   Beschwörer lesen sie ebenso; bis A360 trugen alle sieben je eine wortgleiche Kopie ohne die Gefahrenausnahme.
 
 ### Ähnlich, aber abweichend
 

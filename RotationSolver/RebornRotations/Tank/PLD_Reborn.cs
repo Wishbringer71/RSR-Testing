@@ -23,7 +23,10 @@ public sealed class PLD_Reborn : PaladinRotation
 	protected override bool HasOwnArmsLengthPullRule => true;
 
 
-	[RotationConfig(CombatType.PvE, Name = "Use GCDs to heal. (Ignored if there are no healers alive in party)")]
+	[RotationConfig(CombatType.PvE, Name = "Use GCDs to heal. (Ignored if there are no healers alive in party, or while a party member is about to fall)",
+		Tooltip = "Off: your GCD heals go only when no healer is alive, or while a party member is in the critical class, "
+		+ "about to fall by the time a heal lands. On: whenever the healing thresholds call for them.\n"
+		+ "In a fight: off, you keep attacking while the healers keep up; a member about to fall still gets your heal.")]
 	public bool GCDHeal { get; set; } = false;
 
 	[RotationConfig(CombatType.PvE, Name = "Use Divine Veil during countdown")]
@@ -529,22 +532,6 @@ public sealed class PLD_Reborn : PaladinRotation
 		return false;
 	}
 
-	public override bool CanHealSingleSpell
-	{
-		get
-		{
-			var aliveHealerCount = 0;
-			var healers = PartyMembers.GetJobCategory(JobRole.Healer);
-			foreach (var h in healers)
-			{
-				if (!h.IsDead)
-				{
-					aliveHealerCount++;
-				}
-			}
-
-			return base.CanHealSingleSpell && (GCDHeal || aliveHealerCount == 0);
-		}
-	}
+	public override bool CanHealSingleSpell => base.CanHealSingleSpell && GcdHealsAllowed(GCDHeal);
 	#endregion
 }

@@ -10586,6 +10586,39 @@ sichtbar wird; in Bosskämpfen ändert sich nichts (Tankbuster, Vorhersage und W
 
 *Prüfgrad:* Modell mit Selbsttest, statisch, Compile; im Spiel nicht beobachtet.
 
+### A360 · Einstellungs-Audit, zweiter Durchgang: jede Rotationseinstellung einzeln (25.10.2026)
+
+Sein Auftrag (25.10.2026 abends) wiederholt den zu den Einstellungen; der erste Durchgang (A358) hatte die
+Rotationseinstellungen nach Art gebündelt. Jetzt jede der 243 an ihren Lesern.
+
+- *Leser:* alle gelesen. *Text gegen Code:* „Set to 0 to disable" hält (Sheltron `> 0`, Intervention und Cover über eine
+  Schwelle, die bei 0 nie greift); ein Widerspruch zu seinen Regeln, unten. *Swiftcast:* ab Werk nur beim Piktomanten
+  verbraucht, der keine Wiederbelebung hat. *Bewegung:* jeder Gefahrenschalter ab Werk aus, die Vorstöße der Rotationen
+  unter der zentralen Grenze (A358). *Für den Abgleich mit The Balance vorgemerkt:* Spieltatsachen und Strategie in
+  Viper, Piktomant, Barde, Schnitter, Samurai, Astrologe, die Bio-Schätzung des Gelehrten (Konzept 18).
+- *Befund:* „Use GCDs to heal" aus (Astrologe und Weiser ab Werk) ließ GCD-Heilungen bei einem lebenden zweiten Heiler
+  ganz weg, auch für ein Mitglied, das gleich fällt; bei Paladin, Rotmagier und Beschwörer dasselbe gegenüber den
+  Heilern. Der Grund der Rückhaltung ist Schaden, solange andere heilen – also das Verhalten eines anderen Spielers, nach
+  seiner Regel nie ein tragender Grund. Seine Regel vom 14.10.2026 für Heilungen, die auf die Heiler warten: heilen, wenn
+  es nötig ist und die Heiler tot sind oder nicht hinterherkommen; die universelle Schicht (`HoldPartyHeal`) trägt genau
+  das für die übrigen strategischen Rückhaltungen.
+- *Umgesetzt:* `CustomRotation.GcdHealsAllowed(useGcdHeals)` – erlaubt, wenn kein anderer Heiler lebt oder ein lebendes
+  Mitglied in der kritischen Klasse steht; die sieben Rotationen lesen sie statt je einer Kopie (194 Zeilen weniger).
+  Text der sieben Einstellungen um „or while a party member is about to fall" ergänzt; gespeichert wird unter dem
+  Eigenschaftsnamen, die Werte bleiben.
+- *Bilanz:* Stärke – ein Mitglied in der kritischen Klasse bekommt die GCD-Heilung dieser Rotation, gleich ob der andere
+  Heiler reagiert. Schwäche – heilen beide, geht ein Schadens-GCD verloren; die kritische Klasse ist der seltene,
+  gefährliche Moment (ab Werk 15 % beim Eintreffen der Heilung). Bedrohung – keine neue. Überwiegt: die Sicherheit; ohne
+  Kosten außerhalb der Gefahr.
+
+**Falsifikation.** *Kein Defekt:* Die Einstellung hielt, was ihr Text sagte; der Mangel ist der Widerspruch zu seiner
+Regel und zur universellen Schicht, nicht zum Text – deshalb Text und Code zusammen geändert. *Option falsch:* die
+Voreinstellung bei Astrologe und Weiser auf an zu stellen kostete Schaden auch ohne Gefahr; die Ausnahme greift nur, wo
+die Regel es verlangt. *Ausgeliefert, nichts ändert sich:* wenn er „Use GCDs to heal" ohnehin an hat oder nie ein Mitglied
+in die kritische Klasse fällt, solange ein zweiter Heiler lebt.
+
+*Prüfgrad:* statisch an jedem Leser, Compile; im Spiel nicht beobachtet.
+
 ---
 ## B · Commit-Register (Fork vs. `upstream/main`)
 

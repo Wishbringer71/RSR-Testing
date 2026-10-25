@@ -20,6 +20,10 @@ sind, die durch routinen und ingame auswertungen besser geregelt werden können.
 - **Die Heilschwellen auf den Gruppendurchschnitt lasen den Stand – behoben.** „Heal ahead of incoming damage"
   verspricht die Vorausschau für jede Heilschwelle; sechs Schwellen der Heiler-Rotationen und die Füllheilung lasen
   die Gesundheit jetzt statt beim Eintreffen der Heilung (unten, „Heilung").
+- **„Use GCDs to heal" weicht der Gefahr – behoben.** Aus, überließ die Einstellung GCD-Heilungen dem anderen Heiler (bei
+  Paladin, Rotmagier und Beschwörer den Heilern) auch dann, wenn ein Mitglied gleich fällt; Astrologe und Weiser haben
+  sie ab Werk aus. Jetzt heilt die Rotation, sobald ein Mitglied in der kritischen Klasse steht (unten,
+  „Rotationseinstellungen"; A360).
 - **Die Wiederbelebung wartet ab Werk nicht mehr.** „Raise delay range" stand ab Werk auf 3 s, eine Tarnung ohne
   Nutzen im Kampf; ab Werk jetzt 0 bis 0 s (unten, „Tarnung"; Konzept 11).
 - **Alles Übrige ist eingeordnet, ohne Änderung.** Die übrigen Zahlen, die eine Spieltatsache tragen, haben entweder
@@ -233,10 +237,33 @@ Das Urteil liest den Zustand des Kampfes; der Schalter nimmt sie heraus, wenn si
 |---|---|---|
 | Heil- und Schutzschwellen | „Health threshold for Cover", Essential Dignity je Ladung, Taurochole | Haltung; die Heilschwellen der Heiler lesen die Vorausschau |
 | Gegnerzahlen | Aspected Benefic und Eukrasian Diagnosis vor dem Pull, Holy-Rückhaltung des Weißmagiers, The Blackest Night im Pull | Haltung, Vorbote vor dem ersten Treffer; wie die Pull-Abwehr der Tanks |
+| GCD-Heilungen anderen überlassen | „Use GCDs to heal" (Heiler: dem zweiten Heiler; Paladin, Rotmagier, Beschwörer: den Heilern) | Haltung (Schaden statt GCD-Heilung, solange andere heilen), seit A360 mit der Gefahrenausnahme: Steht ein Mitglied in der kritischen Klasse, heilt die Rotation trotzdem – sonst hinge das Überleben am Verhalten des anderen Spielers |
 | ausdrückliche Gefahrenschalter | Primal Rend „Dangerous", Crimson Cyclone „at any range", Forked Raiju „Dangerous" | seine Entscheidung gegen die eigene Sicherheit; ab Werk aus |
 | Abstände | Stardiver, Dragonfire Dive, Primal Rend, Crimson Cyclone | jetzt unter der zentralen Grenze |
 | Werte aus Leiste, Status und Abklingzeit | Sheltron bei 100 Oath, Paint-Grenze 5, Restzeiten für Reawaken, Death's Design bei 10 s, Lieddauern des Barden | Spieltatsachen; abzuleiten im Abgleich je Job mit The Balance (`TODO.md`, „Rotationen gegen The Balance abgleichen"), weil dort ohnehin jede Regel des Jobs gegen den Guide steht |
 | Opener, Reihenfolgen | Opener des Weisen und Dunkelritters, Liedfolge, Beschwörungsreihenfolge | Strategie; der Abgleich mit The Balance setzt die Voreinstellung |
+
+**Einzeln geprüft** (zweiter Durchgang, sein Auftrag vom 25.10.2026 abends): jede der 243 Einstellungen an ihren Lesern
+im Code.
+- *Leser:* jede wird gelesen.
+- *Text gegen Code:* ein Widerspruch, „Use GCDs to heal" (oben, behoben). Was „Set to 0 to disable" verspricht, hält der
+  Code (Sheltron prüft `> 0`, Intervention und Cover mit einer Schwelle, die bei 0 nie greift).
+- *Swiftcast:* Ab Werk verbrauchen ihn nur die beiden Schalter des Piktomanten (Rainbow Drip, Motiv); er hat keine
+  Wiederbelebung. Die Rotations-Swiftcasts des Beschwörers sind ab Werk aus, die Heiler halten ihn mit „Swiftcast
+  restriction" für die Wiederbelebung, der Weißmagier die letzte Ladung von Thin Air.
+- *Bewegung:* Jeder ausdrückliche Gefahrenschalter (Primal Rend, Crimson Cyclone, Forked Raiju, Displacement nach
+  Engagement, Corps-a-corps in Bewegung) ist ab Werk aus. Die Vorstöße, die die Rotationen ab Werk nutzen (Onslaught im
+  Burst, Corps-a-corps), stehen unter der zentralen Abstandsgrenze.
+- *Für den Abgleich mit The Balance vorgemerkt* (Spieltatsache oder Strategie, keine Spielerentscheidung):
+  - Restzeiten von Swift und Hunt vor Reawaken (je 10 s) und der Bündelzeitpunkt vor Serpent's Ire (75 s), Viper
+  - Paint-Grenze 5, Piktomant
+  - Lieddauern 43/43/34 s, Barde
+  - Death's Design bei 10 s, Schnitter
+  - Meikyo Shisui bei 14 s im Countdown, Samurai
+  - Earthly Star bei 4 s im Countdown, Astrologe
+  - die Schätzung „8 % der eigenen Gesundheit als Gruppenschaden je Sekunde", mit der der Gelehrte Bio auf kurzlebige
+    Ziele vermeidet – eine Stellvertretergröße neben der gemessenen Zeit bis zum Tod, die die zentrale DoT-Planung
+    schon liest
 
 ## Bilanz im Kampf
 

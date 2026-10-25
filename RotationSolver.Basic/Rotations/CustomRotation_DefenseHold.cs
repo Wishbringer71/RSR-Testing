@@ -117,6 +117,35 @@ public partial class CustomRotation
 	}
 
 	/// <summary>
+	/// Whether a rotation's GCD heals may go while its "Use GCDs to heal" is off: when no other healer is alive - a
+	/// healer leaves them to the co-healer, a tank or damage dealer to the healers - or when those healers do not keep
+	/// up, a living member in the critical class (<see cref="HoldPartyHeal"/>). The owner's rule for a heal that waits
+	/// on the healers (14.10.2026) and the universal layer every strategic hold yields to; until A360 the setting held
+	/// them even for a member about to fall while another healer lived. One definition for the seven rotations that
+	/// carried the check as their own copy.
+	/// </summary>
+	/// <param name="useGcdHeals">The rotation's "Use GCDs to heal".</param>
+	/// <returns>True when its GCD heals may go.</returns>
+	protected static bool GcdHealsAllowed(bool useGcdHeals)
+	{
+		if (useGcdHeals)
+		{
+			return true;
+		}
+
+		var playerId = Player?.GameObjectId ?? 0;
+		foreach (var member in PartyMembers)
+		{
+			if (member != null && !member.IsDead && member.GameObjectId != playerId && member.IsJobCategory(JobRole.Healer))
+			{
+				return !HoldPartyHeal(true, "GCD heals left to the healers");
+			}
+		}
+
+		return true;
+	}
+
+	/// <summary>
 	/// The stretching of a job's own defense: after one of <paramref name="triggers"/> the rest waits
 	/// until that trigger's effect has run out, so two hits in a row both get something instead of
 	/// the first getting everything. Area scope; yields like <see cref="HoldAreaDefense"/>.
