@@ -23,6 +23,14 @@ are not reconstructed here.
 
 ## Unreleased
 
+## 7.5.7.7+wsh1
+
+### Removed in RotationSolver.Basic: two settings without a reader
+
+`Configs.SwiftcastBuffer` and `Configs.TargetColor` are gone: nothing had read them since 2025 and 2024, so the
+settings window offered two switches that did nothing. A derived rotation that reads either no longer compiles; neither
+had an effect to replace.
+
 ### Behaviour change in RotationSolver.Basic: without a living healer the defence is spent to stay alive
 
 New on `DataCenter`: `AnyLivingHealer(excludeSelf)` and `UnhealedUnderAttack`. With "Without a living healer, spend your
