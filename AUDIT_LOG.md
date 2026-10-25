@@ -10704,6 +10704,28 @@ ist der Tag, an dem es geschieht.
 
 *Prüfgrad:* Proben in dieser Umgebung, Selbsttests; keine Wirkung im Spiel.
 
+### A363 · Release 7.5.7.7+wsh1 vorbereitet, neuer Zweig (25.10.2026)
+
+Sein Auftrag (25.10.2026): „danach branch nach main, compile, release, neuen branch".
+
+- *Vorab:* Upstream 0 ausstehend (`check_sync_state.py`), `<Version>` 7.5.7.7 gleich dem jüngsten Upstream-Tag im Verlauf
+  (`check_fork_version.py`). Paketoberfläche gegen 7.5.7.6+wsh1 (`scan7.py`): sieben Meldungen, davon zwei öffentliche
+  Entfernungen – `Configs.SwiftcastBuffer` und `Configs.TargetColor` (A339) –, die im CHANGELOG fehlten und dort jetzt
+  stehen; die übrigen fünf liegen in internen Klassen. CHANGELOG: Abschnitt „7.5.7.7+wsh1", „Unreleased" leer.
+- *Zusammenführen:* `main` war Vorfahr des Zweigs; vorgespult auf 73bed2e8d, nachdem Build und Prüfkette dort grün waren.
+  PR #16 steht damit als gemergt.
+- *Kompilieren:* 73bed2e8d ist auf GitHub gebaut und geprüft (Build, DispatchChain: erfolgreich); `main` trägt genau
+  diesen Commit.
+- *Release:* nicht erzeugt – Tags und Releases sind dieser Sitzungsart gesperrt, und `publish.yaml` lege ich nicht an
+  (CLAUDE.md, „Grenzen und Löschungen"). Fertig für ihn: `publish.yaml` per „Run workflow" auf `main` mit dem Tag
+  `7.5.7.7+wsh1`; der Lauf baut 73bed2e8d und nimmt `docs/fork-changes-since-last-release.md` (rund 20 000 Zeichen, unter
+  der Grenze der Release-API) als Text. Nach der Veröffentlichung übernimmt `fork-changes-in-play.md` den Text, und
+  `fork-changes-since-last-release.md` beginnt neu – erst dann, weil der Prüfer den jüngsten Tag auf `origin` liest.
+- *Neuer Zweig:* `claude/fixes-after-7.5.7.7` aus `main`. Löschfälle zur Freigabe: `claude/fixes-after-7.5.7.6` (vollständig
+  gemergt) und der lokale `claude/fixes-after-7.5.7.3` (Gegenstelle weg).
+
+*Prüfgrad:* Zustand gemessen (Fetch beider Gegenstellen, Prüfläufe auf GitHub).
+
 ---
 ## B · Commit-Register (Fork vs. `upstream/main`)
 
