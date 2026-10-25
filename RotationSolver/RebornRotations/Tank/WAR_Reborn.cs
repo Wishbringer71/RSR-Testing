@@ -481,7 +481,7 @@ public sealed class WAR_Reborn : WarriorRotation
 		{
 			if (PrimalRendPvE.CanUse(out act, skipAoeCheck: true))
 			{
-				if (PrimalRendPvE.Target.Target != null && PrimalRendPvE.Target.Target.DistanceToPlayer() <= PrimalRendDistance2)
+				if (GapCloserAllowed(PrimalRendPvE.Target.Target, PrimalRendDistance2))
 				{
 					return true;
 				}

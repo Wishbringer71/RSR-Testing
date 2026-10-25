@@ -144,7 +144,7 @@ public sealed class DRG_Reborn : DragoonRotation
 		{
 			if (StardiverPvE.CanUse(out act))
 			{
-				if (StardiverPvE.Target.Target.DistanceToPlayer() <= StardiverDistance)
+				if (GapCloserAllowed(StardiverPvE.Target.Target, StardiverDistance))
 				{
 					return true;
 				}
@@ -224,7 +224,7 @@ public sealed class DRG_Reborn : DragoonRotation
 		{
 			if ((DragonfireDiveMoving || (!DragonfireDiveMoving && !IsMoving)) && DragonfireDivePvE.CanUse(out act))
 			{
-				if (DragonfireDivePvE.Target.Target.DistanceToPlayer() <= DragonfireDiveDistance)
+				if (GapCloserAllowed(DragonfireDivePvE.Target.Target, DragonfireDiveDistance))
 				{
 					return true;
 				}

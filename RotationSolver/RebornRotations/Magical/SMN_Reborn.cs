@@ -1099,7 +1099,7 @@ public sealed class SMN_Reborn : SummonerRotation
 			return true;
 		}
 
-		if ((!IsMoving || AddCrimsonCycloneMoving) && CrimsonCyclonePvE.CanUse(out act) && (AddCrimsonCyclone || CrimsonCyclonePvE.Target.Target.DistanceToPlayer() <= CrimsonCycloneDistance))
+		if ((!IsMoving || AddCrimsonCycloneMoving) && CrimsonCyclonePvE.CanUse(out act) && (AddCrimsonCyclone || GapCloserAllowed(CrimsonCyclonePvE.Target.Target, CrimsonCycloneDistance)))
 		{
 			return true;
 		}

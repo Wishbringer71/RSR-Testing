@@ -331,6 +331,9 @@ public partial class PaladinRotation
 	static partial void ModifyIntervenePvE(ref ActionSetting setting)
 	{
 		setting.SpecialType = SpecialActionType.HostileMovingAttack;
+		// A leap onto the target, so within the reach the player allows damaging gap closers. As HostileMovingForward
+		// it had that reach from the targeting filter; HostileMovingAttack takes the regular targeting (A358).
+		setting.CanTarget = static t => GapCloserAllowed(t, pressed: ActionID.IntervenePvE);
 	}
 
 	static partial void ModifyAtonementPvE(ref ActionSetting setting)

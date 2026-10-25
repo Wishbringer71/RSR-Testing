@@ -2670,6 +2670,33 @@ public partial class CustomRotation
 	}
 
 	/// <summary>
+	/// Whether an attack that carries the player onto <paramref name="target"/> may go out: the target stands closer than
+	/// "Only use damaging gap closers within this distance" and within <paramref name="rotationLimit"/>, a rotation's own
+	/// limit for that attack - or the player asked for the move: a move-forward command, the countdown, or this very
+	/// action queued by him (his press, intercepted, or a /rotation command). The setting's text covers every gap closer
+	/// that deals damage; the leaps typed <see cref="SpecialActionType.HostileMovingAttack"/> take the regular targeting,
+	/// which does not read it (A358). A rotation switch the player turns on to leap regardless of distance is checked by
+	/// its rotation, not here.
+	/// </summary>
+	/// <param name="target">Where the attack lands.</param>
+	/// <param name="rotationLimit">The rotation's own limit for this attack, if it has one.</param>
+	/// <param name="pressed">The attack itself, for a check that also runs when the player queued it.</param>
+	/// <returns>True when the leap does not take the player further than he allows.</returns>
+	public static bool GapCloserAllowed(IBattleChara? target, float rotationLimit = float.MaxValue, ActionID pressed = default)
+	{
+		// Not the intercepting state: it lasts a few seconds after any press the player makes, a heal included, and
+		// would open every leap in that time.
+		if (DataCenter.MergedStatus.HasFlag(AutoStatus.MoveForward) || Service.CountDownTime > 0
+			|| (pressed != default && DataCenter.CommandNextAction?.ID == (uint)pressed))
+		{
+			return true;
+		}
+
+		var distance = target?.DistanceToPlayer() ?? float.MaxValue;
+		return distance < Service.Config.DistanceForMoving2 && distance <= rotationLimit;
+	}
+
+	/// <summary>
 	/// 
 	/// </summary>
 	[Description("Health of Area Ability")]

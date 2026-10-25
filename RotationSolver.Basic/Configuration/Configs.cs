@@ -1675,8 +1675,15 @@ internal partial class Configs : IPluginConfiguration, IM3Settings
 	[Range(0, 90, ConfigUnitType.Degree, 0.02f)]
 	public float MoveTargetAngle { get; set; } = 24;
 
+	// Every attack that carries the player onto its target reads it - the dashes through the targeting filter, the leaps
+	// through CustomRotation.GapCloserAllowed (A358).
 	[UI("Only use damaging gap closers within this distance",
-		Description = "Gap closers that deal damage are only used on targets closer than this.",
+		Description = "Gap closers that deal damage are only used on targets closer than this: the dashes such as Onslaught "
+			+ "and the leaps onto the target - Intervene, Primal Rend, Crimson Cyclone, Stardiver, Dragonfire Dive. A distance "
+			+ "a rotation sets for one of them applies on top. Not limited: a move-forward command, your own press of the "
+			+ "action, the countdown, and a rotation switch you turn on to leap regardless of distance.\n"
+			+ "In a fight: RSR does not carry you from a spot you stepped to onto the enemy; standing at the enemy, a gap "
+			+ "closer is only damage.",
 		Filter = TargetConfig, Section = 4)]
 	[Range(0, 30, ConfigUnitType.Yalms, 1f)]
 	public float DistanceForMoving2 { get; set; } = 3f;
