@@ -114,12 +114,13 @@ A listed area cast that lands several times right after one cast was rated by it
 four times for up to 24 % each counted as a small hit, and "Skip mitigation for small area casts" left the party
 mitigation out against it. Hits that follow faster than the enemy could cast again are now added up per member.
 
-## Damage areas wait until the enemies in them stand still
+## Damage areas wait until the pack stays
 
 Salted Earth and Doton went out as soon as you stood, so a tank's pause in a wall-to-wall pull was enough to lay them
-where the pack did not stay. Now they wait until at least one enemy stands in their radius and none of those has moved
-for a GCD; Doton gives way to Katon meanwhile. Slipstream waits likewise while its target moves and Emerald Rites are
-left. Setting: "Lay damage areas only once the enemies in them stand still", on by default.
+where the pack did not stay. Now they wait until at least one enemy has been in their radius for a GCD and none that was
+in it has left; enemies shifting about inside it count as staying, and one arriving does not hold it up. Doton gives way
+to Katon meanwhile. Slipstream waits likewise around its target while Emerald Rites are left.
+Setting: "Lay damage areas only where the enemies stay", on by default.
 
 ## Monk, Viper and Dragoon: a dash to the target at the pull, only from out of range
 

@@ -10212,6 +10212,34 @@ sich:* außerhalb von Wall-to-wall stehen die Gegner ohnehin; eine Rotation, die
 
 *Prüfgrad:* statisch, Compile; im Spiel nicht beobachtet.
 
+### A351 · Schadensflächen: Gegner bewegen sich in der Fläche, ohne sie zu verlassen (25.10.2026)
+
+Sein Hinweis (25.10.2026): „du vergisst, dass sich gegner innerhalb der schadensfläche bewegen können, ohne diese zu
+verlassen". Er widerlegt die Bedingung aus A350 (C126); das ganze Konzept neu geprüft, nicht nur die Zeile.
+
+- *Was die Fläche verschwendet:* ein Gegner, der sie verlässt – ein Rudel, das weiterzieht oder hindurchläuft –, nicht
+  einer, der in ihr den Platz wechselt. Gegner am Tank schieben sich zurecht, wenn er sich dreht oder ein Nachzügler
+  ankommt; „keiner bewegt sich einen GCD lang" trifft dann nie zu.
+- *Modell* (`damage_area_model.py`, neu, mit Selbsttest; Annahmen im Kopf des Skripts): vier Regeln über drei Pulls und
+  Nachzügler. OLD (Spieler steht): an der 1,5-s-Pause gelegt, 0 von 25 Treffern. STILL (A350): bei einem Rudel, das sich
+  am Tank verschiebt, nie gelegt. STAYS (mindestens einer seit einem GCD in der Fläche, keiner hat sie verlassen): nach
+  der Ankunft, 25 von 25. ALL (jeder in der Fläche seit einem GCD darin): dieselben Treffer, mit Nachzüglern 4,9 s
+  später. Pause länger als ein GCD: alle Regeln legen sie an der Pause (4–5 von 25) – benannte Grenze.
+- *Umgesetzt (STAYS):* `HostileMovement` führt je Gegner die Positionen des letzten GCD (ein Punkt je Änderung, der
+  letzte vor dem Fenster bleibt); `AreaHolds(centre, radius, hostiles)`; `CustomRotation.DamageAreaSettled` fragt nur
+  noch dort. Einstellung umbenannt, weil ihr Text bindet: „Lay damage areas only where the enemies stay"
+  (`DamageAreasWhereEnemiesStay`); noch nicht veröffentlicht, also ohne Migration.
+- *Neu geprüft, unverändert:* welche Aktionen (Wirktext), wo entschieden wird (CanUse für Leistenaktionen, Doton beim
+  Mudra-Beginn, Slipstream mit Rückfall), Earthly Star und Ten Chi Jin ausgenommen.
+
+**Falsifikation.** *Kein Defekt:* widerlegt – die erste Fassung hätte unter einem sich verschiebenden Rudel nie
+gelegt; Doton wäre dauernd zu Katon geworden, Salted Earth nie gefallen. *Option falsch:* Ein stehender Gegner neben
+einem durchziehenden Rudel, während der Spieler steht – das Rudel verlässt die Fläche oder betritt sie nie; tritt es
+hindurch, hält „keiner hat sie verlassen" sie zurück. *Ausgeliefert, nichts ändert sich:* eine Pause länger als ein GCD;
+ein Gegner, der am Rand ein- und austritt, hält sie je einen GCD auf.
+
+*Prüfgrad:* statisch, Modell, Compile; im Spiel nicht beobachtet.
+
 ---
 ## B · Commit-Register (Fork vs. `upstream/main`)
 
@@ -10517,3 +10545,4 @@ Die offene Arbeit dazu — Reihenfolge und Abbruchbedingung der Nachprüfung —
 | C123 | Konzept 10, „Ausgeschlossen": den Verbrauch von The Blackest Night zu messen brauche einen eigenen Ringpuffer, der in jedem Kampf koste, und der Schadensfluss der letzten Sekunden sage nichts über die nächsten sieben | Die Schadensaufzeichnung des Effekt-Handlers führt Upstream seit 2023 (`AddDamageRec`); die Gegnerzahl, die stattdessen galt, schließt ebenso aus der Gegenwart auf die nächsten sieben Sekunden, nur ohne den Schaden zu sehen | A340: Strom gemessen, Bedingung im Pull-Zweig |
 | C124 | A343, A346 und die Vorlage im TODO: Slither des Vipers bei −0,5 s sei Bewegung, die seine Regel ausschließe, und Thunderclap des Monk im Countdown Bewegung für Schaden | Seine Regel schließt aus, ihn für Schaden aus einer sicheren Position zu holen; zum Pull ist die Position eines Nahkämpfers am Ziel (sein Hinweis, 25.10.2026), und The Balance springt dort selbst. Folge: Viper und Dragoon fehlte der Sprung, die Empfehlung für den Monk stand auf einem falschen Grund | A347: Sprung außerhalb der Reichweite für alle drei |
 | C125 | A348 und der TODO-Eintrag „Mehrfachtreffer gelten in der Flächentabelle als kleiner Treffer": die sechs Serienangriffe kämen, seit die unsichtbaren Helfer gelesen werden, in die Flächenliste | Die Flächentabelle misst und listet nur Aktionen mit Wirkzeit (`Cast100ms > 0`); fünf der sechs sind Sofortaktionen (xivapi v2, 25.10.2026) und bleiben unbewertet, also gemindert. Der Defekt betraf Serien mit Wirkzeit, etwa Ersticken des Fleisches | A349: Serien mit Wirkzeit summiert; Sofortserien zählt `HitSeries` für die Glocke |
+| C126 | A350 und die Fassung von 1feaf6201: eine Schadensfläche fällt erst, wenn keiner der Gegner in ihrem Radius sich im letzten GCD bewegt hat | Gegner bewegen sich in der Fläche, ohne sie zu verlassen (sein Hinweis, 25.10.2026); verschwendet wird sie nur von einem, der hinausgeht. Folge: Unter einem Rudel, das sich am Tank verschiebt, wäre die Fläche nie gefallen (Modell), Doton dauernd Katon gewichen | A351: Bedingung „seit einem GCD darin, keiner hat sie verlassen" |

@@ -309,7 +309,7 @@ public class BaseAction : IBaseAction
 		// action reached only through another button - a ninjutsu, a step of Ten Chi Jin - cannot sit on a hotbar
 		// (IsPlayerAction): it is decided where its sequence begins, and the rotation asks there. An area that is only the
 		// additional effect of a hit is weighed by the rotation against the hit (ActionTooltip.LaysDamageArea).
-		if (Service.Config.DamageAreasWhenEnemiesStand && !IBaseAction.ForceEnable && Action.IsPlayerAction
+		if (Service.Config.DamageAreasWhereEnemiesStay && !IBaseAction.ForceEnable && Action.IsPlayerAction
 			&& ActionTooltip.LaysDamageArea(ID)
 			&& !CustomRotation.DamageAreaSettled(Info.Range > 0 ? PreviewTarget.Value.Target?.Position : Player.Object?.Position,
 				Info.EffectRange))

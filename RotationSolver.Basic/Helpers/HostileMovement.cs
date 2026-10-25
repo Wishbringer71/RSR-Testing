@@ -1,27 +1,35 @@
 namespace RotationSolver.Basic.Helpers;
 
 /// <summary>
-/// Which enemies are moving: an enemy whose position changed within the player's last GCD, or that has not been seen
-/// long enough to tell. The game gives no such flag for an enemy - only for the player (AgentMap) - so it is read from
-/// the positions the client shows (concept 04, "Schadensflächen erst, wenn die Gegner stehen", A350).
+/// Where the enemies have been over the player's last GCD, so a damage area can be laid where they stay: at least one
+/// has been inside it throughout that GCD, and none that was inside it in that time has left (concept 04,
+/// "Schadensflächen erst, wo die Gegner bleiben", A350).
 /// </summary>
 /// <remarks>
-/// A figure that stands keeps its position to the last digit, so any change is movement, with no distance to choose.
-/// Still means still for a GCD: a tank who pauses between two packs of a wall-to-wall pull has not stopped, and the
-/// next slot an area could take comes a GCD later anyway. It also makes the reading independent of how often the client
-/// moves a running figure's drawn position. An enemy seen for the first time counts as moving. Updated by the target
-/// update on the game thread, read there by the rotation.
+/// <para>The owner's correction (25.10.2026): enemies move about inside an area without leaving it. What wastes an area
+/// is an enemy leaving it - a pack moving on behind its tank, or passing through - not one shifting its place in it; the
+/// first version, which asked that none had moved at all, would never have laid an area under a pack that keeps
+/// shifting (damage_area_model.py).</para>
+/// <para>The game gives no movement state for an enemy - only for the player (AgentMap) - so the track is the position
+/// the client shows at each target update, a new point whenever it changes. A GCD in the area is what tells a stop from
+/// a pause: a pack following its tank at run speed crosses an area of 5 y in under a second. An enemy seen for the first
+/// time within that GCD has not stayed anywhere yet; one arriving does not hold the area up. Updated by the target
+/// update on the game thread, read there by the rotation.</para>
 /// </remarks>
 internal static class HostileMovement
 {
-	private static Dictionary<ulong, (Vector3 At, DateTime Moved)> _seen = [];
-	private static Dictionary<ulong, (Vector3 At, DateTime Moved)> _next = [];
+	private static readonly Dictionary<ulong, List<(DateTime At, Vector3 Pos)>> _tracks = [];
+	private static readonly HashSet<ulong> _present = [];
+	private static readonly List<ulong> _gone = [];
+
+	private static TimeSpan Window => TimeSpan.FromSeconds(DataCenter.DefaultGCDTotal);
 
 	/// <summary>Takes the positions of this update's enemies.</summary>
 	internal static void Update(List<IBattleChara> hostiles)
 	{
 		var now = DateTime.Now;
-		_next.Clear();
+		var start = now - Window;
+		_present.Clear();
 		foreach (var enemy in hostiles)
 		{
 			if (enemy == null)
@@ -30,24 +38,92 @@ internal static class HostileMovement
 			}
 
 			var id = enemy.GameObjectId;
+			_ = _present.Add(id);
+			if (!_tracks.TryGetValue(id, out var track))
+			{
+				track = [];
+				_tracks[id] = track;
+			}
+
 			var at = enemy.Position;
-			_next[id] = _seen.TryGetValue(id, out var was) && was.At == at ? was : (at, now);
+			if (track.Count == 0 || track[^1].Pos != at)
+			{
+				track.Add((now, at));
+			}
+
+			// The last position held before the window began stays: it is where the enemy stood at its start.
+			var keepFrom = 0;
+			while (keepFrom + 1 < track.Count && track[keepFrom + 1].At <= start)
+			{
+				keepFrom++;
+			}
+
+			if (keepFrom > 0)
+			{
+				track.RemoveRange(0, keepFrom);
+			}
 		}
 
-		(_seen, _next) = (_next, _seen);
+		_gone.Clear();
+		foreach (var id in _tracks.Keys)
+		{
+			if (!_present.Contains(id))
+			{
+				_gone.Add(id);
+			}
+		}
+
+		foreach (var id in _gone)
+		{
+			_ = _tracks.Remove(id);
+		}
 	}
 
 	/// <summary>Forgets every enemy, when there are none.</summary>
 	internal static void Clear()
 	{
-		_seen.Clear();
-		_next.Clear();
+		_tracks.Clear();
 	}
 
-	/// <summary>Whether <paramref name="enemy"/> moved within the player's last GCD, or has not been seen that long.</summary>
-	internal static bool IsMoving(IBattleChara enemy)
+	/// <summary>
+	/// Whether an area of <paramref name="radius"/> around <paramref name="centre"/> holds its enemies: at least one of
+	/// <paramref name="hostiles"/> has been inside it throughout the last GCD, and none that was inside it during that
+	/// GCD is outside now. Inside is the enemy's hitbox within the radius, as the game's area check has it.
+	/// </summary>
+	internal static bool AreaHolds(Vector3 centre, float radius, List<IBattleChara> hostiles)
 	{
-		return !_seen.TryGetValue(enemy.GameObjectId, out var seen)
-			|| (DateTime.Now - seen.Moved).TotalSeconds < DataCenter.DefaultGCDTotal;
+		var start = DateTime.Now - Window;
+		var stayed = false;
+		foreach (var enemy in hostiles)
+		{
+			if (enemy == null || enemy.IsDead || !_tracks.TryGetValue(enemy.GameObjectId, out var track) || track.Count == 0)
+			{
+				continue;
+			}
+
+			var hitbox = enemy.HitboxRadius;
+			var insideNow = Inside(enemy.Position, centre, radius, hitbox);
+			var wasInside = false;
+			var alwaysInside = track[0].At <= start;
+			foreach (var (_, pos) in track)
+			{
+				var inside = Inside(pos, centre, radius, hitbox);
+				wasInside |= inside;
+				alwaysInside &= inside;
+			}
+
+			// One that has left within the GCD: the pack is moving on, or passed through.
+			if (wasInside && !insideNow)
+			{
+				return false;
+			}
+
+			stayed |= alwaysInside && insideNow;
+		}
+
+		return stayed;
 	}
+
+	private static bool Inside(Vector3 pos, Vector3 centre, float radius, float hitbox)
+		=> Vector3.Distance(centre, pos) - hitbox <= radius;
 }

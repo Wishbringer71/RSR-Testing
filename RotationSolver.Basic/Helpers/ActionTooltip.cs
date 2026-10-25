@@ -117,7 +117,7 @@ internal static class ActionTooltip
 	/// <summary>
 	/// Whether <paramref name="actionId"/> lays a damage area as its own effect: an area that stays where it is laid and
 	/// damages "any enemies who enter" it - Salted Earth, Doton - and not as the additional effect of a hit, as Slipstream's
-	/// windstorm (concept 04, "Schadensflächen erst, wenn die Gegner stehen", A350).
+	/// windstorm (concept 04, "Schadensflächen erst, wo die Gegner bleiben", A350).
 	/// </summary>
 	public static bool LaysDamageArea(uint actionId)
 	{

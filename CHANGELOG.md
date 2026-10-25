@@ -23,12 +23,12 @@ are not reconstructed here.
 
 ## Unreleased
 
-### Behaviour change in RotationSolver.Basic: damage areas wait for the enemies in them to stand still
+### Behaviour change in RotationSolver.Basic: damage areas wait until the enemies stay in them
 
 `BaseAction.CanUse` refuses an action whose effect text lays a damage area of its own ("any enemies who enter") and that
-can sit on a hotbar - Salted Earth - while the enemies within its effect range of where it lands have moved within the
-last GCD, or none stands there. Governed by the new setting `DamageAreasWhenEnemiesStand` ("Lay damage areas only once
-the enemies in them stand still", on by default). `CustomRotation.DamageAreaSettled(IBaseAction area, IBattleChara?
+can sit on a hotbar - Salted Earth - until, around where it lands, at least one enemy has been within its effect range
+for the last GCD and none that was within it in that time has left. Governed by the new setting
+`DamageAreasWhereEnemiesStay` ("Lay damage areas only where the enemies stay", on by default). `CustomRotation.DamageAreaSettled(IBaseAction area, IBattleChara?
 centre = null)` is new and protected for rotations that decide such an area elsewhere: `NIN_Reborn` asks it when the
 mudras for Doton begin, `SMN_Reborn` before Slipstream while Emerald Rites are left.
 

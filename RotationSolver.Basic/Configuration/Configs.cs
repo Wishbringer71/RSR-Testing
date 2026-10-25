@@ -829,12 +829,13 @@ internal partial class Configs : IPluginConfiguration, IM3Settings
 		Filter = AutoActionUsage, PvEFilter = JobFilterType.Melee)]
 	private static readonly bool _pullGapCloser = true;
 
-	// The owner's note, 25.10.2026: damage areas only once the movement after a wall-to-wall pull stops. Still means
-	// unmoved for a GCD - a derivation, not shown in play yet, hence the switch (concept 04, A350).
-	[ConditionBool, UI("Lay damage areas only once the enemies in them stand still",
-		Description = "Salted Earth, Doton and Slipstream's windstorm stay where they are laid. They go out once at least one enemy stands in their radius and none of those has moved for a GCD; Doton gives way to Katon meanwhile, and Slipstream goes at the latest when the Emerald Rites are spent.\nIn a fight: in a wall-to-wall pull the area lands where the pack has gathered, not where the tank paused. Off: it goes out as soon as you stand.",
+	// The owner's note, 25.10.2026: damage areas only once the movement after a wall-to-wall pull stops - and, his
+	// correction, enemies move inside an area without leaving it. A GCD in the area as the sign of a stop is a
+	// derivation, not shown in play yet, hence the switch (concept 04, A350).
+	[ConditionBool, UI("Lay damage areas only where the enemies stay",
+		Description = "Salted Earth, Doton and Slipstream's windstorm stay where they are laid. They go out once at least one enemy has been in their radius for a GCD and none that was in it has left; enemies moving about inside it count as staying, and one arriving does not hold it up. Doton gives way to Katon meanwhile, and Slipstream goes at the latest when the Emerald Rites are spent.\nIn a fight: in a wall-to-wall pull the area lands where the pack has gathered, not where the tank paused. Off: it goes out as soon as you stand.",
 		Filter = AutoActionUsage)]
-	private static readonly bool _damageAreasWhenEnemiesStand = true;
+	private static readonly bool _damageAreasWhereEnemiesStay = true;
 
 	[ConditionBool, UI("Check movement actions with BossModReborn (Experimental)",
 		Description = "Before RSR uses a movement action, or an action that moves you, on its own, ask BossModReborn whether the destination is safe.",

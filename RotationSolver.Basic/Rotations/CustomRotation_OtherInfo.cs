@@ -2647,15 +2647,16 @@ public partial class CustomRotation
 	}
 
 	/// <summary>
-	/// Whether a damage area laid now would hold its enemies: at least one enemy stands within the area's radius of
-	/// <paramref name="centre"/> - or of the player, where none is given - and none of them has moved within the last GCD
-	/// (<see cref="HostileMovement"/>). Owner's rule
-	/// (25.10.2026): "bei allen Klassen mit Schadensflächen: erst dann, wenn Bewegung nach walltowall stoppt" - an area
-	/// stays where it is laid, and a pack still following its tank walks out of it (concept 04, A350).
+	/// Whether a damage area laid now would hold its enemies: around <paramref name="centre"/> - or the player, where none
+	/// is given - at least one enemy has been inside the area's radius throughout the last GCD, and none that was inside it
+	/// in that time has left (<see cref="HostileMovement.AreaHolds"/>). Enemies moving about inside it count as staying.
+	/// Owner's rule (25.10.2026): "bei allen Klassen mit Schadensflächen: erst dann, wenn Bewegung nach walltowall
+	/// stoppt" - an area stays where it is laid, and a pack still following its tank walks out of it - with his correction
+	/// of the same day, that enemies move inside an area without leaving it (concept 04, A350).
 	/// </summary>
 	/// <param name="area">The action that lays the area; its radius is the game's effect range.</param>
 	/// <param name="centre">Where the area is laid: the target of an area laid around it, none for one at the player's feet.</param>
-	/// <returns>True when the enemies in the area stand still.</returns>
+	/// <returns>True when the enemies stay in the area.</returns>
 	protected static bool DamageAreaSettled(IBaseAction area, IBattleChara? centre = null)
 	{
 		return DamageAreaSettled((centre ?? Player)?.Position, area.Info.EffectRange);
@@ -2663,29 +2664,7 @@ public partial class CustomRotation
 
 	internal static bool DamageAreaSettled(Vector3? centre, float radius)
 	{
-		if (centre is not { } at)
-		{
-			return false;
-		}
-
-		// Reach as the game's area check has it for a circle: the enemy's hitbox inside the radius.
-		var holds = false;
-		foreach (var enemy in DataCenter.AllHostileTargets)
-		{
-			if (enemy == null || enemy.IsDead || Vector3.Distance(at, enemy.Position) - enemy.HitboxRadius > radius)
-			{
-				continue;
-			}
-
-			if (HostileMovement.IsMoving(enemy))
-			{
-				return false;
-			}
-
-			holds = true;
-		}
-
-		return holds;
+		return centre is { } at && HostileMovement.AreaHolds(at, radius, DataCenter.AllHostileTargets);
 	}
 
 	/// <summary>

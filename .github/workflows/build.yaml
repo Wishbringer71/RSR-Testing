@@ -237,7 +237,7 @@ jobs:
       - name: Run the models whose script changed
         shell: bash
         run: |
-          MODELS="smn_phase_potency searing_light_coverage tankbuster_model machinist_balance_model melee_gapcloser_model"
+          MODELS="smn_phase_potency searing_light_coverage tankbuster_model machinist_balance_model melee_gapcloser_model damage_area_model"
           before="${{ github.event.before }}"
           after="${{ github.event.pull_request.head.sha || github.sha }}"
           if [ "${{ github.event_name }}" != "pull_request" ] || [ -z "$before" ] || ! git cat-file -e "$before^{commit}" 2>/dev/null; then
