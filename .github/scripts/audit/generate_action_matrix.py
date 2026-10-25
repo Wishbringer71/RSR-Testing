@@ -531,7 +531,7 @@ def rule_edges(code):
         # A guard returns without casting: an if that casts in its own condition - CanUse(out act),
         # CanUse(out var act), a helper filling `out act` - and returns is the priority order, not a
         # guard over what follows.
-        casts = re.search(r"\(\s*out\s+(?:var\s+|IAction\??\s+)?act\b", cond) is not None
+        casts = re.search(r"[(,]\s*out\s+(?:var\s+|IAction\??\s+)?act\b", cond) is not None
         ifs.append((open_at, cond_end, body_end, set(IDENT.findall(cond)),
                     "return" in body and not CANUSE.search(body) and not casts))
     spans = method_spans(code)
@@ -1274,6 +1274,7 @@ def self_test():
         {
             if (GuardPvE.Cooldown.IsCoolingDown) { return base.Attack(out act); }
             if (EarlierPvE.CanUse(out act)) { return true; }
+            if (Helper(remainTime, HelpedPvE, out act)) { return true; }
             if (OuterPvE.EnoughLevel)
             {
                 if (InnerPvE.CanUse(out act)) { return true; }
@@ -1282,7 +1283,7 @@ def self_test():
     ''')
     got = rule_edges(nested)
     if ("InnerPvE", "OuterPvE", "Regel prüft") not in got or ("InnerPvE", "GuardPvE", "Regel sperrt vorher") not in got \
-            or any(r == "EarlierPvE" for _u, r, _k in got):
+            or any(r in ("EarlierPvE", "HelpedPvE") for _u, r, _k in got):
         return f"an enclosing condition or an earlier guard was not read: {got}"
 
     body = modify_bodies('''

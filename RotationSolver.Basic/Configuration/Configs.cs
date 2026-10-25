@@ -822,6 +822,13 @@ internal partial class Configs : IPluginConfiguration, IM3Settings
 		Filter = AutoActionUsage)]
 	private static readonly bool _autoBurst = true;
 
+	// The owner's note, 25.10.2026: a melee belongs in reach of its target. The Balance's Viper opener dashes at -0.5 s;
+	// upstream's Monk did so whatever the distance. Off for a pull that has him wait away from the boss (A347).
+	[ConditionBool, UI("Dash to the target at the end of the countdown when out of melee range",
+		Description = "Monk, Viper and Dragoon use their dash in the last half second of a countdown when their target stands beyond melee range, and only to that target. In range, they don't.\nIn a fight: the first weaponskill lands at the pull instead of after the walk to the boss, up to three seconds later. Off: you walk in yourself.",
+		Filter = AutoActionUsage, PvEFilter = JobFilterType.Melee)]
+	private static readonly bool _pullGapCloser = true;
+
 	[ConditionBool, UI("Check movement actions with BossModReborn (Experimental)",
 		Description = "Before RSR uses a movement action, or an action that moves you, on its own, ask BossModReborn whether the destination is safe.",
 		Filter = AutoActionUsage)]

@@ -97,6 +97,15 @@ Foul went out from three enemies, Xenoglossy below that. On two enemies Foul dea
 rotations also weigh the potencies the tooltips state, which keeps Xenoglossy at levels where it still deals more. A
 Foul AoE count you set yourself is set to two once: RSR carries a changed default over into saved settings.
 
+## Monk, Viper and Dragoon: a dash to the target at the pull, only from out of range
+
+At the end of a countdown the Monk used Thunderclap whatever the distance - standing at the boss, a charge for nothing -
+and, with a party member as focus target, dashed to that member instead of the boss. Viper and Dragoon walked. Now all
+three dash in the last half second only when the target stands beyond melee range, and only to it: the first
+weaponskill lands at the pull instead of up to 3 seconds later, as The Balance's Viper opener does with Slither. Setting:
+"Dash to the target at the end of the countdown when out of melee range", on by default; turn it off for a pull you
+want to wait out away from the boss.
+
 ## Viper: the experimental potion also in the opener
 
 "Experimental Pot Usage(used up to 5 seconds before SerpentsIre comes off cooldown)", off by default, took the potion

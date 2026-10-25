@@ -175,7 +175,7 @@ Nach der Zuordnung zu A4a bleibt von C ein einziger eigenständiger Punkt.
 | BLU · PhantomDefault · PCT · SAM · SMN | 80 / 33 / 32 / 27 / 23 Zweige | A4a, umgesetzt |
 | MCH | 23 Zweige | A4a, bewusst ausgelassen |
 | DRG | 6 `Trait.EnoughLevel`/`!Trait…`-Paare (gezählt am 02.10.2026) | Vereinfachung verworfen |
-| DRG · VPR | kein `CountDownAction` | keine Lücke: Die Opener von The Balance sehen keine Vorlaufaktion vor, die seine Regeln zulassen (unten, A343) |
+| DRG · VPR | `CountDownAction` nur mit dem Sprung zum Ziel | geschlossen: Sprung außerhalb der Nahkampfreichweite wie beim Monk (unten, „Der Sprung zum Ziel am Ende des Countdowns", A347) |
 | RPR · SAM · WAR | kein `EmergencyAbility` in der Reborn-Datei | keine Lücke: WAR in der Basisschicht, RPR/SAM ohne eigene Notfallaktion |
 
 ### C1 · DRG-Trait-Paare — der Fund, der die Vereinfachung blockiert
@@ -263,17 +263,51 @@ Vorwirken des ersten Zaubers bei Paladin, Heilern, Black Mage, Summoner, Red Mag
 kurz vor dem Pull bei Warrior und Gunbreaker; The Blackest Night und Unmend beim Dark Knight; Mudras und Suiton beim
 Ninja; Meikyo Shisui und True North beim Samurai; Standard Step beim Dancer; Reassemble und Air Anchor beim
 Maschinisten. Beim Trank liegen einige um Sekunden anders (Gunbreaker vor dem Pull statt nach dem zweiten GCD, Dancer
-im Kampf statt bei −1 s); seine 30 s decken die Fenster in beiden Fällen. Eine Abweichung ist seine Entscheidung: Der
-Monk springt bei ≤0,5 s mit Thunderclap ans Ziel (Upstream 33e6acb1f) – reine Bewegung ohne Schaden, im Opener von
-The Balance nicht enthalten (TODO, „Monk: Thunderclap im Countdown").
+im Kampf statt bei −1 s); seine 30 s decken die Fenster in beiden Fällen. Dragoon: Standard-Opener ohne Vorlauf, True
+Thrust zum Pull, Trank nach dem zweiten GCD; die Variante mit Piercing Talon gilt bei einem Ziel, das vorher nicht
+erreichbar ist, mit laut The Balance vergleichbarem Schaden, nicht gebaut.
 
-Dragoon und Viper wirken im Countdown nichts, und das ist richtig (A343). The Balance, Openers (Dragoon: Patch 7.5,
-Viper: Patch 7.55, gelesen 24.10.2026):
-- *Dragoon:* Der Standard-Opener beginnt mit True Thrust zum Pull; der Trank fällt nach dem zweiten GCD, im Kampf.
-  Die Variante mit Piercing Talon vor dem Pull gilt dort nur, wenn das Ziel vor dem Kampf nicht erreichbar ist, und
-  bringt laut The Balance vergleichbaren Schaden („The damage output from both openers are comparable"). Nicht gebaut.
-- *Viper:* Einzige Vorlaufaktion ist Slither bei −0,5 s, ein Sprung ans Ziel. Seine Regel schließt Bewegung für Schaden
-  aus, und steht er schon am Ziel, bringt Slither nichts. Der Trank fällt nach dem dritten GCD, im Kampf.
+### Der Sprung zum Ziel am Ende des Countdowns
+
+**Monk, Viper und Dragoon springen in der letzten halben Sekunde des Countdowns ans Ziel, wenn es außerhalb der
+Nahkampfreichweite steht; in Reichweite nicht** (`CustomRotation.PullGapCloser`, A347). Monk mit Thunderclap, Viper mit
+Slither, Dragoon mit Winged Glide; alle drei treffen nicht und bewegen nur. Einstellung „Dash to the target at the end of
+the countdown when out of melee range", ab Werk an. Nahkampfreichweite ist die Reichweite der ersten Waffenfertigkeit
+des Jobs aus dem Spiel (3 y), gemessen von Trefferkreis zu Trefferkreis wie die Anzeige des Spiels.
+
+- *Seine Angaben (25.10.2026):* „Ich spiele bislang keinen monk, also weiß ich es nicht. Monk ist nahkämpfer, daher
+  sollte er im angriffsrange stehen." – Hinweis. „Gerade wenn man Gegner explizit bei Wall-to-wall so anspringt, dass
+  man mittig für aoe Angriffe rauskommt, kann es Sinn machen." – Vorschlag, unten geprüft.
+- *Quellen:* The Balance, Viper-Opener (Patch 7.55): Slither bei −0,5 s. Gunbreaker: „Trajectory can be used at
+  -0.66s to replace Lightning Shot". Monk Basic Guide: „uptime should be your top priority … how physically close you
+  are to an enemy". Dragoon Basic Guide: Winged Glide „does not deal damage so you can use it freely whenever you need
+  to gapclose longer distances". Job-Guide 7.5: Thunderclap, Slither, Winged Glide „Rush to a targeted enemy's
+  location", 20 y.
+- *Im Kampf* (`melee_gapcloser_model.py`; Laufgeschwindigkeit und Animationssperre nennt keine Quelle, gerechnet mit
+  5–7 y/s und 0,5–0,9 s): Steht er zum Pull 8 y entfernt, fällt die erste Waffenfertigkeit zu Fuß 0,8 s später, bei
+  12 y 1,5 s, bei 20 y 2,8 s; mit dem Sprung 0–0,4 s später. Knapp außerhalb der Reichweite, bis 4–6 y je nach
+  Annahme, kostet der Sprung bis 0,4 s mehr als die Schritte (Mitte der Annahmen 0,2 s); das Modell rechnet den Weg ab
+  dem Pull, ohne die Zeit, bis er losläuft. Upstreams Monk sprang auch in Reichweite – eine Ladung und bis 0,4 s
+  Animationssperre für nichts – und mit gesetztem Fokus auf einem Gruppenmitglied zu diesem; beides entfällt.
+- *Warum seine Regel zur Bewegung nicht dagegen steht:* Sie schließt aus, ihn für Schaden aus einer sicheren Position
+  zu holen. Zum Pull hat der Gegner noch nichts gewirkt, und die Position eines Nahkämpfers ist dann am Ziel (sein
+  Hinweis). Wer zum Pull bewusst Abstand hält – ein Gegner, der zum Kampfbeginn springt oder zurückstößt –, schaltet die
+  Einstellung ab. Der Sicherheitscheck über BossModReborn gilt, wenn er ihn eingeschaltet hat (ab Werk aus).
+- *Nicht gebaut:* eine Schwelle an der Stelle, ab der der Sprung schneller ist als die Schritte. Sie bräuchte die
+  Laufgeschwindigkeit und die Animationssperre des Sprungs, die keine Quelle nennt; messen ließen sich beide erst aus
+  früheren Sprüngen und Wegen. Der Unterschied ist höchstens 0,4 s einmal je Pull, der Gewinn darüber Sekunden.
+- *Nicht einbezogen:* Samurai (Gyoten kostet 10 Kenki, zum Pull keine), Reaper (Hell's Ingress springt 15 y in
+  Blickrichtung, nicht zum Ziel), Ninja (Shukuchi zielt auf einen Ort), Tanks (ihr Pull ist eine eigene Regel:
+  Fernangriff, beim Dark Knight Shadowstride).
+
+**Sein Vorschlag Wall-to-wall: geprüft, nicht automatisiert.** Ein Sprung auf einen Gegner eines gesammelten Rudels
+bringt die Flächenangriffe (5 y um den Spieler) an fast alle: Modell, 5 Gegner im Umkreis 4 y, im Mittel 4,6 bis 4,8
+erreicht, beim Halt am ersten erreichbaren Gegner 2,5; der Sprung zum mittigsten Gegner bringt gegenüber dem eigenen Ziel
+nur bei lockeren Rudeln mehr (6 y: 4,1 gegen 3,4). Auf seinen Befehl (Vorwärtsbewegung) springt RSR schon heute zum
+Ziel und holt damit den Großteil. Automatisch im Kampf nicht: Der Sprung endet am Trefferkreis des Ziels auf der Seite,
+von der er kommt – meist vor den Gegnern, die zum Tank schauen –, und deren Flächen sieht RSR ohne BossModReborn-Modul
+nicht; der Sicherheitscheck ist ab Werk aus. Nach seiner Regel geht die Sicherheit der Gruppe, gewichtet mit der
+Wahrscheinlichkeit, vor; Frontalangriffe von Trash-Gruppen sind im Dungeon häufig.
 
 Der Notfallslot ist keine Lücke. Der Krieger hat ihn in der Basisschicht (`WarriorRotation.EmergencyAbility`,
 Holmgang). Schnitter und Samurai haben keine eigene Notfallaktion; ihre Abwehr läuft über die Abwehrslots, und den

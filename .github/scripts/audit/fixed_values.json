@@ -825,6 +825,16 @@
    "status": "exception",
    "loop": "A345",
    "reason": "Default AoE count of Hellfrog Medium and Deathfrog Medium, the least that lets the potency comparison speak: on two enemies 250 (400) each out-damages Bhavacakra's 400 (Zesho Meppo's 700) at level 100 (job guide, 7.5). The decision above it is HellfrogOutdamagesBhavacakra, read from the tooltips; the count stays his setting's lower bound (A345)."
+  },
+  {
+   "file": "RotationSolver.Basic/Rotations/CustomRotation_OtherInfo.cs",
+   "code": "private const float PullDashLead = 0.5f;",
+   "values": [
+    "0.5"
+   ],
+   "status": "exception",
+   "loop": "A347",
+   "reason": "How long before the pull a melee presses its target dash: The Balance's Viper opener (Slither at -0.5 s, patch 7.55) and upstream's Thunderclap (<= 0.5 s, 33e6acb1f). No game sheet gives the time between pressing a dash and the character moving, nor the run speed, so nothing to derive it from; the model (melee_gapcloser_model.py) shows the first weaponskill lands 0-0.4 s after the pull across 0.5-0.9 s of animation lock (A347)."
   }
  ]
 }

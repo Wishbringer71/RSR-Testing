@@ -10042,6 +10042,64 @@ im TODO. Kein Code geändert.
 
 *Prüfgrad:* statisch (Grafiken und Code gelesen).
 
+### A347 · Sprung zum Ziel am Ende des Countdowns für Monk, Viper und Dragoon; Wall-to-wall geprüft (25.10.2026)
+
+Seine Antwort auf die Vorlage aus A346 (25.10.2026): „Ich spiele bislang keinen monk, also weiß ich es nicht. Monk ist
+nahkämpfer, daher sollte er im angriffsrange stehen. Offene Entscheidung im vollen kritische Loop nach Recherche und
+Simulation prüfen. Gerade wenn man Gegner explizit bei Wall-to-wall so anspringt, dass man mittig für aoe Angriffe
+rauskommt, kann es Sinn machen." Einordnung: der zweite Satz Hinweis (Spielmechanik der Rolle), der letzte Vorschlag.
+Profil in CLAUDE.md nachgetragen (Monk bislang nicht).
+
+- *Quellen (25.10.2026):* The Balance – Viper-Opener (Patch 7.55) Slither bei −0,5 s; Gunbreaker „Trajectory can be
+  used at -0.66s"; Monk Basic Guide „uptime should be your top priority"; Dragoon Basic Guide zu Winged Glide „does
+  not deal damage so you can use it freely whenever you need to gapclose longer distances". Job-Guide 7.5: Thunderclap,
+  Slither, Winged Glide springen zum Ziel, 20 y; Gyoten kostet 10 Kenki; Hell's Ingress springt 15 y nach vorn;
+  Shukuchi zielt auf einen Ort.
+- *Code vorher:* `MNK_Reborn.CountDownAction` drückte Thunderclap bei ≤0,5 s, gleich wie weit das Ziel stand (Upstream
+  33e6acb1f). Thunderclap und Slither sind `HostileFriendlyMovingForward`: Mit einem Gruppenmitglied als Fokus wählt die
+  Zielwahl dieses (`ActionTargetInfo`, Zweig `HostileFriendlyMovingForward`) – der Monk sprang zum Pull vom Boss weg.
+  Viper und Dragoon hatten keinen Vorlauf.
+- *Modell* (`melee_gapcloser_model.py`, Laufgeschwindigkeit 5–7 y/s und Animationssperre 0,5–0,9 s als Annahmen, keine
+  Quelle nennt sie): erste Waffenfertigkeit nach dem Pull zu Fuß 0,8 s später bei 8 y, 1,5 s bei 12 y, 2,8 s bei 20 y;
+  mit dem Sprung 0–0,4 s. In Reichweite kostet der Sprung bis 0,4 s, knapp außerhalb (bis 4–6 y) ebenso viel mehr als
+  die Schritte. Rudel: 5 Gegner im Umkreis 4 y – zu Fuß bis zum ersten erreichbaren 2,5 im Flächenangriff, Sprung zum
+  mittigsten 4,8, zu einem beliebigen 4,6; 6 y: 2,0 / 4,1 / 3,4.
+- *Optionen:* (0) so lassen; (1) Monk aus dem Countdown nehmen (meine Empfehlung aus A346, auf seiner Regel zur Bewegung
+  gestützt); (2) Monk nur außerhalb der Reichweite und nur aufs Ziel; (3) wie (2) für alle Nahkämpfer mit einem Sprung
+  zum Ziel, eine Stelle, eine Einstellung; (4) zusätzlich im Kampf automatisch in Rudel springen (sein Vorschlag).
+- *Entscheidung:* (3). `CustomRotation.PullGapCloser` in den letzten 0,5 s, Ziel feindlich und außerhalb der Reichweite
+  der ersten Waffenfertigkeit, der Sprung muss auf dieses Ziel gehen; Monk, Viper, Dragoon rufen es. Einstellung „Dash to
+  the target at the end of the countdown when out of melee range", ab Werk an: Sein Hinweis setzt den Nahkämpfer zum
+  Pull ans Ziel, und The Balance springt dort selbst. Die 0,5 s im Register (Viper-Opener, Upstream; keine Spielgröße).
+  Samurai, Reaper, Ninja und Tanks begründet ausgenommen (Konzept 04).
+- *Sein Vorschlag (4), nicht gebaut:* Der Sprung verdoppelt im gesammelten Rudel etwa die erreichten Gegner; auf seinen
+  Befehl springt RSR schon zum Ziel und holt das meiste davon. Automatisch landet der Sprung am Rand des Ziels auf der
+  Anflugseite, also vor Gegnern, die zum Tank schauen; deren Flächen sieht RSR ohne BossModReborn-Modul nicht, und der
+  Sicherheitscheck ist ab Werk aus. Sicherheit der Gruppe vor Schaden, gewichtet mit der Wahrscheinlichkeit:
+  Frontalangriffe von Trash-Gruppen sind im Dungeon häufig, der Gewinn liegt in einem Teil der Flächenangriffe.
+
+**Falsifikation.** *Kein Defekt:* Für Upstreams Monk widerlegt – der Sprung in Reichweite kostet eine Ladung und die
+Sperre, der Sprung zum Fokus führt vom Boss weg. Für Viper und Dragoon ist das Fehlen kein Defekt, sondern Schaden am
+Pull; The Balance belegt ihn für den Viper. *Option falsch:* Stärkstes Gegenargument ist seine Regel zur Bewegung. Sie
+schließt aus, ihn für Schaden aus einer sicheren Position zu holen; zum Pull wirkt der Gegner noch nichts, und die
+Position eines Nahkämpfers ist dann am Ziel – sein Hinweis. Ein Pull, bei dem er bewusst Abstand hält, ist der Grund für
+die Einstellung. Zweites: knapp außerhalb der Reichweite verliert der Sprung bis 0,4 s; einmal je Pull, gegen Sekunden
+darüber, und die Zeit bis zum Loslaufen fehlt im Modell zugunsten des Laufens. Drittes: Hält ein Tank den Boss beim Pull
+noch nicht, zieht der Sprung höchstens 0,5 s früher Feindseligkeit; dieselbe Zeit, die The Balance beim Viper nimmt.
+*Ausgeliefert, nichts ändert sich:* Er steht zum Pull in Reichweite – dann ist das gewollt; er hat kein Ziel anvisiert –
+dann springt nichts; Fokus auf einem Gruppenmitglied – der Sprung fällt aus, er läuft wie ohne die Regel.
+
+*Nebenbefund, Prüfmittel:* `generate_action_matrix.py` erkannte ein Wirken in der Bedingung nur, wenn `out act` das erste
+Argument war; `PullGapCloser(…, out var act)` las es als Sperre ohne Wirken und trug Thunderclap und Bootshine als
+Sperren aller späteren Countdown-Regeln ein. Klasse: Beim Dark Knight standen aus demselben Grund drei falsche Zeilen
+„Regel sperrt vorher … The Blackest Night" (`CanUseOnLowestBelow(TheBlackestNightPvE, …, out act)`). Erkennung auf
+jede Argumentstelle erweitert, Selbsttest um den Fall ergänzt, DRK-Matrix neu erzeugt.
+
+C124 widerruft die Begründung in A343, Slither sei als Bewegung ausgeschlossen. Konzepte 04 und 14, TODO (Punkt
+geschlossen), Release-Text und CHANGELOG nachgezogen.
+
+*Prüfgrad:* statisch, Modell, Compile; im Spiel nicht beobachtet.
+
 ---
 ## B · Commit-Register (Fork vs. `upstream/main`)
 
@@ -10345,3 +10403,4 @@ Die offene Arbeit dazu — Reihenfolge und Abbruchbedingung der Nachprüfung —
 | C121 | A54, Konzept 11 („Ausgeschlossen") und die Vorlage in A338: `SwiftcastBuffer` bedeute, Spontanität erst bei so viel Restzeit einzuschieben, und kollidiere deshalb mit der Ausführungssperre | Gelesen war die Dokumentation, nicht der Code. Upstreams Leser (4919e1ad5) schob nur bei **mehr** Restzeit ein, ein Mindestabstand ganz oberhalb der Sperre; die Dokumentation widersprach ihrem Code. Folge: Die Empfehlung, sie zu entfernen, stand auf einem falschen Grund | A339: neu geprüft, mit richtigem Grund entfernt |
 | C122 | A338 und Konzept 15 („Je Gebiet"): `tank_lockon02k1` habe sechsmal zwischen bestätigt und verworfen gewechselt, weil ein Pfad in verschiedenen Kämpfen Verschiedenes bedeute | Die Wechsel kamen aus der zweiten Beobachtung desselben Markers nach seinem Treffer und aus den bis A334 ungelesenen Helfern; ein Kampf, in dem der Pfad keinen Tankbuster ankündigt, ist nicht belegt | A340: Defekt behoben, Begründung des Schlüssels berichtigt |
 | C123 | Konzept 10, „Ausgeschlossen": den Verbrauch von The Blackest Night zu messen brauche einen eigenen Ringpuffer, der in jedem Kampf koste, und der Schadensfluss der letzten Sekunden sage nichts über die nächsten sieben | Die Schadensaufzeichnung des Effekt-Handlers führt Upstream seit 2023 (`AddDamageRec`); die Gegnerzahl, die stattdessen galt, schließt ebenso aus der Gegenwart auf die nächsten sieben Sekunden, nur ohne den Schaden zu sehen | A340: Strom gemessen, Bedingung im Pull-Zweig |
+| C124 | A343, A346 und die Vorlage im TODO: Slither des Vipers bei −0,5 s sei Bewegung, die seine Regel ausschließe, und Thunderclap des Monk im Countdown Bewegung für Schaden | Seine Regel schließt aus, ihn für Schaden aus einer sicheren Position zu holen; zum Pull ist die Position eines Nahkämpfers am Ziel (sein Hinweis, 25.10.2026), und The Balance springt dort selbst. Folge: Viper und Dragoon fehlte der Sprung, die Empfehlung für den Monk stand auf einem falschen Grund | A347: Sprung außerhalb der Reichweite für alle drei |

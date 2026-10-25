@@ -2617,6 +2617,35 @@ public partial class CustomRotation
 	[Description("Count Down ahead")]
 	public static float CountDownAhead => Service.Config.CountDownAhead;
 
+	// How long before the pull a melee presses its dash: The Balance's Viper opener (Slither at -0.5 s) and upstream's
+	// Thunderclap. No game figure gives a dash's delay before the character moves (A347).
+	private const float PullDashLead = 0.5f;
+
+	/// <summary>
+	/// The melee's dash at the end of a countdown: in its last <see cref="PullDashLead"/> seconds, when the target - an
+	/// enemy - stands beyond the range of <paramref name="reach"/>, the job's opening weaponskill. So the first weaponskill
+	/// lands at the pull instead of after the walk there; in range, no charge and no animation lock is spent. Governed by
+	/// "Dash to the target at the end of the countdown when out of melee range" (concept 04, A347).
+	/// </summary>
+	/// <param name="remainTime">Seconds left on the countdown.</param>
+	/// <param name="dash">The job's target dash.</param>
+	/// <param name="reach">An opening weaponskill whose range is melee range.</param>
+	/// <param name="act">The dash.</param>
+	/// <returns>True when the dash goes out.</returns>
+	protected static bool PullGapCloser(float remainTime, IBaseAction dash, IBaseAction reach, out IAction? act)
+	{
+		act = null;
+		if (!Service.Config.PullGapCloser || remainTime > PullDashLead
+			|| Svc.Targets.Target is not IBattleChara target || !target.IsHostile()
+			|| target.DistanceToPlayer() <= reach.Info.Range)
+		{
+			return false;
+		}
+
+		// A dash that may also go to a party member picks the focus target first; it has to land on the enemy.
+		return dash.CanUse(out act) && dash.Target.Target?.GameObjectId == target.GameObjectId;
+	}
+
 	/// <summary>
 	/// 
 	/// </summary>

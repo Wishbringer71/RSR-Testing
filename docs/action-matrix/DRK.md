@@ -1,6 +1,6 @@
 # DRK — Abhängigkeitsmatrix
 
-Erzeugt von `.github/scripts/audit/generate_action_matrix.py` am 2026-10-22; nicht von Hand bearbeiten. Methode und Grenzen: `docs/rotation-flow/14-action-dependency-matrix.md`.
+Erzeugt von `.github/scripts/audit/generate_action_matrix.py` am 2026-10-25; nicht von Hand bearbeiten. Methode und Grenzen: `docs/rotation-flow/14-action-dependency-matrix.md`.
 
 - Basisrotation: `DarkKnightRotation`
 - Rotation: `RotationSolver/RebornRotations/Tank/DRK_Reborn.cs`
@@ -102,18 +102,15 @@ direkt: 41 · ungenutzt: 1 · über andere Aktion: 1
 | Blood Weapon | Regel prüft | Delirium |
 | Comeuppance | ComboIds | Scarlet Delirium |
 | Dark Missionary | Regel sperrt vorher | Oblation |
-| Dark Missionary | Regel sperrt vorher | The Blackest Night |
 | Delirium | Regel prüft | Souleater |
 | Disesteem | StatusNeed Scorn | Living Shadow |
 | Edge of Shadow | Regel prüft | Hard Slash |
 | Edge of Shadow | Regel prüft | Unmend |
 | Hard Slash | Regel prüft | Souleater |
 | Living Shadow | Regel prüft | Hard Slash |
-| Oblation | Regel sperrt vorher | The Blackest Night |
 | Rampart | Regel prüft | Shadow Wall |
 | Rampart | Regel prüft | Shadowed Vigil |
 | Reprisal | Regel sperrt vorher | Oblation |
-| Reprisal | Regel sperrt vorher | The Blackest Night |
 | Salt and Darkness | StatusNeed SaltedEarth | Status SaltedEarth |
 | Shadow Wall | Regel prüft | Rampart |
 | Shadow Wall | Regel prüft | Shadowed Vigil |

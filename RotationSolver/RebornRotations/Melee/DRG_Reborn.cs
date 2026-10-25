@@ -24,6 +24,15 @@ public sealed class DRG_Reborn : DragoonRotation
 	public float DragonfireDiveDistance { get; set; } = 20;
 	#endregion
 
+	#region Countdown Logic
+	// Winged Glide deals no damage; The Balance: "use it freely whenever you need to gapclose" - at the pull only from
+	// beyond melee range (A347).
+	protected override IAction? CountDownAction(float remainTime)
+	{
+		return PullGapCloser(remainTime, WingedGlidePvE, TrueThrustPvE, out var act) ? act : base.CountDownAction(remainTime);
+	}
+	#endregion
+
 	#region Additional oGCD Logic
 
 	[RotationDesc(ActionID.WingedGlidePvE)]

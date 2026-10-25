@@ -526,8 +526,9 @@ Geprüft ist bisher nur der Vorlauf (A343); Burst und Prioritäten sind offen.
 - *Dragoon* (The Balance, Openers, Patch 7.5): kein Vorlauf im Standard-Opener; der Trank nach dem zweiten GCD, mit
   Lance Charge, vor Battle Litany. RSR nimmt ihn, sobald Battle Litany liegt – einen GCD später; der Trank wirkt 30 s
   und deckt das Fenster weiter. Nicht geändert.
-- *Viper* (Openers, Patch 7.55): Slither bei −0,5 s ist Bewegung und bleibt aus (Konzept 04, „Countdown und
-  Notfallslot"); der Trank fällt nach dem dritten GCD. RSR nahm ihn mit „Experimental Pot Usage(used up to 5 seconds
-  before SerpentsIre comes off cooldown)" nur in den letzten 5 s vor dem Ende der Abklingzeit von Serpent's Ire, nie
-  solange Serpent's Ire bereit lag, also nie im Opener. Der Text schließt das ein; der Code folgt ihm jetzt
-  (`WillHaveOneCharge`). Ohne die Option (ab Werk aus) ändert sich nichts.
+- *Viper* (Openers, Patch 7.55): Slither bei −0,5 s – RSR springt in der letzten halben Sekunde, wenn das Ziel
+  außerhalb der Nahkampfreichweite steht (Konzept 04, „Der Sprung zum Ziel am Ende des Countdowns", A347); der Trank
+  fällt nach dem dritten GCD. RSR nahm ihn mit „Experimental Pot Usage(used up to 5 seconds before SerpentsIre comes
+  off cooldown)" nur in den letzten 5 s vor dem Ende der Abklingzeit von Serpent's Ire, nie solange Serpent's Ire
+  bereit lag, also nie im Opener. Der Text schließt das ein; der Code folgt ihm jetzt (`WillHaveOneCharge`). Ohne die
+  Option (ab Werk aus) ändert sich nichts.

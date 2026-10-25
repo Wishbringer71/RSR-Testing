@@ -23,6 +23,15 @@ are not reconstructed here.
 
 ## Unreleased
 
+### Behaviour change in RotationSolver.Basic: a melee's dash at the end of a countdown
+
+`CustomRotation.PullGapCloser(float remainTime, IBaseAction dash, IBaseAction reach, out IAction? act)` is new and
+protected: in a countdown's last half second it uses `dash` when the hard target is an enemy beyond the range of
+`reach`, and only if the dash goes to that target. Governed by the new setting `PullGapCloser` ("Dash to the target at
+the end of the countdown when out of melee range", on by default). `MNK_Reborn` now uses Thunderclap through it - no
+longer in range, no longer to a party focus target -, and `VPR_Reborn` (Slither) and `DRG_Reborn` (Winged Glide) gain
+a `CountDownAction` that does the same.
+
 ### RotationSolver.Basic: the Ninja weighs its area actions
 
 `NinjaRotation` gains three protected members: `HellfrogOutdamagesBhavacakra(int targets)` (Meisui's raise included),

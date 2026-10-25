@@ -39,6 +39,14 @@ public sealed class VPR_Reborn : ViperRotation
 	public bool AbilityPrio2 { get; set; } = true;
 	#endregion
 
+	#region Countdown Logic
+	// The Balance's opener dashes with Slither at -0.5 s; only from beyond melee range (A347).
+	protected override IAction? CountDownAction(float remainTime)
+	{
+		return PullGapCloser(remainTime, SlitherPvE, SteelFangsPvE, out var act) ? act : base.CountDownAction(remainTime);
+	}
+	#endregion
+
 	#region Tracking Properties
 	// 0 = none, 1 = Hunter's Coil, 2 = Swiftskin's Coil.
 	// Locks in the position-based Coil choice so the predicted positional doesn't flip while the player repositions.

@@ -45,8 +45,8 @@ public sealed class MNK_Reborn : MonkRotation
 	#region Countdown Logic
 	protected override IAction? CountDownAction(float remainTime)
 	{
-		// gap closer at the end of countdown
-		if (remainTime <= 0.5 && ThunderclapPvE.CanUse(out var act))
+		// gap closer at the end of countdown, only from beyond melee range (A347)
+		if (PullGapCloser(remainTime, ThunderclapPvE, BootshinePvE, out var act))
 		{
 			return act; // need to face target to trigger
 		}
