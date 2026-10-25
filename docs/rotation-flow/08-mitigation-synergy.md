@@ -1297,7 +1297,11 @@ ein Mitglied den Verlauf, bildet einen gleitenden Mittelwert und schaetzt die Ze
 Gruppenmitglied `NaN`. Gegner fuehrt seit Upstream 3c6ce9ee2 `TimeToKillTracker`: eine Ausgleichsgerade ueber
 die letzten 30 s, die bei jedem Anstieg der Gesundheit neu beginnt. Fuer ein Mitglied, das geheilt wird,
 hielte sie nichts, und mit ihr fielen Vorausschau und Selbstkorrektur aus; die Gruppe bleibt deshalb in der
-eigenen Reihe (A341).
+eigenen Reihe (A341). Die eigene Reihe hat einen blinden Fleck (Defekt, `TODO.md`, A354): Sie misst den Abfall seit
+der ersten Probe unter voller Gesundheit; steht das Mitglied danach höher – nach einem harten ersten Treffer eines
+Pulls –, gibt sie bis zu vier Minuten keinen Wert, und die Vorausschau sieht für ihn nichts. Upstreams Gerade sieht
+diesen Fall, ist aber in anderen Lagen blind oder schlägt öfter falschen Alarm; keine der im Modell verglichenen
+Schätzungen überwiegt überall (`party_ttk_model.py`).
 
 **Was ein beobachteter Verlauf leistet, das eine Hochrechnung nicht leistet:** Er ist bereits netto.
 Jede Minderung, jede Mitigation, jede Barriere und jede fremde Heilung stecken darin, ohne dass

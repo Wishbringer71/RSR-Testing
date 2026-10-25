@@ -2681,9 +2681,7 @@ public struct ActionTargetInfo(IBaseAction action)
 					}
 
 					var hp = r.Obj.GetForecastEffectiveHp(instant);
-					var role = r.Obj.IsJobCategory(JobRole.Healer) ? 0
-						: r.Obj.IsJobCategory(JobRole.Tank) ? 1
-						: 2;
+					var role = TieBreakRank(r.Obj);
 					if (critical == null || hp < criticalHp || (hp == criticalHp && role < criticalRole))
 					{
 						critical = r.Obj;
@@ -2878,9 +2876,7 @@ public struct ActionTargetInfo(IBaseAction action)
 				}
 
 				var key = byPoints ? r.Obj.GetForecastEffectiveHp(instant) : r.Health;
-				var role = r.Obj.IsJobCategory(JobRole.Healer) ? 0
-					: r.Obj.IsJobCategory(JobRole.Tank) ? 1
-					: 2;
+				var role = TieBreakRank(r.Obj);
 				if (rest == null || key < restKey || (key == restKey && role < restRole))
 				{
 					rest = r.Obj;
@@ -2891,6 +2887,14 @@ public struct ActionTargetInfo(IBaseAction action)
 
 			rest ??= ranked.Count > 0 ? ranked[0].Obj : null;
 			return rest != null && rest.GetHealthRatio() < 1 ? rest : null;
+		}
+
+		// Among equal points, a healer first, then a tank, then everyone else (concept 07).
+		static int TieBreakRank(IBattleChara member)
+		{
+			return member.IsJobCategory(JobRole.Healer) ? 0
+				: member.IsJobCategory(JobRole.Tank) ? 1
+				: 2;
 		}
 
 		IBattleChara? FindInterruptTarget()

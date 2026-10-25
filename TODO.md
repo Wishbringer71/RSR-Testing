@@ -11,9 +11,10 @@ Nach der Wirkung im Kampf: Sicherheit der Gruppe vor Schaden, gewichtet mit der 
 (seine Vorgabe, 17.10.2026: „todo nach wichtigkeit abarbeiten. jeweils im loop bearbeiten"). Seine Aufträge vom
 18.10.2026 sind erledigt: TODO berichtigt (A322), Prüfläufe geordnet (A323), Laufzeitkosten umgestellt (A325). Sein
 Auftrag vom 24.10.2026 läuft: die einfachen Punkte zuerst (A338), die schweren wichtigen danach ebenso. Sein Auftrag vom
-25.10.2026 kommt davor: Upstream der letzten zehn Tage mit den eigenen Patches inhaltlich abgleichen.
+25.10.2026, Upstream der letzten zehn Tage mit den eigenen Patches inhaltlich abzugleichen, ist erledigt (A354); der
+Defekt daraus steht vorn.
 
-1. Upstream und eigene Patches inhaltlich abgleichen
+1. Zeit bis zum Tod eines Mitglieds nach hartem erstem Treffer blind
 2. Tank: ein neues Rudel ohne Warten binden
 3. Rotationen gegen The Balance abgleichen
 4. Six-sided Star und Flamethrower
@@ -24,16 +25,15 @@ Danach technische Schuld, soweit ihre Auflösungsbedingung erfüllt ist. Warten 
 
 ## Defekte
 
-Keine bekannt.
+### Zeit bis zum Tod eines Mitglieds nach hartem erstem Treffer blind · N
+
+*Im Kampf:* Nimmt ein Mitglied in der ersten Sekunde eines Pulls viel Schaden und steht danach höher, sieht die
+Heilvorausschau für ihn nichts – bis zu vier Minuten; Heilungen reagieren dann nur auf die aktuelle Gesundheit.
+*Ort:* `ObjectHelper.ComputeTTK` (Abfall seit der ersten beschädigten Probe). *Nächster Schritt:* Schätzer im Modell
+mit Rückkopplung wählen; `party_ttk_model.py` vergleicht die eigene Schätzung, Upstreams Gerade, das stärkere Gefälle
+beider und einen wandernden Anker – jede tauscht blinde Sekunden gegen Fehlalarme (A354). *Konzept:* 08.
 
 ## Offene Arbeit
-
-### Upstream und eigene Patches inhaltlich abgleichen · N, R, U
-
-*Im Kampf:* je nach Fund – Doppelungen und Widersprüche zwischen Upstreams Änderungen der letzten zehn Tage und den
-eigenen Patches, ungenutzte Synergien, kompaktere Lösungen (sein Auftrag, 25.10.2026: bisher eher formal als
-inhaltlich abgeglichen). *Nächster Schritt:* je Upstream-Commit seit 15.10.2026 die berührten Stellen mit den
-Fork-Abschnitten derselben Aufgabe lesen, im vollen Loop. *Konzept:* je Bereich.
 
 ### Tank: ein neues Rudel ohne Warten binden · N
 

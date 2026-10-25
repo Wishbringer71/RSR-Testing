@@ -2584,31 +2584,18 @@ public static class ObjectHelper
 		return Math.Max(Math.Max(0f, DataCenter.AnimationLock), castLeft);
 	}
 
-	private static long _healLeadCacheTick = long.MinValue;
-	private static float _healLeadCache;
-
 	// Same frame cache as DataCenter's party HP statistics, and for the same reason: the heal target
 	// selection asks this several times per member per frame, and each read of the GCD figures goes
 	// to the action manager. One value per frame is as current as the question can be - read from the
-	// shared figure instead of a copy of it (A340).
-	private static long HealLeadTtlMs => DataCenter.FrameCacheMs;
+	// shared figure instead of a copy of it (A340), in upstream's frame cache (A354).
+	private static readonly FrameCached<float> _healLead =
+		new(static () => DataCenter.DefaultGCDRemain + DataCenter.DefaultGCDTotal, DataCenter.FrameCacheMs);
 
 	/// <summary>
 	/// How long a heal decided on now takes to land: what is left of this GCD, plus one GCD for the
 	/// cast. Read from the game, so a shortened GCD shortens the look-ahead with it.
 	/// </summary>
-	internal static float GetHealLeadTime()
-	{
-		var now = Environment.TickCount64;
-		if (_healLeadCacheTick != long.MinValue && now - _healLeadCacheTick < HealLeadTtlMs)
-		{
-			return _healLeadCache;
-		}
-
-		_healLeadCache = DataCenter.DefaultGCDRemain + DataCenter.DefaultGCDTotal;
-		_healLeadCacheTick = now;
-		return _healLeadCache;
-	}
+	internal static float GetHealLeadTime() => _healLead.Value;
 
 	/// <summary>
 	/// Is anything actually threatening this character right now?

@@ -110,12 +110,8 @@ internal static class BossModUpdater
 			DataCenter.BMRSpecialModeIn = BMRTimeline_IPCSubscriber.SpecialModeIn?.Invoke() ?? float.MaxValue;
 			DataCenter.BMRSpecialModeType = (SpecialMode)(BMRTimeline_IPCSubscriber.SpecialModeType?.Invoke() ?? 0);
 
-			DataCenter.BMRIsPositionSafe = BMRTimeline_IPCSubscriber.IsPositionSafe != null
-				? pos => BMRTimeline_IPCSubscriber.IsPositionSafe.Invoke(pos)
-				: null;
-			DataCenter.BMRIsDashSafe = BMRTimeline_IPCSubscriber.IsDashSafe != null
-				? (from, to) => BMRTimeline_IPCSubscriber.IsDashSafe.Invoke(from, to)
-				: null;
+			DataCenter.BMRIsPositionSafe = BMRTimeline_IPCSubscriber.IsPositionSafe;
+			DataCenter.BMRIsDashSafe = BMRTimeline_IPCSubscriber.IsDashSafe;
 			// A fixed dash or a backstep has a landing point RSR computes (ActionTargetInfo.CheckMovementSafety); the
 			// question is the same as for a free dash, so the same endpoint answers it (A313).
 			DataCenter.BMRIsFixedDashSafe = DataCenter.BMRIsDashSafe;

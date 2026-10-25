@@ -317,8 +317,9 @@ Rollen-Notfall stellt `CustomRotation.EmergencyAbility`.
 
 **Eine Schadensfläche fällt erst, wenn mindestens ein Gegner seit einem GCD in ihrem Radius ist und jetzt nicht weniger
 Gegner darin sind, als von den noch lebenden zu Beginn dieses GCD darin waren – und der Tank das Rudel eingesammelt
-hat: kein Gegner außerhalb des Kampfes in der Fläche oder in Reichweite eines Tanks, keiner in diesem GCD in den Kampf
-gekommen** (`CustomRotation.DamageAreaSettled`, `HostileMovement.AreaHolds`, A350–A353). Wer sich in der Fläche bewegt,
+hat: kein Gegner außerhalb des Kampfes in der Fläche oder, in einem Inhalt, in dem gezogen wird, in Reichweite eines
+Tanks, und keiner dort in diesem GCD in den Kampf gekommen** (`CustomRotation.DamageAreaSettled`,
+`HostileMovement.AreaHolds`, A350–A354). Wer sich in der Fläche bewegt,
 wer am Rand einen anderen hinausdrängt und dessen Platz einnimmt, wer dazukommt und wer stirbt, hält sie nicht auf; ein
 Rudel, das weiterzieht oder hindurchläuft, senkt die Zahl und schließt sie, ebenso ein Halt des Tanks, um das nächste
 Rudel zu binden. Betroffen sind die Aktionen, deren Wirktext eine Fläche legt, die „any enemies who enter" trifft:
@@ -343,12 +344,34 @@ er selbst steht.
   still, wo es stand – nach seiner Spur ist es geblieben –, und das mitgebrachte Rudel sammelt sich um den Tank, während
   er wartet; danach zieht er sofort weiter. Ein Gegner außerhalb des Kampfes in der Fläche oder in Reichweite des Tanks
   ist einer, den er gleich bindet; ein eben gebundenes Rudel ist eines, mit dem er weiterzieht. Darum wartet die Fläche,
-  bis kein ungebundener Gegner mehr dort steht und seit dem letzten Gebundenen ein GCD vergangen ist. Nebenbei legt sie
-  sich so nie auf ein Rudel, das niemand gezogen hat – sie würde es ziehen. Außerhalb des Kampfes heißt: Kampf-Flag des
-  Gegners aus und kein Ziel; WrathCombo (keine Spielquelle) liest dasselbe Flag für „Only Attack Targets Already In
-  Combat" und für die Wahl des nächsten Gegners im Kampf. Reichweite des Tanks ist der Wirkbereich der ersten
-  Flächenangriffe der vier Tanks aus dem Aktionsblatt (Total Eclipse, Overpower, Unleash, Demon Slice, je 5 y um den
-  Tank), für jeden lebenden Tank der Gruppe. Ein Übungsziel bewegt sich nie und zählt nicht.
+  bis dort kein ungebundener Gegner mehr steht und keiner dort seit weniger als einem GCD im Kampf ist. Gezählt wird
+  nur, wer in der Fläche oder am Tank steht: Eine Welle von Adds am anderen Ende des Raums hält nichts auf. Wer schon im
+  Kampf in Sicht kommt, gilt als eben gebunden – so zeigt sich ein Rudel, das der Tank hinter einer Ecke gezogen hat.
+  Ein ungebundener Gegner am Tank zählt nur in einem Inhalt, in dem gezogen wird (gebunden an eine Instanz, keine
+  Feldoperation): Dort zieht der Tank jeden, an dem er steht; im Freien kann ein passiver Gegner dauerhaft neben ihm
+  stehen. In der Fläche selbst zählt er überall, denn sie würde ihn ziehen – nebenbei legt sie sich so nie auf ein
+  Rudel, das niemand gezogen hat. Außerhalb des Kampfes heißt: Kampf-Flag des Gegners aus und kein Ziel; WrathCombo
+  (keine Spielquelle) liest dasselbe Flag für „Only Attack Targets Already In Combat" und für die Wahl des nächsten
+  Gegners im Kampf. Reichweite des Tanks ist der Wirkbereich der ersten Flächenangriffe der vier Tanks aus dem
+  Aktionsblatt (Total Eclipse, Overpower, Unleash, Demon Slice, je 5 y um den Tank), für jeden lebenden Tank der
+  Gruppe. Ein Übungsziel bewegt sich nie und zählt nicht.
+- *Bilanz im Kampf (SWOT):*
+  - *Stärken:* keine Fläche am Aggro-Halt (Modell: an keinem der 22 Halte statt an jedem, 44–45 statt 0–9 von 45
+    Treffern) – Salted Earth mit 90 s Abklingzeit und Doton liegen dort, wo das Rudel bleibt; keine Fläche auf einem
+    ungezogenen Rudel in ihrem Radius, also kein zusätzlicher Pull durch den Spieler.
+  - *Schwächen:* Bleibt der Tank, wo er gebunden hat, kommt die Fläche nach seinem Flächenangriff und einem GCD (Modell:
+    3,6 s später, dieselben Treffer, solange keiner stirbt); der Ninja wirft so lange Katon statt Doton. Das Kampf-Flag
+    ist durch WrathCombo belegt, nicht durch eine Spielquelle.
+  - *Chancen:* Die Zeile in `DefenseTrace.log` zeigt in seinen Kämpfen, ob Flächen noch verlassen werden; derselbe
+    Kampfzustand je Gegner kann dem Tank sagen, wann ein neues Rudel ungebunden in seiner Reichweite steht (`TODO.md`,
+    „Tank: ein neues Rudel ohne Warten binden").
+  - *Bedrohungen, beseitigt:* Add-Wellen im Bosskampf und ein passiver Gegner am Tank im Freien hielten im ersten Wurf
+    jede Fläche zurück – jetzt zählen nur Gegner in der Fläche oder am Tank, der Ungebundene am Tank nur in Instanzen;
+    ein außer Sicht gezogenes Rudel blieb unerkannt – jetzt zählt das erste Sehen im Kampf. *Verbleibend:* ein passiver
+    Gegner in der Fläche selbst hält sie zurück, solange er dort steht (sie würde ihn ziehen; ihr Text verspricht das);
+    ein Gegner im Kampf ohne Flag und ohne Ziel hielte sie zurück – nicht beobachtet.
+  - *Überwiegt:* der Nutzen – eine verschwendete Salted Earth kostet 90 s, die Verzögerung an einem echten Halt einen
+    GCD bei voller Wirkdauer danach.
 - *Warum ein Vergleich derselben Gegner und kein Zähler:* Gezählt werden zu Beginn des GCD nur die, die jetzt noch
   leben. Ein Tausch am Rand lässt die Zahl gleich (einer hinaus, einer hinein), ein Toter fällt auf beiden Seiten heraus,
   ein Nachzügler erhöht sie; ein abziehendes Rudel senkt sie, weil die, die drin waren, draußen sind und niemand
@@ -381,12 +404,13 @@ er selbst steht.
 - *Gemessen:* Das Spiel gibt nur für den Spieler an, ob er sich bewegt. Für Gegner führt RSR eine Spur der Positionen
   über den letzten GCD, einen Punkt bei jeder Änderung. Ein GCD in der Fläche unterscheidet den Halt von der Pause: Ein
   Rudel, das seinem Tank mit Laufgeschwindigkeit folgt, durchquert 5 y in unter einer Sekunde. Ein Gegner, der eben erst
-  erscheint, ist noch nirgends geblieben. Tote und Gegner, die aus der Feindliste fallen, zählen nicht. Gebunden heißt:
-  bei einer Zielaktualisierung außerhalb des Kampfes gesehen, bei einer späteren im Kampf; wer schon im Kampf erscheint,
-  zählt nicht als eben gebunden.
+  erscheint, ist noch nirgends geblieben. Tote und Gegner, die aus der Feindliste fallen, zählen nicht. Eben in den
+  Kampf gekommen heißt: bei einer Zielaktualisierung außerhalb des Kampfes gesehen und bei einer späteren im Kampf, oder
+  zum ersten Mal gesehen und schon im Kampf – einen GCD lang.
 - *Selbstbewertung:* Jede Fläche, die der Spieler legt (Wirktext „enemies who enter", auch als Zusatzwirkung), bewertet
   sich über ihre Dauer und schreibt eine Zeile in `DefenseTrace.log`: wie lange Gegner in ihr standen, und wie lange die
-  Gegner, auf die sie gelegt wurde, außerhalb von ihr noch lebten – ein Rudel, das weiterzog. Die Regel steuert die
+  Gegner, auf die sie gelegt wurde, außerhalb von ihr noch lebten – ein Rudel, das weiterzog. Eine Fläche, die RSR nicht
+  verfolgt hat (RSR aus), bleibt ohne Zeile: Ein einzelner Blick kann die Zeit dazwischen nicht bewerten. Die Regel steuert die
   Wartezeit daraus nicht selbst nach: Ein Lernen der Pausenlänge müsste festlegen, ab welcher Verweildauer ein
   Weiterziehen noch als Pause gilt. Im Modell verließ das Rudel die Fläche meist erst mehr als einen GCD nach dem
   Legen; ein so langer Zeitraum hielte auch ein Rudel, das nach 10 s Kampf weitergezogen wird, für eine Pause und ließe
@@ -403,9 +427,9 @@ er selbst steht.
   wie es ist.
 - *Grenzen:* Eine Pause des Tanks, die länger als ein GCD dauert und kein neues Rudel bindet, sieht aus wie ein Halt;
   zieht er danach weiter, liegt die Fläche, wo er war (Modell: 4 bis 5 von 25 Treffern, wie früher). Bindet der Tank
-  aus der Entfernung (ein Fernangriff, dann laufen sie zu ihm), wartet die Fläche nur den GCD nach dem Binden. Ein
-  Gegner, der im Kampf ist, aber kein Ziel hat und dessen Flag aus ist, hielte die Fläche zurück, solange er in ihr oder
-  am Tank steht – nicht beobachtet. Steht der Spieler, während der Tank das Rudel
+  aus der Entfernung (ein Fernangriff, dann laufen sie zu ihm), zählen die Gebundenen erst, wenn sie bei ihm oder in der
+  Fläche ankommen – dort halten sie die Fläche noch den Rest ihres ersten GCD im Kampf auf. Die Reichweite des Tanks kennt
+  die vier Tanks von heute; ein neuer Tank-Job käme in die Liste. Steht der Spieler, während der Tank das Rudel
   weiterzieht, kann die Fläche im ersten Teil des GCD danach noch fallen (Modell: bis 39 % der Zeit); der Dunkelritter
   als Tank bewegt sich dann selbst, und das sperrt. Fremde Rotationen, die Salted Earth drücken, folgen der Prüfung mit;
   Doton und Slipstream nur in den Standardrotationen.

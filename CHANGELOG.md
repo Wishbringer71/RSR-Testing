@@ -28,7 +28,8 @@ are not reconstructed here.
 `BaseAction.CanUse` refuses an action whose effect text lays a damage area of its own ("any enemies who enter") and that
 can sit on a hotbar - Salted Earth - until, around where it lands, at least one enemy has been within its effect range
 for the last GCD and no fewer living enemies are within it than were at the start of that GCD, no enemy out of combat
-stands within it or within a party tank's area attack reach, and none came into combat within that GCD. Governed by the new setting
+stands within it or, in a duty that is not a field operation, within a party tank's area attack reach, and none of those
+within it or at a tank came into combat within that GCD. Governed by the new setting
 `DamageAreasWhereEnemiesStay` ("Lay damage areas only where the enemies stay", on by default). `CustomRotation.DamageAreaSettled(IBaseAction area, IBattleChara?
 centre = null)` is new and protected for rotations that decide such an area elsewhere: `NIN_Reborn` asks it when the
 mudras for Doton begin, `SMN_Reborn` before Slipstream while Emerald Rites are left. `ActionTooltip.LeavesDamageArea`

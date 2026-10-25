@@ -302,7 +302,7 @@ internal static partial class TargetUpdater
 		DataCenter.PartyMembers = partyMembers;
 		DataCenter.AllianceMembers = allianceMembers;
 		DataCenter.AllHostileTargets = hostileTargets;
-		// Which of them moved since the last update, for the damage areas (A350).
+		// Which of them moved since the last update, and which came into combat, for the damage areas (A350, A353).
 		HostileMovement.Update(hostileTargets);
 
 		// Which party members an enemy is pointing at, collected once here rather than asked per

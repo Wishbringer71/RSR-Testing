@@ -3,8 +3,9 @@ namespace RotationSolver.Basic.Helpers;
 /// <summary>
 /// Where the enemies have been over the player's last GCD, so a damage area can be laid where they stay: at least one
 /// has been inside it throughout that GCD, and no fewer are inside now than, of those still alive, were inside at its
-/// start; and the tank has gathered the pack - no enemy out of combat in the area or within his area attack's reach,
-/// none picked up within that GCD (concept 04, "Schadensflächen erst, wo die Gegner bleiben", A350-A353).
+/// start; and the tank has gathered the pack - no enemy out of combat in the area or, in a duty, within a tank's area
+/// attack reach, none come into combat there within that GCD (concept 04, "Schadensflächen erst, wo die Gegner
+/// bleiben", A350-A354).
 /// </summary>
 /// <remarks>
 /// <para>The owner's hints (25.10.2026): enemies move about inside an area without leaving it; and in a big pull not all
@@ -18,14 +19,18 @@ namespace RotationSolver.Basic.Helpers;
 /// since his rotation may be elsewhere just then, waits until it has gone out before he moves on. That group stood idle
 /// where it was - by its track it has stayed - and the pack he brought settles around him while he waits; in the model
 /// the area went out at every such stop. An enemy out of combat in the area or within the tank's reach is one he is
-/// about to pick up, and a group just picked up is one he moves on with; laid on an idle group, the area would also pull
-/// it. Out of combat is the enemy's own combat flag with no target - WrathCombo reads the same flag for "Only Attack
-/// Targets Already In Combat" (not a game source). A striking dummy never moves and is left out.</para>
+/// about to pick up, and a group just come into combat there is one he moves on with; laid on an idle group, the area
+/// would also pull it. Out of combat is the enemy's own combat flag with no target - WrathCombo reads the same flag for
+/// "Only Attack Targets Already In Combat" (not a game source). One first seen already in combat counts as just come
+/// into combat: a group pulled out of the player's sight shows up that way. Only where it stands counts - in the area
+/// or at a tank -, so an add wave across the room holds nothing up. An idle enemy at a tank counts only in a duty that
+/// is not a field operation: there every enemy a tank stands at is about to be pulled, in the open world a passive one
+/// may stand there for good. A striking dummy never moves and is left out.</para>
 /// <para>The game gives no movement state for an enemy - only for the player (AgentMap) - so the track is the position
 /// the client shows at each target update, a new point whenever it changes. A GCD in the area is what tells a stop from
 /// a pause: a pack following its tank at run speed crosses an area of 5 y in under a second. An enemy seen for the first
 /// time within that GCD has not stayed anywhere yet; one arriving does not hold the area up. Updated by the target
-/// update on the game thread, read there by the rotation.</para>
+/// update, read there by the rotation.</para>
 /// </remarks>
 internal static class HostileMovement
 {
@@ -33,24 +38,30 @@ internal static class HostileMovement
 	private static readonly HashSet<ulong> _present = [];
 	private static readonly List<ulong> _gone = [];
 	private static readonly HashSet<ulong> _outOfCombat = [];
-	private static DateTime _lastPickup = DateTime.MinValue;
+	private static readonly Dictionary<ulong, DateTime> _cameIntoCombat = [];
+	private static readonly object _gradeGate = new();
 	private static LaidArea? _laid;
-	private static float? _tankReach;
+	private static float _tankReach;
 
 	private static TimeSpan Window => TimeSpan.FromSeconds(DataCenter.DefaultGCDTotal);
 
 	/// <summary>
 	/// How far a tank's area attack reaches around him: the effect range of the four tanks' first area attack, from the
-	/// action sheet (5 y each in 7.5).
+	/// action sheet (5 y each in 7.5). Kept once read; a sheet not ready yet is asked again.
 	/// </summary>
-	private static float TankReach => _tankReach ??= LongestEffectRange(
+	private static float TankReach => _tankReach > 0f ? _tankReach : _tankReach = LongestEffectRange(
 		ActionID.TotalEclipsePvE, ActionID.OverpowerPvE, ActionID.UnleashPvE, ActionID.DemonSlicePvE);
 
-	/// <summary>Takes the positions of this update's enemies, and whether each is in combat.</summary>
+	// Where a tank stands at an enemy he is about to pull with his area attack: in a duty, not in the open world or a
+	// field operation, where passive enemies stand about.
+	private static bool PullsEveryEnemy => DataCenter.IsInDuty && !DataCenter.IsInFieldOperations;
+
+	/// <summary>Takes the positions of this update's enemies, and when each came into combat.</summary>
 	internal static void Update(List<IBattleChara> hostiles)
 	{
 		var now = DateTime.Now;
-		var start = now - Window;
+		var window = Window;
+		var start = now - window;
 		_present.Clear();
 		foreach (var enemy in hostiles)
 		{
@@ -61,14 +72,15 @@ internal static class HostileMovement
 
 			var id = enemy.GameObjectId;
 			_ = _present.Add(id);
-			if (!_tracks.TryGetValue(id, out var track))
+			var seen = _tracks.TryGetValue(id, out var track);
+			if (!seen)
 			{
 				track = [];
 				_tracks[id] = track;
 			}
 
 			var at = enemy.Position;
-			if (track.Count == 0 || track[^1].Pos != at)
+			if (track!.Count == 0 || track[^1].Pos != at)
 			{
 				track.Add((now, at));
 			}
@@ -85,17 +97,19 @@ internal static class HostileMovement
 				track.RemoveRange(0, keepFrom);
 			}
 
-			// A pickup is an enemy seen out of combat that is in it now; one first seen in combat is not counted.
-			if (!enemy.IsDummy())
+			if (enemy.IsDummy())
 			{
-				if (!Engaged(enemy))
-				{
-					_ = _outOfCombat.Add(id);
-				}
-				else if (_outOfCombat.Remove(id))
-				{
-					_lastPickup = now;
-				}
+				continue;
+			}
+
+			if (!Engaged(enemy))
+			{
+				_ = _outOfCombat.Add(id);
+				_ = _cameIntoCombat.Remove(id);
+			}
+			else if (_outOfCombat.Remove(id) || !seen)
+			{
+				_cameIntoCombat[id] = now;
 			}
 		}
 
@@ -108,10 +122,23 @@ internal static class HostileMovement
 			}
 		}
 
+		foreach (var (id, since) in _cameIntoCombat)
+		{
+			if (now - since >= window)
+			{
+				_gone.Add(id);
+			}
+		}
+
 		foreach (var id in _gone)
 		{
-			_ = _tracks.Remove(id);
-			_ = _outOfCombat.Remove(id);
+			if (!_present.Contains(id))
+			{
+				_ = _tracks.Remove(id);
+				_ = _outOfCombat.Remove(id);
+			}
+
+			_ = _cameIntoCombat.Remove(id);
 		}
 
 		Grade(hostiles, now);
@@ -122,27 +149,25 @@ internal static class HostileMovement
 	{
 		_tracks.Clear();
 		_outOfCombat.Clear();
-		_lastPickup = DateTime.MinValue;
-		Finish();
+		_cameIntoCombat.Clear();
+		lock (_gradeGate)
+		{
+			Finish();
+		}
 	}
 
 	/// <summary>
 	/// Whether an area of <paramref name="radius"/> around <paramref name="centre"/> holds its enemies: at least one of
 	/// <paramref name="hostiles"/> - the living ones - has been inside it throughout the last GCD, and no fewer are inside
-	/// it now than were inside at the start of that GCD; no enemy out of combat is inside it or within a party tank's
-	/// area attack reach, and none came into combat within that GCD. Inside is the enemy's hitbox within the radius, as
-	/// the game's area check has it.
+	/// it now than were inside at the start of that GCD; no enemy out of combat is inside it or, in a duty, within a party
+	/// tank's area attack reach, and none inside it or at a tank came into combat within that GCD. Inside is the enemy's
+	/// hitbox within the radius, as the game's area check has it.
 	/// </summary>
 	internal static bool AreaHolds(Vector3 centre, float radius, List<IBattleChara> hostiles)
 	{
 		var now = DateTime.Now;
-		var window = Window;
-		if (now - _lastPickup < window)
-		{
-			return false;
-		}
-
-		var start = now - window;
+		var start = now - Window;
+		var pullsEveryEnemy = PullsEveryEnemy;
 		var stayed = false;
 		var atStart = 0;
 		var insideNow = 0;
@@ -153,14 +178,16 @@ internal static class HostileMovement
 				continue;
 			}
 
+			var id = enemy.GameObjectId;
 			var hitbox = enemy.HitboxRadius;
 			var inNow = Inside(enemy.Position, centre, radius, hitbox);
-			if (!enemy.IsDummy() && !Engaged(enemy) && (inNow || NearTank(enemy.Position, hitbox)))
+			if (_outOfCombat.Contains(id) ? inNow || (pullsEveryEnemy && NearTank(enemy.Position, hitbox))
+				: _cameIntoCombat.ContainsKey(id) && (inNow || NearTank(enemy.Position, hitbox)))
 			{
 				return false;
 			}
 
-			if (!_tracks.TryGetValue(enemy.GameObjectId, out var track) || track.Count == 0)
+			if (!_tracks.TryGetValue(id, out var track) || track.Count == 0)
 			{
 				continue;
 			}
@@ -193,71 +220,91 @@ internal static class HostileMovement
 	/// An area the player laid: <paramref name="name"/>, <paramref name="radius"/> around <paramref name="centre"/> for
 	/// <paramref name="duration"/> seconds. Graded over its duration and written to the defence trace: how long enemies
 	/// were in it, and how long the enemies it was laid on were alive outside it - a pack that moved on. Called by the
-	/// effect handler on the game thread.
+	/// effect handler.
 	/// </summary>
+	/// <remarks>
+	/// The measure for a rule whose answer falls in play. It does not steer the rule: learning the wait from areas left
+	/// behind would need a bound on how long a stay still counts as a pause - an area that worked for 10 s is hardly
+	/// wasted, but 10 s of waiting at every stop would cost much - and that bound has no source (A353).
+	/// </remarks>
 	internal static void AreaLaid(string name, Vector3 centre, float radius, float duration, List<IBattleChara> hostiles)
 	{
-		Finish();
-		if (duration <= 0f)
+		lock (_gradeGate)
 		{
-			return;
-		}
-
-		var now = DateTime.Now;
-		var laid = new LaidArea(name, centre, radius, duration, now);
-		foreach (var enemy in hostiles)
-		{
-			if (enemy != null && !enemy.IsDead && Inside(enemy.Position, centre, radius, enemy.HitboxRadius))
+			Finish();
+			if (duration <= 0f)
 			{
-				_ = laid.LaidOn.Add(enemy.GameObjectId);
+				return;
 			}
-		}
 
-		_laid = laid;
+			var now = DateTime.Now;
+			var laid = new LaidArea(name, centre, radius, duration, now);
+			foreach (var enemy in hostiles)
+			{
+				if (enemy != null && !enemy.IsDead && Inside(enemy.Position, centre, radius, enemy.HitboxRadius))
+				{
+					_ = laid.LaidOn.Add(enemy.GameObjectId);
+				}
+			}
+
+			_laid = laid;
+		}
 	}
 
 	private static void Grade(List<IBattleChara> hostiles, DateTime now)
 	{
-		if (_laid is not { } laid)
+		lock (_gradeGate)
 		{
-			return;
-		}
-
-		var until = now < laid.Ends ? now : laid.Ends;
-		var step = (until - laid.Seen).TotalSeconds;
-		if (step > 0)
-		{
-			var anyInside = false;
-			var laidOnAlive = false;
-			foreach (var enemy in hostiles)
+			if (_laid is not { } laid)
 			{
-				if (enemy == null || enemy.IsDead)
+				return;
+			}
+
+			var until = now < laid.Ends ? now : laid.Ends;
+			var step = until - laid.Seen;
+
+			// Not watched in between (RSR off): one look cannot stand for that stretch, so the area goes ungraded.
+			if (step > Window)
+			{
+				_laid = null;
+				return;
+			}
+
+			if (step > TimeSpan.Zero)
+			{
+				var anyInside = false;
+				var laidOnAlive = false;
+				foreach (var enemy in hostiles)
 				{
-					continue;
+					if (enemy == null || enemy.IsDead)
+					{
+						continue;
+					}
+
+					anyInside |= Inside(enemy.Position, laid.Centre, laid.Radius, enemy.HitboxRadius);
+					laidOnAlive |= laid.LaidOn.Contains(enemy.GameObjectId);
 				}
 
-				anyInside |= Inside(enemy.Position, laid.Centre, laid.Radius, enemy.HitboxRadius);
-				laidOnAlive |= laid.LaidOn.Contains(enemy.GameObjectId);
+				if (anyInside)
+				{
+					laid.Held += step.TotalSeconds;
+				}
+				else if (laidOnAlive)
+				{
+					laid.Left += step.TotalSeconds;
+				}
+
+				laid.Seen = until;
 			}
 
-			if (anyInside)
+			if (now >= laid.Ends)
 			{
-				laid.Held += step;
+				Finish();
 			}
-			else if (laidOnAlive)
-			{
-				laid.Left += step;
-			}
-
-			laid.Seen = until;
-		}
-
-		if (now >= laid.Ends)
-		{
-			Finish();
 		}
 	}
 
+	// Under _gradeGate.
 	private static void Finish()
 	{
 		if (_laid is not { } laid)

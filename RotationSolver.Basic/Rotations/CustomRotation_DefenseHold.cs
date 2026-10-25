@@ -298,20 +298,12 @@ public partial class CustomRotation
 	/// <returns>True when a hold of an area defense must yield.</returns>
 	internal static bool AreaDefenseDanger(out string why)
 	{
-		var now = Environment.TickCount64;
-		if (_areaDangerTick == long.MinValue || now - _areaDangerTick >= DataCenter.FrameCacheMs)
-		{
-			_areaDangerTick = now;
-			_areaDanger = FindAreaDanger(out _areaDangerWhy);
-		}
-
-		why = _areaDangerWhy;
-		return _areaDanger;
+		(var danger, why) = _areaDanger.Value;
+		return danger;
 	}
 
-	private static long _areaDangerTick = long.MinValue;
-	private static bool _areaDanger;
-	private static string _areaDangerWhy = string.Empty;
+	private static readonly FrameCached<(bool Danger, string Why)> _areaDanger =
+		new(static () => (FindAreaDanger(out var why), why), DataCenter.FrameCacheMs);
 
 	private static bool FindAreaDanger(out string why)
 	{

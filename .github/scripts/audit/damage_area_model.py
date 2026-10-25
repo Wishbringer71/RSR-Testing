@@ -25,9 +25,9 @@ Rules for "lay it now", compared over constructed pulls:
   MOST   like FLOW's first half, and more than half of those still alive that were inside at the start of the GCD are
          inside now (considered: as DRIFT)
   ALL    every enemy inside now has been inside throughout the last GCD (stricter variant)
-  GATHER FLOW, and no enemy inside the area is out of combat, and none entered combat within the last GCD: an idle
-         group in it is one the tank is about to pick up, and a group just picked up is one he moves on with
-  GATHT  GATHER, and also no enemy out of combat within the tank's area attack reach (5 y around him): the group he
+  GATHER FLOW, and no enemy inside the area is out of combat or came into combat within the last GCD: an idle group
+         in it is one the tank is about to pick up, and a group just picked up is one he moves on with
+  GATHT  GATHER, and the same for the enemies within the tank's area attack reach (5 y around him): the group he
          stopped for may stand outside the player's area
 
 Measured besides: the share of the time a pack stays at the wall in which a rule would lay the area (how soon a rotation
@@ -126,11 +126,12 @@ def rule(name, enemies, centre, t, player_moving, tank=None):
         return not player_moving
     now_in = [e for e in enemies if inside(e.track[-1][1], centre, e.hitbox)]
     if name in ("GATHER", "GATHT"):
-        if any(not e.engaged(t) for e in now_in) or any(t - GCD < e.joins <= t for e in enemies):
-            return False
-        if name == "GATHT" and tank is not None and any(
-                not e.engaged(t) and dist(e.track[-1][1], tank) - e.hitbox <= TANK_REACH for e in enemies):
-            return False
+        def at_tank(e):
+            return name == "GATHT" and tank is not None and dist(e.track[-1][1], tank) - e.hitbox <= TANK_REACH
+        for e in enemies:
+            here = inside(e.track[-1][1], centre, e.hitbox) or at_tank(e)
+            if here and (not e.engaged(t) or t - GCD < e.joins <= t):
+                return False
         name = "FLOW"
     if name == "STILL":
         if not now_in:

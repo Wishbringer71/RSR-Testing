@@ -1012,6 +1012,16 @@ public static class Watcher
 				return;
 			}
 
+			// A damage area grades itself over its duration: did the enemies stay in it (A353). Ahead of the check below:
+			// an area that hits nobody when it goes out may come with no target effects.
+			if (ActionTooltip.LeavesDamageArea(set.Action.Value.RowId)
+				&& ActionTooltip.TryStatedDuration(set.Action.Value.RowId, out var areaDuration)
+				&& (set.Action.Value.Range > 0 ? set.Target?.Position : playerObject.Position) is { } areaCentre)
+			{
+				HostileMovement.AreaLaid(set.Action.Value.Name.ExtractText(), areaCentre, set.Action.Value.EffectRange,
+					areaDuration, DataCenter.AllHostileTargets);
+			}
+
 			if (set.TargetEffects.Length == 0)
 			{
 				//PluginLog.Debug("ActionFromSelf: No TargetEffects. Exiting.");
@@ -1028,15 +1038,6 @@ public static class Watcher
 
 			// The trace writes what the defence chose; this line says that it went out.
 			DefenseTrace.Executed(action.Value.RowId, action.Value.Name.ExtractText());
-
-			// A damage area grades itself over its duration: did the enemies stay in it (A353).
-			if (ActionTooltip.LeavesDamageArea(action.Value.RowId)
-				&& ActionTooltip.TryStatedDuration(action.Value.RowId, out var areaDuration)
-				&& (action.Value.Range > 0 ? tar?.Position : playerObject.Position) is { } areaCentre)
-			{
-				HostileMovement.AreaLaid(action.Value.Name.ExtractText(), areaCentre, action.Value.EffectRange, areaDuration,
-					DataCenter.AllHostileTargets);
-			}
 
 			if (action.Value.RowId == (uint)ActionID.ShirkPvE)
 			{

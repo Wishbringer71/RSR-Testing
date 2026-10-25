@@ -10313,6 +10313,104 @@ weiter Flächen, die das Rudel verlässt. Bindet der Tank aus der Entfernung, sp
 
 *Prüfgrad:* statisch, Modell, Compile; im Spiel nicht beobachtet, Messmittel geliefert.
 
+### A354 · Upstream der letzten zehn Tage gegen die eigenen Patches, inhaltlich; Review des Aggro-Halts (25.10.2026)
+
+Sein Auftrag (25.10.2026): „die commits innerhalb der letzten 10 tage von upstream zusammen mit den eigenen patches
+analysieren. bislang war die anpassung aneinander eher formal als inhaltlich. gibt es doppelungen, widersprüche? gibt
+es bislang ungenutzte synergieeffekte? kann man code einsparen, weil es kompaktere bessere lösungen gibt?" A324, A331,
+A332 und A341 hatten je Konflikt geprüft, wo eine Fork-Regel nach Upstreams Umbau sitzt und was Upstream im Kampf
+ändert; nicht, ob beide dieselbe Aufgabe zweimal lösen. Erhoben: die sechs Upstream-Commits seit 15.10.2026
+(`8153eea2c`, `edf68cfe1`, `6b52e1dfd`, `3c7f28ade`, `42cb3a7dd`, `64413ccef`), je neuem oder umgebautem Baustein die
+Fork-Stelle derselben Aufgabe; 79 Dateien hat beides berührt.
+
+**Defekt, neu (Sicherheit):** *Die Zeit bis zum Tod eines Mitglieds ist nach einem harten ersten Treffer blind.* Für
+Gegner rechnet seit `64413ccef` Upstreams Ausgleichsgerade (`TimeToKillTracker`), für Mitglieder weiter die alte
+Schätzung `ComputeTTK` (A341): der Abfall seit der ersten Probe unter voller Gesundheit in den letzten 240 s. Liegt die
+Gesundheit über dieser ersten Probe, gibt sie keinen Wert, und die Heilvorausschau sieht nichts – bis zu vier Minuten,
+wenn die erste Sekunde eines Pulls hart war (Modell `party_ttk_model.py`: 4 von 4 Gefahrensekunden blind). Upstreams
+Gerade sieht diesen Fall, verliert aber bei voller Gesundheit ihre Historie und sieht im Wechsel aus Schaden und Heilung
+kaum ein Gefälle (im Bosskampf 2 von 4 blind, mehr Fehlalarme); das stärkere Gefälle beider (MAX) und ein wandernder
+Anker (ANCHOR) beseitigen den blinden Fleck und tauschen ihn gegen bis zu 25 bzw. 34 Sekunden Fehlalarm. Keine Variante
+überwiegt in allen Lagen; die Wahl braucht ein Modell mit Rückkopplung (die Heilung reagiert auf die Vorausschau). In
+`TODO.md` als Defekt, im vollen Loop als Nächstes.
+
+**Verdichtet, ohne Verhaltensänderung:**
+- *Rahmen-Caches:* `ObjectHelper.GetHealLeadTime` und `CustomRotation.AreaDefenseDanger` über Upstreams `FrameCached`
+  statt von Hand (je ein Zeitstempel und ein Wert weniger); die Gültigkeit bleibt `DataCenter.FrameCacheMs`.
+- *Rangfolge bei Gleichstand* (Heiler, Tank, übrige) stand zweimal in der Heilzielwahl; jetzt eine lokale Funktion
+  `TieBreakRank`.
+- *Muster „Duration: Ns"* stand dreimal (`NinjaRotation`, `TraitDurations`, neu); jetzt `ActionTooltip.TryStatedDuration`
+  (1fd640baa).
+- *BMR-Delegaten:* Upstream weist sie direkt zu, der Fork behielt beim Merge die Lambda-Hüllen; übernommen, die Zeile zu
+  A313 bleibt.
+
+**Geprüft, ohne Änderung – mit Grund:**
+- *Heilbestätigung:* `ConfirmPendingHeal` (Fork) und `HealPrediction.HasLanded` (Upstream) laufen in derselben Funktion
+  und beantworten verschiedene Fragen – Messung nur aus sauberen Fällen gegen den Abbau der Vorhersage; Schaden
+  dazwischen verwirft die Messung bewusst.
+- *DoT-Planer gegen eigene Regeln:* kein Widerspruch. Das erzwungene Dia im Laufen (`DOTUpkeep`, Upstream) ist gewollt;
+  `ShouldSustainMitigationDebuff` betrifft keine DoTs.
+- *Persistenz:* Lern- und Listenspeicher laufen seit A331/A341 unter einer Klasse (`ListFile`).
+- *Gehaltene Spielobjekte* (Upstreams Lehre aus `3c7f28ade`: ein gehaltener Wrapper zeigt nach dem Despawn auf
+  freigegebenen Speicher oder ein anderes Objekt): Kein Fork-Feld hält eines über ein Bild; `TankSwapWatch` setzt seine
+  jedes Bild neu, `RandomDelay` merkt sich nur einen Wahrheitswert.
+- *`ForceEnableScope`, `EncounterImmunity`, `IsEngagedByPlayer`, Phantom-Prüfung (`edf68cfe1`):* ohne Doppelung zu Fork-Code.
+- *Hilfsfunktion für die Restwirkzeit* (20 Stellen `TotalCastTime - CurrentCastTime`): verworfen – nur Lesbarkeit,
+  ändert Upstream-Zeilen, jede spätere Upstream-Änderung dort würde ein Konflikt.
+- *Liste der lebenden Tanks* statt sechs Schleifen über die Gruppe: verworfen – jede Stelle hat eine eigene Bedingung,
+  die Schleife bliebe, nur über eine andere Liste.
+
+**Review des Aggro-Halts (A353), unabhängiger Durchlauf, zehn Befunde, je am Code geprüft:**
+- *Übernommen:* (1) Selbstbewertung ohne Sperre, obwohl `DefenseTrace` zwei Threads nennt – Sperre ergänzt; (2) das
+  Binden irgendeines Gegners sperrte jede Fläche einen GCD, auch für Add-Wellen am anderen Ende des Raums – jetzt nur
+  Gegner in der Fläche oder am Tank; (3) ein passiver Gegner am Tank im Freien sperrte dauerhaft – der Ungebundene am
+  Tank zählt jetzt nur in einer Instanz, die keine Feldoperation ist; (4) ein außer Sicht gezogenes Rudel kam schon im
+  Kampf in Sicht und zählte nicht – das erste Sehen im Kampf zählt jetzt; (5) die Selbstbewertung stand hinter der
+  Rückkehr bei leerer Trefferliste – davor gezogen; (6) nach einer Pause der Zielaktualisierung (RSR aus) bewertete ein
+  einziger Blick die ganze Zeit – solche Flächen bleiben ohne Zeile; (7) eine zu früh gelesene Reichweite 0 blieb für die
+  Sitzung – nur ein Wert über 0 wird behalten; (8) der Verzicht auf Selbstnachsteuerung stand nur im Konzept – jetzt auch
+  am Code; (9) die Id-Menge als Parameter (meine Verdichtung) erzeugte eine stille Abhängigkeit von der Aufrufreihenfolge
+  – zurückgenommen.
+- *Nicht übernommen:* (7, zweiter Teil) die Aufzählung der vier Tank-Aktionen statt einer Fähigkeitsprüfung – die Liste
+  ist nicht durch eine Erweiterung veraltet, ein Suchlauf über das Aktionsblatt träfe mehr als die Flächenangriffe; ein
+  neuer Tank-Job käme in die Liste (im Konzept als Grenze). (10) eine gemeinsame Konstante für 0xE0000000 – verschöbe die
+  Ausnahme nur, Upstream-Zeilen blieben beim Literal.
+- *Modell nachgezogen:* Binden örtlich (GATHER: in der Fläche, GATHT: dazu am Tank); Ergebnisse unverändert.
+
+**Bilanz des Aggro-Halts (seine neue Regel, A355, sofort angewandt):** Konzept 04, „Bilanz im Kampf". Stärke: keine
+Fläche am Halt (22 von 22 Halten im Modell), kein Zusatz-Pull. Schwäche: ein GCD Verzögerung, wo der Tank bleibt.
+Bedrohungen beseitigt (2–4); verbleibend: ein passiver Gegner in der Fläche selbst, ein Gegner im Kampf ohne Flag und
+Ziel. Überwiegt: der Nutzen.
+
+**Falsifikation.** *Kein Befund:* widerlegt für den TTK-Defekt (Selbsttest des Modells) und für die Review-Punkte 2–6
+(am Code). *Option falsch:* Die Verdichtungen ändern kein Verhalten – `FrameCached` hält 15 ms wie die Handfassung; die
+Rekursion, gegen die die Handfassung den Zeitstempel vor der Berechnung setzte, tritt nicht auf (`FindAreaDanger` ruft
+`AreaDefenseDanger` nicht). *Ausgeliefert, nichts ändert sich:* für die Verdichtungen gewollt; für den Aggro-Halt im
+Freien und in Feldoperationen bleibt nur die Prüfung in der Fläche.
+
+*Prüfgrad:* statisch, Modelle mit Selbsttest, Compile; im Spiel nicht beobachtet.
+
+### A355 · Arbeitsregel: kausale Kette und Bilanz jeder Entscheidung im Spielgeschehen (25.10.2026)
+
+Seine Vorgabe (25.10.2026): „immer mit kausaler kette, welche auswirkungen hat entscheidung. generelle regel:
+gesamtheitliche und kausale betrachtung. was sind die INHALTLICHEN auswirkungen auf das spielgeschehen. wo sind sie
+negativ, wo positiv? was überwiegt? (SWOT-Analyse und beseitigung von threats und weaknesses). eigentlich müsste die
+regel bereits in einer form existieren … prüfen und logisch korrekt per loop in claude.md einbauen, ergänzen,
+ausweiten."
+
+- *Vorhanden:* A97 hatte die SWOT-Analyse geprüft und nur die Zelle *Opportunities* aufgenommen (Möglichkeitssinn,
+  TOWS Stärke × Chance); die Abwägung (Stufe 3) maß Schweregrad, Dringlichkeit, Aufwand, Blast Radius, Folgekosten – den
+  Preis einer Änderung, nicht ihre Wirkung im Kampf in beide Richtungen. „Maßstab: das Spielgeschehen" verlangte, was im
+  Kampf anders wird, nicht, wo es schadet und was überwiegt.
+- *Eingearbeitet, keine neue Stufe:* „Maßstab: das Spielgeschehen" – jede Entscheidung (meine, Upstreams, eine Option
+  für ihn) in der kausalen Kette bis ins Spielgeschehen, mit Folgen zweiter Ordnung, Bilanz als SWOT gewichtet mit der
+  Wahrscheinlichkeit, Schwächen und Bedrohungen vor der Auslieferung beseitigt; Stufe 3 als SWOT je Option; Stufe 5
+  beseitigt Schwächen und Bedrohungen der gewählten Option; Definition of Done, Prüfpunkt vor der Fertigmeldung und
+  Vorlagen an ihn tragen die Bilanz. Der Grund beim Möglichkeitssinn („misst nie Ertrag") war damit überholt und ist
+  berichtigt; `docs/method/01-loop-evaluation-methods.md` nachgezogen.
+- *Gegen die ganze Datei geprüft:* zehn Stufen, vier Querschnittsanforderungen unverändert; Verweise nennen Titel;
+  „Sicherheit vor Schaden gewichtet mit der Wahrscheinlichkeit" ist dieselbe Gewichtung, kein Widerspruch.
+
 ---
 ## B · Commit-Register (Fork vs. `upstream/main`)
 
@@ -10621,3 +10719,4 @@ Die offene Arbeit dazu — Reihenfolge und Abbruchbedingung der Nachprüfung —
 | C126 | A350 und die Fassung von 1feaf6201: eine Schadensfläche fällt erst, wenn keiner der Gegner in ihrem Radius sich im letzten GCD bewegt hat | Gegner bewegen sich in der Fläche, ohne sie zu verlassen (sein Hinweis, 25.10.2026); verschwendet wird sie nur von einem, der hinausgeht. Folge: Unter einem Rudel, das sich am Tank verschiebt, wäre die Fläche nie gefallen (Modell), Doton dauernd Katon gewichen | A351: Bedingung „seit einem GCD darin, keiner hat sie verlassen" |
 | C127 | A351 und die Fassung von eb2bbf95c: eine Schadensfläche fällt erst, wenn keiner, der im letzten GCD in ihr war, sie verlassen hat | Im großen Pull drängt ein Nachrückender einen anderen hinaus und nimmt seinen Platz ein (sein Hinweis, 25.10.2026); die Fläche bleibt voll. Folge: Im Modell war sie solange das Rudel blieb nur 14–51 % der Zeit frei | A352: Vergleich der Lebenden zu Beginn des GCD mit den jetzt Drinnen |
 | C128 | A352 und der Einstellungstext von 3962e53e7: „im Wall-to-wall fällt die Fläche, wo das Rudel sich gesammelt hat, nicht wo der Tank hielt" | Hält der Tank, um ein neues Rudel zu binden, steht dieses bis zu seinem Flächenangriff still und gilt nach seiner Spur als geblieben (sein Hinweis, 25.10.2026). Folge: Im Modell fiel die Fläche an jedem solchen Halt, 0–9 von 45 Treffern | A353: kein ungebundener Gegner in der Fläche oder in Reichweite eines Tanks, keiner im letzten GCD gebunden |
+| C129 | A353, 1fd640baa: jede Fläche wartet einen GCD nach dem Binden irgendeines Gegners, und ein ungebundener Gegner in Reichweite eines Tanks hält sie überall zurück | Review (A354): Eine Add-Welle am anderen Ende des Raums sperrte jede Fläche einen GCD; ein passiver Gegner am Tank im Freien sperrte sie dauerhaft; ein außer Sicht gezogenes Rudel zählte nicht | A354: nur Gegner in der Fläche oder am Tank, der Ungebundene am Tank nur in Instanzen ohne Feldoperation, das erste Sehen im Kampf zählt als Binden |
