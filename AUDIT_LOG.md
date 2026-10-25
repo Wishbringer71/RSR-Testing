@@ -10726,6 +10726,43 @@ Sein Auftrag (25.10.2026): „danach branch nach main, compile, release, neuen b
 
 *Prüfgrad:* Zustand gemessen (Fetch beider Gegenstellen, Prüfläufe auf GitHub).
 
+### A364 · Auswertung DefenseTrace 24.–25.10.2026 (Builds 43249c4f9 bis b14fe783a) und gelernte Dateien (25.10.2026)
+
+Sein Upload vom 25.10.2026 (`RotationSolver.7z`): `DefenseTrace.log` mit fünf Sitzungen, die ergiebigen zwei als
+Beschwörer im Dungeon (1fd640baa) und als Weißmagier in Achter-Inhalten (b14fe783a, vor A361), dazu die gelernten
+Tabellen. Namen anderer Spieler stehen im Protokoll und nirgends im Repository.
+
+- *Schlaf, Befund (Defekt):* „sleep stopped" stand zweimal bei Wirken, die 0,1 und 0,3 s vor ihrer Zeit endeten, 1,2 s
+  nach der Landung – so viel Rest hatten sie beim Eintreffen. Am Code: Endete der Zauberbalken früher als Laufzeit einer
+  Anfrage und ein Bild, buchte `SleepInterruptWatch` sofort einen Abbruch und sah nicht mehr nach der Wirkung. Der
+  Balken endet im Client aber von selbst früher: Ein Wirken ging am 22.10. 0,5 s vor seiner Zeit los. In
+  `SleepOutcomes.json` stehen damit drei von vier Abbrüchen vermutlich falsch (0,1–0,3 s früh), die Haltezeit stieg
+  auf 1,18 s – die Regel hält diese Aktionen für stoppbar und versucht weiter Schlaf auf sie. *Behoben:* Ein frühes Ende
+  zählt erst nach einem GCD ohne Wirkung als Abbruch; kommt die Wirkung, ist es „did not stop" mit dem frühen Ende des
+  Balkens. Die falschen Einträge bleiben in seiner Datei, bis er sie löscht (seine Entscheidung zum Neuanfang einer
+  gelernten Tabelle, kein Knopf).
+- *Doppelter Tankbuster (Defekt):* Marker auf beiden Tanks; der Weißmagier setzte Göttlichen Segen und Wasserschleier
+  auf denselben, dessen Treffer die Barriere ganz nahm, der andere nahm 74 % unter einer Verwundbarkeit. Am Code: Unter
+  mehreren Tankbuster-Zielen entschied nur die Gesundheit (`FindBeAttackedTarget`) bzw. die Reihenfolge
+  (`FindTankbusterTarget`). *Behoben:* `LeastProtected` – das Ziel mit den wenigsten schadensmindernden Wirkungen
+  (Wirktextwert oder Barriere, jede Quelle); bei einem Ziel oder Gleichstand wie bisher. Gilt für jede Hilfe dieser
+  Zieltypen, auch die der Tanks. *Schluss, nicht belegt:* dass „Hybris" beide Tanks trifft; das Protokoll zeigt den
+  Treffer auf dem einen, der andere kann ihn ganz in der Barriere genommen haben.
+- *Kleiner Tankbuster:* beide Mittel auf einen gemessenen 20-%-Tankbuster – als offene Arbeit eingetragen
+  („Heiler-Hilfe auf einen kleinen gemessenen Tankbuster").
+- *Ohne Befund:* Sanctus-Streckung des Weißmagiers (hält, solange die Betäubung beim Eintreffen noch liegt);
+  Flächen-Überspringen kleiner Wirken (14 %, niemand fiel unter die Linie); Schadensflächen des Beschwörers (kurze
+  Zeiten im Feld, weil die Gegner darin starben, nicht weil sie gingen); Laufzeit im Mittel 0,55 ms je Bild, Spitzen
+  über 16 ms in 3 von 178 Kämpfen. Die Einträge ohne Gebiet in `TankbusterMarkerWithoutHit.json` stammen von vor A338
+  und werden absichtlich übergangen.
+
+**Falsifikation.** *Kein Defekt (Schlaf):* Ein Schlaf könnte ein Wirken spät abbrechen. Dann käme keine Wirkung – genau
+das prüft die neue Regel; die alte buchte auch Wirken, deren Wirkung danach kam. *Option falsch (Ziel):* Zwei Marker,
+von denen nur einer trifft, bekämen beide eine Hilfe; vorher bekam einer alle. *Ausgeliefert, nichts ändert sich:* wenn
+er Schlaf als Stopper nicht nutzt, oder kein doppelter Tankbuster kommt.
+
+*Prüfgrad:* statisch am Code und am Protokoll, Compile; im Spiel nicht beobachtet.
+
 ---
 ## B · Commit-Register (Fork vs. `upstream/main`)
 

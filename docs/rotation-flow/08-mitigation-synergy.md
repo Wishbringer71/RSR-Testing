@@ -1043,6 +1043,10 @@ Seine Protokolle vom 19.–22.10.2026 (Weißmagier, A334):
   Wirkung zu Ende – abgebrochen oder ins Leere gegangen, das Protokoll zeigt es nicht. *Schluss, nicht belegt:* Der
   Status greift einen Augenblick nach dem Eintreffen der Wirkung.
 - *Widerstand:* 13 Gegnerarten, darunter nicht als Boss markierte Gegner von Allianzraids und Prüfungen.
+- *Knappe Enden sind keine Abbrüche* (Protokolle vom 22.–25.10.2026, A364): Ein Wirken ging 0,5 s vor seiner Zeit los,
+  also kann der Zauberbalken im Client von selbst so früh enden. Drei als Abbruch gezählte Wirken endeten 0,1 bis 0,3 s
+  früher, 0,5 bis 1,2 s nach der Landung – so viel Rest hatten sie beim Eintreffen; sie liefen zu Ende. Gezählt wird
+  ein Abbruch seitdem nur, wenn auf das frühe Ende keine Wirkung folgt (unten, „Protokoll").
 - *Unterbrechbares Wirken:* ein Versuch, ohne Ausgang.
 - *Was fehlte:* Ein Weißmagier schlief Gegner ein, die ein Sanctga mit betäubt hätte; das Gelernte begann jede Sitzung
   leer, sodass jede immune Art und jede nicht stoppbare Aktion wieder einen GCD kostete.
@@ -1163,7 +1167,8 @@ Wirken zur Wirkung hängt an der Verbindung und wird in jeder Sitzung neu gemess
 | gewählt, aber nicht gewirkt | „sleep not cast on …" |
 | widerstanden | „sleep resisted by …: immune, its kind is stored" bzw. „… after N sleep(s) in this fight: worn down" |
 | unverwundbar | „sleep did not reach …" (nur für die Sitzung) |
-| Wirken bricht ab | „sleep stopped …" mit der Zeit seit der Landung |
+| Wirken bricht ab: der Zauberbalken endet früher als Laufzeit einer Anfrage und ein Bild, und binnen eines GCD folgt keine Wirkung | „sleep stopped …" mit der Zeit seit der Landung |
+| Zauberbalken endet früh, die Wirkung folgt | „sleep did not stop …", mit dem frühen Ende des Balkens |
 | zu spät | „sleep did not stop …; too late" mit dem neuen nötigen Rest |
 | nicht stoppbar | „sleep did not stop …; … not tried on it again" |
 | nach dem Ende gelandet, Gegner gefallen, zugleich betäubt | wie bisher |
@@ -1177,6 +1182,8 @@ Wirken zur Wirkung hängt an der Verbindung und wird in jeder Sitzung neu gemess
 - Universell zuerst: Die Regel gilt für jede Rolle mit einem Schlaf; der Stopper des Jobs ist ein Einhängepunkt, den
   bisher nur der Weißmagier füllt.
 - Ein Fehlschlag mit wenig Rest beweist den falschen Zeitpunkt, nicht eine nicht stoppbare Aktion.
+- Ob ein Wirken losging, zeigt seine Wirkung im Effekt-Handler, nicht das Ende des Zauberbalkens: Der Balken endet im
+  Client unterschiedlich früh, die Wirkung kommt nur, wenn das Wirken ausgeführt wurde.
 - Voreinstellung an, nach seiner Regel (29.09.2026).
 
 ### Ausgeschlossen

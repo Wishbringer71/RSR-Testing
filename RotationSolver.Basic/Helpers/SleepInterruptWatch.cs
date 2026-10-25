@@ -50,6 +50,10 @@ public static class SleepInterruptWatch
 		public DateTime ExpectedEnd;
 		public bool CastGone;
 		public DateTime CastGoneAt;
+
+		// How long before its time the cast bar ended, and whether a stun stood on the enemy then.
+		public float EndedEarlyBy;
+		public bool StunnedAtEnd;
 	}
 
 	// Kinds that could not be slept this session without that proving an immunity (an invulnerable phase).
@@ -440,7 +444,8 @@ public static class SleepInterruptWatch
 		});
 
 		var line = $"sleep did not stop {watch.Aim.ActionName} #{actionId} of {watch.Aim.EnemyName}: it went off"
-			+ $" {(DateTime.Now - watch.AppliedAt).TotalSeconds:F1} s after the sleep landed, {watch.LeftAtLanding:F1} s before its end";
+			+ $" {(DateTime.Now - watch.AppliedAt).TotalSeconds:F1} s after the sleep landed, {watch.LeftAtLanding:F1} s before its end"
+			+ (watch.CastGone && watch.EndedEarlyBy > 0f ? $", its cast bar gone {watch.EndedEarlyBy:F1} s early" : string.Empty);
 		DefenseTrace.Line(IsUnstoppable(actionId)
 			? $"{line}; cut-off casts stopped within {_holdTime:F1} s, so not tried on it again"
 			: $"{line}; too late - a sleep now has to land {LandingMargin:F1} s before the end");
@@ -505,40 +510,45 @@ public static class SleepInterruptWatch
 
 			watch.CastGone = true;
 			watch.CastGoneAt = now;
-
-			// Ended before its time by more than the measured round trip and the last frame - what a natural end can
-			// be off by on the client: the cast was cut off. A stun that landed at the same time could be the cause as
-			// well; then the answer stays open.
-			var early = Math.Max(0f, TankbusterForecast.RoundTrip) + ECommons.DalamudServices.Svc.Framework.UpdateDelta.TotalSeconds;
-			if ((watch.ExpectedEnd - now).TotalSeconds > early)
-			{
-				_watch = null;
-				if (StunWatch.StunLeft(enemy) > 0f)
-				{
-					DefenseTrace.Line($"{watch.Aim.ActionName} #{watch.Aim.ActionId} of {watch.Aim.EnemyName} stopped "
-						+ $"{(watch.ExpectedEnd - now).TotalSeconds:F1} s early, but a stun landed on it too - not counted");
-					return;
-				}
-
-				var took = (float)(now - watch.AppliedAt).TotalSeconds;
-				Record(watch.Aim.ActionId, reading =>
-				{
-					reading.Stopped++;
-					reading.LongestStop = Math.Max(reading.LongestStop, took);
-				});
-				DefenseTrace.Line($"sleep stopped {watch.Aim.ActionName} #{watch.Aim.ActionId} of {watch.Aim.EnemyName}: "
-					+ $"the cast ended {(watch.ExpectedEnd - now).TotalSeconds:F1} s early, {took:F1} s after the sleep landed"
-					+ (watch.Aim.Interruptible ? "; the cast was interruptible, so another player's interrupt may have done it" : string.Empty));
-				return;
-			}
+			watch.EndedEarlyBy = (float)(watch.ExpectedEnd - now).TotalSeconds;
+			watch.StunnedAtEnd = StunWatch.StunLeft(enemy) > 0f;
+			return;
 		}
 
-		// Ended at its time: whether it went off shows in its effect, which arrives after the cast bar.
-		if ((now - watch.CastGoneAt).TotalSeconds > DataCenter.DefaultGCDTotal)
+		// The answer is the cast's effect, which arrives after the cast bar: ObserveEnemyAction settles a cast that went
+		// off. Until A364 a bar that ended before its time by more than the round trip and a frame counted as stopped at
+		// once, and the effect was no longer watched for - but a cast bar the client shows can end that early by itself:
+		// one went off 0.5 s before its time, and three "stops" in his traces of 22.-25.10.2026 ended 0.1-0.3 s early,
+		// 0.5-1.2 s after the sleep landed, as a cast that ran its course does.
+		if ((now - watch.CastGoneAt).TotalSeconds <= DataCenter.DefaultGCDTotal)
 		{
-			_watch = null;
-			DefenseTrace.Line($"sleep on {watch.Aim.EnemyName}: {watch.Aim.ActionName} #{watch.Aim.ActionId} ended at its time with no effect seen - no answer");
+			return;
 		}
+
+		_watch = null;
+		var early = Math.Max(0f, TankbusterForecast.RoundTrip) + ECommons.DalamudServices.Svc.Framework.UpdateDelta.TotalSeconds;
+		if (watch.EndedEarlyBy <= early)
+		{
+			DefenseTrace.Line($"sleep on {watch.Aim.EnemyName}: {watch.Aim.ActionName} #{watch.Aim.ActionId} ended at its time with no effect seen - no answer");
+			return;
+		}
+
+		if (watch.StunnedAtEnd)
+		{
+			DefenseTrace.Line($"{watch.Aim.ActionName} #{watch.Aim.ActionId} of {watch.Aim.EnemyName} stopped "
+				+ $"{watch.EndedEarlyBy:F1} s early with no effect, but a stun landed on it too - not counted");
+			return;
+		}
+
+		var took = (float)(watch.CastGoneAt - watch.AppliedAt).TotalSeconds;
+		Record(watch.Aim.ActionId, reading =>
+		{
+			reading.Stopped++;
+			reading.LongestStop = Math.Max(reading.LongestStop, took);
+		});
+		DefenseTrace.Line($"sleep stopped {watch.Aim.ActionName} #{watch.Aim.ActionId} of {watch.Aim.EnemyName}: "
+			+ $"the cast ended {watch.EndedEarlyBy:F1} s early, {took:F1} s after the sleep landed, and no effect followed"
+			+ (watch.Aim.Interruptible ? "; the cast was interruptible, so another player's interrupt may have done it" : string.Empty));
 	}
 
 	// Adds one outcome to the stored table and saves it, as the area table does after each rated hit.

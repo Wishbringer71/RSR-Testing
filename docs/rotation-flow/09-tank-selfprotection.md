@@ -1230,6 +1230,11 @@ ein Schadensausteiler, ausgeschaltete Einzelabwehr oder eine vorher greifende Pu
 - Unter „Hold mitigation under invulnerability" fällt ein Mitglied heraus, das jeden auf es gerichteten Tankbuster
   unter Heiligem Boden oder Meteoritenfall nimmt (sein Vorschlag vom 04.10.2026). Bei einem Marker oder einer
   Vorhersage gilt das nicht, beide nennen hier keine Einschlagszeit.
+- Zielt ein Tankbuster auf mehrere (ein doppelter Tankbuster auf beide Tanks), geht die Hilfe an das Ziel, auf dem die
+  wenigsten schadensmindernden Wirkungen stehen – Minderung mit Wirktextwert oder Barriere, von wem auch immer
+  (`LeastProtected`, A364); bei Gleichstand wie bisher. Bis dahin entschied nur die Gesundheit, und alle Hilfe ging an
+  denselben: Im Protokoll vom 25.10.2026 setzte ein Weißmagier Göttlichen Segen und Wasserschleier auf einen Tank,
+  dessen Treffer die Barriere ganz nahm, während der andere 74 % seiner LP nahm. Du selbst bleibst zuerst.
 
 **Entscheidung** (Stufe „Tanks", `CustomRotation.HelpTankbusterTarget`): in der Einzelabwehr, nie auf dich – deine
 eigene Abwehr und ihre Optionen decken dich –, je Tank unter seiner Option:

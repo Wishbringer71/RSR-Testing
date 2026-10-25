@@ -23,6 +23,18 @@ are not reconstructed here.
 
 ## Unreleased
 
+### Behaviour change in RotationSolver.Basic: several tankbuster targets, the help goes to the least protected
+
+`TargetType.Tankbuster` and `TargetType.BeAttacked` pick, among several members a tankbuster is aimed at, the one with
+the fewest damage-reducing effects standing - a rated mitigation or a barrier, from anyone; one target, or all equal, as
+before. A healer's or tank's single-target help over a tankbuster on both tanks now spreads over them instead of
+landing on one.
+
+### Behaviour change in RotationSolver.Basic: a sleep counts as stopping a cast only when no effect follows
+
+`SleepInterruptWatch` waits a GCD after a cast bar that ends early: the cast's effect means it went off. Before, an
+early end alone counted as a stop, and client cast bars end early on their own.
+
 ## 7.5.7.7+wsh1
 
 ### Removed in RotationSolver.Basic: two settings without a reader

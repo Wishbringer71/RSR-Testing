@@ -3033,6 +3033,9 @@ public struct ActionTargetInfo(IBaseAction action)
 				}
 			}
 
+			// Several aimed at, the help goes to the one standing with the least protection (LeastProtected).
+			attachedT = LeastProtected(attachedT);
+
 			if (attachedT.Count == 0)
 			{
 				foreach (var t in battleChara)
@@ -3218,7 +3221,7 @@ public struct ActionTargetInfo(IBaseAction action)
 				return null;
 			}
 
-			IBattleChara? other = null;
+			List<IBattleChara> others = [];
 			foreach (var t in battleChara)
 			{
 				if (!ObjectHelper.IsAlive(t) || t.IsConditionCannotTarget() || !IsTankbusterTargetToProtect(t))
@@ -3231,10 +3234,66 @@ public struct ActionTargetInfo(IBaseAction action)
 					return t;
 				}
 
-				other ??= t;
+				others.Add(t);
 			}
 
-			return other;
+			// Several others aimed at, the help goes to the one standing with the least protection (LeastProtected).
+			others = LeastProtected(others);
+			return others.Count > 0 ? others[0] : null;
+		}
+
+		// Of several members a tankbuster is aimed at, those standing with the fewest damage-reducing effects - a rated
+		// mitigation (DefensiveValues.MitigationByStatusId) or a barrier (StatusHelper.ShieldStatus), from anyone.
+		// Without it every help went to the same one of them, by health: with two tanks under one double tankbuster
+		// a White Mage put Divine Benison and Aquaveil on one tank, whose hit the barrier took whole, while the other
+		// took 74 % of his HP under a vulnerability (his trace of 25.10.2026, A364). One member, or all equal: as given.
+		static List<IBattleChara> LeastProtected(List<IBattleChara> aimedAt)
+		{
+			if (aimedAt.Count <= 1)
+			{
+				return aimedAt;
+			}
+
+			var fewest = int.MaxValue;
+			List<IBattleChara> least = [];
+			foreach (var t in aimedAt)
+			{
+				var count = ProtectionsOn(t);
+				if (count < fewest)
+				{
+					fewest = count;
+					least.Clear();
+				}
+
+				if (count == fewest)
+				{
+					least.Add(t);
+				}
+			}
+
+			return least;
+		}
+
+		static int ProtectionsOn(IBattleChara member)
+		{
+			var count = 0;
+			var statuses = member.StatusList;
+			if (statuses == null)
+			{
+				return 0;
+			}
+
+			foreach (var status in statuses)
+			{
+				if (status != null && status.StatusId != 0
+					&& (DefensiveValues.MitigationByStatusId.ContainsKey(status.StatusId)
+						|| Array.IndexOf(StatusHelper.ShieldStatus, (StatusID)status.StatusId) >= 0))
+				{
+					count++;
+				}
+			}
+
+			return count;
 		}
 
 		//TODO: Capture

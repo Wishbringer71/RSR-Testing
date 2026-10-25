@@ -135,6 +135,20 @@ dungeon runs the deaths fell from 19 to 5 and the time under 30 % to a third; wi
 same direction. Setting: "Hold the big mitigation and Rampart in a pull until your health needs them" (on), with
 "Health the big mitigation waits for" (30 %).
 
+## A tankbuster on both tanks: the help goes to the one less protected
+
+When a tankbuster is aimed at several members - a double tankbuster on both tanks -, a healer's or tank's single-target
+help went to the same one of them every time, chosen by health: a White Mage put Divine Benison and Aquaveil on one
+tank, whose hit the barrier took whole, while the other took 74 % of his HP. Now each help goes to the target standing
+with the fewest mitigations and barriers. With one target nothing changes.
+
+## Sleep: a cast counts as stopped only when nothing follows
+
+"Stop an enemy's cast with the job's stun or a sleep (experimental)" learned casts as stopped when their cast bar ended
+a little early - which cast bars do on their own -, and then kept sleeping enemies whose casts it could not stop. A stop
+now counts only when no effect follows within a GCD. Readings learned before can be wrong: delete
+`SleepOutcomes.json` to start that table over.
+
 ## Without a living healer, your defence is spent to keep you alive
 
 Once your healer has died in a fight, nothing restores what you lose until it ends, and every second you stay alive is

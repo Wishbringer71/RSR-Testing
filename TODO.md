@@ -19,10 +19,11 @@ Durchgang des Einstellungs-Audits, Rotationseinstellung für Rotationseinstellun
 Abwehr ohne Heiler ist umgesetzt (A361); die Phönixfeder daraus kommt als Sicherheitspunkt vor den Schaden.
 
 1. Phönixfeder seit 7.3: 8 s Wirken statt Einschub
-2. Rotationen gegen The Balance abgleichen
-3. Six-sided Star und Flamethrower
-4. AoE-Schwelle an drei Orten
-5. Audit der gesamten Codebasis
+2. Heiler-Hilfe auf einen kleinen gemessenen Tankbuster
+3. Rotationen gegen The Balance abgleichen
+4. Six-sided Star und Flamethrower
+5. AoE-Schwelle an drei Orten
+6. Audit der gesamten Codebasis
 
 Danach technische Schuld, soweit ihre Auflösungsbedingung erfüllt ist. Warten auf Daten: unten.
 
@@ -40,6 +41,14 @@ Inhalte im Kampf erlaubt (Fan-Wiki). *Nächster Schritt:* am Code klären, ob ei
 Fähigkeitenpfad den GCD blockiert, ob Bewegung oder eine angesagte Mechanik das Wirken abbricht, was in den 8 s an
 Abwehr fehlt, und ob eine Tinktur im Burst die Feder für ihre Wiederverwendung sperrt (und umgekehrt). *Konzept:* 11,
 „Die Phönixfeder".
+
+### Heiler-Hilfe auf einen kleinen gemessenen Tankbuster · N
+
+*Im Kampf:* Ein Weißmagier setzte Göttlichen Segen und Wasserschleier auf einen Tankbuster, den die Tabelle mit 20 % der
+LP misst (Protokoll vom 25.10.2026, A364); beim nächsten schweren Treffer fehlen sie. Der Plan des Tanks bemisst seine
+eigene Abwehr am gemessenen Treffer, die Hilfe der Heiler nicht. *Nächster Schritt:* Loop – die Hilfe für einen
+gemessenen Tankbuster nach dem bemessen, was der Treffer beim Ziel übrig lässt. *Konzept:* 09, „Hilfe für das Ziel eines
+Tankbusters".
 
 ### Rotationen gegen The Balance abgleichen · N
 
