@@ -273,7 +273,8 @@ public sealed class NIN_Reborn : NinjaRotation
 		if ((!InMug || InTrickAttack)
 			&& (!BunshinPvE.Cooldown.WillHaveOneCharge(10) || HasPhantomKamaitachi || MugPvE.Cooldown.WillHaveOneCharge(2)))
 		{
-			if (HellfrogMediumPvE.CanUse(out act, skipAoeCheck: !BhavacakraPvE.EnoughLevel))
+			if (HellfrogMediumPvE.CanUse(out act, skipAoeCheck: !BhavacakraPvE.EnoughLevel)
+				&& (!BhavacakraPvE.EnoughLevel || HellfrogOutdamagesBhavacakra(HellfrogMediumPvE.Target.AffectedTargets.Length)))
 			{
 				return true;
 			}
@@ -291,7 +292,8 @@ public sealed class NIN_Reborn : NinjaRotation
 
 		if (Ninki == 100)
 		{
-			if (HellfrogMediumPvE.CanUse(out act, skipAoeCheck: !BhavacakraPvE.EnoughLevel))
+			if (HellfrogMediumPvE.CanUse(out act, skipAoeCheck: !BhavacakraPvE.EnoughLevel)
+				&& (!BhavacakraPvE.EnoughLevel || HellfrogOutdamagesBhavacakra(HellfrogMediumPvE.Target.AffectedTargets.Length)))
 			{
 				return true;
 			}
@@ -348,11 +350,14 @@ public sealed class NIN_Reborn : NinjaRotation
 		// Checks for Kassatsu status to prioritize high-impact Ninjutsu due to its buff.
 		if (HasKassatsu)
 		{
-			if ((DeathBlossomPvE.CanUse(out _) || HakkeMujinsatsuPvE.CanUse(out _)) && GokaMekkyakuPvE.EnoughLevel && !IsLastAction(false, GokaMekkyakuPvE) && GokaMekkyakuPvE.IsEnabled && ChiPvE.Info.IsQuestUnlocked())
+			// Goka Mekkyaku on the enemies it reaches against Hyosho Ranryu, by the tooltips' potencies: from two enemies
+			// at level 100 rather than from the three Death Blossom needs (A345).
+			var goka = GokaMekkyakuPvE.EnoughLevel && GokaOutdamagesHyosho(DeathBlossomPvE.CanUse(out _) || HakkeMujinsatsuPvE.CanUse(out _));
+			if (goka && !IsLastAction(false, GokaMekkyakuPvE) && GokaMekkyakuPvE.IsEnabled && ChiPvE.Info.IsQuestUnlocked())
 			{
 				SetNinjutsu(GokaMekkyakuPvE);
 			}
-			if (!DeathBlossomPvE.CanUse(out _) && !HakkeMujinsatsuPvE.CanUse(out _) && HyoshoRanryuPvE.EnoughLevel && !IsLastAction(false, HyoshoRanryuPvE) && HyoshoRanryuPvE.IsEnabled && JinPvE.Info.IsQuestUnlocked())
+			if (!goka && HyoshoRanryuPvE.EnoughLevel && !IsLastAction(false, HyoshoRanryuPvE) && HyoshoRanryuPvE.IsEnabled && JinPvE.Info.IsQuestUnlocked())
 			{
 				SetNinjutsu(HyoshoRanryuPvE);
 			}
@@ -380,9 +385,14 @@ public sealed class NIN_Reborn : NinjaRotation
 				if ((!HasDoton && !IsMoving && !IsLastGCD(true, DotonPvE) && (!TenChiJinPvE.Cooldown.WillHaveOneCharge(6)) && DotonPvE.EnoughLevel)
 					|| (!HasDoton && !IsLastGCD(true, DotonPvE) && !TenChiJinPvE.Cooldown.IsCoolingDown && DotonPvE.EnoughLevel))
 				{
-					if (JinPvE.CanUse(out _) && DotonPvE.IsEnabled && JinPvE.Info.IsQuestUnlocked())
+					// Doton only where the enemies live through it, else Katon (A345).
+					if (DotonOutlived && JinPvE.CanUse(out _) && DotonPvE.IsEnabled && JinPvE.Info.IsQuestUnlocked())
 					{
 						SetNinjutsu(DotonPvE);
+					}
+					else if (!DotonOutlived && KatonPvE.EnoughLevel && KatonPvE.IsEnabled && ChiPvE.Info.IsQuestUnlocked())
+					{
+						SetNinjutsu(KatonPvE);
 					}
 				}
 				else if (KatonPvE.EnoughLevel && KatonPvE.IsEnabled && ChiPvE.Info.IsQuestUnlocked())

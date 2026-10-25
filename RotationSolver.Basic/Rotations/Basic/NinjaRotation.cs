@@ -169,6 +169,72 @@ public partial class NinjaRotation
 	/// </summary>
 	public static bool IsHidden => StatusHelper.PlayerHasStatus(true, StatusID.Hidden);
 
+	#region Area or single target, by the tooltips' potencies
+	private static readonly System.Text.RegularExpressions.Regex MeisuiBonus =
+		new(@"Meisui Bonus: Potency is increased to (?<value>\d[\d,]*)", System.Text.RegularExpressions.RegexOptions.Compiled);
+
+	private static readonly System.Text.RegularExpressions.Regex StatedDuration =
+		new(@"Duration: (?<value>\d{1,3})s", System.Text.RegularExpressions.RegexOptions.Compiled);
+
+	/// <summary>
+	/// Whether Hellfrog Medium (Deathfrog Medium under Higi) on <paramref name="targets"/> enemies deals more than
+	/// Bhavacakra (Zesho Meppo) on one - raised under Meisui to the figure its tooltip names. Both cost the same 50
+	/// Ninki. At level 100: from two enemies, unless Meisui raises the single hit (concept 14, A345).
+	/// </summary>
+	/// <param name="targets">The enemies Hellfrog Medium would hit.</param>
+	/// <returns>True when it deals more, or a figure cannot be read.</returns>
+	protected bool HellfrogOutdamagesBhavacakra(int targets)
+	{
+		var area = HellfrogMediumPvE.AdjustedID;
+		var single = BhavacakraPvE.AdjustedID;
+		if (!ActionTooltip.TryPotencyOn(area, targets, out var areaTotal) || !ActionTooltip.TryPotencyOn(single, 1, out var singleTotal))
+		{
+			return true;
+		}
+
+		if (StatusHelper.PlayerHasStatus(true, StatusID.Meisui) && ActionTooltip.TryStated(single, MeisuiBonus, out var raised))
+		{
+			singleTotal = raised;
+		}
+
+		return areaTotal > singleTotal;
+	}
+
+	/// <summary>
+	/// Whether Kassatsu's ninjutsu should be Goka Mekkyaku rather than Hyosho Ranryu: Goka on the enemies its own
+	/// target selection reaches deals more than Hyosho on one (Kassatsu raises both alike). At level 100 from two enemies.
+	/// Where the AoE setting is not full or a figure cannot be read, <paramref name="fallback"/> answers, the
+	/// rotation's former test.
+	/// </summary>
+	/// <param name="fallback">The answer without the comparison.</param>
+	/// <returns>True when Goka Mekkyaku deals more.</returns>
+	protected bool GokaOutdamagesHyosho(bool fallback)
+	{
+		if (Service.Config.AoEType != Configuration.ConfigTypes.AoEType.Full)
+		{
+			return fallback;
+		}
+
+		var targets = GokaMekkyakuPvE.TargetInfo.FindTarget(true, true, true, default)?.AffectedTargets.Length ?? 0;
+		if (targets < 1 || !ActionTooltip.TryPotencyOn(GokaMekkyakuPvE.ID, targets, out var goka)
+			|| !ActionTooltip.TryPotencyOn(HyoshoRanryuPvE.ID, 1, out var hyosho))
+		{
+			return fallback;
+		}
+
+		return goka > hyosho;
+	}
+
+	/// <summary>
+	/// Whether the enemies live through Doton's duration, its tooltip's "Duration": The Balance, Ninja Basic Guide, "Use
+	/// on 2+ targets if targets remain in it for the full duration". Read against the average time to kill of the
+	/// hostiles; true while that is unknown or the duration cannot be read, as before.
+	/// </summary>
+	protected bool DotonOutlived => !DataCenter.IsAverageTTKKnown
+		|| !ActionTooltip.TryStated(DotonPvE.ID, StatedDuration, out var duration)
+		|| DataCenter.AverageTTK >= duration;
+	#endregion
+
 	#region Draw Debug
 	/// <inheritdoc/>
 	public override void DisplayBaseStatus()
@@ -398,7 +464,9 @@ public partial class NinjaRotation
 		setting.ActionCheck = () => Ninki >= 50 && !HasTenChiJin;
 		setting.CreateConfig = () => new ActionConfig()
 		{
-			AoeCount = 3,
+			// Two: 250 (400) on each of two enemies out-damages Bhavacakra's 400 (Zesho Meppo's 700) at level 100;
+			// HellfrogOutdamagesBhavacakra weighs the tooltips on top, Meisui included (A345).
+			AoeCount = 2,
 		};
 	}
 
@@ -487,7 +555,9 @@ public partial class NinjaRotation
 		setting.ActionCheck = () => Ninki <= 50 && DeathfrogMediumPvEReady && !HasTenChiJin;
 		setting.CreateConfig = () => new ActionConfig()
 		{
-			AoeCount = 3,
+			// Two: 250 (400) on each of two enemies out-damages Bhavacakra's 400 (Zesho Meppo's 700) at level 100;
+			// HellfrogOutdamagesBhavacakra weighs the tooltips on top, Meisui included (A345).
+			AoeCount = 2,
 		};
 	}
 

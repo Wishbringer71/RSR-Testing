@@ -10002,6 +10002,34 @@ Feindseligkeit gefährdet die Gruppe. *Ausgeliefert, nichts ändert sich:* wenn 
 
 *Prüfgrad:* statisch, Compile; Rechnung mit den Job-Guide-Potenzen; im Spiel nicht beobachtet.
 
+### A345 · Ninja: AoE-Wahl nach den Potenzen von 7.5 (25.10.2026)
+
+Fortsetzung von A344, TODO „Rotationen gegen The Balance abgleichen". `NIN_Reborn` (Upstream d566eda86) entschied
+Goka/Hyosho, Katon/Raiton, Doton und Huton/Suiton an `DeathBlossomPvE.CanUse` (3 Gegner um den Spieler), die
+Ninki-Ausgabe an der AoE-Zahl von Hellfrog Medium (3). The Balance (Ninja Basic Guide, Stand 7.05) nennt teils andere
+Schwellen; nachgerechnet mit dem Job-Guide 7.5 (Bhavacakra 400/550 Meisui, Zesho Meppo 700/850, Hellfrog Medium 250,
+Deathfrog Medium 400 je Gegner, Goka Mekkyaku 850, Hyosho Ranryu 1300, Katon 350, Raiton 740, Raiju 700, Doton 80 je
+Tick über 18 s, Hakke Mujinsatsu 100/120, Kassatsu +30 % auf beide). WrathCombo (Stand 10.10.2026) zählt keine Ziele;
+es trennt Einzel- und Flächentaste und legt Doton nur über einer Gesundheitsschwelle.
+
+- *Gebaut:* Hellfrog/Deathfrog ab 2 mit Meisui-Ausnahme (`HellfrogOutdamagesBhavacakra`, AoE-Zahl 2); Goka nach
+  eigener Reichweite und Potenz (`GokaOutdamagesHyosho`, Rückfall auf die alte Weiche); Doton nur, wenn die
+  Durchschnitts-TTK der Gegner seine Tooltip-Dauer erreicht (`DotonOutlived`), sonst Katon. Upstreams Bedingungszeilen
+  für Doton bleiben unverändert (die 6 s vor Ten Chi Jin sind ihre Zahl); die Prüfung sitzt in der Verzweigung darunter.
+- *Messpunkt:* `ActionTooltip.TryPotencyOn` schreibt einmal je Aktion und Stufe in `DefenseTrace.log`, wenn ein Tooltip
+  keine Potenz nennt – für Maschinist, Black Mage und Ninja dieselbe Stelle.
+- *Nicht gebaut:* Death Blossom/Hakke ohne Doton erst ab 4 – RSR legt Doton ab 3 selbst, die Lücke ist der Anlauf.
+  Ten Chi Jin mit der Flächenfolge bei 2 Gegnern – rechnet sich nur, wenn sie Dotons volle Dauer bleiben.
+- *Folge:* Eine selbst gesetzte AoE-Zahl von Hellfrog Medium steht einmal auf 2 (Upstreams Abgleich der Vorgaben).
+
+**Falsifikation.** *Kein Defekt:* widerlegt durch die Rechnung (zwei Gegner: 500 gegen 400, 800 gegen 700, 1700 gegen
+1300). *Option falsch:* Unter Meisui hält der Vergleich die Frösche zurück; ist eine Zahl unlesbar, gilt die AoE-Zahl
+2 (unter Meisui 50 Potenz zu wenig) bzw. für Goka die alte Weiche. Die Durchschnitts-TTK umfasst alle Gegner, ein Boss
+mit Adds zieht sie nach oben – dann fällt Doton wie bisher. *Ausgeliefert, nichts ändert sich:* bei ausgeschalteter
+AoE oder „Cleave" für Goka; bei Tooltips ohne Potenz zeigt es die Protokollzeile.
+
+*Prüfgrad:* statisch, Compile, Rechnung mit Job-Guide-Potenzen; im Spiel nicht beobachtet.
+
 ---
 ## B · Commit-Register (Fork vs. `upstream/main`)
 

@@ -79,6 +79,17 @@ Checkmate would reach. With all of them in reach, Auto Crossbow goes from six en
 thresholds The Balance gives. The action's AoE count stays the lower limit; where a figure cannot be read, Auto
 Crossbow goes by it as before. DefenseTrace.log notes once per level what was read.
 
+## Ninja: area actions from two enemies where they deal more
+
+The Ninja chose its area actions from three enemies around it. With the potencies since patch 7.5, two of its pairs
+turn at two:
+- Hellfrog Medium (Deathfrog Medium) instead of Bhavacakra (Zesho Meppo) on two enemies, unless Meisui raises the
+  single hit.
+- Goka Mekkyaku instead of Hyosho Ranryu under Kassatsu, counted on the enemies Goka reaches.
+
+Both are weighed with the potencies the tooltips state. Doton now goes down only while the enemies live through its
+duration, as The Balance advises; otherwise Katon. A Hellfrog Medium AoE count you set yourself is set to two once.
+
 ## Black Mage: Foul from two enemies
 
 Foul went out from three enemies, Xenoglossy below that. On two enemies Foul deals 600 and 450 against Xenoglossy's

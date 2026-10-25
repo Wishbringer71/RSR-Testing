@@ -23,6 +23,13 @@ are not reconstructed here.
 
 ## Unreleased
 
+### RotationSolver.Basic: the Ninja weighs its area actions
+
+`NinjaRotation` gains three protected members: `HellfrogOutdamagesBhavacakra(int targets)` (Meisui's raise included),
+`GokaOutdamagesHyosho(bool fallback)` (counts the enemies Goka Mekkyaku reaches) and `DotonOutlived` (the hostiles'
+average time to kill against Doton's duration). Hellfrog Medium and Deathfrog Medium default to an AoE count of two.
+`NIN_Reborn` asks all three.
+
 ### Behaviour change in RotationSolver.Basic: Foul's AoE count is two
 
 `BlackMageRotation`'s Foul now defaults to an AoE count of two instead of three: on two enemies it out-damages

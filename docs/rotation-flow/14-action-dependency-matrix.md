@@ -486,7 +486,7 @@ unter Stufe 68 Heat Blast an die von Blazing Shot.
 Erhoben am 24.10.2026 (A344): die Schwellen, die The Balance je Job nennt, gegen die AoE-Zahlen der Aktionen, wo nötig
 mit den Potenzen von 7.5 aus dem Job-Guide nachgerechnet. Den Potenzvergleich führt `ActionTooltip.TryPotencyOn` und
 `AreaOutdamagesSingle` für alle Jobs an einer Stelle; er liest die Tooltips zur Laufzeit und fällt auf die AoE-Zahl
-zurück, wo eine Zahl fehlt.
+zurück, wo eine Zahl fehlt. `DefenseTrace.log` nennt einmal je Aktion und Stufe einen Tooltip, der keine Potenz nennt.
 
 - *Deckt sich (3+):* Dragoon, Viper, Samurai, Red Mage, Summoner, Bard, Black Mage (AoE-Rotation), Reaper bis auf die
   Fälle unten. Ohne ausdrückliche Zahl im Guide: Monk, Pictomancer, Dancer und die Heiler; nicht nachgerechnet.
@@ -500,11 +500,24 @@ zurück, wo eine Zahl fehlt.
 - *Reaper:* Grim Swathe (140 je Gegner) gegen Unveiled Gibbet/Gallows (440) erst ab 4, gegen Blood Stalk (340) ab 3;
   Guillotine und Grim Reaping mit liegendem Enhanced-Buff ebenso knapp. Die Abweichung liegt bei höchstens 20 Potenz
   je Einsatz. Nicht geändert.
-- *Ninja (offen):* Nach den Potenzen von 7.5 schlagen Hellfrog Medium (250 je Gegner) Bhavacakra (400) und Deathfrog
-  Medium (400) Zesho Meppo (700) schon ab 2 Gegnern, ohne Meisui; Goka Mekkyaku (850) Hyosho Ranryu (1300) ab 2; Death
-  Blossom und Hakke Mujinsatsu die Einzelkombo erst ab 4 (mit Doton ab 3). The Balance (Stand 7.05) nennt teils andere
-  Zahlen, weil die Potenzen seither geändert sind. RSR nimmt überall 3, und `NIN_Reborn` schaltet die ganze AoE-Wahl
-  – Goka, Katon, Doton, Huton – an der AoE-Zahl von Death Blossom um. Das braucht einen Umbau dieser Weiche (TODO).
+- *Ninja* (A345): The Balance steht dort auf 7.05; seither sind die Potenzen geändert, gerechnet ist mit 7.5.
+  `NIN_Reborn` schaltete seine AoE-Wahl an der AoE-Zahl von Death Blossom um (3 Gegner um den Spieler). Das bleibt für
+  die Paare, deren Schwelle 3 ist, und weicht dem Vergleich, wo sie anders liegt:
+  - *Hellfrog Medium statt Bhavacakra* (unter Higi Deathfrog Medium statt Zesho Meppo): 250 (400) je Gegner gegen 400
+    (700) – ab 2 Gegnern, außer Meisui hebt den Einzeltreffer auf 550 (850). AoE-Zahl jetzt 2; darüber entscheidet
+    `HellfrogOutdamagesBhavacakra` mit den Tooltip-Potenzen samt Meisui-Bonus. Bei zwei Gegnern außerhalb von Meisui
+    100 Potenz mehr je 50 Ninki.
+  - *Goka Mekkyaku statt Hyosho Ranryu* unter Kassatsu: 850 je Gegner gegen 1300, Kassatsu hebt beide gleich – ab 2
+    Gegnern. `GokaOutdamagesHyosho` zählt, wen Goka von seinem Ziel aus erreicht; ohne volle AoE-Einstellung oder
+    lesbare Zahl gilt die alte Weiche. Bei zwei Gegnern 400 Potenz mehr je Kassatsu.
+  - *Doton nur, wenn die Gegner seine Dauer überleben* – die Bedingung von The Balance („if targets remain in it for
+    the full duration"). `DotonOutlived` hält die durchschnittliche Zeit bis zum Tod der Gegner gegen die Dauer aus
+    dem Tooltip (18 s); sonst Katon. Solange die Zeit unbekannt ist, wie bisher. WrathCombo nimmt dafür eine
+    Gesundheitsschwelle des Ziels (40 %, Einstellung).
+  - *Unverändert, gerechnet:* Katon statt Raiton ab 3 (350 je Gegner gegen 740 plus den Raiju, den Raiton gewährt, 700
+    statt eines Kombo-GCDs); Huton statt Suiton ab 3; Doton statt Raiton ab 3. *Unverändert, nicht gebaut:* Death
+    Blossom und Hakke Mujinsatsu lohnen ohne liegendes Doton erst ab 4 (110 je Gegner gegen rund 410 der
+    Einzelkombo); RSR legt Doton ab 3 Gegnern selbst, sobald der Ninja steht, die Lücke ist der Anlauf eines Rudels.
 
 ### Dragoon und Viper: Opener
 

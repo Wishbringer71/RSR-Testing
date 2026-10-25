@@ -23,6 +23,7 @@ internal static class ActionTooltip
 	private static readonly object _gate = new();
 
 	private static readonly Regex StatedPotency = new(@"potency of (?<value>\d[\d,]*)", RegexOptions.Compiled);
+	private static readonly HashSet<(uint ActionId, int Level)> _unreadPotency = [];
 	private static readonly Regex StatedFalloff = new(@"(?<value>\d{1,2})% less for all remaining enemies", RegexOptions.Compiled);
 
 	/// <summary>
@@ -83,8 +84,26 @@ internal static class ActionTooltip
 	public static bool TryPotencyOn(uint actionId, int targets, out float total)
 	{
 		total = 0f;
-		if (targets < 1 || !TryStated(actionId, StatedPotency, out var first))
+		if (targets < 1)
 		{
+			return false;
+		}
+
+		if (!TryStated(actionId, StatedPotency, out var first))
+		{
+			// Once per action and level: a comparison that falls back for want of a figure is otherwise silent.
+			var level = DataCenter.PlayerSyncedLevel();
+			bool firstTime;
+			lock (_gate)
+			{
+				firstTime = _unreadPotency.Add((actionId, level));
+			}
+
+			if (firstTime)
+			{
+				DefenseTrace.Line($"Tooltip of action {actionId} at level {level} states no potency - the comparison that asked falls back");
+			}
+
 			return false;
 		}
 

@@ -815,6 +815,16 @@
    "status": "exception",
    "loop": "A343",
    "reason": "The setting's own condition, \"Experimental Pot Usage(used up to 5 seconds before SerpentsIre comes off cooldown)\": a span named by the option text, not a tunable; it replaces the elapsed 115 s of the 120 s recast, which left out the time Serpent's Ire stands ready (A343)."
+  },
+  {
+   "file": "RotationSolver.Basic/Rotations/Basic/NinjaRotation.cs",
+   "code": "AoeCount = 2,",
+   "values": [
+    "2"
+   ],
+   "status": "exception",
+   "loop": "A345",
+   "reason": "Default AoE count of Hellfrog Medium and Deathfrog Medium, the least that lets the potency comparison speak: on two enemies 250 (400) each out-damages Bhavacakra's 400 (Zesho Meppo's 700) at level 100 (job guide, 7.5). The decision above it is HellfrogOutdamagesBhavacakra, read from the tooltips; the count stays his setting's lower bound (A345)."
   }
  ]
 }
