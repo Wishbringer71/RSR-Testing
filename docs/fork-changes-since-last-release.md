@@ -117,8 +117,9 @@ mitigation out against it. Hits that follow faster than the enemy could cast aga
 ## Damage areas wait until the pack stays
 
 Salted Earth and Doton went out as soon as you stood, so a tank's pause in a wall-to-wall pull was enough to lay them
-where the pack did not stay. Now they wait until at least one enemy has been in their radius for a GCD and none that was
-in it has left; enemies shifting about inside it count as staying, and one arriving does not hold it up. Doton gives way
+where the pack did not stay. Now they wait until at least one enemy has been in their radius for a GCD and no fewer are
+in it than, of those still alive, were at the start of that GCD: enemies shifting about inside it, one pushing in for
+another at its edge in a big pull, one arriving or one dying leave it open, a pack moving on closes it. Doton gives way
 to Katon meanwhile. Slipstream waits likewise around its target while Emerald Rites are left.
 Setting: "Lay damage areas only where the enemies stay", on by default.
 

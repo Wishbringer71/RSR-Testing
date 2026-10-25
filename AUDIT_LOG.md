@@ -10240,6 +10240,35 @@ ein Gegner, der am Rand ein- und austritt, hält sie je einen GCD auf.
 
 *Prüfgrad:* statisch, Modell, Compile; im Spiel nicht beobachtet.
 
+### A352 · Schadensflächen: Tausch am Rand und Tote im großen Pull (25.10.2026)
+
+Sein Hinweis (25.10.2026): „gerade bei großen pulls kann es sein, dass am ende nicht alle gegner in eine begrenzte
+schadensfläche passen. dass ein nachdrängender gegner einen vorhandenen rausdrängt und seinen platz einnimmt. aber es
+sterben auch gegner mit der zeit, also kann es nicht einfach nur ein zähler der gegner innerhalb der schadensfläche
+sein. das mal genauer im loop betrachten". Er trifft A351 (C127): Ein einziger hinausgedrängter Gegner sperrte die
+Fläche einen GCD lang.
+
+- *Optionen:* (0) A351 lassen; FLOW: mindestens einer seit einem GCD drin, und nicht weniger drin als von den noch
+  lebenden zu Beginn des GCD; MOST: mehr als die Hälfte der Lebenden von damals noch drin; DRIFT: ihr Schwerpunkt noch
+  in der Fläche; ALL: jeder jetzt Drinnen seit einem GCD drin; ein bloßer Zähler (verworfen: hielte jeden Tod für einen
+  Abgang – sein Einwand).
+- *Modell* (`damage_area_model.py`, erweitert: großer Pull mit 16 Gegnern auf 1–7 y, Tode alle 1,5 s, Abzug des Tanks
+  bei stehendem Spieler; Anteil der Freigabe, solange das Rudel bleibt, und im GCD nach dem Abzug): A351 14–51 % frei,
+  0 % nach Abzug; FLOW 61–75 % / 0–39 %; MOST und DRIFT 100 % / 51–67 %; ALL 0–9 % im großen Pull. Erstes Legen und
+  Treffer sonst gleich.
+- *Entscheidung:* FLOW. Eine Verzögerung kostet wenig (die Fläche wirkt danach ihre volle Dauer, das Rudel bleibt), eine
+  Fläche auf einem abziehenden Rudel ganz; FLOW verzögert kaum und legt selten auf ein abziehendes Rudel. Die Lücke von
+  FLOW nach dem Abzug trifft nur einen stehenden Spieler – der Dunkelritter als Tank bewegt sich dann selbst (sperrt).
+- *Umgesetzt:* `HostileMovement.AreaHolds` zählt zu Beginn des GCD nur die Lebenden (die Feindliste führt keine Toten,
+  dazu `IsDead`) und vergleicht mit den jetzt Drinnen. Einstellungstext nachgezogen (Name bleibt, Text bindet).
+
+**Falsifikation.** *Kein Defekt:* widerlegt – A351 sperrte im großen Pull bis 86 % der Zeit. *Option falsch:* Im
+Modell tauschen Gegner auch nach außen ohne Nachrücker, das unterschätzt die Freigabe eher; ein Rudel, das langsam
+auseinanderfällt, ohne dass der Tank zieht, senkt die Zahl wie ein Abzug – dann wartet die Fläche, bis es wieder einen
+GCD lang hält. *Ausgeliefert, nichts ändert sich:* kleine Rudel (alle Regeln gleich, 100 %); er hat die Einstellung aus.
+
+*Prüfgrad:* statisch, Modell, Compile; im Spiel nicht beobachtet.
+
 ---
 ## B · Commit-Register (Fork vs. `upstream/main`)
 
@@ -10546,3 +10575,4 @@ Die offene Arbeit dazu — Reihenfolge und Abbruchbedingung der Nachprüfung —
 | C124 | A343, A346 und die Vorlage im TODO: Slither des Vipers bei −0,5 s sei Bewegung, die seine Regel ausschließe, und Thunderclap des Monk im Countdown Bewegung für Schaden | Seine Regel schließt aus, ihn für Schaden aus einer sicheren Position zu holen; zum Pull ist die Position eines Nahkämpfers am Ziel (sein Hinweis, 25.10.2026), und The Balance springt dort selbst. Folge: Viper und Dragoon fehlte der Sprung, die Empfehlung für den Monk stand auf einem falschen Grund | A347: Sprung außerhalb der Reichweite für alle drei |
 | C125 | A348 und der TODO-Eintrag „Mehrfachtreffer gelten in der Flächentabelle als kleiner Treffer": die sechs Serienangriffe kämen, seit die unsichtbaren Helfer gelesen werden, in die Flächenliste | Die Flächentabelle misst und listet nur Aktionen mit Wirkzeit (`Cast100ms > 0`); fünf der sechs sind Sofortaktionen (xivapi v2, 25.10.2026) und bleiben unbewertet, also gemindert. Der Defekt betraf Serien mit Wirkzeit, etwa Ersticken des Fleisches | A349: Serien mit Wirkzeit summiert; Sofortserien zählt `HitSeries` für die Glocke |
 | C126 | A350 und die Fassung von 1feaf6201: eine Schadensfläche fällt erst, wenn keiner der Gegner in ihrem Radius sich im letzten GCD bewegt hat | Gegner bewegen sich in der Fläche, ohne sie zu verlassen (sein Hinweis, 25.10.2026); verschwendet wird sie nur von einem, der hinausgeht. Folge: Unter einem Rudel, das sich am Tank verschiebt, wäre die Fläche nie gefallen (Modell), Doton dauernd Katon gewichen | A351: Bedingung „seit einem GCD darin, keiner hat sie verlassen" |
+| C127 | A351 und die Fassung von eb2bbf95c: eine Schadensfläche fällt erst, wenn keiner, der im letzten GCD in ihr war, sie verlassen hat | Im großen Pull drängt ein Nachrückender einen anderen hinaus und nimmt seinen Platz ein (sein Hinweis, 25.10.2026); die Fläche bleibt voll. Folge: Im Modell war sie solange das Rudel blieb nur 14–51 % der Zeit frei | A352: Vergleich der Lebenden zu Beginn des GCD mit den jetzt Drinnen |

@@ -830,10 +830,10 @@ internal partial class Configs : IPluginConfiguration, IM3Settings
 	private static readonly bool _pullGapCloser = true;
 
 	// The owner's note, 25.10.2026: damage areas only once the movement after a wall-to-wall pull stops - and, his
-	// correction, enemies move inside an area without leaving it. A GCD in the area as the sign of a stop is a
-	// derivation, not shown in play yet, hence the switch (concept 04, A350).
+	// hints, enemies move inside an area without leaving it, swap at its edge in a big pull and die. A GCD in the area
+	// as the sign of a stop is a derivation, not shown in play yet, hence the switch (concept 04, A350-A352).
 	[ConditionBool, UI("Lay damage areas only where the enemies stay",
-		Description = "Salted Earth, Doton and Slipstream's windstorm stay where they are laid. They go out once at least one enemy has been in their radius for a GCD and none that was in it has left; enemies moving about inside it count as staying, and one arriving does not hold it up. Doton gives way to Katon meanwhile, and Slipstream goes at the latest when the Emerald Rites are spent.\nIn a fight: in a wall-to-wall pull the area lands where the pack has gathered, not where the tank paused. Off: it goes out as soon as you stand.",
+		Description = "Salted Earth, Doton and Slipstream's windstorm stay where they are laid. They go out once at least one enemy has been in their radius for a GCD and no fewer are in it than were at the start of that GCD, the dead left out; enemies moving about inside it, one pushing in for another at its edge and one arriving count as staying. Doton gives way to Katon meanwhile, and Slipstream goes at the latest when the Emerald Rites are spent.\nIn a fight: in a wall-to-wall pull the area lands where the pack has gathered, not where the tank paused. Off: it goes out as soon as you stand.",
 		Filter = AutoActionUsage)]
 	private static readonly bool _damageAreasWhereEnemiesStay = true;
 

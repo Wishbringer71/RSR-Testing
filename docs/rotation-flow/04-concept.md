@@ -315,34 +315,49 @@ Rollen-Notfall stellt `CustomRotation.EmergencyAbility`.
 
 ## Schadensflächen erst, wo die Gegner bleiben
 
-**Eine Schadensfläche fällt erst, wenn mindestens ein Gegner seit einem GCD in ihrem Radius ist und keiner, der in
-diesem GCD darin war, ihn verlassen hat** (`CustomRotation.DamageAreaSettled`, `HostileMovement.AreaHolds`, A350). Wer
-sich innerhalb der Fläche bewegt, zählt als geblieben; wer dazukommt, hält sie nicht auf. Betroffen sind die Aktionen,
-deren Wirktext eine Fläche legt, die „any enemies who enter" trifft: Salted Earth (Dunkelritter, um die eigenen Füße),
-Doton (Ninja, um die eigenen Füße), Slipstream (Beschwörer, Sturm um das Ziel). Radius ist der Wirkbereich aus dem
-Aktionsblatt (je 5 y), gemessen wie die Flächenprüfung des Spiels: Trefferkreis im Radius. Einstellung „Lay damage areas
-only where the enemies stay", ab Werk an: Die Bedingung ist seine, das Maß „ein GCD in der Fläche" meine Ableitung und im
-Kampf noch nicht gesehen; ausgeschaltet fällt die Fläche, sobald er selbst steht.
+**Eine Schadensfläche fällt erst, wenn mindestens ein Gegner seit einem GCD in ihrem Radius ist und jetzt nicht weniger
+Gegner darin sind, als von den noch lebenden zu Beginn dieses GCD darin waren** (`CustomRotation.DamageAreaSettled`,
+`HostileMovement.AreaHolds`, A350–A352). Wer sich in der Fläche bewegt, wer am Rand einen anderen hinausdrängt und
+dessen Platz einnimmt, wer dazukommt und wer stirbt, hält sie nicht auf; ein Rudel, das weiterzieht oder hindurchläuft,
+senkt die Zahl und schließt sie. Betroffen sind die Aktionen, deren Wirktext eine Fläche legt, die „any enemies who
+enter" trifft: Salted Earth (Dunkelritter, um die eigenen Füße), Doton (Ninja, um die eigenen Füße), Slipstream
+(Beschwörer, Sturm um das Ziel). Radius ist der Wirkbereich aus dem Aktionsblatt (je 5 y), gemessen wie die
+Flächenprüfung des Spiels: Trefferkreis im Radius. Einstellung „Lay damage areas only where the enemies stay", ab Werk
+an: Die Bedingung ist seine, das Maß „ein GCD in der Fläche" meine Ableitung und im Kampf noch nicht gesehen;
+ausgeschaltet fällt die Fläche, sobald er selbst steht.
 
 - *Seine Angaben (25.10.2026):* „Wichtig bei allen Klassen mit Schadensflächen: erst dann, wenn Bewegung nach
   walltowall stoppt. Prüfen im Loop" – Hinweis (eine Fläche bleibt liegen, ein Rudel, das seinem Tank folgt, läuft
-  hinaus) und Vorschlag für die Bedingung. Dazu sein Hinweis: „gegner [können sich] innerhalb der schadensfläche
-  bewegen …, ohne diese zu verlassen" – was eine Fläche verschwendet, ist ein Gegner, der sie verlässt, nicht einer, der
-  in ihr den Platz wechselt.
+  hinaus) und Vorschlag für die Bedingung. Dazu zwei Hinweise: „gegner [können sich] innerhalb der schadensfläche
+  bewegen …, ohne diese zu verlassen"; und „gerade bei großen pulls kann es sein, dass am ende nicht alle gegner in eine
+  begrenzte schadensfläche passen. dass ein nachdrängender gegner einen vorhandenen rausdrängt und seinen platz
+  einnimmt. aber es sterben auch gegner mit der zeit, also kann es nicht einfach nur ein zähler der gegner innerhalb der
+  schadensfläche sein." Was eine Fläche verschwendet, ist das Rudel, das weiterzieht – nicht ein Gegner, der in ihr den
+  Platz wechselt, ein Tausch am Rand oder ein Toter.
+- *Warum ein Vergleich derselben Gegner und kein Zähler:* Gezählt werden zu Beginn des GCD nur die, die jetzt noch
+  leben. Ein Tausch am Rand lässt die Zahl gleich (einer hinaus, einer hinein), ein Toter fällt auf beiden Seiten heraus,
+  ein Nachzügler erhöht sie; ein abziehendes Rudel senkt sie, weil die, die drin waren, draußen sind und niemand
+  nachrückt. Ein bloßer Zähler der Gegner in der Fläche hielte jeden Tod für einen Abgang.
 - *Im Kampf:* Beim Wall-to-wall zieht der Tank Rudel hinter sich her; hält er kurz, laufen sie noch auf ihn zu, und zieht
   er weiter, folgen sie. Früher fiel die Fläche, sobald der Spieler selbst stand – eine Pause des Tanks genügte, und
   Salted Earth (90 s Abklingzeit) oder Doton lagen dort, wo das Rudel nicht blieb. Jetzt fällt sie, wenn das Rudel
-  angekommen ist und dort bleibt, auch wenn es sich am Tank noch zurechtschiebt. Ein Boss, der nicht wandert, ist ohnehin
-  in der Fläche; wandert er aus ihr hinaus, wartet sie, bis er wieder einen GCD lang in einer bleibt.
-- *Modell* (`damage_area_model.py`, Annahmen: 6 y/s, Gegner verschieben sich alle 1–2 s um 1–3 y am Tank, Fläche 5 y für
-  15 s): Tank hält 1,5 s und zieht weiter – früher lag die Fläche an der Pause und traf nichts, jetzt nach der Ankunft am
-  Ziel mit allen 25 möglichen Treffern. Rudel schiebt sich am Ziel – die erste Fassung (keiner bewegt sich einen GCD lang)
-  legte die Fläche nie, die jetzige nach 1,5–2 s. Zwei Nachzügler – die strengere Variante, die jeden Gegner in der
-  Fläche einen GCD lang darin verlangt, wartet bis 9,6 s, die jetzige legt sie bei 4,7 s mit denselben Treffern.
+  angekommen ist und bleibt, auch wenn es sich am Tank zurechtschiebt, am Rand tauscht oder ausdünnt.
+- *Modell* (`damage_area_model.py`, Annahmen im Kopf des Skripts: 6 y/s, Gegner wechseln alle 1–2 s ihren Platz am Tank,
+  im großen Pull 16 Gegner auf 1–7 y, Fläche 5 y für 15 s):
+  - Tank hält 1,5 s und zieht weiter: früher an der Pause gelegt, 0 von 25 Treffern; jetzt nach der Ankunft an der Wand,
+    25 von 25. Die erste Fassung („keiner bewegt sich", C126) legte bei einem Rudel, das sich verschiebt, nie.
+  - Großer Pull, solange er an der Wand bleibt – Anteil der Zeit, in der die Regel die Fläche freigibt: „keiner, der
+    drin war, ist draußen" (A351, C127) 14–40 %, mit Toten 39–51 %; die jetzige 61–62 %, mit Toten 68–75 %. Im Modell
+    wechseln Gegner ihren Platz auch nach außen ohne Nachrücker; im Spiel drängen sie zum Tank, die Freigabe liegt dort
+    eher höher.
+  - Tank zieht das große Rudel weiter, der Spieler steht: im GCD danach gibt die jetzige Regel noch 0–39 % der Zeit frei;
+    Regeln, die nur verlangen, dass die meisten oder der Schwerpunkt bleiben, wären zwar immer frei, solange das Rudel
+    bleibt, aber im GCD nach dem Abzug 51–67 % – sie legten die Fläche öfter auf ein abziehendes Rudel. Eine Verzögerung
+    kostet wenig (die Fläche wirkt danach ihre volle Dauer), eine Fläche auf einem abziehenden Rudel ganz.
 - *Gemessen:* Das Spiel gibt nur für den Spieler an, ob er sich bewegt. Für Gegner führt RSR eine Spur der Positionen
   über den letzten GCD, einen Punkt bei jeder Änderung. Ein GCD in der Fläche unterscheidet den Halt von der Pause: Ein
   Rudel, das seinem Tank mit Laufgeschwindigkeit folgt, durchquert 5 y in unter einer Sekunde. Ein Gegner, der eben erst
-  erscheint, ist noch nirgends geblieben.
+  erscheint, ist noch nirgends geblieben. Tote und Gegner, die aus der Feindliste fallen, zählen nicht.
 - *Wo entschieden wird:* Salted Earth in `BaseAction.CanUse` für jede Rotation, die es drückt. Doton beim Beginn der
   Mudras (`NIN_Reborn`): Bleibt das Rudel noch nicht, kommt Katon, Doton mit der nächsten Ladung. Slipstream
   (`SMN_Reborn`): Der Sturm ist nur Zusatzwirkung eines Treffers (520 Potenz auf das Ziel); es wartet, bis die Gegner um
@@ -354,6 +369,7 @@ Kampf noch nicht gesehen; ausgeschaltet fällt die Fläche, sobald er selbst ste
   Spielers selbst. Ten Chi Jin: Die Folge steht mit ihrem ersten Schritt fest und dauert Sekunden; Doton darin bleibt,
   wie es ist.
 - *Grenzen:* Eine Pause des Tanks, die länger als ein GCD dauert, sieht aus wie ein Halt; zieht er danach weiter, liegt
-  die Fläche, wo er war (Modell: 4 bis 5 von 25 Treffern, wie früher). Ein Gegner, der am Rand ein- und austritt, hält
-  sie je einen GCD auf. Fremde Rotationen, die Salted Earth drücken, folgen der Prüfung mit; Doton und Slipstream nur in
-  den Standardrotationen.
+  die Fläche, wo er war (Modell: 4 bis 5 von 25 Treffern, wie früher). Steht der Spieler, während der Tank das Rudel
+  weiterzieht, kann die Fläche im ersten Teil des GCD danach noch fallen (Modell: bis 39 % der Zeit); der Dunkelritter
+  als Tank bewegt sich dann selbst, und das sperrt. Fremde Rotationen, die Salted Earth drücken, folgen der Prüfung mit;
+  Doton und Slipstream nur in den Standardrotationen.

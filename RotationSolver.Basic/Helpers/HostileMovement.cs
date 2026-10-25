@@ -2,14 +2,17 @@ namespace RotationSolver.Basic.Helpers;
 
 /// <summary>
 /// Where the enemies have been over the player's last GCD, so a damage area can be laid where they stay: at least one
-/// has been inside it throughout that GCD, and none that was inside it in that time has left (concept 04,
-/// "Schadensflächen erst, wo die Gegner bleiben", A350).
+/// has been inside it throughout that GCD, and no fewer are inside now than, of those still alive, were inside at its
+/// start (concept 04, "Schadensflächen erst, wo die Gegner bleiben", A350-A352).
 /// </summary>
 /// <remarks>
-/// <para>The owner's correction (25.10.2026): enemies move about inside an area without leaving it. What wastes an area
-/// is an enemy leaving it - a pack moving on behind its tank, or passing through - not one shifting its place in it; the
-/// first version, which asked that none had moved at all, would never have laid an area under a pack that keeps
-/// shifting (damage_area_model.py).</para>
+/// <para>The owner's hints (25.10.2026): enemies move about inside an area without leaving it; and in a big pull not all
+/// fit into it - one pushing in pushes another out and takes its place - while enemies die over time, so "es kann nicht
+/// einfach nur ein zähler der gegner innerhalb der schadensfläche sein". What wastes an area is the pack moving on, not
+/// an enemy shifting inside it, a swap at its edge or a death. The count compares the same enemies: a swap leaves it, a
+/// death leaves both sides, a pack moving on takes it down. A rule that let nobody leave was open only 14-51 % of the
+/// time a big pull stayed in the model; this one 61-75 %, and it closes on a pack moving on within the GCD
+/// (damage_area_model.py).</para>
 /// <para>The game gives no movement state for an enemy - only for the player (AgentMap) - so the track is the position
 /// the client shows at each target update, a new point whenever it changes. A GCD in the area is what tells a stop from
 /// a pause: a pack following its tank at run speed crosses an area of 5 y in under a second. An enemy seen for the first
@@ -87,13 +90,16 @@ internal static class HostileMovement
 
 	/// <summary>
 	/// Whether an area of <paramref name="radius"/> around <paramref name="centre"/> holds its enemies: at least one of
-	/// <paramref name="hostiles"/> has been inside it throughout the last GCD, and none that was inside it during that
-	/// GCD is outside now. Inside is the enemy's hitbox within the radius, as the game's area check has it.
+	/// <paramref name="hostiles"/> - the living ones - has been inside it throughout the last GCD, and no fewer are inside
+	/// it now than were inside at the start of that GCD. Inside is the enemy's hitbox within the radius, as the game's
+	/// area check has it.
 	/// </summary>
 	internal static bool AreaHolds(Vector3 centre, float radius, List<IBattleChara> hostiles)
 	{
 		var start = DateTime.Now - Window;
 		var stayed = false;
+		var atStart = 0;
+		var insideNow = 0;
 		foreach (var enemy in hostiles)
 		{
 			if (enemy == null || enemy.IsDead || !_tracks.TryGetValue(enemy.GameObjectId, out var track) || track.Count == 0)
@@ -102,26 +108,29 @@ internal static class HostileMovement
 			}
 
 			var hitbox = enemy.HitboxRadius;
-			var insideNow = Inside(enemy.Position, centre, radius, hitbox);
-			var wasInside = false;
-			var alwaysInside = track[0].At <= start;
+			var now = Inside(enemy.Position, centre, radius, hitbox);
+			var known = track[0].At <= start;
+			var alwaysInside = known;
 			foreach (var (_, pos) in track)
 			{
-				var inside = Inside(pos, centre, radius, hitbox);
-				wasInside |= inside;
-				alwaysInside &= inside;
+				alwaysInside &= Inside(pos, centre, radius, hitbox);
 			}
 
-			// One that has left within the GCD: the pack is moving on, or passed through.
-			if (wasInside && !insideNow)
+			// The position held at the start of the GCD is the first of the track when it began before it.
+			if (known && Inside(track[0].Pos, centre, radius, hitbox))
 			{
-				return false;
+				atStart++;
 			}
 
-			stayed |= alwaysInside && insideNow;
+			if (now)
+			{
+				insideNow++;
+			}
+
+			stayed |= alwaysInside && now;
 		}
 
-		return stayed;
+		return stayed && insideNow >= atStart;
 	}
 
 	private static bool Inside(Vector3 pos, Vector3 centre, float radius, float hitbox)
