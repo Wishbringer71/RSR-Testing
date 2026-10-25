@@ -10515,7 +10515,7 @@ durchgehen." Konzept neu: 18.
   der Notfallschwelle, Recitation mit Indomitability –, die Füllheilung („When the lowest party HP is below")
   `PartyMembersMinHP` und `PartyMembersDifferHP`. Beim Weisen lasen Tank und Gruppe in derselben Bedingung verschiedene
   Zeitpunkte. *Umgesetzt:* `CustomRotation.PartyMembersForecastAverHP(instant)` aus `ComputeForecastAreaStats`
-  (dieselben Mitglieder wie der Stand), `DataCenter.ForecastMinHp`; die sieben Stellen lesen sie, Fähigkeiten mit
+  (dieselben Mitglieder wie der Stand), `DataCenter.ForecastMinHp`; die sieben Schwellen lesen sie, Fähigkeiten mit
   `instant`. Mit der Vorausschau aus identisch. *Prüfmittel:* `check_heal_threshold_forecast.py` (A191) las nur
   `GetHealthRatio()` und meldete deshalb nichts; erweitert um die vier Gruppenstatistiken und die Namen Indomitability,
   Horoscope, Holos, `HealthDifference`, Selbsttest um vier Fälle. Gegen den Stand vor der Behebung zehn Funde (die sieben

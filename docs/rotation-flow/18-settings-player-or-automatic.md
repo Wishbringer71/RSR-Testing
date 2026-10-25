@@ -51,7 +51,7 @@ Geprüft ist je Einstellung, was sie im Kampf bewirkt (der Leser im Code), nicht
 
 Erhoben am 25.10.2026 am Zweig: 298 Einstellungen mit eigener Beschriftung in `Configs` und acht Heilschwellen je Job
 ohne eigene Beschriftung (in der Tabelle unter „Automatic healing thresholds"); in den 22 Standardrotationen seiner
-Jobs (PvE, `RebornRotations`) 243 Rotationseinstellungen, davon 151 Schalter, 74 Zahlen, 18 Auswahlen. Außerhalb seines
+Jobs (PvE, `RebornRotations`) 243 Rotationseinstellungen, davon 151 Schalter, 74 Zahlen, 18 Auswahlen und Texte. Außerhalb seines
 Profils erfasst, nicht bewertet: 19 PvP-Einstellungen, 13 der Maskerade, die Rotationen für PvP, Inhalte und
 begrenzte Jobs, die Zusatzrotationen.
 
@@ -104,10 +104,12 @@ Sichtkegel, Übungspuppen: Absichten, die das Spiel nicht kennt.
 - **„Engage settings" bleibt seine Entscheidung.** Ein Angriff auf einen ungebundenen Gegner zieht ihn. Ab Werk greift
   RSR in der Gruppe nur gebundene Gegner an, also zählt auch die Flächenschwelle eines Tanks nur sie (Konzept 04,
   „Bilanz im Kampf"). Ungebundene Gegner mitzuzählen hieße, mit der Fläche zu ziehen, was der Spieler nicht gezogen
-  hat – ein zweites Rudel, eine Patrouille. Die Gruppe trägt den Fehlgriff; die Fläche kommt dafür einen GCD früher.
-  Sicherheit vor Schaden bei hoher Wahrscheinlichkeit des Schadens: Wer als Tank absichtlich große Gruppen zieht, wählt
-  für seinen Tank „all targets" selbst. „Don't pull new enemies with AoE" (ab Werk aus) ist dieselbe Entscheidung für
-  die Flächen aller Jobs.
+  hat – ein zweites Rudel, eine Patrouille. Den Preis eines solchen Fehlgriffs trägt die Gruppe, der Gewinn wäre eine
+  Fläche einen GCD früher; Sicherheit vor Schaden. *Gegenposition:* Upstream beschriftet „All targets that are in range
+  for any abilities (Tanks/Autoduty)" als Wahl für Tanks, und ein Tank im Wall-to-Wall will jedes Rudel auf dem Weg.
+  Nur weiß RSR nicht, welches Rudel er mitnehmen will – das Rudel vor der Bosstür, die Patrouille im Rücken –, also
+  bleibt die Wahl je Job bei ihm, die Voreinstellung bei der vorsichtigen. „Don't pull new enemies with AoE" (ab Werk
+  aus) ist dieselbe Entscheidung für die Flächen aller Jobs.
 - **„Boss time to kill" (90 s), „Dying time to kill" (10 s), „Dying HP" (2 %)** sind Stellvertreter. Ob ein Gegner ein
   Boss ist, sagt das Spiel selbst (`IsBossFromIcon`, Rang im Blatt `BNpcBase`); der Beschwörer liest beide Wege. Was
   „stirbt bald" heißt, hängt am Verbraucher – ob sich ein DoT, ein Ressourcenabbau, eine Positionierung noch lohnt –
@@ -243,16 +245,18 @@ Dragonfire Dive aus 20 Yalm. Am Ziel (unter 3 Yalm) ist jeder Sprung wie bisher 
 länger abseits, wartet der Sprung. Intervene hat zwei Ladungen bei 30 s Abklingzeit – eine Ladung geht nur verloren,
 wenn er lange genug fernbleibt, dass beide voll sind. Stardiver ist an Life of the Dragon gebunden (20 s); bleibt der
 Dragoon die ganze Zeit fern, entfällt er und mit ihm Starcross. Dragonfire Dive (120 s) verschiebt sich nur. Werte aus
-dem Job-Guide, abgerufen am 25.10.2026. *Chance:* Dieselbe
-Prüfung steht jeder Rotation offen (`GapCloserAllowed`, öffentlich im Paket). *Bedrohung:* Ein Spieler, der die Sprünge
+dem Job-Guide, abgerufen am 25.10.2026. *Chance:* Dieselbe Prüfung steht jeder Rotation offen (`GapCloserAllowed`,
+öffentlich im Paket). *Bedrohung:* Ein Spieler, der die Sprünge
 als Rückweg zum Boss nutzte, läuft jetzt selbst; sein Vorwärts-Befehl hebt die Grenze auf. *Überwiegt:* die Sicherheit.
 Der Fall, in dem der Sprung schadet – er steht abseits, weil dort eine Mechanik liegt –, ist der wahrscheinliche
 Grund, abseits zu stehen; der Verlust ist ein verschobener oder einzelner verlorener Angriff.
 
 **Heilschwellen auf den Gruppendurchschnitt.** *Stärke:* Pneuma als Gruppenheilung geht los, wenn die Gruppe beim
 Eintreffen unter der Schwelle stünde, nicht erst, wenn sie schon darunter steht – im Takt der übrigen Heilschwellen.
-*Schwäche:* Wie jede Vorausschau schlägt sie nach einer kleinen Delle etwas früher an; im Regelkreis kostete das keine
-zusätzliche Heilung (Konzept 08, A356), und bei den Fähigkeiten reicht sie nur über die Animationssperre. *Chance:*
+*Schwäche:* Wie jede Vorausschau schlägt sie nach einer kleinen Delle etwas früher an. Für das einzelne Mitglied kostete
+das im Regelkreis keine zusätzliche Heilung (Konzept 08, A356); für den Durchschnitt ist das nicht eigens modelliert,
+sondern daraus geschlossen, weil er aus denselben Einzelwerten gebildet wird. Bei den Fähigkeiten reicht die
+Vorausschau nur über die Animationssperre. *Chance:*
 `PartyMembersForecastAverHP` steht jeder Rotation offen. *Bedrohung:* keine neue – mit der Vorausschau aus bleibt alles
 beim Stand. *Überwiegt:* der Nutzen, klein, und die Schwellen einer Rotation meinen wieder denselben Zeitpunkt.
 
