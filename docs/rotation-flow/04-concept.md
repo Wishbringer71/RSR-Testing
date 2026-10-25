@@ -258,6 +258,15 @@ weil sie verhaltensgleich sind. B3, B4 und B5 schließen je eine Lücke, in der 
 
 ## Countdown und Notfallslot
 
+Die Countdown-Aktionen aller Standardrotationen decken sich mit den Openern von The Balance (gelesen 25.10.2026, A346):
+Vorwirken des ersten Zaubers bei Paladin, Heilern, Black Mage, Summoner, Red Mage, Pictomancer und Reaper; Fernangriff
+kurz vor dem Pull bei Warrior und Gunbreaker; The Blackest Night und Unmend beim Dark Knight; Mudras und Suiton beim
+Ninja; Meikyo Shisui und True North beim Samurai; Standard Step beim Dancer; Reassemble und Air Anchor beim
+Maschinisten. Beim Trank liegen einige um Sekunden anders (Gunbreaker vor dem Pull statt nach dem zweiten GCD, Dancer
+im Kampf statt bei −1 s); seine 30 s decken die Fenster in beiden Fällen. Eine Abweichung ist seine Entscheidung: Der
+Monk springt bei ≤0,5 s mit Thunderclap ans Ziel (Upstream 33e6acb1f) – reine Bewegung ohne Schaden, im Opener von
+The Balance nicht enthalten (TODO, „Monk: Thunderclap im Countdown").
+
 Dragoon und Viper wirken im Countdown nichts, und das ist richtig (A343). The Balance, Openers (Dragoon: Patch 7.5,
 Viper: Patch 7.55, gelesen 24.10.2026):
 - *Dragoon:* Der Standard-Opener beginnt mit True Thrust zum Pull; der Trank fällt nach dem zweiten GCD, im Kampf.

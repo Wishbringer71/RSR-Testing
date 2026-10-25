@@ -15,10 +15,11 @@ steht seit seinem Hinweis vom 24.10.2026 vor der Flächenheilung: Es heilt eine 
 alles nimmt.
 
 1. Weißmagier: Glockenspiel auch vor großen Einzeltreffern (seine Entscheidung)
-2. Rotationen gegen The Balance abgleichen
-3. Six-sided Star und Flamethrower
-4. AoE-Schwelle an drei Orten
-5. Audit der gesamten Codebasis
+2. Monk: Thunderclap im Countdown (seine Entscheidung)
+3. Rotationen gegen The Balance abgleichen
+4. Six-sided Star und Flamethrower
+5. AoE-Schwelle an drei Orten
+6. Audit der gesamten Codebasis
 
 Danach technische Schuld, soweit ihre Auflösungsbedingung erfüllt ist. Warten auf Daten: unten.
 
@@ -44,6 +45,19 @@ gefährlichen Treffer statt bis zu 2000 über den Sammelmarker verteilt; (c) wie
 übrigen Werkzeuge abklingen. *Empfehlung:* (b) – ein Treffer, der Mitglieder in die Gefährdungsklasse bringt, ist die
 akutere Gefahr, und die Heilung kommt dann, wenn sie fehlt; der Sammelmarker bleibt vorrangig, wo kein solcher Treffer
 ansteht. *Konzept:* 08, „Was die Sperren im Spiel bewirken".
+
+### Monk: Thunderclap im Countdown (seine Entscheidung) · N
+
+*Kontext:* `MNK_Reborn.CountDownAction` springt bei ≤0,5 s mit Thunderclap ans Ziel (Upstream 33e6acb1f, ohne
+Einstellung). Thunderclap trifft nicht, es bewegt nur; die Bewegungssicherheit prüft die Strecke über BossModReborn. Der
+Opener von The Balance enthält es nicht. Deine Regel: „Nichts empfehlen, was ihn für Schaden aus einer sicheren Position
+holt. Ausgeschlossen ist die Bewegung" – formuliert für meine Empfehlungen; ob sie bestehendes Verhalten erfasst, weißt
+nur du. *Optionen:* (a) so lassen; (b) aus dem Countdown nehmen – Thunderclap bleibt auf deinen Befehl
+(Vorwärtsbewegung); (c) hinter eine Option, ab Werk aus. *Konsequenzen:* (a) stehst du beim Ende des Countdowns auf
+Abstand, holt RSR dich zum Pull ans Ziel; stehst du schon dort, verbraucht es eine Ladung ohne Wirkung; (b) und (c)
+stehst du auf Abstand, beginnt der Monk mit dem Weg dorthin, der erste GCD kommt um diese Zeit später. *Empfehlung:*
+(b) – der Sprung ist Bewegung für Schaden, The Balance braucht ihn nicht, und auf Befehl bleibt er; eine Option wäre eine
+Funktion für einen Fall, den du mit einem Schritt vor dem Pull löst. *Konzept:* 04, „Countdown und Notfallslot".
 
 ### Rotationen gegen The Balance abgleichen · N
 

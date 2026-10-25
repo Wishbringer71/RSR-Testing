@@ -10030,6 +10030,18 @@ AoE oder „Cleave" für Goka; bei Tooltips ohne Potenz zeigt es die Protokollze
 
 *Prüfgrad:* statisch, Compile, Rechnung mit Job-Guide-Potenzen; im Spiel nicht beobachtet.
 
+### A346 · Countdown aller Jobs gegen die Opener von The Balance (25.10.2026)
+
+TODO „Rotationen gegen The Balance abgleichen", Schnitt Vorlauf: die erste Opener-Grafik jedes Jobs von
+thebalanceffxiv.com geladen, den Teil vor dem Pull ausgeschnitten und gelesen, gegen `CountDownAction` der
+Standardrotationen gestellt. Ergebnis in Konzept 04, „Countdown und Notfallslot": Aktionen decken sich; der Trank liegt
+bei einigen um Sekunden anders, ohne dass ein Fenster verloren geht. Abweichung mit Entscheidungsbedarf: Thunderclap
+des Monk im Countdown (reine Bewegung, Upstream 33e6acb1f) – seine Regel zur Bewegung ist für meine Empfehlungen
+formuliert; ob sie bestehendes Verhalten erfasst, ist seine Einordnung (REGEL: mehrdeutige Absicht → Rückfrage). Vorlage
+im TODO. Kein Code geändert.
+
+*Prüfgrad:* statisch (Grafiken und Code gelesen).
+
 ---
 ## B · Commit-Register (Fork vs. `upstream/main`)
 
