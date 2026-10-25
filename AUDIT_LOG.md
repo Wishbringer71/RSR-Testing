@@ -10664,6 +10664,46 @@ defensive abilities" aus hat.
 *Prüfgrad:* Modell mit Selbsttest, statisch, Compile; im Spiel nicht beobachtet. `DefenseTrace.log` nennt, warum die
 Abwehr offen steht und wann der nächste Tankbuster fällig ist.
 
+### A362 · Werkzeuge für Dalamud, FFXIV und die Plugin-Entwicklung (25.10.2026)
+
+Sein Auftrag (25.10.2026): „gibt es mcp oder lsp oder andere tools, die dir helfen könnten, dalamud und ffxiv besser zu
+verstehen und dessen plugins? oder nuget-pakete, die die plugin-entwicklung für dalamud verbessern würden? im loop
+research". Jeder Kandidat mit Probe, bevor er empfohlen wird.
+
+- *Sprachserver:* Das offizielle Plugin csharp-lsp (Anthropic, csharp-ls) gibt Claude Code Diagnosen nach jeder Änderung
+  und ein LSP-Werkzeug – aber nur in Terminal-Sitzungen; in Cloud-Sitzungen startet Claude Code keine Sprachserver
+  (code.claude.com, „Code intelligence plugins"). Probe hier: csharp-ls installiert sich in Sekunden, lädt die Lösung,
+  Hover zeigt die Dokumentation von Dalamud-Membern; die Verweissuche scheiterte zuerst an einem nicht aufgelösten
+  Analyzer-Verweis (Quellgenerator nur in Release gebaut, der Server lädt Debug), nach dem Debug-Build fand sie alle sechs
+  Aufrufer von `AnyLivingHealer` in zwei Projekten. Gebaut: `.github/scripts/lsp_query.py` (refs, hover, Selbsttest).
+- *Quelltexte:* Dalamud, FFXIVClientStructs, ECommons, BossModReborn, EXDSchema, ffxiv-datamining über den Git-Proxy
+  erreichbar (gemessen). Am Quelltext von BossModReborn geprüft: `SpecialMode` (5 Member) und `PredictedDamageType` (4)
+  tragen dieselben Namen und Ordinale wie RSRs Kopien, die `BossModUpdater` per Cast befüllt. Geprüft hat das bisher
+  nichts. Gebaut: `check_bmr_contract.py` in der CI, mit Selbsttest gegen eingefügte, entfernte und fehlende Member;
+  scheitert, statt zu bestehen, wenn die Quelle nicht erreichbar ist.
+- *MCP:* `getsetmind/dalamudmcp` (MIT, 10 Sterne) – Windows-lokaler Server mit Dalamud-Plugin, liest Spielzustand
+  (Gruppe, Ziel, Ereignisse, Blätter, IPC anderer Plugins) und führt auf Freigabe Aktionen aus. Erreicht diese Umgebung
+  nicht; nutzbar nur mit einer lokalen Claude-Code-Sitzung neben dem laufenden Spiel – dann wäre er Teil jeder Messung,
+  was seine Regel ausschließt, und Aktionen im Spiel durch ein fremdes Werkzeug sind ein eigenes Risiko. Nicht empfohlen.
+- *NuGet:* Dalamud.NET.Sdk 15.0.0 und ECommons 3.2.1.26 sind die neuesten Fassungen (nuget.org, gemessen);
+  BannedApiAnalyzers ist schon eingebunden. Probe der eingebauten .NET-Analyzer auf Stufe „Recommended": rund 570 Funde,
+  fast alle Stil (Kultur beim Formatieren, Standardwerte, Parameternamen, static, Unterstriche, sealed); die vier
+  kulturabhängigen Stringvergleiche (Dalamud-Version, Konfigurationsname, Chatbefehl, Debugfenster) sind mit deutschem
+  Client harmlos. Kein Paket empfohlen: Rauschen ohne Kampfbezug.
+- *Daten aus seinen Kämpfen:* FFLogs-API v2 erreichbar (Token-Endpunkt antwortet, Zugang braucht Client-Zugangsdaten). Mit
+  ihnen ließen sich seine Berichte – Treffer, Tode, Wirken je Sekunde – gegen die Regeln halten, ohne Ablauf-Protokoll
+  aus dem Plugin. Seine Entscheidung (sein Konto).
+- *Ausgeschlossen:* SaintCoinach, Godbert und ähnliche Datenwerkzeuge brauchen die Spieldateien – in dieser Umgebung
+  nicht vorhanden; xivapi v2 deckt dasselbe ab.
+
+**Falsifikation.** *Kein Bedarf:* Die Textsuche fand bisher die Aufrufer; der Sprachserver trennt aber gleichnamige
+Member und Überladungen, an denen eine Textsuche Aufrufer erfindet oder übersieht. *Option falsch:* die
+Vertragsprüfung hängt an der Erreichbarkeit von GitHub – ein Ausfall färbt die CI rot, mit Grund im Text.
+*Ausgeliefert, nichts ändert sich:* solange BossModReborn seine Enums nicht ändert, schlägt die Prüfung nie an; ihr Wert
+ist der Tag, an dem es geschieht.
+
+*Prüfgrad:* Proben in dieser Umgebung, Selbsttests; keine Wirkung im Spiel.
+
 ---
 ## B · Commit-Register (Fork vs. `upstream/main`)
 

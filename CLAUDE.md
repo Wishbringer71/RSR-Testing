@@ -105,7 +105,7 @@ Pflicht für jede nicht-triviale Aufgabe; die REGEL steht darüber.
 Gelten in jeder Stufe. Eine Aussage, die eine davon verletzt, ist unbelegt.
 
 **Gesamtheitlichkeit**
-- Vor jeder Aussage über eine Stelle ihren Wirkungsbereich erheben: Aufrufer, Aufgerufene, Datenflüsse, Schalter, die den Pfad öffnen oder schließen, alle Stellen desselben Musters.
+- Vor jeder Aussage über eine Stelle ihren Wirkungsbereich erheben: Aufrufer, Aufgerufene, Datenflüsse, Schalter, die den Pfad öffnen oder schließen, alle Stellen desselben Musters. Verweise auf ein Symbol mit `.github/scripts/lsp_query.py refs` (Sprachserver: trennt Überladungen und gleichnamige Member), Muster mit der Textsuche.
 - Betroffene benennen: Endnutzer, Autoren abgeleiteter Rotationen (`RotationSolver.Basic` als Paket), Upstream-Pflege.
 - Werte, die über eine Schnittstelle kommen, an ihrer Quelle prüfen, samt Typzuordnung.
 - Nur Maße verwenden, die den Wirkungsbereich selbst messen, keine Surrogate; die Prüftiefe folgt Wirkungsbereich und Fehlerklasse, nicht der Zeilenzahl.
@@ -203,7 +203,7 @@ Gelten in jeder Stufe. Eine Aussage, die eine davon verletzt, ist unbelegt.
 **Verträge**
 - Bindend sind: serialisierte Typen und ihre Enum-Ordinale, Namen in gespeicherter Konfiguration, öffentliche Signaturen des Pakets, und Enums, deren Wert als Zahl über eine Schnittstelle kommt — ein gecasteter fremder `int` bindet die Ordinale an die fremde Reihenfolge, ohne Compilerprüfung.
 - Vor jeder Änderung erheben, ob der Typ persistiert, exportiert oder über eine Grenze gecastet wird; einen Migrationspfad vorsehen.
-- Bekannt: `Configs` schreibt Enums als Zahlen; `SpecialMode` und `PredictedDamageType` sind Vertrag mit BossModReborn.
+- Bekannt: `Configs` schreibt Enums als Zahlen; `SpecialMode` und `PredictedDamageType` sind Vertrag mit BossModReborn, `check_bmr_contract.py` hält ihre Ordinale in der CI gegen dessen Quelltext.
 
 **BossModReborn**
 - Keine verlässliche Quelle: Kein Modul und ein Modul ohne diese Ereignisart kommen beide als `float.MaxValue` an und sehen aus wie „es kommt nichts".
@@ -233,7 +233,8 @@ Gelten in jeder Stufe. Eine Aussage, die eine davon verletzt, ist unbelegt.
 - Ein Werkzeug sage ich erst zu, wenn eine Probe es belegt. Zur Vorlage gehört der Preis des Wegs: Was er mit einem Handgriff erledigt, ist keine Aufgabe für diese Umgebung.
 - Einen fremden Schutzmechanismus führe ich erst als Begründung an, wenn ich geprüft habe, was er abdeckt.
 - Der Netzzugang ist seit 27.09.2026 unbegrenzt (seine Einstellung). Offizielle Quelle für Wirktexte samt der Werte, die `ActionId.resx` ausblendet (Dauern, Potenzen, Statusnamen): der Job-Guide (`na.`/`de.finalfantasyxiv.com/jobguide/`). Referenz für Rotationen: The Balance (`thebalanceffxiv.com`). Spieldaten: `garlandtools.org`, `v2.xivapi.com`. gamerescape und icy-veins weisen Skripte per Cloudflare-Prüfung ab — das ist die Seite, nicht die Umgebung.
-- Öffentliche Git-Repositories sind über den Git-Proxy klonbar. `PunishXIV/WrathCombo` (Klon unter `/home/user/punishxiv/wrathcombo`) belegt, wie ein anderes Rotationswerkzeug eine Mechanik behandelt und was die Spiel-API liefert — keine Spielquelle, Status so benennen; Code nur lesen, nicht übernehmen.
+- Öffentliche Git-Repositories sind über den Git-Proxy klonbar. `PunishXIV/WrathCombo` (Klon unter `/home/user/punishxiv/wrathcombo`) belegt, wie ein anderes Rotationswerkzeug eine Mechanik behandelt und was die Spiel-API liefert — keine Spielquelle, Status so benennen; Code nur lesen, nicht übernehmen. Was eine API des Clients tut, belegt ihr Quelltext: `goatcorp/Dalamud`, `aers/FFXIVClientStructs` (durch Reverse Engineering gewonnen), `NightmareXIV/ECommons`, `FFXIV-CombatReborn/BossmodReborn`; Spaltennamen der Blätter `xivdev/EXDSchema`. Status jeweils Werkzeugquelle.
+- Sprachserver-Plugins (csharp-lsp) startet Claude Code nur in Terminal-Sitzungen, nicht in dieser Umgebung; `lsp_query.py` startet csharp-ls je Frage selbst (Debug-Build des Quellgenerators nötig, sonst scheitert jede Verweissuche).
 - `xivanalysis/xivanalysis` (über den Git-Proxy klonbar, MIT) bewertet FFLogs-Reports je Job nach Rotationsregeln — Community-Auswertung auf Schaden hin, keine Spielquelle; Regelkatalog für den Abgleich, gefiltert durch seine Vorgaben.
 
 # Prüfung und Abschluss
