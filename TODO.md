@@ -13,9 +13,10 @@ Nach der Wirkung im Kampf: Sicherheit der Gruppe vor Schaden, gewichtet mit der 
 Auftrag vom 24.10.2026 läuft: die einfachen Punkte zuerst (A338), die schweren wichtigen danach ebenso. Sein Auftrag vom
 25.10.2026, Upstream der letzten zehn Tage mit den eigenen Patches inhaltlich abzugleichen, ist erledigt (A354), der
 Defekt daraus behoben (A356). Sein Auftrag vom 25.10.2026 nachmittags: nach Priorität und Umsetzbarkeit, je im Loop;
-der Tank-Punkt ist entschieden (A357), danach kommt sein Auftrag zu den Einstellungen.
+der Tank-Punkt ist entschieden (A357), sein Auftrag zu den Einstellungen ist erledigt (A358, Konzept 18), der Punkt
+daraus steht oben, weil er die Abwehr betrifft.
 
-1. Einstellungen: Entscheidung des Spielers oder Automatik
+1. Tank: Pull-Abwehr nach gemessenem Schadenseingang
 2. Rotationen gegen The Balance abgleichen
 3. Six-sided Star und Flamethrower
 4. AoE-Schwelle an drei Orten
@@ -29,23 +30,23 @@ Keine bekannt.
 
 ## Offene Arbeit
 
-### Einstellungen: Entscheidung des Spielers oder Automatik · N, R
+### Tank: Pull-Abwehr nach gemessenem Schadenseingang · N
 
-*Im Kampf:* je Einstellung – sein Auftrag (25.10.2026): „bei allen einstellungen, wo entscheidungen zu treffen sind
-(an/aus, werte in ui einzutragen), ob dies richtige entscheidungen für den spieler sind, oder ob einige davon eher
-automatismen im spiel sind, die durch routinen und ingame auswertungen besser geregelt werden können. das kritisch in
-einem konzept mit audit durchgehen." Erster belegter Fall: „Engage settings" (je Job, ab Werk für jeden Job „All
-targets when solo in duty, or previously engaged") lässt einen Tank in der Gruppe ungebundene Gegner nicht zählen; beim
-Aggro-Halt bleibt er unter seiner Flächenschwelle, bis sein Rudel nachkommt (A357). *Nächster Schritt:* Bestand aller
-Einstellungen (`Configs`, Rotationseinstellungen) erheben, je Einstellung einordnen und im Loop bewerten. *Konzept:*
-neu, weil keines der bestehenden den Gegenstand trägt.
+*Im Kampf:* Die Pull-Abwehr eines Tanks fällt nach der Gegnerzahl („Use tank mitigation when this many enemies target
+you", ab Werk 2): Zwei schwache Gegner kosten eine Minderung, die beim nächsten großen Pull fehlt; ein einzelner starker
+Gegner löst keine aus. Die Gegnerzahl bleibt der Vorbote vor dem ersten Treffer; danach misst RSR den Netto-Verlauf des
+Tanks, wie Konzept 08 ihn für die Drosselung schon liest. *Ort:* `StateUpdater` (Einzelabwehr der Tanks). *Nächster
+Schritt:* Modell im Regelkreis (wie `party_ttk_model.py`): Zählung allein gegen Zählung mit Verlauf als Freigabe oder
+als zusätzlicher Auslöser – Tote, Zeit unter 30 %, verbrauchte Minderungen je Pull. *Konzept:* 18, „Abwehr"; 09.
 
 ### Rotationen gegen The Balance abgleichen · N
 
 *Im Kampf:* Schaden – je Job Opener, Burstausrichtung und Prioritäten gegen den Guide. Der Maschinist ist abgeglichen
 (A342), von Dragoon und Viper der Opener (A343), die AoE-Schwellen aller Jobs (A344), die AoE-Wahl des Ninja (A345). *Nächster Schritt:* die übrigen Jobs je Opener,
 Burst und Prioritäten; ausgeblendete Werte liest `ActionTooltip` zur Laufzeit aus den Tooltips,
-die deutschen Namen gehören in `action_names_de.json`. *Konzept:* 14, „Vergleich mit The Balance".
+die deutschen Namen gehören in `action_names_de.json`. Dabei je Job die Rotationseinstellungen, die eine Spieltatsache
+tragen (Leistenhöchststand, Restzeiten, Lieddauern), aus dem Spiel ableiten (Konzept 18, „Rotationseinstellungen").
+*Konzept:* 14, „Vergleich mit The Balance".
 
 ### Six-sided Star und Flamethrower · N
 

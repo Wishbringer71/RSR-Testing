@@ -365,7 +365,8 @@ er selbst steht.
   - *Chancen:* Die Zeile in `DefenseTrace.log` zeigt in seinen Kämpfen, ob Flächen noch verlassen werden. Für den
     Tank selbst, der ein neues Rudel schneller binden soll, ist der Kampfzustand nicht der Engpass: Mit der
     Voreinstellung von „Engage settings" (je Job) zählt er ungebundene Gegner in der Gruppe nicht für seine
-    Flächenschwelle (A357; `TODO.md`, „Einstellungen: Entscheidung des Spielers oder Automatik").
+    Flächenschwelle (A357). Das bleibt die Entscheidung des Spielers: Mitzählen hieße, mit der Fläche zu ziehen, was er
+    nicht gezogen hat (Konzept 18, „Ziele").
   - *Bedrohungen, beseitigt:* Add-Wellen im Bosskampf und ein passiver Gegner am Tank im Freien hielten im ersten Wurf
     jede Fläche zurück – jetzt zählen nur Gegner in der Fläche oder am Tank, der Ungebundene am Tank nur in Instanzen;
     ein außer Sicht gezogenes Rudel blieb unerkannt – jetzt zählt das erste Sehen im Kampf. *Verbleibend:* ein passiver

@@ -123,6 +123,31 @@ from the last time he stood at least as high. In a model of a healer acting on t
 fights, the change is never worse and needs no more heals; the forecast itself halves the deaths against no forecast
 at low heal thresholds. Setting: "Heal ahead of incoming damage" (unchanged).
 
+## Healers: party heals on the group's average read the forecast too
+
+"Heal ahead of incoming damage" promises every healing threshold the health a member is heading for when the heal
+lands. The thresholds on the party's average in the healer rotations still read the health right now: Horoscope and
+Lady of Crowns, Holos and Pneuma, the Scholar's Fey Blessing, Indomitability and Recitation with Indomitability, and
+the downtime heal ("When the lowest party HP is below"). They read the forecast now. Pneuma as a party heal, a GCD with
+a cast, goes out as much earlier as the party loses before it lands; for abilities the forecast reaches only over the
+animation lock and little changes. With the setting off, all of them read what they did before.
+
+## Gap closers that leap onto the target keep to your distance
+
+"Only use damaging gap closers within this distance" (3 yalms by default) only reached the dashes such as Onslaught.
+The leaps onto the target did not read it: a Paladin standing aside for a mechanic used Intervene to jump back onto the
+boss from up to 20 yalms, and a Dragoon did the same with Stardiver and Dragonfire Dive, whose own limits are 20 yalms
+by default. Every leap now keeps to the setting as well as to any limit its rotation sets - Intervene, Primal Rend,
+Crimson Cyclone, Stardiver, Dragonfire Dive. A move-forward command, your own press, the countdown and the rotation
+switches marked "Dangerous" or "at any range" are not limited. Standing at the enemy, a leap is only damage, as before;
+out of reach it waits until you are back.
+
+## Raises no longer wait three seconds
+
+"Raise delay range" defaulted to 3 s, a wait meant to look less mechanical that leaves the fallen member down longer.
+The default is now no delay; when he gets up is his choice when he accepts, and two raisers on one body are kept apart
+as before. A configuration saved earlier keeps its value.
+
 ## Damage areas wait until the pack stays
 
 Salted Earth and Doton went out as soon as you stood, so a tank's pause in a wall-to-wall pull was enough to lay them

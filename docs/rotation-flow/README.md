@@ -1,6 +1,6 @@
 # Die Konzepte, nach ihrer Leitfrage
 
-Jedes Dokument beantwortet **eine** Frage. Wer die Frage kennt, muss nicht siebzehn Dateien öffnen,
+Jedes Dokument beantwortet **eine** Frage. Wer die Frage kennt, muss nicht achtzehn Dateien öffnen,
 um zu finden, wo etwas hingehört — und wer etwas einträgt, weiß, wohin.
 
 Dieser Index ist Navigation, kein Inhalt: Er nennt keine Entscheidung und keinen Sachstand. Beides
@@ -25,6 +25,7 @@ stünde hier ein zweites Mal und würde altern.
 | [`15-wrathcombo-comparison.md`](15-wrathcombo-comparison.md) | Welche Ideen aus WrathCombo verbessern RSR, und welche nicht? |
 | [`16-xivanalysis-catalog.md`](16-xivanalysis-catalog.md) | Welche Regeln für gute Rotationen kennt xivanalysis, und wo weicht RSR ab — mit welchem Grund? |
 | [`17-machinist-reassemble-buffs.md`](17-machinist-reassemble-buffs.md) | Soll der Maschinist eine Reassemble-Ladung für die Gruppenbuffs halten, und welcher Buff zählt am meisten? |
+| [`18-settings-player-or-automatic.md`](18-settings-player-or-automatic.md) | Welche Einstellung ist eine Entscheidung des Spielers, und welche beantwortet das Spiel oder die Laufzeit besser? |
 
 **Der Knoten der Kampffamilie ist `08`.** Heilung, Barriere und Minderung sind drei Antworten auf
 dieselbe Frage; die Ordnung zwischen ihnen steht dort, die Messung der Treffergröße in `13`, die

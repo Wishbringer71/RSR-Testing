@@ -293,6 +293,12 @@ Die Zeit bis zur Annahme durch den Gefallenen ist für die Entscheidung damit oh
 Status trägt den Ausschluss, nicht die Annahme. Läuft der Status ungenutzt ab, wird der Leichnam
 wieder Kandidat — richtig so.
 
+**Vor dem ersten Zeitpunkt wartet RSR nicht.** „Raise delay range" (`RaiseDelay2`) ist ab Werk 0 bis 0 s: Die
+Wartezeit soll RSR weniger mechanisch aussehen lassen (so ihre Dokumentation), im Kampf liegt der Gefallene damit
+nur länger am Boden. Wann er aufsteht, entscheidet er mit der Annahme selbst; den Wettlauf mit einem zweiten
+Wiederbeleber trägt der Ausschluss oben. Upstream hatte die Vorgabe 2025 mit dem neuen Namen auf 3 s gesetzt, ohne
+Grund im Kampf; dieselbe Abwägung wie bei Unterbrechung und Provokation (Konzept 18, „Tarnung").
+
 **Wirkt ein anderer Spieler gerade eine Wiederbelebung auf einen Leichnam, wählt RSR ihn nicht**
 (`TargetUpdater.UpdateCastsByOthers`, `DataCenter.RaisedByOthers`, A293). Der `Raise`-Status erscheint erst, wenn
 die Wiederbelebung landet; während eines acht Sekunden langen Hartwirkens blieb der Leichnam Kandidat, und RSR ohne

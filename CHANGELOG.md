@@ -23,6 +23,16 @@ are not reconstructed here.
 
 ## Unreleased
 
+### Behaviour change in RotationSolver.Basic: Intervene keeps to the damaging gap closer distance
+
+`PaladinRotation` gives `IntervenePvE` a `Setting.CanTarget` that admits a target only closer than "Only use damaging gap
+closers within this distance", unless a move-forward command, the player's own press of the action or the countdown is
+active. A derived Paladin rotation that used Intervene as a long-range gap closer outside the move-forward path gets it
+only within that distance. New on `CustomRotation`: `GapCloserAllowed(target, rotationLimit)`, the same check for any
+leap onto a target, with a rotation's own limit on top; and `PartyMembersForecastAverHP(instant)`, the party's average
+health at the moment a heal begun now would land, for a party-average healing threshold under "Heal ahead of incoming
+damage" (equal to `PartyMembersAverHP` with that setting off).
+
 ### Behaviour change in RotationSolver.Basic: damage areas wait until the enemies stay in them
 
 `BaseAction.CanUse` refuses an action whose effect text lays a damage area of its own ("any enemies who enter") and that

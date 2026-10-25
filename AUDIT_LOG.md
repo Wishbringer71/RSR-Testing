@@ -10473,6 +10473,81 @@ während das mitgebrachte Rudel auf ihn einschlägt.
 
 *Prüfgrad:* statisch.
 
+### A358 · Einstellungen: Entscheidung des Spielers oder Automatik (25.10.2026)
+
+Sein Auftrag (25.10.2026): „bei allen einstellungen, wo entscheidungen zu treffen sind (an/aus, werte in ui
+einzutragen), ob dies richtige entscheidungen für den spieler sind, oder ob einige davon eher automatismen im spiel
+sind, die durch routinen und ingame auswertungen besser geregelt werden können. das kritisch in einem konzept mit audit
+durchgehen." Konzept neu: 18.
+
+- *Bestand:* 298 beschriftete Einstellungen in `Configs` und acht Heilschwellen je Job; 243 Rotationseinstellungen in den
+  22 Standardrotationen seiner Jobs. Erhoben mit einem Parser über `[UI(`/`[RotationConfig(` bis zur Deklaration; die
+  erste Fassung ordnete Felder versetzt zu (sie nahm die nächste Zeile statt der nächsten Deklaration) und unterschlug
+  die Heilschwellen ohne eigene Beschriftung – beides vor der Einordnung berichtigt.
+- *Maßstab:* Spielerentscheidung, wo das Spiel die Frage nicht beantworten kann (Vorliebe, Risiko, Preis außerhalb des
+  Kampfes, Steuerung, Darstellung, Absprache); Automatik, wo der Wert eine Spieltatsache oder eine gemessene Größe trägt.
+  Dazwischen Haltung mit Laufzeiturteil und Notausschalter. Je Einstellung am Leser im Code geprüft.
+- *Defekt 1, gegen den Einstellungstext:* „Only use damaging gap closers within this distance" verspricht die Grenze für
+  jeden Gapcloser mit Schaden; sie stand nur in der Zielwahl der Vorstöße (`SpecialActionType.HostileMovingForward`).
+  Intervene war bis Upstream 33e6acb1f (07.05.2026) ein Vorstoß und verlor die Grenze mit dem neuen Typ
+  `HostileMovingAttack`, dessen Zweig nur Lebende filtert; seither sprang der Paladin aus bis zu 20 Yalm auf sein Ziel,
+  sobald er stand (`PLD_Reborn.AttackAbility`, `!IsMoving`). Primal Rend und Crimson Cyclone trugen eigene Grenzen
+  (3,5 und 3 Yalm), Stardiver und Dragonfire Dive die des Dragoon (ab Werk 20 Yalm).
+  *Optionen:* (a) Grenze in die Zielwahl für `HostileMovingAttack` – setzte die ausdrücklichen „Dangerous"-Schalter von
+  Krieger, Beschwörer und Ninja außer Kraft, deren Text Sprünge auf jeden Abstand verspricht; verworfen. (b) nur
+  Intervene an der Aufrufstelle – ließe die Dragoon-Voreinstellung von 20 Yalm gegen den zentralen Text stehen. (c) eine
+  Prüfung `CustomRotation.GapCloserAllowed(target, rotationLimit)`: zentrale Grenze und die der Rotation zugleich,
+  ausgenommen Vorwärts-Befehl, Countdown und die Aktion selbst, wenn er sie in die Warteschlange gelegt hat (Review:
+  der erste Wurf nahm den Zustand „Abfangen" aus, der nach jedem eigenen Druck einige Sekunden gilt – er hätte in dieser
+  Zeit jeden Sprung geöffnet); Intervene über
+  `Setting.CanTarget` in `PaladinRotation` (jede Paladin-Rotation, jeder Pfad), Stardiver, Dragonfire Dive, Primal Rend,
+  Crimson Cyclone an ihrer bestehenden Abstandsprüfung. Gewählt (c): Beide Texte halten als Obergrenzen, die
+  Gefahrenschalter bleiben, keine neue Zahl. Beschreibung der Einstellung um die Aufzählung und die Ausnahmen ergänzt,
+  die schon galten.
+  *Bilanz:* kein Sprung mehr aus einer Ausweichposition zurück in die Mechanik; dafür wartet der Sprung, bis er wieder
+  am Ziel steht – Intervene verliert eine Ladung erst, wenn beide voll sind (2 Ladungen, 30 s), Stardiver entfällt nur,
+  wenn der Dragoon die ganzen 20 s von Life of the Dragon fernbleibt (Job-Guide, abgerufen am 25.10.2026). Überwiegt:
+  die Sicherheit – abseits steht er meist wegen einer Mechanik.
+- *Defekt 2, gegen den Einstellungstext, gefunden beim Gegenprüfen des Konzepts:* „Heal ahead of incoming damage"
+  verspricht die Vorausschau für jede Heilschwelle. A182 hatte die zentralen Flächenschwellen umgestellt und
+  `PartyMembersAverHP` wegen seiner vielen Leser auf dem Stand gelassen; die Schwellen der Heiler-Rotationen auf den
+  Gruppendurchschnitt lasen ihn weiter – Horoscope, Lady of Crowns, Holos, Pneuma, Fey Blessing und Indomitability unter
+  der Notfallschwelle, Recitation mit Indomitability –, die Füllheilung („When the lowest party HP is below")
+  `PartyMembersMinHP` und `PartyMembersDifferHP`. Beim Weisen lasen Tank und Gruppe in derselben Bedingung verschiedene
+  Zeitpunkte. *Umgesetzt:* `CustomRotation.PartyMembersForecastAverHP(instant)` aus `ComputeForecastAreaStats`
+  (dieselben Mitglieder wie der Stand), `DataCenter.ForecastMinHp`; die sieben Stellen lesen sie, Fähigkeiten mit
+  `instant`. Mit der Vorausschau aus identisch. *Prüfmittel:* `check_heal_threshold_forecast.py` (A191) las nur
+  `GetHealthRatio()` und meldete deshalb nichts; erweitert um die vier Gruppenstatistiken und die Namen Indomitability,
+  Horoscope, Holos, `HealthDifference`, Selbsttest um vier Fälle. Gegen den Stand vor der Behebung zehn Funde (die sieben
+  Schwellen, Horoscope dreifach, die Streuung der Füllheilung), danach keiner.
+- *Voreinstellung:* „Raise delay range" ab Werk 0 bis 0 s statt 3 s. Upstream hatte die Einstellung 2025 umbenannt und
+  die Vorgabe von 0 auf 3 s gesetzt (6cb0e71cf, „Refined raise logic", ohne Begründung); ihre Dokumentation nennt
+  Tarnung als Zweck. Gleiche Abwägung wie A338 bei Unterbrechung und Provokation. Geprüft und belassen:
+  „Downtime healing delay range" (entprellt „nichts zu tun", Upstream 5b16e58ed), „Out of combat delay range"
+  (entprellt das Kampfende), „Stop casting delay range" (ohne Beleg, dass das Spiel den Zauber selbst abbricht, kein
+  Eingriff), „Delay between clicks" (kürzer als jede Animationssperre, kein Preis).
+- *Eingeordnet, nicht geändert, mit Grund im Konzept:* „Engage settings" (Spielerentscheidung: Mitzählen ungebundener
+  Gegner hieße, mit der Fläche zu ziehen – schließt den Fall aus A357); Vorlaufzeiten der BossModReborn-Zeitleiste
+  (Spieltatsache, bei 2,5 s GCD von den Vorgaben erfüllt, eine Untergrenze änderte nur seine eigene Wahl); Lucid
+  Dreaming (hängt am eigenen Verbrauch, nur MP); Boss- und Sterbeschwellen (Stellvertreter, Umbau berührte jede Rotation
+  mit `IsDying`, kein Gewinn belegt); Schutzschwellen der Tanks ohne Vorausschau (sofort wirkend, Vorausschau nur über
+  die Animationssperre, Text nennt Heilschwellen); Rotationswerte aus Leiste, Status und Abklingzeit (in den Abgleich mit
+  The Balance, `TODO.md`).
+- *Offen daraus:* `TODO.md`, „Tank: Pull-Abwehr nach gemessenem Schadenseingang" – die Gegnerzahl als Vorbote bleibt,
+  der gemessene Verlauf fehlt der Pull-Abwehr; Modell vor dem Code.
+- *Nicht gebaut:* ein Register, das jeder Einstellung eine Klasse zuweist und neue in der CI meldet – es prüfte nur, dass
+  ein Etikett existiert, nicht dass die Einordnung stimmt (Surrogat). Neue Einstellungen von Upstream ordnet der
+  inhaltliche Abgleich des Syncs ein.
+
+**Falsifikation.** *Kein Defekt:* widerlegt – beide Texte versprechen, was der Code nicht tat; Intervene ohne jede
+Abstandsprüfung im Angriffspfad ist am Code belegt. *Option falsch:* die Grenze in der Zielwahl wäre die vollständigere
+Klasse gewesen und brach drei Texte; die gewählte lässt eine künftige Sprungaktion ohne eigene Prüfung offen – benannt
+in Konzept 18, „Grenzen", mit der Prüfung beim Sync. *Ausgeliefert, nichts ändert sich:* möglich, wenn er abseits nie
+steht oder beim Dragoon eine eigene enge Grenze gesetzt hat; dann ändert sich für ihn nur der Paladin. Bei den
+Heilschwellen ändert sich bei Fähigkeiten fast nichts (Vorausschau über die Animationssperre), spürbar nur bei Pneuma.
+
+*Prüfgrad:* statisch an jedem Leser, Versionsgeschichte, Job-Guide, Compile; im Spiel nicht beobachtet.
+
 ---
 ## B · Commit-Register (Fork vs. `upstream/main`)
 

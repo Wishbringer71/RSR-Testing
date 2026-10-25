@@ -1347,7 +1347,10 @@ internal partial class Configs : IPluginConfiguration, IM3Settings
 		Description = "RSR waits a random time in this range before raising.",
 		Filter = RaiseActionCondition, Section = 1)]
 	[Range(0, 10, ConfigUnitType.Seconds, 0.002f)]
-	public Vector2 RaiseDelay2 { get; set; } = new(3f, 3f);
+	// Default none, as for InterruptDelay: the wait exists to look less mechanical, and a raise that waits leaves the
+	// member dead that much longer. The member accepts the raise when he chooses, and the race with another raiser is
+	// handled without it (concept 11, A358).
+	public Vector2 RaiseDelay2 { get; set; } = new(0, 0);
 
 	[Range(0, 10000, ConfigUnitType.None, 100)]
 	[UI("Don't raise below this MP",
