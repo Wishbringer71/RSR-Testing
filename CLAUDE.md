@@ -59,9 +59,9 @@ Persistenz: Priorität 1, jede Eingabe, ausnahmslos. Kontextkomprimierung→Date
 
 **Bevor ich ihn frage oder ihm etwas vorlege**
 - Entscheidbar aus Repository, Wirktexten, Referenzquellen (The Balance), seinen Protokollen oder seinen Vorgaben? Dann entscheide und setze ich um; eine Frage ist erst übrig, wenn alle diese Quellen gesucht sind (seine Rügen, 02.10. und 18.10.2026). Beispiel: Die Voreinstellung einer neuen Regel ist entschieden (→ „Option und Beobachtbarkeit"); danach zu fragen nannte er eine Beleidigung.
-- Gegen meine eigene Empfehlung die drei Antithesen geführt, mit Quellen gegen sie, nicht nur für sie. Hält eine, gilt die Empfehlung nicht — „teilweise entkräftet" ist kein Freibrief (A246).
+- Jede Frage vorher im vollständigen kritischen Loop an Spielszenarien durchgespielt (seine Vorgabe, 26.10.2026): konkrete Kampfverläufe, in denen sie sich stellt; dazu die Antithesen – gegen meine Empfehlung die drei –, mit Quellen gegen sie, nicht nur für sie, und der Versuch, jede zu widerlegen. Hält eine, gilt die Empfehlung nicht — „teilweise entkräftet" ist kein Freibrief (A246).
 - Kann er es im Kampf sehen, oder hat er es entschieden? Sonst nicht fragen.
-- In Kampfbegriffen gestellt?
+- Bleibt sie danach offen: mit den Sachverhalten im Spiel dargestellt, jeder Vorschlag mit einem Beispiel aus dem Kampf belegt (seine Vorgabe, 26.10.2026).
 - Betrifft es meine Hilfsmittel oder einen Schaden, den ich verursacht habe? Dann nicht zur Wahl stellen.
 - Sonst gebündelt, mit durchgerechneten Konsequenzen und Empfehlung (→ „Vorlagen an ihn").
 
@@ -263,7 +263,7 @@ Gelten in jeder Stufe. Eine Aussage, die eine davon verletzt, ist unbelegt.
 # Vorlagen an ihn
 
 - Keine Hinweise auf Grundlagen, die er kennt (seine Vorgabe): weder meine Arbeitsweise („erst Konzept, dann Code“, „voller Loop“) noch den Umgang mit seinem System (eine Plugin-Datei nur bei geschlossenem Spiel löschen).
-- Entscheidungsbedarf gebündelt am Ende, nach ADR-Struktur (Kontext, betroffene Stellen, Mechanismus, Konsequenzen als Bilanz im Spielgeschehen – was besser, was schlechter wird, was überwiegt), mit begründeter Empfehlung und durchgerechneten Konsequenzen — je Fall getrennt, wo sie sich unterscheiden.
+- Entscheidungsbedarf gebündelt am Ende, nach ADR-Struktur (Kontext, betroffene Stellen, Mechanismus, Konsequenzen als Bilanz im Spielgeschehen – was besser, was schlechter wird, was überwiegt), mit begründeter Empfehlung und durchgerechneten Konsequenzen, jede Option an einem durchgespielten Kampfbeispiel (→ „Bevor ich ihn frage oder ihm etwas vorlege") — je Fall getrennt, wo sie sich unterscheiden.
 - Alles ohne Entscheidungsabhängigkeit ist vorher fertig; keine Zwischenrückfragen.
 - Er entscheidet, was ihn trifft: Verhalten im Kampf, Voreinstellungen, Optionen, Umfang und Reihenfolge der Arbeit, Freigabe und Veröffentlichung.
 - Meine Hilfsmittel (Prüfskripte, Selbsttests, Berichtsformat) stehen nicht zur Abstimmung; einen Defekt darin melde ich mit der getroffenen Entscheidung.
