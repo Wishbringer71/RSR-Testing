@@ -36,9 +36,6 @@ public sealed class SMN_Reborn : SummonerRotation
 	[RotationConfig(CombatType.PvE, Name = "Use Crimson Cyclone when moving")]
 	public bool AddCrimsonCycloneMoving { get; set; } = false;
 
-	[RotationConfig(CombatType.PvE, Name = "Use Swiftcast on ressurection")]
-	public bool AddSwiftcastOnRaise { get; set; } = true;
-
 	[RotationConfig(CombatType.PvE, Name = "Raise while in solar bahamut")]
 	public bool SBRaise { get; set; } = true;
 
@@ -911,12 +908,10 @@ public sealed class SMN_Reborn : SummonerRotation
 
 	protected override bool EmergencyAbility(IAction nextGCD, out IAction? act)
 	{
+		// Swiftcast on Resurrection is the job setting "Raise with Swiftcast or Dualcast" (CustomRotation's emergency
+		// pass). A rotation option of its own here overrode it on, and off it changed nothing (A402).
 		if (SwiftcastPvE.CanUse(out act))
 		{
-			if (AddSwiftcastOnRaise && nextGCD.IsTheSameTo(false, ResurrectionPvE))
-			{
-				return true;
-			}
 			if (AddSwiftcastOnLowST && !RubyRitePvE.EnoughLevel && nextGCD.IsTheSameTo(false, RubyRuinPvE, RubyRuinIiPvE, RubyRuinIiiPvE))
 			{
 				return true;

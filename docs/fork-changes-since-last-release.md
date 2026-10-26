@@ -116,3 +116,9 @@ With Thin Air up and someone dead, the White Mage hard cast Raise - eight second
 "Hard-cast raise" set to "Do not hard cast Raise" or to a mode that waits for the other healers, and while moving it
 chose no GCD at all, not even Dia or a Lily. Whether to hard cast is now decided only by that setting, as for every
 other healer; Thin Air still makes the raise cost no MP.
+
+## Summoner: Swiftcast on Resurrection follows "Raise with Swiftcast or Dualcast"
+
+With "Raise with Swiftcast or Dualcast" off, a Summoner still swiftcast Resurrection - through the rule that puts
+Swiftcast on any long cast, and through the Summoner's own option for Swiftcast on Resurrection, whose off switch
+changed nothing. The setting, which is kept per job, now decides alone; the Summoner option is gone.

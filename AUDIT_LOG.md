@@ -11706,6 +11706,32 @@ bis zum Tod, auf der die Rückhaltung urteilt.
 
 *Prüfgrad:* statisch, Compile, Prüfskripte; im Spiel nicht beobachtet.
 
+### A402 · Swiftcast auf die Wiederbelebung an „Raise with Swiftcast or Dualcast" vorbei (26.10.2026)
+
+- *Klassensuche nach A401:* jede Stelle, die über Swiftcast für eine Wiederbelebung entscheidet. Der zentrale Weg
+  (`CustomRotation.EmergencyAbility`, Zweig „Swiftcast for a raise") fragt die Einstellung; zwei andere nicht.
+- *Befund 1 (Defekt, Upstream):* Der allgemeine Zweig der Magier (`Role is RangedMagical && CastTime >= 5`) legt
+  Swiftcast auf jeden langen Zauber, Resurrection (Beschwörer) und Verraise (Rotmagier) eingeschlossen.
+- *Befund 2 (Defekt, Upstream):* `SMN_Reborn` „Use Swiftcast on ressurection" (ab Werk an) legte Swiftcast auf
+  Resurrection, sobald sie der nächste GCD war. Aus änderte nichts, weil der zentrale Weg dann Swiftcast nahm; an überging
+  die zentrale Einstellung, wenn sie aus stand – der einzige Fall, in dem Resurrection mit bereitem Swiftcast der nächste
+  GCD wird.
+- *Wirkung im Kampf:* Mit „Raise with Swiftcast or Dualcast" aus (die Einstellung gilt je Job) verbrauchte der
+  Beschwörer Swiftcast trotzdem auf die Wiederbelebung, gegen ihren Text „If this is off, RSR never uses Swiftcast or
+  Dualcast to raise". Mit der Vorgabe (an) ändert sich nichts. Seine Regel „Swiftcast bleibt für Wiederbelebungen"
+  spricht für die Vorgabe; wer die Einstellung ausschaltet, bekommt jetzt, was sie sagt.
+- *Behebung:* Der allgemeine Zweig nimmt die eigene Wiederbelebung (`Raise` des Jobs) nur bei eingeschalteter
+  Einstellung. Die Beschwörer-Option ist entfernt: Ihre Ablösung ist der zentrale Zweig, der dieselbe Lage mit der
+  Einstellung abdeckt (auch für befohlene Wiederbelebungen über `nextGCD`); ein gespeicherter Wert der Option bleibt
+  ungelesen liegen. `ChurinSMN` trägt dieselbe Option; außerhalb seines Profils, nicht erfasst.
+- *Falsifikation:* kein Defekt – widerlegt, der Text bindet; Option falsch – mit der Vorgabe gehen beide Wege wie
+  zuvor; ausgeliefert und nichts ändert sich – mit der Vorgabe zutreffend.
+- *Betroffene:* N (Beschwörer, Rotmagier mit ausgeschalteter Einstellung), R (Basispass `EmergencyAbility`,
+  CHANGELOG).
+- *Dokumentation:* Konzept 11 („Zustand von Spontanität"), CHANGELOG, Release-Text.
+
+*Prüfgrad:* statisch, Compile, Prüfskripte; im Spiel nicht beobachtet.
+
 ---
 ## B · Commit-Register (Fork vs. `upstream/main`)
 

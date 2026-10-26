@@ -142,6 +142,13 @@ verändert.
 Der Rotmagier fällt aus der Reihe: Dualcast steht in `StatusHelper.SwiftcastStatus`, also ist
 `HasSwift` nach jedem Zauber wahr und Stufe (A) greift ohnehin. Für ihn war der Pfad nie defekt.
 
+**Swiftcast auf die Wiederbelebung entscheidet nur „Raise with Swiftcast or Dualcast" (A402).** Ihr Text: „If this is
+off, RSR never uses Swiftcast or Dualcast to raise." Zwei Wege gingen daran vorbei: der allgemeine Zweig der Magier,
+der Swiftcast auf jeden Zauber ab 5 s Wirkzeit legt (`CustomRotation.EmergencyAbility`; Resurrection und Verraise sind
+solche Zauber), und die Beschwörer-Option „Use Swiftcast on ressurection" (ab Werk an), die ausgeschaltet nichts
+änderte, weil der zentrale Weg dann trotzdem Swiftcast nahm. Der allgemeine Zweig nimmt die eigene Wiederbelebung
+jetzt nur bei eingeschalteter Einstellung; die Beschwörer-Option ist entfernt – die Einstellung gilt je Job.
+
 **Die Hartwirk-Zweige verlangten einen Zustand, den sie selbst verhinderten.** Alle sechs feuerten
 nur bei `SwiftcastPvE.Cooldown.IsCoolingDown`. Ist `RaisePlayerBySwift` abgeschaltet, zündet die
 Rotation Spontanität nie — für einen Heiler sind die beiden anderen Zünder auf `JobRole.RangedMagical`

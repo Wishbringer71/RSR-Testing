@@ -105,6 +105,12 @@ The AoE count of a straight-line action aimed at an enemy (`CastType` 4 with a r
 Arrow, Shadowbringer) runs from the player towards that target again, as the game fires it, instead of along the
 player's facing at the moment of the check. A line without a target keeps the facing.
 
+### Behaviour change in RotationSolver.Basic: no Swiftcast on a raise against "Raise with Swiftcast or Dualcast"
+
+`CustomRotation.EmergencyAbility` puts Swiftcast on a caster's spell of five seconds or more; it now leaves out the
+job's own raise while "Raise with Swiftcast or Dualcast" is off. A derived rotation calling the base pass no longer
+swiftcasts Resurrection or Verraise against that setting.
+
 ## 7.5.7.8+wsh1
 
 ### Dependency of RotationSolver.Basic: RebornMaterial 7.5.7.0

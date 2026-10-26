@@ -759,7 +759,10 @@ public partial class CustomRotation
 			return true;
 		}
 
-		if (nextGCD is BaseAction action)
+		// A long cast takes Swiftcast - the job's own raise only where "Raise with Swiftcast or Dualcast" allows it, whose
+		// text promises that off, RSR never uses Swiftcast to raise; Resurrection and Verraise are long casts (A402).
+		if (nextGCD is BaseAction action
+			&& (Service.Config.RaisePlayerBySwift || Raise == null || !nextGCD.IsTheSameTo(true, Raise)))
 		{
 			if (Role is JobRole.RangedMagical && action.Info.CastTime >= 5 && IActionHelper.IsLastActionGCD() && SwiftcastPvE.CanUse(out act))
 			{

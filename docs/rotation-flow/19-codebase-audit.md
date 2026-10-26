@@ -41,9 +41,10 @@ Abgearbeitet nach seiner Vorgabe vom 26.10.2026: „todo nach priorität und ums
   den Code führen; ohne Befund (A400). Klassensuche nach Abklingzeit-Fragen in den Rotationen: ohne Defekt, eine tote
   Bedingung beim Ninja (A400).
 - **Rotationen, begonnen (26.10.2026):** Weißmagier vollständig – Thin Air wirkte Raise hart, gleich was die
-  Einstellung sagte (behoben A401, Konzept 11) –, Maschinist bis zur Wildfire-Logik ohne Befund; die Leser der breiten Tankbuster-Lesart (`IsHostileCastingToTank`) sind nach A395 nur noch die
+  Einstellung sagte (behoben A401, Konzept 11) –, Maschinist vollständig ohne Befund; Klassensuche Wiederbelebung:
+  Swiftcast auf die Wiederbelebung ging an „Raise with Swiftcast or Dualcast" vorbei (behoben A402); die Leser der breiten Tankbuster-Lesart (`IsHostileCastingToTank`) sind nach A395 nur noch die
   Öffnung der Einzelabwehr für Tanks und Heiler, wie Konzept 09 sie führt.
-- **Offen:** die Rotationen Datei für Datei, zuerst der Rest des Maschinisten, dann Beschwörer und die
+- **Offen:** die Rotationen Datei für Datei, zuerst Beschwörer, dann die
   übrigen Jobs (`RebornRotations`; `ExtraRotations` nur, wo eine zentrale Änderung sie berührt, Churin ausgenommen);
   `RotationSolver/UI`.
 
