@@ -261,7 +261,10 @@ im Code.
   Engagement, Corps-a-corps in Bewegung) ist ab Werk aus. Die Vorstöße, die die Rotationen ab Werk nutzen (Onslaught im
   Burst, Corps-a-corps), stehen unter der zentralen Abstandsgrenze.
 - *Für den Abgleich mit The Balance vorgemerkt* (Spieltatsache oder Strategie, keine Spielerentscheidung):
-  - Restzeiten von Swift und Hunt vor Reawaken (je 10 s) und der Bündelzeitpunkt vor Serpent's Ire (75 s), Viper
+  - Restzeiten von Swift und Hunt vor Reawaken (je 10 s) und der Bündelzeitpunkt vor Serpent's Ire (75 s), Viper –
+    abgeglichen (A387): The Balance nennt für beide keine Zahl; der Reawaken-Ablauf dauert laut Spielblatt 13,2 s,
+    unter Swiftscaled 11,22 s, sein letzter Schlag fällt nach rund 8,7 s – die 10 s decken ihn mit kleinem Polster. Die
+    75 s sind die Bündelstrategie, keine Spieltatsache
   - Paint-Grenze 5, Piktomant – abgeglichen (A385): fünf Ladungen sind die Obergrenze des Spiels (The Balance); die
     Einstellung erlaubt eine niedrigere Schwelle
   - Lieddauern 43/43/34 s, Barde – abgeglichen (A382): The Balance nennt dieselben Zeiten; die Liedlänge selbst kommt
@@ -269,13 +272,15 @@ im Code.
   - Death's Design bei 10 s, Schnitter – abgeglichen (A383): The Balance nennt keine Zahl; die Einstellung gilt nur mit
     der eigenen Zeitwahl, ab Werk aus, sonst plant die zentrale DoT-Planung
   - Meikyo Shisui bei 14 s im Countdown, Samurai – abgeglichen (A381): der Opener von The Balance setzt ihn bei −14 s
-  - Earthly Star bei 4 s im Countdown, Astrologe
+  - Earthly Star bei 4 s im Countdown, Astrologe – abgeglichen (A387): The Balance setzt ihn bei −4 s („our bread and
+    butter")
 - *Aus dem Abgleich mit The Balance umgestellt:* „Use Leylines in combat when standing still" (Schwarzmagier) ist ab
   Werk an (A386). Ab Werk aus setzte RSR Ley Lines nie; The Balance setzt sie etwa auf Abklingzeit, und ein vertaner
   Kreis kostet Schaden, keine Sicherheit (Konzept 14, „Schwarzmagier: Feuer und Eis, Ley Lines").
   - die Schätzung „8 % der eigenen Gesundheit als Gruppenschaden je Sekunde", mit der der Gelehrte Bio auf kurzlebige
-    Ziele vermeidet – eine Stellvertretergröße neben der gemessenen Zeit bis zum Tod, die die zentrale DoT-Planung
-    schon liest
+    Ziele vermeidet – umgestellt (A387): Sie gilt nur noch, solange für das Ziel keine Zeit bis zum Tod gemessen ist
+    (`CustomRotation.IsTimeToKillMeasured`); danach entscheidet die Messung gegen die Zeit bis zum Tod der Aktion. Vorher
+    hielt sie Bio auch auf einem Ziel zurück, dessen gemessene Zeit lang genug war
 
 ## Bilanz im Kampf
 

@@ -1376,6 +1376,18 @@ public partial class CustomRotation
 	}
 
 	/// <summary>
+	/// Whether a time to kill of <paramref name="target"/> is measured: its health falls on balance, by the corrected
+	/// forecast the rules read. The targeting weighs a measured one against each action's time to kill; an estimate of a
+	/// rotation's own belongs to the time before it (A387).
+	/// </summary>
+	/// <param name="target">The enemy.</param>
+	/// <returns>True when a time to kill is measured for it.</returns>
+	public static bool IsTimeToKillMeasured(IBattleChara? target)
+	{
+		return target != null && !float.IsNaN(target.GetCorrectedTTK());
+	}
+
+	/// <summary>
 	/// How long each mob has been in combat.
 	/// </summary>
 	[Description("Mobs Time")]

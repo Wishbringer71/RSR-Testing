@@ -103,7 +103,8 @@ public sealed class SCH_Reborn : ScholarRotation
 	[RotationConfig(CombatType.PvE, Name = "Allow Sacred Soil while moving if fighting a boss")]
 	public bool SacredSoilBossExemption { get; set; } = true;
 
-	[RotationConfig(CombatType.PvE, Name = "Enable ballpark DoT time-to-kill estimator (in addition to normal TTK configs)")]
+	[RotationConfig(CombatType.PvE, Name = "Enable ballpark DoT time-to-kill estimator (in addition to normal TTK configs)",
+		Tooltip = "In a fight: until a time to kill is measured for the enemy, Bio waits while the enemy has less health than the party would deal in 12 seconds at the percentage set above; once one is measured, the action's own time to kill decides. Off: Bio goes by the action's time to kill alone.")]
 	public bool UseBallparkTTK { get; set; } = true;
 
 	[RotationConfig(CombatType.PvE, Name = "How to use Deployment Tactics")]
@@ -721,7 +722,7 @@ public sealed class SCH_Reborn : ScholarRotation
         */
 		if (!BioIiPvE.EnoughLevel)
 		{
-			if (BioPvE.CanUse(out act) && BioPvE.Target.Target.CurrentHp >= expectedHPToLive12Seconds)
+			if (BioPvE.CanUse(out act) && BallparkAllows(BioPvE.Target.Target, expectedHPToLive12Seconds))
 			{
 				return true;
 			}
@@ -738,7 +739,7 @@ public sealed class SCH_Reborn : ScholarRotation
 		}
 		else if (!ArtOfWarPvE.EnoughLevel)
 		{
-			if (BioIiPvE.CanUse(out act) && BioIiPvE.Target.Target.CurrentHp >= expectedHPToLive12Seconds)
+			if (BioIiPvE.CanUse(out act) && BallparkAllows(BioIiPvE.Target.Target, expectedHPToLive12Seconds))
 			{
 				return true; // No better options still and configured TTK should cover whether we want to use it
 			}
@@ -750,7 +751,7 @@ public sealed class SCH_Reborn : ScholarRotation
 		}
 		else if (!BroilMasteryTrait.EnoughLevel)
 		{
-			if (BioIiPvE.CanUse(out act) && nearbyHostiles < GetAoWBreakevenTargets() && BioIiPvE.Target.Target.CurrentHp >= expectedHPToLive12Seconds)
+			if (BioIiPvE.CanUse(out act) && nearbyHostiles < GetAoWBreakevenTargets() && BallparkAllows(BioIiPvE.Target.Target, expectedHPToLive12Seconds))
 			{
 				return true; // This is better against 2 targets IFF it will last >= 24 seconds
 			}
@@ -767,7 +768,7 @@ public sealed class SCH_Reborn : ScholarRotation
 		}
 		else if (!BroilMasteryIiTrait.EnoughLevel)
 		{
-			if (BioIiPvE.CanUse(out act) && nearbyHostiles < GetAoWBreakevenTargets() && BioIiPvE.Target.Target.CurrentHp >= expectedHPToLive12Seconds)
+			if (BioIiPvE.CanUse(out act) && nearbyHostiles < GetAoWBreakevenTargets() && BallparkAllows(BioIiPvE.Target.Target, expectedHPToLive12Seconds))
 			{
 				return true; // This is better against 3 targets IFF it will last >= 24 seconds
 			}
@@ -789,7 +790,7 @@ public sealed class SCH_Reborn : ScholarRotation
 		}
 		else if (!BroilIiiPvE.EnoughLevel)
 		{
-			if (BioIiPvE.CanUse(out act) && nearbyHostiles < GetAoWBreakevenTargets() && BioIiPvE.Target.Target.CurrentHp >= expectedHPToLive12Seconds)
+			if (BioIiPvE.CanUse(out act) && nearbyHostiles < GetAoWBreakevenTargets() && BallparkAllows(BioIiPvE.Target.Target, expectedHPToLive12Seconds))
 			{
 				return true; // This is better against 3 targets IFF it will last >= 24 seconds
 			}
@@ -806,7 +807,7 @@ public sealed class SCH_Reborn : ScholarRotation
 		}
 		else if (!BroilIvPvE.EnoughLevel)
 		{
-			if (BiolysisPvE.CanUse(out act) && nearbyHostiles < GetAoWBreakevenTargets() && BiolysisPvE.Target.Target.CurrentHp >= expectedHPToLive12Seconds)
+			if (BiolysisPvE.CanUse(out act) && nearbyHostiles < GetAoWBreakevenTargets() && BallparkAllows(BiolysisPvE.Target.Target, expectedHPToLive12Seconds))
 			{
 				return true; // This is better against 4 targets IFF it will last >= 27 seconds
 			}
@@ -823,7 +824,7 @@ public sealed class SCH_Reborn : ScholarRotation
 		}
 		else
 		{
-			if (BiolysisPvE.CanUse(out act) && nearbyHostiles < GetAoWBreakevenTargets() && BiolysisPvE.Target.Target.CurrentHp >= expectedHPToLive12Seconds)
+			if (BiolysisPvE.CanUse(out act) && nearbyHostiles < GetAoWBreakevenTargets() && BallparkAllows(BiolysisPvE.Target.Target, expectedHPToLive12Seconds))
 			{
 				return true; // This is better against 4 targets IFF it will last >= 27 seconds
 			}
@@ -846,6 +847,13 @@ public sealed class SCH_Reborn : ScholarRotation
 		}
 
 		return base.GeneralGCD(out act);
+	}
+
+	// The ballpark estimate stands in only while no time to kill is measured for the target; a measured one the targeting
+	// already weighs against the action's own time to kill (A387).
+	private static bool BallparkAllows(IBattleChara? target, float expectedHp)
+	{
+		return target != null && (IsTimeToKillMeasured(target) || target.CurrentHp >= expectedHp);
 	}
 	#endregion
 

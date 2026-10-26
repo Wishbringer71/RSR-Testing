@@ -51,3 +51,9 @@ heals, defence, interrupts, cleanses, raises, provokes and what you press still 
 you turned this on. It goes down once you stand still in combat with an enemy in range, keeps the second charge for you
 unless "Use both stacks of Leylines automatically" is on, and waits while an enemy casts an area attack you may have to
 leave the circle for. The Balance uses Ley Lines roughly on cooldown. If you place it yourself, turn the setting off.
+
+## Scholar: Bio by the measured time to kill
+
+The ballpark estimate behind "Enable ballpark DoT time-to-kill estimator" now holds Bio back only until a time to kill
+is measured for the enemy. Before, it also held Bio on an enemy that had been measured to live long enough, whenever
+its health was below what the party was assumed to deal in 12 seconds.

@@ -11332,6 +11332,29 @@ bearbeitet ist und in seinen Protokollen gespielt wird.
 
 *Prüfgrad:* Quellen, Code, Compile; im Spiel nicht beobachtet.
 
+### A387 · Rotationseinstellungen mit Spieltatsache: Viper, Astrologe, Gelehrter (26.10.2026)
+
+- *Auftrag:* Konzept 18, „Für den Abgleich mit The Balance vorgemerkt", im TODO-Punkt „Rotationen gegen The Balance
+  abgleichen".
+- *Viper:* The Balance, Viper Basic Guide („Patch Applicable: 7.55"): „The whole Reawaken combo takes 13.2s (11.22s
+  with the 15% haste buff)"; Spielblatt: Reawaken 2,2 s, First Generation 2,0 s Wiederholzeit (xivapi, 26.10.2026). Der
+  letzte Schlag fällt unter Swiftscaled nach rund 8,7 s; die Voreinstellung 10 s für Swift und Hunt deckt ihn. 75 s vor
+  Serpent's Ire: Bündelstrategie; der Guide verweist auf seinen Intermediate Guide. Keine Änderung.
+- *Astrologe:* Earthly Star bei −4 s; The Balance: „Star is labeled as -4s because that has become our bread and
+  butter". Keine Änderung.
+- *Gelehrter:* `SCH_Reborn` hielt Bio zurück, solange das Ziel weniger Gesundheit hatte als 8 % der Gesundheit des
+  Spielers je Mitglied und Sekunde über 12 s – auch neben einer gemessenen Zeit bis zum Tod, die lang genug war; nach
+  seiner Regel hat der Laufzeitwert Vorrang. Jetzt gilt die Schätzung nur, solange keine Zeit gemessen ist
+  (`CustomRotation.IsTimeToKillMeasured`, öffentlich); dann entscheidet die Zielwahl mit der Zeit bis zum Tod der
+  Aktion. Einstellungstext unverändert („in addition to normal TTK configs"), Tooltip ergänzt.
+- *Falsifikation:* (1) Kein Defekt? Die Schätzung widersprach einer vorhandenen Messung – widerlegt. (2) Option falsch?
+  Gegenposition: Die Messung zu Beginn eines Rudels ist ungenau, die Schätzung vorsichtiger. Die korrigierte Vorhersage
+  rechnet ihren eigenen Fehler heraus (`ScoreTtkForecast`), und bis sie steht, gilt die Schätzung weiter. (3) Ausgeliefert,
+  nichts ändert sich? Wo Ziele schnell sterben, liefert die Messung kurze Zeiten, und Bio fällt wie vorher nicht.
+- *Betroffen:* Endnutzer (Gelehrter); Paket: `IsTimeToKillMeasured` neu.
+
+*Prüfgrad:* Quellen, Code, Compile; im Spiel nicht beobachtet.
+
 ---
 ## B · Commit-Register (Fork vs. `upstream/main`)
 

@@ -36,16 +36,14 @@ Keine bekannt.
 
 ### Rotationen gegen The Balance abgleichen · N
 
-*Im Kampf:* Schaden – je Job Opener, Burstausrichtung und Prioritäten gegen den Guide. Der Maschinist ist abgeglichen
-(A342), von Dragoon und Viper der Opener (A343), die AoE-Schwellen aller Jobs (A344), die AoE-Wahl des Ninja (A345),
-der Beschwörer (A375), der Weißmagier (A376), die vier Tanks (A377), die übrigen Heiler (A378), von den übrigen
-Schadensausteilern Ressourcen und Buffs (A379), Meikyo und Higanbana des Samurai (A381), Lieder und Burst des Barden (A382), Enshroud des Schnitters (A383), das Fenster des Ninja
-(A384), Motive des Pictomancer (A385), Schwarzmagier mit Ley Lines ab Werk (A386). *Nächster Schritt:* das Burstfenster
-des Monk, dazu Opener und Prioritäten der Schadensausteiler außer
-Maschinist und Beschwörer; ausgeblendete Werte liest `ActionTooltip` zur Laufzeit aus den Tooltips,
-die deutschen Namen gehören in `action_names_de.json`. Dabei je Job die Rotationseinstellungen, die eine Spieltatsache
-tragen (Leistenhöchststand, Restzeiten, Lieddauern), aus dem Spiel ableiten (Konzept 18, „Rotationseinstellungen").
-*Konzept:* 14, „Vergleich mit The Balance".
+*Im Kampf:* Schaden – je Job Opener, Burstausrichtung und Prioritäten gegen den Guide. Abgeglichen: Maschinist
+(A342), Opener von Dragoon und Viper (A343), AoE-Schwellen aller Jobs (A344), AoE-Wahl des Ninja (A345), Beschwörer
+(A375), Weißmagier (A376), die vier Tanks (A377), die übrigen Heiler (A378), Ressourcen und Buffs der übrigen
+Schadensausteiler (A379), die Burstfenster von Samurai, Barde, Schnitter, Ninja, Pictomancer und Schwarzmagier
+(A381–A386), die Rotationseinstellungen mit Spieltatsache (A382, A383, A385, A387). *Nächster Schritt:* das
+Burstfenster des Monk, dazu Opener und Prioritäten der Schadensausteiler, deren Opener noch nicht gegen das Bild des
+Guides gelesen ist (alle außer Maschinist, Beschwörer, Dragoon, Viper, Samurai); ausgeblendete Werte liest
+`ActionTooltip` zur Laufzeit aus den Tooltips, die deutschen Namen gehören in `action_names_de.json`. *Konzept:* 14, „Vergleich mit The Balance".
 
 ### Six-sided Star · N
 

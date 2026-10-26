@@ -67,6 +67,11 @@ A protected helper: a song's duration from its tooltip, the generated table wher
 
 `BlackMageRotation`'s Ley Lines is no longer usable while a hostile casts an area attack (`DataCenter.IsHostileCastingAOE`).
 
+### Addition to RotationSolver.Basic: `CustomRotation.IsTimeToKillMeasured`
+
+A public helper: whether a time to kill is measured for an enemy (its health falls on balance, by the corrected
+forecast), for a rotation's own estimate to stand in only before one is.
+
 ## 7.5.7.8+wsh1
 
 ### Dependency of RotationSolver.Basic: RebornMaterial 7.5.7.0
