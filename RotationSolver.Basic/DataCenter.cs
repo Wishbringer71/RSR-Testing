@@ -3475,6 +3475,130 @@ internal static class DataCenter
 		return latest >= 0f && member.ImperviousThrough(latest);
 	}
 
+	/// <summary>
+	/// What the one tankbuster aimed at <paramref name="member"/> takes and leaves him, by the tankbuster table, as shares
+	/// of his maximum HP: <paramref name="share"/> under the mitigation that still stands at the hit
+	/// (<see cref="TankbusterTable.PredictedShare"/>), <paramref name="left"/> his HP now plus the barriers that still
+	/// stand then, less that share. <paramref name="actionId"/> names the hit. False when this cannot be said: nothing or
+	/// more than one tankbuster aimed at him, a hit the table has not measured, a marker with neither a cast nor a learned
+	/// hit, a BossModReborn prediction on him, or a member who is not a tank - the table rates hits on tanks (A312).
+	/// </summary>
+	/// <remarks>
+	/// Recognition, the footing of the tankbuster plan (concept 09, "Die Rechnung"): the highest measured hit, HP now, only
+	/// what stands at the hit - the cast's rest plus one GCD -, no heal that might come. The hit is a cast at him, a
+	/// tankbuster cast at no other member while a marker stands on him, or with a marker and no such cast the hit learned
+	/// after the same marker in this area (<see cref="TankbusterMarkerWatch.LearnedHitOn"/>), counted without what lies
+	/// on an enemy, as the plan counts it. For help from others: whether it is called for is the reader's question (A373).
+	/// </remarks>
+	internal static bool AimedTankbusterLeaves(IBattleChara member, out uint actionId, out float share, out float left)
+	{
+		actionId = 0;
+		share = 0f;
+		left = 0f;
+		if (member == null || member.IsDead || member.MaxHp == 0 || !member.IsJobCategory(JobRole.Tank)
+			|| (Player.Object is { } player && player.GameObjectId == member.GameObjectId && BMRTankbusterHitsPlayer == true))
+		{
+			return false;
+		}
+
+		var id = member.GameObjectId;
+		bool marked;
+		lock (_tankbusterLock)
+		{
+			marked = TankbusterTargetIds.Contains(id);
+		}
+
+		IBattleChara? attacker = null;
+		var remaining = 0f;
+		var hits = 0;
+		var casters = AreaCasters;
+		if (casters != null)
+		{
+			for (var i = 0; i < casters.Count; i++)
+			{
+				var h = casters[i];
+				if (h == null || !h.IsValid() || !h.IsCasting
+					|| (!OtherConfiguration.HostileCastingTank.Contains(h.CastActionId) && !TankbusterForecast.IsLearned(h.CastActionId))
+					|| (h.CastTargetObjectId != id && !(marked && !IsOtherPartyMember(h.CastTargetObjectId, id))))
+				{
+					continue;
+				}
+
+				hits++;
+				actionId = h.CastActionId;
+				attacker = h;
+				remaining = h.TotalCastTime - h.CurrentCastTime;
+			}
+		}
+
+		if (hits == 0 && marked && TankbusterMarkerWatch.LearnedHitOn(id, out var learned, out var learnedIn, out _) && learnedIn > 0f)
+		{
+			hits = 1;
+			actionId = learned;
+			remaining = learnedIn;
+		}
+
+		if (hits != 1)
+		{
+			return false;
+		}
+
+		var horizon = remaining + DefaultGCDTotal;
+		share = TankbusterTable.PredictedShare(actionId, member, attacker, horizon);
+		if (share <= 0f)
+		{
+			return false;
+		}
+
+		var maxHp = (float)member.MaxHp;
+		left = (member.CurrentHp / maxHp) + TankbusterForecast.BarrierAt(member, horizon, maxHp) - share;
+		return true;
+	}
+
+	// Whether this object is a party member other than the one with exceptId: a cast aimed at him is his.
+	private static bool IsOtherPartyMember(ulong objectId, ulong exceptId)
+	{
+		if (objectId == 0 || objectId == exceptId)
+		{
+			return false;
+		}
+
+		var party = PartyMembers;
+		for (var i = 0; i < party.Count; i++)
+		{
+			if (party[i] is { } m && m.GameObjectId == objectId)
+			{
+				return true;
+			}
+		}
+
+		return false;
+	}
+
+	// When help for a member was last held back for a small measured tankbuster, per member and action: one trace line
+	// per hit, as the area skip writes one per cast (A334).
+	private static readonly ConcurrentDictionary<(ulong, uint), DateTime> _tankbusterHelpHeld = new();
+
+	/// <summary>
+	/// Writes once per hit that help for <paramref name="member"/> is held back: the measured tankbuster
+	/// <paramref name="actionId"/> takes <paramref name="share"/> and leaves him <paramref name="left"/> of his maximum HP.
+	/// </summary>
+	internal static void NoteTankbusterHelpHeld(IBattleChara member, uint actionId, float share, float left, float line)
+	{
+		var key = (member.GameObjectId, actionId);
+		var now = DateTime.Now;
+		if (_tankbusterHelpHeld.TryGetValue(key, out var last) && (now - last).TotalSeconds <= DefaultGCDTotal)
+		{
+			_tankbusterHelpHeld[key] = now;
+			return;
+		}
+
+		_tankbusterHelpHeld[key] = now;
+		var name = Service.GetSheet<Action>().GetRowOrDefault(actionId)?.Name.ExtractText() ?? "?";
+		DefenseTrace.Line($"tankbuster help held: {name} #{actionId} on {member.Name.TextValue} takes {share:P0} of max HP"
+			+ $" and leaves {left:P0}, above the single heal line {line:P0} and under a large shield");
+	}
+
 	// An enemy - a helper too - casting at the member with this id an action on the tankbuster list or one the
 	// tankbuster table has measured, in the window of the cast recognition.
 	private static bool IsKnownTankbusterCastAt(IBattleChara? h, ulong id)

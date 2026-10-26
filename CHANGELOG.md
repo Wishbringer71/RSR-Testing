@@ -30,6 +30,13 @@ within its cast (Item sheet, 8 s) and a request's round trip, or while his corre
 The ordinary HP potion waits while a feather raise is due and the player outlives that cast, unless a tankbuster is on
 its way to him; both share one recast.
 
+### Behaviour change in RotationSolver.Basic: help for a measured tankbuster by its size
+
+The `Tankbuster` and attacked target types no longer pick another member whose one measured tankbuster takes less than
+the largest stated barrier and leaves him at or above `HealthSingleSpell` with what stands at the hit, under
+`HoldMitigationUnderInvulnerability`, outside heal paths, area defence and a commanded single defence. In the single
+defence the attacked fallback no longer takes back a member the tankbuster filter passed over.
+
 ## 7.5.7.8+wsh1
 
 ### Dependency of RotationSolver.Basic: RebornMaterial 7.5.7.0

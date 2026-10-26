@@ -813,11 +813,11 @@ internal static class TankbusterForecast
 
 	// The barrier counts only when it still stands at the horizon; the earliest barrier's end decides, so a short one
 	// beside a long one counts none, and one without a known status counts none (as in StatusHelper.HasSurvivingShield).
-	// Read from the status list itself, like every status here.
-	private static float BarrierAt(IBattleChara player, float horizon, float maxHp)
+	// Read from the status list itself, like every status here. Also read for another member (DataCenter.AimedTankbusterLeaves).
+	internal static float BarrierAt(IBattleChara chara, float horizon, float maxHp)
 	{
-		return player.GetObjectShield() > 0 && ShortestCopy(player, StatusHelper.ShieldStatus) >= horizon
-			? player.GetObjectShield() / maxHp
+		return chara.GetObjectShield() > 0 && ShortestCopy(chara, StatusHelper.ShieldStatus) >= horizon
+			? chara.GetObjectShield() / maxHp
 			: 0f;
 	}
 

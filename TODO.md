@@ -17,9 +17,10 @@ der Tank-Punkt ist entschieden (A357), sein Auftrag zu den Einstellungen ist erl
 daraus gebaut (A359). Sein Auftrag vom 25.10.2026 abends wiederholt beide: das TODO weiter, danach ein zweiter
 Durchgang des Einstellungs-Audits, Rotationseinstellung für Rotationseinstellung. Seine Frage vom 25.10.2026 abends zur
 Abwehr ohne Heiler ist umgesetzt (A361), die Phönixfeder daraus ebenso (A372). Seine Frage
-vom 25.10.2026 abends zu Chorts Türmen und dem Glockenspiel ist beantwortet und umgesetzt (A365).
+vom 25.10.2026 abends zu Chorts Türmen und dem Glockenspiel ist beantwortet und umgesetzt (A365). Die Heiler-Hilfe auf
+einen kleinen gemessenen Tankbuster ist gebaut (A373); die Reflexion daraus steht als eigener Punkt.
 
-1. Heiler-Hilfe auf einen kleinen gemessenen Tankbuster
+1. Reflexion auf einen kleinen gemessenen Tankbuster des anderen Tanks
 2. Rotationen gegen The Balance abgleichen
 3. Six-sided Star und Flamethrower
 4. AoE-Schwelle an drei Orten
@@ -33,13 +34,13 @@ Keine bekannt.
 
 ## Offene Arbeit
 
-### Heiler-Hilfe auf einen kleinen gemessenen Tankbuster · N
+### Reflexion auf einen kleinen gemessenen Tankbuster des anderen Tanks · N
 
-*Im Kampf:* Ein Weißmagier setzte Göttlichen Segen und Wasserschleier auf einen Tankbuster, den die Tabelle mit 20 % der
-LP misst (Protokoll vom 25.10.2026, A364); beim nächsten schweren Treffer fehlen sie. Der Plan des Tanks bemisst seine
-eigene Abwehr am gemessenen Treffer, die Hilfe der Heiler nicht. *Nächster Schritt:* Loop – die Hilfe für einen
-gemessenen Tankbuster nach dem bemessen, was der Treffer beim Ziel übrig lässt. *Konzept:* 09, „Hilfe für das Ziel eines
-Tankbusters".
+*Im Kampf:* Trifft ein gemessener kleiner Tankbuster nur den anderen Tank, geht deine Reflexion in der Einzelabwehr
+weiter, obwohl Heiler und Tanks ihm seit A373 dafür keine Hilfe mehr geben; beim nächsten Raidwide oder schweren Treffer
+fehlt sie 60 s. *Nächster Schritt:* Loop – die Reflexion an derselben Größenregel messen; sie zielt auf den Gegner,
+also über die Quelle der Einzelabwehr statt über die Zielwahl, und eine BossModReborn-Vorhersage ohne Ziel daneben
+muss sie weiter öffnen. *Konzept:* 09, „Hilfe für das Ziel eines Tankbusters".
 
 ### Rotationen gegen The Balance abgleichen · N
 

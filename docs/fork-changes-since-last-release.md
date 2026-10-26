@@ -11,3 +11,12 @@ none of your actions goes out, mitigation included, and it shares its recast wit
 heal forecast says you would fall before it ends - and goes once that has passed. While a raise with it is due and you
 live through its cast, your HP potion waits, as a potion would keep the feather off for 75 seconds; a potion with a
 tankbuster on its way to you still goes.
+
+## Healers keep their single-target mitigation for the tankbuster that needs it
+
+With "Spend only the mitigation a measured tankbuster needs" on, a healer's single-target mitigation - Aquaveil, Divine
+Benison, Exaltation and the like - and a tank's help for another member no longer go onto a tank whose tankbuster has
+been measured to take less than a large shield absorbs and to leave him at or above your HP threshold for single-target
+healing GCDs. They stay ready for the next hit that does need them. A BossModReborn prediction beside a tankbuster no
+longer sends that help onto the tank anyway, which also put it on a tank under Hallowed Ground or Superbolide. The
+first time a tankbuster is met nothing changes: it is measured with that hit.

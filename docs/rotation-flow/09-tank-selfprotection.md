@@ -82,7 +82,8 @@ Einstellungstexte nennen das. Zwei Optionen, ab Werk an:
 - „Use the invulnerability before a tankbuster nothing less survives": die Unverwundbarkeit vor dem Treffer; nur Tanks.
 
 Die Regel sitzt auf der Stufe Tanks: Die Rechnung ist für alle vier gleich, die Aktionen liest sie aus den Wirktexten.
-Der Heiler-Teil sitzt auf der Stufe Heiler; Damage Dealer betrifft sie nicht.
+Die Hilfe für andere – Einzelabwehr der Heiler, Hilfe der Tanks – sitzt in der zentralen Zielwahl, für alle, die
+helfen (Abschnitt „Hilfe für das Ziel eines Tankbusters", A373); Damage Dealer betrifft sie nicht.
 - Erkennung in `TankbusterForecast`: Sie liest keine Option und wählt keine Aktion. Sie liest die Casts aller Gegner,
   auch unsichtbarer Helfer, die einen gelisteten oder gemessenen Tankbuster auf ihn wirken (`DataCenter.AreaCasters`,
   A303); vorher sah sie nur anvisierbare Gegner.
@@ -95,7 +96,8 @@ Der Heiler-Teil sitzt auf der Stufe Heiler; Damage Dealer betrifft sie nicht.
 - Entscheidung in `CustomRotation_Tankbuster.cs`: `UpdateTankbusterPlan` (je Durchlauf), `TankbusterPlanAbility`
   (Ausführung, Fähigkeiten-Slot 9), `HoldDefenceForTankbuster` (Zurückhalten über `IBaseAction.HoldDefenceOnSelf`,
   Gatter in `BaseAction.CanUse`, Ablehnung „HeldForTheInvulnerability").
-- Für Heiler: `StateUpdater.ShouldAddDefenseSingle`.
+- Für Heiler: `StateUpdater.ShouldAddDefenseSingle` (Unverwundbarkeit); die Hilfe für andere nach der Größe des
+  gemessenen Treffers in `ActionTargetInfo` (`MeasuredHitCallsForNoHelp`).
 
 ### Seine Angaben
 
@@ -1190,7 +1192,8 @@ liefert die Kampfdaten, keine Regeln; ein Report von ihm würde zeigen, welche M
 
 **Sachstand (A328):** Vor einem Tankbuster auf ein anderes Mitglied – meist den anderen Tank – setzt jeder Tank seine
 Hilfe für andere auf dieses Mitglied: Paladin Intervention, Krieger Urflackern, Dunkelritter The Blackest Night,
-Revolverklinge Herz des Korunds. Die Heiler setzen ihre Einzelabwehr auf dasselbe Mitglied.
+Revolverklinge Herz des Korunds. Die Heiler setzen ihre Einzelabwehr auf dasselbe Mitglied. Beides unterbleibt, wo
+der gemessene Tankbuster keine Hilfe braucht (A373, Zielwahl).
 
 **Im Kampf:** Trägt der andere Tank einen Tankbuster-Marker oder wirkt ein Gegner einen bekannten Tankbuster auf ihn,
 bekommt er vor dem Einschlag deine Hilfe, und von den Heilern ihre Einzelabwehr statt dessen, den der Boss gerade
@@ -1227,9 +1230,30 @@ ein Schadensausteiler, ausgeschaltete Einzelabwehr oder eine vorher greifende Pu
 - Zieltyp „angegriffen", den die Einzel- und die Flächenabwehr für jede freundliche Aktion ohne eigene Zielangabe
   setzen: Steht unter den Kandidaten eines, auf das ein Tankbuster zielt, nur diese; sonst wie bisher, wen sein eigenes
   Ziel angreift.
-- Unter „Hold mitigation under invulnerability" fällt ein Mitglied heraus, das jeden auf es gerichteten Tankbuster
-  unter Heiligem Boden oder Meteoritenfall nimmt (sein Vorschlag vom 04.10.2026). Bei einem Marker oder einer
-  Vorhersage gilt das nicht, beide nennen hier keine Einschlagszeit.
+- Unter „Spend only the mitigation a measured tankbuster needs" fällt ein Mitglied heraus, das jeden auf es
+  gerichteten Tankbuster unter Heiligem Boden oder Meteoritenfall nimmt (sein Vorschlag vom 04.10.2026). Bei einem
+  Marker oder einer Vorhersage gilt das nicht, beide nennen hier keine Einschlagszeit.
+- Unter derselben Option fällt ein anderes Mitglied heraus, dessen gemessener Tankbuster keine Hilfe braucht (A373):
+  Er nimmt weniger, als ein großer Schild auffängt (The Blackest Night, 25 % laut Wirktext, `LargestStatedBarrierShare`),
+  und lässt ihm mit dem, was beim Einschlag steht, mindestens die Schwelle, ab der deine Rotation ihn mit einem
+  Einzelheil-GCD heilt („HealthSingleSpell", ab Werk 65 %). Das ist die Größenregel der Flächenabwehr
+  (`AreaShareCallsForMitigation`): Minderung, wo sonst Heilung nötig wäre; ein großer Treffer gilt immer als groß.
+  - Erkennung (`DataCenter.AimedTankbusterLeaves`, ohne Option und Schwelle): genau ein Tankbuster auf ihm – ein Wirken
+    auf ihn, ein Tankbuster-Wirken auf kein anderes Mitglied neben einem Marker auf ihm, sonst neben dem Marker der dort
+    gelernte Treffer (Abschnitt „Ein Marker ohne Wirken"). Gerechnet wie im Plan des Tanks: der höchste gemessene
+    Treffer unter der Minderung, die beim Einschlag steht, gegen LP jetzt plus die Barrieren, die dann stehen.
+  - Nichts gesagt, also Hilfe wie bisher: zwei Tankbuster auf ihm, ein ungemessener, ein Marker ohne Wirken und ohne
+    gelernten Treffer, eine BossModReborn-Vorhersage auf ihm, ein Mitglied, das kein Tank ist (die Tabelle bemisst
+    Treffer auf Tanks, A312).
+  - Nicht für dich selbst – dein Plan entscheidet für dich –, nicht in der Einzelabwehr, die du befiehlst, und nicht
+    in Heilpfad und Flächenabwehr (Aurora und Herz des Korunds heilen dort).
+  - Gilt für jede Hilfe dieser Zieltypen: die Einzelabwehr der Heiler und die Hilfe der Tanks für andere.
+- Ein so herausgefallenes Mitglied kommt in der Einzelabwehr nicht über den Ersatz „wen sein Ziel angreift" zurück
+  (A373). Eine BossModReborn-Vorhersage hält die Einzelabwehr des Heilers neben einem gedeckten Tankbuster offen (sie
+  nennt kein Ziel, Review von A260), und über diesen Ersatz ging die Hilfe dann doch an den Tank, den der Boss angreift
+  – Wasserschleier auf einen Tank unter Heiligem Boden. In seinen Protokollen trugen 96 von 118 Entscheidungen der
+  Einzelabwehr mit Tankbuster-Quelle auch eine solche Vorhersage (gemessen 26.10.2026). Heilpfad, Flächenabwehr und
+  die befohlene Einzelabwehr behalten den Ersatz.
 - Zielt ein Tankbuster auf mehrere (ein doppelter Tankbuster auf beide Tanks), geht die Hilfe an das Ziel, auf dem die
   wenigsten schadensmindernden Wirkungen stehen – Minderung mit Wirktextwert oder Barriere, von wem auch immer
   (`LeastProtected`, A364); bei Gleichstand wie bisher. Bis dahin entschied nur die Gesundheit, und alle Hilfe ging an
@@ -1274,6 +1298,14 @@ entscheidet die Triage K2–K4 (Abschnitt „Andere Pfade, die dem Plan ein Glie
   Tankbuster auf den anderen Tank öffnet deine Einzelabwehr, nennt aber kein Ziel; dann bleibt die Hilfe aus.
 - Cover: übernimmt den Treffer, der Paladin nähme den Tankbuster selbst; bleibt Notfall unter seiner Schwelle.
 - Oblation auf den anderen Tank: nicht gebaut; The Blackest Night ist die größere Hilfe und refinanziert sich.
+- Die Linie der Unverwundbarkeit („The HP% for tank to use invulnerability") als Maß, ob ein gemessener Tankbuster
+  Hilfe braucht: Sie ließe fast jeden ohne – ein Treffer von 40 % lässt einen vollen Tank bei 60 %. Dieselbe Linie ist
+  für die Flächenabwehr aus diesem Grund verworfen („a rule that cannot fire in its own domain", `DataCenter`). Für die
+  eigene Abwehr des Tanks gilt sie weiter: Dort geht es um das geringste Mittel, mit dem er überlebt, und hinter der
+  Linie steht seine Unverwundbarkeit; Hilfe von anderen ersetzt Heilung.
+- Reflexion für den kleinen gemessenen Tankbuster des anderen Tanks: Sie zielt auf den Gegner, nicht auf ein Mitglied,
+  und geht in der Einzelabwehr weiter (offene Arbeit, `TODO.md`, „Reflexion auf einen kleinen gemessenen Tankbuster des
+  anderen Tanks").
 
 **Lagen:**
 - *Zwei RSR-Tanks:* Der Getroffene schützt sich, der andere hilft ihm. Dieselbe Hilfe zweimal verhindert die
@@ -1288,11 +1320,19 @@ entscheidet die Triage K2–K4 (Abschnitt „Andere Pfade, die dem Plan ein Glie
 - *BossModReborn ohne Modul:* unverändert, Marker und Wirken tragen.
 - *Tankbuster ohne Marker, auf den Wirker selbst gewirkt oder nie gemessen:* nicht erkannt, keine Hilfe; eine
   gemessene Aktion, die auf das Mitglied gewirkt wird, ab ihrem zweiten Wirken.
+- *Kleiner Tankbuster beim ersten Auftreten:* Hilfe wie bisher; die Messung entsteht erst mit dem Treffer. So lag der
+  Fall aus seinem Protokoll vom 25.10.2026: Doppeleinschlag war vor der Entscheidung nie gemessen und wurde mit dem
+  Treffer gespeichert (20 % ungemindert), samt dem Treffer nach dem Marker. Beim nächsten Mal trägt beides.
+- *Ein Tankbuster aus mehreren Treffern derselben Aktion:* Die Tabelle führt den höchsten Einzeltreffer, die Regel
+  rechnet einen. In seinen 74 Tankbuster-Messungen bis 25.10.2026 folgte keine zweite derselben Aktion binnen 5 s;
+  belegt ist der Fall also nicht, ausgeschlossen auch nicht. Die Grenze trifft den Plan des Tanks ebenso.
 
 **Messmittel:** `DefenseTrace.log` schreibt „single defence -> Intervention … on <Mitglied>" (Urflackern, The Blackest
 Night, Herz des Korunds; das Ziel seit A335, wenn es nicht der Spieler ist) mit den Quellen der Abwehr – Marker auf wem,
-Wirken auf wen – und danach die „used"-Zeile. Keine
-Selbstnachsteuerung nötig: Die Entscheidung fällt aus Marker und Wirken, nicht aus einer Vorhersage.
+Wirken auf wen – und danach die „used"-Zeile; eine Hilfe, die für einen gemessenen kleinen Tankbuster ausbleibt, einmal
+je Treffer „tankbuster help held: … takes …% of max HP and leaves …%". Die Entscheidung fällt aus Marker und Wirken;
+wo sie die Tabelle liest, steuert die Tabelle nach – jeder höhere Treffer hebt ihren Wert, und die nächste Hilfe geht
+wieder.
 
 **Prüfgrad:** statisch, Prüfskripte, Compile über die CI; im Spiel nicht beobachtet.
 

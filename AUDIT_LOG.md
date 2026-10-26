@@ -11026,6 +11026,44 @@ anderer spieler eine phoenixfeder oder man selbst. dann muss man das eigene ster
 
 *Prüfgrad:* Spieldaten, Code, Compile; im Spiel nicht beobachtet.
 
+### A373 · Hilfe für einen kleinen gemessenen Tankbuster; Ersatzziel nahm den ausgeschlossenen Tank zurück (26.10.2026)
+
+TODO-Punkt „Heiler-Hilfe auf einen kleinen gemessenen Tankbuster" (A364).
+
+- *Research:* Der Fall vom 25.10.2026 (Doppeleinschlag #26638, Marker auf dem Tank, Göttlicher Segen und Wasserschleier)
+  war zur Zeit der Entscheidung nicht gemessen: Die Messung (17 % unter Faktor 0,85, ungemindert 20 %) und der gelernte
+  Treffer nach dem Marker entstanden erst mit dem Einschlag. Die Prämisse des TODO-Eintrags („den die Tabelle mit 20 %
+  misst") stimmte also für den nächsten Kampf, nicht für diesen. Am Code: Die Zielwahl (`IsTankbusterTargetToProtect`)
+  kannte nur die Unverwundbarkeit als Grund, keine Hilfe zu geben. Gemessen: 96 von 118 Entscheidungen der Einzelabwehr
+  mit Tankbuster-Quelle in seinen Protokollen trugen auch eine BossModReborn-Vorhersage; sie hält die Einzelabwehr des
+  Heilers offen (Review von A260, A261 Punkt 7), und der Ersatz „wen sein Ziel angreift" in `FindBeAttackedTarget`
+  nahm den ausgeschlossenen Tank wieder auf.
+- *Befund (Defekt):* Dieser Ersatz unterlief schon die bestehende Regel seines Vorschlags vom 04.10.2026: Mit einer
+  Vorhersage daneben ging die Einzelabwehr eines Heilers auf einen Tank unter Heiligem Boden, gegen den Optionstext
+  („no single-target mitigation for a tankbuster cast at a tank who stands under Hallowed Ground"). Der Grund der
+  Entscheidung aus A261 – eine Vorhersage kann einen zweiten Tankbuster auf den anderen Tank meinen – trägt den Ersatz
+  nicht: Er wählt den Tank, den der Boss angreift, nicht den anderen. Die Entscheidung bleibt (die Vorhersage öffnet),
+  nur der Ersatz nimmt ein ausgeschlossenes Mitglied nicht mehr zurück.
+- *Optionen:* Nullvariante; Maß der Unverwundbarkeitslinie (wie der Plan des Tanks); Maß der Flächenabwehr (großer
+  Schild oder Einzelheil-Schwelle); nur die Flagge des Heilers schließen; nur die Zielwahl. *Abwägung:* Die
+  Unverwundbarkeitslinie ließe fast jeden Tankbuster ohne Hilfe (40 % von vollen LP lassen 60 %) – für die Flächenabwehr
+  aus genau diesem Grund verworfen. Die Flagge allein bricht die Entscheidung aus A261 und erreicht die Hilfe der Tanks
+  nicht; die Zielwahl allein ließ den Ersatz offen. Gewählt: Größenregel der Flächenabwehr in der Zielwahl, für alle,
+  die helfen, plus der Ersatz.
+- *Umgesetzt:* `DataCenter.AimedTankbusterLeaves` (Erkennung, Rechnung des Plans), `MeasuredHitCallsForNoHelp` und
+  `TankbusterNeedsNothingFromYou` in `ActionTargetInfo`, `TankbusterForecast.BarrierAt` für jedes Mitglied, Protokoll
+  „tankbuster help held". Unter „Spend only the mitigation a measured tankbuster needs", Text ergänzt.
+- *Falsifikation:* *Kein Defekt?* Die Hilfe kostet nur, wenn der nächste schwere Treffer in ihre Abklingzeit fällt; der
+  Gewinn auf einem Treffer, der den Tank über der Heilschwelle lässt, ist aber keiner – die Regel kann im gemessenen
+  Fall nur gewinnen. *Option falsch?* Die Tabelle irrt nach unten (unbezifferte Minderung beim Messen); ein so
+  unterschätzter Treffer unter 25 % trifft einen Tank über 65 % – er überlebt, und jeder höhere Treffer hebt den Wert.
+  Ein Tankbuster aus mehreren Treffern derselben Aktion bliebe unterschätzt; in 74 Messungen kam keiner vor.
+  *Ausgeliefert, nichts ändert sich?* Ohne den Ersatz hätte die Vorhersage von BossModReborn die Regel in vier von
+  fünf Fällen aufgehoben – deshalb der Ersatz. Weiter ohne Wirkung: beim ersten Auftreten, mit der Option aus, und für
+  die Reflexion der Tanks (offene Arbeit).
+
+*Prüfgrad:* Code, Protokolle, Compile; im Spiel nicht beobachtet.
+
 ---
 ## B · Commit-Register (Fork vs. `upstream/main`)
 

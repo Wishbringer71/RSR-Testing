@@ -3040,7 +3040,7 @@ public struct ActionTargetInfo(IBaseAction action)
 			{
 				foreach (var t in battleChara)
 				{
-					if (ObjectHelper.IsTargetOnSelf(t))
+					if (ObjectHelper.IsTargetOnSelf(t) && !TankbusterNeedsNothingFromYou(t))
 					{
 						attachedT.Add(t);
 					}
@@ -3206,7 +3206,44 @@ public struct ActionTargetInfo(IBaseAction action)
 		static bool IsTankbusterTargetToProtect(IBattleChara t)
 		{
 			return DataCenter.IsTankbusterAimedAt(t)
-				&& !(Service.Config.HoldMitigationUnderInvulnerability && DataCenter.ImperviousPastAimedTankbuster(t));
+				&& !(Service.Config.HoldMitigationUnderInvulnerability
+					&& (DataCenter.ImperviousPastAimedTankbuster(t) || MeasuredHitCallsForNoHelp(t)));
+		}
+
+		// The member the tankbuster filter above passed over, in the single defence the player has not commanded: not
+		// taken back as the one his target attacks. A BossModReborn prediction keeps the healer's single defence open
+		// beside such a tankbuster (StateUpdater, review of A260), and through this fallback the help went to the tank
+		// the boss attacks all the same - Aquaveil on a tank under Hallowed Ground (A373). Heal paths and the area
+		// defence keep their target: neither is help for this hit.
+		static bool TankbusterNeedsNothingFromYou(IBattleChara t)
+		{
+			return !IBaseAction.HealPathRunning && !IBaseAction.AreaDefenceRunning && !IBaseAction.CommandedDefenceRunning
+				&& DataCenter.IsTankbusterAimedAt(t) && !IsTankbusterTargetToProtect(t);
+		}
+
+		// Help from you for another member's measured tankbuster goes where the hit calls for it, by the size rule of
+		// the area defence (DataCenter.AreaShareCallsForMitigation): a hit at or above what a large shield absorbs, or
+		// one that leaves him below the health at which this rotation heals him by itself - mitigation where healing
+		// would otherwise be needed. Below both, a White Mage spent Divine Benison and Aquaveil on a hit of 20 % of a
+		// tank's HP (his trace of 25.10.2026, A364). Not for the player, whose own plan decides for him, not in the
+		// single defence he commands, and not for a heal (Aurora, Heart of Corundum in the heal path) (A373).
+		static bool MeasuredHitCallsForNoHelp(IBattleChara t)
+		{
+			if (IBaseAction.HealPathRunning || IBaseAction.AreaDefenceRunning || IBaseAction.CommandedDefenceRunning
+				|| Player.Object is not { } self || t.GameObjectId == self.GameObjectId
+				|| !DataCenter.AimedTankbusterLeaves(t, out var actionId, out var share, out var left))
+			{
+				return false;
+			}
+
+			var line = Service.Config.HealthSingleSpell;
+			if (share >= DefensiveValues.LargestStatedBarrierShare || left < line)
+			{
+				return false;
+			}
+
+			DataCenter.NoteTankbusterHelpHeld(t, actionId, share, left, line);
+			return true;
 		}
 
 		IBattleChara? FindTankbusterTarget()
