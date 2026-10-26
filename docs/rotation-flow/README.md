@@ -26,6 +26,7 @@ stünde hier ein zweites Mal und würde altern.
 | [`16-xivanalysis-catalog.md`](16-xivanalysis-catalog.md) | Welche Regeln für gute Rotationen kennt xivanalysis, und wo weicht RSR ab — mit welchem Grund? |
 | [`17-machinist-reassemble-buffs.md`](17-machinist-reassemble-buffs.md) | Soll der Maschinist eine Reassemble-Ladung für die Gruppenbuffs halten, und welcher Buff zählt am meisten? |
 | [`18-settings-player-or-automatic.md`](18-settings-player-or-automatic.md) | Welche Einstellung ist eine Entscheidung des Spielers, und welche beantwortet das Spiel oder die Laufzeit besser? |
+| [`19-codebase-audit.md`](19-codebase-audit.md) | Wo weicht der Code – Upstream und Fork – von Absicht, Einstellungstext oder Konzept ab, und was ändert das im Kampf? |
 
 **Der Knoten der Kampffamilie ist `08`.** Heilung, Barriere und Minderung sind drei Antworten auf
 dieselbe Frage; die Ordnung zwischen ihnen steht dort, die Messung der Treffergröße in `13`, die

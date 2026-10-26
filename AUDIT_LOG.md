@@ -11428,6 +11428,20 @@ bearbeitet ist und in seinen Protokollen gespielt wird.
 
 *Prüfgrad:* Code, Spielblatt, Compile; im Spiel nicht beobachtet.
 
+### A392 · Audit Phase 5 begonnen: `DataCenter` mechanisch; Konzept 19 (26.10.2026)
+
+- *Auftrag:* TODO „Audit der gesamten Codebasis", nach der neuen Reihenfolge Punkt 1; seiner vom 26.10.2026.
+- *Erhebung:* jedes Mitglied von `DataCenter` (Eigenschaft, Feld, Methode; 486) gegen alle C#-Dateien des Baums nach
+  ganzem Wort gezählt. Neun ohne Leser; sieben öffentliche Werte für abgeleitete Rotationen, eine öffentliche Sicht
+  neben der gelesenen Textform, `RaidTimeRaw` intern ohne Leser (Upstream `57ad3f81d`, 27.02.2024, Zeitleiste).
+- *Entscheidung:* nichts entfernt – öffentliche Werte sind Paketoberfläche, `RaidTimeRaw` ist fremder Code ohne Wirkung
+  im Kampf. Konzept 19 angelegt, Plan dort.
+- *Grenze der Erhebung:* Die Zählung nach Namen hält gleichnamige Mitglieder anderer Klassen für Leser; sie findet
+  ungelesene Mitglieder, nicht alle. Der Sprachserver (`lsp_query.py refs`) trennt sie, braucht aber den Debug-Build des
+  Quellgenerators; für Phase 5 inhaltlich vorgesehen.
+
+*Prüfgrad:* Textsuche über den Baum; Code nicht verändert.
+
 ---
 ## B · Commit-Register (Fork vs. `upstream/main`)
 

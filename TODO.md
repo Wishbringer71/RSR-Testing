@@ -55,9 +55,9 @@ und Phasenenden".
 
 ### Audit der gesamten Codebasis · N, R, U
 
-*Stand:* Phasen 1 bis 4 abgeschlossen (A8, A10, A82, A286–A290). *Offen:* der Rest von `DataCenter`, die Rotationen
-Datei für Datei, `RotationSolver/UI`. Dokument dafür noch nicht angelegt; die Nummer 14 ist vergeben, es bekommt die
-nächste freie.
+*Im Kampf:* unbekannt, bis gelesen – jeder Befund bisher war ein Defekt mit Wirkung (A8, A10, A82). *Stand:* Phasen
+1 bis 4 abgeschlossen, `DataCenter` mechanisch (A392). *Nächster Schritt:* `DataCenter` inhaltlich, dann `BaseAction`
+und `ActionTargetInfo`, die Rotationen seiner häufigen Jobs, die Oberfläche. *Konzept:* 19.
 
 ## Technische Schuld
 
