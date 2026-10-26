@@ -55,9 +55,14 @@ Abgearbeitet nach seiner Vorgabe vom 26.10.2026: „todo nach priorität und ums
   gefragt; Bewegungsaktionen im Schadenspfad laufen über die zentrale Sprungprüfung (A358); Abwehr- und Heilpfade von
   Barde, Tänzer, Rotmagier, Schwarzmagier, Pictomancer und Beschwörer gelesen, Barde und Tänzer bis zur
   Schadenslogik. Ohne Befund.
-- **Oberfläche, Einstellungseditoren (26.10.2026):** `SearchableConfigs` gelesen – „Reset to Default Value." schaltete
-  jeden `bool`-Schalter ab, statt die Voreinstellung zu setzen (behoben A407, Konzept 18).
-- **Offen:** die übrige Oberfläche (`RotationSolver/UI`); danach die Schadenslogik der übrigen Damage Dealer Zeile für Zeile
+- **Oberfläche (26.10.2026):** `SearchableConfigs` gelesen – „Reset to Default Value." schaltete jeden `bool`-Schalter
+  ab, statt die Voreinstellung zu setzen (behoben A407, Konzept 18). Ohne Befund: jede Zahleneinstellung trägt einen
+  Wertebereich; ausgeblendete Unteroptionen der Rotationen wirken nur, solange ihr Schalter an ist; die
+  Aktionseinstellungen (`MainWindow_Actions`), die Statuslisten (`MainWindow_List`, Hinzufügen, Entfernen, Speichern) und
+  die AoE-Umschaltung der Steuerfenster („Auto" setzt „Full", „Manual" den gemerkten Typ – so gebaut, ohne
+  widersprechenden Text). Nur anzeigend und ohne Wirkung im Kampf, nicht zeilenweise gelesen: Diagnose-, Zeitleisten-,
+  Lehr-, Tutorial-, Änderungs- und Osterei-Fenster.
+- **Offen:** die Schadenslogik der übrigen Damage Dealer Zeile für Zeile
   (`RebornRotations`; `ExtraRotations` nur, wo eine zentrale Änderung sie berührt, Churin ausgenommen).
 
 ## Methode
