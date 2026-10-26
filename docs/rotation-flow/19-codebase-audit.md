@@ -63,10 +63,15 @@ Abgearbeitet nach seiner Vorgabe vom 26.10.2026: „todo nach priorität und ums
   widersprechenden Text). Nur anzeigend und ohne Wirkung im Kampf, nicht zeilenweise gelesen: Diagnose-, Zeitleisten-,
   Lehr-, Tutorial-, Änderungs- und Osterei-Fenster.
 - **Schadenslogik der Damage Dealer (26.10.2026), begonnen:** Dragoon ohne Befund; Samurai – Feint fiel unter seiner
-  eigenen Gesundheitsschwelle ohne Treffer in Sicht (behoben A408, Konzept 08); Schnitter bis zur GCD-Logik –
+  eigenen Gesundheitsschwelle ohne Treffer in Sicht (behoben A408, Konzept 08), sonst vollständig ohne Befund; Schnitter vollständig –
   Einschubsperren von Schnitter, Viper und Samurai auf Sicherheitspfaden wichen der Schranke nicht (behoben A409,
-  Konzept 08).
-- **Offen:** die Schadenslogik der übrigen Damage Dealer Zeile für Zeile
+  Konzept 08); Viper und Rotmagier in Abwehr, Heilung, Wiederbelebung und den Hauptpfaden der GCDs ohne Befund; Ninja:
+  die Mudra-Sperre sitzt zentral im Fähigkeitspfad (`CustomRotation_Ability`), Shade Shift kann die Ninjutsu nicht
+  brechen; Schwarzmagier: die Ley-Lines-Sperre bei Flächencasts sitzt in `ModifyLeyLinesPvE` und gilt für beide
+  Rotationen.
+- **Offen:** die übrige Schadenslogik Zeile für Zeile – Ninja (Mudra-Folgen), Pictomancer, Schwarzmagier,
+  Beschwörer außerhalb von Konzept 12, Barde (Lieder), Tänzer, Monk; ihre Prioritäten sind gegen The Balance abgeglichen
+  (A375–A387, Konzept 14)
   (`RebornRotations`; `ExtraRotations` nur, wo eine zentrale Änderung sie berührt, Churin ausgenommen).
 
 ## Methode
