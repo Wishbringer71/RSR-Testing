@@ -11153,6 +11153,17 @@ bearbeitet ist und in seinen Protokollen gespielt wird.
 
 *Prüfgrad:* Code, Quellen; im Spiel nicht beobachtet.
 
+### A378 · Astrologe, Gelehrter und Weiser gegen The Balance (26.10.2026)
+
+- *Quellen:* The Balance, Basic Guides Astrologe (7.3, 07.08.2025), Gelehrter (7.4, 27.12.2025), Weiser (7.3,
+  07.08.2025), abgerufen 26.10.2026.
+- *Ergebnis:* keine Änderung; Tabelle in Konzept 14, „Astrologe, Gelehrter, Weiser". Die Ladungsregel für Celestial
+  Intersection kam mit A376.
+- *Abweichung mit Grund:* Phlegma des Weisen wartet nicht auf die Buffs der anderen. The Balance rechnet mit ihnen;
+  der Weise hat keinen eigenen Gruppenbuff, und fremdes Verhalten trägt nach seiner Regel keine Entscheidung.
+
+*Prüfgrad:* Code, Quellen; im Spiel nicht beobachtet.
+
 ---
 ## B · Commit-Register (Fork vs. `upstream/main`)
 

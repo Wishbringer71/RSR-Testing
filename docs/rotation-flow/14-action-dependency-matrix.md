@@ -439,7 +439,7 @@ Werk an).
 
 **Sachstand:** Abgeglichen ist der Maschinist (24.10.2026) gegen The Balance, Machinist Basic Guide und Openers
 (beide „Patch Applicable: 7.3", zuletzt geändert am 05.08.2025); die Potenzen nennt der offizielle Job-Guide (Patch
-7.5). Der Beschwörer, der Weißmagier und die vier Tanks sind abgeglichen (26.10.2026, A375 bis A377). Die übrigen Jobs
+7.5). Der Beschwörer, die vier Tanks und die vier Heiler sind abgeglichen (26.10.2026, A375 bis A378). Die übrigen Jobs
 sind offen (TODO, „Rotationen gegen The Balance abgleichen"). Abweichungen, die nur Schaden
 betreffen, werden behoben, wo sich die bessere Wahl aus dem Spiel ableiten lässt und keine seiner Regeln dagegen steht;
 die übrigen nennt der Abgleich mit Grund. Weniger Schaden aus einer Sicherheitsregel bleibt (seine Präzisierung).
@@ -644,3 +644,23 @@ Konzept 09; hier der Schaden. Keine Änderung: Alle Kernregeln decken sich. Die 
 | Dunkelritter | Bloodspiller, Shadowbringer | Blut nur im Burst oder gegen Überlauf; beide Ladungen Shadowbringer ins Zwei-Minuten-Fenster | Blut wie The Balance (A197); Shadowbringer eine Ladung an der Grenze, die letzte im Burst | deckt sich: Im 120-s-Takt ist die zweite Ladung genau zum Fenster zurück |
 | Revolverklinge | No Mercy | jede Minute, Einwebposition je GCD-Geschwindigkeit | auf Stufe 100 mit liegendem Bloodfest; beide haben 60 s Abklingzeit (Job-Guide 7.5) | deckt sich im Takt; die Einwebposition (früh oder spät je Geschwindigkeit) ist nicht geprüft |
 | Revolverklinge | Kartuschen | nicht überlaufen, keine Kombo mit voller Leiste abschließen | Burst Strike vor dem Abschluss bei voller Leiste (`IsAmmoCapped`) | deckt sich |
+
+### Astrologe, Gelehrter, Weiser
+
+Abgeglichen am 26.10.2026 gegen die Basic Guides von The Balance: Astrologe („Patch Applicable: 7.3", 07.08.2025),
+Gelehrter (7.4, 27.12.2025), Weiser (7.3, 07.08.2025). Keine Änderung außer der Ladungsregel des Astrologen (oben,
+„Weißmagier", A376).
+
+| Job | Punkt | The Balance | RSR | Stand |
+|---|---|---|---|---|
+| Astrologe | Divination | auf Abklingzeit, auch in Dungeon-Pulls; Oracle darunter | mit automatischem Burst im Stand; Oracle, sobald bereit | deckt sich |
+| Astrologe | Karten | The Balance und Lord of Crowns aus dem Ziehen der ersten Minute bis Divination halten | The Balance und The Spear halten, solange Divination in 66 s zurückkommt; Lord of Crowns, solange in 45 s, außer das nächste Ziehen steht an | deckt sich |
+| Astrologe | Earthly Star | auf Abklingzeit, bei voller Stärke zünden | auf Abklingzeit (Option „Use Earthly Star as an attack while moving"), Zündung bei Giant Dominance | deckt sich |
+| Astrologe | Celestial Intersection | Barriere auf ein Ziel | Abwehr- und Heilpfad, an der Ladungsgrenze auf den Angegriffenen (A376) | deckt sich |
+| Gelehrter | Aetherflow, Dissipation | nicht mit Ladungen übrig | Aetherflow nur ohne Ladung (`ActionCheck`); Energy Drain leert sie zwei GCDs vor der Rückkehr | deckt sich |
+| Gelehrter | Ruin II | nur für Bewegung, 25 % schwächer als Broil | nur nach einer Bewegungszeit ohne DoT-Ziel | deckt sich |
+| Gelehrter | Heilordnung | frei vor Aetherflow vor GCD | Feenfähigkeiten und Aetherflow-Heilungen vor GCD-Heilungen; GCD-Heilungen nach „Use GCDs to heal" | deckt sich |
+| Weiser | Addersgall | großzügig nutzen, nicht überlaufen | Druochole kurz vor der vierten Ladung (A203), Rhizomata bei höchstens einer | deckt sich |
+| Weiser | Kardia, Psyche | Kardia immer auf jemandem; Psyche auf Abklingzeit | beides so | deckt sich |
+| Weiser | Phlegma | Ladungen in die Buffs der Gruppe nach der zweiten Minute | eine Ladung vor dem Überlauf oder in Bewegung | weicht ab: Der Weise hat keinen eigenen Gruppenbuff; das Fenster der anderen ist eine Annahme über sie, kein tragender Grund (seine Regel) |
+| alle | Swiftcast | für Wiederbelebung aufheben | Swiftcast bleibt für Wiederbelebungen (seine Regel) | deckt sich |
