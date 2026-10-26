@@ -11804,6 +11804,26 @@ bis zum Tod, auf der die Rückhaltung urteilt.
 
 *Prüfgrad:* statisch, Compile, Prüfskripte; im Spiel nicht beobachtet.
 
+### A406 · Dunkelritter: „Keep at least 3000 MP" galt nicht, wenn Darkside auslief (26.10.2026)
+
+- *Gelesen:* `PLD_Reborn`, `WAR_Reborn` vollständig ohne Befund; `DRK_Reborn` vollständig.
+- *Befund (Defekt, Upstream `d566eda86` und früher):* `CheckDarkSide` gab Edge und Flood frei, sobald Darkside binnen
+  drei GCDs auslief, ohne die Einstellung „Keep at least 3000 MP" (ab Werk an) zu fragen. Nur die Burst-Bedingung
+  fragte sie, mit festen 6000 MP. Konzept 10 hielt fest, Edge gebe MP „erst oberhalb von 8500" frei – das traf den
+  Ablauf von Darkside nicht.
+- *Wirkung im Kampf:* Mit 3000 bis 5999 MP, ohne Dark Arts, und Darkside kurz vor dem Ende: Edge of Shadow gab die
+  letzten 3000 MP aus, und für den nächsten Tankbuster fehlte The Blackest Night (Barriere über ein Viertel der
+  maximalen HP) – gegen den Text der Einstellung. Häufig nach einer Barriere ohne Dark Arts.
+- *Behebung:* Beide Bedingungen fragen dieselbe Rücklage: Edge geht nur, wenn danach die Kosten von The Blackest Night
+  übrig bleiben, oder mit Dark Arts. Beide Kosten liest der Code aus dem Spiel (`MPNeed`); die feste 6000 entfällt.
+- *Preis:* Bei knappen MP läuft Darkside aus, bis die MP die Rücklage und Edge decken – bis dahin zehn Prozent weniger
+  Schaden. Die Balance führt Edge gegen das Auslaufen von Darkside; die Abweichung trägt der Text der Einstellung.
+- *Falsifikation:* kein Defekt – widerlegt, der Text bindet; Option falsch – oberhalb der Rücklage und mit Dark Arts
+  geht Edge wie zuvor; ausgeliefert und nichts ändert sich – mit der Einstellung aus zutreffend.
+- *Dokumentation:* Konzepte 10, 14, 19; Release-Text.
+
+*Prüfgrad:* statisch, Compile, Prüfskripte; im Spiel nicht beobachtet.
+
 ---
 ## B · Commit-Register (Fork vs. `upstream/main`)
 

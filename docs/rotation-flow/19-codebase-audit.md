@@ -48,7 +48,8 @@ Abgearbeitet nach seiner Vorgabe vom 26.10.2026: „todo nach priorität und ums
   Astrologe vollständig – die Strategie für Essential Dignity hielt die GCD-Heilungen auch, wenn die letzte Ladung auf
   Gefahr wartete (behoben A403, Konzept 07), „Prioritize Microcosmos over all other healing" hielt Oracle und den
   Trank mit (behoben A404, Konzept 08); Weiser vollständig – Taurochole, für Gefahr zurückgehalten, hielt Druochole
-  mit (behoben A405, Konzept 07).
+  mit (behoben A405, Konzept 07). Paladin und Krieger vollständig ohne Befund; Dunkelritter vollständig – „Keep at
+  least 3000 MP" galt nicht, wenn Darkside auslief (behoben A406, Konzept 10).
 - **Offen:** die Rotationen Datei für Datei, die
   übrigen Jobs (`RebornRotations`; `ExtraRotations` nur, wo eine zentrale Änderung sie berührt, Churin ausgenommen);
   `RotationSolver/UI`.

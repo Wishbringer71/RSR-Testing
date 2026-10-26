@@ -856,6 +856,12 @@ public sealed class DRK_Reborn : DarkKnightRotation
 	// Determines if currently in a burst phase based on cooldowns of key abilities.
 	private bool InTwoMIsBurst => BloodWeaponPvE.Cooldown.IsCoolingDown && DeliriumPvE.Cooldown.IsCoolingDown && ((LivingShadowPvE.Cooldown.IsCoolingDown && !LivingShadowPvE.Cooldown.ElapsedAfter(15)) || !LivingShadowPvE.EnoughLevel);
 
+	// "Keep at least 3000 MP" keeps what The Blackest Night costs: Edge or Flood spends only what lies above it, both
+	// costs read from the game. Darkside running out spent the reserve too, and the barrier was missing for the next
+	// tankbuster (A406).
+	private bool EdgeKeepsBlackestNightMp => !TheBlackestNight || HasDarkArts
+		|| CurrentMp >= TheBlackestNightPvE.Info.MPNeed + EdgeOfDarknessPvE.Info.MPNeed;
+
 	// Manages DarkSide ability based on several conditions.
 	private bool CheckDarkSide
 	{
@@ -863,7 +869,7 @@ public sealed class DRK_Reborn : DarkKnightRotation
 		{
 			if (DarkSideEndAfterGCD(3))
 			{
-				return true;
+				return EdgeKeepsBlackestNightMp;
 			}
 
 			if ((InTwoMIsBurst && HasDarkArts) || (HasDarkArts && StatusHelper.PlayerHasStatus(true, StatusID.BlackestNight)) || (HasDarkArts && DarkSideEndAfterGCD(3)))
@@ -872,7 +878,7 @@ public sealed class DRK_Reborn : DarkKnightRotation
 			}
 
 			if (InTwoMIsBurst && BloodWeaponPvE.Cooldown.IsCoolingDown && LivingShadowPvE.Cooldown.IsCoolingDown && SaltedEarthPvE.Cooldown.IsCoolingDown && ShadowbringerPvE.Cooldown.CurrentCharges == 0 && CarveAndSpitPvE.Cooldown.IsCoolingDown
-				&& (!TheBlackestNight || CurrentMp >= 6000))
+				&& EdgeKeepsBlackestNightMp)
 			{
 				return true;
 			}

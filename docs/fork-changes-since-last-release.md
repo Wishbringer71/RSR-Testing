@@ -138,3 +138,9 @@ held together with the heals while Macrocosmos ran, and the potion missed that b
 With "Taurochole as a heal only on a target in danger" on (the default), a low member with nothing hitting him got
 neither Taurochole nor Druochole, because Druochole only came once Taurochole was on cooldown. Druochole now goes
 instead, as the option describes.
+
+## Dark Knight: "Keep at least 3000 MP" also when Darkside runs out
+
+With Darkside about to run out, Edge of Shadow spent the last 3000 MP regardless of "Keep at least 3000 MP", and The
+Blackest Night was missing for the next tankbuster. Edge now keeps what The Blackest Night costs, unless Dark Arts
+makes it free; with little MP, Darkside may lapse until there is enough.

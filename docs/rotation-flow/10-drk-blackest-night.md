@@ -445,9 +445,10 @@ folgenlos.
 **Randbedingungen.** Der Opener bleibt außen vor: Im Countdown gibt es weder Tankbuster noch Pull,
 eine engere Stufe würde dort nur Dark Arts für die Eröffnung kosten. Rotationskonfigurationen
 speichern Enums als **Namen**, nicht als Ordinalzahlen (`RotationConfigBase.cs:208`, `Enum.Parse`) — die
-Reihenfolge der Stufen ist frei, ihre Bezeichner sind Vertrag. Und der MP-Haushalt bleibt
-unberührt: `CheckDarkSide` gibt MP für Edge erst oberhalb von 8500 frei und behandelt den
-Fall „Dark Arts liegt an, während die Barriere noch läuft" bereits selbst.
+Reihenfolge der Stufen ist frei, ihre Bezeichner sind Vertrag. Den MP-Haushalt führt
+`CheckDarkSide`: Edge gibt MP oberhalb von 8500 frei; im Burst und gegen das Auslaufen von Darkside nur, solange danach
+die Kosten von The Blackest Night übrig bleiben („Keep at least 3000 MP", beide Kosten aus dem Spiel, A406), mit Dark
+Arts immer. Den Fall „Dark Arts liegt an, während die Barriere noch läuft" behandelt es selbst.
 
 **Was das nicht leistet.** Ob vier Gegner die Verbrauchsrate im gespielten Inhalt erreichen, ob eine
 halb betäubte Gruppe den Strom weit genug drückt und ob die engeren Stufen insgesamt besser
