@@ -10914,6 +10914,26 @@ Seine Frage zu meiner Meldung, das Release und die Löschung zweier Zweige seien
 
 *Prüfgrad:* Zustand gemessen (lokale Zweige gegen `origin/main`, Rechteprüfung der Sitzung).
 
+### A369 · Upstream 7.5.7.8 in `main` und Zweig; das ausstehende Release heißt jetzt 7.5.7.8+wsh1 (26.10.2026)
+
+Anlass: der Kontrollblick auf PR #18; `check_sync_state.py` meldete zwei Upstream-Commits.
+
+- *Inhalt:* bf1b29299 und der Merge 8e37d9722 (getaggt 7.5.7.8) heben RebornMaterial von 7.5.6.2 auf 7.5.7.0 und
+  verlegen Zeichencode der Fenster in die Bibliothek (Hauptfenster, Steuerfenster, Statusfenster, Tutorial,
+  Update-Hinweise; 188 Zeilen weniger). Im Kampf ändert das nichts. Einziger Fork-Abschnitt in den berührten Dateien:
+  die Zeile in `FullControlWindow.PostDraw`, die beim Schließen über den eigenen Knopf die Einstellung abschaltet
+  (`WindowCloseButton.TurnOffIfClosedByPlayer`); Upstream fasst `PostDraw` nicht an, der Merge lief ohne Konflikt.
+  Doppelungen, Widersprüche oder ungenutzte Synergien mit eigenen Patches: keine – die Fork-Arbeit an den Fenstern
+  betrifft nur das Schließen, Upstreams Umbau nur das Zeichnen.
+- *Folge für das Release:* Die Merge-Basis liegt jetzt auf dem Tag 7.5.7.8; `check_fork_version.py` verlangt die
+  Version 7.5.7.8 (Commit 05ce1dfc6). Der CHANGELOG-Abschnitt „7.5.7.7+wsh1" heißt „7.5.7.8+wsh1": 7.5.7.7+wsh1 ist nie
+  erschienen, ein Release von `main` trägt jetzt die neue Nummer. Der Release-Text bleibt „Changes since 7.5.7.6+wsh1".
+  Der Arbeitszweig behält seinen Namen bis zur Veröffentlichung; danach heißt er nach seiner Vorgabe
+  `claude/fixes-after-7.5.7.8`.
+- *Kompilieren:* lokal nach `dotnet restore` (neues Paket) und alle 28 Prüfschritte auf `main` grün, vor dem Push.
+
+*Prüfgrad:* Diff gelesen, Compile, Prüfskripte; die Fenster im Spiel nicht angesehen.
+
 ---
 ## B · Commit-Register (Fork vs. `upstream/main`)
 
