@@ -56,9 +56,8 @@ und Phasenenden".
 ### Audit der gesamten Codebasis · N, R, U
 
 *Im Kampf:* unbekannt, bis gelesen – jeder Befund bisher war ein Defekt mit Wirkung (A8, A10, A82). *Stand:* Phasen
-1 bis 4 abgeschlossen, `DataCenter` mechanisch und inhaltlich (A392–A396), `BaseAction` (A397), `ActionTargetInfo` bis zur
-AoE-Zählung (A398, A399). *Nächster Schritt:* `ActionTargetInfo.FindTargetByType`, die Rotationen seiner häufigen
-Jobs, die Oberfläche. *Konzept:* 19.
+1 bis 4 abgeschlossen, `DataCenter` mechanisch und inhaltlich (A392–A396), `BaseAction` (A397), `ActionTargetInfo` (A398–A400).
+*Nächster Schritt:* die Rotationen seiner häufigen Jobs, die Oberfläche. *Konzept:* 19.
 
 ## Technische Schuld
 

@@ -11661,6 +11661,26 @@ bis zum Tod, auf der die Rückhaltung urteilt.
 
 *Prüfgrad:* statisch, Compile, Prüfskripte; im Spiel nicht beobachtet.
 
+### A400 · Audit Phase 5: `ActionTargetInfo` abgeschlossen; Klassensuche nach Abklingzeit-Fragen in den Rotationen (26.10.2026)
+
+- *`FindTargetByType`:* Verteiler, Bewegungsarten, Zielart Tod (das globale `DeathTarget` ist über `GetDeath` auf
+  30 Yalm und Sicht begrenzt, die Reichweite aller Wiederbelebungen), Unterbrechung, feindliche Wahl mit Stoppmarken,
+  Vorrang-Gegnern und DoT-Reihenfolge. Die Zielarten Heilung, angegriffen, Reinigung, Provokation, Tankwechsel,
+  Tank und Tankbuster führen die Konzepte 07 und 09 Aussage für Aussage gegen den Code (zuletzt überarbeitet im
+  Konzeptdurchgang, A270 ff.); ohne neuen Befund. Occult-Crescent-Ziele außerhalb seines Profils erfasst.
+- *Klassensuche nach A397:* alle 24 Fragen nach verstrichener Abklingzeit (`ElapsedAfter`, `ElapsedOneChargeAfter`,
+  `JustUsedAfter`) in `RebornRotations` und `RotationSolver.Basic/Rotations` gelesen. `ElapsedAfter` verlangt eine
+  laufende Abklingzeit und ist für Aktionen mit einer Ladung richtig (Tänzer: Schritte, Devilment; Astrologe:
+  Divination; Weiser: Haima, Taurochole; Ninja: Mug; Tanks: Schutzwall und große Minderung).
+- *Beobachtung, Ninja:* `NIN_Reborn` fragt vor Ten Chi Jin `!TenPvE.Cooldown.ElapsedAfter(30)`; der Kommentar sagt
+  „Ten Chi Jin hasn't recently been used". Ten hat Ladungen; `IsCoolingDown` liest `IsActionOffCooldown`, das bei einer
+  verfügbaren Ladung „bereit" meldet (ClientStructs: „off-cooldown or slidecastable", Werkzeugquelle) – die Frage ist
+  dann nie wahr und sperrt nichts. Wirkung im Kampf: höchstens Mudra-Aufladung, die während Ten Chi Jin an zwei vollen
+  Ladungen verfällt; im Burst fallen die Mudras davor, also selten und im Promillebereich. Nicht geändert; Kommentar und
+  Code widersprechen sich, Adressat Upstream.
+
+*Prüfgrad:* statisch.
+
 ---
 ## B · Commit-Register (Fork vs. `upstream/main`)
 

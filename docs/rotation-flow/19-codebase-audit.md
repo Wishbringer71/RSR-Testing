@@ -37,8 +37,10 @@ Abgearbeitet nach seiner Vorgabe vom 26.10.2026: „todo nach priorität und ums
   Konzept 07, Option ab Werk an).
 - **`ActionTargetInfo`, AoE-Zählung (26.10.2026):** gelesen. Linien mit Ziel zählten nach der Blickrichtung des
   Spielers statt zum Ziel hin (behoben A399, Konzept 03, C3).
-- **Offen:** `ActionTargetInfo.FindTargetByType` (Zielarten: Heilung, Tod, Reinigung, Provokation, Tankwechsel,
-  angegriffen, Karten); die Rotationen Datei für Datei (`RebornRotations`; `ExtraRotations`
+- **`ActionTargetInfo.FindTargetByType` (26.10.2026):** gelesen bis auf die Zielarten, die die Konzepte 07 und 09 gegen
+  den Code führen; ohne Befund (A400). Klassensuche nach Abklingzeit-Fragen in den Rotationen: ohne Defekt, eine tote
+  Bedingung beim Ninja (A400).
+- **Offen:** die Rotationen Datei für Datei (`RebornRotations`; `ExtraRotations`
   nur, wo eine zentrale Änderung sie berührt, Churin ausgenommen); `RotationSolver/UI`.
 
 ## Methode
