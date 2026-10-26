@@ -80,6 +80,10 @@ begrenzte Jobs, die Zusatzrotationen.
 Was ein Fenster zeigt, wann RSR an- und ausgeht, welche Tasten er selbst drückt, ob ein Haken ins Spiel eingreift (kein
 Fallschaden): Das Spiel kennt seine Wünsche nicht. Keine Automatik denkbar, keine Änderung.
 
+„Reset to Default Value." im Rechtsklickmenü einer Einstellung setzt jede Einstellung auf ihre Voreinstellung, auch die
+schlichten und die je Job geführten Schalter (A407). Bis dahin setzte es diese auf aus, und ein Zurücksetzen schaltete
+etwa „Heal ahead of incoming damage" oder „Raise with Swiftcast or Dualcast" ab, obwohl beide ab Werk an stehen.
+
 ### Tarnung: Zufallsverzögerungen
 
 Neun Einstellungen lassen RSR vor einer Aktion zufällig warten, damit er weniger mechanisch aussieht. Das ist seine

@@ -36,10 +36,8 @@ internal class CheckBoxSearchNoCondition(PropertyInfo property, params ISearchab
 		set => _property.SetValue(Service.Config, value);
 	}
 
-	public override void ResetToDefault()
-	{
-		_property.SetValue(Service.Config, false);
-	}
+	// "Reset to Default Value." takes the default from Service.ConfigDefault (Searchable). It set false here, and so
+	// switched off every plain or per-job setting whose default is on (A407).
 }
 
 internal abstract class CheckBoxSearch : Searchable

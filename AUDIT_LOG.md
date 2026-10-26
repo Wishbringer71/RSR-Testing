@@ -11824,6 +11824,27 @@ bis zum Tod, auf der die Rückhaltung urteilt.
 
 *Prüfgrad:* statisch, Compile, Prüfskripte; im Spiel nicht beobachtet.
 
+### A407 · Oberfläche: „Reset to Default Value." schaltete Schalter mit Voreinstellung „an" ab (26.10.2026)
+
+- *Gelesen:* `RotationSolver/UI/SearchableConfigs` vollständig (Jobfilter, Editoren je Typ, Zurücksetzen, Befehl).
+- *Befund (Defekt, Upstream `c38a9247e`, 01.02.2024):* `CheckBoxSearchNoCondition.ResetToDefault` setzte den Wert auf
+  `false`, statt wie die übrigen Editoren die Voreinstellung aus `Service.ConfigDefault` zu lesen. Betroffen sind alle
+  Schalter vom Typ `bool`: die schlichten Eigenschaften und alle `[JobConfig]`-Schalter, die der Generator als `bool`
+  erzeugt (`ConditionBoolean`-Schalter setzten richtig zurück). Ab Werk an stehen davon u. a. „Heal ahead of incoming damage",
+  „Choose the heal target by danger", „Skip mitigation for small area casts", „Raise with Swiftcast or Dualcast" und
+  „Place them where they cover the most party members".
+- *Wirkung im Kampf:* Wer eine solche Einstellung über das Rechtsklickmenü zurücksetzt, schaltet sie ab – gegen den
+  Text der Menüzeile. Danach heilt RSR etwa nicht mehr vor dem Treffer oder belebt ohne Swiftcast wieder.
+- *Behebung:* Die Überschreibung entfällt; das Zurücksetzen liest die Voreinstellung wie bei allen anderen Typen.
+- *Falsifikation:* kein Defekt – widerlegt, der Menütext „Reset to Default Value." bindet; Option falsch – für einen
+  Schalter mit Voreinstellung „aus" bleibt es bei aus; ausgeliefert und nichts ändert sich – solange niemand
+  zurücksetzt, zutreffend.
+- *Ohne Befund:* Jede Zahleneinstellung trägt einen Wertebereich (57); die einzige Rotationszahl ohne
+  (`RefreshDDSecondsRemaining`, Schnitter) fällt auf 0 bis 10 Sekunden mit Voreinstellung 10 zurück.
+- *Dokumentation:* Konzepte 18, 19; Release-Text.
+
+*Prüfgrad:* statisch, Compile, Prüfskripte; im Spiel nicht beobachtet.
+
 ---
 ## B · Commit-Register (Fork vs. `upstream/main`)
 

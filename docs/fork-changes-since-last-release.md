@@ -144,3 +144,9 @@ instead, as the option describes.
 With Darkside about to run out, Edge of Shadow spent the last 3000 MP regardless of "Keep at least 3000 MP", and The
 Blackest Night was missing for the next tankbuster. Edge now keeps what The Blackest Night costs, unless Dark Arts
 makes it free; with little MP, Darkside may lapse until there is enough.
+
+## "Reset to Default Value." restores the default
+
+The right-click entry "Reset to Default Value." now restores the default value. For plain and per-job switches it used
+to turn them off instead: "Heal ahead of incoming damage" or "Raise with Swiftcast or Dualcast", both on by default,
+ended up off.
