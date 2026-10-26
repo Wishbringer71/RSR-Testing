@@ -110,10 +110,6 @@ den Spieldaten (`CastType`, `EffectRange`), hinter eigener Option. *Konzept:* 13
 `BlackestNightMinHostiles` und `BlackestNightHealthRatio` erscheinen ohne `Parent`; `ParentValue` kennt nur einen Wert.
 *Auflösung:* beim Tooltip belassen, solange kein zweiter Fall auftritt. *Konzept:* 10.
 
-### `SpreadDamagePaths` enthält keinen Spread-Marker · N
-Alle Pfade sind Stack-Marker; folgenlos, weil `IsCastingAreaVfx` alle Listen liest. *Auflösung:* belegte Spread-Pfade.
-*Konzept:* 13.
-
 ### Release-Paket enthält vermeidbaren Ballast · N, R
 4,71 MB (7.5.7.3+wsh1) statt rund 2,3 MB (XML, Analyzer, PDB); Upstream verhält sich gleich. *Auflösung:* erst, wenn der
 Veröffentlichungspfad prüfbar ist.

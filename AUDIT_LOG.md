@@ -11896,6 +11896,18 @@ bis zum Tod, auf der die Rückhaltung urteilt.
 
 *Prüfgrad:* statisch, Compile, Prüfskripte; im Spiel nicht beobachtet.
 
+### A410 · Schuldpunkt „`SpreadDamagePaths` enthält keinen Spread-Marker" aufgelöst (26.10.2026)
+
+- *Anlass:* Durchsicht der technischen Schuld auf erfüllte Auflösungsbedingungen nach A394.
+- *Befund:* Der Eintrag behauptete, alle Pfade der Liste seien Stack-Marker. Am Lockon-Blatt und an BossMod (Werkzeugquelle,
+  `awgil/ffxiv_bossmod` 4fc3798): Zeile 655 `x6r9_loc01_t0a1` ist der Spread von Aetherletting (A394), Zeile 596
+  `x6fd_loc04m_5s1v` der Spread von Alexandrian Thunder III (Zelenia, `Components.SpreadFromIcon`). Zeile 589
+  `m0922tar_a0w` benennt BossMod nicht. Die Aussage war damit schon vor A394 für 596 falsch.
+- *Auflösungsbedingung erfüllt:* belegte Spread-Pfade stehen in der Liste, und seit A394 liest `IsAreaVfxReachingPlayer`
+  die Art (ein Spread zählt nur auf dem Markierten). Eintrag aus `TODO.md` entfernt; kein Konzept führte ihn offen.
+
+*Prüfgrad:* statisch (Spieldaten, Werkzeugquelle).
+
 ---
 ## B · Commit-Register (Fork vs. `upstream/main`)
 
