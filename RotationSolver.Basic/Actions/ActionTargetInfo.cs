@@ -1303,6 +1303,64 @@ public struct ActionTargetInfo(IBaseAction action)
 			}
 		}
 
+		var placed = PlaceGroundAreaFriend(range, canAffects, player, targetOverride);
+		if (!Service.Config.GroundBeneficialCoverMost)
+		{
+			return placed;
+		}
+
+		// The spot at a party member that covers the most of them, if it covers more than the usual placement does: that
+		// one asks only that someone stands in the area, and an arena centre or a boss holds the tank and the melee while
+		// the party stacks elsewhere (A398).
+		var covering = GroundAreaCoveringMost(range, canAffects, player);
+		return covering is { } better && better.AffectedTargets.Length > (placed?.AffectedTargets.Length ?? 0) ? better : placed;
+	}
+
+	/// <summary>
+	/// The spot within <paramref name="range"/> of the player, at one of <paramref name="canAffects"/>, whose area covers
+	/// the most of them; among equals the one they stand closest around. Null when nobody can be covered.
+	/// </summary>
+	private readonly TargetResult? GroundAreaCoveringMost(float range, IEnumerable<IBattleChara> canAffects, IPlayerCharacter player)
+	{
+		TargetResult? best = null;
+		var bestSpread = float.MaxValue;
+		foreach (var member in canAffects)
+		{
+			if (member == null || member.IsDead)
+			{
+				continue;
+			}
+
+			var spot = member.Position;
+			var toSpot = spot - player.Position;
+			var length = toSpot.Length();
+			if (length > range)
+			{
+				spot = player.Position + (toSpot / length * range);
+			}
+
+			List<IBattleChara> covered = [.. GetAffectsVector(spot, canAffects)];
+			var spread = 0f;
+			foreach (var c in covered)
+			{
+				spread += Vector3.Distance(spot, c.Position);
+			}
+
+			var count = best?.AffectedTargets.Length ?? 0;
+			if (covered.Count > count || (covered.Count == count && covered.Count > 0 && spread < bestSpread))
+			{
+				best = new TargetResult(player, [.. covered], spot);
+				bestSpread = spread;
+			}
+		}
+
+		return best;
+	}
+
+	// The usual placement after the player's own choices: a stored point or the arena centre, the boss, a point by the
+	// attacked member, the player himself.
+	private readonly TargetResult? PlaceGroundAreaFriend(float range, IEnumerable<IBattleChara> canAffects, IPlayerCharacter player, TargetType targetOverride)
+	{
 		// --- Try OnLocations logic first ---
 		_ = OtherConfiguration.BeneficialPositions.TryGetValue(Svc.ClientState.TerritoryType, out var pts);
 		pts ??= [];

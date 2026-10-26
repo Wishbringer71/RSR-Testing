@@ -32,7 +32,11 @@ Abgearbeitet nach seiner Vorgabe vom 26.10.2026: „todo nach priorität und ums
 - **`BaseAction` mit `ActionBasicInfo` und `ActionCooldownInfo` (26.10.2026):** gelesen. Ein Defekt mit Wirkung:
   `JustUsedAfter` hielt eine bereite Aktion für eben benutzt – Uncoiled Fury des Vipers ging neben einem bereiten
   Serpent's Ire, Perfect Balance des Monks blieb mit zwei Ladungen gesperrt (behoben A397).
-- **Offen:** `ActionTargetInfo`; die Rotationen Datei für Datei (`RebornRotations`; `ExtraRotations`
+- **`ActionTargetInfo` bis zur Bodenplatzierung (26.10.2026):** gelesen. Freundliche Bodenflächen gingen an die
+  Arenamitte, solange irgendwer dort stand; jetzt an die Stelle, die mehr Mitglieder deckt, wenn es sie gibt (A398,
+  Konzept 07, Option ab Werk an).
+- **Offen:** `ActionTargetInfo` ab der Facing-Prüfung (`FilterAffectsByFacing`, `GetMostCanTargetObjects`,
+  `FindTargetByType`); die Rotationen Datei für Datei (`RebornRotations`; `ExtraRotations`
   nur, wo eine zentrale Änderung sie berührt, Churin ausgenommen); `RotationSolver/UI`.
 
 ## Methode

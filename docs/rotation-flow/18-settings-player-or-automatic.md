@@ -190,7 +190,8 @@ the lowest party HP is below") über das vorausberechnete Minimum.
 ### Abwehr
 
 Die Regeln des Forks (Tankbuster-Plan, Übernahme vom Mit-Tank, Streckung der Gruppenwerkzeuge, „Spend only the
-mitigation a measured tankbuster needs") urteilen selbst und sind ab Werk an; ihr Schalter ist Notausschalter.
+mitigation a measured tankbuster needs", „Place them where they cover the most party members" für Bodenflächen,
+Konzept 07) urteilen selbst und sind ab Werk an; ihr Schalter ist Notausschalter.
 
 - **Pull-Abwehr: Gegnerzahl als Vorbote, der Verlauf für die großen Abklingzeiten.** „Use tank mitigation when this
   many enemies target you" (ab Werk 2) öffnet die Einzelabwehr; kurze Minderung, Abtausch und Reflexion fallen sofort.

@@ -21,7 +21,7 @@ vom 25.10.2026 abends zu Chorts Türmen und dem Glockenspiel ist beantwortet und
 kleinen gemessenen Tankbuster ist gebaut, für Heiler und Tanks (A373), die Reflexion daraus ebenso (A374). Sein Auftrag
 vom 26.10.2026 („todo nach priorität und umsetzbarkeit in loops abarbeiten") läuft: Flamethrower ist gebaut (A380),
 der Abgleich mit The Balance bis auf den Monk abgeschlossen (A381–A387, A390), zwei Schuldpunkte aufgelöst (A388,
-A389), die AoE-Schwelle an die AoE-Aktion gebunden (A391), im Audit vier Defekte behoben (A393–A395, A397). Was nur den Monk betrifft, rückt nach hinten: Er spielt ihn bislang nicht (seine Angabe, 25.10.2026), die Wirkung
+A389), die AoE-Schwelle an die AoE-Aktion gebunden (A391), im Audit vier Defekte behoben (A393–A395, A397) und die Bodenflächen an die Gruppe gelegt (A398). Was nur den Monk betrifft, rückt nach hinten: Er spielt ihn bislang nicht (seine Angabe, 25.10.2026), die Wirkung
 in seinem Profil ist heute null.
 
 1. Audit der gesamten Codebasis
@@ -56,8 +56,9 @@ und Phasenenden".
 ### Audit der gesamten Codebasis · N, R, U
 
 *Im Kampf:* unbekannt, bis gelesen – jeder Befund bisher war ein Defekt mit Wirkung (A8, A10, A82). *Stand:* Phasen
-1 bis 4 abgeschlossen, `DataCenter` mechanisch und inhaltlich (A392–A396), `BaseAction` (A397). *Nächster Schritt:*
-`ActionTargetInfo`, die Rotationen seiner häufigen Jobs, die Oberfläche. *Konzept:* 19.
+1 bis 4 abgeschlossen, `DataCenter` mechanisch und inhaltlich (A392–A396), `BaseAction` (A397), `ActionTargetInfo` bis zur
+Bodenplatzierung (A398). *Nächster Schritt:* der Rest von `ActionTargetInfo` (Facing, AoE-Zählung,
+`FindTargetByType`), die Rotationen seiner häufigen Jobs, die Oberfläche. *Konzept:* 19.
 
 ## Technische Schuld
 

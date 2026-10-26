@@ -172,6 +172,35 @@ der Heilschwelle verlangte. Jetzt fällt sie, sobald im Radius genug Verletzte s
 anders antwortet als im Original; die Upstream-Pflege durch eine weitere Abweichung in `ActionTargetInfo.FindTarget`.
 Ein belegter Defekt, keine Verbesserung auf Verdacht — deshalb ohne eigene Option.
 
+### Bodenflächen dort, wo die Gruppe steht
+
+**Sachstand (A398):** Eine freundliche Fläche mit Bodenziel – Sacred Soil, Asylum, Earthly Star, Liturgy of the
+Bell – geht nach den eigenen Wahlen des Spielers („Always place them on yourself", „Place them on the party tank")
+an die übliche Stelle von Upstream: einen gespeicherten Punkt des Gebiets, in Prüfungen und Raids zu acht ohne
+gespeicherten Punkt die Arenamitte (0/0 oder 100/100, der nähere), sonst den Boss, sonst einen Punkt beim
+angegriffenen Mitglied, sonst den Spieler. Diese Stelle verlangte nur, dass irgendwer im Kreis steht. Mit „Place
+them where they cover the most party members" (ab Werk an) wird sie mit der Stelle an jedem Mitglied in Reichweite
+verglichen: Deckt eine davon mehr Mitglieder ab (bei Heilungen: mehr Verletzte), geht die Fläche dorthin; bei
+Gleichstand bleibt die übliche Stelle, unter mehreren gleich guten die, um die die Getroffenen am dichtesten stehen.
+
+**Im Kampf:** Prüfung, Boss in der Mitte bei 100/100, die Gruppe sammelt sich am Südrand, 20 Yalm von der Mitte, für
+einen Stack, dann kommt der Raidwide. Vorher landete Sacred Soil (Wirkradius 15 Yalm laut Blatt) in der Mitte und
+deckte Tank und Nahkämpfer, die Gruppe am Stack nahm den Treffer ohne die 10 % Minderung. Jetzt liegt sie am Stack, wenn dort mehr stehen. Steht die Gruppe in
+der Mitte, ändert sich nichts.
+
+**Warum hinter einer Option:** Gemessen wird, wo die Gruppe beim Wirken steht. Ob sie dort bleibt, misst keiner der
+beiden Wege; die Arenamitte ist eine Annahme von Upstream über künftige Positionen, die Abdeckung eine Messung der
+jetzigen. Dass die Fläche nie weniger Mitglieder deckt als die übliche Stelle, folgt aus dem Vergleich; ob das im
+Kampf mehr nützt, wenn die Gruppe danach weiterläuft, ist nicht belegt.
+
+**Grenzen:** Kandidaten sind die Standorte der Mitglieder (auf die Reichweite gekürzt), nicht jeder Punkt der Arena –
+ein Punkt zwischen zwei Gruppen, der beide deckt, wird nicht gefunden. Earthly Star schadet beim Auslösen auch
+Gegnern; an der Gruppe statt am Boss geht dieser Schaden verloren, wenn die Gruppe fern vom Boss steht – Sicherheit
+vor Schaden.
+
+**Betroffene:** alle Heiler mit Bodenflächen, fremde Rotationen eingeschlossen; Autoren abgeleiteter Rotationen,
+weil die Zielwahl dieser Aktionen anders antwortet (CHANGELOG).
+
 ### Klasse 1 vor den Rollen-Kurzschlüssen
 
 **Die Rollenabkürzungen kehren sofort zurück, sobald ihre Schwelle erfüllt ist, und sehen dabei

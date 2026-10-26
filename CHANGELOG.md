@@ -92,6 +92,13 @@ reads the time since the player's last use from his action record where the acti
 running recast; an action whose recast is not running was not just used. A rotation that asked it as "not used in the
 last x seconds" now gets that for a ready action too.
 
+### Behaviour change in RotationSolver.Basic: ground-targeted beneficial actions cover the most party members
+
+With the new setting "Place them where they cover the most party members" (on by default), the target of a friendly
+ground-targeted action - after "Always place them on yourself" and "Place them on the party tank" - is the spot at a
+party member in range whose area covers the most of them, whenever that covers more than the usual placement
+(stored point, arena centre, boss, a point by the attacked member). Off, the placement is as before.
+
 ## 7.5.7.8+wsh1
 
 ### Dependency of RotationSolver.Basic: RebornMaterial 7.5.7.0

@@ -999,6 +999,13 @@ internal partial class Configs : IPluginConfiguration, IM3Settings
 	[JobConfig, UI("Place them on the party tank when there is one", Description = "Skips RSR's usual placement logic.", Parent = nameof(UseGroundBeneficialAbility))]
 	private static readonly bool _useTargetTankForGroundHeal = false;
 
+	// The usual placement takes the arena centre, the boss or a point by the attacked member and asks only that one
+	// member stands in it; with the party stacked away from that point the area covered almost nobody (A398).
+	[JobConfig, UI("Place them where they cover the most party members",
+		Description = "When the usual placement - a stored point, the arena centre, the boss, a point by the tank - covers fewer party members than a spot at one of them would, the area goes to that spot.\nIn a fight: the party stacks at the south edge, 20 yalms from the boss, for a marker and the raidwide follows; Sacred Soil, Asylum or Earthly Star lands on the stack instead of the empty middle. Off: the usual placement alone.",
+		Parent = nameof(UseGroundBeneficialAbility))]
+	private static readonly bool _groundBeneficialCoverMost = true;
+
 	[ConditionBool, UI("Show Action Timeline window",
 		Description = "A scrolling record of the actions you use: GCDs on the top lane with their cast and recast, oGCDs beneath them with their animation lock.",
 		Filter = UiWindows)]

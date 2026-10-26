@@ -11598,6 +11598,40 @@ bis zum Tod, auf der die Rückhaltung urteilt.
 
 *Prüfgrad:* statisch, Compile, Prüfskripte; im Spiel nicht beobachtet.
 
+### A398 · Audit Phase 5, `ActionTargetInfo`: Bodenflächen an der Arenamitte statt an der Gruppe (26.10.2026)
+
+- *Gelesen:* `ActionTargetInfo` bis einschließlich der Bodenplatzierung (Zielmengen, Bildschirm- und Sichtkegel,
+  `CanUseTo`, Status-, Resistenz- und TTK-Prüfung, `FindTarget` mit Selbst-Kegel und Flächenheilung um den Wirkenden,
+  Bodenziel feindlich, Bewegung, Bewegungssicherheit). Ohne Defekt; der Blaumagier-Zweig außerhalb seines Profils
+  erfasst.
+- *Befund (kein Defekt, Schutzverlust):* `FindTargetAreaFriend` legt eine freundliche Bodenfläche nach den eigenen
+  Wahlen des Spielers an einen gespeicherten Punkt (25 Gebiete ab Werk), in Prüfungen und Raids zu acht sonst an die
+  Arenamitte (0/0 oder 100/100), sonst an den Boss, einen Punkt beim angegriffenen Mitglied oder den Spieler – und
+  verlangt nur, dass irgendwer im Kreis steht. Die Beschreibung der Einstellung „Use beneficial ground-targeted
+  actions" nennt genau das; der Code weicht vom Text nicht ab. Wirkradien laut Blatt (xivapi v2, 26.10.2026): Sacred
+  Soil 15, Asylum 15, Earthly Star 20, Liturgy of the Bell 1 (im Code auf 20 gesetzt, der Heilradius der Glocke).
+- *Wirkung im Kampf:* Sammelt sich die Gruppe vor einem Raidwide am Rand (Stack, 20 Yalm von der Mitte), lag Sacred
+  Soil in der Mitte bei Tank und Nahkämpfern; die Gruppe nahm den Treffer ohne die 10 % Minderung, und die Abklingzeit
+  war verbraucht. Seine Protokolle nennen den Ort einer Bodenfläche nicht; wie oft das geschah, ist nicht gemessen.
+- *Optionen:* 0 belassen · 1 die übliche Stelle ersetzen durch die Stelle, die die meisten deckt · 2 vergleichen: die
+  Stelle an einem Mitglied nur nehmen, wenn sie mehr Mitglieder deckt als die übliche. *Abwägung:* 1 gäbe die
+  gespeicherten Punkte und die Bossnähe auch bei Gleichstand auf. 2 deckt nie weniger als die übliche Stelle und lässt
+  sie bei Gleichstand stehen. Gewählt: 2, hinter der Option „Place them where they cover the most party members" (ab
+  Werk an, seine Regel für neue Regeln), weil der Nutzen gegen eine Gruppe, die nach dem Wirken weiterläuft, nicht
+  belegt ist.
+- *Bilanz:* *Stärke:* Die Fläche deckt die Gruppe dort, wo sie beim Wirken steht. *Schwäche:* Kandidaten sind nur die
+  Standorte der Mitglieder. Earthly Star verliert seinen Schaden am Boss, wenn die Gruppe fern von ihm steht.
+  *Bedrohung:* Eine Gruppe, die nach dem Wirken zur Mitte läuft – dann deckte die Mitte später mehr; dieselbe Annahme
+  trägt die übliche Stelle umgekehrt. *Überwiegt:* der Nutzen, weil die Wahl nie weniger deckt.
+- *Falsifikation:* kein Defekt – zutreffend, es ist eine Verbesserung, deshalb Option; Option falsch – geprüft gegen
+  die Rangfolge der eigenen Wahlen (selbst, Tank bleiben vorn); ausgeliefert und nichts ändert sich – wenn die Gruppe
+  bei jedem Raidwide in der Mitte steht.
+- *Betroffene:* N (Gelehrter, Weißmagier, Astrologe, fremde Heilerrotationen), R (Zielwahl im Paket, CHANGELOG), U.
+- *Dokumentation:* Konzept 07 („Bodenflächen dort, wo die Gruppe steht"), 18, 19; Einstellung mit Kampftext;
+  CHANGELOG; Release-Text.
+
+*Prüfgrad:* statisch, Compile, Prüfskripte; im Spiel nicht beobachtet.
+
 ---
 ## B · Commit-Register (Fork vs. `upstream/main`)
 

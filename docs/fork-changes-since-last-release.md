@@ -93,3 +93,11 @@ Viper's Uncoiled Fury rule for the window after Serpent's Ire therefore spent co
 unused - all fight long with burst off; now it waits for Serpent's Ire, and the overcap rule still spends coils at the
 cap. The Monk's odd-minute Perfect Balance, which waits 20 seconds after the last one, was kept back while both
 charges were full, and Phantom Rush counted a ready Riddle of Fire as used.
+
+## Healers: ground areas where the party stands
+
+Sacred Soil, Asylum, Earthly Star and Liturgy of the Bell went to a stored point, the arena centre, the boss or a point
+by the tank, as long as anyone at all stood in the area. With "Place them where they cover the most party members"
+(on by default) they go to the spot at a party member that covers more of them whenever there is one: when the party
+stacks at the south edge, 20 yalms from the boss, for a marker before a raidwide, Sacred Soil lands on the stack instead of the empty
+middle. With the party at the centre nothing changes.
