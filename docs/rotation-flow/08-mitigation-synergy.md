@@ -176,7 +176,9 @@ Einstellung sind nur die zwei in der Tabelle (Revolverklinge, Dragoon).
   Excogitation.
 - *Einstellungen, deren Text die Rückhaltung ohne Ausnahme anordnet:* „Prioritize Microcosmos over all
   other healing when available" und die Strategie für Essential Dignity (Astrologe), dazu die
-  Burst-Einstellung von Barde, Pictomancer und Tänzer (unten). Der Text bindet.
+  Burst-Einstellung von Barde, Pictomancer und Tänzer (unten). Der Text bindet – auch in seiner Reichweite:
+  Microcosmos hält nur Heilungen, Oracle und der Trank vor Divination laufen weiter (A404); die Strategie hält
+  die GCD-Heilungen nur, solange Essential Dignity jetzt gehen kann (A403, Konzept 07).
 
 **Barde, Pictomancer, Tänzer:** Deren Einstellung „Prevent the use of defense abilties during burst" sagt
 ohne Ausnahme „verhindern"; ihr Text bindet, die Schranke greift dort deshalb nicht. Sie steht seit A283 ab Werk

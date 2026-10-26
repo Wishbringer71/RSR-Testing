@@ -11732,6 +11732,56 @@ bis zum Tod, auf der die Rückhaltung urteilt.
 
 *Prüfgrad:* statisch, Compile, Prüfskripte; im Spiel nicht beobachtet.
 
+### A403 · Astrologe: „Prioritize Essential Dignity" hielt die GCD-Heilungen auch, wenn die letzte Ladung auf Gefahr wartete (26.10.2026)
+
+- *Gelesen:* `SCH_Reborn` vollständig ohne Befund; `AST_Reborn` vollständig (Einstellungen, Countdown, Fähigkeiten,
+  Abwehr, Heil- und Schadens-GCDs).
+- *Befund (Defekt, durch A180):* `HealSingleGCD` gab „keine Heilung" zurück, sobald die Strategie „Any charges" oder
+  „When capped" stand und Essential Dignity eine Ladung hatte. `HealSingleAbility` wirkt die letzte Ladung seit A180
+  nur auf ein Ziel in Gefahr (`EssentialDignityNeedsThreat`, ab Werk an). Das Heilflag (`ShouldHealSingle`) fragt keine
+  Gefahr. A180 band die letzte Ladung an die Gefahr, ohne die Strategie von Upstream (`53d6cc538`) zu lesen.
+- *Wirkung im Kampf:* Mit einer der beiden Strategien und einer Ladung übrig (unter Stufe 78 die einzige): Ein
+  Mitglied, das nach einem Raidwide bei 30 % steht und gerade nichts abbekommt, bekam von diesem Astrologen keine
+  Heilung – kein Benefic, kein Aspected Benefic –, bis der nächste Cast angesagt war. Der Text von
+  `EssentialDignityNeedsThreat` verspricht ihm für diesen Fall „the smaller heals". Mit der Vorgabe („Ignore setting")
+  ändert sich nichts.
+- *Optionen:* 0 belassen · 1 die GCD-Heilungen halten nur, solange Essential Dignity jetzt gehen kann (`CanUse`, die
+  letzte Ladung nur bei Gefahr) · 2 die ganze Entscheidung von `HealSingleAbility` (auch die Schwellen je Ladung)
+  übernehmen. *Abwägung:* 2 hebt die Priorität im Band zwischen Heilschwelle und Schwelle der Ladung auf – genau dort
+  will der Spieler mit der Strategie auf die stärkere Essential Dignity warten. 1 hält beide Texte: „when available" der
+  Strategie und „the smaller heals" der Gefahrenbindung. Gewählt: 1.
+- *Getroffene Entscheidung:* Konzept 08 führt die Strategie unter „Nicht über die Schranke" (ihr Text ordnet die
+  Rückhaltung an, sie weicht keiner Gefährdungsklasse). Das bleibt; geändert ist, wann Essential Dignity „available"
+  ist – die Begründung der Entscheidung, der Text bindet, trägt die Änderung.
+- *Falsifikation:* kein Defekt – widerlegt, das Heilflag fragt keine Gefahr, und kein anderer Pfad heilt das Ziel;
+  Option falsch – mit Ladungen über einer greift die Rückhaltung wie zuvor; ausgeliefert und nichts ändert sich – mit
+  der Vorgabe zutreffend, sichtbar nur mit einer der beiden Strategien.
+- *Klasse:* nur der Astrologe hält GCD-Heilungen für eine Fähigkeit zurück; die Gefahrenbindung der anderen Heiler
+  (Benediction, Excogitation, Taurochole) steht vor keiner solchen Rückhaltung.
+- *Dokumentation:* Konzepte 07, 08, 19; Release-Text.
+
+*Prüfgrad:* statisch, Compile, Prüfskripte; im Spiel nicht beobachtet.
+
+### A404 · Astrologe: „Prioritize Microcosmos over all other healing" hielt Oracle und den Trank mit (26.10.2026)
+
+- *Befund (Defekt, Upstream):* `EmergencyAbility` kehrte unter `MicroPrio` mit laufendem Macrocosmos sofort zurück. Damit
+  hielt es neben den Heilungen (Neutral Sect, Horoscope, Synastry, Stellar Detonation) auch Oracle und den Trank vor
+  Divination – beides keine Heilung.
+- *Wirkung im Kampf:* Mit der Option an (ab Werk aus) und Macrocosmos auf der Gruppe, während Divination bereit wird:
+  Der Trank wartet, Divination geht in `AttackAbility` trotzdem, und danach fragt die Trank-Regel `DivinationPvE.CanUse`
+  vergeblich – der Trank fehlt diesem Burst. Oracle rutscht um bis zu die Dauer von Macrocosmos aus dem
+  Divination-Fenster.
+- *Behebung:* Die Rückhaltung gilt nur noch den Heilungen; Oracle und der Trank laufen wie ohne Option.
+- *Verworfen:* die Rückhaltung einer Gefährdungsklasse weichen lassen (`HoldPartyHeal`) oder Microcosmos auf einen
+  Einzelbedarf wirken. Das erste widerspräche der Entscheidung in Konzept 08 (der Text ordnet die Rückhaltung ohne
+  Ausnahme an). Das zweite zündete Macrocosmos fast immer vor dem Raidwide, für den es gelegt ist: Der Tank liegt
+  unter der Einzelschwelle, sobald er Autoangriffe nimmt, und der gesammelte Schaden des Raidwides ginge verloren.
+- *Falsifikation:* kein Defekt – widerlegt, der Text nennt nur Heilungen; Option falsch – die Heilungen halten wie
+  zuvor; ausgeliefert und nichts ändert sich – mit der Vorgabe (aus) zutreffend.
+- *Dokumentation:* Konzepte 08, 19; Release-Text.
+
+*Prüfgrad:* statisch, Compile, Prüfskripte; im Spiel nicht beobachtet.
+
 ---
 ## B · Commit-Register (Fork vs. `upstream/main`)
 

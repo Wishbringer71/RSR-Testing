@@ -122,3 +122,13 @@ other healer; Thin Air still makes the raise cost no MP.
 With "Raise with Swiftcast or Dualcast" off, a Summoner still swiftcast Resurrection - through the rule that puts
 Swiftcast on any long cast, and through the Summoner's own option for Swiftcast on Resurrection, whose off switch
 changed nothing. The setting, which is kept per job, now decides alone; the Summoner option is gone.
+
+## Astrologian: Essential Dignity priority no longer stops single-target healing
+
+With "Prioritize Essential Dignity over single target GCD heals when available" on "Any charges" or "When capped", the
+Astrologian held every single-target GCD heal while a charge was left - also when that charge was the last one, which
+waits for a target in danger. A member left at 30 % after a raidwide, with nothing hitting him, then got no heal from
+the Astrologian at all. GCD heals now wait only while Essential Dignity can actually go out.
+
+With "Prioritize Microcosmos over all other healing when available" on, Oracle and the potion before Divination were
+held together with the heals while Macrocosmos ran, and the potion missed that burst. Only heals wait now.

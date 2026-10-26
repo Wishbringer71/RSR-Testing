@@ -181,11 +181,6 @@ public sealed class AST_Reborn : AstrologianRotation
 	#region oGCD Logic
 	protected override bool EmergencyAbility(IAction nextGCD, out IAction? act)
 	{
-		if (MicroPrio && HasMacrocosmos)
-		{
-			return base.EmergencyAbility(nextGCD, out act);
-		}
-
 		if (!InCombat)
 		{
 			return base.EmergencyAbility(nextGCD, out act);
@@ -196,7 +191,12 @@ public sealed class AST_Reborn : AstrologianRotation
 			return true;
 		}
 
-		if (nextGCD.IsTheSameTo(false, HeliosConjunctionPvE, AspectedHeliosPvE))
+		// "Prioritize Microcosmos over all other healing when available" holds the heals below while Macrocosmos runs.
+		// Oracle above and the potion are no healing: held with them, Oracle slipped out of Divination and the potion lost
+		// its window, which closes once Divination is pressed (A404).
+		var healsHeld = MicroPrio && HasMacrocosmos;
+
+		if (!healsHeld && nextGCD.IsTheSameTo(false, HeliosConjunctionPvE, AspectedHeliosPvE))
 		{
 			if (NeutralSectPvE.CanUse(out act))
 			{
@@ -204,7 +204,7 @@ public sealed class AST_Reborn : AstrologianRotation
 			}
 		}
 
-		if (nextGCD.IsTheSameTo(false, HeliosConjunctionPvE, HeliosPvE))
+		if (!healsHeld && nextGCD.IsTheSameTo(false, HeliosConjunctionPvE, HeliosPvE))
 		{
 			if (PartyMembersForecastAverHP(true) < HoroscopeHeal && HoroscopePvE.CanUse(out act))
 			{
@@ -212,7 +212,7 @@ public sealed class AST_Reborn : AstrologianRotation
 			}
 		}
 
-		if (SynastryPvE.CanUse(out act))
+		if (!healsHeld && SynastryPvE.CanUse(out act))
 		{
 			if (CanCastSynastry(AspectedBeneficPvE, SynastryPvE, SynastryHeal, nextGCD) ||
 				CanCastSynastry(BeneficIiPvE, SynastryPvE, SynastryHeal, nextGCD) ||
@@ -227,7 +227,7 @@ public sealed class AST_Reborn : AstrologianRotation
 			return true;
 		}
 
-		if (StellarNow && HasGiantDominance && StellarDetonationPvE.CanUse(out act))
+		if (!healsHeld && StellarNow && HasGiantDominance && StellarDetonationPvE.CanUse(out act))
 		{
 			return true;
 		}
@@ -589,11 +589,16 @@ public sealed class AST_Reborn : AstrologianRotation
 			return base.HealSingleGCD(out act);
 		}
 
+		// Essential Dignity is available only when it can go out now. Its last charge waits for a target in danger
+		// (EssentialDignityNeedsThreat); held for it, the GCD heals left a low member out of danger with no heal at all,
+		// where that option gives him the smaller heals (A403).
 		var shouldUseEssentialDignity =
-			(EssentialPrio2 == EssentialPrioStrategy.AnyCharges && EssentialDignityPvE.EnoughLevel &&
-			 EssentialDignityPvE.Cooldown.CurrentCharges > 0) ||
-			(EssentialPrio2 == EssentialPrioStrategy.CappedCharges && EssentialDignityPvE.EnoughLevel &&
-			 EssentialDignityPvE.Cooldown.CurrentCharges == EssentialDignityPvE.Cooldown.MaxCharges);
+			(EssentialPrio2 == EssentialPrioStrategy.AnyCharges
+				|| (EssentialPrio2 == EssentialPrioStrategy.CappedCharges
+					&& EssentialDignityPvE.Cooldown.CurrentCharges == EssentialDignityPvE.Cooldown.MaxCharges))
+			&& EssentialDignityPvE.CanUse(out _, usedUp: true)
+			&& (EssentialDignityPvE.Cooldown.CurrentCharges > 1 || !EssentialDignityNeedsThreat
+				|| (EssentialDignityPvE.Target.Target?.IsUnderThreat() ?? false));
 
 		if (shouldUseEssentialDignity)
 		{

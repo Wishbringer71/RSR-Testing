@@ -44,7 +44,10 @@ Abgearbeitet nach seiner Vorgabe vom 26.10.2026: „todo nach priorität und ums
   Einstellung sagte (behoben A401, Konzept 11) –, Maschinist vollständig ohne Befund; Klassensuche Wiederbelebung:
   Swiftcast auf die Wiederbelebung ging an „Raise with Swiftcast or Dualcast" vorbei (behoben A402); Beschwörer bis
   zur Burst-Logik ohne Befund, die Burst- und Beschwörungslogik führt Konzept 12 gegen den Code; die Leser der breiten Tankbuster-Lesart (`IsHostileCastingToTank`) sind nach A395 nur noch die
-  Öffnung der Einzelabwehr für Tanks und Heiler, wie Konzept 09 sie führt.
+  Öffnung der Einzelabwehr für Tanks und Heiler, wie Konzept 09 sie führt. Gelehrter vollständig ohne Befund;
+  Astrologe vollständig – die Strategie für Essential Dignity hielt die GCD-Heilungen auch, wenn die letzte Ladung auf
+  Gefahr wartete (behoben A403, Konzept 07), „Prioritize Microcosmos over all other healing" hielt Oracle und den
+  Trank mit (behoben A404, Konzept 08).
 - **Offen:** die Rotationen Datei für Datei, die
   übrigen Jobs (`RebornRotations`; `ExtraRotations` nur, wo eine zentrale Änderung sie berührt, Churin ausgenommen);
   `RotationSolver/UI`.
