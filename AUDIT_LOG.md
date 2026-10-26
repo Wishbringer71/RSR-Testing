@@ -12024,6 +12024,32 @@ bis zum Tod, auf der die Rückhaltung urteilt.
 
 *Prüfgrad:* statisch, Modell (A412).
 
+### A415 · Schuldpunkt „`CanUse` als Prüfung weist `Target` zu": jede Lesestelle geklärt (26.10.2026)
+
+- *Auftrag:* nach der offenen Arbeit die technische Schuld, soweit ihre Auflösungsbedingung erfüllt ist; diese verlangte
+  „je Stelle klären, ob das Ziel aus derselben Entscheidung stammt".
+- *Messung:* jede Lesung `X.Target` im Baum außer Churin (Textsuche über alle `.cs`, 238 Lesungen einschließlich mehrfacher
+  in einem Ausdruck), je Stelle das `X.CanUse` im selben Ausdruck oder davor in derselben Methode; die Stellen mit
+  `CanUse` vor der Lesung in eigenen Zeilen von Hand gelesen (Provoke in `CustomRotation_Ability`, Samurai, Viper,
+  Dragoon, Revolverklinge, Paladin, Krieger, Maschinist, Barde, Tänzer, Beschwörer, Astrologe, Weiser).
+- *Ergebnis:* In `RebornRotations` und `RotationSolver.Basic` stammt jedes gelesene Ziel aus dem `CanUse` derselben
+  Entscheidung, meist im Zweig gleich nach ihm. Ausnahmen ohne Wirkung im Kampf: die Anzeige des Gelehrten
+  (`ScholarRotation.DisplayBaseStatus`); der Tänzer schreibt das Ziel von Closed Position nach `CanUse` mit dem
+  benannten Partner, er liest es nicht. Phantom-Jobs und Blaumagier lesen ebenfalls nach `CanUse`. Vor `CanUse` lesen nur
+  BeirutaAST (548, 758, 921, 932, 1245–1249), BeirutaWHM (532, 543, 560, 711, 736) und BeirutaSGE (525–527): Sie prüfen
+  das Ziel des letzten Erfolgs, anfangs keines – Divine Benison des BeirutaWHM etwa nur, wenn das letzte Benison-Ziel
+  ein Tank unter 90 % ist; die beiden Zweige für Celestial Intersection in BeirutaAST verlangen vor `CanUse` ein
+  gelesenes Ziel und öffnen deshalb erst, nachdem ein anderer Pfad einmal Erfolg hatte.
+- *Entscheidung:* Der eigene Code braucht keine seiteneffektfreie Prüfung; der Schuldpunkt ist für ihn aufgelöst. Die
+  Beiruta-Stellen sind fremde Rotationen außerhalb seines Profils – erfasst als eigener Schuldpunkt, aufzugreifen, wenn
+  er sie nennt. Die Zählung „55 Lesestellen" aus A286 war nach anderer Methode gezählt (ohne mehrfache Lesungen je
+  Ausdruck); sie ist nicht nachgemessen und durch die Zählung hier ersetzt.
+- *Prüfskript:* nicht angelegt. Die Klasse wiederholt sich nur, wenn neuer Code `X.Target` vor `X.CanUse` liest; eine
+  Textsuche unterscheidet „vor" und „in einer früheren Entscheidung derselben Methode" nicht sicher, das verlangte den
+  Sprachserver je Stelle.
+
+*Prüfgrad:* Textsuche, Lesen je Stelle; im Spiel nicht beobachtet.
+
 ---
 ## B · Commit-Register (Fork vs. `upstream/main`)
 

@@ -21,7 +21,7 @@ vom 25.10.2026 abends zu Chorts Türmen und dem Glockenspiel ist beantwortet und
 kleinen gemessenen Tankbuster ist gebaut, für Heiler und Tanks (A373), die Reflexion daraus ebenso (A374). Sein Auftrag
 vom 26.10.2026 („todo nach priorität und umsetzbarkeit in loops abarbeiten") ist erledigt: Flamethrower und Six-sided
 Star sind gebaut (A380, A413), der Abgleich mit The Balance ist für jeden Kampfjob abgeschlossen (A381–A387, A390,
-A412), drei Schuldpunkte aufgelöst (A388, A389, A410), die AoE-Schwelle an die AoE-Aktion gebunden (A391), die
+A412), drei Schuldpunkte aufgelöst (A388, A389, A410), ein vierter für den eigenen Code (A415), die AoE-Schwelle an die AoE-Aktion gebunden (A391), die
 Bodenflächen an die Gruppe gelegt (A398) und das Audit der gesamten Codebasis abgeschlossen, mit den Defekten aus A393–A395,
 A397, A399, A401–A409 und A412 (A414).
 
@@ -49,10 +49,11 @@ jede solche Änderung trägt im selben Commit die Anpassung des Modus „plugin"
 Vier Fundstellen in PvP und Bozja (`scan11.py`), außerhalb seines Profils; je eine Richtungsentscheidung, die eine
 Beobachtung im Inhalt verlangt. *Auflösung:* erst, wenn er diese Inhalte nennt.
 
-### `CanUse` als Prüfung weist `Target` zu · N, R
-*Kosten:* Code, der `X.Target` liest, ohne `X.CanUse` in derselben Entscheidung, liest das Ziel des letzten Erfolgs (55
-Lesestellen außerhalb Churin, A286). *Auflösung:* je Stelle klären, ob das Ziel aus derselben Entscheidung stammt; erst
-eine fremde Lesung begründet eine seiteneffektfreie Prüfung. *Konzept:* 03.
+### Die Beiruta-Heiler lesen das Ziel des letzten Erfolgs · N, R
+BeirutaAST, BeirutaWHM und BeirutaSGE lesen `X.Target.Target` vor `X.CanUse`, an 17 Stellen, und prüfen so das Ziel des
+letzten Erfolgs, anfangs keines (A415); der eigene Code liest überall das Ziel derselben Entscheidung. Fremde
+Rotationen, außerhalb seines Profils. *Auflösung:* wenn er sie nennt – dann eine seiteneffektfreie Zielabfrage im Paket,
+die ihr Muster trägt. *Konzept:* 03.
 
 ### `HasSurvivingShield` misst die kürzeste Schildrestzeit · N, R
 Öffentlich, ohne Leser im Baum; der Tankbuster-Plan liest dieselbe Regel aus der Statusliste. Das Maximum tauschte den
