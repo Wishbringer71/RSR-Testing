@@ -11514,6 +11514,41 @@ bis zum Tod, auf der die Rückhaltung urteilt.
 
 *Prüfgrad:* statisch, Prüfskript mit Selbsttest, Compile; im Spiel nicht beobachtet.
 
+### A395 · Die Pull-Rückhaltung fiel bei jedem Trash-Zauber auf sein Ziel; Ausnahme an bekannte Tankbuster gebunden (26.10.2026)
+
+- *Befund (Defekt):* `DataCenter.TankbusterOpensDefence` – die Ausnahme der Pull-Rückhaltung (`PullDefenseOnly`,
+  A359) und der Rückhaltung für den nächsten Tankbuster ohne Heiler (`KeepDefenceForTankbusterIn`, A361) – las beim
+  Tank `IsHostileCastingToTank`. Das enthält den ungelisteten Rückfall von `IsHostileCastingTank`: jedes nicht
+  unterbrechbare Wirken über einen GCD, das ein Gegner auf sein eigenes Ziel richtet, gleich wer das Ziel ist. Konzept
+  09 nannte „ein gelistetes Wirken auf einen Tank"; der Kommentar an `IsTankbusterAimedAt` beschreibt denselben
+  Rückfall als harmlos nur für freie Minderung (C10).
+- *Wirkung im Kampf:* Im Pull hob der erste nicht unterbrechbare Trash-Zauber auf den Tank – ein Kegel oder Zauber
+  über 2,5 s, im Fenster ein bis zwei GCDs vor dem Treffer – die Rückhaltung auf; `StaggeredBigMitigation` lief dann
+  nach der alten Staffel, und Rachsucht/Verdammnis, Schutzwall und ihre Gegenstücke fielen, ohne dass der Verlauf sie
+  brauchte. Ohne Heiler gingen Minderungen auf solche Zauber, statt bis zum nächsten Tankbuster zu warten. Wie oft
+  seine Pulls solche Zauber enthalten, ist nicht gemessen: Seine Protokolle vom 22. bis 25.10.2026 sind
+  Heiler-Abende, ohne eine Tankzeile.
+- *Optionen:* 0 belassen, Konzept angleichen · 1 Ausnahme an bekannte Tankbuster auf einem Tank (Marker, Liste,
+  gemessene Tabelle; `IsTankbusterAimedAt`) · 2 zusätzlich ungelistete Wirken von Bossen. *Abwägung:* 0 gibt den
+  modellierten Nutzen der Rückhaltung in jedem Pull mit Zauberern auf. 2 braucht eine Boss-Erkennung, deren Fehler
+  in beide Richtungen gehen; der Fall, den sie fängt, ist selten (unten). Gewählt: 1, der Leser
+  `IsTankbusterAimedAt` war schon da und ist frei von Optionen.
+- *Bilanz:* *Stärke:* Die Rückhaltung gilt im Pull, wie modelliert; die großen Abklingzeiten bleiben für den Pull, der
+  sie braucht. *Schwäche:* Ein Boss mit Adds an ihm, dessen Tankbuster weder Liste, Tabelle, Marker noch BossModReborn
+  kennen, trifft das erste Mal ohne große Minderung – die kurze liegt, die Tabelle kennt ihn ab dem zweiten, die
+  kritische Klasse hebt die Rückhaltung auf (Wahrscheinlichkeit nach meiner Annahme gering, nicht gemessen: Bosse
+  tragen oft Marker oder haben ein BossModReborn-Modul). Ein Boss allein öffnet die Pull-Regel erst, wenn „Use tank
+  mitigation when this many enemies target you" auf 1 steht; ab 2 (Vorgabe) gilt dort die Staffel wie zuvor.
+  *Überwiegt:* der Nutzen.
+- *Falsifikation:* kein Defekt – widerlegt, der Rückfall trifft jeden nicht unterbrechbaren Zauber auf das Ziel des
+  Gegners, und der Code wich vom Konzept ab; Option falsch – geprüft gegen den Bossfall oben; ausgeliefert und nichts
+  ändert sich – wenn seine Pulls keine solchen Zauber haben; dann kostet die Änderung nichts.
+- *Umsetzung:* `_knownTankbusterAtATank` (je Frame): ein lebender Tank der Gruppe, auf den `IsTankbusterAimedAt`
+  zeigt.
+- *Dokumentation:* Konzept 09 („Die Abwehr im Pull", „Ohne Heiler"), Release-Text.
+
+*Prüfgrad:* statisch, Compile, Prüfskripte; im Spiel nicht beobachtet.
+
 ---
 ## B · Commit-Register (Fork vs. `upstream/main`)
 

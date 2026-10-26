@@ -1431,12 +1431,34 @@ internal static class DataCenter
 
 	/// <summary>
 	/// A tankbuster, or the player, opens the single-target defence this frame: his command, a listed tankbuster cast
-	/// at him, BossModReborn's imminent one, or for a tank any cast an enemy aims at a tank. What the defence spends then
-	/// is for that hit; the pull rule and an attack on an unhealed player are the other sources.
+	/// at him, BossModReborn's imminent one, or for a tank a known tankbuster aimed at either tank. What the defence
+	/// spends then is for that hit; the pull rule and an attack on an unhealed player are the other sources.
 	/// </summary>
+	/// <remarks>
+	/// Known, not the unlisted reading "an enemy casting at the one it attacks" that also opens a tank's defence: that
+	/// matches every uninterruptible trash cast in a pull, and here it lifted the pull's hold on the big mitigation and
+	/// the hold for the next tankbuster without a healer, so the old 60 s / 30 s stagger came back with the first such
+	/// cast (A395).
+	/// </remarks>
 	internal static bool TankbusterOpensDefence =>
 		CommandStatus.HasFlag(AutoStatus.DefenseSingle) || IsHostileCastingTankBusterAtMe || BMRTankbusterImminent
-		|| (Role == JobRole.Tank && IsHostileCastingToTank);
+		|| (Role == JobRole.Tank && _knownTankbusterAtATank.Value);
+
+	// A tankbuster marker on a tank of the party, or a cast at him from the tankbuster list or the measured table.
+	private static readonly FrameCached<bool> _knownTankbusterAtATank = new(() =>
+	{
+		var party = PartyMembers;
+		for (var i = 0; i < party.Count; i++)
+		{
+			var member = party[i];
+			if (member != null && !member.IsDead && member.IsJobCategory(JobRole.Tank) && IsTankbusterAimedAt(member))
+			{
+				return true;
+			}
+		}
+
+		return false;
+	});
 
 	/// <summary>
 	/// Is someone alive who could raise, in the set the current raise settings draw targets from?

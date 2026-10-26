@@ -76,7 +76,9 @@ of needing three enemies around you on top of its own AoE count.
 "Use tank mitigation when this many enemies target you" now opens the tank's pull defence whenever that many enemies
 within 3 yalms target you and you have attacked one of them. Before, more than 30 % of all enemies within 25 yalms also
 had to stand at you, so unpulled packs nearby, casters at range or the other tank's adds kept it shut - holding three
-enemies beside two unpulled packs of four, say. The big cooldowns still wait for your measured health to need them.
+enemies beside two unpulled packs of four, say. The big cooldowns still wait for your measured health to need them, and
+now keep waiting when a trash mob casts a spell at you: only a known tankbuster on a tank - a marker, a cast from the
+tankbuster list or one RSR has measured - lets them go at once.
 
 ## M9: a spread marker on someone else no longer counts as a hit on you
 

@@ -619,11 +619,16 @@ den Wirktexten). Vor dem ersten Verlauf eines Pulls – die ersten 2,5 s – war
 gebraucht wird; feste Abstände gibt es dann nicht mehr, sie schließen einander nur noch über ihren Status aus. Option
 „Hold the big mitigation and Rampart in a pull until your health needs them", ab Werk an.
 
-Die Rückhaltung gilt nur, wenn allein der Pull die Abwehr geöffnet hat. Ein Tankbuster-Marker oder gelistetes Wirken auf
-ihn, ein gelistetes Wirken auf einen Tank, eine Tankbuster-Vorhersage von BossModReborn oder sein Befehl öffnen sie ohne
-Rückhaltung und mit der alten Staffel. Als strategische Rückhaltung läuft sie über die universelle Schicht
-(`HoldSingleDefense`): Steht er oder ein Tank in der kritischen Klasse, fällt sie weg. Lebt kein Heiler, entfallen
-Rückhaltung und Staffel ganz (Abschnitt „Ohne Heiler: den eigenen Tod hinauszögern").
+Die Rückhaltung gilt nur, wenn allein der Pull die Abwehr geöffnet hat. Ein bekannter Tankbuster auf ihn oder den
+anderen Tank – Marker, Wirken aus der Tankbuster-Liste oder der gemessenen Tabelle –, eine Tankbuster-Vorhersage von
+BossModReborn oder sein Befehl öffnen sie ohne Rückhaltung und mit der alten Staffel. Das ungelistete Wirken eines
+Gegners auf sein Ziel öffnet die Abwehr, hebt die Rückhaltung aber nicht auf: Es trifft jeden nicht unterbrechbaren
+Trash-Zauber im Pull, und mit dem ersten kam die Staffel zurück (A395). Sein Preis: Wirkt ein Boss mit Adds an ihm (oder
+allein, wenn die Gegnerzahl auf 1 steht) einen Tankbuster, den weder Liste noch Tabelle noch Marker noch BossModReborn kennen, trifft der erste ohne große
+Minderung – die kurze liegt, die Tabelle kennt ihn ab dem zweiten, und die kritische Klasse hebt die Rückhaltung auf.
+Als strategische Rückhaltung läuft sie über die universelle Schicht (`HoldSingleDefense`): Steht er oder ein Tank in
+der kritischen Klasse, fällt sie weg. Lebt kein Heiler, entfallen Rückhaltung und Staffel ganz (Abschnitt „Ohne
+Heiler: den eigenen Tod hinauszögern").
 
 Eine Methode für alle vier Tanks: `StaggeredBigMitigation(big, upgraded)` trägt, was Paladin, Krieger, Dunkelritter und
 Revolverklinge als je eigene, wortgleiche Kopie führten; die vier Rotationen rufen sie mit ihren Aktionen auf.
@@ -694,9 +699,9 @@ Rolle:
    der Vorhersage von BossModReborn, sonst nach dem Abstand in diesem Kampf: letzter Treffer plus kürzester Abstand, der
    vom Kampfbeginn bis zum ersten eingerechnet (`TankbusterForecast.NextOnPlayerIn`, gefüttert aus `Watcher`). Ohne
    Tankbuster in diesem Kampf ist keiner fällig, und nichts wartet; blieb er zwei Abstände lang aus, gilt der Kampf als
-   weitergegangen (Ausnahme im Register, A361). Öffnet ein Tankbuster selbst die Abwehr – Wirken auf ihn oder einen
-   Tank, Vorhersage, sein Befehl (`DataCenter.TankbusterOpensDefence`) –, gilt diese Prüfung nicht: Was dann geht, ist
-   für diesen Treffer.
+   weitergegangen (Ausnahme im Register, A361). Öffnet ein Tankbuster selbst die Abwehr – ein bekannter auf ihn oder
+   einen Tank (Marker, Liste, gemessene Tabelle), Vorhersage, sein Befehl (`DataCenter.TankbusterOpensDefence`) –, gilt
+   diese Prüfung nicht: Was dann geht, ist für diesen Treffer.
 3. *Tank:* Die große Minderung und Schutzwall warten weder auf den Verlauf (Pull-Rückhaltung) noch auf die feste Staffel;
    sie schließen einander nur über ihren Status aus (`DefenceSpentWithoutHealer` in `StaggeredBigMitigation`).
 4. *Tank, gemessener Tankbuster:* Der Plan drückt sein billigstes Bündel wie sonst; den Rest hält er nicht mehr für den
