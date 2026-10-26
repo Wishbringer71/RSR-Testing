@@ -17,18 +17,20 @@ Abgearbeitet nach seiner Vorgabe vom 26.10.2026: „todo nach priorität und ums
   öffentliche Sicht neben der gelesenen Textform. `RaidTimeRaw` ist intern und ohne Leser – der Rest einer
   Zeitleisten-Funktion von Upstream (`57ad3f81d`, 27.02.2024); Adressat Upstream, nicht gelöscht, weil der Fork sonst
   einen Konflikt in fremdem Code trägt und nichts im Kampf gewinnt.
-- **`DataCenter`, inhaltlich (26.10.2026):** gelesen sind Gebiete und Inhaltsarten, Rollen und Wiederbelebung, GCD,
-  Begleiter, Gesundheit, Aktionsprotokoll, Gegnerzahlen in Reichweite und die Markerlisten. Zwei Defekte mit Wirkung:
+- **`DataCenter`, inhaltlich (26.10.2026, abgeschlossen):** jede Region gelesen. Drei Defekte mit Wirkung im Kampf:
   Die Pull-Regel der Tanks verlangte zusätzlich, dass mehr als 30 % der Gegner in 25 Yalm bei ihm stehen, und blieb
   neben ungezogenen Rudeln zu (behoben A393, Konzept 09, „Die Abwehr im Pull"). Im M9 stand der Spread-Marker von
   Aetherletting auch unter den Stacks und öffnete den Selbstschutz für einen Spread auf einem anderen (behoben A394,
-  Konzept 13, „Marker"; alle übrigen Markerpfade gegen Lockon-Blatt und BossMod geprüft). Die Liste der Allianzraids
-  deckt sich mit den Spielblättern (`TerritoryIntendedUse` 8, 18 Gebiete, 26.10.2026); sie altert mit dem nächsten
+  Konzept 13, „Marker"; alle übrigen Markerpfade gegen Lockon-Blatt und BossMod geprüft). Die Pull-Rückhaltung der
+  großen Minderung fiel bei jedem nicht unterbrechbaren Trash-Zauber auf das Ziel eines Gegners (behoben A395, Konzept
+  09). Ohne Wirkung im Kampf, berichtigt (A396): eine Beschreibung an der falschen Eigenschaft, ein Kommentar auf dem
+  Stand vor A303, die Personenmaske von BossModReborn blieb beim Zurücksetzen stehen. Die Liste der Allianzraids deckt
+  sich mit den Spielblättern (`TerritoryIntendedUse` 8, 18 Gebiete, 26.10.2026); sie altert mit dem nächsten
   Allianzraid, die Fähigkeitsprüfung über das Blatt wäre die Konstruktion ohne Pflege – heute ohne Wirkung, Adressat
-  Upstream.
-- **Offen:** `DataCenter` inhaltlich ab den Zauber-Erkennungen hinter den Markerlisten und die
-  BossModReborn-Zeitleiste, dazu der Kopf der Klasse; die Rotationen Datei für Datei (`RebornRotations`;
-  `ExtraRotations` nur, wo eine zentrale Änderung sie berührt, Churin ausgenommen); `RotationSolver/UI`.
+  Upstream. Begegnungsspezifische Sonderfälle von Upstream (M10S, M11S, Orbonne, Lakshmi, Lich) sind gelesen, nicht
+  gegen die Kämpfe geprüft: Sie liegen außerhalb dessen, was sich hier belegen lässt, und gelten nur in ihrem Gebiet.
+- **Offen:** `BaseAction` und `ActionTargetInfo`; die Rotationen Datei für Datei (`RebornRotations`; `ExtraRotations`
+  nur, wo eine zentrale Änderung sie berührt, Churin ausgenommen); `RotationSolver/UI`.
 
 ## Methode
 

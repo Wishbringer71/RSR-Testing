@@ -11549,6 +11549,23 @@ bis zum Tod, auf der die Rückhaltung urteilt.
 
 *Prüfgrad:* statisch, Compile, Prüfskripte; im Spiel nicht beobachtet.
 
+### A396 · Audit Phase 5: `DataCenter` inhaltlich abgeschlossen (26.10.2026)
+
+- *Gelesen:* der Kopf (Listen, Begleiter, Stufe, Zielhaltung, gemessene Heilungen, Befehle, Kombo, Spezialzustände,
+  Kampfzeit, `MobsTime`, `AverageTTK`), die Zauber-Erkennungen ab `IsHostileCastingTankBusterAtMe`, die Rückhaltungs-
+  und Flächenmessungen, die Reichweitengeometrie und die BossModReborn-Region. Defekte mit Wirkung: A393, A394, A395.
+- *Ohne Wirkung im Kampf, berichtigt:* Die Beschreibung von `AreaCastIsWorthMitigating` stand als erstes von zwei
+  `<summary>` über `LargeShieldShare` – an ihre Methode verschoben. Der Kommentar an `IsAreaCastEnemy` nannte nur die
+  Flächenliste; seit A303 lesen die Helfer auch Tankbuster-, Rückstoß- und gemessene Liste (`IsListedHostileCast`) –
+  die Absicht steht in A303, der Kommentar folgt ihr. `ResetBmrData` ließ `BMRNextDamagePlayers` und
+  `BMRNextDamageHitsPlayer` stehen; ihre Leser prüfen `BMRNextDamageIn` mit, das zurückgesetzt wird, nur die
+  Debug-Ansicht zeigte den alten Wert.
+- *Ohne Befund:* `MobsTime` zählt Gegner in Jobreichweite gegen „Use tank mitigation when this many enemies target you"
+  und hat im Baum keinen Leser außer der Paketoberfläche. Die begegnungsspezifischen Sonderfälle von Upstream sind
+  gelesen, nicht gegen die Kämpfe geprüft.
+
+*Prüfgrad:* statisch, Compile, Prüfskripte.
+
 ---
 ## B · Commit-Register (Fork vs. `upstream/main`)
 

@@ -80,8 +80,9 @@ internal static class DataCenter
 			|| TankbusterForecast.IsLearned(actionId);
 
 	/// <summary>
-	/// Whether <paramref name="h"/> counts as an enemy for the area recognition: targetable and hostile, or an
-	/// untargetable enemy casting an action on the area list.
+	/// Whether <paramref name="h"/> counts as an enemy for the cast recognition: targetable and hostile, or an
+	/// untargetable enemy casting a listed action (<see cref="IsListedHostileCast"/>; the area list since A277, the
+	/// tankbuster and knockback lists and the measured tankbusters since A303).
 	/// </summary>
 	/// <param name="h">The caster.</param>
 	/// <returns>True for an enemy whose area cast is read.</returns>
@@ -4193,32 +4194,6 @@ internal static class DataCenter
 	}
 
 	/// <summary>
-	/// Whether an incoming area cast is big enough that the party mitigation is worth its cooldown.
-	/// </summary>
-	/// <remarks>
-	/// The user's requirement: an area action whose damage stays below what a small shield absorbs
-	/// does not need to be treated as a big hit; one at or above the size of a large shield does.
-	/// What is actually spent on a trivial hit is not the shield but the **cooldown** - a Reprisal
-	/// laid on a two-percent tick is missing at the next real one.
-	///
-	/// The measure is not a threshold anybody had to invent. It is the same question the healing
-	/// side already answers: **does this hit create a need to heal?** Buffer minus expected hit
-	/// against the level at which the tree would heal by itself. Two percent on a full player does
-	/// not; thirty does. The same action is therefore minor for a healthy tank and major for a
-	/// wounded caster, which no stored category could express - and it fits the standing order that
-	/// healing comes before mitigation, because mitigation goes where healing would otherwise be
-	/// needed.
-	///
-	/// An earlier draft compared against HealthForDyingTanks (0.15). Working it through showed it
-	/// would practically never mitigate: a thirty-percent hit leaves a full player at seventy. A rule
-	/// that cannot fire in its own domain is no rule - the same shape C59 found on the Holy hold.
-	///
-	/// Unrated actions return true, which is the behaviour the tree has always had. That is what
-	/// keeps the 850 shipped entries from losing their mitigation the moment this ships: an entry
-	/// only enters the arithmetic once an actual hit has been measured, and in content that is
-	/// repeated - an extreme trial, a savage fight in progression - that is one clear.
-	/// </remarks>
-	/// <summary>
 	/// What a large shield absorbs, as a share of maximum HP: the point from which an area hit counts
 	/// as a big one regardless of how healthy the party is.
 	/// </summary>
@@ -4263,6 +4238,32 @@ internal static class DataCenter
 		}
 	}
 
+	/// <summary>
+	/// Whether an incoming area cast is big enough that the party mitigation is worth its cooldown.
+	/// </summary>
+	/// <remarks>
+	/// The user's requirement: an area action whose damage stays below what a small shield absorbs
+	/// does not need to be treated as a big hit; one at or above the size of a large shield does.
+	/// What is actually spent on a trivial hit is not the shield but the **cooldown** - a Reprisal
+	/// laid on a two-percent tick is missing at the next real one.
+	///
+	/// The measure is not a threshold anybody had to invent. It is the same question the healing
+	/// side already answers: **does this hit create a need to heal?** Buffer minus expected hit
+	/// against the level at which the tree would heal by itself. Two percent on a full player does
+	/// not; thirty does. The same action is therefore minor for a healthy tank and major for a
+	/// wounded caster, which no stored category could express - and it fits the standing order that
+	/// healing comes before mitigation, because mitigation goes where healing would otherwise be
+	/// needed.
+	///
+	/// An earlier draft compared against HealthForDyingTanks (0.15). Working it through showed it
+	/// would practically never mitigate: a thirty-percent hit leaves a full player at seventy. A rule
+	/// that cannot fire in its own domain is no rule - the same shape C59 found on the Holy hold.
+	///
+	/// Unrated actions return true, which is the behaviour the tree has always had. That is what
+	/// keeps the 850 shipped entries from losing their mitigation the moment this ships: an entry
+	/// only enters the arithmetic once an actual hit has been measured, and in content that is
+	/// repeated - an extreme trial, a savage fight in progression - that is one clear.
+	/// </remarks>
 	private static bool AreaCastIsWorthMitigating(uint actionId)
 	{
 		RecordAnnouncedAreaShare(actionId);
@@ -5118,6 +5119,8 @@ internal static class DataCenter
 		BMRNextVulnerableEndIn = float.MaxValue;
 		BMRNextDamageIn = float.MaxValue;
 		BMRNextDamageType = PredictedDamageType.None;
+		BMRNextDamagePlayers = 0;
+		BMRNextDamageHitsPlayer = false;
 		BMRSpecialModeIn = float.MaxValue;
 		BMRSpecialModeType = SpecialMode.Normal;
 		BMRForceCancelCast = false;
