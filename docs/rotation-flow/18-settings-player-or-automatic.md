@@ -198,7 +198,9 @@ mitigation a measured tankbuster needs") urteilen selbst und sind ab Werk an; ih
   unter „Health the big mitigation waits for" (ab Werk 30 %) fiele – eine Haltung mit Laufzeiturteil wie die
   Heilschwellen. Im Regelkreis-Modell in jedem gerechneten Fall weniger Tote und weniger Zeit unter 30 % als die reine
   Zählung (Konzept 09, „Die Abwehr im Pull"). Die Gegnerzahl bleibt, weil vor dem ersten Treffer nichts anderes
-  vorhersagt; „Use tank mitigation below this HP" (ab Werk 100 %, also immer) bleibt als Pegel über der ganzen Abwehr.
+  vorhersagt; „Use tank mitigation below this HP" (ab Werk 100 %, also immer) bleibt als Pegel über der Pull-Regel –
+  nur dort liest ihn der Code; eine Minderung vor einem Tankbuster geht bei jeder Gesundheit, weil sie vor dem Treffer
+  liegen muss.
 - **Ohne Heiler.** „Without a living healer, spend your defence to stay alive longer" (ab Werk an) ist eine Regel, die
   selbst urteilt: Lebt kein Heiler, öffnet die Einzelabwehr bei jedem Angriff auf ihn, und eine Minderung geht, sobald
   sie bis zum nächsten fälligen Tankbuster wieder bereit ist – fällig nach BossModReborn oder nach dem Abstand der

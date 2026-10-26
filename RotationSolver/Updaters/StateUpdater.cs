@@ -273,12 +273,10 @@ internal static class StateUpdater
 
 		if (DataCenter.Role == JobRole.Tank)
 		{
-			var movingHere = false;
-			if (DataCenter.NumberOfHostilesInMaxRange != 0)
-			{
-				movingHere = (float)DataCenter.NumberOfHostilesInRange / DataCenter.NumberOfHostilesInMaxRange > 0.3f;
-			}
-
+			// The pull rule asks what attacks him, as its setting says. A share of all enemies within 25 yalms that had
+			// to stand at him counted unpulled packs, casters at range and the other tank's adds against him, and kept
+			// the defence shut in a pull of three beside two unpulled packs of four; what a pull needs beyond the count
+			// is the measured fall's question (BigMitigationHeldInPull, A393).
 			var tarOnMeCount = 0;
 			var attacked = false;
 			var playerId = Player.Object?.GameObjectId ?? 0;
@@ -299,7 +297,7 @@ internal static class StateUpdater
 
 			if (tarOnMeCount >= Service.Config.AutoDefenseNumber
 				&& ObjectHelper.GetPlayerHealthRatio() <= Service.Config.HealthForAutoDefense
-				&& movingHere && attacked)
+				&& attacked)
 			{
 				DataCenter.TankPullOnPlayer = true;
 				return true;

@@ -70,3 +70,10 @@ for Fuko) against that combo's AoE count, instead of those within melee range - 
 already uses; Ogi Namikiri on the AoE path goes when it hits more than one enemy. The Dark Knight's Abyssal Drain
 takes Carve and Spit's place where it out-damages it on the enemies it reaches, by their tooltips (from three), instead
 of needing three enemies around you on top of its own AoE count.
+
+## Tanks: pull mitigation counts what attacks you
+
+"Use tank mitigation when this many enemies target you" now opens the tank's pull defence whenever that many enemies
+within 3 yalms target you and you have attacked one of them. Before, more than 30 % of all enemies within 25 yalms also
+had to stand at you, so unpulled packs nearby, casters at range or the other tank's adds kept it shut - holding three
+enemies beside two unpulled packs of four, say. The big cooldowns still wait for your measured health to need them.

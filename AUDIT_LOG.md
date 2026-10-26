@@ -11442,6 +11442,48 @@ bearbeitet ist und in seinen Protokollen gespielt wird.
 
 *Prüfgrad:* Textsuche über den Baum; Code nicht verändert.
 
+### A393 · Audit Phase 5, `DataCenter` inhaltlich bis zu den Gegnerzahlen; Pull-Regel der Tanks ohne Gegneranteil (26.10.2026)
+
+- *Gelesen:* Gebiete und Inhaltsarten (1011–1371), Rollen und Wiederbelebung, GCD, Begleiter, Gesundheit,
+  Aktionsprotokoll, Gegnerzahlen in Reichweite (2336–2401) und ihre Leser.
+- *Allianzraids:* `_allianceTerritoryIds` gegen die Spielblätter gemessen (xivapi v2, `TerritoryType` mit
+  `TerritoryIntendedUse=8`, 26.10.2026): 18 Gebiete, deckungsgleich bis „Windurst: The Third Walk" (1368). Leser:
+  `IsAllianceMember` (Heilen und Wiederbeleben von Allianzmitgliedern außerhalb der Gruppe). Kein Defekt; die Liste
+  altert mit dem nächsten Allianzraid, die Prüfung über das Blatt wäre pflegefrei. Nicht umgebaut: heute ohne Wirkung,
+  fremder Code, Adressat Upstream.
+- *Befund (Defekt):* Die Pull-Regel der Tanks (`StateUpdater.ShouldAddDefenseSingle`) verlangte neben der Zahl
+  („Use tank mitigation when this many enemies target you"), dem eigenen Angriff und „Use tank mitigation below this
+  HP" einen Anteil: Gegner in Jobreichweite geteilt durch Gegner in 25 Yalm über 0,3 (`movingHere`). Herkunft Upstream
+  ohne Kommentar, verschoben in `b7fb4ec9b` (21.01.2024), dort schon mit einem zweiten Anteil (70 % der Gegner auf ihm
+  angegriffen), den der Fork später auf „mindestens einer" änderte. `AllHostileTargets` enthält jeden angreifbaren
+  Gegner in 48 Yalm mit Sichtlinie, ohne Kampf- und Zielfilter.
+- *Wirkung im Kampf:* Bei zwei Gegnern an ihm blieb die Abwehr ab sieben Gegnern in 25 Yalm zu, bei drei ab zehn, bei
+  vier ab vierzehn – ungezogene Rudel, Zauberer auf Distanz, Adds am anderen Tank. Beispiel: drei Gegner an ihm, zwei
+  ungezogene Rudel zu je vier in 20 Yalm (3/11) – keine kurze Minderung, kein Abtausch, keine Reflexion, und die große
+  Minderung nach dem gemessenen Verlauf (A359) lief gar nicht, weil sie nur in der geöffneten Pull-Abwehr urteilt.
+  Ein anderer Pfad öffnet beim Tank mit lebendem Heiler nicht: nur Tankbuster-Zauber, Marker und Vorhersagen.
+- *Optionen:* 0 belassen und dokumentieren · 1 Anteil entfernen · 2 Anteil nur über Gegner im Kampf · 3 Zahl auf alle
+  Gegner mit ihm als Ziel in 25 Yalm erweitern. *Abwägung:* 0 hält die Abweichung vom Einstellungstext, der bindet. 2
+  lässt Zauberer und fremde Adds weiter gegen ihn zählen, ohne Bezug zu seinem Schaden. 3 ändert die modellierte Zahl
+  und gehört in einen eigenen Loop, wenn ein Befund ihn verlangt. 1 stellt den Zustand her, den Einstellungstext und
+  Modell (`tank_pull_defense_model.py`, öffnet nach der Zahl) beschreiben. Gewählt: 1.
+- *Bilanz:* *Stärke:* Die Pull-Abwehr öffnet in jeder Aufstellung, in der die Zahl erfüllt ist; die große Minderung
+  urteilt dort nach dem Verlauf wie modelliert. *Schwäche:* Sie öffnet auch, wenn ein Boss und ein Add an ihm stehen und
+  viele Adds an anderen – Kosten nur die kurzen Mittel; Abtausch zählt Bosse nicht mit (A236), die große wartet auf den
+  Verlauf. Dasselbe geschah schon, wenn keine weiteren Gegner in der Nähe standen. *Bedrohung:* Öffnen, solange ein
+  nachlaufendes Rudel noch fern ist (Reflexion trifft es nicht) – der Anteil schützte davor nicht: Beim Eintreffen am
+  zweiten Rudel stehen dessen Gegner sofort an ihm (4 von 8). *Überwiegt:* der Nutzen.
+- *Falsifikation:* kein Defekt – widerlegt, die Aufstellungen kommen vor, und der Einstellungstext bindet unabhängig
+  von der Häufigkeit; Option falsch – widerlegt, die Kosten des Öffnens sind seit A359 die kurzen Mittel; ausgeliefert
+  und nichts ändert sich – möglich, wo seine Pulls nie neben vielen weiteren Gegnern stehen; dann kostet die Änderung
+  nichts.
+- *Nebenbefund:* Konzept 18 nannte „Use tank mitigation below this HP" einen Pegel über der ganzen Abwehr; gelesen
+  wird er nur in der Pull-Regel, eine Minderung vor einem Tankbuster geht bei jeder Gesundheit. Berichtigt.
+- *Dokumentation:* Konzepte 09 („Die Abwehr im Pull": Sachstand, Ausgeschlossen), 18, 19; Release-Text.
+
+*Prüfgrad:* statisch, Compile, Prüfskripte; im Spiel nicht beobachtet. Messmittel bleibt die Selbstkorrektur der Zeit
+bis zum Tod, auf der die Rückhaltung urteilt.
+
 ---
 ## B · Commit-Register (Fork vs. `upstream/main`)
 

@@ -608,8 +608,9 @@ Blitzga und Blitzbogen, die danach gemessen wurden.
 ## Die Abwehr im Pull
 
 **Sachstand.** Die Einzelabwehr öffnet im Pull nach der Gegnerzahl: mindestens „Use tank mitigation when this many
-enemies target you" (ab Werk 2) Gegner in 3 Yalm, die ihn anvisieren, und mindestens einen davon hat er selbst
-angegriffen. Kurze Minderung,
+enemies target you" (ab Werk 2) Gegner in 3 Yalm, die ihn anvisieren, mindestens einen davon hat er selbst
+angegriffen, und seine Gesundheit liegt höchstens bei „Use tank mitigation below this HP" (ab Werk 100 %, also immer).
+Wie viele Gegner sonst in der Nähe stehen, zählt nicht (A393). Kurze Minderung,
 Abtausch und Reflexion fallen sofort. Die große Minderung – Guardian oder Sentinel, Damnation oder Vengeance, Shadowed
 Vigil oder Shadow Wall, Great Nebula oder Nebula – und Schutzwall warten, bis seine Gesundheit beim gemessenen
 Netto-Verlauf innerhalb ihrer eigenen Wirkdauer unter „Health the big mitigation waits for" (ab Werk 30 %) fiele
@@ -661,7 +662,12 @@ Rudel, das in den ersten Sekunden sehr hart zuschlägt (Zauber aller Gegner zugl
 dort nicht schlechter als heute, mit der Gefahrenklasse als Netz. *Überwiegt:* der Nutzen, deutlich – weniger Tote und
 weniger Zeit tief in jedem gerechneten Fall.
 
-**Ausgeschlossen.** *Ein zusätzlicher Auslöser bei weniger Gegnern* (die Abwehr öffnet auch bei einem Gegner, wenn der
+**Ausgeschlossen.** *Ein Mindestanteil der Gegner in 25 Yalm, die bei ihm stehen* (Upstream, mehr als 30 %, ohne
+Begründung im Code, entfernt A393): Er zählte ungezogene Rudel, Zauberer auf Distanz und die Gegner am anderen Tank
+gegen ihn. Hält er drei Gegner und stehen zwei ungezogene Rudel zu je vier 20 Yalm entfernt, waren es 3 von 11 – die
+Abwehr blieb zu, obwohl die Einstellung erfüllt war; ebenso bei zwei Nahkämpfern und fünf Zauberern, die auf ihn
+wirken, und im Allianzraid, wenn der andere Tank mehr Adds in der Nähe hält. Das Modell rechnete ohne ihn; was ein
+Pull über die Zahl hinaus braucht, misst der Verlauf. *Ein zusätzlicher Auslöser bei weniger Gegnern* (die Abwehr öffnet auch bei einem Gegner, wenn der
 Verlauf fällt): im Modell in jedem Fall schlechter, weil er Abklingzeiten an einzelnen starken Gegnern verbraucht, die
 der Heiler trägt. *Die große sofort ab sechs Gegnern:* im harten Auftakt etwas besser (24 statt 27 Tote), sonst gleich
 oder schlechter; die Sechs leitet sich aus nichts ab. *Die alte Staffel unter der Rückhaltung behalten:* im Modell nur
