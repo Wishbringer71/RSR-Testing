@@ -42,9 +42,10 @@ Abgearbeitet nach seiner Vorgabe vom 26.10.2026: „todo nach priorität und ums
   Bedingung beim Ninja (A400).
 - **Rotationen, begonnen (26.10.2026):** Weißmagier vollständig – Thin Air wirkte Raise hart, gleich was die
   Einstellung sagte (behoben A401, Konzept 11) –, Maschinist vollständig ohne Befund; Klassensuche Wiederbelebung:
-  Swiftcast auf die Wiederbelebung ging an „Raise with Swiftcast or Dualcast" vorbei (behoben A402); die Leser der breiten Tankbuster-Lesart (`IsHostileCastingToTank`) sind nach A395 nur noch die
+  Swiftcast auf die Wiederbelebung ging an „Raise with Swiftcast or Dualcast" vorbei (behoben A402); Beschwörer bis
+  zur Burst-Logik ohne Befund, die Burst- und Beschwörungslogik führt Konzept 12 gegen den Code; die Leser der breiten Tankbuster-Lesart (`IsHostileCastingToTank`) sind nach A395 nur noch die
   Öffnung der Einzelabwehr für Tanks und Heiler, wie Konzept 09 sie führt.
-- **Offen:** die Rotationen Datei für Datei, zuerst Beschwörer, dann die
+- **Offen:** die Rotationen Datei für Datei, die
   übrigen Jobs (`RebornRotations`; `ExtraRotations` nur, wo eine zentrale Änderung sie berührt, Churin ausgenommen);
   `RotationSolver/UI`.
 
