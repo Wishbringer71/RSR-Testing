@@ -262,7 +262,8 @@ im Code.
   Burst, Corps-a-corps), stehen unter der zentralen Abstandsgrenze.
 - *Für den Abgleich mit The Balance vorgemerkt* (Spieltatsache oder Strategie, keine Spielerentscheidung):
   - Restzeiten von Swift und Hunt vor Reawaken (je 10 s) und der Bündelzeitpunkt vor Serpent's Ire (75 s), Viper
-  - Paint-Grenze 5, Piktomant
+  - Paint-Grenze 5, Piktomant – abgeglichen (A385): fünf Ladungen sind die Obergrenze des Spiels (The Balance); die
+    Einstellung erlaubt eine niedrigere Schwelle
   - Lieddauern 43/43/34 s, Barde – abgeglichen (A382): The Balance nennt dieselben Zeiten; die Liedlänge selbst kommt
     jetzt aus dem Spiel
   - Death's Design bei 10 s, Schnitter – abgeglichen (A383): The Balance nennt keine Zahl; die Einstellung gilt nur mit

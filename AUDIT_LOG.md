@@ -11299,6 +11299,16 @@ bearbeitet ist und in seinen Protokollen gespielt wird.
 
 *Prüfgrad:* Quellen, Code; im Spiel nicht beobachtet.
 
+### A385 · Pictomancer gegen The Balance: Motive und Starry Muse (26.10.2026)
+
+- *Quellen:* The Balance, Pictomancer Basic Guide („Patch Applicable: 7.4", 10.08.2025); `PCT_Reborn`
+  (`AttackAbility`, `SpendPaint`, `DrawMotifs`, `EmergencyAbility`).
+- *Befund:* Vorbereitung vor Starry Muse, Subtractive Palette, Farbschutz (Grenze 5 = Obergrenze), Living Muses und
+  Rainbow Drip decken sich; Swiftcast auf Rainbow Drip ist mit seiner Regel vereinbar (keine Wiederbelebung).
+- *Entscheidung:* keine Änderung.
+
+*Prüfgrad:* Quellen, Code; im Spiel nicht beobachtet.
+
 ---
 ## B · Commit-Register (Fork vs. `upstream/main`)
 

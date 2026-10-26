@@ -40,7 +40,7 @@ Keine bekannt.
 (A342), von Dragoon und Viper der Opener (A343), die AoE-Schwellen aller Jobs (A344), die AoE-Wahl des Ninja (A345),
 der Beschwörer (A375), der Weißmagier (A376), die vier Tanks (A377), die übrigen Heiler (A378), von den übrigen
 Schadensausteilern Ressourcen und Buffs (A379), Meikyo und Higanbana des Samurai (A381), Lieder und Burst des Barden (A382), Enshroud des Schnitters (A383), das Fenster des Ninja
-(A384). *Nächster Schritt:* die Folgen in den Burstfenstern von Pictomancer, Schwarzmagier und Monk, dazu Opener und Prioritäten der Schadensausteiler außer
+(A384), Motive des Pictomancer (A385). *Nächster Schritt:* die Folgen in den Burstfenstern von Schwarzmagier und Monk, dazu Opener und Prioritäten der Schadensausteiler außer
 Maschinist und Beschwörer; ausgeblendete Werte liest `ActionTooltip` zur Laufzeit aus den Tooltips,
 die deutschen Namen gehören in `action_names_de.json`. Dabei je Job die Rotationseinstellungen, die eine Spieltatsache
 tragen (Leistenhöchststand, Restzeiten, Lieddauern), aus dem Spiel ableiten (Konzept 18, „Rotationseinstellungen").

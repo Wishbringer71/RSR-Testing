@@ -771,13 +771,27 @@ geändert 11.08.2024; eine Reihenfolge nennt er nicht, nur den Inhalt der Fenste
 | Bunshin | auf Abklingzeit, nicht für Kunai's Bane halten | ab 5 s Kampfzeit auf Abklingzeit | deckt sich |
 | Ninki, Kazematoi | Bhavacakra/Zesho Meppo auf einem oder zwei Zielen, Deathfrog Medium ab drei; Aeolian Edge nur mit Kazematoi | Ausgabe im Fenster, vor Bunshin oder bei vollem Ninki; Wahl zwischen Hellfrog und Bhavacakra aus den Tooltips (A345); Kazematoi A379 | deckt sich |
 
+### Pictomancer: Motive und Starry Muse
+
+**Deckt sich, keine Änderung** (26.10.2026, A385) mit The Balance, Pictomancer Basic Guide („Patch Applicable: 7.4",
+10.08.2025; er nennt, was vor dem Zwei-Minuten-Fenster bereitliegen soll, keine Reihenfolge darin).
+
+| Punkt | The Balance | RSR (`PCT_Reborn`) | Stand |
+|---|---|---|---|
+| Starry Muse und Vorbereitung | Striking Muse, Starry Sky Motif und Wing- oder Maw-Muse vor dem Fenster bereit | Starry Muse im Burst nach der Opener-Zeit; Striking Muse hält eine Ladung, solange Starry Muse in 60 s zurückkommt; Motive vor Starry Muse gemalt | deckt sich |
+| Subtractive Palette | ab 50 Palette, Starry Muse gibt einen freien Einsatz | sobald nutzbar und nicht schon aktiv | deckt sich |
+| Farbe | höchstens fünf Ladungen White Paint; Holy in White fürs Laufen, Comet in Black stärker | Überlaufschutz bei der eingestellten Grenze (ab Werk 5, die Obergrenze des Spiels) außerhalb von Starry Muse, Comet vor Holy; Holy/Comet im Laufen als Einstellung | deckt sich |
+| Living Muses, Mog, Madeen | 1000 Potenz je Muse, drei Ladungen zu 40 s; keine Haltevorgabe | Fanged Muse und Madeen in Starry Muse, sonst auf Ladung | deckt sich |
+| Rainbow Drip | mit Swiftcast vor Phasenwechsel oder Tod des Bosses | hart nur vor dem Pull, sonst mit Rainbow Bright aus Starry Muse; Swiftcast darauf als Einstellung – der Pictomancer hat keine Wiederbelebung (Konzept 18) | deckt sich im Zweck |
+
 ### Schadensausteiler: Ressourcen und Buffs
 
 Geprüft am 26.10.2026 gegen die Basic Guides von The Balance (Stand je Guide: Dragoon 7.5, Viper 7.55, Reaper 7.5,
 Samurai 7.4, Monk 7.4, Ninja 7.05, Barde 7.4, Tänzer 7.40, Schwarzmagier 7.4, Rotmagier 7.4, Pictomancer 7.4):
 die Regeln gegen das Überlaufen der Ressourcen und für die eigenen Buffs, je an der Stelle im Code, die sie trägt.
-Keine Änderung. Nicht einzeln geprüft sind die Folgen innerhalb eines Burstfensters (Motivfolgen des Pictomancer,
-Feuer-Eis-Takt des Schwarzmagiers, Monk); das bleibt offene Arbeit. Die Meikyo-Folgen des Samurai stehen unter „Samurai:
+Keine Änderung. Nicht einzeln geprüft sind die Folgen innerhalb eines Burstfensters (Feuer-Eis-Takt des
+Schwarzmagiers, Monk); das bleibt offene Arbeit. Die Motive des Pictomancer stehen unter „Pictomancer: Motive und
+Starry Muse". Die Meikyo-Folgen des Samurai stehen unter „Samurai:
 Meikyo Shisui und Higanbana", die Liedfolge des Barden unter „Barde: Lieder und Burst", die Enshroud-Folge des Reaper
 unter „Schnitter: Enshroud", die Mudra-Planung des Ninja unter „Ninja: das Fenster um Kunai's Bane".
 
