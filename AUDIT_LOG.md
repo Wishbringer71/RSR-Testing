@@ -11397,6 +11397,17 @@ bearbeitet ist und in seinen Protokollen gespielt wird.
 
 *Prüfgrad:* Code, Versionsgeschichte, Compile; kein Versionswechsel beobachtet.
 
+### A390 · Vor-Pull-Aktionen der Schadensausteiler gegen The Balance; Reihenfolge im TODO (26.10.2026)
+
+- *Befund:* `CountDownAction` von Schnitter, Ninja, Tänzer, Rotmagier, Schwarzmagier, Pictomancer und Barde wirkt, was
+  die Opener von The Balance vor dem Pull vorsehen (Tabelle in Konzept 14; Opener-Bilder von Barde und Rotmagier
+  gelesen, Ninja und Tänzer aus dem Text der Openers-Seiten). Abweichung: Der Barde trinkt bei −0,7 s statt nach dem
+  zweiten GCD; beide Fenster decken seine Buffs aus dem Opener ganz. Keine Änderung.
+- *Reihenfolge:* Vom Abgleich bleibt nur der Monk, ebenso „Six-sided Star"; er spielt den Monk bislang nicht (seine
+  Angabe, 25.10.2026), also rücken beide hinter das Audit und die AoE-Schwelle.
+
+*Prüfgrad:* Code, Quellen; im Spiel nicht beobachtet.
+
 ---
 ## B · Commit-Register (Fork vs. `upstream/main`)
 

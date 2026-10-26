@@ -19,12 +19,15 @@ Durchgang des Einstellungs-Audits, Rotationseinstellung für Rotationseinstellun
 Abwehr ohne Heiler ist umgesetzt (A361), die Phönixfeder daraus ebenso (A372). Seine Frage
 vom 25.10.2026 abends zu Chorts Türmen und dem Glockenspiel ist beantwortet und umgesetzt (A365). Die Hilfe auf einen
 kleinen gemessenen Tankbuster ist gebaut, für Heiler und Tanks (A373), die Reflexion daraus ebenso (A374). Sein Auftrag
-vom 26.10.2026 („todo nach priorität und umsetzbarkeit in loops abarbeiten") läuft: Flamethrower ist gebaut (A380).
+vom 26.10.2026 („todo nach priorität und umsetzbarkeit in loops abarbeiten") läuft: Flamethrower ist gebaut (A380),
+der Abgleich mit The Balance bis auf den Monk abgeschlossen (A381–A387, A390), zwei Schuldpunkte aufgelöst (A388,
+A389). Was nur den Monk betrifft, rückt nach hinten: Er spielt ihn bislang nicht (seine Angabe, 25.10.2026), die Wirkung
+in seinem Profil ist heute null.
 
-1. Rotationen gegen The Balance abgleichen
-2. Six-sided Star
-3. AoE-Schwelle an drei Orten
-4. Audit der gesamten Codebasis
+1. Audit der gesamten Codebasis
+2. AoE-Schwelle an drei Orten
+3. Rotationen gegen The Balance abgleichen (nur noch der Monk)
+4. Six-sided Star
 
 Danach technische Schuld, soweit ihre Auflösungsbedingung erfüllt ist. Warten auf Daten: unten.
 
@@ -41,9 +44,9 @@ Keine bekannt.
 (A375), Weißmagier (A376), die vier Tanks (A377), die übrigen Heiler (A378), Ressourcen und Buffs der übrigen
 Schadensausteiler (A379), die Burstfenster von Samurai, Barde, Schnitter, Ninja, Pictomancer und Schwarzmagier
 (A381–A386), die Rotationseinstellungen mit Spieltatsache (A382, A383, A385, A387). *Nächster Schritt:* das
-Burstfenster des Monk, dazu Opener und Prioritäten der Schadensausteiler, deren Opener noch nicht gegen das Bild des
-Guides gelesen ist (alle außer Maschinist, Beschwörer, Dragoon, Viper, Samurai); ausgeblendete Werte liest
-`ActionTooltip` zur Laufzeit aus den Tooltips, die deutschen Namen gehören in `action_names_de.json`. *Konzept:* 14, „Vergleich mit The Balance".
+Burstfenster des Monk; die Vor-Pull-Aktionen der übrigen Schadensausteiler decken sich mit den Openern (A390), danach
+folgen sie den abgeglichenen Prioritäten. Ausgeblendete Werte liest `ActionTooltip` zur Laufzeit aus den Tooltips, die
+deutschen Namen gehören in `action_names_de.json`. *Konzept:* 14, „Vergleich mit The Balance".
 
 ### Six-sided Star · N
 

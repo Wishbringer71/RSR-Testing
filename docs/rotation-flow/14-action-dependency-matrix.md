@@ -805,6 +805,22 @@ Ein Spieler, der Ley Lines selbst setzt, findet die Ladung verbraucht; dann scha
 *Überwiegt:* der Gewinn; die Sperre bei einem gewirkten Flächenangriff nimmt den häufigsten Fall weg, in dem der Kreis
 sofort verlassen werden muss.
 
+### Vor dem Pull: die Countdown-Aktionen der Schadensausteiler
+
+**Deckt sich** (26.10.2026, A390). Gelesen ist, was `CountDownAction` je Rotation wirkt, gegen die Opener und
+Basic Guides von The Balance; nach dem Pull folgt jede Rotation ihren Prioritäten (oben, je Job abgeglichen), einen
+festen Opener führt keine.
+
+| Job | The Balance | RSR | Stand |
+|---|---|---|---|
+| Schnitter | Soulsow vor dem Pull, Harpe zum Pull | Soulsow (außerhalb des Kampfs sofort), Harpe um seine Wirkzeit vor dem Pull | deckt sich |
+| Ninja | Suiton: Mudras ab −6,0 s, gewirkt bei etwa −0,9 s (Openers-Seite) | Mudras ab 5 s, Suiton im letzten Vorlauf vor dem Pull, Hide, wenn Ten abkühlt | deckt sich; eine Sekunde später begonnen, die Mudras brauchen weniger |
+| Tänzer | Standard Step bei −15 s, Schritte, Peloton, Trank bei −1 s, Standard Finish zum Pull (Opener-Bild) | Standard Step ab 15 s, danach die Schritte | deckt sich |
+| Rotmagier, Schwarzmagier | ein Zauber vorgewirkt: Veraero III bei −5 s (Opener-Bild), Fire III | derselbe Zauber um seine Wirkzeit vor dem Pull | deckt sich |
+| Pictomancer | Motive vor dem Kampf, Rainbow Drip vorgewirkt, Striking Muse | Motive außerhalb des Kampfs, Striking Muse und Rainbow Drip um ihre Wirkzeit vor dem Pull | deckt sich |
+| Barde | Heartbreak Shot und Stormbite zum Pull, der Trank nach dem zweiten GCD (Opener-Bild „Adjusted Standard Opener") | Trank bei −0,7 s, wenn die Burst-Medizin im Countdown erlaubt ist; danach die Prioritäten | Trank rund 5 s früher. Beide Trankfenster (30 s) decken Raging Strikes, Battle Voice und Radiant Finale aus dem Opener ganz; verschoben ist nur, welche fünf Sekunden am Rand darunter liegen. Nicht geändert |
+| Samurai, Monk | siehe „Samurai: Meikyo Shisui und Higanbana" und Konzept 04 (Monk, A85) | | |
+
 ### Schadensausteiler: Ressourcen und Buffs
 
 Geprüft am 26.10.2026 gegen die Basic Guides von The Balance (Stand je Guide: Dragoon 7.5, Viper 7.55, Reaper 7.5,
