@@ -747,15 +747,26 @@ Ladung da ist, und an der vollen Ladung.
 | Apex Arrow | „around halfway through Mage's Ballad … by about 21-19s on the timer", früher bei 100 Soul Voice | in Mage's Ballad ab 80 Soul Voice, sobald höchstens 18 s übrig sind; bei 100 sofort außerhalb von Raging Strikes | 1 bis 3 s später als der Guide; die Bedingung `SongEndAfter(22) && SongEndAfter(18)` enthält die 22 nur scheinbar – ein Fenster 22–18 war wohl gemeint. Im Kampf ohne Belang: Der Pfeil fällt im selben Lied und vor demselben Burst; nicht geändert |
 | Barrage, Empyreal Arrow, Sidewinder, Heartbreak Shot | Barrage auf Refulgent Arrow im Burst; Empyreal Arrow alle 15 s; Sidewinder etwa in der Mitte von Mage's Ballad; Heartbreak Shot nicht bei drei Ladungen | Barrage unter Raging Strikes; Empyreal Arrow auf Abklingzeit, kurz vor Raging Strikes zurückgehalten; Ladungsregeln der Rotation | deckt sich |
 
+### Schnitter: Enshroud
+
+**Deckt sich, keine Änderung** (26.10.2026, A383) mit The Balance, Reaper Basic Guide („Patch Applicable: 7.5").
+
+| Punkt | The Balance | RSR (`RPR_Reborn`) | Stand |
+|---|---|---|---|
+| Enshroud | „at 50 or more Shroud or if you have the Ideal Host buff"; „Avoid Double Enshrouds" zugunsten des Ausgebens nach Priorität | ab 50 Shroud oder mit Ideal Host, nicht mit Executioner; „Pool Shroud for Arcane Circle." ab Werk aus | deckt sich |
+| Folge im Enshroud | Void und Cross Reaping viermal im Wechsel; Lemure's Slice nach jedem zweiten; Communio bei einem Lemure-Stapel; Sacrificium einmal | Wechsel nach Enhanced Cross/Void Reaping; Lemure's Slice außerhalb von Arcane Circle erst unter drei Lemure-Stapeln, also nach dem dritten statt dem zweiten Reaping; Communio bei einem Stapel, im Laufen Shadow of Death statt Communio; Sacrificium einmal | deckt sich: beide Lemure's Slice fallen vor Communio, der erste nur einen GCD später; bis dahin liegen höchstens drei Void Shroud |
+| Death's Design | Laufzeit halten, bis 60 s stapelbar; keine Sekundenzahl | zentrale DoT-Planung (`ShadowOfDeathPvE`, 30 s, höchstens 60 s); vor Arcane Circle im Enshroud aufgefüllt, damit es den Burst deckt; „Refresh Death's Design with this many seconds remaining" (10 s) nur mit der eigenen Zeitwahl, ab Werk aus | deckt sich |
+| Gluttony, Arcane Circle, Plentiful Harvest | Gluttony auf Abklingzeit, wenn beide Executioner ausgegeben werden können; Arcane Circle auf Abklingzeit; Plentiful Harvest, sobald verfügbar | Gluttony ohne Perfectio Parata und Immortal Sacrifice; Arcane Circle ab 3,5 s Kampfzeit mit Death's Design am Ziel; Plentiful Harvest nach zwei GCDs | deckt sich |
+
 ### Schadensausteiler: Ressourcen und Buffs
 
 Geprüft am 26.10.2026 gegen die Basic Guides von The Balance (Stand je Guide: Dragoon 7.5, Viper 7.55, Reaper 7.5,
 Samurai 7.4, Monk 7.4, Ninja 7.05, Barde 7.4, Tänzer 7.40, Schwarzmagier 7.4, Rotmagier 7.4, Pictomancer 7.4):
 die Regeln gegen das Überlaufen der Ressourcen und für die eigenen Buffs, je an der Stelle im Code, die sie trägt.
 Keine Änderung. Nicht einzeln geprüft sind die Folgen innerhalb eines Burstfensters (Mudra-Planung des Ninja vor
-Kunai's Bane, Enshroud-Folgen des Reaper, Motivfolgen des Pictomancer, Feuer-Eis-Takt des Schwarzmagiers, Monk); das
-bleibt offene Arbeit. Die Meikyo-Folgen des Samurai stehen unter „Samurai: Meikyo Shisui und Higanbana", die Liedfolge
-des Barden unter „Barde: Lieder und Burst".
+Kunai's Bane, Motivfolgen des Pictomancer, Feuer-Eis-Takt des Schwarzmagiers, Monk); das bleibt offene Arbeit. Die
+Meikyo-Folgen des Samurai stehen unter „Samurai: Meikyo Shisui und Higanbana", die Liedfolge des Barden unter „Barde:
+Lieder und Burst", die Enshroud-Folge des Reaper unter „Schnitter: Enshroud".
 
 | Job | The Balance | RSR | Stand |
 |---|---|---|---|

@@ -265,7 +265,8 @@ im Code.
   - Paint-Grenze 5, Piktomant
   - Lieddauern 43/43/34 s, Barde – abgeglichen (A382): The Balance nennt dieselben Zeiten; die Liedlänge selbst kommt
     jetzt aus dem Spiel
-  - Death's Design bei 10 s, Schnitter
+  - Death's Design bei 10 s, Schnitter – abgeglichen (A383): The Balance nennt keine Zahl; die Einstellung gilt nur mit
+    der eigenen Zeitwahl, ab Werk aus, sonst plant die zentrale DoT-Planung
   - Meikyo Shisui bei 14 s im Countdown, Samurai – abgeglichen (A381): der Opener von The Balance setzt ihn bei −14 s
   - Earthly Star bei 4 s im Countdown, Astrologe
   - die Schätzung „8 % der eigenen Gesundheit als Gruppenschaden je Sekunde", mit der der Gelehrte Bio auf kurzlebige

@@ -11271,6 +11271,21 @@ bearbeitet ist und in seinen Protokollen gespielt wird.
 
 *Prüfgrad:* Quellen, Code, Compile; im Spiel nicht beobachtet.
 
+### A383 · Schnitter gegen The Balance: Enshroud (26.10.2026)
+
+- *Quellen:* The Balance, Reaper Basic Guide („Patch Applicable: 7.5"); `RPR_Reborn` (`AttackAbility`, `GeneralGCD`),
+  `ReaperRotation.ModifyShadowOfDeathPvE`.
+- *Befund:* Enshroud ab 50 Shroud oder mit Ideal Host, Reaping im Wechsel, Communio bei einem Lemure-Stapel, Sacrificium,
+  Gluttony, Arcane Circle, Plentiful Harvest decken sich. Lemure's Slice wartet außerhalb von Arcane Circle bis unter drei
+  Lemure-Stapel (`LemureShroud < 3`) – der erste einen GCD später als „after every other weapon skill", beide vor
+  Communio; vor dem ersten liegen höchstens drei Void Shroud (je Reaping einer, zwei je Lemure's Slice). Death's Design: kein Sekundenwert im
+  Guide; die 10 s der Rotationseinstellung gelten nur mit „Use custom timing to refresh Death's Design" (ab Werk aus).
+- *Entscheidung:* keine Änderung.
+- *Falsifikation:* (1) Kein Defekt? Ja. (2) Gegenposition: Die Lemure-Rückhaltung koste den ersten Lemure's Slice? Nein,
+  er fällt einen GCD später im selben Enshroud. (3) –
+
+*Prüfgrad:* Quellen, Code; im Spiel nicht beobachtet.
+
 ---
 ## B · Commit-Register (Fork vs. `upstream/main`)
 
