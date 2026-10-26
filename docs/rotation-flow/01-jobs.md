@@ -62,7 +62,6 @@ Hook-Profil
   Flags   CanHealSingleSpell · CanHealAreaSpell · DisplayRotationStatus
 
 GeneralGCD
-  ├ 0  Kurzschluss    ThinAir + Raise  → RaiseGCD
   ├ 0  Kurzschluss    Swift + Raise    → base
   ├ 1  Sustain        TrySustainRegenOnTank
   ├ 2  Ressource      Afflatus Misery / Rapture (Lily-Overcap)
@@ -75,9 +74,8 @@ GeneralGCD
   └ 9  DoT            Aero-Kette, zweiter Durchgang
 ```
 
-Besonderheit: zwei Kurzschlüsse statt einem, weil WHM mit Thin Air eine eigene
-Rez-Vorbedingung hat. Die Level-Kette ist mit sechs Gliedern die längste im
-gesamten Repo.
+Der frühere zweite Kurzschluss (Thin Air + Raise → `RaiseGCD`) umging die Einstellung „Hard-cast raise" und ist
+entfernt (A401, Konzept 11). Die Level-Kette ist mit sechs Gliedern die längste im gesamten Repo.
 
 ### AST — 765 LOC, 21 Configs
 

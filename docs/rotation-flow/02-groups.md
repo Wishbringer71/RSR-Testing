@@ -46,7 +46,7 @@ flowchart TD
 
 | | WHM | AST | SGE | SCH |
 |---|---|---|---|---|
-| Kurzschlüsse | **2** (ThinAir + Swift) | 1 | 1 | 1 |
+| Kurzschlüsse | 1 (Swift; Thin Air entfernt, A401) | 1 | 1 | 1 |
 | Sustain-Zweig in `GeneralGCD` | Regen | Aspected Benefic | **keiner** (entfernt, A5) | **keiner** |
 | Pflege auf dem Tank im Pull (`TryPullUpkeepOnTank`) | Regen | Aspected Benefic | Eukr. Diagnosis | **nicht gebaut** |
 | HP-Schwelle der Pflege | `RegenHeal` 0.3 | `AspectedBeneficHeal` 0.4 | keine (Konzept 15) | – |

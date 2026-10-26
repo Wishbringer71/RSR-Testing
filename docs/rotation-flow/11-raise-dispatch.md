@@ -186,6 +186,14 @@ Bei eingeschalteter Einstellung — der Vorgabe — ist das Verhalten unverände
 
 Die Reservierung ist in allen vier Hartwirk-Modi geprüft; das war zeitweise nur bei dreien der Fall.
 
+**Keine Rotation entscheidet daneben selbst über das Hartwirken (A401).** Der Weißmagier gab mit Thin Air und
+gesetztem Wiederbelebungs-Flag in `GeneralGCD` das Ergebnis seines `RaiseGCD` zurück: Er wirkte Raise acht Sekunden
+lang hart, auch unter `NoHardCast` und unter den beiden Heiler-Modi mit lebendem zweitem Heiler, und konnte er es
+nicht wirken, weil er lief, wählte er gar keinen GCD – kein Dia, keine Lilie in der Bewegung. Thin Air macht die
+Wiederbelebung frei von MP, nicht frei von Wirkzeit; ob hart gewirkt wird, beantwortet allein dieser Pfad, und er
+läuft vor `GeneralGCD`. Der Zweig ist entfernt. `BeirutaWHM` (fremde Rotation) trägt denselben Zweig; erfasst, nicht
+geändert.
+
 **Der zweite Halbsatz zählt Heiler, nicht Rezzer — Vorgabe des Auftraggebers.** Die weitere Menge
 hätte das Hartwirken zurückgehalten, weil ein Beschwörer lebt, also aufgrund einer Annahme darüber,
 was ein fremder Spieler mit einer Leiche tun wird. Im Kampf ist das der Unterschied, ob der Tote in

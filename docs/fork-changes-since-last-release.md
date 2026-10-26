@@ -109,3 +109,10 @@ Enlightenment hit everything in a line towards their target, but RSR counted the
 to face. A Dragoon looking away from the pack stayed on the single-target combo with four enemies in reach, or went
 into the AoE combo towards a target with nobody behind it. They are now counted towards the target, and with several
 targets in reach the one whose line hits the most is taken.
+
+## White Mage: Thin Air no longer overrides "Hard-cast raise"
+
+With Thin Air up and someone dead, the White Mage hard cast Raise - eight seconds without heals or damage - even with
+"Hard-cast raise" set to "Do not hard cast Raise" or to a mode that waits for the other healers, and while moving it
+chose no GCD at all, not even Dia or a Lily. Whether to hard cast is now decided only by that setting, as for every
+other healer; Thin Air still makes the raise cost no MP.

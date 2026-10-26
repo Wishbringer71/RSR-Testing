@@ -11681,6 +11681,31 @@ bis zum Tod, auf der die Rückhaltung urteilt.
 
 *Prüfgrad:* statisch.
 
+### A401 · Weißmagier: Thin Air wirkte Raise hart, gleich was „Hard-cast raise" sagte (26.10.2026)
+
+- *Gelesen:* `WHM_Reborn` vollständig (Einstellungen, Countdown, Fähigkeiten, Abwehr, Heil- und Schadens-GCDs,
+  Holy-Rückhaltungen).
+- *Befund (Defekt, Upstream `d566eda86` und früher):* `GeneralGCD` begann mit `if (HasThinAir && Raise-Flag) return
+  RaiseGCD(out act);`. `RaiseGCD` fragt nur `RaisePvE.CanUse`. Die Entscheidung über das Hartwirken trifft der zentrale
+  Pfad (`CustomRotation_GCD.TryRaise` mit `HardCastRaiseType`), der vor `GeneralGCD` läuft (Konzept 11, „Die zwei
+  Einhängepunkte"). Thin Air fällt in `EmergencyAbility` schon, sobald das Flag steht (die letzte Ladung nur vor Raise).
+- *Wirkung im Kampf:* Mit „Do not hard cast Raise" oder einem Heiler-Modus bei lebendem zweitem Heiler, Swiftcast in
+  Erholung und Thin Air bereit: Der Weißmagier wirkte Raise acht Sekunden lang hart, statt zu heilen und Schaden zu
+  machen – gegen den Text der Einstellung. Lief er, scheiterte `RaiseGCD`, und `GeneralGCD` gab „nichts" zurück: kein
+  Dia, keine Lilie, kein Glare bis zum Stehen oder bis Thin Air auslief. Konzept 11 führte `NoHardCast` als „kein
+  Zweig, stimmig".
+- *Optionen:* 0 belassen · 1 Zweig entfernen · 2 Zweig an die zentrale Entscheidung binden. *Abwägung:* 2 doppelt die
+  Entscheidung, die der zentrale Pfad schon vorher trifft. 1 ist der kleinste Eingriff: Die zentrale Entscheidung bleibt
+  die einzige. Gewählt: 1.
+- *Falsifikation:* kein Defekt – widerlegt, der Text „Do not hard cast Raise" bindet; Option falsch – mit der Vorgabe
+  „Raise while Swiftcast is on cooldown" und Swiftcast in Erholung wirkt der zentrale Pfad Raise im Stehen, mit Thin
+  Air frei von MP, wie zuvor; vor beiden Wegen liegen dieselben Heil-GCDs; ausgeliefert und nichts ändert sich – mit
+  der Vorgabe und im Stehen zutreffend, sichtbar wird es unter den anderen Modi und in der Bewegung.
+- *Klasse:* nur noch `BeirutaWHM` (fremde Rotation) gibt `RaiseGCD` direkt zurück; erfasst, nicht geändert.
+- *Dokumentation:* Konzepte 01, 02, 11; Release-Text.
+
+*Prüfgrad:* statisch, Compile, Prüfskripte; im Spiel nicht beobachtet.
+
 ---
 ## B · Commit-Register (Fork vs. `upstream/main`)
 

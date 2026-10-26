@@ -994,11 +994,9 @@ public sealed class WHM_Reborn : WhiteMageRotation
 
 	protected override bool GeneralGCD(out IAction? act)
 	{
-		if (HasThinAir && MergedStatus.HasFlag(AutoStatus.Raise))
-		{
-			return RaiseGCD(out act);
-		}
-
+		// Thin Air up for a raise is no reason of its own to hard cast it: whether to is "Hard-cast raise"'s question,
+		// answered by the central raise path before this one. Returning RaiseGCD here hard cast past "Do not hard cast
+		// Raise" and the healer modes, and chose no GCD at all while the raise could not be cast, moving (A401).
 		if (SwiftRaisePending)
 		{
 			return base.GeneralGCD(out act);
