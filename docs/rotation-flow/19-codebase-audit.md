@@ -40,8 +40,12 @@ Abgearbeitet nach seiner Vorgabe vom 26.10.2026: „todo nach priorität und ums
 - **`ActionTargetInfo.FindTargetByType` (26.10.2026):** gelesen bis auf die Zielarten, die die Konzepte 07 und 09 gegen
   den Code führen; ohne Befund (A400). Klassensuche nach Abklingzeit-Fragen in den Rotationen: ohne Defekt, eine tote
   Bedingung beim Ninja (A400).
-- **Offen:** die Rotationen Datei für Datei (`RebornRotations`; `ExtraRotations`
-  nur, wo eine zentrale Änderung sie berührt, Churin ausgenommen); `RotationSolver/UI`.
+- **Rotationen, begonnen (26.10.2026):** Weißmagier bis zur GCD-Logik und Maschinist bis zur Wildfire-Logik gelesen,
+  ohne Befund; die Leser der breiten Tankbuster-Lesart (`IsHostileCastingToTank`) sind nach A395 nur noch die
+  Öffnung der Einzelabwehr für Tanks und Heiler, wie Konzept 09 sie führt.
+- **Offen:** die Rotationen Datei für Datei, zuerst der Rest von Weißmagier und Maschinist, dann Beschwörer und die
+  übrigen Jobs (`RebornRotations`; `ExtraRotations` nur, wo eine zentrale Änderung sie berührt, Churin ausgenommen);
+  `RotationSolver/UI`.
 
 ## Methode
 
