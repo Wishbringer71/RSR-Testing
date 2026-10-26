@@ -49,10 +49,14 @@ Abgearbeitet nach seiner Vorgabe vom 26.10.2026: „todo nach priorität und ums
   Gefahr wartete (behoben A403, Konzept 07), „Prioritize Microcosmos over all other healing" hielt Oracle und den
   Trank mit (behoben A404, Konzept 08); Weiser vollständig – Taurochole, für Gefahr zurückgehalten, hielt Druochole
   mit (behoben A405, Konzept 07). Paladin und Krieger vollständig ohne Befund; Dunkelritter vollständig – „Keep at
-  least 3000 MP" galt nicht, wenn Darkside auslief (behoben A406, Konzept 10).
-- **Offen:** die Rotationen Datei für Datei, die
-  übrigen Jobs (`RebornRotations`; `ExtraRotations` nur, wo eine zentrale Änderung sie berührt, Churin ausgenommen);
-  `RotationSolver/UI`.
+  least 3000 MP" galt nicht, wenn Darkside auslief (behoben A406, Konzept 10); Revolverklinge vollständig ohne Befund.
+- **Übrige Damage Dealer, Klassensuchen (26.10.2026):** jede Rotationsoption hat einen Leser (291, auch ohne
+  `nameof`); jede einschränkende Option („Only", „Prevent", „Keep", „Limit" …) wird an allen Aufrufstellen ihrer Aktion
+  gefragt; Bewegungsaktionen im Schadenspfad laufen über die zentrale Sprungprüfung (A358); Abwehr- und Heilpfade von
+  Barde, Tänzer, Rotmagier, Schwarzmagier, Pictomancer und Beschwörer gelesen, Barde und Tänzer bis zur
+  Schadenslogik. Ohne Befund.
+- **Offen:** `RotationSolver/UI`; danach die Schadenslogik der übrigen Damage Dealer Zeile für Zeile
+  (`RebornRotations`; `ExtraRotations` nur, wo eine zentrale Änderung sie berührt, Churin ausgenommen).
 
 ## Methode
 

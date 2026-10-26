@@ -56,8 +56,9 @@ und Phasenenden".
 ### Audit der gesamten Codebasis · N, R, U
 
 *Im Kampf:* unbekannt, bis gelesen – jeder Befund bisher war ein Defekt mit Wirkung (A8, A10, A82). *Stand:* Phasen
-1 bis 4 abgeschlossen, `DataCenter` mechanisch und inhaltlich (A392–A396), `BaseAction` (A397), `ActionTargetInfo` (A398–A400).
-*Nächster Schritt:* die Rotationen seiner häufigen Jobs, die Oberfläche. *Konzept:* 19.
+1 bis 4 abgeschlossen, `DataCenter` mechanisch und inhaltlich (A392–A396), `BaseAction` (A397), `ActionTargetInfo` (A398–A400),
+die Rotationen der Heiler, Tanks und des Maschinisten (A401–A406), die übrigen Damage Dealer in Klassensuchen.
+*Nächster Schritt:* die Oberfläche, danach die Schadenslogik der übrigen Damage Dealer. *Konzept:* 19.
 
 ## Technische Schuld
 
