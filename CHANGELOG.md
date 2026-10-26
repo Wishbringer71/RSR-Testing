@@ -25,6 +25,11 @@ are not reconstructed here.
 
 ## 7.5.7.8+wsh1
 
+### Dependency of RotationSolver.Basic: RebornMaterial 7.5.7.0
+
+From upstream 7.5.7.8: RebornMaterial goes from 7.5.6.2 to 7.5.7.0 (LGPL-3.0). Additions only - `M3TopAppBar`,
+`M3Draw.WindowBackdrop`, `M3WindowFold.BeginContent` and others -; the stored `M3.Settings` type is unchanged.
+
 ### Behaviour change in RotationSolver.Basic: an area share of 0 means measured without damage
 
 `OtherConfiguration.HostileCastingAreaPotential` now holds 0 for a listed area cast whose landing put a damage entry of

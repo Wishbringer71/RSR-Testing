@@ -10963,6 +10963,37 @@ ist die Freigabe, ich stelle sie nicht erneut zur Wahl.
 
 *Prüfgrad:* Release-API und Workflow-Lauf gelesen, Prüfskripte; die Übergabe statisch gegen den Release-Text abgeglichen.
 
+### A371 · Upstream 7.5.7.8 im vollen Loop nachgeprüft: Bibliothek, Fork-Oberfläche, Synergien (26.10.2026)
+
+Seine Frage (26.10.2026): „was waren die änderungen im upstream? wurden die inhaltlich geprüft, ob inferenzen mit eigenen
+patches bzw. synergieffekte zur verbesserung bestehen? war das im vollen loop?" – Nein: A369 hatte den Diff gelesen, den
+einen Fork-Abschnitt in den berührten Dateien geprüft und kompiliert, nicht aber die Bibliothek selbst und die übrigen
+Fork-Änderungen an der Oberfläche. Nachgeholt:
+
+- *Research:* Upstream bf1b29299/8e37d9722 hebt RebornMaterial (LTS-FFXIV/RebornMaterial, Tag 7.5.7.0, b67f1faf9) von
+  7.5.6.2 an und ersetzt in fünf Fenstern eigenen Zeichencode durch die neuen Bibliotheksteile. Die Bibliothek zwischen den
+  Tags (Quelltext, 10 Dateien): neu `M3TopAppBar`, `M3Gallery`, `M3Draw.WindowBackdrop`, `M3WindowFold.BeginContent` und
+  `ContentAlpha`, `M3Widgets.WindowActionsThatFit`, `RowCombo`, `RowSegmented`, `M3Text.Bullet`, `M3.AccentFor`,
+  `M3Badge.Size`/`Paint`. Verändert ist nur `M3Badge.Draw`, auf `Size`/`Paint` umgebaut: gleiche Zeilenhöhe, gleiche
+  Füllung, gleicher Rand, gleiche Textlage – nachgerechnet, kein Unterschied in der Darstellung. `CheckboxHitSize` ist
+  ausgelagert, Wert gleich. Keine Änderung an Typen, die RSR speichert (`M3.Settings` in `Configs`, über `Service`).
+  Lizenz: 7.5.6.2 trug keine, 7.5.7.0 steht unter LGPL-3.0.
+- *Fork-Oberfläche gegen die Bibliothek:* Sieben Fork-Dateien unter `RotationSolver/UI` (Diagnosefenster, Listenfenster,
+  Debug, Aktionen, Searchable, `WindowCloseButton`, eine Zeile im Steuerfenster). Keine ruft eine geänderte Stelle; das
+  Schließen über Escape oder die Gamepad-Taste (`WindowCloseButton.TurnOffIfClosedByPlayer` in `PostDraw`) und der
+  Schließknopf der Leiste (`DrawBar(…, out closed)`, unverändert) setzen dieselbe Einstellung, ohne sich zu stören.
+- *Optionen:* (0) übernehmen wie gemergt; (1) die Fork-Zeilen im Listen- und Diagnosefenster auf `M3Text`/`M3Badge`
+  umstellen, damit sie aussehen wie die übrige Oberfläche; (2) das Paket zurückhalten. *Abwägung:* (1) ändert im Kampf
+  nichts, das Diagnosefenster nutzt er nicht, und jede Umstellung vergrößert die Fläche, an der Upstreams nächster Umbau
+  mit dem Fork kollidiert – verworfen (CLAUDE.md, „Keine Funktion ohne Bedarf"). (2) trennt den Fork ohne Grund von
+  Upstream – verworfen. Gewählt (0).
+- *Falsifikation:* *Kein Effekt?* Richtig, nur Zeichnung; im Kampf ändert sich nichts. *Wechselwirkung übersehen?* Die
+  einzige verhaltensändernde Bibliotheksstelle (`M3Badge.Draw`) zeichnet gleich; Fork-Code ruft keine der umgebauten
+  Fenstermethoden. *Ausgeliefert, nichts ändert sich?* So gewollt; 7.5.7.8+wsh1 enthält den Umbau.
+- *Nachgezogen:* CHANGELOG 7.5.7.8+wsh1 nennt die Abhängigkeit RebornMaterial 7.5.7.0.
+
+*Prüfgrad:* Quelltext der Bibliothek zwischen den Tags und Fork-Diff gelesen, Compile; die Fenster im Spiel nicht angesehen.
+
 ---
 ## B · Commit-Register (Fork vs. `upstream/main`)
 
