@@ -246,7 +246,9 @@ internal static class ActionTracer
 		Directory.CreateDirectory(_traceDirectory);
 		// Millisecond precision in the filename avoids collisions when rollover happens twice in one second.
 		var path = Path.Combine(_traceDirectory, $"actiontrace_{DateTime.Now:yyyyMMdd_HHmmss_fff}.log");
-		_writer = new StreamWriter(path, append: false) { AutoFlush = true };
+		// An encoding that writes U+FFFD for a character it cannot encode: StreamWriter's default throws and keeps the
+		// character in its buffer, so every later line of the file would throw as well (A418).
+		_writer = new StreamWriter(path, append: false, new UTF8Encoding(false)) { AutoFlush = true };
 		_writer.WriteLine($"# RotationSolverReborn action trace started {DateTime.Now:yyyy-MM-dd HH:mm:ss.fff} (max size {MaxFileSizeBytes / (1024 * 1024)} MB before rollover)");
 		_currentFilePath = path;
 

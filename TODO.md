@@ -109,13 +109,6 @@ nebeneinander gebraucht werden.
 
 ## Warten auf Daten oder Fremde
 
-- **`DefenseTrace.log` vom 26.10.2026 ohne eine Zeile nach dem Kopf** (Build `01db0e4e3`, drei Kämpfe in der Porta
-  Decumana laut ACT). Jeder Kampf schreibt an seinem Ende zwei Zeilen „update cost over the fight". Ursache von hier
-  nicht bestimmbar (A416, A417). Seit A417 schreibt der Trace jeden Gebietswechsel und jeden Kampfbeginn und jedes
-  Kampfende, und ein fehlgeschlagenes Schreiben öffnet die Datei neu und nennt den Grund darin. Auflösung: die Datei der
-  nächsten Sitzung – fehlen auch diese Zeilen, scheitert das Schreiben; stehen sie da und die übrigen fehlen, liegt es an
-  deren Pfaden.
-
 - **Samurai nutzt Feint und Tengentsu nicht** (fremde Meldung, PR #11, unbestätigt; statisch geprüft A265). Auflösung:
   ein Protokoll eines Samurai-Kampfs („area defence open, nothing chosen" gegen „hit you"). Konzept 13.
 - **Treffer aus einer Quelle, die die Objekttabelle nicht hält** (Verdacht; Necrophobia 10.10., Düsterflare 17.10.).

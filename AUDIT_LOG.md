@@ -12093,9 +12093,54 @@ bis zum Tod, auf der die Rückhaltung urteilt.
   übrigen Pfaden; ein fehlgeschlagenes Schreiben öffnet die Datei neu und nennt den Grund in ihr, bisher nur eine
   Warnung im Dalamud-Log; beim Gebietswechsel öffnet er eine nach einem Fehler geschlossene Datei wieder. Die nächste
   Sitzung trennt damit „das Schreiben scheitert" von „die Pfade schreiben nichts".
-- *Ursache:* offen (TODO, Warten auf Daten).
+- *Ursache:* offen (TODO, Warten auf Daten); Mechanismus und Behebung in A418. Die Neuöffnung dieses Eintrags
+  scheiterte am selben Fehler.
 
 *Prüfgrad:* Code, Compile; im Spiel nicht beobachtet.
+
+### A418 · Ein gescheiterter Schreibversuch machte `DefenseTrace.log` für die ganze Sitzung stumm (26.10.2026)
+
+- *Seine Angaben:* „wenn du die änderung, welche du selbst gemacht hast, nicht findest, bist du ungeeignet" (Vorwurf,
+  er hält eine Änderung von gestern auf heute für die Ursache); „ich habe beide events (porta und alexander) als whm
+  gespielt" (Angabe); „rechner und spiele können auch abstürzen" (Hinweis, geprüft: eine fehlende Abschlusszeile beweist
+  keinen Schreibfehler).
+- *Neue Datei (`fb1d94b8`):* Sitzung 17:39:10 (Build `01db0e4e3`, Beschwörer ab 17:44, Weißmagier ab 17:51, zwei Kämpfe
+  in der Porta Decumana laut ACT) ohne eine Zeile nach dem Kopf; Sitzung 18:51:27 (Build `e08c209a0`, Weißmagier in
+  Alexander – Faust des Vaters) mit Gebiet, Treffern, Kampfbeginn und -ende und Kosten, ohne „trace reopened".
+- *Mechanismus (am .NET gemessen):* `StreamWriter` mit Standardkodierung (UTF-8, `throwOnInvalidBytes`) wirft bei einem
+  ungültigen UTF-16-Zeichen; das Zeichen bleibt im Puffer, jede weitere Zeile und das Schließen werfen ebenso. Die Datei
+  endet mit der letzten guten Zeile – sein Bild. Der Fehler stand nur als Warnung im Dalamud-Log. So gebaut seit
+  `603df3a74` (29.09.2026). Die Neuöffnung aus A417 schloss zuerst, scheiterte daran und ließ die Datei bis zum nächsten
+  Gebietswechsel zu; die Wiederholung der Zeile im `catch` konnte zudem bis in den Aufrufer durchschlagen (Effekt-Handler,
+  Aktualisierungszyklus).
+- *Eine Änderung zwischen `8368ec3f7` und `01db0e4e3` als Ursache – widerlegt:* `e08c209a0` enthält sie alle und schrieb
+  ohne Fehlschlag. Geprüft: die 49 geänderten Dateien auf Schreibaufrufe ins Protokoll und auf Textkürzungen
+durchsucht, die Schreibwege gelesen; `DefenseTrace.cs` seit 23.10. unverändert, `Watcher.Enable`,
+  `MajorUpdater` und der Start unverändert bis auf die Migration aus A389, die bei Version 12 nicht greift. Zwei
+  unabhängige Schreiber schwiegen in der ersten Sitzung – Effekt-Handler im Spiel-Thread („hit you"), Kostenmessung im
+  Framework-Thread –, also der Schreiber selbst, nicht ihre Pfade.
+- *Auslöser am 26.10.:* aus seinen Dateien nicht bestimmbar. Kandidaten: ein nicht kodierbares Zeichen (Mechanismus
+  belegt, Quelle im Code nicht gefunden – kein Schreiber kürzt Text) oder ein Fehler des Dateisystems. *Schluss, nicht
+  belegt:* Der Konfigurationsordner wird synchronisiert (Konfliktkopie vom 23.10.). Dasselbe Bild – Kopf, keine Zeile,
+  keine Abschlusszeile – zeigen die Sitzungen vom 17.10. 09:38 und 24.10. 14:07 mit älteren Builds; ob er darin kämpfte,
+  ist ohne Mitschnitt offen.
+- *Behoben:* Kodierung, die ein nicht kodierbares Zeichen als „�" schreibt statt zu werfen; ein gescheiterter
+  Schreiber wird geschlossen, ohne dass sein Fehler das Neuöffnen verhindert; die Neuöffnung nennt Fehlerart und Meldung
+  in der Datei und schreibt die Zeile nach; ein zweiter Fehlschlag verwirft die Zeile, schließt die Datei bis zum
+  nächsten Gebietswechsel und erreicht den Aufrufer nicht. `ActionTracer` (Upstream, nur bei eingeschaltetem
+  Aktionsprotokoll) bekommt dieselbe Kodierung.
+
+**Falsifikation.** *Kein Defekt:* Die Pfade schrieben nicht – dann hätten nicht beide unabhängigen Schreiber zugleich
+geschwiegen, die in der zweiten Sitzung mit demselben Code schreiben. *Option falsch:* Ein dauerhafter
+Dateisystemfehler – dann scheitert auch das Neuöffnen; die Datei bleibt bis zum Gebietswechsel zu und öffnet dort neu,
+statt die Sitzung zu verlieren. *Ausgeliefert, und nichts ändert sich:* wenn die hochgeladene Kopie veraltet war und die
+Datei auf seinem Rechner vollständig – frühere Hochladungen bei laufendem Spiel (14.10.) enthielten jede Zeile bis zur
+letzten Sekunde; trifft es doch zu, ändert die Behebung nichts und schadet nicht.
+
+*Prüfgrad:* Compile, Prüfskripte (29 Schritte, 0 Fehler), Nachbildung der Schreiblogik am .NET mit drei Fällen
+(ungültiges Zeichen, vergifteter Schreiber, gescheitertes Neuöffnen) – ein Ersatznachweis, weil `DefenseTrace` die
+Dalamud-Dienste braucht; im Spiel nicht beobachtet. Ein künftiger Fehlschlag steht als „trace reopened: a write failed
+(Art: Meldung)" in der Datei, ein nicht kodierbares Zeichen als „�".
 
 ---
 ## B · Commit-Register (Fork vs. `upstream/main`)
@@ -12406,4 +12451,5 @@ Die offene Arbeit dazu — Reihenfolge und Abbruchbedingung der Nachprüfung —
 | C127 | A351 und die Fassung von eb2bbf95c: eine Schadensfläche fällt erst, wenn keiner, der im letzten GCD in ihr war, sie verlassen hat | Im großen Pull drängt ein Nachrückender einen anderen hinaus und nimmt seinen Platz ein (sein Hinweis, 25.10.2026); die Fläche bleibt voll. Folge: Im Modell war sie solange das Rudel blieb nur 14–51 % der Zeit frei | A352: Vergleich der Lebenden zu Beginn des GCD mit den jetzt Drinnen |
 | C128 | A352 und der Einstellungstext von 3962e53e7: „im Wall-to-wall fällt die Fläche, wo das Rudel sich gesammelt hat, nicht wo der Tank hielt" | Hält der Tank, um ein neues Rudel zu binden, steht dieses bis zu seinem Flächenangriff still und gilt nach seiner Spur als geblieben (sein Hinweis, 25.10.2026). Folge: Im Modell fiel die Fläche an jedem solchen Halt, 0–9 von 45 Treffern | A353: kein ungebundener Gegner in der Fläche oder in Reichweite eines Tanks, keiner im letzten GCD gebunden |
 | C129 | A353, 1fd640baa: jede Fläche wartet einen GCD nach dem Binden irgendeines Gegners, und ein ungebundener Gegner in Reichweite eines Tanks hält sie überall zurück | Review (A354): Eine Add-Welle am anderen Ende des Raums sperrte jede Fläche einen GCD; ein passiver Gegner am Tank im Freien sperrte sie dauerhaft; ein außer Sicht gezogenes Rudel zählte nicht | A354: nur Gegner in der Fläche oder am Tank, der Ungebundene am Tank nur in Instanzen ohne Feldoperation, das erste Sehen im Kampf zählt als Binden |
+| C131 | Chat 26.10.2026: „Diese Abschlusszeilen schreibt `Stop` ohne jede Bedingung. Dass sie fehlen, beweist: … jeder Schreibversuch ist gescheitert.“ | Zu stark. Ein Absturz von Spiel oder Rechner beendet die Sitzung ohne `Stop` (sein Hinweis); die fehlende Abschlusszeile allein beweist keinen Schreibfehler. Tragend bleiben die fehlenden Zeilen zweier unabhängiger Schreiber während der Kämpfe. | Im Chat zurückgenommen; A418 stützt sich nicht auf die Abschlusszeile |
 | C130 | Chat 26.10.2026: „Der Text, den du zitierst, … ich habe sie auf Deutsch geschrieben.“ | Falsch. Die zitierte Antwort und mehrere Mitteilungen davor waren Englisch, gegen seinen Befehl „sprich deutsch“; die Behauptung stützte sich auf die Erinnerung statt auf den Verlauf. | Widerrufen im Chat; seine Sprachregel gilt für jede sichtbare Ausgabe (`CLAUDE.md`, „Sprache und Namen“), vor jeder Ausgabe geprüft |

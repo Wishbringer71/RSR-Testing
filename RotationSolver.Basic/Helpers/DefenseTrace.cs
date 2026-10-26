@@ -1,6 +1,7 @@
 using ECommons.DalamudServices;
 using ECommons.GameHelpers;
 using ECommons.Logging;
+using System.Text;
 
 namespace RotationSolver.Basic.Helpers;
 
@@ -27,6 +28,12 @@ internal static class DefenseTrace
 {
 	private static readonly object _lock = new();
 	private static StreamWriter? _writer;
+
+	// UTF-8 that writes a character it cannot encode as U+FFFD instead of throwing. StreamWriter's default throws, and the
+	// characters it could not encode stay in its buffer, so every later line and the close throw as well: one failed
+	// write silenced the rest of a session - the owner's trace of 26.10.2026 held its header and nothing after it
+	// through two fights (A418).
+	private static readonly UTF8Encoding Utf8 = new(encoderShouldEmitUTF8Identifier: false, throwOnInvalidBytes: false);
 	// This session's trace was started and not yet stopped: a missing writer then is a failure, not the end (A417).
 	private static bool _started;
 	private static uint _lastDecision;
@@ -52,18 +59,18 @@ internal static class DefenseTrace
 	{
 		lock (_lock)
 		{
+			CloseQuietly();
 			try
 			{
-				_writer?.Dispose();
 				_started = true;
-				_writer = new StreamWriter(FilePath, true) { AutoFlush = true };
+				_writer = Open();
 				_writer.WriteLine();
 				_writer.WriteLine($"==== {DateTime.Now:yyyy-MM-dd HH:mm:ss} trace started");
 				_writer.WriteLine(header);
 			}
 			catch (Exception ex)
 			{
-				_writer = null;
+				CloseQuietly();
 				PluginLog.Warning($"Could not start the defence trace: {ex.Message}");
 			}
 		}
@@ -272,9 +279,10 @@ internal static class DefenseTrace
 
 	/// <summary>Adds one line with the time of day in front.</summary>
 	/// <remarks>
-	/// A write that fails reopens the file and says why in the file itself. Before, a failure was only a warning in the
-	/// Dalamud log and the file stayed silent for the rest of the session - the owner's trace of 26.10.2026 held its
-	/// header and nothing else (A417).
+	/// A write that fails reopens the file, says in it what failed, and writes the line again. Before, a failure was only
+	/// a warning in the Dalamud log and the file stayed silent for the rest of the session - the owner's trace of
+	/// 26.10.2026 held its header and nothing else (A417, A418). A second failure gives the line up and leaves the file
+	/// closed until the next area; it never reaches the caller, which may be the effect handler or the update cycle.
 	/// </remarks>
 	public static void Line(string text)
 	{
@@ -288,9 +296,19 @@ internal static class DefenseTrace
 			catch (Exception ex)
 			{
 				PluginLog.Warning($"Could not write the defence trace: {ex.Message}");
-				if (Reopen($"a write failed ({ex.Message})"))
+				if (!Reopen($"a write failed ({ex.GetType().Name}: {ex.Message})"))
+				{
+					return;
+				}
+
+				try
 				{
 					_writer!.WriteLine(line);
+				}
+				catch (Exception again)
+				{
+					PluginLog.Warning($"Could not write the defence trace after reopening it: {again.Message}");
+					CloseQuietly();
 				}
 			}
 		}
@@ -313,19 +331,42 @@ internal static class DefenseTrace
 	// Under the lock. True when the file is open again.
 	private static bool Reopen(string reason)
 	{
+		CloseQuietly();
 		try
 		{
-			_writer?.Dispose();
-			_writer = new StreamWriter(FilePath, true) { AutoFlush = true };
+			_writer = Open();
 			_writer.WriteLine($"{DateTime.Now:HH:mm:ss.fff} trace reopened: {reason}");
 			return true;
 		}
 		catch (Exception ex)
 		{
-			_writer = null;
+			CloseQuietly();
 			PluginLog.Warning($"Could not reopen the defence trace: {ex.Message}");
 			return false;
 		}
+	}
+
+	// Under the lock.
+	private static StreamWriter Open()
+	{
+		return new StreamWriter(FilePath, true, Utf8) { AutoFlush = true };
+	}
+
+	// Under the lock. A writer whose write failed fails to close as well - closing flushes what it could not write - and
+	// that must not keep the next one from opening: the reopen of A417 closed first and so stayed shut (A418). The file
+	// handle is released either way.
+	private static void CloseQuietly()
+	{
+		try
+		{
+			_writer?.Dispose();
+		}
+		catch (Exception ex)
+		{
+			PluginLog.Warning($"Could not close the defence trace: {ex.Message}");
+		}
+
+		_writer = null;
 	}
 
 	/// <summary>Writes a last line and closes the file.</summary>
@@ -344,8 +385,7 @@ internal static class DefenseTrace
 			}
 			finally
 			{
-				_writer?.Dispose();
-				_writer = null;
+				CloseQuietly();
 				_started = false;
 			}
 		}

@@ -259,6 +259,11 @@ Abwehr fiel, ankam. Seit A255 bis A257 kommen die Zeilen des Tankwechsels dazu: 
 („tankbuster on you", mit der Verwundbarkeit, die er legte) und nach einem Wechsel auf den Halter, warum ein
 Wechsel oder das Zurückholen wartet, die Wahl, ihr Ausgang und ein Geteiltes Leid eines Gruppenmitglieds auf ihn
 (Konzept 09). Aufgelöst wird das Protokoll, sobald eine Datei seiner Kämpfe die Quelle zeigt und sie behoben ist.
+Jeder Gebietswechsel, Kampfbeginn und jedes Kampfende stehen darin, unabhängig von den übrigen Pfaden (A417). Ein
+gescheiterter Schreibversuch öffnet die Datei neu, nennt Fehlerart und Meldung in ihr („trace reopened: a write failed
+…") und schreibt die Zeile nach; ein Zeichen, das sich nicht kodieren lässt, steht als „�". Scheitert auch das
+Neuöffnen, bleibt die Datei bis zum nächsten Gebietswechsel zu. Vorher machte ein einziger gescheiterter Schreibversuch
+die Datei für die ganze Sitzung stumm – am 26.10.2026 zwei Kämpfe ohne eine Zeile (A418).
 
 ## Wen die Unterdrückung erreicht
 
