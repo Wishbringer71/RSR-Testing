@@ -18,5 +18,7 @@ With "Spend only the mitigation a measured tankbuster needs" on, a healer's sing
 Benison, Exaltation and the like - and a tank's help for another member no longer go onto a tank whose tankbuster has
 been measured to take less than a large shield absorbs and to leave him at or above your HP threshold for single-target
 healing GCDs. They stay ready for the next hit that does need them. A BossModReborn prediction beside a tankbuster no
-longer sends that help onto the tank anyway, which also put it on a tank under Hallowed Ground or Superbolide. The
-first time a tankbuster is met nothing changes: it is measured with that hit.
+longer sends that help onto the tank anyway, which also put it on a tank under Hallowed Ground or Superbolide. Reprisal
+and the party mitigation some jobs spend in the single-target defence stay back the same way while such a tankbuster on
+someone else is all that is coming and BossModReborn predicts none. The first time a tankbuster is met nothing changes:
+it is measured with that hit.

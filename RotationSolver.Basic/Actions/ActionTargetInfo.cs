@@ -3021,13 +3021,13 @@ public struct ActionTargetInfo(IBaseAction action)
 				return null;
 			}
 
-			// A tankbuster aimed at one of them names whom the help is for (IsTankbusterTargetToProtect): a healer's
+			// A tankbuster aimed at one of them names whom the help is for (TankbusterHelp.IsTargetToProtect): a healer's
 			// Aquaveil or Exaltation in the single-target defence went to whoever their own target attacks - the main
 			// tank - while the marker or the cast named the off-tank (A328). Without one among them, as before.
 			List<IBattleChara> attachedT = [];
 			foreach (var t in battleChara)
 			{
-				if (IsTankbusterTargetToProtect(t))
+				if (TankbusterHelp.IsTargetToProtect(t))
 				{
 					attachedT.Add(t);
 				}
@@ -3040,7 +3040,7 @@ public struct ActionTargetInfo(IBaseAction action)
 			{
 				foreach (var t in battleChara)
 				{
-					if (ObjectHelper.IsTargetOnSelf(t) && !TankbusterNeedsNothingFromYou(t))
+					if (ObjectHelper.IsTargetOnSelf(t) && !TankbusterHelp.NeedsNothingFromYou(t))
 					{
 						attachedT.Add(t);
 					}
@@ -3200,52 +3200,6 @@ public struct ActionTargetInfo(IBaseAction action)
 			return RandomPickByJobs(others, JobRole.Tank);
 		}
 
-		// A member a tankbuster is aimed at (DataCenter.IsTankbusterAimedAt), unless, under "hold mitigation under
-		// invulnerability", every such tankbuster lands while he stands impervious - his proposal of 04.10.2026: a
-		// tank the hit cannot touch gets nothing from a mitigation on him (concept 09).
-		static bool IsTankbusterTargetToProtect(IBattleChara t)
-		{
-			return DataCenter.IsTankbusterAimedAt(t)
-				&& !(Service.Config.HoldMitigationUnderInvulnerability
-					&& (DataCenter.ImperviousPastAimedTankbuster(t) || MeasuredHitCallsForNoHelp(t)));
-		}
-
-		// The member the tankbuster filter above passed over, in the single defence the player has not commanded: not
-		// taken back as the one his target attacks. A BossModReborn prediction keeps the healer's single defence open
-		// beside such a tankbuster (StateUpdater, review of A260), and through this fallback the help went to the tank
-		// the boss attacks all the same - Aquaveil on a tank under Hallowed Ground (A373). Heal paths and the area
-		// defence keep their target: neither is help for this hit.
-		static bool TankbusterNeedsNothingFromYou(IBattleChara t)
-		{
-			return !IBaseAction.HealPathRunning && !IBaseAction.AreaDefenceRunning && !IBaseAction.CommandedDefenceRunning
-				&& DataCenter.IsTankbusterAimedAt(t) && !IsTankbusterTargetToProtect(t);
-		}
-
-		// Help from you for another member's measured tankbuster goes where the hit calls for it, by the size rule of
-		// the area defence (DataCenter.AreaShareCallsForMitigation): a hit at or above what a large shield absorbs, or
-		// one that leaves him below the health at which this rotation heals him by itself - mitigation where healing
-		// would otherwise be needed. Below both, a White Mage spent Divine Benison and Aquaveil on a hit of 20 % of a
-		// tank's HP (his trace of 25.10.2026, A364). Not for the player, whose own plan decides for him, not in the
-		// single defence he commands, and not for a heal (Aurora, Heart of Corundum in the heal path) (A373).
-		static bool MeasuredHitCallsForNoHelp(IBattleChara t)
-		{
-			if (IBaseAction.HealPathRunning || IBaseAction.AreaDefenceRunning || IBaseAction.CommandedDefenceRunning
-				|| Player.Object is not { } self || t.GameObjectId == self.GameObjectId
-				|| !DataCenter.AimedTankbusterLeaves(t, out var actionId, out var share, out var left))
-			{
-				return false;
-			}
-
-			var line = Service.Config.HealthSingleSpell;
-			if (share >= DefensiveValues.LargestStatedBarrierShare || left < line)
-			{
-				return false;
-			}
-
-			DataCenter.NoteTankbusterHelpHeld(t, actionId, share, left, line);
-			return true;
-		}
-
 		IBattleChara? FindTankbusterTarget()
 		{
 			// Whom a tankbuster is aimed at - marker, targeted cast, BossModReborn's mask for the player
@@ -3261,7 +3215,7 @@ public struct ActionTargetInfo(IBaseAction action)
 			List<IBattleChara> others = [];
 			foreach (var t in battleChara)
 			{
-				if (!ObjectHelper.IsAlive(t) || t.IsConditionCannotTarget() || !IsTankbusterTargetToProtect(t))
+				if (!ObjectHelper.IsAlive(t) || t.IsConditionCannotTarget() || !TankbusterHelp.IsTargetToProtect(t))
 				{
 					continue;
 				}

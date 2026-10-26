@@ -35,7 +35,9 @@ its way to him; both share one recast.
 The `Tankbuster` and attacked target types no longer pick another member whose one measured tankbuster takes less than
 the largest stated barrier and leaves him at or above `HealthSingleSpell` with what stands at the hit, under
 `HoldMitigationUnderInvulnerability`, outside heal paths, area defence and a commanded single defence. In the single
-defence the attacked fallback no longer takes back a member the tankbuster filter passed over.
+defence the attacked fallback no longer takes back a member the tankbuster filter passed over. `BaseAction.CanUse`
+refuses a rated mitigation with an effect radius in the single defence (`NoTankbusterHereNeedsIt`) while the hit misses
+the player, every tankbuster aimed at a member is one he needs nothing for, and BossModReborn predicts none.
 
 ## 7.5.7.8+wsh1
 

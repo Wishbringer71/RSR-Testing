@@ -97,7 +97,7 @@ helfen (Abschnitt „Hilfe für das Ziel eines Tankbusters", A373); Damage Deale
   (Ausführung, Fähigkeiten-Slot 9), `HoldDefenceForTankbuster` (Zurückhalten über `IBaseAction.HoldDefenceOnSelf`,
   Gatter in `BaseAction.CanUse`, Ablehnung „HeldForTheInvulnerability").
 - Für Heiler: `StateUpdater.ShouldAddDefenseSingle` (Unverwundbarkeit); die Hilfe für andere nach der Größe des
-  gemessenen Treffers in `ActionTargetInfo` (`MeasuredHitCallsForNoHelp`).
+  gemessenen Treffers in `TankbusterHelp`, gelesen von `ActionTargetInfo` und `BaseAction.CanUse`.
 
 ### Seine Angaben
 
@@ -1248,6 +1248,12 @@ ein Schadensausteiler, ausgeschaltete Einzelabwehr oder eine vorher greifende Pu
   - Nicht für dich selbst – dein Plan entscheidet für dich –, nicht in der Einzelabwehr, die du befiehlst, und nicht
     in Heilpfad und Flächenabwehr (Aurora und Herz des Korunds heilen dort).
   - Gilt für jede Hilfe dieser Zieltypen: die Einzelabwehr der Heiler und die Hilfe der Tanks für andere.
+- Was in der Einzelabwehr auf kein Mitglied zielt und über dich hinaus wirkt – Reflexion, die Gruppenminderung der
+  Weisen, Samba, Troubadour, Taktiker –, unterbleibt, wenn der Treffer dich nicht erreicht, mindestens ein Tankbuster
+  auf ein Mitglied zielt, jedes solche Mitglied nichts braucht (Unverwundbarkeit oder kleiner gemessener Treffer) und
+  BossModReborn keinen Tankbuster vorhersagt (`TankbusterHelp.OnlyForMembersNeedingNothing`, Ablehnung
+  „NoTankbusterHereNeedsIt", A374). Dieselbe Entscheidung wie für die Hilfe auf ein Ziel, an einer Stelle
+  (`TankbusterHelp`), damit Zielwahl und Aktionsprüfung nicht auseinanderlaufen.
 - Ein so herausgefallenes Mitglied kommt in der Einzelabwehr nicht über den Ersatz „wen sein Ziel angreift" zurück
   (A373). Eine BossModReborn-Vorhersage hält die Einzelabwehr des Heilers neben einem gedeckten Tankbuster offen (sie
   nennt kein Ziel, Review von A260), und über diesen Ersatz ging die Hilfe dann doch an den Tank, den der Boss angreift
@@ -1303,9 +1309,11 @@ entscheidet die Triage K2–K4 (Abschnitt „Andere Pfade, die dem Plan ein Glie
   für die Flächenabwehr aus diesem Grund verworfen („a rule that cannot fire in its own domain", `DataCenter`). Für die
   eigene Abwehr des Tanks gilt sie weiter: Dort geht es um das geringste Mittel, mit dem er überlebt, und hinter der
   Linie steht seine Unverwundbarkeit; Hilfe von anderen ersetzt Heilung.
-- Reflexion für den kleinen gemessenen Tankbuster des anderen Tanks: Sie zielt auf den Gegner, nicht auf ein Mitglied,
-  und geht in der Einzelabwehr weiter (offene Arbeit, `TODO.md`, „Reflexion auf einen kleinen gemessenen Tankbuster des
-  anderen Tanks").
+- Reflexion neben einer BossModReborn-Vorhersage: Sie geht weiter, auch wenn der sichtbare Tankbuster nur ein Mitglied
+  trifft, das nichts braucht. Die Vorhersage nennt hier kein Ziel und kann einen zweiten Treffer auf den anderen Tank
+  meinen (Grund der Entscheidung aus A261); anders als die Hilfe auf ein Ziel mindert Reflexion auch diesen. In seinen
+  Protokollen trug das 96 von 118 Entscheidungen mit Tankbuster-Quelle – die Regel unten wirkt also vor allem in
+  Kämpfen ohne Modul.
 
 **Lagen:**
 - *Zwei RSR-Tanks:* Der Getroffene schützt sich, der andere hilft ihm. Dieselbe Hilfe zweimal verhindert die
@@ -1330,7 +1338,8 @@ entscheidet die Triage K2–K4 (Abschnitt „Andere Pfade, die dem Plan ein Glie
 **Messmittel:** `DefenseTrace.log` schreibt „single defence -> Intervention … on <Mitglied>" (Urflackern, The Blackest
 Night, Herz des Korunds; das Ziel seit A335, wenn es nicht der Spieler ist) mit den Quellen der Abwehr – Marker auf wem,
 Wirken auf wen – und danach die „used"-Zeile; eine Hilfe, die für einen gemessenen kleinen Tankbuster ausbleibt, einmal
-je Treffer „tankbuster help held: … takes …% of max HP and leaves …%". Die Entscheidung fällt aus Marker und Wirken;
+je Treffer „tankbuster help held: … takes …% of max HP and leaves …%", eine zurückgehaltene Reflexion als Ablehnung
+„NoTankbusterHereNeedsIt" in der nächsten Zeile der Einzelabwehr. Die Entscheidung fällt aus Marker und Wirken;
 wo sie die Tabelle liest, steuert die Tabelle nach – jeder höhere Treffer hebt ihren Wert, und die nächste Hilfe geht
 wieder.
 

@@ -11064,6 +11064,31 @@ TODO-Punkt „Heiler-Hilfe auf einen kleinen gemessenen Tankbuster" (A364).
 
 *Prüfgrad:* Code, Protokolle, Compile; im Spiel nicht beobachtet.
 
+### A374 · Reflexion und Gruppenminderung für einen Tankbuster, den niemand braucht (26.10.2026)
+
+TODO-Punkt „Reflexion auf einen kleinen gemessenen Tankbuster des anderen Tanks" aus A373.
+
+- *Research:* In der Einzelabwehr lehnt `BaseAction.CanUse` nur ab, was allein den Spieler schützt und ihn nicht
+  erreicht (A233); was über ihn hinaus wirkt (Wirkradius über 0), bleibt frei. Erhoben über alle Einzelabwehr-Pfade
+  der Reborn-Rotationen: Reflexion (alle vier Tanks), Holos, Panhaima und Kerachole (Weiser), Shield Samba, Troubadour,
+  Taktiker; Addle und Feint zielen auf einen Gegner mit Wirkradius 0 und fallen nicht darunter. Für Schadensausteiler
+  öffnet die Einzelabwehr nur mit einem Treffer auf sie, einer Vorhersage oder ohne Heiler – dann erreicht der Treffer
+  sie, und das Gatter greift nicht.
+- *Optionen:* je Tank in der Rotation (vier Stellen, dazu fremde Rotationen); zentral in `BaseAction.CanUse` mit
+  derselben Entscheidung wie die Zielwahl; Nullvariante. Gewählt: zentral – die Entscheidung aus A373 zieht nach
+  `TankbusterHelp`, gelesen von Zielwahl und Aktionsprüfung.
+- *BossModReborn:* Eine Vorhersage hält das Gatter offen. Der Grund aus A261 (sie kann einen zweiten Treffer auf den
+  anderen Tank meinen) trägt hier, anders als beim Ersatzziel in A373: Reflexion mindert auch diesen. Die zeitliche
+  Zuordnung des Tankbuster-Plans (eine Vorhersage nicht vor dem Wirken ist dasselbe) gilt dort für den Spieler, dessen
+  Bit die Maske belegt; für andere nennt sie kein Ziel. Folge: wirksam vor allem ohne Modul (22 von 118 Entscheidungen
+  mit Tankbuster-Quelle in seinen Protokollen).
+- *Falsifikation:* *Kein Defekt?* Reflexion 60 s auf einen Treffer, der den Tank über der Heilschwelle lässt, fehlt
+  beim nächsten Raidwide ohne Vorhersage. *Option falsch?* Eine Gruppenminderung des Weisen in der Einzelabwehr fällt
+  mit – richtig, sie hätte nur diesem Treffer gegolten. *Ausgeliefert, nichts ändert sich?* Mit Vorhersage (oben), beim
+  ersten Auftreten, mit der Option aus, und wenn der Treffer den Spieler erreicht.
+
+*Prüfgrad:* Code, Protokolle, Compile; im Spiel nicht beobachtet.
+
 ---
 ## B · Commit-Register (Fork vs. `upstream/main`)
 

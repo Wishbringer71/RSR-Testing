@@ -275,6 +275,17 @@ public class BaseAction : IBaseAction
 			return ActionTracer.Reject(this, "ProtectsOnlyYouAndTheHitMissesYou");
 		}
 
+		// An outward mitigation in the single defence - Reprisal, which lowers what the enemies around the player deal -
+		// when the hit misses him and goes only to members whose tankbuster needs nothing from him: under Hallowed Ground
+		// past it, or a measured hit small enough (TankbusterHelp). Help aimed at those members stays out by the target
+		// selection; this is the same decision for what aims at no member. A BossModReborn prediction keeps it (A374).
+		if (IBaseAction.SelfProtectionHitsMe == false && !IBaseAction.ForceEnable && !IBaseAction.AreaDefenceRunning
+			&& !IBaseAction.HealPathRunning && !IBaseAction.CommandedDefenceRunning && Info.EffectRange > 0
+			&& DefensiveValues.For(ID) != default && TankbusterHelp.OnlyForMembersNeedingNothing())
+		{
+			return ActionTracer.Reject(this, "NoTankbusterHereNeedsIt");
+		}
+
 		// While the tankbuster plan or an invulnerability makes it unneeded, no rated defence aimed at the
 		// player goes out beyond what the plan spends - own mitigation, own barrier, Reprisal around him
 		// alike - from whichever path the rotation spends it. Help aimed at another member stays free, so do
