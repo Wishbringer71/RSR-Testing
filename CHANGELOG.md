@@ -111,6 +111,24 @@ player's facing at the moment of the check. A line without a target keeps the fa
 job's own raise while "Raise with Swiftcast or Dualcast" is off. A derived rotation calling the base pass no longer
 swiftcasts Resurrection or Verraise against that setting.
 
+### Addition to RotationSolver.Basic: `MonkRotation.PerfectBalanceMaxStacks` and `RiddleOfFireDueWithinPerfectBalance`
+
+`PerfectBalanceMaxStacks` is the stack count Perfect Balance grants, from the status sheet (zero when the sheet does not
+say). `RiddleOfFireDueWithinPerfectBalance` is whether Riddle of Fire comes off cooldown after the current weave window
+and in time to be woven before the Masterful Blitz of a Perfect Balance pressed now - The Balance's "3 to 1 gcd range
+before RoF"; false below its level.
+
+### Addition to RotationSolver.Basic: `CustomRotation.LastWeaponskillOnTarget`
+
+Whether the weaponskill chosen now is the last that lands on the current target: the next one could begin only after the
+target has died (corrected time to kill, while it is the last hostile in range) or after the downtime BossModReborn's
+timeline predicts has begun.
+
+### Behaviour change in RotationSolver.Basic: Six-sided Star needs no open chakra
+
+`MonkRotation`'s Six-sided Star no longer requires an open chakra; the game charges none (Action sheet). A derived
+rotation that calls it - `ChurinMNK` under its health threshold - now uses it without chakra as well.
+
 ## 7.5.7.8+wsh1
 
 ### Dependency of RotationSolver.Basic: RebornMaterial 7.5.7.0

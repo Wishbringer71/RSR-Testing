@@ -11975,7 +11975,7 @@ bis zum Tod, auf der die Rückhaltung urteilt.
   Brotherhood, sobald es bereit ist; hielte RSR es, liefe Chakra über, solange Brotherhood auf Riddle of Fire wartet.
 - *Betroffen:* Endnutzer (Monk); Autoren abgeleiteter Rotationen: `PerfectBalanceMaxStacks` und
   `RiddleOfFireDueWithinPerfectBalance` neu – `PerfectBalanceStacks` war der erste Name und hätte die gleichnamige
-  Methode von `ChurinMNK` verdeckt (Compilerwarnung CS0108). Upstream-Pflege: Änderung in `MNK_Reborn`.
+  Methode von `ChurinMNK` verdeckt (Compilerwarnung CS0108); CHANGELOG. Upstream-Pflege: Änderung in `MNK_Reborn`.
 
 *Prüfgrad:* Quellen, Code, Modell mit Selbsttest, Compile; im Spiel nicht beobachtet.
 
@@ -12007,7 +12007,8 @@ bis zum Tod, auf der die Rückhaltung urteilt.
   ändert sich? Ohne Modul und bei einem Boss, der vor null Gesundheit unangreifbar wird, sagt nichts das Ende voraus;
   genannt als Einschränkung.
 - *Betroffen:* Endnutzer (Monk); Autoren abgeleiteter Rotationen: `LastWeaponskillOnTarget` neu, `SixsidedStarPvE`
-  ohne Chakrabedingung – `ChurinMNK` wirkt es unter seiner Gesundheitsschwelle nun auch ohne Chakra.
+  ohne Chakrabedingung – `ChurinMNK` wirkt es unter seiner Gesundheitsschwelle nun auch ohne Chakra; CHANGELOG (nachgetragen
+  im Folgecommit: Die Prüfung der Lieferung nach A415 fand die fehlenden Einträge).
 
 *Prüfgrad:* Quellen, Code, Compile; im Spiel nicht beobachtet.
 
