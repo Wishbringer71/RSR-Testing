@@ -455,6 +455,11 @@ public sealed class AST_Reborn : AstrologianRotation
 			return true;
 		}
 
+		if (TryChargedBarrierAtCap(CelestialIntersectionPvE, out act))
+		{
+			return true;
+		}
+
 		return base.GeneralAbility(nextGCD, out act);
 	}
 

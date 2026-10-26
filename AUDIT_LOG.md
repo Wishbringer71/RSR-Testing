@@ -11116,6 +11116,29 @@ bearbeitet ist und in seinen Protokollen gespielt wird.
 
 *Prüfgrad:* Code, Quelle, Compile; im Spiel nicht beobachtet.
 
+### A376 · Weißmagier gegen The Balance; Heiler-Barrieren an der Ladungsgrenze (26.10.2026)
+
+- *Quelle:* The Balance, White Mage Basic Guide, „Patch Applicable: 7.3", zuletzt geändert am 07.08.2025, Opener am
+  15.09.2025 (abgerufen 26.10.2026).
+- *Befund:* Göttlicher Segen ging nur in Abwehr- und Heilpfad; ohne Gefahr ruhten beide Ladungen, die Wiederaufladung
+  stand still. The Balance: nicht überlaufen lassen, auf den Tank für die Auto-Angriffe. Dieselbe Lage beim Astrologen
+  mit Celestial Intersection; Gelehrter und Weiser haben keine Einzelbarriere mit Ladungen.
+- *Getroffene Entscheidung berührt?* Konzept 16 führt „so oft wie möglich" als abweichend mit Grund (gefahrbezogen,
+  gestreckt, Konzept 08). Der Grund bleibt unberührt: An der Grenze bleibt die zweite Ladung für die Gefahr, und die
+  Streckung hält nur einen Auslöser ohne Ladung zurück (`AnyTriggerInEffect`), also nicht den Wasserschleier nach
+  einer Ladung an der Grenze.
+- *Optionen:* Nullvariante; je Job in der Rotation; auf der Stufe Heiler (`TryChargedBarrierAtCap`). Gewählt: Stufe
+  Heiler, gerufen aus den allgemeinen Fähigkeiten von Weißmagier und Astrologe, hinter Angriff und Abwehr. Ohne Option:
+  Eine Ladung an der Grenze ist sonst verloren, und der Einsatz kostet nur einen freien Einschub.
+- *Falsifikation:* *Kein Defekt?* Im Heilpfad fiel der Segen, sobald der Tank unter die Einzelheil-Schwelle kam; in
+  Pulls also oft. Ohne Gefahr (Boss mit leichten Auto-Angriffen) ruhte er. *Option falsch?* Ein Segen auf einen vollen
+  Tank vor einem kleinen gemessenen Tankbuster: Die Zielwahl nimmt den Tank dann nicht (A373), die Ladung wartet bis
+  danach. *Ausgeliefert, nichts ändert sich?* Wenn niemand angegriffen wird oder der Angegriffene die Barriere schon
+  trägt.
+- *Übrige Punkte:* Tabelle in Konzept 14, „Weißmagier".
+
+*Prüfgrad:* Code, Quelle, Compile; im Spiel nicht beobachtet.
+
 ---
 ## B · Commit-Register (Fork vs. `upstream/main`)
 

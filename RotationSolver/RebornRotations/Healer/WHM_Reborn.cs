@@ -364,6 +364,11 @@ public sealed class WHM_Reborn : WhiteMageRotation
 		{
 			return true;
 		}
+
+		if (TryChargedBarrierAtCap(DivineBenisonPvE, out act))
+		{
+			return true;
+		}
 		return base.GeneralAbility(nextGCD, out act);
 	}
 

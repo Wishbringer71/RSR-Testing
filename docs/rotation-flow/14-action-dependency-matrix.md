@@ -439,7 +439,7 @@ Werk an).
 
 **Sachstand:** Abgeglichen ist der Maschinist (24.10.2026) gegen The Balance, Machinist Basic Guide und Openers
 (beide „Patch Applicable: 7.3", zuletzt geändert am 05.08.2025); die Potenzen nennt der offizielle Job-Guide (Patch
-7.5). Der Beschwörer ist abgeglichen (26.10.2026, A375). Die übrigen Jobs sind offen (TODO, „Rotationen gegen The Balance abgleichen"). Abweichungen, die nur Schaden
+7.5). Der Beschwörer und der Weißmagier sind abgeglichen (26.10.2026, A375, A376). Die übrigen Jobs sind offen (TODO, „Rotationen gegen The Balance abgleichen"). Abweichungen, die nur Schaden
 betreffen, werden behoben, wo sich die bessere Wahl aus dem Spiel ableiten lässt und keine seiner Regeln dagegen steht;
 die übrigen nennt der Abgleich mit Grund. Weniger Schaden aus einer Sicherheitsregel bleibt (seine Präzisierung).
 
@@ -585,3 +585,38 @@ wenige Sekunden vor Searing Light und dem Fenster der Gruppe.
 | Trank | Opener spät eingewebt, danach im Sechs-Minuten-Fenster | unter dem eigenen Searing Light, nach „Tincture usage" (ab Werk nur in High-End-Inhalten); nach 270 s Abklingzeit ist das nächste eigene Fenster das der sechsten Minute | deckt sich |
 | Lucid Dreaming | bei rund 70 % MP | Schwelle in MP, ab Werk 6000 von 10000 | seine Einstellung (Konzept 18) |
 | Physick | kein Einsatz im Endgame | nur mit „Use Physick above level 30" (ab Werk aus) | deckt sich |
+
+### Weißmagier
+
+Abgeglichen am 26.10.2026 gegen The Balance, White Mage Basic Guide („Patch Applicable: 7.3", zuletzt geändert am
+07.08.2025, Opener-Abschnitt am 15.09.2025). Der Guide ist ein Werkzeugüberblick, keine feste Rotation; was er zur
+Heilung sagt, prüft RSR an seinen Sicherheitsregeln, nicht am Schaden.
+
+**Göttlicher Segen an der Ladungsgrenze** (`TryChargedBarrierAtCap`, Konzept 08, A376). The Balance: „Try to not let
+this overcap on charges - you're almost always guaranteed to get value out of this just slapping it on the tank for
+autos." RSR setzte ihn nur in Abwehr- und Heilpfad; stand niemand in Gefahr, ruhten beide Ladungen, und die
+Wiederaufladung stand still. Jetzt geht die Ladung an der Grenze auf den Angegriffenen, wo keine Barriere liegt. Im
+Kampf: eine Barriere von 500 Potenz mehr je 30 s, solange der Tank angegriffen wird; die zweite Ladung bleibt für die
+Gefahr, und weil ein Auslöser mit einer Ladung zurück nicht streckt, hält die Barriere den Wasserschleier für einen
+Tankbuster danach nicht zurück. Dieselbe Regel gilt für Celestial Intersection des Astrologen.
+
+**Weitere Punkte, gegen The Balance geprüft:**
+
+| Punkt | The Balance | RSR | Stand |
+|---|---|---|---|
+| Opener | Glare III bei −2,3 s, Trank nach dem Pull, Presence of Mind nach dem dritten, Assize nach dem vierten GCD | Glare im Countdown; mit „Use the balance Opener in High-End Duties" Presence of Mind ab dem dritten, Assize ab dem vierten GCD | deckt sich |
+| Trank im Opener | nach dem Pull | bei unter 3 s im Countdown, nach „Tincture usage" | weicht um rund drei Sekunden ab: Der Trank endet so viel früher, also vor dem letzten Glare seines Fensters. Nicht geändert – der Unterschied liegt unter einem GCD Trankwirkung, und das Fenster der Gruppe ist eine Annahme über sie |
+| Dia | dauerhaft, außer das Ziel stirbt in unter 15 s | DoT-Regel nach Zeit bis zum Tod gegen den Füller (`DotEffect`) | deckt sich, genauer: rechnet die Gewinnschwelle statt fester 15 s |
+| Glare IV | drei Einsätze unter Presence of Mind | sobald verfügbar | deckt sich |
+| Holy | in Dungeons stark (Betäubung), im Raid ab drei Gegnern | AoE-Zahl 3 (A344), dazu Streckung und Rückhaltungen der Betäubung | deckt sich |
+| Afflatus Misery | unter Buffs, wo es geht; keine Blutlilie überlaufen lassen | mit Opener-Option unter Buffs oder Presence of Mind; Lilien nur bei weniger als drei Blutlilien | deckt sich |
+| Angefangene Lilien-Sätze | vor Kampfende abschließen | keine eigene Regel | nicht gebaut: Schaden im Promillebereich, und am Kampfende ist eine Heilung ohne Bedarf keine Sicherheit |
+| Assize, Presence of Mind | auf Abklingzeit | auf Abklingzeit, im Opener verzögert | deckt sich |
+| Göttlicher Segen | Ladungen nicht überlaufen lassen | gefahrbezogen, an der Ladungsgrenze auf den Angegriffenen (oben) | deckt sich seit A376 |
+| Wasserschleier | für einen gewöhnlichen Tankbuster nie nötig; für ungeplanten Schaden | gefahrbezogen; nicht für einen gemessenen kleinen Tankbuster (Konzept 09, A373) | deckt sich in der Richtung; für große Treffer gibt RSR ihn weiter, Sicherheit vor Schaden |
+| Tetragrammaton, Benediction | nicht für Notfälle zurückhalten | Tetragrammaton im Einzelheilpfad mit allen Ladungen; Benediction unter seiner Schwelle | Benediction weicht ab: seine Einstellung |
+| Plenary Indulgence | vor GCD-Flächenheilungen | vor Afflatus Rapture, Medica und Cure III | deckt sich |
+| Asylum | in Dungeon-Pulls als Regen auf den Tank | bei Flächenheilbedarf; mit „Use Asylum as soon as a single player heal …" auch für einen Einzelnen | weicht ab: Im Pull hält RSR Regen auf dem Tank (`TrySustainRegenOnTank`); Asylum bleibt für die Gruppe |
+| Lucid Dreaming | bei rund 80 % MP | Schwelle in MP, ab Werk 6000 von 10000 | seine Einstellung (Konzept 18) |
+| Thin Air | für MP-teure Heilungen und Wiederbelebung | Einstellungen, ab Werk nur unter MP-Druck | deckt sich |
+| Wiederbelebung | mit Swiftcast und Thin Air | Swiftcast bleibt dafür (seine Regel); Thin Air vor der Wiederbelebung | deckt sich |

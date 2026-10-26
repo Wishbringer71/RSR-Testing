@@ -60,7 +60,9 @@ Swiftcast: siehe oben.
 **Weißmagier.** Glare IV alle drei Ladungen, Lilien nicht überlaufen lassen, Blood Lily nicht überlaufen,
 Afflatus Solace vor Cure II, Divine Caress nach Temperance — abgedeckt. Divine Benison und Aquaveil „so oft
 wie möglich", Temperance „oft", Divine Benison „nicht für Tankbuster halten": **abweichend mit Grund** — RSR
-setzt sie gefahrbezogen ein und streckt sie über die Zeit (Konzept 08), Sicherheit vor Schaden. Dia nicht zu
+setzt sie gefahrbezogen ein und streckt sie über die Zeit (Konzept 08), Sicherheit vor Schaden. Nur an der
+Ladungsgrenze geht Divine Benison auch ohne Gefahr auf den Angegriffenen (A376): Die zweite Ladung bleibt
+für die Gefahr, und die Wiederaufladung läuft wieder. Dia nicht zu
 früh erneuern: Einstellung, siehe allgemeine Regeln.
 
 **Krieger.** Beast Gauge nicht überlaufen (Infuriate nur bis 50), Nascent Chaos nicht überschreiben (Infuriate

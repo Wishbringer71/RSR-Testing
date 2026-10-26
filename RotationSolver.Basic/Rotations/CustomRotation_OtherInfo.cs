@@ -1266,6 +1266,29 @@ public partial class CustomRotation
 				&& BMRKnockbackIn <= ArmsLengthPvE.Cooldown.RecastTimeOneChargeRaw);
 
 	/// <summary>
+	/// A single-target barrier with charges that sits at its last charge: onto the member an enemy is attacking, where
+	/// none of its barrier stands. At the cap the recharge stops, so every second there is a charge lost, and the hits on
+	/// the attacked member use the barrier up - The Balance, White Mage Basic Guide (patch 7.3): "Try to not let this
+	/// overcap on charges - you're almost always guaranteed to get value out of this just slapping it on the tank for
+	/// autos." The healers' rule for every such barrier: Divine Benison, Celestial Intersection (A376).
+	/// </summary>
+	/// <param name="action">The barrier with charges.</param>
+	/// <param name="act">The action aimed at the attacked member, when due.</param>
+	protected static bool TryChargedBarrierAtCap(IBaseAction action, out IAction? act)
+	{
+		act = null;
+		if (!InCombat || action.Cooldown.MaxCharges <= 1 || action.Cooldown.CurrentCharges < action.Cooldown.MaxCharges
+			|| !action.CanUse(out act, targetOverride: TargetType.BeAttacked))
+		{
+			act = null;
+			return false;
+		}
+
+		DefenseTrace.Decision("a charge at the cap, onto the attacked member", act);
+		return true;
+	}
+
+	/// <summary>
 	/// A healer's pull upkeep: an instant HoT or barrier kept on the tank through a dungeon pull and
 	/// renewed as soon as it runs out or is used up. One rule for every healer (the white mage's Regen,
 	/// the astrologian's Aspected Benefic, the sage's Eukrasian Diagnosis); only the action differs.

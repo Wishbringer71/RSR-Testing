@@ -39,6 +39,11 @@ defence the attacked fallback no longer takes back a member the tankbuster filte
 refuses a rated mitigation with an effect radius in the single defence (`NoTankbusterHereNeedsIt`) while the hit misses
 the player, every tankbuster aimed at a member is one he needs nothing for, and BossModReborn predicts none.
 
+### Addition to RotationSolver.Basic: `CustomRotation.TryChargedBarrierAtCap`
+
+A protected helper for healers: a single-target barrier with charges at its last charge goes onto the member an
+enemy is attacking, where none of its barrier stands, with a defence trace line.
+
 ## 7.5.7.8+wsh1
 
 ### Dependency of RotationSolver.Basic: RebornMaterial 7.5.7.0

@@ -29,3 +29,9 @@ The two Necrotizes from the odd-minute Energy Drain used to go out a few seconds
 Light, because Energy Drain comes back at the same moment as the burst summon. They now wait for the window when the
 burst summon and Searing Light are back no later than Energy Drain, and Energy Drain follows them by a weave - as The
 Balance's Summoner guide describes.
+
+## White Mage and Astrologian: no barrier charge left at the cap
+
+Divine Benison and Celestial Intersection used to wait at both charges while nobody was in danger, with their recharge
+standing still. A charge at the cap now goes onto the member an enemy is attacking, where none of its barrier stands;
+the second charge stays for the next danger. The Balance's White Mage guide recommends exactly this.

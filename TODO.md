@@ -37,7 +37,7 @@ Keine bekannt.
 
 *Im Kampf:* Schaden – je Job Opener, Burstausrichtung und Prioritäten gegen den Guide. Der Maschinist ist abgeglichen
 (A342), von Dragoon und Viper der Opener (A343), die AoE-Schwellen aller Jobs (A344), die AoE-Wahl des Ninja (A345),
-der Beschwörer (A375). *Nächster Schritt:* die übrigen Jobs je Opener,
+der Beschwörer (A375), der Weißmagier (A376). *Nächster Schritt:* die übrigen Jobs je Opener,
 Burst und Prioritäten; ausgeblendete Werte liest `ActionTooltip` zur Laufzeit aus den Tooltips,
 die deutschen Namen gehören in `action_names_de.json`. Dabei je Job die Rotationseinstellungen, die eine Spieltatsache
 tragen (Leistenhöchststand, Restzeiten, Lieddauern), aus dem Spiel ableiten (Konzept 18, „Rotationseinstellungen").
