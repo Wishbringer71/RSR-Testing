@@ -758,15 +758,28 @@ Ladung da ist, und an der vollen Ladung.
 | Death's Design | Laufzeit halten, bis 60 s stapelbar; keine Sekundenzahl | zentrale DoT-Planung (`ShadowOfDeathPvE`, 30 s, höchstens 60 s); vor Arcane Circle im Enshroud aufgefüllt, damit es den Burst deckt; „Refresh Death's Design with this many seconds remaining" (10 s) nur mit der eigenen Zeitwahl, ab Werk aus | deckt sich |
 | Gluttony, Arcane Circle, Plentiful Harvest | Gluttony auf Abklingzeit, wenn beide Executioner ausgegeben werden können; Arcane Circle auf Abklingzeit; Plentiful Harvest, sobald verfügbar | Gluttony ohne Perfectio Parata und Immortal Sacrifice; Arcane Circle ab 3,5 s Kampfzeit mit Death's Design am Ziel; Plentiful Harvest nach zwei GCDs | deckt sich |
 
+### Ninja: das Fenster um Kunai's Bane
+
+**Deckt sich, keine Änderung** (26.10.2026, A384) mit The Balance, Ninja Basic Guide („Patch Applicable: 7.05", zuletzt
+geändert 11.08.2024; eine Reihenfolge nennt er nicht, nur den Inhalt der Fenster).
+
+| Punkt | The Balance | RSR (`NIN_Reborn`) | Stand |
+|---|---|---|---|
+| Dokumori und Kunai's Bane | Dokumori eng mit Kunai's Bane | Dokumori im Burst ab 5 s Kampfzeit, Kunai's Bane ab 6 s mit Shadow Walker | deckt sich |
+| Ninjutsu vor dem Fenster | eines für Suiton (Shadow Walker), die übrigen für Raiton, Katon oder Doton; drei natürliche je Minute | Suiton, solange Shadow Walker gebraucht wird; Mudra-Ladungen außerhalb des Fensters nur gegen den Überlauf, im Fenster und für Shadow Walker alle | deckt sich |
+| Kassatsu, Ten Chi Jin, Tenri Jindo | ein Ninjutsu mehr je Minute (Hyosho Ranryu); Ten Chi Jin und Tenri Jindo im geraden Fenster | Kassatsu nach Suiton; Hyosho Ranryu wartet, solange Kunai's Bane bereit ist oder vor dem Ende von Kassatsu bereit wird, fällt also ins Fenster; Ten Chi Jin in Kunai's Bane ohne Shadow Walker; Tenri Jindo, sobald bereit | deckt sich |
+| Bunshin | auf Abklingzeit, nicht für Kunai's Bane halten | ab 5 s Kampfzeit auf Abklingzeit | deckt sich |
+| Ninki, Kazematoi | Bhavacakra/Zesho Meppo auf einem oder zwei Zielen, Deathfrog Medium ab drei; Aeolian Edge nur mit Kazematoi | Ausgabe im Fenster, vor Bunshin oder bei vollem Ninki; Wahl zwischen Hellfrog und Bhavacakra aus den Tooltips (A345); Kazematoi A379 | deckt sich |
+
 ### Schadensausteiler: Ressourcen und Buffs
 
 Geprüft am 26.10.2026 gegen die Basic Guides von The Balance (Stand je Guide: Dragoon 7.5, Viper 7.55, Reaper 7.5,
 Samurai 7.4, Monk 7.4, Ninja 7.05, Barde 7.4, Tänzer 7.40, Schwarzmagier 7.4, Rotmagier 7.4, Pictomancer 7.4):
 die Regeln gegen das Überlaufen der Ressourcen und für die eigenen Buffs, je an der Stelle im Code, die sie trägt.
-Keine Änderung. Nicht einzeln geprüft sind die Folgen innerhalb eines Burstfensters (Mudra-Planung des Ninja vor
-Kunai's Bane, Motivfolgen des Pictomancer, Feuer-Eis-Takt des Schwarzmagiers, Monk); das bleibt offene Arbeit. Die
-Meikyo-Folgen des Samurai stehen unter „Samurai: Meikyo Shisui und Higanbana", die Liedfolge des Barden unter „Barde:
-Lieder und Burst", die Enshroud-Folge des Reaper unter „Schnitter: Enshroud".
+Keine Änderung. Nicht einzeln geprüft sind die Folgen innerhalb eines Burstfensters (Motivfolgen des Pictomancer,
+Feuer-Eis-Takt des Schwarzmagiers, Monk); das bleibt offene Arbeit. Die Meikyo-Folgen des Samurai stehen unter „Samurai:
+Meikyo Shisui und Higanbana", die Liedfolge des Barden unter „Barde: Lieder und Burst", die Enshroud-Folge des Reaper
+unter „Schnitter: Enshroud", die Mudra-Planung des Ninja unter „Ninja: das Fenster um Kunai's Bane".
 
 | Job | The Balance | RSR | Stand |
 |---|---|---|---|

@@ -11286,6 +11286,19 @@ bearbeitet ist und in seinen Protokollen gespielt wird.
 
 *Prüfgrad:* Quellen, Code; im Spiel nicht beobachtet.
 
+### A384 · Ninja gegen The Balance: das Fenster um Kunai's Bane (26.10.2026)
+
+- *Quellen:* The Balance, Ninja Basic Guide („Patch Applicable: 7.05", 11.08.2024 – älter als die übrigen Guides; nennt
+  den Inhalt der Fenster, keine Reihenfolge); `NIN_Reborn` (`EmergencyAbility`, `AttackAbility`, Mudra-Planung,
+  `DoHyoshoRanryu`).
+- *Befund:* Dokumori mit Kunai's Bane, Suiton für Shadow Walker vor dem Fenster, Mudra-Ladungen außerhalb des Fensters
+  nur gegen den Überlauf, Kassatsu nach Suiton mit Hyosho Ranryu im Fenster, Ten Chi Jin in Kunai's Bane, Bunshin auf
+  Abklingzeit, Ninki-Ausgabe im Fenster decken sich. Raiju im Fenster (zwei bzw. drei) folgt aus den Raiton davor;
+  nicht einzeln gezählt.
+- *Entscheidung:* keine Änderung.
+
+*Prüfgrad:* Quellen, Code; im Spiel nicht beobachtet.
+
 ---
 ## B · Commit-Register (Fork vs. `upstream/main`)
 
