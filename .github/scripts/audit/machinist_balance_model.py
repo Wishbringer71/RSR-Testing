@@ -13,6 +13,12 @@ Not a code scanner - a model calculator. Two questions:
    off Double Check and Checkmate, for each number of enemies those two reach. The plugin computes the same
    comparison at runtime from the tooltips (MachinistRotation.AutoCrossbowOutdamagesBlazingShot); the figures here
    are the official job guide's (na.finalfantasyxiv.com/jobguide/machinist, patch 7.5, read 24.10.2026).
+3. Flamethrower: from how many enemies in its cone it out-damages the filler it replaces, with and without the value of
+   the Heat and Battery the filler brings - The Balance: "If gauge is not usable, beats filler on 2+" (A380). Job guide,
+   patch 7.5 (read 26.10.2026): Flamethrower 120 potency to every enemy in its cone for 10 s, per second by the German
+   text ("im Sekundentakt"); the Heated combo 220, 320, 420 with 5 Heat each and 10 Battery on the last; Scattergun 130
+   to every enemy with 10 Heat. Heat is worth what Hypercharge makes of it: 50 Heat buy five Blazing Shots (or Auto
+   Crossbow where it wins) in the time of three filler GCDs; Battery is worth 266 potency per 10 (The Balance).
 
 Simplifications of the queen model: no movement, no downtime, no raid buffs, no potion; Reassemble spent in the
 countdown; the Queen takes 16 s from summon to finish (The Balance: "roughly 16 seconds"), the effect text's 12 s
@@ -349,6 +355,41 @@ def breakpoint(outside):
     return None
 
 
+# Flamethrower against the filler (part 3). The Balance's filler: Heated combo on 1-2 enemies, Scattergun on 3+.
+FLAME_TICK, FLAME_TICK_EVERY = 120, 1.0
+COMBO_AVG, COMBO_HEAT, COMBO_BATTERY = (220 + 320 + 420) / 3, 5, 10 / 3
+SCATTER, SCATTER_HEAT = 130, 10
+BATTERY_VALUE = 266 / 10
+HYPERCHARGE_HEAT, HYPERCHARGE_SHOTS, HYPERCHARGE_GCDS = 50, 5, 3
+
+
+def filler_raw(n):
+    return COMBO_AVG if n < 3 else SCATTER * n
+
+
+def heat_value(n):
+    """Potency one Heat adds: the Hypercharge window it buys over the filler GCDs that window displaces."""
+    window = HYPERCHARGE_SHOTS * max(blazing_value(n), CROSSBOW * n)
+    return (window - HYPERCHARGE_GCDS * filler_raw(n)) / HYPERCHARGE_HEAT
+
+
+def filler_with_gauge(n):
+    heat, battery = (COMBO_HEAT, COMBO_BATTERY) if n < 3 else (SCATTER_HEAT, 0)
+    return filler_raw(n) + heat * heat_value(n) + battery * BATTERY_VALUE
+
+
+def flamethrower(n):
+    """Flamethrower's potency in the time of one GCD."""
+    return FLAME_TICK * (GCD / FLAME_TICK_EVERY) * n
+
+
+def flame_breakpoint(gauge_usable):
+    for n in range(1, 20):
+        if flamethrower(n) >= (filler_with_gauge(n) if gauge_usable else filler_raw(n)):
+            return n
+    return None
+
+
 def self_test():
     # Hand-computed: three enemies, all reached: 540 against 260 + 2 * 0.5 * (180 + 2 * 126) = 692.
     assert abs(blazing_value(3) - 692) < 1e-9, blazing_value(3)
@@ -357,6 +398,12 @@ def self_test():
     # on 4+ targets".
     assert breakpoint(0) == 6, breakpoint(0)
     assert breakpoint(1) == 4, breakpoint(1)
+    # Flamethrower: The Balance, "If gauge is not usable, beats filler on 2+"; on one enemy it loses either way. With the
+    # gauge counted two enemies are even (600 against 596), three ahead.
+    assert flame_breakpoint(gauge_usable=False) == 2, flame_breakpoint(False)
+    assert flamethrower(1) < filler_raw(1) and flamethrower(1) < filler_with_gauge(1)
+    assert abs(flamethrower(2) - 600) < 1e-9 and abs(filler_with_gauge(2) - 600) < 10, filler_with_gauge(2)
+    assert flamethrower(3) > filler_with_gauge(3)
     # Queen: no battery lost with the cap guard, the opener and one-minute summons as The Balance has them.
     s, _ = run()
     assert s.wasted == 0, s.wasted
@@ -367,8 +414,8 @@ def self_test():
     assert broken.wasted > 0, "the cap guard switched off must show as lost battery"
     # The Balance's even-minute Queens follow Air Anchor at 100 battery.
     assert all(b == 100 for t, b in BALANCE if 115 <= t % 120 or t % 120 <= 5), BALANCE
-    print("self-test ok: breakpoints 6 and 4 as The Balance states them, no battery lost, the switched-off cap guard"
-          " shows as lost battery")
+    print("self-test ok: breakpoints 6 and 4 as The Balance states them, Flamethrower from 2 without the gauge, no"
+          " battery lost, the switched-off cap guard shows as lost battery")
 
 
 if __name__ == "__main__":
@@ -381,6 +428,9 @@ if __name__ == "__main__":
     print("The Balance:", BALANCE)
     print("Auto Crossbow from (enemies in the cone): all reached", breakpoint(0), "- one outside", breakpoint(1),
           "- two outside", breakpoint(2))
+    print("Flamethrower per GCD against the filler (enemies: flamethrower / filler / filler with gauge):")
+    for n in range(1, 7):
+        print(f"   {n}: {flamethrower(n):.0f} / {filler_raw(n):.0f} / {filler_with_gauge(n):.0f}")
     if "-t" in sys.argv:
         for e in log:
             print(e)

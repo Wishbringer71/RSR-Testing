@@ -114,6 +114,46 @@ public partial class MachinistRotation
 	public static bool HasFullMetalMachinist => StatusHelper.PlayerHasStatus(true, StatusID.FullMetalMachinist);
 	#endregion
 
+	#region Flamethrower
+	/// <summary>
+	/// Whether Flamethrower beats the GCD it replaces and nothing waits on the channel. The Balance, Machinist Basic Guide:
+	/// "If gauge is not usable, beats filler on 2+" - the action's AoE count, checked by its targeting, and Hypercharge
+	/// neither usable nor coming ready in the channel; "Never beats Hypercharge, Chain Saw/Excavator, Drill/Bio"; "Ensure
+	/// that none of your other major cooldowns (Barrel Stabilizer, Wildfire, Chainsaw, and Air Anchor) will become
+	/// available for the 11 seconds you plan to channel." The channel lasts
+	/// its tooltip's "Duration" from the press; Drill, with its charges, counts once it would fill up, since only then the
+	/// channel costs it time. Reassemble, Double Check and Checkmate are not waited for: the guide does not name them, and a
+	/// third of a charge lost at the cap weighs less than the channel gains on two enemies. The channel binds the player to his place and facing, so the pack stands
+	/// (<see cref="CustomRotation.DamageAreaSettled(IBaseAction, IBattleChara?)"/>), no hostile casts an area attack, and the
+	/// enemies live through the channel where their time to kill is known (A380).
+	/// </summary>
+	/// <param name="wildfireHeld">The rotation keeps Wildfire back here regardless, so a ready Wildfire waits on nothing.</param>
+	/// <returns>True when Flamethrower may go out now.</returns>
+	protected bool FlamethrowerFits(bool wildfireHeld = false)
+	{
+		if (!InCombat || IsOverheated || HasExcavatorReady || HasFullMetalMachinist || DataCenter.IsHostileCastingAOE
+			|| !ActionTooltip.TryStatedDuration(FlamethrowerPvE.ID, out var duration)
+			|| (DataCenter.IsAverageTTKKnown && DataCenter.AverageTTK < duration) || !DamageAreaSettled(FlamethrowerPvE))
+		{
+			return false;
+		}
+
+		// Hypercharge's own condition - Heat for its cost, or Hypercharged - and its recast within the channel.
+		var channel = DataCenter.DefaultGCDRemain + duration;
+		return !(HyperchargePvE.Setting.ActionCheck?.Invoke() == true && ComesReady(HyperchargePvE, channel))
+			&& !ComesReady(AirAnchorPvE.EnoughLevel ? AirAnchorPvE : HotShotPvE, channel)
+			&& !ComesReady(ChainSawPvE, channel)
+			&& !(IsBurst && ComesReady(BarrelStabilizerPvE, channel))
+			&& !(IsBurst && !wildfireHeld && ComesReady(WildfirePvE, channel))
+			&& !(DrillPvE.EnoughLevel && DrillPvE.Cooldown.WillHaveXCharges(DrillPvE.Cooldown.MaxCharges, channel));
+
+		static bool ComesReady(IBaseAction action, float within)
+		{
+			return action.EnoughLevel && action.Cooldown.WillHaveOneCharge(within);
+		}
+	}
+	#endregion
+
 	#region PvE Actions Unassignable
 
 	/// <summary>
@@ -429,7 +469,7 @@ public partial class MachinistRotation
 		setting.IsFriendly = false;
 		setting.CreateConfig = () => new ActionConfig()
 		{
-			AoeCount = 6,
+			AoeCount = 2,
 		};
 	}
 

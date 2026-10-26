@@ -1,6 +1,6 @@
 # Abhängigkeitsmatrix je Job
 
-Erzeugt am 2026-10-24 von `.github/scripts/audit/generate_action_matrix.py`. Methode, Grenzen und Bewertung: `docs/rotation-flow/14-action-dependency-matrix.md`.
+Erzeugt am 2026-10-26 von `.github/scripts/audit/generate_action_matrix.py`. Methode, Grenzen und Bewertung: `docs/rotation-flow/14-action-dependency-matrix.md`.
 
 | Job | Aktionen | direkt | über andere Aktion | nur geprüft | nur gelesen | ungenutzt | unvollständig beschrieben | Wechselwirkungen | Verlängerungen | Selbsterhaltung |
 |---|---|---|---|---|---|---|---|---|---|---|
@@ -13,7 +13,7 @@ Erzeugt am 2026-10-24 von `.github/scripts/audit/generate_action_matrix.py`. Met
 | [DRG](DRG.md) | 40 | 40 | 0 | 0 | 0 | 0 | 16 | 0 | 0 | 0 |
 | [DRK](DRK.md) | 43 | 41 | 1 | 0 | 0 | 1 | 7 | 0 | 4 | 0 |
 | [GNB](GNB.md) | 46 | 44 | 0 | 0 | 1 | 1 | 13 | 0 | 0 | 0 |
-| [MCH](MCH.md) | 46 | 36 | 1 | 0 | 0 | 9 | 8 | 2 | 0 | 0 |
+| [MCH](MCH.md) | 46 | 37 | 1 | 0 | 0 | 8 | 8 | 2 | 0 | 0 |
 | [MNK](MNK.md) | 48 | 45 | 1 | 0 | 1 | 1 | 10 | 0 | 0 | 0 |
 | [NIN](NIN.md) | 62 | 54 | 6 | 0 | 1 | 1 | 17 | 2 | 0 | 0 |
 | [PCT](PCT.md) | 49 | 42 | 0 | 0 | 6 | 1 | 15 | 6 | 0 | 0 |

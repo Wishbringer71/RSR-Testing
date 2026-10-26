@@ -817,6 +817,16 @@
    "reason": "The setting's own condition, \"Experimental Pot Usage(used up to 5 seconds before SerpentsIre comes off cooldown)\": a span named by the option text, not a tunable; it replaces the elapsed 115 s of the 120 s recast, which left out the time Serpent's Ire stands ready (A343)."
   },
   {
+   "file": "RotationSolver.Basic/Rotations/Basic/MachinistRotation.cs",
+   "code": "AoeCount = 2,",
+   "values": [
+    "2"
+   ],
+   "status": "exception",
+   "loop": "A380",
+   "reason": "Default AoE count of Flamethrower: The Balance, Machinist Basic Guide, \"If gauge is not usable, beats filler on 2+\". Recomputed (machinist_balance_model.py, job guide 7.5): 120 potency per second for 10 s on every enemy in the cone, 600 per 2.5-s GCD on two, against the Heated combo's 320 on one, 596 with the Heat and Battery it brings - even with the gauge, far ahead without; one enemy loses either way. The runtime tooltip cannot carry the comparison: the English text does not state the per-second rate, only the German one (\"im Sekundentakt\"). The count stays his setting's lower bound (A380)."
+  },
+  {
    "file": "RotationSolver.Basic/Rotations/Basic/NinjaRotation.cs",
    "code": "AoeCount = 2,",
    "values": [

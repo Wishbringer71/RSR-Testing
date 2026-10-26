@@ -19,7 +19,7 @@ Selbsttest gegen konstruierte Texte und konstruierten Code; `--check` meldet ver
 läuft in der CI.
 
 **Jede Kampfaktion, die ein Spieler auslösen kann und die ohne Sonderlage Schaden, Heilung oder
-Schutz bringt, hat in den Standardrotationen einen Aufruf — außer Six-sided Star und Flamethrower.**
+Schutz bringt, hat in den Standardrotationen einen Aufruf — außer Six-sided Star.**
 Ob ein Aufruf erreicht wird — hinter welcher Einstellung, auf welcher Stufe, in welcher Lage —, sagt
 die Matrix nicht (Grenzen). Was maschinell nicht als gewirkt erscheint („ungenutzt" oder „nur
 gelesen"), zerfällt in sechs Klassen (Stand der erzeugten Dateien: 01.10.2026):
@@ -31,7 +31,7 @@ gelesen"), zerfällt in sechs Klassen (Stand der erzeugten Dateien: 01.10.2026):
 | Limit Breaks | je Job drei | ohne Wirktext im Datensatz; RSR castet keine PvE-Limit-Breaks (Konzept 05) |
 | Hilfsaktionen | Sleep, Repose, Rescue, Leg Graze, Foot Graze, das Ablegen der Tankhaltung (Release …) | Sie wirken auf Mitspieler oder die Gruppenlage (Rescue zieht einen Spieler, das Ablegen der Haltung gibt die Feindseligkeit ab, Schlaf bricht beim ersten Treffer). Nicht automatisiert — Schluss aus der Wirkung, kein Beleg für eine Absicht. Dissolve Union gehört nicht dazu: Der Gelehrte löst damit seine Verbindung über der Schwelle seiner Einstellung und vor Living Dead (A324) |
 | **Knopfwechsel gesperrt** | Detonator (MCH) | `WildfirePvE` führt Wildfire als `StatusProvide` und schließt den gewechselten Knopf aus (`ModifyWildfirePvE`: `!DetonatorPvEReady`); Wildfire zündet mit allen Stapeln von selbst. Siehe „Wo eine Aktion einen Status aufhebt" |
-| **Mit Quelle, nicht gebaut** | Six-sided Star (MNK) · Flamethrower (MCH) | Job-Guide und The Balance nennen Werte und Einsatzregel — siehe „Pausen und Phasenenden" |
+| **Mit Quelle, nicht gebaut** | Six-sided Star (MNK) | Job-Guide und The Balance nennen Werte und Einsatzregel — siehe „Pausen und Phasenenden" |
 
 Improvised Finish (DNC) gehörte zur gesperrten Klasse: `ImprovisationPvE` führt Improvisation als
 `StatusProvide` und verweigert sich, solange der Knopf gewechselt hat. `DNC_Reborn` ruft es deshalb
@@ -177,8 +177,17 @@ beendet es seinen eigenen Kanal also mit dem nächsten GCD oder der nächsten F�
   Stapel eine Wette. Die Wahrscheinlichkeit, dass die Regel einen Tod verhindert, ist nicht messbar und nach der
   Rechnung klein; die Kosten fallen sicher an.
 
-**Umgekehrt, Abwehr beendet Angriff:** Flamethrower (Machinist) ist ebenfalls ein Kanal; RSR wirkt ihn
-nicht. Meditate (Samurai) wirkt RSR nur in der Pause. Dort beendet ihn jede Abwehr oder Heilung, die
+**Umgekehrt, Abwehr beendet Angriff:** Flamethrower (Machinist) ist ebenfalls ein Kanal, einer für Schaden (Einsatzregel:
+„Vergleich mit The Balance", Maschinist). Solange er läuft – sein Status liegt, der Maschinist steht und ein Gegner steht im
+Kegel vor ihm (`DataCenter.FlamethrowerChannelRunning`) –, verweigert `BaseAction.CanUse` jede andere Aktion
+(„KeepsTheFlamethrowerChannel"), einen Trank ebenso (`MedicineItem`). Durch geht, was ein Sicherheitsweg verlangt –
+Heilung, Flächen- und Einzelabwehr, Unterbrechung, Reinigung, Wiederbelebung, Provokation, Schutz gegen Rückstoß – und was
+der Spieler drückt. Sicherheit vor Schaden: Der Kanal ist Schaden, und ein Treffer wiegt mehr als die restlichen Ticks.
+Bewegt sich der Spieler, endet der Kanal ohnehin; RSR sperrt seine Bewegung nur mit „Lock movement while casting" und
+dem Haken bei Flamethrower (beide ab Werk aus). Steht kein Gegner mehr im Kegel, gibt die Sperre frei, und die nächste
+Aktion beendet den leeren Kanal. `DefenseTrace.log` schreibt bei jedem Ende, wie lange er lief, die letzte Aktion und
+ob der Spieler sich bewegte. Apokalypsis (Blaumagier) ist derselbe Kanal als Linie; außerhalb seines Profils erfasst,
+keine Sperre. Meditate (Samurai) wirkt RSR nur in der Pause. Dort beendet ihn jede Abwehr oder Heilung, die
 ohne Gegner in Reichweite fällt: die eigene Heilung (Second Wind, Bloodbath), Tengentsu und Third Eye
 bei angekündigtem Treffer auf ihn oder eigener niedriger Gesundheit. Sicherheit vor Kenki — so gewollt.
 Die Rückhaltung von Abwehr im Burst steht in Konzept 08, „Die Abwehrsperren".
@@ -420,12 +429,6 @@ Werk an).
   dies, or before a boss goes untargetable". Damit ist die Einsatzregel belegt: der letzte GCD vor einer Pause oder
   dem Tod des Ziels, wenn nur noch einer passt. Ob Chakra über eine Pause verfällt, nennt keine der Quellen.
   WrathCombo (Stand 25.09.2026) führt die Aktion nur als Id und wirkt sie nicht. Offen im TODO.
-- *Flamethrower (Machinist):* Job-Guide: Flächenkanal im Kegel 12 Yalm, 120 Potenz über 10 s, endet bei jeder
-  anderen Aktion und bei Bewegung oder Drehung, löst die GCD-Abklingzeit aus. The Balance, Machinist Basic Guide:
-  „If gauge is not usable, beats filler on 2+; Beats Air Anchor (incl. battery) on 6+; Never beats Hypercharge,
-  Chain Saw/Excavator, Drill/Bio", und keine große Abklingzeit darf in den 11 s des Kanals bereit werden. Damit ist
-  die Regel belegt. Er bindet ihn 11 s an Ort und Blickrichtung — nach seiner Spielweise ein Positionsrisiko, das
-  im Kampf nur bei stehenden Rudeln ohne Mechanik trägt. Offen im TODO.
 **Folgen, bewusst hingenommen:**
 - Läuft der Samurai im Kampf aus 25 Yalm heraus, ohne dass eine Pause ist, fällt Meditate, sobald er
   steht. Es bricht bei der ersten Bewegung und kostet dann einen GCD-Takt.
@@ -472,6 +475,46 @@ unter Stufe 68 Heat Blast an die von Blazing Shot.
   Checkmate ihre gewonnene Zeit auch nutzen – am Ende eines Rudels, wenn Ladungen verfallen oder Gegner sterben,
   überschätzt er Blazing Shot.
 
+**Flamethrower fällt anstelle des Füllers auf ein stehendes Rudel** (`MachinistRotation.FlamethrowerFits`, gelesen von
+`MCH_Reborn` hinter „Use Flamethrower on a pack that stands still", ab Werk an, A380). Er trifft jeden Gegner im Kegel vor
+dem Maschinisten 10 s lang jede Sekunde mit 120 Potenz (Job-Guide; die Sekunde nennt nur der deutsche Text, „im
+Sekundentakt") und löst die GCD-Abklingzeit aus; jede andere Aktion, Bewegung und Drehung beendet ihn.
+
+- *Wann:* im Kampf, nicht überhitzt; auf so vielen Gegnern im Kegel, wie seine AoE-Zahl verlangt (ab Werk 2); kein
+  Excavator und kein Full Metal Field bereit; Hypercharge weder nutzbar noch – bei genug Heat oder Hypercharged –
+  innerhalb des Kanals wieder bereit; Air Anchor (darunter Hot Shot) und Chain Saw nicht innerhalb des Kanals bereit,
+  Barrel Stabilizer und Wildfire ebenso nicht, solange Burst an ist (Wildfire nicht, wo die Rotation es ohnehin
+  zurückhält: „Only use Wildfire on Boss targets" gegen ein Ziel ohne Boss-Symbol); Drill füllt seine Ladungen nicht
+  innerhalb des Kanals auf. Der Kanal zählt ab dem Druck so lange, wie der Tooltip als Dauer nennt.
+- *Wo:* Das Rudel steht (`DamageAreaSettled` mit dem Radius der Aktion – dieselbe Bewegungserkennung wie für
+  Schadensflächen, aber nicht an deren Einstellung gebunden; die Option der Rotation trägt die Entscheidung), kein Gegner
+  wirkt einen Flächenangriff (`IsHostileCastingAOE`), und die Gegner überleben den Kanal, wo ihre Zeit bis zum Tod bekannt
+  ist. Grund: Der Kanal bindet ihn an Ort und Blickrichtung; eine angesagte Fläche zwingt ihn zur Bewegung und kostet den
+  Rest.
+- *Warum ab 2:* Modell (`machinist_balance_model.py`, Job-Guide 7.5): je GCD-Zeit 300 Potenz je Gegner. Auf einem
+  Gegner verliert er gegen die Heated-Kombination (320), auf zwei bringt er 600 gegen 320 – mit dem Wert von Heat und
+  Batterie, die der Füller einbringt, 596: gleichauf. Ab drei liegt er auch dann vorn (900 gegen 848, gegen Scattergun).
+  The Balance: „If gauge is not usable, beats filler on 2+". Beide Lesarten von „gauge is not usable" – die Leiste ist
+  gerade nicht ausgebbar, oder was der Füller einbringt, wird nicht mehr ausgegeben – ergeben dieselbe Zahl. Die AoE-Zahl
+  stand bis A380 auf 6 („Beats Air Anchor (incl. battery) on 6+"); gewirkt hat RSR ihn nie.
+- *Zielwahl, ein Defekt der Klasse:* Das Spielblatt führt Flamethrower als auf den Wirkenden gezielt (`CastType` 1,
+  Reichweite 0, Wirkradius 12). Die Zielwahl hielt ihn deshalb für eine Einzelzielaktion, suchte ein Ziel in 0 Yalm,
+  fand keins und überging die AoE-Zahl – auch die Oberfläche blendete sie aus. Unter allen Spieleraktionen haben nur
+  Flamethrower und Apokalypsis (Blaumagier) diese Form (xivapi, 26.10.2026). Jetzt liest `ActionTargetInfo` für diese
+  Form die Gestalt aus dem Wirktext („in a cone before you", „in a straight line before you",
+  `ActionTooltip.StatedShapeBeforeYou`) und zählt die Gegner im Kegel vor dem Spieler wie bei jedem anderen Kegel, den
+  er selbst wirft.
+- *Abweichung von The Balance:* Der Guide nennt 11 s als Fenster ohne Herleitung; RSR rechnet ab dem Druck mit der
+  angegebenen Dauer (10 s). Wird eine der großen Abklingzeiten genau in dieser letzten Sekunde bereit, kommt sie bis zu
+  einer Sekunde später. Reassemble, Double Check und Checkmate wartet die Regel nicht ab: Der Guide nennt sie nicht, und
+  ein Drittel einer Ladung, das an der vollen Leiste verfällt (rund 60 Potenz je Aktion), wiegt weniger als der Kanal ab
+  drei Gegnern gewinnt. Auf zwei Gegnern mit nutzbarer Leiste wöge es mehr; dort liegen die Ladungen aber selten voll,
+  weil `MCH_Reborn` beide bei eingeschaltetem Burst bis zur letzten Ladung verschießt. Während des Kanals wartet auch die Automatenkönigin; Batterie verfällt dabei nicht, weil der
+  Kanal keine einbringt.
+- *Grenzen, bewusst hingenommen:* Der Halbwinkel des Kegels ist der, den die Zielwahl für alle Kegel nimmt (60°); das
+  Spiel nennt ihn nicht. Auf zwei Gegnern mit nutzbarer Leiste ist der Gewinn null – die Regel tauscht dort Gleiches
+  gegen Gleiches und gewinnt erst, wo die Leiste verfiele oder mehr Gegner stehen.
+
 **Weitere Punkte, gegen The Balance geprüft:**
 
 | Punkt | The Balance | RSR | Stand |
@@ -482,7 +525,7 @@ unter Stufe 68 Heat Blast an die von Blazing Shot.
 | Scattergun | ab 3 Gegnern | AoE-Zahl 3 | deckt sich |
 | Bioblaster | schlägt Drill ab 3, Air Anchor ab 4, nie Chain Saw/Excavator | vor Air Anchor, Drill, Excavator und Chain Saw, ab 3 Gegnern | Bei genau drei Gegnern und gleichzeitig bereitem Air Anchor kommt Bioblaster einen GCD früher. Beide fallen innerhalb zweier GCDs; gleich ist die Potenz, nur Air Anchor oder Chain Saw rückt einen GCD nach hinten. Die Grenze 4 hängt am Wert der Batterie, den kein Tooltip nennt (The Balance: 266 Potenz je 10 Batterie, Stand 7.3). Nicht gebaut |
 | Automatenkönigin | 60 im Opener, 90 nach einer Minute, danach 100 direkt nach Air Anchor in jedem Zwei-Minuten-Fenster | dieselben ersten beiden; danach ruft sie der Schutz gegen das Überlaufen der Batterie | Modell über zehn Minuten (24.10.2026): keine Batterie verloren, die Königinnen verlassen nach der zweiten Minute die Zwei-Minuten-Fenster. Ihr Schaden zieht aus keinem eigenen Buff des Maschinisten Nutzen (Wildfire zählt nur seine Waffenfertigkeiten); der Gewinn der Ausrichtung kommt allein aus den Buffs der anderen. Nach seiner Regel ist fremdes Verhalten kein tragender Grund – derselbe Schluss wie für Reassemble (Konzept 17). Nicht gebaut |
-| Flamethrower | Einsatzregel belegt | nicht gewirkt | TODO, „Six-sided Star und Flamethrower" |
+| Flamethrower | ab 2 Gegnern, wenn die Leiste nicht nutzbar ist; nie vor Hypercharge und den Werkzeugen; keine große Abklingzeit in den 11 s des Kanals | anstelle des Füllers, Einsatzregel oben | deckt sich bis auf die Länge des Fensters (A380) |
 
 ### AoE-Schwellen aller Jobs
 

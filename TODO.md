@@ -18,10 +18,11 @@ daraus gebaut (A359). Sein Auftrag vom 25.10.2026 abends wiederholt beide: das T
 Durchgang des Einstellungs-Audits, Rotationseinstellung für Rotationseinstellung. Seine Frage vom 25.10.2026 abends zur
 Abwehr ohne Heiler ist umgesetzt (A361), die Phönixfeder daraus ebenso (A372). Seine Frage
 vom 25.10.2026 abends zu Chorts Türmen und dem Glockenspiel ist beantwortet und umgesetzt (A365). Die Hilfe auf einen
-kleinen gemessenen Tankbuster ist gebaut, für Heiler und Tanks (A373), die Reflexion daraus ebenso (A374).
+kleinen gemessenen Tankbuster ist gebaut, für Heiler und Tanks (A373), die Reflexion daraus ebenso (A374). Sein Auftrag
+vom 26.10.2026 („todo nach priorität und umsetzbarkeit in loops abarbeiten") läuft: Flamethrower ist gebaut (A380).
 
 1. Rotationen gegen The Balance abgleichen
-2. Six-sided Star und Flamethrower
+2. Six-sided Star
 3. AoE-Schwelle an drei Orten
 4. Audit der gesamten Codebasis
 
@@ -45,11 +46,11 @@ die deutschen Namen gehören in `action_names_de.json`. Dabei je Job die Rotatio
 tragen (Leistenhöchststand, Restzeiten, Lieddauern), aus dem Spiel ableiten (Konzept 18, „Rotationseinstellungen").
 *Konzept:* 14, „Vergleich mit The Balance".
 
-### Six-sided Star und Flamethrower · N
+### Six-sided Star · N
 
-*Im Kampf:* Schaden. Werte und Einsatzregeln belegt (Job-Guide, The Balance, 02.10.2026), nicht gebaut. Six-sided Star
-braucht die vorhergesagte Pause oder die Zeit bis zum Tod; Flamethrower bindet 11 s an Ort und Blickrichtung, gegen
-seine Spielweise nur bei stehendem Rudel ohne angesagte Fläche. *Konzept:* 14, „Pausen und Phasenenden".
+*Im Kampf:* Schaden des Monks vor einer Pause oder dem Tod des Ziels. Wert und Einsatzregel belegt (Job-Guide, The
+Balance, 02.10.2026), nicht gebaut; braucht die vorhergesagte Pause oder die Zeit bis zum Tod. *Konzept:* 14, „Pausen
+und Phasenenden".
 
 ### AoE-Schwelle an drei Orten · R, U
 

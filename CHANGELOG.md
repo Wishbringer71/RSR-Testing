@@ -44,6 +44,21 @@ the player, every tankbuster aimed at a member is one he needs nothing for, and 
 A protected helper for healers: a single-target barrier with charges at its last charge goes onto the member an
 enemy is attacking, where none of its barrier stands, with a defence trace line.
 
+### Behaviour change in RotationSolver.Basic: actions aimed at the caster with a shape before him
+
+`ActionTargetInfo.IsSingleTarget` is false for an action the sheet types as aimed at the caster (cast type 1, range 0)
+with an effect range whose effect text names a cone or a straight line before him - Flamethrower and Apokalypsis. Such
+an action now takes the targeting of a cone or line cast from the player, counts the enemies before him against its
+AoE count and shows that count in the action settings. `BaseAction.CanUse` refuses every action but the safety paths
+and the player's own press while the player's Flamethrower channel reaches an enemy (`KeepsTheFlamethrowerChannel`),
+and a tincture waits the same way.
+
+### Addition to RotationSolver.Basic: `MachinistRotation.FlamethrowerFits`
+
+A protected helper for Machinist rotations: whether Flamethrower beats the filler now by The Balance's rule - no tool,
+Wildfire, Barrel Stabilizer or Hypercharge comes ready during the channel, the pack stands and lives through it. The
+default AoE count of Flamethrower is 2 (was 6).
+
 ## 7.5.7.8+wsh1
 
 ### Dependency of RotationSolver.Basic: RebornMaterial 7.5.7.0

@@ -11179,6 +11179,52 @@ bearbeitet ist und in seinen Protokollen gespielt wird.
 
 *Prüfgrad:* Code, Quellen; im Spiel nicht beobachtet.
 
+### A380 · Flamethrower gebaut; die Zielwahl selbstgezielter Kegel (26.10.2026)
+
+- *Auftrag:* seiner vom 26.10.2026, „todo nach priorität und umsetzbarkeit in loops abarbeiten"; TODO „Six-sided Star und
+  Flamethrower", der Maschinist liegt in seinem Profil vorn.
+- *Quellen:* Job-Guide (na./de., abgerufen 26.10.2026): 120 Potenz, 10 s, „im Sekundentakt" nur im deutschen Text,
+  Kegel 12 Yalm, endet bei jeder Aktion, Bewegung, Drehung. The Balance, Machinist Basic Guide: „If gauge is not usable,
+  beats filler on 2+", „Beats Air Anchor (incl. battery) on 6+", „Never beats Hypercharge, Chain Saw/Excavator,
+  Drill/Bio", „Ensure that none of your other major cooldowns (Barrel Stabilizer, Wildfire, Chainsaw, and Air Anchor)
+  will become available for the 11 seconds you plan to channel." „Gauge is not usable" definiert die Seite nicht.
+  xivapi: Zeile 7418 `CastType` 1, `Range` 0, `EffectRange` 12, `CanTargetSelf`.
+- *Befund, Defekt:* `ActionTargetInfo.IsSingleTarget` (= `CastType` 1) schickte Flamethrower auf den Einzelzielweg: Ziel
+  in 0 Yalm gesucht, keins gefunden, AoE-Zahl übergangen und in der Oberfläche ausgeblendet. Klasse über alle
+  Spieleraktionen erhoben (xivapi-Suche `Range=0 EffectRange>0 CastType=1 IsPlayerAction`): Flamethrower und Apokalypsis
+  (Blaumagier, Linie). Behoben an der Konstruktion: Für diese Form liest die Zielwahl die Gestalt aus dem Wirktext
+  (`ActionTooltip.StatedShapeBeforeYou`) und nimmt den Weg der selbstgeworfenen Kegel und Linien mit Blickrichtungsfilter.
+- *Modell:* `machinist_balance_model.py`, Teil 3, mit Selbsttest. Je GCD-Zeit: Flamethrower 300 je Gegner; Füller 320
+  (Heated-Kombination, 1–2 Gegner) bzw. 130 je Gegner (Scattergun, ab 3); mit dem Wert von Heat (50 Heat = fünf Blazing
+  Shots oder Auto Crossbow statt drei Füller-GCDs) und Batterie (266 je 10, The Balance): 533, 596, 848 auf 1, 2, 3
+  Gegnern. Ergebnis: auf einem Gegner nie, auf zwei ohne Leistenwert weit vorn und mit ihm gleichauf, ab drei vorn.
+  Beide Lesarten von „gauge is not usable" führen auf die AoE-Zahl 2; Ausnahme in `fixed_values.json`.
+- *Gebaut:* `MachinistRotation.FlamethrowerFits` (Basis, für jede Maschinisten-Rotation), gelesen von `MCH_Reborn`
+  vor dem Füller hinter der Option „Use Flamethrower on a pack that stands still" (ab Werk an: eigene Grundlage, nicht
+  an „Lay damage areas only where the enemies stay" gehängt); AoE-Zahl 6 → 2. Während des Kanals verweigert
+  `BaseAction.CanUse` jede Aktion außer den Sicherheitswegen und dem Druck des Spielers (`SafetyMayEndAChannel`),
+  `MedicineItem` den Trank. Erkennung `DataCenter.FlamethrowerChannelRunning`, je Frame gerechnet, Gegner im Kegel über
+  `ActionTargetInfo.HostileInFacingCone` (derselbe Kegeltest wie die Zielwahl); eine Zeile in `DefenseTrace.log` je Ende
+  mit Laufzeit, letzter Aktion und Bewegung.
+- *Verworfen:* Reassemble, Double Check und Checkmate an der vollen Ladung abwarten – der Guide nennt sie nicht, ein
+  Drittel Ladung (rund 60 Potenz je Aktion) wiegt weniger als der Gewinn ab drei Gegnern, und mit Burst an verschießt
+  `MCH_Reborn` beide bis zur letzten Ladung. Die Zahl 11 s des Guides – ohne Herleitung; RSR nimmt die Dauer aus dem
+  Tooltip ab dem Druck. Die Erkennung als universelle Kanalsperre für alle Kanäle – Meditate, Improvisation, Passage of
+  Arms und Collective Unconscious verlangen je eine andere Entscheidung (Konzept 14, Kanäle).
+- *Falsifikation:* (1) Kein Defekt? Widerlegt: Ohne Ziel war die Aktion unerreichbar. (2) Option falsch? Auf zwei
+  Gegnern mit nutzbarer Leiste tauscht sie Gleiches gegen Gleiches; Schaden entsteht dort nur, wenn Double Check und
+  Checkmate voll liegen – mit Burst an selten. Positionsrisiko: Die Sperre hält nur RSRs eigene Aktionen, nicht seine
+  Bewegung (außer mit „Lock movement while casting"), Sicherheitswege gehen durch. (3) Ausgeliefert, nichts ändert sich?
+  Möglich, wo stets ein Gegner einen Flächenangriff wirkt, das Rudel nie zwei GCDs steht oder Werkzeuge dicht liegen;
+  dann fällt die Regel aus, ohne zu schaden. Ob die Zielwahl im Spiel den Kegel trifft, zeigt `DefenseTrace.log` über
+  die Laufzeit jedes Kanals.
+- *Betroffen:* Endnutzer (Maschinist, Gruppeninhalte); Autoren abgeleiteter Rotationen: `IsSingleTarget` ist für
+  Flamethrower und Apokalypsis jetzt falsch, `FlamethrowerFits` neu; BLU-Rotationen, die Apokalypsis riefen, fänden
+  jetzt ein Ziel (im Repository ruft keine sie). Das Maschinisten-Modell (Teil 1, ein Gegner) bleibt richtig: Auf
+  einem Gegner fällt Flamethrower nie.
+
+*Prüfgrad:* Code, Quellen, Modell mit Selbsttest, Compile; im Spiel nicht beobachtet.
+
 ---
 ## B · Commit-Register (Fork vs. `upstream/main`)
 

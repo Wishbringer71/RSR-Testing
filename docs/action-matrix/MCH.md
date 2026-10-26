@@ -1,6 +1,6 @@
 # MCH — Abhängigkeitsmatrix
 
-Erzeugt von `.github/scripts/audit/generate_action_matrix.py` am 2026-10-22; nicht von Hand bearbeiten. Methode und Grenzen: `docs/rotation-flow/14-action-dependency-matrix.md`.
+Erzeugt von `.github/scripts/audit/generate_action_matrix.py` am 2026-10-26; nicht von Hand bearbeiten. Methode und Grenzen: `docs/rotation-flow/14-action-dependency-matrix.md`.
 
 - Basisrotation: `MachinistRotation`
 - Rotation: `RotationSolver/RebornRotations/Ranged/MCH_Reborn.cs`
@@ -8,7 +8,7 @@ Erzeugt von `.github/scripts/audit/generate_action_matrix.py` am 2026-10-22; nic
 
 ## Nutzung
 
-direkt: 36 · ungenutzt: 9 · über andere Aktion: 1
+direkt: 37 · ungenutzt: 8 · über andere Aktion: 1
 
 | Stufe | Aktion | Id | Art | Nutzung |
 |---|---|---|---|---|
@@ -35,7 +35,7 @@ direkt: 36 · ungenutzt: 9 · über andere Aktion: 1
 | Job | Double Check (`DoubleCheckPvE`) | 36979 | Ability | direkt |
 | Job | Drill (`DrillPvE`) | 16498 | Weaponskill | direkt |
 | Job | Excavator (`ExcavatorPvE`) | 36981 | Weaponskill | direkt |
-| Job | Flamethrower (`FlamethrowerPvE`) | 7418 | Ability | ungenutzt |
+| Job | Flamethrower (`FlamethrowerPvE`) | 7418 | Ability | direkt |
 | Job | Full Metal Field (`FullMetalFieldPvE`) | 36982 | Weaponskill | direkt |
 | Job | Gauss Round (`GaussRoundPvE`) | 2874 | Ability | direkt |
 | Job | Heat Blast (`HeatBlastPvE`) | 7410 | Weaponskill | direkt |
@@ -148,6 +148,8 @@ direkt: 36 · ungenutzt: 9 · über andere Aktion: 1
 | Excavator | Regel sperrt vorher | Heat Blast |
 | Excavator | Regel sperrt vorher | Hypercharge |
 | Excavator | Regel prüft | Wildfire |
+| Flamethrower | Regel sperrt vorher | Heat Blast |
+| Flamethrower | Regel sperrt vorher | Hypercharge |
 | Full Metal Field | Regel prüft | Air Anchor |
 | Full Metal Field | Regel prüft | Chain Saw |
 | Full Metal Field | Regel prüft | Drill |
@@ -264,7 +266,6 @@ Maschinelle Liste; die Bewertung je Eintrag steht im Konzept.
 - Arm Punch (`ArmPunchPvE`, Weaponskill): ungenutzt — nicht zuweisbar: Begleiter oder Automatik
 - Crowned Collider (`CrownedColliderPvE`, Ability): ungenutzt — nicht zuweisbar: Begleiter oder Automatik
 - Detonator (`DetonatorPvE`, Ability): ungenutzt — Knopfwechsel über Wildfire gesperrt: deren StatusProvide enthält Wildfire (außer in den letzten StatusRefreshGcdCount GCDs des Status oder mit ShouldCheckStatus aus)
-- Flamethrower (`FlamethrowerPvE`, Ability): ungenutzt
 - Foot Graze (`FootGrazePvE`, Ability): ungenutzt
 - Leg Graze (`LegGrazePvE`, Ability): ungenutzt
 - Pile Bunker (`PileBunkerPvE`, Ability): ungenutzt — nicht zuweisbar: Begleiter oder Automatik

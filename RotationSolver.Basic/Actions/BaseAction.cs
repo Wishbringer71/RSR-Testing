@@ -286,6 +286,14 @@ public class BaseAction : IBaseAction
 			return ActionTracer.Reject(this, "NoTankbusterHereNeedsIt");
 		}
 
+		// While the Flamethrower channel runs, any other action ends it (effect text). What a safety path asks for - a
+		// heal, the defence, an interrupt, a cleanse, a raise, a provoke, a knockback guard - and what the player presses
+		// still go: the channel is damage, and safety comes first (A380).
+		if (DataCenter.FlamethrowerChannelRunning && !IBaseAction.ForceEnable && !SafetyMayEndAChannel(ID))
+		{
+			return ActionTracer.Reject(this, "KeepsTheFlamethrowerChannel");
+		}
+
 		// While the tankbuster plan or an invulnerability makes it unneeded, no rated defence aimed at the
 		// player goes out beyond what the plan spends - own mitigation, own barrier, Reprisal around him
 		// alike - from whichever path the rotation spends it. Help aimed at another member stays free, so do
@@ -422,5 +430,16 @@ public class BaseAction : IBaseAction
 	public override string ToString()
 	{
 		return Name;
+	}
+
+	// The paths that answer a safety call, and the player's own press: they may end a damage channel (A380).
+	private static bool SafetyMayEndAChannel(uint id)
+	{
+		return IBaseAction.HealPathRunning || IBaseAction.AreaDefenceRunning || IBaseAction.CommandedDefenceRunning
+			|| IBaseAction.SelfProtectionHitsMe != null
+			|| IBaseAction.TargetOverride is TargetType.Interrupt or TargetType.Dispel or TargetType.Heal or TargetType.BeAttacked
+				or TargetType.Death or TargetType.Provoke or TargetType.TankSwap
+			|| DataCenter.MergedStatus.HasFlag(AutoStatus.AntiKnockback)
+			|| DataCenter.CommandNextAction?.ID == id;
 	}
 }

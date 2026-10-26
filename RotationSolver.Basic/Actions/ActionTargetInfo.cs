@@ -34,7 +34,14 @@ public struct ActionTargetInfo(IBaseAction action)
 	/// <summary>
 	/// Is this action single target.
 	/// </summary>
-	public readonly bool IsSingleTarget => action.Action.CastType == 1;
+	public readonly bool IsSingleTarget => action.Action.CastType == 1 && SelfAimedShape == null;
+
+	// A channel aimed by the player's facing - Flamethrower, Apokalypsis - is typed in the sheet as aimed at the caster
+	// (cast type 1, range 0, an effect range); its effect text names the shape before him. Read only for that form (A380).
+	private readonly CastType? SelfAimedShape => action.Action.CastType == 1 && action.Action.EffectRange > 0
+		&& action.Action.CanTargetSelf && Range == 0
+		? ActionTooltip.StatedShapeBeforeYou(action.Info.ID)
+		: null;
 	/// <summary>
 	/// Is this action target area.
 	/// </summary>
@@ -1543,7 +1550,7 @@ public struct ActionTargetInfo(IBaseAction action)
 			return candidates;
 		}
 
-		var castType = (CastType)action.Action.CastType;
+		var castType = SelfAimedShape ?? (CastType)action.Action.CastType;
 		if (castType != CastType.Cone && castType != CastType.StraightLine && castType != CastType.Donut)
 		{
 			return candidates; // Circle is omnidirectional with no inner exclusion — pass through unfiltered.
@@ -1568,8 +1575,7 @@ public struct ActionTargetInfo(IBaseAction action)
 			if (castType == CastType.Cone)
 			{
 				// Use the same cone half-angle (_alpha = π/3) as GetCanTarget
-				var cos = Vector3.Dot(faceVec, toTarget / dist);
-				if (cos >= (float)Math.Cos(_alpha))
+				if (InFacingCone(faceVec, toTarget / dist))
 				{
 					result.Add(t);
 				}
@@ -1745,6 +1751,46 @@ public struct ActionTargetInfo(IBaseAction action)
 	}
 
 	private const double _alpha = Math.PI / 3;
+
+	// The cone test of a cone cast from the player: the direction to the enemy, flat and unit length, lies within the
+	// half-angle of his facing.
+	private static bool InFacingCone(Vector3 faceVec, Vector3 toTargetUnit)
+	{
+		return Vector3.Dot(faceVec, toTargetUnit) >= (float)Math.Cos(_alpha);
+	}
+
+	/// <summary>
+	/// Whether a hostile stands within <paramref name="range"/> of the player and in the cone before him, as the targeting
+	/// of a cone cast from the player counts it - for a running channel that still reaches someone (A380).
+	/// </summary>
+	internal static bool HostileInFacingCone(float range)
+	{
+		if (Player.Object is not { } player)
+		{
+			return false;
+		}
+
+		var faceVec = Vector3.Normalize(player.GetFaceVector());
+		faceVec.Y = 0;
+		var hostiles = DataCenter.AllHostileTargets;
+		for (var i = 0; i < hostiles.Count; i++)
+		{
+			if (hostiles[i] is not { } h || h.DistanceToPlayer() > range)
+			{
+				continue;
+			}
+
+			var toTarget = h.Position - player.Position;
+			toTarget.Y = 0;
+			var dist = toTarget.Length();
+			if (dist == 0 || InFacingCone(faceVec, toTarget / dist))
+			{
+				return true;
+			}
+		}
+
+		return false;
+	}
 	/// <summary>
 	/// Determines if the sub-target can be targeted based on the specified criteria.
 	/// </summary>

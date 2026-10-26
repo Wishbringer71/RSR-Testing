@@ -26,6 +26,9 @@ public sealed class MCH_Reborn : MachinistRotation
 
 	[RotationConfig(CombatType.PvE, Name = "BMR: Dump Heat before downtime (Experimental)")]
 	public bool BmrDumpBeforeDowntime { get; set; } = true;
+
+	[RotationConfig(CombatType.PvE, Name = "Use Flamethrower on a pack that stands still", Tooltip = "In a fight: Flamethrower goes in place of the filler when it hits as many enemies as its AoE count, the pack has stopped moving, no enemy casts an area attack, Hypercharge is not available, no tool, Wildfire or Barrel Stabilizer comes ready and Drill does not fill up during the channel, and the pack lives through it where its time to kill is known. Moving, turning or any other action ends the channel; meanwhile RSR keeps its own actions back, except heals, defence, interrupts, cleanses, raises, provokes and what you press. Off: RSR never uses it.")]
+	public bool UseFlamethrower { get; set; } = true;
 	#endregion
 
 	#region Countdown logic
@@ -507,6 +510,13 @@ public sealed class MCH_Reborn : MachinistRotation
 			{
 				return true;
 			}
+		}
+
+		// Flamethrower in place of the filler, on a pack that stands (A380)
+		if (UseFlamethrower && FlamethrowerFits(wildfireHeld: WildfireBoss && !(CurrentTarget?.IsBossFromIcon() ?? false))
+			&& FlamethrowerPvE.CanUse(out act))
+		{
+			return true;
 		}
 
 		// 1 AOE

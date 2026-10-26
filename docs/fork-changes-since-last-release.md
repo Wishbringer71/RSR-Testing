@@ -35,3 +35,12 @@ Balance's Summoner guide describes.
 Divine Benison and Celestial Intersection used to wait at both charges while nobody was in danger, with their recharge
 standing still. A charge at the cap now goes onto the member an enemy is attacking, where none of its barrier stands;
 the second charge stays for the next danger. The Balance's White Mage guide recommends exactly this.
+
+## Machinist: Flamethrower on a pack that stands still
+
+RSR never used Flamethrower: its targeting took the action for a single-target one aimed at nobody. With "Use
+Flamethrower on a pack that stands still" (on by default) it now goes in place of the filler when at least two enemies
+stand in the cone before you (its AoE count, which the action settings now show), the pack has stopped moving, no enemy
+casts an area attack, Hypercharge is not available, and no tool, Wildfire or Barrel Stabilizer comes ready during the
+ten seconds - The Balance's rule. While it channels, RSR keeps its own actions and medicine back so as not to end it;
+heals, defence, interrupts, cleanses, raises, provokes and what you press still go. Moving or turning ends it as before.

@@ -136,6 +136,19 @@ internal static class ActionTooltip
 	}
 
 	/// <summary>
+	/// The shape before the player that the text of <paramref name="actionId"/> names - "in a cone before you", "in a
+	/// straight line before you" - for an action the sheet types as aimed at the caster, as Flamethrower and Apokalypsis
+	/// are; null when it names neither (A380).
+	/// </summary>
+	public static CastType? StatedShapeBeforeYou(uint actionId)
+	{
+		var text = Text(actionId);
+		return text.Contains("in a cone before you", StringComparison.Ordinal) ? CastType.Cone
+			: text.Contains("in a straight line before you", StringComparison.Ordinal) ? CastType.StraightLine
+			: null;
+	}
+
+	/// <summary>
 	/// The first "Duration" the text of <paramref name="actionId"/> states, in seconds; false when it states none.
 	/// </summary>
 	public static bool TryStatedDuration(uint actionId, out float seconds)

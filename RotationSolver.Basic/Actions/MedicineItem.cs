@@ -55,5 +55,7 @@ internal class MedicineItem : BaseItem
 		};
 	}
 
-	protected override bool CanUseThis => DataCenter.CurrentTinctureUseType == TinctureUseType.Anywhere || (DataCenter.CurrentTinctureUseType == TinctureUseType.InHighEndDuty && (DataCenter.Territory?.IsHighEndDuty ?? false));
+	// A tincture is used like an action and would end a running Flamethrower channel (A380).
+	protected override bool CanUseThis => !DataCenter.FlamethrowerChannelRunning
+		&& (DataCenter.CurrentTinctureUseType == TinctureUseType.Anywhere || (DataCenter.CurrentTinctureUseType == TinctureUseType.InHighEndDuty && (DataCenter.Territory?.IsHighEndDuty ?? false)));
 }

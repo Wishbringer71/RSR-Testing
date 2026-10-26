@@ -3476,6 +3476,50 @@ internal static class DataCenter
 	}
 
 	/// <summary>
+	/// Whether the player's Flamethrower channel runs and still reaches an enemy: its status stands on him, he stands
+	/// still, and a hostile is within the action's range in the cone before him. "Effect ends upon using another action or moving (including
+	/// facing a different direction)" (its effect text), so whatever reads this keeps other actions back (A380).
+	/// </summary>
+	/// <remarks>
+	/// Recognition only. Read by every action's check, so computed once per frame. Writes one trace line when a channel
+	/// ends, with how long it ran and the last action, so a channel cut short shows.
+	/// </remarks>
+	internal static bool FlamethrowerChannelRunning => _flamethrowerChannelRunning.Value;
+
+	private static readonly FrameCached<bool> _flamethrowerChannelRunning = new(ReadFlamethrowerChannel);
+
+	private static bool ReadFlamethrowerChannel()
+	{
+		var channel = Player.Object != null && StatusHelper.PlayerHasStatus(true, StatusID.Flamethrower);
+		var now = DateTime.Now;
+		if (channel)
+		{
+			if (_flamethrowerSince == DateTime.MinValue)
+			{
+				_flamethrowerSince = now;
+			}
+
+			_flamethrowerSeen = now;
+		}
+		else if (_flamethrowerSince != DateTime.MinValue)
+		{
+			DefenseTrace.Line($"flamethrower ended after {(_flamethrowerSeen - _flamethrowerSince).TotalSeconds:F1} s | last action {LastAction} | moving {IsMoving}");
+			_flamethrowerSince = DateTime.MinValue;
+		}
+
+		if (!channel || IsMoving)
+		{
+			return false;
+		}
+
+		var range = Service.GetSheet<Action>().GetRowOrDefault((uint)ActionID.FlamethrowerPvE)?.EffectRange ?? 0;
+		return ActionTargetInfo.HostileInFacingCone(range);
+	}
+
+	private static DateTime _flamethrowerSince = DateTime.MinValue;
+	private static DateTime _flamethrowerSeen = DateTime.MinValue;
+
+	/// <summary>
 	/// What the one tankbuster aimed at <paramref name="member"/> takes and leaves him, by the tankbuster table, as shares
 	/// of his maximum HP: <paramref name="share"/> under the mitigation that still stands at the hit
 	/// (<see cref="TankbusterTable.PredictedShare"/>), <paramref name="left"/> his HP now plus the barriers that still
