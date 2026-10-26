@@ -716,7 +716,9 @@ die maximalen LP ohne Erhöhung umgerechnet.
 In allen diesen Fällen fällt der ungeminderte Wert zu klein aus, und jeder spätere Treffer kann ihn nur anheben. Ein
 zu kleiner Wert heißt **seit dem Tankbuster-Plan nicht mehr** „das Verhalten ohne Tabelle": Der Plan wählt ein zu
 kleines Bündel und hält mit „Spend only …" den Rest zurück – der Tank nimmt den Treffer mit weniger, als die alte
-Abwehr gedrückt hätte (Konzept 09, „Gemessener Tankbuster: das geringste Mittel", Grenzen). Der erste Treffer einer Aktion hat
+Abwehr gedrückt hätte (Konzept 09, „Gemessener Tankbuster: das geringste Mittel", Grenzen). Unter derselben Option
+bleibt die Hilfe von Heilern und anderen Tanks aus, wo der Wert unter einem großen Schild liegt und ihn über der
+Einzelheil-Schwelle lässt (Konzept 09, „Hilfe für das Ziel eines Tankbusters", A373). Der erste Treffer einer Aktion hat
 keinen Wert.
 
 **Nach oben ausgeschlossen:** ein Treffer eines gestärkten Angreifers. Trägt er `DamageUp`, `PhysicalDamageUp` oder

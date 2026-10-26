@@ -25,8 +25,9 @@ namespace RotationSolver.Basic.Helpers;
 /// here. An underestimate means a defensive that does not fire - the behaviour before the table.</para>
 ///
 /// <para>Detection only: nothing here decides. Readers are the tank swap
-/// (<see cref="TankSwapWatch"/>) for "would a repeat kill", and <see cref="TankbusterForecast"/> for
-/// "what does the coming hit take".</para>
+/// (<see cref="TankSwapWatch"/>) for "would a repeat kill", <see cref="TankbusterForecast"/> for
+/// "what does the coming hit take", and <see cref="DataCenter.AimedTankbusterLeaves"/> for the same question about
+/// another member, whom help from others is for (A373).</para>
 /// </remarks>
 internal static class TankbusterTable
 {
