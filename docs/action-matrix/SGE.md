@@ -1,6 +1,6 @@
 # SGE — Abhängigkeitsmatrix
 
-Erzeugt von `.github/scripts/audit/generate_action_matrix.py` am 2026-10-22; nicht von Hand bearbeiten. Methode und Grenzen: `docs/rotation-flow/14-action-dependency-matrix.md`.
+Erzeugt von `.github/scripts/audit/generate_action_matrix.py` am 2026-10-26; nicht von Hand bearbeiten. Methode und Grenzen: `docs/rotation-flow/14-action-dependency-matrix.md`.
 
 - Basisrotation: `SageRotation`
 - Rotation: `RotationSolver/RebornRotations/Healer/SGE_Reborn.cs`
@@ -102,6 +102,7 @@ direkt: 40 · ungenutzt: 2 · über andere Aktion: 5
 | Aktion | Beziehung | zu |
 |---|---|---|
 | Druochole | Regel prüft | Taurochole |
+| Druochole | Regel sperrt vorher | Taurochole |
 | Dyskrasia | Regel prüft | Eukrasian Dosis II |
 | Dyskrasia | Regel prüft | Eukrasian Dosis III |
 | Dyskrasia | Regel prüft | Eukrasian Dosis |
@@ -126,12 +127,15 @@ direkt: 40 · ungenutzt: 2 · über andere Aktion: 5
 | Eukrasian Dyskrasia | Regel prüft | Eukrasian Dosis III |
 | Eukrasian Dyskrasia | Regel prüft | Eukrasian Dosis |
 | Eukrasian Prognosis | Regel prüft | Eukrasian Prognosis II |
+| Haima | Regel sperrt vorher | Taurochole |
+| Holos | Regel sperrt vorher | Taurochole |
 | Kerachole | Regel prüft | Taurochole |
 | Krasis | Regel prüft | Diagnosis |
 | Krasis | Regel prüft | Eukrasian Diagnosis |
 | Krasis | Regel prüft | Pneuma |
 | Krasis | Regel prüft | Prognosis |
 | Panhaima | Regel prüft | Haima |
+| Panhaima | Regel sperrt vorher | Taurochole |
 | Pepsis | StatusNeed EukrasianPrognosis | Eukrasian Prognosis II |
 | Pepsis | StatusNeed EukrasianPrognosis | Eukrasian Prognosis |
 | Philosophia | Regel prüft | Diagnosis |
@@ -140,8 +144,11 @@ direkt: 40 · ungenutzt: 2 · über andere Aktion: 5
 | Philosophia | Regel prüft | Pneuma |
 | Philosophia | Regel prüft | Prognosis |
 | Physis II | Regel prüft | Panhaima |
+| Physis II | Regel sperrt vorher | Taurochole |
 | Physis | Regel prüft | Physis II |
+| Physis | Regel sperrt vorher | Taurochole |
 | Pneuma | Regel prüft | Dyskrasia |
+| Soteria | Regel sperrt vorher | Taurochole |
 | Zoe | Regel prüft | Eukrasia |
 | Zoe | Regel prüft | Eukrasian Diagnosis |
 | Zoe | Regel prüft | Eukrasian Prognosis II |

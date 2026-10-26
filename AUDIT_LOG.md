@@ -11782,6 +11782,28 @@ bis zum Tod, auf der die Rückhaltung urteilt.
 
 *Prüfgrad:* statisch, Compile, Prüfskripte; im Spiel nicht beobachtet.
 
+### A405 · Weiser: Taurochole, für Gefahr zurückgehalten, hielt Druochole mit (26.10.2026)
+
+- *Gelesen:* `SGE_Reborn` vollständig (Einstellungen, Countdown, Fähigkeiten, Eukrasia-Wahl und -Ausführung, GCDs).
+- *Klassensuche nach A403:* jede Stelle, an der eine kleinere Heilung auf die Gefahrenbindung einer größeren wartet
+  (A180: Benediction, Excogitation, Taurochole, letzte Ladung Essential Dignity). Weißmagier und Gelehrter: die
+  folgenden Heilungen sind unabhängig. Astrologe: A403. Weiser: Druochole fragte `Taurochole.Cooldown.IsCoolingDown`.
+- *Befund (Defekt, durch A180):* Mit Taurochole bereit und für Gefahr zurückgehalten (`TaurocholeNeedsThreat`, ab Werk
+  an) lief weder Taurochole noch Druochole – die kleinere Heilung wartete auf eine größere, die nicht kam.
+- *Wirkung im Kampf:* Ein Mitglied, das nach einem Raidwide bei 30 % steht und gerade nichts abbekommt, bekam vom Weisen
+  keine Fähigkeitsheilung – Soteria nur über Kardia, die Tankstufe nur für Tanks –, und mit „Use GCDs to heal" aus (ab
+  Werk) und lebendem zweitem Heiler auch keine GCD-Heilung. Der Text der Gefahrenbindung verspricht ihm „the smaller
+  heals".
+- *Behebung:* Druochole geht auch, wenn Taurochole bereit war und nur für Gefahr zurückgehalten wurde.
+- *Preis:* Druochole kostet einen Addersgall-Stapel, den auch Taurochole braucht. Steht nur einer, fehlt er Taurochole
+  bis zum nächsten (Wirktext: Druochole und Taurochole kosten je einen Stapel); Haima und Holos bleiben für den Tank. Die Gefahrenbindung soll
+  die Abklingzeit von Taurochole schützen, die bleibt unberührt.
+- *Falsifikation:* kein Defekt – widerlegt, kein anderer Fähigkeitspfad heilt das Ziel; Option falsch – mit Gefahr
+  geht Taurochole wie zuvor zuerst; ausgeliefert und nichts ändert sich – mit der Gefahrenbindung aus zutreffend.
+- *Dokumentation:* Konzepte 07, 19; Release-Text.
+
+*Prüfgrad:* statisch, Compile, Prüfskripte; im Spiel nicht beobachtet.
+
 ---
 ## B · Commit-Register (Fork vs. `upstream/main`)
 

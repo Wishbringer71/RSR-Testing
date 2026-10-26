@@ -132,3 +132,9 @@ the Astrologian at all. GCD heals now wait only while Essential Dignity can actu
 
 With "Prioritize Microcosmos over all other healing when available" on, Oracle and the potion before Divination were
 held together with the heals while Macrocosmos ran, and the potion missed that burst. Only heals wait now.
+
+## Sage: Druochole when Taurochole waits for danger
+
+With "Taurochole as a heal only on a target in danger" on (the default), a low member with nothing hitting him got
+neither Taurochole nor Druochole, because Druochole only came once Taurochole was on cooldown. Druochole now goes
+instead, as the option describes.

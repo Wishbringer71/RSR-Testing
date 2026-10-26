@@ -390,12 +390,21 @@ public sealed class SGE_Reborn : SageRotation
 			}
 		}
 
-		if (TaurocholePvE.CanUse(out act) && (!TaurocholeNeedsThreat || TaurocholePvE.Target.Target.IsUnderThreat()))
+		var taurocholeHeld = false;
+		if (TaurocholePvE.CanUse(out act))
 		{
-			return true;
+			if (!TaurocholeNeedsThreat || TaurocholePvE.Target.Target.IsUnderThreat())
+			{
+				return true;
+			}
+
+			taurocholeHeld = true;
 		}
 
-		if ((!TaurocholePvE.EnoughLevel || TaurocholePvE.Cooldown.IsCoolingDown) && DruocholePvE.CanUse(out act))
+		// Druochole waits for Taurochole while that can go. Held for want of danger, Taurochole kept Druochole back too, and
+		// the target got no heal from the sage where "Taurochole as a heal only on a target in danger" gives him the
+		// smaller heals (A405).
+		if ((!TaurocholePvE.EnoughLevel || TaurocholePvE.Cooldown.IsCoolingDown || taurocholeHeld) && DruocholePvE.CanUse(out act))
 		{
 			return true;
 		}
