@@ -172,6 +172,39 @@ public partial class MonkRotation
 	/// </summary>
 	public static bool HasBrotherhood => StatusHelper.PlayerHasStatus(true, StatusID.Brotherhood);
 
+	/// <summary>
+	/// The stacks Perfect Balance grants, from the game's status sheet; zero when the sheet does not say.
+	/// </summary>
+	public static byte PerfectBalanceMaxStacks => _perfectBalanceMaxStacks ??=
+		Service.GetSheet<Lumina.Excel.Sheets.Status>().TryGetRow((uint)StatusID.PerfectBalance, out var row)
+			? row.MaxStacks : (byte)0;
+
+	private static byte? _perfectBalanceMaxStacks;
+
+	/// <summary>
+	/// Whether Riddle of Fire comes off cooldown after the current weave window, and in time to be woven before the
+	/// Masterful Blitz of a Perfect Balance pressed now - the weaponskill after its stacks. Pressed then, the Blitz lands
+	/// under Riddle of Fire, and Perfect Balance does not share its weave window with Riddle of Fire: The Balance's
+	/// "3 to 1 gcd range before RoF" (Monk Openers, 7.4). Weaving stops <see cref="DataCenter.CalculatedActionAhead"/>
+	/// before a weaponskill (<see cref="CustomRotation.EnoughWeaveTime"/>); the recast is counted from the next
+	/// weaponskill (<see cref="ActionCooldownInfo.RecastTimeRemainOneCharge"/>). False below the level of Riddle of
+	/// Fire and while the sheet gives no stacks (A412).
+	/// </summary>
+	public bool RiddleOfFireDueWithinPerfectBalance
+	{
+		get
+		{
+			if (!RiddleOfFirePvE.EnoughLevel || PerfectBalanceMaxStacks == 0)
+			{
+				return false;
+			}
+
+			var lastWeave = DataCenter.CalculatedActionAhead;
+			return !RiddleOfFirePvE.Cooldown.WillHaveOneCharge(-lastWeave)
+				&& RiddleOfFirePvE.Cooldown.WillHaveOneCharge(GCDTime(PerfectBalanceMaxStacks) - lastWeave);
+		}
+	}
+
 	#endregion
 
 	#region PvE Actions Unassignable
@@ -493,9 +526,11 @@ public partial class MonkRotation
 		};
 	}
 
+	// No chakra needed: the game charges none for it (Action sheet, row 16476: no chakra cost, where The Forbidden Chakra
+	// costs five) and each open one only adds potency (A413).
 	static partial void ModifySixsidedStarPvE(ref ActionSetting setting)
 	{
-		setting.ActionCheck = () => InCombat && Chakra >= 1;
+		setting.ActionCheck = () => InCombat;
 		setting.StatusProvide = [StatusID.SixsidedStar];
 	}
 

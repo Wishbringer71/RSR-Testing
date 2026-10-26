@@ -1740,6 +1740,29 @@ public partial class CustomRotation
 		=> Service.Config.UseBmrTimeline && BMRActive && BMRDowntimeIn is > 0f and < float.MaxValue && BMRDowntimeIn <= seconds;
 
 	/// <summary>
+	/// Whether the weaponskill chosen now is the last one that lands on the current target: the one after it could begin
+	/// only once the target has died - by its time to kill, corrected by how wrong the forecast has been lately, and only
+	/// while it is the last hostile in range, since another one there takes the next hit - or once the downtime
+	/// BossModReborn's timeline predicts has begun (<see cref="BMRDowntimeWithin"/>). Without that timeline a downtime is
+	/// known only when it has begun, too late for this (A413).
+	/// </summary>
+	public static bool LastWeaponskillOnTarget
+	{
+		get
+		{
+			var nextBegins = WeaponRemain;
+			var oneAfter = WeaponRemain + WeaponTotal;
+			if (BMRDowntimeWithin(oneAfter) && BMRDowntimeIn > nextBegins)
+			{
+				return true;
+			}
+
+			var ttk = CurrentTarget is { } target && NumberOfHostilesInRange <= 1 ? target.GetCorrectedTTK() : float.NaN;
+			return !float.IsNaN(ttk) && ttk > nextBegins && ttk <= oneAfter;
+		}
+	}
+
+	/// <summary>
 	/// True when BMR reports a vulnerability window within the specified seconds.
 	/// Always false when BMR is inactive, or when the user has UseBmrTimeline disabled.
 	/// </summary>

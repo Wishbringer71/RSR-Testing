@@ -19,10 +19,11 @@ Selbsttest gegen konstruierte Texte und konstruierten Code; `--check` meldet ver
 läuft in der CI.
 
 **Jede Kampfaktion, die ein Spieler auslösen kann und die ohne Sonderlage Schaden, Heilung oder
-Schutz bringt, hat in den Standardrotationen einen Aufruf — außer Six-sided Star.**
+Schutz bringt, hat in den Standardrotationen einen Aufruf.**
 Ob ein Aufruf erreicht wird — hinter welcher Einstellung, auf welcher Stufe, in welcher Lage —, sagt
 die Matrix nicht (Grenzen). Was maschinell nicht als gewirkt erscheint („ungenutzt" oder „nur
-gelesen"), zerfällt in sechs Klassen (Stand der erzeugten Dateien: 01.10.2026):
+gelesen"), zerfällt in fünf Klassen (Stand der erzeugten Dateien: 01.10.2026; Six-sided Star hat seit A413 einen
+Aufruf):
 
 | Klasse | Aktionen | Warum nicht gewirkt |
 |---|---|---|
@@ -31,7 +32,6 @@ gelesen"), zerfällt in sechs Klassen (Stand der erzeugten Dateien: 01.10.2026):
 | Limit Breaks | je Job drei | ohne Wirktext im Datensatz; RSR castet keine PvE-Limit-Breaks (Konzept 05) |
 | Hilfsaktionen | Sleep, Repose, Rescue, Leg Graze, Foot Graze, das Ablegen der Tankhaltung (Release …) | Sie wirken auf Mitspieler oder die Gruppenlage (Rescue zieht einen Spieler, das Ablegen der Haltung gibt die Feindseligkeit ab, Schlaf bricht beim ersten Treffer). Nicht automatisiert — Schluss aus der Wirkung, kein Beleg für eine Absicht. Dissolve Union gehört nicht dazu: Der Gelehrte löst damit seine Verbindung über der Schwelle seiner Einstellung und vor Living Dead (A324) |
 | **Knopfwechsel gesperrt** | Detonator (MCH) | `WildfirePvE` führt Wildfire als `StatusProvide` und schließt den gewechselten Knopf aus (`ModifyWildfirePvE`: `!DetonatorPvEReady`); Wildfire zündet mit allen Stapeln von selbst. Siehe „Wo eine Aktion einen Status aufhebt" |
-| **Mit Quelle, nicht gebaut** | Six-sided Star (MNK) | Job-Guide und The Balance nennen Werte und Einsatzregel — siehe „Pausen und Phasenenden" |
 
 Improvised Finish (DNC) gehörte zur gesperrten Klasse: `ImprovisationPvE` führt Improvisation als
 `StatusProvide` und verweigert sich, solange der Knopf gewechselt hat. `DNC_Reborn` ruft es deshalb
@@ -416,19 +416,23 @@ seltener — holt diese Jobs in die Bearbeitung (A162).
   sonst erst in der Pause endet. Ihr Wirktext: Ungewirkt fällt der Abschluss „automatically immediately
   before shutting down" — in der Pause trifft er nichts. Nur mit Modul; ohne Vorhersage ist die Pause
   erst bekannt, wenn sie begonnen hat.
+- **Monk:** Six-sided Star als letzte Waffenfertigkeit auf dem Ziel (A413; Option „Use Six-sided Star as the last
+  weaponskill before the target dies or goes untargetable", ab Werk an). Job-Guide 7.5: 780 Potenz, +80 je offenem
+  Chakra, schließt alle Chakren, Wiederholzeit 4 s – zwei GCDs lang; das Aktionsblatt (Zeile 16476) führt kein Chakra
+  als Kosten, The Forbidden Chakra fünf. The Balance, Monk Basic Guide: „two GCDs is always more potency than doing one
+  SSS", nützlich „before running out of a big aoe, before a boss dies, or before a boss goes untargetable". Die
+  Erkennung steht für alle Jobs bereit (`CustomRotation.LastWeaponskillOnTarget`): Die gewählte Waffenfertigkeit ist
+  die letzte, die trifft, wenn die nächste danach erst beginnen könnte, nachdem das Ziel tot ist – nach seiner
+  korrigierten Zeit bis zum Tod (`GetCorrectedTTK`) und nur, solange es der letzte Gegner in Reichweite ist, weil sonst
+  ein anderer den nächsten Schlag nimmt – oder nachdem die Pause begonnen hat, die die Zeitleiste von BossModReborn
+  vorhersagt. Ein bereiter Fire's Reply oder Wind's Reply geht vor. Ohne Zeitleiste ist eine Pause erst bekannt, wenn
+  sie begonnen hat; den Rückzug aus einer großen Fläche sagt nichts voraus.
 
 **Bestehendes Pausenverhalten bleibt, wie es ist,** weil es eine andere Frage beantwortet: Der Monk lädt
 schon Chakra, wenn kein Gegner in **seiner** Reichweite steht (3 Yalm, auch wenn er nur für eine Mechanik
 herausläuft); der Machinist verschießt Heat vor einer vorhergesagten Pause (`BmrDumpBeforeDowntime`, ab
 Werk an).
 
-**Nicht gebaut, mit Grund:**
-- *Six-sided Star (Monk):* Job-Guide (02.10.2026): 780 Potenz, +80 je offenem Chakra, schließt alle Chakren,
-  Wiederholzeit 4 s — zwei GCDs lang. The Balance, Monk Basic Guide: „two GCDs is always more potency than doing
-  one SSS"; nützlich, wo die Zeit nicht für zwei GCDs reicht — „before running out of a big aoe, before a boss
-  dies, or before a boss goes untargetable". Damit ist die Einsatzregel belegt: der letzte GCD vor einer Pause oder
-  dem Tod des Ziels, wenn nur noch einer passt. Ob Chakra über eine Pause verfällt, nennt keine der Quellen.
-  WrathCombo (Stand 25.09.2026) führt die Aktion nur als Id und wirkt sie nicht. Offen im TODO.
 **Folgen, bewusst hingenommen:**
 - Läuft der Samurai im Kampf aus 25 Yalm heraus, ohne dass eine Pause ist, fällt Meditate, sobald er
   steht. Es bricht bei der ersten Bewegung und kostet dann einen GCD-Takt.
@@ -437,13 +441,20 @@ Werk an).
 - Kehrt das Ziel ohne Modul während der 5 s von Soulsow zurück, kommt der erste GCD danach bis zu einer Wirkzeit
   später. Läuft der Schnitter nur aus 25 Yalm heraus, fällt Soulsow wie Meditate, sobald er steht, und bricht bei
   der ersten Bewegung ab; dafür steht danach Harvest Moon für den nächsten Rückzug bereit.
+- Lebt das Ziel länger, als seine Zeit bis zum Tod sagte, nimmt Six-sided Star den Platz zweier Waffenfertigkeiten ein.
+  Gerechnet mit den Potenzen des Job-Guides (Positionale getroffen, kritische Treffer außer Acht): Die
+  Formfertigkeiten liegen bei 320 bis 540, im Wechsel bei rund 450. Ein falscher letzter Schlag kostet rund 120
+  (780 gegen zwei Formfertigkeiten), das Chakra wäre sonst zum selben Satz in The Forbidden Chakra gegangen. Ein
+  richtiger gewinnt rund 330, dazu 80 je Chakra, das sonst ungenutzt bliebe. Der Gewinn überwiegt, sobald etwa jede
+  vierte Vorhersage stimmt; die Zeit bis zum Tod rechnet ihren eigenen Fehler heraus.
 
 ## Vergleich mit The Balance
 
 **Sachstand:** Abgeglichen ist der Maschinist (24.10.2026) gegen The Balance, Machinist Basic Guide und Openers
 (beide „Patch Applicable: 7.3", zuletzt geändert am 05.08.2025); die Potenzen nennt der offizielle Job-Guide (Patch
 7.5). Der Beschwörer, die vier Tanks und die vier Heiler sind abgeglichen (26.10.2026, A375 bis A378), von den übrigen
-Schadensausteilern Ressourcen und Buffs (A379); die Folgen in ihren Burstfenstern sind offen (TODO, „Rotationen gegen The Balance abgleichen"). Abweichungen, die nur Schaden
+Schadensausteilern Ressourcen und Buffs (A379), ihre Burstfenster (A381 bis A386, der Monk A412) und die Vor-Pull-Aktionen
+(A390) – damit jeder Kampfjob. Abweichungen, die nur Schaden
 betreffen, werden behoben, wo sich die bessere Wahl aus dem Spiel ableiten lässt und keine seiner Regeln dagegen steht;
 die übrigen nennt der Abgleich mit Grund. Weniger Schaden aus einer Sicherheitsregel bleibt (seine Präzisierung).
 
@@ -805,6 +816,43 @@ Ein Spieler, der Ley Lines selbst setzt, findet die Ladung verbraucht; dann scha
 *Überwiegt:* der Gewinn; die Sperre bei einem gewirkten Flächenangriff nimmt den häufigsten Fall weg, in dem der Kreis
 sofort verlassen werden muss.
 
+### Monk: Perfect Balance und das Burstfenster
+
+**Geändert: Das gerade Fenster beginnt nach der Regel von The Balance** (26.10.2026, A412). The Balance (Monk Basic Guide
+und Openers, „Patch Applicable: 7.4") baut jedes Burstfenster aus fünf Regeln: Riddle of Fire und Brotherhood auf
+Abklingzeit und zusammen, Riddle of Fire spät eingeschoben, Perfect Balance nur nach einer Opo-opo-Waffenfertigkeit,
+Formless Fist auf Opo-opo, im ungeraden Fenster ein, im geraden zwei Perfect Balance. Das gerade Fenster beginnt mit
+Perfect Balance „after an opo gcd in the 3 to 1 gcd range before RoF". `MNK_Reborn` drückt ihn dort, wenn Riddle of
+Fire nach dem laufenden Einschubfenster und spätestens im Einschub vor dem Masterful Blitz abklingt
+(`MonkRotation.RiddleOfFireDueWithinPerfectBalance`: Stapel von Perfect Balance aus dem Statusblatt, GCD-Länge,
+Einschubgrenze von RSR) und Brotherhood mit diesem Riddle of Fire kommt – schon gedrückt oder bis dahin bereit.
+Unterhalb der Stufe von Riddle of Fire bleibt es beim Bisherigen: Perfect Balance nach jeder Opo-opo-Waffenfertigkeit.
+
+- *Was vorher geschah:* Perfect Balance ging nur, solange Brotherhood binnen 3 s zurückkam, und Brotherhood selbst geht
+  bis zu 3 s vor Riddle of Fire hinaus. Fiel die Opo-opo-Waffenfertigkeit danach, bekam das gerade Fenster seinen ersten
+  Perfect Balance erst unter Riddle of Fire, der zweite kam nach dem Ende von Brotherhood, und eine Ladung lief über –
+  bei 1,97 s GCD in zehn Minuten ein Masterful Blitz weniger.
+- *Was es im Kampf ergibt* (`monk_balance_model.py`, ein Boss, 3 bis 15 Minuten, GCD 1,94/1,97/2,00 s, zwei Annahmen
+  zum späten Einschub, Leaping Opo mit und ohne Faktor für seinen sicheren kritischen Treffer; Potenzen Job-Guide 7.5):
+  Mit der alten Regel lief in 44 von 156 Kombinationen mindestens eine halbe Ladung Perfect Balance über, mit der neuen
+  in keiner; die alte lag in 100 Kombinationen darunter, bis −0,58 %, höchstens +0,03 % darüber.
+- *Opener:* deckt sich mit „Solar Lunar – DK Opener (5s Buffs)" (Openers-Seite, Bild „Dawntrail Patch 7.0"): dieselben
+  14 Waffenfertigkeiten, Perfect Balance nach der ersten, Brotherhood und Riddle of Fire nach der dritten, Riddle of Wind
+  nach der vierten, der zweite Perfect Balance nach der neunten; nur Wind's Reply und das Opo-opo auf Formless Fist
+  tauschen die Plätze, beide unter beiden Buffs. Die Beschreibung der Rotation nennt einen „Lunar Solar Opener"; The
+  Balance führt „Solar Lunar" und „Double Lunar", der Code folgt „Solar Lunar". Der Text ist Upstreams und widerspricht
+  dem Code nur in der Benennung; nicht geändert.
+- *Nicht übernommen, mit Grund* (dasselbe Modell, gegen `MNK_Reborn` seit A412): The Balance als Ganzes +0,03 % im
+  Mittel, −0,25 % bis +0,15 %, 12 Kombinationen darunter. Riddle of Fire spät eingeschoben, für sich, und Perfect
+  Balance vor Riddle of Fire im ungeraden Solar-Fenster (Basic Guide; die Grafik der Openers-Seite nimmt im ungeraden
+  Fenster „the first opo within RoF"), für sich, liegen im Mittel bei ±0,00 %, je 12 darunter – beide verlieren in
+  diesen 12 denselben letzten Perfect Balance vor dem Kampfende. Die Solar-Folge von schwach nach stark bringt +0,04 %
+  (+0,02 bis +0,08 %). Promillebereich, unter der Unschärfe des Modells: kritische Treffer nur als Faktor auf Leaping
+  Opo, der Zeitpunkt des späten Einschubs angenommen, The Forbidden Chakra und Auto-Angriffe nicht gerechnet.
+- *The Forbidden Chakra:* RSR hält es im letzten GCD, bevor Brotherhood abgeklungen ist, und wirkt es, sobald
+  Brotherhood bereit ist – im selben Einschub noch davor. The Balance nennt keine Zurückhaltung. Hielte RSR es bis unter
+  Brotherhood, liefe Chakra über, solange Brotherhood auf Riddle of Fire wartet; nicht geändert.
+
 ### Vor dem Pull: die Countdown-Aktionen der Schadensausteiler
 
 **Deckt sich** (26.10.2026, A390). Gelesen ist, was `CountDownAction` je Rotation wirkt, gegen die Opener und
@@ -819,15 +867,15 @@ festen Opener führt keine.
 | Rotmagier, Schwarzmagier | ein Zauber vorgewirkt: Veraero III bei −5 s (Opener-Bild), Fire III | derselbe Zauber um seine Wirkzeit vor dem Pull | deckt sich |
 | Pictomancer | Motive vor dem Kampf, Rainbow Drip vorgewirkt, Striking Muse | Motive außerhalb des Kampfs, Striking Muse und Rainbow Drip um ihre Wirkzeit vor dem Pull | deckt sich |
 | Barde | Heartbreak Shot und Stormbite zum Pull, der Trank nach dem zweiten GCD (Opener-Bild „Adjusted Standard Opener") | Trank bei −0,7 s, wenn die Burst-Medizin im Countdown erlaubt ist; danach die Prioritäten | Trank rund 5 s früher. Beide Trankfenster (30 s) decken Raging Strikes, Battle Voice und Radiant Finale aus dem Opener ganz; verschoben ist nur, welche fünf Sekunden am Rand darunter liegen. Nicht geändert |
-| Samurai, Monk | siehe „Samurai: Meikyo Shisui und Higanbana" und Konzept 04 (Monk, A85) | | |
+| Samurai, Monk | siehe „Samurai: Meikyo Shisui und Higanbana" und „Monk: Perfect Balance und das Burstfenster"; der Sprung zum Ziel steht in Konzept 04 (A347) | | |
 
 ### Schadensausteiler: Ressourcen und Buffs
 
 Geprüft am 26.10.2026 gegen die Basic Guides von The Balance (Stand je Guide: Dragoon 7.5, Viper 7.55, Reaper 7.5,
 Samurai 7.4, Monk 7.4, Ninja 7.05, Barde 7.4, Tänzer 7.40, Schwarzmagier 7.4, Rotmagier 7.4, Pictomancer 7.4):
 die Regeln gegen das Überlaufen der Ressourcen und für die eigenen Buffs, je an der Stelle im Code, die sie trägt.
-Keine Änderung. Nicht einzeln geprüft sind die Folgen innerhalb eines Burstfensters des Monk; das bleibt offene
-Arbeit. Die Motive des Pictomancer stehen unter „Pictomancer: Motive und Starry Muse", der Takt des Schwarzmagiers
+Keine Änderung. Die Folge im Burstfenster des Monk steht unter „Monk: Perfect Balance und das Burstfenster". Die
+Motive des Pictomancer stehen unter „Pictomancer: Motive und Starry Muse", der Takt des Schwarzmagiers
 unter „Schwarzmagier: Feuer und Eis, Ley Lines". Die Meikyo-Folgen des Samurai stehen unter „Samurai:
 Meikyo Shisui und Higanbana", die Liedfolge des Barden unter „Barde: Lieder und Burst", die Enshroud-Folge des Reaper
 unter „Schnitter: Enshroud", die Mudra-Planung des Ninja unter „Ninja: das Fenster um Kunai's Bane".

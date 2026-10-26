@@ -1,6 +1,6 @@
 # MNK — Abhängigkeitsmatrix
 
-Erzeugt von `.github/scripts/audit/generate_action_matrix.py` am 2026-10-22; nicht von Hand bearbeiten. Methode und Grenzen: `docs/rotation-flow/14-action-dependency-matrix.md`.
+Erzeugt von `.github/scripts/audit/generate_action_matrix.py` am 2026-10-26; nicht von Hand bearbeiten. Methode und Grenzen: `docs/rotation-flow/14-action-dependency-matrix.md`.
 
 - Basisrotation: `MonkRotation`
 - Rotation: `RotationSolver/RebornRotations/Melee/MNK_Reborn.cs`
@@ -8,7 +8,7 @@ Erzeugt von `.github/scripts/audit/generate_action_matrix.py` am 2026-10-22; nic
 
 ## Nutzung
 
-direkt: 45 · nur gelesen: 1 · ungenutzt: 1 · über andere Aktion: 1
+direkt: 46 · nur gelesen: 1 · über andere Aktion: 1
 
 | Stufe | Aktion | Id | Art | Nutzung |
 |---|---|---|---|---|
@@ -50,7 +50,7 @@ direkt: 45 · nur gelesen: 1 · ungenutzt: 1 · über andere Aktion: 1
 | Job | Rising Raptor (`RisingRaptorPvE`) | 36946 | Weaponskill | direkt |
 | Job | Rockbreaker (`RockbreakerPvE`) | 70 | Weaponskill | direkt |
 | Job | Shadow of the Destroyer (`ShadowOfTheDestroyerPvE`) | 25767 | Weaponskill | über Arm of the Destroyer |
-| Job | Six-sided Star (`SixsidedStarPvE`) | 16476 | Weaponskill | ungenutzt |
+| Job | Six-sided Star (`SixsidedStarPvE`) | 16476 | Weaponskill | direkt |
 | Job | Snap Punch (`SnapPunchPvE`) | 56 | Weaponskill | direkt |
 | Job | Steel Peak (`SteelPeakPvE`) | 25761 | Ability | direkt |
 | Job | Steeled Meditation (`SteeledMeditationPvE`) | 36940 | Ability | direkt |
@@ -126,6 +126,8 @@ direkt: 45 · nur gelesen: 1 · ungenutzt: 1 · über andere Aktion: 1
 | Fire's Reply | Regel prüft | Dragon Kick |
 | Fire's Reply | Regel prüft | Leaping Opo |
 | Fire's Reply | StatusNeed FiresRumination | Riddle of Fire |
+| Fire's Reply | Regel prüft | Six-sided Star |
+| Fire's Reply | Regel prüft | Wind's Reply |
 | Flint Strike | Regel prüft | Riddle of Fire |
 | Forbidden Meditation | Regel sperrt vorher | Perfect Balance |
 | Inspirited Meditation | Regel sperrt vorher | Perfect Balance |
@@ -138,13 +140,17 @@ direkt: 45 · nur gelesen: 1 · ungenutzt: 1 · über andere Aktion: 1
 | Riddle of Fire | Regel prüft | Brotherhood |
 | Riddle of Fire | Regel prüft | Perfect Balance |
 | Rising Phoenix | Regel prüft | Riddle of Fire |
+| Six-sided Star | Regel prüft | Fire's Reply |
+| Six-sided Star | Regel prüft | Wind's Reply |
 | Steel Peak | Regel prüft | Brotherhood |
 | Steel Peak | Regel prüft | the Forbidden Chakra |
 | Steeled Meditation | Regel prüft | Forbidden Meditation |
 | Steeled Meditation | Regel sperrt vorher | Perfect Balance |
 | the Forbidden Chakra | Regel prüft | Brotherhood |
 | Tornado Kick | Regel prüft | Riddle of Fire |
+| Wind's Reply | Regel prüft | Fire's Reply |
 | Wind's Reply | StatusNeed WindsRumination | Riddle of Wind |
+| Wind's Reply | Regel prüft | Six-sided Star |
 
 ## Wechselwirkungen und Zeit
 
@@ -171,11 +177,11 @@ keine im Wirktext
 
 Jeder Aufruf der Aktion trägt eine eigene Bedingung; hält sie an, verfällt das Fenster (Konzept 14, „Werden die Fenster genutzt"). Kandidaten, von Hand bewertet.
 
-- Fire's Reply: 1 Aufruf(e), mit Rückfall vor Ablauf
+- Fire's Reply: 2 Aufruf(e), mit Rückfall vor Ablauf
 - Leaping Opo: 1 Aufruf(e), **ohne Rückfall vor Ablauf**
 - Pouncing Coeurl: 1 Aufruf(e), **ohne Rückfall vor Ablauf**
 - Rising Raptor: 1 Aufruf(e), **ohne Rückfall vor Ablauf**
-- Wind's Reply: 1 Aufruf(e), mit Rückfall vor Ablauf
+- Wind's Reply: 2 Aufruf(e), mit Rückfall vor Ablauf
 
 ### Unvollständige Beschreibungen
 
@@ -190,4 +196,3 @@ Ohne Eintrag in `ActionId.resx` und ohne Wirktext; RSR castet keine PvE-Limit-Br
 Maschinelle Liste; die Bewertung je Eintrag steht im Konzept.
 
 - Masterful Blitz (`MasterfulBlitzPvE`, Weaponskill): nur gelesen — Behälter: der Knopf wird zu anderen Aktionen
-- Six-sided Star (`SixsidedStarPvE`, Weaponskill): ungenutzt

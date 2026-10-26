@@ -164,3 +164,18 @@ Executioner ran; Viper held the same while a follow-up ability was ready; Samura
 while Zanshin was ready. A Reaper in Enshroud took an announced knockback without Arm's Length. These holds now give way
 when the party, the player or a tank is in danger, and knockback protection and interrupts wait only for a weave that
 does not clip.
+
+## Monk: both Perfect Balances of the two-minute window
+
+Brotherhood goes out up to three seconds ahead of Riddle of Fire, and the window's first Perfect Balance waited for
+Brotherhood still to come. When the opo-opo weaponskill fell after Brotherhood, the first Perfect Balance came only under
+Riddle of Fire, the second missed Brotherhood, and a charge ran over - at some GCD speeds one Masterful Blitz less in ten
+minutes. Perfect Balance now goes after the opo-opo weaponskill one to three weaponskills before Riddle of
+Fire, as The Balance has it, whenever Brotherhood comes with that Riddle of Fire.
+
+## Monk: Six-sided Star as the last hit
+
+With "Use Six-sided Star as the last weaponskill before the target dies or goes untargetable" (on by default), the Monk
+uses Six-sided Star when only one more weaponskill lands: the target dies first by its time to kill while it is the last
+enemy in range, or the downtime BossModReborn's timeline predicts begins. A ready Fire's Reply or Wind's Reply still goes
+first. Six-sided Star no longer needs an open chakra, as in the game.

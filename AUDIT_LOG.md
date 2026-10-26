@@ -11926,6 +11926,104 @@ bis zum Tod, auf der die Rückhaltung urteilt.
 
 *Prüfgrad:* statisch.
 
+### A412 · Monk gegen The Balance: Das gerade Burstfenster verlor seinen ersten Perfect Balance (26.10.2026)
+
+- *Auftrag:* TODO „Rotationen gegen The Balance abgleichen", der letzte Job; zugleich das Audit des Monk (Konzept 19);
+  seiner vom 26.10.2026.
+- *Quellen:* The Balance, Monk Basic Guide (Abschnitte „Burst in Theory", „Burst in Practice": „When you press an
+  Opo-opo GCD 2-4 GCDs before RoF and BH come off cooldown, follow it with a Perfect Balance") und Openers („Patch
+  Applicable: 7.4", zuletzt geändert 26.12.2025: „Press PB after an opo gcd in the 3 to 1 gcd range before RoF. (This
+  is the period of time about ~7.4ish to ~3ish seconds before RoF comes off cd.)"; Bild „Solar Lunar – DK Opener (5s
+  Buffs)", als Bild gelesen), beide abgerufen 26.10.2026; Job-Guide 7.5 (na., 26.10.2026) für Potenzen und
+  Abklingzeiten; xivapi v2: Status 110 „Perfect Balance" `MaxStacks` 3, Action 7395/7396 `CooldownGroup` 12/20.
+  Code: `MNK_Reborn` (`EmergencyAbility`, `AttackAbility`, `GeneralGCD`), `MonkRotation`, `ActionCooldownInfo`
+  (`WillHaveOneCharge` zählt die Restzeit ab dem nächsten GCD: `RecastTimeRemainOneCharge` zieht `DefaultGCDRemain` ab).
+- *Befund:* Der Perfect Balance des geraden Fensters verlangte `BrotherhoodPvE.Cooldown.WillHaveOneCharge(3)`, und
+  Brotherhood geht hinaus, sobald `RiddleOfFirePvE.Cooldown.WillHaveOneCharge(3)` gilt – bis zu drei Sekunden nach dem
+  nächsten GCD vor Riddle of Fire. Ist Brotherhood gedrückt, klingt es ab, die Bedingung fällt. Lag die
+  Opo-opo-Waffenfertigkeit danach, ging der erste Perfect Balance erst unter Riddle of Fire („odd min burst"), der
+  zweite wartete auf die Replies und `InBrotherhood` und kam nach dem Ende von Brotherhood oder gar nicht; die Ladung
+  lief über.
+- *Rückwärts:* Die Bedingung stammt aus `d566eda86` (13.08.2025). Brotherhood ging bis `8153eea2c` (Upstream,
+  17.10.2026) nur zusammen mit Riddle of Fire hinaus – die alte Klausel verglich die Abklingzeitgruppen 12 und 20 und
+  griff nie. Erst der Vorlauf von drei Sekunden brach die Prämisse der Bedingung. Modell: vor dem 17.10. lief in 2 von
+  78 Kombinationen (Kampflänge, GCD, Einschub) mehr als eine halbe Ladung über, mit `c6ed70be4` in 22.
+- *Optionen:* nichts tun · die Bedingung um „Brotherhood schon gedrückt" erweitern, das Fenster in Sekunden behalten ·
+  die Fensterregel von The Balance über GCD-Positionen (gewählt) · zusätzlich spätes Riddle of Fire, Solar-Folge nach
+  Potenz, Perfect Balance vor Riddle of Fire im ungeraden Solar-Fenster.
+- *Modell:* `monk_balance_model.py` (neu; Selbsttest: Opener gleich dem Bild, gerades Fenster nach der Openers-Seite,
+  die verlorene Ladung der alten Regel, Perfect Balance nie gedrückt). 156 Kombinationen (3–15 min, GCD 1,94/1,97/2,00 s,
+  Leaping Opo mit Faktor 1,0 und 1,39, Einschub 1,3 s nach dem GCD oder 0,55 s vor dem nächsten): die alte Regel in 100
+  darunter, −0,58 % bis +0,03 %, mindestens eine halbe Ladung verloren in 44, die neue in keiner. Gesamtsumme über alle
+  Läufe: 16 Blitze mehr, 66 weniger außerhalb von Riddle of Fire, 38 weniger außerhalb von Brotherhood im geraden
+  Fenster. The Balance über die gewählte Regel hinaus: +0,03 % im Mittel, 12 darunter; die Teile einzeln ±0,00 % bis
+  +0,04 % (Konzept 14) – nicht gebaut.
+- *Geändert:* `MonkRotation.RiddleOfFireDueWithinPerfectBalance` (Erkennung: Riddle of Fire klingt nach dem laufenden
+  Einschubfenster ab und spätestens im Einschub vor dem Blitz; Stapelzahl aus dem Statusblatt
+  `PerfectBalanceMaxStacks`, GCD-Länge, Einschubgrenze `CalculatedActionAhead`). `MNK_Reborn` drückt Perfect Balance
+  dort, wenn Brotherhood mit diesem Riddle of Fire kommt (`HasBrotherhood` oder bereit bis dahin); unterhalb der Stufe
+  von Riddle of Fire wie bisher. Die festen 3 GCDs und 3 s der alten Bedingung entfallen.
+- *Falsifikation:* (1) Kein Defekt? Widerlegt – die Bedingung verfehlte ihre eigene Absicht (Kommentar „even min
+  burst"), und eine Ladung lief über. (2) Option falsch? Stärkster Einwand: In 16 von 156 Kombinationen liegt die neue
+  Regel bis −0,03 % unter der alten, weil ein Blitz aus Riddle of Fire rutscht, wo ein anderer unter Brotherhood kommt;
+  hält nicht gegen 100 Kombinationen darüber und die verlorenen Ladungen. Kommt Riddle of Fire später als seine
+  Abklingzeit sagt (kein Ziel in Reichweite), geht der Blitz vor ihm – derselbe Preis wie mit der alten Regel, die
+  ebenfalls vor Riddle of Fire drückte. (3) Ausgeliefert, nichts ändert sich? Bei einer GCD-Länge, deren Takt die
+  Opo-opo-Waffenfertigkeit nie hinter Brotherhood legt (im Modell 1,94 s), ändert sich fast nichts; gewollt.
+- *Nebenbefunde ohne Änderung:* Die Beschreibung der Rotation nennt „Lunar Solar Opener", The Balance führt „Solar
+  Lunar" und „Double Lunar"; der Code folgt „Solar Lunar" (Benennung, Text Upstreams). The Forbidden Chakra geht vor
+  Brotherhood, sobald es bereit ist; hielte RSR es, liefe Chakra über, solange Brotherhood auf Riddle of Fire wartet.
+- *Betroffen:* Endnutzer (Monk); Autoren abgeleiteter Rotationen: `PerfectBalanceMaxStacks` und
+  `RiddleOfFireDueWithinPerfectBalance` neu – `PerfectBalanceStacks` war der erste Name und hätte die gleichnamige
+  Methode von `ChurinMNK` verdeckt (Compilerwarnung CS0108). Upstream-Pflege: Änderung in `MNK_Reborn`.
+
+*Prüfgrad:* Quellen, Code, Modell mit Selbsttest, Compile; im Spiel nicht beobachtet.
+
+### A413 · Six-sided Star als letzte Waffenfertigkeit auf dem Ziel (26.10.2026)
+
+- *Auftrag:* TODO „Six-sided Star"; seiner vom 26.10.2026.
+- *Quellen:* Job-Guide 7.5 (na., 26.10.2026): 780 Potenz, +80 je offenem Chakra, schließt alle Chakren, Wiederholzeit
+  4 s, legt sie auf alle Waffenfertigkeiten; Aktionsblatt (xivapi v2, Zeile 16476): `PrimaryCostType` 99 ohne Wert –
+  kein Chakra als Kosten, The Forbidden Chakra (Zeile 3547) Typ 28 mit 5; `Recast100ms` 50, mit der GCD-Verkürzung des
+  Monk die 4 s des Job-Guides. The Balance, Monk Basic Guide: „two GCDs is always more potency than doing one SSS",
+  „before running out of a big aoe, before a boss dies, or before a boss goes untargetable".
+- *Gebaut:* `CustomRotation.LastWeaponskillOnTarget` (Erkennung für alle Jobs): Die gewählte Waffenfertigkeit ist die
+  letzte, die trifft, wenn die nächste danach erst nach dem Tod des Ziels (korrigierte Zeit bis zum Tod, nur als
+  letzter Gegner in Reichweite) oder nach dem Beginn der vorhergesagten Pause (`BMRDowntimeWithin`) beginnen könnte.
+  `MNK_Reborn`: dann ein bereiter Fire's Reply oder Wind's Reply, sonst Six-sided Star; Option „Use Six-sided Star as
+  the last weaponskill before the target dies or goes untargetable", ab Werk an – der Nutzen hängt an der Genauigkeit
+  der Zeit bis zum Tod in den letzten Sekunden, die hier nicht belegt ist.
+- *`Chakra >= 1` entfernt:* `ModifySixsidedStarPvE` verlangte ein offenes Chakra (seit `653a50c4a`, 24.12.2024, vorher
+  fünf); das Spiel verlangt keines. Ohne Aufrufer in den Standardrotationen bisher ohne Wirkung; für die neue Regel
+  ein falscher Riegel: Auch ohne Chakra schlägt Six-sided Star jede Formfertigkeit (höchstens 540).
+- *Rechnung* (Job-Guide-Potenzen, Positionale getroffen, kritische Treffer außer Acht): Formfertigkeiten 320 bis 540,
+  im Wechsel rund 450. Richtig: rund +330, dazu 80 je Chakra, das sonst ungenutzt bliebe. Falsch (das Ziel lebt zwei
+  GCDs länger): rund −120, das Chakra wäre zum selben Satz in The Forbidden Chakra gegangen. Ab etwa jeder vierten
+  richtigen Vorhersage überwiegt der Gewinn.
+- *Falsifikation:* (1) Kein Nutzen? Widerlegt durch die Rechnung, sobald die Vorhersage oft genug stimmt; die Zeit bis
+  zum Tod rechnet ihren Fehler heraus (`ScoreTtkForecast`). (2) Option falsch? Stärkster Einwand: Neben dem Ziel
+  stehende Gegner nehmen den nächsten Schlag – deshalb nur als letzter Gegner in Reichweite. Ein gehaltener Blitz geht
+  am Ende nicht vor (die Zurückhaltung für Riddle of Fire ist Upstreams, schon vorher so). (3) Ausgeliefert, nichts
+  ändert sich? Ohne Modul und bei einem Boss, der vor null Gesundheit unangreifbar wird, sagt nichts das Ende voraus;
+  genannt als Einschränkung.
+- *Betroffen:* Endnutzer (Monk); Autoren abgeleiteter Rotationen: `LastWeaponskillOnTarget` neu, `SixsidedStarPvE`
+  ohne Chakrabedingung – `ChurinMNK` wirkt es unter seiner Gesundheitsschwelle nun auch ohne Chakra.
+
+*Prüfgrad:* Quellen, Code, Compile; im Spiel nicht beobachtet.
+
+### A414 · Audit: Monk Zeile für Zeile; das Audit ist abgeschlossen (26.10.2026)
+
+- *Gelesen:* `MNK_Reborn` und `MonkRotation` vollständig – Countdown, Opener, Perfect Balance, Buffs, Chakra, GCD-Folge,
+  Abwehr, Heilung.
+- *Befunde:* das gerade Burstfenster (A412); die Chakrabedingung von Six-sided Star (A413). Ohne Befund: Opener gegen
+  das Bild von The Balance (dieselben Waffenfertigkeiten, Wind's Reply und ein Opo-opo getauscht); Abwehr (Feint, Riddle
+  of Earth), Heilung (Second Wind, Bloodbath, Mantra, Earth's Reply) ohne Job-Rückhaltung, also nichts für die
+  allgemeine Schranke (Konzept 08); der Sprung zum Ziel steht in A347.
+- *Abschluss:* Konzept 19 nennt keinen offenen Bereich mehr; der TODO-Eintrag „Audit der gesamten Codebasis" ist
+  entfernt, ebenso „Rotationen gegen The Balance abgleichen" und „Six-sided Star".
+
+*Prüfgrad:* statisch, Modell (A412).
+
 ---
 ## B · Commit-Register (Fork vs. `upstream/main`)
 

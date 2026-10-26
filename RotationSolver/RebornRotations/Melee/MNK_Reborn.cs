@@ -40,6 +40,9 @@ public sealed class MNK_Reborn : MonkRotation
 
 	[RotationConfig(CombatType.PvE, Name = "Use Riddle of Fire after this ability")]
 	public RiddleOfFireFirst ROFFirst { get; set; } = RiddleOfFireFirst.Brotherhood;
+
+	[RotationConfig(CombatType.PvE, Name = "Use Six-sided Star as the last weaponskill before the target dies or goes untargetable", Tooltip = "In a fight: when only one more weaponskill lands - the target dies first by its time to kill while it is the last enemy in range, or the downtime BossModReborn's timeline predicts begins -, a ready Fire's Reply or Wind's Reply goes, else Six-sided Star instead of the form weaponskill: it hits harder than any of them and adds every open chakra, but holds the next weaponskill for two. If the target lives longer than its time to kill said, that costs a little. Without BossModReborn's timeline a downtime is not foreseen. Off: RSR never uses it.")]
+	public bool SixSidedStarLast { get; set; } = true;
 	#endregion
 
 	#region Countdown Logic
@@ -129,11 +132,14 @@ public sealed class MNK_Reborn : MonkRotation
 			}
 		}
 
-		// even min burst
+		// even min burst: "Press PB after an opo gcd in the 3 to 1 gcd range before RoF" (The Balance, Monk Openers, 7.4),
+		// when Brotherhood comes with that Riddle of Fire - pressed already or ready by then: it goes out ahead of Riddle of
+		// Fire, and the window then lost its first Perfect Balance and, with the second, a charge (A412)
 		if (AutoPB_Boss
 			&& !HasRiddleOfFire
-			&& RiddleOfFirePvE.Cooldown.WillHaveOneChargeGCD(3) && BrotherhoodPvE.Cooldown.WillHaveOneCharge(3)
-			&& IsLastGCD(true, DragonKickPvE, LeapingOpoPvE, BootshinePvE)) // PB must follow an Opo 
+			&& (!RiddleOfFirePvE.EnoughLevel || RiddleOfFireDueWithinPerfectBalance)
+			&& (HasBrotherhood || BrotherhoodPvE.Cooldown.WillHaveOneCharge(RiddleOfFirePvE.Cooldown.RecastTimeRemainOneCharge))
+			&& IsLastGCD(true, DragonKickPvE, LeapingOpoPvE, BootshinePvE)) // PB must follow an Opo
 		{
 			if (PerfectBalancePvE.CanUse(out act, usedUp: true))
 			{
@@ -525,6 +531,14 @@ public sealed class MNK_Reborn : MonkRotation
 		if ((!HasPerfectBalance || StatusHelper.PlayerWillStatusEnd(5, true, StatusID.WindsRumination)) && WindsReplyPvE.CanUse(out act))
 		{
 			return true; // Winds Reply
+		}
+
+		// The last weaponskill on the target: 'two GCDs is always more potency than doing one SSS', and one is all that is
+		// left - a Reply still beats it (The Balance, Monk Basic Guide; job guide) (A413)
+		if (SixSidedStarLast && LastWeaponskillOnTarget
+			&& (FiresReplyPvE.CanUse(out act) || WindsReplyPvE.CanUse(out act) || SixsidedStarPvE.CanUse(out act)))
+		{
+			return true;
 		}
 
 		// Opo needs to follow each PB

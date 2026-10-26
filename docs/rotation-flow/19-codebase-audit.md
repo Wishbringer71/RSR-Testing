@@ -62,7 +62,7 @@ Abgearbeitet nach seiner Vorgabe vom 26.10.2026: „todo nach priorität und ums
   die AoE-Umschaltung der Steuerfenster („Auto" setzt „Full", „Manual" den gemerkten Typ – so gebaut, ohne
   widersprechenden Text). Nur anzeigend und ohne Wirkung im Kampf, nicht zeilenweise gelesen: Diagnose-, Zeitleisten-,
   Lehr-, Tutorial-, Änderungs- und Osterei-Fenster.
-- **Schadenslogik der Damage Dealer (26.10.2026), begonnen:** Dragoon ohne Befund; Samurai – Feint fiel unter seiner
+- **Schadenslogik der Damage Dealer (26.10.2026), abgeschlossen:** Dragoon ohne Befund; Samurai – Feint fiel unter seiner
   eigenen Gesundheitsschwelle ohne Treffer in Sicht (behoben A408, Konzept 08), sonst vollständig ohne Befund; Schnitter vollständig –
   Einschubsperren von Schnitter, Viper und Samurai auf Sicherheitspfaden wichen der Schranke nicht (behoben A409,
   Konzept 08); Viper und Rotmagier in Abwehr, Heilung, Wiederbelebung und den Hauptpfaden der GCDs ohne Befund; Ninja:
@@ -72,10 +72,13 @@ Abgearbeitet nach seiner Vorgabe vom 26.10.2026: „todo nach priorität und ums
   (Lux Solaris nach Konzept 08, Physick über „Use GCDs to heal"), Barde (Lieder, Fähigkeiten) und Tänzer gelesen: ohne
   Defekt; Forked Raiju sprintet nur mit seiner als gefährlich bezeichneten Option, die übrigen Angriffe mit Sprung sind
   an der Aufrufstelle begrenzt. Pictomancer: Text und Code der Farbgrenze gehen unter Hyperphantasia auseinander,
-  ohne eindeutige Lesart (A411).
-- **Offen:** der Monk Zeile für Zeile, zuletzt nach seinem Profil (er spielt ihn bislang nicht); seine Prioritäten
-  gleicht der TODO-Punkt „Rotationen gegen The Balance abgleichen" ab
-  (`RebornRotations`; `ExtraRotations` nur, wo eine zentrale Änderung sie berührt, Churin ausgenommen).
+  ohne eindeutige Lesart (A411). Monk vollständig, zuletzt nach seinem Profil: Das gerade Burstfenster verlor seinen
+  ersten Perfect Balance, wenn Brotherhood vor der Opo-opo-Waffenfertigkeit hinausging, und mit dem zweiten eine Ladung
+  (behoben A412, Konzept 14); Six-sided Star verlangte ein offenes Chakra, das das Spiel nicht verlangt (A413); Abwehr,
+  Heilung und Opener ohne Befund (A414).
+- **Das Audit ist abgeschlossen** (A414): jeder Bereich der Codebasis gelesen, `RebornRotations` Zeile für Zeile,
+  `ExtraRotations` nur, wo eine zentrale Änderung sie berührt, Churin ausgenommen. Neue Befunde aus dem Spiel oder
+  aus einem Upstream-Sync laufen über ihren eigenen Loop, nicht über dieses Konzept.
 
 ## Methode
 

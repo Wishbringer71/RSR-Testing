@@ -19,16 +19,14 @@ Durchgang des Einstellungs-Audits, Rotationseinstellung für Rotationseinstellun
 Abwehr ohne Heiler ist umgesetzt (A361), die Phönixfeder daraus ebenso (A372). Seine Frage
 vom 25.10.2026 abends zu Chorts Türmen und dem Glockenspiel ist beantwortet und umgesetzt (A365). Die Hilfe auf einen
 kleinen gemessenen Tankbuster ist gebaut, für Heiler und Tanks (A373), die Reflexion daraus ebenso (A374). Sein Auftrag
-vom 26.10.2026 („todo nach priorität und umsetzbarkeit in loops abarbeiten") läuft: Flamethrower ist gebaut (A380),
-der Abgleich mit The Balance bis auf den Monk abgeschlossen (A381–A387, A390), zwei Schuldpunkte aufgelöst (A388,
-A389), die AoE-Schwelle an die AoE-Aktion gebunden (A391), im Audit fünfzehn Defekte behoben (A393–A395, A397, A399, A401–A409) und die Bodenflächen an die Gruppe gelegt (A398). Was nur den Monk betrifft, rückt nach hinten: Er spielt ihn bislang nicht (seine Angabe, 25.10.2026), die Wirkung
-in seinem Profil ist heute null.
+vom 26.10.2026 („todo nach priorität und umsetzbarkeit in loops abarbeiten") ist erledigt: Flamethrower und Six-sided
+Star sind gebaut (A380, A413), der Abgleich mit The Balance ist für jeden Kampfjob abgeschlossen (A381–A387, A390,
+A412), drei Schuldpunkte aufgelöst (A388, A389, A410), die AoE-Schwelle an die AoE-Aktion gebunden (A391), die
+Bodenflächen an die Gruppe gelegt (A398) und das Audit der gesamten Codebasis abgeschlossen, mit den Defekten aus A393–A395,
+A397, A399, A401–A409 und A412 (A414).
 
-1. Audit der gesamten Codebasis
-2. Rotationen gegen The Balance abgleichen (nur noch der Monk)
-3. Six-sided Star
-
-Danach technische Schuld, soweit ihre Auflösungsbedingung erfüllt ist. Warten auf Daten: unten.
+Offene Arbeit gibt es keine; als Nächstes die technische Schuld, soweit ihre Auflösungsbedingung erfüllt ist. Warten
+auf Daten: unten.
 
 ## Defekte
 
@@ -36,30 +34,7 @@ Keine bekannt.
 
 ## Offene Arbeit
 
-### Rotationen gegen The Balance abgleichen · N
-
-*Im Kampf:* Schaden – je Job Opener, Burstausrichtung und Prioritäten gegen den Guide. Abgeglichen: Maschinist
-(A342), Opener von Dragoon und Viper (A343), AoE-Schwellen aller Jobs (A344), AoE-Wahl des Ninja (A345), Beschwörer
-(A375), Weißmagier (A376), die vier Tanks (A377), die übrigen Heiler (A378), Ressourcen und Buffs der übrigen
-Schadensausteiler (A379), die Burstfenster von Samurai, Barde, Schnitter, Ninja, Pictomancer und Schwarzmagier
-(A381–A386), die Rotationseinstellungen mit Spieltatsache (A382, A383, A385, A387). *Nächster Schritt:* das
-Burstfenster des Monk; die Vor-Pull-Aktionen der übrigen Schadensausteiler decken sich mit den Openern (A390), danach
-folgen sie den abgeglichenen Prioritäten. Ausgeblendete Werte liest `ActionTooltip` zur Laufzeit aus den Tooltips, die
-deutschen Namen gehören in `action_names_de.json`. *Konzept:* 14, „Vergleich mit The Balance".
-
-### Six-sided Star · N
-
-*Im Kampf:* Schaden des Monks vor einer Pause oder dem Tod des Ziels. Wert und Einsatzregel belegt (Job-Guide, The
-Balance, 02.10.2026), nicht gebaut; braucht die vorhergesagte Pause oder die Zeit bis zum Tod. *Konzept:* 14, „Pausen
-und Phasenenden".
-
-### Audit der gesamten Codebasis · N, R, U
-
-*Im Kampf:* unbekannt, bis gelesen – jeder Befund bisher war ein Defekt mit Wirkung (A8, A10, A82). *Stand:* Phasen
-1 bis 4 abgeschlossen, `DataCenter` mechanisch und inhaltlich (A392–A396), `BaseAction` (A397), `ActionTargetInfo` (A398–A400),
-die Rotationen der Heiler, Tanks und des Maschinisten (A401–A406), die übrigen Damage Dealer in Klassensuchen.
-die Oberfläche (A407), die Schadenslogik der Damage Dealer bis auf den Monk (A408–A411). *Nächster Schritt:* der Monk,
-zuletzt nach seinem Profil. *Konzept:* 19.
+Keine.
 
 ## Technische Schuld
 
@@ -122,10 +97,10 @@ Veröffentlichungspfad prüfbar ist.
 `MainWindow.GetMovementSafetyStatus` neben `ActionTargetInfo.CheckMovementSafety`; die Regel „am Ziel ist ein Sprint nur
 Schaden" fehlt im Fenster. *Auflösung:* `CheckMovementSafety` gibt Ergebnis und Grund heraus, das Fenster zeigt sie.
 
-### Die Modelle von Maschinist und Samurai bilden ihre Rotation von Hand nach · R
+### Die Modelle von Maschinist, Samurai und Monk bilden ihre Rotation von Hand nach · R
 *Kosten:* Ändert sich der Ruf der Königin oder die GCD-Folge in `MCH_Reborn`, die GCD-Folge oder der Meikyo-Zweig in
-`SAM_Reborn`, rechnen `machinist_balance_model.py` und `samurai_balance_model.py` weiter die alte Regel, und Konzept 14
-nennt ihre Ergebnisse. *Auflösung:* jede solche Änderung trägt im selben Commit die Anpassung des Modells. *Konzept:* 14.
+`SAM_Reborn`, Perfect Balance, die Buffs oder die GCD-Folge in `MNK_Reborn`, rechnen `machinist_balance_model.py`,
+`samurai_balance_model.py` und `monk_balance_model.py` weiter die alte Regel, und Konzept 14 nennt ihre Ergebnisse. *Auflösung:* jede solche Änderung trägt im selben Commit die Anpassung des Modells. *Konzept:* 14.
 
 ### Plugin-Identität ist die des Upstreams · N
 `manifest.json` unverändert (`InternalName`, URLs). *Auflösung:* seine Entscheidung, wenn beide Installationen
