@@ -99,6 +99,12 @@ ground-targeted action - after "Always place them on yourself" and "Place them o
 party member in range whose area covers the most of them, whenever that covers more than the usual placement
 (stored point, arena centre, boss, a point by the attacked member). Off, the placement is as before.
 
+### Behaviour change in RotationSolver.Basic: a line with a target is counted towards the target
+
+The AoE count of a straight-line action aimed at an enemy (`CastType` 4 with a range - Doom Spike, Chain Saw, Apex
+Arrow, Shadowbringer) runs from the player towards that target again, as the game fires it, instead of along the
+player's facing at the moment of the check. A line without a target keeps the facing.
+
 ## 7.5.7.8+wsh1
 
 ### Dependency of RotationSolver.Basic: RebornMaterial 7.5.7.0

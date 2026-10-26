@@ -35,8 +35,10 @@ Abgearbeitet nach seiner Vorgabe vom 26.10.2026: „todo nach priorität und ums
 - **`ActionTargetInfo` bis zur Bodenplatzierung (26.10.2026):** gelesen. Freundliche Bodenflächen gingen an die
   Arenamitte, solange irgendwer dort stand; jetzt an die Stelle, die mehr Mitglieder deckt, wenn es sie gibt (A398,
   Konzept 07, Option ab Werk an).
-- **Offen:** `ActionTargetInfo` ab der Facing-Prüfung (`FilterAffectsByFacing`, `GetMostCanTargetObjects`,
-  `FindTargetByType`); die Rotationen Datei für Datei (`RebornRotations`; `ExtraRotations`
+- **`ActionTargetInfo`, AoE-Zählung (26.10.2026):** gelesen. Linien mit Ziel zählten nach der Blickrichtung des
+  Spielers statt zum Ziel hin (behoben A399, Konzept 03, C3).
+- **Offen:** `ActionTargetInfo.FindTargetByType` (Zielarten: Heilung, Tod, Reinigung, Provokation, Tankwechsel,
+  angegriffen, Karten); die Rotationen Datei für Datei (`RebornRotations`; `ExtraRotations`
   nur, wo eine zentrale Änderung sie berührt, Churin ausgenommen); `RotationSolver/UI`.
 
 ## Methode

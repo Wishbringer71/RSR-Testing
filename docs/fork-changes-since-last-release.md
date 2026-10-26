@@ -101,3 +101,11 @@ by the tank, as long as anyone at all stood in the area. With "Place them where 
 (on by default) they go to the spot at a party member that covers more of them whenever there is one: when the party
 stacks at the south edge, 20 yalms from the boss, for a marker before a raidwide, Sacred Soil lands on the stack instead of the empty
 middle. With the party at the centre nothing changes.
+
+## Line attacks count the enemies on the way to their target
+
+Doom Spike, Draconian Fury and Coerthan Torment, Chain Saw, Apex Arrow and Blast Arrow, Shadowbringer and
+Enlightenment hit everything in a line towards their target, but RSR counted the enemies along the way you happened
+to face. A Dragoon looking away from the pack stayed on the single-target combo with four enemies in reach, or went
+into the AoE combo towards a target with nobody behind it. They are now counted towards the target, and with several
+targets in reach the one whose line hits the most is taken.

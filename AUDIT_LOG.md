@@ -11632,6 +11632,35 @@ bis zum Tod, auf der die Rückhaltung urteilt.
 
 *Prüfgrad:* statisch, Compile, Prüfskripte; im Spiel nicht beobachtet.
 
+### A399 · Audit Phase 5, `ActionTargetInfo`: Linien mit Ziel nach der Blickrichtung gezählt (26.10.2026)
+
+- *Gelesen:* `FilterAffectsByFacing`, `GetAffectsTarget`, `GetMostCanTargetObjects`, `GetCanTargetCount`,
+  `GetCanTarget` (alle Gestalten, auch der Fall „Ziel auf dem Spieler"), `HostileInFacingCone`.
+- *Befund (Defekt, Upstream `2c080bbc2`, 27.04.2026, „fixes for BLU rotation"):* `GetCanTarget` zählte für eine
+  Linie (`CastType` 4) die Getroffenen entlang der Blickrichtung des Spielers im Moment der Prüfung; vorher (und
+  jetzt wieder) vom Spieler zum Ziel. Die Linien seiner Jobs haben alle ein Ziel (Blatt, xivapi v2, 26.10.2026):
+  Doom Spike und Coerthan Torment (Reichweite 10, Breite 4), Chain Saw, Apex Arrow, Blast Arrow (25, 4),
+  Shadowbringer, Enlightenment (10, 4). Der Einsatz dreht den Spieler zum Ziel; BossMods Autorotation misst sie zum
+  Hauptziel hin (`AkechiTools.LineTargetCheck`: Ursprung Spieler, Richtung `DirectionTo(primary)`; Werkzeugquelle).
+  Linien ohne Ziel (Reichweite 0) laufen über den Selbstpfad mit `FilterAffectsByFacing` und behalten die
+  Blickrichtung; der Blaumagier-Anlass von Upstream (Kegel, die endlos fielen) liegt dort.
+- *Wirkung im Kampf:* Die Zählung hing davon ab, wohin der Spieler schaute, nicht davon, wohin die Linie geht. Ein
+  Dragoon, der vom Rudel wegsah, blieb auf der Einzelkombo, obwohl vier Gegner in Reichweite standen, oder ging in die
+  AoE-Kombo auf ein Ziel ohne Gegner dahinter; und weil die Zählung für jedes Ziel gleich ausfiel, nahm die Zielwahl
+  für Chain Saw, Apex Arrow und Shadowbringer nicht das Ziel, dessen Linie die meisten trifft.
+- *Optionen:* 0 belassen · 1 Richtung zum Ziel für Linien mit Ziel, Blickrichtung nur ohne waagrechten Abstand.
+  Gewählt: 1, kleinster Eingriff an der einen Stelle.
+- *Falsifikation:* kein Defekt – widerlegt, die Linie geht zum Ziel; Option falsch – mit ausgeschaltetem
+  „Face target when using action" verweigert das Spiel eine Aktion auf ein Ziel, das nicht vor dem Spieler steht, die
+  Richtung zum Ziel bleibt also die einzige, in der sie fällt (Annahme aus dem Spielverhalten, nicht an einer Quelle
+  belegt); ausgeliefert und nichts ändert sich – wenn der Spieler ohnehin zum Ziel schaut, wie meist im Nahkampf.
+- *Klasse:* Kegel zählten schon zum Ziel hin; die Linien der Gegner (`DataCenter.AreaCastReaches`) nehmen das
+  angewirkte Ziel, sonst die Blickrichtung des Gegners – richtig für Gegner.
+- *Betroffene:* N (Dragoon, Maschinist, Barde, Dunkelritter, Monk), R (Zielwahl im Paket, CHANGELOG), U.
+- *Dokumentation:* Konzept 03 (C3), 19; CHANGELOG; Release-Text.
+
+*Prüfgrad:* statisch, Compile, Prüfskripte; im Spiel nicht beobachtet.
+
 ---
 ## B · Commit-Register (Fork vs. `upstream/main`)
 

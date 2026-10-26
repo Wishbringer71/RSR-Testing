@@ -1951,11 +1951,14 @@ public struct ActionTargetInfo(IBaseAction action)
 						return false;
 					}
 
-					// StraightLine fires in the direction the player is currently facing,
-					// not necessarily toward the selected target.
-					var lineDir = Player.Object != null
-						? Vector3.Normalize(new Vector3(Player.Object.GetFaceVector().X, 0, Player.Object.GetFaceVector().Z))
-						: dir / dirLen;
+					// A line with a target goes towards it: using the action turns the player to the target, and
+					// BossMod's autorotation measures it the same way (AkechiTools.LineTargetCheck). Measured along
+					// the facing of the moment (upstream 2c080bbc2), the count followed where the player looked, not
+					// where the line will go (A399). The facing stays for a target straight above or below him.
+					var flatDir = new Vector3(dir.X, 0, dir.Z);
+					var lineDir = flatDir.LengthSquared() > 0f
+						? Vector3.Normalize(flatDir)
+						: Vector3.Normalize(new Vector3(Player.Object.GetFaceVector().X, 0, Player.Object.GetFaceVector().Z));
 
 					// Perpendicular distance in yalms: project both vectors to XZ so Y height
 					// differences don't inflate the cross product length.
