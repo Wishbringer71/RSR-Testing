@@ -439,8 +439,8 @@ Werk an).
 
 **Sachstand:** Abgeglichen ist der Maschinist (24.10.2026) gegen The Balance, Machinist Basic Guide und Openers
 (beide „Patch Applicable: 7.3", zuletzt geändert am 05.08.2025); die Potenzen nennt der offizielle Job-Guide (Patch
-7.5). Der Beschwörer, die vier Tanks und die vier Heiler sind abgeglichen (26.10.2026, A375 bis A378). Die übrigen Jobs
-sind offen (TODO, „Rotationen gegen The Balance abgleichen"). Abweichungen, die nur Schaden
+7.5). Der Beschwörer, die vier Tanks und die vier Heiler sind abgeglichen (26.10.2026, A375 bis A378), von den übrigen
+Schadensausteilern Ressourcen und Buffs (A379); die Folgen in ihren Burstfenstern sind offen (TODO, „Rotationen gegen The Balance abgleichen"). Abweichungen, die nur Schaden
 betreffen, werden behoben, wo sich die bessere Wahl aus dem Spiel ableiten lässt und keine seiner Regeln dagegen steht;
 die übrigen nennt der Abgleich mit Grund. Weniger Schaden aus einer Sicherheitsregel bleibt (seine Präzisierung).
 
@@ -664,3 +664,24 @@ Gelehrter (7.4, 27.12.2025), Weiser (7.3, 07.08.2025). Keine Änderung außer de
 | Weiser | Kardia, Psyche | Kardia immer auf jemandem; Psyche auf Abklingzeit | beides so | deckt sich |
 | Weiser | Phlegma | Ladungen in die Buffs der Gruppe nach der zweiten Minute | eine Ladung vor dem Überlauf oder in Bewegung | weicht ab: Der Weise hat keinen eigenen Gruppenbuff; das Fenster der anderen ist eine Annahme über sie, kein tragender Grund (seine Regel) |
 | alle | Swiftcast | für Wiederbelebung aufheben | Swiftcast bleibt für Wiederbelebungen (seine Regel) | deckt sich |
+
+### Schadensausteiler: Ressourcen und Buffs
+
+Geprüft am 26.10.2026 gegen die Basic Guides von The Balance (Stand je Guide: Dragoon 7.5, Viper 7.55, Reaper 7.5,
+Samurai 7.4, Monk 7.4, Ninja 7.05, Barde 7.4, Tänzer 7.40, Schwarzmagier 7.4, Rotmagier 7.4, Pictomancer 7.4):
+die Regeln gegen das Überlaufen der Ressourcen und für die eigenen Buffs, je an der Stelle im Code, die sie trägt.
+Keine Änderung. Nicht einzeln geprüft sind die Folgen innerhalb eines Burstfensters (Meikyo-Folgen des Samurai,
+Mudra-Planung des Ninja vor Kunai's Bane, Enshroud-Folgen des Reaper, Liedfolge des Barden, Motivfolgen des
+Pictomancer, Feuer-Eis-Takt des Schwarzmagiers, Monk); das bleibt offene Arbeit.
+
+| Job | The Balance | RSR | Stand |
+|---|---|---|---|
+| Ninja | Ninki nie überlaufen lassen; Kazematoi nie überlaufen | Ausgabe bei 100 Ninki; Armor Crush nur unter 4 Kazematoi | deckt sich |
+| Reaper | Soul Slice ohne Überlauf; Gluttony mit beiden Executioner; Arcane Circle auf Abklingzeit | Soul Slice bis 50 Soul, Gluttony ab 50 (`ActionCheck`); Arcane Circle ab 3,5 s Kampfzeit | deckt sich |
+| Viper | Vicewinder vor der zweiten Ladung; eine Rattling Coil zurück, vor Serpent's Ire ausgeben | Vicewinder mit allen Ladungen; Uncoiled Fury am Höchststand oder an seiner Einstellung, vor dem Tod des Ziels | deckt sich |
+| Samurai | Kenki und Meditation nicht überlaufen | Shoha bei voller Meditation; Kenki-Ausgaben ab 25 bzw. 50 | deckt sich |
+| Dragoon | High Jump alle 30 s, Wyrmwind Thrust sobald möglich, Battle Litany auf das Zwei-Minuten-Fenster | auf Abklingzeit; Opener-Abgleich A343 | deckt sich |
+| Tänzer | drei Federn für das Zwei-Minuten-Fenster, die vierte ausgeben; Esprit ins Fenster tragen; Standard Step vor Technical Step halten | Fächertanz mit mehr als drei Federn oder unter Devilment; Saber Dance im Burst oder ab 70 Esprit; Standard Step wartet, wenn Technical Step in 5 s kommt | deckt sich |
+| Rotmagier | Embolden und Manafication auf Abklingzeit; Prefulgence unter Buffs; Fleche, Contre Sixte, Engagement, Corps-a-corps auf Abklingzeit; Swiftcast für Verthunder, Veraero, Impact oder Verraise | Embolden und Manafication auf Abklingzeit; Prefulgence unter Embolden oder vor dem Ablauf; je eine Ladung Engagement und Corps-a-corps für Embolden; Swiftcast auf Verthunder und Veraero | deckt sich; Swiftcast in der Rotation verletzt seine Regel nicht: Der Rotmagier belebt mit Dualcast wieder (Konzept 11) |
+| Schwarzmagier | Polyglot nicht überlaufen | Xenoglossy bei vollem Polyglot, bevor Enochian endet oder Amplifier zurückkommt | deckt sich |
+| Barde, Pictomancer | Bloodletter nicht bei drei Ladungen; Musen nicht überlaufen | Ladungsregeln der Rotationen | deckt sich, nicht vertieft |

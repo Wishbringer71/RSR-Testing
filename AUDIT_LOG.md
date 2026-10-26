@@ -11164,6 +11164,21 @@ bearbeitet ist und in seinen Protokollen gespielt wird.
 
 *Prüfgrad:* Code, Quellen; im Spiel nicht beobachtet.
 
+### A379 · Schadensausteiler gegen The Balance: Ressourcen und Buffs (26.10.2026)
+
+- *Quellen:* The Balance, Basic Guides Dragoon (7.5), Viper (7.55), Reaper (7.5), Samurai (7.4), Monk (7.4), Ninja
+  (7.05, seit 11.08.2024 nicht geändert), Barde, Tänzer, Schwarzmagier, Rotmagier, Pictomancer (je 7.4), abgerufen
+  26.10.2026.
+- *Umfang:* die Regeln gegen das Überlaufen der Ressourcen und für die eigenen Buffs, je an der tragenden Stelle im
+  Code gelesen. Keine Abweichung. Tabelle in Konzept 14, „Schadensausteiler: Ressourcen und Buffs".
+- *Geprüfter Verdacht:* Der Rotmagier setzt Swiftcast in der Schadensrotation ein, gegen seine Regel „Swiftcast bleibt
+  für Wiederbelebungen"? Nein im Zweck: Der Rotmagier belebt mit Dualcast wieder, das nach jedem Zauber liegt
+  (Konzept 11, `StatusHelper.SwiftcastStatus`); The Balance nennt dieselben Ziele.
+- *Nicht geprüft, offen:* die Folgen innerhalb der Burstfenster (Samurai, Ninja, Reaper, Barde, Pictomancer,
+  Schwarzmagier, Monk) und Opener samt Prioritäten der übrigen Schadensausteiler.
+
+*Prüfgrad:* Code, Quellen; im Spiel nicht beobachtet.
+
 ---
 ## B · Commit-Register (Fork vs. `upstream/main`)
 
