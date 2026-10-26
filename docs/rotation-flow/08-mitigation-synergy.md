@@ -162,11 +162,19 @@ Rückhaltung ein Job überhaupt kennt, bleibt seine Sonderregel.** Gebaut in
 | Revolverklinge | Einschub vor dem No-Mercy-Auftakt; No-Mercy-Fenster: Heart of Light, Reflexion | Fläche; Auftakt auch Einzel und Heilung auf sich oder einen Tank (Heart of Corundum, Aurora) |
 | Maschinist | Überhitzung, Wildfire, Full Metal Field; umkämpfter Burst-Einschub | Fläche und Einzel |
 | Dragoon | unmittelbar nach Stardiver | Fläche und Einzel; die eigene Heilung (Second Wind, Bloodbath) weicht, wenn er selbst in Klasse 1 steht (`HoldSelfHeal`) |
-| Viper | Einschub für Serpent's Ire im Burst | Fläche und Einzel |
+| Viper | Einschub für Serpent's Ire im Burst; eine Folgefähigkeit liegt bereit (`NoAbilityReady`) | Fläche und Einzel; die Folgefähigkeit hält auch die eigene Heilung (`HoldSelfHeal`) |
+| Schnitter | Soul Reaver, Enshroud oder Executioner laufen (`NotInActiveCombo`); Gluttony oder Enshroud bereit (nur das zeitgesteuerte Feint) | Fläche und Einzel (Feint, Arcane Crest); die laufende Folge hält auch die eigene Heilung (`HoldSelfHeal`) |
+| Samurai | Zanshin bereit | Fläche und Einzel (Feint, Tengentsu, Third Eye), auch unter seiner eigenen Gesundheitsschwelle |
 
-**Heilungen sind eingeschlossen,** wo die Rückhaltung strategisch ist. Erhoben sind alle frühen
-Rücksprünge der Heil- und Notfallmethoden der Standardrotationen (A161); strategisch ohne eigene
-Einstellung sind nur die zwei in der Tabelle (Revolverklinge, Dragoon).
+**Heilungen sind eingeschlossen,** wo die Rückhaltung strategisch ist. Erhoben sind die frühen
+Rücksprünge der Heil- und Notfallmethoden der Standardrotationen (A161) und die Bedingungen in ihren
+einzelnen Zweigen (A409): Schnitter, Viper und Samurai hielten Abwehr und eigene Heilung für ihre eigenen
+Einschübe zurück, ohne der Schranke zu weichen; sie stehen jetzt in der Tabelle.
+
+**Rückstoß und Unterbrechung sind zeitgebundene Bedrohungen.** Ihr Pfad öffnet nur für einen angekündigten Rückstoß
+oder einen unterbrechbaren Cast; das ist ihr Wahrscheinlichkeitsmaß. Eine Job-Sperre für eigene Einschübe ließ sie bis
+zum Ende der Folge warten, und der Rückstoß traf oder der Cast lief durch. Sie warten deshalb nur auf einen Einschub,
+der nicht verzögert (`EnoughWeaveTime`), wie das zeitgesteuerte Feint (A409).
 
 **Nicht über die Schranke:**
 - *Eigene Sicherheitsvorgaben:* Swiftcast für eine anstehende Wiederbelebung (vier Heiler); das

@@ -100,7 +100,9 @@ public sealed class SAM_Reborn : SamuraiRotation
 			return true;
 		}
 
-		if (!HasZanshinReady)
+		// Zanshin's weave comes first - a preference, so on the universal layer: it yields when the party is in danger,
+		// as every strategic hold of a protective action does (concept 08, A409).
+		if (!HoldAreaDefense(HasZanshinReady, ZanshinHoldRule))
 		{
 			if (FeintPvE.CanUse(out act))
 			{
@@ -133,8 +135,9 @@ public sealed class SAM_Reborn : SamuraiRotation
 			return true;
 		}
 
-		// A tankbuster cast at us is the one hit Third Eye / Tengentsu exist for.
-		if (!HasZanshinReady)
+		// A tankbuster cast at us is the one hit Third Eye / Tengentsu exist for. Zanshin's weave yields as above, here
+		// when the samurai or a tank is in danger.
+		if (!HoldSingleDefense(HasZanshinReady, ZanshinHoldRule))
 		{
 			if (FeintPvE.CanUse(out act))
 			{
@@ -155,12 +158,14 @@ public sealed class SAM_Reborn : SamuraiRotation
 	#endregion
 
 	#region oGCD Logic
+	private const string ZanshinHoldRule = "Samurai: Zanshin ready";
+
 	protected override bool GeneralAbility(IAction nextGCD, out IAction? act)
 	{
 		// The threshold is Tengentsu's and Third Eye's, as its text says. Feint protects the party and goes on the
 		// defence paths, for an announced or measured hit, as for every other job; spent here on the samurai's own low
 		// health, it was gone for the next raidwide (A408).
-		if (!HasZanshinReady && Player?.GetHealthRatio() <= TengentsuHealth)
+		if (Player?.GetHealthRatio() <= TengentsuHealth && !HoldSingleDefense(HasZanshinReady, ZanshinHoldRule))
 		{
 			if (TengentsuPvE.CanUse(out act))
 			{

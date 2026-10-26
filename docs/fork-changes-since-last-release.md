@@ -156,3 +156,11 @@ ended up off.
 Below "Health threshold needed to use Tengentsu/ThirdEye outside of AOE mit scenarios." the Samurai also spent Feint,
 with no hit announced, and it was then missing for the next raidwide. That threshold now uses Tengentsu and Third Eye
 only, as its text says; Feint goes out for announced or measured hits, as for every other job.
+
+## Reaper, Viper, Samurai: protection no longer waits for the job's own weaves
+
+Reaper held Second Wind, Bloodbath, Feint, Arcane Crest, Arm's Length and Leg Sweep while Soul Reaver, Enshroud or
+Executioner ran; Viper held the same while a follow-up ability was ready; Samurai held Feint, Tengentsu and Third Eye
+while Zanshin was ready. A Reaper in Enshroud took an announced knockback without Arm's Length. These holds now give way
+when the party, the player or a tank is in danger, and knockback protection and interrupts wait only for a weave that
+does not clip.

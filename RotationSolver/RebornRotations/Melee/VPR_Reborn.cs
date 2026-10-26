@@ -230,12 +230,15 @@ public sealed class VPR_Reborn : ViperRotation
 	[RotationDesc]
 	protected override bool HealSingleAbility(IAction nextGCD, out IAction? act)
 	{
-		if (NoAbilityReady && SecondWindPvE.CanUse(out act))
+		// The follow-up abilities come first - a preference, so on the universal layer: it yields when the viper is in
+		// the critical class, as every strategic hold of a protective action does (concept 08, A409).
+		var followUpHold = HoldSelfHeal(!NoAbilityReady, FollowUpHoldRule);
+		if (!followUpHold && SecondWindPvE.CanUse(out act))
 		{
 			return true;
 		}
 
-		if (NoAbilityReady && BloodbathPvE.CanUse(out act))
+		if (!followUpHold && BloodbathPvE.CanUse(out act))
 		{
 			return true;
 		}
@@ -258,7 +261,7 @@ public sealed class VPR_Reborn : ViperRotation
 			return true;
 		}
 
-		if (NoAbilityReady && FeintPvE.CanUse(out act))
+		if (!HoldAreaDefense(!NoAbilityReady, FollowUpHoldRule) && FeintPvE.CanUse(out act))
 		{
 			return true;
 		}
@@ -279,7 +282,7 @@ public sealed class VPR_Reborn : ViperRotation
 			return true;
 		}
 
-		if (NoAbilityReady && FeintPvE.CanUse(out act))
+		if (!HoldSingleDefense(!NoAbilityReady, FollowUpHoldRule) && FeintPvE.CanUse(out act))
 		{
 			return true;
 		}
@@ -287,12 +290,16 @@ public sealed class VPR_Reborn : ViperRotation
 		return base.DefenseSingleAbility(nextGCD, out act);
 	}
 
+	private const string FollowUpHoldRule = "Viper: a follow-up ability is ready";
+
 	protected override bool HasOwnAntiKnockbackGate => true;
 
+	// A knockback and an interruptible cast are timed threats: they wait for a weave that does not clip, not for the
+	// follow-up abilities to be spent (A409). The same check as the timed Feint above.
 	[RotationDesc]
 	protected sealed override bool AntiKnockbackAbility(IAction nextGCD, out IAction? act)
 	{
-		if (NoAbilityReady && ArmsLengthPvE.CanUse(out act))
+		if (EnoughWeaveTime && ArmsLengthPvE.CanUse(out act))
 		{
 			return true;
 		}
@@ -305,7 +312,7 @@ public sealed class VPR_Reborn : ViperRotation
 	[RotationDesc]
 	protected sealed override bool InterruptAbility(IAction nextGCD, out IAction? act)
 	{
-		if (NoAbilityReady && LegSweepPvE.CanUse(out act))
+		if (EnoughWeaveTime && LegSweepPvE.CanUse(out act))
 		{
 			return true;
 		}

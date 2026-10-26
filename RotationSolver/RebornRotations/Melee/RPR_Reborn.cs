@@ -56,12 +56,15 @@ public sealed class RPR_Reborn : ReaperRotation
 
 	protected override bool HealSingleAbility(IAction nextGCD, out IAction? act)
 	{
-		if (NotInActiveCombo && SecondWindPvE.CanUse(out act))
+		// The combo's weaves come first - a preference, so on the universal layer: it yields when the reaper is in the
+		// critical class, as every strategic hold of a protective action does (concept 08, A409).
+		var comboHold = HoldSelfHeal(!NotInActiveCombo, ComboHoldRule);
+		if (!comboHold && SecondWindPvE.CanUse(out act))
 		{
 			return true;
 		}
 
-		if (NotInActiveCombo && BloodbathPvE.CanUse(out act))
+		if (!comboHold && BloodbathPvE.CanUse(out act))
 		{
 			return true;
 		}
@@ -74,16 +77,17 @@ public sealed class RPR_Reborn : ReaperRotation
 	{
 		// Gated on EnoughWeaveTime rather than NotInActiveCombo: a timed threat should not be locked
 		// out for a whole combo when a safe weave exists. Still yields to Gluttony/Enshroud, whose
-		// slots come round only once per resource cycle.
+		// slots come round only once per resource cycle - a Reaper special rule on the universal layer,
+		// so it gives way when the party is in danger (A409).
 		if (EnoughWeaveTime
-			&& !(GluttonyPvE.CanUse(out _, skipAoeCheck: true) || EnshroudPvE.CanUse(out _))
+			&& !HoldAreaDefense(GluttonyPvE.CanUse(out _, skipAoeCheck: true) || EnshroudPvE.CanUse(out _), ResourceSlotHoldRule)
 			&& ShouldSustainMitigationDebuff(StatusID.Feint)
 			&& FeintPvE.CanUse(out act, skipStatusProvideCheck: true))
 		{
 			return true;
 		}
 
-		if (NotInActiveCombo && FeintPvE.CanUse(out act))
+		if (!HoldAreaDefense(!NotInActiveCombo, ComboHoldRule) && FeintPvE.CanUse(out act))
 		{
 			return true;
 		}
@@ -94,21 +98,23 @@ public sealed class RPR_Reborn : ReaperRotation
 	[RotationDesc(ActionID.ArcaneCrestPvE, ActionID.FeintPvE)]
 	protected override bool DefenseSingleAbility(IAction nextGCD, out IAction? act)
 	{
-		if (NotInActiveCombo && ArcaneCrestPvE.CanUse(out act))
+		var comboHold = HoldSingleDefense(!NotInActiveCombo, ComboHoldRule);
+		if (!comboHold && ArcaneCrestPvE.CanUse(out act))
 		{
 			return true;
 		}
 
-		// EnoughWeaveTime and the Gluttony/Enshroud slot-guard are safety checks, not preference gates.
+		// EnoughWeaveTime is a clip-risk check; the Gluttony/Enshroud slot-guard is a hold on the universal layer and
+		// gives way when the reaper or a tank is in the critical class (A409).
 		if (EnoughWeaveTime
-			&& !(GluttonyPvE.CanUse(out _, skipAoeCheck: true) || EnshroudPvE.CanUse(out _))
+			&& !HoldSingleDefense(GluttonyPvE.CanUse(out _, skipAoeCheck: true) || EnshroudPvE.CanUse(out _), ResourceSlotHoldRule)
 			&& ShouldSustainMitigationDebuff(StatusID.Feint)
 			&& FeintPvE.CanUse(out act, skipStatusProvideCheck: true))
 		{
 			return true;
 		}
 
-		if (NotInActiveCombo && FeintPvE.CanUse(out act))
+		if (!comboHold && FeintPvE.CanUse(out act))
 		{
 			return true;
 		}
@@ -116,12 +122,17 @@ public sealed class RPR_Reborn : ReaperRotation
 		return base.DefenseSingleAbility(nextGCD, out act);
 	}
 
+	private const string ComboHoldRule = "Reaper: Soul Reaver, Enshroud or Executioner running";
+	private const string ResourceSlotHoldRule = "Reaper: Gluttony or Enshroud ready";
+
 	protected override bool HasOwnAntiKnockbackGate => true;
 
+	// A knockback and an interruptible cast are timed threats: they wait for a weave that does not clip, not for the end
+	// of the combo, which let the knockback land and the cast finish (A409). The same as the timed Feint above.
 	[RotationDesc(ActionID.ArmsLengthPvE)]
 	protected sealed override bool AntiKnockbackAbility(IAction nextGCD, out IAction? act)
 	{
-		if (NotInActiveCombo && ArmsLengthPvE.CanUse(out act))
+		if (EnoughWeaveTime && ArmsLengthPvE.CanUse(out act))
 		{
 			return true;
 		}
@@ -134,7 +145,7 @@ public sealed class RPR_Reborn : ReaperRotation
 	[RotationDesc(ActionID.LegSweepPvE)]
 	protected sealed override bool InterruptAbility(IAction nextGCD, out IAction? act)
 	{
-		if (NotInActiveCombo && LegSweepPvE.CanUse(out act))
+		if (EnoughWeaveTime && LegSweepPvE.CanUse(out act))
 		{
 			return true;
 		}

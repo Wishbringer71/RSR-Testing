@@ -11863,6 +11863,39 @@ bis zum Tod, auf der die Rückhaltung urteilt.
 
 *Prüfgrad:* statisch, Compile, Prüfskripte; im Spiel nicht beobachtet.
 
+### A409 · Schnitter, Viper, Samurai: Einschubsperren auf Sicherheitspfaden ohne die allgemeine Schranke (26.10.2026)
+
+- *Gelesen:* `RPR_Reborn` bis zur GCD-Logik. Klassensuche: jede Bedingung in den Zweigen von Abwehr, eigener Heilung,
+  Rückstoßschutz und Unterbrechung aller Standardrotationen, die keine Option, keine Weave-Prüfung und keine
+  Statusauffrischung ist.
+- *Befund (Defekt, Upstream; Klasse):* A161 erhob nur die frühen Rücksprünge. In den Zweigen selbst hielten drei Jobs
+  Schutzaktionen für ihre eigenen Einschübe zurück, ohne der Schranke aus Konzept 08 zu weichen:
+  Schnitter `NotInActiveCombo` (Soul Reaver, Enshroud, Executioner) vor Second Wind, Bloodbath, Feint, Arcane Crest,
+  Arm's Length und Leg Sweep, dazu Gluttony/Enshroud bereit vor dem zeitgesteuerten Feint; Viper `NoAbilityReady`
+  (eine Folgefähigkeit liegt bereit) vor Second Wind, Bloodbath, Feint, Arm's Length und Leg Sweep; Samurai
+  `!HasZanshinReady` vor Feint, Tengentsu und Third Eye. Der Fork hatte dieselbe Sperre im August für das
+  zeitgesteuerte Feint durch `EnoughWeaveTime` ersetzt („a timed threat should not be locked out for a whole combo"),
+  die übrigen Zweige blieben. Technik ist keine davon: Ein Einschub dazwischen verzögert Lemure's Slice um einen GCD,
+  kostet die Viper höchstens eine Folgefähigkeit und Zanshin einen Einschubplatz.
+- *Wirkung im Kampf:* Ein Schnitter in Enshroud (laut Wirktext bis 30 s, solange Lemure Shroud reicht) nahm einen angekündigten Rückstoß
+  ohne Arm's Length, ließ einen unterbrechbaren Cast durchlaufen und heilte sich in Gefährdungsklasse 1 erst nach der
+  Folge. Bei Viper und Samurai kürzer, dieselbe Art.
+- *Behebung:* Abwehr und eigene Heilung laufen über `HoldAreaDefense`, `HoldSingleDefense` und `HoldSelfHeal`: Die
+  Sperre bleibt, weicht aber, wenn die Gruppe, der Spieler oder ein Tank in Gefahr ist. Rückstoßschutz und
+  Unterbrechung warten nur noch auf einen Einschub ohne Verzögerung (`EnoughWeaveTime`).
+- *Preis:* In Gefahr oder vor einem angekündigten Rückstoß ein Einschub weniger für die eigene Folge – Lemure's Slice
+  einen GCD später, bei der Viper unter Umständen eine verlorene Folgefähigkeit.
+- *Falsifikation:* kein Defekt – widerlegt, die Schranke gilt für jede strategische Rückhaltung (Konzept 08), und
+  Rückstoß und Cast haben ein Zeitfenster; Option falsch – ohne Gefahr bleiben die Sperren in Abwehr und Heilung wie
+  zuvor; ausgeliefert und nichts ändert sich – solange keine Gefahr, kein Rückstoß und kein Cast in die Folge fallen,
+  zutreffend.
+- *Klasse geschlossen:* Ninja (Mudra, Technik), Tänzer, Barde, Pictomancer (Burst-Einstellung, ihr Text bindet),
+  Beschwörer (Doppeldrucksperre), Gelehrter (Recitation → Excogitation) wie in Konzept 08 geführt; Dragoon und
+  Revolverklinge schon auf der Schranke; Monk ohne Sperre.
+- *Dokumentation:* Konzepte 08, 19; Release-Text.
+
+*Prüfgrad:* statisch, Compile, Prüfskripte; im Spiel nicht beobachtet.
+
 ---
 ## B · Commit-Register (Fork vs. `upstream/main`)
 
