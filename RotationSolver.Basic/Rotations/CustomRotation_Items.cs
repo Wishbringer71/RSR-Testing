@@ -192,6 +192,14 @@ public partial class CustomRotation
 	{
 		HpPotionItem? best = null;
 		var bestIsEmergency = false;
+
+		// The feather and every medicine share one recast (cooldown group 59, Item sheet): a potion now keeps a raise
+		// that is due off for its 75 s, the feather keeps potions off for 360 s. While the player lives through the
+		// feather's cast, the raise goes first; a potion with a tankbuster on the way to the player still goes (A372).
+		var featherFirst = DataCenter.MergedStatus.HasFlag(AutoStatus.Raise) && PhoenixDowns.Length > 0
+			&& PhoenixDowns[0].RaisePending && PhoenixDowns[0].PlayerOutlivesTheCast;
+		var bestIsOrdinary = false;
+
 		foreach (var a in HpPotions)
 		{
 			// More healing wins; at EQUAL healing the lower grade wins, and both halves are stated
@@ -221,6 +229,7 @@ public partial class CustomRotation
 				{
 					best = a;
 					bestIsEmergency = false;
+					bestIsOrdinary = true;
 				}
 			}
 
@@ -235,6 +244,7 @@ public partial class CustomRotation
 				{
 					best = a;
 					bestIsEmergency = !a.CanUse(out _, true);
+					bestIsOrdinary = false;
 				}
 			}
 
@@ -243,6 +253,7 @@ public partial class CustomRotation
 				if (best == null || a.MaxHp >= best.MaxHp)
 				{
 					best = a;
+					bestIsOrdinary = false;
 				}
 			}
 
@@ -251,6 +262,7 @@ public partial class CustomRotation
 				if (best == null || a.MaxHp >= best.MaxHp)
 				{
 					best = a;
+					bestIsOrdinary = false;
 				}
 			}
 
@@ -259,9 +271,18 @@ public partial class CustomRotation
 				if (best == null || a.MaxHp >= best.MaxHp)
 				{
 					best = a;
+					bestIsOrdinary = false;
 				}
 			}
 		}
+
+		// An ordinary potion waits for the feather; with a tankbuster on the way it goes, as the emergency branch would
+		// have taken the same potion for it.
+		if (featherFirst && bestIsOrdinary && !DataCenter.IsHostileCastingTankBusterAtMe && !DataCenter.BMRTankbusterReachesPlayer)
+		{
+			best = null;
+		}
+
 		act = best;
 		if (best != null)
 		{

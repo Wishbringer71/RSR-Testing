@@ -10994,6 +10994,38 @@ Fork-Änderungen an der Oberfläche. Nachgeholt:
 
 *Prüfgrad:* Quelltext der Bibliothek zwischen den Tags und Fork-Diff gelesen, Compile; die Fenster im Spiel nicht angesehen.
 
+### A372 · Phönixfeder: 8 s Wirkzeit und gemeinsame Abklingzeit mit den Arzneien (26.10.2026)
+
+TODO-Punkt „Phönixfeder seit 7.3: 8 s Wirken statt Einschub", nach seinem Hinweis vom 25.10.2026 („vielleicht hat ja ein
+anderer spieler eine phoenixfeder oder man selbst. dann muss man das eigene sterben lange genug hinauszögern").
+
+- *Research:* Spieldaten (xivapi, 26.10.2026): Item 4570 `CastTimeSeconds` 8, `Cooldowns` 360; Aktion 43336 in
+  Abklinggruppe 59, Reichweite 15. Gruppe 59 tragen auch Ultratrank (75 s) und Gemdraught-Tinkturen (300 s), alle UI-Kategorie
+  „Medicine". 7.3 (Fan-Wiki, mein-mmo, Forenbericht zur geteilten Abklingzeit): im Kampf in Inhalten für vier und in der
+  offenen Welt, 15 statt 5 Yalm, auch außerhalb der Gruppe. Die Konzeptaussage „seit 7.3 wirkt sie 8 s" war unbelegt und
+  ist ersetzt. Am Code: `UsePhoenixDown` im Fähigkeitenpfad nach `UseHpPotion`; `BaseItem.CanUse` fragt den Status des
+  Spiels, der keine Bewegung kennt (`ActionStatus` hat keinen Wert dafür); keine Prüfung auf Bewegung, auf Treffer während
+  der Wirkzeit oder auf die gemeinsame Abklingzeit.
+- *Optionen:* je Frage (Bewegung, Tankbuster in der Wirkzeit, Tod in der Wirkzeit, Trank gegen Feder, Tinktur gegen
+  Feder) die Nullvariante und eine Wartebedingung; für die Flächentreffer zusätzlich „warten auf jeden angekündigten
+  Treffer". *Abwägung:* Warten auf jeden Flächentreffer hielte die Feder bei Raidwides im Abstand unter 8 s für immer
+  zurück, und die meisten sind überlebbar – verworfen; die TTK-Regel misst anhaltenden Schaden. Tinktur: ab Werk nur in
+  High-End-Inhalten, wo die Feder im Kampf nicht geht; sonst seine Wahl – keine Regel. Trank gegen Feder: Beide sperren
+  sich gegenseitig (75 s gegen 360 s); mit einem zurückgekehrten Heiler wird der Trank seltener gebraucht, also zuerst die
+  Feder, solange er ihre Wirkzeit überlebt.
+- *Umgesetzt:* `PhoenixDownItem.CastCanFinish` (nicht in Bewegung, kein Tankbuster auf ihn innerhalb Wirkzeit plus
+  Laufzeit einer Anfrage, Vorhersage über die Wirkzeit), `RaisePending`, `PlayerOutlivesTheCast`; `UseHpPotion` lässt den
+  normalen Trank warten, solange eine Feder-Wiederbelebung ansteht und er die Wirkzeit überlebt, außer ein Tankbuster
+  kommt auf ihn – dann hätte der Notfallzweig denselben Trank genommen (`CanUse` schließt `CanUseEmergency` ein). Wirkzeit aus dem
+  Item-Blatt. Protokollzeile je Wechsel des Wartegrunds.
+- *Falsifikation:* *Kein Defekt?* Während einer Wirkzeit geht keine Aktion hinaus – die Feder sperrte also bis zu 8 s jede
+  Minderung, und der Trank vorher sperrte sie selbst für 75 s. *Option falsch?* Die TTK-Vorhersage kann pessimistisch
+  sein; dann gehen Abwehr und Trank zuerst und die Feder später – die sichere Richtung. Eine Tankbuster-Schätzung aus dem
+  Abstand kann verfallen; sie gilt nur bis zum Doppelten des Abstands (`NextOnPlayerIn`). *Ausgeliefert, nichts ändert
+  sich?* Wenn „Use Phoenix Down (Experimental)" aus ist (ab Werk), in Inhalten für acht, oder wenn ein Rezzer lebt.
+
+*Prüfgrad:* Spieldaten, Code, Compile; im Spiel nicht beobachtet.
+
 ---
 ## B · Commit-Register (Fork vs. `upstream/main`)
 

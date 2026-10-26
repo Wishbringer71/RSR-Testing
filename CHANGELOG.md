@@ -23,6 +23,13 @@ are not reconstructed here.
 
 ## Unreleased
 
+### Behaviour change in RotationSolver.Basic: Phoenix Down waits for a cast it can finish
+
+`CustomRotation.UsePhoenixDown` no longer reports the feather while the player moves, while a tankbuster on him lands
+within its cast (Item sheet, 8 s) and a request's round trip, or while his corrected time to kill is shorter than the cast.
+The ordinary HP potion waits while a feather raise is due and the player outlives that cast, unless a tankbuster is on
+its way to him; both share one recast.
+
 ## 7.5.7.8+wsh1
 
 ### Dependency of RotationSolver.Basic: RebornMaterial 7.5.7.0

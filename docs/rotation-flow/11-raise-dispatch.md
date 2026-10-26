@@ -251,13 +251,32 @@ Verdrahtet im Fähigkeitenpfad (`CustomRotation.Ability`, nach `UseHpPotion`), h
 Angriffsfähigkeiten: Jemanden am Leben zu halten geht vor. Die Ausführungssperre schluckt sie nicht, weil diese auf
 `nextAction is BaseAction` prüft und ein Gegenstand keiner ist.
 
-**Seit Patch 7.3 (05.08.2025) ist die Feder kein Einschub mehr.** Sie wirkt 8 s, reicht 15 Yalm, hat 360 s
-Wiederverwendung, geteilt mit den Arzneien, und ist im Kampf nur in einem Teil der Inhalte erlaubt – 4er-Dungeons,
-4er-Prüfungen, Feldoperationen und weitere, nicht 8er-Prüfungen und Raids (Fan-Wiki consolegameswiki, „Phoenix Down";
-kein offizieller Text gesichtet). Die Annahme „kostet ein Einschiebefenster", auf der die Stelle im Fähigkeitenpfad
-steht, ist damit widerlegt; was das für Bewegung, Abwehr während des Wirkens und die geteilte Wiederverwendung mit
-Tinkturen heißt, ist offen (`TODO.md`, „Phönixfeder seit 7.3: 8 s Wirken statt Einschub"). Inhaltsverbot und
-Wiederverwendung beantwortet weiter der Spielclient (unten).
+**Die Feder wirkt 8 s und teilt ihre Wiederverwendung mit allen Arzneien** (Spieldaten, xivapi, 26.10.2026: Item 4570
+`CastTimeSeconds` 8, `Cooldowns` 360, Aktion 43336 Abklinggruppe 59, Reichweite 15 Yalm; in Gruppe 59 liegen auch
+Ultratrank mit 75 s und die Gemdraught-Tinkturen mit 300 s, UI-Kategorie „Medicine"). Seit Patch 7.3 ist sie im Kampf in
+Inhalten für vier Spieler und in der offenen Welt erlaubt, reicht 15 statt 5 Yalm und belebt auch Spieler außerhalb der
+Gruppe (Fan-Wiki consolegameswiki, mein-mmo; kein offizieller Text gesichtet), nicht in Prüfungen und Raids für acht.
+Dass 7.3 die Wirkzeit einführte, ist nicht belegt; eine der Quellen nennt sie unverändert. Im Kampf zählt sie erst, seit
+die Feder dort erlaubt ist.
+
+Daraus folgen vier Regeln (A372), alle in `PhoenixDownItem` und `UseHpPotion`, für jede Rolle gleich:
+- *Nicht in Bewegung.* Bewegung bricht eine Wirkzeit ab, und RSR fragte die Feder in jedem Bild erneut an; die Feder wartet, bis er steht (`DataCenter.IsMoving`).
+- *Nicht in einen Tankbuster auf ihn.* Während der 8 s geht keine seiner Aktionen hinaus, auch keine Minderung. Landet
+  ein Tankbuster auf ihm innerhalb der Wirkzeit und der gemessenen Laufzeit einer Anfrage – ein Tankbuster-Cast auf ihn
+  oder der nächste nach `TankbusterForecast.NextOnPlayerIn` (Vorhersage von BossModReborn, sonst der Abstand der
+  Tankbuster in diesem Kampf) –, wartet sie bis nach dem Treffer. Flächentreffer bremsen sie nicht: Sie sind meist
+  überlebbar, und gegen anhaltenden Schaden misst die nächste Regel.
+- *Nicht, wenn er vorher fällt.* Sagt die sich selbst korrigierende Vorhersage (`GetCorrectedTTK`), dass er vor dem Ende
+  der Wirkzeit fällt, wartet sie; seine Abwehr und sein Trank gehen dann zuerst.
+- *Vor dem Heiltrank.* Ein Trank sperrt die Feder für seine 75 s, die Feder sperrt Tränke für 360 s. Steht eine
+  Wiederbelebung mit der Feder an und überlebt er ihre Wirkzeit, wartet der Heiltrank; kommt ein Tankbuster auf ihn (Cast
+  auf ihn oder Vorhersage von BossModReborn, die ihn trifft), geht der Trank weiter, wie ihn der Notfallzweig auch dann
+  nähme.
+
+Jede Wartezeit schreibt `DefenseTrace.log` mit ihrem Grund, einmal je Wechsel. *Ausgeschlossen:* Die Tinktur im Burst
+bleibt ohne Regel. Sie sperrt die Feder für 300 s, aber ab Werk nur in High-End-Inhalten („Tincture usage"), wo die Feder
+im Kampf ohnehin nicht geht; wer sie überall erlaubt, hat das gewählt. Die Stelle im Fähigkeitenpfad bleibt: Die
+Wirkzeit verschiebt den nächsten GCD um ihre Länge, und eine Wiederbelebung, wenn niemand sonst sie kann, ist das wert.
 
 Die Bedingung stand schon vollständig im Code (`PhoenixDownItem.CanUseThis`) und entspricht der
 Vorgabe des Auftraggebers: Lebt in der Bezugsmenge kein Rezzer mehr, wirft, wer eine Feder hat. Das
