@@ -101,10 +101,6 @@ Fehler in die gefährliche Richtung. *Auflösung:* eine Quelle für die Aufteilu
 `IsInTheAquapolis` ohne Zweig in `TreasureDungeonPrio`. Außerhalb seines Profils. *Auflösung:* die Vorrang-Gegner aus
 den Spieldaten des Gebiets.
 
-### `Configs.Migrate` setzt zurück statt zu migrieren · N, R
-Bei abweichender `CurrentVersion` fällt die ganze Konfiguration auf die Vorgaben; `Restore()` verweigert genau dann.
-*Kosten:* Hebt Upstream die Version, sind alle seine Einstellungen weg. *Auflösung:* feldweise Migration.
-
 ### Doppelte Zustandswahl in den Zustandskommandos · N
 `AdjustStateType` und die fünf `Cycle*`-Methoden lösen dieselbe Aufgabe; `DTRAllAuto` mit `ToggleAuto` kollabiert auf
 zwei Zustände. *Auflösung:* erst mit Laufzeitbeobachtung des Zustandsautomaten; `DTRType` und `CycleType` sind

@@ -77,6 +77,13 @@ forecast), for a rotation's own estimate to stand in only before one is.
 `CustomRotation`'s ability path skips the half-second window before the GCD when `Invoke` found no GCD to cast
 (`IBaseAction.IgnoreClipping`, read again for the first time since upstream removed its reader).
 
+### Behaviour change in RotationSolver.Basic: `Configs.Migrate` keeps the stored values
+
+A configuration of another `Configs.CurrentVersion` keeps every setting that still exists, by name, instead of
+falling back to the defaults; `Restore()` migrates a backup of another version instead of refusing it. The plugin
+keeps the file as `RotationSolver_Version<n>.json` before such a change, and an unreadable one as
+`RotationSolver_Unreadable.json` before the defaults replace it.
+
 ## 7.5.7.8+wsh1
 
 ### Dependency of RotationSolver.Basic: RebornMaterial 7.5.7.0

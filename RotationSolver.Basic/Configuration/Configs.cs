@@ -1870,14 +1870,16 @@ internal partial class Configs : IPluginConfiguration, IM3Settings
 			JsonConvert.SerializeObject(this, Formatting.Indented));
 	}
 
+	/// <summary>
+	/// Carries stored settings across a change of <see cref="CurrentVersion"/> field by field: the stored values were read
+	/// into today's type by name, so a setting that still exists keeps its value, a new one takes its default and a
+	/// removed one is dropped. Upstream reset the whole configuration instead (A389).
+	/// </summary>
+	/// <param name="oldConfigs">The configuration as read from the file.</param>
+	/// <returns>The same configuration at the current version.</returns>
 	public static Configs Migrate(Configs oldConfigs)
 	{
-		// Implement migration logic if needed
-		if (oldConfigs.Version != CurrentVersion)
-		{
-			// Reset to default if versions do not match
-			return new Configs();
-		}
+		oldConfigs.Version = CurrentVersion;
 		return oldConfigs;
 	}
 
@@ -1897,13 +1899,7 @@ internal partial class Configs : IPluginConfiguration, IM3Settings
 									  File.ReadAllText(Svc.PluginInterface.ConfigFile.FullName))
 								  ?? new Configs();
 
-		if (restoredConfigs.Version != CurrentVersion)
-		{
-			Svc.Toasts.ShowNormal("Backed up configs are not compatible with the current version.");
-			return;
-		}
-
-		Service.Config = restoredConfigs;
+		Service.Config = Migrate(restoredConfigs);
 		Save();
 		Svc.Toasts.ShowNormal("Configs restored. Closing to set.");
 		DataCenter.HoldingRestore = true;

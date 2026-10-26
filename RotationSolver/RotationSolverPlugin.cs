@@ -123,12 +123,22 @@ public sealed class RotationSolverPlugin : IAsyncDalamudPlugin
 				var json = await File.ReadAllTextAsync(Svc.PluginInterface.ConfigFile.FullName, cancellationToken);
 				var oldConfigs = JsonConvert.DeserializeObject<Configs>(json) ?? new Configs();
 
-				var newConfigs = Configs.Migrate(oldConfigs);
-				if (newConfigs.Version != Configs.CurrentVersion)
+				// The file as it was, before a version change carries it over (A389). A copy that fails costs the copy only,
+				// not the settings.
+				if (oldConfigs.Version != Configs.CurrentVersion)
 				{
-					newConfigs = new Configs();
+					try
+					{
+						File.Copy(Svc.PluginInterface.ConfigFile.FullName,
+							Path.Combine(Svc.PluginInterface.ConfigFile.DirectoryName ?? string.Empty, $"RotationSolver_Version{oldConfigs.Version}.json"), true);
+					}
+					catch (Exception copyEx)
+					{
+						PluginLog.Warning($"Failed to keep the config of version {oldConfigs.Version}: {copyEx.Message}");
+					}
 				}
-				Service.Config = newConfigs;
+
+				Service.Config = Configs.Migrate(oldConfigs);
 			}
 			else
 			{
@@ -138,6 +148,17 @@ public sealed class RotationSolverPlugin : IAsyncDalamudPlugin
 		catch (Exception ex)
 		{
 			PluginLog.Warning($"Failed to load config: {ex.Message}");
+			// Kept before the defaults overwrite it on the next save (A389).
+			try
+			{
+				File.Copy(Svc.PluginInterface.ConfigFile.FullName,
+					Path.Combine(Svc.PluginInterface.ConfigFile.DirectoryName ?? string.Empty, "RotationSolver_Unreadable.json"), true);
+			}
+			catch (Exception copyEx)
+			{
+				PluginLog.Warning($"Failed to keep the unreadable config: {copyEx.Message}");
+			}
+
 			Service.Config = new Configs();
 		}
 

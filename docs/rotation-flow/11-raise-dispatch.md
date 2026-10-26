@@ -461,8 +461,9 @@ nicht messbar. Wer sie an hat, konnte ohne Swiftcast niemanden hochholen.
   bleibt für Fähigkeiten gesperrt, außer wenn `Invoke` keinen GCD gefunden hat – dann gibt es nichts zu clippen, wie
   es das Flag seit Upstream `4ec1a3a1c` (2023) meinte. Ein Leser in `DoAction` bleibt ausgeschlossen: Er hebelte die
   Sperre überall aus, auch neben einem anstehenden GCD.
-- **`Configs.Migrate` ist ein Zurücksetzen, kein Migrationspfad.** Eine Korrektur, die einen Vorgabewert ändert, um
-  das bisherige Verhalten zu erhalten, erreicht gespeicherte Konfigurationen nicht.
+- **`Configs.Migrate` übernimmt die Werte nach Namen** (A389): Bei einem Versionswechsel behält jede Einstellung, die es
+  noch gibt, ihren Wert, und die alte Datei bleibt als Kopie liegen. Eine Korrektur, die einen Vorgabewert ändert, erreicht
+  gespeicherte Konfigurationen weiterhin nicht – gespeichert ist der Wert, nicht die Vorgabe.
 - **`InterruptDelay` und `ProvokeDelay` sind wieder verdrahtet** (A338). Ihre Texte („The range of random delay before
   interrupting hostile targets.", „Provoke delay range") versprechen eine Verzögerung vom Erscheinen des Ziels
   bis zur Wahl; Upstream hatte sie beim Umbau der Zielsuche entfernt (527414d60, 2024). Der Text bindet (seine

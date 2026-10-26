@@ -11376,6 +11376,27 @@ bearbeitet ist und in seinen Protokollen gespielt wird.
 
 *Prüfgrad:* Code, Versionsgeschichte, Compile; im Spiel nicht beobachtet.
 
+### A389 · `Configs.Migrate` übernimmt statt zurückzusetzen (26.10.2026)
+
+- *Auftrag:* TODO, technische Schuld „`Configs.Migrate` setzt zurück statt zu migrieren"; seiner vom 26.10.2026.
+- *Befund:* Bei abweichender `CurrentVersion` (seit 11.09.2024 unverändert 12, `ec3716d5b`) gab `Migrate` eine neue
+  Konfiguration zurück, und `LoadAsync` prüfte das noch einmal; `Restore()` verweigerte eine Sicherung anderer Version.
+  Ein Versionssprung von Upstream hätte alle seine Einstellungen auf die Vorgaben gesetzt, ohne Kopie.
+- *Optionen:* (a) Nullvariante; (b) Kopie der alten Datei, dann wie bisher zurücksetzen; (c) Werte nach Namen
+  übernehmen und die alte Datei als Kopie behalten. Rückbau: die Kopie.
+- *Abwägung:* (b) verliert nichts, setzt ihn aber auf die Vorgaben, bis er von Hand überträgt. (c) behält alles, was
+  es noch gibt; Bedrohung: Hebt Upstream die Version, weil ein Feld bei gleichem Namen seine Bedeutung oder ein Enum seine
+  Ordinale ändert, gälte der alte Wert falsch. Ein Typwechsel bricht das Lesen, dann greift der Rückfall auf die
+  Vorgaben – jetzt mit Kopie der unlesbaren Datei. Gewählt (c): Die Bedrohung zeigt der Sync, der jede fremde Änderung
+  inhaltlich auswertet; die Kopie ist der Rückweg.
+- *Gebaut:* `Configs.Migrate` setzt nur die Version; `LoadAsync` legt vor einem Versionswechsel
+  `RotationSolver_Version<n>.json` und bei einer unlesbaren Datei `RotationSolver_Unreadable.json` an, ein Fehler beim
+  Kopieren kostet nur die Kopie; `Restore()` migriert.
+- *Falsifikation:* (1) Kein Defekt? Ein Versionssprung hätte alles verworfen – widerlegt. (2) siehe Bedrohung. (3)
+  Ausgeliefert, nichts ändert sich? Bis Upstream die Version hebt, ja – so gewollt.
+
+*Prüfgrad:* Code, Versionsgeschichte, Compile; kein Versionswechsel beobachtet.
+
 ---
 ## B · Commit-Register (Fork vs. `upstream/main`)
 
