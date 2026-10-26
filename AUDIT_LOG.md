@@ -12051,6 +12051,30 @@ bis zum Tod, auf der die Rückhaltung urteilt.
 
 *Prüfgrad:* Textsuche, Lesen je Stelle; im Spiel nicht beobachtet.
 
+### A416 · Seine Beobachtung: der Weißmagier heilt heute später als gestern (26.10.2026)
+
+- *Seine Angabe:* „ich habe das gefühl, dass ich als whm schlechter bzw. später heile als gestern" – Beobachtung, kein
+  Befund über die Ursache.
+- *Daten:* ACT-Mitschnitt 26.10.2026 (Porta Decumana, Stufe 50 synchronisiert, Gruppe aus Revolverklinge, Samurai,
+  Rotmagier, Weißmagier; Build `01db0e4e3`) gegen den vom 25.10.2026 (Weißmagier Stufe 100: World of Darkness,
+  Clyteum, Alexandria, Vanguard). `DefenseTrace.log` des Abends enthält nur den Kopf (TODO, Warten auf Daten).
+- *Messung:* je Gruppensturz (mindestens drei Mitglieder verlieren binnen 1,5 s je 15 Punkte) die Zeit bis zur ersten
+  eigenen Heilung, roh und nach Abzug des laufenden GCD oder Casts. Heute 12 Stürze: roh im Median 1,06 s, nach Abzug
+  im Median 0,0 s. Gestern 41 Stürze: roh 0,94 s, nach Abzug 0,0 s. Kein späteres Heilen messbar.
+- *Die auffälligen Fälle heute:* 18:07:52–18:08:17 Granitgefängnis über der ganzen Gruppe – niemand kann handeln, der
+  Boss ist unverwundbar, die Gruppe fällt durch den Schaden darin auf 52–62 %; Medica II beginnt 0,09 s nach der
+  Befreiung, als erste Aktion der Gruppe. 18:10:43 Feuerstoß lässt die Gruppe bei 83 %, keine Heilung nötig. 18:18:45
+  Leitlaser: Medica II am ersten freien GCD.
+- *Warum es sich langsamer anfühlt:* Auf Stufe 50 hat der Weißmagier nur gewirkte GCD-Heilungen (Medica II, Cure III,
+  Regen; Benediction); Tetragrammaton, Assize, Afflatus und Liturgy of the Bell fehlen. Jede Heilung kommt damit erst am
+  nächsten GCD nach dem Sturz, gestern oft sofort als Fähigkeit. Die Raidwides der Porta Decumana nehmen rund die
+  Hälfte der Gesundheit in einem Treffer.
+- *Code:* Keine Änderung zwischen dem Build vom 25.10.2026 und `01db0e4e3` berührt die GCD-Heilung des Weißmagiers auf
+  Stufe 50: Divine Benison (A376), Bodenflächen (A398), Thin Air (A401), Hilfe für Tankbuster (A373) setzen höhere
+  Stufen oder andere Fähigkeiten voraus; `JustUsedAfter` (A397) liest der Weißmagier nicht.
+
+*Prüfgrad:* ACT-Mitschnitte beider Tage, Code; das Gefühl selbst ist nicht messbar.
+
 ---
 ## B · Commit-Register (Fork vs. `upstream/main`)
 

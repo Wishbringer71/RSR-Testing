@@ -300,7 +300,7 @@ Gelten in jeder Stufe. Eine Aussage, die eine davon verletzt, ist unbelegt.
 
 # Sprache und Namen
 
-- Chat Deutsch, vor jeder Antwort geprüft. Commits, Code-Kommentare, Bezeichner Englisch. Konzepte Deutsch, Release-Texte Englisch. Etablierte Fachbegriffe, keine selbst gebildeten.
+- Chat Deutsch, vor jeder Antwort geprüft – auch jede Beschreibung eines Werkzeugaufrufs, die er sieht (sein Befehl, 26.10.2026). Commits, Code-Kommentare, Bezeichner Englisch. Konzepte Deutsch, Release-Texte Englisch. Etablierte Fachbegriffe, keine selbst gebildeten.
 
 **Namen**
 - Er spielt mit deutschem Client: seine Namen sind deutsche Spielnamen, die Bezeichner englisch. Vor jeder Suche oder Aussage über ein Fehlen die Zuordnung belegen.
