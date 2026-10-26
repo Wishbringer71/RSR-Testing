@@ -371,7 +371,8 @@ public partial class BlackMageRotation
 
 	static partial void ModifyLeyLinesPvE(ref ActionSetting setting)
 	{
-		setting.ActionCheck = () => !IsMoving;
+		// Not while an enemy casts an area attack: the player may have to leave the circle for it (A386).
+		setting.ActionCheck = () => !IsMoving && !DataCenter.IsHostileCastingAOE;
 		setting.StatusProvide = [StatusID.LeyLines];
 		setting.UnlockedByQuestID = 67215;
 		setting.IsFriendly = true;

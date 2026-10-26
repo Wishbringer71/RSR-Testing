@@ -44,3 +44,10 @@ stand in the cone before you (its AoE count, which the action settings now show)
 casts an area attack, Hypercharge is not available, and no tool, Wildfire or Barrel Stabilizer comes ready during the
 ten seconds - The Balance's rule. While it channels, RSR keeps its own actions and medicine back so as not to end it;
 heals, defence, interrupts, cleanses, raises, provokes and what you press still go. Moving or turning ends it as before.
+
+## Black Mage: Ley Lines by default
+
+"Use Leylines in combat when standing still" is now on by default, so RSR places Ley Lines - before, it never did unless
+you turned this on. It goes down once you stand still in combat with an enemy in range, keeps the second charge for you
+unless "Use both stacks of Leylines automatically" is on, and waits while an enemy casts an area attack you may have to
+leave the circle for. The Balance uses Ley Lines roughly on cooldown. If you place it yourself, turn the setting off.

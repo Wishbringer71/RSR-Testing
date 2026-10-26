@@ -784,14 +784,35 @@ geändert 11.08.2024; eine Reihenfolge nennt er nicht, nur den Inhalt der Fenste
 | Living Muses, Mog, Madeen | 1000 Potenz je Muse, drei Ladungen zu 40 s; keine Haltevorgabe | Fanged Muse und Madeen in Starry Muse, sonst auf Ladung | deckt sich |
 | Rainbow Drip | mit Swiftcast vor Phasenwechsel oder Tod des Bosses | hart nur vor dem Pull, sonst mit Rainbow Bright aus Starry Muse; Swiftcast darauf als Einstellung – der Pictomancer hat keine Wiederbelebung (Konzept 18) | deckt sich im Zweck |
 
+### Schwarzmagier: Feuer und Eis, Ley Lines
+
+**Deckt sich bis auf Ley Lines** (26.10.2026, A386), gegen The Balance, Black Mage Basic Guide („Patch Applicable: 7.4",
+19.12.2025; er nennt Regeln, keine Folge im Zwei-Minuten-Fenster). Geprüft an `BLM_Default`; `BLM_RP` („Powerdox",
+ausdrücklich zum Testen) trägt dieselben Ley-Lines-Einstellungen.
+
+| Punkt | The Balance | RSR | Stand |
+|---|---|---|---|
+| Astral Fire | sechs Fire IV für Flare Star, danach Despair und Paradox | Flare Star, sobald bereit; Despair und Paradox nach Mana | deckt sich im Ergebnis; die Zahl der Fire IV folgt aus dem Mana, nicht aus einer Zählung |
+| Manafont | am Ende von Astral Fire | bei 0 MP in Astral Fire | deckt sich |
+| High Thunder | erneuern, wenn unter 3 s übrig | im Erneuerungsfenster der DoT-Planung | deckt sich |
+| Amplifier, Xenoglossy | Amplifier etwa auf Abklingzeit ohne Polyglot-Überlauf; keine Xenoglossy verschenken | Amplifier nur ohne vollen Polyglot und nicht in den letzten 10 s von Enochian; Xenoglossy bei vollem Polyglot vor Enochian-Ende oder Amplifier (A379) | deckt sich |
+| Triplecast, Swiftcast | vor allem fürs Laufen und Einweben | Triplecast im Laufen, im Wechsel ins Eis und in Astral Fire; Swiftcast im Wechsel ins Eis – der Schwarzmagier hat keine Wiederbelebung | deckt sich im Zweck |
+| Ley Lines | „roughly off cooldown at the next available weaving window", die zweite Ladung für ein Fenster, das man durchstehen kann | bis A386 nie: die Einstellung dazu kam abgeschaltet | **geändert:** ab Werk an; RSR setzt Ley Lines im Stehen und hält die zweite Ladung zurück (ohne „Use both stacks of Leylines automatically"); nicht, während ein Gegner einen Flächenangriff wirkt (`ModifyLeyLinesPvE`, für jede Schwarzmagier-Rotation) |
+
+*Ley Lines im Kampf:* *Stärke:* der Haste-Kreis fällt, wo The Balance ihn setzt, statt nie. *Schwäche:* muss er den Kreis
+verlassen, ist die Ladung vertan; das kostet Schaden, keine Sicherheit – RSR hält ihn nicht im Kreis. *Bedrohung:*
+Ein Spieler, der Ley Lines selbst setzt, findet die Ladung verbraucht; dann schaltet er die Einstellung ab.
+*Überwiegt:* der Gewinn; die Sperre bei einem gewirkten Flächenangriff nimmt den häufigsten Fall weg, in dem der Kreis
+sofort verlassen werden muss.
+
 ### Schadensausteiler: Ressourcen und Buffs
 
 Geprüft am 26.10.2026 gegen die Basic Guides von The Balance (Stand je Guide: Dragoon 7.5, Viper 7.55, Reaper 7.5,
 Samurai 7.4, Monk 7.4, Ninja 7.05, Barde 7.4, Tänzer 7.40, Schwarzmagier 7.4, Rotmagier 7.4, Pictomancer 7.4):
 die Regeln gegen das Überlaufen der Ressourcen und für die eigenen Buffs, je an der Stelle im Code, die sie trägt.
-Keine Änderung. Nicht einzeln geprüft sind die Folgen innerhalb eines Burstfensters (Feuer-Eis-Takt des
-Schwarzmagiers, Monk); das bleibt offene Arbeit. Die Motive des Pictomancer stehen unter „Pictomancer: Motive und
-Starry Muse". Die Meikyo-Folgen des Samurai stehen unter „Samurai:
+Keine Änderung. Nicht einzeln geprüft sind die Folgen innerhalb eines Burstfensters des Monk; das bleibt offene
+Arbeit. Die Motive des Pictomancer stehen unter „Pictomancer: Motive und Starry Muse", der Takt des Schwarzmagiers
+unter „Schwarzmagier: Feuer und Eis, Ley Lines". Die Meikyo-Folgen des Samurai stehen unter „Samurai:
 Meikyo Shisui und Higanbana", die Liedfolge des Barden unter „Barde: Lieder und Burst", die Enshroud-Folge des Reaper
 unter „Schnitter: Enshroud", die Mudra-Planung des Ninja unter „Ninja: das Fenster um Kunai's Bane".
 

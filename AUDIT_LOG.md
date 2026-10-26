@@ -11309,6 +11309,29 @@ bearbeitet ist und in seinen Protokollen gespielt wird.
 
 *Prüfgrad:* Quellen, Code; im Spiel nicht beobachtet.
 
+### A386 · Schwarzmagier gegen The Balance; Ley Lines ab Werk (26.10.2026)
+
+- *Quellen:* The Balance, Black Mage Basic Guide („Patch Applicable: 7.4", 19.12.2025); `BLM_Default`, `BLM_RP`,
+  `BlackMageRotation`; Einführung der Ley-Lines-Einstellungen in Upstream-Commit `e2b6c5ebd` (02.01.2025, ab Werk aus,
+  ohne Begründung).
+- *Befund:* Astral Fire mit Flare Star, Despair und Paradox, Manafont bei 0 MP, High Thunder, Amplifier, Xenoglossy,
+  Triplecast und Swiftcast decken sich. Ley Lines setzte RSR ab Werk nie; The Balance: „roughly off cooldown at the next
+  available weaving window", die zweite Ladung für ein Fenster, das man durchsteht.
+- *Optionen:* (a) Nullvariante – aus lassen; (b) ab Werk an, wie gebaut; (c) an und zusätzlich nicht, während ein
+  Gegner einen Flächenangriff wirkt. Rückbau: die Einstellung.
+- *Abwägung:* (a) kostet sicher den Haste-Kreis; (b) setzt ihn im Stehen, mit der zweiten Ladung zurück (ohne „Use
+  both stacks"), vertut ihn, wenn er gleich laufen muss; (c) nimmt den häufigsten solchen Fall weg und verzögert den
+  Kreis höchstens um eine Wirkzeit. Sicherheit berührt keine: RSR hält ihn nicht im Kreis. Gewählt (c).
+- *Gebaut:* ab Werk an in beiden Rotationen, mit Tooltip; `ModifyLeyLinesPvE` sperrt während `IsHostileCastingAOE` –
+  für jede Schwarzmagier-Rotation.
+- *Falsifikation:* (1) Kein Defekt? Ab Werk nie gesetzt heißt sicher Schaden verloren – widerlegt. (2) Option falsch?
+  Gegenposition: Spieler setzen Ley Lines gern selbst; dann nimmt RSR ihnen die Ladung. Er ist Tester und stellt selten
+  Voreinstellungen; nach seiner Regel gilt der im Kampf sinnvollere Wert. (3) Ausgeliefert, nichts ändert sich? Hat er
+  die Einstellung gespeichert aus, bleibt sie aus.
+- *Betroffen:* Endnutzer (Schwarzmagier), abgeleitete Rotationen über `ModifyLeyLinesPvE`.
+
+*Prüfgrad:* Quellen, Code, Compile; im Spiel nicht beobachtet.
+
 ---
 ## B · Commit-Register (Fork vs. `upstream/main`)
 

@@ -270,6 +270,9 @@ im Code.
     der eigenen Zeitwahl, ab Werk aus, sonst plant die zentrale DoT-Planung
   - Meikyo Shisui bei 14 s im Countdown, Samurai – abgeglichen (A381): der Opener von The Balance setzt ihn bei −14 s
   - Earthly Star bei 4 s im Countdown, Astrologe
+- *Aus dem Abgleich mit The Balance umgestellt:* „Use Leylines in combat when standing still" (Schwarzmagier) ist ab
+  Werk an (A386). Ab Werk aus setzte RSR Ley Lines nie; The Balance setzt sie etwa auf Abklingzeit, und ein vertaner
+  Kreis kostet Schaden, keine Sicherheit (Konzept 14, „Schwarzmagier: Feuer und Eis, Ley Lines").
   - die Schätzung „8 % der eigenen Gesundheit als Gruppenschaden je Sekunde", mit der der Gelehrte Bio auf kurzlebige
     Ziele vermeidet – eine Stellvertretergröße neben der gemessenen Zeit bis zum Tod, die die zentrale DoT-Planung
     schon liest

@@ -12,8 +12,10 @@ public class BLM_Default : BlackMageRotation
 	[RotationConfig(CombatType.PvE, Name = @"Use ""Double Paradox"" rotation [N15]")]
 	public bool UseN15 { get; set; } = false;
 
-	[RotationConfig(CombatType.PvE, Name = "Use Leylines in combat when standing still")]
-	public bool LeylineMadness { get; set; } = false;
+	// On by default (A386): The Balance, Black Mage Basic Guide, uses Ley Lines "roughly off cooldown"; placed and left
+	// unused it costs a charge, not safety.
+	[RotationConfig(CombatType.PvE, Name = "Use Leylines in combat when standing still", Tooltip = "In a fight: Ley Lines goes down at your feet once you stand still in combat with an enemy in range, not while an enemy casts an area attack you may have to leave it for. One charge stays back for a window you can stand through, unless both stacks are used automatically. Off: you place Ley Lines yourself.")]
+	public bool LeylineMadness { get; set; } = true;
 
 	[RotationConfig(CombatType.PvE, Name = "Use both stacks of Leylines automatically")]
 	public bool Leyline2Madness { get; set; } = false;

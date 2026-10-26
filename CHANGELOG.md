@@ -63,6 +63,10 @@ default AoE count of Flamethrower is 2 (was 6).
 
 A protected helper: a song's duration from its tooltip, the generated table where the tooltip states none.
 
+### Behaviour change in RotationSolver.Basic: Ley Lines waits for an enemy's area cast
+
+`BlackMageRotation`'s Ley Lines is no longer usable while a hostile casts an area attack (`DataCenter.IsHostileCastingAOE`).
+
 ## 7.5.7.8+wsh1
 
 ### Dependency of RotationSolver.Basic: RebornMaterial 7.5.7.0
