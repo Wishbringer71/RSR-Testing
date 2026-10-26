@@ -439,7 +439,8 @@ Werk an).
 
 **Sachstand:** Abgeglichen ist der Maschinist (24.10.2026) gegen The Balance, Machinist Basic Guide und Openers
 (beide „Patch Applicable: 7.3", zuletzt geändert am 05.08.2025); die Potenzen nennt der offizielle Job-Guide (Patch
-7.5). Der Beschwörer und der Weißmagier sind abgeglichen (26.10.2026, A375, A376). Die übrigen Jobs sind offen (TODO, „Rotationen gegen The Balance abgleichen"). Abweichungen, die nur Schaden
+7.5). Der Beschwörer, der Weißmagier und die vier Tanks sind abgeglichen (26.10.2026, A375 bis A377). Die übrigen Jobs
+sind offen (TODO, „Rotationen gegen The Balance abgleichen"). Abweichungen, die nur Schaden
 betreffen, werden behoben, wo sich die bessere Wahl aus dem Spiel ableiten lässt und keine seiner Regeln dagegen steht;
 die übrigen nennt der Abgleich mit Grund. Weniger Schaden aus einer Sicherheitsregel bleibt (seine Präzisierung).
 
@@ -620,3 +621,26 @@ Tankbuster danach nicht zurück. Dieselbe Regel gilt für Celestial Intersection
 | Lucid Dreaming | bei rund 80 % MP | Schwelle in MP, ab Werk 6000 von 10000 | seine Einstellung (Konzept 18) |
 | Thin Air | für MP-teure Heilungen und Wiederbelebung | Einstellungen, ab Werk nur unter MP-Druck | deckt sich |
 | Wiederbelebung | mit Swiftcast und Thin Air | Swiftcast bleibt dafür (seine Regel); Thin Air vor der Wiederbelebung | deckt sich |
+
+### Tanks
+
+Abgeglichen am 26.10.2026 gegen die Basic Guides von The Balance: Krieger („Patch Applicable: 7.4", 27.12.2025),
+Paladin (7.4, 17.12.2025), Dunkelritter (7.5, 14.08.2026), Revolverklinge (7.4, 17.12.2025). Ihre Abwehr steht in
+Konzept 09; hier der Schaden. Keine Änderung: Alle Kernregeln decken sich. Die AoE-Schwelle der Tanks bleibt bei 2
+(oben, „AoE-Schwellen aller Jobs").
+
+| Job | Punkt | The Balance | RSR | Stand |
+|---|---|---|---|---|
+| Krieger | Opener | Tomahawk bei −0,7 s, Infuriate eingewebt | Tomahawk bei unter 0,54 s, Infuriate in der ersten Einwebung | deckt sich |
+| Krieger | Surging Tempest | bei 7 bis 15 s Rest erneuern, nie über 31 s | Storm's Eye neun GCDs vor dem Ablauf (`StatusRefreshGcdCount`) | deckt sich: Bei rund 22 s Rest plus 30 s bleibt die Wirkung unter der Obergrenze von 60 s, es geht nichts verloren |
+| Krieger | Beast Gauge | Storm's Path nicht bei 90 bis 100, Infuriate nicht bei 60 bis 100 | Storm's Path bis 80, Infuriate bis 50 (`ActionCheck`) | deckt sich |
+| Krieger | Upheaval, Inner Release | auf Abklingzeit | auf Abklingzeit, Inner Release mit Surging Tempest | deckt sich |
+| Krieger | Onslaught | drei Ladungen in den geraden, eine in den ungeraden Fenstern | im Burst und vor dem Überlauf, nur im Stand; die Reichweite begrenzt die zentrale Sprungprüfung | weicht ab, wo Onslaught ihn bewegen würde: seine Regel (Konzept 04) |
+| Paladin | Fight or Flight | auf Abklingzeit; Imperator direkt danach, vor Confiteor | Fight or Flight mit bereiten Folgen; Imperator und Requiescat in Fight or Flight | deckt sich |
+| Paladin | Circle of Scorn, Expiacion | in jedem Fight-or-Flight-Fenster | erst, wenn Fight or Flight und Imperator laufen oder abklingen | deckt sich |
+| Paladin | Atonement-Folge | zwischen den Fenstern aufheben, vor dem nächsten Royal Authority ausgeben | in Fight or Flight, vor dem Ablauf oder wenn Rage of Halone bereit ist | deckt sich |
+| Paladin | Intervene | zwei Ladungen in Fight or Flight | im Stand, mit Option alle Ladungen in Fight or Flight | deckt sich, mit seiner Bewegungsregel |
+| Dunkelritter | Edge of Shadow | gegen MP-Überlauf, gegen das Auslaufen von Darkside, im Burst | dieselben drei Lagen, Rücklage für The Blackest Night | deckt sich (A197) |
+| Dunkelritter | Bloodspiller, Shadowbringer | Blut nur im Burst oder gegen Überlauf; beide Ladungen Shadowbringer ins Zwei-Minuten-Fenster | Blut wie The Balance (A197); Shadowbringer eine Ladung an der Grenze, die letzte im Burst | deckt sich: Im 120-s-Takt ist die zweite Ladung genau zum Fenster zurück |
+| Revolverklinge | No Mercy | jede Minute, Einwebposition je GCD-Geschwindigkeit | auf Stufe 100 mit liegendem Bloodfest; beide haben 60 s Abklingzeit (Job-Guide 7.5) | deckt sich im Takt; die Einwebposition (früh oder spät je Geschwindigkeit) ist nicht geprüft |
+| Revolverklinge | Kartuschen | nicht überlaufen, keine Kombo mit voller Leiste abschließen | Burst Strike vor dem Abschluss bei voller Leiste (`IsAmmoCapped`) | deckt sich |

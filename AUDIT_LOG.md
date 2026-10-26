@@ -11139,6 +11139,20 @@ bearbeitet ist und in seinen Protokollen gespielt wird.
 
 *Prüfgrad:* Code, Quelle, Compile; im Spiel nicht beobachtet.
 
+### A377 · Die vier Tanks gegen The Balance (26.10.2026)
+
+- *Quellen:* The Balance, Basic Guides Krieger (7.4, 27.12.2025), Paladin (7.4, 17.12.2025), Dunkelritter (7.5,
+  14.08.2026), Revolverklinge (7.4, 17.12.2025), abgerufen 26.10.2026; offizieller Job-Guide der Revolverklinge.
+- *Ergebnis:* keine Änderung; Tabelle in Konzept 14, „Tanks".
+- *Geprüfter Verdacht:* Auf Stufe 100 wirkt die Revolverklinge No Mercy im Einzelziel nur mit liegendem Bloodfest
+  (Upstream `0907d1dcf`). Mit den 120 s von Bloodfest früherer Stände wäre jede zweite No Mercy ausgefallen; das Spiel
+  gibt Bloodfest heute 60 s (Job-Guide 7.5, Blatt `Action` 16164: `Recast100ms` 600), dieselbe Abklingzeit wie No
+  Mercy. Widerlegt.
+- *Offen, nicht geprüft:* die Einwebposition von No Mercy je GCD-Geschwindigkeit (früh oder spät für ein neuntes
+  GCD-Fenster) – sie hängt an der Geschwindigkeit des Spielers und an der Laufzeit; Schaden im Promillebereich.
+
+*Prüfgrad:* Code, Quellen; im Spiel nicht beobachtet.
+
 ---
 ## B · Commit-Register (Fork vs. `upstream/main`)
 
