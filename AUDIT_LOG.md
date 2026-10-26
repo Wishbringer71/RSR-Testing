@@ -11908,6 +11908,24 @@ bis zum Tod, auf der die Rückhaltung urteilt.
 
 *Prüfgrad:* statisch (Spieldaten, Werkzeugquelle).
 
+### A411 · Pictomancer: Farbgrenze unter Hyperphantasia – Befund ohne Änderung (26.10.2026)
+
+- *Gelesen:* `NIN_Reborn`, `PCT_Reborn`, `BLM_Default`, `BLM_RP`, `SMN_Reborn` außerhalb von Konzept 12, `BRD_Reborn`,
+  `DNC_Reborn` – ohne Defekt.
+- *Befund:* Der Text von „Paint overcap protection limit. How many paint you need to be at for it to use Holy out of burst
+  (Setting is ignored when you have Hyperphantasia)" sagt, unter Hyperphantasia gelte die Grenze nicht; `SpendPaint`
+  fragt nur `!HasStarryMuse`. Hyperphantasia kann Starry Muse überdauern (Job-Guide, na., 26.10.2026: Starry Muse
+  20 s, Hyperphantasia 30 s), dann greift die Grenze doch (seit
+  `d566eda86`, 13.08.2025, Text und Code in einem Commit).
+- *Warum keine Änderung:* Der Text lässt zwei Lesarten zu. „Die Schutzregel entfällt" ließe mit der Voreinstellung 5 die
+  Farbe überlaufen; „die Grenze ist dann die volle Leiste" deckt sich mit der Voreinstellung genau mit dem Code. Ein
+  Unterschied entsteht nur, wenn der Spieler die Grenze senkt, und betrifft Schaden im Promillebereich, den er im Kampf
+  nicht sehen kann – keine Frage an ihn (seine Vorgabe zu Fragen). Die volle Leiste liefert der Code nicht aus dem Spiel;
+  eine feste 5 wäre eine neue Zahl ohne Loop.
+- *Wiederaufnahme:* wenn der Code die Höchstfarbe aus dem Spiel liest oder der Text bei Upstream geklärt wird.
+
+*Prüfgrad:* statisch.
+
 ---
 ## B · Commit-Register (Fork vs. `upstream/main`)
 

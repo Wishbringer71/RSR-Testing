@@ -68,10 +68,13 @@ Abgearbeitet nach seiner Vorgabe vom 26.10.2026: „todo nach priorität und ums
   Konzept 08); Viper und Rotmagier in Abwehr, Heilung, Wiederbelebung und den Hauptpfaden der GCDs ohne Befund; Ninja:
   die Mudra-Sperre sitzt zentral im Fähigkeitspfad (`CustomRotation_Ability`), Shade Shift kann die Ninjutsu nicht
   brechen; Schwarzmagier: die Ley-Lines-Sperre bei Flächencasts sitzt in `ModifyLeyLinesPvE` und gilt für beide
-  Rotationen.
-- **Offen:** die übrige Schadenslogik Zeile für Zeile – Ninja (Mudra-Folgen), Pictomancer, Schwarzmagier,
-  Beschwörer außerhalb von Konzept 12, Barde (Lieder), Tänzer, Monk; ihre Prioritäten sind gegen The Balance abgeglichen
-  (A375–A387, Konzept 14)
+  Rotationen. Ninja (Ninjutsu-Wahl, Ausführung, GCDs), Pictomancer, Schwarzmagier, Beschwörer außerhalb von Konzept 12
+  (Lux Solaris nach Konzept 08, Physick über „Use GCDs to heal"), Barde (Lieder, Fähigkeiten) und Tänzer gelesen: ohne
+  Defekt; Forked Raiju sprintet nur mit seiner als gefährlich bezeichneten Option, die übrigen Angriffe mit Sprung sind
+  an der Aufrufstelle begrenzt. Pictomancer: Text und Code der Farbgrenze gehen unter Hyperphantasia auseinander,
+  ohne eindeutige Lesart (A411).
+- **Offen:** der Monk Zeile für Zeile, zuletzt nach seinem Profil (er spielt ihn bislang nicht); seine Prioritäten
+  gleicht der TODO-Punkt „Rotationen gegen The Balance abgleichen" ab
   (`RebornRotations`; `ExtraRotations` nur, wo eine zentrale Änderung sie berührt, Churin ausgenommen).
 
 ## Methode
