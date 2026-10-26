@@ -11845,6 +11845,24 @@ bis zum Tod, auf der die Rückhaltung urteilt.
 
 *Prüfgrad:* statisch, Compile, Prüfskripte; im Spiel nicht beobachtet.
 
+### A408 · Samurai: Feint unter der eigenen Gesundheitsschwelle, ohne Treffer in Sicht (26.10.2026)
+
+- *Gelesen:* `DRG_Reborn` vollständig ohne Befund; `SAM_Reborn` bis zur GCD-Logik.
+- *Befund (Defekt, Upstream):* `SAM_Reborn.GeneralAbility` wirkte Feint, sobald die eigenen LP des Samurai unter
+  „Health threshold needed to use Tengentsu/ThirdEye outside of AOE mit scenarios." fielen. Der Text nennt nur
+  Tengentsu und Third Eye. Klassensuche: Kein anderer Job wirkt Feint, Addle oder Reprisal außerhalb der Abwehrpfade.
+- *Wirkung im Kampf:* Nach einer Mechanik, die den Samurai unter 50 % bringt, ging Feint auf das Ziel, ohne dass ein
+  Treffer angekündigt oder gemessen war. Feint mindert, was das Ziel austeilt, nicht was den Samurai trifft. Danach
+  fehlte es bis zu 90 s (Abklingzeit) für den nächsten Raidwide der Gruppe, wenn kein anderer Nahkämpfer es trägt.
+- *Behebung:* Der Zweig wirkt nur noch Tengentsu und Third Eye. Feint bleibt in Flächen- und Einzelabwehr.
+- *Falsifikation:* kein Defekt – widerlegt, die Regel misst keine Trefferwahrscheinlichkeit (seine Vorgabe: jede
+  Sicherheitsregel nennt ihr Maß), und der Text nennt Feint nicht; Option falsch – trifft gleich ein Raidwide, öffnet er
+  den Flächenpfad, und Feint geht dort; ausgeliefert und nichts ändert sich – solange der Samurai nicht unter die
+  Schwelle fällt, zutreffend.
+- *Dokumentation:* Konzepte 08, 19; Release-Text.
+
+*Prüfgrad:* statisch, Compile, Prüfskripte; im Spiel nicht beobachtet.
+
 ---
 ## B · Commit-Register (Fork vs. `upstream/main`)
 

@@ -157,12 +157,11 @@ public sealed class SAM_Reborn : SamuraiRotation
 	#region oGCD Logic
 	protected override bool GeneralAbility(IAction nextGCD, out IAction? act)
 	{
+		// The threshold is Tengentsu's and Third Eye's, as its text says. Feint protects the party and goes on the
+		// defence paths, for an announced or measured hit, as for every other job; spent here on the samurai's own low
+		// health, it was gone for the next raidwide (A408).
 		if (!HasZanshinReady && Player?.GetHealthRatio() <= TengentsuHealth)
 		{
-			if (FeintPvE.CanUse(out act))
-			{
-				return true;
-			}
 			if (TengentsuPvE.CanUse(out act))
 			{
 				return true;

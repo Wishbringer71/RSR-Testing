@@ -150,3 +150,9 @@ makes it free; with little MP, Darkside may lapse until there is enough.
 The right-click entry "Reset to Default Value." now restores the default value. For plain and per-job switches it used
 to turn them off instead: "Heal ahead of incoming damage" or "Raise with Swiftcast or Dualcast", both on by default,
 ended up off.
+
+## Samurai: Feint stays for the hits the party takes
+
+Below "Health threshold needed to use Tengentsu/ThirdEye outside of AOE mit scenarios." the Samurai also spent Feint,
+with no hit announced, and it was then missing for the next raidwide. That threshold now uses Tengentsu and Third Eye
+only, as its text says; Feint goes out for announced or measured hits, as for every other job.

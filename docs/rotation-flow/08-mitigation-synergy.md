@@ -508,6 +508,11 @@ Nachbarn, die Abwehr faellt also nicht aus — sie kommt **spaeter**, naemlich e
 schon laeuft und den Vorfilter passiert hat. Das ist der Unterschied zwischen „vor dem Einschlag
 gedeckt" und „waehrend des Einschlags gedeckt".
 
+**Gruppenminderungen nur über diese Ebenen.** Feint, Addle und Reprisal fallen bei jedem Job allein in den
+Abwehrpfaden, also für einen angekündigten oder gemessenen Treffer. Die einzige Ausnahme war Feint des Samurai unter
+seiner eigenen Gesundheitsschwelle („Health threshold needed to use Tengentsu/ThirdEye outside of AOE mit scenarios.",
+deren Text nur Tengentsu und Third Eye nennt). Dort fehlte Feint dann für den nächsten Raidwide. Sie ist entfernt (A408).
+
 **Der Ausfall ist still, und das ist der eigentliche Mangel.** Beide Ausfallarten — kein Modul, oder
 ein Modul, das Raidwides nicht fuehrt — erreichen den Baum als `float.MaxValue`, und jede Pruefung
 gegen ein Zeitfenster liest das als „es kommt nichts". Eine ausbleibende Minderung sieht damit aus

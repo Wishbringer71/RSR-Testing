@@ -21,7 +21,7 @@ vom 25.10.2026 abends zu Chorts Türmen und dem Glockenspiel ist beantwortet und
 kleinen gemessenen Tankbuster ist gebaut, für Heiler und Tanks (A373), die Reflexion daraus ebenso (A374). Sein Auftrag
 vom 26.10.2026 („todo nach priorität und umsetzbarkeit in loops abarbeiten") läuft: Flamethrower ist gebaut (A380),
 der Abgleich mit The Balance bis auf den Monk abgeschlossen (A381–A387, A390), zwei Schuldpunkte aufgelöst (A388,
-A389), die AoE-Schwelle an die AoE-Aktion gebunden (A391), im Audit dreizehn Defekte behoben (A393–A395, A397, A399, A401–A407) und die Bodenflächen an die Gruppe gelegt (A398). Was nur den Monk betrifft, rückt nach hinten: Er spielt ihn bislang nicht (seine Angabe, 25.10.2026), die Wirkung
+A389), die AoE-Schwelle an die AoE-Aktion gebunden (A391), im Audit vierzehn Defekte behoben (A393–A395, A397, A399, A401–A408) und die Bodenflächen an die Gruppe gelegt (A398). Was nur den Monk betrifft, rückt nach hinten: Er spielt ihn bislang nicht (seine Angabe, 25.10.2026), die Wirkung
 in seinem Profil ist heute null.
 
 1. Audit der gesamten Codebasis
