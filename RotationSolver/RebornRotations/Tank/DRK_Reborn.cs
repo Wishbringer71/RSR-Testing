@@ -691,7 +691,10 @@ public sealed class DRK_Reborn : DarkKnightRotation
 			return true;
 		}
 
-		if (NumberOfHostilesInRange >= 3 && AbyssalDrainPvE.CanUse(out act))
+		// Abyssal Drain shares its recast with Carve and Spit: it goes where it out-damages it on the enemies it reaches,
+		// by their tooltips (A391), its AoE count the lower bound.
+		if (AbyssalDrainPvE.CanUse(out act)
+			&& ActionTooltip.AreaOutdamagesSingle(AbyssalDrainPvE.ID, AbyssalDrainPvE.Target.AffectedTargets.Length, CarveAndSpitPvE.ID))
 		{
 			return true;
 		}

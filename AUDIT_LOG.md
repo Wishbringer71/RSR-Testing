@@ -11408,6 +11408,26 @@ bearbeitet ist und in seinen Protokollen gespielt wird.
 
 *Prüfgrad:* Code, Quellen; im Spiel nicht beobachtet.
 
+### A391 · Die AoE-Schwelle an der AoE-Aktion (26.10.2026)
+
+- *Auftrag:* TODO „AoE-Schwelle an drei Orten"; seiner vom 26.10.2026.
+- *Erhebung:* eigene Zählungen mit Schwelle in den Reborn-Rotationen: Samurai (`NumberOfHostilesInRange >= 3` zweimal,
+  `>= 2` für Ogi), Dunkelritter (Abyssal Drain `>= 3`), Monk (Perfect Balance `>= 2`); Paladin `>= 1` ist eine
+  Anwesenheitsprüfung, Dunkelritter `BlackestNightMinHostiles` eine Einstellung der Pull-Abwehr. Viper und Blaumagier, die
+  das TODO noch nannte, zählen nicht mehr selbst. Spielblatt (xivapi): Fuko Kreis 5, Fuga Kegel 8, Tenka Goken Kreis 8,
+  Abyssal Drain Kreis 5 um das Ziel, Reichweite 20.
+- *Befund:* Der Samurai zählte in Nahkampfreichweite, seine AoE-Kombo trifft im Radius 5 – Gegner zwischen 3 und 5 Yalm
+  traf die Kombo, die Weiche sah sie nicht. Der Dunkelritter verlangte drei Gegner um sich und zwei um das Ziel. Monk:
+  Absicht im Kommentar („centre of the mobs"), bleibt.
+- *Gebaut:* `SAM_Reborn.AoeComboReaches` (Radius und AoE-Zahl von Fuko bzw. Fuga); Ogi im AoE-Zweig nach seinen eigenen
+  Getroffenen (`> 1`); `DRK_Reborn` über `ActionTooltip.AreaOutdamagesSingle` (240 je Gegner gegen 540: ab drei).
+- *Falsifikation:* (1) Kein Defekt? Die Mengen wichen ab – widerlegt. (2) Gegenposition Samurai: Die 3 Yalm hielten ihn
+  im Rudel? Nein, die Weiche wählt nur die Aktion, nicht den Platz; die Kombo trifft im Radius 5 ohnehin. (3)
+  Ausgeliefert, nichts ändert sich? In einem eng gezogenen Rudel – alle innerhalb 3 Yalm – zählen beide gleich; anders
+  wird es nur bei locker stehenden.
+
+*Prüfgrad:* Code, Spielblatt, Compile; im Spiel nicht beobachtet.
+
 ---
 ## B · Commit-Register (Fork vs. `upstream/main`)
 

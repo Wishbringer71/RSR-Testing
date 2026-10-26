@@ -62,3 +62,11 @@ its health was below what the party was assumed to deal in 12 seconds.
 
 When RSR finds no weaponskill or spell to cast - while you move as a caster, say - your abilities no longer wait out
 the last half second of the GCD timer. That half second only keeps an ability from delaying a GCD, and none is coming.
+
+## Samurai and Dark Knight: AoE decisions count what the AoE hits
+
+The Samurai's switch to the AoE Iaijutsu and Hagakure now counts the enemies within its AoE combo's radius (5 yalms
+for Fuko) against that combo's AoE count, instead of those within melee range - so it agrees with the AoE combo it
+already uses; Ogi Namikiri on the AoE path goes when it hits more than one enemy. The Dark Knight's Abyssal Drain
+takes Carve and Spit's place where it out-damages it on the enemies it reaches, by their tooltips (from three), instead
+of needing three enemies around you on top of its own AoE count.

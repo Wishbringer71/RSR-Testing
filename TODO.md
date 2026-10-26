@@ -21,13 +21,12 @@ vom 25.10.2026 abends zu Chorts Türmen und dem Glockenspiel ist beantwortet und
 kleinen gemessenen Tankbuster ist gebaut, für Heiler und Tanks (A373), die Reflexion daraus ebenso (A374). Sein Auftrag
 vom 26.10.2026 („todo nach priorität und umsetzbarkeit in loops abarbeiten") läuft: Flamethrower ist gebaut (A380),
 der Abgleich mit The Balance bis auf den Monk abgeschlossen (A381–A387, A390), zwei Schuldpunkte aufgelöst (A388,
-A389). Was nur den Monk betrifft, rückt nach hinten: Er spielt ihn bislang nicht (seine Angabe, 25.10.2026), die Wirkung
+A389), die AoE-Schwelle an die AoE-Aktion gebunden (A391). Was nur den Monk betrifft, rückt nach hinten: Er spielt ihn bislang nicht (seine Angabe, 25.10.2026), die Wirkung
 in seinem Profil ist heute null.
 
 1. Audit der gesamten Codebasis
-2. AoE-Schwelle an drei Orten
-3. Rotationen gegen The Balance abgleichen (nur noch der Monk)
-4. Six-sided Star
+2. Rotationen gegen The Balance abgleichen (nur noch der Monk)
+3. Six-sided Star
 
 Danach technische Schuld, soweit ihre Auflösungsbedingung erfüllt ist. Warten auf Daten: unten.
 
@@ -53,13 +52,6 @@ deutschen Namen gehören in `action_names_de.json`. *Konzept:* 14, „Vergleich 
 *Im Kampf:* Schaden des Monks vor einer Pause oder dem Tod des Ziels. Wert und Einsatzregel belegt (Job-Guide, The
 Balance, 02.10.2026), nicht gebaut; braucht die vorhergesagte Pause oder die Zeit bis zum Tod. *Konzept:* 14, „Pausen
 und Phasenenden".
-
-### AoE-Schwelle an drei Orten · R, U
-
-*Im Kampf:* nichts, solange die drei Wege dieselbe Schwelle meinen – die meisten Jobs über `AoeCount` im Zielsystem, der
-Samurai über `NumberOfHostilesInRange >= n`, Blaumagier und Viper über eigene Zählungen. Eine Änderung an einem Weg
-erreicht die anderen nicht. Keine Laufzeitfrage (A325). *Nächster Schritt:* je Job prüfen, ob die eigene Zählung
-dieselbe Menge zählt wie `AoeCount`; erst dann zusammenführen. *Konzept:* 03, U5.
 
 ### Audit der gesamten Codebasis · N, R, U
 

@@ -1,6 +1,6 @@
 # DRK — Abhängigkeitsmatrix
 
-Erzeugt von `.github/scripts/audit/generate_action_matrix.py` am 2026-10-25; nicht von Hand bearbeiten. Methode und Grenzen: `docs/rotation-flow/14-action-dependency-matrix.md`.
+Erzeugt von `.github/scripts/audit/generate_action_matrix.py` am 2026-10-26; nicht von Hand bearbeiten. Methode und Grenzen: `docs/rotation-flow/14-action-dependency-matrix.md`.
 
 - Basisrotation: `DarkKnightRotation`
 - Rotation: `RotationSolver/RebornRotations/Tank/DRK_Reborn.cs`
@@ -99,6 +99,7 @@ direkt: 41 · ungenutzt: 1 · über andere Aktion: 1
 
 | Aktion | Beziehung | zu |
 |---|---|---|
+| Abyssal Drain | Regel prüft | Carve and Spit |
 | Blood Weapon | Regel prüft | Delirium |
 | Comeuppance | ComboIds | Scarlet Delirium |
 | Dark Missionary | Regel sperrt vorher | Oblation |

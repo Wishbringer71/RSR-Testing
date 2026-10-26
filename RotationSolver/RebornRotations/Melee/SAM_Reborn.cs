@@ -307,6 +307,17 @@ public sealed class SAM_Reborn : SamuraiRotation
 		return false;
 	}
 
+	// Whether the pack calls for the AoE path: as many enemies within the AoE combo's radius as its AoE count asks, the set
+	// and threshold its own targeting uses - one setting moves both (A391).
+	private bool AoeComboReaches
+	{
+		get
+		{
+			var combo = FugaMasteryTrait.EnoughLevel ? FukoPvE : FugaPvE;
+			return NumberOfHostilesInRangeOf(combo.Info.EffectRange) >= combo.Config.AoeCount;
+		}
+	}
+
 	private bool UseAoeFinishers(out IAction? act)
 	{
 		if (KaeshiNamikiriPvE.CanUse(out act))
@@ -314,7 +325,7 @@ public sealed class SAM_Reborn : SamuraiRotation
 			return true;
 		}
 
-		if (NumberOfHostilesInRange >= 3)
+		if (AoeComboReaches)
 		{
 			switch (STtoAOE)
 			{
@@ -342,12 +353,12 @@ public sealed class SAM_Reborn : SamuraiRotation
 			}
 		}
 
-		if (!HagakurePvE.EnoughLevel && NumberOfHostilesInRange >= 3 && MidareSetsugekkaPvE.CanUse(out act))
+		if (!HagakurePvE.EnoughLevel && AoeComboReaches && MidareSetsugekkaPvE.CanUse(out act))
 		{
 			return true;
 		}
 
-		if (NumberOfHostilesInRange >= 2 && OgiNamikiriPvE.CanUse(out act))
+		if (OgiNamikiriPvE.CanUse(out act) && OgiNamikiriPvE.Target.AffectedTargets.Length > 1)
 		{
 			return true;
 		}
