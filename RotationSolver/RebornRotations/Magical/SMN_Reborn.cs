@@ -832,6 +832,17 @@ public sealed class SMN_Reborn : SummonerRotation
 			return true;
 		}
 
+		// The Necrotizes of the odd-minute Energy Drain are saved for the two-minute window "as long as they are used
+		// before the next Energy Drain" (The Balance, Summoner Basic Guide, patch 7.55). They were spent once Energy
+		// Drain was two GCDs off - a few seconds before Solar Bahamut and Searing Light, so outside the window every
+		// time. With the burst summon and Searing Light both back no later than Energy Drain, the gauge now waits: the
+		// window branch spends it there, and Energy Drain, which needs it empty, follows a weave later. Its time to spend
+		// the gauge otherwise is one GCD a stack, a weave slot each (A375).
+		var drainIn = EnergyDrainPvE.Cooldown.RecastTimeRemainOneCharge;
+		var burstSummon = SummonSolarBahamutPvE.EnoughLevel ? SummonSolarBahamutPvE : SummonBahamutPvE;
+		var aetherflowWaitsForBurst = !inBigInvocation && IsBurst && NextBigSummonIsBurst && SearingLightPvE.EnoughLevel
+			&& burstSummon.Cooldown.WillHaveOneCharge(drainIn) && SearingLightPvE.Cooldown.WillHaveOneCharge(drainIn);
+
 		if (PainflarePvE.CanUse(out act))
 		{
 			// HasAnySearingLight, not HasSearingLight: the question here is whether a buff window is
@@ -858,7 +869,7 @@ public sealed class SMN_Reborn : SummonerRotation
 			{
 				return true;
 			}
-			if (EnergyDrainPvE.Cooldown.WillHaveOneChargeGCD(2))
+			if (EnergyDrainPvE.Cooldown.WillHaveOneChargeGCD(AetherflowStacks) && !aetherflowWaitsForBurst)
 			{
 				return true;
 			}
@@ -874,7 +885,7 @@ public sealed class SMN_Reborn : SummonerRotation
 			{
 				return true;
 			}
-			if (EnergyDrainPvE.Cooldown.WillHaveOneChargeGCD(2))
+			if (EnergyDrainPvE.Cooldown.WillHaveOneChargeGCD(AetherflowStacks) && !aetherflowWaitsForBurst)
 			{
 				return true;
 			}

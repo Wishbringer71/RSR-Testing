@@ -439,7 +439,7 @@ Werk an).
 
 **Sachstand:** Abgeglichen ist der Maschinist (24.10.2026) gegen The Balance, Machinist Basic Guide und Openers
 (beide „Patch Applicable: 7.3", zuletzt geändert am 05.08.2025); die Potenzen nennt der offizielle Job-Guide (Patch
-7.5). Die übrigen Jobs sind offen (TODO, „Rotationen gegen The Balance abgleichen"). Abweichungen, die nur Schaden
+7.5). Der Beschwörer ist abgeglichen (26.10.2026, A375). Die übrigen Jobs sind offen (TODO, „Rotationen gegen The Balance abgleichen"). Abweichungen, die nur Schaden
 betreffen, werden behoben, wo sich die bessere Wahl aus dem Spiel ableiten lässt und keine seiner Regeln dagegen steht;
 die übrigen nennt der Abgleich mit Grund. Weniger Schaden aus einer Sicherheitsregel bleibt (seine Präzisierung).
 
@@ -541,3 +541,47 @@ Geprüft ist bisher nur der Vorlauf (A343); Burst und Prioritäten sind offen.
   mit Puffer, Hunter's Instinct liegt also auf allen Treffern der Folge. Dass ein Buff danach bis zur nächsten
   Erneuerung ausläuft, ist die Abwägung, die die Einstellung dem Spieler lässt (früher Reawaken gegen kurze Lücke); The
   Balance nennt keinen Wert (Basic Guide, abgerufen am 25.10.2026). Nicht geändert.
+
+### Beschwörer
+
+Abgeglichen am 26.10.2026 gegen The Balance, Summoner Basic Guide („Patch Applicable: 7.55", zuletzt geändert am
+31.07.2026; die Opener-Seite zeigt die Folge nur als Bild). Die Searing-Light-Regeln selbst stehen in Konzept 12.
+
+**Die Necrotize der ungeraden Minute warten auf das Zwei-Minuten-Fenster** (`SMN_Reborn.AttackAbility`, A375). The
+Balance: „Necrotize from your odd minute Energy Drain … should be saved for 2-minute buff windows as long as they are
+used before the next Energy Drain." RSR gab den Aetherflow aus, sobald Energy Drain in zwei GCDs bereit wurde (Schutz
+gegen das Überlaufen, Konzept 16). Energy Drain kehrt aber zur selben Zeit zurück wie Solar Bahamut: in der ungeraden
+Minute gewirkt, nach 60 s wieder bereit, während der Demi-Takt 60 s beträgt. Die beiden Necrotize fielen so jedes Mal
+wenige Sekunden vor Searing Light und dem Fenster der Gruppe.
+- *Jetzt:* Sind die Burst-Beschwörung (Solar Bahamut, darunter Bahamut) und Searing Light spätestens mit Energy Drain
+  wieder bereit und ist die nächste große Beschwörung die des Bursts, wartet der Aetherflow; im Fenster gibt ihn der
+  bestehende Zweig aus, und Energy Drain, das einen leeren Aetherflow verlangt (`ActionCheck`), folgt eine Einwebung
+  später. Der Takt verschiebt sich dadurch einmal um diese Einwebung und bleibt dann, weil Energy Drain und der
+  Demi-Takt dieselben 60 s haben; das Fenster der Demi (15 s) fasst Energy Drain weiter.
+- *Der Überlaufschutz* rechnet jetzt eine Einwebung je Ladung (`WillHaveOneChargeGCD(AetherflowStacks)`) statt fester
+  zwei GCDs: Jede Ladung braucht einen Platz. Bei zwei Ladungen dasselbe wie vorher.
+- *Im Kampf:* je zwei Minuten zwei Necrotize unter Searing Light (5 %) und den übrigen Buffs der Gruppe statt davor. Der
+  eigene Teil: 2 × 500 Potenz × 5 % = 50 Potenz alle zwei Minuten – Promillebereich; der Teil aus den Buffs der anderen
+  ist eine Annahme über sie, kein tragender Grund. Gebaut, weil es aus Spieldaten folgt und nichts kostet.
+- *Nicht gewartet* wird, wenn der Burst automatisch aus ist, die nächste große Beschwörung nicht die des Bursts ist
+  (ein anderer Beschwörer hält sie, Konzept 12) oder eine der beiden später zurückkommt als Energy Drain. Stirbt das
+  Ziel, gehen die Ladungen wie bisher.
+
+**Weitere Punkte, gegen The Balance geprüft:**
+
+| Punkt | The Balance | RSR | Stand |
+|---|---|---|---|
+| Opener | Titan zuerst; Ruin III vorab gewirkt | Ruin III im Countdown, Reihenfolge ab Werk Titan, Garuda, Ifrit | deckt sich |
+| Searing Light | „on cooldown to align with all other two minute party buffs" | im Solar-Fenster, Sonderfälle mehrerer Beschwörer | Konzept 12 |
+| Energy Drain | früh in der Demi | in jeder großen Beschwörung, sobald der Aetherflow leer ist | deckt sich |
+| Sunflare, Exodus, Akh Morn, Revelation | unter Buffs | sofort in der großen Beschwörung, nach Searing Light | deckt sich |
+| Mountain Buster | jede Gunst sofort einweben | nach Searing Light und Lux Solaris, vor dem Aetherflow | deckt sich |
+| Ruin IV | eine je Zyklus, nie in einer Demi | nur außerhalb der Demi und der Primal-Phase (`UseFillers`) | deckt sich |
+| Ruin III | so selten wie möglich, Demis nicht verzögern | nur als letzter Füller | deckt sich |
+| Ifrit | in Nahkampfreichweite, Crimson Cyclone schließt auf | Crimson Cyclone nur bis 3 Yalm (Einstellung), Ifrit im Rückfallblock nur am Ziel | weicht ab: Aus einer sicheren Position holt ihn RSR nicht für Schaden (seine Regel) |
+| Swiftcast | Wiederbelebung zuerst, Slipstream nur situativ | Wiederbelebung (Einstellung an), alle Rotationsoptionen dafür ab Werk aus | deckt sich mit seiner Regel |
+| Lux Solaris | für einen Raidwide halten, vor Ablauf nutzen | eigene Entscheidung (Konzept 08) | deckt sich |
+| Rekindle | immer nutzen | niedrigster Anteil, sonst er selbst; spätestens drei GCDs vor Phasenende | deckt sich |
+| Trank | Opener spät eingewebt, danach im Sechs-Minuten-Fenster | unter dem eigenen Searing Light, nach „Tincture usage" (ab Werk nur in High-End-Inhalten); nach 270 s Abklingzeit ist das nächste eigene Fenster das der sechsten Minute | deckt sich |
+| Lucid Dreaming | bei rund 70 % MP | Schwelle in MP, ab Werk 6000 von 10000 | seine Einstellung (Konzept 18) |
+| Physick | kein Einsatz im Endgame | nur mit „Use Physick above level 30" (ab Werk aus) | deckt sich |

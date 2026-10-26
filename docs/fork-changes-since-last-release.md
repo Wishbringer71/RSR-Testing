@@ -22,3 +22,10 @@ longer sends that help onto the tank anyway, which also put it on a tank under H
 and the party mitigation some jobs spend in the single-target defence stay back the same way while such a tankbuster on
 someone else is all that is coming and BossModReborn predicts none. The first time a tankbuster is met nothing changes:
 it is measured with that hit.
+
+## Summoner: the odd-minute Necrotizes wait for the two-minute window
+
+The two Necrotizes from the odd-minute Energy Drain used to go out a few seconds before Solar Bahamut and Searing
+Light, because Energy Drain comes back at the same moment as the burst summon. They now wait for the window when the
+burst summon and Searing Light are back no later than Energy Drain, and Energy Drain follows them by a weave - as The
+Balance's Summoner guide describes.

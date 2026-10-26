@@ -365,8 +365,8 @@ rückt um denselben GCD nach hinten und trägt einen Primal-GCD mehr — mit Tit
 mit Mountain Buster 500. Netto sind das 15 bis 23 Potenz eigener Schaden, 0,05 bis 0,08 Prozent des
 Zwei-Minuten-Zyklus; die Aetherflow-Ausgaben der Phase warten ohnehin auf den Buff und verlieren
 nichts. Für die Gruppe verschiebt sich das Fenster um denselben GCD; das ist nicht beziffert. Die übrigen
-Fähigkeiten der Phase — Energy Drain, zweimal Necrotize, Exodus, Sunflare, Searing Flash, Lux
-Solaris — brauchen kein Warten: rund acht auf zwölf Einschiebeplätze. *Clipdauer aus Ausführungssperre
+Fähigkeiten der Phase — Energy Drain, viermal Necrotize (zwei aufgehobene, zwei neue; A375), Exodus,
+Sunflare, Searing Flash, Lux Solaris — brauchen kein Warten: rund zehn auf zwölf Einschiebeplätze. *Clipdauer aus Ausführungssperre
 und Latenz, beide nicht im Repository, der Code liest sie erst zur Laufzeit.*
 
 **Warum Verzug Schaden kostet** (`ActionId.resx`, beides dort wörtlich): Searing Light wirkt
@@ -433,10 +433,10 @@ Quellen zugleich: stärkerer Füller (640), stärkerer Begleitangriff (Luxwave 1
 allem die beiden Abschlüsse Sunflare 1000 und Exodus 1500 gegen Deathflare 500 und Akh Morn 1300.
 
 **Der Abstand zur Zwischenphase ist noch größer als die Tabelle zeigt.** RSR legt zusätzlich Energy
-Drain, zweimal Necrotize und Searing Flash ins Solar-Fenster — Necrotize und Fester unter
-`inSolarUnique && HasAnySearingLight`, Searing Flash, weil es erst durch Searing Light entsteht. Das sind
-1800 Potenz obendrauf, 25 Prozent mehr; sie stehen nicht in der Tabelle, weil der Vergleich ohne Searing
-Light geführt ist.
+Drain, viermal Necrotize und Searing Flash ins Solar-Fenster — Necrotize und Fester unter
+`inSolarUnique && HasAnySearingLight`, die zwei aus dem Energy Drain der ungeraden Minute aufgehoben bis
+dorthin (A375), Searing Flash, weil es erst durch Searing Light entsteht. Das sind 2900 Potenz obendrauf,
+40 Prozent mehr; sie stehen nicht in der Tabelle, weil der Vergleich ohne Searing Light geführt ist.
 
 **Die Beschwörung selbst kostet einen GCD.** Die Action-Tabelle führt bei den Demi-Beschwörungen die
 GCD-Gruppe als zweite Abklingzeitgruppe (A247), und RSR ruft sie aus `GeneralGCD` auf. Das Skript rechnet
@@ -524,7 +524,8 @@ rechnet damit (`smn_phase_potency.py`).
 
 **Woher die Potenzen kommen.** Ohne Merkmalsaufwertung aus `ActionId.resx` in diesem Repository: Umbral
 Impulse 640, Luxwave 160, Wyrmwave 150, Scarlet Flame 150, Sunflare 1000, Exodus 1500, Deathflare 500, Akh
-Morn 1300, Revelation 1300, Necrotize 500, Searing Flash 700, Energy Drain 100. Wo ein Merkmal die Zahl im
+Morn 1300, Revelation 1300, Necrotize 500, Searing Flash 700, Energy Drain 200 (die Zeile des Beschwörers, 16508; die
+100 bis A375 waren die des Gelehrten). Wo ein Merkmal die Zahl im
 Tooltip überschreibt, steht in `ActionId.resx` „with a potency of .“; diese vierzehn Werte stammen aus dem
 offiziellen Job-Guide (Stufe 100, abgerufen 02.10.2026): Astral Impulse 500, Fountain of Fire 580, Ruin III
 400, Ruin IV 520, Ruby Rite 620, Topaz Rite 340, Emerald Rite 280, Crimson Cyclone 560, Crimson Strike 560,

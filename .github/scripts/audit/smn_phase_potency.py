@@ -61,7 +61,7 @@ POTENCY = {
     'Ruin III': (400, GAME),
     'Ruin IV': (520, GAME),
     # abilities RotationSolver parks inside the Solar Bahamut window
-    'Energy Drain': (100, REPO_RESX),
+    'Energy Drain': (200, REPO_RESX),     # EnergyDrainPvE_16508; 100 is Scholar's Energy Drain (167)
     'Necrotize': (500, REPO_RESX),
     'Searing Flash': (700, REPO_RESX),
 }
@@ -409,8 +409,10 @@ def report():
     # SMN_Reborn.cs holds Necrotize and Fester behind "inSolarUnique &&
     # HasSearingLight", and Searing Flash only exists because Searing Light
     # granted Ruby's Glimmer, so none of this survives a comparison that
-    # switches Searing Light off.
-    parked = [('Energy Drain', 1), ('Necrotize', 2), ('Searing Flash', 1)]
+    # switches Searing Light off. Four Necrotizes: the two of the odd-minute
+    # Energy Drain wait for this window (aetherflowWaitsForBurst, A375), then
+    # Energy Drain grants two more.
+    parked = [('Energy Drain', 1), ('Necrotize', 4), ('Searing Flash', 1)]
     extra = sum(pot(n) * c for n, c in parked)
     solar = demi_phases(False)['Solar Bahamut']['potency']
     print('bound to Searing Light and therefore not part of the comparison above:')

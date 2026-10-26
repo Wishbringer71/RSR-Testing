@@ -11089,6 +11089,33 @@ TODO-Punkt „Reflexion auf einen kleinen gemessenen Tankbuster des anderen Tank
 
 *Prüfgrad:* Code, Protokolle, Compile; im Spiel nicht beobachtet.
 
+### A375 · Beschwörer gegen The Balance (26.10.2026)
+
+TODO-Punkt „Rotationen gegen The Balance abgleichen", Job für Job; der Beschwörer zuerst, weil er im Fork am meisten
+bearbeitet ist und in seinen Protokollen gespielt wird.
+
+- *Quelle:* The Balance, Summoner Basic Guide, „Patch Applicable: 7.55", zuletzt geändert am 31.07.2026 (abgerufen
+  26.10.2026); die Opener-Seite zeigt die Folge nur als Bild.
+- *Befund:* Die Necrotize der ungeraden Minute fielen vor dem Zwei-Minuten-Fenster. Der Überlaufschutz (zwei GCDs vor
+  Energy Drain) greift genau dann, weil Energy Drain und Solar Bahamut mit 60 s Abklingzeit gleichzeitig zurückkehren.
+- *Optionen:* Nullvariante (Promillebereich); Warten auf das Fenster, wenn Burst-Beschwörung und Searing Light
+  spätestens mit Energy Drain zurück sind; immer warten (verschiebt Energy Drain unbegrenzt, etwa in einer Pause).
+  Gewählt: das bedingte Warten. Die feste Zwei des Überlaufschutzes ist dabei durch eine Einwebung je Ladung ersetzt –
+  angefasst, also abgeleitet.
+- *Falsifikation:* *Kein Defekt?* Der Gewinn ist klein (eigener Anteil 50 Potenz je zwei Minuten), aber der Text von
+  The Balance ist eindeutig, und das Warten kostet nichts: Energy Drain rückt einmal um eine Einwebung und hält dann
+  den Takt. *Option falsch?* Hält eine Pause die Beschwörung auf, wartet Energy Drain mit; die Bedingung liest aber die
+  Abklingzeit der Beschwörung, nicht ihr Kommen – kommt sie verspätet, wartet Energy Drain bis in die Demi. In einer
+  langen Pause verliert er so höchstens eine Wiederholung am Kampfende. *Ausgeliefert, nichts ändert sich?* Mit
+  automatischem Burst aus, wenn ein anderer Beschwörer das Fenster hält, unterhalb von Searing Light.
+- *Übrige Punkte:* Tabelle in Konzept 14, „Beschwörer"; einzige weitere Abweichung ist Ifrit in Nahkampfreichweite,
+  die seine Regel ausschließt.
+- *Nebenbefund:* `smn_phase_potency.py` führte Energy Drain mit 100 Potenz – die Zeile des Gelehrten (167); die des
+  Beschwörers (16508) nennt 200, ebenso der Job-Guide 7.5. Mit vier Necrotize trägt das Solar-Fenster 2900 Potenz
+  über die Tabelle hinaus statt 1800 (Konzept 12).
+
+*Prüfgrad:* Code, Quelle, Compile; im Spiel nicht beobachtet.
+
 ---
 ## B · Commit-Register (Fork vs. `upstream/main`)
 
