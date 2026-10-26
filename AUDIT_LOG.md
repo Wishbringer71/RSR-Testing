@@ -12075,6 +12075,28 @@ bis zum Tod, auf der die Rückhaltung urteilt.
 
 *Prüfgrad:* ACT-Mitschnitte beider Tage, Code; das Gefühl selbst ist nicht messbar.
 
+### A417 · `DefenseTrace.log` ohne Zeilen nach dem Kopf: Code geprüft, Selbstprüfung eingebaut (26.10.2026)
+
+- *Seine Angabe:* „vorher hat das log funktioniert, jetzt nicht mehr" – Beobachtung; er hält eine Änderung von mir für
+  die Ursache.
+- *Gestern funktionierend:* Build `8368ec3f7`, Trace bis 20:31 mit allen Zeilenarten (`ac104747-RotationSolver.7z`).
+- *Geändert seit `8368ec3f7` an Stellen, die in die Datei schreiben:* `Watcher.cs` (eine neue Zeile, ein Wort einer
+  bestehenden), `UpdateCost.cs` (die größte Gruppe im Kampf statt der Gruppe beim Ende), heute neue Zeilen für die
+  Phönixfeder, die zurückgehaltene Tankbuster-Hilfe und das Ende von Flamethrower. Unverändert: `DefenseTrace.cs`,
+  `Watcher.Enable`, `MajorUpdater`. Keine dieser Änderungen schaltet das Schreiben ab.
+- *Geprüfte und widerlegte Vermutungen:* (1) `UpdateCost.End` bricht an `DataCenter.PartyMembers.Count` ab und lässt
+  `_wasInCombat` falsch – die Liste wird in `TargetUpdater` stets neu und nie null gesetzt. (2) Ein anderer Thread
+  verändert die Schrittliste während `End` – alle Aufrufer laufen im Framework-Thread. (3) Code löscht oder verschiebt
+  die Datei – keiner. Laut ACT-Mitschnitt handelte RSR (Medica II 0,09 s nach der Befreiung aus dem Granitgefängnis),
+  das Plugin lief also.
+- *Gebaut:* Der Trace schreibt jeden Gebietswechsel und jeden Kampfbeginn und jedes Kampfende, unabhängig von den
+  übrigen Pfaden; ein fehlgeschlagenes Schreiben öffnet die Datei neu und nennt den Grund in ihr, bisher nur eine
+  Warnung im Dalamud-Log; beim Gebietswechsel öffnet er eine nach einem Fehler geschlossene Datei wieder. Die nächste
+  Sitzung trennt damit „das Schreiben scheitert" von „die Pfade schreiben nichts".
+- *Ursache:* offen (TODO, Warten auf Daten).
+
+*Prüfgrad:* Code, Compile; im Spiel nicht beobachtet.
+
 ---
 ## B · Commit-Register (Fork vs. `upstream/main`)
 

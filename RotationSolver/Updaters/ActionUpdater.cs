@@ -148,9 +148,13 @@ internal static class ActionUpdater
 		if (!lastInCombat && DataCenter.InCombat)
 		{
 			_startCombatTime = now;
+			// Every combat in the trace, independent of the paths that write in it: a session without these lines did not
+			// write at all, one with them and nothing else wrote nothing on its paths (A417).
+			DefenseTrace.Line("combat started");
 		}
 		else if (lastInCombat && !DataCenter.InCombat)
 		{
+			DefenseTrace.Line($"combat ended after {(now - _startCombatTime).TotalSeconds:F0} s");
 			_startCombatTime = DateTime.MinValue;
 
 			if (DataCenter.AutoOffAfterCombatEnabled && !DataCenter.IsHenched && !DataCenter.IsAutoDuty)

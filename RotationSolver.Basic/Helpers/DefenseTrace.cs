@@ -27,6 +27,8 @@ internal static class DefenseTrace
 {
 	private static readonly object _lock = new();
 	private static StreamWriter? _writer;
+	// This session's trace was started and not yet stopped: a missing writer then is a failure, not the end (A417).
+	private static bool _started;
 	private static uint _lastDecision;
 	// The id the game casts for the last choice: Raw Intuition goes out as Bloodwhetting.
 	private static uint _lastDecisionCast;
@@ -53,6 +55,7 @@ internal static class DefenseTrace
 			try
 			{
 				_writer?.Dispose();
+				_started = true;
 				_writer = new StreamWriter(FilePath, true) { AutoFlush = true };
 				_writer.WriteLine();
 				_writer.WriteLine($"==== {DateTime.Now:yyyy-MM-dd HH:mm:ss} trace started");
@@ -268,18 +271,60 @@ internal static class DefenseTrace
 	}
 
 	/// <summary>Adds one line with the time of day in front.</summary>
+	/// <remarks>
+	/// A write that fails reopens the file and says why in the file itself. Before, a failure was only a warning in the
+	/// Dalamud log and the file stayed silent for the rest of the session - the owner's trace of 26.10.2026 held its
+	/// header and nothing else (A417).
+	/// </remarks>
 	public static void Line(string text)
 	{
 		lock (_lock)
 		{
+			var line = $"{DateTime.Now:HH:mm:ss.fff} {text}";
 			try
 			{
-				_writer?.WriteLine($"{DateTime.Now:HH:mm:ss.fff} {text}");
+				_writer?.WriteLine(line);
 			}
 			catch (Exception ex)
 			{
 				PluginLog.Warning($"Could not write the defence trace: {ex.Message}");
+				if (Reopen($"a write failed ({ex.Message})"))
+				{
+					_writer!.WriteLine(line);
+				}
 			}
+		}
+	}
+
+	/// <summary>
+	/// Opens the file again if this session's trace was started and has no writer any more, and says so in it (A417).
+	/// </summary>
+	public static void EnsureOpen(string reason)
+	{
+		lock (_lock)
+		{
+			if (_started && _writer == null)
+			{
+				_ = Reopen(reason);
+			}
+		}
+	}
+
+	// Under the lock. True when the file is open again.
+	private static bool Reopen(string reason)
+	{
+		try
+		{
+			_writer?.Dispose();
+			_writer = new StreamWriter(FilePath, true) { AutoFlush = true };
+			_writer.WriteLine($"{DateTime.Now:HH:mm:ss.fff} trace reopened: {reason}");
+			return true;
+		}
+		catch (Exception ex)
+		{
+			_writer = null;
+			PluginLog.Warning($"Could not reopen the defence trace: {ex.Message}");
+			return false;
 		}
 	}
 
@@ -301,6 +346,7 @@ internal static class DefenseTrace
 			{
 				_writer?.Dispose();
 				_writer = null;
+				_started = false;
 			}
 		}
 	}

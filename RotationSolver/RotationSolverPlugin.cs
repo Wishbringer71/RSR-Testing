@@ -246,6 +246,10 @@ public sealed class RotationSolverPlugin : IAsyncDalamudPlugin
 		var territory = Service.GetSheet<TerritoryType>().GetRow(id);
 		DataCenter.Territory = new TerritoryInfo(territory);
 
+		// Each area in the trace, and the file open again if it had failed since (A417).
+		DefenseTrace.EnsureOpen("it was closed by a failure");
+		DefenseTrace.Line($"territory {id} {DataCenter.Territory.Name}");
+
 		try
 		{
 			DataCenter.CurrentRotation?.OnTerritoryChanged();
