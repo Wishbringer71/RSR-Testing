@@ -457,9 +457,10 @@ nicht messbar. Wer sie an hat, konnte ohne Swiftcast niemanden hochholen.
 
 ## Bekannte Mängel neben diesem Konzept
 
-- **`IBaseAction.IgnoreClipping` wird geschrieben und nirgends gelesen** (fünf Schreibzugriffe in
-  `CustomRotation_Invoke.cs`, Definition `IBaseAction.IgnoreClipping`). Wirkungsbereich zu groß für diesen
-  Vorgang: Ein Leser in `DoAction` hebelte die Anti-Clipping-Regel überall aus.
+- **`IBaseAction.IgnoreClipping` wird an der Ausführungssperre gelesen** (A388): Die letzte halbe Sekunde vor dem GCD
+  bleibt für Fähigkeiten gesperrt, außer wenn `Invoke` keinen GCD gefunden hat – dann gibt es nichts zu clippen, wie
+  es das Flag seit Upstream `4ec1a3a1c` (2023) meinte. Ein Leser in `DoAction` bleibt ausgeschlossen: Er hebelte die
+  Sperre überall aus, auch neben einem anstehenden GCD.
 - **`Configs.Migrate` ist ein Zurücksetzen, kein Migrationspfad.** Eine Korrektur, die einen Vorgabewert ändert, um
   das bisherige Verhalten zu erhalten, erreicht gespeicherte Konfigurationen nicht.
 - **`InterruptDelay` und `ProvokeDelay` sind wieder verdrahtet** (A338). Ihre Texte („The range of random delay before

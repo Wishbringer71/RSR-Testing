@@ -72,6 +72,11 @@ A protected helper: a song's duration from its tooltip, the generated table wher
 A public helper: whether a time to kill is measured for an enemy (its health falls on balance, by the corrected
 forecast), for a rotation's own estimate to stand in only before one is.
 
+### Behaviour change in RotationSolver.Basic: no clipping window without a GCD
+
+`CustomRotation`'s ability path skips the half-second window before the GCD when `Invoke` found no GCD to cast
+(`IBaseAction.IgnoreClipping`, read again for the first time since upstream removed its reader).
+
 ## 7.5.7.8+wsh1
 
 ### Dependency of RotationSolver.Basic: RebornMaterial 7.5.7.0

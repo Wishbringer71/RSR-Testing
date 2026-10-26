@@ -57,3 +57,8 @@ leave the circle for. The Balance uses Ley Lines roughly on cooldown. If you pla
 The ballpark estimate behind "Enable ballpark DoT time-to-kill estimator" now holds Bio back only until a time to kill
 is measured for the enemy. Before, it also held Bio on an enemy that had been measured to live long enough, whenever
 its health was below what the party was assumed to deal in 12 seconds.
+
+## Abilities when no GCD is coming
+
+When RSR finds no weaponskill or spell to cast - while you move as a caster, say - your abilities no longer wait out
+the last half second of the GCD timer. That half second only keeps an ability from delaying a GCD, and none is coming.

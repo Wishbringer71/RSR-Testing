@@ -73,10 +73,6 @@ Ohne Wirkung im Kampf oder bewusst eingegangen; je Kosten und Auflösungsbedingu
 rechnet `searing_light_coverage.py` weiter die alte Regel, und Konzept 12 argumentiert mit ihren Zahlen. *Auflösung:*
 jede solche Änderung trägt im selben Commit die Anpassung des Modus „plugin". *Konzept:* 12.
 
-### `IBaseAction.IgnoreClipping` wird geschrieben, nie gelesen · N, R
-*Kosten:* ein Flag, das eine Ausnahme verspricht, die nicht gilt. *Auflösung:* erheben, welche der Setzstellen in
-`CustomRotation_Invoke` eine Ausnahme von der Anti-Clipping-Sperre rechtfertigen, und das Flag darauf eingrenzen.
-
 ### Status-Einstellungen auf der falschen Seite der Aktion · N, U
 Vier Fundstellen in PvP und Bozja (`scan11.py`), außerhalb seines Profils; je eine Richtungsentscheidung, die eine
 Beobachtung im Inhalt verlangt. *Auflösung:* erst, wenn er diese Inhalte nennt.

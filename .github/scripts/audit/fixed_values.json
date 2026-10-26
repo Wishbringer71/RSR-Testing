@@ -916,6 +916,16 @@
    "status": "exception",
    "loop": "A361",
    "reason": "Two of the shortest gaps between tankbusters on the player in this fight without one: the fight has moved on (a phase without them), and nothing is kept for one any more. One gap overdue still counts as one due now - a late tankbuster is the likelier reading. The game states no spacing of an encounter's tankbusters; the count of gaps is the rule's own threshold, its cost named in A361: after a phase change the auto-attacks meet held mitigation for at most one more gap."
+  },
+  {
+   "file": "RotationSolver.Basic/Rotations/CustomRotation_Ability.cs",
+   "code": "if (!IBaseAction.IgnoreClipping && WeaponRemain <= 0.5f && WeaponRemain > 0f)",
+   "values": [
+    "0.5"
+   ],
+   "status": "exception",
+   "loop": "A388",
+   "reason": "Upstream's anti-clipping window before the GCD, unchanged; the line was touched only to let the no-GCD branch of Invoke past it (IgnoreClipping). The window answers how long an ability's animation lock may run into the GCD, which the client gives for the ability only once it is pressed (A388)."
   }
  ]
 }

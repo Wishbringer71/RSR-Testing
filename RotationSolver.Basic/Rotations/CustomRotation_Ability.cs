@@ -38,7 +38,9 @@ public partial class CustomRotation
 			return false;
 		}
 
-		if (WeaponRemain <= 0.5f && WeaponRemain > 0f)
+		// The last half second before the GCD stays free so an ability does not clip it - unless Invoke found no GCD to
+		// cast and asks with IgnoreClipping: then there is nothing to clip (the flag's purpose since 4ec1a3a1c, A388).
+		if (!IBaseAction.IgnoreClipping && WeaponRemain <= 0.5f && WeaponRemain > 0f)
 		{
 			return false;
 		}

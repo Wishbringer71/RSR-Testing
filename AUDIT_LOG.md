@@ -11355,6 +11355,27 @@ bearbeitet ist und in seinen Protokollen gespielt wird.
 
 *Prüfgrad:* Quellen, Code, Compile; im Spiel nicht beobachtet.
 
+### A388 · `IgnoreClipping` wieder gelesen, an der Ausführungssperre (26.10.2026)
+
+- *Auftrag:* TODO, technische Schuld „`IBaseAction.IgnoreClipping` wird geschrieben, nie gelesen"; seiner vom 26.10.2026.
+- *Rückwärts:* Upstream `4ec1a3a1c` (21.04.2023) führte das Flag als `CanUseOption.IgnoreClippingCheck` ein: keine
+  Clipping-Prüfung für Fähigkeiten in bestimmten Lagen. Später wurde die Prüfung zur Ausführungssperre in `Ability`
+  (`WeaponRemain <= 0.5f`), der Leser des Flags fiel weg; `Invoke` setzt es weiter – wahr während `GCD()` und im Zweig
+  ohne GCD, falsch, wenn ein GCD ansteht.
+- *Wirkungsbereich:* `Ability` hat genau zwei Aufrufer in `Invoke`, mit GCD (Flag falsch) und ohne (Flag wahr). Ein Leser
+  dort wirkt nur ohne anstehenden GCD.
+- *Gebaut:* Die Sperre gilt, solange das Flag falsch ist. Im Kampf: Ohne GCD – etwa ein Zaubernder in Bewegung – geht eine
+  Fähigkeit bis zu 0,5 s früher; neben einem anstehenden GCD bleibt alles, wie es war. Die 0,5 s bleiben (Ausnahme in
+  `fixed_values.json`): Die Sperre einer Fähigkeit nennt kein Spielblatt (Konzept 11).
+- *Verworfen:* ein Leser in `DoAction` – er hebelte die Sperre auch neben einem GCD aus (Konzept 11); das Flag entfernen
+  – die Verdrahtung fehlte nur, der Zweck steht.
+- *Falsifikation:* (1) Kein Defekt? Das Flag versprach eine Ausnahme, die nicht galt – widerlegt. (2) Gegenposition:
+  Kommt der GCD in der halben Sekunde doch (er bleibt stehen), verzögert die Fähigkeit ihn um ihren Rest der Sperre –
+  derselbe Preis wie vor dem Verlust des Lesers, und nur im Zweig ohne GCD. (3) Ausgeliefert, nichts ändert sich? Mit
+  anstehendem GCD, dem Normalfall, ist das Verhalten gleich.
+
+*Prüfgrad:* Code, Versionsgeschichte, Compile; im Spiel nicht beobachtet.
+
 ---
 ## B · Commit-Register (Fork vs. `upstream/main`)
 
