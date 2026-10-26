@@ -29,7 +29,10 @@ Abgearbeitet nach seiner Vorgabe vom 26.10.2026: „todo nach priorität und ums
   Allianzraid, die Fähigkeitsprüfung über das Blatt wäre die Konstruktion ohne Pflege – heute ohne Wirkung, Adressat
   Upstream. Begegnungsspezifische Sonderfälle von Upstream (M10S, M11S, Orbonne, Lakshmi, Lich) sind gelesen, nicht
   gegen die Kämpfe geprüft: Sie liegen außerhalb dessen, was sich hier belegen lässt, und gelten nur in ihrem Gebiet.
-- **Offen:** `BaseAction` und `ActionTargetInfo`; die Rotationen Datei für Datei (`RebornRotations`; `ExtraRotations`
+- **`BaseAction` mit `ActionBasicInfo` und `ActionCooldownInfo` (26.10.2026):** gelesen. Ein Defekt mit Wirkung:
+  `JustUsedAfter` hielt eine bereite Aktion für eben benutzt – Uncoiled Fury des Vipers ging neben einem bereiten
+  Serpent's Ire, Perfect Balance des Monks blieb mit zwei Ladungen gesperrt (behoben A397).
+- **Offen:** `ActionTargetInfo`; die Rotationen Datei für Datei (`RebornRotations`; `ExtraRotations`
   nur, wo eine zentrale Änderung sie berührt, Churin ausgenommen); `RotationSolver/UI`.
 
 ## Methode

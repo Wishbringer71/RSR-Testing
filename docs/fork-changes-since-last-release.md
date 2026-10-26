@@ -85,3 +85,11 @@ tankbuster list or one RSR has measured - lets them go at once.
 In M9 (Vamp Fatale, normal and Savage), the Aetherletting spread marker was also listed as a stack marker, so a spread
 on another party member counted as a hit on you and spent your self-only protection - Radiant Aegis, Third Eye and the
 like - on a hit that did not reach you. It now counts only when it sits on you; party mitigation reads it as before.
+
+## Viper and Monk: "just used" no longer means "ready"
+
+A check for whether an action was used in the last few seconds answered yes for an action that was simply ready. The
+Viper's Uncoiled Fury rule for the window after Serpent's Ire therefore spent coils while Serpent's Ire lay ready and
+unused - all fight long with burst off; now it waits for Serpent's Ire, and the overcap rule still spends coils at the
+cap. The Monk's odd-minute Perfect Balance, which waits 20 seconds after the last one, was kept back while both
+charges were full, and Phantom Rush counted a ready Riddle of Fire as used.

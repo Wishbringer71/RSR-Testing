@@ -2247,6 +2247,24 @@ internal static class DataCenter
 		return taken;
 	}
 
+	/// <summary>
+	/// When the player last used the action with either id, by the record of his last actions; null when it is not in
+	/// the record, which holds the last <c>QUEUECAPACITY</c> actions and starts over after a fight.
+	/// </summary>
+	internal static DateTime? LastUseOf(uint id, uint adjustedId)
+	{
+		DateTime? last = null;
+		foreach (var rec in _actions)
+		{
+			if (rec.Action.RowId == id || rec.Action.RowId == adjustedId)
+			{
+				last = rec.UsedTime;
+			}
+		}
+
+		return last;
+	}
+
 	public static ActionRec[] RecordActions
 	{
 		get

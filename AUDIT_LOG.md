@@ -11566,6 +11566,38 @@ bis zum Tod, auf der die Rückhaltung urteilt.
 
 *Prüfgrad:* statisch, Compile, Prüfskripte.
 
+### A397 · Audit Phase 5, `BaseAction`: `JustUsedAfter` hielt eine bereite Aktion für eben benutzt (26.10.2026)
+
+- *Gelesen:* `BaseAction` (`CanUse` mit allen Sperren, `BackBefore`, `IsTimeToKillValid`, `Use`, `Config`),
+  `ActionBasicInfo.BasicCheck` mit Status-, Kombo-, MP- und Wirkprüfung, `ActionCooldownInfo`. Ohne Befund bis auf
+  den folgenden.
+- *Befund (Defekt, Upstream `d13d8469f`, 28.02.2024):* `ActionCooldownInfo.JustUsedAfter(time)` rechnete
+  `Elapsed % RecastTimeOneChargeRaw + DefaultGCDRemain < time`. `RecastDetail.Elapsed` ist ein Füllstand
+  (FFXIVClientStructs `ActionManager.cs`, Werkzeugquelle, Stand 17.10.2026: „think of this field as … a resource
+  gauge"): voll auf einer bereiten Aktion, nach dem Modulo null – eine bereite Aktion galt als eben benutzt. Nach dem
+  zweiten Druck einer Aktion mit Ladungen zählte der Rest des Füllstands vom ersten.
+- *Wirkung im Kampf:* Viper (`VPR_Reborn`): Uncoiled Fury aus dem Zweig „nach Serpent's Ire" ging, solange Serpent's
+  Ire bereit lag und nicht gedrückt war – mit Burst aus den ganzen Kampf (Serpent's Ire fällt nur im Burst), mit Burst
+  an im kurzen Fenster bis zu seinem Druck. Monk (`MNK_Reborn`): Perfect Balance im ungeraden Burst wartet 20 s nach
+  der letzten und blieb mit beiden Ladungen voll gesperrt; Phantom Rush zählte ein bereites Riddle of Fire als eben
+  benutzt.
+- *Optionen:* 0 belassen · 1 nur bei laufender Abklingzeit rechnen · 2 die Zeit seit dem letzten Druck aus dem
+  Aktionsprotokoll (`DataCenter._actions`, die letzten 48 Aktionen, nach jedem Kampf geleert), sonst wie 1.
+  *Abwägung:* 1 behebt die bereite Aktion, nicht die zweite Ladung. 2 misst, was die Frage meint; außerhalb der
+  Reichweite des Protokolls bleibt der Füllstand mit der Bedingung aus 1. Gewählt: 2, zentral, weil `ICooldown`
+  Paketoberfläche ist und jede abgeleitete Rotation dieselbe Frage stellt.
+- *Bilanz:* *Stärke:* Die drei Leser bekommen, was ihr Name sagt. *Schwäche:* Mit Burst aus spart der Viper Uncoiled
+  Fury bis zum Überlaufschutz auf (Höchststand oder Einstellung), statt früher auszugeben – kein Verlust, die Spulen
+  verfallen nicht. *Bedrohung:* Eine Aktion ohne Treffereffekt kommt nicht ins Protokoll (`Watcher` schreibt nur
+  Sätze mit Zielen); dann gilt der Füllstand mit Laufbedingung. *Überwiegt:* der Nutzen.
+- *Falsifikation:* kein Defekt – widerlegt am Füllstand; Option falsch – die Leser fragen „in den letzten x s benutzt",
+  das Protokoll misst genau das; ausgeliefert und nichts ändert sich – beim Viper mit Burst an kaum sichtbar, weil
+  Serpent's Ire sofort fällt; mit Burst aus und beim Monk sichtbar.
+- *Betroffene:* N (Viper, Monk), R (`ICooldown.JustUsedAfter` im Paket, Eintrag im CHANGELOG).
+- *Dokumentation:* CHANGELOG, Release-Text, Konzept 19.
+
+*Prüfgrad:* statisch, Compile, Prüfskripte; im Spiel nicht beobachtet.
+
 ---
 ## B · Commit-Register (Fork vs. `upstream/main`)
 

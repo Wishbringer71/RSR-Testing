@@ -194,8 +194,23 @@ public readonly struct ActionCooldownInfo : ICooldown
 	/// </summary>
 	/// <param name="time">The time.</param>
 	/// <returns>True if the action was just used; otherwise, false.</returns>
+	/// <remarks>
+	/// Read from the record of the player's own actions where the action is in it, else from its running recast. The
+	/// recast alone counted a ready action as just used - its gauge stands full, zero after the modulo - and after a
+	/// charge action's second use it counted from the first (A397).
+	/// </remarks>
 	public bool JustUsedAfter(float time)
 	{
+		if (DataCenter.LastUseOf(_action.ID, _action.Info.AdjustedID) is { } used)
+		{
+			return (DateTime.Now - used).TotalSeconds + DataCenter.DefaultGCDRemain < time;
+		}
+
+		if (!ActionIdHelper.IsCoolingDownGroup(CoolDownGroup))
+		{
+			return false;
+		}
+
 		var elapsed = RecastTimeElapsedRaw % RecastTimeOneChargeRaw;
 		return elapsed + DataCenter.DefaultGCDRemain < time;
 	}

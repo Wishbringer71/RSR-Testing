@@ -84,6 +84,14 @@ falling back to the defaults; `Restore()` migrates a backup of another version i
 keeps the file as `RotationSolver_Version<n>.json` before such a change, and an unreadable one as
 `RotationSolver_Unreadable.json` before the defaults replace it.
 
+### Behaviour change in RotationSolver.Basic: `ICooldown.JustUsedAfter` is false for an action not used
+
+`JustUsedAfter(time)` read the recast gauge alone, which stands full on a ready action - zero after the modulo - so an
+action off cooldown counted as just used, and a charge action after its second use counted from the first. It now
+reads the time since the player's last use from his action record where the action is in it, and otherwise the
+running recast; an action whose recast is not running was not just used. A rotation that asked it as "not used in the
+last x seconds" now gets that for a ready action too.
+
 ## 7.5.7.8+wsh1
 
 ### Dependency of RotationSolver.Basic: RebornMaterial 7.5.7.0
