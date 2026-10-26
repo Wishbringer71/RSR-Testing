@@ -854,7 +854,8 @@ nicht anzeigen und auf eine Auswertung warten. Vorgabe des Auftraggebers: Eine S
 was sich selbst nachsteuert. Das ist
 **nicht gebaut**, und der Nutzen ist nicht bloß Diagnose: Ein Anteil, der durch eine zufällig
 laufende Minderung zu niedrig gemessen wurde, bleibt zu niedrig, bis ein ungeminderter
-Treffer ihn anhebt.
+Treffer ihn anhebt (TODO, „Flächentabelle misst unter der stehenden Minderung"; Beleg 26.10.2026: Seelenüberfluss mit
+25 % unter drei Minderungen und einer Barriere, A419).
 
 **Wer den Verbraucher baut, löst mehr als eine Frage.** Welche das sind und welcher Baustein wie viele
 offene Punkte zugleich schließt, steht in `08-mitigation-synergy.md`, Abschnitt „Was ein Baustein

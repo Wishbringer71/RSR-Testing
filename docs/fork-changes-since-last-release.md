@@ -34,7 +34,8 @@ Balance's Summoner guide describes.
 
 Divine Benison and Celestial Intersection used to wait at both charges while nobody was in danger, with their recharge
 standing still. A charge at the cap now goes onto the member an enemy is attacking, where none of its barrier stands;
-the second charge stays for the next danger. The Balance's White Mage guide recommends exactly this.
+the second charge stays for the next danger, and the single-target defence takes it for a tankbuster. The Balance's
+White Mage guide recommends exactly this.
 
 ## Machinist: Flamethrower on a pack that stands still
 

@@ -430,7 +430,10 @@ public sealed class WHM_Reborn : WhiteMageRotation
 			return base.DefenseSingleAbility(nextGCD, out act);
 		}
 
-		if (DivineBenisonPvE.CanUse(out act))
+		// The charge left once the cap rule has spent one (TryChargedBarrierAtCap) is the one kept for danger: without
+		// usedUp the check passed only with every charge back, so after each cap spend Divine Benison stood refused for a
+		// tankbuster for up to a whole recharge - three of four tankbusters against Zoraal Ja on 26.10.2026 (A419).
+		if (DivineBenisonPvE.CanUse(out act, usedUp: true))
 		{
 			return true;
 		}

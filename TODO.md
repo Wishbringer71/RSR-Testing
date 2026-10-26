@@ -25,8 +25,10 @@ A412), drei Schuldpunkte aufgelöst (A388, A389, A410), ein vierter für den eig
 Bodenflächen an die Gruppe gelegt (A398) und das Audit der gesamten Codebasis abgeschlossen, mit den Defekten aus A393–A395,
 A397, A399, A401–A409 und A412 (A414).
 
-Offene Arbeit gibt es keine; als Nächstes die technische Schuld, soweit ihre Auflösungsbedingung erfüllt ist. Warten
-auf Daten: unten.
+Aus seinem Upload vom 26.10.2026 abends (A419) zwei Punkte offener Arbeit, in dieser Reihenfolge: der doppelte
+Tankbuster zuerst – er trifft sicher, und ein Tank steht ohne Hilfe –, danach die Flächentabelle unter Minderung, die nur
+den ersten Treffer einer Aktion falsch bewertet. Danach die technische Schuld, soweit ihre Auflösungsbedingung erfüllt
+ist. Warten auf Daten: unten.
 
 ## Defekte
 
@@ -34,7 +36,18 @@ Keine bekannt.
 
 ## Offene Arbeit
 
-Keine.
+### Einzelabwehr-Streckung bei einem doppelten Tankbuster · N
+Ein Tankbuster auf beide Tanks („Bittere Ernte", Zoraal Ja): Nach dem Göttlichen Segen auf den einen wartet
+Wasserschleier, bis der Segen ausläuft – auch für den anderen Tank, der denselben Treffer nimmt; ein Tank bleibt ohne
+Hilfe. *Ort:* `CustomRotation_DefenseHold.SingleDefenseStretched`, `WHM_Reborn.DefenseSingleAbility`; dieselbe Frage
+bei jedem Heiler mit zwei Einzelmitteln. *Nächster Schritt:* Loop, ob die Streckung je Ziel gilt. *Konzept:* 08.
+
+### Flächentabelle misst unter der stehenden Minderung · N, R
+Ein Raidwide, dessen erste Landung die Gruppe voll gemindert nimmt, steht zu klein in der Tabelle; Glockenspiel,
+Vorausheilung und „Skip mitigation for small area casts" lesen den kleinen Wert, bis ein schwächer geminderter Treffer
+ihn anhebt. *Ort:* `Watcher.TryAreaShare`, die Leser in `DataCenter` (`AreaShareCallsForMitigation`, `HitDropsBelow`).
+*Nächster Schritt:* ungemindert speichern wie die Tankbuster-Tabelle (`TankbusterTable.MitigationFactor`), die Leser
+rechnen die jetzt stehende Minderung je Mitglied ein. *Konzept:* 13.
 
 ## Technische Schuld
 

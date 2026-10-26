@@ -12142,6 +12142,56 @@ letzten Sekunde; trifft es doch zu, ändert die Behebung nichts und schadet nich
 Dalamud-Dienste braucht; im Spiel nicht beobachtet. Ein künftiger Fehlschlag steht als „trace reopened: a write failed
 (Art: Meldung)" in der Datei, ein nicht kodierbares Zeichen als „�".
 
+### A419 · Auswertung des Uploads vom 26.10.2026 abends: Zoraal Ja als Weißmagier; Göttlicher Segen für Tankbuster (26.10.2026)
+
+Sein Upload: `DefenseTrace.log` (Build `e08c209a0`: Alexander – Faust des Vaters, Immerspitze gegen Zoraal Ja, 19:03
+bis 19:13), ACT-Mitschnitt 18:50–19:14, `HitSeriesOnPlayer.json`, `HostileCastingAreaPotential.json` (zweimal,
+gleich), die Schlafdateien und eine leere `NorthHornWeaknessRecords.json`. Keine Frage dazu; allgemein ausgewertet. Kein
+Gruppenmitglied starb. Namen anderer Spieler stehen im Protokoll und nirgends im Repository.
+
+- *Defekt, behoben: Göttlicher Segen stand der Einzelabwehr nach jeder Ausgabe an der Ladungsgrenze bis zu 30 s
+  nicht zur Verfügung.* `DivineBenisonPvE.CanUse` ohne `usedUp` lässt eine Ladungsaktion nur zu, wenn sie bis zum
+  nächsten GCD wieder voll ist (`ActionCooldownInfo.CooldownCheck`). Seit A376 setzt `TryChargedBarrierAtCap` die
+  Ladung an der Grenze; danach stand eine Ladung, und die Abwehr durfte sie nicht nehmen. Im Kampf: von vier
+  Tankbustern fand die Abwehr den Segen dreimal mit „Cooldown" abgelehnt (19:05:00, 19:08:49, 19:12:32), bei den beiden
+  doppelten („Bittere Ernte" auf beide Tanks) ging nur Wasserschleier auf einen. Konzept 14 sagte „die zweite Ladung
+  bleibt für die Gefahr" – der Code hielt sie auch von der Gefahr fern. Behoben: die Einzelabwehr fragt den Segen mit
+  `usedUp`, wie der Astrologe Celestial Intersection; die Einzelheilung bleibt bei der vollen Ladung, so bleibt die
+  Reserve der Abwehr. Seine Entscheidung A9 (Konzept 08, „Zwei Ladungen") nennt als Grund, dass bei echter Gefahr
+  keine Ladung mehr da war; die Einzelabwehr öffnet bei echter Gefahr, die Reserve dient ihr.
+- *Offen, ins TODO: die Einzelabwehr-Streckung bei einem doppelten Tankbuster.* Nach dem Segen auf den einen Tank
+  wartet Wasserschleier, bis der Segen ausläuft – auch für den anderen Tank, den derselbe Tankbuster trifft. Vor A419
+  war es umgekehrt (Wasserschleier auf einen, Segen gesperrt); gedeckt ist so oder so einer.
+- *Offen, ins TODO: die Flächentabelle misst unter der stehenden Minderung.* Der erste Seelenüberfluss (#37707) traf
+  ihn mit 25 % unter Vollkommener Ablass, Mäßigung und Taktiker (je 10 %) und der Barriere aus Göttliche Umarmung;
+  zurückgerechnet rund 34 %. Um 19:04:28 stand er mit 25 % in der Tabelle, Glockenspiel blieb ohne Gefahr im Ansatz
+  liegen, und es folgten 53 % und 65 % in 17 s (Trank bei 35 %); um 19:05:38 ging Glockenspiel bei 56 %. Den größeren
+  Teil des Sprungs machte aber der Dauerstatus „Schaden +" (#2550), den Zoraal Ja um 19:04:01 nach dem ersten Treffer
+  bekam; die Tabelle zog beim nächsten Treffer selbst nach. Konzept 13 führt die Lücke als nicht gebaut.
+- *Ohne Befund:*
+  - Göttliche Umarmung ging jedes Mal nach Mäßigung raus.
+  - Vollkommener Ablass mindert seit dem Wirktext des laufenden Patches um 10 % (ActionId.resx); der Kommentar „the
+    three before it lessen the hit itself" stimmt.
+  - Vor dem Treffer um 19:06:14 ging nach Vollkommener Ablass keine Mäßigung mehr: Nach Blendga (1,5 s Wirkzeit, GCD
+    2,45 s) blieb ein Fenster, das zweite lag hinter dem Treffer.
+  - Mäßigung um 19:10:52 auf eine BossModReborn-Vorhersage ohne laufenden Zauber: Feuga traf alle acht mit 15 %, der
+    60-%-Raidwide 21 s später kam ohne sie. Die Grenze steht in Konzept 08 („BMR sagt wann, nicht wie hart"); ohne
+    Zauber gibt es keine Größe.
+  - „Pein des Patrizids" wird nie gespeichert, weil Zoraal Ja ab 19:04:01 „Schaden +" trägt; ungemessen geht die Hilfe
+    wie vorgesehen.
+  - Bei „Pflichtes Schneide" (#37750, vier Treffer in 2 s Abstand) ging Glockenspiel nicht; die Reihe wurde dabei erst
+    gelernt (`HitSeriesOnPlayer.json`: 4). Waffenbehälter (#4375, zwei Treffer binnen der Glockendauer): 2.
+  - Laufzeit im Mittel 0,39–0,49 ms je Durchlauf; eine Spitze von 19,4 ms im Rotationsschritt.
+
+**Falsifikation.** *Kein Defekt:* Die Ablehnung „Cooldown" könnte die Animationssperre gewesen sein – sie umfasst sie
+auch. Dann hätte der Segen beim nächsten Durchlauf gehen müssen; er ging bis zum Treffer nicht, und die Ladung stand
+seit der Ausgabe an der Grenze. *Option falsch:* `usedUp` gibt die letzte Ladung frei – ausgegeben wird sie nur, wenn
+die Einzelabwehr offen ist; danach streckt der Segen und hält Wasserschleier zurück, bis er ausläuft, außer bei Gefahr.
+*Ausgeliefert, und nichts ändert sich:* wenn die Abwehr den Segen aus einem anderen Grund nicht nimmt (Zielwahl,
+Streckung). Das Protokoll nennt den Grund bei der nächsten Ablehnung in derselben Zeile.
+
+*Prüfgrad:* Mitschnitt und Protokoll ausgewertet, Code gelesen, Compile, Prüfskripte; im Spiel nicht beobachtet.
+
 ---
 ## B · Commit-Register (Fork vs. `upstream/main`)
 

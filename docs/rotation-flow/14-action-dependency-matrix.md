@@ -652,7 +652,7 @@ this overcap on charges - you're almost always guaranteed to get value out of th
 autos." RSR setzte ihn nur in Abwehr- und Heilpfad; stand niemand in Gefahr, ruhten beide Ladungen, und die
 Wiederaufladung stand still. Jetzt geht die Ladung an der Grenze auf den Angegriffenen, wo keine Barriere liegt. Im
 Kampf: eine Barriere von 500 Potenz mehr je 30 s, solange der Tank angegriffen wird; die zweite Ladung bleibt für die
-Gefahr, und weil ein Auslöser mit einer Ladung zurück nicht streckt, hält die Barriere den Wasserschleier für einen
+Gefahr – die Einzelabwehr fragt den Segen mit `usedUp` und nimmt sie (A419) –, und weil ein Auslöser mit einer Ladung zurück nicht streckt, hält die Barriere den Wasserschleier für einen
 Tankbuster danach nicht zurück. Dieselbe Regel gilt für Celestial Intersection des Astrologen.
 
 **Weitere Punkte, gegen The Balance geprüft:**
