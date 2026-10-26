@@ -329,7 +329,7 @@ Gelten in jeder Stufe. Eine Aussage, die eine davon verletzt, ist unbelegt.
 - Commit-Identität nicht überschreiben (`user.name = Claude`, `user.email = noreply@anthropic.com`; kein `git -c user.name=… -c user.email=…`). Sein Klarname und seine private Adresse gehören in keinen Commit; `.githooks/pre-commit` und `check_commit_identity.py` sperren fremde Adressen.
 
 **Grenzen und Löschungen**
-- Tags, Ref-Löschungen und Releases auf `origin` sind dieser Sitzungsart gesperrt (403, beim Release „not permitted for this session type", 22.10.2026). Release-Tags setzt er; ich lege Zielcommit, Tag und Release-Text fertig vor. Auch über `publish.yaml` (`workflow_dispatch`) erzeuge ich kein Release: Der Lauf legt Tag und Release an, also genau das Gesperrte, und eine Sperre der Umgebung umgehe ich nicht (A333).
+- Tag-Pushes, Ref-Löschungen und das Bearbeiten von Releases sind dieser Sitzungsart gesperrt (403, beim Release „not permitted for this session type", 22.10.2026; Tag-Push am 25.10.2026 von der Rechteprüfung der Sitzung abgewiesen). Ein Release erzeuge ich deshalb über `publish.yaml` per `workflow_dispatch`, sobald er es aufträgt (seine Vorgabe, 26.10.2026: „ich habe dich angewiesen, zu compilieren und zu releasen"); sein Auftrag ist die Freigabe, ich stelle sie nicht erneut zur Wahl. Ohne seinen Auftrag erzeuge ich kein Release.
 - Auf `origin` erzeuge ich nichts ohne geprüften Rückweg.
 - Destruktive Operationen sind freigabepflichtig, auch `git branch -D`; geringes Risiko ist ein Argument, keine Freigabe.
 - Ausnahme: Reste der Sitzungsumgebung räume ich selbst auf, sobald sie als risikofrei gemessen sind (lokal, ohne Gegenstelle, ohne eigenen Commit, `git branch -d`), und melde es.
