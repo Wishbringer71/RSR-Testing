@@ -708,14 +708,41 @@ Gelehrter (7.4, 27.12.2025), Weiser (7.3, 07.08.2025). Keine Änderung außer de
 | Weiser | Phlegma | Ladungen in die Buffs der Gruppe nach der zweiten Minute | eine Ladung vor dem Überlauf oder in Bewegung | weicht ab: Der Weise hat keinen eigenen Gruppenbuff; das Fenster der anderen ist eine Annahme über sie, kein tragender Grund (seine Regel) |
 | alle | Swiftcast | für Wiederbelebung aufheben | Swiftcast bleibt für Wiederbelebungen (seine Regel) | deckt sich |
 
+### Samurai: Meikyo Shisui und Higanbana
+
+**Keine Änderung** (26.10.2026, A381). The Balance (Samurai Basic Guide, „Patch Applicable: 7.4"; Opener-Bild „Dawntrail
+Patch 7.05") nutzt Meikyo Shisui im Fenster jeder Minute, um Higanbana „right on time" zu setzen – Iaijutsu verbraucht
+keinen Meikyo-Stapel –, und drückt Meikyo nach seiner „15 second rule", wenn Higanbana ausläuft, während die Sen noch
+aufgebaut werden. `SAM_Reborn` macht es umgekehrt: Meikyo wartet, solange Higanbana in sein Erneuerungsfenster fällt
+(ab Werk 6 GCDs), und Higanbana fällt nur ohne Meikyo-Stapel. Meikyo geht sonst nach jedem Midare oder Tendo, solange eine
+Ladung da ist, und an der vollen Ladung.
+
+- *Was es im Kampf ergibt* (`samurai_balance_model.py`, ein Boss, zehn Minuten, Potenzen Job-Guide 7.5): Mit der Regel
+  von `SAM_Reborn` liegt Higanbana 93,7 % der Zeit (die ersten 15 s eingerechnet), 15,8 s werden überschrieben; keine
+  Meikyo-Ladung verfällt, kein Sen doppelt, 12 Tendo und 17 Midare. Mit der Folge von The Balance, so übernommen, wie
+  `SAM_Reborn` sie tragen könnte: 97,3 %, aber 79,2 s überschrieben, gleich viele Tendo und Midare. Über 60 Kombinationen
+  aus GCD-Länge (2,10 bis 2,20 s), Erneuerungsfenster (2, 4, 6 GCDs) und Kampflänge (3 bis 15 min) bringt sie im Mittel
+  +0,29 % Potenz, zwischen −0,59 % und +1,60 %, in 4 Fällen weniger.
+- *Warum nicht gebaut:* Der Gewinn liegt im Promillebereich und unter der Unschärfe des Modells (Positionale stets
+  getroffen, keine Kritischen, keine Fähigkeiten außer Meikyo und Ikishoten); sein Vorzeichen wechselt mit GCD-Länge und
+  Kampflänge. Was The Balance darüber hinaus trägt – Higanbana „buffed", in den Gruppenbuffs der anderen –, ist nach
+  seiner Regel kein tragender Grund.
+- *Opener:* The Balance setzt den zweiten Meikyo gleich nach dem ersten Tendo Kaeshi und Higanbana in GCD 7;
+  `SAM_Reborn` hält ihn, weil noch kein Higanbana liegt, und setzt Higanbana in GCD 8 (Modell: 15,2 s). Ikishoten fällt
+  einen GCD später als im Bild – nach dem dritten statt dem zweiten GCD, weil `SAM_Reborn` zwei GCDs Kampfzeit abwartet
+  (`CombatElapsedLessGCD(2)`) –, der Trank danach statt nach dem ersten GCD; Senei, Ogi Namikiri und Zanshin folgen in
+  derselben Reihenfolge, alles unter Fugetsu. Die Verschiebung ändert den eigenen Schaden nicht, nur die Lage zu den
+  Gruppenbuffs der anderen.
+
 ### Schadensausteiler: Ressourcen und Buffs
 
 Geprüft am 26.10.2026 gegen die Basic Guides von The Balance (Stand je Guide: Dragoon 7.5, Viper 7.55, Reaper 7.5,
 Samurai 7.4, Monk 7.4, Ninja 7.05, Barde 7.4, Tänzer 7.40, Schwarzmagier 7.4, Rotmagier 7.4, Pictomancer 7.4):
 die Regeln gegen das Überlaufen der Ressourcen und für die eigenen Buffs, je an der Stelle im Code, die sie trägt.
-Keine Änderung. Nicht einzeln geprüft sind die Folgen innerhalb eines Burstfensters (Meikyo-Folgen des Samurai,
-Mudra-Planung des Ninja vor Kunai's Bane, Enshroud-Folgen des Reaper, Liedfolge des Barden, Motivfolgen des
-Pictomancer, Feuer-Eis-Takt des Schwarzmagiers, Monk); das bleibt offene Arbeit.
+Keine Änderung. Nicht einzeln geprüft sind die Folgen innerhalb eines Burstfensters (Mudra-Planung des Ninja vor
+Kunai's Bane, Enshroud-Folgen des Reaper, Liedfolge des Barden, Motivfolgen des Pictomancer, Feuer-Eis-Takt des
+Schwarzmagiers, Monk); das bleibt offene Arbeit. Die Meikyo-Folgen des Samurai stehen unter „Samurai: Meikyo Shisui und
+Higanbana".
 
 | Job | The Balance | RSR | Stand |
 |---|---|---|---|

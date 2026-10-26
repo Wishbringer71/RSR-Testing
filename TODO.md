@@ -39,8 +39,8 @@ Keine bekannt.
 *Im Kampf:* Schaden – je Job Opener, Burstausrichtung und Prioritäten gegen den Guide. Der Maschinist ist abgeglichen
 (A342), von Dragoon und Viper der Opener (A343), die AoE-Schwellen aller Jobs (A344), die AoE-Wahl des Ninja (A345),
 der Beschwörer (A375), der Weißmagier (A376), die vier Tanks (A377), die übrigen Heiler (A378), von den übrigen
-Schadensausteilern Ressourcen und Buffs (A379). *Nächster Schritt:* die Folgen in den Burstfenstern von Samurai,
-Ninja, Reaper, Barde, Pictomancer, Schwarzmagier und Monk, dazu Opener und Prioritäten der Schadensausteiler außer
+Schadensausteilern Ressourcen und Buffs (A379), Meikyo und Higanbana des Samurai (A381). *Nächster Schritt:* die
+Folgen in den Burstfenstern von Ninja, Reaper, Barde, Pictomancer, Schwarzmagier und Monk, dazu Opener und Prioritäten der Schadensausteiler außer
 Maschinist und Beschwörer; ausgeblendete Werte liest `ActionTooltip` zur Laufzeit aus den Tooltips,
 die deutschen Namen gehören in `action_names_de.json`. Dabei je Job die Rotationseinstellungen, die eine Spieltatsache
 tragen (Leistenhöchststand, Restzeiten, Lieddauern), aus dem Spiel ableiten (Konzept 18, „Rotationseinstellungen").
@@ -138,10 +138,10 @@ Veröffentlichungspfad prüfbar ist.
 `MainWindow.GetMovementSafetyStatus` neben `ActionTargetInfo.CheckMovementSafety`; die Regel „am Ziel ist ein Sprint nur
 Schaden" fehlt im Fenster. *Auflösung:* `CheckMovementSafety` gibt Ergebnis und Grund heraus, das Fenster zeigt sie.
 
-### Das Maschinisten-Modell bildet `MCH_Reborn` von Hand nach · R
-*Kosten:* Ändert sich der Ruf der Königin oder die GCD-Folge in `MCH_Reborn`, rechnet `machinist_balance_model.py`
-weiter die alte Regel, und Konzept 14 nennt seine Ergebnisse. *Auflösung:* jede solche Änderung trägt im selben Commit
-die Anpassung des Modells. *Konzept:* 14.
+### Die Modelle von Maschinist und Samurai bilden ihre Rotation von Hand nach · R
+*Kosten:* Ändert sich der Ruf der Königin oder die GCD-Folge in `MCH_Reborn`, die GCD-Folge oder der Meikyo-Zweig in
+`SAM_Reborn`, rechnen `machinist_balance_model.py` und `samurai_balance_model.py` weiter die alte Regel, und Konzept 14
+nennt ihre Ergebnisse. *Auflösung:* jede solche Änderung trägt im selben Commit die Anpassung des Modells. *Konzept:* 14.
 
 ### Plugin-Identität ist die des Upstreams · N
 `manifest.json` unverändert (`InternalName`, URLs). *Auflösung:* seine Entscheidung, wenn beide Installationen

@@ -11225,6 +11225,33 @@ bearbeitet ist und in seinen Protokollen gespielt wird.
 
 *Prüfgrad:* Code, Quellen, Modell mit Selbsttest, Compile; im Spiel nicht beobachtet.
 
+### A381 · Samurai gegen The Balance: Meikyo Shisui und Higanbana (26.10.2026)
+
+- *Auftrag:* TODO „Rotationen gegen The Balance abgleichen", nächster Schritt Burstfenster; seiner vom 26.10.2026.
+- *Quellen:* The Balance, Samurai Basic Guide („Patch Applicable: 7.4", Higanbana-Abschnitt laut Änderungsliste am
+  22.01.2026 überarbeitet), Openers-Seite mit Bild „Standard Opener, Dawntrail Patch 7.05" (als Bild gelesen); Job-Guide
+  7.5 für die Potenzen; `SAM_Reborn` (`GeneralGCD`, Meikyo-Zweig in `AttackAbility`), `SamuraiRotation`
+  (Higanbana: ein Sen, Erneuerung 6 GCDs).
+- *Befund:* The Balance setzt Higanbana unter Meikyo (Iaijutsu verbraucht keinen Stapel) und drückt Meikyo nach der
+  „15 second rule"; `SAM_Reborn` hält Meikyo, solange Higanbana fällig ist, und Higanbana, solange Meikyo-Stapel liegen.
+- *Modell:* `samurai_balance_model.py` (neu, Selbsttest gegen von Hand gebaute Fälle und den nie erneuerten Higanbana,
+  der zuerst als volle Laufzeit durchrutschte und so gefunden wurde). Zehn Minuten, ein Boss: RSR 93,7 % Laufzeit,
+  15,8 s überschrieben, keine Meikyo-Ladung verloren, kein Sen doppelt; die übernehmbare Variante von The Balance
+  97,3 %, 79,2 s überschrieben. Über 60 Kombinationen (GCD 2,10–2,20 s, Erneuerung 2/4/6 GCDs, 3–15 min) im Mittel
+  +0,29 %, −0,59 % bis +1,60 %, viermal weniger. Die beiden Teile einzeln: Higanbana unter Meikyo +0,11 % im Mittel
+  (7 von 60 weniger), Meikyo bei fälligem Higanbana −0,42 % (49 von 60 weniger) – nur zusammen überwiegend positiv.
+- *Entscheidung:* nicht gebaut. Promillebereich, kleiner als die Unschärfe des Modells, Vorzeichen abhängig von GCD und
+  Kampflänge; der übrige Grund des Guides ist die Lage in fremden Gruppenbuffs, nach seiner Regel kein tragender Grund.
+- *Falsifikation:* (1) Kein Defekt? Ja – RSR verliert weder Meikyo-Ladungen noch Sen; Higanbana fällt nur kurz aus.
+  (2) Option falsch? Der stärkste Einwand, The Balance empfehle es und das Mittel sei positiv, hält nicht gegen die
+  Spannweite und die vier negativen Fälle. (3) Ausgeliefert, nichts ändert sich? Bei Erneuerung 2–4 GCDs liefert die
+  Variante in kurzen Kämpfen +0,00 % – dort bliebe sie ohne Wirkung.
+- *Nebenbefund Opener:* Ikishoten einen GCD später als im Bild (`CombatElapsedLessGCD(2)`); eigener Schaden unverändert.
+- *Betroffen:* keine Codeänderung; CI führt das neue Modell, wenn sich sein Skript ändert; die technische Schuld „Die
+  Modelle von Maschinist und Samurai bilden ihre Rotation von Hand nach" deckt es.
+
+*Prüfgrad:* Quellen, Code, Modell mit Selbsttest; im Spiel nicht beobachtet.
+
 ---
 ## B · Commit-Register (Fork vs. `upstream/main`)
 
