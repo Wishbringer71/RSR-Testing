@@ -2595,7 +2595,8 @@ internal static class DataCenter
 		"vfx/lockon/eff/com_trg01_0c",
 		"vfx/lockon/eff/com_trg02_0c",
 		"vfx/lockon/eff/com_trg01_0c",
-		"vfx/lockon/eff/x6r9_loc01_t0a1",
+		// M9 Penetrating Pitch stack (Lockon 656). Its spread, Aetherletting (655, x6r9_loc01_t0a1), stood here too, so a
+		// spread on another member counted as a hit on the player (A394, check_marker_lists.py).
 		"vfx/lockon/eff/x6r9_loc02_t0a1",
 		// Duty-specific AOE share markers
 		"vfx/lockon/eff/m0982trg_g0c",
@@ -2608,9 +2609,8 @@ internal static class DataCenter
 
 	private static readonly FrozenSet<string> SpreadDamagePaths = FrozenSet.ToFrozenSet(
 	[
-		"vfx/lockon/eff/x6r9_loc01_t0a1",
-		"vfx/lockon/eff/x6r9_loc02_t0a1",
-		// Duty-specific AOE share markers
+		"vfx/lockon/eff/x6r9_loc01_t0a1",        // M9 Aetherletting spread (Lockon 655)
+		// Duty-specific AOE spread markers
 		"vfx/lockon/eff/x6fd_loc04m_5s1v",
 		"vfx/lockon/eff/m0922tar_a0w"
 	], StringComparer.OrdinalIgnoreCase);

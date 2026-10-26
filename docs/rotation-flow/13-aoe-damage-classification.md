@@ -158,7 +158,11 @@ eingeschlossen, gleich wie „Heal and raise party NPCs" steht (A220). Das gilt 
 (`IsCastingAreaVfx`, eine Upstream-Erkennung, die bis dahin jeden Marker in Reichweite las) und für den
 Selbstschutz. Ein Stack auf einem Mitglied einer anderen Allianzgruppe traf keinen von ihnen und öffnete doch
 ihre Gruppenminderungen und seinen Selbstschutz. Für den Selbstschutz zählt ein Stack-Marker in der eigenen
-Gruppe als „erreicht ihn" (wer stackt, wird getroffen); ein Spread-Marker zählt nur auf ihm selbst.
+Gruppe als „erreicht ihn" (wer stackt, wird getroffen); ein Spread-Marker zählt nur auf ihm selbst. Deshalb gehört
+jeder Markerpfad genau einer Art an – Tankbuster, Stack oder Spread –, sonst gilt er als die zuerst gefragte:
+Upstream führte im M9 den Spread von Aetherletting (`x6r9_loc01_t0a1`, Lockon 655) auch als Stack, und ein Spread
+auf einem anderen Mitglied öffnete seinen Selbstschutz (A394). Die Arten sind am Lockon-Blatt und an den Icon-Namen
+in BossMod belegt; `check_marker_lists.py` hält sie in der CI getrennt.
 
 **BossModReborn-Raidwide (A273):** Was BossModReborn „Raidwide" nennt, trifft nicht jeden — derselbe Typ steht für
 Spreads, Türme, Köder und Sturmangriffe auf einzelne Spieler (Konzept 08, „Wann eine BossModReborn-Vorhersage ihn

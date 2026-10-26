@@ -77,3 +77,9 @@ of needing three enemies around you on top of its own AoE count.
 within 3 yalms target you and you have attacked one of them. Before, more than 30 % of all enemies within 25 yalms also
 had to stand at you, so unpulled packs nearby, casters at range or the other tank's adds kept it shut - holding three
 enemies beside two unpulled packs of four, say. The big cooldowns still wait for your measured health to need them.
+
+## M9: a spread marker on someone else no longer counts as a hit on you
+
+In M9 (Vamp Fatale, normal and Savage), the Aetherletting spread marker was also listed as a stack marker, so a spread
+on another party member counted as a hit on you and spent your self-only protection - Radiant Aegis, Third Eye and the
+like - on a hit that did not reach you. It now counts only when it sits on you; party mitigation reads it as before.

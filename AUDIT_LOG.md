@@ -11484,6 +11484,36 @@ bearbeitet ist und in seinen Protokollen gespielt wird.
 *Prüfgrad:* statisch, Compile, Prüfskripte; im Spiel nicht beobachtet. Messmittel bleibt die Selbstkorrektur der Zeit
 bis zum Tod, auf der die Rückhaltung urteilt.
 
+### A394 · M9: der Spread-Marker von Aetherletting stand auch unter den Stacks; Markerarten getrennt (26.10.2026)
+
+- *Befund (Defekt):* `x6r9_loc01_t0a1` und `x6r9_loc02_t0a1` standen zugleich in `SharedDamagePaths` und
+  `SpreadDamagePaths` (Upstream `33e6acb1f`, 07.05.2026, beide Pfade in beide Listen in einem Commit).
+  `IsAreaVfxReachingPlayer` fragt die Stack-Listen zuerst: Ein Stack auf einem Mitglied der eigenen Gruppe reicht für
+  „erreicht ihn", ein Spread nur auf ihm selbst.
+- *Belege:* Lockon-Blatt (xivapi v2, 26.10.2026): Zeile 655 `x6r9_loc01_t0a1`, Zeile 656 `x6r9_loc02_t0a1`. BossMod
+  (`awgil/ffxiv_bossmod`, `RM09VampFatale.cs`, Werkzeugquelle): 655 `AetherlettingSpread`
+  (`Components.SpreadFromIcon`, 6 y), 656 `PenPitchStack` (`Components.IconStackSpread`, Stack 5 y).
+- *Wirkung im Kampf:* Im M9 (normal und Savage) galt ein Aetherletting-Spread auf einem anderen Mitglied als Treffer auf
+  ihn: Selbstschutz, der nur ihn schützt – Radiant Aegis, Third Eye/Tengentsu und die übrigen über
+  `AreaHitReachesPlayer` –, fiel für einen Treffer, der ihn nicht erreicht, und fehlte beim nächsten. Wie viele
+  Spieler den Marker tragen, ist nicht belegt; tragen ihn alle, gab es keine Verschwendung. Der Stack-Marker unter den
+  Spreads war ohne Wirkung, weil der Stack zuerst gefragt wird. Die Gruppenminderung (`IsCastingAreaVfx`) liest alle
+  drei Listen und bleibt gleich.
+- *Klasse:* alle 38 Einträge der vier Listen (36 Pfade) gegen das Lockon-Blatt und die Icon-Namen in BossMod
+  gehalten; jeder andere steht in der Art, die BossMod ihm gibt (Tankbuster, Stack, Spread), soweit BossMod ihn
+  benennt – ohne Namen dort: `com_trg02_0c`, `bahamut_kakyu_target_t01i`, `m0922tar_a0w`, die beiden Effekte unter
+  `vfx/monster/` und der Präfix `coshare`, zu dem das Blatt keine Zeile führt. Doppelte Einträge
+  innerhalb einer Liste (`com_trg01_0c`, `z6r2b3_8sec_lockon_c0a1`) sind ohne Wirkung, die Menge entfernt sie.
+- *Behebung:* `loc01` nur Spread, `loc02` nur Stack. `check_marker_lists.py` mit Selbsttest: kein Pfad in zwei Arten,
+  auch nicht über den Präfix einer anderen Art, Groß- und Kleinschreibung wie der Leser; in der CI, weil ein Sync das
+  nächste Paar bringen kann.
+- *Falsifikation:* kein Defekt – widerlegt, die Art eines Pfads ist am Blatt und an BossMod belegt; Option falsch –
+  ein Spread-Marker auf ihm öffnet seinen Selbstschutz weiter, die Gruppenminderung bleibt; ausgeliefert und nichts
+  ändert sich – wenn Aetherletting jeden Spieler markiert, dann kostete der Fehler nichts und die Behebung ebenso.
+- *Dokumentation:* Konzept 13 („Marker"), 19; Release-Text.
+
+*Prüfgrad:* statisch, Prüfskript mit Selbsttest, Compile; im Spiel nicht beobachtet.
+
 ---
 ## B · Commit-Register (Fork vs. `upstream/main`)
 
