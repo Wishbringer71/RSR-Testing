@@ -23,7 +23,7 @@ are not reconstructed here.
 
 ## Unreleased
 
-## 7.5.7.7+wsh1
+## 7.5.7.8+wsh1
 
 ### Behaviour change in RotationSolver.Basic: an area share of 0 means measured without damage
 
