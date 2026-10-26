@@ -11252,6 +11252,25 @@ bearbeitet ist und in seinen Protokollen gespielt wird.
 
 *Prüfgrad:* Quellen, Code, Modell mit Selbsttest; im Spiel nicht beobachtet.
 
+### A382 · Barde gegen The Balance: Lieder und Burst; Liedlänge aus dem Spiel (26.10.2026)
+
+- *Quellen:* The Balance, Bard Basic Guide („Patch Applicable: 7.4", 27.12.2025); `BRD_Reborn`, `BardRotation`;
+  `DefensiveValues.g.cs` (Lieder 45 s).
+- *Befund:* Liedfolge und -zeiten (43/43/34 s), Pitch Perfect, Iron Jaws, Barrage, Empyreal Arrow, Sidewinder und
+  Heartbreak Shot decken sich. Apex Arrow fällt in Mage's Ballad, sobald höchstens 18 s übrig sind, der Guide nennt
+  21–19 s; `SongEndAfter(22) && SongEndAfter(18)` liest die 22 nicht (die 18 schließt sie ein). Im Kampf ohne Belang –
+  derselbe Pfeil im selben Lied vor demselben Burst –, nicht geändert.
+- *Geändert:* Die Liedlänge stand als feste 45 in `BRD_Reborn` (von Upstream, angefasst, also nach seiner Regel
+  abzuleiten). `BardRotation.SongDuration` liest die Dauer aus dem Tooltip, die erzeugte Tabelle als Rückfall. Heute
+  dasselbe Verhalten; ändert ein Patch die Liedlänge, folgt der Liedwechsel.
+- *Falsifikation:* (1) Kein Defekt? Richtig – heute gleiches Verhalten; die Änderung tilgt eine Annahme. (2) Option
+  falsch? Nennt der Tooltip zuerst eine andere Dauer als die des Liedes, wechselte das Lied falsch; die Tooltips der
+  drei Lieder nennen als erste Dauer die des Liedes (Job-Guide), die Tabelle bestätigt 45 s. (3) Ausgeliefert, nichts
+  ändert sich? So gewollt bis zu einem Patch.
+- *Betroffen:* Autoren abgeleiteter Rotationen: `SongDuration` neu (geschützt).
+
+*Prüfgrad:* Quellen, Code, Compile; im Spiel nicht beobachtet.
+
 ---
 ## B · Commit-Register (Fork vs. `upstream/main`)
 

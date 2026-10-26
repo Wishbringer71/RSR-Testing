@@ -59,6 +59,10 @@ A protected helper for Machinist rotations: whether Flamethrower beats the fille
 Wildfire, Barrel Stabilizer or Hypercharge comes ready during the channel, the pack stands and lives through it. The
 default AoE count of Flamethrower is 2 (was 6).
 
+### Addition to RotationSolver.Basic: `BardRotation.SongDuration`
+
+A protected helper: a song's duration from its tooltip, the generated table where the tooltip states none.
+
 ## 7.5.7.8+wsh1
 
 ### Dependency of RotationSolver.Basic: RebornMaterial 7.5.7.0

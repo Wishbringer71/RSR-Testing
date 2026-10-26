@@ -734,15 +734,28 @@ Ladung da ist, und an der vollen Ladung.
   derselben Reihenfolge, alles unter Fugetsu. Die Verschiebung ändert den eigenen Schaden nicht, nur die Lage zu den
   Gruppenbuffs der anderen.
 
+### Barde: Lieder und Burst
+
+**Deckt sich** (26.10.2026, A382) mit The Balance, Bard Basic Guide („Patch Applicable: 7.4", zuletzt geändert
+27.12.2025). Geändert ist nur, woher die Länge eines Liedes kommt.
+
+| Punkt | The Balance | RSR | Stand |
+|---|---|---|---|
+| Liedfolge | WM → MB → AP; „~43 seconds" in Wanderer's Minuet und Mage's Ballad, „~34 seconds" in Army's Paeon, Lieder bis 45 s | erstes bis drittes Lied als Einstellung, ab Werk dieselbe Folge; 43/43/34 s als Einstellung | deckt sich. Die 45 s stand als feste Zahl im Code; jetzt kommt die Dauer aus dem Tooltip des Liedes, aus der erzeugten Tabelle, wo er keine nennt (`BardRotation.SongDuration`) |
+| Pitch Perfect | in Wanderer's Minuet bei drei Stapeln, früher nur gegen den Überlauf von Empyreal Arrow; Rest vor dem Liedwechsel ausgeben | bei drei; bei zwei, wenn Empyreal Arrow im nächsten GCD bereit wird und Radiant Finale abkühlt; Rest, wenn das Lied in 3 s endet | deckt sich |
+| Iron Jaws | „with 4-7 seconds left" | in den letzten zwei GCDs der DoTs (Erneuerungsfenster ab Werk), dazu am Ende der eigenen Buffs | deckt sich |
+| Apex Arrow | „around halfway through Mage's Ballad … by about 21-19s on the timer", früher bei 100 Soul Voice | in Mage's Ballad ab 80 Soul Voice, sobald höchstens 18 s übrig sind; bei 100 sofort außerhalb von Raging Strikes | 1 bis 3 s später als der Guide; die Bedingung `SongEndAfter(22) && SongEndAfter(18)` enthält die 22 nur scheinbar – ein Fenster 22–18 war wohl gemeint. Im Kampf ohne Belang: Der Pfeil fällt im selben Lied und vor demselben Burst; nicht geändert |
+| Barrage, Empyreal Arrow, Sidewinder, Heartbreak Shot | Barrage auf Refulgent Arrow im Burst; Empyreal Arrow alle 15 s; Sidewinder etwa in der Mitte von Mage's Ballad; Heartbreak Shot nicht bei drei Ladungen | Barrage unter Raging Strikes; Empyreal Arrow auf Abklingzeit, kurz vor Raging Strikes zurückgehalten; Ladungsregeln der Rotation | deckt sich |
+
 ### Schadensausteiler: Ressourcen und Buffs
 
 Geprüft am 26.10.2026 gegen die Basic Guides von The Balance (Stand je Guide: Dragoon 7.5, Viper 7.55, Reaper 7.5,
 Samurai 7.4, Monk 7.4, Ninja 7.05, Barde 7.4, Tänzer 7.40, Schwarzmagier 7.4, Rotmagier 7.4, Pictomancer 7.4):
 die Regeln gegen das Überlaufen der Ressourcen und für die eigenen Buffs, je an der Stelle im Code, die sie trägt.
 Keine Änderung. Nicht einzeln geprüft sind die Folgen innerhalb eines Burstfensters (Mudra-Planung des Ninja vor
-Kunai's Bane, Enshroud-Folgen des Reaper, Liedfolge des Barden, Motivfolgen des Pictomancer, Feuer-Eis-Takt des
-Schwarzmagiers, Monk); das bleibt offene Arbeit. Die Meikyo-Folgen des Samurai stehen unter „Samurai: Meikyo Shisui und
-Higanbana".
+Kunai's Bane, Enshroud-Folgen des Reaper, Motivfolgen des Pictomancer, Feuer-Eis-Takt des Schwarzmagiers, Monk); das
+bleibt offene Arbeit. Die Meikyo-Folgen des Samurai stehen unter „Samurai: Meikyo Shisui und Higanbana", die Liedfolge
+des Barden unter „Barde: Lieder und Burst".
 
 | Job | The Balance | RSR | Stand |
 |---|---|---|---|

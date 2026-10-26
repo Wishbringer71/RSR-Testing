@@ -55,9 +55,10 @@ public sealed class BRD_Reborn : BardRotation
 			+ "goes out and takes one weave slot in the burst.")]
 	private bool BurstDefense { get; set; } = false;
 
-	private float WANDRemainTime => 45 - WANDTime;
-	private float MAGERemainTime => 45 - MAGETime;
-	private float ARMYRemainTime => 45 - ARMYTime;
+	// The time left in a song when the next one starts: its duration from the game, less the uptime set above.
+	private float WANDRemainTime => SongDuration(TheWanderersMinuetPvE) - WANDTime;
+	private float MAGERemainTime => SongDuration(MagesBalladPvE) - MAGETime;
+	private float ARMYRemainTime => SongDuration(ArmysPaeonPvE) - ARMYTime;
 
 	private bool InBurstStatus => (!BattleVoicePvE.EnoughLevel && HasRagingStrikes)
 		|| (BattleVoicePvE.EnoughLevel && !RadiantFinalePvE.EnoughLevel && HasRagingStrikes && HasBattleVoice)

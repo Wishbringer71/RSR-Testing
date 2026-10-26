@@ -263,9 +263,10 @@ im Code.
 - *Für den Abgleich mit The Balance vorgemerkt* (Spieltatsache oder Strategie, keine Spielerentscheidung):
   - Restzeiten von Swift und Hunt vor Reawaken (je 10 s) und der Bündelzeitpunkt vor Serpent's Ire (75 s), Viper
   - Paint-Grenze 5, Piktomant
-  - Lieddauern 43/43/34 s, Barde
+  - Lieddauern 43/43/34 s, Barde – abgeglichen (A382): The Balance nennt dieselben Zeiten; die Liedlänge selbst kommt
+    jetzt aus dem Spiel
   - Death's Design bei 10 s, Schnitter
-  - Meikyo Shisui bei 14 s im Countdown, Samurai
+  - Meikyo Shisui bei 14 s im Countdown, Samurai – abgeglichen (A381): der Opener von The Balance setzt ihn bei −14 s
   - Earthly Star bei 4 s im Countdown, Astrologe
   - die Schätzung „8 % der eigenen Gesundheit als Gruppenschaden je Sekunde", mit der der Gelehrte Bio auf kurzlebige
     Ziele vermeidet – eine Stellvertretergröße neben der gemessenen Zeit bis zum Tod, die die zentrale DoT-Planung

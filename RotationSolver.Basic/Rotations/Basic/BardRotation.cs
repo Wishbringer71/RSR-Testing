@@ -91,6 +91,17 @@ public partial class BardRotation
 	}
 
 	/// <summary>
+	/// How long <paramref name="song"/> lasts: the "Duration" its tooltip states at the player's level, the generated
+	/// table where the tooltip states none (A382).
+	/// </summary>
+	/// <param name="song">The Wanderer's Minuet, Mage's Ballad or Army's Paeon.</param>
+	/// <returns>The song's duration in seconds.</returns>
+	protected static float SongDuration(IBaseAction song)
+	{
+		return ActionTooltip.TryStatedDuration(song.ID, out var seconds) ? seconds : DefensiveValues.DurationOf(song.ID);
+	}
+
+	/// <summary>
 	/// 
 	/// </summary>
 	public static byte BloodletterMax => EnhancedBloodletterTrait.EnoughLevel ? (byte)3 : (byte)2;
