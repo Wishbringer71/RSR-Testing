@@ -125,6 +125,7 @@ Pflicht für jede nicht-triviale Aufgabe; die REGEL steht darüber.
 - Eine Spielgröße kläre ich in ihrer Bedeutung, bevor ich sie verrechne: Ein Schild verhindert Schaden und heilt nicht; Unverwundbarkeit verhindert den Tod und heilt nicht; ein Debuff drosselt den Schadensstrom und beendet ihn nicht.
 - Befunde formuliere ich als Wirkung: „die Beschwörung kommt einen GCD später und mit ihr jede weitere Demi", nicht „`searingSettled` liest die Bedingung nicht".
 - Das Verhalten anderer Spieler ist eine Annahme, nie ein tragender Grund. Ein einzelner Beschwörer setzt seinen Burst selbst.
+- Seine Mitschnitte belegen Einzelfälle aus wenigen Instanzen, nicht das Spiel (seine Vorgabe, 27.10.2026). Eine Regel beurteile ich über alle Inhalte, in denen sie greift – Spielblätter, BossMod-Module, Guides –; die Mitschnitte eichen und widerlegen, sie begrenzen nicht. Grund: „Kommt in seinen Logs nicht vor" sagt nichts über Savage, Extreme oder einen Inhalt, den er noch nicht hochgeladen hat.
 
 # Der Auftraggeber
 

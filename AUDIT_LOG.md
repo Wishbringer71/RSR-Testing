@@ -12498,6 +12498,31 @@ beobachtet.
 - *Messmittel:* `act_heal_need.py` mit Selbsttest in der CI; Modell mit 20 Invarianten.
 - *Prüfgrad:* Mitschnitt-Messung, Werkzeug- und Referenzquellen, Modell; kein Code, nicht gebaut.
 
+### A431 · HoT gegen DoT: Zeromus, Esuna, Breite über alle Inhalte, H1 mit Lernen (27.10.2026)
+
+- *Seine Angaben:* Hinweis Zeromus (grüne Kugeln, extrem starker DoT, sofortiger HoT nützlich); Hinweis „dots sind
+  selten durch esuna entfernbar, ausser evtl. gift"; Vorgabe, sich nicht nur auf die Instanzen mit Mitschnitten zu
+  verlassen (in `CLAUDE.md`, „Maßstab: das Spielgeschehen"); Frage, ob die Klone der Plugin-Repositories vor der
+  Prüfung aktuell waren. Wörtlich in Konzept 08, „Schaden über Zeit: HoT gegen DoT".
+- *Klone:* nicht alle. BossMod stand auf dem 23.10., WrathCombo auf dem 10.10.; beide auf den 27.10. vorgespult,
+  BossmodReborn war auf dem neuesten Commit seines Remotes (20.10.), DeathRecap, Sapphire und xivanalysis frisch.
+  Regel in `.claude/rules/konzepte.md`: Klon vor jeder Aussage auf den Stand des Remotes, Commit und Datum nennen.
+- *Zeromus:* Extreme, nicht Savage (BossMod `Ex7Zeromus`); Toxic Bubble, Void Bio Burst bringt Schaden, Verwundbarkeit
+  und Pollen (1507, nicht entfernbar); consolegameswiki: „massive damage-over-time, which will likely kill them".
+  Stärke und Dauer unbelegt.
+- *Esuna:* 90 von 340 nicht jobgebundenen DoT-Status entfernbar; Gift 8 von 15, Blutung 8 von 23, Stromschlag 4 von
+  17. Sein Hinweis trifft die Größenordnung, Gift ist nicht der einzige. Die Zahl „über 500" DoT-Status im Konzept
+  war falsch, gemessen 386; berichtigt.
+- *Breite:* in mindestens 128 Kämpfen der BossMod-Module ein gegnerischer DoT-Status auf Spielern, 29 davon Savage,
+  Extreme, Ultimate oder Criterion, sechs mit DoT auf der ganzen Gruppe; die Hälfte der DoT-Status in seinem
+  Allianz-Raid-Mitschnitt ohne festes Ende.
+- *Modell:* zwei Varianten für DoTs ohne bekanntes Ende. Schätzung aus der bisherigen Laufzeit widerlegt (ein GCD mehr
+  ohne Gewinn, ein HoT ohne Bedarf). Stärke und Lebensdauer je Status und Gebiet gelernt, HoT beim Auflegen: beim
+  Zeromus-artigen DoT (Annahme 15 % je Tick, vier Ticks) Tiefpunkt 64,5 % statt 57,7 % heute, kein GCD mehr.
+  Selbsttest 23 Invarianten.
+- *Empfehlung an ihn:* H1 mit Lernen hinter einer Option, ab Werk an. Nicht gebaut.
+- *Prüfgrad:* Spielblatt, Modul-Quelltexte, Wiki, Modell; kein Code.
+
 ---
 ## B · Commit-Register (Fork vs. `upstream/main`)
 

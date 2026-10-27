@@ -60,7 +60,7 @@ erben die Selbstkorrektur.
 | Wirksamkeitsmessung im Spiel | ersetzt durch die Selbstkorrektur der Vorausschau (`ScoreTtkForecast`); keine Ablesung als Aufgabe an ihn |
 | **Sonde der Flächenbewertung**: `DataCenter.AreaMitigationSkipped` nennt je Aktions-Id, wo die Bewertung eine Minderung verworfen hat (Listenverwaltung) | in Betrieb |
 | **Ein gegnerisches Wirken stoppen** (seine Vorgaben 18.10.2026, 23.10.2026 und 27.10.2026): Heiler und Magier stoppen das Wirken eines Gegners, der kein Boss ist – beim Weißmagier mit Sanctga, sonst mit Schlaf –, und speichern, was sie dabei lernen | umgesetzt (A329, A334, A427), experimentell, ab Werk an; Abschnitt „Ein gegnerisches Wirken stoppen" |
-| **Schaden über Zeit: HoT gegen DoT** (sein Vorschlag vom 27.10.2026): ein GCD-HoT, sobald der gemessene DoT das Mitglied bis zu seinem Ende unter die Schwelle drückt; Gruppen-HoT ab zwei solchen Mitgliedern | geprüft, nicht gebaut; B verworfen, die schmale Mischform H1 zur Entscheidung (A428–A430); Abschnitt „Schaden über Zeit: HoT gegen DoT" |
+| **Schaden über Zeit: HoT gegen DoT** (sein Vorschlag vom 27.10.2026): ein GCD-HoT, sobald der gemessene DoT das Mitglied bis zu seinem Ende unter die Schwelle drückt; Gruppen-HoT ab zwei solchen Mitgliedern | geprüft, nicht gebaut; B verworfen, die schmale Mischform H1 mit Lernen zur Entscheidung (A428–A431); Abschnitt „Schaden über Zeit: HoT gegen DoT" |
 
 ## Die Antwort auf einen eingehenden Treffer
 
@@ -1071,9 +1071,17 @@ Lösungsvorschlag):
   wäre? besser oder schlechter?"
 - Sein Auftrag: „prüfe weg b erneut im vollständigen loop mit antithese und versuch der widerlegung. recherchiere
   weiter", dazu seine Frage: „gibt es bessere hybride wege?"
+- Hinweis: „savage zeromus, da entstehen grüne kugeln, die explodieren wenn man sie berührt und belegen einen mit einem
+  extrem starken dot. das nur als ein beispiel, wo ein sofortiger hot zur zusätzlichen heilung nützlich ist. da hier das
+  gegenheilen schon schwer wird." Geprüft: Zeromus ist eine Extreme-Prüfung (The Abyssal Fracture, BossMod `Ex7Zeromus`),
+  kein Savage-Raid. Die Kugeln heißen Toxic Bubble, entstehen durch Void Bio; die Berührung (Void Bio Burst) bringt
+  Schaden, Verwundbarkeit und den Status Pollen (Id 1507), nicht entfernbar; „massive damage-over-time, which will likely
+  kill them" (consolegameswiki). Stärke und Dauer nennt keine Quelle.
+- Hinweis: „dots sind selten durch esuna entfernbar, ausser evtl. gift". Geprüft am Spielblatt (Abschnitt „Mechanik",
+  „Entfernbar").
 
-**Stand:** zweimal geprüft (A428, A429, A430), nicht gebaut. Weg B in seiner ersten Form ist verworfen; empfohlen ist
-eine schmale Mischform (Abschnitt „Empfehlung"), zu seiner Entscheidung.
+**Stand:** zweimal geprüft (A428–A431), nicht gebaut. Weg B in seiner ersten Form ist verworfen; empfohlen ist
+eine schmale Mischform mit Lernen (Abschnitt „Empfehlung"), zu seiner Entscheidung.
 
 ### Mechanik
 
@@ -1081,14 +1089,16 @@ eine schmale Mischform (Abschnitt „Empfehlung"), zu seiner Entscheidung.
   Das Spiel meldet je Ziel einen zusammengefassten Tick aller DoTs und einen aller HoTs, „an aggregated tick for every
   DoT/HoT source on that target from all sources"; Bodeneffekte gesondert (cactbot LogGuide, Zeile 24). Den Betrag
   sieht also, wer das Ereignis liest, nicht aber, welcher Anteil von welchem Status stammt.
-- *Gegnerische DoTs erkennen:* Über 500 schädliche Status des Blatts `Status` nennen „damage over time" in ihrem
-  Wirktext, in wechselnder Fügung: „Taking damage over time", „Sustaining fire damage over time", bei Tiefkühlung
+- *Gegnerische DoTs erkennen:* 386 Status des Blatts `Status` nennen „damage over time" in ihrem Wirktext, 340 davon an
+  keinen Job gebunden (xivapi v2, 27.10.2026), in wechselnder Fügung: „Taking damage over time", „Sustaining fire damage over time", bei Tiefkühlung
   „dealing damage over time", bei Halbverschlungen „causing damage over time" (xivapi v2, 27.10.2026; die drei letzten
   aus seinem Mitschnitt vom 25.10.2026). Erkennbar wie Pyretic am eigenen Wirktext (A338, Konzept 03), also an der
   Teilzeichenkette; Restzeit aus dem Status. Der gemessene Tick erkennt jeden DoT ohne Wirktext.
-- *Entfernbar:* Ein Teil davon trägt `CanDispel` (in seinen Mitschnitten Gift und Stromschlag, nicht aber Blutung,
-  Brandwunde, Giftpollen, Verdauung). Esuna kommt in RSRs GCD-Verteilung vor jeder Heilung
-  (`CustomRotation_GCD`, `AutoStatus.Dispel`); ein entfernbarer DoT, den RSR entfernt, braucht keinen HoT.
+- *Entfernbar* (sein Hinweis, geprüft): 90 der 340 nicht jobgebundenen DoT-Status tragen `CanDispel`, gut jeder vierte.
+  Gift am häufigsten (8 von 15 Zeilen), aber nicht allein: Blutung 8 von 23, Windburn 5 von 16, Stromschlag 4 von 17,
+  Brandwunde 4 von 23; Tiefkühlung und Umschlungen nie. In seinen Mitschnitten waren Gift und Stromschlag entfernbar, Blutung,
+  Brandwunde, Giftpollen und Verdauung nicht; Pollen bei Zeromus ebenso nicht. Esuna kommt in RSRs GCD-Verteilung vor
+  jeder Heilung (`CustomRotation_GCD`, `AutoStatus.Dispel`); ein entfernbarer DoT, den RSR entfernt, braucht keinen HoT.
 - *HoT-Potenzen* (Job-Guide, 27.10.2026): Regen 250 je Tick für 18 s, 400 MP; Resega (Medica III) 250 sofort und 175
   je Tick für 15 s, 1000 MP, 2 s Wirkzeit; Medica II 250 und 150 je Tick für 15 s; Refugium (Asylum) 100 je Tick für
   24 s, oGCD alle 90 s; Göttliche Umarmung ein Schild, nach dessen Bruch oder Ablauf 200 je Tick für 15 s; Glockenspiel
@@ -1120,6 +1130,23 @@ eine schmale Mischform (Abschnitt „Empfehlung"), zu seiner Entscheidung.
 - *Eigener HoT in Lebenspunkten:* hängt an den Werten des Heilers. Die HoT-Ticks (0x604) fassen alle Heiler auf dem
   Mitglied zusammen; den eigenen Anteil gibt die gemessene Heilung je Potenz der eigenen direkten Heilungen
   (`FullAmount` im Effekt-Handler).
+
+### DoTs über alle Inhalte
+
+Seine Mitschnitte sind eine Stichprobe aus wenigen Instanzen; die Breite geben die Spielblätter und die Kampfmodule
+(seine Vorgabe vom 27.10.2026, `CLAUDE.md`, „Maßstab: das Spielgeschehen").
+
+- *Kämpfe:* In mindestens 128 Kämpfen, die BossMod und BossmodReborn beschreiben (Stand 27.10. und 20.10.2026, beide der
+  jeweils neueste Commit), fällt ein gegnerischer DoT-Status auf Spieler: 28 Allianz-Raids, 16 Dungeons, 12 Savage, 11
+  Trials, 10 Extreme, 4 Criterion, 3 Ultimate, dazu Foray, Varianten, Deep Dungeons und weitere. Untergrenze: Nicht jeder
+  Kampf hat ein Modul, nicht jedes Modul führt seine Status.
+- *Ganze Gruppe:* In sechs Modulen nennt der Kommentar einer Aktion einen Raidwide mit DoT, darunter Zeromus (Big Bang,
+  Big Crunch), Rubicante und Valigarmanda (Extreme) und Shadow Lord (Allianz-Raid, BossMod `A14ShadowLord`).
+- *Entfernbar:* In 39 dieser Kämpfe ist mindestens einer der DoT-Status entfernbar.
+- *Stärke und Dauer* stehen in keinem Blatt und keinem Modul; Stärke setzt der Inhalt, Dauer die Aktion. Messbar sind
+  beide nur im Kampf (Tick, Restzeit). In seinem Mitschnitt vom 25.10.2026 hatte die Hälfte der DoT-Status kein festes
+  Ende (Restzeit 9999: Brandwunde, Giftpollen, Halbverschlungen, Umschlungen; mit Ende: Blutung 20 s, Tiefkühlung 20 s,
+  Stromschlag 30 s, Verdauung 120 s).
 
 ### Was seine Mitschnitte zeigen
 
@@ -1281,18 +1308,25 @@ genau das misst Frage 1 an den angekündigten Treffern.
 | **H1 – schmale Mischform:** heutige Regel als Untergrenze; dazu ein GCD-HoT, wo der gemessene DoT allein (mit angekündigten Treffern) bis zu seinem Ende unter die Schwelle drückt; Gruppen-HoT ab zwei solchen Mitgliedern; Lilien und freie HoTs wie heute | in keiner Lage mehr GCDs als heute, Tiefpunkt überall mindestens so hoch; starker DoT 71 % statt 60 % mit 800 statt 1400 MP (Modell) | greift nur bei mittleren und starken DoTs, in seinem Hauptinhalt selten; braucht die Tickmessung |
 | **H2 – Kosten nach Verdrängtem:** dazu oGCD-HoTs nach Bedarf, mit Vorbehalt ihrer Abklingzeit für den nächsten Raidwide | gilt für alle vier Heiler gleich | oGCD-HoTs kosten keinen Schaden, zu sparen ist nichts; braucht die Zeit bis zum nächsten Raidwide (BossMod oder gelernt) – **zurückgestellt**, bis ein Bedarf gemessen ist |
 | **H3 – nur messen** | Tickbeträge für spätere Regeln | ändert im Kampf nichts |
+| **H1 mit Lernen:** H1, dazu Stärke (Anteil der maximalen HP je Tick) und Lebensdauer je Status und Gebiet aus früheren Treffern, gespeichert wie die übrigen gelernten Tabellen; ab dem zweiten Treffer fällt der HoT beim Auflegen, vor dem ersten Tick, und ein DoT ohne festes Ende wird mit seiner gelernten Lebensdauer fortgeschrieben | sein „sofortiger HoT": HoT und DoT ticken vom ersten Tick an zusammen; Zeromus-artiger DoT (15 % je Tick, vier Ticks) Tiefpunkt 64,5 % statt 57,7 % heute, kein GCD mehr (Modell) | wirkt erst ab dem zweiten Treffer desselben Status im selben Gebiet; eine weitere gelernte Tabelle |
+| **H1 mit Schätzung:** Ende unbekannt, so viele Ticks erwartet, wie schon gelaufen sind | ohne frühere Treffer | beim Zeromus-artigen DoT ein GCD mehr ohne höheren Tiefpunkt, beim kurzen DoT (7,5 %, drei Ticks) ein HoT, den niemand braucht – **verworfen** |
 
 Das Modell, einzelnes Mitglied mit Weißmagier-Voreinstellungen; „B mit Trend" ist B, wie ein Client es rechnen könnte
 (anderer Schaden aus dem Schnitt der letzten vier Ticks über die HoT-Laufzeit fortgeschrieben):
 
-| Lage | heute | B mit Trend | H1 |
-|---|---|---|---|
-| Schwacher DoT 0,6 % je Tick über 5 min | 2 GCDs, Tiefpunkt 65 % | 2 GCDs, 68 % | 2 GCDs, 68 % |
-| DoT in Stärke eines Regen-Ticks, 20 % Rückstand | 1 GCD, 66 % | 1 GCD, 77 % | 1 GCD, 77 % |
-| Starker DoT 6 % je Tick über 30 s | 2 GCDs, 1400 MP, 60 % | 2 GCDs, 1400 MP, 71 % | 2 GCDs, 800 MP, 71 % |
-| Tank, DoT 3 % und Auto-Angriffe 2 % je Tick | 2 GCDs, 60 % | 3 GCDs, 75 % | 2 GCDs, 66 % |
-| Ein Raidwide von 30 %, dann nichts | kein GCD, 70 % | 3 GCDs, 2400 MP | kein GCD, 70 % |
-| Raidwide von 30 % und DoT in Stärke eines Regen-Ticks | 1 GCD, 67 % | 4 GCDs, 3400 MP | 1 GCD, 67 % |
+| Lage | heute | B mit Trend | H1 | H1 mit Lernen |
+|---|---|---|---|---|
+| Schwacher DoT 0,6 % je Tick über 5 min | 2 GCDs, Tiefpunkt 65 % | 2 GCDs, 68 % | 2 GCDs, 68 % | 2 GCDs, 68 % |
+| DoT in Stärke eines Regen-Ticks, 20 % Rückstand | 1 GCD, 66 % | 1 GCD, 77 % | 1 GCD, 77 % | 1 GCD, 80 % |
+| Starker DoT 6 % je Tick über 30 s | 2 GCDs, 1400 MP, 60 % | 2 GCDs, 1400 MP, 71 % | 2 GCDs, 800 MP, 71 % | 2 GCDs, 800 MP, 74 % |
+| Tank, DoT 3 % und Auto-Angriffe 2 % je Tick | 2 GCDs, 60 % | 3 GCDs, 75 % | 2 GCDs, 66 % | 2 GCDs, 66 % |
+| Ein Raidwide von 30 %, dann nichts | kein GCD, 70 % | 3 GCDs, 2400 MP | kein GCD, 70 % | kein GCD, 70 % |
+| Raidwide von 30 % und DoT in Stärke eines Regen-Ticks | 1 GCD, 67 % | 4 GCDs, 3400 MP | 1 GCD, 67 % | 1 GCD, 67 % |
+| Zeromus-artig: 15 % je Tick, vier Ticks, Ende im Status unbekannt | 2 GCDs, 58 % | 3 GCDs, 72 % | 2 GCDs, 61 % (Ende als bekannt gerechnet) | 2 GCDs, 64,5 % |
+| Wie Halbverschlungen: 7,5 % je Tick, drei Ticks, Ende unbekannt | kein GCD, 78 % | kein GCD | kein GCD | kein GCD |
+
+„H1" rechnet hier mit bekanntem Ende; ohne gelernte Lebensdauer lässt H1 einen DoT ohne festes Ende der heutigen Regel.
+Die Stärke des Zeromus-DoT ist unbelegt; 15 % je Tick ist eine Annahme für „extrem stark".
 
 Für Gruppen-DoTs rechnet das Gruppenmodell oben schon so wie H1: Es kennt nur den DoT und den Rückstand, keinen
 weiteren Schaden.
@@ -1309,7 +1343,8 @@ Gesundheitstrend, den RSR hat, überschätzt ihn nach jedem Treffer (Tabelle obe
 
 - *Kein Defekt?* Teilweise. GCD-HoTs ohne Bedarf kosten heute gut 1 % der GCDs, und H1 spart sie nicht – die heutige
   Regel bleibt Untergrenze, und Regen vor dem Pull ist gewollt (A184). Ein Tod durch einen DoT ist in seinen
-  Mitschnitten nicht belegt. H1 ist deshalb keine Sparmaßnahme, sondern der rechtzeitige HoT bei einem DoT, der
+  Mitschnitten nicht belegt, im Spiel aber angelegt: Pollen bei Zeromus tötet laut consolegameswiki „likely". H1 ist
+  deshalb keine Sparmaßnahme, sondern der rechtzeitige HoT bei einem DoT, der
   sicher kommt und dessen Ende feststeht: Blutung auf dem Krieger (25.10.2026, 10–11 % je Tick über 20 s) bekam Regen
   nach dem dritten Tick, Cure II bei 62 %; H1 legt Regen beim ersten. Was das im Kampf bringt, zeigt nur das Modell –
   darum hinter einer Option.
@@ -1318,12 +1353,18 @@ Gesundheitstrend, den RSR hat, überschätzt ihn nach jedem Treffer (Tabelle obe
   Die HoT-Ticks des zweiten Heilers stecken in der Messung (0x604); nur ein HoT, den er im selben Augenblick legt, ist
   nicht zu sehen – Preis ein GCD. Ob prozentuale Minderung den Tick senkt, ist unbelegt; die Messung je Tick führt sie
   ohnehin mit. Ein DoT ohne festes Ende (Restzeit 9999, etwa Halbverschlungen und Giftpollen, die mit der Mechanik
-  enden) lässt sich nicht bis zu seinem Ende fortschreiben – Halbverschlungen endete nach drei Ticks. H1 lässt solche
-  DoTs der heutigen Regel.
-- *Ausgeliefert, nichts ändert sich – warum?* Hält teilweise. Im Pilgerpfad (0,59 % je Tick) greift H1 nie: Sechs Ticks
-  nehmen 3,5 %. Sichtbar wird H1 bei mittleren und starken DoTs mit festem Ende: Tiefkühlung (20 s, rund 10 % je Tick
-  auf zwei Mitgliedern, 25.10.2026) drückt beide ohne Heilung binnen vier Ticks unter 65 %, H1 legt beim ersten Tick
-  den Gruppen-HoT. In Savage fehlt ein Mitschnitt.
+  enden) lässt sich nicht aus dem Status fortschreiben – Halbverschlungen endete nach drei Ticks. Die Restdauer aus der
+  bisherigen Laufzeit zu schätzen, ist widerlegt (Modell: ein GCD mehr ohne Gewinn, ein HoT ohne Bedarf). H1 lässt
+  solche DoTs der heutigen Regel, bis es ihre Lebensdauer in diesem Gebiet gelernt hat. Eine gelernte Stärke kann
+  falsch sein, wenn derselbe Status im selben Gebiet verschieden stark trifft; der erste Tick misst nach, Preis
+  höchstens ein HoT.
+- *Ausgeliefert, nichts ändert sich – warum?* Widerlegt für das Spiel, nicht für seinen Hauptinhalt. Im Pilgerpfad
+  (0,59 % je Tick) greift H1 nie: Sechs Ticks nehmen 3,5 %. Aber gegnerische DoTs auf Spielern gibt es in mindestens 128
+  Kämpfen, 29 davon Savage, Extreme, Ultimate oder Criterion, sechs mit einem DoT auf der ganzen Gruppe (Abschnitt „DoTs
+  über alle Inhalte"). Sichtbar wird H1 dort und bei mittleren DoTs: Tiefkühlung (20 s, rund 10 % je Tick auf zwei
+  Mitgliedern, 25.10.2026) drückt beide ohne Heilung binnen vier Ticks unter 65 %, H1 legt beim ersten Tick den
+  Gruppen-HoT; Pollen bei Zeromus mit Lernen ab dem zweiten Treffer beim Auflegen. Gemessen ist das in keinem
+  Mitschnitt aus diesen Inhalten.
 - *Gegenposition aus der Community:* The Balance empfiehlt, GCD-Heilungen zu meiden, wo oGCDs reichen, und nennt Regen
   die stärkste Einzel-GCD-Heilung, „if you do not need the full healing immediately", häufig bei anhaltendem
   Einzelschaden – dafür ist H1 gebaut. xivanalysis misst Überheilung von GCD-HoTs gegen höchstens 35 %; H1 legt einen
@@ -1333,20 +1374,24 @@ Gesundheitstrend, den RSR hat, überschätzt ihn nach jedem Treffer (Tabelle obe
 
 ### Empfehlung
 
-H1 hinter einer Option, ab Werk an (Nutzen am Modell belegt, im Spiel nicht gemessen); nicht B in seiner ersten Form,
-nicht C, nicht H2, nicht seine Schwelle über vier Spieler, nicht der HoT ohne jede Schwelle. Bestandteile:
+H1 mit Lernen hinter einer Option, ab Werk an (Nutzen am Modell belegt, im Spiel nicht gemessen); nicht B in seiner
+ersten Form, nicht C, nicht H2, nicht die Schätzung aus der bisherigen Laufzeit, nicht seine Schwelle über vier
+Spieler, nicht der HoT ohne jede Schwelle. Bestandteile:
 
 1. *Messung* am vorhandenen Hook: Betrag des DoT-Ticks (0x605) und des HoT-Ticks (0x604) je Mitglied, als Anteil seiner
-   maximalen HP; Ende des DoT aus dem Status mit „damage over time" im Wirktext; DoTs ohne festes Ende und DoTs, die
-   RSR entfernt, ausgenommen.
-2. *Ob:* die heutige Regel als Untergrenze; dazu ein GCD-HoT, wenn gemessener DoT bis zu seinem Ende und angekündigte
-   Treffer, abzüglich der laufenden HoT-Ticks, das Mitglied innerhalb der HoT-Laufzeit unter die Einzelschwelle drücken.
-3. *Wer:* ab zwei solchen Mitgliedern im Wirkbereich der Gruppen-HoT (Resega, Medica II, Helios Conjunction, Aspected
+   maximalen HP; Ende des DoT aus dem Status mit „damage over time" im Wirktext; DoTs, die RSR entfernt, ausgenommen.
+2. *Lernen* je Status und Gebiet: Stärke je Tick als Anteil der maximalen HP und die Lebensdauer, gespeichert wie die
+   übrigen gelernten Tabellen. Ein DoT ohne festes Ende zählt mit seiner gelernten Lebensdauer, vorher nach der
+   heutigen Regel.
+3. *Ob:* die heutige Regel als Untergrenze; dazu ein GCD-HoT, wenn der DoT bis zu seinem Ende und angekündigte Treffer,
+   abzüglich der laufenden HoT-Ticks, das Mitglied innerhalb der HoT-Laufzeit unter die Einzelschwelle drücken – beim
+   ersten Treffer ab dem ersten Tick, danach beim Auflegen des Status.
+4. *Wer:* ab zwei solchen Mitgliedern im Wirkbereich der Gruppen-HoT (Resega, Medica II, Helios Conjunction, Aspected
    Helios), sonst der Einzel-HoT (Regen, Aspected Benefic).
-4. *Womit:* Lilien zuerst; ein HoT, wenn er mindestens so viel landet wie die direkte Heilung; unter `RegenHeal` Cure II.
-5. *Selbstnachsteuerung:* vorausgesagte Landung gegen die gemessenen Ticks; die Abweichung korrigiert die
+5. *Womit:* Lilien zuerst; ein HoT, wenn er mindestens so viel landet wie die direkte Heilung; unter `RegenHeal` Cure II.
+6. *Selbstnachsteuerung:* vorausgesagte Landung gegen die gemessenen Ticks; die Abweichung korrigiert die
    DoT-Vorhersage wie `GetCorrectedTTK`.
-6. *Messmittel für ihn:* `act_heal_need.py` auf seinen nächsten Mitschnitt – GCD-HoTs ohne Bedarf und ihre Überheilung
+7. *Messmittel für ihn:* `act_heal_need.py` auf seinen nächsten Mitschnitt – GCD-HoTs ohne Bedarf und ihre Überheilung
    gegen den Stand von A430.
 
 Getrennt davon, ohne Entscheidungsbedarf: der Defekt der HoT-Listen (TODO).

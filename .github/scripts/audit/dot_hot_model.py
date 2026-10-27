@@ -38,6 +38,10 @@ the DoT carried forward from the last four ticks over the HoT's time, the way th
 today's rule as the floor and adds a HoT only where the measured DoT alone, until its end, would cross the threshold
 within the HoT's time.
 
+The sixth part follows his example of 27.10.2026 (Zeromus, a DoT whose end the status does not tell): ESTIMATE takes
+as many ticks still to come as have run so far; LEARNED knows strength and end from an earlier pull and lays the HoT
+when the status lands, before its first tick.
+
 Usage: python3 .github/scripts/audit/dot_hot_model.py [--self-test]
 """
 import sys
@@ -136,6 +140,9 @@ def rule_effect_trend(m, dots_ahead, recent_others):
 def run(rule, dots, others, steps, hp=100.0):
     m, gcds, mp = Member(hp), 0, 0
     seen = []
+    if rule == "learned" and rule_hybrid(m, dots, others[:1]) == "Regen":
+        # strength and end known from an earlier pull: the HoT goes on when the status lands, before its first tick
+        m.regen, gcds, mp = REGEN_TICKS, 1, MP["Regen"]
     for k in range(steps):
         loss = (dots[k] if k < len(dots) else 0.0) + (others[k] if k < len(others) else 0.0)
         m.hp = max(0.0, m.hp - loss)
@@ -148,10 +155,15 @@ def run(rule, dots, others, steps, hp=100.0):
             choice = rule_today(m, dots[k + 1] if k + 1 < len(dots) else 0.0, others[k + 1] if k + 1 < len(others) else 0.0)
         elif rule == "unbound":
             choice = rule_unbound(m, dots[k + 1:], others[k + 1:])
-        elif rule == "hybrid":
+        elif rule in ("hybrid", "learned"):
             choice = rule_hybrid(m, dots[k + 1:], others[k + 1:])
         elif rule == "trend":
             choice = rule_effect_trend(m, dots[k + 1:], seen)
+        elif rule == "estimate":
+            # end unknown: as many ticks still to come as have run so far
+            now = dots[k] if k < len(dots) else 0.0
+            ran = sum(1 for x in dots[:k + 1] if x > 0)
+            choice = rule_hybrid(m, [now] * ran if now > 0 else [], others[k + 1:])
         else:
             choice = rule_effect(m, dots[k + 1:], others[k + 1:])
         if choice == "Regen":
@@ -172,6 +184,8 @@ SCENARIOS = [
     ("DoT 3 % for 30 s on a tank under 2 % autos", 100, (3.0, 10), (2.0, 20), 30),
     ("a raidwide of 30 %, then nothing", 100, (0, 0), (30.0, 1), 30),
     ("a raidwide of 30 % and a DoT as strong as Regen", 100, (3.4, 6), (30.0, 1), 30),
+    ("15 % DoT of unknown end, lasting 4 ticks", 100, (15.0, 4), (0, 0), 30),
+    ("7.5 % DoT of unknown end, lasting 3 ticks", 100, (7.5, 3), (0, 0), 30),
 ]
 
 
@@ -187,7 +201,7 @@ def hybrid_table():
     rows = []
     for name, hp, (d, dn), (o, on), steps in SCENARIOS:
         dots, others = [d] * dn, [o] * on
-        rows.append((name, {r: run(r, dots, others, steps, hp) for r in ("today", "effect", "trend", "hybrid")}))
+        rows.append((name, {r: run(r, dots, others, steps, hp) for r in ("today", "effect", "trend", "hybrid", "estimate", "learned")}))
     return rows
 
 
@@ -400,6 +414,14 @@ def self_test():
             hybrid[SCENARIOS[5][0]]["trend"]["gcds"] > 0 and hybrid[SCENARIOS[5][0]]["hybrid"]["gcds"] == 0,
         "the hybrid lays the HoT early on a strong DoT":
             hybrid[SCENARIOS[3][0]]["hybrid"]["low"] > hybrid[SCENARIOS[3][0]]["today"]["low"] + REGEN_TICK,
+        # a DoT whose end the status does not tell (his example of 27.10.2026: Zeromus's toxic bubbles)
+        "end unknown, guessing the rest from the ticks so far lays a HoT nobody needs":
+            hybrid[SCENARIOS[8][0]]["estimate"]["gcds"] > hybrid[SCENARIOS[8][0]]["hybrid"]["gcds"],
+        "strength and end learned from an earlier pull put the HoT on at once and keep the member higher at no extra GCD":
+            hybrid[SCENARIOS[7][0]]["learned"]["low"] > hybrid[SCENARIOS[7][0]]["hybrid"]["low"] + 1.0
+            and hybrid[SCENARIOS[7][0]]["learned"]["gcds"] <= hybrid[SCENARIOS[7][0]]["today"]["gcds"],
+        "learned values lay no HoT on a short DoT that needs none":
+            hybrid[SCENARIOS[8][0]]["learned"]["gcds"] == 0,
         # the HoT bound to no health threshold
         "unbound, his weak DoT costs at least five times the heals of the rule by effect":
             unbound[SCENARIOS[0][0]][1]["gcds"] >= 5 * max(1, unbound[SCENARIOS[0][0]][0]["gcds"]),
