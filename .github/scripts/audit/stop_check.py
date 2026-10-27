@@ -17,6 +17,9 @@ finding costs one round and never a loop. It sees the final message only, not th
 import json
 import re
 import sys
+import tempfile
+from datetime import datetime, timezone
+from pathlib import Path
 
 from hook_io import read_hook_input
 
@@ -84,10 +87,29 @@ def findings(message, waiting=False):
     return out
 
 
+def log_path(data):
+    session = re.sub(r"[^\w-]", "_", data.get("session_id") or "")
+    return Path(data.get("scratchpad_dir") or tempfile.gettempdir()) / f"stop_check_{session}.log" if session else None
+
+
+def record(data, found):
+    """One line per run. A Stop hook that lets the turn end leaves nothing in the transcript, so without this a hook
+    that never runs looks the same as one that finds nothing (A426)."""
+    path = log_path(data)
+    if path is None:
+        return
+    try:
+        with open(path, "a", encoding="utf-8") as log:
+            log.write(f"{datetime.now(timezone.utc):%Y-%m-%dT%H:%M:%SZ} continuation={bool(data.get('stop_hook_active'))} "
+                      f"background={len(data.get('background_tasks') or [])} findings={len(found)}\n")
+    except OSError:
+        pass
+
+
 def hook(data):
-    if data.get("stop_hook_active"):
-        return None
-    found = findings(data.get("last_assistant_message") or "", waiting=bool(data.get("background_tasks")))
+    found = [] if data.get("stop_hook_active") else findings(data.get("last_assistant_message") or "",
+                                                             waiting=bool(data.get("background_tasks")))
+    record(data, found)
     if not found:
         return None
     return {"hookSpecificOutput": {"hookEventName": "Stop", "additionalContext": "\n".join(found)}}
@@ -153,10 +175,17 @@ def self_test():
         failed.append("waiting on background work is no announcement")
     if hook({"last_assistant_message": "Recherchen laufen; danach arbeite ich sie ein.", "background_tasks": []}) is None:
         failed.append("without background work the same close is an announcement")
+    with tempfile.TemporaryDirectory() as tmp:
+        base = {"session_id": "t", "scratchpad_dir": tmp}
+        hook({**base, "last_assistant_message": "Die Prüfung ist grün."})
+        hook({**base, "last_assistant_message": "Als Nächstes prüfe ich das."})
+        lines = log_path(base).read_text(encoding="utf-8").splitlines()
+        if len(lines) != 2 or not lines[0].endswith("findings=0") or not lines[1].endswith("findings=1"):
+            failed.append(f"every run leaves a line in the session's log: {lines}")
     if failed:
         print("self-test FAILED: " + "; ".join(failed))
         return 1
-    print(f"self-test ok: {len(cases) + 4} cases - announcement at the end, trailing colon, English, code left out, "
+    print(f"self-test ok: {len(cases) + 5} cases - announcement at the end, trailing colon, English, code left out, "
           f"continuation let through")
     return 0
 

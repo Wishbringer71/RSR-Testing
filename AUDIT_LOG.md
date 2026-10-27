@@ -12370,6 +12370,15 @@ beobachtet.
 - *Belassen:* „Zweig" für den Zweig einer Verzweigung im Code (etablierter deutscher Fachbegriff, in den Konzepten
   so gemeint); Wörter des Spiels; Zitate; die älteren Archiveinträge als Aufzeichnung ihres Tages.
 
+### A426 · Der Stop-Hook vermerkt jeden Lauf (27.10.2026)
+
+- *Anlass:* Auf seine Frage „was ist noch offen?" war zu klären, ob der Stop-Hook im Betrieb läuft. Das Transcript
+  verzeichnet nur Hooks mit Ausgabe (SessionStart, PreToolUse); ein Stop-Hook ohne Befund hinterlässt dort nichts. Ein
+  Hook, der nie läuft, sah damit aus wie einer, der nichts findet.
+- *Umsetzung:* `stop_check.py` schreibt je Lauf eine Zeile in `stop_check_<Session>.log` im Scratchpad der Sitzung
+  (Zeit, Fortsetzung, Zahl der Background-Tasks, Zahl der Befunde); Self-Test dazu.
+- *Prüfgrad:* Self-Test. Der Beleg im Betrieb entsteht mit dem nächsten Zugende.
+
 ---
 ## B · Commit-Register (Fork vs. `upstream/main`)
 
