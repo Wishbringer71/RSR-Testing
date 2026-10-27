@@ -19,6 +19,7 @@ from pathlib import Path
 
 sys.path.insert(0, str(Path(__file__).resolve().parent))
 from check_rule_files import frontmatter, glob_regex, paths_of  # noqa: E402
+from hook_io import read_hook_input  # noqa: E402
 
 ROOT = Path(__file__).resolve().parents[3]
 BUDGET = 9900  # the hook's text is capped at 10,000 characters; past that it lands in a file Claude is not asked to read
@@ -171,7 +172,11 @@ def main(argv):
     if "--self-test" in argv:
         return self_test()
     try:
-        out = hook(json.load(sys.stdin), ROOT)
+        data = read_hook_input()
+        if data is None:  # run by hand without a hook call
+            print(__doc__)
+            return 0
+        out = hook(data, ROOT)
     except Exception as ex:  # a broken hook must not stop the command; exit 1 shows the error without blocking
         print(f"rule_inject.py: {type(ex).__name__}: {ex}", file=sys.stderr)
         return 1

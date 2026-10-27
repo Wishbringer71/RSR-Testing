@@ -12333,6 +12333,26 @@ beobachtet.
 - *Prüfgrad:* Selbsttests, alle CI-Schritte lokal, Build lokal. Laufzeit: PreToolUse-Hook im Betrieb und
   SessionStart beim Fortsetzen beobachtet; der Stop-Hook ist am Verlauf gemessen, im Betrieb noch nicht beobachtet.
 
+### A424 · Rückmeldung aus KSP-MyContracts zu den Hooks: Eingabe ohne Warten, Blocker und Hintergrundarbeit (27.10.2026)
+
+- *Herkunft:* Nachricht der KSP-MyContracts-Sitzung (Stand 5df840a), gemessen an `bf8f52139`; Weitergabe nach seiner
+  Vorgabe vom 27.10.2026, hier am Artefakt geprüft.
+- *Geprüft, alle drei bestätigt:*
+  - `stop_check.py` und `rule_inject.py` lasen stdin ohne Prüfung; von Hand ohne Eingabe gestartet, hingen sie bis
+    zum Abbruch (gemessen, Exit 124 nach 3 s). Nur `session_brief.py` las mit `select`.
+  - Ein Zugende, das benennt, worauf der nächste Schritt bei ihm wartet, ist ein Blocker; „braucht es deine
+    Entscheidung" und „Sagst du ja …, entferne ich … im nächsten Schritt" galten als Ankündigung.
+  - „Recherchen laufen; danach arbeite ich sie ein" galt als Ankündigung, auch wenn Hintergrundarbeit läuft, deren
+    Ende den Zug wieder weckt.
+- *Umsetzung:* `hook_io.py` liest die Hook-Eingabe für alle drei Hooks nur, wenn sie innerhalb einer halben Sekunde
+  anliegt; ohne Eingabe geben die Hooks ihren Hilfetext aus (Selbsttest gegen offenes stummes Rohr, leere Eingabe,
+  JSON; in der CI). `stop_check.py`: Ausnahme für ein Zugende, das auf ihn wartet (`WAITS_ON_HIM` nach KSP), und für
+  laufende Hintergrundarbeit – über das Feld `background_tasks` der Stop-Eingabe statt über ein Wortmuster.
+- *Messung danach* (427 Zugenden dieser Sitzung): 6 englische Schlussmeldungen, 2 deutsche Ankündigungen („Ich warte
+  auf das Ergebnis des lokalen Prüflaufs. Danach committe und pushe ich." – im Betrieb ausgenommen, falls der Lauf als
+  Hintergrundaufgabe lief; ein Stand ohne Daten), der Fall mit Bedingung an seine Antwort nicht mehr.
+- *Prüfgrad:* Selbsttests, Proben von Hand; Stop-Hook am Protokoll gemessen.
+
 ---
 ## B · Commit-Register (Fork vs. `upstream/main`)
 

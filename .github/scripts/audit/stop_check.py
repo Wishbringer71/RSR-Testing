@@ -3,7 +3,9 @@
 times: a turn does not end on an announcement ("Bevor ich einen Zug beende"), and the chat is German ("Sprache und
 Namen"; C130). This checks the final message of every turn against both, and against an empty one (a turn that ended
 after a tool call without a result). Patterns and the empty case follow KerbalMissionDirector's tools/stop_guard.py;
-a message that ends on a question is no announcement. On a finding it hands the reason back as
+a message that ends on a question is no announcement. Neither is a close that names what the next step waits for
+from him, nor one written while background work is in flight (`background_tasks`), whose end wakes the turn again
+(both from KSP-MyContracts, 27.10.2026). On a finding it hands the reason back as
 additionalContext and the turn goes on; on that continuation (stop_hook_active) it lets the turn end, so a wrong
 finding costs one round and never a loop. It sees the final message only, not the messages between tool calls.
 
@@ -15,6 +17,8 @@ finding costs one round and never a loop. It sees the final message only, not th
 import json
 import re
 import sys
+
+from hook_io import read_hook_input
 
 FENCE = re.compile(r"```.*?(?:```|\Z)|~~~.*?(?:~~~|\Z)", re.S)
 INLINE = re.compile(r"`[^`\n]*`")
@@ -40,6 +44,13 @@ ANNOUNCE = [
 ]
 
 
+# A close that names what the next step waits for from him is a blocker, which may end a turn (KSP-MyContracts,
+# WAITS_ON_HIM in tools/hooks/stop_guard.py).
+WAITS_ON_HIM = re.compile(r"\bauf\s+(?:dein|deine|deinen|deiner|seine|seinen|seiner)\b|\bdeine[rn]?\s+(?:entscheidung|freigabe|"
+                          r"antwort|zustimmung|auszug|upload|datei|daten)\b|\b(?:sagst|gibst|entscheidest)\s+du\b|"
+                          r"\bwenn\s+du\b|\bsobald\s+du\b", re.I)
+
+
 def prose(message):
     """The message without code, quotes and links: what is written in the chat's own voice."""
     for pattern in (FENCE, INLINE, QUOTED, LINKS):
@@ -47,7 +58,9 @@ def prose(message):
     return message
 
 
-def findings(message):
+def findings(message, waiting=False):
+    """The reasons to go on. waiting: background work is in flight and its end wakes the turn, so naming what comes
+    after it is no announcement."""
     if not message.strip():
         return ["Der Zug endet ohne Ergebnis: Die letzte Nachricht ist leer, der Zug endete nach einem Werkzeugaufruf. "
                 "CLAUDE.md, „Bevor ich einen Zug beende“: Ergebnis, Blocker oder eine Frage, die nur er beantworten kann."]
@@ -61,7 +74,7 @@ def findings(message):
     blocks = [b.strip() for b in re.split(r"\n\s*\n", text) if b.strip()]
     last = blocks[-1] if blocks else ""
     hit = next((m.group(0) for p in ANNOUNCE for m in [p.search(last)] if m), None)
-    if message.rstrip().endswith("?"):
+    if message.rstrip().endswith("?") or waiting or WAITS_ON_HIM.search(last):
         hit = None
     elif hit or message.rstrip().endswith(":"):
         what = f"„{hit}“" if hit else "einem Doppelpunkt, dem nichts folgt"
@@ -74,7 +87,7 @@ def findings(message):
 def hook(data):
     if data.get("stop_hook_active"):
         return None
-    found = findings(data.get("last_assistant_message") or "")
+    found = findings(data.get("last_assistant_message") or "", waiting=bool(data.get("background_tasks")))
     if not found:
         return None
     return {"hookSpecificOutput": {"hookEventName": "Stop", "additionalContext": "\n".join(found)}}
@@ -120,6 +133,11 @@ def self_test():
         "a waiting status passes": ("Der Build läuft noch. Das Ergebnis kommt als Ereignis über das PR-Abonnement.", 0),
         "an empty message is found": ("  \n", 1),
         "a perfect tense is no announcement (Retainer-Repricer)": ("Ich habe jetzt alle Tests grün.", 0),
+        "a close waiting on his decision is a blocker (KSP-MyContracts)": ("Die Prüfung ist offen.\n\nFür den "
+                                                                            "nächsten Schritt braucht es deine "
+                                                                            "Entscheidung zu V2.", 0),
+        "a close conditional on his answer is a blocker": ("Sagst du ja zu beiden Empfehlungen, entferne ich die "
+                                                           "Einstellungen im nächsten Schritt.", 0),
         "'gleich' as a comparison is no announcement (Retainer-Repricer)": ("Der Preis liegt gleich dem günstigsten "
                                                                            "Angebot, und die Liste ist geprüft.", 0),
         "'weiter mit' is found": ("Gepusht.\n\nWeiter mit D18.", 1),
@@ -130,10 +148,15 @@ def self_test():
         failed.append("a continuation is let through")
     if hook({"last_assistant_message": "Als Nächstes prüfe ich das."}) is None:
         failed.append("the hook answers on a finding")
+    if hook({"last_assistant_message": "Recherchen laufen; danach arbeite ich sie ein.",
+             "background_tasks": [{"id": "t1", "type": "subagent", "status": "running"}]}) is not None:
+        failed.append("waiting on background work is no announcement")
+    if hook({"last_assistant_message": "Recherchen laufen; danach arbeite ich sie ein.", "background_tasks": []}) is None:
+        failed.append("without background work the same close is an announcement")
     if failed:
         print("self-test FAILED: " + "; ".join(failed))
         return 1
-    print(f"self-test ok: {len(cases) + 2} cases - announcement at the end, trailing colon, English, code left out, "
+    print(f"self-test ok: {len(cases) + 4} cases - announcement at the end, trailing colon, English, code left out, "
           f"continuation let through")
     return 0
 
@@ -147,7 +170,11 @@ def main(argv):
                 print("---\n" + text[-300:].replace("\n", " ") + "\n  => " + " | ".join(f[:90] for f in found))
         return 0
     try:
-        out = hook(json.load(sys.stdin))
+        data = read_hook_input()
+        if data is None:  # run by hand without a hook call
+            print(__doc__)
+            return 0
+        out = hook(data)
     except Exception as ex:  # a broken hook must not hold the turn; exit 1 shows the error without blocking
         print(f"stop_check.py: {type(ex).__name__}: {ex}", file=sys.stderr)
         return 1

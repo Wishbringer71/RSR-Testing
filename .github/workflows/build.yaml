@@ -230,6 +230,9 @@ jobs:
       # Two hooks hold rules the text alone did not: rule_inject.py gives a rule file to a shell command that names a
       # path of its occasion, since the shell loads none (A423); stop_check.py hands an announcement or an English
       # final message back before the turn ends. Each is tried against constructed inputs.
+      - name: Check the hooks read their input without waiting on a silent pipe
+        run: python3 .github/scripts/audit/hook_io.py --self-test
+
       - name: Check the rule hook for shell commands against constructed commands
         run: python3 .github/scripts/audit/rule_inject.py --self-test
 

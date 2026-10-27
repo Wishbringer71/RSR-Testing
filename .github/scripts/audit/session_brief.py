@@ -12,13 +12,13 @@ session, since the context no longer holds them.
 
 import json
 import re
-import select
 import subprocess
 import sys
 import urllib.request
 from pathlib import Path
 
 sys.path.insert(0, str(Path(__file__).resolve().parent))
+from hook_io import read_hook_input  # noqa: E402
 from rule_inject import marker_path  # noqa: E402
 
 ROOT = Path(__file__).resolve().parents[3]
@@ -76,20 +76,6 @@ def git_guards():
     return out
 
 
-def hook_input():
-    """The hook's JSON on stdin. Run by hand or by the CI, stdin may be a pipe that never sends and never closes;
-    reading it would wait for ever (found 27.10.2026: run_ci_checks.py hung on this step), so it is read only when
-    data is there."""
-    if sys.stdin is None or sys.stdin.isatty():
-        return {}
-    try:
-        if not select.select([sys.stdin], [], [], 0.5)[0]:
-            return {}
-        return json.loads(sys.stdin.read() or "{}")
-    except (ValueError, OSError):
-        return {}
-
-
 def run(args, timeout):
     try:
         done = subprocess.run(args, cwd=ROOT, capture_output=True, text=True, timeout=timeout)
@@ -99,7 +85,7 @@ def run(args, timeout):
 
 
 def main(argv):
-    data = {} if "--no-sync" in argv else hook_input()
+    data = {} if "--no-sync" in argv else (read_hook_input() or {})
     if data.get("source") in ("compact", "clear"):
         marker_path(data.get("session_id"), data.get("scratchpad_dir")).unlink(missing_ok=True)
     lines = ["Sitzungsbrief (SessionStart-Hook, .github/scripts/audit/session_brief.py)"]
