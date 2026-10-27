@@ -6,7 +6,7 @@ CLAUDE.md holds what applies in every situation and loads whole into every sessi
 table with its occasion (the owner's rule of 27.10.2026: in the repository, editable, no copies). What can go wrong
 is silent: a rule file the table does not name is read by chance only; a path rule whose globs match nothing never
 loads; a rule file without `paths:` loads every session and saves nothing; a rule standing in two files ages in one
-of them; a skill without its name or description is never offered. This fails on each, and on a SessionStart hook
+of them; a skill without its name or description is never offered. This fails on each, and on a hook of any event
 that points at a script that does not exist.
 
   check_rule_files.py              the repository
@@ -125,12 +125,13 @@ def check(root, tracked):
             hooks = json.loads(settings.read_text(encoding="utf-8")).get("hooks", {})
         except json.JSONDecodeError as ex:
             return errors + [f".claude/settings.json is not valid JSON: {ex}"]
-        for group in hooks.get("SessionStart", []):
-            for hook in group.get("hooks", []):
-                for script in re.findall(r"([\w./-]+\.py)", hook.get("command", "")):
-                    rel = script.split("}/", 1)[-1].lstrip("/")
-                    if not (root / rel).exists():
-                        errors.append(f".claude/settings.json: the SessionStart hook runs {rel}, which does not exist")
+        for event, groups in hooks.items():
+            for group in groups:
+                for hook in group.get("hooks", []):
+                    for script in re.findall(r"([\w./-]+\.py)", hook.get("command", "")):
+                        rel = script.split("}/", 1)[-1].lstrip("/")
+                        if not (root / rel).exists():
+                            errors.append(f".claude/settings.json: the {event} hook runs {rel}, which does not exist")
     return errors
 
 
@@ -171,6 +172,7 @@ def self_test():
         "skill without description": (dict(skill="---\nname: s\n---\n"), 1),
         "skill named unlike its directory": (dict(skill=good_skill.replace("name: s", "name: t")), 1),
         "hook runs a missing script": (dict(settings='{"hooks": {"SessionStart": [{"hooks": [{"type": "command", "command": "python3 x/missing.py"}]}]}}'), 1),
+        "stop hook runs a missing script": (dict(settings='{"hooks": {"Stop": [{"hooks": [{"type": "command", "command": "python3 x/gone.py"}]}]}}'), 1),
         "no reading table": (dict(claude="# REGEL\n"), 1),
     }
     failed = []

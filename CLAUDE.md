@@ -42,15 +42,17 @@ Diese Datei gilt in jeder Lage. Die übrigen Regeln stehen je genau einmal im Re
 | Upstream-Sync | `.claude/skills/upstream-sync/SKILL.md` | Skill aufrufen, sonst die Datei lesen |
 | Er lädt Dateien hoch | `.claude/skills/upload-auswertung/SKILL.md` | ebenso |
 | Archiv zu einem Bereich | `python3 .github/scripts/audit/archive.py find <Begriff>`, `show <A123>`, `recent` | nie die ganze Datei lesen; `show` nennt Widerrufe und spätere Einträge dazu, und ein Eintrag gilt nur mit ihnen |
-| Sitzungsbeginn, Kontextkomprimierung | `.github/scripts/audit/session_brief.py`, Hook in `.claude/settings.json` | von selbst |
+| Sitzungsbeginn, Kontextkomprimierung | `.github/scripts/audit/session_brief.py`, Hook in `.claude/settings.json`: Abgleich, TODO, offene Issues, Archiv | von selbst |
+| Shell-Befehl, der einen Pfad eines Anlasses nennt | dessen Regeldatei über `.github/scripts/audit/rule_inject.py` (PreToolUse-Hook) | von selbst, einmal je Sitzung |
+| Zugende | `.github/scripts/audit/stop_check.py` (Stop-Hook): Ankündigung, englische Schlussmeldung | von selbst |
 
-- Handle ich nach einem Anlass, bevor seine Datei geladen ist – Recherche ohne Dateizugriff, eine Aussage aus dem Gedächtnis –, lese ich sie zuerst.
+- Regeldateien laden über Read, Edit und Write, nicht über die Shell (gemessen 27.10.2026, A423); `rule_inject.py` gibt sie einem Shell-Befehl mit, der ihren Pfad nennt. Ändert ein Skript Dateien, ohne ihren Pfad im Befehl zu nennen, oder handle ich ohne Dateizugriff nach einem Anlass – Recherche, eine Aussage aus dem Gedächtnis –, lese ich die Datei zuerst.
 - `check_rule_files.py` hält die Tabelle in der CI gegen die Dateien: jede genannt, jede Pfadregel trifft Dateien, keine Regel doppelt.
 
 # Prüfpunkte
 
 **Bei Sitzungsbeginn und nach jeder Kontextkomprimierung**
-- Der SessionStart-Hook gibt den Abgleich mit Upstream, die offenen TODO-Punkte und die jüngsten Archiveinträge aus. Fehlt seine Ausgabe: `check_sync_state.py` ausführen, `TODO.md` und `archive.py recent` lesen.
+- Der SessionStart-Hook gibt den Abgleich mit Upstream, die offenen TODO-Punkte, die offenen Issues und die jüngsten Archiveinträge aus. Fehlt seine Ausgabe: `check_sync_state.py` ausführen, `TODO.md`, die offenen Issues und `archive.py recent` lesen.
 - Fehlt die REGEL im Kontext, ihm das sagen.
 
 **Wenn er etwas sagt**
@@ -58,6 +60,7 @@ Diese Datei gilt in jeder Lage. Die übrigen Regeln stehen je genau einmal im Re
 - Im selben Zug eintragen (→ „Wohin seine Angaben gehören").
 - Berührt es eine dokumentierte Entscheidung: ihm vorlegen, nicht selbst umstellen (→ „Getroffene Entscheidungen").
 - Widerlegt er etwas von mir: das ganze Konzept neu prüfen, nicht die eine Stelle flicken (→ „Definition of Ready").
+- Eine Weitergabe aus seinen anderen Repositories – Issue oder eingefügter Bericht – prüfe ich hier am Artefakt, bevor ich sie übernehme; seine wörtlichen Aussagen darin ordne ich ein wie jede seiner Angaben.
 
 **Bevor ich etwas zu einem Thema behaupte**
 - Konzept unter `docs/rotation-flow/` lesen, das Archiv zum Bereich über `archive.py find`.
@@ -82,6 +85,7 @@ Diese Datei gilt in jeder Lage. Die übrigen Regeln stehen je genau einmal im Re
 - Wirkkette am Code, Richtigkeit und Bilanz am Spielgeschehen, Nachsteuerung, wo die Antwort erst zur Laufzeit fällt (→ „Definition of Done").
 - Konzept, `TODO.md` und Archiv fortgeschrieben.
 - Am Auftragsende Upstream erneut synchronisiert und ausgewertet (Skill `upstream-sync`).
+- Was davon in seinen anderen Repositories fehlt, dort als Issue weitergegeben; dort nur lesen, keine Datei ändern (seine Vorgabe, 27.10.2026: jedes Repository hat eigene Erkenntnisse – einbauen und die anderen teilhaben lassen).
 - Prüfgrad benannt.
 
 **Bevor ich einen Zug beende**
@@ -211,7 +215,7 @@ Pflicht für jede nicht-triviale Aufgabe; die REGEL steht darüber.
 - Klein geschnitten, zeitnah gepusht; ein eigener Zweig je Vorhaben ist nicht nötig.
 - Vollständig gemergte Zweige sind Löschfälle; ich melde sie ihm.
 - Bleibt ein Prüflauf aus: zuerst `mergeable_state` messen und die Basis mergen.
-- Commit-Identität nicht überschreiben (`user.name = Claude`, `user.email = noreply@anthropic.com`; kein `git -c user.name=… -c user.email=…`). Sein Klarname und seine private Adresse gehören in keinen Commit; `.githooks/pre-commit` und `check_commit_identity.py` sperren fremde Adressen.
+- Commit-Identität nicht überschreiben (`user.name = Claude`, `user.email = noreply@anthropic.com`; kein `git -c user.name=… -c user.email=…`). Sein Klarname und seine private Adresse gehören in keinen Commit; `.githooks/pre-commit` und `check_commit_identity.py` sperren fremde Adressen; `core.hooksPath` setzt der Sitzungsbrief.
 
 **Grenzen und Löschungen**
 - Tag-Pushes, Ref-Löschungen und das Bearbeiten von Releases sind dieser Sitzungsart gesperrt (403, beim Release „not permitted for this session type", 22.10.2026; Tag-Push am 25.10.2026 von der Rechteprüfung der Sitzung abgewiesen). Ein Release erzeuge ich deshalb über `publish.yaml` per `workflow_dispatch`, sobald er es aufträgt (seine Vorgabe, 26.10.2026: „ich habe dich angewiesen, zu compilieren und zu releasen"); sein Auftrag ist die Freigabe, ich stelle sie nicht erneut zur Wahl. Ohne seinen Auftrag erzeuge ich kein Release.

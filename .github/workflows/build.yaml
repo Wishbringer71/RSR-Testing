@@ -227,6 +227,18 @@ jobs:
       - name: Check the session brief still finds the open TODO items
         run: python3 .github/scripts/audit/session_brief.py --no-sync
 
+      # Two hooks hold rules the text alone did not: rule_inject.py gives a rule file to a shell command that names a
+      # path of its occasion, since the shell loads none (A423); stop_check.py hands an announcement or an English
+      # final message back before the turn ends. Each is tried against constructed inputs.
+      - name: Check the rule hook for shell commands against constructed commands
+        run: python3 .github/scripts/audit/rule_inject.py --self-test
+
+      - name: Check the stop hook against constructed final messages
+        run: python3 .github/scripts/audit/stop_check.py --self-test
+
+      - name: Check every Markdown table has its header and delimiter row
+        run: python3 .github/scripts/audit/check_md_tables.py
+
       # A release describes what changed, so its text has to start over after every release. It
       # does not do that by itself: the file still parses and still publishes, and the next
       # release would carry the previous one's text with the new part appended - the cumulative
