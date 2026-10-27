@@ -1,0 +1,16 @@
+{
+  "hooks": {
+    "SessionStart": [
+      {
+        "matcher": "startup|resume|compact",
+        "hooks": [
+          {
+            "type": "command",
+            "command": "python3 \"${CLAUDE_PROJECT_DIR}/.github/scripts/audit/session_brief.py\"",
+            "timeout": 150
+          }
+        ]
+      }
+    ]
+  }
+}

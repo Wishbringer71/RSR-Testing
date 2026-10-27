@@ -209,6 +209,24 @@ jobs:
       - name: Check the concepts are built to their rules
         run: python3 .github/scripts/audit/check_concept_structure.py --strict
 
+      # CLAUDE.md holds what applies in every situation and loads whole into every session; the rest lies once in
+      # .claude/rules (loaded when a matching file is touched) and .claude/skills, each named in CLAUDE.md's reading
+      # table. A file the table does not name, a path rule that matches nothing or a rule in two files is lost or
+      # ages in one place without anything failing.
+      - name: Check the rule files against CLAUDE.md's reading table
+        run: python3 .github/scripts/audit/check_rule_files.py
+
+      # The archive is read by entry through archive.py, and every session starts with session_brief.py from the
+      # SessionStart hook. Both parse files whose layout can drift; a parser that finds nothing answers with silence.
+      - name: Check the archive parser against constructed defects
+        run: python3 .github/scripts/audit/archive.py --self-test
+
+      - name: Check the archive parses whole, its table of revocations unbroken
+        run: python3 .github/scripts/audit/archive.py recent 1
+
+      - name: Check the session brief still finds the open TODO items
+        run: python3 .github/scripts/audit/session_brief.py --no-sync
+
       # A release describes what changed, so its text has to start over after every release. It
       # does not do that by itself: the file still parses and still publishes, and the next
       # release would carry the previous one's text with the new part appended - the cumulative

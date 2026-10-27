@@ -12248,6 +12248,48 @@ beobachtet.
   „claude.md wäre wichtiger, da du anscheinend die dort liegenden vorgaben regelmäßig missachtest"); die alte Fassung
   galt nur dem Release-Status und hielt die Kontrollen deshalb nicht auf.
 
+### A422 · CLAUDE.md nach Anlass aufgeteilt; Archiv gezielt statt ganz gelesen (27.10.2026)
+
+- *Sein Auftrag:* „Prüfung und optimierung von claude.md und von erkenntnissen im archiv, so dann nur die dinge gelesen
+  werden, die für den fall wichtig sind … recherchiere hierzu." Seine Vorgaben dazu: „die dinge müssen überprüfbar in
+  der repo stehen und von mir editierbar sein. also nicht nur kopien"; „harte zeilenzahlen sind blödsinn, formalismus
+  vor inhalt ohne verstand. es kann bei bedarf abweichungen geben". Seine Frage: „bringt ein archiv bzw. audit-log nach
+  der art von obsidian etwas?"
+- *Befund:* CLAUDE.md lag bei 38.000 Zeichen (jetzt 23.000) und lud ganz in jede Sitzung, mit Regeln für Lagen, die selten eintreten
+  (Upload-Auswertung, Upstream-Sync, Release-Texte, Entwurfsregeln für Code). `AUDIT_LOG.md` (am 27.10.2026: 421
+  Einträge, 131 Widerrufe, 1,5 MB) war „vor jeder Neuprüfung eines Bereichs" zu lesen – ganz unmöglich, also nach Gefühl.
+- *Quellen:* Claude-Code-Dokumentation „How Claude remembers your project" (code.claude.com/docs/en/memory): CLAUDE.md
+  lädt ganz in jede Sitzung, nach einer Komprimierung wird nur die Wurzeldatei neu gelesen; `.claude/rules/*.md` mit
+  `paths:` laden beim Zugriff auf passende Dateien; die Auto-Memory führt `MEMORY.md` als Index („one line per memory")
+  und liest Themendateien „on demand". Skills: Beschreibung immer im Kontext, Inhalt erst beim Aufruf. Hooks laufen
+  deterministisch, `SessionStart` mit `compact`, Ausgabe in den Kontext. Anthropic, „Effective context engineering for AI
+  agents": kleinste wirksame Menge, Abruf zur Laufzeit über Kennungen. Obsidian-Hilfe, Backlinks: „Linked mentions are
+  backlinks to the notes that contain an internal link to the active note."
+- *Umsetzung:* CLAUDE.md behält, was in jeder Lage gilt, und eine Lesetabelle „Was wann gilt". Sechs Regeldateien unter
+  `.claude/rules/` mit `paths:` (Code, Konzepte, Archiv und TODO, Prüfmittel, Release-Texte, Regeldateien), zwei Skills
+  (`upstream-sync`, `upload-auswertung`), wortgleich aus der alten Fassung bis auf die Verweise; jede Zeile der alten
+  Fassung steht in genau einer Datei, außer dreizehn bewusst geänderten (Verweise auf die neue Datei, Sitzungsbeginn über
+  den Hook, Archiv gezielt). `session_brief.py` als SessionStart-Hook gibt Abgleich, offene TODO-Punkte und die jüngsten
+  Archiveinträge aus. `archive.py` liest das Archiv nach Eintrag (`recent`, `find`, `show`); `show` nennt dazu, wer den
+  Eintrag später nennt – Widerrufe in Teil C, neuere Einträge, Konzepte –, `find` markiert Einträge mit Widerruf.
+  `check_rule_files.py` hält die Lesetabelle gegen die Dateien. Alle drei in der CI, je mit Selbsttest.
+- *Obsidian:* Das Format – eine Datei je Eintrag, `[[Verweise]]`, Graph – bringt für den Abruf wenig: Die Kennungen
+  A123/C45 sind schon eindeutige Verweise, `find` und `show` finden sie, und zehn weitere Skripte samt 671 Nennungen unter `docs/`
+  (27.10.2026) zeigen auf die eine Datei. Was es bringt, ist ein Prinzip: die Rückverweise. Ein alter Eintrag, gelesen ohne
+  seinen Widerruf, gibt eine widerrufene Aussage als gültig aus (am 27.10.2026 trugen 57 Einträge eine Aussage, die
+  Teil C widerruft, etwa A353 mit C129). Deshalb rechnet `show` sie aus, statt das Archiv umzubauen.
+- *Verworfen:* `@imports` (laden mit, sparen nichts); erzeugte Kopien der Regeln in Dateien, die nicht im Repository
+  stehen (seine Vorgabe); eine Datei je Archiveintrag (Umbau von zehn Skripten und 671 Nennungen ohne Gewinn beim
+  Abruf); eine feste Zeilengrenze für CLAUDE.md (seine Vorgabe, jetzt in `regeldateien.md`).
+- *Mitgefunden:* A107 und A108 standen seit dem 19.09.2026 mitten in Teil C, wo `show` sie nicht fand; eine Leerzeile
+  vor C60 und die beiden Einträge vor C66 und C67 brachen die Widerrufstabelle, sodass C60 bis C131 auf GitHub als
+  Fließtext erschienen. Beides behoben; `archive.py` schlägt jetzt fehl, wenn eine Überschrift nicht geparst wird oder
+  die Tabelle bricht.
+- *Prüfgrad:* Prüfskripte samt Selbsttests, alle Schritte der CI lokal. Laufzeitbeobachtung in dieser Sitzung: Der
+  SessionStart-Hook lief bei der Kontextkomprimierung und gab den Brief aus; `pruefmittel.md` und `regeldateien.md`
+  luden beim Bearbeiten passender Dateien. Ob die Aufteilung das Befolgen der Regeln verbessert, zeigt erst die Arbeit
+  danach.
+
 ---
 ## B · Commit-Register (Fork vs. `upstream/main`)
 

@@ -27,17 +27,30 @@ Form: Symbol nur wenn Bedeutung exakt der Absicht entspricht, sonst Wort/Stichwo
 Persistenz: Priorität 1, jede Eingabe, ausnahmslos. Kontextkomprimierung→Datei erneut lesen vor Weiterarbeit. Sitzungsstart→aktiv prüfen ob Regel im Kontext vorhanden. Zusammenfassung nur ausreichend wenn Regel vollständig enthalten, sonst = Verlust. Verlust/Abweichung erkannt→Nutzer informieren UND Reinjektion anfordern.
 ```
 
-# Diese Datei
+# Was wann gilt
 
-- Jede Regel hier ändert eine Entscheidung beim Arbeiten. Was das nicht tut — Zitate, Fehlergeschichten, Quellenangaben, Umgebungsdetails —, gehört ins Archiv (`AUDIT_LOG.md`), weil diese Datei nach jeder Kontextkomprimierung ganz gelesen wird und Ballast die Regeln verdrängt.
-- Form: eine Anweisung je Punkt, der Grund in einem Halbsatz, ein Beispiel nur, wo die Regel ohne es falsch angewandt würde.
-- Verweise nennen den **Titel** einer Regel, nie „oben" oder „darunter" — Positionen verschieben sich.
-- Neue Regeln einarbeiten, nicht anhängen: vorher prüfen, ob eine bestehende dasselbe sagt, ihr widerspricht oder nur genauer wird, und dann die bestehende umschreiben. Nach jeder Änderung die ganze Datei prüfen: Zählungen, Verweise, Widersprüche (A134).
+Diese Datei gilt in jeder Lage. Die übrigen Regeln stehen je genau einmal im Repository, editierbar wie diese Datei, keine Kopien (seine Vorgabe, 27.10.2026), und laden mit ihrem Anlass:
+
+| Anlass | Datei | Lädt |
+|---|---|---|
+| Code unter `RotationSolver*/` lesen oder ändern | `.claude/rules/code.md`: Querschnittsanforderungen, Entwurfsregeln | von selbst beim ersten Dateizugriff |
+| Konzept oder andere Datei unter `docs/`, Recherche | `.claude/rules/konzepte.md`: Quellen, Konzepte | ebenso |
+| `AUDIT_LOG.md` oder `TODO.md` schreiben | `.claude/rules/archiv-todo.md` | ebenso |
+| Prüfskript, Modell, CI unter `.github/` | `.claude/rules/pruefmittel.md` | ebenso |
+| Release-Text, `CHANGELOG.md` | `.claude/rules/release-texte.md` | ebenso |
+| `CLAUDE.md` oder `.claude/` ändern | `.claude/rules/regeldateien.md` | ebenso |
+| Upstream-Sync | `.claude/skills/upstream-sync/SKILL.md` | Skill aufrufen, sonst die Datei lesen |
+| Er lädt Dateien hoch | `.claude/skills/upload-auswertung/SKILL.md` | ebenso |
+| Archiv zu einem Bereich | `python3 .github/scripts/audit/archive.py find <Begriff>`, `show <A123>`, `recent` | nie die ganze Datei lesen; `show` nennt Widerrufe und spätere Einträge dazu, und ein Eintrag gilt nur mit ihnen |
+| Sitzungsbeginn, Kontextkomprimierung | `.github/scripts/audit/session_brief.py`, Hook in `.claude/settings.json` | von selbst |
+
+- Handle ich nach einem Anlass, bevor seine Datei geladen ist – Recherche ohne Dateizugriff, eine Aussage aus dem Gedächtnis –, lese ich sie zuerst.
+- `check_rule_files.py` hält die Tabelle in der CI gegen die Dateien: jede genannt, jede Pfadregel trifft Dateien, keine Regel doppelt.
 
 # Prüfpunkte
 
 **Bei Sitzungsbeginn und nach jeder Kontextkomprimierung**
-- Diese Datei, `TODO.md` und die jüngsten Einträge in `AUDIT_LOG.md` lesen; `check_sync_state.py` ausführen.
+- Der SessionStart-Hook gibt den Abgleich mit Upstream, die offenen TODO-Punkte und die jüngsten Archiveinträge aus. Fehlt seine Ausgabe: `check_sync_state.py` ausführen, `TODO.md` und `archive.py recent` lesen.
 - Fehlt die REGEL im Kontext, ihm das sagen.
 
 **Wenn er etwas sagt**
@@ -47,18 +60,18 @@ Persistenz: Priorität 1, jede Eingabe, ausnahmslos. Kontextkomprimierung→Date
 - Widerlegt er etwas von mir: das ganze Konzept neu prüfen, nicht die eine Stelle flicken (→ „Definition of Ready").
 
 **Bevor ich etwas zu einem Thema behaupte**
-- Konzept unter `docs/rotation-flow/` und Archiv zum Bereich lesen.
+- Konzept unter `docs/rotation-flow/` lesen, das Archiv zum Bereich über `archive.py find`.
 - Deutsche Namen nachschlagen (→ „Namen").
 - Zustand von Zweig, PR oder Tag frisch messen (→ „Zustand messen").
 
 **Bevor ich Code schreibe**
-- Upstream-Sync gemessen.
+- Upstream-Sync gemessen (Skill `upstream-sync`).
 - Konzept vollständig, alle drei Falsifikationshypothesen widerlegt (→ „Definition of Ready").
-- Keine neue Zahl ohne Loop (→ „Keine festen Werte").
-- Was Analyse klären kann, ist geklärt; eine Anzeige trägt keine offene Annahme (→ „Option und Beobachtbarkeit").
+- Keine neue Zahl ohne Loop (→ „Keine festen Werte", `code.md`).
+- Was Analyse klären kann, ist geklärt; eine Anzeige trägt keine offene Annahme (→ „Option und Beobachtbarkeit", `code.md`).
 
 **Bevor ich ihn frage oder ihm etwas vorlege**
-- Entscheidbar aus Repository, Wirktexten, Referenzquellen (The Balance), seinen Protokollen oder seinen Vorgaben? Dann entscheide und setze ich um; eine Frage ist erst übrig, wenn alle diese Quellen gesucht sind (seine Rügen, 02.10. und 18.10.2026). Beispiel: Die Voreinstellung einer neuen Regel ist entschieden (→ „Option und Beobachtbarkeit"); danach zu fragen nannte er eine Beleidigung.
+- Entscheidbar aus Repository, Wirktexten, Referenzquellen (The Balance), seinen Protokollen oder seinen Vorgaben? Dann entscheide und setze ich um; eine Frage ist erst übrig, wenn alle diese Quellen gesucht sind (seine Rügen, 02.10. und 18.10.2026). Beispiel: Die Voreinstellung einer neuen Regel ist entschieden (→ „Option und Beobachtbarkeit", `code.md`); danach zu fragen nannte er eine Beleidigung.
 - Jede Frage vorher im vollständigen kritischen Loop an Spielszenarien durchgespielt (seine Vorgabe, 26.10.2026): konkrete Kampfverläufe, in denen sie sich stellt; dazu die Antithesen – gegen meine Empfehlung die drei –, mit Quellen gegen sie, nicht nur für sie, und der Versuch, jede zu widerlegen. Hält eine, gilt die Empfehlung nicht — „teilweise entkräftet" ist kein Freibrief (A246).
 - Kann er es im Kampf sehen, oder hat er es entschieden? Sonst nicht fragen.
 - Bleibt sie danach offen: mit den Sachverhalten im Spiel dargestellt, jeder Vorschlag mit einem Beispiel aus dem Kampf belegt (seine Vorgabe, 26.10.2026).
@@ -68,7 +81,7 @@ Persistenz: Priorität 1, jede Eingabe, ausnahmslos. Kontextkomprimierung→Date
 **Bevor ich etwas als fertig melde**
 - Wirkkette am Code, Richtigkeit und Bilanz am Spielgeschehen, Nachsteuerung, wo die Antwort erst zur Laufzeit fällt (→ „Definition of Done").
 - Konzept, `TODO.md` und Archiv fortgeschrieben.
-- Am Auftragsende Upstream erneut synchronisiert und ausgewertet (→ „Upstream“).
+- Am Auftragsende Upstream erneut synchronisiert und ausgewertet (Skill `upstream-sync`).
 - Prüfgrad benannt.
 
 **Bevor ich einen Zug beende**
@@ -84,7 +97,7 @@ Persistenz: Priorität 1, jede Eingabe, ausnahmslos. Kontextkomprimierung→Date
 # Loop
 
 Pflicht für jede nicht-triviale Aufgabe; die REGEL steht darüber.
-- Alle zehn Stufen und die vier Querschnittsanforderungen gelten als Ganzes. Fehlt eine Stufe, hole ich sie nach, bevor ich etwas vorlege — ich biete sie nicht an und frage nicht danach.
+- Alle zehn Stufen und die vier Querschnittsanforderungen (`code.md`) gelten als Ganzes. Fehlt eine Stufe, hole ich sie nach, bevor ich etwas vorlege — ich biete sie nicht an und frage nicht danach.
 - Ein Ergebnis auf unvollständiger Grundlage stelle ich nicht zur Entscheidung.
 
 | # | Stufe | Was ich tue |
@@ -99,39 +112,6 @@ Pflicht für jede nicht-triviale Aufgabe; die REGEL steht darüber.
 | 8 | Nachweis | Verifikation (Spezifikation erfüllt) und Validierung (gemeldetes Verhalten behoben); Prüfgrad benennen. |
 | 9 | Dokumentation | Kontext, verworfene Optionen, Entscheidung, Konsequenzen; Fehlerursachen sachlich am System. |
 | 10 | Wirksamkeit | Ergebnis bewerten, erneut ab 1; Abbruch bei Plateau. |
-
-## Querschnittsanforderungen
-
-Gelten in jeder Stufe. Eine Aussage, die eine davon verletzt, ist unbelegt.
-
-**Gesamtheitlichkeit**
-- Vor jeder Aussage über eine Stelle ihren Wirkungsbereich erheben: Aufrufer, Aufgerufene, Datenflüsse, Schalter, die den Pfad öffnen oder schließen, alle Stellen desselben Musters. Verweise auf ein Symbol mit `.github/scripts/lsp_query.py refs` (Sprachserver: trennt Überladungen und gleichnamige Member), Muster mit der Textsuche.
-- Betroffene benennen: Endnutzer, Autoren abgeleiteter Rotationen (`RotationSolver.Basic` als Paket), Upstream-Pflege.
-- Werte, die über eine Schnittstelle kommen, an ihrer Quelle prüfen, samt Typzuordnung.
-- Nur Maße verwenden, die den Wirkungsbereich selbst messen, keine Surrogate; die Prüftiefe folgt Wirkungsbereich und Fehlerklasse, nicht der Zeilenzahl.
-- Ob ein Pfad genommen wird, messen, nicht annehmen — ein Pfad, der nie läuft, ist keiner. Ein Prüfer, der nur fragt, ob eine Zeile irgendwo steht, prüft das nicht (Beispiel: Ladezeile in `Init()`, gerufen wird `InitAsync`).
-- Wird dieselbe Aufgabe an zwei Stellen geführt: erst feststellen, welche läuft, dann die Doppelung beseitigen.
-
-**Kausalität**
-- Vorwärts: den Weg von der Ursache bis zur sichtbaren Wirkung verfolgen — Auslöser, Weiterträger, Abfang, Verbraucher. Zustandsautomaten vollständig ausschreiben.
-- Ein Flag an den Pfaden messen, die es öffnet, nicht daran, für wen es gesetzt wird.
-- Rückwärts: klären, warum die Stelle so gebaut ist — Einführungs-Commit mit `git log -S`, Diff, Nachricht, Datum gegen die Änderung, die die Prämisse brach.
-- War die Stelle richtig und ist durch eine Erweiterung anderswo veraltet: die Konstruktion ersetzen (Aufzählung → Fähigkeitsprüfung), nicht den Einzelfall.
-- Kennzeichen einer Änderung ohne Verständnis: Klon ohne Anpassung, entfernte Verdrahtung bei stehender Definition, Kommentar widerspricht Code.
-- Kommentare und Optionstexte belegen die Absicht. Einen Widerspruch zum Code nie durch Anpassen des Kommentars auflösen — das tilgt den Befund.
-- Der Text einer Einstellung in der Oberfläche bindet (seine Vorgabe): Weicht der Code ab, wird der Code angepasst, nicht der Text, und nicht zur Wahl gestellt.
-- Jeder Defekt gilt als Klasse, bis das Gegenteil belegt ist: alle gleichen Stellen erheben, dann begründet einschränken; die Behebung zielt auf die Wiederholbarkeit.
-
-**Möglichkeitssinn**
-- Zu jeder Stelle fragen: Welche vorhandene Stärke trifft hier auf welche offene Frage? Grund: Ohne Defekt läuft der Loop gar nicht — alle bisherigen Fälle dieser Art hat er eingebracht, keinen der Loop; die Abwägung (Stufe 3) wägt nur Optionen, die schon auf dem Tisch liegen.
-- Vorhandene Stärken: Gesundheitshistorie über vier Minuten, Effekt-Handler für jeden Treffer, Vorhersage fremder Casts.
-- Ein Baustein ist nicht Vorratsarbeit, nur weil ihn heute keine Regel liest; fragen, was er beantwortbar macht (`docs/method/01-loop-evaluation-methods.md`).
-
-**Inhaltlichkeit**
-- Erst klären, was eine Stelle ausdrücken soll, dann, ob sie es tut.
-- Ungenutzten Code darauf prüfen, ob nur die Verdrahtung fehlt; entfernen erst nach Nachweis einer Ablösung.
-- Was ich nicht verstehe, entferne ich nicht.
-- Einen Test, der ein Surrogat prüft, benenne ich als solchen.
 
 # Maßstab: das Spielgeschehen
 
@@ -156,10 +136,6 @@ Gelten in jeder Stufe. Eine Aussage, die eine davon verletzt, ist unbelegt.
 - Erheben immer vollständig; bearbeiten nur, was in seinem Profil liegt. PvP, Blaumagier und andere begrenzte Jobs, Bozja und ähnliche Sonderinhalte, fremde Rotationen, die er nicht nutzt: erfassen, bis er sie nennt oder freigibt.
 - Churin-Rotationen (`ExtraRotations/*/Churin*`) sind für ihn uninteressant: keine Befunde dazu erfassen.
 - Vor dem Spielen kompiliert er den aktuellen Zweig (seine Angabe). Sein Stand ist der Zweig zur Zeit seiner Beobachtung, nie ein Release; maßgeblich ist das Datum seiner Beobachtung oder Datei.
-- Er zeichnet seine Kämpfe mit ACT auf (seine Angabe); FFLogs-Reports sind also möglich.
-- Was er hochlädt – `DefenseTrace.log`, die gelernten Dateien, ACT-Mitschnitte –, werte ich jedes Mal auch allgemein aus,
-  wenn er eine bestimmte Frage dazu stellt (seine Vorgabe, 25.10.2026): erst seine Frage, dann alle übrigen Kämpfe,
-  Zeilenarten und Dateien. Grund: Eine Frage zu einem Boss lässt den Rest des Abends ungeprüft.
 - Er ist Tester und nutzt selten die Voreinstellungen. Eine Aussage über einen Vorgabewert ist keine über seine Konfiguration, und die kann ich nicht messen. Jede Regel hinter einem Schalter denke ich für beide Stellungen.
 
 **Als was seine Angaben gelten**
@@ -172,7 +148,7 @@ Gelten in jeder Stufe. Eine Aussage, die eine davon verletzt, ist unbelegt.
 - Eine Regel, die nicht in dieser Datei steht, ist meine Ableitung. Ich halte sie ihm nicht als seine vor.
 
 **Wohin seine Angaben gehören**
-- Arbeitsweise → diese Datei. Rotation, Job, Mechanik → Konzept unter `docs/rotation-flow/`, mit ihrer Einordnung. Im selben Zug, nicht am Aufgabenende.
+- Arbeitsweise → diese Datei oder die Regeldatei ihres Anlasses (→ „Was wann gilt"). Rotation, Job, Mechanik → Konzept unter `docs/rotation-flow/`, mit ihrer Einordnung. Im selben Zug, nicht am Aufgabenende.
 - Vor jeder Aussage zu einem Thema lese ich dessen Konzept, nicht nur `TODO.md` und `AUDIT_LOG.md`.
 
 **Getroffene Entscheidungen**
@@ -182,63 +158,6 @@ Gelten in jeder Stufe. Eine Aussage, die eine davon verletzt, ist unbelegt.
 - Eine Beobachtung aus dem Spiel zeigt, dass etwas nicht wirkt, nicht welche Entscheidung fallen soll.
 - Ohne ihn ändere ich nur, was seine Begründung nicht berührt.
 - Aus dem Wortlaut einer Entscheidung lese ich ihren Grund. Ist der Grund prüfbar, prüfe ich ihn, statt nachzufragen.
-
-# Entwurfsregeln für den Code
-
-**Keine festen Werte**
-- Dauern, Schwellen, Stufen, Abstände, GCD-Zahlen und Anteile leite ich aus dem Spiel ab: Aktionsdaten (`Level`, `EnoughLevel`, Wirkzeit, Abklingzeit, Ladungen), Statusrestzeiten, Wirktexte über den Generator, GCD-Länge, Vorlauf, Ausführungssperre, Gruppenzusammensetzung, Messungen im Kampf.
-- Eine Ausnahme erst nach einem Loop zu genau diesem Wert, mit Beleg im Archiv. Das gilt auch für eine Zahl, die eine seiner Regeln wiedergibt, und für jede bestehende Zahl, die ich anfasse.
-- `check_fixed_values.py` hält das in der CI fest.
-- Was das Spiel zur Laufzeit liefert, hat Vorrang (seine Vorgabe, 12.10.2026): Blätter des Clients (sprachunabhängig über die englische Fassung), Status, Abklingzeiten, Stufe. Vorrang ist Gewichtung, kein Ausschluss (seine Präzisierung): Erzeugte oder von außen abgerufene Werte bleiben als zweite Quelle – Rückfall, wo das Spiel nichts liefert, und Gegenprobe; bei Widerspruch wiegt das Spiel schwerer, weil es den laufenden Patch zeigt.
-
-**Universell zuerst**
-- Eine Regel baue ich zuerst allgemein, für alle Fälle, in denen sie anwendbar ist — alle Jobs, alle Lagen —, zentral an einer Stelle (seine Vorgabe). Sonderregelungen spalte ich stufenweise ab; jede Stufe nutzt die darüberliegende, statt sie zu kopieren.
-- Die Stufen (seine Präzisierung): alle → Heiler · Tanks · Damage Dealer als Gesamtheit → bei Damage Dealern Fernkämpfer · Magier · Nahkämpfer → bei Nahkämpfern möglicherweise Untergruppen (Monk und Samurai · Dragoon und Schnitter · Ninja und Viper, seine Namen) → erst danach jeder Job einzeln. Eine Regel sitzt auf der höchsten Stufe, auf der sie für alle Mitglieder gleich gilt; welche Stufe leer bleibt, begründe ich.
-- Grund: Eine Regel nur für den Job, an dem der Fall auffiel, lässt dieselbe Lage bei allen anderen offen.
-
-**Keine Funktion ohne Bedarf**
-- Was er mit einem Handgriff außerhalb des Spiels erledigt (eine Datei löschen, eine Kopie ziehen), bekommt keinen Knopf und keine Option — jede Funktion ist eine weitere Fehlerquelle (seine Vorgabe, A173).
-
-**Erkennung und Entscheidung trennen**
-- Was beantwortet, was der Fall ist, prüft keine Option, vergleicht mit keiner Schwelle und wird nicht nur unter einer bestimmten Regel geschrieben. Das Urteil gehört in den Verbraucher — sonst erbt jeder weitere Leser eine fremde Schwelle, unsichtbar.
-- Umgekehrt hänge ich einen Verbraucher mit eigener Grundlage (eigene Option, Schwelle, Zweck) nicht an eine fremde Freigabe — er erbt sonst alle ihre Gründe (Beispiel: der Heiltrank an der Heilflagge, A124, A133).
-
-**Verträge**
-- Bindend sind: serialisierte Typen und ihre Enum-Ordinale, Namen in gespeicherter Konfiguration, öffentliche Signaturen des Pakets, und Enums, deren Wert als Zahl über eine Schnittstelle kommt — ein gecasteter fremder `int` bindet die Ordinale an die fremde Reihenfolge, ohne Compilerprüfung.
-- Vor jeder Änderung erheben, ob der Typ persistiert, exportiert oder über eine Grenze gecastet wird; einen Migrationspfad vorsehen.
-- Bekannt: `Configs` schreibt Enums als Zahlen; `SpecialMode` und `PredictedDamageType` sind Vertrag mit BossModReborn, `check_bmr_contract.py` hält ihre Ordinale in der CI gegen dessen Quelltext.
-
-**BossModReborn**
-- Keine verlässliche Quelle: Kein Modul und ein Modul ohne diese Ereignisart kommen beide als `float.MaxValue` an und sehen aus wie „es kommt nichts".
-- Jede Regel, die eine BMR-Vorhersage liest, braucht einen Weg ohne sie. Gibt es den nur reaktiv, nenne ich das als Einschränkung.
-- Im Kampf muss ablesbar sein, ob ein Modul läuft und ob es die gelesene Ereignisart vorhersagt.
-
-**Fremde Rotationen**
-- Dateien unter `ExtraRotations` bearbeite ich nicht direkt, sobald daraus ein Folgedefekt mit eigener Richtungsentscheidung entsteht.
-- Zentrale Änderungen bleiben erlaubt; ihre Wirkung auf fremde Rotationen nenne ich als Betroffenenkreis.
-
-**Option und Beobachtbarkeit**
-- Eine Verbesserung, deren Nutzen ich nicht belegen kann, kommt hinter eine Option. Belegte Defektbehebungen nicht.
-- Voreinstellung einer Option ist der Wert, der im Spielgeschehen sinnvoller ist, nicht das bisherige Verhalten (seine Vorgabe, 29.09.2026): Neue Regeln sollen getestet werden. Ausnahme nur mit Grund aus dem Kampf, etwa eine dokumentierte Entscheidung von ihm; „noch nicht entschieden" ist keiner.
-- Gründliche Vorarbeit wird nicht durch nachträgliche Betrachtung ersetzt (seine Präzisierung). Was Analyse klären kann — Wirktexte, Code, Versionsgeschichte, Modell —, ist vor dem Code geklärt. Eine Anzeige ist kein Ablageort für offene Annahmen, und ich verweise nicht auf sie, um eine ungeprüfte Annahme zu tragen.
-- Er nutzt das Diagnosefenster nicht (seine Vorgabe): Ich baue dort keine neuen Zeilen als Messmittel und verweise ihn nicht darauf. Wo die Antwort erst zur Laufzeit fällt, steuert die Regel selbst nach; reicht das nicht, schreibt der Code eine Protokolldatei, die er nach einer Sitzung hochlädt (Beispiel `AreaMeasurementTrace.log`, A176).
-
-**Entscheidung zur Laufzeit**
-- Eine Sonde sitzt dort, wo die Regel entscheidet, und urteilt sofort.
-- Zulässig ist nur, was sich selbst nachsteuert: Die Regel hält ihre Vorhersage gegen den Verlauf und rechnet den Fehler heraus (wie `ScoreTtkForecast`, `GetCorrectedTTK`).
-- Keine Datensammlung, die auf seine Ablesung und meine spätere Auswertung wartet — das macht ihn zum Teil des Regelkreises. Ist Selbstkorrektur nicht baubar, sage ich das.
-- Das Messmittel der REGEL ist in erster Linie die Selbstnachsteuerung; eine Protokolldatei ergänzt sie, wo ein Defekt nur zur Laufzeit zu finden ist, und ersetzt sie nicht.
-
-# Quellen
-
-- Quellen ausschöpfen, bevor ich eine Grenze behaupte; Zugang pfadweise messen, nicht pauschal.
-- Eine Fundstelle, die ich nicht finde, ist nicht unerreichbar — weitere Pfade versuchen.
-- Ein Werkzeug sage ich erst zu, wenn eine Probe es belegt. Zur Vorlage gehört der Preis des Wegs: Was er mit einem Handgriff erledigt, ist keine Aufgabe für diese Umgebung.
-- Einen fremden Schutzmechanismus führe ich erst als Begründung an, wenn ich geprüft habe, was er abdeckt.
-- Der Netzzugang ist seit 27.09.2026 unbegrenzt (seine Einstellung). Offizielle Quelle für Wirktexte samt der Werte, die `ActionId.resx` ausblendet (Dauern, Potenzen, Statusnamen): der Job-Guide (`na.`/`de.finalfantasyxiv.com/jobguide/`). Referenz für Rotationen: The Balance (`thebalanceffxiv.com`). Spieldaten: `garlandtools.org`, `v2.xivapi.com`. gamerescape und icy-veins weisen Skripte per Cloudflare-Prüfung ab — das ist die Seite, nicht die Umgebung.
-- Öffentliche Git-Repositories sind über den Git-Proxy klonbar. `PunishXIV/WrathCombo` (Klon unter `/home/user/punishxiv/wrathcombo`) belegt, wie ein anderes Rotationswerkzeug eine Mechanik behandelt und was die Spiel-API liefert — keine Spielquelle, Status so benennen; Code nur lesen, nicht übernehmen. Was eine API des Clients tut, belegt ihr Quelltext: `goatcorp/Dalamud`, `aers/FFXIVClientStructs` (durch Reverse Engineering gewonnen), `NightmareXIV/ECommons`, `FFXIV-CombatReborn/BossmodReborn`; Spaltennamen der Blätter `xivdev/EXDSchema`. Status jeweils Werkzeugquelle.
-- Sprachserver-Plugins (csharp-lsp) startet Claude Code nur in Terminal-Sitzungen, nicht in dieser Umgebung; `lsp_query.py` startet csharp-ls je Frage selbst (Debug-Build des Quellgenerators nötig, sonst scheitert jede Verweissuche).
-- `xivanalysis/xivanalysis` (über den Git-Proxy klonbar, MIT) bewertet FFLogs-Reports je Job nach Rotationsregeln — Community-Auswertung auf Schaden hin, keine Spielquelle; Regelkatalog für den Abgleich, gefiltert durch seine Vorgaben.
 
 # Prüfung und Abschluss
 
@@ -271,34 +190,6 @@ Gelten in jeder Stufe. Eine Aussage, die eine davon verletzt, ist unbelegt.
 - Release-Freigabe liegt nur bei ihm: Merge-Zeitpunkt, Tagging, Veröffentlichung weder empfehlen noch vorwegnehmen; den Status berichten.
 - Keine selbst gesetzten Wiedervorlagen und keine zeitgesteuerten Kontrollen (`send_later`, Trigger) – für Release, PR, Prüflauf oder Upstream, auch wenn die Sitzungsumgebung sie vorsieht; diese Datei geht vor. Grund: Jede meldet sich bei ihm, fast immer ohne Befund, und Upstream wird ohnehin vor jeder Codeänderung und am Auftragsende synchronisiert (A421).
 
-# Artefakte
-
-**Konzepte**
-- Mit der Erkenntnis fortschreiben, im selben Zug: Vorgabe, Messergebnis, widerlegte Annahme. Grund: Nach einer Kontextkomprimierung sind Chat und Commit-Nachricht weg, und ein Konzept mit altem Stand widerlegt die Erkenntnis.
-- Ein Gegenstand gehört in das bestehende Konzept, das ihn trägt; ein neues Dokument nur, wenn keines ihn trägt (seine Vorgabe, 01.10.2026). Länge eines Konzepts und das Muster früherer Dokumente sind kein Grund — ein zweites Dokument verteilt den Gegenstand auf zwei Stellen, und eine davon veraltet.
-- Urteilsstil: geltender Sachstand zuerst, Begründung danach, Ausgeschlossenes mit Grund. Keine Chronik der eigenen Fassungen, keine Nachträge; Änderungen einarbeiten.
-- Prüfkriterium: Wer einen Abschnitt allein liest, erhält keinen überholten Stand.
-- Die Geschichte des Gegenstands bleibt Inhalt; die des Dokuments steht im Archiv. Vor dem Entfernen prüfen, dass sie dort steht.
-- Die Loop-Stufen sind Arbeitsverfahren, keine Gliederung eines Konzepts.
-
-**Archiv und TODO**
-- `AUDIT_LOG.md` (A: Prüfungen, C: widerrufene Aussagen) vor jeder Neuprüfung eines Bereichs lesen.
-- `TODO.md` führt nur offene Arbeit, getrennt in Defekte (Verhalten weicht von Absicht oder Einstellungstext ab), offene Arbeit, technische Schuld (Kompromiss, Kosten, Auflösungsbedingung) und Warten auf Daten. Je Eintrag nur Wirkung im Kampf, Ort, nächster Schritt oder Auflösungsbedingung, Konzept; Begründung, Messung und Geschichte stehen im Konzept und im Archiv – sonst wächst die Datei mit jedem Loop, veraltet und widerspricht den Konzepten (seine Rüge, 18.10.2026). Neu erkannte Defekte sofort erfassen, auch außerhalb des Auftrags.
-- Schließt ein Loop einen Punkt: Eintrag entfernen, im selben Zug jede Konzeptstelle nachziehen, die ihn offen nennt (Suche nach seinem Titel und nach „offen"), und die Reihenfolge fortschreiben. Ein Verweis auf das TODO nennt den Eintrag mit seinem Titel.
-- Offene Arbeit arbeite ich nach Wichtigkeit ab, jeden Punkt im vollen Loop, ohne Zwischenfrage (seine Vorgabe, 17.10.2026). Wichtigkeit ist die Wirkung im Kampf nach „Spielweise“ in seinem Profil; die Reihenfolge steht oben in `TODO.md` und wird mit jedem Befund fortgeschrieben. „Einfach umsetzbar“ in einem Auftrag sortiert, es schränkt nicht ein: Nach den einfachen kommen die schweren wichtigen Punkte ebenso dran, im selben Auftrag (seine Präzisierung, 24.10.2026).
-- Ein Eintrag gilt erst als seine Entscheidung, wenn der Loop durch ist und die Vorlage darin steht (→ „Vorlagen an ihn"); eine Kennzeichnung „zur Entscheidung" ohne sie ist meine offene Arbeit, und ich gebe sie nicht als seine aus (seine Rüge, 14.10.2026).
-- Fehler sachlich am System dokumentieren, im Archiv und in Commit-Nachrichten, nicht im Bericht.
-
-**Prüfmittel und Zahlen**
-- Prüfskripte liegen versioniert im Repository, laufen beim nächsten Mal wieder und tragen einen Selbsttest gegen konstruierte Defekte — sonst ist ein stiller Nullbefund nicht von einem sauberen Baum zu unterscheiden. Ein Modell, das keinen Code liest, läuft in der CI nur, wenn sich sein Skript ändert; jeder andere Lauf sagt nichts Neues und kostete Minuten (A323).
-- Gemessene Zahlen stehen in Dokumenten nur datiert oder gar nicht, weil sie sonst unbemerkt altern.
-
-**Release-Texte**
-- Englisch; sie beschreiben, was der Fork seit dem letzten Release selbst geändert hat — nicht den Bestand und nicht die Änderungen von Upstream (seine Vorgabe, 23.10.2026: „hier sind nur die eigenen änderungen aufzuführen").
-- `docs/fork-changes-since-last-release.md` mit dem Ausgangs-Release im Titel; nach Veröffentlichung übernimmt `docs/fork-changes-in-play.md` den Text (`check_release_note.py`).
-- Keine Rechenschaft über eigene Fehler darin.
-- Die Längengrenze ist die des tatsächlichen Wegs (Release-API über `body_path`).
-
 # Sprache und Namen
 
 - Chat Deutsch, vor jeder Antwort geprüft – auch jede Zwischenmeldung zwischen Werkzeugaufrufen und jede Beschreibung eines Werkzeugaufrufs, die er sieht (sein Befehl, 26.10.2026, dreimal gerügt). Commits, Code-Kommentare, Bezeichner Englisch. Konzepte Deutsch, Release-Texte Englisch. Etablierte Fachbegriffe, keine selbst gebildeten.
@@ -314,13 +205,6 @@ Gelten in jeder Stufe. Eine Aussage, die eine davon verletzt, ist unbelegt.
 **Zustand messen**
 - Vor jeder Aussage über Branch, PR, Tag oder Release beide Gegenstellen fetchen und gegen `origin/<branch>` und `HEAD` messen, nie gegen einen lokalen Zweig.
 - `.github/scripts/audit/check_sync_state.py` vor jeder Codeänderung und Zustandsaussage ausführen.
-
-**Upstream**
-- Upstream-Sync ist Vorbedingung jeder Codeänderung: null ausstehende Commits gegen `upstream/main`. Prüfen, ob Upstream den Defekt schon behoben hat.
-- `main` halte ich selbst synchron: `upstream/main` in `main` mergen und pushen, ohne Freigabe und ohne auf einen PR-Merge zu warten.
-- `upstream` ist read-only.
-- Einen Sync werte ich aus, statt ihn nur einzupflegen: je fremder Änderung an einem Fork-Abschnitt — was ändert sie im Kampf, wie greift sie in die eigenen Änderungen, was wird daraus (trägt sie eine Regel, schärft sie einen Vertrag, beantwortet sie eine offene Frage)? Inhaltlich, nicht formal (seine Rüge, 25.10.2026): Upstream-Code und eigene Patches gemeinsam auf Doppelungen, Widersprüche, ungenutzte Synergien und kompaktere Lösungen prüfen, nicht nur auf Konflikte und Kompilierbarkeit.
-- Nach dem Abarbeiten eines Auftrags synchronisiere ich erneut und prüfe die neuen Upstream-Änderungen im kritischen Loop auf Probleme mit eigenem Code und Konzepten (seine Vorgabe, 24.10.2026). Grund: Während der Arbeit kommt Upstream weiter, und erst der Sync danach zeigt, ob das Gebaute noch trägt.
 
 **Commits und Zweige**
 - Der Arbeitszweig heißt `claude/fixes-after-<letztes Fork-Release>`, etwa `claude/fixes-after-7.5.6.13` (seine Vorgabe); nach einem neuen Release ein neuer Zweig mit dessen Nummer. Grund: Der Name sagt, auf welchem Release-Stand gearbeitet wird. Gibt die Sitzungsumgebung einen anderen Namen vor, gilt seine Vorgabe, und ich sage es ihm.
