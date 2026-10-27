@@ -242,6 +242,11 @@ jobs:
       - name: Check every Markdown table has its header and delimiter row
         run: python3 .github/scripts/audit/check_md_tables.py
 
+      # The measuring tool for heals over time reads his ACT logs, which are not in the repository; only its reading
+      # is tried here, against constructed log lines (A430).
+      - name: Check the heal-over-time measuring tool against constructed log lines
+        run: python3 .github/scripts/audit/act_heal_need.py --self-test
+
       # A release describes what changed, so its text has to start over after every release. It
       # does not do that by itself: the file still parses and still publishes, and the next
       # release would carry the previous one's text with the new part appended - the cumulative

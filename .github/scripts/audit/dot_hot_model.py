@@ -32,6 +32,12 @@ per threshold k: heal GCDs (each one a damage spell less), MP, group HoTs, overh
 The fourth part answers his question of 27.10.2026 whether the HoT should be bound to no health threshold: UNBOUND
 heals as EFFECT does and, where EFFECT would not heal, lays a HoT on every member carrying a DoT and none yet.
 
+The fifth part tests EFFECT against what a client can know (his request of 27.10.2026 to test the proposal again and
+to look for hybrids): EFFECT knows all damage to come, which no client does. TREND is EFFECT with the damage other than
+the DoT carried forward from the last four ticks over the HoT's time, the way the health trend extends. HYBRID keeps
+today's rule as the floor and adds a HoT only where the measured DoT alone, until its end, would cross the threshold
+within the HoT's time.
+
 Usage: python3 .github/scripts/audit/dot_hot_model.py [--self-test]
 """
 import sys
@@ -103,11 +109,37 @@ def rule_unbound(m, dots_ahead, others_ahead):
     return choice
 
 
+def rule_hybrid(m, dots_ahead, others_ahead):
+    """The narrow hybrid of 27.10.2026: today's rule stays the floor; on top, a HoT as soon as the measured DoT alone,
+    until its end, would take the member below the single threshold within the HoT's time. Damage other than the DoT
+    is not guessed beyond the next tick - the forecast cannot see it that far."""
+    landing = m.hp - (dots_ahead[0] if dots_ahead else 0.0) - (others_ahead[0] if others_ahead else 0.0)
+    if landing <= REGEN_FLOOR:
+        return "Cure II"
+    today = rule_today(m, dots_ahead[0] if dots_ahead else 0.0, others_ahead[0] if others_ahead else 0.0)
+    low_dot, regen_lands = project(m.hp, m.regen, dots_ahead, others_ahead[:1], REGEN_TICKS)
+    if today is None and low_dot >= SINGLE:
+        return None
+    cure_lands = min(CURE2, 100.0 - landing)
+    if m.regen == 0 and regen_lands >= cure_lands:
+        return "Regen"
+    return "Cure II" if today is not None else None
+
+
+def rule_effect_trend(m, dots_ahead, recent_others):
+    """The rule by effect as a client could run it: damage other than the DoT is not known ahead, only the average of
+    the last four ticks, carried over the HoT's whole time - the way the health trend extends."""
+    rate = sum(recent_others[-4:]) / 4.0 if recent_others else 0.0
+    return rule_effect(m, dots_ahead, [rate] * REGEN_TICKS)
+
+
 def run(rule, dots, others, steps, hp=100.0):
     m, gcds, mp = Member(hp), 0, 0
+    seen = []
     for k in range(steps):
         loss = (dots[k] if k < len(dots) else 0.0) + (others[k] if k < len(others) else 0.0)
         m.hp = max(0.0, m.hp - loss)
+        seen.append(others[k] if k < len(others) else 0.0)
         if m.regen:
             m.heal(REGEN_TICK)
             m.regen -= 1
@@ -116,6 +148,10 @@ def run(rule, dots, others, steps, hp=100.0):
             choice = rule_today(m, dots[k + 1] if k + 1 < len(dots) else 0.0, others[k + 1] if k + 1 < len(others) else 0.0)
         elif rule == "unbound":
             choice = rule_unbound(m, dots[k + 1:], others[k + 1:])
+        elif rule == "hybrid":
+            choice = rule_hybrid(m, dots[k + 1:], others[k + 1:])
+        elif rule == "trend":
+            choice = rule_effect_trend(m, dots[k + 1:], seen)
         else:
             choice = rule_effect(m, dots[k + 1:], others[k + 1:])
         if choice == "Regen":
@@ -134,6 +170,8 @@ SCENARIOS = [
     ("the same with 20 % missing", 80, (3.4, 6), (0, 0), 30),
     ("strong DoT, 6 % per tick for 30 s", 100, (6.0, 10), (0, 0), 30),
     ("DoT 3 % for 30 s on a tank under 2 % autos", 100, (3.0, 10), (2.0, 20), 30),
+    ("a raidwide of 30 %, then nothing", 100, (0, 0), (30.0, 1), 30),
+    ("a raidwide of 30 % and a DoT as strong as Regen", 100, (3.4, 6), (30.0, 1), 30),
 ]
 
 
@@ -142,6 +180,14 @@ def single_table():
     for name, hp, (d, dn), (o, on), steps in SCENARIOS:
         dots, others = [d] * dn, [o] * on
         rows.append((name, run("today", dots, others, steps, hp), run("effect", dots, others, steps, hp)))
+    return rows
+
+
+def hybrid_table():
+    rows = []
+    for name, hp, (d, dn), (o, on), steps in SCENARIOS:
+        dots, others = [d] * dn, [o] * on
+        rows.append((name, {r: run(r, dots, others, steps, hp) for r in ("today", "effect", "trend", "hybrid")}))
     return rows
 
 
@@ -295,6 +341,12 @@ def report():
             print(f"    from {k}: GCDs {r['gcds']:>2} (group HoTs {r['group']}), MP {r['mp']:>5}, "
                   f"overheal {r['over']:>4.0%}, lowest {r['low']:5.1f}%")
     print()
+    print("The narrow hybrid (today's rule as floor, a HoT where the measured DoT alone would cross) against both:")
+    for name, by_rule in hybrid_table():
+        for label, r in by_rule.items():
+            print(f"  {name:48} {label:7} GCDs {r['gcds']:>2}, MP {r['mp']:>5}, overheal {r['over']:>4.0%}, "
+                  f"lowest {r['low']:5.1f}%, end {r['end']:4.0f}%")
+    print()
     print("The HoT bound to no health threshold (on every DoT at once) against the rule by effect:")
     for name, effect, unbound in unbound_table():
         for label, r in (("effect", effect), ("unbound", unbound)):
@@ -315,6 +367,7 @@ def self_test():
     party = dict(party_table())
     unbound = {name: (e, u) for name, e, u in unbound_table()}
     party_unbound = {name: (e, u) for name, e, u in party_unbound_table()}
+    hybrid = dict(hybrid_table())
     checks = {
         "the rule never lets the member fall lower than today by more than one Regen tick":
             all(e["low"] >= t["low"] - REGEN_TICK for _, t, e in single_table()),
@@ -339,6 +392,14 @@ def self_test():
             party[PARTY_SCENARIOS[0][0]][2]["gcds"] < party[PARTY_SCENARIOS[0][0]][5]["gcds"],
         "a party at full health with nothing coming draws no heal under any threshold":
             all(party_run(k, 8, 0, 0.0, 0, 0, 10)["gcds"] == 0 for k in THRESHOLDS),
+        # the narrow hybrid against today and against the rule by effect with the health trend in place of foresight
+        "the hybrid never spends more heal GCDs than today and never leaves a member lower":
+            all(r["hybrid"]["gcds"] <= r["today"]["gcds"] and r["hybrid"]["low"] >= r["today"]["low"]
+                for _, r in hybrid_table()),
+        "the rule by effect on the health trend heals a lone raidwide that needs no heal, the hybrid does not":
+            hybrid[SCENARIOS[5][0]]["trend"]["gcds"] > 0 and hybrid[SCENARIOS[5][0]]["hybrid"]["gcds"] == 0,
+        "the hybrid lays the HoT early on a strong DoT":
+            hybrid[SCENARIOS[3][0]]["hybrid"]["low"] > hybrid[SCENARIOS[3][0]]["today"]["low"] + REGEN_TICK,
         # the HoT bound to no health threshold
         "unbound, his weak DoT costs at least five times the heals of the rule by effect":
             unbound[SCENARIOS[0][0]][1]["gcds"] >= 5 * max(1, unbound[SCENARIOS[0][0]][0]["gcds"]),

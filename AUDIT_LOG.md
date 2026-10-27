@@ -12471,6 +12471,33 @@ beobachtet.
   jetzt 17 Invarianten.
 - *Prüfgrad:* Werkzeugquelltexte und Modell; kein Code, nicht gebaut.
 
+### A430 · HoT gegen DoT: Weg B erneut im Loop, B verworfen, schmale Mischform H1 empfohlen (27.10.2026)
+
+- *Sein Auftrag:* „prüfe weg b erneut im vollständigen loop mit antithese und versuch der widerlegung. recherchiere
+  weiter", dazu „gibt es bessere hybride wege?" Wörtlich in Konzept 08, „Schaden über Zeit: HoT gegen DoT".
+- *Recherche:* Job-Guide (27.10.2026) für die HoTs aller vier Heiler; The Balance (Lilien potenzneutral, Regen bei
+  anhaltendem Einzelschaden; für Resega 150 statt 175 je Tick, es gilt der Job-Guide); xivanalysis bewertet nur
+  GCD-Heilungen und GCD-HoTs, Ziel höchstens 35 % Überheilung; xivapi: 84 Status „Regenerating HP over time", DoTs
+  mit „damage over time" in wechselnder Fügung, `CanDispel` je Status.
+- *Messung an seinen Weißmagier-Mitschnitten vom 25. und 26.10.2026* (`act_heal_need.py`, rund 100 Minuten Kampf):
+  GCD-HoTs ohne Bedarf 26 von 121 (Regen 22/110, Resega 2/4, Medica II 2/7), gut 1 % der GCDs; Überheilung unter
+  GCD-HoTs 38–45 % in Dungeons, 62–77 % sonst, unter freien HoTs 71–88 %; bei Zoraal Ja war Refugium viermal gebraucht,
+  die Ticks fielen nach Afflatus laetitiae und dem zweiten Heiler auf volle Gesundheit (C132). World of Darkness:
+  DoT-Ticks im Median 7,4 %, höchstens 15 %; 23 Tode, keiner mit DoT-Anteil. Schild: sechs DoT-Ticks unter Galvanize
+  meldeten 0, einer beim Bruch 678 statt rund 1000 – der Betrag steht nach dem Schild.
+- *Code:* Die Vorausschau blickt nur bis zur Landung der Heilung; Lilien leert RSR vor dem Überlauf; Esuna kommt vor
+  jeder Heilung; den HoT-Listen fehlen Kerakeia, Opposition und die Selbstheilungen der Tanks (Defekt, TODO).
+- *Loop:* Gegen B hält die Hypothese „Option falsch": Die Frage über die ganze HoT-Laufzeit braucht allen künftigen
+  Schaden; mit dem Gesundheitstrend fortgeschrieben heilt B einen einzelnen Raidwide von 30 % mit drei GCDs auf volle
+  Gesundheit (`dot_hot_model.py`, B mit Trend). B verworfen. Mischformen H1 (heutige Regel als Untergrenze, dazu ein
+  GCD-HoT, wo der gemessene DoT allein bis zu seinem Ende unter die Schwelle drückt), H2 (oGCD-HoTs mit
+  Abklingzeit-Vorbehalt, zurückgestellt), H3 (nur messen). H1 im Modell: in keiner Lage mehr GCDs als heute, Tiefpunkt
+  überall mindestens so hoch. Gegen H1 halten „kein Defekt" und „nichts ändert sich" teilweise (selten, in seinem
+  Hauptinhalt nie), daher hinter einer Option; DoTs ohne festes Ende nimmt H1 aus, nachdem das erste Beispiel dafür
+  (Halbverschlungen, 9999) nach drei Ticks endete.
+- *Messmittel:* `act_heal_need.py` mit Selbsttest in der CI; Modell mit 20 Invarianten.
+- *Prüfgrad:* Mitschnitt-Messung, Werkzeug- und Referenzquellen, Modell; kein Code, nicht gebaut.
+
 ---
 ## B · Commit-Register (Fork vs. `upstream/main`)
 
@@ -12755,3 +12782,4 @@ Die offene Arbeit dazu — Reihenfolge und Abbruchbedingung der Nachprüfung —
 | C129 | A353, 1fd640baa: jede Fläche wartet einen GCD nach dem Binden irgendeines Gegners, und ein ungebundener Gegner in Reichweite eines Tanks hält sie überall zurück | Review (A354): Eine Add-Welle am anderen Ende des Raums sperrte jede Fläche einen GCD; ein passiver Gegner am Tank im Freien sperrte sie dauerhaft; ein außer Sicht gezogenes Rudel zählte nicht | A354: nur Gegner in der Fläche oder am Tank, der Ungebundene am Tank nur in Instanzen ohne Feldoperation, das erste Sehen im Kampf zählt als Binden |
 | C130 | Chat 26.10.2026: „Der Text, den du zitierst, … ich habe sie auf Deutsch geschrieben.“ | Falsch. Die zitierte Antwort und mehrere Mitteilungen davor waren Englisch, gegen seinen Befehl „sprich deutsch“; die Behauptung stützte sich auf die Erinnerung statt auf den Verlauf. | Widerrufen im Chat; seine Sprachregel gilt für jede sichtbare Ausgabe (`CLAUDE.md`, „Sprache und Namen“), vor jeder Ausgabe geprüft |
 | C131 | Chat 26.10.2026: „Diese Abschlusszeilen schreibt `Stop` ohne jede Bedingung. Dass sie fehlen, beweist: … jeder Schreibversuch ist gescheitert.“ | Zu stark. Ein Absturz von Spiel oder Rechner beendet die Sitzung ohne `Stop` (sein Hinweis); die fehlende Abschlusszeile allein beweist keinen Schreibfehler. Tragend bleiben die fehlenden Zeilen zweier unabhängiger Schreiber während der Kämpfe. | Im Chat zurückgenommen; A418 stützt sich nicht auf die Abschlusszeile |
+| C132 | A428 und Konzept 08 (27.10.2026): „Das Überheilen, das er beschreibt, entsteht also messbar – aber bei Gruppen-HoTs ohne Bedarf, nicht bei DoTs.“ | Falsch für Zoraal Ja. Refugium war bei allen vier Einsätzen nach der Bedarfsfrage gebraucht; seine Ticks fielen auf volle Gesundheit, weil danach Afflatus laetitiae und der zweite Heiler auffüllten. Dieses Überheilen kostete keinen GCD. GCD-HoTs ohne Bedarf gibt es, aber selten (26 von 121). Der Schluss stützte sich auf die Ticks, nicht auf den Bedarf zur Zeit des Wirkens. | Konzept 08 berichtigt; Messung je Einsatz in A430 mit `act_heal_need.py` |

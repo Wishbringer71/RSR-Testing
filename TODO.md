@@ -29,11 +29,18 @@ Aus seinem Upload vom 26.10.2026 abends (A419) zwei Punkte offener Arbeit, in di
 Tankbuster zuerst – er trifft sicher, und ein Tank steht ohne Hilfe –, danach die Flächentabelle unter Minderung, die nur
 den ersten Treffer einer Aktion falsch bewertet. Aus seinem Upload vom 27.10.2026 (A427) davor ein Punkt: Pyretisch
 mitten im eigenen Zauber – er tötete zweimal an einem Abend. Danach die technische Schuld, soweit ihre
-Auflösungsbedingung erfüllt ist. Warten auf Daten: unten.
+Auflösungsbedingung erfüllt ist. Aus der Prüfung vom 27.10.2026 (A430) der Defekt der HoT-Listen: Er kostet Schaden, nicht Sicherheit, und kommt nach den drei Punkten offener Arbeit. Warten auf Daten: unten.
 
 ## Defekte
 
-Keine bekannt.
+### Laufende HoTs fehlen in den HoT-Listen · N, R
+Läuft die Regeneration aus Kerachole (Weiser) oder Celestial Opposition (Astrologe) auf der Gruppe oder eine
+Selbstheilung auf einem Tank (etwa Aurora), heilen RSRs Heiler, als liefe nichts: Die Schwellen sinken nicht, und eine
+GCD-Heilung fällt, wo die Regeneration getragen hätte. Die Liste soll nach ihrem eigenen Kommentar jeden laufenden
+Gruppen-HoT tragen. *Ort:* `StatusHelper.AreaHots`, `SingleHots`; Leser `StateUpdater.GetHealingOfTimeRatio`,
+`SelfHealingOfTimeRatio`, `ActionTargetInfo`. *Nächster Schritt:* Loop zur Erkennung am Spielblatt (84 Status mit
+„Regenerating HP over time", die Bodeneffekte mit eigenem Wirktext), die Listen als Rückfall; Gruppe oder Einzelziel
+nach dem Wirkbereich der gewährenden Aktion. *Konzept:* 08 („Was RSR heute tut" im Abschnitt „Schaden über Zeit").
 
 ## Offene Arbeit
 
