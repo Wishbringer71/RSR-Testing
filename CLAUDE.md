@@ -196,7 +196,7 @@ Pflicht für jede nicht-triviale Aufgabe; die REGEL steht darüber.
 
 # Sprache und Namen
 
-- Chat Deutsch, vor jeder Antwort geprüft – auch jede Zwischenmeldung zwischen Werkzeugaufrufen und jede Beschreibung eines Werkzeugaufrufs, die er sieht (sein Befehl, 26.10.2026, dreimal gerügt). Commits, Code-Kommentare, Bezeichner Englisch. Konzepte Deutsch, Release-Texte Englisch. Etablierte Fachbegriffe, keine selbst gebildeten.
+- Chat Deutsch, vor jeder Antwort geprüft – auch jede Zwischenmeldung zwischen Werkzeugaufrufen und jede Beschreibung eines Werkzeugaufrufs, die er sieht (sein Befehl, 26.10.2026, dreimal gerügt). Commits, Code-Kommentare, Bezeichner Englisch. Konzepte Deutsch, Release-Texte Englisch. Etablierte Fachbegriffe, keine selbst gebildeten: Ein Fachbegriff des Computerjargons bleibt so, wie der Jargon ihn führt, auch englisch – Pipe, nicht „Rohr“ (seine Präzisierung, 27.10.2026).
 
 **Namen**
 - Er spielt mit deutschem Client: seine Namen sind deutsche Spielnamen, die Bezeichner englisch. Vor jeder Suche oder Aussage über ein Fehlen die Zuordnung belegen.

@@ -12345,7 +12345,7 @@ beobachtet.
   - „Recherchen laufen; danach arbeite ich sie ein" galt als Ankündigung, auch wenn Hintergrundarbeit läuft, deren
     Ende den Zug wieder weckt.
 - *Umsetzung:* `hook_io.py` liest die Hook-Eingabe für alle drei Hooks nur, wenn sie innerhalb einer halben Sekunde
-  anliegt; ohne Eingabe geben die Hooks ihren Hilfetext aus (Selbsttest gegen offenes stummes Rohr, leere Eingabe,
+  anliegt; ohne Eingabe geben die Hooks ihren Hilfetext aus (Selbsttest gegen eine offene stumme Pipe, leere Eingabe,
   JSON; in der CI). `stop_check.py`: Ausnahme für ein Zugende, das auf ihn wartet (`WAITS_ON_HIM` nach KSP), und für
   laufende Hintergrundarbeit – über das Feld `background_tasks` der Stop-Eingabe statt über ein Wortmuster.
 - *Messung danach* (427 Zugenden dieser Sitzung): 6 englische Schlussmeldungen, 2 deutsche Ankündigungen („Ich warte
