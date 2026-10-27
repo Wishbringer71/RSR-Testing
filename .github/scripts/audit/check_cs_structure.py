@@ -2,9 +2,9 @@
 """Is every C# file still structurally intact?
 
 This closes the class of defect where an edit leaves a file that no longer parses - and where the
-only thing that notices is a Windows runner a minute and a half later. There is no local .NET in
-this working environment, so a broken file travels to CI and the branch sits red until a round trip
-finishes. The failure that prompted this check: two helper methods were moved to DataCenter, the
+only thing that notices is a Windows runner a minute and a half later. A fresh session has no .NET
+until .github/scripts/cloud_build.sh fetches it (a local build works since A331), so a broken file
+can travel to CI and the branch sits red until a round trip finishes. The failure that prompted this check: two helper methods were moved to DataCenter, the
 signatures went, the bodies stayed, and the file came back with thirty compiler errors that all
 pointed at one wrong line.
 

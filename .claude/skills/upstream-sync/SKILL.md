@@ -19,7 +19,8 @@ Anlass: vor jeder Codeänderung, am Ende jedes Auftrags, und wenn `check_sync_st
 
 1. Messen: `python3 .github/scripts/audit/check_sync_state.py`; die neuen Commits mit `git log HEAD..upstream/main` und `git diff --stat HEAD...upstream/main`, den Inhalt am Diff.
 2. Eigene Änderungen an denselben Dateien: `git log upstream/main..HEAD -- <Dateien>`; Konflikte vorab mit `git merge-tree --write-tree <Zweig> upstream/main`.
-3. `main`: `upstream/main` mergen, Nachricht „Merge upstream <Version> (<sha>): <Inhalt>" mit den Zuschreibungszeilen; kompilieren, `run_ci_checks.py`. Meldet `check_fork_version.py --require-tags` eine neue Upstream-Version, die drei Versionsangaben in `Directory.Build.props` nachziehen, eigener Commit „Fork version on upstream <Version>"; dann `main` pushen.
+3. `main`: `upstream/main` mergen, Nachricht „Merge upstream <Version> (<sha>): <Inhalt>" mit den Zuschreibungszeilen; kompilieren (`.github/scripts/cloud_build.sh` holt .NET und Dalamud, wo sie fehlen), `run_ci_checks.py`. Meldet `check_fork_version.py --require-tags` eine neue Upstream-Version, die drei Versionsangaben in `Directory.Build.props` nachziehen, eigener Commit „Fork version on upstream <Version>"; dann `main` pushen.
 4. Arbeitszweig: `origin/main` hineinmergen, kompilieren, alle Prüfungen erneut vor dem Push – die Merge-Basis wechselt (A324); pushen.
-5. Auswerten nach den Regeln oben, im Archiv festhalten (Muster: A371, A420); den PR-Text an der betroffenen Stelle ergänzen.
-6. Release-Text und Zweigname folgen dem letzten Fork-Release, nicht der Upstream-Version.
+5. Ändert der Sync ECommons, RebornMaterial oder die Dalamud-Fassung: Bindungen prüfen. ECommons kommt fertig gebaut gegen ein älteres Dalamud; fehlt einer seiner Member im aktuellen Dalamud, fällt RSR erst im Kampf aus (`MissingMethodException`), sobald der Pfad läuft. Werkzeug: `tools/RefCheck` aus Retainer-Repricer, lesend angehängt und gebaut, gegen `RotationSolver/bin/Release` (ECommons, RotationSolver.Basic, RotationSolver, RebornMaterial) und die Dalamud-Bibliotheken; zuerst mit `--self-test`. Nicht kopieren: Dort gilt AGPL-3.0, hier LGPL-3.0 (A423).
+6. Auswerten nach den Regeln oben, im Archiv festhalten (Muster: A371, A420); den PR-Text an der betroffenen Stelle ergänzen.
+7. Release-Text und Zweigname folgen dem letzten Fork-Release, nicht der Upstream-Version.

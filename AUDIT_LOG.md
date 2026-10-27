@@ -12290,6 +12290,49 @@ beobachtet.
   luden beim Bearbeiten passender Dateien. Ob die Aufteilung das Befolgen der Regeln verbessert, zeigt erst die Arbeit
   danach.
 
+### A423 · Weitergaben aus KerbalMissionDirector und Retainer-Repricer: Hooks statt Textregeln, Build und Bindungen (27.10.2026)
+
+- *Seine Angaben:* zwei Berichte der Sitzungen von KerbalMissionDirector (KMD) und Retainer-Repricer (RR), von ihm
+  eingefügt. Darin seine Vorgabe aus dem KMD-Chat: „jede repo hat eigene besonderheiten. und damit vielleicht schon
+  erkenntnisse, die die anderen nicht haben. diese mit einbauen und auch die anderen repos von mir daran teilhaben
+  lassen" – jetzt in CLAUDE.md („Wenn er etwas sagt", „Bevor ich etwas als fertig melde"). Die übrigen Aussagen der
+  Berichte sind Hinweise der anderen Sitzungen, hier am Artefakt geprüft.
+- *Geprüft:*
+  - Die Shell lädt keine Regeldatei: `head` auf `RotationSolver.Basic/Actions/ActionBasicInfo.cs` brachte `code.md`
+    nicht in den Kontext, Read auf dieselbe Datei schon (KMD-Befund bestätigt).
+  - Hook-Dokumentation (code.claude.com/docs/en/hooks): Stop erhält `last_assistant_message` und `stop_hook_active`,
+    nach acht Fortsetzungen in Folge endet der Zug; `additionalContext` setzt den Zug fort, ohne Fehlermeldung.
+    PreToolUse kann `additionalContext` neben das Werkzeugergebnis legen, ohne die Freigabe zu ändern.
+  - Tabellen: kein Defekt im Baum; am Stand vor A422 findet die neue Prüfung die drei Brüche der Widerrufstabelle.
+  - `check_cs_structure.py` behauptete „no local .NET"; lokal kompiliert wird seit A331. Aussage berichtigt.
+  - Bindungen mit `tools/RefCheck` aus RR (lesend gebaut): gegen die aktuelle Dalamud-Verteilung (`Dalamud.dll` vom
+    20.10.2026, dieselbe Datei wie die am 22.10. installierte) ECommons 1313, RotationSolver.Basic 705, RotationSolver
+    4287, RebornMaterial 293 Bindungen, keine fehlend; Selbsttests bestanden.
+  - A418 in den anderen: KMD (`FileLogSink`) und RR (`LogFile`) schreiben mit `new UTF8Encoding(false)`, das nicht
+    wirft – dort kein Befund.
+- *Umsetzung:*
+  - `rule_inject.py` (PreToolUse): gibt einem Shell-Befehl, der einen Pfad eines Anlasses nennt, dessen Regeldatei,
+    einmal je Sitzung; vermerkt, was Read, Edit und Write selbst laden; nach einer Komprimierung setzt
+    `session_brief.py` den Vermerk zurück. Im Betrieb beobachtet: lieferte `archiv-todo.md`, `pruefmittel.md`,
+    `regeldateien.md` und `code.md` zu Shell-Befehlen.
+  - `stop_check.py` (Stop): Ankündigung am Zugende, leere und englische Schlussmeldung; Muster und Leerfall nach
+    KMD, Frage am Ende, Perfekt und „gleich" als Vergleich nach RR. Gemessen an den 425 Zugenden dieser Sitzung:
+    6 englische Schlussmeldungen (alle echt, vgl. C130), 1 echte Ankündigung, 3 Grenzfälle (Bitte um Daten, Bedingung
+    an seine Entscheidung, Stand ohne Daten); 40 Zugenden ohne Text, davon 30 Schnitte der Komprimierung und 4
+    Unterbrechungen, bei denen der Hook nicht läuft. Ein Grenzfall kostet eine Runde, keine Schleife.
+  - `check_md_tables.py` (CI): jede Markdown-Tabelle mit Kopf und Trennzeile, auch der Rest ohne führendes `|` (KMD).
+  - `session_brief.py`: offene Issues, über die Weitergaben ankommen; setzt `core.hooksPath` auf `.githooks` (war
+    nicht gesetzt, nach KMD); meldet einen flachen Klon. Defekt beim Bau: Das Lesen der Hook-Eingabe wartete ohne Hook
+    endlos, `run_ci_checks.py` hing daran; es liest jetzt nur, wenn Daten anliegen.
+  - `cloud_build.sh`: holt .NET 10 und Dalamud, wo sie fehlen, und baut (37 s mit vorhandenen Werkzeugen, ohne
+    Warnung); beide Abrufwege einzeln geprüft. Nach RR.
+  - Skill `upstream-sync`: Bindungsprüfung, wenn der Sync ECommons, RebornMaterial oder Dalamud ändert.
+- *Verworfen:* `RefCheck` in die CI übernehmen – RR steht unter AGPL-3.0, RSR unter LGPL-3.0; über die Lizenz
+  entscheidet er. Die KMD-Textregel „vor einer Änderung mit Read öffnen" allein – der Hook deckt Befehle mit Pfad;
+  für Skripte, die ihre Dateien selbst wählen, bleibt die Textregel in CLAUDE.md.
+- *Prüfgrad:* Selbsttests, alle CI-Schritte lokal, Build lokal. Laufzeit: PreToolUse-Hook im Betrieb und
+  SessionStart beim Fortsetzen beobachtet; der Stop-Hook ist am Verlauf gemessen, im Betrieb noch nicht beobachtet.
+
 ---
 ## B · Commit-Register (Fork vs. `upstream/main`)
 
