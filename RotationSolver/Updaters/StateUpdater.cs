@@ -722,11 +722,6 @@ internal static class StateUpdater
 			return false;
 		}
 
-		if (DataCenter.IsInWindurst && StatusHelper.PlayerHasStatus(false, StatusID.HpRecoveryDown))
-		{
-			return false;
-		}
-
 		var doomed = StatusHelper.PlayerDoomNeedHealing();
 
 		// Calculate the ratio of remaining healing-over-time effects on the target. If they have a "Doom" status, treat dot healing as non-existent.
@@ -741,25 +736,18 @@ internal static class StateUpdater
 		// "Zero" here means a corpse, and it has to be asked of the real health. The forecast
 		// reaches zero for somebody who is alive and about to die - the very case this exists for -
 		// and reading it here would suppress the heal exactly then.
-		if (ObjectHelper.GetPlayerHealthRatio() == 0
-			|| StatusHelper.PlayerHasStatus(false, StatusHelper.HealingIneffectiveStatus))
+		if (ObjectHelper.GetPlayerHealthRatio() == 0)
 		{
 			return false;
 		}
 
-		// See ShouldHealSingle. Relevant here for a dark knight running a rotation that heals itself.
-		if (ObjectHelper.PlayerIsHeldForDeathTrigger())
+		// The exclusions, the hold for a death trigger - relevant here for a dark knight running a rotation that heals
+		// itself - and the protected threshold, for a tank healing itself while riding its own invulnerability: the same
+		// as for every member (ObjectHelper.TryHealSingleThreshold, A432).
+		if (!Player.Object.TryHealSingleThreshold(Lerp(healSingle, healSingleHot, ratio), out var threshold))
 		{
 			return false;
 		}
-
-		// Same construction as ShouldHealSingle: a protective status lowers the threshold rather
-		// than suppressing the flag entirely. This path matters for a tank healing itself while
-		// riding its own invulnerability.
-		var normal = Lerp(healSingle, healSingleHot, ratio);
-		var threshold = ObjectHelper.PlayerIsUnprotectedForHealing()
-			? normal
-			: Math.Min(normal, Service.Config.HealthProtectedRatio);
 
 		return h < threshold;
 	}
@@ -786,11 +774,6 @@ internal static class StateUpdater
 			return false;
 		}
 
-		if (DataCenter.IsInWindurst && StatusHelper.HasStatus(target, false, StatusID.HpRecoveryDown))
-		{
-			return false;
-		}
-
 		if (DataCenter.IsPvP && StatusHelper.HasStatus(target, false, StatusID.Mounted))
 		{
 			return false;
@@ -812,7 +795,7 @@ internal static class StateUpdater
 		// reaches zero for somebody who is alive and about to die - the very case this exists for -
 		// and reading it here would suppress the heal exactly then.
 		var actual = target.GetHealthRatio();
-		if (actual == 0 || target.HasStatus(false, StatusHelper.HealingIneffectiveStatus))
+		if (actual == 0)
 		{
 			return false;
 		}
@@ -821,25 +804,15 @@ internal static class StateUpdater
 		// a wasted cast but the loss of the trigger. Off by default: RSR also fires Living Dead as
 		// a last-ditch save, and under that usage the death is not wanted at all. The hold releases
 		// itself with enough lead time for a heal to land, after which the normal threshold applies.
-		if (target.IsHeldForDeathTrigger())
+		// A protective status lowers the threshold instead of removing it: suppressing the flag
+		// outright meant that a protected tank who was the only wounded member got no healing at
+		// all, and the two-GCD release before expiry is not enough time to bring one back up from
+		// a few percent. Both, with the exclusions, are ObjectHelper.TryHealSingleThreshold's, which
+		// the heal over time against damage over time shares (A432).
+		if (!target.TryHealSingleThreshold(Lerp(healSingle, healSingleHot, ratio), out var threshold))
 		{
 			return false;
 		}
-
-		// A protective status lowers the threshold instead of removing it. "Cannot die right now"
-		// is not "does not need healing": Superbolide puts the gunbreaker at 1 HP on purpose, and
-		// when the window closes the target stands exactly where it left them. Suppressing the flag
-		// outright meant that a protected tank who was the only wounded member got no healing at
-		// all, and the two-GCD release before expiry is not enough time to bring one back up from
-		// a few percent.
-		//
-		// Math.Min keeps the invariant that a protected target is never healed more readily than an
-		// unprotected one, whatever the two settings are configured to. Living Dead with its hold
-		// switched off is no protection here: its fall to zero is Walking Dead, not a spared hit (A306).
-		var normal = Lerp(healSingle, healSingleHot, ratio);
-		var threshold = target.IsUnprotectedForHealing()
-			? normal
-			: Math.Min(normal, Service.Config.HealthProtectedRatio);
 
 		return h < threshold;
 	}

@@ -3113,6 +3113,33 @@ public static class ObjectHelper
 			|| battleChara.CanBeHealed();
 	}
 
+	/// <summary>
+	/// The single-heal threshold for <paramref name="battleChara"/> from <paramref name="normal"/>, or false where a heal
+	/// on him is excluded: healing does nothing on him (<see cref="StatusHelper.HealingIneffectiveStatus"/>, the recovery
+	/// penalty in Windurst), or the hold for his death trigger (<see cref="IsHeldForDeathTrigger"/>). One place for the
+	/// single-heal decision and the heal over time against damage over time (A432), so they cannot disagree.
+	/// </summary>
+	/// <remarks>
+	/// A protective status lowers the threshold instead of removing it. "Cannot die right now" is not "does not need
+	/// healing": Superbolide puts the gunbreaker at 1 HP on purpose, and when the window closes the target stands exactly
+	/// where it left them. Math.Min keeps the invariant that a protected target is never healed more readily than an
+	/// unprotected one, whatever the two settings are configured to. Living Dead with its hold switched off is no
+	/// protection here: its fall to zero is Walking Dead, not a spared hit (A306).
+	/// </remarks>
+	internal static bool TryHealSingleThreshold(this IBattleChara battleChara, float normal, out float threshold)
+	{
+		threshold = 0f;
+		if ((DataCenter.IsInWindurst && StatusHelper.HasStatus(battleChara, false, StatusID.HpRecoveryDown))
+			|| battleChara.HasStatus(false, StatusHelper.HealingIneffectiveStatus)
+			|| battleChara.IsHeldForDeathTrigger())
+		{
+			return false;
+		}
+
+		threshold = battleChara.IsUnprotectedForHealing() ? normal : Math.Min(normal, Service.Config.HealthProtectedRatio);
+		return true;
+	}
+
 	/// <inheritdoc cref="IsUnprotectedForHealing(IBattleChara)"/>
 	public static bool PlayerIsUnprotectedForHealing()
 	{
