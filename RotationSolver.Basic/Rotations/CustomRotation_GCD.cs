@@ -525,8 +525,9 @@ public partial class CustomRotation
 	}
 
 	/// <summary>
-	/// Stops the cast of an enemy that is not a boss - an area attack reaching the party, or a cast the game marks
-	/// interruptible - while enough of it is left: first with the job's own stopper (<see cref="StopEnemyCastByJob"/>),
+	/// Stops the cast of an enemy that is not a boss - an area attack reaching the party, any cast the game marks
+	/// interruptible, or a cast on one target a sleep has stopped before (SleepInterruptWatch.IsCastWorthStopping) - while
+	/// enough of it is left: first with the job's own stopper (<see cref="StopEnemyCastByJob"/>),
 	/// otherwise with Sleep or Repose. The owner's experiment of 18.10.2026, "kann sleep der magiewirkenden klassen
 	/// unterbrechen?", and his rules of 23.10.2026: the stop is the melee interrupt's counterpart, and "wenn holy stunnen
 	/// kann, ist das vorzuziehen" (concept 08, "Ein gegnerisches Wirken stoppen"). Healers and casters together: the

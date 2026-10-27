@@ -23,6 +23,13 @@ are not reconstructed here.
 
 ## Unreleased
 
+### Behaviour change in RotationSolver.Basic: a sleep stops every cast known to be stoppable
+
+`SleepInterruptWatch.IsCastWorthStopping` now takes any cast the game marks interruptible (`IsCastInterruptible`),
+without the melee interrupt's limits and setting (`ObjectHelper.CanInterrupt`), and a single-target cast a sleep has
+stopped before (`SleepOutcomes`), besides an area attack that reaches the party. A resistance is learned from every
+target of the player's own sleep, not only from the one the rule aimed at.
+
 ### Behaviour change in RotationSolver.Basic: Phoenix Down waits for a cast it can finish
 
 `CustomRotation.UsePhoenixDown` no longer reports the feather while the player moves, while a tankbuster on him lands

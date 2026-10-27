@@ -59,7 +59,7 @@ erben die Selbstkorrektur.
 | Rueckstoss auch **als** Minderungswerkzeug wirken | umgesetzt (A194, A236): Abtausch im Pull fuer seine Verlangsamung, nicht vor einem angekuendigten Rueckstoss (A212, A219), nicht auf einen Boss |
 | Wirksamkeitsmessung im Spiel | ersetzt durch die Selbstkorrektur der Vorausschau (`ScoreTtkForecast`); keine Ablesung als Aufgabe an ihn |
 | **Sonde der Flächenbewertung**: `DataCenter.AreaMitigationSkipped` nennt je Aktions-Id, wo die Bewertung eine Minderung verworfen hat (Listenverwaltung) | in Betrieb |
-| **Ein gegnerisches Wirken stoppen** (seine Vorgaben 18.10.2026 und 23.10.2026): Heiler und Magier stoppen das Wirken eines Gegners, der kein Boss ist – beim Weißmagier mit Sanctga, sonst mit Schlaf –, und speichern, was sie dabei lernen | umgesetzt (A329, A334), experimentell, ab Werk an; Abschnitt „Ein gegnerisches Wirken stoppen" |
+| **Ein gegnerisches Wirken stoppen** (seine Vorgaben 18.10.2026, 23.10.2026 und 27.10.2026): Heiler und Magier stoppen das Wirken eines Gegners, der kein Boss ist – beim Weißmagier mit Sanctga, sonst mit Schlaf –, und speichern, was sie dabei lernen | umgesetzt (A329, A334, A427), experimentell, ab Werk an; Abschnitt „Ein gegnerisches Wirken stoppen" |
 
 ## Die Antwort auf einen eingehenden Treffer
 
@@ -1060,10 +1060,15 @@ Zweitverwendung verlangt also, Quellenliste und Stapelverhalten zu Parametern zu
 - Vorgabe (23.10.2026): „und die speicherung des gewonnenen wissens ingame wird ingame nicht ausgewertet und persistent
   genutzt" – „nimm dir ein beispiel an der aoe schadenspotentialspeicherung" – „wichtig ist zu wissen, wo sleep nicht
   wirkt, damit es nicht immer wieder neu versucht wird".
+- Vorgabe (27.10.2026): „sleep auf alle als unterbrechbare aktionen ausweiten, nicht nur auf aoes. wenn die zeit
+  reicht und die aktion bekannt unterbrechbar ist, sleep versuchen, bei aoes weiter die unterbrechbarkeit testen und
+  auswerten. gerade beim debuff des mimiks wäre sie sinnvoll, falls sie durchgeht."
+- Hinweis (27.10.2026): „ich habe schlaf auf mimik selbst gecasted. wahrscheinlich zu spät oder slbst unterbrochen".
 
-**Sachstand (A329, A334):** Heiler und Magier stoppen das Wirken eines Gegners, der kein Boss ist, wenn es eine
-Fläche auf die Gruppe ist oder ein Wirken, das das Spiel als unterbrechbar führt – das, was ein Nahkämpfer mit
-Stolperfalle stoppt –, solange es lang genug läuft. Zuerst mit dem eigenen Stopper des Jobs: beim Weißmagier Sanctus bzw.
+**Sachstand (A329, A334, A427):** Heiler und Magier stoppen das Wirken eines Gegners, der kein Boss ist, wenn es eine
+Fläche auf die Gruppe ist, ein Wirken, das das Spiel als unterbrechbar führt – jedes, nicht nur, was ein Nahkämpfer
+mit Stolperfalle stoppt –, oder ein Wirken auf ein einzelnes Ziel, das ein Schlaf schon einmal abgebrochen hat,
+solange es lang genug läuft. Zuerst mit dem eigenen Stopper des Jobs: beim Weißmagier Sanctus bzw.
 Sanctga, der jeden nicht immunen Gegner im Umkreis betäubt. Wo der nicht reicht, mit Schlummer bzw. Schlaf. Was die
 Versuche zeigen, speichert RSR über die Sitzung hinaus und richtet jede weitere Entscheidung danach. Option „Stop an
 enemy's cast with the job's stun or a sleep (experimental)", ab Werk an. Jeder Versuch steht in `DefenseTrace.log`.
@@ -1091,6 +1096,17 @@ Seine Protokolle vom 19.–22.10.2026 (Weißmagier, A334):
 - *Unterbrechbares Wirken:* ein Versuch, ohne Ausgang.
 - *Was fehlte:* Ein Weißmagier schlief Gegner ein, die ein Sanctga mit betäubt hätte; das Gelernte begann jede Sitzung
   leer, sodass jede immune Art und jede nicht stoppbare Aktion wieder einen GCD kostete.
+
+Sein Mitschnitt vom 26.10.2026 abends (Beschwörer im Pilgerpfad, Ebenen 71–90, A427):
+
+- *Der Mimik widersteht dem Schlaf.* Sein eigener Schlaf auf einen Mimik (Arten 18895, 18896) kam als „Status voll
+  widerstanden" zurück (Effektart 55). Gespeichert wurde nichts: Die Regel lernte nur aus den Schlafen, die sie selbst
+  gewählt hatte. 23 Minuten später begann er einen zweiten Schlaf auf einen Mimik und brach ihn ab.
+- *Sein Debuff ist für einen Schlaf zu kurz.* Boshaftigkeit (#44852) wirkt 2,7 s auf einen Spieler und legt
+  Verwünschung (#1087) für 600 s. Der Schlaf brauchte dort 2,36 s Wirkzeit, dazu die Laufzeit bis zur Wirkung und den
+  gelernten Rest beim Eintreffen (am 27.10.2026: 0,47 s) – rund 3,0 s. Sein Schlaf landete 1,3 s nach dem Ende.
+- `DefenseTrace.log` blieb in beiden Sitzungen dieses Abends nach der Kopfzeile leer (Build `e08c209a0`, vor A418);
+  welche Wirken die Regel erwog, zeigt das Protokoll deshalb nicht.
 
 
 ### Mechanik
@@ -1144,10 +1160,16 @@ Belege abgerufen 18.10.2026 (xivapi v2, Blätter `Action` und `Status`, englisch
 ### Erkennung
 
 `SleepInterruptWatch`, ohne Option und ohne Schwelle:
-- ein Gegner der Feindesliste, kein Boss (Rang 2 und 6 im Blatt BNpcBase), dessen Wirken eine Fläche ist, die dich
-  oder zwei lebende Mitglieder erreicht (`DataCenter.AreaCastReachesParty`), **oder** das das Spiel als unterbrechbar
-  führt, nach derselben Erkennung wie Stolperfalle der Nahkämpfer (`ObjectHelper.CanInterrupt`; mindestens 2 s, kein
-  Kegel, kein Ring, keine Fläche unter 8 y);
+- ein Gegner der Feindesliste, kein Boss (Rang 2 und 6 im Blatt BNpcBase), dessen Wirken
+  - eine Fläche ist, die dich oder zwei lebende Mitglieder erreicht (`DataCenter.AreaCastReachesParty`) – hier testet
+    jeder Schlaf weiter, ob er sie stoppt;
+  - **oder** das das Spiel als unterbrechbar führt (`IsCastInterruptible`), jedes: ohne die Grenzen der Stolperfalle
+    der Nahkämpfer (`ObjectHelper.CanInterrupt`: mindestens 2 s, kein Kegel, kein Ring, keine Fläche unter 8 y) und
+    ohne deren Einstellung „Interrupt enemy casts" (seine Vorgabe vom 27.10.2026, „auf alle als unterbrechbare
+    aktionen"). Die Wirkzeit prüft die Entscheidung, die Form ändert nichts daran, dass ein Abbruch hilft;
+  - **oder** ein Wirken auf ein einzelnes Ziel ist, das ein Schlaf schon einmal abgebrochen hat (`SleepOutcomes`,
+    mindestens ein Abbruch): bekannt unterbrechbar, etwa ein Debuff auf ein Mitglied. Eine Fläche zählt dagegen nur,
+    wenn sie die Gruppe erreicht – sonst kostet der Abbruch einen GCD für nichts;
 - für den Schlaf: ohne Sleep Resistance, nicht von einer gespeicherten widerstehenden Art, in diesem Kampf seltener
   eingeschläfert, als seine Art (sonst irgendeine Art) vor einem Widerstand vertrug, und nicht gerade von einem Schlaf
   getroffen (sein Status zeigt sich erst später; am 21.10.2026 gingen zwei Schlafe auf dasselbe Wirken). Gezählt wird
@@ -1193,7 +1215,8 @@ Ausgewertet wird bei jeder Entscheidung:
   nötigen Rest, und erst ein Abbruch sortiert die Fehlschläge mit großem Rest zu den nicht stoppbaren Aktionen.
 
 Ein Widerstand wird gespeichert, wenn das Spiel den Status oder die ganze Aktion als widerstanden meldet – seine
-Vorgabe: Wo Schlaf nicht wirkt, soll er nicht immer wieder versucht werden. Lag in diesem Kampf schon ein Schlaf auf
+Vorgabe: Wo Schlaf nicht wirkt, soll er nicht immer wieder versucht werden. Das gilt für jeden eigenen Schlaf und jedes
+seiner Ziele, ob die Regel ihn wählte oder er ihn selbst drückte (A427: sein Schlaf auf den Mimik ging verloren). Lag in diesem Kampf schon ein Schlaf auf
 dem Gegner, ist es die Abnutzung (sein Hinweis vom 23.10.2026), nicht die Immunität der Art: Gespeichert wird dann
 die Anzahl, und der Gegner ruht für diesen Kampf. „Unverwundbar" (etwa in einer Übergangsphase) sperrt die Art nur
 für die Sitzung, weil es keine Immunität gegen Schlaf beweist. Die Laufzeit vom
@@ -1235,7 +1258,7 @@ Wirken zur Wirkung hängt an der Verbindung und wird in jeder Sitzung neu gemess
 ### Grenzen und Lagen
 
 - *Kurzes Wirken:* Beide brauchen ihre Wirkzeit, den laufenden GCD, die Laufzeit und den Rest; ein kurzes Wirken lässt
-  keinen Platz. Rotmagier mit Dualcast und Schwarzmagier mit Triplecast schlafen sofort und verbrauchen den Sofortzauber.
+  keinen Platz – Boshaftigkeit des Mimiks mit 2,7 s etwa nie für einen Schlaf. Rotmagier mit Dualcast und Schwarzmagier mit Triplecast schlafen sofort und verbrauchen den Sofortzauber.
 - *Betäubung erschöpft:* Nach wiederholter Betäubung ist ein Gegner vorübergehend immun (`StunWatch`); dann bleibt der
   Schlaf.
 - *Lange Kämpfe:* Die Abnutzung endet nach einer Weile wieder; die Regel sperrt den Gegner trotzdem bis zum Kampfende,

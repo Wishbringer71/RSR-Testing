@@ -200,17 +200,41 @@ public static class SleepInterruptWatch
 
 	/// <summary>
 	/// Whether <paramref name="enemy"/>'s cast is worth stopping by any means: an area attack that reaches the party
-	/// (<see cref="IsAreaCastToStop"/>), or a cast the melee roles would stop with their interrupt - one the game marks
-	/// interruptible, by the same recognition (ObjectHelper.CanInterrupt). The stop is the healers' and casters'
-	/// counterpart to it (his rule of 23.10.2026: "schlaf sollte doch als meleependant für unterbrechungen genutzt
-	/// werden, also auch auf unterbrechbare casts, solange das zeitfenster reicht"). Whatever sleeps have shown about the
-	/// action is not read here: a stun stops what a sleep may not.
+	/// (<see cref="IsAreaCastToStop"/>), where each sleep goes on testing whether it stops it; any cast the game marks
+	/// interruptible; or a cast on a single target that a sleep has stopped before. The stop is the healers' and casters'
+	/// counterpart to the melee interrupt (his rule of 23.10.2026: "schlaf sollte doch als meleependant für
+	/// unterbrechungen genutzt werden, also auch auf unterbrechbare casts, solange das zeitfenster reicht"), and since his
+	/// rule of 27.10.2026 for every cast known to be stoppable: "sleep auf alle als unterbrechbare aktionen ausweiten,
+	/// nicht nur auf aoes. wenn die zeit reicht und die aktion bekannt unterbrechbar ist, sleep versuchen".
 	/// </summary>
+	/// <remarks>
+	/// The interruptible cast is taken as the game marks it, without the melee interrupt's limits (ObjectHelper.CanInterrupt:
+	/// at least 2 s, no cone, no ring, no area under 8 y, and its setting "Interrupt enemy casts", which casters never see):
+	/// the decision checks the time, and the shape does not make a stopped cast less stopped. Whether sleeps have failed on
+	/// the action is not read here: a stun stops what a sleep may not.
+	/// </remarks>
 	/// <param name="enemy">The enemy.</param>
 	/// <returns>True for such a cast.</returns>
 	public static bool IsCastWorthStopping(IBattleChara enemy)
 	{
-		return enemy != null && enemy.IsCasting && enemy.CastActionId != 0 && (ReachesParty(enemy) || enemy.CanInterrupt());
+		return enemy != null && enemy.IsCasting && enemy.CastActionId != 0
+			&& (ReachesParty(enemy) || enemy.IsCastInterruptible || IsKnownStoppedOnOne(enemy.CastActionId));
+	}
+
+	// A cast on a single target - a debuff on one member - that a sleep has stopped before: known to be stoppable. An
+	// area cast counts only while it reaches the party; stopping one that reaches nobody costs a GCD for nothing.
+	private static bool IsKnownStoppedOnOne(uint actionId)
+	{
+		var act = Service.GetSheet<Lumina.Excel.Sheets.Action>().GetRow(actionId);
+		if (act.RowId == 0 || act.EffectRange != 0 || (CastType)act.CastType is not (CastType.Targeted or CastType.Unknown))
+		{
+			return false;
+		}
+
+		lock (OtherConfiguration.SleepStoreGate)
+		{
+			return OtherConfiguration.SleepOutcomes.TryGetValue(actionId, out var reading) && reading.Stopped > 0;
+		}
 	}
 
 	// An area attack that reaches the player or two living members, by the shape of the action.
@@ -326,8 +350,9 @@ public static class SleepInterruptWatch
 	}
 
 	/// <summary>
-	/// The effect of the player's Sleep or Repose arrived: measures its lag, and for the enemy it was aimed at
-	/// learns a resistance or starts watching the cast. Called by the effect handler on the game thread.
+	/// The effect of the player's Sleep or Repose arrived: measures its lag, learns a resistance from every target that
+	/// refused it - whether the rule chose the sleep or the player pressed it himself - and for the enemy it was aimed at
+	/// starts watching the cast. Called by the effect handler on the game thread.
 	/// </summary>
 	/// <param name="actionId">The sleep action.</param>
 	/// <param name="targets">Its targets.</param>
@@ -349,20 +374,30 @@ public static class SleepInterruptWatch
 			_pressedAction = 0;
 		}
 
-		if (_aim is not { } aim)
-		{
-			return;
-		}
-
+		var aim = _aim;
 		_aim = null;
 		Observation? found = null;
 		for (var i = 0; i < targets.Count; i++)
 		{
-			if (targets[i].Target == aim.EnemyId)
+			if (aim != null && targets[i].Target == aim.EnemyId)
 			{
 				found = targets[i];
-				break;
+				continue;
 			}
+
+			// What the game answered for any other target is knowledge of its kind too, whether the rule chose the sleep
+			// or he pressed it himself: his own sleep on a Mimic came back fully resisted on 26.10.2026 and was lost,
+			// because only the rule's sleeps were read, and a second one followed 23 minutes later (A427).
+			if (!targets[i].Applied && (targets[i].StatusResisted || targets[i].Unaffected)
+				&& ECommons.DalamudServices.Svc.Objects.SearchById(targets[i].Target) is IBattleChara other)
+			{
+				LearnRefusal(other.GameObjectId, other.Name.TextValue, other.BaseId, targets[i]);
+			}
+		}
+
+		if (aim == null)
+		{
+			return;
 		}
 
 		if (found is not { } hit || (!hit.Applied && !hit.StatusResisted && !hit.Unaffected))
@@ -373,40 +408,7 @@ public static class SleepInterruptWatch
 
 		if (!hit.Applied)
 		{
-			// Resisted after earlier sleeps in this fight: the halving has run out, which says how many it takes, not
-			// that the kind cannot be slept.
-			var slept = _sleptThisFight.GetValueOrDefault(aim.EnemyId);
-			if (hit.StatusResisted && slept > 0)
-			{
-				_diminishedThisFight[aim.EnemyId] = 0;
-				lock (OtherConfiguration.SleepStoreGate)
-				{
-					OtherConfiguration.SleepDiminishing[aim.BaseId] = OtherConfiguration.SleepDiminishing.TryGetValue(aim.BaseId, out var known)
-						? Math.Min(known, slept)
-						: slept;
-				}
-
-				_ = OtherConfiguration.SaveSleepDiminishing();
-				DefenseTrace.Line($"sleep resisted by {aim.EnemyName} (kind {aim.BaseId}) after {slept} sleep(s) in this fight: worn down, "
-					+ "not tried on it again this fight; the limit is stored");
-				return;
-			}
-
-			if (hit.StatusResisted)
-			{
-				lock (OtherConfiguration.SleepStoreGate)
-				{
-					OtherConfiguration.SleepResistantKinds[aim.BaseId] =
-						OtherConfiguration.SleepResistantKinds.GetValueOrDefault(aim.BaseId) + 1;
-				}
-
-				_ = OtherConfiguration.SaveSleepResistantKinds();
-				DefenseTrace.Line($"sleep resisted by {aim.EnemyName} (kind {aim.BaseId}): immune, its kind is stored and not tried again");
-				return;
-			}
-
-			_unaffectedThisSession[aim.BaseId] = 0;
-			DefenseTrace.Line($"sleep did not reach {aim.EnemyName} (kind {aim.BaseId}): resisted or invulnerable at that moment, its kind is not tried again this session");
+			LearnRefusal(aim.EnemyId, aim.EnemyName, aim.BaseId, hit);
 			return;
 		}
 
@@ -421,6 +423,44 @@ public static class SleepInterruptWatch
 		var left = enemy.TotalCastTime - enemy.CurrentCastTime;
 		_watch = new Watch { Aim = aim, AppliedAt = now, ExpectedEnd = now.AddSeconds(left), LeftAtLanding = left };
 		DefenseTrace.Line($"sleep landed on {aim.EnemyName} while it cast {aim.ActionName} #{aim.ActionId}, {left:F1} s left (lag {Lag:F2} s)");
+	}
+
+	// A sleep that did not take on an enemy: resisted after earlier sleeps in this fight is the halving running out, which
+	// says how many it takes, not that the kind cannot be slept; resisted at the first is an immunity of the kind, stored;
+	// invulnerable says nothing about the kind outside that moment and holds for the session.
+	private static void LearnRefusal(ulong enemyId, string enemyName, uint baseId, Observation hit)
+	{
+		var slept = _sleptThisFight.GetValueOrDefault(enemyId);
+		if (hit.StatusResisted && slept > 0)
+		{
+			_diminishedThisFight[enemyId] = 0;
+			lock (OtherConfiguration.SleepStoreGate)
+			{
+				OtherConfiguration.SleepDiminishing[baseId] = OtherConfiguration.SleepDiminishing.TryGetValue(baseId, out var known)
+					? Math.Min(known, slept)
+					: slept;
+			}
+
+			_ = OtherConfiguration.SaveSleepDiminishing();
+			DefenseTrace.Line($"sleep resisted by {enemyName} (kind {baseId}) after {slept} sleep(s) in this fight: worn down, "
+				+ "not tried on it again this fight; the limit is stored");
+			return;
+		}
+
+		if (hit.StatusResisted)
+		{
+			lock (OtherConfiguration.SleepStoreGate)
+			{
+				OtherConfiguration.SleepResistantKinds[baseId] = OtherConfiguration.SleepResistantKinds.GetValueOrDefault(baseId) + 1;
+			}
+
+			_ = OtherConfiguration.SaveSleepResistantKinds();
+			DefenseTrace.Line($"sleep resisted by {enemyName} (kind {baseId}): immune, its kind is stored and not tried again");
+			return;
+		}
+
+		_unaffectedThisSession[baseId] = 0;
+		DefenseTrace.Line($"sleep did not reach {enemyName} (kind {baseId}): resisted or invulnerable at that moment, its kind is not tried again this session");
 	}
 
 	/// <summary>

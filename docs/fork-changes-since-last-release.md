@@ -180,3 +180,12 @@ With "Use Six-sided Star as the last weaponskill before the target dies or goes 
 uses Six-sided Star when only one more weaponskill lands: the target dies first by its time to kill while it is the last
 enemy in range, or the downtime BossModReborn's timeline predicts begins. A ready Fire's Reply or Wind's Reply still goes
 first. Six-sided Star no longer needs an open chakra, as in the game.
+
+## Healers and casters: sleep on every cast known to be stoppable
+
+With "Stop an enemy's cast with the job's stun or a sleep (experimental)" on, a healer or caster now also sleeps an
+enemy (the White Mage stuns it with Holy first) that casts anything the game marks interruptible - cones, rings and
+small areas included, which the melee interrupt leaves alone - and a cast on a single target, such as a debuff on you,
+that a sleep has stopped before. Area attacks on the party are still tried, so the rule goes on learning which of them a
+sleep stops. A cast too short to be reached by the sleep's own cast is left alone. An enemy that fully resists a sleep
+you cast yourself is now remembered as immune as well, so the rule does not spend a GCD on it again.
