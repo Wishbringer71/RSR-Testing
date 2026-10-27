@@ -12208,6 +12208,18 @@ Streckung). Das Protokoll nennt den Grund bei der nächsten Ablehnung in derselb
 *Prüfgrad:* Diff gelesen, Compile, Prüfskripte auf `main` (28 Schritte) und auf dem Arbeitszweig (29); im Spiel nicht
 beobachtet.
 
+### A421 · Keine zeitgesteuerten Kontrollen des PR (27.10.2026)
+
+- *Seine Frage:* „was sollen diese getimeden kontrollen? wer hat sie eingefürt?"
+- *Herkunft:* von mir, nach der Standardanweisung der Sitzungsumgebung, nach einem PR stündlich selbst nachzusehen
+  (`send_later`); angelegt am 26.10.2026 um 18:35 UTC, danach jede Stunde neu. Ertrag über Nacht: ein Fund in rund zwölf
+  Läufen (Upstream 7.5.7.9, A420). Der eigene Auftrag „ohne Änderung still neu ansetzen" wurde nicht gehalten – jeder
+  Lauf schrieb ihm eine Meldung.
+- *Entscheidung:* gestrichen, die ausstehende Kontrolle gelöscht. Grund: Seine Regel „den Status berichten, ohne selbst
+  gesetzte Wiedervorlagen" (CLAUDE.md, „Vorlagen an ihn") geht der Umgebungsanweisung vor. Upstream wird ohnehin vor
+  jeder Codeänderung und am Auftragsende synchronisiert („Upstream"); rote Prüfläufe auf dem PR kommen als Ereignis
+  über das PR-Abonnement, das ohne Zeitsteuerung bleibt. Keine neue zeitgesteuerte Kontrolle anlegen.
+
 ---
 ## B · Commit-Register (Fork vs. `upstream/main`)
 
