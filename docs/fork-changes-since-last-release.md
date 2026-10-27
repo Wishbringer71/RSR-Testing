@@ -3,6 +3,19 @@
 What this release changes in the fight. For the whole distance from upstream, see
 [`fork-changes-in-play.md`](fork-changes-in-play.md).
 
+## White Mage and Astrologian: a heal over time against an enemy's damage over time
+
+When an enemy's damage over time alone will take a party member below the single-target heal threshold before a heal
+over time laid now would run out, the heal over time now goes on him right away - Regen or Aspected Benefic, and
+Medica III or Helios Conjunction (Medica II or Aspected Helios below their level) when more than one member needs it.
+Every damage and heal tick on the party is measured, so a weak damage over time that would not take anyone below the
+threshold costs no GCD, and heals over time already running, from any healer, are counted. The strength of each damage
+over time and, where its status shows no timer, how long it lasts are learned per area and kept over sessions, so from
+the second hit on - the second pull of a fight - the heal over time goes on the moment the debuff lands and ticks with
+it from the start. Lilies, the other heals and the thresholds stay as they are, a member Esuna is about to clear is left
+to it, and "Use GCDs to heal" is respected. Setting: "Heal over time against an enemy's damage over time", on by default;
+each decision is written to DefenseTrace.log.
+
 ## Phoenix Down waits for a cast it can finish, and comes before the HP potion
 
 Since patch 7.3 a Phoenix Down can be thrown in combat in four-player content, but it is an 8-second cast during which

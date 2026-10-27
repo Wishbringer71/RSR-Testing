@@ -60,7 +60,7 @@ erben die Selbstkorrektur.
 | Wirksamkeitsmessung im Spiel | ersetzt durch die Selbstkorrektur der Vorausschau (`ScoreTtkForecast`); keine Ablesung als Aufgabe an ihn |
 | **Sonde der Flächenbewertung**: `DataCenter.AreaMitigationSkipped` nennt je Aktions-Id, wo die Bewertung eine Minderung verworfen hat (Listenverwaltung) | in Betrieb |
 | **Ein gegnerisches Wirken stoppen** (seine Vorgaben 18.10.2026, 23.10.2026 und 27.10.2026): Heiler und Magier stoppen das Wirken eines Gegners, der kein Boss ist – beim Weißmagier mit Sanctga, sonst mit Schlaf –, und speichern, was sie dabei lernen | umgesetzt (A329, A334, A427), experimentell, ab Werk an; Abschnitt „Ein gegnerisches Wirken stoppen" |
-| **Schaden über Zeit: HoT gegen DoT** (sein Vorschlag vom 27.10.2026): ein GCD-HoT, sobald der gemessene DoT das Mitglied bis zu seinem Ende unter die Schwelle drückt; Gruppen-HoT ab zwei solchen Mitgliedern | geprüft, nicht gebaut; B verworfen, die schmale Mischform H1 mit Lernen zur Entscheidung (A428–A431); Abschnitt „Schaden über Zeit: HoT gegen DoT" |
+| **Schaden über Zeit: HoT gegen DoT** (sein Vorschlag vom 27.10.2026): ein GCD-HoT, sobald der gemessene DoT das Mitglied bis zu seinem Ende unter die Schwelle drückt; Gruppen-HoT ab zwei solchen Mitgliedern | gebaut als H1 mit Lernen, Option ab Werk an, im Spiel nicht beobachtet (A428–A432); Abschnitt „Schaden über Zeit: HoT gegen DoT" |
 
 ## Die Antwort auf einen eingehenden Treffer
 
@@ -1080,8 +1080,9 @@ Lösungsvorschlag):
 - Hinweis: „dots sind selten durch esuna entfernbar, ausser evtl. gift". Geprüft am Spielblatt (Abschnitt „Mechanik",
   „Entfernbar").
 
-**Stand:** zweimal geprüft (A428–A431), nicht gebaut. Weg B in seiner ersten Form ist verworfen; empfohlen ist
-eine schmale Mischform mit Lernen (Abschnitt „Empfehlung"), zu seiner Entscheidung.
+**Stand:** gebaut als H1 mit Lernen, auf seinen Auftrag vom 27.10.2026 (A432; Abschnitt „Bauplan nach dem Loop über H1
+mit Lernen"), hinter der Option „Heal over time against an enemy's damage over time", ab Werk an. Kompiliert, im Spiel
+nicht beobachtet. Weg B in seiner ersten Form ist verworfen (A430).
 
 ### Mechanik
 
@@ -1395,6 +1396,65 @@ Spieler, nicht der HoT ohne jede Schwelle. Bestandteile:
    gegen den Stand von A430.
 
 Getrennt davon, ohne Entscheidungsbedarf: der Defekt der HoT-Listen (TODO).
+
+### Bauplan nach dem Loop über H1 mit Lernen
+
+Sein Auftrag (27.10.2026): „"h1 mit lernen" erneut im kritischen loop überprüfen, ob diese variante noch weiter
+optimiert werden kann. danach umsetzung, audit, codereview, fehlerbeseitigung". Der Loop hat H1 an diesen Stellen
+geändert (A432):
+
+- *Womit:* Bei einem drohenden Verlust durch einen DoT ist das Mittel ein HoT, nicht eine Lilie: Der Verlust liegt in
+  der Zukunft, eine direkte Heilung bei voller Gesundheit fiele ganz auf volle Gesundheit. Lilien bleiben bei der
+  heutigen Regel, für das, was jetzt fehlt. Punkt 5 der Empfehlung ist damit für den DoT-Pfad ersetzt.
+- *Stärke in Lebenspunkten:* gelernt wird der Betrag je Tick, nicht der Anteil an der maximalen HP – ein Tank verliert
+  denselben Betrag, aber einen kleineren Anteil; umgerechnet wird je Mitglied. Ein Tick von 0 (ganz vom Schild
+  geschluckt) lehrt nichts und ersetzt beim Messen nicht die gelernte Stärke. Gelernt wird der Höchstwert, wie in den
+  übrigen gelernten Tabellen: Ein teilweise geschluckter Tick, die Minderung eines Tanks oder ein von der Mechanik
+  verkürzter Status drückten ein Mittel unter das, was der DoT kann – und der gelernte Wert entscheidet gerade vor dem
+  ersten Tick (seine Regel: Sicherheit vor Schaden).
+- *Zuordnung:* verfolgt wird jede Instanz (Status und Quelle) – derselbe Status von zwei Gegnern sind zwei Instanzen in
+  einem Tick; gelernt wird nur, wenn genau eine auf dem Mitglied liegt, sonst gilt die gemessene Summe. Kommt zwischen
+  zwei Ticks eine hinzu, zählt ihre gelernte Stärke zum letzten Tick; ohne gelernte Stärke zählt sie ab ihrem ersten
+  Tick. Endet eine im Fenster früher, fällt ihr Anteil ab dann weg – im gemessenen Tick nach dem Verhältnis der
+  gelernten Stärken, weil die gelernten Werte Höchstwerte sind; fehlt einer, wird nichts abgezogen (sichere Seite).
+- *Bodenflächen:* Ein DoT-Tick einer Bodenfläche kommt getrennt, mit ihrem Status; er zählt nicht, weil er so lange
+  dauert, wie das Mitglied darin steht, nicht so lange wie ein Status.
+- *Ende:* feste Restzeit aus dem Status; ohne festes Ende (Restzeit 0 im Client) die gelernte Lebensdauer dieses Status
+  in diesem Gebiet; ohne sie kein HoT aus diesem Pfad. Gelernt wird sie, wenn der Status geht – vom ersten bis zum
+  letzten Update, das ihn sah –, nicht aber, wenn er erst spät gesehen wurde (Mitglied neu, Aufzeichnung mitten im
+  Kampf zurückgesetzt, eine Zeit ohne Ziele), sein Träger starb, das Gebiet wechselte oder der Kampf endete.
+- *Laufzeit des HoT* aus seinem Wirktext zur Laufzeit (`DefensiveValues.DurationOf`), die Ticks im Fenster auf dem Takt
+  des Mitglieds (`DotTicksBetween`) – keine feste Zahl.
+- *Abdeckung:* was im letzten Tick an HoTs auf dem Mitglied ankam (der zusammengefasste Tick aller Heiler und die
+  getrennt gemeldeten Bodeneffekte), solange alle laufenden HoTs noch laufen – endet der erste, gilt diese Größe nicht
+  mehr; wer so gedeckt ist, braucht keinen. Ein HoT, der noch nicht getickt hat, hält das Mitglied bis zu seinem
+  ersten Tick zurück, statt einen zweiten darauf zu legen.
+- *Esuna:* Steht Esuna an (`AutoStatus.Dispel`) und ist das Mitglied ihr Ziel, lässt dieser Pfad es aus – nur wenn
+  alle seine DoTs entfernbar sind.
+- *Von oben:* nur ein Mitglied, das jetzt über seiner Schwelle steht. Wer schon darunter ist, ist der Fall der
+  Heilschwellen; dorthin bringt ihn nicht mehr „der DoT allein", wie der Optionstext sagt.
+- *Schutzbedingungen der Einzelheilung:* dieselben Ausnahmen (Heilung wirkungslos, Halten für Living Dead) und die
+  niedrigere Schwelle unter einer Unverwundbarkeit wie bei der Einzelheilung, aus einem gemeinsamen Helfer
+  (`ObjectHelper.TryHealSingleThreshold`); der Hauptschalter der automatischen Heilung und die Heilsperre von M11S
+  gelten ebenso. Die Rotationseinstellung „Use GCDs to heal" gilt für beide Mittel.
+- *Angekündigte Treffer* rechnet dieser Pfad nicht: Die heutige Vorausheilung trägt sie schon, doppelt gezählt hieße
+  doppelt geheilt.
+- *Gruppe:* der Gruppen-HoT, wenn mehr als ein Bedürftiger in seinem Wirkbereich steht – ein Einzel-HoT deckt genau
+  einen, der Gruppen-HoT spart also ab dem zweiten einen GCD; gezählt, nicht gesetzt.
+- *Platz in der GCD-Folge:* nach Notheilung, Abwehr und Wiederbelebung, vor den Schadens-GCDs, nicht unter
+  „Stop acting"; eigene Zielart (`TargetType.HotAgainstDot`, am Ende der Aufzählung, damit abgeleitete Rotationen ihre
+  Werte behalten).
+- *Stufe:* Entscheidung zentral für alle Heiler, Mittel je Job – Weißmagier Regen, Resega oder Medica II; Astrologe
+  Aspected Benefic, Helios Conjunction oder Aspected Helios. Gelehrter und Weiser haben keinen GCD-HoT; ihre
+  oGCD-HoTs kosten keinen Schaden und bleiben bei der heutigen Regel.
+- *Erkennung und Entscheidung getrennt:* `DotOnParty` sagt, wie tief der DoT jedes Mitglied im Fenster drückt; Schwelle,
+  Ausnahmen, Esuna und Reichweite entscheidet die Rotation (`CustomRotation.TryHotAgainstDot`).
+- *Selbstnachsteuerung:* Jeder Tick misst neu und hebt die Tabelle, wo er höher liegt; der gelernte Wert gilt nur, bis
+  der erste Tick gemessen ist.
+- *Messmittel:* eine Zeile in `DefenseTrace.log` je Entscheidung (Job statt Name, Tick, Herkunft, Restticks,
+  vorausgesagter Tiefpunkt), die Größe der Tabelle in der Kopfzeile; `act_heal_need.py` auf seine Mitschnitte.
+- *Option* „Heal over time against an enemy's damage over time", ab Werk an; die gelernte Tabelle in einer eigenen
+  Datei, gespeichert wie die übrigen, ohne Knopf zum Löschen.
 
 ## Ein gegnerisches Wirken stoppen
 
@@ -2122,7 +2182,7 @@ sind erfasst statt bearbeitet.
 Zweite, unabhängig belegte Fundstelle: Im Schadenszweig steht der Sanctus-Block
 **vor** dem DoT-Block. Sobald `AoeCount = 3` erfüllt ist, greift Sanctus und der DoT
 wird nie gesetzt — bei einem Boss mit zwei Adds läuft also nie Dia. Dass das nicht
-gewollt ist, zeigt der DoT selbst: `ModifyDiaPvE` (`WhiteMageRotation.cs:365-383`)
+gewollt ist, zeigt der DoT selbst: `ModifyDiaPvE` (`WhiteMageRotation.cs:374-392`)
 setzt `TargetStatusProvide` gegen Nachlegen und `IsRestrictedDOT` gegen ungeeignete
 Ziele, seit Upstream 3c6ce9ee2 dazu die Potenzen für den DoT-Planer — alle Vorkehrungen
 laufen bei AoE ins Leere, weil der Zweig nicht erreicht wird. Seit A231 fällt der GCD nach einem Sanctus auf den fälligen DoT (Abschnitt „Die Regel“).

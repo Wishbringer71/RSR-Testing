@@ -23,6 +23,17 @@ are not reconstructed here.
 
 ## Unreleased
 
+### Addition to RotationSolver.Basic: a heal over time against an enemy's damage over time
+
+New in the GCD order, after every heal, defence and raise and ahead of the damage GCDs: `CustomRotation.HotAgainstDotByJob`
+(protected virtual, false by default), overridden by `WhiteMageRotation` and `AstrologianRotation` through the protected
+helper `CustomRotation.TryHotAgainstDot(single, group, out act)`. A rotation derived from either now lays Regen or Aspected
+Benefic, and Medica III, Medica II, Helios Conjunction or Aspected Helios, where an enemy's damage over time alone takes
+a member below `HealthSingleSpell` from above it, under the new setting `Configs.HotAgainstDot` (on by default) and the
+rotation's own `CanHealSingleSpell` and `CanHealAreaSpell`; override `HotAgainstDotByJob` to change or stop it.
+`TargetType` gains `HotAgainstDot`, appended after `TankSwap`, so every existing value keeps its number. The learned
+figures are kept in `DotOnParty.json` beside the other learned tables.
+
 ### Behaviour change in RotationSolver.Basic: a sleep stops every cast known to be stoppable
 
 `SleepInterruptWatch.IsCastWorthStopping` now takes any cast the game marks interruptible (`IsCastInterruptible`),

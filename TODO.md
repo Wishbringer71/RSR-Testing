@@ -38,9 +38,9 @@ Läuft die Regeneration aus Kerachole (Weiser) oder Celestial Opposition (Astrol
 Selbstheilung auf einem Tank (etwa Aurora), heilen RSRs Heiler, als liefe nichts: Die Schwellen sinken nicht, und eine
 GCD-Heilung fällt, wo die Regeneration getragen hätte. Die Liste soll nach ihrem eigenen Kommentar jeden laufenden
 Gruppen-HoT tragen. *Ort:* `StatusHelper.AreaHots`, `SingleHots`; Leser `StateUpdater.GetHealingOfTimeRatio`,
-`SelfHealingOfTimeRatio`, `ActionTargetInfo`. *Nächster Schritt:* Loop zur Erkennung am Spielblatt (84 Status mit
-„Regenerating HP over time", die Bodeneffekte mit eigenem Wirktext), die Listen als Rückfall; Gruppe oder Einzelziel
-nach dem Wirkbereich der gewährenden Aktion. *Konzept:* 08 („Was RSR heute tut" im Abschnitt „Schaden über Zeit").
+`SelfHealingOfTimeRatio`, `ActionTargetInfo`. *Nächster Schritt:* Loop zur Erkennung am Spielblatt – seit A432 da als
+`StatusHelper.IsHealOverTime` (84 Status mit „Regenerating HP over time"; die Bodeneffekte mit eigenem Wirktext) –, die
+Listen als Rückfall; Gruppe oder Einzelziel nach dem Wirkbereich der gewährenden Aktion. *Konzept:* 08 („Was RSR heute tut" im Abschnitt „Schaden über Zeit").
 
 ## Offene Arbeit
 

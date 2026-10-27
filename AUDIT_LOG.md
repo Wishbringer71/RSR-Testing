@@ -12523,6 +12523,43 @@ beobachtet.
 - *Empfehlung an ihn:* H1 mit Lernen hinter einer Option, ab Werk an. Nicht gebaut.
 - *Prüfgrad:* Spielblatt, Modul-Quelltexte, Wiki, Modell; kein Code.
 
+### A432 · HoT gegen DoT: H1 mit Lernen im Loop geschärft, gebaut, dreimal im Code-Review (27.10.2026)
+
+- *Sein Auftrag:* „"h1 mit lernen" erneut im kritischen loop überprüfen, ob diese variante noch weiter optimiert werden
+  kann. danach umsetzung, audit, codereview, fehlerbeseitigung".
+- *Loop (Optimierungen):* Mittel gegen einen künftigen Verlust ist der HoT, keine Lilie; Stärke als HP je Tick, nicht als
+  Anteil; Lernen nur bei genau einer Instanz; Ende aus dem Status oder gelernter Lebensdauer, sonst kein HoT aus diesem
+  Pfad; HoT-Laufzeit aus dem Wirktext (`DefensiveValues.DurationOf`), Ticks auf dem Takt des Mitglieds; laufende HoTs
+  aller Heiler gemessen; Esuna-Ziel ausgenommen; angekündigte Treffer nicht doppelt; Gruppen-HoT ab dem zweiten
+  Bedürftigen (gezählt); Platz in der GCD-Folge nach Notheilung, Abwehr, Wiederbelebung; Stufe „Heiler", Mittel je Job.
+  Konzept 08, „Bauplan nach dem Loop über H1 mit Lernen".
+- *Bau:* `DotOnParty` (Messung, Lernen, Vorausschau), `DotReading`/`DotArea` und `OtherConfiguration.DotOnParty`
+  (`DotOnParty.json`, gespeichert wie die übrigen gelernten Tabellen), `Watcher` liest die Beträge von 0x605 und 0x604,
+  `TargetUpdater` ruft die Verfolgung je Update, `TargetType.HotAgainstDot` am Ende der Aufzählung,
+  `CustomRotation.HotAgainstDot`/`HotAgainstDotByJob`/`TryHotAgainstDot` mit der Entscheidung, Weißmagier und Astrologe
+  mit ihren GCD-HoTs, Option „Heal over time against an enemy's damage over time" ab Werk an, `StatusHelper.IsHealOverTime`
+  am Wirktext, `ObjectHelper.TryHealSingleThreshold` für die Ausnahmen und die geschützte Schwelle, jetzt von
+  Einzel-, Selbst- und DoT-Heilung geteilt. Fester Wert 0x604 (Kategorie des HoT-Ticks): Protokollwert, in keinem
+  Blatt; belegt an DeathRecap (A429), Ausnahme in `fixed_values.json`.
+- *Code-Review, drei Runden:* 10, 9 und 9 Befunde, verifiziert und behoben bis auf einen gewollten (ein neuer DoT ohne
+  gelernte Stärke zählt ab seinem ersten Tick). Darunter: Zeilenenden der Weißmagier-Basis von CRLF auf LF umgestellt
+  (zurückgestellt); fehlende Ausnahmen der Einzelheilung (Living Dead, Heilung wirkungslos, geschützte Schwelle);
+  Esuna-Ausnahme zu breit; Lebensdauer nach einem Rücksetzen oder einer Lücke ohne Ziele zu kurz bzw. zu lang gelernt;
+  ein stärkerer DoT zwischen zwei Ticks übersehen; derselbe Status von zwei Gegnern als einer gelernt; Mittel statt
+  Höchstwert (jetzt Höchstwert, Sicherheit vor Schaden); Trace bei jeder Prüfung statt je Entscheidung; Hauptschalter
+  der automatischen Heilung und Heilsperre missachtet; Erkennung und Entscheidung vermischt (jetzt getrennt); HoT-Summe
+  bis zum längsten statt kürzesten HoT; Bodenflächen-Ticks überschrieben den zusammengefassten Tick; ein DoT, der im
+  Fenster endet, nicht abgezogen bzw. mit seinem Höchstwert zu stark abgezogen (jetzt anteilig); ein Mitglied schon
+  unter der Schwelle als Fall dieses Pfads gezählt; Optionstext ohne Medica II und Aspected Helios. Nach drei Runden
+  beendet (REGEL, höchstens drei Iterationen je Stufe).
+- *Restrisiken mit Preis:* Die Felder von 0x605/0x604 sind an DeathRecap belegt, in RSR zur Laufzeit nicht gemessen; der
+  Hook läuft nach Annahme auf dem Spiel-Thread wie die Verfolgung; ein gelernter Höchstwert überschätzt, wo ein Mitglied
+  verwundbar war – Preis höchstens ein HoT vor dem ersten Tick; ein HoT, der noch nicht getickt hat, hält das Mitglied
+  bis zu seinem ersten Tick zurück.
+- *Messmittel:* eine Zeile je Entscheidung in `DefenseTrace.log` (Job statt Name, Tick und Herkunft, Ticks im Fenster,
+  HoTs auf ihm, Tiefpunkt, Schwelle), Größe der Tabelle in der Kopfzeile; `act_heal_need.py` auf seine Mitschnitte.
+- *Prüfgrad:* kompiliert ohne Warnung und Fehler, alle CI-Schritte lokal grün; im Spiel nicht beobachtet.
+
 ---
 ## B · Commit-Register (Fork vs. `upstream/main`)
 
