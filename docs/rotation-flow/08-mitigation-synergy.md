@@ -60,7 +60,7 @@ erben die Selbstkorrektur.
 | Wirksamkeitsmessung im Spiel | ersetzt durch die Selbstkorrektur der Vorausschau (`ScoreTtkForecast`); keine Ablesung als Aufgabe an ihn |
 | **Sonde der Flächenbewertung**: `DataCenter.AreaMitigationSkipped` nennt je Aktions-Id, wo die Bewertung eine Minderung verworfen hat (Listenverwaltung) | in Betrieb |
 | **Ein gegnerisches Wirken stoppen** (seine Vorgaben 18.10.2026, 23.10.2026 und 27.10.2026): Heiler und Magier stoppen das Wirken eines Gegners, der kein Boss ist – beim Weißmagier mit Sanctga, sonst mit Schlaf –, und speichern, was sie dabei lernen | umgesetzt (A329, A334, A427), experimentell, ab Werk an; Abschnitt „Ein gegnerisches Wirken stoppen" |
-| **Schaden über Zeit: HoT gegen DoT** (sein Vorschlag vom 27.10.2026): ein HoT nur, wo seine Ticks auf fehlende Gesundheit landen; Gruppen-HoTs nach derselben Frage | geprüft, nicht gebaut, zur Entscheidung (A428); Abschnitt „Schaden über Zeit: HoT gegen DoT" |
+| **Schaden über Zeit: HoT gegen DoT** (sein Vorschlag vom 27.10.2026): ein HoT nur, wo seine Ticks auf fehlende Gesundheit landen; Gruppen-HoTs nach derselben Frage | geprüft, nicht gebaut, zur Entscheidung (A428, A429); Abschnitt „Schaden über Zeit: HoT gegen DoT" |
 
 ## Die Antwort auf einen eingehenden Treffer
 
@@ -1064,6 +1064,11 @@ Lösungsvorschlag):
 - Ergänzung: „und es gibt gruppendots wo man das mit gruppen heals over time gegenwirken könnte. auch hier die frage:
   ab wieviel personen und welchen potential?"
 - Hinweis: „es gibt stärkere dots, meist bei savage raids."
+- Sein Vorschlag zur Schwelle: „wenn man die gruppendot schwelle auf mehr als 4 spieler legt. ist der cast seltener."
+  Dazu seine Frage: „weiterhin kann man beim ersten tick den schadensverlust des dots feststellen bei den
+  gruppenmitgliedern?"
+- Seine Frage zur Schwelle: „was wäre, wenn der hot in dem fall nicht an eine mindestschwelle vorhandener hp gebunden
+  wäre? besser oder schlechter?"
 
 **Stand:** geprüft, nicht gebaut. Die Empfehlung steht am Ende dieses Abschnitts zu seiner Entscheidung.
 
@@ -1079,10 +1084,24 @@ Lösungsvorschlag):
 - *HoT-Potenzen* (Job-Guide, 27.10.2026): Regen 250 je Tick für 18 s, 400 MP; Resega (Medica III) 250 sofort und 175
   je Tick für 15 s, 1000 MP; Medica II 250 und 150 je Tick für 15 s; Refugium (Asylum) 100 je Tick für 24 s; zum
   Vergleich Cure II 800 (1000 MP), Cure III 600 je Getroffenem, Medica 400, Afflatus laetitiae 400.
-- *Potenz in Lebenspunkten:* hängt an den Werten des Heilers. Der Effekt-Handler sieht die Beträge der eigenen
-  direkten Heilungen (`FullAmount`), die Ticks kommen über ein ActorControl-Ereignis, das der Hook im `Watcher`
-  empfängt, aber bisher nur für den Takt gegnerischer DoTs (0x605) liest. Kategorie und Felder des Tickbetrags sind vor
-  einem Bau am Quelltext zu belegen; unbelegt.
+- *Tickbetrag je Mitglied – seine Frage nach dem ersten Tick:* Ja. Das Plugin DeathRecap hängt sich mit derselben
+  Signatur wie RSRs `Watcher` in die Verarbeitung von ActorControl und liest auf Spielern Kategorie 0x605 als DoT-Tick,
+  Betrag im zweiten Parameter, und 0x604 als HoT-Tick, Betrag im zweiten, Status-Id im ersten, wo sie nicht 0 ist,
+  kritisch im vierten (Werkzeugquelle, Stand 02.05.2026). RSR empfängt 0x605 schon, liest aber nur den Zeitpunkt
+  (`DotTickTracker`); das Ereignis kommt für jedes Ziel mit DoT, auch für Gruppenmitglieder – seine Mitschnitte zeigen
+  DoT-Ticks auf drei Spielern. Der erste Tick fällt 0–3 s nach dem Auflegen, auf dem Takt des Mitglieds, und nennt
+  seinen Verlust in Lebenspunkten, also auch als Anteil seiner maximalen HP. Wer einen DoT trägt und wie lange, zeigt
+  der Status schon beim Auflegen. *Grenzen:* Der Betrag ist die Summe aller DoTs auf dem Mitglied, nicht je Status –
+  für die Heilung zählt ohnehin die Summe; jeder weitere Tick misst neu, ein wachsender DoT wird also nachgeführt. Ob
+  ein Schild den Tick schluckt und ob der Betrag davor oder danach steht, ist unbelegt. BossMod führt mit 23 eine
+  Kategorienummer des alten Dissectors; 0x605 lesen RSRs Upstream (für den Takt, seit 24.10.2026) und DeathRecap
+  übereinstimmend. Zur Laufzeit gemessen ist der Betrag nicht. *Vor dem ersten Tick* ist die Stärke unbekannt: Ein
+  Status trägt keine Potenz (Blatt `Status`), die Stärke setzt der Inhalt. Eine je Status gelernte Stärke brächte
+  höchstens einen Tick früher und läge falsch, wo derselbe allgemeine Status anderswo anders stark ist (Schluss) –
+  nicht vorgesehen.
+- *Eigener HoT in Lebenspunkten:* hängt an den Werten des Heilers. Die HoT-Ticks (0x604) fassen alle Heiler auf dem
+  Mitglied zusammen; den eigenen Anteil gibt die gemessene Heilung je Potenz der eigenen direkten Heilungen
+  (`FullAmount` im Effekt-Handler).
 
 ### Was seine Mitschnitte zeigen
 
@@ -1149,6 +1168,65 @@ ab zwei Betroffenen, die Heilung brauchen, je GCD; je MP später, weil Regen nur
 Gut (er kostet Schaden), MP füllt Klartraum nach – deshalb je GCD, MP bei Gleichstand. Gezählt werden nur Mitglieder,
 die nach Frage 1 Heilung brauchen; wer voll ist, zählt nichts.
 
+**Sein Vorschlag, die Schwelle über vier Spieler zu legen** (27.10.2026, geprüft, nicht übernommen): Seltener wird der
+Gruppen-HoT damit, ja. Was an seine Stelle tritt, rechnet das Modell für eine ganze Gruppe mit einem Heiler allein
+(Resega ab *k* Mitgliedern, die nach Frage 1 Heilung brauchen und noch kein Resega tragen, sonst Regen auf das
+niedrigste, Cure II, wenn alle eins tragen oder eins bei 30 % steht); „ab 3" liegt nahe an heute, das die
+Gruppenheilung ab drei Mitgliedern unter der Einzelschwelle nimmt (`StateUpdater`, `singleSpellCount > 2`):
+
+| Lage | ab 2 | ab 3 | ab 5 (sein Vorschlag) |
+|---|---|---|---|
+| Achtergruppe, DoT in Stärke eines Regen-Ticks 18 s auf 4, 25 % Rückstand | 1 GCD, Tiefpunkt 70 % | 1 GCD, 70 % | 6 GCDs, 3600 MP, 61 % |
+| Achtergruppe, Raidwide und derselbe DoT auf allen | 1 GCD, 70 % | 1 GCD, 70 % | 1 GCD, 70 % |
+| Vierergruppe, Raidwide und derselbe DoT auf allen | 1 GCD, 70 % | 1 GCD, 70 % | 6 GCDs, 3600 MP, 61 % |
+| Vierergruppe, derselbe DoT auf 3 | 1 GCD, 70 % | 1 GCD, 70 % | 4 GCDs, 2200 MP, 65 % |
+| Achtergruppe, starker DoT 6 % je Tick 30 s auf 2, 20 % Rückstand | 5 GCDs, 67 % | 8 GCDs, 65 % | 8 GCDs, 65 % |
+| Achtergruppe, schwacher DoT 0,6 % je Tick 5 min auf 4 | 2 GCDs, 68 % | 2 GCDs, 68 % | 8 GCDs, 66 % |
+| Achtergruppe, starker DoT auf allen | 12 GCDs, 48 % | 12 GCDs, 48 % | 12 GCDs, 48 % |
+
+- *Was die Schwelle über vier spart:* Überheilung. Die fällt bei einem Gruppen-HoT auf die Mitglieder ohne DoT (50 %,
+  wenn vier von acht ihn tragen) – und kostet nichts, weil derselbe eine GCD sie mitbringt.
+- *Was sie kostet:* Wo zwei bis vier Mitglieder Heilung brauchen, treten Einzelheilungen an die Stelle des einen
+  Gruppen-HoT – bis fünf GCDs mehr, also fünf Schadenszauber weniger, mehr MP und ein Tiefpunkt bis 9 Punkte tiefer.
+  In der Vierergruppe (Dungeons, Pilgerpfad) fiele der Gruppen-HoT gegen DoTs ganz weg.
+- *Wo sie nichts ändert:* Nach einem Raidwide brauchen alle Heilung, jede Schwelle ist erreicht. Dort entsteht aber das
+  gemessene Überheilen (Zoraal Ja): ein Gruppen-HoT, der nach dem Auffüllen auf eine volle Gruppe tickt. Das verhindert
+  Frage 1, die nur zählt, wer innerhalb der Laufzeit unter die Schwelle fiele – nicht die Zahl.
+- *Mit zweitem Heiler* (Achtergruppe): Die Vorausschau liest die HoT-Ticks aller Heiler auf jedem Mitglied (0x604);
+  wen der andere schon abdeckt, der zählt nicht. Legt der andere seinen HoT im selben Augenblick, ist er noch nicht zu
+  sehen – ein doppelter Gruppen-HoT bleibt möglich, Preis ein GCD.
+
+Überheilung ist also nicht das Maß: Sie kostet nur, wo sie einen GCD oder knappes MP kostet. Das Maß sind die GCDs, die
+der Heilung statt dem Schaden gehören, und der Tiefpunkt der Gruppe.
+
+**Seine Frage, den HoT an keine HP-Schwelle zu binden** (27.10.2026): Das Modell legt dazu den HoT auf jeden DoT-Träger,
+der noch keinen trägt, auch wo Frage 1 „nicht heilen" sagt; sonst wie B.
+
+| Lage | B (mit Schwelle) | ohne Schwelle |
+|---|---|---|
+| Ein Mitglied, schwacher DoT 0,6 % je Tick 5 min (sein Pilgerpfad) | 2 GCDs, Tiefpunkt 68 % | 17 GCDs, 82 % Überheilung, Tiefpunkt 99 % |
+| Ein Mitglied voll, DoT in Stärke eines Regen-Ticks 18 s (sein Idealfall) | kein GCD, endet bei 80 % | 1 GCD, endet bei 100 % |
+| Dasselbe mit 20 % Rückstand | 1 GCD, 77 % | gleich |
+| Ein Mitglied, starker DoT 6 % je Tick 30 s | 2 GCDs, Tiefpunkt 71 % | 3 GCDs, Tiefpunkt 82 % |
+| Tank, DoT 3 % und Auto-Angriffe 2 % je Tick | 3 GCDs, 75 % | 2 GCDs, 71 % |
+| Gruppe nach einem Raidwide mit DoT auf allen (acht oder vier) | 1 GCD | gleich |
+| Achtergruppe, starker DoT auf 2 | 5 GCDs, 67 % | 7 GCDs, 70 % |
+| Achtergruppe, schwacher DoT auf 4 über 5 min | 2 GCDs | 20 GCDs, 90 % Überheilung |
+
+- *Schlechter* überall, wo der DoT schwach oder mittel ist und nichts folgt: In seinem Pilgerpfad wären es 15 GCDs mehr
+  in fünf Minuten, also 15 Schadenszauber weniger, für Lebenspunkte, die niemand braucht.
+- *Besser* nur als Puffer gegen Schaden, der folgt: Wer bei einem starken DoT dauerhaft unter einem HoT steht, liegt
+  rund zehn Punkte höher, wenn der nächste Treffer kommt; Preis ein GCD je HoT-Laufzeit.
+- *Gleich* nach einem Raidwide, weil dort B den HoT ohnehin legt.
+- *Wo der Puffer hingehört:* Den Treffer, der folgt, liest Frage 1 schon mit – angekündigte Treffer aus BossMod, ohne
+  Modul erst am Wirkbalken des Gegners. Ist einer angekündigt, legt B den HoT auch bei voller Gesundheit; ist keiner
+  angekündigt, spart B den GCD. Ohne Schwelle zahlt der Heiler den Puffer auch dann, wenn nichts kommt.
+- *Lesart der unteren Schwelle* (Regen nur über `RegenHeal`, 30 %): Ohne sie bekäme ein Mitglied bei 25 % unter einem
+  DoT von 6 % je Tick Regen (3,4 % je Tick) statt Cure II (10,9 % sofort) und fiele weiter. Diese Schwelle bleibt.
+
+Ergebnis: mit Schwelle besser. Ohne Schwelle lohnt der HoT nur dort, wo ein weiterer Treffer wahrscheinlich ist, und
+genau das misst Frage 1 an den angekündigten Treffern.
+
 ### Die Wege und was sie im Kampf ändern
 
 | Option | Im Kampf besser | Im Kampf schlechter |
@@ -1167,10 +1245,10 @@ Gewinn von B liegt beim Einzelziel in der Sicherheit, beim Gruppen-HoT im Vermei
 
 - *Kein Defekt?* Beim Einzelziel hält die heutige Schwelle das Überheilen niedrig (Modell). Das Überheilen ist messbar
   (73 %), aber bei Gruppen-HoTs; der Teil seines Vorschlags, der dort ansetzt, trägt.
-- *Option falsch?* B hängt an zwei Messungen: dem DoT-Tick (Ereignis noch zu belegen; ersatzweise die Stufen des
-  Gesundheitsverlaufs zu Tickzeiten) und dem eigenen HoT-Tick (neben fremden HoTs nicht trennbar; ersatzweise die
-  gemessene Heilung je Potenz aus den eigenen direkten Heilungen). Fehlt beides, fällt B auf heute zurück, nicht
-  darunter.
+- *Option falsch?* B hängt an zwei Messungen: dem DoT-Tick (0x605, am Quelltext von DeathRecap belegt, zur Laufzeit
+  nicht gemessen; ersatzweise die Stufen des Gesundheitsverlaufs zu Tickzeiten) und dem eigenen HoT-Tick (in 0x604
+  neben fremden HoTs nicht trennbar; ersatzweise die gemessene Heilung je Potenz aus den eigenen direkten Heilungen).
+  Fehlt beides, fällt B auf heute zurück, nicht darunter.
 - *Ausgeliefert, nichts ändert sich – warum?* In seinem gemessenen Inhalt sind die DoTs schwach; B sagt dort „nicht
   heilen" wie heute. Sichtbar wird B bei Gruppen-HoTs nach Raidwides (weniger Resega und Refugium auf volle Gruppen,
   mehr Schaden) und in Savage bei starken DoTs (der HoT früher). Ein Mitschnitt aus Savage fehlt.
@@ -1178,8 +1256,8 @@ Gewinn von B liegt beim Einzelziel in der Sicherheit, beim Gruppen-HoT im Vermei
 ### Empfehlung
 
 B, einzeln und für Gruppen, hinter einer Option (Nutzen nur am Modell belegt), ab Werk an nach seiner Regel; C nicht.
-Vor dem Bau: das Tick-Ereignis am Quelltext belegen, die Messung der eigenen HoT-Ticks und der DoT-Ticks je Mitglied
-bauen, und die Gruppen-HoTs aller Heiler (Resega, Refugium, Whispering Dawn, Physis II, Kerachole, Aspected Helios,
+Gruppen-HoT ab zwei Mitgliedern, die Heilung brauchen, nicht erst über vier (sein Vorschlag, geprüft). Vor dem Bau:
+am vorhandenen Hook die Beträge der DoT-Ticks (0x605) und der HoT-Ticks (0x604) je Mitglied lesen, und die Gruppen-HoTs aller Heiler (Resega, Refugium, Whispering Dawn, Physis II, Kerachole, Aspected Helios,
 Celestial Opposition) an dieselbe Frage hängen – universell zuerst. Messmittel im Kampf: eine Zeile je HoT-Entscheidung
 mit *d*, *h*, *m* und der vorausgesagten Landung, gegen die tatsächlich gelandeten Ticks; die Abweichung steuert die
 Vorhersage nach wie `GetCorrectedTTK`.

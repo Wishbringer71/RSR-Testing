@@ -12448,6 +12448,29 @@ beobachtet.
   Messung der Ticks bauen. Nicht gebaut.
 - *Prüfgrad:* Modell und Messung am Mitschnitt; kein Code.
 
+### A429 · HoT gegen DoT: Tickbetrag je Mitglied belegt, Schwelle über vier und HoT ohne Schwelle geprüft (27.10.2026)
+
+- *Seine Angaben:* Vorschlag, die Gruppen-DoT-Schwelle über vier Spieler zu legen; Frage, ob der Verlust beim ersten
+  Tick je Gruppenmitglied feststellbar ist; Frage, ob ein HoT ohne HP-Schwelle besser wäre. Wörtlich in Konzept 08,
+  „Schaden über Zeit: HoT gegen DoT".
+- *Tickbetrag:* DeathRecap (Werkzeugquelle, Stand 02.05.2026) hängt sich mit derselben Signatur wie RSRs `Watcher` in
+  ActorControl und liest 0x605 als DoT-Tick und 0x604 als HoT-Tick, Betrag jeweils im zweiten Parameter; RSR liest
+  0x605 bisher nur als Zeitpunkt. Der Server-Emulator Sapphire summiert die Ticks ebenso je Ziel; BossMod führt die
+  Dissector-Nummer 23. Damit ist die offene Voraussetzung aus A428 am Quelltext belegt, zur Laufzeit nicht gemessen.
+- *Schwelle über vier:* `dot_hot_model.py` um eine ganze Gruppe mit einem Heiler erweitert. Ab fünf statt ab zwei:
+  dort, wo zwei bis vier Mitglieder Heilung brauchen, bis fünf GCDs mehr und ein Tiefpunkt bis 9 Punkte tiefer; in der
+  Vierergruppe kein Gruppen-HoT mehr; nach einem Raidwide gleich. Gespart wird Überheilung auf Mitgliedern ohne DoT,
+  die keinen GCD kostet. Nicht übernommen. Heute nimmt RSR die Gruppenheilung ab drei Mitgliedern unter der
+  Einzelschwelle (`StateUpdater`).
+- *HoT ohne Schwelle:* im Modell schlechter bei schwachen und mittleren DoTs (Pilgerpfad: 17 statt 2 GCDs in fünf
+  Minuten), besser nur als Puffer bei starken DoTs (Tiefpunkt 82 statt 71 %, ein GCD mehr), gleich nach Raidwides. Den
+  Puffer trägt Frage 1 über angekündigte Treffer. Die untere Schwelle (`RegenHeal`) bleibt: Darunter holt Regen ein
+  Mitglied gegen einen starken DoT nicht zurück.
+- *Modell:* Beim ersten Lauf legte die Regel ohne Schwelle auch auf Mitglieder unter Resega einen HoT und verdrängte Cure
+  II; das hätte sie um ein Vielfaches schlechter dargestellt. Korrigiert, bevor ein Ergebnis ins Konzept ging. Selbsttest
+  jetzt 17 Invarianten.
+- *Prüfgrad:* Werkzeugquelltexte und Modell; kein Code, nicht gebaut.
+
 ---
 ## B · Commit-Register (Fork vs. `upstream/main`)
 
