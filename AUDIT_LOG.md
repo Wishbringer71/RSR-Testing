@@ -12380,6 +12380,54 @@ beobachtet.
 - *Prüfgrad:* Self-Test; im Betrieb belegt: Der Stop-Hook lief am Zugende um 15:02:56 UTC und vermerkte
   `continuation=False background=0 findings=0`.
 
+### A427 · Upload vom 27.10.2026: Pilgerpfad als Beschwörer; Schlaf auf jedes bekannt unterbrechbare Wirken (27.10.2026)
+
+- *Sein Upload:* der Konfigurationsordner (`DefenseTrace.log`, gelernte Tabellen, Listenänderungen) und zwei
+  ACT-Mitschnitte vom 26.10.2026 (18:50–19:14, schon A419; 19:23–21:52 neu). Keine Frage dazu, allgemein ausgewertet.
+  Danach seine Vorgabe: „sleep auf alle als unterbrechbare aktionen ausweiten, nicht nur auf aoes. wenn die zeit reicht
+  und die aktion bekannt unterbrechbar ist, sleep versuchen, bei aoes weiter die unterbrechbarkeit testen und auswerten.
+  gerade beim debuff des mimiks wäre sie sinnvoll, falls sie durchgeht." Sein Hinweis: „ich habe schlaf auf mimik
+  selbst gecasted. wahrscheinlich zu spät oder slbst unterbrochen".
+- *Der neue Abschnitt:* Beschwörer auf Stufe 100 (kurz Weißmagier), Pilgerpfad Ebenen 71–90 zu zweit und zu dritt.
+  Vier eigene Tode:
+  - 19:53 „Negra" (#44775, 4,7 s, um den Wirker): 685.140 bei 162.345 maximalen HP;
+  - 20:44 „Orogener Sturm" (#44762, 3,7 s, Fläche): 706.492 bei 181.747;
+  - 21:15 „Heißes Herz" (#43322, 4,7 s, auf ihn): 23.350, dann Pyretisch (#960) mit rund 1,03 Mio. im selben
+    Augenblick, weil RSR 0,8 s vor der Landung Wirbelströmung (3 s) begonnen hatte; dasselbe Wirken tötete um 21:09 ein
+    Mitglied;
+  - 21:35 Malacoda, „Meteorit" zweimal (111.189 und 186.563) bei 168.485; Schimmerschild stand.
+  Drei sind Ausweichmechaniken, die keine Minderung überlebt. Der vierte geht ins TODO („Pyretisch trifft mitten in
+  einen eigenen Zauber").
+- *`DefenseTrace.log`:* zwei Sitzungen (19:23:55, 19:29:24, Build `e08c209a0`) blieben nach der Kopfzeile leer, über
+  2,5 Stunden mit Gebietswechseln – der Fehler aus A418 auf dem Build vor seiner Behebung. Die Kopfzeile zeigt alle
+  gelernten Tabellen geladen.
+- *Gelernte Tabellen:* Flächen (225), Serien (8) und Schlaf (8 Aktionen, 8 Arten, keine Grenze) unverändert. Die
+  Flächentabelle lernt nur gelistete Wirken und keine, die vom vollen Leben tötet (A298); die schweren Treffer des Abends
+  waren Tötungen. `SouthHornWeaknessRecords.json` ist neu (13 Arten, aus einer Sitzung im Occult Crescent ohne
+  Mitschnitt).
+- *Schlaf und Mimik:* Sein eigener Schlaf auf einen Mimik kam als „Status voll widerstanden" (Effektart 55) zurück und
+  landete 1,3 s nach dem Ende von Boshaftigkeit (#44852, 2,7 s, legt Verwünschung #1087 für 600 s). Gespeichert wurde
+  nichts, weil die Regel nur aus den Schlafen lernte, die sie selbst gewählt hatte; 23 Minuten später folgte ein zweiter
+  Versuch. Für einen Schlaf ist Boshaftigkeit zu kurz: 2,36 s Wirkzeit, dazu Laufzeit und gelernter Rest (0,47 s), rund
+  3,0 s. Seine Annahme „falls sie durchgeht": Sie geht nicht durch, der Mimik ist immun.
+- *Umgesetzt:*
+  - `SleepInterruptWatch.IsCastWorthStopping` nimmt jedes Wirken mit `IsCastInterruptible` – ohne die Grenzen von
+    `ObjectHelper.CanInterrupt` (2 s, Kegel, Ring, Fläche unter 8 y) und ohne dessen Einstellung „Interrupt enemy
+    casts", die Magier nicht sehen – und ein Wirken auf ein einzelnes Ziel, das ein Schlaf schon einmal abgebrochen hat;
+    Flächen auf die Gruppe wie bisher, die weiter getestet werden.
+  - Ein Widerstand wird aus jedem Ziel jedes eigenen Schlafs gelernt (`LearnRefusal`), nicht nur aus dem gezielten.
+  - Konzept 08, Release-Text, CHANGELOG.
+- *Im Kampf:* Ein Heiler oder Magier schläft jetzt auch einen Gegner ein, der ein unterbrechbares Kegel-, Ring- oder
+  kleines Flächenwirken wirkt, und einen, der einen bekannt gestoppten Debuff auf ein Mitglied wirkt – wenn die Zeit
+  reicht. Der Weißmagier betäubt dieselben zuerst mit Sanctga. Preis: je Versuch ein GCD ohne Schaden. Ein Mimik würde
+  nach dem ersten widerstandenen Schlaf nicht wieder versucht.
+- *Falsifikation:* „Ausgeliefert, nichts ändert sich" hält teilweise: Ein Schlaf braucht rund 3 s; Wirken unter etwa
+  3 s erreicht er nie, so wie Boshaftigkeit. Gewirkt wird er bei längeren Wirken mit freiem GCD.
+- *Verworfen:* eine gelernte Fläche, die die Gruppe nicht erreicht, als Ziel (ein GCD für nichts); ein Testschlaf auf
+  jedes unbekannte Einzelziel-Wirken (seine Vorgabe nennt das Testen für Flächen).
+- *Prüfgrad:* statisch, Compile (`cloud_build.sh`, ohne Warnung), Prüfskripte; im Spiel nicht beobachtet. Messmittel:
+  die Zeilen „sleep to stop a cast" und „sleep resisted by" im `DefenseTrace.log` eines Builds ab A418.
+
 ---
 ## B · Commit-Register (Fork vs. `upstream/main`)
 

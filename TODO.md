@@ -27,14 +27,24 @@ A397, A399, A401–A409 und A412 (A414).
 
 Aus seinem Upload vom 26.10.2026 abends (A419) zwei Punkte offener Arbeit, in dieser Reihenfolge: der doppelte
 Tankbuster zuerst – er trifft sicher, und ein Tank steht ohne Hilfe –, danach die Flächentabelle unter Minderung, die nur
-den ersten Treffer einer Aktion falsch bewertet. Danach die technische Schuld, soweit ihre Auflösungsbedingung erfüllt
-ist. Warten auf Daten: unten.
+den ersten Treffer einer Aktion falsch bewertet. Aus seinem Upload vom 27.10.2026 (A427) davor ein Punkt: Pyretisch
+mitten im eigenen Zauber – er tötete zweimal an einem Abend. Danach die technische Schuld, soweit ihre
+Auflösungsbedingung erfüllt ist. Warten auf Daten: unten.
 
 ## Defekte
 
 Keine bekannt.
 
 ## Offene Arbeit
+
+### Pyretisch trifft mitten in einen eigenen Zauber · N
+Ein Gegnerwirken, das Pyretisch anlegt („Heißes Herz", #43322, 4,7 s, im Pilgerpfad), tötet, wenn es landet, während
+ein eigener Zauber läuft: Der Schaden kommt im selben Augenblick wie der Status (26.10.2026: rund 1,03 Mio. auf ihn,
+nachdem RSR 0,8 s vor der Landung Wirbelströmung begann; dasselbe Wirken tötete sechs Minuten zuvor ein Mitglied). Der
+Abbruch unter Pyretisch (A338) kommt danach. *Ort:* `DataCenter.IsHostileStop` (Stoppliste, ab Werk aus, das Wirken
+nicht gelistet), `Watcher` (Effektmeldung: Status 960 als Effektart 0x0E in der Landung). *Nächster Schritt:* Loop, ob
+RSR Wirken lernt, die einen Status der Liste „No-casting debuffs" anlegen, und vor ihrer Landung keinen Zauber beginnt,
+der dann noch liefe; Option und Voreinstellung gehören in den Loop. *Konzept:* 03.
 
 ### Einzelabwehr-Streckung bei einem doppelten Tankbuster · N
 Ein Tankbuster auf beide Tanks („Bittere Ernte", Zoraal Ja): Nach dem Göttlichen Segen auf den einen wartet
@@ -132,6 +142,7 @@ nebeneinander gebraucht werden.
 - **Ein gegnerisches Wirken stoppen: was die gespeicherten Tabellen lernen** (experimentell, seine Vorgaben 18.10. und
   23.10.2026, A329, A334, A337). Erstes Protokoll mit der Regel (23.10.2026): Sanctga 19-mal gewählt, Schlummer
   dreimal gelandet, vier Arten als immun gespeichert. Offen: ob Schlaf unterbrechbares Wirken stoppt (ein Versuch, nicht
-  gewirkt), welche Anzahl bis zur Immunität die Regel lernt, welchen Rest beim Eintreffen. Auflösung: weitere
-  Protokolle mit Heiler oder Magier in Instanzen, danach die Bewertung, ob die Regel experimentell bleibt. Konzept 08,
-  „Ein gegnerisches Wirken stoppen".
+  gewirkt), welche Anzahl bis zur Immunität die Regel lernt, welchen Rest beim Eintreffen. Seit 27.10.2026 zielt die
+  Regel auf jedes unterbrechbare Wirken und auf bekannt gestoppte Wirken auf ein Ziel (seine Vorgabe, A427); der Abend
+  des 26.10. im Pilgerpfad blieb ohne Protokoll (Build vor A418). Auflösung: weitere Protokolle mit Heiler oder Magier
+  in Instanzen, danach die Bewertung, ob die Regel experimentell bleibt. Konzept 08, „Ein gegnerisches Wirken stoppen".
