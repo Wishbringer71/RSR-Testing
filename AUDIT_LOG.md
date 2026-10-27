@@ -12192,6 +12192,22 @@ Streckung). Das Protokoll nennt den Grund bei der nächsten Ablehnung in derselb
 
 *Prüfgrad:* Mitschnitt und Protokoll ausgewertet, Code gelesen, Compile, Prüfskripte; im Spiel nicht beobachtet.
 
+### A420 · Upstream 7.5.7.9 (2fe688ae6) in `main` und den Arbeitszweig (27.10.2026)
+
+- *Inhalt:* Das Einstellungsfenster öffnete nach einem Update oder Neuladen in Minimalgröße, wenn es eingeklappt war;
+  jetzt in der Größe von vorher, ebenso Control- und State-Fenster. Ein gesperrtes Fenster behält seinen
+  Schloss-Knopf (`M3TopAppBar.Begin`, `WindowActionsThatFit` mit der Zahl behaltener Aktionen). Pakete: RebornMaterial
+  7.5.7.1, System.Drawing.Common 10.0.14, Lumina 7.7.2 (nur der Datengenerator).
+- *Im Kampf:* keine Wirkung; nur Zeichnen von Fenstern.
+- *Gegen die eigenen Änderungen:* konfliktfrei. In beiden Fensterdateien weicht der Fork nur in der Schließen-Zeile
+  von `FullControlWindow` ab (`WindowCloseButton.TurnOffIfClosedByPlayer`); sie steht unverändert neben der neuen
+  Zeile. Keine Doppelung, kein Widerspruch, keine Synergie mit Fork-Code.
+- *Version:* Upstream taggte 7.5.7.9; `Directory.Build.props` folgt (`125b284a0`), wie bei 7.5.7.8. Der Release-Text
+  bleibt „Changes since 7.5.7.8+wsh1", der Zweig `claude/fixes-after-7.5.7.8`: das letzte Fork-Release ist unverändert.
+
+*Prüfgrad:* Diff gelesen, Compile, Prüfskripte auf `main` (28 Schritte) und auf dem Arbeitszweig (29); im Spiel nicht
+beobachtet.
+
 ---
 ## B · Commit-Register (Fork vs. `upstream/main`)
 
