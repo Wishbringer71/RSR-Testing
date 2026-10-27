@@ -12377,7 +12377,8 @@ beobachtet.
   Hook, der nie läuft, sah damit aus wie einer, der nichts findet.
 - *Umsetzung:* `stop_check.py` schreibt je Lauf eine Zeile in `stop_check_<Session>.log` im Scratchpad der Sitzung
   (Zeit, Fortsetzung, Zahl der Background-Tasks, Zahl der Befunde); Self-Test dazu.
-- *Prüfgrad:* Self-Test. Der Beleg im Betrieb entsteht mit dem nächsten Zugende.
+- *Prüfgrad:* Self-Test; im Betrieb belegt: Der Stop-Hook lief am Zugende um 15:02:56 UTC und vermerkte
+  `continuation=False background=0 findings=0`.
 
 ---
 ## B · Commit-Register (Fork vs. `upstream/main`)
