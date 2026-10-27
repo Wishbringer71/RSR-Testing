@@ -60,6 +60,7 @@ erben die Selbstkorrektur.
 | Wirksamkeitsmessung im Spiel | ersetzt durch die Selbstkorrektur der Vorausschau (`ScoreTtkForecast`); keine Ablesung als Aufgabe an ihn |
 | **Sonde der Flächenbewertung**: `DataCenter.AreaMitigationSkipped` nennt je Aktions-Id, wo die Bewertung eine Minderung verworfen hat (Listenverwaltung) | in Betrieb |
 | **Ein gegnerisches Wirken stoppen** (seine Vorgaben 18.10.2026, 23.10.2026 und 27.10.2026): Heiler und Magier stoppen das Wirken eines Gegners, der kein Boss ist – beim Weißmagier mit Sanctga, sonst mit Schlaf –, und speichern, was sie dabei lernen | umgesetzt (A329, A334, A427), experimentell, ab Werk an; Abschnitt „Ein gegnerisches Wirken stoppen" |
+| **Schaden über Zeit: HoT gegen DoT** (sein Vorschlag vom 27.10.2026): ein HoT nur, wo seine Ticks auf fehlende Gesundheit landen; Gruppen-HoTs nach derselben Frage | geprüft, nicht gebaut, zur Entscheidung (A428); Abschnitt „Schaden über Zeit: HoT gegen DoT" |
 
 ## Die Antwort auf einen eingehenden Treffer
 
@@ -1047,6 +1048,141 @@ multiplikativ — „Strecken statt stapeln“ ist hier die **Vorgabe**, nicht d
 den Vergleich beider Strategien kann ein Modell ohne Stapeln nicht fuehren. Uebertragbar ist der
 Kern: Zeitschritt-Simulation mit Quellen, Dauer, Wiederholzeit und Zuendregel. Eine
 Zweitverwendung verlangt also, Quellenliste und Stapelverhalten zu Parametern zu machen.
+
+## Schaden über Zeit: HoT gegen DoT
+
+**Seine Angaben, im Wortlaut** (27.10.2026; sein Vorschlag zur Prüfung, ausdrücklich erst Loop und Konzept, dann ein
+Lösungsvorschlag):
+- „theoretischer gedankengang, erst im loop und konzept weiterüberlegen, bevor lösungsvorschlag unterbreitet wird: es
+  gibt dots durch gegner auf spieler. manche dots sind sehr gering, da lohnt erst eine heilung nach minuten. manche dots
+  sind relativ stark, wo man fast mit den heilen nicht hinterherkommt. und andere haben fast ähnliche schadenswerte wie
+  die heals over time. hinzu kommt, dass die dots andere laufzeiten haben als die heal over time. optimal wäre es, einen
+  dot, der die gleiche laufzeit hat wie ein heal over time und auch das gleiche schadenspotential wie das heilpotential
+  des heal over time hat, durch einen daraufgelegten heal over time zu neutralisieren. bei dots, die extremen schaden
+  verursachen kann der heal over time schon unterstütztend gegenwirken, so dass die anderen heals nicht mehr so stark
+  sein müssen. wo liegt hier das beste mittelmaß und wie kann man das umsetzen ohne wieder massig zuviel zu heilen?"
+- Ergänzung: „und es gibt gruppendots wo man das mit gruppen heals over time gegenwirken könnte. auch hier die frage:
+  ab wieviel personen und welchen potential?"
+- Hinweis: „es gibt stärkere dots, meist bei savage raids."
+
+**Stand:** geprüft, nicht gebaut. Die Empfehlung steht am Ende dieses Abschnitts zu seiner Entscheidung.
+
+### Mechanik
+
+- *Ticks:* Jeder DoT und jeder HoT tickt alle 3 s auf dem eigenen Takt des Ziels (`DotTickTracker`, Werkzeugquelle).
+  Das Spiel meldet je Ziel einen zusammengefassten Tick aller DoTs und einen aller HoTs, „an aggregated tick for every
+  DoT/HoT source on that target from all sources"; Bodeneffekte gesondert (cactbot LogGuide, Zeile 24). Den Betrag
+  sieht also, wer das Ereignis liest, nicht aber, welcher Anteil von welchem Status stammt.
+- *Gegnerische DoTs erkennen:* Über 500 schädliche Status des Blatts `Status` beschreiben sich als „Taking damage over
+  time" oder „Suffering damage over time" (xivapi v2, 27.10.2026). Erkennbar wie Pyretic am eigenen Wirktext
+  (A338, Konzept 03); Restzeit aus dem Status.
+- *HoT-Potenzen* (Job-Guide, 27.10.2026): Regen 250 je Tick für 18 s, 400 MP; Resega (Medica III) 250 sofort und 175
+  je Tick für 15 s, 1000 MP; Medica II 250 und 150 je Tick für 15 s; Refugium (Asylum) 100 je Tick für 24 s; zum
+  Vergleich Cure II 800 (1000 MP), Cure III 600 je Getroffenem, Medica 400, Afflatus laetitiae 400.
+- *Potenz in Lebenspunkten:* hängt an den Werten des Heilers. Der Effekt-Handler sieht die Beträge der eigenen
+  direkten Heilungen (`FullAmount`), die Ticks kommen über ein ActorControl-Ereignis, das der Hook im `Watcher`
+  empfängt, aber bisher nur für den Takt gegnerischer DoTs (0x605) liest. Kategorie und Felder des Tickbetrags sind vor
+  einem Bau am Quelltext zu belegen; unbelegt.
+
+### Was seine Mitschnitte zeigen
+
+Seine ACT-Mitschnitte vom 26.10.2026 (A428):
+
+- *Gegnerische DoTs auf Spielern, Pilgerpfad 71–90:* 225 Ticks auf drei Spielern, im Median 0,59 % der maximalen HP je
+  Tick, 90 % unter 2,1 %. Die HoT-Ticks auf Spielern lagen im Median bei 3,4 %. Die DoTs dieses Abends sind schwach
+  gegen jeden HoT – seine „heilung nach minuten". Savage hatte keiner seiner Mitschnitte; die stärkeren DoTs dort sind
+  sein Hinweis, ihre Größe unbelegt.
+- *HoT-Ticks auf voller Gesundheit:* Im Pilgerpfad fielen 91 % der HoT-Heilung auf volle Gesundheit, bei Zoraal Ja 78 %;
+  dort die Ticks, deren gemeldete Quelle er war, also RSRs Weißmagier, 73 % (546 Ticks im Kampf), die anderer Heiler
+  84 %. Gewirkt hatte RSR dort kein Regen, sondern Resega, Refugium und Göttliche Umarmung – Gruppen-HoTs, die nach dem
+  Auffüllen durch Afflatus laetitiae auf eine volle Gruppe ticken. *Schluss mit Unschärfe:* Die Gesundheit vor dem Tick
+  stammt aus der letzten Lebenspunktzeile davor, und die Quelle eines zusammengefassten Ticks nennt nur einen Beitrag.
+  Das Überheilen, das er beschreibt, entsteht also messbar – aber bei Gruppen-HoTs ohne Bedarf, nicht bei DoTs.
+
+### Was RSR heute tut
+
+- *Ob geheilt wird:* Einzel- und Flächenschwellen auf die vorausberechnete Gesundheit (`HealAheadOfDamage`, A182,
+  A191). Die Vorausschau liest den Gesundheitsverlauf des Mitglieds (`RecordedHP`, `GetCorrectedTTK`), also den
+  Nettostrom aus DoT, anderem Schaden und laufenden HoTs, aber nicht, wann der DoT endet.
+- *Laufender HoT:* senkt die Schwellen von `HealthSingleSpell` (65 %) zu `HealthSingleSpellHot` (55 %), linear nach
+  seiner Restzeit über pauschal 15 s (`StateUpdater.GetHealingOfTimeRatio`) – ohne zu wissen, wie stark er gegen den
+  Strom ist.
+- *Womit:* je Job; beim Weißmagier Regen zuerst, solange das Ziel über `RegenHeal` (30 %) steht und keins trägt, sonst
+  Cure II; Resega, wenn höchstens die Hälfte der Gruppe es trägt; Regen auf dem Tank im Pull
+  (`TryPullUpkeepOnTank`).
+
+### Die Rechnung
+
+Je Mitglied: der gemessene DoT-Tick *d* und die Restzeit des DoT, der Tick des eigenen HoT *h* auf ihm und seine Ticks
+*N*, die fehlende Gesundheit *m*, der übrige vorausgesagte Schaden im Fenster (Verlauf, angekündigte Treffer) und die
+HoT-Ticks anderer auf ihm. Was ein HoT auf fehlender Gesundheit landet, ist Tick für Tick das Kleinere aus *h* und dem
+dann fehlenden Leben:
+- *d ≥ h* (starker DoT): Jeder Tick landet ganz; der HoT trägt *h* von jedem Tick, den Rest *(d − h)* tragen andere
+  Heilungen – kleiner und später, weil die Vorausschau den flacheren Verlauf liest.
+- *d ≈ h, gleiche Laufzeit* (sein Idealfall): Der HoT neutralisiert, die Gesundheit bleibt stehen, nichts fließt über.
+- *d < h* (schwacher DoT): Landen kann nur *m + d·N* – was fehlt plus was der DoT im Fenster nimmt; der Rest fließt über.
+- *Laufzeiten:* Endet der DoT vor dem HoT, landen die späteren Ticks nur noch auf dem, was bis dahin fehlt.
+
+**Das Mittelmaß sind zwei Fragen, nicht eine Zahl** – wie in Konzept 07 „wer" und „womit" getrennt sind:
+1. *Ob:* Fiele das Mitglied ohne Heilung innerhalb der Laufzeit des HoT unter die Einzelschwelle – mit dem DoT bis zu
+   seinem Ende, nicht als Trend ins Unendliche? Wenn nicht, wird nicht geheilt; was der schwache DoT nimmt, füllt die
+   nächste Heilung auf, die ohnehin kommt (nach einem Raidwide). Das ist seine „heilung nach minuten", hergeleitet statt
+   gesetzt.
+2. *Womit:* das Mittel, das je GCD am meisten auf fehlende Gesundheit legt – bei Gleichstand je MP. Ein HoT schlägt die
+   direkte Heilung, sobald er mehr landet als sie: Regen (1500) gegen Cure II (800) also, wenn mindestens 800/1500 ≈ 53 %
+   seiner Ticks landen – aus den beiden Potenzen, nicht gesetzt; mit gemessenen Beträgen dasselbe in Lebenspunkten.
+
+### Gruppen-DoTs: ab wie vielen und bei welchem Potenzial
+
+Dieselbe Rechnung über alle Mitglieder im Wirkbereich: Ein Gruppen-HoT landet die Summe dessen, was er bei jedem
+Einzelnen landet; sein Sofortanteil landet nur auf dem, was schon fehlt. Das Modell `dot_hot_model.py` (ohne
+Rückstand, sechs Ticks DoT, Regen-Tick als Maß):
+
+| DoT-Tick | je GCD vorn | je MP vorn |
+|---|---|---|
+| ¼ Regen-Tick | Resega ab 2 Betroffenen | Resega ab 3 |
+| 1 Regen-Tick | Resega ab 2 | Regen bis 4, Resega ab 5 |
+| 2 Regen-Ticks | Resega ab 2 | Regen bis 4, Resega ab 5 |
+
+Ab dem Resega-Tick (175, also 0,7 Regen-Tick) landet jeder Gruppen-Tick ganz. Die Antwort auf „ab wieviel personen":
+ab zwei Betroffenen, die Heilung brauchen, je GCD; je MP später, weil Regen nur 400 MP kostet. Der GCD ist das knappe
+Gut (er kostet Schaden), MP füllt Klartraum nach – deshalb je GCD, MP bei Gleichstand. Gezählt werden nur Mitglieder,
+die nach Frage 1 Heilung brauchen; wer voll ist, zählt nichts.
+
+### Die Wege und was sie im Kampf ändern
+
+| Option | Im Kampf besser | Im Kampf schlechter |
+|---|---|---|
+| **0 – wie heute** | nichts zu bauen | Gruppen-HoTs ticken auf volle Gruppen (73 % bei Zoraal Ja); ein Einzel-HoT kennt die Restzeit des DoT nicht |
+| **A – Neutralisieren nach Verhältnis** (HoT, wenn *d* mindestens ein fester Anteil von *h*) | einfach | feste Zahl; heilt einen schwachen DoT nie und einen gleich starken auch dann, wenn nichts fehlt und nichts droht |
+| **B – nach wirksamer Heilung** (Frage 1 und 2, einzeln und für Gruppen) | kein HoT ohne Bedarf; Gruppen-HoT nur, wo er landet; starker DoT früh mit HoT, Folgeheilungen kleiner | braucht die gemessenen Tickbeträge; vor der ersten Messung wie heute |
+| **C – B und die Schwellensenkung durch einen laufenden HoT aus seiner Stärke** statt aus 15 s | Folgeheilungen auch neben fremden HoTs passend | die Vorausschau liest den flacheren Verlauf schon; Doppelzählung droht |
+
+Das Modell (einzelnes Mitglied, Weißmagier-Voreinstellungen) zeigt für B gegen heute: dieselben oder mehr GCDs, die
+niedrigste Gesundheit höher (starker DoT 71 % statt 60 %, Tank mit DoT und Auto-Angriffen 75 % statt 60 %, dort ein GCD
+mehr) und in keinem Fall Überheilung – die Einzelschwelle von 65 % lässt einem Einzel-HoT ohnehin 35 % Platz. Der
+Gewinn von B liegt beim Einzelziel in der Sicherheit, beim Gruppen-HoT im Vermeiden des Überheilens.
+
+### Was dagegen spricht
+
+- *Kein Defekt?* Beim Einzelziel hält die heutige Schwelle das Überheilen niedrig (Modell). Das Überheilen ist messbar
+  (73 %), aber bei Gruppen-HoTs; der Teil seines Vorschlags, der dort ansetzt, trägt.
+- *Option falsch?* B hängt an zwei Messungen: dem DoT-Tick (Ereignis noch zu belegen; ersatzweise die Stufen des
+  Gesundheitsverlaufs zu Tickzeiten) und dem eigenen HoT-Tick (neben fremden HoTs nicht trennbar; ersatzweise die
+  gemessene Heilung je Potenz aus den eigenen direkten Heilungen). Fehlt beides, fällt B auf heute zurück, nicht
+  darunter.
+- *Ausgeliefert, nichts ändert sich – warum?* In seinem gemessenen Inhalt sind die DoTs schwach; B sagt dort „nicht
+  heilen" wie heute. Sichtbar wird B bei Gruppen-HoTs nach Raidwides (weniger Resega und Refugium auf volle Gruppen,
+  mehr Schaden) und in Savage bei starken DoTs (der HoT früher). Ein Mitschnitt aus Savage fehlt.
+
+### Empfehlung
+
+B, einzeln und für Gruppen, hinter einer Option (Nutzen nur am Modell belegt), ab Werk an nach seiner Regel; C nicht.
+Vor dem Bau: das Tick-Ereignis am Quelltext belegen, die Messung der eigenen HoT-Ticks und der DoT-Ticks je Mitglied
+bauen, und die Gruppen-HoTs aller Heiler (Resega, Refugium, Whispering Dawn, Physis II, Kerachole, Aspected Helios,
+Celestial Opposition) an dieselbe Frage hängen – universell zuerst. Messmittel im Kampf: eine Zeile je HoT-Entscheidung
+mit *d*, *h*, *m* und der vorausgesagten Landung, gegen die tatsächlich gelandeten Ticks; die Abweichung steuert die
+Vorhersage nach wie `GetCorrectedTTK`.
 
 ## Ein gegnerisches Wirken stoppen
 

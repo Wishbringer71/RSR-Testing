@@ -12428,6 +12428,26 @@ beobachtet.
 - *Prüfgrad:* statisch, Compile (`cloud_build.sh`, ohne Warnung), Prüfskripte; im Spiel nicht beobachtet. Messmittel:
   die Zeilen „sleep to stop a cast" und „sleep resisted by" im `DefenseTrace.log` eines Builds ab A418.
 
+### A428 · HoT gegen DoT: sein Vorschlag geprüft, Modell und Messung, Empfehlung (27.10.2026)
+
+- *Seine Angaben:* sein Vorschlag mit Ergänzung zu Gruppen-DoTs und sein Hinweis zu Savage, wörtlich in Konzept 08,
+  „Schaden über Zeit: HoT gegen DoT". Ausdrücklich erst Loop und Konzept, dann ein Lösungsvorschlag.
+- *Messung an seinen ACT-Mitschnitten vom 26.10.2026:* gegnerische DoT-Ticks auf Spielern im Pilgerpfad im Median
+  0,59 % der maximalen HP (90 % unter 2,1 %), HoT-Ticks im Median 3,4 %. HoT-Heilung auf voller Gesundheit: Pilgerpfad
+  91 %, Zoraal Ja 78 %, davon die Ticks mit ihm als Quelle (RSRs Weißmagier) 73 % in 546 Ticks. RSR wirkte dort kein
+  Regen, sondern Resega, Refugium und Göttliche Umarmung. Unschärfe: die Gesundheit vor dem Tick aus der letzten
+  Lebenspunktzeile, die Quelle eines zusammengefassten Ticks nennt einen Beitrag.
+- *Modell* `dot_hot_model.py` (Selbsttest, in der CI-Modellzeile): Beim Einzelziel überheilt die heutige Regel
+  (Einzelschwelle 65 %, Regen zuerst) gegen einen DoT nicht; die Regel nach wirksamer Heilung hält die niedrigste
+  Gesundheit höher (starker DoT 71 % statt 60 %), einmal mit einem GCD mehr. Gruppen-DoT: Resega legt je GCD ab zwei
+  Betroffenen mehr auf fehlende Gesundheit als Regen, je MP bei einem DoT in Stärke eines Regen-Ticks erst ab fünf.
+- *Ergebnis:* Das Mittelmaß sind zwei Fragen – ob das Mitglied innerhalb der HoT-Laufzeit unter die Schwelle fiele (mit
+  dem DoT bis zu seinem Ende), dann das Mittel mit der meisten Heilung auf fehlender Gesundheit je GCD. Sein Überheilen
+  ist gemessen, aber bei Gruppen-HoTs ohne Bedarf, nicht beim DoT.
+- *Empfehlung an ihn:* Weg B hinter einer Option, ab Werk an; vorher das Tick-Ereignis am Quelltext belegen und die
+  Messung der Ticks bauen. Nicht gebaut.
+- *Prüfgrad:* Modell und Messung am Mitschnitt; kein Code.
+
 ---
 ## B · Commit-Register (Fork vs. `upstream/main`)
 
