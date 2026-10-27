@@ -153,6 +153,15 @@ public partial class AstrologianRotation
 	#region PvE Actions
 	private protected sealed override IBaseAction? Raise => AscendPvE;
 
+	/// <summary>
+	/// Aspected Benefic against an enemy's damage over time on one member; Helios Conjunction, below its level Aspected
+	/// Helios, on more than one (concept 08, "Schaden über Zeit: HoT gegen DoT", A432).
+	/// </summary>
+	protected override bool HotAgainstDotByJob(out IAction? act)
+	{
+		return TryHotAgainstDot(AspectedBeneficPvE, HeliosConjunctionPvE.EnoughLevel ? HeliosConjunctionPvE : AspectedHeliosPvE, out act);
+	}
+
 	private static readonly StatusID[] CombustStatus =
 	[
 		StatusID.Combust,

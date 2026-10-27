@@ -224,6 +224,7 @@ public static class StatusHelper
 	};
 
 	private static readonly System.Collections.Concurrent.ConcurrentDictionary<uint, bool> _damageOverTime = new();
+	private static readonly System.Collections.Concurrent.ConcurrentDictionary<uint, bool> _healOverTime = new();
 
 	/// <summary>
 	/// Whether any of these statuses deals damage over time, by its own text in the English status sheet
@@ -235,25 +236,41 @@ public static class StatusHelper
 	{
 		foreach (var id in statusIDs)
 		{
-			if (_damageOverTime.GetOrAdd((uint)id, static key =>
-			{
-				try
-				{
-					var sheet = Svc.Data.GetExcelSheet<Lumina.Excel.Sheets.Status>(Dalamud.Game.ClientLanguage.English);
-					return sheet != null && sheet.TryGetRow(key, out var row)
-						&& row.Description.ExtractText().Contains("damage over time", StringComparison.OrdinalIgnoreCase);
-				}
-				catch (Exception)
-				{
-					return false;
-				}
-			}))
+			if (TextSays(_damageOverTime, id, "damage over time"))
 			{
 				return true;
 			}
 		}
 
 		return false;
+	}
+
+	/// <summary>
+	/// Whether this status heals over time, by its own text in the English status sheet ("Regenerating HP over time.",
+	/// "Self and nearby party members are regenerating HP over time.") - 84 statuses of every job, the healers' and the
+	/// tanks' own (xivapi, 27.10.2026; A432). A sheet that cannot be read answers no.
+	/// </summary>
+	internal static bool IsHealOverTime(StatusID statusId)
+	{
+		return TextSays(_healOverTime, statusId, "regenerating HP over time");
+	}
+
+	// Whether the status's own text in the English sheet holds the phrase, once per status and phrase.
+	private static bool TextSays(System.Collections.Concurrent.ConcurrentDictionary<uint, bool> known, StatusID statusId, string phrase)
+	{
+		return known.GetOrAdd((uint)statusId, static (key, phrase) =>
+		{
+			try
+			{
+				var sheet = Svc.Data.GetExcelSheet<Lumina.Excel.Sheets.Status>(Dalamud.Game.ClientLanguage.English);
+				return sheet != null && sheet.TryGetRow(key, out var row)
+					&& row.Description.ExtractText().Contains(phrase, StringComparison.OrdinalIgnoreCase);
+			}
+			catch (Exception)
+			{
+				return false;
+			}
+		}, phrase);
 	}
 
 	/// <summary>

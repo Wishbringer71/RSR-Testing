@@ -1197,6 +1197,22 @@ internal partial class Configs : IPluginConfiguration, IM3Settings
 		Filter = HealingActionCondition, Section = 1)]
 	public bool HealAheadOfDamage { get; set; } = true;
 
+	// The owner's proposal of 27.10.2026, as the loop left it (concept 08, "Schaden über Zeit: HoT gegen DoT", A432). On
+	// by default: his rule that a default is the value that plays better, so a new rule is tested (29.09.2026); its gain
+	// rests on the model, not on a fight measured with it.
+	[UI("Heal over time against an enemy's damage over time",
+		Description = "As a White Mage or an Astrologian: when an enemy's damage over time alone will take a party member "
+			+ "below the single-target heal threshold before a heal over time laid now would run out, the heal over time "
+			+ "goes on him now - Regen or Aspected Benefic, and Medica III or Helios Conjunction, below their level Medica II "
+			+ "or Aspected Helios, when more than one member needs it. Each tick of damage and heal over time is measured; the strength of each damage over time and, "
+			+ "where its status states no end, how long it lasts are learned per area and kept over every session, so from "
+			+ "the second hit on the heal over time goes on when the status lands. Lilies, the other heals and the "
+			+ "thresholds stay as they are. Each decision is written to DefenseTrace.log.\n"
+			+ "In a fight: against a strong damage over time the heal over time ticks with it from the start instead of "
+			+ "after the member has already dropped; a weak one that would not take him below the threshold costs no GCD.",
+		Filter = HealingActionCondition, Section = 1)]
+	public bool HotAgainstDot { get; set; } = true;
+
 	// The owner's triage (concept 07): whoever is closest to dying first, and at equal danger healer
 	// before tank before damage dealer. Class 1 - about to fall - is built and always on. This adds
 	// classes 2 and 3 in place of the role short-cuts, which pick a role outright once it is under its

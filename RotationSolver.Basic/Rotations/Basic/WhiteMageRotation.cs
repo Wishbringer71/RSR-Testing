@@ -18,6 +18,15 @@ public partial class WhiteMageRotation
 	}
 
 	/// <summary>
+	/// Regen against an enemy's damage over time on one member; Medica III, below its level Medica II, on more than one
+	/// (concept 08, "Schaden über Zeit: HoT gegen DoT", A432).
+	/// </summary>
+	protected override bool HotAgainstDotByJob(out IAction? act)
+	{
+		return TryHotAgainstDot(RegenPvE, MedicaIiiPvE.EnoughLevel ? MedicaIiiPvE : MedicaIiPvE, out act);
+	}
+
+	/// <summary>
 	/// Holy or Holy III stops an enemy's cast by stunning it - and every other enemy in its radius that can still be
 	/// stunned. The owner's rule of 23.10.2026: "ausserdem steht sleep nicht in konkurenz zu holy beim whm. wenn holy
 	/// stunnen kann, ist das vorzuziehen. speziell bei gruppen." (concept 08, "Ein gegnerisches Wirken stoppen").

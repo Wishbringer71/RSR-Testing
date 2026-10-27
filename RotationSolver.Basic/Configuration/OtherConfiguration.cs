@@ -197,6 +197,20 @@ internal class OtherConfiguration
 	/// <summary>Guards <see cref="HitSeriesOnPlayer"/>.</summary>
 	internal static readonly object HitSeriesGate = new();
 
+	/// <summary>
+	/// What enemy damage over time on party members was seen to do, by area (territory id) and status - learned in play
+	/// over every session (concept 08, "Schaden über Zeit: HoT gegen DoT", A432).
+	/// </summary>
+	/// <remarks>
+	/// Stored like <see cref="SleepOutcomes"/>: merged with the file on every save, every figure only rising, never
+	/// written when its load did not finish, set aside as .corrupt when unreadable. Changed on the game thread under
+	/// <see cref="DotStoreGate"/>. No button discards it: the file is deleted by hand with the game closed.
+	/// </remarks>
+	internal static Dictionary<uint, DotArea> DotOnParty = [];
+
+	/// <summary>Guards <see cref="DotOnParty"/>.</summary>
+	internal static readonly object DotStoreGate = new();
+
 	public static RotationSolverRecord RotationSolverRecord = new();
 
 	private abstract class ListFile(string name)
@@ -605,6 +619,9 @@ internal class OtherConfiguration
 		new LearnedFile<int>(nameof(HitSeriesOnPlayer), CopyHitSeries,
 			v => { lock (HitSeriesGate) { HitSeriesOnPlayer = v; } },
 			Math.Max, state => HitSeriesStoreState = state, "enemy action(s) hitting in series"),
+		new LearnedFile<DotArea>(nameof(DotOnParty), CopyDotStore,
+			v => { lock (DotStoreGate) { DotOnParty = v; } },
+			DotArea.Merge, state => DotStoreState = state, "area(s) with learned damage over time"),
 		new SetList(nameof(HostileCastingTank), ActionLists.HostileCastingTank, () => HostileCastingTank, v => HostileCastingTank = v,
 			13364, 13365, 13367, 13371, 13375, 13385, 13388, 13438, 13444, 13452, 13454, 13462, 13475),
 		new MapList<Vector3>(nameof(BeneficialPositions), TerritoryLists.BeneficialPositions, () => BeneficialPositions, v => BeneficialPositions = v),
@@ -624,6 +641,21 @@ internal class OtherConfiguration
 		lock (SleepStoreGate)
 		{
 			return new Dictionary<uint, T>(store);
+		}
+	}
+
+	// Deep, under the gate: the readings change on the game thread while the save writes off it.
+	private static Dictionary<uint, DotArea> CopyDotStore()
+	{
+		lock (DotStoreGate)
+		{
+			var copy = new Dictionary<uint, DotArea>(DotOnParty.Count);
+			foreach (var (area, readings) in DotOnParty)
+			{
+				copy[area] = readings.Copy();
+			}
+
+			return copy;
 		}
 	}
 
@@ -765,6 +797,11 @@ internal class OtherConfiguration
 	internal static Task SaveSleepDiminishing() => SaveList(nameof(SleepDiminishing));
 
 	internal static Task SaveHitSeriesOnPlayer() => SaveList(nameof(HitSeriesOnPlayer));
+
+	internal static Task SaveDotOnParty() => SaveList(nameof(DotOnParty));
+
+	/// <summary>What the last save and load of <see cref="DotOnParty"/> did, in words.</summary>
+	internal static string DotStoreState { get; private set; } = "not loaded yet";
 
 	/// <summary>What the last save and load of <see cref="HitSeriesOnPlayer"/> did, in words.</summary>
 	internal static string HitSeriesStoreState { get; private set; } = "not loaded yet";

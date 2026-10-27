@@ -28,6 +28,12 @@ internal static class DataCenter
 	public static List<IBattleChara> PartyMembers { get; set; } = [];
 
 	/// <summary>
+	/// The members an enemy's damage over time alone takes below the single-heal threshold before a heal over time laid
+	/// now would run out, lowest first - set by the heal-over-time path right before it asks its action (A432).
+	/// </summary>
+	internal static List<IBattleChara> HotAgainstDotMembers { get; set; } = [];
+
+	/// <summary>
 	/// The party's first living tank, or null if there is none.
 	/// </summary>
 	public static IBattleChara? PartyTank
@@ -2324,6 +2330,7 @@ internal static class DataCenter
 		_avgTTKCacheTick = long.MinValue;
 		TimeToKillTracker.Clear();
 		DotTickTracker.Clear();
+		DotOnParty.Clear();
 		_partyHpStatsCacheTick = long.MinValue;
 		_timeLastActionUsed = DateTime.Now;
 		_actions.Clear();

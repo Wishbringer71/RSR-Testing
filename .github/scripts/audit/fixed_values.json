@@ -926,6 +926,16 @@
    "status": "exception",
    "loop": "A388",
    "reason": "Upstream's anti-clipping window before the GCD, unchanged; the line was touched only to let the no-GCD branch of Invoke past it (IgnoreClipping). The window answers how long an ability's animation lock may run into the GCD, which the client gives for the ability only once it is pressed (A388)."
+  },
+  {
+   "file": "RotationSolver/Watcher.cs",
+   "code": "private const uint HotTickCategory = 0x604;",
+   "values": [
+    "0x604"
+   ],
+   "status": "exception",
+   "loop": "A432",
+   "reason": "ActorControl category of the aggregated heal-over-time tick on a target, beside upstream's 0x605 for damage over time; a protocol value stated in no game sheet (DeathRecap reads it so, A429, A432)."
   }
  ]
 }

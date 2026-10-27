@@ -2221,6 +2221,7 @@ public struct ActionTargetInfo(IBaseAction action)
 				TargetType.Provoke => FindProvokeTarget(),
 				TargetType.TankSwap => FindTankSwapTarget(),
 				TargetType.Dispel => FindDispelTarget(),
+				TargetType.HotAgainstDot => FindHotAgainstDotTarget(),
 				TargetType.Move => FindTargetForMoving(),
 				TargetType.Heal => FindHealTarget(healRatio),
 				TargetType.Interrupt => FindInterruptTarget(),
@@ -3225,6 +3226,29 @@ public struct ActionTargetInfo(IBaseAction action)
 			}
 		}
 
+		// The first of the members an enemy's damage over time takes below the threshold, lowest first, that this action
+		// can still be put on - one who carries it already is not among its targets (A432).
+		IBattleChara? FindHotAgainstDotTarget()
+		{
+			if (battleChara == null)
+			{
+				return null;
+			}
+
+			foreach (var member in DataCenter.HotAgainstDotMembers)
+			{
+				foreach (var o in battleChara)
+				{
+					if (o.GameObjectId == member.GameObjectId)
+					{
+						return o;
+					}
+				}
+			}
+
+			return null;
+		}
+
 		IBattleChara? FindDispelTarget()
 		{
 			if (battleChara != null && DataCenter.DispelTarget != null)
@@ -3777,7 +3801,10 @@ public enum TargetType : byte
 
 	// Unused, and dropped upstream in 7.5.7.5; kept so TankSwap keeps its value for rotations built against this package.
 	Capture,
-	TankSwap
+	TankSwap,
+
+	// The member a heal over time against an enemy's damage over time goes on (A432); last, so every value before it stays.
+	HotAgainstDot
 }
 #pragma warning restore CS1591 // Missing XML comment for publicly visible type or member
 

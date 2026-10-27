@@ -17,6 +17,10 @@ public static class Watcher
 	private const uint CancelAbilityCategory = 15;
 	private const uint EnemyDotTickCategory = 0x605;
 
+	// A heal-over-time tick on a target, amount in the second parameter: the aggregated one with 0 in the first, a ground
+	// effect's with its status there - beside the damage-over-time tick above (DeathRecap reads both so; A432).
+	private const uint HotTickCategory = 0x604;
+
 	private delegate void ActorControlDelegate(uint entityId, uint category, uint p1, uint p2, uint p3, uint p4, uint p5, uint p6, uint p7, uint p8, ulong targetId, byte replaying);
 	private static Hook<ActorControlDelegate>? _actorControlHook;
 
@@ -30,7 +34,9 @@ public static class Watcher
 			+ $" | stop enemy casts {config.SleepToStopAreaCasts}"
 			+ $" | sleep knowledge {OtherConfiguration.SleepOutcomes.Count} action(s), {OtherConfiguration.SleepResistantKinds.Count} resistant kind(s),"
 			+ $" {OtherConfiguration.SleepDiminishing.Count} kind limit(s) ({OtherConfiguration.SleepStoreState})"
-			+ $" | hit series {OtherConfiguration.HitSeriesOnPlayer.Count} action(s) ({OtherConfiguration.HitSeriesStoreState})");
+			+ $" | hit series {OtherConfiguration.HitSeriesOnPlayer.Count} action(s) ({OtherConfiguration.HitSeriesStoreState})"
+			+ $" | heal over time against damage over time {config.HotAgainstDot},"
+			+ $" damage over time learned in {OtherConfiguration.DotOnParty.Count} area(s) ({OtherConfiguration.DotStoreState})");
 
 		ActionEffect.ActionEffectEvent += ActionFromEnemy;
 		ActionEffect.ActionEffectEvent += ActionFromSelf;
@@ -80,6 +86,11 @@ public static class Watcher
 			if (category == EnemyDotTickCategory)
 			{
 				DotTickTracker.RecordTick(entityId, Environment.TickCount64);
+				DotOnParty.RecordDotTick(entityId, p1, p2);
+			}
+			else if (category == HotTickCategory)
+			{
+				DotOnParty.RecordHotTick(entityId, p1, p2);
 			}
 			else if (category == CancelAbilityCategory && entityId == Player.Object?.EntityId)
 			{

@@ -278,6 +278,14 @@ public partial class CustomRotation
 
 			if (!DataCenter.MergedStatus.HasFlag(AutoStatus.NoCasting))
 			{
+				// The owner's proposal of 27.10.2026 (concept 08, "Schaden über Zeit: HoT gegen DoT"): a heal over time on
+				// whom an enemy's damage over time alone takes below the single-heal threshold before it ends - after every
+				// heal, defence and raise above, ahead of the damage GCDs.
+				if (CanCastHeals && HotAgainstDot(out act))
+				{
+					return act;
+				}
+
 				if (ActiveDutyRotation?.GeneralGCD(out act) == true)
 				{
 					return act;
@@ -522,6 +530,137 @@ public partial class CustomRotation
 	{
 		act = null;
 		return false;
+	}
+
+	/// <summary>
+	/// A heal over time on a party member whom an enemy's damage over time alone takes below the single-heal threshold
+	/// before a heal over time laid now would run out - the owner's proposal of 27.10.2026 as the loop left it (concept
+	/// 08, "Schaden über Zeit: HoT gegen DoT", A432). Healers only, with the job's own heals over time
+	/// (<see cref="HotAgainstDotByJob"/>); who needs one, and the measurement behind it, is DotOnParty's.
+	/// </summary>
+	private bool HotAgainstDot(out IAction? act)
+	{
+		act = null;
+		// The master switch and the heal stop of the automatic heals hold here as for the heal flags (StateUpdater).
+		return Service.Config.HotAgainstDot && Service.Config.AutoHeal && !DataCenter.IsPvP && DataCenter.InCombat
+			&& DataCenter.Role == JobRole.Healer && !DataCenter.IsTyrantCastingSpecialIndicator() && DotOnParty.AnyDot
+			&& HotAgainstDotByJob(out act);
+	}
+
+	/// <summary>
+	/// The job's heals over time against an enemy's damage over time, through <see cref="TryHotAgainstDot"/>. Among the
+	/// healers only the White Mage and the Astrologian have them as a GCD; the Scholar's and the Sage's are abilities,
+	/// cost no damage and stay with the heal thresholds (concept 08).
+	/// </summary>
+	/// <param name="act">The heal over time to use.</param>
+	/// <returns>True when the job lays one.</returns>
+	protected virtual bool HotAgainstDotByJob(out IAction? act)
+	{
+		act = null;
+		return false;
+	}
+
+	/// <summary>
+	/// <paramref name="group"/> where more than one member within its reach needs a heal over time against an enemy's
+	/// damage over time - a single one covers exactly one member, so from the second on the group one saves a GCD -,
+	/// else <paramref name="single"/> on the lowest of them who does not carry it yet. Each is asked with its own
+	/// duration, read from its effect text.
+	/// </summary>
+	/// <remarks>
+	/// Both are GCD heals and ask the rotation's own permission for them (<see cref="CanHealAreaSpell"/>,
+	/// <see cref="CanHealSingleSpell"/>) - with "Use GCDs to heal" off, a healer leaves them to the other healer.
+	/// </remarks>
+	/// <param name="single">The job's heal over time on one target.</param>
+	/// <param name="group">The job's heal over time on the party, or null.</param>
+	/// <param name="act">The action to use.</param>
+	/// <returns>True when one of them goes.</returns>
+	protected bool TryHotAgainstDot(IBaseAction single, IBaseAction? group, out IAction? act)
+	{
+		act = null;
+		if (group is { EnoughLevel: true } && CanHealAreaSpell)
+		{
+			NeedHotAgainstDot(DefensiveValues.DurationOf(group.ID), group.Info.EffectRange);
+			if (DataCenter.HotAgainstDotMembers.Count > 1 && group.CanUse(out act, skipAoeCheck: true))
+			{
+				TraceHotAgainstDot(group, null);
+				return true;
+			}
+		}
+
+		if (!single.EnoughLevel || !CanHealSingleSpell)
+		{
+			return false;
+		}
+
+		// No reach of its own here: the target choice keeps to the members the action reaches.
+		NeedHotAgainstDot(DefensiveValues.DurationOf(single.ID), float.MaxValue);
+		if (DataCenter.HotAgainstDotMembers.Count == 0 || !single.CanUse(out act, targetOverride: TargetType.HotAgainstDot))
+		{
+			return false;
+		}
+
+		TraceHotAgainstDot(single, single.Target.Target);
+		return true;
+	}
+
+	private static readonly Dictionary<ulong, float> _hotAgainstDotThresholds = [];
+	private static (uint Action, ulong Target, DateTime At) _hotAgainstDotTraced;
+
+	// The decision over what DotOnParty sees coming: whom it takes below his single-heal threshold from above it - with
+	// the exclusions and the protected threshold of the single-heal decision; one already below is the heal thresholds'
+	// case, and "damage over time alone" is no longer what takes him there -, within reach, and not one whose damage over
+	// time Esuna is about to clear. Lowest first, into DataCenter.HotAgainstDotMembers for the target choice.
+	private static void NeedHotAgainstDot(float hotSeconds, float range)
+	{
+		_hotAgainstDotThresholds.Clear();
+		List<IBattleChara> members = [];
+		var normal = Service.Config.HealthSingleSpell;
+		var esuna = DataCenter.MergedStatus.HasFlag(AutoStatus.Dispel) ? DataCenter.DispelTarget : null;
+		foreach (var (member, low) in DotOnParty.Project(hotSeconds))
+		{
+			if (member.DistanceToPlayer() > range || !member.TryHealSingleThreshold(normal, out var threshold) || low >= threshold
+				|| member.GetHealthRatio() < threshold
+				|| (esuna?.GameObjectId == member.GameObjectId && DotOnParty.OnlyDispellable(member)))
+			{
+				continue;
+			}
+
+			members.Add(member);
+			_hotAgainstDotThresholds[member.GameObjectId] = threshold;
+		}
+
+		DataCenter.HotAgainstDotMembers = members;
+	}
+
+	// One line in DefenseTrace.log per heal over time this path lays, on the target or for the party - at most once per
+	// GCD for the same action and target, since the decision is asked on every update until it goes. The job stands
+	// for the member, not his name.
+	private static void TraceHotAgainstDot(IBaseAction action, IBattleChara? target)
+	{
+		var now = DateTime.Now;
+		var targetId = target?.GameObjectId ?? 0;
+		if (_hotAgainstDotTraced.Action == action.ID && _hotAgainstDotTraced.Target == targetId
+			&& (now - _hotAgainstDotTraced.At).TotalSeconds < DataCenter.DefaultGCDTotal)
+		{
+			return;
+		}
+
+		_hotAgainstDotTraced = (action.ID, targetId, now);
+		var text = new System.Text.StringBuilder($"heal over time against damage over time: {action.Name}");
+		foreach (var member in DataCenter.HotAgainstDotMembers)
+		{
+			if ((target != null && member.GameObjectId != target.GameObjectId) || !DotOnParty.TryWeighed(member, out var w))
+			{
+				continue;
+			}
+
+			_ = text.Append($" | {DotOnParty.JobOf(member)} at {member.CurrentHp / (float)member.MaxHp:P0},"
+				+ $" {w.Tick:F0} HP per tick ({(w.Measured ? "measured" : "learned in this area")}),"
+				+ $" {w.Ticks} tick(s) within {w.Window:F1} s, heals over time on him {w.HotTick} HP x {w.HotTicks:F0},"
+				+ $" lowest ahead {w.Low:P0} under {_hotAgainstDotThresholds.GetValueOrDefault(member.GameObjectId):P0}");
+		}
+
+		DefenseTrace.Line(text.ToString());
 	}
 
 	/// <summary>
