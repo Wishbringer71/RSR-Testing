@@ -12218,7 +12218,9 @@ beobachtet.
 - *Entscheidung:* gestrichen, die ausstehende Kontrolle gelöscht. Grund: Seine Regel „den Status berichten, ohne selbst
   gesetzte Wiedervorlagen" (CLAUDE.md, „Vorlagen an ihn") geht der Umgebungsanweisung vor. Upstream wird ohnehin vor
   jeder Codeänderung und am Auftragsende synchronisiert („Upstream"); rote Prüfläufe auf dem PR kommen als Ereignis
-  über das PR-Abonnement, das ohne Zeitsteuerung bleibt. Keine neue zeitgesteuerte Kontrolle anlegen.
+  über das PR-Abonnement, das ohne Zeitsteuerung bleibt. Die Regel steht in CLAUDE.md („Vorlagen an ihn"; seine Rüge:
+  „claude.md wäre wichtiger, da du anscheinend die dort liegenden vorgaben regelmäßig missachtest"); die alte Fassung
+  galt nur dem Release-Status und hielt die Kontrollen deshalb nicht auf.
 
 ---
 ## B · Commit-Register (Fork vs. `upstream/main`)

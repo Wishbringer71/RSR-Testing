@@ -79,7 +79,7 @@ Persistenz: Priorität 1, jede Eingabe, ausnahmslos. Kontextkomprimierung→Date
 - Identität unverändert, Commit klein.
 - Nach einem Merge-Commit die Prüfungen erneut laufen lassen, vor dem Push: Die Merge-Basis wechselt, und was vorher als Fork-Zeile zählte, ist danach Upstreams (A324).
 - Release-Text: Unterschied zum letzten Release, englisch.
-- Nach dem Push den Prüflauf abwarten; bleibt er aus, `mergeable_state` messen.
+- Nach dem Push den Prüflauf abwarten – über das Ereignis des PR-Abonnements, nie über eine zeitgesteuerte Kontrolle (→ „Vorlagen an ihn"); bleibt er aus, `mergeable_state` messen.
 
 # Loop
 
@@ -268,7 +268,8 @@ Gelten in jeder Stufe. Eine Aussage, die eine davon verletzt, ist unbelegt.
 - Er entscheidet, was ihn trifft: Verhalten im Kampf, Voreinstellungen, Optionen, Umfang und Reihenfolge der Arbeit, Freigabe und Veröffentlichung.
 - Meine Hilfsmittel (Prüfskripte, Selbsttests, Berichtsformat) stehen nicht zur Abstimmung; einen Defekt darin melde ich mit der getroffenen Entscheidung.
 - Einen von mir verursachten Schaden an seinen personenbezogenen Daten stelle ich nicht zur Wahl: sofort beseitigen und sagen, was die Beseitigung nicht erreicht.
-- Release-Freigabe liegt nur bei ihm: Merge-Zeitpunkt, Tagging, Veröffentlichung weder empfehlen noch vorwegnehmen; den Status berichten, ohne selbst gesetzte Wiedervorlagen.
+- Release-Freigabe liegt nur bei ihm: Merge-Zeitpunkt, Tagging, Veröffentlichung weder empfehlen noch vorwegnehmen; den Status berichten.
+- Keine selbst gesetzten Wiedervorlagen und keine zeitgesteuerten Kontrollen (`send_later`, Trigger) – für Release, PR, Prüflauf oder Upstream, auch wenn die Sitzungsumgebung sie vorsieht; diese Datei geht vor. Grund: Jede meldet sich bei ihm, fast immer ohne Befund, und Upstream wird ohnehin vor jeder Codeänderung und am Auftragsende synchronisiert (A421).
 
 # Artefakte
 
