@@ -65,7 +65,7 @@ Diese Datei gilt in jeder Lage. Die übrigen Regeln stehen je genau einmal im Re
 **Bevor ich etwas zu einem Thema behaupte**
 - Konzept unter `docs/rotation-flow/` lesen, das Archiv zum Bereich über `archive.py find`.
 - Deutsche Namen nachschlagen (→ „Namen").
-- Zustand von Zweig, PR oder Tag frisch messen (→ „Zustand messen").
+- Zustand von Branch, PR oder Tag frisch messen (→ „Zustand messen").
 
 **Bevor ich Code schreibe**
 - Upstream-Sync gemessen (Skill `upstream-sync`).
@@ -96,7 +96,7 @@ Diese Datei gilt in jeder Lage. Die übrigen Regeln stehen je genau einmal im Re
 - Identität unverändert, Commit klein.
 - Nach einem Merge-Commit die Prüfungen erneut laufen lassen, vor dem Push: Die Merge-Basis wechselt, und was vorher als Fork-Zeile zählte, ist danach Upstreams (A324).
 - Release-Text: Unterschied zum letzten Release, englisch.
-- Nach dem Push den Prüflauf abwarten – über das Ereignis des PR-Abonnements, nie über eine zeitgesteuerte Kontrolle (→ „Vorlagen an ihn"); bleibt er aus, `mergeable_state` messen.
+- Nach dem Push den CI-Lauf abwarten – über das Ereignis des PR-Abonnements, nie über eine zeitgesteuerte Kontrolle (→ „Vorlagen an ihn"); bleibt er aus, `mergeable_state` messen.
 
 # Loop
 
@@ -139,7 +139,7 @@ Pflicht für jede nicht-triviale Aufgabe; die REGEL steht darüber.
 - Priorität folgt seinem Profil: PvE, deutscher Client, seine Jobs und Rotationen. Seine Jobs (seine Angabe): alle Kampfjobs — Maschinist zwischendurch, alle anderen seltener; Monk bislang nicht (seine Angabe, 25.10.2026). Kein Kampfjob liegt deshalb außerhalb des Profils.
 - Erheben immer vollständig; bearbeiten nur, was in seinem Profil liegt. PvP, Blaumagier und andere begrenzte Jobs, Bozja und ähnliche Sonderinhalte, fremde Rotationen, die er nicht nutzt: erfassen, bis er sie nennt oder freigibt.
 - Churin-Rotationen (`ExtraRotations/*/Churin*`) sind für ihn uninteressant: keine Befunde dazu erfassen.
-- Vor dem Spielen kompiliert er den aktuellen Zweig (seine Angabe). Sein Stand ist der Zweig zur Zeit seiner Beobachtung, nie ein Release; maßgeblich ist das Datum seiner Beobachtung oder Datei.
+- Vor dem Spielen kompiliert er den aktuellen Branch (seine Angabe). Sein Stand ist der Branch zur Zeit seiner Beobachtung, nie ein Release; maßgeblich ist das Datum seiner Beobachtung oder Datei.
 - Er ist Tester und nutzt selten die Voreinstellungen. Eine Aussage über einen Vorgabewert ist keine über seine Konfiguration, und die kann ich nicht messen. Jede Regel hinter einem Schalter denke ich für beide Stellungen.
 
 **Als was seine Angaben gelten**
@@ -169,7 +169,7 @@ Pflicht für jede nicht-triviale Aufgabe; die REGEL steht darüber.
 - Ein eingehaltener Ablauf belegt keine Ergebnisqualität.
 - Selbstkontrolle ist kein Audit.
 - Den Prüfgrad benenne ich — statisch, Prüfskript, Compile, Laufzeitbeobachtung —, und die Formulierung folgt ihm.
-- Ein grüner Prüflauf belegt nur, was die Prüfungen erfassen. Konzepte werden nicht kompiliert (seine Vorgabe): Über ihren Inhalt sagt er nichts. Ihren Inhalt prüfe ich Aussage für Aussage am Code und an den Quellen. Eine Prüfung, die bei einem Konzept anschlägt, etwa auf eine verrutschte Zeilenangabe, zeigt, dass ich Code geändert habe, ohne die Konzeptstelle dazu neu zu lesen. Deshalb prüfe ich den Inhalt der Stelle, nicht nur die Angabe.
+- Ein grüner CI-Lauf belegt nur, was die Prüfungen erfassen. Konzepte werden nicht kompiliert (seine Vorgabe): Über ihren Inhalt sagt er nichts. Ihren Inhalt prüfe ich Aussage für Aussage am Code und an den Quellen. Eine Prüfung, die bei einem Konzept anschlägt, etwa auf eine verrutschte Zeilenangabe, zeigt, dass ich Code geändert habe, ohne die Konzeptstelle dazu neu zu lesen. Deshalb prüfe ich den Inhalt der Stelle, nicht nur die Angabe.
 
 **Definition of Ready: erst das vollständige Konzept, dann Code**
 - Vor Arbeitsbeginn steht fest: was der Fehler ist, woran seine Behebung im Kampf erkennbar wäre, welche Quellen auszuschöpfen sind.
@@ -192,11 +192,11 @@ Pflicht für jede nicht-triviale Aufgabe; die REGEL steht darüber.
 - Meine Hilfsmittel (Prüfskripte, Selbsttests, Berichtsformat) stehen nicht zur Abstimmung; einen Defekt darin melde ich mit der getroffenen Entscheidung.
 - Einen von mir verursachten Schaden an seinen personenbezogenen Daten stelle ich nicht zur Wahl: sofort beseitigen und sagen, was die Beseitigung nicht erreicht.
 - Release-Freigabe liegt nur bei ihm: Merge-Zeitpunkt, Tagging, Veröffentlichung weder empfehlen noch vorwegnehmen; den Status berichten.
-- Keine selbst gesetzten Wiedervorlagen und keine zeitgesteuerten Kontrollen (`send_later`, Trigger) – für Release, PR, Prüflauf oder Upstream, auch wenn die Sitzungsumgebung sie vorsieht; diese Datei geht vor. Grund: Jede meldet sich bei ihm, fast immer ohne Befund, und Upstream wird ohnehin vor jeder Codeänderung und am Auftragsende synchronisiert (A421).
+- Keine selbst gesetzten Wiedervorlagen und keine zeitgesteuerten Kontrollen (`send_later`, Trigger) – für Release, PR, CI-Lauf oder Upstream, auch wenn die Sitzungsumgebung sie vorsieht; diese Datei geht vor. Grund: Jede meldet sich bei ihm, fast immer ohne Befund, und Upstream wird ohnehin vor jeder Codeänderung und am Auftragsende synchronisiert (A421).
 
 # Sprache und Namen
 
-- Chat Deutsch, vor jeder Antwort geprüft – auch jede Zwischenmeldung zwischen Werkzeugaufrufen und jede Beschreibung eines Werkzeugaufrufs, die er sieht (sein Befehl, 26.10.2026, dreimal gerügt). Commits, Code-Kommentare, Bezeichner Englisch. Konzepte Deutsch, Release-Texte Englisch. Etablierte Fachbegriffe, keine selbst gebildeten: Ein Fachbegriff des Computerjargons bleibt so, wie der Jargon ihn führt, auch englisch – Pipe, nicht „Rohr“ (seine Präzisierung, 27.10.2026).
+- Chat Deutsch, vor jeder Antwort geprüft – auch jede Zwischenmeldung zwischen Tool-Aufrufen und jede Beschreibung eines Tool-Aufrufs, die er sieht (sein Befehl, 26.10.2026, dreimal gerügt). Commits, Code-Kommentare, Bezeichner Englisch. Konzepte Deutsch, Release-Texte Englisch. Etablierte Fachbegriffe, keine selbst gebildeten: Ein Fachbegriff des Computerjargons bleibt so, wie der Jargon ihn führt, auch englisch – Pipe, nicht „Rohr“ (seine Präzisierung, 27.10.2026).
 
 **Namen**
 - Er spielt mit deutschem Client: seine Namen sind deutsche Spielnamen, die Bezeichner englisch. Vor jeder Suche oder Aussage über ein Fehlen die Zuordnung belegen.
@@ -207,18 +207,18 @@ Pflicht für jede nicht-triviale Aufgabe; die REGEL steht darüber.
 # Versionskontrolle und Umgebung
 
 **Zustand messen**
-- Vor jeder Aussage über Branch, PR, Tag oder Release beide Gegenstellen fetchen und gegen `origin/<branch>` und `HEAD` messen, nie gegen einen lokalen Zweig.
+- Vor jeder Aussage über Branch, PR, Tag oder Release beide Remotes fetchen und gegen `origin/<branch>` und `HEAD` messen, nie gegen einen lokalen Branch.
 - `.github/scripts/audit/check_sync_state.py` vor jeder Codeänderung und Zustandsaussage ausführen.
 
-**Commits und Zweige**
-- Der Arbeitszweig heißt `claude/fixes-after-<letztes Fork-Release>`, etwa `claude/fixes-after-7.5.6.13` (seine Vorgabe); nach einem neuen Release ein neuer Zweig mit dessen Nummer. Grund: Der Name sagt, auf welchem Release-Stand gearbeitet wird. Gibt die Sitzungsumgebung einen anderen Namen vor, gilt seine Vorgabe, und ich sage es ihm.
-- Klein geschnitten, zeitnah gepusht; ein eigener Zweig je Vorhaben ist nicht nötig.
-- Vollständig gemergte Zweige sind Löschfälle; ich melde sie ihm.
-- Bleibt ein Prüflauf aus: zuerst `mergeable_state` messen und die Basis mergen.
+**Commits und Branches**
+- Der Arbeits-Branch heißt `claude/fixes-after-<letztes Fork-Release>`, etwa `claude/fixes-after-7.5.6.13` (seine Vorgabe); nach einem neuen Release ein neuer Branch mit dessen Nummer. Grund: Der Name sagt, auf welchem Release-Stand gearbeitet wird. Gibt die Sitzungsumgebung einen anderen Namen vor, gilt seine Vorgabe, und ich sage es ihm.
+- Klein geschnitten, zeitnah gepusht; ein eigener Branch je Vorhaben ist nicht nötig.
+- Vollständig gemergte Branches sind Löschfälle; ich melde sie ihm.
+- Bleibt ein CI-Lauf aus: zuerst `mergeable_state` messen und die Basis mergen.
 - Commit-Identität nicht überschreiben (`user.name = Claude`, `user.email = noreply@anthropic.com`; kein `git -c user.name=… -c user.email=…`). Sein Klarname und seine private Adresse gehören in keinen Commit; `.githooks/pre-commit` und `check_commit_identity.py` sperren fremde Adressen; `core.hooksPath` setzt der Sitzungsbrief.
 
 **Grenzen und Löschungen**
 - Tag-Pushes, Ref-Löschungen und das Bearbeiten von Releases sind dieser Sitzungsart gesperrt (403, beim Release „not permitted for this session type", 22.10.2026; Tag-Push am 25.10.2026 von der Rechteprüfung der Sitzung abgewiesen). Ein Release erzeuge ich deshalb über `publish.yaml` per `workflow_dispatch`, sobald er es aufträgt (seine Vorgabe, 26.10.2026: „ich habe dich angewiesen, zu compilieren und zu releasen"); sein Auftrag ist die Freigabe, ich stelle sie nicht erneut zur Wahl. Ohne seinen Auftrag erzeuge ich kein Release.
 - Auf `origin` erzeuge ich nichts ohne geprüften Rückweg.
 - Destruktive Operationen sind freigabepflichtig, auch `git branch -D`; geringes Risiko ist ein Argument, keine Freigabe.
-- Ausnahme: Reste der Sitzungsumgebung räume ich selbst auf, sobald sie als risikofrei gemessen sind (lokal, ohne Gegenstelle, ohne eigenen Commit, `git branch -d`), und melde es.
+- Ausnahme: Reste der Sitzungsumgebung räume ich selbst auf, sobald sie als risikofrei gemessen sind (lokal, ohne Remote, ohne eigenen Commit, `git branch -d`), und melde es.

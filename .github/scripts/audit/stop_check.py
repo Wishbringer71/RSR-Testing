@@ -62,7 +62,7 @@ def findings(message, waiting=False):
     """The reasons to go on. waiting: background work is in flight and its end wakes the turn, so naming what comes
     after it is no announcement."""
     if not message.strip():
-        return ["Der Zug endet ohne Ergebnis: Die letzte Nachricht ist leer, der Zug endete nach einem Werkzeugaufruf. "
+        return ["Der Zug endet ohne Ergebnis: Die letzte Nachricht ist leer, der Zug endete nach einem Tool-Aufruf. "
                 "CLAUDE.md, „Bevor ich einen Zug beende“: Ergebnis, Blocker oder eine Frage, die nur er beantworten kann."]
     out = []
     text = prose(message)

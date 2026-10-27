@@ -72,7 +72,7 @@ def git_guards():
                    + (", jetzt .githooks: Der Identitätsschutz läuft vor jedem Commit" if done.returncode == 0
                       else ", Setzen fehlgeschlagen: mit -c core.hooksPath=.githooks committen"))
     if run(["git", "rev-parse", "--is-shallow-repository"], 10)[0] == "true":
-        out.append("flacher Klon: Aussagen über die Versionsgeschichte erst nach git fetch --unshallow")
+        out.append("Shallow Clone: Aussagen über die Versionsgeschichte erst nach git fetch --unshallow")
     return out
 
 

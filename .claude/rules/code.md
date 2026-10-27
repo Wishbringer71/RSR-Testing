@@ -12,7 +12,7 @@ Lädt mit dem ersten Zugriff auf eine Datei unter `RotationSolver*/`. Gilt für 
 Gelten in jeder Stufe. Eine Aussage, die eine davon verletzt, ist unbelegt.
 
 **Gesamtheitlichkeit**
-- Vor jeder Aussage über eine Stelle ihren Wirkungsbereich erheben: Aufrufer, Aufgerufene, Datenflüsse, Schalter, die den Pfad öffnen oder schließen, alle Stellen desselben Musters. Verweise auf ein Symbol mit `.github/scripts/lsp_query.py refs` (Sprachserver: trennt Überladungen und gleichnamige Member), Muster mit der Textsuche.
+- Vor jeder Aussage über eine Stelle ihren Wirkungsbereich erheben: Aufrufer, Aufgerufene, Datenflüsse, Schalter, die den Pfad öffnen oder schließen, alle Stellen desselben Musters. Verweise auf ein Symbol mit `.github/scripts/lsp_query.py refs` (Language Server: trennt Überladungen und gleichnamige Member), Muster mit der Textsuche.
 - Betroffene benennen: Endnutzer, Autoren abgeleiteter Rotationen (`RotationSolver.Basic` als Paket), Upstream-Pflege.
 - Werte, die über eine Schnittstelle kommen, an ihrer Quelle prüfen, samt Typzuordnung.
 - Nur Maße verwenden, die den Wirkungsbereich selbst messen, keine Surrogate; die Prüftiefe folgt Wirkungsbereich und Fehlerklasse, nicht der Zeilenzahl.

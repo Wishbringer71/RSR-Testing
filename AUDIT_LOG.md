@@ -12275,7 +12275,7 @@ beobachtet.
   `check_rule_files.py` hält die Lesetabelle gegen die Dateien. Alle drei in der CI, je mit Selbsttest.
 - *Obsidian:* Das Format – eine Datei je Eintrag, `[[Verweise]]`, Graph – bringt für den Abruf wenig: Die Kennungen
   A123/C45 sind schon eindeutige Verweise, `find` und `show` finden sie, und zehn weitere Skripte samt 671 Nennungen unter `docs/`
-  (27.10.2026) zeigen auf die eine Datei. Was es bringt, ist ein Prinzip: die Rückverweise. Ein alter Eintrag, gelesen ohne
+  (27.10.2026) zeigen auf die eine Datei. Was es bringt, ist ein Prinzip: die Backlinks. Ein alter Eintrag, gelesen ohne
   seinen Widerruf, gibt eine widerrufene Aussage als gültig aus (am 27.10.2026 trugen 57 Einträge eine Aussage, die
   Teil C widerruft, etwa A353 mit C129). Deshalb rechnet `show` sie aus, statt das Archiv umzubauen.
 - *Verworfen:* `@imports` (laden mit, sparen nichts); erzeugte Kopien der Regeln in Dateien, die nicht im Repository
@@ -12290,7 +12290,7 @@ beobachtet.
   luden beim Bearbeiten passender Dateien. Ob die Aufteilung das Befolgen der Regeln verbessert, zeigt erst die Arbeit
   danach.
 
-### A423 · Weitergaben aus KerbalMissionDirector und Retainer-Repricer: Hooks statt Textregeln, Build und Bindungen (27.10.2026)
+### A423 · Weitergaben aus KerbalMissionDirector und Retainer-Repricer: Hooks statt Textregeln, Build und Referenzen (27.10.2026)
 
 - *Seine Angaben:* zwei Berichte der Sitzungen von KerbalMissionDirector (KMD) und Retainer-Repricer (RR), von ihm
   eingefügt. Darin seine Vorgabe aus dem KMD-Chat: „jede repo hat eigene besonderheiten. und damit vielleicht schon
@@ -12302,12 +12302,12 @@ beobachtet.
     nicht in den Kontext, Read auf dieselbe Datei schon (KMD-Befund bestätigt).
   - Hook-Dokumentation (code.claude.com/docs/en/hooks): Stop erhält `last_assistant_message` und `stop_hook_active`,
     nach acht Fortsetzungen in Folge endet der Zug; `additionalContext` setzt den Zug fort, ohne Fehlermeldung.
-    PreToolUse kann `additionalContext` neben das Werkzeugergebnis legen, ohne die Freigabe zu ändern.
+    PreToolUse kann `additionalContext` neben das Tool-Ergebnis legen, ohne die Freigabe zu ändern.
   - Tabellen: kein Defekt im Baum; am Stand vor A422 findet die neue Prüfung die drei Brüche der Widerrufstabelle.
   - `check_cs_structure.py` behauptete „no local .NET"; lokal kompiliert wird seit A331. Aussage berichtigt.
-  - Bindungen mit `tools/RefCheck` aus RR (lesend gebaut): gegen die aktuelle Dalamud-Verteilung (`Dalamud.dll` vom
+  - Referenzen mit `tools/RefCheck` aus RR (lesend gebaut): gegen die aktuelle Dalamud-Distribution (`Dalamud.dll` vom
     20.10.2026, dieselbe Datei wie die am 22.10. installierte) ECommons 1313, RotationSolver.Basic 705, RotationSolver
-    4287, RebornMaterial 293 Bindungen, keine fehlend; Selbsttests bestanden.
+    4287, RebornMaterial 293 Referenzen, keine fehlend; Selbsttests bestanden.
   - A418 in den anderen: KMD (`FileLogSink`) und RR (`LogFile`) schreiben mit `new UTF8Encoding(false)`, das nicht
     wirft – dort kein Befund.
 - *Umsetzung:*
@@ -12322,18 +12322,18 @@ beobachtet.
     Unterbrechungen, bei denen der Hook nicht läuft. Ein Grenzfall kostet eine Runde, keine Schleife.
   - `check_md_tables.py` (CI): jede Markdown-Tabelle mit Kopf und Trennzeile, auch der Rest ohne führendes `|` (KMD).
   - `session_brief.py`: offene Issues, über die Weitergaben ankommen; setzt `core.hooksPath` auf `.githooks` (war
-    nicht gesetzt, nach KMD); meldet einen flachen Klon. Defekt beim Bau: Das Lesen der Hook-Eingabe wartete ohne Hook
+    nicht gesetzt, nach KMD); meldet einen Shallow Clone. Defekt beim Bau: Das Lesen des Hook-Inputs wartete ohne Hook
     endlos, `run_ci_checks.py` hing daran; es liest jetzt nur, wenn Daten anliegen.
-  - `cloud_build.sh`: holt .NET 10 und Dalamud, wo sie fehlen, und baut (37 s mit vorhandenen Werkzeugen, ohne
+  - `cloud_build.sh`: holt .NET 10 und Dalamud, wo sie fehlen, und baut (37 s mit vorhandenen Tools, ohne
     Warnung); beide Abrufwege einzeln geprüft. Nach RR.
-  - Skill `upstream-sync`: Bindungsprüfung, wenn der Sync ECommons, RebornMaterial oder Dalamud ändert.
+  - Skill `upstream-sync`: Referenzprüfung, wenn der Sync ECommons, RebornMaterial oder Dalamud ändert.
 - *Verworfen:* `RefCheck` in die CI übernehmen – RR steht unter AGPL-3.0, RSR unter LGPL-3.0; über die Lizenz
   entscheidet er. Die KMD-Textregel „vor einer Änderung mit Read öffnen" allein – der Hook deckt Befehle mit Pfad;
   für Skripte, die ihre Dateien selbst wählen, bleibt die Textregel in CLAUDE.md.
 - *Prüfgrad:* Selbsttests, alle CI-Schritte lokal, Build lokal. Laufzeit: PreToolUse-Hook im Betrieb und
   SessionStart beim Fortsetzen beobachtet; der Stop-Hook ist am Verlauf gemessen, im Betrieb noch nicht beobachtet.
 
-### A424 · Rückmeldung aus KSP-MyContracts zu den Hooks: Eingabe ohne Warten, Blocker und Hintergrundarbeit (27.10.2026)
+### A424 · Rückmeldung aus KSP-MyContracts zu den Hooks: Input ohne Warten, Blocker und Background-Tasks (27.10.2026)
 
 - *Herkunft:* Nachricht der KSP-MyContracts-Sitzung (Stand 5df840a), gemessen an `bf8f52139`; Weitergabe nach seiner
   Vorgabe vom 27.10.2026, hier am Artefakt geprüft.
@@ -12342,16 +12342,33 @@ beobachtet.
     zum Abbruch (gemessen, Exit 124 nach 3 s). Nur `session_brief.py` las mit `select`.
   - Ein Zugende, das benennt, worauf der nächste Schritt bei ihm wartet, ist ein Blocker; „braucht es deine
     Entscheidung" und „Sagst du ja …, entferne ich … im nächsten Schritt" galten als Ankündigung.
-  - „Recherchen laufen; danach arbeite ich sie ein" galt als Ankündigung, auch wenn Hintergrundarbeit läuft, deren
+  - „Recherchen laufen; danach arbeite ich sie ein" galt als Ankündigung, auch wenn ein Background-Task läuft, dessen
     Ende den Zug wieder weckt.
-- *Umsetzung:* `hook_io.py` liest die Hook-Eingabe für alle drei Hooks nur, wenn sie innerhalb einer halben Sekunde
+- *Umsetzung:* `hook_io.py` liest den Hook-Input für alle drei Hooks nur, wenn sie innerhalb einer halben Sekunde
   anliegt; ohne Eingabe geben die Hooks ihren Hilfetext aus (Selbsttest gegen eine offene stumme Pipe, leere Eingabe,
   JSON; in der CI). `stop_check.py`: Ausnahme für ein Zugende, das auf ihn wartet (`WAITS_ON_HIM` nach KSP), und für
-  laufende Hintergrundarbeit – über das Feld `background_tasks` der Stop-Eingabe statt über ein Wortmuster.
+  laufende Background-Tasks – über das Feld `background_tasks` des Stop-Inputs statt über ein Wortmuster.
 - *Messung danach* (427 Zugenden dieser Sitzung): 6 englische Schlussmeldungen, 2 deutsche Ankündigungen („Ich warte
   auf das Ergebnis des lokalen Prüflaufs. Danach committe und pushe ich." – im Betrieb ausgenommen, falls der Lauf als
-  Hintergrundaufgabe lief; ein Stand ohne Daten), der Fall mit Bedingung an seine Antwort nicht mehr.
+  Background-Task lief; ein Stand ohne Daten), der Fall mit Bedingung an seine Antwort nicht mehr.
 - *Prüfgrad:* Selbsttests, Proben von Hand; Stop-Hook am Protokoll gemessen.
+
+### A425 · Fachbegriffe des Computerjargons bleiben, wie der Jargon sie führt (27.10.2026)
+
+- *Seine Präzisierung:* „fachbegriffe müssen nicht eingedeutscht werden. Pipe -> Rohr ist im Computerjargon sinnfrei."
+  Seine Rüge auf die erste Umsetzung, die nur „Rohr" ersetzte: „es geht nicht nur um rohr. das war nur ein verdammtes
+  beispiel. kannst du sowas nicht erkennen?" – das Beispiel für die Regel genommen, eine stille Verengung (Loop,
+  Stufe 4).
+- *Regel:* CLAUDE.md, „Sprache und Namen": Ein Fachbegriff des Computerjargons bleibt so, wie der Jargon ihn führt,
+  auch englisch.
+- *Durchgesehen und ersetzt:* CLAUDE.md, Regeldateien, Skills, die Ausgaben der Hooks, die Einträge A422 bis A424 und
+  die Konzepte – Zweig (Git) → Branch, Arbeitszweig → Arbeits-Branch, Gegenstelle → Remote, Prüflauf → CI-Lauf,
+  Werkzeugaufruf → Tool-Aufruf, Sprachserver → Language Server, Quellgenerator → Source Generator, Verweissuche →
+  Referenzsuche, Rückverweise → Backlinks, flacher Klon → Shallow Clone, Hintergrundarbeit → Background-Task,
+  Hook-Eingabe → Hook-Input, Dalamud-Verteilung → Dalamud-Distribution, Bindungen (RefCheck) → Referenzen,
+  Rohr → Pipe.
+- *Belassen:* „Zweig" für den Zweig einer Verzweigung im Code (etablierter deutscher Fachbegriff, in den Konzepten
+  so gemeint); Wörter des Spiels; Zitate; die älteren Archiveinträge als Aufzeichnung ihres Tages.
 
 ---
 ## B · Commit-Register (Fork vs. `upstream/main`)
