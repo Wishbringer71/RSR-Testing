@@ -208,7 +208,8 @@ public sealed class VPR_Reborn : ViperRotation
 
 		// Burst medicine from the setting's "5 seconds before SerpentsIre comes off cooldown" on - and while it stands
 		// ready, which the setting's text includes: the opener's Serpent's Ire. Elapsed recast alone left that out (A342).
-		if (NoAbilityReady && BurstMed && SerpentsIrePvE.EnoughLevel && SerpentsIrePvE.Cooldown.WillHaveOneCharge(5)
+		// In combat only: out of it Serpent's Ire stands ready too, and the potion went before the pull.
+		if (InCombat && NoAbilityReady && BurstMed && SerpentsIrePvE.EnoughLevel && SerpentsIrePvE.Cooldown.WillHaveOneCharge(5)
 			&& UseBurstMedicine(out act))
 		{
 			return true;
