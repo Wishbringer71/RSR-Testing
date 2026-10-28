@@ -200,7 +200,7 @@ public static class IActionHelper
 	{
 		for (var i = 0; i < ids.Length; i++)
 		{
-			if (ids[i].Equals(id))
+			if (ids[i] == id)
 			{
 				return true;
 			}
@@ -222,7 +222,7 @@ public static class IActionHelper
 			}
 
 			var actionId = isAdjust ? (ActionID)action.AdjustedID : (ActionID)action.ID;
-			if (actionId.Equals(id))
+			if (actionId == id)
 			{
 				return true;
 			}

@@ -808,7 +808,7 @@
   },
   {
    "file": "RotationSolver/RebornRotations/Melee/VPR_Reborn.cs",
-   "code": "if (NoAbilityReady && BurstMed && SerpentsIrePvE.EnoughLevel && SerpentsIrePvE.Cooldown.WillHaveOneCharge(5)",
+   "code": "if (InCombat && NoAbilityReady && BurstMed && SerpentsIrePvE.EnoughLevel && SerpentsIrePvE.Cooldown.WillHaveOneCharge(5)",
    "values": [
     "5"
    ],

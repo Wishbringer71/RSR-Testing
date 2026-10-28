@@ -3000,7 +3000,8 @@ public struct ActionTargetInfo(IBaseAction action)
 				return MinBy(battleChara, hostileOrder);
 			}
 
-			return PickByTargeting(battleChara, ToTargetType(commandTargeting ?? DataCenter.TargetingType));
+			var sort = commandTargeting.HasValue || IsSortType(effectiveType) ? effectiveType : ToTargetType(DataCenter.TargetingType);
+			return PickByTargeting(battleChara, sort);
 		}
 
 		IBattleChara? FindBeAttackedTarget()
@@ -3424,6 +3425,10 @@ public struct ActionTargetInfo(IBaseAction action)
 			return lowerHpFirst ? a.CurrentHp.CompareTo(b.CurrentHp) : b.CurrentHp.CompareTo(a.CurrentHp);
 		}
 	}
+
+	private static bool IsSortType(TargetType type) => type is TargetType.Small or TargetType.HighHP or TargetType.LowHP
+		or TargetType.HighHPPercent or TargetType.LowHPPercent or TargetType.HighMaxHP or TargetType.LowMaxHP
+		or TargetType.Nearest or TargetType.Farthest or TargetType.PvPHealers or TargetType.PvPTanks or TargetType.PvPDPS;
 
 	private static TargetType ToTargetType(TargetingType targetingType) => targetingType switch
 	{
