@@ -29,8 +29,10 @@ Aus seinem Upload vom 26.10.2026 abends (A419) zwei Punkte offener Arbeit, in di
 Tankbuster zuerst – er trifft sicher, und ein Tank steht ohne Hilfe –, danach die Flächentabelle unter Minderung, die nur
 den ersten Treffer einer Aktion falsch bewertet. Aus seinem Upload vom 27.10.2026 (A427) davor ein Punkt: Pyretisch
 mitten im eigenen Zauber – er tötete zweimal an einem Abend. Danach die technische Schuld, soweit ihre
-Auflösungsbedingung erfüllt ist. Aus der Prüfung vom 27.10.2026 (A430) der Defekt der HoT-Listen: Er kostet Schaden, nicht Sicherheit, und kommt nach den drei Punkten offener Arbeit. Sein Auftrag vom 28.10.2026, die gelernten Tabellen in den Einstellungen zu zeigen
-und zu bearbeiten, danach: Er ändert den Kampf nur mittelbar, über einen berichtigten Lernwert. Warten auf Daten: unten.
+Auflösungsbedingung erfüllt ist. Aus der Prüfung vom 27.10.2026 (A430) der Defekt der HoT-Listen: Er kostet Schaden, nicht Sicherheit, und kommt nach den drei Punkten offener Arbeit. Seine beiden Aufträge vom 28.10.2026 zu den gelernten Tabellen danach, als ein Konzept
+und eine Vorlage: erst die Revision über einen Spielpatch, weil sie festlegt, welchen Stand ein Wert hat, dann die
+Anzeige und Bearbeitung in den Einstellungen, die diesen Stand zeigt. Beide ändern den Kampf nur mittelbar, über einen
+geprüften oder berichtigten Lernwert, und werden erst nach seiner Freigabe gebaut. Warten auf Daten: unten.
 
 ## Defekte
 
@@ -67,6 +69,26 @@ ihn anhebt. *Ort:* `Watcher.TryAreaShare`, die Leser in `DataCenter` (`AreaShare
 *Nächster Schritt:* ungemindert speichern wie die Tankbuster-Tabelle (`TankbusterTable.MitigationFactor`), die Leser
 rechnen die jetzt stehende Minderung je Mitglied ein. *Konzept:* 13.
 
+### Gelernte Tabellen über einen Spielpatch: Revision statt Höchstwert · N
+Sein Auftrag (28.10.2026): „das lernlisten-konzept müsste auch überarbeitet in hinblick auf anstehende patches. […]
+nach patch werden die bestehenden listen als gegeben angesehen, aber noch nicht als verifiziert. also solange anwendung
+der bisherigen erkenntnisse, bis durch neue erkenntnisse (also eine neue revision der liste) diese bestätigt werden oder
+eben falsifiziert werden und in der neuen liste als ungültig markiert bzw. in der alten gelöscht werden. das neue
+revisionssystem muss sicher aufgebaut sein, dass nicht irrtümlich erkenntnisse gelöscht werden, bzw. alte daten dauerhaft
+unwidersprochen und ungeprüft nach einem versionssprung des spiels beibehalten werden." Im Kampf: Ändert ein Patch eine
+Mechanik, gilt der alte Lernwert weiter. Ein stärkerer Treffer hebt ihn an, weil jedes Speichern den höheren Wert
+behält; ein abgeschwächter Treffer senkt ihn nie, und RSR gibt weiter Abwehr und Heilung für den alten aus. Ein Gegner,
+der nun schläft, bleibt als resistent geführt, eine Serie, die nicht mehr kommt, bleibt gelernt. *Ort:*
+`OtherConfiguration.LearnedFile` (Zusammenführung mit `Math.Max`, `Math.Min` oder `Higher`, Speichern), die Werttypen
+`TankbusterReading`, `SleepReading`, `DotReading`/`DotArea`, dazu `HitSeriesOnPlayer` und `TankbusterMarkerWithoutHit`;
+Vorbild der Upstream-Listen: `BuiltInList`/`SetList` (eingebaute Einträge, eigene Änderungen als Differenz,
+ausgemusterte Ids). *Nächster Schritt:* Konzept im vollständigen kritischen Loop mit Antithese und Widerlegungsversuch,
+danach Audit des Konzepts: Revision je Spielversion; nach einem Versionssprung gelten die alten Werte weiter, aber als
+unbestätigt, bis eine Messung der neuen Revision sie bestätigt oder widerlegt. Seine Bedingung: Nichts wird irrtümlich
+gelöscht, und nichts bleibt nach einem Versionssprung dauerhaft unwidersprochen und ungeprüft stehen. Umsetzung erst
+nach ausführlicher Präsentation und Begründung (seine Vorgabe, 28.10.2026), zusammen mit „Gelernte Tabellen des Forks in
+den Einstellungen zeigen und bearbeiten". *Konzept:* 13.
+
 ### Gelernte Tabellen des Forks in den Einstellungen zeigen und bearbeiten · N
 Sein Auftrag (28.10.2026): „prüfen, ob es sinnvoll ist, die durch den fork selbst erstellten lernlisten ähnlich der
 listen vom upstream (aoe, tankbuster, rückstoß etc.) auch in den settings anzeigbar und editierbar zu machen mit den
@@ -80,7 +102,10 @@ Tankbuster-Tabelle neben Upstreams AoE- und Tankbuster-Liste. *Ort:* `MainWindow
 `SleepOutcomes`, `SleepResistantKinds`, `SleepDiminishing`, `HitSeriesOnPlayer`, `DotOnParty`. *Nächster Schritt:*
 Prüfung und Konzept im kritischen Loop, mit Antithese und Widerlegungsversuch, danach Audit des Konzepts; erst dann
 Code. Abzuwägen gegen seine Vorgabe aus A173 („unnötige funktionen erzeugen auch unnötige fehlerursachen", Löschen von
-Hand statt Knopf); berührt das Ergebnis sie, lege ich es ihm vor. *Konzept:* 13 (gelernte Tabellen), 18 (Einstellungen).
+Hand statt Knopf); berührt das Ergebnis sie, lege ich es ihm vor. Die Anzeige zeigt auch den Stand eines Werts nach
+„Gelernte Tabellen über einen Spielpatch: Revision statt Höchstwert"; beide Konzepte gehen zusammen. Umsetzung erst nach
+ausführlicher Präsentation und Begründung, wie das Ziel erreicht wird (seine Vorgabe, 28.10.2026). *Konzept:* 13
+(gelernte Tabellen), 18 (Einstellungen).
 
 ## Technische Schuld
 
