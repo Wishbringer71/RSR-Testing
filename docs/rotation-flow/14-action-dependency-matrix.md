@@ -271,7 +271,10 @@ ist nutzbar, solange der benötigte Status liegt, bis die Aktion losgeht und ihr
 Ein GCD wird vor dem Ablauf des GCD gewählt (`CalculatedActionAhead`) und geht los, wenn er abläuft;
 deshalb zählt die Restzeit mit. Die Wirkzeit ist die angepasste des Spiels — unter Swiftcast oder
 Dualcast null (belegt an WrathCombo, das „Wiederbelebung nur mit Swiftcast" über
-`GetAdjustedCastTime == 0` prüft).
+`GetAdjustedCastTime == 0` prüft). Auf der Zielseite gilt die Bedingung, solange `ActionConfig.ShouldCheckTargetStatus`
+an ist: ab Werk an und ohne Schalter in der Oberfläche, eine abgeleitete Rotation kann sie je Aktion abschalten. Der
+Fork hatte den Schalter entfernt, weil ihn nichts setzte; er gehört aber zur öffentlichen Schnittstelle des Pakets und
+steht seit A434 wieder wie bei Upstream.
 
 **Warum so:** Bis A166 war eine solche Aktion gesperrt, sobald ihr Status in `StatusRefreshGcdCount`
 GCDs (ab Werk 2, rund 5 s) endete. Die Einstellung heißt in der Oberfläche „Number of GCDs before the

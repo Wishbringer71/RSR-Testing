@@ -269,6 +269,7 @@ public partial class MainWindow
 						ImGui.Text("AoeCount: " + action.Config.AoeCount);
 					}
 					ImGui.Text("ShouldCheckStatus: " + action.Config.ShouldCheckStatus);
+					ImGui.Text("ShouldCheckTargetStatus: " + action.Config.ShouldCheckTargetStatus);
 					ImGui.Text("StatusFromSelf: " + action.Setting.StatusFromSelf);
 					ImGui.Text("Is Real GCD: " + action.Info.IsRealGCD);
 					ImGui.Text("Is PvP Action: " + action.Info.IsPvP);

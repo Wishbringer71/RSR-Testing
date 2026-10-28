@@ -24,6 +24,12 @@ countdown or between two packs, a ready burst ability - Presence of Mind, Divina
 could set it off before the pull, so it ran out before the burst and kept every medicine on its recast. The tincture in
 the countdown goes as before.
 
+## An enemy cast missing from the game data no longer cuts the update short
+
+When an enemy casts something the game's action sheet has no entry for, the area attack and sleep checks now pass over
+that cast, as they were meant to. Before, looking it up failed, and for every frame of the cast the rest of that update
+step was skipped.
+
 ## Phoenix Down waits for a cast it can finish, and comes before the HP potion
 
 Since patch 7.3 a Phoenix Down can be thrown in combat in four-player content, but it is an 8-second cast during which

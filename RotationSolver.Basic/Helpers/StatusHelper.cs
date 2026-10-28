@@ -1874,6 +1874,33 @@ public static class StatusHelper
 		}
 	}
 
+	/// <summary>
+	/// Returns true if any of <paramref name="statusIDs"/> is present on <paramref name="battleChara"/>.
+	/// </summary>
+	private static bool AnyStatusMatches(IBattleChara? battleChara, bool isFromSelf, ReadOnlySpan<StatusID> statusIDs)
+	{
+		if (!TryGetStatusList(battleChara, out var statusList))
+		{
+			return false;
+		}
+
+		var playerId = Player.Object?.GameObjectId ?? 0;
+		for (var i = 0; i < statusList!.Length; i++)
+		{
+			var status = statusList[i];
+			if (status == null || status.StatusId == 0)
+			{
+				continue;
+			}
+
+			if (ContainsId(status.StatusId, statusIDs) && (!isFromSelf || IsFromPlayer(status, playerId)))
+			{
+				return true;
+			}
+		}
+		return false;
+	}
+
 	// The objects the player owns - pet, summons, companions - by id, gathered once per frame. The "from self" test
 	// asked Status.SourceObject for every status whose source is not the player himself, and that getter is a
 	// linear search over every slot of the object table (Dalamud's ObjectTable.SearchById); a source that is no
@@ -1914,38 +1941,6 @@ public static class StatusHelper
 	}
 
 	/// <summary>
-	/// Returns true if any of <paramref name="statusIDs"/> is present on <paramref name="battleChara"/>.
-	/// </summary>
-	private static bool AnyStatusMatches(IBattleChara? battleChara, bool isFromSelf, ReadOnlySpan<StatusID> statusIDs)
-	{
-		if (!TryGetStatusList(battleChara, out var statusList))
-		{
-			return false;
-		}
-
-		var playerId = Player.Object?.GameObjectId ?? 0;
-		for (var i = 0; i < statusList!.Length; i++)
-		{
-			var status = statusList[i];
-			if (status == null || status.StatusId == 0)
-			{
-				continue;
-			}
-
-			if (isFromSelf && !IsFromPlayer(status, playerId))
-			{
-				continue;
-			}
-
-			if (ContainsId(status.StatusId, statusIDs))
-			{
-				return true;
-			}
-		}
-		return false;
-	}
-
-	/// <summary>
 	/// Returns the minimum remaining time among the statuses in <paramref name="statusIDs"/> present on
 	/// <paramref name="battleChara"/>; <paramref name="found"/> is false when none match.
 	/// </summary>
@@ -1967,12 +1962,7 @@ public static class StatusHelper
 				continue;
 			}
 
-			if (isFromSelf && !IsFromPlayer(status, playerId))
-			{
-				continue;
-			}
-
-			if (ContainsId(status.StatusId, statusIDs))
+			if (ContainsId(status.StatusId, statusIDs) && (!isFromSelf || IsFromPlayer(status, playerId)))
 			{
 				var t = status.RemainingTime == 0f ? float.MaxValue : status.RemainingTime;
 				if (t < min)
@@ -2007,12 +1997,7 @@ public static class StatusHelper
 				continue;
 			}
 
-			if (isFromSelf && !IsFromPlayer(status, playerId))
-			{
-				continue;
-			}
-
-			if (ContainsId(status.StatusId, statusIDs))
+			if (ContainsId(status.StatusId, statusIDs) && (!isFromSelf || IsFromPlayer(status, playerId)))
 			{
 				var s = (byte)(status.Param == 0 ? byte.MaxValue : status.Param);
 				if (s < min)

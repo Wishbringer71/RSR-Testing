@@ -34,6 +34,12 @@ rotation's own `CanHealSingleSpell` and `CanHealAreaSpell`; override `HotAgainst
 `TargetType` gains `HotAgainstDot`, appended after `TankSwap`, so every existing value keeps its number. The learned
 figures are kept in `DotOnParty.json` beside the other learned tables.
 
+### Addition to RotationSolver.Basic: `ActionConfig.ShouldCheckTargetStatus` is back
+
+The fork had removed it as unused; it belongs to upstream's package surface, so a rotation built against upstream that
+sets it compiles again. On by default: a target status an action needs (`TargetStatusNeed`) is checked as before; set it
+to false in the action's config to skip that check. `ShouldCheckStatus` keeps gating the provided status only.
+
 ### Behaviour change in RotationSolver.Basic: burst medicine only in combat or under a countdown
 
 `CustomRotation.UseBurstMedicine` now returns false out of combat unless a countdown is running

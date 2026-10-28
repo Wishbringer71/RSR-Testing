@@ -288,7 +288,7 @@ Zündung hängt damit vom Zeitpunkt ab:
 | nach Ablauf | 20 s, volle Wirkung |
 
 `IsStatusProvided` (`ActionBasicInfo.cs:627`) sperrt die Zündung, solange der Status nicht innerhalb von
-`StatusRefreshGcdCount` GCDs endet (`ActionConfig.cs:66`, ab Werk 2), also etwa fünf Sekunden vor Ablauf.
+`StatusRefreshGcdCount` GCDs endet (`ActionConfig.cs:71`, ab Werk 2), also etwa fünf Sekunden vor Ablauf.
 Entscheidend dafür ist `StatusFromSelf = false` in `ModifySearingLightPvE`: `PlayerHasStatus`
 (`StatusHelper.PlayerHasStatus`, Quellenfilter in `AnyStatusMatches`) filtert nur bei `isFromSelf` auf die
 eigene Quelle, hier zählt also jeder fremde Buff. Der Schutz verhindert die teuren Fälle und erlaubt die

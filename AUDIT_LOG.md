@@ -12617,6 +12617,55 @@ beobachtet.
   Build von `main` geholt wird.
 - *Prüfgrad:* statisch an jedem Leser, kompiliert, CI-Schritte lokal; im Spiel nicht beobachtet.
 
+### A434 · Upstream 7.5.7.10 gegen vorhandene Fork-Lösungen: Struktur, Logistik, Zukunft, Wechselwirkungen (28.10.2026)
+
+- *Seine Vorgaben:* „immer bei dingen prüfen, die im fork schon vorhanden sind: welche upsetzung ist logischer,
+  strukturierter und objectorientierter. welche lösung braucht bei gleicher qualität weniger logistik und passt besser in
+  das gesamtkonzept. welche lösung ist für weiteren ausbau zukunftssicherer. falls jede lösung vor- und nachteile bietet,
+  versuchen eine bessere zu finden, die die nachteile beseitigt und nur die vorteile nutzt. hybridlösungen sind da dann
+  die letzte option, aber möglich." und „wechselwirkungen mit anderen funktionen nicht ausser acht lassen. viele dinge
+  sind miteinander verwoben". Beide im Skill `upstream-sync`. Logistik heißt hier auch: jede Zeile, die künftig gegen
+  Upstream gemergt werden muss.
+- *Statusprüfung (`ShouldCheckStatus`, `ShouldCheckTargetStatus`):* Upstream legt den Schalter der Aktion jetzt auf die
+  Gewährungsseite, wie der Fork seit 331c12540, und behält für die Bedarfsseite auf dem Ziel `ShouldCheckTargetStatus`
+  (öffentlich, ab Werk an, ohne Oberfläche). Der Fork hatte ihn entfernt, weil ihn nichts setzte. Vergleich: gleiches
+  Verhalten, solange niemand ihn abschaltet; Upstreams Form benennt beide Seiten mit eigenem Schalter (der Kommentar des
+  Forks wird überflüssig), hält die öffentliche Schnittstelle des Pakets – eine abgeleitete Rotation, die ihn setzt,
+  kompilierte gegen den Fork nicht – und lässt einer Rotation den Eingriff je Aktion offen. Übernommen: Schalter,
+  Bedarfsprüfung, Debug-Zeile, die Zeile in `IsStatusProvided` im Wortlaut. Wechselwirkung: Die DoT-Verteilung
+  (Konzept 03) liest weiter `ShouldCheckStatus`, die Gewährungsseite; Konzept 12 (Searing Light, `IsStatusProvided`)
+  inhaltlich nachgelesen, gilt unverändert. CHANGELOG.
+- *Effektfilter des VFX-Hooks:* Fork `IsReadVfxPath` (A325) mit `vfx/lockon/eff/`, Upstream `IsTrackedVfxPath` mit
+  `vfx/lockon/`, sonst dieselben vier Markerlisten. Das Blatt `Lockon` führt nur den Namen (Zeile 655:
+  `x6r9_loc01_t0a1`), das Spiel legt jeden Marker unter `vfx/lockon/eff/` ab; BossMod (awgil, 87843ccee, 27.10.2026)
+  kennt keinen anderen Pfad. Beide lassen also dieselben Effekte durch (Schluss aus Blatt und Fremdquelle). Upstreams
+  Form braucht keinen Eingriff, wenn ein neuer Leser einen anderen Lock-on-Effekt liest – zukunftssicherer – und hat
+  keine Abweichung. Übernommen im Wortlaut samt Platz von `StartsWithAny`; Fork-Fassung, Präfix-Konstante und zweites
+  `StartsWithAny` entfernt. Wechselwirkung: Leser der Warteschlange (Flächen-, Mehrfachtreffer-, Tankbuster-Erkennung,
+  Markerwache, Trace, Debug-Ansicht) lesen nur Pfade dieser Listen oder unter `vfx/lockon/eff/`; nichts fällt weg.
+- *Quelle „vom Spieler" (`StatusHelper.IsFromPlayer`):* Upstream fragt erst die Id, dann die Quelle; der Fork umgekehrt,
+  dafür ohne Suche im Objektverzeichnis je Status (A325). Bessere Lösung als jede allein: Upstreams Reihenfolge – die
+  teurere Quellenprüfung nur für einen Status mit gesuchter Id – mit der Fork-Umsetzung an Upstreams Platz. Die drei
+  Aufrufstellen stehen jetzt im Wortlaut, die Abweichung ist nur noch der Rumpf. Wechselwirkung: Der Zwischenspeicher
+  der Spielerobjekte hat keinen anderen Leser.
+- *Klasse aus Upstreams `GetRowOrDefault`:* Lumina wirft bei einer fehlenden Zeile (`ExcelSheet.GetRow`,
+  `ArgumentOutOfRangeException`, Doku der installierten Fassung); die Abfragen `RowId == 0` nach `GetRow` an zehn
+  Fork-Stellen griffen deshalb nie. Betroffen: Flächenerkennung und Großflächen-Pfad in `DataCenter`, die Beschreibung
+  der Abwehrquellen, zwei Trace-Zeilen der Flächenabwehr, vier Stellen von `SleepInterruptWatch`. Castet ein Gegner etwas
+  ohne Zeile im Blatt `Action`, brach die Ausnahme den Schritt des Aktualisierungslaufs ab (`MajorUpdater.Run` fängt sie)
+  – in jedem Frame, solange der Cast lief; die Häufigkeit ist nicht gemessen. Jetzt `GetRowOrDefault(...) ?? default`,
+  Upstreams Schreibweise; ein Helfer wäre eine Fork-Schnittstelle mehr. Upstream-Stellen mit festen oder vom Spiel
+  gemeldeten Ids (`ActionQueueManager` nur Typ Action, Rückstoß in `Watcher`) bleiben.
+- *Ohne Überschneidung, auf Wechselwirkung geprüft:* Speichern über eine Zwischendatei – bei den gelernten Tabellen
+  Upstreams eigener Weg, der Fork bewahrt eine unlesbare Datei auf (A389), beides ergänzt sich. Upstreams Speicher der
+  gültigen Gruppenziele (`TargetHelper.GetValidTargets`) nutzt negative Schlüssel in `DataCenter.TargetsByRange`, die je
+  Frame geleert werden; kein Fork-Leser zählt die Einträge. `ClassJob.Value.RowId` und der Überlauf von `MaxHp *` kommen
+  im Fork nicht vor.
+- *Gegnerwahl (A433):* geprüft, ob eine Form statt der Verbindung trägt. Die DoT-Verteilung braucht einen Vergleich je
+  Aktion (Status, Ticks), eine Zielart kann ihn nicht tragen; die Rangfolge Befehl, DoT-Verteilung, Sortierung der
+  Aktion, Zielart des Spielers bleibt.
+- *Prüfgrad:* kompiliert ohne Warnung, alle Prüfschritte lokal; im Spiel nicht beobachtet.
+
 ---
 ## B · Commit-Register (Fork vs. `upstream/main`)
 

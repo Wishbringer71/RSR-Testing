@@ -2664,6 +2664,25 @@ internal static class DataCenter
 	], StringComparer.OrdinalIgnoreCase);
 
 	private static readonly StringComparison PathCmp = StringComparison.OrdinalIgnoreCase;
+	internal static bool IsTrackedVfxPath(string path)
+	{
+		return path.StartsWith("vfx/lockon/", PathCmp) || StartsWithAny(path, SharedDamagePaths) || StartsWithAny(path, MultiHitSharedPaths)
+			|| StartsWithAny(path, SpreadDamagePaths) || StartsWithAny(path, TankbusterPaths);
+	}
+
+	private static bool StartsWithAny(string path, FrozenSet<string> prefixes)
+	{
+		foreach (var p in prefixes)
+		{
+			if (path.StartsWith(p, PathCmp))
+			{
+				return true;
+			}
+		}
+
+		return false;
+	}
+
 
 	/// <summary>Whether a VFX path is one of the tankbuster markers, before the learned exclusions.</summary>
 	internal static bool IsTankbusterMarkerPath(string path)
@@ -2678,27 +2697,6 @@ internal static class DataCenter
 
 		return false;
 	}
-
-	// The lock-on effects the debug view lists (MainWindow_Debug, "Casting Vfx").
-	private const string LockOnEffectPrefix = "vfx/lockon/eff/";
-
-	/// <summary>
-	/// Whether anything reads an actor effect with this path: the four marker lists - tankbuster, multi-hit
-	/// shared, shared and spread - and the lock-on effects of the debug view. Only these enter
-	/// <see cref="VfxDataQueue"/>; a new reader of the queue matches its paths through these lists, or adds its
-	/// own here.
-	/// </summary>
-	/// <remarks>
-	/// The hook used to queue every effect of every character for five seconds, and every reader walked all of
-	/// them on every read - one asked the object table for each before looking at its path. In a Critical
-	/// Engagement that is every skill effect of 48 players (A325).
-	/// </remarks>
-	internal static bool IsReadVfxPath(string path)
-		=> path.StartsWith(LockOnEffectPrefix, PathCmp)
-			|| StartsWithAny(path, TankbusterPaths)
-			|| StartsWithAny(path, MultiHitSharedPaths)
-			|| StartsWithAny(path, SharedDamagePaths)
-			|| StartsWithAny(path, SpreadDamagePaths);
 
 	/// <summary>Whether a fight in this area has shown this marker path not to be followed by a hit.</summary>
 	internal static bool IsFalsifiedTankbusterMarker(string path)
@@ -2818,7 +2816,7 @@ internal static class DataCenter
 					continue;
 				}
 
-				var action = actionSheet.GetRow(h.CastActionId);
+				var action = actionSheet.GetRowOrDefault(h.CastActionId) ?? default;
 				if (action.RowId != 0 && AreaCastCanReachPlayer(h, action))
 				{
 					return true;
@@ -2980,7 +2978,7 @@ internal static class DataCenter
 						continue;
 					}
 
-					var action = actionSheet.GetRow(h.CastActionId);
+					var action = actionSheet.GetRowOrDefault(h.CastActionId) ?? default;
 					if (action.RowId == 0 || !AreaCastReachesParty(h, action))
 					{
 						continue;
@@ -4315,7 +4313,7 @@ internal static class DataCenter
 		var now = DateTime.Now;
 		if (!AreaMitigationSkipped.TryGetValue(actionId, out var last) || (now - last).TotalSeconds > DefaultGCDTotal)
 		{
-			var name = Service.GetSheet<Action>().GetRow(actionId).Name.ExtractText();
+			var name = Service.GetSheet<Action>().GetRowOrDefault(actionId)?.Name.ExtractText() ?? "?";
 			DefenseTrace.Line($"area defence skipped: {name} #{actionId}, rated {share:P0}, which leaves everybody above"
 				+ " the area heal line");
 		}
@@ -4540,7 +4538,7 @@ internal static class DataCenter
 					if (isTank && IsHostileCastingTank(h))
 					{
 						var aimed = Svc.Objects.SearchById(h.CastTargetObjectId);
-						parts.Add($"cast {sheet?.GetRow(id).Name.ExtractText() ?? "?"} #{id} by {h.Name.TextValue} at "
+						parts.Add($"cast {sheet?.GetRowOrDefault(id)?.Name.ExtractText() ?? "?"} #{id} by {h.Name.TextValue} at "
 							+ $"{(player != null && h.CastTargetObjectId == player.GameObjectId ? "you" : aimed?.Name.TextValue ?? "?")}"
 							+ $" (unlisted, cast at its target) {h.TotalCastTime - h.CurrentCastTime:F1} s left");
 					}
@@ -4548,7 +4546,7 @@ internal static class DataCenter
 					continue;
 				}
 
-				var act = sheet?.GetRow(id);
+				var act = sheet?.GetRowOrDefault(id);
 				var target = Svc.Objects.SearchById(h.CastTargetObjectId);
 				var text = $"cast {act?.Name.ExtractText() ?? "?"} #{id} by {h.Name.TextValue}"
 					+ $"{(AreaCastHelperIds.Contains(h.GameObjectId) ? " (untargetable)" : string.Empty)} at {target?.Name.TextValue ?? "?"}"
@@ -4623,19 +4621,6 @@ internal static class DataCenter
 
 		return Svc.Objects.SearchById(objectId) is IBattleChara marked
 			&& (marked.IsParty() || marked.IsNpcPartyMember());
-	}
-
-	private static bool StartsWithAny(string path, FrozenSet<string> prefixes)
-	{
-		foreach (var p in prefixes)
-		{
-			if (path.StartsWith(p, PathCmp))
-			{
-				return true;
-			}
-		}
-
-		return false;
 	}
 
 	private static bool IsAnyHostileCastingKnockback()
@@ -4885,7 +4870,7 @@ internal static class DataCenter
 		}
 
 		_bmrRaidwideHeldTracedFor = _bmrRaidwideLandsAt;
-		var name = Service.GetSheet<Action>().GetRow(actionId).Name.ExtractText();
+		var name = Service.GetSheet<Action>().GetRowOrDefault(actionId)?.Name.ExtractText() ?? "?";
 		DefenseTrace.Line($"area defence held: BossModReborn's raidwide in {BMRNextRaidwideIn:F1} s came with"
 			+ $" {name} #{actionId}, rated {share:P0}, which leaves everybody above the area heal line");
 	}

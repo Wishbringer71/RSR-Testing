@@ -225,7 +225,7 @@ public static class SleepInterruptWatch
 	// area cast counts only while it reaches the party; stopping one that reaches nobody costs a GCD for nothing.
 	private static bool IsKnownStoppedOnOne(uint actionId)
 	{
-		var act = Service.GetSheet<Lumina.Excel.Sheets.Action>().GetRow(actionId);
+		var act = Service.GetSheet<Lumina.Excel.Sheets.Action>().GetRowOrDefault(actionId) ?? default;
 		if (act.RowId == 0 || act.EffectRange != 0 || (CastType)act.CastType is not (CastType.Targeted or CastType.Unknown))
 		{
 			return false;
@@ -240,7 +240,7 @@ public static class SleepInterruptWatch
 	// An area attack that reaches the player or two living members, by the shape of the action.
 	private static bool ReachesParty(IBattleChara enemy)
 	{
-		var act = Service.GetSheet<Lumina.Excel.Sheets.Action>().GetRow(enemy.CastActionId);
+		var act = Service.GetSheet<Lumina.Excel.Sheets.Action>().GetRowOrDefault(enemy.CastActionId) ?? default;
 		if (act.RowId == 0)
 		{
 			return false;
@@ -299,7 +299,7 @@ public static class SleepInterruptWatch
 		}
 
 		_jobStopTraced = cast;
-		var name = Service.GetSheet<Lumina.Excel.Sheets.Action>().GetRow(enemy.CastActionId).Name.ExtractText();
+		var name = Service.GetSheet<Lumina.Excel.Sheets.Action>().GetRowOrDefault(enemy.CastActionId)?.Name.ExtractText() ?? "?";
 		DefenseTrace.Line($"stop a cast -> {action.Name} #{action.ID} on {enemy.Name.TextValue} (kind {enemy.BaseId}), casting {name} #{enemy.CastActionId}"
 			+ $", {remaining:F1} s left, interruptible {enemy.IsCastInterruptible}, needs {needed:F1} s");
 	}
@@ -327,7 +327,7 @@ public static class SleepInterruptWatch
 		}
 
 		TraceNotCast(_aim);
-		var name = Service.GetSheet<Lumina.Excel.Sheets.Action>().GetRow(actionId).Name.ExtractText();
+		var name = Service.GetSheet<Lumina.Excel.Sheets.Action>().GetRowOrDefault(actionId)?.Name.ExtractText() ?? "?";
 		_aim = new Aim(enemy.GameObjectId, enemy.Name.TextValue, enemy.BaseId, actionId, name, DateTime.Now.AddSeconds(remaining),
 			enemy.IsCastInterruptible);
 		DefenseTrace.Line($"sleep to stop a cast -> {sleep.Name} #{sleep.ID} on {enemy.Name.TextValue} (kind {enemy.BaseId}), casting {name} #{actionId}"

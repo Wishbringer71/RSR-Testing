@@ -338,7 +338,7 @@ public struct ActionTargetInfo(IBaseAction action)
 			return false;
 		}
 
-		if (action.Setting.TargetStatusNeed != null && !skipTargetStatusNeedCheck)
+		if (action.Setting.TargetStatusNeed != null && !skipTargetStatusNeedCheck && action.Config.ShouldCheckTargetStatus)
 		{
 			if (DataCenter.IsInOccultCrescentOp && battleChara.NameId != 0)
 			{
@@ -359,10 +359,6 @@ public struct ActionTargetInfo(IBaseAction action)
 			}
 		}
 
-		// ShouldCheckStatus is the user's "does this action check status effects" toggle. It belongs on
-		// the provide side only: that check skips the action because the status it grants is already
-		// there, which is what the option is meant to switch off. The need side is a precondition, not
-		// redundancy, so it stays in force either way.
 		if (action.Setting.TargetStatusProvide != null && !skipStatusProvideCheck && action.Config.ShouldCheckStatus)
 		{
 			if (!NeedsTargetStatus(battleChara) || (Service.Config.Statuscap2 && StatusHelper.IsStatusCapped(battleChara)))
