@@ -1,6 +1,6 @@
 # What this fork does differently in a fight
 
-The whole distance from upstream **7.5.7.8**, as of release `7.5.7.8+wsh1`. What a single
+The whole distance from upstream **7.5.7.10**, as of release `7.5.7.10+wsh1`. What a single
 release changed is in [`fork-changes-since-last-release.md`](fork-changes-since-last-release.md),
 which is the text of the release description; this document is the standing picture and takes
 each release's text over once it has shipped.
@@ -65,7 +65,9 @@ the low 16 bits only, and a raidwide that hit a tank harder than that could be r
   reaches the party but not you spends no defence that protects only you. Where BossModReborn names
   nobody (its timeline, or another prediction comes first), the raidwide counts as hitting everyone.
 - **Markers count only on you or your own party** (Duty Support companions included); a stack
-  marker in another alliance group no longer opens your mitigations.
+  marker in another alliance group no longer opens your mitigations. A spread marker counts only when it
+  sits on you: in M9 (Vamp Fatale, normal and Savage) Aetherletting's spread on another member no longer
+  spends your self-only protection, and party mitigation reads it as before.
 - **Skip area defence for casts that missed you** — **on by default**. An area cast that landed last
   time without reaching you does not open your area defence the next time; once it reaches you
   again, it counts again. Blocked, parried, absorbed or taken under invulnerability counts as
@@ -142,10 +144,30 @@ the low 16 bits only, and a raidwide that hit a tank harder than that could be r
   tankbuster that reaches you lowers the percentage: one cast at you, or a predicted one whose targets
   name you — when BossModReborn names nobody, for a tank, or when the party has no tank alive. Of two potions the one that restores more
   goes first, and at equal healing the lower grade, read for the form that will be drunk (HQ or NQ).
+  While a raise with a Phoenix Down is due and you live through its cast, the potion waits, as it would
+  keep the feather off for 75 seconds; one with a tankbuster on its way to you still goes.
 
 - **GCD heals do not wait on another healer while someone is about to fall.** With `Use GCDs to heal`
-  off — the default for Astrologian and Sage —, and for Paladin, Red Mage and Summoner, the rotation
-  still heals with its GCDs whenever a party member is in the critical class.
+  off — the default for Sage —, and for Paladin, Red Mage and Summoner, the rotation still heals with its
+  GCDs whenever a party member is in the critical class. For the Astrologian it is **on by default**, as for
+  White Mage and Scholar, so its GCD heals and the heal over time against damage over time also go beside a
+  second healer; a value you set yourself stays.
+- **A heal over time against an enemy's damage over time** — `Heal over time against an enemy's damage
+  over time`, **on by default**. When an enemy's damage over time alone will take a party member below the
+  single-target heal threshold before a heal over time laid now would run out, White Mage and Astrologian
+  lay Regen or Aspected Benefic at once, and Medica III or Helios Conjunction (Medica II or Aspected Helios
+  below their level) when more than one member needs it. Every damage and heal tick on the party is
+  measured, so a weak damage over time costs no GCD, and running heals over time from any healer count. Its
+  strength and, where the status shows no timer, how long it lasts are learned per area and kept, so from
+  the second pull the heal goes on the moment the debuff lands. A member Esuna is about to clear is left to
+  it; each decision is written to `DefenseTrace.log`.
+- **Astrologian: Essential Dignity priority no longer stops single-target healing.** On "Any charges" or
+  "When capped", `Prioritize Essential Dignity over single target GCD heals when available` held every
+  single-target GCD heal while a charge was left, also the last one, which waits for a target in danger;
+  GCD heals now wait only while Essential Dignity can go out. `Prioritize Microcosmos over all other
+  healing when available` holds only heals, not Oracle and the potion before Divination.
+- **Sage: Druochole when Taurochole waits for danger.** With `Taurochole as a heal only on a target in
+  danger` on (the default), a low member with nothing hitting him gets Druochole instead of neither.
 - **White Mage: Liturgy of the Bell heals when the party needs it.** Its second press (`Press Liturgy of
   the Bell a second time when the party needs an area heal`, **on by default**) releases the stacks left
   at once, once the bell has healed and the party is below your area-heal thresholds. Under `Limit
@@ -185,6 +207,10 @@ the low 16 bits only, and a raidwide that hit a tank harder than that could be r
 - **A tankbuster on several members: each help goes to the one less protected** — the target standing
   with the fewest mitigations and barriers, so a double tankbuster on both tanks no longer gets every
   help on the same one.
+- **Ground heals go where the party stands** — `Place them where they cover the most party members`, **on
+  by default**. Sacred Soil, Asylum, Earthly Star and Liturgy of the Bell go to the spot at a party member
+  that covers more members than the stored point, arena centre, boss or tank point would: a party stacked
+  at the south edge for a marker gets Sacred Soil on the stack, not in the empty middle.
 
 ## Shields and barriers
 
@@ -201,6 +227,10 @@ the low 16 bits only, and a raidwide that hit a tank harder than that could be r
   needs on it.
 - **Dancer: Improvisation ends with its barrier.** Improvised Finish was never cast, so the party
   got the regen but not the 5 % barrier.
+- **White Mage and Astrologian: no barrier charge left at the cap.** At both charges Divine Benison and
+  Celestial Intersection go onto the member an enemy is attacking, where none of their barrier stands; the
+  second charge stays for the next danger, and the single-target defence takes it for a tankbuster — as
+  The Balance's White Mage guide recommends.
 
 ## Raising
 
@@ -216,7 +246,13 @@ the low 16 bits only, and a raidwide that hit a tank harder than that could be r
 - **Red Mage raises in the burst**: `Prevent raising during burst combos` is **off by default**. In
   the burst, Vercure still waits under `Prevent healing during burst combos`, but no longer when no
   healer is alive or a member is about to die because the healers do not keep up.
-- **Phoenix Down** is wired up and checks target eligibility. **Off by default.**
+- **Phoenix Down** is wired up and checks target eligibility. **Off by default.** Since patch 7.3 it can be
+  thrown in combat in four-player content as an 8-second cast that holds every action and shares its recast
+  with the medicines; it waits while you move, while a tankbuster on you would land within the cast, and
+  while the heal forecast says you would fall before it ends.
+- **White Mage: Thin Air no longer overrides `Hard-cast raise`.** Whether Raise is hard cast is decided
+  by that setting alone, as for every healer; Thin Air still makes it cost no MP, and while moving Dia and
+  the Lilies go as before.
 - **No raise delay by default.** `Raise delay range` starts at no delay; when the fallen member gets up is
   his choice when he accepts. A configuration saved earlier keeps its value.
 - **`Raise All.` counts the alliance's living raisers** the way `Raise All In Duty.` does: the
@@ -226,7 +262,8 @@ the low 16 bits only, and a raidwide that hit a tank harder than that could be r
   with Swiftcast ready, nothing is hard-cast any more.
 - Swiftcast is not spent for damage in the Summoner rotation; it stays reserved for raises —
   `Use Crimson Cyclone at any range…` and Swiftcast on Ruby Ruin and Ruby Outburst below Ruby
-  Rite's level are off by default.
+  Rite's level are off by default. Whether a raise is swiftcast follows `Raise with Swiftcast or Dualcast`
+  alone, kept per job; the Summoner's own option for Swiftcast on Resurrection is gone.
 
 ## Mitigation and defensives
 
@@ -246,7 +283,13 @@ the low 16 bits only, and a raidwide that hit a tank harder than that could be r
   White Mage and Astrologian wait as long as the effect that started the wait lasts (Astrologian 15 s
   after Macrocosmos, 10 s after Collective Unconscious). The Bard, Painter and Dancer setting "Prevent
   the use of defense abilties during burst" is **off by default**, so a raidwide inside the burst gets
-  Troubadour, Shield Samba, Tempera or Addle; switched on, it holds without exception.
+  Troubadour, Shield Samba, Tempera or Addle; switched on, it holds without exception. Reaper (Soul Reaver,
+  Enshroud, Executioner), Viper (a ready follow-up ability) and Samurai (Zanshin ready) hold their
+  protection, self-heal, knockback protection and interrupts no longer when the party, you or a tank is in
+  danger; knockback protection and interrupts wait only for a weave that does not clip.
+- **Samurai: Feint stays for the hits the party takes.** The threshold `Health threshold needed to use
+  Tengentsu/ThirdEye outside of AOE mit scenarios.` uses Tengentsu and Third Eye only; Feint goes out for
+  announced or measured hits, as for every job.
 - **Tankbuster markers**: every tank lock-on marker and shared tank laser is recognised, plus two
   more party-stack markers. A marker after which no enemy action reaches the marked member goes on
   `TankbusterMarkerWithoutHit.json` and is no longer treated as a tankbuster; a later hit takes it
@@ -266,11 +309,18 @@ the low 16 bits only, and a raidwide that hit a tank harder than that could be r
   member instead of whoever the boss is attacking, and Heart of Corundum and Aurora on `Only use on
   tankbuster targets prioritizing self` reach the other tank. Intervention needs no tank stance on its
   target. Help is not given to a member who takes the hit under Hallowed Ground or Superbolide while
-  `Spend only the mitigation a measured tankbuster needs` is on.
+  `Spend only the mitigation a measured tankbuster needs` is on; with it on, a healer's single-target
+  mitigation and a tank's help also stay off a tank whose measured tankbuster takes less than a large
+  shield absorbs and leaves him at or above your single-target heal threshold, and a BossModReborn
+  prediction beside it no longer sends them anyway. Reprisal and the party mitigation some jobs spend in the
+  single-target defence wait the same way while such a tankbuster on someone else is all that is coming.
+  The first time a tankbuster is met nothing changes: it is measured with that hit.
 - **An enemy's cast is stopped by the job's stun first (experimental)** — `Stop an enemy's cast with the
   job's stun or a sleep (experimental)`, **on by default**. Healers and casters stop an area attack of an
-  enemy that is not a boss reaching you or two party members, and a cast the game marks interruptible,
-  when enough of it is left to land in time. A White Mage uses Holy when the caster stands in its radius
+  enemy that is not a boss reaching you or two party members, any cast the game marks interruptible —
+  cones, rings and small areas included, which the melee interrupt leaves alone —, and a single-target
+  cast, such as a debuff on you, that a sleep has stopped before, when enough of it is left to land in
+  time. An enemy that fully resists a sleep you cast yourself is remembered as immune too. A White Mage uses Holy when the caster stands in its radius
   and can still be stunned; otherwise Repose or Sleep goes on the enemy. Swiftcast is never spent on it,
   a healer does not use it while a member is about to die, and with `Don't pull new enemies with AoE` on
   no area stop reaches an enemy not yet fighting. What sleeps show is kept over every session: enemy kinds
@@ -293,6 +343,9 @@ the low 16 bits only, and a raidwide that hit a tank harder than that could be r
 - **The BossModReborn timeline is only read when it is switched on**, and a defence pressed for a hit
   it announces goes out only while a press made now still reaches the server before the end of the
   cast, from your measured round trip — no fixed margin.
+- **An enemy cast missing from the game data is passed over.** The area attack and sleep checks skip a
+  cast the action sheet has no entry for; before, looking it up failed, and for every frame of that cast
+  the rest of the update step was skipped.
 - **Each ability picks its own target.** A target rule set by the GCD no longer carries over to the
   commanded action, the emergency abilities, the tankbuster plan and the tank swap: the Paladin's
   emergency Intervention goes to the co-tank, not to whoever has the least HP.
@@ -343,12 +396,17 @@ the low 16 bits only, and a raidwide that hit a tank harder than that could be r
   under a planned invulnerability.
 - **The time a press needs to reach the server** is measured from the moment the request actually leaves,
   matched to the effect that answers it; every press counts, your own too.
+- **Pull mitigation counts what attacks you.** `Use tank mitigation when this many enemies target you`
+  opens the pull defence whenever that many enemies within 3 yalms target you and you have attacked one of
+  them; unpulled packs nearby, casters at range or the other tank's adds no longer keep it shut.
 - **The big mitigation waits in a pull until your health needs it** — `Hold the big mitigation and
   Rampart in a pull until your health needs them`, **on by default**, with `Health the big mitigation
   waits for` (30 %). Your short mitigation, Arm's Length and Reprisal go at once; the big mitigation and
   Rampart wait until your health, at the rate measured net of every heal and mitigation, would fall below
   that line within their duration, and then each goes as soon as it is needed. A tankbuster, a cast aimed
-  at you, a BossModReborn tankbuster and danger to you or a tank open them as before.
+  at you, a BossModReborn tankbuster and danger to you or a tank open them as before; a trash mob's spell
+  at you no longer does — only a known tankbuster on a tank (a marker, a cast from the tankbuster list or
+  one RSR has measured).
 - **One big mitigation per predicted tankbuster, first in line.** For a tankbuster BossModReborn
   predicts on you, every tank casts its big mitigation (Damnation, Guardian, Shadowed Vigil, Great
   Nebula and their lower forms) before the smaller ones, and Rampart only when the big one is not
@@ -377,6 +435,9 @@ the low 16 bits only, and a raidwide that hit a tank harder than that could be r
   can hold Holy while a tank carries the barrier (`HoldHolyForBlackestNight`). It and Oblation on a
   low party member are not held in the burst window, and they pick their target among the members under
   their health threshold.
+- **Dark Knight: `Keep at least 3000 MP` also when Darkside runs out.** Edge of Shadow keeps what The
+  Blackest Night costs, unless Dark Arts makes it free; with little MP, Darkside may lapse until there is
+  enough.
 - **Living Dead and Walking Dead.** `WithholdHealingForLivingDead` is **off by default**, since RSR
   also fires Living Dead as a last-ditch save: then Living Dead counts as protection nowhere RSR decides
   on healing, and the dark knight is healed normally, as the setting's text promises. With it on, a
@@ -500,6 +561,9 @@ off.
   boss but goes out in the last weave slot before Ruby's Glimmer runs out — the case beside other
   Summoners, where Searing Light can fall into a Titan or Ifrit block and the next demi is further off
   than Ruby's Glimmer lasts. As the only Summoner it falls inside Solar Bahamut as before.
+- **Summoner: the odd-minute Necrotizes wait for the two-minute window.** The two Necrotizes from the
+  odd-minute Energy Drain wait until the burst summon and Searing Light are back no later than Energy
+  Drain, which follows them by a weave — as The Balance's Summoner guide describes.
 - **Summoner: Radiant Aegis goes out before a demi**, which replaces Carbuncle for 15 seconds; the
   big summon waits for a due shield. During a demi it is not chosen, since the game allows it only
   while Carbuncle is summoned, and Addle comes in its place.
@@ -515,7 +579,8 @@ off.
   HP, then by expiry`, **on by default**. Every job's damage over time, recognised by the status's own
   text, goes first on the enemy with the most HP, and once each carries it, it is renewed in the order it
   runs out; not where a rotation uses the action for something else or names the target. Direct
-  single-target attacks keep the targeting type you chose.
+  single-target attacks keep the targeting type you chose, unless the action brings its own order: Red
+  Mage's Corps-a-corps jumps to the nearest enemy.
 - **Damage over time refreshed by its ticks** — `Time DoT refreshes from DoT ticks and time to kill
   (Experimental)`, **on by default** (off upstream). White Mage, Astrologian, Scholar, Sage, Black Mage
   and Reaper refresh on the last GCD that loses no tick, and leave a DoT off a target that will die before
@@ -529,6 +594,22 @@ off.
   long as the status lasts until it goes off, not locked out for the last two GCDs. Ogi Namikiri,
   Sonic Break, Reign of Beasts, Phantom Kamaitachi and Hypercharged are spent before their Ready runs
   out; Retrace only while Ley Lines outlasts the next GCD.
+- **Abilities when no GCD is coming** no longer wait out the last half second of the GCD timer — while
+  you move as a caster, say; that half second only keeps an ability from delaying a GCD.
+- **Line attacks count the enemies on the way to their target.** Doom Spike, Draconian Fury and Coerthan
+  Torment, Chain Saw, Apex Arrow and Blast Arrow, Shadowbringer and Enlightenment were counted along the way
+  you faced; they are counted towards the target, and of several targets the one whose line hits the most
+  is taken.
+- **Samurai and Dark Knight: AoE decisions count what the AoE hits.** The Samurai's AoE Iaijutsu and
+  Hagakure count the enemies within the AoE combo's radius against its AoE count; Ogi Namikiri on the AoE
+  path goes when it hits more than one. Abyssal Drain takes Carve and Spit's place where it out-damages it
+  on the enemies it reaches, by their tooltips.
+- **Machinist: Flamethrower on a pack that stands still** — `Use Flamethrower on a pack that stands still`,
+  **on by default**. It goes in place of the filler when at least two enemies stand in the cone (its AoE
+  count), the pack has stopped, no enemy casts an area attack, Hypercharge is not available and no tool,
+  Wildfire or Barrel Stabilizer comes ready in its ten seconds — The Balance's rule. While it channels,
+  RSR keeps its own actions and medicine back; heals, defence, interrupts, cleanses, raises, provokes and
+  your presses still go.
 - **Machinist: Auto Crossbow only where it out-damages Blazing Shot**, weighed with the potencies the
   tooltips state and the enemies Double Check and Checkmate reach: from six enemies with all of them in
   reach, from four with one outside; the AoE count stays the lower limit.
@@ -537,8 +618,29 @@ off.
   instead of Hyosho Ranryu under Kassatsu, counted on the enemies Goka reaches; Doton only while the
   enemies live through its duration, otherwise Katon.
 - **Black Mage: Foul from two enemies**, weighed against Xenoglossy with the tooltip potencies.
+- **Black Mage: Ley Lines by default** — `Use Leylines in combat when standing still`, **on by default**. It
+  goes down once you stand still in combat with an enemy in range, keeps the second charge unless `Use both
+  stacks of Leylines automatically` is on, and waits while an enemy casts an area attack you may have to
+  leave the circle for. If you place it yourself, turn the setting off.
+- **Scholar: Bio by the measured time to kill.** The ballpark estimate of `Enable ballpark DoT time-to-kill
+  estimator` holds Bio back only until a time to kill is measured for the enemy.
+- **Tinctures wait for the fight or its countdown.** No rotation drinks one out of combat unless a
+  countdown runs: waiting at a boss without a countdown or between two packs, a ready burst ability no
+  longer sets it off before the pull.
 - **Viper:** `Experimental Pot Usage(used up to 5 seconds before SerpentsIre comes off cooldown)` (off by
   default) also takes the potion while Serpent's Ire stands ready, so in the opener too.
+- **Viper and Monk: "just used" no longer means "ready".** Uncoiled Fury after Serpent's Ire waits for
+  Serpent's Ire instead of spending coils beside a ready one; the overcap rule still spends at the cap. The
+  Monk's odd-minute Perfect Balance is no longer kept back with both charges full, and Phantom Rush no
+  longer counts a ready Riddle of Fire as used.
+- **Monk: both Perfect Balances of the two-minute window.** Perfect Balance goes after the opo-opo
+  weaponskill one to three weaponskills before Riddle of Fire, as The Balance has it, whenever Brotherhood
+  comes with that Riddle of Fire; the first no longer slips under Riddle of Fire and the second no longer
+  misses Brotherhood.
+- **Monk: Six-sided Star as the last hit** — `Use Six-sided Star as the last weaponskill before the target
+  dies or goes untargetable`, **on by default**: when only one more weaponskill lands before the last enemy
+  in range dies by its time to kill or BossModReborn's timeline predicts a downtime; a ready Fire's Reply
+  or Wind's Reply goes first. It needs no open chakra, as in the game.
 - **Machinist:** with `Only use Wildfire on Boss targets`, Heat is not held for Wildfire on trash;
   Wildfire cannot go out as Detonator; Queen Overdrive lands before a predicted untargetable phase.
 - **Samurai:** Meditate when no enemy is within 25 yalms in combat.
@@ -588,13 +690,16 @@ off.
   mitigation, notes for each Dark Knight barrier whether it broke, names each Liturgy of the Bell laid into
   a series, writes one line per damage area laid, and counts the party members a listed area cast
   reached.
+- **The right-click entry "Reset to Default Value." restores the default value**. Plain and per-job
+  switches used to end up off instead, `Heal ahead of incoming damage` and `Raise with Swiftcast or
+  Dualcast` among them.
 - **Two settings that did nothing were removed**: `How early before next GCD should RSR use swiftcast for
   raise` and `Target color`; nothing had read them since upstream dropped their code.
 
 ## Frame time
 
-RSR keeps only the visual effects it reads — the stack, spread and tankbuster markers — instead of every
-effect of every character, checks whether a status is your own without searching the object table per
+RSR keeps only the visual effects it reads — the stack, spread and tankbuster markers and the lock-on
+markers — instead of every effect of every character, checks whether a status is your own without searching the object table per
 status, and works out each enemy's time-to-kill once per frame. Most of the difference shows in
 alliance content, where 24 or 48 players' effects used to be walked several times a frame.
 
@@ -634,6 +739,14 @@ alliance content, where 24 or 48 players' effects used to be walked several time
   unrated; `TargetType.Tankbuster` and `TargetType.BeAttacked` prefer the least protected of several
   targets; `SleepInterruptWatch` counts a stop only when no effect follows; `Configs.SwiftcastBuffer` and
   `Configs.TargetColor` are removed.
+- 7.5.7.10+wsh1 (details in `CHANGELOG.md`): `CustomRotation.HotAgainstDotByJob` and `TryHotAgainstDot`,
+  `TargetType.HotAgainstDot` and `Configs.HotAgainstDot`; `ActionConfig.ShouldCheckTargetStatus` is back;
+  `UseBurstMedicine` refuses out of combat without a countdown; `SleepInterruptWatch` stops every cast known
+  to be stoppable; `PhoenixDownItem` waits for a cast it can finish; `TankbusterHelp` for a measured
+  tankbuster by its size; `TryChargedBarrierAtCap`, `FlamethrowerFits`, `BardRotation.SongDuration`,
+  `IsTimeToKillMeasured`, `MonkRotation.PerfectBalanceMaxStacks` and `RiddleOfFireDueWithinPerfectBalance`,
+  `CustomRotation.LastWeaponskillOnTarget`; `ICooldown.JustUsedAfter` is false for an action not used;
+  `Configs.Migrate` keeps stored values across a version change; RebornMaterial 7.5.7.2.
 
 **Defects of the original that were costing something in the fight:**
 

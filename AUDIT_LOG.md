@@ -12666,6 +12666,34 @@ beobachtet.
   Aktion, Zielart des Spielers bleibt.
 - *Prüfgrad:* kompiliert ohne Warnung, alle Prüfschritte lokal; im Spiel nicht beobachtet.
 
+### A435 · Release 7.5.7.10+wsh1 veröffentlicht, Release-Text übergeben, neuer Zweig (28.10.2026)
+
+Sein Auftrag (28.10.2026): „branch zu main, compile, release, neuer branch" – die Freigabe (`CLAUDE.md`, „Grenzen und
+Löschungen").
+
+- *Vorher gemessen:* Upstream abgeglichen (0 ausstehend, 7.5.7.10); `main` (f1e174063) Vorfahr des Arbeitszweigs; Tag
+  frei auf `origin`; Release-Text 15 731 Zeichen, „Changes since 7.5.7.8+wsh1".
+- *Zweig zu `main`:* `main` auf `claude/fixes-after-7.5.7.8` (e885f59ca) vorgespult und gepusht; damit ist PR #19
+  gemergt. Kompiliert ohne Warnung.
+- *Release:* `publish.yaml` per `workflow_dispatch` auf `main` mit `7.5.7.10+wsh1`, Lauf 40685250084 erfolgreich.
+  Release auf e885f59ca, `latest.zip` 4 810 475 Bytes, Digest sha256:cfbca4b1…0d88, Text mit 28 Abschnitten.
+- *Übergabe:* `fork-changes-in-play.md` steht auf Upstream 7.5.7.10; die 28 Abschnitte sind in die Themen eingearbeitet,
+  nicht angehängt – DoT-HoT, Essential Dignity, Druochole, Voreinstellung „Use GCDs to heal" des Astrologen und die
+  Wartezeit des HP-Tranks bei „Healing — when it lands"; Bodenheilungen bei „who it picks"; Barriereladung an der
+  Obergrenze bei „Shields and barriers"; Phönixfeder, Thin Air und Swiftcast des Beschwörers bei „Raising"; Haltungen von
+  Schnitter, Viper, Samurai, Feint des Samurai, Hilfe nach Größe des Tankbusters, Schlaf und der fehlende Blatteintrag
+  bei „Mitigation and defensives"; Pull-Abwehr, große Minderung gegen Trash-Zauber und die MP des Dunkelritters bei
+  „Tank self-protection"; M9 bei den Markern; die Rotationen, Tinkturen, Linienangriffe und Fähigkeiten ohne GCD bei
+  „Damage and rotation"; „Reset to Default Value." bei „Seeing what the rules decide"; die Paketeinträge bei „For
+  rotation authors". `fork-changes-since-last-release.md` beginnt mit „Changes since 7.5.7.10+wsh1". `CHANGELOG.md`:
+  Abschnitt 7.5.7.10+wsh1 mit dem nachgetragenen Eintrag zu RebornMaterial 7.5.7.1/7.5.7.2 und System.Drawing.Common
+  10.0.14, die mit 7.5.7.9 und 7.5.7.10 ohne Eintrag gekommen waren.
+- *Zweige:* `claude/fixes-after-7.5.7.10` von `main` nach seiner Namensvorgabe, die Übergabe darauf und `main`
+  vorgespult. `claude/fixes-after-7.5.7.8` ist vollständig gemergt und ein Löschfall auf `origin` (Ref-Löschungen sind
+  der Sitzung gesperrt).
+
+*Prüfgrad:* Release-API und Workflow-Lauf gelesen, Prüfskripte; die Übergabe statisch gegen den Release-Text abgeglichen.
+
 ---
 ## B · Commit-Register (Fork vs. `upstream/main`)
 

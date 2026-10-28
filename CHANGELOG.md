@@ -23,6 +23,14 @@ are not reconstructed here.
 
 ## Unreleased
 
+## 7.5.7.10+wsh1
+
+### Dependency of RotationSolver.Basic: RebornMaterial 7.5.7.2
+
+From upstream 7.5.7.9 and 7.5.7.10: RebornMaterial goes from 7.5.7.0 to 7.5.7.1 and 7.5.7.2, System.Drawing.Common to
+10.0.14. Every reference RotationSolver.Basic and RotationSolver make into it resolves against the current Dalamud
+distribution (checked with RefCheck on 28.10.2026).
+
 ### Addition to RotationSolver.Basic: a heal over time against an enemy's damage over time
 
 New in the GCD order, after every heal, defence and raise and ahead of the damage GCDs: `CustomRotation.HotAgainstDotByJob`
