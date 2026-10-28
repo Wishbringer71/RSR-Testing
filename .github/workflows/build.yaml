@@ -242,6 +242,9 @@ jobs:
       - name: Check every Markdown table has its header and delimiter row
         run: python3 .github/scripts/audit/check_md_tables.py
 
+      - name: Check TODO.md holds open work only
+        run: python3 .github/scripts/audit/check_todo_open.py
+
       # The measuring tool for heals over time reads his ACT logs, which are not in the repository; only its reading
       # is tried here, against constructed log lines (A430).
       - name: Check the heal-over-time measuring tool against constructed log lines

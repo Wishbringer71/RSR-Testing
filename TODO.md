@@ -8,31 +8,17 @@ Betroffene: **N** Endnutzer · **R** Autoren abgeleiteter Rotationen (`RotationS
 ## Reihenfolge
 
 Nach der Wirkung im Kampf: Sicherheit der Gruppe vor Schaden, gewichtet mit der Wahrscheinlichkeit, in seinem Profil
-(seine Vorgabe, 17.10.2026: „todo nach wichtigkeit abarbeiten. jeweils im loop bearbeiten"). Seine Aufträge vom
-18.10.2026 sind erledigt: TODO berichtigt (A322), Prüfläufe geordnet (A323), Laufzeitkosten umgestellt (A325). Sein
-Auftrag vom 24.10.2026 läuft: die einfachen Punkte zuerst (A338), die schweren wichtigen danach ebenso. Sein Auftrag vom
-25.10.2026, Upstream der letzten zehn Tage mit den eigenen Patches inhaltlich abzugleichen, ist erledigt (A354), der
-Defekt daraus behoben (A356). Sein Auftrag vom 25.10.2026 nachmittags: nach Priorität und Umsetzbarkeit, je im Loop;
-der Tank-Punkt ist entschieden (A357), sein Auftrag zu den Einstellungen ist erledigt (A358, Konzept 18), der Punkt
-daraus gebaut (A359). Sein Auftrag vom 25.10.2026 abends wiederholt beide: das TODO weiter, danach ein zweiter
-Durchgang des Einstellungs-Audits, Rotationseinstellung für Rotationseinstellung. Seine Frage vom 25.10.2026 abends zur
-Abwehr ohne Heiler ist umgesetzt (A361), die Phönixfeder daraus ebenso (A372). Seine Frage
-vom 25.10.2026 abends zu Chorts Türmen und dem Glockenspiel ist beantwortet und umgesetzt (A365). Die Hilfe auf einen
-kleinen gemessenen Tankbuster ist gebaut, für Heiler und Tanks (A373), die Reflexion daraus ebenso (A374). Sein Auftrag
-vom 26.10.2026 („todo nach priorität und umsetzbarkeit in loops abarbeiten") ist erledigt: Flamethrower und Six-sided
-Star sind gebaut (A380, A413), der Abgleich mit The Balance ist für jeden Kampfjob abgeschlossen (A381–A387, A390,
-A412), drei Schuldpunkte aufgelöst (A388, A389, A410), ein vierter für den eigenen Code (A415), die AoE-Schwelle an die AoE-Aktion gebunden (A391), die
-Bodenflächen an die Gruppe gelegt (A398) und das Audit der gesamten Codebasis abgeschlossen, mit den Defekten aus A393–A395,
-A397, A399, A401–A409 und A412 (A414).
+(seine Vorgabe, 17.10.2026: „todo nach wichtigkeit abarbeiten. jeweils im loop bearbeiten").
 
-Aus seinem Upload vom 26.10.2026 abends (A419) zwei Punkte offener Arbeit, in dieser Reihenfolge: der doppelte
-Tankbuster zuerst – er trifft sicher, und ein Tank steht ohne Hilfe –, danach die Flächentabelle unter Minderung, die nur
-den ersten Treffer einer Aktion falsch bewertet. Aus seinem Upload vom 27.10.2026 (A427) davor ein Punkt: Pyretisch
-mitten im eigenen Zauber – er tötete zweimal an einem Abend. Danach die technische Schuld, soweit ihre
-Auflösungsbedingung erfüllt ist. Aus der Prüfung vom 27.10.2026 (A430) der Defekt der HoT-Listen: Er kostet Schaden, nicht Sicherheit, und kommt nach den drei Punkten offener Arbeit. Seine beiden Aufträge vom 28.10.2026 zu den gelernten Tabellen danach, als ein Konzept
-und eine Vorlage: erst die Revision über einen Spielpatch, weil sie festlegt, welchen Stand ein Wert hat, dann die
-Anzeige und Bearbeitung in den Einstellungen, die diesen Stand zeigt. Beide ändern den Kampf nur mittelbar, über einen
-geprüften oder berichtigten Lernwert, und werden erst nach seiner Freigabe gebaut. Warten auf Daten: unten.
+1. Pyretisch trifft mitten in einen eigenen Zauber – tötete zweimal an einem Abend.
+2. Einzelabwehr-Streckung bei einem doppelten Tankbuster – der Treffer kommt sicher, und ein Tank steht ohne Hilfe.
+3. Flächentabelle misst unter der stehenden Minderung – bewertet nur den ersten Treffer einer Aktion falsch.
+4. Laufende HoTs fehlen in den HoT-Listen – kostet Schaden, nicht Sicherheit.
+5. Die gelernten Tabellen, als ein Konzept und eine Vorlage, gebaut erst nach seiner Freigabe: erst die Revision über
+   einen Spielpatch, weil sie festlegt, welchen Stand ein Wert hat, dann Anzeige und Bearbeitung in den Einstellungen,
+   die diesen Stand zeigen. Beide ändern den Kampf nur mittelbar, über einen geprüften oder berichtigten Lernwert.
+
+Danach die technische Schuld, soweit ihre Auflösungsbedingung erfüllt ist. Warten auf Daten: unten.
 
 ## Defekte
 
@@ -41,7 +27,7 @@ Läuft die Regeneration aus Kerachole (Weiser) oder Celestial Opposition (Astrol
 Selbstheilung auf einem Tank (etwa Aurora), heilen RSRs Heiler, als liefe nichts: Die Schwellen sinken nicht, und eine
 GCD-Heilung fällt, wo die Regeneration getragen hätte. Die Liste soll nach ihrem eigenen Kommentar jeden laufenden
 Gruppen-HoT tragen. *Ort:* `StatusHelper.AreaHots`, `SingleHots`; Leser `StateUpdater.GetHealingOfTimeRatio`,
-`SelfHealingOfTimeRatio`, `ActionTargetInfo`. *Nächster Schritt:* Loop zur Erkennung am Spielblatt – seit A432 da als
+`SelfHealingOfTimeRatio`, `ActionTargetInfo`. *Nächster Schritt:* Loop zur Erkennung am Spielblatt – vorhanden als
 `StatusHelper.IsHealOverTime` (84 Status mit „Regenerating HP over time"; die Bodeneffekte mit eigenem Wirktext) –, die
 Listen als Rückfall; Gruppe oder Einzelziel nach dem Wirkbereich der gewährenden Aktion. *Konzept:* 08 („Was RSR heute tut" im Abschnitt „Schaden über Zeit").
 
@@ -151,7 +137,7 @@ zwei Zustände. *Auflösung:* erst mit Laufzeitbeobachtung des Zustandsautomaten
 Ordinalvertrag. `AutodutyUpdateState` dupliziert `UpdateState` und löst sich mit. *Konzept:* 03.
 
 ### Die Aufnahme in die AoE-Liste trennt Raidwide und ausweichbare Fläche nicht · N
-Bewertung und Reichweite sind gebaut (Konzept 13); die Aufnahme bleibt grob. *Auflösung:* ein Unterscheidungsmerkmal aus
+Die Aufnahme in die Liste bleibt grob; Bewertung und Reichweite trennen schon (Konzept 13). *Auflösung:* ein Unterscheidungsmerkmal aus
 den Spieldaten (`CastType`, `EffectRange`), hinter eigener Option. *Konzept:* 13.
 
 ### Zwei Werte des Dunkelritters hängen nicht an ihrer Strategie · N
@@ -182,15 +168,12 @@ nebeneinander gebraucht werden.
 
 - **Samurai nutzt Feint und Tengentsu nicht** (fremde Meldung, PR #11, unbestätigt; statisch geprüft A265). Auflösung:
   ein Protokoll eines Samurai-Kampfs („area defence open, nothing chosen" gegen „hit you"). Konzept 13.
-- **Treffer aus einer Quelle, die die Objekttabelle nicht hält** (Verdacht; Necrophobia 10.10., Düsterflare 17.10.).
-  Der Fall „in der Tabelle, aber keine Figur der Gegnerseite" ist seit A327 gelesen; offen bleibt der ohne Objekt.
+- **Treffer aus einer Quelle, die die Objekttabelle nicht hält** (Verdacht). Offen ist der Treffer ohne Objekt; der
+  Fall „in der Tabelle, aber keine Figur der Gegnerseite" wird gelesen.
   Auflösung: Protokollzeilen „hit you from a source the object table does not hold". Konzept 08.
 - **BossModReborn: FATE-Modul in Occult Crescent läuft nach dem Weggang weiter** (am Quelltext `be8ff77` gefolgert).
   Adressat BossModReborn. Konzept 08, „Wann eine BossModReborn-Vorhersage ihn betrifft".
-- **Ein gegnerisches Wirken stoppen: was die gespeicherten Tabellen lernen** (experimentell, seine Vorgaben 18.10. und
-  23.10.2026, A329, A334, A337). Erstes Protokoll mit der Regel (23.10.2026): Sanctga 19-mal gewählt, Schlummer
-  dreimal gelandet, vier Arten als immun gespeichert. Offen: ob Schlaf unterbrechbares Wirken stoppt (ein Versuch, nicht
-  gewirkt), welche Anzahl bis zur Immunität die Regel lernt, welchen Rest beim Eintreffen. Seit 27.10.2026 zielt die
-  Regel auf jedes unterbrechbare Wirken und auf bekannt gestoppte Wirken auf ein Ziel (seine Vorgabe, A427); der Abend
-  des 26.10. im Pilgerpfad blieb ohne Protokoll (Build vor A418). Auflösung: weitere Protokolle mit Heiler oder Magier
-  in Instanzen, danach die Bewertung, ob die Regel experimentell bleibt. Konzept 08, „Ein gegnerisches Wirken stoppen".
+- **Ein gegnerisches Wirken stoppen: was die gespeicherten Tabellen lernen** (experimentell, seine Vorgaben 18.10.,
+  23.10. und 27.10.2026). Offen: ob Schlaf unterbrechbares Wirken stoppt, welche Anzahl bis zur Immunität die Regel
+  lernt, welchen Rest beim Eintreffen. Auflösung: Protokolle mit Heiler oder Magier in Instanzen, danach die Bewertung,
+  ob die Regel experimentell bleibt. Konzept 08, „Ein gegnerisches Wirken stoppen".

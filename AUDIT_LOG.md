@@ -12694,6 +12694,24 @@ Löschungen").
 
 *Prüfgrad:* Release-API und Workflow-Lauf gelesen, Prüfskripte; die Übergabe statisch gegen den Release-Text abgeglichen.
 
+### A436 · TODO: erledigte Aufträge und Messgeschichte entfernt, Prüfung `check_todo_open.py` (28.10.2026)
+
+- *Seine Frage:* „warum sind in der todo bereits erledigte dinge aufgelistet?" Er hat recht.
+- *Ursache am System:* Der Absatz „Reihenfolge" wurde je Auftrag um einen Satz fortgeschrieben – „Seine Aufträge vom
+  18.10.2026 sind erledigt …" bis A415 –, statt Erledigtes zu entfernen; der Eintrag zum Stoppen eines gegnerischen
+  Wirkens behielt die Daten seiner Messungen. Die Regel bestand (`archiv-todo.md`: nur offene Arbeit, Geschichte in
+  Archiv und Konzept); keine Prüfung hielt sie.
+- *Entfernt, und wo es steht:* die abgeschlossenen Aufträge A322, A323, A325, A338, A354, A356–A359, A361, A365,
+  A372–A374, A380–A391, A398, A410, A412–A415 (je im Archiv); das erste Protokoll der Schlafregel vom 23.10.2026
+  (Archiv, Zeile mit „Sanctga bzw. Sanctus 19-mal gewählt"); der Abend des 26.10.2026 im Pilgerpfad ohne Protokoll, weil
+  der Build vor A418 lag (hier festgehalten); die Kämpfe gegen Necrophobia und Düsterflare (Konzept 08); „seit A327",
+  „seit A432", „sind gebaut" auf den Ist-Stand umgeschrieben.
+- *Jetzt:* „Reihenfolge" nennt nur die offene Arbeit, nummeriert, je mit dem Grund ihres Platzes.
+- *Prüfung:* `check_todo_open.py` (CI, mit Selbsttest gegen sieben konstruierte Fälle) meldet in `TODO.md` unterhalb der
+  ersten Überschrift „erledigt", „abgeschlossen", „abgearbeitet", „umgesetzt", „behoben", „aufgelöst", „ist/sind/wurde(n)
+  gebaut" und „seit A<n>"; der Vorspann, der die Regel selbst nennt, bleibt frei.
+- *Prüfgrad:* Prüfskript mit Selbsttest, alle Prüfschritte lokal.
+
 ---
 ## B · Commit-Register (Fork vs. `upstream/main`)
 
