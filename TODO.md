@@ -29,7 +29,8 @@ Aus seinem Upload vom 26.10.2026 abends (A419) zwei Punkte offener Arbeit, in di
 Tankbuster zuerst – er trifft sicher, und ein Tank steht ohne Hilfe –, danach die Flächentabelle unter Minderung, die nur
 den ersten Treffer einer Aktion falsch bewertet. Aus seinem Upload vom 27.10.2026 (A427) davor ein Punkt: Pyretisch
 mitten im eigenen Zauber – er tötete zweimal an einem Abend. Danach die technische Schuld, soweit ihre
-Auflösungsbedingung erfüllt ist. Aus der Prüfung vom 27.10.2026 (A430) der Defekt der HoT-Listen: Er kostet Schaden, nicht Sicherheit, und kommt nach den drei Punkten offener Arbeit. Warten auf Daten: unten.
+Auflösungsbedingung erfüllt ist. Aus der Prüfung vom 27.10.2026 (A430) der Defekt der HoT-Listen: Er kostet Schaden, nicht Sicherheit, und kommt nach den drei Punkten offener Arbeit. Sein Auftrag vom 28.10.2026, die gelernten Tabellen in den Einstellungen zu zeigen
+und zu bearbeiten, danach: Er ändert den Kampf nur mittelbar, über einen berichtigten Lernwert. Warten auf Daten: unten.
 
 ## Defekte
 
@@ -65,6 +66,21 @@ Vorausheilung und „Skip mitigation for small area casts" lesen den kleinen Wer
 ihn anhebt. *Ort:* `Watcher.TryAreaShare`, die Leser in `DataCenter` (`AreaShareCallsForMitigation`, `HitDropsBelow`).
 *Nächster Schritt:* ungemindert speichern wie die Tankbuster-Tabelle (`TankbusterTable.MitigationFactor`), die Leser
 rechnen die jetzt stehende Minderung je Mitglied ein. *Konzept:* 13.
+
+### Gelernte Tabellen des Forks in den Einstellungen zeigen und bearbeiten · N
+Sein Auftrag (28.10.2026): „prüfen, ob es sinnvoll ist, die durch den fork selbst erstellten lernlisten ähnlich der
+listen vom upstream (aoe, tankbuster, rückstoß etc.) auch in den settings anzeigbar und editierbar zu machen mit den
+dazugehörigen werten wie name, gegner, schaden, effekt etc.). dass dann an den beispielen des upstreams ausrichten und
+auch dort integrieren." Im Kampf: Ein falsch gelernter Wert – ein zu groß gemessener Tankbuster, ein als resistent
+geführter Gegnertyp, ein Marker ohne Treffer, ein überschätzter DoT – steuert Abwehr, Heilung und Schlaf, bis die ganze
+Datei bei geschlossenem Spiel gelöscht wird; die Liste zeigt heute nur die Anteile der Flächen- und der
+Tankbuster-Tabelle neben Upstreams AoE- und Tankbuster-Liste. *Ort:* `MainWindow_List` (`DrawListActions`,
+`DrawActionsList`, Vorbild: Upstreams Listen mit Hinzufügen, Zwischenablage, Entfernen, Zurücksetzen); die Speicher in
+`OtherConfiguration`: `HostileCastingAreaPotential`, `TankbusterPotential`, `TankbusterMarkerWithoutHit`,
+`SleepOutcomes`, `SleepResistantKinds`, `SleepDiminishing`, `HitSeriesOnPlayer`, `DotOnParty`. *Nächster Schritt:*
+Prüfung und Konzept im kritischen Loop, mit Antithese und Widerlegungsversuch, danach Audit des Konzepts; erst dann
+Code. Abzuwägen gegen seine Vorgabe aus A173 („unnötige funktionen erzeugen auch unnötige fehlerursachen", Löschen von
+Hand statt Knopf); berührt das Ergebnis sie, lege ich es ihm vor. *Konzept:* 13 (gelernte Tabellen), 18 (Einstellungen).
 
 ## Technische Schuld
 
