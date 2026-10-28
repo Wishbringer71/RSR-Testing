@@ -13,8 +13,16 @@ threshold costs no GCD, and heals over time already running, from any healer, ar
 over time and, where its status shows no timer, how long it lasts are learned per area and kept over sessions, so from
 the second hit on - the second pull of a fight - the heal over time goes on the moment the debuff lands and ticks with
 it from the start. Lilies, the other heals and the thresholds stay as they are, a member Esuna is about to clear is left
-to it, and "Use GCDs to heal" is respected. Setting: "Heal over time against an enemy's damage over time", on by default;
-each decision is written to DefenseTrace.log.
+to it, and "Use GCDs to heal" is respected - for the Astrologian it is now on by default as well, as it already was for
+the White Mage, so the heal over time also goes beside a second healer; a value you set yourself stays. Setting: "Heal
+over time against an enemy's damage over time", on by default; each decision is written to DefenseTrace.log.
+
+## Tinctures wait for the fight or its countdown
+
+No rotation drinks a tincture out of combat any more unless a countdown is running. Waiting at a boss without a
+countdown or between two packs, a ready burst ability - Presence of Mind, Divination, Serpent's Ire, Technical Step -
+could set it off before the pull, so it ran out before the burst and kept every medicine on its recast. The tincture in
+the countdown goes as before.
 
 ## Phoenix Down waits for a cast it can finish, and comes before the HP potion
 

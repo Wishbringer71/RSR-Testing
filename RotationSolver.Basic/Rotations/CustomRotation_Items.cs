@@ -114,6 +114,14 @@ public partial class CustomRotation
 	{
 		act = null;
 
+		// Out of combat only under a countdown: a burst tincture drunk while waiting for a pull without one runs out
+		// before the fight and keeps every medicine on its recast. Upstream closed this in three rotations (White Mage,
+		// Viper, Dancer); here it holds for every caller, the countdown openers included (A433).
+		if (!DataCenter.InCombat && Service.CountDownTime <= 0)
+		{
+			return false;
+		}
+
 		var isHostileTargetDummy = HostileTarget?.IsDummy() ?? false;
 		var isInHighEndDuty = DataCenter.Territory?.IsHighEndDuty ?? false;
 

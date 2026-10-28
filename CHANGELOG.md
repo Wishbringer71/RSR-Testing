@@ -34,6 +34,12 @@ rotation's own `CanHealSingleSpell` and `CanHealAreaSpell`; override `HotAgainst
 `TargetType` gains `HotAgainstDot`, appended after `TankSwap`, so every existing value keeps its number. The learned
 figures are kept in `DotOnParty.json` beside the other learned tables.
 
+### Behaviour change in RotationSolver.Basic: burst medicine only in combat or under a countdown
+
+`CustomRotation.UseBurstMedicine` now returns false out of combat unless a countdown is running
+(`Service.CountDownTime`). A rotation that drank a tincture before the pull from a trigger that also holds out of
+combat no longer does; a tincture in the countdown goes as before.
+
 ### Behaviour change in RotationSolver.Basic: a sleep stops every cast known to be stoppable
 
 `SleepInterruptWatch.IsCastWorthStopping` now takes any cast the game marks interruptible (`IsCastInterruptible`),

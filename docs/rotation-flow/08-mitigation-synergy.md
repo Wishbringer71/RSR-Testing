@@ -1436,7 +1436,11 @@ geändert (A432):
 - *Schutzbedingungen der Einzelheilung:* dieselben Ausnahmen (Heilung wirkungslos, Halten für Living Dead) und die
   niedrigere Schwelle unter einer Unverwundbarkeit wie bei der Einzelheilung, aus einem gemeinsamen Helfer
   (`ObjectHelper.TryHealSingleThreshold`); der Hauptschalter der automatischen Heilung und die Heilsperre von M11S
-  gelten ebenso. Die Rotationseinstellung „Use GCDs to heal" gilt für beide Mittel.
+  gelten ebenso. Die Rotationseinstellung „Use GCDs to heal" gilt für beide Mittel; aus, ließe sie den Pfad neben einem
+  zweiten Heiler nur für ein Mitglied in der kritischen Klasse zu. Sie ist deshalb bei Weißmagier und Astrologe ab Werk
+  an (seine Präzisierung, 28.10.2026: Schalter, die eine neue Regel sperren, stehen zum Testen ab Werk an; A433). Ein
+  Wert, den er selbst gesetzt hat, bleibt: Gespeichert wird nur, was er in der Oberfläche ändert
+  (`RotationConfigBase.Value`).
 - *Angekündigte Treffer* rechnet dieser Pfad nicht: Die heutige Vorausheilung trägt sie schon, doppelt gezählt hieße
   doppelt geheilt.
 - *Gruppe:* der Gruppen-HoT, wenn mehr als ein Bedürftiger in seinem Wirkbereich steht – ein Einzel-HoT deckt genau

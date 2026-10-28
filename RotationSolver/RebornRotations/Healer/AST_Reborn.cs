@@ -26,7 +26,7 @@ public sealed class AST_Reborn : AstrologianRotation
 		+ "your abilities still healing - except while a party member is in the critical class, about to fall by the "
 		+ "time a heal lands, when your GCD heals go anyway. On: GCD heals whenever the healing thresholds call for them.\n"
 		+ "In a fight: off, a member about to fall still gets your GCD heal, whatever the other healer does.")]
-	public bool GCDHeal { get; set; } = false;
+	public bool GCDHeal { get; set; } = true;
 
 	[RotationConfig(CombatType.PvE, Name = "Prioritize Microcosmos over all other healing when available")]
 	public bool MicroPrio { get; set; } = false;

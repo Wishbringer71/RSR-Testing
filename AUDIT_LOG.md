@@ -12560,6 +12560,63 @@ beobachtet.
   HoTs auf ihm, Tiefpunkt, Schwelle), Größe der Tabelle in der Kopfzeile; `act_heal_need.py` auf seine Mitschnitte.
 - *Prüfgrad:* kompiliert ohne Warnung und Fehler, alle CI-Schritte lokal grün; im Spiel nicht beobachtet.
 
+### A433 · Astrologe „Use GCDs to heal" ab Werk an; Upstream 7.5.7.10 gegen Fork und Konzepte, Arznei zentral (28.10.2026)
+
+- *Seine Angaben:* „zum testen müssten somit alle diese schalter per default auf on sein" (zu den Schaltern, die H1
+  mitliest) – Präzisierung seiner Vorgabe vom 29.09.2026 zu Voreinstellungen, eingetragen in `code.md`, „Option und
+  Beobachtbarkeit". „immer die lösungen des upstreams mit denen des forks und der konzepte vergleichen. evtl. ergeben
+  sich aus upstream verbesserungen, welche die eigenen konzepte optimieren können. im loop prüfen" – Vorgabe, eingetragen
+  im Skill `upstream-sync`.
+- *Schalter von H1, gemessen:* „Automatic healing thresholds" (`AutoHeal`) an, „Heal over time against an enemy's damage
+  over time" an, „Use GCDs to heal" beim Weißmagier an (auch BeirutaAST an; BeirutaWHM hat keinen), beim Astrologen
+  (`AST_Reborn.GCDHeal`) aus, ab Werk seit Upstream d566eda86 (13.08.2025). Aus und mit einem lebenden zweiten Heiler
+  sperrt er H1 bis auf ein Mitglied in der kritischen Klasse (`GcdHealsAllowed`). Die Schwellen sind keine Schalter.
+- *Entgegen stand:* nur meine Falsifikation in A360 („die Voreinstellung bei Astrologe und Weiser auf an zu stellen
+  kostete Schaden auch ohne Gefahr"), keine Entscheidung von ihm; ihr Grund – Schaden, solange der andere heilt – ist das
+  Verhalten eines anderen Spielers, nach seiner Regel nie tragend, und weniger Schaden aus einer Sicherheitsregel ist
+  gewollt.
+- *Umgesetzt:* `AST_Reborn.GCDHeal` ab Werk an. Der Weise bleibt aus: Er hat keinen GCD-HoT, H1 liest den Schalter dort
+  nicht. Paladin, Rotmagier, Beschwörer bleiben aus: H1 gilt nur für Heiler.
+- *Bilanz:* Besser – H1 legt beim Astrologen auch neben einem zweiten Heiler Aspected Benefic oder Helios Conjunction,
+  sobald der DoT allein ein Mitglied unter die Schwelle drückt; ebenso gehen seine übrigen GCD-Heilungen, wenn die
+  Heilschwellen sie rufen, wie beim Weißmagier und Gelehrten. Schlechter – jeder solche GCD ersetzt einen Malefic, und
+  heilt der zweite Heiler dasselbe Mitglied, wird überheilt. Überwiegt nach seiner Regel (Sicherheit vor Schaden,
+  gewichtet mit der Wahrscheinlichkeit: die Schwellen rufen nur, wo ein Mitglied darunter steht oder fällt).
+- *Falsifikation:* Kein Defekt (H1 griffe beim Astrologen ohnehin)? Widerlegt: `TryHotAgainstDot` fragt
+  `CanHealSingleSpell`/`CanHealAreaSpell`, beide `base && GcdHealsAllowed(GCDHeal)`. Option falsch? Der Preis trifft alle
+  GCD-Heilungen des Astrologen, nicht nur H1 – benannt; ein eigener Schalter nur für H1 wäre eine zweite Option für
+  dieselbe Frage, und der Optionstext „Use GCDs to heal" bindet auch H1. Ausgeliefert, nichts ändert sich? Wenn er den
+  Wert selbst gesetzt hat: `RotationConfigBase.Value` speichert nur, was in der Oberfläche geändert wird; ein gesetzter
+  Wert bleibt (Konzept 08 nennt das).
+- *Upstream 7.5.7.10 (f1ef35ea1, 4a6fb1cca, „Minor core fixes and UI fix"), gegen Fork und Konzepte:* Der Tag kam erst
+  nach dem Merge; die Merge-Nachrichten nennen deshalb 7.5.7.9, die Fork-Version steht auf 7.5.7.10.
+  - Statusprüfung: Upstream legt `ShouldCheckStatus` jetzt auf die Provide-Seite – der Weg des Forks seit 331c12540;
+    `ShouldCheckTargetStatus` bleibt entfernt (ohne Oberfläche und Setter, immer wahr). Fork-Fassung behalten.
+  - VFX-Hook: Upstreams `IsTrackedVfxPath` nimmt jede `vfx/lockon/`-Spur, der Fork nur `vfx/lockon/eff/`
+    (`IsReadVfxPath`, A325); kein Leser liest eine Spur außerhalb. Upstreams Kopie samt zweitem `StartsWithAny` entfernt.
+  - `StatusHelper.IsFromPlayer`: die Fork-Fassung ohne Suche im Objektverzeichnis je Status behalten, Upstreams Kopie
+    entfernt.
+  - Konfiguration über eine Zwischendatei speichern: Die gelernten Tabellen des Forks schreiben schon so
+    (`OtherConfiguration`); Upstream zieht für `Configs` nach. Nichts nachzuziehen.
+  - Arznei: Upstream sperrt sie außerhalb des Kampfes in Weißmagier, Viper und Tänzer und den Öffner-Trank ohne
+    Countdown. Die Lücke ist eine Klasse: `UseBurstMedicine` prüfte den Kampf nicht, Astrologe (Divination bereit),
+    Weiser, Gelehrter, Schwarzmagier und fremde Rotationen riefen ohne Kampfprüfung. Zentral geschlossen: außerhalb des
+    Kampfes nur unter einem Countdown (`Service.CountDownTime`, dieselbe Uhr wie `CountDownAction`). Viper: Upstreams
+    `InCombat` zur Fork-Bedingung `WillHaveOneCharge(5)` (A342) genommen. Konzept 03.
+  - Gegnerwahl: Eine Aktion mit eigener Sortierung (Nearest, HighHP …) ordnet jetzt nach ihr statt nach seiner Zielart;
+    im Profil trifft das Corps-a-corps, das auf den nächsten Gegner springt – kürzester Weg. Nach der DoT-Verteilung des
+    Forks eingefügt, ein Befehl geht beiden vor. Konzept 03.
+  - „Presses per action" entfernt (fest 2 bis 3): Konzept 18 nachgezogen.
+  - Ohne Berührung mit Fork-Konzepten: `GetRowOrDefault`, `ClassJob.RowId`, Überlauf in `GetObjectShield` (Schild eines
+    Ziels mit sehr hohen HP), Rücksetzen von `AutoHealCheck` je Lauf, Phantomjob nur in Occult Crescent, Hostile-Ziel nur
+    für Gegner, Makroindex begrenzt, Gruppenziele je Bias einmal geprüft.
+  - RebornMaterial 7.5.7.1 → 7.5.7.2: `RefCheck` gegen die Dalamud-Distribution (`latest.zip` am 28.10.2026 byte-gleich
+    mit der vom 20.10.2026): ECommons 1381, RotationSolver.Basic 722, RotationSolver 4292, RebornMaterial 293 Referenzen,
+    keine fehlend; Selbsttest bestanden.
+- *Hilfsmittel:* `cloud_build.sh` liegt erst im Arbeits-Branch, nicht in `main`; der Skill sagt jetzt, wie es für den
+  Build von `main` geholt wird.
+- *Prüfgrad:* statisch an jedem Leser, kompiliert, CI-Schritte lokal; im Spiel nicht beobachtet.
+
 ---
 ## B · Commit-Register (Fork vs. `upstream/main`)
 

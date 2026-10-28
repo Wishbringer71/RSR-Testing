@@ -21,9 +21,10 @@ sind, die durch routinen und ingame auswertungen besser geregelt werden können.
   verspricht die Vorausschau für jede Heilschwelle; sechs Schwellen der Heiler-Rotationen und die Füllheilung lasen
   die Gesundheit jetzt statt beim Eintreffen der Heilung (unten, „Heilung").
 - **„Use GCDs to heal" weicht der Gefahr – behoben.** Aus, überließ die Einstellung GCD-Heilungen dem anderen Heiler (bei
-  Paladin, Rotmagier und Beschwörer den Heilern) auch dann, wenn ein Mitglied gleich fällt; Astrologe und Weiser haben
-  sie ab Werk aus. Jetzt heilt die Rotation, sobald ein Mitglied in der kritischen Klasse steht (unten,
-  „Rotationseinstellungen"; A360).
+  Paladin, Rotmagier und Beschwörer den Heilern) auch dann, wenn ein Mitglied gleich fällt. Jetzt heilt die Rotation,
+  sobald ein Mitglied in der kritischen Klasse steht (unten, „Rotationseinstellungen"; A360). Ab Werk aus hat sie unter
+  den Heilern nur noch der Weise; beim Astrologen ist sie ab Werk an, weil „Heal over time against an enemy's damage over
+  time" sie mitliest und sonst neben einem zweiten Heiler nie griffe (seine Präzisierung, 28.10.2026; A433).
 - **Die Wiederbelebung wartet ab Werk nicht mehr.** „Raise delay range" stand ab Werk auf 3 s, eine Tarnung ohne
   Nutzen im Kampf; ab Werk jetzt 0 bis 0 s (unten, „Tarnung"; Konzept 11).
 - **Alles Übrige ist eingeordnet, ohne Änderung.** Die übrigen Zahlen, die eine Spieltatsache tragen, haben entweder
@@ -99,7 +100,7 @@ Voreinstellung (der Wert, der im Spielgeschehen sinnvoller ist) wartet RSR ab We
 | „Out of combat delay range" | 2 bis 3 s, bleibt | sie entprellt das Kampfende für Sprint und Peloton; zwischen zwei Rudeln fällt der Kampfzustand kurz ab |
 | „Stop casting delay range" | 0,5 bis 1 s, bleibt | nur mit „Stop casting when the target dies" (ab Werk aus); ob das Spiel einen Zauber auf ein totes Ziel ohnehin abbricht, ist nicht belegt – ohne Beleg kein Eingriff |
 | „Delay between clicks" | 0,1 bis 0,2 s, bleibt | kürzer als die Animationssperre jeder Aktion (das Spiel sperrt nach einer Aktion länger, als die Spanne höchstens erlaubt, 0,25 s): kein Preis im Kampf |
-| „Presses per action" | 2 bis 3, bleibt | simulierte Tastendrücke auf der Leiste, kein Einfluss auf die Aktion |
+| Tastendrücke je Aktion | fest 2 bis 3 | simulierte Tastendrücke auf der Leiste, kein Einfluss auf die Aktion; die Einstellung „Presses per action" hat Upstream entfernt (f1ef35ea1) |
 
 Seine eigenen Werte sind von hier aus nicht messbar; die Verzögerung der Wiederbelebung hatte er auf 0 gesetzt (Archiv,
 C35).
@@ -250,7 +251,7 @@ Das Urteil liest den Zustand des Kampfes; der Schalter nimmt sie heraus, wenn si
 |---|---|---|
 | Heil- und Schutzschwellen | „Health threshold for Cover", Essential Dignity je Ladung, Taurochole | Haltung; die Heilschwellen der Heiler lesen die Vorausschau |
 | Gegnerzahlen | Aspected Benefic und Eukrasian Diagnosis vor dem Pull, Holy-Rückhaltung des Weißmagiers, The Blackest Night im Pull | Haltung, Vorbote vor dem ersten Treffer; wie die Pull-Abwehr der Tanks |
-| GCD-Heilungen anderen überlassen | „Use GCDs to heal" (Heiler: dem zweiten Heiler; Paladin, Rotmagier, Beschwörer: den Heilern) | Haltung (Schaden statt GCD-Heilung, solange andere heilen), seit A360 mit der Gefahrenausnahme: Steht ein Mitglied in der kritischen Klasse, heilt die Rotation trotzdem – sonst hinge das Überleben am Verhalten des anderen Spielers |
+| GCD-Heilungen anderen überlassen | „Use GCDs to heal" (Heiler: dem zweiten Heiler; Paladin, Rotmagier, Beschwörer: den Heilern) | Haltung (Schaden statt GCD-Heilung, solange andere heilen), seit A360 mit der Gefahrenausnahme: Steht ein Mitglied in der kritischen Klasse, heilt die Rotation trotzdem – sonst hinge das Überleben am Verhalten des anderen Spielers. Ab Werk an bei Weißmagier, Gelehrter und Astrologe (A433), aus beim Weisen und bei Paladin, Rotmagier, Beschwörer |
 | ausdrückliche Gefahrenschalter | Primal Rend „Dangerous", Crimson Cyclone „at any range", Forked Raiju „Dangerous" | seine Entscheidung gegen die eigene Sicherheit; ab Werk aus |
 | Abstände | Stardiver, Dragonfire Dive, Primal Rend, Crimson Cyclone | jetzt unter der zentralen Grenze |
 | Werte aus Leiste, Status und Abklingzeit | Sheltron bei 100 Oath, Paint-Grenze 5, Restzeiten für Reawaken, Death's Design bei 10 s, Lieddauern des Barden | Spieltatsachen; abzuleiten im Abgleich je Job mit The Balance (`TODO.md`, „Rotationen gegen The Balance abgleichen"), weil dort ohnehin jede Regel des Jobs gegen den Guide steht |
