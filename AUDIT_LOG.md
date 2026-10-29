@@ -12742,6 +12742,32 @@ Löschungen").
   Selbsttest bestanden. Fork-Version 7.5.7.11.
 - *Prüfgrad:* statisch, Build, Prüfskripte; im Spiel nicht beobachtet.
 
+### A438 · Audit des Merges von Upstream 7.5.7.11: nichts beschädigt, kein Konflikt mit den Konzepten (29.10.2026)
+
+- *Sein Auftrag:* „die upstream änderungen erneut im vollen loop kritisch und inhaltlich prüfen auf inhaltliche
+  konflikte mit den konzepten, ebenso audit und codereview ob der merge inhaltlich nichts kaputtgemacht hat."
+- *Abgleich Fork gegen Merge-Ergebnis* (1fc9235c9 gegen 889cb44d2, je C#-Datei über die Verschiebung hinweg, ohne
+  Leerraum und ohne Kommentare außerhalb von Zeichenketten): Es weichen genau die 16 Dateien ab, in denen Upstream
+  inhaltlich änderte; keine weitere. In den zwölf, die der Fork nicht berührt hatte, gleicht das Ergebnis Upstream; in den
+  vier, die er berührt hatte (`DataCenter`, `ObjectHelper`, `CustomRotation_Items`, `RotationSolverPlugin`), kam genau
+  Upstreams Änderung hinzu und vom Fork fehlt nichts. Fehlend sind nur Upstreams Löschungen (`AssemblyInfo`, Vorlagen).
+- *Gleichwertigkeit der Umschreibungen:* `RandomDelay` (Konzept 18, „Tarnung") setzt dieselben Startwerte als
+  Feldinitialisierer im primären Konstruktor, der zweite Konstruktor verkettet darauf, `default` bleibt ungesetzt wie
+  vorher; `ObjectListDelay`, `ConditionBoolean`, `RotationConfigComparer`, `RotationConfigSet`, die Generatoren:
+  Schreibweise. `IconSet.Init` und SVG: Im Repository zeigt keine Bildadresse auf SVG außer den Abzeichen der README,
+  die GitHub darstellt. `PhantomRotation` abstrakt: Der Fork leitet nur ab.
+- *Gelöschtes:* `.config/dotnet-tools.json` (Upstreams Dokumentationsgenerator), `AssemblyInfo.cs`
+  (`InternalsVisibleTo` auf die nun selbe Assembly), Vorlagen – kein Fork-Werkzeug nutzt sie; die Solution kennt das alte
+  Projekt nicht mehr, `lsp_query.py` lädt sie.
+- *Projektdatei:* `OutputPath` ohne Plattformbedingung, kein `GenerateDocumentationFile`, kein `AllowUnsafeBlocks`
+  (das SDK erlaubt es), kein eigenes Roslyn-Paket. Gemessen: Der Weg von `publish.yaml` (`--output`) legt `latest.zip`
+  weiter unter `<output>/RotationSolver/latest.zip`; Fork-Code liest weder XML-Dokumentation noch Roslyn zur Laufzeit.
+- *Konzepte:* nennen `RotationSolver.Basic` nur noch als Namensraum oder Codebereich (03, 08); keine Aussage über das
+  Projekt, die DLL, den Ausgabeort oder das Paket widerspricht dem Umbau. Alte Build-Ausgaben dieser Sitzung
+  (`RotationSolver.Basic/bin`, `obj`, `RotationSolver/bin`) entfernt; lokal, von Git ignoriert, ohne Commit.
+- *Prüfgrad:* maschineller Abgleich auf Tokenebene, Build mit dem Weg des Releases, Prüfskripte; im Spiel nicht
+  beobachtet.
+
 ---
 ## B · Commit-Register (Fork vs. `upstream/main`)
 
