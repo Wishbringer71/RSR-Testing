@@ -13130,6 +13130,20 @@ Löschungen").
 - *Prüfgrad:* statisch am Code, Modell gerechnet (`learned_revision_model.py`, Selbsttest grün), Barriere an seinen
   Mitschnitten gemessen; nichts gebaut.
 
+### A450 · Upstream 518b3503f in `main` und den Arbeitszweig: RebornMaterial 7.5.7.3 (29.10.2026)
+
+- *Inhalt:* nur der Paketstand von RebornMaterial (7.5.7.2 → 7.5.7.3) in `RotationSolver.csproj` und
+  `packages.lock.json`. Am Paket verglichen (Dokumentation, Zeichenketten und Bezeichner beider Stände): keine geänderte
+  öffentliche Schnittstelle; neu eine Snackbar mit Schweregrad und Symbol, ein gestufter Schieberegler,
+  Zwischenspeicher je Frame für Zeilen, Combos und Knöpfe; die Schriftzwischenspeicherung umgebaut.
+- *Im Kampf:* keine Wirkung; nur Zeichnen von Fenstern.
+- *Gegen die eigenen Änderungen:* konfliktfrei; der Fork ruft keinen geänderten Member auf. `RefCheck` (aus
+  Retainer-Repricer, lesend, A444) gegen die Dalamud-Distribution: ECommons 1313, RotationSolver 1482, RebornMaterial 294
+  Referenzen, keine fehlend, Selbsttests bestanden. Keine Synergie für offene Arbeit: Die Anzeige der gelernten Tabellen
+  (Konzept 13, Regel 10) braucht nur Tabelle, Suche und Clipper.
+- *Geprüft:* Build von `main` und Arbeitszweig ohne Warnung; alle Prüfschritte lokal, vor dem Push erneut nach dem
+  Merge (A324); Fork-Version 7.5.7.11 unverändert richtig.
+
 ---
 ## B · Commit-Register (Fork vs. `upstream/main`)
 
