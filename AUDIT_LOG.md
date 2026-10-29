@@ -13016,6 +13016,35 @@ Löschungen").
 - *Prüfgrad:* statisch, Compile ohne Warnung, alle Prüfschritte; im Spiel nicht beobachtet. Messmittel: die Liste zeigt
   „unmitigated" je Eintrag, das Protokoll „measured … unmitigated" je Messung.
 
+### A447 · Gelernte Tabellen über Spielversionen: Vorlage neu, nach seiner Rüge (29.10.2026)
+
+- *Seine Rüge an A443:* „zu flach ausgearbeitet. das konzept ist nicht stichhaltig genug, eher schlampig. […] was ist mit
+  der vorgabe, dass das überleben zählt? was ist mit failsafe und hardening? nacharbeiten". Das ganze Konzept neu
+  geprüft, nicht die Stelle geflickt.
+- *Was A443 fehlte:*
+  - kein Maßstab nach dem Überleben: dass jeder Wert schützend und einsparend gelesen wird und nur der zu niedrige
+    einsparende Wert Leben kostet;
+  - keine Absicherung je Fehlerfall;
+  - kein Messverfahren als Revisionsgrund, obwohl A446 im selben Zeitraum den Schaden daraus zeigte;
+  - eine Beweisregel ohne Rechnung, die bei Stacks schlechter ist als heute (Modell: 3,8 % gegen 2,2 % falsch
+    ausgelassener Schutz);
+  - ein Schlafversuch je Version ohne Blick darauf, dass der Schlaf in der GCD-Folge vor der Heilung steht;
+  - Pyretisch-Wirken widerlegbar durch Landungen auf Nicht-Zielen.
+- *Neu:*
+  - Grundsatz: Unbestätigtes darf Schutz auslösen, keinen einsparen.
+  - Senken erst bei gleich viel und gleich streuender Evidenz und einer Abweichung über den Schadenswurf (±5 %, Allagan
+    Studies).
+  - Sperren lösen nur, wo das schützt, der Schlafversuch nicht vor fälliger Heilung.
+  - Absicherungstabelle: Version unlesbar, Datei unlesbar mit Sicherung, Formatwechsel mit unberührter Altdatei, ältere
+    RSR-Fassung, Quarantäne, Invarianten beim Speichern.
+  - Härtung innerhalb einer Version als eigene Entscheidung.
+  - Anzeige: nur „erneut prüfen" als denkbare Bearbeitung.
+  - Prüfskript für die Leser, Bauabfolge mit Rückbau.
+- *Modell* `learned_revision_model.py` (Selbsttest, in der CI-Modellzeile): sieben Lagen, neun Regeln. Der Vorschlag lässt
+  nirgends öfter Schutz falsch aus als heute, wo der Treffer nicht schwächer wurde, und nach einer Abschwächung seltener als
+  heute jede neue Aktion.
+- *Prüfgrad:* statisch am Code und an den Quellen, Modell gerechnet, Selbstprüfung; nichts gebaut.
+
 ---
 ## B · Commit-Register (Fork vs. `upstream/main`)
 

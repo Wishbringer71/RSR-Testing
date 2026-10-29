@@ -10,7 +10,7 @@ Betroffene: **N** Endnutzer · **R** Autoren abgeleiteter Rotationen (Namensräu
 Nach der Wirkung im Kampf: Sicherheit der Gruppe vor Schaden, gewichtet mit der Wahrscheinlichkeit, in seinem Profil
 (seine Vorgabe, 17.10.2026: „todo nach wichtigkeit abarbeiten. jeweils im loop bearbeiten").
 
-1. Die gelernten Tabellen: Die Vorlage steht (Konzept 13, A443) und wartet auf seine Entscheidung; gebaut wird danach,
+1. Die gelernten Tabellen: Die Vorlage steht (Konzept 13, A447) und wartet auf seine Entscheidung; gebaut wird danach,
    erst die Revision über einen Spielpatch, dann die Anzeige. Beide ändern den Kampf nur mittelbar, über einen
    geprüften oder berichtigten Lernwert – die Sperren unter ihnen (Schlaf) aber dauerhaft.
 
@@ -38,7 +38,7 @@ Pyretisch mehr anlegt, hält weiter Zauber an. *Ort:*
 und `ActionPenaltyCasts`;
 Vorbild der Upstream-Listen: `BuiltInList`/`SetList` (eingebaute Einträge, eigene Änderungen als Differenz,
 ausgemusterte Ids). *Nächster Schritt:* seine Entscheidung über die Vorlage (Konzept 13, „Gelernte Tabellen über
-Spielversionen", A443), dann der Bau; Umsetzung erst nach seiner Freigabe (seine Vorgabe, 28.10.2026), zusammen mit
+Spielversionen", A447), dann der Bau; Umsetzung erst nach seiner Freigabe (seine Vorgabe, 28.10.2026), zusammen mit
 „Gelernte Tabellen des Forks in den Einstellungen zeigen und bearbeiten". *Konzept:* 13.
 
 ### Gelernte Tabellen des Forks in den Einstellungen zeigen und bearbeiten · N
@@ -53,7 +53,7 @@ Tankbuster-Tabelle neben Upstreams AoE- und Tankbuster-Liste. *Ort:* `MainWindow
 `OtherConfiguration`: `HostileCastingAreaPotential`, `TankbusterPotential`, `TankbusterMarkerWithoutHit`,
 `SleepOutcomes`, `SleepResistantKinds`, `SleepDiminishing`, `HitSeriesOnPlayer`, `DotOnParty`, `ActionPenaltyCasts`.
 *Nächster Schritt:*
-seine Entscheidung über die Vorlage (Konzept 13, „Gelernte Tabellen über Spielversionen", A443): Anzeige allein, mit
+seine Entscheidung über die Vorlage (Konzept 13, „Gelernte Tabellen über Spielversionen", A447): Anzeige allein, mit
 Entfernen einzelner Einträge, oder gar nicht – die Bearbeitung berührt seine Vorgabe A173. Umsetzung erst nach seiner
 Freigabe (seine Vorgabe, 28.10.2026). *Konzept:* 13 (gelernte Tabellen), 18 (Einstellungen).
 
