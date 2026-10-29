@@ -405,9 +405,27 @@ Ersticken des Fleisches (6 s Wirkzeit) traf ihn am 19.10.2026 zweimal je viermal
 je Treffer und zusammen 49 und 54 %: einzeln ein Treffer, der ihn über der Flächenheilschwelle lässt, zusammen nicht. Der Text von „Skip mitigation for small area casts"
 mindert voll, wenn nach dem Treffer Heilung fällig wird; mit dem Einzeltreffer hätte die Regel die Minderung gegen die
 ganze Serie gespart. Zwei Gegner, die dieselbe Aktion im selben Moment wirken, zählen ebenso zusammen – sie treffen die
-Gruppe zusammen. *Offen* (TODO „Mehrfach treffender Raidwide: Minderung über die ganze Serie"): Die Flächenserie kennt
-ihre Dauer nicht, und die Größenregel rechnet die Minderung, die beim Ende des Balkens steht, für die ganze Summe; die
-Tankbuster-Serie lernt ihre Dauer seit A454 (Konzept 09, „H_S").
+Gruppe zusammen.
+
+**Gemindert ist eine Serie nur so weit, wie die Minderung bis zu ihrem letzten Treffer steht** (A460). Die Flächenserie
+lernt wie die Tankbuster-Serie (A454) ihre Dauer vom ersten bis zum letzten Treffer, als höchsten Wert je Aktion
+(`OtherConfiguration.AreaSeriesSpan`), und `DataCenter.AreaShareNow` zählt nur Minderung und Erhöhung der
+Maximalgesundheit, die über die Restzeit des Casts und diese Dauer hinaus stehen. Für alle Leser der Tabelle zugleich:
+die Größenregel, die Vorausheilung, den großen unterbrechbaren Cast und den gehaltenen BossModReborn-Raidwide.
+- *Warum:* Ersticken des Fleisches – vier Türme aus je eigenem 5,7-s-Cast eines Helfers, 3 s versetzt – trifft bis
+  9 s nach dem ersten Turm (seine Protokolle vom 25. und 29.10.2026). Eine Gruppenminderung von 10 s, 3 s vor dem
+  Ende des ersten Balkens gelegt, endet vor dem dritten Turm; die Größenregel rechnete sie für die ganze Summe, konnte
+  die eigene Minderung auslassen, und die letzten Türme kamen ungemindert.
+- *Preis:* Eine Minderung, die nur die ersten Treffer deckt, zählt gar nicht – gerechnet wird, als träfe die ganze
+  Summe ungemindert. RSR mindert dann eher einmal zu viel; nach seiner Spielweise der sichere Fehler, weil die
+  Wahrscheinlichkeit des Treffers bekannt ist (er ist angekündigt). Eine Serie, die über viele Gegner mit derselben
+  Aktion immer weiter läuft, lernt eine lange Dauer; die Aktion zählt dann ungemindert, wie ihre aufgelaufene Summe ohnehin
+  nahelegt.
+- *Ausgeschlossen:* den schon gelandeten Teil einer offenen Serie von der Summe abziehen, wenn ihr nächster Cast
+  angekündigt wird (sein Protokoll vom 29.10.2026: vor jedem Turm „hit 99 %"). Läuft die Serie heute länger als die
+  gespeicherte, rechnete der Abzug den nächsten Cast zu klein; und die Vorausheilung nach dem ersten Turm ist meist
+  ohnehin begründet – drei Türme zu 19 % stehen gegen ein Mitglied bei 80 %. Ebenso ausgeschlossen: die Minderung je
+  Treffer zeitlich aufzuteilen; die Treffer einer Serie kennt die Tabelle nicht einzeln.
 
 **Fortgeschrieben wird als Höchstwert über alle Durchläufe.** Der Wert kann nur steigen, und jeder
 Anstieg wirkt beim nächsten Verbrauch sofort.
@@ -911,7 +929,8 @@ Anteil eines Mitglieds wird durch das geteilt, was die Minderung beim Einschlag 
 nach Schadensart, mit den Werten der Tankbuster-Tabelle (`TankbusterTable.MitigationFactor`, `DefensiveValues`) –, auf
 seine maximalen LP ohne Erhöhung umgerechnet und höchstens als ganze Maximalgesundheit abgelegt. Gelesen wird er unter der
 Minderung, die beim Einschlag noch steht (`DataCenter.AreaShareNow`): auf dem Mitglied, das sie am wenigsten schützt,
-und auf dem Wirker; eine, die vor dem Ende des Casts ausläuft, zählt nicht. Beleg: Seelenüberfluss (#37707) traf ihn am
+und auf dem Wirker; eine, die vor dem Ende des Casts ausläuft – bei einer Serie vor ihrem letzten Treffer –, zählt
+nicht. Beleg: Seelenüberfluss (#37707) traf ihn am
 26.10.2026 mit 25 % unter Vollkommener Ablass, Mäßigung und Taktiker; zurückgerechnet rund 34 % (Taktiker 10 %) oder
 36 % (ab Stufe 98 15 %), und Glockenspiel blieb mit dem kleinen Wert liegen (A419). Bis dahin war der Messwert Schaden
 nach Minderung, und die Höchstwertregel federte das nur ab. Die Rückrechnung geht auf seinen Einwand zurück (A26:
@@ -1088,6 +1107,7 @@ begründet.
 | `HostileCastingAreaPotential` (+ `AreaPotentialUnmitigated`, A446) | `DataCenter.AreaShareNow` | Minderung ab großer Barriere, Vorausheilung, Glocke, Weichen der Rückhaltungen | Größenregel, „angekündigter Treffer klein", BossModReborn-Raidwide gehalten | zu niedrig: Minderung ausgelassen |
 | `TankbusterPotential` | `TankbusterTable.PredictedShare` | Bündel, Unverwundbarkeit, Tankwechsel | „nur so viel, wie nötig", Hilfe für den anderen Tank ausgelassen | zu niedrig: zu kleines Bündel; zu hoch: Unverwundbarkeit fehlt dem nächsten tödlichen Treffer |
 | `HitSeriesOnPlayer` | `HitSeries` | Glocke auf eine Serie | – | zu niedrig: Glocke fehlt einer Serie |
+| `AreaSeriesSpan` (A460) | `DataCenter.AreaShareNow` | nur Minderung, die bis zum letzten Treffer der Serie steht, zählt | – | zu kurz: eine Minderung, die vor dem letzten Treffer endet, zählt für die ganze Summe |
 | `DotOnParty` | `DotOnParty.Learned` | HoT gegen DoT, Fortschreibung eines DoT ohne Ende | – | zu niedrig: HoT zu spät |
 | `SleepOutcomes` | `SleepInterruptWatch` | „ein Schlaf hat es schon gestoppt" öffnet den Versuch | „Schlaf stoppt es nicht" (`IsUnstoppable`) | zu niedrig/als unstoppbar: Wirken landet |
 | `SleepResistantKinds` | `SleepInterruptWatch.CanStillBeSlept` | – | kein Versuch auf die Art | Wirken landet, nie wieder geprüft |
@@ -1326,8 +1346,8 @@ jede Fläche, kein Tankbuster gemessen, Schlafwissen weg; mit der Sicherung gilt
 **Umfang.** Schichten bekommen die beiden Speicher, deren Werte die Stufen 2 und 3 einsparend lesen: die Flächentabelle
 (`HostileCastingAreaPotential`) und die Tankbuster-Tabelle (`TankbusterPotential`). Die Sperrspeicher (Schlaf,
 Pyretisch, Marker ohne Treffer) bekommen sie mit Stufe 4, weil erst Regel 6 festlegt, was dort eine Beobachtung ist;
-die nur schützend gelesenen (Serie, DoT, Markertreffer) mit der Regel, die sie einmal senkt – bis dahin gelten sie wie
-heute. Das kostet nichts: Ein Speicher, der seine Schichten später bekommt, übernimmt seine Werte dann als übernommen,
+die nur schützend gelesenen (Serie, Dauer der Flächenserie, DoT, Markertreffer) mit der Regel, die sie einmal senkt –
+bis dahin gelten sie wie heute. Das kostet nichts: Ein Speicher, der seine Schichten später bekommt, übernimmt seine Werte dann als übernommen,
 und übernommen ist der schützende Zustand; der Preis ist eine Bestätigung je Eintrag mehr. Die Sicherung bekommen alle
 gelernten Speicher mit dem Speicherweg `LearnedFile`; die beiden Markerspeicher (`LocalFile`) mit Stufe 4.
 `AreaPotentialUnmitigated` bleibt ohne Schichten: Es sagt, wie ein Wert gemessen wurde, nicht, was das Spiel tut, und
@@ -1364,8 +1384,8 @@ Ohne das bliebe nach einem Patch jede unveränderte Aktion übernommen, bis ein 
   Tankbuster-Treffer, den eine Unverwundbarkeit aufhielt („Null zählt nicht") –, und sie kommt nur als erste: Folgt ihr
   doch Schaden, weitet sie die Streuung und hemmt die Senkung. Einheit ist die Landung, bei einer Serie (A349) also die
   laufende Summe: Teilsummen weiten `Low`
-  und erhöhen `Count`, beides hemmt die Senkung in Regel 5 und 5b nur. Die Serie als Einheit kommt mit dem offenen
-  Punkt „Mehrfach treffender Raidwide" und erhöht das Messverfahren.
+  und erhöhen `Count`, beides hemmt die Senkung in Regel 5 und 5b nur. Die Serie als Einheit kommt mit Stufe 3, die
+  sie als erste liest, und erhöht das Messverfahren.
 - *Tankbuster:* jede abgelegte Serie (A454) mit ihrer Summe, ihrer Dauer und „nur als Wirken auf das Ziel". Sauber, wenn
   sie nicht unter einer Verwundbarkeit lag; eine unter Schadensplus wird gar nicht abgelegt. `Low` und `High` aus der
   Summe.
