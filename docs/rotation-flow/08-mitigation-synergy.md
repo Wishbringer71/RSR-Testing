@@ -105,7 +105,7 @@ loest die dritte Vorgabe ein: Die Barriere steht im Zaehler, also addiert sie si
 Minderung, statt mit ihr zu konkurrieren.
 
 **Der Wert je Abwehraktion liegt vor.** `generate_defensive_values.py` liest ihn aus den Wirktexten
-in `ActionId.resx` und `DutyAction.resx` und erzeugt `RotationSolver.Basic/Data/DefensiveValues.g.cs`;
+in `ActionId.resx` und `DutyAction.resx` und erzeugt `RotationSolver/Basic/Data/DefensiveValues.g.cs`;
 die CI stellt die erzeugte Datei gegen die Wirktexte. Drei Formen, bewusst getrennt gehalten, weil
 sie **nicht** dasselbe bedeuten:
 

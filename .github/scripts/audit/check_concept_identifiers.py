@@ -28,7 +28,7 @@ from pathlib import Path
 CONCEPT_DIR = Path('docs/rotation-flow')
 # The generator project counts too: a concept naming `StaticCodeGenerator.GenerateRotations` was
 # reported only because this list did not include the folder the class lives in.
-SOURCE_DIRS = ('RotationSolver.Basic', 'RotationSolver', 'RotationSolver.GameData',
+SOURCE_DIRS = ('RotationSolver', 'RotationSolver.GameData',
                'RotationSolver.SourceGenerators', '.github')
 SOURCE_PATTERNS = ('*.cs', '*.py', '*.resx', '*.yaml', '*.props', '*.csproj')
 

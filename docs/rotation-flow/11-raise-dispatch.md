@@ -29,7 +29,7 @@ Bedingungen schließen einander aus:
 |---|---|---|
 | `CustomRotation_GCD.RaiseSpell`, Zweig `RaisePlayerBySwift` | wählt Spontanität **nur** bei `WeaponRemain <= 0.5f` | Auswahl |
 | `RSCommands_Actions.DoAction` | verweigert **jede** Fähigkeit bei `0 < DefaultGCDRemain <= 0.5f` | Ausführung |
-| `RSCommands_Actions.cs:46` | dieselbe Sperre im Klick-Gate (`DefaultGCDRemain`) | Ausführung |
+| `RSCommands_Actions.cs:45` | dieselbe Sperre im Klick-Gate (`DefaultGCDRemain`) | Ausführung |
 | `CustomRotation.Ability`, Einschiebesperre (`WeaponRemain <= 0.5f`) | dieselbe Sperre im Fähigkeiten-Dispatcher | Auswahl |
 
 Spontanität ist eine Fähigkeit. Die beiden Fenster decken sich bis auf den einzigen Punkt
@@ -48,7 +48,7 @@ Bewegung spielt keine Rolle: Spontanität hat keine Wirkzeit, die Wirkzeitsperre
 
 Der Auftraggeber hat berichtet, dass die Wiederbelebung sofort erfolgt, sobald er von automatisch
 auf manuell stellt und den Toten anvisiert. Das ist ein natürliches Experiment und bestätigt die
-Ursachenanalyse: `ActionTargetInfo.cs:112` (`IsManual`) lässt im manuellen Modus ein **feindliches** Ziel nur zu,
+Ursachenanalyse: `ActionTargetInfo.cs:107` (`IsManual`) lässt im manuellen Modus ein **feindliches** Ziel nur zu,
 wenn es das angewählte Hauptziel ist. Wer einen Toten anvisiert, hat kein feindliches Ziel, sämtliche
 Angriffsaktionen fallen aus, der GCD bleibt frei, `DefaultGCDRemain` steht auf genau `0` — der eine
 Punkt, an dem beide Fenster zusammenpassen.

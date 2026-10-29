@@ -1,10 +1,11 @@
 #!/usr/bin/env python3
 """Phase 7: public surface of RotationSolver.Basic removed or changed since a base revision.
 
-Authors of derived rotations compile against the public and protected members of
-RotationSolver.Basic. Until upstream's UI rework (merged 04.10.2026) it shipped as a NuGet package
-(GeneratePackageOnBuild); since then the project is IsPackable=false and the assembly reaches them
-as RotationSolver.Basic.dll in the plugin's latest.zip - the surface is the same contract either way. Removing one, renaming it or changing its
+Authors of derived rotations compile against the public and protected members of the
+RotationSolver.Basic namespaces. Until upstream's UI rework (merged 04.10.2026) it shipped as a NuGet
+package (GeneratePackageOnBuild), then as RotationSolver.Basic.dll in the plugin's latest.zip; since
+upstream 7.5.7.11 its sources live under RotationSolver/Basic in the plugin itself - the surface is
+the same contract either way. Removing one, renaming it or changing its
 parameter list breaks their build; Semantic Versioning calls that a major change, and the project has
 no deprecation path for it.
 
@@ -21,7 +22,10 @@ import re
 import subprocess
 import sys
 
-PROJECT = 'RotationSolver.Basic/'
+# Where the project's sources live: since upstream 7.5.7.11 in the plugin project, before as a project of its own. A
+# base revision from before the move holds them under the old path, and the key below names type and member, not the
+# file, so a member keeps its key across the move.
+PROJECTS = ('RotationSolver/Basic/', 'RotationSolver.Basic/')
 
 # Public surface: a member declared public or protected. "protected" counts because derived rotations
 # inherit CustomRotation and call into exactly those members.
@@ -76,9 +80,9 @@ def surface(revision=None):
         ['git', 'ls-files'] if revision is None
         else ['git', 'ls-tree', '-r', '--name-only', revision],
         capture_output=True, text=True, check=True).stdout.split()
-    files = [f for f in listing if f.startswith(PROJECT) and f.endswith('.cs')]
+    files = [f for f in listing if f.startswith(PROJECTS) and f.endswith('.cs')]
     if not files:
-        raise RuntimeError(f'no {PROJECT} sources found in {revision or "the working tree"}')
+        raise RuntimeError(f'no {" or ".join(PROJECTS)} sources found in {revision or "the working tree"}')
 
     found = {}
     for path in files:

@@ -18,10 +18,10 @@ import re
 import sys
 from pathlib import Path
 
-TARGET = Path('RotationSolver.Basic/Actions/ActionTargetInfo.cs')
+TARGET = Path('RotationSolver/Basic/Actions/ActionTargetInfo.cs')
 # The critical class is one definition shared by every reader (A159). GeneralHealTarget may call it
 # instead of spelling the threshold out, and then the definition is where the look-ahead is checked.
-HELPER = Path('RotationSolver.Basic/Helpers/ObjectHelper.cs')
+HELPER = Path('RotationSolver/Basic/Helpers/ObjectHelper.cs')
 HELPER_METHOD = re.compile(r'static bool IsInCriticalClass\s*\(')
 CLASS_CALL = re.compile(r'IsInCriticalClass\([^)]*\)')
 

@@ -704,7 +704,7 @@ public static class Watcher
 			float damageRatio = 0;
 			var playerId = playerObject.GameObjectId;
 			var maxHp = playerObject.MaxHp;
-			var denom = Math.Max(1u, maxHp); // avoid division by zero
+			var denom = Math.Max(1u, maxHp);
 
 			// An enemy nobody can target - the invisible helpers that resolve many raidwides, the parts of a
 			// boss, or a boss while it is off the field - counts as an enemy here: the area recognition reads
@@ -883,7 +883,6 @@ public static class Watcher
 						}
 					}
 
-					// Only write the file when this is a newly recorded action, not on every raidwide cast.
 					if (intakeOpen && damageEffectCount == partyMemberCount
 						&& OtherConfiguration.HostileCastingArea.Add(set.Action!.Value.RowId))
 					{
@@ -1027,31 +1026,24 @@ public static class Watcher
 	{
 		try
 		{
-			//PluginLog.Debug($"ActionFromSelf invoked. Source: {set.Source?.GameObjectId}, Action: {set.Action?.Name.ExtractText() ?? "null"}");
-
 			var playerObject = Player.Object;
 			if (set.Source == null || playerObject == null)
 			{
-				//PluginLog.Debug("ActionFromSelf: Source or playerObject is null. Exiting.");
 				return;
 			}
 
 			if (set.Source.GameObjectId != playerObject.GameObjectId)
 			{
-				//PluginLog.Debug($"ActionFromSelf: Source.GameObjectId ({set.Source.GameObjectId}) does not match playerObject.GameObjectId ({playerObject.GameObjectId}). Exiting.");
 				return;
 			}
 
-			// ECommons leaves Action null for items and mounts, so this also keeps mount IDs out of combo tracking.
 			if (set.Action == null)
 			{
-				//PluginLog.Debug("ActionFromSelf: set.Action is null. Exiting.");
 				return;
 			}
 
 			if (set.Action.Value.ActionCategory.RowId == (uint)ActionCate.Autoattack)
 			{
-				//PluginLog.Debug("ActionFromSelf: ActionCategory is Autoattack. Exiting.");
 				return;
 			}
 
@@ -1067,15 +1059,12 @@ public static class Watcher
 
 			if (set.TargetEffects.Length == 0)
 			{
-				//PluginLog.Debug("ActionFromSelf: No TargetEffects. Exiting.");
 				return;
 			}
 
 			var action = set.Action;
 			var tar = set.Target;
 
-			// Record
-			//PluginLog.Debug($"ActionFromSelf: ActionType is {set.Header.ActionType}.");
 			DataCenter.AddActionRec(action!.Value);
 			TankbusterForecast.RecordOwnAction(action.Value.RowId, tar?.GameObjectId ?? 0);
 
@@ -1087,7 +1076,6 @@ public static class Watcher
 				TankSwapWatch.ShirkLanded();
 			}
 
-			// Only shown on the Debug tab; formatting the whole effect set for every action is wasted otherwise.
 			if (Service.Config.InDebug)
 			{
 				ShowStrSelf = set.ToString();
@@ -1121,7 +1109,6 @@ public static class Watcher
 				}
 			}
 
-			// Ensure ApplyStatus dictionary is non-null, then merge source-applied effects
 			DataCenter.ApplyStatus = set.GetSpecificTypeEffect(ActionEffectType.ApplyStatusEffectTarget) ?? [];
 			var sourceApply = set.GetSpecificTypeEffect(ActionEffectType.ApplyStatusEffectSource);
 			if (sourceApply is { Count: > 0 })
@@ -1168,7 +1155,6 @@ public static class Watcher
 						continue;
 					}
 
-					// Check if the target is already in the attacked targets list
 					var targetExists = false;
 					foreach ((var id, var time) in attackedTargets)
 					{
@@ -1183,26 +1169,20 @@ public static class Watcher
 						continue;
 					}
 
-					// Ensure the current target is not dequeued
 					while (attackedTargets.Count >= attackedTargetsCount && attackedTargets.Count > 0)
 					{
 						(var id, var time) = attackedTargets.Peek();
 						if (id == effect.TargetID)
 						{
-							// If the oldest target is the current target, break the loop to avoid dequeuing it
 							break;
 						}
 						_ = attackedTargets.Dequeue();
 					}
 
-					// Enqueue the new target
 					attackedTargets.Enqueue((effect.TargetID, DateTime.Now));
 				}
 			}
 
-			// Macro
-			// Not Compiled: the static Regex cache holds only a few entries, so compiled patterns would be
-			// recompiled (slowly, on the game thread) whenever more events than that are configured.
 			var regexOptions = RegexOptions.IgnoreCase;
 			var eventsList = Service.Config.Events ?? [];
 			var actionName = action.Value.Name.ExtractText() ?? string.Empty;

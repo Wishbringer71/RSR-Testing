@@ -33,8 +33,8 @@ from collections import defaultdict
 
 ACTIONS = 'RotationSolver.SourceGenerators/Properties/ActionId.resx'
 STATUSES = 'RotationSolver.SourceGenerators/Properties/Status.resx'
-HELPER = 'RotationSolver.Basic/Helpers/StatusHelper.cs'
-CODE_DIRS = ['RotationSolver.Basic', 'RotationSolver']
+HELPER = 'RotationSolver/Basic/Helpers/StatusHelper.cs'
+CODE_DIRS = ['RotationSolver']
 
 # Effects an action can put on an enemy that the plugin could act on. The key is the status name
 # the game uses, the value the phrases that announce it in an action's description.

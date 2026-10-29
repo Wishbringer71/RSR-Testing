@@ -36,8 +36,8 @@ from pathlib import Path
 
 ROOT = Path(__file__).resolve().parents[3]
 PROPERTIES = ROOT / "RotationSolver.SourceGenerators" / "Properties"
-BASIC = ROOT / "RotationSolver.Basic" / "Rotations" / "Basic"
-CENTRAL = ROOT / "RotationSolver.Basic" / "Rotations"
+BASIC = ROOT / "RotationSolver" / "Basic" / "Rotations" / "Basic"
+CENTRAL = ROOT / "RotationSolver" / "Basic" / "Rotations"
 REBORN = ROOT / "RotationSolver" / "RebornRotations"
 OUTPUT = ROOT / "docs" / "action-matrix"
 
@@ -372,7 +372,7 @@ MOVE_LOCK = re.compile(r"Action = ActionID\.(\w+PvE), Parent = nameof\(PoslockCa
 def central_channel_locks():
     return channel_locks((CENTRAL / "CustomRotation_GCD.cs").read_text(encoding="utf-8"),
                          (CENTRAL / "CustomRotation_Ability.cs").read_text(encoding="utf-8"),
-                         (ROOT / "RotationSolver.Basic" / "Configuration" / "Configs.cs").read_text(encoding="utf-8"))
+                         (ROOT / "RotationSolver" / "Basic" / "Configuration" / "Configs.cs").read_text(encoding="utf-8"))
 
 
 def channel_locks(gcd_code, ability_code, configs_code):
@@ -395,7 +395,7 @@ def channel_locks(gcd_code, ability_code, configs_code):
 @functools.lru_cache(maxsize=None)
 def rated_ids():
     """Action ids DefensiveValues rates - the same table the defense rules read."""
-    path = ROOT / "RotationSolver.Basic" / "Data" / "DefensiveValues.g.cs"
+    path = ROOT / "RotationSolver" / "Basic" / "Data" / "DefensiveValues.g.cs"
     text = path.read_text(encoding="utf-8")
     head = text.split("DurationByActionId", 1)[0]
     return {int(x) for x in re.findall(r"\[(\d+)\] = new\(", head)}

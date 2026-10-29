@@ -29,9 +29,9 @@ import os
 import re
 import sys
 
-GCD_PATH = 'RotationSolver.Basic/Rotations/CustomRotation_GCD.cs'
+GCD_PATH = 'RotationSolver/Basic/Rotations/CustomRotation_GCD.cs'
 GATE_PATH = 'RotationSolver/Commands/RSCommands_Actions.cs'
-ABILITY_PATH = 'RotationSolver.Basic/Rotations/CustomRotation_Ability.cs'
+ABILITY_PATH = 'RotationSolver/Basic/Rotations/CustomRotation_Ability.cs'
 
 # The gate: `baseAct.Info.IsAbility && ... && DataCenter.DefaultGCDRemain <= X && ... > 0f`
 GATE_RE = re.compile(

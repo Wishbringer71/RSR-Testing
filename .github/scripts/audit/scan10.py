@@ -27,7 +27,7 @@ import subprocess
 import sys
 from collections import defaultdict
 
-ROOTS = ('RotationSolver.Basic/', 'RotationSolver/')
+ROOTS = ('RotationSolver/Basic/', 'RotationSolver/')
 RESX = 'RotationSolver.SourceGenerators/Properties/Status.resx'
 
 # The generated doc block is HTML-escaped inside the resx value.

@@ -2,7 +2,7 @@
 # Builds the plugin in a Linux cloud session, so a compiler error shows in the session instead of on the Windows
 # runner of the CI. A fresh session has neither .NET nor Dalamud; this fetches what is missing - the .NET SDK 10 into
 # $HOME/.dotnet, the Dalamud distribution into $HOME/.xlcore/dalamud/Hooks/dev, where the projects look on Linux
-# (RotationSolver.Basic.csproj, DalamudLibPath) - and builds RotationSolver with RotationSolver.Basic in Release.
+# (DalamudLibPath) - and builds RotationSolver in Release.
 # Done by hand since A331 (22.10.2026); written down after Retainer-Repricer's tools/cloud-build.sh (27.10.2026, A423).
 #
 #   .github/scripts/cloud_build.sh            fetch what is missing, build

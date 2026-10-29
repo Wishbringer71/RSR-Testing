@@ -18,7 +18,7 @@ import re
 import sys
 from pathlib import Path
 
-SOURCE = Path('RotationSolver.Basic/DataCenter.cs')
+SOURCE = Path('RotationSolver/Basic/DataCenter.cs')
 KINDS = {
     'tankbuster': ('TankbusterPaths',),
     'stack': ('MultiHitSharedPaths', 'SharedDamagePaths'),

@@ -39,10 +39,8 @@ internal static class CancelCastUpdater
 			&& castTarget.IsEnemy()
 			&& castTarget.CurrentHp == 0;
 
-		// Evaluate the delay every frame so its timer tracks the target's state.
 		var stopForDeadTarget = _tarStopCastDelay.Delay(tarDead);
 
-		// Cancel raise cast if target already has Raise status
 		var tarHasRaise = castTarget != null && castTarget.HasStatus(false, StatusHelper.RaiseStatus);
 
 		// Cancel a raise another player lands first on the same body (A294). The status above comes only once
@@ -56,7 +54,6 @@ internal static class CancelCastUpdater
 			&& NoCastingStatusHelper.PlayerHasNoCastingStatus(out var noCastingRemaining, out var damagesEveryAction)
 			&& (damagesEveryAction || noCastingRemaining < NoCastingStatusHelper.ResolveWindow);
 
-		// Cancel cast in PvP if an enemy target gains Guard and the action does not ignore Guard
 		var tarHasGuard = DataCenter.IsPvP && Service.Config.PvpGuardCancel
 			&& castTarget != null
 			&& castTarget.IsEnemy()
@@ -64,8 +61,6 @@ internal static class CancelCastUpdater
 			&& ((ActionID)player.CastActionId).GetActionFromID(true, RotationUpdater.CurrentRotationActions)
 				is IBaseAction { Setting.IgnoreGuard: false };
 
-		// Cancel the cast if BossMod's own AI hints (module or AI controller) are requesting a cancel,
-		// e.g. because the boss module determined the cast is no longer safe/useful.
 		var bmrForceCancelCast = Service.Config.UseBmrTimeline
 			&& (DataCenter.BMRForceCancelCast || DataCenter.BMRForceCancelCastAI);
 

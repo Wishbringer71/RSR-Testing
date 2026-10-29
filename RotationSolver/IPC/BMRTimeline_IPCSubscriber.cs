@@ -67,15 +67,9 @@ internal static class BMRTimeline_IPCSubscriber
 	[EzIPC("Hints.SpecialModeType", true)]
 	internal static readonly Func<int>? SpecialModeType;
 
-	/// <summary>
-	/// Returns true if the destination position (XZ) is safe to move to.
-	/// </summary>
 	[EzIPC("Hints.IsPositionSafe", true)]
 	internal static readonly Func<Vector3, bool>? IsPositionSafe;
 
-	/// <summary>
-	/// Returns true if the dash from <c>from</c> to <c>to</c> is safe.
-	/// </summary>
 	[EzIPC("Hints.IsDashSafe", true)]
 	internal static readonly Func<Vector3, Vector3, bool>? IsDashSafe;
 

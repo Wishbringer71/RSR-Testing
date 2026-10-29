@@ -31,7 +31,7 @@ import subprocess
 import sys
 from collections import defaultdict
 
-ROOTS = ('RotationSolver.Basic/', 'RotationSolver/')
+ROOTS = ('RotationSolver/Basic/', 'RotationSolver/')
 
 # A negation already spelled into the identifier. Anchored to a word boundary inside PascalCase so
 # "Normal" and "Notice" do not match on their first letters.

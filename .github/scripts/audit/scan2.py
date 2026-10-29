@@ -8,7 +8,7 @@ scan8.py already guard against.
 """
 import os, re, sys, collections
 
-ROOTS = ['RotationSolver', 'RotationSolver.Basic']
+ROOTS = ['RotationSolver']
 
 def strip(src):
     src = re.sub(r'/\*.*?\*/', '', src, flags=re.S)

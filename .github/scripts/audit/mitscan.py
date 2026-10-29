@@ -19,7 +19,7 @@ import os, re, sys
 # table is the capability check that replaces the enumeration.
 def load_mitigations():
     table = os.path.join(os.path.dirname(__file__), '..', '..', '..',
-                         'RotationSolver.Basic', 'Data', 'DefensiveValues.g.cs')
+                         'RotationSolver', 'Basic', 'Data', 'DefensiveValues.g.cs')
     names = []
     try:
         with open(table, encoding='utf-8') as handle:

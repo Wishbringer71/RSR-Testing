@@ -2,7 +2,7 @@
 """Do RSR's copies of BossModReborn's enums still carry BossModReborn's ordinals?
 
 `BossModUpdater` casts the integers BossModReborn sends over IPC straight into `SpecialMode` and `PredictedDamageType`
-(`RotationSolver.Basic/Data/BossModEnums.cs`): `(PredictedDamageType)damageType`, `(SpecialMode)...`. Nothing in the
+(`RotationSolver/Basic/Data/BossModEnums.cs`): `(PredictedDamageType)damageType`, `(SpecialMode)...`. Nothing in the
 compiler ties those numbers to BossModReborn's own enums (`BossMod/BossModule/AIHints.cs`) - should BossModReborn insert
 or reorder a member, a raidwide arrives here as a tankbuster, or a no-movement window as Pyretic, and every rule reading
 them decides on the wrong event (CLAUDE.md, "Verträge"). This reads BossModReborn's file from its repository and
@@ -20,7 +20,7 @@ import time
 import urllib.request
 from pathlib import Path
 
-RSR = Path('RotationSolver.Basic/Data/BossModEnums.cs')
+RSR = Path('RotationSolver/Basic/Data/BossModEnums.cs')
 BMR_URL = 'https://raw.githubusercontent.com/FFXIV-CombatReborn/BossmodReborn/main/BossMod/BossModule/AIHints.cs'
 ENUMS = ('SpecialMode', 'PredictedDamageType')
 

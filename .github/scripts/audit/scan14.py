@@ -31,7 +31,7 @@ import sys
 from collections import defaultdict
 
 RESX = 'RotationSolver.SourceGenerators/Properties/Status.resx'
-HELPER = 'RotationSolver.Basic/Helpers/StatusHelper.cs'
+HELPER = 'RotationSolver/Basic/Helpers/StatusHelper.cs'
 
 LIST = re.compile(r'public static StatusID\[\] (\w+)\s*\{\s*get;\s*\}\s*=\s*\[(.*?)\];', re.S)
 PREFIX_WORDS = 4

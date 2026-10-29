@@ -36,10 +36,10 @@ from pathlib import Path
 ROOT = Path(__file__).resolve().parents[3]
 PROPERTIES = ROOT / "RotationSolver.SourceGenerators" / "Properties"
 SOURCES = [PROPERTIES / "ActionId.resx", PROPERTIES / "DutyAction.resx"]
-OUTPUT = ROOT / "RotationSolver.Basic" / "Data" / "DefensiveValues.g.cs"
+OUTPUT = ROOT / "RotationSolver" / "Basic" / "Data" / "DefensiveValues.g.cs"
 STATUS_SHEET = PROPERTIES / "Status.resx"
 TRAIT_DURATIONS = Path(__file__).resolve().with_name("trait_durations.json")
-ROTATION_SOURCES = ROOT / "RotationSolver.Basic" / "Rotations"
+ROTATION_SOURCES = ROOT / "RotationSolver" / "Basic" / "Rotations"
 STATUS_ASSIGNMENT = re.compile(r"^(\w+)\s*=\s*(\d+),", re.M)
 MODIFY_BODY = re.compile(r"Modify(\w+PvE)\(ref ActionSetting setting\)\s*\{(.*?)\n\t\}", re.S)
 PROVIDE = re.compile(r"(Target)?StatusProvide\s*=\s*([^;]+);")

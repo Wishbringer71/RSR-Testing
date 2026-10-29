@@ -1,10 +1,8 @@
 <Project>
-    <PropertyGroup>
-		<TargetFramework>net10.0-windows</TargetFramework>
+	<PropertyGroup>
 		<ImplicitUsings>enable</ImplicitUsings>
 		<Authors>The CombatReborn Team</Authors>
 		<PlatformTarget>x64</PlatformTarget>
-		<Platforms>AnyCPU</Platforms>
 		<LangVersion>latest</LangVersion>
 		<Nullable>enable</Nullable>
 
@@ -22,9 +20,9 @@
 
 		<!-- The package identity needs the fork suffix as a pre-release label. RotationSolver.Basic
 		     used to build with GeneratePackageOnBuild, so every local and PR build produced a .nupkg
-		     carrying the bare upstream identity. Upstream's UI rework made the project
-		     IsPackable=false, so no package is built at the moment; the label stays so that a project
-		     that packs again cannot fall back to the upstream identity.
+		     carrying the bare upstream identity. Upstream folded that project into RotationSolver
+		     (7.5.7.11), so no package is built at the moment; the label stays so that a project that
+		     packs again cannot fall back to the upstream identity.
 		     NuGet strips "+wsh1" as build metadata during normalization but keeps "-wsh1", which is
 		     part of the version identity. The publish workflow derives the same value from the tag. -->
 		<PackageVersion>7.5.7.10-wsh1</PackageVersion>
@@ -34,12 +32,12 @@
 		     settings window title reads, so the version showed up with a 40-character hash after it
 		     even on tagged release builds. -->
 		<IncludeSourceRevisionInInformationalVersion>false</IncludeSourceRevisionInInformationalVersion>
-    </PropertyGroup>
-	
-    <ItemGroup>
+	</PropertyGroup>
+
+	<ItemGroup>
 		<Using Include="System.Numerics" />
 		<Using Include="System.Reflection" />
-    </ItemGroup>
+	</ItemGroup>
 
 	<!-- Read the upstream release out of the repository instead of trusting the literal above.
 
