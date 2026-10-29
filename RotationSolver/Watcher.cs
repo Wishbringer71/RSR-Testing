@@ -132,9 +132,9 @@ public static class Watcher
 	// A hit he survived only behind his barrier counts as his whole health - it takes all of it, and the
 	// table never holds more than that, so a load can tell an old reading from a measurement. The barrier
 	// is read when the effect arrives: that is when the action locks in, before its damage applies
-	// (cactbot LogGuide, line 37), and a barrier counts if it stands at that moment. Whether the amount
-	// includes the part a barrier absorbs is not established; read either way, the bound errs towards
-	// storing.
+	// (cactbot LogGuide, line 37), and a barrier counts if it stands at that moment. The amount includes the part
+	// a barrier absorbs - hits swallowed whole by one carry their full figure while the member's HP stays (his ACT
+	// logs of 26.10.2026, A449) -, so the bound is exact.
 	//
 	// The share is stored unmitigated (A441), as the tankbuster table stores its hits: divided by what got through the
 	// mitigation that stood on the member and on the caster when the effect arrived, by the figures of the effect texts
@@ -291,6 +291,21 @@ public static class Watcher
 	// How many party members this set reached, for the trace line of an area landing: "missed you" with
 	// party members reached says he stood out of it; with none, the set carried no hit at all and the
 	// damage came another way (trace of 01.10.2026, A242).
+	// Every target the action reached, party or not.
+	private static int ReachedTargets(ActionEffectSet set)
+	{
+		var count = 0;
+		foreach (var effect in set.TargetEffects)
+		{
+			if (ReachedTarget(effect))
+			{
+				count++;
+			}
+		}
+
+		return count;
+	}
+
 	private static int DamagedPartyMembers(ActionEffectSet set)
 	{
 		var count = 0;
@@ -501,6 +516,17 @@ public static class Watcher
 
 		var highestShare = SeriesShare(listed, shares);
 
+		// Above the level the content syncs to, the reading is smaller than in sync and would rate the action too small for
+		// every synced run after it (A452).
+		if (highestShare > 0f && DataCenter.AboveContentLevel)
+		{
+			DataCenter.RecordAreaMeasurementOutcome(listed, "not measured - above the level the content syncs to",
+				$" ({highestShare:P0} of max HP unmitigated), from #{action.RowId}");
+			DefenseTrace.Line($"follow-up of #{listed}: {action.Name.ExtractText()} #{action.RowId}, highest {highestShare:P0}"
+				+ " of max HP unmitigated - not stored, above the level the content syncs to");
+			return;
+		}
+
 		// Same rule as a listed landing: only a real amount a member can survive measures, and only an increase
 		// is written.
 		if (highestShare > 0f
@@ -688,13 +714,25 @@ public static class Watcher
 
 						// The tankbuster table learns from every player it is seen to hit, not only from
 						// the user - the co-tank's busters, and other parties' in large content; it keeps the
-						// hits on tanks (TankbusterTable.Record, A312).
-						if (isTankbuster
+						// hits on tanks (TankbusterTable.Record, A312). The landing of a cast taken for a tankbuster
+						// only because the enemy cast it at its own target is learned too, under the cast's id, which
+						// the forecast reads; the tank swap stays with list and marker (A452).
+						var aimedCast = isTankbuster || partyWide ? 0u
+							: TankbusterTable.AimedCastLanding(source.GameObjectId, effect.TargetID, marked);
+
+						// A tankbuster reaches one target; one that reaches more is a cleave or a raidwide aimed at the tank -
+						// counted over every target, other alliance groups' too - which the area list does not hold where its
+						// intake is off or the party is small.
+						if (aimedCast != 0 && ReachedTargets(set) > 1)
+						{
+							aimedCast = 0;
+						}
+						if ((isTankbuster || aimedCast != 0)
 							&& Svc.Objects.SearchById(effect.TargetID) is Dalamud.Game.ClientState.Objects.SubKinds.IPlayerCharacter struck)
 						{
 							TankbusterTable.Record(marked.RowId, marked.Name.ExtractText(), struck, source,
 								DamageShareOn(set, effect.TargetID, Math.Max(1u, struck.MaxHp)),
-								StatusesAppliedTo(set, effect.TargetID));
+								StatusesAppliedTo(set, effect.TargetID), aimedCast);
 						}
 					}
 				}
@@ -846,7 +884,11 @@ public static class Watcher
 				var type = set.Action?.GetActionCate();
 				if (type is ActionCate.Spell or ActionCate.Weaponskill or ActionCate.Ability)
 				{
-					var damageEffectCount = 0;
+					// Members the action reached, for the intake: a damage entry with an amount or the flag below, or a
+					// hit turned away by invulnerability, evasion or resistance. A tank under Hallowed Ground or Superbolide
+					// carries no damage entry; counted by damage alone, a raidwide landing on him stayed off the list, and a
+					// tankbuster a patch made a raidwide kept drawing the tankbuster plan (his second test case, A452).
+					var reachedMembers = 0;
 
 					// The members by id, because the measurement below needs each one's maximum HP and
 					// barrier and this is the one place that already walks the party. The previous form
@@ -879,13 +921,18 @@ public static class Watcher
 
 						if (!TryGetDamageEntry(effect, out var damageEffect))
 						{
+							if (ReachedTarget(effect))
+							{
+								reachedMembers++;
+							}
+
 							continue;
 						}
 
 						var landed = FullAmount(damageEffect) > 0;
 						if (landed || (damageEffect.param0 & 6) == 6)
 						{
-							damageEffectCount++;
+							reachedMembers++;
 						}
 
 						damageEntries++;
@@ -894,13 +941,10 @@ public static class Watcher
 							zeroWithoutBarrier++;
 						}
 
-						// Only a real amount measures anything. A hit that arrived at zero under a
-						// barrier was swallowed by it, and zero does not mean the action is harmless -
-						// it means something absorbed it (at zero with no barrier on anyone reached, see
-						// zeroWithoutBarrier below, the action dealt nothing). Such a set is skipped
-						// for the measurement while still counting for the intake above, so a
-						// raidwide does not fall out of the list just because the party was shielded.
-						// Nor does a hit beyond the member's whole health and barrier (TryAreaShare):
+						// Only a real amount measures anything. A barrier makes no zero - the figure carries what it
+						// absorbed (A449) -, so a zero entry is a hit that did nothing; with no barrier on anyone reached
+						// (zeroWithoutBarrier below) the action is read as dealing nothing. For the intake above a zero
+						// counts with the flag only, as before. Nor does a hit beyond the member's whole health and barrier (TryAreaShare):
 						// it says the member missed the mechanic, not how hard the cast hits the rest.
 						if (landed && member.MaxHp > 0)
 						{
@@ -916,7 +960,7 @@ public static class Watcher
 						}
 					}
 
-					if (intakeOpen && damageEffectCount == partyMemberCount
+					if (intakeOpen && reachedMembers == partyMemberCount
 						&& OtherConfiguration.HostileCastingArea.Add(set.Action!.Value.RowId))
 					{
 						_ = OtherConfiguration.SaveHostileCastingArea();
@@ -937,13 +981,21 @@ public static class Watcher
 					// a raidwide with a member dead, invulnerable or out of range would throw the
 					// reading away - in exactly the hard fights where it matters most. Second, only
 					// an increase is written. The mitigation the effect texts rate is divided out
-					// (TryAreaShare); what they do not rate, a barrier among it, leaves a reading low,
+					// (TryAreaShare); what they do not rate leaves a reading low - a barrier does not, its part is in the figure (A449) -,
 					// and the highest value ever seen is the one a hit under less of it brings.
 					// The line above said "measured" before the amount was known; say what the reading
 					// was, or that there was none.
+					// Above the level the content syncs to, every reading is smaller than in sync and would rate the action too
+					// small for the synced runs after it: none is stored, a rating of 0 neither (A452).
+					var aboveContentLevel = DataCenter.AboveContentLevel;
 					if (damageRatio > 0f && OtherConfiguration.HostileCastingArea.Contains(set.Action!.Value.RowId))
 					{
-						if (highestShare > 0f)
+						if (highestShare > 0f && aboveContentLevel)
+						{
+							DataCenter.RecordAreaMeasurementOutcome(set.Action!.Value.RowId,
+								"not measured - above the level the content syncs to", $" ({highestShare:P0} of max HP unmitigated)");
+						}
+						else if (highestShare > 0f)
 						{
 							DataCenter.RecordAreaMeasurementOutcome(set.Action!.Value.RowId, "measured",
 								$" at {highestShare:P0} of max HP unmitigated");
@@ -1012,7 +1064,7 @@ public static class Watcher
 							+ $" ({damagedMembers} party members reached)");
 					}
 
-					if (highestShare > 0f && OtherConfiguration.HostileCastingArea.Contains(set.Action!.Value.RowId))
+					if (highestShare > 0f && !aboveContentLevel && OtherConfiguration.HostileCastingArea.Contains(set.Action!.Value.RowId))
 					{
 						var id = set.Action!.Value.RowId;
 						if (!OtherConfiguration.HostileCastingAreaPotential.TryGetValue(id, out var known)
@@ -1024,7 +1076,7 @@ public static class Watcher
 
 						MarkMeasuredUnmitigated(id);
 					}
-					else if (highestShare == 0f && beyondHealth == 0 && zeroWithoutBarrier > 1 && zeroWithoutBarrier == damageEntries
+					else if (highestShare == 0f && !aboveContentLevel && beyondHealth == 0 && zeroWithoutBarrier > 1 && zeroWithoutBarrier == damageEntries
 						&& OtherConfiguration.HostileCastingArea.Contains(set.Action!.Value.RowId)
 						&& !OtherConfiguration.HostileCastingAreaPotential.ContainsKey(set.Action!.Value.RowId))
 					{

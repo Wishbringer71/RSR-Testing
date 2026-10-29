@@ -310,6 +310,22 @@ internal static class DataCenter
 
 	public unsafe static int PlayerCurrentLevel => PlayerState.Instance()->CurrentLevel;
 
+	/// <summary>
+	/// Whether the player stands above the level the current content syncs to - an unrestricted party in older content.
+	/// A hit taken there is a smaller share than in sync, and every learned size - area, tankbuster, damage over time -
+	/// would rate the action too small for the next synced run, where a saving decision reads it (concept 13, his test
+	/// cases of 29.10.2026, A452). Content without a level sync - the open world - counts as in sync; an item level above
+	/// the content's limit at the same level is not seen here.
+	/// </summary>
+	internal static bool AboveContentLevel
+	{
+		get
+		{
+			var sync = Territory?.ClassJobLevelSync ?? 0;
+			return sync > 0 && PlayerSyncedLevel() > sync;
+		}
+	}
+
 	public static int PlayerMaxLevel => Player.MaxLevel;
 
 	public static bool IsActivated()

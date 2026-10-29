@@ -55,6 +55,7 @@ internal static partial class TargetUpdater
 			// With no party list there is nothing to follow, and a status seen again afterwards is seen late (A432).
 			DotOnParty.Clear();
 			ActionPenaltyWatch.Clear();
+			TankbusterTable.ClearAimedCasts();
 			// Through the delays, so their timers start again with the next target instead of carrying this one over.
 			DataCenter.ProvokeTarget = _provokeDelay.Delay<IBattleChara>(null);
 			DataCenter.InterruptTarget = _interruptDelay.Delay<IBattleChara>(null);
@@ -73,6 +74,8 @@ internal static partial class TargetUpdater
 		DotOnParty.Update();
 		// Casts that will lay a status damaging every action on the player (A439).
 		ActionPenaltyWatch.Update();
+		// Casts at a tank that only the cast's aim names a tankbuster, so their landing can be learned (A452).
+		TankbusterTable.UpdateAimedCasts();
 		// "Provoke when there is another tank in the party" covers the cases its text names; the party
 		// walk behind it runs only when one of them comes up.
 		bool? autoProvokeAllowed = null;

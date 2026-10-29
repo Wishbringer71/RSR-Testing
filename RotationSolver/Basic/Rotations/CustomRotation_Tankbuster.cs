@@ -1012,8 +1012,11 @@ public partial class CustomRotation
 
 		// A learned hit after a marker holds nothing but under the invulnerability, which keeps any hit off: the marker
 		// may have announced another hit this time, and a bundle sized for the learned one would then leave the tank
-		// with less than the marker's own defence gives him (A340).
-		if (!plan.Survivable || plan.Cast.Learned)
+		// with less than the marker's own defence gives him (A340). Nor does a cast neither list nor marker names a
+		// tankbuster, known only from the table - an enemy's cast at its own target, learned from its landing (A452):
+		// in a pull it comes from one of many enemies, and the rest of the defence is for their blows. Its plan still
+		// spends what it needs, the invulnerability included.
+		if (!plan.Survivable || plan.Cast.Learned || !plan.Cast.Announced)
 		{
 			return false;
 		}

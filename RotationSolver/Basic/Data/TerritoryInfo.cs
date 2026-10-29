@@ -77,6 +77,12 @@ public class TerritoryInfo
 	public uint ContentFinderIcon { get; private set; }
 
 	/// <summary>
+	/// The level the territory's content syncs to, from its content finder condition; zero where it syncs to none, as in
+	/// the open world. Read for the learned tables: a hit taken above it is smaller than in sync (A452).
+	/// </summary>
+	public byte ClassJobLevelSync { get; private set; }
+
+	/// <summary>
 	/// Represents detailed information about a specific game territory.
 	/// Contains attributes such as the territory's name, unique identifier, PvP status,
 	/// content finder details, and whether it is classified as a high-end duty.
@@ -92,5 +98,6 @@ public class TerritoryInfo
 		IsHighEndDuty = contentFinder.HighEndDuty;
 		ContentType = (TerritoryContentType)contentFinder.ContentType.Value.RowId;
 		ContentFinderIcon = contentFinder.Icon;
+		ClassJobLevelSync = contentFinder.ClassJobLevelSync;
 	}
 }

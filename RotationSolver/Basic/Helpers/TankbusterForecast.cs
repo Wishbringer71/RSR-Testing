@@ -50,9 +50,12 @@ internal static class TankbusterForecast
 	/// <param name="Learned">No cast at all: a tankbuster marker on the player, met with the hit learned after it before
 	/// (<see cref="TankbusterMarkerWatch.LearnedHitOn"/>, A340). <paramref name="Source"/> is then the player's target,
 	/// not known to be the hitter, so nothing laid on it counts; <paramref name="Remaining"/> is the learned time.</param>
+	/// <param name="Announced">Known as a tankbuster by the tankbuster list or a learned hit after list or marker. False for
+	/// a cast the table knows only from an enemy casting it at its own target, a tank (A452): in a pull that is any trash
+	/// cast at the tank, and the rest of the defence is for the blows of the others.</param>
 	internal sealed record Cast(int Serial, IBattleChara Source, uint ActionId, uint AttackType, float Remaining,
 		float Total, float Predicted, float Budget, float Horizon, bool ByMarker = false, ulong SourceId = 0,
-		bool Learned = false)
+		bool Learned = false, bool Announced = true)
 	{
 		/// <summary>Measured at all: the table has a figure for the action.</summary>
 		public bool Measured => Predicted > 0f;
@@ -677,7 +680,13 @@ internal static class TankbusterForecast
 			}
 
 			var id = hostile.CastActionId;
-			if (!OtherConfiguration.HostileCastingTank.Contains(id) && !IsLearned(id))
+			var listed = OtherConfiguration.HostileCastingTank.Contains(id);
+			var measured = TableKnows(id, out var fromAimOnly);
+			// A cast learned only from an enemy aiming it at its own target (A452) is planned for the same way: at the
+			// player, by a targetable enemy attacking him, as it was learned.
+			var aimedOnly = !listed && measured && fromAimOnly && hostile.CastTargetObjectId == player.GameObjectId
+				&& hostile.TargetObjectId == player.GameObjectId && !DataCenter.AreaCastHelperIds.Contains(hostile.GameObjectId);
+			if (!listed && !(measured && !fromAimOnly) && !aimedOnly)
 			{
 				continue;
 			}
@@ -714,7 +723,7 @@ internal static class TankbusterForecast
 			_ = _live.Add(identity);
 			_lastComing[id] = _readAt;
 			var cast = new Cast(serial, hostile, id, attackType, left, hostile.TotalCastTime, predicted,
-				(player.CurrentHp / maxHp) + barrier, horizon, byMarker, hostile.GameObjectId);
+				(player.CurrentHp / maxHp) + barrier, horizon, byMarker, hostile.GameObjectId, Announced: !aimedOnly);
 			_casts.Add(cast);
 			if (isNew)
 			{
@@ -832,7 +841,7 @@ internal static class TankbusterForecast
 		var name = Service.GetSheet<Lumina.Excel.Sheets.Action>().TryGetRow(cast.ActionId, out var row)
 			? row.Name.ExtractText()
 			: $"#{cast.ActionId}";
-		DefenseTrace.Line($"tankbuster coming at you{(cast.Learned ? " (learned from the marker on you)" : cast.ByMarker ? " (by the marker on you)" : string.Empty)}:"
+		DefenseTrace.Line($"tankbuster coming at you{(cast.Learned ? " (learned from the marker on you)" : cast.ByMarker ? " (by the marker on you)" : !cast.Announced ? " (known only as a cast at you, nothing else held)" : string.Empty)}:"
 			+ $" {name} #{cast.ActionId} in {cast.Remaining:F1} s - "
 			+ (!cast.Measured
 				? "not in the tankbuster table"
@@ -877,9 +886,36 @@ internal static class TankbusterForecast
 			return false;
 		}
 
+		// A reading learned only from casts an enemy aimed at its own target is no known tankbuster: the readers that open
+		// the defence or call for help would take every learned trash cast in a pull for one (A452, A395).
 		lock (OtherConfiguration.TankbusterPotentialGate)
 		{
-			return OtherConfiguration.TankbusterPotential.ContainsKey(actionId);
+			return OtherConfiguration.TankbusterPotential.TryGetValue(actionId, out var reading) && !reading.AimedOnly;
+		}
+	}
+
+	/// <summary>
+	/// Whether the table holds a reading of <paramref name="actionId"/> that is no raidwide, and whether it knows it only
+	/// from the landings of an enemy's cast at its own target, a tank (<see cref="TankbusterReading.AimedOnly"/>, A452):
+	/// the plan reads such a cast at the player and holds nothing else for it. One lookup for the forecast's loop.
+	/// </summary>
+	private static bool TableKnows(uint actionId, out bool aimedOnly)
+	{
+		aimedOnly = false;
+		if (TankbusterTable.IsPartyWide(actionId))
+		{
+			return false;
+		}
+
+		lock (OtherConfiguration.TankbusterPotentialGate)
+		{
+			if (!OtherConfiguration.TankbusterPotential.TryGetValue(actionId, out var reading))
+			{
+				return false;
+			}
+
+			aimedOnly = reading.AimedOnly;
+			return true;
 		}
 	}
 }

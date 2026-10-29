@@ -61,8 +61,10 @@ internal static class DotOnParty
 		_dot[entityId] = new Tick(DateTime.Now, amount);
 
 		// Only a tick one instance of one status dealt alone can teach that status, and one a barrier swallowed whole
-		// teaches nothing.
-		if (amount == 0 || !TryOnlyInstance(entityId, out var instance) || !_seen.TryGetValue(instance, out var seen))
+		// teaches nothing. Above the level the content syncs to, a tick is smaller than in sync and would rate the damage
+		// over time too low for the synced runs after it (A452).
+		if (amount == 0 || DataCenter.AboveContentLevel || !TryOnlyInstance(entityId, out var instance)
+			|| !_seen.TryGetValue(instance, out var seen))
 		{
 			return;
 		}
