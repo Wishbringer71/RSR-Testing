@@ -13568,6 +13568,36 @@ Löschungen").
   gewollt; der Grund kommt mit dem nächsten Abend, an dem ein Schlaf verfällt.
 - *Prüfgrad:* statisch am Code, kompiliert ohne Warnung; im Spiel nicht beobachtet.
 
+### A460 · Mehrfach treffender Raidwide: gemindert nur, so weit die Minderung bis zum letzten Treffer steht (29.10.2026)
+
+- *Auftrag:* TODO-Punkt „Mehrfach treffender Raidwide: Minderung über die ganze Serie".
+- *Erhebung:* Die Flächentabelle summiert eine Serie (A349, `Watcher.SeriesShare`) und wird an sechs Stellen über
+  `DataCenter.AreaShareNow` gelesen: Erkennung des Treffers auf ihn, Größenregel, großer unterbrechbarer Cast, die
+  Vorausheilung (`AnnouncedAreaShare`), der gehaltene BossModReborn-Raidwide. `AreaShareNow` rechnete die Minderung,
+  die beim Ende des Balkens steht, für die ganze Summe. Ersticken des Fleisches (#48882, Klyteum) sind vier Türme aus
+  je eigenem 5,7-s-Cast eines Helfers, 3 s versetzt; in seinem Protokoll vom 29.10.2026 landeten sie über 9,0 s
+  (21:43:22,5 bis 21:43:31,4). Dort zudem: Vor jedem Turm kündigte die Vorausheilung die ganze Summe an („hit 99 %").
+- *Optionen:* Nullvariante; die Dauer der Serie lernen und Minderung bis zum letzten Treffer verlangen; die Minderung je
+  Treffer zeitlich aufteilen (die Tabelle kennt die Treffer nicht einzeln); den gelandeten Teil einer offenen Serie von
+  der Summe abziehen.
+- *Gewählt:* die Dauer lernen. `AreaSeriesSpan` (gelernter Speicher, höchster Wert, wie `HitSeriesOnPlayer`) hält je
+  Aktion die Zeit vom ersten bis zum letzten Treffer; abgelegt mit dem Anteil unter denselben Bedingungen.
+  `AreaShareNow` verlängert den Horizont um sie, für alle Leser zugleich. Nicht gewählt: der Abzug des Gelandeten –
+  läuft eine Serie heute länger als die gespeicherte, rechnete er den nächsten Cast zu klein, und die Vorausheilung
+  nach dem ersten Turm ist meist begründet (drei Türme zu 19 % gegen ein Mitglied bei 80 %).
+- *Im Kampf:* Eine Gruppenminderung, die vor dem letzten Turm endet, zählt nicht mehr; die Größenregel gibt die eigene
+  Minderung, wo die Summe sonst die Heilschwelle unterschreitet oder eine große Barriere übersteigt. Preis: Eine
+  Minderung, die nur die ersten Treffer deckt, zählt für keinen – RSR mindert eher einmal zu viel.
+- *Falsifikation:* Kein Defekt? Eine Minderung von 10 s, 3 s vor dem ersten Balkenende gelegt, endet vor dem dritten
+  Turm; sie zählte für alle vier. Option falsch? Die Aufteilung je Treffer setzt Daten voraus, die die Tabelle nicht
+  hat; der Abzug kann unterschätzen. Ausgeliefert, und nichts ändert sich? Wo jede stehende Minderung die ganze Serie
+  deckt, und bei Einzeltreffern (Dauer 0) – richtig so. Eine Serie, die über viele Gegner immer weiter läuft, lernt
+  eine lange Dauer und zählt ungemindert; die Richtung ist die sichere.
+- *Gebaut:* `Watcher.SeriesShare` (Beginn der Serie, Dauer), `Watcher.RecordAreaSeriesSpan` (beide Messpfade, Zeile im
+  Protokoll), `OtherConfiguration.AreaSeriesSpan` (LearnedFile mit Sicherung), `DataCenter.AreaShareNow`; Kopfzeile des
+  Protokolls. Konzept 13 („Eine Serie zählt als ein Angriff", „Grenzen der Messung", Bestand) vor dem Code.
+- *Prüfgrad:* statisch am Code und an seinem Protokoll, kompiliert ohne Warnung; im Spiel nicht beobachtet.
+
 ---
 ## B · Commit-Register (Fork vs. `upstream/main`)
 

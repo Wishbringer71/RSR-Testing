@@ -13,8 +13,6 @@ Nach der Wirkung im Kampf: Sicherheit der Gruppe vor Schaden, gewichtet mit der 
 1. Die gelernten Tabellen: entschieden (Konzept 13, A451); gebaut nach Regel 12 des Entwurfs, erst die Revision über
    einen Spielpatch (als Nächstes Stufe 2, nach seinem ersten Upload mit Stufe 1, A456), dann die Anzeige. Beide ändern den Kampf nur mittelbar, über einen
    geprüften oder berichtigten Lernwert – die Sperren unter ihnen (Schlaf) aber dauerhaft.
-2. „Mehrfach treffender Raidwide: Minderung über die ganze Serie": Eine Gruppenminderung kann vor dem letzten Treffer
-   einer Flächenserie ablaufen; die Gruppenminderungen dauern mindestens 10 s, die Wirkung ist kleiner als beim Tank.
 
 Danach die technische Schuld, soweit ihre Auflösungsbedingung erfüllt ist. Warten auf Daten: unten.
 
@@ -23,15 +21,6 @@ Danach die technische Schuld, soweit ihre Auflösungsbedingung erfüllt ist. War
 Keine offenen.
 
 ## Offene Arbeit
-
-### Mehrfach treffender Raidwide: Minderung über die ganze Serie · N
-Die Flächentabelle summiert die Treffer einer Serie (A349), aber die Größenregel rechnet die Minderung, die beim Ende
-des Balkens steht, für die ganze Summe (`DataCenter.AreaShareNow`, Horizont = Restzeit des Casts). Läuft eine
-Gruppenminderung vor dem letzten Treffer ab – Ersticken des Fleisches trifft in seinem Mitschnitt bis 10 s nach dem Balken
-–, nimmt die Gruppe den Rest ungemindert, und die Größenregel kann die eigene Minderung für eine zu klein gerechnete
-Summe auslassen. *Ort:* `Watcher.SeriesShare`, `DataCenter.AreaShareNow`, `HostileCastingAreaPotential`. *Nächster
-Schritt:* im Loop prüfen, ob die Flächenserie wie die Tankbuster-Serie ihre Dauer lernen und die Größenregel die Minderung
-bis zum letzten Treffer verlangen soll (Konzept 09, „H_S", A454). *Konzept:* 13, „Grenzen der Messung".
 
 ### Gelernte Tabellen über einen Spielpatch: Revision statt Höchstwert · N
 Sein Auftrag (28.10.2026): „das lernlisten-konzept müsste auch überarbeitet in hinblick auf anstehende patches. […]

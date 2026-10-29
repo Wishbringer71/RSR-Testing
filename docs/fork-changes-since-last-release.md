@@ -26,6 +26,11 @@ What this release changes in the fight. For the whole distance from upstream, se
   other's effect. Under a tankbuster on both tanks, Aquaveil goes on the tank without Divine Benison at once instead of
   waiting 15 s, and a tank whose barrier the last hit took gets the next help for the next hit.
 
+- **A raidwide that lands in several hits counts mitigation only to its last hit.** RSR learns how long a series of
+  hits from one area attack runs - Bodyweight Exorcism's four towers land over 9 s - and counts a party mitigation only
+  where it lasts until the last hit. Before, a mitigation that ran out after the first towers counted for all of them,
+  and `Skip mitigation for small area casts` could leave yours out while the last towers landed unmitigated.
+
 ## Healing — when it lands
 
 - **Every running heal over time counts.** The heal thresholds for "Targets with Heal-over-Time" applied only to the
