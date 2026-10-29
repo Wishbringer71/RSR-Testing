@@ -10,10 +10,9 @@ Betroffene: **N** Endnutzer · **R** Autoren abgeleiteter Rotationen (Namensräu
 Nach der Wirkung im Kampf: Sicherheit der Gruppe vor Schaden, gewichtet mit der Wahrscheinlichkeit, in seinem Profil
 (seine Vorgabe, 17.10.2026: „todo nach wichtigkeit abarbeiten. jeweils im loop bearbeiten").
 
-1. Einzelabwehr-Streckung bei einem doppelten Tankbuster – der Treffer kommt sicher, und ein Tank steht ohne Hilfe.
-2. Flächentabelle misst unter der stehenden Minderung – bewertet nur den ersten Treffer einer Aktion falsch.
-3. Laufende HoTs fehlen in den HoT-Listen – kostet Schaden, nicht Sicherheit.
-4. Die gelernten Tabellen, als ein Konzept und eine Vorlage, gebaut erst nach seiner Freigabe: erst die Revision über
+1. Flächentabelle misst unter der stehenden Minderung – bewertet nur den ersten Treffer einer Aktion falsch.
+2. Laufende HoTs fehlen in den HoT-Listen – kostet Schaden, nicht Sicherheit.
+3. Die gelernten Tabellen, als ein Konzept und eine Vorlage, gebaut erst nach seiner Freigabe: erst die Revision über
    einen Spielpatch, weil sie festlegt, welchen Stand ein Wert hat, dann Anzeige und Bearbeitung in den Einstellungen,
    die diesen Stand zeigen. Beide ändern den Kampf nur mittelbar, über einen geprüften oder berichtigten Lernwert.
 
@@ -31,12 +30,6 @@ Gruppen-HoT tragen. *Ort:* `StatusHelper.AreaHots`, `SingleHots`; Leser `StateUp
 Listen als Rückfall; Gruppe oder Einzelziel nach dem Wirkbereich der gewährenden Aktion. *Konzept:* 08 („Was RSR heute tut" im Abschnitt „Schaden über Zeit").
 
 ## Offene Arbeit
-
-### Einzelabwehr-Streckung bei einem doppelten Tankbuster · N
-Ein Tankbuster auf beide Tanks („Bittere Ernte", Zoraal Ja): Nach dem Göttlichen Segen auf den einen wartet
-Wasserschleier, bis der Segen ausläuft – auch für den anderen Tank, der denselben Treffer nimmt; ein Tank bleibt ohne
-Hilfe. *Ort:* `CustomRotation_DefenseHold.SingleDefenseStretched`, `WHM_Reborn.DefenseSingleAbility`; dieselbe Frage
-bei jedem Heiler mit zwei Einzelmitteln. *Nächster Schritt:* Loop, ob die Streckung je Ziel gilt. *Konzept:* 08.
 
 ### Flächentabelle misst unter der stehenden Minderung · N, R
 Ein Raidwide, dessen erste Landung die Gruppe voll gemindert nimmt, steht zu klein in der Tabelle; Glockenspiel,

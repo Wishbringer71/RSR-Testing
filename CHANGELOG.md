@@ -40,6 +40,16 @@ round trip; outside PvP. The enemy casts are learned in play, from every landing
 tables; BossModReborn's imminent Pyretic mode counts as well. A rotation that needs a cast in that window gets an instant
 action or none.
 
+### Addition to RotationSolver.Basic: the single-target stretch asks the chosen target
+
+`CustomRotation.SingleDefenseStretched(IBaseAction defense, string rule, params IBaseAction[] triggers)` is new and
+protected: asked after `defense.CanUse` has chosen its target, it holds only while that target carries the effect of a
+trigger in effect, laid by the player (a beneficial status named like the action), and for every target within a GCD of
+the trigger's press or for a trigger without such a status. The White Mage and Astrologian rotations of this repository
+use it: under a tankbuster on both tanks Aquaveil goes on the tank without Divine Benison at once.
+`SingleDefenseStretched(string rule, params IBaseAction[] triggers)` stays with its behaviour - held while a trigger is
+in effect anywhere - and is marked obsolete; move a call to the new overload after the `CanUse` of the defense it holds.
+
 ## 7.5.7.10+wsh1
 
 ### Dependency of RotationSolver.Basic: RebornMaterial 7.5.7.2

@@ -13,3 +13,7 @@ What this release changes in the fight. For the whole distance from upstream, se
   before its end releases at once. BossModReborn's imminent Pyretic counts too. The learned casts are kept in
   `ActionPenaltyCasts.json` beside the other learned tables; a status taken off `No-casting debuffs` is no longer learned
   or waited for.
+- **A tankbuster on both tanks gets help on both.** A White Mage's Divine Benison and Aquaveil, and an Astrologian's
+  barrier after Macrocosmos or Collective Unconscious, wait for each other only on a target that still carries the
+  other's effect. Under a tankbuster on both tanks, Aquaveil goes on the tank without Divine Benison at once instead of
+  waiting 15 s, and a tank whose barrier the last hit took gets the next help for the next hit.

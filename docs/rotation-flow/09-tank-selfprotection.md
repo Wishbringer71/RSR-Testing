@@ -1275,7 +1275,9 @@ ein Schadensausteiler, ausgeschaltete Einzelabwehr oder eine vorher greifende Pu
   wenigsten schadensmindernden Wirkungen stehen – Minderung mit Wirktextwert oder Barriere, von wem auch immer
   (`LeastProtected`, A364); bei Gleichstand wie bisher. Bis dahin entschied nur die Gesundheit, und alle Hilfe ging an
   denselben: Im Protokoll vom 25.10.2026 setzte ein Weißmagier Göttlichen Segen und Wasserschleier auf einen Tank,
-  dessen Treffer die Barriere ganz nahm, während der andere 74 % seiner LP nahm. Du selbst bleibst zuerst.
+  dessen Treffer die Barriere ganz nahm, während der andere 74 % seiner LP nahm. Du selbst bleibst zuerst. Die
+  Streckung des Heilers fragt das gewählte Ziel (Konzept 08, „Die Abwehrsperren", A440): Nach dem Segen auf den einen
+  geht Wasserschleier auf den anderen, statt bis zum Ende des Segens zu warten.
 
 **Entscheidung** (Stufe „Tanks", `CustomRotation.HelpTankbusterTarget`): in der Einzelabwehr, nie auf dich – deine
 eigene Abwehr und ihre Optionen decken dich –, je Tank unter seiner Option:

@@ -12809,6 +12809,44 @@ Löschungen").
   beobachtet. Messmittel im Code: „learned: … lays status" und „held for a status that damages every action" im
   `DefenseTrace.log`, die Kopfzeile zählt die gelernten Wirken.
 
+### A440 · Einzelabwehr-Streckung je Ziel: ein doppelter Tankbuster bekommt Hilfe auf beiden Tanks (29.10.2026)
+
+- *Auftrag:* TODO „Einzelabwehr-Streckung bei einem doppelten Tankbuster" (aus A419), im Loop nach der Reihenfolge.
+- *Ursache am Code:* `SingleDefenseStretched` fragte vor der Zielwahl, ob ein Auslöser irgendwo wirkt. Die Zielwahl der
+  Einzelabwehr verteilt bei mehreren Tankbuster-Zielen schon je Ziel (`LeastProtected`, A364; der Segen steht in
+  `ShieldStatus` und zählt), die Streckung hielt die zweite Hilfe aber für alle zurück: Nach Göttlichem Segen auf den
+  einen Tank wartete Wasserschleier 15 s, auch für den anderen Tank derselben „Bitteren Ernte". Dieselbe Klasse: ein
+  Tankbuster auf den anderen Tank innerhalb der Wirkdauer (Tankwechsel) und ein zweiter Treffer auf denselben Tank,
+  nachdem der erste die Barriere des Segens genommen hatte – beide bekamen bis zum Ende der 15 s nichts vom Weißmagier.
+  Betroffen sind die beiden Heiler, die strecken (Weißmagier, Astrologe); Gelehrter und Weiser strecken nicht, ihre
+  Einzelabwehr folgt der Zielwahl.
+- *Optionen:* Nullvariante (ein Tank je doppeltem Tankbuster ohne Hilfe des Heilers); die Einzelstreckung streichen
+  (beide Mittel fielen auf denselben Treffer, zwei Treffer in Folge auf einen Tank bekämen nur einen); eine Ausnahme nur
+  für zwei Tankbuster-Ziele (ließe Tankwechsel und verbrauchte Barriere offen); die Kandidaten der Zielwahl vor ihr
+  nachbilden (zweite Stelle derselben Logik, beim Ersatz „wen ein Gegner angreift" ohne `LeastProtected` widersprüchlich);
+  gewählt: nach der Zielwahl am gewählten Ziel fragen. Rückbau: die alte Überladung steht noch, als veraltet markiert.
+- *Umgesetzt:* `SingleDefenseStretched(defense, rule, triggers)` hält, solange das Ziel, das `defense.CanUse` gewählt
+  hat, die Wirkung eines Auslösers trägt – ein nützlicher Status vom Namen der Aktion, vom Spieler, gelesen wie die
+  Flächenstreckung den Spieler liest (A340). Einen GCD nach dem Druck und für einen Auslöser ohne solchen Status hält sie
+  für jedes Ziel: Das Aktionsprotokoll führt kein Ziel, und vorher kann der Status nicht sichtbar sein. Weißmagier und
+  Astrologe fragen sie nach dem `CanUse` ihrer Einzelabwehr. Die alte Überladung bleibt für abgeleitete Rotationen mit
+  ihrem Verhalten und ist als veraltet markiert (CHANGELOG). Keine neue Zahl, keine Option (belegte Defektbehebung).
+- *Im Kampf:* Doppelter Tankbuster: Segen auf den einen, einen GCD später Wasserschleier auf den anderen; der Wirkzauber
+  eines Tankbusters dauert länger. Zweiter Tankbuster auf denselben Tank nach verbrauchter Barriere: Wasserschleier geht
+  für ihn, statt bis zum Ende der 15 s zu warten. Steht der Segen noch, wartet Wasserschleier wie bisher. Astrologe: Wer
+  im Bereich von Macrocosmos oder Collective Unconscious stand, trägt die Wirkung und wartet wie bisher; ein Tank außerhalb
+  bekommt die Einzelbarriere. Preis: Wasserschleier ist für den nächsten Treffer auf den ersten Tank nicht mehr da (60 s
+  Abklingzeit). Nach seiner Spielweise wiegt der sichere, angekündigte Treffer jetzt schwerer als ein möglicher später.
+- *Falsifikation:*
+  - „Kein Defekt" ist widerlegt: Der Code hielt ohne Blick auf das Ziel, und die Zielwahl hätte den anderen Tank gewählt.
+  - „Option falsch" ist widerlegt: Eine Hilfe, die das Ziel schon trägt, wird weiter gestreckt. Zusammenfallen kann sie
+    nur innerhalb eines GCD, und den hält die Gnadenzeit.
+  - „Ausgeliefert, und nichts ändert sich" hält, wo die Zielwahl wieder den Tank mit dem Segen wählt. Das geschieht beim
+    Ersatz „wen ein Gegner angreift" ohne Tankbuster-Ziel, nach Gesundheit; dort hält die Streckung wie bisher. Ebenso
+    hält sie, wenn der andere Tank außerhalb der Reichweite steht.
+- *Prüfgrad:* statisch, Compile (`cloud_build.sh`, ohne Warnung), Prüfskripte; im Spiel nicht beobachtet. Messmittel im Code:
+  die Entscheidungszeilen der Einzelabwehr im `DefenseTrace.log` nennen ihr Ziel („-> Aquaveil … on …", A334).
+
 ---
 ## B · Commit-Register (Fork vs. `upstream/main`)
 
