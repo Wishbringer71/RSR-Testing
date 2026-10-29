@@ -650,7 +650,7 @@ public partial class MainWindow
 			var label = $"{action.Name} ({action.RowId})";
 			if (potential != null && potential.TryGetValue(action.RowId, out var measured) && measured > 0f)
 			{
-				label += $"  -  {measured * 100f:F0}% measured";
+				label += $"  -  {measured * 100f:F0}% unmitigated";
 				if (DataCenter.AreaMitigationSkipped.ContainsKey(action.RowId))
 				{
 					label += ", mitigation withheld";

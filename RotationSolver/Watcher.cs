@@ -135,7 +135,14 @@ public static class Watcher
 	// (cactbot LogGuide, line 37), and a barrier counts if it stands at that moment. Whether the amount
 	// includes the part a barrier absorbs is not established; read either way, the bound errs towards
 	// storing.
-	private static bool TryAreaShare(uint amount, IBattleChara member, out float share)
+	//
+	// The share is stored unmitigated (A441), as the tankbuster table stores its hits: divided by what got through the
+	// mitigation that stood on the member and on the caster when the effect arrived, by the figures of the effect texts
+	// (TankbusterTable.MitigationFactor), and scaled to his maximum without a raise. Read raw, a raidwide whose first
+	// landing the party took under three mitigations stood too low until a hit under less raised it (Seelenüberfluss,
+	// 26.10.2026: 25 % measured, about 34 % unmitigated, A419). A mitigation no text rates and a barrier are not divided
+	// out, so the figure errs low, as before, and a later hit can raise it; it never exceeds his whole health.
+	private static bool TryAreaShare(uint amount, IBattleChara member, uint actionId, IBattleChara? caster, out float share)
 	{
 		share = 0f;
 		var maxHp = member.MaxHp;
@@ -145,6 +152,12 @@ public static class Watcher
 		}
 
 		share = Math.Min(amount, maxHp) / (float)maxHp;
+		var factor = TankbusterTable.MitigationFactor(actionId, member, caster);
+		if (factor > 0f)
+		{
+			share = Math.Min(1f, share * (1f + TankbusterTable.MaxHpRaise(member)) / factor);
+		}
+
 		return true;
 	}
 
@@ -462,7 +475,7 @@ public static class Watcher
 				if (effect.TargetID == member.GameObjectId && TryGetDamageEntry(effect, out var entry)
 					&& FullAmount(entry) > 0)
 				{
-					if (TryAreaShare(FullAmount(entry), member, out var share))
+					if (TryAreaShare(FullAmount(entry), member, action.RowId, set.Source as IBattleChara, out var share))
 					{
 						shares[member.GameObjectId] = Math.Max(shares.GetValueOrDefault(member.GameObjectId), share);
 					}
@@ -487,7 +500,7 @@ public static class Watcher
 
 		if (highestShare > 0f)
 		{
-			DataCenter.RecordAreaMeasurementOutcome(listed, "measured", $" at {highestShare:P0} of max HP, from #{action.RowId}");
+			DataCenter.RecordAreaMeasurementOutcome(listed, "measured", $" at {highestShare:P0} of max HP unmitigated, from #{action.RowId}");
 		}
 		else if (beyondHealth > 0)
 		{
@@ -496,7 +509,7 @@ public static class Watcher
 		}
 
 		DefenseTrace.Line($"follow-up of #{listed}: {action.Name.ExtractText()} #{action.RowId}, reached you {hitPlayer},"
-			+ $" {damaged} party members damaged, highest {highestShare:P0} of max HP"
+			+ $" {damaged} party members damaged, highest {highestShare:P0} of max HP unmitigated"
 			+ (beyondHealth > 0 ? $", {beyondHealth} hit beyond max HP and barrier not measured" : string.Empty));
 	}
 
@@ -874,7 +887,7 @@ public static class Watcher
 						// it says the member missed the mechanic, not how hard the cast hits the rest.
 						if (landed && member.MaxHp > 0)
 						{
-							if (TryAreaShare(FullAmount(damageEffect), member, out var share))
+							if (TryAreaShare(FullAmount(damageEffect), member, set.Action!.Value.RowId, battle, out var share))
 							{
 								shares[member.GameObjectId] = Math.Max(shares.GetValueOrDefault(member.GameObjectId), share);
 							}
@@ -906,9 +919,9 @@ public static class Watcher
 					// right for deciding what belongs in the list and wrong for measuring one, since
 					// a raidwide with a member dead, invulnerable or out of range would throw the
 					// reading away - in exactly the hard fights where it matters most. Second, only
-					// an increase is written. The highest value ever seen is the one that survives a
-					// well-mitigated pull, and an underrated action corrects itself: the mitigation
-					// is skipped, so the next hit arrives unmitigated and measures itself.
+					// an increase is written. The mitigation the effect texts rate is divided out
+					// (TryAreaShare); what they do not rate, a barrier among it, leaves a reading low,
+					// and the highest value ever seen is the one a hit under less of it brings.
 					// The line above said "measured" before the amount was known; say what the reading
 					// was, or that there was none.
 					if (damageRatio > 0f && OtherConfiguration.HostileCastingArea.Contains(set.Action!.Value.RowId))
@@ -916,7 +929,7 @@ public static class Watcher
 						if (highestShare > 0f)
 						{
 							DataCenter.RecordAreaMeasurementOutcome(set.Action!.Value.RowId, "measured",
-								$" at {highestShare:P0} of max HP");
+								$" at {highestShare:P0} of max HP unmitigated");
 						}
 						else if (beyondHealth > 0)
 						{
@@ -936,7 +949,7 @@ public static class Watcher
 					{
 						DefenseTrace.Line($"area cast {set.Action!.Value.Name.ExtractText()} #{set.Action!.Value.RowId}:"
 							+ $" {beyondHealth} hit beyond max HP and barrier (up to {hardestBeyond:P0}) not measured,"
-							+ $" measured {highestShare:P0}");
+							+ $" measured {highestShare:P0} unmitigated");
 					}
 
 					// Whether this landing reached the player (A205). Recorded apart from the setting that

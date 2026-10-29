@@ -2565,7 +2565,7 @@ internal static class DataCenter
 				// The same recognition the flag uses, asked of the player instead of the party.
 				if (IsHostileCastingBase(h, act => OtherConfiguration.HostileCastingArea.Contains(act.RowId)
 					&& AreaCastCanReachPlayer(h, act)
-					&& AreaCastIsWorthMitigating(act.RowId)))
+					&& AreaCastIsWorthMitigating(act.RowId, h)))
 				{
 					return true;
 				}
@@ -2574,7 +2574,7 @@ internal static class DataCenter
 				// recording.
 				if (!h.IsCastInterruptible || !Service.Config.MitigateBigAreaCastsEvenIfInterruptible
 					|| !OtherConfiguration.HostileCastingArea.Contains(h.CastActionId)
-					|| !OtherConfiguration.HostileCastingAreaPotential.TryGetValue(h.CastActionId, out var share)
+					|| !AreaShareNow(h.CastActionId, h, out var share)
 					|| share < LargeShieldShare)
 				{
 					continue;
@@ -2742,8 +2742,7 @@ internal static class DataCenter
 						continue;
 					}
 
-					if (!OtherConfiguration.HostileCastingAreaPotential.TryGetValue(h.CastActionId, out var share)
-						|| share < LargeShieldShare)
+					if (!AreaShareNow(h.CastActionId, h, out var share) || share < LargeShieldShare)
 					{
 						continue;
 					}
@@ -2822,7 +2821,7 @@ internal static class DataCenter
 						return false;
 					}
 
-					RecordAnnouncedAreaShare(act.RowId);
+					RecordAnnouncedAreaShare(act.RowId, h);
 					return true;
 				}))
 				{
@@ -3520,7 +3519,7 @@ internal static class DataCenter
 			// docs/rotation-flow/13-aoe-damage-classification.md.
 			return OtherConfiguration.HostileCastingArea.Contains(act.RowId)
 				&& AreaCastReachesParty(h, act)
-				&& AreaCastIsWorthMitigating(act.RowId);
+				&& AreaCastIsWorthMitigating(act.RowId, h);
 		});
 	}
 
@@ -3671,8 +3670,8 @@ internal static class DataCenter
 
 	/// <summary>
 	/// The share of the weakest party member's maximum health carried by the area cast that is
-	/// currently announced, or 0 when none is announced or its size has not been measured yet.
-	/// 0 means "unknown", never "harmless".
+	/// currently announced, under the mitigation standing when it lands (<see cref="AreaShareNow"/>), or 0
+	/// when none is announced or its size has not been measured yet. 0 means "unknown", never "harmless".
 	/// </summary>
 	public static float AnnouncedAreaShare =>
 		DateTime.Now - _announcedAreaShareTime <= AnnouncedAreaShareLifetime ? _announcedAreaShare : 0f;
@@ -4017,10 +4016,10 @@ internal static class DataCenter
 	// flag, needs it whether or not the owner wants small casts mitigated. Recorded inside the
 	// verdict it sat behind SkipMitigationForSmallAreaCasts, which would have left that reader blind
 	// to every cast whenever the switch was off.
-	private static void RecordAnnouncedAreaShare(uint actionId)
+	private static void RecordAnnouncedAreaShare(uint actionId, IBattleChara caster)
 	{
 		// A rating of 0 is a landing measured without damage (A366), and announces exactly that.
-		if (OtherConfiguration.HostileCastingAreaPotential.TryGetValue(actionId, out var share))
+		if (AreaShareNow(actionId, caster, out var share))
 		{
 			_announcedAreaShare = share;
 			_announcedAreaShareTime = DateTime.Now;
@@ -4054,9 +4053,9 @@ internal static class DataCenter
 	/// only enters the arithmetic once an actual hit has been measured, and in content that is
 	/// repeated - an extreme trial, a savage fight in progression - that is one clear.
 	/// </remarks>
-	private static bool AreaCastIsWorthMitigating(uint actionId)
+	private static bool AreaCastIsWorthMitigating(uint actionId, IBattleChara caster)
 	{
-		RecordAnnouncedAreaShare(actionId);
+		RecordAnnouncedAreaShare(actionId, caster);
 
 		if (!Service.Config.SkipMitigationForSmallAreaCasts)
 		{
@@ -4064,7 +4063,7 @@ internal static class DataCenter
 		}
 
 		// Unrated: behave exactly as before. A rating of 0 is a landing measured without damage (A366), a small cast.
-		if (!OtherConfiguration.HostileCastingAreaPotential.TryGetValue(actionId, out var share))
+		if (!AreaShareNow(actionId, caster, out var share))
 		{
 			return true;
 		}
@@ -4081,12 +4080,50 @@ internal static class DataCenter
 		if (!AreaMitigationSkipped.TryGetValue(actionId, out var last) || (now - last).TotalSeconds > DefaultGCDTotal)
 		{
 			var name = Service.GetSheet<Action>().GetRowOrDefault(actionId)?.Name.ExtractText() ?? "?";
-			DefenseTrace.Line($"area defence skipped: {name} #{actionId}, rated {share:P0}, which leaves everybody above"
-				+ " the area heal line");
+			DefenseTrace.Line($"area defence skipped: {name} #{actionId}, expected at {share:P0} under the mitigation standing,"
+				+ " which leaves everybody above the area heal line");
 		}
 
 		AreaMitigationSkipped[actionId] = now;
 		return false;
+	}
+
+	/// <summary>
+	/// The share of maximum HP a listed area action of <paramref name="caster"/> is expected to take when it lands: its
+	/// stored unmitigated figure times what gets through the mitigation that still stands then - on the caster, and on
+	/// the living party member it protects least, whoever laid it - with a raise of his maximum counted
+	/// (<see cref="TankbusterTable.MitigationFactor"/>, A441). False when the action has not been measured; a rating of 0
+	/// is a landing measured without damage (A366).
+	/// </summary>
+	/// <remarks>
+	/// The table holds the hit as it lands unmitigated; read raw, a raidwide whose first landing the party took under
+	/// three mitigations and a barrier stood at 25 % instead of about 34 % (Seelenüberfluss, 26.10.2026, A419), and the
+	/// bell, the heal ahead and the size rule read the small figure. Read here, mitigation another player has laid for
+	/// this hit makes it smaller, and one that runs out before the cast ends does not.
+	/// </remarks>
+	internal static bool AreaShareNow(uint actionId, IBattleChara? caster, out float share)
+	{
+		if (!OtherConfiguration.HostileCastingAreaPotential.TryGetValue(actionId, out var unmitigated))
+		{
+			share = 0f;
+			return false;
+		}
+
+		var horizon = caster != null && caster.IsCasting ? Math.Max(0f, caster.TotalCastTime - caster.CurrentCastTime) : 0f;
+		var through = 0f;
+		var party = PartyMembers;
+		for (var i = 0; i < party.Count; i++)
+		{
+			var member = party[i];
+			if (member != null && !member.IsDead && member.MaxHp > 0)
+			{
+				through = Math.Max(through, TankbusterTable.MitigationFactor(actionId, member, caster, horizon)
+					/ (1f + TankbusterTable.MaxHpRaise(member, horizon)));
+			}
+		}
+
+		share = unmitigated * (through > 0f ? through : 1f);
+		return true;
 	}
 
 	/// <summary>
@@ -4328,7 +4365,7 @@ internal static class DataCenter
 					if (listedArea)
 					{
 						text += $", reaches you {AreaCastCanReachPlayer(h, a)}, reaches the party {AreaCastReachesParty(h, a)}, interruptible {h.IsCastInterruptible}"
-							+ $", rated {(OtherConfiguration.HostileCastingAreaPotential.TryGetValue(id, out var share) ? share.ToString("P0") : "no")}"
+							+ $", rated {(OtherConfiguration.HostileCastingAreaPotential.TryGetValue(id, out var share) ? share.ToString("P0") + " unmitigated" : "no")}"
 							+ $", last landing reached you {(AreaCastReachedPlayer.TryGetValue(id, out var reachedLast) ? reachedLast.ToString() : "not seen")}";
 					}
 				}
@@ -4603,7 +4640,7 @@ internal static class DataCenter
 			if (Svc.Objects.SearchById(cast.CasterId) is not IBattleChara caster || !caster.HasNativeState()
 				|| !caster.IsCasting || caster.CastActionId != cast.ActionId
 				|| !OtherConfiguration.HostileCastingArea.Contains(cast.ActionId)
-				|| !OtherConfiguration.HostileCastingAreaPotential.TryGetValue(cast.ActionId, out var share)
+				|| !AreaShareNow(cast.ActionId, caster, out var share)
 				|| AreaShareCallsForMitigation(share))
 			{
 				return false;

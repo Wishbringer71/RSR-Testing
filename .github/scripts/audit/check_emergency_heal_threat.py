@@ -73,9 +73,12 @@ SET_CLEAR = re.compile(r'DataCenter\.TargetedPartyMembers\.Clear\(\)')
 # an action nothing has been measured on must stay "mitigate" - that fallback is the only thing
 # keeping 850 shipped entries from losing their mitigation the moment this ships.
 AREA_WORTH_METHOD = re.compile(r'bool\s+AreaCastIsWorthMitigating\s*\(')
-AREA_WORTH_CALL = re.compile(r'AreaCastIsWorthMitigating\(act\.RowId\)')
+# Since A441 the decision passes the caster and reads the share through DataCenter.AreaShareNow, which scales the
+# stored unmitigated figure by the mitigation standing when the cast lands; both forms are accepted.
+AREA_WORTH_CALL = re.compile(r'AreaCastIsWorthMitigating\(act\.RowId(?:,\s*h)?\)')
 AREA_UNRATED_FALLBACK = re.compile(
-    r'TryGetValue\(actionId,\s*out\s+var\s+share\).{0,80}?return\s+true;', re.DOTALL)
+    r'(?:TryGetValue\(actionId,\s*out\s+var\s+share\)|AreaShareNow\(actionId,\s*\w+,\s*out\s+var\s+share\))'
+    r'.{0,80}?return\s+true;', re.DOTALL)
 AREA_HEAL_THRESHOLD = re.compile(r'Service\.Config\.HealthAreaSpell')
 # Since A301 the size rule is its own method, asked by the cast path and by the BossModReborn path alike;
 # the threshold is then checked where the rule is.
@@ -338,6 +341,20 @@ def self_test():
     if not any('no longer records that it withheld' in p for p in check_area_worth(
             good_area.replace('AreaMitigationSkipped[actionId] = DateTime.Now;\n', ''))):
         raise AssertionError('a decision that withholds mitigation unobservably went unnoticed')
+
+    now_area = good_area.replace('AreaCastIsWorthMitigating(act.RowId);', 'AreaCastIsWorthMitigating(act.RowId, h);') \
+        .replace('AreaCastIsWorthMitigating(uint actionId)', 'AreaCastIsWorthMitigating(uint actionId, IBattleChara caster)') \
+        .replace('OtherConfiguration.HostileCastingAreaPotential.TryGetValue(actionId, out var share)',
+                 'AreaShareNow(actionId, caster, out var share)')
+    if check_area_worth(now_area):
+        raise AssertionError('the decision reading the share under the standing mitigation was rejected: %s'
+                             % check_area_worth(now_area))
+    if not any('no longer falls back to mitigating' in p for p in check_area_worth(
+            now_area.replace('return true;\n            }', 'return false;\n            }'))):
+        raise AssertionError('an unrated action falling through under AreaShareNow went unnoticed')
+    if not any('no longer asks whether the cast is worth' in p for p in check_area_worth(
+            now_area.replace('\n            && AreaCastIsWorthMitigating(act.RowId, h);', ';'))):
+        raise AssertionError('an area cast decided without the measurement, caster passed, went unnoticed')
 
     split_area = '''
         return OtherConfiguration.HostileCastingArea.Contains(act.RowId)
