@@ -48,3 +48,9 @@ What this release changes in the fight. For the whole distance from upstream, se
   what others have already laid makes the hit smaller, and your own party mitigation goes out where the rest of the hit
   would still push someone to where healing is called for, or is at least the size of a large barrier. Ratings learned
   before are read as they were until the action lands again; a barrier is not divided out.
+
+## Stability
+
+- **No crash from RSR's windows at a loading screen.** When RSR rebuilt its window fonts after a zone change - at
+  character select or a teleport - a font still being drawn could already be released, and the game crashed in the
+  control window. RSR now uses RebornMaterial 7.5.7.5, which keeps each font until the frame is drawn.

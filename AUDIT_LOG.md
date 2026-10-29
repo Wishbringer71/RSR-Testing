@@ -13276,6 +13276,40 @@ Löschungen").
 - *Ergebnis:* kein Defekt im Code dieser Builds belegt; die beiden Unterbewertungen hat die Höchstwertregel behoben.
   Prüfgrad: Mitschnitt und Trace statisch ausgewertet, Namen anderer Spieler nur in der Sitzung.
 
+### A455 · Abstürze bei Charakterwahl und Teleport: RebornMaterial 7.5.7.3, angehoben auf 7.5.7.5 (29.10.2026)
+
+- *Seine Frage* (29.10.2026, 21:07): „haben die crashes bei der characterwahl bzw. beim porten was mit rsr zu tun?"
+  Hochgeladen: vier Absturzberichte samt Speicherabbild (19:17, 19:20, 21:01, 21:05) und die Dalamud-Protokolle der
+  Sitzung ab 21:02. Laut Crashhandler-Protokoll stürzte das Spiel an diesem Tag fünfmal ab; der Bericht von 19:15 war
+  gelöscht, als er hochlud.
+- *Befund:* Drei der vier Abstürze (19:17, 19:20, 21:05) sind dieselbe Zugriffsverletzung in RSR:
+  `ImGui::SetCurrentFont` liest Adresse 0x47C, also einen leeren Schriftzeiger plus Versatz. Aufgerufen über
+  `ImRaii.PushFont(M3.LabelSmall)` aus `FullControlWindow.DrawStatusLines` beziehungsweise `StatusLine`. Der Absturz von
+  21:01 ist eine `AccessViolationException` im Plugin TextToTalk (`DialogueSessionService.OnFrameworkUpdate`,
+  `AtkUnitBase.IsVisible`), nicht RSR. Beim Absturz von 21:05 baute RSRs Schriftatlas 250 ms vorher neu auf
+  („[Rotation Solver Reborn] Building from BuildFontsAsync"), 2,3 s nach einem Gebietswechsel. Die Neuaufbauten der
+  Sitzung folgten alle auf Gebietswechsel oder den Ladevorgang. Er lief seinen eigenen Build des Arbeitszweigs
+  (devPlugins, v7.5.7.11) mit RebornMaterial 7.5.7.3 (A450).
+- *Ursache:* `M3Fonts.Loaded` in RebornMaterial bis 7.5.7.3 sperrt die Schrift mit `IFontHandle.Lock()`, gibt die
+  Sperre im selben Aufruf frei und reicht den Zeiger weiter. Dalamud gibt eine Schrift nach der Freigabe der Sperre frei,
+  sobald ein neuer Atlas fertig ist. `Push()` dagegen legt die Sperre bis zum Ende des Bildes ab
+  (`EnqueueDeferredDispose`, `FontHandle.Push`; goatcorp/Dalamud master 1e51469 vom 25.10.2026, Werkzeugquelle).
+  Fällt ein Neuaufbau zwischen Freigabe und `PushFont`, zeigt der Zeiger auf freigegebenen Speicher. Das Muster steht in
+  RebornMaterial seit 7.5.7.0; 7.5.7.3 hat die Zwischenspeicherung umgebaut.
+- *Behoben bei RebornMaterial:* 7.5.7.4 („crashfix", 5e183c8, auf NuGet seit 18:36 UTC am 29.10.2026) nimmt die Schrift
+  über `Push()` und `ImGui.GetFont()`; der Zwischenspeicher gibt sie nur im selben Bild zurück, in dem die Sperre noch
+  liegt. 7.5.7.5 (0d00d83, 19:52 UTC) liest die Textgröße einmal je Bild, wenn kein Regler gehalten wird, statt bei jedem
+  Zugriff. Öffentliche Schnittstelle unverändert, gleiches Dalamud-SDK 15.0.0; Upstream RSR stand noch bei 7.5.7.3.
+- *Optionen:* Nullvariante (auf Upstream warten; jeder Gebietswechsel mit Neuaufbau kann abstürzen); 7.5.7.4; 7.5.7.5;
+  das `FullControlWindow` ohne eigene Schriften (behebt die Klasse nicht: Einstellungsfenster und Tutorial nutzen
+  dieselben Schriften); eigener Ableger von RebornMaterial (unnötig). *Gewählt:* 7.5.7.5. Es enthält den Fix und baut die
+  Schriften seltener neu, weil sich die Textgröße nicht während des Ziehens am Regler ändert. RSR ruft `M3.BeginFrame`
+  je Bild auf (`RotationSolverPlugin`), also greift die Änderung. Preis: eine Zeile, die beim nächsten Upstream-Merge
+  zusammenläuft. *Falsifikation:* Kein Defekt? Drei gleiche Aufrufstapel und der Neuaufbau unmittelbar davor sprechen
+  dagegen. Option falsch? `Push()` hält die Schrift laut Dalamud-Quelltext bis zum Ende des Bildes. Ausgeliefert, und nichts
+  ändert sich? Nur, wenn die Abstürze eine zweite Ursache hätten; die Speicherabbilder werden dafür nicht ausgewertet.
+- *Im Kampf:* keine Wirkung; nur Zeichnen von Fenstern.
+
 ---
 ## B · Commit-Register (Fork vs. `upstream/main`)
 
