@@ -12712,6 +12712,36 @@ Löschungen").
   gebaut" und „seit A<n>"; der Vorspann, der die Regel selbst nennt, bleibt frei.
 - *Prüfgrad:* Prüfskript mit Selbsttest, alle Prüfschritte lokal.
 
+### A437 · Upstream 7.5.7.11: RotationSolver.Basic im Hauptprojekt, Bereinigung; Werkzeuge nachgezogen (29.10.2026)
+
+- *Upstream* (bd9c156b0, b5d686c5e, „Merged basic to main solution, VS code cleanup pass"): Das Projekt
+  `RotationSolver.Basic` liegt unter `RotationSolver/Basic` im Plugin, Namensräume unverändert; dazu eine Bereinigung über
+  260 Dateien. Inhaltlich darüber hinaus nur in 16 Dateien, gleichwertig: primäre Konstruktoren, Sammlungsausdrücke,
+  `ThrowIfNull`, entferntes `unsafe`. Mit Wirkung zwei: `IconSet.Init` samt SVG-Umwandlung und Paket `Svg` entfernt –
+  der Fork lädt kein SVG –; `PhantomRotation` abstrakt – der Fork leitet nur ab (`PhantomDefault`).
+- *Merge:* 20 Dateien, die der Fork unter dem alten Ordner angelegt hatte, zogen mit. 80 Konfliktstellen in 26 Dateien,
+  alle von einer Art: Upstream änderte Formatierung oder Kommentare, der Fork den Inhalt (geprüft: keine Stelle, an der
+  Upstream mehr als Leerraum und Zeilenkommentare änderte). Fork-Inhalt behalten; Upstreams kosmetische Änderungen
+  übertragen, wo die Zeilen des Forks der Basis glichen (39 Blöcke), und vier Kommentare der Basis, die Upstream
+  entfernte, ebenso entfernt – sonst trüge der Fork Abweichungen ohne Grund, die jeder künftige Merge mitführt.
+- *Nach seinen Kriterien:* Upstreams Struktur ist zu übernehmen, nicht abzuwägen: Ein eigenes Basic-Projekt im Fork
+  hielte jede Datei des Ordners als Abweichung, und das Projekt hatte keinen Abnehmer mehr – das Plugin lädt Rotationen
+  nur aus seiner eigenen Assembly (`RotationUpdater`, Zeile 33), ein Paket erschien seit dem UI-Umbau nicht.
+- *Wechselwirkungen, je nachgezogen:* 34 Prüfskripte, `fixed_values.json`, `cloud_build.sh` und drei Konzepte lesen
+  `RotationSolver/Basic`; Ordnerlisten, die beide Ordner nannten, nennen `RotationSolver` einmal (alle durchsuchen
+  rekursiv; sonst doppelte Befunde). `scan7.py` liest beide Orte, damit ein Release vor dem Umbau vergleichbar bleibt;
+  sein Schlüssel ist Typ und Mitglied, nicht die Datei – gegen 7.5.7.10+wsh1 fällt nur `IconSet.Init()` weg. Vier
+  Zeilenverweise der Konzepte 10, 11, 12 verrutschten durch die Bereinigung; jede Aussage an der neuen Zeile nachgelesen,
+  alle gelten. Der Ausgabeort ist jetzt `bin/Release` (`OutputPath` im Projekt, `<Platforms>` entfiel); `latest.zip`
+  enthält ECommons, RebornMaterial, `RotationSolver.dll`, deps und Manifest – keine `RotationSolver.Basic.dll`, keine
+  `.pdb`, keine `.xml`, lokal 3,2 MB. Der Schuldpunkt „Release-Paket enthält vermeidbaren Ballast" ist damit aufgelöst;
+  das nächste Release bestätigt die Größe am Paket des Veröffentlichungswegs (`publish.yaml`, `--output .\build`).
+  Skill `upstream-sync` (Ausgabeort für `RefCheck`), `code.md`, `TODO.md`, README, CHANGELOG nachgezogen.
+- *Geprüft:* Build ohne Warnung; alle Prüfschritte lokal; `RefCheck` gegen die Dalamud-Distribution (am 29.10.2026
+  byte-gleich mit der vom 20.10.2026): ECommons 1381, RotationSolver 1508, RebornMaterial 293 Referenzen, keine fehlend,
+  Selbsttest bestanden. Fork-Version 7.5.7.11.
+- *Prüfgrad:* statisch, Build, Prüfskripte; im Spiel nicht beobachtet.
+
 ---
 ## B · Commit-Register (Fork vs. `upstream/main`)
 
