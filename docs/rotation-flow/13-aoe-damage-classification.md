@@ -1105,10 +1105,14 @@ Wahrscheinlichkeit. In der einsparenden Richtung widersprechen sich beide, wenn 
 also schützend.
 
 **Kampfbeispiele.**
-- *Tankbuster, ein Patch hebt ihn von 60 % auf 90 % ungemindert, der Tank steht bei 70 %:* Wörtlich hält der Plan
-  60 % für überlebbar, gibt kein Mittel aus und hält die übrigen zurück; es treffen 90 %, und der Tank fällt.
-  Asymmetrisch gilt der Plan beim ersten Mal nicht, die bereite Abwehr geht wie ohne Tabelle – etwa Rampart (20 %) und
-  das 40-%-Mittel, es treffen rund 43 % –, und der Tank überlebt; die Landung misst 90 %, ab dann plant er richtig.
+- *Tankbuster, ein Patch hebt ihn unbemerkt von 60 % auf 90 % ungemindert, der Tank steht bei 70 %:* Vor dem Einschlag
+  weiß RSR nur die alten 60 % – in beiden Wegen; dass er 90 % hat, zeigt erst die Landung. Wörtlich vertraut der Plan
+  den 60 %: überlebbar, kein Mittel, die übrigen zurückgehalten; der Tank hat nur, was die Heiler ihm geben, und ohne das
+  fällt er. Asymmetrisch vertraut RSR dem unbestätigten Wert nicht zum Einsparen: Die Abwehr läuft wie heute bei jedem
+  noch nie gemessenen Tankbuster, in ihrer Reihenfolge, eines je Einschub (beim Paladin Bulwark, Holy Sheltron,
+  Guardian oder Rampart). Ob das 90 % überstehen lässt, hängt davon ab, was bereit ist und wie viele Einschübe die
+  Wirkzeit bietet – sicher ist es nicht, aber es ist der Schutz, den RSR ohne Wissen gibt, statt einer Wette auf den
+  alten Wert. Die Landung misst 90 %; ab dann plant RSR mit ihnen.
 - *Raidwide, ein Patch hebt ihn von 18 % auf 30 %:* Wörtlich lässt die Größenregel bei gesunder Gruppe die
   Gruppenminderung aus, alle nehmen 30 %. Asymmetrisch mindert RSR den ersten Cast; gerechnet sinkt das falsche
   Auslassen von 8,3 % je Cast auf 0 %.

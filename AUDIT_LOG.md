@@ -13065,6 +13065,14 @@ Löschungen").
     („… teilhaben lassen").
   - 09:30 (a8b91e9f3): Ich machte daraus die Pflicht am Auftragsende, Fehlendes dort als Issue weiterzugeben, und
     kennzeichnete sie als seine Vorgabe (C133).
+- *Sein Einwand zum Tankbeispiel:* „woher weißt du vor dem ersten einschlag, dass er 90% haben wird? […] dass der wert
+  nicht mehr reicht, weißt du doch erst, wenn der tank mehr schaden bekommt". Zutreffend: Das Beispiel ließ RSR
+  asymmetrisch „rund 43 %" treffen und den Tank überleben, als kenne RSR die 90 % vorher, und rechnete mit einem Bündel,
+  das die Abwehr ohne Plan so nicht sicher drückt. Berichtigt: Vorher weiß RSR in beiden Wegen nur die alten 60 %; der
+  Unterschied ist allein, ob der unbestätigte Wert Schutz einsparen darf. Asymmetrisch läuft die Abwehr wie bei jedem
+  ungemessenen Tankbuster heute (beim Paladin eines je Einschub: Bulwark, Holy Sheltron, Guardian oder Rampart), ob
+  das reicht, ist offen; wörtlich drückt der Tank nichts. Auch das „der Tank fällt" war zu absolut: Die Heiler helfen
+  bei gemessenen 60 % auf 70 % Gesundheit weiter (`MeasuredHitCallsForNoHelp`: Rest unter der Einzelheilschwelle).
 
 ---
 ## B · Commit-Register (Fork vs. `upstream/main`)
