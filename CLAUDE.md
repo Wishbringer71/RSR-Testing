@@ -85,7 +85,6 @@ Diese Datei gilt in jeder Lage. Die übrigen Regeln stehen je genau einmal im Re
 - Wirkkette am Code, Richtigkeit und Bilanz am Spielgeschehen, Nachsteuerung, wo die Antwort erst zur Laufzeit fällt (→ „Definition of Done").
 - Konzept, `TODO.md` und Archiv fortgeschrieben.
 - Am Auftragsende Upstream erneut synchronisiert und ausgewertet (Skill `upstream-sync`).
-- Seine anderen Repositories, die nichts mit RSR zu tun haben (KerbalMissionDirector, Retainer-Repricer), sind nicht meine Zuständigkeit: dort keine Issues, keine Weitergabe, keine Arbeit; ein Auftrag wie „TODO abarbeiten" meint dieses Repository (seine Präzisierung, 29.10.2026, seiner Vorgabe vom 27.10.2026). Was er aus ihnen hierher weitergibt, prüfe ich weiter (→ „Wenn er etwas sagt").
 - Prüfgrad benannt.
 
 **Bevor ich einen Zug beende**
@@ -220,6 +219,7 @@ Pflicht für jede nicht-triviale Aufgabe; die REGEL steht darüber.
 
 **Grenzen und Löschungen**
 - Tag-Pushes, Ref-Löschungen und das Bearbeiten von Releases sind dieser Sitzungsart gesperrt (403, beim Release „not permitted for this session type", 22.10.2026; Tag-Push am 25.10.2026 von der Rechteprüfung der Sitzung abgewiesen). Ein Release erzeuge ich deshalb über `publish.yaml` per `workflow_dispatch`, sobald er es aufträgt (seine Vorgabe, 26.10.2026: „ich habe dich angewiesen, zu compilieren und zu releasen"); sein Auftrag ist die Freigabe, ich stelle sie nicht erneut zur Wahl. Ohne seinen Auftrag erzeuge ich kein Release.
+- Seine anderen Repositories (KerbalMissionDirector, Retainer-Repricer) sind nicht meine Zuständigkeit. Fällt mir bei meinen Aufgaben ein Fehler in einem von ihnen auf, darf ich ihn dort als Issue melden; sonst arbeite und ändere ich dort nichts (seine Präzisierung, 29.10.2026). Was er aus ihnen hierher weitergibt, prüfe ich weiter (→ „Wenn er etwas sagt").
 - Auf `origin` erzeuge ich nichts ohne geprüften Rückweg.
 - Destruktive Operationen sind freigabepflichtig, auch `git branch -D`; geringes Risiko ist ein Argument, keine Freigabe.
 - Ausnahme: Reste der Sitzungsumgebung räume ich selbst auf, sobald sie als risikofrei gemessen sind (lokal, ohne Remote, ohne eigenen Commit, `git branch -d`), und melde es.

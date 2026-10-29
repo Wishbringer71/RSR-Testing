@@ -12981,6 +12981,22 @@ Löschungen").
   dieses Repository begrenzt. Der Skill `upstream-sync` nutzt `tools/RefCheck` aus Retainer-Repricer weiter lesend für
   die eigene Referenzprüfung; das ist keine Arbeit dort.
 
+### A445 · Andere Repositories: Issues erlaubt, TODO nur RSR; Herkunft der Regel vom 27.10.2026 (29.10.2026)
+
+- *Seine Präzisierung:* „wenn dir bei bearbeitung deiner aufgaben ein fehler der anderen repos auffällt, darfst du
+  issues melden. die haben aber in deiner todo nichts verloren, da gilt. in deine todo gehört nur rsr. und bei der
+  abarbeitung genauso." Sie fasst A444 genauer: Ein Issue für einen Fehler, der bei der eigenen Arbeit auffällt, ist
+  erlaubt; Arbeit dort, Einträge hier und eine Weitergabe als Pflicht am Auftragsende nicht.
+- *Geändert:* CLAUDE.md, „Grenzen und Löschungen" (statt des Punkts unter „Bevor ich etwas als fertig melde");
+  `archiv-todo.md`: `TODO.md` führt nur RSR.
+- *Herkunft der Regel vom 27.10.2026 (seine Frage):* Sein Satz „jede repo hat eigene besonderheiten … diese mit
+  einbauen und auch die anderen repos von mir daran teilhaben lassen" stammt aus dem Chat von KerbalMissionDirector
+  und kam über einen Bericht, den er hier einfügte (A423). Ich schrieb daraus in a8b91e9f3 zwei Regeln: das Prüfen
+  eingehender Weitergaben und am Auftragsende die Pflicht, Fehlendes dort als Issue weiterzugeben, unter „seine
+  Vorgabe". Die Pflicht je Auftrag und der Weg über Issues waren meine Ableitung aus „teilhaben lassen", nicht sein
+  Wortlaut; als seine Vorgabe gekennzeichnet, stand sie über der Regel, dass eine Ableitung nicht als seine
+  ausgegeben wird (C133).
+
 ---
 ## B · Commit-Register (Fork vs. `upstream/main`)
 
@@ -13266,3 +13282,4 @@ Die offene Arbeit dazu — Reihenfolge und Abbruchbedingung der Nachprüfung —
 | C130 | Chat 26.10.2026: „Der Text, den du zitierst, … ich habe sie auf Deutsch geschrieben.“ | Falsch. Die zitierte Antwort und mehrere Mitteilungen davor waren Englisch, gegen seinen Befehl „sprich deutsch“; die Behauptung stützte sich auf die Erinnerung statt auf den Verlauf. | Widerrufen im Chat; seine Sprachregel gilt für jede sichtbare Ausgabe (`CLAUDE.md`, „Sprache und Namen“), vor jeder Ausgabe geprüft |
 | C131 | Chat 26.10.2026: „Diese Abschlusszeilen schreibt `Stop` ohne jede Bedingung. Dass sie fehlen, beweist: … jeder Schreibversuch ist gescheitert.“ | Zu stark. Ein Absturz von Spiel oder Rechner beendet die Sitzung ohne `Stop` (sein Hinweis); die fehlende Abschlusszeile allein beweist keinen Schreibfehler. Tragend bleiben die fehlenden Zeilen zweier unabhängiger Schreiber während der Kämpfe. | Im Chat zurückgenommen; A418 stützt sich nicht auf die Abschlusszeile |
 | C132 | A428 und Konzept 08 (27.10.2026): „Das Überheilen, das er beschreibt, entsteht also messbar – aber bei Gruppen-HoTs ohne Bedarf, nicht bei DoTs.“ | Falsch für Zoraal Ja. Refugium war bei allen vier Einsätzen nach der Bedarfsfrage gebraucht; seine Ticks fielen auf volle Gesundheit, weil danach Afflatus laetitiae und der zweite Heiler auffüllten. Dieses Überheilen kostete keinen GCD. GCD-HoTs ohne Bedarf gibt es, aber selten (26 von 121). Der Schluss stützte sich auf die Ticks, nicht auf den Bedarf zur Zeit des Wirkens. | Konzept 08 berichtigt; Messung je Einsatz in A430 mit `act_heal_need.py` |
+| C133 | CLAUDE.md und A423 (27.10.2026): „Was davon in seinen anderen Repositories fehlt, dort als Issue weitergegeben … (seine Vorgabe, 27.10.2026 …)“ | Zu weit und falsch zugeschrieben. Sein Satz aus dem Chat von KerbalMissionDirector sagte „teilhaben lassen“; die Pflicht am Ende jedes Auftrags und der Weg über Issues waren meine Ableitung. Seit 29.10.2026 präzisiert: Issues nur für Fehler, die bei der eigenen Arbeit auffallen, erlaubt, keine Pflicht; `TODO.md` nur RSR (A444, A445) | CLAUDE.md, „Grenzen und Löschungen“; `archiv-todo.md` |
