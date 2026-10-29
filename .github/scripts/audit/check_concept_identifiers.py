@@ -46,7 +46,7 @@ EXPLAINED = re.compile(
     r'toter Code|dead code|früher|frueher|ehemals|einst|'
     r'removed|rejected|planned|would be|'
     # A name from another tool's code, on a line that names the tool: it lives there, not here.
-    r'WrathCombo|BossModReborn|FFXIVClientStructs|xivanalysis', re.IGNORECASE)
+    r'WrathCombo|BossModReborn|ffxiv_bossmod|FFXIVClientStructs|xivanalysis', re.IGNORECASE)
 
 
 def tree_text(dirs=SOURCE_DIRS, patterns=SOURCE_PATTERNS):

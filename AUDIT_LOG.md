@@ -12847,6 +12847,55 @@ Löschungen").
 - *Prüfgrad:* statisch, Compile (`cloud_build.sh`, ohne Warnung), Prüfskripte; im Spiel nicht beobachtet. Messmittel im Code:
   die Entscheidungszeilen der Einzelabwehr im `DefenseTrace.log` nennen ihr Ziel („-> Aquaveil … on …", A334).
 
+### A441 · Flächentabelle ungemindert gemessen, gelesen unter der stehenden Minderung (29.10.2026)
+
+- *Auftrag:* TODO „Flächentabelle misst unter der stehenden Minderung" (aus A419), im Loop nach der Reihenfolge.
+- *Ursache am Code:* `Watcher.TryAreaShare` legte den Anteil ab, wie er ankam; die Höchstwertregel hob ihn erst, wenn ein
+  Treffer unter weniger Minderung kam. Seelenüberfluss (#37707) traf am 26.10.2026 mit 25 % unter Vollkommener Ablass
+  (Confession 10 %), Mäßigung (10 %) und Taktiker (10 %, ab Stufe 98 15 %, Merkmal) und einer Barriere; zurückgerechnet
+  rund 34–36 %. Glockenspiel, Vorausheilung und „Skip mitigation for small area casts" lasen den kleinen Wert.
+- *Getroffene Entscheidung geprüft:* Konzept 13 verwarf die Rückrechnung, weil `GetCurrentMitigationPercent` eine
+  Aufzählung von vier Status ist. Der Vorschlag dazu war seiner (A26), die Ablehnung meine. Ihren Grund hat die
+  Tankbuster-Tabelle mit den Wirktextwerten (`MitigationByStatusId`, A259, A286) aufgehoben. Eine Entscheidung von ihm
+  steht nicht dagegen.
+- *Optionen:*
+  - Nullvariante: der erste Treffer unter Minderung setzt den Wert zu klein, bis ein schwächer geminderter kommt.
+  - Gewählt: ungemindert speichern wie die Tankbuster-Tabelle (`TankbusterTable.MitigationFactor` und `MaxHpRaise`, auf
+    dem Mitglied und dem Wirker, gedeckelt bei der ganzen Maximalgesundheit) und unter der Minderung lesen, die beim
+    Einschlag noch steht.
+  - Nur speichern und roh lesen: verworfen, weil die Leser dann eine Minderung, die schon liegt, doppelt ausgäben.
+  - Je Mitglied lesen und je Mitglied rechnen: verworfen, weil `HitDropsBelow` mit einem Anteil fragt; gewählt ist das
+    am wenigsten geschützte Mitglied, die Fehlerrichtung ist sicher.
+  - Neue Datei: verworfen, denn 225 Werte gingen verloren, und jede Aktion würde wieder ohne Ansehen gemindert.
+  - Rückbau: die Division in `TryAreaShare` und `AreaShareNow` entfernen.
+- *Umgesetzt:* `TryAreaShare` rechnet zurück, beide Messpfade (gelistete Landung, Folgelandung) geben Aktion und Wirker
+  mit. `DataCenter.AreaShareNow` liest den erwarteten Anteil mit einem Horizont bis zum Ende des Casts. Ihn lesen die
+  Größenregel, die beiden Prüfungen auf große unterbrechbare Casts, der angekündigte Anteil (Vorausheilung, Glockenspiel
+  über die Flächenabwehr) und der BossModReborn-Abgleich. Protokoll und Liste nennen den Wert „unmitigated".
+  `check_emergency_heal_threat.py` nimmt die neue Form an, mit Selbsttest. Keine neue Zahl, keine Option; der Text von
+  „Skip mitigation for small area casts" fragt nach dem Treffer, wie er landet.
+- *Im Kampf:*
+  - Seelenüberfluss gilt nach der ersten Landung als groß (rund 34–36 % statt 25 %). Die Flächenabwehr öffnet ohne Blick
+    auf die Gesundheit, und Glockenspiel liegt bereit.
+  - Steht schon Minderung anderer, wird der erwartete Treffer kleiner. Ein Raidwide von 30 % unter 20 % fremder Minderung
+    gilt als 24 %: Bei gesunder Gruppe geht keine weitere Gruppenminderung, bei einem Mitglied nahe der Heilschwelle die
+    volle.
+  - Preis: Eine eigene, eben gelegte Minderung zählt ebenso. Nach Addle kann Schimmerschild für einen mittleren Treffer
+    ausbleiben, wenn der Rest niemanden gefährdet.
+- *Falsifikation:*
+  - „Kein Defekt": widerlegt am Beleg oben.
+  - „Option falsch": Ein Wirktextwert, der für diesen Treffer nicht gilt, hebt den Wert. Das ist die sichere Richtung,
+    gedeckelt bei der ganzen Gesundheit. Die Schadensart trennt `SelfAgainst` und auf dem Wirker die kleinere
+    Minderung.
+  - „Ausgeliefert, und nichts ändert sich": hält dort, wo eine Barriere stand (nicht herausgerechnet) und für Werte aus
+    der Zeit davor, bis zur nächsten Landung. Am Beleg rechnet die Barriere aus Göttliche Umarmung nicht heraus; die drei
+    Minderungen schon.
+- *Nebenbefund:* `PyreticThreshold` (A439) stand in Konzept 03 ohne Herkunft. Die Zeile nennt jetzt `ffxiv_bossmod`,
+  und `check_concept_identifiers.py` kennt das Werkzeug.
+- *Prüfgrad:* statisch, Compile (`cloud_build.sh`, ohne Warnung), Prüfskripte; Beleg aus Protokoll und Wirktextwerten
+  gerechnet; im Spiel nicht beobachtet. Messmittel im Code: „area defence skipped: … expected at … under the mitigation
+  standing" und „measured … unmitigated" im `DefenseTrace.log`.
+
 ---
 ## B · Commit-Register (Fork vs. `upstream/main`)
 

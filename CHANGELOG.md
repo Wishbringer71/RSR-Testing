@@ -50,6 +50,15 @@ use it: under a tankbuster on both tanks Aquaveil goes on the tank without Divin
 `SingleDefenseStretched(string rule, params IBaseAction[] triggers)` stays with its behaviour - held while a trigger is
 in effect anywhere - and is marked obsolete; move a call to the new overload after the `CanUse` of the defense it holds.
 
+### Behaviour change in RotationSolver.Basic: area hits are learned unmitigated and read under the mitigation standing
+
+The learned share of each area action (`HostileCastingAreaPotential.json`) is stored scaled back to unmitigated - divided
+by the mitigation that stood on the member and on the caster by the figures of the effect texts, as the tankbuster table
+does - and read as that figure times the mitigation still standing when the cast lands, on the least protected member.
+`DataCenter.AnnouncedAreaShare` and `DataCenter.AnnouncedHitIsSmall` answer for that expected hit: a raidwide measured
+under three mitigations no longer reads small, and one other players have already mitigated reads smaller. Readings
+stored before stay as they are and count as unmitigated until the next landing raises them.
+
 ## 7.5.7.10+wsh1
 
 ### Dependency of RotationSolver.Basic: RebornMaterial 7.5.7.2

@@ -10,9 +10,8 @@ Betroffene: **N** Endnutzer · **R** Autoren abgeleiteter Rotationen (Namensräu
 Nach der Wirkung im Kampf: Sicherheit der Gruppe vor Schaden, gewichtet mit der Wahrscheinlichkeit, in seinem Profil
 (seine Vorgabe, 17.10.2026: „todo nach wichtigkeit abarbeiten. jeweils im loop bearbeiten").
 
-1. Flächentabelle misst unter der stehenden Minderung – bewertet nur den ersten Treffer einer Aktion falsch.
-2. Laufende HoTs fehlen in den HoT-Listen – kostet Schaden, nicht Sicherheit.
-3. Die gelernten Tabellen, als ein Konzept und eine Vorlage, gebaut erst nach seiner Freigabe: erst die Revision über
+1. Laufende HoTs fehlen in den HoT-Listen – kostet Schaden, nicht Sicherheit.
+2. Die gelernten Tabellen, als ein Konzept und eine Vorlage, gebaut erst nach seiner Freigabe: erst die Revision über
    einen Spielpatch, weil sie festlegt, welchen Stand ein Wert hat, dann Anzeige und Bearbeitung in den Einstellungen,
    die diesen Stand zeigen. Beide ändern den Kampf nur mittelbar, über einen geprüften oder berichtigten Lernwert.
 
@@ -30,13 +29,6 @@ Gruppen-HoT tragen. *Ort:* `StatusHelper.AreaHots`, `SingleHots`; Leser `StateUp
 Listen als Rückfall; Gruppe oder Einzelziel nach dem Wirkbereich der gewährenden Aktion. *Konzept:* 08 („Was RSR heute tut" im Abschnitt „Schaden über Zeit").
 
 ## Offene Arbeit
-
-### Flächentabelle misst unter der stehenden Minderung · N, R
-Ein Raidwide, dessen erste Landung die Gruppe voll gemindert nimmt, steht zu klein in der Tabelle; Glockenspiel,
-Vorausheilung und „Skip mitigation for small area casts" lesen den kleinen Wert, bis ein schwächer geminderter Treffer
-ihn anhebt. *Ort:* `Watcher.TryAreaShare`, die Leser in `DataCenter` (`AreaShareCallsForMitigation`, `HitDropsBelow`).
-*Nächster Schritt:* ungemindert speichern wie die Tankbuster-Tabelle (`TankbusterTable.MitigationFactor`), die Leser
-rechnen die jetzt stehende Minderung je Mitglied ein. *Konzept:* 13.
 
 ### Gelernte Tabellen über einen Spielpatch: Revision statt Höchstwert · N
 Sein Auftrag (28.10.2026): „das lernlisten-konzept müsste auch überarbeitet in hinblick auf anstehende patches. […]

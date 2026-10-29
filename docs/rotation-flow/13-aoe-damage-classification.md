@@ -48,12 +48,16 @@ Gruppenminderung.
 
 **Die Rechnung, die alles ersetzt, was sonst gesetzt werden müsste:**
 
-> **Erste Stufe:** Liegt der gespeicherte Anteil bei **0,25 oder darüber**, ist die Fläche groß, und
+> **Erwarteter Anteil** (`DataCenter.AreaShareNow`, A441): der gespeicherte ungeminderte Anteil mal dem, was die
+> Minderung durchlässt, die beim Einschlag noch steht – auf dem Wirker und auf dem Mitglied, das sie am wenigsten
+> schützt, gleich wer sie legte –, umgerechnet auf seine maximalen LP samt Erhöhung.
+>
+> **Erste Stufe:** Liegt der erwartete Anteil bei **0,25 oder darüber**, ist die Fläche groß, und
 > es wird gemindert — ohne Blick auf die Gesundheit der Gruppe. Der Wert ist die Deckung von The
 > Blackest Night aus ihrem eigenen Wirktext, also ein großer Schild.
 >
 > **Zweite Stufe, darunter:** **Effektiver Puffer** des Mitglieds (Gesundheit einschließlich Barriere)
-> **minus** dem gespeicherten Anteil seiner Maximalgesundheit. Bleibt das über der Schwelle, ab der
+> **minus** dem erwarteten Anteil seiner Maximalgesundheit. Bleibt das über der Schwelle, ab der
 > der Baum von sich aus heilen würde, ist nichts zu tun; unterschreitet es sie, wird gemindert.
 
 **Beide Stufen zusammen sind nötig** (A108, C67): Allein mit der zweiten fragte die Regel nur, ob **Heilbedarf** entstünde, und bei gesunder Gruppe lautet die
@@ -74,6 +78,7 @@ den Puffer. Dieselbe Größe, zwei Fragen, zwei Antworten — nachzulesen in
 |---|---|
 | Aufnahme einer Flächenaktion in die Liste | vorhanden, Upstream (`Watcher.ActionFromEnemy`) |
 | Messung: höchster Anteil an der Maximalgesundheit je Effektsatz, eine Serie je Mitglied summiert | umgesetzt (Serie: A349) |
+| Messung ungemindert zurückgerechnet, Leser unter der beim Einschlag stehenden Minderung | umgesetzt (A441) |
 | Treffer über der ganzen Gesundheit samt Barriere nicht gemessen, Ablage höchstens die ganze Maximalgesundheit | umgesetzt (A298) |
 | Ablage je Aktion (`HostileCastingAreaPotential`, Parallelspeicher) | umgesetzt |
 | Höchstwert-Fortschreibung, auch für bekannte Ids, mit gelockerter Bedingung | umgesetzt |
@@ -92,8 +97,8 @@ antwortet auf die Frage, die zählt: für wie viele der bewerteten Aktionen hat 
 eine Abklingzeit gespart. Der Vermerk ist Diagnose und wird bewusst **nicht** gespeichert — nach einem
 Neustart lautet die ehrliche Antwort „in dieser Sitzung noch nicht gesehen".
 
-**Jedes Auslassen steht in `DefenseTrace.log`**, eine Zeile je Cast („area defence skipped: … rated …, which leaves
-everybody above the area heal line"), wie der BossModReborn-Pfad je Vorhersage eine schreibt („area defence held").
+**Jedes Auslassen steht in `DefenseTrace.log`**, eine Zeile je Cast („area defence skipped: … expected at … under the
+mitigation standing, which leaves everybody above the area heal line"), wie der BossModReborn-Pfad je Vorhersage eine schreibt („area defence held").
 Ohne sie sahen in seinen Protokollen vom 18.–22.10.2026 ein Cast, den die Größenregel durchließ, und einer, den die
 Erkennung nie sah, gleich aus: Schriller Kreischer traf zweimal mit 32 und 24 % ohne Zeile, beim dritten Mal öffnete
 die Abwehr mit dem nachgelernten Anteil von 37 % (A334). Die Regel steuert sich selbst nach – die nächste ungeminderte
@@ -373,6 +378,8 @@ verschöbe zwei Pfade auf einmal. Der neue Weg hängt allein an der Verteidigung
 | Dieselbe Bagatelle, ein Mitglied knapp über der Heilschwelle | volle Gruppenminderung | volle Gruppenminderung |
 | Gemessene Fläche ab 25 %, Gruppe gesund | volle Gruppenminderung | **unverändert** — die Obergrenze entscheidet ohne Blick auf die Gesundheit |
 | Gemessene Fläche zwischen 10 % und 25 %, Gruppe gesund | volle Gruppenminderung | keine Minderung, solange der Treffer niemanden unter die Heilschwelle drückt |
+| Erste Landung unter drei Minderungen gemessen (A419: 25 %) | – | zurückgerechnet, rund 34–36 %: der nächste Cast gilt als groß |
+| Gemessene Fläche von 30 %, ein anderer Spieler hat schon 20 % Minderung gelegt, Gruppe gesund | volle Gruppenminderung | erwartet rund 24 %: keine weitere, solange der Treffer niemanden unter die Heilschwelle drückt |
 | Savage-Training, zweiter Versuch | jede Fläche gleich behandelt | die kleinen kosten nichts mehr |
 | Nach dem Kampf, Blick in die Listenverwaltung | nichts zu sehen | je Aktion der gemessene Anteil, und welche davon eine Minderung gespart hat |
 
@@ -503,8 +510,8 @@ es auch vom Anteil an der Maximalgesundheit, und der ist der gewählte Maßstab 
 `AUDIT_LOG.md` A24).
 
 **Was für die Potenz spricht, und nicht kleinzureden ist: sie wäre minderungsfrei.** Der beobachtete
-Schaden trägt immer die zufällig gerade wirkende Minderung mit; die Potenz täte das nicht und würde
-den Zirkelschluss vollständig beseitigen, den die Höchstwertregel nur abfedert. Findet sich eine
+Schaden trägt die gerade wirkende Minderung mit; zurückgerechnet wird seit A441, was die Wirktexte beziffern, eine
+Barriere und eine unbezifferte Minderung nicht. Die Potenz wäre davon ganz frei. Findet sich eine
 auswertbare Potenz für Gegneraktionen, gehört sie **neben** den Anteil, nicht an seine Stelle.
 
 **Was dagegen spricht, in der Reihenfolge des Gewichts:**
@@ -701,8 +708,8 @@ Messung in `TankbusterTable`, Ablage über denselben gesicherten Weg wie die Fl�
   - Einen Wert trägt nur ein Status, dessen eigener Text eine Minderung oder einen größeren Lebenspool nennt. Ein Status,
     der nur den Namen der Aktion teilt — der HoT von Temperance, die Barriere von Aquaveil, die Rückstrahlung von Nebula,
     eine ältere Form derselben Aktion —, trägt keinen; sonst würde dieselbe Minderung doppelt herausgerechnet.
-  - Damit drückt ein gut geminderter Treffer die Aktion nicht nach unten – die Schwäche des Höchstwerts der
-    Flächentabelle (Abschnitt „Grenzen der Messung") entfällt hier.
+  - Damit drückt ein gut geminderter Treffer die Aktion nicht nach unten; die Flächentabelle rechnet seit A441
+    ebenso zurück (Abschnitt „Grenzen der Messung").
 - **Unter Verwundbarkeit getrennt:** Trägt der Getroffene eine Verwundbarkeit, geht der Wert in die zweite Zahl.
   Ausgenommen ist eine, die genau dieser Treffer legt (Effektsatz): Sie kam mit ihm und hat ihn nicht verstärkt.
   Ob das Spiel sie beim Eintreffen des Effekts schon gesetzt hat, ist nicht belegt; die Ausnahme macht die Frage
@@ -782,18 +789,32 @@ Schaltfläche).
 
 ## Grenzen der Messung
 
-**Der Höchstwert konvergiert nicht, wenn immer gemindert wird.** Nicht widerlegt, aber entschärft:
-Minderungen haben Abklingzeiten, sind verschieden stark, und die **erste** Beobachtung einer Aktion
-ist immer ohne RSR-Minderung. Der Höchstwert konvergiert gegen das Maximum über die vorgekommenen
-Minderungszustände, und das liegt nahe am ungemilderten Wert. Eine Rückrechnung über
-`GetCurrentMitigationPercent` wäre der scheinbar sauberere Weg und ist verworfen: Diese Größe ist eine
-Aufzählung bekannter Status und damit unvollständig — und eine Näherung, die den Wert **erhöht**, ist
-gefährlicher als eine Beobachtung, die ihn zu niedrig ansetzt und sich selbst korrigiert.
+**Gemessen unter Minderung: zurückgerechnet, soweit die Wirktexte sie beziffern** (A441, `Watcher.TryAreaShare`). Der
+Anteil eines Mitglieds wird durch das geteilt, was die Minderung beim Einschlag durchließ – auf ihm und auf dem Wirker
+nach Schadensart, mit den Werten der Tankbuster-Tabelle (`TankbusterTable.MitigationFactor`, `DefensiveValues`) –, auf
+seine maximalen LP ohne Erhöhung umgerechnet und höchstens als ganze Maximalgesundheit abgelegt. Gelesen wird er unter der
+Minderung, die beim Einschlag noch steht (`DataCenter.AreaShareNow`): auf dem Mitglied, das sie am wenigsten schützt,
+und auf dem Wirker; eine, die vor dem Ende des Casts ausläuft, zählt nicht. Beleg: Seelenüberfluss (#37707) traf ihn am
+26.10.2026 mit 25 % unter Vollkommener Ablass, Mäßigung und Taktiker; zurückgerechnet rund 34 % (Taktiker 10 %) oder
+36 % (ab Stufe 98 15 %), und Glockenspiel blieb mit dem kleinen Wert liegen (A419). Bis dahin war der Messwert Schaden
+nach Minderung, und die Höchstwertregel federte das nur ab. Die Rückrechnung geht auf seinen Einwand zurück (A26:
+„wer den absoluten Wert hat, kann die Störfaktoren herausrechnen"); verworfen war sie, solange nur
+`GetCurrentMitigationPercent` bereitstand, eine Aufzählung von vier Status. Die Wirktextwerte der Tankbuster-Tabelle
+haben diesen Grund aufgehoben.
+
+Was bleibt, liegt in der sicheren Richtung oder korrigiert sich: Eine Barriere und eine Minderung, die kein Wirktext
+beziffert, werden nicht herausgerechnet; der Wert fällt zu klein aus, und der nächste Treffer unter weniger davon hebt
+ihn. Werte, die vor A441 unter Minderung abgelegt wurden, gelten als ungemindert, bis die nächste Landung sie anhebt.
+Eine Minderung anderer Spieler, die beim Einschlag steht, macht den erwarteten Treffer kleiner, und die Größenregel
+spart dann die eigene, solange der Rest niemanden unter die Heilschwelle drückt und unter einem großen Schild bleibt;
+eine eigene, eben gelegte Minderung ebenso. Das ist die Frage der Einstellung („whose measured damage would leave
+everybody above …"), am Treffer, wie er landet.
 
 **Eine unterschätzte Aktion wird nicht gemindert, und in einem Savage-Kampf ist das ein Wipe.** Der
-ernsteste Einwand, und durchgerechnet trägt er kaum: Der Messwert ist Schaden **nach** Minderung,
-Gruppenminderung liegt bei zehn bis zwanzig Prozent, ein Raidwide mit vierzig Prozent Potential misst
-sich also bei zweiunddreißig bis sechsunddreißig — weit über jeder Bagatelle. Eine Verwechslung
+ernsteste Einwand, und durchgerechnet trägt er kaum: Die bezifferte Minderung ist herausgerechnet (oben); was
+bleibt, ist eine Barriere oder eine unbezifferte Minderung. Selbst ungerechnet läge ein Raidwide mit vierzig Prozent
+Potential unter zehn bis zwanzig Prozent Gruppenminderung bei zweiunddreißig bis sechsunddreißig — weit über jeder
+Bagatelle. Eine Verwechslung
 verlangte eine Minderung von neunzig Prozent, die es nicht gibt. Fehlklassifikation bleibt auf einen
 schmalen Grenzbereich beschränkt, und dort sind beide Antworten vertretbar.
 
@@ -852,10 +873,10 @@ Aktion den gespeicherten Anteil gegen den beobachteten halten und den Fehler **s
 nicht anzeigen und auf eine Auswertung warten. Vorgabe des Auftraggebers: Eine Sonde, deren Auswertung
 über das Modell läuft, kostet je Messwert einen Kampf, einen Bericht und eine Runde; zulässig ist nur,
 was sich selbst nachsteuert. Das ist
-**nicht gebaut**, und der Nutzen ist nicht bloß Diagnose: Ein Anteil, der durch eine zufällig
-laufende Minderung zu niedrig gemessen wurde, bleibt zu niedrig, bis ein ungeminderter
-Treffer ihn anhebt (TODO, „Flächentabelle misst unter der stehenden Minderung"; Beleg 26.10.2026: Seelenüberfluss mit
-25 % unter drei Minderungen und einer Barriere, A419).
+**nicht gebaut**, und der Nutzen ist nicht bloß Diagnose: Ein Anteil, den eine Barriere oder eine unbezifferte
+Minderung zu niedrig hielt, bleibt zu niedrig, bis ein Treffer unter weniger davon ihn anhebt; ein Anteil, den ein
+Fehlschlag oder ein gestärkter Wirker zu hoch setzte, bleibt zu hoch. Die bezifferte Minderung rechnet die Messung seit
+A441 heraus.
 
 **Wer den Verbraucher baut, löst mehr als eine Frage.** Welche das sind und welcher Baustein wie viele
 offene Punkte zugleich schließt, steht in `08-mitigation-synergy.md`, Abschnitt „Was ein Baustein
