@@ -13543,6 +13543,31 @@ Löschungen").
   Drain fast nichts (sterbender Boss), bei Ruin IV nur in Bewegung oder am Phasenende.
 - *Prüfgrad:* statisch am Code und an der Quelle, kompiliert; im Spiel nicht beobachtet.
 
+### A459 · Ein gewählter Schlaf geht nicht hinaus: kein belegter Defekt, die Protokollzeile nennt jetzt den Grund (29.10.2026)
+
+- *Auftrag:* der TODO-Punkt aus A457, im Loop.
+- *Erhebung am Code:* `CustomRotation.TryInvoke` gibt einen bereiten GCD immer zuerst zurück
+  (`ActionHelper.CanUseGCD ? gcdAction : Ability(…)`), und `CustomRotation.Ability` hält jede Fähigkeit in den letzten
+  0,5 s vor dem GCD zurück. Eine Fähigkeit geht bei bereitem GCD nur, wenn es keinen GCD gibt (`IgnoreClipping`). Im
+  Fall aus A457 war der GCD bei der Wahl höchstens 0,8 s entfernt (Bedarf 3,2 s, davon 2,5 s Wirkzeit); dass 0,9 s
+  später Göttlicher Segen hinausging, heißt also: Der Schlaf war da nicht mehr der gewählte GCD. Gründe, die die Regel
+  selbst gibt: in Bewegung ist Schlummer nicht wirkbar (dann bleibt oft kein GCD, und RSR webt), oder ein Mitglied fällt
+  in die kritische Klasse (dann gehört der GCD der Heilung) – beides gewollt. Welcher es war, zeigt das Protokoll
+  nicht; ein ACT-Mitschnitt des Abends fehlt.
+- *Optionen:* Nullvariante; den Grund ins Protokoll; Fähigkeiten zurückhalten, solange ein knapper Schlaf gewählt ist
+  (träfe keinen belegten Fall); mehr Reserve im Bedarf (ein fester Wert, und er nähme Versuche, die gelingen).
+- *Gewählt:* den Grund ins Protokoll. Die Regel merkt sich für den gewählten Schlaf, aus welchem Grund sie ihn zuletzt
+  nicht mehr wählte (Swiftcast, das Wirken beendet, kritische Klasse, der Stopper des Jobs, zu wenig Zeit mit Rest und
+  Bedarf, nicht wirkbar – in Bewegung oder sonst –, ein anderes Wirken); ohne Grund kam ein GCD davor im Pfad. Im Kampf
+  ändert sich nichts. Konzept 08, „Protokoll" und „Grenzen und Lagen", vor dem Code.
+- *TODO:* von „Defekte" nach „Warten auf Daten"; Auflösung über den Grund in seinem nächsten Upload – „too little time"
+  kurz nach der Wahl wäre ein Defekt der Bedarfsrechnung. A457s Aussage, die Sperrzeit des oGCD habe das Fenster
+  geschlossen, ist widerrufen (C136).
+- *Falsifikation:* Kein Defekt? Nach dem Code die wahrscheinliche Lage; offen, bis der Grund im Protokoll steht. Option
+  falsch? Eine Änderung am Verhalten ohne Ursache wäre Versuch und Irrtum. Ausgeliefert, und nichts ändert sich? So
+  gewollt; der Grund kommt mit dem nächsten Abend, an dem ein Schlaf verfällt.
+- *Prüfgrad:* statisch am Code, kompiliert ohne Warnung; im Spiel nicht beobachtet.
+
 ---
 ## B · Commit-Register (Fork vs. `upstream/main`)
 
@@ -13831,3 +13856,4 @@ Die offene Arbeit dazu — Reihenfolge und Abbruchbedingung der Nachprüfung —
 | C133 | CLAUDE.md und A423 (27.10.2026): „Was davon in seinen anderen Repositories fehlt, dort als Issue weitergegeben … (seine Vorgabe, 27.10.2026 …)“ | Zu weit und falsch zugeschrieben. Sein Satz aus dem Chat von KerbalMissionDirector sagte „teilhaben lassen“; die Pflicht am Ende jedes Auftrags und der Weg über Issues waren meine Ableitung. Seit 29.10.2026 präzisiert: Issues nur für Fehler, die bei der eigenen Arbeit auffallen, erlaubt, keine Pflicht; `TODO.md` nur RSR (A444, A445) | CLAUDE.md, „Grenzen und Löschungen“; `archiv-todo.md` |
 | C134 | Konzept 09, „Die Abwehr im Pull" (A395, 26.10.2026): „… trifft der erste ohne große Minderung – die kurze liegt, die Tabelle kennt ihn ab dem zweiten" | Falsch. Die Tankbuster-Tabelle misst nur gelistete und per Marker bestätigte Tankbuster (`Watcher`, `isTankbuster`); einer, den nur das Wirken eines Gegners auf sein eigenes Ziel verrät, wird nie gelernt, und jeder weitere trifft ebenso (A449, Defekt „Ungelisteter Tankbuster ohne Marker wird nie gelernt") | Konzept 09, „Die Abwehr im Pull" |
 | C135 | A315 und Konzept 09, „H, der Horizont" (17.10.2026): „Der GCD deckt mehrfache und nachlaufende Treffer eines Tankbusters" | Falsch. Crush Helm trifft groß 6,1 s, Void Meteor 4,1 s nach dem Balken, Bitter Whirlwind 6,4 s nach dem ersten Treffer (BossModReborn ae64e33), Valfodr in seinem Mitschnitt bis 7 s nach dem Balken; der GCD deckt nur die Ankunft des ersten Treffers (A454) | Konzept 09, „H_S" und „H_I"; die Entscheidung, H nicht zu kürzen, bleibt |
+| C136 | A457 (29.10.2026): „der oGCD fiel also auf oder nach das GCD-Ende, und seine Sperrzeit schließt ein Fenster von 0,4 s" | Ein bereiter GCD geht im Dispatch immer vor, Fähigkeiten ruhen in den letzten 0,5 s vor ihm; die Fähigkeit ging, weil der Schlaf nicht mehr der gewählte GCD war (A459) | berichtigt (A459) |

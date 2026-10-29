@@ -65,6 +65,10 @@ public static class SleepInterruptWatch
 	private static readonly ConcurrentDictionary<ulong, byte> _diminishedThisFight = new();
 
 	private static Aim? _aim;
+
+	// Why the rule last did not choose the sleep for the aim it had chosen it for; null while it still chooses it.
+	private static string? _lapse;
+
 	private static Watch? _watch;
 	private static uint _pressedAction;
 	private static DateTime _pressedAt;
@@ -317,6 +321,7 @@ public static class SleepInterruptWatch
 		var actionId = enemy.CastActionId;
 		if (_aim is { } aim && aim.EnemyId == enemy.GameObjectId && aim.ActionId == actionId)
 		{
+			_lapse = null;
 			return;
 		}
 
@@ -326,7 +331,13 @@ public static class SleepInterruptWatch
 			return;
 		}
 
+		if (_aim is { Cast: false })
+		{
+			_lapse ??= $"a cast ending sooner was aimed at instead ({enemy.Name.TextValue})";
+		}
+
 		TraceNotCast(_aim);
+		_lapse = null;
 		var name = Service.GetSheet<Lumina.Excel.Sheets.Action>().GetRowOrDefault(actionId)?.Name.ExtractText() ?? "?";
 		_aim = new Aim(enemy.GameObjectId, enemy.Name.TextValue, enemy.BaseId, actionId, name, DateTime.Now.AddSeconds(remaining),
 			enemy.IsCastInterruptible);
@@ -526,6 +537,7 @@ public static class SleepInterruptWatch
 				{
 					TraceNotCast(aim);
 					_aim = null;
+					_lapse = null;
 				}
 			}
 
@@ -647,13 +659,29 @@ public static class SleepInterruptWatch
 		}
 	}
 
-	// A choice the GCD never carried out - another action came first, or the enemy's cast ran too short for the sleep
-	// by the time the GCD rolled. Without this line such a choice and a sleep that went out unanswered looked alike.
+	/// <summary>
+	/// The rule did not choose the sleep this time, for <paramref name="reason"/>: kept for the aim it had chosen it for,
+	/// so a choice that lapses says why (concept 08, "Protokoll"). <paramref name="enemy"/> null for a reason that holds
+	/// for every cast.
+	/// </summary>
+	internal static void NoteLapse(IBattleChara? enemy, string reason)
+	{
+		if (_aim is { Cast: false } aim && (enemy == null || (aim.EnemyId == enemy.GameObjectId && aim.ActionId == enemy.CastActionId)))
+		{
+			_lapse = reason;
+		}
+	}
+
+	// A choice the GCD never carried out, with the reason the rule last gave for not choosing it again. Without a reason
+	// the rule was not asked: a GCD ahead of it in the path was chosen. The choice holds only for the moment it is made -
+	// moving or a member in danger takes the GCD after it, as intended; the reason tells those apart from a window that
+	// closed (A457).
 	private static void TraceNotCast(Aim? aim)
 	{
 		if (aim is { Cast: false })
 		{
-			DefenseTrace.Line($"sleep not cast on {aim.EnemyName}: chosen for {aim.ActionName} #{aim.ActionId}, but no sleep went out for it");
+			DefenseTrace.Line($"sleep not cast on {aim.EnemyName}: chosen for {aim.ActionName} #{aim.ActionId}, but no sleep went out for it - "
+				+ (_lapse ?? "the rule was not asked again: a GCD ahead of it in the path"));
 		}
 	}
 }

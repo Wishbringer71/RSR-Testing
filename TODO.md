@@ -10,26 +10,17 @@ Betroffene: **N** Endnutzer · **R** Autoren abgeleiteter Rotationen (Namensräu
 Nach der Wirkung im Kampf: Sicherheit der Gruppe vor Schaden, gewichtet mit der Wahrscheinlichkeit, in seinem Profil
 (seine Vorgabe, 17.10.2026: „todo nach wichtigkeit abarbeiten. jeweils im loop bearbeiten").
 
-1. „Ein gewählter Schlaf geht nicht hinaus": ein Defekt; jedes Mal landet ein Wirken auf der Gruppe, das der Schlaf
-   stoppen sollte.
-2. Die gelernten Tabellen: entschieden (Konzept 13, A451); gebaut nach Regel 12 des Entwurfs, erst die Revision über
+1. Die gelernten Tabellen: entschieden (Konzept 13, A451); gebaut nach Regel 12 des Entwurfs, erst die Revision über
    einen Spielpatch (als Nächstes Stufe 2, A456), dann die Anzeige. Beide ändern den Kampf nur mittelbar, über einen
    geprüften oder berichtigten Lernwert – die Sperren unter ihnen (Schlaf) aber dauerhaft.
-3. „Mehrfach treffender Raidwide: Minderung über die ganze Serie": Eine Gruppenminderung kann vor dem letzten Treffer
+2. „Mehrfach treffender Raidwide: Minderung über die ganze Serie": Eine Gruppenminderung kann vor dem letzten Treffer
    einer Flächenserie ablaufen; die Gruppenminderungen dauern mindestens 10 s, die Wirkung ist kleiner als beim Tank.
 
 Danach die technische Schuld, soweit ihre Auflösungsbedingung erfüllt ist. Warten auf Daten: unten.
 
 ## Defekte
 
-### Ein gewählter Schlaf geht nicht hinaus · N
-Im Kampf: Gegen ein Wirken mit 3,7 s Rest wählt RSR Schlummer (Bedarf 3,2–3,4 s), aber kein Schlaf geht hinaus, und das
-Wirken landet auf der Gruppe – siebenmal an zwei Abenden („sleep not cast", A453, A457), dreimal in Klyteum. In einem Fall
-ging 0,9 s nach der Wahl Göttlicher Segen hinaus; seine Sperrzeit reicht, das Fenster von 0,4 s zu schließen. *Ort:*
-`CustomRotation_GCD.StopEnemyCast` (Bedarf `NeededStatusMargin` + Verzögerung + Landereserve, ohne die Sperrzeit eines
-oGCD), `SleepInterruptWatch.TraceNotCast` (nennt keinen Grund). *Nächster Schritt:* Loop zur Ursache – ob ein oGCD nach
-der Wahl das GCD-Fenster schließt oder ein anderer GCD vorgeht –, Konzept 08 „Ein gegnerisches Wirken stoppen".
-*Konzept:* 08.
+Keine offenen.
 
 ## Offene Arbeit
 
@@ -162,3 +153,8 @@ nebeneinander gebraucht werden.
   23.10. und 27.10.2026). Offen: ob Schlaf unterbrechbares Wirken stoppt, welche Anzahl bis zur Immunität die Regel
   lernt, welchen Rest beim Eintreffen. Auflösung: Protokolle mit Heiler oder Magier in Instanzen, danach die Bewertung,
   ob die Regel experimentell bleibt. Konzept 08, „Ein gegnerisches Wirken stoppen".
+- **Ein gewählter Schlaf geht nicht hinaus** (siebenmal an zwei Abenden, A453, A457). Ein oGCD schließt das Fenster
+  nicht (ein bereiter GCD geht vor, Fähigkeiten ruhen in den letzten 0,5 s); übrig bleiben Bewegung und ein Mitglied
+  in der kritischen Klasse, beides gewollt. Auflösung: der Grund, den die Zeile „sleep not cast …" nennt (A459); heißt er
+  „too little time" kurz nach der Wahl, ist die Bedarfsrechnung ein Defekt. Konzept 08, „Ein gegnerisches Wirken
+  stoppen".

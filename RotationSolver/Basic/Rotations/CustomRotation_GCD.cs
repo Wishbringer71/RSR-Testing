@@ -680,6 +680,7 @@ public partial class CustomRotation
 		// spent on whatever spell comes next, so a stop may take them.
 		if (StatusHelper.PlayerHasStatus(true, StatusID.Swiftcast))
 		{
+			SleepInterruptWatch.NoteLapse(null, "Swiftcast stands, kept for a raise");
 			return false;
 		}
 
@@ -699,6 +700,7 @@ public partial class CustomRotation
 
 		if (casts.Count == 0)
 		{
+			SleepInterruptWatch.NoteLapse(null, "the cast ended or was stopped");
 			return false;
 		}
 
@@ -711,6 +713,7 @@ public partial class CustomRotation
 			{
 				if (member != null && !member.IsDead && member.IsInCriticalClass())
 				{
+					SleepInterruptWatch.NoteLapse(null, "a party member in the critical class takes the GCD");
 					return false;
 				}
 			}
@@ -725,12 +728,16 @@ public partial class CustomRotation
 		{
 			if (StopEnemyCastByJob(enemy, left, lag, out act))
 			{
+				SleepInterruptWatch.NoteLapse(null, $"the job's own stopper went instead, at {enemy.Name.TextValue} ({act?.Name})");
 				return true;
 			}
 
 			if (!sleep.EnoughLevel || left <= needed || SleepInterruptWatch.IsUnstoppable(enemy.CastActionId)
 				|| !SleepInterruptWatch.CanStillBeSlept(enemy) || AreaReachesNewMob(enemy, sleep.Info.EffectRange))
 			{
+				SleepInterruptWatch.NoteLapse(enemy, left <= needed
+					? $"too little time: {left:F1} s left, {needed:F1} s needed"
+					: "the cast or the enemy is no longer one to sleep");
 				continue;
 			}
 
@@ -743,6 +750,7 @@ public partial class CustomRotation
 			{
 				if (!sleep.CanUse(out act, skipAoeCheck: true, skipTTKCheck: true))
 				{
+					SleepInterruptWatch.NoteLapse(enemy, DataCenter.IsMoving ? $"{sleep.Name} not castable: moving" : $"{sleep.Name} not castable now");
 					continue;
 				}
 			}
