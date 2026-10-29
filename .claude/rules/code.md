@@ -13,7 +13,7 @@ Gelten in jeder Stufe. Eine Aussage, die eine davon verletzt, ist unbelegt.
 
 **Gesamtheitlichkeit**
 - Vor jeder Aussage über eine Stelle ihren Wirkungsbereich erheben: Aufrufer, Aufgerufene, Datenflüsse, Schalter, die den Pfad öffnen oder schließen, alle Stellen desselben Musters. Verweise auf ein Symbol mit `.github/scripts/lsp_query.py refs` (Language Server: trennt Überladungen und gleichnamige Member), Muster mit der Textsuche.
-- Betroffene benennen: Endnutzer, Autoren abgeleiteter Rotationen (`RotationSolver.Basic` als Paket), Upstream-Pflege.
+- Betroffene benennen: Endnutzer, Autoren abgeleiteter Rotationen (öffentliche Schnittstelle der Namensräume `RotationSolver.Basic`), Upstream-Pflege.
 - Werte, die über eine Schnittstelle kommen, an ihrer Quelle prüfen, samt Typzuordnung.
 - Nur Maße verwenden, die den Wirkungsbereich selbst messen, keine Surrogate; die Prüftiefe folgt Wirkungsbereich und Fehlerklasse, nicht der Zeilenzahl.
 - Ob ein Pfad genommen wird, messen, nicht annehmen — ein Pfad, der nie läuft, ist keiner. Ein Prüfer, der nur fragt, ob eine Zeile irgendwo steht, prüft das nicht (Beispiel: Ladezeile in `Init()`, gerufen wird `InitAsync`).

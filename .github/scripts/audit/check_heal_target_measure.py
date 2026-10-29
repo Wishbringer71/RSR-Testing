@@ -25,7 +25,7 @@ ROOT = Path(__file__).resolve().parents[3]
 RESX = ROOT / "RotationSolver.SourceGenerators" / "Properties" / "ActionId.resx"
 ROTATION_DIRS = [
     ROOT / "RotationSolver" / "RebornRotations",
-    ROOT / "RotationSolver.Basic" / "Rotations",
+    ROOT / "RotationSolver" / "Basic" / "Rotations",
 ]
 
 # "...when HP falls below 75%...", "...while HP is below 50%..." - a share the game itself applies.

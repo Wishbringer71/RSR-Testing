@@ -8,7 +8,7 @@ failure mode scan3.py through scan8.py already carry self-tests for.
 """
 import os, re, sys, collections
 
-ROOTS = ['RotationSolver', 'RotationSolver.Basic']
+ROOTS = ['RotationSolver']
 
 def strip(src):
     src = re.sub(r'/\*.*?\*/', '', src, flags=re.S)

@@ -38,7 +38,7 @@ ROOT = os.path.abspath(os.path.join(HERE, '..', '..', '..'))
 ROTATION_ROOTS = [
     'RotationSolver/RebornRotations',
     'RotationSolver/ExtraRotations',
-    'RotationSolver.Basic/Rotations',
+    'RotationSolver/Basic/Rotations',
 ]
 
 # `if (SomeActionPvE.CanUse(out act))` and nothing else on the line.

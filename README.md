@@ -16,17 +16,19 @@ no plugin repository manifest of its own, so the install instructions below add 
 `InternalName: RotationSolver` and the upstream `RepoUrl` included — so a fork build presents
 itself to Dalamud under the same plugin identity as upstream.
 
-**`RotationSolver.Basic`** is no longer built as a NuGet package: upstream made the project
-`IsPackable=false` in its UI rework, so the releases carry no `.nupkg`. A derived rotation
-compiles against `RotationSolver.Basic.dll` from the plugin's `latest.zip`. Changes to its public
-surface are listed in [CHANGELOG.md](CHANGELOG.md), because the version number cannot express
-them — its numeric part follows the upstream release, not this fork's own compatibility.
+**`RotationSolver.Basic`** is no project of its own any more: since upstream 7.5.7.11 its sources live
+under `RotationSolver/Basic` in the plugin, with their namespaces unchanged, and the releases carry
+neither a `.nupkg` nor a `RotationSolver.Basic.dll`. The plugin loads rotations from its own assembly
+only, so a rotation is built as part of this solution. Changes to the public surface of the
+`RotationSolver.Basic` namespaces are listed in [CHANGELOG.md](CHANGELOG.md), because the version
+number cannot express them — its numeric part follows the upstream release, not this fork's own
+compatibility.
 
 **Where the fork documents itself**
 
 | | |
 |---|---|
-| [`CHANGELOG.md`](CHANGELOG.md) | changes a consumer of `RotationSolver.Basic` has to act on |
+| [`CHANGELOG.md`](CHANGELOG.md) | changes an author building on the `RotationSolver.Basic` namespaces has to act on |
 | [`docs/rotation-flow/`](docs/rotation-flow) | design documents for the areas this fork changes |
 | [`AUDIT_LOG.md`](AUDIT_LOG.md) | archive of completed reviews, including the claims that were withdrawn |
 | [`TODO.md`](TODO.md) | open work only, separated into defects, technical debt and planned work |

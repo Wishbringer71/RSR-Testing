@@ -44,7 +44,7 @@ import re
 import subprocess
 import sys
 
-ROOTS = ('RotationSolver.Basic/', 'RotationSolver/')
+ROOTS = ('RotationSolver/Basic/', 'RotationSolver/')
 RESX = 'RotationSolver.SourceGenerators/Properties/Status.resx'
 
 SEE = re.compile(r'&lt;strong&gt;[^&]+&lt;/strong&gt;&lt;/see&gt;\s*(?P<pol>[↑↓])')

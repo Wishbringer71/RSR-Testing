@@ -25,20 +25,20 @@ import sys
 from pathlib import Path
 
 ROOT = Path(__file__).resolve().parents[3]
-SCAN = [ROOT / "RotationSolver", ROOT / "RotationSolver.Basic"]
+SCAN = [ROOT / "RotationSolver"]
 
 NEGATED = re.compile(r"!\s*[\w?.()\[\]]*?\b(?:Player)?(?:CanBeHealed|NoNeedHealingInvuln|IsUnprotectedForHealing)\(\)")
 
 # Negated reads that mean "protected" on purpose: file, a fragment of the line, the reason.
 ACCEPTED = [
-    ("RotationSolver.Basic/DataCenter.cs", "unprotectedOnly && !member.IsUnprotectedForHealing()",
+    ("RotationSolver/Basic/DataCenter.cs", "unprotectedOnly && !member.IsUnprotectedForHealing()",
      "skips the protected when only the unprotected are asked for"),
-    ("RotationSolver.Basic/DataCenter.cs", "member.MaxHp == 0 || !member.IsUnprotectedForHealing()",
+    ("RotationSolver/Basic/DataCenter.cs", "member.MaxHp == 0 || !member.IsUnprotectedForHealing()",
      "AnnouncedHitKills: an invulnerable member does not die of the raidwide, so it is not counted; Living Dead "
      "with its hold off counts, since its fall to zero is Walking Dead (A306)"),
-    ("RotationSolver.Basic/Rotations/CustomRotation_OtherInfo.cs", "player == null || !player.CanBeHealed()",
+    ("RotationSolver/Basic/Rotations/CustomRotation_OtherInfo.cs", "player == null || !player.CanBeHealed()",
      "TankbusterOnMeWithin: no own cooldown for a tankbuster while an invulnerability covers the player"),
-    ("RotationSolver.Basic/Helpers/TankSwapWatch.cs", "asked ? !holder.CanBeHealed()",
+    ("RotationSolver/Basic/Helpers/TankSwapWatch.cs", "asked ? !holder.CanBeHealed()",
      "TakeOverHeld: the enemy is not taken from a co-tank an invulnerability protects (A321)"),
 ]
 
@@ -77,11 +77,11 @@ def self_test():
         "a negated read of the heal chain's player predicate must be caught"
     assert not findings_in("RotationSolver/RebornRotations/Tank/WAR_Reborn.cs", plain), \
         "the plain read means unprotected and is accepted"
-    assert not findings_in("RotationSolver.Basic/Actions/ActionTargetInfo.cs", comment), \
+    assert not findings_in("RotationSolver/Basic/Actions/ActionTargetInfo.cs", comment), \
         "a comment is not code"
-    assert not findings_in("RotationSolver.Basic/DataCenter.cs", accepted), \
+    assert not findings_in("RotationSolver/Basic/DataCenter.cs", accepted), \
         "a listed negated read is accepted"
-    assert findings_in("RotationSolver.Basic/Helpers/ObjectHelper.cs", accepted), \
+    assert findings_in("RotationSolver/Basic/Helpers/ObjectHelper.cs", accepted), \
         "a listed line is accepted only in its own file"
     print("self-test ok: negated reads are caught, the player variant, the old name and the heal chain's predicate too; "
           "the plain read, a comment "

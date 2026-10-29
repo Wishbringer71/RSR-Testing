@@ -13,9 +13,6 @@ internal static partial class TargetUpdater
 		_raisePartyTargets = new(() => Service.Config.RaiseDelay2),
 		_raiseAllTargets = new(() => Service.Config.RaiseDelay2),
 		_dispelPartyTargets = new(() => Service.Config.EsunaDelay);
-
-
-	// Scratch lists reused every update; ObjectListDelay copies what it needs.
 	// "Interrupt delay range" and "Provoke delay range": the delay their
 	// texts promise, from the moment a target appears until it is chosen. Wired here until upstream's refactor of the
 	// target update dropped it (527414d60, 2024) and left both settings without a reader (A338). Not readonly: the
@@ -26,7 +23,6 @@ internal static partial class TargetUpdater
 	private static readonly List<IBattleChara> _raiseCandidates = [];
 	private static readonly List<IBattleChara> _dispelCandidates = [];
 
-	// Other players outside duties, only gathered for RaiseType.AllOutOfDuty.
 	private static List<IBattleChara> _outOfDutyPlayers = [];
 
 	private static long _lastUpdateTimeToKill;
@@ -37,7 +33,6 @@ internal static partial class TargetUpdater
 		DataCenter.TargetsByRange.Clear();
 		DataCenter.AllTargets = GetAllTargets();
 
-		// Early-out: avoid downstream work and stale data when there are no potential targets
 		if (DataCenter.AllTargets == null || DataCenter.AllTargets.Count == 0)
 		{
 			DataCenter.PartyMembers.Clear();
@@ -218,7 +213,6 @@ internal static partial class TargetUpdater
 	{
 		var allTargets = DataCenter.AllTargets;
 
-		// Pre-size lists to reduce reallocations
 		List<IBattleChara> partyMembers = new(capacity: allTargets.Count);
 		List<IBattleChara> allianceMembers = new(capacity: allTargets.Count);
 		List<IBattleChara> hostileTargets = new(capacity: allTargets.Count);
@@ -227,21 +221,18 @@ internal static partial class TargetUpdater
 		var raisetype = Service.Config.RaiseType;
 		var ignoreInvincibility = DataCenter.IsPvP && Service.Config.IgnorePvPInvincibility;
 
-		// Compute player eye position once
 		var playerEye = Player.Object?.Position;
 		if (playerEye != null)
 		{
 			playerEye = new Vector3(playerEye.Value.X, playerEye.Value.Y + 2.0f, playerEye.Value.Z);
 		}
 
-		// GetAllTargets already filtered out untargetable objects and pets.
 		foreach (var member in allTargets)
 		{
 			try
 			{
 				if (member.IsEnemy())
 				{
-					// Only proceed if playerEye is available
 					if (playerEye == null)
 					{
 						continue;
@@ -249,7 +240,6 @@ internal static partial class TargetUpdater
 
 					if (member.DistanceToPlayer() < 48 && member.CanSeeFrom(playerEye.Value))
 					{
-						// Valid hostile target
 						if (!ignoreInvincibility)
 						{
 							var hasInvincible = false;
@@ -271,7 +261,7 @@ internal static partial class TargetUpdater
 
 							if (hasInvincible)
 							{
-								continue; // Invincible enemy doesn't get added to any lists
+								continue;
 							}
 						}
 						hostileTargets.Add(member);
@@ -279,7 +269,6 @@ internal static partial class TargetUpdater
 				}
 				else if (member.IsParty())
 				{
-					// Party members are only added to the party list
 					if (member.Character() != null)
 					{
 						partyMembers.Add(member);
@@ -443,7 +432,6 @@ internal static partial class TargetUpdater
 				}
 			}
 
-			// Alliance members never include party members (UpdateLists keeps them disjoint).
 			if (DataCenter.AllianceMembers != null)
 			{
 				if (raisetype == RaiseType.PartyAndAllianceSupports || raisetype == RaiseType.PartyAndAllianceHealers)
@@ -457,7 +445,7 @@ internal static partial class TargetUpdater
 								validRaiseTargets.Add(member);
 							}
 						}
-						else // PartyAndAllianceSupports
+						else
 						{
 							if (member.IsJobCategory(JobRole.Healer) || member.IsJobCategory(JobRole.Tank))
 							{
@@ -483,7 +471,6 @@ internal static partial class TargetUpdater
 				}
 			}
 
-			// Apply raise delay without allocating a new list per frame
 			if (raisetype == RaiseType.PartyOnly)
 			{
 				_raisePartyTargets.Delay(validRaiseTargets);
@@ -585,7 +572,6 @@ internal static partial class TargetUpdater
 			weakenPeople.Clear();
 			AddDispelTargets(DataCenter.PartyMembers, weakenPeople);
 
-			// Apply dispel delay to the candidate list
 			_dispelPartyTargets.Delay(weakenPeople);
 
 			const AutoStatus busyStatus = AutoStatus.HealAreaAbility | AutoStatus.HealAreaSpell
@@ -593,7 +579,6 @@ internal static partial class TargetUpdater
 				| AutoStatus.DefenseArea | AutoStatus.DefenseSingle;
 			var canDispelNonDangerous = (DataCenter.MergedStatus & busyStatus) == 0;
 
-			// Single-pass selection over the delayed set to avoid extra list allocations
 			IBattleChara? closestDangerous = null;
 			var closestDangerousDist = float.MaxValue;
 			IBattleChara? closestNonDangerous = null;
@@ -669,7 +654,7 @@ internal static partial class TargetUpdater
 						if (status != null && status.CanDispel() && leftToOthers-- <= 0)
 						{
 							targetList.Add(member);
-							break; // Add only once per member if any status can be dispelled
+							break;
 						}
 					}
 				}
@@ -775,7 +760,6 @@ internal static partial class TargetUpdater
 				continue;
 			}
 
-			// Skip mobs whose weakness is already manually curated in StatusHelper.
 			if (StatusHelper.HasKnownOccultWeakness(hostile.NameId))
 			{
 				continue;

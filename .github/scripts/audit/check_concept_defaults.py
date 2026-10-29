@@ -30,7 +30,7 @@ CONCEPT_DIR = Path('docs/rotation-flow')
 EXTRA_DOCS = (Path('docs/fork-changes-in-play.md'),
               Path('docs/fork-changes-since-last-release.md'))
 
-SOURCE_DIRS = (Path('RotationSolver.Basic'), Path('RotationSolver'))
+SOURCE_DIRS = (Path('RotationSolver'),)
 
 # `public bool Name { get; set; } = true;` - the form both the configuration class and every
 # rotation file use for a switchable setting.

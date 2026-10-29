@@ -23,6 +23,14 @@ are not reconstructed here.
 
 ## Unreleased
 
+### Structure of RotationSolver.Basic: folded into RotationSolver
+
+From upstream 7.5.7.11: the project `RotationSolver.Basic` is gone; its sources live under `RotationSolver/Basic` in the
+plugin project, with their namespaces unchanged, and `latest.zip` no longer carries `RotationSolver.Basic.dll`, its
+`.pdb` or its `.xml`. A rotation is built as part of the solution, as the plugin loads rotations from its own assembly
+only. The public surface is the same except `IconSet.Init()`, which is removed together with the SVG conversion and the
+`Svg` dependency; `PhantomRotation` is abstract.
+
 ## 7.5.7.10+wsh1
 
 ### Dependency of RotationSolver.Basic: RebornMaterial 7.5.7.2

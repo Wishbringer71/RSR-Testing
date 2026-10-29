@@ -25,7 +25,7 @@ import sys
 from pathlib import Path
 
 DOCS = (Path('docs/fork-changes-in-play.md'), Path('docs/fork-changes-since-last-release.md'))
-SOURCE_DIRS = (Path('RotationSolver.Basic'), Path('RotationSolver'))
+SOURCE_DIRS = (Path('RotationSolver'),)
 
 LABEL = re.compile(r'(?:\bUI\(\s*|\bName\s*=\s*|\bDescription\s*=\s*|\[Description\(\s*)"(?P<label>[^"]{4,})"')
 # Backticks stay on one line; straight quotes may wrap, as the documents break at a fixed width.

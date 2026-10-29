@@ -444,7 +444,7 @@ folgenlos.
 
 **Randbedingungen.** Der Opener bleibt außen vor: Im Countdown gibt es weder Tankbuster noch Pull,
 eine engere Stufe würde dort nur Dark Arts für die Eröffnung kosten. Rotationskonfigurationen
-speichern Enums als **Namen**, nicht als Ordinalzahlen (`RotationConfigBase.cs:208`, `Enum.Parse`) — die
+speichern Enums als **Namen**, nicht als Ordinalzahlen (`RotationConfigBase.cs:185`, `Enum.Parse`) — die
 Reihenfolge der Stufen ist frei, ihre Bezeichner sind Vertrag. Den MP-Haushalt führt
 `CheckDarkSide`: Edge gibt MP oberhalb von 8500 frei; im Burst und gegen das Auslaufen von Darkside nur, solange danach
 die Kosten von The Blackest Night übrig bleiben („Keep at least 3000 MP", beide Kosten aus dem Spiel, A406), mit Dark

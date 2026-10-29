@@ -32,7 +32,7 @@ import re
 import subprocess
 import sys
 
-ROOTS = ('RotationSolver.Basic/', 'RotationSolver/')
+ROOTS = ('RotationSolver/Basic/', 'RotationSolver/')
 
 MODIFIERS = (r'(?:\s+(?:static|virtual|abstract|override|sealed|partial|new|unsafe|extern|async))*')
 

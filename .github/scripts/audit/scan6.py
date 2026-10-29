@@ -37,8 +37,8 @@ TYPE_BODY = re.compile(
     r'\b(?:class|struct|record)\s+(\w+)'
 )
 
-CONFIG_FILES = ('RotationSolver.Basic/Configuration/Configs.cs',
-                'RotationSolver.Basic/Configuration/OtherConfiguration.cs')
+CONFIG_FILES = ('RotationSolver/Basic/Configuration/Configs.cs',
+                'RotationSolver/Basic/Configuration/OtherConfiguration.cs')
 
 
 def parse_enums(text):

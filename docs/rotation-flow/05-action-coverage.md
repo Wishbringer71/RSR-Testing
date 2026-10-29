@@ -21,7 +21,7 @@ andere Richtung:
 
 | Regel | Warum | Ohne sie |
 |---|---|---|
-| Verwendung nur in `RebornRotations` und `ExtraRotations` zählen | In `RotationSolver.Basic/Rotations` steht die **Deklaration**, nicht die Verwendung | `IcarusPvE` gilt als benutzt, obwohl keine Rotation es ruft |
+| Verwendung nur in `RebornRotations` und `ExtraRotations` zählen | In `RotationSolver/Basic/Rotations` steht die **Deklaration**, nicht die Verwendung | `IcarusPvE` gilt als benutzt, obwohl keine Rotation es ruft |
 | Bewegungserkennung über den Wortstamm, nicht das Wort | Die Aktionstexte schreiben „Rush**es** to a target" | SAM Gyoten, PLD Intervene, DRG Elusive Jump fehlen |
 | Dispatch-Overrides auf **beiden** Ebenen suchen | Die handgeschriebenen Basic-Partials überschreiben teils selbst | SGE erscheint als Lücke, obwohl Icarus längst verdrahtet ist |
 
@@ -86,7 +86,7 @@ Dispatch-Overrides liegen in **zwei** Schichten, ohne erkennbare Regel:
 
 | Ebene | Beispiele |
 |---|---|
-| `RotationSolver.Basic/Rotations/Basic/{Job}Rotation.cs` (handgeschriebene Hälfte) | NIN `MoveForwardAbility`, SGE `MoveForwardAbility`, WAR `MoveForwardAbility`/`MoveForwardGCD`/`EmergencyAbility`, DRK/GNB `EmergencyAbility` (Invuln) |
+| `RotationSolver/Basic/Rotations/Basic/{Job}Rotation.cs` (handgeschriebene Hälfte) | NIN `MoveForwardAbility`, SGE `MoveForwardAbility`, WAR `MoveForwardAbility`/`MoveForwardGCD`/`EmergencyAbility`, DRK/GNB `EmergencyAbility` (Invuln) |
 | `RotationSolver/RebornRotations/…/{Job}_Reborn.cs` | alle übrigen — SAM, RPR, MNK, VPR, DRG, PLD, DRK, DNC, RDM, PCT, BLM |
 
 Konkrete Folge, nicht nur Kosmetik:

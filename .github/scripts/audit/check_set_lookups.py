@@ -28,8 +28,8 @@ from pathlib import Path
 # Both files that ask these lists whether they hold an id. The first survey stopped at DataCenter and
 # missed the site in Watcher, which is why this is a list rather than a single path.
 TARGETS = [
-    Path('RotationSolver.Basic/DataCenter.cs'),
-    Path('RotationSolver.Basic/Helpers/StatusHelper.cs'),
+    Path('RotationSolver/Basic/DataCenter.cs'),
+    Path('RotationSolver/Basic/Helpers/StatusHelper.cs'),
     Path('RotationSolver/Watcher.cs'),
 ]
 

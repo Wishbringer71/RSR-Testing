@@ -29,8 +29,8 @@ import pathlib
 import re
 import sys
 
-CONFIG = 'RotationSolver.Basic/Configuration/Configs.cs'
-ROOTS = ('RotationSolver.Basic', 'RotationSolver', 'RotationSolver.SourceGenerators')
+CONFIG = 'RotationSolver/Basic/Configuration/Configs.cs'
+ROOTS = ('RotationSolver', 'RotationSolver.SourceGenerators')
 SKIP_DIRS = ('/obj/', '/bin/')
 
 PROP_RE = re.compile(

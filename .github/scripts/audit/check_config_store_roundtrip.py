@@ -29,7 +29,7 @@ import re
 import sys
 from pathlib import Path
 
-TARGET = Path('RotationSolver.Basic/Configuration/OtherConfiguration.cs')
+TARGET = Path('RotationSolver/Basic/Configuration/OtherConfiguration.cs')
 LIST_WINDOW = Path('RotationSolver/UI/MainWindow/MainWindow_List.cs')
 
 # The one array, from its declaration to the closing bracket.

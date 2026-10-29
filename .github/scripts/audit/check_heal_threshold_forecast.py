@@ -29,7 +29,7 @@ from pathlib import Path
 ROOT = Path(__file__).resolve().parents[3]
 SCAN = [
     ROOT / "RotationSolver" / "RebornRotations",
-    ROOT / "RotationSolver.Basic" / "Rotations",
+    ROOT / "RotationSolver" / "Basic" / "Rotations",
 ]
 SKIP_PARTS = {"PVPRotations", "Duty", "ExtraRotations"}
 

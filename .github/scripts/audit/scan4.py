@@ -50,7 +50,7 @@ assert pr == 3, f'pairs={pr}'
 assert len(res) == 2, res
 print('self-test ok: %d pairs, %d defects detected\n' % (pr, len(res)))
 
-files = ['RotationSolver.Basic/Configuration/Configs.cs']
+files = ['RotationSolver/Basic/Configuration/Configs.cs']
 total_pairs = 0
 for path in files:
     lines = open(path, encoding='utf-8').read().split('\n')
