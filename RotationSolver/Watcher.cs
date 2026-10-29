@@ -38,6 +38,7 @@ public static class Watcher
 			+ $" | heal over time against damage over time {config.HotAgainstDot},"
 			+ $" damage over time learned in {OtherConfiguration.DotOnParty.Count} area(s) ({OtherConfiguration.DotStoreState})"
 			+ $" | casts laying a status that damages every action {ActionPenaltyWatch.LearnedCount} ({OtherConfiguration.ActionPenaltyStoreState})"
+			+ $" | area series with a learned span {OtherConfiguration.AreaSeriesSpan.Count} ({OtherConfiguration.AreaSeriesSpanState})"
 			+ $" | area table revisions: {OtherConfiguration.AreaRevisionState}"
 			+ $" | tankbuster table revisions: {OtherConfiguration.TankbusterRevisionState}");
 
@@ -175,6 +176,21 @@ public static class Watcher
 		}
 	}
 
+	// How long a listed area series hits after its first landing, the longest seen: DataCenter.AreaShareNow counts only the
+	// mitigation that stands until its last hit (A460). Stored alongside the share, under the same conditions.
+	private static void RecordAreaSeriesSpan(uint actionId, float span)
+	{
+		if (span <= 0f || (OtherConfiguration.AreaSeriesSpan.TryGetValue(actionId, out var known) && known >= span))
+		{
+			return;
+		}
+
+		OtherConfiguration.AreaSeriesSpan[actionId] = span;
+		_ = OtherConfiguration.SaveAreaSeriesSpan();
+		var name = Service.GetSheet<Lumina.Excel.Sheets.Action>().GetRowOrDefault(actionId)?.Name.ExtractText() ?? "?";
+		DefenseTrace.Line($"area series {name} #{actionId}: hits {span:F1} s after its first landing - stored");
+	}
+
 	// A clean area reading: no damage up on the caster and no vulnerability on a member measured - the mitigation
 	// TryAreaShare divides out knows neither, and both raise the figure (concept 13, rule 2). A vulnerability the hit
 	// itself lays counts where it already stands when the effect arrives: one clean reading too few, which only holds a
@@ -191,24 +207,27 @@ public static class Watcher
 	// stops at his whole health, the most the table holds (IsWithinWholeHealth).
 	private sealed class AreaSeries
 	{
+		public DateTime First;
 		public DateTime Last;
 		public readonly Dictionary<ulong, float> Sums = [];
 	}
 
 	private static readonly Dictionary<uint, AreaSeries> _areaSeries = [];
 
-	private static float SeriesShare(uint listed, Dictionary<ulong, float> shares)
+	// The span is the time from the series' first landing to this one: how long after its first hit the series still hits.
+	private static float SeriesShare(uint listed, Dictionary<ulong, float> shares, out float span)
 	{
 		var now = DateTime.Now;
 		var castSeconds = Service.GetSheet<Lumina.Excel.Sheets.Action>().TryGetRow(listed, out var row)
 			? row.CastSeconds() : 0f;
 		if (!_areaSeries.TryGetValue(listed, out var series) || (now - series.Last).TotalSeconds > castSeconds)
 		{
-			series = new AreaSeries();
+			series = new AreaSeries { First = now };
 			_areaSeries[listed] = series;
 		}
 
 		series.Last = now;
+		span = (float)(series.Last - series.First).TotalSeconds;
 		var highest = 0f;
 		foreach (var (member, share) in shares)
 		{
@@ -529,7 +548,7 @@ public static class Watcher
 			}
 		}
 
-		var highestShare = SeriesShare(listed, shares);
+		var highestShare = SeriesShare(listed, shares, out var seriesSpan);
 
 		// Above the level the content syncs to, the reading is smaller than in sync and would rate the action too small for
 		// every synced run after it (A452).
@@ -547,6 +566,7 @@ public static class Watcher
 		if (highestShare > 0f)
 		{
 			OtherConfiguration.MeasureAreaShare(listed, highestShare, IsCleanAreaReading(set.Source as IBattleChara, vulnerableMeasured));
+			RecordAreaSeriesSpan(listed, seriesSpan);
 			MarkMeasuredUnmitigated(listed);
 		}
 
@@ -994,8 +1014,9 @@ public static class Watcher
 					}
 
 					// A listed action is rated by its series (SeriesShare); an unlisted one is not measured at all.
+					var seriesSpan = 0f;
 					var highestShare = OtherConfiguration.HostileCastingArea.Contains(set.Action!.Value.RowId)
-						? SeriesShare(set.Action!.Value.RowId, shares) : 0f;
+						? SeriesShare(set.Action!.Value.RowId, shares, out seriesSpan) : 0f;
 
 					// Recording how hard it hits. DataCenter.AreaCastIsWorthMitigating reads this, and
 					// the store is what carries a reading past the end of a session: without it every
@@ -1098,6 +1119,7 @@ public static class Watcher
 						// highest for the readers, as written here before (concept 13, "Stufe 1").
 						var id = set.Action!.Value.RowId;
 						OtherConfiguration.MeasureAreaShare(id, highestShare, IsCleanAreaReading(battle, vulnerableMeasured));
+						RecordAreaSeriesSpan(id, seriesSpan);
 						MarkMeasuredUnmitigated(id);
 					}
 					else if (highestShare == 0f && !aboveContentLevel && beyondHealth == 0 && zeroWithoutBarrier > 1 && zeroWithoutBarrier == damageEntries

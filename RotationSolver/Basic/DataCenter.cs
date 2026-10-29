@@ -4122,6 +4122,10 @@ internal static class DataCenter
 	/// action) is the hit as it arrived, often under mitigation; taking the mitigation standing now off it again read a
 	/// raidwide stored at 25 % as 22.5 % under another player's 10 %, below the size of a large barrier, and the size rule
 	/// could skip the mitigation it gave before. Such a reading is read as before until the action is measured (A446).</para>
+	/// <para>A series of hits (<see cref="OtherConfiguration.AreaSeriesSpan"/>) is read under the mitigation that still
+	/// stands at its last hit, not at the end of the bar: Bodyweight Exorcism's four towers land over 9 s, and a party
+	/// mitigation that ended before the third had counted for all four, so the size rule could leave its own out (A460).
+	/// One that covers only the first hits counts for none - the safe side.</para>
 	/// </remarks>
 	internal static bool AreaShareNow(uint actionId, IBattleChara? caster, out float share)
 	{
@@ -4137,7 +4141,9 @@ internal static class DataCenter
 			return true;
 		}
 
-		var horizon = caster != null && caster.IsCasting ? Math.Max(0f, caster.TotalCastTime - caster.CurrentCastTime) : 0f;
+		// A series hits for its learned span after the cast lands: only what stands until its last hit counts (A460).
+		var horizon = (caster != null && caster.IsCasting ? Math.Max(0f, caster.TotalCastTime - caster.CurrentCastTime) : 0f)
+			+ OtherConfiguration.AreaSeriesSpan.GetValueOrDefault(actionId);
 		var through = 0f;
 		var party = PartyMembers;
 		for (var i = 0; i < party.Count; i++)

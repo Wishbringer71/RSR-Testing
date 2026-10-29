@@ -145,6 +145,14 @@ internal partial class OtherConfiguration
 	internal static Dictionary<uint, int> AreaPotentialUnmitigated = [];
 
 	/// <summary>
+	/// How long each listed area action's series hits after its first landing, in seconds - the longest seen, keyed by
+	/// action id (concept 13, "Eine Serie zählt als ein Angriff", A460). <see cref="DataCenter.AreaShareNow"/> counts only
+	/// the mitigation that stands until the series' last hit. Learned in play on the game thread with the area table,
+	/// stored like <see cref="HitSeriesOnPlayer"/>: merged with the file by the higher span. No button discards it.
+	/// </summary>
+	internal static Dictionary<uint, float> AreaSeriesSpan = [];
+
+	/// <summary>
 	/// What each tankbuster does to the one it hits, scaled back to unmitigated, as a share of that
 	/// member's maximum HP - keyed by action id. Learned in play from every tankbuster seen on any
 	/// player, not only on the user (concept 13, "Die Tankbuster-Tabelle").
@@ -678,6 +686,11 @@ internal partial class OtherConfiguration
 		new LearnedFile<int>(nameof(AreaPotentialUnmitigated),
 			() => new Dictionary<uint, int>(AreaPotentialUnmitigated), v => AreaPotentialUnmitigated = v,
 			Math.Max, state => AreaPotentialUnmitigatedState = state, "rated action(s) measured unmitigated"),
+		// Written on the game thread with the area table, and copied there.
+		new LearnedFile<float>(nameof(AreaSeriesSpan),
+			() => new Dictionary<uint, float>(AreaSeriesSpan), v => AreaSeriesSpan = v,
+			Math.Max, state => AreaSeriesSpanState = state, "area series with a learned span",
+			span => float.IsFinite(span) && span >= 0f),
 		new LearnedFile<TankbusterReading>(nameof(TankbusterPotential), CopyTankbusterPotential,
 			v => { lock (TankbusterPotentialGate) { TankbusterPotential = v; } },
 			TankbusterReading.Higher, state => TankbusterStoreState = state, "rated tankbuster(s)", TankbusterReading.IsValid,
@@ -872,6 +885,11 @@ internal partial class OtherConfiguration
 	public static Task SaveHostileCastingArea() => SaveList(nameof(HostileCastingArea));
 
 	internal static Task SaveAreaPotentialUnmitigated() => SaveList(nameof(AreaPotentialUnmitigated));
+
+	internal static Task SaveAreaSeriesSpan() => SaveList(nameof(AreaSeriesSpan));
+
+	/// <summary>What the last save and load of <see cref="AreaSeriesSpan"/> did, in words.</summary>
+	internal static string AreaSeriesSpanState { get; private set; } = "not loaded yet";
 
 	/// <summary>What the last save and load of <see cref="AreaPotentialUnmitigated"/> did, in words.</summary>
 	internal static string AreaPotentialUnmitigatedState { get; private set; } = "not loaded yet";
