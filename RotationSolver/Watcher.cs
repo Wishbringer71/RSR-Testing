@@ -192,7 +192,7 @@ public static class Watcher
 	{
 		var now = DateTime.Now;
 		var castSeconds = Service.GetSheet<Lumina.Excel.Sheets.Action>().TryGetRow(listed, out var row)
-			? row.Cast100ms / CastUnitsPerSecond : 0f;
+			? row.CastSeconds() : 0f;
 		if (!_areaSeries.TryGetValue(listed, out var series) || (now - series.Last).TotalSeconds > castSeconds)
 		{
 			series = new AreaSeries();
@@ -211,8 +211,10 @@ public static class Watcher
 		return highest;
 	}
 
-	// The Action sheet states cast times in tenths of a second (Cast100ms).
-	private const float CastUnitsPerSecond = 10f;
+	// The targets of one effect set the tankbuster table has taken, so one named twice counts once (A454); and the
+	// statuses passed for a member who is not a tank, whom the table does not store.
+	private static readonly HashSet<ulong> _tankbusterTargets = [];
+	private static readonly List<uint> _noStatuses = [];
 
 	private static Dictionary<ulong, uint> AmountsByTarget(ActionEffectSet set, ActionEffectType type)
 	{
@@ -288,24 +290,26 @@ public static class Watcher
 				|| (source.IsEnemySideFigure() && (!source.IsTargetable || DamagedPartyMembers(set) > 0)));
 	}
 
-	// How many party members this set reached, for the trace line of an area landing: "missed you" with
-	// party members reached says he stood out of it; with none, the set carried no hit at all and the
-	// damage came another way (trace of 01.10.2026, A242).
-	// Every target the action reached, party or not.
+	// How many targets the action reached, party or not, each once.
 	private static int ReachedTargets(ActionEffectSet set)
 	{
-		var count = 0;
+		_reachedTargets.Clear();
 		foreach (var effect in set.TargetEffects)
 		{
 			if (ReachedTarget(effect))
 			{
-				count++;
+				_ = _reachedTargets.Add(effect.TargetID);
 			}
 		}
 
-		return count;
+		return _reachedTargets.Count;
 	}
 
+	private static readonly HashSet<ulong> _reachedTargets = [];
+
+	// How many party members this set reached, for the trace line of an area landing: "missed you" with
+	// party members reached says he stood out of it; with none, the set carried no hit at all and the
+	// damage came another way (trace of 01.10.2026, A242).
 	private static int DamagedPartyMembers(ActionEffectSet set)
 	{
 		var count = 0;
@@ -697,9 +701,13 @@ public static class Watcher
 				// 22. and 23.10.2026, A337). It still confirms the marker; that error leans the safe way (concept 15).
 				var partyWide = TankbusterTable.IsPartyWide(marked.RowId);
 				var markedForPlayer = false;
+				var tankbusterForPlayer = 0u;
+				var reached = -1;
+				_tankbusterTargets.Clear();
 				foreach (var effect in set.TargetEffects)
 				{
-					if (ReachedTarget(effect))
+					// A target the set names twice counts once (A454).
+					if (ReachedTarget(effect) && _tankbusterTargets.Add(effect.TargetID))
 					{
 						var isMarked = TankbusterMarkerWatch.RecordHit(effect.TargetID, marked.RowId, partyWide) && !partyWide;
 						var isTankbuster = isMarked || OtherConfiguration.HostileCastingTank.Contains(marked.RowId);
@@ -707,32 +715,42 @@ public static class Watcher
 						{
 							markedForPlayer = isMarked;
 						}
-						else if (isTankbuster)
-						{
-							TankSwapWatch.RecordBusterOnOther(source.GameObjectId, effect.TargetID, marked.Name.ExtractText(), marked.RowId);
-						}
 
-						// The tankbuster table learns from every player it is seen to hit, not only from
-						// the user - the co-tank's busters, and other parties' in large content; it keeps the
-						// hits on tanks (TankbusterTable.Record, A312). The landing of a cast taken for a tankbuster
-						// only because the enemy cast it at its own target is learned too, under the cast's id, which
-						// the forecast reads; the tank swap stays with list and marker (A452).
-						var aimedCast = isTankbuster || partyWide ? 0u
-							: TankbusterTable.AimedCastLanding(source.GameObjectId, effect.TargetID, marked);
-
-						// A tankbuster reaches one target; one that reaches more is a cleave or a raidwide aimed at the tank -
-						// counted over every target, other alliance groups' too - which the area list does not hold where its
-						// intake is off or the party is small.
-						if (aimedCast != 0 && ReachedTargets(set) > 1)
-						{
-							aimedCast = 0;
-						}
-						if ((isTankbuster || aimedCast != 0)
+						// The tankbuster table learns from every player it is seen to hit, not only from the user - the
+						// co-tank's busters, and other parties' in large content; it keeps the hits on tanks (A312). Besides
+						// list and marker it takes the landing of a cast the plan takes for a tankbuster, also one cast only
+						// at its own target (A452), and adds up what one cast's hits take on one tank, under the cast's id,
+						// which the forecast reads (TankbusterTable.Record, A454). A raidwide is no tankbuster. Asked before the
+						// target is looked up: every hit on a player passes.
+						var counted = 0u;
+						if (!partyWide && TankbusterTable.MayCount(source, effect.TargetID, marked, isTankbuster)
 							&& Svc.Objects.SearchById(effect.TargetID) is Dalamud.Game.ClientState.Objects.SubKinds.IPlayerCharacter struck)
 						{
-							TankbusterTable.Record(marked.RowId, marked.Name.ExtractText(), struck, source,
+							if (reached < 0)
+							{
+								reached = ReachedTargets(set);
+							}
+
+							counted = TankbusterTable.Record(marked, struck, source,
 								DamageShareOn(set, effect.TargetID, Math.Max(1u, struck.MaxHp)),
-								StatusesAppliedTo(set, effect.TargetID), aimedCast);
+								struck.IsJobCategory(JobRole.Tank) ? StatusesAppliedTo(set, effect.TargetID) : _noStatuses, isTankbuster, reached);
+						}
+
+						// Marker and tank swap read the table under the id the series lies under, the cast's where one explains
+						// the hit (A454); the tank swap stays with list and marker.
+						if (isMarked && counted != 0 && counted != marked.RowId)
+						{
+							TankbusterMarkerWatch.LearnAs(effect.TargetID, marked.RowId, counted);
+						}
+
+						if (effect.TargetID == playerObject.GameObjectId)
+						{
+							tankbusterForPlayer = counted;
+						}
+						else if (isTankbuster)
+						{
+							TankSwapWatch.RecordBusterOnOther(source.GameObjectId, effect.TargetID, marked.Name.ExtractText(),
+								counted != 0 ? counted : marked.RowId);
 						}
 					}
 				}
@@ -755,10 +773,12 @@ public static class Watcher
 					DefenseTrace.Line($"hit you: {marked.Name.ExtractText()} #{marked.RowId} from {source.Name.TextValue}"
 						+ $" for {hitShare:P0} of max HP, {set.TargetEffects.Length} targets"
 						+ (!markedForPlayer ? string.Empty
-							: DataCenter.Role != JobRole.Tank || TankbusterForecast.TookCastFor(marked.RowId) ? ", after a tankbuster marker"
+							: DataCenter.Role != JobRole.Tank || TankbusterForecast.TookCastFor(tankbusterForPlayer != 0 ? tankbusterForPlayer : marked.RowId)
+								? ", after a tankbuster marker"
 							: ", after a tankbuster marker, no cast taken for it"));
-					TankSwapWatch.RecordHitOnPlayer(marked.RowId, marked.Name.ExtractText(), source.GameObjectId, hitShare,
-						markedForPlayer, StatusesAppliedTo(set, playerObject.GameObjectId));
+					TankSwapWatch.RecordHitOnPlayer(tankbusterForPlayer != 0 ? tankbusterForPlayer : marked.RowId, marked.Name.ExtractText(),
+						source.GameObjectId, hitShare, markedForPlayer, !partyWide && OtherConfiguration.HostileCastingTank.Contains(marked.RowId),
+						StatusesAppliedTo(set, playerObject.GameObjectId));
 
 					// When the next one is due, from the spacing in this fight; turned away or absorbed, it still came.
 					if (markedForPlayer || (!partyWide && OtherConfiguration.HostileCastingTank.Contains(marked.RowId)))

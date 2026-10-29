@@ -10,25 +10,28 @@ Betroffene: **N** Endnutzer · **R** Autoren abgeleiteter Rotationen (Namensräu
 Nach der Wirkung im Kampf: Sicherheit der Gruppe vor Schaden, gewichtet mit der Wahrscheinlichkeit, in seinem Profil
 (seine Vorgabe, 17.10.2026: „todo nach wichtigkeit abarbeiten. jeweils im loop bearbeiten").
 
-1. „Mehrfach einschlagender Tankbuster wird je Treffer bewertet": Der Plan kann einen Tank mit zu kleinem Bündel lassen.
-2. Die gelernten Tabellen: entschieden (Konzept 13, A451); gebaut nach Regel 12 des Entwurfs, erst die Revision über
+1. Die gelernten Tabellen: entschieden (Konzept 13, A451); gebaut nach Regel 12 des Entwurfs, erst die Revision über
    einen Spielpatch, dann die Anzeige. Beide ändern den Kampf nur mittelbar, über einen
    geprüften oder berichtigten Lernwert – die Sperren unter ihnen (Schlaf) aber dauerhaft.
+2. „Mehrfach treffender Raidwide: Minderung über die ganze Serie": Eine Gruppenminderung kann vor dem letzten Treffer
+   einer Flächenserie ablaufen; die Gruppenminderungen dauern mindestens 10 s, die Wirkung ist kleiner als beim Tank.
 
 Danach die technische Schuld, soweit ihre Auflösungsbedingung erfüllt ist. Warten auf Daten: unten.
 
 ## Defekte
 
-### Mehrfach einschlagender Tankbuster wird je Treffer bewertet · N
-Die Tankbuster-Tabelle legt jeden Treffer einzeln als Höchstwert ab, und der Plan rechnet mit einem Treffer. Ein
-Tankbuster aus zwei Treffern zu je 45 % gilt als überlebbar mit 45 %; der Plan gibt ein Mittel aus, hält den Rest
-zurück, und beide Treffer zusammen nehmen 90 % ungemindert. Gilt für gelistete, markierte und gelernte Tankbuster.
-*Ort:* `TankbusterTable.Record`, `TankbusterForecast`, `CustomRotation_Tankbuster.UpdateTankbusterPlan`. *Nächster
-Schritt:* an seinen Mitschnitten erheben, welche Tankbuster mehrfach einschlagen (gleiche Id oder Folgezeilen auf
-dasselbe Ziel), dann die Treffer eines Casts als Serie summieren, wie die Flächentabelle (`SeriesShare`, A349).
-*Konzept:* 13, „Die Tankbuster-Tabelle"; 09, „Gemessener Tankbuster: das geringste Mittel".
+Keine offenen.
 
 ## Offene Arbeit
+
+### Mehrfach treffender Raidwide: Minderung über die ganze Serie · N
+Die Flächentabelle summiert die Treffer einer Serie (A349), aber die Größenregel rechnet die Minderung, die beim Ende
+des Balkens steht, für die ganze Summe (`DataCenter.AreaShareNow`, Horizont = Restzeit des Casts). Läuft eine
+Gruppenminderung vor dem letzten Treffer ab – Ersticken des Fleisches trifft in seinem Mitschnitt bis 10 s nach dem Balken
+–, nimmt die Gruppe den Rest ungemindert, und die Größenregel kann die eigene Minderung für eine zu klein gerechnete
+Summe auslassen. *Ort:* `Watcher.SeriesShare`, `DataCenter.AreaShareNow`, `HostileCastingAreaPotential`. *Nächster
+Schritt:* im Loop prüfen, ob die Flächenserie wie die Tankbuster-Serie ihre Dauer lernen und die Größenregel die Minderung
+bis zum letzten Treffer verlangen soll (Konzept 09, „H_S", A454). *Konzept:* 13, „Grenzen der Messung".
 
 ### Gelernte Tabellen über einen Spielpatch: Revision statt Höchstwert · N
 Sein Auftrag (28.10.2026): „das lernlisten-konzept müsste auch überarbeitet in hinblick auf anstehende patches. […]
@@ -73,12 +76,6 @@ ist er der einzige, spart die Größenregel im nächsten synchronisierten Lauf z
 der des Inhalts (`DataCenter.AboveContentLevel`, A452). *Auflösung:* eine Quelle, die den laufenden Inhalt als Gruppe
 ohne Beschränkung ausweist; `ContentsFinderQueueInfo.PoppedContentIsUnrestrictedParty` beschreibt den zuletzt
 gestarteten. *Konzept:* 13.
-
-### Ungelisteter Tankbuster, den ein Helfer bringt, bleibt ungelernt · N
-*Kosten:* Ein Tankbuster ohne Liste und Marker, dessen Treffer nicht vom Wirkenden selbst kommt, sondern von einem
-unsichtbaren Helfer, wird nicht gelernt und tötet, wenn er tödlich ist, bei jeder Wiederholung (A452). In seinem
-Mitschnitt vom 26.10.2026 kam kein Fall vor. *Auflösung:* ein belegter Fall; dann den Helfertreffer gleichen Namens
-auf dasselbe Ziel im Fenster des Casts zuordnen. *Konzept:* 13, „Auch ohne Liste und Marker".
 
 ### Searing-Light-Abdeckungsmodell bildet die Phasenbuchung von Hand nach · R
 *Kosten:* Ändert sich die Buchung in `UpdateSearingPhaseBook`, `AllSearingPhasesHeld` oder `BurstPhaseHeldByAnother`,

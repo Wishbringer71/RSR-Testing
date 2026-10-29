@@ -5,6 +5,14 @@ What this release changes in the fight. For the whole distance from upstream, se
 
 ## Mitigation and defensives
 
+- **A tankbuster of several hits is planned as one.** The tankbuster table now adds up what all hits of one cast take on
+  a tank - also hits that land under another id or from a helper, matched to the cast by its name - and keeps the sum
+  under the cast the plan reads, with the time from the first hit to the last. The plan sizes its mitigation for the
+  sum and counts only mitigation that still stands at the last hit, and it presses the invulnerability late enough to
+  last through the series, at the latest one GCD before the cast ends. An invulnerability that runs out before the last
+  hit no longer holds the rest of your defence back. Before, the plan saw one hit or none: a three-hit buster got a
+  bundle for one hit, and a short mitigation had run out before the big last hit. A tankbuster of one hit is planned as
+  before.
 - **No spell runs into Pyretic.** A status that damages every action — Pyretic, Causality — comes with the hit that lays
   it, and an action still under way at that moment takes its damage at once. RSR learns, from every landing on you or a
   party member, which enemy casts lay such a status, and before one of them lands on you it starts no spell that would

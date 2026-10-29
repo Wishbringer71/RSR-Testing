@@ -857,14 +857,14 @@
    "reason": "How long before the pull a melee presses its target dash: The Balance's Viper opener (Slither at -0.5 s, patch 7.55) and upstream's Thunderclap (<= 0.5 s, 33e6acb1f). No game sheet gives the time between pressing a dash and the character moving, nor the run speed, so nothing to derive it from; the model (melee_gapcloser_model.py) shows the first weaponskill lands 0-0.4 s after the pull across 0.5-0.9 s of animation lock (A347)."
   },
   {
-   "file": "RotationSolver/Watcher.cs",
+   "file": "RotationSolver/Basic/Helpers/ActionHelper.cs",
    "code": "private const float CastUnitsPerSecond = 10f;",
    "values": [
     "10"
    ],
    "status": "exception",
    "loop": "A349",
-   "reason": "Unit conversion, not a game value: the Action sheet states cast times in tenths of a second (Cast100ms), and the series window of the area measurement is the action's own cast time in seconds (A349)."
+   "reason": "Unit conversion, not a game value: the Action sheet states cast times in tenths of a second (Cast100ms). The series window of the area measurement is the action's own cast time in seconds (A349), that of the tankbuster measurement the announcing cast's, a GCD at least (A454)."
   },
   {
    "file": "RotationSolver/Basic/Helpers/HostileMovement.cs",

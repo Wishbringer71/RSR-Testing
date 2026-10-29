@@ -251,6 +251,22 @@ internal static class TankbusterMarkerWatch
 		return marked;
 	}
 
+	/// <summary>
+	/// The first hit after a marker on <paramref name="targetId"/>, <paramref name="hitId"/>, counts in the tankbuster table
+	/// under <paramref name="key"/> - the id of the cast it landed from (A454): learned as that, so the plan for a marker
+	/// with no cast reads the whole series the table keeps there. Called from the effect handler, on the game thread.
+	/// </summary>
+	public static void LearnAs(ulong targetId, uint hitId, uint key)
+	{
+		foreach (var watch in _open)
+		{
+			if (watch.Target == targetId && !watch.Confirmed && watch.HitAction == hitId)
+			{
+				watch.HitAction = key;
+			}
+		}
+	}
+
 	private static bool IsWatched(VfxNewData vfx)
 	{
 		foreach (var watch in _open)

@@ -622,11 +622,12 @@ public partial class CustomRotation
 				continue;
 			}
 
-			// Invariant 5: its window (the hit no further away than its duration less a GCD) has to open before the
-			// last GCD, in which the hold ends for a missing member, so its duration has to be known and longer
-			// than two GCD. Below their trait level Reprisal and Sheltron state none (TODO.md) and stay out.
-			// A refused member stays only while its refusal runs out before the last GCD (invariant 1).
-			if (!action.EnoughLevel || !action.Config.IsEnabled || DefensiveValues.DurationOf(action.ID) - gcd <= gcd
+			// Invariant 5: its window (the hit no further away than its duration less a GCD and the series' span) has to
+			// open before the last GCD, in which the hold ends for a missing member, so its duration has to be known and
+			// longer than two GCD and the span. Below their trait level Reprisal and Sheltron state none (TODO.md) and stay
+			// out. A refused member stays only while its refusal runs out before the last GCD (invariant 1).
+			if (!action.EnoughLevel || !action.Config.IsEnabled
+				|| WindowOpensAt(DefensiveValues.DurationOf(action.ID), cast, gcd, false) <= gcd
 				|| (refusal > 0f && cast.Remaining - refusal <= gcd)
 				|| !action.Cooldown.WillHaveOneCharge(Math.Max(0f, cast.Remaining - gcd))
 				|| !action.Info.BasicCheck(true, false, true, true))
@@ -726,15 +727,46 @@ public partial class CustomRotation
 	}
 
 	/// <summary>
-	/// Whether an invulnerability on the player lasts over the horizon of <paramref name="cast"/>, from now: its
-	/// status, or - between the own press and the status showing - its record (<see cref="PendingStands"/>).
+	/// Whether an invulnerability on the player covers <paramref name="cast"/> - lasts over <see cref="InvulnerabilityHorizon"/>,
+	/// from now -: its status, or - between the own press and the status showing - its record (<see cref="PendingStands"/>).
 	/// Holmgang protects its user whatever it was aimed at.
 	/// </summary>
 	private bool InvulnerabilityCovers(TankbusterForecast.Cast cast, bool windowCounts)
 	{
+		return InvulnerabilityCovers(cast, InvulnerabilityHorizon(cast, DataCenter.DefaultGCDTotal), windowCounts);
+	}
+
+	private bool InvulnerabilityCovers(TankbusterForecast.Cast cast, float horizon, bool windowCounts)
+	{
 		var invulnerability = Invulnerability;
-		return TankbusterForecast.PlayerInvulnerableThrough(cast.Horizon)
-			|| (invulnerability != null && PendingStands(invulnerability.AdjustedID, true, cast, windowCounts));
+		var covered = cast with { Horizon = horizon, Span = 0f };
+		return TankbusterForecast.PlayerInvulnerableThrough(horizon)
+			|| (invulnerability != null && PendingStands(invulnerability.AdjustedID, true, covered, windowCounts));
+	}
+
+	/// <summary>
+	/// H_I (concept 09, A454): how long an invulnerability has to last, from now, to cover <paramref name="cast"/> - until
+	/// the series' last hit, or where none can reach that far, as far as one pressed at the last GCD reaches. Measured
+	/// against the first hit, one pressed by hand before a series and ending before its last hit held every other defence
+	/// back; measured against the last hit alone, one that cannot reach it never covered the series, and the plan pressed a
+	/// bundle on top of its own for hits it already kept off.
+	/// </summary>
+	private float InvulnerabilityHorizon(TankbusterForecast.Cast cast, float gcd)
+	{
+		var lasts = Invulnerability is { } invulnerability ? DefensiveValues.DurationOf(invulnerability.ID) : 0f;
+		return lasts > 0f ? Math.Min(cast.Horizon, cast.Remaining + lasts - gcd) : cast.Horizon;
+	}
+
+	/// <summary>
+	/// The rest of the cast at which the window of an action of the plan opens: from then it lasts until the series' last
+	/// hit - its duration <paramref name="lasts"/> less a GCD for the first hit to arrive and less the series' span (concept
+	/// 09, invariant 5, "H_S", A454). The invulnerability's likewise, but at the latest at the last GCD, where Z3 stops
+	/// holding the rest: it is measured against the first hit and takes what of the series falls into its duration.
+	/// </summary>
+	private static float WindowOpensAt(float lasts, TankbusterForecast.Cast cast, float gcd, bool invulnerability)
+	{
+		var opens = lasts - gcd - cast.Span;
+		return invulnerability ? Math.Min(lasts - gcd, Math.Max(opens, gcd)) : opens;
 	}
 
 	/// <summary>
@@ -843,7 +875,8 @@ public partial class CustomRotation
 			}
 
 			// Retried every cycle: a refusal here is a block on every ability (stun, amnesia), no answer about it.
-			return PressForTankbuster(invulnerability, plan, gcd, "invulnerability, nothing less survives", out act, notesRefusal: false);
+			return PressForTankbuster(invulnerability, plan, gcd, "invulnerability, nothing less survives", out act, notesRefusal: false,
+				isInvulnerability: true);
 		}
 
 		if (!Service.Config.HoldMitigationUnderInvulnerability)
@@ -871,11 +904,11 @@ public partial class CustomRotation
 	}
 
 	private static bool PressForTankbuster(IBaseAction action, TankbusterPlan plan, float gcd, string why, out IAction? act,
-		bool notesRefusal = true)
+		bool notesRefusal = true, bool isInvulnerability = false)
 	{
 		act = null;
 		var lasts = DefensiveValues.DurationOf(action.ID);
-		if (lasts > 0f && plan.Cast.Remaining > lasts - gcd)
+		if (lasts > 0f && plan.Cast.Remaining > WindowOpensAt(lasts, plan.Cast, gcd, isInvulnerability))
 		{
 			return false;
 		}
@@ -946,13 +979,19 @@ public partial class CustomRotation
 	private bool InvulnerabilityCoversEveryCast(TankbusterPlan plan)
 	{
 		var lag = TankbusterForecast.SinceReading;
-		var latest = plan.Cast.Horizon;
+		var gcd = DataCenter.DefaultGCDTotal;
+		var own = InvulnerabilityHorizon(plan.Cast, gcd);
+		var latest = own;
 		foreach (var cast in TankbusterForecast.Casts)
 		{
-			latest = Math.Max(latest, cast.Horizon - lag);
+			latest = Math.Max(latest, InvulnerabilityHorizon(cast with
+			{
+				Remaining = Math.Max(0f, cast.Remaining - lag),
+				Horizon = Math.Max(0f, cast.Horizon - lag),
+			}, gcd));
 		}
 
-		return InvulnerabilityCovers(plan.Cast with { Horizon = latest }, latest <= plan.Cast.Horizon);
+		return InvulnerabilityCovers(plan.Cast, latest, latest <= own);
 	}
 
 	/// <summary>
@@ -1054,7 +1093,7 @@ public partial class CustomRotation
 		_allowedNow.Clear();
 		foreach (var action in plan.Mitigations)
 		{
-			if (plan.Cast.Remaining <= DefensiveValues.DurationOf(action.ID) - gcd)
+			if (plan.Cast.Remaining <= WindowOpensAt(DefensiveValues.DurationOf(action.ID), plan.Cast, gcd, false))
 			{
 				_ = _allowedNow.Add(action.ID);
 				_ = _allowedNow.Add(action.AdjustedID);

@@ -10,6 +10,15 @@ internal static class ActionHelper
 
 	internal const byte OGCDCooldownGroup = 71;
 
+	// The Action sheet states cast times in tenths of a second (Cast100ms).
+	private const float CastUnitsPerSecond = 10f;
+
+	/// <summary>
+	/// The action's cast time in seconds, from the sheet: no new cast of it lands sooner, so a further landing within it
+	/// belongs to the same use - the series of the area and of the tankbuster measurement (A349, A454).
+	/// </summary>
+	internal static float CastSeconds(this Action action) => action.Cast100ms / CastUnitsPerSecond;
+
 	/// <summary>
 	/// Gets the action category of the specified action.
 	/// </summary>

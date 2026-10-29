@@ -13276,6 +13276,119 @@ Löschungen").
 - *Ergebnis:* kein Defekt im Code dieser Builds belegt; die beiden Unterbewertungen hat die Höchstwertregel behoben.
   Prüfgrad: Mitschnitt und Trace statisch ausgewertet, Namen anderer Spieler nur in der Sitzung.
 
+### A454 · Mehrfach einschlagender Tankbuster: der Cast samt seiner Treffer, Summe und Dauer (29.10.2026)
+
+- *Auftrag:* „todo im vollen kritischen loop weiter abarbeiten" (29.10.2026), Defekt „Mehrfach einschlagender
+  Tankbuster wird je Treffer bewertet". Dazu seine Vorgabe vom selben Tag, eingetragen in CLAUDE.md („Definition of
+  Ready"): erst das Konzept, dann der Code.
+- *Ablauf:* Eine erste Umsetzung summierte die Treffer je Ziel und Treffer-Id und entstand vor dem Konzept. Ein
+  Code-Review fand zehn Befunde. Die Recherche zeigte, dass sie im Kampf kaum wirkte: Die Treffer kommen meist unter
+  anderen Ids als der Cast, den der Plan liest. Verworfen und aus dem Arbeitsbaum genommen; danach Konzept 13 und 09
+  erweitert, Modell, Code.
+- *Research:*
+  - Seine Abwehrprotokolle: 126 Messzeilen, keine zwei Treffer derselben Aktion auf dasselbe Ziel binnen 10 s; keine
+    seiner Mehrfachserien nannte Liste oder Marker.
+  - Seine ACT-Mitschnitte vom 25. bis 28.10.:
+    - Knallregen: ein Cast, dann bis zu sechs Treffer im Abstand von 2,14 bis 2,18 s, ab dem zweiten unter der
+      Nachbarzeile; Wirkzeit laut Blatt 2,0 s.
+    - Valfodr: drei bis vier Treffer bis 7 s nach dem Balken.
+    - Quadrupel-Triade: zwei Treffer im Abstand von 2,6 bis 2,8 s.
+  - BossModReborn ae64e33: Lead Hook, Crush Helm, Void Meteor, Bitter Whirlwind, Relentless Torment, Tyrfing und
+    Bahamut's Claw, mit Ids, Quellen und Abständen.
+  - xivapi v2: Cast und Treffer heißen gleich, ausgenommen Void Comet; der sichtbare Cast eines Bosses hat oft keinen
+    Angriffstyp.
+  - Folge: Der Plan las unter der Cast-Id nur den ersten Treffer oder nichts, und eine kurze Minderung lief vor dem
+    großen Treffer ab.
+  - Die Unverwundbarkeit öffnete bei R ≤ Wirkdauer − GCD; so früh gedrückt, endete sie vor dem zweiten Treffer von Bitter
+    Whirlwind und vor dem großen von Crush Helm.
+- *Optionen:*
+  - Nullvariante.
+  - Serie je Treffer-Id (die verworfene erste Umsetzung).
+  - Zuordnung zum Cast mit Summe ohne Dauer.
+  - Dasselbe mit Dauer: Bündel bis zum letzten Treffer, Unverwundbarkeit spät gedrückt und bis H_I deckend – gewählt.
+  - Unverwundbarkeit nur am ersten Treffer gemessen.
+  - Unverwundbarkeit nur am letzten Treffer gemessen.
+  - Größter Treffer mal Anzahl.
+  - Vorhersagen von BossModReborn: ohne Modul nichts, und jede Regel braucht einen Weg ohne sie.
+- *Abwägung im Kampf:*
+  - Summe und Dauer: Ein Tank übersteht die ganze Serie ohne Heilung dazwischen – Lead Hook, Crush Helm, Bitter
+    Whirlwind.
+  - Preis (Stufe 3): mehr Abwehr bei langen Serien kleiner Treffer; Glieder unter Wirkdauer plus Dauer der Serie
+    zählen nicht.
+  - Die Unverwundbarkeit nur am ersten Treffer gemessen: Eine früh von Hand gedrückte hielte alles zurück, und der Rest
+    der Serie träfe ohne Minderung.
+  - Nur am letzten gemessen: Bei Serien über ihre Reichweite drückte der Plan über der eigenen ein Bündel.
+  - Das Modell fängt beide Fehler (Varianten `z1_first_hit`, `z1_series_only`).
+- *Modell* (`tankbuster_model.py`): Prüfung O12 – überlebt jeden Treffer der Serie, was der Plan überlebbar nannte, als
+  gedeckt nahm oder mit Unverwundbarkeit plante. Neue Szenarien:
+  - Serien nach Lead Hook, Crush Helm und Bitter Whirlwind, und Zufallsserien bis 6,4 s.
+  - Eine von Hand früh gedrückte Unverwundbarkeit vor einer Serie.
+
+  Fünf neue Defektvarianten: Bewertung je Treffer, Summe ohne Dauer, Unverwundbarkeit ohne Dauer im Fenster, Deckung
+  am ersten und nur am letzten Treffer. Ergebnis:
+  - 66 Szenarien mit je 300 Läufen ohne Verstoß; der Selbsttest fängt alle 17 Varianten.
+  - Die zunächst erwogene späteste Druckstelle eine Druckspanne vor dem letzten GCD scheitert: sechs Tode in O12 bei
+    200 Läufen je Szenario. Grund: Der Schaden des letzten Treffers folgt seinem Snapshot nach. Deshalb liegt die
+    späteste Druckstelle am letzten GCD.
+- *Code-Review* der Umsetzung nach Konzept, zehn Befunde:
+  - Behoben:
+    - Marker-Lernen und Tankwechsel lasen die Treffer-Id; sie lesen jetzt die Id der Serie (`TankbusterMarkerWatch.LearnAs`).
+    - Eine Unverwundbarkeit galt bis zum ersten Treffer als deckend; jetzt H_I.
+    - Die Serie wurde je Treffer abgelegt, und ein späterer Treffer konnte sie nicht mehr unbrauchbar machen; jetzt
+      Ablage am Ende, einmal je Serie, also auch nur eine Speicherung.
+    - Eine Serie mit abgewehrtem Treffer wurde als vollständig abgelegt; jetzt nicht abgelegt.
+    - Ziele zählten je Eintrag statt je Ziel.
+    - Jeder Treffer auf einen Spieler lief durch Objektsuche und Namenslesung; jetzt Vorprüfung
+      (`TankbusterTable.MayCount`) und ein Namenszwischenspeicher.
+    - Feste Zahlen für Schadensart und Rang; jetzt Aufzählungen.
+  - Eigener Befund: Die Kometen von Void Meteor treffen vor dem Meteor und fanden keine offene Serie; jetzt gehört
+    ein von Liste oder Marker genannter Treffer ohne eigenen Cast zum offenen Tankbuster-Cast.
+  - Belassen mit Grund: Zwei gleichnamige Einsätze ohne Cast binnen eines Fensters verschmelzen. Das ist selten, mehr
+    Abwehr, und im Konzept unter „Fehlerrichtung" genannt.
+  - Die Angabe 5,8 s im Modell ist der Snapshot; der Schaden folgt 0,4 bis 1 s später – im Modell kommentiert.
+  - Der Kommentar über `ReachedTargets` gehörte seit A452 zu `DamagedPartyMembers`; zurückgesetzt.
+- *Zweite Review-Runde,* acht Befunde:
+  - Behoben:
+    - Ein doppelt genannter Spieler setzte die Id der Serie für Protokoll und Tankwechsel auf 0 zurück; ein Ziel wird je
+      Effektsatz jetzt nur einmal behandelt.
+    - Der Tankwechsel verwarf einen gelisteten Treffer unter einer ungelisteten Cast-Id; die Prüfung auf die Liste gilt
+      wieder dem Treffer.
+    - Die Zuordnung zum offenen Tankbuster-Cast prüfte die Schadensart nicht; die Vorhersage legte dann die Minderung
+      der falschen Art auf.
+    - Doppelte Suche zwischen `MayCount` und `Record`; Ziel- und Tankbuster-Merkmal je Bild neu bestimmt statt einmal je
+      Instanz.
+  - Belassen, als Preis in Konzept 09:
+    - Druckstelle am letzten GCD: andere Pfade sind dort frei; das Modell belegt die Alternative als tödlich.
+    - Eine Unverwundbarkeit, die vor dem letzten GCD gedrückt wurde, deckt eine Serie, die länger dauert, als sie reicht,
+      nicht: Folge ist mehr Abwehr, die sichere Richtung.
+    - Barrieren zählen nur, wenn sie bis zum letzten Treffer stehen: vorsichtig, denn die Tabelle kennt die Verteilung der
+      Treffer nicht.
+    - Ein anderer gelisteter Treffer ohne eigenen Cast im Fenster eines Tankbusters zählt zu dessen Serie: Kommt er
+      jedes Mal mit, ist die Summe richtig, sonst mehr Abwehr.
+- *Gebaut:*
+  - `TankbusterTable`: `UpdateCasts` verfolgt jedes Wirken in `AreaCasters` außer Raidwides, je Instanz; dazu `CastOf`,
+    `OpenSeries`, `Record` (Zwischenstand je Treffer im Protokoll), `Store` am Ende der Serie und `SeriesSpan`.
+  - `TankbusterReading.Span` – Vertrag erweitert, alte Dateien lesen 0.
+  - Vorhersage und Hilfe für andere mit H_S; im Plan `WindowOpensAt` (Glieder H_S, Unverwundbarkeit spätestens am
+    letzten GCD) und `InvulnerabilityHorizon` (H_I).
+  - `ActionHelper.CastSeconds` gemeinsam für Flächen- und Tankbuster-Serie.
+  - Text im Listenfenster.
+- *Konzepte, TODO:*
+  - Konzept 13, „Ein Tankbuster ist der Cast samt seiner Treffer"; Konzept 09, „H_S" und „H_I"; Widerruf C135.
+  - TODO: Defekt und die technische Schuld „Ungelisteter Tankbuster, den ein Helfer bringt, bleibt ungelernt"
+    entfernt; neu „Mehrfach treffender Raidwide: Minderung über die ganze Serie".
+- *Falsifikation:*
+  - Kein Defekt? Widerlegt an BossModReborn und an seinen Mitschnitten.
+  - Option falsch? Die Zuordnung über den Namen stützt sich auf die Spielblätter. Fehlerrichtungen und Grenzen stehen
+    im Konzept.
+  - Ausgeliefert, und nichts ändert sich? In seinen bisherigen Inhalten nur, wo ein Cast auf das Ziel zielt (Valfodr,
+    Quadrupel-Triade) oder Liste und Marker greifen. Für Inhalte mit Markern und gelisteten sichtbaren Casts – Savage,
+    Extreme, Ultimate – ab dem zweiten Cast.
+- *Prüfgrad:* Modell, Kompilieren ohne Warnung, Prüfskripte; im Spiel nicht beobachtet. Messmittel im Protokoll:
+  - je Treffer „hit n of its series, together …";
+  - am Ende „tankbuster series: … stored" oder „not stored, …";
+  - im Plan „its hits over … s take …".
+
 ### A455 · Abstürze bei Charakterwahl und Teleport: RebornMaterial 7.5.7.3, angehoben auf 7.5.7.5 (29.10.2026)
 
 - *Seine Frage* (29.10.2026, 21:07): „haben die crashes bei der characterwahl bzw. beim porten was mit rsr zu tun?"
@@ -13597,3 +13710,4 @@ Die offene Arbeit dazu — Reihenfolge und Abbruchbedingung der Nachprüfung —
 | C132 | A428 und Konzept 08 (27.10.2026): „Das Überheilen, das er beschreibt, entsteht also messbar – aber bei Gruppen-HoTs ohne Bedarf, nicht bei DoTs.“ | Falsch für Zoraal Ja. Refugium war bei allen vier Einsätzen nach der Bedarfsfrage gebraucht; seine Ticks fielen auf volle Gesundheit, weil danach Afflatus laetitiae und der zweite Heiler auffüllten. Dieses Überheilen kostete keinen GCD. GCD-HoTs ohne Bedarf gibt es, aber selten (26 von 121). Der Schluss stützte sich auf die Ticks, nicht auf den Bedarf zur Zeit des Wirkens. | Konzept 08 berichtigt; Messung je Einsatz in A430 mit `act_heal_need.py` |
 | C133 | CLAUDE.md und A423 (27.10.2026): „Was davon in seinen anderen Repositories fehlt, dort als Issue weitergegeben … (seine Vorgabe, 27.10.2026 …)“ | Zu weit und falsch zugeschrieben. Sein Satz aus dem Chat von KerbalMissionDirector sagte „teilhaben lassen“; die Pflicht am Ende jedes Auftrags und der Weg über Issues waren meine Ableitung. Seit 29.10.2026 präzisiert: Issues nur für Fehler, die bei der eigenen Arbeit auffallen, erlaubt, keine Pflicht; `TODO.md` nur RSR (A444, A445) | CLAUDE.md, „Grenzen und Löschungen“; `archiv-todo.md` |
 | C134 | Konzept 09, „Die Abwehr im Pull" (A395, 26.10.2026): „… trifft der erste ohne große Minderung – die kurze liegt, die Tabelle kennt ihn ab dem zweiten" | Falsch. Die Tankbuster-Tabelle misst nur gelistete und per Marker bestätigte Tankbuster (`Watcher`, `isTankbuster`); einer, den nur das Wirken eines Gegners auf sein eigenes Ziel verrät, wird nie gelernt, und jeder weitere trifft ebenso (A449, Defekt „Ungelisteter Tankbuster ohne Marker wird nie gelernt") | Konzept 09, „Die Abwehr im Pull" |
+| C135 | A315 und Konzept 09, „H, der Horizont" (17.10.2026): „Der GCD deckt mehrfache und nachlaufende Treffer eines Tankbusters" | Falsch. Crush Helm trifft groß 6,1 s, Void Meteor 4,1 s nach dem Balken, Bitter Whirlwind 6,4 s nach dem ersten Treffer (BossModReborn ae64e33), Valfodr in seinem Mitschnitt bis 7 s nach dem Balken; der GCD deckt nur die Ankunft des ersten Treffers (A454) | Konzept 09, „H_S" und „H_I"; die Entscheidung, H nicht zu kürzen, bleibt |

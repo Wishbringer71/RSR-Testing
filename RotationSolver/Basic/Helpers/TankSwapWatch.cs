@@ -120,13 +120,16 @@ internal static class TankSwapWatch
 	/// <summary>
 	/// An enemy action that is not an auto-attack reached the player. Called from the effect handler,
 	/// on the game thread. <paramref name="markedForPlayer"/>: a tankbuster marker on the player stood
-	/// for this hit and is not on the learned list of markers without one.
+	/// for this hit and is not on the learned list of markers without one; <paramref name="listed"/>: the hit is on the
+	/// tankbuster list. <paramref name="actionId"/> is the id the tankbuster table keeps it under - its cast's, where one
+	/// explains the hit (A454).
 	/// </summary>
-	public static void RecordHitOnPlayer(uint actionId, string name, ulong source, float share, bool markedForPlayer, List<uint> appliedStatuses)
+	public static void RecordHitOnPlayer(uint actionId, string name, ulong source, float share, bool markedForPlayer, bool listed,
+		List<uint> appliedStatuses)
 	{
 		lock (_gate)
 		{
-			if (!markedForPlayer && !OtherConfiguration.HostileCastingTank.Contains(actionId))
+			if (!markedForPlayer && !listed)
 			{
 				return;
 			}

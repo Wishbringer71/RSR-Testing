@@ -33,7 +33,8 @@ internal static class TankbusterForecast
 	/// the action has not been measured.</param>
 	/// <param name="Budget">Share of maximum HP the player has to take it: HP now plus the barriers that
 	/// still stand at impact.</param>
-	/// <param name="Horizon">Seconds until the hit can arrive: the cast's rest plus one GCD.</param>
+	/// <param name="Horizon">Seconds until the last hit of the tankbuster can arrive: the cast's rest plus one GCD for the first
+	/// hit, plus <paramref name="Span"/> - what mitigates it has to stand until then (concept 09, "H_S", A454).</param>
 	/// <param name="Serial">Tells this cast from every other, also from a later cast of the same action
 	/// by the same enemy with the same cast time.</param>
 	/// <param name="Source">The enemy casting it.</param>
@@ -53,12 +54,15 @@ internal static class TankbusterForecast
 	/// <param name="Announced">Known as a tankbuster by the tankbuster list or a learned hit after list or marker. False for
 	/// a cast the table knows only from an enemy casting it at its own target, a tank (A452): in a pull that is any trash
 	/// cast at the tank, and the rest of the defence is for the blows of the others.</param>
+	/// <param name="Span">Seconds from the first to the last hit of the tankbuster's series, as the table measured it (A454);
+	/// zero for one hit.</param>
 	internal sealed record Cast(int Serial, IBattleChara Source, uint ActionId, uint AttackType, float Remaining,
 		float Total, float Predicted, float Budget, float Horizon, bool ByMarker = false, ulong SourceId = 0,
-		bool Learned = false, bool Announced = true)
+		bool Learned = false, bool Announced = true, float Span = 0f)
 	{
 		/// <summary>Measured at all: the table has a figure for the action.</summary>
 		public bool Measured => Predicted > 0f;
+
 	}
 
 	private static readonly List<Cast> _casts = [];
@@ -256,15 +260,19 @@ internal static class TankbusterForecast
 		}
 
 		// Inside its window: its duration reaches the horizon of the soonest measured cast as it goes out. Read
-		// now, so the cast's time is taken to now as well.
+		// now, so the cast's time is taken to now as well. An invulnerability's is H_I: the series' last hit, or as far as
+		// one pressed at the last GCD reaches, where none reaches that far (concept 09, A454).
 		var soonest = SoonestMeasured;
+		var reach = soonest == null ? 0f
+			: GivesInvulnerability(onSelf) ? Math.Min(soonest.Horizon, soonest.Remaining + lasts - DataCenter.DefaultGCDTotal)
+			: soonest.Horizon;
 		var execution = new Execution
 		{
 			ActionId = actionId,
 			Target = targetId,
 			Tick = now,
 			Confirmed = confirmed,
-			CoveredSerial = soonest != null && lasts >= soonest.Horizon - SinceReading ? soonest.Serial : 0,
+			CoveredSerial = soonest != null && lasts >= reach - SinceReading ? soonest.Serial : 0,
 			OnSelf = onSelf,
 			Where = where,
 			Outward = outward,
@@ -709,7 +717,8 @@ internal static class TankbusterForecast
 			}
 
 			var left = hostile.TotalCastTime - hostile.CurrentCastTime;
-			var horizon = left + gcd;
+			var span = TankbusterTable.SeriesSpan(id);
+			var horizon = left + gcd + span;
 			var predicted = TankbusterTable.PredictedShare(id, player, hostile, horizon);
 			var barrier = BarrierAt(player, horizon, maxHp);
 			var attackType = AttackTypeOf(id);
@@ -723,7 +732,7 @@ internal static class TankbusterForecast
 			_ = _live.Add(identity);
 			_lastComing[id] = _readAt;
 			var cast = new Cast(serial, hostile, id, attackType, left, hostile.TotalCastTime, predicted,
-				(player.CurrentHp / maxHp) + barrier, horizon, byMarker, hostile.GameObjectId, Announced: !aimedOnly);
+				(player.CurrentHp / maxHp) + barrier, horizon, byMarker, hostile.GameObjectId, Announced: !aimedOnly, Span: span);
 			_casts.Add(cast);
 			if (isNew)
 			{
@@ -766,8 +775,8 @@ internal static class TankbusterForecast
 			}
 		}
 
-		// Over every cast now coming at the player, or with none for at least one more GCD: a cover that ends
-		// between two casts keeps nothing back for the second.
+		// Over every cast now coming at the player, until its last hit, or with none for at least one more GCD: a cover
+		// that ends between two casts, or inside a series, keeps nothing back for what comes after (A454).
 		var latest = gcd;
 		foreach (var cast in _casts)
 		{
@@ -796,7 +805,8 @@ internal static class TankbusterForecast
 			return;
 		}
 
-		var horizon = remaining + gcd;
+		var span = TankbusterTable.SeriesSpan(id);
+		var horizon = remaining + gcd + span;
 		var predicted = TankbusterTable.PredictedShare(id, player, null, horizon);
 		if (predicted <= 0f)
 		{
@@ -812,7 +822,7 @@ internal static class TankbusterForecast
 		_lastComing[id] = _readAt;
 
 		var cast = new Cast(serial, aim, id, AttackTypeOf(id), remaining, delay, predicted,
-			(player.CurrentHp / maxHp) + BarrierAt(player, horizon, maxHp), horizon, true, aim.GameObjectId, true);
+			(player.CurrentHp / maxHp) + BarrierAt(player, horizon, maxHp), horizon, true, aim.GameObjectId, true, Span: span);
 		_casts.Add(cast);
 		if (isNew)
 		{
@@ -845,7 +855,9 @@ internal static class TankbusterForecast
 			+ $" {name} #{cast.ActionId} in {cast.Remaining:F1} s - "
 			+ (!cast.Measured
 				? "not in the tankbuster table"
-				: $"takes {cast.Predicted:P0} of max HP under what stands at impact, you have {cast.Budget:P0}"));
+				: cast.Span > 0f
+					? $"its hits over {cast.Span:F1} s take {cast.Predicted:P0} of max HP under what stands until the last, you have {cast.Budget:P0}"
+					: $"takes {cast.Predicted:P0} of max HP under what stands at impact, you have {cast.Budget:P0}"));
 	}
 
 	/// <summary>

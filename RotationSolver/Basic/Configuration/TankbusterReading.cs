@@ -2,7 +2,8 @@ namespace RotationSolver.Basic.Configuration;
 
 /// <summary>
 /// One tankbuster's learned figures in <see cref="OtherConfiguration.TankbusterPotential"/>, each a share
-/// of the maximum HP of the one it hit, scaled back to what it would have done unmitigated.
+/// of the maximum HP of the one it hit, scaled back to what it would have done unmitigated: what one cast's
+/// hits took together on one tank, a series of hits summed (A454).
 /// </summary>
 internal sealed class TankbusterReading
 {
@@ -23,7 +24,14 @@ internal sealed class TankbusterReading
 	/// </summary>
 	public bool AimedOnly { get; set; }
 
-	/// <summary>Both figures at their higher value, aimed only while both are - the merge a save applies with the file.</summary>
+	/// <summary>
+	/// The longest time seen from the first to the last hit of one cast's series on one tank, in seconds (A454): how much
+	/// longer than its first hit what mitigates it has to stand. Zero for a tankbuster of one hit, and in files written
+	/// before.
+	/// </summary>
+	public float Span { get; set; }
+
+	/// <summary>Every figure at its higher value, aimed only while both are - the merge a save applies with the file.</summary>
 	public static TankbusterReading Higher(TankbusterReading first, TankbusterReading second)
 	{
 		return new TankbusterReading
@@ -31,6 +39,7 @@ internal sealed class TankbusterReading
 			Unmitigated = Math.Max(first.Unmitigated, second.Unmitigated),
 			UnderVulnerability = Math.Max(first.UnderVulnerability, second.UnderVulnerability),
 			AimedOnly = first.AimedOnly && second.AimedOnly,
+			Span = Math.Max(first.Span, second.Span),
 		};
 	}
 }

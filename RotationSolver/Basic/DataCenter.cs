@@ -3357,8 +3357,9 @@ internal static class DataCenter
 	/// hit, a BossModReborn prediction on him, or a member who is not a tank - the table rates hits on tanks (A312).
 	/// </summary>
 	/// <remarks>
-	/// Recognition, the footing of the tankbuster plan (concept 09, "Die Rechnung"): the highest measured hit, HP now, only
-	/// what stands at the hit - the cast's rest plus one GCD -, no heal that might come. The hit is a cast at him, a
+	/// Recognition, the footing of the tankbuster plan (concept 09, "Die Rechnung"): the highest measured sum of a cast's
+	/// hits, HP now, only what stands until its last hit - the cast's rest plus one GCD plus the series' span -, no heal
+	/// that might come. The hit is a cast at him, a
 	/// tankbuster cast at no other member while a marker stands on him, or with a marker and no such cast the hit learned
 	/// after the same marker in this area (<see cref="TankbusterMarkerWatch.LearnedHitOn"/>), counted without what lies
 	/// on an enemy, as the plan counts it. For help from others: whether it is called for is the reader's question (A373).
@@ -3416,7 +3417,8 @@ internal static class DataCenter
 			return false;
 		}
 
-		var horizon = remaining + DefaultGCDTotal;
+		// What mitigates the hit has to stand until the series' last hit (concept 09, "H_S", A454).
+		var horizon = remaining + DefaultGCDTotal + TankbusterTable.SeriesSpan(actionId);
 		share = TankbusterTable.PredictedShare(actionId, member, attacker, horizon);
 		if (share <= 0f)
 		{

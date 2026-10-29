@@ -427,7 +427,8 @@ public partial class MainWindow
 			}
 
 			DrawActionsList(nameof(OtherConfiguration.HostileCastingTank), OtherConfiguration.HostileCastingTank, tankbusterShares);
-			ImGui.Text($"Tankbusters rated, unmitigated: {tankbustersRated} (learned from every player hit, listed or marked)");
+			ImGui.Text($"Tankbusters rated, unmitigated: {tankbustersRated} (all hits of a cast on a tank together, learned from every"
+				+ " tank hit by a listed, marked or measured cast or one aimed at its own target)");
 			var tankbusterStore = OtherConfiguration.TankbusterStoreState;
 			ImGui.TextColored(
 				tankbusterStore.Contains("FAILED") || tankbusterStore.Contains("MISMATCH") || tankbusterStore.Contains("NOT SAVED")
