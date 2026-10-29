@@ -645,9 +645,10 @@ A447–A451). Die beiden einfachen Formen – die erste neue Messung ersetzt den
 die letzten Messungen – tragen das Risiko, dass eine kleinere erste oder letzte Messung den Wert zu tief setzt und der
 nächste Treffer ohne Schutz ankommt; die zweite braucht dazu eine feste Zahl. Die Revision dort widerlegt einen alten
 Wert erst mit so vielen sauberen Beobachtungen, wie er selbst hatte, oder nach einem Abfall, den kein Schadenswurf
-erklärt. Bis zu ihrem Bau deckt das Löschen von Hand den Fall.
+erklärt. Bis zu ihrem Bau deckt das Löschen von Hand den Fall – seit Stufe 1 beide Dateien des Speichers (Abschnitt
+„Stufe 1: Speicher, Übernahme, Sicherung").
 
-**Seit A172 kann kein Speichern mehr verlieren, was die Datei hält.** Die Tabelle wächst von selbst nur; also ist jeder Stand der Datei eine Untergrenze, und ein Speichern nimmt je Aktion das Höhere aus Speicher und Datei. Damit ist die Fehlerklasse geschlossen, nicht der Einzelfall: Gleich aus welchem Grund der Speicher leer oder unvollständig ist — Laden gescheitert, abgebrochen, ein künftiger Defekt —, die Datei behält ihren Stand. Dazu wird ein Speicher, dessen Laden in dieser Sitzung nicht zu Ende lief, gar nicht geschrieben: Das Entladen schreibt alle Listen, und ein abgebrochener Start hätte sie sonst alle geleert. Ausgenommen ist nur ein Wert, den die Messung selbst nicht ablegt, über der ganzen Maximalgesundheit (A298, Abschnitt „Was gemessen wird, und was nicht").
+**Seit A172 kann kein Speichern mehr verlieren, was die Datei hält.** Die Tabelle wächst von selbst nur; also ist jeder Stand der Datei eine Untergrenze, und ein Speichern nimmt je Aktion das Höhere aus Speicher und Datei. Damit ist die Fehlerklasse geschlossen, nicht der Einzelfall: Gleich aus welchem Grund der Speicher leer oder unvollständig ist — Laden gescheitert, abgebrochen, ein künftiger Defekt —, die Datei behält ihren Stand. Dazu wird ein Speicher, dessen Laden in dieser Sitzung nicht zu Ende lief, gar nicht geschrieben: Das Entladen schreibt alle Listen, und ein abgebrochener Start hätte sie sonst alle geleert. Ausgenommen ist nur ein Wert, den die Messung selbst nicht ablegt – über der ganzen Maximalgesundheit (A298, Abschnitt „Was gemessen wird, und was nicht"), nicht endlich oder negativ –; die Revisionsdatei hält ihn in Quarantäne (Abschnitt „Stufe 1: Speicher, Übernahme, Sicherung").
 
 **Der schwerste Weg war keiner der erhobenen, sondern das Ausbleiben des Ladens** (A121). Der Speicher
 stand nur in `OtherConfiguration.Init()`, und die ruft niemand; gerufen wird `InitAsync`. Die Tabelle
@@ -1029,7 +1030,7 @@ aktuelle Gesundheit nicht reicht, und Barriere samt Minderung zusätzlich, wo au
 reicht. Sie gilt nicht nur für Flächen — dieselbe Frage stellt sich beim Tankbuster —, deshalb steht
 sie dort und nicht hier.
 
-## Gelernte Tabellen über Spielversionen: Revision, Absicherung, Anzeige (entschieden, nicht gebaut)
+## Gelernte Tabellen über Spielversionen: Revision, Absicherung, Anzeige (entschieden, Stufen 0 und 1 gebaut)
 
 **Seine Aufträge vom 28.10.2026.** Revision: „sobald ein neuer patch von ffxiv rauskommt, könnte sich der wert der
 listen aber ändern, weil sich mechaniken im spiel ändern. […] nach patch werden die bestehenden listen als gegeben
@@ -1314,7 +1315,7 @@ Verhaltensänderung, die alte Datei bleibt (Abschnitt „Stufe 1: Speicher, Übe
 und Tankbuster. (3) Regeln 5 und 5b. (4) Sperren nach Regel 6, mit den Schichten der Sperrspeicher. (5) Anzeige. Rückbau
 einer Stufe: ihr Messverfahren zurück; die Werte bleiben in beiden Dateien.
 
-### Stufe 1: Speicher, Übernahme, Sicherung (entschieden, nicht gebaut)
+### Stufe 1: Speicher, Übernahme, Sicherung (gebaut)
 
 **Im Kampf ändert Stufe 1 nichts:** Jeder Leser bekommt denselben Wert wie vorher. Sie legt ab ihrem Einbau jede Messung
 unter ihrer Spielversion ab, sodass nach dem nächsten Patch feststeht, was die neue Version schon bestätigt hat – die
@@ -1345,8 +1346,10 @@ erst ab einer sauberen). Die Plätze späterer Stufen kommen als zusätzliche Fe
 eine Datei mit dem neuen Feld von einer älteren Fassung falsch gelesen würde.
 
 **Revision.** Spielversion: der Text aus `GameVersionString` und den Erweiterungen aus `ExVersions` (Heavensward bis
-Dawntrail und folgende), verbunden; lesbar nur, wenn jeder Teil aus Ziffern und Punkten besteht und der Hauptteil nicht
-leer ist. Das schließt ein Feld aus, das nach einer Verschiebung Fremdes liest – es hielte sonst jeden Patch für keinen.
+Dawntrail und folgende), verbunden; lesbar nur, wenn der Hauptteil aus Ziffern und Punkten besteht. Das schließt ein
+Feld aus, das nach einer Verschiebung Fremdes liest – es hielte sonst jeden Patch für keinen. Ein Platz der
+Erweiterungen, der keine Version hält, bleibt außen vor: Der Hauptteil zeigt einen Patch auch allein, und ein
+ungenutzter Platz darf die Version nicht auf Dauer unlesbar machen.
 Messverfahren je Speicher: 1 ab Stufe 1. Werte der alten Datei tragen die Revision „unbekannt" (leere Spielversion,
 Verfahren 0).
 
@@ -1357,7 +1360,10 @@ Ohne das bliebe nach einem Patch jede unveränderte Aktion übernommen, bis ein 
   Bedingungen wie bisher, ohne „nur höher". Sauber: der Wirkende ohne Schadensplus und kein gemessenes Mitglied mit
   Verwundbarkeit; die Minderung, die `MitigationFactor` herausrechnet, kennt beide nicht. Eine Verwundbarkeit, die erst
   der Treffer legt, macht die Messung unsauber, wo sie beim Eintreffen schon steht – das zählt eine saubere zu wenig und
-  hemmt Regel 5 nur. Einheit ist die Landung, bei einer Serie (A349) also die laufende Summe: Teilsummen weiten `Low`
+  hemmt Regel 5 nur. Die Bewertung 0 einer schadenlosen Aktion ist eine saubere Messung von 0 – anders als ein
+  Tankbuster-Treffer, den eine Unverwundbarkeit aufhielt („Null zählt nicht") –, und sie kommt nur als erste: Folgt ihr
+  doch Schaden, weitet sie die Streuung und hemmt die Senkung. Einheit ist die Landung, bei einer Serie (A349) also die
+  laufende Summe: Teilsummen weiten `Low`
   und erhöhen `Count`, beides hemmt die Senkung in Regel 5 und 5b nur. Die Serie als Einheit kommt mit dem offenen
   Punkt „Mehrfach treffender Raidwide" und erhöht das Messverfahren.
 - *Tankbuster:* jede abgelegte Serie (A454) mit ihrer Summe, ihrer Dauer und „nur als Wirken auf das Ziel". Sauber, wenn
@@ -1389,7 +1395,8 @@ Zählung), wird nicht gelesen und in der Kopfzeile gezählt. Die alte Datei läs
 Höhere aus laufender und übernommener Schicht, also der Höchstwert aller gültigen Messungen wie bisher. Kein Schreiber
 schreibt sie mehr selbst: Jeder meldet seine Messung dem Speicher, und der setzt den Wert. Zwei Quellen, die
 auseinanderlaufen können, gibt es damit nicht; ein Prüfskript hält in der CI fest, dass keine Stelle außerhalb des
-Speichers in die beiden Tabellen schreibt.
+Speichers in die beiden Tabellen schreibt, und ein Tankbuster-Wert lässt sich nach seinem Anlegen nicht mehr ändern –
+die Schichten, ihre Sicherung und die Tabelle teilen ihn.
 
 **Speichern.** Wie bisher: nur nach vollendetem Laden, zusammengeführt mit der Datei, über eine temporäre Datei,
 zurückgelesen, einer zur Zeit. Zusammengeführt wird nach dem Übergang beider Seiten, je Platz: gleiche Revision – der
@@ -1420,14 +1427,18 @@ Höchstwert aller gültigen Messungen (keine Verhaltensänderung); keine Messung
 laufende Schicht enthält genau die Messungen der laufenden Revision; ein gelöschter Speicher bleibt gelöscht; ein
 ungültiger Wert wird nie gelesen. Sein Selbsttest baut die Fehler ein, gegen die der Entwurf gebaut ist, und jeder
 wird erkannt. Nicht gedeckt ist eine alte Datei, die zuletzt eine ältere Fassung schrieb: Sie legt keine Sicherung an,
-und was nur sie hielt, geht mit ihr verloren wie heute.
+und was nur sie hielt, geht mit ihr verloren wie heute. Den Code selbst spielt `revision_harness/run.sh` außerhalb
+des Spiels durch dieselben Läufe, samt einem JSON-Rundlauf des Tankbuster-Formats und eingebauten Fehlern als
+Selbsttest; nicht in der CI, deren Prüfrechner weder .NET noch Dalamud hat.
 
 **Was dagegen spricht.**
 - *„Eine Stufe ohne Wirkung im Kampf ist Vorratsarbeit."* Nein: Ohne sie hätte Stufe 2 beim ersten Patch nach ihrem
   Einbau keine bestätigten Einträge, und jeder Eintrag zöge noch einmal Schutz, den die Version schon bestätigt hatte;
   die Sicherung wirkt sofort; und der Speicherweg läuft in seinem Spiel, bevor eine Abwehr von ihm abhängt. Bleibt: mehr
-  Schreiben – jede gemessene Landung speichert, bisher nur eine Erhöhung; Dateien von einigen hundert Kilobyte, auf
-  einem Hilfsthread.
+  Schreiben – jede gemessene Landung und jede abgelegte Serie speichert beide Dateien, bisher nur eine Erhöhung; bei
+  seinen 220 Flächeneinträgen (Stand 25.10.2026) ist die neue Datei mit beiden Schichten je Eintrag rund 124 KB groß,
+  geschrieben auf einem Hilfsthread. Seltener zu speichern wäre billiger, verlöre aber bei einem Absturz die Zählungen
+  des Kampfes, und Abstürze hatte er allein am 29.10.2026 fünf (A455).
 - *„Zwei Dateien je Speicher verdoppeln die Fehlerstellen."* Die alte läuft über den unveränderten Weg und kann nur
   steigen. Die neue prüfen Invarianten bei jedem Speichern und das Modell. Bleibt: Er setzt einen Speicher nur zurück,
   wenn er beide Dateien löscht.
@@ -1597,11 +1608,18 @@ Aussage für Aussage, statisch (Selbstprüfung, kein unabhängiges Audit):
   Messstellen lesbar; die Barriere (`GetObjectShield`) braucht sie nicht mehr, die Grenze aus A298 liest sie weiter. Die
   Kommentare, die die Frage noch offen nannten, sind mit Stufe (0) berichtigt.
 - Schlaf vor Heilung in der GCD-Folge (`CustomRotation_GCD`: Notfall, Unterbrechung, `StopEnemyCast`, dann Heilung).
-- Offen bis zum Bau: das Feld der Spielversion vor dem Laden lesbar; die Zahl der Messungen fehlt heute bei Fläche,
-  Tankbuster, Serie und Pyretisch und beginnt mit Stufe 1 – alte Einträge zählen als eine Messung.
+- Stufe 1 (A456): `OtherConfiguration.RevisedStore` – Laden mit `.bak`, Übernahme, Übergang, Messung,
+  Zusammenführung, Invarianten, Schreiben mit Rücklesen; `LearnedFile` mit Revision und `.bak` für alle gelernten
+  Speicher; die Schreiber über `MeasureAreaShare` (drei Stellen in `Watcher`) und `MeasureTankbuster`
+  (`TankbusterTable.Store`); `check_learned_writes.py` hält fest, dass niemand sonst die beiden Tabellen schreibt.
+  Zählungen gibt es bei Fläche und Tankbuster ab Stufe 1, bei Serie und Pyretisch mit ihren Stufen; alte Einträge
+  zählen als eine Messung.
+- Offen bis zur Beobachtung im Spiel: ob das Feld der Spielversion beim Laden schon lesbar ist. Ist es das nicht,
+  gehen die Messungen bis zur ersten lesbaren in die übernommene Schicht, und die Kopfzeile sagt es.
 
-Prüfgrad: statisch am Code und an den Quellen, Modell gerechnet, die Barriere an seinen ACT-Mitschnitten gemessen; die
-Revision nicht gebaut, Stufe (0) gebaut und kompiliert, im Spiel nicht beobachtet.
+Prüfgrad: statisch am Code und an den Quellen, Modell gerechnet, die Barriere an seinen ACT-Mitschnitten gemessen;
+Stufen (0) und (1) gebaut und kompiliert, der Code von Stufe 1 außerhalb des Spiels gegen die Läufe des Modells geprüft
+(`revision_harness/run.sh`), im Spiel nicht beobachtet; die übrigen Stufen nicht gebaut.
 
 ## Betroffene
 

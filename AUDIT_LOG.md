@@ -13423,6 +13423,62 @@ Löschungen").
   ändert sich? Nur, wenn die Abstürze eine zweite Ursache hätten; die Speicherabbilder werden dafür nicht ausgewertet.
 - *Im Kampf:* keine Wirkung; nur Zeichnen von Fenstern.
 
+### A456 · Gelernte Tabellen, Stufe 1 der Revision: Messungen je Spielversion, Sicherung, Quarantäne, Invarianten (29.10.2026)
+
+- *Auftrag:* TODO-Punkt „Gelernte Tabellen über einen Spielpatch: Revision statt Höchstwert", Stufe 1 nach Regel 12 des
+  Entwurfs (Konzept 13); nach seiner Vorgabe vom selben Tag erst das Konzept (de0a99bdd), dann der Code.
+- *Erhebung:* Schreiber je Speicher gelesen: Fläche an drei Stellen in `Watcher` (Landung, Folgeaktion einer leeren
+  Landung, Bewertung 0), Tankbuster in `TankbusterTable.Store`, Schlaf und DoT als Zähler, die an Ort und Stelle
+  geändert werden, die Marker als letzte Beobachtung, die bei einem Treffer wieder entfernt wird. Jeder Größenschreiber
+  schrieb nur eine Erhöhung. `MitigationFactor` kennt weder Schadensplus noch Verwundbarkeit; die Flächenmessung legte
+  beides mit ab. Spielversion: `Framework.GameVersionString` und `ExVersions` (FFXIVClientStructs b72bc1f7, Felder
+  0x2BF8 und 0x2CF8, Werkzeugquelle). Seine Flächentabelle vom 25.10.2026: 220 Einträge, 5 KB.
+- *Optionen:* Nullvariante (nach einem Patch gilt jeder alte Wert in beide Richtungen); das alte Format an Ort und
+  Stelle erweitern; die alte Datei nach der Übernahme nicht mehr schreiben (Fassung des Entwurfs vom 28.10.); je Eintrag
+  nur eine Versionsmarke; alle Speicher auf einmal; Schichten nur für Fläche und Tankbuster, Sicherung für alle
+  `LearnedFile`; eine unlesbare Version als eigene Revision oder ihre Messungen in die übernommene Schicht.
+- *Gewählt:* Schichten für Fläche und Tankbuster, die Speicher, die Stufe 2 und 3 einsparend lesen; die alte Datei
+  läuft auf ihrem Weg weiter – geänderter Entwurf, vorher „bleibt unberührt": eine ältere Fassung hätte sonst alles
+  seither Gelernte verloren, und ihr Schreibweg kann nur heben; jede Messung wird gemeldet; bei unlesbarer Version
+  kein Übergang, die Messungen in die übernommene Schicht. Begründungen im Konzept, Abschnitt „Stufe 1: Speicher,
+  Übernahme, Sicherung".
+- *Modell:* `learned_store_model.py`, 400 Läufe zu 14 Sitzungen zu 6 Messungen: READ, LOST, DOUBLED, CURRENT, DELETED
+  halten; acht eingebaute Fehler erkannt. Vor dem ersten Lauf berichtigt: Eine ältere Fassung legt keine Sicherung an;
+  „Speichern ohne vollendetes Laden" verliert bei Zusammenführung mit der Datei nichts und ist keine Defektvariante. Der
+  erste Lauf zeigte nur Fehler des Prüfrahmens selbst (ungespeicherte Messungen der laufenden Sitzung nicht mitgezählt;
+  eine Datei, die zuletzt eine ältere Fassung schrieb, beschädigt ohne Sicherung) – die zweite ist als Grenze im
+  Konzept genannt.
+- *Gebaut:* `LearnedRevision.cs` (Format), `OtherConfiguration.Revision.cs` (`RevisedStore`, `ReadGameVersion`),
+  `LearnedFile` mit Revision und `.bak` beim Laden, `SaveTracked` mit `.bak` nach dem Rücklesen; Schreiber über
+  `MeasureAreaShare` und `MeasureTankbuster`, sauber ohne Schadensplus am Wirkenden und ohne Verwundbarkeit auf einem
+  gemessenen Mitglied; `TankbusterReading` mit `IsValid` und unveränderlichen Werten; die alten Dateien lassen
+  ungültige Werte aus; Kopfzeile des `DefenseTrace.log` mit beiden Revisionsständen. `SaveHostileCastingAreaPotential`
+  und `SaveTankbusterPotential` entfernt: nur im Fork, ohne Aufrufer, abgelöst durch das Speichern je Messung.
+- *Prüfmittel:* `check_learned_writes.py` in der CI (kein Schreiber außerhalb des Speichers; gegen den Stand davor vier
+  Stellen gemeldet). `revision_harness/run.sh`: der C#-Code der Revision außerhalb des Spiels, 300 Läufe des Modells, die
+  fünf Prüfungen halten; JSON-Rundlauf des Tankbuster-Formats samt NaN in Quarantäne; Selbsttest mit vier eingebauten
+  Fehlern, jeder erkannt; nicht in der CI (kein .NET, kein Dalamud auf dem Prüfrechner). `check_fixed_values.py` zählt
+  den C#-Code von `revision_harness` nicht: Seine Zahlen sind Annahmen des Tests, keine Aussagen des Plugins.
+- *Review:* eigene Durchsicht und Code-Review (Stufe „high"). Behoben: ein unbrauchbarer Platz der
+  Erweiterungsversionen hätte die Version auf Dauer unlesbar gemacht (jetzt übergangen); der XML-Kommentar von `Files`
+  hing an einem Revisionsspeicher; Einträge mit fremder laufender Schicht fehlten in der Zählung der Kopfzeile; LINQ
+  (gesperrt, RS0030); ein leerer Eintrag einer von Hand bearbeiteten Datei hätte das Laden beendet; die
+  Tankbuster-Messung lief unter der Sperre der Leser samt Vorbereitung des Speicherns; zwei Kommentare sagten noch „nur
+  eine Erhöhung" und „die Datei löschen"; der Ladebericht nannte die alte Datei, wo die Leser die Revisionen sehen; eine
+  Warnung bei unlesbarer Version je Messung; die Ausnahme in der Zahlenprüfung galt für ganz `.github/`; die
+  Schreibprüfung las nur ein Projekt; ein Tankbuster-Wert, den Schichten und Tabelle teilen, war änderbar. Nicht
+  übernommen: die Bewertung 0 als unsaubere Messung – sie ist eine echte Messung, kommt nur als erste und hemmt die
+  Senkung nur (Konzept); seltener speichern – verlöre bei einem Absturz die Zählungen eines Kampfes (fünf Abstürze am
+  29.10.2026, A455), Preis rund 124 KB je Speichern bei 220 Einträgen.
+- *Falsifikation:* Kein Defekt? Ohne Revision gilt nach einem Patch jeder alte Wert in beide Richtungen. Option falsch?
+  Die Verworfenen im Konzept; keine liefert dieselben Daten mit weniger Risiko für den Bestand. Ausgeliefert, und nichts
+  ändert sich? Im Kampf gewollt. Was nicht wirken könnte: eine beim Laden noch unlesbare Spielversion – dann gehen die
+  Messungen bis zur ersten lesbaren in die übernommene Schicht, und die Kopfzeile nennt es.
+- *Im Kampf:* nichts; jeder Leser bekommt den Höchstwert aller gültigen Messungen wie vorher. Eine unlesbare Datei eines
+  gelernten Speichers startet nicht mehr leer, sondern mit ihrer Sicherung.
+- *Prüfgrad:* kompiliert ohne Warnung, CI-Prüfungen lokal, Modell gerechnet, C#-Code außerhalb des Spiels gegen
+  Zufallsläufe; im Spiel nicht beobachtet, das Lesen der Spielversion nur dort prüfbar (Kopfzeile).
+
 ---
 ## B · Commit-Register (Fork vs. `upstream/main`)
 

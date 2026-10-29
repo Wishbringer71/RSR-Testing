@@ -36,6 +36,15 @@ What this release changes in the fight. For the whole distance from upstream, se
 
 ## The learned lists
 
+- **The area and tankbuster tables count every reading under the game version it was taken in.** Nothing changes in a
+  fight: every rule still reads the highest valid reading. Each reading is now kept, not only one that raises the value,
+  in `HostileCastingAreaPotential.rev.json` and `TankbusterPotential.rev.json` beside the old files, which RSR goes on
+  writing; after the next patch RSR can tell which values the new version has confirmed. To start one of these tables
+  over by hand, delete both of its files with the game closed.
+- **A learned table that cannot be read comes back from its backup.** Every learned table keeps a copy of its last save
+  that was read back (`.bak`). A file that cannot be read is set aside as before, and the backup is loaded instead of
+  starting empty - where every area cast counted as unrated for the session and every tankbuster as unmeasured. A file
+  you deleted stays deleted.
 - **A tankbuster nothing names is learned from its first hit.** A tankbuster that neither the tankbuster list nor a
   marker names - RSR knows it only because the enemy casts it at its target, a tank - was never measured, so the
   tankbuster plan never took it, and a lethal one killed at every repeat. Its hit on a tank is now learned like any
