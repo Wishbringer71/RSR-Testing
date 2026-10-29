@@ -13510,6 +13510,39 @@ Löschungen").
 - *Ergebnis:* ein Defekt (Schlaf), ins TODO an erster Stelle; ein offener Punkt im Spiel bestätigt; A453s offene
   Frage beantwortet. Prüfgrad: Trace und Tabellen statisch ausgewertet, Namen anderer Spieler nur in der Sitzung.
 
+### A458 · Upstream 33cd2a99b ausgewertet: Beirutas 0-GCD-Opener, beim Beschwörer zwei Schalter nicht übernommen (29.10.2026)
+
+- *Gemessen* am Auftragsende (Skill `upstream-sync`): vier neue Commits auf `upstream/main` (33cd2a99b, PR #1412 von
+  BeirutaNa1na, 29.10.2026): BeirutaPCT, BeirutaRDM, BeirutaNIN und `SMN_Reborn`. Konflikt nur in `SMN_Reborn.cs`, in
+  Main und Arbeits-Branch gleich.
+- *Beirutas eigene Rotationen:* ein Öffnungsmodus „Balance"/„0 GCD" und Feinheiten der Opener; kein Fork-Code berührt,
+  Swiftcast nicht neu verbraucht. Unverändert übernommen.
+- *Beschwörer, vier Änderungen, je bewertet:*
+  - „Restrict Searing Light with (Solar) Bahamut" (ab Werk an; aus: Searing Light, sobald bereit) – *nicht
+    übernommen.* The Balance (Summoner Basic Guide, abgerufen am 29.10.2026): „Aligning with other party buffs should
+    be prioritized over aligning with your own burst phases." Das richtet den Buff nach den anderen aus, eine Annahme
+    über sie, die nach seiner Spielweise kein tragender Grund ist; die Bindung an die Lage ist seine Vorgabe (Konzept
+    12), und für einen Beschwörer fällt „on cooldown" mit dem Solar-Fenster zusammen. Ein Schalter, der im Fork nur
+    diese Regel abschaltete, wäre eine Funktion ohne Bedarf.
+  - „Opener/Burst open window" (ab Werk „0 GCD" = bisheriges Verhalten; „Balance" hält Searing Light, Energy Drain und
+    die Enkindles die ersten 5 s zurück) – *nicht übernommen:* derselbe Grund, dazu ein fester Wert ohne Herleitung.
+  - Energy Drain und Siphon auch unter dem eigenen Searing Light außerhalb einer Demi – *übernommen.* Die inneren
+    Bedingungen verlangen weiter eine laufende Beschwörung (`SummonTime`) oder ein sterbendes Bossziel; außerhalb einer
+    Demi wirkt die Änderung also nur auf einen sterbenden Boss. Mein erster Kommentar dazu sagte mehr; vor dem Commit
+    am Code berichtigt.
+  - Ruin IV in der Ifrit-Phase, wenn kein Ruby Rite geht (in Bewegung, oder die Phase endet vor dessen Wirkzeit) –
+    *übernommen,* nach Crimson Strike, also ohne die Nahkampffolge zu trennen. The Balance: „any time between
+    demi-primal phases (except during the 1-2 melee combo during Ifrit phase)". Im Kampf: ein GCD in Bewegung, der
+    bisher ausfiel, trifft mit Ruin IV.
+- *Gebaut:* Main 9cadda56c → a4c8144f7 (Konflikt gelöst, Aktionsmatrix des Beschwörers neu erzeugt), Branch c28d3138f;
+  beide kompiliert ohne Warnung, CI-Prüfungen lokal 38 und 40 Schritte ohne Fehler. Konzepte 12 („Ausgeschlossen")
+  und 14 („Beschwörer") fortgeschrieben.
+- *Falsifikation:* Kein Defekt? Die beiden Schalter ändern ab Werk nichts; ihr Wegfall nimmt ihm nur eine Wahl, die
+  seine Vorgabe ausschließt – wünscht er sie doch, ist sie eine Zeile. Option falsch? Für Ruin IV und Energy Drain
+  folgt der Fork Upstream; bei Searing Light seiner eigenen Regel. Ausgeliefert, und nichts ändert sich? Bei Energy
+  Drain fast nichts (sterbender Boss), bei Ruin IV nur in Bewegung oder am Phasenende.
+- *Prüfgrad:* statisch am Code und an der Quelle, kompiliert; im Spiel nicht beobachtet.
+
 ---
 ## B · Commit-Register (Fork vs. `upstream/main`)
 

@@ -793,6 +793,14 @@ Verlust, aber der Pfad gibt das nicht her: `AttackAbility` wird in `CustomRotati
   dass ein anderer Solar hält, bis zu 5,5 Punkte weniger, weil sie dann für den Rest des Kampfes in Bahamut
   und Phoenix bleibt (Tabelle unter „Gemessen"). Sie rückte zudem weiter, ohne dass jemand zuvorgekommen
   ist, was Punkt 2 seiner Vorgabe nicht vorsieht.
+- **Upstreams Schalter „Restrict Searing Light with (Solar) Bahamut" und „Opener/Burst open window"** (33cd2a99b,
+  29.10.2026). Der erste gibt Searing Light frei, sobald es bereit ist; der zweite hält es in der Variante „Balance"
+  die ersten 5 s des Kampfes zurück, damit es mit den Buffs der Gruppe fällt, die meist nach zwei GCDs kommen. Beides
+  richtet Searing Light nach den anderen aus – eine Annahme über sie, die nach seiner Spielweise kein tragender Grund
+  ist; die Bindung an die Lage ist seine Vorgabe (Abschnitt „Seine Vorgabe"), und für einen Beschwörer fällt „on
+  cooldown" mit dem Solar-Fenster ohnehin zusammen. Die 5 s sind zudem ein fester Wert ohne Herleitung. Übernommen
+  sind aus demselben Commit Energy Drain unter dem eigenen Searing Light – außerhalb einer Demi wirkt das nur auf einen
+  sterbenden Boss – und Ruin IV in der Ifrit-Phase (Konzept 14, „Beschwörer").
 - **Das Solar-Fenster nur beim Betreten beobachten**, wie das Phasenbuch bucht. Ein fremder Buff, der einen
   Augenblick nach dem Betreten fällt, bliebe ungesehen; im synchronen Pull kostete das im Modell bis zu zehn
   Punkte.

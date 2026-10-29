@@ -631,10 +631,10 @@ wenige Sekunden vor Searing Light und dem Fenster der Gruppe.
 |---|---|---|---|
 | Opener | Titan zuerst; Ruin III vorab gewirkt | Ruin III im Countdown, Reihenfolge ab Werk Titan, Garuda, Ifrit | deckt sich |
 | Searing Light | „on cooldown to align with all other two minute party buffs" | im Solar-Fenster, Sonderfälle mehrerer Beschwörer | Konzept 12 |
-| Energy Drain | früh in der Demi | in jeder großen Beschwörung, sobald der Aetherflow leer ist | deckt sich |
+| Energy Drain | früh in der Demi | in jeder großen Beschwörung, sobald der Aetherflow leer ist; unter dem eigenen Searing Light außerhalb einer Demi nur auf einen sterbenden Boss (Upstream 33cd2a99b, A458) | deckt sich |
 | Sunflare, Exodus, Akh Morn, Revelation | unter Buffs | sofort in der großen Beschwörung, nach Searing Light | deckt sich |
 | Mountain Buster | jede Gunst sofort einweben | nach Searing Light und Lux Solaris, vor dem Aetherflow | deckt sich |
-| Ruin IV | eine je Zyklus, nie in einer Demi | nur außerhalb der Demi und der Primal-Phase (`UseFillers`) | deckt sich |
+| Ruin IV | eine je Zyklus, nie in einer Demi; „any time between demi-primal phases (except during the 1-2 melee combo during Ifrit phase)" (abgerufen am 29.10.2026) | außerhalb der Demi am Ende einer Phase (`UseFillers`) und in der Ifrit-Phase, wenn kein Ruby Rite geht – etwa in Bewegung –, nach Crimson Strike (Upstream 33cd2a99b, A458) | deckt sich |
 | Ruin III | so selten wie möglich, Demis nicht verzögern | nur als letzter Füller | deckt sich |
 | Ifrit | in Nahkampfreichweite, Crimson Cyclone schließt auf | Crimson Cyclone nur bis 3 Yalm (Einstellung), Ifrit im Rückfallblock nur am Ziel | weicht ab: Aus einer sicheren Position holt ihn RSR nicht für Schaden (seine Regel) |
 | Swiftcast | Wiederbelebung zuerst, Slipstream nur situativ | Wiederbelebung (Einstellung an), alle Rotationsoptionen dafür ab Werk aus | deckt sich mit seiner Regel |
