@@ -724,7 +724,10 @@ public sealed class SMN_Reborn : SummonerRotation
 			return true;
 		}
 
-		if (inBigInvocation)
+		// Under the own Searing Light as well (upstream 33cd2a99b). Outside a demi the checks below still ask for a running
+		// summon, so there it lets only a dying boss take Energy Drain or Siphon before the buff runs out (concept 14,
+		// "Beschwörer").
+		if (inBigInvocation || HasSearingLight)
 		{
 			if (EnergySiphonPvE.CanUse(out act))
 			{
@@ -1129,6 +1132,14 @@ public sealed class SMN_Reborn : SummonerRotation
 		}
 
 		if (!DreadwyrmTrancePvE.Info.EnoughLevelAndQuest() && HasHostilesInRange && AetherchargePvE.CanUse(out act))
+		{
+			return true;
+		}
+
+		// Ruby Rite needs a still player; moving, the Further Ruin goes in its place, after Crimson Strike, so the melee
+		// combo stays whole - The Balance: "any time between demi-primal phases (except during the 1-2 melee combo during
+		// Ifrit phase)" (upstream 33cd2a99b; concept 14, "Beschwörer").
+		if (RubyAttunement && AttunementCount != 0 && HasFurtherRuin && RuinIvPvE.CanUse(out act, skipAoeCheck: true))
 		{
 			return true;
 		}
