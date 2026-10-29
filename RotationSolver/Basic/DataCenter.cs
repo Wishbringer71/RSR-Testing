@@ -4100,6 +4100,10 @@ internal static class DataCenter
 	/// three mitigations and a barrier stood at 25 % instead of about 34 % (Seelenüberfluss, 26.10.2026, A419), and the
 	/// bell, the heal ahead and the size rule read the small figure. Read here, mitigation another player has laid for
 	/// this hit makes it smaller, and one that runs out before the cast ends does not.
+	/// <para>A reading stored before that form (<see cref="OtherConfiguration.AreaPotentialUnmitigated"/> without the
+	/// action) is the hit as it arrived, often under mitigation; taking the mitigation standing now off it again read a
+	/// raidwide stored at 25 % as 22.5 % under another player's 10 %, below the size of a large barrier, and the size rule
+	/// could skip the mitigation it gave before. Such a reading is read as before until the action is measured (A446).</para>
 	/// </remarks>
 	internal static bool AreaShareNow(uint actionId, IBattleChara? caster, out float share)
 	{
@@ -4107,6 +4111,12 @@ internal static class DataCenter
 		{
 			share = 0f;
 			return false;
+		}
+
+		if (!OtherConfiguration.AreaPotentialUnmitigated.ContainsKey(actionId))
+		{
+			share = unmitigated;
+			return true;
 		}
 
 		var horizon = caster != null && caster.IsCasting ? Math.Max(0f, caster.TotalCastTime - caster.CurrentCastTime) : 0f;

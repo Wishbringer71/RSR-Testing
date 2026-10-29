@@ -57,7 +57,8 @@ by the mitigation that stood on the member and on the caster by the figures of t
 does - and read as that figure times the mitigation still standing when the cast lands, on the least protected member.
 `DataCenter.AnnouncedAreaShare` and `DataCenter.AnnouncedHitIsSmall` answer for that expected hit: a raidwide measured
 under three mitigations no longer reads small, and one other players have already mitigated reads smaller. Readings
-stored before stay as they are and count as unmitigated until the next landing raises them.
+stored before stay as they are and are read as before, without the mitigation standing now taken off them, until the
+action is measured again (`AreaPotentialUnmitigated.json` lists the actions measured since).
 
 ### Behaviour change in RotationSolver.Basic: every running heal over time lowers the heal thresholds
 

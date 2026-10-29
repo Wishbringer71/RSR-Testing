@@ -133,6 +133,14 @@ internal class OtherConfiguration
 	public static Dictionary<uint, float> HostileCastingAreaPotential = [];
 
 	/// <summary>
+	/// The actions of <see cref="HostileCastingAreaPotential"/> measured since its readings are stored unmitigated (A441),
+	/// by action id; the value is that form's number, 1. An entry without it holds a reading of the earlier form - the hit
+	/// as it arrived, often under mitigation - and is read as it was then, without the mitigation standing now taken off
+	/// it a second time (A446). Written on the game thread with the table, merged with the file by the higher form.
+	/// </summary>
+	internal static Dictionary<uint, int> AreaPotentialUnmitigated = [];
+
+	/// <summary>
 	/// What each tankbuster does to the one it hits, scaled back to unmitigated, as a share of that
 	/// member's maximum HP - keyed by action id. Learned in play from every tankbuster seen on any
 	/// player, not only on the user (concept 13, "Die Tankbuster-Tabelle").
@@ -616,6 +624,9 @@ internal class OtherConfiguration
 		new LearnedFile<float>(nameof(HostileCastingAreaPotential),
 			() => new Dictionary<uint, float>(HostileCastingAreaPotential), v => HostileCastingAreaPotential = v,
 			Math.Max, state => AreaPotentialStoreState = state, "rated action(s)", IsWithinWholeHealth, DropBeyondWholeHealth),
+		new LearnedFile<int>(nameof(AreaPotentialUnmitigated),
+			() => new Dictionary<uint, int>(AreaPotentialUnmitigated), v => AreaPotentialUnmitigated = v,
+			Math.Max, state => AreaPotentialUnmitigatedState = state, "rated action(s) measured unmitigated"),
 		new LearnedFile<TankbusterReading>(nameof(TankbusterPotential), CopyTankbusterPotential,
 			v => { lock (TankbusterPotentialGate) { TankbusterPotential = v; } },
 			TankbusterReading.Higher, state => TankbusterStoreState = state, "rated tankbuster(s)"),
@@ -809,6 +820,11 @@ internal class OtherConfiguration
 	public static Task SaveHostileCastingArea() => SaveList(nameof(HostileCastingArea));
 
 	public static Task SaveHostileCastingAreaPotential() => SaveList(nameof(HostileCastingAreaPotential));
+
+	internal static Task SaveAreaPotentialUnmitigated() => SaveList(nameof(AreaPotentialUnmitigated));
+
+	/// <summary>What the last save and load of <see cref="AreaPotentialUnmitigated"/> did, in words.</summary>
+	internal static string AreaPotentialUnmitigatedState { get; private set; } = "not loaded yet";
 
 	public static Task SaveTankbusterPotential() => SaveList(nameof(TankbusterPotential));
 

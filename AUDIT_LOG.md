@@ -12997,6 +12997,25 @@ Löschungen").
   Wortlaut; als seine Vorgabe gekennzeichnet, stand sie über der Regel, dass eine Ableitung nicht als seine
   ausgegeben wird (C133).
 
+### A446 · Rückschritt aus A441: alte Flächenwerte zweimal gemindert gelesen, behoben (29.10.2026)
+
+- *Gefunden* bei der Überarbeitung der Vorlage A443 nach seiner Rüge: Seit A441 nimmt `DataCenter.AreaShareNow` vom
+  gespeicherten Wert die beim Einschlag stehende Minderung ab, weil er ungemindert gespeichert sei. Für einen Wert von vor
+  A441 stimmt das nicht: Er ist der Treffer, wie er ankam, oft unter Minderung – die 850 ausgelieferten Einträge mindert
+  RSR, solange sie unbewertet sind, also ist ihre erste Messung meist gemindert.
+- *Im Kampf:* Seelenüberfluss, gespeichert mit 25 % (unter drei Minderungen gemessen, A419), las RSR unter 10 % fremder
+  Minderung als 22,5 % – unter der Größe einer großen Barriere. Bei gesunder Gruppe ließ die Größenregel die eigene
+  Minderung aus, die sie vor A441 gab, und der Treffer kam mit rund 32 % an. Nicht tödlich bei voller Gesundheit, aber
+  ein Rückschritt in der gefährlichen Richtung, und A441 hatte ihn als „gilt als ungemindert, bis die nächste Landung
+  ihn anhebt" hingenommen – die Entscheidung vor dieser Landung fiel auf dem zu kleinen Wert.
+- *Behoben:* `OtherConfiguration.AreaPotentialUnmitigated` führt je Aktion, ob sie seit A441 gemessen wurde (eigene
+  Datei, wie die übrigen gelernten Tabellen zusammengeführt). Ohne Eintrag liest `AreaShareNow` den Wert wie vor A441;
+  mit Eintrag gemindert wie seit A441. Jede Messung seit A441 setzt den Eintrag, auch eine, die den Wert nicht hebt: Der
+  gespeicherte ist dann mindestens eine ungeminderte Messung. Die Vorlage zur Revision (A447) fasst das als Stand des
+  Messverfahrens je Eintrag allgemein.
+- *Prüfgrad:* statisch, Compile ohne Warnung, alle Prüfschritte; im Spiel nicht beobachtet. Messmittel: die Liste zeigt
+  „unmitigated" je Eintrag, das Protokoll „measured … unmitigated" je Messung.
+
 ---
 ## B · Commit-Register (Fork vs. `upstream/main`)
 

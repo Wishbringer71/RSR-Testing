@@ -802,7 +802,11 @@ haben diesen Grund aufgehoben.
 
 Was bleibt, liegt in der sicheren Richtung oder korrigiert sich: Eine Barriere und eine Minderung, die kein Wirktext
 beziffert, werden nicht herausgerechnet; der Wert fällt zu klein aus, und der nächste Treffer unter weniger davon hebt
-ihn. Werte, die vor A441 unter Minderung abgelegt wurden, gelten als ungemindert, bis die nächste Landung sie anhebt.
+ihn. Ein Wert, der vor A441 abgelegt wurde, ist der Treffer, wie er ankam, oft unter Minderung; er wird gelesen wie
+damals, ohne die jetzt stehende Minderung ein zweites Mal abzuziehen, bis die Aktion neu gemessen ist
+(`OtherConfiguration.AreaPotentialUnmitigated`, A446). Sonst las RSR Seelenüberfluss mit 25 % unter 10 % fremder
+Minderung als 22,5 %, unter der Größe einer großen Barriere, und die Größenregel konnte die Minderung auslassen, die sie
+vorher gab.
 Eine Minderung anderer Spieler, die beim Einschlag steht, macht den erwarteten Treffer kleiner, und die Größenregel
 spart dann die eigene, solange der Rest niemanden unter die Heilschwelle drückt und unter einem großen Schild bleibt;
 eine eigene, eben gelegte Minderung ebenso. Das ist die Frage der Einstellung („whose measured damage would leave

@@ -34,4 +34,4 @@ What this release changes in the fight. For the whole distance from upstream, se
   heal ahead of the hit, the White Mage's bell — reads it under the mitigation that will still stand when the cast lands:
   what others have already laid makes the hit smaller, and your own party mitigation goes out where the rest of the hit
   would still push someone to where healing is called for, or is at least the size of a large barrier. Ratings learned
-  before count as unmitigated until the next landing raises them; a barrier is not divided out.
+  before are read as they were until the action lands again; a barrier is not divided out.

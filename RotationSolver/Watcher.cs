@@ -161,6 +161,18 @@ public static class Watcher
 		return true;
 	}
 
+	// An action measured since the readings are stored unmitigated (A441). Until then its stored reading is of the earlier
+	// form - the hit as it arrived, often under mitigation - and DataCenter.AreaShareNow reads it as it was read then,
+	// without taking the mitigation standing now off it a second time (A446). A reading of the new form that does not
+	// raise the stored one still marks it: the stored figure is then at least an unmitigated measurement.
+	private static void MarkMeasuredUnmitigated(uint actionId)
+	{
+		if (OtherConfiguration.AreaPotentialUnmitigated.TryAdd(actionId, 1))
+		{
+			_ = OtherConfiguration.SaveAreaPotentialUnmitigated();
+		}
+	}
+
 	// A listed cast that lands several times - a series of hits after one cast, Bodyweight Exorcism's four in three-second
 	// steps - is rated by what the whole series takes from a member, not by its largest hit: one hit of it leaves
 	// everybody above the area heal line, the series does not, and "Skip mitigation for small area casts" mitigates
@@ -496,6 +508,11 @@ public static class Watcher
 		{
 			OtherConfiguration.HostileCastingAreaPotential[listed] = highestShare;
 			_ = OtherConfiguration.SaveHostileCastingAreaPotential();
+		}
+
+		if (highestShare > 0f)
+		{
+			MarkMeasuredUnmitigated(listed);
 		}
 
 		if (highestShare > 0f)
@@ -1004,6 +1021,8 @@ public static class Watcher
 							OtherConfiguration.HostileCastingAreaPotential[id] = highestShare;
 							_ = OtherConfiguration.SaveHostileCastingAreaPotential();
 						}
+
+						MarkMeasuredUnmitigated(id);
 					}
 					else if (highestShare == 0f && beyondHealth == 0 && zeroWithoutBarrier > 1 && zeroWithoutBarrier == damageEntries
 						&& OtherConfiguration.HostileCastingArea.Contains(set.Action!.Value.RowId)
@@ -1016,6 +1035,7 @@ public static class Watcher
 						var id = set.Action!.Value.RowId;
 						OtherConfiguration.HostileCastingAreaPotential[id] = 0f;
 						_ = OtherConfiguration.SaveHostileCastingAreaPotential();
+						MarkMeasuredUnmitigated(id);
 						DataCenter.RecordAreaMeasurementOutcome(id, "measured", $" at no damage on {zeroWithoutBarrier} party members without a barrier");
 						DefenseTrace.Line($"area cast {set.Action!.Value.Name.ExtractText()} #{id}: no damage on {zeroWithoutBarrier}"
 							+ " party members without a barrier - rated 0 %");
