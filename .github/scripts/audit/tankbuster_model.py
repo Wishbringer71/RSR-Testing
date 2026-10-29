@@ -22,10 +22,15 @@ Checked per run, against the true world state:
   O10 no mitigation the plan presses for the cast reaches the server after the snapshot (the end of the cast
       there) - "alles nach schadenseingang bringt auch nix" (his note, 12.10.2026);
   O11 a stun that ends with a press left before the end of the cast and the invulnerability available leaves
-      the tank alive: no bundle that cannot be pressed in time is planned instead.
+      the tank alive: no bundle that cannot be pressed in time is planned instead;
+  O12 a tankbuster of several hits (A454): a plan that said "survivable" (a bundle), took the cast as covered by an
+      invulnerability (Z1) or drew one survives every hit of the series under what truly stands at it - the bundle
+      sized for the sum of the series and standing until H_S = H + its span, the invulnerability pressed late enough
+      to stand until H_S where it can and counted as covering only until H_I (concept 09, "H_S").
 
 Impact follows the snapshot: a mitigation counts when the server has applied it by the end of the cast there,
-which the client sees half a round trip later; Holmgang's floor counts when the damage is dealt, after that.
+which the client sees half a round trip later; Holmgang's floor counts when the damage is dealt, after that. A later
+hit of a series takes its own snapshot, the same time after the end of the cast as the hit.
 
 The self-test switches on, one at a time, the defects review rounds found in the built code
 (A263) and the refusal rule his note rejected (A267): each has to be caught by at least one check. A model that cannot find them would not
@@ -96,6 +101,11 @@ class Defects:
     stun_noted: bool = False      # a refusal under a stun leaves the member out for a GCD, as one for MP or range
     no_deadline: bool = False     # mitigation is pressed until the cast ends, not until the measured round trip before
     no_slots: bool = False        # a bundle is chosen whether or not its members still fit before the deadline
+    per_hit: bool = False         # the table rates a series by its largest hit (before A454)
+    no_span: bool = False         # the series' sum without its span: members count that run out before its last hit
+    invul_early: bool = False     # the invulnerability pressed once it covers the first hit, its window without the span
+    z1_first_hit: bool = False    # an invulnerability counts as covering the cast once it lasts until the first hit
+    z1_series_only: bool = False  # ... only once it lasts until the series' last hit, even where none can reach that far
 
 
 @dataclass
@@ -131,6 +141,13 @@ class World:
     apply_delay: float = 0.6      # from the snapshot to the damage being dealt (Holmgang counts then)
     rtt_known: bool = True        # a round trip press -> confirmation has been measured
     spacing_known: bool = True    # the time a press keeps the next one back has been measured
+    offsets: list = field(default_factory=lambda: [0.0])   # each hit's snapshot after the cast's (series, A454);
+                                                           # its damage follows apply_delay later
+    shares: list = field(default_factory=lambda: [1.0])    # each hit's part of the series' sum
+
+    @property
+    def span(self):
+        return self.offsets[-1] - self.offsets[0]
 
 
 def own_left(w, act, t):
@@ -167,13 +184,42 @@ def snapshot(w):
     return w.cast_time - w.latency / 2
 
 
-def counts_at_impact(w, s):
-    at = snapshot(w) + (w.apply_delay if s.act.invul else 0.0)
+def counts_at_impact(w, s, offset=0.0):
+    """Whether status s counts for the hit <offset> seconds after the end of the cast: applied on the server by that
+    hit's snapshot (Holmgang: by its damage) and still standing then."""
+    at = snapshot(w) + offset + (w.apply_delay if s.act.invul else 0.0)
     return s.applied <= at and s.left(at) >= 0
 
 
 def ready_by(w, act, t, seconds):
     return w.cooldown_until.get(act.name, -1e9) <= t + seconds
+
+
+def span_of(w, d):
+    """The span of the series the table holds, from its first hit to its last (none in the defect variant)."""
+    return 0.0 if d.no_span else w.span
+
+
+def predicted_of(w, d):
+    """What the table holds for the series: its sum, or its largest hit in the defect variant (before A454)."""
+    return w.hit * (max(w.shares) if d.per_hit else 1.0)
+
+
+def invul_horizon(w, d, R, H, span):
+    """H_I: what an invulnerability has to last until to cover the cast - the series' last hit, or where none can reach
+    that far, as far as one pressed at the last GCD reaches (concept 09, A454)."""
+    if d.z1_first_hit:
+        return H - span
+    if d.z1_series_only:
+        return H
+    return min(H, R + HOLMGANG.duration - GCD)
+
+
+def invul_window(w, d, act):
+    """The rest of the cast at which the invulnerability goes out: late enough to stand until H_S, at the latest at the
+    last GCD, where Z3 stops holding the rest (concept 09, A454)."""
+    span = 0.0 if d.invul_early else w.span
+    return min(act.duration - GCD, max(act.duration - GCD - span, GCD))
 
 
 def plan(w, d, t, read_t, R_read, H_read, P_read, B_read):
@@ -183,14 +229,16 @@ def plan(w, d, t, read_t, R_read, H_read, P_read, B_read):
         lag = round(lag / TICK_RES) * TICK_RES - TICK_RES
     R = max(0.0, R_read - lag)
     H = max(0.0, H_read - lag)
+    span = span_of(w, d)
+    HI = invul_horizon(w, d, R, H, span)
 
     plan.counted = set()
     plan.double = set()
-    # Z1: an invulnerability over the horizon - status, or a record that stands
+    # Z1: an invulnerability over H_I - status, or a record that stands
     for r in w.records:
-        if r.act.invul and not r.seen and (r.covered or r.act.duration - (t - r.press) >= H):
+        if r.act.invul and not r.seen and (r.covered or r.act.duration - (t - r.press) >= HI):
             return 'Z1', [], R, H
-    if any(s.act.invul and t >= s.shown and s.left(t) >= H for s in w.statuses):
+    if any(s.act.invul and t >= s.shown and s.left(t) >= HI for s in w.statuses):
         return 'Z1', [], R, H
 
     pending, standing_live = [], set()
@@ -229,7 +277,7 @@ def plan(w, d, t, read_t, R_read, H_read, P_read, B_read):
     for act in KIT:
         if act in pending or act.name in standing_live:
             continue
-        if act.duration - GCD <= GCD or not ready_by(w, act, t, max(0.0, R - GCD)):
+        if act.duration - GCD - span <= GCD or not ready_by(w, act, t, max(0.0, R - GCD)):
             continue
         refused_left = max(0.0, w.refused_until.get(act.name, -1) - t)
         limit = (R > 2 * GCD) if d.refusal_fixed else (R - refused_left > GCD)
@@ -281,7 +329,7 @@ def plan(w, d, t, read_t, R_read, H_read, P_read, B_read):
     return 'Z4', sorted((a for a, _ in cands), key=lambda a: -(P_read * (1 - a.factor) + a.barrier)), R, H
 
 
-def held(w, state, members, act, R):
+def held(w, state, members, act, R, span=0.0):
     """The concept's hold for a press from another path (no command, one known cast)."""
     if not w.opt_b:
         return False
@@ -294,7 +342,7 @@ def held(w, state, members, act, R):
     if state == 'Z2':
         if R <= GCD and any(ready_by(w, m, 0, 0) and m.name not in [a.name for _, a, _ in w.pressed] for m in members):
             return False
-        return not (act in members and R <= act.duration - GCD)
+        return not (act in members and R <= act.duration - GCD - span)
     return False
 
 
@@ -310,8 +358,8 @@ def bundle_exists_true(w, t):
     the last GCD - off cooldown by then, and not refused with the refusal running into the last GCD
     (a member that can only be retried inside it is no means "ohne Risiko")."""
     R = w.cast_time - t
-    acts = [a for a in KIT if ready_by(w, a, t, max(0.0, R - GCD)) and a.duration - GCD > GCD
-            and own_left(w, a, w.cast_time + GCD) < 0
+    acts = [a for a in KIT if ready_by(w, a, t, max(0.0, R - GCD)) and a.duration - GCD - w.span > GCD
+            and own_left(w, a, w.cast_time + GCD + w.span) < 0
             and not (w.refused_until.get(a.name, -1) > t and w.cast_time - w.refused_until[a.name] <= GCD
                      and not w.refused_by_stun.get(a.name))]
     if not w.opt_b:
@@ -322,8 +370,9 @@ def bundle_exists_true(w, t):
         free = max(free, w.stun_at + w.stun_len - t)
     D = R - w.latency
     fit = 0 if D <= free else int(-(-(D - free) // LOCK))
-    # the concept's horizon: the hit lands at most one GCD after the cast ends ("ohne Risiko")
-    standing = [s.act for s in w.statuses if s.left(w.cast_time + GCD) >= 0 and not s.act.invul]
+    # the concept's horizon: the first hit lands at most one GCD after the cast ends, the last its span later
+    # ("ohne Risiko", A454)
+    standing = [s.act for s in w.statuses if s.left(w.cast_time + GCD + w.span) >= 0 and not s.act.invul]
     for k in range(min(len(acts), fit) + 1):
         for combo in itertools.combinations(acts, k):
             f, b = 1.0, w.hp
@@ -339,8 +388,9 @@ def run(w, d):
     t = 0.0
     read_t = 0.0
     R_read = w.cast_time
-    H_read = R_read + GCD
-    P_read, B_read = w.hit, w.hp
+    span = span_of(w, d)
+    H_read = R_read + GCD + span
+    P_read, B_read = predicted_of(w, d), w.hp
     tracked = {}
     violations = []
     last_state = None
@@ -389,7 +439,7 @@ def run(w, d):
         elif t >= w.lock_until:
             for act in members:
                 if act.invul and state == 'Z3':
-                    if R <= act.duration - GCD:
+                    if R <= invul_window(w, d, act):
                         if w.refuse_at is not None and abs(t - w.refuse_at) < dt and act.name not in w.refused_until:
                             # in the game only a block on every ability refuses it (stun, amnesia): nothing goes
                             # out from any path until it ends; RSR notes the refusal for a GCD
@@ -400,7 +450,7 @@ def run(w, d):
                             continue   # the rejected rule: no retry for a GCD after a refusal
                         if bundle_exists_true(w, t):
                             violations.append(('O3', w.seed, t, act.name))
-                        press(w, act, t, 'plan', H)
+                        press(w, act, t, 'plan', invul_horizon(w, d, R, H, span))
                         break
                     continue
                 if not w.opt_b:
@@ -409,7 +459,7 @@ def run(w, d):
                     continue   # after the deadline a press for this cast is lost
                 if any(a is act for _, a, _ in w.pressed[-1:]) and t - w.pressed[-1][0] < LOCK:
                     continue
-                if R > act.duration - GCD or not ready_by(w, act, t, 0):
+                if R > act.duration - GCD - span or not ready_by(w, act, t, 0):
                     continue
                 if w.refused_until.get(act.name, -1) > t:
                     continue
@@ -426,7 +476,7 @@ def run(w, d):
         # free paths
         if w.other and t >= w.lock_until and not blocked(w, t) and rng.random() < 0.05:
             want = rng.choice(KIT)
-            if ready_by(w, want, t, 0) and (d.hold_off or not held(w, state, members, want, R)):
+            if ready_by(w, want, t, 0) and (d.hold_off or not held(w, state, members, want, R, span)):
                 press(w, want, t, 'other', H)
         if w.shake_at is not None and abs(t - w.shake_at) < dt:
             needed = any(a.dispelled_by_shake and a.name in tracked for a in KIT)
@@ -450,8 +500,8 @@ def run(w, d):
         gap = rng.uniform(0.0, next_dt * 0.3)
         read_t = t + gap
         R_read = w.cast_time - read_t
-        H_read = R_read + GCD
-        P_read, B_read = w.hit, w.hp
+        H_read = R_read + GCD + span
+        P_read, B_read = predicted_of(w, d), w.hp
         plan.in_reading = set()
         for s in w.statuses:
             if read_t >= s.shown and s.left(read_t) >= H_read and not s.act.invul:
@@ -462,17 +512,27 @@ def run(w, d):
             if not r.seen and own_left(w, r.act, read_t) > r.prior_left:
                 r.seen = True
 
-    # O1 and O4 at impact: what the server applied by the snapshot (Holmgang: by the damage)
-    f, b = 1.0, w.hp
-    for s in w.statuses:
-        if not s.act.invul and counts_at_impact(w, s):
-            f *= s.act.factor
-            b += s.act.barrier
-    invul_holds = any(s.act.invul and counts_at_impact(w, s) for s in w.statuses)
-    survived = invul_holds or w.hit * f < b
+    # O1 and O4 at impact: what the server applied by each hit's snapshot (Holmgang: by the damage); a series takes
+    # every hit under what stands at it, and its damage adds up (A454)
+    taken, survived, margin, invul_holds = 0.0, True, 0.0, False
+    for offset, part in zip(w.offsets, w.shares):
+        f, b = 1.0, w.hp
+        for s in w.statuses:
+            if not s.act.invul and counts_at_impact(w, s, offset):
+                f *= s.act.factor
+                b += s.act.barrier
+        invul_holds = any(s.act.invul and counts_at_impact(w, s, offset) for s in w.statuses)
+        if not invul_holds:
+            taken += w.hit * part * f
+            if taken >= b:
+                survived = False
+        margin = b - taken
+    series = len(w.offsets) > 1
     if last_state == 'Z2' and not survived:
-        violations.append(('O1', w.seed, w.cast_time, 'survivable plan did not survive'))
-    if last_state == 'Z2' and not invul_holds and b - w.hit * f <= w.line:
+        violations.append(('O12' if series else 'O1', w.seed, w.cast_time, 'survivable plan did not survive'))
+    if series and (last_state == 'Z1' or (w.invul_pressed and last_state == 'Z3')) and not survived:
+        violations.append(('O12', w.seed, w.cast_time, 'the invulnerability ran out before the series was over'))
+    if last_state == 'Z2' and not invul_holds and margin <= w.line:
         violations.append(('O9', w.seed, w.cast_time, 'the planned bundle left the tank at the invulnerability line'))
     for (tp, act, by) in w.pressed:
         if by.startswith('plan') and not act.invul and \
@@ -520,6 +580,34 @@ def world(seed, scenario):
     if scenario.get('stun_long'):
         # stunned from the start of the cast until shortly before its end: every press falls into the last moment
         stun_at, stun_len = 0.0, cast_time - rng.uniform(0.02, 1.2)
+    # a tankbuster of several hits (A454), shaped after the series concept 13 names: Lead Hook (three hits 1.1 s apart),
+    # Crush Helm (four small hits, the large one 6.1 s after the cast), Bitter Whirlwind (three hits 3.3 and 3.1 s
+    # apart), or any series up to 6.4 s long
+    offsets, shares = [0.0], [1.0]
+    kind = scenario.get('series')
+    if kind == 'lead_hook':
+        offsets, shares = [0.0, 1.1, 2.2], [1 / 3] * 3
+    elif kind == 'crush_helm':
+        # the large hit's snapshot 5.8 s after the cast's, its damage apply_delay later: 6.2 s or more after the cast
+        offsets, shares = [0.0, 1.0, 2.0, 3.0, 5.8], [0.04] * 4 + [0.84]
+    elif kind == 'whirlwind':
+        offsets, shares = [0.0, 3.3, 6.4], [1 / 3] * 3
+    elif kind == 'random':
+        offsets = [0.0]
+        for _ in range(rng.randint(1, 4)):
+            nxt = offsets[-1] + rng.uniform(0.8, 3.3)
+            if nxt > 6.4:
+                break
+            offsets.append(nxt)
+        weights = [rng.uniform(0.1, 1.0) for _ in offsets]
+        shares = [x / sum(weights) for x in weights]
+    statuses = []
+    cooldown = {DAMNATION.name: 1e9} if scenario.get('no_damnation') else {}
+    if scenario.get('invul_standing'):
+        # pressed by hand before the cast, ending during the series; on cooldown for this cast
+        applied = cast_time - rng.uniform(4.0, 8.0)
+        statuses.append(Status(HOLMGANG, applied, applied))
+        cooldown[HOLMGANG.name] = 1e9
     return World(
         seed=seed,
         cast_time=cast_time,
@@ -543,8 +631,11 @@ def world(seed, scenario):
         opt_a=scenario.get('opt_a', True),
         opt_b=scenario.get('opt_b', True),
         other=bool(scenario.get('other')),
-        cooldown_until={DAMNATION.name: 1e9} if scenario.get('no_damnation') else {},
+        cooldown_until=cooldown,
+        statuses=statuses,
         line=scenario.get('line', 0.0),
+        offsets=offsets,
+        shares=shares,
     )
 
 
@@ -568,6 +659,14 @@ SCENARIOS = [
     {'no_rtt': True}, {'no_spacing': True}, {'no_rtt': True, 'stun_late': True},
     {'stun_long': True}, {'stun_long': True, 'tight': True}, {'stun_long': True, 'invul': False},
     {'stun_long': True, 'line': 0.15},
+    # a tankbuster of several hits: its sum, its span, the invulnerability until its last hit (A454)
+    {'series': 'lead_hook'}, {'series': 'crush_helm'}, {'series': 'whirlwind'}, {'series': 'random'},
+    {'series': 'crush_helm', 'invul': False}, {'series': 'whirlwind', 'invul': False}, {'series': 'random', 'invul': False},
+    {'series': 'random', 'tight': True}, {'series': 'random', 'line': 0.15}, {'series': 'random', 'other': True},
+    {'series': 'crush_helm', 'stun': True}, {'series': 'whirlwind', 'other': True}, {'series': 'random', 'shake': True},
+    {'series': 'lead_hook', 'no_rtt': True},
+    {'series': 'whirlwind', 'invul_standing': True}, {'series': 'crush_helm', 'invul_standing': True},
+    {'series': 'random', 'invul_standing': True},
     # Left out: a long stun before the spacing of presses has been measured. Until then the plan does not count
     # presses, as before the deadline was built, and a set that no longer fits after the stun kills (O1, O11). The
     # measurement comes from any instant press without a lock running, so it stands from the first press after the
@@ -612,6 +711,11 @@ def self_test():
         'stun_noted': Defects(stun_noted=True),
         'no_deadline': Defects(no_deadline=True),
         'no_slots': Defects(no_slots=True),
+        'per_hit': Defects(per_hit=True),
+        'no_span': Defects(no_span=True),
+        'invul_early': Defects(invul_early=True),
+        'z1_first_hit': Defects(z1_first_hit=True),
+        'z1_series_only': Defects(z1_series_only=True),
     }
     missed = []
     for name, d in variants.items():

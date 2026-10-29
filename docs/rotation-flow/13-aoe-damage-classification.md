@@ -405,7 +405,9 @@ Ersticken des Fleisches (6 s Wirkzeit) traf ihn am 19.10.2026 zweimal je viermal
 je Treffer und zusammen 49 und 54 %: einzeln ein Treffer, der ihn über der Flächenheilschwelle lässt, zusammen nicht. Der Text von „Skip mitigation for small area casts"
 mindert voll, wenn nach dem Treffer Heilung fällig wird; mit dem Einzeltreffer hätte die Regel die Minderung gegen die
 ganze Serie gespart. Zwei Gegner, die dieselbe Aktion im selben Moment wirken, zählen ebenso zusammen – sie treffen die
-Gruppe zusammen.
+Gruppe zusammen. *Offen* (TODO „Mehrfach treffender Raidwide: Minderung über die ganze Serie"): Die Flächenserie kennt
+ihre Dauer nicht, und die Größenregel rechnet die Minderung, die beim Ende des Balkens steht, für die ganze Summe; die
+Tankbuster-Serie lernt ihre Dauer seit A454 (Konzept 09, „H_S").
 
 **Fortgeschrieben wird als Höchstwert über alle Durchläufe.** Der Wert kann nur steigen, und jeder
 Anstieg wirkt beim nächsten Verbrauch sofort.
@@ -672,36 +674,111 @@ da aber beim speichern nicht die gleichen fehler." Dazu seine Frage: „kannst d
 spieler auswerten?" Anlass ist sein Hinweis, dass sich ohne den erwarteten Schaden nicht sagen lässt, ob ein
 Tankbuster tödlich ist. Eine öffentliche Quelle dafür gibt es nicht (A258).
 
-**Gebaut (A259):** `OtherConfiguration.TankbusterPotential`, je Aktion zwei Werte als Anteil an den maximalen LP
-des Getroffenen: der ungeminderte Schaden ohne Verwundbarkeit und der unter Verwundbarkeit. Beide steigen nur.
-Messung in `TankbusterTable`, Ablage über denselben gesicherten Weg wie die Flächentabelle.
+**Gebaut (A259, A454):** `OtherConfiguration.TankbusterPotential`, je Aktion zwei Werte als Anteil an den maximalen LP
+des Getroffenen: der ungeminderte Schaden ohne Verwundbarkeit und der unter Verwundbarkeit – jeweils, was ein Tank aus
+einem Cast zusammen nimmt, alle seine Treffer summiert –, dazu die Dauer dieser Serie vom ersten bis zum letzten Treffer
+in Sekunden (`TankbusterReading.Span`). Alle drei steigen nur. Messung in `TankbusterTable`, Ablage über denselben
+gesicherten Weg wie die Flächentabelle.
 
 ### Was gemessen wird
 
 - **Welche Treffer:** jeder Treffer einer gegnerischen Aktion, die in der Tankbuster-Liste steht oder deren
-  Tankbuster-Marker bestätigt wurde (`TankbusterMarkerWatch.RecordHit`), auf **jeden Tank** unter den Spielern. Das
-  schließt den Co-Tank ein und in großen Inhalten Tanks anderer Gruppen. Die LP und Status anderer Spieler liegen vor.
+  Tankbuster-Marker bestätigt wurde (`TankbusterMarkerWatch.RecordHit`), und jeder Treffer eines Casts, den der Plan als
+  Tankbuster nimmt, samt dessen Folgetreffern (Absatz „Ein Tankbuster ist der Cast samt seiner Treffer"), auf **jeden
+  Tank** unter den Spielern. Das schließt den Co-Tank ein und in großen Inhalten Tanks anderer Gruppen. Die LP und Status anderer Spieler liegen vor.
   Ein Treffer auf einen Nicht-Tank wird nicht abgelegt (A312): Jeder Leser rechnet für einen Tank – der Plan des
   Spielers, der Tankwechsel –, und dem Nicht-Tank fehlen die Minderung des Tank-Merkmals, die kein Status trägt, und
   die größere Maximalgesundheit; ein Fehlschlag an ihm höbe den Wert für jeden Tank, im Extremfall über die ganze
   Gesundheit hinaus. Das Protokoll schreibt ihn mit „(not a tank) … not stored". Keiner der Leser liest die Tabelle für
   einen Nicht-Tank, also fehlt dort nichts.
+- **Ein Tankbuster ist der Cast samt seiner Treffer** (A454). Abgelegt wird, was ein Tank aus einem Cast zusammen nimmt,
+  unter der Id, die der Plan liest: der des Casts.
+  - *Warum:* Bei jedem erhobenen mehrfach einschlagenden Tankbuster mit Cast kommt ein Teil der Treffer unter anderen
+    Ids als der Cast, oft von einem Helfer. Lead Hook (Criterion, 4 s): der erste Treffer unter dem Cast, der zweite und
+    dritte unter zwei anderen Zeilen, je 1,1 s später. Crush Helm (P12S, 5 s): Cast des Bosses auf sich selbst, vier
+    kleine Treffer eines Helfers, die eine Verwundbarkeit stapeln, dann der große 6,1 s nach dem Balken. Void Meteor
+    (Golbez, Extreme): vier Kometen eines Helfers ab dem Balken im Abstand von 1 s, der Meteor 4,1 s nach dem Balken.
+    Bitter Whirlwind (Zoraal Ja, Extreme): drei Treffer im Abstand von 3,3 und 3,1 s, zwischen ihnen ein Tankwechsel
+    oder eine Unverwundbarkeit (BossModReborn ae64e33 vom 20.10.2026, Werkzeugquelle; Namen, Wirkzeiten und
+    Angriffstypen aus den Spielblättern, xivapi v2). In seinen Mitschnitten vom 25. bis 28.10.2026: Knallregen
+    (Alexander – The Arm of the Son, 2,0 s laut Blatt) drei bis sechs Treffer im Abstand von 2,14 bis 2,18 s, ab dem
+    zweiten unter der Nachbarzeile; Valfodr (Pilgrim's Traverse, 5 s) drei bis vier Treffer bis 7 s nach dem Balken;
+    Quadrupel-Triade (5 s) zwei Treffer im Abstand von 2,6 bis 2,8 s. Bis A454 lag jeder Treffer einzeln als Höchstwert
+    unter seiner eigenen Id. Der Plan las nur den ersten Treffer (Lead Hook, Knallregen unter der Id des Casts; Crush
+    Helm über den Marker den ersten kleinen) oder nichts (Void Meteor), das Bündel reichte für einen Bruchteil, und eine
+    kurze Minderung, die den ersten Treffer deckte, war beim großen schon abgelaufen. In seinen Abwehrprotokollen steht
+    keine Serie: Die Mehrfachtreffer dort nannte weder Liste noch Marker; seine Mitschnitte belegen Einzelfälle, nicht
+    ihr Fehlen.
+  - *Zuordnung:* `TankbusterTable` verfolgt jedes Wirken der Gegner, die RSR liest (`DataCenter.AreaCasters`), mit
+    Wirker, Id, Name, Angriffstyp, Ziel und Ende des Balkens; jeder Cast ist eine eigene Instanz. Ein Treffer auf einen
+    Tank gehört zu dem Cast mit seiner Id, sonst zu dem mit seinem Namen – Cast und Treffer heißen in allen erhobenen
+    Fällen gleich, ausgenommen die Kometen von Void Meteor („Void Comet") –, dessen Balken höchstens ein Serienfenster
+    vor dem Treffer endete und der auf diesen Tank oder auf kein Gruppenmitglied zielte (auf sich selbst, den Boden).
+    Unter mehreren gilt der Cast des Wirkers, der trifft; der eines anderen Wirkers nur, wenn ein nicht anvisierbarer
+    Helfer trifft. Bei mehreren Instanzen gilt die, deren Balken zuletzt vor dem Treffer endete. Ein Cast mit anderer
+    Schadensart als der Treffer – physisch gegen magisch – zählt nicht: Die Vorhersage legt die Minderung nach der Art
+    des Casts auf. Ein Cast ohne Angriffstyp (die sichtbaren Casts der Bosse) zählt, die Vorhersage nimmt dann die
+    kleinere der beiden Minderungen und rechnet eher zu viel.
+  - *Wann ein Treffer zählt:* wenn Liste oder Marker ihn nennen (wie bisher); wenn er zu einem Cast gehört, den der Plan
+    als Tankbuster nimmt – gelistet, gemessen oder als Wirken auf das eigene Ziel (Absatz „Auch ohne Liste und Marker");
+    oder wenn er die offene Serie seines Namens auf diesem Tank fortsetzt (die Folgezeilen, die keine Liste nennt).
+    Einen Treffer, den Liste oder Marker nennen und den kein Cast seiner Id oder seines Namens erklärt, rechnet die
+    Zuordnung dem Tankbuster-Cast zu, dessen Fenster auf diesem Tank offen ist – gelistet oder gemessen, auf diesen Tank
+    oder auf kein Mitglied gezielt, von derselben Schadensart oder ohne eine –, sonst der offenen Serie eines solchen Casts: Die Kometen von Void Meteor treffen
+    ab dem Balken, vor dem Meteor, und gehören so zu seiner Serie.
+  - *Die Serie:* Ein Treffer setzt sie fort, solange er dem vorigen früher folgt – der erste dem Ende des Balkens – als
+    das Serienfenster: die Wirkzeit des Casts laut Blatt, mindestens ein GCD (`DataCenter.DefaultGCDTotal`). Die
+    Wirkzeit, weil ein neuer Cast derselben Aktion mindestens so lange braucht; einen neuen Balken trennt die Zuordnung
+    ohnehin. Der GCD für Treffer ohne Cast (Bahamut's Claw, UCoB: fünf Treffer in 3,2 s) und weil binnen eines GCD keine
+    Heilung zwischen zwei Treffer kommt. Alle erhobenen Abstände liegen im Fenster, Knallregen (2,14 s gegen 2,0 s
+    Wirkzeit) nur durch den GCD. Mit einem Tankwechsel zwischen den Treffern hat jeder Tank seine eigene Serie.
+  - *Ohne Cast:* Treffer, die kein Cast erklärt – ein Marker ohne Wirken –, bilden die Serie unter der Id ihres ersten
+    Treffers, derselben, die der Marker lernt (Konzept 09, „Ein Marker ohne Wirken"); ihr Fenster ist die Wirkzeit
+    dieser Zeile, mindestens ein GCD.
+  - *Abgelegt* wird, wenn die Serie endet – ihr Fenster ist ohne weiteren Treffer verstrichen, oder die Ziellisten
+    werden außerhalb des Kampfes geleert –, einmal je Serie; je Treffer schreibt das Protokoll den Zwischenstand. Bis
+    zum Ende kann ein späterer Treffer die Serie noch unbrauchbar machen; je Treffer abgelegt, bliebe der Zwischenstand
+    stehen, weil die Tabelle nur steigt. Abgelegt werden die Summe der ungeminderten Anteile – jeder Treffer mit der
+    Minderung zurückgerechnet, die bei ihm stand – und die Dauer vom ersten bis zum letzten Treffer, beide als
+    Höchstwert, die Dauer auch ohne höhere Summe. Ob unter Verwundbarkeit, entscheidet der erste Treffer: Eine
+    Verwundbarkeit, die ein früherer Treffer derselben Serie legte (Crush Helm), gehört zum Tankbuster und kommt mit ihm
+    wieder. Nicht abgelegt wird eine Serie mit einem Treffer von einem Angreifer mit Schadensverstärkung, bei einem
+    Wirken auf das eigene Ziel mit einem Treffer, der mehr als ein Ziel erreicht, und mit einem Treffer ohne Schaden
+    (Unverwundbarkeit, Ausweichen): Ihre Summe wäre nur eine Untergrenze, und der Plan hielte für sie die übrige Abwehr
+    zurück. Vor A454 lag in diesem Fall der ungedeckte Rest als Einzeltreffer in der Tabelle. Ein Effektsatz zählt je
+    Tank einmal. Serien und verfolgte Casts verfallen mit ihrem Fenster und mit den Ziellisten außerhalb des Kampfes.
+  - *Wer liest:* der Plan die Summe als P und die Dauer für den Horizont (Konzept 09, „Die Rechnung"); die Hilfe für das
+    Ziel eines Tankbusters ebenso (`DataCenter.AimedTankbusterLeaves`); der Tankwechsel die Summe („eine Wiederholung
+    bringt dich um") unter der Id, unter der die Serie liegt. Der Marker lernt als seinen Treffer ebendiese Id – die des
+    Casts, wenn einer ihn erklärt (Konzept 09, „Ein Marker ohne Wirken"); steht er vor dem Balken, plant RSR so schon
+    mit der Serie. Für einen Tankbuster aus einem Treffer ändert sich nichts: Summe und Treffer sind gleich, die Dauer
+    ist 0.
+  - *Fehlerrichtung:* Zu kurz – die Serie zerfällt in Einzeltreffer wie vor A454 – wird sie, wenn der Beobachter einen
+    kürzeren GCD hat als der Abstand (Knallregen bei einem GCD unter 2,14 s); der Höchstwert behält die längere Serie
+    eines anderen Beobachters. Zu lang wird sie nur ohne neuen Cast: Zwei Einsätze ohne Balken binnen eines Fensters
+    verschmelzen, und ein gleichnamiger Treffer, der nicht zum Tankbuster gehört, erhöht die Summe – beides mehr Abwehr,
+    die sichere Richtung (Stufe 3). Heilung zwischen den Treffern zählt nicht: Die Summe ist, was der Tank ohne Heilung
+    nimmt, wie der Plan rechnet (Konzept 09, „Ohne Risiko"); bei langen Serien kleiner Treffer (Knallregen: sechs
+    Treffer zusammen 85 % der maximalen LP über 11 s, gemessen unter der Minderung, die stand) gibt der Plan damit mehr
+    Abwehr aus, als die Heiler nötig machten.
+  - *Grenzen:* Einen Treffer anderen Namens, den weder Liste noch Marker nennen, führt nichts mit seinem Cast zusammen.
+    Wirkt ein Helfer eine ungelistete, ungemessene Aktion, liest RSR seinen Cast nicht; sein Treffer geht an den
+    sichtbaren Cast gleichen Namens, wenn der Boss einen wirkt, sonst bleibt er unter seiner eigenen Id. Endet das
+    Plugin, bevor eine Serie endet, geht sie verloren.
 - **Auch ohne Liste und Marker** (A452): der Treffer eines Casts, den RSR nur als Wirken eines Gegners auf sein eigenes
-  Ziel für einen Tankbuster nimmt (`DataCenter.IsHostileCastingTank`, Rückfall) – ein anvisierbarer Gegner, kein
-  Helfer, nicht unterbrechbar, länger als ein GCD, auf einen Tank. `TankbusterTable.UpdateAimedCasts` verfolgt solche
-  Casts je Wirker und Aktion bis einen GCD nach dem Balken; der Effekt-Handler erkennt ihre Landung am Wirker, am Ziel
-  und an derselben Id oder an einer Zeile gleichen Namens und gleichen Angriffstyps (in seinem Mitschnitt vom
-  26.10.2026 landeten 84 von 85 gezielten Casts über 2,5 s unter ihrer eigenen Id, einer – Valfodr – unter der
-  Nachbarzeile). Abgelegt wird unter der Id des Casts, die die Vorhersage liest, mit dem Kennzeichen
-  `TankbusterReading.AimedOnly`. Ein Treffer, der mehr als ein Ziel erreicht – auch in einer anderen Allianzgruppe –,
-  ist ein Cleave oder Raidwide und wird so nicht gelernt.
+  Ziel für einen Tankbuster nimmt (`DataCenter.IsHostileCastingTank`, Rückfall) – ein anvisierbarer Gegner, kein Helfer,
+  nicht unterbrechbar, länger als ein GCD, auf einen Tank. Seine Landung erkennt die Zuordnung des vorigen Absatzes; in
+  seinem Mitschnitt vom 26.10.2026 landeten 84 von 85 gezielten Casts über 2,5 s unter ihrer eigenen Id, einer – Valfodr
+  – unter der Nachbarzeile. Abgelegt wird unter der Id des Casts, die die Vorhersage liest, mit dem Kennzeichen
+  `TankbusterReading.AimedOnly`, solange kein Treffer der Serie unter Liste oder Marker kam. Ein Treffer, der mehr als
+  ein Ziel erreicht – auch in einer anderen Allianzgruppe –, ist ein Cleave oder Raidwide und wird so nicht gelernt.
   - *Wer ihn liest:* nur der Tankbuster-Plan, für einen Cast auf den Spieler, und er hält für ihn nichts weiter zurück
     (Konzept 09). Für die Leser, die die Abwehr öffnen oder Hilfe rufen (`IsLearned`: `IsKnownTankbusterCastAt`,
     `AimedTankbusterLeaves`, Helfererkennung), ist er kein bekannter Tankbuster: Im Pull ist er jeder Trash-Zauber auf
     den Tank, und mit ihm kehrte die Staffel zurück, die A395 im Pull abgestellt hat. Der Tankwechsel bleibt bei Liste
     und Marker. Eine Landung unter Liste oder Marker hebt das Kennzeichen für immer auf.
-  - *Grenzen:* Ein Treffer, den ein unsichtbarer Helfer statt des Wirkers bringt, wird so nicht erkannt; bei
-    ausgeschaltetem RSR ohne Auto-On aktualisiert RSR die Ziele nicht und verfolgt nichts.
+  - *Grenzen:* Einen Treffer, den ein unsichtbarer Helfer statt des Wirkers bringt, erkennt die Zuordnung nur unter dem
+    Namen des Casts; bei ausgeschaltetem RSR ohne Auto-On aktualisiert RSR die Ziele nicht und verfolgt nichts.
 - **Kein Raidwide:** Eine Aktion der Flächenliste hat schon einmal jedes Mitglied getroffen; sie ist nicht der
   Tankbuster eines Markers, auch wenn sie das markierte Mitglied trifft, solange der Marker steht
   (`TankbusterTable.IsPartyWide`). Bis A337 zählte jede Aktion in diesem Fenster: In seinen Protokollen vom 22. und
@@ -732,13 +809,14 @@ Messung in `TankbusterTable`, Ablage über denselben gesicherten Weg wie die Fl�
   - Damit drückt ein gut geminderter Treffer die Aktion nicht nach unten; die Flächentabelle rechnet seit A441
     ebenso zurück (Abschnitt „Grenzen der Messung").
 - **Unter Verwundbarkeit getrennt:** Trägt der Getroffene eine Verwundbarkeit, geht der Wert in die zweite Zahl.
-  Ausgenommen ist eine, die genau dieser Treffer legt (Effektsatz): Sie kam mit ihm und hat ihn nicht verstärkt.
+  Ausgenommen ist eine, die genau dieser Treffer legt (Effektsatz): Sie kam mit ihm und hat ihn nicht verstärkt. In
+  einer Serie entscheidet ihr erster Treffer, und was ihre Treffer legen, gehört zum Tankbuster (A454).
   Ob das Spiel sie beim Eintreffen des Effekts schon gesetzt hat, ist nicht belegt; die Ausnahme macht die Frage
   gegenstandslos.
   Sonst würde der zweite Treffer einer Wechselmechanik die Aktion selbst als so hart einstufen.
 - **Null zählt nicht:** Ein Treffer ohne Schaden – Unverwundbarkeit, Ausweichen – sagt, dass etwas ihn aufhielt,
-  nicht, dass er harmlos ist. Eine Barriere gehört nicht dazu: Ein Treffer, den sie ganz auffängt, trägt seinen
-  vollen Betrag (A449).
+  nicht, dass er harmlos ist; eine Serie mit ihm wird nicht abgelegt (Absatz „Ein Tankbuster ist der Cast samt seiner
+  Treffer"). Eine Barriere gehört nicht dazu: Ein Treffer, den sie ganz auffängt, trägt seinen vollen Betrag (A449).
 
 **Fehler nur nach unten:**
 - Eine Minderung, die kein Text beziffert (unverknüpfter Status, Merkmalswert unterhalb der Merkmalsstufe), wird nicht herausgerechnet.
@@ -1027,6 +1105,8 @@ nie wieder versucht, auch wenn ein Patch ihn schlafbar machte.
 2. *Ein neues Messverfahren von RSR:* A298 (Treffer über die ganze Gesundheit), A312 (Tankbuster nur an Tanks), A337
    (Raidwides aus der Tankbuster-Tabelle), A441 (Fläche ungemindert) änderten die Bedeutung gespeicherter Werte. A446
    zeigt den Preis, wenn das nicht geführt wird: Alte Flächenwerte wurden ein zweites Mal gemindert gelesen.
+   A454 (die Treffer eines Casts als Summe statt jedes Treffers einzeln) ändert die Bedeutung ohne Entwertung: Ein
+   alter Wert unter der Id eines Casts ist einer seiner Treffer, also eine Untergrenze, und die erste Serie hebt ihn.
 3. *Eine Änderung am Server ohne neue Clientversion:* von hier nicht erkennbar. Gedeckt nur in der Richtung, in der der
    Höchstwert sich selbst hebt.
 4. *Messfehler in einer Version, nach unten:* eine Messung bei gleicher Stufe ohne die Gegenstandsstufengrenze des
@@ -1063,7 +1143,7 @@ ungeprüft einsparen darf (Regel 4), und wie schnell der Einschlag den alten Wer
   eigenes Ziel. Bis A452 lernte die Tabelle ihn nie, und er tötete bei jeder Wiederholung; jetzt lernt sie ihn mit dem
   Kennzeichen „nur als Wirken auf das Ziel", und der Plan nimmt ihn ab dem zweiten Cast – mit der Unverwundbarkeit, aber
   ohne den Rest zurückzuhalten (Abschnitt „Die Tankbuster-Tabelle", „Auch ohne Liste und Marker"). Bringt ein
-  unsichtbarer Helfer den Treffer, bleibt er ungelernt.
+  unsichtbarer Helfer den Treffer, lernt sie ihn, wenn er den Namen des Casts trägt (A454).
 - *Quarantäne:* Sie gilt je Speicher nach dessen Grenze (Regel 7). Über der ganzen Gesundheit ist ein Tankbuster-Wert
   gültig; sonst bliebe Beispiel 1 auf Dauer tödlich.
 

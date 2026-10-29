@@ -138,7 +138,7 @@ beiden Optionen an ist:
 | Zustand | Wann | Was gedrückt wird | Was zurückgehalten wird |
 |---|---|---|---|
 | Z0 kein Plan | kein gemessenes Wirken auf dich, oder jede Fähigkeit ist über das Ende des Wirkens hinaus gesperrt | nichts | nichts; unter Heiligem Boden oder Meteoritenfall über den nächsten GCD: alles Bewertete auf dich |
-| Z1 gedeckt | eine Unverwundbarkeit steht über H (Status oder eigener Druck) | nichts | alles Bewertete auf dich |
+| Z1 gedeckt | eine Unverwundbarkeit steht über H_I (Status oder eigener Druck; „Die Rechnung") | nichts | alles Bewertete auf dich |
 | Z2 Bündel S | das billigste Bündel S übersteht c, und seine ungedrückten Glieder passen in die Druckplätze bis zur Frist; S darf leer sein | jedes Glied von S in seinem Fenster, bis zur Frist | alles Bewertete auf dich außer S; ein Glied von S erst ab seinem Fenster; im letzten GCD nichts mehr, wenn ein Glied fehlt; nach der Frist nichts mehr |
 | Z3 Unverwundbarkeit | kein Bündel übersteht c, sie ist einen GCD vor dem Einschlag verfügbar | sie, in ihrem Fenster; nach einer Ablehnung im nächsten Durchlauf neu | alles Bewertete auf dich, solange R > GCD |
 | Z4 alles | kein Bündel, keine verfügbare Unverwundbarkeit | jedes verfügbare Glied in seinem Fenster bis zur Frist, das wertvollste zuerst | nichts |
@@ -172,45 +172,83 @@ Wirken zurück, wenn die Deckung über jedes Wirken reicht.
 **Invarianten**, solange zurückgehalten wird (aus keinem Pfad):
 1. Die Unverwundbarkeit wird nie geplant, solange ein Bündel reicht, dessen Glieder bis zum letzten GCD noch gedrückt
    werden können – auch eines mit einem eben abgelehnten Glied.
-2. Steht eine Unverwundbarkeit über H oder ist sie für c gedrückt, geht für c keine Minderung mehr hinaus (Z1), auch
+2. Steht eine Unverwundbarkeit über H_I oder ist sie für c gedrückt, geht für c keine Minderung mehr hinaus (Z1), auch
    nicht vom Plan selbst und auch ohne „Spend only …" (seine Präzisierung zu „alles"). Holmgang und Totenerweckung
    eingeschlossen; wie viele LP nach ihrem Ende bleiben, rechnet der Plan nicht.
 3. Das Zurückhalten trifft nie Heilung, Hilfe für andere, nach außen wirkende Flächenabwehr oder das Befohlene; ein
    Befehl gibt nur sich selbst frei.
 4. Ein Glied von S geht aus keinem Pfad vor seinem Fenster hinaus; fehlt im letzten GCD eines, endet das Zurückhalten.
-5. Ein Kandidat braucht eine bekannte Wirkdauer von mehr als zwei GCD: Sein Fenster muss sich vor dem letzten GCD
-   öffnen.
+5. Ein Kandidat braucht eine bekannte Wirkdauer von mehr als zwei GCD plus der Dauer der Serie: Sein Fenster – der
+   Druck, ab dem er bis H_S steht – muss sich vor dem letzten GCD öffnen.
 6. Nach einem Druck gibt es keinen Durchlauf, in dem die Aktion weder Kandidat noch stehend ist.
 
 ### Die Rechnung
 
-1. **Was der Treffer nimmt (P):** der höchste je gemessene ungeminderte Anteil der Aktion an deinen maximalen LP
-   (Konzept 13), mal jede Minderung, die über H steht – deine (gegen seine Schadensart, Dark Mind je Art), die
+1. **Was der Treffer nimmt (P):** die höchste je gemessene ungeminderte Summe dessen, was ein Tank aus einem Cast der
+   Aktion nimmt – bei einem Tankbuster aus mehreren Treffern alle zusammen (Konzept 13, „Ein Tankbuster ist der Cast
+   samt seiner Treffer", A454) –, als Anteil an deinen maximalen LP, mal jede Minderung, die über H_S steht – deine (gegen seine Schadensart, Dark Mind je Art), die
    Reflexion des Co-Tanks, Zermürben oder Stumpfsinn auf dem Boss, eine Minderung eines Heilers auf dir – und geteilt
    durch eine Erhöhung der maximalen LP, die dann steht (`TankbusterTable.PredictedShare`).
-2. **Was du hast (B):** LP jetzt plus die Barrieren, die über H stehen; läuft eine vorher ab, zählt keine (die früheste
+2. **Was du hast (B):** LP jetzt plus die Barrieren, die über H_S stehen; läuft eine vorher ab, zählt keine (die früheste
    entscheidet). Ein großer Heilerschild, der hält, zählt voll – sein Hinweis.
 3. **Was du noch tun kannst:** jede eigene Abwehr, die erlernt, aktiviert und nach ihren eigenen Prüfungen nutzbar ist
    (Ressourcen eingeschlossen), bis einen GCD vor dem Einschlag abgeklungen ist, eine bekannte Wirkdauer von mehr als
-   zwei GCD hat, sich rechnen lässt – Minderung gegen diese Schadensart, Barriere oder Erhöhung der maximalen LP – und
-   beim Einschlag nicht schon steht. Ein Knopf zählt einmal (Rachsucht/Verdammnis, Urinstinkt/Urimpuls).
+   zwei GCD plus der Dauer der Serie hat, sich rechnen lässt – Minderung gegen diese Schadensart, Barriere oder
+   Erhöhung der maximalen LP – und über H_S nicht schon steht. Ein Knopf zählt einmal (Rachsucht/Verdammnis, Urinstinkt/Urimpuls).
 4. **Das geringste Mittel:** unter allen Bündeln dieser Abwehr das billigste, mit dem P unter B bleibt, abzüglich der
    Linie, an der die eigene Unverwundbarkeit gezogen wird (A304, siehe „Überlebt heißt: über der Linie"). Billig nach der
    Abklingzeit des Verbrauchten, bei Gleichstand das kleinere Bündel – was am wenigsten Abklingzeit kostet, lässt am
    meisten für den nächsten Tankbuster (meine Lesart von „geringstes notwendiges Mittel", nicht seine Regel). Reicht
    der Treffer schon ohne alles nicht zum Tod, ist das Bündel leer.
 
-**H, der Horizont:** Restzeit des Wirkens R plus ein GCD für das Eintreffen des Treffers. **Entschieden (A315): bleibt.**
-Nach dem Snapshot-Beleg (Mechanik) genügte für einen einzelnen Treffer das Ende des Wirkens; in seinen Protokollen als
-Krieger kam er 0,26 bis 0,39 s nach dem Ende des Wirkbalkens (drei Treffer, 13.10.2026). Der GCD darüber ist eine
-Sicherheitsmarge, kein Ersatz für eine unbekannte Zeit: Er deckt einen Tankbuster mit mehreren oder nachlaufenden
-Treffern („Ein Tankbuster ist nicht ein Einschlag", Abschnitt „Living Dead ist ein Zeitproblem") und Holmgang, dessen
-Untergrenze beim Zufügen zählt. Sein Preis liegt auf Stufe 3 der Rangordnung – Fenster öffnen bis zu einen GCD später,
+**H, der Horizont des ersten Treffers:** Restzeit des Wirkens R plus ein GCD für sein Eintreffen. **Entschieden
+(A315): bleibt.** Nach dem Snapshot-Beleg (Mechanik) genügte für einen einzelnen Treffer das Ende des Wirkens; in seinen
+Protokollen als Krieger kam er 0,26 bis 0,39 s nach dem Ende des Wirkbalkens (drei Treffer, 13.10.2026). Der GCD
+darüber ist eine Sicherheitsmarge, kein Ersatz für eine unbekannte Zeit: Er deckt die Ankunft des ersten Treffers und
+Holmgang, dessen Untergrenze beim Zufügen zählt. Sein Preis liegt auf Stufe 3 der Rangordnung – Fenster öffnen bis zu einen GCD später,
 kurze Glieder brauchen eine Wirkdauer über zwei GCD –, ein kürzerer Horizont riskierte Stufe 1. Dasselbe gilt für die
 übrigen GCD-Größen des Plans: das Ende des Zurückhaltens im letzten GCD (Sicherheitsnetz neben den Druckplätzen, A307),
 die Bestätigung, die nach einem GCD verfällt (ein Ablauf an der gemessenen Laufzeit zählte einen verspätet bestätigten
 Druck als verloren und drückte bei Ladungen doppelt), und die Ablehnung für MP oder Reichweite, deren Ende das Spiel
 nicht nennt.
+
+**H_S, der Horizont der Serie** (A454): H plus die gemessene Dauer der Serie vom ersten bis zum letzten Treffer
+(`TankbusterReading.Span`, Konzept 13); für einen Tankbuster aus einem Treffer ist H_S = H. Was den Treffer mindert oder
+auffängt – die Minderungen in P, die Barrieren in B, jedes Glied und sein Fenster –, muss bis H_S stehen: Die Summe P
+gilt nur, wenn die Minderung bei jedem ihrer Treffer steht.
+- *Warum:* Bis A454 nahm der Absatz zu H an, der GCD decke mehrfache und nachlaufende Treffer. Das ist widerlegt
+  (C135): Crush Helm trifft groß 6,1 s, Void Meteor 4,1 s nach dem Balken, Valfodr in seinem Mitschnitt bis 7 s danach
+  (Konzept 13, „Ein Tankbuster ist der Cast samt seiner Treffer"). Eine Minderung von 8 s durfte der Plan bei einem GCD
+  von 2,5 s ab 5,5 s vor dem Ende des Balkens drücken; so gedrückt, endete sie 3,6 s vor dem großen Treffer von Crush Helm, und der Plan
+  zählte sie trotzdem.
+- *Preis* (Stufe 3): Glieder, die nicht bis H_S reichen, zählen nicht – bei Crush Helm, dessen großer Treffer 6,1 s
+  nach dem Balken kommt, keines mit 8 s Wirkdauer –; der Plan wählt dann längere oder die Unverwundbarkeit. Das gilt
+  auch für eine Barriere (Schwärzeste Nacht, Herz des Korunds), die der erste Treffer schon aufbrauchen könnte: Wie viel
+  sie vor ihrem Ende auffängt, hängt von der Verteilung der Treffer ab, und die Tabelle kennt nur Summe und Dauer. Die
+  GCD-Marge liegt auch auf H_S, weil die Dauer vom ersten Treffer an gemessen ist und der Marker ohne Wirken keinen
+  Balken hat.
+- *Erst ab dem zweiten Cast:* Beim ersten kennt die Tabelle die Serie nicht und hält nichts oder einen einzelnen
+  Treffer; dann gilt H_S = H wie vor A454.
+- *Die Unverwundbarkeit, H_I:* Sie deckt c, wenn sie bis H_S steht; wo keine bis dahin reicht, so weit, wie eine am
+  letzten GCD gedrückte reichte: H_I = min(H_S, R + Wirkdauer − GCD). Gedrückt wird sie so spät, dass sie bis H_S steht:
+  Ihr Fenster öffnet bei R ≤ Wirkdauer − GCD − Dauer der Serie, spätestens bei R = GCD, wo das Zurückhalten von Z3 endet.
+  Bis A454 öffnete es bei R ≤ Wirkdauer − GCD, für 10 s also 7,5 s vor dem Ende des Balkens; so früh gedrückt, endete
+  sie 2,5 s nach ihm – vor dem zweiten Treffer von Bitter Whirlwind (3,3 s danach), den BossModReborn mit
+  Unverwundbarkeit oder Tankwechsel lösen lässt, und vor dem großen von Crush Helm (6,1 s danach). Alle vier
+  Unverwundbarkeiten dauern 10 s (Spielblätter, Wirktexte); bei R = GCD gedrückt, decken sie bei einem GCD von 2,5 s bis
+  7,5 s nach dem Balken. Der späteste Druckpunkt liegt am letzten GCD und nicht eine Druckspanne davor, weil der Schaden
+  eines Treffers erst nach seinem Snapshot zugefügt wird – Holmgang zählt erst dann –: Der letzte Treffer von Bitter
+  Whirlwind kommt 6,4 s nach dem ersten, sein Schaden also 6,7 s oder später nach dem Balken (Modell, „Prüfmittel").
+  - *Warum H_I und nicht H:* Gemessen am ersten Treffer, hielte eine Unverwundbarkeit, die vor der Serie von Hand oder
+    für ein früheres Wirken gedrückt wurde und vor ihrem letzten Treffer endet, alles Bewertete zurück, und der Rest der
+    Serie träfe ohne Minderung. Gemessen an H_S allein, deckte sie eine Serie, die länger dauert, als sie reicht, nie,
+    und der Plan drückte über der selbst gedrückten ein Bündel für Treffer, die sie schon abhält.
+  - *Preis* (Stufe 3): Im letzten GCD sind die anderen Pfade frei und können vor ihr eine Minderung drücken, die dann
+    unter ihr verfällt. Eine Unverwundbarkeit, die vor dem letzten GCD gedrückt wurde, deckt eine Serie, die länger
+    dauert, als sie reicht, nicht: Der Plan legt dann ein Bündel dazu. *Grenze:* Was über ihr Ende hinausläuft, ist ungedeckt, und nach Invariante 2 geht für c nichts
+    mehr hinaus; wie viele LP nach ihrem Ende bleiben, rechnet der Plan nicht. In den erhobenen Serien liegt der letzte
+    große Treffer höchstens 6,4 s nach dem ersten (Bitter Whirlwind), die kleinen von Valfodr und Knallregen bis 7 und
+    11 s nach dem Balken.
 
 **Überlebt heißt: über der Linie** (A304). Ein Bündel reicht nur, wenn es den Tank über „The HP% for tank to use
 invulnerability" (`HealthForDyingTanks`, ab Werk 15 %) zurücklässt. An oder unter dieser Linie zieht jeder der vier Tanks
@@ -220,9 +258,9 @@ die Linie, plant RSR gleich die Unverwundbarkeit, sonst „alles". Die Linie ist
 auf 0 gestellt gilt die Rechnung bis zum Tod wie vor A304. Das Modell (`tankbuster_model.py`, Prüfung O9 und eigene
 Szenarien) hält fest, dass ein geplantes Bündel den Tank über der Linie lässt.
 
-**Ohne Risiko,** wie er es für jedes Mittel unterhalb der Unverwundbarkeit verlangt: der höchste gemessene Treffer,
-die LP jetzt und nur, was beim Einschlag steht. Eine Heilung, die bis dahin kommen könnte, zählt nicht – sie ist eine
-Annahme über das, was jemand tun wird. Was schon steht, ist keine Annahme: Das unterscheidet die Fremdeffekte seines
+**Ohne Risiko,** wie er es für jedes Mittel unterhalb der Unverwundbarkeit verlangt: die höchste gemessene Summe eines
+Casts, die LP jetzt und nur, was bei jedem seiner Treffer steht. Eine Heilung, die bis dahin oder zwischen den Treffern
+einer Serie kommen könnte, zählt nicht – sie ist eine Annahme über das, was jemand tun wird. Was schon steht, ist keine Annahme: Das unterscheidet die Fremdeffekte seines
 Hinweises von einer erhofften Hilfe.
 
 **Wann eine eigene Abwehr als stehend zählt, bevor ihr Status liegt:** Jeder eigene Druck einer bewerteten Abwehr mit
@@ -233,8 +271,8 @@ Zeitpunkt, der Restzeit einer eigenen Kopie ihres Status beim Druck und ob der n
   Druck lief –, längstens einen GCD ohne Bestätigung des Servers (Effekt-Handler), mit Bestätigung längstens ihre
   Wirkdauer.
 - Solange er lebt, zählt die Aktion als stehend, wenn sie in ihrem Fenster hinausging (beim Druck festgehalten), sonst,
-  wenn ihre Wirkdauer ab dem Druck über H reicht.
-- Eine Erneuerung zählt nicht zusätzlich, solange die alte Kopie schon über H reicht; sie steckt bereits in P.
+  wenn ihre Wirkdauer ab dem Druck über H_S reicht, die Unverwundbarkeit über H_I.
+- Eine Erneuerung zählt nicht zusätzlich, solange die alte Kopie schon über H_S reicht; sie steckt bereits in P.
 - Status liest RSR nur aus der Statusliste selbst, nie den, den ein Bestätigungspaket vorhersagt
   (`DataCenter.ApplyStatus` meldet ihn mit unendlicher Restzeit).
 - Bei den großen Minderungen ist die Statusangabe der Aktion die gemeinsame Sperrliste; deshalb gilt der Status, an den
@@ -463,9 +501,9 @@ magisch, Barriere als Positionswerte; dazu als nicht-positionale Eigenschaften e
 
 | Tatsache | Quelle | erhoben | Ausfall |
 |---|---|---|---|
-| R, H | Wirkzeit des Gegners | `TankbusterForecast.Update`, einmal je Bild nach der Rotation; im Plan auf „jetzt" vorgerückt | Wirken abgebrochen: verschwindet; neu begonnen: neue Nummer |
-| P | Tabellen-Höchstwert × Status, die über H stehen | dieselbe Erhebung | ungemessen: kein Plan; unter Damage Up gemessen: nicht gespeichert |
-| B | LP + Barrieren über H (früheste) | dieselbe Erhebung | Barriere ohne gelisteten Status zählt nicht |
+| R, H, H_S | Wirkzeit des Gegners; für H_S dazu die Dauer der Serie aus der Tabelle | `TankbusterForecast.Update`, einmal je Bild nach der Rotation; im Plan auf „jetzt" vorgerückt | Wirken abgebrochen: verschwindet; neu begonnen: neue Nummer |
+| P | Tabellen-Höchstwert (Summe der Serie) × Status, die über H_S stehen | dieselbe Erhebung | ungemessen: kein Plan; unter Damage Up gemessen: nicht gespeichert |
+| B | LP + Barrieren über H_S (früheste) | dieselbe Erhebung | Barriere ohne gelisteten Status zählt nicht |
 | Datensatz | Druck (`BaseAction.Use`), Bestätigung (Effekt-Handler), Status gesehen (Erhebung) | Spielthread bzw. Erhebung | Bestätigung fehlt: Datensatz verfällt nach einem GCD |
 | Ablehnung | `CanUse` falsch außerhalb Animationssperre, eigenem Zauber und Sperre jeder Fähigkeit | Plan | – |
 | Laufzeit, Abstand | letzter eigener Druck ohne Wirkzeit und ohne laufende Sperre: bis zur Bestätigung, bis zum Ende seiner Animationssperre | Spielthread bzw. Erhebung | vor der ersten Messung: Frist am Ende des Wirkens, Plätze ungezählt |
@@ -560,14 +598,16 @@ Blitzga und Blitzbogen, die danach gemessen wurden.
 
 - **Gelernt** (`TankbusterMarkerWatch`, `TankbusterMarkerHits.json`, kein Download): Bestätigt ein Treffer einen
   Marker auf einem Gruppenmitglied, gleich welchem, merkt RSR für Gebiet und Pfad die Aktion des ersten Treffers und
-  die Zeit vom Erscheinen des Markers bis zu ihm. Eine Aktion, die schon die ganze Gruppe traf, bestätigt den Marker,
+  die Zeit vom Erscheinen des Markers bis zu ihm – als Aktion die Id, unter der die Tabelle seine Serie ablegt, die des
+  Casts, wenn einer ihn erklärt (Konzept 13, A454). Eine Aktion, die schon die ganze Gruppe traf, bestätigt den Marker,
   wird aber nicht gelernt (Raidwide-Regel, A337). Folgt beim nächsten Mal eine andere Aktion, ersetzt sie den Eintrag;
   dieselbe Aktion behält die kürzere Zeit, damit eine danach getaktete Abwehr eher früh als spät kommt.
 - **Genutzt** (`TankbusterForecast`, `Learned`): Steht ein nicht verworfener Marker auf dir, kommt kein Wirken auf dich
   zu und hat die Tabelle die gelernte Aktion gemessen, gilt sie als Tankbuster auf dich, fällig nach der gelernten
   Zeit ab dem Erscheinen des Markers. Gerechnet wird ohne Debuffs am Gegner – der Treffer kann von einem Helfer kommen,
   den ein Debuff auf dem Boss nicht erreicht –; Reprisal und Ähnliches zählen nicht und werden nicht geplant. Der Plan
-  wählt Bündel oder Unverwundbarkeit wie sonst. Ohne Ziel des Spielers oder nach Ablauf der gelernten Zeit kein Plan.
+  wählt Bündel oder Unverwundbarkeit wie sonst, mit Summe und Dauer der Serie, die unter der gelernten Aktion liegt
+  (Konzept 13, A454). Ohne Ziel des Spielers oder nach Ablauf der gelernten Zeit kein Plan.
 - **Zurückgehalten wird nur unter der geplanten Unverwundbarkeit,** die jeden Treffer abhält. Ein Bündel hält die
   Staffelung nicht zurück: Kündigt der Marker diesmal einen anderen Treffer an, ließe ein Bündel für den gelernten den
   Tank mit weniger als der Abwehr des Markers. Damit gibt RSR hier mehr aus, als „Spend only the mitigation a measured
@@ -595,14 +635,17 @@ Blitzga und Blitzbogen, die danach gemessen wurden.
     wird bis dahin genau einmal gezählt; ein freier Pfad macht aus einem überlebten Treffer keinen Tod und erzwingt
     keine Unverwundbarkeit; „alles" nur, solange die Unverwundbarkeit nicht verfügbar ist; keine Minderung des Plans
     kommt nach dem Snapshot an (O10); bleibt nach einem Stun ein Druck und ist die Unverwundbarkeit verfügbar, überlebt
-    der Tank (O11).
+    der Tank (O11); seit A454 ein Tankbuster aus mehreren Treffern: Was der Plan überlebbar nannte, übersteht jeden
+    Treffer der Serie unter dem, was bei ihm wirklich steht (O12).
   - Der Selbsttest schaltet die Defekte ein, die frühere Fassungen des Codes hatten (Archiv A263, A267), dazu die
-    Sperre für einen GCD unter Stun, den Druck bis zum Ende des Wirkens und die Bündelwahl ohne Druckplätze (A307);
-    jeder muss gefunden werden.
+    Sperre für einen GCD unter Stun, den Druck bis zum Ende des Wirkens und die Bündelwahl ohne Druckplätze (A307),
+    seit A454 die Bewertung je Treffer und die Summe ohne die Dauer der Serie; jeder muss gefunden werden.
   - Ausgelassen: ein langer Stun, bevor der Abstand der Drücke gemessen ist (Grenze oben).
   - Nicht abgedeckt, dort trägt nur die Herleitung: ein zweites Wirken und BossModReborn-Vorhersagen, Befehle, die
     Unverwundbarkeit nach einem Bündel bei fallenden LP, Minderung je Schadensart, die Kopplung über Eid, die anderen
-    drei Tanks (gleiche Rechnung, andere Zahlen). Das Modell übernimmt H = R + GCD (Abschnitt „Die Rechnung", A315).
+    drei Tanks (gleiche Rechnung, andere Zahlen). Das Modell übernimmt H = R + GCD und H_S = H + Dauer der Serie
+    (Abschnitt „Die Rechnung", A315, A454) und die gemessene Serie als gegeben; wie sie gemessen wird (Konzept 13),
+    bildet es nicht ab.
 - `DefenseTrace.log` schreibt je Wirken auf dich „tankbuster coming at you: … takes …% … you have …%", je Änderung des
   Plans „tankbuster plan for … : Rampart + Damnation, leaving …% against …%" (oder „survivable as it stands, nothing
   spent", „the invulnerability already covers it, nothing else", „nothing less survives it: the invulnerability",
@@ -1261,8 +1304,9 @@ ein Schadensausteiler, ausgeschaltete Einzelabwehr oder eine vorher greifende Pu
   (`AreaShareCallsForMitigation`): Minderung, wo sonst Heilung nötig wäre; ein großer Treffer gilt immer als groß.
   - Erkennung (`DataCenter.AimedTankbusterLeaves`, ohne Option und Schwelle): genau ein Tankbuster auf ihm – ein Wirken
     auf ihn, ein Tankbuster-Wirken auf kein anderes Mitglied neben einem Marker auf ihm, sonst neben dem Marker der dort
-    gelernte Treffer (Abschnitt „Ein Marker ohne Wirken"). Gerechnet wie im Plan des Tanks: der höchste gemessene
-    Treffer unter der Minderung, die beim Einschlag steht, gegen LP jetzt plus die Barrieren, die dann stehen.
+    gelernte Treffer (Abschnitt „Ein Marker ohne Wirken"). Gerechnet wie im Plan des Tanks: die höchste gemessene
+    Summe des Casts unter der Minderung, die bis H_S steht, gegen LP jetzt plus die Barrieren, die bis dahin stehen
+    („Die Rechnung", A454).
   - Nichts gesagt, also Hilfe wie bisher: zwei Tankbuster auf ihm, ein ungemessener, ein Marker ohne Wirken und ohne
     gelernten Treffer, eine BossModReborn-Vorhersage auf ihm, ein Mitglied, das kein Tank ist (die Tabelle bemisst
     Treffer auf Tanks, A312).
@@ -1861,8 +1905,9 @@ zurückhalten" ist aus den vorhandenen Größen **nicht herstellbar**:
   Minderungsfenster (`DataCenter.BMRTankbusterHitsPlayer`). `IsHostileCastingTankBusterAtMe` ist
   spielerzentriert (`DataCenter.IsHostileCastingTankBusterAtMe`).
 - **Ein Tankbuster ist nicht ein Einschlag.** Mehrfach einschlagende Buster sind eine
-  Folge von Treffern; die Vorhersage nennt den Beginn, nicht die Anzahl und nicht die
-  Gesamtsumme.
+  Folge von Treffern; die Vorhersage von BossModReborn nennt den Beginn, nicht die Anzahl und
+  nicht die Gesamtsumme. Für einen gemessenen Tankbuster kennt die Tabelle Summe und Dauer
+  seiner Serie (Konzept 13, A454); die Living-Dead-Regel liest sie nicht (unten, A306).
 - **Manche Buster töten auch einen vollgeheilten und geschildeten Tank.** Die
   stillschweigende Annahme „wenn ich rechtzeitig heile, überlebt er" trifft dort nicht
   zu.
