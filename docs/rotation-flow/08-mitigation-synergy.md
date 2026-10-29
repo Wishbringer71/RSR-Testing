@@ -1416,7 +1416,9 @@ geändert (A432):
   geschluckt) lehrt nichts und ersetzt beim Messen nicht die gelernte Stärke. Gelernt wird der Höchstwert, wie in den
   übrigen gelernten Tabellen: Ein teilweise geschluckter Tick, die Minderung eines Tanks oder ein von der Mechanik
   verkürzter Status drückten ein Mittel unter das, was der DoT kann – und der gelernte Wert entscheidet gerade vor dem
-  ersten Tick (seine Regel: Sicherheit vor Schaden).
+  ersten Tick (seine Regel: Sicherheit vor Schaden). Ein Tick über der Stufe, auf die der Inhalt synchronisiert, lehrt
+  nichts: Er fiele kleiner aus als im synchronisierten Lauf, in dem der Wert dann zu niedrig gelesen würde (A452,
+  Konzept 13, „Ohne Stufensynchronisation").
 - *Zuordnung:* verfolgt wird jede Instanz (Status und Quelle) – derselbe Status von zwei Gegnern sind zwei Instanzen in
   einem Tick; gelernt wird nur, wenn genau eine auf dem Mitglied liegt, sonst gilt die gemessene Summe. Kommt zwischen
   zwei Ticks eine hinzu, zählt ihre gelernte Stärke zum letzten Tick; ohne gelernte Stärke zählt sie ab ihrem ersten

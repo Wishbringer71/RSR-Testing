@@ -13155,6 +13155,91 @@ Löschungen").
   Absatz „Selbstkorrektur nach einem Patch"; Konzept 18; `TODO.md` (beide Einträge der gelernten Tabellen: Bau nach
   Regel 12). Beauftragt sind jetzt die drei Defekte; der Bau der Revision folgt in der Reihenfolge danach.
 
+### A452 · Drei Defekte aus seinen Prüffällen behoben: ungelisteter Tankbuster, Aufnahme unter Unverwundbarkeit, Messung ohne Synchronisation (29.10.2026)
+
+- *Auftrag:* „danach die drei defekte abarbeiten. alles im vollen kritischen loop mit audit und codereview" (29.10.2026,
+  18:18). Die Defekte stammen aus A449.
+- *D1, ungelisteter Tankbuster ohne Marker wird nie gelernt.*
+  - *Research:* Der Effekt-Handler legte einen Treffer nur bei `isTankbuster` ab, also bei Liste oder bestätigtem
+    Marker; `DataCenter.IsHostileCastingTank` nimmt zusätzlich jeden nicht unterbrechbaren Cast über einen GCD auf das
+    eigene Ziel (Rückfall). `TankbusterForecast` liest nur gelistete oder gelernte Casts. Ein tödlicher Rückfall-Cast
+    bekam deshalb nie Plan noch Unverwundbarkeit. `IsLearned` lesen außerdem die Abwehröffnung (`IsKnownTankbusterCastAt`
+    über `_knownTankbusterAtATank`, A395), die Hilfe für andere (`AimedTankbusterLeaves`) und die Helfererkennung
+    (`IsListedHostileCast`); der Tankwechsel liest nur Liste und Marker. Der Plan hält bei überlebbarem Treffer jede
+    Selbstabwehr zurück, ohne Ausnahme für die kritische Klasse. Mitschnitt vom 26.10.2026: 84 von 85 gezielten Casts
+    über 2,5 s landeten unter ihrer eigenen Id, einer (Valfodr) unter der Nachbarzeile gleichen Namens.
+  - *Optionen:* Nullvariante; (1) lernen mit Herkunftskennzeichen, nur der Plan liest es, ohne Zurückhalten – gewählt;
+    (2) lernen ohne Kennzeichen, Rückhaltung wie bei Listen-Tankbustern; (3) Abgleich bei der Landung nur über das
+    Blatt, ohne Beobachter; (4) Eintrag in Upstreams Tankbuster-Liste; (5) nur von Bossen lernen.
+  - *Abwägung im Kampf:* (1) Ein tödlicher Schlag tötet einmal, ab dem zweiten Cast geht die Unverwundbarkeit; ein
+    mittlerer bekommt das nötige Bündel. Preis: Für einen ungelisteten Boss-Tankbuster hält der Plan nichts zurück, die
+    alte Staffel spendet mit – Abklingzeit, nicht Leben. (2) hielte im Pull bei jedem gelernten Trash-Zauber die
+    Selbstabwehr gegen die übrigen Gegner zurück. (3) unschärfer: unterbrechbare und fremde Treffer. (4) änderte
+    Tankwechsel, Marker- und Abwehrleser zugleich, in Upstreams editierbarer Liste. (5) Bosse sind nicht verlässlich
+    erkennbar, und starke Trash-Tankbuster fielen heraus.
+  - *Gebaut:* `TankbusterTable.UpdateAimedCasts` verfolgt solche Casts auf einen Tank je Wirker und Aktion bis einen GCD
+    nach dem Balken (`TargetUpdater`, alle Rollen); `AimedCastLanding` erkennt ihre Landung am Wirker, am Ziel und an
+    derselben Id oder an einer Zeile gleichen Namens und gleichen Angriffstyps; ein Treffer auf mehr als ein Ziel, auch
+    in einer anderen Allianzgruppe, zählt nicht (Cleave, Raidwide). Abgelegt unter der Cast-Id mit `TankbusterReading.AimedOnly`, das eine Landung unter
+    Liste oder Marker für immer aufhebt; Zusammenführung: nur, wenn beide Seiten es tragen. `IsLearned` schließt es aus,
+    `IsLearnedFromAim` liest nur `TankbusterForecast` für einen Cast auf den Spieler durch einen ihn angreifenden
+    anvisierbaren Gegner; `Cast.Announced` falsch, und `HoldDefenceForTankbuster` hält für ihn nichts zurück außer unter
+    einer geplanten Unverwundbarkeit. Optionstext von „Spend only …" ergänzt; Protokollzeilen nennen den Fall.
+  - *Erste Review-Runde (zehn Funde):* Hilfe und Reprisal anderer sparten bei gelernten Trash-Casts; das Kriterium
+    „angekündigt" maß die Herkunft der Kennung, nicht den Pull; Angriffstyp der Nachbarzeile beim Zurückrechnen; ein
+    zweiter Cast desselben Wirkers verdrängte den ersten; kein Zeitfenster im Abgleich; Kommentar zur Aufnahme
+    widersprach dem Code; Blattzugriffe je Treffer und Namenszeichenketten je Frame; A452 fehlte. Behoben bis auf den
+    Vorschlag, die Aufnahme einheitlich über `ReachedTarget` zu zählen – verworfen, er änderte Upstreams Bedingung für
+    Nulleinträge ohne Bedarf.
+  - *Zweite Review-Runde (neun Funde), Umbau:* Über `IsLearned` galten die gelernten Rückfall-Casts überall als bekannte
+    Tankbuster – die Abwehröffnung im Pull kehrte zurück, die A395 abgestellt hatte, und Heiler halfen bei jedem kleinen
+    Trash-Zauber. Die Änderung an der Hilfe für andere und am Optionstext dort hätte seine dokumentierte Regel (A364,
+    A373) eingeschränkt. Daher das Herkunftskennzeichen statt einer Herkunftsprüfung in drei Lesern; die Hilfe-Änderung
+    und die Markerprüfung `MarkerNames` sind zurückgenommen; der Ausschluss mehrfach getroffener Ziele kam dazu.
+  - *Falsifikation:* Kein Defekt – widerlegt am Code und an Konzept 09 (C134). Option falsch – ein Treffer gleichen
+    Namens und Typs vom selben Wirker im Fenster kann einem anderen Cast zugeordnet werden (schützende Richtung); die
+    fehlende Rückhaltung kostet Abklingzeit. Ausgeliefert, nichts ändert sich – hält, wo ein unsichtbarer Helfer den
+    Treffer bringt (technische Schuld), bei ausgeschaltetem RSR ohne Auto-On, bei ausgeschalteter
+    Unverwundbarkeitsoption und für unterbrechbare oder kurze Casts, die der Rückfall nicht nimmt.
+- *D2, unverwundbarer Tank verhindert die Aufnahme eines Raidwides.*
+  - *Research:* Die Aufnahme zählte nur Schadenseinträge; Hallowed Ground und Superbolide geben die Effektart
+    „unverwundbar". *Optionen:* Nullvariante; ohne Schadenseintrag zählt ein erreichtes Mitglied (`ReachedTarget`:
+    unverwundbar, Ausweichen, Widerstand) – gewählt; alles einheitlich über `ReachedTarget` – verworfen (oben).
+  - *Im Kampf:* Sein Beispiel 2 endet unter jeder Tank-Unverwundbarkeit an der ersten Landung; die Aktion steht auf der
+    Flächenliste, der Tankbuster-Plan übergeht sie (A337). *Falsifikation:* ausgeliefert, nichts ändert sich – weniger als
+    vier Mitglieder, „Record enemy AoE actions" aus, ein totes Mitglied in der Gruppenliste.
+- *D3, Messung ohne Stufensynchronisation bewertet eine Aktion zu klein.*
+  - *Research, Klasse:* Größen lernen die Flächentabelle (drei Schreibstellen: gelistete Landung, Folgetreffer einer
+    leeren Landung, Bewertung mit 0 aus A366), die Tankbuster-Tabelle und der DoT-Speicher (Betrag je Tick); Serien,
+    Schlaf, Pyretisch und Marker lernen keine Größe. Erkennung: `PlayerSyncedLevel` gegen `ClassJobLevelSync` der
+    `ContentFinderCondition` des Gebiets (Lumina). Das Flag `ContentsFinderQueueInfo.PoppedContentIsUnrestrictedParty`
+    (FFXIVClientStructs b72bc1f7 vom 25.10.2026) beschreibt den zuletzt gestarteten Inhalt; dass es für den laufenden
+    gilt, ist nicht belegt, und falsch gelesen schaltete es das Lernen still ab – verworfen.
+  - *Optionen:* Nullvariante; nicht ablegen – gewählt; ablegen mit Kennzeichen, nur schützend lesen (Format, Nutzen nur
+    ein Wert, den der erste synchronisierte Treffer liefert); nach Stufenabstand umrechnen (erfundene Zahl).
+  - *Gebaut:* `DataCenter.AboveContentLevel`, die Synchronisationsstufe aus `TerritoryInfo` (beim Gebietswechsel gelesen,
+    eine Eigenschaft mehr in Upstreams Datei statt einer zweiten Abbildung); an allen fünf Schreibstellen; Protokoll und
+    Messbericht nennen den Grund. *Falsifikation:* ausgeliefert, nichts ändert sich – spielt er nie über der Stufe, ist
+    nichts anders; die gleiche Stufe ohne Gegenstandsstufengrenze bleibt (technische Schuld); in der offenen Welt gilt
+    alles als synchron; ob Sonderinhalte mit eigener Stufe (Deep Dungeons) „darüber" melden, ist nicht geprüft –
+    falsch gemeldet, lernte RSR dort nichts, die sichere Richtung.
+- *Dritte Review-Runde (acht Funde):* behoben – Cleave-Ausschluss über alle erreichten Ziele statt nur der eigenen
+  Gruppe (Allianz), Protokollzeile beim Wechsel zum bekannten Tankbuster, Messbericht mit dem genaueren Grund, ein
+  Tabellenzugriff je Cast in der Vorhersage, Synchronisationsstufe in `TerritoryInfo`. Verworfen – „Minimum IL" lasse
+  zu kleine Treffer durch: Es senkt die Gegenstandsstufe auf das Minimum des Inhalts, die Treffer fallen größer aus;
+  die aktive `ContentFinderCondition` statt der des Gebiets: eine Werkzeugquelle (FFXIVClientStructs) gegen das Blatt,
+  dieselbe Abbildung wie Upstreams `TerritoryInfo`. Neu erkannt, nicht in diesem Auftrag: ein mehrfach einschlagender
+  Tankbuster wird je Treffer bewertet, auch ein gelisteter (Defekt in `TODO.md`).
+- *Dazu:* Kommentare in `Watcher` und `TankbusterTable`, die die Barrierenfrage offen nannten oder einen
+  Barrierenverlust annahmen, berichtigt (A449).
+- *Geprüft:* Build ohne Warnung, alle Prüfschritte lokal, drei Code-Reviews, die Funde behoben oder begründet
+  verworfen. Prüfgrad: kompiliert und statisch; im Spiel nicht beobachtet. Messmittel im Protokoll: „known only as a cast
+  at its own target", „tankbuster coming at you (known only as a cast at you, nothing else held)", „not stored, above
+  the level the content syncs to", Messbericht „not measured - above the level the content syncs to".
+- *Fortgeschrieben:* Konzept 13 (Tankbuster-Tabelle, Grenzen der Messung, Prüffälle, Regeln 7, 8, 12), Konzept 09
+  (Abwehr im Pull, Gemessener Tankbuster), Konzept 08 (DoT-Stärke); `TODO.md`: die drei Defekte entfernt, der neue
+  zu Mehrfachtreffern erfasst, zwei Punkte technische Schuld; Release-Text.
+
 ---
 ## B · Commit-Register (Fork vs. `upstream/main`)
 

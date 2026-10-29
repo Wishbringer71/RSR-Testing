@@ -87,6 +87,12 @@ helfen (Abschnitt „Hilfe für das Ziel eines Tankbusters", A373); Damage Deale
 - Erkennung in `TankbusterForecast`: Sie liest keine Option und wählt keine Aktion. Sie liest die Casts aller Gegner,
   auch unsichtbarer Helfer, die einen gelisteten oder gemessenen Tankbuster auf ihn wirken (`DataCenter.AreaCasters`,
   A303); vorher sah sie nur anvisierbare Gegner.
+  - Dazu ein Cast, den die Tabelle nur als Wirken eines Gegners auf sein eigenes Ziel kennt (A452), wenn ein
+    anvisierbarer Gegner, der ihn angreift, ihn auf ihn wirkt. Für ihn plant RSR wie für jeden gemessenen, hält aber
+    nichts weiter zurück, außer unter einer geplanten Unverwundbarkeit (`Cast.Announced`): Im Pull ist er jeder
+    Trash-Zauber auf den Tank, und der Rest der Abwehr ist für die Schläge der anderen. Das Protokoll schreibt „(known
+    only as a cast at you, nothing else held)". Der Text von „Spend only the mitigation a measured tankbuster needs"
+    nennt es.
   - Dazu ein solcher Cast, der auf kein anderes Gruppenmitglied gerichtet ist – auf den Wirkenden selbst, auf den
     Boden –, während ein Tankbuster-Marker auf ihm steht, der nicht als falsifiziert gelernt ist (A308). Viele Kämpfe
     markieren den Tank und lassen Boss oder Helfer ohne Ziel wirken. Einmal ihm zugerechnet, bleibt der Cast seiner,
@@ -624,10 +630,12 @@ anderen Tank – Marker, Wirken aus der Tankbuster-Liste oder der gemessenen Tab
 BossModReborn oder sein Befehl öffnen sie ohne Rückhaltung und mit der alten Staffel. Das ungelistete Wirken eines
 Gegners auf sein Ziel öffnet die Abwehr, hebt die Rückhaltung aber nicht auf: Es trifft jeden nicht unterbrechbaren
 Trash-Zauber im Pull, und mit dem ersten kam die Staffel zurück (A395). Sein Preis: Wirkt ein Boss mit Adds an ihm (oder
-allein, wenn die Gegnerzahl auf 1 steht) einen Tankbuster, den weder Liste noch Tabelle noch Marker noch BossModReborn kennen, trifft der erste ohne große
-Minderung – die kurze liegt, und die kritische Klasse hebt die Rückhaltung auf. Die Tabelle lernt ihn nicht: Sie misst nur
-gelistete und per Marker bestätigte Tankbuster, und auch jeder weitere trifft so (Defekt in `TODO.md`, „Ungelisteter
-Tankbuster ohne Marker wird nie gelernt").
+allein, wenn die Gegnerzahl auf 1 steht) einen Tankbuster, den weder Liste noch Tabelle noch Marker noch BossModReborn
+kennen, trifft der erste ohne große Minderung – die kurze liegt, und die kritische Klasse hebt die Rückhaltung auf. Seit
+A452 lernt die Tabelle ihn aus diesem ersten Treffer, gekennzeichnet als nur als Wirken auf das Ziel bekannt. Ab dem
+zweiten plant RSR für ihn (Abschnitt „Gemessener Tankbuster: das geringste Mittel"), die Unverwundbarkeit eingeschlossen.
+Ein bekannter Tankbuster ist er damit nicht: Er öffnet die Abwehr nicht ohne Rückhaltung, und der Plan hält für ihn
+nichts weiter zurück – sonst hätte jeder gelernte Trash-Zauber im Pull die Staffel zurückgebracht.
 Als strategische Rückhaltung läuft sie über die universelle Schicht (`HoldSingleDefense`): Steht er oder ein Tank in
 der kritischen Klasse, fällt sie weg. Lebt kein Heiler, entfallen Rückhaltung und Staffel ganz (Abschnitt „Ohne
 Heiler: den eigenen Tod hinauszögern").

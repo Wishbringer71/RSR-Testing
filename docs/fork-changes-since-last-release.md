@@ -28,6 +28,19 @@ What this release changes in the fight. For the whole distance from upstream, se
 
 ## The learned lists
 
+- **A tankbuster nothing names is learned from its first hit.** A tankbuster that neither the tankbuster list nor a
+  marker names - RSR knows it only because the enemy casts it at its target, a tank - was never measured, so the
+  tankbuster plan never took it, and a lethal one killed at every repeat. Its hit on a tank is now learned like any
+  tankbuster's, and from the next cast at you the plan spends what it needs, the invulnerability included. Nothing else
+  is held for it: in a pull such a cast can come from one of many enemies. It does not count as a known tankbuster for
+  opening the defence or for help from others, and a hit that reaches more than one member is not learned as one.
+- **A raidwide landing on a tank under Hallowed Ground or Superbolide joins the area list.** The tank's hit carries no
+  damage then, and the action stayed off the list - a tankbuster that a patch turned into a raidwide kept drawing the
+  tankbuster plan at its next cast.
+- **Nothing measured above the content's level sync is learned.** In an unrestricted party in older content every hit is
+  smaller than in sync; learned, it rated the action too small for the next synced run, where the mitigation or the
+  tankbuster bundle was then left out. The area table, the tankbuster table and the damage over time on the party skip
+  such readings; the open world counts as in sync.
 - **An area hit counts at its unmitigated size.** The damage table divides out the mitigation that stood when a raidwide
   landed — on the member and on the boss, by the figures the effect texts state — so a raidwide first seen under three
   mitigations is no longer rated small. Every rule that reads the table — `Skip mitigation for small area casts`, the

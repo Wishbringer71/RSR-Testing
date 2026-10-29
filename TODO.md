@@ -10,11 +10,8 @@ Betroffene: **N** Endnutzer · **R** Autoren abgeleiteter Rotationen (Namensräu
 Nach der Wirkung im Kampf: Sicherheit der Gruppe vor Schaden, gewichtet mit der Wahrscheinlichkeit, in seinem Profil
 (seine Vorgabe, 17.10.2026: „todo nach wichtigkeit abarbeiten. jeweils im loop bearbeiten").
 
-1. „Ungelisteter Tankbuster ohne Marker wird nie gelernt": ein tödlicher Treffer, der bei jeder Wiederholung tötet.
-2. „Messung ohne Stufensynchronisation bewertet eine Aktion zu klein": Schutz fehlt im nächsten synchronisierten Lauf,
-   wo er unsynchronisiert spielte.
-3. „Unverwundbarer Tank verhindert die Aufnahme eines Raidwides": ein Bündel ohne Not, einmal je umgebauter Aktion.
-4. Die gelernten Tabellen: entschieden (Konzept 13, A451); gebaut nach Regel 12 des Entwurfs, erst die Revision über
+1. „Mehrfach einschlagender Tankbuster wird je Treffer bewertet": Der Plan kann einen Tank mit zu kleinem Bündel lassen.
+2. Die gelernten Tabellen: entschieden (Konzept 13, A451); gebaut nach Regel 12 des Entwurfs, erst die Revision über
    einen Spielpatch, dann die Anzeige. Beide ändern den Kampf nur mittelbar, über einen
    geprüften oder berichtigten Lernwert – die Sperren unter ihnen (Schlaf) aber dauerhaft.
 
@@ -22,28 +19,14 @@ Danach die technische Schuld, soweit ihre Auflösungsbedingung erfüllt ist. War
 
 ## Defekte
 
-### Ungelisteter Tankbuster ohne Marker wird nie gelernt · N
-Ein Tankbuster, den weder die Tankbuster-Liste noch ein Marker nennt, nimmt RSR nur als Wirken eines Gegners auf sein
-eigenes Ziel: Die Einzelabwehr öffnet, die Tankbuster-Tabelle misst ihn nicht, und Plan und Unverwundbarkeit lesen nur
-gelistete oder gelernte Casts. Ein tödlicher – sein Beispiel 1 nach einem Patch, ohne Marker – tötet bei jeder
-Wiederholung. *Ort:* `Watcher` (Effekt-Handler, `isTankbuster` = Marker oder Liste), `TankbusterForecast` (gelistet oder
-`IsLearned`). *Nächster Schritt:* den Treffer eines Casts messen, der auf das Ziel seines Wirkers ging und einen Tank
-traf, mit den bestehenden Ausschlüssen (nur Tanks, Schadensplus, `IsPartyWide`); der Tankwechsel bleibt bei Liste und
-Marker. *Konzept:* 13, „Die Tankbuster-Tabelle" und „Seine Prüffälle"; 09.
-
-### Messung ohne Stufensynchronisation bewertet eine Aktion zu klein · N
-Eine Messung über der Stufe, auf die der Inhalt synchronisiert, oder ohne seine Gegenstandsstufengrenze wird abgelegt
-wie jede andere. Ist sie die einzige, lässt im nächsten synchronisierten Lauf die Größenregel die Gruppenminderung aus
-oder der Tankbuster-Plan das Bündel. *Ort:* `Watcher.TryAreaShare` und `TankbusterTable.Record`. *Nächster Schritt:*
-nicht ablegen, mit Protokollzeile; die Stufe aus `PlayerState` gegen die des Inhalts, eine Gruppe ohne Beschränkung,
-soweit erkennbar. *Konzept:* 13, Regel 8 des Entwurfs.
-
-### Unverwundbarer Tank verhindert die Aufnahme eines Raidwides · N
-Landet ein Raidwide, während ein Tank unter Hallowed Ground oder Superbolide steht, trägt sein Eintrag keinen Schaden,
-und die Aktion kommt nicht in die Flächenliste. Ein Tankbuster, den ein Patch zur Fläche machte (sein Beispiel 2),
-bekommt dann beim nächsten Cast noch einmal den Tankbuster-Plan. *Ort:* `Watcher`, Aufnahme (`damageEffectCount`).
-*Nächster Schritt:* für die Aufnahme jedes erreichte Mitglied zählen (`ReachedTarget`). *Konzept:* 13, „Ein
-Schadenseintrag ohne Betrag wird nicht gemessen" und „Seine Prüffälle".
+### Mehrfach einschlagender Tankbuster wird je Treffer bewertet · N
+Die Tankbuster-Tabelle legt jeden Treffer einzeln als Höchstwert ab, und der Plan rechnet mit einem Treffer. Ein
+Tankbuster aus zwei Treffern zu je 45 % gilt als überlebbar mit 45 %; der Plan gibt ein Mittel aus, hält den Rest
+zurück, und beide Treffer zusammen nehmen 90 % ungemindert. Gilt für gelistete, markierte und gelernte Tankbuster.
+*Ort:* `TankbusterTable.Record`, `TankbusterForecast`, `CustomRotation_Tankbuster.UpdateTankbusterPlan`. *Nächster
+Schritt:* an seinen Mitschnitten erheben, welche Tankbuster mehrfach einschlagen (gleiche Id oder Folgezeilen auf
+dasselbe Ziel), dann die Treffer eines Casts als Serie summieren, wie die Flächentabelle (`SeriesShare`, A349).
+*Konzept:* 13, „Die Tankbuster-Tabelle"; 09, „Gemessener Tankbuster: das geringste Mittel".
 
 ## Offene Arbeit
 
@@ -83,6 +66,19 @@ als letzte Stufe der Revision. *Konzept:* 13 (gelernte Tabellen), 18 (Einstellun
 ## Technische Schuld
 
 Ohne Wirkung im Kampf oder bewusst eingegangen; je Kosten und Auflösungsbedingung.
+
+### Gleiche Stufe ohne Gegenstandsstufengrenze wird gemessen wie synchron · N
+*Kosten:* In einer Gruppe ohne Beschränkung bei der Stufe des Inhalts fällt jeder Treffer kleiner aus und wird abgelegt;
+ist er der einzige, spart die Größenregel im nächsten synchronisierten Lauf zu Unrecht. Erkannt wird nur eine Stufe über
+der des Inhalts (`DataCenter.AboveContentLevel`, A452). *Auflösung:* eine Quelle, die den laufenden Inhalt als Gruppe
+ohne Beschränkung ausweist; `ContentsFinderQueueInfo.PoppedContentIsUnrestrictedParty` beschreibt den zuletzt
+gestarteten. *Konzept:* 13.
+
+### Ungelisteter Tankbuster, den ein Helfer bringt, bleibt ungelernt · N
+*Kosten:* Ein Tankbuster ohne Liste und Marker, dessen Treffer nicht vom Wirkenden selbst kommt, sondern von einem
+unsichtbaren Helfer, wird nicht gelernt und tötet, wenn er tödlich ist, bei jeder Wiederholung (A452). In seinem
+Mitschnitt vom 26.10.2026 kam kein Fall vor. *Auflösung:* ein belegter Fall; dann den Helfertreffer gleichen Namens
+auf dasselbe Ziel im Fenster des Casts zuordnen. *Konzept:* 13, „Auch ohne Liste und Marker".
 
 ### Searing-Light-Abdeckungsmodell bildet die Phasenbuchung von Hand nach · R
 *Kosten:* Ändert sich die Buchung in `UpdateSearingPhaseBook`, `AllSearingPhasesHeld` oder `BurstPhaseHeldByAnother`,

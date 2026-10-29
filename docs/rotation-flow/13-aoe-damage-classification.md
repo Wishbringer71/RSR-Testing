@@ -451,10 +451,11 @@ Treffer, bei dem kein Betrag ankam. Gemessen wird nur, wo ein Betrag ankam. *Die
 nicht belegbar* und wird nicht behauptet — sicher ist nur, dass `value` dann nicht der Einschlag ist. Ein Treffer, den
 eine Barriere ganz auffängt, ist kein solcher Fall: Er trägt seinen vollen Betrag (Absatz „Gemessen wird nur ein
 Treffer, den das Mitglied überleben kann", Punkt „Barriere", A449) und wird gemessen wie jeder andere. Für die
-**Aufnahme** zählt ein Eintrag ohne Betrag weiter: Er zeigt, dass die Aktion das Mitglied erreichte. Ein Mitglied unter Unverwundbarkeit trägt dagegen gar keinen Schadenseintrag, sondern die
-Effektart „unverwundbar", und zählt für die Aufnahme nicht: Ein Raidwide, der landet, während ein Tank unter Hallowed
-Ground oder Superbolide steht, kommt bei dieser Landung nicht in die Liste (Defekt in `TODO.md`, „Unverwundbarer Tank
-verhindert die Aufnahme eines Raidwides").
+**Aufnahme** zählt ein Eintrag ohne Betrag weiter, wie Upstream es führt: mit dem Flag. Ein Mitglied unter
+Unverwundbarkeit trägt gar keinen Schadenseintrag, sondern die Effektart „unverwundbar"; es zählt für die Aufnahme als
+erreicht, ebenso Ausweichen und Widerstand (`Watcher.ReachedTarget`, A452). Bis dahin kam ein Raidwide, der landete,
+während ein Tank unter Hallowed Ground oder Superbolide stand, bei dieser Landung nicht in die Liste – ein Tankbuster,
+den ein Patch zur Fläche machte, bekam dann beim nächsten Cast noch einmal den Tankbuster-Plan (sein zweiter Prüffall).
 
 **Null ohne Barriere ist kein Schaden** (A366). Trägt jedes erreichte Mitglied einen Schadenseintrag von null und keines
 eine Barriere (`GetObjectShield`), hat nichts den Treffer geschluckt: Die Aktion macht keinen Schaden. Eine gelistete,
@@ -685,11 +686,22 @@ Messung in `TankbusterTable`, Ablage über denselben gesicherten Weg wie die Fl�
   die größere Maximalgesundheit; ein Fehlschlag an ihm höbe den Wert für jeden Tank, im Extremfall über die ganze
   Gesundheit hinaus. Das Protokoll schreibt ihn mit „(not a tank) … not stored". Keiner der Leser liest die Tabelle für
   einen Nicht-Tank, also fehlt dort nichts.
-  Nicht gemessen wird der Treffer eines Casts, den RSR nur als Wirken eines Gegners auf sein eigenes Ziel für einen
-  Tankbuster nimmt (`DataCenter.IsHostileCastingTank`, Rückfall): Die Einzelabwehr öffnet für ihn, die Tabelle
-  lernt ihn nie, und weil Plan und Unverwundbarkeit nur gelistete oder gelernte Casts lesen
-  (`TankbusterForecast`), nimmt keiner von beiden ihn je – ein tödlicher tötet bei jeder Wiederholung (Defekt in
-  `TODO.md`, „Ungelisteter Tankbuster ohne Marker wird nie gelernt").
+- **Auch ohne Liste und Marker** (A452): der Treffer eines Casts, den RSR nur als Wirken eines Gegners auf sein eigenes
+  Ziel für einen Tankbuster nimmt (`DataCenter.IsHostileCastingTank`, Rückfall) – ein anvisierbarer Gegner, kein
+  Helfer, nicht unterbrechbar, länger als ein GCD, auf einen Tank. `TankbusterTable.UpdateAimedCasts` verfolgt solche
+  Casts je Wirker und Aktion bis einen GCD nach dem Balken; der Effekt-Handler erkennt ihre Landung am Wirker, am Ziel
+  und an derselben Id oder an einer Zeile gleichen Namens und gleichen Angriffstyps (in seinem Mitschnitt vom
+  26.10.2026 landeten 84 von 85 gezielten Casts über 2,5 s unter ihrer eigenen Id, einer – Valfodr – unter der
+  Nachbarzeile). Abgelegt wird unter der Id des Casts, die die Vorhersage liest, mit dem Kennzeichen
+  `TankbusterReading.AimedOnly`. Ein Treffer, der mehr als ein Ziel erreicht – auch in einer anderen Allianzgruppe –,
+  ist ein Cleave oder Raidwide und wird so nicht gelernt.
+  - *Wer ihn liest:* nur der Tankbuster-Plan, für einen Cast auf den Spieler, und er hält für ihn nichts weiter zurück
+    (Konzept 09). Für die Leser, die die Abwehr öffnen oder Hilfe rufen (`IsLearned`: `IsKnownTankbusterCastAt`,
+    `AimedTankbusterLeaves`, Helfererkennung), ist er kein bekannter Tankbuster: Im Pull ist er jeder Trash-Zauber auf
+    den Tank, und mit ihm kehrte die Staffel zurück, die A395 im Pull abgestellt hat. Der Tankwechsel bleibt bei Liste
+    und Marker. Eine Landung unter Liste oder Marker hebt das Kennzeichen für immer auf.
+  - *Grenzen:* Ein Treffer, den ein unsichtbarer Helfer statt des Wirkers bringt, wird so nicht erkannt; bei
+    ausgeschaltetem RSR ohne Auto-On aktualisiert RSR die Ziele nicht und verfolgt nichts.
 - **Kein Raidwide:** Eine Aktion der Flächenliste hat schon einmal jedes Mitglied getroffen; sie ist nicht der
   Tankbuster eines Markers, auch wenn sie das markierte Mitglied trifft, solange der Marker steht
   (`TankbusterTable.IsPartyWide`). Bis A337 zählte jede Aktion in diesem Fenster: In seinen Protokollen vom 22. und
@@ -731,13 +743,24 @@ Messung in `TankbusterTable`, Ablage über denselben gesicherten Weg wie die Fl�
 **Fehler nur nach unten:**
 - Eine Minderung, die kein Text beziffert (unverknüpfter Status, Merkmalswert unterhalb der Merkmalsstufe), wird nicht herausgerechnet.
 - Treffer unsichtbarer Helfer tragen die Debuffs des Bosses nicht.
-- Eine Messung über der Stufe, auf die der Inhalt synchronisiert, oder ohne seine Gegenstandsstufengrenze: Der Anteil
-  fällt kleiner aus – wie viel, hängt vom Abstand der Stufen ab und ist nicht gemessen – und wird heute abgelegt wie jeder
-  andere (Defekt in `TODO.md`, „Messung ohne
-  Stufensynchronisation bewertet eine Aktion zu klein").
+- Eine Messung bei gleicher Stufe ohne die Gegenstandsstufengrenze des Inhalts (Gruppe ohne Beschränkung): Der
+  Anteil fällt kleiner aus und wird abgelegt. Erkannt wird nur eine Stufe über der des Inhalts (Absatz „Ohne
+  Stufensynchronisation").
 
 Eine Barriere verfälscht nichts: Die Schadenszahl des Spiels enthält, was sie auffing (A449); herauszurechnen ist
 nichts.
+
+**Ohne Stufensynchronisation: nicht abgelegt** (A452). Steht der Spieler über der Stufe, auf die der Inhalt
+synchronisiert (`DataCenter.AboveContentLevel`: `PlayerSyncedLevel` gegen `ClassJobLevelSync` der
+`ContentFinderCondition` des Gebiets, gelesen mit `TerritoryInfo` beim Gebietswechsel), zeigt jeder Treffer weniger als im synchronisierten
+Lauf – wie viel, hängt vom Abstand der Stufen ab und ist nicht gemessen. Abgelegt, bewertete er eine noch unbewertete
+Aktion zu klein, und im nächsten synchronisierten Lauf sparte die Größenregel die Minderung oder der Plan das Bündel.
+Deshalb legt keiner der drei Speicher, die eine Größe lernen, eine solche Messung ab: Tankbuster-Tabelle
+(„not stored, above the level the content syncs to"), Flächentabelle samt der Bewertung mit 0 (A366) und der DoT-Speicher
+(Konzept 08). Ein Inhalt ohne Synchronisationsstufe – die offene Welt – gilt als synchron, wie bisher. Verworfen ist das
+Flag der Gruppe ohne Beschränkung (`ContentsFinderQueueInfo.PoppedContentIsUnrestrictedParty`, FFXIVClientStructs):
+Es beschreibt den zuletzt gestarteten Inhalt, nicht belegt auch den laufenden, und falsch gelesen schaltete es das
+Lernen still ab; Stufe und Blatt sind dagegen Spieldaten des laufenden Inhalts.
 
 Herausgerechnet werden dagegen eine Minderung je Schadensart auf dem Getroffenen (Dark Mind: physisch 10 %, magisch
 20 %; `MitigationFactor` über `SelfAgainst`) und eine Erhöhung der maximalen LP, die beim Treffer steht (Kampfrausch,
@@ -819,8 +842,8 @@ haben diesen Grund aufgehoben.
 
 Was bleibt, korrigiert sich: Eine Minderung, die kein Wirktext beziffert, wird nicht herausgerechnet; der Wert fällt
 zu klein aus, und der nächste Treffer unter weniger davon hebt ihn. Eine Barriere braucht keine Rückrechnung: Die
-Schadenszahl enthält, was sie auffing (A449). Eine Messung ohne Stufensynchronisation korrigiert sich nicht von selbst,
-solange sie die einzige ist (Abschnitt „Die Tankbuster-Tabelle", „Fehler nur nach unten"). Ein Wert, der vor A441 abgelegt wurde, ist der Treffer, wie er ankam, oft unter Minderung; er wird gelesen wie
+Schadenszahl enthält, was sie auffing (A449). Eine Messung über der Stufe des Inhalts wird nicht abgelegt (Abschnitt
+„Die Tankbuster-Tabelle", „Ohne Stufensynchronisation"). Ein Wert, der vor A441 abgelegt wurde, ist der Treffer, wie er ankam, oft unter Minderung; er wird gelesen wie
 damals, ohne die jetzt stehende Minderung ein zweites Mal abzuziehen, bis die Aktion neu gemessen ist
 (`OtherConfiguration.AreaPotentialUnmitigated`, A446). Sonst las RSR Seelenüberfluss mit 25 % unter 10 % fremder
 Minderung als 22,5 %, unter der Größe einer großen Barriere, und die Größenregel konnte die Minderung auslassen, die sie
@@ -835,10 +858,8 @@ ernsteste Einwand, und für synchronisierte Messungen trägt er kaum: Die beziff
 (Abschnitt „Grenzen der Messung", erster Absatz), eine Barriere verfälscht nichts (A449); was bleibt, ist eine
 unbezifferte Minderung. Selbst ungerechnet läge ein Raidwide mit vierzig Prozent Potential unter zehn bis zwanzig
 Prozent Gruppenminderung bei zweiunddreißig bis sechsunddreißig — weit über jeder Bagatelle. Eine Verwechslung verlangte
-eine Minderung von neunzig Prozent, die es nicht gibt. Der Einwand hält für eine Messung ohne Stufensynchronisation: Sie
-zeigt weniger als der synchronisierte Treffer, wie viel weniger, ist nicht gemessen, und ist sie die einzige, spart die Größenregel im nächsten
-synchronisierten Lauf die Minderung (Defekt in `TODO.md`, „Messung ohne Stufensynchronisation bewertet eine Aktion zu
-klein").
+eine Minderung von neunzig Prozent, die es nicht gibt. Für eine Messung über der Stufe des Inhalts hielte der Einwand;
+sie wird deshalb nicht abgelegt (A452). Offen bleibt die gleiche Stufe ohne Gegenstandsstufengrenze.
 
 **Verwundbarkeitsstapel verfälschen nach oben.** Zutreffend, und die Fehlerrichtung ist die sichere:
 Überschätzung kostet eine Abklingzeit, Unterschätzung ein Gruppenmitglied.
@@ -1008,9 +1029,9 @@ nie wieder versucht, auch wenn ein Patch ihn schlafbar machte.
    zeigt den Preis, wenn das nicht geführt wird: Alte Flächenwerte wurden ein zweites Mal gemindert gelesen.
 3. *Eine Änderung am Server ohne neue Clientversion:* von hier nicht erkennbar. Gedeckt nur in der Richtung, in der der
    Höchstwert sich selbst hebt.
-4. *Messfehler in einer Version, nach unten:* eine Messung ohne Stufensynchronisation (heute abgelegt, Defekt in
-   `TODO.md`, „Messung ohne Stufensynchronisation bewertet eine Aktion zu klein"), ein Stack mit mehr Teilenden als
-   sonst, eine Minderung, die kein Wirktext beziffert. Eine Barriere gehört nicht dazu: Die Schadenszahl enthält, was
+4. *Messfehler in einer Version, nach unten:* eine Messung bei gleicher Stufe ohne die Gegenstandsstufengrenze des
+   Inhalts, ein Stack mit mehr Teilenden als sonst, eine Minderung, die kein Wirktext beziffert. Eine Messung über der
+   Stufe des Inhalts wird seit A452 nicht abgelegt. Eine Barriere gehört nicht dazu: Die Schadenszahl enthält, was
    sie auffing (A449).
 5. *Messfehler in einer Version, nach oben:* Schadensplus des Gegners (in der Tankbuster-Tabelle nicht abgelegt),
    Verwundbarkeit (dort getrennt geführt), eine verfehlte, aber überlebte Mechanik. Ein Treffer über der ganzen
@@ -1035,12 +1056,14 @@ ungeprüft einsparen darf (Regel 4), und wie schnell der Einschlag den alten Wer
   Flächentabelle; dass das Spiel den vollen Betrag eines tödlichen Treffers meldet, zeigt Megatod mit 941 % in seinem
   Protokoll (A298). Der Wert steigt sofort. Ab dem nächsten Cast nimmt die Vorhersage die Aktion als gelernt
   (`TankbusterForecast`), kein Bündel reicht für 150 %, also geht die Unverwundbarkeit; mit zwei Tanks rechnet der
-  Tankwechsel mit dem Wert („eine Wiederholung bringt dich um"). Gerechnet danach kein Tod mehr. In der Revision
+  Tankwechsel mit dem Wert („eine Wiederholung bringt dich um"), wo Liste oder Marker die Aktion nennen. Gerechnet
+  danach kein Tod mehr. In der Revision
   steht der Wert in der laufenden Schicht und gilt in beide Richtungen.
-- *Bedingung:* Gemessen wird nur ein Tankbuster der Liste oder einer mit bestätigtem Marker. Einen umgebauten Schlag
-  ohne beides erkennt RSR nur als Wirken eines Gegners auf sein eigenes Ziel; die Einzelabwehr öffnet, aber die Tabelle
-  lernt ihn nie, und er tötet bei jeder Wiederholung (Defekt in `TODO.md`, „Ungelisteter Tankbuster ohne Marker wird nie
-  gelernt").
+- *Ohne Liste und Marker:* Einen umgebauten Schlag ohne beides erkennt RSR nur als Wirken eines Gegners auf sein
+  eigenes Ziel. Bis A452 lernte die Tabelle ihn nie, und er tötete bei jeder Wiederholung; jetzt lernt sie ihn mit dem
+  Kennzeichen „nur als Wirken auf das Ziel", und der Plan nimmt ihn ab dem zweiten Cast – mit der Unverwundbarkeit, aber
+  ohne den Rest zurückzuhalten (Abschnitt „Die Tankbuster-Tabelle", „Auch ohne Liste und Marker"). Bringt ein
+  unsichtbarer Helfer den Treffer, bleibt er ungelernt.
 - *Quarantäne:* Sie gilt je Speicher nach dessen Grenze (Regel 7). Über der ganzen Gesundheit ist ein Tankbuster-Wert
   gültig; sonst bliebe Beispiel 1 auf Dauer tödlich.
 
@@ -1056,11 +1079,10 @@ ungeprüft einsparen darf (Regel 4), und wie schnell der Einschlag den alten Wer
   misst die 10 % für die Flächentabelle; ab dem zweiten Cast lässt „Skip mitigation for small area casts" die
   Gruppenminderung aus, bei gesunder Gruppe. Das ist sein „ein grppenschild ist fast nicht nötig". In der Revision
   ist die Messung eine der laufenden Version und spart sofort (Regel 4).
-- *Lücke:* Steht der Tank beim Einschlag unter Hallowed Ground oder Superbolide, trägt sein Eintrag keinen Schaden,
-  sondern die Effektart „unverwundbar", und die Aufnahme bleibt aus. Beim zweiten Cast plant RSR, wo es ihn wie beim
-  ersten für den Tankbuster nimmt, wieder mit 150 %, ohne die Unverwundbarkeit, die dann abklingt, mit dem größten Bündel; erst diese Landung nimmt die Aktion auf (Defekt
-  in `TODO.md`, „Unverwundbarer Tank verhindert die Aufnahme eines Raidwides"). Unter Holmgang und Living Dead nimmt der
-  Tank Schaden, und die erste Landung genügt.
+- *Unter Unverwundbarkeit:* Steht der Tank beim Einschlag unter Hallowed Ground oder Superbolide, trägt sein Eintrag
+  keinen Schaden, sondern die Effektart „unverwundbar". Seit A452 zählt er für die Aufnahme als erreicht, und die erste
+  Landung genügt auch dann; bis dahin plante RSR beim zweiten Cast noch einmal das größte Bündel. Unter Holmgang und
+  Living Dead nimmt der Tank Schaden.
 - *Ohne Aufnahme* – weniger als vier Mitglieder, die Option aus, oder der Treffer bleibt auf dem Tank – senkt den
   alten Wert nur die Revision. Heute nie: Jede bereite Unverwundbarkeit geht auf einen Treffer von 10 %, gerechnet 3 in
   12 Casts (Unverwundbarkeit jeden vierten Cast zurück, Annahme), dazwischen das größte Bündel. Mit der Zählregel
@@ -1075,7 +1097,7 @@ ungeprüft einsparen darf (Regel 4), und wie schnell der Einschlag den alten Wer
 | Am Einschlag erkennbar | woran | Folge | Regel |
 |---|---|---|---|
 | härter als bekannt | ein Treffer über dem Wert | sofort übernommen, auch über der ganzen Gesundheit | Höchstwert (heute und Regel 5) |
-| eine neue Art: trifft alle | jedes Mitglied erreicht | Flächenliste, der alte Tankbuster-Wert wird übergangen | Aufnahme; unter Unverwundbarkeit Defekt |
+| eine neue Art: trifft alle | jedes Mitglied erreicht, auch unter Unverwundbarkeit | Flächenliste, der alte Tankbuster-Wert wird übergangen | Aufnahme (A452) |
 | viel schwächer als ein fester Wert | eine saubere Messung mehr als einen Schadenswurf unter alten, die selbst nicht mehr als einen Wurf streuen | alter Wert widerlegt | 5b |
 | schwächer als ein streuender Wert: *nicht* an einem Einschlag | ein Stack, den einmal nur vier teilten, sieht von acht geteilt klein aus | gesenkt erst nach so vielen sauberen Messungen wie die alten | 5 |
 
@@ -1161,7 +1183,7 @@ einer Erhöhung schützt der erste Cast.
 | Fehler | Zustand danach |
 |---|---|
 | Spielversion nicht lesbar (Feld verschoben, Client nicht bereit) | Kein Eintrag gilt einsparend als bestätigt; Zeile im Protokoll und im Speicherstand; Versuch bei jeder Aktualisierung |
-| Stufensynchronisation nicht lesbar | Messung nicht abgelegt (Regel 8), Zeile im Protokoll |
+| Inhalt ohne Synchronisationsstufe im Blatt (offene Welt) | gilt als synchron, wie vor A452; Stufe des Spielers und Blatt sind sonst immer lesbar |
 | Datei unlesbar | letzte rückgelesene Sicherung (`.bak`, geschrieben nach jedem bestätigten Speichern); erst wenn auch sie fehlt, leer – „nichts gelernt"; die unlesbare bleibt als `.corrupt` |
 | Erster Start mit dem neuen Format | neues Format in neuer Datei, die alte bleibt unberührt; das Ergebnis wird zurückgelesen, bevor es gilt; misslingt es, gilt die alte |
 | Ältere RSR-Fassung nach der neuen | liest die unberührte alte Datei; die neue übernimmt deren Werte beim nächsten Start nur als übernommene Schicht, also nur schützend |
@@ -1169,17 +1191,16 @@ einer Erhöhung schützt der erste Cast.
 | Speichern verlöre einen Eintrag, eine Schicht oder senkte einen Wert ohne Senkung nach Regel 5 oder 5b | nicht gespeichert, „SAVE INVARIANT" im Speicherstand und im Protokoll, der Speicher bleibt im Gedächtnis |
 | Absturz beim Schreiben, zwei Schreiber | wie heute: temporäre Datei, Sperre je Speicher, Rücklesen |
 
-**8. Härtung innerhalb einer Version: keine Messung ohne Stufensynchronisation.** Eine Messung über der Stufe, auf die
-der Inhalt synchronisiert, oder ohne seine Gegenstandsstufengrenze zeigt weniger als der Treffer, um den es geht, und
-heute bewertet sie eine noch unbewertete Aktion: Im nächsten synchronisierten Lauf spart die Größenregel die Minderung
-oder der Plan das Bündel. Gerechnet bei der Hälfte der Landungen ohne Synchronisation, ein Drittel kleiner (Annahme):
-heute 8,3 % falsch ausgelassener Schutz je Cast nach der ersten Messung einer neuen Aktion, ohne Ablage 0 %. Entschieden
-nach seiner Spielweise: Nicht abgelegt wird sie, nicht nur einsparend übergangen – ihr einziger Nutzen wäre ein Wert,
-den der erste synchronisierte Treffer ohnehin liefert, und eine Kennzeichnung je Messung kostete Format. Es ist zugleich
-die Behebung des Defekts in `TODO.md` und von der Revision unabhängig. Die Stufe zeigt das Spiel
-(`PlayerState.IsLevelSynced`, `SyncedLevel`), die Stufe des Inhalts sein Blatt (`ContentFinderCondition`, beim Bau zu
-belegen); ob eine Gruppe ohne Beschränkung erkennbar ist, ist beim Bau am Quelltext zu belegen, sonst bleibt dieser Fall
-offen und wird so benannt.
+**8. Härtung innerhalb einer Version: keine Messung über der Stufe des Inhalts – gebaut (A452).** Eine solche Messung
+zeigt weniger als der Treffer, um den es geht, und bewertete eine noch unbewertete Aktion: Im nächsten synchronisierten
+Lauf spart die Größenregel die Minderung oder der Plan das Bündel. Gerechnet bei der Hälfte der Landungen ohne
+Synchronisation, ein Drittel kleiner (Annahme): 8,3 % falsch ausgelassener Schutz je Cast nach der ersten Messung einer
+neuen Aktion, ohne Ablage 0 %. Entschieden nach seiner Spielweise: Nicht abgelegt wird sie, nicht nur einsparend
+übergangen – ihr einziger Nutzen wäre ein Wert, den der erste synchronisierte Treffer ohnehin liefert, und eine
+Kennzeichnung je Messung kostete Format. Gebaut unabhängig von der Revision, in allen drei Speichern, die eine Größe
+lernen (Abschnitt „Die Tankbuster-Tabelle", „Ohne Stufensynchronisation"). Nicht erkannt wird die gleiche Stufe ohne die
+Gegenstandsstufengrenze des Inhalts: Das Flag der Gruppe ohne Beschränkung beschreibt den zuletzt gestarteten Inhalt,
+nicht belegt den laufenden.
 
 **9. Messmittel im Code.** Jeder Übergang – übernommen, bestätigt, gesenkt, Quarantäne, Versuch auf eine Sperre – eine
 Zeile im `DefenseTrace.log`; die Kopfzeile zählt je Speicher die Zustände. Die Regel steuert sich selbst; sie wartet auf
@@ -1202,8 +1223,7 @@ hinzu, hat aber keinen Fall, den die Revision nicht schon abdeckt, und wäre ein
 geprüft bei jedem Speichern.
 
 **12. Bauabfolge, jede Stufe rückbaubar.** (0) Die drei Defekte aus seinen Prüffällen – ungelisteter Tankbuster,
-Aufnahme unter Unverwundbarkeit, Messung ohne Synchronisation –: unabhängig von der Revision, als Defekte in
-`TODO.md`, ohne Abhängigkeit von der Revision. (1) Format, Übernahme der alten Dateien, Sicherung, Quarantäne, Invarianten – ohne
+Aufnahme unter Unverwundbarkeit, Messung ohne Synchronisation –: unabhängig von der Revision, gebaut (A452). (1) Format, Übernahme der alten Dateien, Sicherung, Quarantäne, Invarianten – ohne
 Verhaltensänderung, die alte Datei bleibt. (2) Regel 4 für Fläche und Tankbuster. (3) Regeln 5 und 5b. (4) Sperren nach
 Regel 6. (5) Anzeige. Rückbau einer Stufe: ihr Messverfahren zurück; die Werte bleiben in beiden Dateien.
 
@@ -1295,8 +1315,7 @@ tödlich, und dort, wo eine Minderung ihn abgefangen hätte.
   stärker macht: gerechnet 8,3 % falsch ausgelassener Schutz heute, 0 % mit Regel 4. Die Antithese hält für den Schaden,
   nicht für das Überleben.
 - *„Kein Verfahren rettet den Tank in Beispiel 1."* Zutreffend für den ersten Cast; der Entwurf sagt nichts anderes. Er
-  sorgt dafür, dass es bei einem Tod bleibt – und das nur, wenn der Treffer gemessen wird (Defekt „Ungelisteter
-  Tankbuster ohne Marker wird nie gelernt").
+  sorgt dafür, dass es bei einem Tod bleibt; seit A452 auch ohne Liste und Marker, solange der Wirkende selbst trifft.
 - *„Regel 5b senkt einen Stack, der nur zufällig fest aussah."* Zutreffend; gerechnet 3,0 % statt 2,4 % falsch
   ausgelassener Schutz je Cast nach einer Abschwächung, unter den 5,5 %, die RSR heute jeder neuen Aktion zumutet.
 - *„Ein übernommener hoher Tankbusterwert zieht die Unverwundbarkeit ohne Not."* Beim ersten Cast, unvermeidbar (Beispiel
@@ -1320,8 +1339,8 @@ einem nicht geführten Messverfahren, und seine Prüffälle legten drei Defekte 
 geprüft an den Alternativen oben, gerechnet am Modell; keine verworfene Regel ist in einer Lage besser für das
 Überleben. *Ausgeliefert, und nichts ändert sich:* hält für den ersten Treffer jeder umgebauten Aktion (Beispiel 1), für
 Änderungen am Server ohne neue Clientversion und für Einträge, die nie wieder gespielt werden; alle drei wirken nur, wo
-gespielt wird, und dort misst RSR. Bis zu den Defektbehebungen hält sie außerdem für einen ungelisteten Tankbuster ohne
-Marker und für eine Aufnahme unter Unverwundbarkeit.
+gespielt wird, und dort misst RSR. Für einen ungelisteten Tankbuster ohne Marker hält sie noch, wo ein unsichtbarer
+Helfer den Treffer bringt.
 
 ### Am Code geprüft
 
@@ -1336,26 +1355,23 @@ Aussage für Aussage, statisch (Selbstprüfung, kein unabhängiges Audit):
   Unverwundbarkeit ebenso: „an action not yet measured … gets nothing"), Hilfe für den anderen Tank
   (`MeasuredHitCallsForNoHelp` nur über `AimedTankbusterLeaves` mit Messwert).
 - Beispiel 1: `TankbusterTable.Record` prüft weder die ganze Gesundheit noch, ob der Getroffene lebt; der Wert steigt
-  nur (`raised`). `TankbusterForecast` nimmt einen Cast, der gelistet oder gelernt ist (`IsLearned`). Gemessen wird nur
-  bei `isTankbuster` = bestätigter Marker oder Liste (`Watcher`, Effekt-Handler) – der Rückfall
-  „Wirken auf das eigene Ziel" (`DataCenter.IsHostileCastingTank`) fehlt dort.
-- Beispiel 2: Aufnahme bei `RecordCastingArea` und mindestens vier Mitgliedern, wenn jedes einen Schadenseintrag trägt
-  (`damageEffectCount == partyMemberCount`); `IsDamageEntry` umfasst Schaden, Block und Parade, nicht „unverwundbar".
-  Gemessen wird in derselben Landung (`Contains` nach `Add`). `PredictedShare` und `IsLearned` geben für eine Aktion der
-  Flächenliste 0 und `false` zurück.
-- Keine Prüfung der Stufensynchronisation an einer der beiden Messstellen; lesbar über ECommons `Player.IsLevelSynced`
-  und `SyncedLevel` (`PlayerState`, ECommons 74af164 vom 09.10.2026, Klon in der Sitzung).
+  nur (`raised`). `TankbusterForecast` nimmt einen Cast, der gelistet oder gelernt ist (`IsLearned`), seit A452 auch
+  einen, der nur als Wirken auf das Ziel gelernt ist (`TankbusterReading.AimedOnly`), dann ohne Zurückhalten
+  (`Announced`).
+- Beispiel 2: Aufnahme bei `RecordCastingArea` und mindestens vier Mitgliedern, wenn jedes erreicht ist
+  (`reachedMembers == partyMemberCount`, seit A452 auch unter Unverwundbarkeit über `ReachedTarget`). Gemessen wird in
+  derselben Landung (`Contains` nach `Add`). `PredictedShare` und `IsLearned` geben für eine Aktion der Flächenliste 0
+  und `false` zurück.
+- Stufensynchronisation: `DataCenter.AboveContentLevel` an allen Messstellen, die eine Größe ablegen (A452).
 - Sauberkeit: Schadensplus am Gegner (`CarriesDamageUp`) und Verwundbarkeit (`CarriesVulnerabilityUp`) an beiden
-  Messstellen lesbar; die Barriere (`GetObjectShield`) braucht sie nicht mehr, die Grenze aus A298 liest sie weiter. Kommentare, die die Frage
-  noch offen nennen (`Watcher`: Grenze aus A298 und Fortschreibung; `TankbusterTable`: Klassenkommentar), werden mit
-  Stufe (0) berichtigt.
+  Messstellen lesbar; die Barriere (`GetObjectShield`) braucht sie nicht mehr, die Grenze aus A298 liest sie weiter. Die
+  Kommentare, die die Frage noch offen nannten, sind mit Stufe (0) berichtigt.
 - Schlaf vor Heilung in der GCD-Folge (`CustomRotation_GCD`: Notfall, Unterbrechung, `StopEnemyCast`, dann Heilung).
 - Offen bis zum Bau: das Feld der Spielversion vor dem Laden lesbar; die Zahl der Messungen fehlt heute bei Fläche,
-  Tankbuster, Serie und Pyretisch und beginnt mit Stufe 1 – alte Einträge zählen als eine Messung; die Erkennung einer
-  Gruppe ohne Beschränkung.
+  Tankbuster, Serie und Pyretisch und beginnt mit Stufe 1 – alte Einträge zählen als eine Messung.
 
-Prüfgrad: statisch am Code und an den Quellen, Modell gerechnet, die Barriere an seinen ACT-Mitschnitten gemessen;
-nichts gebaut.
+Prüfgrad: statisch am Code und an den Quellen, Modell gerechnet, die Barriere an seinen ACT-Mitschnitten gemessen; die
+Revision nicht gebaut, Stufe (0) gebaut und kompiliert, im Spiel nicht beobachtet.
 
 ## Betroffene
 
