@@ -13074,6 +13074,62 @@ Löschungen").
   das reicht, ist offen; wörtlich drückt der Tank nichts. Auch das „der Tank fällt" war zu absolut: Die Heiler helfen
   bei gemessenen 60 % auf 70 % Gesundheit weiter (`MeasuredHitCallsForNoHelp`: Rest unter der Einzelheilschwelle).
 
+### A449 · Gelernte Tabellen an seinen Prüffällen: Barriere gemessen, drei Defekte, klarer Abfall (29.10.2026)
+
+- *Anlass:* seine Prüffälle vom 29.10.2026 – „ein vorher harmloser schlag wird zum tödlichen onehit umgebaut, der nur
+  mit invul gegegnet werden kann. erkenntnis erst nach tod, bzw. einschlag" und „ein tödlicher onehit, der bislang invul
+  benötigt hat, ist nun ein harmloser 10% aoe. auch erst bekannt nach einschlag. da ändert sich sogar die art und ein
+  grppenschild ist fast nicht nötig" – und sein Hinweis „manchmal ist etwas nach einschlag klar erkennbar". Geprüft wurde
+  der Entwurf A447/A448 an beiden Fällen, am Code, am Modell und an seinen Mitschnitten.
+- *Gemessen: die Barriere.* In seinem ACT-Mitschnitt vom 26.10.2026 (`Network_30304_20261026.log`, mit den beiden
+  ausgelagerten Teilen desselben Tages; Treffer eines Gegners auf einen Spieler aus Zeile 21/22 gegen die Zeile 37
+  derselben Sequenz und desselben Ziels, Barriere aus der vorigen Zeile 37) tragen vier Treffer einen Betrag, während die
+  LP des Getroffenen gleich blieben und seine Barriere fiel – 3274 bei einer Barriere von 8 auf 7 %, 3098, 3236 und 3190
+  bei 7 bzw. 11 % –, und weitere einen Betrag über dem LP-Verlust, etwa 4681 bei 1562 LP und einer Barriere von 2 auf
+  0 %. Treffer, zwischen deren Zeilen andere Heilung oder anderer Schaden fiel, sagen nichts und sind nicht gezählt. Die Schadenszahl enthält den aufgefangenen Teil;
+  A298 ließ das offen. Folgen: Die Grenze aus A298 ist genau; eine Barriere macht eine Messung nicht unsauber; die
+  Annahme des Modells „half the landings under a barrier hiding a third" ist widerlegt, das Szenario steht jetzt für
+  Messungen ohne Stufensynchronisation; die Härtungsregel 8 („Einsparen erst nach einer sauberen Messung") verlor ihre
+  Begründung und lautet jetzt: keine Messung ohne Stufensynchronisation. Die Stellen in Konzept 13, die die Frage offen
+  nannten oder einen Barrierenverlust annahmen, sind berichtigt; die Kommentare im Code (`Watcher`: Grenze aus A298 und
+  Fortschreibung; `TankbusterTable`: Klassenkommentar und Nullfall) folgen mit der ersten Codeänderung dort. Das Auswerteskript liegt nicht im Repository: Die Mitschnitte tragen Namen anderer
+  Spieler.
+- *Beispiel 1 am Code:* Der erste Cast tötet unter jeder Regel – gegen einen nicht als tödlich gemessenen Treffer gibt
+  RSR keine Unverwundbarkeit (Optionstext), und Minderung fängt keinen One-Shot ab. Danach lernt RSR:
+  `TankbusterTable.Record` prüft weder die ganze Gesundheit noch, ob der Getroffene lebt; `TankbusterForecast` nimmt
+  den gelernten Cast, der Plan die Unverwundbarkeit. Zwei Funde: (a) Gemessen wird nur ein gelisteter oder per Marker
+  bestätigter Tankbuster; einer, den nur das Wirken auf das eigene Ziel verrät, wird nie gelernt und tötet bei jeder
+  Wiederholung – Defekt, und Konzept 09 behauptete das Gegenteil (C134). (b) Regel 7 des Entwurfs stellte Werte „über der
+  ganzen Gesundheit" in Quarantäne, auch in der Tankbuster-Tabelle, und hätte Beispiel 1 auf Dauer tödlich gemacht;
+  die Quarantäne gilt jetzt je Speicher nach dessen Grenze.
+- *Beispiel 2 am Code:* Die neue Art erkennt die Aufnahme in die Flächenliste an der ersten Landung, und
+  `TankbusterTable.IsPartyWide` beendet den Tankbuster-Plan für sie – unter jeder Regel, auch heute; dieselbe Landung
+  misst die 10 %, und ab dem zweiten Cast spart die Größenregel die Gruppenminderung. Fund: Ein Tank unter Hallowed
+  Ground oder Superbolide trägt keinen Schadenseintrag, und die Aufnahme bleibt aus (Defekt). Ohne Aufnahme senkt nur
+  die Revision: gerechnet 3 Unverwundbarkeiten ohne Not in 12 Casts heute, mit Regel 5 bei 3 alten Messungen 1, bei 10
+  alten 3.
+- *Neu: Regel 5b, klarer Abfall* – sein Hinweis als Regel: Streuen die alten sauberen Messungen (mindestens zwei) nicht
+  mehr als einen Schadenswurf, senkt eine neue, die um mehr als einen Wurf unter ihnen liegt; bei einer alten Messung
+  zwei neue. Gerechnet: Beispiel 2 ohne Aufnahme bei 10 alten Messungen 1 statt 3 Unverwundbarkeiten ohne Not; ein
+  abgeschwächter fester Raidwide spart ab Cast 1 statt 3; Preis im Stack nach einer Abschwächung 3,0 % statt 2,4 %
+  falsch ausgelassener Schutz je Cast, unter den 5,5 % einer neuen Aktion heute. Der Selbsttest des Modells verlangte
+  zuerst, dass 5b nirgends öfter Schutz falsch auslässt als Regel 5; das scheiterte um 0,03 und 0,6 Prozentpunkte in den
+  Stack-Fällen. Maßstab jetzt, wie für die übrigen Regeln: nicht öfter als heute, wo der Treffer nicht schwächer wurde,
+  nicht öfter als heute bei einer neuen Aktion, wo er es wurde; der Rest ist als Preis benannt.
+- *Dritter Fund:* Eine Messung ohne Stufensynchronisation wird an beiden Messstellen abgelegt wie jede andere und kann
+  eine Aktion zu klein bewerten (Defekt).
+- *Berichtigt:* „Living Dead ohne Not verlangt volle Heilung in Walking Dead" galt so nicht – Walking Dead folgt nur, wenn
+  der Treffer die Gesundheit auf null bringt; der Preis eines zu hohen Werts ist die Abklingzeit, Walking Dead nur, wo
+  Living Dead ein Bündel ersetzte, das gereicht hätte, und der Treffer ungemindert tötet.
+- *Verworfen:* ein Abdruck der Blattzeile als Zeichen einer Änderung vor dem Einschlag (zeigt keine Richtung; einsparend
+  ist ohnehin alles übernommen, schützend darf er nichts nehmen); eine Unverwundbarkeit auf Verdacht für unbekannte
+  Casts.
+- *Vorlage:* weiter die eine Frage (Wortlaut in der einsparenden Richtung). Seine Beispiele entscheiden sie nicht – im
+  One-Shot und in Beispiel 2 sind beide Wege gleich –; die Kampfbeispiele zeigen jetzt den Fall, in dem sie es tut: ein
+  umgebauter Treffer, den Minderung abfängt.
+- *Prüfgrad:* statisch am Code, Modell gerechnet (`learned_revision_model.py`, Selbsttest grün), Barriere an seinen
+  Mitschnitten gemessen; nichts gebaut.
+
 ---
 ## B · Commit-Register (Fork vs. `upstream/main`)
 
@@ -13360,3 +13416,4 @@ Die offene Arbeit dazu — Reihenfolge und Abbruchbedingung der Nachprüfung —
 | C131 | Chat 26.10.2026: „Diese Abschlusszeilen schreibt `Stop` ohne jede Bedingung. Dass sie fehlen, beweist: … jeder Schreibversuch ist gescheitert.“ | Zu stark. Ein Absturz von Spiel oder Rechner beendet die Sitzung ohne `Stop` (sein Hinweis); die fehlende Abschlusszeile allein beweist keinen Schreibfehler. Tragend bleiben die fehlenden Zeilen zweier unabhängiger Schreiber während der Kämpfe. | Im Chat zurückgenommen; A418 stützt sich nicht auf die Abschlusszeile |
 | C132 | A428 und Konzept 08 (27.10.2026): „Das Überheilen, das er beschreibt, entsteht also messbar – aber bei Gruppen-HoTs ohne Bedarf, nicht bei DoTs.“ | Falsch für Zoraal Ja. Refugium war bei allen vier Einsätzen nach der Bedarfsfrage gebraucht; seine Ticks fielen auf volle Gesundheit, weil danach Afflatus laetitiae und der zweite Heiler auffüllten. Dieses Überheilen kostete keinen GCD. GCD-HoTs ohne Bedarf gibt es, aber selten (26 von 121). Der Schluss stützte sich auf die Ticks, nicht auf den Bedarf zur Zeit des Wirkens. | Konzept 08 berichtigt; Messung je Einsatz in A430 mit `act_heal_need.py` |
 | C133 | CLAUDE.md und A423 (27.10.2026): „Was davon in seinen anderen Repositories fehlt, dort als Issue weitergegeben … (seine Vorgabe, 27.10.2026 …)“ | Zu weit und falsch zugeschrieben. Sein Satz aus dem Chat von KerbalMissionDirector sagte „teilhaben lassen“; die Pflicht am Ende jedes Auftrags und der Weg über Issues waren meine Ableitung. Seit 29.10.2026 präzisiert: Issues nur für Fehler, die bei der eigenen Arbeit auffallen, erlaubt, keine Pflicht; `TODO.md` nur RSR (A444, A445) | CLAUDE.md, „Grenzen und Löschungen“; `archiv-todo.md` |
+| C134 | Konzept 09, „Die Abwehr im Pull" (A395, 26.10.2026): „… trifft der erste ohne große Minderung – die kurze liegt, die Tabelle kennt ihn ab dem zweiten" | Falsch. Die Tankbuster-Tabelle misst nur gelistete und per Marker bestätigte Tankbuster (`Watcher`, `isTankbuster`); einer, den nur das Wirken eines Gegners auf sein eigenes Ziel verrät, wird nie gelernt, und jeder weitere trifft ebenso (A449, Defekt „Ungelisteter Tankbuster ohne Marker wird nie gelernt") | Konzept 09, „Die Abwehr im Pull" |

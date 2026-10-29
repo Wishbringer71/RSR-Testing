@@ -10,7 +10,11 @@ Betroffene: **N** Endnutzer · **R** Autoren abgeleiteter Rotationen (Namensräu
 Nach der Wirkung im Kampf: Sicherheit der Gruppe vor Schaden, gewichtet mit der Wahrscheinlichkeit, in seinem Profil
 (seine Vorgabe, 17.10.2026: „todo nach wichtigkeit abarbeiten. jeweils im loop bearbeiten").
 
-1. Die gelernten Tabellen: Die Vorlage steht (Konzept 13, A447) und wartet auf seine Entscheidung; gebaut wird danach,
+1. „Ungelisteter Tankbuster ohne Marker wird nie gelernt": ein tödlicher Treffer, der bei jeder Wiederholung tötet.
+2. „Messung ohne Stufensynchronisation bewertet eine Aktion zu klein": Schutz fehlt im nächsten synchronisierten Lauf,
+   wo er unsynchronisiert spielte.
+3. „Unverwundbarer Tank verhindert die Aufnahme eines Raidwides": ein Bündel ohne Not, einmal je umgebauter Aktion.
+4. Die gelernten Tabellen: Die Vorlage steht (Konzept 13, A449) und wartet auf seine Entscheidung; gebaut wird danach,
    erst die Revision über einen Spielpatch, dann die Anzeige. Beide ändern den Kampf nur mittelbar, über einen
    geprüften oder berichtigten Lernwert – die Sperren unter ihnen (Schlaf) aber dauerhaft.
 
@@ -18,7 +22,28 @@ Danach die technische Schuld, soweit ihre Auflösungsbedingung erfüllt ist. War
 
 ## Defekte
 
-Zurzeit keiner.
+### Ungelisteter Tankbuster ohne Marker wird nie gelernt · N
+Ein Tankbuster, den weder die Tankbuster-Liste noch ein Marker nennt, nimmt RSR nur als Wirken eines Gegners auf sein
+eigenes Ziel: Die Einzelabwehr öffnet, die Tankbuster-Tabelle misst ihn nicht, und Plan und Unverwundbarkeit lesen nur
+gelistete oder gelernte Casts. Ein tödlicher – sein Beispiel 1 nach einem Patch, ohne Marker – tötet bei jeder
+Wiederholung. *Ort:* `Watcher` (Effekt-Handler, `isTankbuster` = Marker oder Liste), `TankbusterForecast` (gelistet oder
+`IsLearned`). *Nächster Schritt:* den Treffer eines Casts messen, der auf das Ziel seines Wirkers ging und einen Tank
+traf, mit den bestehenden Ausschlüssen (nur Tanks, Schadensplus, `IsPartyWide`); der Tankwechsel bleibt bei Liste und
+Marker. *Konzept:* 13, „Die Tankbuster-Tabelle" und „Seine Prüffälle"; 09.
+
+### Messung ohne Stufensynchronisation bewertet eine Aktion zu klein · N
+Eine Messung über der Stufe, auf die der Inhalt synchronisiert, oder ohne seine Gegenstandsstufengrenze wird abgelegt
+wie jede andere. Ist sie die einzige, lässt im nächsten synchronisierten Lauf die Größenregel die Gruppenminderung aus
+oder der Tankbuster-Plan das Bündel. *Ort:* `Watcher.TryAreaShare` und `TankbusterTable.Record`. *Nächster Schritt:*
+nicht ablegen, mit Protokollzeile; die Stufe aus `PlayerState` gegen die des Inhalts, eine Gruppe ohne Beschränkung,
+soweit erkennbar. *Konzept:* 13, Regel 8 des Entwurfs.
+
+### Unverwundbarer Tank verhindert die Aufnahme eines Raidwides · N
+Landet ein Raidwide, während ein Tank unter Hallowed Ground oder Superbolide steht, trägt sein Eintrag keinen Schaden,
+und die Aktion kommt nicht in die Flächenliste. Ein Tankbuster, den ein Patch zur Fläche machte (sein Beispiel 2),
+bekommt dann beim nächsten Cast noch einmal den Tankbuster-Plan. *Ort:* `Watcher`, Aufnahme (`damageEffectCount`).
+*Nächster Schritt:* für die Aufnahme jedes erreichte Mitglied zählen (`ReachedTarget`). *Konzept:* 13, „Ein
+Schadenseintrag ohne Betrag wird nicht gemessen" und „Seine Prüffälle".
 
 ## Offene Arbeit
 
@@ -38,7 +63,7 @@ Pyretisch mehr anlegt, hält weiter Zauber an. *Ort:*
 und `ActionPenaltyCasts`;
 Vorbild der Upstream-Listen: `BuiltInList`/`SetList` (eingebaute Einträge, eigene Änderungen als Differenz,
 ausgemusterte Ids). *Nächster Schritt:* seine Entscheidung über die Vorlage (Konzept 13, „Gelernte Tabellen über
-Spielversionen", A447), dann der Bau; Umsetzung erst nach seiner Freigabe (seine Vorgabe, 28.10.2026), zusammen mit
+Spielversionen", A449), dann der Bau; Umsetzung erst nach seiner Freigabe (seine Vorgabe, 28.10.2026), zusammen mit
 „Gelernte Tabellen des Forks in den Einstellungen zeigen und bearbeiten". *Konzept:* 13.
 
 ### Gelernte Tabellen des Forks in den Einstellungen zeigen und bearbeiten · N
@@ -53,8 +78,8 @@ Tankbuster-Tabelle neben Upstreams AoE- und Tankbuster-Liste. *Ort:* `MainWindow
 `OtherConfiguration`: `HostileCastingAreaPotential`, `TankbusterPotential`, `TankbusterMarkerWithoutHit`,
 `SleepOutcomes`, `SleepResistantKinds`, `SleepDiminishing`, `HitSeriesOnPlayer`, `DotOnParty`, `ActionPenaltyCasts`.
 *Nächster Schritt:*
-seine Entscheidung über die Vorlage (Konzept 13, „Gelernte Tabellen über Spielversionen", A447): Anzeige allein, mit
-Entfernen einzelner Einträge, oder gar nicht – die Bearbeitung berührt seine Vorgabe A173. Umsetzung erst nach seiner
+seine Entscheidung über die Vorlage (Konzept 13, „Gelernte Tabellen über Spielversionen", A449); dort aus seinen Regeln
+entschieden: Anzeige ja, Bearbeitung nein (seine Vorgabe A173). Umsetzung erst nach seiner
 Freigabe (seine Vorgabe, 28.10.2026). *Konzept:* 13 (gelernte Tabellen), 18 (Einstellungen).
 
 ## Technische Schuld

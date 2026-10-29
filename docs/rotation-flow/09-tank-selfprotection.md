@@ -625,7 +625,9 @@ BossModReborn oder sein Befehl öffnen sie ohne Rückhaltung und mit der alten S
 Gegners auf sein Ziel öffnet die Abwehr, hebt die Rückhaltung aber nicht auf: Es trifft jeden nicht unterbrechbaren
 Trash-Zauber im Pull, und mit dem ersten kam die Staffel zurück (A395). Sein Preis: Wirkt ein Boss mit Adds an ihm (oder
 allein, wenn die Gegnerzahl auf 1 steht) einen Tankbuster, den weder Liste noch Tabelle noch Marker noch BossModReborn kennen, trifft der erste ohne große
-Minderung – die kurze liegt, die Tabelle kennt ihn ab dem zweiten, und die kritische Klasse hebt die Rückhaltung auf.
+Minderung – die kurze liegt, und die kritische Klasse hebt die Rückhaltung auf. Die Tabelle lernt ihn nicht: Sie misst nur
+gelistete und per Marker bestätigte Tankbuster, und auch jeder weitere trifft so (Defekt in `TODO.md`, „Ungelisteter
+Tankbuster ohne Marker wird nie gelernt").
 Als strategische Rückhaltung läuft sie über die universelle Schicht (`HoldSingleDefense`): Steht er oder ein Tank in
 der kritischen Klasse, fällt sie weg. Lebt kein Heiler, entfallen Rückhaltung und Staffel ganz (Abschnitt „Ohne
 Heiler: den eigenen Tod hinauszögern").
