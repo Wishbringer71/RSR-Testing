@@ -1647,7 +1647,7 @@ Wirken zur Wirkung hängt an der Verbindung und wird in jeder Sitzung neu gemess
 |---|---|
 | Stopper des Jobs gewählt | „stop a cast -> Sanctga …" |
 | Schlaf gewählt | „sleep to stop a cast -> …" (Gegner, Art, Aktion, Restzeit, Unterbrechbarkeit, benötigte Zeit) |
-| gewählt, aber nicht gewirkt | „sleep not cast on …" |
+| gewählt, aber nicht gewirkt | „sleep not cast on …", mit dem Grund, aus dem die Regel den Schlaf zuletzt nicht mehr wählte: in Bewegung oder sonst nicht wirkbar, ein Mitglied in der kritischen Klasse, zu wenig Zeit (Rest gegen Bedarf), der Stopper des Jobs, Swiftcast, das Wirken beendet; ohne Grund kam ein GCD davor im Pfad |
 | widerstanden | „sleep resisted by …: immune, its kind is stored" bzw. „… after N sleep(s) in this fight: worn down" |
 | unverwundbar | „sleep did not reach …" (nur für die Sitzung) |
 | Wirken bricht ab: der Zauberbalken endet früher als Laufzeit einer Anfrage und ein Bild, und binnen eines GCD folgt keine Wirkung | „sleep stopped …" mit der Zeit seit der Landung |
@@ -1683,6 +1683,12 @@ Wirken zur Wirkung hängt an der Verbindung und wird in jeder Sitzung neu gemess
 - *Lange Kämpfe:* Die Abnutzung endet nach einer Weile wieder; die Regel sperrt den Gegner trotzdem bis zum Kampfende,
   weil die Dauer unbelegt ist. Das kostet höchstens einen möglichen Schlaf auf einem langlebigen Gegner.
 - *Wiederholtes Wirken:* Wirkt der geweckte Gegner erneut, kostet jeder Abbruch wieder einen GCD.
+- *Gewählt, aber nicht gewirkt:* Die Wahl gilt nur für den Augenblick; bewegt er sich danach oder fällt ein Mitglied
+  in die kritische Klasse, geht der GCD anders – beides gewollt. Ein oGCD schließt das Fenster nicht: Ein bereiter GCD
+  geht im Dispatch immer vor, und Fähigkeiten ruhen in den letzten 0,5 s vor ihm (`CustomRotation.Ability`). Siebenmal
+  an zwei Abenden ging ein gewählter Schlaf nicht hinaus (A453, A457); in einem Fall webte RSR 0,9 s nach der Wahl eine
+  Fähigkeit, obwohl der GCD nach höchstens 0,3 s bereit war – der Schlaf war da schon nicht mehr der gewählte GCD.
+  Welcher Grund es war, zeigt das Protokoll erst mit der Grundangabe.
 - *Vierer-Instanz:* die Hauptlage. *Allianzraid:* gezählt wird die eigene Gruppe.
 - *Stufensynchron:* Schlaf ab Stufe 10, Schlummer ab 8, Sanctus ab 45, Sanctga ab 82 (`EnoughLevel`).
 - *Zwei Rechner:* Beide Tabellen werden beim Speichern mit der Datei zusammengeführt; gleichzeitig laufende Spiele
