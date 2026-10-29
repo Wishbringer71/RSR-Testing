@@ -13479,6 +13479,37 @@ Löschungen").
 - *Prüfgrad:* kompiliert ohne Warnung, CI-Prüfungen lokal, Modell gerechnet, C#-Code außerhalb des Spiels gegen
   Zufallsläufe; im Spiel nicht beobachtet, das Lesen der Spielversion nur dort prüfbar (Kopfzeile).
 
+### A457 · Upload vom 29.10.2026 ausgewertet: der Abend des 29.10., Weißmagier in Qarn, Klyteum und Tanzgarten (29.10.2026)
+
+- *Hochgeladen:* der Ordner `RotationSolver` (seine Angabe: „danach", nach Stufe 1 auszuwerten), ohne ACT-Mitschnitt:
+  `DefenseTrace.log` mit zehn Sitzungen (19:13–22:16), gelernte Tabellen von 21:16. Builds: 9f78403e7 bis 21:12,
+  84433d9eb (RebornMaterial 7.5.7.5, A455) ab 21:32 – beide ohne die Tankbuster-Serie (A454).
+- *Abstürze:* Die Sitzungen 19:13, 19:16, 19:18 und 21:02 enden ohne „trace ended", zu den Zeiten der Abstürze aus
+  A455. Die Sitzung mit 84433d9eb lief 44 min ohne Absturz durch drei Gebietswechsel: an einem Abend, kein Beleg über
+  ihn hinaus.
+- *Schlaf, Defekt:* Dreimal in Klyteum wählte RSR Schlummer gegen ein Wirken mit 3,7 s Rest bei 3,2–3,4 s Bedarf, und
+  kein Schlaf ging hinaus („sleep not cast"); A453 zählte vier weitere. Nach der dritten Wahl ging 0,9 s später
+  Göttlicher Segen („a charge at the cap"); da Schlummer 2,5 s wirkt, lag das GCD-Ende bei der Wahl höchstens 0,8 s
+  entfernt – der oGCD fiel also auf oder nach das GCD-Ende, und seine Sperrzeit schließt ein Fenster von 0,4 s.
+  Belegt ist das nur für diesen Fall; in den beiden anderen nennt das Protokoll nichts zwischen Wahl und Verfall. Ins
+  TODO als Defekt „Ein gewählter Schlaf geht nicht hinaus". Gelungen sind zwei Versuche mit Widerstand (Mithril-Band in
+  Qarn, Puck im Tanzgarten), beide als resistente Art gelernt.
+- *Ersticken des Fleisches:* Die 98,9 % für #48882, deren Herkunft A453 offenließ, sind hier belegt: fünf Treffer im
+  Abstand von 3 s zu je 18–20 % gemindert auf ihn, als Serie summiert (A349). Vor jedem Cast rechnete die Vorausheilung
+  mit 99 % („it would leave … in danger"), obwohl die Treffer über 12 s verteilt kommen – der offene Punkt „Mehrfach
+  treffender Raidwide: Minderung über die ganze Serie", jetzt auch für die Heilung belegt. #48878 desselben Namens
+  (10 %) blieb richtig ohne Gruppenabwehr.
+- *Gelernte Tabellen gegen die Fassung vom 28.10.:* Fläche 275 → 280 (+5, #48930 von 61 auf 70 %),
+  `AreaPotentialUnmitigated` 13; Tankbuster 63 → 68 – zwei davon nur als Wirken auf das Ziel gelernt (A452, im Spiel
+  bestätigt), die übrigen Änderungen nur das neue Feld; Serien +1; resistente Arten +2; DoT +2 Gebiete; Markertreffer
+  +2; `ActionPenaltyCasts` leer.
+- *DoT in Klyteum, unbelegt:* „Blutung" (#3077) mit 63 250 LP je Tick, (#3078) mit 31 886; darauf ging Regena auf einen
+  Krieger bei 100 % mit erwarteten 30 %. Ohne ACT-Mitschnitt nicht zu prüfen, ob die Ticks so hoch sind; ein zu hoher
+  Wert kostet einen GCD, schützt aber.
+- *Laufzeit:* im Mittel 0,40–0,53 ms je Durchlauf, ein Durchlauf mit 21 ms (Rotation 20,9 ms) einmalig.
+- *Ergebnis:* ein Defekt (Schlaf), ins TODO an erster Stelle; ein offener Punkt im Spiel bestätigt; A453s offene
+  Frage beantwortet. Prüfgrad: Trace und Tabellen statisch ausgewertet, Namen anderer Spieler nur in der Sitzung.
+
 ---
 ## B · Commit-Register (Fork vs. `upstream/main`)
 
