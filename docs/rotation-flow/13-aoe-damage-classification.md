@@ -637,12 +637,12 @@ Speicher die Werte, und das nächste Speichern führt sie mit der dann fehlenden
 schreibt es sie zurück. Kein automatischer Verfall — er würde genau die Eigenschaft aufheben, die eine
 einzelne ungemilderte Beobachtung wertvoll macht.
 
-**Selbstkorrektur nach einem Patch: nicht gebaut, als Vorlage entworfen** (Abschnitt „Gelernte Tabellen über
-Spielversionen", A447). Die beiden einfachen Formen – die erste neue Messung ersetzt den alten Wert, oder ein gleitendes
-Maximum über die letzten Messungen – tragen das Risiko, dass eine geminderte erste oder letzte Messung den Wert zu tief
-setzt und der nächste Treffer ungemildert ankommt; die zweite braucht dazu eine feste Zahl. Der Entwurf dort widerlegt
-einen alten Wert erst mit so vielen sauberen Beobachtungen, wie er selbst hatte. Bis zu seinem Bau deckt das Löschen
-von Hand den Fall.
+**Selbstkorrektur nach einem Patch: entschieden, nicht gebaut** (Abschnitt „Gelernte Tabellen über Spielversionen",
+A447–A451). Die beiden einfachen Formen – die erste neue Messung ersetzt den alten Wert, oder ein gleitendes Maximum über
+die letzten Messungen – tragen das Risiko, dass eine kleinere erste oder letzte Messung den Wert zu tief setzt und der
+nächste Treffer ohne Schutz ankommt; die zweite braucht dazu eine feste Zahl. Die Revision dort widerlegt einen alten
+Wert erst mit so vielen sauberen Beobachtungen, wie er selbst hatte, oder nach einem Abfall, den kein Schadenswurf
+erklärt. Bis zu ihrem Bau deckt das Löschen von Hand den Fall.
 
 **Seit A172 kann kein Speichern mehr verlieren, was die Datei hält.** Die Tabelle wächst von selbst nur; also ist jeder Stand der Datei eine Untergrenze, und ein Speichern nimmt je Aktion das Höhere aus Speicher und Datei. Damit ist die Fehlerklasse geschlossen, nicht der Einzelfall: Gleich aus welchem Grund der Speicher leer oder unvollständig ist — Laden gescheitert, abgebrochen, ein künftiger Defekt —, die Datei behält ihren Stand. Dazu wird ein Speicher, dessen Laden in dieser Sitzung nicht zu Ende lief, gar nicht geschrieben: Das Entladen schreibt alle Listen, und ein abgebrochener Start hätte sie sonst alle geleert. Ausgenommen ist nur ein Wert, den die Messung selbst nicht ablegt, über der ganzen Maximalgesundheit (A298, Abschnitt „Was gemessen wird, und was nicht").
 
@@ -930,7 +930,7 @@ aktuelle Gesundheit nicht reicht, und Barriere samt Minderung zusätzlich, wo au
 reicht. Sie gilt nicht nur für Flächen — dieselbe Frage stellt sich beim Tankbuster —, deshalb steht
 sie dort und nicht hier.
 
-## Gelernte Tabellen über Spielversionen: Revision, Absicherung, Anzeige (Vorlage, nicht gebaut)
+## Gelernte Tabellen über Spielversionen: Revision, Absicherung, Anzeige (entschieden, nicht gebaut)
 
 **Seine Aufträge vom 28.10.2026.** Revision: „sobald ein neuer patch von ffxiv rauskommt, könnte sich der wert der
 listen aber ändern, weil sich mechaniken im spiel ändern. […] nach patch werden die bestehenden listen als gegeben
@@ -945,8 +945,10 @@ gegner, schaden, effekt etc." Seine Rüge vom 29.10.2026 an der ersten Fassung (
 zum tödlichen onehit umgebaut, der nur mit invul gegegnet werden kann. erkenntnis erst nach tod, bzw. einschlag" und „ein
 tödlicher onehit, der bislang invul benötigt hat, ist nun ein harmloser 10% aoe. auch erst bekannt nach einschlag. da
 ändert sich sogar die art und ein grppenschild ist fast nicht nötig"; dazu sein Hinweis: „manchmal ist etwas nach
-einschlag klar erkennbar." Gebaut wird erst nach seiner Freigabe: „umsetzung der beiden konzepte erfolgt nach
-ausführlicher präsentation und begründung wie das ziel erreicht werden soll."
+einschlag klar erkennbar." Gebaut wird nach seiner Freigabe: „umsetzung der beiden konzepte erfolgt nach
+ausführlicher präsentation und begründung wie das ziel erreicht werden soll." Die eine offene Frage hat er am 29.10.2026
+entschieden („asymmetrisch, wie empfohlen", Abschnitt „Seine Entscheidung: asymmetrisch") und danach die drei Defekte
+aus seinen Prüffällen beauftragt.
 
 **Berührte Entscheidungen:** seine Vorgabe A173 – Löschen der Datei von Hand, „dazu brauch ich keinen ingame-button.
 unnötige funktionen erzeugen auch unnötige fehlerursachen"; meine Absage an eine Selbstkorrektur nach einem Patch
@@ -975,8 +977,9 @@ haben, darf Schutz auslösen, aber keinen einsparen.** Einsparend gelesen gilt e
 überall schon heute: schützen („unbewertet heißt mindern"; „Spend only the mitigation a measured tankbuster needs" gilt
 laut Text nur „against a tankbuster the table has measured"; die Hilfe für den anderen Tank geht). Schützend gelesen
 gilt er wie bisher – das ist „solange anwendung der bisherigen erkenntnisse" in der Richtung, in der ein Irrtum nur
-Schaden kostet. In der einsparenden Richtung weicht der Grundsatz vom Wortlaut seines Auftrags ab – die einzige Frage an
-ihn (Abschnitt „Vorlage an ihn"). Alles Übrige ist aus seinen Regeln entschieden und unten begründet.
+Schaden kostet. In der einsparenden Richtung weicht der Grundsatz vom Wortlaut seines Auftrags ab; so hat er es
+entschieden (Abschnitt „Seine Entscheidung: asymmetrisch"). Alles Übrige ist aus seinen Regeln entschieden und unten
+begründet.
 
 ### Bestand
 
@@ -1200,11 +1203,15 @@ geprüft bei jedem Speichern.
 
 **12. Bauabfolge, jede Stufe rückbaubar.** (0) Die drei Defekte aus seinen Prüffällen – ungelisteter Tankbuster,
 Aufnahme unter Unverwundbarkeit, Messung ohne Synchronisation –: unabhängig von der Revision, als Defekte in
-`TODO.md`, ohne Abhängigkeit von dieser Vorlage. (1) Format, Übernahme der alten Dateien, Sicherung, Quarantäne, Invarianten – ohne
+`TODO.md`, ohne Abhängigkeit von der Revision. (1) Format, Übernahme der alten Dateien, Sicherung, Quarantäne, Invarianten – ohne
 Verhaltensänderung, die alte Datei bleibt. (2) Regel 4 für Fläche und Tankbuster. (3) Regeln 5 und 5b. (4) Sperren nach
 Regel 6. (5) Anzeige. Rückbau einer Stufe: ihr Messverfahren zurück; die Werte bleiben in beiden Dateien.
 
-### Vorlage an ihn: die eine offene Frage
+### Seine Entscheidung: asymmetrisch
+
+**Entschieden am 29.10.2026** (seine Antwort: „asymmetrisch, wie empfohlen"), eine Präzisierung seines Auftrags vom
+28.10.2026 für die einsparende Richtung: Ein übernommener Wert gilt schützend wie bisher; einsparend gilt er bis zur
+ersten sauberen Messung der neuen Version als unbewertet, also schützend. Die Grundlage, wie sie ihm vorlag:
 
 **Kontext.** Sein Auftrag sagt: nach einem Patch „solange anwendung der bisherigen erkenntnisse, bis […] diese
 bestätigt werden oder eben falsifiziert". Seine Spielweise sagt: Sicherheit vor Schaden, gewichtet mit der
@@ -1242,7 +1249,7 @@ des wörtlichen Wegs ist selten (wie oft ein Patch alte Aktionen verstärkt, ist
 tödlich, und dort, wo eine Minderung ihn abgefangen hätte.
 
 **Drei Antithesen gegen die Empfehlung, und was von ihnen bleibt.**
-1. *„Sein Auftrag sagt es anders."* Hält – deshalb diese Frage. Der Zweck des Wortlauts, gelernte Werte über einen
+1. *„Sein Auftrag sagt es anders."* Hielt – deshalb war es seine Frage, und er hat sie entschieden. Der Zweck des Wortlauts, gelernte Werte über einen
    Patch hinweg nicht zu verlieren, bleibt gewahrt: Gelöscht wird nichts, schützend gilt alles weiter, und einsparend
    gilt der Wert nach einer sauberen Messung wieder.
 2. *„Mitigationspläne verteilen die starken Mittel auf die schweren Treffer zuerst: ‚Do not start at the top of the
@@ -1253,9 +1260,6 @@ tödlich, und dort, wo eine Minderung ihn abgefangen hätte.
 3. *„Unbewertet heißt beim Tank die alte Abwehr – die kann Unverwundbarkeit oder Living Dead ziehen."* Widerlegt am
    Optionstext: Die Unverwundbarkeit gegen einen gemessenen Tankbuster gibt einer ungemessenen Aktion nichts („an action
    not yet measured … gets nothing"); die alte Abwehr nimmt Minderungen.
-
-**Die Frage:** Hat er seine Meinung zum Wortlaut „solange anwendung der bisherigen erkenntnisse" für die einsparende
-Richtung geändert – asymmetrisch, wie empfohlen – oder gilt der Wortlaut in beiden Richtungen?
 
 ### Verworfen
 

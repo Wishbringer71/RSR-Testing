@@ -14,8 +14,8 @@ Nach der Wirkung im Kampf: Sicherheit der Gruppe vor Schaden, gewichtet mit der 
 2. „Messung ohne Stufensynchronisation bewertet eine Aktion zu klein": Schutz fehlt im nächsten synchronisierten Lauf,
    wo er unsynchronisiert spielte.
 3. „Unverwundbarer Tank verhindert die Aufnahme eines Raidwides": ein Bündel ohne Not, einmal je umgebauter Aktion.
-4. Die gelernten Tabellen: Die Vorlage steht (Konzept 13, A449) und wartet auf seine Entscheidung; gebaut wird danach,
-   erst die Revision über einen Spielpatch, dann die Anzeige. Beide ändern den Kampf nur mittelbar, über einen
+4. Die gelernten Tabellen: entschieden (Konzept 13, A451); gebaut nach Regel 12 des Entwurfs, erst die Revision über
+   einen Spielpatch, dann die Anzeige. Beide ändern den Kampf nur mittelbar, über einen
    geprüften oder berichtigten Lernwert – die Sperren unter ihnen (Schlaf) aber dauerhaft.
 
 Danach die technische Schuld, soweit ihre Auflösungsbedingung erfüllt ist. Warten auf Daten: unten.
@@ -62,9 +62,8 @@ Pyretisch mehr anlegt, hält weiter Zauber an. *Ort:*
 `TankbusterReading`, `SleepReading`, `DotReading`/`DotArea`, dazu `HitSeriesOnPlayer`, `TankbusterMarkerWithoutHit`
 und `ActionPenaltyCasts`;
 Vorbild der Upstream-Listen: `BuiltInList`/`SetList` (eingebaute Einträge, eigene Änderungen als Differenz,
-ausgemusterte Ids). *Nächster Schritt:* seine Entscheidung über die Vorlage (Konzept 13, „Gelernte Tabellen über
-Spielversionen", A449), dann der Bau; Umsetzung erst nach seiner Freigabe (seine Vorgabe, 28.10.2026), zusammen mit
-„Gelernte Tabellen des Forks in den Einstellungen zeigen und bearbeiten". *Konzept:* 13.
+ausgemusterte Ids). *Nächster Schritt:* der Bau nach Regel 12 (Konzept 13, „Gelernte Tabellen über Spielversionen");
+die offene Frage hat er entschieden, asymmetrisch (A451). *Konzept:* 13.
 
 ### Gelernte Tabellen des Forks in den Einstellungen zeigen und bearbeiten · N
 Sein Auftrag (28.10.2026): „prüfen, ob es sinnvoll ist, die durch den fork selbst erstellten lernlisten ähnlich der
@@ -78,9 +77,8 @@ Tankbuster-Tabelle neben Upstreams AoE- und Tankbuster-Liste. *Ort:* `MainWindow
 `OtherConfiguration`: `HostileCastingAreaPotential`, `TankbusterPotential`, `TankbusterMarkerWithoutHit`,
 `SleepOutcomes`, `SleepResistantKinds`, `SleepDiminishing`, `HitSeriesOnPlayer`, `DotOnParty`, `ActionPenaltyCasts`.
 *Nächster Schritt:*
-seine Entscheidung über die Vorlage (Konzept 13, „Gelernte Tabellen über Spielversionen", A449); dort aus seinen Regeln
-entschieden: Anzeige ja, Bearbeitung nein (seine Vorgabe A173). Umsetzung erst nach seiner
-Freigabe (seine Vorgabe, 28.10.2026). *Konzept:* 13 (gelernte Tabellen), 18 (Einstellungen).
+Anzeige ja, Bearbeitung nein (Konzept 13, „Gelernte Tabellen über Spielversionen", Regel 10; seine Vorgabe A173); gebaut
+als letzte Stufe der Revision. *Konzept:* 13 (gelernte Tabellen), 18 (Einstellungen).
 
 ## Technische Schuld
 

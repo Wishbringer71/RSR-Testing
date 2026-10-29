@@ -13144,6 +13144,17 @@ Löschungen").
 - *Geprüft:* Build von `main` und Arbeitszweig ohne Warnung; alle Prüfschritte lokal, vor dem Push erneut nach dem
   Merge (A324); Fork-Version 7.5.7.11 unverändert richtig.
 
+### A451 · Gelernte Tabellen: seine Entscheidung, asymmetrisch (29.10.2026)
+
+- *Seine Antwort* auf die eine Frage aus A449: „asymmetrisch, wie empfohlen. danach die drei defekte abarbeiten. alles im
+  vollen kritischen loop mit audit und codereview".
+- *Einordnung:* Präzisierung seiner Vorgabe vom 28.10.2026 („solange anwendung der bisherigen erkenntnisse") für die
+  einsparende Richtung: Ein übernommener Wert gilt schützend wie bisher und einsparend bis zur ersten sauberen Messung
+  der neuen Version als unbewertet.
+- *Eingetragen:* Konzept 13, Abschnitt „Seine Entscheidung: asymmetrisch" (vorher die Vorlage), der Maßstab und der
+  Absatz „Selbstkorrektur nach einem Patch"; Konzept 18; `TODO.md` (beide Einträge der gelernten Tabellen: Bau nach
+  Regel 12). Beauftragt sind jetzt die drei Defekte; der Bau der Revision folgt in der Reihenfolge danach.
+
 ---
 ## B · Commit-Register (Fork vs. `upstream/main`)
 
