@@ -59,6 +59,15 @@ does - and read as that figure times the mitigation still standing when the cast
 under three mitigations no longer reads small, and one other players have already mitigated reads smaller. Readings
 stored before stay as they are and count as unmitigated until the next landing raises them.
 
+### Behaviour change in RotationSolver.Basic: every running heal over time lowers the heal thresholds
+
+The "Targets with Heal-over-Time" thresholds take any status whose own text says it regenerates HP over time, from any
+source, with `StatusHelper.AreaHots` and `SingleHots` kept as a fallback and unchanged: Kerachole's Kerakeia, Celestial
+Opposition, Aurora, Knight's Benediction and the rest count now. The single thresholds read the longest such status on
+the member; the area thresholds read the mean over the living members instead of the player's own area heal over time.
+`AutoStatus.HealSingleSpell`, `HealSingleAbility`, `HealAreaSpell` and `HealAreaAbility` follow. A heal action counts as
+granting a heal over time on a Walking Dead target by the same recognition.
+
 ## 7.5.7.10+wsh1
 
 ### Dependency of RotationSolver.Basic: RebornMaterial 7.5.7.2

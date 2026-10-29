@@ -1786,8 +1786,8 @@ das kann z.b. durch fehlende gegnerzahlen oder durch ein anstehendes event passi
 nicht mehr angreifen kann." Der Wirktext bestätigt die Mechanik (Living Dead, `ActionId.resx` 3638).
 
 **Sachstand:** `StatusHelper.WalkingDeadCarriedBySelfHeal` sagt, ob der Träger noch von seinen eigenen
-Angriffen getragen wird. Solange das gilt, nimmt ihn keine Heilaktion als Ziel, die keinen HoT aus
-`SingleHots` verleiht (`ActionTargetInfo.FindTarget`), und er zählt nicht als Grund für eine
+Angriffen getragen wird. Solange das gilt, nimmt ihn keine Heilaktion als Ziel, die ihm keinen HoT verleiht (am
+Wirktext des Status, `StatusHelper.IsAnyHealOverTime`, A442; `ActionTargetInfo.FindTarget`), und er zählt nicht als Grund für eine
 Flächenheilung um den Wirkenden. Regen des Weißmagiers ist unter Walking Dead von der
 `RegenHeal`-Sperre ausgenommen. Die volle Unterstützung setzt ein, sobald einer dieser Fälle eintritt:
 

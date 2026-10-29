@@ -1188,10 +1188,15 @@ fällt – und das ist selten.
   unter der Einzelschwelle oder nach dem Schnitt der vier niedrigsten (`StateUpdater.ShouldHealArea`).
 - *Laufender HoT:* senkt die Schwellen von `HealthSingleSpell` (65 %) zu `HealthSingleSpellHot` (55 %), linear nach
   seiner Restzeit über pauschal 15 s (`StateUpdater.GetHealingOfTimeRatio`), aus jeder Quelle – ohne zu wissen, wie
-  stark er gegen den Strom ist. Welche Status als HoT gelten, sagen zwei Listen (`StatusHelper.AreaHots`,
-  `SingleHots`); ihnen fehlen die Regeneration aus Kerachole (Kerakeia) und Celestial Opposition (Opposition) und die
-  Selbstheilungen der Tanks, obwohl die Liste nach ihrem eigenen Kommentar jeden laufenden Gruppen-HoT tragen soll.
-  Defekt, im TODO („Laufende HoTs fehlen in den HoT-Listen").
+  stark er gegen den Strom ist. Als HoT gilt jeder Status, dessen eigener Wirktext „regenerating HP over time" sagt
+  (`StatusHelper.IsAnyHealOverTime`, 84 Status im Spielblatt vom 29.10.2026: Kerakeia aus Kerachole, Opposition aus
+  Celestial Opposition, Aurora, Knight's Benediction, Equilibrium, Wheel of Fortune und die Heiler-HoTs), die Listen
+  `StatusHelper.AreaHots` und `SingleHots` bleiben Rückfall; es zählt der am längsten laufende (A442). Die Einzelschwelle
+  liest ihn auf dem Mitglied, die Flächenschwelle das Mittel über die lebenden Mitglieder (`PartyHealingOfTimeRatio`):
+  Eine Bodenregeneration, die der andere Heiler abseits des Spielers legt, zählt, ein Regen auf dem Spieler allein nur
+  für ihn. Bis A442 las die Flächenschwelle nur einen Listen-HoT auf dem Spieler, die Einzelschwelle nur einen
+  Einzel-HoT der Liste – unter Kerachole, Celestial Opposition oder Aurora heilte RSR, als liefe nichts. Der Spaltentext
+  der Schwellen sagt „Targets with Heal-over-Time".
 - *Womit:* je Job; beim Weißmagier Afflatus solatii zuerst, dann Regen, solange das Ziel über `RegenHeal` (30 %) steht
   und keins trägt, sonst Cure II; für die Gruppe Afflatus laetitiae zuerst, Resega, wenn höchstens die Hälfte der
   Gruppe es trägt; Regen auf dem Tank im Pull (`TryPullUpkeepOnTank`, A184). Lilien leert RSR vor dem Überlauf auch

@@ -12896,6 +12896,46 @@ Löschungen").
   gerechnet; im Spiel nicht beobachtet. Messmittel im Code: „area defence skipped: … expected at … under the mitigation
   standing" und „measured … unmitigated" im `DefenseTrace.log`.
 
+### A442 · Jeder laufende HoT senkt die Heilschwellen: Erkennung am Wirktext, Flächenschwelle über die Gruppe (29.10.2026)
+
+- *Auftrag:* TODO-Defekt „Laufende HoTs fehlen in den HoT-Listen" (aus A428/A432), im Loop nach der Reihenfolge.
+- *Ursache am Code:* `StateUpdater` las die HoT-Schwellen über zwei Aufzählungen. Die Einzelschwellen nahmen nur
+  `SingleHots` auf dem Mitglied, die Flächenschwellen nur `AreaHots` auf dem Spieler, je die früheste Restzeit. Es
+  fehlten Kerakeia (Kerachole), Opposition (Celestial Opposition), Aurora, Knight's Benediction, Equilibrium, Wheel of
+  Fortune und Medica II auf der Einzelschwelle. Der Spaltentext der Schwellen sagt „Targets with Heal-over-Time" – der
+  Code wich vom Text ab.
+- *Optionen:*
+  - Nullvariante: unter fremden und Tank-HoTs heilt RSR zu früh, ein GCD Schaden je unnötiger Heilung.
+  - Die Listen ergänzen: verworfen, die Aufzählung altert mit jedem Patch (code.md, Aufzählung → Fähigkeitsprüfung).
+  - Gewählt: die Erkennung am Wirktext (`IsHealOverTime`, 84 Status, xivapi am 29.10.2026 nachgezählt), die Listen als
+    Rückfall.
+  - Gruppe oder Einzelziel nach dem Wirkbereich der gewährenden Aktion: verworfen. Der Name des Status führt nicht
+    sicher zur Aktion (Kerakeia – Kerachole). Gewählt ist, wo der HoT liegt: Für die Flächenschwelle zählt das Mittel
+    der Anteile über die lebenden Mitglieder.
+  - Rückbau: `HealOverTimeLeft` durch die Listen ersetzen.
+- *Umgesetzt:* `StatusHelper.IsAnyHealOverTime`, `HealOverTimeLeft` (der am längsten laufende HoT jeder Quelle; ein HoT
+  unterwegs zählt voll, wie vorher). `StateUpdater.GetHealingOfTimeRatio(member)`, `PartyHealingOfTimeRatio`. Die
+  Walking-Dead-Regel erkennt eine HoT-Aktion ebenso (`ActionTargetInfo.GrantsSingleHot`). Die öffentlichen Listen
+  bleiben. Keine neue Zahl (die 15 s sind Upstreams; die Zeile mit Upstreams „mehr als zwei Mitglieder" steht in
+  `fixed_values.json` als Ausnahme mit A442, weil der Fork sie für den gelesenen Anteil änderte), keine Option: Der Text
+  der Schwellen bindet.
+- *Im Kampf:*
+  - Unter Kerachole des Co-Heilers sinkt die Einzelschwelle eines Mitglieds von 65 auf bis 55 %, nach der Restzeit.
+    Eine Cure II bei 60 % fällt aus, die Regeneration trägt, und der Heiler wirft Schaden.
+  - Unter Aurora des Revolverklingen-Tanks ebenso für ihn.
+  - Flächenheilung: Liegt eine Bodenregeneration auf sieben von acht, sinkt die Schwelle fast voll, auch wenn der
+    Spieler außerhalb steht. Ein Regen allein auf dem Spieler senkt sie nur um ein Achtel statt ganz.
+  - Preis: Ein schwacher HoT senkt die Schwelle wie ein starker; die Stärke liest die Schwelle nicht, wie vorher.
+    Gefahrenklasse, Vorausheilung und Notfall bleiben unberührt.
+- *Falsifikation:*
+  - „Kein Defekt": widerlegt am Spaltentext und an der Liste der Wirktexte.
+  - „Option falsch": Ein Status, der „regenerating" sagt, aber kaum heilt, senkt die Schwelle. Die 84 Treffer sind alle
+    Regenerationen; einige gehören zu PvP oder Sonderinhalten und kommen im PvE nicht vor.
+  - „Ausgeliefert, nichts ändert sich": wo der Co-Heiler nicht mit RSR spielt und sein HoT trotzdem fehlt – nicht
+    möglich, gelesen wird jede Quelle. Bei einem HoT ohne diesen Wirktext greift die Liste.
+- *Prüfgrad:* statisch, Compile (`cloud_build.sh`, ohne Warnung), Prüfskripte, Statusliste gegen xivapi; im Spiel nicht
+  beobachtet. Messmittel im Code: keines neu – die Wirkung zeigt sich in den Heilentscheidungen im `DefenseTrace.log`.
+
 ---
 ## B · Commit-Register (Fork vs. `upstream/main`)
 

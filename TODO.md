@@ -10,8 +10,7 @@ Betroffene: **N** Endnutzer · **R** Autoren abgeleiteter Rotationen (Namensräu
 Nach der Wirkung im Kampf: Sicherheit der Gruppe vor Schaden, gewichtet mit der Wahrscheinlichkeit, in seinem Profil
 (seine Vorgabe, 17.10.2026: „todo nach wichtigkeit abarbeiten. jeweils im loop bearbeiten").
 
-1. Laufende HoTs fehlen in den HoT-Listen – kostet Schaden, nicht Sicherheit.
-2. Die gelernten Tabellen, als ein Konzept und eine Vorlage, gebaut erst nach seiner Freigabe: erst die Revision über
+1. Die gelernten Tabellen, als ein Konzept und eine Vorlage, gebaut erst nach seiner Freigabe: erst die Revision über
    einen Spielpatch, weil sie festlegt, welchen Stand ein Wert hat, dann Anzeige und Bearbeitung in den Einstellungen,
    die diesen Stand zeigen. Beide ändern den Kampf nur mittelbar, über einen geprüften oder berichtigten Lernwert.
 
@@ -19,14 +18,7 @@ Danach die technische Schuld, soweit ihre Auflösungsbedingung erfüllt ist. War
 
 ## Defekte
 
-### Laufende HoTs fehlen in den HoT-Listen · N, R
-Läuft die Regeneration aus Kerachole (Weiser) oder Celestial Opposition (Astrologe) auf der Gruppe oder eine
-Selbstheilung auf einem Tank (etwa Aurora), heilen RSRs Heiler, als liefe nichts: Die Schwellen sinken nicht, und eine
-GCD-Heilung fällt, wo die Regeneration getragen hätte. Die Liste soll nach ihrem eigenen Kommentar jeden laufenden
-Gruppen-HoT tragen. *Ort:* `StatusHelper.AreaHots`, `SingleHots`; Leser `StateUpdater.GetHealingOfTimeRatio`,
-`SelfHealingOfTimeRatio`, `ActionTargetInfo`. *Nächster Schritt:* Loop zur Erkennung am Spielblatt – vorhanden als
-`StatusHelper.IsHealOverTime` (84 Status mit „Regenerating HP over time"; die Bodeneffekte mit eigenem Wirktext) –, die
-Listen als Rückfall; Gruppe oder Einzelziel nach dem Wirkbereich der gewährenden Aktion. *Konzept:* 08 („Was RSR heute tut" im Abschnitt „Schaden über Zeit").
+Zurzeit keiner.
 
 ## Offene Arbeit
 

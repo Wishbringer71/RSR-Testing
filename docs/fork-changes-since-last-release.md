@@ -18,6 +18,14 @@ What this release changes in the fight. For the whole distance from upstream, se
   other's effect. Under a tankbuster on both tanks, Aquaveil goes on the tank without Divine Benison at once instead of
   waiting 15 s, and a tank whose barrier the last hit took gets the next help for the next hit.
 
+## Healing — when it lands
+
+- **Every running heal over time counts.** The heal thresholds for "Targets with Heal-over-Time" applied only to the
+  heals over time on two fixed lists, so under Kerachole, Celestial Opposition, Aurora or Knight's Benediction RSR healed
+  as if nothing were ticking. Any status whose own text says it regenerates HP over time counts now, from whoever laid
+  it. A member's single threshold reads the one on him that runs longest; the area threshold reads how much of the party
+  is under one, not only whether you are.
+
 ## The learned lists
 
 - **An area hit counts at its unmitigated size.** The damage table divides out the mitigation that stood when a raidwide
