@@ -13240,6 +13240,42 @@ Löschungen").
   (Abwehr im Pull, Gemessener Tankbuster), Konzept 08 (DoT-Stärke); `TODO.md`: die drei Defekte entfernt, der neue
   zu Mehrfachtreffern erfasst, zwei Punkte technische Schuld; Release-Text.
 
+### A453 · Upload vom 29.10.2026 ausgewertet: Abende des 28.10. (29.10.2026)
+
+- *Dateien:* RSR-Ordner (`DefenseTrace.log` vom 26. bis 28.10., gelernte Tabellen), ACT-Mitschnitt des 28.10. ab 17:40,
+  zwei ausgelagerte ACT-Teile desselben Tages (Vormittag, Nachmittag). Seine Anweisung: „auswerten".
+- *Builds:* 28.10. vormittags 9019e9263, ab 14:39 b8cf69a3c – beide vor A439 bis A452. Der Trace enthält auch die
+  Sitzungen vom 26. und 27.10.
+- *Gespielt:* vormittags Summoner und White Mage nur in Städten; nachmittags Dark Knight und White Mage in „the Clyteum";
+  abends White Mage in the Void Ark, drei Allianz-Raids (Windurst, San d'Oria, Thaleia), zwei AAC-Kämpfen, Alexander –
+  The Arm of the Son und Mistwake. Der Spieler starb nicht.
+- *Tode der eigenen Gruppe (28):* Mechaniken – One-Shots über der ganzen Gesundheit (Flut 103 und 142 %, Hyper-Impuls
+  118 %, Wellenstoß 9 999 999), Doppeltreffer binnen 1,5 s (Byakkos Kapriole 79 bis 83 % und Messerklauen 88 bis 93 %;
+  Lunarer Schuss 58 und 77 %), Steinfluch auf dem Dark Knight in AAC Cruiserweight (M3; volle Gesundheit, dann null beim
+  Ablauf), Tode ohne Quelle und ein Wipe in Thaleia. Wo Schaden tötete, kam die Heilung des Spielers nach dem ersten
+  Treffer, und der zweite landete, bevor sie wirkte. Eine ausgelassene verfügbare Heilung ist an den Zeilen 21/22 nicht
+  zu sehen; Abklingzeiten nicht geprüft.
+- *Ausgelassene Flächenabwehr (12):* zehn landeten wie bewertet (8 bis 21 %, niemand unter 59 %). Zwei nicht:
+  - Welt der Dornen (#42307), bewertet 9 % aus seinem Trace vom 13.10. (dort 3 % auf ihn), traf nach dem Tod des Tanks
+    mit 38 bis 45 %. Im selben Kampf Neo-Brutalo-Spezial 47 % statt 19 %. Die übrigen Treffer des Kampfes waren an beiden
+    Tagen ähnlich – kein Lauf ohne Synchronisation, sondern eine Mechanik, deren Schaden vom Spiel abhängt.
+  - Brutzelblitz (#5615) traf dreimal 15, 31 und 14 %; der zweite, ausgelassene, mit 31 %. Kein Schadensplus am Wirker,
+    keine Verwundbarkeit auf allen; Ursache offen.
+  - Niedrigste verbliebene Gesundheit 55 und 68 %. Die Höchstwertregel hob beide nach der Landung (45 und 32 %). Eine
+    erste Messung aus gut gespielter Mechanik bewertet den Fehlschlag zu klein – der Fall, den der Konzeptabschnitt
+    „Eine unterschätzte Aktion wird nicht gemindert" für synchronisierte Messungen als schmalen Bereich führt.
+- *Gelernte Tabellen gegen den Upload vom 26.10.:* Fläche 275 Einträge, 50 neu, 21 angehoben, keiner über der ganzen
+  Gesundheit; Ersticken des Fleisches (#48882, „the Clyteum") steht bei 98,9 % – vier versetzt wirkende Helfer, ein Treffer
+  alle 3 s, nach A349 als Serie summiert; die höchste Wellensumme am 28.10. war 79 %, die Herkunft der 98,9 % ist im
+  Mitschnitt dieses Tages nicht zu finden. Tankbuster-Tabelle 63 Einträge, höchster 82 %. Serien 27 (+19), Schlaf 11
+  (+3), resistente Gegnerarten 14 (+6, darunter die Adds aus M3), DoT-Speicher 9 Gebiete.
+- *Pyretisch:* Status #1049 lag in Alexander auf zwei Gruppenmitgliedern; er steht in `NoCastingStatus`, A439 lernt das
+  Wirken jetzt.
+- *Laufzeit:* im Mittel 0,49 ms je Durchlauf; ein Durchlauf in Thaleia mit 97 ms (Rotation 68,5 ms), einmalig.
+- *Schlaf:* zwei Schlafversuche, viermal gewählt und nicht ausgeführt („sleep not cast").
+- *Ergebnis:* kein Defekt im Code dieser Builds belegt; die beiden Unterbewertungen hat die Höchstwertregel behoben.
+  Prüfgrad: Mitschnitt und Trace statisch ausgewertet, Namen anderer Spieler nur in der Sitzung.
+
 ---
 ## B · Commit-Register (Fork vs. `upstream/main`)
 
