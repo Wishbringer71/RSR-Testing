@@ -12768,6 +12768,47 @@ Löschungen").
 - *Prüfgrad:* maschineller Abgleich auf Tokenebene, Build mit dem Weg des Releases, Prüfskripte; im Spiel nicht
   beobachtet.
 
+### A439 · Pyretisch vor der Landung: gelernte Wirken, kein Zauber, der dann noch liefe (29.10.2026)
+
+- *Auftrag:* TODO „Pyretisch trifft mitten in einen eigenen Zauber" (aus A427), im Loop nach der Reihenfolge.
+- *Fehlerbild und Ursache* (ACT-Mitschnitt vom 26.10.2026): „Heißes Herz" (#43322, 4,7 s) wurde siebenmal gewirkt,
+  dreimal auf ihn; zweimal gelandet, zweimal am Balkenende abgebrochen, dreimal unterbrochen. Um 21:15:51,6 begann es auf ihn, um 21:15:56,6 landete es: Schaden und Effektart 0x0E mit Status #960
+  (Pyretisch) im selben Effektsatz, darauf Pyretisch mit rund 1,03 Mio. auf ihn, weil die 0,8 s vorher begonnene
+  Wirbelströmung erst danach endete. Um 21:09:03,7 dieselbe Landung auf einem Mitglied, das daran starb. Die Sperren aus
+  A338 lesen den liegenden Status; vor der Landung sperrte nichts. Die Stoppliste (`IsHostileStop`) ist ab Werk aus und
+  führt das Wirken nicht; BossModReborn (ae64e33 vom 20.10.2026, Stand des Remotes) setzt `SpecialMode.Pyretic` in einem
+  einzigen Modul, keinem des Pilgerpfads.
+- *Optionen:* Nullvariante (der Tod wiederholt sich bei jedem Zauber über die Landung); das Wirken in die Stoppliste
+  (von Hand, je Wirken, hält jede Aktion für die ganze Wirkdauer); nur BossModReborns Sondermodus (kein Modul hier); ein
+  festes Fenster wie BossMods `PyreticThreshold` (4707e49c2 vom 28.10.2026: ab Werk 1,0 s, ein laufender Zauber wird im
+  Fenster abgebrochen); gewählt: Wirken lernen, deren Landung einem Mitglied oder ihm einen solchen Status anlegt, und
+  vor ihrer Landung nach Wirkzeit und gemessener Laufzeit sperren. Rückbau: `ActionPenaltyCasts.json` löschen, den
+  Status aus „No-casting debuffs" nehmen.
+- *Umgesetzt:* `ActionPenaltyWatch` (Erkennung: gelernte Wirken jeder gegnerischen Figur auf ihn oder in einer Gestalt,
+  die ihn erreicht; ein Balken, der mindestens eine Aktualisierung vor seinem Ende verschwindet, war gestoppt und landet
+  nicht; nach einem Balken, der an seinem Ende endet, „landet sofort" bis zur gesehenen Landung, höchstens einen GCD; dazu BossModReborns
+  bevorstehender Sondermodus). Entscheidung in den vier Verbrauchern: `ActionBasicInfo.NeedsCasting` (kein Zauber, der
+  bei der Landung noch liefe, Wirkzeit nach `GetAdjustedCastTime` samt Spontaneität), `RSCommands.DoAction` (kein Druck,
+  dessen Aktion samt Wirkzeit dann liefe), `CancelCastUpdater` (Abbruch), `AutoAttackUpdater` (kein Auto-Angriff), je
+  mit `TankbusterForecast.RoundTrip`, außer im PvP. Die Tabelle hält je Aktion den gelegten Status; die Liste „No-casting
+  debuffs" bleibt so der Schalter. Keine neue Option: belegte Defektbehebung (code.md). Keine neue Zahl.
+- *Im Kampf:* Am Fall oben hätte die Landung um 21:09 das Wirken gelehrt; um 21:15 beginnt ab drei Sekunden und
+  Laufzeit vor der Landung kein Wirbelströmung mehr, an seiner Stelle eine sofort wirkende Aktion oder keine. Ein
+  Heiler beginnt in diesem Fenster keine gewirkte Heilung und keine Wiederbelebung – eine, die über die Landung liefe,
+  kostete ihn das Leben, und unter Pyretisch heilt er ohnehin nicht. Preis: je Landung höchstens eine Wirkzeit ohne
+  Zauber; ein Wirken auf ihn, das erst am Balkenende abbricht, hält einen GCD danach alles an (am Abend eines von dreien
+  auf ihn); das nach 1,8 s unterbrochene gibt sofort frei. Der erste Entwurf hielt auch dieses bis einen GCD nach dem
+  regulären Balkenende, rund 5 s ohne Aktion – am Mitschnitt gefunden, vor dem Commit behoben.
+- *Falsifikation:* „Kein Defekt": zwei Tote an einem Abend. „Option falsch": Die Sperre trifft nur Aktionen, die bei
+  der Landung noch liefen; was vorher fertig wird, geht, und unter dem liegenden Status sperrt A338 ohnehin alles. „Ausgeliefert, nichts ändert
+  sich": hält teilweise – die erste Landung eines unbekannten Wirkens ohne Modul trifft ungehindert, allein im
+  Pilgerpfad auch auf ihn; ein Status, der nicht in der Landung selbst liegt, sondern später entsteht, wird nicht
+  gelernt (dann greift A338); ein Druck von Hand liegt außerhalb von RSR. Die Wirkkette des Lernens ist am Mitschnitt
+  belegt: Die Effektart 0x0E trägt die Status-Id in `EffectEntry.value` (ECommons 74af164).
+- *Prüfgrad:* statisch, Compile (`cloud_build.sh`, ohne Warnung), Prüfskripte, Wirkkette am Mitschnitt; im Spiel nicht
+  beobachtet. Messmittel im Code: „learned: … lays status" und „held for a status that damages every action" im
+  `DefenseTrace.log`, die Kopfzeile zählt die gelernten Wirken.
+
 ---
 ## B · Commit-Register (Fork vs. `upstream/main`)
 

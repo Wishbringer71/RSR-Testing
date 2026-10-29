@@ -31,6 +31,15 @@ plugin project, with their namespaces unchanged, and `latest.zip` no longer carr
 only. The public surface is the same except `IconSet.Init()`, which is removed together with the SVG conversion and the
 `Svg` dependency; `PhantomRotation` is abstract.
 
+### Behaviour change in RotationSolver.Basic: no cast that a status damaging every action would meet
+
+An action with a cast time is no longer usable (`CanUse` returns false) while an enemy cast is coming that will lay a
+status damaging every action - Pyretic, Causality - on the player before the cast would end, counted with the measured
+round trip; outside PvP. The enemy casts are learned in play, from every landing that lays such a status of the
+`NoCastingStatus` list on the player or a party member, and kept in `ActionPenaltyCasts.json` beside the other learned
+tables; BossModReborn's imminent Pyretic mode counts as well. A rotation that needs a cast in that window gets an instant
+action or none.
+
 ## 7.5.7.10+wsh1
 
 ### Dependency of RotationSolver.Basic: RebornMaterial 7.5.7.2

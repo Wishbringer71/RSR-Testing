@@ -10,11 +10,10 @@ Betroffene: **N** Endnutzer · **R** Autoren abgeleiteter Rotationen (Namensräu
 Nach der Wirkung im Kampf: Sicherheit der Gruppe vor Schaden, gewichtet mit der Wahrscheinlichkeit, in seinem Profil
 (seine Vorgabe, 17.10.2026: „todo nach wichtigkeit abarbeiten. jeweils im loop bearbeiten").
 
-1. Pyretisch trifft mitten in einen eigenen Zauber – tötete zweimal an einem Abend.
-2. Einzelabwehr-Streckung bei einem doppelten Tankbuster – der Treffer kommt sicher, und ein Tank steht ohne Hilfe.
-3. Flächentabelle misst unter der stehenden Minderung – bewertet nur den ersten Treffer einer Aktion falsch.
-4. Laufende HoTs fehlen in den HoT-Listen – kostet Schaden, nicht Sicherheit.
-5. Die gelernten Tabellen, als ein Konzept und eine Vorlage, gebaut erst nach seiner Freigabe: erst die Revision über
+1. Einzelabwehr-Streckung bei einem doppelten Tankbuster – der Treffer kommt sicher, und ein Tank steht ohne Hilfe.
+2. Flächentabelle misst unter der stehenden Minderung – bewertet nur den ersten Treffer einer Aktion falsch.
+3. Laufende HoTs fehlen in den HoT-Listen – kostet Schaden, nicht Sicherheit.
+4. Die gelernten Tabellen, als ein Konzept und eine Vorlage, gebaut erst nach seiner Freigabe: erst die Revision über
    einen Spielpatch, weil sie festlegt, welchen Stand ein Wert hat, dann Anzeige und Bearbeitung in den Einstellungen,
    die diesen Stand zeigen. Beide ändern den Kampf nur mittelbar, über einen geprüften oder berichtigten Lernwert.
 
@@ -32,15 +31,6 @@ Gruppen-HoT tragen. *Ort:* `StatusHelper.AreaHots`, `SingleHots`; Leser `StateUp
 Listen als Rückfall; Gruppe oder Einzelziel nach dem Wirkbereich der gewährenden Aktion. *Konzept:* 08 („Was RSR heute tut" im Abschnitt „Schaden über Zeit").
 
 ## Offene Arbeit
-
-### Pyretisch trifft mitten in einen eigenen Zauber · N
-Ein Gegnerwirken, das Pyretisch anlegt („Heißes Herz", #43322, 4,7 s, im Pilgerpfad), tötet, wenn es landet, während
-ein eigener Zauber läuft: Der Schaden kommt im selben Augenblick wie der Status (26.10.2026: rund 1,03 Mio. auf ihn,
-nachdem RSR 0,8 s vor der Landung Wirbelströmung begann; dasselbe Wirken tötete sechs Minuten zuvor ein Mitglied). Der
-Abbruch unter Pyretisch (A338) kommt danach. *Ort:* `DataCenter.IsHostileStop` (Stoppliste, ab Werk aus, das Wirken
-nicht gelistet), `Watcher` (Effektmeldung: Status 960 als Effektart 0x0E in der Landung). *Nächster Schritt:* Loop, ob
-RSR Wirken lernt, die einen Status der Liste „No-casting debuffs" anlegen, und vor ihrer Landung keinen Zauber beginnt,
-der dann noch liefe; Option und Voreinstellung gehören in den Loop. *Konzept:* 03.
 
 ### Einzelabwehr-Streckung bei einem doppelten Tankbuster · N
 Ein Tankbuster auf beide Tanks („Bittere Ernte", Zoraal Ja): Nach dem Göttlichen Segen auf den einen wartet
@@ -64,9 +54,11 @@ revisionssystem muss sicher aufgebaut sein, dass nicht irrtümlich erkenntnisse 
 unwidersprochen und ungeprüft nach einem versionssprung des spiels beibehalten werden." Im Kampf: Ändert ein Patch eine
 Mechanik, gilt der alte Lernwert weiter. Ein stärkerer Treffer hebt ihn an, weil jedes Speichern den höheren Wert
 behält; ein abgeschwächter Treffer senkt ihn nie, und RSR gibt weiter Abwehr und Heilung für den alten aus. Ein Gegner,
-der nun schläft, bleibt als resistent geführt, eine Serie, die nicht mehr kommt, bleibt gelernt. *Ort:*
+der nun schläft, bleibt als resistent geführt, eine Serie, die nicht mehr kommt, bleibt gelernt, ein Wirken, das kein
+Pyretisch mehr anlegt, hält weiter Zauber an. *Ort:*
 `OtherConfiguration.LearnedFile` (Zusammenführung mit `Math.Max`, `Math.Min` oder `Higher`, Speichern), die Werttypen
-`TankbusterReading`, `SleepReading`, `DotReading`/`DotArea`, dazu `HitSeriesOnPlayer` und `TankbusterMarkerWithoutHit`;
+`TankbusterReading`, `SleepReading`, `DotReading`/`DotArea`, dazu `HitSeriesOnPlayer`, `TankbusterMarkerWithoutHit`
+und `ActionPenaltyCasts`;
 Vorbild der Upstream-Listen: `BuiltInList`/`SetList` (eingebaute Einträge, eigene Änderungen als Differenz,
 ausgemusterte Ids). *Nächster Schritt:* Konzept im vollständigen kritischen Loop mit Antithese und Widerlegungsversuch,
 danach Audit des Konzepts: Revision je Spielversion; nach einem Versionssprung gelten die alten Werte weiter, aber als
@@ -85,7 +77,8 @@ Datei bei geschlossenem Spiel gelöscht wird; die Liste zeigt heute nur die Ante
 Tankbuster-Tabelle neben Upstreams AoE- und Tankbuster-Liste. *Ort:* `MainWindow_List` (`DrawListActions`,
 `DrawActionsList`, Vorbild: Upstreams Listen mit Hinzufügen, Zwischenablage, Entfernen, Zurücksetzen); die Speicher in
 `OtherConfiguration`: `HostileCastingAreaPotential`, `TankbusterPotential`, `TankbusterMarkerWithoutHit`,
-`SleepOutcomes`, `SleepResistantKinds`, `SleepDiminishing`, `HitSeriesOnPlayer`, `DotOnParty`. *Nächster Schritt:*
+`SleepOutcomes`, `SleepResistantKinds`, `SleepDiminishing`, `HitSeriesOnPlayer`, `DotOnParty`, `ActionPenaltyCasts`.
+*Nächster Schritt:*
 Prüfung und Konzept im kritischen Loop, mit Antithese und Widerlegungsversuch, danach Audit des Konzepts; erst dann
 Code. Abzuwägen gegen seine Vorgabe aus A173 („unnötige funktionen erzeugen auch unnötige fehlerursachen", Löschen von
 Hand statt Knopf); berührt das Ergebnis sie, lege ich es ihm vor. Die Anzeige zeigt auch den Stand eines Werts nach
