@@ -172,6 +172,7 @@ Pflicht für jede nicht-triviale Aufgabe; die REGEL steht darüber.
 - Ein grüner CI-Lauf belegt nur, was die Prüfungen erfassen. Konzepte werden nicht kompiliert (seine Vorgabe): Über ihren Inhalt sagt er nichts. Ihren Inhalt prüfe ich Aussage für Aussage am Code und an den Quellen. Eine Prüfung, die bei einem Konzept anschlägt, etwa auf eine verrutschte Zeilenangabe, zeigt, dass ich Code geändert habe, ohne die Konzeptstelle dazu neu zu lesen. Deshalb prüfe ich den Inhalt der Stelle, nicht nur die Angabe.
 
 **Definition of Ready: erst das vollständige Konzept, dann Code**
+- Das Konzept kommt vor dem Code, nie umgekehrt: Besteht eines, erweitere ich es zuerst und baue den Code darauf; zeigt sich beim Bauen etwas, das es nicht trägt, halte ich an und schreibe erst das Konzept fort. Code zuerst und das Konzept danach anpassen ist Versuch und Irrtum und verboten (seine Vorgabe, 29.10.2026).
 - Vor Arbeitsbeginn steht fest: was der Fehler ist, woran seine Behebung im Kampf erkennbar wäre, welche Quellen auszuschöpfen sind.
 - Vollständig heißt das ganze berührte Verhalten: alle mitwirkenden Spielmechaniken (belegt oder als unbelegt markiert); alle Regeln, die denselben Zeitpunkt, dieselbe Ressource oder denselben Platz nutzen; alle Lagen (allein, mehrere, stufensynchron, Burst aus, BossMod ohne Modul); seine Vorgaben und Hinweise; je Option die Wirkung über den ganzen Kampf.
 - Geprüft heißt: Falsifikation gegen das ganze Konzept, ein Modell, wo rechenbar, und zu jeder Annahme die Frage, was geschieht, wenn sie nicht stimmt.
