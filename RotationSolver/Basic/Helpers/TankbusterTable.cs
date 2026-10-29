@@ -533,26 +533,22 @@ internal static class TankbusterTable
 			raised = series.Sum > before;
 			longer = span > reading.Span;
 			changed = raised || longer || (known && reading.AimedOnly != aimedOnly);
-			if (changed)
-			{
-				OtherConfiguration.TankbusterPotential[series.Key] = new TankbusterReading
-				{
-					Unmitigated = !series.Vulnerable && raised ? series.Sum : reading.Unmitigated,
-					UnderVulnerability = series.Vulnerable && raised ? series.Sum : reading.UnderVulnerability,
-					AimedOnly = aimedOnly,
-					Span = Math.Max(span, reading.Span),
-				};
-			}
 		}
+
+		// Every stored series, not only one that raises the value: the revisions count it in its game version, and set the
+		// table to the higher of what they hold - the value written here before (concept 13, "Stufe 1"). Outside the
+		// readers' lock: the store takes it only to set the entry, and its save is prepared after that.
+		OtherConfiguration.MeasureTankbuster(series.Key, new TankbusterReading
+		{
+			Unmitigated = series.Vulnerable ? 0f : series.Sum,
+			UnderVulnerability = series.Vulnerable ? series.Sum : 0f,
+			AimedOnly = series.AimedOnly,
+			Span = span,
+		}, !series.Vulnerable);
 
 		DefenseTrace.Line(what + (series.AimedOnly ? ", known only as a cast at its own target" : string.Empty)
 			+ (raised ? " - stored" : longer ? " - not above the stored value, its span stored"
 				: changed ? " - not above the stored value, known as a tankbuster from now on" : " - not above the stored value"));
-
-		if (changed)
-		{
-			_ = OtherConfiguration.SaveTankbusterPotential();
-		}
 	}
 
 	/// <summary>

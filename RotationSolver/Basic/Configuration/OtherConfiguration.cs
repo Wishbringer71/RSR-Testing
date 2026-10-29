@@ -6,7 +6,7 @@ using RotationSolver.Basic.Resources;
 
 namespace RotationSolver.Basic.Configuration;
 
-internal class OtherConfiguration
+internal partial class OtherConfiguration
 {
 	/// <markdown file="List" name="AoE" section="Actions">
 	///
@@ -127,8 +127,12 @@ internal class OtherConfiguration
 	/// player logs out, which for a fight progged over several evenings means never. That is why the
 	/// list reset leaves it alone, why a save merges with the file instead of replacing it, and why
 	/// it is written through a temporary file rather than in place. There is no button to discard
-	/// it: after a patch that changes how hard these actions hit, the file is deleted by hand with
-	/// the game closed (owner's decision - a function that is not needed is one more way to fail).
+	/// it (owner's decision - a function that is not needed is one more way to fail).
+	///
+	/// Set from its revisions alone (<see cref="MeasureAreaShare"/>, concept 13, "Stufe 1"): every reading is
+	/// counted under its game version in "HostileCastingAreaPotential.rev.json", and this table holds the
+	/// higher of the running and the taken-over layer - the highest valid reading, as before. A patch no
+	/// longer needs the file deleted; to start over by hand, both files go, with the game closed.
 	/// </remarks>
 	public static Dictionary<uint, float> HostileCastingAreaPotential = [];
 
@@ -156,7 +160,8 @@ internal class OtherConfiguration
 	/// mitigation that stood on the member and on the attacker at the hit
 	/// (<see cref="DefensiveValues.TryStatus"/>), so a well-mitigated hit does not rate the
 	/// action low. A hit taken under a vulnerability debuff goes into its own figure. Both only ever
-	/// rise. No button discards it: after a patch the file is deleted by hand with the game closed.
+	/// rise. No button discards it. Set from its revisions alone, like the area table
+	/// (<see cref="MeasureTankbuster"/>): to start over by hand, both files go, with the game closed.
 	/// </remarks>
 	public static Dictionary<uint, TankbusterReading> TankbusterPotential = [];
 
@@ -540,11 +545,15 @@ internal class OtherConfiguration
 	/// <remarks>
 	/// <paramref name="prune"/> removes what the table's own measurement would not store, and returns how
 	/// many it removed; it runs in the same step as the load, because the loads run in parallel.
+	/// With <paramref name="revision"/>, the table the readers see is set from the revisions alone, and the
+	/// old file goes on being written beside them (concept 13, "Stufe 1").
 	/// </remarks>
 	private sealed class LearnedFile<TValue>(string name, Func<Dictionary<uint, TValue>> copy,
 		Action<Dictionary<uint, TValue>> set, Func<TValue, TValue, TValue> higher, Action<string> report,
-		string noun, Func<TValue, bool>? keep = null, Func<Dictionary<uint, TValue>, int>? prune = null)
+		string noun, Func<TValue, bool>? keep = null, Func<Dictionary<uint, TValue>, int>? prune = null,
+		RevisedStore<TValue>? revision = null)
 		: ListFile(name)
+		where TValue : notnull
 	{
 		// One writer at a time. Every save of a store uses the same "<name>.json.tmp", and two pool
 		// tasks writing it at once made the second one fail on the locked file - retried twice, and
@@ -559,16 +568,38 @@ internal class OtherConfiguration
 			// the first of them is harmless - so the outcome is recorded for the list window.
 			var path = FilePath;
 			var existed = File.Exists(path);
-			var value = ReadFile<Dictionary<uint, TValue>>(path) ?? [];
+			var value = ReadFile<Dictionary<uint, TValue>>(path);
+			var fromBackup = false;
+			if (value == null && existed && !File.Exists(path))
+			{
+				// There but unreadable, set aside as .corrupt: the last copy that was read back after a save. A missing
+				// file is not replaced by it - he deleted the file, and that stands (concept 13, rule 7).
+				value = ReadFile<Dictionary<uint, TValue>>(path + ".bak");
+				fromBackup = value != null;
+			}
+
+			value ??= [];
 			MarkLoaded(Name);
+			var read = value.Count;
+			var old = revision != null ? new Dictionary<uint, TValue>(value) : null;
 			var pruned = prune?.Invoke(value) ?? 0;
+			if (revision != null)
+			{
+				value = revision.Load(old!);
+			}
+
 			set(value);
-			report(!existed
-				? $"loaded {DateTime.Now:HH:mm:ss}: no file yet, started empty"
-				: !File.Exists(path)
-					? $"LOAD FAILED {DateTime.Now:HH:mm:ss}: file unreadable, set aside as .corrupt, started empty"
-					: $"loaded {DateTime.Now:HH:mm:ss}: {value.Count} {noun} from file"
-						+ (pruned > 0 ? $", {pruned} above a whole max HP left out" : string.Empty));
+
+			// With revisions the readers see what the revisions hold, and the old file only fed them: both are named.
+			var failed = existed && !File.Exists(path);
+			var file = !existed ? "no file yet"
+				: fromBackup ? $"file unreadable, set aside as .corrupt, {read} {noun} from its backup"
+				: failed ? "file unreadable, set aside as .corrupt, no readable backup"
+				: $"{read} {noun} " + (revision != null ? "in the file" : "from file")
+					+ (pruned > 0 ? $", {pruned} invalid or above a whole max HP left out" : string.Empty);
+			report($"{(failed ? "LOAD FAILED" : "loaded")} {DateTime.Now:HH:mm:ss}: {file}"
+				+ (revision != null ? $"; the readers see {value.Count} {noun} from the revisions"
+					: (failed && !fromBackup) || !existed ? ", started empty" : string.Empty));
 		}
 
 		// Learned in play, never reset: there is no built-in table to return to, and no button discards it.
@@ -581,7 +612,17 @@ internal class OtherConfiguration
 		public override Action PrepareWrite()
 		{
 			var snapshot = copy();
-			return () => SaveTracked(snapshot, Name, higher, report, _gate, noun, keep);
+			if (revision == null)
+			{
+				return () => SaveTracked(snapshot, Name, higher, report, _gate, noun, keep);
+			}
+
+			var layers = revision.Snapshot();
+			return () =>
+			{
+				SaveTracked(snapshot, Name, higher, report, _gate, noun, keep);
+				revision.Save(layers);
+			};
 		}
 	}
 
@@ -595,6 +636,15 @@ internal class OtherConfiguration
 		TypeNameHandling = TypeNameHandling.None,
 		Converters = [new StringEnumConverter()],
 	};
+
+	// Declared before Files, which takes them: static fields start in the order they stand in a file. The method number
+	// is raised with every change to what a stored value means (concept 13, rule 1); 1 is the method since stage 1.
+	private static readonly RevisedStore<float> AreaRevision = new(nameof(HostileCastingAreaPotential), 1, Math.Max,
+		IsValidAreaShare, share => share, () => HostileCastingAreaPotential, null, "area table");
+
+	private static readonly RevisedStore<TankbusterReading> TankbusterRevision = new(nameof(TankbusterPotential), 1,
+		TankbusterReading.Higher, TankbusterReading.IsValid, reading => reading.Unmitigated > 0f ? reading.Unmitigated : null,
+		() => TankbusterPotential, TankbusterPotentialGate, "tankbuster table");
 
 	/// <summary>
 	/// Every stored list this plugin keeps, in one place: <see cref="InitAsync"/> loads exactly these,
@@ -623,13 +673,15 @@ internal class OtherConfiguration
 		// The game thread is the only writer of this table, and the copy is taken there.
 		new LearnedFile<float>(nameof(HostileCastingAreaPotential),
 			() => new Dictionary<uint, float>(HostileCastingAreaPotential), v => HostileCastingAreaPotential = v,
-			Math.Max, state => AreaPotentialStoreState = state, "rated action(s)", IsWithinWholeHealth, DropBeyondWholeHealth),
+			Math.Max, state => AreaPotentialStoreState = state, "rated action(s)", IsValidAreaShare, DropBeyondWholeHealth,
+			AreaRevision),
 		new LearnedFile<int>(nameof(AreaPotentialUnmitigated),
 			() => new Dictionary<uint, int>(AreaPotentialUnmitigated), v => AreaPotentialUnmitigated = v,
 			Math.Max, state => AreaPotentialUnmitigatedState = state, "rated action(s) measured unmitigated"),
 		new LearnedFile<TankbusterReading>(nameof(TankbusterPotential), CopyTankbusterPotential,
 			v => { lock (TankbusterPotentialGate) { TankbusterPotential = v; } },
-			TankbusterReading.Higher, state => TankbusterStoreState = state, "rated tankbuster(s)"),
+			TankbusterReading.Higher, state => TankbusterStoreState = state, "rated tankbuster(s)", TankbusterReading.IsValid,
+			revision: TankbusterRevision),
 		new LearnedFile<SleepReading>(nameof(SleepOutcomes), () => CopySleepStore(SleepOutcomes),
 			v => { lock (SleepStoreGate) { SleepOutcomes = v; } },
 			SleepReading.Higher, state => SleepStoreState = state, "slept action(s)"),
@@ -739,7 +791,7 @@ internal class OtherConfiguration
 		var beyond = new List<uint>();
 		foreach (var (id, share) in table)
 		{
-			if (!IsWithinWholeHealth(share))
+			if (!IsValidAreaShare(share))
 			{
 				beyond.Add(id);
 			}
@@ -819,14 +871,10 @@ internal class OtherConfiguration
 
 	public static Task SaveHostileCastingArea() => SaveList(nameof(HostileCastingArea));
 
-	public static Task SaveHostileCastingAreaPotential() => SaveList(nameof(HostileCastingAreaPotential));
-
 	internal static Task SaveAreaPotentialUnmitigated() => SaveList(nameof(AreaPotentialUnmitigated));
 
 	/// <summary>What the last save and load of <see cref="AreaPotentialUnmitigated"/> did, in words.</summary>
 	internal static string AreaPotentialUnmitigatedState { get; private set; } = "not loaded yet";
-
-	public static Task SaveTankbusterPotential() => SaveList(nameof(TankbusterPotential));
 
 	internal static Task SaveSleepOutcomes() => SaveList(nameof(SleepOutcomes));
 
@@ -890,8 +938,9 @@ internal class OtherConfiguration
 			// takes the higher value of memory and file for every action and drops nothing the file
 			// holds. Memory can hold less than the file - a load that failed, a table that started
 			// empty for any reason - and before this a single save then replaced weeks of readings
-			// with the few taken since. To start over after a patch, the file is deleted by hand
-			// while the game is closed - there is deliberately no button for it (owner's decision).
+			// with the few taken since. To start over, the file is deleted by hand while the game
+			// is closed - there is deliberately no button for it (owner's decision); a table with
+			// revisions keeps a second file beside it, and both go (concept 13, "Stufe 1").
 			if (!TryReadEntriesOnDisk<T>(name, out var onDiskBefore))
 			{
 				// A file that is there but cannot be read now - locked by another program, or broken -
@@ -922,6 +971,19 @@ internal class OtherConfiguration
 			// left a file the loader cannot read, or one with fewer entries than were written, is
 			// exactly the failure this store cannot afford, and only the file itself can say so.
 			var readBack = CountEntriesOnDisk<T>(name);
+			if (ok && readBack == snapshot.Count)
+			{
+				// The backup a later load falls back to when the file cannot be read: only a copy that was read back.
+				try
+				{
+					File.Copy(GetFilePath(name), GetFilePath(name) + ".bak", true);
+				}
+				catch (Exception ex)
+				{
+					PluginLog.Warning($"Could not copy {name} as its backup: {ex.Message}");
+				}
+			}
+
 			report(ok && readBack == snapshot.Count
 				? $"saved {DateTime.Now:HH:mm:ss}: {snapshot.Count} {noun} written and read back"
 				: !ok

@@ -18,7 +18,10 @@ entries stops saying which values are really there.
 
 Not counted: 0 and 1, which are identities rather than claims about the game; literals inside
 strings and comments; generated files (*.g.cs), which are derived from the game data by their
-generators and checked against it in CI.
+generators and checked against it in CI; the C# of revision_harness, the test tool that drives the
+revision store's code with assumed runs, whose numbers are assumptions of the test, named there, as
+in the Python models beside it - not claims the plugin makes about the game. Any other C# under
+.github/ is counted: a tool whose numbers reached the plugin would otherwise pass unseen.
 
 WHAT THIS CHECKS, STATED HONESTLY: that a number was looked at, not that the loop was right. The
 loop's reasoning lives in AUDIT_LOG.md and has to be read there.
@@ -112,7 +115,7 @@ def collect(diff, untracked_files):
             close_hunk()
             if line.startswith("+++ "):
                 path = line[6:].strip() if line.startswith("+++ b/") else None
-                current = path if path and not path.endswith(".g.cs") else None
+                current = path if path and counted(path) else None
             continue
         if current and line.startswith("+"):
             hunk_added.append((current, line[1:].strip()))
@@ -121,10 +124,18 @@ def collect(diff, untracked_files):
             hunk_removed[key] = hunk_removed.get(key, 0) + 1
     close_hunk()
     for path, lines in untracked_files.items():
-        if path.endswith(".g.cs"):
+        if not counted(path):
             continue
         result.extend((path, line.strip()) for line in lines)
     return result
+
+
+HARNESS = ".github/scripts/audit/revision_harness/"
+
+
+def counted(path):
+    """Plugin code: not generated from the game data, not the revision store's test harness."""
+    return not path.endswith(".g.cs") and not path.startswith(HARNESS)
 
 
 def drop_upstream_lines(lines, listed_keys, upstream_lines):
@@ -161,9 +172,11 @@ def self_test():
             return f"{code!r} read as {got}, expected {expected}"
 
     # A file git does not know yet has no diff; its lines must still be seen.
-    lines = collect("+++ b/A.cs\n+var a = 2.5f;\n", {"B.cs": ["var b = 30f;"], "C.g.cs": ["var c = 7;"]})
-    if ("B.cs", "var b = 30f;") not in lines or any(p == "C.g.cs" for p, _ in lines) \
-            or ("A.cs", "var a = 2.5f;") not in lines:
+    lines = collect("+++ b/A.cs\n+var a = 2.5f;\n+++ b/" + HARNESS + "T.cs\n+var t = 0.3;\n",
+                    {"B.cs": ["var b = 30f;"], "C.g.cs": ["var c = 7;"], HARNESS + "U.cs": ["var u = 6;"],
+                     ".github/V.cs": ["var v = 9;"]})
+    if ("B.cs", "var b = 30f;") not in lines or any(p == "C.g.cs" or p.startswith(HARNESS) for p, _ in lines) \
+            or ("A.cs", "var a = 2.5f;") not in lines or (".github/V.cs", "var v = 9;") not in lines:
         return f"untracked files were not collected as added lines: {lines}"
     # An unchanged line that git shows as removed and added again in one hunk is not an added line;
     # the same line moved to another hunk still is.

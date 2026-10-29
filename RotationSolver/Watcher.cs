@@ -37,7 +37,9 @@ public static class Watcher
 			+ $" | hit series {OtherConfiguration.HitSeriesOnPlayer.Count} action(s) ({OtherConfiguration.HitSeriesStoreState})"
 			+ $" | heal over time against damage over time {config.HotAgainstDot},"
 			+ $" damage over time learned in {OtherConfiguration.DotOnParty.Count} area(s) ({OtherConfiguration.DotStoreState})"
-			+ $" | casts laying a status that damages every action {ActionPenaltyWatch.LearnedCount} ({OtherConfiguration.ActionPenaltyStoreState})");
+			+ $" | casts laying a status that damages every action {ActionPenaltyWatch.LearnedCount} ({OtherConfiguration.ActionPenaltyStoreState})"
+			+ $" | area table revisions: {OtherConfiguration.AreaRevisionState}"
+			+ $" | tankbuster table revisions: {OtherConfiguration.TankbusterRevisionState}");
 
 		ActionEffect.ActionEffectEvent += ActionFromEnemy;
 		ActionEffect.ActionEffectEvent += ActionFromSelf;
@@ -172,6 +174,13 @@ public static class Watcher
 			_ = OtherConfiguration.SaveAreaPotentialUnmitigated();
 		}
 	}
+
+	// A clean area reading: no damage up on the caster and no vulnerability on a member measured - the mitigation
+	// TryAreaShare divides out knows neither, and both raise the figure (concept 13, rule 2). A vulnerability the hit
+	// itself lays counts where it already stands when the effect arrives: one clean reading too few, which only holds a
+	// later lowering back.
+	private static bool IsCleanAreaReading(IBattleChara? caster, bool vulnerableMeasured)
+		=> !vulnerableMeasured && caster?.CarriesDamageUp() != true;
 
 	// A listed cast that lands several times - a series of hits after one cast, Bodyweight Exorcism's four in three-second
 	// steps - is rated by what the whole series takes from a member, not by its largest hit: one hit of it leaves
@@ -494,6 +503,7 @@ public static class Watcher
 
 		var shares = new Dictionary<ulong, float>();
 		var beyondHealth = 0;
+		var vulnerableMeasured = false;
 		foreach (var member in DataCenter.PartyMembers)
 		{
 			if (member == null || member.MaxHp == 0)
@@ -509,6 +519,7 @@ public static class Watcher
 					if (TryAreaShare(FullAmount(entry), member, action.RowId, set.Source as IBattleChara, out var share))
 					{
 						shares[member.GameObjectId] = Math.Max(shares.GetValueOrDefault(member.GameObjectId), share);
+						vulnerableMeasured |= member.CarriesVulnerabilityUp();
 					}
 					else
 					{
@@ -531,17 +542,11 @@ public static class Watcher
 			return;
 		}
 
-		// Same rule as a listed landing: only a real amount a member can survive measures, and only an increase
-		// is written.
-		if (highestShare > 0f
-			&& (!OtherConfiguration.HostileCastingAreaPotential.TryGetValue(listed, out var known) || highestShare > known))
-		{
-			OtherConfiguration.HostileCastingAreaPotential[listed] = highestShare;
-			_ = OtherConfiguration.SaveHostileCastingAreaPotential();
-		}
-
+		// Same rule as a listed landing: only a real amount a member can survive measures. Every reading goes to the
+		// revisions, which keep the highest for the readers as before (concept 13, "Stufe 1").
 		if (highestShare > 0f)
 		{
+			OtherConfiguration.MeasureAreaShare(listed, highestShare, IsCleanAreaReading(set.Source as IBattleChara, vulnerableMeasured));
 			MarkMeasuredUnmitigated(listed);
 		}
 
@@ -927,6 +932,7 @@ public static class Watcher
 					var shares = new Dictionary<ulong, float>();
 					var beyondHealth = 0;
 					var hardestBeyond = 0f;
+					var vulnerableMeasured = false;
 
 					// Damage entries on party members, and those of them at zero on a member who carried no barrier.
 					var damageEntries = 0;
@@ -971,6 +977,7 @@ public static class Watcher
 							if (TryAreaShare(FullAmount(damageEffect), member, set.Action!.Value.RowId, battle, out var share))
 							{
 								shares[member.GameObjectId] = Math.Max(shares.GetValueOrDefault(member.GameObjectId), share);
+								vulnerableMeasured |= member.CarriesVulnerabilityUp();
 							}
 							else
 							{
@@ -999,8 +1006,9 @@ public static class Watcher
 					// to be a known area action already: the strict "every member was hit" test is
 					// right for deciding what belongs in the list and wrong for measuring one, since
 					// a raidwide with a member dead, invulnerable or out of range would throw the
-					// reading away - in exactly the hard fights where it matters most. Second, only
-					// an increase is written. The mitigation the effect texts rate is divided out
+					// reading away - in exactly the hard fights where it matters most. Second, every
+					// reading goes to the table's revisions, which give the readers the highest one
+					// (concept 13, "Stufe 1"). The mitigation the effect texts rate is divided out
 					// (TryAreaShare); what they do not rate leaves a reading low - a barrier does not, its part is in the figure (A449) -,
 					// and the highest value ever seen is the one a hit under less of it brings.
 					// The line above said "measured" before the amount was known; say what the reading
@@ -1086,14 +1094,10 @@ public static class Watcher
 
 					if (highestShare > 0f && !aboveContentLevel && OtherConfiguration.HostileCastingArea.Contains(set.Action!.Value.RowId))
 					{
+						// Every reading, not only an increase: the revisions count it in its game version and keep the
+						// highest for the readers, as written here before (concept 13, "Stufe 1").
 						var id = set.Action!.Value.RowId;
-						if (!OtherConfiguration.HostileCastingAreaPotential.TryGetValue(id, out var known)
-							|| highestShare > known)
-						{
-							OtherConfiguration.HostileCastingAreaPotential[id] = highestShare;
-							_ = OtherConfiguration.SaveHostileCastingAreaPotential();
-						}
-
+						OtherConfiguration.MeasureAreaShare(id, highestShare, IsCleanAreaReading(battle, vulnerableMeasured));
 						MarkMeasuredUnmitigated(id);
 					}
 					else if (highestShare == 0f && !aboveContentLevel && beyondHealth == 0 && zeroWithoutBarrier > 1 && zeroWithoutBarrier == damageEntries
@@ -1105,8 +1109,7 @@ public static class Watcher
 						// zero on all four, and unrated it drew Temperance at every cast (owner's log of 25.10.2026,
 						// A366). Rated 0, it is a small cast; a later landing with damage raises it, as any rating.
 						var id = set.Action!.Value.RowId;
-						OtherConfiguration.HostileCastingAreaPotential[id] = 0f;
-						_ = OtherConfiguration.SaveHostileCastingAreaPotential();
+						OtherConfiguration.MeasureAreaShare(id, 0f, IsCleanAreaReading(battle, false));
 						MarkMeasuredUnmitigated(id);
 						DataCenter.RecordAreaMeasurementOutcome(id, "measured", $" at no damage on {zeroWithoutBarrier} party members without a barrier");
 						DefenseTrace.Line($"area cast {set.Action!.Value.Name.ExtractText()} #{id}: no damage on {zeroWithoutBarrier}"

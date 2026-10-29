@@ -113,6 +113,12 @@ jobs:
       - name: Check every saved list is loaded on the path that runs
         run: python3 .github/scripts/audit/check_config_store_roundtrip.py
 
+      # Since stage 1 of the revisions the area and tankbuster tables are set from the revisions alone (concept 13). A
+      # writer that sets them itself leaves a value no layer holds: gone at the next load, and beside layers that say
+      # otherwise until then.
+      - name: Check only the store writes the learned area and tankbuster tables
+        run: python3 .github/scripts/audit/check_learned_writes.py
+
       # A setting with a label and a default promises the user it does something. When nothing
       # reads it the promise fails silently and forever. Two such settings sat in the raise path
       # alone, so this guards against the next one rather than against those two.
