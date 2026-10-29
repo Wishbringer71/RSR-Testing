@@ -533,7 +533,9 @@ public readonly struct ActionBasicInfo
 
 		if (DataCenter.SpecialType == SpecialCommandType.NoCasting ||
 			(DateTime.Now > DataCenter.KnockbackStart && DateTime.Now < DataCenter.KnockbackFinished) ||
-			(DataCenter.NoPoslock && DataCenter.IsMoving && !skipCastingCheck) || DataCenter.BMRForceCancelCast || DataCenter.BMRIsMoving)
+			(DataCenter.NoPoslock && DataCenter.IsMoving && !skipCastingCheck) || DataCenter.BMRForceCancelCast || DataCenter.BMRIsMoving
+			// A cast still under way when a status that damages every action lands kills (A439).
+			|| (!DataCenter.IsPvP && ActionPenaltyWatch.WouldMeetLanding(CastTime)))
 		{
 			return true;
 		}

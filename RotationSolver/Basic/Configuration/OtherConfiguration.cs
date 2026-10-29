@@ -211,6 +211,23 @@ internal class OtherConfiguration
 	/// <summary>Guards <see cref="DotOnParty"/>.</summary>
 	internal static readonly object DotStoreGate = new();
 
+	/// <summary>
+	/// The enemy actions whose landing has been seen to lay a status that damages every action - Pyretic, Causality -
+	/// on a party member, keyed by action id, with the status laid - learned in play over every session (concept 03,
+	/// "Status, unter denen nicht gehandelt werden soll", A439).
+	/// </summary>
+	/// <remarks>
+	/// The status is kept so that <see cref="NoCastingStatus"/> stays the switch: a status taken off that list is no
+	/// longer waited for, learned or not. Stored like <see cref="HitSeriesOnPlayer"/>: merged with the file on every save
+	/// by the higher id, which for one action is the one id it lays, never written
+	/// when its load did not finish, set aside as .corrupt when unreadable. Changed on the game thread under
+	/// <see cref="ActionPenaltyGate"/>. No button discards it: the file is deleted by hand with the game closed.
+	/// </remarks>
+	internal static Dictionary<uint, uint> ActionPenaltyCasts = [];
+
+	/// <summary>Guards <see cref="ActionPenaltyCasts"/>.</summary>
+	internal static readonly object ActionPenaltyGate = new();
+
 	public static RotationSolverRecord RotationSolverRecord = new();
 
 	private abstract class ListFile(string name)
@@ -617,6 +634,9 @@ internal class OtherConfiguration
 		new LearnedFile<DotArea>(nameof(DotOnParty), CopyDotStore,
 			v => { lock (DotStoreGate) { DotOnParty = v; } },
 			DotArea.Merge, state => DotStoreState = state, "area(s) with learned damage over time"),
+		new LearnedFile<uint>(nameof(ActionPenaltyCasts), CopyActionPenaltyCasts,
+			v => { lock (ActionPenaltyGate) { ActionPenaltyCasts = v; } },
+			Math.Max, state => ActionPenaltyStoreState = state, "enemy action(s) laying a status that damages every action"),
 		new SetList(nameof(HostileCastingTank), ActionLists.HostileCastingTank, () => HostileCastingTank, v => HostileCastingTank = v,
 			13364, 13365, 13367, 13371, 13375, 13385, 13388, 13438, 13444, 13452, 13454, 13462, 13475),
 		new MapList<Vector3>(nameof(BeneficialPositions), TerritoryLists.BeneficialPositions, () => BeneficialPositions, v => BeneficialPositions = v),
@@ -651,6 +671,14 @@ internal class OtherConfiguration
 			}
 
 			return copy;
+		}
+	}
+
+	private static Dictionary<uint, uint> CopyActionPenaltyCasts()
+	{
+		lock (ActionPenaltyGate)
+		{
+			return new Dictionary<uint, uint>(ActionPenaltyCasts);
 		}
 	}
 
@@ -793,6 +821,11 @@ internal class OtherConfiguration
 	internal static Task SaveHitSeriesOnPlayer() => SaveList(nameof(HitSeriesOnPlayer));
 
 	internal static Task SaveDotOnParty() => SaveList(nameof(DotOnParty));
+
+	internal static Task SaveActionPenaltyCasts() => SaveList(nameof(ActionPenaltyCasts));
+
+	/// <summary>What the last save and load of <see cref="ActionPenaltyCasts"/> did, in words.</summary>
+	internal static string ActionPenaltyStoreState { get; private set; } = "not loaded yet";
 
 	/// <summary>What the last save and load of <see cref="DotOnParty"/> did, in words.</summary>
 	internal static string DotStoreState { get; private set; } = "not loaded yet";

@@ -54,6 +54,13 @@ internal static class CancelCastUpdater
 			&& NoCastingStatusHelper.PlayerHasNoCastingStatus(out var noCastingRemaining, out var damagesEveryAction)
 			&& (damagesEveryAction || noCastingRemaining < NoCastingStatusHelper.ResolveWindow);
 
+		// Cancel a cast that would still be under way when a status that damages every action lands on the player (A439).
+		var castMeetsPenalty = !DataCenter.IsPvP && ActionPenaltyWatch.WouldMeetLanding(player.TotalCastTime - player.CurrentCastTime);
+		if (castMeetsPenalty)
+		{
+			ActionPenaltyWatch.NoteHold("own cast cancelled");
+		}
+
 		var tarHasGuard = DataCenter.IsPvP && Service.Config.PvpGuardCancel
 			&& castTarget != null
 			&& castTarget.IsEnemy()
@@ -64,7 +71,7 @@ internal static class CancelCastUpdater
 		var bmrForceCancelCast = Service.Config.UseBmrTimeline
 			&& (DataCenter.BMRForceCancelCast || DataCenter.BMRForceCancelCastAI);
 
-		if (stopForDeadTarget || hasNoCastingStatus || tarHasRaise || raiseLandsFirstElsewhere || tarHasGuard || bmrForceCancelCast || ShouldStopHealing(player, castTarget))
+		if (stopForDeadTarget || hasNoCastingStatus || castMeetsPenalty || tarHasRaise || raiseLandsFirstElsewhere || tarHasGuard || bmrForceCancelCast || ShouldStopHealing(player, castTarget))
 		{
 			var uiState = UIState.Instance();
 			if (uiState != null)

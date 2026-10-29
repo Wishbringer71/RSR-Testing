@@ -2105,6 +2105,7 @@ internal static class DataCenter
 		TimeToKillTracker.Clear();
 		DotTickTracker.Clear();
 		DotOnParty.Clear();
+		ActionPenaltyWatch.Clear();
 		_partyHpStatsCacheTick = long.MinValue;
 		_timeLastActionUsed = DateTime.Now;
 		_actions.Clear();

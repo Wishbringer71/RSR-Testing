@@ -36,7 +36,8 @@ public static class Watcher
 			+ $" {OtherConfiguration.SleepDiminishing.Count} kind limit(s) ({OtherConfiguration.SleepStoreState})"
 			+ $" | hit series {OtherConfiguration.HitSeriesOnPlayer.Count} action(s) ({OtherConfiguration.HitSeriesStoreState})"
 			+ $" | heal over time against damage over time {config.HotAgainstDot},"
-			+ $" damage over time learned in {OtherConfiguration.DotOnParty.Count} area(s) ({OtherConfiguration.DotStoreState})");
+			+ $" damage over time learned in {OtherConfiguration.DotOnParty.Count} area(s) ({OtherConfiguration.DotStoreState})"
+			+ $" | casts laying a status that damages every action {ActionPenaltyWatch.LearnedCount} ({OtherConfiguration.ActionPenaltyStoreState})");
 
 		ActionEffect.ActionEffectEvent += ActionFromEnemy;
 		ActionEffect.ActionEffectEvent += ActionFromSelf;
@@ -595,6 +596,8 @@ public static class Watcher
 			// every filter below.
 			ObserveStuns(set);
 			ObserveSleep(set, playerObject.GameObjectId);
+			// A landing that lays a status damaging every action teaches its action, from any source (A439).
+			ActionPenaltyWatch.ObserveLanding(set);
 
 			TraceHitFromUnreadSource(set, playerObject);
 

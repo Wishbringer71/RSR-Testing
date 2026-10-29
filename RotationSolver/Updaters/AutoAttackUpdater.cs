@@ -90,6 +90,12 @@ namespace RotationSolver.Updaters
 					return true;
 				}
 
+				// An auto-attack is an action too; none in the last moment before such a status lands (A439).
+				if (!DataCenter.IsPvP && ActionPenaltyWatch.WouldMeetLanding(0f))
+				{
+					return true;
+				}
+
 				if (Player.Object?.StatusList == null)
 				{
 					return false;
