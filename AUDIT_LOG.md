@@ -13045,6 +13045,27 @@ Löschungen").
   heute jede neue Aktion.
 - *Prüfgrad:* statisch am Code und an den Quellen, Modell gerechnet, Selbstprüfung; nichts gebaut.
 
+### A448 · Vorlage A447 nach seinen Regeln: eine offene Frage statt fünf (29.10.2026)
+
+- *Seine Rüge:* „welche entscheidungen hast du nach meinen regeln vorgelegt und begründet? hast du nicht" und „aus drei
+  entscheidungen wurden nun fünf. das ist das gegenteil eines konzeptes".
+- *Was falsch war:* A443 legte drei, A447 fünf Fragen vor, ohne zu prüfen, ob sie aus seinen Regeln entscheidbar sind
+  (CLAUDE.md, „Bevor ich ihn frage oder ihm etwas vorlege"), ohne ADR-Gliederung je Frage, ohne drei Antithesen mit
+  Gegenquellen und ohne Kampfbeispiel je Option.
+- *Jetzt:*
+  - Beweisregel, Sperren, Härtung (eine saubere Messung) und Anzeige ohne Bearbeitung sind aus seiner Spielweise, dem
+    Optionstext und A173 entschieden und im Konzept begründet.
+  - Vorgelegt wird nur, was seine Vorgabe berührt: der Wortlaut „solange anwendung der bisherigen erkenntnisse" in der
+    einsparenden Richtung. Gegliedert nach Kontext, Stellen, Mechanismus, Kampfbeispielen und Bilanz, mit drei
+    Antithesen; eine davon mit Gegenquelle (Guild Order, „writing a mit plan").
+- *Herkunft der Regel vom 27.10.2026* (seine erste Frage, im Verlauf nachgelesen):
+  - 27.10.2026, 08:29: seine Frage „kannst du hinweise an die anderen chats geben?"; ich schrieb einen Bericht zum
+    Einfügen.
+  - 09:01: Er fügte den Bericht aus KerbalMissionDirector hier ein, mit seinem Satz aus dem dortigen Chat
+    („… teilhaben lassen").
+  - 09:30 (a8b91e9f3): Ich machte daraus die Pflicht am Auftragsende, Fehlendes dort als Issue weiterzugeben, und
+    kennzeichnete sie als seine Vorgabe (C133).
+
 ---
 ## B · Commit-Register (Fork vs. `upstream/main`)
 

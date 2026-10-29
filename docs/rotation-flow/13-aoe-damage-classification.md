@@ -947,8 +947,9 @@ Daraus der tragende Grundsatz: **Ein Wert, den die laufende Spielversion und das
 haben, darf Schutz auslösen, aber keinen einsparen.** Einsparend gelesen gilt er als unbewertet, und unbewertet heißt
 überall schon heute: schützen („unbewertet heißt mindern"; „Spend only the mitigation a measured tankbuster needs" gilt
 laut Text nur „against a tankbuster the table has measured"; die Hilfe für den anderen Tank geht). Schützend gelesen gilt er wie bisher – das ist „solange anwendung der bisherigen
-erkenntnisse" in der Richtung, in der ein Irrtum nur Schaden kostet. Die Abweichung vom Wortlaut seines Auftrags in der
-einsparenden Richtung ist Entscheidung 1 der Vorlage.
+erkenntnisse" in der Richtung, in der ein Irrtum nur Schaden kostet. In der einsparenden Richtung weicht der Grundsatz
+vom Wortlaut seines Auftrags ab – die einzige Frage an ihn (Abschnitt „Vorlage an ihn"). Alles Übrige ist aus seinen
+Regeln entschieden und unten begründet.
 
 ### Bestand
 
@@ -1057,23 +1058,29 @@ schützt der erste Cast, und ein nur unter Barriere gemessener Wert spart nichts
 | Speichern verlöre einen Eintrag, eine Schicht oder senkte einen Wert ohne Senkung nach Regel 5 | nicht gespeichert, „SAVE INVARIANT" im Speicherstand und im Protokoll, der Speicher bleibt im Gedächtnis |
 | Absturz beim Schreiben, zwei Schreiber | wie heute: temporäre Datei, Sperre je Speicher, Rücklesen |
 
-**8. Härtung innerhalb einer Version** (Entscheidung 4). Dieselben Messfehler wirken heute schon bei jeder neuen Aktion:
-Gerechnet lässt die heutige Regel nach der ersten Messung bei Stacks 5,3 % und bei halb unter Barriere gemessenen Würfen
-8,3 % der Casts falsch ohne Schutz. Verlangt das Einsparen eine saubere Messung, fallen die Barrierefälle auf 0 %; verlangt
-es zwei saubere Messungen, die nicht über den Wurf hinaus streuen, fallen auch die Stacks auf 3,4 %. Preis: eine oder zwei
-Minderungen mehr je kleiner Aktion, bevor sie spart; eine Aktion, die über den Wurf hinaus streut, spart nie.
+**8. Härtung innerhalb einer Version: Einsparen erst nach einer sauberen Messung.** Dieselben Messfehler wirken heute
+schon bei jeder neuen Aktion: Gerechnet lässt die heutige Regel nach der ersten Messung bei halb unter Barriere
+gemessenen Würfen 8,3 % und bei Stacks 5,3 % der Casts falsch ohne Schutz. Mit einer sauberen Messung als Bedingung
+fallen die Barrierefälle auf 0 %, für eine Minderung mehr je kleiner Aktion. Entschieden nach seiner Spielweise: Der
+Preis ist einmal Abklingzeit, der Gewinn ein Treffer mit Schutz; und der Text von „Skip mitigation for small area casts"
+spricht vom gemessenen Schaden der Aktion, den eine Messung unter Barriere nicht zeigt. Verworfen ist die strengere
+Form mit zwei gleichmäßigen Messungen (Stacks auf 3,4 %): Eine Aktion, die über den Wurf hinaus streut, spart dann nie,
+und jede ihrer Landungen kostet eine Abklingzeit, die einem größeren Treffer fehlen kann.
 
 **9. Messmittel im Code.** Jeder Übergang – übernommen, bestätigt, gesenkt, Quarantäne, Versuch auf eine Sperre – eine
 Zeile im `DefenseTrace.log`; die Kopfzeile zählt je Speicher die Zustände. Die Regel steuert sich selbst; sie wartet auf
 keine Ablesung.
 
-**10. Anzeige** (Entscheidung 5). Im Listenfenster neben Upstreams Listen je Speicher eine Tabelle: Aktion im
+**10. Anzeige: ja; Bearbeiten: nein.** Im Listenfenster neben Upstreams Listen je Speicher eine Tabelle: Aktion im
 Client-Namen, Wirkender, Gebiet, Wert (Anteil der Maximalgesundheit, Treffer je Serie, Status, Schlafergebnis), Zustand
 mit Revision und Zahl der sauberen Messungen. Suche und Kopieren wie Upstreams Listen; gezeichnet nur die sichtbaren
-Zeilen (ImGui-Clipper), Blattnamen zwischengespeichert, kein Schreiben aus der Oberfläche. Bearbeiten nur, wenn er es
-will, und dann nur „erneut prüfen" je Eintrag: Er setzt den Eintrag auf übernommen und kann nach Regel 4 nur Schutz
-hinzufügen. Entfernen und Werte eintippen nicht: Ein entfernter Pyretisch-, Serien- oder DoT-Eintrag nimmt Schutz weg,
-ein zu niedrig eingetippter Flächen- oder Tankbusterwert ebenso, ohne dass eine Beobachtung ihn widerlegt hätte.
+Zeilen (ImGui-Clipper), Blattnamen zwischengespeichert, kein Schreiben aus der Oberfläche. Ergebnis seiner Prüffrage,
+ob Anzeige und Bearbeitung sinnvoll sind: Die Anzeige ja – er testet, und ohne sie sieht er nicht, warum RSR eine
+Aktion mindert oder auslässt. Die Bearbeitung nein, seine Vorgabe A173 bleibt: Den Anlass, für den er die Datei von Hand
+löscht – ein Patch –, deckt die Revision selbst. Entfernen nähme bei Pyretisch, Serie und DoT Schutz weg, ein zu niedrig
+eingetippter Flächen- oder Tankbusterwert ebenso, ohne dass eine Beobachtung ihn widerlegt hätte; ein Knopf „erneut
+prüfen" fügte nur Schutz hinzu, hat aber keinen Fall, den die Revision nicht schon abdeckt, und wäre eine Funktion
+ohne Bedarf.
 
 **11. Prüfmittel.** Das Modell in der CI (läuft, wenn es sich ändert). Ein Prüfskript nach dem Muster von
 `check_emergency_heal_threat.py`: Jeder einsparende Leser geht über den Zugriff „bestätigt", jeder schützende über
@@ -1083,6 +1090,51 @@ geprüft bei jedem Speichern.
 **12. Bauabfolge, jede Stufe rückbaubar.** (1) Format, Übernahme der alten Dateien, Sicherung, Quarantäne,
 Invarianten – ohne Verhaltensänderung, die alte Datei bleibt. (2) Regel 4 für Fläche und Tankbuster. (3) Regel 5.
 (4) Sperren nach Regel 6. (5) Anzeige. Rückbau einer Stufe: ihr Messverfahren zurück; die Werte bleiben in beiden Dateien.
+
+### Vorlage an ihn: die eine offene Frage
+
+**Kontext.** Sein Auftrag sagt: nach einem Patch „solange anwendung der bisherigen erkenntnisse, bis […] diese
+bestätigt werden oder eben falsifiziert". Seine Spielweise sagt: Sicherheit vor Schaden, gewichtet mit der
+Wahrscheinlichkeit. In der einsparenden Richtung widersprechen sich beide, wenn ein Patch eine Aktion verstärkt.
+*Betroffene Stellen:* `DataCenter.AreaCastIsWorthMitigating` (Größenregel), `AnnouncedHitIsSmall`,
+`BmrRaidwideIsSmallListedCast`, der Tankbuster-Plan unter „Spend only the mitigation a measured tankbuster needs",
+`TankbusterHelp.MeasuredHitCallsForNoHelp`, `SleepInterruptWatch.IsUnstoppable`.
+
+**Mechanismus.** *Wörtlich:* Ein übernommener Wert gilt bis zur Bestätigung in beiden Richtungen. *Asymmetrisch
+(Empfehlung):* Er gilt schützend; einsparend gilt er bis zur ersten sauberen Messung der neuen Version als unbewertet,
+also schützend.
+
+**Kampfbeispiele.**
+- *Tankbuster, ein Patch hebt ihn von 60 % auf 90 % ungemindert, der Tank steht bei 70 %:* Wörtlich hält der Plan
+  60 % für überlebbar, gibt kein Mittel aus und hält die übrigen zurück; es treffen 90 %, und der Tank fällt.
+  Asymmetrisch gilt der Plan beim ersten Mal nicht, die bereite Abwehr geht wie ohne Tabelle – etwa Rampart (20 %) und
+  das 40-%-Mittel, es treffen rund 43 % –, und der Tank überlebt; die Landung misst 90 %, ab dann plant er richtig.
+- *Raidwide, ein Patch hebt ihn von 18 % auf 30 %:* Wörtlich lässt die Größenregel bei gesunder Gruppe die
+  Gruppenminderung aus, alle nehmen 30 %. Asymmetrisch mindert RSR den ersten Cast; gerechnet sinkt das falsche
+  Auslassen von 8,3 % je Cast auf 0 %.
+- *Hotfix ohne Änderung, ein Raidwide von 15 %:* Wörtlich spart RSR wie vorher. Asymmetrisch geht beim ersten Cast nach
+  dem Hotfix einmal eine Gruppenminderung, danach spart RSR wieder.
+
+**Konsequenzen.** Besser asymmetrisch: Kein Patch, der eine Aktion verstärkt, nimmt ihrem ersten Treffer den Schutz.
+Schlechter asymmetrisch: Je Version und kleiner Aktion eine Abklingzeit mehr, beim ersten Auftreten. Es überwiegt nach
+seiner Spielweise das Überleben: Der Preis ist sicher, aber klein; der Schaden des wörtlichen Wegs ist selten (wie oft
+ein Patch alte Aktionen verstärkt, ist unbelegt), aber im Tankbuster-Fall tödlich.
+
+**Drei Antithesen gegen die Empfehlung, und was von ihnen bleibt.**
+1. *„Sein Auftrag sagt es anders."* Hält – deshalb diese Frage. Der Zweck des Wortlauts, gelernte Werte über einen
+   Patch hinweg nicht zu verlieren, bleibt gewahrt: Gelöscht wird nichts, schützend gilt alles weiter, und einsparend
+   gilt der Wert nach einer sauberen Messung wieder.
+2. *„Mitigationspläne verteilen die starken Mittel auf die schweren Treffer zuerst: ‚Do not start at the top of the
+   fight and spend chronologically; you will run out of good tools before the hard part.' (Guild Order, ‚writing a
+   mit plan')."* Trifft den Preis: Eine Abklingzeit auf einem kleinen Treffer kann einem großen danach fehlen. Bleibt
+   begrenzt: nur beim ersten Auftreten je Version, nur für Treffer, die die Größenregel klein nennt; die Abstandsregeln
+   (A340) und die Reprisal-Rückhaltung für einen angekündigten Raidwide gelten weiter.
+3. *„Unbewertet heißt beim Tank die alte Abwehr – die kann Unverwundbarkeit oder Living Dead ziehen."* Widerlegt am
+   Optionstext: Die Unverwundbarkeit gegen einen gemessenen Tankbuster gibt einer ungemessenen Aktion nichts („an action
+   not yet measured … gets nothing"); die alte Abwehr nimmt Minderungen.
+
+**Die Frage:** Hat er seine Meinung zum Wortlaut „solange anwendung der bisherigen erkenntnisse" für die einsparende
+Richtung geändert – asymmetrisch, wie empfohlen – oder gilt der Wortlaut in beiden Richtungen?
 
 ### Verworfen
 
