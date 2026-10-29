@@ -11,7 +11,7 @@ Nach der Wirkung im Kampf: Sicherheit der Gruppe vor Schaden, gewichtet mit der 
 (seine Vorgabe, 17.10.2026: „todo nach wichtigkeit abarbeiten. jeweils im loop bearbeiten").
 
 1. Die gelernten Tabellen: entschieden (Konzept 13, A451); gebaut nach Regel 12 des Entwurfs, erst die Revision über
-   einen Spielpatch (als Nächstes Stufe 2, A456), dann die Anzeige. Beide ändern den Kampf nur mittelbar, über einen
+   einen Spielpatch (als Nächstes Stufe 2, nach seinem ersten Upload mit Stufe 1, A456), dann die Anzeige. Beide ändern den Kampf nur mittelbar, über einen
    geprüften oder berichtigten Lernwert – die Sperren unter ihnen (Schlaf) aber dauerhaft.
 2. „Mehrfach treffender Raidwide: Minderung über die ganze Serie": Eine Gruppenminderung kann vor dem letzten Treffer
    einer Flächenserie ablaufen; die Gruppenminderungen dauern mindestens 10 s, die Wirkung ist kleiner als beim Tank.
@@ -49,7 +49,9 @@ und Tankbuster schon (A456). *Ort:* `OtherConfiguration.RevisedStore` (Fläche, 
 `SleepReading`, `DotReading`/`DotArea`, dazu `HitSeriesOnPlayer`, `TankbusterMarkerWithoutHit` und
 `ActionPenaltyCasts`. *Nächster Schritt:* Stufe 2, Regel 4 für Fläche und Tankbuster – ein übernommener Wert spart
 keinen Schutz, bis eine saubere Messung der laufenden Version ihn bestätigt (Konzept 13, „Gelernte Tabellen über
-Spielversionen", Regel 12); die offene Frage hat er entschieden, asymmetrisch (A451). *Konzept:* 13.
+Spielversionen", Regel 12); die offene Frage hat er entschieden, asymmetrisch (A451). Gebaut, sobald sein erster Upload
+mit Stufe 1 zeigt, dass der Speicherweg im Spiel trägt (Kopfzeile mit lesbarer Spielversion, `.rev.json` mit laufenden
+Schichten): Stufe 1 soll ihn prüfen, bevor eine Abwehr von ihm abhängt. *Konzept:* 13.
 
 ### Gelernte Tabellen des Forks in den Einstellungen zeigen und bearbeiten · N
 Sein Auftrag (28.10.2026): „prüfen, ob es sinnvoll ist, die durch den fork selbst erstellten lernlisten ähnlich der
