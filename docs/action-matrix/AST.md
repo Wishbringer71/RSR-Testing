@@ -1,6 +1,6 @@
 # AST — Abhängigkeitsmatrix
 
-Erzeugt von `.github/scripts/audit/generate_action_matrix.py` am 2026-10-22; nicht von Hand bearbeiten. Methode und Grenzen: `docs/rotation-flow/14-action-dependency-matrix.md`.
+Erzeugt von `.github/scripts/audit/generate_action_matrix.py` am 2026-10-29; nicht von Hand bearbeiten. Methode und Grenzen: `docs/rotation-flow/14-action-dependency-matrix.md`.
 
 - Basisrotation: `AstrologianRotation`
 - Rotation: `RotationSolver/RebornRotations/Healer/AST_Reborn.cs`
@@ -100,8 +100,8 @@ direkt: 49 · ungenutzt: 6
 
 | Aktion | Beziehung | zu |
 |---|---|---|
-| Aspected Benefic | Regel sperrt vorher | Collective Unconscious |
-| Aspected Benefic | Regel sperrt vorher | Macrocosmos |
+| Aspected Benefic | Regel prüft | Collective Unconscious |
+| Aspected Benefic | Regel prüft | Macrocosmos |
 | Aspected Benefic | Regel prüft | Neutral Sect |
 | Aspected Helios | Regel prüft | Helios Conjunction |
 | Benefic II | Regel sperrt vorher | Aspected Benefic |
@@ -134,8 +134,10 @@ direkt: 49 · ungenutzt: 6
 | Microcosmos | StatusNeed Macrocosmos | Macrocosmos |
 | Neutral Sect | Regel prüft | Aspected Benefic |
 | Neutral Sect | Regel prüft | Aspected Helios |
+| Neutral Sect | Regel prüft | Collective Unconscious |
 | Neutral Sect | Regel sperrt vorher | Collective Unconscious |
 | Neutral Sect | Regel prüft | Helios Conjunction |
+| Neutral Sect | Regel prüft | Macrocosmos |
 | Neutral Sect | Regel sperrt vorher | Macrocosmos |
 | Oracle | StatusNeed Divining | Divination |
 | Stellar Detonation | Regel sperrt vorher | Aspected Benefic |

@@ -533,14 +533,11 @@ public sealed class AST_Reborn : AstrologianRotation
 
 	protected override bool DefenseSingleGCD(out IAction? act)
 	{
-		// The same triggers hold the single-target barrier too (an Astrologian special rule); it
-		// yields when the player or a tank is in the critical class.
-		if (SingleDefenseStretched("Astrologian: Macrocosmos or Collective Unconscious still in effect", MacrocosmosPvE, CollectiveUnconsciousPvE))
-		{
-			return base.DefenseSingleGCD(out act);
-		}
-
-		if ((NeutralSectPvE.CanUse(out _) || HasNeutralSect || IsLastAbility(false, NeutralSectPvE)) && AspectedBeneficPvE.CanUse(out act))
+		// The same triggers hold the single-target barrier too (an Astrologian special rule), for a target that carries
+		// their effect; it yields when the player or a tank is in the critical class.
+		if ((NeutralSectPvE.CanUse(out _) || HasNeutralSect || IsLastAbility(false, NeutralSectPvE)) && AspectedBeneficPvE.CanUse(out act)
+			&& !SingleDefenseStretched(AspectedBeneficPvE, "Astrologian: Macrocosmos or Collective Unconscious still in effect",
+				MacrocosmosPvE, CollectiveUnconsciousPvE))
 		{
 			return true;
 		}

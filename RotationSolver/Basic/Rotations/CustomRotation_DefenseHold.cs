@@ -160,12 +160,34 @@ public partial class CustomRotation
 	}
 
 	/// <summary>
-	/// <see cref="AreaDefenseStretched"/> for single-target defense; yields like
-	/// <see cref="HoldSingleDefense"/>.
+	/// <see cref="AreaDefenseStretched"/> for single-target defense, asked once <paramref name="defense"/> has chosen its
+	/// target: it waits while that target carries the effect of one of <paramref name="triggers"/> laid by the player, which
+	/// carries the next hit on him. A target without it gets the defense at once - the other tank under a tankbuster on
+	/// both, which the target selection picks as the less protected, or the tank whose barrier the last hit took. Yields
+	/// like <see cref="HoldSingleDefense"/>.
+	/// </summary>
+	/// <remarks>
+	/// Asked without the target, the stretch held every single-target defense while a trigger was in effect anywhere:
+	/// after Divine Benison on one tank, Aquaveil waited for its 15 s even for the other tank of the same tankbuster
+	/// (Zoraal Ja, 26.10.2026, A419, A440).
+	/// </remarks>
+	/// <param name="defense">The defense whose <c>CanUse</c> has just chosen its target.</param>
+	/// <param name="rule">What the hold is, in a few words, for the diagnostics window.</param>
+	/// <param name="triggers">The actions after which the job's single-target defense waits.</param>
+	/// <returns>True while the stretch holds for that target.</returns>
+	protected static bool SingleDefenseStretched(IBaseAction defense, string rule, params IBaseAction[] triggers)
+	{
+		return HoldSingleDefense(AnyTriggerOn(defense.Target.Target, triggers), rule);
+	}
+
+	/// <summary>
+	/// The stretch of single-target defense asked before any target is chosen: it holds while a trigger is in effect at
+	/// all, also for a member who does not carry it.
 	/// </summary>
 	/// <param name="rule">What the hold is, in a few words, for the diagnostics window.</param>
 	/// <param name="triggers">The actions after which the job's single-target defense waits.</param>
 	/// <returns>True while the stretch holds.</returns>
+	[Obsolete("Ask with the defense whose target is chosen: SingleDefenseStretched(defense, rule, triggers).")]
 	protected static bool SingleDefenseStretched(string rule, params IBaseAction[] triggers)
 	{
 		return HoldSingleDefense(AnyTriggerInEffect(triggers, false), rule);
@@ -182,27 +204,51 @@ public partial class CustomRotation
 	{
 		foreach (var trigger in triggers)
 		{
-			var duration = DefensiveValues.DurationOf(trigger.ID);
-			if (duration <= 0f || !trigger.EnoughLevel)
+			if (TriggerInEffect(trigger) && !(area && EffectGoneFromPlayer(trigger)))
+			{
+				return true;
+			}
+		}
+
+		return false;
+	}
+
+	private static bool TriggerInEffect(IBaseAction trigger)
+	{
+		var duration = DefensiveValues.DurationOf(trigger.ID);
+		if (duration <= 0f || !trigger.EnoughLevel)
+		{
+			return false;
+		}
+
+		var cooldown = trigger.Cooldown;
+		if (!ActionIdHelper.IsCoolingDownGroup(cooldown.CoolDownGroup))
+		{
+			return false;
+		}
+
+		// The recast of a charged action runs over all its charges, and the elapsed time counts the
+		// charges already back: an elapsed time of at least one charge means a charge is ready.
+		var oneCharge = cooldown.RecastTime / cooldown.MaxCharges;
+		return oneCharge > 0f && cooldown.RecastTimeElapsedRaw < oneCharge && UsedWithin(trigger.ID, duration);
+	}
+
+	// Whether a trigger in effect lies on the chosen target. Read like the area stretch reads the player: a beneficial
+	// status of the trigger's name, laid by the player. A trigger without such a status, or within a GCD of its press
+	// before the status had time to show, cannot be read on a member and keeps its stated time for every target - the
+	// record of own actions names no target. A barrier the last hit took is gone from him, and so is the stretch.
+	private static bool AnyTriggerOn(IBattleChara? target, IBaseAction[] triggers)
+	{
+		foreach (var trigger in triggers)
+		{
+			if (!TriggerInEffect(trigger))
 			{
 				continue;
 			}
 
-			var cooldown = trigger.Cooldown;
-			if (!ActionIdHelper.IsCoolingDownGroup(cooldown.CoolDownGroup))
-			{
-				continue;
-			}
-
-			// The recast of a charged action runs over all its charges, and the elapsed time counts the
-			// charges already back: an elapsed time of at least one charge means a charge is ready.
-			var oneCharge = cooldown.RecastTime / cooldown.MaxCharges;
-			if (oneCharge <= 0f || cooldown.RecastTimeElapsedRaw >= oneCharge)
-			{
-				continue;
-			}
-
-			if (UsedWithin(trigger.ID, duration) && !(area && EffectGoneFromPlayer(trigger)))
+			var statuses = OwnEffectStatusesOf(trigger.ID);
+			if (statuses.Length == 0 || UsedWithin(trigger.ID, DataCenter.DefaultGCDTotal)
+				|| (target != null && target.HasStatus(true, statuses)))
 			{
 				return true;
 			}

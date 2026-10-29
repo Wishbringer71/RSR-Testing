@@ -423,22 +423,21 @@ public sealed class WHM_Reborn : WhiteMageRotation
 	[RotationDesc(ActionID.DivineBenisonPvE, ActionID.AquaveilPvE)]
 	protected override bool DefenseSingleAbility(IAction nextGCD, out IAction? act)
 	{
-		// The same stretch for the single-target defence: Divine Benison and Aquaveil, each held
-		// while the other's effect stands, unless the player or a tank is in the critical class.
-		if (SingleDefenseStretched("White Mage: Divine Benison or Aquaveil still in effect", DivineBenisonPvE, AquaveilPvE))
-		{
-			return base.DefenseSingleAbility(nextGCD, out act);
-		}
+		// The same stretch for the single-target defence: Divine Benison and Aquaveil, each held while the other's effect
+		// stands on the target chosen, unless the player or a tank is in the critical class. The other tank of a
+		// tankbuster on both carries neither and gets the second at once (A440).
+		const string stretch = "White Mage: Divine Benison or Aquaveil still in effect";
 
 		// The charge left once the cap rule has spent one (TryChargedBarrierAtCap) is the one kept for danger: without
 		// usedUp the check passed only with every charge back, so after each cap spend Divine Benison stood refused for a
 		// tankbuster for up to a whole recharge - three of four tankbusters against Zoraal Ja on 26.10.2026 (A419).
-		if (DivineBenisonPvE.CanUse(out act, usedUp: true))
+		if (DivineBenisonPvE.CanUse(out act, usedUp: true)
+			&& !SingleDefenseStretched(DivineBenisonPvE, stretch, DivineBenisonPvE, AquaveilPvE))
 		{
 			return true;
 		}
 
-		if (AquaveilPvE.CanUse(out act))
+		if (AquaveilPvE.CanUse(out act) && !SingleDefenseStretched(AquaveilPvE, stretch, DivineBenisonPvE, AquaveilPvE))
 		{
 			return true;
 		}
