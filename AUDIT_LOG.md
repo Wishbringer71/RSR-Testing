@@ -12968,6 +12968,19 @@ Löschungen").
   unabhängiges Audit; nichts gebaut. Offene Annahme: dass die Spielversion vor dem Laden der Tabellen lesbar ist –
   beim Bau zu belegen, mit Rückfall.
 
+### A444 · Andere Repositories: keine Zuständigkeit für die, die nichts mit RSR zu tun haben (29.10.2026)
+
+- *Seine Angabe:* „wenn ich von dir abarbeitung todo fordere, dann deiner originären repo. du bist nicht für die
+  anderen repos zuständig die nichts mit rsr zu tun haben". Anlass: Am Ende des Auftrags „todo im loop weiter
+  abarbeiten" sollte die TODO-Prüfung aus A436 als Issue an KerbalMissionDirector und Retainer-Repricer gehen, nach der
+  Regel in CLAUDE.md aus seiner Vorgabe vom 27.10.2026 (A423); das Hinzufügen der Repositories wies die Sitzung ab, kein
+  Issue entstand.
+- *Einordnung:* Präzisierung seiner Vorgabe vom 27.10.2026. Die Weitergabe nach außen entfällt für Repositories ohne
+  Bezug zu RSR; eine Weitergabe von dort hierher prüfe ich weiter am Artefakt.
+- *Geändert:* CLAUDE.md, „Bevor ich etwas als fertig melde": statt „dort als Issue weitergegeben" die Zuständigkeit auf
+  dieses Repository begrenzt. Der Skill `upstream-sync` nutzt `tools/RefCheck` aus Retainer-Repricer weiter lesend für
+  die eigene Referenzprüfung; das ist keine Arbeit dort.
+
 ---
 ## B · Commit-Register (Fork vs. `upstream/main`)
 

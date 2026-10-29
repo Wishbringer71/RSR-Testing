@@ -85,7 +85,7 @@ Diese Datei gilt in jeder Lage. Die übrigen Regeln stehen je genau einmal im Re
 - Wirkkette am Code, Richtigkeit und Bilanz am Spielgeschehen, Nachsteuerung, wo die Antwort erst zur Laufzeit fällt (→ „Definition of Done").
 - Konzept, `TODO.md` und Archiv fortgeschrieben.
 - Am Auftragsende Upstream erneut synchronisiert und ausgewertet (Skill `upstream-sync`).
-- Was davon in seinen anderen Repositories fehlt, dort als Issue weitergegeben; dort nur lesen, keine Datei ändern (seine Vorgabe, 27.10.2026: jedes Repository hat eigene Erkenntnisse – einbauen und die anderen teilhaben lassen).
+- Seine anderen Repositories, die nichts mit RSR zu tun haben (KerbalMissionDirector, Retainer-Repricer), sind nicht meine Zuständigkeit: dort keine Issues, keine Weitergabe, keine Arbeit; ein Auftrag wie „TODO abarbeiten" meint dieses Repository (seine Präzisierung, 29.10.2026, seiner Vorgabe vom 27.10.2026). Was er aus ihnen hierher weitergibt, prüfe ich weiter (→ „Wenn er etwas sagt").
 - Prüfgrad benannt.
 
 **Bevor ich einen Zug beende**
