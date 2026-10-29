@@ -472,18 +472,18 @@ internal static class StateUpdater
 
 		// The ability flags look ahead only as far as the animation lock, the spell flags by the rest
 		// of the GCD and a cast: an off-GCD heal decided now lands now (A213).
-		var singleAbilityCount = ShouldHealSingle(StatusHelper.SingleHots,
+		var singleAbilityCount = ShouldHealSingle(
 			Service.Config.HealthSingleAbility,
 			Service.Config.HealthSingleAbilityHot, true);
 
 		var singleSpellCount = canUseHealSpell
-			? ShouldHealSingle(StatusHelper.SingleHots,
+			? ShouldHealSingle(
 				Service.Config.HealthSingleSpell,
 				Service.Config.HealthSingleSpellHot, false)
 			: 0;
 
 		var partyCount = DataCenter.PartyMembers.Count;
-		var areaHotRatio = partyCount > 2 ? SelfHealingOfTimeRatio(StatusHelper.AreaHots) : 0f;
+		var areaHotRatio = partyCount > 2 ? PartyHealingOfTimeRatio() : 0f;
 
 		// Established once, read by both flags. Each recognition walks every casting enemy, and this
 		// method asks for the ability flag and the spell flag; reading it per flag put two full passes
@@ -537,12 +537,12 @@ internal static class StateUpdater
 		{
 			var selfDoomed = StatusHelper.PlayerDoomNeedHealing();
 
-			if (selfDoomed || ShouldHealSelf(StatusHelper.SingleHots, Service.Config.HealthSingleAbility, Service.Config.HealthSingleAbilityHot, true))
+			if (selfDoomed || ShouldHealSelf(Service.Config.HealthSingleAbility, Service.Config.HealthSingleAbilityHot, true))
 			{
 				status |= AutoStatus.HealSingleAbility;
 			}
 
-			if (canUseHealSpell && (selfDoomed || ShouldHealSelf(StatusHelper.SingleHots, Service.Config.HealthSingleSpell, Service.Config.HealthSingleSpellHot, false)))
+			if (canUseHealSpell && (selfDoomed || ShouldHealSelf(Service.Config.HealthSingleSpell, Service.Config.HealthSingleSpellHot, false)))
 			{
 				status |= AutoStatus.HealSingleSpell;
 			}
@@ -652,34 +652,41 @@ internal static class StateUpdater
 		return false;
 	}
 
-	private static float SelfHealingOfTimeRatio(params StatusID[] statusIds)
+	// How far the party is under heals over time, for the area thresholds: the mean over the living members of each
+	// one's own ratio. The player's own area HoT stood for the party before, from a list (A442): a ground HoT placed by
+	// the co-healer away from the player, Kerachole or Celestial Opposition counted for nothing, and a single Regen
+	// on the player would have counted for everybody. Where the HoT lies is what the members carry.
+	private static float PartyHealingOfTimeRatio()
 	{
-		if (Player.Object == null)
+		var sum = 0f;
+		var living = 0;
+		foreach (var member in DataCenter.PartyMembers)
 		{
-			return 0;
+			if (member != null && !member.IsDead && member.MaxHp > 0)
+			{
+				sum += GetHealingOfTimeRatio(member);
+				living++;
+			}
 		}
-		const float buffWholeTime = 15;
 
-		var buffTime = StatusHelper.PlayerStatusTime(false, statusIds);
-
-		return Math.Min(1, buffTime / buffWholeTime);
+		return living == 0 ? 0f : sum / living;
 	}
 
-	private static float GetHealingOfTimeRatio(IBattleChara target, params StatusID[] statusIds)
+	private static float GetHealingOfTimeRatio(IBattleChara target)
 	{
 		const float buffWholeTime = 15;
 
-		var buffTime = target.StatusTime(false, statusIds);
+		var buffTime = target.HealOverTimeLeft();
 
 		return Math.Min(1, buffTime / buffWholeTime);
 	}
 
-	private static int ShouldHealSingle(StatusID[] hotStatus, float healSingle, float healSingleHot, bool instant)
+	private static int ShouldHealSingle(float healSingle, float healSingleHot, bool instant)
 	{
 		var count = 0;
 		foreach (var member in DataCenter.PartyMembers)
 		{
-			if (ShouldHealSingle(member, hotStatus, healSingle, healSingleHot, instant))
+			if (ShouldHealSingle(member, healSingle, healSingleHot, instant))
 			{
 				count++;
 			}
@@ -687,7 +694,7 @@ internal static class StateUpdater
 		return count;
 	}
 
-	private static bool ShouldHealSelf(StatusID[] hotStatus, float healSingle, float healSingleHot, bool instant)
+	private static bool ShouldHealSelf(float healSingle, float healSingleHot, bool instant)
 	{
 		if (Player.Object == null)
 		{
@@ -706,7 +713,7 @@ internal static class StateUpdater
 
 		var doomed = StatusHelper.PlayerDoomNeedHealing();
 
-		var ratio = doomed ? 0f : GetHealingOfTimeRatio(Player.Object, hotStatus);
+		var ratio = doomed ? 0f : GetHealingOfTimeRatio(Player.Object);
 
 		// Outside the Doom case this is the health the player is heading for by the time a heal
 		// begun now would land - identical to the current ratio while HealAheadOfDamage is off, or
@@ -738,11 +745,11 @@ internal static class StateUpdater
 	/// </summary>
 	internal static bool NeedsSingleHealSpell(IBattleChara member)
 	{
-		return ShouldHealSingle(member, StatusHelper.SingleHots, Service.Config.HealthSingleSpell,
+		return ShouldHealSingle(member, Service.Config.HealthSingleSpell,
 			Service.Config.HealthSingleSpellHot, false);
 	}
 
-	private static bool ShouldHealSingle(IBattleChara target, StatusID[] hotStatus, float healSingle, float healSingleHot, bool instant)
+	private static bool ShouldHealSingle(IBattleChara target, float healSingle, float healSingleHot, bool instant)
 	{
 		if (target == null)
 		{
@@ -759,7 +766,7 @@ internal static class StateUpdater
 			return false;
 		}
 
-		var ratio = target.DoomNeedHealing() ? 0f : GetHealingOfTimeRatio(target, hotStatus);
+		var ratio = target.DoomNeedHealing() ? 0f : GetHealingOfTimeRatio(target);
 
 		// Forecast rather than current: a level threshold crossed at a steep rate leaves less time
 		// than the heal it triggers needs to arrive. Identical to the current ratio while

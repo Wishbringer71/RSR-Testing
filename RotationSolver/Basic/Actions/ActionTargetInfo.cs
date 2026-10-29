@@ -1104,7 +1104,7 @@ public struct ActionTargetInfo(IBaseAction action)
 		}
 	}
 
-	/// <summary>Whether this action grants one of the single-target HoTs in <see cref="StatusHelper.SingleHots"/>.</summary>
+	/// <summary>Whether this action grants its target a heal over time (<see cref="StatusHelper.IsAnyHealOverTime"/>).</summary>
 	private readonly bool GrantsSingleHot()
 	{
 		var provides = action.Setting.TargetStatusProvide;
@@ -1115,7 +1115,7 @@ public struct ActionTargetInfo(IBaseAction action)
 
 		foreach (var status in provides)
 		{
-			if (Array.IndexOf(StatusHelper.SingleHots, status) >= 0)
+			if (StatusHelper.IsAnyHealOverTime(status))
 			{
 				return true;
 			}

@@ -435,6 +435,16 @@
   },
   {
    "file": "RotationSolver/Updaters/StateUpdater.cs",
+   "code": "var areaHotRatio = partyCount > 2 ? PartyHealingOfTimeRatio() : 0f;",
+   "values": [
+    "2"
+   ],
+   "status": "exception",
+   "loop": "A442",
+   "reason": "Upstream's gate of area healing - more than two members, the same as ShouldHealArea's own partyCount <= 2 - on a line the fork changed only for the ratio it reads (PartyHealingOfTimeRatio instead of the player's listed area HoT, A442); not a figure of the game."
+  },
+  {
+   "file": "RotationSolver/Updaters/StateUpdater.cs",
    "code": "var h = doomed ? 0.2f : ObjectHelper.GetForecastPlayerHealthRatio(instant);",
    "values": [
     "0.2"

@@ -255,6 +255,52 @@ public static class StatusHelper
 		return TextSays(_healOverTime, statusId, "regenerating HP over time");
 	}
 
+	/// <summary>
+	/// Whether this status heals over time for the heal thresholds: by its own text (<see cref="IsHealOverTime"/>), or
+	/// as one of <see cref="AreaHots"/> and <see cref="SingleHots"/> - kept as the fallback for a status whose text says
+	/// it another way and for a sheet that cannot be read.
+	/// </summary>
+	internal static bool IsAnyHealOverTime(StatusID statusId)
+	{
+		return IsHealOverTime(statusId) || Array.IndexOf(AreaHots, statusId) >= 0 || Array.IndexOf(SingleHots, statusId) >= 0;
+	}
+
+	/// <summary>
+	/// How long the heal over time running longest on <paramref name="battleChara"/> lasts, from any source - the healer's,
+	/// the co-healer's, a tank's own (Aurora), a ground effect's (Kerachole); <see cref="float.MaxValue"/> while an action
+	/// that lays one is on its way to it, or for one without an end; 0 when none runs.
+	/// </summary>
+	/// <remarks>
+	/// The lists alone left out Kerachole's and Celestial Opposition's regeneration and the tanks' own, and the heal
+	/// thresholds treated a member under them as if nothing ticked (A442). The longest, not the earliest to end: a member
+	/// keeps regenerating for as long as one still runs.
+	/// </remarks>
+	internal static float HealOverTimeLeft(this IBattleChara battleChara)
+	{
+		if (DataCenter.InEffectTime && DataCenter.ApplyStatus.TryGetValue(battleChara.GameObjectId, out var pending)
+			&& IsAnyHealOverTime((StatusID)pending))
+		{
+			return float.MaxValue;
+		}
+
+		if (!TryGetStatusList(battleChara, out var statusList))
+		{
+			return 0f;
+		}
+
+		var longest = 0f;
+		for (var i = 0; i < statusList!.Length; i++)
+		{
+			var status = statusList[i];
+			if (status != null && status.StatusId != 0 && IsAnyHealOverTime((StatusID)status.StatusId))
+			{
+				longest = Math.Max(longest, status.RemainingTime == 0f ? float.MaxValue : status.RemainingTime);
+			}
+		}
+
+		return longest;
+	}
+
 	// Whether the status's own text in the English sheet holds the phrase, once per status and phrase.
 	private static bool TextSays(System.Collections.Concurrent.ConcurrentDictionary<uint, bool> known, StatusID statusId, string phrase)
 	{
