@@ -12936,6 +12936,38 @@ Löschungen").
 - *Prüfgrad:* statisch, Compile (`cloud_build.sh`, ohne Warnung), Prüfskripte, Statusliste gegen xivapi; im Spiel nicht
   beobachtet. Messmittel im Code: keines neu – die Wirkung zeigt sich in den Heilentscheidungen im `DefenseTrace.log`.
 
+### A443 · Gelernte Tabellen über Spielversionen und ihre Anzeige: Vorlage (29.10.2026)
+
+- *Auftrag:* seine beiden TODO-Aufträge vom 28.10.2026 – Revision der gelernten Tabellen über einen Patch, Anzeige und
+  Bearbeitung in den Einstellungen; Konzept im Loop mit Antithese und Audit, dann Vorlage, Bau erst nach seiner Freigabe.
+- *Bestand erhoben:* zehn gelernte Speicher, zwei Arten.
+  - Höchstwerte: Fläche, Tankbuster, Serie, DoT, Schlafzeiten, Markerverzögerung. Sie irren nach einem Patch dauerhaft
+    nur zu hoch; das kostet Abklingzeit, keine Sicherheit.
+  - Sperren: resistente Gegnerart, Schlafgrenze, Pyretisch-Wirken. Sie verhindern die Beobachtung, die sie widerlegen
+    könnte; das ist der Fall „dauerhaft ungeprüft".
+  - Marker ohne Treffer prüfen sich schon selbst nach (A340).
+- *Entwurf:*
+  - Revision je Spielversion (`Framework.GameVersionString`, ClientStructs b72bc1f7). Dalamud gibt Plugins keine
+    Spielversion (1e51469).
+  - Nach dem Sprung gelten die Einträge als übernommen weiter. Höchstwerte gelten als das Höhere aus alt und neu.
+  - Widerlegt ist ein Wert erst nach so vielen sauberen Beobachtungen (ohne Barriere auf dem Gemessenen), wie er selbst
+    hatte. Bestätigt ist er, sobald der neue Wert ihn erreicht.
+  - Sperren werden je Version einmal geprüft.
+  - Speichern führt je Revision zusammen; gelöscht wird nur durch die Beweisregel.
+  - Anzeige im Listenfenster mit Name, Gegner, Gebiet, Wert und Zustand.
+- *Verworfen:*
+  - Die erste neue Messung ersetzt den alten Wert (zu tiefe Werte durch geminderte Messungen).
+  - Gleitendes Maximum und Verfall nach Zeit (feste Zahl).
+  - Revision je Gebiet (das Spiel sagt nicht, welchen Inhalt ein Patch berührt).
+  - Ein Knopf „neu prüfen" (A173).
+  - Werte eintippen (ein zu niedriger Wert nimmt Minderung ohne Gegenbeobachtung).
+- *Getroffene Entscheidungen:* Seine Vorgabe A173 (Löschen von Hand, kein Knopf) berührt nur die Bearbeitung; die
+  Revision braucht keinen Knopf. Meine Absage an die Selbstkorrektur (Konzept 13) beantwortet die Beweisregel. Beides
+  steht in der Vorlage.
+- *Prüfgrad:* statisch am Code und an den Quellen (ClientStructs, Dalamud, Lumina-Dokumentation); Selbstprüfung, kein
+  unabhängiges Audit; nichts gebaut. Offene Annahme: dass die Spielversion vor dem Laden der Tabellen lesbar ist –
+  beim Bau zu belegen, mit Rückfall.
+
 ---
 ## B · Commit-Register (Fork vs. `upstream/main`)
 

@@ -10,9 +10,9 @@ Betroffene: **N** Endnutzer · **R** Autoren abgeleiteter Rotationen (Namensräu
 Nach der Wirkung im Kampf: Sicherheit der Gruppe vor Schaden, gewichtet mit der Wahrscheinlichkeit, in seinem Profil
 (seine Vorgabe, 17.10.2026: „todo nach wichtigkeit abarbeiten. jeweils im loop bearbeiten").
 
-1. Die gelernten Tabellen, als ein Konzept und eine Vorlage, gebaut erst nach seiner Freigabe: erst die Revision über
-   einen Spielpatch, weil sie festlegt, welchen Stand ein Wert hat, dann Anzeige und Bearbeitung in den Einstellungen,
-   die diesen Stand zeigen. Beide ändern den Kampf nur mittelbar, über einen geprüften oder berichtigten Lernwert.
+1. Die gelernten Tabellen: Die Vorlage steht (Konzept 13, A443) und wartet auf seine Entscheidung; gebaut wird danach,
+   erst die Revision über einen Spielpatch, dann die Anzeige. Beide ändern den Kampf nur mittelbar, über einen
+   geprüften oder berichtigten Lernwert – die Sperren unter ihnen (Schlaf) aber dauerhaft.
 
 Danach die technische Schuld, soweit ihre Auflösungsbedingung erfüllt ist. Warten auf Daten: unten.
 
@@ -37,12 +37,9 @@ Pyretisch mehr anlegt, hält weiter Zauber an. *Ort:*
 `TankbusterReading`, `SleepReading`, `DotReading`/`DotArea`, dazu `HitSeriesOnPlayer`, `TankbusterMarkerWithoutHit`
 und `ActionPenaltyCasts`;
 Vorbild der Upstream-Listen: `BuiltInList`/`SetList` (eingebaute Einträge, eigene Änderungen als Differenz,
-ausgemusterte Ids). *Nächster Schritt:* Konzept im vollständigen kritischen Loop mit Antithese und Widerlegungsversuch,
-danach Audit des Konzepts: Revision je Spielversion; nach einem Versionssprung gelten die alten Werte weiter, aber als
-unbestätigt, bis eine Messung der neuen Revision sie bestätigt oder widerlegt. Seine Bedingung: Nichts wird irrtümlich
-gelöscht, und nichts bleibt nach einem Versionssprung dauerhaft unwidersprochen und ungeprüft stehen. Umsetzung erst
-nach ausführlicher Präsentation und Begründung (seine Vorgabe, 28.10.2026), zusammen mit „Gelernte Tabellen des Forks in
-den Einstellungen zeigen und bearbeiten". *Konzept:* 13.
+ausgemusterte Ids). *Nächster Schritt:* seine Entscheidung über die Vorlage (Konzept 13, „Gelernte Tabellen über
+Spielversionen", A443), dann der Bau; Umsetzung erst nach seiner Freigabe (seine Vorgabe, 28.10.2026), zusammen mit
+„Gelernte Tabellen des Forks in den Einstellungen zeigen und bearbeiten". *Konzept:* 13.
 
 ### Gelernte Tabellen des Forks in den Einstellungen zeigen und bearbeiten · N
 Sein Auftrag (28.10.2026): „prüfen, ob es sinnvoll ist, die durch den fork selbst erstellten lernlisten ähnlich der
@@ -56,12 +53,9 @@ Tankbuster-Tabelle neben Upstreams AoE- und Tankbuster-Liste. *Ort:* `MainWindow
 `OtherConfiguration`: `HostileCastingAreaPotential`, `TankbusterPotential`, `TankbusterMarkerWithoutHit`,
 `SleepOutcomes`, `SleepResistantKinds`, `SleepDiminishing`, `HitSeriesOnPlayer`, `DotOnParty`, `ActionPenaltyCasts`.
 *Nächster Schritt:*
-Prüfung und Konzept im kritischen Loop, mit Antithese und Widerlegungsversuch, danach Audit des Konzepts; erst dann
-Code. Abzuwägen gegen seine Vorgabe aus A173 („unnötige funktionen erzeugen auch unnötige fehlerursachen", Löschen von
-Hand statt Knopf); berührt das Ergebnis sie, lege ich es ihm vor. Die Anzeige zeigt auch den Stand eines Werts nach
-„Gelernte Tabellen über einen Spielpatch: Revision statt Höchstwert"; beide Konzepte gehen zusammen. Umsetzung erst nach
-ausführlicher Präsentation und Begründung, wie das Ziel erreicht wird (seine Vorgabe, 28.10.2026). *Konzept:* 13
-(gelernte Tabellen), 18 (Einstellungen).
+seine Entscheidung über die Vorlage (Konzept 13, „Gelernte Tabellen über Spielversionen", A443): Anzeige allein, mit
+Entfernen einzelner Einträge, oder gar nicht – die Bearbeitung berührt seine Vorgabe A173. Umsetzung erst nach seiner
+Freigabe (seine Vorgabe, 28.10.2026). *Konzept:* 13 (gelernte Tabellen), 18 (Einstellungen).
 
 ## Technische Schuld
 

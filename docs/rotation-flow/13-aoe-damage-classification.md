@@ -631,14 +631,12 @@ Speicher die Werte, und das nächste Speichern führt sie mit der dann fehlenden
 schreibt es sie zurück. Kein automatischer Verfall — er würde genau die Eigenschaft aufheben, die eine
 einzelne ungemilderte Beobachtung wertvoll macht.
 
-**Selbstkorrektur nach einem Patch: nicht gebaut.** Eine Historie über Tage bräuchte sie nicht.
-Denkbar wären zwei Formen: je Eintrag die Spielversion der Messung (nach einem Patch ersetzt die erste
-neue Messung den alten Wert), oder ein gleitendes Maximum über die letzten Messungen je Aktion. Beide
-tragen dasselbe Risiko: Ist die erste oder sind die letzten Messungen gemildert, sinkt der Wert zu
-tief, und der nächste Treffer dieser Aktion kommt ungemildert an — ein Sicherheitsverlust, um einen
-Fall zu lösen, der selten ist (ein Patch, der eine alte Aktion abschwächt) und dessen Folge nur
-überflüssige Minderung ist. Dazu braucht die zweite Form eine neue feste Zahl. Das Löschen von Hand
-deckt den Fall ohne dieses Risiko.
+**Selbstkorrektur nach einem Patch: nicht gebaut, als Vorlage entworfen** (Abschnitt „Gelernte Tabellen über
+Spielversionen", A443). Die beiden einfachen Formen – die erste neue Messung ersetzt den alten Wert, oder ein gleitendes
+Maximum über die letzten Messungen – tragen das Risiko, dass eine geminderte erste oder letzte Messung den Wert zu tief
+setzt und der nächste Treffer ungemildert ankommt; die zweite braucht dazu eine feste Zahl. Der Entwurf dort widerlegt
+einen alten Wert erst mit so vielen sauberen Beobachtungen, wie er selbst hatte. Bis zu seinem Bau deckt das Löschen
+von Hand den Fall.
 
 **Seit A172 kann kein Speichern mehr verlieren, was die Datei hält.** Die Tabelle wächst von selbst nur; also ist jeder Stand der Datei eine Untergrenze, und ein Speichern nimmt je Aktion das Höhere aus Speicher und Datei. Damit ist die Fehlerklasse geschlossen, nicht der Einzelfall: Gleich aus welchem Grund der Speicher leer oder unvollständig ist — Laden gescheitert, abgebrochen, ein künftiger Defekt —, die Datei behält ihren Stand. Dazu wird ein Speicher, dessen Laden in dieser Sitzung nicht zu Ende lief, gar nicht geschrieben: Das Entladen schreibt alle Listen, und ein abgebrochener Start hätte sie sonst alle geleert. Ausgenommen ist nur ein Wert, den die Messung selbst nicht ablegt, über der ganzen Maximalgesundheit (A298, Abschnitt „Was gemessen wird, und was nicht").
 
@@ -907,6 +905,147 @@ die Bezugsgröße, die seine Vorgabe zur Deckung nennt.
 aktuelle Gesundheit nicht reicht, und Barriere samt Minderung zusätzlich, wo auch die volle nicht
 reicht. Sie gilt nicht nur für Flächen — dieselbe Frage stellt sich beim Tankbuster —, deshalb steht
 sie dort und nicht hier.
+
+## Gelernte Tabellen über Spielversionen: Revision und Anzeige (Vorlage, nicht gebaut)
+
+**Seine Aufträge vom 28.10.2026.** Zur Revision: „sobald ein neuer patch von ffxiv rauskommt, könnte sich der wert der
+listen aber ändern, weil sich mechaniken im spiel ändern. […] nach patch werden die bestehenden listen als gegeben
+angesehen, aber noch nicht als verifiziert. also solange anwendung der bisherigen erkenntnisse, bis durch neue
+erkenntnisse (also eine neue revision der liste) diese bestätigt werden oder eben falsifiziert werden und in der neuen
+liste als ungültig markiert bzw. in der alten gelöscht werden. das neue revisionssystem muss sicher aufgebaut sein, dass
+nicht irrtümlich erkenntnisse gelöscht werden, bzw. alte daten dauerhaft unwidersprochen und ungeprüft nach einem
+versionssprung des spiels beibehalten werden." Zur Anzeige: „prüfen, ob es sinnvoll ist, die durch den fork selbst
+erstellten lernlisten ähnlich der listen vom upstream (aoe, tankbuster, rückstoß etc.) auch in den settings anzeigbar
+und editierbar zu machen mit den dazugehörigen werten wie name, gegner, schaden, effekt etc." Beide gehen zusammen: Die
+Anzeige zeigt den Stand, den die Revision festlegt. Gebaut wird erst nach seiner Freigabe dieser Vorlage.
+
+**Berührte Entscheidung:** Seine Vorgabe A173 – die Datei wird bei einem Patch von Hand gelöscht, „dazu brauch ich
+keinen ingame-button. unnötige funktionen erzeugen auch unnötige fehlerursachen" – und meine Absage an eine
+Selbstkorrektur, weil die erste neue Messung gemindert sein kann (Abschnitt „Die Werte und ihr Schutz"). Die Revision
+unten braucht keinen Knopf; die Bearbeitung in den Einstellungen wäre einer, und darüber entscheidet er.
+
+### Bestand
+
+| Speicher (Datei) | Schlüssel | Wert, Zusammenführung | Leser im Kampf | ein veralteter Wert im Kampf | prüft sich selbst nach |
+|---|---|---|---|---|---|
+| `HostileCastingAreaPotential` | Aktion | ungeminderter Anteil (A441), Höchstwert | Größenregel, Vorausheilung, Glockenspiel, große unterbrechbare Casts | zu hoch: Minderung und Heilung ohne Not; zu niedrig: hebt sich beim nächsten Treffer | nur nach oben |
+| `TankbusterPotential` | Aktion | ungemindert, ohne und unter Verwundbarkeit, je Höchstwert | Tankbuster-Plan, Tankwechsel, Hilfe für den anderen Tank | zu hoch: größeres Bündel oder Unverwundbarkeit ohne Not | nur nach oben |
+| `HitSeriesOnPlayer` | Aktion | Treffer je Serie, Höchstwert | Glockenspiel auf Serien | zu hoch: Glocke für Treffer, die nicht mehr kommen | nur nach oben |
+| `DotOnParty` | Gebiet, Status | Tick (HP) und Lebensdauer je Höchstwert, Zähler | HoT gegen DoT (Konzept 08) | zu hoch: HoT früher als nötig | nur nach oben |
+| `SleepOutcomes` | Aktion | Stopps, Durchgänge, Zeiten, je Höchstwert | Schlaf gegen ein Wirken (Konzept 08) | falsche Zeit: Schlaf zu früh oder zu spät | ja, jede Beobachtung |
+| `SleepResistantKinds` | Gegnerart | Widerstände, Höchstwert | keine Schlafversuche auf diese Art | **sperrt die eigene Prüfung**: nie wieder versucht | **nein** |
+| `SleepDiminishing` | Gegnerart | Schlafgrenze, Tiefstwert | Zahl der Schlafe je Kampf | **sperrt** Versuche über der Grenze | **nein** |
+| `ActionPenaltyCasts` | Aktion | gelegter Status (A439) | kein Zauber vor der Landung | hält Zauber vor einer Landung, die nichts mehr legt | nein, nur Hinzulernen |
+| `TankbusterMarkerWithoutHit` | Gebiet, Pfad | Menge | Marker gilt nicht als Tankbuster | eine verpasste Minderung | **ja**: ein späterer Treffer streicht ihn (A340) |
+| `TankbusterMarkerHits` | Gebiet, Pfad | Aktion, kürzeste Verzögerung | Tankbuster-Plan ohne Cast | zu früh: Abwehr früher als nötig | ja, je Treffer |
+
+Daraus zwei Arten. **Höchstwerte** (Fläche, Tankbuster, Serie, DoT, Schlafzeiten, Markerverzögerung) irren nach einem
+Patch nur in der sicheren Richtung dauerhaft: Ein abgeschwächter Treffer behält seinen zu hohen Wert, ein verstärkter
+hebt ihn beim nächsten Mal. **Sperren** (resistente Art, Schlafgrenze, Pyretisch-Wirken) verhindern die Beobachtung,
+die sie widerlegen könnte – genau der Fall „dauerhaft unwidersprochen und ungeprüft", gegen den sein Auftrag steht. Der
+Mimik aus A427 ist das Beispiel: Nach einem Widerstand wird er nie wieder versucht, auch wenn ein Patch ihn schlafbar
+machte.
+
+### Entwurf
+
+**1. Revisionsmerkmal: die Spielversion des Clients.** `Framework.GameVersionString` (FFXIVClientStructs, Feld
+`_gameVersion`, eine Zeichenkette; Stand b72bc1f7 vom 25.10.2026, Werkzeugquelle) ändert sich mit jedem Patch und jedem
+Hotfix. Dalamud gibt die Spielversion Plugins nicht (`StartInfo.GameVersion` ist intern; `IDalamudVersionInfo` nennt nur
+Dalamuds eigene Version, Stand 1e51469 vom 25.10.2026). Als zweite Quelle liest Lumina die Version der Spieldateien
+(`Repository.ParseVersion`); ob sie öffentlich lesbar ist, belegt seine Dokumentation nicht. Ein Hotfix ohne
+Mechanikänderung startet eine Revision, die nichts widerlegt: Die Werte gelten weiter und werden mit den nächsten
+Beobachtungen bestätigt. Ein Merkmal je Inhalt (Gebiet) ist verworfen: Kein Datum sagt, welchen Inhalt ein Patch
+berührt.
+
+**2. Zustände je Eintrag.** Jeder Eintrag trägt neben seinem Wert die Version, in der er zuletzt beobachtet wurde, und
+die Zahl der Beobachtungen in ihr. Nach einem Versionssprung wird nichts gelöscht; ein Eintrag aus der alten Version
+heißt *übernommen* und gilt weiter, wie sein Auftrag sagt. Beobachtungen der neuen Version sammeln sich als eigener
+Wert daneben – die neue Revision des Eintrags. Er heißt *bestätigt*, sobald die neue Revision ihn trägt, und
+*widerlegt*, sobald sie ihm widerspricht; dann gilt die neue, und der alte Wert wird gelöscht. Ein Eintrag, der nie
+wieder beobachtet wird, bleibt übernommen – er wirkt auch nur dort, wo sein Inhalt gespielt wird, und dort wird er
+beobachtet.
+
+**3. Die Regel je Art.**
+- *Höchstwerte:* Angewandt wird bis zur Entscheidung das Höhere aus übernommenem und neuem Wert – eine einzelne
+  niedrige Messung senkt nichts. Bestätigt ist er, sobald der neue Wert den übernommenen erreicht. Widerlegt ist er erst,
+  wenn die neue Version die Aktion mindestens so oft sauber beobachtet hat wie die alte und ihr Höchstwert darunter
+  bleibt; dann gilt der neue Wert. *Sauber* heißt ohne Barriere auf dem Gemessenen – sie wird nicht herausgerechnet, und
+  eine Messung unter ihr fällt zu klein aus. Die Beweisregel setzt keine Zahl: Der neue Wert braucht so viel Beobachtung,
+  wie der alte hatte. Ein unveränderter Treffer, dessen alter Wert einen hohen Schadenswurf trägt, kann so um die
+  Streuung des Schadens sinken; das ist Messgenauigkeit, keine Sicherheitsfrage.
+- *Sperren:* Eine übernommene Sperre gilt als Hypothese, und die neue Version prüft sie einmal. Eine resistente
+  Gegnerart wird einmal versucht: Widerstand bestätigt, ein gelandeter Schlaf widerlegt. Eine Schlafgrenze wird einmal
+  überschritten. Ein Pyretisch-Wirken hält weiter Zauber zurück (die sichere Richtung) und ist widerlegt, wenn die neue
+  Version es so oft ohne den Status auf einem getroffenen Mitglied landen sah, wie die alte es mit ihm sah. Preis: je
+  Version und Gegnerart höchstens ein Schlaf-GCD ohne Wirkung.
+- *Marker ohne Treffer und Markerverzögerung* prüfen sich schon je Auftreten selbst nach (A340); die Revision zeigt nur
+  ihren Stand.
+
+**4. Speichern.** Die Eigenschaft, dass kein Speichern verliert, was die Datei hält (A172), gilt je Revision: Zusammengeführt
+wird je Eintrag die gleiche Version miteinander (Höchstwert, Summe der Beobachtungen), eine ältere nur als übernommener
+Wert, nie über einen neueren. Gelöscht wird ein Wert ausschließlich durch die Beweisregel oben – kein Speichern, Laden
+oder Zurücksetzen löscht einen. Ein widerlegter Wert wird so geschrieben, dass das nächste Zusammenführen ihn nicht aus
+der Datei zurückholt (Kennzeichen „widerlegt in Version X" statt bloßem Fehlen).
+
+**5. Einführung.** Die vorhandenen Dateien werden einmal gelesen und als *übernommen* mit einer Beobachtung geführt –
+wie oft ein alter Wert gesehen wurde, sagt keine Datei. Beim nächsten Speichern steht das neue Format; die alte Datei
+bleibt als Sicherung daneben, bis er sie löscht.
+
+**6. Anzeige** (Konzept 18, „Darstellung"). Im Listenfenster neben Upstreams Listen je Speicher eine Tabelle: Name der
+Aktion im Client (bei ihm deutsch), Gegner (beim Messen dazu gespeichert: der Name des Wirkenden aus dem Blatt, ein
+neues Feld), Gebiet, Wert (Anteil der Maximalgesundheit, Treffer je Serie, Status, Schlafergebnis), Zustand (bestätigt
+in Version X, übernommen aus X mit n Beobachtungen, widerlegt), Zahl der Beobachtungen. Suche und Kopieren wie bei
+Upstreams Listen. Ob bearbeitet werden kann, entscheidet er (Vorlage).
+
+### Verworfen
+
+- *Die erste neue Messung ersetzt den alten Wert* – die frühere Form 1: Ist sie gemindert oder unter einer Barriere,
+  sinkt der Wert zu tief, und der nächste Treffer kommt ohne Minderung an.
+- *Gleitendes Maximum über die letzten N Messungen, Verfall nach Zeit:* eine neue feste Zahl, und ein selten
+  gespielter Inhalt verlöre seine Werte ohne Gegenbeobachtung.
+- *Revision je Gebiet:* Das Spiel sagt nicht, welchen Inhalt ein Patch berührt.
+- *Ein Knopf „nach Patch neu prüfen":* Die Revision erkennt den Patch selbst; ein Knopf wäre eine Funktion ohne Bedarf
+  (A173).
+- *Werte in den Einstellungen eintippen:* Ein zu niedrig eingetippter Flächen- oder Tankbusterwert nimmt Minderung weg,
+  ohne dass eine Beobachtung ihn je widerlegt hätte – der eine Fehler, den die Tabellen nicht machen dürfen.
+
+### Was gegen den Entwurf spricht
+
+- *„Nach einem Patch sind die alten Werte sowieso meist richtig – die Revision ist Aufwand ohne Nutzen."* Für die
+  Höchstwerte trägt das: Alte Inhalte ändert ein Patch selten, und ein zu hoher Wert kostet nur Abklingzeit. Für die
+  Sperren nicht: Ohne Revision wird eine einmal widerstandene Art nie wieder versucht – unabhängig vom Patch, schon eine
+  Fehlbeobachtung (ein Widerstand durch ein Ereignis der Mechanik) sperrt sie dauerhaft. Die Antithese hält für die
+  Höchstwerte teilweise, nicht für die Sperren.
+- *„Die Beweisregel ist zu langsam: Ein Wert aus 40 Durchläufen braucht 40 neue Beobachtungen."* Zutreffend. Der Preis
+  ist Minderung ohne Not bis dahin, also Schaden, nicht Sicherheit – nach seiner Spielweise die richtige Seite. Eine
+  schnellere Regel bräuchte eine Zahl oder nähme das Risiko der zu tiefen ersten Messung.
+- *„Die saubere Messung ist selbst unsicher: Ob die Schadenszahl den von einer Barriere geschluckten Teil enthält, ist
+  nicht belegt."* Gerade deshalb zählt eine Messung unter Barriere nicht für die Widerlegung; sie hebt nur, wie heute.
+- *„Ein Hotfix jede Woche hält alles dauerhaft im Zustand übernommen."* Übernommen wirkt wie heute; bestätigt wird mit
+  der ersten Beobachtung, die den alten Wert erreicht. Der Zustand kostet nichts im Kampf.
+- *„Die Spielversion ist eine Werkzeugquelle; ändert ClientStructs das Feld, bricht die Revision."* Dann liest RSR keine
+  Version: Alle Einträge bleiben in ihrer Revision, also das heutige Verhalten. Die Erkennung braucht einen Rückfall und
+  eine Zeile im Protokoll.
+- *„Eine Sperre einmal zu prüfen kostet im Ernstfall: Der Schlafversuch fällt in eine Lage, in der der GCD für Heilung
+  fehlte."* Die Schranke der Rückhaltungen und die Heilentscheidung stehen über dem Schlaf (Konzept 08); geprüft wird nur,
+  wo der Schlaf ohnehin gewählt würde.
+
+### Am Code geprüft
+
+Geprüft am Code, Aussage für Aussage (Selbstprüfung, kein unabhängiges Audit):
+- Jeder Speicher hat genau einen Ladeweg und einen Speicherweg über `OtherConfiguration.Files` (`LearnedFile`, `LocalFile`
+  für die beiden Markerspeicher); ein Revisionsformat lässt sich dort je Art einhängen, ohne die Leser zu verdoppeln.
+- Die Leser je Speicher sind wenige und zentral: Fläche über `DataCenter.AreaShareNow` (A441), Tankbuster über
+  `TankbusterTable`, Schlaf über `SleepInterruptWatch`, DoT über `DotOnParty.Learned`, Serie über `HitSeries`, Pyretisch
+  über `ActionPenaltyWatch`. Ein Zugriff „angewandter Wert" je Speicher genügt.
+- Die Beobachtungszahl fehlt heute bei Fläche, Tankbuster, Serie und Pyretisch; DoT und Schlaf zählen schon. Sie
+  kommt als Feld dazu.
+- Die Barriere beim Treffer ist an beiden Messstellen schon gelesen (`GetObjectShield` in `TryAreaShare`; beim
+  Tankbuster am Ziel lesbar).
+- Offene Annahme: dass `Framework.GameVersionString` vor dem Laden der Tabellen gelesen werden kann. Die Tabellen laden in
+  `InitAsync` beim Start des Plugins, der Client läuft da schon; zu belegen beim Bau, mit Rückfall wie oben.
+
+Prüfgrad: statisch am Code und an den Quellen; nichts gebaut.
 
 ## Betroffene
 

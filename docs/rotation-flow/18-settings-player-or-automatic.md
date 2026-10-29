@@ -81,6 +81,9 @@ begrenzte Jobs, die Zusatzrotationen.
 Was ein Fenster zeigt, wann RSR an- und ausgeht, welche Tasten er selbst drückt, ob ein Haken ins Spiel eingreift (kein
 Fallschaden): Das Spiel kennt seine Wünsche nicht. Keine Automatik denkbar, keine Änderung.
 
+Die gelernten Tabellen des Forks im Listenfenster anzuzeigen und vielleicht zu bearbeiten, ist als Vorlage entworfen
+(Konzept 13, „Gelernte Tabellen über Spielversionen", A443); gebaut wird nach seiner Entscheidung.
+
 „Reset to Default Value." im Rechtsklickmenü einer Einstellung setzt jede Einstellung auf ihre Voreinstellung, auch die
 schlichten und die je Job geführten Schalter (A407). Bis dahin setzte es diese auf aus, und ein Zurücksetzen schaltete
 etwa „Heal ahead of incoming damage" oder „Raise with Swiftcast or Dualcast" ab, obwohl beide ab Werk an stehen.
