@@ -13598,6 +13598,17 @@ Löschungen").
   Protokolls. Konzept 13 („Eine Serie zählt als ein Angriff", „Grenzen der Messung", Bestand) vor dem Code.
 - *Prüfgrad:* statisch am Code und an seinem Protokoll, kompiliert ohne Warnung; im Spiel nicht beobachtet.
 
+### A461 · Upstream 7.5.7.12 (6567a78bb): RebornMaterial 7.5.7.5 auch bei Upstream (29.10.2026)
+
+- *Gemessen* am Auftragsende: ein neuer Commit auf `upstream/main`, getaggt 7.5.7.12 – RebornMaterial 7.5.7.3 → 7.5.7.5,
+  dieselbe Hebung wie A455 im Arbeits-Branch, gleicher Inhalts-Hash in `packages.lock.json`.
+- *Bewertung:* Upstream trägt die Absturzbehebung jetzt selbst; die Fork-Zeile ist keine Abweichung mehr und läuft
+  künftig ohne Konflikt zusammen. Nichts Weiteres im Commit.
+- *Gebaut:* Main 81b499a15 (Merge 98d5ace1e, Fork-Version auf 7.5.7.12 nach `check_fork_version.py --require-tags`),
+  Branch 42e749cb9; beide kompiliert ohne Warnung, CI-Prüfungen lokal ohne Fehler. Release-Text und Branch-Name folgen
+  dem letzten Fork-Release 7.5.7.10+wsh1.
+- *Prüfgrad:* statisch, kompiliert.
+
 ---
 ## B · Commit-Register (Fork vs. `upstream/main`)
 
