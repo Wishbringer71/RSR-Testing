@@ -1183,11 +1183,14 @@ ungeprüft einsparen darf (Regel 4), und wie schnell der Einschlag den alten Wer
 
 ### Entwurf
 
-**1. Revisionsmerkmale.** Die Spielversion des Clients (`Framework.GameVersionString`, FFXIVClientStructs b72bc1f7 vom
-25.10.2026, Werkzeugquelle; Dalamud gibt sie Plugins nicht, 1e51469 vom 25.10.2026; Lumina liest die Version der
-Spieldateien, `Repository.ParseVersion`, öffentlich nicht dokumentiert) und je Speicher eine Nummer des Messverfahrens im
-Code, erhöht mit jeder Änderung, die die Bedeutung seiner Werte ändert. Eine Revision ist das Paar aus beiden. Jeder
-Hotfix beginnt eine; sie widerlegt nichts, die Werte werden mit der nächsten sauberen Messung bestätigt.
+**1. Revisionsmerkmale.** Die Spielversion des Clients samt den Versionen der Erweiterungen (`Framework.GameVersionString`
+und `Framework.ExVersions`, FFXIVClientStructs b72bc1f7 vom 25.10.2026, Werkzeugquelle; Dalamud gibt sie Plugins nicht,
+1e51469 vom 25.10.2026; Lumina liest die Version der Spieldateien, `Repository.ParseVersion`, öffentlich nicht
+dokumentiert) und je Speicher eine Nummer des Messverfahrens im Code, erhöht mit jeder Änderung, die die Bedeutung seiner
+Werte ändert. Eine Revision ist das Paar aus beiden. Jeder Hotfix beginnt eine; sie widerlegt nichts, die Werte werden
+mit der nächsten sauberen Messung bestätigt. Die Erweiterungen gehören dazu, weil ein Patch auch nur ihre Dateien
+bearbeiten kann: Eine Revision zu viel kostet je Eintrag eine Bestätigung, eine zu wenig ließe ab Stufe 2 einen alten
+Wert Schutz einsparen.
 
 **2. Eintrag.** Je Eintrag zwei Schichten, die laufende und die übernommene, je mit: Revision, höchster Messung, Zahl der
 Messungen, Zahl der sauberen Messungen, niedrigster und höchster sauberer Messung. *Sauber* heißt: ohne Schadensplus am
@@ -1195,7 +1198,10 @@ Gegner und ohne Verwundbarkeit auf dem Gemessenen – beides verfälscht nach ob
 Regel 5 die Varianten einer Aktion erkennt. Eine Barriere macht eine Messung nicht unsauber (A449); eine Messung ohne
 Stufensynchronisation wird gar nicht abgelegt (Regel 8). Dazu ein dritter Platz für einen widerlegten Wert (gelöscht
 wird er nicht, nur nicht mehr gelesen) und der Name des Wirkenden (Blattzeile, für die Anzeige). Mehr Schichten
-entstehen nicht: Ein zweiter Versionssprung ohne neue Messung lässt die übernommene Schicht, wie sie ist.
+entstehen nicht: Ein zweiter Versionssprung ohne neue Messung lässt die übernommene Schicht, wie sie ist. Jeder Platz
+kommt mit der Stufe, die ihn liest (Regel 12): die beiden Schichten und die Quarantäne mit Stufe 1, der widerlegte Wert
+mit Stufe 3, der Name mit Stufe 5 – jeweils als zusätzliches Feld, das eine ältere Datei leer liest (Abschnitt „Stufe 1:
+Speicher, Übernahme, Sicherung").
 
 **3. Zustände.** *Übernommen:* Messungen nur aus einer früheren Revision. *Bestätigt:* mindestens eine saubere Messung in
 der laufenden Revision. *Gesenkt:* die übernommene Schicht widerlegt (Regeln 5 und 5b). *Quarantäne:* ein ungültiger
@@ -1262,13 +1268,13 @@ einer Erhöhung schützt der erste Cast.
 
 | Fehler | Zustand danach |
 |---|---|
-| Spielversion nicht lesbar (Feld verschoben, Client nicht bereit) | Kein Eintrag gilt einsparend als bestätigt; Zeile im Protokoll und im Speicherstand; Versuch bei jeder Aktualisierung |
+| Spielversion nicht lesbar (Feld verschoben, Client nicht bereit) | Kein Eintrag gilt einsparend als bestätigt; keine laufende Schicht wird verschoben, Messungen gehen in die übernommene – sie schützen und bestätigen nichts; Zeile im Protokoll und im Speicherstand; Versuch bei jeder Messung |
 | Inhalt ohne Synchronisationsstufe im Blatt (offene Welt) | gilt als synchron, wie vor A452; Stufe des Spielers und Blatt sind sonst immer lesbar |
-| Datei unlesbar | letzte rückgelesene Sicherung (`.bak`, geschrieben nach jedem bestätigten Speichern); erst wenn auch sie fehlt, leer – „nichts gelernt"; die unlesbare bleibt als `.corrupt` |
-| Erster Start mit dem neuen Format | neues Format in neuer Datei, die alte bleibt unberührt; das Ergebnis wird zurückgelesen, bevor es gilt; misslingt es, gilt die alte |
-| Ältere RSR-Fassung nach der neuen | liest die unberührte alte Datei; die neue übernimmt deren Werte beim nächsten Start nur als übernommene Schicht, also nur schützend |
+| Datei unlesbar | letzte rückgelesene Sicherung (`.bak`, geschrieben nach jedem bestätigten Speichern); erst wenn auch sie fehlt, leer – „nichts gelernt"; die unlesbare bleibt als `.corrupt`. Fehlt die Datei, gilt das: Er hat sie gelöscht, und die Sicherung bringt sie nicht zurück |
+| Erster Start mit dem neuen Format | neues Format in neuer Datei; die alte schreibt RSR auf dem bisherigen Weg weiter, als Höchstwert aller gültigen Messungen; das neue Format wird beim ersten Speichern zurückgelesen; misslingt es, bleibt die alte vollständig |
+| Ältere RSR-Fassung nach der neuen | liest die alte Datei mit allem Gelernten; was sie dazulernt, übernimmt die neue beim nächsten Start nur als übernommene Schicht, also nur schützend |
 | Ungültiger Wert | Quarantäne: bleibt in der Datei, wird nicht gelesen, wird gezählt. Ungültig ist je Speicher, was er nicht ablegen kann: NaN, unendlich, negativ; in der Flächentabelle dazu über der ganzen Gesundheit (A298). Die Tankbuster-Tabelle behält Werte über der ganzen Gesundheit – dort sind sie die gesuchte Auskunft, und Beispiel 1 lebt von ihnen |
-| Speichern verlöre einen Eintrag, eine Schicht oder senkte einen Wert ohne Senkung nach Regel 5 oder 5b | nicht gespeichert, „SAVE INVARIANT" im Speicherstand und im Protokoll, der Speicher bleibt im Gedächtnis |
+| Speichern verlöre einen Eintrag, eine Schicht, eine Messung oder senkte einen Wert ohne Senkung nach Regel 5 oder 5b | nicht gespeichert, „SAVE INVARIANT" im Speicherstand und im Protokoll, der Speicher bleibt im Gedächtnis |
 | Absturz beim Schreiben, zwei Schreiber | wie heute: temporäre Datei, Sperre je Speicher, Rücklesen |
 
 **8. Härtung innerhalb einer Version: keine Messung über der Stufe des Inhalts – gebaut (A452).** Eine solche Messung
@@ -1304,8 +1310,152 @@ geprüft bei jedem Speichern.
 
 **12. Bauabfolge, jede Stufe rückbaubar.** (0) Die drei Defekte aus seinen Prüffällen – ungelisteter Tankbuster,
 Aufnahme unter Unverwundbarkeit, Messung ohne Synchronisation –: unabhängig von der Revision, gebaut (A452). (1) Format, Übernahme der alten Dateien, Sicherung, Quarantäne, Invarianten – ohne
-Verhaltensänderung, die alte Datei bleibt. (2) Regel 4 für Fläche und Tankbuster. (3) Regeln 5 und 5b. (4) Sperren nach
-Regel 6. (5) Anzeige. Rückbau einer Stufe: ihr Messverfahren zurück; die Werte bleiben in beiden Dateien.
+Verhaltensänderung, die alte Datei bleibt (Abschnitt „Stufe 1: Speicher, Übernahme, Sicherung"). (2) Regel 4 für Fläche
+und Tankbuster. (3) Regeln 5 und 5b. (4) Sperren nach Regel 6, mit den Schichten der Sperrspeicher. (5) Anzeige. Rückbau
+einer Stufe: ihr Messverfahren zurück; die Werte bleiben in beiden Dateien.
+
+### Stufe 1: Speicher, Übernahme, Sicherung (entschieden, nicht gebaut)
+
+**Im Kampf ändert Stufe 1 nichts:** Jeder Leser bekommt denselben Wert wie vorher. Sie legt ab ihrem Einbau jede Messung
+unter ihrer Spielversion ab, sodass nach dem nächsten Patch feststeht, was die neue Version schon bestätigt hat – die
+Grundlage von Stufe 2 –, und sie prüft den Speicherweg, bevor eine Abwehr von ihm abhängt. Schon jetzt wirkt die
+Sicherung: Eine unlesbare Datei startet heute leer, und jede Aktion gilt in dieser Sitzung als unbewertet – Minderung auf
+jede Fläche, kein Tankbuster gemessen, Schlafwissen weg; mit der Sicherung gilt der letzte gespeicherte Stand.
+
+**Umfang.** Schichten bekommen die beiden Speicher, deren Werte die Stufen 2 und 3 einsparend lesen: die Flächentabelle
+(`HostileCastingAreaPotential`) und die Tankbuster-Tabelle (`TankbusterPotential`). Die Sperrspeicher (Schlaf,
+Pyretisch, Marker ohne Treffer) bekommen sie mit Stufe 4, weil erst Regel 6 festlegt, was dort eine Beobachtung ist;
+die nur schützend gelesenen (Serie, DoT, Markertreffer) mit der Regel, die sie einmal senkt – bis dahin gelten sie wie
+heute. Das kostet nichts: Ein Speicher, der seine Schichten später bekommt, übernimmt seine Werte dann als übernommen,
+und übernommen ist der schützende Zustand; der Preis ist eine Bestätigung je Eintrag mehr. Die Sicherung bekommen alle
+gelernten Speicher mit dem Speicherweg `LearnedFile`; die beiden Markerspeicher (`LocalFile`) mit Stufe 4.
+`AreaPotentialUnmitigated` bleibt ohne Schichten: Es sagt, wie ein Wert gemessen wurde, nicht, was das Spiel tut, und
+ein Patch ändert daran nichts.
+
+**Dateien.** Je Speicher mit Schichten eine neue Datei `<Name>.rev.json`. Die alte `<Name>.json` schreibt RSR auf dem
+bisherigen Weg weiter: als Höchstwert aller gültigen Messungen, zusammengeführt mit ihrem Inhalt, zurückgelesen. Eine
+ältere RSR-Fassung findet darin alles Gelernte; fallen die neue Datei und ihre Sicherung aus, ist die alte der zweite
+Bestand. Ihr Schreibweg nimmt nur Höheres auf, ein Fehler im neuen Weg kann sie also heben, nicht senken. Zurücksetzen
+von Hand heißt deshalb: beide Dateien des Speichers löschen; eine allein stellt die andere wieder her.
+
+**Format.** `{"Format": 1, "Entries": {"<Id>": {"Current": …, "Inherited": …, "Quarantined": …}}}`, ein fehlender Platz
+ist leer. Jede Schicht: `Game` (Spielversion), `Method` (Messverfahren), `Value` (der Wert in der Form der alten
+Datei), `Count` (Messungen), `Clean` (saubere Messungen), `Low` und `High` (niedrigste und höchste saubere, bedeutsam
+erst ab einer sauberen). Die Plätze späterer Stufen kommen als zusätzliche Felder (Regel 2); `Format` steigt nur, wenn
+eine Datei mit dem neuen Feld von einer älteren Fassung falsch gelesen würde.
+
+**Revision.** Spielversion: der Text aus `GameVersionString` und den Erweiterungen aus `ExVersions` (Heavensward bis
+Dawntrail und folgende), verbunden; lesbar nur, wenn jeder Teil aus Ziffern und Punkten besteht und der Hauptteil nicht
+leer ist. Das schließt ein Feld aus, das nach einer Verschiebung Fremdes liest – es hielte sonst jeden Patch für keinen.
+Messverfahren je Speicher: 1 ab Stufe 1. Werte der alten Datei tragen die Revision „unbekannt" (leere Spielversion,
+Verfahren 0).
+
+**Messung: jede, nicht nur eine Erhöhung.** Bisher schrieb jeder Schreiber nur, was den Höchstwert hob. Jetzt meldet er
+jede Messung, die er ablegen würde, mit ihrem Wert und ob sie sauber ist; Höchstwert und Zählung führt der Speicher.
+Ohne das bliebe nach einem Patch jede unveränderte Aktion übernommen, bis ein Treffer ihren alten Höchstwert überböte.
+- *Fläche:* jede Landung, die einen Anteil über 0 misst, und die Bewertung 0 einer Aktion ohne Wert (A366) – dieselben
+  Bedingungen wie bisher, ohne „nur höher". Sauber: der Wirkende ohne Schadensplus und kein gemessenes Mitglied mit
+  Verwundbarkeit; die Minderung, die `MitigationFactor` herausrechnet, kennt beide nicht. Eine Verwundbarkeit, die erst
+  der Treffer legt, macht die Messung unsauber, wo sie beim Eintreffen schon steht – das zählt eine saubere zu wenig und
+  hemmt Regel 5 nur. Einheit ist die Landung, bei einer Serie (A349) also die laufende Summe: Teilsummen weiten `Low`
+  und erhöhen `Count`, beides hemmt die Senkung in Regel 5 und 5b nur. Die Serie als Einheit kommt mit dem offenen
+  Punkt „Mehrfach treffender Raidwide" und erhöht das Messverfahren.
+- *Tankbuster:* jede abgelegte Serie (A454) mit ihrer Summe, ihrer Dauer und „nur als Wirken auf das Ziel". Sauber, wenn
+  sie nicht unter einer Verwundbarkeit lag; eine unter Schadensplus wird gar nicht abgelegt. `Low` und `High` aus der
+  Summe.
+
+**Übergang.** Trägt die laufende Schicht eines Eintrags eine andere Revision als die laufende, wird sie in die
+übernommene eingerechnet: der höhere Wert nach der Höchstwertregel des Speichers, die Zählungen addiert, `Low` das
+niedrigere, `High` das höhere; die übernommene trägt danach die jüngere Revision. Beim Laden für jeden Eintrag, sonst bei
+jeder Berührung und vor jedem Speichern. Ein Versionssprung ohne Messung dazwischen ändert die übernommene Schicht nicht.
+
+**Spielversion nicht lesbar.** Kein Übergang, und jede Messung geht in die übernommene Schicht: Sie schützt sofort,
+bestätigt nichts und schiebt keine laufende Schicht beiseite, die vielleicht doch zur laufenden Version gehört. Gelesen
+wird bei jeder Messung erneut; wird die Version lesbar, gilt von da an der Übergang.
+
+**Übernahme der alten Datei.** Beim Laden geht jeder Eintrag der alten Datei, der dem Bestand etwas hinzufügt – kein
+Platz kennt ihn, oder sein Wert hebt das Höhere aus allen Plätzen –, in die übernommene Schicht, als eine saubere
+Messung ohne Streuung (`Low` = `High` = Wert, Regel 5). Beim ersten Start sind das alle; danach nur, was eine ältere
+Fassung dazwischen gelernt hat. Der eigene Schreibweg fügt der alten Datei nichts hinzu, was der Bestand nicht kennt –
+die Übernahme wiederholt sich also nicht und zählt nichts doppelt.
+
+**Quarantäne.** Ungültig ist: nicht endlich oder negativ; in der Flächentabelle zudem über der ganzen Gesundheit (A298,
+bisher beim Laden ausgelassen und aus der alten Datei entfernt). In der Tankbuster-Tabelle gilt das für jede Zahl des
+Werts. Ein ungültiger Wert – aus einer Datei oder einer Messung – geht auf den Platz `Quarantined` (letzter Wert,
+Zählung), wird nicht gelesen und in der Kopfzeile gezählt. Die alte Datei lässt ihn aus, wie bisher einen Flächenwert
+über der ganzen Gesundheit.
+
+**Was die Leser sehen.** Die bisherigen Tabellen bleiben die einzige Leseschnittstelle; ihr Wert je Eintrag ist das
+Höhere aus laufender und übernommener Schicht, also der Höchstwert aller gültigen Messungen wie bisher. Kein Schreiber
+schreibt sie mehr selbst: Jeder meldet seine Messung dem Speicher, und der setzt den Wert. Zwei Quellen, die
+auseinanderlaufen können, gibt es damit nicht; ein Prüfskript hält in der CI fest, dass keine Stelle außerhalb des
+Speichers in die beiden Tabellen schreibt.
+
+**Speichern.** Wie bisher: nur nach vollendetem Laden, zusammengeführt mit der Datei, über eine temporäre Datei,
+zurückgelesen, einer zur Zeit. Zusammengeführt wird nach dem Übergang beider Seiten, je Platz: gleiche Revision – der
+höhere Wert, je Zählung die höhere, denn beide Seiten stammen aus derselben Geschichte, und eine Summe zählte doppelt;
+verschiedene Revision in der übernommenen Schicht – Werte nach der Höchstwertregel, Zählungen addiert, denn eine Zählung
+zu viel in der übernommenen hemmt Regel 5 nur, eine zu wenig lockerte sie. Danach die Invarianten gegen die Datei vor
+dem Schreiben: Kein Eintrag fehlt, kein belegter Platz ist leer, das Höhere aus allen Plätzen sinkt nicht, die Summe der
+Zählungen sinkt nicht. Verletzt eine davon, wird nicht geschrieben (Regel 7). Nach einem Schreiben, dessen Rücklesen
+dieselbe Zahl Einträge ergab, eine Kopie als `<Datei>.bak`.
+
+**Laden.** Lesbare Datei – sie. Vorhanden, aber unlesbar – zur Seite als `.corrupt`, dann die `.bak`, erst ohne sie
+leer. Fehlt die Datei, gilt das, die `.bak` bleibt ungelesen: Er hat sie gelöscht. Danach die Übernahme der alten Datei,
+der Übergang, die Quarantäne, zuletzt die Tabellen für die Leser. Für die alten Dateien aller `LearnedFile`-Speicher gilt
+dieselbe Regel für `.corrupt` und `.bak`.
+
+**Protokoll.** Die Kopfzeile des `DefenseTrace.log` nennt je Speicher mit Schichten die Spielversion, die Einträge mit
+laufender Schicht, die nur übernommenen, die in Quarantäne und den Ausgang des Ladens samt Übergängen. Eine Zeile je
+Eintrag, wenn er bestätigt wird (die erste saubere Messung der laufenden Revision bei vorhandener übernommener Schicht)
+und wenn ein Wert in Quarantäne geht; der Übergang beim Laden als Anzahl in der Kopfzeile, nicht je Eintrag – nach einem
+Patch wären es Hunderte Zeilen.
+
+**Rückbau.** Die neue Datei wird nicht mehr gelesen und nicht mehr geschrieben; die alte ist vollständig, weil sie
+durchgehend geschrieben wurde.
+
+**Prüfmittel.** `learned_store_model.py` spielt zufällige Folgen von Messungen, Speichern, Laden, Versionssprüngen,
+unlesbaren Versionen und Dateien, gelöschten Dateien und Läufen einer älteren Fassung und hält: Der gelesene Wert ist der
+Höchstwert aller gültigen Messungen (keine Verhaltensänderung); keine Messung geht verloren oder zählt doppelt; die
+laufende Schicht enthält genau die Messungen der laufenden Revision; ein gelöschter Speicher bleibt gelöscht; ein
+ungültiger Wert wird nie gelesen. Sein Selbsttest baut die Fehler ein, gegen die der Entwurf gebaut ist, und jeder
+wird erkannt. Nicht gedeckt ist eine alte Datei, die zuletzt eine ältere Fassung schrieb: Sie legt keine Sicherung an,
+und was nur sie hielt, geht mit ihr verloren wie heute.
+
+**Was dagegen spricht.**
+- *„Eine Stufe ohne Wirkung im Kampf ist Vorratsarbeit."* Nein: Ohne sie hätte Stufe 2 beim ersten Patch nach ihrem
+  Einbau keine bestätigten Einträge, und jeder Eintrag zöge noch einmal Schutz, den die Version schon bestätigt hatte;
+  die Sicherung wirkt sofort; und der Speicherweg läuft in seinem Spiel, bevor eine Abwehr von ihm abhängt. Bleibt: mehr
+  Schreiben – jede gemessene Landung speichert, bisher nur eine Erhöhung; Dateien von einigen hundert Kilobyte, auf
+  einem Hilfsthread.
+- *„Zwei Dateien je Speicher verdoppeln die Fehlerstellen."* Die alte läuft über den unveränderten Weg und kann nur
+  steigen. Die neue prüfen Invarianten bei jedem Speichern und das Modell. Bleibt: Er setzt einen Speicher nur zurück,
+  wenn er beide Dateien löscht.
+- *„Die Landung als Einheit misst bei Serien Teilsummen."* Wirkt in Stufe 1 nicht; in den Regeln 5 und 5b nur hemmend,
+  also im Preis von Abklingzeiten, nicht von Leben.
+- *„Zwei Spielclients mit demselben Konfigurationsordner zählen gegeneinander."* Die Zusammenführung nimmt je Zählung
+  die höhere, eine Zählung des anderen Clients kann so fehlen: in der laufenden Schicht hemmt das die Senkung, in der
+  übernommenen lockert es sie um wenige Messungen. Von hier nicht zu unterscheiden; selten.
+
+**Verworfen.**
+- *Das alte Format an Ort und Stelle erweitern:* Eine ältere Fassung läse es nicht, legte die Datei als `.corrupt` ab
+  und begänne leer.
+- *Die alte Datei nach der Übernahme nicht mehr schreiben:* Eine ältere Fassung verlöre alles seither Gelernte, und ohne
+  die neue Datei bliebe nur der Stand vor Stufe 1.
+- *Je Eintrag nur eine Versionsmarke statt zweier Schichten:* Der laufende Wert ließe sich nicht vom übernommenen
+  trennen; Regel 5 hätte nichts zu vergleichen.
+- *Alle Speicher in Stufe 1:* Für Zähler (Schlafausgänge, DoT-Ticks) und Speicher, deren letzte Beobachtung gilt
+  (Marker), legt erst die Regel, die ihre Schichten liest, fest, was eine Messung ist; vorher gebaut, legte sie eine
+  Bedeutung fest, die Regel 6 noch nicht entschieden hat.
+- *Bei unlesbarer Version eine eigene Revision „unbekannt":* Sie schöbe jede laufende Schicht in die übernommene, auch
+  wo nur das Feld beim Laden noch leer war, und kein späteres Lesen holte das zurück.
+- *Die Sicherung auch bei fehlender Datei laden:* Sie höbe sein Löschen von Hand auf.
+
+**Gegenhypothesen.** *Kein Defekt:* Ohne Revision gilt nach einem Patch jeder alte Wert in beide Richtungen, die
+Lage, die er mit „alte daten dauerhaft unwidersprochen" ausschließt. *Option falsch:* geprüft an den Verworfenen;
+keine liefert dieselben Daten mit weniger Risiko für den Bestand. *Ausgeliefert, und nichts ändert sich – warum?* So
+gewollt im Kampf. Was nicht wirken könnte: Bleibt die Spielversion unlesbar, landet jede Messung in der übernommenen
+Schicht, und Stufe 2 bestätigte nie etwas – schützend, und in der Kopfzeile sichtbar.
 
 ### Seine Entscheidung: asymmetrisch
 
@@ -1426,7 +1576,7 @@ Helfer den Treffer bringt.
 
 Aussage für Aussage, statisch (Selbstprüfung, kein unabhängiges Audit):
 - Lade- und Speicherweg je Speicher über `OtherConfiguration.Files` (`LearnedFile`; die Markerspeicher als `LocalFile`
-  ohne Zusammenführung – sie bekommen sie mit Stufe 1).
+  ohne Zusammenführung – sie bekommen sie mit Stufe 4).
 - Leser je Speicher wie in der Tabelle: Fläche über `AreaShareNow` (A441, A446), Tankbuster über `PredictedShare`, Schlaf
   über `SleepInterruptWatch`, DoT über `DotOnParty.Learned`, Serie über `HitSeries`, Pyretisch über `ActionPenaltyWatch`.
 - „Unbewertet schützt" je einsparendem Leser: Größenregel (`AreaCastIsWorthMitigating`: ohne Wert `true`),
