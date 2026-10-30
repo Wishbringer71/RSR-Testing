@@ -77,6 +77,10 @@ What this release changes in the fight. For the whole distance from upstream, se
   so it was unknown for every enemy: the Monk's Six-sided Star as the last weaponskill came only before a downtime
   BossModReborn predicts, never before the target died, and the Scholar held Bio by its rough estimate even where the
   target's measured time was long enough. Both now read the corrected time for enemies too.
+- **Red Mage: Manafication waits for Embolden only where that costs no use.** Manafication (110 s) waits for Embolden
+  (120 s), so it drifts and, depending on the fight's length, the last one before the boss dies was lost. When the
+  boss's measured time to kill says the wait would cost that use, Manafication now goes at once. Until then, and while
+  no time to kill is measured, it waits as before.
 
 - **Pictomancer: no motif under Starry Muse in the opener.** Below level 92 Starry Muse comes two seconds into the
   fight, inside the opener's first five seconds, and the opener could paint a motif under it - a burst GCD without

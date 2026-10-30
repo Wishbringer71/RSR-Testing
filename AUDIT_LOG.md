@@ -13682,6 +13682,33 @@ Löschungen").
   sich selbst") vor dem Code. Widerrufe C137 (A387), C138 (A413).
 - *Prüfgrad:* statisch am Code und an der Versionsgeschichte, kompiliert ohne Warnung; im Spiel nicht beobachtet.
 
+### A464 · Manafication wartet auf Embolden nur, wo das keinen Einsatz kostet (30.10.2026)
+
+- *Auftrag:* TODO-Punkt „Halten für einen Buff nur, wo es keinen Einsatz kostet" (aus A462); seine Frage vom 30.10.2026,
+  ob auf dem TODO nichts mehr erledigt werden könne – doch, dieser Punkt wartete auf keine Daten.
+- *Vorbedingung:* Die korrigierte Zeit bis zum Tod fehlte für jeden Gegner (A463); erst seit der Korrektur trägt sie.
+- *Erhebung:* alle Halteregeln der Reborn-Rotationen (`WillHaveOneCharge` mit Frist). Die meisten warten nur, solange der
+  Buff bereit, aber nicht gedrückt ist (Empyreal Arrow, Flourish), oder ihre Abklingzeit teilt die des Buffs (Lance
+  Charge 60/120 s, Gnashing Fang 30/60 s; xivapi, 30.10.2026); andere halten Ressourcen (Ninki, Heat, Soul, Shroud,
+  Karten). Eine Abklingzeit, die bei jedem Warten wandert, hat nur der Rotmagier: Manafication 110 s auf Embolden 120 s.
+- *Optionen:* Nullvariante (warten wie bisher); stets auf Abklingzeit (The Balances Wahl bei unbekannter Kampfdauer);
+  warten, außer wo es vor dem Tod des Ziels einen Einsatz kostet. Modell (Notizordner, `manafication_hold.py`;
+  Potenzen des Job-Guides, Einsatz = Kombo gegen Füller plus Prefulgence, eigenes Embolden +10 %, Kampfdauer 5 bis
+  15 min gleich verteilt): auf Abklingzeit −99 Potenz je Kampf gegenüber dem Warten; die Prüfung +310 bei genauer
+  Zeit bis zum Tod, +217/+176/+135/+136 bei 5/10/20/30 % Fehler – 0,1 bis 0,2 % von rund 150 000 Potenz. Gewählt:
+  die Prüfung. Nach dem Maßstab von A375 gebaut: Sie folgt aus Spieldaten und The Balance und kostet im Kampf nichts.
+- *Gebaut:* `CustomRotation.HoldCostsUse` (für alle Jobs; nur als letzter Gegner in Reichweite, ohne Messung falsch);
+  `RDM_Reborn.EmergencyAbility` – nach dem bestehenden Zweig: Manafication sofort, wenn das Warten bis Embolden bereit
+  ist einen Einsatz kostet. Die Wartezeit ist bis zur Bereitschaft von Embolden gerechnet, nicht bis 5 s davor – die
+  Prüfung schlägt so eher an, in Richtung der Wahl, die The Balance bei Unsicherheit trifft. Konzept 14 vor dem Code,
+  CHANGELOG, Release-Text.
+- *Falsifikation:* Kein Defekt? Je nach Kampfdauer ging der letzte Einsatz verloren (110 gegen 120 s). Option falsch?
+  Stärkster Einwand: Die Zeit bis zum Tod ist am Kampfende ungenau – im Modell bleibt die Prüfung auch bei 30 % Fehler
+  vorn, eine Fehlvorhersage kostet höchstens den Embolden-Anteil eines Einsatzes. Ausgeliefert, und nichts ändert
+  sich? Bei Kämpfen unter zwei Minuten, bei Gegnergruppen und bei einem Boss, der vor null Gesundheit unangreifbar
+  wird – dort wartet Manafication wie bisher.
+- *Prüfgrad:* statisch am Code, Modell, kompiliert ohne Warnung; im Spiel nicht beobachtet.
+
 ---
 ## B · Commit-Register (Fork vs. `upstream/main`)
 

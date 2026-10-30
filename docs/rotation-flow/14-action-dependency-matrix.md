@@ -922,6 +922,26 @@ unter „Schnitter: Enshroud", die Mudra-Planung des Ninja unter „Ninja: das F
 | Samurai | Kenki und Meditation nicht überlaufen | Shoha bei voller Meditation; Kenki-Ausgaben ab 25 bzw. 50 | deckt sich |
 | Dragoon | High Jump alle 30 s, Wyrmwind Thrust sobald möglich, Battle Litany auf das Zwei-Minuten-Fenster | auf Abklingzeit; Opener-Abgleich A343 | deckt sich |
 | Tänzer | drei Federn für das Zwei-Minuten-Fenster, die vierte ausgeben; Esprit ins Fenster tragen; Standard Step vor Technical Step halten | Fächertanz mit mehr als drei Federn oder unter Devilment; Saber Dance im Burst oder ab 70 Esprit; Standard Step wartet, wenn Technical Step in 5 s kommt | deckt sich |
-| Rotmagier | Embolden auf Abklingzeit; Manafication „on cooldown in unknown killtimes, but only when the boss is targetable. Align with Embolden only if you're sure you won't lose a use, or are willing to gamble on the DPS loss of doing so" (abgerufen am 30.10.2026); Prefulgence unter Buffs; Fleche, Contre Sixte, Engagement, Corps-a-corps auf Abklingzeit; Swiftcast für Verthunder, Veraero, Impact oder Verraise | Embolden auf Abklingzeit; Manafication wartet auf Embolden – nur, wenn es liegt oder in 5 s bereit ist (`RDM_Reborn.EmergencyAbility`) –, sonst nach seiner Bereitschaft; Prefulgence unter Embolden oder vor dem Ablauf; je eine Ladung Engagement und Corps-a-corps für Embolden; Swiftcast auf Verthunder und Veraero | Manafication: die zweite Spielweise des Guides; je nach Kampfdauer kostet sie einen Einsatz (110 s gegen 120 s Abklingzeit, etwa in einem Kampf von 9:10 bis 9:59 min sechs statt fünf), dafür liegt jeder unter Embolden. Offen im TODO („Halten für einen Buff nur, wo es keinen Einsatz kostet"). Swiftcast in der Rotation verletzt seine Regel nicht: Der Rotmagier belebt mit Dualcast wieder (Konzept 11) |
+| Rotmagier | Embolden auf Abklingzeit; Manafication „on cooldown in unknown killtimes, but only when the boss is targetable. Align with Embolden only if you're sure you won't lose a use, or are willing to gamble on the DPS loss of doing so" (abgerufen am 30.10.2026); Prefulgence unter Buffs; Fleche, Contre Sixte, Engagement, Corps-a-corps auf Abklingzeit; Swiftcast für Verthunder, Veraero, Impact oder Verraise | Embolden auf Abklingzeit; Manafication geht, wenn Embolden liegt oder in höchstens 5 s bereit ist (`RDM_Reborn.EmergencyAbility`), und sofort, wenn das Warten darauf vor dem Tod des Ziels einen Einsatz kostet (`CustomRotation.HoldCostsUse`, A464); Prefulgence unter Embolden oder vor dem Ablauf; je eine Ladung Engagement und Corps-a-corps für Embolden; Swiftcast auf Verthunder und Veraero | deckt sich: ausgerichtet, außer wo das Warten einen Einsatz kostet (unten). Swiftcast in der Rotation verletzt seine Regel nicht: Der Rotmagier belebt mit Dualcast wieder (Konzept 11) |
 | Schwarzmagier | Polyglot nicht überlaufen | Xenoglossy bei vollem Polyglot, bevor Enochian endet oder Amplifier zurückkommt | deckt sich |
 | Barde, Pictomancer | Bloodletter nicht bei drei Ladungen; Musen nicht überlaufen | Ladungsregeln der Rotationen | deckt sich, nicht vertieft |
+
+**Eine Abklingzeit wartet auf einen Buff nur, wo das keinen Einsatz kostet** (`CustomRotation.HoldCostsUse`, A464).
+The Balance stellt die Frage beim Rotmagier („Align with Embolden only if you're sure you won't lose a use") und beim
+Beschwörer („Will I lose a use of a demi-primal by delaying?"). Die Prüfung gilt für jeden Job: Passen nach dem Warten
+weniger Einsätze der Abklingzeit in die Zeit bis zum Tod des Ziels als ohne, kostet das Warten einen. Gelesen wird die
+korrigierte Zeit bis zum Tod (Konzept 08) und nur, solange das Ziel der letzte Gegner in Reichweite ist – sonst geht
+der Kampf nach ihm weiter. Ohne Messung – ein Boss vor dem ersten Schaden, eine Phase, in der er nicht fällt – wartet
+die Abklingzeit wie vorher.
+- *Wo gehalten wird* (Reborn-Rotationen, erhoben am 30.10.2026): Fast alle Halteregeln warten nur, solange der Buff
+  bereit, aber noch nicht gedrückt ist (Empyreal Arrow vor Raging Strikes, Flourish vor Technical Step), oder ihre
+  Abklingzeit teilt die des Buffs (Lance Charge 60 s zu Battle Litany 120 s, Gnashing Fang 30 s zu No Mercy 60 s);
+  dann verschiebt das Warten nichts auf Dauer. Andere halten eine Ressource statt einer Abklingzeit (Ninki, Heat,
+  Soul, Shroud, Karten); für sie zählt das Überlaufen, nicht der Einsatz. Eine Abklingzeit, die bei jedem Warten weiter
+  wandert, hat nur der Rotmagier: Manafication mit 110 s auf Embolden mit 120 s.
+- *Im Kampf, Rotmagier:* Ausgerichtet bleibt jede Manafication, bis die letzte vor dem Tod des Bosses ausfiele; die
+  geht dann sofort. Modell (A464; Potenzen des Job-Guides, eigenes Embolden +10 %, Kampfdauer 5 bis 15 min gleich
+  verteilt): gegenüber dem bloßen Warten +310 Potenz je Kampf bei genauer Zeit bis zum Tod, +135 bis +176 bei 10 bis
+  30 % Fehler – bei rund 150 000 Potenz in zehn Minuten 0,1 bis 0,2 %. Stets auf Abklingzeit wären −99: Ohne die
+  Buffs der anderen, die nach seiner Spielweise kein tragender Grund sind, gewinnt die Ausrichtung knapp. Eine
+  Fehlvorhersage kostet höchstens den Embolden-Anteil eines Einsatzes; die Sicherheit berührt die Regel nicht.

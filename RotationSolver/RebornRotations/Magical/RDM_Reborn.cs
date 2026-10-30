@@ -139,6 +139,14 @@ public sealed class RDM_Reborn : RedMageRotation
 			}
 		}
 
+		// Waiting for Embolden must not cost Manafication a use before the target dies - The Balance: "Align with Embolden
+		// only if you're sure you won't lose a use" (concept 14, A464).
+		if (!HasEmbolden && !IsInMeleeCombo && HoldCostsUse(ManaficationPvE, EmboldenPvE.Cooldown.RecastTimeRemainOneCharge)
+			&& InCombat && HasHostilesInMaxRange && ManaficationPvE.CanUse(out act))
+		{
+			return true;
+		}
+
 		if (!AnyonesMeleeRule)
 		{
 			if (IsBurst && InCombat && HasHostilesInRange && EmboldenPvE.CanUse(out act))

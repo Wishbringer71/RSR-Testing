@@ -1761,6 +1761,39 @@ public partial class CustomRotation
 	}
 
 	/// <summary>
+	/// Whether holding <paramref name="action"/> for <paramref name="holdSeconds"/> costs it a use before the current
+	/// target dies: fewer of its recasts fit into the target's corrected time to kill after the hold than without it -
+	/// The Balance's test for aligning a cooldown with a buff ("Align with Embolden only if you're sure you won't lose a
+	/// use"). Asked only while the target is the last hostile in range, since otherwise the fight goes on after it; false
+	/// whenever no time to kill is measured, so the hold stays as it was (A464).
+	/// </summary>
+	/// <param name="action">The cooldown that would wait.</param>
+	/// <param name="holdSeconds">How long from now it would wait.</param>
+	/// <returns>True when the hold loses a use before the target dies.</returns>
+	public static bool HoldCostsUse(IBaseAction action, float holdSeconds)
+	{
+		if (action == null || holdSeconds <= 0f || NumberOfHostilesInRange > 1 || CurrentTarget is not { } target)
+		{
+			return false;
+		}
+
+		var ttk = target.GetCorrectedTTK();
+		var recast = action.Cooldown.RecastTimeOneChargeRaw;
+		if (float.IsNaN(ttk) || recast <= 0f)
+		{
+			return false;
+		}
+
+		var ready = action.Cooldown.HasOneCharge ? 0f : Math.Max(0f, action.Cooldown.RecastTimeRemainOneCharge);
+		return UsesWithin(ttk - ready, recast) > UsesWithin(ttk - Math.Max(ready, holdSeconds), recast);
+
+		static int UsesWithin(float span, float recast)
+		{
+			return span < 0f ? 0 : (int)(span / recast) + 1;
+		}
+	}
+
+	/// <summary>
 	/// True when BMR reports a vulnerability window within the specified seconds.
 	/// Always false when BMR is inactive, or when the user has UseBmrTimeline disabled.
 	/// </summary>

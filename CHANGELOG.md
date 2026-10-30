@@ -69,6 +69,16 @@ the member; the area thresholds read the mean over the living members instead of
 `AutoStatus.HealSingleSpell`, `HealSingleAbility`, `HealAreaSpell` and `HealAreaAbility` follow. A heal action counts as
 granting a heal over time on a Walking Dead target by the same recognition.
 
+### Behaviour change and addition in RotationSolver.Basic: the time an enemy has left
+
+`CustomRotation.IsTimeToKillMeasured` and `LastWeaponskillOnTarget` read the corrected time to kill, which was kept for
+party members only, so for an enemy the first was always false and the second fired only before a downtime
+BossModReborn predicts. The forecast is now kept for every hostile, and both answer for enemies as documented.
+
+New: `CustomRotation.HoldCostsUse(IBaseAction action, float holdSeconds)` - whether holding a cooldown that long costs it
+a use before the current target dies, by that time to kill; false while none is measured or while other hostiles are in
+range.
+
 ## 7.5.7.10+wsh1
 
 ### Dependency of RotationSolver.Basic: RebornMaterial 7.5.7.2
