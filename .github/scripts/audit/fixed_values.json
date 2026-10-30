@@ -946,6 +946,16 @@
    "status": "exception",
    "loop": "A432",
    "reason": "ActorControl category of the aggregated heal-over-time tick on a target, beside upstream's 0x605 for damage over time; a protocol value stated in no game sheet (DeathRecap reads it so, A429, A432)."
+  },
+  {
+   "file": "RotationSolver/RebornRotations/Magical/PCT_Reborn.cs",
+   "code": "if (CombatTime < 5 && !HasStarryMuse)",
+   "values": [
+    "5"
+   ],
+   "status": "exception",
+   "loop": "A462",
+   "reason": "Upstream's opener window, unchanged; the fork line adds only the Starry Muse guard. It is the same 5 s as upstream's Starry Muse hold from level 92 (adjustCombatTimeForOpener in AttackAbility), so both end the opener together; deriving this one alone (two GCDs) would part it from the hold, which stays upstream's. With the guard the window ends at the earlier of 5 s and Starry Muse (A462)."
   }
  ]
 }

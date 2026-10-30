@@ -625,6 +625,28 @@ wenige Sekunden vor Searing Light und dem Fenster der Gruppe.
   (ein anderer Beschwörer hält sie, Konzept 12) oder eine der beiden später zurückkommt als Energy Drain. Stirbt das
   Ziel, gehen die Ladungen wie bisher.
 
+**Eine offene Gunst verfällt mit der nächsten Beschwörung; RSR hält dafür keine Beschwörung zurück** (A462). Der
+Wirktext sagt nur „Effect of Garuda's Favor ends upon execution of certain summoner actions" (Job-Guide, abgerufen am
+30.10.2026). Welche, zeigen seine ACT-Mitschnitte vom 26. und 28.10.2026 an allen Beschwörern der Gruppen: Endet Garudas
+Gunst ohne Wirbelströmung (Slipstream) oder Ifrits Gunst ohne Zinnober-Zyklon (Crimson Cyclone), dann mit der nächsten
+Primal- oder Demi-Beschwörung. Bei ihm (26.10.2026, Dungeons) verfiel Slipstream 18-mal bei 69 Gunsten, Crimson Cyclone
+22-mal bei 33.
+- *Crimson Cyclone:* Das Ziel stand jedes Mal weiter als die eingestellten 3 Yalm – seine Regel, gewollt.
+- *Slipstream:* 11-mal mit der Demi, die vorgeht – The Balance: „Will I lose a use of a demi-primal by delaying? …
+  Unsure: Do not delay demi-primal." 6-mal mit Ifrit, jedes Mal nach Bewegung, die das Wirken von Slipstream abbrach,
+  oft zwischen zwei Gruppen; einmal ohne Folgeaktion.
+- *Nicht gebaut: Ruin IV in der Garuda-Phase vor der nächsten Beschwörung.* The Balance zeigt das für eine Bewegung,
+  die der Spieler kommen sieht: „You can use your one charge of Ruin IV to do this, then hardcast Slipstream for your
+  next GCD." RSR kennt die Dauer der Bewegung nicht. Geht sie weiter, fällt Ifrit einen GCD später und die Gunst
+  trotzdem; bewegt er sich später in der Ifrit-Phase noch einmal, fehlt dort Ruin IV, die einzige Sofortaktion, und
+  der GCD bleibt leer. Steht er nach einem GCD, gewinnt sie Slipstream gegen den Füller am Ende des Zyklus. In seinem
+  Mitschnitt hätte sie einen der 18 Fälle getroffen (19:46 Uhr: Rand des Ruins bereit, Ifrit folgte); dort brach er
+  auch den nächsten Ruby Rite durch Bewegung ab, Slipstream wäre erst mit der Demi fertig geworden, und die Demi hätte
+  dann die Ifrit-Beschwörung gekostet (geschlossen aus den Zeitstempeln).
+- *Ist Garuda die letzte Primal-Beschwörung des Zyklus,* geht Ruin IV in Bewegung schon heute (`UseFillers`), und
+  Slipstream folgt, sobald er steht: Die Einstimmung endet mit dem letzten Ritus (geschlossen aus seinem Mitschnitt –
+  Ruin IV fiel 8 s nach der Ifrit-Beschwörung, also lange vor dem Ende der 30 s, die der Wirktext nennt).
+
 **Weitere Punkte, gegen The Balance geprüft:**
 
 | Punkt | The Balance | RSR | Stand |
@@ -787,12 +809,21 @@ geändert 11.08.2024; eine Reihenfolge nennt er nicht, nur den Inhalt der Fenste
 
 ### Pictomancer: Motive und Starry Muse
 
-**Deckt sich, keine Änderung** (26.10.2026, A385) mit The Balance, Pictomancer Basic Guide („Patch Applicable: 7.4",
-10.08.2025; er nennt, was vor dem Zwei-Minuten-Fenster bereitliegen soll, keine Reihenfolge darin).
+**Deckt sich** (26.10.2026, A385) mit The Balance, Pictomancer Basic Guide („Patch Applicable: 7.4", 10.08.2025; er
+nennt, was vor dem Zwei-Minuten-Fenster bereitliegen soll, keine Reihenfolge darin).
+
+**Die Opener-Prioritäten enden mit Starry Muse** (`PCT_Reborn.UseOpenerAndPriority`, A462). In den ersten 5 s des
+Kampfes gehen Holy in White und die Motive allem anderen vor. Ab Stufe 92 kommt Starry Muse erst danach; darunter
+schon nach 2 s (`AttackAbility`), also mitten in diesen 5 s. Dort malte RSR bei leerer Leinwand ein Motiv – einen GCD
+ohne Schaden mitten im Burst –, obwohl dieselbe Rotation sonst unter Starry Muse kein Motiv malt (`DrawMotifs`). Jetzt
+gelten die Opener-Prioritäten nur ohne Starry Muse. *Im Kampf:* in stufensynchronen Inhalten unter Stufe 92 fällt der
+erste GCD unter Starry Muse auf Rainbow Drip, Comet in Black, die Hämmer oder die Farbausgabe statt auf ein Motiv; ab
+Stufe 92 ändert sich nichts. Upstream hat dieselbe Bedingung in `BeirutaPCT` gesetzt (33cd2a99b), wo die Variante
+„0 GCD" Starry Muse auf jeder Stufe in diese 5 s legt; im Fork gab es den Block nur in dieser einen Rotation.
 
 | Punkt | The Balance | RSR (`PCT_Reborn`) | Stand |
 |---|---|---|---|
-| Starry Muse und Vorbereitung | Striking Muse, Starry Sky Motif und Wing- oder Maw-Muse vor dem Fenster bereit | Starry Muse im Burst nach der Opener-Zeit; Striking Muse hält eine Ladung, solange Starry Muse in 60 s zurückkommt; Motive vor Starry Muse gemalt | deckt sich |
+| Starry Muse und Vorbereitung | Striking Muse, Starry Sky Motif und Wing- oder Maw-Muse vor dem Fenster bereit | Starry Muse im Burst nach der Opener-Zeit; Striking Muse hält eine Ladung, solange Starry Muse in 60 s zurückkommt; Motive vor Starry Muse gemalt, unter ihr keines | deckt sich |
 | Subtractive Palette | ab 50 Palette, Starry Muse gibt einen freien Einsatz | sobald nutzbar und nicht schon aktiv | deckt sich |
 | Farbe | höchstens fünf Ladungen White Paint; Holy in White fürs Laufen, Comet in Black stärker | Überlaufschutz bei der eingestellten Grenze (ab Werk 5, die Obergrenze des Spiels) außerhalb von Starry Muse, Comet vor Holy; Holy/Comet im Laufen als Einstellung | deckt sich |
 | Living Muses, Mog, Madeen | 1000 Potenz je Muse, drei Ladungen zu 40 s; keine Haltevorgabe | Fanged Muse und Madeen in Starry Muse, sonst auf Ladung | deckt sich |
@@ -891,6 +922,6 @@ unter „Schnitter: Enshroud", die Mudra-Planung des Ninja unter „Ninja: das F
 | Samurai | Kenki und Meditation nicht überlaufen | Shoha bei voller Meditation; Kenki-Ausgaben ab 25 bzw. 50 | deckt sich |
 | Dragoon | High Jump alle 30 s, Wyrmwind Thrust sobald möglich, Battle Litany auf das Zwei-Minuten-Fenster | auf Abklingzeit; Opener-Abgleich A343 | deckt sich |
 | Tänzer | drei Federn für das Zwei-Minuten-Fenster, die vierte ausgeben; Esprit ins Fenster tragen; Standard Step vor Technical Step halten | Fächertanz mit mehr als drei Federn oder unter Devilment; Saber Dance im Burst oder ab 70 Esprit; Standard Step wartet, wenn Technical Step in 5 s kommt | deckt sich |
-| Rotmagier | Embolden und Manafication auf Abklingzeit; Prefulgence unter Buffs; Fleche, Contre Sixte, Engagement, Corps-a-corps auf Abklingzeit; Swiftcast für Verthunder, Veraero, Impact oder Verraise | Embolden und Manafication auf Abklingzeit; Prefulgence unter Embolden oder vor dem Ablauf; je eine Ladung Engagement und Corps-a-corps für Embolden; Swiftcast auf Verthunder und Veraero | deckt sich; Swiftcast in der Rotation verletzt seine Regel nicht: Der Rotmagier belebt mit Dualcast wieder (Konzept 11) |
+| Rotmagier | Embolden auf Abklingzeit; Manafication „on cooldown in unknown killtimes, but only when the boss is targetable. Align with Embolden only if you're sure you won't lose a use, or are willing to gamble on the DPS loss of doing so" (abgerufen am 30.10.2026); Prefulgence unter Buffs; Fleche, Contre Sixte, Engagement, Corps-a-corps auf Abklingzeit; Swiftcast für Verthunder, Veraero, Impact oder Verraise | Embolden auf Abklingzeit; Manafication wartet auf Embolden – nur, wenn es liegt oder in 5 s bereit ist (`RDM_Reborn.EmergencyAbility`) –, sonst nach seiner Bereitschaft; Prefulgence unter Embolden oder vor dem Ablauf; je eine Ladung Engagement und Corps-a-corps für Embolden; Swiftcast auf Verthunder und Veraero | Manafication: die zweite Spielweise des Guides; je nach Kampfdauer kostet sie einen Einsatz (110 s gegen 120 s Abklingzeit, etwa in einem Kampf von 9:10 bis 9:59 min sechs statt fünf), dafür liegt jeder unter Embolden. Offen im TODO („Halten für einen Buff nur, wo es keinen Einsatz kostet"). Swiftcast in der Rotation verletzt seine Regel nicht: Der Rotmagier belebt mit Dualcast wieder (Konzept 11) |
 | Schwarzmagier | Polyglot nicht überlaufen | Xenoglossy bei vollem Polyglot, bevor Enochian endet oder Amplifier zurückkommt | deckt sich |
 | Barde, Pictomancer | Bloodletter nicht bei drei Ladungen; Musen nicht überlaufen | Ladungsregeln der Rotationen | deckt sich, nicht vertieft |

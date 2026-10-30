@@ -71,6 +71,13 @@ What this release changes in the fight. For the whole distance from upstream, se
   would still push someone to where healing is called for, or is at least the size of a large barrier. Ratings learned
   before are read as they were until the action lands again; a barrier is not divided out.
 
+## Rotations
+
+- **Pictomancer: no motif under Starry Muse in the opener.** Below level 92 Starry Muse comes two seconds into the
+  fight, inside the opener's first five seconds, and the opener could paint a motif under it - a burst GCD without
+  damage. The opener's priorities now end once Starry Muse is up, as the rest of the rotation already does. From level
+  92 nothing changes.
+
 ## Stability
 
 - **No crash from RSR's windows at a loading screen.** When RSR rebuilt its window fonts after a zone change - at

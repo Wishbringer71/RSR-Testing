@@ -271,8 +271,10 @@ public sealed class PCT_Reborn : PictomancerRotation
 
 	private bool UseOpenerAndPriority(out IAction? act)
 	{
-		//Opener requirements
-		if (CombatTime < 5)
+		//Opener requirements - not under Starry Muse: below level 92 it comes after 2 s, inside this window, and a motif
+		// painted under it is a burst GCD without damage; DrawMotifs paints none under it either (upstream 33cd2a99b,
+		// BeirutaPCT; concept 14, "Pictomancer").
+		if (CombatTime < 5 && !HasStarryMuse)
 		{
 			if (HolyInWhitePvE.CanUse(out act))
 			{
