@@ -13,6 +13,7 @@ Nach der Wirkung im Kampf: Sicherheit der Gruppe vor Schaden, gewichtet mit der 
 1. Die gelernten Tabellen: entschieden (Konzept 13, A451); gebaut nach Regel 12 des Entwurfs, erst die Revision über
    einen Spielpatch (als Nächstes Stufe 2, nach seinem ersten Upload mit Stufe 1, A456), dann die Anzeige. Beide ändern den Kampf nur mittelbar, über einen
    geprüften oder berichtigten Lernwert – die Sperren unter ihnen (Schlaf) aber dauerhaft.
+2. Halten für einen Buff nur, wo es keinen Einsatz kostet: Schaden ohne Sicherheitsfolge.
 
 Danach die technische Schuld, soweit ihre Auflösungsbedingung erfüllt ist. Warten auf Daten: unten.
 
@@ -56,6 +57,15 @@ Tankbuster-Tabelle neben Upstreams AoE- und Tankbuster-Liste. *Ort:* `MainWindow
 *Nächster Schritt:*
 Anzeige ja, Bearbeitung nein (Konzept 13, „Gelernte Tabellen über Spielversionen", Regel 10; seine Vorgabe A173); gebaut
 als letzte Stufe der Revision. *Konzept:* 13 (gelernte Tabellen), 18 (Einstellungen).
+
+### Halten für einen Buff nur, wo es keinen Einsatz kostet · N
+Im Kampf: Der Rotmagier hält Manafication bis Embolden (110 s gegen 120 s Abklingzeit) und verliert je nach Kampfdauer
+einen Einsatz samt Nahkampfkombo und Prefulgence; The Balance hält nur, wenn kein Einsatz verloren geht, und sonst auf
+Abklingzeit. Dieselbe Frage stellt The Balance beim Beschwörer für die Demi („Will I lose a use … by delaying?"). RSR
+hat die Antwort im Haus: die nachgesteuerte Restzeit des Ziels (`GetCorrectedTTK`). *Ort:* `RDM_Reborn.EmergencyAbility`;
+erhoben werden zuerst alle Rotationen, die eine Abklingzeit für einen Buff halten. *Nächster Schritt:* Loop – eine
+Prüfung im Paket „kostet das Halten bis zum Buff einen Einsatz vor dem vorhergesagten Ende?", Verhalten ohne
+Vorhersage (Boss mit Phasen, nicht angreifbar), dann die Leser. *Konzept:* 14 („Vergleich mit The Balance", Rotmagier).
 
 ## Technische Schuld
 

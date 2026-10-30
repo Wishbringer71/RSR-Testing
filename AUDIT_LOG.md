@@ -13609,6 +13609,50 @@ Löschungen").
   dem letzten Fork-Release 7.5.7.10+wsh1.
 - *Prüfgrad:* statisch, kompiliert.
 
+### A462 · Upstream 33cd2a99b gegen die Rotationen des Forks: Piktomant übernommen, Beschwörer gemessen, Rotmagier offen (30.10.2026)
+
+- *Anlass:* seine Frage, ob ich die Upstream-Änderungen den Konzepten des Forks entgegengestellt und Synergien für das
+  Spielverhalten gesucht habe („ist ja mit eine grundaufgabe von dir"). A458 hatte nur die Stellen bewertet, die
+  Fork-Dateien trafen; Beirutas Änderungen an PCT, RDM und NIN galten als fremde Rotationen, ohne Vergleich mit den
+  Rotationen desselben Jobs, die er nutzt.
+- *Piktomant – übernommen.* `BeirutaPCT` beendet die Opener-Prioritäten der ersten 5 s, sobald Starry Muse liegt.
+  `PCT_Reborn` hat denselben Block (einziger Opener-Zeitblock aller Reborn-Rotationen) und setzt Starry Muse unter
+  Stufe 92 schon nach 2 s: Dort malte er bei leerer Leinwand ein Motiv unter Starry Muse, obwohl `DrawMotifs` sonst
+  unter ihr keines malt. Jetzt `CombatTime < 5 && !HasStarryMuse`. Die 5 ist Upstreams Opener-Fenster, gleich der
+  Starry-Sperre ab Stufe 92; nicht allein hergeleitet, weil zwei GCDs sie von der Sperre trennten, die Upstreams bleibt
+  (`fixed_values.json`). Im Kampf: unter Stufe 92 ein Burst-GCD mit Schaden statt eines Motivs; ab 92 nichts.
+- *Beschwörer – gemessen, nichts gebaut.* Wirktext der Gunst: „ends upon execution of certain summoner actions". Seine
+  ACT-Mitschnitte vom 26. und 28.10.2026 zeigen an allen Beschwörern der Gruppen: Eine Gunst, die nicht genutzt wurde,
+  endet mit der nächsten Primal- oder Demi-Beschwörung. Bei ihm (26.10., Dungeons, Stand seines Branches an dem Tag):
+  Slipstream verfiel 18-mal bei 69 Gunsten (11-mal mit der Demi, die nach The Balance vorgeht; 6-mal mit Ifrit nach
+  Bewegung, die das Wirken abbrach; einmal ohne Folgeaktion), Crimson Cyclone 22-mal bei 33 (Ziel weiter als 3 Yalm,
+  seine Regel). Ruin IV vor der nächsten Beschwörung, wie The Balance es für eine absehbare Bewegung zeigt, nicht
+  gebaut: RSR kennt die Dauer der Bewegung nicht; sie kostet Ruin IV dort, wo in der Ifrit-Phase sonst der einzige
+  Sofort-GCD fehlt, und im einzigen Fall, den sie im Mitschnitt getroffen hätte, hätte die Demi danach die
+  Ifrit-Beschwörung gekostet. Ist Garuda die letzte Beschwörung des Zyklus, geht Ruin IV schon heute (`UseFillers`):
+  Die Einstimmung endet mit dem letzten Ritus (Ruin IV 8 s nach der Ifrit-Beschwörung, zweimal im Mitschnitt).
+- *Rotmagier – Konzept berichtigt, Arbeit offen.* Beirutas Reihenfolge Embolden vor Manafication ändert im Spiel
+  nichts, wo beide im selben Webfenster fallen; The Balance nennt keine. Dabei aufgefallen: Konzept 14 führte für
+  `RDM_Reborn` „Manafication auf Abklingzeit"; tatsächlich wartet sie auf Embolden (liegt oder in 5 s bereit). The
+  Balance: „on cooldown in unknown killtimes … Align with Embolden only if you're sure you won't lose a use". Die
+  Antwort darauf hat RSR in der nachgesteuerten Restzeit des Ziels; als offene Arbeit im TODO („Halten für einen Buff
+  nur, wo es keinen Einsatz kostet"), weil dieselbe Frage mehrere Jobs trifft. „Do not start melee combo when moving"
+  nicht übernommen: Die Kombo-GCDs sind Sofortaktionen, RSR bewegt ihn nicht, und ein Grund im Spiel ist nicht
+  belegt; Upstream setzt den Schalter ab Werk aus.
+- *Ninja, „UMAD", und die Öffnungsmodi:* richten den Burst nach einer Absprache der Gruppe – das Verhalten anderer, nach
+  seiner Spielweise kein tragender Grund (wie beim Beschwörer, Konzept 12, „Ausgeschlossen"). In `NIN_Reborn` ohne
+  Gegenstück; nichts zu tun.
+- *Werkzeug:* Skill `upstream-sync` geschärft – auch eine Änderung an einer fremden Rotation wird gegen die Rotation
+  desselben Jobs, The Balance und seine Mitschnitte geprüft. Deutsche Namen belegt (xivapi v2, `language=de`):
+  Wirbelströmung (Action 25837), Zinnober-Zyklon (25835), Ruinka (7426), Rubin-Ifrit-Beschwörung (25838), Rand des
+  Ruins (Status 2701), Garudas Gunst (2725), Ifrits Gunst (2724), Ermutigen (Action 7520), Manafizierung (7521).
+- *Falsifikation:* Kein Defekt? Beim Piktomanten hängt die Wirkung an der Leinwand im Opener; wo sie nie leer ist,
+  ändert sich nichts – die Bedingung kostet dort auch nichts. Option falsch? Beim Beschwörer spricht The Balance für
+  Ruin IV; die Bilanz ohne Kenntnis der Bewegung ist aber höchstens null, im gemessenen Fall negativ. Ausgeliefert, und
+  nichts ändert sich? Ab Stufe 92 so gewollt.
+- *Prüfgrad:* statisch am Code, an The Balance, am Job-Guide und an seinen Mitschnitten; kompiliert; im Spiel nicht
+  beobachtet.
+
 ---
 ## B · Commit-Register (Fork vs. `upstream/main`)
 

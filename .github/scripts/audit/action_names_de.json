@@ -521,6 +521,46 @@
       "identifier": "AsylumPvE",
       "kind": "action",
       "source": "game data, xivapi v2 Action 3569 language=de, 2026-10-24"
+    },
+    {
+      "de": "Wirbelströmung",
+      "en": "Slipstream",
+      "identifier": "SlipstreamPvE",
+      "kind": "action",
+      "source": "xivapi v2, language=de, Action 25837, 2026-10-30",
+      "note": "Summoner, Garuda's Astral Flow: a 3 s cast, usable while under Garuda's Favor (Garudas Gunst, Status 2725)."
+    },
+    {
+      "de": "Zinnober-Zyklon",
+      "en": "Crimson Cyclone",
+      "identifier": "CrimsonCyclonePvE",
+      "kind": "action",
+      "source": "xivapi v2, language=de, Action 25835, 2026-10-30",
+      "note": "Summoner, Ifrit's Astral Flow: rushes the target, a gap closer; usable under Ifrit's Favor (Ifrits Gunst, Status 2724)."
+    },
+    {
+      "de": "Ruinka",
+      "en": "Ruin IV",
+      "identifier": "RuinIvPvE",
+      "kind": "action",
+      "source": "xivapi v2, language=de, Action 7426, 2026-10-30",
+      "note": "Summoner, instant; usable under Further Ruin (Rand des Ruins, Status 2701)."
+    },
+    {
+      "de": "Ermutigen",
+      "en": "Embolden",
+      "identifier": "EmboldenPvE",
+      "kind": "action",
+      "source": "xivapi v2, language=de, Action 7520, 2026-10-30",
+      "note": "Red Mage, party damage buff, 120 s."
+    },
+    {
+      "de": "Manafizierung",
+      "en": "Manafication",
+      "identifier": "ManaficationPvE",
+      "kind": "action",
+      "source": "xivapi v2, language=de, Action 7521, 2026-10-30",
+      "note": "Red Mage, 110 s; grants Magicked Swordplay and Prefulgence Ready."
     }
   ]
 }
