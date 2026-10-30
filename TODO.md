@@ -119,10 +119,6 @@ den Spieldaten (`CastType`, `EffectRange`), hinter eigener Option. *Konzept:* 13
 ### VPR: leerer Zweig einer Struktur, die anderswo entscheidet · U
 `VPR_Reborn.GeneralGCD`, Swiftskin's Bite und Sting. *Auflösung:* Adressat Upstream; bewusst nicht gelöscht (A11).
 
-### Das Aktionsfenster rechnet die Bewegungssicherheit ein zweites Mal · U
-`MainWindow.GetMovementSafetyStatus` neben `ActionTargetInfo.CheckMovementSafety`; die Regel „am Ziel ist ein Sprint nur
-Schaden" fehlt im Fenster. *Auflösung:* `CheckMovementSafety` gibt Ergebnis und Grund heraus, das Fenster zeigt sie.
-
 ### Die Modelle von Maschinist, Samurai und Monk bilden ihre Rotation von Hand nach · R
 *Kosten:* Ändert sich der Ruf der Königin oder die GCD-Folge in `MCH_Reborn`, die GCD-Folge oder der Meikyo-Zweig in
 `SAM_Reborn`, Perfect Balance, die Buffs oder die GCD-Folge in `MNK_Reborn`, rechnen `machinist_balance_model.py`,

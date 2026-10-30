@@ -407,149 +407,20 @@ public partial class MainWindow
 			return new MovementSafetyResult { Status = MovementSafetyStatus.NotApplicable, Reason = "Player not available" };
 		}
 
-		var playerPos = Player.Object.Position;
-		var specialType = action.Setting.SpecialType;
-
-		try
+		// The check that decides in combat, without recording a refusal (ActionTargetInfo.MovementSafety, A465). Only the
+		// placed object's position is looked up here, as the combat path looks it up before asking.
+		var destination = Player.Object.Position;
+		if (action.Setting.SpecialType == SpecialActionType.ObjectBasedMovement
+			&& !ObjectHelper.TryGetOwnedObjectPosition(action.Setting.ObjectBasedMovementObjectOID, out destination))
 		{
-			switch (specialType)
-			{
-				case SpecialActionType.FixedDistanceMoveForward:
-					{
-						// The distance along the facing as the effect text states it, the point
-						// ActionTargetInfo.CheckMovementSafety measures (A313); the action's range is 0 for a self move.
-						var range = action.Setting.BackstepDistance;
-						if (range <= 0f)
-						{
-							return new MovementSafetyResult { Status = MovementSafetyStatus.NotApplicable, Reason = "Distance unknown" };
-						}
-
-						var faceVector = Player.Object.GetFaceVector();
-						var destination = playerPos + (Vector3.Normalize(faceVector) * range);
-						var isSafe = DataCenter.IsFixedDashSafe(playerPos, destination);
-						return new MovementSafetyResult
-						{
-							Status = isSafe ? MovementSafetyStatus.Safe : MovementSafetyStatus.NotSafe,
-							Reason = isSafe ? string.Empty : "Destination unsafe (IsFixedDashSafe)"
-						};
-					}
-
-				case SpecialActionType.FixedDistanceMoveBackward:
-					{
-						// The distance along the facing as the effect text states it, the point
-						// ActionTargetInfo.CheckMovementSafety measures (A313); the action's range is 0 for a self move.
-						var range = action.Setting.BackstepDistance;
-						if (range <= 0f)
-						{
-							return new MovementSafetyResult { Status = MovementSafetyStatus.NotApplicable, Reason = "Distance unknown" };
-						}
-
-						var faceVector = Player.Object.GetFaceVector();
-						var destination = playerPos - (Vector3.Normalize(faceVector) * range);
-						var isSafe = DataCenter.IsFixedDashSafe(playerPos, destination);
-						return new MovementSafetyResult
-						{
-							Status = isSafe ? MovementSafetyStatus.Safe : MovementSafetyStatus.NotSafe,
-							Reason = isSafe ? string.Empty : "Destination unsafe (IsFixedDashSafe)"
-						};
-					}
-
-				case SpecialActionType.HostileMovingForward:
-				case SpecialActionType.FriendlyMovingForward:
-				case SpecialActionType.HostileFriendlyMovingForward:
-				case SpecialActionType.HostileMovingAttack:
-					{
-						var target = action.Target.Target;
-						if (target == null)
-						{
-							return new MovementSafetyResult { Status = MovementSafetyStatus.NotApplicable, Reason = "No target" };
-						}
-
-						var directionToTarget = target.Position - playerPos;
-						var distanceToTarget = directionToTarget.Length();
-
-						if (distanceToTarget < 0.001f)
-						{
-							return new MovementSafetyResult { Status = MovementSafetyStatus.Safe, Reason = "Already at target" };
-						}
-
-						var normalizedDirection = directionToTarget / distanceToTarget;
-						var distanceToHitbox = Math.Max(0, distanceToTarget - target.HitboxRadius);
-						var destination = playerPos + (normalizedDirection * distanceToHitbox);
-
-						var isSafe = DataCenter.IsDashSafe(playerPos, destination);
-						return new MovementSafetyResult
-						{
-							Status = isSafe ? MovementSafetyStatus.Safe : MovementSafetyStatus.NotSafe,
-							Reason = isSafe ? string.Empty : "Path to target unsafe (IsDashSafe)"
-						};
-					}
-
-				case SpecialActionType.HostileAttackBackstep:
-					{
-						// The landing point BackstepDistance behind the player, away from the target -
-						// the point ActionTargetInfo.CheckMovementSafety measures.
-						var target = action.Target.Target;
-						if (target == null)
-						{
-							return new MovementSafetyResult { Status = MovementSafetyStatus.NotApplicable, Reason = "No target" };
-						}
-
-						var away = playerPos - target.Position;
-						away.Y = 0;
-						var length = away.Length();
-						if (length <= 0f)
-						{
-							return new MovementSafetyResult { Status = MovementSafetyStatus.NotApplicable, Reason = "Standing on the target" };
-						}
-
-						var landing = playerPos + (away / length * action.Setting.BackstepDistance);
-						var isSafe = DataCenter.IsFixedDashSafe(playerPos, landing);
-						return new MovementSafetyResult
-						{
-							Status = isSafe ? MovementSafetyStatus.Safe : MovementSafetyStatus.NotSafe,
-							Reason = isSafe ? string.Empty : "Backstep landing unsafe (IsFixedDashSafe)"
-						};
-					}
-
-				case SpecialActionType.ObjectBasedMovement:
-					{
-						if (action.Setting.ObjectBasedMovementObjectOID == 0)
-						{
-							return new MovementSafetyResult { Status = MovementSafetyStatus.NotApplicable, Reason = "No object OID configured" };
-						}
-
-						Vector3? objectPosition = null;
-						var playerId = Player.Object.GameObjectId;
-						foreach (var obj in Svc.Objects)
-						{
-							if (obj != null && obj.BaseId == action.Setting.ObjectBasedMovementObjectOID && obj.OwnerId == playerId)
-							{
-								objectPosition = obj.Position;
-								break;
-							}
-						}
-
-						if (!objectPosition.HasValue)
-						{
-							return new MovementSafetyResult { Status = MovementSafetyStatus.NotApplicable, Reason = "Object not found" };
-						}
-
-						var isSafe = DataCenter.IsDashSafe(playerPos, objectPosition.Value);
-						return new MovementSafetyResult
-						{
-							Status = isSafe ? MovementSafetyStatus.Safe : MovementSafetyStatus.NotSafe,
-							Reason = isSafe ? string.Empty : "Object position unsafe (IsDashSafe)"
-						};
-					}
-
-				default:
-					return new MovementSafetyResult { Status = MovementSafetyStatus.NotSafe, Reason = "Unknown movement type" };
-			}
+			return new MovementSafetyResult { Status = MovementSafetyStatus.NotApplicable, Reason = "Object not found" };
 		}
-		catch (Exception ex)
+
+		var (safe, reason, measured) = action.TargetInfo.MovementSafety(destination, action.Target.Target);
+		return new MovementSafetyResult
 		{
-			return new MovementSafetyResult { Status = MovementSafetyStatus.NotSafe, Reason = $"Error: {ex.Message}" };
-		}
+			Status = !measured ? MovementSafetyStatus.NotApplicable : safe ? MovementSafetyStatus.Safe : MovementSafetyStatus.NotSafe,
+			Reason = safe ? string.Empty : reason,
+		};
 	}
 }

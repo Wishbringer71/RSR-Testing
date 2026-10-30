@@ -1013,6 +1013,25 @@ public struct ActionTargetInfo(IBaseAction action)
 			return false;
 		}
 
+		var safety = MovementSafety(destination, target);
+		return safety.Safe || Refused(safety.Reason, safety.Measured);
+	}
+
+	/// <summary>
+	/// The movement safety check as the combat path makes it, without recording a refusal: whether the move is safe, why
+	/// not, and whether a landing point was measured at all. The action window shows this (A465), so what it shows is what
+	/// decides in combat.
+	/// </summary>
+	/// <param name="destination">Where the move ends, for a move to a placed object; otherwise the player's position.</param>
+	/// <param name="target">The target a dash or a backstep is measured against.</param>
+	/// <returns>Safe, the reason when it is not, and whether a landing point was measured.</returns>
+	internal readonly (bool Safe, string Reason, bool Measured) MovementSafety(Vector3 destination, IBattleChara? target = null)
+	{
+		if (Player.Object == null)
+		{
+			return (false, "the player is not available", false);
+		}
+
 		var playerPos = Player.Object.Position;
 		var specialType = action.Setting.SpecialType;
 
@@ -1028,16 +1047,16 @@ public struct ActionTargetInfo(IBaseAction action)
 				var distance = action.Setting.BackstepDistance;
 				if (distance <= 0f)
 				{
-					return DataCenter.BMRIsFixedDashSafe == null
-						|| Refused("the action's distance is not known, so its landing point is not either", measured: false);
+					return (DataCenter.BMRIsFixedDashSafe == null,
+						"the action's distance is not known, so its landing point is not either", false);
 				}
 
 				var facing = Player.Object.Rotation;
 				var along = specialType == SpecialActionType.FixedDistanceMoveBackward ? -distance : distance;
 				var landingPoint = new Vector3(playerPos.X + (MathF.Sin(facing) * along), playerPos.Y,
 					playerPos.Z + (MathF.Cos(facing) * along));
-				return DataCenter.IsFixedDashSafe(playerPos, landingPoint)
-					|| Refused("the landing point is in a danger zone");
+				return (DataCenter.IsFixedDashSafe(playerPos, landingPoint),
+					"the landing point is in a danger zone", true);
 			}
 
 			case SpecialActionType.HostileMovingForward:
@@ -1046,7 +1065,7 @@ public struct ActionTargetInfo(IBaseAction action)
 			case SpecialActionType.HostileMovingAttack:
 				if (target == null)
 				{
-					return Refused("no target to measure the dash against", measured: false);
+					return (false, "no target to measure the dash against", false);
 				}
 
 				// Standing at the target, the dash does not move the player, and there is nothing
@@ -1065,18 +1084,19 @@ public struct ActionTargetInfo(IBaseAction action)
 				// rotation's own setting (for the Summoner AddCrimsonCyclone and CrimsonCycloneDistance).
 				if (StandsAtTarget(target))
 				{
-					return true;
+					return (true, string.Empty, true);
 				}
 
 				var toTarget = target.Position - playerPos;
 				var direction = toTarget / toTarget.Length();
 				var finalDestination = target.Position - direction * target.HitboxRadius;
 				return DataCenter.IsDashSafe(playerPos, finalDestination)
-					|| Refused($"the dash to {target.Name} crosses a danger zone ({target.DistanceToPlayer():F1} y)");
+					? (true, string.Empty, true)
+					: (false, $"the dash to {target.Name} crosses a danger zone ({target.DistanceToPlayer():F1} y)", true);
 
 			case SpecialActionType.ObjectBasedMovement:
-				return DataCenter.IsDashSafe(playerPos, destination)
-					|| Refused("the way to the placed object crosses a danger zone");
+				return (DataCenter.IsDashSafe(playerPos, destination),
+					"the way to the placed object crosses a danger zone", true);
 
 			case SpecialActionType.HostileAttackBackstep:
 				// The attack itself does not move the player towards the target; the backstep carries
@@ -1084,7 +1104,7 @@ public struct ActionTargetInfo(IBaseAction action)
 				// target is the reference for the direction: facing it is how the attack is made.
 				if (target == null)
 				{
-					return Refused("no target to measure the backstep against", measured: false);
+					return (false, "no target to measure the backstep against", false);
 				}
 
 				var away = playerPos - target.Position;
@@ -1092,15 +1112,16 @@ public struct ActionTargetInfo(IBaseAction action)
 				var length = away.Length();
 				if (length <= 0f)
 				{
-					return Refused("standing on the target, the backstep has no direction", measured: false);
+					return (false, "standing on the target, the backstep has no direction", false);
 				}
 
 				var landing = playerPos + (away / length * action.Setting.BackstepDistance);
 				return DataCenter.IsFixedDashSafe(playerPos, landing)
-					|| Refused($"the backstep from {target.Name} lands in a danger zone");
+					? (true, string.Empty, true)
+					: (false, $"the backstep from {target.Name} lands in a danger zone", true);
 
 			default:
-				return true;
+				return (true, string.Empty, false);
 		}
 	}
 

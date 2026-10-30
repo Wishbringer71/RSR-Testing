@@ -141,6 +141,11 @@ BossModReborns eigener Endpunkt `Hints.IsFixedDashSafe` nimmt Weite und Richtung
 Abonniert als `(Vector3, Vector3)` schlug jeder Aufruf fehl, und der sichere Wrapper lieferte „unsicher": Solange
 BossModReborn lief, lehnte RSR jeden festen Sprung und jeden Rücksprung ab (seit `33e6acb1f`, Upstream, 07.05.2026).
 
+**Eine Prüfung, zwei Leser** (A465). Das Aktionsfenster („BMR Safetycheck") zeigt das Ergebnis und den Grund der
+Prüfung, die im Kampf entscheidet (`ActionTargetInfo.MovementSafety`), ohne eine Ablehnung zu buchen.
+`CheckMovementSafety` bucht sie für das Protokoll. Vorher rechnete das Fenster die Prüfung selbst nach und kannte die
+Regel „am Ziel ist ein Sprung nur Schaden" nicht: Es zeigte „Fail" für einen Gapcloser, den RSR im Kampf drückte.
+
 ## Verbleibender Rest — offene Kandidaten
 
 Nach Abzug von Limit Breaks, Pet-Aktionen, Stance-Abbrüchen,

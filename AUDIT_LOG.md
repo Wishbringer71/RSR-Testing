@@ -13709,6 +13709,23 @@ Löschungen").
   wird – dort wartet Manafication wie bisher.
 - *Prüfgrad:* statisch am Code, Modell, kompiliert ohne Warnung; im Spiel nicht beobachtet.
 
+### A465 · Das Aktionsfenster zeigt die Bewegungsprüfung, die im Kampf entscheidet (30.10.2026)
+
+- *Auftrag:* technische Schuld „Das Aktionsfenster rechnet die Bewegungssicherheit ein zweites Mal"; ihre Auflösung
+  war eine Bauaufgabe, keine Bedingung, also jetzt machbar.
+- *Erhebung:* `MainWindow.GetMovementSafetyStatus` (Upstream, 33e6acb1f, vom Fork in A313 nachgezogen) rechnete jeden
+  Bewegungstyp selbst nach. Die Regel „am Ziel ist ein Sprung nur Schaden" (`StandsAtTarget`) fehlte dort: Das Fenster
+  zeigte „Fail" für einen Gapcloser, den RSR im Kampf drückte.
+- *Gebaut:* `ActionTargetInfo.MovementSafety` gibt Ergebnis, Grund und „gemessen" ohne Buchung heraus;
+  `CheckMovementSafety` bucht wie bisher die Ablehnung (gemessen oder nicht) und entscheidet gleich. Das Fenster liest
+  nur noch diese Prüfung und sucht allein das gelegte Objekt wie der Kampfpfad. Im Kampf ändert sich nichts. Gegen
+  Upstream ist die Funktion damit ganz ersetzt (rund 130 Zeilen weniger); ändert Upstream sie, gibt es dort einen
+  Konflikt – vorher waren es drei eigene Stellen darin. Konzept 05 („Eine Prüfung, zwei Leser") vor dem Code.
+- *Falsifikation:* Kein Defekt? Die Anzeige wich in der Lage „am Ziel" ab – belegt am Code. Option falsch? Die
+  Alternative, die fehlende Regel ins Fenster zu kopieren, hielte die Doppelung. Ausgeliefert, und nichts ändert sich?
+  Im Kampf gewollt; er nutzt das Fenster nicht, die Änderung entlastet die Pflege.
+- *Prüfgrad:* statisch am Code, kompiliert ohne Warnung.
+
 ---
 ## B · Commit-Register (Fork vs. `upstream/main`)
 
