@@ -326,6 +326,39 @@ internal static class DataCenter
 		}
 	}
 
+	/// <summary>
+	/// Whether the running content was entered as an unrestricted party: the duty finder's last popped entry is this
+	/// content and was popped so. Its item level is not synced either, so a hit is a smaller share than in a synced run,
+	/// at the same level too (concept 13, A466). Content the duty finder did not bring - the open world - counts as in sync.
+	/// </summary>
+	internal static unsafe bool InUnrestrictedParty
+	{
+		get
+		{
+			var content = Territory?.ContentFinderConditionId ?? 0;
+			var finder = ContentsFinder.Instance();
+			if (content == 0 || finder == null)
+			{
+				return false;
+			}
+
+			var popped = finder->QueueInfo.PoppedQueueEntry;
+			return finder->QueueInfo.PoppedContentIsUnrestrictedParty
+				&& popped.ContentType == FFXIVClientStructs.FFXIV.Client.UI.Agent.ContentsType.Regular
+				&& popped.Id == content;
+		}
+	}
+
+	/// <summary>
+	/// Whether a reading taken now lies outside the content's sync - above its level, or in an unrestricted party - and is
+	/// therefore stored by no learned size (A452, A466).
+	/// </summary>
+	internal static bool OutOfContentSync => AboveContentLevel || InUnrestrictedParty;
+
+	/// <summary>Why <see cref="OutOfContentSync"/> holds, in the words of the trace.</summary>
+	internal static string OutOfContentSyncReason
+		=> AboveContentLevel ? "above the level the content syncs to" : "in an unrestricted party";
+
 	public static int PlayerMaxLevel => Player.MaxLevel;
 
 	public static bool IsActivated()

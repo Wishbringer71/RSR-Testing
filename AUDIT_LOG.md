@@ -13726,6 +13726,30 @@ Löschungen").
   Im Kampf gewollt; er nutzt das Fenster nicht, die Änderung entlastet die Pflege.
 - *Prüfgrad:* statisch am Code, kompiliert ohne Warnung.
 
+### A466 · Eine Gruppe ohne Beschränkung bei gleicher Stufe wird erkannt; ihre Messungen lernt keine Tabelle (30.10.2026)
+
+- *Auftrag:* technische Schuld „Gleiche Stufe ohne Gegenstandsstufengrenze wird gemessen wie synchron"; Auflösung war
+  eine Quelle, die den laufenden Inhalt als Gruppe ohne Beschränkung ausweist.
+- *Quelle:* FFXIVClientStructs (aers, bee7720, 30.10.2026; Werkzeugquelle): `ContentsFinderQueueInfo` führt
+  `PoppedContentIsUnrestrictedParty` und `PoppedQueueEntry` (`ContentsId`: `ContentsType.Regular` mit der Zeile der
+  `ContentFinderCondition`, `Roulette` mit der der Zufallssuche). Stimmt der gekommene Eintrag mit der
+  `ContentFinderCondition` des Gebiets überein, beschreibt das Merkmal den laufenden Inhalt. Damit fällt der Grund, aus
+  dem A452 das Merkmal verworfen hatte („beschreibt den zuletzt gestarteten Inhalt, nicht belegt auch den laufenden"):
+  Der Abgleich bindet es an ihn. Eine Zufallssuche kann keine Gruppe ohne Beschränkung sein. Gebaut gegen Dalamuds
+  Fassung der Strukturen, ohne Fehler: die Felder sind dort vorhanden.
+- *Im Kampf:* In einer Gruppe ohne Beschränkung bei der Stufe des Inhalts fällt jeder Treffer kleiner aus; abgelegt,
+  bewertete er eine Aktion zu klein, und im nächsten synchronisierten Lauf sparte die Größenregel die Minderung oder der
+  Plan das Bündel. Jetzt legen Flächentabelle, Tankbuster-Tabelle und DoT-Speicher solche Messungen nicht ab, wie über
+  der Stufe des Inhalts; das Protokoll nennt den Grund („in an unrestricted party").
+- *Gebaut:* `TerritoryInfo.ContentFinderConditionId`, `DataCenter.InUnrestrictedParty`, `OutOfContentSync`,
+  `OutOfContentSyncReason`; die vier Messstellen lesen `OutOfContentSync`. Konzept 13 vor dem Code (fünf Stellen,
+  darunter „Ohne Stufensynchronisation").
+- *Falsifikation:* Kein Defekt? Belegt seit A452 als offene Lücke. Option falsch? Ein falsch gelesenes Merkmal
+  schaltete das Lernen nur für diesen einen Inhalt ab, und jede Auslassung steht mit Grund im Protokoll; die
+  Fehlerrichtung „nicht gelernt" ist die, die der erste synchronisierte Treffer behebt. Ausgeliefert, und nichts ändert
+  sich? Wer nie ohne Beschränkung spielt, sieht nichts – so gewollt.
+- *Prüfgrad:* statisch am Code und am Quelltext der Strukturen, kompiliert ohne Warnung; im Spiel nicht beobachtet.
+
 ---
 ## B · Commit-Register (Fork vs. `upstream/main`)
 

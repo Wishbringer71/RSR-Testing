@@ -550,14 +550,14 @@ public static class Watcher
 
 		var highestShare = SeriesShare(listed, shares, out var seriesSpan);
 
-		// Above the level the content syncs to, the reading is smaller than in sync and would rate the action too small for
+		// Above the level the content syncs to or in an unrestricted party (A466), the reading is smaller than in sync and would rate the action too small for
 		// every synced run after it (A452).
-		if (highestShare > 0f && DataCenter.AboveContentLevel)
+		if (highestShare > 0f && DataCenter.OutOfContentSync)
 		{
-			DataCenter.RecordAreaMeasurementOutcome(listed, "not measured - above the level the content syncs to",
+			DataCenter.RecordAreaMeasurementOutcome(listed, $"not measured - {DataCenter.OutOfContentSyncReason}",
 				$" ({highestShare:P0} of max HP unmitigated), from #{action.RowId}");
 			DefenseTrace.Line($"follow-up of #{listed}: {action.Name.ExtractText()} #{action.RowId}, highest {highestShare:P0}"
-				+ " of max HP unmitigated - not stored, above the level the content syncs to");
+				+ $" of max HP unmitigated - not stored, {DataCenter.OutOfContentSyncReason}");
 			return;
 		}
 
@@ -1034,15 +1034,15 @@ public static class Watcher
 					// and the highest value ever seen is the one a hit under less of it brings.
 					// The line above said "measured" before the amount was known; say what the reading
 					// was, or that there was none.
-					// Above the level the content syncs to, every reading is smaller than in sync and would rate the action too
+					// Above the level the content syncs to or in an unrestricted party (A466), every reading is smaller than in sync and would rate the action too
 					// small for the synced runs after it: none is stored, a rating of 0 neither (A452).
-					var aboveContentLevel = DataCenter.AboveContentLevel;
+					var outOfContentSync = DataCenter.OutOfContentSync;
 					if (damageRatio > 0f && OtherConfiguration.HostileCastingArea.Contains(set.Action!.Value.RowId))
 					{
-						if (highestShare > 0f && aboveContentLevel)
+						if (highestShare > 0f && outOfContentSync)
 						{
 							DataCenter.RecordAreaMeasurementOutcome(set.Action!.Value.RowId,
-								"not measured - above the level the content syncs to", $" ({highestShare:P0} of max HP unmitigated)");
+								$"not measured - {DataCenter.OutOfContentSyncReason}", $" ({highestShare:P0} of max HP unmitigated)");
 						}
 						else if (highestShare > 0f)
 						{
@@ -1113,7 +1113,7 @@ public static class Watcher
 							+ $" ({damagedMembers} party members reached)");
 					}
 
-					if (highestShare > 0f && !aboveContentLevel && OtherConfiguration.HostileCastingArea.Contains(set.Action!.Value.RowId))
+					if (highestShare > 0f && !outOfContentSync && OtherConfiguration.HostileCastingArea.Contains(set.Action!.Value.RowId))
 					{
 						// Every reading, not only an increase: the revisions count it in its game version and keep the
 						// highest for the readers, as written here before (concept 13, "Stufe 1").
@@ -1122,7 +1122,7 @@ public static class Watcher
 						RecordAreaSeriesSpan(id, seriesSpan);
 						MarkMeasuredUnmitigated(id);
 					}
-					else if (highestShare == 0f && !aboveContentLevel && beyondHealth == 0 && zeroWithoutBarrier > 1 && zeroWithoutBarrier == damageEntries
+					else if (highestShare == 0f && !outOfContentSync && beyondHealth == 0 && zeroWithoutBarrier > 1 && zeroWithoutBarrier == damageEntries
 						&& OtherConfiguration.HostileCastingArea.Contains(set.Action!.Value.RowId)
 						&& !OtherConfiguration.HostileCastingAreaPotential.ContainsKey(set.Action!.Value.RowId))
 					{

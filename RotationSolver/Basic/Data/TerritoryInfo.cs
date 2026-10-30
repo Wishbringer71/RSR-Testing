@@ -83,6 +83,12 @@ public class TerritoryInfo
 	public byte ClassJobLevelSync { get; private set; }
 
 	/// <summary>
+	/// The territory's row of the ContentFinderCondition sheet; zero where it has none, as in the open world. Matched against
+	/// the duty finder's last popped entry to tell an unrestricted party (A466).
+	/// </summary>
+	internal uint ContentFinderConditionId { get; private set; }
+
+	/// <summary>
 	/// Represents detailed information about a specific game territory.
 	/// Contains attributes such as the territory's name, unique identifier, PvP status,
 	/// content finder details, and whether it is classified as a high-end duty.
@@ -99,5 +105,6 @@ public class TerritoryInfo
 		ContentType = (TerritoryContentType)contentFinder.ContentType.Value.RowId;
 		ContentFinderIcon = contentFinder.Icon;
 		ClassJobLevelSync = contentFinder.ClassJobLevelSync;
+		ContentFinderConditionId = sheetType.ContentFinderCondition.RowId;
 	}
 }

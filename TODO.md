@@ -62,13 +62,6 @@ als letzte Stufe der Revision. *Konzept:* 13 (gelernte Tabellen), 18 (Einstellun
 
 Ohne Wirkung im Kampf oder bewusst eingegangen; je Kosten und Auflösungsbedingung.
 
-### Gleiche Stufe ohne Gegenstandsstufengrenze wird gemessen wie synchron · N
-*Kosten:* In einer Gruppe ohne Beschränkung bei der Stufe des Inhalts fällt jeder Treffer kleiner aus und wird abgelegt;
-ist er der einzige, spart die Größenregel im nächsten synchronisierten Lauf zu Unrecht. Erkannt wird nur eine Stufe über
-der des Inhalts (`DataCenter.AboveContentLevel`, A452). *Auflösung:* eine Quelle, die den laufenden Inhalt als Gruppe
-ohne Beschränkung ausweist; `ContentsFinderQueueInfo.PoppedContentIsUnrestrictedParty` beschreibt den zuletzt
-gestarteten. *Konzept:* 13.
-
 ### Searing-Light-Abdeckungsmodell bildet die Phasenbuchung von Hand nach · R
 *Kosten:* Ändert sich die Buchung in `UpdateSearingPhaseBook`, `AllSearingPhasesHeld` oder `BurstPhaseHeldByAnother`,
 rechnet `searing_light_coverage.py` weiter die alte Regel, und Konzept 12 argumentiert mit ihren Zahlen. *Auflösung:*

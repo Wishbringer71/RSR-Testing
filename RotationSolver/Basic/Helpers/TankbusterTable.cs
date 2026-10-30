@@ -475,13 +475,13 @@ internal static class TankbusterTable
 			return key;
 		}
 
-		// Above the level the content syncs to, the hit is a smaller share than in sync: stored, it would rate the action
+		// Above the level the content syncs to or in an unrestricted party (A466), the hit is a smaller share than in sync: stored, it would rate the action
 		// too small for the next synced run, where the plan reads it to spend less (A452).
-		if (DataCenter.AboveContentLevel)
+		if (DataCenter.OutOfContentSync)
 		{
-			series.Spoiled ??= "above the level the content syncs to";
+			series.Spoiled ??= DataCenter.OutOfContentSyncReason;
 			DefenseTrace.Line($"tankbuster measured: {name} #{hit.RowId}{asKey} on {target.Name.TextValue} for {share:P0} of max HP{via}"
-				+ " - not stored, above the level the content syncs to");
+				+ $" - not stored, {DataCenter.OutOfContentSyncReason}");
 			return key;
 		}
 

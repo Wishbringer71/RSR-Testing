@@ -840,24 +840,29 @@ gesicherten Weg wie die Flächentabelle.
 **Fehler nur nach unten:**
 - Eine Minderung, die kein Text beziffert (unverknüpfter Status, Merkmalswert unterhalb der Merkmalsstufe), wird nicht herausgerechnet.
 - Treffer unsichtbarer Helfer tragen die Debuffs des Bosses nicht.
-- Eine Messung bei gleicher Stufe ohne die Gegenstandsstufengrenze des Inhalts (Gruppe ohne Beschränkung): Der
-  Anteil fällt kleiner aus und wird abgelegt. Erkannt wird nur eine Stufe über der des Inhalts (Absatz „Ohne
-  Stufensynchronisation").
+- Eine Messung bei gleicher Stufe ohne die Gegenstandsstufengrenze des Inhalts in einem Inhalt, der nicht über die
+  Inhaltssuche kam: Der Anteil fällt kleiner aus und wird abgelegt. Erkannt werden eine Stufe über der des Inhalts und
+  eine Gruppe ohne Beschränkung aus der Inhaltssuche (Absatz „Ohne Stufensynchronisation").
 
 Eine Barriere verfälscht nichts: Die Schadenszahl des Spiels enthält, was sie auffing (A449); herauszurechnen ist
 nichts.
 
-**Ohne Stufensynchronisation: nicht abgelegt** (A452). Steht der Spieler über der Stufe, auf die der Inhalt
-synchronisiert (`DataCenter.AboveContentLevel`: `PlayerSyncedLevel` gegen `ClassJobLevelSync` der
+**Ohne Stufensynchronisation: nicht abgelegt** (A452, A466; `DataCenter.OutOfContentSync`). Steht der Spieler über der
+Stufe, auf die der Inhalt synchronisiert (`DataCenter.AboveContentLevel`: `PlayerSyncedLevel` gegen `ClassJobLevelSync` der
 `ContentFinderCondition` des Gebiets, gelesen mit `TerritoryInfo` beim Gebietswechsel), zeigt jeder Treffer weniger als im synchronisierten
 Lauf – wie viel, hängt vom Abstand der Stufen ab und ist nicht gemessen. Abgelegt, bewertete er eine noch unbewertete
 Aktion zu klein, und im nächsten synchronisierten Lauf sparte die Größenregel die Minderung oder der Plan das Bündel.
 Deshalb legt keiner der drei Speicher, die eine Größe lernen, eine solche Messung ab: Tankbuster-Tabelle
 („not stored, above the level the content syncs to"), Flächentabelle samt der Bewertung mit 0 (A366) und der DoT-Speicher
-(Konzept 08). Ein Inhalt ohne Synchronisationsstufe – die offene Welt – gilt als synchron, wie bisher. Verworfen ist das
-Flag der Gruppe ohne Beschränkung (`ContentsFinderQueueInfo.PoppedContentIsUnrestrictedParty`, FFXIVClientStructs):
-Es beschreibt den zuletzt gestarteten Inhalt, nicht belegt auch den laufenden, und falsch gelesen schaltete es das
-Lernen still ab; Stufe und Blatt sind dagegen Spieldaten des laufenden Inhalts.
+(Konzept 08). Ein Inhalt ohne Synchronisationsstufe – die offene Welt – gilt als synchron, wie bisher. Dasselbe gilt
+in einer Gruppe ohne Beschränkung bei gleicher Stufe: Dort fehlt die Gegenstandsstufengrenze, und jeder Treffer fällt
+ebenso kleiner aus. Erkannt wird sie an der Inhaltssuche (`DataCenter.InUnrestrictedParty`, A466):
+`ContentsFinderQueueInfo.PoppedContentIsUnrestrictedParty` beschreibt den zuletzt aus der Warteschlange gekommenen
+Inhalt, `PoppedQueueEntry` nennt ihn (`ContentsType.Regular` mit der Zeile der `ContentFinderCondition`); nur wenn
+das die `ContentFinderCondition` des laufenden Gebiets ist, gilt das Merkmal für ihn. Ein Gebiet ohne eigene Zeile –
+die offene Welt – oder ein anderer Inhalt als der zuletzt gekommene lassen das Lernen an. Die Felder sind durch
+Reverse Engineering gewonnen (FFXIVClientStructs, Werkzeugquelle); falsch gelesen, schaltete ein Merkmal das Lernen
+nur für diesen einen Inhalt ab, und jede nicht abgelegte Messung steht mit ihrem Grund im Protokoll.
 
 Herausgerechnet werden dagegen eine Minderung je Schadensart auf dem Getroffenen (Dark Mind: physisch 10 %, magisch
 20 %; `MitigationFactor` über `SelfAgainst`) und eine Erhöhung der maximalen LP, die beim Treffer steht (Kampfrausch,
@@ -957,7 +962,7 @@ ernsteste Einwand, und für synchronisierte Messungen trägt er kaum: Die beziff
 unbezifferte Minderung. Selbst ungerechnet läge ein Raidwide mit vierzig Prozent Potential unter zehn bis zwanzig
 Prozent Gruppenminderung bei zweiunddreißig bis sechsunddreißig — weit über jeder Bagatelle. Eine Verwechslung verlangte
 eine Minderung von neunzig Prozent, die es nicht gibt. Für eine Messung über der Stufe des Inhalts hielte der Einwand;
-sie wird deshalb nicht abgelegt (A452). Offen bleibt die gleiche Stufe ohne Gegenstandsstufengrenze.
+sie wird deshalb nicht abgelegt (A452), ebenso eine Messung in einer Gruppe ohne Beschränkung (A466).
 
 **Verwundbarkeitsstapel verfälschen nach oben.** Zutreffend, und die Fehlerrichtung ist die sichere:
 Überschätzung kostet eine Abklingzeit, Unterschätzung ein Gruppenmitglied.
@@ -1130,9 +1135,9 @@ nie wieder versucht, auch wenn ein Patch ihn schlafbar machte.
    alter Wert unter der Id eines Casts ist einer seiner Treffer, also eine Untergrenze, und die erste Serie hebt ihn.
 3. *Eine Änderung am Server ohne neue Clientversion:* von hier nicht erkennbar. Gedeckt nur in der Richtung, in der der
    Höchstwert sich selbst hebt.
-4. *Messfehler in einer Version, nach unten:* eine Messung bei gleicher Stufe ohne die Gegenstandsstufengrenze des
-   Inhalts, ein Stack mit mehr Teilenden als sonst, eine Minderung, die kein Wirktext beziffert. Eine Messung über der
-   Stufe des Inhalts wird seit A452 nicht abgelegt. Eine Barriere gehört nicht dazu: Die Schadenszahl enthält, was
+4. *Messfehler in einer Version, nach unten:* ein Stack mit mehr Teilenden als sonst, eine Minderung, die kein
+   Wirktext beziffert. Eine Messung über der Stufe des Inhalts oder in einer Gruppe ohne Beschränkung wird nicht
+   abgelegt (A452, A466). Eine Barriere gehört nicht dazu: Die Schadenszahl enthält, was
    sie auffing (A449).
 5. *Messfehler in einer Version, nach oben:* Schadensplus des Gegners (in der Tankbuster-Tabelle nicht abgelegt),
    Verwundbarkeit (dort getrennt geführt), eine verfehlte, aber überlebte Mechanik. Ein Treffer über der ganzen
@@ -1305,9 +1310,8 @@ Synchronisation, ein Drittel kleiner (Annahme): 8,3 % falsch ausgelassener Schut
 neuen Aktion, ohne Ablage 0 %. Entschieden nach seiner Spielweise: Nicht abgelegt wird sie, nicht nur einsparend
 übergangen – ihr einziger Nutzen wäre ein Wert, den der erste synchronisierte Treffer ohnehin liefert, und eine
 Kennzeichnung je Messung kostete Format. Gebaut unabhängig von der Revision, in allen drei Speichern, die eine Größe
-lernen (Abschnitt „Die Tankbuster-Tabelle", „Ohne Stufensynchronisation"). Nicht erkannt wird die gleiche Stufe ohne die
-Gegenstandsstufengrenze des Inhalts: Das Flag der Gruppe ohne Beschränkung beschreibt den zuletzt gestarteten Inhalt,
-nicht belegt den laufenden.
+lernen (Abschnitt „Die Tankbuster-Tabelle", „Ohne Stufensynchronisation"); ebenso eine Gruppe ohne Beschränkung bei
+gleicher Stufe, erkannt an der Inhaltssuche (A466).
 
 **9. Messmittel im Code.** Jeder Übergang – übernommen, bestätigt, gesenkt, Quarantäne, Versuch auf eine Sperre – eine
 Zeile im `DefenseTrace.log`; die Kopfzeile zählt je Speicher die Zustände. Die Regel steuert sich selbst; sie wartet auf
@@ -1623,7 +1627,8 @@ Aussage für Aussage, statisch (Selbstprüfung, kein unabhängiges Audit):
   (`reachedMembers == partyMemberCount`, seit A452 auch unter Unverwundbarkeit über `ReachedTarget`). Gemessen wird in
   derselben Landung (`Contains` nach `Add`). `PredictedShare` und `IsLearned` geben für eine Aktion der Flächenliste 0
   und `false` zurück.
-- Stufensynchronisation: `DataCenter.AboveContentLevel` an allen Messstellen, die eine Größe ablegen (A452).
+- Stufensynchronisation: `DataCenter.OutOfContentSync` (über der Stufe des Inhalts oder Gruppe ohne Beschränkung) an
+  allen Messstellen, die eine Größe ablegen (A452, A466).
 - Sauberkeit: Schadensplus am Gegner (`CarriesDamageUp`) und Verwundbarkeit (`CarriesVulnerabilityUp`) an beiden
   Messstellen lesbar; die Barriere (`GetObjectShield`) braucht sie nicht mehr, die Grenze aus A298 liest sie weiter. Die
   Kommentare, die die Frage noch offen nannten, sind mit Stufe (0) berichtigt.

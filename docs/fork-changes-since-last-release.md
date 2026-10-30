@@ -59,10 +59,10 @@ What this release changes in the fight. For the whole distance from upstream, se
 - **A raidwide landing on a tank under Hallowed Ground or Superbolide joins the area list.** The tank's hit carries no
   damage then, and the action stayed off the list - a tankbuster that a patch turned into a raidwide kept drawing the
   tankbuster plan at its next cast.
-- **Nothing measured above the content's level sync is learned.** In an unrestricted party in older content every hit is
-  smaller than in sync; learned, it rated the action too small for the next synced run, where the mitigation or the
-  tankbuster bundle was then left out. The area table, the tankbuster table and the damage over time on the party skip
-  such readings; the open world counts as in sync.
+- **Nothing measured outside the content's sync is learned.** Above the content's level, or in an unrestricted party
+  from the duty finder at the same level, every hit is smaller than in sync; learned, it rated the action too small for
+  the next synced run, where the mitigation or the tankbuster bundle was then left out. The area table, the tankbuster
+  table and the damage over time on the party skip such readings; the open world counts as in sync.
 - **An area hit counts at its unmitigated size.** The damage table divides out the mitigation that stood when a raidwide
   landed — on the member and on the boss, by the figures the effect texts state — so a raidwide first seen under three
   mitigations is no longer rated small. Every rule that reads the table — `Skip mitigation for small area casts`, the
