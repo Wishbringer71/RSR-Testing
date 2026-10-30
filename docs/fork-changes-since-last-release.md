@@ -73,6 +73,11 @@ What this release changes in the fight. For the whole distance from upstream, se
 
 ## Rotations
 
+- **The time an enemy has left is measured again.** The self-correcting time to kill was kept for party members only,
+  so it was unknown for every enemy: the Monk's Six-sided Star as the last weaponskill came only before a downtime
+  BossModReborn predicts, never before the target died, and the Scholar held Bio by its rough estimate even where the
+  target's measured time was long enough. Both now read the corrected time for enemies too.
+
 - **Pictomancer: no motif under Starry Muse in the opener.** Below level 92 Starry Muse comes two seconds into the
   fight, inside the opener's first five seconds, and the opener could paint a motif under it - a burst GCD without
   damage. The opener's priorities now end once Starry Muse is up, as the rest of the rotation already does. From level

@@ -1869,6 +1869,12 @@ Er leistet damit mehr, als eine berichtete Spielsitzung leisten koennte.
 - **Geglaettet und begrenzt** auf 0,25 bis 4, damit eine einzelne Spitze den Faktor nicht uebernimmt.
 - **Gelesen wird die korrigierte Zeit** (`GetCorrectedTTK` = `GetTTK` geteilt durch den Faktor). Die
   Korrektur kostet keine einzige gesetzte Zahl; sie faellt aus der Beobachtung.
+- **Gefuehrt fuer jedes Gruppenmitglied und jeden Gegner** (`TargetUpdater.UpdateTimeToKill`, A463). Fuer
+  einen Gegner liest `GetTTK` Upstreams Tracker, eine Gerade ueber 30 s, die zu Beginn eines Bursts
+  hinterherlaeuft; der Faktor misst genau das. Bis A463 wurde er nur fuer die Gruppe gefuehrt, und
+  `GetCorrectedTTK` war fuer jeden Gegner unbekannt: Six-sided Star als letzter Schlag (Konzept 14,
+  A413) und die Messung, die beim Gelehrten ueber Bio entscheidet (Konzept 18, A387), liefen nie in
+  ihrem Zeitpfad.
 
 **Einer Ablesung bedarf die Korrektur nicht.** Bleibt der Faktor ueber einen Pull hinweg nahe 1, wirkt
 sie nicht; laeuft er hoch, sobald eine Gruppe anbindet, ist die Rohzahl die zu spaete, und die Regeln

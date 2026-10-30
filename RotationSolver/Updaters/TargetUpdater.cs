@@ -745,6 +745,15 @@ internal static partial class TargetUpdater
 			party[i]?.ScoreTtkForecast();
 		}
 
+		// Every hostile as well: the rules that ask when an enemy dies read the same corrected forecast - the last
+		// weaponskill on a target, a Scholar's Bio (A463). Their rate is upstream's tracker above, a 30 s fit that lags
+		// behind a burst, which is the gap the bias measures. Scored for the party alone, no forecast was ever filed
+		// for an enemy, and GetCorrectedTTK answered NaN for every one.
+		for (var i = 0; i < hostiles.Count; i++)
+		{
+			hostiles[i]?.ScoreTtkForecast();
+		}
+
 		ObjectHelper.ForgetStaleTtkForecasts();
 	}
 

@@ -2729,7 +2729,7 @@ public static class ObjectHelper
 	/// </summary>
 	/// <remarks>
 	/// Both dictionaries are keyed by object id and would otherwise grow for every member of every
-	/// party of a session. Pruning against the current party instead would be cheaper but wrong: a
+	/// party and every enemy of a session (A463). Pruning against the current party instead would be cheaper but wrong: a
 	/// member who walks out of the object table for a few seconds would come back with the learned
 	/// bias reset to 1, which is the one moment - a pull spread over a wide room - where the
 	/// correction is worth the most. Age is the honest criterion, and it is the same window the

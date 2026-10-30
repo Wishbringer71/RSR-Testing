@@ -13653,6 +13653,35 @@ Löschungen").
 - *Prüfgrad:* statisch am Code, an The Balance, am Job-Guide und an seinen Mitschnitten; kompiliert; im Spiel nicht
   beobachtet.
 
+### A463 · Die korrigierte Zeit bis zum Tod fehlte für jeden Gegner: Six-sided Star und Bio liefen nie in ihrem Zeitpfad (30.10.2026)
+
+- *Anlass:* Beim TODO-Punkt „Halten für einen Buff nur, wo es keinen Einsatz kostet", der auf der Zeit bis zum Tod des
+  Gegners aufbaut, gefunden.
+- *Erhebung:* `GetCorrectedTTK` liest nur die Vorhersage, die `ScoreTtkForecast` ablegt; einziger Aufrufer ist
+  `TargetUpdater.UpdateTimeToKill`, über die Gruppe – so seit der Einführung (1b385b796, 17.09.2026). Für jeden Gegner
+  war die korrigierte Zeit daher unbekannt. Leser für Gegner: `IsTimeToKillMeasured` (der Gelehrte über Bio, A387) und
+  `LastWeaponskillOnTarget` (der Monk über Six-sided Star, A413); alle übrigen Leser fragen nach Gruppenmitgliedern.
+- *Im Kampf bisher:* Der Gelehrte hielt Bio nach der Schätzung zurück, auch wo eine Messung lang genug gewesen wäre –
+  genau das, was A387 beheben sollte. Der Monk schlug Six-sided Star nur vor einer Pause, die BossModReborns Zeitleiste
+  vorhersagt, nie vor dem Tod des Ziels, obwohl der Einstellungstext („before the target dies or goes untargetable")
+  es verspricht.
+- *Optionen:* Nullvariante (die beiden Regeln bleiben wirkungslos); die Vorhersage auch für jeden Gegner bewerten;
+  für Gegner auf die unkorrigierte Zeit zurückfallen; die beiden Leser auf `GetTTK` umstellen. Gewählt: jeden Gegner
+  bewerten, im selben Takt wie die Gruppe. Die beiden anderen verlören die Korrektur, auf die A387 und A413 bauen –
+  Upstreams Tracker ist eine Gerade über 30 s und läuft zu Beginn eines Bursts hinterher, also gerade dann, wenn die
+  letzte Waffenfertigkeit gewählt wird.
+- *Bilanz im Kampf:* Six-sided Star fällt jetzt auch als letzter Schlag auf einen sterbenden letzten Gegner (A413:
+  Gewinn ab etwa jeder vierten richtigen Vorhersage); der Gelehrte wirkt Bio, wo die gemessene Zeit es trägt.
+  Sicherheit unberührt: Beide Regeln betreffen nur Schaden. Kosten: eine Bewertung je Gegner und Sekunde, die Einträge
+  verfallen nach 240 s wie die der Gruppe.
+- *Falsifikation:* Kein Defekt? Am Code gemessen: einziger Schreiber, einziger Aufrufer, Schleife über die Gruppe.
+  Option falsch? Für Gegner misst der Faktor das Hinterherlaufen der 30-s-Geraden – die Richtung, in der die Rohzahl
+  zu lang ist. Ausgeliefert, und nichts ändert sich? Bei einem Boss, der vor null Gesundheit unangreifbar wird, sagt
+  die Zeit den Tod zu spät voraus; dort bleibt es bei der Zeitleiste – als Einschränkung schon in Konzept 14 genannt.
+- *Gebaut:* `TargetUpdater.UpdateTimeToKill` bewertet jeden Gegner nach der Gruppe; Konzept 08 („Die Schaetzung prueft
+  sich selbst") vor dem Code. Widerrufe C137 (A387), C138 (A413).
+- *Prüfgrad:* statisch am Code und an der Versionsgeschichte, kompiliert ohne Warnung; im Spiel nicht beobachtet.
+
 ---
 ## B · Commit-Register (Fork vs. `upstream/main`)
 
@@ -13942,3 +13971,5 @@ Die offene Arbeit dazu — Reihenfolge und Abbruchbedingung der Nachprüfung —
 | C134 | Konzept 09, „Die Abwehr im Pull" (A395, 26.10.2026): „… trifft der erste ohne große Minderung – die kurze liegt, die Tabelle kennt ihn ab dem zweiten" | Falsch. Die Tankbuster-Tabelle misst nur gelistete und per Marker bestätigte Tankbuster (`Watcher`, `isTankbuster`); einer, den nur das Wirken eines Gegners auf sein eigenes Ziel verrät, wird nie gelernt, und jeder weitere trifft ebenso (A449, Defekt „Ungelisteter Tankbuster ohne Marker wird nie gelernt") | Konzept 09, „Die Abwehr im Pull" |
 | C135 | A315 und Konzept 09, „H, der Horizont" (17.10.2026): „Der GCD deckt mehrfache und nachlaufende Treffer eines Tankbusters" | Falsch. Crush Helm trifft groß 6,1 s, Void Meteor 4,1 s nach dem Balken, Bitter Whirlwind 6,4 s nach dem ersten Treffer (BossModReborn ae64e33), Valfodr in seinem Mitschnitt bis 7 s nach dem Balken; der GCD deckt nur die Ankunft des ersten Treffers (A454) | Konzept 09, „H_S" und „H_I"; die Entscheidung, H nicht zu kürzen, bleibt |
 | C136 | A457 (29.10.2026): „der oGCD fiel also auf oder nach das GCD-Ende, und seine Sperrzeit schließt ein Fenster von 0,4 s" | Ein bereiter GCD geht im Dispatch immer vor, Fähigkeiten ruhen in den letzten 0,5 s vor ihm; die Fähigkeit ging, weil der Schlaf nicht mehr der gewählte GCD war (A459) | berichtigt (A459) |
+| C137 | A387 (26.10.2026): „Die korrigierte Vorhersage rechnet ihren eigenen Fehler heraus (`ScoreTtkForecast`), und bis sie steht, gilt die Schätzung weiter" | Für einen Gegner stand sie nie: `ScoreTtkForecast` lief seit seiner Einführung (1b385b796, 17.09.2026) nur für die Gruppe, `GetCorrectedTTK` war für jeden Gegner unbekannt und `IsTimeToKillMeasured` immer falsch; der Gelehrte entschied über Bio weiter nach der Schätzung | berichtigt (A463) |
+| C138 | A413 (26.10.2026): Six-sided Star als letzte Waffenfertigkeit „nach der korrigierten Zeit bis zum Tod"; „die Zeit bis zum Tod rechnet ihren Fehler heraus (`ScoreTtkForecast`)" | Derselbe Grund: Für das Ziel gab es keine korrigierte Zeit, der Zweig über den Tod des Ziels lief nie; Six-sided Star kam nur vor einer Pause, die die Zeitleiste von BossModReborn vorhersagt | berichtigt (A463) |
