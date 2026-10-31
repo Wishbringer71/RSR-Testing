@@ -25,6 +25,9 @@ sind, die durch routinen und ingame auswertungen besser geregelt werden können.
   sobald ein Mitglied in der kritischen Klasse steht (unten, „Rotationseinstellungen"; A360). Ab Werk aus hat sie unter
   den Heilern nur noch der Weise; beim Astrologen ist sie ab Werk an, weil „Heal over time against an enemy's damage over
   time" sie mitliest und sonst neben einem zweiten Heiler nie griffe (seine Präzisierung, 28.10.2026; A433).
+- **Die Heilschwellen bleiben Einstellungen – gegen Messregeln geprüft, keine ersetzt** (seine Frage vom 31.10.2026;
+  unten, „Heilung"; A470). Was das Spiel messen lässt, urteilt schon zur Laufzeit; was bleibt, ist sein Puffer gegen
+  Schaden ohne Vorwarnung, und jede gemessene Ersatzregel kauft Sicherheit zum selben Preis oder kostet Leben.
 - **Die Wiederbelebung wartet ab Werk nicht mehr.** „Raise delay range" stand ab Werk auf 3 s, eine Tarnung ohne
   Nutzen im Kampf; ab Werk jetzt 0 bis 0 s (unten, „Tarnung"; Konzept 11).
 - **Alles Übrige ist eingeordnet, ohne Änderung.** Die übrigen Zahlen, die eine Spieltatsache tragen, haben entweder
@@ -174,6 +177,64 @@ Jede Heilschwelle der Standardrotationen der Heiler liest diese Vorausschau: die
 `GetForecastHealthRatio`, die auf den Gruppendurchschnitt über `PartyMembersForecastAverHP`, die Füllheilung („When
 the lowest party HP is below") über das vorausberechnete Minimum.
 
+**Durch Messung ersetzen: geprüft, keine Schwelle ersetzt.** Seine Frage (31.10.2026), ob Startschwellen, die
+Streuung für Flächenheilungen und die Trennung von Fähigkeit und Zauber Erkenntnissen aus dem Spiel weichen können,
+mit seinen Kriterien: „es soll ja nicht großartig überheilt werden, die spieler sollen nie richtig in gefahr geraten"
+(Vorgabe für die Heilung), „optimal wäre es doch, dass in endeffekt alle spieler immer bei voller gesundheit sind bzw.
+knapp darunter, damit auch die natürliche regeneration genutzt werden kann" (Vorschlag; die Regeneration ist ein
+Hinweis), „hier lieber die einstellungen belassen, wenn das neue modell probleme bereiten könnte" (Vorgabe für diese
+Prüfung).
+
+- **Was RSR schon misst, urteilt schon.** Den Verlauf jedes Mitglieds netto aller Heilungen, Barrieren und HoT-Ticks
+  (die Vorausschau, Konzept 08), den angekündigten Treffer und wen er gefährdet (die Heilung davor), die Gefahr für die
+  Zielwahl (Konzept 07), die laufenden HoTs für die HoT-Spalte, die Heilmenge je Aktion (für Lux Solaris, Konzept 08).
+  Was keine Messung vorhersagt, ist der Treffer ohne Vorwarnung – eine Fläche ohne Wirkbalken, eine verpatzte Mechanik,
+  ein Ausreißer der Autoangriffe. Gegen ihn hilft nur Gesundheit, die schon da ist, und wie viel davon, ist seine
+  Haltung zum Risiko. Das ist, was die Startschwellen setzen.
+- **Gemessen an seinen Mitschnitten (Weißmagier, 25. und 26.10.2026):** Die natürliche Regeneration gibt im Kampf 1 %
+  der maximalen HP je 3-s-Tick (Zeile 39, Paare ohne andere Wirkung dazwischen; außerhalb des Kampfes 10 %). Sie wirkt
+  bei jeder Gesundheit unter voll gleich – „knapp darunter" nutzt sie nicht besser als „deutlich darunter"; voll geheilt
+  verfällt sie. Die Heilungen nach den Schwellen überheilen wenig: Afflatus solatii und Tetragrammaton je etwa 8 %,
+  Vitra 18 %, Resega bis 35 %, Resedra 48 % (eine Fläche über alle acht; ihre Flagge liest bei mehr als vier Mitgliedern
+  die vier niedrigsten). Die große Überheilung kommt von Aktionen, die unabhängig vom Bedarf fallen: Afflatus laetitiae
+  am Lilien-Überlauf (62–67 %, bezahlt von Afflatus miseriae) und Assise, eine Schadensfähigkeit auf ihrer Abklingzeit
+  (84–97 %).
+- **Im Modell** (`heal_policy_model.py`; ein Heiler in der Leichtgruppe, zwei in der Vollgruppe; Treffer je Lage
+  zufällig; die Heilung vor dem angekündigten Treffer und die Hilfe vor dem Tankbuster wie im Plugin; natürliche
+  Regeneration wie gemessen; 300 Kämpfe je Lage, Stand 31.10.2026) ist keine Messregel in jeder Lage mindestens so gut
+  wie die festen Schwellen bei gleichem Preis:
+  - „Heilen, wo die Heilung ganz trifft" (sein Bild wörtlich) ist sicherer: in der Leichtgruppe mit Treffern ohne
+    Vorwarnung 0 statt 2,7 Tote je 100 Kämpfe und ein Viertel der Zeit unter 30 %, im Raid 3,0 statt 5,7 Tote. Es kostet
+    4 bis 5 Heilzauber mehr je Heiler und 180 s, 8 bis 18 Punkte mehr Überheilung und 16 bis 32 Punkte weniger genutzte
+    Regeneration – und verhält sich damit fast genau wie um 20 Punkte höhere Schwellen: gleiche Tote, gleiche Zeit unter
+    30 %, knapp einen Heilzauber weniger und 0 bis 7 Punkte weniger Überheilung als diese. Die Messgröße ist also keine
+    neue Fähigkeit, sondern dieselbe Haltung mit etwas weniger Überheilung, und die wählt er mit den Schwellen selbst.
+  - Eine aus den bisherigen Treffern je Mitglied gelernte Startschwelle ist im Raid sicherer (2,7 statt 5,7 Tote), in
+    der Leichtgruppe gefährlicher (9,0 statt 2,7): Bis zum ersten großen Treffer setzt sie zu tief an. Nur bei Gefahr zu
+    heilen kostet überall Tote (in der Leichtgruppe 94 je 100, bei 80 Kämpfen).
+  - Aufstocken nur mit kostenlosen Mitteln – Fähigkeiten und Lilien, wo sie ganz treffen – liegt zwischen heute und 10
+    Punkten höher und ist in der Leichtgruppe weniger sicher als diese für den ähnlichen Preis (1,7 statt 0 Tote je
+    100). Fähigkeiten nur bei vollen Ladungen zu verbrauchen, ändert nichts (im Rauschen).
+  Nach seiner Vorgabe ist keine davon gebaut: Ihr Nutzen hängt vom Inhalt ab, oder er ist mit den Schwellen billiger zu
+  haben.
+- **Je Einstellung:** Die vier Startschwellen bleiben (Haltung, oben). Die HoT-Spalte bleibt: Ab Werk senkt ein voller
+  HoT die Schwelle um 10 Punkte, etwa ein Tick von Regena auf einem Damage Dealer (250 Potenz je Tick; eine Heilung von
+  800 Potenz gab an seinem Abend vom 25.10. im Median 31 % der maximalen HP des Ziels). Eine gemessene Anrechnung des
+  Ticks gäbe für Regena dasselbe, für schwächere HoTs weniger, vor dem ersten Tick nichts; im Kampf verschiebt das die
+  Schwelle um wenige Punkte, nicht modelliert. „AoE heal HP spread" bleibt (unten). Fähigkeit vor Zauber bleibt:
+  kostenlose Fähigkeiten schon über der Schwelle zu verbrauchen, ist nicht billiger als höhere Schwellen (oben). Die
+  Rollenschwellen ordnen nur das Ziel (Konzept 07). „When the lowest party HP is below" setzt dieselbe Haltung für die
+  Füllheilung, wo kein Ziel angreifbar ist.
+- **Nicht gebaut, zu klein:** Die Lilie am Überlauf auf Afflatus solatii statt laetitiae, wo sie mehr heilt, hätte an
+  seinen Abenden 0 und höchstens 4 % mehr wirksame Lilienheilung gebracht (nicht jede fiel am Überlauf). Eine
+  Flächenheilung abzubrechen, wenn die Gruppe während des Wirkens anderweitig hochgeheilt wird, wie es „Stop single
+  target GCD healing after reaching threshold" für Einzelheilungen tut, hätte 2 von 15 Flächenheilungen betroffen.
+- **Wenn er die Gruppe voller halten will:** Um 10 Punkte höhere Schwellen senken im Modell die Tote in der Leichtgruppe
+  mit Treffern ohne Vorwarnung von 2,7 auf 0 je 100 Kämpfe und die Zeit unter 30 % auf ein Drittel, im Raid von 5,7 auf
+  4,0 und auf die Hälfte – für 2 bis 3 Heilzauber mehr je Heiler und 180 s (rund 3 bis 4 % seiner GCDs), 3 bis 9 Punkte
+  mehr Überheilung und 6 bis 12 Punkte weniger genutzte Regeneration. 20 Punkte höher ist sein Bild (oben). Wie oft
+  Treffer ohne Vorwarnung kommen, ist die Annahme des Modells; deshalb bleibt die Wahl seine.
+
 - **Die Schwellen auf den Gruppendurchschnitt lasen den Stand – behoben.** Horoscope und Lady of Crowns (Astrologe),
   Holos und Pneuma (Weiser), Fey Blessing und Indomitability unter der Notfallschwelle sowie Recitation mit
   Indomitability (Gelehrter) verglichen `PartyMembersAverHP`, die Füllheilung `PartyMembersMinHP` und
@@ -188,9 +249,10 @@ the lowest party HP is below") über das vorausberechnete Minimum.
   Tengentsu des Samurai). Keine Lücke: Die Vorausschau einer sofort wirkenden Fähigkeit reicht nur über die
   Animationssperre (`GetForecastHealthRatio(instant)`), und der Text von „Heal ahead of incoming damage" nennt
   Heilschwellen, nicht Schutz.
-- **„AoE heal HP spread"** wählt zwischen Flächen- und Einzelheilung über die Streuung der Gesundheit. Eine Rechnung über
-  die wirksame Heilmenge je Mitglied wäre genauer; kein Fall im Kampf belegt, dass die Streuung falsch wählt. Nicht
-  geändert.
+- **„AoE heal HP spread"** wählt zwischen Flächen- und Einzelheilung über die Streuung der Gesundheit. Die Rechnung über
+  die wirksame Heilmenge – Fläche, wo sie mehr von dem heilt, was fehlt, als die Einzelheilung auf dem, dem am meisten
+  fehlt – wählt im Modell in keiner Lage anders, auch nicht bei Treffern auf zwei bis sechs Mitglieder; sie bräuchte die
+  gemessene Heilmenge beider Aktionen und vor der ersten Landung im Gebiet doch die Streuung. Nicht geändert.
 - **„Stop healing when enemies will die within"** gilt nur für Heilungen von Tanks und Damage Dealern (`StateUpdater`);
   ein Heiler heilt unabhängig davon. Klein, nicht geändert.
 - **„Heal a target under an invulnerability only below this HP"** ist eine Haltung (wie tief ein Tank unter

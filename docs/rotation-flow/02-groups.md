@@ -105,6 +105,16 @@ flowchart TD
 | `MyInterruptGCD` | ✓ | – | – | – |
 | Configs | 16 | 17 | 12 | **3** |
 
+### Feindseligkeit im Pull: Hinweis zur Revolverklinge (offen)
+
+Hinweis eines Bekannten, von ihm weitergegeben (31.10.2026): Unter RSR (Upstream) erzeuge die Revolverklinge bei
+Flächen und bei einzelnen Gegnern weniger Feindseligkeit als die anderen Tanks. Sein Zusatz, ebenfalls ein Hinweis
+(31.10.2026): „gerade bei wall to wall pulls, wenn die gunblade in die gegnergruppe rennt, dauert es gefühlt länger,
+dass sie bei allen gegnern aggro hat, als bei den anderen tankklassen. und beim weiterziehen zur nächsten gegnergruppe
+scheint sie schneller wieder die aggro zu verlieren, wenn die damagedealer beim laufen schaden auf die gegner machen."
+Beides ist eine Beobachtung, kein Befund: Ursache am Code und an der Mechanik der Feindseligkeit zu belegen, im Loop
+(TODO, „Revolverklinge: Feindseligkeit im Pull").
+
 Die frühere Spaltung bei Reflexion (Paladin und Krieger nur in der Einzelabwehr) ist aufgehoben (00bc9c6f).
 `HasHostileCountAoeMitigation` gibt es nicht mehr: Es setzte `DefenseArea` allein auf die Gegnerzahl und
 öffnete damit die ganze Abwehrkette (b8018cf0, Konzept 08).

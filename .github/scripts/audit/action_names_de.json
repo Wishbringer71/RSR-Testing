@@ -561,6 +561,55 @@
       "kind": "action",
       "source": "xivapi v2, language=de, Action 7521, 2026-10-30",
       "note": "Red Mage, 110 s; grants Magicked Swordplay and Prefulgence Ready."
+    },
+    {
+      "de": "Afflatus solatii",
+      "en": "Afflatus Solace",
+      "identifier": "AfflatusSolacePvE",
+      "kind": "action",
+      "source": "game data, xivapi v2 Action 16531 language=de, 2026-10-31"
+    },
+    {
+      "de": "Tetragrammaton",
+      "en": "Tetragrammaton",
+      "identifier": "TetragrammatonPvE",
+      "kind": "action",
+      "source": "game data, xivapi v2 Action 3570 language=de, 2026-10-31"
+    },
+    {
+      "de": "Vitra",
+      "en": "Cure II",
+      "identifier": "CureIiPvE",
+      "kind": "action",
+      "source": "game data, xivapi v2 Action 135 language=de, 2026-10-31"
+    },
+    {
+      "de": "Resega",
+      "en": "Medica III",
+      "identifier": "MedicaIiiPvE",
+      "kind": "action",
+      "source": "game data, xivapi v2 Action 37010 language=de, 2026-10-31"
+    },
+    {
+      "de": "Resedra",
+      "en": "Medica II",
+      "identifier": "MedicaIiPvE",
+      "kind": "action",
+      "source": "game data, xivapi v2 Action 133 language=de, 2026-10-31"
+    },
+    {
+      "de": "Assise",
+      "en": "Assize",
+      "identifier": "AssizePvE",
+      "kind": "action",
+      "source": "game data, xivapi v2 Action 3571 language=de, 2026-10-31"
+    },
+    {
+      "de": "Afflatus miseriae",
+      "en": "Afflatus Misery",
+      "identifier": "AfflatusMiseryPvE",
+      "kind": "action",
+      "source": "game data, xivapi v2 Action 16535 language=de, 2026-10-31"
     }
   ]
 }

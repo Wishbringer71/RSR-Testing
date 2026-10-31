@@ -13840,6 +13840,45 @@ Löschungen").
   (CHANGELOG).
 - *Prüfgrad:* statisch am Code, kompiliert ohne Warnung; im Spiel nicht beobachtet.
 
+### A470 · Heilschwellen durch Messung ersetzen: geprüft, keine ersetzt (31.10.2026)
+
+- *Auftrag:* seine Frage, ob Startschwellen, die Streuung für Flächenheilungen und die Trennung von Fähigkeit und
+  Zauber Erkenntnissen aus dem Spiel weichen können; wenig Überheilung, nie echte Gefahr, alle voll oder knapp
+  darunter wegen der natürlichen Regeneration; im Zweifel die Einstellungen belassen. Einordnung in Konzept 18.
+- *Erhebung:* acht Schwellen je Job (`StateUpdater.StatusFromHealing`, Lerp zur HoT-Spalte über 15 s), Streuung
+  `HealthDifference` über die vier niedrigsten ab fünf Mitgliedern, drei Mitglieder unter der Einzelschwelle öffnen die
+  Fläche, `AutoHealRatio` als Zielfilter je Aktion, Rollenschwellen (Konzept 07), Füllheilung im Leerlauf; die
+  Schwellen sind zugleich sichere Linie anderer Regeln (Größenregel, Tankbuster-Hilfe, Rollenaktionen, Weiser).
+  Gemessen an seinen Mitschnitten vom 25. und 26.10.: natürliche Regeneration im Kampf 1,0 % der maximalen HP je
+  3-s-Tick (Zeile 39), außerhalb 10 %; Überheilung je Aktion (Konzept 18). Eine erste Ablesung an Zeile 24 (2,6–2,8 %)
+  war falsch: Zeile 24 ist der zusammengefasste HoT-Tick aller Quellen (cactbot LogGuide), nicht die Regeneration; sie
+  stand nur in den Notizen, korrigiert vor jeder Verwendung.
+- *Geprüft und verworfen:* doppelte Anrechnung eines HoT (Vorausschau netto und HoT-Spalte) – die Vorausschau reicht nur
+  über 1–3 s, darin höchstens ein Tick; die Medica II auf eine volle Gruppe am 25.10. (19:52:49) – Auslöser im Trace
+  nicht belegbar, Stand 8368ec3f7 vor HoT gegen DoT.
+- *Modell:* `heal_policy_model.py` (neu, Selbsttest: Vorhersage gleich ANCHOR aus `party_ttk_model.py`, Regeneration
+  bis voll, ein Heiler ohne Heilung verliert Mitglieder, „heilen, wo es ganz trifft" kostet mehr Zauber). Regeln:
+  heute, +10 Punkte, Fläche nach wirksamer Heilmenge, Lilie am Überlauf nach Menge, kostenlose Fähigkeiten bei vollen
+  Ladungen, kostenlose Mittel wo sie ganz treffen, sein Bild wörtlich, gelernte Startschwelle, nur bei Gefahr; fünf
+  Lagen, 80 und 300 Kämpfe. Ergebnis in Konzept 18: keine Messregel ist in jeder Lage bei gleichem Preis mindestens so
+  gut wie die festen Schwellen; sein Bild verhält sich wie um 20 Punkte höhere Schwellen mit etwas weniger
+  Überheilung; die gelernte Schwelle ist im Raid sicherer, in der Leichtgruppe gefährlicher; nur bei Gefahr kostet
+  Tote; kostenlose Mittel liegen zwischen heute und 10 Punkten höher.
+- *Code-Review des Modells (Stufe high):* Die Heilung vor dem angekündigten Treffer stand bei 65 %, im Plugin greift sie
+  bei `HealthForDyingTanks` (15 %, `AnnouncedHitDropsBelow`); die Hilfe vor dem Tankbuster fehlte. Beides berichtigt,
+  danach alles neu gerechnet – die Grundlinie wurde unsicherer, das Urteil blieb. Dazu ein falscher Docstring, ein
+  totes Feld, eine doppelte Rechnung.
+- *Nicht gebaut:* Lilie am Überlauf nach Menge (an seinen Abenden 0 und höchstens 4 % mehr wirksame Lilienheilung);
+  Abbruch einer Flächenheilung, die im Wirken überflüssig wird (2 von 15).
+- *Falsifikation:* Kein Defekt? Gestützt: die Heilungen nach den Schwellen überheilen wenig, die große Überheilung
+  fällt unabhängig vom Bedarf. Option falsch (behalten)? Neun Regeln gerechnet, keine dominiert; die Grenzen des
+  Modells – keine kritischen Heilungen, keine Barrieren und Minderungen, feste Mengen, HoTs nicht modelliert – kippen
+  das nicht: kritische Heilungen vergrößern die Überheilung des Aufstockens, Barrieren sind die Heilung vor dem
+  Treffer, die schon gebaut ist. Ausgeliefert, und nichts ändert sich? Es ändert sich nichts im Kampf; wer die Gruppe
+  voller will, hebt die Schwellen, mit dem Preis aus dem Modell.
+- *Betroffen:* niemand (kein Code des Plugins geändert).
+- *Prüfgrad:* Mitschnitt-Auswertung (Zeilen 21, 22, 39), Modell, statisch am Code; im Spiel nicht beobachtet.
+
 ---
 ## B · Commit-Register (Fork vs. `upstream/main`)
 
