@@ -418,6 +418,24 @@ Hauptursache des Wiederbelebungsdefekts. Im Kampf änderte die Umstellung nichts
 (`RaisePendingAndCastable`) diese Jobs schon über `Raise` erreichte; ein künftiger Rezzer-Job fällt
 nicht mehr still heraus.
 
+### Das Mana für die Wiederbelebung
+
+**Ein Schadenszauber gibt nur das Mana aus, das über der Wiederbelebung liegt** (`ActionBasicInfo.LeavesMpForRaise`,
+Option „Keep the MP a raise needs", ab Werk an, A469). Für jeden Job mit Wiederbelebung (`Raise`, ab ihrer Stufe), im
+Kampf und in einer Gruppe: Eine feindliche Aktion mit Manakosten geht nur, solange nach ihr noch die Kosten der
+Wiederbelebung bleiben, oder „Don't raise below this MP", wo das höher steht. Heilungen, die Wiederbelebung selbst,
+Fähigkeiten ohne Mana und ein Zauber unter Thin Air (frei) sind nicht betroffen.
+- *Herkunft:* die Idee des Dunkelritters „Keep at least 3000 MP" (A406) – das Mana für die Schutzaktion bleibt, die
+  Schadensfähigkeiten geben nur aus, was darüber liegt –, übertragen auf die Wiederbelebung. Bei den Heilern hielt das
+  bisher nur die Pflege auf dem Tank im Pull ein (`TryPullUpkeepOnTank`).
+- *Im Kampf:* Ein Heiler bei 2600 MP wirkt kein Glare mehr, das ihn unter 2400 brächte; er greift auf freie Angriffe
+  (Afflatus Misery, Phlegma, Toxikon) oder wartet, bis das Mana nachläuft, und kann einen Toten sofort aufheben. Ohne
+  die Regel kostet reiner Schaden einen Heiler netto rund 240 MP je GCD (400 je Zauber gegen die Erholung von 200 je
+  3 s, Schluss aus den Wirktexten), also bei 3000 MP den Rest in gut zehn Sekunden. Heilungen hält die Regel nicht:
+  Die Lebenden gehen vor.
+- *Preis:* Schaden in Phasen knappen Manas. Ob ein anderer Heiler die Wiederbelebung übernähme, ist eine Annahme über
+  ihn und kein tragender Grund.
+
 ## Ausgeschlossen
 
 - **Nullvariante.** Scheidet aus: Der Defekt trifft jede Wiederbelebung jedes Rezzers und hat keine

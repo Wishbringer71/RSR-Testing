@@ -1374,6 +1374,16 @@ internal partial class Configs : IPluginConfiguration, IM3Settings
 	[UI("Don't raise below this MP",
 		Filter = RaiseActionCondition, Section = 1)]
 	public int LessMPNoRaise { get; set; } = 2400;
+
+	[UI("Keep the MP a raise needs",
+		Description = "In combat and in a party, a job that can raise spends MP on damage only while the raise's cost - or "
+			+ "\"Don't raise below this MP\" where that is higher - is left afterwards. Heals, the raise itself and free casts "
+			+ "are not held.\n"
+			+ "In a fight: a healer at 2600 MP casts no damage spell that would take him below 2400; he uses his free "
+			+ "attacks or waits for MP, and can raise a member who dies at once instead of after the MP has come back.\n"
+			+ "Off: damage spends MP down to the raise's cost and below, as before.",
+		Filter = RaiseActionCondition, Section = 1)]
+	public bool KeepMpForRaise { get; set; } = true;
 	#endregion
 
 	[UI("AoE heal HP spread", Description = "The largest standard deviation of party HP at which RSR still uses AoE heals instead of single-target heals. Lower values need the party's HP to be closer together. Adjust only if you want to fine-tune AoE heal behavior.",

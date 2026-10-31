@@ -474,6 +474,11 @@ public readonly struct ActionBasicInfo
 			return false;
 		}
 
+		if (!LeavesMpForRaise())
+		{
+			return false;
+		}
+
 		if (!IsQuestUnlocked())
 		{
 			BasicWarningHelper.AddSystemWarning($"Do your class quests, action not unlocked: {Name}");
@@ -546,6 +551,37 @@ public readonly struct ActionBasicInfo
 	private bool IsActionEnabled()
 	{
 		return _action.Config?.IsEnabled ?? false;
+	}
+
+	/// <summary>
+	/// Whether this action leaves the MP a raise needs (concept 11, "Das Mana für die Wiederbelebung", A469): for a job that
+	/// raises, in combat and in a party, a hostile action that costs MP goes only while the raise's cost - or "Don't raise
+	/// below this MP" where that is higher - is left after it. Heals, the raise itself, actions without MP and a cast Thin
+	/// Air makes free are untouched. The dark knight's "Keep at least 3000 MP" (A406), carried over to the raise.
+	/// </summary>
+	private bool LeavesMpForRaise()
+	{
+		if (!Service.Config.KeepMpForRaise || _action.Setting.IsFriendly || !DataCenter.InCombat
+			|| DataCenter.PartyMembers.Count <= 1)
+		{
+			return true;
+		}
+
+		var cost = MPNeed;
+		if (cost == 0 || DataCenter.CurrentRotation is not CustomRotation rotation || rotation.RaiseAction is not { } raise
+			|| !raise.EnoughLevel || raise.ID == ID)
+		{
+			return true;
+		}
+
+		if (Player.Job == Job.WHM
+			&& (StatusHelper.PlayerHasStatus(true, StatusID.ThinAir) || CustomRotation.IsLastAction(ActionID.ThinAirPvE)))
+		{
+			return true;
+		}
+
+		var reserve = Math.Max(raise.Info.MPNeed, (uint)Math.Max(0, Service.Config.LessMPNoRaise));
+		return DataCenter.CurrentMp >= cost + reserve;
 	}
 
 	/// <summary>

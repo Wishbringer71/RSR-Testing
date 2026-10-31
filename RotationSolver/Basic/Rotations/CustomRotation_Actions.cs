@@ -275,6 +275,9 @@ public partial class CustomRotation
 
 	#endregion
 	private protected virtual IBaseAction? Raise => null;
+
+	/// <summary>The job's raise, for the MP it keeps back (<c>ActionBasicInfo.LeavesMpForRaise</c>, A469).</summary>
+	internal IBaseAction? RaiseAction => Raise;
 	private protected virtual IBaseAction? TankStance => null;
 
 	private protected virtual IBaseAction? LimitBreak1 => null;
