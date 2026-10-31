@@ -23,6 +23,14 @@ are not reconstructed here.
 
 ## Unreleased
 
+## 7.5.7.13+wsh1
+
+### Dependency of RotationSolver: RebornMaterial 7.5.7.5
+
+RebornMaterial goes from 7.5.7.2 to 7.5.7.5: 7.5.7.3 from upstream 518b3503f, 7.5.7.4 and 7.5.7.5 in this fork first and
+in upstream 7.5.7.12 since. 7.5.7.4 holds a window font through the frame it is drawn in, 7.5.7.5 reads the text scale
+once a frame; nothing a rotation calls changed.
+
 ### Structure of RotationSolver.Basic: folded into RotationSolver
 
 From upstream 7.5.7.11: the project `RotationSolver.Basic` is gone; its sources live under `RotationSolver/Basic` in the

@@ -13909,6 +13909,35 @@ Löschungen").
 - *Betroffen:* Endnutzer (Revolverklinge); Upstream-Pflege: eine Konfliktzone in `GNB_Reborn.GeneralGCD`.
 - *Prüfgrad:* statisch am Code, Referenz, kompiliert ohne Warnung; im Spiel nicht beobachtet.
 
+### A472 · Release 7.5.7.13+wsh1 veröffentlicht, Release-Text übergeben, neuer Zweig (31.10.2026)
+
+Sein Auftrag (31.10.2026): „Branch zu Master, Compiler, Release, neuer branch" – die Freigabe (`CLAUDE.md`, „Grenzen und
+Löschungen"); „Master" ist hier `main`.
+
+- *Vorher gemessen:* Upstream abgeglichen (0 ausstehend, 7.5.7.13); `main` (a5fe14208) Vorfahr des Arbeitszweigs; Tag
+  frei auf `origin`; Versionsangaben schon auf 7.5.7.13+wsh1. Der Release-Text bekam die zwei sichtbaren Änderungen ohne
+  Kampfwirkung, die ihm fehlten (A459, A465), 10 728 Zeichen.
+- *Zweig zu `main`:* `main` auf `claude/fixes-after-7.5.7.10` (cd13d3b3b) vorgespult und gepusht; damit ist PR #20
+  gemergt. Kompiliert ohne Warnung und Fehler.
+- *Release:* `publish.yaml` per `workflow_dispatch` auf `main` mit `7.5.7.13+wsh1`, Lauf 41206602612 erfolgreich.
+  Release auf cd13d3b3b, `latest.zip` 3 997 875 Bytes, Digest sha256:8c4ba49e…9888, Text mit den Abschnitten des
+  Release-Texts.
+- *Übergabe:* `fork-changes-in-play.md` steht auf Upstream 7.5.7.13; die Einträge sind in die Themen eingearbeitet:
+  Serie eines Raidwides und Grenze der Mehrfachtreffer der Heiler bei „Party mitigation answers raidwides"; jeder
+  laufende HoT bei „Healing — when it lands"; das Mana der Wiederbelebung bei „Raising"; Pyretisch, Tankbuster auf
+  beiden Tanks und Herz des Korunds bei „Mitigation and defensives"; der Tankbuster aus mehreren Treffern bei „Tank
+  self-protection"; die sechs Einträge der gelernten Tabellen bei „The learned lists"; Patronen der Revolverklinge,
+  Restzeit der Gegner, Manafizierung und Pictomancer bei „Damage and rotation"; Aktionsfenster und Schlaf-Trace bei
+  „Seeing what the rules decide"; der Absturz an der Ladeseite bei „Frame time"; die Paketeinträge bei „For rotation
+  authors". `fork-changes-since-last-release.md` beginnt mit „Changes since 7.5.7.13+wsh1". `CHANGELOG.md`: Abschnitt
+  7.5.7.13+wsh1 mit dem nachgetragenen Eintrag zu RebornMaterial 7.5.7.5.
+- *Zweige:* `claude/fixes-after-7.5.7.13` von `main` nach seiner Namensvorgabe (die Sitzungsumgebung nennt
+  `claude/repo-privacy-settings-f06dqh`; seine Vorgabe gilt), die Übergabe darauf und `main` vorgespult.
+  `claude/fixes-after-7.5.7.10` ist vollständig gemergt und ein Löschfall auf `origin` (Ref-Löschungen sind der Sitzung
+  gesperrt).
+
+*Prüfgrad:* Release-API und Workflow-Lauf gelesen, Prüfskripte; die Übergabe statisch gegen den Release-Text abgeglichen.
+
 ---
 ## B · Commit-Register (Fork vs. `upstream/main`)
 

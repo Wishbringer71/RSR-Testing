@@ -1,6 +1,6 @@
 # What this fork does differently in a fight
 
-The whole distance from upstream **7.5.7.10**, as of release `7.5.7.10+wsh1`. What a single
+The whole distance from upstream **7.5.7.13**, as of release `7.5.7.13+wsh1`. What a single
 release changed is in [`fork-changes-since-last-release.md`](fork-changes-since-last-release.md),
 which is the text of the release description; this document is the standing picture and takes
 each release's text over once it has shipped.
@@ -84,6 +84,15 @@ the low 16 bits only, and a raidwide that hit a tank harder than that could be r
 - **Enemy debuffs on a pull follow their refresh setting.** Without a BossModReborn prediction, Reprisal,
   Feint and Addle are kept up on a pull of enough enemies and renewed as the action's own "Number of GCDs
   before the DOT/Status effect is reapplied" says.
+
+- **A raidwide that lands in several hits counts mitigation only to its last hit.** RSR learns how long a series of
+  hits from one area attack runs - Bodyweight Exorcism's four towers land over 9 s - and counts a party mitigation only
+  where it lasts until the last hit. A mitigation that ran out after the first towers no longer counts for all of them,
+  and `Skip mitigation for small area casts` no longer leaves yours out while the last towers land unmitigated.
+- **Astrologian, Scholar, Sage: the limit to multihit stacks also covers series and dangerous hits.** With "Limit
+  Macrocosmos / Seraphism / Panhaima to multihit party stacks" on, these tools went into the attacks that hit the party
+  several times only with a marker. As for the White Mage's bell, two sub-settings (on by default) let them go into a
+  learned series and before an area hit that would put a member in danger.
 
 ## Healing — when it lands
 
@@ -177,6 +186,11 @@ the low 16 bits only, and a raidwide that hit a tank harder than that could be r
   and into an enemy attack learned to hit you and the party several times in a row (`Also into an enemy
   attack that hits in a series`) — at its first hit, or just before it when an enemy cast of it reaching
   you lands within the next GCD. An attack teaches the first time it is met.
+- **Every running heal over time counts.** The heal thresholds for "Targets with Heal-over-Time" applied only to the
+  heals over time on two fixed lists, so under Kerachole, Celestial Opposition, Aurora or Knight's Benediction RSR healed
+  as if nothing were ticking. Any status whose own text says it regenerates HP over time counts, from whoever laid it.
+  A member's single threshold reads the one on him that runs longest; the area threshold reads how much of the party is
+  under one, not only whether you are.
 
 ## Healing — who it picks
 
@@ -264,6 +278,10 @@ the low 16 bits only, and a raidwide that hit a tank harder than that could be r
   `Use Crimson Cyclone at any range…` and Swiftcast on Ruby Ruin and Ruby Outburst below Ruby
   Rite's level are off by default. Whether a raise is swiftcast follows `Raise with Swiftcast or Dualcast`
   alone, kept per job; the Summoner's own option for Swiftcast on Resurrection is gone.
+- **A job that can raise keeps the MP for it.** In combat and in a party, healers, Summoner and Red Mage spend MP on
+  damage only while the raise's cost - or "Don't raise below this MP" where that is higher - is left. A healer at 2600
+  MP does not cast the damage spell that would take him below 2400 and leave a dead member waiting for MP; heals and
+  free casts go on. Setting "Keep the MP a raise needs", on by default.
 
 ## Mitigation and defensives
 
@@ -349,6 +367,22 @@ the low 16 bits only, and a raidwide that hit a tank harder than that could be r
 - **Each ability picks its own target.** A target rule set by the GCD no longer carries over to the
   commanded action, the emergency abilities, the tankbuster plan and the tank swap: the Paladin's
   emergency Intervention goes to the co-tank, not to whoever has the least HP.
+- **No spell runs into Pyretic.** A status that damages every action - Pyretic, Causality - comes with the hit that
+  lays it, and an action still under way at that moment takes its damage at once. RSR learns, from every landing on you
+  or a party member, which enemy casts lay such a status, and before one of them lands on you it starts no spell that
+  would still be casting, presses nothing that would still be under way, and cancels a running cast that would meet it
+  - each counted with your measured round trip. Instant actions and casts that finish in time go on, and an enemy cast
+  stopped before its end releases at once. BossModReborn's imminent Pyretic counts too. The learned casts are kept in
+  `ActionPenaltyCasts.json` beside the other learned tables; a status taken off `No-casting debuffs` is no longer learned
+  or waited for.
+- **A tankbuster on both tanks gets help on both.** A White Mage's Divine Benison and Aquaveil, and an Astrologian's
+  barrier after Macrocosmos or Collective Unconscious, wait for each other only on a target that still carries the
+  other's effect. Under a tankbuster on both tanks, Aquaveil goes on the tank without Divine Benison at once instead of
+  waiting 15 s, and a tank whose barrier the last hit took gets the next help for the next hit.
+- **Gunbreaker: Heart of Corundum on "Full target usage" goes to who needs it.** It went to the member with the fewest
+  hit points - most often a caster at full health with a small pool - while the gunbreaker took the hit himself. It goes
+  to the tankbuster's target first, the gunbreaker before others, otherwise to the member the heal target order puts
+  first; with a tankbuster on him before it is back, another member gets it only to save a healer or a tank in danger.
 
 ## Tank self-protection
 
@@ -481,6 +515,12 @@ the low 16 bits only, and a raidwide that hit a tank harder than that could be r
   still hits him, RSR stops taking that enemy on an announcement for the rest of the fight.
   `Provoke when there is another tank in the party` does only what its text names, and `Provoke
   anything not on the no provoke list.` respects the list.
+- **A tankbuster of several hits is planned as one.** The tankbuster table adds up what all hits of one cast take on a
+  tank - also hits that land under another id or from a helper, matched to the cast by its name - and keeps the sum
+  under the cast the plan reads, with the time from the first hit to the last. The plan sizes its mitigation for the sum
+  and counts only mitigation that still stands at the last hit, and it presses the invulnerability late enough to last
+  through the series, at the latest one GCD before the cast ends. An invulnerability that runs out before the last hit
+  no longer holds the rest of your defence back. A tankbuster of one hit is planned as before.
 
 ## Movement safety
 
@@ -542,6 +582,30 @@ off.
   while the game is closed.
 - **A list whose load did not finish is not saved**, so a cancelled start cannot write "every entry removed"
   over your list changes; an unreadable list file is set aside and the built-in list stands.
+- **The area and tankbuster tables count every reading under the game version it was taken in.** Nothing changes in a
+  fight: every rule still reads the highest valid reading. Each reading is kept, not only one that raises the value, in
+  `HostileCastingAreaPotential.rev.json` and `TankbusterPotential.rev.json` beside the old files, which RSR goes on
+  writing; after the next patch RSR can tell which values the new version has confirmed. To start one of these tables
+  over by hand, delete both of its files with the game closed.
+- **A learned table that cannot be read comes back from its backup.** Every learned table keeps a copy of its last save
+  that was read back (`.bak`). A file that cannot be read is set aside, and the backup is loaded instead of starting
+  empty. A file you deleted stays deleted.
+- **A tankbuster nothing names is learned from its first hit.** A tankbuster that neither the tankbuster list nor a
+  marker names - RSR knows it only because the enemy casts it at its target, a tank - is learned from its hit on a tank
+  like any tankbuster's, and from the next cast at you the plan spends what it needs, the invulnerability included.
+  Nothing else is held for it, it does not count as a known tankbuster for opening the defence or for help from others,
+  and a hit that reaches more than one member is not learned as one.
+- **A raidwide landing on a tank under Hallowed Ground or Superbolide joins the area list,** although the tank's hit
+  carries no damage then; a tankbuster that a patch turned into a raidwide no longer draws the tankbuster plan.
+- **Nothing measured outside the content's sync is learned.** Above the content's level, or in an unrestricted party
+  from the duty finder at the same level, every hit is smaller than in sync. The area table, the tankbuster table and the
+  damage over time on the party skip such readings; the open world counts as in sync.
+- **An area hit counts at its unmitigated size.** The damage table divides out the mitigation that stood when a raidwide
+  landed - on the member and on the boss, by the figures the effect texts state -, so a raidwide first seen under three
+  mitigations is no longer rated small. Every rule that reads the table reads it under the mitigation that will still
+  stand when the cast lands: what others have already laid makes the hit smaller, and your own party mitigation goes out
+  where the rest of the hit would still push someone to where healing is called for, or is at least the size of a large
+  barrier. A barrier is not divided out.
 
 ## Damage and rotation
 
@@ -664,6 +728,19 @@ off.
   that hold only), and while more than half the enemies in radius are slowed (`HoldHolyWhilePackSlowed`).
 - **Thin Air** is only spent under real MP pressure that Lucid Dreaming cannot answer
   (`ThinAirOnMpPressureOnly`, **on by default**). A raise still takes a charge regardless.
+- **Gunbreaker: cartridges go into the pack.** In a pull a cartridge goes on Fated Circle once its number of enemies is
+  met, Gnashing Fang does not start against three or more, and Sonic Break goes on up to five, at four and five only
+  when the target lives its whole duration by its measured time to kill, at three half of it - as The Balance's guide
+  has it. Before, most GCDs under No Mercy went into one enemy, and the damage dealers drew the rest.
+- **The time an enemy has left is measured.** The self-correcting time to kill was kept for party members only. It is
+  kept for enemies too: the Monk's Six-sided Star as the last weaponskill comes before the target dies, and the Scholar
+  holds Bio only where the target's measured time is too short.
+- **Red Mage: Manafication waits for Embolden only where that costs no use.** When the boss's measured time to kill
+  says the wait would cost the last Manafication, it goes at once; until then, and while no time to kill is measured, it
+  waits as before.
+- **Pictomancer: no motif under Starry Muse in the opener.** Below level 92 Starry Muse comes two seconds into the
+  fight, inside the opener's first five seconds; the opener's priorities end once Starry Muse is up, as the rest of the
+  rotation already does.
 
 ## Seeing what the rules decide
 
@@ -695,6 +772,10 @@ off.
   Dualcast` among them.
 - **Two settings that did nothing were removed**: `How early before next GCD should RSR use swiftcast for
   raise` and `Target color`; nothing had read them since upstream dropped their code.
+- **The action window shows the movement check that decides in combat**, including that a dash onto a target at 0
+  yalms is only damage; it asks the same check as the press.
+- **A chosen sleep that never went out says why** in the trace's "sleep not cast" line: moving, or a party member in
+  danger, which both come first.
 
 ## Frame time
 
@@ -702,6 +783,10 @@ RSR keeps only the visual effects it reads — the stack, spread and tankbuster 
 markers — instead of every effect of every character, checks whether a status is your own without searching the object table per
 status, and works out each enemy's time-to-kill once per frame. Most of the difference shows in
 alliance content, where 24 or 48 players' effects used to be walked several times a frame.
+
+**No crash from RSR's windows at a loading screen.** When RSR rebuilt its window fonts after a zone change - at
+character select or a teleport - a font still being drawn could already be released, and the game crashed in the
+control window. RSR uses RebornMaterial 7.5.7.5, which keeps each font until the frame is drawn.
 
 ## For rotation authors
 
@@ -747,6 +832,13 @@ alliance content, where 24 or 48 players' effects used to be walked several time
   `IsTimeToKillMeasured`, `MonkRotation.PerfectBalanceMaxStacks` and `RiddleOfFireDueWithinPerfectBalance`,
   `CustomRotation.LastWeaponskillOnTarget`; `ICooldown.JustUsedAfter` is false for an action not used;
   `Configs.Migrate` keeps stored values across a version change; RebornMaterial 7.5.7.2.
+- 7.5.7.13+wsh1 (details in `CHANGELOG.md`): `RotationSolver.Basic` is folded into `RotationSolver` (upstream 7.5.7.11),
+  `latest.zip` carries no `RotationSolver.Basic.dll`; no cast meets a learned status that damages every action
+  (`NoCastingStatus`, `ActionPenaltyCasts.json`); the single-target stretch asks the target the defense has chosen; area
+  hits are learned unmitigated (`AreaPotentialUnmitigated.json`) and read under the mitigation standing; every running
+  heal over time lowers the heal thresholds; the corrected time to kill is kept for enemies
+  (`CustomRotation.IsTimeToKillMeasured`, `LastWeaponskillOnTarget`), with `CustomRotation.HoldCostsUse`; damage keeps the
+  raise's MP (`Configs.KeepMpForRaise`); `CustomRotation.HitSeriesHitsLeft` and `MultiHitAhead` for every healer.
 
 **Defects of the original that were costing something in the fight:**
 
