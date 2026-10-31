@@ -1,0 +1,45 @@
+<Project>
+	<!--
+	DalamudPackager imports this file instead of running its own default targets (DalamudPackager.targets in the
+	package: "Condition=!Exists('$(PackagerTargetFile)')"). Without a list, its zip takes every file below the
+	output path, recursively. Two builds put more there than the plugin: the release workflow builds with
+	`dotnet build` with an output folder, which sends the source generator's dll, deps and pdb into the same folder, and a local
+	build into bin\Release keeps the files of earlier builds - RotationSolver.Basic.dll from before upstream 7.5.7.11
+	folded that project into this one. Both ended up in latest.zip (A474).
+
+	The list is the plugin: its assembly, its manifest and deps file, and the two libraries PruneOutputDlls keeps
+	(RotationSolver.csproj). A library added there has to be added here too; check_plugin_zip.py reads this list and
+	fails a build whose zip differs from it. The manifest properties and the Debug/Release split are the package's
+	own defaults.
+	-->
+	<PropertyGroup>
+		<RsrPluginFiles>$(AssemblyName).dll;$(AssemblyName).json;$(AssemblyName).deps.json;ECommons.dll;RebornMaterial.dll</RsrPluginFiles>
+	</PropertyGroup>
+
+	<Target Name="RsrDalamudPackager" AfterTargets="Build">
+		<DalamudPackager ProjectDir="$(ProjectDir)"
+						 OutputPath="$(OutputPath)"
+						 AssemblyName="$(AssemblyName)"
+						 MakeZip="$([System.String]::Equals('$(Configuration)', 'Release'))"
+						 Include="$(RsrPluginFiles)"
+						 Author="$(Author)"
+						 Name="$(Name)"
+						 MinimumDalamudVersion="$(MinimumDalamudVersion)"
+						 Punchline="$(Punchline)"
+						 Description="$(Description)"
+						 ApplicableVersion="$(ApplicableVersion)"
+						 RepoUrl="$(RepoUrl)"
+						 Tags="$(Tags)"
+						 CategoryTags="$(CategoryTags)"
+						 DalamudApiLevel="$(DalamudApiLevel)"
+						 LoadRequiredState="$(LoadRequiredState)"
+						 LoadSync="$(LoadSync)"
+						 CanUnloadAsync="$(CanUnloadAsync)"
+						 LoadPriority="$(LoadPriority)"
+						 ImageUrls="$(ImageUrls)"
+						 IconUrl="$(IconUrl)"
+						 Changelog="$(Changelog)"
+						 AcceptsFeedback="$(AcceptsFeedback)"
+						 FeedbackMessage="$(FeedbackMessage)" />
+	</Target>
+</Project>

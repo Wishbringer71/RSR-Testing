@@ -13984,6 +13984,32 @@ durchgehen". Als Skill `spielpatch` festgehalten (Lesetabelle in CLAUDE.md); den
 - *Prüfgrad:* Patchnotes, Wirktexte und Spielblätter (xivapi) gelesen, The Balance abgeglichen, statisch am Code,
   kompiliert ohne Warnung; im Spiel nicht beobachtet.
 
+### A474 · latest.zip enthält nur das Plugin (31.10.2026)
+
+- *Hinweis* (31.10.2026): „das zip unter vs2026 hat andere inhalte als das der repo-seite, mehr, z.b. basic".
+- *Ursache, am Quelltext des Packers belegt* (goatcorp/DalamudPackager 827d88d, `CreateZip`): Ohne `Include` oder
+  `Exclude` zippt er rekursiv jede Datei unter dem Ausgabepfad. Sein lokales Zip: Bis 7.5.7.10 schrieb das Projekt
+  RotationSolver.Basic ebenfalls nach `$(SolutionDir)bin\Release`; der Build löscht dort nichts, also lagen
+  `RotationSolver.Basic.dll` und ihre Begleiter weiter im Ordner und im Zip. Das Release-Zip: `publish.yaml` baut mit
+  `--output .\build`, dorthin geht auch der Code-Generator (`RotationSolver.SourceGenerators.dll`, `.deps.json`,
+  `.pdb`); das Asset von 7.5.7.13+wsh1 enthält sie (heruntergeladen und gelistet). C139 widerruft die Aussage aus A437.
+- *Im Kampf:* nichts. RSR lädt keine weiteren Assemblys aus seinem Ordner, und nichts verweist mehr auf
+  RotationSolver.Basic oder den Generator; beide liegen dort wirkungslos. Der Generator kostete im Release 5,7 MB.
+- *Gebaut:* `RotationSolver/DalamudPackager.targets`, das der Packer anstelle seiner Vorgabe heranzieht, mit fester
+  Liste (`RsrPluginFiles`: Assembly, Manifest, deps, ECommons, RebornMaterial) und denselben Manifest-Angaben wie die
+  Vorgabe. `check_plugin_zip.py` hält ein gebautes Zip gegen diese Liste und die Liste gegen die Bibliotheken, die
+  `PruneOutputDlls` im Projekt behält (Selbsttest: genaues Zip, alte Basic, Generator, fehlende Datei, vergessene
+  Bibliothek); in der CI nach dem Build, im Release-Workflow vor der Veröffentlichung.
+- *Nachweis:* lokal mit alten Basic-Dateien im Ausgabeordner und im Weg des Release-Workflows (`--output`) gebaut; beide
+  Zips enthalten genau die fünf Dateien, das alte Release-Asset fällt durch.
+- *Falsifikation:* Kein Defekt? Das Asset enthält nachweislich Dateien, die nicht zum Plugin gehören. Option falsch? Im
+  Release-Workflow ohne `--output` zu bauen, hätte das Release repariert, sein lokales Zip nicht; die Liste trifft
+  beide. Ausgeliefert, und nichts ändert sich? Eine neue Bibliothek, die das Projekt behält, fehlte im Zip, wenn die
+  Liste sie nicht nennt – dagegen der zweite Abgleich der Prüfung.
+- *Betroffen:* Endnutzer (Inhalt und Größe des Pakets); Upstream-Pflege (eine Datei im Projekt).
+- *Prüfgrad:* Quelltext des Packers, lokaler Build in beiden Wegen, Prüfskript; der Release-Workflow selbst läuft erst
+  beim nächsten Release.
+
 ---
 ## B · Commit-Register (Fork vs. `upstream/main`)
 
@@ -14275,3 +14301,4 @@ Die offene Arbeit dazu — Reihenfolge und Abbruchbedingung der Nachprüfung —
 | C136 | A457 (29.10.2026): „der oGCD fiel also auf oder nach das GCD-Ende, und seine Sperrzeit schließt ein Fenster von 0,4 s" | Ein bereiter GCD geht im Dispatch immer vor, Fähigkeiten ruhen in den letzten 0,5 s vor ihm; die Fähigkeit ging, weil der Schlaf nicht mehr der gewählte GCD war (A459) | berichtigt (A459) |
 | C137 | A387 (26.10.2026): „Die korrigierte Vorhersage rechnet ihren eigenen Fehler heraus (`ScoreTtkForecast`), und bis sie steht, gilt die Schätzung weiter" | Für einen Gegner stand sie nie: `ScoreTtkForecast` lief seit seiner Einführung (1b385b796, 17.09.2026) nur für die Gruppe, `GetCorrectedTTK` war für jeden Gegner unbekannt und `IsTimeToKillMeasured` immer falsch; der Gelehrte entschied über Bio weiter nach der Schätzung | berichtigt (A463) |
 | C138 | A413 (26.10.2026): Six-sided Star als letzte Waffenfertigkeit „nach der korrigierten Zeit bis zum Tod"; „die Zeit bis zum Tod rechnet ihren Fehler heraus (`ScoreTtkForecast`)" | Derselbe Grund: Für das Ziel gab es keine korrigierte Zeit, der Zweig über den Tod des Ziels lief nie; Six-sided Star kam nur vor einer Pause, die die Zeitleiste von BossModReborn vorhersagt | berichtigt (A463) |
+| C139 | A437 (29.10.2026): „`latest.zip` enthält ECommons, RebornMaterial, `RotationSolver.dll`, deps und Manifest – keine `RotationSolver.Basic.dll`, keine `.pdb`, keine `.xml`“, der Schuldpunkt „Release-Paket enthält vermeidbaren Ballast“ sei aufgelöst | Galt nur für den lokalen Build ohne Ausgabeordner. Der Veröffentlichungsweg (`publish.yaml`, `--output .\build`) legt den Code-Generator in denselben Ordner, und der Packer zippt jede Datei dort: Das Asset von 7.5.7.13+wsh1 enthielt `RotationSolver.SourceGenerators.dll`, `.deps.json` und `.pdb`. Die angekündigte Bestätigung am Paket des Veröffentlichungswegs fand nicht statt | berichtigt (A474): feste Liste in `RotationSolver/DalamudPackager.targets`, `check_plugin_zip.py` in der CI und vor jeder Veröffentlichung |

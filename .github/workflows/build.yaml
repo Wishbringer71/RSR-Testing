@@ -428,6 +428,11 @@ jobs:
       - name: Build Plugin
         run: dotnet build --no-restore -c Release RotationSolver/RotationSolver.csproj "-p:SolutionDir=$env:GITHUB_WORKSPACE/" -warnaserror:CS0618,CS0612,RS0030,CS0419,CS1570,CS1571,CS1572,CS1573,CS1574,CS1734
 
+      # latest.zip holds the plugin and nothing else: the packager zips every file of the output folder unless
+      # RotationSolver/DalamudPackager.targets gives it the list (A474). The release workflow runs the same check.
+      - name: Check latest.zip holds only the plugin
+        run: python .github/scripts/audit/check_plugin_zip.py bin/Release/RotationSolver/latest.zip
+
       # DefenseTrace.log names the commit it was written by, so an uploaded trace can be matched to
       # its code. The commit comes from a git call in Directory.Build.props; if that call fails the
       # build still succeeds and the trace says "unknown". This step makes the failure visible: the

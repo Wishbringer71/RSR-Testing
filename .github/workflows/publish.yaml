@@ -93,6 +93,12 @@ jobs:
       - name: Build Plugin
         run: dotnet build --no-restore -c Release RotationSolver/RotationSolver.csproj -p:AssemblyVersion=${{ env.numericVersion }} -p:FileVersion=${{ env.numericVersion }} -p:PackageVersion=${{ env.packageVersion }} -p:InformationalVersion=${{ env.tag }} --output .\build
 
+      # The build's output folder also receives the source generator, and without a list the packager zipped it into
+      # latest.zip (the asset of 7.5.7.13+wsh1, A474); the list is in RotationSolver/DalamudPackager.targets. Nothing is
+      # published unless the zip holds exactly the plugin.
+      - name: Check latest.zip holds only the plugin
+        run: python .github/scripts/audit/check_plugin_zip.py build/RotationSolver/latest.zip
+
       - name: Publish Plugin
         uses: softprops/action-gh-release@v3
         with:
