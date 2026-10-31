@@ -57,13 +57,6 @@ Tankbuster-Tabelle neben Upstreams AoE- und Tankbuster-Liste. *Ort:* `MainWindow
 Anzeige ja, Bearbeitung nein (Konzept 13, „Gelernte Tabellen über Spielversionen", Regel 10; seine Vorgabe A173); gebaut
 als letzte Stufe der Revision. *Konzept:* 13 (gelernte Tabellen), 18 (Einstellungen).
 
-### Revolverklinge: Feindseligkeit im Pull · N
-Hinweis eines Bekannten und sein Zusatz (31.10.2026): Im Wall-to-wall-Pull hat die Revolverklinge gefühlt später alle
-Gegner als die anderen Tanks und verliert sie beim Weiterziehen schneller an Damage Dealer, die im Laufen Schaden
-machen. Im Kampf: Gegner laufen zu Damage Dealern und Heilern, die Treffer nehmen, die dem Tank gelten. *Ort:*
-`GNB_Reborn` (Flächen-Combo, Eröffnung im Pull, Fernangriff, Gapcloser) gegen `PLD_Reborn`, `WAR_Reborn`, `DRK_Reborn`.
-*Nächster Schritt:* Loop direkt nach der Prüfung der Heilschwellen. *Konzept:* 02 („Feindseligkeit im Pull").
-
 
 ## Technische Schuld
 

@@ -1,6 +1,6 @@
 # GNB — Abhängigkeitsmatrix
 
-Erzeugt von `.github/scripts/audit/generate_action_matrix.py` am 2026-10-25; nicht von Hand bearbeiten. Methode und Grenzen: `docs/rotation-flow/14-action-dependency-matrix.md`.
+Erzeugt von `.github/scripts/audit/generate_action_matrix.py` am 2026-10-31; nicht von Hand bearbeiten. Methode und Grenzen: `docs/rotation-flow/14-action-dependency-matrix.md`.
 
 - Basisrotation: `GunbreakerRotation`
 - Rotation: `RotationSolver/RebornRotations/Tank/GNB_Reborn.cs`
@@ -149,8 +149,6 @@ direkt: 44 · nur gelesen: 1 · ungenutzt: 1
 | Brutal Shell | Regel sperrt vorher | Gnashing Fang |
 | Brutal Shell | Regel sperrt vorher | Keen Edge |
 | Brutal Shell | Regel sperrt vorher | No Mercy |
-| Burst Strike | Regel sperrt vorher | Bloodfest |
-| Burst Strike | Regel sperrt vorher | No Mercy |
 | Camouflage | Regel sperrt vorher | Gnashing Fang |
 | Camouflage | Regel sperrt vorher | No Mercy |
 | Danger Zone | Regel sperrt vorher | Bloodfest |

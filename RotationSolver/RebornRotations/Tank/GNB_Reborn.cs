@@ -440,11 +440,19 @@ public sealed class GNB_Reborn : GunbreakerRotation
 	#region GCD Logic
 	protected override bool GeneralGCD(out IAction? act)
 	{
+		// In a pack the cartridges go into the area and the single-target chain stops where the reference says so (The
+		// Balance, Gunbreaker Basic Guide: Fated Circle on 2 targets or more, no Gnashing Fang on 3 or more, Sonic Break on
+		// up to 5 - at 4 only for its whole duration, at 3 for half of it). Before, Burst Strike, the Gnashing Fang chain
+		// and Sonic Break came ahead of the area whatever the count, and in a wall-to-wall pull most GCDs under No Mercy
+		// went into one enemy while the damage dealers drew the rest (concept 02, "Feindseligkeit im Pull"; A471).
+		var pack = EnemiesAroundMe();
+		var gnashingFangInPack = !FatedCirclePvE.EnoughLevel || pack < 3;
+
 		// Sonic Break and Reign of Beasts wait for No Mercy below. Should No Mercy pass without room for
 		// them (a window without a GCD, downtime), Ready to Break or Ready to Reign would run out unused;
 		// its last GCD goes to them, ahead of everything else, since every other GCD here can still come
 		// a GCD later.
-		if (IsLastChanceBeforeStatusEnds(SonicBreakPvE, StatusID.ReadyToBreak) && SonicBreakPvE.CanUse(out act))
+		if (IsLastChanceBeforeStatusEnds(SonicBreakPvE, StatusID.ReadyToBreak) && SonicBreakPvE.CanUse(out act) && SonicBreakWorthIn(pack))
 		{
 			return true;
 		}
@@ -457,7 +465,7 @@ public sealed class GNB_Reborn : GunbreakerRotation
 			return true;
 		}
 
-		if (BurstStrikePvE.CanUse(out act))
+		if (CartridgeSpender(out act))
 		{
 			if (IsAmmoCapped && BloodfestPvE.EnoughLevel && NoMercyPvE.Cooldown.WillHaveOneChargeGCD(1))
 			{
@@ -498,7 +506,7 @@ public sealed class GNB_Reborn : GunbreakerRotation
 
 		if (!InReignCombo)
 		{
-			if (AmmoComboStep == 0 && GnashingFangPvE.CanUse(out act, skipComboCheck: true))
+			if (gnashingFangInPack && AmmoComboStep == 0 && GnashingFangPvE.CanUse(out act, skipComboCheck: true))
 			{
 				return true;
 			}
@@ -508,12 +516,12 @@ public sealed class GNB_Reborn : GunbreakerRotation
 				return true;
 			}
 
-			if (HasNoMercy && SonicBreakPvE.CanUse(out act))
+			if (HasNoMercy && SonicBreakPvE.CanUse(out act) && SonicBreakWorthIn(pack))
 			{
 				return true;
 			}
 
-			if (AmmoComboStep == 0 && GnashingFangPvE.CanUse(out act, skipComboCheck: true, usedUp: HasNoMercy || GnashingFangPvE.Cooldown.WillHaveXChargesGCD(2, 1)))
+			if (gnashingFangInPack && AmmoComboStep == 0 && GnashingFangPvE.CanUse(out act, skipComboCheck: true, usedUp: HasNoMercy || GnashingFangPvE.Cooldown.WillHaveXChargesGCD(2, 1)))
 			{
 				return true;
 			}
@@ -529,7 +537,7 @@ public sealed class GNB_Reborn : GunbreakerRotation
 			}
 		}
 
-		if (BurstStrikePvE.CanUse(out act))
+		if (CartridgeSpender(out act))
 		{
 			if (Ammo > 3 && OvercappedAmmo() > 0)
 			{
@@ -597,6 +605,45 @@ public sealed class GNB_Reborn : GunbreakerRotation
 		}
 
 		return base.GeneralGCD(out act);
+	}
+
+	// The enemies around the gunbreaker, where Fated Circle and the Demon Slice combo strike: counted by Demon Slice,
+	// which needs no cartridge and is learned at level 10, so Sonic Break is weighed with an empty gauge too.
+	private int EnemiesAroundMe()
+	{
+		return DemonSlicePvE.CanUse(out _, skipComboCheck: true, skipAoeCheck: true) ? DemonSlicePvE.Target.AffectedTargets.Length : 0;
+	}
+
+	// A cartridge on Fated Circle where its own count of enemies is met (2 by default, the reference's too), otherwise on
+	// Burst Strike: the same spend, one hit on everybody around instead of a bigger one on the target.
+	private bool CartridgeSpender(out IAction? act)
+	{
+		return FatedCirclePvE.CanUse(out act) || BurstStrikePvE.CanUse(out act);
+	}
+
+	// Sonic Break by the reference's counts: up to 5 enemies; at 4 and 5 only where the target it was just chosen for lives
+	// its whole stated duration by its measured time to kill, at 3 half of it; while that time is unknown, as before. Its
+	// damage over time sits on one enemy, so in a large pack the GCD gives the others nothing. Asked after CanUse, which
+	// picks that target.
+	private bool SonicBreakWorthIn(int pack)
+	{
+		if (pack < 3)
+		{
+			return true;
+		}
+
+		if (pack > 5)
+		{
+			return false;
+		}
+
+		var ttk = SonicBreakPvE.Target.Target?.GetCorrectedTTK() ?? float.NaN;
+		if (float.IsNaN(ttk) || !ActionTooltip.TryStatedDuration(SonicBreakPvE.ID, out var duration))
+		{
+			return true;
+		}
+
+		return ttk >= (pack == 3 ? duration / 2f : duration);
 	}
 	#endregion
 }

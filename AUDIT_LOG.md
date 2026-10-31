@@ -13879,6 +13879,36 @@ Löschungen").
 - *Betroffen:* niemand (kein Code des Plugins geändert).
 - *Prüfgrad:* Mitschnitt-Auswertung (Zeilen 21, 22, 39), Modell, statisch am Code; im Spiel nicht beobachtet.
 
+### A471 · Revolverklinge: die Patronen im Pull in die Fläche (31.10.2026)
+
+- *Hinweis:* ein Bekannter, von ihm weitergegeben, und sein Zusatz (31.10.2026): Im Wall-to-wall-Pull hat die
+  Revolverklinge gefühlt später alle Gegner und verliert sie beim Weiterziehen schneller an Damage Dealer, die im Laufen
+  Schaden machen (Konzept 02).
+- *Ursache:* `GNB_Reborn.GeneralGCD` (Upstream) prüfte Burst Strike, die Gnashing-Fang-Kette und Sonic Break vor Fated
+  Circle und der Flächen-Combo, ohne Gegner zu zählen; unter No Mercy gingen so die meisten GCDs auf einen Gegner. Die
+  anderen Tanks prüfen ihre Flächenversion zuerst (Krieger, Paladin, Dunkelritter, je Zeile in Konzept 02); die Klasse
+  ist auf die Revolverklinge beschränkt. Referenz: The Balance, Gunbreaker Basic Guide (abgerufen 31.10.2026).
+- *Optionen:* Nullvariante; eine allgemeine Regel in der Tankschicht (verworfen: nur ein Job betroffen, und welche
+  Aktion die Einzelzielversion ist, weiß nur die Rotation); die Reihenfolge der Referenz in der Rotation (gewählt);
+  Gnashing Fang per Potenzvergleich aus den Wirktexten (`ActionTooltip.AreaOutdamagesSingle`) statt der Zahl der
+  Referenz (verworfen: der Vergleich stellt Treffer gegen Treffer, die Kette aus drei GCDs gegen die Füller, die sie
+  ersetzt, kann er nicht).
+- *Gebaut:* Zählung der Gegner um die Revolverklinge über Demon Slice (ohne Patrone, ab Stufe 10); `CartridgeSpender`:
+  Fated Circle, wo seine Gegnerzahl erreicht ist, sonst Burst Strike, an beiden Stellen; Gnashing Fang nur unter drei
+  Gegnern oder ohne Fated Circle; Sonic Break bis fünf Gegner, bei vier und fünf nur mit gemessener Restzeit des Ziels
+  über der ganzen Wirkdauer aus dem Wirktext, bei drei über der halben, ohne Messung wie bisher. Die Zahlen der
+  Referenz als Ausnahmen in `fixed_values.json` (Loop A471).
+- *Im Kampf:* Im Pull trifft jede Patrone alle Gegner im Umkreis, die GCDs bleiben auf der Flächen-Combo; nach der
+  Referenz auch der höhere Schaden. Gegen einen oder zwei Gegner ändert sich nichts außer Fated Circle statt Burst Strike
+  bei zwei.
+- *Falsifikation:* Kein Defekt? Die Reihenfolge am Code und die Referenz widersprechen sich, und eine Einzelzielaktion
+  erzeugt Feindseligkeit nur am Ziel – der Hinweis passt in beiden Teilen. Option falsch? Die gewählte Reihenfolge ist
+  die der Referenz und die der drei anderen Tanks; Schaden kostet sie nicht. Ausgeliefert, und nichts ändert sich?
+  Wenn die Gegner außerhalb von Fated Circles Reichweite bleiben (heranlaufendes Rudel) oder er die Gegnerzahl von Fated
+  Circle hochgesetzt hat; dann bleibt Burst Strike, wie er es einstellt.
+- *Betroffen:* Endnutzer (Revolverklinge); Upstream-Pflege: eine Konfliktzone in `GNB_Reborn.GeneralGCD`.
+- *Prüfgrad:* statisch am Code, Referenz, kompiliert ohne Warnung; im Spiel nicht beobachtet.
+
 ---
 ## B · Commit-Register (Fork vs. `upstream/main`)
 

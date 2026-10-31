@@ -82,6 +82,12 @@ What this release changes in the fight. For the whole distance from upstream, se
   goes to the tankbuster's target first, the gunbreaker before others, otherwise to the member the heal target order
   puts first; with a tankbuster on him before it is back, another member gets it only to save a healer or a tank in
   danger.
+- **Gunbreaker: cartridges go into the pack.** In a pull the gunbreaker spent its cartridges and most GCDs under No
+  Mercy on one enemy - Burst Strike, the Gnashing Fang chain and Sonic Break came ahead of Fated Circle whatever the
+  number of enemies -, so the damage dealers drew the others, entering a wall-to-wall pull and moving on to the next.
+  Now a cartridge goes on Fated Circle once its number of enemies is met, Gnashing Fang no longer starts against three or
+  more, and Sonic Break goes on up to five, at four and five only when the target lives its whole duration by its
+  measured time to kill, at three half of it - as The Balance's guide has it.
 - **Astrologian, Scholar, Sage: the limit to multihit stacks also covers series and dangerous hits.** With "Limit
   Macrocosmos / Seraphism / Panhaima to multihit party stacks" on, these tools stayed unused in the attacks that hit the
   party several times without a marker. As for the White Mage's bell, two sub-settings (on by default) let them go into

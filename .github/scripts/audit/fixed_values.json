@@ -956,6 +956,57 @@
    "status": "exception",
    "loop": "A462",
    "reason": "Upstream's opener window, unchanged; the fork line adds only the Starry Muse guard. It is the same 5 s as upstream's Starry Muse hold from level 92 (adjustCombatTimeForOpener in AttackAbility), so both end the opener together; deriving this one alone (two GCDs) would part it from the hold, which stays upstream's. With the guard the window ends at the earlier of 5 s and Starry Muse (A462)."
+  },
+  {
+   "file": "RotationSolver/RebornRotations/Tank/GNB_Reborn.cs",
+   "code": "var gnashingFangInPack = !FatedCirclePvE.EnoughLevel || pack < 3;",
+   "values": [
+    "3"
+   ],
+   "status": "exception",
+   "loop": "A471",
+   "reason": "Reference rule: The Balance, Gunbreaker Basic Guide (31.10.2026), 'Stop using Gnashing Fang on 3 or more targets'. The break-even of a three-GCD single-target chain against Fated Circle on the pack, computed there; the tooltips give potencies per hit, not the chain against the filler it replaces (A471)."
+  },
+  {
+   "file": "RotationSolver/RebornRotations/Tank/GNB_Reborn.cs",
+   "code": "if (gnashingFangInPack && AmmoComboStep == 0 && GnashingFangPvE.CanUse(out act, skipComboCheck: true, usedUp: HasNoMercy || GnashingFangPvE.Cooldown.WillHaveXChargesGCD(2, 1)))",
+   "values": [
+    "2"
+   ],
+   "status": "exception",
+   "loop": "A471",
+   "reason": "Upstream's charge check (both charges within a GCD), unchanged; the fork only added the pack guard in front (A471)."
+  },
+  {
+   "file": "RotationSolver/RebornRotations/Tank/GNB_Reborn.cs",
+   "code": "if (pack < 3)",
+   "values": [
+    "3"
+   ],
+   "status": "exception",
+   "loop": "A471",
+   "reason": "Reference rule: The Balance, Gunbreaker Basic Guide (31.10.2026), Sonic Break at 3 targets only for half its duration, below that always (A471)."
+  },
+  {
+   "file": "RotationSolver/RebornRotations/Tank/GNB_Reborn.cs",
+   "code": "if (pack > 5)",
+   "values": [
+    "5"
+   ],
+   "status": "exception",
+   "loop": "A471",
+   "reason": "Reference rule: The Balance, Gunbreaker Basic Guide (31.10.2026), 'Use Sonic Break on up to 5 targets' (A471)."
+  },
+  {
+   "file": "RotationSolver/RebornRotations/Tank/GNB_Reborn.cs",
+   "code": "return ttk >= (pack == 3 ? duration / 2f : duration);",
+   "values": [
+    "3",
+    "2"
+   ],
+   "status": "exception",
+   "loop": "A471",
+   "reason": "Reference rule: The Balance, Gunbreaker Basic Guide (31.10.2026): at 3 targets Sonic Break needs half its stated duration, at 4 and 5 the whole; the duration itself is read from the tooltip (A471)."
   }
  ]
 }
