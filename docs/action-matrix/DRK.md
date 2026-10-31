@@ -107,8 +107,11 @@ direkt: 41 · ungenutzt: 1 · über andere Aktion: 1
 | Disesteem | StatusNeed Scorn | Living Shadow |
 | Edge of Shadow | Regel prüft | Hard Slash |
 | Edge of Shadow | Regel prüft | Unmend |
+| Flood of Darkness | Regel prüft | Edge of Darkness |
 | Hard Slash | Regel prüft | Souleater |
+| Impalement | Regel prüft | Torcleaver |
 | Living Shadow | Regel prüft | Hard Slash |
+| Quietus | Regel prüft | Bloodspiller |
 | Rampart | Regel prüft | Shadow Wall |
 | Rampart | Regel prüft | Shadowed Vigil |
 | Reprisal | Regel sperrt vorher | Oblation |
@@ -155,7 +158,9 @@ keine im Wirktext
 
 ### Fenster, deren Verbraucher an Bedingungen hängt
 
-keine
+Jeder Aufruf der Aktion trägt eine eigene Bedingung; hält sie an, verfällt das Fenster (Konzept 14, „Werden die Fenster genutzt"). Kandidaten, von Hand bewertet.
+
+- Impalement: 1 Aufruf(e), **ohne Rückfall vor Ablauf**
 
 ### Unvollständige Beschreibungen
 

@@ -13938,6 +13938,52 @@ Löschungen"); „Master" ist hier `main`.
 
 *Prüfgrad:* Release-API und Workflow-Lauf gelesen, Prüfskripte; die Übergabe statisch gegen den Release-Text abgeglichen.
 
+### A473 · Spielpatches 7.5 bis 7.57 rückwirkend ausgewertet; Ausgaben der Tanks nach Wirktext (31.10.2026)
+
+Seine Vorgabe (31.10.2026): neue FFXIV-Versionen über die Patchnotes der Lodestone-Nachrichten je Klasse auswerten,
+Konzepte anpassen, The Balance prüfen; einmal rückwirkend ab 7.5, „z.B. Optimierung beastmaster.. aber auch allgemein
+durchgehen". Als Skill `spielpatch` festgehalten (Lesetabelle in CLAUDE.md); den Beastmaster hat er damit genannt
+(Profil in CLAUDE.md).
+
+- *Patchnotes* (Lodestone, `special/patchnote_log`, Rohtext gelesen): Job-Änderungen im PvE nur in 7.5 – Krieger (Inner
+  Chaos 660→700, Primal Rend 700→720, Primal Ruination 780→800), Samurai (Midare und Kaeshi: Setsugekka 640→680),
+  Schnitter (Gluttony 520→560, Void/Cross Reaping 560→580, verstärkt 620→640), Viper (Vicewinder 500→540, Hunter's und
+  Swiftskin's Coil 570→630 und 620→680, Abfall nach dem ersten Ziel bei Reawaken, den Generationen, Ouroboros und den
+  Legacies 80→75 %), Beschwörer (Painflare 150→220, Ruby Rite 580→620, Crimson Cyclone und Strike 520→560, Necrotize
+  460→500), Weiser (Phlegma III und Psyche 600→690, Eukrasian Dosis III 85→90); Gegenstände gehen in die Warteschlange.
+  7.51: Dancing Mad (Ultimate), Behebung der Abfall-Rechnung der Viper. 7.55: Okkulte Sichel Nordhorn, PvP-Änderungen
+  (außerhalb seines Profils, erfasst). 7.56: Beastmaster. 7.57: nichts für Jobs.
+- *Je Klasse gegen RSR:* Modelle des Forks (Beschwörer, Samurai) rechnen schon mit den Werten von 7.5. Zielzahlen der
+  Flächenaktionen gegen die Rechnung aus den Wirktexten: Beschwörer (Painflare ab 3), Viper (Flächen-Combos ab 3),
+  Samurai (Tenka Goken, Kyuten ab 3; Guren gegen Senei bei 2 Gleichstand), Schnitter (Grim Swathe 140 gegen Blood Stalk
+  340 ab 3 – The Balance sagt 4, die Potenz trägt 3; nicht geändert), Weiser (keine Zielzahl betroffen) stimmen. Keine
+  Rotationsstelle hängt an einem geänderten Wert. Gegenstände: keine Sonderbehandlung, die an der alten Regel hing.
+- *The Balance:* Beschwörer und Viper 7.55, Schnitter 7.5; Krieger und Samurai 7.4, Weiser 7.3 – für die geänderten
+  Stellen keine Referenz, dort entscheidet der Wirktext.
+- *Befund, allgemein:* Die Ausgabe-Aktionen der Tanks stehen in der Basisschicht pauschal auf 2 Zielen. Nach den
+  Wirktexten lohnen beim Krieger Decimate und Chaotic Cyclone erst ab 4, Orogeny und Steel Cyclone ab 3, beim
+  Dunkelritter Quietus, Flood of Shadow und Impalement ab 3. Paladin (Holy Circle bei 2 Gleichstand unter Divine Might
+  und Requiescat) und Revolverklinge (A471) liegen richtig. Gebaut: `CustomRotation.AreaWorthOver` (öffentlich,
+  CHANGELOG) über `ActionTooltip.AreaAtLeastSingle`, Gleichstand zur Fläche; Krieger und Dunkelritter fragen es nach dem
+  `CanUse` der Flächenversion, deren Zielzahl die Untergrenze bleibt; der Krieger setzt bei zu kleinem Rudel die
+  Einzelausgabe an die Stelle der Flächenausgabe, damit die Leiste im Rudel von zwei oder drei ausgegeben wird wie zuvor.
+  Konzept 02 vor dem Code. Im Kampf: bei zwei Gegnern Fell Cleave 580 statt Decimate 360, Inner Chaos 700 statt Chaotic
+  Cyclone 400.
+- *Beastmaster (7.56):* `BST_Reborn` (Upstream, auf 7.57) geprüft. Die Äxte sind Waffenfertigkeiten in eigener
+  Abklinggruppe 16 und werden eingewoben; die Kompass-Richtung bildet die Basisschicht über die Herz-Status ab. Keine
+  Rotationsreferenz vorhanden (Job-Guide nur Mechanik, The Balance ohne Beastmaster). Konzept 01, Abschnitt BST:
+  geprüft, kein Defekt belegbar, Optimierung nach Kompass und Kombozahl wartet auf einen Mitschnitt von ihm.
+- *Code-Review (high):* ein Befund, behoben (doppelter Potenzvergleich zusammengeführt).
+- *Falsifikation:* Kein Defekt bei den Tanks? Die Rechnung aus den Wirktexten und der Krieger-Guide (Decimate,
+  Chaotic Cyclone ab 4; Orogeny ab 3) widersprechen den Zielzahlen von 2. Option falsch? Die Feindseligkeit auf dem
+  zweiten und dritten Gegner hält die Flächen-Combo (Zielzahl 2, unverändert); die Gegenposition „Ausgabe in die Fläche
+  für die Feindseligkeit" trägt bei zwei oder drei Gegnern nicht, weil die Haltung sie ohnehin verzehnfacht und die
+  Combo alle trifft. Ausgeliefert, und nichts ändert sich? Wenn ein Wirktext keine Potenz nennt, fällt der Vergleich auf
+  das Alte zurück (der Trace nennt es einmal je Aktion).
+- *Betroffen:* Endnutzer (Krieger, Dunkelritter); Autoren abgeleiteter Rotationen (`AreaWorthOver`).
+- *Prüfgrad:* Patchnotes, Wirktexte und Spielblätter (xivapi) gelesen, The Balance abgeglichen, statisch am Code,
+  kompiliert ohne Warnung; im Spiel nicht beobachtet.
+
 ---
 ## B · Commit-Register (Fork vs. `upstream/main`)
 

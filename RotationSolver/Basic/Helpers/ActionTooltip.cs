@@ -163,7 +163,25 @@ internal static class ActionTooltip
 	/// </summary>
 	public static bool AreaOutdamagesSingle(uint area, int targets, uint single)
 	{
-		return !TryPotencyOn(area, targets, out var areaTotal) || !TryPotencyOn(single, 1, out var singleTotal)
-			|| areaTotal > singleTotal;
+		return CompareAreaToSingle(area, targets, single, tieToArea: false);
+	}
+
+	/// <summary>
+	/// <see cref="AreaOutdamagesSingle"/> with a tie going to the area: for a choice where the area spreads the same
+	/// damage over every enemy it reaches, as a tank's spender does with enmity (A473).
+	/// </summary>
+	public static bool AreaAtLeastSingle(uint area, int targets, uint single)
+	{
+		return CompareAreaToSingle(area, targets, single, tieToArea: true);
+	}
+
+	private static bool CompareAreaToSingle(uint area, int targets, uint single, bool tieToArea)
+	{
+		if (!TryPotencyOn(area, targets, out var areaTotal) || !TryPotencyOn(single, 1, out var singleTotal))
+		{
+			return true;
+		}
+
+		return tieToArea ? areaTotal >= singleTotal : areaTotal > singleTotal;
 	}
 }

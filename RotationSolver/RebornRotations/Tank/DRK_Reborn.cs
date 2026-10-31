@@ -670,7 +670,10 @@ public sealed class DRK_Reborn : DarkKnightRotation
 
 		if (CheckDarkSide)
 		{
-			if (FloodOfDarknessPvE.CanUse(out act))
+			// Flood of Darkness, or Flood of Shadow where it has replaced it, only where it deals at least Edge on the enemies
+			// it reaches - from 3 at patch 7.5 (concept 02, "Ausgaben in der Fläche erst, wo sie mindestens so viel bringen";
+			// A473). Its AoE count stays the lower bound.
+			if (FloodOfDarknessPvE.CanUse(out act) && AreaWorthOver(FloodOfDarknessPvE, EdgeOfDarknessPvE))
 			{
 				return true;
 			}
@@ -747,13 +750,15 @@ public sealed class DRK_Reborn : DarkKnightRotation
 			return true;
 		}
 
-		//AOE Delirium
-		if (ImpalementPvE.CanUse(out act))
+		// AOE Delirium and the area blood spender, each where it deals at least the single one on the enemies it reaches:
+		// Impalement against Torcleaver, the strongest step of the Delirium combo, and Quietus against Bloodspiller - both
+		// from 3 at patch 7.5 (A473).
+		if (ImpalementPvE.CanUse(out act) && AreaWorthOver(ImpalementPvE, TorcleaverPvE))
 		{
 			return true;
 		}
 
-		if (UseBlood && QuietusPvE.CanUse(out act))
+		if (UseBlood && QuietusPvE.CanUse(out act) && AreaWorthOver(QuietusPvE, BloodspillerPvE))
 		{
 			return true;
 		}

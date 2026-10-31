@@ -23,6 +23,15 @@ are not reconstructed here.
 
 ## Unreleased
 
+### Addition to RotationSolver: an area spender only where it deals at least the single one
+
+New: `CustomRotation.AreaWorthOver(IBaseAction area, IBaseAction single)` - after the area version's `CanUse`, whether
+it deals at least the potency of the single-target version on one enemy over the enemies it reaches, by the tooltips of
+the running patch (first stated potency, stated falloff applied), a tie going to the area; true when a tooltip states no
+potency. Behind it `ActionTooltip.AreaAtLeastSingle`, internal. Warrior and Dark Knight ask it for their spenders, so
+Decimate, Chaotic Cyclone, Orogeny, Quietus, Flood of Shadow and Impalement go out only from the count where they pay
+(A473); their AoE count stays the lower bound.
+
 ## 7.5.7.13+wsh1
 
 ### Dependency of RotationSolver: RebornMaterial 7.5.7.5

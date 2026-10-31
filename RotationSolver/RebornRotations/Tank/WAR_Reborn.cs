@@ -186,7 +186,7 @@ public sealed class WAR_Reborn : WarriorRotation
 			return false;
 		}
 
-		if (OrogenyPvE.CanUse(out act))
+		if (OrogenyPvE.CanUse(out act) && AreaWorthOver(OrogenyPvE, UpheavalPvE))
 		{
 			return true;
 		}
@@ -417,7 +417,10 @@ public sealed class WAR_Reborn : WarriorRotation
 	{
 		if (!StatusHelper.PlayerWillStatusEndGCD(3, 0, true, StatusID.SurgingTempest))
 		{
-			if (ChaoticCyclonePvE.CanUse(out act))
+			// Each spender's area version only where it deals at least the single one on the enemies it reaches, by their
+			// tooltips (concept 02, "Ausgaben in der Fläche erst, wo sie mindestens so viel bringen"; A473): Decimate and
+			// Chaotic Cyclone from 4, Orogeny and Steel Cyclone from 3 at patch 7.5, each AoE count the lower bound.
+			if (ChaoticCyclonePvE.CanUse(out act) && AreaWorthOver(ChaoticCyclonePvE, InnerChaosPvE))
 			{
 				return true;
 			}
@@ -430,11 +433,12 @@ public sealed class WAR_Reborn : WarriorRotation
 
 		if (!StatusHelper.PlayerWillStatusEndGCD(3, 0, true, StatusID.SurgingTempest) && !StatusHelper.PlayerHasStatus(true, StatusID.NascentChaos) && InnerReleaseStacks > 0)
 		{
-			if (DecimatePvE.CanUse(out act, skipStatusProvideCheck: true))
+			if (DecimatePvE.CanUse(out act, skipStatusProvideCheck: true) && AreaWorthOver(DecimatePvE, FellCleavePvE))
 			{
 				return true;
 			}
-			if (!DecimatePvE.Info.EnoughLevelAndQuest() && SteelCyclonePvE.CanUse(out act, skipStatusProvideCheck: true))
+			if (!DecimatePvE.Info.EnoughLevelAndQuest() && SteelCyclonePvE.CanUse(out act, skipStatusProvideCheck: true)
+				&& AreaWorthOver(SteelCyclonePvE, InnerBeastPvE))
 			{
 				return true;
 			}
@@ -468,16 +472,23 @@ public sealed class WAR_Reborn : WarriorRotation
 			}
 		}
 
-		// AOE
+		// AOE. Where the pack is too small for the area spender, the single one goes here, ahead of the area combo as the
+		// area spender did, so the gauge is spent in a pack of two or three as before (A473).
 		if (!StatusHelper.PlayerWillStatusEndGCD(3, 0, true, StatusID.SurgingTempest) || !StormsEyePvE.EnoughLevel)
 		{
 			if (DecimatePvE.CanUse(out act, skipStatusProvideCheck: true))
 			{
-				return true;
+				if (AreaWorthOver(DecimatePvE, FellCleavePvE) || FellCleavePvE.CanUse(out act, skipStatusProvideCheck: true))
+				{
+					return true;
+				}
 			}
 			if (!DecimatePvE.Info.EnoughLevelAndQuest() && SteelCyclonePvE.CanUse(out act))
 			{
-				return true;
+				if (AreaWorthOver(SteelCyclonePvE, InnerBeastPvE) || InnerBeastPvE.CanUse(out act))
+				{
+					return true;
+				}
 			}
 		}
 

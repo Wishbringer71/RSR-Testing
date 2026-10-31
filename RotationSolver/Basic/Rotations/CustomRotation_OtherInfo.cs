@@ -1761,6 +1761,23 @@ public partial class CustomRotation
 	}
 
 	/// <summary>
+	/// Whether <paramref name="area"/>, after its <c>CanUse</c> chose where it lands, deals at least the potency of
+	/// <paramref name="single"/> on one target over the enemies it reaches, by the tooltips of the running patch (their
+	/// first stated potency, a stated falloff applied). A tie goes to the area: the same damage, spread over every enemy.
+	/// True when a tooltip states no potency, so a caller keeps what it did without the comparison. The area's own AoE
+	/// count stays the lower bound, since <c>CanUse</c> asked it first (concept 02, "Ausgaben in der Fläche erst, wo sie
+	/// mindestens so viel bringen"; A473).
+	/// </summary>
+	/// <param name="area">The area version, asked after its <c>CanUse</c> returned true.</param>
+	/// <param name="single">The single-target version it replaces.</param>
+	/// <returns>True when the area deals at least as much.</returns>
+	public static bool AreaWorthOver(IBaseAction area, IBaseAction single)
+	{
+		return area == null || single == null
+			|| ActionTooltip.AreaAtLeastSingle(area.AdjustedID, area.Target.AffectedTargets?.Length ?? 1, single.AdjustedID);
+	}
+
+	/// <summary>
 	/// Whether holding <paramref name="action"/> for <paramref name="holdSeconds"/> costs it a use before the current
 	/// target dies: fewer of its recasts fit into the target's corrected time to kill after the hold than without it -
 	/// The Balance's test for aligning a cooldown with a buff ("Align with Embolden only if you're sure you won't lose a
