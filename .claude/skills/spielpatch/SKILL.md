@@ -12,8 +12,10 @@ Aktionen oder Status nachzieht (seine Vorgabe, 31.10.2026).
 
 - Quelle sind die Patchnotes der Lodestone-Nachrichten (`na.finalfantasyxiv.com/lodestone/topics/`, deutsch
   `de.finalfantasyxiv.com/lodestone/topics/`), dazu Wirktexte im Job-Guide und Spielblätter (xivapi) als Gegenprobe.
-- Je Klasse inhaltlich durchgehen, nicht nur die Stichworte: Potenzen, Wirk- und Abklingzeiten, Effekte, Dauern,
-  Ladungen, Leisten, neue oder entfernte Aktionen und Eigenschaften, Änderungen an Stufen.
+- Je Klasse inhaltlich durchgehen, nicht nur die Stichworte: Potenzen, Cast- und Wirkzeiten (seine Präzisierung,
+  31.10.2026), Abklingzeiten, Effekte und ihre Dauern, Ladungen, Leisten, neue oder entfernte Aktionen und
+  Eigenschaften, Änderungen an Stufen. PvE und PvP getrennt lesen: Die PvP-Tabellen stehen mit denselben Jobnamen in
+  eigenem Abschnitt.
 - Je Änderung im Loop bewerten, was sie im Kampf an der Rotation und am Verhalten der Klasse ändert: welche Stelle in
   der Rotation (Reborn und Basisschicht) und welches Konzept sie berührt, ob eine Regel des Forks auf einer Zahl oder
   Mechanik ruht, die sich geändert hat, ob eine Priorität, ein Fenster oder eine Schwelle neu zu bewerten ist.
