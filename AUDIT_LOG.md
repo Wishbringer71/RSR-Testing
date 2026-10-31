@@ -13750,6 +13750,96 @@ Löschungen").
   sich? Wer nie ohne Beschränkung spielt, sieht nichts – so gewollt.
 - *Prüfgrad:* statisch am Code und am Quelltext der Strukturen, kompiliert ohne Warnung; im Spiel nicht beobachtet.
 
+### A467 · Revolverklinge: Herz des Korunds mit „Full target usage" geht an den, der es braucht (31.10.2026)
+
+- *Anlass:* sein Auftrag vom 31.10.2026, die Ideen hinter den Verbesserungen an Beschwörer, Weißmagier und Dunkelritter
+  auf die anderen Jobs zu prüfen (A468). Die Idee hier: Hilfe nach Bedarf statt nach den wenigsten Lebenspunkten –
+  Rekindle beim Beschwörer (niedrigster Anteil), die Barriere des Dunkelritters auf andere (erst die Schwelle, dann die
+  Wahl), beim Krieger Urflackern (Heilzielwahl und Triage, Konzept 09).
+- *Erhebung:* Jede Zielwahl `TargetType.LowHP` in den Reborn-Rotationen. Übrig nach den behobenen: `GNB_Reborn`,
+  Strategie „Full target usage" für Herz des Korunds/Herz des Steins, in `DefenseSingleAbility` – dem Pfad, den ein
+  Treffer auf ihn öffnet. `LowHP` sortiert nach aktuellen Lebenspunkten, ohne Schwelle: Das Herz ging an das Mitglied
+  mit dem kleinsten Rest, meist einen unverletzten Magier, während er selbst den Tankbuster nahm. Upstream-Code
+  (b6a5451dc); ab Werk steht „Only use on tankbuster targets prioritizing self", er nutzt Voreinstellungen selten.
+- *Optionen:* Nullvariante; `LowHPPercent` (sortiert nach Anteil, aber ohne Schwelle weiter an jeden); Tankbuster-Ziel
+  zuerst, sonst die Heilzielwahl, mit Triage gegen den eigenen Bedarf (gewählt); die volle Triage des Kriegers samt
+  eigener Option (mehr Code ohne weiteren Fall).
+- *Im Kampf:* Unter einem Tankbuster auf ihn bekommt er das Herz selbst; sonst bekommt es der, den die Heilzielwahl
+  vorn sieht (kritische Klasse zuerst, unter der Heilschwelle der Aktion), und niemand, wenn keiner darunter steht.
+  Kommt in der Abklingzeit des Herzens ein Tankbuster auf ihn, geht es an einen anderen nur, wenn der die Triage
+  gewinnt (Heiler in Gefahr; ein Tank, solange die eigene Unverwundbarkeit übernehmen kann).
+- *Falsifikation:* Kein Defekt? Belegt am Code: Sortierung nach Punkten ohne Schwelle, im Pfad für ihn selbst. Option
+  falsch? Die Heilzielwahl ist dieselbe, die Konzept 07 für jede Heilung festlegt; die Triage dieselbe wie bei
+  Urflackern. Ausgeliefert, und nichts ändert sich? Mit der Voreinstellung so gewollt.
+- *Gebaut:* `GNB_Reborn.DefenseSingleAbility`; Konzept 09 („Hilfe für das Ziel eines Tankbusters") vor dem Code.
+- *Prüfgrad:* statisch am Code, kompiliert ohne Warnung; im Spiel nicht beobachtet.
+
+### A468 · Die Ideen aus Beschwörer, Weißmagier und Dunkelritter auf die anderen Jobs geprüft (31.10.2026)
+
+- *Auftrag (31.10.2026):* „Ich habe mit dir ja viel bei Beschwörer, weißmagier und dunkelritter gearbeitet. Eine direkte
+  Umsetzung dieser Verbesserungen bei anderen Klassen ist wahrscheinlich nicht möglich. Aber was ist mit den
+  dahinterliegenden Ideen und synergieeffekten? Das bitte im jeweils vollem kritischen Loop prüfen."
+- *Vorher:* Upstream 7.5.7.13 (ec34ec943, eine Bozja-Gebietskennung) in main und Branch; Fork-Version nachgezogen.
+- *Erhebung:* jede Fork-Regel der drei Rotationen (rund 1900 eigene Zeilen), getrennt in Idee und Job-Mechanik, dann je
+  Idee: schon zentral, einzigartig, oder auf andere Jobs übertragbar.
+- *Gebaut:*
+  - **Serie und gefährlicher Treffer für die beschränkten Heilerwerkzeuge** (Idee der Glocke, A349): Astrologe
+    (Macrocosmos), Gelehrter (Seraphism) und Weiser (Panhaima) haben dieselbe Beschränkung auf Mehrfach-Sammelmarker
+    wie der Weißmagier; eingeschaltet blieben ihre Werkzeuge in Serien ohne Marker ungenutzt. Je Job zwei
+    Unteroptionen wie bei der Glocke, ab Werk an, dazu der Serienweg außerhalb der Abwehrflagge. Zentral:
+    `CustomRotation.HitSeriesHitsLeft`, `MultiHitAhead`. Wirktexte (Job-Guide, 31.10.2026) in Konzept 08. Die
+    Beschränkung selbst bleibt ab Werk aus, wie beim Weißmagier; mit ihr aus gehen die Werkzeuge auf jede Abwehrflagge,
+    die Unteroptionen sperren dann nichts.
+  - **Hilfe nach Bedarf** (A467).
+  - **Mana für die Schutzaktion** (A469).
+- *Schon zentral:* Notfallheilung nur bei Gefahr (A180, alle Heiler); Heilung unter Living Dead (Konzept 09, eine
+  Option für alle); Bodenflächen erst, wenn die Gegner stehen (A350, `BaseAction.CanUse`); Swiftcast für die
+  Wiederbelebung (A402, Job-Einstellung aller Wiederbeleber); die Abwehrsperren mit Schranke (A159); die Hilfe für das
+  Ziel eines Tankbusters (A328); die AoE-Schwelle an der Aktion (A391).
+- *Geprüft, nicht übertragen:*
+  - Einzelabwehr-Streckung je Ziel (A440) für Gelehrten und Weisen: Konzept 08 trägt („ohne belegten Nutzen"): Der
+    Weise hat eigene Abstände (Panhaima 20 s nach Haima, Kerachole 20 s nach Taurochole, Taurochole nur unter seiner
+    Schwelle); beim Gelehrten ergänzen sich Protraction und Excogitation.
+  - Lux Solaris als Muster für Curing Waltz (Tänzer): Lux brauchte die eigene Entscheidung, weil Refulgent Lux verfällt
+    und die Heilflagge bei einem einzelnen Verletzten unten bleibt; Curing Waltz verfällt nicht.
+  - Gruppenbuff bei doppelter Klasse (Konzept 12) auf alle Buff-Jobs: nur Schaden; in 18 Gruppen seiner Mitschnitte vom
+    26. und 28.10.2026 war kein Buff-Job doppelt (Parteiliste, Zeile 11, gegen die Jobs aus Zeile 03).
+  - Searing Light wartet vor einer Wiederbelebung (A206): an Solar gebunden; ein Gruppenbuff anderer Jobs wirkt während
+    der eigenen Wiederbelebung voll für die Gruppe.
+  - Betäubung gegen Barriere (Sanctus und The Blackest Night) und Abtausch gegen die Barriere: einzig – Sanctus ist die
+    einzige Flächenbetäubung, The Blackest Night die einzige Barriere, die brechen soll.
+  - Kostenlose Minderung vor der kostenpflichtigen (Dunkelritter): einzig – nur er bezahlt Minderung mit dem Mana seines
+    Schadens; der Eid des Paladins dient nur Sheltron und Intervention.
+- *Nebenbefund ohne Defekt:* Die Eigenschaft `Raise` setzen alle Wiederbeleber (eine erste Suche nach `IBaseAction?`
+  fand nur den Astrologen; die übrigen schreiben den Typ ohne Fragezeichen).
+- *Prüfgrad:* statisch am Code, an den Wirktexten und an seinen Mitschnitten; kompiliert ohne Warnung; im Spiel nicht
+  beobachtet.
+
+### A469 · Ein Schadenszauber gibt nur das Mana aus, das über der Wiederbelebung liegt (31.10.2026)
+
+- *Idee:* „Keep at least 3000 MP" des Dunkelritters (A406): Das Mana für die Schutzaktion bleibt, die
+  Schadensfähigkeiten geben nur aus, was darüber liegt. Übertragen auf die Wiederbelebung (A468).
+- *Erhebung:* Bei den Heilern hielt das nur die Pflege auf dem Tank im Pull ein (`TryPullUpkeepOnTank`); ihre
+  Schadenszauber, die des Beschwörers und des Rotmagiers prüften nur, ob das Mana für sie selbst reicht. „Don't raise
+  below this MP" (2400 ab Werk) sagt nur, ab wann RSR nicht mehr wiederbelebt.
+- *Optionen:* Nullvariante; je Rotation eine Prüfung (sieben Stellen, jede veraltet für sich); zentral in der
+  Grundprüfung der Aktion (gewählt); die Reserve auch für Heilungen (verworfen: die Lebenden gehen vor).
+- *Gebaut:* `ActionBasicInfo.LeavesMpForRaise` nach `HasEnoughMP`: für einen Job mit Wiederbelebung ab ihrer Stufe, im
+  Kampf und in einer Gruppe, eine feindliche Aktion mit Manakosten nur, solange danach die Kosten der Wiederbelebung
+  bleiben, oder „Don't raise below this MP", wo das höher steht. Heilungen, die Wiederbelebung selbst, Fähigkeiten
+  ohne Mana und ein Zauber unter Thin Air sind frei. Option „Keep the MP a raise needs", ab Werk an.
+  `CustomRotation.RaiseAction` (intern) gibt die Wiederbelebung des Jobs heraus. Konzept 11 vor dem Code.
+- *Im Kampf:* Ein Heiler bei 2600 MP wirkt kein Glare mehr, das ihn unter 2400 brächte; freie Angriffe gehen weiter.
+  Reiner Schaden kostet einen Heiler netto rund 240 MP je GCD (Schluss aus den Wirktexten); bei 3000 MP war der Rest
+  vor der Regel in gut zehn Sekunden fort. Preis: Schaden in Phasen knappen Manas.
+- *Falsifikation:* Kein Defekt? Ohne Reserve sank ein Heiler durch Schaden unter die Kosten der Wiederbelebung –
+  belegt am Code. Option falsch? Eine Reserve nur, wenn schon jemand tot ist, käme zu spät; die Reserve muss vorher
+  stehen. Ausgeliefert, und nichts ändert sich? Wo das Mana nie so tief fällt, so gewollt; Beschwörer und Rotmagier
+  fallen selten so tief.
+- *Betroffen:* Endnutzer (alle Wiederbeleber); Autoren abgeleiteter Rotationen: die Grundprüfung jeder Aktion
+  (CHANGELOG).
+- *Prüfgrad:* statisch am Code, kompiliert ohne Warnung; im Spiel nicht beobachtet.
+
 ---
 ## B · Commit-Register (Fork vs. `upstream/main`)
 

@@ -79,6 +79,16 @@ New: `CustomRotation.HoldCostsUse(IBaseAction action, float holdSeconds)` - whet
 a use before the current target dies, by that time to kill; false while none is measured or while other hostiles are in
 range.
 
+### Behaviour change and addition in RotationSolver.Basic: the raise's MP, series for every healer
+
+The basic check of every action now holds a hostile action that costs MP, for a job that can raise, in combat and in a
+party, while the raise's cost - or `Configs.LessMPNoRaise` where that is higher - would not be left after it
+(`Configs.KeepMpForRaise`, on by default). Heals, the raise itself and free casts are untouched.
+
+New: `CustomRotation.HitSeriesHitsLeft` - the hits a learned series on the party still brings, counted as Liturgy of
+the Bell counts them - and the protected `MultiHitAhead(bool alsoSeries, bool alsoDanger)` for a tool limited to
+multihit party stacks.
+
 ## 7.5.7.10+wsh1
 
 ### Dependency of RotationSolver.Basic: RebornMaterial 7.5.7.2

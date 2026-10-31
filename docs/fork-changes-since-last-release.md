@@ -73,6 +73,20 @@ What this release changes in the fight. For the whole distance from upstream, se
 
 ## Rotations
 
+- **A job that can raise keeps the MP for it.** In combat and in a party, healers, Summoner and Red Mage spend MP on
+  damage only while the raise's cost - or "Don't raise below this MP" where that is higher - is left. A healer at 2600 MP no longer casts
+  the damage spell that would take him below 2400 and leaves a dead member waiting for MP; heals and free casts go on.
+  Setting "Keep the MP a raise needs", on by default.
+- **Gunbreaker: Heart of Corundum on "Full target usage" goes to who needs it.** It went to the member with the fewest
+  hit points - most often a caster at full health with a small pool - while the gunbreaker took the hit himself. Now it
+  goes to the tankbuster's target first, the gunbreaker before others, otherwise to the member the heal target order
+  puts first; with a tankbuster on him before it is back, another member gets it only to save a healer or a tank in
+  danger.
+- **Astrologian, Scholar, Sage: the limit to multihit stacks also covers series and dangerous hits.** With "Limit
+  Macrocosmos / Seraphism / Panhaima to multihit party stacks" on, these tools stayed unused in the attacks that hit the
+  party several times without a marker. As for the White Mage's bell, two sub-settings (on by default) let them go into
+  a learned series and before an area hit that would put a member in danger.
+
 - **The time an enemy has left is measured again.** The self-correcting time to kill was kept for party members only,
   so it was unknown for every enemy: the Monk's Six-sided Star as the last weaponskill came only before a downtime
   BossModReborn predicts, never before the target died, and the Scholar held Bio by its rough estimate even where the
