@@ -11,6 +11,20 @@ public sealed class AST_Reborn : AstrologianRotation
 	[RotationConfig(CombatType.PvE, Name = "Limit Macrocosmos to multihit party stacks")]
 	public bool MultiHitRestrict { get; set; } = false;
 
+	// The bell's two cases for every healer with such a limit (concept 08, "Glockenspiel", A468).
+	[RotationConfig(CombatType.PvE, Name = "Also before a hit that would put a party member in danger", Parent = nameof(MultiHitRestrict),
+		Tooltip = "With the limit to multihit party stacks on, Macrocosmos also goes before an announced area hit that, by its "
+			+ "measured size, would leave an unprotected member in the critical class and that reaches you.\n"
+			+ "In a fight: half of that hit is compiled and healed back when Macrocosmos ends, on a party the hit has nearly emptied.")]
+	public bool MacrocosmosBeforeDanger { get; set; } = true;
+
+	[RotationConfig(CombatType.PvE, Name = "Also into an enemy attack that hits in a series", Parent = nameof(MultiHitRestrict),
+		Tooltip = "With the limit to multihit party stacks on, Macrocosmos also goes into an enemy attack that has been seen to "
+			+ "hit you and the party several times in a row, or just before its first hit when an enemy cast of it lands "
+			+ "within the next GCD. Learned per enemy action over every session; the first time an attack is met it teaches.\n"
+			+ "In a fight: every further hit of the series is compiled and healed back, instead of Macrocosmos staying unused.")]
+	public bool MacrocosmosOnSeries { get; set; } = true;
+
 	[RotationConfig(CombatType.PvE, Name = "Enable Swiftcast Restriction Logic to attempt to prevent actions other than Raise when you have swiftcast")]
 	public bool SwiftLogic { get; set; } = true;
 
@@ -562,7 +576,7 @@ public sealed class AST_Reborn : AstrologianRotation
 			return true;
 		}
 
-		if ((MultiHitRestrict && IsCastingMultiHit) || !MultiHitRestrict)
+		if (!MultiHitRestrict || MultiHitAhead(MacrocosmosOnSeries, MacrocosmosBeforeDanger))
 		{
 			if (MacrocosmosPvE.CanUse(out act))
 			{
@@ -682,6 +696,13 @@ public sealed class AST_Reborn : AstrologianRotation
 		if (SwiftRaisePending)
 		{
 			return base.GeneralGCD(out act);
+		}
+
+		// Into a learned series also outside the area-defence flag: most series are instant attacks without a cast, and
+		// every further hit is compiled (concept 08, A468).
+		if (MultiHitRestrict && MacrocosmosOnSeries && HitSeriesHitsLeft > 0 && MacrocosmosPvE.CanUse(out act, skipAoeCheck: true))
+		{
+			return true;
 		}
 
 		// Ahead of the damage filler: as bottom-of-list it only ever fired on the first pull.

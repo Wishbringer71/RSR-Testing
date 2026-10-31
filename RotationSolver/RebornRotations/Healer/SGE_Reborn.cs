@@ -23,6 +23,20 @@ public sealed class SGE_Reborn : SageRotation
 	[RotationConfig(CombatType.PvE, Name = "Limit Panhaima to multihit party stacks")]
 	public bool MultiHitRestrict { get; set; } = false;
 
+	// The bell's two cases for every healer with such a limit (concept 08, "Glockenspiel", A468).
+	[RotationConfig(CombatType.PvE, Name = "Also before a hit that would put a party member in danger", Parent = nameof(MultiHitRestrict),
+		Tooltip = "With the limit to multihit party stacks on, Panhaima also goes before an announced area hit that, by its "
+			+ "measured size, would leave an unprotected member in the critical class and that reaches you.\n"
+			+ "In a fight: the barrier takes part of that hit and heals with its remaining stacks when it ends.")]
+	public bool PanhaimaBeforeDanger { get; set; } = true;
+
+	[RotationConfig(CombatType.PvE, Name = "Also into an enemy attack that hits in a series", Parent = nameof(MultiHitRestrict),
+		Tooltip = "With the limit to multihit party stacks on, Panhaima also goes into an enemy attack that has been seen to "
+			+ "hit you and the party several times in a row, or just before its first hit when an enemy cast of it lands "
+			+ "within the next GCD. Learned per enemy action over every session; the first time an attack is met it teaches.\n"
+			+ "In a fight: the barrier forms anew after each hit, up to five times, instead of Panhaima staying unused.")]
+	public bool PanhaimaOnSeries { get; set; } = true;
+
 	[RotationConfig(CombatType.PvE, Name = "Use GCDs to heal. (Ignored if you are the only healer in party, or while a party member is about to fall)",
 		Tooltip = "Off: while another healer is alive your GCD heals are left to them and you deal damage instead, with "
 		+ "your abilities still healing - except while a party member is in the critical class, about to fall by the "
@@ -255,7 +269,7 @@ public sealed class SGE_Reborn : SageRotation
 
 		if (Addersgall <= 1)
 		{
-			if ((MultiHitRestrict && IsCastingMultiHit) || !MultiHitRestrict)
+			if (!MultiHitRestrict || MultiHitAhead(PanhaimaOnSeries, PanhaimaBeforeDanger))
 			{
 				if (PanhaimaPvE.CanUse(out act))
 				{
@@ -455,6 +469,13 @@ public sealed class SGE_Reborn : SageRotation
 	[RotationDesc(ActionID.KardiaPvE, ActionID.RhizomataPvE, ActionID.SoteriaPvE)]
 	protected override bool GeneralAbility(IAction nextGCD, out IAction? act)
 	{
+		// Into a learned series also outside the area-defence flag, where Kerachole is not asked either: most series are
+		// instant attacks without a cast, and the barrier forms anew after each hit (concept 08, A468).
+		if (MultiHitRestrict && PanhaimaOnSeries && HitSeriesHitsLeft > 0 && PanhaimaPvE.CanUse(out act))
+		{
+			return true;
+		}
+
 		// A fourth stack is lost at three. Spending one just before the next arrives keeps three for
 		// the emergencies once it has, and Druochole returns 7% MP whether or not anyone needs the
 		// heal - The Balance: "use them liberally even if not necessarily needed" (A203). On whoever

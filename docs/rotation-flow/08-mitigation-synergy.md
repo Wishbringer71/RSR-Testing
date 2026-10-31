@@ -261,6 +261,22 @@ gewählten Trank mit dem Zweig, der ihn freigab, und den HP.
       20 s bleiben für den Rest der Serie.
   - *Ohne die Einstellung* kommt es zuletzt, wenn Plenary, Temperance und Divine Caress nicht bereit sind, und
     hält danach die übrige Abwehr 20 s zurück (Streckung).
+  - *Dieselben zwei Unteroptionen bei den anderen Heilern* (A468): Astrologe, Gelehrter und Weiser haben dieselbe
+    Beschränkung auf Mehrfach-Sammelmarker – „Limit Macrocosmos / Seraphism / Panhaima to multihit party stacks",
+    ab Werk aus. Eingeschaltet blieben ihre großen Werkzeuge in den Serien ohne Marker ungenutzt, die die Glocke seit
+    A349 kennt. Alle drei gewinnen wie die Glocke mit jedem weiteren Treffer und vor einem schweren (Job-Guide,
+    31.10.2026): Macrocosmos sammelt 15 s lang die Hälfte des erlittenen Schadens und heilt ihn danach zurück, dazu
+    200 Potenz; Panhaima legt eine Barriere von 200 Potenz, die nach jedem Bruch neu entsteht, bis zu fünfmal in 15 s,
+    und heilt 100 je übrigem Stapel; Seraphism heilt 20 s lang alle im Umkreis und macht Adloquium und Concitation zu
+    Sofortheilungen. Gebaut wie beim Weißmagier, je Job zwei Unteroptionen unter der Beschränkung, ab Werk an: vor
+    einem angekündigten Flächentreffer, den die Schranke als gefährlich misst und der den Heiler erreicht
+    (`AreaDefenseDanger`, `AreaHitOnMe`), und in eine gelernte Serie (`HitSeries`, `CustomRotation.HitSeriesHitsLeft`)
+    – auch außerhalb der Abwehrflagge, im allgemeinen Platz (Macrocosmos ist ein GCD, die beiden anderen oGCDs).
+    Die Serie ist so gezählt, wie die Glocke zählt (20 s, ein Treffer je Sekunde, ihn und ein weiteres Mitglied); für
+    die 15 s von Macrocosmos und Panhaima reicht die Frage, ob noch Treffer ausstehen. *Im Kampf:* Mit der
+    Beschränkung an fällt etwa Panhaima vor den vier Türmen von Ersticken des Fleisches statt gar nicht; ohne sie
+    ändert sich nichts. Haima (die Einzelfassung) bleibt, wie sie ist: Die Serien auf einem Tank misst die
+    Tankbuster-Tabelle (Konzept 13), und der Weise setzt Haima schon auf jede Einzelabwehr.
   - *Sein Vorschlag (23.10.2026):* „es würde sich also nur lohnen, wenn die gesundheit der gruppe weit unten ist, so
     dass 2000 potenz heilung voll heilt, aber nicht überheilt, oder nur minimal". Geprüft: Für die Platzierung trägt
     die Bedingung nicht. Die 2000 sind kein einzelner Heilstoß, sondern fünf Auslösungen zu 400, jede erst nach einem

@@ -11,6 +11,21 @@ public sealed class SCH_Reborn : ScholarRotation
 	[RotationConfig(CombatType.PvE, Name = "Limit Seraphism to multihit party stacks")]
 	public bool MultiHitRestrict { get; set; } = false;
 
+	// The bell's two cases for every healer with such a limit (concept 08, "Glockenspiel", A468).
+	[RotationConfig(CombatType.PvE, Name = "Also before a hit that would put a party member in danger", Parent = nameof(MultiHitRestrict),
+		Tooltip = "With the limit to multihit party stacks on, Seraphism also goes before an announced area hit that, by its "
+			+ "measured size, would leave an unprotected member in the critical class and that reaches you.\n"
+			+ "In a fight: the party is healed over the twenty seconds after that hit, and Adloquium and Concitation "
+			+ "become instant heals for them.")]
+	public bool SeraphismBeforeDanger { get; set; } = true;
+
+	[RotationConfig(CombatType.PvE, Name = "Also into an enemy attack that hits in a series", Parent = nameof(MultiHitRestrict),
+		Tooltip = "With the limit to multihit party stacks on, Seraphism also goes into an enemy attack that has been seen to "
+			+ "hit you and the party several times in a row, or just before its first hit when an enemy cast of it lands "
+			+ "within the next GCD. Learned per enemy action over every session; the first time an attack is met it teaches.\n"
+			+ "In a fight: the party is healed between the hits of the series, instead of Seraphism staying unused.")]
+	public bool SeraphismOnSeries { get; set; } = true;
+
 	[Range(0, 1, ConfigUnitType.Percent)]
 	[RotationConfig(CombatType.PvE, Name = "Remove Aetherpact if the linked party member's HP is above this percentage")]
 	public float AetherpactRemove { get; set; } = 0.9f;
@@ -450,7 +465,7 @@ public sealed class SCH_Reborn : ScholarRotation
 		}
 
 		// Seraphism is really good but we want to save it if we can, and should alternate it with Summon Seraph outside of the hardest content
-		if ((MultiHitRestrict && IsCastingMultiHit) || !MultiHitRestrict)
+		if (!MultiHitRestrict || MultiHitAhead(SeraphismOnSeries, SeraphismBeforeDanger))
 		{
 			if ((SummonSeraphPvE.Cooldown.IsCoolingDown || CurrentMp <= EmergencyHealingMPThreshold) && SeraphismPvE.CanUse(out act))
 			{
@@ -506,6 +521,19 @@ public sealed class SCH_Reborn : ScholarRotation
 		}
 
 		return base.SpeedAbility(nextGCD, out act);
+	}
+
+	protected override bool GeneralAbility(IAction nextGCD, out IAction? act)
+	{
+		// Into a learned series also outside the area-defence flag: most series are instant attacks without a cast
+		// (concept 08, A468). The alternation with Summon Seraph stays as in the area-defence path.
+		if (MultiHitRestrict && SeraphismOnSeries && HitSeriesHitsLeft > 0
+			&& (SummonSeraphPvE.Cooldown.IsCoolingDown || CurrentMp <= EmergencyHealingMPThreshold) && SeraphismPvE.CanUse(out act))
+		{
+			return true;
+		}
+
+		return base.GeneralAbility(nextGCD, out act);
 	}
 
 	[RotationDesc(ActionID.ChainStratagemPvE, ActionID.EnergyDrainPvE, ActionID.BanefulImpactionPvE, ActionID.AetherflowPvE, ActionID.DissipationPvE)]

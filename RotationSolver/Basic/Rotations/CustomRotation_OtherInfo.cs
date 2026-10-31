@@ -1919,6 +1919,25 @@ public partial class CustomRotation
 	public static bool AreaHitOnMe => DataCenter.AreaHitReachesPlayer;
 
 	/// <summary>
+	/// How many more hits of a learned series on the party the player would still take - a series running, or one an enemy
+	/// cast announces within the next GCD; 0 when none. Counted the way Liturgy of the Bell counts its triggers
+	/// (<see cref="HitSeries"/>: within its 20 s, one hit a second, the player and another member), and read by every
+	/// healer whose big tool gains from each hit of a series (concept 08, "Glockenspiel", A468).
+	/// </summary>
+	public static int HitSeriesHitsLeft => HitSeries.TriggersLeft();
+
+	/// <summary>
+	/// Whether a tool limited to multihit party stacks may go now: a multihit stack marker, or - each under its own switch -
+	/// a learned series still hitting (<see cref="HitSeriesHitsLeft"/>) or an announced area hit that reaches the player
+	/// and would put an unprotected member in danger (concept 08, A349, A468).
+	/// </summary>
+	/// <param name="alsoSeries">Also into a learned series.</param>
+	/// <param name="alsoDanger">Also before a dangerous area hit.</param>
+	/// <returns>True when the limited tool may go.</returns>
+	protected static bool MultiHitAhead(bool alsoSeries, bool alsoDanger)
+		=> IsCastingMultiHit || (alsoSeries && HitSeriesHitsLeft > 0) || (alsoDanger && AreaHitOnMe && AreaDefenseDanger(out _));
+
+	/// <summary>
 	/// True when BMR reports a tankbuster within the specified seconds.
 	/// Always false when BMR is inactive, or when the user has UseBmrTimeline disabled.
 	/// </summary>
