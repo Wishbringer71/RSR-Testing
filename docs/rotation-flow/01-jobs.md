@@ -401,7 +401,22 @@ Belegt die meisten Dispatch-Slots im Repo (28 überschriebene Mitglieder einschl
 ### BST — 538 LOC, 13 Configs
 
 Seit dem Upstream-Umbau (07f9f7daf, 30.09.2026) eine eigene Rotation: `GeneralGCD` mit Quelling Wave,
-Shieldsplitter, Axeblade Bite und Smash Axe. Begrenzter Job, außerhalb seines Profils — erfasst, nicht bearbeitet.
+Shieldsplitter, Axeblade Bite und Smash Axe. Begrenzter Job seit Patch 7.56 (Stufe 50, eigenes Solo-Duell „Crucible of
+the Unbroken"); er hat ihn am 31.10.2026 genannt („z.B. Optimierung beastmaster"), damit gehört er in sein Profil.
+
+**Geprüft am 31.10.2026 (A473), kein Defekt belegbar:**
+- Die vier Äxte und ihre Formen bei 250 TP (Brutal Rage, Hawkish Talons, Risen Fall, Calamity) sind Waffenfertigkeiten in
+  eigener Abklinggruppe 16, nicht in der GCD-Gruppe 58 (Spielblätter, xivapi: „do not share a recast timer with any
+  other actions"); sie werden eingewoben, und `AttackAbility` ist ihr richtiger Platz.
+- Der Innere Kompass verlangt für eine absichtliche Kombo die Richtung im Uhrzeigersinn (Volant → Rampant → Durant →
+  Eldritch → Volant, offizieller Job-Guide). Die Basisschicht bildet das über die Herz-Status ab, die jede Axt verlangt
+  und gewährt (`StatusNeed`/`StatusProvide`, etwa Avalanche Axe nach Volant Heart); ohne passendes Herz geht sie im
+  zweiten Durchgang ohne diese Bedingung.
+- Eine Referenz für die Rotation gibt es nicht: Der offizielle Job-Guide beschreibt nur Mechanik (Stand „Last Update: -"),
+  The Balance führt keinen Beastmaster, icy-veins nur das Leveln. Optimieren ließe sich die Reihenfolge der Äxte und
+  Tricks nach dem Kompass und der Kombozahl (Multiplikator bis 3,0 ab der fünften Kombo, Werkzeugquelle consolegameswiki),
+  aber ohne Referenz und ohne einen Mitschnitt von ihm wäre das eine Annahme. Mit seinem ersten Mitschnitt als
+  Beastmaster (ACT oder DefenseTrace) wird das gemessen.
 
 ---
 

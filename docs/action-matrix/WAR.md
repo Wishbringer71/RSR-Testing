@@ -95,15 +95,20 @@ direkt: 40 · ungenutzt: 1
 | Berserk | ActionCheck liest | Inner Release |
 | Berserk | Regel prüft | Inner Release |
 | Berserk | Regel prüft | Storm's Eye |
+| Chaotic Cyclone | Regel prüft | Inner Chaos |
 | Damnation | Regel prüft | Vengeance |
+| Decimate | Regel prüft | Fell Cleave |
 | Decimate | Regel sperrt vorher | Primal Rend |
 | Decimate | Regel prüft | Storm's Eye |
+| Fell Cleave | Regel prüft | Decimate |
 | Fell Cleave | Regel sperrt vorher | Primal Rend |
 | Fell Cleave | Regel prüft | Storm's Eye |
 | Heavy Swing | Regel sperrt vorher | Primal Rend |
 | Infuriate | Regel prüft | Inner Release |
+| Inner Beast | Regel prüft | Decimate |
 | Inner Beast | Regel prüft | Fell Cleave |
 | Inner Beast | Regel sperrt vorher | Primal Rend |
+| Inner Beast | Regel prüft | Steel Cyclone |
 | Inner Beast | Regel prüft | Storm's Eye |
 | Inner Release | Regel prüft | Storm's Eye |
 | Maim | ComboIds | Heavy Swing |
@@ -111,6 +116,7 @@ direkt: 40 · ungenutzt: 1
 | Mythril Tempest | ComboIds | Overpower |
 | Mythril Tempest | Regel sperrt vorher | Primal Rend |
 | Onslaught | Regel prüft | Upheaval |
+| Orogeny | Regel prüft | Upheaval |
 | Overpower | Regel sperrt vorher | Primal Rend |
 | Primal Rend | StatusNeed PrimalRendReady | Inner Release |
 | Primal Ruination | Regel sperrt vorher | Primal Rend |
@@ -119,6 +125,7 @@ direkt: 40 · ungenutzt: 1
 | Raw Intuition | Regel prüft | Bloodwhetting |
 | Reprisal | Regel sperrt vorher | Shake It Off |
 | Steel Cyclone | Regel prüft | Decimate |
+| Steel Cyclone | Regel prüft | Inner Beast |
 | Steel Cyclone | Regel sperrt vorher | Primal Rend |
 | Steel Cyclone | Regel prüft | Storm's Eye |
 | Storm's Eye | ComboIds | Maim |

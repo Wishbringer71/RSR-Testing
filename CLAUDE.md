@@ -41,6 +41,7 @@ Diese Datei gilt in jeder Lage. Die übrigen Regeln stehen je genau einmal im Re
 | `CLAUDE.md` oder `.claude/` ändern | `.claude/rules/regeldateien.md` | ebenso |
 | Upstream-Sync | `.claude/skills/upstream-sync/SKILL.md` | Skill aufrufen, sonst die Datei lesen |
 | Er lädt Dateien hoch | `.claude/skills/upload-auswertung/SKILL.md` | ebenso |
+| Neue FFXIV-Version (Patchnotes in den Lodestone-Nachrichten) | `.claude/skills/spielpatch/SKILL.md` | ebenso |
 | Archiv zu einem Bereich | `python3 .github/scripts/audit/archive.py find <Begriff>`, `show <A123>`, `recent` | nie die ganze Datei lesen; `show` nennt Widerrufe und spätere Einträge dazu, und ein Eintrag gilt nur mit ihnen |
 | Sitzungsbeginn, Kontextkomprimierung | `.github/scripts/audit/session_brief.py`, Hook in `.claude/settings.json`: Abgleich, TODO, offene Issues, Archiv | von selbst |
 | Shell-Befehl, der einen Pfad eines Anlasses nennt | dessen Regeldatei über `.github/scripts/audit/rule_inject.py` (PreToolUse-Hook) | von selbst, einmal je Sitzung |
@@ -137,7 +138,7 @@ Pflicht für jede nicht-triviale Aufgabe; die REGEL steht darüber.
 
 **Nutzungsprofil**
 - Priorität folgt seinem Profil: PvE, deutscher Client, seine Jobs und Rotationen. Seine Jobs (seine Angabe): alle Kampfjobs — Maschinist zwischendurch, alle anderen seltener; Monk bislang nicht (seine Angabe, 25.10.2026). Kein Kampfjob liegt deshalb außerhalb des Profils.
-- Erheben immer vollständig; bearbeiten nur, was in seinem Profil liegt. PvP, Blaumagier und andere begrenzte Jobs, Bozja und ähnliche Sonderinhalte, fremde Rotationen, die er nicht nutzt: erfassen, bis er sie nennt oder freigibt.
+- Erheben immer vollständig; bearbeiten nur, was in seinem Profil liegt. PvP, Blaumagier und andere begrenzte Jobs, Bozja und ähnliche Sonderinhalte, fremde Rotationen, die er nicht nutzt: erfassen, bis er sie nennt oder freigibt. Genannt: der Beastmaster (31.10.2026).
 - Churin-Rotationen (`ExtraRotations/*/Churin*`) sind für ihn uninteressant: keine Befunde dazu erfassen.
 - Vor dem Spielen kompiliert er den aktuellen Branch (seine Angabe). Sein Stand ist der Branch zur Zeit seiner Beobachtung, nie ein Release; maßgeblich ist das Datum seiner Beobachtung oder Datei.
 - Er ist Tester und nutzt selten die Voreinstellungen. Eine Aussage über einen Vorgabewert ist keine über seine Konfiguration, und die kann ich nicht messen. Jede Regel hinter einem Schalter denke ich für beide Stellungen.
