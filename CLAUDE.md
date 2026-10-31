@@ -41,6 +41,7 @@ Diese Datei gilt in jeder Lage. Die übrigen Regeln stehen je genau einmal im Re
 | `CLAUDE.md` oder `.claude/` ändern | `.claude/rules/regeldateien.md` | ebenso |
 | Upstream-Sync | `.claude/skills/upstream-sync/SKILL.md` | Skill aufrufen, sonst die Datei lesen |
 | Er lädt Dateien hoch | `.claude/skills/upload-auswertung/SKILL.md` | ebenso |
+| Neue FFXIV-Version (Patchnotes in den Lodestone-Nachrichten) | `.claude/skills/spielpatch/SKILL.md` | ebenso |
 | Archiv zu einem Bereich | `python3 .github/scripts/audit/archive.py find <Begriff>`, `show <A123>`, `recent` | nie die ganze Datei lesen; `show` nennt Widerrufe und spätere Einträge dazu, und ein Eintrag gilt nur mit ihnen |
 | Sitzungsbeginn, Kontextkomprimierung | `.github/scripts/audit/session_brief.py`, Hook in `.claude/settings.json`: Abgleich, TODO, offene Issues, Archiv | von selbst |
 | Shell-Befehl, der einen Pfad eines Anlasses nennt | dessen Regeldatei über `.github/scripts/audit/rule_inject.py` (PreToolUse-Hook) | von selbst, einmal je Sitzung |
