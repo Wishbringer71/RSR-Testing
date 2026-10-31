@@ -1267,6 +1267,16 @@ den sein eigenes Ziel angreift, auch bei einem Pull, und nur an einen Tank mit H
 Night gingen nur nach Gesundheitsschwellen; Aquaveil, Exaltation und die übrige Einzelabwehr der Heiler gingen an den
 Angegriffenen, auch wenn der Marker den anderen Tank nannte.
 
+**Herz des Korunds mit „Full target usage"** (`GNB_Reborn.DefenseSingleAbility`, A467): erst das Ziel eines
+Tankbusters, er selbst vor anderen (`TargetType.Tankbuster`, wie ab Werk); sonst das Mitglied, das die Heilzielwahl
+vorn sieht (`TargetType.Heal`: die kritische Klasse zuerst, unter der Heilschwelle der Aktion, Konzept 07) – nicht mehr
+das mit den wenigsten Lebenspunkten (`TargetType.LowHP`), meist ein unverletzter Magier mit kleinem Vorrat, während er
+selbst den Treffer nahm. Kommt ein Tankbuster auf ihn, bevor Herz des Korunds wieder bereit ist, geht es an einen
+anderen nur, wenn der die Triage gewinnt (`HelpWinsTriage`, wie Urflackern): Das Herz kostet ihn – anders als
+Urflackern den Krieger – die eigene Minderung. Dieselbe Lehre zog schon die Zielwahl von Rekindle beim Beschwörer
+(niedrigster Anteil statt wenigster Punkte) und die Barriere des Dunkelritters auf andere (erst die Schwelle, dann die
+Wahl).
+
 **Erkennung** (Stufe „alle", ohne Option, `DataCenter.IsTankbusterAimedAt`): ein bekannter Tankbuster zielt auf das
 Mitglied –
 - ein Tankbuster-Marker auf ihm, der nicht auf der Liste der Marker ohne Treffer steht (`TankbusterTargetIds`, je Bild

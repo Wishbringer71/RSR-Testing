@@ -220,14 +220,26 @@ public sealed class GNB_Reborn : GunbreakerRotation
 
 				case HeartOfStoneStrategy.Fullusage:
 				default:
-					if (HeartOfCorundumPvE.EnoughLevel && HeartOfCorundumPvE.CanUse(out act, targetOverride: TargetType.LowHP))
+				{
+					// "Full target usage": the tankbuster target first, the player before others; otherwise the member the
+					// heal target order puts first (critical class, under the action's heal ratio; concept 07). It took the
+					// member with the fewest health points, most often a caster at full health while the gunbreaker took
+					// the hit. With a tankbuster on him before the heart is back, another member gets it only by winning
+					// the triage, as Nascent Flash does (concept 09, A467).
+					var heart = HeartOfCorundumPvE.EnoughLevel ? HeartOfCorundumPvE : HeartOfStonePvE;
+					if (heart.CanUse(out act, targetOverride: TargetType.Tankbuster))
 					{
 						return true;
 					}
-					if (!HeartOfCorundumPvE.EnoughLevel && HeartOfStonePvE.CanUse(out act, targetOverride: TargetType.LowHP))
+
+					var ownNeed = TankbusterOnMeWithin(heart.Cooldown.RecastTimeOneChargeRaw);
+					if (heart.CanUse(out act, targetOverride: TargetType.Heal)
+						&& (!ownNeed || heart.Target.Target is not { } member || member.GameObjectId == Player?.GameObjectId
+							|| HelpWinsTriage(member)))
 					{
 						return true;
 					}
+				}
 					break;
 			}
 		}
