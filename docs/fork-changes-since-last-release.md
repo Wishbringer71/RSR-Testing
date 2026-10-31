@@ -107,6 +107,15 @@ What this release changes in the fight. For the whole distance from upstream, se
   damage. The opener's priorities now end once Starry Muse is up, as the rest of the rotation already does. From level
   92 nothing changes.
 
+## Seeing what the rules decide
+
+- **The action window shows the movement check that decides in combat.** It worked the check out on its own and missed
+  that a dash onto a target at 0 yalms is only damage, so it showed "Fail" for a gap closer RSR pressed. It now asks
+  the same check as the press. Nothing changes in a fight.
+- **A chosen sleep that never went out says why.** When RSR chose a sleep against an enemy cast and the sleep did not go
+  out, the trace's "sleep not cast" line now names the reason the rule stopped choosing it - moving, or a party member
+  in danger, which both come first.
+
 ## Stability
 
 - **No crash from RSR's windows at a loading screen.** When RSR rebuilt its window fonts after a zone change - at
