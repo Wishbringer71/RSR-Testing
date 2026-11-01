@@ -14135,6 +14135,34 @@ durchgehen". Als Skill `spielpatch` festgehalten (Lesetabelle in CLAUDE.md); den
 - *Prüfgrad:* Kompiliert ohne Warnung, 40 Prüfschritte, Modell; im Spiel nicht beobachtet – die Trace-Zeile zeigt es im
   nächsten Upload.
 
+### A478 · Upload vom 01.11.2026 abends: Krieger im Nordhorn, Weißmagier in der Gubal-Bibliothek (01.11.2026)
+
+- *Hochgeladen:* `RotationSolver.7z` (`DefenseTrace.log` einer Sitzung 16:28–17:39, Build d6bf0ce5b – mit der Füllheilung
+  aus A476, die A477 zurücknahm –, Tabellen von 16:39) und `fflogsarchive.7z` (der Mitschnitt vom Vormittag erneut und
+  der vom Abend, 16:27–17:39). Gespielt: Krieger in Nördliches Kreszentia (16:31–17:08), Weißmagier in der Großen
+  Gubal-Bibliothek (schwer, 17:18–17:32).
+- *Sein Tod im Nordhorn (16:46:34):* Kaltes Starren (#47149) des Schreckensseher traf ihn mit über 480 % der
+  Maximalgesundheit, beim dritten von drei Wirken (je 3,7 s); die ersten beiden trafen ihn nicht, das dritte zwei Spieler.
+  Während dieses Wirkens löste RSR keine Aktion aus (die letzte, Tomahawk, 3,3 s vor seinem Beginn). Der Name deutet auf
+  eine Blickmechanik (Schluss); sie steht nicht in der Gaze/Stop-Liste, deren Einstellung ab Werk aus ist, und auch an
+  wäre sie nur ein Innehalten, keine Drehung. Ein Treffer über der ganzen Gesundheit ist nach Konzept 13 eine verfehlte
+  Mechanik, gegen die Heilung und Minderung nichts tun (sein Hinweis zu Megatod). Kein Defekt. 40 weitere Spielertode im
+  Nordhorn, keiner in der Bibliothek.
+- *Der Tank bei 0,3 % (Bibliothek, 17:27):* Ein ganzes Pack auf dem Tank (Revolverklinge eines Mitspielers, keine eigene
+  Minderung bis 5 %), von 82 auf 43 LP in 3 s. Cure II zuerst auf den Weißmagier selbst (etwa 50 %, von einem Gegner
+  angegriffen), dann zweimal auf den Tank; Benediktion, im Dungeon nie benutzt, ging in keinem der Fenster nach den
+  Zaubern (je etwa 0,85 s bis zum nächsten GCD) hinaus. Defekt ins TODO, Konzept vor Code; die Vorhersage rechnet die
+  eigene Heilung im Flug nicht an (`GetForecastSurvivingShare`), daran lag es nicht.
+- *Verfluchter Blick als Serie über 21 s:* Mehrere Augen wirkten ihn alle 3 s (4,7 s Wirkzeit); `Watcher.SeriesShare`
+  verkettete die Landungen, weil sie einander schneller folgten als die Wirkzeit, gleich welcher Gegner wirkte – abgelegt
+  38 % und 21 s Spanne bei Treffern von 0 bis 7 %. Defekt ins TODO und in Konzept 13.
+- *Regen in der Bibliothek:* 18, fast alle auf den Tank zu Beginn der Pulls (Pull-Pflege, so gewollt).
+- *Tabellen gegen den Mittag:* Fläche 283 → 290, Tankbuster 69 → 71, Serien +3, Serienspannen +3 (eine mit 21 s, oben),
+  ungemindert gemessen +7; laufende Schichten 19 und 6, keine Quarantäne, Sicherungen gleich ihren Dateien.
+- *Ergebnis:* zwei Defekte ins TODO, beide mit Konzept vor Code. Prüfgrad: Trace, Tabellen und ACT statisch; die
+  Blickrichtung steht nicht im Mitschnitt (keine Bewegungszeilen für ihn in diesem Abschnitt); Namen anderer Spieler nur
+  in der Sitzung.
+
 ---
 ## B · Commit-Register (Fork vs. `upstream/main`)
 

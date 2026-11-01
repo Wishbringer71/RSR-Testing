@@ -407,6 +407,13 @@ mindert voll, wenn nach dem Treffer Heilung fällig wird; mit dem Einzeltreffer 
 ganze Serie gespart. Zwei Gegner, die dieselbe Aktion im selben Moment wirken, zählen ebenso zusammen – sie treffen die
 Gruppe zusammen.
 
+**Der Code verkettet mehr als das, Defekt offen** (A478, TODO „Gestaffelte Wirken mehrerer Gegner werden zu einer Serie
+verkettet"). Er prüft den Abstand zur vorigen Landung derselben Aktion, nicht den Wirkenden: Wirken mehrere Gegner sie
+gestaffelt, folgt jede Landung der vorigen schneller als die Wirkzeit, obwohl jeder Gegner sie nur einmal wirkte.
+Verfluchter Blick (#47152, Nördliches Kreszentia, 01.11.2026), von mehreren Augen alle 3 s bei 4,7 s Wirkzeit, steht so
+als eine Serie über 21 s mit 38 %; die Treffer lagen bei 0 bis 7 %. Die Annahme dahinter – „der Gegner hätte sie
+dazwischen nicht wirken können" – gilt je Gegner.
+
 **Gemindert ist eine Serie nur so weit, wie die Minderung bis zu ihrem letzten Treffer steht** (A460). Die Flächenserie
 lernt wie die Tankbuster-Serie (A454) ihre Dauer vom ersten bis zum letzten Treffer, als höchsten Wert je Aktion
 (`OtherConfiguration.AreaSeriesSpan`), und `DataCenter.AreaShareNow` zählt nur Minderung und Erhöhung der

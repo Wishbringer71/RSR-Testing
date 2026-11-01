@@ -411,17 +411,22 @@ Veni Vidi Vici, ohne Wirkbalken, ließ ihn mit 34 % statt rechnerisch etwa 8 % s
 Ticks, wo Medica II mitlief, samt ihren – auf dem kleinsten Lebenspool füllen drei Ticks auf, wie Resedra (48 %
 Überheilung, Konzept 18) nicht die Ausnahme.
 
-### Die Füllheilung: heilen, wenn nichts anderes zu tun ist (Defekt, Behebung geplant)
+**Die Notfallheilung als Fähigkeit kann zwischen zwei Zaubern ausfallen, Defekt offen** (A478, TODO „Benediktion fehlte,
+als der Tank auf 0,3 % fiel"). In der Großen Gubal-Bibliothek fiel der Tank unter einem ganzen Pack in 3 s von 82 auf
+43 LP; die Rangfolge gab den ersten Cure II dem Weißmagier selbst, der bei etwa 50 % selbst angegriffen wurde (Rang 2,
+Schluss aus dem Verlauf, der Trace nennt es nicht), dann zwei dem Tank. Benediktion, bereit und mit erfüllter Gefahr,
+ging in keinem der beiden Fenster nach den Zaubern hinaus; nach einem Zauber bleiben bis zum nächsten GCD Bruchteile einer
+Sekunde, und die letzte halbe ist für Fähigkeiten gesperrt.
+
+### Die Füllheilung: heilen, wenn nichts anderes zu tun ist
 
 **Was sie tut.** „Use GCD heals when there's nothing else to do" (ab Werk an) läuft am Ende des GCD-Pfads, nach Heilung,
 Abwehr, Wiederbelebung und Schaden – also nur, wenn kein anderer GCD geht –, im Kampf, nie unter `NoCasting` (der
 GCD-Pfad endet davor), nach einer zufälligen Verzögerung („Downtime healing delay range", ab Werk 0,5 bis 1 s).
 Auslöser ist das vorausberechnete Minimum der Gruppe (`ForecastMinHp`) unter „When the lowest party HP is below" (ab
-Werk 80 %). Dann setzt sie die Zielart auf die Rangfolge (`TargetType.Heal`) und ruft die Flächenheilung, wenn mehr
-als zwei Mitglieder nicht voll sind und die Streuung unter „AoE heal HP spread" liegt, sonst die Einzelheilung – zuerst
-die der Spezialaktionen, dann die des Jobs. Den Bedarfsfilter (`AutoHealCheck`) schaltet sie nicht ein: Die Rangfolge
-sieht jedes Mitglied, das nicht voll ist, und eine Flächenheilung um den Wirkenden gilt als nötig, sobald überhaupt
-jemand in ihrer Reichweite steht.
+Werk 80 %). Dann setzt sie die Zielart auf die Rangfolge (`TargetType.Heal`) samt Bedarfsfilter an ihrer Linie und ruft
+die Flächenheilung, wenn mehr als zwei Mitglieder unter der Linie stehen und die Streuung unter „AoE heal HP spread"
+liegt, sonst die Einzelheilung – zuerst die der Spezialaktionen, dann die des Jobs (die Regel unten, „Was gilt").
 
 Sie läuft in Pausen ohne angreifbares Ziel – ein Boss wird unanvisierbar, eine Welle ist tot und die nächste noch nicht
 da, die Ziele stehen außer Reichweite – und bei einem Zaubernden in Bewegung ohne sofort wirkenden Angriff. Sie gilt
@@ -433,15 +438,15 @@ Ziel während des Wirkens hochgeheilt wird (`CancelCastUpdater`, `HealingWhileDo
 nimmt, läuft vorher und bleibt unberührt: die regulären Heilpfade mit Filter, die Wiederbelebung, HoT gegen DoT, die
 Pull-Pflege mit Regen auf den Tank (im allgemeinen GCD-Zweig). Eine Vorhersage von BossModReborn liest sie nicht.
 
-**Der Defekt.** Ohne Filter heilt sie Mitglieder über ihrer eigenen Linie. Am Prätorium (Stufe 50, sein Upload vom
-01.11.2026, A476): Gaius wurde unanvisierbar, der Tank stand bei 75 % und trug Regen, und die Füllheilung ging als Regen
-auf den Schwarzmagier bei 95 %. Das widerspricht dem Eingang dieses Konzepts („`FindHealTarget` bekommt bereits ein durch
-`healRatio` gefiltertes Feld") und seiner Vorgabe für die Heilung („es soll ja nicht großartig überheilt werden",
-Konzept 18). Dieselbe Lücke hat ihre Flächenheilung, zweifach: Drei Mitglieder bei 95 % zählen als „nicht voll" und
-öffnen sie, und gewirkt wird sie, sobald jemand in Reichweite steht – auch wenn der eine unter der Linie außer
-Reichweite steht.
+**Der Defekt bis A477.** Sie schaltete den Bedarfsfilter (`AutoHealCheck`) nicht ein und heilte so Mitglieder über
+ihrer eigenen Linie. Am Prätorium (Stufe 50, sein Upload vom 01.11.2026, A476): Gaius wurde unanvisierbar, der Tank stand
+bei 75 % und trug Regen, und die Füllheilung ging als Regen auf den Schwarzmagier bei 95 %. Das widersprach dem Eingang
+dieses Konzepts („`FindHealTarget` bekommt bereits ein durch `healRatio` gefiltertes Feld") und seiner Vorgabe für die
+Heilung („es soll ja nicht großartig überheilt werden", Konzept 18). Dieselbe Lücke hatte ihre Flächenheilung, zweifach:
+Drei Mitglieder bei 95 % zählten als „nicht voll" und öffneten sie, und gewirkt wurde sie, sobald jemand in Reichweite
+stand – auch wenn der eine unter der Linie außer Reichweite stand.
 
-**Was gelten soll.** Die Füllheilung heilt, wer unter ihrer Linie steht:
+**Was gilt.** Die Füllheilung heilt, wer unter ihrer Linie steht:
 - Der Bedarfsfilter gilt in ihr, mit der Linie aus „When the lowest party HP is below" statt der Heilquote der Aktion –
   für das Ziel der Einzelheilung und für die Frage, ob eine Flächenheilung um den Wirkenden jemanden mit Bedarf
   erreicht. Unter den Gefilterten ordnet die Rangfolge wie überall.
