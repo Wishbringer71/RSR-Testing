@@ -1250,6 +1250,17 @@ nur um den Wurf; eine Senkung durch neue Messungen, die die Varianten der alten 
 den einmal nur vier teilten); eine Senkung auf eine einzelne Messung einer streuenden Aktion. Ein alter Eintrag ohne
 Streuungsangabe zählt als eine Messung ohne Streuung.
 
+**Für die Einträge aus der alten Datei trägt das nicht, vor Stufe 3 zu lösen** (A475). Ihr Wert ist der Höchstwert
+aller Messungen vor Stufe 1, deren Zahl und Streuung unbekannt sind; übernommen wird er als eine Messung ohne Streuung.
+Zwei neue Messungen, die die harte Variante nur noch nicht getroffen haben, widerlegen ihn dann schon. Im Upload vom
+01.11.2026 (Prätorium, Nebeltrift) hätten die Regeln 5 und 5b vier von 16 neu gemessenen Einträgen gesenkt, ohne dass
+sich an diesen Aktionen etwas geändert haben muss: Donnerfunke (#45291) von 56 auf 44 %, Erdbeben (#43327) von 50 auf
+41 %, Verstärkte Sprengung (#28477) von 46 auf 36 %, den Tankbuster Goldene Klauen (#45305) von 44 auf 6 %. Wie weit eine
+Aktion streut, zeigen dieselben Kämpfe: Donnerfunke traf das am härtesten getroffene Mitglied mit 4 und dann mit 40 %
+seiner Maximalgesundheit, Erdbeben mit 16 und mit 37 %. Ob ein alter Wert dagegen einen früheren Messfehler trägt
+(Goldene Klauen, 6 und 2 % neu), ist von hier nicht zu unterscheiden. Der Maßstab unten gilt deshalb nur für Einträge,
+deren alte Messungen gezählt sind.
+
 **5b. Senken nach klarem Abfall: sein „manchmal ist etwas nach einschlag klar erkennbar".** Die übernommene Schicht ist
 auch widerlegt, wenn ihre sauberen Messungen – mindestens zwei – nicht mehr als einen Schadenswurf auseinanderliegen und
 eine saubere Messung der laufenden Revision um mehr als einen Wurf unter der niedrigsten von ihnen liegt. Ein fester
@@ -1269,7 +1280,8 @@ benannt): falsch ausgelassener Schutz je Cast
 | Patch senkt 30 → 18 % | 0 % (spart nie) | 0 %, spart ab Cast 1 | 0 %, ab Cast 3 | 0 %, ab Cast 3 | 0 %, ab Cast 1 |
 | Patch senkt, Stack | 0 % (spart nie) | 5,5 % | 3,8 % | 2,4 % | 3,0 % |
 
-Maßstab der Senkregeln: Wo der Treffer nicht schwächer wurde, lassen sie nie öfter Schutz falsch aus als heute; wo ein
+Maßstab der Senkregeln, für Einträge mit gezählten alten Messungen (die übernommenen der alten Datei: oben, A475): Wo
+der Treffer nicht schwächer wurde, lassen sie nie öfter Schutz falsch aus als heute; wo ein
 Patch ihn schwächte, nie öfter als heute bei jeder neuen Aktion (gerechnet 5,5 % im Stack-Fall) – ein geschwächter
 Treffer ist für die Tabelle eine neue Aktion. Regel 5b bleibt in beiden Grenzen. Ihr Preis ist der Stack, dessen alte
 Messungen zufällig alle von gleich vielen geteilt wurden: Er sieht fest aus, und nach einer Abschwächung senkt eine
@@ -1454,6 +1466,12 @@ wird erkannt. Nicht gedeckt ist eine alte Datei, die zuletzt eine ältere Fassun
 und was nur sie hielt, geht mit ihr verloren wie heute. Den Code selbst spielt `revision_harness/run.sh` außerhalb
 des Spiels durch dieselben Läufe, samt einem JSON-Rundlauf des Tankbuster-Formats und eingebauten Fehlern als
 Selbsttest; nicht in der CI, deren Prüfrechner weder .NET noch Dalamud hat.
+
+**Im Spiel belegt** (sein Upload vom 01.11.2026, Builds d8451be59 und 124fdcb17, A475): Die Spielversion ist lesbar,
+sobald er eingeloggt ist; in den Kopfzeilen von Sitzungen, die vor dem Login laden, steht „NOT READABLE", und Messungen
+danach tragen die Version doch (zwölf Flächen- und vier Tankbuster-Einträge mit laufender Schicht). Die alte Datei
+gleicht in jedem Eintrag dem Höheren aus beiden Schichten, die Sicherungen gleichen ihren Dateien, keine Invariante
+schlug an, nichts ging in Quarantäne.
 
 **Was dagegen spricht.**
 - *„Eine Stufe ohne Wirkung im Kampf ist Vorratsarbeit."* Nein: Ohne sie hätte Stufe 2 beim ersten Patch nach ihrem

@@ -14010,6 +14010,61 @@ durchgehen". Als Skill `spielpatch` festgehalten (Lesetabelle in CLAUDE.md); den
 - *Prüfgrad:* Quelltext des Packers, lokaler Build in beiden Wegen, Prüfskript; der Release-Workflow selbst läuft erst
   beim nächsten Release.
 
+### A475 · Upload vom 01.11.2026 ausgewertet: Stufe 1 im Spiel, Regen auf den Schwarzmagier (01.11.2026)
+
+- *Hochgeladen:* `fflogsarchive.7z` mit zwei ACT-Mitschnitten (31.10. 19:29–20:02, 01.11. 09:33–13:17; der zweite
+  endet mit seinem Export um 13:17) und `RotationSolver.7z`: `DefenseTrace.log` mit fünf Sitzungen (31.10. 19:31 bis
+  01.11. 13:44), Builds d8451be59 und 124fdcb17 (Branch-Stand, `latest.zip` nach A474), gelernte Tabellen von 12:44.
+- *Gespielt:* 31.10. Beschwörer in Nordwald (ein Kampf, mit Chocobo). 01.11. Weißmagier auf seinem zweiten Charakter
+  im Prätorium (Stufe 50, sieben Kämpfe), dann auf dem Hauptcharakter Weißmagier in Nebeltrift (neun Kämpfe) und in
+  Arretur P1T6 (Sophia, acht Mitglieder), dazwischen das Gold-Saucer-Spiel „Keybound Brawler" (RSR ohne Kampf; ein
+  Effekt #49551 mit 0 % alle 5 s, nicht gelernt), zuletzt Krieger allein in Südliches Kreszentia gegen den Kreszenten
+  Berserker (374 s, nur im Trace). Kein Mitglied starb in den aufgezeichneten Kämpfen; der Trace zeigt auch im
+  Kriegerkampf keinen eigenen Tod.
+- *Seine Frage (01.11.2026): „warum wurde im 50er inhalt der schwarzmagier so oft mit regen ausgestattet. gab es dafür
+  einen grund?"* – sechs von 32 Regen im Prätorium gingen an den Schwarzmagier (18 an den Tank, sechs an ihn selbst,
+  zwei an den zweiten Damage Dealer). Grund: Regen wählt das Mitglied mit dem geringsten Anteil an seiner
+  Maximalgesundheit ohne Regen (`TargetType.LowHPPercent`, Upstream), und unter Stufe 52 steht sie in der Einzelheilung
+  vor Cure II. Der Schwarzmagier hatte die kleinste Maximalgesundheit (2937 gegen 4688 des Tanks), stand nach jedem
+  Gruppentreffer (Eiserner Kuss, Verstärkte Sprengung, Festina Lente, Hand des Kaiserreichs) am tiefsten, und der Tank
+  trug Regen meist schon. Fünf trafen ihn bei 46 bis 70 %, eine bei 95 % um 10:21:15, im selben Moment, in dem Gaius
+  unanvisierbar wurde und die Projektionen erschienen (ACT-Zeile 34): kein Angriffsziel, also kein Schadens-GCD verloren.
+- *Seine Nachfrage „kausalität: ist denn das ziel des grundes eingetreten?"* – ja, in allen sechs: Vor dem nächsten
+  Gruppentreffer war er jedes Mal voll oder fast voll. Am deutlichsten Veni Vidi Vici (1656 LP, 56 %): Die zwei Ticks
+  zwischen Regen und Einschlag (777 LP) und Medica II brachten ihn von 48 auf 91 %, er blieb bei 34 %; ohne die Ticks
+  rechnerisch bei etwa 8 %, ohne beide tot. Bei 70 % ohne frischen Treffer (10:19:47) nahm er Festina Lente bei 100 %
+  statt rechnerisch etwa 79 %. Die Regen bei 95 % wirkte nur, weil 11 s später Erbenbann (22 %) ihn traf, was bei ihrer
+  Wahl nicht angekündigt war. Wirksam waren 33 bis 63 % der Ticks (bei 10:02:55 und 10:22:10 samt Medica II); der Rest
+  heilte ins Volle, weil drei Ticks seinen kleinen Lebenspool füllen. Ins Konzept 07 als Eigenschaft der Zielwahl.
+- *Stufe 1 im Spiel belegt (A456):* Spielversion lesbar nach dem Login, in Kopfzeilen vor dem Login „NOT READABLE",
+  Messungen danach mit Version (zwölf Flächen-, vier Tankbuster-Einträge mit laufender Schicht); alte Datei gleich dem
+  Höheren beider Schichten in allen 283 und 69 Einträgen, Sicherungen gleich ihren Dateien, keine Invariante, keine
+  Quarantäne. Die Bedingung für Stufe 2 im TODO ist damit erfüllt.
+- *Befund für Stufe 3 (Konzept 13, Regel 5):* Die übernommenen Einträge der alten Datei sind Höchstwerte vieler
+  Messungen, übernommen als eine ohne Streuung. Die Regeln 5 und 5b hätten nach je zwei neuen Messungen vier von 16
+  gesenkt, ohne Hinweis auf eine Änderung: Donnerfunke 56 → 44 %, Erdbeben 50 → 41 %, Verstärkte Sprengung 46 → 36 %,
+  Goldene Klauen 44 → 6 %. Dieselben Aktionen streuten am selben Abend: Donnerfunke 4 und 40 % am härtesten getroffenen
+  Mitglied, Erdbeben 16 und 37 %. Der Maßstab der Senkregeln („nie öfter Schutz falsch aus als heute") gilt damit nur für
+  Einträge mit gezählten alten Messungen; vor Stufe 3 zu lösen, im TODO.
+- *Sophia:* Regen auf einen Dragoon bei 100 % gegen einen DoT war richtig: 2608 LP je Tick am Mitschnitt, genau der
+  gelernte Wert, rund 15 % seiner Maximalgesundheit alle 3 s.
+- *Abbruch einer Heilung:* zweimal im Prätorium. Der erste brach Cure II 0,09 s nach Beginn ab, nachdem ein Regen-Tick
+  den Tank von 51 auf 60 % gehoben hatte; der zweite wurde geschrieben, als der Zauber schon gelandet war. Kein Verlust.
+- *Vorausheilung für den Tank:* Vor Erdseim-Entlüfter rechnete sie mit 36 % (dem höchsten Anteil, Konzept 13); den Tank
+  traf er mit 12,5 %, ihn mit 33 %. So entworfen, und es ging dafür keine Heilung hinaus.
+- *Krieger allein:* Ohne Heiler in der Gruppe nahm RSR Urimpuls, Schutzwall, Verdammnis, Reflexion und die
+  Spezialaktion Abwehr, sobald bereit; Rasender Schlag traf einmal mit 41 % nach einer Bewertung von 21 %, die Tabelle
+  führt seither 41 % (unsauber gemessen).
+- *Laufzeit:* je ein Durchlauf von 102 ms (Sophia; Rotation 76, Zustand 20 ms, eine Speicherbereinigung) und 102 ms
+  (Kreszentia; Rotation 101 ms, keine) – einmal je Kampf; frühere Traces hatten 97 (28.10.) und 474 ms (23.10.). Welcher
+  Teil der Rotation die Zeit trägt, zeigt die Kostenzeile nicht.
+- *Tabellen gegen den 29.10.:* Fläche 280 → 283 (drei Aktionen des Berserkers), Tankbuster 68 → 69 (Erbenbann, nur als
+  Wirken auf das Ziel), DoT +1 Gebiet (Arretur), Serien +1 (Chintamani), Schlaf vier gestoppte Wirken in Nebeltrift,
+  Schwächen Südhorn +1, neu `AreaSeriesSpan` mit drei Spannen.
+- *Ergebnis:* kein Defekt; ein Befund gegen das Konzept von Stufe 3, eingetragen. Prüfgrad: Trace, Tabellen und
+  ACT-Mitschnitte statisch ausgewertet, die Gegenrechnungen ohne Regen aus Tickhöhe und natürlicher Regeneration;
+  Namen anderer Spieler nur in der Sitzung.
+
 ---
 ## B · Commit-Register (Fork vs. `upstream/main`)
 

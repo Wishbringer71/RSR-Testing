@@ -398,6 +398,17 @@ Bedarfsfilter weg, den `FindHealTarget` an seinem Eingang führt (`GetForecastHe
 healRatio`, `AutoHealRatio` 0,80 als Vorgabewert im Code). Eine überschriebene Zielwahl kann deshalb
 auf einen Unverletzten zeigen; die Rangfolge kann das nicht.
 
+**Regen des Weißmagiers wählt ab Werk so** (`ModifyRegenPvE`: `TargetType.LowHPPercent`, von Upstream): Sie geht an das
+Mitglied mit dem geringsten Anteil an seiner Maximalgesundheit, das noch keine Regen trägt – nicht an das Mitglied, das
+den Heilbedarf ausgelöst hat. In der Einzelheilung (`WHM_Reborn.HealSingleGCD`) steht sie vor Cure II, unter Stufe 52
+als erster Schritt, weil Afflatus Solace fehlt. Im Prätorium (Stufe 50, sein Upload vom 01.11.2026, A475) gingen so sechs
+von 32 Regen an den Schwarzmagier: Mit der kleinsten Maximalgesundheit der Gruppe stand er nach jedem Gruppentreffer am
+tiefsten, und der Tank trug Regen meist schon. Fünf trafen ihn bei 46 bis 70 %, und vor dem nächsten Gruppentreffer war
+er jedes Mal wieder voll; Veni Vidi Vici ließ ihn mit 34 % statt rechnerisch etwa 8 % stehen. Eine ging bei 95 % hinaus,
+in dem Moment, als der Boss unanvisierbar wurde; einen Schadens-GCD kostete sie nicht. Der Preis der Sortierung ist die
+Überheilung: Auf seinen kleinen Lebenspool füllen drei Ticks auf, die übrigen heilen ins Volle (33 bis 63 % der Ticks
+wirksam, wo Medica II mitlief, samt ihren).
+
 **Welche Sortierung richtig ist, hängt an der Aktion, und beide Antworten kommen vor:**
 
 | Maß | Beantwortet | Richtig für |
