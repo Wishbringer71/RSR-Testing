@@ -15,6 +15,11 @@ public interface IBaseAction : IAction
 	internal static bool AllEmpty { get; set; } = false;
 	internal static bool ShouldEndSpecial { get; set; } = false;
 
+	// The line AutoHealCheck filters at in place of each action's own heal ratio; null keeps the action's. The downtime
+	// heal sets its own, "When the lowest party HP is below": it heals the members under the line the player set for it,
+	// and with the action's ratio a line set higher would filter out the very member who opened it (concept 07, A476).
+	internal static float? HealRatioOverride { get; set; } = null;
+
 	// Set by the defence dispatch while a defence path runs: whether the hit that opened it reaches the
 	// player. False rejects the actions that protect only him (concept 13, A233); null outside the paths.
 	internal static bool? SelfProtectionHitsMe { get; set; } = null;
@@ -48,6 +53,7 @@ public interface IBaseAction : IAction
 		TargetOverride = null;
 		ForceEnable = false;
 		AutoHealCheck = false;
+		HealRatioOverride = null;
 		IgnoreClipping = false;
 		AllEmpty = false;
 		ShouldEndSpecial = false;

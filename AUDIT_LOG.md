@@ -14065,6 +14065,52 @@ durchgehen". Als Skill `spielpatch` festgehalten (Lesetabelle in CLAUDE.md); den
   ACT-Mitschnitte statisch ausgewertet, die Gegenrechnungen ohne Regen aus Tickhöhe und natürlicher Regeneration;
   Namen anderer Spieler nur in der Sitzung.
 
+### A476 · Regen auf den Schwarzmagier am Konzept gemessen; Füllheilung ohne Bedarfsfilter (01.11.2026)
+
+- *Seine Rüge (01.11.2026):* „und das soll eine gute begründung und logik sein? […] was sagt unser konzept?" – zu meiner
+  Antwort aus A475, Regen gehe nach dem geringsten Anteil (`LowHPPercent`). Widerlegt am Code: `ActionSetting.TargetType`
+  liest zuerst `IBaseAction.TargetOverride`, und `CustomRotation_GCD` setzt vor den Heilungen `TargetType.Heal` mit
+  `AutoHealCheck`. Die eigene Zielart von Regen greift im Heilpfad nie (C140).
+- *Was das Konzept sagt:* Konzept 07, seine Vorgabe – ob geheilt wird, entscheiden die Heilschwellen; wen, die Gefahr
+  unter denen, die die Heilung brauchen (Filter: vorausberechnete Gesundheit unter der Heilquote der Aktion, ab Werk
+  80 %), nicht der Anteil für sich; welches Mittel, die Gefahr (ohne Aggro und Angekündigtes genügen HoT und kleinere
+  Heilungen). Konzept 18, seine Vorgabe: „es soll ja nicht großartig überheilt werden, die spieler sollen nie richtig in
+  gefahr geraten"; gegen Treffer ohne Vorwarnung hilft nur Gesundheit, die schon da ist.
+- *Gemessen an den sechs Regen im Prätorium (A475):* Fünf (46 bis 70 %) folgten dem Konzept: unter dem Filter; kein
+  Gegner zielte auf ihn, nichts angekündigt, also Klasse 3 – nach Anteil und Punkten stand er nach jedem Gruppentreffer
+  am tiefsten (10:02:55: 1361 LP gegen 1556 des Weißmagiers und 2586 des Tanks); der Tank trug Regen schon und schied
+  für sie aus; Mittel HoT. Veni Vidi Vici hatte keinen Wirkbalken (kein Zeile-20-Eintrag), ein Treffer ohne Vorwarnung:
+  Die Gesundheit, die die Ticks davor brachten, hielt ihn bei 34 %. Wirksam 33 bis 63 % der Ticks – im Bereich von
+  Resedra (48 %, Konzept 18), keine Abweichung von der Vorgabe. Eine (95 %, 10:21:15) widersprach ihm: Sie kam aus der
+  Füllheilung („Use GCD heals when there's nothing else to do", „When the lowest party HP is below"), als Gaius
+  unanvisierbar wurde (ACT-Zeile 34) – nur dieser Pfad kann ein Mitglied über 80 % wählen; die Pull-Pflege zielt nur
+  auf den Tank, die Einzelheilung filtert. Ausgelöst hatte sie der Tank bei 75 %, der Regen schon trug.
+- *Ursache:* Die Füllheilung setzt `TargetOverride = Heal`, aber nicht `AutoHealCheck` (Upstream; der Pfad kam mit 876e5917f,
+  27.05.2023); `FindHealTarget` lässt dann jeden durch, der nicht voll ist. Konzept 07 nennt genau das den Fehler einer
+  Überschreibung („kann auf einen Unverletzten zeigen").
+- *Optionen:* (0) belassen; (1) Filter mit der Heilquote der Aktion; (2) Filter mit der Linie der Füllheilung;
+  (3) nur das auslösende Mitglied heilen. Rückbau: Rücknahme des Commits.
+- *Abwägung im Kampf:* (0) heilt in jeder Pause ohne Ziel auch Volle, kostet MP und hält, wo nach der Pause neue Ziele
+  kommen, den ersten Angriff um einen GCD auf. (1) Bei einer höher gesetzten Linie (etwa 90 %) fiele das auslösende
+  Mitglied (85 %) aus dem Filter (80 %), und die Füllheilung täte nicht, was ihr Text sagt. (3) Überginge die Rangfolge
+  nach Gefahr (Konzept 07). (2) heilt genau die unter der Linie, die er für diese Heilung setzt, das auslösende Mitglied
+  immer; Schwäche: Trägt das auslösende Mitglied den HoT schon, geht Cure II auf es – das kam vorher ebenso, nur einen GCD
+  später, nach der Regen auf den Vollen. Gewählt (2).
+- *Klasse:* Die automatischen Heilpfade für Fähigkeiten und Zauber schalten den Filter ein; ohne ihn laufen nur die von
+  ihm befohlenen (seine Entscheidung im Moment) und bisher die Füllheilung.
+- *Umgesetzt:* `IBaseAction.HealRatioOverride` (zurückgesetzt mit den übrigen Überschreibungen), in `ActionTargetInfo`
+  gelesen statt der Heilquote der Aktion, wo der Filter sie liest; die Füllheilung setzt Filter und ihre Linie und
+  nimmt beides danach zurück. Konzepte 07 und 18 fortgeschrieben; die Zeilenangabe in Konzept 11 nachgezogen
+  (Inhalt geprüft: `IsManual` unverändert).
+- *Falsifikation:* Kein Defekt? Eine Heilung auf ein Mitglied bei 95 % ist Überheilung, gegen seine Vorgabe und gegen
+  den Filter, den Konzept 07 voraussetzt – auch wenn sie keinen Schadens-GCD kostet. Option falsch? (1) und (3)
+  verletzen den Text der Einstellung oder die Rangfolge. Ausgeliefert, und nichts ändert sich? Steht seine Linie auf
+  100 %, lässt der Filter jeden durch, der nicht voll ist – dann gilt seine Einstellung, und nur Volle fallen heraus;
+  sonst wirkt es nur in Pausen ohne Ziel, also selten und klein.
+- *Betroffen:* Endnutzer mit GCD-Heilungen in Pausen (alle Jobs mit Heilzaubern); Upstream-Pflege (drei Dateien von Upstream,
+  gut 20 Zeilen); abgeleitete Rotationen nicht (interne Felder).
+- *Prüfgrad:* Kompiliert ohne Warnung, 40 Prüfschritte, Wirkkette am Code; im Spiel nicht beobachtet.
+
 ---
 ## B · Commit-Register (Fork vs. `upstream/main`)
 
@@ -14357,3 +14403,4 @@ Die offene Arbeit dazu — Reihenfolge und Abbruchbedingung der Nachprüfung —
 | C137 | A387 (26.10.2026): „Die korrigierte Vorhersage rechnet ihren eigenen Fehler heraus (`ScoreTtkForecast`), und bis sie steht, gilt die Schätzung weiter" | Für einen Gegner stand sie nie: `ScoreTtkForecast` lief seit seiner Einführung (1b385b796, 17.09.2026) nur für die Gruppe, `GetCorrectedTTK` war für jeden Gegner unbekannt und `IsTimeToKillMeasured` immer falsch; der Gelehrte entschied über Bio weiter nach der Schätzung | berichtigt (A463) |
 | C138 | A413 (26.10.2026): Six-sided Star als letzte Waffenfertigkeit „nach der korrigierten Zeit bis zum Tod"; „die Zeit bis zum Tod rechnet ihren Fehler heraus (`ScoreTtkForecast`)" | Derselbe Grund: Für das Ziel gab es keine korrigierte Zeit, der Zweig über den Tod des Ziels lief nie; Six-sided Star kam nur vor einer Pause, die die Zeitleiste von BossModReborn vorhersagt | berichtigt (A463) |
 | C139 | A437 (29.10.2026): „`latest.zip` enthält ECommons, RebornMaterial, `RotationSolver.dll`, deps und Manifest – keine `RotationSolver.Basic.dll`, keine `.pdb`, keine `.xml`“, der Schuldpunkt „Release-Paket enthält vermeidbaren Ballast“ sei aufgelöst | Galt nur für den lokalen Build ohne Ausgabeordner. Der Veröffentlichungsweg (`publish.yaml`, `--output .\build`) legt den Code-Generator in denselben Ordner, und der Packer zippt jede Datei dort: Das Asset von 7.5.7.13+wsh1 enthielt `RotationSolver.SourceGenerators.dll`, `.deps.json` und `.pdb`. Die angekündigte Bestätigung am Paket des Veröffentlichungswegs fand nicht statt | berichtigt (A474): feste Liste in `RotationSolver/DalamudPackager.targets`, `check_plugin_zip.py` in der CI und vor jeder Veröffentlichung |
+| C140 | A475 (01.11.2026): Regen gehe an das Mitglied mit dem geringsten Anteil ohne Regen (`TargetType.LowHPPercent`, Upstream), das sei der Grund für die Regen auf den Schwarzmagier; „Ergebnis: kein Defekt"; dazu der Absatz in Konzept 07 „Regen des Weißmagiers wählt ab Werk so" | Im Heilpfad liest `ActionSetting.TargetType` zuerst `IBaseAction.TargetOverride`, und der GCD-Pfad setzt vor den Heilungen `TargetType.Heal` samt Bedarfsfilter: Die Zielart von Regen greift dort nie. Die fünf Regen bei 46 bis 70 % wählte die Rangfolge aus Konzept 07; die bei 95 % kam aus der Füllheilung, die den Filter nicht einschaltete – ein Defekt gegen Konzept 07. Die Begründung beschrieb den Code unvollständig gelesen und gab einen Mechanismus als Grund aus | berichtigt (A476): Konzept 07 neu gefasst, Füllheilung mit Bedarfsfilter |

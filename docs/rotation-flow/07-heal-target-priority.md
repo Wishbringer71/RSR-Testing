@@ -398,16 +398,28 @@ Bedarfsfilter weg, den `FindHealTarget` an seinem Eingang führt (`GetForecastHe
 healRatio`, `AutoHealRatio` 0,80 als Vorgabewert im Code). Eine überschriebene Zielwahl kann deshalb
 auf einen Unverletzten zeigen; die Rangfolge kann das nicht.
 
-**Regen des Weißmagiers wählt ab Werk so** (`ModifyRegenPvE`: `TargetType.LowHPPercent`, von Upstream): Sie geht an das
-Mitglied mit dem geringsten Anteil an seiner Maximalgesundheit, das noch keine Regen trägt – nicht an das Mitglied, das
-den Heilbedarf ausgelöst hat. In der Einzelheilung (`WHM_Reborn.HealSingleGCD`) steht sie vor Cure II, unter Stufe 52
-als erster Schritt, weil Afflatus Solace fehlt. Im Prätorium (Stufe 50, sein Upload vom 01.11.2026, A475) gingen so sechs
-von 32 Regen an den Schwarzmagier: Mit der kleinsten Maximalgesundheit der Gruppe stand er nach jedem Gruppentreffer am
-tiefsten, und der Tank trug Regen meist schon. Fünf trafen ihn bei 46 bis 70 %, und vor dem nächsten Gruppentreffer war
-er jedes Mal wieder voll; Veni Vidi Vici ließ ihn mit 34 % statt rechnerisch etwa 8 % stehen. Eine ging bei 95 % hinaus,
-in dem Moment, als der Boss unanvisierbar wurde; einen Schadens-GCD kostete sie nicht. Der Preis der Sortierung ist die
-Überheilung: Auf seinen kleinen Lebenspool füllen drei Ticks auf, die übrigen heilen ins Volle (33 bis 63 % der Ticks
-wirksam, wo Medica II mitlief, samt ihren).
+**Im Heilpfad gilt diese Rangfolge für jede Heilaktion, auch für eine mit eigener Zielart.** Vor den Heilungen setzt
+der GCD-Pfad die Zielart auf `TargetType.Heal` und schaltet den Bedarfsfilter ein (`CustomRotation_GCD`,
+`IBaseAction.TargetOverride`, `AutoHealCheck`); `ActionSetting.TargetType` liest die Überschreibung vor der eigenen
+Zielart. Die eigene Zielart einer Heilaktion – Regen des Weißmagiers trägt `TargetType.LowHPPercent` – greift nur
+außerhalb davon. Ein Mitglied, das den HoT schon trägt, scheidet für ihn aus (`TargetStatusProvide`); die Heilung fällt
+dann auf das nächstgefährdete Mitglied mit Bedarf. Am Prätorium (Stufe 50, sein Upload vom 01.11.2026, A476) gingen so
+fünf Regen an den Schwarzmagier, jedes Mal bei 46 bis 70 %, unter dem Filter und nach Klasse 3: kein Gegner zielte auf
+ihn, nichts war angekündigt, er stand nach jedem Gruppentreffer nach Anteil und nach Punkten am tiefsten, und der Tank
+trug Regen schon. Das Mittel folgt der Gefahr (oben): HoT. Vor dem nächsten Gruppentreffer war er jedes Mal voll;
+Veni Vidi Vici, ohne Wirkbalken, ließ ihn mit 34 % statt rechnerisch etwa 8 % stehen. Wirksam waren 33 bis 63 % der
+Ticks, wo Medica II mitlief, samt ihren – auf dem kleinsten Lebenspool füllen drei Ticks auf, wie Resedra (48 %
+Überheilung, Konzept 18) nicht die Ausnahme.
+
+**Die Füllheilung filtert nach ihrer eigenen Linie** (A476). „Use GCD heals when there's nothing else to do" heilt,
+wenn kein Ziel angreifbar ist und das vorausberechnete Minimum der Gruppe unter „When the lowest party HP is below"
+liegt. Sie setzte die Zielart auf die Rangfolge, aber nicht den Filter: Die Rangfolge sah jeden, der nicht voll war.
+Am Prätorium ging so eine Regen auf den Schwarzmagier bei 95 %, im Moment, als Gaius unanvisierbar wurde; ausgelöst
+hatte die Füllheilung der Tank bei 75 %, der Regen schon trug. Jetzt gilt in der Füllheilung der Filter mit ihrer
+eigenen Linie statt der Heilquote der Aktion: Geheilt wird, wer unter der Linie steht, die er für sie gesetzt hat –
+das auslösende Mitglied immer, ein Mitglied darüber nie. Mit der Heilquote der Aktion (ab Werk 80 %, wie die Linie)
+fiele bei einer höher gesetzten Linie das auslösende Mitglied heraus, und die Einstellung täte nicht, was ihr Text
+sagt.
 
 **Welche Sortierung richtig ist, hängt an der Aktion, und beide Antworten kommen vor:**
 

@@ -52,6 +52,10 @@ public struct ActionTargetInfo(IBaseAction action)
 	/// </summary>
 	public readonly bool IsTargetFriendly => action.Setting.IsFriendly;
 
+	// The line the heal-need filter (AutoHealCheck) reads: the action's own ratio, unless the running heal path sets its
+	// own (the downtime heal, IBaseAction.HealRatioOverride).
+	private readonly float HealRatio => IBaseAction.HealRatioOverride ?? action.Config.AutoHealRatio;
+
 	#region Targetting Behaviour
 
 	/// <summary>
@@ -719,7 +723,7 @@ public struct ActionTargetInfo(IBaseAction action)
 					continue;
 				}
 
-				if (!IBaseAction.AutoHealCheck || member.GetForecastHealthRatio(InstantHeal) < action.Config.AutoHealRatio)
+				if (!IBaseAction.AutoHealCheck || member.GetForecastHealthRatio(InstantHeal) < HealRatio)
 				{
 					anyInNeed = true;
 					break;
@@ -769,7 +773,7 @@ public struct ActionTargetInfo(IBaseAction action)
 
 		var commandTargeting = commandTarget?.TargetingType;
 		var dotOrder = DotSpreadOrder(skipStatusProvideCheck, targetOverride, commandTargeting);
-		var target = FindTargetByType(targetsList, type, action.Config.AutoHealRatio, action.Setting.SpecialType, targetOverride, action.Setting.IsFriendly, InstantHeal, commandTargeting, dotOrder);
+		var target = FindTargetByType(targetsList, type, HealRatio, action.Setting.SpecialType, targetOverride, action.Setting.IsFriendly, InstantHeal, commandTargeting, dotOrder);
 		if (target == null)
 		{
 			return null;
@@ -962,7 +966,7 @@ public struct ActionTargetInfo(IBaseAction action)
 			}
 
 			var targetList = TargetFilter.GetObjectInRadius(availableCharas, range);
-			var target = FindTargetByType(targetList, TargetType.Move, action.Config.AutoHealRatio, action.Setting.SpecialType, targetOverride, true);
+			var target = FindTargetByType(targetList, TargetType.Move, HealRatio, action.Setting.SpecialType, targetOverride, true);
 			if (target == null)
 			{
 				return null;
@@ -1408,7 +1412,7 @@ public struct ActionTargetInfo(IBaseAction action)
 				}
 			}
 			var attackT = FindTargetByType(partyMembersInRadius,
-				TargetType.BeAttacked, action.Config.AutoHealRatio, action.Setting.SpecialType, targetOverride, true, InstantHeal);
+				TargetType.BeAttacked, HealRatio, action.Setting.SpecialType, targetOverride, true, InstantHeal);
 
 			if (attackT == null)
 			{
