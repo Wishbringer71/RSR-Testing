@@ -411,15 +411,101 @@ Veni Vidi Vici, ohne Wirkbalken, ließ ihn mit 34 % statt rechnerisch etwa 8 % s
 Ticks, wo Medica II mitlief, samt ihren – auf dem kleinsten Lebenspool füllen drei Ticks auf, wie Resedra (48 %
 Überheilung, Konzept 18) nicht die Ausnahme.
 
-**Die Füllheilung filtert nach ihrer eigenen Linie** (A476). „Use GCD heals when there's nothing else to do" heilt,
-wenn kein Ziel angreifbar ist und das vorausberechnete Minimum der Gruppe unter „When the lowest party HP is below"
-liegt. Sie setzte die Zielart auf die Rangfolge, aber nicht den Filter: Die Rangfolge sah jeden, der nicht voll war.
-Am Prätorium ging so eine Regen auf den Schwarzmagier bei 95 %, im Moment, als Gaius unanvisierbar wurde; ausgelöst
-hatte die Füllheilung der Tank bei 75 %, der Regen schon trug. Jetzt gilt in der Füllheilung der Filter mit ihrer
-eigenen Linie statt der Heilquote der Aktion: Geheilt wird, wer unter der Linie steht, die er für sie gesetzt hat –
-das auslösende Mitglied immer, ein Mitglied darüber nie. Mit der Heilquote der Aktion (ab Werk 80 %, wie die Linie)
-fiele bei einer höher gesetzten Linie das auslösende Mitglied heraus, und die Einstellung täte nicht, was ihr Text
-sagt.
+### Die Füllheilung: heilen, wenn nichts anderes zu tun ist (Defekt, Behebung geplant)
+
+**Was sie tut.** „Use GCD heals when there's nothing else to do" (ab Werk an) läuft am Ende des GCD-Pfads, nach Heilung,
+Abwehr, Wiederbelebung und Schaden – also nur, wenn kein anderer GCD geht –, im Kampf, nie unter `NoCasting` (der
+GCD-Pfad endet davor), nach einer zufälligen Verzögerung („Downtime healing delay range", ab Werk 0,5 bis 1 s).
+Auslöser ist das vorausberechnete Minimum der Gruppe (`ForecastMinHp`) unter „When the lowest party HP is below" (ab
+Werk 80 %). Dann setzt sie die Zielart auf die Rangfolge (`TargetType.Heal`) und ruft die Flächenheilung, wenn mehr
+als zwei Mitglieder nicht voll sind und die Streuung unter „AoE heal HP spread" liegt, sonst die Einzelheilung – zuerst
+die der Spezialaktionen, dann die des Jobs. Den Bedarfsfilter (`AutoHealCheck`) schaltet sie nicht ein: Die Rangfolge
+sieht jedes Mitglied, das nicht voll ist, und eine Flächenheilung um den Wirkenden gilt als nötig, sobald überhaupt
+jemand in ihrer Reichweite steht.
+
+Sie läuft in Pausen ohne angreifbares Ziel – ein Boss wird unanvisierbar, eine Welle ist tot und die nächste noch nicht
+da, die Ziele stehen außer Reichweite – und bei einem Zaubernden in Bewegung ohne sofort wirkenden Angriff. Sie gilt
+für jeden Job mit einer GCD-Heilung: die vier Heiler, den Paladin (Clemency, hinter seinen eigenen Schwellen), den
+Beschwörer (Physick, mit „Healbot" oder bis Stufe 30), den Rotmagier (Vercure), den Blaumagier und die Spezialaktionen
+(Okkulte Sichel, Bozja, Variante, Hardboiled). Einen Schadens-GCD kostet sie nie, es gab keinen; sie kostet MP, beim
+Weißmagier auch Lilien (Afflatus solatii). Die Abbruchregel schont sie: Eine Füllheilung wird nicht abgebrochen, wenn ihr
+Ziel während des Wirkens hochgeheilt wird (`CancelCastUpdater`, `HealingWhileDoingNothing`). Was denselben GCD sonst
+nimmt, läuft vorher und bleibt unberührt: die regulären Heilpfade mit Filter, die Wiederbelebung, HoT gegen DoT, die
+Pull-Pflege mit Regen auf den Tank (im allgemeinen GCD-Zweig). Eine Vorhersage von BossModReborn liest sie nicht.
+
+**Der Defekt.** Ohne Filter heilt sie Mitglieder über ihrer eigenen Linie. Am Prätorium (Stufe 50, sein Upload vom
+01.11.2026, A476): Gaius wurde unanvisierbar, der Tank stand bei 75 % und trug Regen, und die Füllheilung ging als Regen
+auf den Schwarzmagier bei 95 %. Das widerspricht dem Eingang dieses Konzepts („`FindHealTarget` bekommt bereits ein durch
+`healRatio` gefiltertes Feld") und seiner Vorgabe für die Heilung („es soll ja nicht großartig überheilt werden",
+Konzept 18). Dieselbe Lücke hat ihre Flächenheilung, zweifach: Drei Mitglieder bei 95 % zählen als „nicht voll" und
+öffnen sie, und gewirkt wird sie, sobald jemand in Reichweite steht – auch wenn der eine unter der Linie außer
+Reichweite steht.
+
+**Was gelten soll.** Die Füllheilung heilt, wer unter ihrer Linie steht:
+- Der Bedarfsfilter gilt in ihr, mit der Linie aus „When the lowest party HP is below" statt der Heilquote der Aktion –
+  für das Ziel der Einzelheilung und für die Frage, ob eine Flächenheilung um den Wirkenden jemanden mit Bedarf
+  erreicht. Unter den Gefilterten ordnet die Rangfolge wie überall.
+- Die Flächenheilung öffnet sie, wenn mehr als zwei Mitglieder unter der Linie stehen (vorausberechnet), nicht mehr,
+  wenn mehr als zwei nicht voll sind; die Streuung bleibt die zweite Bedingung.
+- Das auslösende Mitglied besteht den Filter immer: Auslöser und Filter lesen denselben Anteil
+  (`GetPartyMemberHPRatio`, samt der eigenen Heilung im Flug, beim Filter über `RefinedHP`) mit derselben Vorausschau
+  für eine GCD-Heilung, dieselben Mitglieder (die Zielwahl einer freundlichen Aktion zieht aus `PartyMembers`,
+  `TargetHelper.GetTargetsByRange`) und vergleichen beide mit „kleiner als". Einzige Abweichung: Ein Mitglied unter
+  Verhängnis liest die Zielwahl mit 1 %, es besteht den Filter also immer. Ein Mitglied über der Linie besteht ihn nie;
+  Tote zählen weder beim Auslöser noch bei der Flächenheilung.
+- Jede Füllheilung schreibt eine Zeile ins `DefenseTrace.log`: Aktion, Ziel, dessen vorausberechnete Gesundheit, die
+  Linie. Am Prätorium musste sie aus dem ACT-Mitschnitt erschlossen werden; mit der Zeile zeigt sein Upload jede.
+
+*Im Kampf, Lage für Lage:*
+- Boss unanvisierbar, Tank unter der Linie ohne HoT: wie bisher, Regen oder Cure II auf ihn.
+- Tank unter der Linie mit HoT, alle anderen darüber (der Fall vom Prätorium): keine Regen auf den Vollen. Regen findet
+  kein Ziel, Cure II geht auf den Tank – bisher kam Cure II erst im nächsten Pausen-GCD, nach der Regen auf den Vollen.
+  Preis: Cure II überheilt um das, was der HoT bis zur Landung bringt.
+- Auslöser außer Reichweite: keine Füllheilung, wo bisher ein Mitglied in Reichweite geheilt wurde, das sie nicht
+  brauchte. Für den Auslöser ändert sich nichts.
+- Ein, zwei Mitglieder unter der Linie, der Rest knapp darüber: Einzelheilung statt einer Flächenheilung über alle.
+- Seine Linie auf 100 %: Der Filter lässt jeden durch, der nicht voll ist. Die Rangfolge nahm schon bisher nie einen
+  Vollen (ihr letzter Rückfall verlangt weniger als volle Gesundheit); die Flächenheilung zählt, wer nach der Vorausschau
+  nicht voll ist, bisher nach dem Stand – ein Mitglied, das gerade fällt, zählt jetzt mit.
+- Paladin, Beschwörer, Rotmagier, Blaumagier, Spezialaktionen: dieselbe Grenze, vor ihren eigenen Schwellen.
+- Stufensynchron, allein mit Chocobo („Treat your chocobo as a party member"), Achtergruppe, Okkulte Sichel ohne
+  Gruppe: nichts Eigenes; Auslöser und Ziele sind die Mitglieder, die `PartyMembers` führt.
+
+**Verworfen.**
+- *Der Filter mit der Heilquote der Aktion* (`AutoHealRatio`, ab Werk wie die Linie 80 %): Setzt er die Linie höher,
+  etwa 90 %, fiele der Auslöser bei 85 % aus dem Filter, und die Einstellung täte nicht, was ihr Text sagt – der Text
+  einer Einstellung bindet (seine Vorgabe).
+- *Nur den Auslöser heilen:* überginge die Rangfolge nach Gefahr – ein Heiler bei 79 % unter Aggro käme nach einem
+  Damage Dealer bei 75 % ohne.
+- *Die HoT-Spalte auf die Linie anwenden* (ein voller HoT senkt die Schwelle, Konzept 18): Die Füllheilung hat keine
+  HoT-Einstellung, ihr Text nennt eine Linie; die Senkung wäre eine Regel ohne Einstellung. Ihr Preis, die Überheilung
+  des Tanks mit HoT, fällt in eine Pause ohne Schadensverlust und kostet MP.
+- *Die Schwellen der regulären Einzelheilung statt der Linie:* Dann heilte sie nur, wo die reguläre ohnehin heilt, und
+  die Linie, die er für Pausen eigens setzt, verlöre ihren Zweck.
+- *Nichts ändern:* lässt die Heilung auf Mitglieder über der Linie, gegen seine Vorgabe und gegen den Filter, den dieses
+  Konzept voraussetzt.
+
+**Gegenhypothesen.** *Kein Defekt:* Eine Heilung auf ein Mitglied über der Linie nützt dem Auslöser nichts und ist
+Überheilung; dass sie keinen Schadens-GCD kostet, macht sie nicht nützlich. *Option falsch:* geprüft an den
+Verworfenen; dazu die Annahmen – sehen Auslöser und Filter dieselben Mitglieder und dieselbe Vorausschau? Ja, am Code
+belegt (oben); wäre es nicht so, fiele höchstens eine Füllheilung aus, nie eine auf einen Vollen. Kostet eine Pause nie
+Schaden? Sie läuft nur, wenn kein anderer GCD ging. *Ausgeliefert, und nichts ändert sich – warum?* Steht seine Linie
+auf 100 % oder kommt in seinen Kämpfen keine Pause mit jemandem unter der Linie, wirkt die Änderung nicht; die
+Trace-Zeile zeigt beides.
+
+**Gerechnet** (`filler_heal_model.py`; zufällige Pausen, Gruppe von 4 oder 8, ein Drittel voll, ein Viertel mit HoT,
+jedes achte Mitglied außer Reichweite, Weißmagier unter Stufe 52; Annahmen dort benannt; je Pause, die die Füllheilung
+öffnet):
+
+| Linie | heute: Heilung über der Linie | Heilquote der Aktion: über der Linie / Auslöser verfehlt | eigene Linie |
+|---|---|---|---|
+| 70 % | 8,2 % | 3,2 % / 0 % | 0 / 0 |
+| 80 % | 5,2 % | 0 / 0 | 0 / 0 |
+| 90 % | 2,5 % | 0 / 1,7 % | 0 / 0 |
+| 100 % | 0 | 0 / 2,5 % | 0 / 0 |
+
+Eine Flächenheilung, die niemanden unter der Linie erreicht, kam heute in bis zu 1,2 % der Pausen vor, mit der eigenen
+Linie nie. Das Modell prüft die Entscheidung, nicht Heilmengen.
 
 **Welche Sortierung richtig ist, hängt an der Aktion, und beide Antworten kommen vor:**
 

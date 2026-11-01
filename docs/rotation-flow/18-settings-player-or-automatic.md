@@ -224,7 +224,7 @@ Prüfung).
   Schwelle um wenige Punkte, nicht modelliert. „AoE heal HP spread" bleibt (unten). Fähigkeit vor Zauber bleibt:
   kostenlose Fähigkeiten schon über der Schwelle zu verbrauchen, ist nicht billiger als höhere Schwellen (oben). Die
   Rollenschwellen ordnen nur das Ziel (Konzept 07). „When the lowest party HP is below" setzt dieselbe Haltung für die
-  Füllheilung, wo kein Ziel angreifbar ist, und begrenzt sie auf die Mitglieder darunter (Konzept 07, A476).
+  Füllheilung, wo kein Ziel angreifbar ist.
 - **Nicht gebaut, zu klein:** Die Lilie am Überlauf auf Afflatus solatii statt laetitiae, wo sie mehr heilt, hätte an
   seinen Abenden 0 und höchstens 4 % mehr wirksame Lilienheilung gebracht (nicht jede fiel am Überlauf). Eine
   Flächenheilung abzubrechen, wenn die Gruppe während des Wirkens anderweitig hochgeheilt wird, wie es „Stop single

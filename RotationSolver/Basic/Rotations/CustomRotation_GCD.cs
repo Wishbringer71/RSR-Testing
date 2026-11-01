@@ -316,13 +316,6 @@ public partial class CustomRotation
 						IBaseAction.TargetOverride = TargetType.Heal;
 						IBaseAction.HealPathRunning = true;
 
-						// The heal target choice with its need filter, at this heal's own line: without the filter it took
-						// anybody not at full health - Regen went on a black mage at 95 % while the tank who opened the
-						// heal at 75 % already carried it (A476). The line, not each action's heal ratio, so the member
-						// who opened it always qualifies, whatever both are set to (concept 07).
-						IBaseAction.AutoHealCheck = true;
-						IBaseAction.HealRatioOverride = Service.Config.HealWhenNothingTodoBelow;
-
 						if (forecastSpread < Service.Config.HealthDifference)
 						{
 							var count = 0;
@@ -353,8 +346,6 @@ public partial class CustomRotation
 
 						IBaseAction.TargetOverride = null;
 						IBaseAction.HealPathRunning = false;
-						IBaseAction.AutoHealCheck = false;
-						IBaseAction.HealRatioOverride = null;
 					}
 				}
 			}
@@ -368,7 +359,6 @@ public partial class CustomRotation
 			// Ensure these are reset
 			IBaseAction.ShouldEndSpecial = false;
 			IBaseAction.TargetOverride = null;
-			IBaseAction.HealRatioOverride = null;
 		}
 
 		return null;
