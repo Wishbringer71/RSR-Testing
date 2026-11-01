@@ -14111,6 +14111,30 @@ durchgehen". Als Skill `spielpatch` festgehalten (Lesetabelle in CLAUDE.md); den
   gut 20 Zeilen); abgeleitete Rotationen nicht (interne Felder).
 - *Prüfgrad:* Kompiliert ohne Warnung, 40 Prüfschritte, Wirkkette am Code; im Spiel nicht beobachtet.
 
+### A477 · Füllheilung: Code zurückgenommen, Konzept vollständig, dann gebaut (01.11.2026)
+
+- *Seine Rüge (01.11.2026):* „wo bleiben die konzeptoptimierungen vor den codeanpassungen? hast du wieder gecoded, bevor
+  ein konzept korrekt zuendegeplant war?" – Ja (C141). In A476 standen zwei Konzeptabsätze Minuten vor dem Code; der
+  Loop folgte im Archiv, die Flächenheilung der Füllheilung, die übrigen Jobs mit GCD-Heilung und die Lagen fehlten.
+- *Zurückgenommen:* der Code aus d6bf0ce5b (`IBaseAction`, `ActionTargetInfo`, `CustomRotation_GCD`), die Zeilenangabe
+  in Konzept 11, der Satz in Konzept 18 und der Eintrag im Release-Text; die Berichtigung der Erklärung (C140) blieb.
+- *Konzept 07, „Die Füllheilung" (neu, vor dem Code):* was sie tut (Auslöser, Ablauf, Verzögerung, `NoCasting`, Abbruchregel,
+  was denselben GCD vorher nimmt), wer sie nutzt (vier Heiler, Paladin, Beschwörer, Rotmagier, Blaumagier,
+  Spezialaktionen), der Defekt zweifach (Einzelheilung ohne Filter; Flächenheilung geöffnet von „nicht voll" und gewirkt,
+  sobald jemand in Reichweite steht), was gelten soll (Filter an ihrer Linie; Flächenheilung ab mehr als zwei unter der
+  Linie; Trace-Zeile je Füllheilung), sieben Lagen im Kampf, fünf verworfene Optionen, die Annahmen am Code geprüft
+  (Auslöser und Filter lesen denselben Anteil über `GetPartyMemberHPRatio`/`RefinedHP`, dieselbe Vorausschau, dieselben
+  Mitglieder aus `PartyMembers`; Abweichung nur unter Verhängnis, dort zugunsten des Filters).
+- *Modell* `filler_heal_model.py` (neu, mit Selbsttest, in der CI-Liste): heute je nach Linie 2,5 bis 8,2 % der
+  Füllheilungen über der Linie und bis 1,2 % Flächenheilungen für niemanden; mit der Heilquote der Aktion 1,7 bis 2,5 %
+  verfehlte Auslöser bei höher gesetzter Linie; mit der eigenen Linie keines davon.
+- *Gebaut nach dem Konzept:* `IBaseAction.HealRatioOverride`, in `ActionTargetInfo` an den vier Stellen gelesen, die die
+  Heilquote an die Zielwahl geben; die Füllheilung setzt Filter und Linie, zählt für die Flächenheilung die Mitglieder
+  unter der Linie (lebend, vorausberechnet wie der Auslöser) und schreibt „downtime heal -> …" einmal je Aktion, Ziel und
+  GCD. Zeilenangabe in Konzept 11 am Inhalt geprüft (`IsManual`) und nachgezogen; Konzept 18 und Release-Text ergänzt.
+- *Prüfgrad:* Kompiliert ohne Warnung, 40 Prüfschritte, Modell; im Spiel nicht beobachtet – die Trace-Zeile zeigt es im
+  nächsten Upload.
+
 ---
 ## B · Commit-Register (Fork vs. `upstream/main`)
 
@@ -14404,3 +14428,4 @@ Die offene Arbeit dazu — Reihenfolge und Abbruchbedingung der Nachprüfung —
 | C138 | A413 (26.10.2026): Six-sided Star als letzte Waffenfertigkeit „nach der korrigierten Zeit bis zum Tod"; „die Zeit bis zum Tod rechnet ihren Fehler heraus (`ScoreTtkForecast`)" | Derselbe Grund: Für das Ziel gab es keine korrigierte Zeit, der Zweig über den Tod des Ziels lief nie; Six-sided Star kam nur vor einer Pause, die die Zeitleiste von BossModReborn vorhersagt | berichtigt (A463) |
 | C139 | A437 (29.10.2026): „`latest.zip` enthält ECommons, RebornMaterial, `RotationSolver.dll`, deps und Manifest – keine `RotationSolver.Basic.dll`, keine `.pdb`, keine `.xml`“, der Schuldpunkt „Release-Paket enthält vermeidbaren Ballast“ sei aufgelöst | Galt nur für den lokalen Build ohne Ausgabeordner. Der Veröffentlichungsweg (`publish.yaml`, `--output .\build`) legt den Code-Generator in denselben Ordner, und der Packer zippt jede Datei dort: Das Asset von 7.5.7.13+wsh1 enthielt `RotationSolver.SourceGenerators.dll`, `.deps.json` und `.pdb`. Die angekündigte Bestätigung am Paket des Veröffentlichungswegs fand nicht statt | berichtigt (A474): feste Liste in `RotationSolver/DalamudPackager.targets`, `check_plugin_zip.py` in der CI und vor jeder Veröffentlichung |
 | C140 | A475 (01.11.2026): Regen gehe an das Mitglied mit dem geringsten Anteil ohne Regen (`TargetType.LowHPPercent`, Upstream), das sei der Grund für die Regen auf den Schwarzmagier; „Ergebnis: kein Defekt"; dazu der Absatz in Konzept 07 „Regen des Weißmagiers wählt ab Werk so" | Im Heilpfad liest `ActionSetting.TargetType` zuerst `IBaseAction.TargetOverride`, und der GCD-Pfad setzt vor den Heilungen `TargetType.Heal` samt Bedarfsfilter: Die Zielart von Regen greift dort nie. Die fünf Regen bei 46 bis 70 % wählte die Rangfolge aus Konzept 07; die bei 95 % kam aus der Füllheilung, die den Filter nicht einschaltete – ein Defekt gegen Konzept 07. Die Begründung beschrieb den Code unvollständig gelesen und gab einen Mechanismus als Grund aus | berichtigt (A476): Konzept 07 neu gefasst, Füllheilung mit Bedarfsfilter |
+| C141 | A476 (01.11.2026): „*Umgesetzt:* `IBaseAction.HealRatioOverride` […]; die Füllheilung setzt Filter und ihre Linie" samt Loop und Falsifikation | Gebaut, bevor das Konzept fertig geplant war: zwei Konzeptabsätze, Minuten danach der Code, der Loop erst hinterher im Archiv; die Flächenheilung der Füllheilung, die übrigen Jobs und die Lagen waren nicht erhoben – gegen seine Vorgabe vom 29.10.2026 (Konzept vor Code) | zurückgenommen und nach dem vollständigen Konzept neu gebaut (A477) |

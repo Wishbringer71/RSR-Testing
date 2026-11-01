@@ -311,41 +311,53 @@ public partial class CustomRotation
 					// incoming damage" states for every one - and so does the spread weighed with it, as in the area
 					// thresholds (A182, A358). With that setting off both are the levels.
 					DataCenter.ComputeForecastAreaStats(false, out _, out var forecastSpread, out _, out _);
-					if (DataCenter.ForecastMinHp(false) < Service.Config.HealWhenNothingTodoBelow)
+					var line = Service.Config.HealWhenNothingTodoBelow;
+					if (DataCenter.ForecastMinHp(false) < line)
 					{
 						IBaseAction.TargetOverride = TargetType.Heal;
 						IBaseAction.HealPathRunning = true;
 
+						// It heals those under its own line (concept 07, "Die Füllheilung", A477): the heal target choice
+						// with its need filter, at the line instead of each action's heal ratio, so the member who opened
+						// it always qualifies and nobody over it does. Without the filter Regen went on a black mage at
+						// 95 % while the tank who opened the heal at 75 % already carried it.
+						IBaseAction.AutoHealCheck = true;
+						IBaseAction.HealRatioOverride = line;
+
 						if (forecastSpread < Service.Config.HealthDifference)
 						{
+							// More than two under the line, read as the trigger reads them; it counted every member not
+							// at full health, so three at 95 % opened an area heal.
 							var count = 0;
-							foreach (var hp in DataCenter.PartyMembersHP)
+							foreach (var member in DataCenter.PartyMembers)
 							{
-								if (hp < 1)
+								if (member != null && member.GetHealthRatio() > 0 && member.GetForecastHealthRatio(false) < line)
 								{
 									count++;
 								}
 							}
 							if (count > 2 && ActiveDutyRotation?.HealAreaGCD(out act) == true)
 							{
-								return act;
+								return TraceDowntimeHeal(act, line);
 							}
 							if (count > 2 && HealAreaGCD(out act))
 							{
-								return act;
+								return TraceDowntimeHeal(act, line);
 							}
 						}
 						if (ActiveDutyRotation?.HealSingleGCD(out act) == true)
 						{
-							return act;
+							return TraceDowntimeHeal(act, line);
 						}
 						if (HealSingleGCD(out act))
 						{
-							return act;
+							return TraceDowntimeHeal(act, line);
 						}
 
 						IBaseAction.TargetOverride = null;
 						IBaseAction.HealPathRunning = false;
+						IBaseAction.AutoHealCheck = false;
+						IBaseAction.HealRatioOverride = null;
 					}
 				}
 			}
@@ -359,10 +371,35 @@ public partial class CustomRotation
 			// Ensure these are reset
 			IBaseAction.ShouldEndSpecial = false;
 			IBaseAction.TargetOverride = null;
+			IBaseAction.HealRatioOverride = null;
 		}
 
 		return null;
 	}
+
+	// The probe of the downtime heal (concept 07, "Die Füllheilung"): a line per heal with its target, the target's
+	// forecast health and the line, so an upload shows each one - the Praetorium case had to be read from ACT.
+	// The GCD path asks every frame until the heal goes out; one line per action and target within a GCD.
+	private static IAction? TraceDowntimeHeal(IAction? act, float line)
+	{
+		var target = (act as IBaseAction)?.Target.Target;
+		var key = (act?.ID ?? 0u, target?.GameObjectId ?? 0ul);
+		var now = DateTime.Now;
+		if (key != _downtimeHealTraced || (now - _downtimeHealTracedAt).TotalSeconds >= DataCenter.DefaultGCDTotal)
+		{
+			_downtimeHealTraced = key;
+			_downtimeHealTracedAt = now;
+			var health = target?.GetForecastHealthRatio(false);
+			DefenseTrace.Line($"downtime heal -> {act?.Name ?? "?"} #{key.Item1}"
+				+ (target != null ? $" on {target.Name.TextValue} at {health:P0}" : string.Empty)
+				+ $", line {line:P0}");
+		}
+
+		return act;
+	}
+
+	private static (uint Action, ulong Target) _downtimeHealTraced;
+	private static DateTime _downtimeHealTracedAt = DateTime.MinValue;
 
 	private static bool CanCastHeals => !StatusHelper.PlayerHealingPunished();
 
