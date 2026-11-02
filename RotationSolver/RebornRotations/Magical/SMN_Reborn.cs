@@ -66,6 +66,33 @@ public sealed class SMN_Reborn : SummonerRotation
 	[RotationConfig(CombatType.PvE, Name = "Use Physick above level 30")]
 	public bool Healbot { get; set; } = false;
 
+	// Off in the fork (A495): the follow-ups already go ahead of a new summon whenever they can, so the block only waits
+	// where movement or the Crimson Cyclone distance holds one back - with that distance kept, an Ifrit's Favor would
+	// hold every later primal until the next demi-summon.
+	[RotationConfig(CombatType.PvE, Name = "Do not summon a new primal while attuned or holding Ifrit's/Garuda's Favor")]
+    public bool BlockSummonWhileAttunedOrFavor { get; set; } = false;
+
+	[RotationConfig(CombatType.PvE, Name = "Swiftcast for movement uptime: only use it on Ruby Rite/Slipstream while moving")]
+    public bool SwiftcastMovementUptime { get; set; } = false;
+
+	[RotationConfig(CombatType.PvE, Name = "Dynamic primal order: Ifrit if still and close, Garuda if still and far, Titan if moving (falls back to Order)")]
+    public bool DynamicSummonOrder { get; set; } = false;
+
+	public enum PotTiming : byte
+    {
+	    [Description("First Searing Light")] FirstSearingLight,
+	    [Description("From second Searing Light")] FromSecondSearingLight,
+    }
+
+    [RotationConfig(CombatType.PvE, Name = "Use potion")]
+    public bool UsePotion { get; set; } = true;
+
+    [RotationConfig(CombatType.PvE, Name = "Potion timing", Parent = nameof(UsePotion))]
+    public PotTiming PotionTiming { get; set; } = PotTiming.FirstSearingLight;
+
+    [RotationConfig(CombatType.PvE, Name = "Only use potion during a big summon (Bahamut/Phoenix/Solar Bahamut)", Parent = nameof(UsePotion))]
+    public bool LimitPotToBigSummon { get; set; } = false;
+
 	#endregion
 
 	#region Tracking Properties
@@ -531,11 +558,6 @@ public sealed class SMN_Reborn : SummonerRotation
 			}
 		}
 
-		if (HasSearingLight && InCombat && UseBurstMedicine(out act))
-		{
-			return true;
-		}
-
 		if (RadiantAegisAheadOfRaidwide
 			&& RadiantAegisPvE.CanUse(out act, usedUp: true, skipStatusProvideCheck: true))
 		{
@@ -910,31 +932,56 @@ public sealed class SMN_Reborn : SummonerRotation
 	}
 
 	protected override bool EmergencyAbility(IAction nextGCD, out IAction? act)
+{   
+    var potInBigSummon = !SummonBahamutPvE.EnoughLevel || InBahamut || InPhoenix || InSolarBahamut;
+
+    if (UsePotion && HasSearingLight && InCombat
+	    && (PotionTiming == PotTiming.FirstSearingLight || CombatTime > 30f)
+	    && (!LimitPotToBigSummon || potInBigSummon)
+	    && UseBurstMedicine(out act))
+    {
+	    return true;
+    }
+
+	// Swiftcast on Resurrection is the job setting "Raise with Swiftcast or Dualcast" (CustomRotation's emergency
+	// pass). A rotation option of its own here overrode it on, and off it changed nothing (A402).
+	if (SwiftcastPvE.CanUse(out act))
 	{
-		// Swiftcast on Resurrection is the job setting "Raise with Swiftcast or Dualcast" (CustomRotation's emergency
-		// pass). A rotation option of its own here overrode it on, and off it changed nothing (A402).
-		if (SwiftcastPvE.CanUse(out act))
+		if (SwiftcastMovementUptime && !HasSwift)
 		{
-			if (AddSwiftcastOnLowST && !RubyRitePvE.EnoughLevel && nextGCD.IsTheSameTo(false, RubyRuinPvE, RubyRuinIiPvE, RubyRuinIiiPvE))
+			if (IsMoving && AttunementCount == 0 && SlipstreamPvE.CanUse(out _, skipCastingCheck: true))
 			{
 				return true;
 			}
-			if (AddSwiftcastOnLowAOE && !RubyRitePvE.EnoughLevel && nextGCD.IsTheSameTo(false, RubyOutburstPvE))
+			if (IsMoving && RubyRitePvE.CanUse(out _, skipCastingCheck: true))
 			{
 				return true;
 			}
-			if (AddSwiftcastOnRuby && nextGCD.IsTheSameTo(false, RubyRitePvE) && !ElementalMasteryTrait.EnoughLevel)
-			{
-				return true;
-			}
-			if (AddSwiftcastOnGaruda && nextGCD.IsTheSameTo(false, SlipstreamPvE) && ElementalMasteryTrait.EnoughLevel && !InBahamut && !InPhoenix && !InSolarBahamut)
+			if (nextGCD.IsTheSameTo(false, RubyRitePvE, SlipstreamPvE) && !IsGarudaReady && !IsIfritReady)
 			{
 				return true;
 			}
 		}
-
-		return base.EmergencyAbility(nextGCD, out act);
+		if (AddSwiftcastOnLowST && !RubyRitePvE.EnoughLevel && nextGCD.IsTheSameTo(false, RubyRuinPvE, RubyRuinIiPvE, RubyRuinIiiPvE))
+		{
+			return true;
+		}
+		if (AddSwiftcastOnLowAOE && !RubyRitePvE.EnoughLevel && nextGCD.IsTheSameTo(false, RubyOutburstPvE))
+		{
+			return true;
+		}
+		if (!SwiftcastMovementUptime && AddSwiftcastOnRuby && nextGCD.IsTheSameTo(false, RubyRitePvE) && !ElementalMasteryTrait.EnoughLevel)
+		{
+			return true;
+		}
+		if (!SwiftcastMovementUptime && AddSwiftcastOnGaruda && nextGCD.IsTheSameTo(false, SlipstreamPvE) && ElementalMasteryTrait.EnoughLevel && !InBahamut && !InPhoenix && !InSolarBahamut)
+		{
+			return true;
+		}
 	}
+
+	return base.EmergencyAbility(nextGCD, out act);
+}
 
 	#endregion
 
@@ -1104,7 +1151,7 @@ public sealed class SMN_Reborn : SummonerRotation
 	{
 		// Slipstream's windstorm stays where it is laid; until the enemies around its target have stayed there for a GCD
 		// it waits for the Emerald Rites left, and goes once they are spent - the hit outweighs the area (A350).
-		if (SlipstreamPvE.CanUse(out act, skipCastingCheck: AddSwiftcastOnGaruda && ((!SwiftcastPvE.Cooldown.IsCoolingDown && IsMoving) || HasSwift))
+		if (SlipstreamPvE.CanUse(out act, skipCastingCheck: !SwiftcastMovementUptime && AddSwiftcastOnGaruda && ((!SwiftcastPvE.Cooldown.IsCoolingDown && IsMoving) || HasSwift))
 			&& (!Service.Config.DamageAreasWhereEnemiesStay || !EmeraldAttunement
 				|| DamageAreaSettled(SlipstreamPvE, SlipstreamPvE.Target.Target)))
 		{
@@ -1150,7 +1197,9 @@ public sealed class SMN_Reborn : SummonerRotation
 
 	private bool SummonPrimals(out IAction? act)
 	{
-		if (!InBahamut && !InPhoenix && !InSolarBahamut)
+		var attunedOrFavor = AttunementCount != 0 || HasIfritFavor || HasGarudaFavor || HasCrimsonStrike;
+
+		if (!InBahamut && !InPhoenix && !InSolarBahamut && !(BlockSummonWhileAttunedOrFavor && attunedOrFavor))
 		{
 			// Topaz GCDs are instant-cast; Garuda/Ifrit's follow-ups need a stationary summoner.
 			// Falls through to the configured order below if Titan isn't available right now.
@@ -1159,6 +1208,11 @@ public sealed class SMN_Reborn : SummonerRotation
 				return true;
 			}
 
+			if (DynamicSummonOrder && DynamicSummonTime(out act))
+	        {
+		        return true;
+	        }
+			
 			switch (SummonOrder)
 			{
 				case SummonOrderType.TopazEmeraldRuby:
@@ -1446,5 +1500,27 @@ public sealed class SMN_Reborn : SummonerRotation
 	}
 
 	public override bool CanHealSingleSpell => base.CanHealSingleSpell && GcdHealsAllowed(GCDHeal);
+
+	private bool DynamicSummonTime(out IAction? act)
+    {
+	        act = null;
+	        var target = HostileTarget;
+	        if (target == null)
+	    {
+            return false;
+	    }
+
+	        if (IsMoving)
+	    {
+		return TitanTime(out act);
+        }
+
+        if (target.DistanceToPlayer() <= CrimsonCycloneDistance)
+        {
+            return IfritTime(out act);
+        }
+
+	return GarudaTime(out act);
+    }
 	#endregion
 }
