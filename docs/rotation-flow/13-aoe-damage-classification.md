@@ -77,7 +77,7 @@ den Puffer. Dieselbe Größe, zwei Fragen, zwei Antworten — nachzulesen in
 | Baustein | Stand |
 |---|---|
 | Aufnahme einer Flächenaktion in die Liste | vorhanden, Upstream (`Watcher.ActionFromEnemy`) |
-| Messung: höchster Anteil an der Maximalgesundheit je Effektsatz, eine Serie je Mitglied summiert | umgesetzt (Serie: A349) |
+| Messung: höchster Anteil an der Maximalgesundheit je Effektsatz, eine Serie je Mitglied summiert | umgesetzt (Serie: A349, A480) |
 | Messung ungemindert zurückgerechnet, Leser unter der beim Einschlag stehenden Minderung | umgesetzt (A441) |
 | Treffer über der ganzen Gesundheit samt Barriere nicht gemessen, Ablage höchstens die ganze Maximalgesundheit | umgesetzt (A298) |
 | Ablage je Aktion (`HostileCastingAreaPotential`, Parallelspeicher) | umgesetzt |
@@ -398,21 +398,61 @@ verschiedener Maximalgesundheit und verschiedener eigener Minderung; der höchst
 typischerweise dem Stoffträger und sagt, wie hart die Aktion den am stärksten Betroffenen trifft.
 Genau danach fragt die Entscheidung.
 
-**Eine Serie zählt als ein Angriff** (A349, `Watcher.SeriesShare`). Landet eine gelistete Aktion mehrmals, folgt jede
-Landung der vorigen also schneller, als der Gegner sie noch einmal wirken könnte (ihre Wirkzeit laut Aktionsblatt),
-werden die Anteile je Mitglied addiert und der höchste Summenanteil abgelegt, höchstens die ganze Maximalgesundheit.
-Ersticken des Fleisches (6 s Wirkzeit) traf ihn am 19.10.2026 zweimal je viermal im Abstand von 3 s, mit bis zu 24 %
-je Treffer und zusammen 49 und 54 %: einzeln ein Treffer, der ihn über der Flächenheilschwelle lässt, zusammen nicht. Der Text von „Skip mitigation for small area casts"
+**Eine Serie zählt als ein Angriff** (A349, A480, `Watcher.SeriesShare`). Landet eine gelistete Aktion mehrmals, folgt
+jede Landung der vorigen also schneller als ihre Wirkzeit laut Aktionsblatt, werden die Anteile je Mitglied addiert und der
+höchste Summenanteil abgelegt, höchstens die ganze Maximalgesundheit. Ersticken des Fleisches (6 s Wirkzeit) traf ihn am
+19.10.2026 zweimal je viermal im Abstand von 3 s, mit bis zu 24 % je Treffer und zusammen 49 und 54 %: einzeln ein
+Treffer, der ihn über der Flächenheilschwelle lässt, zusammen nicht. Der Text von „Skip mitigation for small area casts"
 mindert voll, wenn nach dem Treffer Heilung fällig wird; mit dem Einzeltreffer hätte die Regel die Minderung gegen die
-ganze Serie gespart. Zwei Gegner, die dieselbe Aktion im selben Moment wirken, zählen ebenso zusammen – sie treffen die
-Gruppe zusammen.
+ganze Serie gespart.
 
-**Der Code verkettet mehr als das, Defekt offen** (A478, TODO „Gestaffelte Wirken mehrerer Gegner werden zu einer Serie
-verkettet"). Er prüft den Abstand zur vorigen Landung derselben Aktion, nicht den Wirkenden: Wirken mehrere Gegner sie
-gestaffelt, folgt jede Landung der vorigen schneller als die Wirkzeit, obwohl jeder Gegner sie nur einmal wirkte.
-Verfluchter Blick (#47152, Nördliches Kreszentia, 01.11.2026), von mehreren Augen alle 3 s bei 4,7 s Wirkzeit, steht so
-als eine Serie über 21 s mit 38 %; die Treffer lagen bei 0 bis 7 %. Die Annahme dahinter – „der Gegner hätte sie
-dazwischen nicht wirken können" – gilt je Gegner.
+**Gleich welcher Gegner wirkt.** Die Serie gilt dem, was die Gruppe nacheinander trifft, nicht dem Wirkenden. Die Leser
+der Tabelle bewerten je angekündigtem Cast nur diesen einen (`DataCenter.AnnouncedAreaShare`); ohne die Summe sähen sie
+beim zweiten und dritten Wirken jeweils einen Treffer. Zwei Arten kommen in seinen Mitschnitten vor (25.10. bis
+01.11.2026, alle gemessenen Flächenaktionen nachgerechnet, `area_series_model.py`):
+- *Mechanikobjekte,* nie angegriffen, je ein Wirken: Ersticken des Fleisches (vier Türme in 9 s), Chemiebombe (vier in
+  9 s), Explosion (drei in 5 s), Verfluchter Blick (acht Verfluchte Augäpfel, nicht anvisierbar, gemeinsam erschienen und
+  entfernt, alle 3 s ein Blick, 21 s); dazu gleichzeitige Gruppen (Großer Meteorit, Dunkler Regen, Kritzelei). Eine
+  Mechanik; ihre Summe ist ihr Schaden.
+- *Ein Rudel angreifbarer Gegner:* Schockwelle (drei Gegner in 2,9 s), Augen auf mich (zwei in 3,6 s), Schlangenpeitsche
+  (zwei in 2,0 s). Die Treffer kommen, bevor eine Heilung dazwischen landet. Wirkt ein Gegner allein, bewertet die Summe
+  ihn zu hoch – Fehlerrichtung sicher.
+
+Die 38 % von Verfluchter Blick sind zwei Blicke zu je 18 bis 19 % auf ein Mitglied, das sich nicht abwandte; die übrigen
+66 von 78 Zielen traf er nicht. Das ist der verfehlte, aber überlebte Treffer („Ein verfehlter, aber überlebbarer Treffer
+bewertet den Cast zu hoch", unten), keine falsche Verkettung (C142).
+
+**Ein neues Wirken desselben angreifbaren Gegners beginnt eine neue Serie** (A480). Landet ein anvisierbarer Gegner, der
+in der laufenden Serie schon traf, wieder, und liegt seine eigene vorige Landung darin mindestens eine Wirkzeit zurück, hat
+er neu gewirkt: Die Runde des Rudels ist vorbei, die Landung beginnt eine neue Serie. Liegt sie kürzer zurück, ist es ein
+weiterer Treffer desselben Wirkens und bleibt in der Serie.
+- *Warum:* Ohne diese Grenze läuft die Serie in einem großen Pull weiter, solange irgendein Gegner die Lücke füllt, und die
+  Summe wächst mit der Dauer des Pulls statt mit dem Angriff. Abgelegt wird der höchste Wert, der Fehler bliebe also.
+  Nachgerechnet über 200 Pulls zu 45 s (`area_series_model.py`): Drei Gegner, die alle 8 s dieselbe Fläche zu 8 % wirken,
+  stünden mit 64 % statt 24 %, vier bis sechs mit 100 %; bei 12 s ab fünf Gegnern 80 % statt 40 %. Jedes Wirken des
+  Rudels zählte dann als fast tödlich: Minderung und Vorausheilung bei jedem, „Skip mitigation for small area casts" spart
+  nie, und die mitgelernte Dauer der Serie lässt keine Minderung mehr zählen.
+- *Mechanikobjekte bleiben ausgenommen:* Ein Helfer, der in derselben Mechanik zweimal wirkt, teilte sie sonst, und nur ein
+  Teil der Türme wäre bewertet – die unsichere Richtung. Gemessen wird `IsTargetable` des Wirkenden bei der Landung; ein
+  Boss, der vor ihr unanvisierbar wird, zählt als Mechanikobjekt, und die Serie läuft wie bisher.
+- *In seinen Mitschnitten* (sechs Abende, 160 Serien) landet kein Gegner zweimal in derselben Serie; die Regel ändert dort
+  nichts. Was sie teilt, schreibt eine Zeile ins `DefenseTrace.log`.
+- *Fehlerrichtung zu kurz:* Ein anvisierbarer Gegner, dessen eines Wirken dieselbe Aktions-Id in größerem Abstand als
+  seiner Wirkzeit treffen lässt, während dazwischen andere landen, würde geteilt; kommt in seinen Mitschnitten nicht vor.
+- *Bestand:* Die Serie wird nicht gespeichert, nur ihre Summe; ein schon aufgelaufener Wert lässt sich nicht nachträglich
+  zerlegen. Sein letzter Upload zeigt keinen: Die gelernten Serienspannen (sechs, seit A460 geführt) liegen außer bei
+  Verfluchter Blick bei höchstens 1 s, und die längste Serie angreifbarer Gegner in seinen Mitschnitten sind drei Landungen
+  in 2,9 s. Einen älteren, unerkannten senkt erst die Revision über einen Spielpatch.
+- *Verworfen:*
+  - Je Wirkendem trennen und nur gleichzeitige Landungen zusammennehmen: zerlegte Ersticken des Fleisches, Chemiebombe
+    und Verfluchter Blick in Einzeltreffer, und die Minderung fehlte gegen die ganze Mechanik.
+  - Die Serie auf eine Wirkzeit ab ihrer ersten Landung begrenzen: teilte Ersticken des Fleisches (9 s bei 5,7 s).
+  - Eine Höchstzahl von Landungen: eine erfundene Zahl.
+- *Gegenhypothesen:*
+  - Kein Defekt: In seinen Mitschnitten läuft keine Serie auf. Der Höchstwert hält aber einen einzigen Lauf fest, und große
+    Pulls gleicher Gegner gibt es in jedem Dungeon (Modell oben).
+  - Ausgeliefert, und nichts ändert sich – warum? Weil die Lage in seinen Inhalten bisher fehlt (null von 160 Serien), und
+    weil ein schon aufgelaufener Wert bleibt (Bestand).
 
 **Gemindert ist eine Serie nur so weit, wie die Minderung bis zu ihrem letzten Treffer steht** (A460). Die Flächenserie
 lernt wie die Tankbuster-Serie (A454) ihre Dauer vom ersten bis zum letzten Treffer, als höchsten Wert je Aktion
@@ -425,9 +465,8 @@ die Größenregel, die Vorausheilung, den großen unterbrechbaren Cast und den g
   die eigene Minderung auslassen, und die letzten Türme kamen ungemindert.
 - *Preis:* Eine Minderung, die nur die ersten Treffer deckt, zählt gar nicht – gerechnet wird, als träfe die ganze
   Summe ungemindert. RSR mindert dann eher einmal zu viel; nach seiner Spielweise der sichere Fehler, weil die
-  Wahrscheinlichkeit des Treffers bekannt ist (er ist angekündigt). Eine Serie, die über viele Gegner mit derselben
-  Aktion immer weiter läuft, lernt eine lange Dauer; die Aktion zählt dann ungemindert, wie ihre aufgelaufene Summe ohnehin
-  nahelegt.
+  Wahrscheinlichkeit des Treffers bekannt ist (er ist angekündigt). Eine Mechanik, die länger trifft, als eine Minderung
+  steht – Verfluchter Blick über 21 s –, zählt ungemindert; die Serie eines Rudels endet mit seiner Runde (oben).
 - *Ausgeschlossen:* den schon gelandeten Teil einer offenen Serie von der Summe abziehen, wenn ihr nächster Cast
   angekündigt wird (sein Protokoll vom 29.10.2026: vor jedem Turm „hit 99 %"). Läuft die Serie heute länger als die
   gespeicherte, rechnete der Abzug den nächsten Cast zu klein; und die Vorausheilung nach dem ersten Turm ist meist
