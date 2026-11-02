@@ -1161,15 +1161,16 @@ begründet.
 | `AreaSeriesSpan` (A460) | `DataCenter.AreaShareNow` | nur Minderung, die bis zum letzten Treffer der Serie steht, zählt | – | zu kurz: eine Minderung, die vor dem letzten Treffer endet, zählt für die ganze Summe |
 | `DotOnParty` | `DotOnParty.Learned` | HoT gegen DoT, Fortschreibung eines DoT ohne Ende | – | zu niedrig: HoT zu spät |
 | `SleepOutcomes` | `SleepInterruptWatch` | „ein Schlaf hat es schon gestoppt" öffnet den Versuch | „Schlaf stoppt es nicht" (`IsUnstoppable`) | zu niedrig/als unstoppbar: Wirken landet |
-| `SleepResistantKinds` | `SleepInterruptWatch.CanStillBeSlept` | – | kein Versuch auf die Art | Wirken landet, nie wieder geprüft |
+| `SleepResistantKinds` | `SleepInterruptWatch.LocksOn` | – | kein Versuch auf die Art | Wirken landet; seit Stufe 4 je Version einmal geprüft |
 | `SleepDiminishing` | ebenda | – | Versuche über der Grenze unterbleiben | Wirken landet |
-| `ActionPenaltyCasts` (A439) | `ActionPenaltyWatch` | kein Zauber in die Landung | – | fehlender Eintrag: der Tod aus A427 |
+| `ActionPenaltyCasts` (A439) | `ActionPenaltyWatch` | kein Zauber in die Landung | – | fehlender oder falsch widerlegter Eintrag: der Tod aus A427 |
 | `TankbusterMarkerWithoutHit` | Tankbuster-Erkennung | – | Marker gilt nicht | Tankbuster ohne Abwehr (prüft sich je Auftreten nach, A340) |
 | `TankbusterMarkerHits` | Tankbuster-Plan ohne Cast | frühester Zeitpunkt | – | zu spät: Abwehr nach dem Treffer |
 
 Zwei Speicher sind reine Sperren (resistente Art, Schlafgrenze): Sie verhindern die Beobachtung, die sie widerlegen
-könnte – der Fall „dauerhaft unwidersprochen und ungeprüft" seines Auftrags. Der Mimik aus A427 wird nach einem Widerstand
-nie wieder versucht, auch wenn ein Patch ihn schlafbar machte.
+könnte – der Fall „dauerhaft unwidersprochen und ungeprüft" seines Auftrags. Bis Stufe 4 wurde der Mimik aus A427 nach
+einem Widerstand nie wieder versucht, auch wenn ein Patch ihn schlafbar machte; seit Stufe 4 bekommt er in jeder neuen
+Spielversion einen Versuch (Abschnitt „Stufe 4", 4b).
 
 ### Was einen gelernten Wert entwertet
 
@@ -1413,7 +1414,7 @@ geprüft bei jedem Speichern.
 **12. Bauabfolge, jede Stufe rückbaubar.** (0) Die drei Defekte aus seinen Prüffällen – ungelisteter Tankbuster,
 Aufnahme unter Unverwundbarkeit, Messung ohne Synchronisation –: unabhängig von der Revision, gebaut (A452). (1) Format, Übernahme der alten Dateien, Sicherung, Quarantäne, Invarianten – ohne
 Verhaltensänderung, die alte Datei bleibt (Abschnitt „Stufe 1: Speicher, Übernahme, Sicherung"). (2) Regel 4 für Fläche
-und Tankbuster – gebaut (A481, Abschnitt „Stufe 2"). (3) Regeln 5 und 5b – gebaut (A492, Abschnitt „Stufe 3"). (4) Sperren nach Regel 6, mit den Schichten der Sperrspeicher. (5) Anzeige. Rückbau
+und Tankbuster – gebaut (A481, Abschnitt „Stufe 2"). (3) Regeln 5 und 5b – gebaut (A492, Abschnitt „Stufe 3"). (4) Sperren nach Regel 6 – gebaut (A493, A494, Abschnitt „Stufe 4"). (5) Anzeige. Rückbau
 einer Stufe: ihr Messverfahren zurück; die Werte bleiben in beiden Dateien.
 
 ### Stufe 1: Speicher, Übernahme, Sicherung (gebaut)
@@ -1426,11 +1427,12 @@ jede Fläche, kein Tankbuster gemessen, Schlafwissen weg; mit der Sicherung gilt
 
 **Umfang.** Schichten bekommen die beiden Speicher, deren Werte die Stufen 2 und 3 einsparend lesen: die Flächentabelle
 (`HostileCastingAreaPotential`) und die Tankbuster-Tabelle (`TankbusterPotential`). Die Sperrspeicher (Schlaf,
-Pyretisch, Marker ohne Treffer) bekommen sie mit Stufe 4, weil erst Regel 6 festlegt, was dort eine Beobachtung ist;
+Pyretisch, Marker ohne Treffer) bekommen statt Schichten mit Stufe 4 einen Nebenspeicher mit der Spielversion je Sperre,
+weil erst Regel 6 festlegt, was dort eine Beobachtung ist (Abschnitt „Stufe 4");
 die nur schützend gelesenen (Serie, Dauer der Flächenserie, DoT, Markertreffer) mit der Regel, die sie einmal senkt –
 bis dahin gelten sie wie heute. Das kostet nichts: Ein Speicher, der seine Schichten später bekommt, übernimmt seine Werte dann als übernommen,
 und übernommen ist der schützende Zustand; der Preis ist eine Bestätigung je Eintrag mehr. Die Sicherung bekommen alle
-gelernten Speicher mit dem Speicherweg `LearnedFile`; die beiden Markerspeicher (`LocalFile`) mit Stufe 4.
+gelernten Speicher mit dem Speicherweg `LearnedFile`; die Marker- und Sperrspeicher (`LocalFile`) mit Stufe 4.
 `AreaPotentialUnmitigated` bleibt ohne Schichten: Es sagt, wie ein Wert gemessen wurde, nicht, was das Spiel tut, und
 ein Patch ändert daran nichts.
 
@@ -1719,14 +1721,29 @@ Einträge.
   kleinem Raidwide eine Gruppenminderung mehr. Der Preis der Landung als Einheit liegt in der sicheren Richtung: eine
   abgeschwächte Serie bleibt länger beim alten Wert.
 
+**Preis.** Ein streuender Treffer aus der alten Datei, den ein Patch abschwächte, behält in dieser Version seinen alten
+Wert: gerechnet in 91 bis 96 % der Casts Schutz, den er nicht mehr braucht. Der Stack, dessen alte Messungen zufällig
+fest aussahen, sinkt nach einer Abschwächung vor seiner seltenen harten Variante: 3,0 % statt 2,4 % falsch ausgelassener
+Schutz je Cast. Beide Zahlen stehen unter Regel 5 und 5b.
+
+**Gegenhypothesen.**
+- *Kein Defekt:* Ohne Stufe 3 bliebe ein abgeschwächter Treffer für immer beim alten Wert. Das schließt sein „alte daten
+  [nicht] dauerhaft unwidersprochen" aus.
+- *Option falsch:* Ein falsch gesenkter Wert steigt mit dem ersten härteren Treffer wieder. Dieser eine Treffer kommt
+  ohne die Minderung, die die Größenregel ihm sonst gäbe.
+- *Ausgeliefert, und nichts ändert sich – warum?* Hat kein Patch einen Treffer abgeschwächt, gibt es nichts zu senken.
+  Die streuenden Einträge der alten Datei senkt der gleichbleibende Abfall nie. Beides ist gewollt; die Kopfzeile zählt,
+  was gesenkt wurde.
+
 ### Stufe 4: Sperren nach Regel 6
 
-Regel 6 stellt vier Sperren unter die Spielversion. Ihre Speicher sind verschieden gebaut, deshalb kommen sie
-einzeln: 4a der Marker ohne Treffer (Lebensgefahr für den Tank, wenn ein Patch den Marker zum Tankbuster macht), danach
-4b die Schlafsperren (resistente Art, Schlafgrenze, „Schlaf stoppt es nicht") und 4c das Pyretisch-Wirken. Die
-Schlafsperren werden heute nur mit dem Höchst- oder Mindestwert der Datei zusammengelegt und können deshalb nicht
-gelöst werden; dafür braucht 4b eine Kennzeichnung „widerlegt" neben der Datei. 4c hält im Zweifel weiter Zauber an,
-und das ist die sichere Seite.
+Regel 6 stellt die Sperren unter die Spielversion, in drei Teilstufen, alle gebaut: 4a der Marker ohne Treffer
+(Lebensgefahr für den Tank, wenn ein Patch den Marker zum Tankbuster macht), 4b die Schlafsperren (resistente Art,
+Schlafgrenze, „Schlaf stoppt es nicht"), 4c das Pyretisch-Wirken. Ihre Speicher sind verschieden gebaut; gemeinsam ist
+ihnen ein Nebenspeicher, der je Sperre die Spielversion der letzten entscheidenden Beobachtung hält. Die Schlaf- und
+Pyretisch-Dateien werden beim Speichern mit dem Höchst- oder Mindestwert der Datei zusammengelegt, eine Sperre aus ihnen
+lässt sich in ihnen also nicht lösen; „widerlegt" steht deshalb im Nebenspeicher. Eine Sperre ohne Eintrag dort stammt
+aus der Zeit vor Stufe 4 und gilt als übernommen.
 
 **4a – Marker ohne Treffer (gebaut, A493).**
 - *Im Kampf:* Ein Marker, dem in einer früheren Spielversion kein Treffer folgte, zählt nach einem Patch wieder als
@@ -1742,19 +1759,98 @@ und das ist die sichere Seite.
 - *Gegenhypothese – ausgeliefert, und nichts ändert sich:* Kommt kein Patch und hat er keine Sperren, ändert sich
   nichts. Das ist gewollt.
 
-**Preis.** Ein streuender Treffer aus der alten Datei, den ein Patch abschwächte, behält in dieser Version seinen alten
-Wert: gerechnet in 91 bis 96 % der Casts Schutz, den er nicht mehr braucht. Der Stack, dessen alte Messungen zufällig
-fest aussahen, sinkt nach einer Abschwächung vor seiner seltenen harten Variante: 3,0 % statt 2,4 % falsch ausgelassener
-Schutz je Cast. Beide Zahlen stehen unter Regel 5 und 5b.
+**4b – Schlafsperren (gebaut, A494).**
+- *Im Kampf:* Eine Gegnerart, die einen Schlaf in einer früheren Spielversion oder vor Stufe 4 abwies, bekommt in der
+  laufenden einen Versuch: Ein Heiler oder Magier legt einmal einen Schlaf auf ein Wirken dieser Art, das zu stoppen
+  lohnt (Konzept 08, „Ein gegnerisches Wirken stoppen"). Weist sie ihn ab, gilt die Sperre bis zum nächsten
+  Versionssprung; landet er, ist sie widerlegt, und ihr Wirken wird von da an eingeschläfert wie das jeder Art ohne
+  Sperre. Ebenso die Schlafgrenze (ein Schlaf über die gelernte Zahl hinaus) und eine Aktion, deren Wirken ein Schlaf
+  nicht stoppte (ein Schlaf auf ihr Wirken).
+- *Nur auf einem GCD, den keine Heilung braucht:* Kein Heilzauber ist fällig (Einzel- oder Flächenheilung), und niemand
+  steht in Gefährdungsklasse 1 – für Heiler und Magier gleich, denn beide heilen mit dem GCD, und der Schlaf steht in der
+  GCD-Folge vor der Heilung. Sonst hält die übernommene Sperre, und das Protokoll nennt den Grund.
+- *Seine Vorgabe* „wo Schlaf nicht wirkt, soll er nicht immer wieder versucht werden" (Konzept 08, „Gespeichertes
+  Wissen") bleibt gewahrt: ein Versuch je Spielversion, nicht je Kampf oder Sitzung.
+- *Ein Versuch je Sperre und Version*, verbraucht mit dem Druck des Schlafs, denn dann ist der GCD ausgegeben: Ein
+  Schlaf, der ohne Antwort bleibt (der Gegner fällt, ist gerade unverwundbar, das Wirken endet vorher), verbraucht ihn
+  auch. Ein Schlaf auf mehrere übernommene Sperren zugleich (Art und Aktion) verbraucht den Versuch jeder.
+- *Was bestätigt, was widerlegt* – jede Beobachtung, nicht nur der Versuch:
+  - Art: Abweisung beim ersten Schlaf im Kampf bestätigt. Ein gelandeter Schlaf, gleich von wem, widerlegt, auch in der
+    laufenden Version.
+  - Grenze: Abweisung nach Schlafen in diesem Kampf bestätigt; in einer Version gilt die kleinste Zahl. Ein Schlaf, der
+    auf einem Gegner landet, der in diesem Kampf schon so oft eingeschläfert wurde, wie die Grenze sagt, widerlegt sie:
+    Sie liegt höher. Bis zur nächsten Abweisung hat die Art dann keine eigene Grenze; die niedrigste der anderen Arten
+    gilt für sie nur, wo sie über der widerlegten liegt, und ihr Zustand ist der ihrer Quelle.
+  - Aktion: Ein Wirken, das trotz eines rechtzeitigen Schlafs ausgeht, bestätigt; eines, das ein Schlaf stoppt,
+    widerlegt, wie bisher (gestoppt heißt stoppbar).
+- *Woran:* Nebenspeicher `SleepLocks` mit je einer Liste für Arten, Grenzen und Aktionen: Spielversion und Ergebnis der
+  letzten entscheidenden Beobachtung, bei der Art die Zahl der Abweisungen in der Datei zu diesem Zeitpunkt, bei der
+  Grenze ihr Wert (widerlegt: die Zahl der Schlafe, nach denen einer landete), und die Spielversion des Versuchs. Zählt
+  die Datei für eine widerlegte Art mehr Abweisungen als bei der Widerlegung – geschrieben von einem zweiten Client oder
+  einer älteren RSR-Fassung –, gilt sie wieder als übernommen.
+- *Spielversion nicht lesbar:* Eine übernommene Sperre hält wie vor Stufe 4; „ein Versuch je Version" ließe sich nicht
+  halten. Im Kampf ist die Version gelesen (A475).
+- *Preis:* je Sperre und Version ein GCD auf einen Gegner, der wahrscheinlich noch abweist – Schaden, keine Heilung.
+  Beim ersten Start mit 4b gilt das für alle bisherigen Sperren: in seinem Upload vom 02.11.2026 16 Arten, keine Grenze,
+  keine Aktion. Eine Art, die nur in manchen Phasen abweist, wechselt zwischen widerlegt und bestätigt; jeder Wechsel
+  kostet höchstens einen GCD.
+- *Messmittel:* eine Zeile je Versuch (welche Sperren er prüft), je Bestätigung und je Widerlegung; der Grund, wenn eine
+  übernommene Sperre hält; die Kopfzeile zählt je Sperrart, wie viele in dieser Version gelten und wie viele widerlegt
+  sind.
+- *Prüfmittel:* `revision_harness/run.sh` spielt die Zustandslogik (`LearnedLocks.cs`) gegen ein Orakel, das nur die
+  Geschichte der Beobachtungen kennt: zufällige Folgen aus Abweisungen, Landungen, Versuchen, Versionssprüngen,
+  unlesbaren Versionen und Speichern; mit Mutanten im Selbsttest.
+- *Gegenhypothese – ausgeliefert, und nichts ändert sich:* Er trifft die gesperrten Arten selten wieder, und in vollen
+  Pulls ist oft Heilung fällig; dann hält die Sperre wie vorher. Das ist der sichere Zustand, und die Kopfzeile zeigt,
+  wie viele Sperren laufen.
+- *Verworfen:*
+  - Alle Schlafsperren bei einem Versionssprung löschen: Jede Art bekäme ihren Versuch ohne die Bedingungen, also auch
+    dann, wenn Heilung fällig ist.
+  - Ein Versuch je Sitzung statt je Version: ein GCD je Art und Sitzung ohne neue Erkenntnis.
+  - Die Datei selbst senken: Das Zusammenlegen mit der Datei holte den alten Wert beim nächsten Speichern zurück.
 
-**Gegenhypothesen.**
-- *Kein Defekt:* Ohne Stufe 3 bliebe ein abgeschwächter Treffer für immer beim alten Wert. Das schließt sein „alte daten
-  [nicht] dauerhaft unwidersprochen" aus.
-- *Option falsch:* Ein falsch gesenkter Wert steigt mit dem ersten härteren Treffer wieder. Dieser eine Treffer kommt
-  ohne die Minderung, die die Größenregel ihm sonst gäbe.
-- *Ausgeliefert, und nichts ändert sich – warum?* Hat kein Patch einen Treffer abgeschwächt, gibt es nichts zu senken.
-  Die streuenden Einträge der alten Datei senkt der gleichbleibende Abfall nie. Beides ist gewollt; die Kopfzeile zählt,
-  was gesenkt wurde.
+**4c – Pyretisch-Wirken (gebaut, A494).**
+- *Im Kampf:* Ein gelerntes Wirken hält weiter Zauber zurück, auch nach einem Patch. Landet es in der laufenden Version
+  mindestens zweimal auf seinem Ziel, ohne den Status zu legen, öfter, als es ihn in früheren Versionen legte, und legt
+  es ihn in dieser Version nie, hält es keine Zauber mehr zurück. Legt es ihn danach wieder, gilt es sofort wieder.
+- *Was zählt:*
+  - Mit dem Status: Die Landung legt einem Mitglied der Gruppe einen Status, der jede Aktion bestraft (der Lernweg,
+    A439).
+  - Ohne: Das Ziel des Wirkens, wie der Wirkbalken es zeigte, ist ein Mitglied, und die Landung desselben Wirkenden trifft
+    es mit Schaden. Kein Mitglied bekommt einen solchen Status, das Ziel trug den gelernten nicht schon, und kein Eintrag
+    der Landung auf dem Ziel zeigt Widerstand, Unverwundbarkeit oder einen Status ohne Wirkung.
+  - Ein Wirken ohne Ziel in der Gruppe – eine Fläche um den Wirkenden – zählt nie und bleibt gesperrt.
+  - Früher gesehen: die Landungen mit Status aller früheren Versionen; für ein Wirken von vor Stufe 4, dessen Zahl nicht
+    geführt wurde, eine.
+- *Woran:* Nebenspeicher `ActionPenaltySightings` je Aktion: Spielversion, Landungen mit und ohne Status in ihr, die
+  früheren mit Status, widerlegt. Ohne lesbare Spielversion zählt nichts, also widerlegt nichts; eine Landung mit Status
+  hebt eine Widerlegung auch dann auf.
+- *Restrisiko:* Legt ein Wirken den Status nur unter einer Bedingung, die seine Landung nicht zeigt (etwa nur, wer in
+  etwas steht), sehen zwei Landungen ohne ihn wie eine Änderung aus, und die nächste mit ihm trifft einen laufenden
+  Zauber: der Treffer aus A427, der dann das Wirken sofort wieder lernt. Begrenzt dadurch, dass die laufende Version es
+  nie mit dem Status sah, dass mehr Landungen ohne ihn nötig sind, als früher mit ihm gezählt wurden, und dass die
+  Ankündigung von BossModReborn (Sondermodus Pyretic) unabhängig davon hält. Wie oft ein Status so gelegt wird, ist
+  unbelegt; in seinen Uploads ist noch kein Wirken gelernt (Datei vom 02.11.2026 leer).
+- *Preis:* Ein entschärftes Wirken hält bis zur Widerlegung Zauber zurück wie bisher, mindestens zwei Landungen lang.
+- *Messmittel:* eine Zeile je gezählter Landung ohne Status mit dem Stand, je Widerlegung und je Aufhebung; die
+  Kopfzeile zählt die widerlegten Wirken.
+- *Gegenhypothese – ausgeliefert, und nichts ändert sich:* Seine Datei ist leer; bis ein Wirken gelernt ist, ändert 4c
+  nichts. Gewollt.
+
+**Sicherung der Sperrspeicher (gebaut, A494).** Die Markerspeicher und die Nebenspeicher der Sperren
+(`LocalFile`) legen nach jedem Speichern, das sich zurücklesen lässt, eine Sicherung an (`.bak`) und fallen beim Laden
+einer unlesbaren Datei auf sie zurück; eine fehlende Datei holt sie nicht zurück (Regel 7). Ohne sie ginge mit einer
+unlesbaren `TankbusterMarkerHits.json` der gemessene Treffer nach einem Marker verloren, und der Plan begegnete einem
+tödlichen Marker wie einem ungemessenen. Die übrigen enden auch ohne Sicherung im schützenden Zustand: Jeder Marker
+zählt, jede Schlafsperre ist übernommen, jedes Pyretisch-Wirken hält.
+
+**Gegenhypothesen für Stufe 4.**
+- *Kein Defekt:* Ohne Stufe 4 bliebe jede Sperre für immer: Die Schlafdateien wachsen nur, und eine gesperrte Art wird
+  nie wieder versucht, also nie widerlegt. Das schließt sein „alte daten [nicht] dauerhaft unwidersprochen" aus.
+- *Option falsch:* geprüft an den Verworfenen unter 4b; für 4c ist die strenge Widerlegung die Regel 6, wie entschieden,
+  und ihr Preis steht oben.
+- *Ausgeliefert, und nichts ändert sich – warum?* Ohne Patch und ohne Begegnung mit einer gesperrten Art oder einem
+  gelernten Wirken ändert sich nichts. Die Kopfzeile zählt, was läuft, was übernommen und was widerlegt ist.
 
 ### Seine Entscheidung: asymmetrisch
 
@@ -1874,8 +1970,8 @@ Helfer den Treffer bringt.
 ### Am Code geprüft
 
 Aussage für Aussage, statisch (Selbstprüfung, kein unabhängiges Audit):
-- Lade- und Speicherweg je Speicher über `OtherConfiguration.Files` (`LearnedFile`; die Markerspeicher als `LocalFile`
-  ohne Zusammenführung – sie bekommen sie mit Stufe 4).
+- Lade- und Speicherweg je Speicher über `OtherConfiguration.Files` (`LearnedFile`; die Marker- und Sperrspeicher als
+  `LocalFile` ohne Zusammenführung, seit Stufe 4 mit Sicherung).
 - Leser je Speicher wie in der Tabelle: Fläche über `AreaShareNow` (A441, A446), Tankbuster über `PredictedShare`, Schlaf
   über `SleepInterruptWatch`, DoT über `DotOnParty.Learned`, Serie über `HitSeries`, Pyretisch über `ActionPenaltyWatch`.
 - „Unbewertet schützt" je einsparendem Leser: Größenregel (`AreaCastIsWorthMitigating`: ohne Wert `true`),

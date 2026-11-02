@@ -35,10 +35,12 @@ public static class Watcher
 			+ $" | stop enemy casts {config.SleepToStopAreaCasts}"
 			+ $" | sleep knowledge {OtherConfiguration.SleepOutcomes.Count} action(s), {OtherConfiguration.SleepResistantKinds.Count} resistant kind(s),"
 			+ $" {OtherConfiguration.SleepDiminishing.Count} kind limit(s) ({OtherConfiguration.SleepStoreState})"
+			+ $" | sleep locks: {SleepInterruptWatch.LockSummary()}"
 			+ $" | hit series {OtherConfiguration.HitSeriesOnPlayer.Count} action(s) ({OtherConfiguration.HitSeriesStoreState})"
 			+ $" | heal over time against damage over time {config.HotAgainstDot},"
 			+ $" damage over time learned in {OtherConfiguration.DotOnParty.Count} area(s) ({OtherConfiguration.DotStoreState})"
-			+ $" | casts laying a status that damages every action {ActionPenaltyWatch.LearnedCount} ({OtherConfiguration.ActionPenaltyStoreState})"
+			+ $" | casts laying a status that damages every action {ActionPenaltyWatch.LearnedCount}, {ActionPenaltyWatch.RefutedCount} refuted"
+			+ $" ({OtherConfiguration.ActionPenaltyStoreState})"
 			+ $" | area series with a learned span {OtherConfiguration.AreaSeriesSpan.Count} ({OtherConfiguration.AreaSeriesSpanState})"
 			+ $" | area table revisions: {OtherConfiguration.AreaRevisionState}"
 			+ $" | tankbuster table revisions: {OtherConfiguration.TankbusterRevisionState}");
@@ -57,9 +59,6 @@ public static class Watcher
 		}
 	}
 
-	// The commit this build was made from, so an uploaded trace can be matched to the code that wrote it:
-	// the version is the same for every build on the branch, and a day carries several commits.
-	// Embedded by Directory.Build.props; missing when the build had no git.
 	// Stage 4a (concept 13): the marker locks that hold in the running game version; the rest are taken over.
 	private static int MarkerLocksRunning()
 	{
@@ -72,6 +71,9 @@ public static class Watcher
 		return running;
 	}
 
+	// The commit this build was made from, so an uploaded trace can be matched to the code that wrote it:
+	// the version is the same for every build on the branch, and a day carries several commits.
+	// Embedded by Directory.Build.props; missing when the build had no git.
 	private static string SourceCommit()
 	{
 		foreach (var attribute in typeof(Watcher).Assembly.GetCustomAttributes<AssemblyMetadataAttribute>())

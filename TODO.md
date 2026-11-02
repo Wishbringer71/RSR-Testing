@@ -10,10 +10,9 @@ Betroffene: **N** Endnutzer · **R** Autoren abgeleiteter Rotationen (Namensräu
 Nach der Wirkung im Kampf: Sicherheit der Gruppe vor Schaden, gewichtet mit der Wahrscheinlichkeit, in seinem Profil
 (seine Vorgabe, 17.10.2026: „todo nach wichtigkeit abarbeiten. jeweils im loop bearbeiten").
 
-1. Die gelernten Tabellen: entschieden (Konzept 13, A451); gebaut nach Regel 12 des Entwurfs, erst die Revision über
-   einen Spielpatch (Stufen 1 bis 3 und 4a gebaut, A481, A492, A493; als Nächstes 4b, die Schlafsperren), dann die
-   Anzeige. Beide ändern den Kampf nur mittelbar, über einen geprüften oder berichtigten Lernwert –
-   die Sperren unter ihnen (Schlaf) aber dauerhaft.
+1. Die gelernten Tabellen in den Einstellungen zeigen: entschieden (Konzept 13, A451, Regel 10), die letzte Stufe nach
+   Regel 12. Ändert den Kampf nur mittelbar: Er sieht, warum RSR eine Aktion mindert, auslässt oder einen Gegner nicht
+   einschläfert.
 2. Fremde Repositories auf Verbesserungen für RSR prüfen: Jeder Fund kann ein Defekt im Verhalten einer Klasse sein,
    den RSR heute im Kampf zeigt; zuerst die Rotationswerkzeuge für alle Jobs, Daedalus vorn (aktiv, alle Jobs,
    eigene Kampfvorhersage).
@@ -23,25 +22,6 @@ Danach die technische Schuld, soweit ihre Auflösungsbedingung erfüllt ist. War
 ## Defekte
 
 ## Offene Arbeit
-
-### Gelernte Tabellen über einen Spielpatch: Revision statt Höchstwert · N
-Sein Auftrag (28.10.2026): „das lernlisten-konzept müsste auch überarbeitet in hinblick auf anstehende patches. […]
-nach patch werden die bestehenden listen als gegeben angesehen, aber noch nicht als verifiziert. also solange anwendung
-der bisherigen erkenntnisse, bis durch neue erkenntnisse (also eine neue revision der liste) diese bestätigt werden oder
-eben falsifiziert werden und in der neuen liste als ungültig markiert bzw. in der alten gelöscht werden. das neue
-revisionssystem muss sicher aufgebaut sein, dass nicht irrtümlich erkenntnisse gelöscht werden, bzw. alte daten dauerhaft
-unwidersprochen und ungeprüft nach einem versionssprung des spiels beibehalten werden." Im Kampf: Ändert ein Patch eine
-Mechanik, gilt in den übrigen Speichern der alte Lernwert weiter: Ein Gegner, der nun schläft, bleibt als resistent
-geführt, eine Serie, die nicht mehr kommt, bleibt gelernt, ein Wirken, das kein Pyretisch mehr anlegt, hält weiter
-Zauber an. Gebaut sind für Fläche und Tankbuster Stufe 1 (Speicher, Übernahme, Sicherung), Stufe 2 (ein übernommener
-Wert spart keinen Schutz, bis die laufende Version ihn sauber misst, A481) und Stufe 3 (ein abgeschwächter Treffer
-widerlegt den alten Wert nach den Regeln 5, 5b oder dem gleichbleibenden Abfall, A492); von Stufe 4 gebaut ist 4a
-(ein Marker ohne Treffer aus einer früheren Version zählt wieder als Tankbuster, A493); offen sind 4b, 4c und Stufe 5. *Ort:* `OtherConfiguration.RevisedStore`
-(Fläche, Tankbuster), `OtherConfiguration.LearnedFile` (die übrigen: Zusammenführung mit `Math.Max`, `Math.Min` oder
-`Higher`), die Werttypen `SleepReading`, `DotReading`/`DotArea`, dazu `HitSeriesOnPlayer`, `TankbusterMarkerWithoutHit`
-und `ActionPenaltyCasts`. *Nächster Schritt:* 4b – die Schlafsperren (resistente Gegnerart, Schlafgrenze, „Schlaf stoppt es
-nicht") nach Regel 6 mit einer Kennzeichnung „widerlegt" neben den Dateien, die heute nur steigen; dann 4c,
-Pyretisch-Wirken. *Konzept:* 13, „Stufe 4".
 
 ### Gelernte Tabellen des Forks in den Einstellungen zeigen und bearbeiten · N
 Sein Auftrag (28.10.2026): „prüfen, ob es sinnvoll ist, die durch den fork selbst erstellten lernlisten ähnlich der
@@ -53,7 +33,9 @@ Datei bei geschlossenem Spiel gelöscht wird; die Liste zeigt heute nur die Ante
 Tankbuster-Tabelle neben Upstreams AoE- und Tankbuster-Liste. *Ort:* `MainWindow_List` (`DrawListActions`,
 `DrawActionsList`, Vorbild: Upstreams Listen mit Hinzufügen, Zwischenablage, Entfernen, Zurücksetzen); die Speicher in
 `OtherConfiguration`: `HostileCastingAreaPotential`, `TankbusterPotential`, `TankbusterMarkerWithoutHit`,
-`SleepOutcomes`, `SleepResistantKinds`, `SleepDiminishing`, `HitSeriesOnPlayer`, `DotOnParty`, `ActionPenaltyCasts`.
+`SleepOutcomes`, `SleepResistantKinds`, `SleepDiminishing`, `HitSeriesOnPlayer`, `DotOnParty`, `ActionPenaltyCasts`, mit dem
+Zustand je Eintrag aus den Revisionen und den Nebenspeichern der Sperren (`TankbusterMarkerWithoutHitGame`, `SleepLocks`,
+`ActionPenaltySightings`).
 *Nächster Schritt:*
 Anzeige ja, Bearbeitung nein (Konzept 13, „Gelernte Tabellen über Spielversionen", Regel 10; seine Vorgabe A173); gebaut
 als letzte Stufe der Revision. *Konzept:* 13 (gelernte Tabellen), 18 (Einstellungen).

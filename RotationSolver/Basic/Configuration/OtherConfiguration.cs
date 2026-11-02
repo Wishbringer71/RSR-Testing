@@ -208,7 +208,22 @@ internal partial class OtherConfiguration
 	/// </summary>
 	internal static Dictionary<uint, int> SleepDiminishing = [];
 
-	/// <summary>Guards <see cref="SleepOutcomes"/>, <see cref="SleepResistantKinds"/> and <see cref="SleepDiminishing"/>.</summary>
+	/// <summary>
+	/// The latest decisive observation of each sleep lock - a kind that resisted, a sleep limit, an action a sleep did not
+	/// stop - with its game version and the version of its one try (concept 13, "Stufe 4", 4b). Kept beside the learned
+	/// files, which only rise or fall on every save and so cannot let a lock go.
+	/// </summary>
+	/// <remarks>
+	/// Written over on every save, as <see cref="TankbusterMarkerWithoutHitGame"/> is, with a backup the load falls back to
+	/// when the file is unreadable. A lock without a mark is from before stage 4 and taken over. Changed on the game thread
+	/// under <see cref="SleepStoreGate"/>.
+	/// </remarks>
+	internal static SleepLockMarks SleepLocks = new();
+
+	/// <summary>
+	/// Guards <see cref="SleepOutcomes"/>, <see cref="SleepResistantKinds"/>, <see cref="SleepDiminishing"/> and
+	/// <see cref="SleepLocks"/>.
+	/// </summary>
 	internal static readonly object SleepStoreGate = new();
 
 	/// <summary>
@@ -253,7 +268,17 @@ internal partial class OtherConfiguration
 	/// </remarks>
 	internal static Dictionary<uint, uint> ActionPenaltyCasts = [];
 
-	/// <summary>Guards <see cref="ActionPenaltyCasts"/>.</summary>
+	/// <summary>
+	/// Per action of <see cref="ActionPenaltyCasts"/>, what its landings showed in the running game version and before:
+	/// with the status, on its target without it, and whether the running version refuted it (concept 13, "Stufe 4", 4c).
+	/// </summary>
+	/// <remarks>
+	/// Kept beside <see cref="ActionPenaltyCasts"/>, which only rises on every save. Written over on every save, with a
+	/// backup, as <see cref="SleepLocks"/>. Changed on the game thread under <see cref="ActionPenaltyGate"/>.
+	/// </remarks>
+	internal static Dictionary<uint, PenaltySighting> ActionPenaltySightings = [];
+
+	/// <summary>Guards <see cref="ActionPenaltyCasts"/> and <see cref="ActionPenaltySightings"/>.</summary>
 	internal static readonly object ActionPenaltyGate = new();
 
 	public static RotationSolverRecord RotationSolverRecord = new();
@@ -292,14 +317,58 @@ internal partial class OtherConfiguration
 			return () => WriteFile(path, json);
 		}
 	}
-	private sealed class LocalFile<T>(string name, Func<T> get, Action<T> set) : ListFile(name) where T : class, new()
+	private sealed class LocalFile<T>(string name, Func<T> get, Action<T> set, bool backup = false) : ListFile(name) where T : class, new()
 	{
+		private readonly object _gate = new();
+
 		public override string FilePath => GetFilePath(Name);
 
 		public override void Load()
 		{
-			set(ReadFile<T>(FilePath) ?? new T());
+			var path = FilePath;
+			var existed = File.Exists(path);
+			var value = ReadFile<T>(path);
+
+			// There but unreadable, set aside as .corrupt: the last copy that was read back after a save (concept 13, "Stufe
+			// 4"). A missing file is not replaced by it - he deleted the file, and that stands (rule 7).
+			if (value == null && backup && existed && !File.Exists(path))
+			{
+				value = ReadFile<T>(path + ".bak");
+			}
+
+			set(value ?? new T());
 			MarkLoaded(Name);
+		}
+
+		public override Action PrepareWrite()
+		{
+			var write = base.PrepareWrite();
+			if (!backup)
+			{
+				return write;
+			}
+
+			var path = FilePath;
+			return () =>
+			{
+				lock (_gate)
+				{
+					write();
+
+					// The backup a later load falls back to: only a copy that reads back.
+					try
+					{
+						if (File.Exists(path) && JsonConvert.DeserializeObject<T>(File.ReadAllText(path), DeserializerSettings) != null)
+						{
+							File.Copy(path, path + ".bak", true);
+						}
+					}
+					catch (Exception ex)
+					{
+						PluginLog.Warning($"Could not copy {Name} as its backup: {ex.Message}");
+					}
+				}
+			};
 		}
 
 		public override void Reset() => set(new T());
@@ -729,10 +798,18 @@ internal partial class OtherConfiguration
 		new SetList(nameof(NoCastingStatus), StatusLists.NoCastingStatus, () => NoCastingStatus, v => NoCastingStatus = v),
 		new SetList(nameof(HostileCastingKnockback), ActionLists.HostileCastingKnockback, () => HostileCastingKnockback, v => HostileCastingKnockback = v),
 		// Learned in play, like the damage tables: no built-in list.
-		new LocalFile<HashSet<string>>(nameof(TankbusterMarkerWithoutHit), () => TankbusterMarkerWithoutHit, v => TankbusterMarkerWithoutHit = v),
+		// The lock and marker stores carry a backup (concept 13, "Stufe 4"): an unreadable TankbusterMarkerHits would lose the hit
+		// measured after a marker.
+		new LocalFile<HashSet<string>>(nameof(TankbusterMarkerWithoutHit), () => TankbusterMarkerWithoutHit, v => TankbusterMarkerWithoutHit = v,
+			backup: true),
 		new LocalFile<Dictionary<string, string>>(nameof(TankbusterMarkerWithoutHitGame), () => TankbusterMarkerWithoutHitGame,
-			v => TankbusterMarkerWithoutHitGame = v),
-		new LocalFile<Dictionary<string, TankbusterMarkerHit>>(nameof(TankbusterMarkerHits), () => TankbusterMarkerHits, v => TankbusterMarkerHits = v),
+			v => TankbusterMarkerWithoutHitGame = v, backup: true),
+		new LocalFile<Dictionary<string, TankbusterMarkerHit>>(nameof(TankbusterMarkerHits), () => TankbusterMarkerHits, v => TankbusterMarkerHits = v,
+			backup: true),
+		new LocalFile<SleepLockMarks>(nameof(SleepLocks), CopySleepLocks, v => { lock (SleepStoreGate) { SleepLocks = v.Whole(); } },
+			backup: true),
+		new LocalFile<Dictionary<uint, PenaltySighting>>(nameof(ActionPenaltySightings), CopyPenaltySightings,
+			v => { lock (ActionPenaltyGate) { ActionPenaltySightings = PenaltySightingRules.Whole(v); } }, backup: true),
 		new SetList(nameof(HostileCastingStop), ActionLists.HostileCastingStop, () => HostileCastingStop, v => HostileCastingStop = v, 3715, 3719, 3720, 3721, 3722),
 		new LocalFile<Dictionary<uint, List<string>>>(nameof(NorthHornWeaknessRecords), () => NorthHornWeaknessRecords, v => NorthHornWeaknessRecords = v),
 		new LocalFile<Dictionary<uint, List<string>>>(nameof(SouthHornWeaknessRecords), () => SouthHornWeaknessRecords, v => SouthHornWeaknessRecords = v),
@@ -758,6 +835,22 @@ internal partial class OtherConfiguration
 			}
 
 			return copy;
+		}
+	}
+
+	private static SleepLockMarks CopySleepLocks()
+	{
+		lock (SleepStoreGate)
+		{
+			return SleepLocks.Copy();
+		}
+	}
+
+	private static Dictionary<uint, PenaltySighting> CopyPenaltySightings()
+	{
+		lock (ActionPenaltyGate)
+		{
+			return PenaltySightingRules.Copy(ActionPenaltySightings);
 		}
 	}
 
@@ -916,6 +1009,10 @@ internal partial class OtherConfiguration
 	internal static Task SaveDotOnParty() => SaveList(nameof(DotOnParty));
 
 	internal static Task SaveActionPenaltyCasts() => SaveList(nameof(ActionPenaltyCasts));
+
+	internal static Task SaveSleepLocks() => SaveList(nameof(SleepLocks));
+
+	internal static Task SaveActionPenaltySightings() => SaveList(nameof(ActionPenaltySightings));
 
 	/// <summary>What the last save and load of <see cref="ActionPenaltyCasts"/> did, in words.</summary>
 	internal static string ActionPenaltyStoreState { get; private set; } = "not loaded yet";

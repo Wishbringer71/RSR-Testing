@@ -1077,6 +1077,16 @@
    "status": "exception",
    "loop": "A492",
    "reason": "The steady drop for old-file layers (concept 13, A482): the fewest clean readings at which no unchanged case of learned_oldfile_model.py falls more than half a point behind never lowering; two lose up to 1.2 points."
+  },
+  {
+   "file": "RotationSolver/Basic/Configuration/LearnedLocks.cs",
+   "code": "internal const int RefuteLandings = 2;",
+   "values": [
+    "2"
+   ],
+   "status": "exception",
+   "loop": "A494",
+   "reason": "Concept 13, rule 6 (decided with the revision, A451): a learned action laying a status that damages every action is refuted only after at least two landings on its target without it - one may be a case the effect does not show, two is the least that repeats. The game states no such count; a wrongly refuted action is the death of A427, so the count only rises with the sightings it had before (Before)."
   }
  ]
 }

@@ -1641,6 +1641,7 @@ Kopfzeile des Protokolls.
 | `SleepResistantKinds.json` | Gegnerart (BaseId) | wie oft sie einen ersten Schlaf als Status oder Aktion abwehrte | Die Art wird nicht mehr eingeschläfert. |
 | `SleepDiminishing.json` | Gegnerart (BaseId) | die wenigsten Schlafe in einem Kampf, nach denen sie widerstand (beim Zusammenführen die kleinere Zahl) | Ein Gegner wird in einem Kampf höchstens so oft eingeschläfert. |
 | `SleepOutcomes.json` | Aktion des Gegners | Abbrüche und die längste Zeit von der Landung bis zum Abbruch; Fehlschläge und der größte Rest, mit dem der Schlaf trotzdem zu spät kam | Die Regel liest daraus bei jeder Entscheidung die Haltezeit, den nötigen Rest und die nicht stoppbaren Aktionen. |
+| `SleepLocks.json` (Konzept 13, „Stufe 4") | je Sperre: Art, Grenze, Aktion | Spielversion und Ergebnis der letzten entscheidenden Beobachtung, Spielversion des Versuchs; überschrieben, nicht zusammengeführt, mit Sicherung | Die drei Sperren oben halten nur in der Version, die sie sah; eine übernommene bekommt einen Versuch, wenn kein Heilzauber fällig ist und niemand in Gefährdungsklasse 1 steht. Ein gelandeter Schlaf widerlegt Art und Grenze. |
 
 Ausgewertet wird bei jeder Entscheidung:
 - *Haltezeit:* die längste Zeit von der Landung bis zum Abbruch über alle Aktionen.

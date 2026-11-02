@@ -1,5 +1,6 @@
 ﻿using ECommons.ExcelServices;
 using ECommons.Logging;
+using RotationSolver.Basic.Configuration;
 
 namespace RotationSolver.Basic.Rotations;
 
@@ -769,12 +770,24 @@ public partial class CustomRotation
 				return true;
 			}
 
-			if (!sleep.EnoughLevel || left <= needed || SleepInterruptWatch.IsUnstoppable(enemy.CastActionId)
-				|| !SleepInterruptWatch.CanStillBeSlept(enemy) || AreaReachesNewMob(enemy, sleep.Info.EffectRange))
+			if (!sleep.EnoughLevel || left <= needed || !SleepInterruptWatch.IsOpenToSleep(enemy) || AreaReachesNewMob(enemy, sleep.Info.EffectRange))
 			{
 				SleepInterruptWatch.NoteLapse(enemy, left <= needed
 					? $"too little time: {left:F1} s left, {needed:F1} s needed"
 					: "the cast or the enemy is no longer one to sleep");
+				continue;
+			}
+
+			// The stored locks - its kind resisted, the fight's sleeps reached the limit, a sleep did not stop the action -
+			// hold in the game version that saw them. One from an earlier version is a hypothesis with one try in this one,
+			// and only on a GCD no heal needs (concept 13, "Stufe 4", 4b).
+			var locks = SleepInterruptWatch.LocksOn(enemy, _sleepTries);
+			var busy = string.Empty;
+			if (locks == LockState.Holds || (locks == LockState.TakenOver && !SleepTryAllowed(out busy)))
+			{
+				SleepInterruptWatch.NoteLapse(enemy, locks == LockState.Holds
+					? "a stored lock holds: its kind resisted, the sleeps in this fight reached its limit, or a sleep did not stop the action"
+					: $"a lock from an earlier game version is tried only on a GCD no heal needs, and {busy}");
 				continue;
 			}
 
@@ -796,12 +809,49 @@ public partial class CustomRotation
 				setting.CanTarget = canTarget;
 			}
 
-			SleepInterruptWatch.AimAt(enemy, sleep, left, needed);
+			SleepInterruptWatch.AimAt(enemy, sleep, left, needed, _sleepTries);
 			return true;
 		}
 
 		act = null;
 		return false;
+	}
+
+	// The locks taken over from an earlier game version that the sleep chosen last tries.
+	private readonly List<SleepLockKey> _sleepTries = [];
+
+	/// <summary>
+	/// Whether a try on a sleep lock taken over from an earlier game version may take this GCD (concept 13, rule 6): no heal
+	/// spell is due and nobody stands in the critical class. The sleep comes before the heals in the GCD path, and a try on a
+	/// kind that most likely still resists must not cost a heal - for healers and casters alike, both heal with the GCD.
+	/// </summary>
+	/// <param name="busy">What the GCD is needed for, when it is.</param>
+	/// <returns>True when the try may go.</returns>
+	private static bool SleepTryAllowed(out string busy)
+	{
+		if ((DataCenter.MergedStatus & (AutoStatus.HealSingleSpell | AutoStatus.HealAreaSpell)) != 0)
+		{
+			busy = "a heal spell is due";
+			return false;
+		}
+
+		if (Player is { IsDead: false } self && self.IsInCriticalClass())
+		{
+			busy = "you are in the critical class";
+			return false;
+		}
+
+		foreach (var member in DataCenter.PartyMembers)
+		{
+			if (member != null && !member.IsDead && member.IsInCriticalClass())
+			{
+				busy = "a party member is in the critical class";
+				return false;
+			}
+		}
+
+		busy = string.Empty;
+		return true;
 	}
 
 	/// <summary>

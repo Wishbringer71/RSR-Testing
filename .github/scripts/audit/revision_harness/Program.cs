@@ -3,7 +3,8 @@
 // merged with the file, copied as the backup after reading back -, and the checks read the revision file the store wrote.
 using RotationSolver.Basic.Configuration;
 
-return OtherConfiguration.RoundTrip() ? OtherConfiguration.RunHarness(args.Length > 0 ? int.Parse(args[0]) : 300) : 1;
+var runs = args.Length > 0 ? int.Parse(args[0]) : 300;
+return OtherConfiguration.RoundTrip() && OtherConfiguration.RunHarness(runs) == 0 && LockHarness.Run(runs) == 0 ? 0 : 1;
 
 namespace RotationSolver.Basic.Configuration
 {

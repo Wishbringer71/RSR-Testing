@@ -14651,6 +14651,39 @@ durchgehen". Als Skill `spielpatch` festgehalten (Lesetabelle in CLAUDE.md); den
 - *Preis:* je Marker und Version einmal Abwehr; beim ersten Start mit diesem Build für alle bisherigen Sperren.
 - *Prüfgrad:* Compile, alle CI-Prüfungen lokal; keine Laufzeitbeobachtung.
 
+### A494 · Gelernte Tabellen, Stufe 4b und 4c: Schlafsperren und Pyretisch-Wirken unter der Spielversion (02.11.2026)
+
+- *Anlass:* nächster Schritt nach A493 (Regel 6, Konzept 13). Die Schlafdateien wachsen nur (Höchst- oder Mindestwert
+  beim Zusammenlegen mit der Datei), eine Sperre aus ihnen ließ sich also nie lösen; die Pyretisch-Datei ebenso.
+- *Im Kampf:* Eine resistente Gegnerart, eine Schlafgrenze und eine Aktion, die ein Schlaf nicht stoppte, halten nur in
+  der Spielversion, die sie sah. Eine übernommene bekommt in der laufenden einen Schlaf – nur wenn kein Heilzauber fällig
+  ist und niemand in Gefährdungsklasse 1 steht. Ein gelandeter Schlaf, gleich von wem, widerlegt Art und Grenze; ein
+  gestopptes Wirken die Aktion. Ein gelerntes Pyretisch-Wirken hält weiter Zauber, bis die laufende Version es
+  mindestens zweimal auf seinem Ziel ohne den Status landen sah, öfter als früher mit ihm, und nie mit ihm.
+- *Gebaut:*
+  - `LearnedLocks.cs`: Zustandslogik rein, ohne Spielobjekte (`SleepLockRules`, `PenaltySightingRules`).
+  - Nebenspeicher `SleepLocks.json` und `ActionPenaltySightings.json` (`LocalFile`, überschrieben).
+  - `SleepInterruptWatch.LocksOn` für die Stopp-Regel; Widerlegung in `CountApplications`, Bestätigung in
+    `LearnRefusal` und beim ausgegangenen Wirken, Versuch beim Druck (`RecordPress`).
+  - `CustomRotation.SleepTryAllowed`: Heilzauber fällig oder Gefährdungsklasse 1 verbieten den Versuch, für Heiler und
+    Magier gleich.
+  - `ActionPenaltyWatch`: Ziel des Wirkens aus dem Wirkbalken; Zählung mit und ohne Status; widerlegte Wirken werden
+    nicht verfolgt.
+  - Sicherung (`.bak`) für die Marker- und Sperrspeicher, wie in Stufe 1 für Stufe 4 angekündigt.
+  - Kopfzeile: Sperrstände je Art, Grenze, Aktion; widerlegte Pyretisch-Wirken.
+- *Prüfmittel:* `revision_harness` spielt die Sperren gegen ein Orakel aus der Beobachtungsgeschichte (300 Läufe: KIND,
+  LIMIT, ACTION, ONE TRY, UNREADABLE, PENALTY, ROUND TRIP); neun neue Mutanten, der Selbsttest fängt alle 18.
+- *Feste Zahl:* `PenaltySightingRules.RefuteLandings = 2`, die „mindestens zweimal" der Regel 6 (Ausnahme in
+  `fixed_values.json`): Eine Landung ohne Status kann ein Fall sein, den der Effekt nicht zeigt; zwei sind das
+  Wenigste, das sich wiederholt. Das Spiel nennt keine solche Zahl.
+- *Preis:* je Schlafsperre und Version ein GCD (beim ersten Start mit diesem Build 16 Arten aus seinem Upload vom
+  02.11.2026); ein entschärftes Pyretisch-Wirken hält mindestens zwei Landungen lang Zauber. Restrisiko 4c: ein Status,
+  den ein Wirken nur unter einer unsichtbaren Bedingung legt, kann falsch widerlegt werden; dann trifft die nächste
+  Landung mit ihm einen laufenden Zauber (A427) und lernt das Wirken sofort wieder. Unbelegt, wie oft das vorkommt.
+- *Nebenbei berichtigt:* Preis und Gegenhypothesen von Stufe 3 standen seit A493 unter Stufe 4; der Kommentar zu
+  `SourceCommit` stand über `MarkerLocksRunning`.
+- *Prüfgrad:* Compile ohne Warnung, Prüfgerüst mit Selbsttest, alle CI-Prüfungen lokal; im Spiel nicht beobachtet.
+
 ## B · Commit-Register (Fork vs. `upstream/main`)
 
 ### B1 · Einzelgeprüfte Fork-Commits

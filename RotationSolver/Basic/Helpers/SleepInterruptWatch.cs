@@ -22,6 +22,11 @@ namespace RotationSolver.Basic.Helpers;
 /// stop - are worked out from those observations at each decision, so a later observation corrects an earlier
 /// conclusion instead of being shut out by it. Each outcome is a line in the defence trace.</para>
 ///
+/// <para>The three locks among them - a resistant kind, a sleep limit, an action a sleep did not stop - hold in the game
+/// version that saw them (concept 13, "Stufe 4", 4b): one from an earlier version, or from before stage 4, gets one try
+/// in the running one; a sleep that lands refutes the kind or the limit, one that stops a cast refutes the action. The
+/// marks for that are <see cref="OtherConfiguration.SleepLocks"/>, the logic <see cref="SleepLockRules"/>.</para>
+///
 /// <para>Recognition and its own measure only; the rule that presses the sleep decides
 /// (<c>CustomRotation.StopEnemyCast</c>).</para>
 /// </remarks>
@@ -40,6 +45,9 @@ public static class SleepInterruptWatch
 	{
 		/// <summary>The player began the sleep's cast on this enemy.</summary>
 		public bool Cast { get; init; }
+
+		/// <summary>The locks taken over from an earlier game version that a sleep on this aim tries (concept 13, "Stufe 4").</summary>
+		public IReadOnlyList<SleepLockKey> Tries { get; init; } = [];
 	}
 
 	private sealed class Watch
@@ -120,9 +128,42 @@ public static class SleepInterruptWatch
 		=> actionId is (uint)ActionID.SleepPvE or (uint)ActionID.ReposePvE;
 
 	/// <summary>
-	/// Whether a sleep could still land on <paramref name="enemy"/>: not a boss (BNpcBase rank), no Sleep Resistance
-	/// (row 1354, "Immune to sleep effects"), not of a kind that resisted one (stored), not worn down by repeated sleeps
-	/// in this fight, and no sleep has just landed on it.
+	/// Whether a sleep could still land on <paramref name="enemy"/>: nothing of this fight or session bars it
+	/// (<see cref="IsOpenToSleep"/>), and no stored lock on its kind stands - one taken over from an earlier game version
+	/// counts as standing here; only the rule's own try passes it (<see cref="LocksOn"/>).
+	/// </summary>
+	/// <param name="enemy">The enemy.</param>
+	/// <returns>True while a sleep can still land.</returns>
+	public static bool CanStillBeSlept(IBattleChara enemy)
+	{
+		return IsOpenToSleep(enemy) && LocksOn(enemy, null, withCast: false) == LockState.None;
+	}
+
+	/// <summary>
+	/// Whether nothing of this fight or session bars a sleep on <paramref name="enemy"/>: not a boss (BNpcBase rank), no
+	/// Sleep Resistance (row 1354, "Immune to sleep effects"), not of a kind a sleep could not reach this session, not
+	/// worn down by repeated sleeps in this fight, and no sleep has just landed on it. The stored locks are
+	/// <see cref="LocksOn"/>'s.
+	/// </summary>
+	/// <param name="enemy">The enemy.</param>
+	/// <returns>True when nothing of the fight or session bars it.</returns>
+	internal static bool IsOpenToSleep(IBattleChara enemy)
+	{
+		return enemy != null && !enemy.IsBossFromIcon() && !enemy.HasStatus(false, StatusID.SleepResistance)
+			&& !_unaffectedThisSession.ContainsKey(enemy.BaseId)
+			&& !_diminishedThisFight.ContainsKey(enemy.GameObjectId)
+			// An enemy a sleep has just landed on is asleep before its status shows; a second sleep on the same cast
+			// is a GCD for nothing (trace of 21.10.2026, A334).
+			&& _watch?.Aim.EnemyId != enemy.GameObjectId;
+	}
+
+	/// <summary>
+	/// The stored locks on a sleep at <paramref name="enemy"/> (concept 13, "Stufe 4", 4b): its kind resisted a first
+	/// sleep; the sleeps that landed on it in this fight reached the limit learned for its kind, otherwise the lowest
+	/// learned for any; and with <paramref name="withCast"/>, a sleep did not stop the action it casts.
+	/// <see cref="LockState.Holds"/> when one holds in the running game version, its one try there spent, or the version
+	/// unreadable; <see cref="LockState.TakenOver"/> when only locks from an earlier version or from before stage 4 stand,
+	/// each listed in <paramref name="tries"/>.
 	/// </summary>
 	/// <remarks>
 	/// Repeated sleeps on one enemy halve until it resists for a while, counted apart from stuns (community sources:
@@ -131,47 +172,103 @@ public static class SleepInterruptWatch
 	/// a status, so the sleeps that landed in this fight are counted here, as StunWatch counts stuns.
 	/// </remarks>
 	/// <param name="enemy">The enemy.</param>
-	/// <returns>True while a sleep can still land.</returns>
-	public static bool CanStillBeSlept(IBattleChara enemy)
+	/// <param name="tries">Filled with the taken-over locks a sleep now would try; null when not wanted.</param>
+	/// <param name="withCast">Whether the lock on the action it casts counts.</param>
+	/// <returns>The strongest lock standing.</returns>
+	internal static LockState LocksOn(IBattleChara enemy, List<SleepLockKey>? tries, bool withCast = true)
 	{
-		if (enemy == null || enemy.IsBossFromIcon() || enemy.HasStatus(false, StatusID.SleepResistance)
-			|| _unaffectedThisSession.ContainsKey(enemy.BaseId)
-			|| _diminishedThisFight.ContainsKey(enemy.GameObjectId)
-			// An enemy a sleep has just landed on is asleep before its status shows; a second sleep on the same cast
-			// is a GCD for nothing (trace of 21.10.2026, A334).
-			|| _watch?.Aim.EnemyId == enemy.GameObjectId)
-		{
-			return false;
-		}
-
+		tries?.Clear();
+		var state = LockState.None;
+		var game = OtherConfiguration.GameVersion;
 		var slept = _sleptThisFight.GetValueOrDefault(enemy.GameObjectId);
+		var action = withCast && enemy.IsCasting ? enemy.CastActionId : 0u;
+		var unstoppable = action != 0 && IsUnstoppable(action);
 		lock (OtherConfiguration.SleepStoreGate)
 		{
-			if (OtherConfiguration.SleepResistantKinds.ContainsKey(enemy.BaseId))
+			var marks = OtherConfiguration.SleepLocks;
+			Add(SleepLockRules.KindState(OtherConfiguration.SleepResistantKinds, marks, enemy.BaseId, game),
+				new SleepLockKey(SleepLockType.Kind, enemy.BaseId));
+			if (slept > 0 && SleepLockRules.LimitFor(OtherConfiguration.SleepDiminishing, marks, enemy.BaseId, game, out var limitState) is { } limit
+				&& slept >= limit)
 			{
-				return false;
+				Add(limitState, new SleepLockKey(SleepLockType.Limit, enemy.BaseId));
 			}
 
-			// The limit learned for this kind, otherwise the lowest learned for any: the halving is the game's, not
-			// the kind's.
-			if (slept == 0)
-			{
-				return true;
-			}
-
-			if (OtherConfiguration.SleepDiminishing.TryGetValue(enemy.BaseId, out var limit))
-			{
-				return slept < limit;
-			}
-
-			var lowest = int.MaxValue;
-			foreach (var learned in OtherConfiguration.SleepDiminishing.Values)
-			{
-				lowest = Math.Min(lowest, learned);
-			}
-
-			return slept < lowest;
+			Add(SleepLockRules.ActionState(unstoppable, marks, action, game), new SleepLockKey(SleepLockType.Action, action));
 		}
+
+		return state;
+
+		void Add(LockState found, SleepLockKey key)
+		{
+			if (found == LockState.TakenOver)
+			{
+				tries?.Add(key);
+			}
+
+			if (found > state)
+			{
+				state = found;
+			}
+		}
+	}
+
+	/// <summary>The sleep locks in the trace's head line: per type, how many hold, how many are taken over, how many are refuted.</summary>
+	internal static string LockSummary()
+	{
+		var game = OtherConfiguration.GameVersion;
+		lock (OtherConfiguration.SleepStoreGate)
+		{
+			var marks = OtherConfiguration.SleepLocks;
+			int[] kinds = [0, 0, 0], limits = [0, 0, 0], actions = [0, 0, 0];
+			foreach (var kind in OtherConfiguration.SleepResistantKinds.Keys)
+			{
+				kinds[(int)SleepLockRules.KindState(OtherConfiguration.SleepResistantKinds, marks, kind, game)]++;
+			}
+
+			foreach (var kind in OtherConfiguration.SleepDiminishing.Keys)
+			{
+				if (!marks.Limits.ContainsKey(kind))
+				{
+					limits[(int)LockState.TakenOver]++;
+				}
+			}
+
+			foreach (var mark in marks.Limits.Values)
+			{
+				limits[mark.Refuted ? (int)LockState.None : game != null && mark.Game == game ? (int)LockState.Holds : (int)LockState.TakenOver]++;
+			}
+
+			foreach (var action in OtherConfiguration.SleepOutcomes.Keys)
+			{
+				if (IsUnstoppable(action))
+				{
+					actions[(int)SleepLockRules.ActionState(true, marks, action, game)]++;
+				}
+			}
+
+			const int holds = (int)LockState.Holds, takenOver = (int)LockState.TakenOver, refuted = (int)LockState.None;
+			return $"kinds {kinds[holds]} hold, {kinds[takenOver]} taken over, {kinds[refuted]} refuted;"
+				+ $" limits {limits[holds]} hold, {limits[takenOver]} taken over, {limits[refuted]} refuted;"
+				+ $" actions a sleep did not stop {actions[holds]} hold, {actions[takenOver]} taken over (game version {game ?? "NOT READABLE"})";
+		}
+	}
+
+	// The locks a list of keys names, for the trace.
+	private static string Describe(IReadOnlyList<SleepLockKey> keys)
+	{
+		var text = new System.Text.StringBuilder();
+		foreach (var key in keys)
+		{
+			_ = text.Append(text.Length > 0 ? ", " : string.Empty).Append(key.Type switch
+			{
+				SleepLockType.Kind => $"kind {key.Id} resisted",
+				SleepLockType.Limit => $"sleep limit of kind {key.Id}",
+				_ => $"action #{key.Id} not stopped",
+			});
+		}
+
+		return text.ToString();
 	}
 
 	/// <summary>
@@ -183,10 +280,48 @@ public static class SleepInterruptWatch
 	{
 		for (var i = 0; i < targets.Count; i++)
 		{
-			if (targets[i].Applied)
+			if (!targets[i].Applied)
 			{
-				_sleptThisFight.AddOrUpdate(targets[i].Target, 1, (_, count) => count + 1);
+				continue;
 			}
+
+			var before = _sleptThisFight.GetValueOrDefault(targets[i].Target);
+			_sleptThisFight.AddOrUpdate(targets[i].Target, 1, (_, count) => count + 1);
+			if (ECommons.DalamudServices.Svc.Objects.SearchById(targets[i].Target) is IBattleChara enemy)
+			{
+				RefuteLocks(enemy, before);
+			}
+		}
+	}
+
+	// A sleep that landed, from any source, refutes a lock that said it would not (concept 13, "Stufe 4", 4b): its kind
+	// stored as resistant, or a limit at or below the sleeps it had taken in this fight.
+	private static void RefuteLocks(IBattleChara enemy, int sleptBefore)
+	{
+		var game = OtherConfiguration.GameVersion;
+		bool kind, limit;
+		lock (OtherConfiguration.SleepStoreGate)
+		{
+			kind = SleepLockRules.RefuteKind(OtherConfiguration.SleepResistantKinds, OtherConfiguration.SleepLocks, enemy.BaseId, game);
+			limit = SleepLockRules.RefuteLimit(OtherConfiguration.SleepDiminishing, OtherConfiguration.SleepLocks, enemy.BaseId, sleptBefore, game);
+		}
+
+		if (!kind && !limit)
+		{
+			return;
+		}
+
+		_ = OtherConfiguration.SaveSleepLocks();
+		if (kind)
+		{
+			DefenseTrace.Line($"sleep landed on {enemy.Name.TextValue} (kind {enemy.BaseId}), a kind stored as resistant: the lock is refuted"
+				+ $" (game version {game ?? "NOT READABLE"}), its casts are slept again");
+		}
+
+		if (limit)
+		{
+			DefenseTrace.Line($"sleep landed on {enemy.Name.TextValue} (kind {enemy.BaseId}) after {sleptBefore} sleep(s) in this fight, at or above"
+				+ $" its sleep limit: the limit is refuted, it lies above {sleptBefore} (game version {game ?? "NOT READABLE"})");
 		}
 	}
 
@@ -275,6 +410,10 @@ public static class SleepInterruptWatch
 	/// Whether a sleep cannot stop <paramref name="actionId"/>: it went off although a sleep had landed at least as
 	/// long before its end as the longest a cut-off cast took to stop, and no cast of it was ever stopped.
 	/// </summary>
+	/// <remarks>
+	/// The conclusion over every game version. The rule reads it as a lock through <see cref="LocksOn"/>, which holds it
+	/// only in the version that saw it and gives one taken over a try (concept 13, "Stufe 4", 4b).
+	/// </remarks>
 	/// <param name="actionId">The enemy's action.</param>
 	/// <returns>True when the stored outcomes say so.</returns>
 	public static bool IsUnstoppable(uint actionId)
@@ -316,12 +455,18 @@ public static class SleepInterruptWatch
 	/// <param name="sleep">The sleep chosen.</param>
 	/// <param name="remaining">Seconds left on its cast.</param>
 	/// <param name="needed">Seconds the sleep needs to land, as the rule reckoned them.</param>
-	internal static void AimAt(IBattleChara enemy, IBaseAction sleep, float remaining, float needed)
+	/// <param name="tries">The locks taken over from an earlier game version this sleep tries; empty for none.</param>
+	internal static void AimAt(IBattleChara enemy, IBaseAction sleep, float remaining, float needed, IReadOnlyList<SleepLockKey> tries)
 	{
 		var actionId = enemy.CastActionId;
 		if (_aim is { } aim && aim.EnemyId == enemy.GameObjectId && aim.ActionId == actionId)
 		{
 			_lapse = null;
+			if (!aim.Cast)
+			{
+				_aim = aim with { Tries = [.. tries] };
+			}
+
 			return;
 		}
 
@@ -340,9 +485,10 @@ public static class SleepInterruptWatch
 		_lapse = null;
 		var name = Service.GetSheet<Lumina.Excel.Sheets.Action>().GetRowOrDefault(actionId)?.Name.ExtractText() ?? "?";
 		_aim = new Aim(enemy.GameObjectId, enemy.Name.TextValue, enemy.BaseId, actionId, name, DateTime.Now.AddSeconds(remaining),
-			enemy.IsCastInterruptible);
+			enemy.IsCastInterruptible) { Tries = [.. tries] };
 		DefenseTrace.Line($"sleep to stop a cast -> {sleep.Name} #{sleep.ID} on {enemy.Name.TextValue} (kind {enemy.BaseId}), casting {name} #{actionId}"
-			+ $", {remaining:F1} s left, interruptible {enemy.IsCastInterruptible}, needs {needed:F1} s");
+			+ $", {remaining:F1} s left, interruptible {enemy.IsCastInterruptible}, needs {needed:F1} s"
+			+ (tries.Count > 0 ? $"; tries locks from an earlier game version: {Describe(tries)}" : string.Empty));
 	}
 
 	/// <summary>The player pressed a sleep: the start of the time to its effect. Called from <c>BaseAction.Use</c>.</summary>
@@ -358,6 +504,25 @@ public static class SleepInterruptWatch
 		_pressedAction = actionId;
 		_pressedAt = DateTime.Now;
 		_pressedCastTime = castTime;
+
+		// The GCD is spent now: the one try in this game version on each lock taken over that the aim tries (concept 13,
+		// "Stufe 4", 4b), whatever answer comes.
+		if (_aim is { Tries.Count: > 0 } aim)
+		{
+			var game = OtherConfiguration.GameVersion;
+			bool marked;
+			lock (OtherConfiguration.SleepStoreGate)
+			{
+				marked = SleepLockRules.Try(OtherConfiguration.SleepLocks, aim.Tries, game);
+			}
+
+			_aim = aim with { Tries = [] };
+			if (marked)
+			{
+				_ = OtherConfiguration.SaveSleepLocks();
+				DefenseTrace.Line($"sleep pressed for {aim.EnemyName}: the one try in game version {game} on {Describe(aim.Tries)}");
+			}
+		}
 	}
 
 	/// <summary>
@@ -453,8 +618,9 @@ public static class SleepInterruptWatch
 			}
 
 			_ = OtherConfiguration.SaveSleepDiminishing();
+			ConfirmLock(lockMarks => SleepLockRules.ConfirmLimit(lockMarks, baseId, slept, OtherConfiguration.GameVersion));
 			DefenseTrace.Line($"sleep resisted by {enemyName} (kind {baseId}) after {slept} sleep(s) in this fight: worn down, "
-				+ "not tried on it again this fight; the limit is stored");
+				+ $"not tried on it again this fight; the limit is stored and holds in game version {OtherConfiguration.GameVersion ?? "NOT READABLE"}");
 			return;
 		}
 
@@ -466,12 +632,25 @@ public static class SleepInterruptWatch
 			}
 
 			_ = OtherConfiguration.SaveSleepResistantKinds();
-			DefenseTrace.Line($"sleep resisted by {enemyName} (kind {baseId}): immune, its kind is stored and not tried again");
+			ConfirmLock(lockMarks => SleepLockRules.ConfirmKind(OtherConfiguration.SleepResistantKinds, lockMarks, baseId, OtherConfiguration.GameVersion));
+			DefenseTrace.Line($"sleep resisted by {enemyName} (kind {baseId}): immune, its kind is stored and not tried again in game version "
+				+ (OtherConfiguration.GameVersion ?? "NOT READABLE"));
 			return;
 		}
 
 		_unaffectedThisSession[baseId] = 0;
 		DefenseTrace.Line($"sleep did not reach {enemyName} (kind {baseId}): resisted or invulnerable at that moment, its kind is not tried again this session");
+	}
+
+	// Records an observation that confirms a lock in the running game version, and saves the marks.
+	private static void ConfirmLock(Action<SleepLockMarks> confirm)
+	{
+		lock (OtherConfiguration.SleepStoreGate)
+		{
+			confirm(OtherConfiguration.SleepLocks);
+		}
+
+		_ = OtherConfiguration.SaveSleepLocks();
 	}
 
 	/// <summary>
@@ -497,8 +676,17 @@ public static class SleepInterruptWatch
 		var line = $"sleep did not stop {watch.Aim.ActionName} #{actionId} of {watch.Aim.EnemyName}: it went off"
 			+ $" {(DateTime.Now - watch.AppliedAt).TotalSeconds:F1} s after the sleep landed, {watch.LeftAtLanding:F1} s before its end"
 			+ (watch.CastGone && watch.EndedEarlyBy > 0f ? $", its cast bar gone {watch.EndedEarlyBy:F1} s early" : string.Empty);
-		DefenseTrace.Line(IsUnstoppable(actionId)
-			? $"{line}; cut-off casts stopped within {_holdTime:F1} s, so not tried on it again"
+
+		// A sleep in time that did not stop it holds the lock in the running game version (concept 13, "Stufe 4", 4b); one
+		// that came too late says nothing of the action.
+		var unstoppable = IsUnstoppable(actionId);
+		if (unstoppable && watch.LeftAtLanding >= _holdTime)
+		{
+			ConfirmLock(lockMarks => SleepLockRules.ConfirmAction(lockMarks, actionId, OtherConfiguration.GameVersion));
+		}
+
+		DefenseTrace.Line(unstoppable
+			? $"{line}; cut-off casts stopped within {_holdTime:F1} s, so not tried on it again in game version {OtherConfiguration.GameVersion ?? "NOT READABLE"}"
 			: $"{line}; too late - a sleep now has to land {LandingMargin:F1} s before the end");
 	}
 

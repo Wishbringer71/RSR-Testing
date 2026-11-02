@@ -21,8 +21,10 @@ namespace RotationSolver.Basic.Helpers;
 /// </remarks>
 internal static class ActionPenaltyWatch
 {
-	// A cast of a learned action: when its bar ends, when it was last seen, and whether its landing reaches the player.
-	private readonly record struct Cast(uint Action, DateTime EndsAt, DateTime SeenAt, bool ReachesPlayer);
+	// A cast of a learned action: when its bar ends, when it was last seen, whether its landing reaches the player, and its
+	// target as the cast bar shows it - the one landing that can show the action no longer lays the status (concept 13,
+	// "Stufe 4", 4c).
+	private readonly record struct Cast(uint Action, DateTime EndsAt, DateTime SeenAt, bool ReachesPlayer, ulong Target);
 
 	private static readonly Dictionary<ulong, Cast> _casting = [];
 	// Casts whose bar has ended and whose landing has not been seen yet: the effect comes after the bar, and in between
@@ -40,6 +42,24 @@ internal static class ActionPenaltyWatch
 			lock (OtherConfiguration.ActionPenaltyGate)
 			{
 				return OtherConfiguration.ActionPenaltyCasts.Count;
+			}
+		}
+	}
+
+	/// <summary>Of <see cref="LearnedCount"/>, the actions a game version refuted: they hold no spells (concept 13, "Stufe 4", 4c).</summary>
+	internal static int RefutedCount
+	{
+		get
+		{
+			lock (OtherConfiguration.ActionPenaltyGate)
+			{
+				var refuted = 0;
+				foreach (var action in OtherConfiguration.ActionPenaltyCasts.Keys)
+				{
+					refuted += PenaltySightingRules.IsRefuted(OtherConfiguration.ActionPenaltySightings, action) ? 1 : 0;
+				}
+
+				return refuted;
 			}
 		}
 	}
@@ -65,16 +85,19 @@ internal static class ActionPenaltyWatch
 			{
 				foreach (var obj in Svc.Objects)
 				{
+					// A learned action the running game version refuted holds nothing until it lays the status again (concept 13,
+					// "Stufe 4", 4c).
 					if (obj is not IBattleChara caster || !caster.IsCasting || !caster.IsEnemySideFigure()
 						|| !OtherConfiguration.ActionPenaltyCasts.TryGetValue(caster.CastActionId, out var status)
-						|| !OtherConfiguration.NoCastingStatus.Contains(status))
+						|| !OtherConfiguration.NoCastingStatus.Contains(status)
+						|| PenaltySightingRules.IsRefuted(OtherConfiguration.ActionPenaltySightings, caster.CastActionId))
 					{
 						continue;
 					}
 
 					var reaches = caster.CastTargetObjectId == player.GameObjectId || DataCenter.CastReachesPlayer(caster);
 					_casting[caster.GameObjectId] = new Cast(caster.CastActionId,
-						now.AddSeconds(Math.Max(0f, caster.TotalCastTime - caster.CurrentCastTime)), now, reaches);
+						now.AddSeconds(Math.Max(0f, caster.TotalCastTime - caster.CurrentCastTime)), now, reaches, caster.CastTargetObjectId);
 					_ = _seen.Add(caster.GameObjectId);
 				}
 			}
@@ -117,8 +140,9 @@ internal static class ActionPenaltyWatch
 	}
 
 	/// <summary>
-	/// An enemy action's landing: it resolves the wait for it, and if it laid a status that damages every action on a party
-	/// member, the action is learned.
+	/// An enemy action's landing: it resolves the wait for it; if it laid a status that damages every action on a party
+	/// member, the action is learned; and if a learned action hit its target, a party member, without laying it, that is
+	/// counted towards refuting it (concept 13, "Stufe 4", 4c).
 	/// </summary>
 	internal static void ObserveLanding(ActionEffectSet set)
 	{
@@ -127,13 +151,25 @@ internal static class ActionPenaltyWatch
 			return;
 		}
 
+		// The cast this landing ends, by the same caster: its target, as the cast bar showed it. The landing can come before
+		// the bar is seen gone.
 		var sourceId = set.Source?.GameObjectId ?? 0;
+		var castTarget = 0ul;
+		if (sourceId != 0 && _casting.TryGetValue(sourceId, out var running) && running.Action == action.RowId)
+		{
+			castTarget = running.Target;
+		}
+
 		_gone.Clear();
 		foreach (var (caster, cast) in _landing)
 		{
 			if (cast.Action == action.RowId && (sourceId == 0 || caster == sourceId))
 			{
 				_gone.Add(caster);
+				if (caster == sourceId)
+				{
+					castTarget = cast.Target;
+				}
 			}
 		}
 
@@ -148,6 +184,9 @@ internal static class ActionPenaltyWatch
 			return;
 		}
 
+		var laid = 0u;
+		var targetHit = false;
+		var targetUnclear = false;
 		foreach (var effect in set.TargetEffects)
 		{
 			var onParty = effect.TargetID == player.GameObjectId;
@@ -161,7 +200,7 @@ internal static class ActionPenaltyWatch
 				continue;
 			}
 
-			var laid = 0u;
+			var isTarget = castTarget != 0 && effect.TargetID == castTarget;
 			effect.ForEach(entry =>
 			{
 				if (entry.type == ActionEffectType.ApplyStatusEffectTarget && entry.value != 0
@@ -169,31 +208,102 @@ internal static class ActionPenaltyWatch
 				{
 					laid = entry.value;
 				}
+				else if (isTarget && entry.type is ActionEffectType.Damage or ActionEffectType.BlockedDamage or ActionEffectType.ParriedDamage)
+				{
+					targetHit = true;
+				}
+				// A status resisted or without effect, an invulnerable or missed target: the landing does not say whether
+				// the action still lays the status.
+				else if (isTarget && entry.type is ActionEffectType.FullResistStatus or ActionEffectType.FullResistStatus2
+					or ActionEffectType.StatusNoEffect or ActionEffectType.Invulnerable or ActionEffectType.PartialInvulnerable
+					or ActionEffectType.FullResist or ActionEffectType.Miss)
+				{
+					targetUnclear = true;
+				}
 			});
+		}
 
-			if (laid != 0)
-			{
-				Learn(action, laid);
-				return;
-			}
+		if (laid != 0)
+		{
+			Learn(action, laid);
+			return;
+		}
+
+		if (castTarget != 0 && targetHit && !targetUnclear)
+		{
+			SeenWithout(action, castTarget);
 		}
 	}
 
 	private static void Learn(Lumina.Excel.Sheets.Action action, uint status)
 	{
+		var game = OtherConfiguration.GameVersion;
+		bool known, lifted;
 		lock (OtherConfiguration.ActionPenaltyGate)
 		{
-			if (OtherConfiguration.ActionPenaltyCasts.TryGetValue(action.RowId, out var known) && known == status)
+			var learned = OtherConfiguration.ActionPenaltyCasts.TryGetValue(action.RowId, out var was);
+			known = learned && was == status;
+			if (!known)
 			{
-				return;
+				OtherConfiguration.ActionPenaltyCasts[action.RowId] = status;
 			}
 
-			OtherConfiguration.ActionPenaltyCasts[action.RowId] = status;
+			lifted = PenaltySightingRules.SeenWith(OtherConfiguration.ActionPenaltySightings, action.RowId, learned, game);
+		}
+
+		_ = OtherConfiguration.SaveActionPenaltySightings();
+		if (lifted)
+		{
+			DefenseTrace.Line($"{action.Name.ExtractText()} #{action.RowId} laid status #{status} again: no longer refuted"
+				+ " - no action under way when it lands from now on");
+		}
+
+		if (known)
+		{
+			return;
 		}
 
 		_ = OtherConfiguration.SaveActionPenaltyCasts();
 		DefenseTrace.Line($"learned: {action.Name.ExtractText()} #{action.RowId} lays status #{status}, which damages every action"
 			+ " - no action under way when it lands from now on");
+	}
+
+	// A learned action landed on its target, a party member, with damage and laid the status on nobody. A target that carried
+	// it already says nothing; nor does a landing in a game version that cannot be read.
+	private static void SeenWithout(Lumina.Excel.Sheets.Action action, ulong target)
+	{
+		var game = OtherConfiguration.GameVersion;
+		uint status;
+		lock (OtherConfiguration.ActionPenaltyGate)
+		{
+			if (game == null || !OtherConfiguration.ActionPenaltyCasts.TryGetValue(action.RowId, out status))
+			{
+				return;
+			}
+		}
+
+		if (Svc.Objects.SearchById(target) is IBattleChara member && member.HasStatus(false, (StatusID)status))
+		{
+			return;
+		}
+
+		bool refuted;
+		PenaltySighting? sighting;
+		lock (OtherConfiguration.ActionPenaltyGate)
+		{
+			refuted = PenaltySightingRules.SeenWithout(OtherConfiguration.ActionPenaltySightings, action.RowId, game);
+			sighting = OtherConfiguration.ActionPenaltySightings.GetValueOrDefault(action.RowId);
+		}
+
+		if (sighting == null || sighting.Game != game)
+		{
+			return;
+		}
+
+		_ = OtherConfiguration.SaveActionPenaltySightings();
+		DefenseTrace.Line($"{action.Name.ExtractText()} #{action.RowId} hit its target without status #{status}: {sighting.Without} landing(s) without,"
+			+ $" {sighting.With} with it in game version {game}, {sighting.Before} with it before"
+			+ (refuted ? " - refuted: it holds no spells until it lays the status again" : string.Empty));
 	}
 
 	/// <summary>

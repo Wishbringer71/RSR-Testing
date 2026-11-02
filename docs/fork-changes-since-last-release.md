@@ -96,6 +96,18 @@ What this release changes in the fight. For the whole distance from upstream, se
   the marked member is locked as "no tankbuster" only in the game version that saw it. After a patch, and on the first
   start of this build, it counts as a tankbuster until it goes without a hit again - one defence per marker and version
   for a tank that a patch may have turned it against.
+- **Sleep locks from an earlier game version get one try.** An enemy kind that resisted a sleep, a sleep limit, and an
+  action a sleep did not stop held for good, since those files only grow. Now each holds in the game version that saw
+  it; one from an earlier version, or from before this build, gets one sleep in the running version - only when no heal
+  spell is due and nobody is in the critical class, so the try never costs a heal. A resistance holds it again until the
+  next patch; a sleep that lands, from anyone, ends the lock for a kind or a limit, and a stopped cast for an action.
+  Each try, confirmation and refutation writes a line to `DefenseTrace.log`, and the head line counts the locks.
+- **A cast that no longer lays Pyretic stops holding spells.** A learned action that lays a status damaging every
+  action keeps holding spells after a patch. It lets go only when the running version sees it land on its target, a
+  party member, without the status at least twice, more often than it laid it before, and never with it; it holds again
+  the moment it lays the status. BossModReborn's Pyretic announcement holds regardless.
+- **The marker and lock files keep a backup.** The tankbuster marker files and the new lock files fall back to their
+  last read-back copy when unreadable, so a measured hit after a marker is not lost with a broken file.
 
 ## Packaging
 

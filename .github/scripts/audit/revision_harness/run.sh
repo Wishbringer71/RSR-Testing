@@ -1,7 +1,7 @@
 #!/bin/bash
 # Runs the revision store's C# code outside the game against random runs of readings, saves, loads, patches, unreadable
 # versions and files, deletions by hand and sessions of an older RSR - the runs of learned_store_model.py, against the
-# code instead of the design (concept 13, "Stufe 1"). Needs the .NET SDK 10 and Newtonsoft.Json from the Dalamud
+# code instead of the design (concept 13, "Stufe 1") - and the locks of stage 4 against an oracle (Locks.cs). Needs the .NET SDK 10 and Newtonsoft.Json from the Dalamud
 # distribution (.github/scripts/cloud_build.sh --fetch); not part of the CI, which has neither on its check runner.
 #
 #   run.sh               the runs; fails on a broken check
@@ -11,7 +11,7 @@ here="$(cd "$(dirname "$0")" && pwd)"
 export PATH="$HOME/.dotnet:$PATH" DOTNET_CLI_TELEMETRY_OPTOUT=1 DOTNET_NOLOGO=1
 work="$(mktemp -d)"
 trap 'rm -rf "$work"' EXIT
-cp "$here/revtest.csproj" "$here/Stubs.cs" "$here/Program.cs" "$work/"
+cp "$here/revtest.csproj" "$here/Stubs.cs" "$here/Program.cs" "$here/Locks.cs" "$work/"
 
 build() {
 	python3 "$here/prepare.py" "$work" "$@"
