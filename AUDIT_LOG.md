@@ -14389,6 +14389,44 @@ durchgehen". Als Skill `spielpatch` festgehalten (Lesetabelle in CLAUDE.md); den
   des Begleiters 0 zeigt.
 - *Prüfgrad:* Code und Quellen statisch. Konzept 01 und TODO fortgeschrieben.
 
+
+### A485 · Beastmaster: Begleiter nach Lage, nach Stufe und vorhandenen Begleitern (02.11.2026)
+
+- *Sein Auftrag:* die Beastmaster-Rotation mit eigenen Ideen ausbauen, damit die vorhandenen Begleiter nach Art und
+  Zahl der Gegner möglichst viel Schaden machen; alle Eigenschaften auswerten, Synergien erzeugen; dazu seine Fragen
+  nach Heilen (dann Wechsel bei starkem Verlust an Gesundheit) und Tanken. Mitten in der Arbeit zwei Vorgaben: nur
+  Begleiter, die er hat, im Spiel erhoben, das Optimum mit den vorhandenen Mitteln; Stufe und Fähigkeiten zählen, er
+  levelt noch.
+- *Belegt* (xivapi v2, Action, ActionTransient, Trait, Status, XBMPet, Pet, 02.11.2026; FFXIVClientStructs b69073a,
+  Werkzeugquelle): Stufen der Aktionen (Horn I 1, Scheidender Schlag 6, Dressur 8, Horn II 10, Entfesseln 18, Horn III
+  20, Borrow und Beast Mode 22, Battlehorn Mastery II und III 30 und 34); Begleiteraktionen ohne eigene Stufe;
+  Beast-Mode-Abklingzeit 90 s, Kinship 90 s mit stehendem Ablauf, solange der Begleiter draußen ist; der Text der
+  heilenden Dressur („Damage dealt is partially absorbed as beastmaster HP"); die Hörner führen XBMPet-Zeilen
+  (`ActionManager`), die freigeschalteten Begleiter stehen in `XBMManager`, eine Funktion zum Setzen der Zuordnung nicht.
+- *Befund am Code (B0):* Der Scheidende Schlag wartete, bis weder Entfesseln noch Borrow bereit war. One with Nature
+  hält Entfesseln bereit, bis es verbraucht ist; ein Horn auf Borrow vor Stufe 22 oder auf „Neither" verbrauchte es nie,
+  und sein Begleiter blieb, die anderen Hörner ruhten (ab Werk das dritte Horn auf Stufe 20 und 21). Jetzt wartet ein
+  Horn nur auf die Aktion, für die es One with Nature verbraucht, solange sie kommen kann; Borrow, das nicht kommen kann,
+  wird Entfesseln.
+- *Umgesetzt:* B0 immer; B1 bis B3 unter „Choose the battlehorn by the situation" (ab Werk an): Katalog aus den
+  Blättern, Wirkung je Begleiter auf der Stufe des Spielers; Gefahr (sofort landende Vorausberechnung unter
+  „HealthSingleAbility" oder Klasse 1) ruft zuerst einen, der heilt oder schützt, schickt einen anderen mit Scheidendem
+  Schlag fort (nicht unter Snarl), hält einen mit heilender Dressur draußen und setzt Scaleskin sofort; ohne Gefahr
+  bleibt der Begleiter mit der stärksten Dressur gegen die Gegner im Kampf um das Ziel zuletzt. `BeastmasterFamiliars.cs`,
+  `BST_Reborn.cs`; Modell `bst_horn_model.py` mit Selbsttest in der CI.
+- *Verworfen:* jeden schützenden Begleiter in der Gefahr draußen halten (Modell: Abdeckung 13 bis 27 % statt 70 bis
+  100 %); B4, Schwächung zuerst (−1,8 bis +1,3 %); Vileskin in der Gefahr (Blockwirkung unbelegt); feste Drei als Schwelle;
+  Zuordnung im Kampf ändern; Tabelle der Begleiter im Code.
+- *Review* (Code-Review-Skill, hoch): acht Befunde, sieben behoben (Snarl, Katalog je Stufe und nur für die Hörner,
+  sofort landende Vorausberechnung, ungezogene Gegner, Schutz nur mit dem Ruf, Erkennung ohne Schwelle in der
+  Basisklasse). Nicht behoben: Verweigert RSR Entfesseln aus einem anderen Grund als Stufe oder Schalter (eine dritte
+  Aktions-Id), wartet das Horn weiter wie vorher; kein solcher Fall bekannt.
+- *Unbelegt:* wie viel ein Block beim Beastmaster abfängt; ob die Zuordnung im Kampf änderbar ist; wie schnell
+  Begleiter-TP steigen (der Mindestwert der Dressur ist ein Schluss aus dem Code).
+- *Prüfgrad:* Compile, alle CI-Prüfungen lokal, Modell; keine Laufzeitbeobachtung. Konzept 01, TODO (Eintrag
+  „Kampfhorn nach Gegnerzahl und Schwäche wählen" geschlossen, „Belegung der Kampfhörner aus den freigeschalteten
+  Begleitern vorschlagen" neu), Release-Text fortgeschrieben.
+
 ---
 ## B · Commit-Register (Fork vs. `upstream/main`)
 

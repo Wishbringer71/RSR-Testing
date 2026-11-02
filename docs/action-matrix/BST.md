@@ -1,6 +1,6 @@
 # BST — Abhängigkeitsmatrix
 
-Erzeugt von `.github/scripts/audit/generate_action_matrix.py` am 2026-10-31; nicht von Hand bearbeiten. Methode und Grenzen: `docs/rotation-flow/14-action-dependency-matrix.md`.
+Erzeugt von `.github/scripts/audit/generate_action_matrix.py` am 2026-11-02; nicht von Hand bearbeiten. Methode und Grenzen: `docs/rotation-flow/14-action-dependency-matrix.md`.
 
 - Basisrotation: `BeastmasterRotation`
 - Rotation: `RotationSolver/RebornRotations/Limited Jobs/BST_Reborn.cs`
@@ -224,13 +224,13 @@ Jeder Aufruf der Aktion trägt eine eigene Bedingung; hält sie an, verfällt da
 
 - Avalanche Axe: 2 Aufruf(e), **ohne Rückfall vor Ablauf**
 - Beastskin: 1 Aufruf(e), **ohne Rückfall vor Ablauf**
-- Borrow: 3 Aufruf(e), **ohne Rückfall vor Ablauf**
+- Borrow: 1 Aufruf(e), **ohne Rückfall vor Ablauf**
 - Gale Axe: 2 Aufruf(e), **ohne Rückfall vor Ablauf**
 - Mistral Axe: 2 Aufruf(e), **ohne Rückfall vor Ablauf**
-- Scaleskin: 2 Aufruf(e), **ohne Rückfall vor Ablauf**
+- Scaleskin: 3 Aufruf(e), **ohne Rückfall vor Ablauf**
 - Spinning Axe: 2 Aufruf(e), **ohne Rückfall vor Ablauf**
-- Tempered Release: 3 Aufruf(e), **ohne Rückfall vor Ablauf**
-- Tempered Release: 3 Aufruf(e), **ohne Rückfall vor Ablauf**
+- Tempered Release: 1 Aufruf(e), **ohne Rückfall vor Ablauf**
+- Tempered Release: 1 Aufruf(e), **ohne Rückfall vor Ablauf**
 - Trick: 2 Aufruf(e), **ohne Rückfall vor Ablauf**
 
 ### Unvollständige Beschreibungen

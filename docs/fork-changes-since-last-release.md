@@ -11,6 +11,16 @@ What this release changes in the fight. For the whole distance from upstream, se
   least as much, by the tooltips of the running patch: Decimate and Chaotic Cyclone from four, Orogeny, Steel Cyclone,
   Quietus, Flood of Shadow and Impalement from three. Below that the single-target spender goes in the same place, so
   the gauge is spent as before; the area combo still holds the enemies from two on.
+- **Beastmaster calls its familiars by the situation and by what you have.** Among the ready battlehorns the familiar
+  whose Trick brings least against the enemies in combat around your target is called first, so an area familiar on a
+  pack keeps the long stint until a horn is back. When your health is falling below the line at which RSR heals you with
+  abilities, a familiar that heals you (Digest, Blood Drain) or protects you (Tempered Release or Borrow) is called first,
+  one that does neither leaves by Parting Blow for it, a healing one stays out while the danger lasts, and Scaleskin goes
+  up at once. Only the familiars on your horns and only the actions you have at your level count. New option "Choose the
+  battlehorn by the situation", on by default.
+- **Beastmaster no longer keeps a familiar out for good.** A horn set to Borrow before level 22, or to "Neither", never
+  spent One with Nature, and Parting Blow waited for it: the familiar stayed and the other horns sat idle. A horn now waits
+  only for the action it spends One with Nature on, and Borrow that cannot come yet is Tempered Release.
 
 ## Healing
 
