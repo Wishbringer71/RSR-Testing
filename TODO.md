@@ -156,6 +156,12 @@ nebeneinander gebraucht werden.
 
 ## Warten auf Daten oder Fremde
 
+- **Beastmaster: die Regeln schrieben am 02.11.2026 keine Zeile** (A489). Im Kampf: In einer Stunde mit allen Regeln
+  (b83dc3ce9) rief RSR 28 Hörner, aber weder die Hornwahl nach Lage noch das Anfreunden noch der Katalog hinterließen
+  eine Zeile. Wahrscheinlich liefen sie nicht: leer gelesene Hornplätze, eine Option aus oder Anfreunden gesperrt.
+  Auflösung: die Zustandszeile „beastmaster state" im nächsten `DefenseTrace.log` als Beastmaster. Konzept 01,
+  „Zustandszeile".
+
 - **Beastmaster: Belegung der Kampfhörner situationsbezogen setzen** (seine Vorgabe, 02.11.2026: „es soll in die
   rotation eingearbeitet werden, situationsbezogen"). Im Kampf heute: RSR wählt situationsbezogen unter den drei
   Begleitern seiner Hörner (B0 bis B3), die Belegung selbst setzt nur er im Bestienbuch. Ein Weg zum Setzen ist

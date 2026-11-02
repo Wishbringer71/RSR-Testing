@@ -14512,6 +14512,47 @@ durchgehen". Als Skill `spielpatch` festgehalten (Lesetabelle in CLAUDE.md); den
 - *Prüfgrad:* Compile, alle CI-Prüfungen lokal; keine Laufzeitbeobachtung – die Aufzeichnung ist das Messmittel für
   die Belegung.
 
+### A489 · Upload vom 02.11.2026: Beastmaster, Weißmagier, gelernte Tabellen (02.11.2026)
+
+- *Seine Vorgabe:* „danach logs allgemein prüfen" und „alles andere im upload umfassend prüfen, nicht nur logs, nicht
+  nur für beastmaster". Dateien: `RotationSolver.7z` (DefenseTrace, gelernte Tabellen) und ein ACT-Mitschnitt vom
+  02.11.2026, 17:41 bis 20:41. Die ersten 434 Zeilen des Trace sind die schon ausgewertete Fassung vom 01.11. (A478).
+- *Sitzungen:* 17:42 und 19:26 mit 3bf44e23f, 19:45 bis 20:41 mit b83dc3ce9 (alle Beastmaster-Regeln bis A487).
+  Gespielt: Beastmaster Stufe 19 bis 22 (17:51–18:39, 19:45–20:41), Weißmagier in der Kupferglocken-Mine (19:23–19:37).
+- *Drei Tode als Beastmaster Stufe 19* (Build vor den Gefahrenregeln): 18:27 und 18:30 in der Kupferglocken-Mine allein
+  gegen einen Zornigen Ichor (11.383 LP gegen seine 534), 18:39 gegen den FATE-Boss Fauler Laurence im Ostwald.
+  - RSR griff weiter an, bis er fiel; die Zeilen „critical class" zeigten ihn Sekunden vorher bei 0 %.
+  - Seine Begleiter damals (Cu Sith, Spriggan, Fliegenfalle, Schaf, Opo-Opo) heilen nicht, und Borgen gibt es erst ab
+    Stufe 22. Auch B2 hätte nichts rufen können.
+  - Den Trank nahm er selbst; RSRs Heiltrank-Regel ist ab Werk aus, seine Einstellung ist unbekannt.
+  - Ergebnis: kein Defekt von RSR. Gegen einen zu starken Gegner allein hilft keine Regel.
+- *Beastmaster mit allen Regeln* (19:45–20:41):
+  - Aktionen: 28 Hörner, 20 Scheidende Schläge, 22 Entfesseln, 3 Borgen, 1 Biesthaut, 1 Seelenschmerz, 2 Brechende
+    Welle, kein Anfreunden, kein Tod.
+  - Jeder Scheidende Schlag hatte binnen 3 s einen Nachfolger; der Fall aus R1 (A488) trat nicht auf.
+  - Gegen 20:05 belegte er die Hörner um: I Gespenst, II Fledermaus, III Opo-Opo.
+  - *Befund:* keine einzige Zeile der Regeln, auch nicht die Katalogzeile, die jede Hornwahl und jede Prüfung auf
+    Anfreunden anlegt. Die Rotation lief („next action (rotation)" 0,2–0,8 ms). Die Dateien unterscheiden nicht, ob
+    die Hornplätze leer gelesen wurden, eine Option aus war oder Anfreunden gesperrt.
+  - *Messmittel:* die Zustandszeile „beastmaster state" (Konzept 01), geschrieben bei jeder Änderung. TODO unter
+    „Warten auf Daten".
+- *Weißmagier* (Kupferglocken-Mine, Gruppe zu viert, Stufe 20, kein Tod):
+  - Füllheilung zweimal bei 73 % und 78 % unter ihrer Linie von 80 % (A477 hält).
+  - Zwei Heilungen abgebrochen, weil das Ziel während des Wirkens geheilt wurde.
+  - Göttlicher Segen vor einem Tankbuster abgelehnt (BasicCheck); der Treffer nahm 16 %.
+  - 14 von 73 Wind trafen Gegner, die keine 12 s mehr lebten (vier unter 6 s). Das ist eine Schadensfrage der
+    bestehenden Restzeitregel, kein Defekt.
+- *Einzelabwehr:* 252-mal offen in der Beastmaster-Sitzung („no healer alive, an enemy attacks you"), jedes Mal
+  Schuppenpanzer geprüft und abgelehnt (keine Scalekin). Wie erwartet.
+- *Gelernte Tabellen* (gegen die Fassung vom 01.11. abends):
+  - Tankbuster 28545 (15,2 %) und 28764 (16,2 %) aus der Kupferglocken-Mine, auf dem Tank gemessen, laufende
+    Spielversion, sauber. Der Treffer von 25 % auf ihn als Beastmaster wurde nicht gespeichert (kein Tank), wie
+    gebaut.
+  - Marker in der Mine auf 28764 mit 5,1 s Vorlauf.
+  - Gifte in Gebiet 152 (zehn Ticks zu 51) und 138 (ein Tick).
+  - Alles Übrige ist unverändert.
+- *Prüfgrad:* Auswertung von Trace und Mitschnitt, Compile; keine Laufzeitbeobachtung der Zustandszeile.
+
 ## B · Commit-Register (Fork vs. `upstream/main`)
 
 ### B1 · Einzelgeprüfte Fork-Commits

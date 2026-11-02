@@ -694,6 +694,13 @@ Lage.
   - Bei gleichem Wert behält ein Begleiter, der heilt oder schützt, den langen Einsatz; danach die eingestellte
     Reihenfolge. Bei einem Gegner heißt das meist: der heilende bleibt, ohne Schaden zu kosten.
 - Jede Wahl und jeder Wechsel aus Gefahr schreibt eine Zeile ins `DefenseTrace.log`: Horn, Begleiter, Grund.
+- *Zustandszeile* (A489): Sobald sich ändert, was diese Regeln und das Anfreunden lesen, schreibt RSR eine Zeile
+  „beastmaster state": Begleiter der drei Hörner, wie RSR sie liest; das Horn draußen; die Optionen „Choose the
+  battlehorn by the situation" und „Capture familiars you do not have yet"; ob Anfreunden eingeschaltet ist; ob das
+  Spiel die Liste der Begleiter geladen hat; Stand des Katalogs. Anlass: Am 02.11.2026 rief RSR in einer Stunde mit
+  allen Regeln (b83dc3ce9) 28 Hörner, ohne dass eine Regel eine Zeile schrieb oder den Katalog anlegte. Ob die Hörner
+  leer gelesen wurden, eine Option aus war oder Anfreunden gesperrt, sagen die Dateien nicht; die Zeile sagt es beim
+  nächsten Kampf.
 
 *Gerechnet* (`bst_horn_model.py`, Annahmen dort benannt: Dressur alle 7,5 s, kurzer Einsatz 5 s, eigener Schaden 200 je
 Sekunde, alle Gegner eines Rudels im Wirkradius):

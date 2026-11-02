@@ -200,6 +200,16 @@ public partial class BeastmasterRotation
 	// squirrel's model carry it, A487). No source names the column.
 	private const byte CapturableBase = 5;
 
+	/// <summary>Whether the game has loaded the list of the player's familiars (<see cref="FamiliarUnlocked"/>).</summary>
+	public static unsafe bool FamiliarListLoaded
+	{
+		get
+		{
+			var manager = XBMManager.Instance();
+			return manager != null && manager->State == XBMManager.DataState.Received;
+		}
+	}
+
 	/// <summary>
 	/// Whether the player has <paramref name="pet"/> already, as the game's familiar list says; null while the game has
 	/// not loaded that list.

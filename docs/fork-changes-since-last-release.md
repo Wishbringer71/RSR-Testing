@@ -41,7 +41,9 @@ What this release changes in the fight. For the whole distance from upstream, se
   the familiar keeps fighting. "Only use Snarl and Challenge on Last Horn" reads the same: no other horn ready.
 - **Beastmaster: a record of the Master's Bestiary.** While the Bestiary is open, RSR writes to `BestiaryTrace.log`
   next to `DefenseTrace.log` what the game receives from each click, every context menu with its entries, and the
-  battlehorn slots as they change. It only listens; it opens and closes with the Bestiary.
+  battlehorn slots as they change. It only listens; it opens and closes with the Bestiary. `DefenseTrace.log` also
+  gets a "beastmaster state" line whenever what the horn choice and Capture read changes: the familiars on the horns,
+  the one out, both options, whether Capture is enabled, and whether the familiar list and catalog are loaded.
 
 ## Healing
 

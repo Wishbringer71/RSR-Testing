@@ -751,6 +751,30 @@ public sealed class BST_Reborn : BeastmasterRotation
 
 	private static string _lastHornTrace = string.Empty;
 	private static DateTime _lastHornTraceAt = DateTime.MinValue;
+
+	// What the horn choice and Capture read (concept 01, "Zustandszeile", A489).
+	private readonly record struct BeastmasterState(BeastmasterPet First, BeastmasterPet Second, BeastmasterPet Third,
+		HornOrder Out, bool BySituation, bool Capture, bool CaptureEnabled, bool ListLoaded, string Catalog);
+
+	private static BeastmasterState? _lastState;
+
+	// One line whenever that changes. On 02.11.2026 RSR called 28 horns in an hour with every rule built (b83dc3ce9) and
+	// no rule wrote a line or built the catalog; the files could not tell empty slots from a switch that was off.
+	private void TraceState()
+	{
+		var state = new BeastmasterState(PetOnHorn(HornOrder.FirstBattlehorn), PetOnHorn(HornOrder.SecondBattlehorn),
+			PetOnHorn(HornOrder.ThirdBattlehorn), (HornOrder)ActiveBattlehorn, HornBySituation, CaptureFamiliars,
+			CapturePvE.IsEnabled, FamiliarListLoaded, FamiliarCatalogState);
+		if (state == _lastState)
+		{
+			return;
+		}
+
+		_lastState = state;
+		DefenseTrace.Line($"beastmaster state: horns {state.First}, {state.Second}, {state.Third} | out {state.Out}"
+			+ $" | choose by the situation {state.BySituation} | capture {state.Capture}, action enabled {state.CaptureEnabled}"
+			+ $" | familiar list loaded {state.ListLoaded} | catalog {state.Catalog}");
+	}
 	#endregion
 
 	#region GCD Logic
@@ -762,6 +786,8 @@ public sealed class BST_Reborn : BeastmasterRotation
 
 	protected override bool GeneralGCD(out IAction? act)
 	{
+		TraceState();
+
 		// A1, A2 (concept 01, A487): Capture on the last weaponskill before a familiar you lack falls.
 		if (CaptureFamiliars && InCombat && CapturePvE.CanUse(out act))
 		{
