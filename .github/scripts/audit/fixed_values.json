@@ -1027,6 +1027,56 @@
    "status": "exception",
    "loop": "A491",
    "reason": "The smallest pack: C1 counts a Release that stops enemies as protection only when more than one enemy attacks you. One attacker alone is the elite or boss case (his three deaths of 02.11.2026, A489), where an immunity the game does not show would leave the danger without protection; bst_control_model.py shows that from two stoppable attackers on, a 15 s stun keeps more off than a 20 % mitigation over any danger of 10 to 60 s. A count of attackers, not a tuned threshold."
+  },
+  {
+   "file": "RotationSolver/Basic/Configuration/OtherConfiguration.Revision.cs",
+   "code": "private const int RevisionFormat = 2;",
+   "values": [
+    "2"
+   ],
+   "status": "exception",
+   "loop": "A492",
+   "reason": "The revision file's form, a version number of the file, not a game quantity: raised to 2 with stage 3 so that an older RSR, which would drop the refuted layer when writing, leaves the file as it is and reads the old file (concept 13, rule 7)."
+  },
+  {
+   "file": "RotationSolver/Basic/Configuration/OtherConfiguration.Revision.cs",
+   "code": "private const float RollHigh = 1.05f;",
+   "values": [
+    "1.05"
+   ],
+   "status": "exception",
+   "loop": "A492",
+   "reason": "The damage roll: each hit taken varies by +/-5 % before mitigations (Allagan Studies, 'How to be a Math Wizard', community source; concept 13, rule 5). The game shows no figure for it; learned_revision_model.py and learned_oldfile_model.py rate the lowering rules with this roll."
+  },
+  {
+   "file": "RotationSolver/Basic/Configuration/OtherConfiguration.Revision.cs",
+   "code": "private const float RollLow = 0.95f;",
+   "values": [
+    "0.95"
+   ],
+   "status": "exception",
+   "loop": "A492",
+   "reason": "The lower end of the same damage roll (+/-5 %, concept 13, rule 5)."
+  },
+  {
+   "file": "RotationSolver/Basic/Configuration/OtherConfiguration.Revision.cs",
+   "code": "private const int SpreadReadings = 2;",
+   "values": [
+    "2"
+   ],
+   "status": "exception",
+   "loop": "A492",
+   "reason": "Definitional: the fewest clean readings that can show a spread (concept 13, rule 5, A446; SPREAD_READINGS in learned_revision_model.py)."
+  },
+  {
+   "file": "RotationSolver/Basic/Configuration/OtherConfiguration.Revision.cs",
+   "code": "private const int SteadyReadings = 3;",
+   "values": [
+    "3"
+   ],
+   "status": "exception",
+   "loop": "A492",
+   "reason": "The steady drop for old-file layers (concept 13, A482): the fewest clean readings at which no unchanged case of learned_oldfile_model.py falls more than half a point behind never lowering; two lose up to 1.2 points."
   }
  ]
 }

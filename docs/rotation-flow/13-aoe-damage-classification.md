@@ -1100,7 +1100,7 @@ aktuelle Gesundheit nicht reicht, und Barriere samt Minderung zusätzlich, wo au
 reicht. Sie gilt nicht nur für Flächen — dieselbe Frage stellt sich beim Tankbuster —, deshalb steht
 sie dort und nicht hier.
 
-## Gelernte Tabellen über Spielversionen: Revision, Absicherung, Anzeige (entschieden, Stufen 0 und 1 gebaut)
+## Gelernte Tabellen über Spielversionen: Revision, Absicherung, Anzeige (entschieden, Stufen 0 bis 3 gebaut)
 
 **Seine Aufträge vom 28.10.2026.** Revision: „sobald ein neuer patch von ffxiv rauskommt, könnte sich der wert der
 listen aber ändern, weil sich mechaniken im spiel ändern. […] nach patch werden die bestehenden listen als gegeben
@@ -1413,7 +1413,7 @@ geprüft bei jedem Speichern.
 **12. Bauabfolge, jede Stufe rückbaubar.** (0) Die drei Defekte aus seinen Prüffällen – ungelisteter Tankbuster,
 Aufnahme unter Unverwundbarkeit, Messung ohne Synchronisation –: unabhängig von der Revision, gebaut (A452). (1) Format, Übernahme der alten Dateien, Sicherung, Quarantäne, Invarianten – ohne
 Verhaltensänderung, die alte Datei bleibt (Abschnitt „Stufe 1: Speicher, Übernahme, Sicherung"). (2) Regel 4 für Fläche
-und Tankbuster – gebaut (A481, Abschnitt „Stufe 2"). (3) Regeln 5 und 5b. (4) Sperren nach Regel 6, mit den Schichten der Sperrspeicher. (5) Anzeige. Rückbau
+und Tankbuster – gebaut (A481, Abschnitt „Stufe 2"). (3) Regeln 5 und 5b – gebaut (A492, Abschnitt „Stufe 3"). (4) Sperren nach Regel 6, mit den Schichten der Sperrspeicher. (5) Anzeige. Rückbau
 einer Stufe: ihr Messverfahren zurück; die Werte bleiben in beiden Dateien.
 
 ### Stufe 1: Speicher, Übernahme, Sicherung (gebaut)
@@ -1465,8 +1465,8 @@ Ohne das bliebe nach einem Patch jede unveränderte Aktion übernommen, bis ein 
   Tankbuster-Treffer, den eine Unverwundbarkeit aufhielt („Null zählt nicht") –, und sie kommt nur als erste: Folgt ihr
   doch Schaden, weitet sie die Streuung und hemmt die Senkung. Einheit ist die Landung, bei einer Serie (A349) also die
   laufende Summe: Teilsummen weiten `Low`
-  und erhöhen `Count`, beides hemmt die Senkung in Regel 5 und 5b nur. Die Serie als Einheit kommt mit Stufe 3, die
-  sie als erste liest, und erhöht das Messverfahren.
+  und erhöhen `Count`, beides hemmt die Senkung in Regel 5 und 5b nur. Stufe 3 behält die Landung als Einheit (A492,
+  Abschnitt „Stufe 3", Lagen).
 - *Tankbuster:* jede abgelegte Serie (A454) mit ihrer Summe, ihrer Dauer und „nur als Wirken auf das Ziel". Sauber, wenn
   sie nicht unter einer Verwundbarkeit lag; eine unter Schadensplus wird gar nicht abgelegt. `Low` und `High` aus der
   Summe.
@@ -1643,6 +1643,95 @@ klein; der Schaden des wörtlichen Wegs selten, aber im Tankbuster-Fall tödlich
 Treffers; das schließt sein Auftrag aus. *Option falsch:* die Verworfenen. *Ausgeliefert, und nichts ändert sich –
 warum?* Bleibt die Spielversion unlesbar, ist nichts bestätigt und nichts spart (schützend, sichtbar in der Kopfzeile);
 landet eine Aktion nie sauber, spart sie nie – ebenfalls schützend.
+
+### Stufe 3: Senken nach Regel 5, 5b und gleichbleibendem Abfall
+
+**Im Kampf.** Bis Stufe 3 behielt ein Eintrag nach einem Patch, der seinen Treffer abschwächte, den alten Wert. Er
+schützt damit weiter und spart, sobald bestätigt, ebenfalls mit dem Höheren aus beiden Schichten (Regel 4). Ein kleiner
+gewordener Raidwide zog dann jedes Mal eine Gruppenminderung, ein entschärfter Tankbuster weiter das große Bündel oder
+die Unverwundbarkeit. Mit Stufe 3 widerlegt die laufende Version die übernommene Schicht, sobald eine der Regeln unten
+hält. Ab dann gilt der neue Wert, schützend und sparend. Ein Treffer, der wieder härter landet, hebt ihn sofort
+(Höchstwert).
+
+**Die Regeln, wie gerechnet** (`learned_revision_model.py`, `learned_oldfile_model.py`). „Ein Schadenswurf" zwischen zwei
+Messungen ist das Verhältnis 1,05 / 0,95. Die Streuung einer Schicht ist ihre höchste saubere Messung durch ihre
+niedrigste; bei weniger als zwei sauberen ist sie 1. Verglichen werden die Anteile der Maximalgesundheit, beim
+Tankbuster der ungeminderte.
+- *Schicht aus der alten Datei* (Regel 5, Abschnitt „Für die Einträge aus der alten Datei"): widerlegt, wenn die laufende
+  mindestens drei saubere Messungen hat, die höchstens einen Wurf streuen, und ihre höchste saubere um mehr als einen
+  Wurf unter dem alten Wert liegt.
+  - Als solche gilt jede übernommene Schicht, die einen Wert der alten Datei enthält. Das Kennzeichen geht bei jedem
+    Zusammenlegen mit. Beim ersten Laden mit Stufe 3 trägt es jede übernommene Schicht des Verfahrens 0 oder ohne
+    Spielversion; die zweite Art kann Messungen bei unlesbarer Version enthalten, die gezählt wären. Die strengere Regel
+    ist die sichere Richtung.
+- *Gezählte Schicht, Regel 5:* widerlegt, wenn die laufende mindestens so viele saubere Messungen hat wie die
+  übernommene und mindestens zwei; wenn ihre Streuung mal einem Wurf mindestens die der übernommenen erreicht; und wenn
+  ihr Höchstwert mal einem Wurf unter dem übernommenen liegt.
+- *Gezählte Schicht, Regel 5b:* Hat die übernommene mindestens zwei saubere Messungen und streut sie höchstens einen
+  Wurf, genügt es, dass die höchste saubere der laufenden mal einem Wurf unter der niedrigsten übernommenen liegt. Mit
+  nur einer übernommenen sauberen braucht die laufende zwei, die höchstens einen Wurf streuen und mal einem Wurf unter
+  ihr liegen.
+- Geprüft wird nach jeder sauberen Messung der laufenden Version und beim Laden. Was vorher schon gemessen war, kann so
+  beim ersten Start mit Stufe 3 senken.
+
+**Wohin der widerlegte Wert geht** (Regel 2, der dritte Platz). Die übernommene Schicht geht als Ganzes auf den Platz
+„widerlegt": nicht gelöscht, nicht mehr gelesen. Eine spätere Widerlegung kommt dazu.
+- *Die alte Datei* hält weiter den Höchstwert aller gültigen Messungen. Geschrieben wird sie aus der Tabelle der Leser,
+  angehoben auf alles, was der Eintrag kennt, den widerlegten Platz eingeschlossen. Ohne das schriebe RSR nach dem Verlust
+  der alten Datei den gesenkten Wert, und fiele danach auch die Revisionsdatei samt Sicherung aus, wäre der alte Wert
+  ganz verloren.
+- *Beim Laden* übernimmt RSR den Wert der alten Datei nur, wenn er über allem liegt, was der Eintrag kennt, den
+  widerlegten Platz eingeschlossen. Sonst brächte jeder Start den widerlegten Wert zurück.
+- *Beim Speichern* geht eine übernommene Schicht der Datei, die dieselbe Geschichte trägt wie die widerlegte, in den
+  widerlegten Platz, nicht zurück unter die gelesenen. Der widerlegte Platz der Datei und der des Speichers sind
+  derselbe Platz, zweimal gesehen; er wächst nur, also zählt beim Zusammenlegen die höhere Zahl, nicht die Summe.
+- *Invarianten* (Regel 7): Der angezeigte Wert darf nur fallen, wenn der widerlegte Platz den alten hält. Keine Messung
+  geht verloren; der widerlegte Platz zählt mit.
+- *Format 2:* Eine ältere RSR-Fassung ließe den widerlegten Platz beim Schreiben fallen; das Format hält sie davon ab. Sie
+  lässt die Revisionsdatei, wie sie ist, und liest die alte Datei (Regel 7, „Ältere RSR-Fassung nach der neuen").
+
+**Messmittel.** Jede Widerlegung schreibt eine Zeile ins `DefenseTrace.log`: Eintrag, Regel, alter Wert, saubere
+Messungen der laufenden Version mit ihrer Spanne, der Wert danach. Die Kopfzeile zählt je Speicher die gesenkten
+Einträge.
+
+**Prüfmittel.** `revision_harness/run.sh` spielt das gegen den Code:
+- Der angezeigte Wert ist der Höchstwert der nicht widerlegten Messungen.
+- Keine Messung geht verloren, die widerlegten mitgezählt.
+- Ein widerlegter Wert kommt nie aus der alten Datei zurück.
+- Vier neue Mutanten muss der Selbsttest fangen: ein Laden, das den widerlegten Platz übersieht; eine Invariante, die ihn
+  übersieht; ein Zusammenlegen, das ihn zurückholt; eine alte Datei, die nur schreibt, was die Leser sehen.
+- Ein Eintrag wird in den Läufen von einem Patch abgeschwächt, damit Widerlegungen überhaupt vorkommen (300 Läufe, rund
+  250 Widerlegungen).
+
+**Lagen.**
+- *Kein Patch:* Ein unveränderter fester Treffer streut nur im Wurf und wird nie gesenkt. Ein unveränderter streuender
+  (Stack) kann nach Regel 5 sinken. Gerechnet sind das 1,5 % falsch ausgelassener Schutz je Cast statt 2,2 % ohne die
+  Revision (Tabelle unter Regel 5b); der nächste harte Treffer hebt ihn wieder.
+- *Patch schwächt:* fester Treffer nach einer Landung (5b) oder drei (alte Datei); streuender nach so vielen sauberen
+  Messungen wie die alten (5); einer aus der alten Datei, der streut, nie in dieser Version (Preis unten).
+- *Unlesbare Spielversion:* Keine Messung kommt in die laufende Schicht, also senkt nichts.
+- *Ohne Stufensynchronisation* wird nichts abgelegt (Regel 8), also senkt nichts.
+- *Flächenserien* (A349): Abgelegt wird jede Landung mit der laufenden Summe, die Teilsummen weiten die Streuung. Regel
+  5b und der gleichbleibende Abfall senken eine Serie deshalb nie. Regel 5 senkt sie erst, wenn die laufende Version so
+  viele Landungen sah wie die übernommene und ihre volle Summe um mehr als einen Wurf darunter liegt. Die Serie als
+  Einheit war für diese Stufe geplant und ist verworfen: Sie braucht ein Serienende, das das Spiel nicht meldet, und ein
+  neues Messverfahren. Dann wäre jede Flächenzahl bis zu ihrer nächsten Landung unbestätigt und spart nicht – je
+  kleinem Raidwide eine Gruppenminderung mehr. Der Preis der Landung als Einheit liegt in der sicheren Richtung: eine
+  abgeschwächte Serie bleibt länger beim alten Wert.
+
+**Preis.** Ein streuender Treffer aus der alten Datei, den ein Patch abschwächte, behält in dieser Version seinen alten
+Wert: gerechnet in 91 bis 96 % der Casts Schutz, den er nicht mehr braucht. Der Stack, dessen alte Messungen zufällig
+fest aussahen, sinkt nach einer Abschwächung vor seiner seltenen harten Variante: 3,0 % statt 2,4 % falsch ausgelassener
+Schutz je Cast. Beide Zahlen stehen unter Regel 5 und 5b.
+
+**Gegenhypothesen.**
+- *Kein Defekt:* Ohne Stufe 3 bliebe ein abgeschwächter Treffer für immer beim alten Wert. Das schließt sein „alte daten
+  [nicht] dauerhaft unwidersprochen" aus.
+- *Option falsch:* Ein falsch gesenkter Wert steigt mit dem ersten härteren Treffer wieder. Dieser eine Treffer kommt
+  ohne die Minderung, die die Größenregel ihm sonst gäbe.
+- *Ausgeliefert, und nichts ändert sich – warum?* Hat kein Patch einen Treffer abgeschwächt, gibt es nichts zu senken.
+  Die streuenden Einträge der alten Datei senkt der gleichbleibende Abfall nie. Beides ist gewollt; die Kopfzeile zählt,
+  was gesenkt wurde.
 
 ### Seine Entscheidung: asymmetrisch
 

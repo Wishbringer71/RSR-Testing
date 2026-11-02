@@ -14597,6 +14597,44 @@ durchgehen". Als Skill `spielpatch` festgehalten (Lesetabelle in CLAUDE.md); den
 - *TODO:* Punkt „Beastmaster: Nutzen der Begleiter jenseits von Schaden, Heilung und Schutz" geschlossen.
 - *Prüfgrad:* Compile, alle CI-Prüfungen lokal, Modell; keine Laufzeitbeobachtung.
 
+### A492 · Gelernte Tabellen, Stufe 3: Senken nach Regel 5, 5b und gleichbleibendem Abfall (02.11.2026)
+
+- *Sein Auftrag:* „todo nach priorität weiter abarbeiten" (nach dem Beastmaster). Nächster Schritt der Revision war
+  Stufe 3 (Konzept 13, Regel 12).
+- *Gebaut* (Konzept 13, Abschnitt „Stufe 3"):
+  - Regel 5, Regel 5b und für Schichten der alten Datei der gleichbleibende Abfall (A482). Die Formeln sind aus
+    `learned_revision_model.py` und `learned_oldfile_model.py` gespiegelt: Wurf 1,05 / 0,95, Streuung höchste durch
+    niedrigste saubere Messung.
+  - Geprüft nach jeder sauberen Messung der laufenden Version und beim Laden.
+  - Die widerlegte Schicht geht auf den Platz `Refuted` (Regel 2), behalten, nicht gelesen.
+  - Kennzeichen `OldFile` je Schicht, mitgeführt beim Zusammenlegen. Beim ersten Laden trägt es jede übernommene Schicht
+    des Verfahrens 0 oder ohne Spielversion, die sichere Richtung.
+  - Format 2, damit eine ältere Fassung den widerlegten Platz nicht überschreibt.
+- *Persistenz:*
+  - Die alte Datei wird auf alles Bekannte angehoben (`RaiseToKnown`), bleibt also Höchstwert aller gültigen Messungen.
+  - Beim Laden übernimmt RSR einen Wert der alten Datei nur über allem Bekannten.
+  - Beim Speichern geht eine übernommene Schicht der Datei derselben Geschichte in den widerlegten Platz; der widerlegte
+    Platz wird mit der höheren Zählung zusammengelegt.
+  - Die Invarianten zählen den widerlegten Platz mit.
+- *Von der Harness gefunden und behoben, bevor es gepusht wurde:*
+  - DOUBLED: Der widerlegte Platz trägt nach zwei Widerlegungen nur die Kennung der letzten; zusammengelegt über
+    „verschiedene Geschichte" zählte er die Datei doppelt. Jetzt höhere Zählung.
+  - LOST: Eine neue Messung bei unlesbarer Version mit der Kennung der widerlegten Schicht ging beim Speichern in den
+    widerlegten Platz und verloren. Der Block für „die Datei widerlegte, was diese Sitzung liest" ist entfernt; die
+    Schicht bleibt lesbar, also schützend.
+  - READ: Die alte Datei, aus der gesenkten Tabelle geschrieben, verlor nach ihrem eigenen Verlust den Höchstwert. Jetzt
+    `RaiseToKnown`.
+- *Harness:* Ein Eintrag wird von einem Patch abgeschwächt (60 % der Läufe), damit Widerlegungen vorkommen: 300 Läufe,
+  254 Widerlegungen. READ prüft den Höchstwert der nicht widerlegten Messungen; neu ist REVIVED. Vier neue Mutanten,
+  der Selbsttest fängt alle neun.
+- *Verworfen:* die Serie als Einheit, die Stufe 1 für diese Stufe angekündigt hatte. Sie braucht ein Serienende, das das
+  Spiel nicht meldet, und ein neues Messverfahren, das jede Flächenzahl bis zu ihrer nächsten Landung unbestätigt ließe.
+  Teilsummen hemmen die Senkung nur.
+- *Festwerte:* `RevisionFormat`, `RollHigh`, `RollLow`, `SpreadReadings`, `SteadyReadings` als Ausnahmen mit diesem
+  Loop.
+- *Prüfgrad:* Compile, alle CI-Prüfungen lokal, Revisions-Harness (.NET, 300 Läufe und Selbsttest); keine
+  Laufzeitbeobachtung.
+
 ## B · Commit-Register (Fork vs. `upstream/main`)
 
 ### B1 · Einzelgeprüfte Fork-Commits

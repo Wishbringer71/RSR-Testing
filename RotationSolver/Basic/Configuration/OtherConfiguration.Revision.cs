@@ -6,7 +6,21 @@ namespace RotationSolver.Basic.Configuration;
 internal partial class OtherConfiguration
 {
 	/// <summary>The newest form of a revision file this RSR reads (<see cref="RevisionFile{TValue}.Format"/>).</summary>
-	private const int RevisionFormat = 1;
+	// 2 since stage 3: an older RSR would drop the refuted layer when writing; the format keeps it off the file (concept 13,
+	// "Stufe 3", rule 7: it reads the old file instead).
+	private const int RevisionFormat = 2;
+
+	// One damage roll between two readings of the same hit: each hit taken varies by +/-5 % before mitigations (Allagan
+	// Studies, "How to be a Math Wizard", community source; concept 13, rule 5).
+	private const float RollHigh = 1.05f;
+	private const float RollLow = 0.95f;
+	private const float Roll = RollHigh / RollLow;
+
+	// The fewest clean readings that show a spread - definitional (concept 13, rule 5, A446).
+	private const int SpreadReadings = 2;
+
+	// A layer of the old file falls only by a steady drop over this many clean readings (concept 13, A482).
+	private const int SteadyReadings = 3;
 
 	/// <summary>What the area table's revisions hold now, for the trace's head line.</summary>
 	internal static string AreaRevisionState => AreaRevision.Summary();
@@ -116,14 +130,16 @@ internal partial class OtherConfiguration
 	/// A learned table with revisions (concept 13, "Stufe 1: Speicher, Übernahme, Sicherung"): per entry a running layer -
 	/// the readings of the game version and measuring method that run - and a taken-over one - the readings before, the
 	/// old file's values, and those taken while the version could not be read. The table the readers see is set from it
-	/// alone: per entry the higher of the two layers, the highest valid reading as before. Nothing in a fight changes
-	/// with it; the later stages read the layers.
+	/// alone: per entry the higher of the two layers. Stage 2 lets a saving reader use only a confirmed entry; stage 3
+	/// moves a taken-over layer the running version refuted (rules 5 and 5b, the steady drop) to a refuted place that is
+	/// kept and never read.
 	/// </summary>
 	/// <remarks>
 	/// Saved in "&lt;name&gt;.rev.json" beside the old file, which <see cref="LearnedFile{TValue}"/> goes on writing as
 	/// before - an older RSR finds everything in it, and it is the second store when the new file and its backup fail.
 	/// Every way in which this could lose a reading - a version change, the merge with the file, the old file taken over
-	/// again, the backup, an unreadable version - is played through in learned_store_model.py.
+	/// again, the backup, an unreadable version - is played through in learned_store_model.py, and against this code in
+	/// revision_harness/run.sh, refutations included.
 	/// </remarks>
 	private sealed class RevisedStore<TValue>(string name, int method, Func<TValue, TValue, TValue> higher,
 		Func<TValue, bool> valid, Func<TValue, float?> cleanFigure, Func<Dictionary<uint, TValue>> table, object? gate,
@@ -199,12 +215,28 @@ internal partial class OtherConfiguration
 					}
 				}
 
-				var moved = 0;
 				foreach (var entry in entries.Values)
+				{
+					// Stage 3: a taken-over layer of the old file's method, or without a game version, may hold an old-file
+					// value; the steady drop is the stricter rule and so the safe one for it.
+					if (entry.Inherited is { } taken && (taken.Method == 0 || taken.Game.Length == 0))
+					{
+						taken.OldFile = true;
+					}
+				}
+
+				var moved = 0;
+				var lowered = new List<string>();
+				foreach (var (id, entry) in entries)
 				{
 					if (Transition(entry, _game))
 					{
 						moved++;
+					}
+
+					if (Refute(id, entry) is { } line)
+					{
+						lowered.Add(line);
 					}
 				}
 
@@ -223,7 +255,13 @@ internal partial class OtherConfiguration
 					+ (moved > 0 ? $", {moved} moved to taken-over at a new game version or method" : string.Empty)
 					+ (setAside > 0 ? $", {setAside} invalid value(s) of the old file set aside" : string.Empty)
 					+ (unreadable > 0 ? $", {unreadable} unreadable entry or layer(s) set aside" : string.Empty)
+					+ (lowered.Count > 0 ? $", {lowered.Count} taken-over value(s) refuted" : string.Empty)
 					+ (_game == null ? ", GAME VERSION NOT READABLE - readings go to the taken-over layer" : string.Empty);
+				foreach (var line in lowered)
+				{
+					DefenseTrace.Line(line);
+				}
+
 				return shown;
 			}
 		}
@@ -258,6 +296,11 @@ internal partial class OtherConfiguration
 						line = $"{noun} #{id}: first clean reading in this game version, {Text(value)}"
 							+ $" (taken over: {Text(entry.Inherited!.Value!)}) - confirmed";
 					}
+
+					if (clean && Refute(id, entry) is { } refuted)
+					{
+						line = line == null ? refuted : line + "; " + refuted;
+					}
 				}
 				else
 				{
@@ -277,6 +320,25 @@ internal partial class OtherConfiguration
 			}
 
 			_ = SaveList(name);
+		}
+
+		/// <summary>
+		/// Raises <paramref name="table"/> - the old file's snapshot - to everything the entries know, the refuted place
+		/// included: the old file stays the highest of all valid readings (concept 13, rule 7), so a lost revision file
+		/// falls back to the old values, which protect, and an older RSR reads them.
+		/// </summary>
+		public void RaiseToKnown(Dictionary<uint, TValue> table)
+		{
+			lock (_memory)
+			{
+				foreach (var (id, entry) in _entries)
+				{
+					if (entry.Refuted != null && TryKnown(entry, out var known))
+					{
+						table[id] = table.TryGetValue(id, out var shown) ? higher(shown, known) : known;
+					}
+				}
+			}
 		}
 
 		/// <summary>The layers as they are now, for a save off this thread; values are shared, never changed in place.</summary>
@@ -385,8 +447,14 @@ internal partial class OtherConfiguration
 				var confirmed = 0;
 				var earlier = 0;
 				var quarantined = 0;
+				var refuted = 0;
 				foreach (var entry in _entries.Values)
 				{
+					if (entry.Refuted != null)
+					{
+						refuted++;
+					}
+
 					if (entry.Current != null && entry.Current.Game == _game && entry.Current.Method == method)
 					{
 						running++;
@@ -408,7 +476,7 @@ internal partial class OtherConfiguration
 
 				return $"game {_game ?? "NOT READABLE"}, method {method}: {running} measured in it ({confirmed} confirmed by a clean"
 					+ $" reading), {earlier} from earlier versions"
-					+ $" only, {quarantined} set aside as invalid; {_loaded}; {_saved}";
+					+ $" only, {refuted} with a refuted taken-over value, {quarantined} set aside as invalid; {_loaded}; {_saved}";
 			}
 		}
 
@@ -425,6 +493,52 @@ internal partial class OtherConfiguration
 			entry.Current = null;
 			return true;
 		}
+
+		// Stage 3 (concept 13, rules 5 and 5b, the steady drop for old-file layers): the running layer of the running
+		// version refutes the taken-over one, which moves to the refuted place - kept, never read. Returns the trace line.
+		private string? Refute(uint id, RevisionEntry<TValue> entry)
+		{
+			if (_game == null || entry.Current is not { } current || entry.Inherited is not { } taken
+				|| current.Game != _game || current.Method != method || current.Clean == 0
+				|| cleanFigure(current.Value!) is not { } now || cleanFigure(taken.Value!) is not { } was)
+			{
+				return null;
+			}
+
+			string? rule = null;
+			if (taken.OldFile)
+			{
+				if (current.Clean >= SteadyReadings && Spread(current) <= Roll && current.High * Roll < was)
+				{
+					rule = "steady drop";
+				}
+			}
+			else if (current.Clean >= Math.Max(taken.Clean, SpreadReadings) && Spread(current) * Roll >= Spread(taken)
+				&& now * Roll < was)
+			{
+				rule = "rule 5";
+			}
+			else if (taken.Clean >= SpreadReadings
+				? Spread(taken) <= Roll && current.High * Roll < taken.Low
+				: current.Clean >= SpreadReadings && Spread(current) <= Roll && current.High * Roll < (taken.Clean > 0 ? taken.High : was))
+			{
+				rule = "rule 5b";
+			}
+
+			if (rule == null)
+			{
+				return null;
+			}
+
+			entry.Refuted = Combine(entry.Refuted, taken, true);
+			entry.Inherited = null;
+			return $"{noun} #{id}: taken-over {Text(taken.Value!)} refuted ({rule}) by {current.Clean} clean reading(s)"
+				+ $" {current.Low:0.###}-{current.High:0.###} in this game version - now {Text(current.Value!)}";
+		}
+
+		// Highest clean reading over the lowest; 1 with fewer than two.
+		private static float Spread(RevisionLayer<TValue> layer)
+			=> layer.Clean >= SpreadReadings && layer.Low > 0f && layer.High > layer.Low ? layer.High / layer.Low : 1f;
 
 		// A value of the old file that adds to what the layers hold - unknown to them, or above their highest - joins the
 		// taken-over layer as one clean reading without spread. The table's own save adds nothing the layers do not hold,
@@ -444,13 +558,13 @@ internal partial class OtherConfiguration
 				return TakenOver.SetAside;
 			}
 
-			if (entry != null && TryHighest(entry, out var known) && Same(higher(known, value), known))
+			if (entry != null && TryKnown(entry, out var known) && Same(higher(known, value), known))
 			{
 				return TakenOver.Nothing;
 			}
 
 			entry ??= entries[id] = new RevisionEntry<TValue>();
-			var taken = new RevisionLayer<TValue> { Game = string.Empty, Method = 0, Value = value };
+			var taken = new RevisionLayer<TValue> { Game = string.Empty, Method = 0, Value = value, OldFile = true };
 			Add(taken, value, true);
 			entry.Inherited = Combine(entry.Inherited, taken, entry.Inherited == null);
 			return TakenOver.Value;
@@ -487,6 +601,7 @@ internal partial class OtherConfiguration
 			var combined = into.Copy();
 			combined.Value = higher(into.Value!, other.Value!);
 			combined.Count += other.Count;
+			combined.OldFile |= other.OldFile;
 			Spread(combined, other);
 			combined.Clean += other.Clean;
 			if (labelFromOther)
@@ -504,6 +619,7 @@ internal partial class OtherConfiguration
 			var merged = mine.Copy();
 			merged.Value = higher(mine.Value!, theirs.Value!);
 			merged.Count = Math.Max(mine.Count, theirs.Count);
+			merged.OldFile |= theirs.OldFile;
 			Spread(merged, theirs);
 			merged.Clean = Math.Max(mine.Clean, theirs.Clean);
 			return merged;
@@ -556,7 +672,20 @@ internal partial class OtherConfiguration
 					}
 				}
 
-				if (theirs.Inherited is { } inherited)
+				if (theirs.Refuted is { } theirRefuted)
+				{
+					// The refuted place only grows, and this session's was loaded from the file's: the same place seen twice,
+					// its counts the higher of both. A sum would count what both hold twice.
+					entry.Refuted = entry.Refuted == null ? theirRefuted : MergeSame(entry.Refuted, theirRefuted);
+				}
+
+				if (theirs.Inherited is { } refutedHere && entry.Refuted is { } mineRefuted && SameHistory(mineRefuted, refutedHere)
+					&& (entry.Inherited == null || !SameHistory(entry.Inherited, refutedHere)))
+				{
+					// The file's taken-over layer is the one this session refuted: it joins the refuted place, not the read one.
+					entry.Refuted = MergeSame(mineRefuted, refutedHere);
+				}
+				else if (theirs.Inherited is { } inherited)
 				{
 					entry.Inherited = entry.Inherited == null ? inherited
 						: entry.Inherited.Game == inherited.Game && entry.Inherited.Method == inherited.Method
@@ -587,7 +716,8 @@ internal partial class OtherConfiguration
 					return $"#{id} would be lost";
 				}
 
-				if ((before.Current != null || before.Inherited != null) && after.Current == null && after.Inherited == null)
+				if ((before.Current != null || before.Inherited != null || before.Refuted != null)
+					&& after.Current == null && after.Inherited == null && after.Refuted == null)
 				{
 					return $"#{id} would lose its readings";
 				}
@@ -597,7 +727,8 @@ internal partial class OtherConfiguration
 					return $"#{id} would lose its set-aside value";
 				}
 
-				if (TryHighest(before, out var was) && (!TryHighest(after, out var now) || !Same(higher(now, was), now)))
+				// A fall is allowed only where the refuted place holds the value it fell from (stage 3).
+				if (TryKnown(before, out var was) && (!TryKnown(after, out var now) || !Same(higher(now, was), now)))
 				{
 					return $"#{id} would fall from {Text(was)}";
 				}
@@ -612,9 +743,25 @@ internal partial class OtherConfiguration
 		}
 
 		private static int Readings(RevisionEntry<TValue> entry)
-			=> (entry.Current?.Count ?? 0) + (entry.Inherited?.Count ?? 0) + (entry.Quarantined?.Count ?? 0);
+			=> (entry.Current?.Count ?? 0) + (entry.Inherited?.Count ?? 0) + (entry.Refuted?.Count ?? 0)
+				+ (entry.Quarantined?.Count ?? 0);
 
-		private bool TryHighest(RevisionEntry<TValue> entry, out TValue value) => TryShow(entry, out value);
+		// Everything the entry knows, the refuted place included: what the old file may not bring back, and what a save
+		// may not lose.
+		private bool TryKnown(RevisionEntry<TValue> entry, out TValue value)
+		{
+			var shown = TryShow(entry, out value);
+			if (entry.Refuted is { } refuted && refuted.Value is { } old)
+			{
+				value = shown ? higher(value, old) : old;
+				return true;
+			}
+
+			return shown;
+		}
+
+		private static bool SameHistory(RevisionLayer<TValue> first, RevisionLayer<TValue> second)
+			=> first.Game == second.Game && first.Method == second.Method;
 
 		// What the readers see: the higher of the two layers. The set-aside value never.
 		private bool TryShow(RevisionEntry<TValue> entry, out TValue value)
@@ -660,6 +807,17 @@ internal partial class OtherConfiguration
 					}
 
 					entry.Current = null;
+					setAside++;
+				}
+
+				if (entry.Refuted is { } refutedLayer && (refutedLayer.Value is null || !valid(refutedLayer.Value)))
+				{
+					if (refutedLayer.Value is not null)
+					{
+						Quarantine(entry, refutedLayer.Value);
+					}
+
+					entry.Refuted = null;
 					setAside++;
 				}
 

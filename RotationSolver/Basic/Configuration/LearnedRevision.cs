@@ -28,6 +28,12 @@ internal sealed class RevisionEntry<TValue>
 	/// <summary>The last value no reader may take - not finite, negative, or beyond what the table can hold - kept, not read.</summary>
 	public RevisionQuarantine? Quarantined { get; set; }
 
+	/// <summary>
+	/// The taken-over readings the running version refuted (concept 13, rules 5 and 5b, "Stufe 3"): kept, never read, and
+	/// never taken over again from the old file.
+	/// </summary>
+	public RevisionLayer<TValue>? Refuted { get; set; }
+
 	public RevisionEntry<TValue> Copy()
 	{
 		return new RevisionEntry<TValue>
@@ -35,6 +41,7 @@ internal sealed class RevisionEntry<TValue>
 			Current = Current?.Copy(),
 			Inherited = Inherited?.Copy(),
 			Quarantined = Quarantined == null ? null : new RevisionQuarantine { Value = Quarantined.Value, Count = Quarantined.Count },
+			Refuted = Refuted?.Copy(),
 		};
 	}
 }
@@ -63,6 +70,12 @@ internal sealed class RevisionLayer<TValue>
 	/// <summary>The highest clean reading; meaningful only with <see cref="Clean"/> above zero.</summary>
 	public float High { get; set; }
 
+	/// <summary>
+	/// The layer holds a value of the old file - the highest of uncounted readings - and may be lowered only by a steady
+	/// drop (concept 13, "Für die Einträge aus der alten Datei"). Carried through every joining of layers.
+	/// </summary>
+	public bool OldFile { get; set; }
+
 	public RevisionLayer<TValue> Copy()
 	{
 		return new RevisionLayer<TValue>
@@ -74,6 +87,7 @@ internal sealed class RevisionLayer<TValue>
 			Clean = Clean,
 			Low = Low,
 			High = High,
+			OldFile = OldFile,
 		};
 	}
 }

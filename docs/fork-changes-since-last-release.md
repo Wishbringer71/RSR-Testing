@@ -86,6 +86,12 @@ What this release changes in the fight. For the whole distance from upstream, se
   one, a small tankbuster holds nothing back beside the plan, and help for the tank is not held, until the action lands
   cleanly again. A patch that made a hit harder can no longer take the first cast's cover. Each such case writes a line
   to `DefenseTrace.log`, and the trace's head line counts the confirmed entries.
+- **A hit a patch weakened lets go of its old figure.** In the area and tankbuster tables the running game version now
+  refutes a figure taken over from an earlier one: a fixed hit after one clean landing more than a damage roll below it,
+  a varying one after as many clean landings as the old figure had, and a figure from the file before the revisions only
+  after three clean landings that agree with each other. From then on the new figure counts, protecting and saving; a
+  harder hit raises it again at once. The old figure is kept, not read, and the old file still holds the highest of all
+  readings. Each refutation writes a line to `DefenseTrace.log`.
 
 ## Packaging
 

@@ -109,16 +109,23 @@ namespace RotationSolver.Basic.Configuration
 			}
 			if (failures.Count == 0)
 			{
-				Console.WriteLine($"{runs} runs: READ, LOST, DOUBLED, CURRENT, DELETED, CONFIRMED hold on the C# store");
+				Console.WriteLine($"{runs} runs: READ, LOST, DOUBLED, CURRENT, DELETED, CONFIRMED, REVIVED hold on the C# store"
+					+ $" ({Refutations} refutation(s) seen)");
 				return 0;
 			}
 			foreach (var (f, n) in failures) Console.WriteLine($"{f}: {n} runs, first seed {firstSeed[f]}");
 			return 1;
 		}
 
+		// Stage 3: refutations the runs reached - the self-test needs some for its stage 3 mutants.
+		static int Refutations;
+
 		static HashSet<string> Run(int seed)
 		{
 			var rng = new Random(seed);
+			// A fixed hit a patch weakens: entry 1 lands within a roll of 0.45 in game 1 and of 0.12 from game 2 on, so that
+			// the lowering rules of stage 3 run (concept 13, "Stufe 3").
+			var weakened = rng.NextDouble() < 0.6;
 			Harness.Dir = Path.Combine(Path.GetTempPath(), "revtest", seed.ToString());
 			if (Directory.Exists(Harness.Dir)) Directory.Delete(Harness.Dir, true);
 			Directory.CreateDirectory(Harness.Dir);
@@ -183,7 +190,7 @@ namespace RotationSolver.Basic.Configuration
 				if (finishes)
 				{
 					HostileCastingAreaPotential = store.Load(LoadOld());
-					Check(truth, [], found, "load", knownFrom == 0 ? running : null, method, store.Confirmed);
+					Check(truth, [], found, "load", knownFrom == 0 ? running : null, method, store.Confirmed, store.Snapshot().Entries);
 				}
 				var session = new List<(uint Id, float Value, string? Running, bool Clean)>();
 				for (var r = 0; r < 6; r++)
@@ -191,6 +198,10 @@ namespace RotationSolver.Basic.Configuration
 					Harness.Game = r + 1 >= knownFrom ? running : null;
 					var id = Ids[rng.Next(3)];
 					float v = rng.NextDouble() < 0.08 ? new[] { float.NaN, 1.7f, -0.1f }[rng.Next(3)] : (float)Math.Round(0.05 + rng.NextDouble() * 0.75, 3);
+					if (weakened && id == 1 && IsValidAreaShare(v))
+					{
+						v = (float)Math.Round((game == 1 ? 0.45 : 0.12) * (0.95 + rng.NextDouble() * 0.1), 4);
+					}
 					var clean = rng.NextDouble() > 0.2;
 					store.Measure(id, v, clean);
 					if (IsValidAreaShare(v)) session.Add((id, v, Harness.Game, clean));
@@ -199,7 +210,10 @@ namespace RotationSolver.Basic.Configuration
 					if (finishes)
 					{
 						var layers = store.Snapshot();
-						SaveOld(new Dictionary<uint, float>(HostileCastingAreaPotential));
+						// As LearnedFile.PrepareWrite: the old file's snapshot raised to everything the store knows.
+						var forOld = new Dictionary<uint, float>(HostileCastingAreaPotential);
+						store.RaiseToKnown(forOld);
+						SaveOld(forOld);
 						store.Save(layers);
 						foreach (var (sid, sv, srun, sclean) in session)
 						{
@@ -210,7 +224,7 @@ namespace RotationSolver.Basic.Configuration
 							if (srun != null && sclean) truth.CleanByRevision[(sid, srun, method)] = truth.CleanByRevision.GetValueOrDefault((sid, srun, method)) + 1;
 						}
 						session.Clear();
-						Check(truth, [], found, "reading", Harness.Game, method);
+						Check(truth, [], found, "reading", Harness.Game, method, null, store.Snapshot().Entries);
 					}
 					else
 					{
@@ -218,6 +232,8 @@ namespace RotationSolver.Basic.Configuration
 					}
 				}
 			}
+			Refutations += Harness.Log.Count(line => line.Contains("refuted ("));
+			Harness.Log.Clear();
 			return found;
 		}
 
@@ -233,21 +249,35 @@ namespace RotationSolver.Basic.Configuration
 		}
 
 		static void Check(Truth truth, List<(uint, float, string?)> pending, HashSet<string> found, string where, string? running, int method,
-			Func<uint, bool>? confirmed = null)
+			Func<uint, bool>? confirmed, Dictionary<uint, RevisionEntry<float>> memory)
 		{
 			var disk = DiskRev();
 			foreach (var id in Ids)
 			{
 				var expected = truth.Highest(id, []);
 				var seen = HostileCastingAreaPotential.TryGetValue(id, out var s) ? s : (float?)null;
+				memory.TryGetValue(id, out var mem);
 				if (seen is { } sv && !IsValidAreaShare(sv)) found.Add("READ");
-				if (expected != seen) found.Add(expected == null ? "DELETED" : "READ");
+				// Stage 3: the readers see the highest reading not refuted; the refuted place holds the rest.
+				var refuted = mem?.Refuted?.Value;
+				if (expected != seen && !(expected != null && refuted != null && Math.Max(seen ?? -1f, refuted.Value) == expected))
+				{
+					found.Add(expected == null ? "DELETED" : "READ");
+				}
+
+				// A refuted value never comes back to be read: not from the old file, not from the file's taken-over layer.
+				if (mem?.Refuted is { } gone && mem.Inherited is { } back
+					&& ((back.Method == 0 && back.Game.Length == 0 && back.Value <= gone.Value)
+						|| (back.Game.Length > 0 && back.Game == gone.Game && back.Method == gone.Method)))
+				{
+					found.Add("REVIVED");
+				}
 				// Loaded in a readable version: confirmed exactly where that version has a clean reading.
 				if (confirmed != null && running != null && !truth.CountsLost
 					&& confirmed(id) != truth.CleanByRevision.GetValueOrDefault((id, running, method)) > 0) found.Add("CONFIRMED");
 				if (where != "reading" || disk == null) continue;
 				disk.Entries.TryGetValue(id, out var e);
-				var counted = (e?.Current?.Count ?? 0) + (e?.Inherited?.Count ?? 0);
+				var counted = (e?.Current?.Count ?? 0) + (e?.Inherited?.Count ?? 0) + (e?.Refuted?.Count ?? 0);
 				if (!truth.CountsLost && counted < truth.Stored[id]) found.Add("LOST");
 				if (counted > truth.Stored[id] + truth.BroughtIn[id]) found.Add("DOUBLED");
 				if (running != null && !truth.CountsLost)

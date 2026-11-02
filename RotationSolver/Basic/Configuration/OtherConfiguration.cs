@@ -625,6 +625,8 @@ internal partial class OtherConfiguration
 				return () => SaveTracked(snapshot, Name, higher, report, _gate, noun, keep);
 			}
 
+			// The old file keeps the highest of all valid readings, the refuted ones included (concept 13, "Stufe 3").
+			revision.RaiseToKnown(snapshot);
 			var layers = revision.Snapshot();
 			return () =>
 			{

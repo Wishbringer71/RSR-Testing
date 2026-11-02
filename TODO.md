@@ -11,8 +11,7 @@ Nach der Wirkung im Kampf: Sicherheit der Gruppe vor Schaden, gewichtet mit der 
 (seine Vorgabe, 17.10.2026: „todo nach wichtigkeit abarbeiten. jeweils im loop bearbeiten").
 
 1. Die gelernten Tabellen: entschieden (Konzept 13, A451); gebaut nach Regel 12 des Entwurfs, erst die Revision über
-   einen Spielpatch (Stufen 1 und 2 gebaut, A481; die Senkregel für die Einträge der alten Datei entschieden, A482; als
-   Nächstes Stufe 3), dann die Anzeige. Beide ändern den Kampf nur mittelbar, über einen geprüften oder berichtigten Lernwert –
+   einen Spielpatch (Stufen 1 bis 3 gebaut, A481, A492; als Nächstes Stufe 4, die Sperren), dann die Anzeige. Beide ändern den Kampf nur mittelbar, über einen geprüften oder berichtigten Lernwert –
    die Sperren unter ihnen (Schlaf) aber dauerhaft.
 2. Fremde Repositories auf Verbesserungen für RSR prüfen: Jeder Fund kann ein Defekt im Verhalten einer Klasse sein,
    den RSR heute im Kampf zeigt; zuerst die Rotationswerkzeuge für alle Jobs, Daedalus vorn (aktiv, alle Jobs,
@@ -31,16 +30,16 @@ der bisherigen erkenntnisse, bis durch neue erkenntnisse (also eine neue revisio
 eben falsifiziert werden und in der neuen liste als ungültig markiert bzw. in der alten gelöscht werden. das neue
 revisionssystem muss sicher aufgebaut sein, dass nicht irrtümlich erkenntnisse gelöscht werden, bzw. alte daten dauerhaft
 unwidersprochen und ungeprüft nach einem versionssprung des spiels beibehalten werden." Im Kampf: Ändert ein Patch eine
-Mechanik, gilt der alte Lernwert weiter. Ein stärkerer Treffer hebt ihn an, weil jedes Speichern den höheren Wert
-behält; ein abgeschwächter Treffer senkt ihn nie, und RSR gibt weiter Abwehr und Heilung für den alten aus. Ein Gegner,
-der nun schläft, bleibt als resistent geführt, eine Serie, die nicht mehr kommt, bleibt gelernt, ein Wirken, das kein
-Pyretisch mehr anlegt, hält weiter Zauber an. Gebaut sind Stufe 1 (Speicher, Übernahme, Sicherung) und Stufe 2 (ein übernommener Wert spart keinen Schutz, bis die
-laufende Version ihn sauber misst, A481); offen sind die Stufen 3 bis 5. *Ort:* `OtherConfiguration.RevisedStore`
+Mechanik, gilt in den übrigen Speichern der alte Lernwert weiter: Ein Gegner, der nun schläft, bleibt als resistent
+geführt, eine Serie, die nicht mehr kommt, bleibt gelernt, ein Wirken, das kein Pyretisch mehr anlegt, hält weiter
+Zauber an. Gebaut sind für Fläche und Tankbuster Stufe 1 (Speicher, Übernahme, Sicherung), Stufe 2 (ein übernommener
+Wert spart keinen Schutz, bis die laufende Version ihn sauber misst, A481) und Stufe 3 (ein abgeschwächter Treffer
+widerlegt den alten Wert nach den Regeln 5, 5b oder dem gleichbleibenden Abfall, A492); offen sind die Stufen 4 und 5. *Ort:* `OtherConfiguration.RevisedStore`
 (Fläche, Tankbuster), `OtherConfiguration.LearnedFile` (die übrigen: Zusammenführung mit `Math.Max`, `Math.Min` oder
 `Higher`), die Werttypen `SleepReading`, `DotReading`/`DotArea`, dazu `HitSeriesOnPlayer`, `TankbusterMarkerWithoutHit`
-und `ActionPenaltyCasts`. *Nächster Schritt:* Stufe 3 – die Regeln 5 und 5b für gezählte Einträge, für die der alten
-Datei nur der gleichbleibende Abfall aus drei sauberen Messungen (Konzept 13, Regel 5, A482), mit dem Platz für den
-widerlegten Wert. *Konzept:* 13.
+und `ActionPenaltyCasts`. *Nächster Schritt:* Stufe 4 – die Sperren nach Regel 6 (Marker ohne Treffer, resistente
+Gegnerart und Schlafgrenze, „Schlaf stoppt es nicht", Pyretisch-Wirken) mit den Schichten der Sperrspeicher. *Konzept:*
+13.
 
 ### Gelernte Tabellen des Forks in den Einstellungen zeigen und bearbeiten · N
 Sein Auftrag (28.10.2026): „prüfen, ob es sinnvoll ist, die durch den fork selbst erstellten lernlisten ähnlich der
