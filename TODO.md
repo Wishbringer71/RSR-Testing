@@ -10,26 +10,14 @@ Betroffene: **N** Endnutzer · **R** Autoren abgeleiteter Rotationen (Namensräu
 Nach der Wirkung im Kampf: Sicherheit der Gruppe vor Schaden, gewichtet mit der Wahrscheinlichkeit, in seinem Profil
 (seine Vorgabe, 17.10.2026: „todo nach wichtigkeit abarbeiten. jeweils im loop bearbeiten").
 
-1. Defekt „Benediktion fehlte, als der Tank auf 0,3 % fiel": ein Tank am Rand des Todes ohne Notfallheilung.
-2. Defekt „Gestaffelte Wirken mehrerer Gegner werden zu einer Serie verkettet": Schutz ohne Not, Abklingzeiten fehlen dann.
-3. Die gelernten Tabellen: entschieden (Konzept 13, A451); gebaut nach Regel 12 des Entwurfs, erst die Revision über
+1. Defekt „Gestaffelte Wirken mehrerer Gegner werden zu einer Serie verkettet": Schutz ohne Not, Abklingzeiten fehlen dann.
+2. Die gelernten Tabellen: entschieden (Konzept 13, A451); gebaut nach Regel 12 des Entwurfs, erst die Revision über
    einen Spielpatch (als Nächstes Stufe 2; sein erster Upload mit Stufe 1 zeigt den Speicherweg im Spiel tragend, A475), dann die Anzeige. Beide ändern den Kampf nur mittelbar, über einen
    geprüften oder berichtigten Lernwert – die Sperren unter ihnen (Schlaf) aber dauerhaft.
 
 Danach die technische Schuld, soweit ihre Auflösungsbedingung erfüllt ist. Warten auf Daten: unten.
 
 ## Defekte
-
-### Benediktion fehlte, als der Tank auf 0,3 % fiel · N
-Im Kampf (Große Gubal-Bibliothek, sein Upload vom 01.11.2026, A478): Ein ganzes Pack schlug auf den Tank ein, der keine
-eigene Minderung nahm; er fiel in 3 s von 82 auf 5 % und auf 43 LP. RSR wirkte Cure II erst auf den Weißmagier selbst (bei
-etwa 50 %, von einem Gegner angegriffen), dann zweimal auf den Tank. Benediktion – im ganzen Dungeon unbenutzt, also
-bereit, der Tank unter Bedrohung und unter ihrer Schwelle – ging in keinem der beiden Fenster zwischen den Cure II hinaus
-(je etwa 0,85 s bis zum nächsten GCD). *Ort:* `CustomRotation_Ability.Ability` (keine Fähigkeit in der letzten halben
-Sekunde vor dem GCD), `ActionHelper.CanUseGCD` („Action ahead", ab Werk ein Viertel des GCD), `WHM_Reborn.HealSingleAbility`.
-*Nächster Schritt:* Konzept vor Code – wann eine Notfallheilung als Fähigkeit den nächsten GCD verschieben darf, für alle
-Heiler (Konzepte 07, 08, 11), mit Messmittel: eine Trace-Zeile, wenn ein ungeschütztes Mitglied in Klasse 1 steht und keine
-Notfallheilung hinausgeht, samt dem Grund. *Konzept:* 07, 08, 11.
 
 ### Gestaffelte Wirken mehrerer Gegner werden zu einer Serie verkettet · N
 Im Kampf (Nördliches Kreszentia, A478): Verfluchter Blick (#47152), von mehreren Augen alle 3 s gewirkt (je 4,7 s

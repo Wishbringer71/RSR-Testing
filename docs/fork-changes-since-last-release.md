@@ -14,6 +14,14 @@ What this release changes in the fight. For the whole distance from upstream, se
 
 ## Healing
 
+- **The emergency heal now gets out between two hard casts.** After a 2.0 s heal (Cure II, Medica II, Cure III,
+  Adloquium, Succor, Prognosis) at most half a second is left before the next GCD, and abilities are never woven into
+  that last half second, so a healer chaining Cure II never reached Benediction: a tank under a whole pack fell to 43 HP
+  with Benediction ready. When a party member would die before a GCD heal begun now could land (the critical class,
+  "HealthForDyingTanks"), the job's heal ability for that member is now pressed the moment the GCD comes free, and the
+  GCD follows after its animation lock. Which ability goes, and on whom, still follow each job's own thresholds and
+  danger checks - Benediction stays the absolute emergency. Each such heal, and each critical member left without one,
+  writes a line to `DefenseTrace.log`.
 - **Downtime healing heals only those below its line.** "Use GCD heals when there's nothing else to do" started when the
   lowest member fell below "When the lowest party HP is below", but then healed anybody not at full health: with the
   tank at 75 % already carrying Regen, Regen went on a black mage at 95 %, and three members at 95 % were enough for an

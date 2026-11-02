@@ -929,13 +929,13 @@
   },
   {
    "file": "RotationSolver/Basic/Rotations/CustomRotation_Ability.cs",
-   "code": "if (!IBaseAction.IgnoreClipping && WeaponRemain <= 0.5f && WeaponRemain > 0f)",
+   "code": "if (!emergencyHealOnly && !IBaseAction.IgnoreClipping && WeaponRemain <= 0.5f && WeaponRemain > 0f)",
    "values": [
     "0.5"
    ],
    "status": "exception",
    "loop": "A388",
-   "reason": "Upstream's anti-clipping window before the GCD, unchanged; the line was touched only to let the no-GCD branch of Invoke past it (IgnoreClipping). The window answers how long an ability's animation lock may run into the GCD, which the client gives for the ability only once it is pressed (A388)."
+   "reason": "Upstream's anti-clipping window before the GCD, unchanged; the line was touched only to let the no-GCD branch of Invoke (IgnoreClipping, A388) and the emergency heal for a member in the critical class ahead of a due GCD (A479) past it. The window answers how long an ability's animation lock may run into the GCD, which the client gives for the ability only once it is pressed (A388)."
   },
   {
    "file": "RotationSolver/Watcher.cs",

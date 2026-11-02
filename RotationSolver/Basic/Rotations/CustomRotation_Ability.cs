@@ -7,9 +7,15 @@ public partial class CustomRotation
 {
 	private const float TrueNorthLastWeaveRemain = 1.35f;
 
-	private bool Ability(IAction nextGCD, out IAction? act)
+	/// <param name="nextGCD">The GCD that follows.</param>
+	/// <param name="act">The ability, if one goes.</param>
+	/// <param name="emergencyHealOnly">Asked by Invoke while the GCD is due: only a heal ability for a member in the
+	/// critical class, past the clipping lock, behind every other gate (concept 07, "Die Notfallheilung zwischen zwei
+	/// Zaubern").</param>
+	private bool Ability(IAction nextGCD, out IAction? act, bool emergencyHealOnly = false)
 	{
-		act = DataCenter.CommandNextAction;
+		// A command or an item waits for an ordinary window; only the emergency heal goes ahead of the GCD.
+		act = emergencyHealOnly ? null : DataCenter.CommandNextAction;
 
 		// GCD() may have returned from inside its heal path.
 		IBaseAction.HealPathRunning = false;
@@ -33,7 +39,8 @@ public partial class CustomRotation
 
 		// The last half second before the GCD stays free so an ability does not clip it - unless Invoke found no GCD to
 		// cast and asks with IgnoreClipping: then there is nothing to clip (the flag's purpose since 4ec1a3a1c, A388).
-		if (!IBaseAction.IgnoreClipping && WeaponRemain <= 0.5f && WeaponRemain > 0f)
+		// The emergency heal passes it: the GCD is due, and the ability is pressed the moment it comes free.
+		if (!emergencyHealOnly && !IBaseAction.IgnoreClipping && WeaponRemain <= 0.5f && WeaponRemain > 0f)
 		{
 			return false;
 		}
@@ -85,6 +92,11 @@ public partial class CustomRotation
 		{
 			act = null;
 			return false;
+		}
+
+		if (emergencyHealOnly)
+		{
+			return EmergencyHealAheadOfGcd(nextGCD, out act);
 		}
 
 		if (!DataCenter.MergedStatus.HasFlag(AutoStatus.NoCasting) && ActiveDutyRotation?.EmergencyAbility(nextGCD, out act) == true)
@@ -211,21 +223,9 @@ public partial class CustomRotation
 			IBaseAction.ShouldEndSpecial = false;
 		}
 
-		if (DataCenter.AutoStatus.HasFlag(AutoStatus.HealAreaAbility) && (CanHealAreaAbility || DataCenter.IsInOccultCrescentOp))
+		if (AutoHealAreaAbility(nextGCD, out act))
 		{
-			IBaseAction.AutoHealCheck = true;
-			if (ActiveDutyRotation?.HealAreaAbility(nextGCD, out act) == true)
-			{
-				return true;
-			}
-			if (CanCastHeals)
-			{
-				if (HealAreaAbility(nextGCD, out act))
-				{
-					return true;
-				}
-			}
-			IBaseAction.AutoHealCheck = false;
+			return true;
 		}
 
 		if (DataCenter.CommandStatus.HasFlag(AutoStatus.HealSingleAbility))
@@ -247,21 +247,9 @@ public partial class CustomRotation
 			IBaseAction.ShouldEndSpecial = false;
 		}
 
-		if (DataCenter.AutoStatus.HasFlag(AutoStatus.HealSingleAbility) && (CanHealSingleAbility || DataCenter.IsInOccultCrescentOp))
+		if (AutoHealSingleAbility(nextGCD, out act))
 		{
-			IBaseAction.AutoHealCheck = true;
-			if (ActiveDutyRotation?.HealSingleAbility(nextGCD, out act) == true)
-			{
-				return true;
-			}
-			if (CanCastHeals)
-			{
-				if (HealSingleAbility(nextGCD, out act))
-				{
-					return true;
-				}
-			}
-			IBaseAction.AutoHealCheck = false;
+			return true;
 		}
 
 		IBaseAction.TargetOverride = null;
@@ -535,6 +523,191 @@ public partial class CustomRotation
 		}
 		return false;
 	}
+
+	/// <summary>
+	/// The automatic area heal abilities, the duty's before the job's, with the heal target order and the need filter.
+	/// The caller has set the heal path's target override.
+	/// </summary>
+	private bool AutoHealAreaAbility(IAction nextGCD, out IAction? act)
+	{
+		act = null;
+		if (!DataCenter.AutoStatus.HasFlag(AutoStatus.HealAreaAbility) || !(CanHealAreaAbility || DataCenter.IsInOccultCrescentOp))
+		{
+			return false;
+		}
+
+		IBaseAction.AutoHealCheck = true;
+		if (ActiveDutyRotation?.HealAreaAbility(nextGCD, out act) == true)
+		{
+			return true;
+		}
+		if (CanCastHeals && HealAreaAbility(nextGCD, out act))
+		{
+			return true;
+		}
+		IBaseAction.AutoHealCheck = false;
+		return false;
+	}
+
+	/// <summary>
+	/// The automatic single heal abilities, the duty's before the job's, with the heal target order and the need
+	/// filter. The caller has set the heal path's target override.
+	/// </summary>
+	private bool AutoHealSingleAbility(IAction nextGCD, out IAction? act)
+	{
+		act = null;
+		if (!DataCenter.AutoStatus.HasFlag(AutoStatus.HealSingleAbility) || !(CanHealSingleAbility || DataCenter.IsInOccultCrescentOp))
+		{
+			return false;
+		}
+
+		IBaseAction.AutoHealCheck = true;
+		if (ActiveDutyRotation?.HealSingleAbility(nextGCD, out act) == true)
+		{
+			return true;
+		}
+		if (CanCastHeals && HealSingleAbility(nextGCD, out act))
+		{
+			return true;
+		}
+		IBaseAction.AutoHealCheck = false;
+		return false;
+	}
+
+	/// <summary>
+	/// A heal ability ahead of a due GCD for a party member in the critical class (concept 07, "Die Notfallheilung
+	/// zwischen zwei Zaubern"). After a hard cast the time left to the GCD is its recast less its cast, at most half a
+	/// second for every 2.0-s heal at any spell speed, and the locks in Ability and DoAction keep that half second free:
+	/// a healer chaining Cure II never reached Benediction while the tank fell to 43 HP (01.11.2026, A478). Reported
+	/// instead of the GCD, the ability is pressed the moment the GCD comes free - DoAction lets abilities go at none
+	/// left - and the GCD follows after its animation lock. Which ability and on whom stays with the job's heal paths
+	/// and their own conditions; it goes ahead only if it reaches a member in the critical class, because the delayed
+	/// GCD is worth it only for the one who would otherwise fall.
+	/// </summary>
+	private bool EmergencyHealAheadOfGcd(IAction nextGCD, out IAction? act)
+	{
+		act = null;
+		if (DataCenter.IsPvP)
+		{
+			return false;
+		}
+
+		_criticalMembers.Clear();
+		foreach (var member in DataCenter.PartyMembers)
+		{
+			if (member != null && !member.IsDead && member.MaxHp > 0 && member.IsInCriticalClass())
+			{
+				_criticalMembers.Add(member);
+			}
+		}
+
+		if (_criticalMembers.Count == 0)
+		{
+			return false;
+		}
+
+		IBaseAction.TargetOverride = TargetType.Heal;
+		IBaseAction.HealPathRunning = true;
+		try
+		{
+			// The area heal first, as in the heal path; one that misses the member leaves the single heal its turn.
+			if ((AutoHealAreaAbility(nextGCD, out act) && act is IBaseAction area && ReachedCriticalMember(area) is { } byArea
+					&& TraceEmergencyHeal(area, byArea, nextGCD))
+				|| (AutoHealSingleAbility(nextGCD, out act) && act is IBaseAction single && ReachedCriticalMember(single) is { } bySingle
+					&& TraceEmergencyHeal(single, bySingle, nextGCD)))
+			{
+				return true;
+			}
+		}
+		finally
+		{
+			IBaseAction.TargetOverride = null;
+			IBaseAction.HealPathRunning = false;
+			IBaseAction.AutoHealCheck = false;
+		}
+
+		act = null;
+		foreach (var member in _criticalMembers)
+		{
+			TraceEmergencyHeal(null, member, nextGCD);
+		}
+		return false;
+	}
+
+	private static readonly List<IBattleChara> _criticalMembers = [];
+
+	/// <summary>
+	/// The member in the critical class this heal reaches, as its target or among those an area heal covers.
+	/// </summary>
+	private static IBattleChara? ReachedCriticalMember(IBaseAction heal)
+	{
+		var result = heal.Target;
+		foreach (var member in _criticalMembers)
+		{
+			if (result.Target?.GameObjectId == member.GameObjectId)
+			{
+				return member;
+			}
+
+			if (result.AffectedTargets == null)
+			{
+				continue;
+			}
+
+			foreach (var affected in result.AffectedTargets)
+			{
+				if (affected?.GameObjectId == member.GameObjectId)
+				{
+					return member;
+				}
+			}
+		}
+
+		return null;
+	}
+
+	/// <summary>
+	/// One trace line per heal and target, or per member left without one, and GCD: the emergency heal reported ahead
+	/// of the GCD, or a member in the critical class for whom no heal ability could go.
+	/// </summary>
+	/// <returns>Always true, so the line can be written where the heal is accepted.</returns>
+	private static bool TraceEmergencyHeal(IBaseAction? heal, IBattleChara critical, IAction nextGCD)
+	{
+		var target = heal?.Target.Target;
+		var key = (heal?.ID ?? 0u, heal != null ? target?.GameObjectId ?? 0ul : critical.GameObjectId);
+		var now = DateTime.Now;
+		var gcd = TimeSpan.FromSeconds(DataCenter.DefaultGCDTotal);
+		if (_emergencyHealTraced.TryGetValue(key, out var last) && now - last < gcd)
+		{
+			return true;
+		}
+
+		// Keys of members and heals long gone go, so the table stays the size of one emergency.
+		_staleTraceKeys.Clear();
+		foreach (var entry in _emergencyHealTraced)
+		{
+			if (now - entry.Value >= gcd)
+			{
+				_staleTraceKeys.Add(entry.Key);
+			}
+		}
+		foreach (var stale in _staleTraceKeys)
+		{
+			_ = _emergencyHealTraced.Remove(stale);
+		}
+
+		_emergencyHealTraced[key] = now;
+		var forecast = critical.GetForecastEffectiveHpPercent();
+		DefenseTrace.Line(heal != null
+			? $"emergency heal ahead of {nextGCD.Name} -> {heal.Name} #{heal.ID}"
+				+ (target != null ? $" on {target.Name.TextValue} at {target.GetHealthRatio():P0}" : string.Empty)
+				+ $", critical {critical.Name.TextValue} at {forecast}% forecast"
+			: $"critical class: {critical.Name.TextValue} at {forecast}% forecast, no heal ability for it ahead of {nextGCD.Name}");
+		return true;
+	}
+
+	private static readonly Dictionary<(uint Action, ulong Target), DateTime> _emergencyHealTraced = [];
+	private static readonly List<(uint Action, ulong Target)> _staleTraceKeys = [];
 
 	/// <summary>
 	/// Determines if an interrupt ability can be used.

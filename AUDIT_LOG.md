@@ -14163,6 +14163,66 @@ durchgehen". Als Skill `spielpatch` festgehalten (Lesetabelle in CLAUDE.md); den
   Blickrichtung steht nicht im Mitschnitt (keine Bewegungszeilen für ihn in diesem Abschnitt); Namen anderer Spieler nur
   in der Sitzung.
 
+### A479 · Notfallheilung zwischen zwei Zaubern: Benediktion beim freien GCD (02.11.2026)
+
+- *Anlass:* TODO-Defekt „Benediktion fehlte, als der Tank auf 0,3 % fiel" (A478, Große Gubal-Bibliothek, 01.11.2026),
+  abgearbeitet nach seinem „weiter".
+- *Ursache:* Zwei Sperren halten Fähigkeiten aus der letzten halben Sekunde vor dem GCD heraus –
+  `CustomRotation.Ability` (`WeaponRemain <= 0.5f`, dazu meldet `Invoke` ab dem Vorlauf nur noch den GCD) und
+  `RSCommands.DoAction` (`0 < DefaultGCDRemain <= 0.5`). Nach einem hart gewirkten Zauber bleibt bis zum GCD Abklingzeit
+  minus Wirkzeit, beide im selben Maß verkürzt. Spielblätter (xivapi, 02.11.2026): 2,0 s Wirkzeit bei 2,5 s Abklingzeit für
+  Cure II, Medica II, Cure III, Adloquium, Succor, Prognosis. Zwischen zwei solchen Zaubern geht damit bei keinem Tempo
+  eine Fähigkeit. An jenem Abend, unter Geistesgegenwart, blieben 0,35 bis 0,4 s.
+- *Seine Angaben dazu (02.11.2026):*
+  - „und wo ist das problem, dass der tank vor benediktion bei 10-22 prozent liegt?" – Er hat recht: Es gibt keins. Die
+    Zahl ist der Stand, auf den der Tank fällt, solange Benediktion unterwegs ist. Der Konzeptsatz las sich als Mangel und
+    ist umgeschrieben.
+  - „benediktion soll ja erst als absoluter notfall gelten" – eingeordnet als seine Vorgabe aus A94 („Notfallmaßnahme"
+    nur bei Gefahr), angeführt als Begründung, keine neue Linie. In Konzept 07 mit Datum eingetragen.
+  - Daraus folgt die Präzisierung im Konzept: Absolut ist ein Notfall am Augenblick der Entscheidung gemessen. Für einen
+    Heiler, der hart wirkt, ist der freie GCD der letzte Augenblick vor 1,5 bis 2 s ohne Fähigkeit.
+- *Nachgerechnet* (`emergency_weave_model.py`, neu; Selbsttest gegen eine konstruierte Sperre von 0,3 s):
+  - Beim freien GCD (17:27:21,3) stand der Tank bei 24 % und verlor 2 300 bis 2 900 LP je Sekunde. Tot wäre er in 1,2
+    bis 1,5 s gewesen, ein Cure II landet nach 2,1 s – Klasse 1.
+  - Benediktions eigene Bedingungen hielten ebenfalls: Sie liest beim freien GCD die jetzige Gesundheit, 24 % unter 30 %
+    ab Werk, und der Tank stand unter Angriff.
+  - Nach dem Wirken des zweiten Cure II stand er bei 712 LP, und die Sperre hielt bis zum GCD danach.
+  - Mit Benediktion beim freien GCD: Tiefpunkt bis zur Landung 10 bis 22 %, um 22,8 s 78 bis 90 % statt 43 LP.
+- *Umgesetzt:*
+  - `Invoke` fragt ab dem Vorlauf `Ability(…, emergencyHealOnly: true)`. Das läuft durch alle allgemeinen Sperren außer
+    der Klippsperre – Zauber, `NoCasting`, Fähigkeiten aus, Mudra, Fähigkeitssperre, gehaltene Kanalisierung – und fragt
+    dann nur die automatischen Heilfähigkeiten.
+  - Die beiden Heilblöcke des Fähigkeitenpfads sind dafür als `AutoHealAreaAbility`/`AutoHealSingleAbility`
+    herausgezogen; im regulären Pfad stehen sie an derselben Stelle.
+  - Vorgezogen wird nur im PvE, nur wenn ein Mitglied in Klasse 1 steht, und nur eine Fähigkeit, die eines erreicht
+    (Ziel oder Getroffene). Befehl und Gegenstand werden nicht vorgezogen.
+  - `DoAction` drückt sie bei 0 s Rest.
+  - Zwei Trace-Zeilen, je Schlüssel und GCD: „emergency heal ahead of …" und „critical class: … no heal ability for it
+    ahead of …".
+  - Die Ausnahme der Sperrzahl in `fixed_values.json` ist an die Zeile nachgezogen. Konzept 11 nennt die zweite Ausnahme
+    der Sperre.
+- *Verworfen* (Konzept 07):
+  - die Sperre senken;
+  - sofort wirkende GCD-Heilungen vorziehen;
+  - den laufenden Zauber abbrechen;
+  - den Leser in `DoAction` öffnen;
+  - nichts ändern.
+- *Falsifikation:*
+  - Kein Defekt: widerlegt. Die Notfallheilung war bereit und ging bei keinem Tempo.
+  - Option falsch: Die Annahme „`DoAction` lässt bei 0 s Rest zu" ist am Code belegt (`DefaultGCDRemain > 0f`).
+  - Ausgeliefert, und nichts ändert sich – warum?
+    - Seine Schwelle für Benediktion liegt unter dem Stand des Tanks beim freien GCD; dann kommen die übrigen
+      Heilfähigkeiten.
+    - Ein Sprung schneller als die Rate.
+    - Ein GCD, den `DoAction` schon in die Warteschlange gegeben hatte.
+    - Alle drei zeigt die Trace-Zeile.
+- *Preis:* Je vorgezogener Fähigkeit rückt der nächste GCD um ihre Ausführungssperre nach hinten. Die Community nennt
+  etwa 0,6 s; unbelegt, der Server meldet sie im Effektpaket.
+- *Prüfgrad:* statisch (Code, Spielblätter, Mitschnitt), Modell mit Selbsttest, Compile ohne Warnung,
+  `run_ci_checks.py` mit 40 von 40 Schritten. Im Spiel nicht beobachtet; die Trace-Zeilen zeigen es in seinem nächsten
+  Upload.
+- *TODO:* Eintrag entfernt, Reihenfolge fortgeschrieben.
+
 ---
 ## B · Commit-Register (Fork vs. `upstream/main`)
 

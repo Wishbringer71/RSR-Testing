@@ -279,7 +279,14 @@ public partial class CustomRotation
 
 			if (gcdAction != null)
 			{
-				return ActionHelper.CanUseGCD ? gcdAction : Ability(gcdAction, out var ability) ? ability : gcdAction;
+				if (!ActionHelper.CanUseGCD)
+				{
+					return Ability(gcdAction, out var ability) ? ability : gcdAction;
+				}
+
+				// From the action lead on only the GCD is reported - except a heal ability for a member in the critical
+				// class, which no window between two hard casts would ever let out (concept 07, A479).
+				return Ability(gcdAction, out var heal, emergencyHealOnly: true) ? heal : gcdAction;
 			}
 			else
 			{
