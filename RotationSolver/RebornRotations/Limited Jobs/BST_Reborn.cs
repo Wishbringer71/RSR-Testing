@@ -39,6 +39,14 @@ public sealed class BST_Reborn : BeastmasterRotation
 			+ "Off: the horn order above.")]
 	private bool HornBySituation { get; set; } = true;
 
+	[RotationConfig(CombatType.PvE, Name = "Capture familiars you do not have yet",
+		Tooltip = "When an enemy you can befriend as a familiar, one you do not have yet and not above your level, is about to "
+			+ "fall before your next weaponskill, Capture marks it then, at the least HP it will have alive: the lower its HP "
+			+ "when marked, the likelier the pact. Capture shares the weaponskill timer, so it costs one weaponskill per "
+			+ "attempt, and none once you have that familiar.\n"
+			+ "Off: Capture is never used.")]
+	private bool CaptureFamiliars { get; set; } = true;
+
 	[RotationConfig(CombatType.PvE, Name = "Use Snarl and Challenge based on your HP and your familiar's HP (Crucible only)",
 		Tooltip = "Off: Snarl is never used.\nOn: Snarl gives your damage to the familiar and Challenge takes it back, based on the settings below. If one of you has to die, it will be the familiar.")]
 	private bool FamiliarTankSwap { get; set; } = false;
@@ -237,6 +245,12 @@ public sealed class BST_Reborn : BeastmasterRotation
 		{
 			if (PetTPCount >= 100)
 			{
+				// K1 (concept 01, A487): the axe that keeps the compass clockwise, so the Trick closes intentionally.
+				if (CompassAxe(out act))
+				{
+					return true;
+				}
+
 				if (GaleAxePvE.CanUse(out act, skipStatusNeed: true, usedUp: true))
 				{
 					return true;
@@ -484,6 +498,31 @@ public sealed class BST_Reborn : BeastmasterRotation
 	}
 	#endregion
 
+	#region Compass
+	// K1 (concept 01, A487): with a heart standing, the axe that follows it clockwise - its status need is that heart;
+	// with none, the axe before the Trick's affinity, so the familiar's Trick closes an intentional combo after it. Any
+	// other case, or that axe not learned, falls through to the order below. Same TP, same recast: only which axe.
+	private bool CompassAxe(out IAction? act)
+	{
+		act = null;
+		if (HasVolantHeart || HasRampantHeart || HasDurantHeart || HasEldritchHeart)
+		{
+			return AvalancheAxePvE.CanUse(out act, usedUp: true) || MistralAxePvE.CanUse(out act, usedUp: true)
+				|| SpinningAxePvE.CanUse(out act, usedUp: true) || GaleAxePvE.CanUse(out act, usedUp: true);
+		}
+
+		var axe = (FamiliarOf(CurrentPet)?.TrickHeart ?? 0) switch
+		{
+			StatusID.RampantHeart => GaleAxePvE,
+			StatusID.DurantHeart => AvalancheAxePvE,
+			StatusID.EldritchHeart => MistralAxePvE,
+			StatusID.VolantHeart => SpinningAxePvE,
+			_ => null,
+		};
+		return axe != null && axe.CanUse(out act, skipStatusNeed: true, usedUp: true);
+	}
+	#endregion
+
 	#region Finishers
 	// W3 (concept 01, A486): the finisher that does not move you first. Risen Fall is Brutal Rage without the rush - the
 	// same potency, affinity, circle and reach. Between Calamity's line and Hawkish Talons' circle the one that reaches
@@ -720,6 +759,14 @@ public sealed class BST_Reborn : BeastmasterRotation
 
 	protected override bool GeneralGCD(out IAction? act)
 	{
+		// A1, A2 (concept 01, A487): Capture on the last weaponskill before a familiar you lack falls.
+		if (CaptureFamiliars && InCombat && CapturePvE.CanUse(out act))
+		{
+			TraceHorn($"Capture on {CapturePvE.Target.Target?.Name} ({CapturableFamiliar(CapturePvE.Target.Target)}): "
+				+ "a familiar you do not have, falling before the next weaponskill");
+			return true;
+		}
+
 		if (QuellingWavePvE.CanUse(out act))
 		{
 			return true;

@@ -1403,9 +1403,10 @@ public partial class BeastmasterRotation
 	{
 		setting.StatusProvide = [StatusID.CapturingInterest];
 		setting.StatusFromSelf = false;
+		// Not on a target already marked - it needed and refused the same status at once, so it never went (A487).
 		setting.TargetStatusProvide = [StatusID.InterestCaptured];
-		setting.TargetStatusNeed = [StatusID.InterestCaptured];
 		setting.IsFriendly = false;
+		setting.CanTarget = static t => CaptureDue(t);
 		//setting.TargetType = TargetType.Capture;
 	}
 

@@ -14451,6 +14451,28 @@ durchgehen". Als Skill `spielpatch` festgehalten (Lesetabelle in CLAUDE.md); den
   Mitschnitten), also ob ein Horn lieber wartet oder den GCD verschiebt; W1 folgt der bestehenden Absicht.
 - *Review* (Code-Review-Skill, hoch): zwei Befunde, beide behoben (Gefahr-Horn durch W1 verzögert, Elixier im PvP).
 - *Prüfgrad:* Compile, alle CI-Prüfungen lokal; keine Laufzeitbeobachtung.
+
+### A487 · Beastmaster: TODO nach Priorität – Kompass, Anfreunden, Hornbelegung (02.11.2026)
+
+- *Sein Auftrag:* „todo nach priorität weiter abarbeiten (nur beastmaster)". Reihenfolge nach Wirkung im Kampf: die
+  Kompass-Kombos (Schaden), das Anfreunden (mehr Mittel), die Belegung der Hörner. Mitten darin seine Vorgabe zur
+  Belegung: „wieso vorschlag? es soll in die rotation eingearbeitet werden, situationsbezogen".
+- *Kompass (K1, ohne Option):* Job-Guide und Wirktexte nennen die Regeln, keine Zahlen. In Zweig 2 (Axt zuerst, Dressur
+  schließt) wählte RSR die Axt in fester Reihenfolge. Jetzt die Axt, die dem stehenden Herz folgt, ohne Herz die vor der
+  Affinität der Dressur (aus ihrem Tooltip, im Katalog von B1). `bst_compass_model.py` (erschöpfend, in der CI): nie
+  weniger absichtliche Glieder, in 12 von 20 Fällen eines mehr, jede Stufe der Äxte; Zweig 1 umzudrehen bringt
+  nichts.
+- *Anfreunden (A1, A2, Option ab Werk an):* Ein Gegner gehört zu einem Begleiter, wenn sein Modell dem Aussehen des
+  Begleiters gleicht (`BNpcBase.ModelChara` gegen `Pet.Unknown8` → `PetMirage.ModelChara`, zurück über
+  `Pet.Unknown18`; EXDSchema „latest" vom 17.10.2026, xivapi, Reflexion auf die gebaute Lumina); anfreundbar mit 5 in
+  `BNpcBase.Unknown10` (WrathCombo, Werkzeugquelle). Freigeschaltet: `XBMManager.IsPetUnlocked`. Markiert wird auf dem
+  letzten GCD vor seinem Tod (korrigierte Restzeit höchstens ein GCD), nur wenn das Spiel Anfreunden für das Ziel
+  freigibt. `ModifyCapturePvE` verlangte und verbot denselben Status am Ziel; berichtigt.
+- *Belegung:* Der erste Entwurf, ein Chat-Vorschlag, ist auf seine Vorgabe hin verworfen. Eine Funktion zum Setzen der
+  Belegung kennt der Client nicht (FFXIVClientStructs b69073a); die Rotation wählt situationsbezogen unter den drei
+  Begleitern seiner Hörner. TODO unter „Warten auf Daten".
+- *Widerrufen:* C143, C144 (A483).
+- *Prüfgrad:* Compile, alle CI-Prüfungen lokal, Modell; keine Laufzeitbeobachtung.
 ---
 ## B · Commit-Register (Fork vs. `upstream/main`)
 
@@ -14746,3 +14768,5 @@ Die offene Arbeit dazu — Reihenfolge und Abbruchbedingung der Nachprüfung —
 | C140 | A475 (01.11.2026): Regen gehe an das Mitglied mit dem geringsten Anteil ohne Regen (`TargetType.LowHPPercent`, Upstream), das sei der Grund für die Regen auf den Schwarzmagier; „Ergebnis: kein Defekt"; dazu der Absatz in Konzept 07 „Regen des Weißmagiers wählt ab Werk so" | Im Heilpfad liest `ActionSetting.TargetType` zuerst `IBaseAction.TargetOverride`, und der GCD-Pfad setzt vor den Heilungen `TargetType.Heal` samt Bedarfsfilter: Die Zielart von Regen greift dort nie. Die fünf Regen bei 46 bis 70 % wählte die Rangfolge aus Konzept 07; die bei 95 % kam aus der Füllheilung, die den Filter nicht einschaltete – ein Defekt gegen Konzept 07. Die Begründung beschrieb den Code unvollständig gelesen und gab einen Mechanismus als Grund aus | berichtigt (A476): Konzept 07 neu gefasst, Füllheilung mit Bedarfsfilter |
 | C141 | A476 (01.11.2026): „*Umgesetzt:* `IBaseAction.HealRatioOverride` […]; die Füllheilung setzt Filter und ihre Linie" samt Loop und Falsifikation | Gebaut, bevor das Konzept fertig geplant war: zwei Konzeptabsätze, Minuten danach der Code, der Loop erst hinterher im Archiv; die Flächenheilung der Füllheilung, die übrigen Jobs und die Lagen waren nicht erhoben – gegen seine Vorgabe vom 29.10.2026 (Konzept vor Code) | zurückgenommen und nach dem vollständigen Konzept neu gebaut (A477) |
 | C142 | A478 (01.11.2026): Verfluchter Blick, „von mehreren Augen alle 3 s gewirkt", verkettet „gleich welcher Gegner wirkte" zu 38 % über 21 s „bei Treffern von 0 bis 7 %" – ein Defekt, TODO „Gestaffelte Wirken mehrerer Gegner werden zu einer Serie verkettet", nächster Schritt „die Wirkzeitregel gilt je Wirkendem" | Die acht Augäpfel sind nicht anvisierbare Mechanikobjekte, gemeinsam erschienen und entfernt, je ein Wirken – eine Mechanik wie Ersticken des Fleisches, deren Verkettung A460 baut; die 0 bis 7 % waren seine eigenen, geminderten Treffer, Mitglieder seiner Gruppe traf ein Blick mit 18 bis 19 %, die 38 % sind zwei Blicke auf eines; „je Wirkendem" hätte die Mechaniken zerlegt | Defekt gestrichen; gebaut wurde statt dessen die Rundengrenze für angreifbare Gegner (A480) |
+| C143 | A483 und Konzept 01, „Anfreunden und Analysieren" (02.11.2026): Anfreunden einweben, „Es kostet keinen GCD, nur einen Einwebeplatz" | Anfreunden ist ein Talent, liegt aber in der Abklinggruppe 58 der Waffenfertigkeiten (Action 44880, 2,5 s); die Aktionsart wurde gelesen, die Abklinggruppe nicht | berichtigt (A487): Konzept 01, die Regel A2 setzt es auf den letzten GCD |
+| C144 | A483 und Konzept 01 (02.11.2026): „Eine Liste der anfreundbaren Bestien führt keines der Blätter […]. Was eine Bestie ist, sagt also nur die Chatmeldung." | Gesucht wurde nach Namen; die Blätter verbinden Gegner und Begleiter über das Modell (`BNpcBase.ModelChara`, `PetMirage`, `Pet`, `XBMPet`) und markieren anfreundbare Grundzeilen in `BNpcBase` Spalte 10 | berichtigt (A487): Konzept 01, Regel A1 |

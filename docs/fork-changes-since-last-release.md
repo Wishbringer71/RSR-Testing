@@ -28,6 +28,13 @@ What this release changes in the fight. For the whole distance from upstream, se
 - **A battlehorn no longer pushes back your next weaponskill.** Its 1 s summon now starts only where it ends before the
   half second kept free ahead of the GCD; when you are in danger a healing or protecting familiar still comes at once.
 - **Soul Crush interrupts.** It goes to a caster whose cast can be interrupted first: 1,000 instead of 300, and 100 TP.
+- **Beastmaster keeps the Inner Compass turning clockwise.** When an axe opens a combo for the familiar's Trick to
+  close, it is now the axe that follows the standing heart, or with none the one before the Trick's affinity, so the
+  Trick closes an intentional combo - "greater additional damage" - instead of a plain one in most cases.
+- **Beastmaster captures familiars you do not have yet.** On the last weaponskill before such an enemy falls, Capture
+  marks it at the least HP it will have alive; the lower its HP when marked, the likelier the pact. It recognises the
+  beast from the game data and asks the game's familiar list, so a familiar you have is never tried again. New option
+  "Capture familiars you do not have yet", on by default; it costs one weaponskill per attempt.
 
 ## Healing
 

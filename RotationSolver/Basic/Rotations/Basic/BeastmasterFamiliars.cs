@@ -1,4 +1,5 @@
 using ECommons.DalamudServices;
+using FFXIVClientStructs.FFXIV.Client.Game;
 using Lumina.Excel.Sheets;
 
 namespace RotationSolver.Basic.Rotations.Basic;
@@ -17,8 +18,10 @@ namespace RotationSolver.Basic.Rotations.Basic;
 /// <param name="ReleaseHeals">The Tempered Release grants Life Siphon.</param>
 /// <param name="ReleaseProtects">The Tempered Release lowers the damage you take.</param>
 /// <param name="BorrowProtects">The Beast Mode action Borrow unlocks for its kin lowers the damage you take.</param>
+/// <param name="TrickHeart">The heart its Trick grants, by the instinctual affinity its tooltip states; 0 when it states
+/// none.</param>
 public sealed record FamiliarProfile(BeastmasterPet Pet, uint TrickId, uint ReleaseId, float TrickRadius, float TrickPotency,
-	bool TrickHeals, bool ReleaseHeals, bool ReleaseProtects, bool BorrowProtects);
+	bool TrickHeals, bool ReleaseHeals, bool ReleaseProtects, bool BorrowProtects, StatusID TrickHeart);
 
 public partial class BeastmasterRotation
 {
@@ -28,6 +31,10 @@ public partial class BeastmasterRotation
 
 	// Built once from the sheets; null until then, empty when the familiar's Pet row cannot be told (B1).
 	private static Dictionary<byte, FamiliarRow>? _familiarRows;
+
+	// A1 (concept 01, "Was gilt beim Anfreunden", A487): the familiar a model belongs to - the model and base of the first
+	// look its Pet row allows (Pet.Unknown8, AllowedPetMirage[0], to PetMirage.ModelChara). Built with the rows.
+	private static readonly Dictionary<(ushort Model, byte Base), BeastmasterPet> _familiarByModel = [];
 	private static string _familiarCatalogState = "not built yet";
 
 	// The profiles read so far at _profileLevel, only for the familiars asked for - the three on the horns.
@@ -72,7 +79,8 @@ public partial class BeastmasterRotation
 		DefenseTrace.Line($"beastmaster familiar {pet} at level {level}: Trick {profile.TrickPotency:F0}"
 			+ $"{(profile.TrickRadius > 0f ? $" in {profile.TrickRadius:F0} y" : " single")}"
 			+ $"{(profile.TrickHeals ? ", Trick heals" : string.Empty)}{(profile.ReleaseHeals ? ", Release heals" : string.Empty)}"
-			+ $"{(profile.ReleaseProtects ? ", Release protects" : string.Empty)}{(profile.BorrowProtects ? ", Borrow protects" : string.Empty)}");
+			+ $"{(profile.ReleaseProtects ? ", Release protects" : string.Empty)}{(profile.BorrowProtects ? ", Borrow protects" : string.Empty)}"
+			+ $", Trick {(profile.TrickHeart == 0 ? "without affinity" : profile.TrickHeart.ToString())}");
 		return profile;
 	}
 
@@ -124,6 +132,79 @@ public partial class BeastmasterRotation
 		return potency * Math.Max(1, hits);
 	}
 
+	/// <summary>
+	/// The familiar <paramref name="target"/> can become (A1): its base row marked capturable - 5 in the unnamed column 10
+	/// of BNpcBase, as WrathCombo reads it - and its model that of a familiar's look. None for any other target.
+	/// </summary>
+	public static BeastmasterPet CapturableFamiliar(IBattleChara? target)
+	{
+		if (target == null)
+		{
+			return BeastmasterPet.None;
+		}
+
+		_familiarRows ??= BuildFamiliarRows();
+		var bases = Svc.Data.GetExcelSheet<BNpcBase>();
+		if (bases == null || !bases.TryGetRow(target.BaseId, out var npc) || npc.Unknown10 != CapturableBase
+			|| !npc.ModelChara.IsValid)
+		{
+			return BeastmasterPet.None;
+		}
+
+		return _familiarByModel.TryGetValue((npc.ModelChara.Value.Model, npc.ModelChara.Value.Base), out var pet)
+			? pet
+			: BeastmasterPet.None;
+	}
+
+	// The value of BNpcBase column 10 on the base rows a beastmaster can capture (WrathCombo; four of the ten rows with the
+	// squirrel's model carry it, A487). No source names the column.
+	private const byte CapturableBase = 5;
+
+	/// <summary>
+	/// Whether the player has <paramref name="pet"/> already, as the game's familiar list says; null while the game has
+	/// not loaded that list.
+	/// </summary>
+	public static unsafe bool? FamiliarUnlocked(BeastmasterPet pet)
+	{
+		var manager = XBMManager.Instance();
+		if (manager == null || manager->State != XBMManager.DataState.Received)
+		{
+			return null;
+		}
+
+		return manager->IsPetUnlocked((uint)pet);
+	}
+
+	/// <summary>
+	/// A1 and A2 of concept 01 ("Was gilt beim Anfreunden", A487): <paramref name="target"/> can become a familiar the
+	/// player has not got, is not marked, not above his level, the game would take Capture on it - and it falls before the
+	/// next GCD by its corrected time to kill, so the mark meets the least HP it can.
+	/// </summary>
+	public static unsafe bool CaptureDue(IBattleChara target)
+	{
+		var player = Player;
+		if (player == null || target.Level > player.Level || target.HasStatus(false, StatusID.InterestCaptured))
+		{
+			return false;
+		}
+
+		var pet = CapturableFamiliar(target);
+		if (pet == BeastmasterPet.None || FamiliarUnlocked(pet) != false)
+		{
+			return false;
+		}
+
+		var ttk = target.GetCorrectedTTK();
+		if (float.IsNaN(ttk) || ttk > DataCenter.DefaultGCDTotal)
+		{
+			return false;
+		}
+
+		var actions = ActionManager.Instance();
+		return actions != null && actions->GetActionStatus(ActionType.Action, (uint)ActionID.CapturePvE, target.GameObjectId,
+			checkRecastActive: false, checkCastingActive: false) == 0;
+	}
+
 	// Where Pet.Abilities holds what a familiar's Trick and Tempered Release execute.
 	private const int TrickAbility = 0;
 	private const int ReleaseAbility = TrickAbility + 1;
@@ -139,7 +220,8 @@ public partial class BeastmasterRotation
 			var xbm = Svc.Data.GetExcelSheet<XBMPet>();
 			var pets = Svc.Data.GetExcelSheet<Lumina.Excel.Sheets.Pet>();
 			var actions = Svc.Data.GetExcelSheet<Lumina.Excel.Sheets.Action>();
-			if (xbm == null || pets == null || actions == null)
+			var mirages = Svc.Data.GetExcelSheet<PetMirage>();
+			if (xbm == null || pets == null || actions == null || mirages == null)
 			{
 				_familiarCatalogState = "NO CATALOG: a sheet is missing";
 				return catalog;
@@ -185,9 +267,17 @@ public partial class BeastmasterRotation
 				var radius = actions.TryGetRow(trick, out var trickRow) && trickRow.CastType > 1 ? trickRow.EffectRange : 0f;
 				catalog[(byte)row.RowId] = new FamiliarRow(trick, pet.Abilities[ReleaseAbility].RowId, radius,
 					(BeastmasterKinType)row.Unknown7);
+
+				// The Pet row leads back to its XBMPet row (Pet.Unknown18); one that does not is not trusted for a model.
+				if (pet.Unknown18 == row.RowId && mirages.TryGetRow(pet.Unknown8, out var mirage)
+					&& mirage.ModelChara.IsValid)
+				{
+					_familiarByModel[(mirage.ModelChara.Value.Model, mirage.ModelChara.Value.Base)] = (BeastmasterPet)row.RowId;
+				}
 			}
 
-			_familiarCatalogState = $"{catalog.Count} familiars from the sheets (Pet column {(fifth ? 5 : 6)})";
+			_familiarCatalogState = $"{catalog.Count} familiars from the sheets (Pet column {(fifth ? 5 : 6)}), "
+				+ $"{_familiarByModel.Count} by model";
 		}
 		catch (Exception ex)
 		{
@@ -211,7 +301,26 @@ public partial class BeastmasterRotation
 			TrickHeals: trickText.Contains("absorbed as beastmaster HP", StringComparison.Ordinal),
 			ReleaseHeals: releaseText.Contains("Life Siphon", StringComparison.Ordinal),
 			ReleaseProtects: Protects(releaseText, "nearby party members"),
-			BorrowProtects: Protects(borrowText, string.Empty));
+			BorrowProtects: Protects(borrowText, string.Empty),
+			TrickHeart: HeartOf(trickText));
+	}
+
+	// The heart of the affinity a tooltip states ("Instinctual Affinity: Eldritch"), 0 for none (K1, concept 01, A487).
+	private static StatusID HeartOf(string text)
+	{
+		const string Marker = "Instinctual Affinity: ";
+		var at = text.IndexOf(Marker, StringComparison.Ordinal);
+		if (at < 0)
+		{
+			return 0;
+		}
+
+		var rest = text[(at + Marker.Length)..];
+		return rest.StartsWith("Volant", StringComparison.Ordinal) ? StatusID.VolantHeart
+			: rest.StartsWith("Rampant", StringComparison.Ordinal) ? StatusID.RampantHeart
+			: rest.StartsWith("Durant", StringComparison.Ordinal) ? StatusID.DurantHeart
+			: rest.StartsWith("Eldritch", StringComparison.Ordinal) ? StatusID.EldritchHeart
+			: 0;
 	}
 
 	// What lowers the damage you take, as the effect texts word it: a lower vulnerability or damage taken, a barrier, or

@@ -1007,6 +1007,16 @@
    "status": "exception",
    "loop": "A471",
    "reason": "Reference rule: The Balance, Gunbreaker Basic Guide (31.10.2026): at 3 targets Sonic Break needs half its stated duration, at 4 and 5 the whole; the duration itself is read from the tooltip (A471)."
+  },
+  {
+   "file": "RotationSolver/Basic/Rotations/Basic/BeastmasterFamiliars.cs",
+   "code": "private const byte CapturableBase = 5;",
+   "values": [
+    "5"
+   ],
+   "status": "exception",
+   "loop": "A487",
+   "reason": "A value in the game's own BNpcBase column 10, compared, not tuned: the base rows a beastmaster can capture carry 5 (WrathCombo reads it so; four of the ten rows with the squirrel's model carry it). No source names the column; the game's GetActionStatus for Capture on the target is asked as well, so a wrong reading costs no weaponskill."
   }
  ]
 }

@@ -14,11 +14,6 @@ Nach der Wirkung im Kampf: Sicherheit der Gruppe vor Schaden, gewichtet mit der 
    einen Spielpatch (Stufen 1 und 2 gebaut, A481; die Senkregel für die Einträge der alten Datei entschieden, A482; als
    Nächstes Stufe 3), dann die Anzeige. Beide ändern den Kampf nur mittelbar, über einen geprüften oder berichtigten Lernwert –
    die Sperren unter ihnen (Schlaf) aber dauerhaft.
-2. Beastmaster: Anfreunden zum besten Zeitpunkt – kein Einfluss auf Sicherheit oder Schaden, deshalb nach den Tabellen.
-3. Beastmaster: Dressur nach ihrer Affinität in die Kompass-Kombos setzen – Schaden; die Größe des Gewinns nennt kein
-   Text.
-4. Beastmaster: Belegung der Kampfhörner aus den freigeschalteten Begleitern vorschlagen – RSR kann sie nicht
-   anwenden; Schaden und Sicherheit nur über seine Zuordnung im Menü.
 
 Danach die technische Schuld, soweit ihre Auflösungsbedingung erfüllt ist. Warten auf Daten: unten.
 
@@ -59,32 +54,6 @@ Tankbuster-Tabelle neben Upstreams AoE- und Tankbuster-Liste. *Ort:* `MainWindow
 Anzeige ja, Bearbeitung nein (Konzept 13, „Gelernte Tabellen über Spielversionen", Regel 10; seine Vorgabe A173); gebaut
 als letzte Stufe der Revision. *Konzept:* 13 (gelernte Tabellen), 18 (Einstellungen).
 
-
-### Beastmaster: Anfreunden zum besten Zeitpunkt · N
-Seine Frage (02.11.2026): „kann man beim beastmaster vor tod der gegner prüfen, ob man sich damit anfreunden kann und
-dann das talent so anwenden, dass die wahrscheinlichkeit hoch ist, dass man sich anfreundet?" Im Kampf heute: RSR setzt
-weder Analysieren noch Anfreunden ein; markiert er von Hand zu früh, ist die Chance kleiner, als sie sein müsste. *Ort:*
-`BST_Reborn` (kein Aufruf), `BeastmasterRotation.ModifyCapturePvE` (widersprüchliche Zielbedingungen). *Nächster
-Schritt:* Konzept 01, „Anfreunden und Analysieren": Zeitpunkt, Zielauswahl, ob Analysieren gelesen werden muss (Chat),
-Lagen (Gruppe, Mitspieler tötet, Stufensynchronisation). Was WrathCombo dafür liest (Konzept 01, „Weben, Ansturm und
-Abschlüsse"): Begleiter am Ziel über `BNpcBase` und Modell, freigeschaltet über `XBMManager.IsPetUnlocked`, laufender
-Versuch am Status „Interest Captured". *Konzept:* 01.
-
-### Beastmaster: Dressur nach ihrer Affinität in die Kompass-Kombos setzen · N
-Im Kampf heute: RSR drückt die Dressur, sobald irgendein Herz steht, ohne ihre Affinität. Folgt sie nicht im
-Uhrzeigersinn auf das stehende Herz, wird die Kombo nur einfach statt absichtlich („greater additional damage"), und die
-Axt, die sie absichtlich geschlossen hätte, wartet. *Ort:* `BST_Reborn.AttackAbility` (Dressur mit `skipStatusNeed`),
-`BeastmasterRotation.ModifyTrickPvE`. *Nächster Schritt:* Affinität der Dressur aus ihrem Tooltip („Instinctual Affinity")
-in den Katalog von B1; Wert der absichtlichen gegen die einfache Kombo belegen (kein Text nennt ihn); WrathCombo setzt
-Dressur und Axt in beide Richtungen (Konzept 01, „Weben, Ansturm und Abschlüsse"). *Konzept:* 01.
-
-### Beastmaster: Belegung der Kampfhörner aus den freigeschalteten Begleitern vorschlagen · N
-Seine Vorgabe (02.11.2026): das Optimum mit den vorhandenen Begleitern finden und nutzen. Im Kampf heute: RSR wählt unter
-den drei Begleitern, die er im Bestienbuch den Hörnern zuordnet (Konzept 01, „Begleiter nach Lage", B0 bis B3); ob unter
-seinen freigeschalteten einer mit Flächendressur oder einer, der heilt, fehlt, sagt ihm nichts. *Ort:* `XBMManager`
-(freigeschaltete Begleiter, FFXIVClientStructs), `BeastmasterRotation.FamiliarOf`. *Nächster Schritt:* Konzept 01: was
-ein Vorschlag abwägt (Rudel, allein, Stufe), wie er ihn sieht, ohne das Diagnosefenster; Schwächen der Gegner nur
-gelernt. *Konzept:* 01.
 
 ## Technische Schuld
 
@@ -150,6 +119,12 @@ den Spieldaten (`CastType`, `EffectRange`), hinter eigener Option. *Konzept:* 13
 nebeneinander gebraucht werden.
 
 ## Warten auf Daten oder Fremde
+
+- **Beastmaster: Belegung der Kampfhörner situationsbezogen setzen** (seine Vorgabe, 02.11.2026: „es soll in die
+  rotation eingearbeitet werden, situationsbezogen"). Im Kampf heute: RSR wählt situationsbezogen unter den drei
+  Begleitern seiner Hörner (B0 bis B3), die Belegung selbst setzt nur er im Bestienbuch. Auflösung: eine Funktion, ein
+  Agent oder ein Paket des Clients, das die Belegung setzt, belegt in FFXIVClientStructs (Stand b69073a, 02.11.2026:
+  nur Lesen). Konzept 01, „Belegung der Hörner in der Rotation".
 
 - **Samurai nutzt Feint und Tengentsu nicht** (fremde Meldung, PR #11, unbestätigt; statisch geprüft A265). Auflösung:
   ein Protokoll eines Samurai-Kampfs („area defence open, nothing chosen" gegen „hit you"). Konzept 13.
