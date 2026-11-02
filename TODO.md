@@ -14,6 +14,7 @@ Nach der Wirkung im Kampf: Sicherheit der Gruppe vor Schaden, gewichtet mit der 
    einen Spielpatch (Stufen 1 und 2 gebaut, A481; die Senkregel für die Einträge der alten Datei entschieden, A482; als
    Nächstes Stufe 3), dann die Anzeige. Beide ändern den Kampf nur mittelbar, über einen geprüften oder berichtigten Lernwert –
    die Sperren unter ihnen (Schlaf) aber dauerhaft.
+2. Beastmaster: Anfreunden zum besten Zeitpunkt – kein Einfluss auf Sicherheit oder Schaden, deshalb nach den Tabellen.
 
 Danach die technische Schuld, soweit ihre Auflösungsbedingung erfüllt ist. Warten auf Daten: unten.
 
@@ -54,6 +55,14 @@ Tankbuster-Tabelle neben Upstreams AoE- und Tankbuster-Liste. *Ort:* `MainWindow
 Anzeige ja, Bearbeitung nein (Konzept 13, „Gelernte Tabellen über Spielversionen", Regel 10; seine Vorgabe A173); gebaut
 als letzte Stufe der Revision. *Konzept:* 13 (gelernte Tabellen), 18 (Einstellungen).
 
+
+### Beastmaster: Anfreunden zum besten Zeitpunkt · N
+Seine Frage (02.11.2026): „kann man beim beastmaster vor tod der gegner prüfen, ob man sich damit anfreunden kann und
+dann das talent so anwenden, dass die wahrscheinlichkeit hoch ist, dass man sich anfreundet?" Im Kampf heute: RSR setzt
+weder Analysieren noch Anfreunden ein; markiert er von Hand zu früh, ist die Chance kleiner, als sie sein müsste. *Ort:*
+`BST_Reborn` (kein Aufruf), `BeastmasterRotation.ModifyCapturePvE` (widersprüchliche Zielbedingungen). *Nächster
+Schritt:* Konzept 01, „Anfreunden und Analysieren": Zeitpunkt, Zielauswahl, ob Analysieren gelesen werden muss (Chat),
+Lagen (Gruppe, Mitspieler tötet, Stufensynchronisation). *Konzept:* 01.
 
 ## Technische Schuld
 

@@ -14353,6 +14353,25 @@ durchgehen". Als Skill `spielpatch` festgehalten (Lesetabelle in CLAUDE.md); den
     abschwächt. Bis zum nächsten Patch kommt er nicht vor, und in dieser Zeit soll sich auch nichts ändern.
 - *Prüfgrad:* Modell mit Selbsttest. Konzept 13, Regel 5, fortgeschrieben; gebaut wird es mit Stufe 3.
 
+### A483 · Beastmaster: Anfreunden und Analysieren erhoben (02.11.2026)
+
+- *Seine Frage:* ob sich vor dem Tod eines Gegners prüfen lässt, ob man sich mit ihm anfreunden kann, und das Talent so
+  einsetzen, dass es wahrscheinlich gelingt. Eingeordnet als Frage mit einem möglichen Vorschlag: als offene Arbeit ins
+  TODO, der Umfang liegt bei ihm.
+- *Belegt* (xivapi v2, deutsch und englisch):
+  - Capture heißt „Anfreunden" (44880), Gauge heißt „Analysieren" (44882). Die Status sind Freundschaftsangebot (4624,
+    auf dir) und Freundschaftsempfänglich (4626, auf der Bestie).
+  - Die Antworten von Analysieren stehen im Blatt LogMessage, Zeilen 11217–11222, 11425, 11443 und 11455; die Meldung
+    für einen geschlossenen Pakt ist 11400.
+  - Die Chance hängt von den LP beim Markieren und von der Stufe ab. Das Talent kann nicht töten.
+  - Beide Namen sind in `action_names_de.json` eingetragen.
+- *Unbelegt:* ob die Stufe von Analysieren die aktuellen LP einrechnet, ob ein Sieg durch einen Mitspieler zählt, eine
+  Prozentzahl, eine Liste der anfreundbaren Bestien.
+- *RSR:* setzt keines der beiden Talente ein. `ModifyCapturePvE` verlangt am Ziel denselben Status, den es legt, und wäre
+  so nie einsetzbar. Das wirkt nicht, solange es niemand ruft.
+- *Prüfgrad:* Spielblätter, consolegameswiki (Werkzeugquelle); icy-veins wies den Abruf ab (Cloudflare).
+- Konzept 01 und TODO fortgeschrieben.
+
 ---
 ## B · Commit-Register (Fork vs. `upstream/main`)
 

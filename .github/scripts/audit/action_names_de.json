@@ -610,6 +610,22 @@
       "identifier": "AfflatusMiseryPvE",
       "kind": "action",
       "source": "game data, xivapi v2 Action 16535 language=de, 2026-10-31"
+    },
+    {
+      "de": "Anfreunden",
+      "en": "Capture",
+      "identifier": "CapturePvE",
+      "kind": "action",
+      "source": "user, 2026-11-02 (\"anfreunden\"); xivapi v2 Action 44880, language=de, 2026-11-02",
+      "note": "Beastmaster, level 1, ability, 10 y, 2.5 s recast. Marks the beast with Freundschaftsempfänglich for 120 s; the pact is decided when it is defeated, more likely the lower its HP at the moment of marking and below the player's level, impossible above it. The attack cannot KO."
+    },
+    {
+      "de": "Analysieren",
+      "en": "Gauge",
+      "identifier": "GaugePvE",
+      "kind": "action",
+      "source": "xivapi v2 Action 44882, language=de, 2026-11-02",
+      "note": "Beastmaster, level 1, ability, 30 y, 3 s recast. Answers in the chat with LogMessage 11217-11222 (no pact possible, then sehr schwierig to sehr einfach), 11425/11455 (pact already forged) or 11443 (not strong enough)."
     }
   ]
 }

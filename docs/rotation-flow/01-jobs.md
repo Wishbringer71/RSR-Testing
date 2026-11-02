@@ -418,6 +418,41 @@ the Unbroken"); er hat ihn am 31.10.2026 genannt („z.B. Optimierung beastmaste
   aber ohne Referenz und ohne einen Mitschnitt von ihm wäre das eine Annahme. Mit seinem ersten Mitschnitt als
   Beastmaster (ACT oder DefenseTrace) wird das gemessen.
 
+**Anfreunden und Analysieren** (seine Frage vom 02.11.2026, ob sich vor dem Tod eines Gegners prüfen lässt, ob man sich
+mit ihm anfreunden kann, und das Talent dann so einsetzen, dass es wahrscheinlich gelingt; A483):
+- *Mechanik* (Spielblätter, xivapi v2, Action 44880 und 44882, Status 4624 und 4626, LogMessage 11217–11222, 11400,
+  11425, 11443, 11455; 02.11.2026):
+  - *Analysieren* (`GaugePvE`; Talent, 30 Yalm, 3 s Abklingzeit, kein Feindseligkeit, auch vom Reittier am Boden)
+    antwortet im Chat:
+    - „Mit diesem Ziel ist ein Pakt nicht möglich ...";
+    - fünf Stufen von „... dürfte sehr schwierig sein" bis „... dürfte sehr einfach sein";
+    - „Mit dieser Bestie hast du bereits einen Pakt geschlossen.";
+    - „Du bist noch nicht stark genug ...".
+  - *Anfreunden* (`CapturePvE`; Talent, 10 Yalm, 2,5 s, Attacke-Wert 100, kann das Ziel nicht kampfunfähig machen)
+    markiert die Bestie für 120 s mit Freundschaftsempfänglich und dich mit Freundschaftsangebot. Der Pakt entscheidet
+    sich beim Sieg über sie.
+    - Die Chance ist umso größer, je niedriger ihre LP *beim Markieren* sind, und steigt, wenn ihre Stufe unter deiner
+      liegt; über deiner Stufe ist kein Pakt möglich.
+    - Der beste Zeitpunkt ist also der letzte vor dem tödlichen Treffer. Weil das Talent selbst nicht tötet, geht es
+      auch bei 1 LP gefahrlos.
+- *Nicht belegt:*
+  - ob die Stufe von Analysieren die aktuellen LP einrechnet oder je Bestie fest ist (weder Wirktext noch
+    consolegameswiki sagen es);
+  - ob der Sieg durch einen Mitspieler zählt;
+  - eine Prozentzahl.
+  - Eine Liste der anfreundbaren Bestien führt keines der Blätter, die xivapi nennt (nach Namen gesucht). Was eine
+    Bestie ist, sagt also nur die Chatmeldung.
+- *RSR heute:* Die Beastmaster-Rotation setzt keines der beiden Talente ein. Die Basisschicht gibt Anfreunden
+  widersprüchliche Bedingungen: `TargetStatusNeed` und `TargetStatusProvide` verlangen beide Freundschaftsempfänglich
+  (`ModifyCapturePvE`). Damit wäre es nie einsetzbar; das wirkt nicht, solange es niemand ruft.
+- *Was eine Regel brauchte:*
+  - Anfreunden im letzten Fenster vor dem tödlichen GCD einweben – über die korrigierte Restzeit des Ziels oder seine
+    LP gegen den nächsten Treffer –, nur auf ein Ziel, das nicht über deiner Stufe steht und noch nicht markiert ist.
+  - Es kostet keinen GCD, nur einen Einwebeplatz.
+  - Ohne Analysieren versuchte die Regel es auch an Zielen ohne Pakt. Mit Analysieren müsste RSR die Chatmeldung lesen
+    (im Text der Client-Sprache, aus dem Blatt `LogMessage`); einen Chat-Leser hat RSR bisher nicht.
+  - Offene Arbeit im TODO, „Beastmaster: Anfreunden zum besten Zeitpunkt".
+
 ---
 
 ## Quantitative Auffälligkeiten
