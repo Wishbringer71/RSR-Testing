@@ -468,6 +468,10 @@ internal static class RotationUpdater
 	public static void ChangeRotation(ICustomRotation rotation)
 	{
 		rotation.OnTerritoryChanged();
+		// Which rotation decides, and from which library: a session with every rule of a rotation built and none of its
+		// lines written could not tell a rotation that never ran from rules that never fired (concept 01, A490).
+		DefenseTrace.Line($"rotation {rotation.GetType().FullName} from {rotation.GetType().Assembly.GetName().Name}"
+			+ $" for {rotation.Job} ({rotation.GetAttributes()?.Type})");
 		DataCenter.CurrentRotation = rotation;
 		CurrentRotationActions = DataCenter.CurrentRotation?.AllActions ?? [];
 	}

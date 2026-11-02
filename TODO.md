@@ -158,9 +158,9 @@ nebeneinander gebraucht werden.
 
 - **Beastmaster: die Regeln schrieben am 02.11.2026 keine Zeile** (A489). Im Kampf: In einer Stunde mit allen Regeln
   (b83dc3ce9) rief RSR 28 Hörner, aber weder die Hornwahl nach Lage noch das Anfreunden noch der Katalog hinterließen
-  eine Zeile. Wahrscheinlich liefen sie nicht: leer gelesene Hornplätze, eine Option aus oder Anfreunden gesperrt.
-  Auflösung: die Zustandszeile „beastmaster state" im nächsten `DefenseTrace.log` als Beastmaster. Konzept 01,
-  „Zustandszeile".
+  eine Zeile. Wahrscheinlich liefen sie nicht: eine fremde Beastmaster-Rotation, leer gelesene Hornplätze, eine Option
+  aus oder Anfreunden gesperrt. Auflösung: die Zeilen „rotation" (A490) und „beastmaster state" im nächsten
+  `DefenseTrace.log` als Beastmaster. Konzept 01, „Zustandszeile".
 
 - **Beastmaster: Belegung der Kampfhörner situationsbezogen setzen** (seine Vorgabe, 02.11.2026: „es soll in die
   rotation eingearbeitet werden, situationsbezogen"). Im Kampf heute: RSR wählt situationsbezogen unter den drei

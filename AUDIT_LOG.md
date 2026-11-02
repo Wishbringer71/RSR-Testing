@@ -14553,6 +14553,19 @@ durchgehen". Als Skill `spielpatch` festgehalten (Lesetabelle in CLAUDE.md); den
   - Alles Übrige ist unverändert.
 - *Prüfgrad:* Auswertung von Trace und Mitschnitt, Compile; keine Laufzeitbeobachtung der Zustandszeile.
 
+### A490 · Trace nennt die aktive Rotation (02.11.2026)
+
+- *Anlass:* A489. In einer Stunde als Beastmaster mit allen Regeln schrieb BST_Reborn keine Zeile. Eine Ursache, die
+  A489 nicht nannte: Es lief eine andere Beastmaster-Rotation, etwa aus einer geladenen Bibliothek
+  (`RotationUpdater.UpdateCustomRotation` wählt nach `RotationChoice` unter allen Rotationen des Jobs). Sie drückte
+  dieselben Hörner, Scheidende Schläge und Entfesseln, ohne Zeile. Der Trace nannte die Rotation nie.
+- *Gebaut, zentral für jeden Job:* `RotationUpdater.ChangeRotation` schreibt bei jedem Wechsel „rotation <Typ> from
+  <Bibliothek> for <Job> (<PvE|PvP>)". Gerufen wird es beim Jobwechsel und bei der Wahl im Fenster, also selten.
+- *Zusammen mit der Zustandszeile (A489):* Nennt die Zeile eine fremde Rotation, ist das die Ursache. Nennt sie
+  BST_Reborn und fehlt die Zustandszeile, erreicht die Rotation `GeneralGCD` nicht. Steht beides da, sagt die
+  Zustandszeile, welcher Schalter oder welcher Wert die Regeln hielt.
+- *Prüfgrad:* Compile, alle CI-Prüfungen lokal; keine Laufzeitbeobachtung.
+
 ## B · Commit-Register (Fork vs. `upstream/main`)
 
 ### B1 · Einzelgeprüfte Fork-Commits

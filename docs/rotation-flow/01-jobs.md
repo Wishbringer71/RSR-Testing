@@ -701,6 +701,10 @@ Lage.
   allen Regeln (b83dc3ce9) 28 Hörner, ohne dass eine Regel eine Zeile schrieb oder den Katalog anlegte. Ob die Hörner
   leer gelesen wurden, eine Option aus war oder Anfreunden gesperrt, sagen die Dateien nicht; die Zeile sagt es beim
   nächsten Kampf.
+- *Welche Rotation läuft* (A490, für jeden Job): Ebenso möglich ist, dass gar nicht BST_Reborn lief, sondern eine
+  Beastmaster-Rotation aus einer geladenen Bibliothek; sie drückte dieselben Hörner, ohne eine dieser Zeilen. Darum
+  schreibt RSR bei jedem Wechsel der Rotation eine Zeile „rotation": Name, Bibliothek, Job und PvE oder PvP. Fehlt
+  dann die Zustandszeile, obwohl BST_Reborn genannt ist, erreicht die Rotation `GeneralGCD` nicht.
 
 *Gerechnet* (`bst_horn_model.py`, Annahmen dort benannt: Dressur alle 7,5 s, kurzer Einsatz 5 s, eigener Schaden 200 je
 Sekunde, alle Gegner eines Rudels im Wirkradius):
