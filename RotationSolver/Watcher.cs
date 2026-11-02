@@ -203,30 +203,53 @@ public static class Watcher
 	// everybody above the area heal line, the series does not, and "Skip mitigation for small area casts" mitigates
 	// in full a hit after which healing is called for (A349). A landing belongs to the series while it follows the
 	// previous one sooner than the action's own cast time: the caster could not have cast it again in between, so it
-	// is the same use or another caster's at the same moment, and both reach the party together. A member's sum
-	// stops at his whole health, the most the table holds (IsWithinWholeHealth).
+	// is the same use, or another caster's - a mechanic's helpers, a pack -, and they reach the party together. A
+	// member's sum stops at his whole health, the most the table holds (IsWithinWholeHealth).
+	//
+	// Whoever cast it, because the readers rate one announced cast at a time and would otherwise see a single hit of
+	// the pack or the mechanic. Except a targetable enemy casting anew - it already landed in the series, and its
+	// own previous landing lies at least a cast time back: the pack's round is over, and the landing starts a new
+	// series. Without that, a big pull of like enemies kept one series running while any of them filled the gap, and
+	// its sum grew with the pull, not the attack - three enemies recasting an 8 % area cast every 8 s stood at 64 %
+	// instead of 24 % (area_series_model.py). Untargetable casters, the mechanic objects, keep the gap rule alone: a
+	// helper casting twice in one mechanic would split it, and part of the towers would be rated (concept 13, A480).
 	private sealed class AreaSeries
 	{
 		public DateTime First;
 		public DateTime Last;
 		public readonly Dictionary<ulong, float> Sums = [];
+		public readonly Dictionary<ulong, DateTime> LandedBy = [];
 	}
 
 	private static readonly Dictionary<uint, AreaSeries> _areaSeries = [];
 
 	// The span is the time from the series' first landing to this one: how long after its first hit the series still hits.
-	private static float SeriesShare(uint listed, Dictionary<ulong, float> shares, out float span)
+	private static float SeriesShare(uint listed, Dictionary<ulong, float> shares, IGameObject? caster, out float span)
 	{
 		var now = DateTime.Now;
 		var castSeconds = Service.GetSheet<Lumina.Excel.Sheets.Action>().TryGetRow(listed, out var row)
 			? row.CastSeconds() : 0f;
-		if (!_areaSeries.TryGetValue(listed, out var series) || (now - series.Last).TotalSeconds > castSeconds)
+		var fresh = !_areaSeries.TryGetValue(listed, out var series) || (now - series.Last).TotalSeconds > castSeconds;
+		if (!fresh && caster is { IsTargetable: true } && series!.LandedBy.TryGetValue(caster.GameObjectId, out var own)
+			&& (now - own).TotalSeconds >= castSeconds)
+		{
+			fresh = true;
+			DefenseTrace.Line($"area series #{listed}: {caster.Name.TextValue} cast it anew, {(now - own).TotalSeconds:F1} s"
+				+ $" after its landing in the series {(now - series.First).TotalSeconds:F1} s long - a new series");
+		}
+
+		if (fresh)
 		{
 			series = new AreaSeries { First = now };
 			_areaSeries[listed] = series;
 		}
 
-		series.Last = now;
+		series!.Last = now;
+		if (caster != null)
+		{
+			series.LandedBy[caster.GameObjectId] = now;
+		}
+
 		span = (float)(series.Last - series.First).TotalSeconds;
 		var highest = 0f;
 		foreach (var (member, share) in shares)
@@ -548,7 +571,7 @@ public static class Watcher
 			}
 		}
 
-		var highestShare = SeriesShare(listed, shares, out var seriesSpan);
+		var highestShare = SeriesShare(listed, shares, set.Source, out var seriesSpan);
 
 		// Above the level the content syncs to or in an unrestricted party (A466), the reading is smaller than in sync and would rate the action too small for
 		// every synced run after it (A452).
@@ -1016,7 +1039,7 @@ public static class Watcher
 					// A listed action is rated by its series (SeriesShare); an unlisted one is not measured at all.
 					var seriesSpan = 0f;
 					var highestShare = OtherConfiguration.HostileCastingArea.Contains(set.Action!.Value.RowId)
-						? SeriesShare(set.Action!.Value.RowId, shares, out seriesSpan) : 0f;
+						? SeriesShare(set.Action!.Value.RowId, shares, battle, out seriesSpan) : 0f;
 
 					// Recording how hard it hits. DataCenter.AreaCastIsWorthMitigating reads this, and
 					// the store is what carries a reading past the end of a session: without it every

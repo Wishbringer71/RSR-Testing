@@ -28,6 +28,16 @@ What this release changes in the fight. For the whole distance from upstream, se
   area heal. It now heals only members under that line, by the same danger order as every other heal, and casts an area
   heal only when more than two stand under it. Each downtime heal writes a line to `DefenseTrace.log`.
 
+## Mitigation
+
+- **An area series of a pack ends with the pack's round.** A listed area cast that lands several times in a row is rated
+  by what the whole series takes from a member, whoever cast each landing - a mechanic's helpers and a pack land on the
+  party together. In a big pull of like enemies the series ran on as long as any of them filled the gap, and its sum
+  grew with the pull: three enemies recasting an 8 % area cast every 8 s could be stored at 64 %, and every later cast
+  of it was then mitigated and pre-healed as a near-lethal hit. A targetable enemy that casts again within a running
+  series now starts a new one; mechanic objects (untargetable helpers) keep counting together, so tower sequences stay
+  one series. Each split writes a line to `DefenseTrace.log`.
+
 ## Packaging
 
 - **latest.zip holds the plugin and nothing else.** The release package of 7.5.7.13+wsh1 also carried the build's source

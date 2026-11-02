@@ -14223,6 +14223,56 @@ durchgehen". Als Skill `spielpatch` festgehalten (Lesetabelle in CLAUDE.md); den
   Upload.
 - *TODO:* Eintrag entfernt, Reihenfolge fortgeschrieben.
 
+### A480 · Flächenserie: verkettete Wirkende sind gewollt, ein neues Wirken eines angreifbaren Gegners beendet die Runde (02.11.2026)
+
+- *Anlass:* TODO-Defekt „Gestaffelte Wirken mehrerer Gegner werden zu einer Serie verkettet" (A478), abgearbeitet nach
+  seinem Auftrag vom 02.11.2026 („todo nach priorität und umsetzbarkeit weiter in jeweiligen kritischen und vollständigen
+  loops bearbeiten"; dieselbe Vorgabe wie 17.10. und 24.10., nichts neu einzutragen).
+- *Der Defekt hielt nicht* (C142). Mitschnitt vom 01.11.:
+  - Verfluchter Blick wirkten acht Verfluchte Augäpfel, die gemeinsam erschienen und gemeinsam entfernt wurden. Sie
+    waren nicht anvisierbar (Trace: „untargetable"), wurden nie angegriffen und wirkten je einmal, alle 3 s.
+  - Das ist eine Mechanik wie Ersticken des Fleisches (vier Helfer, 3 s versetzt), deren Verkettung A460 ausdrücklich
+    baut.
+  - Die 0 bis 7 % aus A478 waren seine eigenen Treffer als Krieger unter Minderung („hit you"). Mitglieder seiner Gruppe
+    traf ein Blick mit 18 bis 19 %. Die abgelegten 38 % sind zwei Blicke auf ein Mitglied, das sich nicht abwandte, also
+    der verfehlte, aber überlebte Treffer aus Konzept 13 (Fehlerrichtung sicher).
+- *Nachgerechnet über sechs Mitschnitte* (25.10. bis 01.11.2026, alle gemessenen Flächenaktionen):
+  - Serien mit mehreren Wirkenden gibt es zweierlei.
+    - Mechanikobjekte: Ersticken des Fleisches, Chemiebombe, Explosion, Verfluchter Blick und gleichzeitige Gruppen.
+    - Kleine Rudel angreifbarer Gegner: Schockwelle drei in 2,9 s, Augen auf mich, Schlangenpeitsche.
+  - Die Leser bewerten je angekündigtem Cast nur diesen einen (`AnnouncedAreaShare`). Die Summe über das Rudel ist
+    deshalb die sichere Bewertung.
+  - In 160 Serien landete kein Gegner zweimal in derselben Serie.
+- *Gefunden statt dessen:*
+  - Die Kette angreifbarer Gegner hat keine Grenze. Sie läuft weiter, solange irgendein Gegner die Lücke füllt, und der
+    Höchstwert hält einen einzigen solchen Lauf fest.
+  - Modell (`area_series_model.py`, neu, mit Selbsttest): drei Gegner, die alle 8 s eine Fläche zu 8 % wirken, stehen nach
+    200 Pulls bei 64 % statt 24 %; vier bis sechs bei 100 %.
+  - Die Folge: Minderung und Vorausheilung bei jedem Wirken des Rudels, die Größenregel spart nie, und die mitgelernte
+    Dauer lässt keine Minderung zählen.
+- *Umgesetzt* (`Watcher.SeriesShare`):
+  - Ein anvisierbarer Wirkender, der in der laufenden Serie schon landete und dessen eigene vorige Landung mindestens eine
+    Wirkzeit zurückliegt, beginnt eine neue Serie. Seine Landung schreibt dazu eine Trace-Zeile.
+  - Mechanikobjekte, also nicht anvisierbare Wirkende, behalten die Abstandsregel allein.
+  - Der Kommentar dazu nennt die gewollte Verkettung über Wirkende (bisher „im selben Moment").
+- *Verworfen:*
+  - Je Wirkendem trennen: zerlegte die Mechaniken.
+  - Eine Wirkzeit ab der ersten Landung: teilte Ersticken des Fleisches.
+  - Eine Höchstzahl von Landungen: eine erfundene Zahl.
+  - Die Regel auch für Mechanikobjekte: Ein zweimal wirkender Helfer teilte die Mechanik. Der Selbsttest hält das als
+    konstruierten Defekt.
+- *Falsifikation:*
+  - Kein Defekt: In seinen Mitschnitten läuft nichts auf. Der Höchstwert bewahrt aber jeden einzelnen Lauf, und große
+    Pulls gleicher Gegner gibt es in jedem Dungeon.
+  - Option falsch: siehe „Verworfen".
+  - Ausgeliefert, und nichts ändert sich: Die Lage fehlte bisher in seinen Inhalten, und ein schon aufgelaufener Wert bleibt
+    bis zur Revision über einen Spielpatch. In seinem letzten Upload gibt es keinen solchen Wert (Serienspannen höchstens
+    1 s außer Verfluchter Blick).
+- *Prüfgrad:* Mitschnitte und Trace statisch, Modell mit Selbsttest, Compile ohne Warnung, `run_ci_checks.py` mit 40 von
+  40 Schritten. Im Spiel nicht beobachtet.
+- *TODO:* Defekt entfernt, Reihenfolge fortgeschrieben. Konzept 13: Abschnitt „Eine Serie zählt als ein Angriff" neu
+  gefasst, der Preis der Seriendauer angepasst.
+
 ---
 ## B · Commit-Register (Fork vs. `upstream/main`)
 
@@ -14517,3 +14567,4 @@ Die offene Arbeit dazu — Reihenfolge und Abbruchbedingung der Nachprüfung —
 | C139 | A437 (29.10.2026): „`latest.zip` enthält ECommons, RebornMaterial, `RotationSolver.dll`, deps und Manifest – keine `RotationSolver.Basic.dll`, keine `.pdb`, keine `.xml`“, der Schuldpunkt „Release-Paket enthält vermeidbaren Ballast“ sei aufgelöst | Galt nur für den lokalen Build ohne Ausgabeordner. Der Veröffentlichungsweg (`publish.yaml`, `--output .\build`) legt den Code-Generator in denselben Ordner, und der Packer zippt jede Datei dort: Das Asset von 7.5.7.13+wsh1 enthielt `RotationSolver.SourceGenerators.dll`, `.deps.json` und `.pdb`. Die angekündigte Bestätigung am Paket des Veröffentlichungswegs fand nicht statt | berichtigt (A474): feste Liste in `RotationSolver/DalamudPackager.targets`, `check_plugin_zip.py` in der CI und vor jeder Veröffentlichung |
 | C140 | A475 (01.11.2026): Regen gehe an das Mitglied mit dem geringsten Anteil ohne Regen (`TargetType.LowHPPercent`, Upstream), das sei der Grund für die Regen auf den Schwarzmagier; „Ergebnis: kein Defekt"; dazu der Absatz in Konzept 07 „Regen des Weißmagiers wählt ab Werk so" | Im Heilpfad liest `ActionSetting.TargetType` zuerst `IBaseAction.TargetOverride`, und der GCD-Pfad setzt vor den Heilungen `TargetType.Heal` samt Bedarfsfilter: Die Zielart von Regen greift dort nie. Die fünf Regen bei 46 bis 70 % wählte die Rangfolge aus Konzept 07; die bei 95 % kam aus der Füllheilung, die den Filter nicht einschaltete – ein Defekt gegen Konzept 07. Die Begründung beschrieb den Code unvollständig gelesen und gab einen Mechanismus als Grund aus | berichtigt (A476): Konzept 07 neu gefasst, Füllheilung mit Bedarfsfilter |
 | C141 | A476 (01.11.2026): „*Umgesetzt:* `IBaseAction.HealRatioOverride` […]; die Füllheilung setzt Filter und ihre Linie" samt Loop und Falsifikation | Gebaut, bevor das Konzept fertig geplant war: zwei Konzeptabsätze, Minuten danach der Code, der Loop erst hinterher im Archiv; die Flächenheilung der Füllheilung, die übrigen Jobs und die Lagen waren nicht erhoben – gegen seine Vorgabe vom 29.10.2026 (Konzept vor Code) | zurückgenommen und nach dem vollständigen Konzept neu gebaut (A477) |
+| C142 | A478 (01.11.2026): Verfluchter Blick, „von mehreren Augen alle 3 s gewirkt", verkettet „gleich welcher Gegner wirkte" zu 38 % über 21 s „bei Treffern von 0 bis 7 %" – ein Defekt, TODO „Gestaffelte Wirken mehrerer Gegner werden zu einer Serie verkettet", nächster Schritt „die Wirkzeitregel gilt je Wirkendem" | Die acht Augäpfel sind nicht anvisierbare Mechanikobjekte, gemeinsam erschienen und entfernt, je ein Wirken – eine Mechanik wie Ersticken des Fleisches, deren Verkettung A460 baut; die 0 bis 7 % waren seine eigenen, geminderten Treffer, Mitglieder seiner Gruppe traf ein Blick mit 18 bis 19 %, die 38 % sind zwei Blicke auf eines; „je Wirkendem" hätte die Mechaniken zerlegt | Defekt gestrichen; gebaut wurde statt dessen die Rundengrenze für angreifbare Gegner (A480) |
