@@ -14737,6 +14737,37 @@ durchgehen". Als Skill `spielpatch` festgehalten (Lesetabelle in CLAUDE.md); den
 - *Prüfgrad:* Compile ohne Warnung, alle CI-Prüfungen lokal; das Fenster ist hier nicht zu sehen – ob es so aussieht,
   wie beschrieben, zeigt erst sein Spiel.
 
+### A497 · Upstream 444388102 im Loop nachgeholt: Arznei zurück an ihre Stelle, die beiden Optionen bleiben aus (02.11.2026)
+
+- *Anlass:* seine Frage, ob die Upstream-Änderungen inhaltlich kritisch auf Synergien mit dem Fork und auf ihren Nutzen
+  im Spiel geprüft wurden. Nein: A495 hatte nur die Beschwörungssperre im Loop gerechnet; die Arznei, „Swiftcast for
+  movement uptime" und „Dynamic primal order" waren nach ihren Voreinstellungen übernommen. Dabei war A495s „ab Werk wie
+  vorher" für die Arznei falsch (C146).
+- *Arznei:* Upstream verschob sie von `GeneralAbility` in `EmergencyAbility`, vor Tankbuster-Plan, Unterbrechung, Heil-
+  und Abwehrdurchläufe. Jede andere Rotation des Forks drückt sie in `GeneralAbility`.
+  - Wirkung: Fallen Arznei und eine Abwehr (Addle, Radiant Aegis) in dieselbe Einwebung, ginge die Abwehr eine Einwebung
+    später. Selten (einmal je 270 s, nur unter Searing Light, ab Werk nur in High-End-Inhalten), aber gegen die
+    Reihenfolge Sicherheit vor Schaden.
+  - Gewinn der früheren Stelle: keiner, der zählt. Die Arznei hält 30 s (Itemtext, xivapi Item 44165), Searing Light 20 s;
+    einige Einwebungen später deckt sie das Fenster noch ganz.
+  - Gebaut: die Arznei mit Upstreams drei Optionen wieder in `GeneralAbility`, hinter Radiant Aegis vor einem Raidwide.
+    Ab Werk ist sie damit wirklich wie vor dem Merge, nur die Optionen sind neu.
+- *Dynamic primal order, ab Werk aus:* Die Synergie mit seiner Zyklon-Grenze (Ifrit nur, wenn der Zyklon gehen darf)
+  greift selten. Sein Mitschnitt vom 26.10.2026: bei den Primal-Beschwörungen im Median 13 bis 20 Yalm vom Ziel (Mitte zu
+  Mitte), höchstens 5 Yalm bei 9 von 81 Titan- und 10 von 69 Garuda-Beschwörungen. Meist zöge die Option Garuda vor
+  Titan: 25 Potenz je zwei Minuten weniger unter Searing Light (`smn_phase_potency.py`, Frage 2), dazu in kurzen Kämpfen
+  die schwächere Phase zuerst. Der seltene zusätzliche Zyklon wiegt das nicht sicher auf; alles im Promillebereich.
+- *Swiftcast for movement uptime, ab Werk aus:* verbraucht Swiftcast in der Rotation, gegen seine Regel.
+- *Beschwörungssperre:* A495 bleibt (Modell, Frage 3).
+- *Falsifikation:*
+  - Kein Defekt? Die Arznei in `EmergencyAbility` kostet nur in der seltenen Kollision; die Rückverschiebung ist eine
+    Ordnungsfrage, kein Verlust.
+  - Option falsch? Upstreams Stelle gewinnt nichts, was zählt (30 s gegen 20 s); die dynamische Reihenfolge verliert bei
+    seinem Abstand leicht.
+  - Ausgeliefert, und nichts ändert sich? Gewollt: Ab Werk spielt der Beschwörer wie vor dem Merge.
+- *Prüfgrad:* statisch am Code, Itemtext und Modell, Abstände aus seinem Mitschnitt (ohne Trefferkreise, daher nur
+  Größenordnung); kompiliert, alle CI-Prüfungen lokal; im Spiel nicht beobachtet.
+
 ## B · Commit-Register (Fork vs. `upstream/main`)
 
 ### B1 · Einzelgeprüfte Fork-Commits
@@ -15034,3 +15065,4 @@ Die offene Arbeit dazu — Reihenfolge und Abbruchbedingung der Nachprüfung —
 | C143 | A483 und Konzept 01, „Anfreunden und Analysieren" (02.11.2026): Anfreunden einweben, „Es kostet keinen GCD, nur einen Einwebeplatz" | Anfreunden ist ein Talent, liegt aber in der Abklinggruppe 58 der Waffenfertigkeiten (Action 44880, 2,5 s); die Aktionsart wurde gelesen, die Abklinggruppe nicht | berichtigt (A487): Konzept 01, die Regel A2 setzt es auf den letzten GCD |
 | C144 | A483 und Konzept 01 (02.11.2026): „Eine Liste der anfreundbaren Bestien führt keines der Blätter […]. Was eine Bestie ist, sagt also nur die Chatmeldung." | Gesucht wurde nach Namen; die Blätter verbinden Gegner und Begleiter über das Modell (`BNpcBase.ModelChara`, `PetMirage`, `Pet`, `XBMPet`) und markieren anfreundbare Grundzeilen in `BNpcBase` Spalte 10 | berichtigt (A487): Konzept 01, Regel A1 |
 | C145 | A487 und Konzept 01, „Belegung der Hörner in der Rotation" (02.11.2026): „Die Belegung selbst wechseln kann sie nicht" | Gesucht wurde nur nach einer Funktion des Clients; Daedalus setzt die Belegung über die Rückrufe des Bestienbuchs und sein Kontextmenü, wie der Spieler | berichtigt (A488): Konzept 01, „Belegung der Hörner in der Rotation", „Aufzeichnung des Bestienbuchs" |
+| C146 | A495 und Konzept 14, „Beschwörer" (02.11.2026): Upstreams Arznei „ab Werk wie vorher" | Upstream hatte sie von `GeneralAbility` in `EmergencyAbility` verschoben, vor die Heil- und Abwehrdurchläufe; ab Werk galt dieselbe Bedingung, aber an anderer Stelle der Reihenfolge. Berichtigt durch A497: wieder in `GeneralAbility`. |

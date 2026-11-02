@@ -565,6 +565,19 @@ public sealed class SMN_Reborn : SummonerRotation
 			return true;
 		}
 
+		// The potion with upstream's options (444388102), here as in every other rotation of the fork: after the heal and
+		// defence passes and the shield ahead of a raidwide. Upstream put it in EmergencyAbility, ahead of all of them;
+		// under Searing Light its 30 s still cover the whole 20 s window when it goes a few weaves later (A497).
+		var potInBigSummon = !SummonBahamutPvE.EnoughLevel || InBahamut || InPhoenix || InSolarBahamut;
+
+		if (UsePotion && HasSearingLight && InCombat
+			&& (PotionTiming == PotTiming.FirstSearingLight || CombatTime > 30f)
+			&& (!LimitPotToBigSummon || potInBigSummon)
+			&& UseBurstMedicine(out act))
+		{
+			return true;
+		}
+
 		return base.GeneralAbility(nextGCD, out act);
 	}
 
@@ -933,16 +946,6 @@ public sealed class SMN_Reborn : SummonerRotation
 
 	protected override bool EmergencyAbility(IAction nextGCD, out IAction? act)
 {   
-    var potInBigSummon = !SummonBahamutPvE.EnoughLevel || InBahamut || InPhoenix || InSolarBahamut;
-
-    if (UsePotion && HasSearingLight && InCombat
-	    && (PotionTiming == PotTiming.FirstSearingLight || CombatTime > 30f)
-	    && (!LimitPotToBigSummon || potInBigSummon)
-	    && UseBurstMedicine(out act))
-    {
-	    return true;
-    }
-
 	// Swiftcast on Resurrection is the job setting "Raise with Swiftcast or Dualcast" (CustomRotation's emergency
 	// pass). A rotation option of its own here overrode it on, and off it changed nothing (A402).
 	if (SwiftcastPvE.CanUse(out act))

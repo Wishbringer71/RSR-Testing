@@ -661,8 +661,26 @@ Primal- oder Demi-Beschwörung. Bei ihm (26.10.2026, Dungeons) verfiel Slipstrea
   - Im Kampf: Ab Werk ändert sich nichts; die Entscheidung oben (RSR hält keine Beschwörung für eine Gunst zurück)
     bleibt. Wer den Schalter einschaltet, sollte „Crimson Cyclone" ohne Reichweitengrenze nutzen, sonst steht die
     Beschwörung bis zur Demi.
-- *Upstreams „Dynamic primal order"* (ab Werk aus) wählt Titan in Bewegung, Ifrit am Ziel innerhalb der
-  Zyklon-Reichweite, sonst Garuda; im Fork nach „Prefer Titan while moving", das dieselbe Bewegung schon vorzieht.
+- *Upstreams „Dynamic primal order"* (444388102) *bleibt ab Werk aus* (A497). Sie wählt Titan in Bewegung, Ifrit am
+  Ziel innerhalb der Zyklon-Reichweite, sonst Garuda; im Fork nach „Prefer Titan while moving", das dieselbe Bewegung
+  schon vorzieht. Die Verbindung zu seiner Zyklon-Grenze ist die mögliche Stärke: Ifrit dann, wenn der Zyklon gehen
+  darf. Sein Mitschnitt vom 26.10.2026 (Beschwörer, Dungeons) zeigt, dass sie selten greift: Bei den Primal-Beschwörungen
+  stand er im Median 13 bis 20 Yalm vom Ziel entfernt (Mitte zu Mitte, ohne Trefferkreis), bei 9 von 81
+  Titan-Beschwörungen und 10 von 69 Garuda-Beschwörungen höchstens 5 Yalm. Meist stünde er also weit, und die Option
+  zöge Garuda vor Titan. Das kostet Titan im Rest von Searing Light nach der Demi: 1300 gegen 800 Potenz unter dem
+  Buff (`smn_phase_potency.py`, Frage 2), also 25 Potenz je zwei Minuten. In kurzen Kämpfen, die nur die erste Primal
+  erreichen (33 Ifrit gegen 81 Titan im Mitschnitt), fällt die schwächere Garuda-Phase zuerst. Der seltene Gewinn, ein
+  Zyklon mehr, wiegt das nicht sicher auf; beides liegt im Promillebereich.
+- *Upstreams „Swiftcast for movement uptime"* bleibt ab Werk aus: Es verbraucht Swiftcast in der Rotation, und seine
+  Regel hält Swiftcast für Wiederbelebungen. Eingeschaltet setzt es die übrigen Swiftcast-Optionen der Rotation außer
+  Kraft.
+- *Die Arznei* steht im Fork weiter in `GeneralAbility`, wie in jeder anderen Rotation des Forks, nach den Heil- und
+  Abwehrdurchläufen und nach Radiant Aegis vor einem Raidwide (A497). Upstream setzte sie in `EmergencyAbility`, vor
+  all diese Durchläufe. Im Kampf hätte das nur dort etwas geändert, wo die Arznei und eine Abwehr in dieselbe
+  Einwebung fallen: Dann ginge die Abwehr eine Einwebung später. Gewonnen hätte die Arznei an der früheren Stelle
+  nichts, was zählt. Sie hält 30 s (Itemtext, xivapi), Searing Light 20 s; einige Einwebungen später deckt sie das
+  Fenster noch ganz. Upstreams Optionen „Use potion", „Potion timing" und „Only use potion during a big summon" gelten
+  an dieser Stelle unverändert.
 
 **Weitere Punkte, gegen The Balance geprüft:**
 
@@ -679,7 +697,7 @@ Primal- oder Demi-Beschwörung. Bei ihm (26.10.2026, Dungeons) verfiel Slipstrea
 | Swiftcast | Wiederbelebung zuerst, Slipstream nur situativ | Wiederbelebung (Einstellung an), alle Rotationsoptionen dafür ab Werk aus, auch Upstreams „Swiftcast for movement uptime" (444388102) | deckt sich mit seiner Regel |
 | Lux Solaris | für einen Raidwide halten, vor Ablauf nutzen | eigene Entscheidung (Konzept 08) | deckt sich |
 | Rekindle | immer nutzen | niedrigster Anteil, sonst er selbst; spätestens drei GCDs vor Phasenende | deckt sich |
-| Trank | Opener spät eingewebt, danach im Sechs-Minuten-Fenster | unter dem eigenen Searing Light, nach „Tincture usage" (ab Werk nur in High-End-Inhalten); nach 270 s Abklingzeit ist das nächste eigene Fenster das der sechsten Minute. Seit Upstream 444388102 in der Notfallprüfung der Fähigkeiten, mit „Use potion" (an), „Potion timing" (ab dem ersten Searing Light) und „Only use potion during a big summon" (aus) – ab Werk wie vorher | deckt sich |
+| Trank | Opener spät eingewebt, danach im Sechs-Minuten-Fenster | unter dem eigenen Searing Light, nach „Tincture usage" (ab Werk nur in High-End-Inhalten); nach 270 s Abklingzeit ist das nächste eigene Fenster das der sechsten Minute. Dazu Upstreams Optionen (444388102) „Use potion" (an), „Potion timing" (ab dem ersten Searing Light) und „Only use potion during a big summon" (aus); die Stelle bleibt `GeneralAbility` (A497) | deckt sich |
 | Lucid Dreaming | bei rund 70 % MP | Schwelle in MP, ab Werk 6000 von 10000 | seine Einstellung (Konzept 18) |
 | Physick | kein Einsatz im Endgame | nur mit „Use Physick above level 30" (ab Werk aus) | deckt sich |
 
