@@ -435,23 +435,54 @@ mit ihm anfreunden kann, und das Talent dann so einsetzen, dass es wahrscheinlic
       liegt; über deiner Stufe ist kein Pakt möglich.
     - Der beste Zeitpunkt ist also der letzte vor dem tödlichen Treffer. Weil das Talent selbst nicht tötet, geht es
       auch bei 1 LP gefahrlos.
-- *Nicht belegt:*
-  - ob die Stufe von Analysieren die aktuellen LP einrechnet oder je Bestie fest ist (weder Wirktext noch
-    consolegameswiki sagen es);
-  - ob der Sieg durch einen Mitspieler zählt;
-  - eine Prozentzahl.
-  - Eine Liste der anfreundbaren Bestien führt keines der Blätter, die xivapi nennt (nach Namen gesucht). Was eine
-    Bestie ist, sagt also nur die Chatmeldung.
-- *RSR heute:* Die Beastmaster-Rotation setzt keines der beiden Talente ein. Die Basisschicht gibt Anfreunden
-  widersprüchliche Bedingungen: `TargetStatusNeed` und `TargetStatusProvide` verlangen beide Freundschaftsempfänglich
-  (`ModifyCapturePvE`). Damit wäre es nie einsetzbar; das wirkt nicht, solange es niemand ruft.
-- *Was eine Regel brauchte:*
-  - Anfreunden im letzten Fenster vor dem tödlichen GCD einweben – über die korrigierte Restzeit des Ziels oder seine
-    LP gegen den nächsten Treffer –, nur auf ein Ziel, das nicht über deiner Stufe steht und noch nicht markiert ist.
-  - Es kostet keinen GCD, nur einen Einwebeplatz.
-  - Ohne Analysieren versuchte die Regel es auch an Zielen ohne Pakt. Mit Analysieren müsste RSR die Chatmeldung lesen
-    (im Text der Client-Sprache, aus dem Blatt `LogMessage`); einen Chat-Leser hat RSR bisher nicht.
-  - Offene Arbeit im TODO, „Beastmaster: Anfreunden zum besten Zeitpunkt".
+- *Nicht belegt:* ob die Stufe von Analysieren die aktuellen LP einrechnet; ob der Sieg durch einen Mitspieler zählt;
+  eine Prozentzahl.
+- *Anfreunden kostet einen GCD:* Es ist zwar ein Talent, liegt aber in der Abklinggruppe 58 der Waffenfertigkeiten
+  (Action 44880, 2,5 s; xivapi v2, 02.11.2026) und ersetzt einen GCD mit 160 bis 600 durch einen mit 100.
+- *Was eine Bestie ist, sagen die Blätter* (A487): Ein Gegner gehört zu einem Begleiter, wenn das Modell seiner
+  Grundzeile (`BNpcBase.ModelChara`: Modell und Basis) dem Aussehen des Begleiters gleicht: `XBMPet` → `Pet` → erstes
+  erlaubtes Aussehen (`PetMirage`) → `ModelChara`. In der gebauten Lumina heißen die Spalten `Pet.Unknown8`
+  (`AllowedPetMirage[0]`) und `Pet.Unknown18` (zurück zu `XBMPet`); belegt am EXDSchema („latest", 17.10.2026) nach der
+  Lage der Spalten und an xivapi (Eichhörnchen: Pet 48, PetMirage 10, Modell 2 und Basis 2, XBMPet 2). Anfreundbar ist
+  eine Grundzeile mit dem Wert 5 in der unbenannten Spalte 10 (`BNpcBase.Unknown10`). So liest es WrathCombo
+  (Werkzeugquelle); von den zehn Grundzeilen mit dem Modell des Eichhörnchens tragen vier die 5. Was die Spalte
+  bedeutet, nennt keine Quelle. Die freigeschalteten Begleiter führt das Spiel in `XBMManager` (`IsPetUnlocked`, mit
+  der XBMPet-Id).
+- *RSR heute:* Die Beastmaster-Rotation setzte keines der beiden Talente ein. Die Basisschicht gab Anfreunden
+  widersprüchliche Bedingungen: `TargetStatusNeed` und `TargetStatusProvide` verlangten beide Interest Captured
+  (`ModifyCapturePvE`); das wirkte nicht, solange es niemand rief.
+
+**Was gilt beim Anfreunden** (Option „Capture familiars you do not have yet", ab Werk an; A487):
+- *A1 – Wen:* einen Gegner, der nach den Blättern ein Begleiter ist (oben), den du nach `XBMManager` noch nicht hast,
+  der nicht schon markiert ist (Interest Captured, 4626), nicht über deiner Stufe steht und höchstens 10 y entfernt
+  ist; solange du nicht schon einen markierst (Capturing Interest, 4624). Hat das Spiel die Liste noch nicht geladen
+  (`XBMManager.State`), oder lehnt es Anfreunden für dieses Ziel ab (`GetActionStatus` mit dem Ziel, ohne
+  Abklingzeit), keiner.
+- *A2 – Wann:* wenn seine korrigierte Restzeit nicht länger ist als ein GCD. Dann fällt er voraussichtlich vor deinem
+  nächsten GCD, dies ist der letzte, der ihn noch lebend trifft, und seine LP sind die niedrigsten, die ein Markieren
+  noch erreicht. Weil Anfreunden nicht tötet, geht es auch bei 1 LP. Ohne Schätzung der Restzeit keine Markierung.
+- *Preis:* ein GCD je Versuch, einmal je Gegner einer Art, die du noch nicht hast; misslingt der Pakt, beim nächsten
+  dieser Art. Hast du sie, nie wieder.
+- *Lagen:* In der Gruppe markiert RSR ebenso; ob der Sieg eines Mitspielers zählt, ist unbelegt, der Preis bleibt ein
+  GCD. Unter Stufensynchronisation zählt deine synchronisierte Stufe. Mehrere Bestien: eine Markierung zur Zeit.
+- Analysieren braucht die Regel nicht; die Chatmeldung zu lesen entfällt.
+- *Gegenhypothesen:* Bedeutet die 5 etwas anderes, versucht RSR es an Gegnern ohne Pakt; das Spiel lehnt das Ziel dann
+  ab, oder es kostet einen GCD je Gegner, nicht mehr – der Versuch fällt auf den letzten GCD vor seinem Tod. Kein
+  Gewinn, weil Gegner zu schnell fallen? Ohne Restzeitschätzung markiert RSR nicht; das bleibt sichtbar daran, dass
+  keine Markierung erscheint.
+
+**Belegung der Hörner in der Rotation** (seine Vorgabe vom 02.11.2026: „wieso vorschlag? es soll in die rotation
+eingearbeitet werden, situationsbezogen"; A487):
+- *Was die Rotation situationsbezogen tut:* Sie wählt unter den drei Begleitern seiner Hörner nach Lage (B0 bis B3):
+  in der Gefahr den, der heilt oder schützt; ohne Gefahr den, dessen Dressur gegen die Gegner im Kampf am meisten
+  bringt, für den langen Einsatz.
+- *Die Belegung selbst wechseln kann sie nicht:* Der Client führt die drei Begleiter der Hörner im `ActionManager` und
+  die freigeschalteten im `XBMManager` nur zum Lesen. Eine Funktion, einen Agenten oder ein Paket, das die Belegung
+  setzt, kennt FFXIVClientStructs nicht (b69073a vom 02.11.2026, nach „XBM", „Beastmaster", „Bestiary", „Pet"
+  durchsucht). Die drei Bytes im Speicher zu überschreiben, änderte nur die Anzeige des Clients, nicht, was der Server
+  beim Ruf beschwört. Ob das Menü des Bestienbuchs im Kampf offen ist, ist unbelegt.
+- *Darum kein Vorschlag im Chat* (der erste Entwurf; er will keinen): Bis eine Funktion zum Setzen belegt ist, wartet
+  der Punkt im TODO unter „Warten auf Daten".
 
 **Begleiter nach Lage: Schaden, Heilung, Schutz** (A485). Sein Auftrag vom 02.11.2026: die Rotation mit eigenen Ideen
 so ausbauen, dass die vorhandenen Begleiter passend zu Art und Zahl der Gegner möglichst viel Schaden machen, alle
@@ -631,9 +662,8 @@ Option aus: die eingestellte Reihenfolge wie bisher, B0 gilt. BossModReborn lies
 
 *Belegung der Hörner:* RSR wählt unter den drei, die er im Bestienbuch zuordnet; welche drei das sind, entscheidet die
 Wahl am meisten. Für Rudel (Dungeons beim Leveln) einer mit Flächendressur, allein in der offenen Welt einer, dessen
-Dressur heilt, oder einer, der mit Entfesseln oder Borrow schützt. Aus den freigeschalteten einen Vorschlag zu machen,
-kann RSR lesen (`XBMManager`), aber nicht anwenden; offen im TODO („Beastmaster: Belegung der Kampfhörner aus den
-freigeschalteten Begleitern vorschlagen").
+Dressur heilt, oder einer, der mit Entfesseln oder Borrow schützt. Die Belegung selbst kann RSR nicht setzen (unten,
+„Belegung der Hörner in der Rotation").
 
 *Preis:* Die Wahl liest nur, was beim Rufen steht. Ändert sich die Zahl der Gegner im langen Einsatz, bleibt der
 Begleiter. Kegel und Linie zählt B3 wie einen Kreis um das Ziel (die Stellung des Begleiters ist beim Rufen unbekannt) –
@@ -721,11 +751,11 @@ Werkzeugquelle, nur gelesen):
   Stützt W2 und W3 unabhängig.
 - Die Affinität jeder Dressur als Tabelle von 50 Aktionen; daraus Dressur und Axt im Uhrzeigersinn in beide Richtungen
   (Dressur zuerst oder als zweite). RSR setzt die Dressur, sobald irgendein Herz steht, ohne ihre Affinität; die steht im
-  Tooltip („Instinctual Affinity: Eldritch"). Wie viel eine absichtliche Kombo mehr bringt als eine einfache, nennt
-  kein Text; offen im TODO („Beastmaster: Dressur nach ihrer Affinität in die Kompass-Kombos setzen").
+  Tooltip („Instinctual Affinity: Eldritch"). Umgesetzt als K1 (unten, „Kompass: Dressur und Axt im
+  Uhrzeigersinn").
 - Anfreunden: ein Ziel als Begleiter erkannt über `BNpcBase` und Modell, freigeschaltet über
-  `XBMManager.IsPetUnlocked`, laufender Versuch am Status „Interest Captured" (4626). Fließt in den TODO-Punkt
-  „Beastmaster: Anfreunden zum besten Zeitpunkt".
+  `XBMManager.IsPetUnlocked`, laufender Versuch am Status „Interest Captured" (4626). Umgesetzt in A1 (oben, „Was gilt
+  beim Anfreunden"); WrathComboʼs Weg über `Pet.AllowedPetMirage` heißt in der gebauten Lumina `Pet.Unknown8`.
 - Entfesseln nicht für Wespe (Final Sting), ein Burst aus Dressur, Axt, Rally und Rallying Cheer, eine Ladung Shield Charge
   zurückgehalten: ohne Begründung in der Quelle, nicht übernommen.
 
@@ -733,6 +763,51 @@ Werkzeugquelle, nur gelesen):
 Beginn des Fensters verschiebt nichts und bleibt erlaubt. W2 falsch, weil der Ansturm Schaden bringt? Den Wert hat Risen
 Fall ohne Ansturm; nur Hawkish Talons über 10 y wartet. Ausgeliefert, und nichts ändert sich? Steht er im Nahkampf, ändert
 W2 nichts; die Wahl von W3 schreibt keine Zeile, sie ist ohne Bewegung gleichwertig.
+
+**Kompass: Dressur und Axt im Uhrzeigersinn** (A487; sein Auftrag vom 02.11.2026, das TODO nach Priorität
+abzuarbeiten).
+
+*Was das Spiel festlegt* (Job-Guide na, „Instinctual Combos", abgerufen 02.11.2026; Wirktexte der Äxte, der Dressur und
+der Traits Wild Heart III und IV, xivapi v2):
+- Zwei Instinktfertigkeiten – deine oder die des Begleiters – innerhalb von 7 s schließen eine Kombo mit Zusatzschaden.
+- Folgt die zweite im Uhrzeigersinn auf die erste (Volant → Rampant → Durant → Eldritch → Volant), ist es eine
+  absichtliche Kombo: „greater additional damage", dazu leuchtet Sunstrider oder Moonstalker; beide Seiten geben
+  Universality. Eine höhere Kettenzahl erhöht den Zusatzschaden.
+- Schließt der Begleiter die Kombo, gibt es einen Stapel Natural Instinct, schließt deine Axt, einen Stapel Mastered
+  Instinct.
+- Die Äxte: Avalanche Rampant, Mistral Durant, Spinning Eldritch, Gale Volant. Die Dressur trägt die Affinität ihres
+  Begleiters, im Tooltip „Instinctual Affinity" (Digest: Eldritch).
+- Wie viel Zusatzschaden eine Kombo bringt, nennt kein Text; die Kombo-Aktionen (44910–44916) haben keinen Wirktext.
+
+*Wie RSR heute verkettet* (`BST_Reborn.AttackAbility`):
+- Zweig 1, wenn Mastered Instinct fehlt (deine Axt soll schließen): Dressur, dann die Axt, deren Bedingung das
+  stehende Herz ist – also die im Uhrzeigersinn folgende. Absichtlich.
+- Zweig 2, wenn Natural Instinct fehlt (der Begleiter soll schließen): eine Axt ohne Blick auf das Herz, in fester
+  Reihenfolge Gale, Spinning, Mistral, Avalanche, danach die Dressur. Absichtlich wird das nur zufällig: nach Gale nur
+  mit einem Rampant-Begleiter, und Gale selbst nur nach einem Eldritch-Herz.
+
+*Was gilt (K1, ohne Option):* In Zweig 2 die Axt, die den Kompass im Uhrzeigersinn hält:
+- Steht ein Herz, die Axt, die ihm folgt (ihre Bedingung ist dieses Herz).
+- Steht keines, die Axt vor der Affinität der Dressur, damit die Dressur danach absichtlich schließt: vor Eldritch
+  Mistral, vor Volant Spinning, vor Rampant Gale, vor Durant Avalanche.
+- Fehlt diese Axt (Stufe), oder ist die Affinität unbekannt (kein Katalog), die bisherige Reihenfolge.
+- Kosten wie bisher: eine Axt, dieselben TP, dieselbe Abklingzeit; nur welche der vier.
+
+*Gerechnet* (`bst_compass_model.py`, erschöpfend über jedes Herz und jede Affinität, jede Stufe der Äxte): K1 bringt in
+jedem Fall mindestens so viele absichtliche Glieder wie die feste Reihenfolge, in 12 von 20 Fällen eines mehr (ohne Herz
+und Gale als Starter waren es nur bei einem Rampant-Begleiter zwei). Nichts wird schlechter, auch nicht mit fehlenden
+Äxten.
+
+*Verworfen:*
+- Zweig 1 umdrehen (erst die Axt, die dem Herz folgt, dann die Dressur): gleiche Erwartung an absichtlichen Gliedern
+  (eines sicher, eines zu einem Viertel), aber ein anderer Stapel – kein Gewinn, belegt durch dasselbe Modell.
+- Die Dressur zurückhalten, bis sie absichtlich schließt: Die Kette bricht nach 7 s, und den Wert der Kettenzahl
+  gegen den einer absichtlichen Kombo nennt kein Text.
+- Eine Tabelle der 50 Affinitäten (WrathCombo): Der Tooltip hat sie.
+
+*Gegenhypothesen:* Kein Gewinn, weil der Unterschied klein ist? Den Betrag nennt kein Text; K1 kostet nichts und verliert
+nirgends. Ausgeliefert, und nichts ändert sich? Mit einem Rampant-Begleiter war Gale schon die richtige Axt; ohne Katalog
+bleibt die alte Reihenfolge.
 
 ---
 
