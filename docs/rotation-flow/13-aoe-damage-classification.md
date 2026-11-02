@@ -1394,7 +1394,7 @@ geprüft bei jedem Speichern.
 **12. Bauabfolge, jede Stufe rückbaubar.** (0) Die drei Defekte aus seinen Prüffällen – ungelisteter Tankbuster,
 Aufnahme unter Unverwundbarkeit, Messung ohne Synchronisation –: unabhängig von der Revision, gebaut (A452). (1) Format, Übernahme der alten Dateien, Sicherung, Quarantäne, Invarianten – ohne
 Verhaltensänderung, die alte Datei bleibt (Abschnitt „Stufe 1: Speicher, Übernahme, Sicherung"). (2) Regel 4 für Fläche
-und Tankbuster. (3) Regeln 5 und 5b. (4) Sperren nach Regel 6, mit den Schichten der Sperrspeicher. (5) Anzeige. Rückbau
+und Tankbuster – gebaut (A481, Abschnitt „Stufe 2"). (3) Regeln 5 und 5b. (4) Sperren nach Regel 6, mit den Schichten der Sperrspeicher. (5) Anzeige. Rückbau
 einer Stufe: ihr Messverfahren zurück; die Werte bleiben in beiden Dateien.
 
 ### Stufe 1: Speicher, Übernahme, Sicherung (gebaut)
@@ -1555,6 +1555,75 @@ Lage, die er mit „alte daten dauerhaft unwidersprochen" ausschließt. *Option 
 keine liefert dieselben Daten mit weniger Risiko für den Bestand. *Ausgeliefert, und nichts ändert sich – warum?* So
 gewollt im Kampf. Was nicht wirken könnte: Bleibt die Spielversion unlesbar, landet jede Messung in der übernommenen
 Schicht, und Stufe 2 bestätigte nie etwas – schützend, und in der Kopfzeile sichtbar.
+
+### Stufe 2: Regel 4 für Fläche und Tankbuster
+
+**Im Kampf.** Ein Wert, den die laufende Spielversion noch nicht sauber gemessen hat, spart keinen Schutz mehr: Eine
+kleine Fläche wird gemindert wie eine unbewertete, ein kleiner Tankbuster hält die übrige Abwehr nicht zurück, und
+Mitspieler helfen dem Tank wie bei einem ungemessenen. Schützend gilt jeder Wert weiter: ein großer gelernter Raidwide,
+ein tödlicher Tankbuster, eine lange Serie. Mit der ersten sauberen Messung der laufenden Version spart er wieder. Seine
+Entscheidung (A451, „asymmetrisch, wie empfohlen"); die Rechnung dazu: „Patch hebt 18 → 30 %" sinkt von 8,3 % falsch
+ausgelassenem Schutz je Cast auf 0 % (`learned_revision_model.py`, Tabelle unter Regel 5b).
+
+**Bestätigt** heißt: Die laufende Schicht des Eintrags trägt die laufende Spielversion und das laufende Messverfahren und
+hat mindestens eine saubere Messung. Ist die Spielversion nicht lesbar, ist nichts bestätigt; gelesen wird sie beim Fragen
+erneut, solange sie fehlt. Ein Eintrag ohne laufende Schicht – nur aus der alten Datei oder aus einer früheren Version –
+ist übernommen.
+
+**Die Leser, je nach Richtung** (alle Stellen, die eine der beiden Tabellen lesen, A481):
+
+| Leser | Richtung | übernommen, unbestätigt |
+|---|---|---|
+| `DataCenter.AreaCastIsWorthMitigating` (Größenregel, „Skip mitigation for small area casts") | spart | wie unbewertet: gemindert |
+| `DataCenter.BmrRaidwideIsSmallListedCast` (gehaltener BossModReborn-Raidwide) | spart | nicht klein: nicht gehalten |
+| `DataCenter.AnnouncedHitIsSmall` (proaktive Erneuerung wartet) | spart | nicht klein: wartet nicht |
+| Rückhalt beim Tankbuster-Plan (`HoldDefenceForTankbuster`, „Spend only the mitigation a measured tankbuster needs") | spart | nichts neben dem Plan gehalten |
+| `TankbusterHelp.MeasuredHitCallsForNoHelp` (Hilfe für den Tank bleibt aus) | spart | Hilfe wie bei einem ungemessenen |
+| großer unterbrechbarer Cast, große Fläche (`AreaShareNow` gegen die Größe einer großen Barriere) | schützt | gilt |
+| angekündigter Anteil: Vorausheilung, Halt für den Treffer, wen er tötet (`AnnouncedAreaShare`) | schützt | gilt |
+| Tankbuster-Plan: Bündel, Unverwundbarkeit, „alles" (`TankbusterTable.PredictedShare`) | schützt | gilt |
+| Tankwechsel (`TankSwapWatch`), bekannter Tankbuster (`IsLearned`), Seriendauern | schützt | gilt |
+
+Ein schützender Leser ist mit einem kleinen übernommenen Wert nie weniger schützend als ohne Wert: Er reagiert erst ab
+einer Größe, und ohne Wert reagiert er gar nicht. Deshalb genügt es, die sparenden Leser auf „bestätigt" zu stellen.
+
+**Messmittel.** Lässt ein sparender Leser einen Wert aus, weil er unbestätigt ist, schreibt er eine Zeile ins
+`DefenseTrace.log`, einmal je Cast: Aktion, übernommener Wert, „not confirmed in this game version". Die Kopfzeile zählt
+je Speicher die bestätigten Einträge neben den laufenden und den übernommenen.
+
+**Prüfmittel** (Regel 11). `check_learned_readers.py` hält in der CI fest: Die Tabellen werden nur in den Dateien gelesen,
+deren Leser oben eingeordnet sind; jeder sparende Leser fragt „bestätigt". Ein neuer Leser in einer anderen Datei ist ein
+Befund, bis er eingeordnet ist. Selbsttest gegen einen sparenden Leser ohne die Frage und einen Leser in einer neuen Datei.
+Den Speicher spielt `revision_harness/run.sh` durch: Nach dem Laden in lesbarer Version ist ein Eintrag genau dann
+bestätigt, wenn diese Version eine saubere Messung von ihm hat, und eine saubere Messung bestätigt sofort; ein Speicher,
+der schon eine unsaubere Messung als Bestätigung nimmt, fällt im Selbsttest auf.
+
+**Lagen.**
+- *Erster Start mit Stufe 2:* Bestätigt ist, was seit Stufe 1 in der laufenden Version sauber gemessen wurde (im Upload vom
+  01.11.2026 zwölf Flächen- und vier Tankbuster-Einträge); alles aus der alten Datei ist übernommen, bis es wieder
+  landet. Das ist der Preis aus Stufe 1, „eine Bestätigung je Eintrag mehr".
+- *Patch oder Hotfix:* Jeder Eintrag ist übernommen, bis er wieder landet; sein Beispiel „Hotfix ohne Änderung" kostet je
+  kleinem Raidwide einmal eine Gruppenminderung.
+- *Ohne Stufensynchronisation* wird nichts abgelegt (Regel 8), also auch nichts bestätigt: In übersynchronisiertem Inhalt
+  bleibt ein übernommener Wert unbestätigt und spart nicht.
+- *Unsaubere Landungen* (Schadensplus am Gegner, Verwundbarkeit) bestätigen nicht; ein Gegner, der stets mit Schadensplus
+  wirkt, bleibt unbestätigt – schützend.
+- *Spielversion nicht lesbar:* nichts bestätigt, alles schützt; die Kopfzeile sagt es.
+
+**Preis.** Je Version und kleiner Aktion beim ersten Auftreten eine Abklingzeit mehr; beim Tank die alte Abwehr neben dem
+Plan, und Hilfe eines Mitspielers, die sonst ausbliebe. Bewertet in seiner Entscheidung (A451): Der Preis ist sicher, aber
+klein; der Schaden des wörtlichen Wegs selten, aber im Tankbuster-Fall tödlich.
+
+**Verworfen.**
+- *Bestätigt erst ab zwei sauberen Messungen:* verdoppelte den Preis und schützt nur gegen eine erste Messung, die zu klein
+  ausfällt – das deckt Regel 5 mit Zahl und Streuung, nicht Regel 4.
+- *Die schützenden Leser ebenfalls auf „bestätigt" stellen:* nähme einem übernommenen tödlichen Tankbuster die
+  Unverwundbarkeit – gegen „schützend gilt immer das Höhere".
+
+**Gegenhypothesen.** *Kein Defekt:* Ohne Stufe 2 spart nach einem Patch jeder alte Wert weiter, auch der eines verstärkten
+Treffers; das schließt sein Auftrag aus. *Option falsch:* die Verworfenen. *Ausgeliefert, und nichts ändert sich –
+warum?* Bleibt die Spielversion unlesbar, ist nichts bestätigt und nichts spart (schützend, sichtbar in der Kopfzeile);
+landet eine Aktion nie sauber, spart sie nie – ebenfalls schützend.
 
 ### Seine Entscheidung: asymmetrisch
 

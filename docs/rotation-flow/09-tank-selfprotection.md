@@ -307,6 +307,10 @@ Freigegeben ist in Z2 ein Glied von S ab seinem Fenster.
 - **Kein Heiler lebt:** Die Reserve entfällt; neben dem Plan geht der Rest mit auf den Tankbuster (Abschnitt „Ohne
   Heiler: den eigenen Tod hinauszögern"). Die Rückhaltung unter einer Unverwundbarkeit bleibt – unter ihr trifft der
   Tankbuster nicht.
+- **Wert nicht bestätigt:** Hat die laufende Spielversion den Tankbuster noch nicht sauber gemessen – sein Wert ist aus
+  einer früheren Version oder der alten Datei übernommen –, hält der Plan nichts neben sich zurück; was er braucht, drückt
+  er weiter, die Unverwundbarkeit eingeschlossen. Ein Patch, der den Treffer verstärkt hat, nimmt dem ersten Cast so nicht
+  die Abwehr eines ungemessenen (Konzept 13, „Stufe 2", seine Entscheidung A451).
 - **Heiler:** keine Einzelabwehr für einen gewirkten Tankbuster, wenn jedes seiner Ziele unter Heiligem Boden oder
   Meteoritenfall über den Einschlag hinaus steht. Eine BossModReborn-Vorhersage öffnet sie weiterhin – sie sagt nicht,
   wen sie trifft –, ein Tankbuster-Marker ebenso, er nennt keinen Zeitpunkt. Den Plan des Tanks kennt der Heiler nicht.
