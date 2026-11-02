@@ -10,10 +10,7 @@ Betroffene: **N** Endnutzer · **R** Autoren abgeleiteter Rotationen (Namensräu
 Nach der Wirkung im Kampf: Sicherheit der Gruppe vor Schaden, gewichtet mit der Wahrscheinlichkeit, in seinem Profil
 (seine Vorgabe, 17.10.2026: „todo nach wichtigkeit abarbeiten. jeweils im loop bearbeiten").
 
-1. Die gelernten Tabellen in den Einstellungen zeigen: entschieden (Konzept 13, A451, Regel 10), die letzte Stufe nach
-   Regel 12. Ändert den Kampf nur mittelbar: Er sieht, warum RSR eine Aktion mindert, auslässt oder einen Gegner nicht
-   einschläfert.
-2. Fremde Repositories auf Verbesserungen für RSR prüfen: Jeder Fund kann ein Defekt im Verhalten einer Klasse sein,
+1. Fremde Repositories auf Verbesserungen für RSR prüfen: Jeder Fund kann ein Defekt im Verhalten einer Klasse sein,
    den RSR heute im Kampf zeigt; zuerst die Rotationswerkzeuge für alle Jobs, Daedalus vorn (aktiv, alle Jobs,
    eigene Kampfvorhersage).
 
@@ -22,23 +19,6 @@ Danach die technische Schuld, soweit ihre Auflösungsbedingung erfüllt ist. War
 ## Defekte
 
 ## Offene Arbeit
-
-### Gelernte Tabellen des Forks in den Einstellungen zeigen und bearbeiten · N
-Sein Auftrag (28.10.2026): „prüfen, ob es sinnvoll ist, die durch den fork selbst erstellten lernlisten ähnlich der
-listen vom upstream (aoe, tankbuster, rückstoß etc.) auch in den settings anzeigbar und editierbar zu machen mit den
-dazugehörigen werten wie name, gegner, schaden, effekt etc.). dass dann an den beispielen des upstreams ausrichten und
-auch dort integrieren." Im Kampf: Ein falsch gelernter Wert – ein zu groß gemessener Tankbuster, ein als resistent
-geführter Gegnertyp, ein Marker ohne Treffer, ein überschätzter DoT – steuert Abwehr, Heilung und Schlaf, bis die ganze
-Datei bei geschlossenem Spiel gelöscht wird; die Liste zeigt heute nur die Anteile der Flächen- und der
-Tankbuster-Tabelle neben Upstreams AoE- und Tankbuster-Liste. *Ort:* `MainWindow_List` (`DrawListActions`,
-`DrawActionsList`, Vorbild: Upstreams Listen mit Hinzufügen, Zwischenablage, Entfernen, Zurücksetzen); die Speicher in
-`OtherConfiguration`: `HostileCastingAreaPotential`, `TankbusterPotential`, `TankbusterMarkerWithoutHit`,
-`SleepOutcomes`, `SleepResistantKinds`, `SleepDiminishing`, `HitSeriesOnPlayer`, `DotOnParty`, `ActionPenaltyCasts`, mit dem
-Zustand je Eintrag aus den Revisionen und den Nebenspeichern der Sperren (`TankbusterMarkerWithoutHitGame`, `SleepLocks`,
-`ActionPenaltySightings`).
-*Nächster Schritt:*
-Anzeige ja, Bearbeitung nein (Konzept 13, „Gelernte Tabellen über Spielversionen", Regel 10; seine Vorgabe A173); gebaut
-als letzte Stufe der Revision. *Konzept:* 13 (gelernte Tabellen), 18 (Einstellungen).
 
 ### Fremde Repositories auf Verbesserungen für RSR prüfen · N, R, U
 Sein Auftrag (02.11.2026): „alle von dir gefundenen repos, die du benannt hast prüfen, ob daraus generell

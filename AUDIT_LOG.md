@@ -14715,6 +14715,28 @@ durchgehen". Als Skill `spielpatch` festgehalten (Lesetabelle in CLAUDE.md); den
 - *Prüfgrad:* statisch am Code, an Job-Guide und The Balance, gerechnet im Modell (Selbsttest erweitert: die Sperre,
   die jede Primal für eine nie lösbare Gunst hält, muss verlieren); kompiliert; im Spiel nicht beobachtet.
 
+### A496 · Gelernte Tabellen, Stufe 5: Anzeige im Listenfenster (02.11.2026)
+
+- *Anlass:* letzter Schritt nach Regel 12; TODO „Gelernte Tabellen des Forks in den Einstellungen zeigen und
+  bearbeiten" (sein Auftrag vom 28.10.2026, entschieden mit Regel 10: Anzeige ja, Bearbeitung nein). Damit sind alle
+  Stufen der Revision gebaut; der TODO-Eintrag ist geschlossen.
+- *Im Kampf:* nichts. Er sieht im Listenfenster unter „Learned tables" je Speicher den Wert, den die Regeln lesen, und
+  seinen Zustand unter der Spielversion – bestätigt, übernommen, widerlegt, Sperre mit offenem oder verbrauchtem Versuch.
+- *Gebaut:*
+  - `MainWindow_Learned.cs`: zehn Reiter für die 14 angezeigten Speicher; Zeilen aus Kopien unter den Schlössern,
+    höchstens einmal je Sekunde und nur bei offenem Abschnitt; Namen aus den Blättern zwischengespeichert; nur
+    sichtbare Zeilen gezeichnet (`ImGuiListClipper`, Muster aus BossModReborn ae64e33, Werkzeugquelle); Suche und
+    „Copy" mit Tabulatoren. Nichts wird geschrieben.
+  - In Upstreams `MainWindow_List.cs` nur eine Zeile: der neue Abschnitt.
+  - `OtherConfiguration.AreaRevisionSnapshot` und `TankbusterRevisionSnapshot` für den Zustand der Schichten.
+- *Abweichung von Regel 10:* Wirkender und Gebiet je Aktion führen die Speicher nicht; gezeigt wird, was sie führen.
+  Für Gegnerarten nennt die Anzeige den Namen eines Gegners dieser Art im Umkreis, sonst die Id.
+- *Prüfmittel:* `check_learned_display.py` (neu, in der CI, mit Selbsttest): jeder gelernte Speicher in
+  `OtherConfiguration.Files` hat einen Reiter. `check_learned_readers.py` führt die Anzeige als Leser.
+- *Feste Zahl:* die Pufferlänge des Suchfelds (50, wie Upstreams Suchfelder), kein Spielwert.
+- *Prüfgrad:* Compile ohne Warnung, alle CI-Prüfungen lokal; das Fenster ist hier nicht zu sehen – ob es so aussieht,
+  wie beschrieben, zeigt erst sein Spiel.
+
 ## B · Commit-Register (Fork vs. `upstream/main`)
 
 ### B1 · Einzelgeprüfte Fork-Commits

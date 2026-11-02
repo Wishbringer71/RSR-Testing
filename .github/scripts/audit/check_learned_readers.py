@@ -34,6 +34,7 @@ READING_FILES = {
     'RotationSolver/Watcher.cs',
     'RotationSolver/UI/DiagnosticsWindow.cs',
     'RotationSolver/UI/MainWindow/MainWindow_List.cs',
+    'RotationSolver/UI/MainWindow/MainWindow_Learned.cs',
     'RotationSolver/UI/MainWindow/MainWindow_Debug.cs',
 }
 SAVERS = [  # (file, method name, token its body must hold)

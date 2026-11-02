@@ -100,6 +100,8 @@ public partial class MainWindow
 			{ () => UiString.ConfigWindow_List_Statuses.GetDescription(), DrawListStatuses },
 			{ () => Service.Config.UseDefenseAbility ? UiString.ConfigWindow_List_Actions.GetDescription() : string.Empty, DrawListActions },
 			{ () => UiString.ConfigWindow_List_Territories.GetDescription(), DrawListTerritories },
+			// The fork's learned tables, read only (concept 13, "Stufe 5").
+			{ () => "Learned tables", DrawListLearned },
 		},
 		(UiString.ConfigWindow_List_Statuses, FontAwesomeIcon.Star),
 		(UiString.ConfigWindow_List_Actions, FontAwesomeIcon.Bolt),

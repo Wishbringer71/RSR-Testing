@@ -85,8 +85,8 @@ Was ein Fenster zeigt, wann RSR an- und ausgeht, welche Tasten er selbst drückt
 Fallschaden): Das Spiel kennt seine Wünsche nicht. Keine Automatik denkbar, keine Änderung.
 
 Die gelernten Tabellen des Forks im Listenfenster anzuzeigen, ist entschieden, bearbeiten nicht (Konzept 13, „Gelernte
-Tabellen über Spielversionen", Regel 10; seine Vorgabe A173 bleibt); gebaut wird die Anzeige als letzte Stufe der
-Revision.
+Tabellen über Spielversionen", Regel 10; seine Vorgabe A173 bleibt); gebaut als Abschnitt „Learned tables" im
+Listenfenster (Konzept 13, „Stufe 5", A496).
 
 „Reset to Default Value." im Rechtsklickmenü einer Einstellung setzt jede Einstellung auf ihre Voreinstellung, auch die
 schlichten und die je Job geführten Schalter (A407). Bis dahin setzte es diese auf aus, und ein Zurücksetzen schaltete

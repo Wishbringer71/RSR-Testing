@@ -51,6 +51,13 @@ internal partial class OtherConfiguration
 	/// <summary>The same for the tankbuster table (<see cref="AreaShareConfirmed"/>).</summary>
 	internal static bool TankbusterConfirmed(uint actionId) => TankbusterRevision.Confirmed(actionId);
 
+	/// <summary>A copy of the area table's revisions and the running game version, for the list window (concept 13, "Stufe 5").</summary>
+	internal static (Dictionary<uint, RevisionEntry<float>> Entries, string? Game) AreaRevisionSnapshot() => AreaRevision.Snapshot();
+
+	/// <summary>A copy of the tankbuster table's revisions, as <see cref="AreaRevisionSnapshot"/>.</summary>
+	internal static (Dictionary<uint, RevisionEntry<TankbusterReading>> Entries, string? Game) TankbusterRevisionSnapshot()
+		=> TankbusterRevision.Snapshot();
+
 	/// <summary>Whether an area share is one the table can hold: finite, not negative, at most a whole maximum HP (A298).</summary>
 	internal static bool IsValidAreaShare(float share) => float.IsFinite(share) && share >= 0f && IsWithinWholeHealth(share);
 

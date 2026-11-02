@@ -125,6 +125,11 @@ jobs:
       - name: Check the learned tables' saving readers ask for confirmation
         run: python3 .github/scripts/audit/check_learned_readers.py
 
+      # The list window shows every learned store with its state under the game version (concept 13, "Stufe 5"); a store
+      # added without a tab is one whose decisions the owner cannot see.
+      - name: Check every learned store has a tab in the list window
+        run: python3 .github/scripts/audit/check_learned_display.py
+
       # A setting with a label and a default promises the user it does something. When nothing
       # reads it the promise fails silently and forever. Two such settings sat in the raise path
       # alone, so this guards against the next one rather than against those two.

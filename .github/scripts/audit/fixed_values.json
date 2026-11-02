@@ -1087,6 +1087,16 @@
    "status": "exception",
    "loop": "A494",
    "reason": "Concept 13, rule 6 (decided with the revision, A451): a learned action laying a status that damages every action is refuted only after at least two landings on its target without it - one may be a case the effect does not show, two is the least that repeats. The game states no such count; a wrongly refuted action is the death of A427, so the count only rises with the sightings it had before (Before)."
+  },
+  {
+   "file": "RotationSolver/UI/MainWindow/MainWindow_Learned.cs",
+   "code": "_ = ImGui.InputTextWithHint(\"##Searching the learned tables\", \"Name or ID\", ref _learnedSearching, 50);",
+   "values": [
+    "50"
+   ],
+   "status": "exception",
+   "loop": "A496",
+   "reason": "The search field's text buffer, as long as upstream's search fields in the same window (MainWindow_List: 50). A limit of the input box, not a figure of the game; nothing in the game could supply it."
   }
  ]
 }

@@ -110,6 +110,11 @@ What this release changes in the fight. For the whole distance from upstream, se
   action keeps holding spells after a patch. It lets go only when the running version sees it land on its target, a
   party member, without the status at least twice, more often than it laid it before, and never with it; it holds again
   the moment it lays the status. BossModReborn's Pyretic announcement holds regardless.
+- **The learned tables can be seen.** The list window has a new section, "Learned tables", with one tab per store:
+  area hits, tankbusters, area and hit series, sleep outcomes, sleep-resistant kinds and limits, damage over time,
+  casts laying Pyretic and tankbuster markers. Each entry shows the value the rules read and its state in the running
+  game version - confirmed, taken over, refuted, a lock with its try left or spent. Search and copy; nothing can be
+  changed there.
 - **The marker and lock files keep a backup.** The tankbuster marker files and the new lock files fall back to their
   last read-back copy when unreadable, so a measured hit after a marker is not lost with a broken file.
 

@@ -1100,7 +1100,7 @@ aktuelle Gesundheit nicht reicht, und Barriere samt Minderung zusätzlich, wo au
 reicht. Sie gilt nicht nur für Flächen — dieselbe Frage stellt sich beim Tankbuster —, deshalb steht
 sie dort und nicht hier.
 
-## Gelernte Tabellen über Spielversionen: Revision, Absicherung, Anzeige (entschieden, Stufen 0 bis 3 gebaut)
+## Gelernte Tabellen über Spielversionen: Revision, Absicherung, Anzeige (entschieden, gebaut)
 
 **Seine Aufträge vom 28.10.2026.** Revision: „sobald ein neuer patch von ffxiv rauskommt, könnte sich der wert der
 listen aber ändern, weil sich mechaniken im spiel ändern. […] nach patch werden die bestehenden listen als gegeben
@@ -1414,7 +1414,7 @@ geprüft bei jedem Speichern.
 **12. Bauabfolge, jede Stufe rückbaubar.** (0) Die drei Defekte aus seinen Prüffällen – ungelisteter Tankbuster,
 Aufnahme unter Unverwundbarkeit, Messung ohne Synchronisation –: unabhängig von der Revision, gebaut (A452). (1) Format, Übernahme der alten Dateien, Sicherung, Quarantäne, Invarianten – ohne
 Verhaltensänderung, die alte Datei bleibt (Abschnitt „Stufe 1: Speicher, Übernahme, Sicherung"). (2) Regel 4 für Fläche
-und Tankbuster – gebaut (A481, Abschnitt „Stufe 2"). (3) Regeln 5 und 5b – gebaut (A492, Abschnitt „Stufe 3"). (4) Sperren nach Regel 6 – gebaut (A493, A494, Abschnitt „Stufe 4"). (5) Anzeige. Rückbau
+und Tankbuster – gebaut (A481, Abschnitt „Stufe 2"). (3) Regeln 5 und 5b – gebaut (A492, Abschnitt „Stufe 3"). (4) Sperren nach Regel 6 – gebaut (A493, A494, Abschnitt „Stufe 4"). (5) Anzeige – gebaut (A496, Abschnitt „Stufe 5"). Rückbau
 einer Stufe: ihr Messverfahren zurück; die Werte bleiben in beiden Dateien.
 
 ### Stufe 1: Speicher, Übernahme, Sicherung (gebaut)
@@ -1604,6 +1604,7 @@ ist übernommen.
 | angekündigter Anteil: Vorausheilung, Halt für den Treffer, wen er tötet (`AnnouncedAreaShare`) | schützt | gilt |
 | Tankbuster-Plan: Bündel, Unverwundbarkeit, „alles" (`TankbusterTable.PredictedShare`) | schützt | gilt |
 | Tankwechsel (`TankSwapWatch`), bekannter Tankbuster (`IsLearned`), Seriendauern | schützt | gilt |
+| Anzeige im Listenfenster (`MainWindow_Learned`, Stufe 5) | zeigt nur | als übernommen benannt |
 
 Ein schützender Leser ist mit einem kleinen übernommenen Wert nie weniger schützend als ohne Wert: Er reagiert erst ab
 einer Größe, und ohne Wert reagiert er gar nicht. Deshalb genügt es, die sparenden Leser auf „bestätigt" zu stellen.
@@ -1851,6 +1852,60 @@ zählt, jede Schlafsperre ist übernommen, jedes Pyretisch-Wirken hält.
   und ihr Preis steht oben.
 - *Ausgeliefert, und nichts ändert sich – warum?* Ohne Patch und ohne Begegnung mit einer gesperrten Art oder einem
   gelernten Wirken ändert sich nichts. Die Kopfzeile zählt, was läuft, was übernommen und was widerlegt ist.
+
+### Stufe 5: Anzeige (Regel 10, gebaut)
+
+**Im Kampf** ändert die Anzeige nichts. Sie zeigt ihm, warum RSR eine Aktion mindert oder auslässt, einen Gegner nicht
+einschläfert, einen Marker übergeht oder einen Zauber vor einer Landung zurückhält: je Eintrag den Wert, den die Leser
+sehen, und seinen Zustand unter der Spielversion. Bearbeiten kann er nichts (Regel 10, seine Vorgabe A173).
+
+**Wo:** im Listenfenster ein eigener Abschnitt „Learned tables" neben Upstreams Listen, immer sichtbar, auch wenn die
+Abwehr aus ist – Schlaf, Pyretisch und DoT hängen nicht an ihr. Eine Reiterleiste, ein Reiter je Speicher; oben ein
+Suchfeld (Name oder Id) und „Copy", das die Zeilen des offenen Reiters als Text mit Tabulatoren in die Zwischenablage
+legt, Kopfzeile zuerst.
+
+**Was je Reiter** – gezeigt wird, was der Speicher führt; Wirkender und Gebiet führen die Aktionsspeicher nicht, ihr
+Schlüssel ist die Aktion:
+
+| Reiter | Speicher | Spalten |
+|---|---|---|
+| Area hits | `HostileCastingAreaPotential` mit Revision | Aktion (Client-Name, Id), Anteil, Zustand, Messungen dieser Version |
+| Tankbusters | `TankbusterPotential` mit Revision | Aktion, ungemindert, unter Verwundbarkeit, Seriendauer, „aimed only", Zustand, Messungen; „in the AoE list", wenn die Flächenliste ihn führt (A337) |
+| Area series | `AreaSeriesSpan` | Aktion, Dauer der Serie |
+| Hit series | `HitSeriesOnPlayer` | Aktion, Treffer in Folge |
+| Sleep outcomes | `SleepOutcomes` mit `SleepLocks` | Aktion, gestoppt (längste Zeit bis zum Abbruch), ausgegangen (größter Rest), Sperre „Schlaf stoppt es nicht" mit Zustand |
+| Sleep kinds | `SleepResistantKinds` mit `SleepLocks` | Gegnerart (Id, Name eines Gegners dieser Art im Umkreis, falls einer da ist), Abweisungen, Zustand |
+| Sleep limits | `SleepDiminishing` mit `SleepLocks` | Gegnerart, Grenze, Zustand |
+| Damage over time | `DotOnParty` | Gebiet (Client-Name), Status (Client-Name), Ticks, Betrag je Tick, Enden, Laufzeit |
+| Penalty casts | `ActionPenaltyCasts` mit `ActionPenaltySightings` | Aktion, Status, Zustand, Landungen mit und ohne in dieser Version, mit vorher |
+| Tankbuster markers | `TankbusterMarkerWithoutHit` mit Spielversion, `TankbusterMarkerHits` | Gebiet, Pfad, Sperre „kein Tankbuster" mit Zustand, Treffer nach dem Marker (Aktion, Verzug) |
+
+**Zustand** heißt in den Reitern mit Revision: „confirmed in this game version" (eine saubere Messung der laufenden
+Version, Regel 4), „measured in this version, not cleanly yet", „taken over from game version …" oder „taken over from
+the file before the revisions", dazu „refuted: was …", wenn eine Widerlegung (Stufe 3) den Wert senkte, und
+„quarantined", wenn ein ungültiger Wert ruht (Regel 7). In den Sperren: „holds in this game version", „taken over, one
+try left", „taken over, try spent", „refuted"; beim Pyretisch-Wirken „holds spells" oder „refuted". Spielversion nicht
+lesbar: Der Kopf des Abschnitts sagt es, und jeder Zustand folgt Regel 7.
+
+**Wie, ohne den Kampf zu bremsen:** Die Zeilen entstehen aus einer Kopie jedes Speichers unter seinem Schloss, höchstens
+einmal je Sekunde und nur, solange der Abschnitt offen ist; Aktions-, Status- und Gebietsnamen aus den Blättern werden
+zwischengespeichert. Gezeichnet werden nur die sichtbaren Zeilen (ImGui-Clipper). Geschrieben wird nichts.
+
+**Prüfmittel:** `check_learned_display.py` (in der CI): Jeder gelernte Speicher in `OtherConfiguration.Files` hat
+einen Reiter; ein neuer Speicher ohne Reiter ist ein Befund. Selbsttest gegen einen Speicher ohne Reiter.
+
+**Verworfen:**
+- *Die Werte in Upstreams Aktionslisten anhängen* (wie heute die Anteile der Fläche): Dort stehen nur gelistete
+  Aktionen; gelernte ohne Listeneintrag (Tankbuster aus A452, Serien, Schlaf) fehlten, und Upstreams Listencode bekäme
+  mehr Fork-Zeilen.
+- *Eine Zeile je Messung:* Die Schichten halten Zählungen und Spannen, keine Einzelmessungen; die Einzelnen stehen im
+  `DefenseTrace.log`.
+- *Bearbeiten, Entfernen, „erneut prüfen":* Regel 10.
+
+**Gegenhypothesen.** *Kein Defekt:* Ohne die Anzeige sieht er die Speicher nur in den Dateien, ohne Namen und ohne
+Zustand – seine Frage, warum RSR etwas tut, bliebe auf den Upload angewiesen. *Option falsch:* die Verworfenen.
+*Ausgeliefert, und nichts ändert sich – warum?* Im Kampf ändert sich gewollt nichts; nutzt er das Fenster nicht, bleibt
+das Protokoll die Quelle.
 
 ### Seine Entscheidung: asymmetrisch
 
