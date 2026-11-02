@@ -453,39 +453,217 @@ mit ihm anfreunden kann, und das Talent dann so einsetzen, dass es wahrscheinlic
     (im Text der Client-Sprache, aus dem Blatt `LogMessage`); einen Chat-Leser hat RSR bisher nicht.
   - Offene Arbeit im TODO, „Beastmaster: Anfreunden zum besten Zeitpunkt".
 
-**Kampfhörner und Begleiter nach Lage** (seine Fragen vom 02.11.2026, als Auftrag für danach: ob die Rotation zwischen den
-Kampfhörnern wechselt, wenn ein Begleiter verschwunden ist; ob sich im Kampf die Zuordnung eines Begleiters zu einem Horn
-wechseln lässt, um Begleiter nach den Schwächen der Gegner und ihrer Anzahl zu wählen – „begleiter ab drei gegnern rufen,
-der aoes beherrscht"; sein Vorschlag, A484):
-- *Mechanik* (Spielblätter, xivapi v2; consolegameswiki, Werkzeugquelle; 02.11.2026):
-  - Jedes der drei Kampfhörner ruft den Begleiter, den du ihm im Bestienbuch zugeordnet hast. Zugeordnet wird über einen
-    Unterbefehl am Symbol der Bestie dort, nicht über eine Aktion.
-  - Im Kampf beginnt die Abklingzeit eines Horns (90 s), sobald sein Begleiter den Kampf verlässt. Außerhalb des Kampfes
-    zählt ein Rückzug nicht.
-  - Scheidender Schlag (Parting Blow) lässt den Begleiter mit Attacke-Wert 1.000 auf Ziel und Umstehende angreifen
-    (1.500 unter Schleichender Vorteil); danach verlässt er den Kampf.
-  - Jeder Begleiter hat eine Familie (Beastkin, Vilekin …, sie bestimmt, was Borrow gibt) und eine Schadensart der
-    automatischen Angriffe (Stich, Hieb, Schlag, Wasser). Seine Aktionen sind elementar oder elementneutral, und
-    manche davon sind Flächen, etwa Dressur und Entfesseln einzelner Bestien.
-- *Was RSR heute tut:*
-  - Ist kein Begleiter draußen (`ActiveBattlehorn` 0), ruft `BST_Reborn` das erste bereite Horn in der eingestellten
-    Reihenfolge („First/Second/Third Horn"), dann der Reihe nach.
-  - Verschwindet ein Begleiter, kommt also das nächste bereite Horn. Dass die Anzeige dann 0 zeigt, ist im Spiel
-    nicht beobachtet.
-  - Welcher Begleiter auf welchem Horn sitzt, liest die Basisschicht (`CurrentPets`); die Reihenfolge der Hörner ist
-    fest eingestellt.
-- *Unbelegt:*
-  - ob die Zuordnung im Kampf geändert werden kann – keine Quelle sagt es;
-  - welche Schwächen die Gegner haben. Für das Crucible nennt die Wiki Elemente, Schadensarten und
-    Statusresistenzen als wichtiger als sonst, ohne Liste.
-- *Was eine Regel kann:*
-  - Die Zuordnung ändert RSR nicht. Sie ist eine Menübedienung, und RSR drückt Aktionen.
-  - RSR kann aber unter den drei zugeordneten Begleitern den wählen, der zur Lage passt. Die Flächenwirkung jedes
-    Begleiters steht in den Blättern seiner Aktionen (Form und Reichweite); ab wie vielen Gegnern sie sich lohnt,
-    ergibt sich aus den Attacke-Werten wie bei `CustomRotation.AreaWorthOver`, nicht aus einer festen Drei.
-  - Die Schwächen der Gegner fehlen als Datenquelle. Gelernt werden könnten sie nur über die Treffer je
-    Schadensart.
-  - Offene Arbeit im TODO, „Beastmaster: Kampfhorn nach Gegnerzahl und Schwäche wählen".
+**Begleiter nach Lage: Schaden, Heilung, Schutz** (A485). Sein Auftrag vom 02.11.2026: die Rotation mit eigenen Ideen
+so ausbauen, dass die vorhandenen Begleiter passend zu Art und Zahl der Gegner möglichst viel Schaden machen, alle
+Eigenschaften des Beastmasters und seiner Begleiter dafür auswerten und Synergien erzeugen. Dazu seine Fragen: ob die
+Rotation die Kampfhörner wechselt, wenn ein Begleiter verschwunden ist; ob sich die Zuordnung im Kampf wechseln lässt
+(„begleiter ab drei gegnern rufen, der aoes beherrscht", sein Vorschlag); ob Begleiter heilen können, dann auch der
+Wechsel bei starkem Verlust an Gesundheit; ob Begleiter tanken und Feindseligkeit halten. Seine Vorgaben vom selben Tag:
+Die vorhandenen Begleiter werden im Spiel erhoben, damit RSR keinen zu nutzen versucht, den er noch nicht hat; das Optimum
+ist mit den vorhandenen Mitteln zu finden und zu nutzen. Stufe und Fähigkeiten des Spielers zählen mit: Er levelt den
+Beastmaster noch, nicht alle Fähigkeiten stehen am Anfang zur Verfügung.
+
+*Was der Beastmaster hat* (Spielblätter über xivapi v2: Action, ActionTransient, Trait, Status, XBMPet, Pet; 02.11.2026):
+- *Eigene Kombo:* Smash Axe (160) → Axeblade Bite (500) → Shieldsplitter (600, +15 TP).
+- *Instinktäxte:* vier Äxte (Volant, Rampant, Durant, Eldritch), ab 100 TP, 400 bis 1.000 mit den TP, jede gibt das Herz
+  ihrer Affinität (7 s). Ab 250 TP (Stufe 50) die Flächenabschlüsse Brutal Rage, Hawkish Talons, Risen Fall, Calamity
+  (1.200, Sunstrider oder Moonstalker).
+- *Kombos:* Zwei Instinktfertigkeiten – deine oder die des Begleiters – innerhalb von 7 s geben Zusatzschaden. Im
+  Uhrzeigersinn (Volant → Rampant → Durant → Eldritch → Volant) ist es eine absichtliche Kombo, Sunstrider mit
+  Moonstalker die Kombo Universality; die Kettenzahl erhöht den Zusatzschaden. Eine Kombo mit einer Fertigkeit des
+  Begleiters gibt einen Stapel Natural Instinct (Stufe 28), eine mit einer eigenen einen Stapel Mastered Instinct
+  (Stufe 40). Rally und Rallying Cheer (120 s, ab Stufe 42 und 48 90 s) wandeln sie in TP und Begleiter-TP.
+- *Kampfhörner* (2 s außerhalb, im Kampf 90 s ab dem Rückzug des Begleiters): Ein Ruf gibt One with Nature (Stufe 18):
+  einmal Entfesseln oder Borrow. Ab Stufe 30 setzt der Ruf die Abklingzeit von Entfesseln zurück, ab 34 die von Borrow.
+- *Dressur* (3 s): die Instinktfertigkeit des Begleiters, ab 100 Begleiter-TP, Attacke-Wert 500 bis 1.250 (bei neun
+  Begleitern 450 bis 1.500) mit den Begleiter-TP; sie gibt das Herz seiner Affinität. Begleiter-TP kommen aus seinen
+  automatischen Angriffen und dem Ätherstoß (Stufe 8) und aus Rallying Cheer.
+- *Entfesseln* (30 s) und *Borrow* (30 s): je Begleiter verschieden (unten). Beide geben ab Stufe 44 und 46 Lingering
+  Vantage: der nächste Scheidende Schlag mit 1.500 statt 1.000. Borrow gibt die Kinship seiner Familie für 90 s; ihr
+  Ablauf steht still, solange der Begleiter draußen ist. Das Beast Mode dazu hat 90 s Abklingzeit (Scouring Ash 60 s).
+  Was Entfesseln auf die Gruppe legt (Lebensentzug 21 s, −20 % Verwundbarkeit 48 s), läuft nach dem Rückzug weiter.
+- *Scheidender Schlag* (10 s): Ätherstoß des Begleiters auf Ziel und Umstehende (8 Yalm), danach Rückzug.
+- *Shield Charge* (60 s, ab Stufe 36 drei Ladungen): Ansturm, Fläche 300.
+- *Stufen* (`Action.ClassJobLevel`, Trait; xivapi v2, 02.11.2026): Kampfhorn I ab 1, Scheidender Schlag 6, Dressur 8,
+  Kampfhorn II 10, Entfesseln und One with Nature 18, Kampfhorn III 20, Borrow und Beast Mode 22, Battlehorn Mastery II
+  und III 30 und 34. Die Aktionen der Begleiter haben keine eigene Stufe (`ClassJobLevel` 0); sie kommen mit Dressur,
+  Entfesseln und Borrow.
+
+*Die 50 Begleiter* (je Begleiter im Blatt `Pet` als `Abilities`: Dressur, Entfesseln, Ätherstoß, Threaten; über
+`XBMPet.Pet` zu finden):
+- *Dressur, Form:* Einzelziel (etwa Wespe, Coblyn, Mantis, Bat, Colibri, Coeurl, Cobra, Karlabos), Kreis um
+  das Ziel (Stone Throw, Drenching Blow, Fireball, Dark Thunder, Bestial Thunder II, Acorn Bomb, Bloody Caress, Cursed
+  Sphere, Flying Frenzy …), Kegel (Rake, Screwdriver, Wing Cutter, Ice Breath, Heave, Boulder Clap …) oder Linie
+  (Somersault Slash, Fleece Butt, Natural Needles, Beatdown, Vine Probe). Wasser, Feuer, Erde, Wind, Blitz, Eis oder
+  elementneutral magisch, sonst physisch (Hieb, Stich, Schlag).
+- *Dressur, die heilt:* Digest (Schleim) und Blood Drain (Fledermaus) – ein Teil des Schadens kommt dir als LP zugute.
+- *Entfesseln, Schaden:* etwa Foul Breath (Raptor, Kegel 1.000), Bottomless Desert (Wurm, 800 um den Begleiter), Breath
+  Wing (Zu, 800), Blighted Bouquet (Rafflesia, 800), Tail Screw (Karlabos, 800 um das Ziel), War Cry (Buffalo, 750 und
+  Betäubung), Final Sting (Wespe, 2.000 bis 3.000, danach Rückzug), Curse (Geist, 300 und 1.500 gegen Kranke).
+- *Entfesseln, Schwächung:* Element −20 % für 60 s – Bubble Shower (Megalocrab, Wasser), Rockslide (Golem, Erde), Foul
+  Breath (Raptor, Feuer), Charged Whisker (Coeurl, Blitz), The Ram's Voice (Chimera, Eis), Breath Wing (Zu, Wind);
+  Verwundbarkeit +10 % für 30 s – Eerie Soundwave (Mantis, physisch), Necrotic Nectar (Fliegenfalle) und Peculiar Light
+  (Salamander, magisch); Krankheit – Moldy Sneeze (Goobbue), White Breath (Hydra).
+- *Entfesseln, Stärkung:* King's Will (Dullahan, +10 % physischer Schaden, 30 s), Frozen Heart (Eisgolem, +25 % magischer
+  Schaden, 15 s), Hypodermic Hustle (Sabotender, +20 % Schaden mit Schaden über Zeit, 21 s), Scamper (Eichhörnchen,
+  Tempo 15 %, 30 s).
+- *Entfesseln, Heilung und Schutz:* Odium (Geshunpest, Lebensentzug für alle, 21 s); Vulcanize (Coblyn) und Harden Shell
+  (Adamantoise) −20 % physische, Water Wall (Pugil) und Smoldering Scales (Drache) −20 % magische Verwundbarkeit für 48 s;
+  Strut (Dodo) −15 % Erdschaden; Ultrasonics (Fledermaus) reinigt alle.
+- *Entfesseln, Kontrolle:* Lullaby (Lamm, Schlaf um den Begleiter), War Cry (Betäubung), Petribreath und Stone Gaze
+  (Versteinerung), Silkscreen und Syrup (Fessel), Formic Pheromones und Regurgitate (Verlangsamung), Pins and Nails
+  (Lähmung), Bad Breath (alle drei).
+- *Borrow nach Familie:* Beastkin – Beastskin (−25 % physischer Schaden, +5 % kritisch, 30 s); Vilekin – Vileskin (Block
+  100 %, kein Rückstoß); Cloudkin – Cloud Skim (Bewegung); Seedkin – Seedsower (Gegner −10 % Schaden, Gift); Wavekin –
+  Quelling Wave (350, TP); Scalekin – Scaleskin (Barriere 8 % gegen Magie); Soulkin – Soul Crush (Unterbrechung, 1.000);
+  Ashkin – Scouring Ash (reinigt, heilt 10 %).
+
+*Seine Fragen, beantwortet:*
+- *Wechsel nach einem verschwundenen Begleiter:* Ja; ist keiner draußen, ruft `BST_Reborn` das nächste bereite Horn.
+- *Zuordnung im Kampf:* Das Spiel führt die Begleiter der drei Hörner im `ActionManager` („selected Battlehorn pets,
+  XBMPet RowIds"), die freigeschalteten im `XBMManager` (50 Bits, `IsPetUnlocked`); FFXIVClientStructs b69073a vom
+  02.11.2026, Werkzeugquelle. Eine Funktion, die die Zuordnung setzt, führt es dort nicht; gesetzt wird sie im Menü des
+  Bestienbuchs, ob auch im Kampf, ist unbelegt. RSR liest die Zuordnung und ändert sie nicht.
+- *Heilen:* ja, über die heilende Dressur (Schleim, Fledermaus) und Odium. Scouring Ash heilt 10 % nur, wenn es einen
+  schädlichen Effekt entfernt. Schützen über Beastskin, Scaleskin und Seedsower (Borrow) sowie Vulcanize, Harden Shell,
+  Water Wall, Smoldering Scales und Strut (Entfesseln); dazu Kontrolle.
+- *Tanken:* nur im Crucible. Dort lässt Snarl den Begleiter mit Threaten die Feindseligkeit ziehen und 45 s deinen
+  Schaden auf sich nehmen; Challenge holt sie zurück. RSR hat das als Einstellung „Use Snarl and Challenge …" (ab Werk
+  aus, nur Crucible). Außerhalb des Crucible ist kein Weg belegt.
+- *Schwächen der Gegner:* keine Datenquelle. Was es gibt, sind die Schwächungen, die ein Begleiter selbst legt.
+
+*Der Zyklus:* Ein Ruf gibt One with Nature, das Horn verbraucht es nach seiner Einstellung für Entfesseln oder Borrow
+(„What to use One with Nature on …", ab Werk 1. und 2. Horn Entfesseln, 3. Borrow). Sobald es verbraucht ist und ein
+anderes Horn bereitsteht, folgt Scheidender Schlag, dann der nächste Ruf. Steht kein Horn bereit, bleibt der Begleiter,
+bis das erste wieder bereit ist (90 s nach seinem Rückzug). Über einen langen Kampf: zwei kurze Einsätze, ein langer, und
+so fort. Die Reihenfolge ist eingestellt („First/Second/Third Horn"); die Option unten ordnet die bereiten Hörner nach
+Lage.
+
+**Was gilt** (B0 immer; B1 bis B3 unter der Option „Choose the battlehorn by the situation", ab Werk an):
+- *B0 – Was er hat, nach Stufe* (seine Vorgaben).
+  - RSR ruft nur die Begleiter der drei Hörner, wie das Spiel sie führt. Das Spiel belegt ein Horn nur mit einem
+    Begleiter, den er hat. Ein leeres Horn zählt nicht, ebenso eines, das das Spiel nicht freigibt (Stufe, Abklingzeit).
+  - Ein Horn wartet mit dem Scheidenden Schlag nur auf das, wofür es One with Nature verbraucht, und nur, solange diese
+    Aktion kommen kann: Der Spieler hat sie (Stufe, Freischaltung), sie ist in RSR eingeschaltet, und bei Borrow läuft
+    nicht schon die Kinship dieses Horns (die verweigert Borrow, und ihr Ablauf steht, solange der Begleiter draußen
+    ist). Steht es auf Borrow, und Borrow kann nicht kommen (Stufe 18 bis 21, abgeschaltet), verbraucht es One with
+    Nature für Entfesseln; auf „Neither" wartet es auf nichts. Bisher wartete jedes Horn, bis weder Entfesseln noch Borrow bereit war. One with Nature blieb dann
+    stehen und hielt Entfesseln bereit, also kam kein Scheidender Schlag: Der Begleiter blieb draußen, die anderen
+    Hörner ruhten (ab Werk das dritte Horn auf Stufe 20 und 21; auf „Neither" auf jeder Stufe ab 18). Ein Defekt, keine
+    Wahl; deshalb nicht hinter der Option.
+- *B1 – Katalog aus den Spieldaten.* Je Begleiter auf einem Horn: Dressur und Entfesseln aus `Pet.Abilities` (erste und
+  zweite Aktion). Zum Begleiter führt `XBMPet`; die Spalte mit seiner Pet-Zeile hat in Lumina keinen Namen. Gelesen wird die
+  der beiden Zahlenspalten, deren Werte über alle Begleiter verschieden sind – die Pet-Ids (47 bis 97) sind es, die
+  Fundorte nicht – und deren Pet-Zeile Aktionen führt. Trifft das auf keine oder beide zu, gibt es keinen Katalog, und die
+  eingestellte Reihenfolge gilt. Form und Reichweite der Dressur aus dem Aktionsblatt (`CastType`, `EffectRange`),
+  Attacke-Wert aus dem Tooltip (`ActionTooltip`, der erste genannte, auf der Stufe des Spielers). Die Zuordnung aus den
+  Blättern entsteht einmal; was ein Begleiter bringt, liest RSR erst für die Begleiter auf den Hörnern und neu mit jeder
+  Stufe, auch einer synchronisierten: beim Leveln ändert sich, was eine Aktion bringt. RSR drückt die Dressur,
+  sobald 100 Begleiter-TP stehen; der Mindestwert ist deshalb der, den sie meist bringt (Schluss aus dem Code, nicht
+  gemessen).
+  - *Heilt:* die Dressur („absorbed as beastmaster HP") oder das Entfesseln („Life Siphon").
+  - *Schützt:* das Entfesseln („reducing nearby party members' … vulnerability", „… damage taken") oder das Beast Mode
+    seiner Familie („damage taken", „absorbs", „Reduces damage dealt").
+  - Was zählt, Entfesseln oder Borrow, folgt der Einstellung seines Horns (nach B0). Keine Tabelle im Code.
+  - Es zählt nur, was der Spieler hat: die Dressur ab Stufe 8, Entfesseln ab 18, Borrow ab 22, jeweils mit der
+    Freischaltung, wie RSR sie für jede Aktion prüft. Unter 8 bringt kein Begleiter eine Dressur; alle sind gleich, und
+    die eingestellte Reihenfolge entscheidet. Entfesseln und Borrow zählen außerdem nur, wenn sie mit dem Ruf kommen: ab
+    Stufe 30 und 34 setzt der Ruf ihre Abklingzeit zurück, darunter nur, wenn sie nicht gerade abklingen. Sonst käme der
+    Schutz bis zu 30 s nach dem Ruf.
+  - *Nicht gezählt:* Vileskin (Block 100 %, 15 s): Wie viel ein Block beim Beastmaster abfängt, ist unbelegt, und RSR
+    hält Vileskin für einen Rückstoß. Scouring Ash: heilt nur, wenn es einen schädlichen Effekt entfernt.
+- *B2 – Gefahr zuerst.* Fällt deine vorausberechnete Gesundheit unter die Linie, an der RSR dich mit Fähigkeiten heilt
+  („HealthSingleAbility", gerechnet wie dort: bis zu einer sofort landenden Heilung), oder stehst du in Klasse 1:
+  - RSR ruft unter den bereiten Hörnern zuerst einen Begleiter, der heilt oder schützt.
+  - Steht einer draußen, der weder heilt noch schützt, und ein solches Horn ist bereit, geht er mit Scheidender Schlag
+    (1.000 oder 1.500), und der heilende kommt. Nicht, solange er nach Snarl deinen Schaden trägt (Crucible, Status
+    „Covered"): Dann nimmt er ihn dir gerade ab.
+  - Einer, dessen Dressur heilt, bleibt draußen, solange die Gefahr anhält: kein Scheidender Schlag für den Zyklus. Seine
+    Heilung kommt nur, solange er draußen ist. Was Entfesseln oder Borrow bringt, läuft nach dem Rückzug weiter (oben);
+    ein Begleiter, der so schützt, geht wie im Zyklus, und der nächste Ruf ist wieder einer, der heilt oder schützt.
+  - Scaleskin (Barriere gegen Magie) setzt RSR in der Gefahr sofort ein, sonst nur für einen angekündigten Treffer oder
+    ohne Heiler. Beastskin und Seedsower setzt es ohnehin ein, sobald Borrow sie freigibt.
+  - *Messgröße der Wahrscheinlichkeit:* deine vorausberechnete Gesundheit (`GetForecastHealthRatio`, sofort landend wie
+    bei Second Wind), also die gemessene Schadensrate.
+- *B3 – Der Begleiter, der bleibt, zuletzt.* Ohne Gefahr ruft RSR unter mehreren bereiten Hörnern zuerst den, dessen
+  Dressur gegen die Gegner um das Ziel am wenigsten bringt.
+  - Der zuletzt gerufene bleibt, bis das erste Horn zurück ist (der lange Einsatz). Die anderen gehen nach Entfesseln oder
+    Borrow und Scheidender Schlag.
+  - Wert der Dressur = Treffer × Attacke-Wert; Treffer: 1 bei Einzelziel, sonst die Gegner im Kampf im Wirkradius um
+    das Ziel, mindestens das Ziel. Eine ungezogene Gruppe daneben zählt nicht.
+  - Bei gleichem Wert behält ein Begleiter, der heilt oder schützt, den langen Einsatz; danach die eingestellte
+    Reihenfolge. Bei einem Gegner heißt das meist: der heilende bleibt, ohne Schaden zu kosten.
+- Jede Wahl und jeder Wechsel aus Gefahr schreibt eine Zeile ins `DefenseTrace.log`: Horn, Begleiter, Grund.
+
+*Gerechnet* (`bst_horn_model.py`, Annahmen dort benannt: Dressur alle 7,5 s, kurzer Einsatz 5 s, eigener Schaden 200 je
+Sekunde, alle Gegner eines Rudels im Wirkradius):
+- Gegen die feste Reihenfolge verliert B1 bis B3 nie Schaden. Bei einem Rudel, wenn der Flächenbegleiter sonst nicht
+  zuletzt käme, sind es 4,7 % (Rudel für 40 s) bis 12,9 % (Rudel durchgehend) mehr.
+- In einer Gefahr ab 40 s ist der heilende Begleiter sofort draußen; mit der festen Reihenfolge nach 55 s, wenn er zuerst
+  dran war. Beginnt die Gefahr erst, nachdem sein Horn in die Abklingzeit ging (im Modell ab 100 s), hilft keine
+  Reihenfolge.
+- Anteil einer Gefahr bis Kampfende, in dem ein heilender Begleiter draußen ist oder ein Schutz aus Entfesseln läuft
+  (Hörner Schleim, Wespe, Coblyn und ihre Umstellungen, ein Gegner): B2 hält 60 bis 100 %, die feste Reihenfolge 0 bis
+  100 %. Hielte B2 jeden schützenden Begleiter draußen, fiele der Anteil in drei von neun Fällen auf 13 bis 27 %: Sein
+  Schutz läuft nach 48 s ab, und der heilende kommt nicht. Ein Fall geht gegen B2 aus (60 statt 100 %): B3 gibt dem
+  sicheren Begleiter den langen Einsatz, und beginnt die Gefahr kurz nach dessen Ende, liegt sein Horn in der
+  Abklingzeit.
+- Preis in Schaden: Bleibt der heilende Begleiter in einer Gefahr ab Kampfbeginn draußen, fehlen die kurzen Einsätze der
+  anderen, bis zu 12,6 % Attacke-Wert über den Kampf.
+
+*Warum so:*
+- Die Hornwahl ist der einzige Hebel über die Begleiter; Entfesseln oder Borrow bleibt seine Einstellung je Horn, ihr Text
+  bindet.
+- Sicherheit vor Schaden: Als begrenzter Job spielt er den Beastmaster allein (Crucible, offene Welt); einen Heiler gibt
+  es dort nicht, die heilenden Begleiter sind seine Heilung.
+- Der Wechsel kostet: Der laufende Begleiter verliert seinen Rest, sein Horn geht 90 s in die Abklingzeit. Deshalb nur aus
+  Gefahr, nicht für Schaden.
+
+*Lagen:* Pull ohne Begleiter (alle drei bereit): B3 ordnet alle drei. Ein Rudel bei langem Einsatz: der lange Einsatz
+gehört dem Flächenbegleiter, wenn er beim Rufen erkannt ist; ein Wechsel nur für Fläche findet nicht statt. Beim Leveln:
+unter 10 ein Horn, unter 20 zwei, keine Wahl bei einem; unter 8 keine Dressur, alle Begleiter gleich; unter 18 kein One
+with Nature, also kein Entfesseln und kein Borrow, „sicher" heißt dann nur eine heilende Dressur; unter 22 kein Borrow, ein
+Horn darauf entfesselt (B0); unter 30 und 34 setzt ein Ruf die Abklingzeit von Entfesseln und Borrow nicht zurück, und das
+Horn wartet auf seine Aktion, höchstens deren 30 s, statt One with Nature verfallen zu lassen. Bisher wartete es meist
+schon, weil die andere Aktion unter One with Nature bereit stand; ging es ohne, weil beide abklangen, verfiel One with
+Nature. Über einen Zyklus der drei Hörner sind das drei Entfesseln statt eines (Schluss aus dem Code, nicht gemessen). Stufensynchronisation: dieselben Grenzen auf der synchronisierten Stufe.
+Option aus: die eingestellte Reihenfolge wie bisher, B0 gilt. BossModReborn liest die Regel nicht.
+
+*Belegung der Hörner:* RSR wählt unter den drei, die er im Bestienbuch zuordnet; welche drei das sind, entscheidet die
+Wahl am meisten. Für Rudel (Dungeons beim Leveln) einer mit Flächendressur, allein in der offenen Welt einer, dessen
+Dressur heilt, oder einer, der mit Entfesseln oder Borrow schützt. Aus den freigeschalteten einen Vorschlag zu machen,
+kann RSR lesen (`XBMManager`), aber nicht anwenden; offen im TODO („Beastmaster: Belegung der Kampfhörner aus den
+freigeschalteten Begleitern vorschlagen").
+
+*Preis:* Die Wahl liest nur, was beim Rufen steht. Ändert sich die Zahl der Gegner im langen Einsatz, bleibt der
+Begleiter. Kegel und Linie zählt B3 wie einen Kreis um das Ziel (die Stellung des Begleiters ist beim Rufen unbekannt) –
+bei verteilten Gegnern zu viele Treffer. Bleibt ein heilender Begleiter in der Gefahr draußen, fehlen in dieser Zeit die
+kurzen Einsätze der anderen (Entfesseln, Scheidender Schlag).
+
+*Verworfen:*
+- Die Zuordnung im Kampf ändern: Menübedienung.
+- Für Fläche mitten im Einsatz wechseln: kostet den Rest des laufenden und 90 s Horn.
+- Eine feste Drei als Schwelle (sein Vorschlag): Die Dressur trifft je Gegner gleich stark; schon ab zwei Gegnern im
+  Wirkradius bringt die Flächendressur mehr. Die Drei bleibt als sein Beispiel.
+- *B4, Schwächung oder Stärkung zuerst* (Entfesseln, das die Dressur eines anderen trifft oder dich stärkt): gerechnet
+  zwischen −1,8 % (ein Gegner) und +1,3 %. Die geänderte Reihenfolge verschiebt den Zyklus der Hörner mehr, als die 20 % auf
+  eine Dressur bringen.
+- Jeden Begleiter, der heilt oder schützt, in der Gefahr draußen halten (der erste Entwurf von B2): Ein Schutz aus
+  Entfesseln läuft nach 48 s ab, und solange er draußen bleibt, kommt kein anderer (Gerechnet).
+- Vileskin in der Gefahr: Was ein Block beim Beastmaster abfängt, ist unbelegt; für einen Rückstoß fehlte es dann 90 s.
+- Den heilenden Begleiter als Reserve zurückhalten: Der Zyklus ruft jedes bereite Horn; zurückhalten hieße, ihn ganz zu
+  sparen, und kostete je 90 s einen kurzen Einsatz.
+- Schwächen der Gegner lernen: keine Datenquelle; aus eigenen Treffern je Element denkbar, später.
+- Eine Tabelle der 50 Begleiter im Code: veraltet mit jedem Patch, die Spielblätter haben alles.
+
+*Gegenhypothesen:*
+- Kein Gewinn: Bei einem Gegner ändert sich am Schaden nichts; gewonnen wird dort nur in der Gefahr (B2). Bei mehreren
+  rechnet das Modell.
+- Option falsch: siehe Verworfen.
+- Ausgeliefert, und nichts ändert sich – warum? Hat er nur Einzelziel-Begleiter zugeordnet oder keinen heilenden, wählt die
+  Regel nichts anderes; findet der Katalog die Pet-Spalte nicht, gilt die eingestellte Reihenfolge. Die Trace-Zeile nennt
+  beides. Unter Stufe 8 wirkt nur B0 und die Reihenfolge; unter 18 schützt kein Begleiter, nur die heilende Dressur
+  zählt.
 
 ---
 
