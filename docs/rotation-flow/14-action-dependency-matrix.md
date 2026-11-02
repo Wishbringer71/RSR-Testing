@@ -646,6 +646,23 @@ Primal- oder Demi-Beschwörung. Bei ihm (26.10.2026, Dungeons) verfiel Slipstrea
 - *Ist Garuda die letzte Primal-Beschwörung des Zyklus,* geht Ruin IV in Bewegung schon heute (`UseFillers`), und
   Slipstream folgt, sobald er steht: Die Einstimmung endet mit dem letzten Ritus (geschlossen aus seinem Mitschnitt –
   Ruin IV fiel 8 s nach der Ifrit-Beschwörung, also lange vor dem Ende der 30 s, die der Wirktext nennt).
+- *Upstreams Schalter „Do not summon a new primal while attuned or holding Ifrit's/Garuda's Favor"* (444388102) *steht
+  im Fork ab Werk aus* (A495); Upstream liefert ihn eingeschaltet. Die Folgeaktionen stehen in der GCD-Folge vor der nächsten
+  Beschwörung (`UsePrimalFollowUps` vor `SummonPrimals`), im Fork wie bei Upstream; der Schalter wirkt also nur, wo
+  Bewegung oder die Reichweite eine Folgeaktion zurückhält, und lässt den Beschwörer dann warten, statt zu beschwören.
+  Gerechnet in `smn_phase_potency.py` (Frage 3; Potenzen des Job-Guides, Sturm der Wirbelströmung nicht gezählt): was
+  von der Runde nach der Demi bleibt, wenn alles, was vor der nächsten Demi nicht beginnt, verloren ist; Ruin IV dem
+  Wartenden als Sofortaktion gutgeschrieben.
+  - *Ifrits Gunst, Ziel weiter als die Zyklon-Reichweite* (seine Regel; bei ihm 22 von 33 Ifrit-Phasen): Mit dem
+    Schalter beschwört RSR keine Primal mehr, bis die nächste Demi die Gunst beendet – 1560 Potenz weniger je Runde
+    als ohne ihn, wo nur Zyklon und Schlag verfallen.
+  - *Garudas Gunst in Bewegung, Titan bereit:* 280 weniger bei einem GCD Bewegung, 680 bei zwei, 1080 bei drei.
+  - *Ifrits Einstimmung in Bewegung, Titan bereit:* 40 mehr bei genau einem GCD, 360 weniger bei zwei, 760 bei drei.
+  - Im Kampf: Ab Werk ändert sich nichts; die Entscheidung oben (RSR hält keine Beschwörung für eine Gunst zurück)
+    bleibt. Wer den Schalter einschaltet, sollte „Crimson Cyclone" ohne Reichweitengrenze nutzen, sonst steht die
+    Beschwörung bis zur Demi.
+- *Upstreams „Dynamic primal order"* (ab Werk aus) wählt Titan in Bewegung, Ifrit am Ziel innerhalb der
+  Zyklon-Reichweite, sonst Garuda; im Fork nach „Prefer Titan while moving", das dieselbe Bewegung schon vorzieht.
 
 **Weitere Punkte, gegen The Balance geprüft:**
 
@@ -659,10 +676,10 @@ Primal- oder Demi-Beschwörung. Bei ihm (26.10.2026, Dungeons) verfiel Slipstrea
 | Ruin IV | eine je Zyklus, nie in einer Demi; „any time between demi-primal phases (except during the 1-2 melee combo during Ifrit phase)" (abgerufen am 29.10.2026) | außerhalb der Demi am Ende einer Phase (`UseFillers`) und in der Ifrit-Phase, wenn kein Ruby Rite geht – etwa in Bewegung –, nach Crimson Strike (Upstream 33cd2a99b, A458) | deckt sich |
 | Ruin III | so selten wie möglich, Demis nicht verzögern | nur als letzter Füller | deckt sich |
 | Ifrit | in Nahkampfreichweite, Crimson Cyclone schließt auf | Crimson Cyclone nur bis 3 Yalm (Einstellung), Ifrit im Rückfallblock nur am Ziel | weicht ab: Aus einer sicheren Position holt ihn RSR nicht für Schaden (seine Regel) |
-| Swiftcast | Wiederbelebung zuerst, Slipstream nur situativ | Wiederbelebung (Einstellung an), alle Rotationsoptionen dafür ab Werk aus | deckt sich mit seiner Regel |
+| Swiftcast | Wiederbelebung zuerst, Slipstream nur situativ | Wiederbelebung (Einstellung an), alle Rotationsoptionen dafür ab Werk aus, auch Upstreams „Swiftcast for movement uptime" (444388102) | deckt sich mit seiner Regel |
 | Lux Solaris | für einen Raidwide halten, vor Ablauf nutzen | eigene Entscheidung (Konzept 08) | deckt sich |
 | Rekindle | immer nutzen | niedrigster Anteil, sonst er selbst; spätestens drei GCDs vor Phasenende | deckt sich |
-| Trank | Opener spät eingewebt, danach im Sechs-Minuten-Fenster | unter dem eigenen Searing Light, nach „Tincture usage" (ab Werk nur in High-End-Inhalten); nach 270 s Abklingzeit ist das nächste eigene Fenster das der sechsten Minute | deckt sich |
+| Trank | Opener spät eingewebt, danach im Sechs-Minuten-Fenster | unter dem eigenen Searing Light, nach „Tincture usage" (ab Werk nur in High-End-Inhalten); nach 270 s Abklingzeit ist das nächste eigene Fenster das der sechsten Minute. Seit Upstream 444388102 in der Notfallprüfung der Fähigkeiten, mit „Use potion" (an), „Potion timing" (ab dem ersten Searing Light) und „Only use potion during a big summon" (aus) – ab Werk wie vorher | deckt sich |
 | Lucid Dreaming | bei rund 70 % MP | Schwelle in MP, ab Werk 6000 von 10000 | seine Einstellung (Konzept 18) |
 | Physick | kein Einsatz im Endgame | nur mit „Use Physick above level 30" (ab Werk aus) | deckt sich |
 

@@ -14684,6 +14684,37 @@ durchgehen". Als Skill `spielpatch` festgehalten (Lesetabelle in CLAUDE.md); den
   `SourceCommit` stand über `MarkerLocksRunning`.
 - *Prüfgrad:* Compile ohne Warnung, Prüfgerüst mit Selbsttest, alle CI-Prüfungen lokal; im Spiel nicht beobachtet.
 
+### A495 · Upstream 444388102 ausgewertet: Beirutas Beschwörer-Optionen, die Beschwörungssperre im Fork aus (02.11.2026)
+
+- *Gemessen* vor der Codeänderung für A494: zwei neue Commits auf `upstream/main` (444388102, PR #1414 von
+  BeirutaNa1na, 02.11.2026), nur `SMN_Reborn.cs`. Konflikt in sechs Stellen, in Main und Branch gleich.
+- *Übernommen:*
+  - Arznei in der Notfallprüfung der Fähigkeiten mit „Use potion" (an), „Potion timing" (erstes Searing Light),
+    „Only use potion during a big summon" (aus) – ab Werk wie vorher.
+  - „Swiftcast for movement uptime" (aus) und die Sperre der übrigen Swiftcast-Optionen, wenn sie an ist – nach seiner
+    Regel bleibt Swiftcast für Wiederbelebungen; ab Werk aus, wie alle Swiftcast-Optionen der Rotation.
+  - „Dynamic primal order" (aus), nach „Prefer Titan while moving" des Forks.
+- *Im Fork ab Werk aus:* „Do not summon a new primal while attuned or holding Ifrit's/Garuda's Favor" (Upstream an).
+  - Mechanismus: Die Folgeaktionen stehen in der GCD-Folge vor der nächsten Beschwörung, bei Upstream wie im Fork. Der
+    Schalter wirkt nur, wo Bewegung oder die Zyklon-Reichweite eine zurückhält, und lässt dann warten.
+  - Gerechnet in `smn_phase_potency.py` (Frage 3, neu; Potenzen des Job-Guides, Rest der Runde bis zur nächsten Demi):
+    Ifrits Gunst, Ziel weiter als 3 Yalm (seine Regel; bei ihm 22 von 33 Ifrit-Phasen, A462) – mit dem Schalter keine
+    Primal bis zur nächsten Demi, 1560 Potenz weniger je Runde. Garudas Gunst in Bewegung, Titan bereit: 280, 680, 1080
+    weniger bei einem, zwei, drei GCD Bewegung. Ifrits Einstimmung in Bewegung: 40 mehr bei genau einem GCD, danach
+    360 und 760 weniger.
+  - Deckt sich mit der dokumentierten Entscheidung (A462, Konzept 14): RSR hält keine Beschwörung für eine Gunst
+    zurück, weil es die Dauer der Bewegung nicht kennt.
+- *Nicht übernommen:* wie A458 die beiden Searing-Light-Schalter; die Option „Swiftcast on raise" bleibt bei der
+  Job-Einstellung (A402). Die Statusprüfungen nehmen die Eigenschaften der Basisklasse statt eines zweiten Satzes mit
+  festen Ids; die ungenutzte Eigenschaft `SwiftcastForMovement` fehlt.
+- *Gebaut:* Main cc2ba06eb (Konflikt gelöst, Aktionsmatrix des Beschwörers neu erzeugt), Branch 743e9f93a; beide
+  kompiliert ohne Warnung, CI-Prüfungen lokal 40 Schritte ohne Fehler. Konzept 14 („Beschwörer") fortgeschrieben.
+- *Falsifikation:* Kein Defekt? Ab Werk ändert die Übernahme nichts am Kampf. Option falsch? Mit dem Schalter an und
+  „Crimson Cyclone" ohne Reichweitengrenze wartet der Beschwörer nur kurz – das ist Upstreams Lage, nicht seine.
+  Ausgeliefert, und nichts ändert sich? Gewollt, solange er die Optionen nicht einschaltet.
+- *Prüfgrad:* statisch am Code, an Job-Guide und The Balance, gerechnet im Modell (Selbsttest erweitert: die Sperre,
+  die jede Primal für eine nie lösbare Gunst hält, muss verlieren); kompiliert; im Spiel nicht beobachtet.
+
 ## B · Commit-Register (Fork vs. `upstream/main`)
 
 ### B1 · Einzelgeprüfte Fork-Commits

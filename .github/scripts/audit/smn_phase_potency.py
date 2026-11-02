@@ -8,6 +8,9 @@ Answers two questions that the Searing Light concept left open:
    with no Searing Light applied?
 2. Does pulling the strongest primal block forward, so that it falls inside a
    running Searing Light, pay for itself?
+3. Upstream's "Do not summon a new primal while attuned or holding Ifrit's/
+   Garuda's Favor" (444388102): what does waiting cost where a follow-up is held
+   back, against summoning and losing it (A495)?
 
 Every potency carries its source.  ``resx`` means the value was read from
 ``RotationSolver.SourceGenerators/Properties/ActionId.resx`` in this
@@ -189,6 +192,60 @@ def primal_sequence(order):
         seq.extend(PRIMAL_BLOCKS[name])
     return seq
 
+
+
+# --- the summon block (question 3) ---------------------------------------
+# Between two demi summons the primals have the round less the demi window; whatever does not start before the next
+# demi is lost, since The Balance does not delay a demi ("Unsure: Do not delay demi-primal"). The follow-ups go ahead
+# of a summon whenever they can (GeneralGCD: UsePrimalFollowUps before SummonPrimals), so the block only acts while
+# one is held back: by movement, or by the Crimson Cyclone distance kept from a safe position. Movement and distance
+# are assumptions of the case, not measured; Ruin IV is taken as still available for the block (its one instant).
+ROUND_AFTER_DEMI = 60.0 - DEMI_DURATION
+
+
+def run_timeline(steps, budget):
+    """Potency of the GCD actions that start within the budget; idle steps are ('idle', seconds)."""
+    t = 0.0
+    total = 0
+    for name, costs_gcd in steps:
+        if t >= budget - 1e-9:
+            break
+        if name == 'idle':
+            t += GCD
+            continue
+        total += pot(name)
+        if costs_gcd:
+            t += recast(name)
+    return total
+
+
+def fillers(ruin_iv=True):
+    return ([('Ruin IV', True)] if ruin_iv else []) + [('Ruin III', True)] * 12
+
+
+def summon_block_cases(moving=1):
+    """Potency left in the round, without and with the block, for the three cases where it acts."""
+    cases = {}
+    # Ifrit first, the target farther than the Cyclone distance for the whole round (his rule).
+    ifrit_at_range = [('Inferno', True), ('Ruby Rite', True), ('Ruby Rite', True)]
+    titan = PRIMAL_BLOCKS['Titan']
+    garuda = PRIMAL_BLOCKS['Garuda']
+    ifrit = PRIMAL_BLOCKS['Ifrit']
+    cases['Ifrit\'s Favor, target out of Cyclone range'] = (
+        run_timeline(ifrit_at_range + titan + garuda + fillers(), ROUND_AFTER_DEMI),
+        run_timeline(ifrit_at_range + fillers(), ROUND_AFTER_DEMI))
+    # Garuda first; Slipstream held by movement after the four rites; Titan ready, so it comes forward while moving.
+    garuda_rites = [('Aerial Blast', True)] + [('Emerald Rite', True)] * 4
+    idle = [('Ruin IV', True)] + [('idle', True)] * (moving - 1) if moving > 0 else []
+    cases['Garuda\'s Favor, moving %d GCD' % moving] = (
+        run_timeline(garuda_rites + titan + ifrit + fillers(), ROUND_AFTER_DEMI),
+        run_timeline(garuda_rites + idle + [('Slipstream', True)] + titan + ifrit + fillers(False), ROUND_AFTER_DEMI))
+    # Ifrit first; the two Ruby Rites held by movement after Crimson Strike; Titan comes forward while moving.
+    ifrit_melee = [('Inferno', True), ('Crimson Cyclone', True), ('Crimson Strike', True)]
+    cases['Ifrit\'s attunement, moving %d GCD' % moving] = (
+        run_timeline(ifrit_melee + titan + garuda + fillers(), ROUND_AFTER_DEMI),
+        run_timeline(ifrit_melee + idle + [('Ruby Rite', True)] * 2 + titan + garuda + fillers(False), ROUND_AFTER_DEMI))
+    return cases
 
 WEAVES_PER_GCD = 2
 
@@ -422,6 +479,14 @@ def report():
           '%.0f %% more' % (extra, solar, solar + extra, 100.0 * extra / solar))
     print()
 
+    print('summon block (question 3): potency left in the round after the demi, without / with the block')
+    for moving in (1, 2, 3):
+        for case, (free, blocked) in summon_block_cases(moving).items():
+            if moving > 1 and 'range' in case:
+                continue
+            print('  %-42s %6d / %6d  (%+d with the block)' % (case, free, blocked, blocked - free))
+    print()
+
     from_guide = sorted(n for n, (_, s) in POTENCY.items() if s == GAME)
     print('potencies blanked in this repository by a trait, read from the job guide:')
     print('  ' + ', '.join(from_guide))
@@ -506,6 +571,14 @@ def self_test():
     # printed against it are meaningless
     if cycle_potency(False) <= demi_phases(False)['Solar Bahamut']['potency']:
         raise AssertionError('cycle total is not plausible')
+
+    # the summon block: holding every primal for a Favor the distance rule never lets go must lose, and the timeline
+    # must drop what does not start before the next demi
+    far = summon_block_cases(1)["Ifrit's Favor, target out of Cyclone range"]
+    if far[1] >= far[0]:
+        raise AssertionError('the block held every primal and still did not lose')
+    if run_timeline([('Ruin III', True)] * 100, ROUND_AFTER_DEMI) != int(ROUND_AFTER_DEMI / GCD + 0.999) * pot('Ruin III'):
+        raise AssertionError('the round budget did not cut the timeline')
 
     print('self-test ok: budget, source coverage, order conservation, window '
           'accounting and a constructed defect all check out')

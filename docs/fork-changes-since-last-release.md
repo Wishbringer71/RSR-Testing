@@ -45,6 +45,10 @@ What this release changes in the fight. For the whole distance from upstream, se
   boss and, for the stun, none stunned since its last immunity. Strut and Formic Pheromones, which lower only earth or
   water, earth and ice damage, no longer count as protection. A Release that deals damage over time to the party
   (Hypodermic Hustle) waits while you are in danger.
+- **Summoner keeps summoning while a follow-up is held back.** Upstream's new "Do not summon a new primal while attuned
+  or holding Ifrit's/Garuda's Favor" is off by default here: the follow-ups already go first whenever they can, so it
+  only waits where movement or the Crimson Cyclone distance holds one back - with that distance kept, an unused
+  Ifrit's Favor would hold every later primal until the next demi-summon.
 - **Beastmaster: a record of the Master's Bestiary.** While the Bestiary is open, RSR writes to `BestiaryTrace.log`
   next to `DefenseTrace.log` what the game receives from each click, every context menu with its entries, and the
   battlehorn slots as they change. It only listens; it opens and closes with the Bestiary. `DefenseTrace.log` also
