@@ -1,6 +1,6 @@
 # SMN — Abhängigkeitsmatrix
 
-Erzeugt von `.github/scripts/audit/generate_action_matrix.py` am 2026-10-31; nicht von Hand bearbeiten. Methode und Grenzen: `docs/rotation-flow/14-action-dependency-matrix.md`.
+Erzeugt von `.github/scripts/audit/generate_action_matrix.py` am 2026-11-02; nicht von Hand bearbeiten. Methode und Grenzen: `docs/rotation-flow/14-action-dependency-matrix.md`.
 
 - Basisrotation: `SummonerRotation`
 - Rotation: `RotationSolver/RebornRotations/Magical/SMN_Reborn.cs`
@@ -268,6 +268,8 @@ direkt: 72 · nur gelesen: 1 · ungenutzt: 10 · über andere Aktion: 3
 | Painflare | Regel sperrt vorher | Searing Flash |
 | Painflare | Regel sperrt vorher | Summon Bahamut |
 | Painflare | Regel sperrt vorher | Sunflare |
+| Ruby Rite | Regel sperrt vorher | Slipstream |
+| Ruby Rite | Regel prüft | Swiftcast |
 | Ruby Ruin | Regel prüft | Summon Ifrit |
 | Ruin II | Regel prüft | Ruin III |
 | Ruin IV | StatusNeed FurtherRuin_2701 | Status FurtherRuin_2701 |
