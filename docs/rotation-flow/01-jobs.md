@@ -665,6 +665,75 @@ kurzen Einsätze der anderen (Entfesseln, Scheidender Schlag).
   beides. Unter Stufe 8 wirkt nur B0 und die Reihenfolge; unter 18 schützt kein Begleiter, nur die heilende Dressur
   zählt.
 
+**Weben, Ansturm und Abschlüsse** (A486). Seine Frage vom 02.11.2026: ob oGCDs und GCDs richtig gemischt werden, ohne
+Zeitverlust, mit Weben; danach die Rotation weiter analysieren und verbessern; dazu, ob WrathCombo Erkenntnisse hat.
+
+*Was das Spiel festlegt* (Action, ActionTransient; xivapi v2, 02.11.2026):
+- *GCD* (Abklinggruppe 58, 2,5 s): Smash Axe, Axeblade Bite, Shieldsplitter, Quelling Wave (Zauber), Capture.
+- *Instinktäxte und ihre Abschlüsse:* Waffenfertigkeiten in eigener Gruppe 16 (5 s); „Instinctual skills do not share a
+  recast timer with any other actions". Jede Axt wird bei 250 TP (ab Stufe 50) zu ihrem Abschluss: Avalanche Axe zu
+  Brutal Rage, Mistral Axe zu Hawkish Talons, Spinning Axe zu Risen Fall, Gale Axe zu Calamity; alle vier 1.200.
+- *Fähigkeiten:* Dressur (3 s), Scheidender Schlag (10 s), Entfesseln, Borrow, Beast Mode, Shield Charge (drei Ladungen),
+  Rally, Rallying Cheer. Die Kampfhörner sind Fähigkeiten mit 1 s Wirkzeit, die einzigen Spieler-Fähigkeiten mit
+  Wirkzeit im PvE (Abfrage über alle Aktionen).
+- *Ansturm mit Schaden* (`AffectsPosition`, „Rushes forward"): Shield Charge (20 y, 300 um das Ziel), Brutal Rage und
+  Hawkish Talons (25 y, 1.200 um das Ziel). Risen Fall ist Brutal Rage ohne Ansturm: gleicher Wert, gleiche Affinität
+  (Sunstrider), gleicher Kreis von 6 y um das Ziel, gleiche Reichweite 25 y. Calamity ist der Moonstalker-Abschluss ohne
+  Ansturm, aber auf einer Linie von 10 y vor dir statt im Kreis um das Ziel.
+
+*Wie RSR mischt und webt:* Es ordnet nach Abklinggruppe, nicht nach Aktionsart (`IsGeneralGCD`: Gruppe 58). Die Äxte und
+Abschlüsse sind also oGCDs und stehen in `AttackAbility`, die Kombo und Quelling Wave in `GeneralGCD`, die übrigen
+Fähigkeiten in den Fähigkeitspfaden. Zwischen zwei GCDs drückt RSR Fähigkeiten, sobald die Animationssperre frei ist,
+nicht in der letzten halben Sekunde vor dem GCD (`CustomRotation.Ability`, `RSCommands`; Upstreams Fenster, A388). Das
+gilt für jeden Job.
+
+*Befunde und was gilt:*
+- *W1 – Kampfhorn verschiebt den GCD.* Das Fenster misst den Beginn einer Fähigkeit, nicht ihr Ende. Ein Horn, 0,6 s vor
+  dem GCD gerufen, wirkt 1 s und verschiebt den GCD um rund eine halbe Sekunde; das widerspricht dem Zweck des Fensters
+  („so an ability does not clip it"). *Gilt:* Eine Fähigkeit mit Wirkzeit geht zwischen zwei GCDs nur, wenn ihre
+  Wirkzeit vor dem freien Fenster endet; zentral für jede Aktion im PvE, heute nur die Hörner (im PvP hat nur das
+  Elixier Wirkzeit, 4,5 s, und bleibt, wie es war). Läuft kein GCD, oder fand RSR keinen (das Fenster gilt dann ohnehin
+  nicht), gilt die Grenze nicht. *Ausnahme:* Ruft B2 in der Gefahr ein Horn, das heilt oder schützt, darf es in den GCD
+  laufen – Sicherheit vor Schaden: eine Drittelsekunde GCD gegen bis zu einen GCD früher Heilung. *Preis:* Ein Horn, das im zweiten Webfenster
+  fällig wird, kommt nach dem nächsten GCD, der Begleiter bis zu einem GCD später. Ob der Begleiter in dieser Zeit mehr
+  bringt als der verschobene GCD, ist unbelegt: Die Blätter nennen keinen Wert für seine automatischen Angriffe, und
+  seine Mitschnitte enthalten keinen Beastmaster-Kampf von ihm. Die Regel folgt der bestehenden Absicht, dass eine
+  Fähigkeit den GCD nicht verschiebt.
+- *W2 – Ansturm ohne Abstandsgrenze.* Shield Charge, Brutal Rage und Hawkish Talons gingen auf jeden Abstand bis 20 und
+  25 y. Das widerspricht dem Text der Einstellung „Only use damaging gap closers within this distance" (bindet; A358 hat
+  die Klasse für seine damaligen Jobs geschlossen, der Beastmaster kam erst am 31.10.2026 in sein Profil). Im Kampf:
+  Steht er für eine Mechanik 15 y vom Boss, trägt ihn Brutal Rage bei 250 TP zurück in die Fläche. *Gilt:* in jeder
+  Beastmaster-Rotation über `GapCloserAllowed` wie Intervene: Ziel näher als die Einstellung (ab Werk 3 y), oder er hat
+  die Aktion selbst gedrückt, Vorwärts-Befehl, Countdown. Dazu der Typ `HostileMovingAttack`, der den Landepunkt gegen
+  bekannte Gefahrenflächen prüft.
+- *W3 – Abschluss ohne Bewegung zuerst.* Risen Fall vor Brutal Rage: gleicher Wert, kein Schritt. Zwischen Calamity und
+  Hawkish Talons der, der mehr Gegner trifft (`AffectedTargets` der Zielwahl), bei Gleichstand Calamity. Die Reihenfolge
+  der Affinitäten bleibt (Sunstrider vor Moonstalker); die Universality-Kombo bleibt, wo sie war. Steht er weiter als
+  10 y, geht Risen Fall aus 25 y; nur Hawkish Talons wartet dann auf die Grenze aus W2.
+- *W4 – Soul Crush unterbricht.* Er bringt 300, beim Unterbrechen 1.000 und 100 TP („Potency increases to 1,000 … upon
+  interruption"). RSR setzte ihn nur in `AttackAbility` auf das Ziel. *Gilt:* zuerst im Unterbrechungspfad auf einen
+  Wirker, dessen Wirken sich unterbrechen lässt; sonst wie bisher. Zurückgehalten für eine Unterbrechung wird er nicht:
+  Wie oft in 30 s eine kommt, hängt am Inhalt, und jede verpasste Abklingzeit kostet 300.
+
+*Was WrathCombo hat* (PunishXIV/WrathCombo d9c63e468 vom 27.10.2026, BST-Dateien zuletzt am 28.09.2026 geändert;
+Werkzeugquelle, nur gelesen):
+- Abschlüsse nur Risen Fall und Calamity, Brutal Rage und Hawkish Talons nie; Shield Charge nur in Nahkampfreichweite.
+  Stützt W2 und W3 unabhängig.
+- Die Affinität jeder Dressur als Tabelle von 50 Aktionen; daraus Dressur und Axt im Uhrzeigersinn in beide Richtungen
+  (Dressur zuerst oder als zweite). RSR setzt die Dressur, sobald irgendein Herz steht, ohne ihre Affinität; die steht im
+  Tooltip („Instinctual Affinity: Eldritch"). Wie viel eine absichtliche Kombo mehr bringt als eine einfache, nennt
+  kein Text; offen im TODO („Beastmaster: Dressur nach ihrer Affinität in die Kompass-Kombos setzen").
+- Anfreunden: ein Ziel als Begleiter erkannt über `BNpcBase` und Modell, freigeschaltet über
+  `XBMManager.IsPetUnlocked`, laufender Versuch am Status „Interest Captured" (4626). Fließt in den TODO-Punkt
+  „Beastmaster: Anfreunden zum besten Zeitpunkt".
+- Entfesseln nicht für Wespe (Final Sting), ein Burst aus Dressur, Axt, Rally und Rallying Cheer, eine Ladung Shield Charge
+  zurückgehalten: ohne Begründung in der Quelle, nicht übernommen.
+
+*Gegenhypothesen:* Kein Defekt bei W1? Der Rhythmus aus Beginn plus Wirkzeit ist Rechnung, kein Mitschnitt; ein Horn am
+Beginn des Fensters verschiebt nichts und bleibt erlaubt. W2 falsch, weil der Ansturm Schaden bringt? Den Wert hat Risen
+Fall ohne Ansturm; nur Hawkish Talons über 10 y wartet. Ausgeliefert, und nichts ändert sich? Steht er im Nahkampf, ändert
+W2 nichts; die Wahl von W3 schreibt keine Zeile, sie ist ohne Bewegung gleichwertig.
+
 ---
 
 ## Quantitative Auffälligkeiten
