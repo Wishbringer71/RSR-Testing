@@ -453,6 +453,40 @@ mit ihm anfreunden kann, und das Talent dann so einsetzen, dass es wahrscheinlic
     (im Text der Client-Sprache, aus dem Blatt `LogMessage`); einen Chat-Leser hat RSR bisher nicht.
   - Offene Arbeit im TODO, „Beastmaster: Anfreunden zum besten Zeitpunkt".
 
+**Kampfhörner und Begleiter nach Lage** (seine Fragen vom 02.11.2026, als Auftrag für danach: ob die Rotation zwischen den
+Kampfhörnern wechselt, wenn ein Begleiter verschwunden ist; ob sich im Kampf die Zuordnung eines Begleiters zu einem Horn
+wechseln lässt, um Begleiter nach den Schwächen der Gegner und ihrer Anzahl zu wählen – „begleiter ab drei gegnern rufen,
+der aoes beherrscht"; sein Vorschlag, A484):
+- *Mechanik* (Spielblätter, xivapi v2; consolegameswiki, Werkzeugquelle; 02.11.2026):
+  - Jedes der drei Kampfhörner ruft den Begleiter, den du ihm im Bestienbuch zugeordnet hast. Zugeordnet wird über einen
+    Unterbefehl am Symbol der Bestie dort, nicht über eine Aktion.
+  - Im Kampf beginnt die Abklingzeit eines Horns (90 s), sobald sein Begleiter den Kampf verlässt. Außerhalb des Kampfes
+    zählt ein Rückzug nicht.
+  - Scheidender Schlag (Parting Blow) lässt den Begleiter mit Attacke-Wert 1.000 auf Ziel und Umstehende angreifen
+    (1.500 unter Schleichender Vorteil); danach verlässt er den Kampf.
+  - Jeder Begleiter hat eine Familie (Beastkin, Vilekin …, sie bestimmt, was Borrow gibt) und eine Schadensart der
+    automatischen Angriffe (Stich, Hieb, Schlag, Wasser). Seine Aktionen sind elementar oder elementneutral, und
+    manche davon sind Flächen, etwa Dressur und Entfesseln einzelner Bestien.
+- *Was RSR heute tut:*
+  - Ist kein Begleiter draußen (`ActiveBattlehorn` 0), ruft `BST_Reborn` das erste bereite Horn in der eingestellten
+    Reihenfolge („First/Second/Third Horn"), dann der Reihe nach.
+  - Verschwindet ein Begleiter, kommt also das nächste bereite Horn. Dass die Anzeige dann 0 zeigt, ist im Spiel
+    nicht beobachtet.
+  - Welcher Begleiter auf welchem Horn sitzt, liest die Basisschicht (`CurrentPets`); die Reihenfolge der Hörner ist
+    fest eingestellt.
+- *Unbelegt:*
+  - ob die Zuordnung im Kampf geändert werden kann – keine Quelle sagt es;
+  - welche Schwächen die Gegner haben. Für das Crucible nennt die Wiki Elemente, Schadensarten und
+    Statusresistenzen als wichtiger als sonst, ohne Liste.
+- *Was eine Regel kann:*
+  - Die Zuordnung ändert RSR nicht. Sie ist eine Menübedienung, und RSR drückt Aktionen.
+  - RSR kann aber unter den drei zugeordneten Begleitern den wählen, der zur Lage passt. Die Flächenwirkung jedes
+    Begleiters steht in den Blättern seiner Aktionen (Form und Reichweite); ab wie vielen Gegnern sie sich lohnt,
+    ergibt sich aus den Attacke-Werten wie bei `CustomRotation.AreaWorthOver`, nicht aus einer festen Drei.
+  - Die Schwächen der Gegner fehlen als Datenquelle. Gelernt werden könnten sie nur über die Treffer je
+    Schadensart.
+  - Offene Arbeit im TODO, „Beastmaster: Kampfhorn nach Gegnerzahl und Schwäche wählen".
+
 ---
 
 ## Quantitative Auffälligkeiten

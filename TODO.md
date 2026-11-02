@@ -15,6 +15,8 @@ Nach der Wirkung im Kampf: Sicherheit der Gruppe vor Schaden, gewichtet mit der 
    Nächstes Stufe 3), dann die Anzeige. Beide ändern den Kampf nur mittelbar, über einen geprüften oder berichtigten Lernwert –
    die Sperren unter ihnen (Schlaf) aber dauerhaft.
 2. Beastmaster: Anfreunden zum besten Zeitpunkt – kein Einfluss auf Sicherheit oder Schaden, deshalb nach den Tabellen.
+3. Beastmaster: Kampfhorn nach Gegnerzahl und Schwäche wählen – sein Auftrag „danach" (02.11.2026); Schaden, keine
+   Sicherheit.
 
 Danach die technische Schuld, soweit ihre Auflösungsbedingung erfüllt ist. Warten auf Daten: unten.
 
@@ -63,6 +65,16 @@ weder Analysieren noch Anfreunden ein; markiert er von Hand zu früh, ist die Ch
 `BST_Reborn` (kein Aufruf), `BeastmasterRotation.ModifyCapturePvE` (widersprüchliche Zielbedingungen). *Nächster
 Schritt:* Konzept 01, „Anfreunden und Analysieren": Zeitpunkt, Zielauswahl, ob Analysieren gelesen werden muss (Chat),
 Lagen (Gruppe, Mitspieler tötet, Stufensynchronisation). *Konzept:* 01.
+
+### Beastmaster: Kampfhorn nach Gegnerzahl und Schwäche wählen · N
+Seine Fragen (02.11.2026, „danach"): ob die Rotation zwischen den Kampfhörnern wechselt, wenn ein Begleiter verschwunden
+ist; ob sich die Zuordnung im Kampf wechseln lässt, um Begleiter nach den Schwächen der Gegner und ihrer Anzahl zu
+wählen – „begleiter ab drei gegnern rufen, der aoes beherrscht" (sein Vorschlag). Im Kampf heute: Nach einem
+verschwundenen Begleiter kommt das nächste bereite Horn, aber stets in der eingestellten Reihenfolge, gleich wie viele
+Gegner stehen. *Ort:* `BST_Reborn.GeneralAbility` (Hornreihenfolge), `BeastmasterRotation.CurrentPets`. *Nächster
+Schritt:* Konzept 01, „Kampfhörner und Begleiter nach Lage": Flächenwirkung je Begleiter aus den Blättern seiner Aktionen,
+Schwelle aus den Attacke-Werten, Preis eines vorzeitigen Wechsels (90 s Abklingzeit, Scheidender Schlag), Schwächen nur
+gelernt. *Konzept:* 01.
 
 ## Technische Schuld
 

@@ -626,6 +626,50 @@
       "kind": "action",
       "source": "xivapi v2 Action 44882, language=de, 2026-11-02",
       "note": "Beastmaster, level 1, ability, 30 y, 3 s recast. Answers in the chat with LogMessage 11217-11222 (no pact possible, then sehr schwierig to sehr einfach), 11425/11455 (pact already forged) or 11443 (not strong enough)."
+    },
+    {
+      "de": "Kampfhorn I",
+      "en": "First Battlehorn",
+      "identifier": "FirstBattlehornPvE",
+      "kind": "action",
+      "source": "user, 2026-11-02 (\"kampfhörner\"); xivapi v2 Action 44881, language=de, 2026-11-02",
+      "note": "Beastmaster: summons the familiar assigned to the first horn in the Master's Bestiary; in combat its recast begins once that familiar has retreated."
+    },
+    {
+      "de": "Kampfhorn II",
+      "en": "Second Battlehorn",
+      "identifier": "SecondBattlehornPvE",
+      "kind": "action",
+      "source": "user, 2026-11-02 (\"kampfhörner\"); xivapi v2 Action 44892, language=de, 2026-11-02"
+    },
+    {
+      "de": "Kampfhorn III",
+      "en": "Third Battlehorn",
+      "identifier": "ThirdBattlehornPvE",
+      "kind": "action",
+      "source": "user, 2026-11-02 (\"kampfhörner\"); xivapi v2 Action 44894, language=de, 2026-11-02"
+    },
+    {
+      "de": "Scheidender Schlag",
+      "en": "Parting Blow",
+      "identifier": "PartingBlowPvE",
+      "kind": "action",
+      "source": "xivapi v2 Action 44891, language=de, 2026-11-02",
+      "note": "The familiar's unaspected magic attack on the target and all enemies around it, potency 1,000 (1,500 under Lingering Vantage); the familiar leaves combat after it."
+    },
+    {
+      "de": "Entfesseln",
+      "en": "Tempered Release",
+      "identifier": "TemperedReleasePvE",
+      "kind": "action",
+      "source": "xivapi v2 Action 44890, language=de, 2026-11-02"
+    },
+    {
+      "de": "Dressur",
+      "en": "Trick",
+      "identifier": "TrickPvE",
+      "kind": "action",
+      "source": "xivapi v2 Action 47093, language=de, 2026-11-02"
     }
   ]
 }

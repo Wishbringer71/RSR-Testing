@@ -14372,6 +14372,23 @@ durchgehen". Als Skill `spielpatch` festgehalten (Lesetabelle in CLAUDE.md); den
 - *Prüfgrad:* Spielblätter, consolegameswiki (Werkzeugquelle); icy-veins wies den Abruf ab (Cloudflare).
 - Konzept 01 und TODO fortgeschrieben.
 
+### A484 · Beastmaster: Kampfhörner und Begleiter nach Lage erhoben (02.11.2026)
+
+- *Seine Fragen* („danach"): Wechselt die Rotation die Kampfhörner, wenn ein Begleiter verschwunden ist? Lässt sich die
+  Zuordnung im Kampf wechseln, um Begleiter nach Schwäche und Anzahl der Gegner zu wählen („ab drei gegnern … der aoes
+  beherrscht")? Eingeordnet als Frage und Vorschlag. Die Drei ist seine Zahl; ob sie gilt, prüft die Regel an den
+  Attacke-Werten.
+- *Belegt:*
+  - `BST_Reborn` ruft ohne aktiven Begleiter das nächste bereite Horn in der eingestellten Reihenfolge.
+  - Die Abklingzeit eines Horns beginnt im Kampf erst mit dem Rückzug seines Begleiters (Wirktext).
+  - Die Zuordnung geschieht über ein Menü des Bestienbuchs.
+  - Begleiter haben Familie, Schadensart und teils Flächenaktionen (consolegameswiki, Werkzeugquelle).
+  - Deutsche Namen nach xivapi: Kampfhorn I–III, Scheidender Schlag, Entfesseln, Dressur; in `action_names_de.json`
+    eingetragen.
+- *Unbelegt:* ob die Zuordnung im Kampf änderbar ist; Schwächen der Gegner als Daten; dass die Jobanzeige nach dem Tod
+  des Begleiters 0 zeigt.
+- *Prüfgrad:* Code und Quellen statisch. Konzept 01 und TODO fortgeschrieben.
+
 ---
 ## B · Commit-Register (Fork vs. `upstream/main`)
 
