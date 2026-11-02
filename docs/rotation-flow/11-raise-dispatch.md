@@ -92,9 +92,10 @@ Die daraus folgende Regel: Wer eine Meldebedingung lockert, misst ihre Wirkung a
 zählt vorher aus, wer `nextGCD` liest.
 
 **Warum der Zweig im richtigen Fenster läuft.** `Ability()` kehrt bei `0 < WeaponRemain <= 0.5f`
-sofort zurück, und bei freiem GCD ruft `Invoke` den Fähigkeitenpfad gar nicht erst auf. Der Zweig
-kann also nur bei `WeaponRemain > 0,5 s` greifen — dem Einschiebefenster, in dem die
-Ausführungssperre nicht gilt.
+sofort zurück, und bei freiem GCD ruft `Invoke` den Fähigkeitenpfad nur für die Notfallheilung auf, die
+nach den allgemeinen Sperren zurückkehrt, bevor `EmergencyAbility` gefragt wird (Konzept 07, „Die
+Notfallheilung zwischen zwei Zaubern", A479). Der Zweig kann also nur bei `WeaponRemain > 0,5 s`
+greifen — dem Einschiebefenster, in dem die Ausführungssperre nicht gilt.
 
 **Warum er nichts verdrängt.** Nach ihm stehen in `EmergencyAbility` nur zwei Zweige, beide Second
 Wind für Nahkämpfer beziehungsweise physische Fernkämpfer bei Doom-Status. Für einen Rezzer ist dort
@@ -492,7 +493,8 @@ nicht messbar. Wer sie an hat, konnte ohne Swiftcast niemanden hochholen.
 
 - **`IBaseAction.IgnoreClipping` wird an der Ausführungssperre gelesen** (A388): Die letzte halbe Sekunde vor dem GCD
   bleibt für Fähigkeiten gesperrt, außer wenn `Invoke` keinen GCD gefunden hat – dann gibt es nichts zu clippen, wie
-  es das Flag seit Upstream `4ec1a3a1c` (2023) meinte. Ein Leser in `DoAction` bleibt ausgeschlossen: Er hebelte die
+  es das Flag seit Upstream `4ec1a3a1c` (2023) meinte – und außer der Heilfähigkeit für ein Mitglied in Klasse 1, die
+  beim freien GCD gedrückt wird und ihn um ihre Ausführungssperre schiebt (Konzept 07, A479). Ein Leser in `DoAction` bleibt ausgeschlossen: Er hebelte die
   Sperre überall aus, auch neben einem anstehenden GCD.
 - **`Configs.Migrate` übernimmt die Werte nach Namen** (A389): Bei einem Versionswechsel behält jede Einstellung, die es
   noch gibt, ihren Wert, und die alte Datei bleibt als Kopie liegen. Eine Korrektur, die einen Vorgabewert ändert, erreicht

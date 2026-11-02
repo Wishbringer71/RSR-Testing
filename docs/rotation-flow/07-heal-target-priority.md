@@ -411,12 +411,107 @@ Veni Vidi Vici, ohne Wirkbalken, ließ ihn mit 34 % statt rechnerisch etwa 8 % s
 Ticks, wo Medica II mitlief, samt ihren – auf dem kleinsten Lebenspool füllen drei Ticks auf, wie Resedra (48 %
 Überheilung, Konzept 18) nicht die Ausnahme.
 
-**Die Notfallheilung als Fähigkeit kann zwischen zwei Zaubern ausfallen, Defekt offen** (A478, TODO „Benediktion fehlte,
-als der Tank auf 0,3 % fiel"). In der Großen Gubal-Bibliothek fiel der Tank unter einem ganzen Pack in 3 s von 82 auf
-43 LP; die Rangfolge gab den ersten Cure II dem Weißmagier selbst, der bei etwa 50 % selbst angegriffen wurde (Rang 2,
-Schluss aus dem Verlauf, der Trace nennt es nicht), dann zwei dem Tank. Benediktion, bereit und mit erfüllter Gefahr,
-ging in keinem der beiden Fenster nach den Zaubern hinaus; nach einem Zauber bleiben bis zum nächsten GCD Bruchteile einer
-Sekunde, und die letzte halbe ist für Fähigkeiten gesperrt.
+### Die Notfallheilung zwischen zwei Zaubern
+
+**Was geschah** (Große Gubal-Bibliothek, sein Upload vom 01.11.2026, A478). Ein ganzes Pack schlug auf den Tank ein,
+der keine eigene Minderung nahm; er fiel in 3 s von 82 % auf 43 LP. Der Weißmagier wirkte viermal Cure II hintereinander
+(17:27:19 bis 17:27:26) – den ersten auf sich selbst, der bei etwa 50 % selbst angegriffen wurde (Rang 2, ein Schluss aus
+dem Verlauf; der Trace nennt die Wahl nicht), dann drei auf den Tank. Benediktion war im ganzen Dungeon unbenutzt, also
+bereit, der Tank unter Bedrohung und unter ihrer Schwelle – sie ging nicht hinaus. Die erste Fähigkeit nach der Kette war
+Assise, nach einem sofort wirkenden Zauber (17:27:27,7).
+
+**Warum es keine Lücke gab.** Zwei Sperren halten Fähigkeiten aus der letzten halben Sekunde vor dem GCD heraus: die Wahl
+(`CustomRotation.Ability`: `WeaponRemain <= 0.5f`, und `Invoke` meldet ab dem Vorlauf „Action ahead", ab Werk einem
+Viertel des GCD, nur noch den GCD) und das Drücken (`RSCommands.DoAction`: keine Fähigkeit bei `0 < DefaultGCDRemain <= 0.5`).
+Nach einem hart gewirkten Zauber bleibt bis zum nächsten GCD dessen Abklingzeit minus Wirkzeit, beide im selben Maß
+verkürzt durch Zaubertempo und Geistesgegenwart. Cure II wirkt 2,0 s bei 2,5 s Abklingzeit (Spielblatt, xivapi,
+02.11.2026); es bleiben höchstens 0,5 s, an jenem Abend unter Geistesgegenwart 1,53 s Wirkzeit in einem GCD von 1,87 bis
+1,96 s, also 0,35 bis 0,4 s. Zwischen zwei Cure II geht damit keine Fähigkeit – nicht als Zufall, sondern bei jedem
+Zaubertempo. Dasselbe gilt für jeden Heilzauber mit 2,0 s Wirkzeit: Medica II und Cure III (Weißmagier), Adloquium und
+Succor (Gelehrter), Prognosis (Weiser). Nach 1,5 s Wirkzeit – Benefic II, Helios, Helios Conjunction (Astrologe),
+Diagnosis (Weiser), Glare III und Holy III – bleibt rund eine Sekunde, abzüglich der Sperre ein Fenster von 0,27 bis
+0,5 s je nach Tempo (`emergency_weave_model.py`).
+
+**Was gilt** (A479). Steht ein ungeschütztes Mitglied der Gruppe in Klasse 1 – seine vorausberechnete effektive Gesundheit
+bei oder unter `HealthForDyingTanks`, ab Werk 15 % –, fragt `Invoke` die automatischen Heilfähigkeiten des Jobs auch dann,
+wenn der GCD schon ansteht, und meldet eine, die hinausgehen kann, vor dem GCD. Gedrückt wird sie, sobald der GCD frei
+ist (die Sperre in `DoAction` bleibt; bei 0 s Rest lässt sie Fähigkeiten zu), und der nächste GCD folgt nach ihrer
+Ausführungssperre. Was die Fähigkeit ist und auf wen sie geht, entscheiden wie bisher die Heilpfade des Jobs mit ihren
+eigenen Schwellen und Bedingungen – Benediktion etwa weiter erst unter „Minimum health threshold party member needs to be
+to use Benediction" und unter Bedrohung (oben, „Das Mittel richtet sich nach der Gefahr"); die Rangfolge stellt das
+Mitglied in Klasse 1 an die Spitze. Geändert wird allein der Zeitpunkt, und nur für eine Fähigkeit, die ein Mitglied in
+Klasse 1 erreicht – als ihr Ziel oder unter den Getroffenen einer Flächenheilung. Wählt der Pfad etwas anderes, etwa
+Second Wind für einen Schadensausteiler bei 40 %, während der Tank in Klasse 1 steht, wartet es wie bisher auf ein
+Fenster; den GCD um eine Ausführungssperre zu schieben, lohnt nur für den, der sonst fällt. Die allgemeinen Sperren des
+Fähigkeitenpfads gelten weiter: nichts während eines Zaubers, unter `NoCasting`, mit abgeschalteten Fähigkeiten, während
+Mudra, unter Fähigkeitssperre (Shackled Abilities) oder solange eine Kanalisierung gehalten wird (Passage of Arms,
+Collective Unconscious, Phantom Flurry nach seinen Einstellungen). Ein Befehl („next action“) und ein Gegenstand werden
+nicht vorgezogen. Andere Fähigkeiten – Angriff, Unterbrechung, Abwehr – bleiben hinter den Sperren. Jede so vorgezogene
+Heilung schreibt eine Zeile ins `DefenseTrace.log`; steht ein Mitglied in Klasse 1 und geht keine Heilfähigkeit für es,
+einmal je Mitglied und GCD eine Zeile mit diesem Befund.
+
+*Benediktion bleibt der absolute Notfall* (seine Worte, 02.11.2026: „benediktion soll ja erst als absoluter notfall
+gelten“ – seine Vorgabe von oben, „Das Mittel richtet sich nach der Gefahr“, nicht eine neue Linie). Die Regel macht sie
+nicht früher, sie macht den Notfall erreichbar: Vorgezogen wird nur in Klasse 1, also wenn das Mitglied fiele, bevor
+eine jetzt begonnene GCD-Heilung landet – die engste Fassung von „absolut“, die sich am Kampf messen lässt. Absolut ist
+ein Notfall dabei am Augenblick der Entscheidung gemessen, nicht an der Anzeige: Für einen Heiler, der hart wirkt, ist der
+freie GCD der letzte Augenblick vor 1,5 bis 2 s ohne jede Fähigkeit. Wer erst bei 10 % auf dem Bildschirm drücken wollte,
+stünde dann mitten im Zauber. Außerhalb von Klasse 1 gelten für Benediktion unverändert ihre Schwelle und die Gefahr
+(oben); für einen Tank ist die Gefahr durch seine Aggro stets erfüllt, dort entscheidet ihre Schwelle.
+
+*Woran die Wahrscheinlichkeit gemessen wird* (seine Vorgabe für jede Sicherheitsregel): an Klasse 1 – der gemessenen
+Schadensrate, über die sich selbst korrigierende Restzeit (`GetCorrectedTTK`) bis zur Landung einer jetzt begonnenen
+GCD-Heilung fortgeschrieben, gegen die Linie, die er für den sterbenden Tank setzt.
+
+*Im Kampf, am Fall vom 01.11.:* Als der GCD um 17:27:21,3 frei wurde (der erste Cure II hatte um 20,9 geendet), stand der
+Tank bei 24 % und verlor 2 300 bis 2 900 LP je Sekunde (über die letzte und die letzten zwei Sekunden gemessen); tot wäre
+er in 1,2 bis 1,5 s gewesen, ein dann begonnener Cure II landet nach 2,1 s – Klasse 1. Benediktions eigene Bedingungen
+hielten ebenso: Sie liest die Gesundheit bis zum Ende der laufenden Sperre, beim freien GCD also die jetzige (24 % unter
+ihrer Schwelle ab Werk von 30 %), und der Tank stand unter Angriff. Benediktion wäre gemeldet und gedrückt worden. Später
+ging es nicht: Der zweite Cure II begann in diesem Augenblick; nach seiner Wirkzeit (22,8) stand der Tank bei 712 LP, und
+bis zum GCD danach hielt die Sperre jede Fähigkeit zurück. Eine sofort wirkende Heilung ändert die LP 0,53 s nach ihrer
+Zeile im Mitschnitt (26 Heilungen jenes Abends gemessen); mit 0 bis 0,3 s vom Drücken bis zu dieser Zeile (angenommen)
+fällt der Tank bis zur Landung weiter auf 10 bis 22 % – kein Mangel, sondern die Lage, für die sie da ist – und stünde um
+17:27:22,8, nach dem Schaden, der tatsächlich kam, bei 78 bis 90 % statt bei 43 LP (`emergency_weave_model.py`,
+Nachrechnung aus dem Mitschnitt). Der zweite Cure II begänne um die Ausführungssperre der Fähigkeit später.
+
+*Lagen:* Ein Heiler, der nur harte Zauber kettet, kommt in jeder Notlage an seine Notfallheilung, nicht erst nach dem
+nächsten sofortigen Zauber. Mit Lilien oder Eukrasie ist die Lücke meist ohnehin da; dann ändert sich nichts. Unter
+Stufe 50 hat der Weißmagier keine Benediktion, die übrigen Heilfähigkeiten folgen ihren Stufen. Gilt für jeden Job, dessen
+Heilpfade Fähigkeiten liefern (universell), im PvE; ein Paladin oder Krieger hat dort Selbstheilungen, die ebenso nur
+greifen, wo ihre Bedingungen es erlauben. BossModReborn liest die Regel nicht.
+
+**Preis und Gegenwirkung.** Je vorgezogener Fähigkeit rückt der nächste GCD um ihre Ausführungssperre nach hinten (in
+keinem Spielblatt; der Server nennt sie im Effektpaket, `AnimationLockTime`; in Community-Angaben um 0,6 s). Mehrere
+Fähigkeiten hintereinander, solange das Mitglied in Klasse 1 bleibt, verschieben ihn mehrfach – jede heilt sofort, also
+endet Klasse 1 mit der ersten, die genug heilt. Eine zweite allein deshalb, weil die LP der ersten erst 0,53 s später
+steigen, gibt es nicht: Vor dem Ende ihrer Ausführungssperre drückt `DoAction` nichts, und sobald ihr Effektpaket da ist,
+rechnet `RefinedHP` ihre Heilung vorab an (`HealHP`, bis zur Sperre plus 1 s; `Watcher`, `DataCenter.GetPartyMemberHPRatio`).
+Eine anstehende Wiederbelebung bleibt, wo sie ist: Spontanität im Notfallzweig des Fähigkeitenpfads, der Zauber im GCD –
+die Heilfähigkeit geht vor diesem GCD.
+Ein falscher Alarm der Vorhersage (ein Ratensprung, der abebbt) kostet dieselbe Verschiebung; ob die Fähigkeit selbst
+geht, entscheiden weiter ihre eigenen Bedingungen, eine Benediktion geht also nicht auf jemanden ohne Gefahr. Rest: Hat
+`DoAction` den GCD schon in die Warteschlange des Spiels gegeben, bevor das Mitglied in Klasse 1 rückt, beginnt dieser
+GCD, und die Fähigkeit wartet bis nach ihm – wie heute.
+
+**Verworfen.**
+- *Die Sperre senken* (0,5 s auf weniger): verschiebt den Fundort, nicht die Zuständigkeit (Konzept 11, „Entstehung"),
+  und clippte jeden GCD ohne Not.
+- *In der Not sofort wirkende GCD-Heilungen vorziehen*, damit eine Lücke entsteht: jobweise verschieden und nicht immer da –
+  an jenem Abend waren die Lilien gerade ausgegeben (dreimal Afflatus solatii bis 17:27:13).
+- *Den laufenden Zauber abbrechen*, um die Fähigkeit einzuschieben: kostet die Wirkzeit, und der Zauber, der läuft, heilt
+  in der Not meist das gefährdete Mitglied.
+- *Den Leser in `DoAction` öffnen:* hebelte die Sperre für jede Fähigkeit aus (Konzept 11, A388).
+- *Nichts ändern:* Ein Heiler, der in der Not Cure II kettet, kommt nie an Benediktion – genau die Lage, für die sie da ist.
+
+**Gegenhypothesen.** *Kein Defekt:* Der Tank überlebte mit 43 LP, durch den dritten Cure II und eine Minderung, die er
+bei 5 % selbst nahm; die Notfallheilung, die für diese Lage gebaut ist, war bereit und ging nicht. *Option falsch:* die
+Verworfenen oben; Annahme „die Sperre in `DoAction` lässt bei 0 s Rest zu" – am Code belegt (`DefaultGCDRemain > 0f`);
+stimmte sie nicht, ginge die Fähigkeit nach dem GCD statt davor, wie heute. *Ausgeliefert, und nichts ändert sich –
+warum?* Kommt die Vorhersage nicht rechtzeitig in Klasse 1 – der Sprung kommt schneller als ihre Rate –, oder gehen die
+Heilpfade des Jobs ihrer eigenen Bedingungen wegen nicht – etwa weil seine Schwelle für Benediktion unter dem Stand liegt,
+den der Tank beim freien GCD hat (im Fall vom 01.11. unter 24 %); dann kommen die übrigen Heilfähigkeiten des Pfads nach
+ihren Bedingungen vor, und Benediktion wartet, wie er es eingestellt hat. Beides zeigt die Trace-Zeile.
 
 ### Die Füllheilung: heilen, wenn nichts anderes zu tun ist
 
