@@ -14324,6 +14324,35 @@ durchgehen". Als Skill `spielpatch` festgehalten (Lesetabelle in CLAUDE.md); den
   `run_ci_checks.py` mit 41 von 41 Schritten. Im Spiel nicht beobachtet.
 - *TODO:* Stufe 2 erledigt. Nächster Schritt vor Stufe 3: die Senkregeln für die Einträge der alten Datei (A475).
 
+### A482 · Senkregel für die Einträge der alten Datei: nur gleichbleibender Abfall aus drei Messungen (02.11.2026)
+
+- *Anlass:* die offene Frage vor Stufe 3 (A475, TODO „Gelernte Tabellen über einen Spielpatch").
+  - Ein Eintrag der alten Datei ist der Höchstwert unbekannt vieler Messungen, übernommen als eine Messung ohne Streuung.
+  - Die Regeln 5 und 5b hätten im Upload vom 01.11. vier von 16 Einträgen ohne Änderung im Spiel gesenkt.
+- *Gerechnet* (`learned_oldfile_model.py`, neu, mit Selbsttest; Streuung, Varianten und Zahl der alten Messungen sind
+  Annahmen und dort benannt). Mehr falsch ausgelassener Schutz als „nie senken", höchstens:
+  - Regel 5 in der bisherigen Fassung: 4,4 Punkte.
+  - Klarer Abfall mit zwei Messungen: 2,5 Punkte.
+  - Gleichbleibender Abfall aus zwei Messungen: 1,2 Punkte.
+  - Gleichbleibender Abfall aus drei Messungen: 0,5 Punkte.
+  - „Nie senken" bände den Schutz eines abgeschwächten festen Treffers für immer; drei Messungen geben ihn nach drei
+    Landungen frei.
+- *Entschieden:* Eine Schicht aus der alten Datei (Verfahren 0) gilt als widerlegt, wenn die laufende Version mindestens
+  drei saubere Messungen hat, alle innerhalb eines Wurfs voneinander und alle mehr als einen Wurf unter dem alten Wert.
+  Eine Messung außerhalb des Wurfs hält den alten Wert für diese Version. Die Regeln 5 und 5b gelten für solche
+  Schichten nicht.
+  - Keine Frage an ihn: Beide seiner Anforderungen vom 28.10.2026 sind abgedeckt („nicht irrtümlich gelöscht",
+    „nicht dauerhaft unwidersprochen"), dazu „Sicherheit vor Schaden". Die Zahl drei ist die kleinste, die im Modell
+    überall im halben Punkt von „nie senken" bleibt. Diese Begründung ist die Ausnahme für den festen Wert, wenn er in
+    den Code kommt.
+  - Preis: Ein streuender Treffer, den ein Patch abschwächte, behält in dieser Version seinen alten Wert.
+- *Falsifikation:*
+  - Kein Defekt: Regel 5 senkte nachweislich ohne Änderung im Spiel (A475).
+  - Option falsch: siehe die gerechneten Varianten.
+  - Ausgeliefert, und nichts ändert sich: Der Fall, für den die Regel gebaut ist, ist ein fester Treffer, den ein Patch
+    abschwächt. Bis zum nächsten Patch kommt er nicht vor, und in dieser Zeit soll sich auch nichts ändern.
+- *Prüfgrad:* Modell mit Selbsttest. Konzept 13, Regel 5, fortgeschrieben; gebaut wird es mit Stufe 3.
+
 ---
 ## B · Commit-Register (Fork vs. `upstream/main`)
 

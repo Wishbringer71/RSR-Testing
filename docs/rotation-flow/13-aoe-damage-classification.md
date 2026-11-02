@@ -1296,16 +1296,35 @@ nur um den Wurf; eine Senkung durch neue Messungen, die die Varianten der alten 
 den einmal nur vier teilten); eine Senkung auf eine einzelne Messung einer streuenden Aktion. Ein alter Eintrag ohne
 Streuungsangabe zählt als eine Messung ohne Streuung.
 
-**Für die Einträge aus der alten Datei trägt das nicht, vor Stufe 3 zu lösen** (A475). Ihr Wert ist der Höchstwert
-aller Messungen vor Stufe 1, deren Zahl und Streuung unbekannt sind; übernommen wird er als eine Messung ohne Streuung.
-Zwei neue Messungen, die die harte Variante nur noch nicht getroffen haben, widerlegen ihn dann schon. Im Upload vom
-01.11.2026 (Prätorium, Nebeltrift) hätten die Regeln 5 und 5b vier von 16 neu gemessenen Einträgen gesenkt, ohne dass
-sich an diesen Aktionen etwas geändert haben muss: Donnerfunke (#45291) von 56 auf 44 %, Erdbeben (#43327) von 50 auf
-41 %, Verstärkte Sprengung (#28477) von 46 auf 36 %, den Tankbuster Goldene Klauen (#45305) von 44 auf 6 %. Wie weit eine
-Aktion streut, zeigen dieselben Kämpfe: Donnerfunke traf das am härtesten getroffene Mitglied mit 4 und dann mit 40 %
-seiner Maximalgesundheit, Erdbeben mit 16 und mit 37 %. Ob ein alter Wert dagegen einen früheren Messfehler trägt
-(Goldene Klauen, 6 und 2 % neu), ist von hier nicht zu unterscheiden. Der Maßstab unten gilt deshalb nur für Einträge,
-deren alte Messungen gezählt sind.
+**Für die Einträge aus der alten Datei gilt nur der gleichbleibende Abfall** (A475, A482). Ihr Wert ist der Höchstwert
+aller Messungen vor Stufe 1, deren Zahl und Streuung unbekannt sind; als eine Messung ohne Streuung übernommen, senkten
+ihn die Regeln 5 und 5b schon nach zwei neuen Messungen, die die harte Variante nur noch nicht getroffen haben. Im Upload
+vom 01.11.2026 (Prätorium, Nebeltrift) hätten sie vier von 16 neu gemessenen Einträgen gesenkt, ohne dass sich an diesen
+Aktionen etwas geändert haben muss: Donnerfunke (#45291) von 56 auf 44 %, Erdbeben (#43327) von 50 auf 41 %, Verstärkte
+Sprengung (#28477) von 46 auf 36 %, den Tankbuster Goldene Klauen (#45305) von 44 auf 6 %. Wie weit eine Aktion streut,
+zeigen dieselben Kämpfe: Donnerfunke traf das am härtesten getroffene Mitglied mit 4 und dann mit 40 % seiner
+Maximalgesundheit, Erdbeben mit 16 und mit 37 %.
+- *Was gilt:* Eine übernommene Schicht aus der alten Datei (Verfahren 0) ist widerlegt, wenn die laufende Version
+  mindestens drei saubere Messungen hat, alle innerhalb eines Schadenswurfs voneinander und alle um mehr als einen Wurf
+  unter dem alten Wert; dann gilt ihr Höchstwert. Eine einzige saubere Messung außerhalb des Wurfs zeigt eine streuende
+  Aktion und hält den alten Wert für diese Version. Die Regeln 5 und 5b gelten für solche Schichten nicht.
+- *Gerechnet* (`learned_oldfile_model.py`, Annahmen dort benannt, alte Datei aus 3, 10 oder 30 Messungen): Bei einer
+  unveränderten, streuenden Aktion lässt die Regel Schutz höchstens einen halben Punkt öfter falsch aus als nie zu senken;
+  Regel 5 in der bisherigen Fassung bis 4,4 Punkte öfter, zwei Messungen statt drei bis 1,2 Punkte. Einen abgeschwächten
+  festen Treffer gibt sie nach drei Landungen frei; nie zu senken bände seinen Schutz für immer.
+- *Warum drei:* die wenigsten, bei denen keine unveränderte Lage des Modells mehr als einen halben Punkt hinter „nie
+  senken" zurückfällt.
+- *Seine beiden Anforderungen* (28.10.2026): „nicht irrtümlich erkenntnisse gelöscht" – gesenkt wird nur bei
+  gleichbleibendem Abfall, und gelöscht wird nichts (der widerlegte Wert bleibt auf seinem Platz, Regel 2); „alte daten
+  [nicht] dauerhaft unwidersprochen" – ein fester Treffer wird nach drei Landungen widerlegt. Ein streuender bleibt, solange
+  er streut: Das ist der Teil, der sich ohne falsches Senken nicht prüfen lässt.
+- *Preis:* Ein streuender Treffer, den ein Patch abschwächte, behält in dieser Version seinen alten Wert (gerechnet in 91
+  bis 96 % der Casts Schutz, den er nicht mehr braucht). Ein falsch gesenkter Wert steigt mit dem ersten härteren Treffer
+  wieder (Höchstwert); dieser eine kommt ohne die Minderung, die die Größenregel ihm sonst gäbe.
+- *Verworfen:* Regel 5 wie für gezählte Einträge; der klare Abfall aus Regel 5b mit zwei Messungen (gerechnet bis 2,5
+  Punkte öfter als nie senken); nie senken (gegen „dauerhaft unwidersprochen").
+
+Der Maßstab unten gilt für Einträge, deren alte Messungen gezählt sind.
 
 **5b. Senken nach klarem Abfall: sein „manchmal ist etwas nach einschlag klar erkennbar".** Die übernommene Schicht ist
 auch widerlegt, wenn ihre sauberen Messungen – mindestens zwei – nicht mehr als einen Schadenswurf auseinanderliegen und

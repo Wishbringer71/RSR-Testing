@@ -11,8 +11,8 @@ Nach der Wirkung im Kampf: Sicherheit der Gruppe vor Schaden, gewichtet mit der 
 (seine Vorgabe, 17.10.2026: „todo nach wichtigkeit abarbeiten. jeweils im loop bearbeiten").
 
 1. Die gelernten Tabellen: entschieden (Konzept 13, A451); gebaut nach Regel 12 des Entwurfs, erst die Revision über
-   einen Spielpatch (Stufen 1 und 2 gebaut, A481; als Nächstes die Senkregeln für die Einträge der alten Datei, dann
-   Stufe 3), dann die Anzeige. Beide ändern den Kampf nur mittelbar, über einen geprüften oder berichtigten Lernwert –
+   einen Spielpatch (Stufen 1 und 2 gebaut, A481; die Senkregel für die Einträge der alten Datei entschieden, A482; als
+   Nächstes Stufe 3), dann die Anzeige. Beide ändern den Kampf nur mittelbar, über einen geprüften oder berichtigten Lernwert –
    die Sperren unter ihnen (Schlaf) aber dauerhaft.
 
 Danach die technische Schuld, soweit ihre Auflösungsbedingung erfüllt ist. Warten auf Daten: unten.
@@ -35,9 +35,9 @@ Pyretisch mehr anlegt, hält weiter Zauber an. Gebaut sind Stufe 1 (Speicher, Ü
 laufende Version ihn sauber misst, A481); offen sind die Stufen 3 bis 5. *Ort:* `OtherConfiguration.RevisedStore`
 (Fläche, Tankbuster), `OtherConfiguration.LearnedFile` (die übrigen: Zusammenführung mit `Math.Max`, `Math.Min` oder
 `Higher`), die Werttypen `SleepReading`, `DotReading`/`DotArea`, dazu `HitSeriesOnPlayer`, `TankbusterMarkerWithoutHit`
-und `ActionPenaltyCasts`. *Nächster Schritt:* vor Stufe 3 lösen, wie ein übernommener Eintrag der alten Datei gesenkt
-werden darf – die Regeln 5 und 5b hätten im Upload vom 01.11.2026 vier von 16 neu gemessenen Einträgen gesenkt, ohne
-Hinweis auf eine Änderung (Konzept 13, Regel 5, A475). *Konzept:* 13.
+und `ActionPenaltyCasts`. *Nächster Schritt:* Stufe 3 – die Regeln 5 und 5b für gezählte Einträge, für die der alten
+Datei nur der gleichbleibende Abfall aus drei sauberen Messungen (Konzept 13, Regel 5, A482), mit dem Platz für den
+widerlegten Wert. *Konzept:* 13.
 
 ### Gelernte Tabellen des Forks in den Einstellungen zeigen und bearbeiten · N
 Sein Auftrag (28.10.2026): „prüfen, ob es sinnvoll ist, die durch den fork selbst erstellten lernlisten ähnlich der
