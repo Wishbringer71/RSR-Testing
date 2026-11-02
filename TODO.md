@@ -14,6 +14,11 @@ Nach der Wirkung im Kampf: Sicherheit der Gruppe vor Schaden, gewichtet mit der 
    einen Spielpatch (Stufen 1 und 2 gebaut, A481; die Senkregel für die Einträge der alten Datei entschieden, A482; als
    Nächstes Stufe 3), dann die Anzeige. Beide ändern den Kampf nur mittelbar, über einen geprüften oder berichtigten Lernwert –
    die Sperren unter ihnen (Schlaf) aber dauerhaft.
+2. Beastmaster, Nutzen der Begleiter jenseits von Schaden, Heilung und Schutz: wirkt in jedem Kampf mit Rudel oder
+   Gruppe, in dem ein solcher Begleiter auf einem Horn sitzt.
+3. Fremde Repositories auf Verbesserungen für RSR prüfen: Jeder Fund kann ein Defekt im Verhalten einer Klasse sein,
+   den RSR heute im Kampf zeigt; zuerst die Rotationswerkzeuge für alle Jobs, Daedalus vorn (aktiv, alle Jobs,
+   eigene Kampfvorhersage).
 
 Danach die technische Schuld, soweit ihre Auflösungsbedingung erfüllt ist. Warten auf Daten: unten.
 
@@ -53,6 +58,37 @@ Tankbuster-Tabelle neben Upstreams AoE- und Tankbuster-Liste. *Ort:* `MainWindow
 *Nächster Schritt:*
 Anzeige ja, Bearbeitung nein (Konzept 13, „Gelernte Tabellen über Spielversionen", Regel 10; seine Vorgabe A173); gebaut
 als letzte Stufe der Revision. *Konzept:* 13 (gelernte Tabellen), 18 (Einstellungen).
+
+### Beastmaster: Nutzen der Begleiter jenseits von Schaden, Heilung und Schutz · N
+Im Kampf: Die Hornwahl (B1 bis B3) wertet nur Dressur-Schaden, Heilung und Schutz. Ein Begleiter, der ein Rudel
+betäubt oder einfriert, die Verwundbarkeit des Ziels erhöht oder die Gruppe stärkt, zählt wie einer ohne das; Daedalus
+baut seine Belegungen nach Inhalt genau darauf (A488). *Ort:* `BeastmasterFamiliars.ReadProfile`, `BST_Reborn`
+(`SituationalHorn`). *Nächster Schritt:* aus den Wirktexten der 50 Begleiter erheben, welche Wirkungen es gibt und
+was jede im Kampf bringt, dann Loop gegen B3 und das Modell `bst_horn_model.py`. *Konzept:* 01, „Begleiter nach Lage".
+
+### Fremde Repositories auf Verbesserungen für RSR prüfen · N, R, U
+Sein Auftrag (02.11.2026): „alle von dir gefundenen repos, die du benannt hast prüfen, ob daraus generell
+verbesserungen für rsr entstehen könnten, für die grundstruktur, für die rotationen und das verhalten der einzelnen
+klassen". Im Kampf: Was ein anderes Werkzeug für eine Mechanik, eine Lage oder einen Job gelöst hat, fehlt RSR
+vielleicht; jeder Fund wird am Spiel belegt, bevor er ein Defekt oder eine Verbesserung heißt. Code nur lesen, nicht
+übernehmen (Lizenzen: GPL, AGPL, LGPL, MIT, ohne Lizenz). Die Repositories, nach Zweck:
+- *Rotationen für alle Jobs:* ofnature/Daedalus, PunishXIV/WrathCombo, ahwootech/BRUTAL, BeirutaNa1na/RotationSolverReborn
+  (Fork von Upstream), RhyTamok/XIVdrg.
+- *Beastmaster:* Kriss-Hietala/BeastmasterAssist, Rin-0617/BeastHelper, lexxxgo/Masterbeast; Daedalus und WrathCombo
+  dazu ausgewertet (A488).
+- *Kampfvorhersage und Unterbrechen:* FFXIV-CombatReborn/BossmodReborn, awgil/ffxiv_bossmod, sourpuh/ffxiv_interjection.
+- *Auswertung von Kämpfen:* xivanalysis/xivanalysis, OverlayPlugin/cactbot, xiv-stats/xiv-damage-samples,
+  Ahriqi/astbalanceimages.
+- *Spiel-API und Spieldaten:* goatcorp/Dalamud, aers/FFXIVClientStructs, NightmareXIV/ECommons, NotAdam/Lumina,
+  xivdev/EXDSchema, xivapi/ffxiv-datamining, SapphireServer/Sapphire (Server-Nachbau: Formeln und Abläufe, keine
+  Spielquelle), LTS-FFXIV/RebornMaterial.
+- *Automatisierung und Werkzeuge:* Knightmore/Henchman, Knightmore/Underlings, getsetmind/dalamudmcp,
+  t3knical/DalamudPlugins.
+*Ort:* Grundstruktur (`RotationSolver/Basic`, Updaters, Zielwahl, Abwehr), die Rotationen unter `RebornRotations`, die
+Jobkonzepte. *Nächster Schritt:* Daedalus über alle Jobs: Zielwahl, Abwehr, Kampfvorhersage, je Job die Regeln, die
+RSR nicht kennt; danach die übrigen in der Reihenfolge der Liste. Je Fund ein Loop, je Repository ein Archiveintrag mit
+Commit und Datum. *Konzept:* 15, erweitert vom Vergleich mit WrathCombo auf die übrigen Werkzeuge; je Fund dazu das
+tragende (01 Jobs, 08 Minderung, 13 Flächenschaden und Tankbuster).
 
 
 ## Technische Schuld
@@ -122,9 +158,11 @@ nebeneinander gebraucht werden.
 
 - **Beastmaster: Belegung der Kampfhörner situationsbezogen setzen** (seine Vorgabe, 02.11.2026: „es soll in die
   rotation eingearbeitet werden, situationsbezogen"). Im Kampf heute: RSR wählt situationsbezogen unter den drei
-  Begleitern seiner Hörner (B0 bis B3), die Belegung selbst setzt nur er im Bestienbuch. Auflösung: eine Funktion, ein
-  Agent oder ein Paket des Clients, das die Belegung setzt, belegt in FFXIVClientStructs (Stand b69073a, 02.11.2026:
-  nur Lesen). Konzept 01, „Belegung der Hörner in der Rotation".
+  Begleitern seiner Hörner (B0 bis B3), die Belegung selbst setzt nur er im Bestienbuch. Ein Weg zum Setzen ist
+  bekannt: über das Menü des Bestienbuchs, wie Daedalus es außerhalb des Kampfes tut (A488). Auflösung: sein
+  `BestiaryTrace.log` mit einer Zuweisung außerhalb und einem Versuch im Kampf belegt Rückruf, Menü und Kampfgrenze auf
+  seinem Client; dann Loop über das, was die Rotation setzt. Konzept 01, „Belegung der Hörner in der Rotation",
+  „Aufzeichnung des Bestienbuchs".
 
 - **Samurai nutzt Feint und Tengentsu nicht** (fremde Meldung, PR #11, unbestätigt; statisch geprüft A265). Auflösung:
   ein Protokoll eines Samurai-Kampfs („area defence open, nothing chosen" gegen „hit you"). Konzept 13.

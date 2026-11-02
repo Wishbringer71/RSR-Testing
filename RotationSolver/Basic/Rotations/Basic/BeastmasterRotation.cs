@@ -814,7 +814,7 @@ public partial class BeastmasterRotation
 	/// <summary>
 	/// True when no Battlehorn is left to swap to.
 	/// </summary>
-	public static bool OnLastHorn => !AnyBattlehornReady;
+	public static bool OnLastHorn => !ReplacementHornReady;
 
 	/// <summary>
 	/// True when everything the level 100 Instinctual finisher needs is up: both TP bars full, both Rally

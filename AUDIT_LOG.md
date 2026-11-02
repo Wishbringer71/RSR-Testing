@@ -14474,6 +14474,44 @@ durchgehen". Als Skill `spielpatch` festgehalten (Lesetabelle in CLAUDE.md); den
 - *Widerrufen:* C143, C144 (A483).
 - *Prüfgrad:* Compile, alle CI-Prüfungen lokal, Modell; keine Laufzeitbeobachtung.
 ---
+### A488 · Beastmaster: fremde Werkzeuge, Abtreten nur mit Ersatz, Aufzeichnung des Bestienbuchs (02.11.2026)
+
+- *Seine Aufträge:* „ja, bau die aufzeichnung, sie soll sich dann aktivieren, wenn das buch auf ist, und deaktivieren,
+  wenn es geschlossen wurde. wo landen die logdaten?"; dazu die Fragen, ob Masterbeast, BeastHelper, BeastmasterAssist
+  und Daedalus RSR verbessern können („es muss nicht nur wrathcombo sein, was als hilfe herangezogen wird"), und als
+  TODO alle genannten Repositories auf Verbesserungen für RSR zu prüfen.
+- *Stand der Quellen:* Kriss-Hietala/BeastmasterAssist db9e2e3 (14.09.2026, MIT), Rin-0617/BeastHelper be40a1e
+  (26.10.2026, AGPL-3.0), lexxxgo/Masterbeast 712bddd (19.09.2026, ohne Lizenz), ofnature/Daedalus e3a16de (01.11.2026,
+  GPL-3.0/LGPL-3.0), WrathCombo d9c63e468 (27.10.2026); Werkzeugquellen, Code nur gelesen.
+- *Hornbelegung:* Daedalus setzt sie über die Rückrufe des Bestienbuchs (`XBMMonsterNotebook`: `3, Seite`, `8, Kachel`;
+  Kontextmenü `0, Eintrag, 0`), nur außerhalb des Kampfes, Menüeintrag am englischen Wort erkannt. Offen für seinen
+  Client: Werte, Menü, Kampfgrenze. Darum die Aufzeichnung zuerst; TODO-Punkt bleibt unter „Warten auf Daten" mit neuer
+  Auflösung.
+- *R1, Abtreten nur mit Ersatz (Defekt, ohne Option):* Wirktext der Hörner (xivapi v2 ActionTransient 44881): die
+  Abklingzeit beginnt im Kampf erst mit dem Rückzug; 90 s nach consolegameswiki und BeastmasterAssist, Daedalus
+  beobachtete 70 s allein. Schlussstich (Wespe, Action 44954, de) lässt den Begleiter abtreten wie Scheidender Schlag;
+  die Suche über alle Wirktexte („retreats from combat") findet nur diese beiden. RSR setzte Scheidender Schlag bei
+  irgendeinem bereiten Horn, Schlussstich ohne Prüfung. Jetzt beide nur mit einem anderen bereiten Horn mit Begleiter
+  (`ReplacementHornReady`, `FamiliarProfile.ReleaseRetreats` aus dem Wirktext); `OnLastHorn` folgt seinem Kommentar
+  („no Battlehorn is left to swap to"). Gegenhypothesen: Meldet das Spiel das eigene Horn ohnehin als nicht bereit,
+  ändert sich beim Scheidenden Schlag nichts, beim Schlussstich trotzdem; wäre die Abklingzeit im Kampf 2 s, kostete es
+  nur unter Stufe 10 (ein Horn) den Scheidenden Schlag. Preis: am Kampfende ein Abtreten ohne Ersatz, das reiner
+  Gewinn wäre.
+- *Geprüft ohne Defekt:* Daedalus wartet nach der Dressur auf die Aktion des Begleiters, sonst schließt die Axt die
+  Kombo verkehrt; RSR verlangt für die Axt das Herz, das erst die gelandete Dressur gibt (`StatusNeed`). Anfreunden:
+  Daedalus markiert etwa 20 s vor dem Tod; RSR bleibt bei A2 (offizieller Job-Guide: niedrigere LP beim Markieren,
+  größere Chance). BeastmasterAssist empfiehlt nur Kinship-Aktionen, die RSR schon setzt; BeastHelper und Masterbeast
+  zielen auf den Crucible.
+- *Aufzeichnung:* `RotationSolver/Helpers/BestiaryTrace.cs`, `BestiaryTrace.log` im Konfigurationsordner; Start bei
+  `PostSetup`/`PostShow` des Bestienbuchs, Ende bei `PreFinalize`/`PostHide`; dazwischen `IAgentLifecycle`
+  `PreReceiveEvent` aller Agenten, `IAddonLifecycle` `PreReceiveEvent` an Bestienbuch und Kontextmenü, Werte jedes
+  Kontextmenüs, Hornplätze und Kampfstatus je Bild. Hört nur zu.
+- *TODO neu:* „Beastmaster: Nutzen der Begleiter jenseits von Schaden, Heilung und Schutz" (aus Daedalus' Belegungen);
+  „Fremde Repositories auf Verbesserungen für RSR prüfen" (sein Auftrag).
+- *Widerrufen:* C145 (A487).
+- *Prüfgrad:* Compile, alle CI-Prüfungen lokal; keine Laufzeitbeobachtung – die Aufzeichnung ist das Messmittel für
+  die Belegung.
+
 ## B · Commit-Register (Fork vs. `upstream/main`)
 
 ### B1 · Einzelgeprüfte Fork-Commits
@@ -14770,3 +14808,4 @@ Die offene Arbeit dazu — Reihenfolge und Abbruchbedingung der Nachprüfung —
 | C142 | A478 (01.11.2026): Verfluchter Blick, „von mehreren Augen alle 3 s gewirkt", verkettet „gleich welcher Gegner wirkte" zu 38 % über 21 s „bei Treffern von 0 bis 7 %" – ein Defekt, TODO „Gestaffelte Wirken mehrerer Gegner werden zu einer Serie verkettet", nächster Schritt „die Wirkzeitregel gilt je Wirkendem" | Die acht Augäpfel sind nicht anvisierbare Mechanikobjekte, gemeinsam erschienen und entfernt, je ein Wirken – eine Mechanik wie Ersticken des Fleisches, deren Verkettung A460 baut; die 0 bis 7 % waren seine eigenen, geminderten Treffer, Mitglieder seiner Gruppe traf ein Blick mit 18 bis 19 %, die 38 % sind zwei Blicke auf eines; „je Wirkendem" hätte die Mechaniken zerlegt | Defekt gestrichen; gebaut wurde statt dessen die Rundengrenze für angreifbare Gegner (A480) |
 | C143 | A483 und Konzept 01, „Anfreunden und Analysieren" (02.11.2026): Anfreunden einweben, „Es kostet keinen GCD, nur einen Einwebeplatz" | Anfreunden ist ein Talent, liegt aber in der Abklinggruppe 58 der Waffenfertigkeiten (Action 44880, 2,5 s); die Aktionsart wurde gelesen, die Abklinggruppe nicht | berichtigt (A487): Konzept 01, die Regel A2 setzt es auf den letzten GCD |
 | C144 | A483 und Konzept 01 (02.11.2026): „Eine Liste der anfreundbaren Bestien führt keines der Blätter […]. Was eine Bestie ist, sagt also nur die Chatmeldung." | Gesucht wurde nach Namen; die Blätter verbinden Gegner und Begleiter über das Modell (`BNpcBase.ModelChara`, `PetMirage`, `Pet`, `XBMPet`) und markieren anfreundbare Grundzeilen in `BNpcBase` Spalte 10 | berichtigt (A487): Konzept 01, Regel A1 |
+| C145 | A487 und Konzept 01, „Belegung der Hörner in der Rotation" (02.11.2026): „Die Belegung selbst wechseln kann sie nicht" | Gesucht wurde nur nach einer Funktion des Clients; Daedalus setzt die Belegung über die Rückrufe des Bestienbuchs und sein Kontextmenü, wie der Spieler | berichtigt (A488): Konzept 01, „Belegung der Hörner in der Rotation", „Aufzeichnung des Bestienbuchs" |

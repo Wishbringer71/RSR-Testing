@@ -283,7 +283,9 @@ public sealed class BST_Reborn : BeastmasterRotation
 
 		// B0: what the active horn spends One with Nature on, as far as the player has it.
 		var nature = EffectiveNature((HornOrder)ActiveBattlehorn);
-		if (nature == OneWithNatureOrder.Tempered)
+		// R1 (concept 01, A488): a Release after which the familiar leaves (Wespe's Final Sting) waits for a familiar to
+		// take its place; the horn of the familiar out starts its 90 s only with the retreat.
+		if (nature == OneWithNatureOrder.Tempered && (!ReleaseRetreatsFamiliar || ReplacementHornReady))
 		{
 			if (TemperedReleasePvE.IsEnabled)
 			{
@@ -320,7 +322,8 @@ public sealed class BST_Reborn : BeastmasterRotation
 			&& TrickHealsOnHorn((HornOrder)ActiveBattlehorn);
 		if (!waitsForNature && !keepForDanger)
 		{
-			if (AnyBattlehornReady && ((!IsLastAction(true, TrickPvE) && TrickPvE.Cooldown.HasOneCharge) || !TrickPvE.EnoughLevel))
+			// R1: only with another horn's familiar ready to follow - not the horn of the familiar out.
+			if (ReplacementHornReady && ((!IsLastAction(true, TrickPvE) && TrickPvE.Cooldown.HasOneCharge) || !TrickPvE.EnoughLevel))
 			{
 				if (PartingBlowPvE.CanUse(out act))
 				{

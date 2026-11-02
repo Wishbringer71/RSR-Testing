@@ -17,11 +17,13 @@ namespace RotationSolver.Basic.Rotations.Basic;
 /// <param name="TrickHeals">The Trick's damage is partly absorbed as your HP.</param>
 /// <param name="ReleaseHeals">The Tempered Release grants Life Siphon.</param>
 /// <param name="ReleaseProtects">The Tempered Release lowers the damage you take.</param>
+/// <param name="ReleaseRetreats">The familiar leaves combat after its Tempered Release, as after Parting Blow (Wespe's
+/// Final Sting; R1, concept 01, A488).</param>
 /// <param name="BorrowProtects">The Beast Mode action Borrow unlocks for its kin lowers the damage you take.</param>
 /// <param name="TrickHeart">The heart its Trick grants, by the instinctual affinity its tooltip states; 0 when it states
 /// none.</param>
 public sealed record FamiliarProfile(BeastmasterPet Pet, uint TrickId, uint ReleaseId, float TrickRadius, float TrickPotency,
-	bool TrickHeals, bool ReleaseHeals, bool ReleaseProtects, bool BorrowProtects, StatusID TrickHeart);
+	bool TrickHeals, bool ReleaseHeals, bool ReleaseProtects, bool ReleaseRetreats, bool BorrowProtects, StatusID TrickHeart);
 
 public partial class BeastmasterRotation
 {
@@ -79,7 +81,8 @@ public partial class BeastmasterRotation
 		DefenseTrace.Line($"beastmaster familiar {pet} at level {level}: Trick {profile.TrickPotency:F0}"
 			+ $"{(profile.TrickRadius > 0f ? $" in {profile.TrickRadius:F0} y" : " single")}"
 			+ $"{(profile.TrickHeals ? ", Trick heals" : string.Empty)}{(profile.ReleaseHeals ? ", Release heals" : string.Empty)}"
-			+ $"{(profile.ReleaseProtects ? ", Release protects" : string.Empty)}{(profile.BorrowProtects ? ", Borrow protects" : string.Empty)}"
+			+ $"{(profile.ReleaseProtects ? ", Release protects" : string.Empty)}{(profile.ReleaseRetreats ? ", Release retreats" : string.Empty)}"
+			+ $"{(profile.BorrowProtects ? ", Borrow protects" : string.Empty)}"
 			+ $", Trick {(profile.TrickHeart == 0 ? "without affinity" : profile.TrickHeart.ToString())}");
 		return profile;
 	}
@@ -103,6 +106,43 @@ public partial class BeastmasterRotation
 		HornOrder.ThirdBattlehorn => ThirdBattleHornReady,
 		_ => false,
 	};
+
+	private static readonly HornOrder[] _threeHorns = [HornOrder.FirstBattlehorn, HornOrder.SecondBattlehorn, HornOrder.ThirdBattlehorn];
+
+	/// <summary>
+	/// Whether a horn other than the one whose familiar is out holds a familiar and is ready: one to take its place should
+	/// it retreat (R1, concept 01, A488). In combat a horn's recast begins only when its familiar retreats, so the horn of
+	/// the familiar out is never its own replacement, whatever the game answers for it. With the slots unreadable - all
+	/// empty although a familiar is out - every other ready horn counts.
+	/// </summary>
+	public static bool ReplacementHornReady
+	{
+		get
+		{
+			var active = (HornOrder)ActiveBattlehorn;
+			var slotsRead = false;
+			foreach (var horn in _threeHorns)
+			{
+				slotsRead |= PetOnHorn(horn) != BeastmasterPet.None;
+			}
+
+			foreach (var horn in _threeHorns)
+			{
+				if (horn != active && HornReady(horn) && (!slotsRead || PetOnHorn(horn) != BeastmasterPet.None))
+				{
+					return true;
+				}
+			}
+
+			return false;
+		}
+	}
+
+	/// <summary>
+	/// Whether the familiar out leaves combat with its Tempered Release (R1, concept 01, A488): false for none out or none
+	/// known.
+	/// </summary>
+	public static bool ReleaseRetreatsFamiliar => FamiliarOf(CurrentPet)?.ReleaseRetreats == true;
 
 	/// <summary>
 	/// What <paramref name="profile"/>'s Trick brings against the enemies around <paramref name="target"/>: its potency
@@ -301,6 +341,7 @@ public partial class BeastmasterRotation
 			TrickHeals: trickText.Contains("absorbed as beastmaster HP", StringComparison.Ordinal),
 			ReleaseHeals: releaseText.Contains("Life Siphon", StringComparison.Ordinal),
 			ReleaseProtects: Protects(releaseText, "nearby party members"),
+			ReleaseRetreats: releaseText.Contains("retreats from combat", StringComparison.Ordinal),
 			BorrowProtects: Protects(borrowText, string.Empty),
 			TrickHeart: HeartOf(trickText));
 	}

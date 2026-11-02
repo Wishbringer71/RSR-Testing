@@ -35,6 +35,13 @@ What this release changes in the fight. For the whole distance from upstream, se
   marks it at the least HP it will have alive; the lower its HP when marked, the likelier the pact. It recognises the
   beast from the game data and asks the game's familiar list, so a familiar you have is never tried again. New option
   "Capture familiars you do not have yet", on by default; it costs one weaponskill per attempt.
+- **Beastmaster no longer sends a familiar away with nobody to follow.** In combat a horn's 90 s start only when its
+  familiar retreats, so the horn of the familiar out is never its replacement. Parting Blow, and a Tempered Release
+  after which the familiar leaves (Wespe's Final Sting), now go only when another horn's familiar is ready; until then
+  the familiar keeps fighting. "Only use Snarl and Challenge on Last Horn" reads the same: no other horn ready.
+- **Beastmaster: a record of the Master's Bestiary.** While the Bestiary is open, RSR writes to `BestiaryTrace.log`
+  next to `DefenseTrace.log` what the game receives from each click, every context menu with its entries, and the
+  battlehorn slots as they change. It only listens; it opens and closes with the Bestiary.
 
 ## Healing
 

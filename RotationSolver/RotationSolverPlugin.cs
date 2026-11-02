@@ -13,6 +13,7 @@ using RotationSolver.ActionTimeline;
 using RotationSolver.Basic.Configuration;
 using RotationSolver.Commands;
 using RotationSolver.Data;
+using RotationSolver.Helpers;
 using RotationSolver.IPC;
 using RotationSolver.UI;
 using RotationSolver.UI.ExtraWindows;
@@ -169,6 +170,7 @@ public sealed class RotationSolverPlugin : IAsyncDalamudPlugin
 			BMRPlanUpdater.Enable();
 			ActionContextMenu.Init();
 			HotbarHighlightManager.Init();
+			BestiaryTrace.Enable();
 
 			Svc.DutyState.DutyStarted += DutyState_DutyStarted;
 			Svc.DutyState.DutyWiped += DutyState_DutyWiped;
@@ -442,6 +444,7 @@ public sealed class RotationSolverPlugin : IAsyncDalamudPlugin
 		ActionManagerEx.DisposeInstance();
 		BMRPlanUpdater.Disable();
 		ActionContextMenu.Dispose();
+		BestiaryTrace.Disable();
 		Svc.PluginInterface.UiBuilder.OpenConfigUi -= OnOpenConfigUi;
 		Svc.PluginInterface.UiBuilder.OpenMainUi -= OnOpenConfigUi;
 		Svc.PluginInterface.UiBuilder.Draw -= OnDraw;

@@ -472,17 +472,67 @@ mit ihm anfreunden kann, und das Talent dann so einsetzen, dass es wahrscheinlic
   keine Markierung erscheint.
 
 **Belegung der Hörner in der Rotation** (seine Vorgabe vom 02.11.2026: „wieso vorschlag? es soll in die rotation
-eingearbeitet werden, situationsbezogen"; A487):
+eingearbeitet werden, situationsbezogen"; A487, A488):
 - *Was die Rotation situationsbezogen tut:* Sie wählt unter den drei Begleitern seiner Hörner nach Lage (B0 bis B3):
   in der Gefahr den, der heilt oder schützt; ohne Gefahr den, dessen Dressur gegen die Gegner im Kampf am meisten
   bringt, für den langen Einsatz.
-- *Die Belegung selbst wechseln kann sie nicht:* Der Client führt die drei Begleiter der Hörner im `ActionManager` und
-  die freigeschalteten im `XBMManager` nur zum Lesen. Eine Funktion, einen Agenten oder ein Paket, das die Belegung
-  setzt, kennt FFXIVClientStructs nicht (b69073a vom 02.11.2026, nach „XBM", „Beastmaster", „Bestiary", „Pet"
-  durchsucht). Die drei Bytes im Speicher zu überschreiben, änderte nur die Anzeige des Clients, nicht, was der Server
-  beim Ruf beschwört. Ob das Menü des Bestienbuchs im Kampf offen ist, ist unbelegt.
-- *Darum kein Vorschlag im Chat* (der erste Entwurf; er will keinen): Bis eine Funktion zum Setzen belegt ist, wartet
-  der Punkt im TODO unter „Warten auf Daten".
+- *Kein Setzer im Client:* Der Client führt die drei Begleiter der Hörner im `ActionManager` und die freigeschalteten im
+  `XBMManager` nur zum Lesen; eine Funktion, einen Agenten oder ein Paket, das die Belegung setzt, kennt
+  FFXIVClientStructs nicht (b69073a vom 02.11.2026, nach „XBM", „Beastmaster", „Bestiary", „Pet" durchsucht). Die drei
+  Bytes im Speicher zu überschreiben, änderte nur die Anzeige des Clients, nicht, was der Server beim Ruf beschwört.
+- *Der Weg über das Bestienbuch* (Daedalus, ofnature/Daedalus e3a16de vom 01.11.2026, `BattlehornAssigner`,
+  `BattlehornGame`; Werkzeugquelle, nach eigener Angabe im Spiel aufgezeichnet): Ein Plugin bedient das Buch wie der
+  Spieler. Es öffnet das „Bestienbuch des Bändigers" (Hauptkommando, MainCommand 100), blättert über dessen Rückruf
+  (`3, Seite`; 25 Begleiter je Seite in der Reihenfolge ihrer Nummer im Buch), öffnet mit `8, Kachel` das Kontextmenü
+  eines Begleiters und wählt dort den Eintrag des Horns (Eintrag 0, 1, 2 für Horn I, II, III; Rückruf des Menüs
+  `0, Eintrag, 0`). Nach etwa einer Sekunde liest es die Hornplätze zurück; die Zuweisung geht über den Server.
+  - Ein Eintrag für das Horn, auf dem der Begleiter schon sitzt, nimmt ihn herunter.
+  - Filter oder Sortierung des Buchs verschieben die Kacheln; dann landet die Wahl falsch.
+  - Daedalus setzt nur außerhalb des Kampfes und erkennt den Menüeintrag am englischen Wort „Battlehorn".
+- *Offen, und darum noch nicht gebaut:*
+  - ob der Weg auf seinem deutschen Client gleich läuft: Werte des Rückrufs, Reihenfolge und Wortlaut des Menüs;
+  - ob das Spiel ihn im Kampf zulässt; sonst bleibt nur die Zeit zwischen zwei Kämpfen, und deren Lage ist vor dem Pull
+    nicht bekannt;
+  - was die Rotation dann setzt.
+  Die ersten beiden beantwortet die Aufzeichnung (unten) aus seinem Client.
+- *Darum kein Vorschlag im Chat* (der erste Entwurf; er will keinen): Bis der Weg auf seinem Client belegt ist, steht
+  der Punkt im TODO.
+
+**Aufzeichnung des Bestienbuchs** (sein Auftrag vom 02.11.2026: „bau die aufzeichnung, sie soll sich dann aktivieren,
+wenn das buch auf ist, und deaktivieren, wenn es geschlossen wurde"; A488):
+- *Wann:* vom Öffnen des Bestienbuchs (`XBMMonsterNotebook` aufgebaut oder gezeigt) bis zum Schließen (abgebaut oder
+  verborgen). Sonst schreibt sie nichts; keine Option, sie kostet nur, solange das Buch offen ist.
+- *Was, je Zeile mit Uhrzeit, Kampfstatus und den drei Hornplätzen (Nummer im Buch und Begleiter):*
+  - jedes Ereignis, das ein Agent empfängt (Agent, Art, alle Werte) – das ist der Rückruf, den ein Klick im Buch oder
+    im Menü auslöst;
+  - jedes Klickereignis an Bestienbuch und Kontextmenü (Ereignisart, Parameter);
+  - jedes Kontextmenü, das aufgeht oder sich erneuert, mit allen Werten, also den Einträgen im Wortlaut des Clients;
+  - jede Änderung der Hornplätze, sobald der Server sie bestätigt, und jeder Wechsel des Kampfstatus.
+- *Wo:* `BestiaryTrace.log` im Konfigurationsordner von RSR neben `DefenseTrace.log` (der Ordner, den Dalamud dem Plugin
+  gibt). Jede Öffnung des Buchs beginnt einen Abschnitt mit Datum, Uhrzeit, Version und Commit; die Datei wächst,
+  Löschen setzt sie zurück.
+- *Was sie nicht tut:* Sie klickt nichts, sendet nichts und ändert nichts; sie hört nur zu.
+
+**Fremde Werkzeuge zum Beastmaster** (seine Fragen vom 02.11.2026, ob Masterbeast, BeastHelper, BeastmasterAssist und
+Daedalus RSR verbessern können; A488; Stand: Kriss-Hietala/BeastmasterAssist db9e2e3 vom 14.09.2026, MIT;
+Rin-0617/BeastHelper be40a1e vom 26.10.2026, AGPL-3.0; lexxxgo/Masterbeast 712bddd vom 19.09.2026, ohne Lizenz;
+ofnature/Daedalus e3a16de vom 01.11.2026, GPL-3.0 und LGPL-3.0). Alle Werkzeugquellen; Code nur gelesen.
+- *Daedalus* (Rotation für alle Jobs, Beastmaster „Artemis"): der Weg über das Bestienbuch (oben); der Hinweis, der
+  zu R1 führte; vorgefertigte Belegungen nach Inhalt (Einzelziel, Dungeon-Rudel, Gruppenunterstützung, Leveln) mit
+  Begleitern, deren Wert jenseits von Schaden, Heilung und Schutz liegt (Betäubung, Einfrieren, Verwundbarkeit,
+  Gruppenstärkung) – B1 wertet das nicht, im TODO. Geprüft ohne Defekt: Daedalus wartet nach der Dressur, bis die
+  Aktion des Begleiters gelandet ist, weil eine sofort folgende Axt sonst vor ihr auflöst und die Kombo verkehrt herum
+  schließt; in RSR verlangt die Axt nach der Dressur das Herz, das erst die gelandete Dressur gibt (`StatusNeed`, Zweig 1
+  des Kompasses). Anfreunden: Daedalus markiert etwa 20 s vor dem geschätzten Tod, um den Tod vor der Markierung zu
+  vermeiden; RSR bleibt beim letzten GCD (A2), weil die Chance mit niedrigeren LP beim Markieren steigt (offizieller
+  Job-Guide) – der Preis von A2 ist ein Gegner, der schneller fällt als geschätzt.
+- *BeastmasterAssist* (Anzeige, keine Automatik): Empfehlungen zu den Aktionen der Kinships (Soul Crush, Scouring Ash,
+  Vileskin, Scaleskin, Beastskin, Seedsower, Quelling Wave); RSR setzt alle schon ein. Neu wäre nur „TP für die
+  Abschlüsse halten" (ab Stufe 50, 250 TP); ohne Messung, wie viel Potenz die Äxte darunter verlieren, nicht gewertet.
+- *BeastHelper, Masterbeast*: auf den Crucible ausgerichtet (Wege über das Brett, Teamwahl über `XBMPetParty`,
+  Gegenstände); für die Rotation nichts Neues.
+- *WrathCombo* (d9c63e468 vom 27.10.2026): `OnLastHorn` liest die Hörner wie RSR bisher, ohne das Horn des Begleiters
+  draußen auszunehmen.
 
 **Begleiter nach Lage: Schaden, Heilung, Schutz** (A485). Sein Auftrag vom 02.11.2026: die Rotation mit eigenen Ideen
 so ausbauen, dass die vorhandenen Begleiter passend zu Art und Zahl der Gegner möglichst viel Schaden machen, alle
@@ -582,6 +632,25 @@ Lage.
     stehen und hielt Entfesseln bereit, also kam kein Scheidender Schlag: Der Begleiter blieb draußen, die anderen
     Hörner ruhten (ab Werk das dritte Horn auf Stufe 20 und 21; auf „Neither" auf jeder Stufe ab 18). Ein Defekt, keine
     Wahl; deshalb nicht hinter der Option.
+  - *R1 – Abtreten nur mit Ersatz* (A488). Zwei Aktionen lassen den Begleiter abtreten: Scheidender Schlag immer;
+    Entfesseln bei einem Begleiter, dessen Entfesseln es laut Wirktext tut („Familiar retreats from combat upon
+    execution"; heute nur Wespes Schlussstich, xivapi v2 Action 44954, language=de: 2.000 bis 3.000, steigend mit
+    sinkenden LP des Ziels). Im Kampf beginnt die Abklingzeit eines Horns erst mit dem Rückzug seines Begleiters
+    (Wirktext der Hörner) und dauert 90 s (consolegameswiki, BeastmasterAssist; Daedalus nennt 70 s allein nach drei
+    Rückzügen in 40 s – Werkzeugquellen; das Blatt führt 2 s, den Wert außerhalb des Kampfes). Das Horn des Begleiters
+    draußen ist deshalb nie sein Ersatz.
+    - *Gilt:* RSR setzt beide nur, wenn ein anderes Horn mit einem Begleiter bereit ist. Ist die Belegung nicht lesbar
+      (alle drei Plätze leer, obwohl einer draußen ist), zählt jedes andere bereite Horn. Schlussstich wartet dann, Wespe
+      kämpft weiter und geht, sobald ein anderes Horn bereit ist; der Scheidende Schlag wartet ohnehin auf Entfesseln.
+      „Only use Snarl and Challenge on Last Horn" liest dieselbe Frage: der letzte Begleiter heißt, kein anderes Horn
+      ist bereit.
+    - *Bisher:* Für den Scheidenden Schlag genügte irgendein bereites Horn, Schlussstich prüfte keines. Meldet das Spiel
+      das Horn des Begleiters draußen als bereit – seine Abklingzeit läuft ja noch nicht –, ging er mit 1.000 oder 1.500,
+      und du standest bis zu 90 s ohne Begleiter: keine Dressur, keine Kombo, kein Entfesseln, keine Heilung aus ihm.
+      Ob das Spiel es so meldet, ist unbelegt; die Bedingung ist in beiden Fällen richtig, für Schlussstich ohnehin.
+    - *Preis:* Am Ende eines Kampfes wäre ein Abtreten ohne Ersatz reiner Gewinn (bis 1.500 oder 3.000); RSR kennt das
+      Kampfende nicht verlässlich – die Restzeit eines Ziels sagt nichts über Nachzügler. Unter Stufe 10, mit einem
+      Horn, kein Scheidender Schlag.
 - *B1 – Katalog aus den Spieldaten.* Je Begleiter auf einem Horn: Dressur und Entfesseln aus `Pet.Abilities` (erste und
   zweite Aktion). Zum Begleiter führt `XBMPet`; die Spalte mit seiner Pet-Zeile hat in Lumina keinen Namen. Gelesen wird die
   der beiden Zahlenspalten, deren Werte über alle Begleiter verschieden sind – die Pet-Ids (47 bis 97) sind es, die
@@ -662,7 +731,7 @@ Option aus: die eingestellte Reihenfolge wie bisher, B0 gilt. BossModReborn lies
 
 *Belegung der Hörner:* RSR wählt unter den drei, die er im Bestienbuch zuordnet; welche drei das sind, entscheidet die
 Wahl am meisten. Für Rudel (Dungeons beim Leveln) einer mit Flächendressur, allein in der offenen Welt einer, dessen
-Dressur heilt, oder einer, der mit Entfesseln oder Borrow schützt. Die Belegung selbst kann RSR nicht setzen (unten,
+Dressur heilt, oder einer, der mit Entfesseln oder Borrow schützt. Die Belegung selbst setzt RSR heute nicht (unten,
 „Belegung der Hörner in der Rotation").
 
 *Preis:* Die Wahl liest nur, was beim Rufen steht. Ändert sich die Zahl der Gegner im langen Einsatz, bleibt der
@@ -671,7 +740,8 @@ bei verteilten Gegnern zu viele Treffer. Bleibt ein heilender Begleiter in der G
 kurzen Einsätze der anderen (Entfesseln, Scheidender Schlag).
 
 *Verworfen:*
-- Die Zuordnung im Kampf ändern: Menübedienung.
+- Die Zuordnung im Kampf ändern: Das geht nur über das Menü des Bestienbuchs, und ob es im Kampf geht, ist offen
+  (unten, „Belegung der Hörner in der Rotation").
 - Für Fläche mitten im Einsatz wechseln: kostet den Rest des laufenden und 90 s Horn.
 - Eine feste Drei als Schwelle (sein Vorschlag): Die Dressur trifft je Gegner gleich stark; schon ab zwei Gegnern im
   Wirkradius bringt die Flächendressur mehr. Die Drei bleibt als sein Beispiel.
