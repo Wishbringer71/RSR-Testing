@@ -97,6 +97,14 @@ internal static class TankbusterHelp
 			return false;
 		}
 
+		// Small by a figure the running game version has not confirmed: the help goes as for an unmeasured tankbuster
+		// (concept 13, "Stufe 2").
+		if (!OtherConfiguration.TankbusterConfirmed(actionId))
+		{
+			DataCenter.NoteUnconfirmedReading($"help for {t.Name.TextValue} is not held", actionId, share);
+			return false;
+		}
+
 		DataCenter.NoteTankbusterHelpHeld(t, actionId, share, left, line);
 		return true;
 	}

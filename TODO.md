@@ -11,8 +11,9 @@ Nach der Wirkung im Kampf: Sicherheit der Gruppe vor Schaden, gewichtet mit der 
 (seine Vorgabe, 17.10.2026: „todo nach wichtigkeit abarbeiten. jeweils im loop bearbeiten").
 
 1. Die gelernten Tabellen: entschieden (Konzept 13, A451); gebaut nach Regel 12 des Entwurfs, erst die Revision über
-   einen Spielpatch (als Nächstes Stufe 2; sein erster Upload mit Stufe 1 zeigt den Speicherweg im Spiel tragend, A475), dann die Anzeige. Beide ändern den Kampf nur mittelbar, über einen
-   geprüften oder berichtigten Lernwert – die Sperren unter ihnen (Schlaf) aber dauerhaft.
+   einen Spielpatch (Stufen 1 und 2 gebaut, A481; als Nächstes die Senkregeln für die Einträge der alten Datei, dann
+   Stufe 3), dann die Anzeige. Beide ändern den Kampf nur mittelbar, über einen geprüften oder berichtigten Lernwert –
+   die Sperren unter ihnen (Schlaf) aber dauerhaft.
 
 Danach die technische Schuld, soweit ihre Auflösungsbedingung erfüllt ist. Warten auf Daten: unten.
 
@@ -30,16 +31,13 @@ unwidersprochen und ungeprüft nach einem versionssprung des spiels beibehalten 
 Mechanik, gilt der alte Lernwert weiter. Ein stärkerer Treffer hebt ihn an, weil jedes Speichern den höheren Wert
 behält; ein abgeschwächter Treffer senkt ihn nie, und RSR gibt weiter Abwehr und Heilung für den alten aus. Ein Gegner,
 der nun schläft, bleibt als resistent geführt, eine Serie, die nicht mehr kommt, bleibt gelernt, ein Wirken, das kein
-Pyretisch mehr anlegt, hält weiter Zauber an. Offen sind die Stufen 2 bis 5; die Messungen je Spielversion führen Fläche
-und Tankbuster schon (A456). *Ort:* `OtherConfiguration.RevisedStore` (Fläche, Tankbuster),
-`OtherConfiguration.LearnedFile` (die übrigen: Zusammenführung mit `Math.Max`, `Math.Min` oder `Higher`), die Werttypen
-`SleepReading`, `DotReading`/`DotArea`, dazu `HitSeriesOnPlayer`, `TankbusterMarkerWithoutHit` und
-`ActionPenaltyCasts`. *Nächster Schritt:* Stufe 2, Regel 4 für Fläche und Tankbuster – ein übernommener Wert spart
-keinen Schutz, bis eine saubere Messung der laufenden Version ihn bestätigt (Konzept 13, „Gelernte Tabellen über
-Spielversionen", Regel 12); die offene Frage hat er entschieden, asymmetrisch (A451). Die Bedingung dafür ist erfüllt: Der
-Upload vom 01.11.2026 zeigt die Spielversion lesbar und laufende Schichten in beiden Dateien (A475). Vor Stufe 3 offen:
-wie ein übernommener Eintrag der alten Datei gesenkt werden darf – die Regeln 5 und 5b hätten im selben Upload vier von
-16 neu gemessenen Einträgen gesenkt, ohne Hinweis auf eine Änderung (Konzept 13, Regel 5). *Konzept:* 13.
+Pyretisch mehr anlegt, hält weiter Zauber an. Gebaut sind Stufe 1 (Speicher, Übernahme, Sicherung) und Stufe 2 (ein übernommener Wert spart keinen Schutz, bis die
+laufende Version ihn sauber misst, A481); offen sind die Stufen 3 bis 5. *Ort:* `OtherConfiguration.RevisedStore`
+(Fläche, Tankbuster), `OtherConfiguration.LearnedFile` (die übrigen: Zusammenführung mit `Math.Max`, `Math.Min` oder
+`Higher`), die Werttypen `SleepReading`, `DotReading`/`DotArea`, dazu `HitSeriesOnPlayer`, `TankbusterMarkerWithoutHit`
+und `ActionPenaltyCasts`. *Nächster Schritt:* vor Stufe 3 lösen, wie ein übernommener Eintrag der alten Datei gesenkt
+werden darf – die Regeln 5 und 5b hätten im Upload vom 01.11.2026 vier von 16 neu gemessenen Einträgen gesenkt, ohne
+Hinweis auf eine Änderung (Konzept 13, Regel 5, A475). *Konzept:* 13.
 
 ### Gelernte Tabellen des Forks in den Einstellungen zeigen und bearbeiten · N
 Sein Auftrag (28.10.2026): „prüfen, ob es sinnvoll ist, die durch den fork selbst erstellten lernlisten ähnlich der

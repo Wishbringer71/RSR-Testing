@@ -58,6 +58,7 @@ public partial class CustomRotation
 
 	// The cast for which the line "no healer alive, nothing held" was written.
 	private static int _unhealedTraced;
+	private static int _unconfirmedTraced;
 
 
 	/// <summary>
@@ -1057,6 +1058,19 @@ public partial class CustomRotation
 		// spends what it needs, the invulnerability included.
 		if (!plan.Survivable || plan.Cast.Learned || !plan.Cast.Announced)
 		{
+			return false;
+		}
+
+		// A figure the running game version has not confirmed holds nothing beside the plan: the rest of the defence goes
+		// as for an unmeasured tankbuster, in case a patch made the hit harder (his decision A451, concept 13, "Stufe 2").
+		if (!plan.Cast.Confirmed)
+		{
+			if (_unconfirmedTraced != plan.Cast.Serial)
+			{
+				_unconfirmedTraced = plan.Cast.Serial;
+				DataCenter.NoteUnconfirmedReading("nothing held beside the tankbuster plan", plan.Cast.ActionId, plan.Cast.Predicted);
+			}
+
 			return false;
 		}
 

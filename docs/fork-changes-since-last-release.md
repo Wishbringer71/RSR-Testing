@@ -38,6 +38,16 @@ What this release changes in the fight. For the whole distance from upstream, se
   series now starts a new one; mechanic objects (untargetable helpers) keep counting together, so tower sequences stay
   one series. Each split writes a line to `DefenseTrace.log`.
 
+## Learned tables
+
+- **A learned figure from an earlier game version saves no protection until it is confirmed.** The area and tankbuster
+  tables now tell a figure the running game version has measured cleanly from one taken over from an earlier version
+  (or from the file before the revisions). A taken-over figure still protects - a big raidwide, a lethal tankbuster, a
+  long series are met as before - but it no longer leaves protection out: a small raidwide is mitigated like an unrated
+  one, a small tankbuster holds nothing back beside the plan, and help for the tank is not held, until the action lands
+  cleanly again. A patch that made a hit harder can no longer take the first cast's cover. Each such case writes a line
+  to `DefenseTrace.log`, and the trace's head line counts the confirmed entries.
+
 ## Packaging
 
 - **latest.zip holds the plugin and nothing else.** The release package of 7.5.7.13+wsh1 also carried the build's source

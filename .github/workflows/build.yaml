@@ -119,6 +119,12 @@ jobs:
       - name: Check only the store writes the learned area and tankbuster tables
         run: python3 .github/scripts/audit/check_learned_writes.py
 
+      # Since stage 2 a figure taken over from an earlier game version saves nothing until the running version confirms
+      # it (concept 13, his decision A451). A saving reader that does not ask lets an outdated figure take the cover of
+      # the first cast after a patch; a reader in a new file is not yet sorted into saving or protecting.
+      - name: Check the learned tables' saving readers ask for confirmation
+        run: python3 .github/scripts/audit/check_learned_readers.py
+
       # A setting with a label and a default promises the user it does something. When nothing
       # reads it the promise fails silently and forever. Two such settings sat in the raise path
       # alone, so this guards against the next one rather than against those two.

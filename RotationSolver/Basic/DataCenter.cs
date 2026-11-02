@@ -2807,6 +2807,7 @@ internal static class DataCenter
 					// exactly the casts this property exists to catch: the defence would open and
 					// the heal would not - and the standing order is healing before mitigation.
 					_announcedAreaShare = share;
+					_announcedAreaShareConfirmed = OtherConfiguration.AreaShareConfirmed(h.CastActionId);
 					_announcedAreaShareTime = DateTime.Now;
 					_lastAnnouncedAreaAction = h.CastActionId;
 
@@ -3591,6 +3592,28 @@ internal static class DataCenter
 	/// </remarks>
 	public static readonly ConcurrentDictionary<uint, DateTime> AreaMitigationSkipped = new();
 
+	// When a reader last passed over a figure for want of confirmation, by what it did and the action: asked every frame,
+	// a note less than a GCD after the last is the same cast.
+	private static readonly ConcurrentDictionary<(string What, uint ActionId), DateTime> _unconfirmedNoted = new();
+
+	/// <summary>
+	/// One trace line per cast where a reader that would leave protection out on a learned figure does not, because the
+	/// running game version has not confirmed it (concept 13, "Stufe 2"). <paramref name="what"/> says what happens
+	/// instead.
+	/// </summary>
+	internal static void NoteUnconfirmedReading(string what, uint actionId, float figure)
+	{
+		var now = DateTime.Now;
+		var key = (what, actionId);
+		var due = !_unconfirmedNoted.TryGetValue(key, out var last) || (now - last).TotalSeconds > DefaultGCDTotal;
+		_unconfirmedNoted[key] = now;
+		if (due)
+		{
+			var name = Service.GetSheet<Action>().GetRowOrDefault(actionId)?.Name.ExtractText() ?? "?";
+			DefenseTrace.Line($"learned figure not confirmed in this game version: {name} #{actionId} at {figure:P0} - {what}");
+		}
+	}
+
 	/// <summary>
 	/// Every area action the pre-heal rule has raised the healing flag for, and when it last did.
 	/// </summary>
@@ -3710,6 +3733,10 @@ internal static class DataCenter
 	private static float _announcedAreaShare;
 	private static DateTime _announcedAreaShareTime = DateTime.MinValue;
 
+	// Whether the running game version has confirmed the announced figure; the readers that would leave protection out
+	// on it ask (concept 13, "Stufe 2").
+	private static bool _announcedAreaShareConfirmed;
+
 	// Which action the recorded share belongs to, so a probe can name it rather than counting
 	// anonymously. Carried with the share and subject to the same lifetime.
 	private static uint _lastAnnouncedAreaAction;
@@ -3771,6 +3798,13 @@ internal static class DataCenter
 			var share = AnnouncedAreaShare;
 			if (share <= 0f || share >= LargeShieldShare)
 			{
+				return false;
+			}
+
+			// A figure the running game version has not confirmed saves nothing: not small (concept 13, "Stufe 2").
+			if (!_announcedAreaShareConfirmed)
+			{
+				NoteUnconfirmedReading("the proactive refresh does not wait", _lastAnnouncedAreaAction, share);
 				return false;
 			}
 
@@ -4073,6 +4107,7 @@ internal static class DataCenter
 		if (AreaShareNow(actionId, caster, out var share))
 		{
 			_announcedAreaShare = share;
+			_announcedAreaShareConfirmed = OtherConfiguration.AreaShareConfirmed(actionId);
 			_announcedAreaShareTime = DateTime.Now;
 			_lastAnnouncedAreaAction = actionId;
 		}
@@ -4121,6 +4156,14 @@ internal static class DataCenter
 
 		if (AreaShareCallsForMitigation(share))
 		{
+			return true;
+		}
+
+		// Taken over from an earlier game version and not confirmed since: mitigated as unrated, the asymmetric rule he
+		// decided (A451, concept 13, "Stufe 2") - a patch that made the hit harder must not take the first cast's cover.
+		if (!OtherConfiguration.AreaShareConfirmed(actionId))
+		{
+			NoteUnconfirmedReading("the area mitigation goes as for an unrated cast", actionId, share);
 			return true;
 		}
 
@@ -4710,6 +4753,13 @@ internal static class DataCenter
 				|| !AreaShareNow(cast.ActionId, caster, out var share)
 				|| AreaShareCallsForMitigation(share))
 			{
+				return false;
+			}
+
+			// Small by a figure the running game version has not confirmed: not held (concept 13, "Stufe 2").
+			if (!OtherConfiguration.AreaShareConfirmed(cast.ActionId))
+			{
+				NoteUnconfirmedReading("the BossModReborn raidwide is not held", cast.ActionId, share);
 				return false;
 			}
 

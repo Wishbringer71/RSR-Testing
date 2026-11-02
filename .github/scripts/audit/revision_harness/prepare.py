@@ -19,6 +19,7 @@ MUTANTS = [
     ('entry.Inherited = Combine(entry.Inherited, current, true);', 'entry.Inherited ??= null;'),
     ('if (entry != null && TryHighest(entry, out var known) && Same(higher(known, value), known))', 'if (false)'),
     ('file = ReadFile<RevisionFile<TValue>>(path + ".bak");', 'file = null;'),
+    ('&& current.Game == _game && current.Method == method && current.Clean > 0;', '&& current.Count > 0;'),
 ]
 
 

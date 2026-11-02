@@ -18,6 +18,7 @@ namespace RotationSolver.Basic.Configuration
 			public Dictionary<uint, int> Stored = new() { [1] = 0, [2] = 0, [3] = 0 };
 			public Dictionary<uint, int> BroughtIn = new() { [1] = 0, [2] = 0, [3] = 0 };
 			public Dictionary<(uint, string, int), int> ByRevision = [];
+			public Dictionary<(uint, string, int), int> CleanByRevision = [];
 			public bool CountsLost;
 			public float? Highest(uint id, IEnumerable<float> extra)
 			{
@@ -108,7 +109,7 @@ namespace RotationSolver.Basic.Configuration
 			}
 			if (failures.Count == 0)
 			{
-				Console.WriteLine($"{runs} runs: READ, LOST, DOUBLED, CURRENT, DELETED hold on the C# store");
+				Console.WriteLine($"{runs} runs: READ, LOST, DOUBLED, CURRENT, DELETED, CONFIRMED hold on the C# store");
 				return 0;
 			}
 			foreach (var (f, n) in failures) Console.WriteLine($"{f}: {n} runs, first seed {firstSeed[f]}");
@@ -182,9 +183,9 @@ namespace RotationSolver.Basic.Configuration
 				if (finishes)
 				{
 					HostileCastingAreaPotential = store.Load(LoadOld());
-					Check(truth, [], found, "load", knownFrom == 0 ? running : null, method);
+					Check(truth, [], found, "load", knownFrom == 0 ? running : null, method, store.Confirmed);
 				}
-				var session = new List<(uint Id, float Value, string? Running)>();
+				var session = new List<(uint Id, float Value, string? Running, bool Clean)>();
 				for (var r = 0; r < 6; r++)
 				{
 					Harness.Game = r + 1 >= knownFrom ? running : null;
@@ -192,18 +193,21 @@ namespace RotationSolver.Basic.Configuration
 					float v = rng.NextDouble() < 0.08 ? new[] { float.NaN, 1.7f, -0.1f }[rng.Next(3)] : (float)Math.Round(0.05 + rng.NextDouble() * 0.75, 3);
 					var clean = rng.NextDouble() > 0.2;
 					store.Measure(id, v, clean);
-					if (IsValidAreaShare(v)) session.Add((id, v, Harness.Game));
+					if (IsValidAreaShare(v)) session.Add((id, v, Harness.Game, clean));
+					// A clean reading taken in the running version confirms its entry at once (concept 13, "Stufe 2").
+					if (finishes && clean && IsValidAreaShare(v) && Harness.Game == running && !store.Confirmed(id)) found.Add("CONFIRMED");
 					if (finishes)
 					{
 						var layers = store.Snapshot();
 						SaveOld(new Dictionary<uint, float>(HostileCastingAreaPotential));
 						store.Save(layers);
-						foreach (var (sid, sv, srun) in session)
+						foreach (var (sid, sv, srun, sclean) in session)
 						{
 							truth.Values.TryAdd(sid, []);
 							truth.Values[sid].Add(sv);
 							truth.Stored[sid]++;
 							if (srun != null) truth.ByRevision[(sid, srun, method)] = truth.ByRevision.GetValueOrDefault((sid, srun, method)) + 1;
+							if (srun != null && sclean) truth.CleanByRevision[(sid, srun, method)] = truth.CleanByRevision.GetValueOrDefault((sid, srun, method)) + 1;
 						}
 						session.Clear();
 						Check(truth, [], found, "reading", Harness.Game, method);
@@ -228,7 +232,8 @@ namespace RotationSolver.Basic.Configuration
 			return t;
 		}
 
-		static void Check(Truth truth, List<(uint, float, string?)> pending, HashSet<string> found, string where, string? running, int method)
+		static void Check(Truth truth, List<(uint, float, string?)> pending, HashSet<string> found, string where, string? running, int method,
+			Func<uint, bool>? confirmed = null)
 		{
 			var disk = DiskRev();
 			foreach (var id in Ids)
@@ -237,6 +242,9 @@ namespace RotationSolver.Basic.Configuration
 				var seen = HostileCastingAreaPotential.TryGetValue(id, out var s) ? s : (float?)null;
 				if (seen is { } sv && !IsValidAreaShare(sv)) found.Add("READ");
 				if (expected != seen) found.Add(expected == null ? "DELETED" : "READ");
+				// Loaded in a readable version: confirmed exactly where that version has a clean reading.
+				if (confirmed != null && running != null && !truth.CountsLost
+					&& confirmed(id) != truth.CleanByRevision.GetValueOrDefault((id, running, method)) > 0) found.Add("CONFIRMED");
 				if (where != "reading" || disk == null) continue;
 				disk.Entries.TryGetValue(id, out var e);
 				var counted = (e?.Current?.Count ?? 0) + (e?.Inherited?.Count ?? 0);

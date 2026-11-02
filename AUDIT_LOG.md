@@ -14273,6 +14273,57 @@ durchgehen". Als Skill `spielpatch` festgehalten (Lesetabelle in CLAUDE.md); den
 - *TODO:* Defekt entfernt, Reihenfolge fortgeschrieben. Konzept 13: Abschnitt „Eine Serie zählt als ein Angriff" neu
   gefasst, der Preis der Seriendauer angepasst.
 
+### A481 · Gelernte Tabellen, Stufe 2: ein übernommener Wert spart erst nach Bestätigung (02.11.2026)
+
+- *Anlass:* TODO „Gelernte Tabellen über einen Spielpatch: Revision statt Höchstwert". Nächster Schritt war Stufe 2,
+  Regel 4 für Fläche und Tankbuster. Er hat entschieden: asymmetrisch (A451). Die Bedingung, eine lesbare Spielversion
+  im Spiel, ist seit A475 erfüllt.
+- *Erhoben – alle Leser der beiden Tabellen, eingeordnet nach Richtung:*
+  - Die Flächentabelle liest nur `DataCenter.AreaShareNow` (dazu Messung und Anzeige). Ihre Verbraucher:
+    - Größenregel: spart.
+    - Gehaltener BossModReborn-Raidwide: spart.
+    - `AnnouncedHitIsSmall`: spart.
+    - Großer unterbrechbarer Cast, große Fläche, angekündigter Anteil für Vorausheilung, Halt und Tote: schützen.
+  - Die Tankbustertabelle lesen `TankbusterTable` und `TankbusterForecast`; ihre Verbraucher:
+    - Der Rückhalt neben dem Plan (`HoldDefenceForTankbuster`): spart.
+    - `TankbusterHelp.MeasuredHitCallsForNoHelp`: spart.
+    - Plan-Bündel, Unverwundbarkeit, Tankwechsel, `IsLearned`, Seriendauern: schützen.
+  - Ein schützender Leser reagiert erst ab einer Größe. Mit einem kleinen übernommenen Wert ist er also nie weniger
+    schützend als ohne Wert.
+- *Umgesetzt:*
+  - Speicher:
+    - `RevisedStore.Confirmed`: Die laufende Schicht trägt Spielversion und Verfahren und hat eine saubere Messung.
+      Bei unlesbarer Version ist nichts bestätigt, und die Version wird beim Fragen erneut gelesen.
+    - `OtherConfiguration.AreaShareConfirmed` und `TankbusterConfirmed`.
+    - Die Kopfzeile zählt die bestätigten Einträge.
+  - Die fünf sparenden Leser fragen „bestätigt"; unbestätigt verhalten sie sich wie ohne Wert.
+    - `Cast.Confirmed` im Plan.
+    - `_announcedAreaShareConfirmed` neben dem angekündigten Anteil.
+  - Messmittel: `DataCenter.NoteUnconfirmedReading` schreibt einmal je Cast eine Trace-Zeile.
+  - Konzept 13, Abschnitt „Stufe 2", mit Leser-Tabelle, Lagen, Preis und Verworfenem; Konzept 09 nennt die Ausnahme beim
+    Rückhalt.
+- *Prüfmittel:*
+  - `check_learned_readers.py` (neu, in der CI) prüft zweierlei: Die Tabellen werden nur in eingeordneten Dateien
+    gelesen, und jeder sparende Leser fragt „bestätigt". Selbsttest gegen fehlende Frage, Frage nur im Kommentar, Leser
+    in neuer Datei, umbenannten Leser.
+  - `revision_harness`: neue Invariante CONFIRMED, dazu ein fünfter Mutant (unsaubere Messung bestätigt). 300 Läufe
+    grün, Selbsttest erkennt alle fünf Defekte.
+- *Lagen im Kampf:*
+  - Erster Start mit Stufe 2: Bestätigt sind nur die seit Stufe 1 sauber gemessenen Einträge (im Upload vom 01.11. zwölf
+    Flächen- und vier Tankbuster-Einträge). Die übrigen etwa 280 Flächen- und 65 Tankbuster-Einträge sparen erst nach
+    ihrer nächsten Landung wieder: je kleinem Raidwide einmal eine Gruppenminderung, je kleinem Tankbuster einmal die
+    alte Abwehr neben dem Plan.
+  - Danach gilt dasselbe je Patch und Hotfix.
+- *Falsifikation:*
+  - Kein Defekt: Ohne Stufe 2 spart ein verstärkter Treffer nach einem Patch weiter mit dem alten Wert.
+  - Option falsch: Bestätigung erst ab zwei Messungen verdoppelte den Preis. Die schützenden Leser ebenfalls auf
+    „bestätigt" zu stellen nähme einem tödlichen Tankbuster die Unverwundbarkeit.
+  - Ausgeliefert, und nichts ändert sich: bei unlesbarer Spielversion oder einer Aktion, die nie sauber landet. Beides
+    schützt; die Kopfzeile und die Trace-Zeile zeigen es.
+- *Prüfgrad:* statisch (alle Leser erhoben), Prüfstand des Speichers in .NET mit Selbsttest, Compile ohne Warnung,
+  `run_ci_checks.py` mit 41 von 41 Schritten. Im Spiel nicht beobachtet.
+- *TODO:* Stufe 2 erledigt. Nächster Schritt vor Stufe 3: die Senkregeln für die Einträge der alten Datei (A475).
+
 ---
 ## B · Commit-Register (Fork vs. `upstream/main`)
 

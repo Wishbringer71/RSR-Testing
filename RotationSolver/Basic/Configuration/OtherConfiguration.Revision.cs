@@ -26,6 +26,17 @@ internal partial class OtherConfiguration
 	internal static void MeasureTankbuster(uint actionId, TankbusterReading reading, bool clean)
 		=> TankbusterRevision.Measure(actionId, reading, clean);
 
+	/// <summary>
+	/// Whether the running game version has confirmed the area table's figure for <paramref name="actionId"/>: one clean
+	/// reading at least in the running layer. Asked by every reader that would leave protection out on the figure; an
+	/// entry taken over from an earlier version, or from the file before the revisions, counts there as unrated until it
+	/// lands again (concept 13, "Stufe 2", his decision A451).
+	/// </summary>
+	internal static bool AreaShareConfirmed(uint actionId) => AreaRevision.Confirmed(actionId);
+
+	/// <summary>The same for the tankbuster table (<see cref="AreaShareConfirmed"/>).</summary>
+	internal static bool TankbusterConfirmed(uint actionId) => TankbusterRevision.Confirmed(actionId);
+
 	/// <summary>Whether an area share is one the table can hold: finite, not negative, at most a whole maximum HP (A298).</summary>
 	internal static bool IsValidAreaShare(float share) => float.IsFinite(share) && share >= 0f && IsWithinWholeHealth(share);
 
@@ -352,11 +363,26 @@ internal partial class OtherConfiguration
 		}
 
 		/// <summary>The game version, the entries per state, and how the last load and save went.</summary>
+		/// <summary>
+		/// One clean reading at least in the running layer, taken in the running game version with the running method.
+		/// Nothing is confirmed while the version cannot be read; it is read again here as long as it is missing.
+		/// </summary>
+		public bool Confirmed(uint id)
+		{
+			lock (_memory)
+			{
+				_game ??= ReadGameVersion();
+				return _game != null && _entries.TryGetValue(id, out var entry) && entry.Current is { } current
+					&& current.Game == _game && current.Method == method && current.Clean > 0;
+			}
+		}
+
 		public string Summary()
 		{
 			lock (_memory)
 			{
 				var running = 0;
+				var confirmed = 0;
 				var earlier = 0;
 				var quarantined = 0;
 				foreach (var entry in _entries.Values)
@@ -364,6 +390,10 @@ internal partial class OtherConfiguration
 					if (entry.Current != null && entry.Current.Game == _game && entry.Current.Method == method)
 					{
 						running++;
+						if (entry.Current.Clean > 0)
+						{
+							confirmed++;
+						}
 					}
 					else if (entry.Current != null || entry.Inherited != null)
 					{
@@ -376,7 +406,8 @@ internal partial class OtherConfiguration
 					}
 				}
 
-				return $"game {_game ?? "NOT READABLE"}, method {method}: {running} measured in it, {earlier} from earlier versions"
+				return $"game {_game ?? "NOT READABLE"}, method {method}: {running} measured in it ({confirmed} confirmed by a clean"
+					+ $" reading), {earlier} from earlier versions"
 					+ $" only, {quarantined} set aside as invalid; {_loaded}; {_saved}";
 			}
 		}

@@ -58,10 +58,13 @@ internal static class TankbusterForecast
 	/// zero for one hit.</param>
 	internal sealed record Cast(int Serial, IBattleChara Source, uint ActionId, uint AttackType, float Remaining,
 		float Total, float Predicted, float Budget, float Horizon, bool ByMarker = false, ulong SourceId = 0,
-		bool Learned = false, bool Announced = true, float Span = 0f)
+		bool Learned = false, bool Announced = true, float Span = 0f, bool Confirmed = false)
 	{
 		/// <summary>Measured at all: the table has a figure for the action.</summary>
 		public bool Measured => Predicted > 0f;
+
+		// Confirmed: the running game version has measured the figure cleanly. Unconfirmed, it protects - the plan presses
+		// what it needs, the invulnerability included - but holds nothing back beside it (concept 13, "Stufe 2").
 
 	}
 
@@ -732,7 +735,8 @@ internal static class TankbusterForecast
 			_ = _live.Add(identity);
 			_lastComing[id] = _readAt;
 			var cast = new Cast(serial, hostile, id, attackType, left, hostile.TotalCastTime, predicted,
-				(player.CurrentHp / maxHp) + barrier, horizon, byMarker, hostile.GameObjectId, Announced: !aimedOnly, Span: span);
+				(player.CurrentHp / maxHp) + barrier, horizon, byMarker, hostile.GameObjectId, Announced: !aimedOnly, Span: span,
+				Confirmed: OtherConfiguration.TankbusterConfirmed(id));
 			_casts.Add(cast);
 			if (isNew)
 			{
@@ -822,7 +826,8 @@ internal static class TankbusterForecast
 		_lastComing[id] = _readAt;
 
 		var cast = new Cast(serial, aim, id, AttackTypeOf(id), remaining, delay, predicted,
-			(player.CurrentHp / maxHp) + BarrierAt(player, horizon, maxHp), horizon, true, aim.GameObjectId, true, Span: span);
+			(player.CurrentHp / maxHp) + BarrierAt(player, horizon, maxHp), horizon, true, aim.GameObjectId, true, Span: span,
+			Confirmed: OtherConfiguration.TankbusterConfirmed(id));
 		_casts.Add(cast);
 		if (isNew)
 		{
