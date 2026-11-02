@@ -105,6 +105,7 @@ internal static class TankbusterMarkerWatch
 				if (!watch.Confirmed)
 				{
 					changed |= OtherConfiguration.TankbusterMarkerWithoutHit.Remove(watch.Key);
+					changed |= OtherConfiguration.TankbusterMarkerWithoutHitGame.Remove(watch.Key);
 					learned |= Learn(watch);
 					watch.Confirmed = true;
 				}
@@ -153,6 +154,13 @@ internal static class TankbusterMarkerWatch
 			if (Svc.Objects.SearchById(watch.Target) is IBattleChara target && !target.IsDead && target.IsParty())
 			{
 				changed |= OtherConfiguration.TankbusterMarkerWithoutHit.Add(watch.Key);
+				// Stage 4a (concept 13): locked in the version that saw it; unread, it stays taken over and does not hold.
+				if (OtherConfiguration.GameVersion is { } game
+					&& (!OtherConfiguration.TankbusterMarkerWithoutHitGame.TryGetValue(watch.Key, out var seen) || seen != game))
+				{
+					OtherConfiguration.TankbusterMarkerWithoutHitGame[watch.Key] = game;
+					changed = true;
+				}
 			}
 		}
 
@@ -239,7 +247,7 @@ internal static class TankbusterMarkerWatch
 			if (watch.Target == targetId && !watch.Confirmed)
 			{
 				watch.Hit = true;
-				marked |= !OtherConfiguration.TankbusterMarkerWithoutHit.Contains(watch.Key);
+				marked |= !DataCenter.MarkerLockHolds(watch.Key);
 				if (!partyWide && watch.HitAction == 0)
 				{
 					watch.HitAction = actionId;

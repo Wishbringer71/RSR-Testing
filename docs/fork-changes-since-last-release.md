@@ -92,6 +92,10 @@ What this release changes in the fight. For the whole distance from upstream, se
   after three clean landings that agree with each other. From then on the new figure counts, protecting and saving; a
   harder hit raises it again at once. The old figure is kept, not read, and the old file still holds the highest of all
   readings. Each refutation writes a line to `DefenseTrace.log`.
+- **A tankbuster marker locked in an earlier game version counts again.** A marker the fight once showed with no hit on
+  the marked member is locked as "no tankbuster" only in the game version that saw it. After a patch, and on the first
+  start of this build, it counts as a tankbuster until it goes without a hit again - one defence per marker and version
+  for a tank that a patch may have turned it against.
 
 ## Packaging
 

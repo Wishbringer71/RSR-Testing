@@ -2519,8 +2519,36 @@ internal static class DataCenter
 	}
 
 	/// <summary>Whether a fight in this area has shown this marker path not to be followed by a hit.</summary>
-	internal static bool IsFalsifiedTankbusterMarker(string path)
-		=> OtherConfiguration.TankbusterMarkerWithoutHit.Contains(TankbusterMarkerKey(path));
+	internal static bool IsFalsifiedTankbusterMarker(string path) => MarkerLockHolds(TankbusterMarkerKey(path));
+
+	private static readonly ConcurrentDictionary<string, byte> _markerLocksTakenOver = new();
+
+	/// <summary>
+	/// Whether the marker entry <paramref name="key"/> is locked as "no tankbuster" in the running game version (concept
+	/// 13, "Stufe 4", 4a): a lock from an earlier version, or from before stage 4, is a hypothesis and does not hold - the
+	/// marker counts as a tankbuster until it goes without a hit again. Nothing holds while the version cannot be read.
+	/// </summary>
+	internal static bool MarkerLockHolds(string key, bool trace = true)
+	{
+		if (!OtherConfiguration.TankbusterMarkerWithoutHit.Contains(key))
+		{
+			return false;
+		}
+
+		if (OtherConfiguration.GameVersion is { } game && OtherConfiguration.TankbusterMarkerWithoutHitGame.TryGetValue(key, out var seen)
+			&& seen == game)
+		{
+			return true;
+		}
+
+		if (trace && _markerLocksTakenOver.TryAdd(key, 0))
+		{
+			DefenseTrace.Line($"tankbuster marker {key}: no hit seen in an earlier game version only - counted as a tankbuster"
+				+ " until it goes without a hit in this one");
+		}
+
+		return false;
+	}
 
 	/// <summary>
 	/// The entry of a marker in <see cref="OtherConfiguration.TankbusterMarkerWithoutHit"/>: the area and the path. One

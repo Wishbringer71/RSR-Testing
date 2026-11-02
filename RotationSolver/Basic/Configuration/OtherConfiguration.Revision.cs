@@ -60,6 +60,14 @@ internal partial class OtherConfiguration
 	/// none. An expansion slot that holds no version is passed over: the main version alone still tells a patch, and one
 	/// unused slot left unset must not make the version unreadable for good.
 	/// </summary>
+	private static string? _gameVersion;
+
+	/// <summary>
+	/// The running game version with its expansions, read once it can be read; null until then. For the locks of
+	/// stage 4, which hold only in the version that saw them (concept 13, rule 6).
+	/// </summary>
+	internal static string? GameVersion => _gameVersion ??= ReadGameVersion();
+
 	private static unsafe string? ReadGameVersion()
 	{
 		try

@@ -14635,6 +14635,22 @@ durchgehen". Als Skill `spielpatch` festgehalten (Lesetabelle in CLAUDE.md); den
 - *Prüfgrad:* Compile, alle CI-Prüfungen lokal, Revisions-Harness (.NET, 300 Läufe und Selbsttest); keine
   Laufzeitbeobachtung.
 
+### A493 · Gelernte Tabellen, Stufe 4a: Marker ohne Treffer nur in der Version, die ihn sah (02.11.2026)
+
+- *Anlass:* nächster Schritt nach A492. Regel 6 stellt vier Sperren unter die Spielversion. Ihre Speicher sind
+  verschieden gebaut: Die Schlafspeicher werden nur mit Höchst- oder Mindestwert der Datei zusammengelegt, also nicht
+  lösbar; die Marker-Sperre ist eine überschriebene Datei. Daher Teilstufen, die mit Lebensgefahr zuerst.
+- *Im Kampf:* Eine Sperre „Marker ohne Treffer" aus einer früheren Version ließ RSR einen Marker übergehen, auch wenn
+  ein Patch ihn zum Tankbuster machte – keine Abwehr für den Tank. Jetzt hält sie nur in der Version, die sie sah. Sonst
+  zählt der Marker wieder als Tankbuster, bis er in der laufenden Version erneut ohne Treffer bleibt.
+- *Gebaut:*
+  - Nebenspeicher `TankbusterMarkerWithoutHitGame` (Schlüssel → Spielversion der letzten Beobachtung ohne Treffer).
+  - `DataCenter.MarkerLockHolds` für beide Leser, Schreiben in `TankbusterMarkerWatch`.
+  - Unlesbare Version: keine Sperre hält.
+  - Eine Zeile je Marker und Sitzung, die Kopfzeile zählt laufende Sperren.
+- *Preis:* je Marker und Version einmal Abwehr; beim ersten Start mit diesem Build für alle bisherigen Sperren.
+- *Prüfgrad:* Compile, alle CI-Prüfungen lokal; keine Laufzeitbeobachtung.
+
 ## B · Commit-Register (Fork vs. `upstream/main`)
 
 ### B1 · Einzelgeprüfte Fork-Commits

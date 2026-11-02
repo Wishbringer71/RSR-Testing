@@ -39,6 +39,13 @@ internal partial class OtherConfiguration
 	public static HashSet<string> TankbusterMarkerWithoutHit = [];
 
 	/// <summary>
+	/// Per entry of <see cref="TankbusterMarkerWithoutHit"/>, the game version in which the marker last went without a
+	/// hit (concept 13, "Stufe 4", 4a). An entry without one, or of another version, is taken over and does not hold: the
+	/// marker counts as a tankbuster again until it shows no hit in the running version.
+	/// </summary>
+	public static Dictionary<string, string> TankbusterMarkerWithoutHitGame = [];
+
+	/// <summary>
 	/// What hit after a tankbuster marker, per marker entry (area and path, <see cref="DataCenter.TankbusterMarkerKey"/>):
 	/// lets the tank plan meet a marker that no cast accompanies with the hit measured after it before (concept 09,
 	/// A340). Learned in play, never downloaded; a confirmation by another action replaces an entry, one by the same
@@ -723,6 +730,8 @@ internal partial class OtherConfiguration
 		new SetList(nameof(HostileCastingKnockback), ActionLists.HostileCastingKnockback, () => HostileCastingKnockback, v => HostileCastingKnockback = v),
 		// Learned in play, like the damage tables: no built-in list.
 		new LocalFile<HashSet<string>>(nameof(TankbusterMarkerWithoutHit), () => TankbusterMarkerWithoutHit, v => TankbusterMarkerWithoutHit = v),
+		new LocalFile<Dictionary<string, string>>(nameof(TankbusterMarkerWithoutHitGame), () => TankbusterMarkerWithoutHitGame,
+			v => TankbusterMarkerWithoutHitGame = v),
 		new LocalFile<Dictionary<string, TankbusterMarkerHit>>(nameof(TankbusterMarkerHits), () => TankbusterMarkerHits, v => TankbusterMarkerHits = v),
 		new SetList(nameof(HostileCastingStop), ActionLists.HostileCastingStop, () => HostileCastingStop, v => HostileCastingStop = v, 3715, 3719, 3720, 3721, 3722),
 		new LocalFile<Dictionary<uint, List<string>>>(nameof(NorthHornWeaknessRecords), () => NorthHornWeaknessRecords, v => NorthHornWeaknessRecords = v),
@@ -1057,7 +1066,8 @@ internal partial class OtherConfiguration
 
 	public static Task SaveHostileCastingKnockback() => SaveList(nameof(HostileCastingKnockback));
 
-	public static Task SaveTankbusterMarkerWithoutHit() => SaveList(nameof(TankbusterMarkerWithoutHit));
+	public static Task SaveTankbusterMarkerWithoutHit()
+		=> Task.WhenAll(SaveList(nameof(TankbusterMarkerWithoutHit)), SaveList(nameof(TankbusterMarkerWithoutHitGame)));
 
 	public static Task SaveTankbusterMarkerHits() => SaveList(nameof(TankbusterMarkerHits));
 	#endregion

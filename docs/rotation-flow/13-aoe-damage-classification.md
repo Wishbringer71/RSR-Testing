@@ -1719,6 +1719,29 @@ Einträge.
   kleinem Raidwide eine Gruppenminderung mehr. Der Preis der Landung als Einheit liegt in der sicheren Richtung: eine
   abgeschwächte Serie bleibt länger beim alten Wert.
 
+### Stufe 4: Sperren nach Regel 6
+
+Regel 6 stellt vier Sperren unter die Spielversion. Ihre Speicher sind verschieden gebaut, deshalb kommen sie
+einzeln: 4a der Marker ohne Treffer (Lebensgefahr für den Tank, wenn ein Patch den Marker zum Tankbuster macht), danach
+4b die Schlafsperren (resistente Art, Schlafgrenze, „Schlaf stoppt es nicht") und 4c das Pyretisch-Wirken. Die
+Schlafsperren werden heute nur mit dem Höchst- oder Mindestwert der Datei zusammengelegt und können deshalb nicht
+gelöst werden; dafür braucht 4b eine Kennzeichnung „widerlegt" neben der Datei. 4c hält im Zweifel weiter Zauber an,
+und das ist die sichere Seite.
+
+**4a – Marker ohne Treffer (gebaut, A493).**
+- *Im Kampf:* Ein Marker, dem in einer früheren Spielversion kein Treffer folgte, zählt nach einem Patch wieder als
+  Tankbuster. Das gilt, bis er in der laufenden Version erneut ohne Treffer bleibt; erst dann ist er wieder gesperrt.
+  Folgt ihm ein Treffer, verschwindet die Sperre wie bisher.
+- *Woran:* Ein Nebenspeicher hält je gesperrtem Marker die Spielversion der letzten Beobachtung ohne Treffer
+  (`TankbusterMarkerWithoutHitGame`). Eine Sperre ohne Eintrag dort stammt aus der Zeit vor Stufe 4 und gilt als
+  übernommen. Ist die Spielversion nicht lesbar, gilt keine Sperre als laufend (Regel 7), und jeder Marker zählt.
+- *Preis:* je Marker und Version einmal die Abwehr, die ein Tankbuster bekommt. Beim ersten Start mit 4a gilt das auch
+  ohne Patch: Alle bisherigen Sperren sind übernommen.
+- *Messmittel:* je Marker und Sitzung eine Zeile, wenn eine übernommene Sperre nicht greift; die Kopfzeile zählt
+  laufende und übernommene Sperren.
+- *Gegenhypothese – ausgeliefert, und nichts ändert sich:* Kommt kein Patch und hat er keine Sperren, ändert sich
+  nichts. Das ist gewollt.
+
 **Preis.** Ein streuender Treffer aus der alten Datei, den ein Patch abschwächte, behält in dieser Version seinen alten
 Wert: gerechnet in 91 bis 96 % der Casts Schutz, den er nicht mehr braucht. Der Stack, dessen alte Messungen zufällig
 fest aussahen, sinkt nach einer Abschwächung vor seiner seltenen harten Variante: 3,0 % statt 2,4 % falsch ausgelassener

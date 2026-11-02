@@ -11,7 +11,8 @@ Nach der Wirkung im Kampf: Sicherheit der Gruppe vor Schaden, gewichtet mit der 
 (seine Vorgabe, 17.10.2026: „todo nach wichtigkeit abarbeiten. jeweils im loop bearbeiten").
 
 1. Die gelernten Tabellen: entschieden (Konzept 13, A451); gebaut nach Regel 12 des Entwurfs, erst die Revision über
-   einen Spielpatch (Stufen 1 bis 3 gebaut, A481, A492; als Nächstes Stufe 4, die Sperren), dann die Anzeige. Beide ändern den Kampf nur mittelbar, über einen geprüften oder berichtigten Lernwert –
+   einen Spielpatch (Stufen 1 bis 3 und 4a gebaut, A481, A492, A493; als Nächstes 4b, die Schlafsperren), dann die
+   Anzeige. Beide ändern den Kampf nur mittelbar, über einen geprüften oder berichtigten Lernwert –
    die Sperren unter ihnen (Schlaf) aber dauerhaft.
 2. Fremde Repositories auf Verbesserungen für RSR prüfen: Jeder Fund kann ein Defekt im Verhalten einer Klasse sein,
    den RSR heute im Kampf zeigt; zuerst die Rotationswerkzeuge für alle Jobs, Daedalus vorn (aktiv, alle Jobs,
@@ -34,12 +35,13 @@ Mechanik, gilt in den übrigen Speichern der alte Lernwert weiter: Ein Gegner, d
 geführt, eine Serie, die nicht mehr kommt, bleibt gelernt, ein Wirken, das kein Pyretisch mehr anlegt, hält weiter
 Zauber an. Gebaut sind für Fläche und Tankbuster Stufe 1 (Speicher, Übernahme, Sicherung), Stufe 2 (ein übernommener
 Wert spart keinen Schutz, bis die laufende Version ihn sauber misst, A481) und Stufe 3 (ein abgeschwächter Treffer
-widerlegt den alten Wert nach den Regeln 5, 5b oder dem gleichbleibenden Abfall, A492); offen sind die Stufen 4 und 5. *Ort:* `OtherConfiguration.RevisedStore`
+widerlegt den alten Wert nach den Regeln 5, 5b oder dem gleichbleibenden Abfall, A492); von Stufe 4 gebaut ist 4a
+(ein Marker ohne Treffer aus einer früheren Version zählt wieder als Tankbuster, A493); offen sind 4b, 4c und Stufe 5. *Ort:* `OtherConfiguration.RevisedStore`
 (Fläche, Tankbuster), `OtherConfiguration.LearnedFile` (die übrigen: Zusammenführung mit `Math.Max`, `Math.Min` oder
 `Higher`), die Werttypen `SleepReading`, `DotReading`/`DotArea`, dazu `HitSeriesOnPlayer`, `TankbusterMarkerWithoutHit`
-und `ActionPenaltyCasts`. *Nächster Schritt:* Stufe 4 – die Sperren nach Regel 6 (Marker ohne Treffer, resistente
-Gegnerart und Schlafgrenze, „Schlaf stoppt es nicht", Pyretisch-Wirken) mit den Schichten der Sperrspeicher. *Konzept:*
-13.
+und `ActionPenaltyCasts`. *Nächster Schritt:* 4b – die Schlafsperren (resistente Gegnerart, Schlafgrenze, „Schlaf stoppt es
+nicht") nach Regel 6 mit einer Kennzeichnung „widerlegt" neben den Dateien, die heute nur steigen; dann 4c,
+Pyretisch-Wirken. *Konzept:* 13, „Stufe 4".
 
 ### Gelernte Tabellen des Forks in den Einstellungen zeigen und bearbeiten · N
 Sein Auftrag (28.10.2026): „prüfen, ob es sinnvoll ist, die durch den fork selbst erstellten lernlisten ähnlich der

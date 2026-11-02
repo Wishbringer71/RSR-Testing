@@ -31,6 +31,7 @@ public static class Watcher
 			+ $" | single defence {config.UseStDefense} | skip casts that missed you {config.SkipAreaCastsThatMissedMe}"
 			+ $" | big interruptible casts {config.MitigateBigAreaCastsEvenIfInterruptible} | BMR timeline {config.UseBmrTimeline}"
 			+ $" | AoE list {OtherConfiguration.HostileCastingArea.Count} | tankbuster list {OtherConfiguration.HostileCastingTank.Count}"
+			+ $" | tankbuster markers without a hit {OtherConfiguration.TankbusterMarkerWithoutHit.Count} ({MarkerLocksRunning()} locked in this game version)"
 			+ $" | stop enemy casts {config.SleepToStopAreaCasts}"
 			+ $" | sleep knowledge {OtherConfiguration.SleepOutcomes.Count} action(s), {OtherConfiguration.SleepResistantKinds.Count} resistant kind(s),"
 			+ $" {OtherConfiguration.SleepDiminishing.Count} kind limit(s) ({OtherConfiguration.SleepStoreState})"
@@ -59,6 +60,18 @@ public static class Watcher
 	// The commit this build was made from, so an uploaded trace can be matched to the code that wrote it:
 	// the version is the same for every build on the branch, and a day carries several commits.
 	// Embedded by Directory.Build.props; missing when the build had no git.
+	// Stage 4a (concept 13): the marker locks that hold in the running game version; the rest are taken over.
+	private static int MarkerLocksRunning()
+	{
+		var running = 0;
+		foreach (var key in OtherConfiguration.TankbusterMarkerWithoutHit)
+		{
+			running += DataCenter.MarkerLockHolds(key, trace: false) ? 1 : 0;
+		}
+
+		return running;
+	}
+
 	private static string SourceCommit()
 	{
 		foreach (var attribute in typeof(Watcher).Assembly.GetCustomAttributes<AssemblyMetadataAttribute>())
