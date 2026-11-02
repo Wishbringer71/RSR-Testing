@@ -32,12 +32,17 @@ import sys
 GCD_PATH = 'RotationSolver/Basic/Rotations/CustomRotation_GCD.cs'
 GATE_PATH = 'RotationSolver/Commands/RSCommands_Actions.cs'
 ABILITY_PATH = 'RotationSolver/Basic/Rotations/CustomRotation_Ability.cs'
+HELPER_PATH = 'RotationSolver/Basic/Helpers/ActionHelper.cs'
+
+# The window as a figure, or as the constant that names it once (A486): `ActionHelper.AbilityClipWindow`.
+VALUE = r'([0-9.]+f|ActionHelper\.AbilityClipWindow)'
+CONST_RE = re.compile(r'const\s+float\s+AbilityClipWindow\s*=\s*([0-9.]+)f')
 
 # The gate: `baseAct.Info.IsAbility && ... && DataCenter.DefaultGCDRemain <= X && ... > 0f`
 GATE_RE = re.compile(
-    r'IsAbility.*?DefaultGCDRemain\s*<=\s*([0-9.]+)f', re.S)
+    r'IsAbility.*?DefaultGCDRemain\s*<=\s*' + VALUE, re.S)
 # A selection guarded by the shared clock.
-WINDOW_RE = re.compile(r'WeaponRemain\s*<=\s*([0-9.]+)f')
+WINDOW_RE = re.compile(r'WeaponRemain\s*<=\s*' + VALUE)
 # `SwiftcastPvE.CanUse(out act)` and friends - an action handed back from this path.
 PICK_RE = re.compile(r'\b([A-Za-z0-9_]+PvE)\.CanUse\s*\(\s*out\s+act\b')
 
@@ -47,21 +52,36 @@ def read(path):
         return fh.read()
 
 
-def gate_window(text):
+def figure(value, constant):
+    """A captured window: a literal like `0.5f`, or the named constant, resolved to its declared value (None unread)."""
+    if value.endswith('f'):
+        return float(value[:-1])
+    return constant
+
+
+def gate_window(text, constant=None):
     """The largest GCD remainder for which the execution gate still refuses an ability."""
-    hits = GATE_RE.findall(text)
-    return max(float(h) for h in hits) if hits else None
+    hits = [figure(h, constant) for h in GATE_RE.findall(text)]
+    hits = [h for h in hits if h is not None]
+    return max(hits) if hits else None
 
 
-def offenders(text, window):
+def offenders(text, window, constant=None):
     """Lines picking an action under a WeaponRemain window that the gate refuses."""
     found = []
     for num, line in enumerate(text.splitlines(), 1):
         w = WINDOW_RE.search(line)
         p = PICK_RE.search(line)
-        if w and p and float(w.group(1)) <= window:
-            found.append((num, p.group(1), float(w.group(1)), line.strip()))
+        value = figure(w.group(1), constant) if w else None
+        if value is not None and p and value <= window:
+            found.append((num, p.group(1), value, line.strip()))
     return found
+
+
+def declared_window(text):
+    """The value ActionHelper declares for AbilityClipWindow, None when it declares none."""
+    m = CONST_RE.search(text)
+    return float(m.group(1)) if m else None
 
 
 def self_test():
@@ -81,18 +101,26 @@ def self_test():
 
     outside = 'if (WeaponRemain <= 1.4f && SwiftcastPvE.CanUse(out act))'
     assert offenders(outside, 0.5) == [], 'a window outside the gate is not this defect'
+
+    named = 'if (baseAct.Info.IsAbility && !x && DataCenter.DefaultGCDRemain <= ActionHelper.AbilityClipWindow && y)'
+    assert declared_window('internal const float AbilityClipWindow = 0.5f;') == 0.5, 'the constant is read'
+    assert gate_window(named, 0.5) == 0.5, 'a gate naming the constant reads its declared value'
+    assert gate_window(named, None) is None, 'an undeclared constant must not read as a window'
+    assert len(offenders('if (WeaponRemain <= ActionHelper.AbilityClipWindow && SwiftcastPvE.CanUse(out act))',
+                         0.5, 0.5)) == 1, 'a pick under the named window is caught as under the figure'
     print('self-test ok: gate parsed, broken form caught, fixed form and wide window accepted\n')
 
 
 def main():
     self_test()
 
-    for path in (GCD_PATH, GATE_PATH, ABILITY_PATH):
+    for path in (GCD_PATH, GATE_PATH, ABILITY_PATH, HELPER_PATH):
         if not os.path.exists(path):
             print(f'missing: {path}')
             return 1
 
-    window = gate_window(read(GATE_PATH))
+    constant = declared_window(read(HELPER_PATH))
+    window = gate_window(read(GATE_PATH), constant)
     if window is None:
         print(f'{GATE_PATH}: no ability window found in the execution gate.\n'
               'Either the gate moved or its shape changed - this check reads it from there on '
@@ -103,7 +131,7 @@ def main():
     print(f'Execution gate refuses abilities while 0 < DefaultGCDRemain <= {window}f '
           f'({GATE_PATH}).')
 
-    bad = offenders(read(GCD_PATH), window)
+    bad = offenders(read(GCD_PATH), window, constant)
     print(f'{GCD_PATH}: {len(bad)} selection(s) inside that window.')
 
     # The known-open one. The first attempt at fixing it made things worse in game - naming the

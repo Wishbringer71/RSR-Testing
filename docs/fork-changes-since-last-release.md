@@ -21,6 +21,13 @@ What this release changes in the fight. For the whole distance from upstream, se
 - **Beastmaster no longer keeps a familiar out for good.** A horn set to Borrow before level 22, or to "Neither", never
   spent One with Nature, and Parting Blow waited for it: the familiar stayed and the other horns sat idle. A horn now waits
   only for the action it spends One with Nature on, and Borrow that cannot come yet is Tempered Release.
+- **Beastmaster no longer rushes back into danger for a finisher.** Shield Charge, Brutal Rage and Hawkish Talons carry
+  you to the target from up to 20 and 25 yalms; they now keep to "Only use damaging gap closers within this distance"
+  (3 yalms by default) and check the landing point. Risen Fall, the same 1,200 without the rush, now goes before Brutal
+  Rage, and Calamity before Hawkish Talons unless the rush reaches more enemies.
+- **A battlehorn no longer pushes back your next weaponskill.** Its 1 s summon now starts only where it ends before the
+  half second kept free ahead of the GCD; when you are in danger a healing or protecting familiar still comes at once.
+- **Soul Crush interrupts.** It goes to a caster whose cast can be interrupted first: 1,000 instead of 300, and 100 TP.
 
 ## Healing
 

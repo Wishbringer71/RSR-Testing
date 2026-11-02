@@ -51,4 +51,10 @@ internal static class ActionHelper
 	}
 
 	internal static bool CanUseGCD => DataCenter.DefaultGCDRemain <= DataCenter.CalculatedActionAhead;
+
+	/// <summary>
+	/// The window before the GCD in which no ability starts, so that its animation lock does not run into the GCD:
+	/// upstream's window, kept in one place since an ability with a cast time measures its end against it (A388, A486).
+	/// </summary>
+	internal const float AbilityClipWindow = 0.5f;
 }

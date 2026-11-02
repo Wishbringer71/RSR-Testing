@@ -139,6 +139,7 @@ direkt: 32 · ungenutzt: 8 · über andere Aktion: 8
 | Borrow | StatusNeed OneWithNature | Status OneWithNature |
 | Brutal Rage | StatusNeed Moonstalker | Calamity |
 | Brutal Rage | StatusNeed Moonstalker | Hawkish Talons |
+| Brutal Rage | Regel prüft | Risen Fall |
 | Calamity | StatusNeed Sunstrider | Brutal Rage |
 | Calamity | StatusNeed Sunstrider | Risen Fall |
 | Cloud Skim | StatusNeed CloudKinship | Status CloudKinship |
@@ -165,6 +166,7 @@ direkt: 32 · ungenutzt: 8 · über andere Aktion: 8
 | Quelling Wave | StatusNeed PopotoSkin | Status PopotoSkin |
 | Quelling Wave | StatusNeed WaveKinship | Status WaveKinship |
 | Quelling Wave | StatusNeed WaveKinship_4648 | Status WaveKinship_4648 |
+| Risen Fall | Regel prüft | Brutal Rage |
 | Risen Fall | StatusNeed Moonstalker | Calamity |
 | Risen Fall | StatusNeed Moonstalker | Hawkish Talons |
 | Scaleskin | StatusNeed ScaleKinship | Status ScaleKinship |
@@ -225,8 +227,10 @@ Jeder Aufruf der Aktion trägt eine eigene Bedingung; hält sie an, verfällt da
 - Avalanche Axe: 2 Aufruf(e), **ohne Rückfall vor Ablauf**
 - Beastskin: 1 Aufruf(e), **ohne Rückfall vor Ablauf**
 - Borrow: 1 Aufruf(e), **ohne Rückfall vor Ablauf**
+- Brutal Rage: 1 Aufruf(e), **ohne Rückfall vor Ablauf**
 - Gale Axe: 2 Aufruf(e), **ohne Rückfall vor Ablauf**
 - Mistral Axe: 2 Aufruf(e), **ohne Rückfall vor Ablauf**
+- Risen Fall: 1 Aufruf(e), **ohne Rückfall vor Ablauf**
 - Scaleskin: 3 Aufruf(e), **ohne Rückfall vor Ablauf**
 - Spinning Axe: 2 Aufruf(e), **ohne Rückfall vor Ablauf**
 - Tempered Release: 1 Aufruf(e), **ohne Rückfall vor Ablauf**

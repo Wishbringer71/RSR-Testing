@@ -15,7 +15,9 @@ Nach der Wirkung im Kampf: Sicherheit der Gruppe vor Schaden, gewichtet mit der 
    Nächstes Stufe 3), dann die Anzeige. Beide ändern den Kampf nur mittelbar, über einen geprüften oder berichtigten Lernwert –
    die Sperren unter ihnen (Schlaf) aber dauerhaft.
 2. Beastmaster: Anfreunden zum besten Zeitpunkt – kein Einfluss auf Sicherheit oder Schaden, deshalb nach den Tabellen.
-3. Beastmaster: Belegung der Kampfhörner aus den freigeschalteten Begleitern vorschlagen – RSR kann sie nicht
+3. Beastmaster: Dressur nach ihrer Affinität in die Kompass-Kombos setzen – Schaden; die Größe des Gewinns nennt kein
+   Text.
+4. Beastmaster: Belegung der Kampfhörner aus den freigeschalteten Begleitern vorschlagen – RSR kann sie nicht
    anwenden; Schaden und Sicherheit nur über seine Zuordnung im Menü.
 
 Danach die technische Schuld, soweit ihre Auflösungsbedingung erfüllt ist. Warten auf Daten: unten.
@@ -64,7 +66,17 @@ dann das talent so anwenden, dass die wahrscheinlichkeit hoch ist, dass man sich
 weder Analysieren noch Anfreunden ein; markiert er von Hand zu früh, ist die Chance kleiner, als sie sein müsste. *Ort:*
 `BST_Reborn` (kein Aufruf), `BeastmasterRotation.ModifyCapturePvE` (widersprüchliche Zielbedingungen). *Nächster
 Schritt:* Konzept 01, „Anfreunden und Analysieren": Zeitpunkt, Zielauswahl, ob Analysieren gelesen werden muss (Chat),
-Lagen (Gruppe, Mitspieler tötet, Stufensynchronisation). *Konzept:* 01.
+Lagen (Gruppe, Mitspieler tötet, Stufensynchronisation). Was WrathCombo dafür liest (Konzept 01, „Weben, Ansturm und
+Abschlüsse"): Begleiter am Ziel über `BNpcBase` und Modell, freigeschaltet über `XBMManager.IsPetUnlocked`, laufender
+Versuch am Status „Interest Captured". *Konzept:* 01.
+
+### Beastmaster: Dressur nach ihrer Affinität in die Kompass-Kombos setzen · N
+Im Kampf heute: RSR drückt die Dressur, sobald irgendein Herz steht, ohne ihre Affinität. Folgt sie nicht im
+Uhrzeigersinn auf das stehende Herz, wird die Kombo nur einfach statt absichtlich („greater additional damage"), und die
+Axt, die sie absichtlich geschlossen hätte, wartet. *Ort:* `BST_Reborn.AttackAbility` (Dressur mit `skipStatusNeed`),
+`BeastmasterRotation.ModifyTrickPvE`. *Nächster Schritt:* Affinität der Dressur aus ihrem Tooltip („Instinctual Affinity")
+in den Katalog von B1; Wert der absichtlichen gegen die einfache Kombo belegen (kein Text nennt ihn); WrathCombo setzt
+Dressur und Axt in beide Richtungen (Konzept 01, „Weben, Ansturm und Abschlüsse"). *Konzept:* 01.
 
 ### Beastmaster: Belegung der Kampfhörner aus den freigeschalteten Begleitern vorschlagen · N
 Seine Vorgabe (02.11.2026): das Optimum mit den vorhandenen Begleitern finden und nutzen. Im Kampf heute: RSR wählt unter

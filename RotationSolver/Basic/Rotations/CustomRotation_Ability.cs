@@ -40,7 +40,7 @@ public partial class CustomRotation
 		// The last half second before the GCD stays free so an ability does not clip it - unless Invoke found no GCD to
 		// cast and asks with IgnoreClipping: then there is nothing to clip (the flag's purpose since 4ec1a3a1c, A388).
 		// The emergency heal passes it: the GCD is due, and the ability is pressed the moment it comes free.
-		if (!emergencyHealOnly && !IBaseAction.IgnoreClipping && WeaponRemain <= 0.5f && WeaponRemain > 0f)
+		if (!emergencyHealOnly && !IBaseAction.IgnoreClipping && WeaponRemain <= ActionHelper.AbilityClipWindow && WeaponRemain > 0f)
 		{
 			return false;
 		}

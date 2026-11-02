@@ -42,7 +42,7 @@ namespace RotationSolver.Commands
 			_lastClickTime = DateTime.Now;
 			_clickDelay = RandomSeconds(Service.Config.ClickingDelay.X, Service.Config.ClickingDelay.Y);
 
-			if (!isGCD && DataCenter.DefaultGCDRemain <= 0.5f && DataCenter.DefaultGCDRemain > 0f)
+			if (!isGCD && DataCenter.DefaultGCDRemain <= ActionHelper.AbilityClipWindow && DataCenter.DefaultGCDRemain > 0f)
 			{
 				return false;
 			}
@@ -70,7 +70,7 @@ namespace RotationSolver.Commands
 
 			if (nextAction is BaseAction baseAct)
 			{
-				if (baseAct.Info.IsAbility && !baseAct.Setting.IsMudra && DataCenter.DefaultGCDRemain <= 0.5f && DataCenter.DefaultGCDRemain > 0f)
+				if (baseAct.Info.IsAbility && !baseAct.Setting.IsMudra && DataCenter.DefaultGCDRemain <= ActionHelper.AbilityClipWindow && DataCenter.DefaultGCDRemain > 0f)
 				{
 					return;
 				}

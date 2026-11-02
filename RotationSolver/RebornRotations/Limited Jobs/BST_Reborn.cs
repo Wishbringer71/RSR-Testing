@@ -200,19 +200,7 @@ public sealed class BST_Reborn : BeastmasterRotation
 			}
 		}
 
-		if (BrutalRagePvE.CanUse(out act, usedUp: true))
-		{
-			return true;
-		}
-		if (HawkishTalonsPvE.CanUse(out act, usedUp: true))
-		{
-			return true;
-		}
-		if (RisenFallPvE.CanUse(out act, usedUp: true))
-		{
-			return true;
-		}
-		if (CalamityPvE.CanUse(out act, usedUp: true))
+		if (Finisher(skipStatusNeed: false, out act))
 		{
 			return true;
 		}
@@ -327,19 +315,7 @@ public sealed class BST_Reborn : BeastmasterRotation
 			}
 		}
 
-		if (BrutalRagePvE.CanUse(out act, usedUp: true, skipStatusNeed: true))
-		{
-			return true;
-		}
-		if (HawkishTalonsPvE.CanUse(out act, usedUp: true, skipStatusNeed: true))
-		{
-			return true;
-		}
-		if (RisenFallPvE.CanUse(out act, usedUp: true, skipStatusNeed: true))
-		{
-			return true;
-		}
-		if (CalamityPvE.CanUse(out act, usedUp: true, skipStatusNeed: true))
+		if (Finisher(skipStatusNeed: true, out act))
 		{
 			return true;
 		}
@@ -479,6 +455,18 @@ public sealed class BST_Reborn : BeastmasterRotation
 		return base.DispelAbility(nextGCD, out act);
 	}
 
+	protected override bool InterruptAbility(IAction nextGCD, out IAction? act)
+	{
+		// W4 (concept 01, A486): Soul Crush deals 1,000 instead of 300 and grants 100 TP when it interrupts - on a caster
+		// whose cast can be interrupted first; otherwise it goes as before.
+		if (SoulCrushPvE.CanUse(out act))
+		{
+			return true;
+		}
+
+		return base.InterruptAbility(nextGCD, out act);
+	}
+
 	protected override bool AntiKnockbackAbility(IAction nextGCD, out IAction? act)
 	{
 		if (VileskinPvE.CanUse(out act))
@@ -493,6 +481,36 @@ public sealed class BST_Reborn : BeastmasterRotation
 	{
 
 		return base.MoveForwardAbility(nextGCD, out act);
+	}
+	#endregion
+
+	#region Finishers
+	// W3 (concept 01, A486): the finisher that does not move you first. Risen Fall is Brutal Rage without the rush - the
+	// same potency, affinity, circle and reach. Between Calamity's line and Hawkish Talons' circle the one that reaches
+	// more enemies, a tie to Calamity. Sunstrider before Moonstalker as before.
+	private bool Finisher(bool skipStatusNeed, out IAction? act)
+	{
+		if (RisenFallPvE.CanUse(out act, usedUp: true, skipStatusNeed: skipStatusNeed)
+			|| BrutalRagePvE.CanUse(out act, usedUp: true, skipStatusNeed: skipStatusNeed))
+		{
+			return true;
+		}
+
+		var line = CalamityPvE.CanUse(out var calamity, usedUp: true, skipStatusNeed: skipStatusNeed);
+		var rush = HawkishTalonsPvE.CanUse(out var talons, usedUp: true, skipStatusNeed: skipStatusNeed);
+		if (line && (!rush || Reached(CalamityPvE) >= Reached(HawkishTalonsPvE)))
+		{
+			act = calamity;
+			return true;
+		}
+
+		act = talons;
+		return rush;
+	}
+
+	private static int Reached(IBaseAction action)
+	{
+		return Math.Max(1, action.Target.AffectedTargets?.Length ?? 0);
 	}
 	#endregion
 
@@ -606,7 +624,7 @@ public sealed class BST_Reborn : BeastmasterRotation
 		if (InCombat && InDanger && FirstSafeReadyHorn() is { } safe)
 		{
 			chosen = safe;
-			why = "you are in danger, it heals or protects";
+			why = DangerReason;
 		}
 		else
 		{
@@ -646,13 +664,25 @@ public sealed class BST_Reborn : BeastmasterRotation
 			return false;
 		}
 
-		var pressed = call switch
+		// W1 keeps a horn's 1 s cast out of the next GCD; a horn called in danger may run into it (A486): a fraction of a
+		// GCD against the healing or protecting familiar up to a GCD sooner.
+		var clipping = IBaseAction.IgnoreClipping;
+		IBaseAction.IgnoreClipping = clipping || why == DangerReason;
+		bool pressed;
+		try
 		{
-			HornOrder.FirstBattlehorn => FirstBattlehornPvE.CanUse(out act),
-			HornOrder.SecondBattlehorn => SecondBattlehornPvE.CanUse(out act),
-			HornOrder.ThirdBattlehorn => ThirdBattlehornPvE.CanUse(out act),
-			_ => false,
-		};
+			pressed = call switch
+			{
+				HornOrder.FirstBattlehorn => FirstBattlehornPvE.CanUse(out act),
+				HornOrder.SecondBattlehorn => SecondBattlehornPvE.CanUse(out act),
+				HornOrder.ThirdBattlehorn => ThirdBattlehornPvE.CanUse(out act),
+				_ => false,
+			};
+		}
+		finally
+		{
+			IBaseAction.IgnoreClipping = clipping;
+		}
 		if (pressed)
 		{
 			TraceHorn($"{call} ({PetOnHorn(call)}) called: {why}");
@@ -660,6 +690,8 @@ public sealed class BST_Reborn : BeastmasterRotation
 
 		return pressed;
 	}
+
+	private const string DangerReason = "you are in danger, it heals or protects";
 
 	// One line per decision: the choice is asked every frame until the familiar is out.
 	private static void TraceHorn(string line)

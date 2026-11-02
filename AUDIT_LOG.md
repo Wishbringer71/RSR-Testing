@@ -14427,6 +14427,30 @@ durchgehen". Als Skill `spielpatch` festgehalten (Lesetabelle in CLAUDE.md); den
   „Kampfhorn nach Gegnerzahl und Schwäche wählen" geschlossen, „Belegung der Kampfhörner aus den freigeschalteten
   Begleitern vorschlagen" neu), Release-Text fortgeschrieben.
 
+
+### A486 · Beastmaster: Weben, Ansturm und Abschlüsse; WrathCombo gelesen (02.11.2026)
+
+- *Seine Fragen:* ob beim Beastmaster oGCDs und GCDs ohne Zeitverlust gemischt werden und Weben beachtet wird; danach
+  die Rotation weiter analysieren und verbessern; ob WrathCombo Erkenntnisse hat.
+- *Belegt* (xivapi v2, Action und ActionTransient, 02.11.2026): GCD-Gruppe 58 für Kombo, Quelling Wave, Capture; Äxte und
+  Abschlüsse Waffenfertigkeiten in Gruppe 16 (5 s); Kampfhörner Fähigkeiten mit 1 s Wirkzeit, die einzigen im PvE (im
+  PvP nur das Elixier); Shield Charge, Brutal Rage und Hawkish Talons mit `AffectsPosition` und „Rushes forward"; jede
+  Axt wird bei 250 TP zu ihrem Abschluss, alle 1.200; Soul Crush 300, beim Unterbrechen 1.000. RSR ordnet nach
+  Abklinggruppe und webt mit Upstreams Fenster von 0,5 s vor dem GCD, das nur den Beginn einer Fähigkeit misst.
+- *Befunde, umgesetzt* (Konzept 01, „Weben, Ansturm und Abschlüsse"): W1 eine Fähigkeit mit Wirkzeit endet vor dem
+  Fenster (zentral in `BaseAction.CanUse`, nur PvE; Ausnahme: ein Horn, das B2 in der Gefahr ruft); das Fenster heißt
+  jetzt einmal `ActionHelper.AbilityClipWindow` für seine drei Leser, `scan17.py` liest die Konstante. W2 Ansturm nur
+  über `GapCloserAllowed` und mit Landeprüfung (`HostileMovingAttack`), gegen den Text der Abstands-Einstellung vorher
+  verletzt. W3 Risen Fall vor Brutal Rage, Calamity gegen Hawkish Talons nach Treffern. W4 Soul Crush im
+  Unterbrechungspfad.
+- *WrathCombo* (d9c63e468, 27.10.2026; Werkzeugquelle): nutzt nur Risen Fall und Calamity und Shield Charge nur im
+  Nahkampf – stützt W2 und W3; Affinität der Dressur als Tabelle, Dressur und Axt in beide Richtungen (TODO); Erkennung
+  eines anfreundbaren Ziels über `BNpcBase`, `XBMManager.IsPetUnlocked`, Status 4626 (TODO „Anfreunden"). Nicht
+  übernommen: Entfesseln nie für Wespe, Burst-Folge mit Rally, eine Ladung zurückgehalten – ohne Begründung in der Quelle.
+- *Unbelegt:* der Schaden des Begleiters je Sekunde (kein Wert in den Blättern, kein Beastmaster-Kampf in seinen
+  Mitschnitten), also ob ein Horn lieber wartet oder den GCD verschiebt; W1 folgt der bestehenden Absicht.
+- *Review* (Code-Review-Skill, hoch): zwei Befunde, beide behoben (Gefahr-Horn durch W1 verzögert, Elixier im PvP).
+- *Prüfgrad:* Compile, alle CI-Prüfungen lokal; keine Laufzeitbeobachtung.
 ---
 ## B · Commit-Register (Fork vs. `upstream/main`)
 

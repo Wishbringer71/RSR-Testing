@@ -1245,6 +1245,10 @@ public partial class BeastmasterRotation
 
 	static partial void ModifyBrutalRagePvE(ref ActionSetting setting)
 	{
+		// A rush onto the target (W2, concept 01, A486): within the reach the player allows damaging gap closers, and the
+		// landing point checked against known danger areas, as Intervene (A358).
+		setting.SpecialType = SpecialActionType.HostileMovingAttack;
+		setting.CanTarget = static t => GapCloserAllowed(t, pressed: ActionID.BrutalRagePvE);
 		setting.ActionCheck = () => TPCount == 250;
 		setting.IsFriendly = false;
 		setting.StatusNeed = [StatusID.Moonstalker];
@@ -1259,6 +1263,10 @@ public partial class BeastmasterRotation
 
 	static partial void ModifyHawkishTalonsPvE(ref ActionSetting setting)
 	{
+		// A rush onto the target (W2, concept 01, A486): within the reach the player allows damaging gap closers, and the
+		// landing point checked against known danger areas, as Intervene (A358).
+		setting.SpecialType = SpecialActionType.HostileMovingAttack;
+		setting.CanTarget = static t => GapCloserAllowed(t, pressed: ActionID.HawkishTalonsPvE);
 		setting.ActionCheck = () => TPCount == 250;
 		setting.IsFriendly = false;
 		setting.StatusNeed = [StatusID.Sunstrider];
@@ -1366,6 +1374,10 @@ public partial class BeastmasterRotation
 
 	static partial void ModifyShieldChargePvE(ref ActionSetting setting)
 	{
+		// A rush onto the target (W2, concept 01, A486): within the reach the player allows damaging gap closers, and the
+		// landing point checked against known danger areas, as Intervene (A358).
+		setting.SpecialType = SpecialActionType.HostileMovingAttack;
+		setting.CanTarget = static t => GapCloserAllowed(t, pressed: ActionID.ShieldChargePvE);
 		setting.IsFriendly = false;
 		setting.CreateConfig = () => new ActionConfig()
 		{
