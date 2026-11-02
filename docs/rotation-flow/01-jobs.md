@@ -520,7 +520,7 @@ ofnature/Daedalus e3a16de vom 01.11.2026, GPL-3.0 und LGPL-3.0). Alle Werkzeugqu
 - *Daedalus* (Rotation für alle Jobs, Beastmaster „Artemis"): der Weg über das Bestienbuch (oben); der Hinweis, der
   zu R1 führte; vorgefertigte Belegungen nach Inhalt (Einzelziel, Dungeon-Rudel, Gruppenunterstützung, Leveln) mit
   Begleitern, deren Wert jenseits von Schaden, Heilung und Schutz liegt (Betäubung, Einfrieren, Verwundbarkeit,
-  Gruppenstärkung) – B1 wertet das nicht, im TODO. Geprüft ohne Defekt: Daedalus wartet nach der Dressur, bis die
+  Gruppenstärkung) – daraus C1 bis C3 unter „Was gilt" (A491). Geprüft ohne Defekt: Daedalus wartet nach der Dressur, bis die
   Aktion des Begleiters gelandet ist, weil eine sofort folgende Axt sonst vor ihr auflöst und die Kombo verkehrt herum
   schließt; in RSR verlangt die Axt nach der Dressur das Herz, das erst die gelandete Dressur gibt (`StatusNeed`, Zweig 1
   des Kompasses). Anfreunden: Daedalus markiert etwa 20 s vor dem geschätzten Tod, um den Tod vor der Markierung zu
@@ -693,6 +693,49 @@ Lage.
     das Ziel, mindestens das Ziel. Eine ungezogene Gruppe daneben zählt nicht.
   - Bei gleichem Wert behält ein Begleiter, der heilt oder schützt, den langen Einsatz; danach die eingestellte
     Reihenfolge. Bei einem Gegner heißt das meist: der heilende bleibt, ohne Schaden zu kosten.
+- *Nutzen jenseits von Schaden, Heilung und Schutz* (A491; TODO-Punkt aus A488). Die Wirktexte aller 50 Begleiter
+  (xivapi v2, 02.11.2026) legen diesen Nutzen fast ganz ins Entfesseln. Die Dressur trägt nur Blind (Dodo, Riesenwurm),
+  Gift, Albtraum (Baumschrat) und eine kleine Chance auf Todesurteil (Geist). Was davon die Wahl ändert:
+  - *C1 – Aufhalten zählt als Schutz gegen ein Rudel.* Ein Entfesseln, das die Gegner um das Ziel aufhält, zählt in B2
+    und B3 wie eines, das schützt: Betäubung (War Cry, Büffel, 15 s um den Begleiter), Versteinerung (Petribreath, Ziz,
+    21 s im Kegel), Tiefkühlung (The Ram's Voice, Chimäre, 20 s). Das Statusblatt trägt bei allen drei `LockActions`
+    („preventing the execution of actions").
+    - *Bedingungen:* mindestens zwei Gegner im Kampf greifen dich an; jeder von ihnen steht in der Reichweite um das Ziel
+      (Kegel wie Kreis, wie B3); keiner trägt das Boss-Symbol; bei Betäubung ist keiner immun (`StunWatch`), und auf
+      keinem liegt eine Betäubung seit seiner letzten Immunität. Die nächste wäre halbiert (The Balance).
+    - *Gerechnet* (`bst_control_model.py`): Hält es zwei oder drei Angreifer 15 s auf, verhindert es in jeder Gefahr
+      von 10 bis 60 s mehr Schaden als −20 % Verwundbarkeit über 48 s. Bei drei Angreifern und 30 s Gefahr ist es das
+      2,5-Fache. Eine halbierte Betäubung oder ein Boss unter den Angreifern kehrt das um; deshalb die Bedingungen.
+    - *Ein Angreifer allein zählt nicht.* Das ist der Fall des Elitegegners oder Bosses (seine drei Tode vom 02.11.2026,
+      A489). Ist der Gegner immun, ohne dass das Spiel es zeigt, stünde die Gefahr ohne Schutz da, und der heilende
+      Begleiter käme zu spät.
+    - *Nicht gezählt:* Schlaf (Lullaby, Schaf) – der nächste Treffer weckt, und RSR greift weiter an (Gemeinschaftsquelle,
+      Konzept 08). Lähmung (nur „sometimes"). Fesseln, Schwere, Rückstoß, Heranziehen – sie halten keinen Gegner auf, der
+      schon an dir steht. Todesurteil und einstellige LP – nur eine Chance. Stone Gaze (Kobra) – trifft nur das Ziel, also
+      nie ein Rudel.
+  - *C2 – Elementarschutz zählt nicht als Schutz* (Defekt in B1, ohne Option). Strut (Dodo: Erdschaden −15 %) und Formic
+    Pheromones (Treiberameise: Wasser-, Erd- und Eisschaden −15 %) galten wegen „damage taken" als Schutz. Gegen
+    physischen oder nicht-elementaren Schaden halten sie nichts ab, und welches Element ein Gegner nutzt, sagt kein
+    Blatt. Jetzt zählt „damage taken" nur, wenn der Satz kein Element nennt. Smoldering Scales (magische Verwundbarkeit
+    −20 %) und Beastskin (physischer Schaden −25 %) bleiben Schutz.
+  - *C3 – Kein Schaden für dich in der Gefahr.* Hypodermic Hustle (Kaktor) gibt der Gruppe +20 % Schaden, „but inflicts
+    damage over time"; wie viel, nennt kein Text. Solange du in Gefahr bist, wartet dieses Entfesseln. Der Kaktor bleibt
+    dann draußen, oder B2 schickt ihn für einen sicheren Begleiter weg. Preis: der Schadensbonus kommt später.
+  - *Unverändert, mit Grund:*
+    - Gruppenstärkung (King's Will, Frozen Heart, Scamper) und Verwundbarkeit oder Resistenz am Gegner: zeitlich
+      ausrichten bringt zwischen −1,8 und +1,3 % (B4, verworfen).
+    - Reinigen (Ultrasonics, Fledermaus): Die Fledermaus zählt schon über ihre heilende Dressur.
+    - Stärkung entfernen (Bloodcurdling Caw, Kapgeier): Welche Stärkung eines Gegners zählt, liest RSR nirgends.
+    - Belegungen nach Inhalt wie bei Daedalus: Das ist die Wahl der drei Begleiter (Punkt „Belegung der Hörner"), nicht
+      die Wahl unter ihnen.
+  - *Gegenhypothesen:*
+    - Kein Gewinn: Ohne Rudel und ohne Gefahr ändert C1 nichts. C2 ändert nur etwas mit Dodo oder Treiberameise auf einem
+      Horn.
+    - Option falsch: Ein Rudel, das nicht vom Boss-Symbol erfasst wird und doch immun ist (Elitegruppen), kostet einen
+      Ruf ohne Wirkung. Bei Betäubung zeigt `StunWatch` die Immunität nach dem ersten Fehlschlag; bei Versteinerung und
+      Tiefkühlung bleibt das offen. Der Preis ist ein Ruf, danach kommt der nächste sichere.
+    - Ausgeliefert, und nichts ändert sich: wenn er keinen Begleiter mit Kontrolle hat (Büffel ab Stufe 8 einfangbar,
+      Ziz ab 16, Chimäre ab 38), Entfesseln nicht hat (vor Stufe 18) oder die Hörner auf Borrow stehen.
 - Jede Wahl und jeder Wechsel aus Gefahr schreibt eine Zeile ins `DefenseTrace.log`: Horn, Begleiter, Grund.
 - *Zustandszeile* (A489): Sobald sich ändert, was diese Regeln und das Anfreunden lesen, schreibt RSR eine Zeile
   „beastmaster state": Begleiter der drei Hörner, wie RSR sie liest; das Horn draußen; die Optionen „Choose the

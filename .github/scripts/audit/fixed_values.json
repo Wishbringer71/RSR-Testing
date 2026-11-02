@@ -1017,6 +1017,16 @@
    "status": "exception",
    "loop": "A487",
    "reason": "A value in the game's own BNpcBase column 10, compared, not tuned: the base rows a beastmaster can capture carry 5 (WrathCombo reads it so; four of the ten rows with the squirrel's model carry it). No source names the column; the game's GetActionStatus for Capture on the target is asked as well, so a wrong reading costs no weaponskill."
+  },
+  {
+   "file": "RotationSolver/Basic/Rotations/Basic/BeastmasterFamiliars.cs",
+   "code": "private const int PackAttackers = 2;",
+   "values": [
+    "2"
+   ],
+   "status": "exception",
+   "loop": "A491",
+   "reason": "The smallest pack: C1 counts a Release that stops enemies as protection only when more than one enemy attacks you. One attacker alone is the elite or boss case (his three deaths of 02.11.2026, A489), where an immunity the game does not show would leave the danger without protection; bst_control_model.py shows that from two stoppable attackers on, a 15 s stun keeps more off than a 20 % mitigation over any danger of 10 to 60 s. A count of attackers, not a tuned threshold."
   }
  ]
 }

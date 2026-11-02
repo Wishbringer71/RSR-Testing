@@ -112,7 +112,7 @@ public sealed class BST_Reborn : BeastmasterRotation
 			&& FirstSafeReadyHorn() is { } safe && PartingBlowPvE.CanUse(out act))
 		{
 			TraceHorn($"{(HornOrder)ActiveBattlehorn} ({CurrentPet}) leaves by Parting Blow: you are in danger, {safe}"
-				+ $" ({PetOnHorn(safe)}) heals or protects");
+				+ $" ({PetOnHorn(safe)}) heals, protects or stops your attackers");
 			return true;
 		}
 
@@ -285,7 +285,9 @@ public sealed class BST_Reborn : BeastmasterRotation
 		var nature = EffectiveNature((HornOrder)ActiveBattlehorn);
 		// R1 (concept 01, A488): a Release after which the familiar leaves (Wespe's Final Sting) waits for a familiar to
 		// take its place; the horn of the familiar out starts its 90 s only with the retreat.
-		if (nature == OneWithNatureOrder.Tempered && (!ReleaseRetreatsFamiliar || ReplacementHornReady))
+		// C3 (A491): a Release that deals damage over time to the party (Hypodermic Hustle) waits while you are in danger.
+		if (nature == OneWithNatureOrder.Tempered && (!ReleaseRetreatsFamiliar || ReplacementHornReady)
+			&& !(HornBySituation && InDanger && ReleaseHurtsPartyFamiliar))
 		{
 			if (TemperedReleasePvE.IsEnabled)
 			{
@@ -634,8 +636,11 @@ public sealed class BST_Reborn : BeastmasterRotation
 		}
 
 		var nature = EffectiveNature(horn);
+		// C1 (concept 01, A491): a Release that stops every enemy of a pack attacking you protects like one that lowers
+		// the damage you take.
 		return TrickHealsOnHorn(horn)
-			|| (nature == OneWithNatureOrder.Tempered && (familiar.ReleaseHeals || familiar.ReleaseProtects)
+			|| (nature == OneWithNatureOrder.Tempered
+				&& (familiar.ReleaseHeals || familiar.ReleaseProtects || StopsAttackers(familiar, CurrentTarget))
 				&& (BattlehornMasteryIiTrait.EnoughLevel || !TemperedReleasePvE.Cooldown.IsCoolingDown))
 			|| (nature == OneWithNatureOrder.Borrow && familiar.BorrowProtects
 				&& (BattlehornMasteryIiiTrait.EnoughLevel || !BorrowPvE.Cooldown.IsCoolingDown));
@@ -733,7 +738,7 @@ public sealed class BST_Reborn : BeastmasterRotation
 		return pressed;
 	}
 
-	private const string DangerReason = "you are in danger, it heals or protects";
+	private const string DangerReason = "you are in danger, it heals, protects or stops your attackers";
 
 	// One line per decision: the choice is asked every frame until the familiar is out.
 	private static void TraceHorn(string line)

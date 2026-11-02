@@ -14566,6 +14566,37 @@ durchgehen". Als Skill `spielpatch` festgehalten (Lesetabelle in CLAUDE.md); den
   Zustandszeile, welcher Schalter oder welcher Wert die Regeln hielt.
 - *Prüfgrad:* Compile, alle CI-Prüfungen lokal; keine Laufzeitbeobachtung.
 
+### A491 · Beastmaster: Nutzen der Begleiter jenseits von Schaden, Heilung und Schutz (02.11.2026)
+
+- *Sein Auftrag:* „todo nach priorität weiter abarbeiten, beastmaster als erstes". Der TODO-Punkt kam aus A488
+  (Daedalus belegt nach Inhalt mit Kontrolle und Stärkung).
+- *Erhoben:* die Wirktexte von Dressur und Entfesseln aller 50 Begleiter und von Borrow je Familie (xivapi v2,
+  02.11.2026), dazu die Statusblätter. Der Nutzen jenseits von Schaden liegt fast ganz im Entfesseln:
+  - Kontrolle: Betäubung, Schlaf, Versteinerung, Tiefkühlung, Lähmung, Fesseln, Schwere, Verlangsamung, Rückstoß,
+    Heranziehen;
+  - Stärkung der Gruppe; Verwundbarkeit und Resistenz am Gegner;
+  - Stärkung entfernen beim Gegner, Reinigen in der Gruppe.
+  Stun, Schlaf, Versteinerung und Tiefkühlung tragen `LockActions`; Lähmung verhindert nur „sometimes".
+- *C1 (unter der Option der Hornwahl):* Ein Entfesseln, das aufhält, zählt in B2 und B3 als Schutz, wenn mindestens
+  zwei Gegner dich angreifen und alle in seiner Reichweite um das Ziel stehen. Keiner darf das Boss-Symbol tragen; bei
+  Betäubung darf keiner immun oder seit seiner Immunität betäubt sein (`StunWatch`).
+  `bst_control_model.py` (in CI, Selbsttest):
+  - Zwei oder mehr Angreifer 15 s aufgehalten halten in jeder Gefahr von 10 bis 60 s mehr ab als −20 % über 48 s.
+  - Ein Boss unter den Angreifern oder eine halbierte Betäubung kehren das um; der Selbsttest fängt beide Fehlbauten.
+  - Ein Angreifer allein zählt nicht: Das ist der Fall der drei Tode aus A489, ein Elitegegner, dessen Immunität das
+    Spiel nicht zeigt.
+- *C2 (Defekt in B1, ohne Option):* „damage taken" zählte auch bei Elementarschutz. Strut (Erde) und Formic Pheromones
+  (Wasser, Erde, Eis) galten als Schutz; gegen physischen oder nicht-elementaren Schaden halten sie nichts ab. Jetzt
+  zählt die Senkung nur ohne Element im Satz. Das Modell spiegelt die Textregel an acht echten Wirktexten (ein Spiegel,
+  benannt als solcher).
+- *C3:* Hypodermic Hustle (Kaktor, +20 % mit Schaden über Zeit für die Gruppe, Höhe unbelegt) wartet in der Gefahr.
+- *Unverändert:* Gruppenstärkung und Schwächung am Gegner (B4, verworfen in A485); Reinigen (die Fledermaus zählt über
+  ihre Dressur); Stärkung entfernen (welche zählt, liest RSR nirgends); Schlaf, Lähmung, Fesseln, Schwere, Rückstoß,
+  Heranziehen, Todesurteil.
+- *Festwert:* `PackAttackers = 2` als Ausnahme mit diesem Loop.
+- *TODO:* Punkt „Beastmaster: Nutzen der Begleiter jenseits von Schaden, Heilung und Schutz" geschlossen.
+- *Prüfgrad:* Compile, alle CI-Prüfungen lokal, Modell; keine Laufzeitbeobachtung.
+
 ## B · Commit-Register (Fork vs. `upstream/main`)
 
 ### B1 · Einzelgeprüfte Fork-Commits

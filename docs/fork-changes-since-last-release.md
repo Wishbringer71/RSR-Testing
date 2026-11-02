@@ -39,6 +39,12 @@ What this release changes in the fight. For the whole distance from upstream, se
   familiar retreats, so the horn of the familiar out is never its replacement. Parting Blow, and a Tempered Release
   after which the familiar leaves (Wespe's Final Sting), now go only when another horn's familiar is ready; until then
   the familiar keeps fighting. "Only use Snarl and Challenge on Last Horn" reads the same: no other horn ready.
+- **Beastmaster counts a pack stopped as protection, and an element-only shield no longer.** In a danger, a familiar
+  whose Tempered Release stops the enemies it reaches - Stun (War Cry), Petrification (Petribreath), Deep Freeze (The
+  Ram's Voice) - is called like one that protects, when two or more enemies attack you, all within its reach, none a
+  boss and, for the stun, none stunned since its last immunity. Strut and Formic Pheromones, which lower only earth or
+  water, earth and ice damage, no longer count as protection. A Release that deals damage over time to the party
+  (Hypodermic Hustle) waits while you are in danger.
 - **Beastmaster: a record of the Master's Bestiary.** While the Bestiary is open, RSR writes to `BestiaryTrace.log`
   next to `DefenseTrace.log` what the game receives from each click, every context menu with its entries, and the
   battlehorn slots as they change. It only listens; it opens and closes with the Bestiary. `DefenseTrace.log` also

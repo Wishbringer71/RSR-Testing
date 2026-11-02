@@ -19,17 +19,25 @@ namespace RotationSolver.Basic.Rotations.Basic;
 /// <param name="ReleaseProtects">The Tempered Release lowers the damage you take.</param>
 /// <param name="ReleaseRetreats">The familiar leaves combat after its Tempered Release, as after Parting Blow (Wespe's
 /// Final Sting; R1, concept 01, A488).</param>
+/// <param name="ReleaseStops">The Tempered Release stops the enemies it reaches from acting: Stun, Petrification or Deep
+/// Freeze (C1, concept 01, A491).</param>
+/// <param name="ReleaseStopsByStun">That stop is a stun, which halves with each application.</param>
+/// <param name="ReleaseRadius">0 for a single-target Tempered Release, else the radius its area reaches.</param>
+/// <param name="ReleaseHurtsParty">The Tempered Release's party effect deals damage over time to the party (Hypodermic
+/// Hustle; C3).</param>
 /// <param name="BorrowProtects">The Beast Mode action Borrow unlocks for its kin lowers the damage you take.</param>
 /// <param name="TrickHeart">The heart its Trick grants, by the instinctual affinity its tooltip states; 0 when it states
 /// none.</param>
 public sealed record FamiliarProfile(BeastmasterPet Pet, uint TrickId, uint ReleaseId, float TrickRadius, float TrickPotency,
-	bool TrickHeals, bool ReleaseHeals, bool ReleaseProtects, bool ReleaseRetreats, bool BorrowProtects, StatusID TrickHeart);
+	bool TrickHeals, bool ReleaseHeals, bool ReleaseProtects, bool ReleaseRetreats, bool ReleaseStops, bool ReleaseStopsByStun,
+	float ReleaseRadius, bool ReleaseHurtsParty, bool BorrowProtects, StatusID TrickHeart);
 
 public partial class BeastmasterRotation
 {
 	// What the sheets say of a familiar regardless of level: the actions its Trick and Tempered Release execute, the reach of
 	// the Trick, and its kin.
-	private readonly record struct FamiliarRow(uint TrickId, uint ReleaseId, float TrickRadius, BeastmasterKinType Kin);
+	private readonly record struct FamiliarRow(uint TrickId, uint ReleaseId, float TrickRadius, float ReleaseRadius,
+		BeastmasterKinType Kin);
 
 	// Built once from the sheets; null until then, empty when the familiar's Pet row cannot be told (B1).
 	private static Dictionary<byte, FamiliarRow>? _familiarRows;
@@ -82,6 +90,8 @@ public partial class BeastmasterRotation
 			+ $"{(profile.TrickRadius > 0f ? $" in {profile.TrickRadius:F0} y" : " single")}"
 			+ $"{(profile.TrickHeals ? ", Trick heals" : string.Empty)}{(profile.ReleaseHeals ? ", Release heals" : string.Empty)}"
 			+ $"{(profile.ReleaseProtects ? ", Release protects" : string.Empty)}{(profile.ReleaseRetreats ? ", Release retreats" : string.Empty)}"
+			+ $"{(profile.ReleaseStops ? $", Release stops{(profile.ReleaseStopsByStun ? " (stun)" : string.Empty)}" : string.Empty)}"
+			+ $"{(profile.ReleaseHurtsParty ? ", Release hurts the party" : string.Empty)}"
 			+ $"{(profile.BorrowProtects ? ", Borrow protects" : string.Empty)}"
 			+ $", Trick {(profile.TrickHeart == 0 ? "without affinity" : profile.TrickHeart.ToString())}");
 		return profile;
@@ -171,6 +181,49 @@ public partial class BeastmasterRotation
 
 		return potency * Math.Max(1, hits);
 	}
+
+	// C1 counts a stopping Release only against a pack (concept 01, A491): one attacker alone is the elite or boss case,
+	// where an immunity the game does not show would leave the danger without protection.
+	private const int PackAttackers = 2;
+
+	/// <summary>
+	/// C1 of concept 01 (A491): whether <paramref name="profile"/>'s Tempered Release would stop every enemy attacking you -
+	/// at least two of them in combat, each within its radius of <paramref name="target"/>, none with a boss icon, and for
+	/// a stun none immune or stunned since its last immunity (the next stun is halved).
+	/// </summary>
+	public static bool StopsAttackers(FamiliarProfile profile, IBattleChara? target)
+	{
+		var player = Player;
+		if (!profile.ReleaseStops || profile.ReleaseRadius <= 0f || target == null || player == null)
+		{
+			return false;
+		}
+
+		var attackers = 0;
+		foreach (var hostile in DataCenter.AllHostileTargets)
+		{
+			if (hostile == null || hostile.IsDead || !hostile.InCombat() || hostile.TargetObjectId != player.GameObjectId)
+			{
+				continue;
+			}
+
+			if (Vector3.Distance(hostile.Position, target.Position) - hostile.HitboxRadius > profile.ReleaseRadius
+				|| hostile.IsBossFromIcon()
+				|| (profile.ReleaseStopsByStun && (!StunWatch.CanStillBeStunned(hostile) || StunWatch.Applications(hostile) > 0)))
+			{
+				return false;
+			}
+
+			attackers++;
+		}
+
+		return attackers >= PackAttackers;
+	}
+
+	/// <summary>
+	/// Whether the familiar out deals damage over time to the party with its Tempered Release (C3, concept 01, A491).
+	/// </summary>
+	public static bool ReleaseHurtsPartyFamiliar => FamiliarOf(CurrentPet)?.ReleaseHurtsParty == true;
 
 	/// <summary>
 	/// The familiar <paramref name="target"/> can become (A1): its base row marked capturable - 5 in the unnamed column 10
@@ -315,8 +368,11 @@ public partial class BeastmasterRotation
 				var pet = pets.GetRow(fifth ? row.Unknown5 : row.Unknown6);
 				var trick = pet.Abilities[TrickAbility].RowId;
 				var radius = actions.TryGetRow(trick, out var trickRow) && trickRow.CastType > 1 ? trickRow.EffectRange : 0f;
-				catalog[(byte)row.RowId] = new FamiliarRow(trick, pet.Abilities[ReleaseAbility].RowId, radius,
-					(BeastmasterKinType)row.Unknown7);
+				var release = pet.Abilities[ReleaseAbility].RowId;
+				var releaseRadius = actions.TryGetRow(release, out var releaseRow) && releaseRow.CastType > 1
+					? releaseRow.EffectRange
+					: 0f;
+				catalog[(byte)row.RowId] = new FamiliarRow(trick, release, radius, releaseRadius, (BeastmasterKinType)row.Unknown7);
 
 				// The Pet row leads back to its XBMPet row (Pet.Unknown18); one that does not is not trusted for a model.
 				if (pet.Unknown18 == row.RowId && mirages.TryGetRow(pet.Unknown8, out var mirage)
@@ -352,6 +408,13 @@ public partial class BeastmasterRotation
 			ReleaseHeals: releaseText.Contains("Life Siphon", StringComparison.Ordinal),
 			ReleaseProtects: Protects(releaseText, "nearby party members"),
 			ReleaseRetreats: releaseText.Contains("retreats from combat", StringComparison.Ordinal),
+			ReleaseStops: releaseText.Contains("with Stun", StringComparison.Ordinal)
+				|| releaseText.Contains("with Petrification", StringComparison.Ordinal)
+				|| releaseText.Contains("with Deep Freeze", StringComparison.Ordinal),
+			ReleaseStopsByStun: releaseText.Contains("with Stun", StringComparison.Ordinal),
+			ReleaseRadius: row.ReleaseRadius,
+			ReleaseHurtsParty: releaseText.Contains("party members", StringComparison.Ordinal)
+				&& releaseText.Contains("inflicts damage over time", StringComparison.Ordinal),
 			BorrowProtects: Protects(borrowText, string.Empty),
 			TrickHeart: HeartOf(trickText));
 	}
@@ -385,9 +448,40 @@ public partial class BeastmasterRotation
 		}
 
 		return (text.Contains("vulnerability by", StringComparison.Ordinal) && text.Contains("reducing", StringComparison.Ordinal))
-			|| text.Contains("damage taken", StringComparison.Ordinal)
+			|| GeneralDamageTaken(text)
 			|| text.Contains("absorbs", StringComparison.Ordinal)
 			|| text.Contains("Reduces damage dealt", StringComparison.Ordinal);
+	}
+
+	// C2 (concept 01, A491): a lower "damage taken" protects only when its clause names no element. Strut (earth) and
+	// Formic Pheromones (water, earth and ice) keep nothing off physical or non-elemental damage, and no sheet says which
+	// element an enemy uses; they counted as protection, so B2 could call one in a danger for nothing.
+	private static readonly string[] Elements = ["fire", "ice", "wind", "earth", "lightning", "water"];
+
+	private static bool GeneralDamageTaken(string text)
+	{
+		const string Taken = "damage taken";
+		const string Reduction = "educ";
+		var at = text.IndexOf(Taken, StringComparison.Ordinal);
+		while (at >= 0)
+		{
+			var start = Math.Max(text.LastIndexOf(Reduction, at, StringComparison.Ordinal), 0);
+			var clause = text[start..at];
+			var named = false;
+			foreach (var element in Elements)
+			{
+				named |= clause.Contains(element, StringComparison.OrdinalIgnoreCase);
+			}
+
+			if (!named)
+			{
+				return true;
+			}
+
+			at = text.IndexOf(Taken, at + Taken.Length, StringComparison.Ordinal);
+		}
+
+		return false;
 	}
 
 	// The action Beast Mode becomes for a kin's Kinship (Borrow's effect text).

@@ -14,9 +14,7 @@ Nach der Wirkung im Kampf: Sicherheit der Gruppe vor Schaden, gewichtet mit der 
    einen Spielpatch (Stufen 1 und 2 gebaut, A481; die Senkregel für die Einträge der alten Datei entschieden, A482; als
    Nächstes Stufe 3), dann die Anzeige. Beide ändern den Kampf nur mittelbar, über einen geprüften oder berichtigten Lernwert –
    die Sperren unter ihnen (Schlaf) aber dauerhaft.
-2. Beastmaster, Nutzen der Begleiter jenseits von Schaden, Heilung und Schutz: wirkt in jedem Kampf mit Rudel oder
-   Gruppe, in dem ein solcher Begleiter auf einem Horn sitzt.
-3. Fremde Repositories auf Verbesserungen für RSR prüfen: Jeder Fund kann ein Defekt im Verhalten einer Klasse sein,
+2. Fremde Repositories auf Verbesserungen für RSR prüfen: Jeder Fund kann ein Defekt im Verhalten einer Klasse sein,
    den RSR heute im Kampf zeigt; zuerst die Rotationswerkzeuge für alle Jobs, Daedalus vorn (aktiv, alle Jobs,
    eigene Kampfvorhersage).
 
@@ -58,13 +56,6 @@ Tankbuster-Tabelle neben Upstreams AoE- und Tankbuster-Liste. *Ort:* `MainWindow
 *Nächster Schritt:*
 Anzeige ja, Bearbeitung nein (Konzept 13, „Gelernte Tabellen über Spielversionen", Regel 10; seine Vorgabe A173); gebaut
 als letzte Stufe der Revision. *Konzept:* 13 (gelernte Tabellen), 18 (Einstellungen).
-
-### Beastmaster: Nutzen der Begleiter jenseits von Schaden, Heilung und Schutz · N
-Im Kampf: Die Hornwahl (B1 bis B3) wertet nur Dressur-Schaden, Heilung und Schutz. Ein Begleiter, der ein Rudel
-betäubt oder einfriert, die Verwundbarkeit des Ziels erhöht oder die Gruppe stärkt, zählt wie einer ohne das; Daedalus
-baut seine Belegungen nach Inhalt genau darauf (A488). *Ort:* `BeastmasterFamiliars.ReadProfile`, `BST_Reborn`
-(`SituationalHorn`). *Nächster Schritt:* aus den Wirktexten der 50 Begleiter erheben, welche Wirkungen es gibt und
-was jede im Kampf bringt, dann Loop gegen B3 und das Modell `bst_horn_model.py`. *Konzept:* 01, „Begleiter nach Lage".
 
 ### Fremde Repositories auf Verbesserungen für RSR prüfen · N, R, U
 Sein Auftrag (02.11.2026): „alle von dir gefundenen repos, die du benannt hast prüfen, ob daraus generell
