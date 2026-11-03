@@ -23,6 +23,17 @@
   },
   {
    "file": "RotationSolver/Basic/Configuration/Configs.cs",
+   "code": "[Range(0, 10, ConfigUnitType.Seconds, 0.05f)]",
+   "values": [
+    "10",
+    "0.05"
+   ],
+   "status": "exception",
+   "loop": "A498",
+   "reason": "slider bounds of ProvokeDelay, upstream's own until 7.5.7.14 removed the unread setting; the fork reads it (A338), the default is 0 to 0 s, and the bounds only limit what the player can enter"
+  },
+  {
+   "file": "RotationSolver/Basic/Configuration/Configs.cs",
    "code": "[Range(0, 1, ConfigUnitType.Percent, 0.02f)]",
    "values": [
     "0.02"
@@ -70,26 +81,6 @@
    "status": "exception",
    "loop": "A259",
    "reason": "Enum ordinal mirroring row 4 of the game's AttackType sheet (shot, physical); the enum is the typed name of that row id, compared with AttackType.RowId, so the ordinal is the game's own number"
-  },
-  {
-   "file": "RotationSolver/Basic/Data/BossModEnums.cs",
-   "code": "Freezing = 3,",
-   "values": [
-    "3"
-   ],
-   "status": "exception",
-   "loop": "A130",
-   "reason": "IPC ordinal contract with BossModReborn: the value arrives as a bare int without a name, so it cannot be derived at runtime; mapping verified against BMR's source in A119"
-  },
-  {
-   "file": "RotationSolver/Basic/Data/BossModEnums.cs",
-   "code": "Misdirection = 4,",
-   "values": [
-    "4"
-   ],
-   "status": "exception",
-   "loop": "A130",
-   "reason": "IPC ordinal contract with BossModReborn: the value arrives as a bare int without a name, so it cannot be derived at runtime; mapping verified against BMR's source in A119"
   },
   {
    "file": "RotationSolver/Basic/Data/BossModEnums.cs",
@@ -546,16 +537,6 @@
   },
   {
    "file": "RotationSolver/Basic/DataCenter.cs",
-   "code": "return AnyHostileCasting(static action => action.AttackType.RowId is >= 1 and <= 4);",
-   "values": [
-    "4"
-   ],
-   "status": "exception",
-   "loop": "A179",
-   "reason": "AttackType sheet rows 1-4 are slashing, piercing, blunt and shot (read through v2.xivapi.com, 2026-09-27); row ids of a game sheet, not a tunable value"
-  },
-  {
-   "file": "RotationSolver/Basic/DataCenter.cs",
    "code": "internal const int LightPartySize = 4;",
    "values": [
     "4"
@@ -633,17 +614,6 @@
    "status": "exception",
    "loop": "A197",
    "reason": "The Balance 7.5 Dark Knight guide: enter Delirium with 70 or less Blood so the three Blood Weapon stacks it grants (+10 each, job guide) do not overcap. The gauge's maximum is not in any sheet, so the limit cannot be computed at runtime"
-  },
-  {
-   "file": "RotationSolver/Basic/Rotations/Basic/SageRotation.cs",
-   "code": "private static float AddersgallTimerRaw => (20000f - JobGauge.AddersgallTimer) / 1000f;",
-   "values": [
-    "20000",
-    "1000"
-   ],
-   "status": "exception",
-   "loop": "A203",
-   "reason": "The gauge counts elapsed milliseconds from 0 to 20 000 (Dalamud SGEGauge documentation); one stack every twenty seconds (job guide, The Balance). 1000 converts milliseconds to seconds. No sheet carries the interval"
   },
   {
    "file": "RotationSolver/RebornRotations/Healer/SGE_Reborn.cs",
