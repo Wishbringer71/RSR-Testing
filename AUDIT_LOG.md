@@ -15255,6 +15255,31 @@ Sein Auftrag (03.11.2026): „branch zu main, compile, release" – die Freigabe
 
 *Prüfgrad:* Release-API und Workflow-Lauf gelesen, Prüfskripte; die Übergabe statisch gegen den Release-Text abgeglichen.
 
+### A513 · Shinryu (Unreal): Reiryu nur durch Einzelheilung besiegbar – BossModReborn, Spiel und RSR geprüft (03.11.2026)
+
+Seine Frage (03.11.2026): ob RSR die an Spieler angeleinten Adds bei Unreal Shinryu heilen kann, die man nicht
+bekämpfen, nur direkt heilen kann, oder ob BossMod das enthält; dazu seine Angabe, dass er BossModReborn nutzt.
+Eingeordnet als *Hinweis* (Mechanik des Spiels), am Artefakt geprüft und in Konzept 07 geführt.
+
+- *Spiel:* BNpcBase 19945 (Reiryu, BNpcName 6856) steht im Battalion 0, dem der Spieler, alle übrigen Figuren des
+  Kampfes im Battalion 4 (xivapi v2). Status 1419 Fluch des Drachen: „LP-Regeneration ist angehalten"; derselbe Begriff
+  heißt bei Chaoserde (1605) jede Erholung. Deutsche Namen aus den Spielblättern: Drachenflug (Action 50228),
+  Traumprüfung - Heldenlied von Shinryu (ContentFinderCondition 1118).
+- *BossModReborn* (Modul `Un2Shinryu`, 89387f4 vom 20.10.2026; Klon 577675d vom 31.10.2026): Hinweis, Markierung,
+  Angriffssperre für die eigene KI; keine Heilung. ffxiv_bossmod hat kein Modul zu diesem Kampf.
+- *Wiki* (consolegameswiki, 01.07.2026): 0 % bis 100 % nur durch direkte Heilung, Flächenheilung wirkt nicht,
+  Scheitern bringt Schaden und 60 s Schaden-runter auf alle, bis zu dreimal je Kampf.
+- *RSR:* greift sie zu Recht nicht an (`IsEnemy` fragt das Spiel); heilt sie nicht (`IsParty`); der Schalter für
+  Solo-NPCs würde sie zu Gruppenmitgliedern machen und alle Gruppenwerte verfälschen. Neu erkannter Defekt:
+  `HealingIneffectiveStatus` kennt Fluch des Drachen nicht, die Angeleinten werden vergeblich geheilt.
+- *Mitschnitte:* keiner seiner hochgeladenen ACT-Mitschnitte (25., 26., 28.10., 02.11.2026) enthält den Kampf.
+- *Ergebnis:* Konzept 07, „Heilziele außerhalb der Gruppe: Figuren, die nur Einzelheilung besiegt", mit Entwurf;
+  `TODO.md`: Defekt „Heilung auf Ziele, die keine annehmen", offene Arbeit „Figuren, die nur Einzelheilung besiegt",
+  beide vor den fremden Repositories eingereiht.
+
+*Prüfgrad:* statisch – Spielblätter, Quelltext von RSR, BossModReborn und ECommons (6e3524d0 vom 30.10.2026), Wiki; kein
+Code geändert.
+
 ## B · Commit-Register (Fork vs. `upstream/main`)
 
 ### B1 · Einzelgeprüfte Fork-Commits

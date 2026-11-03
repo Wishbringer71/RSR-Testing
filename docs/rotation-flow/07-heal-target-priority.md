@@ -660,6 +660,81 @@ hängt eine zweite Prüfung an derselben Wahl — das gewählte Ziel muss zusät
 ausfallen lässt. Die Entscheidung darüber berührt `10-drk-blackest-night.md` und gehört dem
 Auftraggeber. Die Fundstellen in den PvP-Rotationen liegen außerhalb seines Nutzungsprofils.
 
+## Heilziele außerhalb der Gruppe: Figuren, die nur Einzelheilung besiegt
+
+**Hinweis des Auftraggebers (03.11.2026):** „bei unreal shinryu erscheinen mehrmals in den phasen adds, welche mit
+spielern getetherd sind. diese mobs kann man nicht bekämpfen, um sie zu vernichten muss man sie heilen. hier greifen
+keine aoes, sondern nur direkte heilungen mit ihnen als target." Er nutzt BossModReborn, nicht ffxiv_bossmod (seine
+Angabe, 03.11.2026).
+
+**Die Mechanik, am Spiel geprüft.**
+- *Inhalt und Figur:* Traumprüfung - Heldenlied von Shinryu (ContentFinderCondition 1118, Stufe 100, Patch 7.5). Die
+  Figuren heißen Reiryu (BNpcName 6856, BNpcBase 19945 = 0x4DE9), vier je Welle.
+- *Seite:* Das Spielblatt führt Reiryu im Battalion 0, dem der Spieler, und Battalion 0 ist sich selbst nicht feind
+  (`IsEnemyTo[0]` falsch). Alle übrigen Figuren des Kampfes (BNpcBase 19940 bis 19947 außer 19945) stehen im
+  Battalion 4, das Battalion 0 feind ist (xivapi v2, 03.11.2026). Das Spiel stellt Reiryu also auf die Seite der
+  Gruppe: Angreifen lässt es sich nicht, heilen wie ein Verbündeter.
+- *Ablauf:* Die vier Reiryu erscheinen, leinen sich an die vier Schadensausteiler (Tether 1, Reiryu → Spieler) und
+  wirken Drachenflug (30 s). Sie beginnen bei 0 % und verschwinden, sobald sie direkt auf 100 % geheilt sind;
+  Flächenheilung wirkt weder auf sie noch auf die Angeleinten. Läuft Drachenflug durch oder stirbt ein Angeleinter,
+  fliegen sie auf: Schaden und 60 s Schaden-runter auf die ganze Gruppe. In Phase 1 einmal (Zeitleiste von
+  BossModReborn: Erscheinen 214 s, Ende Drachenflug 251,5 s nach dem ersten Cast), in Phase 2 einmal je Rotation, bis
+  zu zweimal. Quellen: BossModReborn, Modul `Un2Shinryu` (Commit 89387f4 vom 20.10.2026, aus zwei Mitschnitten des
+  Autors; Klon auf 577675d vom 31.10.2026), Werkzeugquelle; consolegameswiki, Seite „Shinryu's Domain (Unreal)",
+  zuletzt bearbeitet am 01.07.2026, Gemeinschaftsquelle. Die Folgen des Scheiterns und Phase 2 stehen nur im Wiki.
+- *Fluch des Drachen (Status 1419), den die Leine auf den Angeleinten legt:* „Fluch des Drachen verursacht schrittweise
+  Schaden und LP-Regeneration ist angehalten. Regeneration wird kurzzeitig aktiv, wenn selbst eine Attacke ausgeführt
+  wird." „LP-Regeneration" heißt in den deutschen Texten jede Erholung: Chaoserde (Status 1605) „Jede Form von
+  LP-Regeneration ist wirkungslos", englisch „all HP recovery is nullified". Natürliche Erholung gibt es im Kampf
+  nicht, der Satz meint also Heilung (Schluss; das Wiki sagt „preventing healing").
+
+**Was RSR tut (Quelltext, 03.11.2026).**
+- *Kein Angriff, und das ist richtig.* `ObjectHelper.IsEnemy` fragt das Spiel, ob Blizzard auf die Figur ginge
+  (`ActionManager.CanUseActionOnTarget`); auf eine Figur des Battalion 0 geht er nicht. Die Reiryu stehen auf keiner
+  Gegnerliste, mit und ohne BossModReborn.
+- *Keine Heilung.* Heilziele sind `DataCenter.PartyMembers`, gefüllt über `IsParty`: die Gruppe, NPC-Gruppenmitglieder,
+  der Chocobo, das Fokusziel aus der Allianz und, nur unter „Heal solo instance NPCs (Experimental)" (ab Werk aus),
+  freundliche Kampf-NPCs nach ihrem Namensschild (`NameplateKind.FriendlyBattleNPC`). Ob Reiryu dieses Namensschild
+  trägt, ist unbelegt (wahrscheinlich, Schluss aus Battalion 0).
+- *Der Schalter ist kein Weg.* Er macht die Reiryu zu Gruppenmitgliedern. Dann stehen vier Figuren bei 0 % in jedem
+  Gruppenwert: Mittelwert und Streuung der Flächenschwellen, die Minderungsurteile, die Zielwahl jeder Einzelheilung,
+  auch der nur auf die Gruppe zielenden. Die Flächenheilung, die das auslöst, erreicht sie nicht.
+- *Die Angeleinten werden vergeblich geheilt (Defekt).* `StatusHelper.HealingIneffectiveStatus` führt nur `Mounted`;
+  Fluch des Drachen und Chaoserde fehlen. Die vier Schadensausteiler verlieren unter dem Fluch stetig Gesundheit und
+  rücken damit in der Zielwahl nach oben; jede Einzelheilung auf sie verpufft, und ihr sinkender Stand treibt die
+  Flächenschwellen. Im Kampf: In den 30 s, in denen die Reiryu voll werden müssen, gehen die GCDs der Heiler auf Ziele,
+  die keine Heilung annehmen (`TODO.md`, „Heilung auf Ziele, die keine annehmen").
+
+**BossModReborn heilt nicht.** Es zeigt „Heal Reiryu to full before the cast ends", färbt die Reiryu in der Arena und
+sperrt sie für seine eigene KI als Angriffsziel (`AIHints.Enemy.PriorityForbidden`). Eine Heilung gibt es dort nicht.
+RSR liest diese Priorität nicht und braucht sie nicht: Das Spiel schließt den Angriff schon aus.
+
+**Umsetzbar ist es. Der Entwurf** (`TODO.md`, „Figuren, die nur Einzelheilung besiegt"; noch ohne Loop):
+1. *Erkennung, zentral für alle Jobs:* eine Figur im Kampf, kein Gruppenmitglied, die das Spiel als Ziel der eigenen
+   Einzelheilung zulässt (`ActionManager.CanUseActionOnTarget` mit der Heilung selbst, dieselbe Frage, die `IsEnemy`
+   mit Blizzard stellt), unter voller Gesundheit und an ein Gruppenmitglied angeleint (`ObjectHelper.GetAllTethers`).
+   Die Leine trennt sie von den freundlichen NPCs eines Solo-Inhalts, für die der bestehende Schalter bleibt. Ob es
+   Figuren dieser Art ohne Leine gibt, ist offen; eine Figur ohne Leine löst nichts aus.
+2. *Eine eigene Liste neben `PartyMembers`,* gelesen nur von der Zielwahl der Einzelheilungen, nie von Gruppenwerten,
+   Flächenschwellen oder Minderung. Die übrigen Leser erben nichts.
+3. *Frist und Bedarf liest die Regel zur Laufzeit:* die Restzeit von Drachenflug auf der Figur, ihre fehlende
+   Gesundheit und die eigene Heilrate auf sie; reicht die Rate nicht, zieht sie nach. Keine dieser Größen braucht eine
+   feste Zahl, auch nicht die Gesundheit der Reiryu, die keine der Quellen nennt.
+4. *Rang:* gegen seine Vorgabe abzuwägen, dass das gesamtheitliche Überleben vorgeht. Ein Scheitern trifft alle acht
+   mit Schaden und 60 s Schaden-runter; ein Mitglied in Klasse 1 stirbt sofort. Daher der Ansatz: nach Klasse 1, vor
+   den Klassen 2 und 3, solange die Frist läuft.
+5. *Wer heilt:* die Heiler. Nichtheiler mit einer Einzelheilung (Rotmagier, Paladin, Beschwörer) erst, wenn die Frist
+   ohne sie nicht reicht. Das tauscht Schaden gegen Sicherheit, ist also eine Option, mit seiner Regel als
+   Voreinstellung (an).
+6. *Welche Heilung, entscheidet das Spiel.* Im Action-Blatt dürfen Cure, Cure II, Benediction, Tetragrammaton, Benefic,
+   Essential Dignity, Adloquium, Lustrate, Diagnosis, Druochole, Vercure, Clemency und Physick Allianzziele treffen.
+   Taurochole, Kardia, Divine Benison, Celestial Intersection, Krasis, Exaltation, Nascent Flash und Heart of Corundum
+   treffen nur die Gruppe. Ob „Allianz" eine freundliche Figur einschließt, ist unbelegt; die Laufzeitfrage aus
+   Punkt 1 beantwortet es ohne Annahme.
+
+*Prüfgrad:* statisch, an Spielblättern, am Quelltext von RSR und BossModReborn und am Wiki. Keiner seiner
+hochgeladenen Mitschnitte enthält den Kampf.
+
 ## Abgrenzung zur Schildanrechnung
 
 Die entfernte Schildanrechnung (`AUDIT_LOG.md` A85) hat dieselbe Größe an der falschen Stelle
