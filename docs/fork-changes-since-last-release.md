@@ -27,3 +27,19 @@ What this release changes in the fight. For the whole distance from upstream, se
 - **No heals on players whom healing cannot reach.** The Worm's Curse (the Reiryu's tether) and
   Primordial Crust nullify all healing, as Mounted does. Their bearers are no longer single-heal
   targets and no longer raise the heal flags.
+
+## Leaps and dashes
+
+- **Blue Mage and Phantom leaps keep to the gap-closer distance.** J Kick and Flying Frenzy (Blue
+  Mage) and Phantom Kick (Phantom Monk) leap onto the target. They now follow `Only use damaging gap
+  closers within this distance` like every other damaging gap closer: from farther away they go out
+  only on a move-forward command, in the countdown, or when you press them yourself. With
+  `Check movement actions with BossModReborn` on, their path is checked too. Occult Featherfoot
+  (15 yalms forward) has its landing point checked like En Avant.
+
+## Occult Crescent
+
+- **Phantom heals heal ahead of incoming damage.** Occult Potion, Occult Elixir, Occult Chakra,
+  Occult Resuscitation, Blessing and Phantom Judgment, and the Mega Potion of the Monster Hunter
+  fights, compare the health a member is heading for with their thresholds, as `Heal ahead of
+  incoming damage` states for every healing threshold. With that setting off nothing changes.
