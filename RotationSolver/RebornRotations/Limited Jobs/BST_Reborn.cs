@@ -39,6 +39,21 @@ public sealed class BST_Reborn : BeastmasterRotation
 			+ "Off: the horn order above.")]
 	private bool HornBySituation { get; set; } = true;
 
+	// Concept 01, B4 (A520): his precept of 03.11.2026 - try in combat in which situations a horn assignment works.
+	[RotationConfig(CombatType.PvE, Name = "Test battlehorn assignment in combat (experimental)",
+		Tooltip = "RSR tests in which situations the server lets a horn be reassigned in a fight. It puts another familiar "
+			+ "you have on a horn whose familiar is not out, with the server command the Bestiary sends, and puts your "
+			+ "familiar straight back. The situations: the horn ready or recasting, a familiar out or none (just spent, "
+			+ "before the next is called). Each is tried once per area, first the command alone, then after the "
+			+ "Bestiary's opening command, then with the weapon sheathed for it and drawn again - until one is taken. Out of "
+			+ "combat it tries the command once as the control. DefenseTrace.log says for each whether the server took it. "
+			+ "While a test waits for the server, at most a GCD, no horn is called; a familiar that does not go back in the "
+			+ "fight goes back after it.\n"
+			+ "In a fight: up to twelve tests per area, each holding a horn call for at most a GCD, the sheathed one also "
+			+ "your auto-attack for a moment; your horns end as you set them.\n"
+			+ "Off: RSR never changes your horns.")]
+	private bool HornProbeInCombat { get; set; } = true;
+
 	[RotationConfig(CombatType.PvE, Name = "Capture familiars you do not have yet",
 		Tooltip = "When an enemy you can befriend as a familiar, one you do not have yet and not above your level, is about to "
 			+ "fall before your next weaponskill, Capture marks it then, at the least HP it will have alive: the lower its HP "
@@ -376,12 +391,14 @@ public sealed class BST_Reborn : BeastmasterRotation
 			}
 		}
 
-		if (ActiveBattlehorn == 0 && HornBySituation && SituationalHorn(out act))
+		// B4: while a test waits for the server, no horn is called, so a call never brings the test familiar.
+		var probing = HornProbePending;
+		if (ActiveBattlehorn == 0 && !probing && HornBySituation && SituationalHorn(out act))
 		{
 			return true;
 		}
 
-		if (ActiveBattlehorn == 0)
+		if (ActiveBattlehorn == 0 && !probing)
 		{
 			act = null;
 
@@ -781,6 +798,17 @@ public sealed class BST_Reborn : BeastmasterRotation
 			+ $" | familiar list loaded {state.ListLoaded} | catalog {state.Catalog}");
 	}
 	#endregion
+
+	protected override void UpdateInfo()
+	{
+		base.UpdateInfo();
+
+		// B4 (A520): the test in combat, and its judgement and restore every frame, in combat or not.
+		if (!(HornProbeInCombat && TryHornProbe()))
+		{
+			_ = HornProbePending;
+		}
+	}
 
 	#region GCD Logic
 	protected override bool MoveForwardGCD(out IAction? act)

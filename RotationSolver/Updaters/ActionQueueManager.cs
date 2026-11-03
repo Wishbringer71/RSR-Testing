@@ -128,6 +128,14 @@ namespace RotationSolver.Updaters
 
 							var matchingAction = ((ActionID)adjustedActionId).GetActionFromID(false, rotationActions, dutyActions);
 
+							// A move to a spot on the ground is placed by the player's own press; intercepted, RSR would place it
+							// elsewhere (concept 05, A520).
+							if (matchingAction is IBaseAction { Setting.SpecialType: SpecialActionType.GroundTargetMove }
+								&& _useActionHook?.Original != null)
+							{
+								return _useActionHook.Original(actionManager, actionType, actionID, targetObjectID, param, useType, pvp, isGroundTarget);
+							}
+
 							if (matchingAction != null && !BlackListedInterceptActionsContains((ActionID)matchingAction.ID))
 							{
 								CommandTarget? macroTarget = useType == (uint)ActionManager.UseActionMode.Macro && targetObjectID != 0 && targetObjectID != InvalidGameObjectId

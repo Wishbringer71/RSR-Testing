@@ -71,6 +71,14 @@ public enum SpecialActionType : byte
 	/// ordinals of the members above stay as they are.
 	/// </summary>
 	HostileAttackBackstep,
+
+	/// <summary>
+	/// A pure movement action to a spot on the ground the action places (Loom, Shukuchi: "Move quickly to the specified
+	/// location"). RSR places it with the area-move logic (<see cref="TargetType.Move"/>: ahead in the facing or towards the
+	/// screen centre), the way to that spot is validated for safety, and a press of the player's own is not intercepted, so
+	/// the spot he places stays his (concept 05, A520). Appended last, so the ordinals above stay as they are.
+	/// </summary>
+	GroundTargetMove,
 }
 
 /// <summary>

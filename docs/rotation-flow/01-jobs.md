@@ -886,10 +886,46 @@ eingearbeitet werden, situationsbezogen"; A487, A488):
 - *Was die Rotation situationsbezogen tut:* Sie wählt unter den drei Begleitern seiner Hörner nach Lage (B0 bis B3):
   in der Gefahr den, der heilt oder schützt; ohne Gefahr den, dessen Dressur gegen die Gegner im Kampf am meisten
   bringt, für den langen Einsatz.
-- *Kein Setzer im Client:* Der Client führt die drei Begleiter der Hörner im `ActionManager` und die freigeschalteten im
-  `XBMManager` nur zum Lesen; eine Funktion, einen Agenten oder ein Paket, das die Belegung setzt, kennt
-  FFXIVClientStructs nicht (b69073a vom 02.11.2026, nach „XBM", „Beastmaster", „Bestiary", „Pet" durchsucht). Die drei
-  Bytes im Speicher zu überschreiben, änderte nur die Anzeige des Clients, nicht, was der Server beim Ruf beschwört.
+- *Der Befehl* (seine Aufzeichnung vom 03.11.2026, Build a885b43bf, zehn Zuweisungen): Jede Zuweisung im Bestienbuch
+  schickt der Client als `GameMain.ExecuteCommand(2420, Horn I, Horn II, Horn III, 0)`, mit den Nummern der drei
+  Begleiter im Buch (XBMPet-Id); 0 leert ein Horn. Die Hornplätze zeigen die neue Belegung 10 bis 16 ms danach; sie geht also
+  über den Server. Beim Öffnen des Buchs kommt `2421` ohne Werte. Damit setzt RSR die Hörner ohne das Buch, unabhängig
+  von Sprache, Filter und Sortierung. Die drei Bytes im Speicher zu überschreiben, änderte dagegen nur die Anzeige des
+  Clients, nicht, was der Server beim Ruf beschwört.
+- *Im Kampf: offen, von RSR selbst zu prüfen.* In der Aufzeichnung fiel eine Menüwahl in drei Sekunden Kampfstatus, weil
+  ihn ein Gegner bei offenem Buch angriff. Der Client schickte keinen Befehl, nach Kampfende ging dieselbe Wahl durch.
+  Ein Versuch war das nicht (seine Angabe, 03.11.2026: „ich habe es beim kampf nie versucht, da mit kampf beschäftigt").
+  Seine Vorgabe (03.11.2026): „beastmaster begleiter im kampf anpassen. nicht die aktuellen, sondern die beiden anderen.
+  mal mit cooldown, mal ohne versuchen. vielleicht gibt es ja unterschiedliche blocker (wie ein bestehender cooldown, wie
+  beschworene begleiter)"; dazu seine Präzisierung: „und einmal im kampf, wenn kein begleiter draussen ist (gerade
+  verbraucht für dmg-effekt, vor rufen des nächsten)".
+- *B4 – Probe im Kampf* (seine Präzisierung, 03.11.2026: „ich will einfach nur austesten, in welchen situationen der
+  wechsel klappen könnte"; Option „Test battlehorn assignment in combat (experimental)", ab Werk an):
+  - *Die Lagen:* das Horn bereit oder abklingend, ein Begleiter draußen oder keiner, also vier. „Keiner draußen" ist der
+    Moment nach Entfesseln oder Scheidendem Schlag vor dem nächsten Ruf.
+  - *Der Versuch:* RSR setzt im Kampf auf ein Horn, dessen Begleiter nicht draußen ist, einen anderen Begleiter, den
+    er hat und der auf keinem Horn sitzt (Befehl 2420 mit den drei Plätzen, nur das eine Horn geändert). Je Lage und
+    Gebiet in drei Varianten nacheinander, bis eine angenommen wird:
+    - *einfach:* nur der Befehl;
+    - *nach dem Öffnen:* erst 2421, wie beim Öffnen des Buchs, dann 2420 – falls der Server das offene Buch erwartet;
+    - *mit weggesteckter Waffe* (seine Idee, 03.11.2026: „vielleicht muss auch einfach die kampfhaltung beendet werden,
+      wechsel, kampfhaltung an"): Waffe weg (Befehl 1 mit 0, 1), 2420, danach Waffe ziehen (1 mit 1, 0) – im selben
+      Moment geschickt, damit keine Aktion der Rotation die Waffe dazwischen zieht. Die Werte sind die seines Clients
+      aus der Aufzeichnung; dass Befehl 1 die Waffe zieht und wegsteckt, ist ein Schluss aus ihrem Muster.
+  - *Die Gegenprobe:* Außerhalb des Kampfes versucht RSR den einfachen Befehl einmal je Gebiet. Nimmt der Server ihn dort
+    an und im Kampf nicht, liegt es am Kampf, nicht am Versuch. Außerhalb des Kampfes sperrt die gezogene Waffe nicht:
+    In der Aufzeichnung nahm der Server die Zuweisung um 19:47:40 nach Kampfende mit gezogener Waffe an.
+  - *Die Messung:* Zeigen die Hornplätze die Zuweisung binnen eines GCD, nimmt der Server sie an („TAKEN"), und RSR
+    stellt den ursprünglichen Begleiter sofort auf demselben Weg zurück. Sonst nimmt er sie nicht an („NOT TAKEN"), und
+    die nächste Variante folgt in dieser Lage. Jede Zeile im `DefenseTrace.log` nennt Variante, Lage, Waffe, Horn, beide
+    Begleiter und die Wartezeit. Ein Gebietswechsel versucht die Lagen neu, weil ein Inhalt es anders regeln kann.
+  - *Schutz der Belegung:* Solange ein Versuch oder die Rückstellung auf den Server wartet, ruft RSR kein Horn; ein Ruf
+    bringt also nie den Probebegleiter. Zeigt sich die Rückstellung im Kampf nicht, schickt RSR sie nach dem Kampf erneut.
+    Seine Hörner enden so, wie er sie gesetzt hat.
+  - *Im Kampf anders:* bis zu zwölf Versuche je Gebiet (vier Lagen, drei Varianten), jeder hält einen Hornruf höchstens
+    einen GCD auf; der mit weggesteckter Waffe unterbricht kurz den automatischen Angriff. Sonst nichts.
+  - *Danach:* Zeigen die Zeilen, in welchen Lagen der Server annimmt, ist zu entscheiden, ob und wie RSR die Hörner nach
+    Lage belegt (B2 und B3 über alle Begleiter statt über die drei der Hörner). Das ist seine Entscheidung.
 - *Der Weg über das Bestienbuch* (Daedalus, ofnature/Daedalus e3a16de vom 01.11.2026, `BattlehornAssigner`,
   `BattlehornGame`; Werkzeugquelle, nach eigener Angabe im Spiel aufgezeichnet): Ein Plugin bedient das Buch wie der
   Spieler. Es öffnet das „Bestienbuch des Bändigers" (Hauptkommando, MainCommand 100), blättert über dessen Rückruf
@@ -914,21 +950,10 @@ eingearbeitet werden, situationsbezogen"; A487, A488):
     - danach wartet es höchstens 5 s auf den Status des neuen Phantomjobs.
   - *Für den Beastmaster:* Die Leseseite ist dieselbe. RSR liest die drei Hörner aus dem `ActionManager`
     (`BeastmasterRotation.CurrentPets`), wie das Blaumagier-Set. Die Folgeaktionen eines Begleiters hängen an seinem
-    Horn wie Folgezauber an ihrem Platz. Einen Setzer wie `ChangeSupportJob` kennt der Client für die Hörner nicht.
-  - *Was davon nutzbar ist:* Ein Klick im Bestienbuch muss beim Server ankommen. Geht er über
-    `GameMain.ExecuteCommand`, die allgemeine Befehlsfunktion des Clients, dann zeigt die Aufzeichnung (unten) Befehl und
-    Werte. RSR könnte die Hörner dann ohne Buch setzen, wie BOCCHI den Phantomjob: unabhängig von Sprache, Filter und
-    Sortierung des Buchs. Es übernähme BOCCHIs Sperren und läse die Hornplätze danach zurück. Geht der Klick über ein
-    eigenes Paket, bleibt nur der Weg über das Buch.
-- *Offen, und darum noch nicht gebaut:*
-  - ob ein direkter Befehl die Hörner setzt (Aufzeichnung, Serverbefehle);
-  - ob der Weg auf seinem deutschen Client gleich läuft: Werte des Rückrufs, Reihenfolge und Wortlaut des Menüs;
-  - ob das Spiel ihn im Kampf zulässt; sonst bleibt nur die Zeit zwischen zwei Kämpfen, und deren Lage ist vor dem Pull
-    nicht bekannt;
-  - was die Rotation dann setzt.
-  Die ersten beiden beantwortet die Aufzeichnung (unten) aus seinem Client.
-- *Darum kein Vorschlag im Chat* (der erste Entwurf; er will keinen): Bis der Weg auf seinem Client belegt ist, steht
-  der Punkt im TODO.
+    Horn wie Folgezauber an ihrem Platz. Eine Funktion wie `ChangeSupportJob` kennt der Client für die Hörner nicht;
+    die Zuweisung ist ein allgemeiner Serverbefehl (oben, „Der Befehl").
+  - *Was davon nutzbar ist:* Der Klick im Buch geht über `GameMain.ExecuteCommand` (oben, „Der Befehl"). RSR setzt
+    die Hörner wie BOCCHI den Phantomjob, liest die Hornplätze danach zurück und hört auf, wo der Server ablehnt.
 
 **Aufzeichnung des Bestienbuchs** (sein Auftrag vom 02.11.2026: „bau die aufzeichnung, sie soll sich dann aktivieren,
 wenn das buch auf ist, und deaktivieren, wenn es geschlossen wurde"; A488):
@@ -1089,9 +1114,12 @@ Lage.
       Horn, kein Scheidender Schlag.
 - *B1 – Katalog aus den Spieldaten.* Je Begleiter auf einem Horn: Dressur und Entfesseln aus `Pet.Abilities` (erste und
   zweite Aktion). Zum Begleiter führt `XBMPet`; die Spalte mit seiner Pet-Zeile hat in Lumina keinen Namen. Gelesen wird die
-  der beiden Zahlenspalten, deren Werte über alle Begleiter verschieden sind – die Pet-Ids (47 bis 97) sind es, die
-  Fundorte nicht – und deren Pet-Zeile Aktionen führt. Trifft das auf keine oder beide zu, gibt es keinen Katalog, und die
-  eingestellte Reihenfolge gilt. Form und Reichweite der Dressur aus dem Aktionsblatt (`CastType`, `EffectRange`),
+  der drei Id-Spalten (Lumina `Unknown4` bis `Unknown6`, im EXDSchema in dieser Reihenfolge Pet, Action, Location), deren
+  Werte über alle Begleiter verschieden sind – die Pet-Ids (47 bis 97) sind es, Aktionen und Fundorte nicht – und deren
+  Pet-Zeile Aktionen führt. Trifft das auf keine oder mehrere zu, gibt es keinen Katalog, und die eingestellte Reihenfolge
+  gilt. Bis A520 prüfte RSR nur `Unknown5` und `Unknown6`, also Action und Location: Auf seinem Client entstand der Katalog
+  nie (Protokoll vom 03.11.2026, jede Zustandszeile „NO CATALOG: the familiars' Pet column cannot be told (neither of
+  two)"), und B1 bis B3, C1 bis C3 und die Dressur nach Affinität wirkten nicht; es galt nur B0. Form und Reichweite der Dressur aus dem Aktionsblatt (`CastType`, `EffectRange`),
   Attacke-Wert aus dem Tooltip (`ActionTooltip`, der erste genannte, auf der Stufe des Spielers). Die Zuordnung aus den
   Blättern entsteht einmal; was ein Begleiter bringt, liest RSR erst für die Begleiter auf den Hörnern und neu mit jeder
   Stufe, auch einer synchronisierten: beim Leveln ändert sich, was eine Aktion bringt. RSR drückt die Dressur,

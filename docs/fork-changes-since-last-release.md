@@ -36,6 +36,15 @@ What this release changes in the fight. For the whole distance from upstream, se
   only on a move-forward command, in the countdown, or when you press them yourself. With
   `Check movement actions with BossModReborn (Experimental)` on, their path is checked too. Occult Featherfoot
   (15 yalms forward) has its landing point checked like En Avant.
+- **Moves to a spot on the ground go where you look, and your own press stays yours.** Loom (Blue
+  Mage), Shukuchi (Ninja) and Cloud Skim (Beastmaster) were placed like a ground heal or an area
+  attack: on a move-forward command Loom went to the party or under the boss, Shukuchi onto enemies.
+  They now go ahead - the full range with `Move as far as possible with ground-targeted movement
+  actions`, otherwise to the farthest character in the movement cone - with their path checked, and
+  RSR no longer takes over a press of yours, so the spot you place is kept. On a move-forward
+  command, leaps such as Intervene or J Kick now reach the farthest target in that cone within their
+  range instead of only one within 3 yalms, as `Only use damaging gap closers within this distance`
+  states.
 
 ## Occult Crescent
 
@@ -43,3 +52,17 @@ What this release changes in the fight. For the whole distance from upstream, se
   Occult Resuscitation, Blessing and Phantom Judgment, and the Mega Potion of the Monster Hunter
   fights, compare the health a member is heading for with their thresholds, as `Heal ahead of
   incoming damage` states for every healing threshold. With that setting off nothing changes.
+
+## Beastmaster
+
+- **Familiars by the situation now work.** The familiar catalog was never built: RSR looked for the
+  link from a familiar to its actions in the wrong two columns of the game data. Every rule that picks
+  a horn by the situation - a healing or protecting familiar when you are in danger, the area familiar
+  for the long stint on a pack, Trick by affinity, holding back a familiar whose Release would leave -
+  now has the data it reads. Before, only your horn order counted.
+- **Test whether a horn can be reassigned in a fight.** `Test battlehorn assignment in combat
+  (experimental)`, **on by default**: once per situation and area RSR puts another familiar you have
+  on a horn whose familiar is not out - with the horn ready or recasting, a familiar out or none -
+  first with the Bestiary's command alone, then after its opening command, then with your weapon
+  sheathed for it, and puts yours straight back. Out of combat it tries once as the control.
+  `DefenseTrace.log` says what the server took.

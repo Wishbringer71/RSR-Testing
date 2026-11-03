@@ -312,9 +312,11 @@ public partial class BeastmasterRotation
 	private const int TrickAbility = 0;
 	private const int ReleaseAbility = TrickAbility + 1;
 
-	// B1: XBMPet leads to the familiar's Pet row through a column Lumina leaves unnamed. Of its two id columns, the one whose
-	// values differ across all familiars and lead to Pet rows with abilities is it - the Pet ids do, the places they are
-	// found at repeat. Neither or both: no catalog, and the configured order stands. Sheets only, no tooltip: cheap.
+	// B1: XBMPet leads to the familiar's Pet row through a column Lumina leaves unnamed. Of its three id columns (EXDSchema:
+	// Pet, Action, Location), the one whose values differ across all familiars and lead to Pet rows with abilities is it -
+	// the Pet ids do; action ids lead to no Pet row, the places they are found at repeat. None or several: no catalog, and
+	// the configured order stands. Until A520 only the last two were asked, and the catalog was never built on the
+	// owner's client. Sheets only, no tooltip: cheap.
 	private static Dictionary<byte, FamiliarRow> BuildFamiliarRows()
 	{
 		var catalog = new Dictionary<byte, FamiliarRow>();
@@ -339,9 +341,9 @@ public partial class BeastmasterRotation
 				}
 			}
 
-			bool LeadsToPets(Func<XBMPet, ushort> column)
+			bool LeadsToPets(Func<XBMPet, uint> column)
 			{
-				var seen = new HashSet<ushort>();
+				var seen = new HashSet<uint>();
 				foreach (var row in rows)
 				{
 					var id = column(row);
@@ -355,17 +357,30 @@ public partial class BeastmasterRotation
 				return rows.Count > 0;
 			}
 
-			var fifth = LeadsToPets(row => row.Unknown5);
-			var sixth = LeadsToPets(row => row.Unknown6);
-			if (fifth == sixth)
+			(string Name, Func<XBMPet, uint> Read)[] columns =
+				[("Unknown4", row => (uint)Math.Max(0, row.Unknown4)), ("Unknown5", row => row.Unknown5), ("Unknown6", row => row.Unknown6)];
+			var petColumn = -1;
+			var leading = 0;
+			for (var i = 0; i < columns.Length; i++)
 			{
-				_familiarCatalogState = $"NO CATALOG: the familiars' Pet column cannot be told ({(fifth ? "both" : "neither")} of two)";
+				if (LeadsToPets(columns[i].Read))
+				{
+					petColumn = i;
+					leading++;
+				}
+			}
+
+			if (leading != 1)
+			{
+				_familiarCatalogState = $"NO CATALOG: the familiars' Pet column cannot be told ({(leading == 0 ? "none" : leading.ToString())} of {columns.Length})";
 				return catalog;
 			}
 
+			var petOf = columns[petColumn].Read;
+
 			foreach (var row in rows)
 			{
-				var pet = pets.GetRow(fifth ? row.Unknown5 : row.Unknown6);
+				var pet = pets.GetRow(petOf(row));
 				var trick = pet.Abilities[TrickAbility].RowId;
 				var radius = actions.TryGetRow(trick, out var trickRow) && trickRow.CastType > 1 ? trickRow.EffectRange : 0f;
 				var release = pet.Abilities[ReleaseAbility].RowId;
@@ -382,7 +397,7 @@ public partial class BeastmasterRotation
 				}
 			}
 
-			_familiarCatalogState = $"{catalog.Count} familiars from the sheets (Pet column {(fifth ? 5 : 6)}), "
+			_familiarCatalogState = $"{catalog.Count} familiars from the sheets (Pet column {columns[petColumn].Name}), "
 				+ $"{_familiarByModel.Count} by model";
 		}
 		catch (Exception ex)
@@ -497,4 +512,252 @@ public partial class BeastmasterRotation
 		BeastmasterKinType.Ashkin => ActionID.ScouringAshPvE,
 		_ => 0,
 	};
+
+	// B4 (concept 01, "Belegung der Hörner in der Rotation", A520): the server commands of the owner's BestiaryTrace.log of
+	// 03.11.2026. 2420 assigns the three horns, with the familiars' numbers in the book, one per horn (0 empties one): ten
+	// assignments, each shown by the slots 10 to 16 ms later. 2421 the client sends whenever the book opens. 1 draws the
+	// weapon with (1, 0) and sheathes it with (0, 1) - read from the pattern around his fight, the client's own values.
+	private const int AssignBattlehornsCommand = 2420;
+	private const int BestiaryOpenedCommand = 2421;
+	private const int WeaponCommand = 1;
+
+	// How a probe is sent: the command alone; after the book's opening command; with the weapon sheathed for it and drawn
+	// again after (his idea, 03.11.2026: "vielleicht muss auch einfach die kampfhaltung beendet werden").
+	private enum HornProbeVariant : byte
+	{
+		Plain,
+		AfterOpening,
+		Sheathed,
+		Exhausted,
+	}
+
+	// The situation of a probe: in combat or not, the horn ready or recasting, a familiar out or none.
+	private readonly record struct HornProbeKind(bool InCombat, bool HornReady, bool FamiliarOut);
+
+	private enum HornProbeStep : byte
+	{
+		None,
+		Sent,
+		Restoring,
+	}
+
+	// Per situation the next variant to try; a situation the server took an assignment in is Exhausted - no more probes.
+	private static readonly Dictionary<HornProbeKind, HornProbeVariant> _probeNext = [];
+	private static uint _probeArea;
+	private static HornProbeStep _probeStep;
+	private static byte[] _probeOriginal = [];
+	private static byte[] _probeAwaited = [];
+	private static DateTime _probeSentAt;
+	private static HornProbeKind _probeKind;
+	private static HornProbeVariant _probeVariant;
+	private static string _probeWhat = string.Empty;
+	private static bool _restoreOwed;
+
+	private static string KindText(HornProbeKind kind)
+		=> $"{(kind.InCombat ? "in combat" : "out of combat")}, the horn {(kind.HornReady ? "ready" : "recasting")}, "
+			+ $"{(kind.FamiliarOut ? "a familiar out" : "none out")}";
+
+	private static string WeaponText()
+		=> Player is { } player && player.StatusFlags.HasFlag(Dalamud.Game.ClientState.Objects.Enums.StatusFlags.WeaponOut)
+			? "weapon drawn"
+			: "weapon sheathed";
+
+	private static bool SlotsShow(byte[] awaited)
+	{
+		var slots = CurrentPets;
+		if (slots.Length < awaited.Length)
+		{
+			return false;
+		}
+
+		for (var i = 0; i < awaited.Length; i++)
+		{
+			if (slots[i] != awaited[i])
+			{
+				return false;
+			}
+		}
+
+		return true;
+	}
+
+	// The commands of one variant, in the order the server handles them; for Sheathed the weapon is drawn again after.
+	private static string SendHorns(byte[] horns, HornProbeVariant variant)
+	{
+		static int Slot(HornOrder h) => (int)h - (int)HornOrder.FirstBattlehorn;
+		if (variant == HornProbeVariant.AfterOpening)
+		{
+			_ = GameMain.ExecuteCommand(BestiaryOpenedCommand, 0, 0, 0, 0);
+		}
+		else if (variant == HornProbeVariant.Sheathed)
+		{
+			_ = GameMain.ExecuteCommand(WeaponCommand, 0, 1, 0, 0);
+		}
+
+		var answer = GameMain.ExecuteCommand(AssignBattlehornsCommand, horns[Slot(HornOrder.FirstBattlehorn)],
+			horns[Slot(HornOrder.SecondBattlehorn)], horns[Slot(HornOrder.ThirdBattlehorn)], 0);
+		return $"the client answered {answer}";
+	}
+
+	private static void DrawWeaponAgain()
+	{
+		if (_probeVariant == HornProbeVariant.Sheathed && DataCenter.InCombat)
+		{
+			_ = GameMain.ExecuteCommand(WeaponCommand, 1, 0, 0, 0);
+		}
+	}
+
+	/// <summary>
+	/// Whether a probe of B4 still waits for the slots: while it does, no horn is called, so a call never brings the probe
+	/// familiar. Judges it on the way - shown within a GCD, the server takes an assignment in that situation and variant,
+	/// and the original familiar goes back at once, the same way; not shown, the next variant follows in that situation.
+	/// A restore not shown goes out again out of combat.
+	/// </summary>
+	public static bool HornProbePending
+	{
+		get
+		{
+			if (DataCenter.TerritoryID != _probeArea)
+			{
+				_probeArea = DataCenter.TerritoryID;
+				_probeNext.Clear();
+			}
+
+			if (_probeStep == HornProbeStep.None)
+			{
+				if (_restoreOwed && !DataCenter.InCombat && _probeOriginal.Length > 0)
+				{
+					_restoreOwed = false;
+					_probeVariant = HornProbeVariant.Plain;
+					_probeAwaited = _probeOriginal;
+					_probeSentAt = DateTime.Now;
+					_probeStep = HornProbeStep.Restoring;
+					DefenseTrace.Line($"battlehorn probe: restore sent again out of combat, {SendHorns(_probeOriginal, HornProbeVariant.Plain)}");
+					return true;
+				}
+
+				return false;
+			}
+
+			var waited = (DateTime.Now - _probeSentAt).TotalSeconds;
+			var shown = SlotsShow(_probeAwaited);
+			if (!shown && waited <= DataCenter.DefaultGCDTotal)
+			{
+				return true;
+			}
+
+			if (_probeStep == HornProbeStep.Sent)
+			{
+				if (shown)
+				{
+					_probeNext[_probeKind] = HornProbeVariant.Exhausted;
+					DefenseTrace.Line($"battlehorn probe: TAKEN after {waited:F3} s, {_probeVariant}, {KindText(_probeKind)} "
+						+ $"({_probeWhat}, {WeaponText()} now) - the original goes back, {SendHorns(_probeOriginal, _probeVariant)}");
+					DrawWeaponAgain();
+					_probeAwaited = _probeOriginal;
+					_probeSentAt = DateTime.Now;
+					_probeStep = HornProbeStep.Restoring;
+					return true;
+				}
+
+				_probeNext[_probeKind] = _probeVariant + 1;
+				DrawWeaponAgain();
+				DefenseTrace.Line($"battlehorn probe: NOT TAKEN within {waited:F2} s, {_probeVariant}, {KindText(_probeKind)} "
+					+ $"({_probeWhat}) - the slots {(SlotsShow(_probeOriginal) ? "kept the original" : "changed otherwise")}"
+					+ $"{(_probeVariant + 1 == HornProbeVariant.Exhausted ? "; no variant left in this situation" : $"; next here: {_probeVariant + 1}")}");
+			}
+			else if (shown)
+			{
+				DefenseTrace.Line($"battlehorn probe: original back after {waited:F3} s");
+			}
+			else
+			{
+				_restoreOwed = true;
+				DefenseTrace.Line($"battlehorn probe: restore not shown within {waited:F2} s - sent again out of combat");
+			}
+
+			_probeStep = HornProbeStep.None;
+			return false;
+		}
+	}
+
+	/// <summary>
+	/// B4 of concept 01 (A520): puts a familiar the player has and no horn holds on a horn whose familiar is not out, to
+	/// learn whether the server takes it - in combat once per situation and variant until one is taken, out of combat once
+	/// as the control; <see cref="HornProbePending"/> judges it and puts the original back.
+	/// </summary>
+	/// <returns>Whether a probe went out.</returns>
+	public static bool TryHornProbe()
+	{
+		if (HornProbePending || _restoreOwed || !FamiliarListLoaded || Player is not { } player || player.IsDead
+			|| player.IsCasting)
+		{
+			return false;
+		}
+
+		var slots = CurrentPets;
+		if (slots.Length < _threeHorns.Length)
+		{
+			return false;
+		}
+
+		var active = (HornOrder)ActiveBattlehorn;
+		foreach (var horn in _threeHorns)
+		{
+			var kind = new HornProbeKind(DataCenter.InCombat, HornReady(horn), active != HornOrder.None);
+			var variant = _probeNext.TryGetValue(kind, out var next) ? next : HornProbeVariant.Plain;
+			// Out of combat only the plain command, once: the control that the probe itself works.
+			if (horn == active || variant == HornProbeVariant.Exhausted || (!kind.InCombat && variant != HornProbeVariant.Plain))
+			{
+				continue;
+			}
+
+			var probe = BeastmasterPet.None;
+			foreach (var pet in Enum.GetValues<BeastmasterPet>())
+			{
+				if (pet == BeastmasterPet.None || FamiliarUnlocked(pet) != true)
+				{
+					continue;
+				}
+
+				var onHorn = false;
+				foreach (var other in _threeHorns)
+				{
+					onHorn |= PetOnHorn(other) == pet;
+				}
+
+				if (!onHorn)
+				{
+					probe = pet;
+					break;
+				}
+			}
+
+			if (probe == BeastmasterPet.None)
+			{
+				return false;
+			}
+
+			_probeOriginal = slots[.._threeHorns.Length].ToArray();
+			var sent = (byte[])_probeOriginal.Clone();
+			var index = (int)horn - (int)HornOrder.FirstBattlehorn;
+			sent[index] = (byte)probe;
+			if (!kind.InCombat)
+			{
+				_probeNext[kind] = HornProbeVariant.Exhausted;
+			}
+
+			_probeKind = kind;
+			_probeVariant = variant;
+			_probeWhat = $"{horn} {(BeastmasterPet)_probeOriginal[index]} -> {probe}";
+			_probeAwaited = sent;
+			_probeSentAt = DateTime.Now;
+			_probeStep = HornProbeStep.Sent;
+			var weapon = WeaponText();
+			DefenseTrace.Line($"battlehorn probe: {_probeWhat}, {variant}, {KindText(kind)}, {weapon} - sent, {SendHorns(sent, variant)}");
+			return true;
+		}
+
+		return false;
+	}
 }

@@ -175,19 +175,34 @@ Jetzt gilt:
   BossModReborn (Experimental)" (ab Werk aus); die Abstandsgrenze gilt immer.
 
 Ausnahmen, je mit Grund im Skript:
-- Shukuchi und Cloud Skim: Bodenziel in eine gewählte Richtung; keine Fork-Rotation wirkt sie, und einen Landepunkt
-  hätte erst eine eigene Zielwahl.
 - Rescue: bewegt das Gruppenmitglied, nicht den Spieler.
 - Steadfast Stance (Phantomtänzer): RSR wirkt es nur auf den Spieler. Den Ansturm gibt es nur auf ein Gruppenmitglied.
 - Night Stallion (Quest-Gefecht): Die Weite des Rutschens nennt kein Text, und ohne Weite lehnte die Prüfung neben
   BossModReborn ab.
 - Lost Seraph Strike: Bozja liegt außerhalb seines Profils und kommt in keinem seiner Mitschnitte vom 25.10. bis
   03.11.2026 vor. Erfasst, nicht bearbeitet.
-- Böse Ahnung (Loom), Blaumagier, „Move quickly to the specified location": ein Bodenziel. Die Rotation wirkt es auf
-  „Move Forward" (`MoveForwardGCD`). Die Zielwahl behandelt es wie eine Bodenheilung (`IsFriendly`,
-  `FindTargetAreaFriend`): Es landet an einem gespeicherten Punkt, an der Arenamitte, unter dem Boss oder bei einem
-  Gruppenmitglied, nicht in seiner Blickrichtung, und ohne Prüfung des Wegs (`TODO.md`, „Böse Ahnung (Loom) landet, wo
-  Bodenheilungen liegen, statt vorn").
+
+**Bewegung zu einem Ort am Boden** (`SpecialActionType.GroundTargetMove`, A520): Böse Ahnung (Loom, Blaumagier),
+Shukuchi (Ninja) und Cloud Skim (Beastmaster, alle fünf Fassungen) bewegen den Spieler zu einem Ort, den die Aktion setzt
+(„Move quickly to the specified location", „… in the selected direction").
+- *Bis A520:* ohne Bewegungstyp und ohne Bewegungszielwahl. Böse Ahnung galt als Bodenheilung (`IsFriendly`) und landete
+  auf „Move Forward" an einem gespeicherten Punkt, an der Arenamitte, unter dem Boss oder bei einem Gruppenmitglied.
+  Shukuchi, das die Ninja-Basisschicht auf „Move Forward" wirkt (`MoveForwardAbility`), lief in die Platzierung der
+  Flächenangriffe, also auf Gegner. Beide ohne Prüfung des Wegs. Das Skript führte Shukuchi als „von keiner
+  Fork-Rotation gewirkt"; das stimmte nicht.
+- *Jetzt:* Die Zielwahl für Bewegung (`TargetType.Move`, `FindTargetAreaMove`) setzt den Ort. Mit „Move as far as
+  possible with ground-targeted movement actions" (ab Werk aus) liegt er in voller Reichweite in Blickrichtung oder zur
+  Bildschirmmitte („Aim movement actions at the screen center"). Sonst liegt er beim entferntesten Mitspieler oder Gegner
+  im Kegel vor ihm („Movement target angle"), in Reichweite der Aktion. Der Weg dorthin wird geprüft
+  (`MovementSafety`, wie beim Objekt-Sprung). Drückt er die Aktion selbst, fängt RSR sie nicht ab
+  (`ActionQueueManager`): Den Ort, den er setzt, ersetzte sonst die Zielwahl.
+- *Die Grenze im Kegel:* Die Zielwahl für Bewegung las „Only use damaging gap closers within this distance" (ab Werk
+  3 Yalm). Ihr Text nimmt den Bewegungsbefehl aus („Not limited: a move-forward command"), und diese Zielwahl läuft nur
+  auf ihn: für die Bodenziele, für die Sprünge mit Schaden (`HostileMovingAttack`) und für Freundessprünge ohne
+  Fokus. Upstream setzte die Grenze dort im Oktober 2026 (6b52e1dfd); erreicht wurde sie bis A520 nur von diesen
+  Sprüngen. Der Text bindet: Jetzt begrenzt dort nur die Reichweite der Aktion. Im Kampf: Auf „Move Forward" springen
+  Intervene, Gewissenstritt oder Icarus ohne Fokus jetzt auf den entferntesten Kandidaten im Kegel, nicht nur auf einen
+  bis 3 Yalm. Vorstöße auf Gegner (`HostileMovingForward`) nehmen auf den Befehl wie bisher dein Ziel.
 
 **Nach einem Sprung zum Ziel kein Fernangriff** (`MeleeRangedAfterMove`, Upstream). Die Fernangriffe mit diesem Typ –
 Piercing Talon, Throwing Dagger, Lightning Shot, Writhing Snap, Enpi, Shield Lob, Tomahawk, Harpe; beim Dunkelritter

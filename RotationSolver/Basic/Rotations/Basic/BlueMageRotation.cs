@@ -765,7 +765,10 @@ public partial class BlueMageRotation
 
 	static partial void ModifyLoomPvE(ref ActionSetting setting)
 	{
-		//setting.SpecialType = SpecialActionType.MovingForward;
+		// "Move quickly to the specified location": placed ahead by the area-move logic, its way checked, and a press of
+		// the player's own is not intercepted (concept 05, A520). As a ground heal it landed at the party or the boss.
+		setting.TargetType = TargetType.Move;
+		setting.SpecialType = SpecialActionType.GroundTargetMove;
 		setting.AttackTypeOverride = AttackType.Magic;
 		setting.AspectOverride = Aspect.Lightning;
 		setting.IsFriendly = true;

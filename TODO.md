@@ -12,25 +12,14 @@ Nach der Wirkung im Kampf: Sicherheit der Gruppe vor Schaden, gewichtet mit der 
 
 1. Nach der Wiederbelebung wartet RSR die Unverwundbarkeit ab: Ein Heiler stirbt am ersten Treffer nach dem
    Aufstehen, ohne dass RSR etwas drückt.
-2. Böse Ahnung (Loom) landet, wo Bodenheilungen liegen, statt vorn: Auf seinen Bewegungsbefehl springt der Blaumagier ungeprüft an
-   einen fremden Punkt, auch in eine Fläche.
-3. Fremde Repositories auf Verbesserungen für RSR prüfen: Jeder Fund kann ein Defekt im Verhalten einer Klasse sein,
+2. Fremde Repositories auf Verbesserungen für RSR prüfen: Jeder Fund kann ein Defekt im Verhalten einer Klasse sein,
    den RSR heute im Kampf zeigt; zuerst die Rotationswerkzeuge für alle Jobs, Daedalus vorn (aktiv, alle Jobs,
    eigene Kampfvorhersage).
-4. Flächenbetäuber in Kreszentia für The Blackest Night: kostet MP, kein Leben.
+3. Flächenbetäuber in Kreszentia für The Blackest Night: kostet MP, kein Leben.
 
 Danach die technische Schuld, soweit ihre Auflösungsbedingung erfüllt ist. Warten auf Daten: unten.
 
 ## Defekte
-
-### Böse Ahnung (Loom) landet, wo Bodenheilungen liegen, statt vorn · N
-Im Kampf: Auf „Move Forward" wirkt der Blaumagier Böse Ahnung an einen gespeicherten Punkt, an die Arenamitte, unter den Boss
-oder zu einem Gruppenmitglied, nicht in seine Blickrichtung, und ohne Prüfung des Wegs. Steht dort eine Fläche, springt
-er hinein. *Ort:* `BlueMageRotation.ModifyLoomPvE` (`IsFriendly`, kein Bewegungstyp), Zielwahl `FindTargetAreaFriend`;
-die Zielwahl für Bewegung mit Bodenziel (`FindTargetAreaMove`) erreicht heute keine Aktion. *Nächster Schritt:* Loop:
-`TargetType.Move` und ein Bewegungstyp, der den Weg zum gewählten Punkt prüft; dabei klären, ob ein selbst gedrücktes
-Loom über RSR seinen Zielpunkt verliert. Shukuchi und Cloud Skim gehören zur selben Klasse. *Konzept:* 05,
-„Welche Aktion bewegt".
 
 ## Offene Arbeit
 
@@ -148,21 +137,12 @@ nebeneinander gebraucht werden.
   „blue mage spell outside the active set" im nächsten `DefenseTrace.log` als Blaumagier. Konzept 01, „Blaumagier",
   „Das Set".
 
-- **Beastmaster: die Regeln schrieben am 02.11.2026 keine Zeile** (A489). Im Kampf: In einer Stunde mit allen Regeln
-  (b83dc3ce9) rief RSR 28 Hörner, aber weder die Hornwahl nach Lage noch das Anfreunden noch der Katalog hinterließen
-  eine Zeile. Wahrscheinlich liefen sie nicht: eine fremde Beastmaster-Rotation, leer gelesene Hornplätze, eine Option
-  aus oder Anfreunden gesperrt. Auflösung: die Zeilen „rotation" (A490) und „beastmaster state" im nächsten
-  `DefenseTrace.log` als Beastmaster. Konzept 01, „Zustandszeile".
-
-- **Beastmaster: Belegung der Kampfhörner situationsbezogen setzen** (seine Vorgabe, 02.11.2026: „es soll in die
-  rotation eingearbeitet werden, situationsbezogen"). Im Kampf heute: RSR wählt situationsbezogen unter den drei
-  Begleitern seiner Hörner (B0 bis B3), die Belegung selbst setzt nur er im Bestienbuch. Ein Weg zum Setzen ist
-  bekannt: über das Menü des Bestienbuchs, wie Daedalus es außerhalb des Kampfes tut (A488). Ein direkter Weg wie
-  BOCCHIs Phantomjob-Wechsel ginge, wenn die Zuweisung über `GameMain.ExecuteCommand` läuft (A505). Auflösung: sein
-  `BestiaryTrace.log` mit einer Zuweisung außerhalb und einem Versuch im Kampf belegt Rückruf, Menü, Serverbefehl und
-  Kampfgrenze auf seinem Client; dann Loop über den Weg und über das, was die Rotation setzt. Konzept 01, „Belegung der Hörner in der Rotation",
-  „Aufzeichnung des Bestienbuchs".
-
+- **Beastmaster: in welchen Lagen der Server eine Hornzuweisung im Kampf annimmt** (seine Präzisierung, 03.11.2026:
+  „ich will einfach nur austesten, in welchen situationen der wechsel klappen könnte"). Im Kampf heute: RSR wählt unter
+  den drei Begleitern seiner Hörner (B0 bis B3); die Probe B4 setzt je Lage einmal einen anderen und stellt zurück.
+  Auflösung: Zeilen „battlehorn probe" im nächsten `DefenseTrace.log` als Beastmaster in einem Kampf, je Lage TAKEN oder
+  NOT TAKEN; danach seine Entscheidung, ob RSR die Hörner nach Lage belegt. Konzept 01, „Belegung der Hörner in der
+  Rotation".
 - **Samurai nutzt Feint und Tengentsu nicht** (fremde Meldung, PR #11, unbestätigt; statisch geprüft A265). Auflösung:
   ein Protokoll eines Samurai-Kampfs („area defence open, nothing chosen" gegen „hit you"). Konzept 13.
 - **Treffer aus einer Quelle, die die Objekttabelle nicht hält** (Verdacht). Offen ist der Treffer ohne Objekt; der

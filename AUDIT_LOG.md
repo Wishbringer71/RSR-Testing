@@ -15514,6 +15514,52 @@ Upstream vorher gemessen: 0 ausstehend (a560469db).
 - *Prüfgrad:* statisch am Code, an den Blättern und seinen Mitschnitten; Prüfskripte mit Selbsttest und Gegenprobe;
   kompiliert, alle CI-Prüfungen lokal; im Spiel nicht beobachtet.
 
+### A520 · Upload vom 03.11.2026 spät: Beastmaster-Katalog, Hornzuweisung per Serverbefehl, Bodenziel-Bewegung (03.11.2026)
+
+Hochgeladen: `RotationSolver.7z` (`DefenseTrace.log` 19:41–21:11, `BestiaryTrace.log`, gelernte Tabellen) und ein
+ACT-Mitschnitt desselben Abends. Build a885b43bf, das Release 7.5.7.14+wsh1, ohne die Änderungen nach 15:08 UTC.
+Gespielt: Beschwörer (Lösung Neun), Beastmaster (La Noscea, Tiefer Wald), Blaumagier geladen (ohne Kampf), Weißmagier
+in Windurst: Die dritte Etappe (sechs Kämpfe, 20:15–20:45).
+Seine Vorgaben während der Auswertung (03.11.2026), eingeordnet als Vorgaben zur Reihenfolge und als Präzisierungen:
+„zuerst bluemage und beastmaster auswerten"; „erst alles, was mit bluemage und beastmaster zu tun hat, auswerten,
+konzeptionieren, optimieren, anpassen. dafür sind diese logs vornehmlich da"; zur Hornzuweisung im Kampf (Konzept 01,
+„Belegung der Hörner in der Rotation") vier Präzisierungen bis „ich will einfach nur austesten, in welchen situationen
+der wechsel klappen könnte" und „vielleicht muss auch einfach die kampfhaltung beendet werden".
+
+- *Beastmaster, Katalog (Defekt):* Jede Zustandszeile meldete „NO CATALOG: the familiars' Pet column cannot be told
+  (neither of two)". B1 prüfte nur `XBMPet.Unknown5` und `Unknown6`. Nach EXDSchema („latest") und den Offsets der
+  gebauten Lumina (eigene Probe per Reflexion: Unknown4 Int32 @16, Unknown5 und 6 UInt16 @20/@22) sind das Action und
+  Location; die Pet-Spalte ist `Unknown4`. Am Datamining-Blatt nachgerechnet: Pet führt bei allen 50 Begleitern
+  eindeutig zu einer Pet-Zeile mit zwei Aktionen, Action und Location nicht. Wirkung im Kampf bis jetzt: B1 bis B3, C1
+  bis C3, die Dressur nach Affinität und der Rückzug beim Entfesseln wirkten nie; es galt B0, die eingestellte
+  Reihenfolge. Behoben: B1 prüft alle drei Id-Spalten und nimmt die eine, die zu Pet-Zeilen führt (C155).
+- *Beastmaster, Kämpfe:* 20:09–20:13 und 20:51–20:53 nach B0, wie eingestellt: Horn, Entfesseln, Scheidender Schlag,
+  nächstes Horn; Dressur auf 100 Begleiter-TP. Kein weiterer Befund.
+- *Bestienbuch, Aufzeichnung:* zehn Zuweisungen, jede als `ExecuteCommand(2420, Horn I, Horn II, Horn III, 0)` mit den
+  Nummern im Buch, die Hornplätze 10 bis 16 ms danach geändert; `2421` bei jedem Öffnen. Eine Menüwahl fiel um 19:47:38
+  in drei Sekunden Kampfstatus (ein Gegner griff an), ohne Befehl. Meine erste Deutung im Chat, er habe es im Kampf
+  versucht, war falsch (seine Angabe: „ich habe es beim kampf nie versucht, da mit kampf beschäftigt").
+- *Gebaut, B4 – Probe im Kampf* (Konzept 01): je Lage (Horn bereit oder abklingend, Begleiter draußen oder keiner) und
+  Gebiet drei Varianten nacheinander, bis eine angenommen wird – einfach, nach 2421, mit weggesteckter Waffe (Befehl 1
+  mit den Werten seines Clients; dass 1 die Waffe zieht, ist ein Schluss aus dem Muster) –, dazu einmal außerhalb des
+  Kampfes als Gegenprobe. Rückstellung sofort auf demselben Weg, notfalls nach dem Kampf; kein Hornruf, solange ein
+  Versuch wartet. Option „Test battlehorn assignment in combat (experimental)", ab Werk an. Eine Lagewahl über alle
+  Begleiter war schon gebaut und ist wieder entfernt: Er will nur testen.
+- *Blaumagier:* kein Kampf. Beim Laden setzte RSR Eruption in den leeren Platz 22 („a damage cooldown the set lacks"),
+  wie Stufe 3 es vorsieht. 1000 Nadeln verschwand 22 s später aus Platz 13 ohne eine Schreibzeile von RSR, also nicht
+  durch RSR. Der TODO-Punkt „1000 Nadeln gewirkt, obwohl nicht im Set" bleibt offen: Er braucht einen Kampf als
+  Blaumagier.
+- *Bewegung zu einem Ort am Boden* (Konzept 05; Böse Ahnung steht in seinem Set): neuer Typ `GroundTargetMove` für Böse
+  Ahnung, Shukuchi und Cloud Skim, Zielwahl für Bewegung, Prüfung des Wegs, kein Abfangen eines eigenen Drucks. Shukuchi
+  wirkt die Ninja-Basisschicht auf „Move Forward"; die Ausnahme im Prüfskript („keine Fork-Rotation") war falsch (C156).
+  Die Zielwahl für Bewegung begrenzte auf „Only use damaging gap closers within this distance", deren Text den
+  Bewegungsbefehl ausnimmt; jetzt nur die Reichweite. TODO-Punkt geschlossen.
+- *Zurückgestellt auf seine Vorgabe:* Weißmagier in Windurst (drei Tode der Gruppe, alle an Mechaniken; „Heilung -"
+  nach Himmlischer Pfad), die übrigen Zeilenarten und die gelernten Tabellen. Sie folgen.
+- *Prüfgrad:* statisch an Code, Blättern (xivapi v2, Datamining-CSV, EXDSchema), Lumina per Reflexion und seinen
+  Mitschnitten; kompiliert, alle CI-Prüfungen lokal; Probe und Katalog im Spiel nicht beobachtet – die Probe misst sich
+  selbst und schreibt jedes Urteil ins `DefenseTrace.log`.
+
 ## B · Commit-Register (Fork vs. `upstream/main`)
 
 ### B1 · Einzelgeprüfte Fork-Commits
@@ -15820,3 +15866,5 @@ Die offene Arbeit dazu — Reihenfolge und Abbruchbedingung der Nachprüfung —
 | C152 | Konzept 14, Rotmagier (A500): „Swiftcast in der Rotation verletzt seine Regel nicht: Der Rotmagier belebt mit Dualcast wieder" | Mit Dualcast höchstens einen GCD später im Stehen, im Laufen gar nicht; seine Vorgabe verlangt Swiftcast bereit (A503). |
 | C153 | A517: „Kreszentia ist ein Sonderinhalt außerhalb des genannten Profils: erfasst, kein Eingriff nötig." | Ein Schluss aus der Ähnlichkeit zu Bozja, nicht seine Angabe, und gegen seine Angabe: Er spielt Occult Crescent, so am 08.09.2026 (A43), und seine Daten zeigen es (Schwächen-Aufzeichnungen aus dem Südhorn in seinen Uploads vom 01. bis 03.11.2026, A478 Krieger im Nordhorn). Seine Rüge (03.11.2026): „wer sagt. das kreszentia ausserhalb meines profiles liegt? ich?" Unter der berichtigten Prämisse nachgeprüft: Das Halten der Phantomangriffe für den Schadensbonus der Klasse (`IsBursting`) fragte nur beim Dunkelritter einen Status, den das Spiel nicht mehr legt; das hat Upstream 7.5.7.15 behoben. Fugetsu und Fuka (Samurai), Hunter's Instinct und Swiftscaled (Viper) liegen in seinem Mitschnitt vom 03.11.2026 an; der Ninja liest Abklingzeiten, der Schwarzmagier den Job-Messwert. Kein weiterer Eingriff nötig. | CLAUDE.md, „Nutzungsprofil": Was er spielt, liegt in seinem Profil; vor jeder Einordnung als außerhalb in Uploads und Archiv nachsehen. |
 | C154 | A498: „beim Dunkelritter ist Darkside fast immer an, ‚Save for burst window‘ hält dort also kaum noch" | Ungeprüft übernommen: Der Status Darkside (751) liegt im Spiel nie an (3893 Aktionszeilen von Dunkelrittern – Hard Slash, Syphon Strike, Unleash, Souleater, Bloodspiller, Edge und Flood of Shadow – in seinen Mitschnitten vom 25.10. bis 03.11.2026, keine Zeile mit Status 751; gemessen 03.11.2026). Mit dem Code von 7.5.7.14 hielt die Phantom-Rotation die Angriffe eines Dunkelritters also für immer zurück, bis Upstream 7.5.7.15 den Messwert las (A517). | Keine; behoben durch den Merge von 7.5.7.15. |
+| C155 | Konzept 01, B1 (A485): „Gelesen wird die der beiden Zahlenspalten, deren Werte über alle Begleiter verschieden sind" (`XBMPet.Unknown5`, `Unknown6`) | Es gibt drei Id-Spalten; die beiden geprüften sind Action und Location, die Pet-Spalte ist `Unknown4`. Der Katalog entstand auf seinem Client nie (Protokoll vom 03.11.2026). | B1 prüft alle drei; A520. |
+| C156 | `check_movement_types.py` (A498): Shukuchi ohne Bewegungstyp, „no fork rotation casts it" | Die Ninja-Basisschicht wirkt Shukuchi auf „Move Forward" (`NinjaRotation.MoveForwardAbility`); ohne Typ lief es in die Platzierung der Flächenangriffe. | Typ `GroundTargetMove`; A520. |

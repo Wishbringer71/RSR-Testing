@@ -421,7 +421,11 @@ public partial class NinjaRotation
 
 	static partial void ModifyShukuchiPvE(ref ActionSetting setting)
 	{
-		//setting.SpecialType = SpecialActionType.MovingForward;
+		// "Move quickly to the specified location", cast on Move Forward (MoveForwardAbility): placed ahead by the area-move
+		// logic, its way checked, a press of the player's own not intercepted. Untyped it went to the hostile area
+		// placement, onto enemies (concept 05, A520).
+		setting.TargetType = TargetType.Move;
+		setting.SpecialType = SpecialActionType.GroundTargetMove;
 		setting.UnlockedByQuestID = 65752;
 	}
 

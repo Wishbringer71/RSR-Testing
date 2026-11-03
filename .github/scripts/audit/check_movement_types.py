@@ -35,13 +35,10 @@ API = 'https://v2.xivapi.com/api'
 MOVING_TYPES = {
     'FixedDistanceMoveForward', 'FixedDistanceMoveBackward', 'HostileMovingForward', 'FriendlyMovingForward',
     'HostileFriendlyMovingForward', 'HostileMovingAttack', 'ObjectBasedMovement', 'HostileAttackBackstep',
+    'GroundTargetMove',
 }
 
 ACCEPTED = {
-    'ShukuchiPvE': 'ground target ("Move quickly to the specified location"): the landing point is the spot chosen, '
-                   'which needs a targeting of its own; no fork rotation casts it',
-    'CloudSkimPvE': 'ground target in a chosen direction ("Move quickly in the selected direction"); no fork rotation '
-                    'casts it',
     'RescuePvE': 'moves the party member drawn, not the player ("Instantly draws target party member to your side")',
     'SteadfastStancePvE': 'RSR casts it on the player only (TargetType.Self); the rush comes only "when targeting a party '
                           'member"',
@@ -49,9 +46,6 @@ ACCEPTED = {
                         'far, and a fixed type without a distance is refused next to BossModReborn (A313)',
     'LostSeraphStrikePvE': 'Bozja, outside the owner\'s profile: none of his recordings from 25.10. to 03.11.2026 shows '
                            'Bozja or Zadnor; recorded, not worked on (A519)',
-    'LoomPvE': 'ground target to a chosen spot ("Move quickly to the specified location"); the Blue Mage rotation casts '
-               'it on Move Forward and it lands where ground heals go - open in TODO.md, "Böse Ahnung (Loom) '
-               'landet, wo Bodenheilungen liegen, statt vorn"',
 }
 
 

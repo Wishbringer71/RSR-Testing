@@ -1048,7 +1048,8 @@ public struct ActionTargetInfo(IBaseAction action)
 				or SpecialActionType.HostileFriendlyMovingForward
 				or SpecialActionType.HostileMovingAttack
 				or SpecialActionType.ObjectBasedMovement
-				or SpecialActionType.HostileAttackBackstep;
+				or SpecialActionType.HostileAttackBackstep
+				or SpecialActionType.GroundTargetMove;
 
 	/// <summary>
 	/// The movement types that leave the player at his target or ahead of where he stood: a dash to a target, a dash
@@ -1152,6 +1153,11 @@ public struct ActionTargetInfo(IBaseAction action)
 			case SpecialActionType.ObjectBasedMovement:
 				return (DataCenter.IsDashSafe(playerPos, destination),
 					"the way to the placed object crosses a danger zone", true);
+
+			case SpecialActionType.GroundTargetMove:
+				// The spot the area-move logic placed (FindTargetAreaMove) is where the move ends.
+				return (DataCenter.IsDashSafe(playerPos, destination),
+					"the way to the chosen spot crosses a danger zone", true);
 
 			case SpecialActionType.HostileAttackBackstep:
 				// The attack itself does not move the player towards the target; the backstep carries
@@ -2430,10 +2436,13 @@ public struct ActionTargetInfo(IBaseAction action)
 			var halfAngle = Math.PI * Service.Config.MoveTargetAngle / 360;
 			IBattleChara? farthest = null;
 			var farthestDistance = float.MinValue;
+			// The candidates lie within the action's range already (FindTargetAreaMove). "Only use damaging gap closers within
+			// this distance" does not limit a move-forward command, its text says; it limited this path until A520, when no
+			// action reached it yet.
 			foreach (var t in battleChara)
 			{
 				var distance = t.DistanceToPlayer();
-				if (distance > Service.Config.DistanceForMoving2 || distance <= farthestDistance)
+				if (distance <= farthestDistance)
 				{
 					continue;
 				}

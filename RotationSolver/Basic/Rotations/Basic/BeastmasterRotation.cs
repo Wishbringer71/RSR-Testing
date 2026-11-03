@@ -1522,6 +1522,10 @@ public partial class BeastmasterRotation
 
 	static partial void ModifyCloudSkimPvE(ref ActionSetting setting)
 	{
+		// A move to a spot on the ground in a chosen direction: placed by the area-move logic, its way checked, a press of
+		// the player's own not intercepted (concept 05, A520).
+		setting.TargetType = TargetType.Move;
+		setting.SpecialType = SpecialActionType.GroundTargetMove;
 		setting.ActionCheck = () => KinshipBattlehorn > 0 && KinshipKinType == BeastmasterKinType.Cloudkin;
 		setting.StatusNeed = [StatusID.CloudKinship, StatusID.CloudKinship_4646];
 		//setting.StatusProvide = [StatusID.LiquidEvasion];
@@ -1530,6 +1534,10 @@ public partial class BeastmasterRotation
 	#region CloudSkin Variants (Movement Directions)
 	static partial void ModifyCloudSkimPvE_45038(ref ActionSetting setting)
 	{
+		// A move to a spot on the ground in a chosen direction: placed by the area-move logic, its way checked, a press of
+		// the player's own not intercepted (concept 05, A520).
+		setting.TargetType = TargetType.Move;
+		setting.SpecialType = SpecialActionType.GroundTargetMove;
 		setting.StatusNeed = [StatusID.CloudKinship, StatusID.CloudKinship_4646];
 		//setting.StatusProvide = [StatusID.LiquidEvasion];
 		setting.IsFriendly = true;
@@ -1537,6 +1545,10 @@ public partial class BeastmasterRotation
 
 	static partial void ModifyCloudSkimPvE_45039(ref ActionSetting setting)
 	{
+		// A move to a spot on the ground in a chosen direction: placed by the area-move logic, its way checked, a press of
+		// the player's own not intercepted (concept 05, A520).
+		setting.TargetType = TargetType.Move;
+		setting.SpecialType = SpecialActionType.GroundTargetMove;
 		setting.StatusNeed = [StatusID.CloudKinship, StatusID.CloudKinship_4646];
 		//setting.StatusProvide = [StatusID.LiquidEvasion];
 		setting.IsFriendly = true;
@@ -1544,6 +1556,10 @@ public partial class BeastmasterRotation
 
 	static partial void ModifyCloudSkimPvE_45040(ref ActionSetting setting)
 	{
+		// A move to a spot on the ground in a chosen direction: placed by the area-move logic, its way checked, a press of
+		// the player's own not intercepted (concept 05, A520).
+		setting.TargetType = TargetType.Move;
+		setting.SpecialType = SpecialActionType.GroundTargetMove;
 		setting.StatusNeed = [StatusID.CloudKinship, StatusID.CloudKinship_4646];
 		//setting.StatusProvide = [StatusID.LiquidEvasion];
 		setting.IsFriendly = true;
@@ -1551,6 +1567,10 @@ public partial class BeastmasterRotation
 
 	static partial void ModifyCloudSkimPvE_45041(ref ActionSetting setting)
 	{
+		// A move to a spot on the ground in a chosen direction: placed by the area-move logic, its way checked, a press of
+		// the player's own not intercepted (concept 05, A520).
+		setting.TargetType = TargetType.Move;
+		setting.SpecialType = SpecialActionType.GroundTargetMove;
 		setting.StatusNeed = [StatusID.CloudKinship, StatusID.CloudKinship_4646];
 		//setting.StatusProvide = [StatusID.LiquidEvasion];
 		setting.IsFriendly = true;
