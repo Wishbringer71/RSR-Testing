@@ -530,6 +530,7 @@ public partial class NinjaRotation
 		// "Rushes target": the gap-closing form of Fleeting Raiju.
 		setting.SpecialType = SpecialActionType.HostileMovingAttack;
 		setting.ActionCheck = () => HasRaijuReady;
+		setting.SpecialType = SpecialActionType.HostileMovingAttack;
 	}
 
 	static partial void ModifyFleetingRaijuPvE(ref ActionSetting setting)
@@ -822,5 +823,14 @@ public partial class NinjaRotation
 		}
 
 		return base.DefenseSingleAbility(nextGCD, out act);
+	}
+
+	public override bool IsBursting()
+	{
+		if (InTrickAttack)
+		{
+			return true;
+		}
+		return false;
 	}
 }
