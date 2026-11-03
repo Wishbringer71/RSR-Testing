@@ -29,7 +29,7 @@ Bedingungen schließen einander aus:
 |---|---|---|
 | `CustomRotation_GCD.RaiseSpell`, Zweig `RaisePlayerBySwift` | wählt Spontanität **nur** bei `WeaponRemain <= 0.5f` | Auswahl |
 | `RSCommands_Actions.DoAction` | verweigert **jede** Fähigkeit bei `0 < DefaultGCDRemain <= 0.5f` | Ausführung |
-| `RSCommands_Actions.cs:45` | dieselbe Sperre im Klick-Gate (`DefaultGCDRemain`) | Ausführung |
+| `RSCommands_Actions.cs:46` | dieselbe Sperre im Klick-Gate (`DefaultGCDRemain`) | Ausführung |
 | `CustomRotation.Ability`, Einschiebesperre (`WeaponRemain <= 0.5f`) | dieselbe Sperre im Fähigkeiten-Dispatcher | Auswahl |
 
 Spontanität ist eine Fähigkeit. Die beiden Fenster decken sich bis auf den einzigen Punkt
