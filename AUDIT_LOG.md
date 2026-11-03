@@ -15109,6 +15109,57 @@ durchgehen". Als Skill `spielpatch` festgehalten (Lesetabelle in CLAUDE.md); den
 - *Prüfgrad:* statisch an Code, Blättern, Spieler- und Werkzeugquellen; kompiliert, alle CI-Prüfungen lokal; die
   Zeilen im Spiel nicht beobachtet.
 
+### A507 · Blaumagier, Stufe 1: Mondflöte nach Wert und Sicherheit, Wertregel, Rösselsprünge, Verstärker, Füllreihenfolge (03.11.2026)
+
+- *Auftrag:* „blaumagier und beastmaster weiter im kritischen loop optimieren, dazu alle todos die damit im zusammenhang
+  stehen"; zuerst das TODO „Blaumagier, Stufe 1".
+- *Weitere Defekte am Code gefunden* (Konzept 01, „Befund vor Stufe 1"):
+  - D7: Diamantrücken am Ende jedes Waxing. Laut Wirktext wechselt er sofort in Waning und macht 10 s unbeweglich.
+  - D8: Kribbeln vor dem Dreizack verlangte Kribbeln als letzten GCD; sein eigener Status sperrt es dann, es ging nie.
+  - D9: Tatami-gaeshi nannte Kribbeln als Zustand auf dem Ziel (Klon); laut Blatt Stun.
+  - D10: Der Einstieg in den Rösselsprung-Kreislauf übersprang `skipStatusNeed` (eigene Voraussetzung) statt
+    `skipTargetStatusNeedCheck`; er ging nie.
+  - Rakete ging ohne „Use Low Chance abilities", obwohl ihr Wirktext die geringe Chance nennt; der Raketenwerfer stand
+    darunter, obwohl seiner keine nennt. Der Text der Einstellung bindet.
+  - D6 (Surpanakha) ist kein Defekt: Die Kette setzt `EmergencyAbility` vor jeder Fähigkeit und `EmergencyGCD` vor jedem
+    GCD fort.
+- *Quellen:* Wirktexte und Aktionsdaten aller berührten Zauber (xivapi, englisch und deutsch, 03.11.2026); Bind = Status
+  13, Slow = 9 (xivapi; WrathCombo 1e64c866c führt dieselben, Werkzeugquelle). Geteilte Abklingzeiten laut Wirktext:
+  Gewissenstritt/Quasar, Federregen/Eruption, Monddämmerung/Beide Enden, Schockschlag/Bergsprenger. Kampfinstinkt wirkt
+  laut Wirktext nur in Inhalten für mehrere Spieler.
+- *Gebaut:*
+  - `OwnHitWatch` (Erkennung, keine Schwelle): Schaden je Potenz aus eigenen Treffern mit genau einer bedingungslosen
+    Potenz im Wirktext, je Stufe und Gebiet; gelernte Immunität je Gegnerart gegen festen oder tödlichen Schaden (kein
+    Schaden, kein Status, kein Fehlschlag, kein Unverwundbarkeitsstatus) und gegen Zustände (Widerstand 52/55, oder ein
+    versprochener Zustand ohne Chance landet trotz Schaden nicht). Sitzungsweit, ohne Datei.
+  - `ActionTooltip`: einfache Potenz, fester Schaden, HP-Anteil (Mittel bei mehreren), Schadenszuschlag, zweite Dauer,
+    Stufenklausel.
+  - `ActionTargetInfo`: Ein Zauber der Klasse mit festem oder tödlichem Schaden geht nicht gegen höherstufige Gegner und
+    nicht gegen eine Art, die er nachweislich nicht trifft. Verhängnis und Dimensionsverschiebung tragen die Klasse jetzt
+    auch (Wirktext).
+  - `BlueMageRotation`: Füllzauber und Füllschaden, Wert von festem und prozentualem Schaden, Vergleich mit
+    Schallwelle, Fensterwert der Mondflöte je Abklinggruppe, Sicherheit, Haltekosten je Sekunde, Fortschreibung der
+    eigenen Gesundheit; Rösselsprünge Bind statt Blind; Tatami-gaeshi Stun.
+  - `BLU_Reborn`: Option „Moon Flute only when it is safe…" (ab Werk an, seine Regel als Voreinstellung); Mondflöte
+    nach Wert und Sicherheit, vorher Pfeife und Kribbeln für den Dreizack; der Burst wartet, bis das Warten mehr kostet,
+    als das Fenster bringt; Diamantrücken nur, wenn die Gesundheit über Waning in die kritische Klasse fiele; Pfeife
+    nicht mehr vor dem Gesang; Dreizack mit Pfeife und Kribbeln; Rakete unter dem Schalter; 1000 Nadeln,
+    Raketenwerfer, Dimensionsverschiebung nach Wert; Füllzauber vor Schallwelle nur nach Potenz je Zeit; Perpetueller
+    Strahl kein Füllzauber; Rösselsprung-Einstieg nur gegen eine Art ohne Widerstand und mit Restzeit für Einstieg und
+    eine Auszahlung.
+- *Verworfen:* „allein nur unter Kampfinstinkt und mit voller Gesundheit" (eigener Entwurf aus A506): sperrte die Flöte
+  im Masked Carnivale ganz; ersetzt durch die Fortschreibung der Gesundheit. Eine Ankerregel nur mit Monddämmerung:
+  trüge auf niedriger Stufe kein Fenster.
+- *Rechnung:* Zur Minute je Abklinggruppe 2850 Potenz im Fenster, +1425 gegen 1470: die Flöte geht dort gewöhnlich
+  nicht; zur zweiten Minute weit darüber (A506: +3035 gegen −840 ohne Burst).
+- *Festwerte:* drei Prozentumrechnungen als Ausnahme mit diesem Loop eingetragen (Einheit, kein Spielwert).
+- *Messmittel im `DefenseTrace.log`:* „moon flute comes", „moon flute held", „damage per potency: first measure",
+  „state resisted", „state did not land", „fixed or lethal spell without effect".
+- *Falsifikation:* im Konzept. Offen bleibt, welche Antwort das Spiel bei Immunität gegen festen Schaden gibt; die
+  Lernregel deckt „ohne Schaden" und „unverwundbar ohne Unverwundbarkeitsstatus".
+- *Prüfgrad:* statisch an Code und Wirktexten; kompiliert ohne Warnung; alle 43 Prüfschritte lokal grün. Im Spiel nicht
+  beobachtet; Schaden je Potenz und Immunität steuern sich selbst nach.
+
 ## B · Commit-Register (Fork vs. `upstream/main`)
 
 ### B1 · Einzelgeprüfte Fork-Commits

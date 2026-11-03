@@ -1,6 +1,6 @@
 # BLU — Abhängigkeitsmatrix
 
-Erzeugt von `.github/scripts/audit/generate_action_matrix.py` am 2026-10-31; nicht von Hand bearbeiten. Methode und Grenzen: `docs/rotation-flow/14-action-dependency-matrix.md`.
+Erzeugt von `.github/scripts/audit/generate_action_matrix.py` am 2026-11-03; nicht von Hand bearbeiten. Methode und Grenzen: `docs/rotation-flow/14-action-dependency-matrix.md`.
 
 - Basisrotation: `BlueMageRotation`
 - Rotation: `RotationSolver/RebornRotations/Limited Jobs/BLU_Reborn.cs`
@@ -49,7 +49,7 @@ direkt: 114 · ungenutzt: 23
 | Job | Deep Clean (`DeepCleanPvE`) | 34570 | Spell | ungenutzt |
 | Job | Devour (`DevourPvE`) | 18320 | Spell | direkt |
 | Job | Diamondback (`DiamondbackPvE`) | 11424 | Spell | direkt |
-| Job | Dimensional Shift (`DimensionalShiftPvE`) | 34573 | Spell | ungenutzt |
+| Job | Dimensional Shift (`DimensionalShiftPvE`) | 34573 | Spell | direkt |
 | Job | Divination Rune (`DivinationRunePvE`) | 34572 | Spell | direkt |
 | Job | Divine Cataract (`DivineCataractPvE`) | 23274 | Spell | direkt |
 | Job | Doom (`DoomPvE`) | 11416 | Spell | direkt |
@@ -101,7 +101,7 @@ direkt: 114 · ungenutzt: 23
 | Job | Peat Pelt (`PeatPeltPvE`) | 34569 | Spell | ungenutzt |
 | Job | Peculiar Light (`PeculiarLightPvE`) | 11421 | Spell | direkt |
 | Job | Peripheral Synthesis (`PeripheralSynthesisPvE`) | 23286 | Spell | direkt |
-| Job | Perpetual Ray (`PerpetualRayPvE`) | 18314 | Spell | direkt |
+| Job | Perpetual Ray (`PerpetualRayPvE`) | 18314 | Spell | ungenutzt |
 | Job | Phantom Flurry (`PhantomFlurryPvE`) | 23288 | Ability | direkt |
 | Job | Phantom Flurry (`PhantomFlurryPvE_23289`) | 23289 | Ability | direkt |
 | Job | Plaincracker (`PlaincrackerPvE`) | 11391 | Spell | direkt |
@@ -194,51 +194,59 @@ direkt: 114 · ungenutzt: 23
 
 | Aktion | Beziehung | zu |
 |---|---|---|
+| Abyssal Transfixion | Regel sperrt vorher | the Ram's Voice |
 | Abyssal Transfixion | Regel sperrt vorher | Ultravibration |
+| Aqua Breath | Regel sperrt vorher | the Ram's Voice |
 | Aqua Breath | Regel sperrt vorher | Ultravibration |
 | Black Knight's Tour | StatusNeed Slow | Bad Breath |
 | Black Knight's Tour | Regel sperrt vorher | Missile |
+| Black Knight's Tour | Regel sperrt vorher | the Ram's Voice |
 | Black Knight's Tour | Regel sperrt vorher | Ultravibration |
 | Black Knight's Tour | Regel prüft | White Knight's Tour |
 | Black Knight's Tour | StatusNeed Slow | White Knight's Tour |
-| Black Knight's Tour | Regel sperrt vorher | 1000 Needles |
 | Blood Drain | Regel sperrt vorher | Goblin Punch |
 | Blood Drain | Regel sperrt vorher | Missile |
-| Blood Drain | Regel sperrt vorher | 1000 Needles |
+| Bomb Toss | Regel sperrt vorher | the Ram's Voice |
 | Bomb Toss | Regel sperrt vorher | Ultravibration |
 | Bristle | Regel prüft | Song of Torment |
+| Choco Meteor | Regel sperrt vorher | the Ram's Voice |
 | Choco Meteor | Regel sperrt vorher | Ultravibration |
 | Deep Clean | StatusNeed Begrimed | Peat Pelt |
+| Dimensional Shift | Regel sperrt vorher | Missile |
 | Divination Rune | Regel sperrt vorher | Goblin Punch |
 | Divination Rune | Regel sperrt vorher | Missile |
-| Divination Rune | Regel sperrt vorher | 1000 Needles |
 | Divine Cataract | StatusNeed AuspiciousTrance | Status AuspiciousTrance |
 | Drill Cannons | StatusNeed Petrification | Level 5 Petrify |
 | Drill Cannons | Regel sperrt vorher | Missile |
 | Drill Cannons | StatusNeed Petrification_1511 | Status Petrification_1511 |
 | Drill Cannons | StatusNeed Petrification_3007 | Status Petrification_3007 |
 | Drill Cannons | StatusNeed Petrification_4445 | Status Petrification_4445 |
+| Drill Cannons | Regel sperrt vorher | the Ram's Voice |
 | Drill Cannons | Regel sperrt vorher | Ultravibration |
-| Drill Cannons | Regel sperrt vorher | 1000 Needles |
 | Eerie Soundwave | StatusNeed CriticalStrikes_1797 | Status CriticalStrikes_1797 |
 | Eerie Soundwave | StatusNeed VulnerabilityDown | Status VulnerabilityDown |
+| Fire Angon | Regel sperrt vorher | the Ram's Voice |
 | Fire Angon | Regel sperrt vorher | Ultravibration |
+| Flying Frenzy | Regel sperrt vorher | the Ram's Voice |
 | Flying Frenzy | Regel sperrt vorher | Ultravibration |
+| Flying Sardine | Regel sperrt vorher | the Ram's Voice |
 | Flying Sardine | Regel sperrt vorher | Ultravibration |
 | Goblin Punch | StatusNeed MightyGuard | Mighty Guard |
 | Goblin Punch | Regel sperrt vorher | Missile |
+| Goblin Punch | Regel sperrt vorher | the Ram's Voice |
 | Goblin Punch | Regel sperrt vorher | Ultravibration |
-| Goblin Punch | Regel sperrt vorher | 1000 Needles |
 | High Voltage | StatusNeed Dropsy_1736 | Aqua Breath |
+| High Voltage | Regel sperrt vorher | the Ram's Voice |
 | High Voltage | Regel sperrt vorher | Ultravibration |
+| Ink Jet | Regel sperrt vorher | the Ram's Voice |
 | Ink Jet | Regel sperrt vorher | Ultravibration |
+| Launcher | Regel sperrt vorher | Missile |
+| Malediction of Water | Regel sperrt vorher | the Ram's Voice |
 | Malediction of Water | Regel sperrt vorher | Ultravibration |
 | Northerlies | StatusNeed Dropsy_1736 | Aqua Breath |
 | Phantom Flurry | StatusNeed PhantomFlurry | Phantom Flurry |
 | Revenge Blast | Regel sperrt vorher | Missile |
-| Revenge Blast | Regel sperrt vorher | 1000 Needles |
 | Saintly Beam | Regel sperrt vorher | Missile |
-| Saintly Beam | Regel sperrt vorher | 1000 Needles |
 | Sharpened Knife | StatusNeed Stun | Bomb Toss |
 | Sharpened Knife | StatusNeed Stun | Faze |
 | Sharpened Knife | Regel sperrt vorher | Missile |
@@ -259,12 +267,14 @@ direkt: 114 · ungenutzt: 23
 | Sharpened Knife | StatusNeed Stun_4433 | Status Stun_4433 |
 | Sharpened Knife | StatusNeed Stun_5043 | Status Stun_5043 |
 | Sharpened Knife | StatusNeed Stun | Sticky Tongue |
+| Sharpened Knife | StatusNeed Stun | Tatami-gaeshi |
+| Sharpened Knife | Regel sperrt vorher | the Ram's Voice |
 | Sharpened Knife | Regel sperrt vorher | Ultravibration |
-| Sharpened Knife | Regel sperrt vorher | 1000 Needles |
+| Sonic Boom | Regel sperrt vorher | the Ram's Voice |
 | Sonic Boom | Regel sperrt vorher | Ultravibration |
 | Stotram | Regel sperrt vorher | Missile |
-| Stotram | Regel sperrt vorher | 1000 Needles |
 | the Dragon's Voice | Regel prüft | the Ram's Voice |
+| the Dragon's Voice | Regel sperrt vorher | the Ram's Voice |
 | the Dragon's Voice | StatusNeed DeepFreeze_1731 | the Ram's Voice |
 | the Dragon's Voice | Regel sperrt vorher | Ultravibration |
 | the Dragon's Voice | StatusNeed DeepFreeze_1731 | White Death |
@@ -273,19 +283,18 @@ direkt: 114 · ungenutzt: 23
 | Ultravibration | StatusNeed Petrification | Level 5 Petrify |
 | Ultravibration | StatusNeed DeepFreeze_1731 | the Ram's Voice |
 | Ultravibration | StatusNeed DeepFreeze_1731 | White Death |
+| Water Cannon | Regel sperrt vorher | the Ram's Voice |
 | Water Cannon | Regel sperrt vorher | Ultravibration |
-| Whistle | Regel prüft | Song of Torment |
+| Whistle | Regel prüft | Triple Trident |
 | White Death | Regel sperrt vorher | Missile |
 | White Death | StatusNeed TouchOfFrost | Status TouchOfFrost |
-| White Death | Regel sperrt vorher | 1000 Needles |
-| White Knight's Tour | StatusNeed Blind | Bad Breath |
 | White Knight's Tour | Regel prüft | Black Knight's Tour |
-| White Knight's Tour | StatusNeed Blind | Black Knight's Tour |
-| White Knight's Tour | StatusNeed Blind | Ink Jet |
+| White Knight's Tour | StatusNeed Bind | Black Knight's Tour |
 | White Knight's Tour | Regel sperrt vorher | Missile |
+| White Knight's Tour | Regel sperrt vorher | the Ram's Voice |
 | White Knight's Tour | Regel sperrt vorher | Ultravibration |
-| White Knight's Tour | Regel sperrt vorher | 1000 Needles |
 | 1000 Needles | Regel sperrt vorher | Missile |
+| 4-tonze Weight | Regel sperrt vorher | the Ram's Voice |
 | 4-tonze Weight | Regel sperrt vorher | Ultravibration |
 
 ## Wechselwirkungen und Zeit
@@ -350,7 +359,6 @@ Maschinelle Liste; die Bewertung je Eintrag steht im Konzept.
 - Avail (`AvailPvE`, Spell): ungenutzt
 - Conviction Marcato (`ConvictionMarcatoPvE`, Spell): ungenutzt
 - Deep Clean (`DeepCleanPvE`, Spell): ungenutzt
-- Dimensional Shift (`DimensionalShiftPvE`, Spell): ungenutzt
 - Final Sting (`FinalStingPvE`, Spell): ungenutzt
 - Force Field (`ForceFieldPvE`, Spell): ungenutzt
 - Laser Eye (`LaserEyePvE`, Spell): ungenutzt
@@ -358,6 +366,7 @@ Maschinelle Liste; die Bewertung je Eintrag steht im Konzept.
 - Mind Blast (`MindBlastPvE`, Spell): ungenutzt
 - Mortal Flame (`MortalFlamePvE`, Spell): ungenutzt
 - Peat Pelt (`PeatPeltPvE`, Spell): ungenutzt
+- Perpetual Ray (`PerpetualRayPvE`, Spell): ungenutzt
 - Right Round (`RightRoundPvE`, Spell): ungenutzt
 - Ruby Dynamics (`RubyDynamicsPvE`, Spell): ungenutzt
 - Self-destruct (`SelfdestructPvE`, Spell): ungenutzt

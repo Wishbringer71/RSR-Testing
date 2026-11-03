@@ -26,6 +26,10 @@ public sealed class BLU_Reborn : BlueMageRotation
 	[RotationConfig(CombatType.PvE, Name = "Use Low Chance abilities")]
 	public bool LowChance { get; set; } = false;
 
+	[RotationConfig(CombatType.PvE, Name = "Moon Flute only when it is safe: not as tank or healer, no member in danger, no raidwide or tankbuster on you announced within its window",
+		Tooltip = "In a fight: Moon Flute goes when the burst it lifts gains more than Waning Nocturne costs - Waning allows no action at all, no heal, no mitigation, no raise. On: it also waits while you are under tank or healer mimicry, while a party member is in danger or an announced area cast would put one there, while your own health, carried forward over the window, would fall that low, and while BossModReborn announces a raidwide or a tankbuster on you within it. Without BossModReborn's timeline only what is cast or measured counts. Off: only the value decides.")]
+	public bool MoonFluteOnlyWhenSafe { get; set; } = true;
+
 	[Range(0, 1, ConfigUnitType.Percent)]
 	[RotationConfig(CombatType.PvE, Name = "Minimum HP percent allowed for the use of Devour as a heal")]
 	public float DevourHealThreshold { get; set; } = 0.6f;
@@ -109,12 +113,20 @@ public sealed class BLU_Reborn : BlueMageRotation
 
 	protected override bool AttackAbility(IAction nextGCD, out IAction? act)
 	{
-		if (SurpanakhaPvE.Cooldown.CurrentCharges == 4 || IsLastAbility(true, SurpanakhaPvE))
+		if (IsLastAbility(true, SurpanakhaPvE) && SurpanakhaPvE.CanUse(out act, usedUp: true))
 		{
-			if (SurpanakhaPvE.CanUse(out act, usedUp: true))
-			{
-				return true;
-			}
+			return true;
+		}
+
+		// The burst waits for the Moon Flute coming within the next GCDs (concept 01, "Der Burst wartet", A507).
+		if (BurstWaits)
+		{
+			return base.AttackAbility(nextGCD, out act);
+		}
+
+		if (SurpanakhaPvE.Cooldown.CurrentCharges == SurpanakhaPvE.Cooldown.MaxCharges && SurpanakhaPvE.CanUse(out act, usedUp: true))
+		{
+			return true;
 		}
 
 		if (SeaShantyPvE.CanUse(out act))
@@ -217,20 +229,17 @@ public sealed class BLU_Reborn : BlueMageRotation
 
 	protected override bool EmergencyGCD(IAction? nextGCD, out IAction? act)
 	{
-		if (SurpanakhaPvE.Cooldown.CurrentCharges == 4 || IsLastAbility(true, SurpanakhaPvE))
+		if ((IsLastAbility(true, SurpanakhaPvE) || (SurpanakhaPvE.Cooldown.CurrentCharges == SurpanakhaPvE.Cooldown.MaxCharges && !BurstWaits))
+			&& SurpanakhaPvE.CanUse(out act, usedUp: true))
 		{
-			if (SurpanakhaPvE.CanUse(out act, usedUp: true))
-			{
-				return true;
-			}
+			return true;
 		}
 
-		if (WaxingNocturneWillEnd)
+		// Diamondback turns Waxing into Waning at once and roots the player for its duration (effect text): only when the
+		// player's health, carried forward over Waning, would fall into the critical class (concept 01, "Diamantrücken", A507).
+		if (WaxingNocturneWillEnd && PlayerFallsInWaning && DiamondbackPvE.CanUse(out act))
 		{
-			if (DiamondbackPvE.CanUse(out act))
-			{
-				return true;
-			}
+			return true;
 		}
 
 		if (UseMightyGuard && (IsTank || HasBasicInstinct))
@@ -355,11 +364,6 @@ public sealed class BLU_Reborn : BlueMageRotation
 			{
 				return true;
 			}
-
-			if (LauncherPvE.CanUse(out act))
-			{
-				return true;
-			}
 		}
 
 		if (CondensedLibraPvE.CanUse(out act))
@@ -377,9 +381,24 @@ public sealed class BLU_Reborn : BlueMageRotation
 			return true;
 		}
 
-		if (InCombat && MoonFlutePvE.CanUse(out act))
+		// The Moon Flute window by value and safety; Whistle and Tingle go before it when Triple Trident falls into Waxing, so
+		// they take no Waxing GCD (concept 01, "Mondflöte", A507).
+		if (MoonFluteComing)
 		{
-			return true;
+			if (TridentInWaxing && WhistlePvE.CanUse(out act))
+			{
+				return true;
+			}
+
+			if (TridentInWaxing && TinglePvE.CanUse(out act))
+			{
+				return true;
+			}
+
+			if (MoonFlutePvE.CanUse(out act))
+			{
+				return true;
+			}
 		}
 
 		if (UltravibrationPvE.CanUse(out act))
@@ -395,12 +414,9 @@ public sealed class BLU_Reborn : BlueMageRotation
 	{
 		if (SongOfTormentPvE.Info.IsOnSlot && SongOfTormentPvE.CanUse(out _, skipStatusProvideCheck: true) && SongOfTormentPvE.Target.Target != null && (SongOfTormentPvE.Target.Target?.WillStatusEndGCD(3, 0, true, SongOfTormentPvE.Setting.TargetStatusProvide ?? []) ?? false))
 		{
-			if (BristlePvE.CanUse(out act))
-			{
-				return true;
-			}
-
-			if (WhistlePvE.CanUse(out act))
+			// Bristle lifts the next spell, Song of Torment's 550 over its duration by half; Whistle lifts only a physical one
+			// and went to waste here. Not while the flute comes: its cast is the next spell (concept 01, "Verstärker", A507).
+			if (!MoonFluteComing && BristlePvE.CanUse(out act))
 			{
 				return true;
 			}
@@ -423,7 +439,7 @@ public sealed class BLU_Reborn : BlueMageRotation
 
 		if (SongOfTormentPvE.CanUse(out act, skipStatusProvideCheck: true) && SongOfTormentPvE.Target.Target != null && (SongOfTormentPvE.Target.Target?.WillStatusEndGCD(3, 0, true, SongOfTormentPvE.Setting.TargetStatusProvide ?? []) ?? false))
 		{
-			if ((BristlePvE.Info.IsOnSlot || WhistlePvE.Info.IsOnSlot) && HasHarmonizedBoost)
+			if (BristlePvE.Info.IsOnSlot && StatusHelper.PlayerHasStatus(true, StatusID.Boost_1716))
 			{
 				return true;
 			}
@@ -435,9 +451,17 @@ public sealed class BLU_Reborn : BlueMageRotation
 
 	private bool SpendCooldowns(out IAction? act)
 	{
-		if (TripleTridentPvE.Info.IsOnSlot && (TripleTridentPvE.Cooldown.HasOneCharge || TripleTridentPvE.Cooldown.WillHaveOneChargeGCD(1)) && IsLastGCD(false, TinglePvE))
+		// Whistle, then Tingle, then Triple Trident: each enhancer as many GCDs ahead as enhancers are still missing. The old
+		// condition asked for Tingle as the last GCD, which Tingle's own status never let happen (D8, A507).
+		if (TripleTridentPvE.Info.IsOnSlot)
 		{
-			if (TinglePvE.CanUse(out act))
+			var tingleMissing = TinglePvE.Info.IsOnSlot && !StatusHelper.PlayerHasStatus(true, StatusID.Tingling);
+			if (TripleTridentPvE.Cooldown.WillHaveOneChargeGCD((uint)((tingleMissing ? 1 : 0) + 1)) && WhistlePvE.CanUse(out act))
+			{
+				return true;
+			}
+
+			if (TripleTridentPvE.Cooldown.WillHaveOneChargeGCD(1) && TinglePvE.CanUse(out act))
 			{
 				return true;
 			}
@@ -501,7 +525,8 @@ public sealed class BLU_Reborn : BlueMageRotation
 			return true;
 		}
 
-		if (MissilePvE.CanUse(out act))
+		// Missile's effect text says its chance is low: it goes under "Use Low Chance abilities" only (D1, A507).
+		if (LowChance && MissilePvE.CanUse(out act))
 		{
 			if (MissilePvE.Target.Target != null && MissilePvE.Target.Target.GetEffectiveHpPercent() >= TheMissileKnowsWhereItIs * 100f)
 			{
@@ -509,12 +534,21 @@ public sealed class BLU_Reborn : BlueMageRotation
 			}
 		}
 
-		if (_1000NeedlesPvE.CanUse(out act))
+		// Fixed and percentage damage only where it beats the filler in the same time, by the measured damage per potency
+		// (concept 01, "Wert statt Reihenfolge", A507).
+		if (_1000NeedlesPvE.CanUse(out act) && FixedDamageBeatsFiller(_1000NeedlesPvE))
 		{
-			if (_1000NeedlesPvE.Target.Target != null && _1000NeedlesPvE.Target.Target.CurrentHp >= 1000)
-			{
-				return true;
-			}
+			return true;
+		}
+
+		if (LauncherPvE.CanUse(out act) && HealthShareBeatsFiller(LauncherPvE))
+		{
+			return true;
+		}
+
+		if (DimensionalShiftPvE.CanUse(out act) && HealthShareBeatsFiller(DimensionalShiftPvE))
+		{
+			return true;
 		}
 
 		if (DrillCannonsPvE.CanUse(out act, skipAoeCheck: true))
@@ -535,7 +569,7 @@ public sealed class BLU_Reborn : BlueMageRotation
 			return true;
 		}
 
-		if (SaintlyBeamPvE.CanUse(out act))
+		if (SaintlyBeamPvE.CanUse(out act) && OverSonicBoom(SaintlyBeamPvE))
 		{
 			return true;
 		}
@@ -607,97 +641,93 @@ public sealed class BLU_Reborn : BlueMageRotation
 			return true;
 		}
 
-		if (PeripheralSynthesisPvE.CanUse(out act))
+		if (PeripheralSynthesisPvE.CanUse(out act) && OverSonicBoom(PeripheralSynthesisPvE))
 		{
 			return true;
 		}
 
-		if (HydroPullPvE.CanUse(out act))
+		if (HydroPullPvE.CanUse(out act) && OverSonicBoom(HydroPullPvE))
 		{
 			return true;
 		}
 
-		if (BlazePvE.CanUse(out act))
+		if (BlazePvE.CanUse(out act) && OverSonicBoom(BlazePvE))
 		{
 			return true;
 		}
 
-		if (MustardBombPvE.CanUse(out act))
+		if (MustardBombPvE.CanUse(out act) && OverSonicBoom(MustardBombPvE))
 		{
 			return true;
 		}
 
-		if (FlameThrowerPvE.CanUse(out act))
+		if (FlameThrowerPvE.CanUse(out act) && OverSonicBoom(FlameThrowerPvE))
 		{
 			return true;
 		}
 
-		if (GlowerPvE.CanUse(out act))
+		if (GlowerPvE.CanUse(out act) && OverSonicBoom(GlowerPvE))
 		{
 			return true;
 		}
 
-		if (TheLookPvE.CanUse(out act))
+		if (TheLookPvE.CanUse(out act) && OverSonicBoom(TheLookPvE))
 		{
 			return true;
 		}
 
-		if (PlaincrackerPvE.CanUse(out act))
+		if (PlaincrackerPvE.CanUse(out act) && OverSonicBoom(PlaincrackerPvE))
 		{
 			return true;
 		}
 
-		if (HighVoltagePvE.CanUse(out act))
+		if (HighVoltagePvE.CanUse(out act) && OverSonicBoom(HighVoltagePvE))
 		{
 			return true;
 		}
 
-		if (FeculentFloodPvE.CanUse(out act))
+		if (FeculentFloodPvE.CanUse(out act) && OverSonicBoom(FeculentFloodPvE))
 		{
 			return true;
 		}
 
-		if (KaltstrahlPvE.CanUse(out act))
+		if (KaltstrahlPvE.CanUse(out act) && OverSonicBoom(KaltstrahlPvE))
 		{
 			return true;
 		}
 
-		if (ElectrogenesisPvE.CanUse(out act))
+		if (ElectrogenesisPvE.CanUse(out act) && OverSonicBoom(ElectrogenesisPvE))
 		{
 			return true;
 		}
 
-		if (NortherliesPvE.CanUse(out act))
+		if (NortherliesPvE.CanUse(out act) && OverSonicBoom(NortherliesPvE))
 		{
 			return true;
 		}
 
-		if (ProteanWavePvE.CanUse(out act))
+		if (ProteanWavePvE.CanUse(out act) && OverSonicBoom(ProteanWavePvE))
 		{
 			return true;
 		}
 
-		if (AlpineDraftPvE.CanUse(out act))
+		if (AlpineDraftPvE.CanUse(out act) && OverSonicBoom(AlpineDraftPvE))
 		{
 			return true;
 		}
 
-		if (TatamigaeshiPvE.CanUse(out act))
+		if (TatamigaeshiPvE.CanUse(out act) && OverSonicBoom(TatamigaeshiPvE))
 		{
 			return true;
 		}
 
-		if (PerpetualRayPvE.CanUse(out act))
+		// Perpetual Ray (220 in a 3 s cast) is no filler: Sonic Boom brings more per second (concept 01, "Füllreihenfolge").
+		if (RefluxPvE.CanUse(out act) && OverSonicBoom(RefluxPvE))
 		{
 			return true;
 		}
 
-		if (RefluxPvE.CanUse(out act))
-		{
-			return true;
-		}
-
-		if (GoblinPunchPvE.CanUse(out act))
+		if (GoblinPunchPvE.CanUse(out act) && OverSonicBoom(GoblinPunchPvE))
 		{
 			return true;
 		}
@@ -709,83 +739,90 @@ public sealed class BLU_Reborn : BlueMageRotation
 				return true;
 			}
 
-			if (!UltravibrationPvE.Info.IsOnSlot)
+			if (!UltravibrationPvE.Info.IsOnSlot && OverSonicBoom(TheRamsVoicePvE))
 			{
 				return true;
 			}
 		}
 
-		if (TheDragonsVoicePvE.CanUse(out act, skipTargetStatusNeedCheck: !TheRamsVoicePvE.Info.IsOnSlot))
+		if (TheDragonsVoicePvE.CanUse(out act, skipTargetStatusNeedCheck: !TheRamsVoicePvE.Info.IsOnSlot)
+			&& (TheRamsVoicePvE.Info.IsOnSlot || OverSonicBoom(TheDragonsVoicePvE)))
 		{
 			return true;
 		}
 
-		if (BlackKnightsTourPvE.CanUse(out act, skipStatusNeed: WhiteKnightsTourPvE.Info.IsOnSlot))
+		// The Knight's Tour cycle begins with one tour at 200 against Sonic Boom's 210 and pays 400 for every one after it, as
+		// long as Bind and Slow land. It begins only against a kind not seen to resist them, and where the target lives for the
+		// opener and one payoff (concept 01, "Rösselsprünge", A507). The opener skipped the player's own status need before,
+		// not the target's, and never went (D10).
+		if (KnightsTourCanBegin(BlackKnightsTourPvE, WhiteKnightsTourPvE)
+			&& BlackKnightsTourPvE.CanUse(out act, skipTargetStatusNeedCheck: true))
 		{
 			return true;
 		}
 
-		if (WhiteKnightsTourPvE.CanUse(out act, skipStatusNeed: BlackKnightsTourPvE.Info.IsOnSlot))
+		if (KnightsTourCanBegin(WhiteKnightsTourPvE, BlackKnightsTourPvE)
+			&& WhiteKnightsTourPvE.CanUse(out act, skipTargetStatusNeedCheck: true))
 		{
 			return true;
 		}
 
-		if (ChocoMeteorPvE.CanUse(out act))
+		if (ChocoMeteorPvE.CanUse(out act) && OverSonicBoom(ChocoMeteorPvE))
 		{
 			return true;
 		}
 
-		if (MaledictionOfWaterPvE.CanUse(out act))
+		if (MaledictionOfWaterPvE.CanUse(out act) && OverSonicBoom(MaledictionOfWaterPvE))
 		{
 			return true;
 		}
 
-		if (FireAngonPvE.CanUse(out act))
+		if (FireAngonPvE.CanUse(out act) && OverSonicBoom(FireAngonPvE))
 		{
 			return true;
 		}
 
-		if (_4TonzeWeightPvE.CanUse(out act))
+		if (_4TonzeWeightPvE.CanUse(out act) && OverSonicBoom(_4TonzeWeightPvE))
 		{
 			return true;
 		}
 
-		if (InkJetPvE.CanUse(out act))
+		if (InkJetPvE.CanUse(out act) && OverSonicBoom(InkJetPvE))
 		{
 			return true;
 		}
 
-		if (BombTossPvE.CanUse(out act))
+		if (BombTossPvE.CanUse(out act) && OverSonicBoom(BombTossPvE))
 		{
 			return true;
 		}
 
-		if (DrillCannonsPvE.CanUse(out act, skipTargetStatusNeedCheck: true))
+		if (DrillCannonsPvE.CanUse(out act, skipTargetStatusNeedCheck: true) && OverSonicBoom(DrillCannonsPvE))
 		{
 			return true;
 		}
 
-		if (HighVoltagePvE.CanUse(out act, skipTargetStatusNeedCheck: true))
+		if (HighVoltagePvE.CanUse(out act, skipTargetStatusNeedCheck: true) && OverSonicBoom(HighVoltagePvE))
 		{
 			return true;
 		}
 
-		if (FlyingFrenzyPvE.CanUse(out act))
+		if (FlyingFrenzyPvE.CanUse(out act) && OverSonicBoom(FlyingFrenzyPvE))
 		{
 			return true;
 		}
 
-		if (AquaBreathPvE.CanUse(out act))
+		if (AquaBreathPvE.CanUse(out act) && OverSonicBoom(AquaBreathPvE))
 		{
 			return true;
 		}
 
-		if (AbyssalTransfixionPvE.CanUse(out act))
+		if (AbyssalTransfixionPvE.CanUse(out act) && OverSonicBoom(AbyssalTransfixionPvE))
 		{
 			return true;
 		}
 
-		if (SharpenedKnifePvE.CanUse(out act, skipTargetStatusNeedCheck: true))
+		if (SharpenedKnifePvE.CanUse(out act, skipTargetStatusNeedCheck: true) && OverSonicBoom(SharpenedKnifePvE))
 		{
 			return true;
 		}
@@ -964,6 +1001,115 @@ public sealed class BLU_Reborn : BlueMageRotation
 	#endregion
 
 	#region Extra Methods
+
+	private FrameCached<bool>? _moonFluteComing;
+	private string _moonFluteHeldFor = string.Empty;
+	private bool _moonFluteWasComing;
+	private DateTime _moonFluteComingSince = DateTime.MinValue;
+	private float _moonFluteNet;
+
+	/// <summary>
+	/// Whether the burst abilities wait for the coming Moon Flute: it comes, and waiting has not begun to cost more than the
+	/// window gains (<see cref="BurstWaitCostsUse"/>).
+	/// </summary>
+	private bool BurstWaits => MoonFluteComing && !BurstWaitCostsUse();
+
+	/// <summary>
+	/// Whether the Moon Flute goes within the next GCDs: in combat, neither Waxing nor Waning running, in the set, its window
+	/// worth more than Waning costs, and - under <see cref="MoonFluteOnlyWhenSafe"/> - safe (concept 01, "Mondflöte", A507).
+	/// Decided once per frame; the trace gets a line when it begins to come and when the reason it is held changes.
+	/// </summary>
+	private bool MoonFluteComing => (_moonFluteComing ??= new(DecideMoonFlute, DataCenter.FrameCacheMs)).Value;
+
+	private bool DecideMoonFlute()
+	{
+		if (!InCombat)
+		{
+			_moonFluteHeldFor = string.Empty;
+		}
+
+		if (!InCombat || HasWaxingNocturne || HasWaningNocturne || !MoonFlutePvE.Info.IsOnSlot || !MoonFlutePvE.EnoughLevel
+			|| !MoonFluteWindowWorth(out var worth, out _moonFluteNet))
+		{
+			_moonFluteWasComing = false;
+			return false;
+		}
+
+		if (MoonFluteOnlyWhenSafe && !MoonFluteSafe(out var why))
+		{
+			if (why != _moonFluteHeldFor)
+			{
+				_moonFluteHeldFor = why;
+				DefenseTrace.Line($"moon flute held: {why} ({worth})");
+			}
+
+			_moonFluteWasComing = false;
+			return false;
+		}
+
+		_moonFluteHeldFor = string.Empty;
+		if (!_moonFluteWasComing)
+		{
+			_moonFluteComingSince = DateTime.Now;
+			DefenseTrace.Line($"moon flute comes: {worth}");
+		}
+
+		_moonFluteWasComing = true;
+		return true;
+	}
+
+	/// <summary>
+	/// Whether Triple Trident is ready within Waxing Nocturne, so Whistle and Tingle go before the flute.
+	/// </summary>
+	private bool TridentInWaxing
+		=> TripleTridentPvE.Info.IsOnSlot && TryMoonFluteText(out _, out var waxing, out _)
+			&& (TripleTridentPvE.Cooldown.HasOneCharge || TripleTridentPvE.Cooldown.WillHaveOneCharge(waxing));
+
+	/// <summary>
+	/// Whether waiting for the flute costs more than it brings: the time already waited - the flute cannot be cast while the
+	/// player moves - times what holding the burst costs per second has reached what the window gains
+	/// (<see cref="BlueMageRotation.BurstHoldCostPerSecond"/>), or the wait still ahead costs one of the abilities ready now a
+	/// use before the target dies (<see cref="CustomRotation.HoldCostsUse"/>). The wait ahead reaches over the rest of this
+	/// GCD, Whistle and Tingle where they still go, and the flute itself.
+	/// </summary>
+	private bool BurstWaitCostsUse()
+	{
+		if ((float)(DateTime.Now - _moonFluteComingSince).TotalSeconds * BurstHoldCostPerSecond() >= _moonFluteNet)
+		{
+			return true;
+		}
+
+		var gcds = (TridentInWaxing && WhistlePvE.Info.IsOnSlot ? 1 : 0) + (TridentInWaxing && TinglePvE.Info.IsOnSlot ? 1 : 0);
+		var wait = WeaponRemain + (gcds * WeaponTotal) + SpellTime(MoonFlutePvE);
+		foreach (var action in AllBaseActions)
+		{
+			if (action != null && !action.Info.IsRealGCD && !action.Setting.IsFriendly && action.Info.IsOnSlot
+				&& action.Cooldown.HasOneCharge && action.Cooldown.RecastTimeOneChargeRaw > WeaponTotal
+				&& HoldCostsUse(action, wait))
+			{
+				return true;
+			}
+		}
+
+		return false;
+	}
+
+	/// <summary>
+	/// Whether a Knight's Tour cycle may begin with <paramref name="opener"/>: the other tour that pays for it is in the set,
+	/// the target's kind has not been seen to resist Bind or Slow, and the target lives long enough for the opener and one
+	/// payoff where its time to kill is known.
+	/// </summary>
+	private bool KnightsTourCanBegin(IBaseAction opener, IBaseAction payoff)
+	{
+		if (!payoff.Info.IsOnSlot || CurrentTarget is not { } target
+			|| OwnHitWatch.Resists(target, StatusID.Bind) || OwnHitWatch.Resists(target, StatusID.Slow))
+		{
+			return false;
+		}
+
+		var ttk = target.GetCorrectedTTK();
+		return float.IsNaN(ttk) || ttk > SpellTime(opener) + SpellTime(payoff);
+	}
 	public override bool CanHealSingleSpell
 	{
 		get

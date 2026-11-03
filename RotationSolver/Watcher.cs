@@ -1206,6 +1206,127 @@ public static class Watcher
 		}
 	}
 
+	// What an own action did, for OwnHitWatch: the damage on its main target, against the potency its text states; and for
+	// the Blue Mage, whether a spell of the fixed-or-lethal class did anything and which states the targets resisted (A507).
+	private static void ObserveOwnHits(ActionEffectSet set, Lumina.Excel.Sheets.Action action)
+	{
+		var mainId = set.Target?.GameObjectId ?? 0;
+		foreach (var effect in set.TargetEffects)
+		{
+			if (effect.TargetID == mainId && TryGetDamageEntry(effect, out var entry))
+			{
+				OwnHitWatch.Hit(action.RowId, FullAmount(entry));
+				break;
+			}
+		}
+
+		if (DataCenter.Job != ECommons.ExcelServices.Job.BLU || action.ClassJob.RowId != (uint)ECommons.ExcelServices.Job.BLU)
+		{
+			return;
+		}
+
+		var lowerLevelOnly = ActionTooltip.IgnoresHigherLevel(action.RowId);
+		var promised = PromisedTargetStatuses(action.RowId);
+		foreach (var effect in set.TargetEffects)
+		{
+			IBattleChara? target = null;
+			foreach (var hostile in DataCenter.AllHostileTargets)
+			{
+				if (hostile.GameObjectId == effect.TargetID)
+				{
+					target = hostile;
+					break;
+				}
+			}
+
+			if (target == null)
+			{
+				continue;
+			}
+
+			bool damaged = false, applied = false, missed = false, invulnerable = false;
+			List<uint>? resisted = null;
+			effect.ForEach(e =>
+			{
+				if (IsDamageEntry(e.type))
+				{
+					damaged |= FullAmount(e) > 0;
+				}
+				else if (e.type == ActionEffectType.ApplyStatusEffectTarget)
+				{
+					applied = true;
+				}
+				else if (e.type == ActionEffectType.Miss)
+				{
+					missed = true;
+				}
+				// "Invulnerable" is a phase only while the target carries an invincibility status; without one it is how the
+				// game answers a spell its kind is immune to, and that is learned (OwnHitWatch).
+				else if (e.type == ActionEffectType.Invulnerable)
+				{
+					invulnerable = HasInvincibility(target);
+				}
+				// A fully resisted status (52, 55), as the sleep and stun watches read it.
+				else if (e.type is ActionEffectType.FullResistStatus or ActionEffectType.FullResistStatus2)
+				{
+					(resisted ??= []).Add(e.value);
+				}
+			});
+
+			if (lowerLevelOnly || resisted != null || promised.Count > 0)
+			{
+				OwnHitWatch.Outcome(action.RowId, target, lowerLevelOnly, damaged, applied, missed, invulnerable, resisted ?? [], promised);
+			}
+		}
+	}
+
+	private static bool HasInvincibility(IBattleChara target)
+	{
+		if (target.StatusList == null)
+		{
+			return false;
+		}
+
+		foreach (var status in target.StatusList)
+		{
+			if (status != null && status.IsInvincible())
+			{
+				return true;
+			}
+		}
+
+		return false;
+	}
+
+	// The statuses an own action puts on its target by the rotation's setting, where its effect text names no chance for
+	// them: a hit without them did not land them (OwnHitWatch).
+	private static List<uint> PromisedTargetStatuses(uint actionId)
+	{
+		List<uint> promised = [];
+		var actions = DataCenter.CurrentRotation?.AllBaseActions;
+		if (actions == null || ActionTooltip.Text(actionId).Contains("chance", StringComparison.OrdinalIgnoreCase))
+		{
+			return promised;
+		}
+
+		foreach (var candidate in actions)
+		{
+			if (candidate?.ID != actionId || candidate.Setting.TargetStatusProvide is not { } provides)
+			{
+				continue;
+			}
+
+			foreach (var status in provides)
+			{
+				promised.Add((uint)status);
+			}
+
+			break;
+		}
+
+		return promised;
+	}
+
 	private static void ActionFromSelf(ActionEffectSet set)
 	{
 		try
@@ -1255,6 +1376,7 @@ public static class Watcher
 			// The trace writes what the defence chose; this line says that it went out.
 			DefenseTrace.Executed(action.Value.RowId, action.Value.Name.ExtractText());
 			Updaters.BlueMageSetTrace.Landed(action.Value);
+			ObserveOwnHits(set, action.Value);
 
 			if (action.Value.RowId == (uint)ActionID.ShirkPvE)
 			{

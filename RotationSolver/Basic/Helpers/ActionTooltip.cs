@@ -28,6 +28,13 @@ internal static class ActionTooltip
 	private const string DamageAreaText = "enemies who enter";
 	private static readonly Regex AdditionalDamageArea = new(@"Additional Effect: Creates [^.]*enemies who enter", RegexOptions.Compiled);
 	private static readonly Regex StatedDuration = new(@"Duration: (?<value>\d{1,3})s", RegexOptions.Compiled);
+	private static readonly Regex PotencyWord = new(@"[Pp]otenc", RegexOptions.Compiled);
+	private static readonly Regex ConditionalWording = new(@"\b(when|while|increase[sd]?|over time|fold|each hit|[Cc]ombo|rear|flank|front|[Bb]onus|[Cc]ure)\b", RegexOptions.Compiled);
+	private static readonly Regex StatedFixedDamage = new(@"fixed (?<value>\d[\d,]*) points of", RegexOptions.Compiled);
+	private static readonly Regex StatedPercent = new(@"(?<value>\d{1,3})%", RegexOptions.Compiled);
+	private static readonly Regex StatedHealthShare = new(@"(?:dealing|equal to) (?<shares>[^.|\n]*?) of (?:their|target's) (?:current )?HP", RegexOptions.Compiled);
+	private static readonly Regex StatedDamageUp = new(@"increasing damage dealt by (?<value>\d{1,3})%", RegexOptions.Compiled);
+	private const string IgnoresHigherLevelText = "no effect on enemies whose level is higher than your own";
 
 	/// <summary>
 	/// The evaluated effect text of <paramref name="actionId"/>, empty when the sheet has no row for it or the
@@ -154,6 +161,95 @@ internal static class ActionTooltip
 	public static bool TryStatedDuration(uint actionId, out float seconds)
 	{
 		return TryStated(actionId, StatedDuration, out seconds);
+	}
+
+	/// <summary>
+	/// The second "Duration" the text of <paramref name="actionId"/> states, in seconds: the effect that follows the first one,
+	/// as Moon Flute's Waning Nocturne follows its Waxing Nocturne; false when the text states fewer than two.
+	/// </summary>
+	public static bool TrySecondStatedDuration(uint actionId, out float seconds)
+	{
+		seconds = 0f;
+		var first = StatedDuration.Match(Text(actionId));
+		var second = first.Success ? first.NextMatch() : first;
+		return second.Success && float.TryParse(second.Groups["value"].Value, NumberStyles.Float,
+			CultureInfo.InvariantCulture, out seconds);
+	}
+
+	/// <summary>
+	/// The potency of <paramref name="actionId"/> when its text states exactly one and no condition on it - no "when",
+	/// "increased", damage over time, multiple hits, combo, positional or bonus wording - so that one hit on the main target
+	/// deals that potency and nothing else; false otherwise. The measure of damage per potency counts only such hits
+	/// (<see cref="OwnHitWatch"/>, A507).
+	/// </summary>
+	public static bool TryPlainPotency(uint actionId, out float potency)
+	{
+		potency = 0f;
+		var text = Text(actionId);
+		return text.Length > 0 && PotencyWord.Matches(text).Count == 1 && !ConditionalWording.IsMatch(text)
+			&& TryStated(actionId, StatedPotency, out potency);
+	}
+
+	/// <summary>
+	/// The fixed damage the text of <paramref name="actionId"/> states ("Deals a fixed 1,000 points of physical damage"),
+	/// false when it states none.
+	/// </summary>
+	public static bool TryFixedDamage(uint actionId, out float damage)
+	{
+		return TryStated(actionId, StatedFixedDamage, out damage);
+	}
+
+	/// <summary>
+	/// The share of each enemy's health the text of <paramref name="actionId"/> states it deals, as a fraction: "damage equal
+	/// to 30% of their current HP" gives 0.3, and "randomly dealing 50%, 30%, 20%, or 10% of their HP" the mean of the
+	/// four. False when the text states no such share.
+	/// </summary>
+	public static bool TryHealthShare(uint actionId, out float share)
+	{
+		share = 0f;
+		var match = StatedHealthShare.Match(Text(actionId));
+		if (!match.Success)
+		{
+			return false;
+		}
+
+		var sum = 0f;
+		var count = 0;
+		foreach (Match percent in StatedPercent.Matches(match.Groups["shares"].Value))
+		{
+			if (float.TryParse(percent.Groups["value"].Value, NumberStyles.Float, CultureInfo.InvariantCulture, out var value))
+			{
+				sum += value;
+				count++;
+			}
+		}
+
+		if (count == 0)
+		{
+			return false;
+		}
+
+		share = sum / count / 100f;
+		return true;
+	}
+
+	/// <summary>
+	/// The damage increase in percent a buff of <paramref name="actionId"/> states ("increasing damage dealt by 50%"),
+	/// false when it states none.
+	/// </summary>
+	public static bool TryStatedDamageUp(uint actionId, out float percent)
+	{
+		return TryStated(actionId, StatedDamageUp, out percent);
+	}
+
+	/// <summary>
+	/// Whether the text of <paramref name="actionId"/> says it has no effect on enemies of higher level than the player:
+	/// the Blue Mage's class of fixed, percentage and lethal spells (Missile, Launcher, Dimensional Shift, Tail Screw, Doom,
+	/// Level 5 Death, Ultravibration).
+	/// </summary>
+	public static bool IgnoresHigherLevel(uint actionId)
+	{
+		return Text(actionId).Contains(IgnoresHigherLevelText, StringComparison.Ordinal);
 	}
 
 	/// <summary>

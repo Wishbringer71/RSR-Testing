@@ -55,6 +55,353 @@ public partial class BlueMageRotation
 	public static bool NoMimicry => !IsTank && !IsDPS && !IsHealer;
 	#endregion
 
+	#region Value against the filler and the Moon Flute window (concept 01, "Blaumagier", A507)
+
+	/// <summary>
+	/// The filler the value rules weigh against: Sonic Boom, else Water Cannon, whichever is in the active set; null with
+	/// neither.
+	/// </summary>
+	protected IBaseAction? ValueFiller
+		=> SonicBoomPvE.Info.IsOnSlot ? SonicBoomPvE : WaterCannonPvE.Info.IsOnSlot ? WaterCannonPvE : null;
+
+	/// <summary>
+	/// The time a spell takes of the player's: its cast, or the GCD where that is longer.
+	/// </summary>
+	protected static float SpellTime(IBaseAction action)
+		=> Math.Max(action.Info.CastTime, WeaponTotal);
+
+	/// <summary>
+	/// The filler's potency as its effect text states it, and the time it takes; false without a filler in the set or a
+	/// figure in its text.
+	/// </summary>
+	protected bool TryFiller(out float potency, out float time)
+	{
+		time = 0f;
+		potency = 0f;
+		var filler = ValueFiller;
+		if (filler == null || !ActionTooltip.TryPotencyOn(filler.ID, 1, out potency))
+		{
+			return false;
+		}
+
+		time = SpellTime(filler);
+		return potency > 0f && time > 0f;
+	}
+
+	/// <summary>
+	/// The damage the filler would deal in <paramref name="seconds"/>, by the damage per potency measured on the player's own
+	/// hits (<see cref="OwnHitWatch.DamagePerPotency"/>); NaN while nothing is measured.
+	/// </summary>
+	protected float FillerDamageOver(float seconds)
+	{
+		var perPotency = OwnHitWatch.DamagePerPotency;
+		return float.IsNaN(perPotency) || !TryFiller(out var potency, out var time)
+			? float.NaN
+			: perPotency * potency / time * seconds;
+	}
+
+	/// <summary>
+	/// Whether a spell of fixed damage - 1000 Needles - deals more than the filler in the time it takes: the fixed damage its
+	/// text states, at most the health of the enemies it reaches since they share it, against the measured filler damage
+	/// over its cast. False while nothing is measured or the text states no figure (concept 01, "Wert statt Reihenfolge").
+	/// </summary>
+	/// <param name="action">The spell, asked after its <c>CanUse</c> chose its targets.</param>
+	protected bool FixedDamageBeatsFiller(IBaseAction action)
+	{
+		if (!ActionTooltip.TryFixedDamage(action.ID, out var fixedDamage))
+		{
+			return false;
+		}
+
+		var filler = FillerDamageOver(SpellTime(action));
+		return !float.IsNaN(filler) && Math.Min(fixedDamage, HealthReached(action, false)) > filler;
+	}
+
+	/// <summary>
+	/// Whether a spell dealing a share of each enemy's health - Launcher, Dimensional Shift - deals more than the filler in
+	/// the time it takes: the share its text states (the mean, where it names several at random) of the health of the
+	/// enemies it reaches, against the measured filler damage over its cast. An enemy of higher level or of a kind such a
+	/// spell has been seen to do nothing to counts with nothing.
+	/// </summary>
+	/// <param name="action">The spell, asked after its <c>CanUse</c> chose its targets.</param>
+	protected bool HealthShareBeatsFiller(IBaseAction action)
+	{
+		if (!ActionTooltip.TryHealthShare(action.ID, out var share))
+		{
+			return false;
+		}
+
+		var filler = FillerDamageOver(SpellTime(action));
+		return !float.IsNaN(filler) && share * HealthReached(action, true) > filler;
+	}
+
+	// The current health of the enemies an action reaches as its CanUse chose them. With onlyAffected, an enemy the fixed-or-
+	// lethal class does nothing to - of higher level, or of a kind seen unaffected - adds nothing.
+	private static float HealthReached(IBaseAction action, bool onlyAffected)
+	{
+		var sum = 0f;
+		var targets = action.Target.AffectedTargets;
+		if (targets == null)
+		{
+			return sum;
+		}
+
+		foreach (var enemy in targets)
+		{
+			if (enemy == null || !enemy.IsEnemy()
+				|| (onlyAffected && (enemy.Level > DataCenter.PlayerSyncedLevel() || OwnHitWatch.FlatOrLethalDoesNothing(enemy))))
+			{
+				continue;
+			}
+
+			sum += enemy.CurrentHp;
+		}
+
+		return sum;
+	}
+
+	/// <summary>
+	/// Whether <paramref name="action"/>, a spell without a recast of its own, should go before Sonic Boom: it brings more
+	/// potency per time over the enemies it reaches, and on a single target only without a longer cast - a longer cast costs
+	/// the weaving room the Blue Mage's many abilities need, which is why Sonic Boom (1 s) is the filler at Blue Academy,
+	/// WrathCombo and BossMod. True without Sonic Boom in the set or a figure in either text, so the old order stays
+	/// (concept 01, "Füllreihenfolge").
+	/// </summary>
+	/// <param name="action">The spell, asked after its <c>CanUse</c> chose its targets.</param>
+	protected bool OverSonicBoom(IBaseAction action)
+	{
+		if (!SonicBoomPvE.Info.IsOnSlot || !SonicBoomPvE.EnoughLevel)
+		{
+			return true;
+		}
+
+		var targets = Math.Max(1, action.Target.AffectedTargets?.Length ?? 1);
+		if (!ActionTooltip.TryPotencyOn(action.AdjustedID, targets, out var potency)
+			|| !ActionTooltip.TryPotencyOn(SonicBoomPvE.ID, 1, out var boom))
+		{
+			return true;
+		}
+
+		if (potency / SpellTime(action) <= boom / SpellTime(SonicBoomPvE))
+		{
+			return false;
+		}
+
+		return targets > 1 || action.Info.CastTime <= SonicBoomPvE.Info.CastTime;
+	}
+
+	/// <summary>
+	/// Whether the player's own health, carried forward by its measured trend over <paramref name="seconds"/>, falls into
+	/// the heal chain's critical class (concept 07). False while health is not falling on balance.
+	/// </summary>
+	protected static bool PlayerFallsWithin(float seconds)
+	{
+		var player = Player;
+		if (player == null)
+		{
+			return false;
+		}
+
+		var ttk = player.GetCorrectedTTK();
+		if (float.IsNaN(ttk) || ttk <= 0f)
+		{
+			return false;
+		}
+
+		var left = player.GetEffectiveHpPercent() * Math.Max(0f, 1f - (seconds / ttk));
+		return left <= HealthForDyingTanks * 100f;
+	}
+
+	/// <summary>
+	/// Moon Flute's Waxing and Waning Nocturne and the damage it adds, from its effect text; false when the text states them
+	/// not.
+	/// </summary>
+	protected bool TryMoonFluteText(out float damageUp, out float waxing, out float waning)
+	{
+		waxing = 0f;
+		waning = 0f;
+		return ActionTooltip.TryStatedDamageUp(MoonFlutePvE.ID, out damageUp)
+			& ActionTooltip.TryStatedDuration(MoonFlutePvE.ID, out waxing)
+			& ActionTooltip.TrySecondStatedDuration(MoonFlutePvE.ID, out waning);
+	}
+
+	private readonly Dictionary<byte, (float Potency, int Gcds)> _windowGroups = [];
+
+	/// <summary>
+	/// Whether a Moon Flute window begun now gains more than its Waning Nocturne costs (concept 01, "Mondflöte", "Wert").
+	/// </summary>
+	/// <remarks>
+	/// Gained: the damage increase on what falls into Waxing - every damaging spell in the set with a recast of its own
+	/// longer than the GCD that is ready within it, at the first potency its text states, once per charge at hand, and the
+	/// filler for the GCDs left. Lost: the flute's own GCD and the GCDs of Waning at the filler's potency. Where the target is
+	/// the last enemy in range and its time to kill is known, both count only up to it, so a flute just before the end costs
+	/// its own GCD alone. No window while BossModReborn predicts downtime within Waxing. Multiple hits count with their first
+	/// potency, so the window errs towards going too rarely.
+	/// </remarks>
+	/// <param name="why">The figures, for the trace.</param>
+	/// <param name="net">What the window gains over what it costs, in potency.</param>
+	/// <returns>True when the window gains more than it costs.</returns>
+	protected bool MoonFluteWindowWorth(out string why, out float net)
+	{
+		net = 0f;
+		var gcd = WeaponTotal;
+		if (!TryMoonFluteText(out var damageUp, out var waxing, out var waning) || !TryFiller(out var filler, out _) || gcd <= 0f)
+		{
+			why = "Moon Flute's or the filler's effect text states no figure";
+			return false;
+		}
+
+		if (BMRDowntimeWithin(waxing))
+		{
+			why = $"BossMod predicts downtime in {BMRDowntimeIn:F0} s";
+			return false;
+		}
+
+		var left = float.PositiveInfinity;
+		if (NumberOfHostilesInRange <= 1 && CurrentTarget is { } target && target.GetCorrectedTTK() is var ttk && !float.IsNaN(ttk) && ttk > 0f)
+		{
+			left = ttk;
+		}
+
+		var gainSpan = Math.Min(waxing, left);
+		var lossSpan = Math.Min(waning, Math.Max(0f, left - waxing));
+
+		// One entry per recast group: J Kick and Quasar, Feather Rain and Eruption, Nightbloom and Both Ends share theirs, and
+		// only the stronger of a pair goes in the window.
+		_windowGroups.Clear();
+		foreach (var action in AllBaseActions)
+		{
+			if (action == null || action.ID == MoonFlutePvE.ID || action.Setting.IsFriendly || !action.Info.IsOnSlot
+				|| !action.EnoughLevel || action.Cooldown.RecastTimeOneChargeRaw <= gcd)
+			{
+				continue;
+			}
+
+			if (!action.Cooldown.HasOneCharge && action.Cooldown.RecastTimeRemainOneChargeRaw > gainSpan)
+			{
+				continue;
+			}
+
+			if (!ActionTooltip.TryPotencyOn(action.ID, 1, out var potency))
+			{
+				continue;
+			}
+
+			var charges = Math.Max((int)action.Cooldown.CurrentCharges, 1);
+			var group = action.Cooldown.CoolDownGroup;
+			if (!_windowGroups.TryGetValue(group, out var known) || known.Potency < potency * charges)
+			{
+				_windowGroups[group] = (potency * charges, action.Info.IsRealGCD ? charges : 0);
+			}
+		}
+
+		var burst = 0f;
+		var burstGcds = 0;
+		foreach (var (potency, gcds) in _windowGroups.Values)
+		{
+			burst += potency;
+			burstGcds += gcds;
+		}
+
+		var fillers = Math.Max(0f, (gainSpan / gcd) - burstGcds);
+		var gain = damageUp / 100f * (burst + (filler * fillers));
+		var cost = filler * (1f + (lossSpan / gcd));
+		why = $"window {burst + (filler * fillers):F0} potency in {gainSpan:F0} s: +{gain:F0} against {cost:F0} lost";
+		net = gain - cost;
+		return net > 0f;
+	}
+
+	/// <summary>
+	/// The potency per second that holding the burst abilities ready now costs over a long fight: each of them comes back that
+	/// much later, a share of a use per second of its recast. Holding them for the Moon Flute pays while the time held, times
+	/// this, stays below what the window gains (concept 01, "Der Burst wartet").
+	/// </summary>
+	protected float BurstHoldCostPerSecond()
+	{
+		_windowGroups.Clear();
+		foreach (var action in AllBaseActions)
+		{
+			if (action == null || action.Info.IsRealGCD || action.Setting.IsFriendly || !action.Info.IsOnSlot
+				|| !action.Cooldown.HasOneCharge || action.Cooldown.RecastTimeOneChargeRaw <= WeaponTotal
+				|| !ActionTooltip.TryPotencyOn(action.ID, 1, out var potency))
+			{
+				continue;
+			}
+
+			var perSecondOfIt = potency / action.Cooldown.RecastTimeOneChargeRaw;
+			var group = action.Cooldown.CoolDownGroup;
+			if (!_windowGroups.TryGetValue(group, out var known) || known.Potency < perSecondOfIt)
+			{
+				_windowGroups[group] = (perSecondOfIt, 0);
+			}
+		}
+
+		var perSecond = 0f;
+		foreach (var (potency, _) in _windowGroups.Values)
+		{
+			perSecond += potency;
+		}
+
+		return perSecond;
+	}
+
+	/// <summary>
+	/// Whether the 15 s of Waning Nocturne put anyone at risk (concept 01, "Mondflöte", "Sicherheit"): tank or healer mimicry,
+	/// a member in the critical class or an announced area cast that would put one there, the player's own health carried
+	/// forward over the window into the critical class, a raidwide BossModReborn predicts within the window, or a tankbuster
+	/// on the player within it. Where the chance is measured: the health trend, the announcement, BossModReborn's timeline;
+	/// without a module only the first two.
+	/// </summary>
+	/// <param name="why">The reason it is not safe, or empty.</param>
+	/// <returns>True when nothing of that holds.</returns>
+	protected bool MoonFluteSafe(out string why)
+	{
+		if (IsTank || IsHealer)
+		{
+			why = IsTank ? "tank mimicry: Waning Nocturne leaves no mitigation" : "healer mimicry: Waning Nocturne leaves no heals";
+			return false;
+		}
+
+		if (AreaDefenseDanger(out var danger))
+		{
+			why = danger;
+			return false;
+		}
+
+		var window = TryMoonFluteText(out _, out var waxing, out var waning) ? waxing + waning : 0f;
+		if (PlayerFallsWithin(window))
+		{
+			why = "the player's health, carried forward over the window, falls into the critical class";
+			return false;
+		}
+
+		if (BMRRaidwideWithin(window))
+		{
+			why = $"BossMod predicts a raidwide in {BMRRaidwideIn:F0} s";
+			return false;
+		}
+
+		if (TankbusterOnMeWithin(window))
+		{
+			why = "a tankbuster on the player is announced within the window";
+			return false;
+		}
+
+		why = string.Empty;
+		return true;
+	}
+
+	/// <summary>
+	/// Whether the player's health, carried forward over what is left of Waxing Nocturne and the whole of Waning Nocturne,
+	/// falls into the critical class: the one case for Diamondback at the end of Waxing, which turns it into Waning at once
+	/// and roots the player for its duration (concept 01, "Diamantrücken").
+	/// </summary>
+	protected bool PlayerFallsInWaning
+		=> TryMoonFluteText(out _, out _, out var waning)
+			&& PlayerFallsWithin(StatusHelper.PlayerStatusTime(true, StatusID.WaxingNocturne) + waning);
+
+	#endregion
+
 
 	/// <summary>
 	/// 
@@ -527,6 +874,8 @@ public partial class BlueMageRotation
 		setting.AttackTypeOverride = AttackType.Magic;
 		setting.AspectOverride = Aspect.Unaspected;
 		setting.TargetStatusProvide = [StatusID.Doom_1738];
+		// "Has no effect on enemies whose level is higher than your own" - the fixed-or-lethal class (A507).
+		setting.IsFlatDamageDeath = true;
 	}
 
 	static partial void ModifyPeculiarLightPvE(ref ActionSetting setting)
@@ -762,7 +1111,8 @@ public partial class BlueMageRotation
 		setting.AspectOverride = Aspect.Unaspected;
 		setting.IsSlowSpell = true;
 		setting.TargetStatusProvide = [StatusID.Slow];
-		setting.TargetStatusNeed = [StatusID.Blind];
+		// Effect text: "Potency is increased to 400 when enemies are bound. The Bind effect is also removed." (A507)
+		setting.TargetStatusNeed = [StatusID.Bind];
 		setting.CreateConfig = () => new ActionConfig()
 		{
 			AoeCount = 1,
@@ -773,8 +1123,9 @@ public partial class BlueMageRotation
 	{
 		setting.AttackTypeOverride = AttackType.Magic;
 		setting.AspectOverride = Aspect.Unaspected;
-		setting.IsBlindSpell = true;
-		setting.TargetStatusProvide = [StatusID.Blind];
+		// Effect text: "Additional Effect: Bind" (A507); it was read as Blind.
+		setting.IsBindSpell = true;
+		setting.TargetStatusProvide = [StatusID.Bind];
 		setting.TargetStatusNeed = [StatusID.Slow];
 		setting.CreateConfig = () => new ActionConfig()
 		{
@@ -924,7 +1275,9 @@ public partial class BlueMageRotation
 	{
 		setting.AttackTypeOverride = AttackType.Magic;
 		setting.AspectOverride = Aspect.Unaspected;
-		setting.TargetStatusProvide = [StatusID.Tingling];
+		// Effect text: "Additional Effect: Stun, Duration: 3s" (A507); the setting named Tingle's own status.
+		setting.IsStunSpell = true;
+		setting.TargetStatusProvide = [StatusID.Stun];
 		setting.CreateConfig = () => new ActionConfig()
 		{
 			AoeCount = 1,
@@ -1311,10 +1664,11 @@ public partial class BlueMageRotation
 
 	static partial void ModifyDimensionalShiftPvE(ref ActionSetting setting)
 	{
-		//Need data
 		setting.AttackTypeOverride = AttackType.Magic;
 		setting.AspectOverride = Aspect.Unaspected;
 		setting.IsFriendly = false;
+		// "Has no effect on enemies whose level is higher than your own" - the fixed-or-lethal class (A507).
+		setting.IsFlatDamageDeath = true;
 		setting.CreateConfig = () => new ActionConfig()
 		{
 			AoeCount = 1,

@@ -513,6 +513,15 @@ public struct ActionTargetInfo(IBaseAction action)
 			}
 		}
 
+		// The Blue Mage's fixed, percentage and lethal spells: their effect text says they do nothing to an enemy of higher
+		// level, and a kind they have been seen to do nothing to is not tried again in this session (concept 01,
+		// "Gelernte Immunität", A507).
+		if (DataCenter.Job == Job.BLU && action.Setting.IsFlatDamageDeath
+			&& (battleChara.Level > DataCenter.PlayerSyncedLevel() || OwnHitWatch.FlatOrLethalDoesNothing(battleChara)))
+		{
+			return false;
+		}
+
 		try
 		{
 			if (DataCenter.IsPvP && !action.Setting.IgnoreGuard)

@@ -1137,6 +1137,36 @@
    "status": "exception",
    "loop": "A496",
    "reason": "The search field's text buffer, as long as upstream's search fields in the same window (MainWindow_List: 50). A limit of the input box, not a figure of the game; nothing in the game could supply it."
+  },
+  {
+   "file": "RotationSolver/Basic/Helpers/ActionTooltip.cs",
+   "code": "share = sum / count / 100f;",
+   "values": [
+    "100"
+   ],
+   "status": "exception",
+   "loop": "A507",
+   "reason": "Unit conversion, not a game value: the effect text states the share in percent and the method answers a fraction (A507)."
+  },
+  {
+   "file": "RotationSolver/Basic/Rotations/Basic/BlueMageRotation.cs",
+   "code": "return left <= HealthForDyingTanks * 100f;",
+   "values": [
+    "100"
+   ],
+   "status": "exception",
+   "loop": "A507",
+   "reason": "Unit conversion, not a game value: GetEffectiveHpPercent answers in percent and HealthForDyingTanks is a share, as in the critical class (A154, A340, A507)."
+  },
+  {
+   "file": "RotationSolver/Basic/Rotations/Basic/BlueMageRotation.cs",
+   "code": "var gain = damageUp / 100f * (burst + (filler * fillers));",
+   "values": [
+    "100"
+   ],
+   "status": "exception",
+   "loop": "A507",
+   "reason": "Unit conversion, not a game value: Moon Flute's effect text states the damage increase in percent (A507)."
   }
  ]
 }

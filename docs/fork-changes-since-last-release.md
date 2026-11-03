@@ -59,6 +59,25 @@ What this release changes in the fight. For the whole distance from upstream, se
 - **Blue Mage: the active set in the trace.** `DefenseTrace.log` now lists the Blue Mage's 24 active spells whenever
   they change, and every own Blue Mage spell that lands although it is not in that set (a follow-up a set spell turns
   into, such as White Death, does not count).
+- **Blue Mage: Moon Flute only when it pays and is safe.** Moon Flute no longer goes again every time Waning Nocturne
+  ends. It goes when the damage it adds to what falls into Waxing Nocturne - the cooldown spells ready by then, one per
+  shared recast, read from their tooltips - is more than Waning costs; just before a fight ends it costs only its own
+  GCD. The burst abilities wait for it, Whistle and Tingle go before it when Triple Trident falls into the window, and
+  the wait ends once it would cost more than the window brings (for instance while you keep moving). New option "Moon
+  Flute only when it is safe…" (on by default): no Moon Flute under tank or healer mimicry, while a party member is in
+  danger, while your own health would fall too low over the window, or while BossModReborn announces a raidwide or a
+  tankbuster on you within it. Diamondback at the end of Waxing now goes only when your health would otherwise fall
+  that low during Waning; before, it ended every window early and rooted you.
+- **Blue Mage: fixed and percentage damage by value.** RSR measures the damage one point of potency deals on your own
+  hits. 1000 Needles, Launcher and Dimensional Shift go only where they deal more than Sonic Boom in the same time;
+  none of the fixed or lethal spells goes against an enemy of higher level, and an enemy kind they have been seen to do
+  nothing to is not tried again in the session. Missile now needs "Use Low Chance abilities", as its tooltip names a
+  low chance; Launcher, whose tooltip does not, no longer does.
+- **Blue Mage: fillers, enhancers and Knight's Tours.** Sonic Boom is the filler; another spell goes before it only
+  with more potency per second over the enemies it hits, and on one target without a longer cast. Perpetual Ray is no
+  filler. Whistle no longer goes before Song of Torment, where it was lost; Whistle and Tingle now go before Triple
+  Trident (Tingle never went before). The Knight's Tours now read Bind instead of Blind, and the cycle can begin: it
+  starts against an enemy kind not seen to resist Bind or Slow. Tatami-gaeshi now counts as a stun.
 - **Beastmaster: a record of the Master's Bestiary.** While the Bestiary is open, RSR writes to `BestiaryTrace.log`
   next to `DefenseTrace.log` what the game receives from each click, every context menu with its entries, every server
   command the client sends through its general command function, and the battlehorn slots as they change. It only

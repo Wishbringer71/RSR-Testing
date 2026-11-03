@@ -413,20 +413,23 @@ zu seinem Profil. Namen: deutsch nach den Spielblättern (xivapi, `language=de`,
   geführt), UltimateCombo 7fa9359 vom 04.10.2026 (StackBLU): Werkzeugquellen, Code nur gelesen.
 - **consolegameswiki**, „Blue Mage": Regeln des Sets, Stufe 80.
 
-**Was im Kampf heute geschieht** (am Code von `BLU_Reborn` und `BlueMageRotation`):
+**Befund vor Stufe 1** (am Code von `BLU_Reborn` und `BlueMageRotation` bis A506; behoben mit A507, Regeln unter „Wert
+statt Reihenfolge" und „Mondflöte"):
 - *D1, 1000 Nadeln* (Id 11397, vom Kaktor gelernt; vermutlich sein „Kaktor-Zauber"):
-  - Er steht in `UseFiller` vor allen Füllzaubern. Seine einzige Bedingung ist, dass das Ziel mindestens 1000 HP hat;
-    auf hoher Stufe trifft das auf jedes Ziel zu.
+  - Er stand in `UseSituational` vor allen Füllzaubern. Seine einzige Bedingung war, dass das Ziel mindestens 1000 HP
+    hat; auf hoher Stufe trifft das auf jedes Ziel zu.
   - Laut Blatt wirkt er 6 s und macht feste 1000 Schaden, aufgeteilt auf alle Gegner in 4 Yalm. Schallwelle (Sonic
     Boom, 18308) wirkt 1 s mit Potenz 210.
   - Er lohnt nur, solange 2,4 GCDs Füllzauber weniger als 1000 Schaden machen, also weniger als rund 417 Schaden je
     GCD; das ist nur ganz unten in den Stufen der Fall.
   - Dieselbe Klasse ohne Wertvergleich: Rakete (Missile, 50 % der aktuellen HP, geringe Chance), Raketenwerfer
     (Launcher), Dimensionsverschiebung (Dimensional Shift, 5 s), Schweifschraube, Verhängnis, Todesstufe 5.
-- *D2, Mondflöte* (11415): Sie steht in `UseUtilityAndDebuffs` unter nur `InCombat`.
+  - Rakete ging ohne den Schalter „Use Low Chance abilities", obwohl ihr Wirktext die geringe Chance nennt; der
+    Raketenwerfer, dessen Text keine nennt, stand darunter.
+- *D2, Mondflöte* (11415): Sie stand in `UseUtilityAndDebuffs` unter nur `InCombat`.
   - Sie gibt 15 s Waxing Nocturne (+50 % Schaden), danach 15 s Waning Nocturne. In dieser Zeit gibt es keine Aktion:
     keine Heilung, keine Abwehr, keine Wiederbelebung.
-  - RSR zündet sie neu, sobald Waning endet. Ohne gesammelten Burst ist das ein Wechsel aus 15 s mit 150 % und 15 s mit
+  - RSR zündete sie neu, sobald Waning endete. Ohne gesammelten Burst ist das ein Wechsel aus 15 s mit 150 % und 15 s mit
     0 %, im Mittel 75 % des Schadens.
   - Rechnung: Ohne Burst bringt ein Fenster +630 Potenz und kostet 1470 (sechs GCDs Waning und den eigenen GCD), also
     −840 je Fenster.
@@ -434,19 +437,27 @@ zu seinem Profil. Namen: deutsch nach den Spielblättern (xivapi, `language=de`,
 - *D3, die beiden Rösselsprünge:*
   - Laut Blatt verstärkt Weißer Rösselsprung (18310) gegen Bind und setzt Slow. Schwarzer Rösselsprung (18311)
     verstärkt gegen Slow und setzt Bind.
-  - In `BlueMageRotation` liest Weißer Rösselsprung Blind statt Bind, und Schwarzer setzt Blind statt Bind.
+  - In `BlueMageRotation` las Weißer Rösselsprung Blind statt Bind, und Schwarzer setzte Blind statt Bind.
 - *D4, Pfeife* (Whistle, 18309): Sie verstärkt nur den nächsten physischen Zauber um 80 %.
-  - `MaintainDoTs` setzt sie vor Gesang der Gemarterten (Song of Torment), einen magischen Zauber; dort verfällt sie.
-  - Borstigkeit (Bristle, +50 % auf den nächsten Zauber) geht nur vor den Gesang. Gerade dort lohnt sie wenig (unten,
-    „Wert statt Reihenfolge").
+  - `MaintainDoTs` setzte sie vor Gesang der Gemarterten (Song of Torment), einen magischen Zauber; dort verfiel sie.
 - *D5, Füllreihenfolge:*
-  - Heiligenstrahl (Saintly Beam, Potenz 100, 500 nur gegen Untote) steht ohne Prüfung auf Untote vor Schallwelle.
-  - Perpetueller Strahl (Perpetual Ray, 3 s Wirkzeit) und viele Flächenzauber mit `AoeCount` 1 stehen ebenfalls davor.
+  - Heiligenstrahl (Saintly Beam, Potenz 100, 500 nur gegen Untote) stand ohne Prüfung auf Untote vor Schallwelle.
+  - Perpetueller Strahl (Perpetual Ray, 3 s Wirkzeit) und viele Flächenzauber mit `AoeCount` 1 standen ebenfalls davor.
   - Wirkzeiten von 2 bis 3 s lassen kaum Raum zum Weben. Schallwelle (1 s) ist bei Blue Academy, WrathCombo und
     BossMod der Füllzauber.
-- *D6, Surpanakha* (18323): Vier Ladungen; jede verstärkt die nächste um 50 % (bis dreifach), jede andere Aktion bricht
-  die Kette. RSR beginnt bei vier Ladungen und hängt nach, belegt im Code. Ob eine Webregel dazwischen fällt, ist nicht
-  gemessen.
+- *D6, Surpanakha* (18323), kein Defekt: Vier Ladungen; jede verstärkt die nächste um 50 % (bis dreifach), jede andere
+  Aktion bricht die Kette. RSR beginnt bei vollen Ladungen. Die Fortsetzung steht in `EmergencyAbility` vor jeder anderen
+  Fähigkeit und in `EmergencyGCD` vor jedem GCD; dazwischen fällt keine andere Regel (am Code).
+- *D7, Diamantrücken am Ende jedes Waxing:* `EmergencyGCD` nahm ihn, sobald Waxing in zwei GCDs endete. Laut Wirktext
+  wechselt er sofort in Waning und macht 10 s unbeweglich: Waxing endete früher, und der Spieler konnte keiner Fläche
+  ausweichen.
+- *D8, Kribbeln:* Es sollte vor dem Dreizack gehen, verlangte aber, dass der letzte GCD schon Kribbeln war. Sein eigener
+  Status sperrt es dann; es ging nie.
+- *D9, Tatami-gaeshi:* Seine Einstellung nannte Kribbeln als Zustand auf dem Ziel, ein Klon aus Kribbeln; laut Blatt setzt
+  es Stun.
+- *D10, Einstieg in den Rösselsprung-Kreislauf:* Er übersprang die eigene Statusvoraussetzung des Spielers statt der des
+  Ziels (`skipStatusNeed` statt `skipTargetStatusNeedCheck`) und ging nie; ein Rösselsprung fiel nur, wenn Bind oder
+  Slow schon von anderswo auf dem Ziel standen.
 
 **Das Set** (sein Hinweis vom 03.11.2026: RSR wirke offenbar Zauber außerhalb des Sets oder schreibe es im Kampf um;
 1000 Nadeln stehe bei ihm nicht im Set und werde trotzdem gewirkt):
@@ -541,29 +552,95 @@ zu seinem Profil. Namen: deutsch nach den Spielblättern (xivapi, `language=de`,
   - Bestialischer Zorn (kostet 50 % der max. HP) und Rachestoß (500 nur unter 20 % HP): nur als Option für Spieler,
     die Schaden vor Sicherheit stellen, ab Werk aus (CLAUDE.md, „Spielweise").
 
-**Wert statt Reihenfolge** (die Behebung von D1, D4 und D5 als Klasse):
-- Ein Zauber mit festem oder prozentualem Schaden geht nur, wenn er mehr bringt als der Füllzauber in derselben Zeit.
-  - Den Schaden je Potenz misst RSR am eigenen Schallwellen-Treffer, über den Effekt-Handler, der jeden Treffer sieht.
-    Das steuert sich selbst nach Stufe und Ausrüstung nach.
-  - Bei 1000 Nadeln: 1000 gegen gemessenen Füllschaden mal 2,4 GCDs.
-  - Rakete, Raketenwerfer und Dimensionsverschiebung: erwarteter Anteil der Gegner-HP gegen den Füllschaden, nur gegen
-    Gegner ohne höhere Stufe.
-  - Ob eine Gegnerart dagegen verwundbar ist, lernt RSR aus dem Ergebnis, wie bei den gelernten Schlafwiderständen.
-- Ein Verstärker (Borstigkeit, Pfeife, Kribbeln) geht nur vor einem Verbraucher, der ihn über den Wert eines Füllzaubers
-  hebt (Schwellen in der Tabelle). Er geht nicht ins Leere: Pfeife nur vor einen physischen Zauber.
-- Füllzauber sortiert nach Potenz je GCD und nach Webraum. Schallwelle ist der Einzelziel-Füllzauber; Flächenzauber erst
-  ab ihrer Gegnerzahl.
+**Wert statt Reihenfolge** (die Behebung von D1, D3 bis D5 und D8 bis D10 als Klasse; Stufe 1, gebaut mit A507):
+- *Schaden je Potenz:* RSR misst ihn an den eigenen Treffern, im Effekt-Handler, der jeden Treffer sieht.
+  - Es zählen Zauber, deren Wirktext genau eine Potenz ohne Bedingung nennt: kein „increased", kein Schaden über Zeit,
+    keine Mehrfachtreffer. Gemessen am Hauptziel, der Betrag geteilt durch die Potenz.
+  - Mittel über die Treffer derselben Stufe im selben Gebiet, neu bei einem Wechsel. Kritische, Direkttreffer und die
+    Buffs, unter denen auch der Füllzauber fiele, sind darin; genau das braucht der Vergleich.
+  - So steuert es sich nach Stufe, Ausrüstung, Stufensynchronisation und Kampfinstinkt nach.
+- *Füllschaden:* Schaden je Potenz mal die Potenz der Schallwelle aus dem Wirktext, je GCD; ohne Schallwelle im Set die
+  der Wasserkanone.
+- *1000 Nadeln:* der feste Schaden aus dem Wirktext, höchstens die HP der Gegner in seiner Reichweite (er wird geteilt),
+  gegen den Füllschaden über seine Wirkzeit. Ohne Messung geht er nicht.
+- *Raketenwerfer, Dimensionsverschiebung:* der Anteil aus dem Wirktext mal die HP aller erreichten Gegner, gegen den
+  Füllschaden über die Wirkzeit. Beim Raketenwerfer ist der Anteil das Mittel der vier zufälligen Anteile im Text.
+- *Geringe Chance:* Die Einstellung „Use Low Chance abilities" bindet nach ihrem Text.
+  - Rakete nennt im Wirktext eine geringe Trefferchance und geht nur unter ihr; bisher ging sie ohne.
+  - Der Raketenwerfer nennt keine und geht nach Wert; bisher stand er unter dem Schalter.
+  - Schweifschraube, Verhängnis und Todesstufe 5 bleiben darunter.
+- *Höhere Stufe:* Jeder Zauber mit festem oder tödlichem Schaden („Has no effect on enemies whose level is higher than
+  your own") geht nicht gegen einen Gegner höherer Stufe.
+- *Gelernte Immunität:*
+  - Landet ein solcher Zauber auf einer Gegnerart ohne Schaden und ohne Fehlschlag (Miss), ist die Art dagegen immun.
+    RSR sperrt die Klasse für diese Art bis zum Ende der Sitzung. Ein Fehlschlag ist die geringe Chance und sperrt nicht.
+  - Ebenso für Zustände: Meldet das Spiel für einen gesetzten Zustand Widerstand (Effektarten 52, 55, „status no
+    effect"), widersteht die Art ihm. Eine Kette, die ihn braucht, beginnt gegen sie nicht mehr (Rösselsprünge).
+  - Sitzung statt Datei: Die Tabellen auf Platte tragen Revision und Quarantäne (Konzept 13). Hier kostet ein Irrtum einen
+    Zauber je Art und Sitzung. Im Masked Carnivale gelten zuerst die Widerstände aus dem Blatt.
+- *Füllreihenfolge (D5):* Schallwelle ist der Füllzauber. Ein anderer Zauber ohne eigene Abklingzeit geht vor ihr nur,
+  - wenn er mindestens zwei Gegner trifft und über sie mehr Potenz je Zeit bringt (Potenz über die Ziele aus dem
+    Wirktext; Zeit ist die längere von Wirkzeit und GCD), oder
+  - wenn er auf einem Ziel mehr Potenz je Zeit bringt, ohne länger zu wirken. Eine längere Wirkzeit kostet Webraum für
+    die vielen Fähigkeiten des Blaumagiers; darum ist Schallwelle (1 s) bei Blue Academy, WrathCombo und BossMod der
+    Füllzauber, auch gegen Feuersturm mit 220 in 2 s.
+  - Steht sein verstärkender Zustand schon auf dem Ziel (Bind, Slow, Stun, Petrifikation, Deep Freeze), gilt die
+    verstärkte Potenz, und er geht vor ihr.
+  - Ohne Schallwelle im Set bleibt die bisherige Reihenfolge.
+  - Heiligenstrahl geht damit ab drei Gegnern (100 je Gegner gegen 210), solange RSR Untote nicht erkennt. Perpetueller
+    Strahl (220 in 3 s) geht nie als Füllzauber.
+- *Verstärker (D4, D8):*
+  - Pfeife nur vor einem physischen Zauber, der damit über einen Füllzauber kommt: vor dem Dreizack (dreimal 150, +80 %:
+    +360 gegen 210). Nicht mehr vor dem Gesang der Gemarterten, einem magischen Zauber.
+  - Kribbeln vor dem Dreizack. Bisher verlangte RSR, dass der letzte GCD schon Kribbeln war; weil Kribbeln nicht über
+    seinen eigenen Status gesetzt wird, ging es nie.
+  - Reihenfolge Pfeife, Kribbeln, Dreizack, sobald der Dreizack in so vielen GCDs bereit ist, wie Verstärker fehlen.
+  - Borstigkeit bleibt vor dem Gesang (550 über die Dauer, +50 %: +275 gegen 210). Der Gesang wartet nicht mehr auf den
+    Status der Pfeife, nur auf den der Borstigkeit.
+- *Tatami-gaeshi (D9):* Die Einstellung nannte Kribbeln als Zustand auf dem Ziel, ein Klon aus Kribbeln. Laut Blatt setzt
+  es Stun für 3 s. Künftig Stun, und der Masked Carnivale sperrt es gegen Gegner ohne Stun-Anfälligkeit.
 
-**Sicherheit** (seine Regel, mit der Wahrscheinlichkeit gewichtet):
-- Die Mondflöte geht nur, wenn alles davon zutrifft:
-  - Burst bereit: Monddämmerung oder Sterblichkeit und die Fensterzauber im Set und bereit.
-  - Keine Gefahr in den 30 s aus Fenster und Waning: kein Mitglied in der kritischen Klasse. Mit BossMod-Modul keine
-    Raidwide und kein Tankbuster auf die Gruppe vorhergesagt; ohne Modul nur reaktiv.
-  - Nicht als Tank-Mimikry: 15 s ohne Abwehr.
-  - Allein nur unter Kampfinstinkt und mit voller Gesundheit.
-  - Ohne eine dieser Bedingungen wartet sie und schreibt den Grund ins `DefenseTrace.log`.
-- Diamantrücken (11424) während Waxing beendet das Fenster sofort; er geht dort nur im Notfall.
-- Für Spieler, die Schaden vorziehen, wird die Gefahrenbedingung eine Option, ab Werk an (seine Regel).
+**Mondflöte** (D2, D7; Stufe 1, gebaut mit A507; seine Regel, mit der Wahrscheinlichkeit gewichtet):
+- *Wert:* Das Fenster geht, wenn der Zuschlag auf das, was in Waxing fällt, den Verlust durch Waning übersteigt.
+  - Zuschlag und beide Dauern stehen im Wirktext der Mondflöte (+50 %, 15 s, 15 s).
+  - In Waxing fällt jeder Schadenszauber im Set mit eigener Abklingzeit länger als der GCD, der innerhalb von Waxing
+    bereit ist: seine erste Potenz aus dem Wirktext, je verfügbarer Ladung. Teilen sich zwei die Abklingzeit (Gewissenstritt
+    und Quasar, Federregen und Eruption, Monddämmerung und Beide Enden, Schockschlag und Bergsprenger; Wirktexte), zählt nur
+    der stärkere. Dazu der Füllzauber für die übrigen GCDs.
+  - Verlust: der GCD der Mondflöte und die GCDs in Waning, je mit der Potenz des Füllzaubers.
+  - Kampfende: Ist das Ziel der letzte Gegner in Reichweite und seine korrigierte Restzeit bekannt, zählt nur die Zeit
+    bis dahin. Eine Mondflöte kurz vor dem Ende kostet dann nur ihren eigenen GCD.
+  - Sagt BossMod in Waxing eine Downtime voraus, geht kein Fenster.
+  - Mehrfachtreffer (Dreizack, Matra-Magie, die Steigerung der Surpanakha) zählen nur mit der ersten Potenz. Das
+    Fenster geht also eher zu selten als zu oft; mit dem Burst liegt es weit über der Schwelle (+3035 gegen −840, oben).
+- *Der Burst wartet:* Kommt die Mondflöte (Wert und Sicherheit erfüllt, weder Waxing noch Waning), warten die
+  Schadensfähigkeiten mit Abklingzeit und der Beginn der Surpanakha-Kette.
+  - Vorher gehen Pfeife und Kribbeln, wenn der Dreizack in Waxing bereit ist; sie fallen so nicht in die Waxing-GCDs.
+  - Das Warten reicht bis zur Mondflöte, gewöhnlich die GCDs für Pfeife, Kribbeln und Flöte. Es endet, sobald es mehr
+    kostet, als das Fenster bringt: Jede gehaltene Fähigkeit kommt um die gehaltene Zeit später zurück, über einen langen
+    Kampf ein Anteil eines Einsatzes je Sekunde ihrer Abklingzeit. Übersteigt die gehaltene Zeit mal diese Kosten den
+    Gewinn des Fensters, gehen sie ohne Flöte; das trifft, wenn der Spieler sich bewegt und die Flöte (2 s Wirkzeit) nicht
+    wirken kann. Kostet das Warten nach der Restzeit des Ziels einen Einsatz, wartet nichts (`HoldCostsUse`).
+- *Sicherheit* (Option „Moon Flute only when it is safe", ab Werk an; seine Regel als Voreinstellung). Die Mondflöte
+  geht nur, wenn alles davon zutrifft:
+  - nicht unter Tank- oder Heiler-Mimikry: 15 s Waning ohne Abwehr und ohne Heilung;
+  - kein Mitglied in der kritischen Klasse und keine angesagte Fläche, die eines hineinbrächte (`AreaDefenseDanger`,
+    Konzept 07);
+  - die eigene Gesundheit, mit ihrem gemessenen Verlauf über Waxing und Waning fortgeschrieben, bleibt über der
+    kritischen Klasse;
+  - BossMod sagt in Fensterlänge keine Raidwide und keinen Tankbuster auf ihn voraus.
+  - Gemessen wird die Wahrscheinlichkeit am Gesundheitsverlauf, an der Ansage und an der Zeitleiste von BossMod. Ohne
+    Modul bleiben die ersten beiden; eine Raidwide, die nur die Zeitleiste kennt, sieht RSR dann nicht voraus.
+  - Ein Tankbuster auf einen anderen Tank zählt nicht: Als DPS hilft der Blaumagier ihm mit keiner seiner Aktionen.
+  - Hält sie wegen der Sicherheit, steht der Grund einmal je Wechsel im `DefenseTrace.log`, und der Burst wartet nicht.
+  - Verworfen: „allein nur unter Kampfinstinkt und mit voller Gesundheit". Kampfinstinkt wirkt laut Wirktext nur in
+    Inhalten für mehrere Spieler; die Bedingung sperrte die Flöte im Masked Carnivale ganz. Volle Gesundheit sagt nicht,
+    ob in Waning Schaden kommt; das sagt der Verlauf, allein wie in der Gruppe.
+- *Diamantrücken (D7):* Laut Wirktext wechselt er aus Waxing sofort in Waning und macht 10 s unbeweglich, bei −90 %
+  Schaden. Bisher nahm RSR ihn am Ende jedes Waxing, sobald er im Set war: Waxing endete bis zu zwei GCDs früher, und der
+  Spieler konnte in Waning keiner Fläche ausweichen. Künftig nur, wenn die eigene Gesundheit über Waning fortgeschrieben
+  in die kritische Klasse fiele; dann wiegt der Schaden schwerer als die Bewegung.
+- Für Spieler, die Schaden vorziehen, schaltet die Option die Sicherheitsbedingungen ab; Wert und Diamantrücken bleiben.
 
 **Alle gelernten Zauber nutzen: das Set** (seine Vorgabe):
 - Gelernt ist ein Zauber, wenn `UIState.IsUnlockLinkUnlockedOrQuestCompleted` seinen `UnlockLink` bestätigt. RSR prüft
@@ -607,7 +684,10 @@ zu seinem Profil. Namen: deutsch nach den Spielblättern (xivapi, `language=de`,
   - Es schreibt jede eigene Blaumagier-Aktion, die landet, obwohl sie nicht im gelesenen Set steht; Folgezauber über
     ihren Grundplatz ausgenommen.
   - Das entscheidet seinen Hinweis zu 1000 Nadeln.
-- *Stufe 1, Defekte:* D1 bis D5 nach „Wert statt Reihenfolge"; D2 nach „Sicherheit"; D3 Bind statt Blind.
+- *Stufe 1, Defekte* (gebaut mit A507): D1, D3 bis D5 und D8 bis D10 nach „Wert statt Reihenfolge"; D2 und D7 nach
+  „Mondflöte". Messmittel im `DefenseTrace.log`: „moon flute comes" mit Fensterwert, Gewinn und Verlust; „moon flute
+  held" mit dem Sicherheitsgrund, einmal je Wechsel; „damage per potency: first measure" je Stufe und Gebiet; „state
+  resisted", „state did not land" und „fixed or lethal spell without effect" je gelernter Gegnerart.
 - *Stufe 2, Synergien:* die Ketten aus der Tabelle. Jede Kette prüft, ob ihr Zustand landet, und gibt sie sonst für
   diese Gegnerart auf.
 - *Stufe 3, Set:* Auswahl und Schreiben außerhalb des Kampfes.
@@ -622,8 +702,24 @@ zu seinem Profil. Namen: deutsch nach den Spielblättern (xivapi, `language=de`,
 - *Ausgeliefert, und nichts ändert sich?*
   - Steht ein Zauber nicht im Set, bleibt jede Regel stumm. Darum misst Stufe 0 das Set, und Stufe 3 setzt es.
   - Ohne DPS-Mimikry bringt Matra-Magie die Hälfte; das trägt die Wertregel.
-- *Prüfgrad:* statisch an Code, Blättern, Spieler- und Werkzeugquellen; die Mondflöten-Rechnung aus Blattpotenzen.
-  Das Nachziehen von Dauerschaden in Waxing ist Spielerpraxis.
+- *Stufe 1, gebaut:*
+  - *Kein Defekt?* D7 bis D10 sind wie D1 bis D3 am Code und am Wirktext belegt.
+  - *Option falsch?* Die Mondflöte geht nach Wert gierig: Sie geht, sobald ein Fenster jetzt mehr bringt als kostet,
+    auch zur Minute. Dort liegen je Abklinggruppe eine 30- und 60-s-Fähigkeit (Gewissenstritt 300, Schockschlag 400,
+    Eruption 300, zwei Ladungen Surpanakha 400, Zermalmender Geist 400 als GCD) mit fünf Füllzaubern bei 2850 Potenz, also +1425
+    gegen 1470: knapp darunter, die Flöte geht dort gewöhnlich nicht. Geht sie doch, weil mehr bereit ist, bringt sie
+    mehr als sie kostet; die 120-s-Fähigkeiten sind zur Minute ohnehin nicht bereit, das 2-Minuten-Fenster verschiebt
+    sich nicht. Eine Ankerregel (nur mit Monddämmerung) trüge auf niedriger Stufe ohne Monddämmerung gar kein Fenster.
+  - *Ausgeliefert, und nichts ändert sich?*
+    - Liest RSR den Wirktext der Mondflöte nicht, geht sie nicht mehr; vorher ging sie immer. Das ist die sichere
+      Richtung, und `DefenseTrace.log` nennt jeden Wirktext ohne Potenz einmal.
+    - Ohne Messung des Schadens je Potenz geht 1000 Nadeln nicht. Die erste eigene Schallwelle misst ihn.
+    - Meldet das Spiel Immunität gegen festen Schaden anders als ohne Schaden, ohne Fehlschlag und ohne
+      Unverwundbarkeitsstatus, lernt RSR sie nicht; welche Antwort es gibt, ist nicht belegt. Dann wiederholt sich ein
+      solcher Zauber gegen diese Art; die Zeile „fixed or lethal spell without effect" fehlt dann im Protokoll.
+- *Prüfgrad:* statisch an Code, Blättern, Spieler- und Werkzeugquellen; die Mondflöten-Rechnung aus Blattpotenzen;
+  Compile und alle 43 Prüfschritte grün. Das Nachziehen von Dauerschaden in Waxing ist Spielerpraxis. Im Spiel steuern
+  sich Schaden je Potenz und gelernte Immunität selbst nach; Fensterwert und Haltegrund schreibt das Protokoll.
 
 ### BST — 538 LOC, 13 Configs
 

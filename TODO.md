@@ -10,10 +10,8 @@ Betroffene: **N** Endnutzer · **R** Autoren abgeleiteter Rotationen (Namensräu
 Nach der Wirkung im Kampf: Sicherheit der Gruppe vor Schaden, gewichtet mit der Wahrscheinlichkeit, in seinem Profil
 (seine Vorgabe, 17.10.2026: „todo nach wichtigkeit abarbeiten. jeweils im loop bearbeiten").
 
-1. Blaumagier, Stufe 1: Die Mondflöte nimmt die Hälfte der Kampfzeit jede Aktion, auch Heilung und Abwehr; zuerst sie,
-   dann 1000 Nadeln und die übrigen Defekte.
-2. Blaumagier, Stufe 2 und 3: Synergieketten, dann das Set aus den gelernten Zaubern.
-3. Fremde Repositories auf Verbesserungen für RSR prüfen: Jeder Fund kann ein Defekt im Verhalten einer Klasse sein,
+1. Blaumagier, Stufe 2 und 3: Synergieketten, dann das Set aus den gelernten Zaubern.
+2. Fremde Repositories auf Verbesserungen für RSR prüfen: Jeder Fund kann ein Defekt im Verhalten einer Klasse sein,
    den RSR heute im Kampf zeigt; zuerst die Rotationswerkzeuge für alle Jobs, Daedalus vorn (aktiv, alle Jobs,
    eigene Kampfvorhersage).
 
@@ -21,27 +19,15 @@ Danach die technische Schuld, soweit ihre Auflösungsbedingung erfüllt ist. War
 
 ## Defekte
 
-### Blaumagier, Stufe 1: Mondflöte, 1000 Nadeln, Rösselsprünge, Pfeife, Füllreihenfolge · N
-- *Wirkung:*
-  - Die Mondflöte geht im Kampf jederzeit. Danach folgen 15 s ohne jede Aktion, im Mittel 75 % Schaden.
-  - 1000 Nadeln (6 s, feste 1000) verdrängt Schallwelle.
-  - Die Rösselsprünge lesen Blind statt Bind.
-  - Pfeife verfällt vor einem magischen Zauber.
-  - Heiligenstrahl und langsame Flächenzauber gehen vor Schallwelle.
-- *Ort:* `BLU_Reborn` (`UseUtilityAndDebuffs`, `MaintainDoTs`, `UseFiller`), `BlueMageRotation` (Modify der
-  Rösselsprünge).
-- *Nächster Schritt:* Loop zu D1 bis D5. Mondflöte nur mit Burst und ohne vorhergesagte Gefahr; Wert statt
-  Reihenfolge mit gemessenem Schaden je Potenz.
-- *Konzept:* 01, „Blaumagier".
-
 ## Offene Arbeit
 
 ### Blaumagier, Stufe 2: Synergieketten · N
-- *Wirkung:* Gegen Gegner, auf denen Bind und Slow landen, bringt der Rösselsprung-Kreislauf 400 statt 210 je GCD.
-  Stimme des Widders mit Ultravibration räumt Rudel ab. Pfeife und Kribbeln gehen vor Dreizack und Schwinge.
-  Schwinge des Urteils führt zu Mette marcato. Dazu die übrigen Ketten.
-- *Ort:* `BLU_Reborn`.
-- *Nächster Schritt:* nach Stufe 1; je Kette die Prüfung, ob ihr Zustand landet.
+- *Wirkung:* Schwinge des Urteils führt zu Mette marcato (440 statt 220); Stun führt zu Blankes Messer (450),
+  Petrifikation zur Bohrkanone (600), Lightheaded zur Senfbombe; Borstigkeit geht vor Matra-Magie unter DPS-Mimikry;
+  Pitsche, patsche bei Regen; Heiligenstrahl gegen Untote. Rösselsprung-Kreislauf sowie Pfeife und Kribbeln vor dem
+  Dreizack stehen seit Stufe 1 (A507).
+- *Ort:* `BLU_Reborn`, `BlueMageRotation`.
+- *Nächster Schritt:* je Kette gegen die Synergietabelle; ob ihr Zustand landet, lernt `OwnHitWatch` seit A507.
 - *Konzept:* 01, „Blaumagier", Synergietabelle.
 
 ### Blaumagier, Stufe 3: Set aus den gelernten Zaubern · N
