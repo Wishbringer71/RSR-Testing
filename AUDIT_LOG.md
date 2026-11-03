@@ -15230,6 +15230,31 @@ durchgehen". Als Skill `spielpatch` festgehalten (Lesetabelle in CLAUDE.md); den
 - *TODO:* der Punkt steht unter „Warten auf Daten".
 - *Prüfgrad:* statisch; kompiliert ohne Warnung.
 
+### A512 · Release 7.5.7.14+wsh1 veröffentlicht, Release-Text übergeben, neuer Zweig (03.11.2026)
+
+Sein Auftrag (03.11.2026): „branch zu main, compile, release" – die Freigabe (`CLAUDE.md`, „Grenzen und Löschungen").
+
+- *Vorher gemessen:* Upstream abgeglichen (0 ausstehend, 7.5.7.14); `main` (0882b640c) Vorfahr des Arbeitszweigs, 54
+  Commits voraus; Tag `7.5.7.14+wsh1` frei auf `origin`; Versionsangaben schon auf 7.5.7.14+wsh1; CI auf 1d8aac195 grün.
+- *Zweig zu `main`:* `main` auf `claude/fixes-after-7.5.7.13` (1d8aac195) vorgespult und gepusht, über das Arbeitsverzeichnis
+  von `main` im Notizordner. Kompiliert ohne Warnung und Fehler.
+- *Release:* `publish.yaml` per `workflow_dispatch` auf `main` mit `7.5.7.14+wsh1`, Lauf 41660275237 erfolgreich.
+  Release auf 1d8aac195, `latest.zip` 3 335 697 Bytes, Digest sha256:ae510b0d…bdb8, Text mit allen Abschnitten des
+  Release-Texts.
+- *Übergabe:* `fork-changes-in-play.md` steht auf Upstream 7.5.7.14; die 39 Einträge sind in die Themen eingearbeitet:
+  Krieger, Dunkelritter, Beastmaster, Beschwörer, Blaumagier und Tinkturen bei „Damage and rotation"; die Messzeilen
+  des Blaumagiers und des Bestienbuchs bei „Seeing what the rules decide"; Swiftcast bei „Raising"; die Verzögerungen bei
+  „Mitigation and defensives"; die festen Sprünge und der Fernangriff danach bei „Movement safety"; Notfall- und
+  Füllheilung bei den beiden Heilthemen; die Flächenserie einer Gruppe bei „Party mitigation answers raidwides"; die
+  gelernten Tabellen bei „The learned lists"; das Paket bei „For rotation authors". `fork-changes-since-last-release.md`
+  beginnt mit „Changes since 7.5.7.14+wsh1". `CHANGELOG.md`: Abschnitt 7.5.7.14+wsh1 mit dem Eintrag zu
+  `AreaWorthOver` und drei neuen: Swiftcast für die Wiederbelebung, `OnLastHorn` und die Wertrechnung des Blaumagiers.
+- *Zweige:* `claude/fixes-after-7.5.7.14` von `main` nach seiner Namensvorgabe, die Übergabe darauf und `main`
+  vorgespult. `claude/fixes-after-7.5.7.13` ist vollständig gemergt und ein Löschfall auf `origin` (Ref-Löschungen sind
+  der Sitzung gesperrt).
+
+*Prüfgrad:* Release-API und Workflow-Lauf gelesen, Prüfskripte; die Übergabe statisch gegen den Release-Text abgeglichen.
+
 ## B · Commit-Register (Fork vs. `upstream/main`)
 
 ### B1 · Einzelgeprüfte Fork-Commits

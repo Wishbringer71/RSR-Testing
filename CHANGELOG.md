@@ -23,6 +23,33 @@ are not reconstructed here.
 
 ## Unreleased
 
+## 7.5.7.14+wsh1
+
+### Addition to RotationSolver: Swiftcast kept for the raise
+
+New on `CustomRotation`: `SwiftcastKeptForRaise` (the job's raise and Swiftcast learned and "Raise with Swiftcast or
+Dualcast" on), the overridable `SwiftcastForDamage` (its negation by default; Red Mage overrides it with its "Use
+Swiftcast for damage" switch) and `RunningSwiftGoesToRaise`. A rotation that spends Swiftcast on damage asks
+`SwiftcastForDamage` first (A503, A504).
+
+### Behaviour change in RotationSolver: `BeastmasterRotation.OnLastHorn`
+
+`OnLastHorn` now reads "no other horn holding a familiar is ready" (`ReplacementHornReady`) instead of "no horn is
+ready": in combat a horn's recast starts only when its familiar retreats, so the horn of the familiar out never
+replaces it (A488). New public statics beside it: `FamiliarOf`, `PetOnHorn`, `HornReady`, `TrickValue`,
+`StopsAttackers`, `CapturableFamiliar`, `FamiliarUnlocked`, `CaptureDue`, `ReleaseRetreatsFamiliar`,
+`ReleaseHurtsPartyFamiliar`, `FamiliarCatalogState`.
+
+### Addition to RotationSolver: the Blue Mage's value helpers
+
+New protected members of `BlueMageRotation` for weighing a spell against the filler and the Moon Flute window:
+`ValueFiller`, `SpellTime`, `TryFiller`, `FillerDamageOver`, `FixedDamageBeatsFiller`, `HealthShareBeatsFiller`,
+`OverSonicBoom`, `PlayerFallsWithin`, `TryMoonFluteText`, `MoonFluteWindowWorth`, `BurstHoldCostPerSecond`,
+`MoonFluteSafe`, `PlayerFallsInWaning` and `ImproveActiveSet`, which writes the active set out of combat (A507-A510).
+Behind them the internal `OwnHitWatch` (damage per potency, learned immunity per enemy kind). The Knight's Tours now
+need and give Bind instead of Blind, Tatami-gaeshi gives Stun, Doom and Dimensional Shift carry
+`IsFlatDamageDeath`.
+
 ### Addition to RotationSolver: an area spender only where it deals at least the single one
 
 New: `CustomRotation.AreaWorthOver(IBaseAction area, IBaseAction single)` - after the area version's `CanUse`, whether
