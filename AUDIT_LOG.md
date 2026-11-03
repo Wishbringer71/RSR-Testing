@@ -15030,6 +15030,40 @@ durchgehen". Als Skill `spielpatch` festgehalten (Lesetabelle in CLAUDE.md); den
 - *TODO:* „Wiederbelebung verbraucht laufenden Swiftcast trotz ausgeschalteter Einstellung" geschlossen.
 - *Prüfgrad:* statisch am Code; kompiliert, alle CI-Prüfungen lokal; im Spiel nicht beobachtet.
 
+### A505 · Analogien für die Hornbelegung: Blaumagier-Set, Phantomjob in Kreszentia; Serverbefehle in der Aufzeichnung (03.11.2026)
+
+- *Seine Frage und Hinweise:* RSR nutze beim Blaumagier auch Zauber außerhalb des gewählten Sets, und BOCCHI wechsle
+  in Kreszentia den Phantomjob ohne Umwege – gibt es nutzbare Analogien für die geplante Hornbelegung?
+- *Blaumagier, am Code:* Der Hinweis trifft nur zum Teil zu. RSR liest das aktive Set jeden Frame
+  (`GetActiveBlueMageActionInSlot`, `ActionUpdater`), und ein Blaumagier-Zauber besteht die Grundprüfung nur im Set
+  (`IsOnSlot`). Außerhalb des Sets gehen nur die Folgezauber, die das Spiel an die Stelle eines gesetzten Zaubers legt:
+  White Death über Cold Fog, Divine Cataract über Chelonian Gate (`RequiredBluSlotActionId`). Das Set setzt RSR nie;
+  der Client hätte Setzer (`SetBlueMageActions`, `AssignBlueMageActionToSlot`; FFXIVClientStructs b69073a).
+- *BOCCHI, am Code* (OhKannaDuh/BOCCHI 9403174 vom 24.10.2026, AGPL-3.0, nur gelesen): Es ruft
+  `PublicContentOccultCrescent.ChangeSupportJob` direkt auf. Gesperrt im Kampf und 4 s danach, beim Wirken, Springen
+  und Gebietswechsel; danach wartet es bis zu 5 s auf den Status des neuen Phantomjobs. Der Hinweis trifft zu.
+- *Für den Beastmaster:*
+  - Leseseite und Folgeaktionen gleichen dem Blaumagier schon (`BeastmasterRotation.CurrentPets`, Katalog je Horn).
+  - Einen Setzer für die Hörner kennt FFXIVClientStructs nicht (b69073a, heute erneut durchsucht: `XBMManager` nur
+    Freischaltungen, `AgentXBMMonsterNotebook` und `AgentXBMPetParty` nur Buch und Arena).
+  - Nutzbar ist das Muster des direkten Aufrufs, wenn der Klick im Buch über `GameMain.ExecuteCommand` beim Server
+    ankommt. Dann setzte RSR die Hörner wie BOCCHI den Phantomjob, unabhängig von Sprache, Filter und Sortierung des
+    Buchs, mit BOCCHIs Sperren und Rücklesen der Hornplätze.
+- *Gebaut (Messmittel):* `BestiaryTrace` hört, solange das Buch offen ist, auf `GameMain.ExecuteCommand` und schreibt
+  Befehl, vier Werte und Ergebnis. Der Aufruf geht unverändert weiter. Am Anfang des Abschnitts steht, ob der Mithörer
+  steht, am Ende die Zahl der Aufrufe; null bei einer Zuweisung heißt, die Hörner gehen über ein eigenes Paket.
+- *Falsifikation:*
+  - Kein Bedarf? Der direkte Weg ist offen und nur in seinem Client messbar.
+  - Mittel falsch? Ein Mithörer auf Pakete griffe tiefer ein. Eine statische Zerlegung des Spiels ist hier nicht
+    möglich.
+  - Ausgeliefert, und nichts ändert sich? Geht die Zuweisung nicht über den Befehl, bleibt die Zahl null. Das ist
+    ebenfalls eine Antwort.
+- *Bedrohung, benannt für den späteren Bau:* Einen Befehl in einer Lage zu senden, in der der Client ihn selbst nicht
+  sendet (etwa im Kampf), wäre ein Muster, das kein Spieler erzeugt. Ein direkter Setzer übernähme deshalb die Grenzen,
+  die die Aufzeichnung für den Client belegt.
+- *Prüfgrad:* statisch am Code von RSR, FFXIVClientStructs und BOCCHI; kompiliert, alle CI-Prüfungen lokal; der
+  Mithörer im Spiel nicht beobachtet.
+
 ## B · Commit-Register (Fork vs. `upstream/main`)
 
 ### B1 · Einzelgeprüfte Fork-Commits

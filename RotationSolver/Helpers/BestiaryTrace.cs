@@ -3,9 +3,11 @@ using Dalamud.Game.Addon.Lifecycle.AddonArgTypes;
 using Dalamud.Game.Agent;
 using Dalamud.Game.Agent.AgentArgTypes;
 using Dalamud.Game.ClientState.Conditions;
+using Dalamud.Hooking;
 using ECommons.DalamudServices;
 using ECommons.GameHelpers;
 using ECommons.Logging;
+using FFXIVClientStructs.FFXIV.Client.Game;
 using FFXIVClientStructs.FFXIV.Component.GUI;
 using Lumina.Text.ReadOnly;
 using System.Reflection;
@@ -16,7 +18,8 @@ namespace RotationSolver.Helpers;
 /// <summary>
 /// Writes what the game does while the Master's Bestiary is open to <c>BestiaryTrace.log</c> in the plugin's config
 /// folder: every event an agent receives, every click on the Bestiary and the context menu, every context menu with its
-/// entries, and the three battlehorn slots as they change (concept 01, "Aufzeichnung des Bestienbuchs", A488).
+/// entries, every server command the client sends through GameMain.ExecuteCommand, and the three battlehorn slots as they
+/// change (concept 01, "Aufzeichnung des Bestienbuchs", A488, A505).
 /// </summary>
 /// <remarks>
 /// The owner's request of 02.11.2026: record how he assigns familiars to the battlehorns, starting when the Bestiary
@@ -38,6 +41,13 @@ internal static class BestiaryTrace
 	private static string _horns = string.Empty;
 	private static bool _inCombat;
 
+	// GameMain.ExecuteCommand is the client's general server command. Whether a horn assignment goes through it decides
+	// whether RSR could set the horns directly, as BOCCHI sets the phantom job with ChangeSupportJob (A505). The hook is
+	// created on the first open of the Bestiary, enabled only while it is open, and passes every call on unchanged.
+	private delegate byte ExecuteCommandDelegate(int command, int param1, int param2, int param3, int param4);
+	private static Hook<ExecuteCommandDelegate>? _executeCommandHook;
+	private static int _commands;
+
 	/// <summary>The trace file's full path.</summary>
 	public static string FilePath => Path.Combine(Svc.PluginInterface.ConfigDirectory.FullName, "BestiaryTrace.log");
 
@@ -54,6 +64,8 @@ internal static class BestiaryTrace
 	{
 		Svc.AddonLifecycle.UnregisterListener(OnBestiaryOpened, OnBestiaryClosed);
 		Stop("plugin unloaded");
+		_executeCommandHook?.Dispose();
+		_executeCommandHook = null;
 	}
 
 	private static void OnBestiaryOpened(AddonEvent type, AddonArgs args)
@@ -90,6 +102,47 @@ internal static class BestiaryTrace
 		Svc.AgentLifecycle.RegisterListener(AgentEvent.PreReceiveEvent, OnAgentEvent);
 		Svc.Framework.Update += OnFrame;
 		_listening = true;
+		ListenToCommands();
+	}
+
+	private static unsafe void ListenToCommands()
+	{
+		_commands = 0;
+		if (GameMain.Addresses.ExecuteCommand.Value == 0)
+		{
+			Line("execute command listener unavailable: address not resolved");
+			return;
+		}
+
+		try
+		{
+			_executeCommandHook ??=Svc.Hook.HookFromAddress<ExecuteCommandDelegate>(GameMain.Addresses.ExecuteCommand.Value, ExecuteCommandDetour);
+			_executeCommandHook.Enable();
+			Line("execute command listener on");
+		}
+		catch (Exception ex)
+		{
+			Line($"execute command listener unavailable: {ex.GetType().Name} {ex.Message}");
+		}
+	}
+
+	private static byte ExecuteCommandDetour(int command, int param1, int param2, int param3, int param4)
+	{
+		var result = _executeCommandHook!.Original(command, param1, param2, param3, param4);
+		if (_listening)
+		{
+			try
+			{
+				_commands++;
+				Line($"execute command {command}: {param1}, {param2}, {param3}, {param4} -> {result}");
+			}
+			catch (Exception ex)
+			{
+				PluginLog.Warning($"Could not record a command in the bestiary trace: {ex.Message}");
+			}
+		}
+
+		return result;
 	}
 
 	private static void OnBestiaryClosed(AddonEvent type, AddonArgs args)
@@ -105,10 +158,12 @@ internal static class BestiaryTrace
 		}
 
 		_listening = false;
+		_executeCommandHook?.Disable();
 		Svc.Framework.Update -= OnFrame;
 		Svc.AgentLifecycle.UnregisterListener(OnAgentEvent);
 		Svc.AddonLifecycle.UnregisterListener(OnAddonClick, OnMenu);
 		Line($"horns {Horns()}");
+		Line($"execute commands while open: {_commands}");
 		Write($"==== {DateTime.Now:yyyy-MM-dd HH:mm:ss} {why}");
 
 		lock (_lock)

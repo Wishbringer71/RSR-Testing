@@ -119,9 +119,10 @@ nebeneinander gebraucht werden.
 - **Beastmaster: Belegung der Kampfhörner situationsbezogen setzen** (seine Vorgabe, 02.11.2026: „es soll in die
   rotation eingearbeitet werden, situationsbezogen"). Im Kampf heute: RSR wählt situationsbezogen unter den drei
   Begleitern seiner Hörner (B0 bis B3), die Belegung selbst setzt nur er im Bestienbuch. Ein Weg zum Setzen ist
-  bekannt: über das Menü des Bestienbuchs, wie Daedalus es außerhalb des Kampfes tut (A488). Auflösung: sein
-  `BestiaryTrace.log` mit einer Zuweisung außerhalb und einem Versuch im Kampf belegt Rückruf, Menü und Kampfgrenze auf
-  seinem Client; dann Loop über das, was die Rotation setzt. Konzept 01, „Belegung der Hörner in der Rotation",
+  bekannt: über das Menü des Bestienbuchs, wie Daedalus es außerhalb des Kampfes tut (A488). Ein direkter Weg wie
+  BOCCHIs Phantomjob-Wechsel ginge, wenn die Zuweisung über `GameMain.ExecuteCommand` läuft (A505). Auflösung: sein
+  `BestiaryTrace.log` mit einer Zuweisung außerhalb und einem Versuch im Kampf belegt Rückruf, Menü, Serverbefehl und
+  Kampfgrenze auf seinem Client; dann Loop über den Weg und über das, was die Rotation setzt. Konzept 01, „Belegung der Hörner in der Rotation",
   „Aufzeichnung des Bestienbuchs".
 
 - **Samurai nutzt Feint und Tengentsu nicht** (fremde Meldung, PR #11, unbestätigt; statisch geprüft A265). Auflösung:

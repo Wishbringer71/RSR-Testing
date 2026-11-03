@@ -489,7 +489,29 @@ eingearbeitet werden, situationsbezogen"; A487, A488):
   - Ein Eintrag für das Horn, auf dem der Begleiter schon sitzt, nimmt ihn herunter.
   - Filter oder Sortierung des Buchs verschieben die Kacheln; dann landet die Wahl falsch.
   - Daedalus setzt nur außerhalb des Kampfes und erkennt den Menüeintrag am englischen Wort „Battlehorn".
+- *Analogien* (seine Frage, 03.11.2026, mit seinem Hinweis auf den Blaumagier und auf BOCCHI in Kreszentia):
+  - *Blaumagier in RSR:* RSR liest das aktive Set jeden Frame aus dem Client
+    (`ActionManager.GetActiveBlueMageActionInSlot`, `ActionUpdater`). Ein Zauber des Blaumagiers geht nur, wenn er im
+    Set steht (`ActionBasicInfo.IsOnSlot` in der Grundprüfung). Ausnahme sind die Folgezauber, die das Spiel an die
+    Stelle eines gesetzten Zaubers legt: White Death über Cold Fog, Divine Cataract über Chelonian Gate
+    (`RequiredBluSlotActionId`). Ein Zauber außerhalb des Sets geht nicht, und RSR setzt das Set nie.
+  - *Setzer im Client:* Für den Blaumagier kennt FFXIVClientStructs Setzer (`ActionManager.SetBlueMageActions`,
+    `AssignBlueMageActionToSlot`, `SwapBlueMageActionSlots`), für Kreszentia
+    `PublicContentOccultCrescent.ChangeSupportJob(byte)`. Beides gilt auf b69073a vom 02.11.2026.
+  - *BOCCHI* (OhKannaDuh/BOCCHI 9403174 vom 24.10.2026, AGPL-3.0, nur gelesen) ruft `ChangeSupportJob` direkt auf:
+    - nur außerhalb des Kampfes und erst 4 s nach seinem Ende;
+    - nicht beim Wirken, Springen oder Gebietswechsel (`PhantomJobChangeGate`);
+    - danach wartet es höchstens 5 s auf den Status des neuen Phantomjobs.
+  - *Für den Beastmaster:* Die Leseseite ist dieselbe. RSR liest die drei Hörner aus dem `ActionManager`
+    (`BeastmasterRotation.CurrentPets`), wie das Blaumagier-Set. Die Folgeaktionen eines Begleiters hängen an seinem
+    Horn wie Folgezauber an ihrem Platz. Einen Setzer wie `ChangeSupportJob` kennt der Client für die Hörner nicht.
+  - *Was davon nutzbar ist:* Ein Klick im Bestienbuch muss beim Server ankommen. Geht er über
+    `GameMain.ExecuteCommand`, die allgemeine Befehlsfunktion des Clients, dann zeigt die Aufzeichnung (unten) Befehl und
+    Werte. RSR könnte die Hörner dann ohne Buch setzen, wie BOCCHI den Phantomjob: unabhängig von Sprache, Filter und
+    Sortierung des Buchs. Es übernähme BOCCHIs Sperren und läse die Hornplätze danach zurück. Geht der Klick über ein
+    eigenes Paket, bleibt nur der Weg über das Buch.
 - *Offen, und darum noch nicht gebaut:*
+  - ob ein direkter Befehl die Hörner setzt (Aufzeichnung, Serverbefehle);
   - ob der Weg auf seinem deutschen Client gleich läuft: Werte des Rückrufs, Reihenfolge und Wortlaut des Menüs;
   - ob das Spiel ihn im Kampf zulässt; sonst bleibt nur die Zeit zwischen zwei Kämpfen, und deren Lage ist vor dem Pull
     nicht bekannt;
@@ -507,11 +529,15 @@ wenn das buch auf ist, und deaktivieren, wenn es geschlossen wurde"; A488):
     im Menü auslöst;
   - jedes Klickereignis an Bestienbuch und Kontextmenü (Ereignisart, Parameter);
   - jedes Kontextmenü, das aufgeht oder sich erneuert, mit allen Werten, also den Einträgen im Wortlaut des Clients;
-  - jede Änderung der Hornplätze, sobald der Server sie bestätigt, und jeder Wechsel des Kampfstatus.
+  - jede Änderung der Hornplätze, sobald der Server sie bestätigt, und jeder Wechsel des Kampfstatus;
+  - jeder Aufruf von `GameMain.ExecuteCommand` (Befehl, vier Werte, Ergebnis), auf den der Client einen Klick abbildet
+    (A505). Der Abschnitt nennt am Anfang, ob der Mithörer dafür steht, und am Ende, wie viele Aufrufe kamen. Null bei
+    einer Zuweisung heißt: Die Hörner gehen nicht über diesen Befehl.
 - *Wo:* `BestiaryTrace.log` im Konfigurationsordner von RSR neben `DefenseTrace.log` (der Ordner, den Dalamud dem Plugin
   gibt). Jede Öffnung des Buchs beginnt einen Abschnitt mit Datum, Uhrzeit, Version und Commit; die Datei wächst,
   Löschen setzt sie zurück.
-- *Was sie nicht tut:* Sie klickt nichts, sendet nichts und ändert nichts; sie hört nur zu.
+- *Was sie nicht tut:* Sie klickt nichts, sendet nichts und ändert nichts; sie hört nur zu. Auch den Befehlsaufruf
+  reicht sie unverändert weiter. Der Mithörer darauf steht nur, solange das Buch offen ist.
 
 **Fremde Werkzeuge zum Beastmaster** (seine Fragen vom 02.11.2026, ob Masterbeast, BeastHelper, BeastmasterAssist und
 Daedalus RSR verbessern können; A488; Stand: Kriss-Hietala/BeastmasterAssist db9e2e3 vom 14.09.2026, MIT;

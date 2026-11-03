@@ -57,8 +57,9 @@ What this release changes in the fight. For the whole distance from upstream, se
   not while moving unless "Use Crimson Cyclone when moving" is on, and not with "Use Crimson Cyclone at any range" on.
   The Cyclone never goes beyond your distance setting.
 - **Beastmaster: a record of the Master's Bestiary.** While the Bestiary is open, RSR writes to `BestiaryTrace.log`
-  next to `DefenseTrace.log` what the game receives from each click, every context menu with its entries, and the
-  battlehorn slots as they change. It only listens; it opens and closes with the Bestiary. `DefenseTrace.log` also
+  next to `DefenseTrace.log` what the game receives from each click, every context menu with its entries, every server
+  command the client sends through its general command function, and the battlehorn slots as they change. It only
+  listens and passes every command on unchanged; it opens and closes with the Bestiary. `DefenseTrace.log` also
   gets a "beastmaster state" line whenever what the horn choice and Capture read changes: the familiars on the horns,
   the one out, both options, whether Capture is enabled, and whether the familiar list and catalog are loaded.
 
