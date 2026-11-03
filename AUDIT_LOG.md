@@ -15383,6 +15383,23 @@ annehmen" und „Figuren, die nur Einzelheilung besiegt".
 *Prüfgrad:* kompiliert (0 Warnungen, 0 Fehler), alle Prüfskripte grün; Mechanik und Rechnung an Spielblättern und
 seinem Mitschnitt. Im Spiel nicht beobachtet; die Messzeilen zeigen es im nächsten Protokoll.
 
+### A517 · Upstream 7.5.7.15 (a560469db) gemergt und ausgewertet (03.11.2026)
+
+Am Auftragsende gemessen: zwei neue Commits auf `upstream/main` (977601a50, Merge a560469db, Tag 7.5.7.15).
+
+- *Dunkelritter, `IsBursting`:* liest den Burst aus der Restzeit von Darkside im Job-Messwert statt aus dem Status
+  (Fix für Dunkelritter unter einem Phantomjob). Im Kampf: Der Burst eines Dunkelritters gilt auch dort als laufend, wo
+  der Status nicht gelesen wird. Kein Fork-Abschnitt berührt; Konzept 10 liest `IsBursting` nicht.
+- *Hotbar-Puls und Lehrmodus:* Die Tastendruck-Simulation (`KeyboardNoise`) sucht die Hotbar-Plätze vor dem Drücken
+  und findet die wechselnden PvP-Kombotasten; der Lehrmodus hebt sie hervor. Nur Anzeige; die Fork-Sperren in
+  `DoAction` (Transcendent, Status, die jede Aktion schädigen) stehen davor und sind unverändert.
+- *Folge für die Konzepte:* Die neue Zeile oben in `RSCommands_Actions` verschob das in Konzept 11 zitierte Klick-Gate um
+  eine Zeile; der Inhalt ist gleich, die Angabe nachgezogen.
+- *Ablauf:* `main` gemergt (ohne Konflikt), Fork-Version auf 7.5.7.15, kompiliert ohne Warnung, Prüfungen grün,
+  gepusht; `main` in `claude/fixes-after-7.5.7.14`, erneut kompiliert und geprüft.
+
+*Prüfgrad:* Diff gelesen, Compile, Prüfskripte.
+
 ## B · Commit-Register (Fork vs. `upstream/main`)
 
 ### B1 · Einzelgeprüfte Fork-Commits
