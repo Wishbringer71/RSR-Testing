@@ -75,6 +75,49 @@ internal static class BlueMageSetTrace
 			+ " (a follow-up whose set spell has already turned back shows here as well)");
 	}
 
+	private static int _briefedStage = -1;
+
+	/// <summary>
+	/// Writes the stage the Masked Carnivale briefing shows and, per act, the enemy ids it holds with the briefing sheet's
+	/// name for each, once per stage chosen (concept 01, "Masked Carnivale", A510). What these ids are is not documented:
+	/// FFXIVClientStructs names them enemies of an arrangement, nothing more. The line shows whether they resolve to the
+	/// stage's enemies in <c>AOZContentBriefingBNpc</c> - the condition for choosing a set per stage by their resistances.
+	/// </summary>
+	public static unsafe void BriefingRead()
+	{
+		var agent = FFXIVClientStructs.FFXIV.Client.UI.Agent.AgentAozContentBriefing.Instance();
+		if (agent == null || !agent->IsAgentActive() || agent->AozContentData == null)
+		{
+			_briefedStage = -1;
+			return;
+		}
+
+		var data = agent->AozContentData;
+		var stage = data->SelectedContentIndex;
+		if (stage == _briefedStage)
+		{
+			return;
+		}
+
+		_briefedStage = stage;
+		var sheet = Service.GetSheet<Lumina.Excel.Sheets.AOZContentBriefingBNpc>();
+		var text = new StringBuilder($"carnivale briefing: stage index {stage}");
+		var act = 0;
+		foreach (ref readonly var arrangement in data->Arrangements)
+		{
+			act++;
+			text.Append($"; act {act}:");
+			for (var i = 0; i < arrangement.Count && i < arrangement.Enemies.Length; i++)
+			{
+				var id = arrangement.Enemies[i];
+				var name = sheet.GetRowOrDefault(id) is { } row ? row.BNpcName.Value.Singular.ExtractText() : "not in the briefing sheet";
+				text.Append($" #{id} {name}");
+			}
+		}
+
+		DefenseTrace.Line(text.ToString());
+	}
+
 	private static string Name(uint id)
 	{
 		if (id == 0)

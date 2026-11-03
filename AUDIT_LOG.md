@@ -15217,6 +15217,16 @@ durchgehen". Als Skill `spielpatch` festgehalten (Lesetabelle in CLAUDE.md); den
   nicht selbst geschrieben hat.
 - *Prüfgrad:* statisch; kompiliert ohne Warnung; alle Prüfschritte lokal.
 
+### A511 · Masked Carnivale: Messzeile für die Gegner der Einweisung (03.11.2026)
+
+- *Anlass:* TODO „Set je Stufe im Masked Carnivale" (A506, seine Frage). Gebaut werden kann die Wahl erst, wenn belegt
+  ist, was die Gegner-Ids der Einweisung sind: FFXIVClientStructs b69073a führt `AozArrangementData.Enemies` (je Akt
+  bis zu 30, `ushort`) ohne Bedeutung; RSRs mitgelieferte Fassung kennt `AgentAozContentBriefing` ebenso.
+- *Gebaut:* `BlueMageSetTrace.BriefingRead`, nur als Blaumagier, nur lesend: je gewählter Stufe eine Zeile
+  „carnivale briefing" mit den Ids je Akt und dem Namen aus `AOZContentBriefingBNpc`.
+- *TODO:* der Punkt steht unter „Warten auf Daten".
+- *Prüfgrad:* statisch; kompiliert ohne Warnung.
+
 ## B · Commit-Register (Fork vs. `upstream/main`)
 
 ### B1 · Einzelgeprüfte Fork-Commits

@@ -176,6 +176,7 @@ internal static class ActionUpdater
 			}
 
 			BlueMageSetTrace.SlotsRead(DataCenter.BluSlots);
+			BlueMageSetTrace.BriefingRead();
 		}
 
 		if (DataCenter.IsInDuty)

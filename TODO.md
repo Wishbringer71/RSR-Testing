@@ -10,8 +10,7 @@ Betroffene: **N** Endnutzer · **R** Autoren abgeleiteter Rotationen (Namensräu
 Nach der Wirkung im Kampf: Sicherheit der Gruppe vor Schaden, gewichtet mit der Wahrscheinlichkeit, in seinem Profil
 (seine Vorgabe, 17.10.2026: „todo nach wichtigkeit abarbeiten. jeweils im loop bearbeiten").
 
-1. Blaumagier: Set je Stufe im Masked Carnivale.
-2. Fremde Repositories auf Verbesserungen für RSR prüfen: Jeder Fund kann ein Defekt im Verhalten einer Klasse sein,
+1. Fremde Repositories auf Verbesserungen für RSR prüfen: Jeder Fund kann ein Defekt im Verhalten einer Klasse sein,
    den RSR heute im Kampf zeigt; zuerst die Rotationswerkzeuge für alle Jobs, Daedalus vorn (aktiv, alle Jobs,
    eigene Kampfvorhersage).
 
@@ -20,14 +19,6 @@ Danach die technische Schuld, soweit ihre Auflösungsbedingung erfüllt ist. War
 ## Defekte
 
 ## Offene Arbeit
-
-### Blaumagier: Set je Stufe im Masked Carnivale · N
-- *Wirkung:* Vor dem Betreten einer Stufe stünden die gelernten Zauber im Set, gegen die ihre Gegner schwach oder
-  verwundbar sind; immune fielen heraus. Heute verbessert RSR das Set dort wie überall nur nach Wert.
-- *Ort:* `BlueMageRotation.ImproveActiveSet`; Einweisung `AgentAozContentBriefing` (gewählte Stufe, Gegner je Akt),
-  `MaskedCarnivaleHelper` (Widerstände je Gegner).
-- *Nächster Schritt:* Loop zur Wahl je Akt; die Stufen-Leitfäden von Blue Academy als zweite Quelle je Stufe.
-- *Konzept:* 01, „Blaumagier", „Masked Carnivale".
 
 ### Fremde Repositories auf Verbesserungen für RSR prüfen · N, R, U
 Sein Auftrag (02.11.2026): „alle von dir gefundenen repos, die du benannt hast prüfen, ob daraus generell
@@ -118,6 +109,12 @@ den Spieldaten (`CastType`, `EffectRange`), hinter eigener Option. *Konzept:* 13
 nebeneinander gebraucht werden.
 
 ## Warten auf Daten oder Fremde
+
+- **Blaumagier: Set je Stufe im Masked Carnivale** (seine Frage, 03.11.2026; A511). Im Kampf: Vor einer Stufe stünden
+  die gelernten Zauber im Set, gegen die ihre Gegner schwach oder verwundbar sind. Offen ist, was die Gegner-Ids der
+  Einweisung sind. Auflösung: die Zeile „carnivale briefing" im nächsten `DefenseTrace.log`, nachdem er die Einweisung
+  als Blaumagier geöffnet und eine Stufe gewählt hat; dann Loop zur Wahl als eigene Option. Konzept 01, „Masked
+  Carnivale".
 
 - **Blaumagier: 1000 Nadeln gewirkt, obwohl nicht im Set** (sein Hinweis, 03.11.2026; A506). Im Kampf: RSR wirkt
   laut ihm einen Zauber außerhalb des Sets; der Code lässt das nicht zu. Auflösung: die Zeilen „blue mage set" und

@@ -421,7 +421,7 @@ public partial class BlueMageRotation
 
 		var slots = DataCenter.BluSlots;
 
-		// A set the player changed himself - a saved set loaded, a spell for a Masked Carnivale stage put in - is his
+		// A set the player changed themselves - a saved set loaded, a spell for a Masked Carnivale stage put in - is his
 		// decision: from then on RSR writes nothing into it in this session. Inside the Carnivale never.
 		if (_setSeen != null && !_setEditedByPlayer)
 		{

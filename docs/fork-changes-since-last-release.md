@@ -96,6 +96,8 @@ What this release changes in the fight. For the whole distance from upstream, se
   only while its spell is ready. One slot at a time; each change is written to `DefenseTrace.log`. Once you change
   your set yourself, and inside the Masked Carnivale, RSR leaves it alone for the session. Saved sets and hotbars are
   not touched.
+- **Blue Mage: the Masked Carnivale briefing in the trace.** With the briefing open, `DefenseTrace.log` lists for each
+  stage you select the enemy ids of every act and the name the briefing sheet gives each.
 - **Beastmaster: a record of the Master's Bestiary.** While the Bestiary is open, RSR writes to `BestiaryTrace.log`
   next to `DefenseTrace.log` what the game receives from each click, every context menu with its entries, every server
   command the client sends through its general command function, and the battlehorn slots as they change. It only

@@ -701,6 +701,13 @@ statt Reihenfolge" und „Mondflöte"):
   - *Wann:* Das Set wird geschrieben, solange die Einweisung offen ist und eine Stufe gewählt ist, vor dem Betreten,
     außerhalb des Kampfes. Ob das Spiel das Set in der Stufe selbst ändern lässt, ist offen; der Entwurf braucht es
     nicht.
+  - *Nicht belegt, darum noch nicht gebaut:* Was die Gegner-Ids der Einweisung (`AozArrangementData.Enemies`) sind,
+    sagt FFXIVClientStructs nicht. Dass sie Zeilen von `AOZContentBriefingBNpc` sind, ist ein Schluss. Messmittel (A511):
+    Beim Öffnen der Einweisung als Blaumagier schreibt `DefenseTrace.log` je gewählter Stufe „carnivale briefing" mit
+    den Ids je Akt und dem Namen, den das Blatt für jede nennt. Stimmen die Namen mit den Gegnern der Stufe überein,
+    trägt der Schluss.
+  - *Und seine Entscheidung:* Für eine Stufe wählt er sein Set selbst; seit A510 schreibt der Verbesserer nach einer
+    eigenen Änderung nicht mehr hinein. Eine Stufenwahl durch RSR wäre darum eine eigene Option, die er einschaltet.
   - *Grenze:* Die Blätter beschreiben Widerstände, nicht die Mechaniken einer Stufe (etwa Reflexion oder ein Gegner,
     der zur Mitte zieht). Für die beste Gewinnchance zählen auch die Stufen-Leitfäden als zweite Quelle, je Stufe
     geprüft. Ohne sie bleibt es eine Wahl nach Widerständen.
