@@ -15397,8 +15397,30 @@ Am Auftragsende gemessen: zwei neue Commits auf `upstream/main` (977601a50, Merg
   eine Zeile; der Inhalt ist gleich, die Angabe nachgezogen.
 - *Ablauf:* `main` gemergt (ohne Konflikt), Fork-Version auf 7.5.7.15, kompiliert ohne Warnung, Prüfungen grün,
   gepusht; `main` in `claude/fixes-after-7.5.7.14`, erneut kompiliert und geprüft.
+- *Loop nachgeholt* (seine Frage, 03.11.2026: „upstream-änderungen per loop auf synergieeffekte und rotationsprobleme
+  geprüft?" – bis dahin nur formal ausgewertet):
+  - *Dunkelritter, Ursache:* `IsBursting` fragte vorher den Status Darkside (751). Den legt das Spiel nicht mehr: In
+    seinen Mitschnitten vom 28.10. und 03.11.2026 stehen 98 Dunkelritter-Aktionen und kein Status 751. Der Burst des
+    Dunkelritters galt also nie als laufend.
+  - *Dunkelritter, Wirkung:* Einziger Leser ist `DutyRotation.InBurstWindow` → `PhantomDefault.ShouldHoldBurst` unter
+    „Save Phantom Attacks for class specific damage bonus?" (ab Werk an). Ein Dunkelritter in Kreszentia hielt seine
+    Phantomangriffe also für immer zurück; jetzt nur, solange Darkside fehlt (im Opener).
+  - *Dunkelritter, Gegenposition:* ausrichten wie Revolverklinge und Paladin an ihrem Burst-Buff, hier Delirium.
+    Verworfen: Der Wirktext von Delirium nennt keinen Schadensbonus (Ersatzaktionen, Blood Weapon). Die Option fragt
+    nach dem Schadensbonus der Klasse, und der ist Darkside; Upstreams Lösung trifft die Absicht.
+  - *Dunkelritter, Klasse geprüft:* `StatusProvide = [Darkside]` an Edge und Flood of Darkness und of Shadow ist tot,
+    der Status fehlt immer, und `IsStatusProvided` sperrt nie. Die Rotation entscheidet über die Restzeit im Messwert
+    (`DarkSideEndAfterGCD`, `CheckDarkSide`, Konzept 10), daher keine Wirkung im Kampf. Upstream-Code, nicht
+    angefasst. Kreszentia ist ein Sonderinhalt außerhalb des genannten Profils: erfasst, kein Eingriff nötig.
+  - *Hotbar:* `KeyboardNoise` steht ab Werk an. Die Plätze werden einmal je Druck gesucht (`FindActionBarSlots`), der
+    Lehrmodus und die Tastenanzeige prüfen je Platz zwei Vergleiche mehr (`IsSlotMatch`). Die Kosten sind
+    vernachlässigbar neben den 0,04 ms der Färbung aus Konzept 03 (Schluss, nicht gemessen). Die PvP-Kombotasten liegen
+    außerhalb seines Profils. Die Fork-Sperren in `DoAction` (Transcendent, Status, die jede Aktion schädigen) stehen
+    vor dem Erfassen der Plätze und sind unberührt.
+  - *Synergien mit dem Fork:* keine offen. A514 (Status vom eigenen Begleiter) berührt Darkside nicht.
 
-*Prüfgrad:* Diff gelesen, Compile, Prüfskripte.
+*Prüfgrad:* Diff gelesen, Leser und Aufrufer am Code verfolgt, die Statusfrage an seinen Mitschnitten gemessen, Wirktext
+von Delirium (xivapi); Compile, Prüfskripte.
 
 ## B · Commit-Register (Fork vs. `upstream/main`)
 
