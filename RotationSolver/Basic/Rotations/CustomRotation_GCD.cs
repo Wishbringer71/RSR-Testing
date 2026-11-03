@@ -501,6 +501,15 @@ public partial class CustomRotation
 		|| (SwiftcastPvE.Cooldown.IsCoolingDown && Raise != null
 			&& Raise.Info.CastTime < SwiftcastPvE.Cooldown.RecastTimeRemainOneCharge);
 
+	/// <summary>
+	/// Whether a raise takes the Swiftcast or Dualcast already running. With "Raise with Swiftcast or Dualcast" on, always.
+	/// Off, the setting's text holds and the next spells spend it - until it would run out unused: when the next GCD is
+	/// its last chance, it goes into the raise. The owner's rule (03.11.2026): what would be wasted is used first, as the
+	/// bell and Lux Solaris are used before they run out (A504).
+	/// </summary>
+	protected bool RunningSwiftGoesToRaise => Service.Config.RaisePlayerBySwift
+		|| (HasSwift && StatusHelper.PlayerStatusTime(true, StatusHelper.SwiftcastStatus) < WeaponRemain + WeaponTotal);
+
 	private bool RaiseSpell(out IAction? act, bool mustUse)
 	{
 		act = null;
@@ -533,7 +542,15 @@ public partial class CustomRotation
 				{
 					if (HasSwift || IsLastAction(ActionID.SwiftcastPvE))
 					{
-						return true;
+						if (RunningSwiftGoesToRaise)
+						{
+							return true;
+						}
+
+						// The next spells spend it, as "Raise with Swiftcast or Dualcast" off says; a hard cast now would
+						// spend it on the raise all the same (A504).
+						act = null;
+						return false;
 					}
 
 					if (Service.Config.RaisePlayerBySwift && !SwiftcastPvE.Cooldown.IsCoolingDown && WeaponRemain <= 0.5f && SwiftcastPvE.CanUse(out act))

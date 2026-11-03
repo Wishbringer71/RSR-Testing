@@ -135,30 +135,42 @@ verändert.
 | Zustand | Weg | Ergebnis |
 |---|---|---|
 | läuft (`HasSwift`), Einstellung an | Stufe (A) in `RaiseSpell` | Wiederbelebung sofort, ohne Wirkzeit |
-| läuft, Einstellung aus | Stufe (A) in `RaiseSpell` | Wiederbelebung sofort – gegen den Text der Einstellung (offener Defekt, unten) |
+| läuft, Einstellung aus | Stufe (A) über `RunningSwiftGoesToRaise` | erst die nächsten Zauber; die Wiederbelebung nur im letzten GCD, bevor der Status abliefe |
 | bereit, Einstellung an | Einschiebefenster (`EmergencyAbility`) | zündet, danach Fall 1 |
 | in Erholung, Einstellung an | Hartwirk-Zweig | Hartwirk, **nur im Stehen** — Stufe (C) verlangt `!IsMoving` |
 | bereit, Einstellung aus | Hartwirk-Zweig über `!SwiftcastComingForRaise` | Hartwirk im Stehen |
 | `NoHardCast` **und** Einstellung aus | keiner | keine Wiederbelebung — beide Wege bewusst abgeschaltet, kein Defekt |
 
 Der Rotmagier fällt aus der Reihe: Dualcast steht in `StatusHelper.SwiftcastStatus`, also ist
-`HasSwift` nach jedem Zauber wahr und Stufe (A) greift ohnehin, mit ausgeschalteter Einstellung ebenso (offener Defekt,
-unten).
+`HasSwift` nach jedem Zauber wahr und Stufe (A) greift mit eingeschalteter Einstellung ohnehin; mit ausgeschalteter
+nimmt der nächste Zauber das Dualcast, und Verraise wird hartgewirkt (unten).
 
-**Offen: Mit der Einstellung aus verbraucht Stufe (A) einen laufenden Swiftcast- oder Dualcast-Status trotzdem für
-die Wiederbelebung** (`TODO.md`, „Wiederbelebung verbraucht laufenden Swiftcast trotz ausgeschalteter Einstellung").
-Ihr Text: „If this is off, RSR never uses Swiftcast or Dualcast to raise." A402 hat nur das Drücken an sie gebunden.
-- *Im Kampf:* Ein Beschwörer mit „Swiftcast for movement uptime" drückt Swiftcast im Laufen für Slipstream, im selben
-  Moment fällt ein Mitglied. Resurrection geht sofort, und Slipstream fällt im Laufen aus.
-- *Warum nicht einfach gesperrt* (A503 versucht und zurückgenommen): Die Swiftcast-Sperre der Reborn-Heiler („Swiftcast
-  restriction", ab Werk an) hält jeden anderen GCD zurück, solange Swiftcast läuft und eine Wiederbelebung ansteht. Ein
-  Heiler mit der Einstellung aus, der Swiftcast von Hand drückt, stünde dann bis zu 10 s ohne GCD. Und ein von Hand
-  gedrückter Swiftcast bei einem Toten ist meist genau für die Wiederbelebung gedacht.
-- *Die Behebung* muss deshalb unterscheiden, wer den Status erzeugt hat – ein Schadensschalter der Rotation, Dualcast,
-  der Spieler von Hand – und die Sperre der Heiler mitnehmen.
+**Mit der Einstellung aus geht ein laufender Swiftcast oder Dualcast erst dann in die Wiederbelebung, wenn er sonst
+ungenutzt abliefe** (seine Vorgabe, 03.11.2026: „bevor was verschwendet wird, ist es zu nutzen. das haben wir auch bei
+heilungen, wo diese innerhalb eines zeitfensters zu nutzen sind. siehe glockenspiel oder den smn gruppenheal"; A504).
+- *Regel:* `CustomRotation.RunningSwiftGoesToRaise`. Mit der Einstellung an immer. Aus nur, wenn der Status vor dem
+  übernächsten GCD endet (Restzeit unter `WeaponRemain + WeaponTotal`), der nächste GCD also seine letzte Gelegenheit
+  ist. Vorher nehmen ihn die nächsten Zauber für Schaden oder Heilung. Der Text der Einstellung sagt beides.
+- *Warum:* Der frühere Text „If this is off, RSR never uses Swiftcast or Dualcast to raise" galt nur für das Drücken
+  (A402). Stufe (A) verbrauchte einen laufenden Status ohne Blick auf die Einstellung.
+  - Im Kampf: Ein Beschwörer mit „Swiftcast for movement uptime" drückt Swiftcast im Laufen für Slipstream, im selben
+    Moment fällt ein Mitglied. Vorher ging Resurrection sofort, und Slipstream fiel im Laufen aus. Jetzt geht
+    Slipstream, und Resurrection folgt im Stehen.
+  - Den Status ganz von der Wiederbelebung fernzuhalten, verschwendete ihn, wo ihn kein Zauber mehr nimmt. Das ist
+    etwa im Demi-Abschnitt des Beschwörers der Fall, dessen GCDs Sofortzauber sind.
+- *Die Swiftcast-Sperre der Heiler* („Swiftcast restriction", ab Werk an, `SwiftRaisePending` in den vier
+  Reborn-Heilern) hält die anderen GCDs nur noch zurück, solange die Wiederbelebung den laufenden Status auch nimmt.
+  Vorher hätte ein Heiler mit der Einstellung aus, der Swiftcast bei einem Toten von Hand drückt, bis zu 10 s ohne GCD
+  gestanden, und der Status wäre verfallen. Jetzt nimmt ihn sein nächster Zauber, oder im letzten GCD die
+  Wiederbelebung.
+- *Mit der Einstellung an* (Voreinstellung, seine Spielweise) ändert sich nichts.
+- *Grenze:* Die letzte Gelegenheit ist an der GCD-Länge geschätzt. Wirkt der nächste Zauber länger als ein GCD, kann
+  der Status trotzdem ablaufen. Und die Wiederbelebung kann ihn einen GCD früher nehmen, als ein Zauber es gekonnt
+  hätte. Beides kostet höchstens einen Sofortzauber.
 
-**Swiftcast auf die Wiederbelebung entscheidet nur „Raise with Swiftcast or Dualcast" (A402).** Ihr Text: „If this is
-off, RSR never uses Swiftcast or Dualcast to raise." Zwei Wege gingen daran vorbei: der allgemeine Zweig der Magier,
+**Swiftcast auf die Wiederbelebung entscheidet nur „Raise with Swiftcast or Dualcast" (A402).** Ihr Text sagt seit
+A504: aus drückt RSR Swiftcast nie für eine Wiederbelebung, und ein laufender Status geht an die nächsten Zauber, in
+die Wiederbelebung nur, bevor er ungenutzt abliefe (oben). Zwei Wege gingen daran vorbei: der allgemeine Zweig der Magier,
 der Swiftcast auf jeden Zauber ab 5 s Wirkzeit legt (`CustomRotation.EmergencyAbility`; Resurrection und Verraise sind
 solche Zauber), und die Beschwörer-Option „Use Swiftcast on ressurection" (ab Werk an), die ausgeschaltet nichts
 änderte, weil der zentrale Weg dann trotzdem Swiftcast nahm. Der allgemeine Zweig nimmt die eigene Wiederbelebung

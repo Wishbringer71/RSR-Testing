@@ -15001,6 +15001,35 @@ durchgehen". Als Skill `spielpatch` festgehalten (Lesetabelle in CLAUDE.md); den
 - *Prüfgrad:* statisch am Code, Spielblätter, Werkzeugquelle; kompiliert, alle CI-Prüfungen lokal; im Spiel nicht
   beobachtet.
 
+### A504 · Mit der Einstellung aus läuft kein Swiftcast ungenutzt ab (03.11.2026)
+
+- *Seine Vorgabe:* „bevor was verschwendet wird, ist es zu nutzen. das haben wir auch bei heilungen, wo diese innerhalb
+  eines zeitfensters zu nutzen sind. siehe glockenspiel oder den smn gruppenheal" – auf Nachfrage bezogen auf den
+  offenen Defekt aus A503 (seine Präzisierung: „die antwort war bezogen auf den offenen defekt").
+- *Gebaut:* `CustomRotation.RunningSwiftGoesToRaise`: mit „Raise with Swiftcast or Dualcast" an immer, aus nur, wenn
+  der laufende Swiftcast- oder Dualcast-Status vor dem übernächsten GCD endet (Restzeit unter `WeaponRemain +
+  WeaponTotal`). Stufe (A) in `RaiseSpell` nimmt ihn nur dann; sonst gibt sie nichts zurück, und die nächsten Zauber
+  nehmen ihn. `SwiftRaisePending` der vier Reborn-Heiler hält die anderen GCDs nur noch, solange die Wiederbelebung den
+  Status nimmt. Text der Einstellung nach der Vorgabe neu gefasst.
+- *Optionen:*
+  - so lassen: Die Wiederbelebung nimmt den Status sofort, gegen den Text, und ein Schadens-Sofortzauber fällt aus;
+  - ganz sperren (A503 versucht): Der Status verfällt, wo kein Zauber ihn mehr nimmt, und ein Heiler stünde mit der
+    Sperre bis zu 10 s ohne GCD;
+  - sperren bis zur letzten Gelegenheit – gebaut.
+- *Antithesen:*
+  - „Die Schätzung der letzten Gelegenheit irrt bei Zaubern, die länger als ein GCD wirken": Der Status kann dann
+    trotzdem ablaufen, oder die Wiederbelebung nimmt ihn einen GCD früher. Höchstens ein Sofortzauber; als Grenze
+    benannt.
+  - „Wer die Einstellung ausschaltet, will gar keine Wiederbelebung mit Swiftcast": Der Status ginge sonst verloren,
+    und seine Vorgabe stellt die Nutzung vor den Verlust; der Text sagt es.
+- *Falsifikation:*
+  - Kein Defekt? Text und Verhalten wichen ab.
+  - Option falsch? Die beiden anderen verschwenden.
+  - Ausgeliefert, und nichts ändert sich? Mit der Einstellung an (Voreinstellung) ist `RunningSwiftGoesToRaise` immer
+    wahr, alles wie zuvor; die Änderung wirkt nur mit ihr aus.
+- *TODO:* „Wiederbelebung verbraucht laufenden Swiftcast trotz ausgeschalteter Einstellung" geschlossen.
+- *Prüfgrad:* statisch am Code; kompiliert, alle CI-Prüfungen lokal; im Spiel nicht beobachtet.
+
 ## B · Commit-Register (Fork vs. `upstream/main`)
 
 ### B1 · Einzelgeprüfte Fork-Commits

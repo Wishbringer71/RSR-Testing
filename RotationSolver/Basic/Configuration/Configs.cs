@@ -1365,7 +1365,9 @@ internal partial class Configs : IPluginConfiguration, IM3Settings
 		Filter = RaiseActionCondition)]
 	private static readonly bool _raisePlayerFirst = false;
 
-	[JobConfig, UI("Raise with Swiftcast or Dualcast", Description = "If this is off, RSR never uses Swiftcast or Dualcast to raise.",
+	[JobConfig, UI("Raise with Swiftcast or Dualcast", Description = "If this is off, RSR never presses Swiftcast for a raise, "
+		+ "and a Swiftcast or Dualcast already running goes to your next spells. Only when it would otherwise run out unused "
+		+ "does it go into a pending raise.",
 		Filter = RaiseActionCondition)]
 	private static readonly bool _raisePlayerBySwift = true;
 

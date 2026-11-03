@@ -13,21 +13,10 @@ Nach der Wirkung im Kampf: Sicherheit der Gruppe vor Schaden, gewichtet mit der 
 1. Fremde Repositories auf Verbesserungen für RSR prüfen: Jeder Fund kann ein Defekt im Verhalten einer Klasse sein,
    den RSR heute im Kampf zeigt; zuerst die Rotationswerkzeuge für alle Jobs, Daedalus vorn (aktiv, alle Jobs,
    eigene Kampfvorhersage).
-2. Wiederbelebung verbraucht laufenden Swiftcast trotz ausgeschalteter Einstellung: nur mit der Einstellung aus,
-   außerhalb seines Profils (er belebt mit Swiftcast wieder); im Kampf ein verlorener Sofortzauber, keine Gefahr.
 
 Danach die technische Schuld, soweit ihre Auflösungsbedingung erfüllt ist. Warten auf Daten: unten.
 
 ## Defekte
-
-### Wiederbelebung verbraucht laufenden Swiftcast trotz ausgeschalteter Einstellung · N
-- *Wirkung:* Mit „Raise with Swiftcast or Dualcast" aus belebt RSR mit einem schon laufenden Swiftcast oder Dualcast
-  wieder, gegen den Text der Einstellung. Ein Beschwörer, der Swiftcast für Slipstream im Laufen drückt, verliert ihn an
-  Resurrection, wenn im selben Moment jemand fällt. Ein Rotmagier belebt mit Dualcast.
-- *Ort:* `CustomRotation_GCD.RaiseSpell`, Stufe (A); die Swiftcast-Sperre der Reborn-Heiler (`SwiftRaisePending`).
-- *Nächster Schritt:* den Erzeuger des Status unterscheiden – Schadensschalter, Dualcast, von Hand – und die
-  Heilersperre mitnehmen, sonst steht ein Heiler mit der Einstellung aus bis zu 10 s ohne GCD (A503).
-- *Konzept:* 11, „Zustand von Spontanität".
 
 ## Offene Arbeit
 

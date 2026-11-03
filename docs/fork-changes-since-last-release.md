@@ -86,6 +86,11 @@ What this release changes in the fight. For the whole distance from upstream, se
   every burst and for any hard-cast Verthunder III or Veraero III; it now does so only with the new option "Use
   Swiftcast for damage" (off by default), so a dead member is raised at once even while you move. Summoner's Swiftcast
   switches already were off by default.
+- **With "Raise with Swiftcast or Dualcast" off, a running Swiftcast is not wasted.** A Swiftcast or Dualcast already
+  running now goes to your next spells, as the setting says, and into a pending raise only when it would otherwise run
+  out unused. Before, the raise took it at once: a Summoner who pressed Swiftcast for Slipstream while moving lost it to
+  Resurrection. The healers' "Swiftcast restriction" holds their other GCDs only while the raise takes it, so a healer
+  who presses Swiftcast by hand at a corpse keeps casting.
 - **Delays never make an action too late.** The provoke delay does not apply when taking an enemy from a co-tank, and
   otherwise ends with the enemy's first hit on the party member it turned to. The dispel delay ends when a dangerous
   status would run out within a GCD. The interrupt delay already ended with one GCD of the cast left. A stored interrupt

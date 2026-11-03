@@ -350,8 +350,8 @@ nicht mit swiftcast rezzen"; A503). Wirkung und Rechnung in Konzept 11, „Swift
 - *Gebaut:* Swiftcast ist für die Wiederbelebung zurückgelegt, solange sie gelernt ist und „Raise with Swiftcast or
   Dualcast" an steht. Schaden nimmt ihn nur, wo der Spieler es ausdrücklich wählt: die Einstellung aus oder ein
   Schadensschalter der Rotation (ab Werk aus). Der Rotmagier, der Swiftcast im Burst ohne Schalter nahm (C150), hat
-  jetzt „Use Swiftcast for damage", ab Werk aus. Offen: Mit der Einstellung aus verbraucht die Wiederbelebung einen
-  schon laufenden Swiftcast- oder Dualcast-Status noch (Konzept 11, `TODO.md`).
+  jetzt „Use Swiftcast for damage", ab Werk aus. Mit der Einstellung aus nimmt die Wiederbelebung einen schon laufenden
+  Swiftcast oder Dualcast nur noch, bevor er ungenutzt abliefe (seine Vorgabe, A504; Konzept 11).
 - *Wählbare Lagen:* nur Wiederbelebung (Voreinstellung, seine Regel); Schaden mit Wiederbelebung, wenn Swiftcast gerade
   bereit ist (Schadensschalter an); nur Schaden (Einstellung aus, Schadensschalter an); Swiftcast von Hand (beides aus).
 - *Antithese* „ein Schalter ist klarer als fünf": für den Beschwörer zutreffend, doch die fünf sind Upstreams und

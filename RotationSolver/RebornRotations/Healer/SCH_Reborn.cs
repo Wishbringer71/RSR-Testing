@@ -89,9 +89,11 @@ public sealed class SCH_Reborn : ScholarRotation
 	[RotationConfig(CombatType.PvE, Name = "Enable Swiftcast restriction: only allow Raise while Swiftcast is active")]
 	public bool SwiftLogic { get; set; } = true;
 
-	/// <summary>A raise is pending with Swiftcast up for it, so no GCD method spends the cast.</summary>
+	/// <summary>A raise is pending with Swiftcast up for it, so no GCD method spends the cast - only while the raise takes
+	/// the running Swiftcast; otherwise the next spell spends it, and it does not run out unused (A504).</summary>
 	private bool SwiftRaisePending =>
-		(HasSwift || IsLastAction(ActionID.SwiftcastPvE)) && SwiftLogic && MergedStatus.HasFlag(AutoStatus.Raise);
+		(HasSwift || IsLastAction(ActionID.SwiftcastPvE)) && SwiftLogic && MergedStatus.HasFlag(AutoStatus.Raise)
+		&& RunningSwiftGoesToRaise;
 
 	[RotationConfig(CombatType.PvE, Name = "Use GCDs to heal. (Ignored if you are the only healer in party, or while a party member is about to fall)",
 		Tooltip = "Off: while another healer is alive your GCD heals are left to them and you deal damage instead, with "

@@ -916,7 +916,7 @@ public partial class CustomRotation
 		}
 
 		// A long cast takes Swiftcast - the job's own raise only where "Raise with Swiftcast or Dualcast" allows it, whose
-		// text promises that off, RSR never uses Swiftcast to raise; Resurrection and Verraise are long casts (A402). Any
+		// text promises that off, RSR never presses Swiftcast for a raise; Resurrection and Verraise are long casts (A402). Any
 		// other long cast is damage - Verthunder III and Veraero III on Red Mage - and takes Swiftcast only where it is
 		// not held for the raise (A503).
 		var nextIsOwnRaise = Raise != null && nextGCD.IsTheSameTo(true, Raise);

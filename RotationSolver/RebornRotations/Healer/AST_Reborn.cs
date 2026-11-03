@@ -28,9 +28,11 @@ public sealed class AST_Reborn : AstrologianRotation
 	[RotationConfig(CombatType.PvE, Name = "Enable Swiftcast Restriction Logic to attempt to prevent actions other than Raise when you have swiftcast")]
 	public bool SwiftLogic { get; set; } = true;
 
-	/// <summary>A raise is pending with Swiftcast up for it, so no GCD method spends the cast.</summary>
+	/// <summary>A raise is pending with Swiftcast up for it, so no GCD method spends the cast - only while the raise takes
+	/// the running Swiftcast; otherwise the next spell spends it, and it does not run out unused (A504).</summary>
 	private bool SwiftRaisePending =>
-		(HasSwift || IsLastAction(ActionID.SwiftcastPvE)) && SwiftLogic && MergedStatus.HasFlag(AutoStatus.Raise);
+		(HasSwift || IsLastAction(ActionID.SwiftcastPvE)) && SwiftLogic && MergedStatus.HasFlag(AutoStatus.Raise)
+		&& RunningSwiftGoesToRaise;
 
 	[RotationConfig(CombatType.PvE, Name = "Use both stacks of Lightspeed while moving")]
 	public bool LightspeedMove { get; set; } = true;

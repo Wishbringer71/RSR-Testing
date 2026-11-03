@@ -47,9 +47,11 @@ public sealed class SGE_Reborn : SageRotation
 	[RotationConfig(CombatType.PvE, Name = "Enable Swiftcast Restriction Logic to attempt to prevent actions other than Raise when you have swiftcast")]
 	public bool SwiftLogic { get; set; } = true;
 
-	/// <summary>A raise is pending with Swiftcast up for it, so no GCD method spends the cast.</summary>
+	/// <summary>A raise is pending with Swiftcast up for it, so no GCD method spends the cast - only while the raise takes
+	/// the running Swiftcast; otherwise the next spell spends it, and it does not run out unused (A504).</summary>
 	private bool SwiftRaisePending =>
-		(HasSwift || IsLastAction(ActionID.SwiftcastPvE)) && SwiftLogic && MergedStatus.HasFlag(AutoStatus.Raise);
+		(HasSwift || IsLastAction(ActionID.SwiftcastPvE)) && SwiftLogic && MergedStatus.HasFlag(AutoStatus.Raise)
+		&& RunningSwiftGoesToRaise;
 
 	// The owner's rule, first built for Benediction (BenedictionNeedsThreat): an emergency measure only
 	// where there is danger, otherwise a HoT and the smaller heals are enough. Every healer carries one,
