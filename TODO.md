@@ -12,14 +12,25 @@ Nach der Wirkung im Kampf: Sicherheit der Gruppe vor Schaden, gewichtet mit der 
 
 1. Nach der Wiederbelebung wartet RSR die Unverwundbarkeit ab: Ein Heiler stirbt am ersten Treffer nach dem
    Aufstehen, ohne dass RSR etwas drückt.
-2. Fremde Repositories auf Verbesserungen für RSR prüfen: Jeder Fund kann ein Defekt im Verhalten einer Klasse sein,
+2. Heilungen in „Heilung -" verpuffen: fünf GCDs Schaden und MP ohne Wirkung, solange der Status liegt; kein Leben,
+   denn die Heilung wirkt dort ohnehin nicht.
+3. Fremde Repositories auf Verbesserungen für RSR prüfen: Jeder Fund kann ein Defekt im Verhalten einer Klasse sein,
    den RSR heute im Kampf zeigt; zuerst die Rotationswerkzeuge für alle Jobs, Daedalus vorn (aktiv, alle Jobs,
    eigene Kampfvorhersage).
-3. Flächenbetäuber in Kreszentia für The Blackest Night: kostet MP, kein Leben.
+4. Flächenbetäuber in Kreszentia für The Blackest Night: kostet MP, kein Leben.
 
 Danach die technische Schuld, soweit ihre Auflösungsbedingung erfüllt ist. Warten auf Daten: unten.
 
 ## Defekte
+
+### Heilungen in „Heilung -" (HP Recovery Down) verpuffen · N
+Im Kampf: Himmlischer Pfad setzte drei Mitglieder auf 10 % und legte 20 s „Heilung -" (Status 2852; Windurst: Die dritte
+Etappe, 03.11.2026). RSR wirkte in dieser Zeit zwei Afflatus laetitiae, Resega, Vitaga und Assise; jede Heilung brachte
+den Getroffenen ein bis zwei Prozent, gemessen etwa 98 % weniger. Erst nach Ablauf stiegen sie. Niemand starb, es kostete
+fünf GCDs Schaden und MP. *Ort:* Heilzielwahl und Heilflaggen (`HealingIneffectiveStatus` kennt nur Status, die Heilung
+ganz aufheben); der Wirktext nennt keine Stärke. *Nächster Schritt:* Loop: die Wirkung eigener Heilungen auf Träger eines
+heilsenkenden Status messen (Effekt-Handler) und daraus je Status lernen, ob Heilen dort lohnt; Abwägung gegen ein
+Mitglied in der kritischen Klasse. *Konzept:* 07.
 
 ## Offene Arbeit
 

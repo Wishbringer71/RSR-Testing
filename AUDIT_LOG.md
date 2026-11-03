@@ -15554,8 +15554,21 @@ der wechsel klappen könnte" und „vielleicht muss auch einfach die kampfhaltun
   wirkt die Ninja-Basisschicht auf „Move Forward"; die Ausnahme im Prüfskript („keine Fork-Rotation") war falsch (C156).
   Die Zielwahl für Bewegung begrenzte auf „Only use damaging gap closers within this distance", deren Text den
   Bewegungsbefehl ausnimmt; jetzt nur die Reichweite. TODO-Punkt geschlossen.
-- *Zurückgestellt auf seine Vorgabe:* Weißmagier in Windurst (drei Tode der Gruppe, alle an Mechaniken; „Heilung -"
-  nach Himmlischer Pfad), die übrigen Zeilenarten und die gelernten Tabellen. Sie folgen.
+- *Danach, auf seine Reihenfolge:*
+  - *Weißmagier in Windurst,* drei Tode der Gruppe, alle an Mechaniken:
+    - Maschinist und Schwarzmagier nahmen um 20:28:33 je zweimal Elektrisieren (Gordeus-System), zusammen mehr als ihre
+      volle Gesundheit (rund 298.000 auf 194.793 und 280.000 auf 190.218).
+    - Der Schwarzmagier stand um 20:44:55 in zwei Kataklystischen Klingen binnen 0,09 s. Benediktion ging 0,13 s nach
+      dem Absturz auf 1 HP raus; der Tod kam vor ihrer Wirkung.
+    - Er selbst starb nicht. Kein Defekt.
+  - *„Heilung -" (Status 2852):* Himmlischer Pfad setzte drei Mitglieder auf 10 % und legte den Status für 20 s. Fünf
+    GCD-Heilungen und Assise brachten in dieser Zeit je ein bis zwei Prozent, gemessen etwa 98 % weniger. Das ist ein
+    Defekt im TODO, ohne Tod.
+  - *Gelernte Tabellen* gegen die Fassung vom Nachmittag: Fläche 294 Einträge (neu Genesis 0,35; Göttliches Urteil in
+    der laufenden Schicht unsauber 1,0 gegen sauber 0,87 geerbt); Tankbuster 80 (neu Explosion, Meteor, Dark Nova;
+    Comet unter Verwundbarkeit 1,23). Keine Quarantäne. Die Spielversion der Schichten gleicht der Kopfzeile.
+  - *Übrige Zeilen:* „no healer alive" (88, Beastmaster allein in der offenen Welt), Göttlicher Segen auf den
+    Angegriffenen bei voller Ladung (41), Holy ohne Betäubte in Reichweite (22): wie vorgesehen.
 - *Prüfgrad:* statisch an Code, Blättern (xivapi v2, Datamining-CSV, EXDSchema), Lumina per Reflexion und seinen
   Mitschnitten; kompiliert, alle CI-Prüfungen lokal; Probe und Katalog im Spiel nicht beobachtet – die Probe misst sich
   selbst und schreibt jedes Urteil ins `DefenseTrace.log`.
