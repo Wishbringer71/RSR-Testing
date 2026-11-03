@@ -719,6 +719,8 @@ public partial class AstrologianRotation
 	{
 		setting.SpecialType = SpecialActionType.FixedDistanceMoveForward;
 		setting.IsFriendly = true;
+		// "Quickly dash 15 yalms forward" (effect text); without it the landing check refuses (A498).
+		setting.BackstepDistance = 15;
 	}
 
 	static partial void ModifyRetrogradePvP(ref ActionSetting setting)

@@ -156,7 +156,9 @@ gab den Sprungangriffen einen eigenen Typ (33e6acb1f, 07.05.2026), damit sie die
 Angriff braucht ein gültiges feindliches Ziel, die Zielwahl der Vorstöße nimmt das harte Ziel oder das fernste im
 Kegel. Die Grenze stand in der Zielwahl der Vorstöße und blieb dort. Primal Rend und Crimson Cyclone hatten vor dem
 Umbau keinen wirksamen Vorstoßtyp (die Zeile stand auskommentiert) und brachten eigene Grenzen mit; Stardiver,
-Dragonfire Dive und Forked Raiju bekamen den Typ im Fork (A174), für die Bewegungsprüfung mit BossModReborn.
+Dragonfire Dive und Forked Raiju bekamen den Typ im Fork (A174), für die Bewegungsprüfung mit BossModReborn;
+Upstream setzte ihn in 7.5.7.14 ebenso. Welche Aktion bewegt, sagen die Blätter, und die CI hält jede gegen einen
+Bewegungstyp (Konzept 05, A498).
 
 *Warum nicht in der Zielwahl.* Dort hätte die Grenze die ausdrücklichen „Dangerous"-Schalter des Kriegers, des
 Beschwörers und des Ninja außer Kraft gesetzt, deren Text Sprünge auf jeden Abstand verspricht. Die Grenze sitzt

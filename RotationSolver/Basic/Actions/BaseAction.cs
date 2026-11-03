@@ -245,7 +245,7 @@ public class BaseAction : IBaseAction
 			return ActionTracer.Reject(this, "CastRunsIntoGCD");
 		}
 
-		if (Setting.SpecialType == SpecialActionType.MeleeRangedAttack && IActionHelper.IsLastAction(IActionHelper.MovingActions))
+		if (Setting.SpecialType == SpecialActionType.MeleeRangedAttack && IActionHelper.LastActionMovedForward())
 		{
 			return ActionTracer.Reject(this, "MeleeRangedAfterMove");
 		}

@@ -633,6 +633,14 @@ public struct ActionTargetInfo(IBaseAction action)
 
 		if (Range == 0 && EffectRange == 0)
 		{
+			// A fixed dash has no target to choose and lands here; its landing point is checked on this path or not at
+			// all - every other check sits behind it, and until A498 no fixed dash was ever checked in combat.
+			if (action.Setting.SpecialType is SpecialActionType.FixedDistanceMoveForward or SpecialActionType.FixedDistanceMoveBackward
+				&& ShouldCheckMoveSafety() && !CheckMovementSafety(Player.Object.Position))
+			{
+				return null;
+			}
+
 			return new TargetResult(Player.Object, [], Player.Object.Position);
 		}
 
@@ -1009,6 +1017,17 @@ public struct ActionTargetInfo(IBaseAction action)
 				or SpecialActionType.HostileMovingAttack
 				or SpecialActionType.ObjectBasedMovement
 				or SpecialActionType.HostileAttackBackstep;
+
+	/// <summary>
+	/// The movement types that leave the player at his target or ahead of where he stood: a dash to a target, a dash
+	/// forward. Not the moves backwards (Elusive Jump grants the very Piercing Talon a ranged follow-up uses), nor a
+	/// move to a placed object.
+	/// </summary>
+	internal static bool IsForwardMovingSpecialType(SpecialActionType type)
+		=> type is SpecialActionType.FixedDistanceMoveForward
+				or SpecialActionType.HostileMovingForward
+				or SpecialActionType.HostileFriendlyMovingForward
+				or SpecialActionType.HostileMovingAttack;
 
 	private readonly bool CheckMovementSafety(Vector3 destination, IBattleChara? target = null)
 	{

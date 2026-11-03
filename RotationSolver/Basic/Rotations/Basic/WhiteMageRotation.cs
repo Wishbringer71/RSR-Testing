@@ -258,6 +258,9 @@ public partial class WhiteMageRotation
 	{
 		setting.TargetType = TargetType.Move;
 		setting.IsFriendly = true;
+		// "Quickly dash 15 yalms forward" (effect text): a fixed dash, its landing point checked (A498).
+		setting.SpecialType = SpecialActionType.FixedDistanceMoveForward;
+		setting.BackstepDistance = 15;
 	}
 
 	static partial void ModifyHolyPvE(ref ActionSetting setting)

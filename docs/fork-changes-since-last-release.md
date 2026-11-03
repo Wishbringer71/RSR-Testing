@@ -55,6 +55,18 @@ What this release changes in the fight. For the whole distance from upstream, se
   gets a "beastmaster state" line whenever what the horn choice and Capture read changes: the familiars on the horns,
   the one out, both options, whether Capture is enabled, and whether the familiar list and catalog are loaded.
 
+## Movement
+
+- **Fixed dashes check where they land.** Hell's Ingress, Hell's Egress, En Avant, Smudge, Aetherial Shift and Elusive
+  Jump - the dashes without a target - went out on "Move Forward" or "Move Back" wherever they would land. With
+  BossModReborn running they now wait while the landing point lies in a danger zone, for as long as the command lasts
+  ("Special state duration", 3 s by default), like every dash onto a target already did. "Skip BossModReborn
+  position-safety check for this movement action" in the action's settings turns it off for that action.
+- **No ranged attack right after every dash to the target.** Lightning Shot after Trajectory, Writhing Snap after
+  Slither, Tomahawk after Primal Rend, Piercing Talon after Stardiver or Winged Glide and Throwing Dagger after Forked
+  Raiju are held for one action, as they already were after Intervene, Onslaught or Dragonfire Dive: the player stands
+  at the target now. After a jump backwards (Elusive Jump) the ranged follow-up stays allowed.
+
 ## Healing
 
 - **The emergency heal now gets out between two hard casts.** After a 2.0 s heal (Cure II, Medica II, Cure III,

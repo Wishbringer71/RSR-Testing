@@ -171,6 +171,9 @@ public partial class DragoonRotation
 		setting.UnlockedByQuestID = 66604;
 		setting.StatusProvide = [StatusID.EnhancedPiercingTalon];
 		setting.IsFriendly = true;
+		// "Executes a jump to a location 15 yalms behind you" (effect text): a fixed dash, its landing point checked (A498).
+		setting.SpecialType = SpecialActionType.FixedDistanceMoveBackward;
+		setting.BackstepDistance = 15;
 	}
 
 	static partial void ModifyDoomSpikePvE(ref ActionSetting setting)
@@ -421,6 +424,8 @@ public partial class DragoonRotation
 	{
 		setting.SpecialType = SpecialActionType.FixedDistanceMoveBackward;
 		setting.IsFriendly = true;
+		// "Executes a jump to a location 15 yalms behind you" (effect text); without it the landing check refuses (A498).
+		setting.BackstepDistance = 15;
 	}
 
 	static partial void ModifyHorridRoarPvP(ref ActionSetting setting)

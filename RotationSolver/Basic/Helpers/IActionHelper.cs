@@ -5,22 +5,31 @@
 /// </summary>
 public static class IActionHelper
 {
-	internal static ActionID[] MovingActions { get; } =
-	[
-		ActionID.EnAvantPvE,
-        //ActionID.PlungePvE,
-        ActionID.RoughDividePvE,
-		ActionID.ThunderclapPvE,
-		ActionID.ShukuchiPvE,
-		ActionID.IntervenePvE,
-		ActionID.CorpsacorpsPvE,
-		ActionID.HellsIngressPvE,
-		ActionID.HissatsuGyotenPvE,
-		ActionID.IcarusPvE,
-		ActionID.OnslaughtPvE,
-        //ActionID.SpineshatterDivePvE,
-        ActionID.DragonfireDivePvE,
-	];
+	/// <summary>
+	/// Whether the last action moved the player to a target or forward, read from that action's movement type
+	/// (<see cref="ActionTargetInfo.IsForwardMovingSpecialType"/>). A hand-kept list stood here: it still named Rough
+	/// Divide, which Trajectory replaced in 7.0, and none of the dashes added since (A498).
+	/// </summary>
+	internal static bool LastActionMovedForward()
+	{
+		var last = DataCenter.LastAction;
+		var actions = DataCenter.CurrentRotation?.AllBaseActions;
+		if (last == 0 || actions == null)
+		{
+			return false;
+		}
+
+		foreach (var action in actions)
+		{
+			if (ActionTargetInfo.IsForwardMovingSpecialType(action.Setting.SpecialType)
+				&& ((ActionID)action.ID == last || (ActionID)action.AdjustedID == last))
+			{
+				return true;
+			}
+		}
+
+		return false;
+	}
 
 	internal static ActionID[] HealingActions { get; } =
 	[

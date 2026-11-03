@@ -126,23 +126,50 @@ SAM `HissatsuYatenPvE` liegt in `SAM_Reborn.MoveBackAbility` (f90c7bf7, A7). Es 
 Bewegungsfähigkeit, sondern eine Schadensaktion mit Rücksprung, die zusätzlich Enhanced Enpi gewährt. Im
 Rückzugsslot fällt es nur bei gesetztem `AutoStatus.MoveBack`, also nur, wenn ein Rückzug ohnehin gewollt ist.
 
-**Sicherheit des Landepunkts (A313).** Vor jeder Bewegungsaktion fragt RSR BossModReborn, ob der Weg in eine
+**Sicherheit des Landepunkts (A313, A498).** Vor jeder Bewegungsaktion fragt RSR BossModReborn, ob der Weg in eine
 Gefahrenzone führt (`ActionTargetInfo.CheckMovementSafety`, Schalter „Skip position safety check" je Aktion). Den
 Landepunkt rechnet RSR selbst und fragt `Hints.IsDashSafe(from, to)`:
 - Sprung auf ein Ziel: bis zum Rand seiner Trefferfläche; steht der Spieler schon dort (0 Yalm), nichts zu prüfen.
-- fester Sprung entlang der Blickrichtung (Hell's Ingress, Hell's Egress): die Weite aus dem Wirktext
-  („Quickly dash 15 yalms forward/backwards", `ActionSetting.BackstepDistance`). Ohne bekannte Weite – die PvP- und
-  Sonderaktionen – kein Landepunkt: mit BossModReborn abgelehnt, ohne es erlaubt.
+- fester Sprung entlang der Blickrichtung: die Weite aus dem Wirktext (`ActionSetting.BackstepDistance`) – Hell's
+  Ingress und Smudge („Quickly dash 15 yalms forward"), Aetherial Shift (ebenso), En Avant („Quickly dash 10 yalms
+  forward"), Hell's Egress („… 15 yalms backwards"), Elusive Jump („Executes a jump to a location 15 yalms behind
+  you"), im PvP Elusive Jump, Epicycle und Hell's Ingress mit denselben Texten. Ohne bekannte Weite kein Landepunkt: mit
+  BossModReborn abgelehnt, ohne es erlaubt. Seit die Prüfung im Kampf läuft (A498), hieße das für einen festen Sprung
+  ohne Weite, dass er neben BossModReborn nie geht; deshalb trägt jeder feste Sprung der Basisrotationen seine Weite.
 - Rücksprung vom Ziel (Displacement 15, Hissatsu: Yaten 10, Repelling Shot 10 Yalm, Wirktexte): weg vom Ziel um diese
   Weite. Repelling Shot („Jump 10 yalms away from current target") ist seit A313 ein solcher Rücksprung; als fester
   Rückwärtssprung zielte es auf den Spieler selbst, was die Aktion nicht annimmt.
+
+Ein fester Sprung hat kein Ziel (Reichweite und Wirkradius 0 in den Blättern). Für solche Aktionen gibt die Zielwahl
+sofort den Spieler zurück (`FindTarget`), und die Prüfung sitzt deshalb in diesem Pfad selbst. Bis A498 stand sie nur
+hinter ihm: Kein fester Sprung wurde im Kampf geprüft, Hell's Ingress lief auf „Move Forward" in eine angekündigte
+Fläche, während das Aktionsfenster „Fail" zeigte. Im Kampf jetzt: Auf einen Bewegungsbefehl bleibt der feste Sprung aus,
+solange sein Landepunkt in einer Gefahrenzone liegt. Der Befehl gilt weiter, solange seine Dauer läuft („Special
+state duration", ab Werk 3 s); vergeht die Fläche oder dreht sich der Spieler in der Zeit, geht der Sprung, sonst gar nicht.
+
+**Welche Aktion bewegt, sagen die Blätter** (`Action.AffectsPosition`). `check_movement_types.py` hält jede
+Spieleraktion des PvE mit diesem Merkmal gegen einen Bewegungstyp in ihrer Basisrotation; eine ohne Typ fällt in der CI.
+Upstream setzte den Typ in 7.5.7.14 für Dragonfire Dive, Stardiver und Forked Raiju, die ihn im Fork schon trugen (A174);
+En Avant, Smudge, Aetherial Shift und Elusive Jump hatten keinen und gingen auf den Bewegungsbefehl ungeprüft. Ausnahmen,
+je mit Grund im Skript: Shukuchi und Cloud Skim (Bodenziel in eine gewählte Richtung; keine Fork-Rotation wirkt sie, und
+einen Landepunkt hätte erst eine eigene Zielwahl), Rescue (bewegt das Gruppenmitglied, nicht den Spieler).
+
+**Nach einem Sprung zum Ziel kein Fernangriff** (`MeleeRangedAfterMove`, Upstream). Die Fernangriffe mit diesem Typ –
+Piercing Talon, Throwing Dagger, Lightning Shot, Writhing Snap, Enpi, Shield Lob, Tomahawk, Harpe; beim Dunkelritter
+ist Unmend nicht so markiert – bleiben einen Zug aus, wenn die letzte Aktion den Spieler zum Ziel
+oder nach vorn bewegt hat – dort ist er jetzt im Nahkampf, und die Entfernung von vorher wählte sonst den schwächeren
+Fernangriff. Welche Aktion das ist, sagt ihr Bewegungstyp (`IActionHelper.LastActionMovedForward`). Die Liste davor war
+von Hand geführt: Sie nannte Rough Divide, das in 7.0 Trajectory wich, und kannte Trajectory, Shadowstride, Primal Rend,
+Stardiver, Forked Raiju, Winged Glide und Slither nicht. Ein Rücksprung zählt nicht: Nach Elusive Jump ist Piercing Talon
+gerade die Folge, die der Sprung freischaltet.
 
 BossModReborns eigener Endpunkt `Hints.IsFixedDashSafe` nimmt Weite und Richtung aus der Blickrichtung, nicht zwei Punkte.
 Abonniert als `(Vector3, Vector3)` schlug jeder Aufruf fehl, und der sichere Wrapper lieferte „unsicher": Solange
 BossModReborn lief, lehnte RSR jeden festen Sprung und jeden Rücksprung ab (seit `33e6acb1f`, Upstream, 07.05.2026).
 
-**Eine Prüfung, zwei Leser** (A465). Das Aktionsfenster („BMR Safetycheck") zeigt das Ergebnis und den Grund der
-Prüfung, die im Kampf entscheidet (`ActionTargetInfo.MovementSafety`), ohne eine Ablehnung zu buchen.
+**Eine Prüfung, zwei Leser** (A465, für feste Sprünge erst seit A498 wahr). Das Aktionsfenster („BMR Safetycheck")
+zeigt das Ergebnis und den Grund der Prüfung, die im Kampf entscheidet (`ActionTargetInfo.MovementSafety`), ohne eine
+Ablehnung zu buchen.
 `CheckMovementSafety` bucht sie für das Protokoll. Vorher rechnete das Fenster die Prüfung selbst nach und kannte die
 Regel „am Ziel ist ein Sprung nur Schaden" nicht: Es zeigte „Fail" für einen Gapcloser, den RSR im Kampf drückte.
 

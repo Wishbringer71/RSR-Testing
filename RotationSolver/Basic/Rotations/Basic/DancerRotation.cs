@@ -474,6 +474,9 @@ public partial class DancerRotation
 	{
 		setting.TargetType = TargetType.Move;
 		setting.IsFriendly = true;
+		// "Quickly dash 10 yalms forward" (effect text): a fixed dash, its landing point checked (A498).
+		setting.SpecialType = SpecialActionType.FixedDistanceMoveForward;
+		setting.BackstepDistance = 10;
 	}
 
 	static partial void ModifyClosedPositionPvE(ref ActionSetting setting)

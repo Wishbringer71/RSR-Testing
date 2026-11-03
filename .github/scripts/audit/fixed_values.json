@@ -1059,6 +1059,56 @@
    "reason": "Concept 13, rule 6 (decided with the revision, A451): a learned action laying a status that damages every action is refuted only after at least two landings on its target without it - one may be a case the effect does not show, two is the least that repeats. The game states no such count; a wrongly refuted action is the death of A427, so the count only rises with the sightings it had before (Before)."
   },
   {
+   "file": "RotationSolver/Basic/Rotations/Basic/AstrologianRotation.cs",
+   "code": "setting.BackstepDistance = 15;",
+   "values": [
+    "15"
+   ],
+   "status": "exception",
+   "loop": "A498",
+   "reason": "The dash distance is stated only in the effect text (Epicycle, PvP: \"Quickly dash 15 yalms forward\", ActionTransient via xivapi v2, 03.11.2026); no sheet carries it as a number, so it cannot be read at runtime"
+  },
+  {
+   "file": "RotationSolver/Basic/Rotations/Basic/DancerRotation.cs",
+   "code": "setting.BackstepDistance = 10;",
+   "values": [
+    "10"
+   ],
+   "status": "exception",
+   "loop": "A498",
+   "reason": "The dash distance is stated only in the effect text (En Avant: \"Quickly dash 10 yalms forward\", ActionTransient via xivapi v2, 03.11.2026); no sheet carries it as a number, so it cannot be read at runtime"
+  },
+  {
+   "file": "RotationSolver/Basic/Rotations/Basic/DragoonRotation.cs",
+   "code": "setting.BackstepDistance = 15;",
+   "values": [
+    "15"
+   ],
+   "status": "exception",
+   "loop": "A498",
+   "reason": "The dash distance is stated only in the effect text (Elusive Jump: \"Executes a jump to a location 15 yalms behind you\", ActionTransient via xivapi v2, 03.11.2026); no sheet carries it as a number, so it cannot be read at runtime"
+  },
+  {
+   "file": "RotationSolver/Basic/Rotations/Basic/PictomancerRotation.cs",
+   "code": "setting.BackstepDistance = 15;",
+   "values": [
+    "15"
+   ],
+   "status": "exception",
+   "loop": "A498",
+   "reason": "The dash distance is stated only in the effect text (Smudge: \"Quickly dash 15 yalms forward\", ActionTransient via xivapi v2, 03.11.2026); no sheet carries it as a number, so it cannot be read at runtime"
+  },
+  {
+   "file": "RotationSolver/Basic/Rotations/Basic/WhiteMageRotation.cs",
+   "code": "setting.BackstepDistance = 15;",
+   "values": [
+    "15"
+   ],
+   "status": "exception",
+   "loop": "A498",
+   "reason": "The dash distance is stated only in the effect text (Aetherial Shift: \"Quickly dash 15 yalms forward\", ActionTransient via xivapi v2, 03.11.2026); no sheet carries it as a number, so it cannot be read at runtime"
+  },
+  {
    "file": "RotationSolver/UI/MainWindow/MainWindow_Learned.cs",
    "code": "_ = ImGui.InputTextWithHint(\"##Searching the learned tables\", \"Name or ID\", ref _learnedSearching, 50);",
    "values": [
