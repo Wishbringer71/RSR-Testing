@@ -86,6 +86,15 @@ What this release changes in the fight. For the whole distance from upstream, se
   Bomb Toss stun first. Level 5 Petrify joins the low-chance spells, and Level 5 Death and Petrify skip enemies whose
   level is not a multiple of five. Saintly Beam learns undead enemy kinds from its own hits and then goes against them
   on one target too.
+- **Blue Mage: the active set improves itself from your learned spells.** New option "Improve the Blue Mage set from
+  your learned spells" (on by default). Out of combat, without a target and while RSR is on, it adds Sonic Boom where it
+  is missing, the partners of spell chains one part of which is in your set (Whistle and Tingle with Triple Trident,
+  Conviction Marcato with Winged Reprobation, Ultravibration with the Ram's Voice, the other Knight's Tour, Mustard Bomb
+  with Peripheral Synthesis, Bristle with Matra Magic or Song of Torment), and damage spells with a recast from recast
+  groups your set lacks. It uses only free slots and plain fillers RSR does not cast at your level; damage cooldowns,
+  heals, defence, movement, mimicry, raises, interrupts and every spell with an additional effect stay, and a slot changes
+  only while its spell is ready. One slot at a time; each change is written to `DefenseTrace.log`. Saved sets and
+  hotbars are not touched.
 - **Beastmaster: a record of the Master's Bestiary.** While the Bestiary is open, RSR writes to `BestiaryTrace.log`
   next to `DefenseTrace.log` what the game receives from each click, every context menu with its entries, every server
   command the client sends through its general command function, and the battlehorn slots as they change. It only

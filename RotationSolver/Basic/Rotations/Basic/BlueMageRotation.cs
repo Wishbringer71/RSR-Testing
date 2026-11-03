@@ -391,6 +391,255 @@ public partial class BlueMageRotation
 		return true;
 	}
 
+	#region Improving the active set from the learned spells (concept 01, "Verbessern statt ersetzen", A509)
+
+	private static int _setWrittenSlot = -1;
+	private static uint _setWrittenId;
+	private static uint _setWrittenIn;
+
+	/// <summary>
+	/// Writes one improvement of the active set per call, out of combat (concept 01, "Verbessern statt ersetzen"): the
+	/// filler where it is missing, the partners of the chains one part of which is in the set, then damage spells with a
+	/// recast from recast groups the set lacks. It takes only free slots or slots whose spell RSR does not cast at this
+	/// level - a plain-potency spell that is neither the best single-target nor the best area filler, or a fixed-damage
+	/// spell that does not beat the filler. Cooldowns in the set stay, as do heals, defence, movement,
+	/// mimicry, raises, interrupts and every spell with an additional effect stay. A slot is written only while its spell
+	/// does not recast. After a write nothing more is written until the slot shows the new spell, so a write the game
+	/// refuses - a duty that forbids changing the set - stops the improvement in that area.
+	/// </summary>
+	protected unsafe void ImproveActiveSet()
+	{
+		var player = Player;
+		var manager = FFXIVClientStructs.FFXIV.Client.Game.ActionManager.Instance();
+		if (DataCenter.InCombat || player == null || player.IsDead || player.IsCasting || player.TargetObject != null
+			|| manager == null || manager->ActionQueued || WeaponTotal <= 0f)
+		{
+			return;
+		}
+
+		var slots = DataCenter.BluSlots;
+		if (_setWrittenSlot >= 0)
+		{
+			if (DataCenter.TerritoryID != _setWrittenIn)
+			{
+				_setWrittenSlot = -1;
+			}
+			else if (_setWrittenSlot < slots.Length && slots[_setWrittenSlot] == _setWrittenId)
+			{
+				DefenseTrace.Line($"blue mage set: slot {_setWrittenSlot + 1} now holds #{_setWrittenId}");
+				_setWrittenSlot = -1;
+			}
+
+			return;
+		}
+
+		if (!TryPlanSetChange(slots, out var slot, out var add, out var why))
+		{
+			return;
+		}
+
+		var old = slots[slot];
+		manager->AssignBlueMageActionToSlot(slot, add.ID);
+		_setWrittenSlot = slot;
+		_setWrittenId = add.ID;
+		_setWrittenIn = DataCenter.TerritoryID;
+		DefenseTrace.Line($"blue mage set: slot {slot + 1} #{old} -> {add.Name} #{add.ID} ({why})");
+	}
+
+	private bool TryPlanSetChange(uint[] slots, out int slot, out IBaseAction add, out string why)
+	{
+		slot = -1;
+		add = null!;
+		why = string.Empty;
+
+		var inSet = new Dictionary<uint, IBaseAction>();
+		var learned = new List<IBaseAction>();
+		foreach (var action in AllBaseActions)
+		{
+			if (action == null || action.Action.ClassJob.RowId != (uint)ECommons.ExcelServices.Job.BLU || !action.EnoughLevel
+				|| !action.Info.IsQuestUnlocked())
+			{
+				continue;
+			}
+
+			if (Array.IndexOf(slots, action.ID) >= 0)
+			{
+				inSet[action.ID] = action;
+			}
+			else
+			{
+				learned.Add(action);
+			}
+		}
+
+		// The best single-target and the best area filler in the set stay; every other plain filler can make room.
+		IBaseAction? bestSingle = null, bestArea = null;
+		float single = 0f, area = 0f;
+		foreach (var action in inSet.Values)
+		{
+			if (!IsPlainFiller(action))
+			{
+				continue;
+			}
+
+			var time = SpellTime(action);
+			if (ActionTooltip.TryPotencyOn(action.ID, 1, out var one) && one / time > single)
+			{
+				single = one / time;
+				bestSingle = action;
+			}
+
+			if (action.Action.EffectRange > 0 && ActionTooltip.TryPotencyOn(action.ID, 1 + 1, out var two) && two / time > area)
+			{
+				area = two / time;
+				bestArea = action;
+			}
+		}
+
+		bool Removable(IBaseAction action)
+		{
+			if (IsPlainFiller(action))
+			{
+				return action != bestSingle && action != bestArea;
+			}
+
+			if (!ActionTooltip.TryFixedDamage(action.ID, out var fixedDamage) || action.Cooldown.RecastTimeOneChargeRaw > WeaponTotal)
+			{
+				return false;
+			}
+
+			var filler = FillerDamageOver(SpellTime(action));
+			return !float.IsNaN(filler) && fixedDamage <= filler;
+		}
+
+		// What comes in, first to last: the filler, the partners of chains in the set, cooldowns of missing recast groups.
+		var wanted = new List<(IBaseAction Spell, float Value, string Why)>();
+		if (learned.Contains(SonicBoomPvE))
+		{
+			wanted.Add((SonicBoomPvE, 0f, "the filler"));
+		}
+
+		void Pair(IBaseAction part, IBaseAction partner, string chain)
+		{
+			if (inSet.ContainsKey(part.ID) && learned.Contains(partner) && !wanted.Exists(w => w.Spell == partner))
+			{
+				wanted.Add((partner, 0f, chain));
+			}
+		}
+
+		Pair(TripleTridentPvE, WhistlePvE, "Whistle before Triple Trident");
+		Pair(TripleTridentPvE, TinglePvE, "Tingle before Triple Trident");
+		Pair(WingedReprobationPvE, ConvictionMarcatoPvE, "Conviction Marcato after Winged Redemption");
+		Pair(TheRamsVoicePvE, UltravibrationPvE, "Ultravibration after the Ram's Voice");
+		Pair(BlackKnightsTourPvE, WhiteKnightsTourPvE, "the Knight's Tour cycle");
+		Pair(WhiteKnightsTourPvE, BlackKnightsTourPvE, "the Knight's Tour cycle");
+		Pair(PeripheralSynthesisPvE, MustardBombPvE, "Mustard Bomb on Lightheaded");
+		Pair(MatraMagicPvE, BristlePvE, "Bristle before Matra Magic");
+		Pair(SongOfTormentPvE, BristlePvE, "Bristle before Song of Torment");
+
+		var groupsInSet = new HashSet<byte>();
+		foreach (var action in inSet.Values)
+		{
+			groupsInSet.Add(action.Cooldown.CoolDownGroup);
+		}
+
+		var cooldowns = new List<(IBaseAction Spell, float Value, string Why)>();
+		foreach (var action in learned)
+		{
+			var value = CooldownValue(action);
+			if (value <= 0f || groupsInSet.Contains(action.Cooldown.CoolDownGroup))
+			{
+				continue;
+			}
+
+			var index = cooldowns.FindIndex(c => c.Spell.Cooldown.CoolDownGroup == action.Cooldown.CoolDownGroup);
+			if (index < 0)
+			{
+				cooldowns.Add((action, value, "a damage cooldown the set lacks"));
+			}
+			else if (cooldowns[index].Value < value)
+			{
+				cooldowns[index] = (action, value, "a damage cooldown the set lacks");
+			}
+		}
+
+		cooldowns.Sort((a, b) => b.Value.CompareTo(a.Value));
+		wanted.AddRange(cooldowns);
+
+		foreach (var (spell, value, reason) in wanted)
+		{
+			// A free slot first, then a filler RSR does not cast. A cooldown in the set stays: its first potency undervalues
+			// Triple Trident's three hits and Winged Reprobation's four casts. A slot whose spell recasts is left alone.
+			var best = -1;
+			var bestHeld = float.MaxValue;
+			for (var i = 0; i < slots.Length; i++)
+			{
+				float held;
+				if (slots[i] == 0)
+				{
+					held = -1f;
+				}
+				else if (!inSet.TryGetValue(slots[i], out var heldAction) || heldAction.Cooldown.IsCoolingDown)
+				{
+					continue;
+				}
+				else if (Removable(heldAction))
+				{
+					held = 0f;
+				}
+				// The best single-target filler gives way to Sonic Boom where that brings more potency a second.
+				else if (heldAction == bestSingle && spell == SonicBoomPvE
+					&& ActionTooltip.TryPotencyOn(spell.ID, 1, out var boom) && boom / SpellTime(spell) > single)
+				{
+					held = 0f;
+				}
+				else
+				{
+					continue;
+				}
+
+				if (held < bestHeld)
+				{
+					bestHeld = held;
+					best = i;
+				}
+			}
+
+			if (best >= 0)
+			{
+				slot = best;
+				add = spell;
+				why = reason;
+				return true;
+			}
+		}
+
+		return false;
+	}
+
+	// A spell RSR uses only as a filler: no recast of its own, one plain potency in its text and no additional effect,
+	// interrupt or enmity - so taking it out costs nothing a better filler does not give.
+	private static bool IsPlainFiller(IBaseAction action)
+	{
+		var text = ActionTooltip.Text(action.ID);
+		return !action.Setting.IsFriendly && action.Cooldown.RecastTimeOneChargeRaw <= WeaponTotal
+			&& ActionTooltip.TryPlainPotency(action.ID, out _)
+			&& !text.Contains("Additional Effect", StringComparison.Ordinal) && !text.Contains("nterrupt", StringComparison.Ordinal)
+			&& !text.Contains("enmity", StringComparison.Ordinal);
+	}
+
+	// The potency a second a damaging spell with a recast of its own brings over a long fight: its first stated potency,
+	// over its recast. Zero for anything else.
+	private static float CooldownValue(IBaseAction action)
+	{
+		var recast = action.Cooldown.RecastTimeOneChargeRaw;
+		return action.Setting.IsFriendly || recast <= WeaponTotal || !ActionTooltip.TryPotencyOn(action.ID, 1, out var potency)
+			? 0f
+			: potency / recast;
+	}
+
+	#endregion
+
 	/// <summary>
 	/// Whether the player's health, carried forward over what is left of Waxing Nocturne and the whole of Waning Nocturne,
 	/// falls into the critical class: the one case for Diamondback at the end of Waxing, which turns it into Waning at once

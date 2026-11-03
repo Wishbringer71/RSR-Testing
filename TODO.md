@@ -10,7 +10,7 @@ Betroffene: **N** Endnutzer · **R** Autoren abgeleiteter Rotationen (Namensräu
 Nach der Wirkung im Kampf: Sicherheit der Gruppe vor Schaden, gewichtet mit der Wahrscheinlichkeit, in seinem Profil
 (seine Vorgabe, 17.10.2026: „todo nach wichtigkeit abarbeiten. jeweils im loop bearbeiten").
 
-1. Blaumagier, Stufe 3: das Set aus den gelernten Zaubern; erst damit stehen die Ketten im Set.
+1. Blaumagier: Set je Stufe im Masked Carnivale.
 2. Fremde Repositories auf Verbesserungen für RSR prüfen: Jeder Fund kann ein Defekt im Verhalten einer Klasse sein,
    den RSR heute im Kampf zeigt; zuerst die Rotationswerkzeuge für alle Jobs, Daedalus vorn (aktiv, alle Jobs,
    eigene Kampfvorhersage).
@@ -21,14 +21,13 @@ Danach die technische Schuld, soweit ihre Auflösungsbedingung erfüllt ist. War
 
 ## Offene Arbeit
 
-### Blaumagier, Stufe 3: Set aus den gelernten Zaubern · N
-- *Wirkung:* RSR nutzt nur die 24 Zauber im aktiven Set. Ein Set nach Rolle und Lage aus den gelernten Zaubern macht
-  die Ketten erst möglich. Im Masked Carnivale je Stufe nach den Widerständen ihrer Gegner, vor dem Betreten.
-- *Ort:* neu, außerhalb des Kampfes; `SetBlueMageActions` mit allen 24 Plätzen, auf dem Spiel-Thread, danach
-  zurücklesen.
-- *Nächster Schritt:* Loop zum Setzen außerhalb des Kampfes; sein Protokoll (Stufe 0) zeigt, ob das aktive Set
-  1000 Nadeln enthält.
-- *Konzept:* 01, „Blaumagier", „Alle gelernten Zauber nutzen".
+### Blaumagier: Set je Stufe im Masked Carnivale · N
+- *Wirkung:* Vor dem Betreten einer Stufe stünden die gelernten Zauber im Set, gegen die ihre Gegner schwach oder
+  verwundbar sind; immune fielen heraus. Heute verbessert RSR das Set dort wie überall nur nach Wert.
+- *Ort:* `BlueMageRotation.ImproveActiveSet`; Einweisung `AgentAozContentBriefing` (gewählte Stufe, Gegner je Akt),
+  `MaskedCarnivaleHelper` (Widerstände je Gegner).
+- *Nächster Schritt:* Loop zur Wahl je Akt; die Stufen-Leitfäden von Blue Academy als zweite Quelle je Stufe.
+- *Konzept:* 01, „Blaumagier", „Masked Carnivale".
 
 ### Fremde Repositories auf Verbesserungen für RSR prüfen · N, R, U
 Sein Auftrag (02.11.2026): „alle von dir gefundenen repos, die du benannt hast prüfen, ob daraus generell

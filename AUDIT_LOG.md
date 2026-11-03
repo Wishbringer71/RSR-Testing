@@ -15182,6 +15182,28 @@ durchgehen". Als Skill `spielpatch` festgehalten (Lesetabelle in CLAUDE.md); den
 - *Prüfgrad:* statisch an Code und Wirktexten; kompiliert ohne Warnung; alle Prüfschritte lokal. Im Spiel nicht
   beobachtet; die Landungen steuern sich selbst nach, das Protokoll nennt gelernte Arten.
 
+### A509 · Blaumagier, Stufe 3: das aktive Set aus den gelernten Zaubern verbessern (03.11.2026)
+
+- *Auftrag:* wie A507; TODO „Blaumagier, Stufe 3".
+- *Quellen:*
+  - FFXIVClientStructs b69073a (02.11.2026): `AssignBlueMageActionToSlot`, `SwapBlueMageActionSlots`,
+    `SetBlueMageActions`; RSRs mitgelieferte Fassung führt für `AssignBlueMageActionToSlot` dieselbe Signatur.
+  - WrathCombo 1e64c866c: setzt einen Zauber auf Klick auf einen freien Platz (`AssignBlueMageActionToSlot`).
+  - UltimateCombo 7fa9359: tauscht für den Schatzkarten-Tank sechs Plätze über denselben Weg, nur außerhalb des Kampfes,
+    ohne Ziel, ohne Wirken, ohne vorgemerkte Aktion, und nur Plätze, deren Zauber bereit ist.
+  - Blue Academy (Patch 7.5): Rollenseiten DPS, Tank, Heiler, allein mit 35, 29, 26 und 29 Zaubern für 24 Plätze; die
+    Sterne sind der Erwerbsrang, keine Rangfolge.
+- *Entscheidung:* Verbessern statt ersetzen (Konzept 01). Ein ganz neu gewähltes Set nähme dem Spieler Werkzeuge, die er
+  selbst drückt, und die Quelle gibt keine Rangfolge für 24 Plätze. Abklingzauber im Set bleiben, weil ihre erste
+  Potenz Mehrfachtreffer und Ketten unterschätzt. Weg über `AssignBlueMageActionToSlot` Platz für Platz statt
+  `SetBlueMageActions` (A506: am vollen Feld stürzte Upstreams Setzer vermutlich ab).
+- *Gebaut:* `BlueMageRotation.ImproveActiveSet` (je Frame eine Änderung, danach Warten auf das Rücklesen, Gebietswechsel
+  setzt zurück); `BLU_Reborn`: Option „Improve the Blue Mage set from your learned spells", ab Werk an (seine Vorgabe
+  „nutze alle gelernten spells optimal aus"), aufgerufen aus `UpdateInfo`, das nur bei eingeschaltetem RSR läuft.
+- *Offen:* die Wahl je Stufe im Masked Carnivale nach den Widerständen ihrer Gegner (TODO).
+- *Prüfgrad:* statisch an Code und Quellen; kompiliert ohne Warnung; alle Prüfschritte lokal. Das Schreiben ist im Spiel
+  nicht beobachtet; jede Änderung und ihr Rücklesen stehen im `DefenseTrace.log`.
+
 ## B · Commit-Register (Fork vs. `upstream/main`)
 
 ### B1 · Einzelgeprüfte Fork-Commits

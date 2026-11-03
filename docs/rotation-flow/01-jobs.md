@@ -648,19 +648,38 @@ statt Reihenfolge" und „Mondflöte"):
 **Alle gelernten Zauber nutzen: das Set** (seine Vorgabe):
 - Gelernt ist ein Zauber, wenn `UIState.IsUnlockLinkUnlockedOrQuestCompleted` seinen `UnlockLink` bestätigt. RSR prüft
   das schon in `ActionBasicInfo`; WrathCombo liest es ebenso.
-- Ein Set wählt RSR nach Rolle und Lage aus den gelernten Zaubern: Einzelziel-Burst, Rudel, Tank, Heiler. Bausteine
-  sind die Kerne aus Blue Academy und die Synergieketten oben, gefüllt nach Wert.
-- Schreiben nur unter diesen Bedingungen:
-  - außerhalb des Kampfes, ohne Ziel und ohne laufenden Zauber, wie UltimateCombo;
-  - auf dem Spiel-Thread, aus dem Frame-Update, nie aus einem Konstruktor;
-  - immer mit allen 24 Plätzen; leere Plätze sind 0, wie der Client sie liest;
-  - einmal je Entscheidung, nicht je Frame.
-  Danach liest RSR die Plätze zurück; schlägt das fehl, bleibt das Set des Spielers. Das sind die beiden Ursachen, an
-  denen Upstreams Setzer vermutlich abstürzte (oben).
-- *Bedrohung:* RSR ändert, was der Spieler im Zauberbuch sieht, und in manchen Inhalten verbietet das Spiel den
-  Wechsel. Darum als Option, ab Werk an (seine Vorgabe „alle gelernten nutzen"). Die Hotbar bleibt unberührt.
-- *Mithören zuerst:* Das `DefenseTrace.log` nennt das Set und die gelernten Zauber, die eine Kette bräuchte und die im
-  Set fehlen, wie UltimateCombo es je Ablauf anzeigt.
+- *Verbessern statt ersetzen* (Stufe 3, gebaut mit A509): RSR nimmt dem Spieler nichts, was er selbst drückt. Heilung,
+  Abwehr, Bewegung, Mimikry, Wiederbelebung, Unterbrechung, Provokation und jeder Zauber mit einem Zusatzeffekt bleiben
+  im Set. Ersetzt wird nur, was RSR auf dieser Stufe nachweislich nicht oder schlechter wirkt:
+  - *Ersetzbar* ist ein Schadenszauber ohne eigene Abklingzeit, dessen Wirktext genau eine bedingungslose Potenz und
+    keinen Zusatzeffekt nennt, wenn er weder der beste Füllzauber auf einem Ziel noch der beste auf mehreren ist; dazu
+    ein Zauber mit festem Schaden (1000 Nadeln), der den Füllschaden nach Messung nicht schlägt (Stufe 1). Der beste
+    Füllzauber auf einem Ziel weicht Schallwelle, wenn sie mehr Potenz je Sekunde bringt (Wasserkanone: 200 in 2 s
+    gegen 210 in 1 s, die GCD-Länge als Untergrenze).
+  - Ein Abklingzauber im Set bleibt: Seine erste Potenz unterschätzt Dreizack (dreimal 150) und Schwinge des Urteils
+    (vier Würfe, danach Mette); ein Tausch nach ihr nähme gerade die Ketten heraus.
+  - *Hinzu kommen*, in dieser Reihenfolge, auf freie oder ersetzbare Plätze: Schallwelle als Füllzauber, wenn sie fehlt;
+    die Partner der Ketten, deren einer Teil schon im Set steht (Dreizack mit Pfeife und Kribbeln, Schwinge mit Mette,
+    Stimme des Widders mit Ultravibration, ein Rösselsprung mit dem anderen, Replikator mit Senfbombe, Matra-Magie mit
+    Borstigkeit); dann gelernte Schadenszauber mit Abklingzeit aus Abklinggruppen ohne Vertreter im Set, nach Potenz je
+    Sekunde.
+  - Ein Platz wird nur überschrieben, wenn sein Zauber nicht abklingt; UltimateCombo tauscht ebenso nur bereite Zauber.
+- *Schreiben* nur unter diesen Bedingungen:
+  - während RSR an ist; außerhalb des Kampfes, ohne Ziel, ohne laufenden Zauber und ohne vorgemerkte Aktion, wie
+    UltimateCombo;
+  - auf dem Spiel-Thread, aus dem Frame-Update der Rotation, nie aus einem Konstruktor;
+  - Platz für Platz über `AssignBlueMageActionToSlot`, den Weg, den WrathCombo (auf Klick) und UltimateCombo (für den
+    Schatzkarten-Tank) im Betrieb nutzen; RSRs ClientStructs führt dieselbe Signatur. Nicht über `SetBlueMageActions`:
+    Daran stürzte Upstreams Setzer vermutlich ab (unvollständiges Feld, oben);
+  - eine Änderung je Frame; im nächsten Frame liest RSR den Platz zurück. Steht der Zauber nicht dort, hat das Spiel
+    abgelehnt, etwa in einem Inhalt, der den Wechsel verbietet: Dann schreibt RSR in diesem Gebiet nichts mehr.
+  - Jede Änderung steht im `DefenseTrace.log` mit Platz, altem und neuem Zauber und Grund.
+- *Option* „Improve the Blue Mage set from your learned spells" in der Rotation, ab Werk an (seine Vorgabe „nutze alle
+  gelernten spells optimal aus"). Seine gespeicherten Sets im Zauberbuch bleiben; ein Klick stellt sein Set wieder her.
+  Die Hotbar bleibt unberührt.
+- *Bedrohung:* Ein Absturz beim Schreiben. Dagegen: der im Betrieb erprobte Weg, nur außerhalb des Kampfes, ein Platz je
+  Frame, Rücklesen. Ob das Spiel einen Platz mit einem abklingenden Zauber ablehnt oder den Zauber verwirft, ist nicht
+  belegt; RSR überschreibt einen solchen Platz nicht.
 - *Masked Carnivale* (seine Frage, 03.11.2026: ob ein Set vor dem Betreten so aus bekannten Zaubern optimiert werden
   kann, dass es die besten Gewinnchancen hat). Ja, aus Daten, die der Client schon liefert:
   - *Die Stufe:* Die Einweisung (`AgentAozContentBriefing`, FFXIVClientStructs b69073a) führt die gewählte Stufe
@@ -719,7 +738,8 @@ statt Reihenfolge" und „Mondflöte"):
     setzen einen Zustand oder töten; wie das Spiel dort eine verfehlte Chance meldet, ist nicht belegt, also lehren sie
     nichts. Die gelernte Immunität sperrt aber die ganze Klasse (Schluss: Eine Art, gegen die Prozentschaden nichts
     tut, ist meist auch gegen Tod immun).
-- *Stufe 3, Set:* Auswahl und Schreiben außerhalb des Kampfes.
+- *Stufe 3, Set* (gebaut mit A509): „Verbessern statt ersetzen" oben. Offen bleibt die Wahl je Stufe im Masked
+  Carnivale (unten); der Verbesserer schreibt dort wie überall, nach Wert ohne die Widerstände der Stufe.
 
 **Falsifikation:**
 - *Kein Defekt?* D1, D2 und D3 sind am Code und an den Blättern belegt. Die Rechnung zeigt D2 als Verlust auch an
@@ -751,6 +771,14 @@ statt Reihenfolge" und „Mondflöte"):
   - *Option falsch?* Verwirrung trägt keinen Schaden: Landet ihr Stun nicht, ist ein GCD verloren, bis `StunWatch` die
     Immunität kennt. Gegen Bosse ist das die Regel; die Bedingung „noch betäubbar" fängt den zweiten Versuch.
   - *Ausgeliefert, und nichts ändert sich?* Jede Kette braucht beide Zauber im Set; ohne Stufe 3 entscheidet sein Set.
+- *Stufe 3, gebaut:*
+  - *Kein Defekt?* Am Code belegt: Außerhalb des Sets besteht kein Blaumagier-Zauber die Grundprüfung, und nichts schrieb
+    das Set; ein gelernter Zauber, der fehlt, fiel nie.
+  - *Option falsch?* Ein Set, das RSR ganz nach Rolle neu wählt, nähme dem Spieler Werkzeuge, die er selbst drückt
+    (Bewegung, Mimikry, Zauber für eine Strategie); die Rollenseiten von Blue Academy nennen je Rolle 26 bis 35 Zauber
+    für 24 Plätze, ohne Rangfolge. Darum nur Verbessern.
+  - *Ausgeliefert, und nichts ändert sich?* Ein volles Set ohne ersetzbaren Füllzauber bleibt, wie es ist; das ist
+    gewollt. Lehnt das Spiel einen Platz ab, schreibt RSR in dem Gebiet nichts mehr; die Zeile „now holds" fehlt dann.
 - *Prüfgrad:* statisch an Code, Blättern, Spieler- und Werkzeugquellen; die Mondflöten-Rechnung aus Blattpotenzen;
   Compile und alle 43 Prüfschritte grün. Das Nachziehen von Dauerschaden in Waxing ist Spielerpraxis. Im Spiel steuern
   sich Schaden je Potenz und gelernte Immunität selbst nach; Fensterwert und Haltegrund schreibt das Protokoll.

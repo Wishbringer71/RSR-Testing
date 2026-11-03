@@ -30,6 +30,10 @@ public sealed class BLU_Reborn : BlueMageRotation
 		Tooltip = "In a fight: Moon Flute goes when the burst it lifts gains more than Waning Nocturne costs - Waning allows no action at all, no heal, no mitigation, no raise. On: it also waits while you are under tank or healer mimicry, while a party member is in danger or an announced area cast would put one there, while your own health, carried forward over the window, would fall that low, and while BossModReborn announces a raidwide or a tankbuster on you within it. Without BossModReborn's timeline only what is cast or measured counts. Off: only the value decides.")]
 	public bool MoonFluteOnlyWhenSafe { get; set; } = true;
 
+	[RotationConfig(CombatType.PvE, Name = "Improve the Blue Mage set from your learned spells",
+		Tooltip = "In a fight: RSR casts only spells in your active set, so with this on more of your learned spells come into play. Out of combat, without a target: RSR adds Sonic Boom where it is missing, the partners of the spell chains one part of which is in your set, and damage spells with a recast from recast groups your set lacks. It takes only free slots and fillers it does not cast at your level - damage cooldowns, heals, defence, movement, mimicry, raises, interrupts and every spell with an additional effect stay, and a slot is changed only while its spell is ready. Your saved sets and hotbars stay as they are. Off: your set stays as you made it.")]
+	public bool ImproveBlueMageSet { get; set; } = true;
+
 	[Range(0, 1, ConfigUnitType.Percent)]
 	[RotationConfig(CombatType.PvE, Name = "Minimum HP percent allowed for the use of Devour as a heal")]
 	public float DevourHealThreshold { get; set; } = 0.6f;
@@ -42,6 +46,16 @@ public sealed class BLU_Reborn : BlueMageRotation
 	[RotationConfig(CombatType.PvE, Name = "MP needed to use Blood Drain/Divination Rune for MP gain")]
 
 	public float MPGainNeed { get; set; } = 5000;
+
+	/// <inheritdoc/>
+	protected override void UpdateInfo()
+	{
+		base.UpdateInfo();
+		if (ImproveBlueMageSet)
+		{
+			ImproveActiveSet();
+		}
+	}
 
 	#region Countdown logic
 
