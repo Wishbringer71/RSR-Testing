@@ -14768,6 +14768,66 @@ durchgehen". Als Skill `spielpatch` festgehalten (Lesetabelle in CLAUDE.md); den
 - *Prüfgrad:* statisch am Code, Itemtext und Modell, Abstände aus seinem Mitschnitt (ohne Trefferkreise, daher nur
   Größenordnung); kompiliert, alle CI-Prüfungen lokal; im Spiel nicht beobachtet.
 
+### A498 · Upstream 7.5.7.14 je Änderung ausgewertet; feste Sprünge wurden nie geprüft (03.11.2026)
+
+- *Sync:* drei Upstream-Commits (0c44a19ac „The List", df7215872 Beschwörer, 3d4b358f4 Changelog), 43 Dateien; main
+  a54f7deba, Version 7.5.7.14 (6ef4b2c01), Ausnahmen 0882b640c; Branch df9888f89. RebornMaterial 7.5.7.6: RefCheck
+  (Retainer-Repricer 493584d, 27.10.2026) mit Selbsttest, RebornMaterial 302, ECommons 1381, RotationSolver 1535
+  Referenzen, keine fehlt.
+- *Schon im Fork, Fork-Fassung bleibt* (gleiche Bedingung, Kommentar mit Grund): `JustUsedAfter` (A397), befreundete
+  Ziele außerhalb des Bildschirms, Cleave nur für Angriffe (A147), Linie zum Ziel (A399; Upstreams Schwelle 1e-6 statt
+  0 ohne Wirkung im Spiel, keine neue Zahl), Shirk nie auf sich, Small/Big HP (A225), Sprung bei 0 Yalm (A138),
+  `NoProvokeNames` vor `ProvokeAnything`, `Raise_1140` über `StatusHelper.RaiseStatus` (die Merge-Auflösung hatte im
+  Abbruch-Updater Upstreams Literalpaar genommen, zurückgestellt), Synastry und Aurora auf das Heilziel (A305, A283),
+  Intervention ohne „from self" (A201), Addersgall (A203), Swiftcast-Sperre und Hartwirk-Vorbehalt (A402), Thin Air
+  (A401), Arznei außerhalb des Kampfes (A433), Reset auf Vorgabe (A407), Reprisal in den Tank-Flächenpfaden, Improvised
+  Finish (A202), Trajectory, BossMod-Ordinale, `SwiftcastBuffer` entfernt (A339). Wirkung im Spiel: keine Änderung.
+  Drei automatisch gemergte Stellen setzten dieselbe Zeile doppelt (Dragoon, Ninja, Paladin) oder dieselbe Methode
+  zweimal (Revolverklinge, Tänzer); bereinigt, Fork-Kommentare an Upstreams Zeilen.
+- *Beschwörer, Swiftcast auf Resurrection (df7215872):* Upstream entfernt seine Option wie der Fork in A402, liest
+  „Raise with Swiftcast or Dualcast" aber in `SMN_Reborn` ein zweites Mal, ohne `IsLastActionGCD`. Gleiche Aktion in
+  gleicher Lage; anders nur im zweiten Webfenster, wenn das erste belegt war, und im Notfalldurchlauf steht davor nur
+  Swiftcast für Bewegung. Nicht übernommen (Konzept 11). Die Arznei bleibt in `GeneralAbility` (A497).
+- *Übernommen:* Dunkelritter (Darkside) und Ninja (Trick Attack) als Burst-Fenster – einziger Leser die
+  Phantom-Rotation (Okkulter Kreszent, außerhalb seines Profils); beim Dunkelritter ist Darkside fast immer an, „Save for
+  burst window" hält dort also kaum noch. Samurai: Feint nicht mehr auf die eigene niedrige Gesundheit, bleibt für die
+  Abwehrpfade (wie A408 für die Abwehr). Tote Optionen entfernt (SGE ZoeHeal, OGCDHeal, Phantom PrayHeal – im Fork
+  ohne Leser). Einstellungsbefehl liest Vektoren und Kommazahlen; „Animation length" (`UiMotionScale`, Leser
+  RebornMaterial über `IM3Settings`, in `scan18.py` mit Beleg).
+- *Nicht übernommen, seine Entscheidung:* Upstream entfernt `InterruptDelay` und `ProvokeDelay`, die dort nie gelesen
+  wurden; der Fork liest sie (A338), ab Werk 0. Tarnung ist seine Frage (Konzept 18) – vorgelegt.
+- *Klasse aus Upstreams Einzelfall (Bewegungstyp für Dragonfire Dive, Stardiver, Forked Raiju, im Fork seit A174):*
+  - Blätter (xivapi v2, 03.11.2026): 31 PvE-Spieleraktionen mit `AffectsPosition`. Ohne Bewegungstyp: En Avant, Smudge,
+    Aetherial Shift, Elusive Jump; dazu Shukuchi, Cloud Skim, Rescue.
+  - Am Code: Für Aktionen mit Reichweite und Wirkradius 0 gibt `FindTarget` sofort den Spieler zurück; die
+    Bewegungsprüfung sitzt in allen anderen Pfaden dahinter. Kein fester Sprung wurde im Kampf geprüft, auch Hell's
+    Ingress und Egress nicht, obwohl A313 die Rechnung dafür baute und A465 das Ergebnis im Aktionsfenster zeigte
+    (C147, C148).
+  - Wirkung im Kampf: Auf „Move Forward"/„Move Back" lief jeder feste Sprung in eine angekündigte Fläche. Jetzt bleibt
+    er aus, solange der Landepunkt darin liegt (Befehlsdauer ab Werk 3 s).
+  - Gebaut: Prüfung im Selbstzielpfad für die festen Typen; Typ und Weite aus dem Wirktext für En Avant 10, Smudge 15,
+    Aetherial Shift 15, Elusive Jump 15 zurück, dazu die PvP-Fassungen von Elusive Jump, Epicycle und Hell's Ingress
+    (je 15): Ohne Weite lehnt die Prüfung neben BossModReborn ab (A313), und mit der Prüfung im Kampf wären sie dort
+    nie mehr gegangen (Ausnahmen in `fixed_values.json`); `check_movement_types.py` hält jede
+    Aktion mit `AffectsPosition` gegen einen Bewegungstyp, Selbsttest mit eingesetzten Fehlern; gegen den alten Stand
+    fand es genau die vier. Ausnahmen mit Grund: Shukuchi, Cloud Skim (Bodenziel, von keiner Fork-Rotation gewirkt),
+    Rescue (bewegt das Ziel).
+  - Dieselbe Klasse in `IActionHelper.MovingActions` (Fernangriff gesperrt nach einem Sprung): Handliste mit Rough Divide
+    (in 7.0 durch Trajectory ersetzt), ohne Trajectory, Shadowstride, Primal Rend, Stardiver, Forked Raiju, Winged Glide,
+    Slither. Ersetzt durch den Bewegungstyp der letzten Aktion, nur zum Ziel oder nach vorn: Nach Elusive Jump ist
+    Piercing Talon die Folge, die der Sprung freischaltet. Shukuchi fällt heraus (an einen gewählten Ort, nicht zum Ziel).
+- *Falsifikation:*
+  - Kein Defekt? Der frühe Rücksprung steht im Code, kein anderer Aufrufer prüft feste Typen (Suche über alle Leser von
+    `ShouldCheckMoveSafety` und `MovementSafety`).
+  - Option falsch? Die Richtung ist die Blickrichtung wie bei Hell's Ingress; die Spieler drehen sich beim Laufen in die
+    Laufrichtung. Ohne BossModReborn oder mit „Skip position safety check" ändert sich nichts.
+  - Ausgeliefert, und nichts ändert sich? Nur, wenn er keine Bewegungsbefehle nutzt; dann wirkt allein die geänderte
+    Fernangriffssperre: Lightning Shot nach Trajectory, Writhing Snap nach Slither, Tomahawk nach Primal Rend, Piercing
+    Talon nach Stardiver und Winged Glide, Throwing Dagger nach Forked Raiju bleiben einen Zug aus (der Dunkelritter
+    hat keinen gesperrten Fernangriff).
+- *Prüfgrad:* statisch am Code und an den Blättern; Prüfskript mit Gegenprobe; kompiliert, alle CI-Prüfungen lokal; im
+  Spiel nicht beobachtet.
+
 ## B · Commit-Register (Fork vs. `upstream/main`)
 
 ### B1 · Einzelgeprüfte Fork-Commits
@@ -15066,3 +15126,5 @@ Die offene Arbeit dazu — Reihenfolge und Abbruchbedingung der Nachprüfung —
 | C144 | A483 und Konzept 01 (02.11.2026): „Eine Liste der anfreundbaren Bestien führt keines der Blätter […]. Was eine Bestie ist, sagt also nur die Chatmeldung." | Gesucht wurde nach Namen; die Blätter verbinden Gegner und Begleiter über das Modell (`BNpcBase.ModelChara`, `PetMirage`, `Pet`, `XBMPet`) und markieren anfreundbare Grundzeilen in `BNpcBase` Spalte 10 | berichtigt (A487): Konzept 01, Regel A1 |
 | C145 | A487 und Konzept 01, „Belegung der Hörner in der Rotation" (02.11.2026): „Die Belegung selbst wechseln kann sie nicht" | Gesucht wurde nur nach einer Funktion des Clients; Daedalus setzt die Belegung über die Rückrufe des Bestienbuchs und sein Kontextmenü, wie der Spieler | berichtigt (A488): Konzept 01, „Belegung der Hörner in der Rotation", „Aufzeichnung des Bestienbuchs" |
 | C146 | A495 und Konzept 14, „Beschwörer" (02.11.2026): Upstreams Arznei „ab Werk wie vorher" | Upstream hatte sie von `GeneralAbility` in `EmergencyAbility` verschoben, vor die Heil- und Abwehrdurchläufe; ab Werk galt dieselbe Bedingung, aber an anderer Stelle der Reihenfolge. Berichtigt durch A497: wieder in `GeneralAbility`. |
+| C147 | A313 und Konzept 05, „Sicherheit des Landepunkts" (17.10.2026): Feste Sprünge „gehen wieder, wenn der Landepunkt außerhalb einer Gefahrenzone liegt" | Die Rechnung war gebaut, aber nie erreicht: Für Aktionen mit Reichweite und Wirkradius 0 gibt `FindTarget` den Spieler zurück, bevor eine Bewegungsprüfung läuft. Hell's Ingress und Egress gingen auf jeden Landepunkt. Berichtigt durch A498. |
+| C148 | A465 und Konzept 05, „Eine Prüfung, zwei Leser" (30.10.2026): Das Aktionsfenster zeigt „die Prüfung, die im Kampf entscheidet" | Für feste Sprünge entschied sie im Kampf nichts (C147); das Fenster zeigte „Fail" für einen Sprung, den RSR drückte. Wahr seit A498. |

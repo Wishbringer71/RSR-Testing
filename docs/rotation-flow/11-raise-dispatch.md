@@ -149,6 +149,12 @@ der Swiftcast auf jeden Zauber ab 5 s Wirkzeit legt (`CustomRotation.EmergencyAb
 solche Zauber), und die Beschwörer-Option „Use Swiftcast on ressurection" (ab Werk an), die ausgeschaltet nichts
 änderte, weil der zentrale Weg dann trotzdem Swiftcast nahm. Der allgemeine Zweig nimmt die eigene Wiederbelebung
 jetzt nur bei eingeschalteter Einstellung; die Beschwörer-Option ist entfernt – die Einstellung gilt je Job.
+Upstream entfernte die Option in 7.5.7.14 ebenfalls (df7215872), liest die Einstellung aber in `SMN_Reborn` ein zweites
+Mal: Swiftcast, sobald Resurrection der nächste GCD ist, ohne die Bedingung des zentralen Wegs, dass gerade ein GCD
+fiel. Der Fork übernimmt diese Zeile nicht. Sie wählt dieselbe Aktion in derselben Lage; anders wäre sie nur im zweiten
+Webfenster, wenn das erste schon belegt war – und im Notfalldurchlauf des Beschwörers steht vor dem zentralen Weg nur
+noch Swiftcast für die Bewegung, also dieselbe Aktion. Eine Lücke im zentralen Weg wäre eine für jeden Wiederbeleber
+und gehört dorthin, nicht in eine Rotation.
 
 **Die Hartwirk-Zweige verlangten einen Zustand, den sie selbst verhinderten.** Alle sechs feuerten
 nur bei `SwiftcastPvE.Cooldown.IsCoolingDown`. Ist `RaisePlayerBySwift` abgeschaltet, zündet die
@@ -505,7 +511,9 @@ nicht messbar. Wer sie an hat, konnte ohne Swiftcast niemanden hochholen.
   Vorgabe), also gilt jetzt der Wert, der in seiner Konfiguration steht – ohne Migration der alte Vorgabewert 0,5 bis
   1 s, sofern er ihn nicht geändert hat. Neue Vorgabe: keine Verzögerung, weil eine wartende Unterbrechung ihr Wirken
   verpassen und eine wartende Provokation den Gegner länger beim Falschen lassen kann. Die Unterbrechung wartet nie
-  über das Wirken hinaus: Bleibt ihm nur noch ein GCD, geht sie sofort (`TargetUpdater`).
+  über das Wirken hinaus: Bleibt ihm nur noch ein GCD, geht sie sofort (`TargetUpdater`). Upstream entfernte beide
+  Einstellungen in 7.5.7.14 (0c44a19ac), weil sie dort keinen Leser hatten; der Fork behält sie, denn ob RSR weniger
+  mechanisch aussehen soll, ist seine Entscheidung (Konzept 18, Tarnung) – ab Werk ändert sich dadurch nichts.
 - **`TargetColor` ist entfernt** (A339), zusammen mit `SwiftcastBuffer` (unter „Ausgeschlossen"). Sie färbte einen
   Kreis um das Ziel der nächsten Aktion und verlor ihren Leser mit der Zeichenbibliothek XIVPainter (Upstream
   72f43cbcf, 2024, mit dem Verweis auf BossModReborn); RSR zeichnet seither nichts in die Welt. Eine Zeichnung neu zu
