@@ -56,6 +56,5 @@ internal class MedicineItem : BaseItem
 	}
 
 	// A tincture is used like an action and would end a running Flamethrower channel (A380).
-	protected override bool CanUseThis => !DataCenter.FlamethrowerChannelRunning
-		&& (DataCenter.CurrentTinctureUseType == TinctureUseType.Anywhere || (DataCenter.CurrentTinctureUseType == TinctureUseType.InHighEndDuty && (DataCenter.Territory?.IsHighEndDuty ?? false)));
+	protected override bool CanUseThis => !DataCenter.FlamethrowerChannelRunning && CustomRotation.TinctureAllowedHere;
 }

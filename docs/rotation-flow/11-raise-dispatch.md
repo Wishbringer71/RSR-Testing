@@ -134,14 +134,28 @@ verändert.
 
 | Zustand | Weg | Ergebnis |
 |---|---|---|
-| läuft (`HasSwift`) | Stufe (A) in `RaiseSpell` | Wiederbelebung sofort, ohne Wirkzeit |
+| läuft (`HasSwift`), Einstellung an | Stufe (A) in `RaiseSpell` | Wiederbelebung sofort, ohne Wirkzeit |
+| läuft, Einstellung aus | Stufe (A) in `RaiseSpell` | Wiederbelebung sofort – gegen den Text der Einstellung (offener Defekt, unten) |
 | bereit, Einstellung an | Einschiebefenster (`EmergencyAbility`) | zündet, danach Fall 1 |
 | in Erholung, Einstellung an | Hartwirk-Zweig | Hartwirk, **nur im Stehen** — Stufe (C) verlangt `!IsMoving` |
 | bereit, Einstellung aus | Hartwirk-Zweig über `!SwiftcastComingForRaise` | Hartwirk im Stehen |
 | `NoHardCast` **und** Einstellung aus | keiner | keine Wiederbelebung — beide Wege bewusst abgeschaltet, kein Defekt |
 
 Der Rotmagier fällt aus der Reihe: Dualcast steht in `StatusHelper.SwiftcastStatus`, also ist
-`HasSwift` nach jedem Zauber wahr und Stufe (A) greift ohnehin. Für ihn war der Pfad nie defekt.
+`HasSwift` nach jedem Zauber wahr und Stufe (A) greift ohnehin, mit ausgeschalteter Einstellung ebenso (offener Defekt,
+unten).
+
+**Offen: Mit der Einstellung aus verbraucht Stufe (A) einen laufenden Swiftcast- oder Dualcast-Status trotzdem für
+die Wiederbelebung** (`TODO.md`, „Wiederbelebung verbraucht laufenden Swiftcast trotz ausgeschalteter Einstellung").
+Ihr Text: „If this is off, RSR never uses Swiftcast or Dualcast to raise." A402 hat nur das Drücken an sie gebunden.
+- *Im Kampf:* Ein Beschwörer mit „Swiftcast for movement uptime" drückt Swiftcast im Laufen für Slipstream, im selben
+  Moment fällt ein Mitglied. Resurrection geht sofort, und Slipstream fällt im Laufen aus.
+- *Warum nicht einfach gesperrt* (A503 versucht und zurückgenommen): Die Swiftcast-Sperre der Reborn-Heiler („Swiftcast
+  restriction", ab Werk an) hält jeden anderen GCD zurück, solange Swiftcast läuft und eine Wiederbelebung ansteht. Ein
+  Heiler mit der Einstellung aus, der Swiftcast von Hand drückt, stünde dann bis zu 10 s ohne GCD. Und ein von Hand
+  gedrückter Swiftcast bei einem Toten ist meist genau für die Wiederbelebung gedacht.
+- *Die Behebung* muss deshalb unterscheiden, wer den Status erzeugt hat – ein Schadensschalter der Rotation, Dualcast,
+  der Spieler von Hand – und die Sperre der Heiler mitnehmen.
 
 **Swiftcast auf die Wiederbelebung entscheidet nur „Raise with Swiftcast or Dualcast" (A402).** Ihr Text: „If this is
 off, RSR never uses Swiftcast or Dualcast to raise." Zwei Wege gingen daran vorbei: der allgemeine Zweig der Magier,
@@ -155,6 +169,75 @@ fiel. Der Fork übernimmt diese Zeile nicht. Sie wählt dieselbe Aktion in derse
 Webfenster, wenn das erste schon belegt war – und im Notfalldurchlauf des Beschwörers steht vor dem zentralen Weg nur
 noch Swiftcast für die Bewegung, also dieselbe Aktion. Eine Lücke im zentralen Weg wäre eine für jeden Wiederbeleber
 und gehört dorthin, nicht in eine Rotation.
+
+**Swiftcast bleibt für die Wiederbelebung bereit** (seine Vorgabe, 03.11.2026: „schaden wird häufiger generiert als
+rezz, also muss verhindert werden, dass swiftcast für rezz nicht bereitsteht, außer spieler will explizit nicht mit
+swiftcast rezzen"; A503).
+- *Regel:* Ist die Wiederbelebung des Jobs gelernt, Swiftcast gelernt und „Raise with Swiftcast or Dualcast" an, ist
+  Swiftcast für sie zurückgelegt (`CustomRotation.SwiftcastKeptForRaise`). Schaden nimmt ihn nur, wo
+  `SwiftcastForDamage` es erlaubt: ohne Rücklage, oder wo der Spieler es ausdrücklich wählt.
+- *Ausdrückliche Wahl:* die Einstellung aus (seine Ausnahme), oder ein Schadensschalter der Rotation, den der Spieler
+  einschaltet – Rotmagier „Use Swiftcast for damage" (A503), Beschwörer „Swiftcast for movement uptime" und die
+  Swiftcast-Schalter auf Garuda und Ruby (Upstreams). Alle sind ab Werk aus, und ihr Text nennt den Preis. Den
+  eingeschalteten Schalter als ausdrückliche Wahl zu werten, ist meine Ableitung (CLAUDE.md, „Spielweise"). Grund: Die
+  Einstellung allein trennt beim Rotmagier Swiftcast nicht von Dualcast; wer sie für Schaden ausschaltet, verlöre auch
+  laut ihrem Text die Wiederbelebung mit Dualcast.
+- *Leser:*
+  - der allgemeine Zweig der Magier: Swiftcast auf einen Zauber ab 5 s Wirkzeit, der nicht die Wiederbelebung ist,
+    beim Rotmagier Verthunder III und Veraero III (Spielblatt: 5,0 s);
+  - Occult Comet;
+  - der Swiftcast im Burst des Rotmagiers;
+  - die Prüfung des Rotmagiers vor Enchanted Reprise in Bewegung: Ein zurückgelegter Swiftcast zählt dort nicht als
+    verfügbarer Sofortzauber, sonst bliebe der Rotmagier im Laufen ohne GCD.
+- *Ohne Wiederbelebung* gibt es nichts zurückzulegen: Schwarzmagier, Piktomant, jeder Job unter der Stufe seiner
+  Wiederbelebung, auch synchronisiert. Die Reborn-Heiler nehmen Swiftcast nur für die Wiederbelebung.
+- *Fremde Rotationen* lesen die Rücklage nicht: `BeirutaRDM` nimmt Swiftcast für Schaden, die Beiruta-Heiler haben
+  eigene Rücklagen. Außerhalb seines Profils; erfasst, nicht geändert.
+- *Verworfen:*
+  - eine Sperre in der Swiftcast-Aktion selbst (`ActionCheck`): Sie fängt jeden Aufrufer, auch fremde Rotationen, sperrt
+    aber auch die eingeschalteten Schadensschalter, deren Text dann etwas verspricht, das nie geschieht. Und sie müsste
+    die Wiederbelebungswege erkennen, ohne ihren Aufrufer zu kennen – ein Fehler dort kostet die schnelle
+    Wiederbelebung;
+  - eine neue zentrale Einstellung neben „Raise with Swiftcast or Dualcast": Sie sagte dasselbe zweimal.
+
+**Was Swiftcast dem Rotmagier an Schaden bringt, gegen die schnellere Wiederbelebung** (seine Frage, 03.11.2026, für
+einen langen Savage-Kampf). Werte aus den Spielblättern (xivapi, 03.11.2026), Schätzungen gekennzeichnet:
+- *Swiftcast:* 60 s, ab Stufe 94 40 s (Eigenschaft 644 „Enhanced Swiftcast", Magier und Heiler).
+- *Was er im Fork tut:* `RDM_Reborn` setzt ihn auf Verthunder oder Veraero III, wenn sonst Jolt III hartgewirkt würde.
+  Der Swiftcast-Zauber gibt kein Dualcast. Belegt ist das nur mittelbar (Werkzeugquelle): WrathCombo d9c63e468,
+  27.10.2026, setzt im Opener nach dem Swiftcast-Zauber sofort Acceleration, was mit laufendem Dualcast verschenkt wäre.
+  Der Wirktext von Dualcast („upon casting any spell with a cast time") lässt es offen. Im Ergebnis ersetzt ein Swiftcast
+  einen Jolt III (360 Potenz, 2+2 Mana) durch Verthunder oder Veraero III (440 Potenz, 6 Mana, 50 % Chance auf
+  Verfire oder Verstone).
+- *Gewinn je Swiftcast (Schätzung):*
+  - direkt +80 Potenz;
+  - +2 Mana, rund +40 Potenz-Äquivalent. Die Nahkampffolge bringt rund 1500 Potenz mehr als Füllzauber in derselben
+    Zeit und kostet netto rund 73 Mana: 100 Mana Kosten, 27 zurück durch Verflare, Scorch und Resolution. Das sind rund
+    20 Potenz je Mana;
+  - aus der Chance auf Verfire oder Verstone rund +20.
+  - Zusammen rund 140 Potenz alle 40 s, etwa 1 bis 1,5 % des eigenen Schadens (Schätzung über rund 260 Potenz je
+    Sekunde für den Rotmagier). In einem Savage-Kampf von zehn Minuten sind das rund 15 Einsätze, zusammen etwa 2100
+    Potenz – rund acht Sekunden Rotmagier-Schaden, der Kampf endet etwa eine Sekunde früher (Schätzung: Der Rotmagier
+    trägt rund ein Siebtel des Gruppenschadens).
+  - The Balance nennt einen zweiten Zweck, die Ausrichtung von Fleche, Contre Sixte und Embolden ohne Drift. Den nutzt
+    `RDM_Reborn` nicht; er zählt hier nicht.
+- *Wiederbelebung mit zurückgelegtem Swiftcast:* Swiftcast im nächsten Webfenster, Verraise im nächsten GCD, auch im
+  Laufen. Zwei Tote hintereinander gehen mit Dualcast und Swiftcast in zwei GCDs (The Balance: „raise multiple people
+  back-to-back with Dualcast and Swiftcast").
+- *Wiederbelebung ohne Swiftcast* (er klingt im Mittel noch 20 s ab):
+  - im Stehen sofort, wenn Dualcast gerade läuft (nach jedem hartgewirkten Zauber), sonst einen GCD später, rund 2,5 s
+    (Jolt III 2 s Wirkzeit, dann Verraise mit Dualcast);
+  - jede weitere Wiederbelebung einen GCD später;
+  - im Laufen gar nicht, bis der Rotmagier 2 s stehen kann: Acceleration gilt nur für Verthunder III, Veraero III und
+    Impact (Wirktext), nicht für Verraise, und Verraise selbst wirkt 10 s.
+- *Bilanz:*
+  - Der Schaden entscheidet nur einen Kampf, der den Enrage um weniger als etwa eine Sekunde verfehlt.
+  - Die Wiederbelebung entscheidet bei jedem Fast-Wipe, ob der Heiler vor dem nächsten Raidwide wieder steht. Gerade in
+    einem Fast-Wipe läuft meist eine Mechanik mit Bewegung, und dann ist der Unterschied nicht 2,5 s, sondern die ganze
+    Laufzeit.
+  - Ein Wipe kostet den ganzen Versuch. Auch bei einer kleinen Wahrscheinlichkeit, dass die Sekunden ihn entscheiden,
+    wiegt das schwerer als eine Sekunde frühere Kampfzeit.
+  - Ergebnis: Für seine Regel überwiegt die Bereitschaft klar. Der Schalter bleibt für Spieler, die Schaden vorziehen.
 
 **Die Hartwirk-Zweige verlangten einen Zustand, den sie selbst verhinderten.** Alle sechs feuerten
 nur bei `SwiftcastPvE.Cooldown.IsCoolingDown`. Ist `RaisePlayerBySwift` abgeschaltet, zündet die

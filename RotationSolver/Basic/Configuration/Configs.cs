@@ -511,6 +511,15 @@ internal partial class Configs : IPluginConfiguration, IM3Settings
 	Filter = AutoActionUsage, Section = 5, PvPFilter = JobFilterType.NoJob)]
 	private readonly TinctureUseType _TinctureType = TinctureUseType.InHighEndDuty;
 
+	// Damage against healing and mana is each player's own choice; off is the owner's rule, safety first (A502).
+	[JobConfig, UI("Hold HP and MP potions for the tincture",
+	Description = "On: where this job drinks tinctures (Tincture usage) and one is in your inventory, HP and MP potions "
+		+ "wait, because each one blocks the next tincture for its recast. An HP potion against a tankbuster on you still goes.\n"
+		+ "In a fight: off, a potion goes at its threshold, even if the tincture then misses its burst. On, the tincture "
+		+ "comes in its burst, and below the threshold you rely on your healers.",
+	Filter = AutoActionUsage, Section = 5, PvPFilter = JobFilterType.NoJob)]
+	private static readonly bool _holdPotionsForTincture = false;
+
 	[ConditionBool, UI("Use anti-knockback actions",
 	Description = "Use Arm's Length and Surecast when an enemy casts an action on the Knockback list.",
 	Filter = AutoActionUsage, Section = 2, Order = 1)]

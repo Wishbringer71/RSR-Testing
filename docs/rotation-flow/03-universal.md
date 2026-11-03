@@ -406,13 +406,28 @@ merklich schneller zu beenden; sie kostet Geld, und sie für einen gewöhnlichen
   Tinkturen, Super- und Hyper-Potion, Super-Ether, Elixier und Phönixfeder; `Item.Cooldowns` 300, 75, 300, 300, 360 s).
   Die Arznei, die zuerst geht, sperrt die anderen für ihre eigene Zeit: eine Tinktur Heiltrank und Äther für 300 s, ein
   Heiltrank die Tinktur für 75 s. Ab Werk trinkt RSR Heil- und Manatränke nie („Use HP potions below this HP", „Use MP
-  potions below this MP", aus) und Tinkturen nur in High-End-Inhalten. Schaden gegen Heilung und Mana ist damit seine
-  Entscheidung (sein Hinweis, 03.11.2026): Wer beide einschaltet, bekommt die Arznei, deren Auslöser zuerst greift – im
-  Burst die Tinktur, unter der Schwelle den Trank. Einen Trank für die nächste Tinktur zurückzuhalten, hieße Heilung für
-  Schaden aufzuschieben, gegen seine Regel „Sicherheit vor Schaden"; die Tinktur zurückzuhalten, weil ein Trank nötig
-  werden könnte, hieße eine Gefahr ohne Messung anzunehmen. Beides ist nicht gebaut. Die drei Einstellungstexte nennen
-  die gemeinsame Wiederverwendung. Ein Tank, der in einem Dungeon mit „überall" eine Tinktur trinkt, hat bis zu fünf
-  Minuten keinen Heiltrank.
+  potions below this MP", aus) und Tinkturen nur in High-End-Inhalten. Die drei Einstellungstexte nennen die gemeinsame
+  Wiederverwendung. Ein Tank, der in einem Dungeon mit „überall" eine Tinktur trinkt, hat bis zu fünf Minuten keinen
+  Heiltrank.
+- *Vorrang: Tränke warten auf die Tinktur* (Einstellung je Job „Hold HP and MP potions for the tincture", ab Werk aus;
+  A502). Schaden gegen Heilung und Mana entscheidet jeder Spieler selbst (sein Hinweis und seine Präzisierung,
+  03.11.2026: „die Entscheidung Sicherheit vor Schaden ist meine. andere Spieler können anders entscheiden").
+  - *Aus (seine Regel):* Es geht die Arznei, deren Auslöser zuerst greift – im Burst die Tinktur, unter der Schwelle der
+    Trank, auch wenn die Tinktur dann ihren Burst verpasst.
+  - *An:* Heil- und Manatränke warten, solange die Tinktur käme. Das heißt: Die Rotation hat in diesem Kampf schon eine
+    verlangt (`UseBurstMedicine` im Kampf gerufen), „Tincture usage" erlaubt sie hier (`CustomRotation.TinctureAllowedHere`),
+    und eine Tinktur vom Typ des Jobs ist eingeschaltet und im Inventar. Ein Trank gegen einen Tankbuster auf den Spieler
+    geht trotzdem: Ein Tod kostet mehr Schaden, als die Tinktur bringt, also spricht auch die Schadensabwägung für ihn.
+  - *Warum ohne Burstvorhersage:* Trank und Tinktur sind nur gemeinsam frei, wenn die letzte Tinktur 300 s zurückliegt.
+    Im Zwei-Minuten-Zyklus kommt der nächste Burst dann spätestens 60 s später (Tinktur bei 0, frei ab 5:00, Burst 6:00).
+    Ein Heiltrank sperrt 75 s, ein Äther 300 s; jeder Trank in diesem Fenster schiebt die Tinktur also aus ihrem Burst.
+    Halten, solange die Tinktur bereit ist, ist deshalb genau die Lage, in der ein Trank sie kostet. Über das Ziel hinaus
+    hält die Regel nur, wo eine Pause den Burst über 75 s hinausschiebt.
+  - *Nicht gehalten:* Phönixfeder (Wiederbelebung, Konzept 11) und die Sondertränke aus Eureka und den Tiefen Gewölben
+    (Eurekan-, Pilgrim's- und Sustaining Potion, eigene Abklinggruppe 60, Spielblätter 03.11.2026; sie sperren die
+    Tinktur nicht).
+  - *Die Gegenrichtung* – die Tinktur zurückhalten, weil ein Trank nötig werden könnte – ist nicht gebaut: Sie nähme eine
+    Gefahr ohne Messung an. Wer keine Tinktur will, stellt „Tincture usage" auf „nie".
 
 **Pause im Kampf** (`CustomRotation.InCombatPause`): im Kampf, kein Gegner in 25 Yalm. Die allgemeine
 Hälfte der Pausenregel; was ein Job in der Pause wirkt, ist seine Regel (Konzept 14, „Pausen und

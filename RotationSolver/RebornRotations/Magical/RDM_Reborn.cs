@@ -29,6 +29,19 @@ public sealed class RDM_Reborn : RedMageRotation
 			+ "In a fight: on, a dead member waits until the burst is through; off, they are raised at once.")]
 	public bool PreventRaising { get; set; } = false;
 
+	// The owner's rule (03.11.2026): Swiftcast stays ready for the raise unless the player chooses otherwise (A503).
+	[RotationConfig(CombatType.PvE, Name = "Use Swiftcast for damage",
+		Tooltip = "Off: while Verraise is learned and \"Raise with Swiftcast or Dualcast\" is on, Swiftcast stays ready for "
+			+ "Verraise; below that level or with that setting off it goes to damage either way. On: Swiftcast also turns "
+			+ "a hard-cast Jolt into an instant Verthunder or Veraero.\n"
+			+ "In a fight: off, Swiftcast is there when someone dies, and Verraise needs no cast, moving or not. On, a "
+			+ "little more damage of your own, and Verraise comes with Dualcast: at once or one GCD later standing, not "
+			+ "while you keep moving.")]
+	public bool SwiftcastDamage { get; set; } = false;
+
+	/// <inheritdoc/>
+	protected override bool SwiftcastForDamage => SwiftcastDamage || base.SwiftcastForDamage;
+
 	[RotationConfig(CombatType.PvE, Name = "Use Vercure for Dualcast when out of combat.")]
 	public bool UseVercure { get; set; } = false;
 
@@ -174,7 +187,8 @@ public sealed class RDM_Reborn : RedMageRotation
 		//Swiftcast usage
 		if (HasEmbolden || (EmboldenPvE.EnoughLevel && !EmboldenPvE.Cooldown.WillHaveOneCharge(30)) || !EmboldenPvE.EnoughLevel)
 		{
-			if (!HasAccelerate && !HasDualcast && !Meleecheck)
+			// Only where Swiftcast is not held for Verraise, or the player chose it for damage (A503)
+			if (SwiftcastForDamage && !HasAccelerate && !HasDualcast && !Meleecheck)
 			{
 				if (!CanVerFire && !CanVerStone && IsLastGCD(false, VerthunderPvE, VerthunderIiiPvE, VeraeroPvE, VeraeroIiiPvE))
 				{
@@ -544,7 +558,8 @@ public sealed class RDM_Reborn : RedMageRotation
 			 //Bunch of checks if anything else can be used instead of Reprise
 			 !AccelerationPvE.CanUse(out _) &&
 			 !HasAccelerate &&
-			 !SwiftcastPvE.CanUse(out _) &&
+			 // A Swiftcast held for Verraise is no instant cast for damage (A503)
+			 !(SwiftcastForDamage && SwiftcastPvE.CanUse(out _)) &&
 			 !HasSwift &&
 			 !GrandImpactPvE.CanUse(out _) &&
 			 !CanGrandImpact &&

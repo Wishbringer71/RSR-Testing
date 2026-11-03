@@ -443,7 +443,7 @@ public partial class CustomRotation
 		//
 		// InCombat stays, and it is this rule's own condition rather than a borrowed one: a potion
 		// is an emergency consumable, and out of combat health returns on its own.
-		if (DataCenter.InCombat && UseHpPotion(nextGCD, out act))
+		if (DataCenter.InCombat && UseHpPotion(nextGCD, PotionsWaitForTincture(), out act))
 		{
 			return true;
 		}
@@ -479,7 +479,7 @@ public partial class CustomRotation
 			return true;
 		}
 
-		return UseMpPotion(nextGCD, out act) || GeneralUsingAbility(role, nextGCD, out act) || (DataCenter.AutoStatus.HasFlag(AutoStatus.Speed) && SpeedAbility(nextGCD, out act));
+		return UseMpPotion(nextGCD, PotionsWaitForTincture(), out act) || GeneralUsingAbility(role, nextGCD, out act) || (DataCenter.AutoStatus.HasFlag(AutoStatus.Speed) && SpeedAbility(nextGCD, out act));
 	}
 
 	private bool MyInterruptAbility(JobRole role, IAction nextGCD, out IAction? act)
@@ -889,6 +889,20 @@ public partial class CustomRotation
 
 
 	/// <summary>
+	/// Swiftcast is held for this job's raise: the raise and Swiftcast are learned at the current level, and the player
+	/// raises with Swiftcast ("Raise with Swiftcast or Dualcast"). The owner's rule (A503): damage comes far more often
+	/// than a raise, so a Swiftcast spent on damage is rarely there when someone dies.
+	/// </summary>
+	protected bool SwiftcastKeptForRaise => Service.Config.RaisePlayerBySwift && Raise is { EnoughLevel: true } && SwiftcastPvE.EnoughLevel;
+
+	/// <summary>
+	/// Whether damage may take Swiftcast: where nothing is held for a raise, or where the player chose it explicitly.
+	/// A rotation with its own damage switch for Swiftcast adds that switch here; every damage use of Swiftcast asks
+	/// this, not <see cref="SwiftcastKeptForRaise"/> (A503).
+	/// </summary>
+	protected virtual bool SwiftcastForDamage => !SwiftcastKeptForRaise;
+
+	/// <summary>
 	/// Determines if an emergency ability can be used.
 	/// </summary>
 	/// <param name="nextGCD">The next GCD action.</param>
@@ -902,8 +916,11 @@ public partial class CustomRotation
 		}
 
 		// A long cast takes Swiftcast - the job's own raise only where "Raise with Swiftcast or Dualcast" allows it, whose
-		// text promises that off, RSR never uses Swiftcast to raise; Resurrection and Verraise are long casts (A402).
-		if (nextGCD is BaseAction action && (Service.Config.RaisePlayerBySwift || Raise == null || !nextGCD.IsTheSameTo(true, Raise)))
+		// text promises that off, RSR never uses Swiftcast to raise; Resurrection and Verraise are long casts (A402). Any
+		// other long cast is damage - Verthunder III and Veraero III on Red Mage - and takes Swiftcast only where it is
+		// not held for the raise (A503).
+		var nextIsOwnRaise = Raise != null && nextGCD.IsTheSameTo(true, Raise);
+		if (nextGCD is BaseAction action && (nextIsOwnRaise ? Service.Config.RaisePlayerBySwift : SwiftcastForDamage))
 		{
 			if (Role is JobRole.RangedMagical && action.Info.CastTime >= 5 && IActionHelper.IsLastActionGCD() && SwiftcastPvE.CanUse(out act))
 			{
@@ -914,7 +931,7 @@ public partial class CustomRotation
 			}
 		}
 
-		if (Role is JobRole.RangedMagical && !HasSwift && IActionHelper.IsLastActionGCD() && nextGCD.IsTheSameTo(true, ActionID.OccultCometPvE))
+		if (Role is JobRole.RangedMagical && SwiftcastForDamage && !HasSwift && IActionHelper.IsLastActionGCD() && nextGCD.IsTheSameTo(true, ActionID.OccultCometPvE))
 		{
 			if (SwiftcastPvE.CanUse(out act))
 			{

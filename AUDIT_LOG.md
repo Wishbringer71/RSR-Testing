@@ -14921,6 +14921,86 @@ durchgehen". Als Skill `spielpatch` festgehalten (Lesetabelle in CLAUDE.md); den
   Dungeons, benannt, ab Werk ohne Tinktur, mit „überall" erreichbar.
 - *Prüfgrad:* statisch am Code, Spielblätter; kompiliert, alle CI-Prüfungen lokal; im Spiel nicht beobachtet.
 
+### A502 · Tränke warten auf die Tinktur, als Option je Job; seine Regel bleibt Voreinstellung (03.11.2026)
+
+- *Seine Präzisierung:* „die Entscheidung Sicherheit vor Schaden ist meine. andere Spieler können anders entscheiden" –
+  zu meiner Begründung in A500, einen Vorrangschalter zu verwerfen, weil ein zurückgehaltener Trank gegen „Sicherheit
+  vor Schaden" verstoße. Eingetragen in CLAUDE.md, „Spielweise": Wo ein Spieler Schaden gegen Sicherheit anders
+  gewichten kann, wird die Wahl eine Option mit seiner Regel als Voreinstellung. A500 insoweit widerrufen (C151).
+- *Gebaut:* „Hold HP and MP potions for the tincture" (je Job, ab Werk aus). An: Heil- und Manatränke warten, solange
+  die Tinktur käme – die Rotation hat im Kampf eine verlangt (`UseBurstMedicine`), „Tincture usage" erlaubt sie hier
+  (`CustomRotation.TinctureAllowedHere`, jetzt die eine Stelle für `UseBurstMedicine` und `MedicineItem`), eine Tinktur
+  vom Typ des Jobs ist eingeschaltet und im Inventar. Der Heiltrank gegen einen Tankbuster auf den Spieler geht trotzdem.
+- *Modell (Rechnung aus den Spielblättern):* Trank und Tinktur sind nur gemeinsam frei, wenn die letzte Tinktur 300 s
+  zurückliegt; im Zwei-Minuten-Zyklus kommt der Burst dann spätestens 60 s später, kürzer als jeder Trank sperrt (75 s,
+  Äther 300 s). Halten, solange die Tinktur bereit ist, braucht deshalb keine Burstvorhersage.
+- *Gemessen:* Eurekan-, Pilgrim's- und Sustaining Potion haben die Aktion 8667 in Abklinggruppe 60 (xivapi, 03.11.2026),
+  nicht 59; sie sperren die Tinktur nicht und warten nie.
+- *Antithesen:*
+  - „Die drei Schalter genügen" – widerlegt: Sie wählen nur alles oder nichts. Wer Tränke in Dungeons und die Tinktur
+    in Savage will, müsste je Inhalt umschalten.
+  - „Eine Rotation, die nie eine Tinktur trinkt, hält Tränke für nichts" – widerlegt: gehalten wird erst, wenn sie im
+    Kampf eine verlangt hat. Eine Rotation, die nur im Countdown trinkt, zählt nicht.
+  - „Auch den Notfalltrank halten" – verworfen: Ein Tod kostet mehr Schaden als die Tinktur bringt.
+  - „Eine Pause schiebt den Burst über 75 s hinaus" – gehalten: Dann hält die Regel länger als nötig; als Preis
+    benannt.
+- *Falsifikation:*
+  - Kein Defekt? Seine Präzisierung verlangt die Wahl.
+  - Option falsch? Die Gegenrichtung, die Tinktur für einen Trank halten, nähme eine Gefahr ohne Messung an; „Tincture
+    usage: nie" leistet sie.
+  - Ausgeliefert, und nichts ändert sich? Ab Werk aus. Heil- und Manatränke sind ab Werk ohnehin aus. Wirksam erst mit
+    Tränken an, Tinktur im Inventar und erlaubtem Inhalt.
+- *Prüfgrad:* statisch am Code, Spielblätter; kompiliert, alle CI-Prüfungen lokal; im Spiel nicht beobachtet.
+
+### A503 · Swiftcast bleibt für die Wiederbelebung bereit; Rotmagier-Schalter; Rechnung zum Rotmagier (03.11.2026)
+
+- *Seine Vorgabe (E3):* „schaden wird häufiger generiert als rezz, also muss verhindert werde, dass swiftcast für rezz
+  nicht bereitsteht, ausser spieler will explizit nicht mit swiftcast reszzen". Seine Frage: Was bringt Swiftcast für
+  Schaden beim Rotmagier in einem langen Savage-Kampf gegenüber der schnelleren Wiederbelebung bei einem Fast-Wipe?
+- *Gebaut:*
+  - `CustomRotation.SwiftcastKeptForRaise`: Wiederbelebung und Swiftcast gelernt, „Raise with Swiftcast or Dualcast" an.
+  - `SwiftcastForDamage`, virtuell: Eine Rotation mit eigenem Schadensschalter fügt ihn hinzu.
+  - Leser: der allgemeine Zweig der Magier für lange Zauber, die nicht die Wiederbelebung sind (beim Rotmagier
+    Verthunder III und Veraero III, 5 s), Occult Comet, der Burst des Rotmagiers und seine Prüfung vor Enchanted Reprise.
+  - Rotmagier „Use Swiftcast for damage", ab Werk aus.
+  - Klasse dazu, gefunden und nicht behoben: Mit der Einstellung aus verbraucht Stufe (A) in `RaiseSpell` einen
+    laufenden Swiftcast- oder Dualcast-Status trotzdem für die Wiederbelebung, gegen den Text „never uses Swiftcast or
+    Dualcast to raise"; A402 hatte nur das Drücken gebunden. Die Sperre dort war gebaut und ist zurückgenommen: Mit der
+    Swiftcast-Sperre der Reborn-Heiler (ab Werk an) stünde ein Heiler, der Swiftcast bei einem Toten von Hand drückt,
+    bis zu 10 s ohne GCD. Als Defekt in `TODO.md`; die Behebung muss den Erzeuger des Status unterscheiden.
+- *Ausdrückliche Wahl:* die Einstellung aus (seine Ausnahme) oder ein eingeschalteter Schadensschalter der Rotation.
+  Den Schalter so zu werten, ist meine Ableitung, in CLAUDE.md als solche gekennzeichnet. Grund: Beim Rotmagier trennt
+  die Einstellung Swiftcast nicht von Dualcast.
+- *Verworfen:*
+  - eine Sperre in der Aktion selbst: Sie sperrt auch eingeschaltete Schalter, und sie muss die Wiederbelebungswege
+    ohne Kenntnis des Aufrufers erkennen;
+  - eine zweite zentrale Einstellung: Sie sagte dasselbe zweimal.
+- *Rechnung zum Rotmagier* (Konzept 11, „Was Swiftcast dem Rotmagier an Schaden bringt"):
+  - Spielblätter: Swiftcast 60 s, ab Stufe 94 40 s (Eigenschaft 644); Jolt III 360, Verthunder und Veraero III 440;
+    Verraise 10 s Wirkzeit; Acceleration gilt nicht für Verraise.
+  - Der Swiftcast-Zauber gibt kein Dualcast (Werkzeugquelle WrathCombo d9c63e468, mittelbar).
+  - Schätzung: rund 140 Potenz je Einsatz, 1 bis 1,5 % des eigenen Schadens; zehn Minuten Savage, rund eine Sekunde
+    frühere Kampfzeit.
+  - Wiederbelebung ohne Swiftcast: im Stehen 0 bis 2,5 s später, im Laufen erst nach dem Laufen. Für seine Regel
+    überwiegt die Bereitschaft.
+- *Antithesen:*
+  - „Der Rotmagier belebt ohnehin mit Dualcast" – teilweise: im Stehen höchstens einen GCD später, im Laufen gar
+    nicht. Ein Fast-Wipe verlangt meist Bewegung.
+  - „The Balance setzt Swiftcast für die Ausrichtung ein" – `RDM_Reborn` nutzt diesen Zweck nicht; mit dem Schalter
+    bleibt die Schadensnutzung wählbar.
+  - „Ein eingeschalteter Beschwörer-Schalter widerspricht seiner Ausnahme wörtlich" – die Wahl ist ausdrücklich,
+    ab Werk aus, und ihr Text nennt den Preis.
+- *Falsifikation:*
+  - Kein Defekt? Der Rotmagier nahm Swiftcast ohne Schalter (C150) und über den allgemeinen Zweig für Verthunder III.
+  - Option falsch? Siehe Verworfen.
+  - Ausgeliefert, und nichts ändert sich? Der Rotmagier drückt ab Werk Swiftcast nur noch für Verraise. Unter Stufe 64,
+    ohne die Einstellung und bei Schwarzmagier und Piktomant ändert sich nichts.
+- *Betroffene:* N (Rotmagier, Beschwörer und Rotmagier mit der Einstellung aus); R (`SwiftcastForDamage` ist
+  überschreibbar; `BeirutaRDM` liest es nicht, erfasst); U (`RDM_Reborn` an zwei Stellen, `CustomRotation`).
+- *Widerruf:* Konzept 14, Rotmagier: „Swiftcast in der Rotation verletzt seine Regel nicht" (C152).
+- *Prüfgrad:* statisch am Code, Spielblätter, Werkzeugquelle; kompiliert, alle CI-Prüfungen lokal; im Spiel nicht
+  beobachtet.
+
 ## B · Commit-Register (Fork vs. `upstream/main`)
 
 ### B1 · Einzelgeprüfte Fork-Commits
@@ -15223,3 +15303,5 @@ Die offene Arbeit dazu — Reihenfolge und Abbruchbedingung der Nachprüfung —
 | C148 | A465 und Konzept 05, „Eine Prüfung, zwei Leser" (30.10.2026): Das Aktionsfenster zeigt „die Prüfung, die im Kampf entscheidet" | Für feste Sprünge entschied sie im Kampf nichts (C147); das Fenster zeigte „Fail" für einen Sprung, den RSR drückte. Wahr seit A498. |
 | C149 | A497 und Konzept 14, „Beschwörer" (02.11.2026): Der Gewinn der dynamischen Reihenfolge, „ein Zyklon mehr", wiege die Kosten nicht sicher auf, „beides liegt im Promillebereich" | Der Zyklon mit Crimson Strike ist 1120 Potenz; Ifrit zuletzt verlor ihn in 21 von 32 Phasen. Gemessen war Mitte zu Mitte ohne Trefferkreis; mit dem Radius aus Zeile 261 stand er in 7 der 22 verlorenen Runden früher nah genug. Berichtigt durch A499: +686 Potenz je Runde, in der die Fork-Regel greift. |
 | C150 | A358 und Konzept 18, „Rotationseinstellungen" (25.10.2026): „Ab Werk verbrauchen ihn nur die beiden Schalter des Piktomanten" | Der Rotmagier nimmt Swiftcast im Burst für Schaden, ohne Schalter (`RDM_Reborn.AttackAbility`). Berichtigt in A500; die Wahl für ihn ist Teil der Vorlage zu E3. |
+| C151 | A500, „Gemeinsame Wiederverwendung" (03.11.2026): „Ein Vorrangschalter wurde geprüft und verworfen: Einen Trank für die Tinktur zurückzuhalten, schöbe Heilung für Schaden auf (gegen „Sicherheit vor Schaden")" | Seine Regel ist seine Entscheidung; andere Spieler können anders entscheiden (seine Präzisierung, 03.11.2026). Gebaut als Option mit seiner Regel als Voreinstellung (A502). |
+| C152 | Konzept 14, Rotmagier (A500): „Swiftcast in der Rotation verletzt seine Regel nicht: Der Rotmagier belebt mit Dualcast wieder" | Mit Dualcast höchstens einen GCD später im Stehen, im Laufen gar nicht; seine Vorgabe verlangt Swiftcast bereit (A503). |

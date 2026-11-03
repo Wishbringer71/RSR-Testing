@@ -76,6 +76,16 @@ What this release changes in the fight. For the whole distance from upstream, se
   of Mind", Viper's "Experimental Pot Usage", Machinist's "Use burst medicine in countdown".
 - **Tinctures and potions share one recast.** "Tincture usage", "Use HP potions" and "Use MP potions" now say so: a
   tincture blocks HP and MP potions for 5 minutes, an HP potion the tincture for its own recast.
+- **Potions can wait for the tincture.** New option "Hold HP and MP potions for the tincture" (per job, off by
+  default): on, HP and MP potions wait where your rotation drinks tinctures, "Tincture usage" allows one and one is in
+  your inventory, so the tincture always comes in its burst; an HP potion against a tankbuster on you still goes. Off,
+  a potion goes at its threshold as before, even if the tincture then misses its burst. Potions of Eureka and the deep
+  dungeons have a recast of their own and never wait.
+- **Swiftcast stays ready for the raise.** While a job's raise is learned and "Raise with Swiftcast or Dualcast" is on,
+  damage no longer takes Swiftcast unless you switch it on yourself: Red Mage used it for Verthunder and Veraero in
+  every burst and for any hard-cast Verthunder III or Veraero III; it now does so only with the new option "Use
+  Swiftcast for damage" (off by default), so a dead member is raised at once even while you move. Summoner's Swiftcast
+  switches already were off by default.
 - **Delays never make an action too late.** The provoke delay does not apply when taking an enemy from a co-tank, and
   otherwise ends with the enemy's first hit on the party member it turned to. The dispel delay ends when a dangerous
   status would run out within a GCD. The interrupt delay already ended with one GCD of the cast left. A stored interrupt

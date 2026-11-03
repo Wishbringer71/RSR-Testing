@@ -302,7 +302,8 @@ Konzept 07) urteilen selbst und sind ab Werk an; ihr Schalter ist Notausschalter
 
 - **Wen und womit wiederbelebt wird**, ob Swiftcast dafür bleibt: seine Entscheidung (Swiftcast bleibt für
   Wiederbelebungen, CLAUDE.md, „Spielweise"). Andere stellen Schaden vor die Wiederbelebung (seine Präzisierung,
-  03.11.2026: „meine regel ist meine regel"); die Form dieser Wahl steht unter „Swiftcast: Wiederbelebung oder Schaden".
+  03.11.2026: „meine regel ist meine regel"). Seit seiner Vorgabe zu E3 bleibt Swiftcast für die Wiederbelebung
+  bereit, außer der Spieler wählt es ausdrücklich ab (unter „Swiftcast: Wiederbelebung oder Schaden").
 - **„Don't raise below this MP"** (2400) ist ab Werk genau der Preis der Wiederbelebung; das Spiel prüft den Preis
   ohnehin, die Einstellung wirkt erst darüber, als Rücklage für Heilungen. Seine Haltung. Der Weißmagier wirkt unter Thin
   Air auch darunter (`WhiteMageRotation`).
@@ -338,24 +339,24 @@ im Code.
 - *Leser:* jede wird gelesen.
 - *Text gegen Code:* ein Widerspruch, „Use GCDs to heal" (oben, behoben). Was „Set to 0 to disable" verspricht, hält der
   Code (Sheltron prüft `> 0`, Intervention und Cover mit einer Schwelle, die bei 0 nie greift).
-- *Swiftcast:* Ab Werk verbrauchen ihn für Schaden die beiden Schalter des Piktomanten (Rainbow Drip, Motiv; er hat
-  keine Wiederbelebung) und der Rotmagier im Burst, ohne Schalter (`RDM_Reborn.AttackAbility`, C150). Der Rotmagier belebt
-  auch mit Dualcast wieder, nach jedem gewirkten Zauber. Die Rotations-Swiftcasts des Beschwörers sind ab Werk aus, die
-  Heiler halten ihn mit „Swiftcast restriction" für die Wiederbelebung, der Weißmagier die letzte Ladung von Thin Air.
+- *Swiftcast:* Ab Werk verbrauchen ihn für Schaden nur die beiden Schalter des Piktomanten (Rainbow Drip, Motiv; er hat
+  keine Wiederbelebung). Der Rotmagier nahm ihn im Burst ohne Schalter (C150); seit A503 nur mit „Use Swiftcast for
+  damage", ab Werk aus. Die Rotations-Swiftcasts des Beschwörers sind ab Werk aus, die Heiler halten ihn mit „Swiftcast
+  restriction" für die Wiederbelebung, der Weißmagier die letzte Ladung von Thin Air.
 
-**Swiftcast: Wiederbelebung oder Schaden** (sein Vorschlag, 03.11.2026: ein Schalter „Swiftcast für Rezz gegen Swiftcast
-für Schaden"; geprüft, A500, ihm vorgelegt):
-- *Heute:* zwei Ebenen. „Raise with Swiftcast or Dualcast" je Job entscheidet, ob eine Wiederbelebung Swiftcast nimmt;
-  die Schalter der Rotation (beim Beschwörer fünf, ab Werk aus) entscheiden, ob Schaden ihn nimmt. Steht eine
-  Wiederbelebung an, bekommt sie Swiftcast auch dann, wenn ihn die Rotation gerade für Schaden drückte: Der GCD-Ablauf
-  nimmt die Wiederbelebung vor jeden Schadens-GCD (`TryRaise` vor `GeneralGCD`). Der Preis von „Schaden" fällt also erst
-  an, wenn jemand stirbt, während Swiftcast abklingt (60 s): Die Wiederbelebung wirkt dann 8 s und kostet drei GCDs.
-- *Vier Lagen, alle sinnvoll:* nur Wiederbelebung (seine), nur Schaden, beides (Schaden, Wiederbelebung wenn bereit),
-  keins (Swiftcast von Hand). Ein einzelner Schalter nähme die beiden letzten.
-- *Lücke:* Beim Rotmagier gibt es die Wahl nicht; er nimmt Swiftcast im Burst immer für Schaden. Für ihn kostet das
-  wenig, weil Dualcast nach jedem Zauber bereitsteht – die Wiederbelebung kommt höchstens einen GCD später.
+**Swiftcast: Wiederbelebung oder Schaden** (sein Vorschlag, dann seine Vorgabe, 03.11.2026: „schaden wird häufiger
+generiert als rezz, also muss verhindert werden, dass swiftcast für rezz nicht bereitsteht, außer spieler will explizit
+nicht mit swiftcast rezzen"; A503). Wirkung und Rechnung in Konzept 11, „Swiftcast bleibt für die Wiederbelebung bereit".
+- *Gebaut:* Swiftcast ist für die Wiederbelebung zurückgelegt, solange sie gelernt ist und „Raise with Swiftcast or
+  Dualcast" an steht. Schaden nimmt ihn nur, wo der Spieler es ausdrücklich wählt: die Einstellung aus oder ein
+  Schadensschalter der Rotation (ab Werk aus). Der Rotmagier, der Swiftcast im Burst ohne Schalter nahm (C150), hat
+  jetzt „Use Swiftcast for damage", ab Werk aus. Offen: Mit der Einstellung aus verbraucht die Wiederbelebung einen
+  schon laufenden Swiftcast- oder Dualcast-Status noch (Konzept 11, `TODO.md`).
+- *Wählbare Lagen:* nur Wiederbelebung (Voreinstellung, seine Regel); Schaden mit Wiederbelebung, wenn Swiftcast gerade
+  bereit ist (Schadensschalter an); nur Schaden (Einstellung aus, Schadensschalter an); Swiftcast von Hand (beides aus).
 - *Antithese* „ein Schalter ist klarer als fünf": für den Beschwörer zutreffend, doch die fünf sind Upstreams und
-  stufenabhängig; sie zu einem zusammenzulegen, hieße Upstreams meistgeänderte Datei umzubauen.
+  stufenabhängig; sie zu einem zusammenzulegen, hieße Upstreams meistgeänderte Datei umzubauen. Die Rücklage selbst ist
+  zentral und gilt für jeden Job; nur die ausdrückliche Wahl sitzt bei der Rotation, die den Schaden kennt.
 - *Bewegung:* Jeder ausdrückliche Gefahrenschalter (Primal Rend, Crimson Cyclone, Forked Raiju, Displacement nach
   Engagement, Corps-a-corps in Bewegung) ist ab Werk aus. Die Vorstöße, die die Rotationen ab Werk nutzen (Onslaught im
   Burst, Corps-a-corps), stehen unter der zentralen Abstandsgrenze.
@@ -391,7 +392,7 @@ Konzept 14, „Beschwörer"):
 | „Only use potion during a big summon", aus | Arznei erst mit der Demi | fast wirkungslos: Searing Light fällt im Fork unmittelbar vor der großen Beschwörung; sie schiebt die Arznei nur um einen GCD hinter die Beschwörung und trennt den Rest des Buffs nach der Demi ab | keine | entfernt (A500) |
 | „Do not summon … while attuned or holding Favor", aus | hält die nächste Primal bis zur Folgeaktion | eingeschaltet schädlich: bis 1560 Potenz je Runde (Frage 3); die Folgeaktionen gehen ohnehin vor | keine (die GCD-Folge leistet es schon) | entfernt (A500, nach seinem Maßstab) |
 | „Dynamic primal order", aus | Titan in Bewegung, Ifrit am Ziel, sonst Garuda | eigener Teil nur noch „sonst Garuda", 25 Potenz je zwei Minuten weniger | – | ersetzt durch die Fork-Regel „Ifrit vor, solange der Zyklon folgen darf" (A499, ab Werk an, Bilanz +686 Potenz je Runde, in der sie greift); entfernt (A500) |
-| „Swiftcast for movement uptime", aus | Swiftcast auf Ruby Rite und Slipstream | eine Wahl für Spieler, die Schaden vor Wiederbelebung stellen (seine Präzisierung: seine Regel gilt für ihn) | – | belassen, aus; zur Form der Wahl unten, „Swiftcast: Wiederbelebung oder Schaden" |
+| „Swiftcast for movement uptime", aus | Swiftcast auf Ruby Rite und Slipstream | eine Wahl für Spieler, die Schaden vor Wiederbelebung stellen (seine Präzisierung: seine Regel gilt für ihn) | – | belassen, aus: die ausdrückliche Wahl des Spielers (unten, „Swiftcast: Wiederbelebung oder Schaden") |
 
 Entfernen kostet Pflege: `SMN_Reborn` ändert Upstream oft (33cd2a99b, 444388102, df7215872 in einer Woche), und jede
 entfernte Zeile ist eine Stelle, an der ein Merge kollidieren kann. Im Kampf ändert das Entfernen ab Werk nichts.
