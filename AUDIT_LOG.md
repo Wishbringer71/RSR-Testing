@@ -14862,6 +14862,48 @@ durchgehen". Als Skill `spielpatch` festgehalten (Lesetabelle in CLAUDE.md); den
 - *Prüfgrad:* Mitschnitt (Zeilen 21, 22, 261), Modell mit Selbsttest, statisch am Code; kompiliert, alle CI-Prüfungen
   lokal; im Spiel nicht beobachtet.
 
+### A500 · Seine Antworten E1–E4: Tinktur in jeder Burstphase, gemeinsame Arznei-Wiederverwendung, Verzögerungen unter der Schwelle (03.11.2026)
+
+- *Seine Angaben:* E1 Hinweis „Potions und Tinkturen sind unterschiedliche Dinge" – im Spiel richtig; Upstreams „Use
+  potion" schaltete im Code die Tinktur (`UseBurstMedicine`), sagte es aber nicht. E2 Vorgabe: Tinktur in Burstphasen,
+  wenn nutzbar und vorhanden; ein Schalter nur für die Inhalte. E3 Präzisierung und Vorschlag: seine Swiftcast-Regel gilt
+  für ihn; vielleicht ein Schalter „Swiftcast für Wiederbelebung gegen Schaden". E4 Vorgabe: Verzögerung wählbar, unter
+  der Schwelle, an der sie zu spät käme; alte Werte kürzen, ab Werk 0. Nachfrage: ob Tinktur und Tränke einen Timer
+  teilen – dann sei es wieder eine Entscheidung Schaden gegen Heilung oder Mana.
+- *Gemessen:* Spielblätter (xivapi): alle Arzneien in `CooldownGroup` 59 – Gemdraughts 300 s, Super- und Hyper-Potion
+  75 s, Super-Ether 300 s, Elixier 300 s, Phönixfeder 360 s. `ContentFinderCondition.HighEndDuty` markiert nur 14 Inhalte
+  (Ultimates, Chaotic, laufende Savage-Stufe, laufende Extreme- und Unreal-Prüfung). Konzept 14 nannte 270 s für die
+  Tinktur; berichtigt auf 300 s.
+- *E2, Klasse:* Revolverklinge, Dunkelritter und Barde tranken nur im Countdown, der Maschinist nur im Countdown und nur
+  mit einem Schalter (aus), die Viper nur mit einem Schalter (aus). Gebaut: Tinktur im Kampf unter No Mercy, im
+  Zwei-Minuten-Fenster (`InTwoMIsBurst`), unter `InBurstStatus`, unter Wildfire; Viper 5 s vor Serpent's Ire mit „Auto
+  Burst"; die Schalter von Beschwörer (3), Weißmagier, Viper und Maschinist entfernt. Der Schwarzmagier „Powerdox
+  (TESTING)" behält seinen Schalter (fremde Testrotation, erfasst).
+- *E2, Antithesen:* „Ab dem zweiten Searing Light" für einen Kampf, dessen erstes Fenster nichts trifft – widerlegt
+  durch seine Vorgabe „wenn nutzbar"; „ein Job ohne Tinktur, die anderen mit" – „Tincture usage" ist je Job; „mehr
+  Tinkturen sperren Heiltränke" – gehalten, als Preis benannt: ab Werk nur High-End, und die Texte nennen ihn.
+- *Gemeinsame Wiederverwendung:* Schaden gegen Heilung oder Mana ist seine Entscheidung; die drei Schalter treffen sie
+  schon. Ein Vorrangschalter wurde geprüft und verworfen: Einen Trank für die Tinktur zurückzuhalten, schöbe Heilung für
+  Schaden auf (gegen „Sicherheit vor Schaden"), die Tinktur für einen möglichen Trank zurückzuhalten, nähme eine Gefahr
+  ohne Messung an. Gebaut: die Texte von „Tincture usage", „Use HP potions", „Use MP potions".
+- *Beschwörer:* „Do not summon …" und „Dynamic primal order" nach seinem Maßstab entfernt (die Entscheidung ohne sie hat
+  keinen Nachteil; zu diesem Teil von E1 hatte er nichts gesagt).
+- *E3:* geprüft, vorgelegt (Konzept 18, „Swiftcast: Wiederbelebung oder Schaden"). Belegt: Eine anstehende
+  Wiederbelebung nimmt Swiftcast vor jedem Schadens-GCD (`TryRaise` vor `GeneralGCD`). Befund: Der Rotmagier nimmt
+  Swiftcast im Burst ohne Schalter (C150).
+- *E4:* Die Unterbrechung hatte ihre Schwelle (ein GCD Restwirkzeit). Provokation: beim Gegner eines anderen Tanks keine
+  Verzögerung, sonst bis zum ersten Treffer auf das Mitglied, dem der Gegner sich zuwandte (`DataCenter.LastStrikeByEnemy`
+  aus dem Effekt-Handler). Klasse: Die Esuna-Verzögerung hatte keine Schwelle; ein gefährlicher Zustand, der innerhalb
+  eines GCD abläuft, wird jetzt sofort gereinigt. Die Wiederbelebung hat keinen Ablaufpunkt, unverändert. Migration:
+  genau Upstreams alte Vorgabe 0,5 bis 1 s wird auf 0 gesetzt (`Configs.ForkVersion`).
+- *Falsifikation:*
+  - Kein Defekt? Die vier Jobs ohne Tinktur im Kampf: am Code, jede Stelle von `UseBurstMedicine` erhoben.
+  - Option falsch? Die Burst-Bedingungen sind die der Rotation selbst. Beim Dunkelritter unter Stufe 80 öffnet
+    `InTwoMIsBurst` jede Minute; die Tinktur geht dann ins erste nutzbare Fenster, nach seiner Vorgabe richtig.
+  - Ausgeliefert, und nichts ändert sich? Ab Werk („nur High-End") nur in jenen 14 Inhalten und auf der Puppe;
+    Verzögerungen ab Werk 0.
+- *Prüfgrad:* statisch am Code, Spielblätter; kompiliert, alle CI-Prüfungen lokal; im Spiel nicht beobachtet.
+
 ## B · Commit-Register (Fork vs. `upstream/main`)
 
 ### B1 · Einzelgeprüfte Fork-Commits
@@ -15163,3 +15205,4 @@ Die offene Arbeit dazu — Reihenfolge und Abbruchbedingung der Nachprüfung —
 | C147 | A313 und Konzept 05, „Sicherheit des Landepunkts" (17.10.2026): Feste Sprünge „gehen wieder, wenn der Landepunkt außerhalb einer Gefahrenzone liegt" | Die Rechnung war gebaut, aber nie erreicht: Für Aktionen mit Reichweite und Wirkradius 0 gibt `FindTarget` den Spieler zurück, bevor eine Bewegungsprüfung läuft. Hell's Ingress und Egress gingen auf jeden Landepunkt. Berichtigt durch A498. |
 | C148 | A465 und Konzept 05, „Eine Prüfung, zwei Leser" (30.10.2026): Das Aktionsfenster zeigt „die Prüfung, die im Kampf entscheidet" | Für feste Sprünge entschied sie im Kampf nichts (C147); das Fenster zeigte „Fail" für einen Sprung, den RSR drückte. Wahr seit A498. |
 | C149 | A497 und Konzept 14, „Beschwörer" (02.11.2026): Der Gewinn der dynamischen Reihenfolge, „ein Zyklon mehr", wiege die Kosten nicht sicher auf, „beides liegt im Promillebereich" | Der Zyklon mit Crimson Strike ist 1120 Potenz; Ifrit zuletzt verlor ihn in 21 von 32 Phasen. Gemessen war Mitte zu Mitte ohne Trefferkreis; mit dem Radius aus Zeile 261 stand er in 7 der 22 verlorenen Runden früher nah genug. Berichtigt durch A499: +686 Potenz je Runde, in der die Fork-Regel greift. |
+| C150 | A358 und Konzept 18, „Rotationseinstellungen" (25.10.2026): „Ab Werk verbrauchen ihn nur die beiden Schalter des Piktomanten" | Der Rotmagier nimmt Swiftcast im Burst für Schaden, ohne Schalter (`RDM_Reborn.AttackAbility`). Berichtigt in A500; die Wahl für ihn ist Teil der Vorlage zu E3. |

@@ -637,6 +637,12 @@ public sealed class DRK_Reborn : DarkKnightRotation
 
 	protected override bool AttackAbility(IAction nextGCD, out IAction? act)
 	{
+		// The tincture in the burst whenever it is usable and at hand; where is "Tincture usage" alone (his rule, A500). Before, only in the countdown.
+		if (InTwoMIsBurst && InCombat && UseBurstMedicine(out act))
+		{
+			return true;
+		}
+
 		if (IsBurst)
 		{
 			if (InCombat && (IsLastGCD(false, SouleaterPvE) || !CombatElapsedLessGCD(4)))

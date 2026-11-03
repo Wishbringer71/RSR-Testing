@@ -312,6 +312,12 @@ public sealed class GNB_Reborn : GunbreakerRotation
 
 	protected override bool AttackAbility(IAction nextGCD, out IAction? act)
 	{
+		// The tincture in the burst whenever it is usable and at hand; where is "Tincture usage" alone (his rule, A500). Before, only in the countdown.
+		if (HasNoMercy && InCombat && UseBurstMedicine(out act))
+		{
+			return true;
+		}
+
 		// ST No Mercy Logic
 		if (NoMercyPvE.CanUse(out act))
 		{

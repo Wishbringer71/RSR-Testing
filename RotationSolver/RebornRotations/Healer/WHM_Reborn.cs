@@ -41,9 +41,6 @@ public sealed class WHM_Reborn : WhiteMageRotation
 			+ "after it, instead of when the bell runs out.")]
 	public bool LiturgySecondPress { get; set; } = true;
 
-	[RotationConfig(CombatType.PvE, Name = "Use Tincture/Gemdraught when about to use Presence of Mind")]
-	public bool UseMedicine { get; set; } = true;
-
 	[RotationConfig(CombatType.PvE, Name = "Enable Swiftcast Restriction Logic to attempt to prevent actions other than Raise when you have swiftcast")]
 	public bool SwiftLogic { get; set; } = true;
 
@@ -332,7 +329,9 @@ public sealed class WHM_Reborn : WhiteMageRotation
 			return true;
 		}
 
-		if (UseMedicine && InCombat && !PresenceOfMindPvE.Cooldown.IsCoolingDown && UseBurstMedicine(out act))
+		// The tincture when Presence of Mind is about to go, whenever it is usable and at hand; where is "Tincture usage"
+		// alone (his rule, A500) - the rotation's own switch asked it a second time.
+		if (InCombat && !PresenceOfMindPvE.Cooldown.IsCoolingDown && UseBurstMedicine(out act))
 		{
 			return true;
 		}

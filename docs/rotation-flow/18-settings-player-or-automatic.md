@@ -106,9 +106,9 @@ Voreinstellung (der Wert, der im Spielgeschehen sinnvoller ist) wartet RSR ab We
 
 | Einstellung | ab Werk | Begründung |
 |---|---|---|
-| „Interrupt delay range", „Provoke delay range" | 0 bis 0 s | eine wartende Unterbrechung verpasst ihr Wirken; eine wartende Provokation lässt den Gegner länger beim Falschen (Konzept 11) |
+| „Interrupt delay range", „Provoke delay range" | 0 bis 0 s; Upstreams alte Vorgabe 0,5 bis 1 s wird beim Laden auf 0 gekürzt (A500) | eine wartende Unterbrechung verpasst ihr Wirken; eine wartende Provokation lässt den Gegner länger beim Falschen. Beide warten nie über die Schwelle, an der sie zu spät kämen (seine Vorgabe, 03.11.2026): die Unterbrechung nicht, wenn dem Zauber ein GCD bleibt, die Provokation gar nicht beim Gegner eines anderen Tanks und sonst nur bis zu seinem ersten Treffer auf den, dem er sich zuwandte (Konzept 11) |
 | „Raise delay range" | 0 bis 0 s | der Gefallene liegt länger; er nimmt selbst an, wann er aufsteht (Konzept 11) |
-| „Dispel delay range", „Auto-target delay range" | 0 bis 0 s | schon so |
+| „Dispel delay range", „Auto-target delay range" | 0 bis 0 s | schon so. Die Reinigung wartet nie über die Schwelle, an der sie zu spät käme: Ein gefährlicher Zustand, der innerhalb eines GCD abläuft (Verhängnis und ähnliche), wird sofort gereinigt (A500, Klasse zu seiner Vorgabe für Unterbrechung und Provokation) |
 | „Downtime healing delay range" | 0,5 bis 1 s, bleibt | sie entprellt „nichts zu tun": Ein Augenblick ohne Ziel – ein Rudel stirbt, das nächste ist noch nicht gewählt – löste sonst eine Füllheilung statt des nächsten Angriffs aus (Upstream 5b16e58ed, „fix: add delay for heal when nothing to do") |
 | „Out of combat delay range" | 2 bis 3 s, bleibt | sie entprellt das Kampfende für Sprint und Peloton; zwischen zwei Rudeln fällt der Kampfzustand kurz ab |
 | „Stop casting delay range" | 0,5 bis 1 s, bleibt | nur mit „Stop casting when the target dies" (ab Werk aus); ob das Spiel einen Zauber auf ein totes Ziel ohnehin abbricht, ist nicht belegt – ohne Beleg kein Eingriff |
@@ -301,7 +301,8 @@ Konzept 07) urteilen selbst und sind ab Werk an; ihr Schalter ist Notausschalter
 ### Wiederbelebung, Verbrauchsgüter, MP
 
 - **Wen und womit wiederbelebt wird**, ob Swiftcast dafür bleibt: seine Entscheidung (Swiftcast bleibt für
-  Wiederbelebungen, CLAUDE.md, „Spielweise").
+  Wiederbelebungen, CLAUDE.md, „Spielweise"). Andere stellen Schaden vor die Wiederbelebung (seine Präzisierung,
+  03.11.2026: „meine regel ist meine regel"); die Form dieser Wahl steht unter „Swiftcast: Wiederbelebung oder Schaden".
 - **„Don't raise below this MP"** (2400) ist ab Werk genau der Preis der Wiederbelebung; das Spiel prüft den Preis
   ohnehin, die Einstellung wirkt erst darüber, als Rücklage für Heilungen. Seine Haltung. Der Weißmagier wirkt unter Thin
   Air auch darunter (`WhiteMageRotation`).
@@ -337,9 +338,24 @@ im Code.
 - *Leser:* jede wird gelesen.
 - *Text gegen Code:* ein Widerspruch, „Use GCDs to heal" (oben, behoben). Was „Set to 0 to disable" verspricht, hält der
   Code (Sheltron prüft `> 0`, Intervention und Cover mit einer Schwelle, die bei 0 nie greift).
-- *Swiftcast:* Ab Werk verbrauchen ihn nur die beiden Schalter des Piktomanten (Rainbow Drip, Motiv); er hat keine
-  Wiederbelebung. Die Rotations-Swiftcasts des Beschwörers sind ab Werk aus, die Heiler halten ihn mit „Swiftcast
-  restriction" für die Wiederbelebung, der Weißmagier die letzte Ladung von Thin Air.
+- *Swiftcast:* Ab Werk verbrauchen ihn für Schaden die beiden Schalter des Piktomanten (Rainbow Drip, Motiv; er hat
+  keine Wiederbelebung) und der Rotmagier im Burst, ohne Schalter (`RDM_Reborn.AttackAbility`, C150). Der Rotmagier belebt
+  auch mit Dualcast wieder, nach jedem gewirkten Zauber. Die Rotations-Swiftcasts des Beschwörers sind ab Werk aus, die
+  Heiler halten ihn mit „Swiftcast restriction" für die Wiederbelebung, der Weißmagier die letzte Ladung von Thin Air.
+
+**Swiftcast: Wiederbelebung oder Schaden** (sein Vorschlag, 03.11.2026: ein Schalter „Swiftcast für Rezz gegen Swiftcast
+für Schaden"; geprüft, A500, ihm vorgelegt):
+- *Heute:* zwei Ebenen. „Raise with Swiftcast or Dualcast" je Job entscheidet, ob eine Wiederbelebung Swiftcast nimmt;
+  die Schalter der Rotation (beim Beschwörer fünf, ab Werk aus) entscheiden, ob Schaden ihn nimmt. Steht eine
+  Wiederbelebung an, bekommt sie Swiftcast auch dann, wenn ihn die Rotation gerade für Schaden drückte: Der GCD-Ablauf
+  nimmt die Wiederbelebung vor jeden Schadens-GCD (`TryRaise` vor `GeneralGCD`). Der Preis von „Schaden" fällt also erst
+  an, wenn jemand stirbt, während Swiftcast abklingt (60 s): Die Wiederbelebung wirkt dann 8 s und kostet drei GCDs.
+- *Vier Lagen, alle sinnvoll:* nur Wiederbelebung (seine), nur Schaden, beides (Schaden, Wiederbelebung wenn bereit),
+  keins (Swiftcast von Hand). Ein einzelner Schalter nähme die beiden letzten.
+- *Lücke:* Beim Rotmagier gibt es die Wahl nicht; er nimmt Swiftcast im Burst immer für Schaden. Für ihn kostet das
+  wenig, weil Dualcast nach jedem Zauber bereitsteht – die Wiederbelebung kommt höchstens einen GCD später.
+- *Antithese* „ein Schalter ist klarer als fünf": für den Beschwörer zutreffend, doch die fünf sind Upstreams und
+  stufenabhängig; sie zu einem zusammenzulegen, hieße Upstreams meistgeänderte Datei umzubauen.
 - *Bewegung:* Jeder ausdrückliche Gefahrenschalter (Primal Rend, Crimson Cyclone, Forked Raiju, Displacement nach
   Engagement, Corps-a-corps in Bewegung) ist ab Werk aus. Die Vorstöße, die die Rotationen ab Werk nutzen (Onslaught im
   Burst, Corps-a-corps), stehen unter der zentralen Abstandsgrenze.
@@ -370,12 +386,12 @@ Konzept 14, „Beschwörer"):
 
 | Option, ab Werk | Was sie im Fork tut | Nachteil der Option | Nachteil einer Entscheidung im Spiel | Stand |
 |---|---|---|---|---|
-| „Use potion", an | sperrt die Arznei | doppelt: „Tincture usage" je Job kann schon „Nowhere"; aus überstimmt sie dort „Anywhere" | keine (die zentrale Einstellung bleibt, Kosten außerhalb des Kampfes sind seine Wahl) | vorgelegt: entfernen |
-| „Potion timing", erstes Searing Light | „ab dem zweiten" wartet auf ein Searing Light nach 30 s | „ab dem zweiten" bringt nie mehr Arzneien ins Fenster (270 s Abklingzeit: 0, 6, 12 Minuten gegen 2, 8, 14), weniger bei Kämpfen von unter 2, 6 bis 8, 12 bis 14 Minuten | immer das erste: nur wo das erste Fenster in einem bestimmten Kampf nichts trifft – Wissen über den Kampf | vorgelegt: belassen |
-| „Only use potion during a big summon", aus | Arznei erst mit der Demi | fast wirkungslos: Searing Light fällt im Fork unmittelbar vor der großen Beschwörung; sie schiebt die Arznei nur um einen GCD hinter die Beschwörung und trennt den Rest des Buffs nach der Demi ab | keine | vorgelegt: entfernen |
-| „Do not summon … while attuned or holding Favor", aus | hält die nächste Primal bis zur Folgeaktion | eingeschaltet schädlich: bis 1560 Potenz je Runde (Frage 3); die Folgeaktionen gehen ohnehin vor | keine (die GCD-Folge leistet es schon) | vorgelegt: entfernen |
-| „Dynamic primal order", aus | Titan in Bewegung, Ifrit am Ziel, sonst Garuda | eigener Teil nur noch „sonst Garuda", 25 Potenz je zwei Minuten weniger | – | ersetzt durch die Fork-Regel „Ifrit vor, solange der Zyklon folgen darf" (A499, ab Werk an, Bilanz +686 Potenz je Runde, in der sie greift); vorgelegt: entfernen |
-| „Swiftcast for movement uptime", aus | Swiftcast auf Ruby Rite und Slipstream | gegen seine Regel (Swiftcast für Wiederbelebungen) | – | vorgelegt: belassen, aus |
+| „Use potion", an | sperrt die Arznei | doppelt: „Tincture usage" je Job kann schon „Nowhere"; aus überstimmt sie dort „Anywhere" | keine (die zentrale Einstellung bleibt, Kosten außerhalb des Kampfes sind seine Wahl) | entfernt (A500): seine Vorgabe, Tinktur in jeder Burstphase, nur der Inhalt ist ein Schalter (Konzept 03) |
+| „Potion timing", erstes Searing Light | „ab dem zweiten" wartet auf ein Searing Light nach 30 s | „ab dem zweiten" bringt nie mehr Tinkturen ins Fenster (300 s Wiederverwendung: 0, 6, 12 Minuten gegen 2, 8, 14), weniger bei Kämpfen von unter 2, 6 bis 8, 12 bis 14 Minuten | immer das erste: nur wo das erste Fenster in einem bestimmten Kampf nichts trifft – Wissen über den Kampf | entfernt (A500): seine Vorgabe „wenn nutzbar und vorhanden" |
+| „Only use potion during a big summon", aus | Arznei erst mit der Demi | fast wirkungslos: Searing Light fällt im Fork unmittelbar vor der großen Beschwörung; sie schiebt die Arznei nur um einen GCD hinter die Beschwörung und trennt den Rest des Buffs nach der Demi ab | keine | entfernt (A500) |
+| „Do not summon … while attuned or holding Favor", aus | hält die nächste Primal bis zur Folgeaktion | eingeschaltet schädlich: bis 1560 Potenz je Runde (Frage 3); die Folgeaktionen gehen ohnehin vor | keine (die GCD-Folge leistet es schon) | entfernt (A500, nach seinem Maßstab) |
+| „Dynamic primal order", aus | Titan in Bewegung, Ifrit am Ziel, sonst Garuda | eigener Teil nur noch „sonst Garuda", 25 Potenz je zwei Minuten weniger | – | ersetzt durch die Fork-Regel „Ifrit vor, solange der Zyklon folgen darf" (A499, ab Werk an, Bilanz +686 Potenz je Runde, in der sie greift); entfernt (A500) |
+| „Swiftcast for movement uptime", aus | Swiftcast auf Ruby Rite und Slipstream | eine Wahl für Spieler, die Schaden vor Wiederbelebung stellen (seine Präzisierung: seine Regel gilt für ihn) | – | belassen, aus; zur Form der Wahl unten, „Swiftcast: Wiederbelebung oder Schaden" |
 
 Entfernen kostet Pflege: `SMN_Reborn` ändert Upstream oft (33cd2a99b, 444388102, df7215872 in einer Woche), und jede
 entfernte Zeile ist eine Stelle, an der ein Merge kollidieren kann. Im Kampf ändert das Entfernen ab Werk nichts.

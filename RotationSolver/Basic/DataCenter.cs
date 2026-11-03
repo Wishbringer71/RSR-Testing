@@ -113,6 +113,12 @@ internal static class DataCenter
 
 	public static IBattleChara? ProvokeTarget { get; set; }
 
+	/// <summary>
+	/// Whom each enemy last struck, and when, from the effect handler. The provoke delay ends with an enemy's first hit on
+	/// the party member it turned to (A500).
+	/// </summary>
+	internal static readonly ConcurrentDictionary<ulong, (ulong Target, DateTime At)> LastStrikeByEnemy = new();
+
 	public static IBattleChara? DeathTarget { get; set; }
 
 	public static IBattleChara? DispelTarget { get; set; }

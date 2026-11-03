@@ -6,9 +6,6 @@
 public sealed class MCH_Reborn : MachinistRotation
 {
 	#region Config Options
-	[RotationConfig(CombatType.PvE, Name = "Use burst medicine in countdown (requires auto burst option on)")]
-	private bool OpenerBurstMeds { get; set; } = false;
-
 	[RotationConfig(CombatType.PvE, Name = "Use Bioblaster while moving")]
 	private bool BioMove { get; set; } = true;
 
@@ -49,12 +46,14 @@ public sealed class MCH_Reborn : MachinistRotation
 			return act;
 		}
 
-		if (AirAnchorCountdown && IsBurst && OpenerBurstMeds && remainTime <= 1.5f && UseBurstMedicine(out act))
+		// The tincture in the countdown with the burst allowed, as its switch (off by default) required; where is
+		// "Tincture usage" alone (his rule, A500).
+		if (AirAnchorCountdown && IsBurst && remainTime <= 1.5f && UseBurstMedicine(out act))
 		{
 			return act;
 		}
 
-		if (!AirAnchorCountdown && IsBurst && OpenerBurstMeds && remainTime <= 1f && UseBurstMedicine(out act))
+		if (!AirAnchorCountdown && IsBurst && remainTime <= 1f && UseBurstMedicine(out act))
 		{
 			return act;
 		}
@@ -238,6 +237,12 @@ public sealed class MCH_Reborn : MachinistRotation
 		if (FullMetalFieldPvE.EnoughLevel && HasFullMetalMachinist && IsLastAction(false, WildfirePvE))
 		{
 			return base.AttackAbility(nextGCD, out act);
+		}
+
+		// The tincture in the burst whenever it is usable and at hand; where is "Tincture usage" alone (his rule, A500). Before, only in the countdown and only with a switch that was off.
+		if (HasWildfire && InCombat && UseBurstMedicine(out act))
+		{
+			return true;
 		}
 
 		// Reassemble Logic

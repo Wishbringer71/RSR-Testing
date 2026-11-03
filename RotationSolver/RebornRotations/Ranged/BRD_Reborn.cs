@@ -325,6 +325,12 @@ public sealed class BRD_Reborn : BardRotation
 
 	protected override bool AttackAbility(IAction nextGCD, out IAction? act)
 	{
+		// The tincture in the burst whenever it is usable and at hand; where is "Tincture usage" alone (his rule, A500). Before, only in the countdown.
+		if (InBurstStatus && InCombat && UseBurstMedicine(out act))
+		{
+			return true;
+		}
+
 		if (IsBurst && Song != Song.None && MagesBalladPvE.EnoughLevel)
 		{
 			if (((!RadiantFinalePvE.EnoughLevel && !RagingStrikesPvE.Cooldown.IsCoolingDown)

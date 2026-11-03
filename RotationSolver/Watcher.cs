@@ -738,6 +738,19 @@ public static class Watcher
 				}
 			}
 
+			// Whom an enemy struck, and when: the provoke delay ends with its first hit on the member it turned to (A500).
+			if (IsHostileSource(set) && set.Source is IBattleChara striker)
+			{
+				foreach (var effect in set.TargetEffects)
+				{
+					if (ReachedTarget(effect))
+					{
+						DataCenter.LastStrikeByEnemy[striker.GameObjectId] = (effect.TargetID, DateTime.Now);
+						break;
+					}
+				}
+			}
+
 			// The first auto-attack after a swap Shirk shows whom the enemy attacks now.
 			if (set.Source is IBattleChara swinger && set.Action is { } swing && swing.GetActionCate() == ActionCate.Autoattack)
 			{

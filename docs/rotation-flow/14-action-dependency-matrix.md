@@ -646,21 +646,13 @@ Primal- oder Demi-Beschwörung. Bei ihm (26.10.2026, Dungeons) verfiel Slipstrea
 - *Ist Garuda die letzte Primal-Beschwörung des Zyklus,* geht Ruin IV in Bewegung schon heute (`UseFillers`), und
   Slipstream folgt, sobald er steht: Die Einstimmung endet mit dem letzten Ritus (geschlossen aus seinem Mitschnitt –
   Ruin IV fiel 8 s nach der Ifrit-Beschwörung, also lange vor dem Ende der 30 s, die der Wirktext nennt).
-- *Upstreams Schalter „Do not summon a new primal while attuned or holding Ifrit's/Garuda's Favor"* (444388102) *steht
-  im Fork ab Werk aus* (A495); Upstream liefert ihn eingeschaltet. Die Folgeaktionen stehen in der GCD-Folge vor der nächsten
-  Beschwörung (`UsePrimalFollowUps` vor `SummonPrimals`), im Fork wie bei Upstream; der Schalter wirkt also nur, wo
-  Bewegung oder die Reichweite eine Folgeaktion zurückhält, und lässt den Beschwörer dann warten, statt zu beschwören.
-  Gerechnet in `smn_phase_potency.py` (Frage 3; Potenzen des Job-Guides, Sturm der Wirbelströmung nicht gezählt): was
-  von der Runde nach der Demi bleibt, wenn alles, was vor der nächsten Demi nicht beginnt, verloren ist; Ruin IV dem
-  Wartenden als Sofortaktion gutgeschrieben.
-  - *Ifrits Gunst, Ziel weiter als die Zyklon-Reichweite* (seine Regel; bei ihm 22 von 33 Ifrit-Phasen): Mit dem
-    Schalter beschwört RSR keine Primal mehr, bis die nächste Demi die Gunst beendet – 1560 Potenz weniger je Runde
-    als ohne ihn, wo nur Zyklon und Schlag verfallen.
-  - *Garudas Gunst in Bewegung, Titan bereit:* 280 weniger bei einem GCD Bewegung, 680 bei zwei, 1080 bei drei.
-  - *Ifrits Einstimmung in Bewegung, Titan bereit:* 40 mehr bei genau einem GCD, 360 weniger bei zwei, 760 bei drei.
-  - Im Kampf: Ab Werk ändert sich nichts; die Entscheidung oben (RSR hält keine Beschwörung für eine Gunst zurück)
-    bleibt. Wer den Schalter einschaltet, sollte „Crimson Cyclone" ohne Reichweitengrenze nutzen, sonst steht die
-    Beschwörung bis zur Demi.
+- *Upstreams Schalter „Do not summon a new primal while attuned or holding Ifrit's/Garuda's Favor"* (444388102) *ist im
+  Fork entfernt* (A500, nach seinem Maßstab, Konzept 18: die Entscheidung im Spiel ohne ihn hat keinen Nachteil). Die
+  Folgeaktionen stehen in der GCD-Folge vor der nächsten Beschwörung (`UsePrimalFollowUps` vor `SummonPrimals`); der
+  Schalter wirkte nur, wo Bewegung oder die Reichweite eine Folgeaktion zurückhält, und ließ den Beschwörer dann warten.
+  Gerechnet in `smn_phase_potency.py` (Frage 3): mit Ifrits Gunst und dem Ziel jenseits der Zyklon-Reichweite 1560 Potenz
+  weniger je Runde, mit Garudas Gunst in Bewegung 280 bis 1080 weniger, mit Ifrits Einstimmung in Bewegung nur bei genau
+  einem GCD 40 mehr.
 - *Ifrit vor, solange der Zyklon sofort folgen darf* (Fork-Regel „Summon Ifrit first while Crimson Cyclone can
   follow", ab Werk an, A499). Steht er still und ist das Ziel innerhalb seiner Zyklon-Reichweite, kommt Ifrit vor der
   eingestellten Reihenfolge, nach „Prefer Titan while moving". Grund: Die Gunst endet mit der nächsten Beschwörung,
@@ -681,20 +673,17 @@ Primal- oder Demi-Beschwörung. Bei ihm (26.10.2026, Dungeons) verfiel Slipstrea
   - *Vorbehalt:* Bei einigen genutzten Zyklonen jenes Abends zeigte der Mitschnitt bis 10,9 Yalm Spielabstand; seine
     Einstellung ist also vermutlich größer als die Voreinstellung 3 (nicht messbar). Mit einer größeren Reichweite
     greift die Regel öfter.
-- *Upstreams „Dynamic primal order"* (444388102) *bleibt ab Werk aus* (A497). Sie wählt Titan in Bewegung, Ifrit
-  innerhalb der Zyklon-Reichweite und sonst Garuda. Sie greift im Fork erst nach den beiden Fork-Regeln, und ihr eigener
-  Teil ist damit nur noch „sonst Garuda": Das kostet Titan im Rest von Searing Light 1300 gegen 800 Potenz unter dem
-  Buff (Frage 2), also 25 Potenz je zwei Minuten, und in kurzen Kämpfen kommt die schwächere Phase zuerst.
+- *Upstreams „Dynamic primal order"* (444388102) *ist entfernt* (A500). Titan in Bewegung und Ifrit am Ziel leisten die
+  beiden Fork-Regeln; ihr eigener Rest war „sonst Garuda" und kostete Titan im Rest von Searing Light 1300 gegen 800
+  Potenz unter dem Buff (Frage 2).
 - *Upstreams „Swiftcast for movement uptime"* bleibt ab Werk aus: Es verbraucht Swiftcast in der Rotation, und seine
   Regel hält Swiftcast für Wiederbelebungen. Eingeschaltet setzt es die übrigen Swiftcast-Optionen der Rotation außer
   Kraft.
-- *Die Arznei* steht im Fork weiter in `GeneralAbility`, wie in jeder anderen Rotation des Forks, nach den Heil- und
-  Abwehrdurchläufen und nach Radiant Aegis vor einem Raidwide (A497). Upstream setzte sie in `EmergencyAbility`, vor
-  all diese Durchläufe. Im Kampf hätte das nur dort etwas geändert, wo die Arznei und eine Abwehr in dieselbe
-  Einwebung fallen: Dann ginge die Abwehr eine Einwebung später. Gewonnen hätte die Arznei an der früheren Stelle
-  nichts, was zählt. Sie hält 30 s (Itemtext, xivapi), Searing Light 20 s; einige Einwebungen später deckt sie das
-  Fenster noch ganz. Upstreams Optionen „Use potion", „Potion timing" und „Only use potion during a big summon" gelten
-  an dieser Stelle unverändert.
+- *Die Tinktur* steht im Fork in `GeneralAbility`, wie in jeder anderen Rotation, nach den Heil- und Abwehrdurchläufen
+  und nach Radiant Aegis vor einem Raidwide (A497), unter dem eigenen Searing Light, sobald sie nutzbar und vorhanden ist
+  (seine Vorgabe, A500, Konzept 03). Upstreams „Use potion", „Potion timing" und „Only use potion during a big summon"
+  (444388102) sind entfernt: In welchen Inhalten, entscheidet „Tincture usage"; „ab dem zweiten Searing Light" brachte nie
+  mehr Tinkturen ins Fenster, und die große Beschwörung folgt Searing Light im Fork ohnehin.
 
 **Weitere Punkte, gegen The Balance geprüft:**
 
@@ -711,7 +700,7 @@ Primal- oder Demi-Beschwörung. Bei ihm (26.10.2026, Dungeons) verfiel Slipstrea
 | Swiftcast | Wiederbelebung zuerst, Slipstream nur situativ | Wiederbelebung (Einstellung an), alle Rotationsoptionen dafür ab Werk aus, auch Upstreams „Swiftcast for movement uptime" (444388102) | deckt sich mit seiner Regel |
 | Lux Solaris | für einen Raidwide halten, vor Ablauf nutzen | eigene Entscheidung (Konzept 08) | deckt sich |
 | Rekindle | immer nutzen | niedrigster Anteil, sonst er selbst; spätestens drei GCDs vor Phasenende | deckt sich |
-| Trank | Opener spät eingewebt, danach im Sechs-Minuten-Fenster | unter dem eigenen Searing Light, nach „Tincture usage" (ab Werk nur in High-End-Inhalten); nach 270 s Abklingzeit ist das nächste eigene Fenster das der sechsten Minute. Dazu Upstreams Optionen (444388102) „Use potion" (an), „Potion timing" (ab dem ersten Searing Light) und „Only use potion during a big summon" (aus); die Stelle bleibt `GeneralAbility` (A497) | deckt sich |
+| Trank | Opener spät eingewebt, danach im Sechs-Minuten-Fenster | unter dem eigenen Searing Light, sobald nutzbar und vorhanden, nach „Tincture usage" (ab Werk nur in High-End-Inhalten); nach 300 s Wiederverwendung (Item 44165) ist das nächste eigene Fenster das der sechsten Minute; die Stelle bleibt `GeneralAbility` (A497) | deckt sich |
 | Lucid Dreaming | bei rund 70 % MP | Schwelle in MP, ab Werk 6000 von 10000 | seine Einstellung (Konzept 18) |
 | Physick | kein Einsatz im Endgame | nur mit „Use Physick above level 30" (ab Werk aus) | deckt sich |
 

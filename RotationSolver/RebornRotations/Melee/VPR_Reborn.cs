@@ -32,9 +32,6 @@ public sealed class VPR_Reborn : ViperRotation
 	[RotationConfig(CombatType.PvE, Name = "How long has to pass on Serpents Ire's cooldown before the rotation starts pooling gauge for burst. Leave this alone if you dont know what youre doing. (Will still use Reawaken if you reach cap regardless of timer)")]
 	public int ReawakenDelayTimer { get; set; } = 75;
 
-	[RotationConfig(CombatType.PvE, Name = "Experimental Pot Usage(used up to 5 seconds before SerpentsIre comes off cooldown)")]
-	public bool BurstMed { get; set; } = false;
-
 	[RotationConfig(CombatType.PvE, Name = "Restrict GCD use if Serpent's Tail, Twinblood, or Twinfang oGCDs can be used")]
 	public bool AbilityPrio2 { get; set; } = true;
 	#endregion
@@ -206,10 +203,11 @@ public sealed class VPR_Reborn : ViperRotation
 			return true;
 		}
 
-		// Burst medicine from the setting's "5 seconds before SerpentsIre comes off cooldown" on - and while it stands
-		// ready, which the setting's text includes: the opener's Serpent's Ire. Elapsed recast alone left that out (A342).
-		// In combat only: out of it Serpent's Ire stands ready too, and the potion went before the pull.
-		if (InCombat && NoAbilityReady && BurstMed && SerpentsIrePvE.EnoughLevel && SerpentsIrePvE.Cooldown.WillHaveOneCharge(5)
+		// The tincture from 5 seconds before Serpent's Ire comes off cooldown on, and while it stands ready - the opener's
+		// Serpent's Ire (A342). Whenever it is usable and at hand, with the burst allowed; where is "Tincture usage" alone
+		// (his rule, A500). Its switch, "Experimental Pot Usage", was off by default, and the viper never drank one.
+		// In combat only: out of it Serpent's Ire stands ready too, and the tincture went before the pull.
+		if (InCombat && NoAbilityReady && IsBurst && SerpentsIrePvE.EnoughLevel && SerpentsIrePvE.Cooldown.WillHaveOneCharge(5)
 			&& UseBurstMedicine(out act))
 		{
 			return true;

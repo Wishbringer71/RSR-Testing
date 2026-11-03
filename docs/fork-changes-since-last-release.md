@@ -46,9 +46,10 @@ What this release changes in the fight. For the whole distance from upstream, se
   water, earth and ice damage, no longer count as protection. A Release that deals damage over time to the party
   (Hypodermic Hustle) waits while you are in danger.
 - **Summoner keeps summoning while a follow-up is held back.** Upstream's new "Do not summon a new primal while attuned
-  or holding Ifrit's/Garuda's Favor" is off by default here: the follow-ups already go first whenever they can, so it
-  only waits where movement or the Crimson Cyclone distance holds one back - with that distance kept, an unused
-  Ifrit's Favor would hold every later primal until the next demi-summon.
+  or holding Ifrit's/Garuda's Favor" is removed here, as is its "Dynamic primal order": the follow-ups already go first
+  whenever they can, so the block only waited where movement or the Crimson Cyclone distance held one back - with that
+  distance kept, an unused Ifrit's Favor held every later primal until the next demi-summon. "Prefer Titan while
+  moving" and "Summon Ifrit first while Crimson Cyclone can follow" cover the order.
 - **Summoner summons Ifrit first while Crimson Cyclone can follow.** Ifrit's Favor ends with the next summon, and as
   the last primal Ifrit lost Crimson Cyclone and Crimson Strike to the demi-summon in most rounds. New option "Summon
   Ifrit first while Crimson Cyclone can follow" (on by default): while you stand within your Crimson Cyclone distance,
@@ -60,6 +61,22 @@ What this release changes in the fight. For the whole distance from upstream, se
   battlehorn slots as they change. It only listens; it opens and closes with the Bestiary. `DefenseTrace.log` also
   gets a "beastmaster state" line whenever what the horn choice and Capture read changes: the familiars on the horns,
   the one out, both options, whether Capture is enabled, and whether the familiar list and catalog are loaded.
+
+## Tinctures and delays
+
+- **A tincture in every burst window where it is ready and in your inventory.** Only "Tincture usage" decides where
+  (never, high-end duties, anywhere). Gunbreaker, Dark Knight, Bard and Machinist drank one only in a countdown - with no
+  countdown, and in every later burst such as the sixth minute, never; they now drink it under No Mercy, in the
+  two-minute window, under the Bard's buffs and under Wildfire. Viper and Machinist had a switch of their own, off by
+  default, and never drank one. The rotations' own tincture switches are removed: Summoner's "Use potion", "Potion
+  timing" and "Only use potion during a big summon", White Mage's "Use Tincture/Gemdraught when about to use Presence
+  of Mind", Viper's "Experimental Pot Usage", Machinist's "Use burst medicine in countdown".
+- **Tinctures and potions share one recast.** "Tincture usage", "Use HP potions" and "Use MP potions" now say so: a
+  tincture blocks HP and MP potions for 5 minutes, an HP potion the tincture for its own recast.
+- **Delays never make an action too late.** The provoke delay does not apply when taking an enemy from a co-tank, and
+  otherwise ends with the enemy's first hit on the party member it turned to. The dispel delay ends when a dangerous
+  status would run out within a GCD. The interrupt delay already ended with one GCD of the cast left. A stored interrupt
+  or provoke delay still at the old default of 0.5 to 1 s is set to none on load.
 
 ## Movement
 

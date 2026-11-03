@@ -20,6 +20,9 @@ internal static partial class TargetUpdater
 	private static RandomDelay _interruptDelay = new(() => Service.Config.InterruptDelay);
 	private static RandomDelay _provokeDelay = new(() => Service.Config.ProvokeDelay);
 
+	// The enemy the provoke waits for, the member it turned to, and since when (A500).
+	private static (ulong Enemy, ulong Member, DateTime Since) _provokeTurn;
+
 	private static readonly List<IBattleChara> _raiseCandidates = [];
 	private static readonly List<IBattleChara> _dispelCandidates = [];
 
@@ -56,6 +59,7 @@ internal static partial class TargetUpdater
 			DotOnParty.Clear();
 			ActionPenaltyWatch.Clear();
 			TankbusterTable.ClearCasts();
+			DataCenter.LastStrikeByEnemy.Clear();
 			// Through the delays, so their timers start again with the next target instead of carrying this one over.
 			DataCenter.ProvokeTarget = _provokeDelay.Delay<IBattleChara>(null);
 			DataCenter.InterruptTarget = _interruptDelay.Delay<IBattleChara>(null);
@@ -80,9 +84,14 @@ internal static partial class TargetUpdater
 		// walk behind it runs only when one of them comes up.
 		bool? autoProvokeAllowed = null;
 		bool AutoProvokeAllowed() => autoProvokeAllowed ??= Service.Config.AutoProvokeForTank || StateUpdater.CountPartyTanks() < 2;
-		DataCenter.ProvokeTarget = _provokeDelay.Delay((DataCenter.Role == JobRole.Tank || StatusHelper.PlayerHasStatus(true, StatusID.VariantUltimatumSet))
+		var provokeCandidate = (DataCenter.Role == JobRole.Tank || StatusHelper.PlayerHasStatus(true, StatusID.VariantUltimatumSet))
 			? GetFirstHostileTarget(target => target.CanProvoke(AutoProvokeAllowed))
-			: null); // Calculating this per frame rather than on-demand is actually a fair amount worse
+			: null; // Calculating this per frame rather than on-demand is actually a fair amount worse
+		// The delay never outlasts the point where the provoke could come too late (his rule, A500): taking the enemy from
+		// a co-tank - in danger, or ahead of a tankbuster - does not wait at all, and an enemy that turned to another
+		// member waits only until its first hit on him.
+		DataCenter.ProvokeTarget = _provokeDelay.Delay(provokeCandidate)
+			?? (provokeCandidate is { } enemy && ProvokeCannotWait(enemy) ? enemy : null);
 		// Tanks, Melee, RDM, and various phantom and duty actions can interrupt so just deal with it. The delay never outlasts
 		// the cast: with one GCD of it left the interrupt goes now, since one that waits past the cast's end is no interrupt.
 		var interruptCandidate = GetFirstHostileTarget(ObjectHelper.CanInterrupt);
@@ -96,6 +105,27 @@ internal static partial class TargetUpdater
 		}
 
 		UpdateTimeToKill();
+	}
+
+	/// <summary>
+	/// Whether the provoke on <paramref name="enemy"/> must go now, whatever its delay says: the enemy attacks a tank (the
+	/// provoke takes it from a co-tank, where waiting risks him) or nobody, or it has already struck the member it turned
+	/// to since it turned.
+	/// </summary>
+	private static bool ProvokeCannotWait(IBattleChara enemy)
+	{
+		if (Svc.Objects.SearchById(enemy.TargetObjectId) is not IBattleChara member || member.IsJobCategory(JobRole.Tank))
+		{
+			return true;
+		}
+
+		if (_provokeTurn.Enemy != enemy.GameObjectId || _provokeTurn.Member != member.GameObjectId)
+		{
+			_provokeTurn = (enemy.GameObjectId, member.GameObjectId, DateTime.Now);
+		}
+
+		return DataCenter.LastStrikeByEnemy.TryGetValue(enemy.GameObjectId, out var strike)
+			&& strike.Target == member.GameObjectId && strike.At >= _provokeTurn.Since;
 	}
 
 	/// <summary>
@@ -570,6 +600,29 @@ internal static partial class TargetUpdater
 			: deathOthers.Count > 0 ? deathOthers[0] : null;
 	}
 
+	private static readonly List<IBattleChara> _urgentDispel = [];
+
+	// Whether a dangerous status on the member runs out within the given seconds.
+	private static bool DangerousStatusEndsWithin(IBattleChara person, float seconds)
+	{
+		var statusList = person.StatusList;
+		if (statusList == null)
+		{
+			return false;
+		}
+
+		for (int i = 0, n = statusList.Length; i < n; i++)
+		{
+			var status = statusList[i];
+			if (status != null && status.IsDangerous() && status.RemainingTime > 0 && status.RemainingTime <= seconds)
+			{
+				return true;
+			}
+		}
+
+		return false;
+	}
+
 	private static IBattleChara? GetDispelTarget()
 	{
 		if (Player.Job is Job.WHM or Job.SCH or Job.AST or Job.SGE or Job.BRD or Job.CNJ)
@@ -579,6 +632,23 @@ internal static partial class TargetUpdater
 			AddDispelTargets(DataCenter.PartyMembers, weakenPeople);
 
 			_dispelPartyTargets.Delay(weakenPeople);
+
+			// The delay never outlasts the point where the cleanse could come too late (his rule, A500): a dangerous status
+			// that runs out within a GCD - Doom and its kind - is cleansed at once, as an interrupt goes with one GCD left.
+			var dispelNow = _urgentDispel;
+			dispelNow.Clear();
+			foreach (var person in _dispelPartyTargets)
+			{
+				dispelNow.Add(person);
+			}
+
+			foreach (var person in weakenPeople)
+			{
+				if (!dispelNow.Contains(person) && DangerousStatusEndsWithin(person, DataCenter.DefaultGCDTotal))
+				{
+					dispelNow.Add(person);
+				}
+			}
 
 			const AutoStatus busyStatus = AutoStatus.HealAreaAbility | AutoStatus.HealAreaSpell
 				| AutoStatus.HealSingleAbility | AutoStatus.HealSingleSpell
@@ -590,7 +660,7 @@ internal static partial class TargetUpdater
 			IBattleChara? closestNonDangerous = null;
 			var closestNonDangerousDist = float.MaxValue;
 
-			foreach (var person in _dispelPartyTargets)
+			foreach (var person in dispelNow)
 			{
 				var hasDangerous = false;
 				var statusList = person.StatusList;

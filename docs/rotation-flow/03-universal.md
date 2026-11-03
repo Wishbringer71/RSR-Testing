@@ -371,6 +371,38 @@ wie vorher, weil der Countdown dieselbe Uhr liest (`Service.CountDownTime`). Ups
 geschlossen (Weißmagier, Viper, Tänzer, f1ef35ea1); die Methode trägt die Regel für jeden Aufrufer, auch für Astrologe,
 Weiser, Gelehrter, Schwarzmagier und die fremden Rotationen, die ohne Kampfprüfung riefen.
 
+**Tinktur in jeder Burstphase, in der sie nutzbar und vorhanden ist** (seine Vorgabe, 03.11.2026, A500). Ein Schalter
+entscheidet nur, in welchen Inhalten: „Tincture usage" je Job – nie, nur in High-End-Inhalten, überall; bei „nur
+High-End" auch auf einer Trainingspuppe. High-End ist, was das Spiel so markiert (`ContentFinderCondition.HighEndDuty`,
+xivapi 03.11.2026): 14 Inhalte – die Ultimates, der Chaotic-Raid, die vier Savage-Kämpfe der laufenden Stufe, die
+laufende Extreme- und Unreal-Prüfung. Ältere Savage- und Extreme-Kämpfe zählen nicht; dort lohnt die Tinktur, die Geld
+kostet, meist ohnehin nicht. Ob die Tinktur getrunken wird, entscheidet sonst niemand mehr:
+- *Entfernt* sind die Schalter der Rotationen, die dieselbe Frage ein zweites Mal stellten: beim Beschwörer „Use potion",
+  „Potion timing" und „Only use potion during a big summon" (Upstream 444388102), beim Weißmagier „Use Tincture/Gemdraught
+  when about to use Presence of Mind", bei der Viper „Experimental Pot Usage", beim Maschinisten „Use burst medicine in
+  countdown". Mit Viper und Maschinist ab Werk aus trank keiner von beiden je eine Tinktur. „Ab dem zweiten Searing
+  Light" brachte nie mehr Tinkturen ins Fenster als das erste (Wiederverwendung 300 s, Item 44165 `Cooldowns`: Fenster
+  bei 0, 6, 12 Minuten gegen 2, 8, 14).
+- *Neu im Kampf*, wo die Rotation sie nur im Countdown trank und ohne Countdown, im Dungeon wie in jeder späteren
+  Burstphase, nie: Revolverklinge unter No Mercy, Dunkelritter im Zwei-Minuten-Fenster (`InTwoMIsBurst`), Barde unter
+  seinen Buffs (`InBurstStatus`), Maschinist unter Wildfire; die Viper weiter 5 s vor Serpent's Ire, jetzt mit erlaubtem
+  Burst („Auto Burst"). Die Tinktur im Countdown bleibt, wo die Rotation sie hatte, beim Maschinisten unter „Auto Burst"
+  wie vorher.
+- *Begriffe* (sein Hinweis, 03.11.2026): Im Spiel heißen Heiltränke „Potion" (Kategorie „Medicine"), die Schadensbuffs
+  „Gemdraught" oder „Tincture"; „pot" im englischen Spielerjargon meint die Tinktur. Upstreams „Use potion" meinte die
+  Tinktur und las sich wie ein Heiltrank – auch deshalb entfernt.
+- *Eine Wiederverwendung für alle Arzneien* (Spielblätter, xivapi 03.11.2026: `ItemAction.Action.CooldownGroup` 59 bei
+  Tinkturen, Super- und Hyper-Potion, Super-Ether, Elixier und Phönixfeder; `Item.Cooldowns` 300, 75, 300, 300, 360 s).
+  Die Arznei, die zuerst geht, sperrt die anderen für ihre eigene Zeit: eine Tinktur Heiltrank und Äther für 300 s, ein
+  Heiltrank die Tinktur für 75 s. Ab Werk trinkt RSR Heil- und Manatränke nie („Use HP potions below this HP", „Use MP
+  potions below this MP", aus) und Tinkturen nur in High-End-Inhalten. Schaden gegen Heilung und Mana ist damit seine
+  Entscheidung (sein Hinweis, 03.11.2026): Wer beide einschaltet, bekommt die Arznei, deren Auslöser zuerst greift – im
+  Burst die Tinktur, unter der Schwelle den Trank. Einen Trank für die nächste Tinktur zurückzuhalten, hieße Heilung für
+  Schaden aufzuschieben, gegen seine Regel „Sicherheit vor Schaden"; die Tinktur zurückzuhalten, weil ein Trank nötig
+  werden könnte, hieße eine Gefahr ohne Messung anzunehmen. Beides ist nicht gebaut. Die drei Einstellungstexte nennen
+  die gemeinsame Wiederverwendung. Ein Tank, der in einem Dungeon mit „überall" eine Tinktur trinkt, hat bis zu fünf
+  Minuten keinen Heiltrank.
+
 **Pause im Kampf** (`CustomRotation.InCombatPause`): im Kampf, kein Gegner in 25 Yalm. Die allgemeine
 Hälfte der Pausenregel; was ein Job in der Pause wirkt, ist seine Regel (Konzept 14, „Pausen und
 Phasenenden"). Die vorhergesagte Pause liest `BMRDowntimeWithin`, nur mit Modul.

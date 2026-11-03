@@ -45,6 +45,8 @@ ACCEPTED = {
         'input fields upstream replaced with its reworked rotation loading (d566eda86, 2025)',
     'ActionSequencerIndex':
         'internal persisted index, no UI and no label - stored state, not a promise to the user',
+    'ForkVersion':
+        'the fork migration count, read in Configs.Migrate in the same file; no UI and no label - stored state (A500)',
     'UiPaddingScale':
         'read outside this tree: Configs implements RebornMaterial.IM3Settings, and the package '
         '(7.5.6.2, upstream 27f6acb41) reads it through that interface (name found in its DLL)',

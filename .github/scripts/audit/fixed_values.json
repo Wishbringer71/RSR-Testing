@@ -788,7 +788,7 @@
   },
   {
    "file": "RotationSolver/RebornRotations/Melee/VPR_Reborn.cs",
-   "code": "if (InCombat && NoAbilityReady && BurstMed && SerpentsIrePvE.EnoughLevel && SerpentsIrePvE.Cooldown.WillHaveOneCharge(5)",
+   "code": "if (InCombat && NoAbilityReady && IsBurst && SerpentsIrePvE.EnoughLevel && SerpentsIrePvE.Cooldown.WillHaveOneCharge(5)",
    "values": [
     "5"
    ],
@@ -866,6 +866,16 @@
    "status": "exception",
    "loop": "A359",
    "reason": "Default of the line a tank's big mitigation waits for in a pull - the owner's posture, which the setting leaves to him. No sheet states it; chosen in tank_pull_defense_model.py, where 30 % had the fewest deaths or least time under 30 % against 15, 45 and 65 % (A359)."
+  },
+  {
+   "file": "RotationSolver/Basic/Configuration/Configs.cs",
+   "code": "var oldDefault = new Vector2(0.5f, 1f);",
+   "values": [
+    "0.5"
+   ],
+   "status": "exception",
+   "loop": "A500",
+   "reason": "Not a rule value: it recognises upstream's former default of the interrupt and provoke delays in a stored configuration, to cut exactly that to none on load"
   },
   {
    "file": "RotationSolver/Basic/Rotations/CustomRotation_DefenseHold.cs",
@@ -1107,6 +1117,16 @@
    "status": "exception",
    "loop": "A498",
    "reason": "The dash distance is stated only in the effect text (Aetherial Shift: \"Quickly dash 15 yalms forward\", ActionTransient via xivapi v2, 03.11.2026); no sheet carries it as a number, so it cannot be read at runtime"
+  },
+  {
+   "file": "RotationSolver/RebornRotations/Ranged/MCH_Reborn.cs",
+   "code": "if (AirAnchorCountdown && IsBurst && remainTime <= 1.5f && UseBurstMedicine(out act))",
+   "values": [
+    "1.5"
+   ],
+   "status": "exception",
+   "loop": "A500",
+   "reason": "Upstream's own countdown moment for the tincture ahead of Air Anchor, unchanged; the line differs from upstream only by the removed switch (his rule: the tincture whenever usable, A500)"
   },
   {
    "file": "RotationSolver/UI/MainWindow/MainWindow_Learned.cs",

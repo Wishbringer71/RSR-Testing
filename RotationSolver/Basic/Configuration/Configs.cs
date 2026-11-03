@@ -45,6 +45,12 @@ internal partial class Configs : IPluginConfiguration, IM3Settings
 	public const int CurrentVersion = 12;
 	public int Version { get; set; } = CurrentVersion;
 
+	/// <summary>
+	/// The fork's own migration count (<see cref="Migrate"/>); a file without it starts at 0, and a fresh configuration
+	/// runs the steps once against its defaults, which they leave as they are.
+	/// </summary>
+	public int ForkVersion { get; set; }
+
 	public string LastSeenChangelog { get; set; } = "0.0.0.0";
 	public bool TutorialDone { get; set; } = false;
 
@@ -499,7 +505,9 @@ internal partial class Configs : IPluginConfiguration, IM3Settings
 	private static readonly bool _blulockCasting = true;
 
 	[JobConfig, UI("Tincture usage",
-	Description = "When to use gemdraughts and tinctures. Only rotations that support automatic tincture usage follow this.",
+	Description = "When to use gemdraughts and tinctures. Only rotations that support automatic tincture usage follow this.\n"
+		+ "In a fight: the tincture goes in each burst window where it is ready and in your inventory. Tinctures, HP and MP "
+		+ "potions and Phoenix Down share one recast: a tincture blocks HP and MP potions for its 5 minutes.",
 	Filter = AutoActionUsage, Section = 5, PvPFilter = JobFilterType.NoJob)]
 	private readonly TinctureUseType _TinctureType = TinctureUseType.InHighEndDuty;
 
@@ -509,6 +517,8 @@ internal partial class Configs : IPluginConfiguration, IM3Settings
 	private static readonly bool _useKnockback = true;
 
 	[ConditionBool, UI("Use HP potions",
+	Description = "In a fight: HP potions, tinctures, MP potions and Phoenix Down share one recast. An HP potion blocks "
+		+ "the next tincture for its recast; a tincture drunk in a burst blocks HP potions for 5 minutes.",
 	Filter = AutoActionUsage, Section = 5)]
 	private static readonly bool _useHpPotions = false;
 
@@ -517,6 +527,8 @@ internal partial class Configs : IPluginConfiguration, IM3Settings
 	public float UseHpPotionsPercent { get; set; } = 0.5f;
 
 	[ConditionBool, UI("Use MP potions",
+	Description = "In a fight: MP potions, tinctures, HP potions and Phoenix Down share one recast. An MP potion blocks "
+		+ "the next tincture for its recast; a tincture drunk in a burst blocks MP potions for 5 minutes.",
 	Filter = AutoActionUsage, Section = 5)]
 	private static readonly bool _useMpPotions = false;
 
@@ -1331,7 +1343,9 @@ internal partial class Configs : IPluginConfiguration, IM3Settings
 	public bool HoldProactiveMitigationForSmallCast { get; set; } = true;
 
 	[UI("Dispel delay range",
-		Description = "RSR waits a random time in this range before dispelling.",
+		Description = "RSR waits a random time in this range before dispelling.\n"
+			+ "In a fight: never past the point where it could come too late - a dangerous status that runs out within a "
+			+ "GCD is cleansed at once.",
 		Filter = AutoActionUsage, Section = 4, Order = 1,
 		PvEFilter = JobFilterType.Dispel, PvPFilter = JobFilterType.NoJob)]
 	[Range(0, 10, ConfigUnitType.Seconds, 0.002f)]
@@ -1436,15 +1450,21 @@ internal partial class Configs : IPluginConfiguration, IM3Settings
 	public Vector2 StopCastingDelay { get; set; } = new(0.5f, 1);
 
 	[UI("Interrupt delay range", Parent = nameof(InterruptibleMoreCheck),
+		Description = "In a fight: the interrupt never waits past the point where it could come too late - with one GCD of "
+			+ "the cast left, it goes at once.",
 		PvEFilter = JobFilterType.Interrupt, PvPFilter = JobFilterType.NoJob)]
 	[Range(0, 3, ConfigUnitType.Seconds, 0.002f)]
 	// Default none: an interrupt that waits can miss its cast, and the setting exists to look less mechanical, not to
-	// play better (concept 11, A338).
+	// play better (concept 11, A338). Upstream's old default of 0.5 to 1 s is cut to none on load (A500).
 	public Vector2 InterruptDelay { get; set; } = new(0, 0);
 
-	[UI("Provoke delay range", Parent = nameof(AutoProvokeForTank))]
+	[UI("Provoke delay range", Parent = nameof(AutoProvokeForTank),
+		Description = "In a fight: the provoke never waits past the point where it could come too late - not at all when "
+			+ "taking the enemy from a co-tank, and no longer than until the enemy's first hit on the party member it "
+			+ "turned to.")]
 	[Range(0, 10, ConfigUnitType.Seconds, 0.05f)]
-	// Default none, as for InterruptDelay: a provoke that waits leaves the enemy on whoever took it longer.
+	// Default none, as for InterruptDelay: a provoke that waits leaves the enemy on whoever took it longer. Upstream's
+	// old default of 0.5 to 1 s is cut to none on load (A500).
 	public Vector2 ProvokeDelay { get; set; } = new(0, 0);
 
 	[UI("Downtime healing delay range", Parent = nameof(HealWhenNothingTodo))]
@@ -1788,6 +1808,26 @@ internal partial class Configs : IPluginConfiguration, IM3Settings
 	public static Configs Migrate(Configs oldConfigs)
 	{
 		oldConfigs.Version = CurrentVersion;
+
+		// The fork's own steps, counted apart from upstream's Version, so an upstream bump neither skips nor repeats them.
+		if (oldConfigs.ForkVersion < 1)
+		{
+			// The interrupt and provoke delays still at upstream's old default of 0.5 to 1 s, unread from 2024 until A338,
+			// are cut to the fork's default of none (his rule, A500): the delay is optional, and one never set is none.
+			var oldDefault = new Vector2(0.5f, 1f);
+			if (oldConfigs.InterruptDelay == oldDefault)
+			{
+				oldConfigs.InterruptDelay = Vector2.Zero;
+			}
+
+			if (oldConfigs.ProvokeDelay == oldDefault)
+			{
+				oldConfigs.ProvokeDelay = Vector2.Zero;
+			}
+
+			oldConfigs.ForkVersion = 1;
+		}
+
 		return oldConfigs;
 	}
 

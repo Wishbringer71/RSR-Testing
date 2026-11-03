@@ -514,6 +514,19 @@ nicht messbar. Wer sie an hat, konnte ohne Swiftcast niemanden hochholen.
   über das Wirken hinaus: Bleibt ihm nur noch ein GCD, geht sie sofort (`TargetUpdater`). Upstream entfernte beide
   Einstellungen in 7.5.7.14 (0c44a19ac), weil sie dort keinen Leser hatten; der Fork behält sie, denn ob RSR weniger
   mechanisch aussehen soll, ist seine Entscheidung (Konzept 18, Tarnung) – ab Werk ändert sich dadurch nichts.
+  Seine Vorgabe (03.11.2026): die Verzögerung bleibt wählbar, aber unter der Schwelle, an der sie zu spät käme; alte Werte
+  gekürzt, ab Werk 0 (A500).
+  - *Unterbrechung:* Die Schwelle ist schon gebaut – bleibt dem Zauber ein GCD, geht sie sofort.
+  - *Provokation beim Gegner eines anderen Tanks* (in Gefahr oder vor einem Tankbuster, „Take the enemy from a co-tank in
+    danger"): keine Verzögerung. Hier ist jeder Augenblick der, in dem der Tankbuster auf den Falschen fallen kann.
+  - *Provokation eines Gegners, der sich einem anderen Mitglied zuwandte:* Sie wartet höchstens bis zu dessen erstem
+    Treffer auf dieses Mitglied (`DataCenter.LastStrikeByEnemy` aus dem Effekt-Handler, `TargetUpdater.ProvokeCannotWait`).
+    Im Kampf: Ein Gegner läuft auf den Heiler zu; solange er ihn nicht getroffen hat, darf die Provokation warten; mit
+    dem ersten Treffer geht sie. Ein zweiter Treffer durch die Verzögerung ist damit ausgeschlossen, ein erster nicht –
+    er wäre auch ohne Verzögerung oft gefallen, weil eine Provokation als Fähigkeit auf ihr Webfenster wartet.
+  - *Alte Werte:* Gespeicherte Konfigurationen mit genau Upstreams alter Vorgabe (0,5 bis 1 s) werden beim Laden auf 0
+    gesetzt (`Configs.Migrate`, eigene Zählung `ForkVersion`, damit ein Versionssprung von Upstream sie weder überspringt
+    noch wiederholt). Andere Werte bleiben; die Schwellen begrenzen sie im Kampf.
 - **`TargetColor` ist entfernt** (A339), zusammen mit `SwiftcastBuffer` (unter „Ausgeschlossen"). Sie färbte einen
   Kreis um das Ziel der nächsten Aktion und verlor ihren Leser mit der Zeichenbibliothek XIVPainter (Upstream
   72f43cbcf, 2024, mit dem Verweis auf BossModReborn); RSR zeichnet seither nichts in die Welt. Eine Zeichnung neu zu

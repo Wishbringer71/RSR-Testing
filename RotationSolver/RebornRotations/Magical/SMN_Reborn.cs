@@ -76,32 +76,8 @@ public sealed class SMN_Reborn : SummonerRotation
 	[RotationConfig(CombatType.PvE, Name = "Use Physick above level 30")]
 	public bool Healbot { get; set; } = false;
 
-	// Off in the fork (A495): the follow-ups already go ahead of a new summon whenever they can, so the block only waits
-	// where movement or the Crimson Cyclone distance holds one back - with that distance kept, an Ifrit's Favor would
-	// hold every later primal until the next demi-summon.
-	[RotationConfig(CombatType.PvE, Name = "Do not summon a new primal while attuned or holding Ifrit's/Garuda's Favor")]
-    public bool BlockSummonWhileAttunedOrFavor { get; set; } = false;
-
 	[RotationConfig(CombatType.PvE, Name = "Swiftcast for movement uptime: only use it on Ruby Rite/Slipstream while moving")]
     public bool SwiftcastMovementUptime { get; set; } = false;
-
-	[RotationConfig(CombatType.PvE, Name = "Dynamic primal order: Ifrit if still and close, Garuda if still and far, Titan if moving (falls back to Order)")]
-    public bool DynamicSummonOrder { get; set; } = false;
-
-	public enum PotTiming : byte
-    {
-	    [Description("First Searing Light")] FirstSearingLight,
-	    [Description("From second Searing Light")] FromSecondSearingLight,
-    }
-
-    [RotationConfig(CombatType.PvE, Name = "Use potion")]
-    public bool UsePotion { get; set; } = true;
-
-    [RotationConfig(CombatType.PvE, Name = "Potion timing", Parent = nameof(UsePotion))]
-    public PotTiming PotionTiming { get; set; } = PotTiming.FirstSearingLight;
-
-    [RotationConfig(CombatType.PvE, Name = "Only use potion during a big summon (Bahamut/Phoenix/Solar Bahamut)", Parent = nameof(UsePotion))]
-    public bool LimitPotToBigSummon { get; set; } = false;
 
 	#endregion
 
@@ -575,15 +551,10 @@ public sealed class SMN_Reborn : SummonerRotation
 			return true;
 		}
 
-		// The potion with upstream's options (444388102), here as in every other rotation of the fork: after the heal and
-		// defence passes and the shield ahead of a raidwide. Upstream put it in EmergencyAbility, ahead of all of them;
-		// under Searing Light its 30 s still cover the whole 20 s window when it goes a few weaves later (A497).
-		var potInBigSummon = !SummonBahamutPvE.EnoughLevel || InBahamut || InPhoenix || InSolarBahamut;
-
-		if (UsePotion && HasSearingLight && InCombat
-			&& (PotionTiming == PotTiming.FirstSearingLight || CombatTime > 30f)
-			&& (!LimitPotToBigSummon || potInBigSummon)
-			&& UseBurstMedicine(out act))
+		// The tincture under the own Searing Light whenever it is usable and at hand (his rule, A500), here as in every
+		// other rotation of the fork: after the heal and defence passes and the shield ahead of a raidwide (A497). Where
+		// is "Tincture usage" alone; upstream's three potion switches (444388102) asked it again and are gone.
+		if (HasSearingLight && InCombat && UseBurstMedicine(out act))
 		{
 			return true;
 		}
@@ -1212,9 +1183,10 @@ public sealed class SMN_Reborn : SummonerRotation
 
 	private bool SummonPrimals(out IAction? act)
 	{
-		var attunedOrFavor = AttunementCount != 0 || HasIfritFavor || HasGarudaFavor || HasCrimsonStrike;
-
-		if (!InBahamut && !InPhoenix && !InSolarBahamut && !(BlockSummonWhileAttunedOrFavor && attunedOrFavor))
+		// Upstream's block for an open Favor and its dynamic order (444388102) are gone (A500): the follow-ups go ahead of
+		// a summon in the GCD order already, the block only lost where one is held back (smn_phase_potency.py, question
+		// 3), and the order's useful part is the Ifrit rule below.
+		if (!InBahamut && !InPhoenix && !InSolarBahamut)
 		{
 			// Topaz GCDs are instant-cast; Garuda/Ifrit's follow-ups need a stationary summoner.
 			// Falls through to the configured order below if Titan isn't available right now.
@@ -1234,11 +1206,6 @@ public sealed class SMN_Reborn : SummonerRotation
 				return true;
 			}
 
-			if (DynamicSummonOrder && DynamicSummonTime(out act))
-	        {
-		        return true;
-	        }
-			
 			switch (SummonOrder)
 			{
 				case SummonOrderType.TopazEmeraldRuby:
@@ -1527,26 +1494,5 @@ public sealed class SMN_Reborn : SummonerRotation
 
 	public override bool CanHealSingleSpell => base.CanHealSingleSpell && GcdHealsAllowed(GCDHeal);
 
-	private bool DynamicSummonTime(out IAction? act)
-    {
-	        act = null;
-	        var target = HostileTarget;
-	        if (target == null)
-	    {
-            return false;
-	    }
-
-	        if (IsMoving)
-	    {
-		return TitanTime(out act);
-        }
-
-        if (target.DistanceToPlayer() <= CrimsonCycloneDistance)
-        {
-            return IfritTime(out act);
-        }
-
-	return GarudaTime(out act);
-    }
 	#endregion
 }
