@@ -15347,6 +15347,42 @@ als Weißmagier; Shinryu (Unreal) zweimal als Beschwörer, beide besiegt. Seine 
 
 *Prüfgrad:* Mitschnitt und Protokoll gelesen und gegeneinander gestellt; die Befunde je am Mitschnitt belegt.
 
+### A516 · Shinryu (Unreal): Reiryu werden geheilt, die Verfluchten nicht mehr (03.11.2026)
+
+Sein Auftrag (03.11.2026): „die todo zu unreal shinryu einbauen" – die beiden Einträge „Heilung auf Ziele, die keine
+annehmen" und „Figuren, die nur Einzelheilung besiegt".
+
+- *Heilsperre:* Das Status-Blatt nennt zwei Status, die jede Erholung aufheben: Fluch des Drachen (1419) und Chaoserde
+  (1605); beide stehen jetzt neben Mounted in `HealingIneffectiveStatus`. Beleg im Mitschnitt vom 03.11.2026: Lux
+  Solaris heilte die Verfluchten dreimal um 0 LP. Einzelheilung, Einzelheilflaggen (`TryHealSingleThreshold`) und
+  Flächenheilung um den Wirkenden zählen sie nicht. Die Gruppenmittel der Flächenschwellen bleiben unverändert: Die
+  Verfluchten hielten sich durch Lebensraub hoch.
+- *Reiryu:*
+  - Erkennung (`HealToDefeat`): freundliche Kampffigur außerhalb der Gruppe, die zuerst mit 1 LP gesehen wurde oder ein
+    Mitglied anleint (Leine aus `Vfx.Tethers` der Figur). Der Tether-Helfer in `ObjectHelper` sucht per Reflexion eine
+    statische Liste in ECommons' `TetherInfo`, die es dort nach dem Quelltext (6e3524d0) nicht gibt; er liefert danach
+    immer leer und hat keinen Aufrufer.
+  - Eigene Liste `DataCenter.HealToDefeatTargets`; Kandidat nur reiner Einzelheilungen (`GetCanTargets`: ein Ziel,
+    kein Radius, kein Bodenziel, kein HoT, das Spiel erlaubt es).
+  - Rangfolge in `FindHealTarget`: Notfall (Klasse 1, jetzt eine gemeinsame Funktion `CriticalMember`), dann Figuren,
+    dann der Rest. Die `healRatio`-Schranke gilt nicht für Figuren.
+  - Eigene Heilflaggen (`StateUpdater.StatusFromHealToDefeat`). Nichtheiler (Paladin, Beschwörer, Rotmagier) helfen
+    nur hinter der Frist, unter der neuen Option ab Werk an; die Frist ist die Restzeit des Zaubers einer Figur gegen
+    Bedarf und gemessene Rate.
+  - Selbstkorrektur: Eine eigene Heilung für 0 nimmt die Art für das Gebiet heraus.
+  - Messzeilen: erkannte Figur, Rückstand, Ende einer Welle.
+- *Rechnung am Mitschnitt:* Der Weißmagier seiner Gruppe heilte 350 000 bis 464 000 LP je Welle in 17 bis 23 s, der
+  Weise 39 000 bis 152 000. Ohne Benediction braucht ein Weißmagier für vier Reiryu rund 30 s; die Frist endet nach
+  rund 38 s.
+- *Prüfmittel:* `check_heal_target_order.py` liest den Notfallrang jetzt auch in seiner eigenen Funktion. Neue
+  Selbsttests: die Funktion wird angenommen, ohne kritische Klasse, ohne vorausberechnete Ordnung und hinter einem
+  Kurzweg wird sie abgelehnt.
+- Konzept 07 („Heilziele außerhalb der Gruppe") auf den gebauten Stand, Konzept 09 nachgezogen, TODO-Einträge entfernt,
+  Release-Text.
+
+*Prüfgrad:* kompiliert (0 Warnungen, 0 Fehler), alle Prüfskripte grün; Mechanik und Rechnung an Spielblättern und
+seinem Mitschnitt. Im Spiel nicht beobachtet; die Messzeilen zeigen es im nächsten Protokoll.
+
 ## B · Commit-Register (Fork vs. `upstream/main`)
 
 ### B1 · Einzelgeprüfte Fork-Commits

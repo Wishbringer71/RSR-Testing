@@ -53,6 +53,12 @@ internal static class DataCenter
 
 	public static List<IBattleChara> AllianceMembers { get; set; } = [];
 
+	/// <summary>
+	/// Friendly figures outside the party that only single-target healing defeats (<see cref="HealToDefeat"/>): read by
+	/// the target choice of single heals, never by party values.
+	/// </summary>
+	public static List<IBattleChara> HealToDefeatTargets { get; set; } = [];
+
 	public static List<IBattleChara> AllHostileTargets { get; set; } = [];
 
 	/// <summary>

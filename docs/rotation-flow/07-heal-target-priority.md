@@ -706,58 +706,93 @@ ffxiv_bossmod (seine Angabe, 03.11.2026).
   LP-Regeneration ist wirkungslos", englisch „all HP recovery is nullified". Natürliche Erholung gibt es im Kampf
   nicht, der Satz meint also Heilung (Schluss; das Wiki sagt „preventing healing").
 
-**Was RSR tut (Quelltext, 03.11.2026).**
-- *Kein Angriff, und das ist richtig.* `ObjectHelper.IsEnemy` fragt das Spiel, ob Blizzard auf die Figur ginge
-  (`ActionManager.CanUseActionOnTarget`); auf eine Figur des Battalion 0 geht er nicht. Die Reiryu stehen auf keiner
-  Gegnerliste, mit und ohne BossModReborn.
-- *Keine Heilung.* Heilziele sind `DataCenter.PartyMembers`, gefüllt über `IsParty`: die Gruppe, NPC-Gruppenmitglieder,
-  der Chocobo, das Fokusziel aus der Allianz und, nur unter „Heal solo instance NPCs (Experimental)" (ab Werk aus),
-  freundliche Kampf-NPCs nach ihrem Namensschild (`NameplateKind.FriendlyBattleNPC`). Die Namen der Reiryu sind grün,
-  nicht rot (seine Beobachtung); grün zeigt das Spiel freundliche Kampf-NPCs. Dass die Farbe, die ECommons aus dem
-  Spiel liest, dafür den Wert `FriendlyBattleNPC` (12) liefert, ist Schluss aus der Benennung in ECommons
-  (6e3524d0 vom 30.10.2026), deren Quelltext die Farbe nicht nennt; Battalion 0 stützt ihn.
-- *Der Schalter ist kein Weg.* Er macht die Reiryu nach dem Vorigen zu Gruppenmitgliedern. Dann stehen vier Figuren bei 0 % in jedem
-  Gruppenwert: Mittelwert und Streuung der Flächenschwellen, die Minderungsurteile, die Zielwahl jeder Einzelheilung,
-  auch der nur auf die Gruppe zielenden. Die Flächenheilung, die das auslöst, erreicht sie nicht.
-- *Die Angeleinten werden vergeblich geheilt (Defekt).* `StatusHelper.HealingIneffectiveStatus` führt nur `Mounted`;
-  Fluch des Drachen und Chaoserde fehlen. Die vier Angeleinten verlieren unter dem Fluch stetig Gesundheit und
-  rücken damit in der Zielwahl nach oben; jede Einzelheilung auf sie verpufft, und ihr sinkender Stand treibt die
-  Flächenschwellen. Im Kampf: In den 30 s, in denen die Reiryu voll werden müssen, gehen die GCDs der Heiler auf Ziele,
-  die keine Heilung annehmen (`TODO.md`, „Heilung auf Ziele, die keine annehmen").
+**Was RSR tut (A516).** Die Reiryu heilt jeder Heiler unter RSR, nach einem Notfall in der Gruppe und vor allem
+anderen; Nichtheiler springen ein, wenn die Frist ohne sie nicht reicht. Auf die Angeleinten heilt RSR nicht mehr.
+Angegriffen werden die Reiryu nicht: `ObjectHelper.IsEnemy` fragt das Spiel, ob Blizzard auf die Figur ginge
+(`ActionManager.CanUseActionOnTarget`), und auf eine Figur des Battalion 0 geht er nicht.
 
-**BossModReborn heilt nicht.** Es zeigt „Heal Reiryu to full before the cast ends", färbt die Reiryu in der Arena und
-sperrt sie für seine eigene KI als Angriffsziel (`AIHints.Enemy.PriorityForbidden`). Eine Heilung gibt es dort nicht.
-RSR liest diese Priorität nicht und braucht sie nicht: Das Spiel schließt den Angriff schon aus.
+- *Erkennung* (`HealToDefeat`, zentral für alle Jobs, je Frame nach den Zielen, nicht im PvP und nur im Kampf): eine
+  Kampffigur (BattleNpc), die kein Gruppen- oder Allianzmitglied ist, kein Begleiter, kein Chocobo und kein
+  NPC-Gruppenmitglied; die das Spiel nicht angreifen lässt; die lebt und unter voller Gesundheit steht; und die eines
+  von zwei Zeichen trägt. Entweder wurde sie mit 1 LP gesehen, dem wenigsten, was ein Lebender hat; so erscheinen die
+  Reiryu. Oder sie leint ein Gruppenmitglied an: Leine in ihrer eigenen Effektliste (`Vfx.Tethers`), Ziel ein
+  Mitglied. Die Erkennung behält die Figur, bis sie verschwindet; ein Gebietswechsel leert sie. Liefert eine eigene
+  Heilung auf sie 0 LP, fällt ihre Art für dieses Gebiet heraus. Diese Selbstkorrektur greift bei einer Figur, die so
+  aussieht, aber keine Heilung annimmt.
+- *Kandidaten:* Die Figuren stehen in einer eigenen Liste (`DataCenter.HealToDefeatTargets`), nicht in `PartyMembers`.
+  Gruppenwerte, Flächenschwellen und Minderung lesen sie nicht. Nur die Zielwahl einer Einzelheilung nimmt sie auf: Die
+  Aktion ist freundlich, hat ein Ziel ohne Wirkungsradius und ohne Bodenziel, gibt keinen HoT (`GrantsSingleHot`), und
+  das Spiel erlaubt sie auf die Figur (`CanUseActionOnTarget` je Aktion). Damit fallen Flächenheilungen heraus (sie
+  wirken nicht), Regen und die anderen HoTs, und die Schilde und Minderungen, die nur Gruppenmitglieder treffen.
+- *Flaggen:* Steht eine Figur, setzt `StateUpdater` die Einzelheilflaggen (Fähigkeit und Zauber), für Heiler immer, für
+  Nichtheiler nur unter „Help heal figures only healing defeats as a non-healer" (ab Werk an) und nur, wenn die Frist
+  ohne sie nicht reicht.
+- *Rangfolge* (`FindHealTarget`):
+  1. ein Mitglied in Klasse 1, das gleich stirbt;
+  2. die Figuren;
+  3. die übrigen Klassen.
+  
+  Unter den Figuren geht zuerst die, die ein Mitglied anleint, das selbst nicht mehr heilbar ist und am tiefsten
+  steht: Den Verfluchten rettet nur der Tod seiner Reiryu. Sonst geht die mit dem höchsten Anteil zuerst, damit eine
+  nach der anderen fertig wird; jede fertige beendet einen Fluch oder verhindert ihn. Die Schranke `healRatio` gilt für
+  Figuren nicht: Eine Reiryu bei 94 % braucht die letzte Heilung so dringend wie die erste, sonst läuft Drachenflug aus.
+- *Benediction* bleibt an die Gefahr gebunden (Abschnitt „Das Mittel richtet sich nach der Gefahr"); die Reiryu ist
+  kein bedrohtes Mitglied. Gerechnet am Mitschnitt reicht ein Weißmagier ohne sie: 10 bis 12 Heilungen zu 31 000 bis
+  45 000 LP (Afflatus Solace, Tetragrammaton, Cure II) für vier Reiryu, rund 30 s nach dem Erscheinen; die Frist
+  endet nach rund 38 s. Mit Benediction schaffte es der Weißmagier seiner Gruppe in 17 bis 23 s.
+- *Frist für Nichtheiler* (`HealToDefeat.Behind`): Läuft auf einer Figur ein Zauber, ist seine Restzeit die Frist
+  (Drachenflug 29,7 s). Der Bedarf ist die Summe der fehlenden LP. Die Rate ist die Summe der gewonnenen LP aller
+  Figuren seit dem ersten Sehen, geteilt durch die vergangene Zeit; sie folgt den tatsächlichen Heilern. Reicht Rate mal
+  Frist nicht für den Bedarf, springen Nichtheiler ein: Rotmagier mit Vercure, Paladin mit Clemency, Beschwörer mit
+  Physick. Ihre Job-Schalter für Heilungen (Healbot, Prevent heal) gelten dann nicht. Vor dem ersten Zauber gibt es
+  keine Frist, und die Nichtheiler warten; die Heiler heilen ab dem Erscheinen.
+- *Die Angeleinten:* Fluch des Drachen (1419) und Chaoserde (1605) stehen in `StatusHelper.HealingIneffectiveStatus`.
+  Beleg im Mitschnitt: Lux Solaris heilte die Verfluchten dreimal um 0 LP. Wer einen davon trägt, ist kein Ziel einer
+  Einzelheilung, zählt nicht für die Einzelheilflaggen (`TryHealSingleThreshold`) und nicht für eine Flächenheilung um
+  den Wirkenden. Die Gruppenmittel der Flächenschwellen bleiben, wie sie sind: Die Verfluchten hielten sich durch
+  Lebensraub hoch (sein Beschwörer 88 000 bis 112 650 von 112 650 LP), und ein Ausschluss änderte viele Leser ohne Nutzen.
+- *Unabhängig von BossModReborn:* Erkennung, Frist und Rangfolge lesen nur das Spiel. BossModReborn zeigt „Heal Reiryu
+  to full before the cast ends", färbt die Reiryu und sperrt sie für seine eigene KI als Angriffsziel
+  (`AIHints.Enemy.PriorityForbidden`); heilen tut es nicht.
+- *Messmittel* (`DefenseTrace.log`):
+  - eine Zeile je erkannter Figur mit Name, Art, LP und Zeichen;
+  - eine Zeile, wenn Nichtheiler einspringen, mit Frist, Bedarf und Rate;
+  - eine Zeile, wenn die letzte einer Welle fort ist: Zahl, Dauer, wie oft RSR geheilt hat und welche ungeheilt
+    verschwand.
 
-**Umsetzbar ist es. Der Entwurf** (`TODO.md`, „Figuren, die nur Einzelheilung besiegt"; noch ohne Loop):
-1. *Erkennung, zentral für alle Jobs:* eine Figur im Kampf, kein Gruppenmitglied, die das Spiel als Ziel der eigenen
-   Einzelheilung zulässt (`ActionManager.CanUseActionOnTarget` mit der Heilung selbst, dieselbe Frage, die `IsEnemy`
-   mit Blizzard stellt), unter voller Gesundheit. Die Leine (`ObjectHelper.GetAllTethers`) darf keine Bedingung sein:
-   Sie kommt erst rund 8 s nach dem Erscheinen, und eine Reiryu, die bis dahin voll ist, legt keinen Fluch (Mitschnitt).
-   Offen für den Loop ist deshalb, was die Figur von den freundlichen NPCs eines Solo-Inhalts trennt, für die der
-   bestehende Schalter bleibt. Kandidaten: das Erscheinen mit 1 LP im Kampf, die Leine als spätes zweites Zeichen, ein
-   Inhalt mit voller Gruppe.
-2. *Eine eigene Liste neben `PartyMembers`,* gelesen nur von der Zielwahl der Einzelheilungen, nie von Gruppenwerten,
-   Flächenschwellen oder Minderung. Die übrigen Leser erben nichts.
-3. *Frist und Bedarf liest die Regel zur Laufzeit:* die Restzeit von Drachenflug auf der Figur, ihre fehlende
-   Gesundheit und die eigene Heilrate auf sie; reicht die Rate nicht, zieht sie nach. Vor der Leine läuft noch kein
-   Drachenflug; die Frist ist dann die längste, die Dringlichkeit trotzdem hoch, weil eine frühe Heilung den Fluch
-   verhindert. Keine dieser Größen braucht eine feste Zahl; die 105 448 LP liest die Regel aus der Figur.
-4. *Rang:* gegen seine Vorgabe abzuwägen, dass das gesamtheitliche Überleben vorgeht. Ein Scheitern trifft alle acht
-   mit Schaden und 60 s Schaden-runter; ein Mitglied in Klasse 1 stirbt sofort. Daher der Ansatz: nach Klasse 1, vor
-   den Klassen 2 und 3, solange die Frist läuft.
-5. *Wer heilt:* die Heiler. Nichtheiler mit einer Einzelheilung (Rotmagier, Paladin, Beschwörer) erst, wenn die Frist
-   ohne sie nicht reicht. Das tauscht Schaden gegen Sicherheit, ist also eine Option, mit seiner Regel als
-   Voreinstellung (an).
-6. *Welche Heilung, entscheidet das Spiel.* Im Action-Blatt dürfen Cure, Cure II, Benediction, Tetragrammaton, Benefic,
-   Essential Dignity, Adloquium, Lustrate, Diagnosis, Druochole, Vercure, Clemency und Physick Allianzziele treffen.
-   Taurochole, Kardia, Divine Benison, Celestial Intersection, Krasis, Exaltation, Nascent Flash und Heart of Corundum
-   treffen nur die Gruppe. Ob „Allianz" eine freundliche Figur einschließt, ist unbelegt; die Laufzeitfrage aus
-   Punkt 1 beantwortet es ohne Annahme.
+**Bilanz im Kampf.** Besser: Spielt er Heiler, heilt RSR die Reiryu ab dem Erscheinen. Eine, die vor ihrer Leine voll
+ist, verflucht niemanden. Ohne die Regel blieb das am menschlichen Mitheiler, und allein schafft der es knapp. Spielt
+er Schadensausteiler, kostet die Regel nichts, solange die Heiler in der Frist liegen. Schlechter: Solange Reiryu
+stehen, warten Mitglieder der Klassen 2 und 3 (ein beschossener Tank über der Notfallschwelle) bis zu 38 s auf die
+Heilungen dieses Heilers; Klasse 1 kommt weiter zuerst, und der Mitheiler heilt weiter. Bedrohung: Eine freundliche
+Figur in einem anderen Inhalt, die mit 1 LP erscheint und nicht geheilt werden soll, bekäme Heilungen; nimmt sie sie
+nicht an, korrigiert die 0-LP-Regel das. Eine, deren LP das Spiel festhält, ohne 0 zu melden, bekäme sie weiter. Das
+ist nicht belegt, der Preis wären Heilungen im Leeren. Überwiegt: das Bessere. Ein Scheitern trifft alle acht, und die
+Angeleinten sterben (sein Hinweis).
 
-*Prüfgrad:* Mechanik an Spielblättern, am Quelltext von RSR und BossModReborn, am Wiki und an seinem Mitschnitt vom
-03.11.2026 (zwei Läufe, gemessen: LP, Zeiten, Heilungen, Leinen, Flüche). Das Scheitern ist im Mitschnitt nicht
-vorgekommen; seine Folgen stehen nur im Wiki und in seinem Hinweis.
+**Ausgeschlossen:**
+- *Jede freundliche Figur unter voller Gesundheit:* Das ist der Bereich des Schalters für Solo-NPCs (Upstream:
+  experimentell, ab Werk aus), mit FATE-NPCs und Verbündeten in Solo-Inhalten.
+- *Nur die Leine als Zeichen:* Sie kommt 8 s zu spät, und genau die frühe Heilung verhindert den Fluch.
+- *Nur 1 LP als Zeichen:* Eine Figur, die RSR erst nach der ersten Heilung sieht (RSR eingeschaltet mitten in der
+  Welle), bliebe unerkannt; die Leine fängt sie.
+- *Die Figuren in `PartyMembers`* (der Schalter für Solo-NPCs): Vier Figuren bei 0 % verfälschten jeden Gruppenwert.
+- *Die Gruppenmittel ohne die Verfluchten:* siehe oben.
+
+**Falsifikation.** Kein Defekt: widerlegt. RSR heilte die Reiryu nicht, keine Liste führte sie. Option falsch: Die
+Rangfolge vor Klasse 2 lässt einen beschossenen Tank warten. Der Tank fällt aber in Klasse 1, sobald er gleich stirbt,
+und die Welle dauert höchstens 38 s; dagegen steht ein sicheres Scheitern ohne die Heilung. Ausgeliefert, und nichts
+ändert sich, warum?
+- *Die Reiryu sind kein Ziel:* Sie sind anvisierbar, die Heiler seiner Gruppe zielten auf sie.
+- *Das Spiel weist die Heilung ab:* Cure II, Tetragrammaton, Afflatus Solace, Druochole und Diagnosis gingen auf sie,
+  dieselbe Prüfung, die der Client für die Taste nutzt (Schluss).
+- *Eine Job-Schranke auf den Anteil des Ziels hält die letzte Heilung zurück:* Essential Dignity fragt den Anteil, die
+  GCD-Heilungen dahinter nicht.
+- *Die Erkennung sieht 1 LP nicht,* weil eine Heilung im selben Frame landet: Dann trägt die Leine.
+
+*Prüfgrad:* Mechanik an Spielblättern, am Quelltext von RSR, BossModReborn und ECommons, am Wiki und an seinem
+Mitschnitt vom 03.11.2026 (zwei Läufe: LP, Zeiten, Heilungen, Leinen, Flüche, 0-LP-Heilungen auf Verfluchte). Die Regel
+ist kompiliert und geprüft, im Spiel noch nicht beobachtet; die Zeilen oben zeigen es im nächsten Protokoll.
 
 ## Abgrenzung zur Schildanrechnung
 

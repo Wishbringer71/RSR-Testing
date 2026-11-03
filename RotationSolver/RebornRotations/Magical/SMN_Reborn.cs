@@ -989,6 +989,13 @@ public sealed class SMN_Reborn : SummonerRotation
 		{
 			return true;
 		}
+
+		// A figure only healing defeats, when the healers fall behind its deadline (concept 07, A516): the figure alone.
+		if (HealToDefeat.CallsForNonHealer && PhysickPvE.CanUse(out act) && HealToDefeat.IsFigure(PhysickPvE.Target.Target))
+		{
+			return true;
+		}
+
 		return base.HealSingleGCD(out act);
 	}
 

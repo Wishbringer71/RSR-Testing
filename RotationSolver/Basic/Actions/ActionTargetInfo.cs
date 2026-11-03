@@ -120,6 +120,22 @@ public struct ActionTargetInfo(IBaseAction action)
 			}
 		}
 
+		// Figures only healing defeats (concept 07, A516) are candidates of a single heal and of nothing else: one target,
+		// no effect radius and no ground target - an area heal does nothing to them -, no heal over time, and only where the
+		// game lets this action reach them, which CanUseTo asks it per action.
+		if (type == TargetType.Heal && action.Setting.IsFriendly && IsSingleTarget && EffectRange == 0 && !IsTargetArea
+			&& DataCenter.HealToDefeatTargets.Count > 0 && !GrantsSingleHot())
+		{
+			foreach (var figure in DataCenter.HealToDefeatTargets.GetObjectInRadius(Range))
+			{
+				if (CheckStatus(figure, skipStatusProvideCheck, skipTargetStatusNeedCheck) && CanUseTo(figure)
+					&& action.Setting.CanTarget(figure))
+				{
+					validTargets.Add(figure);
+				}
+			}
+		}
+
 		return validTargets;
 	}
 
@@ -2456,8 +2472,17 @@ public struct ActionTargetInfo(IBaseAction action)
 			}
 
 			List<IBattleChara> filteredGameObjects = [];
+			List<IBattleChara>? figures = null;
 			foreach (var o in battleChara)
 			{
+				// A figure only healing defeats needs every point until it is full - at 94 % the last heal is as urgent as the
+				// first, or its cast runs out - so the heal ratio does not cut it, and it is ranked apart below (A516).
+				if (HealToDefeat.IsFigure(o))
+				{
+					(figures ??= []).Add(o);
+					continue;
+				}
+
 				// The death-trigger hold has to bite at the entrance, not further down. Everything
 				// below draws from this set - the ranked candidate list, the healer and tank passes,
 				// the worst-hurt pick and both fallbacks - and the tank-stance fallback would
@@ -2493,6 +2518,13 @@ public struct ActionTargetInfo(IBaseAction action)
 				{
 					partyMembers.Add(o);
 				}
+			}
+
+			// A member about to die first, then the figures only healing defeats, then everyone else (concept 07, A516):
+			// failing them hits all eight, and a member they curse is helped by nothing but their death.
+			if (figures != null)
+			{
+				return CriticalMember(partyMembers, instantHeal) ?? PickFigure(figures, instantHeal);
 			}
 
 			var result = GeneralHealTarget(partyMembers, instantHeal);
@@ -2611,26 +2643,7 @@ public struct ActionTargetInfo(IBaseAction action)
 				// Protected members stay out. Without that this rank would invert into its own
 				// opposite - a gunbreaker under Superbolide sits at 1 HP on purpose, would hold the
 				// fewest points of anyone and would outrank every genuine emergency.
-				IBattleChara? critical = null;
-				var criticalHp = uint.MaxValue;
-				var criticalRole = int.MaxValue;
-				foreach (var r in ranked)
-				{
-					if (!r.Obj.IsInCriticalClass(r.Unprotected))
-					{
-						continue;
-					}
-
-					var hp = r.Obj.GetForecastEffectiveHp(instant);
-					var role = TieBreakRank(r.Obj);
-					if (critical == null || hp < criticalHp || (hp == criticalHp && role < criticalRole))
-					{
-						critical = r.Obj;
-						criticalHp = hp;
-						criticalRole = role;
-					}
-				}
-
+				var critical = CriticalMember(objs, instant);
 				if (critical != null)
 				{
 					return critical;
@@ -2831,6 +2844,70 @@ public struct ActionTargetInfo(IBaseAction action)
 		}
 
 		// Among equal points, a healer first, then a tank, then everyone else (concept 07).
+		// The member about to die, if any: in the critical class, not protected, healing not nullified, fewest effective
+		// points first and role on a tie. The first rank of GeneralHealTarget, and ahead of the figures only healing defeats.
+		static IBattleChara? CriticalMember(List<IBattleChara> objs, bool instant)
+		{
+			IBattleChara? critical = null;
+			var criticalHp = uint.MaxValue;
+			var criticalRole = int.MaxValue;
+			foreach (var o in objs)
+			{
+				if (o.IsDead || o.HasStatus(false, StatusHelper.HealingIneffectiveStatus))
+				{
+					continue;
+				}
+
+				var unprotected = o.IsUnprotectedForHealing();
+				if (!o.IsInCriticalClass(unprotected))
+				{
+					continue;
+				}
+
+				var hp = o.GetForecastEffectiveHp(instant);
+				var role = TieBreakRank(o);
+				if (critical == null || hp < criticalHp || (hp == criticalHp && role < criticalRole))
+				{
+					critical = o;
+					criticalHp = hp;
+					criticalRole = role;
+				}
+			}
+
+			return critical;
+		}
+
+		// Which figure only healing defeats is healed first (concept 07, A516): the one tethering a member whom healing no
+		// longer reaches and who is about to die - nothing but the figure's death helps him -, the fewest effective points
+		// first; otherwise the one nearest full, so that one after the other is finished and each ends or prevents a curse.
+		static IBattleChara PickFigure(List<IBattleChara> figures, bool instant)
+		{
+			IBattleChara? rescue = null;
+			var rescueHp = uint.MaxValue;
+			var nearest = figures[0];
+			var nearestRatio = nearest.GetHealthRatio();
+			foreach (var figure in figures)
+			{
+				var ratio = figure.GetHealthRatio();
+				if (ratio > nearestRatio)
+				{
+					nearest = figure;
+					nearestRatio = ratio;
+				}
+
+				if (HealToDefeat.TetheredMember(figure) is { } member
+					&& member.HasStatus(false, StatusHelper.HealingIneffectiveStatus)
+					&& member.IsInCriticalClass(member.IsUnprotectedForHealing())
+					&& member.GetForecastEffectiveHp(instant) is var hp && hp < rescueHp)
+				{
+					rescue = figure;
+					rescueHp = hp;
+				}
+			}
+
+			return rescue ?? nearest;
+		}
+
 		static int TieBreakRank(IBattleChara member)
 		{
 			return member.IsJobCategory(JobRole.Healer) ? 0

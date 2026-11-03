@@ -1434,6 +1434,17 @@ internal partial class Configs : IPluginConfiguration, IM3Settings
 		Filter = HealingActionCondition, Section = 3)]
 	private static readonly bool _friendlyPartyNPCHealRaise3 = true;
 
+	// Damage against the party's safety is each player's own choice; on is the owner's rule, safety first (A516).
+	[ConditionBool, UI("Help heal figures only healing defeats as a non-healer",
+		Description = "Some fights bring in friendly figures that are defeated only by healing them to full with single-target heals, "
+		+ "such as the Reiryu in Shinryu (Unreal). Healers always heal them. With this on, a Red Mage, Paladin or Summoner "
+		+ "helps with Vercure, Clemency or Physick, but only when the healing they receive would not finish them before the cast "
+		+ "they are running ends.\n"
+		+ "In a fight: on, you give up some damage while the healers fall behind, and the figures are finished in time. Off, "
+		+ "you keep attacking; if the healers do not make it, the figures fly off and hit the whole party.",
+		Filter = HealingActionCondition, Section = 3)]
+	private static readonly bool _healToDefeatAsNonHealer = true;
+
 	[ConditionBool, UI("Treat your chocobo as a party member",
 		Filter = HealingActionCondition, Section = 3, Order = 1)]
 	private static readonly bool _chocoboPartyMember = false;

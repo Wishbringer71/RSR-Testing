@@ -1008,14 +1008,19 @@ public static class StatusHelper
 	/// </para>
 	/// </summary>
 	/// <remarks>
-	/// Only <see cref="StatusID.Mounted"/> (1420) qualifies on the evidence: its description says
-	/// "HP recovery and beneficial effects conferred by actions are nullified". Mounted_1520 is
-	/// "Riding atop a Rathalos" and says nothing about healing, so it is deliberately absent - a
-	/// shared identifier is not evidence of a shared effect.
+	/// The statuses whose description says healing does nothing, searched in the status sheet (A516):
+	/// <see cref="StatusID.Mounted"/> (1420), "HP recovery and beneficial effects conferred by actions are nullified";
+	/// <see cref="StatusID.TheWormsCurse"/> (1419), "HP regeneration is nullified", the tether of the Reiryu in Shinryu
+	/// (Unreal) - Lux Solaris healed its bearers for 0 three times in the owner's log of 03.11.2026;
+	/// <see cref="StatusID.PrimordialCrust"/> (1605), "all HP recovery is nullified". Mounted_1520 is "Riding atop a
+	/// Rathalos" and says nothing about healing, so it is deliberately absent - a shared identifier is not evidence of a
+	/// shared effect.
 	/// </remarks>
 	public static StatusID[] HealingIneffectiveStatus { get; } =
 	[
 		StatusID.Mounted,
+		StatusID.TheWormsCurse,
+		StatusID.PrimordialCrust,
 	];
 
 	/// <summary>

@@ -10,13 +10,9 @@ Betroffene: **N** Endnutzer · **R** Autoren abgeleiteter Rotationen (Namensräu
 Nach der Wirkung im Kampf: Sicherheit der Gruppe vor Schaden, gewichtet mit der Wahrscheinlichkeit, in seinem Profil
 (seine Vorgabe, 17.10.2026: „todo nach wichtigkeit abarbeiten. jeweils im loop bearbeiten").
 
-1. Heilung auf Ziele, die keine annehmen: Die Heiler verschwenden GCDs genau in der Frist, in der die Reiryu
-   geheilt werden müssen; das ist zugleich die Voraussetzung von Punkt 2.
-2. Figuren, die nur Einzelheilung besiegt: Scheitert die Frist, nehmen alle acht Schaden und 60 s Schaden-runter,
-   mehrmals je Kampf.
-3. Nach der Wiederbelebung wartet RSR die Unverwundbarkeit ab: Ein Heiler stirbt am ersten Treffer nach dem
+1. Nach der Wiederbelebung wartet RSR die Unverwundbarkeit ab: Ein Heiler stirbt am ersten Treffer nach dem
    Aufstehen, ohne dass RSR etwas drückt.
-4. Fremde Repositories auf Verbesserungen für RSR prüfen: Jeder Fund kann ein Defekt im Verhalten einer Klasse sein,
+2. Fremde Repositories auf Verbesserungen für RSR prüfen: Jeder Fund kann ein Defekt im Verhalten einer Klasse sein,
    den RSR heute im Kampf zeigt; zuerst die Rotationswerkzeuge für alle Jobs, Daedalus vorn (aktiv, alle Jobs,
    eigene Kampfvorhersage).
 
@@ -24,22 +20,7 @@ Danach die technische Schuld, soweit ihre Auflösungsbedingung erfüllt ist. War
 
 ## Defekte
 
-### Heilung auf Ziele, die keine annehmen · N, R
-Im Kampf: Bei Shinryu (Unreal) heilen die Heiler die vier Angeleinten (meist Schadensausteiler) unter Fluch des Drachen, auf die keine
-Heilung wirkt, und deren sinkender Stand löst Flächenheilungen aus, in den 30 s, in denen die Reiryu geheilt werden
-müssen. *Ort:* `StatusHelper.HealingIneffectiveStatus` (nur `Mounted`) und seine Leser. Klasse: Status, die jede
-Erholung aufheben (Fluch des Drachen 1419, Chaoserde 1605). *Nächster Schritt:* das Status-Blatt nach der Klasse
-durchsuchen, die Leser der Liste auf ihre Wirkung prüfen, Loop. *Konzept:* 07, „Heilziele außerhalb der Gruppe".
-
 ## Offene Arbeit
-
-### Figuren, die nur Einzelheilung besiegt · N, R
-Im Kampf: Bei Shinryu (Unreal) müssen die vier Reiryu binnen Drachenflug (30 s) direkt voll geheilt werden, mehrmals
-je Kampf. RSR heilt sie nicht; scheitert es, nehmen alle acht Schaden und 60 s Schaden-runter. *Ort:* Heilzielwahl
-(`ActionTargetInfo`), Erkennung neben `PartyMembers` (`TargetUpdater`). *Nächster Schritt:* Loop auf dem Entwurf im
-Konzept (Erkennung ohne Leine, Abgrenzung von Solo-NPCs, Rang gegen seine Vorgabe, Option für Nichtheiler, Modell der
-Frist). *Konzept:* 07, „Heilziele außerhalb der
-Gruppe".
 
 ### Nach der Wiederbelebung wartet RSR die Unverwundbarkeit ab · N, U
 Im Kampf: Wiederbelebt bei 21 %, Zellexplosion auf ihn angekündigt; RSR drückte 5 s lang nichts, der Treffer kam

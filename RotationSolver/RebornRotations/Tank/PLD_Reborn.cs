@@ -388,6 +388,13 @@ public sealed class PLD_Reborn : PaladinRotation
 			return true;
 		}
 
+		// A figure only healing defeats, when the healers fall behind its deadline (concept 07, A516): the figure alone,
+		// whatever the heal bot settings say about the party.
+		if (HealToDefeat.CallsForNonHealer && ClemencyPvE.CanUse(out act) && HealToDefeat.IsFigure(ClemencyPvE.Target.Target))
+		{
+			return true;
+		}
+
 		return base.HealSingleGCD(out act);
 	}
 

@@ -57,6 +57,11 @@ PREFILTER_METHOD = re.compile(r'IBattleChara\?\s+FindHealTarget\s*\(')
 PREFILTER_READ = re.compile(r'o\.GetForecastHealthRatio\([^)]*\)\s*<\s*healRatio')
 PREFILTER_PLAIN = re.compile(r'o\.GetHealthRatio\(\)\s*<\s*healRatio')
 METHOD = re.compile(r'static IBattleChara\?\s+GeneralHealTarget\s*\(')
+# The critical rank may live in its own local function, which GeneralHealTarget calls first and the figures that
+# only healing defeats are ranked behind (A516). Then its body is read as part of GeneralHealTarget's, and the call
+# stands where the rank stands.
+RANK_METHOD = re.compile(r'static IBattleChara\?\s+CriticalMember\s*\(')
+RANK_CALL = re.compile(r'(?<!static IBattleChara\? )CriticalMember\(')
 TTK_METHOD = re.compile(r'bool\s+CheckTimeToKill\s*\(')
 TTK_FRIENDLY = re.compile(r'action\.Setting\.IsFriendly')
 TTK_CALL = re.compile(r'GetTTK\(\)')
@@ -77,6 +82,13 @@ def body_of(text, pattern):
             if depth == 0:
                 return text[i:j + 1]
     return None
+
+
+def rank_of(text, body):
+    """The body of the critical rank's own function when GeneralHealTarget calls it, else an empty string."""
+    if RANK_CALL.search(body) is None:
+        return ''
+    return body_of(text, RANK_METHOD) or ''
 
 
 def check_time_to_kill(text):
@@ -114,6 +126,7 @@ def check_forecast(text):
         return ['GeneralHealTarget not found - the method was renamed or removed']
 
     problems = []
+    body = body + rank_of(text, body)
     for name, pattern in FORECAST_READS:
         # The shared definition stands in for the spelled-out threshold; check_helper asks whether
         # it reads the forecast.
@@ -171,6 +184,8 @@ def check(text):
         problems.append('the candidate list no longer drops the dead (o.IsDead)')
 
     critical = CRITICAL.search(body)
+    if critical is None and CRITICAL.search(rank_of(text, body)):
+        critical = RANK_CALL.search(body)
     if critical is None:
         problems.append('the critical rank is gone - nothing reads HealthForDyingTanks here')
         return problems
@@ -323,11 +338,37 @@ def self_test():
         if not any(expected in p for p in check_helper(broken)):
             raise AssertionError('a critical class without %s went unnoticed' % expected)
 
+    # The rank in its own function (A516): accepted when GeneralHealTarget calls it ahead of the short-cuts and it holds
+    # the class and the forecast ordering; caught when it lacks either or when the call moves behind a short-cut.
+    rank_line = 'var hp = r.Obj.GetForecastEffectiveHp(instant);'
+    in_function = good.replace(critical_line, 'var critical = CriticalMember(objs, instant);').replace(rank_line, '')
+    in_function = in_function.replace('static IBattleChara? GeneralHealTarget', '''static IBattleChara? CriticalMember(List<IBattleChara> objs, bool instant)
+            {
+                if (!o.IsInCriticalClass(o.IsUnprotectedForHealing())) { continue; }
+                var hp = o.GetForecastEffectiveHp(instant);
+            }
+
+            static IBattleChara? GeneralHealTarget''')
+    if check(in_function) or check_forecast(in_function):
+        raise AssertionError('the critical rank in its own function was rejected: %s'
+                             % (check(in_function) + check_forecast(in_function)))
+    no_class = in_function.replace('if (!o.IsInCriticalClass(o.IsUnprotectedForHealing())) { continue; }', '')
+    if not any('critical rank is gone' in p for p in check(no_class)):
+        raise AssertionError('a rank function without the critical class went unnoticed')
+    plain_order = in_function.replace('o.GetForecastEffectiveHp(instant)', 'o.GetEffectiveHp()')
+    if not any('critical rank ordering' in p for p in check_forecast(plain_order)):
+        raise AssertionError('a rank function ordering by the current health went unnoticed')
+    late_call = in_function.replace('var critical = CriticalMember(objs, instant);\n', '')
+    late_call = late_call.replace(tank_line, tank_line + '\n                var critical = CriticalMember(objs, instant);')
+    if not any('BEFORE the critical rank' in p for p in check(late_call)):
+        raise AssertionError('the rank function called after a short-cut went unnoticed')
+
     print('self-test ok: the intact order is accepted, a short-cut moved ahead of the critical rank '
           'is caught,\n  a candidate list keeping the dead is caught, a match outside the method '
           'does not count,\n  each of the four forward-looking reads is caught when reverted to the '
           'current health,\n  the AutoHealRatio gate is caught both reverted and left doubled, '
-          '\n  CheckTimeToKill is checked for its friendly exemption, and the shared critical class'
+          '\n  CheckTimeToKill is checked for its friendly exemption, the rank in its own function is '
+          'followed,\n  and the shared critical class'
           '\n  is checked for the forecast, the threshold and the invulnerable')
 
 

@@ -57,6 +57,7 @@ internal static class StateUpdater
 		}
 
 		status |= StatusFromHealing();
+		status |= StatusFromHealToDefeat();
 
 		if (ShouldAddDefenseArea())
 		{
@@ -444,6 +445,16 @@ internal static class StateUpdater
 
 	// The announced action the last "heal ahead" trace line was written for; 0 once the rule stops firing.
 	private static uint _healAheadTraced;
+
+	// Figures only healing defeats (concept 07, A516): a reason to heal of their own, apart from the party's health and
+	// from the settings that let a non-healer heal the party - a healer whenever one stands, anyone else when the option
+	// and the deadline call for it (HealToDefeat.CallsForPlayer). "Auto heal" switches it off as it does every heal.
+	private static AutoStatus StatusFromHealToDefeat()
+	{
+		return Service.Config.AutoHeal && HealToDefeat.CallsForPlayer
+			? AutoStatus.HealSingleAbility | AutoStatus.HealSingleSpell
+			: AutoStatus.None;
+	}
 
 	private static AutoStatus StatusFromHealing()
 	{

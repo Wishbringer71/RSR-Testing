@@ -41,6 +41,7 @@ internal static partial class TargetUpdater
 			DataCenter.PartyMembers.Clear();
 			DataCenter.AllianceMembers.Clear();
 			DataCenter.AllHostileTargets.Clear();
+			HealToDefeat.Update();
 			HostileMovement.Clear();
 			UpdateAreaCasters();
 			DataCenter.UpdateTankbusterTargets();
@@ -68,6 +69,8 @@ internal static partial class TargetUpdater
 		}
 
 		UpdateLists();
+		// Figures only healing defeats, after the party list they are told apart from (A516).
+		HealToDefeat.Update();
 		UpdateAreaCasters();
 		// Whom a tankbuster marker names, after the party list it is matched against (A328).
 		DataCenter.UpdateTankbusterTargets();

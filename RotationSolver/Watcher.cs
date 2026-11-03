@@ -1404,6 +1404,8 @@ public static class Watcher
 			}
 
 			DataCenter.HealHP = AmountsByTarget(set, ActionEffectType.Heal);
+			// A heal of ours on a figure only healing defeats: counted, and one for 0 takes its kind out (A516).
+			HealToDefeat.NoteOwnHeals(DataCenter.HealHP);
 
 			// Record what this heal was actually worth in health points. HealHP above is consumed and
 			// cleared as soon as the server's own health update catches up, so it answers "do not heal

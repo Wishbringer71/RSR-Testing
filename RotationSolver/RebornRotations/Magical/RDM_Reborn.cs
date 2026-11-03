@@ -300,7 +300,8 @@ public sealed class RDM_Reborn : RedMageRotation
 	[RotationDesc(ActionID.VercurePvE)]
 	protected override bool HealSingleGCD(out IAction? act)
 	{
-		if (PreventHeal)
+		// Behind the deadline of a figure only healing defeats, the burst does not hold the heal (concept 07, A516).
+		if (PreventHeal && !HealToDefeat.CallsForNonHealer)
 		{
 			if (HasManafication || HasEmbolden || ManaStacks == 3 || CanMagickedSwordplay || CanGrandImpact
 				|| ScorchPvE.CanUse(out _) || ResolutionPvE.CanUse(out _)
