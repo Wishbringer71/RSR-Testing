@@ -14828,6 +14828,40 @@ durchgehen". Als Skill `spielpatch` festgehalten (Lesetabelle in CLAUDE.md); den
 - *Prüfgrad:* statisch am Code und an den Blättern; Prüfskript mit Gegenprobe; kompiliert, alle CI-Prüfungen lokal; im
   Spiel nicht beobachtet.
 
+### A499 · Beschwörer-Optionen nach dem Nachteil; Ifrit vor, solange der Zyklon folgen darf (03.11.2026)
+
+- *Seine Frage:* ob die einschaltbaren Optionen sinnvoll sind und Entscheidungen im Spiel weichen können; bei den
+  Heilschwellen (A470) hatte ich „kein Vorteil im Spiel" geantwortet, ihm geht es um den Nachteil. Als Präzisierung des
+  Maßstabs in Konzept 18 eingetragen; für die Heilschwellen ändert sie das Ergebnis nicht (jede Messregel hatte im
+  Modell einen Nachteil in einer Lage).
+- *Je Option* (Konzept 18, Tabelle „Beschwörer: Upstreams Optionen"): „Use potion" doppelt zu „Tincture usage";
+  „Only use potion during a big summon" fast wirkungslos, weil Searing Light im Fork vor der großen Beschwörung fällt;
+  „Do not summon …" eingeschaltet bis 1560 Potenz je Runde schlechter; „Potion timing: ab dem zweiten" bringt nie mehr
+  Arzneien ins Fenster (0/6/12 gegen 2/8/14 Minuten); „Swiftcast for movement uptime" gegen seine Regel. Entfernen ist
+  seine Entscheidung (Optionen, Pflegeaufwand gegen Upstream) – vorgelegt.
+- *Dynamische Reihenfolge, neu gemessen:* A497 hatte Mitte-zu-Mitte-Abstände ohne Trefferkreis genommen und den Wert
+  des Zyklons nicht je Runde gerechnet (C149). Sein Mitschnitt vom 26.10.2026 mit dem Radius aus Zeile 261: Zyklon
+  verloren in 22 von 33 Ifrit-Phasen (21 von 32 mit der Demi danach); in 7 davon stand er bei einer früheren Beschwörung
+  derselben Runde höchstens 3 Yalm vom Ziel, sechsmal bei Garuda. Slipstream verloren mit der Demi danach in 11 von 36,
+  sonst in 7 von 33. `smn_phase_potency.py` Frage 4 (neu, Selbsttest): +735 Zyklon, −49 Slipstream, +686 je Runde, in
+  der die Regel greift.
+- *Gebaut:* Fork-Option „Summon Ifrit first while Crimson Cyclone can follow" (ab Werk an, neue Regel), in
+  `SummonPrimals` nach „Prefer Titan while moving": still oder „when moving" erlaubt, Ziel innerhalb der Zyklon-Grenze
+  (`GapCloserAllowed` wie der Zyklon selbst), nicht unter Searing Light, nicht mit „at any range". Upstreams „Dynamic
+  primal order" greift danach; ihr eigener Teil ist nur noch „sonst Garuda".
+- *Falsifikation:*
+  - Kein Defekt? Gemessen: Ifrit zuletzt verlor den Zyklon meist an die Demi.
+  - Option falsch? Bleibt er nach der Beschwörung nicht stehen, fehlt der Zyklon wie bisher; die Wahrscheinlichkeit,
+    dass Ifrit zuletzt ihn verliert, ist für Runden, in denen er früher nah stand, vielleicht kleiner als 21 von 32 – in
+    den 7 gezählten Runden ging er aber tatsächlich verloren. Unter Searing Light ausgenommen (Webfenster). Garuda
+    zuletzt verliert Slipstream öfter: gerechnet.
+  - Ausgeliefert, und nichts ändert sich? Steht er immer weit, greift sie nie und kostet nichts; mit „at any range"
+    ruht sie. Seine Zyklon-Grenze ist vermutlich größer als 3 (genutzte Zyklone bis 10,9 Yalm Spielabstand) – dann
+    greift sie öfter.
+- *Sicherheit:* unverändert; der Zyklon springt nur innerhalb seiner Grenze, kein Swiftcast.
+- *Prüfgrad:* Mitschnitt (Zeilen 21, 22, 261), Modell mit Selbsttest, statisch am Code; kompiliert, alle CI-Prüfungen
+  lokal; im Spiel nicht beobachtet.
+
 ## B · Commit-Register (Fork vs. `upstream/main`)
 
 ### B1 · Einzelgeprüfte Fork-Commits
@@ -15128,3 +15162,4 @@ Die offene Arbeit dazu — Reihenfolge und Abbruchbedingung der Nachprüfung —
 | C146 | A495 und Konzept 14, „Beschwörer" (02.11.2026): Upstreams Arznei „ab Werk wie vorher" | Upstream hatte sie von `GeneralAbility` in `EmergencyAbility` verschoben, vor die Heil- und Abwehrdurchläufe; ab Werk galt dieselbe Bedingung, aber an anderer Stelle der Reihenfolge. Berichtigt durch A497: wieder in `GeneralAbility`. |
 | C147 | A313 und Konzept 05, „Sicherheit des Landepunkts" (17.10.2026): Feste Sprünge „gehen wieder, wenn der Landepunkt außerhalb einer Gefahrenzone liegt" | Die Rechnung war gebaut, aber nie erreicht: Für Aktionen mit Reichweite und Wirkradius 0 gibt `FindTarget` den Spieler zurück, bevor eine Bewegungsprüfung läuft. Hell's Ingress und Egress gingen auf jeden Landepunkt. Berichtigt durch A498. |
 | C148 | A465 und Konzept 05, „Eine Prüfung, zwei Leser" (30.10.2026): Das Aktionsfenster zeigt „die Prüfung, die im Kampf entscheidet" | Für feste Sprünge entschied sie im Kampf nichts (C147); das Fenster zeigte „Fail" für einen Sprung, den RSR drückte. Wahr seit A498. |
+| C149 | A497 und Konzept 14, „Beschwörer" (02.11.2026): Der Gewinn der dynamischen Reihenfolge, „ein Zyklon mehr", wiege die Kosten nicht sicher auf, „beides liegt im Promillebereich" | Der Zyklon mit Crimson Strike ist 1120 Potenz; Ifrit zuletzt verlor ihn in 21 von 32 Phasen. Gemessen war Mitte zu Mitte ohne Trefferkreis; mit dem Radius aus Zeile 261 stand er in 7 der 22 verlorenen Runden früher nah genug. Berichtigt durch A499: +686 Potenz je Runde, in der die Fork-Regel greift. |

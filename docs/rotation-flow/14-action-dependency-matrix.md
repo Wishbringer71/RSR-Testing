@@ -661,16 +661,30 @@ Primal- oder Demi-Beschwörung. Bei ihm (26.10.2026, Dungeons) verfiel Slipstrea
   - Im Kampf: Ab Werk ändert sich nichts; die Entscheidung oben (RSR hält keine Beschwörung für eine Gunst zurück)
     bleibt. Wer den Schalter einschaltet, sollte „Crimson Cyclone" ohne Reichweitengrenze nutzen, sonst steht die
     Beschwörung bis zur Demi.
-- *Upstreams „Dynamic primal order"* (444388102) *bleibt ab Werk aus* (A497). Sie wählt Titan in Bewegung, Ifrit am
-  Ziel innerhalb der Zyklon-Reichweite, sonst Garuda; im Fork nach „Prefer Titan while moving", das dieselbe Bewegung
-  schon vorzieht. Die Verbindung zu seiner Zyklon-Grenze ist die mögliche Stärke: Ifrit dann, wenn der Zyklon gehen
-  darf. Sein Mitschnitt vom 26.10.2026 (Beschwörer, Dungeons) zeigt, dass sie selten greift: Bei den Primal-Beschwörungen
-  stand er im Median 13 bis 20 Yalm vom Ziel entfernt (Mitte zu Mitte, ohne Trefferkreis), bei 9 von 81
-  Titan-Beschwörungen und 10 von 69 Garuda-Beschwörungen höchstens 5 Yalm. Meist stünde er also weit, und die Option
-  zöge Garuda vor Titan. Das kostet Titan im Rest von Searing Light nach der Demi: 1300 gegen 800 Potenz unter dem
-  Buff (`smn_phase_potency.py`, Frage 2), also 25 Potenz je zwei Minuten. In kurzen Kämpfen, die nur die erste Primal
-  erreichen (33 Ifrit gegen 81 Titan im Mitschnitt), fällt die schwächere Garuda-Phase zuerst. Der seltene Gewinn, ein
-  Zyklon mehr, wiegt das nicht sicher auf; beides liegt im Promillebereich.
+- *Ifrit vor, solange der Zyklon sofort folgen darf* (Fork-Regel „Summon Ifrit first while Crimson Cyclone can
+  follow", ab Werk an, A499). Steht er still und ist das Ziel innerhalb seiner Zyklon-Reichweite, kommt Ifrit vor der
+  eingestellten Reihenfolge, nach „Prefer Titan while moving". Grund: Die Gunst endet mit der nächsten Beschwörung,
+  und als letzte Primal verlor Ifrit den Zyklon mit Crimson Strike (1120 Potenz) meist an die Demi.
+  - *Gemessen* (sein ACT-Mitschnitt vom 26.10.2026, Beschwörer, Dungeons; Spielabstand Trefferkreis zu Trefferkreis aus
+    dem Radius der Zeile 261, wie RSR ihn prüft): Der Zyklon verfiel in 22 von 33 Ifrit-Phasen, in 21 von 32 mit der
+    Demi danach. In 7 der 22 stand er bei einer früheren Beschwörung derselben Runde höchstens 3 Yalm vom Ziel, sechsmal
+    bei Garuda. Slipstream verfiel, wenn die Demi folgte, in 11 von 36 Garuda-Phasen, sonst in 7 von 33.
+  - *Gerechnet* (`smn_phase_potency.py`, Frage 4) je Runde, in der die Regel greift: +735 Potenz durch den Zyklon, −49
+    durch Slipstream, weil Garuda dann zuletzt kommt; Bilanz +686. An jenem Abend hätte sie in 7 von 33 Runden
+    gegriffen.
+  - *Nicht unter Searing Light:* Im Rest des Buffs nach der Demi hält Titan mit seinen Sofortzaubern die Webfenster
+    frei; Ifrit wirkt dort zweimal Ruby Rite (2,8 s). Der Vorteil Ifrits in diesem Rest wäre 60 Potenz unter 5 %
+    (Frage 2), also nichts.
+  - *Nicht mit „Use Crimson Cyclone at any range":* Dann darf der Zyklon immer, und die Reihenfolge verliert ihn nie.
+  - *Sicherheit:* unverändert. Der Zyklon springt nur innerhalb der Reichweite, die er selbst einstellt; die Regel
+    ordnet nur die Beschwörungen. Kein Swiftcast.
+  - *Vorbehalt:* Bei einigen genutzten Zyklonen jenes Abends zeigte der Mitschnitt bis 10,9 Yalm Spielabstand; seine
+    Einstellung ist also vermutlich größer als die Voreinstellung 3 (nicht messbar). Mit einer größeren Reichweite
+    greift die Regel öfter.
+- *Upstreams „Dynamic primal order"* (444388102) *bleibt ab Werk aus* (A497). Sie wählt Titan in Bewegung, Ifrit
+  innerhalb der Zyklon-Reichweite und sonst Garuda. Sie greift im Fork erst nach den beiden Fork-Regeln, und ihr eigener
+  Teil ist damit nur noch „sonst Garuda": Das kostet Titan im Rest von Searing Light 1300 gegen 800 Potenz unter dem
+  Buff (Frage 2), also 25 Potenz je zwei Minuten, und in kurzen Kämpfen kommt die schwächere Phase zuerst.
 - *Upstreams „Swiftcast for movement uptime"* bleibt ab Werk aus: Es verbraucht Swiftcast in der Rotation, und seine
   Regel hält Swiftcast für Wiederbelebungen. Eingeschaltet setzt es die übrigen Swiftcast-Optionen der Rotation außer
   Kraft.
@@ -693,7 +707,7 @@ Primal- oder Demi-Beschwörung. Bei ihm (26.10.2026, Dungeons) verfiel Slipstrea
 | Mountain Buster | jede Gunst sofort einweben | nach Searing Light und Lux Solaris, vor dem Aetherflow | deckt sich |
 | Ruin IV | eine je Zyklus, nie in einer Demi; „any time between demi-primal phases (except during the 1-2 melee combo during Ifrit phase)" (abgerufen am 29.10.2026) | außerhalb der Demi am Ende einer Phase (`UseFillers`) und in der Ifrit-Phase, wenn kein Ruby Rite geht – etwa in Bewegung –, nach Crimson Strike (Upstream 33cd2a99b, A458) | deckt sich |
 | Ruin III | so selten wie möglich, Demis nicht verzögern | nur als letzter Füller | deckt sich |
-| Ifrit | in Nahkampfreichweite, Crimson Cyclone schließt auf | Crimson Cyclone nur bis 3 Yalm (Einstellung), Ifrit im Rückfallblock nur am Ziel | weicht ab: Aus einer sicheren Position holt ihn RSR nicht für Schaden (seine Regel) |
+| Ifrit | in Nahkampfreichweite, Crimson Cyclone schließt auf | Crimson Cyclone nur bis 3 Yalm (Einstellung), Ifrit im Rückfallblock nur am Ziel, vor der Reihenfolge, solange der Zyklon sofort folgen darf (A499) | weicht ab: Aus einer sicheren Position holt ihn RSR nicht für Schaden (seine Regel) |
 | Swiftcast | Wiederbelebung zuerst, Slipstream nur situativ | Wiederbelebung (Einstellung an), alle Rotationsoptionen dafür ab Werk aus, auch Upstreams „Swiftcast for movement uptime" (444388102) | deckt sich mit seiner Regel |
 | Lux Solaris | für einen Raidwide halten, vor Ablauf nutzen | eigene Entscheidung (Konzept 08) | deckt sich |
 | Rekindle | immer nutzen | niedrigster Anteil, sonst er selbst; spätestens drei GCDs vor Phasenende | deckt sich |

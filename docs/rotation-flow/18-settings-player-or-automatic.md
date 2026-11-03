@@ -55,6 +55,12 @@ Dazwischen liegen zwei Formen, die beide richtig sind:
 
 Geprüft ist je Einstellung, was sie im Kampf bewirkt (der Leser im Code), nicht ihr Name.
 
+**Die Frage ist der Nachteil** (seine Präzisierung nach A497). Ob eine Option einer Entscheidung im Spiel weicht, hängt
+nicht daran, ob die Automatik einen Vorteil bringt, sondern ob sie oder die Option einen Nachteil hat: Hat die Automatik
+im Spiel keinen, weicht die Option; hat die Option einen – doppelt, wirkungslos, schädlich eingeschaltet –, steht sie zur
+Prüfung. Für die Heilschwellen ändert das das Ergebnis nicht: Im Modell hatte jede Messregel einen Nachteil in einer
+Lage – mehr Tote in der Leichtgruppe oder mehr Zauber und Überheilung (Abschnitt „Heilung").
+
 ## Bestand
 
 Erhoben am 25.10.2026 am Zweig: 298 Einstellungen mit eigener Beschriftung in `Configs` und acht Heilschwellen je Job
@@ -358,6 +364,21 @@ im Code.
     Ziele vermeidet – umgestellt (A387): Sie gilt nur noch, solange für das Ziel keine Zeit bis zum Tod gemessen ist
     (`CustomRotation.IsTimeToKillMeasured`); danach entscheidet die Messung gegen die Zeit bis zum Tod der Aktion. Vorher
     hielt sie Bio auch auf einem Ziel zurück, dessen gemessene Zeit lang genug war
+
+**Beschwörer: Upstreams Optionen (444388102) nach dem Nachteil** (seine Frage nach A497; Wirkung im Einzelnen
+Konzept 14, „Beschwörer"):
+
+| Option, ab Werk | Was sie im Fork tut | Nachteil der Option | Nachteil einer Entscheidung im Spiel | Stand |
+|---|---|---|---|---|
+| „Use potion", an | sperrt die Arznei | doppelt: „Tincture usage" je Job kann schon „Nowhere"; aus überstimmt sie dort „Anywhere" | keine (die zentrale Einstellung bleibt, Kosten außerhalb des Kampfes sind seine Wahl) | vorgelegt: entfernen |
+| „Potion timing", erstes Searing Light | „ab dem zweiten" wartet auf ein Searing Light nach 30 s | „ab dem zweiten" bringt nie mehr Arzneien ins Fenster (270 s Abklingzeit: 0, 6, 12 Minuten gegen 2, 8, 14), weniger bei Kämpfen von unter 2, 6 bis 8, 12 bis 14 Minuten | immer das erste: nur wo das erste Fenster in einem bestimmten Kampf nichts trifft – Wissen über den Kampf | vorgelegt: belassen |
+| „Only use potion during a big summon", aus | Arznei erst mit der Demi | fast wirkungslos: Searing Light fällt im Fork unmittelbar vor der großen Beschwörung; sie schiebt die Arznei nur um einen GCD hinter die Beschwörung und trennt den Rest des Buffs nach der Demi ab | keine | vorgelegt: entfernen |
+| „Do not summon … while attuned or holding Favor", aus | hält die nächste Primal bis zur Folgeaktion | eingeschaltet schädlich: bis 1560 Potenz je Runde (Frage 3); die Folgeaktionen gehen ohnehin vor | keine (die GCD-Folge leistet es schon) | vorgelegt: entfernen |
+| „Dynamic primal order", aus | Titan in Bewegung, Ifrit am Ziel, sonst Garuda | eigener Teil nur noch „sonst Garuda", 25 Potenz je zwei Minuten weniger | – | ersetzt durch die Fork-Regel „Ifrit vor, solange der Zyklon folgen darf" (A499, ab Werk an, Bilanz +686 Potenz je Runde, in der sie greift); vorgelegt: entfernen |
+| „Swiftcast for movement uptime", aus | Swiftcast auf Ruby Rite und Slipstream | gegen seine Regel (Swiftcast für Wiederbelebungen) | – | vorgelegt: belassen, aus |
+
+Entfernen kostet Pflege: `SMN_Reborn` ändert Upstream oft (33cd2a99b, 444388102, df7215872 in einer Woche), und jede
+entfernte Zeile ist eine Stelle, an der ein Merge kollidieren kann. Im Kampf ändert das Entfernen ab Werk nichts.
 
 ## Bilanz im Kampf
 

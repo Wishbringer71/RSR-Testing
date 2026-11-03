@@ -49,6 +49,12 @@ What this release changes in the fight. For the whole distance from upstream, se
   or holding Ifrit's/Garuda's Favor" is off by default here: the follow-ups already go first whenever they can, so it
   only waits where movement or the Crimson Cyclone distance holds one back - with that distance kept, an unused
   Ifrit's Favor would hold every later primal until the next demi-summon.
+- **Summoner summons Ifrit first while Crimson Cyclone can follow.** Ifrit's Favor ends with the next summon, and as
+  the last primal Ifrit lost Crimson Cyclone and Crimson Strike to the demi-summon in most rounds. New option "Summon
+  Ifrit first while Crimson Cyclone can follow" (on by default): while you stand within your Crimson Cyclone distance,
+  Ifrit comes ahead of the configured order and both go out at once; Garuda then comes last. Not under Searing Light,
+  not while moving unless "Use Crimson Cyclone when moving" is on, and not with "Use Crimson Cyclone at any range" on.
+  The Cyclone never goes beyond your distance setting.
 - **Beastmaster: a record of the Master's Bestiary.** While the Bestiary is open, RSR writes to `BestiaryTrace.log`
   next to `DefenseTrace.log` what the game receives from each click, every context menu with its entries, and the
   battlehorn slots as they change. It only listens; it opens and closes with the Bestiary. `DefenseTrace.log` also

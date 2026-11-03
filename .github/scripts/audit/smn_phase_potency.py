@@ -11,6 +11,9 @@ Answers two questions that the Searing Light concept left open:
 3. Upstream's "Do not summon a new primal while attuned or holding Ifrit's/
    Garuda's Favor" (444388102): what does waiting cost where a follow-up is held
    back, against summoning and losing it (A495)?
+4. Ifrit ahead of the configured order while the Crimson Cyclone may follow at
+   once (A499): what does a round gain where Ifrit would otherwise come last and
+   lose the Cyclone to the next summon, against Garuda coming last instead?
 
 Every potency carries its source.  ``resx`` means the value was read from
 ``RotationSolver.SourceGenerators/Properties/ActionId.resx`` in this
@@ -250,6 +253,30 @@ def summon_block_cases(moving=1):
 WEAVES_PER_GCD = 2
 
 
+# --- Ifrit ahead while the Cyclone may follow (question 4) -------------------
+#
+# A Favor ends with the next summon (concept 14, A462). Measured in his ACT log of 26.10.2026 (Summoner, dungeons; game
+# distance from the combatant radius of line 261): the Cyclone was lost in 21 of 32 Ifrit phases the demi followed, and
+# Slipstream in 11 of 36 Garuda phases the demi followed against 7 of 33 a primal followed. Pulling Ifrit forward while
+# the Cyclone may go at once uses it at once and puts Garuda last.
+LOG_20261026 = {
+    'cyclone_lost_when_last': (21, 32),
+    'slipstream_lost_when_last': (11, 36),
+    'slipstream_lost_when_not_last': (7, 33),
+}
+
+
+def ifrit_ahead_case(log=LOG_20261026):
+    """(gain, cost, net) in potency for a round where Ifrit is pulled ahead while the Cyclone may follow: the Cyclone and
+    Strike it would have lost as the last primal, against the Slipstream Garuda then loses more often as the last."""
+    lost_last = log['cyclone_lost_when_last'][0] / log['cyclone_lost_when_last'][1]
+    slip_last = log['slipstream_lost_when_last'][0] / log['slipstream_lost_when_last'][1]
+    slip_not_last = log['slipstream_lost_when_not_last'][0] / log['slipstream_lost_when_not_last'][1]
+    gain = lost_last * sum(pot(n) for n in PRIMAL_SIGNATURE['Ifrit'])
+    cost = (slip_last - slip_not_last) * pot('Slipstream')
+    return gain, cost, gain - cost
+
+
 def tail_window(order, gcd=GCD, swiftcast=False, after_demi=True, blocks=None,
                 unknown_cast='instant'):
     """Everything that still snapshots inside Searing Light after the demi.
@@ -487,6 +514,13 @@ def report():
             print('  %-42s %6d / %6d  (%+d with the block)' % (case, free, blocked, blocked - free))
     print()
 
+    gain, cost, net = ifrit_ahead_case()
+    print('Ifrit ahead while the Cyclone may follow (question 4), per round it applies to:')
+    print('  Cyclone and Strike no longer lost as the last primal  %+6.0f' % gain)
+    print('  Slipstream lost more often with Garuda last           %+6.0f' % -cost)
+    print('  balance                                               %+6.0f potency' % net)
+    print()
+
     from_guide = sorted(n for n, (_, s) in POTENCY.items() if s == GAME)
     print('potencies blanked in this repository by a trait, read from the job guide:')
     print('  ' + ', '.join(from_guide))
@@ -579,6 +613,15 @@ def self_test():
         raise AssertionError('the block held every primal and still did not lose')
     if run_timeline([('Ruin III', True)] * 100, ROUND_AFTER_DEMI) != int(ROUND_AFTER_DEMI / GCD + 0.999) * pot('Ruin III'):
         raise AssertionError('the round budget did not cut the timeline')
+
+    # question 4: the balance must charge the Slipstream risk, and a Slipstream lost every time Garuda is last must cost
+    # the whole Slipstream
+    gain, cost, net = ifrit_ahead_case()
+    if not (gain > 0 and cost > 0 and abs(net - (gain - cost)) < 1e-9):
+        raise AssertionError('the Ifrit balance does not charge the Slipstream risk')
+    worst = dict(LOG_20261026, slipstream_lost_when_last=(1, 1), slipstream_lost_when_not_last=(0, 1))
+    if abs(ifrit_ahead_case(worst)[1] - pot('Slipstream')) > 1e-9:
+        raise AssertionError('a Slipstream always lost as the last primal did not cost the whole Slipstream')
 
     print('self-test ok: budget, source coverage, order conservation, window '
           'accounting and a constructed defect all check out')

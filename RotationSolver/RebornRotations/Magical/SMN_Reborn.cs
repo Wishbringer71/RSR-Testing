@@ -63,6 +63,16 @@ public sealed class SMN_Reborn : SummonerRotation
 			+ "configured summon order applies unchanged.")]
 	public bool PreferTitanWhileMoving { get; set; } = true;
 
+	[RotationConfig(CombatType.PvE, Name = "Summon Ifrit first while Crimson Cyclone can follow",
+		Tooltip = "While you stand within your Crimson Cyclone distance, Ifrit is summoned ahead of the configured order.\n"
+			+ "In a fight: Ifrit's Favor ends with the next summon. As the last primal, Ifrit often lost Crimson Cyclone "
+			+ "and Crimson Strike to the demi-summon; summoned while the Cyclone may go, both go out at once. Garuda then "
+			+ "comes last, where Slipstream is lost to the demi-summon a little more often.\n"
+			+ "Not while Searing Light runs (Titan's instant casts keep the weaves free), not while you move unless "
+			+ "\"Use Crimson Cyclone when moving\" is on, and not with \"Use Crimson Cyclone at any range\" on. The "
+			+ "Cyclone never goes beyond your distance setting.")]
+	public bool PreferIfritWhileCycloneCanFollow { get; set; } = true;
+
 	[RotationConfig(CombatType.PvE, Name = "Use Physick above level 30")]
 	public bool Healbot { get; set; } = false;
 
@@ -1209,6 +1219,17 @@ public sealed class SMN_Reborn : SummonerRotation
 			// Topaz GCDs are instant-cast; Garuda/Ifrit's follow-ups need a stationary summoner.
 			// Falls through to the configured order below if Titan isn't available right now.
 			if (PreferTitanWhileMoving && IsMoving && TitanTime(out act))
+			{
+				return true;
+			}
+
+			// Ifrit while the Crimson Cyclone may follow at once, by the same gate the Cyclone itself uses (A499): its Favor
+			// ends with the next summon, and as the last primal Ifrit lost the Cyclone and Strike to the demi in most
+			// rounds. Not under Searing Light, where Titan's instant casts keep the weaves free, and not when the Cyclone
+			// may go at any range anyway - then no order loses it.
+			if (PreferIfritWhileCycloneCanFollow && !AddCrimsonCyclone && !HasSearingLight
+				&& (!IsMoving || AddCrimsonCycloneMoving)
+				&& GapCloserAllowed(HostileTarget, CrimsonCycloneDistance) && IfritTime(out act))
 			{
 				return true;
 			}
