@@ -34,7 +34,7 @@ What this release changes in the fight. For the whole distance from upstream, se
   Mage) and Phantom Kick (Phantom Monk) leap onto the target. They now follow `Only use damaging gap
   closers within this distance` like every other damaging gap closer: from farther away they go out
   only on a move-forward command, in the countdown, or when you press them yourself. With
-  `Check movement actions with BossModReborn` on, their path is checked too. Occult Featherfoot
+  `Check movement actions with BossModReborn (Experimental)` on, their path is checked too. Occult Featherfoot
   (15 yalms forward) has its landing point checked like En Avant.
 
 ## Occult Crescent

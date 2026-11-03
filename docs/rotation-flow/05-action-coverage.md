@@ -172,7 +172,7 @@ Jetzt gilt:
 - Im Kampf: Gewissenstritt und Rasender Sturz gehen erst, wenn der Blaumagier nah genug am Ziel steht (ab Werk unter
   3 Yalm), auf einen Bewegungsbefehl, im Countdown oder wenn er sie selbst drückt; sonst bleiben sie bereit, und im
   Mondflöten-Fenster fehlt dann Gewissenstritt. Die Prüfung des Wegs läuft nur mit „Check movement actions with
-  BossModReborn" (ab Werk aus); die Abstandsgrenze gilt immer.
+  BossModReborn (Experimental)" (ab Werk aus); die Abstandsgrenze gilt immer.
 
 Ausnahmen, je mit Grund im Skript:
 - Shukuchi und Cloud Skim: Bodenziel in eine gewählte Richtung; keine Fork-Rotation wirkt sie, und einen Landepunkt

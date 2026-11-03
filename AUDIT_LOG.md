@@ -15502,7 +15502,7 @@ Upstream vorher gemessen: 0 ausstehend (a560469db).
     seinen eigenen Druck. Steht er weiter weg, fehlt Gewissenstritt im Mondflöten-Fenster, und der Füller wechselt.
   - Kreszentia: Die Phantom-Heilungen kommen, wenn ein Treffer die Gesundheit unter die Schwelle bringen wird, nicht
     erst danach.
-  - Die Prüfung des Wegs läuft nur mit „Check movement actions with BossModReborn", ab Werk aus. Die Abstandsgrenze gilt
+  - Die Prüfung des Wegs läuft nur mit „Check movement actions with BossModReborn (Experimental)", ab Werk aus. Die Abstandsgrenze gilt
     immer.
 - *Falsifikation:*
   - *Kein Defekt?* Der Text der Abstandsgrenze nennt jeden Gapcloser mit Schaden. Der Text der Vorausschau nennt jede
