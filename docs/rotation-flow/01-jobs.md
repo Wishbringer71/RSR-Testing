@@ -664,6 +664,11 @@ statt Reihenfolge" und „Mondflöte"):
     Borstigkeit); dann gelernte Schadenszauber mit Abklingzeit aus Abklinggruppen ohne Vertreter im Set, nach Potenz je
     Sekunde.
   - Ein Platz wird nur überschrieben, wenn sein Zauber nicht abklingt; UltimateCombo tauscht ebenso nur bereite Zauber.
+  - *Sein Set ist seine Entscheidung:* Ändert der Spieler das Set selbst (ein gespeichertes Set geladen, ein Zauber für
+    eine Carnivale-Stufe gesetzt), schreibt RSR in dieser Sitzung nicht mehr hinein; im Masked Carnivale nie. Grund: Für
+    eine Stufe wählt er Zauber nach dem Element, gegen das ihre Gegner schwach sind (Wasserkanone gegen einen
+    feuerschwachen); als Füllzauber gemessen wäre sie ersetzbar, und Schallwelle (Wind) träfe dort vielleicht einen
+    immunen Gegner.
 - *Schreiben* nur unter diesen Bedingungen:
   - während RSR an ist; außerhalb des Kampfes, ohne Ziel, ohne laufenden Zauber und ohne vorgemerkte Aktion, wie
     UltimateCombo;
@@ -802,6 +807,19 @@ the Unbroken"); er hat ihn am 31.10.2026 genannt („z.B. Optimierung beastmaste
   Tricks nach dem Kompass und der Kombozahl (Multiplikator bis 3,0 ab der fünften Kombo, Werkzeugquelle consolegameswiki),
   aber ohne Referenz und ohne einen Mitschnitt von ihm wäre das eine Annahme. Mit seinem ersten Mitschnitt als
   Beastmaster (ACT oder DefenseTrace) wird das gemessen.
+
+**Geprüft am 03.11.2026 (A510), kein weiterer Defekt belegbar:** dieselben Fehlerklassen wie beim Blaumagier (A507,
+A508) am Beastmaster gesucht.
+- *Überspring-Schalter:* Die Äxte, der Trick und die Finisher überspringen die eigene Voraussetzung des Spielers
+  (Herz-Status, Sunstrider, Moonstalker) mit `skipStatusNeed`, Quelling Wave die des Ziels (ein Buff zum Auflösen)
+  mit `skipTargetStatusNeedCheck`; beides passt.
+- *Statusketten:* Die vier Äxte verlangen und gewähren die Herzen im Uhrzeigersinn ohne Lücke; die Finisher wechseln
+  Sunstrider und Moonstalker.
+- *Quelling Wave* (350, +10 TP, mit Auflösung +50 TP; Wirktext): Es geht zuerst mit einem Buff zum Auflösen, ohne ihn
+  erst nach der Kombo. Mitten in der Kombo bräche es sie (160, 500, 600: im Mittel 420 je GCD gegen 350); so steht es.
+- Seit A507 misst `OwnHitWatch` auch beim Beastmaster den Schaden je Potenz (Smash Axe nennt eine bedingungslose
+  Potenz); heute liest ihn keine Beastmaster-Regel.
+- Die beiden offenen Punkte („die Regeln schrieben keine Zeile", Hornbelegung setzen) warten auf seine Protokolle.
 
 **Anfreunden und Analysieren** (seine Frage vom 02.11.2026, ob sich vor dem Tod eines Gegners prüfen lässt, ob man sich
 mit ihm anfreunden kann, und das Talent dann so einsetzen, dass es wahrscheinlich gelingt; A483):

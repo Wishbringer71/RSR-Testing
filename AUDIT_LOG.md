@@ -15204,6 +15204,19 @@ durchgehen". Als Skill `spielpatch` festgehalten (Lesetabelle in CLAUDE.md); den
 - *Prüfgrad:* statisch an Code und Quellen; kompiliert ohne Warnung; alle Prüfschritte lokal. Das Schreiben ist im Spiel
   nicht beobachtet; jede Änderung und ihr Rücklesen stehen im `DefenseTrace.log`.
 
+### A510 · Beastmaster nach den Fehlerklassen des Blaumagiers geprüft; Set-Verbesserer achtet sein eigenes Set (03.11.2026)
+
+- *Auftrag:* wie A507 („blaumagier und beastmaster weiter im kritischen loop optimieren").
+- *Beastmaster:* Überspring-Schalter, Herzkette der Äxte, Finisher und Quelling Wave gegen die Kombo geprüft (Konzept 01,
+  BST, „Geprüft am 03.11.2026"); kein Defekt. Wirktexte: Smash Axe 160, Axeblade Bite 260 und 500 in der Kombo,
+  Shieldsplitter 280 und 600, Quelling Wave 350 (xivapi, 03.11.2026). Die offenen Punkte warten auf seine Protokolle.
+- *Set-Verbesserer (A509) nachgeschärft:* Beim Durchspielen einer Carnivale-Stufe gefunden: Ein für die Stufe nach dem
+  Element gewählter Füllzauber (Wasserkanone gegen einen feuerschwachen Gegner) wäre als Füllzauber ersetzbar gewesen,
+  und Schallwelle (Wind) hätte dort vielleicht einen immunen Gegner getroffen. Jetzt: Ändert der Spieler sein Set
+  selbst, schreibt RSR in dieser Sitzung nicht mehr hinein; im Masked Carnivale nie. Erkennung: eine Änderung, die RSR
+  nicht selbst geschrieben hat.
+- *Prüfgrad:* statisch; kompiliert ohne Warnung; alle Prüfschritte lokal.
+
 ## B · Commit-Register (Fork vs. `upstream/main`)
 
 ### B1 · Einzelgeprüfte Fork-Commits

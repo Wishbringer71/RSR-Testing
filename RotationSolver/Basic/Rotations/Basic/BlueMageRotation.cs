@@ -396,6 +396,8 @@ public partial class BlueMageRotation
 	private static int _setWrittenSlot = -1;
 	private static uint _setWrittenId;
 	private static uint _setWrittenIn;
+	private static uint[]? _setSeen;
+	private static bool _setEditedByPlayer;
 
 	/// <summary>
 	/// Writes one improvement of the active set per call, out of combat (concept 01, "Verbessern statt ersetzen"): the
@@ -418,6 +420,28 @@ public partial class BlueMageRotation
 		}
 
 		var slots = DataCenter.BluSlots;
+
+		// A set the player changed himself - a saved set loaded, a spell for a Masked Carnivale stage put in - is his
+		// decision: from then on RSR writes nothing into it in this session. Inside the Carnivale never.
+		if (_setSeen != null && !_setEditedByPlayer)
+		{
+			for (var i = 0; i < slots.Length && i < _setSeen.Length; i++)
+			{
+				if (slots[i] != _setSeen[i] && !(i == _setWrittenSlot && slots[i] == _setWrittenId))
+				{
+					_setEditedByPlayer = true;
+					DefenseTrace.Line($"blue mage set: changed by the player in slot {i + 1} - RSR leaves the set alone for this session");
+					break;
+				}
+			}
+		}
+
+		_setSeen = (uint[])slots.Clone();
+		if (_setEditedByPlayer || DataCenter.IsInMaskedCarnivale)
+		{
+			return;
+		}
+
 		if (_setWrittenSlot >= 0)
 		{
 			if (DataCenter.TerritoryID != _setWrittenIn)

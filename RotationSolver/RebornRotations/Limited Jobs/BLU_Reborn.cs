@@ -31,7 +31,7 @@ public sealed class BLU_Reborn : BlueMageRotation
 	public bool MoonFluteOnlyWhenSafe { get; set; } = true;
 
 	[RotationConfig(CombatType.PvE, Name = "Improve the Blue Mage set from your learned spells",
-		Tooltip = "In a fight: RSR casts only spells in your active set, so with this on more of your learned spells come into play. Out of combat, without a target: RSR adds Sonic Boom where it is missing, the partners of the spell chains one part of which is in your set, and damage spells with a recast from recast groups your set lacks. It takes only free slots and fillers it does not cast at your level - damage cooldowns, heals, defence, movement, mimicry, raises, interrupts and every spell with an additional effect stay, and a slot is changed only while its spell is ready. Your saved sets and hotbars stay as they are. Off: your set stays as you made it.")]
+		Tooltip = "In a fight: RSR casts only spells in your active set, so with this on more of your learned spells come into play. Out of combat, without a target: RSR adds Sonic Boom where it is missing, the partners of the spell chains one part of which is in your set, and damage spells with a recast from recast groups your set lacks. It takes only free slots and fillers it does not cast at your level - damage cooldowns, heals, defence, movement, mimicry, raises, interrupts and every spell with an additional effect stay, and a slot is changed only while its spell is ready. Once you change your set yourself, or inside the Masked Carnivale, RSR leaves it alone for the rest of the session. Your saved sets and hotbars stay as they are. Off: your set stays as you made it.")]
 	public bool ImproveBlueMageSet { get; set; } = true;
 
 	[Range(0, 1, ConfigUnitType.Percent)]

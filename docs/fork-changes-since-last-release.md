@@ -93,8 +93,9 @@ What this release changes in the fight. For the whole distance from upstream, se
   with Peripheral Synthesis, Bristle with Matra Magic or Song of Torment), and damage spells with a recast from recast
   groups your set lacks. It uses only free slots and plain fillers RSR does not cast at your level; damage cooldowns,
   heals, defence, movement, mimicry, raises, interrupts and every spell with an additional effect stay, and a slot changes
-  only while its spell is ready. One slot at a time; each change is written to `DefenseTrace.log`. Saved sets and
-  hotbars are not touched.
+  only while its spell is ready. One slot at a time; each change is written to `DefenseTrace.log`. Once you change
+  your set yourself, and inside the Masked Carnivale, RSR leaves it alone for the session. Saved sets and hotbars are
+  not touched.
 - **Beastmaster: a record of the Master's Bestiary.** While the Bestiary is open, RSR writes to `BestiaryTrace.log`
   next to `DefenseTrace.log` what the game receives from each click, every context menu with its entries, every server
   command the client sends through its general command function, and the battlehorn slots as they change. It only
