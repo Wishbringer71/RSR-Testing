@@ -945,46 +945,48 @@ public sealed class SMN_Reborn : SummonerRotation
 	}
 
 	protected override bool EmergencyAbility(IAction nextGCD, out IAction? act)
-{   
-	// Swiftcast on Resurrection is the job setting "Raise with Swiftcast or Dualcast" (CustomRotation's emergency
-	// pass). A rotation option of its own here overrode it on, and off it changed nothing (A402).
-	if (SwiftcastPvE.CanUse(out act))
-	{
-		if (SwiftcastMovementUptime && !HasSwift)
+	{   
+		// Swiftcast on Resurrection is the job setting "Raise with Swiftcast or Dualcast" in CustomRotation's emergency
+		// pass, for every raiser alike (A402). Upstream reads the same setting here again (df7215872); a second path
+		// for one job would go past the central path's weave condition, and a gap there is a gap for every raiser.
+		// The potion is in GeneralAbility, after the defence passes (A497).
+		if (SwiftcastPvE.CanUse(out act))
 		{
-			if (IsMoving && AttunementCount == 0 && SlipstreamPvE.CanUse(out _, skipCastingCheck: true))
+			if (SwiftcastMovementUptime && !HasSwift)
+			{
+				if (IsMoving && AttunementCount == 0 && SlipstreamPvE.CanUse(out _, skipCastingCheck: true))
+				{
+					return true;
+				}
+				if (IsMoving && RubyRitePvE.CanUse(out _, skipCastingCheck: true))
+				{
+					return true;
+				}
+				if (nextGCD.IsTheSameTo(false, RubyRitePvE, SlipstreamPvE) && !IsGarudaReady && !IsIfritReady)
+				{
+					return true;
+				}
+			}
+			if (AddSwiftcastOnLowST && !RubyRitePvE.EnoughLevel && nextGCD.IsTheSameTo(false, RubyRuinPvE, RubyRuinIiPvE, RubyRuinIiiPvE))
 			{
 				return true;
 			}
-			if (IsMoving && RubyRitePvE.CanUse(out _, skipCastingCheck: true))
+			if (AddSwiftcastOnLowAOE && !RubyRitePvE.EnoughLevel && nextGCD.IsTheSameTo(false, RubyOutburstPvE))
 			{
 				return true;
 			}
-			if (nextGCD.IsTheSameTo(false, RubyRitePvE, SlipstreamPvE) && !IsGarudaReady && !IsIfritReady)
+			if (!SwiftcastMovementUptime && AddSwiftcastOnRuby && nextGCD.IsTheSameTo(false, RubyRitePvE) && !ElementalMasteryTrait.EnoughLevel)
+			{
+				return true;
+			}
+			if (!SwiftcastMovementUptime && AddSwiftcastOnGaruda && nextGCD.IsTheSameTo(false, SlipstreamPvE) && ElementalMasteryTrait.EnoughLevel && !InBahamut && !InPhoenix && !InSolarBahamut)
 			{
 				return true;
 			}
 		}
-		if (AddSwiftcastOnLowST && !RubyRitePvE.EnoughLevel && nextGCD.IsTheSameTo(false, RubyRuinPvE, RubyRuinIiPvE, RubyRuinIiiPvE))
-		{
-			return true;
-		}
-		if (AddSwiftcastOnLowAOE && !RubyRitePvE.EnoughLevel && nextGCD.IsTheSameTo(false, RubyOutburstPvE))
-		{
-			return true;
-		}
-		if (!SwiftcastMovementUptime && AddSwiftcastOnRuby && nextGCD.IsTheSameTo(false, RubyRitePvE) && !ElementalMasteryTrait.EnoughLevel)
-		{
-			return true;
-		}
-		if (!SwiftcastMovementUptime && AddSwiftcastOnGaruda && nextGCD.IsTheSameTo(false, SlipstreamPvE) && ElementalMasteryTrait.EnoughLevel && !InBahamut && !InPhoenix && !InSolarBahamut)
-		{
-			return true;
-		}
-	}
 
-	return base.EmergencyAbility(nextGCD, out act);
-}
+		return base.EmergencyAbility(nextGCD, out act);
+	}
 
 	#endregion
 

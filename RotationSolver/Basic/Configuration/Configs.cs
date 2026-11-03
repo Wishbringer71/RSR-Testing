@@ -764,6 +764,12 @@ internal partial class Configs : IPluginConfiguration, IM3Settings
 	[Range(0.25f, 2f, ConfigUnitType.Percent, 0.01f)]
 	public float UiPaddingScale { get; set; } = 1.5f;
 
+	[UI("Animation length",
+		Description = "Scales how long animations take in every RSR window, such as menus, folding windows and moving selections. Set it to 0% to turn animations off.",
+		Filter = UiCustomize)]
+	[Range(0f, 2f, ConfigUnitType.Percent, 0.01f)]
+	public float UiMotionScale { get; set; } = 1f;
+
 	[ConditionBool, UI("Show a toast when a command queues an action",
 		Description = "Confirms each action that a /rotation DoAction command adds to the queue.",
 		Filter = BasicCommands, Section = 2)]

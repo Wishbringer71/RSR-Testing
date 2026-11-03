@@ -74,17 +74,6 @@ public sealed class GNB_Reborn : GunbreakerRotation
 	#endregion
 
 	#region oGCD Logic
-	[RotationDesc(ActionID.TrajectoryPvE)]
-	protected override bool MoveForwardAbility(IAction nextGCD, out IAction? act)
-	{
-		if (TrajectoryPvE.CanUse(out act, usedUp: true))
-		{
-			return true;
-		}
-
-		return base.MoveForwardAbility(nextGCD, out act);
-	}
-
 	protected override bool EmergencyAbility(IAction nextGCD, out IAction? act)
 	{
 		if (JugularRipPvE.CanUse(out act))
@@ -113,6 +102,17 @@ public sealed class GNB_Reborn : GunbreakerRotation
 		}
 
 		return base.EmergencyAbility(nextGCD, out act);
+	}
+
+	[RotationDesc(ActionID.TrajectoryPvE)]
+	protected override bool MoveForwardAbility(IAction nextGCD, out IAction? act)
+	{
+		if (TrajectoryPvE.CanUse(out act, usedUp: true))
+		{
+			return true;
+		}
+
+		return base.MoveForwardAbility(nextGCD, out act);
 	}
 
 	[RotationDesc(ActionID.HeartOfLightPvE, ActionID.ReprisalPvE)]

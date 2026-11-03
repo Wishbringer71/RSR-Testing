@@ -2,6 +2,7 @@ using ECommons.DalamudServices;
 using ECommons.ExcelServices;
 using Lumina.Excel.Sheets;
 using RebornMaterial;
+using RotationSolver.Commands;
 using RotationSolver.Data;
 
 namespace RotationSolver.UI.SearchableConfigs;
@@ -204,7 +205,7 @@ internal abstract class Searchable(PropertyInfo property) : ISearchable
 		get
 		{
 			var result = Service.COMMAND + " " + OtherCommandType.Settings.ToString() + " " + _property.Name;
-			var extra = _property.GetValue(Service.ConfigDefault)?.ToString();
+			var extra = RSCommands.FormatSettingValue(_property.GetValue(Service.ConfigDefault));
 			if (!string.IsNullOrEmpty(extra))
 			{
 				result += " " + extra;
@@ -326,6 +327,8 @@ internal abstract class UnitSearchable(PropertyInfo property) : Searchable(prope
 	}
 
 	protected float SliderScale => Unit == ConfigUnitType.Percent ? 100f : 1f;
+
+	protected string SliderFormat => (Unit == ConfigUnitType.Percent ? "%.1f" : "%.2f") + Unit.ToSymbol().Replace("%", "%%");
 
 	protected string Format(float value)
 	{

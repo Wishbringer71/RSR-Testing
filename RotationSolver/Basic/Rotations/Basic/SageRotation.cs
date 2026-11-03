@@ -28,7 +28,7 @@ public partial class SageRotation
 	private static float AddersgallTimerRaw => (20000f - JobGauge.AddersgallTimer) / 1000f;
 
 	/// <summary>
-	/// Gets the seconds until the next Addersgall stack, counted from the end of the current GCD.
+	/// Gets the seconds until the next Addersgall, after the current GCD.
 	/// </summary>
 	public static float AddersgallTime => AddersgallTrait.EnoughLevel ? AddersgallTimerRaw - DataCenter.DefaultGCDRemain : 0;
 

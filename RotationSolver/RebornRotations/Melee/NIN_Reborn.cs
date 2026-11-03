@@ -1152,14 +1152,4 @@ public sealed class NIN_Reborn : NinjaRotation
 		return base.GeneralGCD(out act);
 	}
 	#endregion
-
-	/// <inheritdoc/>
-	public override bool IsBursting()
-	{
-		if (InTrickAttack)
-		{
-			return true;
-		}
-		return false;
-	}
 }

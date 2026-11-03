@@ -48,6 +48,9 @@ ACCEPTED = {
     'UiPaddingScale':
         'read outside this tree: Configs implements RebornMaterial.IM3Settings, and the package '
         '(7.5.6.2, upstream 27f6acb41) reads it through that interface (name found in its DLL)',
+    'UiMotionScale':
+        'read outside this tree, as UiPaddingScale: an IM3Settings member since RebornMaterial 7.5.7.6 '
+        '(upstream 0c44a19ac); get_UiMotionScale is in the package DLL',
 }
 
 

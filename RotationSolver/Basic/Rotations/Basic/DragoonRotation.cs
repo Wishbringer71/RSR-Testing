@@ -206,6 +206,7 @@ public partial class DragoonRotation
 		// there, so the BMR movement check applies like on every other gap closer.
 		setting.SpecialType = SpecialActionType.HostileMovingAttack;
 		setting.UnlockedByQuestID = 66608;
+		setting.SpecialType = SpecialActionType.HostileMovingAttack;
 		setting.StatusProvide = [StatusID.DragonsFlight];
 		setting.CreateConfig = () => new ActionConfig()
 		{
@@ -306,6 +307,7 @@ public partial class DragoonRotation
 		// A leap onto the target like Dragonfire Dive, without a return.
 		setting.SpecialType = SpecialActionType.HostileMovingAttack;
 		setting.ActionCheck = () => JobGauge.IsLOTDActive;
+		setting.SpecialType = SpecialActionType.HostileMovingAttack;
 		setting.StatusProvide = [StatusID.StarcrossReady];
 		setting.CreateConfig = () => new ActionConfig()
 		{
