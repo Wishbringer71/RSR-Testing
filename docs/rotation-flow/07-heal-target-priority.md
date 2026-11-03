@@ -666,8 +666,9 @@ Auftraggeber. Die Fundstellen in den PvP-Rotationen liegen außerhalb seines Nut
 spielern getetherd sind. diese mobs kann man nicht bekämpfen, um sie zu vernichten muss man sie heilen. hier greifen
 keine aoes, sondern nur direkte heilungen mit ihnen als target." Dazu sein zweiter Hinweis (03.11.2026): „die vier
 mobs heißen Reiryu oder ähnlich, sind nicht rot als böse gefärbt, sondern namen sind grün und sie sind meist mit den
-damagedealern getethered. einer pro spieler". Er nutzt BossModReborn, nicht ffxiv_bossmod (seine Angabe,
-03.11.2026).
+damagedealern getethered. einer pro spieler". Sein dritter (03.11.2026): „man muss sie voll heilen, sonst töten sie
+irgendwann die getetherten spieler, sie starten mit low health, wahrscheinlich 1HP." Er nutzt BossModReborn, nicht
+ffxiv_bossmod (seine Angabe, 03.11.2026).
 
 **Die Mechanik, am Spiel geprüft.**
 - *Inhalt und Figur:* Traumprüfung - Heldenlied von Shinryu (ContentFinderCondition 1118, Stufe 100, Patch 7.5). Die
@@ -678,13 +679,27 @@ damagedealern getethered. einer pro spieler". Er nutzt BossModReborn, nicht ffxi
   Gruppe: Angreifen lässt es sich nicht, heilen wie ein Verbündeter.
 - *Ablauf:* Die vier Reiryu erscheinen, je einer leint sich an einen Spieler, meist an die Schadensausteiler (Tether 1,
   Reiryu → Spieler; das Wiki nennt alle vier Schadensausteiler, er sah „meist"), und sie wirken Drachenflug (30 s).
-  Die Rolle des Angeleinten trägt also nichts; die Leine an ein Gruppenmitglied schon. Sie beginnen bei 0 % und verschwinden, sobald sie direkt auf 100 % geheilt sind;
-  Flächenheilung wirkt weder auf sie noch auf die Angeleinten. Läuft Drachenflug durch oder stirbt ein Angeleinter,
-  fliegen sie auf: Schaden und 60 s Schaden-runter auf die ganze Gruppe. In Phase 1 einmal (Zeitleiste von
+  Für die Erkennung trägt die Rolle des Angeleinten nichts. Sie erscheinen mit 1 LP und
+  sterben, sobald sie direkt voll geheilt sind; Flächenheilung wirkt weder auf sie noch auf die Angeleinten. Läuft
+  Drachenflug durch oder stirbt ein Angeleinter, fliegen sie auf: Schaden und 60 s Schaden-runter auf die ganze Gruppe
+  (Wiki); ungeheilt töten sie mit der Zeit die Angeleinten (sein Hinweis). In Phase 1 einmal (Zeitleiste von
   BossModReborn: Erscheinen 214 s, Ende Drachenflug 251,5 s nach dem ersten Cast), in Phase 2 einmal je Rotation, bis
   zu zweimal. Quellen: BossModReborn, Modul `Un2Shinryu` (Commit 89387f4 vom 20.10.2026, aus zwei Mitschnitten des
   Autors; Klon auf 577675d vom 31.10.2026), Werkzeugquelle; consolegameswiki, Seite „Shinryu's Domain (Unreal)",
   zuletzt bearbeitet am 01.07.2026, Gemeinschaftsquelle. Die Folgen des Scheiterns und Phase 2 stehen nur im Wiki.
+- *Gemessen in seinem Mitschnitt* (ACT, 03.11.2026, zwei Läufe, vier Wellen, 16 Reiryu; er spielte Beschwörer, die
+  beiden Heiler waren andere Spieler):
+  - Jede Reiryu erscheint mit 1 von 105 448 LP (ACT-Zeile 03, BNpcBase 19945).
+  - Leine und Drachenflug beginnen 7,8 bis 8,4 s nach dem Erscheinen; Drachenflug wirkt 29,7 s. Vom Erscheinen bis zum
+    Ende des Zaubers bleiben also rund 38 s.
+  - Die Heiler begannen 3 bis 5,5 s nach dem Erscheinen, vor der Leine. Die Reiryu, die vor der Leine voll war, leinte
+    niemanden an: In jeder Welle gab es drei Leinen und drei Flüche, nicht vier. Je früher die Heilung, desto weniger
+    Spieler tragen den Fluch.
+  - Eine Benediction heilte eine Reiryu in einem Zug voll. Sonst brauchte jede drei Heilungen: Tetragrammaton, Afflatus
+    Solace, Cure II, Druochole und Diagnosis brachten je 19 000 bis 50 000 LP.
+  - Alle 16 starben 5,6 bis 27,3 s nach dem Erscheinen (ACT-Zeile 25 ohne Quelle). Kein Drachenflug lief durch, kein
+    Angeleinter starb an ihnen.
+  - Der Fluch endet mit dem Tod seiner Reiryu (ACT-Zeile 30).
 - *Fluch des Drachen (Status 1419), den die Leine auf den Angeleinten legt:* „Fluch des Drachen verursacht schrittweise
   Schaden und LP-Regeneration ist angehalten. Regeneration wird kurzzeitig aktiv, wenn selbst eine Attacke ausgeführt
   wird." „LP-Regeneration" heißt in den deutschen Texten jede Erholung: Chaoserde (Status 1605) „Jede Form von
@@ -717,14 +732,17 @@ RSR liest diese Priorität nicht und braucht sie nicht: Das Spiel schließt den 
 **Umsetzbar ist es. Der Entwurf** (`TODO.md`, „Figuren, die nur Einzelheilung besiegt"; noch ohne Loop):
 1. *Erkennung, zentral für alle Jobs:* eine Figur im Kampf, kein Gruppenmitglied, die das Spiel als Ziel der eigenen
    Einzelheilung zulässt (`ActionManager.CanUseActionOnTarget` mit der Heilung selbst, dieselbe Frage, die `IsEnemy`
-   mit Blizzard stellt), unter voller Gesundheit und an ein Gruppenmitglied angeleint (`ObjectHelper.GetAllTethers`).
-   Die Leine trennt sie von den freundlichen NPCs eines Solo-Inhalts, für die der bestehende Schalter bleibt. Ob es
-   Figuren dieser Art ohne Leine gibt, ist offen; eine Figur ohne Leine löst nichts aus.
+   mit Blizzard stellt), unter voller Gesundheit. Die Leine (`ObjectHelper.GetAllTethers`) darf keine Bedingung sein:
+   Sie kommt erst rund 8 s nach dem Erscheinen, und eine Reiryu, die bis dahin voll ist, legt keinen Fluch (Mitschnitt).
+   Offen für den Loop ist deshalb, was die Figur von den freundlichen NPCs eines Solo-Inhalts trennt, für die der
+   bestehende Schalter bleibt. Kandidaten: das Erscheinen mit 1 LP im Kampf, die Leine als spätes zweites Zeichen, ein
+   Inhalt mit voller Gruppe.
 2. *Eine eigene Liste neben `PartyMembers`,* gelesen nur von der Zielwahl der Einzelheilungen, nie von Gruppenwerten,
    Flächenschwellen oder Minderung. Die übrigen Leser erben nichts.
 3. *Frist und Bedarf liest die Regel zur Laufzeit:* die Restzeit von Drachenflug auf der Figur, ihre fehlende
-   Gesundheit und die eigene Heilrate auf sie; reicht die Rate nicht, zieht sie nach. Keine dieser Größen braucht eine
-   feste Zahl, auch nicht die Gesundheit der Reiryu, die keine der Quellen nennt.
+   Gesundheit und die eigene Heilrate auf sie; reicht die Rate nicht, zieht sie nach. Vor der Leine läuft noch kein
+   Drachenflug; die Frist ist dann die längste, die Dringlichkeit trotzdem hoch, weil eine frühe Heilung den Fluch
+   verhindert. Keine dieser Größen braucht eine feste Zahl; die 105 448 LP liest die Regel aus der Figur.
 4. *Rang:* gegen seine Vorgabe abzuwägen, dass das gesamtheitliche Überleben vorgeht. Ein Scheitern trifft alle acht
    mit Schaden und 60 s Schaden-runter; ein Mitglied in Klasse 1 stirbt sofort. Daher der Ansatz: nach Klasse 1, vor
    den Klassen 2 und 3, solange die Frist läuft.
@@ -737,8 +755,9 @@ RSR liest diese Priorität nicht und braucht sie nicht: Das Spiel schließt den 
    treffen nur die Gruppe. Ob „Allianz" eine freundliche Figur einschließt, ist unbelegt; die Laufzeitfrage aus
    Punkt 1 beantwortet es ohne Annahme.
 
-*Prüfgrad:* statisch, an Spielblättern, am Quelltext von RSR und BossModReborn und am Wiki. Keiner seiner
-hochgeladenen Mitschnitte enthält den Kampf.
+*Prüfgrad:* Mechanik an Spielblättern, am Quelltext von RSR und BossModReborn, am Wiki und an seinem Mitschnitt vom
+03.11.2026 (zwei Läufe, gemessen: LP, Zeiten, Heilungen, Leinen, Flüche). Das Scheitern ist im Mitschnitt nicht
+vorgekommen; seine Folgen stehen nur im Wiki und in seinem Hinweis.
 
 ## Abgrenzung zur Schildanrechnung
 

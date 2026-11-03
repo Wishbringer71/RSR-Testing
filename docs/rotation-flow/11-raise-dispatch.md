@@ -590,6 +590,29 @@ in dem hart gewirkt wird, und genau der, den der Abbruch traf.
 **Der Vorgabewert von `UseStopCasting` ist aus**, die Einstellung des Auftraggebers ist von hier aus
 nicht messbar. Wer sie an hat, konnte ohne Swiftcast niemanden hochholen.
 
+## Nach der eigenen Wiederbelebung
+
+**Befund aus seinem Mitschnitt** (ACT und `DefenseTrace.log` vom 03.11.2026, Weißmagier in AAC Heavyweight M4, Build
+a885b43bf): Er nahm die Wiederbelebung um 18:34:29,26 an und stand bei 41 569 von 197 953 LP (21 %), mit
+Transcendent (Status 418, 5 s), Sterbenselend und 2 000 MP. 0,5 s später begann Lindwurm Zellexplosion auf ihn (4,7 s).
+Transcendent lief um 18:34:34,29 ab, der Treffer kam um 18:34:34,74 mit 60 % seiner LP, er starb. Zwischen Annahme
+und Tod drückte RSR nichts: keine Heilung auf sich, keine Abwehr, keine Zeile in der `DefenseTrace.log`.
+
+**Zwei Regeln erklären das, beide nicht vom Fork:**
+- *Unter Transcendent wird nichts gedrückt* (`RSCommands_Actions`, Upstream b90750d63 vom 12.11.2025, „prevent actions
+  when Transcendent"). Der Wirktext begründet es: „temporarily invulnerable to most damage. Status ends upon execution of
+  an action." Eine Aktion beendet den Schutz. Die Regel fragt aber nicht, ob ein angekündigter Treffer erst nach dem
+  Ende des Schutzes landet. Dann kostet das Warten die einzige Zeit, in der eine Heilung noch ankäme.
+- *„Turn off when you die"* (`AutoOffWhenDead`, ab Werk an) schaltet RSR beim Tod aus. Wieder an geht es nur über
+  die Einschaltregeln seiner Konfiguration, die nicht messbar ist. Ob RSR in diesen 5 s an war, zeigt der Mitschnitt
+  nicht; unter Transcendent hätte es so oder so nichts gedrückt.
+
+**Offen für den Loop** (`TODO.md`, „Nach der Wiederbelebung wartet RSR die Unverwundbarkeit ab"): ob eine Heilung oder
+Abwehr unter Transcendent gehen soll, wenn ein angekündigter Treffer nach dessen Ende landet und den Spieler töten
+kann. Dazu, ob es hier gereicht hätte: Benediction lief noch ab (gewirkt 18:33:11), und von 21 % auf über 60 %
+effektive LP in 5 s braucht mehrere Heilungen oder Schild und Minderung zusammen. Und ob „Turn off when you die" einen
+Wiederbelebten wieder einschalten soll.
+
 ## Bekannte Mängel neben diesem Konzept
 
 - **`IBaseAction.IgnoreClipping` wird an der Ausführungssperre gelesen** (A388): Die letzte halbe Sekunde vor dem GCD

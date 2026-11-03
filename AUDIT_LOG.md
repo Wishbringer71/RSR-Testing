@@ -15293,6 +15293,8 @@ nächsten Gefahr.
 - *Fehlerbild am Mitschnitt* (ACT und `DefenseTrace.log` vom 03.11.2026, Build a885b43bf): drei zweite Schilde auf einen
   stehenden ersten, Rest 15,2 s (Thordan), 11,8 s und 14,3 s (Shinryu Unreal, beide Läufe), jeweils kurz vor dem ersten
   Raidwide (Gaias Zorn 0,8 und 1,6 s vor dem Einschlag) oder unter der Einzelabwehr.
+- *Folge im Kampf:* In beiden Shinryu-Läufen kam 24 und 25 s nach dem zweiten Schild Flutwelle (75 und 63 % seiner
+  LP); die Flächenabwehr fand keine Ladung mehr („refused before: Schimmerschild (Cooldown)").
 - *Ursache:* Quelle des Status Schimmerschild ist das Objekt Karfunkel. Jede Beschwörung ersetzt es (Sol-Bahamut,
   Topas-Titan; ACT-Zeilen 03/04 zeigen das alte Karfunkel entfernt, ein neues mit neuer Id). `StatusHelper.IsFromPlayer`
   kannte nur die Objekte, die dem Spieler gerade gehören, also galt der Schild als fremd, und `StatusProvide` in
@@ -15317,6 +15319,33 @@ nächsten Gefahr.
 *Prüfgrad:* Ursache am Mitschnitt und am Code; Korrektur kompiliert (0 Warnungen, 0 Fehler), Prüfskripte grün; im Spiel
 nicht beobachtet. Messmittel ohne neue Zeile: ein zweiter Schimmerschild bei stehendem erstem zeigt sich im ACT-Mitschnitt,
 sein Pfad in der `DefenseTrace.log`.
+
+### A515 · Upload vom 03.11.2026: Shinryu (Unreal) als Beschwörer, Weißmagier in M4 und Nebeltrift (03.11.2026)
+
+Dateien: `RotationSolver.7z` (`DefenseTrace.log` 1 011 Zeilen, eine Sitzung 17:52–19:30, Build a885b43bf; gelernte
+Tabellen; `BestiaryTrace.log`) und der ACT-Mitschnitt `Network_30304_20261103`. Kämpfe: Höllengrund (Extrem) und
+Thordan (Extrem) allein als Beschwörer; Seele des Schöpfers, AAC Light-heavyweight und Heavyweight (M4) sowie Nebeltrift
+als Weißmagier; Shinryu (Unreal) zweimal als Beschwörer, beide besiegt. Seine Fragen zuerst.
+
+- *Reiryu:* Jede erscheint mit 1 von 105 448 LP (16 von 16); Leine und Drachenflug folgen nach 7,8 bis 8,4 s, der
+  Zauber wirkt 29,7 s. Die Heiler der Gruppe (andere Spieler) heilten jede in 5,6 bis 27,3 s voll. Die vor der Leine
+  geheilte legte keinen Fluch. Konzept 07 fortgeschrieben, der Entwurf erkennt nicht mehr über die Leine.
+- *Schimmerschild doppelt:* A514.
+- *Tode des Spielers:* in M4 dreimal. Zweimal deckten sich zwei Mechaniken auf ihm (Detonation 44 und 62 %,
+  Zellexplosion 59 und 62 %); das ist nicht RSR. Das dritte Mal nach der Wiederbelebung: Unter Transcendent drückte
+  RSR 5 s nichts, der angekündigte Treffer kam 0,45 s nach Ablauf (Konzept 11, „Nach der eigenen Wiederbelebung";
+  `TODO.md`). In Höllengrund allein starb er nach einem Heiltrank bei 4 %.
+- *Übrige Zeilenarten:* Abwehrentscheidungen stichprobenweise geprüft, ohne Auffälligkeit außerhalb der beiden Befunde; drei Heiltränke
+  (bei 4, 38 und 40 %, nach seiner Schwelle); Kosten im Mittel 0,44 bis 0,54 ms je Durchlauf, Spitze 39,6 ms im ersten
+  Kampf nach dem Start; eine Lesung ohne Bestätigung im Spielstand (Semi-Sanctus).
+- *Gelernte Tabellen* gegen den Upload vom 02.11.2026: Fläche neun Einträge (neu: Blitzga 45353, Windschlag 50235,
+  Superzyklon 50280; höher: Flutwelle 50230 auf 0,79 aus zwei sauberen Lesungen, Ionenschlag 50232 auf 0,81 aus einer
+  unter Minderung hochgerechneten). Tankbuster vier neu (Todesurteil, Tera-Schlag, Eingeweideriss, 6884), Serien und
+  Markerzeiten plausibel am Mitschnitt; `SleepLocks.json` neu und leer.
+- *Warten auf Daten:* kein Kampf als Beastmaster oder Blaumagier; das Bestienbuch wurde zweimal geöffnet, ohne
+  Zuweisung. Die Einträge bleiben offen.
+
+*Prüfgrad:* Mitschnitt und Protokoll gelesen und gegeneinander gestellt; die Befunde je am Mitschnitt belegt.
 
 ## B · Commit-Register (Fork vs. `upstream/main`)
 

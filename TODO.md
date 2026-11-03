@@ -14,7 +14,9 @@ Nach der Wirkung im Kampf: Sicherheit der Gruppe vor Schaden, gewichtet mit der 
    geheilt werden müssen; das ist zugleich die Voraussetzung von Punkt 2.
 2. Figuren, die nur Einzelheilung besiegt: Scheitert die Frist, nehmen alle acht Schaden und 60 s Schaden-runter,
    mehrmals je Kampf.
-3. Fremde Repositories auf Verbesserungen für RSR prüfen: Jeder Fund kann ein Defekt im Verhalten einer Klasse sein,
+3. Nach der Wiederbelebung wartet RSR die Unverwundbarkeit ab: Ein Heiler stirbt am ersten Treffer nach dem
+   Aufstehen, ohne dass RSR etwas drückt.
+4. Fremde Repositories auf Verbesserungen für RSR prüfen: Jeder Fund kann ein Defekt im Verhalten einer Klasse sein,
    den RSR heute im Kampf zeigt; zuerst die Rotationswerkzeuge für alle Jobs, Daedalus vorn (aktiv, alle Jobs,
    eigene Kampfvorhersage).
 
@@ -35,8 +37,16 @@ durchsuchen, die Leser der Liste auf ihre Wirkung prüfen, Loop. *Konzept:* 07, 
 Im Kampf: Bei Shinryu (Unreal) müssen die vier Reiryu binnen Drachenflug (30 s) direkt voll geheilt werden, mehrmals
 je Kampf. RSR heilt sie nicht; scheitert es, nehmen alle acht Schaden und 60 s Schaden-runter. *Ort:* Heilzielwahl
 (`ActionTargetInfo`), Erkennung neben `PartyMembers` (`TargetUpdater`). *Nächster Schritt:* Loop auf dem Entwurf im
-Konzept (Rang gegen seine Vorgabe, Option für Nichtheiler, Modell der Frist). *Konzept:* 07, „Heilziele außerhalb der
+Konzept (Erkennung ohne Leine, Abgrenzung von Solo-NPCs, Rang gegen seine Vorgabe, Option für Nichtheiler, Modell der
+Frist). *Konzept:* 07, „Heilziele außerhalb der
 Gruppe".
+
+### Nach der Wiederbelebung wartet RSR die Unverwundbarkeit ab · N, U
+Im Kampf: Wiederbelebt bei 21 %, Zellexplosion auf ihn angekündigt; RSR drückte 5 s lang nichts, der Treffer kam
+0,45 s nach Ablauf von Transcendent, er starb (M4, 03.11.2026). *Ort:* `RSCommands_Actions` (Sperre unter
+Transcendent, Upstream), `AutoOffWhenDead`. *Nächster Schritt:* Loop: ob Heilung und Abwehr unter Transcendent gehen,
+wenn ein angekündigter Treffer nach dessen Ende landet; ob ein Wiederbelebter wieder eingeschaltet wird. *Konzept:* 11,
+„Nach der eigenen Wiederbelebung".
 
 ### Fremde Repositories auf Verbesserungen für RSR prüfen · N, R, U
 Sein Auftrag (02.11.2026): „alle von dir gefundenen repos, die du benannt hast prüfen, ob daraus generell
