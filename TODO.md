@@ -23,7 +23,7 @@ Danach die technische Schuld, soweit ihre Auflösungsbedingung erfüllt ist. War
 ## Defekte
 
 ### Heilung auf Ziele, die keine annehmen · N, R
-Im Kampf: Bei Shinryu (Unreal) heilen die Heiler die vier Schadensausteiler unter Fluch des Drachen, auf die keine
+Im Kampf: Bei Shinryu (Unreal) heilen die Heiler die vier Angeleinten (meist Schadensausteiler) unter Fluch des Drachen, auf die keine
 Heilung wirkt, und deren sinkender Stand löst Flächenheilungen aus, in den 30 s, in denen die Reiryu geheilt werden
 müssen. *Ort:* `StatusHelper.HealingIneffectiveStatus` (nur `Mounted`) und seine Leser. Klasse: Status, die jede
 Erholung aufheben (Fluch des Drachen 1419, Chaoserde 1605). *Nächster Schritt:* das Status-Blatt nach der Klasse

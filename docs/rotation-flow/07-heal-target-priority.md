@@ -664,8 +664,10 @@ Auftraggeber. Die Fundstellen in den PvP-Rotationen liegen außerhalb seines Nut
 
 **Hinweis des Auftraggebers (03.11.2026):** „bei unreal shinryu erscheinen mehrmals in den phasen adds, welche mit
 spielern getetherd sind. diese mobs kann man nicht bekämpfen, um sie zu vernichten muss man sie heilen. hier greifen
-keine aoes, sondern nur direkte heilungen mit ihnen als target." Er nutzt BossModReborn, nicht ffxiv_bossmod (seine
-Angabe, 03.11.2026).
+keine aoes, sondern nur direkte heilungen mit ihnen als target." Dazu sein zweiter Hinweis (03.11.2026): „die vier
+mobs heißen Reiryu oder ähnlich, sind nicht rot als böse gefärbt, sondern namen sind grün und sie sind meist mit den
+damagedealern getethered. einer pro spieler". Er nutzt BossModReborn, nicht ffxiv_bossmod (seine Angabe,
+03.11.2026).
 
 **Die Mechanik, am Spiel geprüft.**
 - *Inhalt und Figur:* Traumprüfung - Heldenlied von Shinryu (ContentFinderCondition 1118, Stufe 100, Patch 7.5). Die
@@ -674,8 +676,9 @@ Angabe, 03.11.2026).
   (`IsEnemyTo[0]` falsch). Alle übrigen Figuren des Kampfes (BNpcBase 19940 bis 19947 außer 19945) stehen im
   Battalion 4, das Battalion 0 feind ist (xivapi v2, 03.11.2026). Das Spiel stellt Reiryu also auf die Seite der
   Gruppe: Angreifen lässt es sich nicht, heilen wie ein Verbündeter.
-- *Ablauf:* Die vier Reiryu erscheinen, leinen sich an die vier Schadensausteiler (Tether 1, Reiryu → Spieler) und
-  wirken Drachenflug (30 s). Sie beginnen bei 0 % und verschwinden, sobald sie direkt auf 100 % geheilt sind;
+- *Ablauf:* Die vier Reiryu erscheinen, je einer leint sich an einen Spieler, meist an die Schadensausteiler (Tether 1,
+  Reiryu → Spieler; das Wiki nennt alle vier Schadensausteiler, er sah „meist"), und sie wirken Drachenflug (30 s).
+  Die Rolle des Angeleinten trägt also nichts; die Leine an ein Gruppenmitglied schon. Sie beginnen bei 0 % und verschwinden, sobald sie direkt auf 100 % geheilt sind;
   Flächenheilung wirkt weder auf sie noch auf die Angeleinten. Läuft Drachenflug durch oder stirbt ein Angeleinter,
   fliegen sie auf: Schaden und 60 s Schaden-runter auf die ganze Gruppe. In Phase 1 einmal (Zeitleiste von
   BossModReborn: Erscheinen 214 s, Ende Drachenflug 251,5 s nach dem ersten Cast), in Phase 2 einmal je Rotation, bis
@@ -694,13 +697,15 @@ Angabe, 03.11.2026).
   Gegnerliste, mit und ohne BossModReborn.
 - *Keine Heilung.* Heilziele sind `DataCenter.PartyMembers`, gefüllt über `IsParty`: die Gruppe, NPC-Gruppenmitglieder,
   der Chocobo, das Fokusziel aus der Allianz und, nur unter „Heal solo instance NPCs (Experimental)" (ab Werk aus),
-  freundliche Kampf-NPCs nach ihrem Namensschild (`NameplateKind.FriendlyBattleNPC`). Ob Reiryu dieses Namensschild
-  trägt, ist unbelegt (wahrscheinlich, Schluss aus Battalion 0).
-- *Der Schalter ist kein Weg.* Er macht die Reiryu zu Gruppenmitgliedern. Dann stehen vier Figuren bei 0 % in jedem
+  freundliche Kampf-NPCs nach ihrem Namensschild (`NameplateKind.FriendlyBattleNPC`). Die Namen der Reiryu sind grün,
+  nicht rot (seine Beobachtung); grün zeigt das Spiel freundliche Kampf-NPCs. Dass die Farbe, die ECommons aus dem
+  Spiel liest, dafür den Wert `FriendlyBattleNPC` (12) liefert, ist Schluss aus der Benennung in ECommons
+  (6e3524d0 vom 30.10.2026), deren Quelltext die Farbe nicht nennt; Battalion 0 stützt ihn.
+- *Der Schalter ist kein Weg.* Er macht die Reiryu nach dem Vorigen zu Gruppenmitgliedern. Dann stehen vier Figuren bei 0 % in jedem
   Gruppenwert: Mittelwert und Streuung der Flächenschwellen, die Minderungsurteile, die Zielwahl jeder Einzelheilung,
   auch der nur auf die Gruppe zielenden. Die Flächenheilung, die das auslöst, erreicht sie nicht.
 - *Die Angeleinten werden vergeblich geheilt (Defekt).* `StatusHelper.HealingIneffectiveStatus` führt nur `Mounted`;
-  Fluch des Drachen und Chaoserde fehlen. Die vier Schadensausteiler verlieren unter dem Fluch stetig Gesundheit und
+  Fluch des Drachen und Chaoserde fehlen. Die vier Angeleinten verlieren unter dem Fluch stetig Gesundheit und
   rücken damit in der Zielwahl nach oben; jede Einzelheilung auf sie verpufft, und ihr sinkender Stand treibt die
   Flächenschwellen. Im Kampf: In den 30 s, in denen die Reiryu voll werden müssen, gehen die GCDs der Heiler auf Ziele,
   die keine Heilung annehmen (`TODO.md`, „Heilung auf Ziele, die keine annehmen").

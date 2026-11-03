@@ -15276,6 +15276,9 @@ Eingeordnet als *Hinweis* (Mechanik des Spiels), am Artefakt geprüft und in Kon
 - *Ergebnis:* Konzept 07, „Heilziele außerhalb der Gruppe: Figuren, die nur Einzelheilung besiegt", mit Entwurf;
   `TODO.md`: Defekt „Heilung auf Ziele, die keine annehmen", offene Arbeit „Figuren, die nur Einzelheilung besiegt",
   beide vor den fremden Repositories eingereiht.
+- *Sein zweiter Hinweis* (03.11.2026): Die Namen der Reiryu sind grün, nicht rot; je einer leint sich an einen Spieler,
+  meist an die Schadensausteiler. Im Konzept eingearbeitet: Die Leine an ein Gruppenmitglied trägt die Erkennung, nicht
+  die Rolle; der grüne Name stützt, dass der Schalter für Solo-NPCs die Reiryu zu Gruppenmitgliedern machte.
 
 *Prüfgrad:* statisch – Spielblätter, Quelltext von RSR, BossModReborn und ECommons (6e3524d0 vom 30.10.2026), Wiki; kein
 Code geändert.
