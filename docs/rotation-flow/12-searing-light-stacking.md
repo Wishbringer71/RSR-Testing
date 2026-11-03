@@ -146,6 +146,9 @@ Carbuncle und eine Ladung. Der Schild nimmt den Platz vor der Beschwörung **vor
 Beschwörung wartet, solange er fällig und wirkbar ist — auch eine, die nicht die Burst-Demi ist, und bei
 ausgeschaltetem Burst. Ohne BossModReborn-Modul bleibt nur die Flagge, also ein Cast, der schon läuft;
 das ist die Grenze des reaktiven Wegs.
+Nach der Beschwörung bleibt der Schild für RSR der eigene, obwohl das Karfunkel, das ihn gelegt hat, ersetzt ist
+(Konzept 03, „Vom Spieler heißt auch: von einem Objekt, das ihm gehörte", A514). Vorher galt er dann als fremd, und
+die nächste Abwehr zündete die zweite Ladung auf den stehenden Schild.
 
 **Warum so:** Der angekündigte Schild steht in `GeneralAbility`, das die Kette erst **nach** dem
 Angriffszweig fragt. Ohne den Vorrang nähme Searing Light den einzigen Platz vor der Demi, und der Schild

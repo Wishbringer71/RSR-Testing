@@ -1918,18 +1918,28 @@ public static class StatusHelper
 		return false;
 	}
 
-	// The objects the player owns - pet, summons, companions - by id, gathered once per frame. The "from self" test
-	// asked Status.SourceObject for every status whose source is not the player himself, and that getter is a
-	// linear search over every slot of the object table (Dalamud's ObjectTable.SearchById); a source that is no
-	// longer there, or none at all, costs the whole table. A check that does not find its status visits every
-	// status on the character, and the rotations make hundreds of such checks a frame (A325).
+	// The objects the player owns or has owned in this area - pet, summons, companions - by id, brought up to date once
+	// per frame. The "from self" test asked Status.SourceObject for every status whose source is not the player,
+	// and that getter is a linear search over every slot of the object table (Dalamud's
+	// ObjectTable.SearchById); a source that is no longer there, or none at all, costs the whole table. A check that
+	// does not find its status visits every status on the character, and the rotations make hundreds of such checks a
+	// frame (A325).
+	//
+	// The ids outlive their objects until the area changes (concept 03, "Vom Spieler heißt auch", A514). A status keeps
+	// the id of the object that put it on, and many of the player's objects are replaced while their statuses run: every
+	// summon replaces Carbuncle with a new object, and Radiant Aegis, which Carbuncle puts on, then counted as someone
+	// else's - the summoner cast a second charge onto a shield that still stood for 12 to 15 seconds (traces of
+	// 03.11.2026). An id that the table shows under another owner is dropped, so a reused id is not taken for the
+	// player's.
 	private static readonly HashSet<ulong> _playerOwned = [];
 	private static long _playerOwnedTick = long.MinValue;
 	private static ulong _playerOwnedFor;
+	private static uint _playerOwnedIn;
 
 	/// <summary>
-	/// Whether <paramref name="status"/> comes from the player or from an object he owns - the same test as
-	/// <c>SourceId == playerId || SourceObject?.OwnerId == playerId</c>, without a search of the object table per status.
+	/// Whether <paramref name="status"/> comes from the player or from an object the player owns or has owned in this area - the
+	/// test <c>SourceId == playerId || SourceObject?.OwnerId == playerId</c>, without a search of the object table per
+	/// status, and true still after the object that put the status on has gone.
 	/// </summary>
 	private static bool IsFromPlayer(IStatus status, ulong playerId)
 	{
@@ -1938,23 +1948,50 @@ public static class StatusHelper
 			return true;
 		}
 
-		var now = Environment.TickCount64;
-		if (_playerOwnedTick == long.MinValue || now - _playerOwnedTick >= DataCenter.FrameCacheMs || _playerOwnedFor != playerId)
+		if (_playerOwnedTick == long.MinValue || Environment.TickCount64 - _playerOwnedTick >= DataCenter.FrameCacheMs
+			|| _playerOwnedFor != playerId || _playerOwnedIn != DataCenter.TerritoryID)
 		{
-			_playerOwned.Clear();
-			foreach (var obj in Svc.Objects)
-			{
-				if (obj.OwnerId == playerId)
-				{
-					_ = _playerOwned.Add(obj.GameObjectId);
-				}
-			}
-
-			_playerOwnedTick = now;
-			_playerOwnedFor = playerId;
+			NoteOwnedObjects();
 		}
 
 		return _playerOwned.Contains(status.SourceId);
+	}
+
+	/// <summary>
+	/// Brings the ids of the player's objects up to date: adds every object the player owns now, drops an id the table
+	/// shows under another owner, and forgets them all when the player or the area changes. Called once a frame from the
+	/// update, so that an object that lives only between two status checks - a Carbuncle replaced by the next summon - is
+	/// seen; a status check outside the update calls it itself when the last call is older than a frame.
+	/// </summary>
+	internal static void NoteOwnedObjects()
+	{
+		var playerId = Player.Object?.GameObjectId ?? 0;
+		if (playerId == 0)
+		{
+			return;
+		}
+
+		var territory = DataCenter.TerritoryID;
+		if (_playerOwnedFor != playerId || _playerOwnedIn != territory)
+		{
+			_playerOwned.Clear();
+			_playerOwnedFor = playerId;
+			_playerOwnedIn = territory;
+		}
+
+		foreach (var obj in Svc.Objects)
+		{
+			if (obj.OwnerId == playerId)
+			{
+				_ = _playerOwned.Add(obj.GameObjectId);
+			}
+			else
+			{
+				_ = _playerOwned.Remove(obj.GameObjectId);
+			}
+		}
+
+		_playerOwnedTick = Environment.TickCount64;
 	}
 
 	internal static float MinStatusRemainingTime(IBattleChara? battleChara, bool isFromSelf, ReadOnlySpan<StatusID> statusIDs, out bool found)

@@ -15283,6 +15283,41 @@ Eingeordnet als *Hinweis* (Mechanik des Spiels), am Artefakt geprüft und in Kon
 *Prüfgrad:* statisch – Spielblätter, Quelltext von RSR, BossModReborn und ECommons (6e3524d0 vom 30.10.2026), Wiki; kein
 Code geändert.
 
+### A514 · Schimmerschild doppelt: der Status galt nach jeder Beschwörung als fremd (03.11.2026)
+
+Seine Meldung (03.11.2026): „ich caste am anfang als smn schimmerschild und dann obwohl es noch da ist, vor
+schadenseingang nochmal. den fehler habe ich ganz am anfang des forks bemängelt" (A9). Eingeordnet als Fehlermeldung zu
+einer dokumentierten Entscheidung (A9, C76): Die Doppelzündung ist verboten, ihr Grund ist die fehlende Ladung bei der
+nächsten Gefahr.
+
+- *Fehlerbild am Mitschnitt* (ACT und `DefenseTrace.log` vom 03.11.2026, Build a885b43bf): drei zweite Schilde auf einen
+  stehenden ersten, Rest 15,2 s (Thordan), 11,8 s und 14,3 s (Shinryu Unreal, beide Läufe), jeweils kurz vor dem ersten
+  Raidwide (Gaias Zorn 0,8 und 1,6 s vor dem Einschlag) oder unter der Einzelabwehr.
+- *Ursache:* Quelle des Status Schimmerschild ist das Objekt Karfunkel. Jede Beschwörung ersetzt es (Sol-Bahamut,
+  Topas-Titan; ACT-Zeilen 03/04 zeigen das alte Karfunkel entfernt, ein neues mit neuer Id). `StatusHelper.IsFromPlayer`
+  kannte nur die Objekte, die dem Spieler gerade gehören, also galt der Schild als fremd, und `StatusProvide` in
+  `CanUse`, `RadiantAegisDueBeforeDemi` und `BMRShouldRefreshBefore` sahen keinen. Die Prüfung `SourceObject?.OwnerId`
+  bei Upstream hat dieselbe Lücke.
+- *Warum A9 es nicht traf:* A9 entfernte einen Zweig ohne Gefahr; hier war die Gefahr echt und der Blick auf den eigenen
+  Schild blind. Der Schild vor der Demi (A129, A277) legt ihn genau vor den Wechsel.
+- *Optionen:* nichts tun (die zweite Ladung fehlt bei der nächsten Gefahr); nur Schimmerschild auf jede Quelle stellen
+  (richtig für die Aktion, die Klasse bliebe offen: Fee des Gelehrten, Begleiter des Beastmasters); jeden Status ohne
+  auffindbare Quelle als eigenen zählen (fremde Begleiter verschwinden auch); die Ids der eigenen Objekte bis zum
+  Gebietswechsel behalten. Gewählt: das Letzte, mit Streichung einer Id, die unter fremdem Besitzer auftaucht.
+- *Falsifikation:* kein Defekt – widerlegt am Mitschnitt (Quelle und Objektwechsel) und am Pfad in der
+  `DefenseTrace.log`. Option falsch – eine wiederverwendete Id würde einen fremden Status zum eigenen machen; die Ids
+  stiegen in beiden Mitschnitten streng an, und die Streichung und der Gebietswechsel begrenzen es. Ausgeliefert, und
+  nichts ändert sich – wenn die Erhebung das alte Karfunkel nie sieht, weil zwischen Schild und Beschwörung keine Abfrage
+  lief; deshalb erhebt `NoteOwnedObjects` jetzt jeden Frame aus dem `MajorUpdater`, nicht nur bei Bedarf. Alle
+  Abfragen „vom Spieler" laufen über `IsFromPlayer`; ein anderer Quellenvergleich steht nur in `DutyRotation` (gegen die
+  Spieler-Id) und in der Anzeige.
+- *Umsetzung:* `StatusHelper.IsFromPlayer` und `NoteOwnedObjects`, Aufruf in `MajorUpdater.ActivatedCoreUpdate`.
+  Konzept 03, „Vom Spieler heißt auch: von einem Objekt, das ihm gehörte"; Verweise in 08 und 12; Release-Text.
+
+*Prüfgrad:* Ursache am Mitschnitt und am Code; Korrektur kompiliert (0 Warnungen, 0 Fehler), Prüfskripte grün; im Spiel
+nicht beobachtet. Messmittel ohne neue Zeile: ein zweiter Schimmerschild bei stehendem erstem zeigt sich im ACT-Mitschnitt,
+sein Pfad in der `DefenseTrace.log`.
+
 ## B · Commit-Register (Fork vs. `upstream/main`)
 
 ### B1 · Einzelgeprüfte Fork-Commits

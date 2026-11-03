@@ -147,6 +147,8 @@ internal static class MajorUpdater
 		if (autoOnEnabled || isActivated)
 		{
 			Run("(RSRActivatedCore): TargetUpdater.UpdateTargets", TargetUpdater.UpdateTargets);
+			// The player's objects, every frame: a status keeps the id of the object that put it on (A514).
+			Run("(RSRActivatedCore): StatusHelper.NoteOwnedObjects", StatusHelper.NoteOwnedObjects);
 		}
 
 		if (!isActivated)

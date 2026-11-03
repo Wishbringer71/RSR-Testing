@@ -606,6 +606,9 @@ gehe ohne Gefahr hinaus. Die dort festgehaltene Begründung ist genau diese: **�
 dabei auch die zweite Ladung frei — bei echter Gefahr war keine mehr da.“** Er hat es bei der Arbeit
 an dieser Regel wiederholt: die Doppelzündung von Schimmerschild war neben Addle einer der ersten
 Fehler, die der Fork behoben hat.
+Eine zweite Ursache der Doppelzündung, gemeldet am 03.11.2026, lag nicht in einem Zweig, sondern im Blick auf
+den eigenen Schild: Jede Beschwörung ersetzt Karfunkel, das den Schild gelegt hat, und danach galt er als fremd.
+Behoben zentral in Konzept 03, „Vom Spieler heißt auch: von einem Objekt, das ihm gehörte" (A514).
 
 **Die Frage wird nicht vorgelegt, sondern im Kampf entschieden — und das ist der Unterschied
 zwischen dem Buchstaben seiner Entscheidung und ihrem Grund.** A9 verbietet nicht „die zweite Ladung
