@@ -398,6 +398,233 @@ unter „BLM" zusammen und ist für `BLM_RP` deshalb nicht belastbar.
 Belegt die meisten Dispatch-Slots im Repo (28 überschriebene Mitglieder einschließlich Flags). `GeneralGCD` hatte
 81 Zweige auf einer Ebene; seit A4a ist es ein Dispatcher über benannte Stufen, die Reihenfolge unverändert.
 
+**Blaumagier: Konzept für Rotation, Synergien und Set** (sein Auftrag vom 03.11.2026: „die blaumagier rotation scheint
+nicht zu funktionieren. es wird meist nur der kaktor spell genutzt, was bei highlevel sinnfrei ist … erstelle konzept im
+loop"; dazu seine Vorgaben „nutze alle gelernten spells optimal aus, suche synergieeffekte" und „finde auch weitere
+sinnvolle kombinationen und rotationen anhand der wirkungen der spells"; A506). Mit dem Auftrag gehört der Blaumagier
+zu seinem Profil. Namen: deutsch nach den Spielblättern (xivapi, `language=de`, Zeilen-Id), Bezeichner englisch.
+
+*Quellen* (Stand 03.11.2026):
+- **Spielblätter:** alle 125 Blaumagier-Aktionen mit Wirktext, Wirk- und Abklingzeit, Reichweite und Abklinggruppe
+  (xivapi). Die Werte unten stammen daraus.
+- **Blue Academy** (`blue-academy.pages.dev`, „Updated for Patch 7.5 (May 16, 2026)"): Spielerquelle für den Blaumagier,
+  wie The Balance für die anderen Jobs.
+- **WrathCombo** 1e64c866c vom 03.11.2026, BossMod `ffxiv_bossmod` 3bbbdf5e0 vom 02.11.2026 (Rotation „xan BLU", als WIP
+  geführt), UltimateCombo 7fa9359 vom 04.10.2026 (StackBLU): Werkzeugquellen, Code nur gelesen.
+- **consolegameswiki**, „Blue Mage": Regeln des Sets, Stufe 80.
+
+**Was im Kampf heute geschieht** (am Code von `BLU_Reborn` und `BlueMageRotation`):
+- *D1, 1000 Nadeln* (Id 11397, vom Kaktor gelernt; vermutlich sein „Kaktor-Zauber"):
+  - Er steht in `UseFiller` vor allen Füllzaubern. Seine einzige Bedingung ist, dass das Ziel mindestens 1000 HP hat;
+    auf hoher Stufe trifft das auf jedes Ziel zu.
+  - Laut Blatt wirkt er 6 s und macht feste 1000 Schaden, aufgeteilt auf alle Gegner in 4 Yalm. Schallwelle (Sonic
+    Boom, 18308) wirkt 1 s mit Potenz 210.
+  - Er lohnt nur, solange 2,4 GCDs Füllzauber weniger als 1000 Schaden machen, also weniger als rund 417 Schaden je
+    GCD; das ist nur ganz unten in den Stufen der Fall.
+  - Dieselbe Klasse ohne Wertvergleich: Rakete (Missile, 50 % der aktuellen HP, geringe Chance), Raketenwerfer
+    (Launcher), Dimensionsverschiebung (Dimensional Shift, 5 s), Schweifschraube, Verhängnis, Todesstufe 5.
+- *D2, Mondflöte* (11415): Sie steht in `UseUtilityAndDebuffs` unter nur `InCombat`.
+  - Sie gibt 15 s Waxing Nocturne (+50 % Schaden), danach 15 s Waning Nocturne. In dieser Zeit gibt es keine Aktion:
+    keine Heilung, keine Abwehr, keine Wiederbelebung.
+  - RSR zündet sie neu, sobald Waning endet. Ohne gesammelten Burst ist das ein Wechsel aus 15 s mit 150 % und 15 s mit
+    0 %, im Mittel 75 % des Schadens.
+  - Rechnung: Ohne Burst bringt ein Fenster +630 Potenz und kostet 1470 (sechs GCDs Waning und den eigenen GCD), also
+    −840 je Fenster.
+  - Das wiegt schwerer als D1. Die Hälfte der Kampfzeit kann der Blaumagier nichts tun.
+- *D3, die beiden Rösselsprünge:*
+  - Laut Blatt verstärkt Weißer Rösselsprung (18310) gegen Bind und setzt Slow. Schwarzer Rösselsprung (18311)
+    verstärkt gegen Slow und setzt Bind.
+  - In `BlueMageRotation` liest Weißer Rösselsprung Blind statt Bind, und Schwarzer setzt Blind statt Bind.
+- *D4, Pfeife* (Whistle, 18309): Sie verstärkt nur den nächsten physischen Zauber um 80 %.
+  - `MaintainDoTs` setzt sie vor Gesang der Gemarterten (Song of Torment), einen magischen Zauber; dort verfällt sie.
+  - Borstigkeit (Bristle, +50 % auf den nächsten Zauber) geht nur vor den Gesang. Gerade dort lohnt sie wenig (unten,
+    „Wert statt Reihenfolge").
+- *D5, Füllreihenfolge:*
+  - Heiligenstrahl (Saintly Beam, Potenz 100, 500 nur gegen Untote) steht ohne Prüfung auf Untote vor Schallwelle.
+  - Perpetueller Strahl (Perpetual Ray, 3 s Wirkzeit) und viele Flächenzauber mit `AoeCount` 1 stehen ebenfalls davor.
+  - Wirkzeiten von 2 bis 3 s lassen kaum Raum zum Weben. Schallwelle (1 s) ist bei Blue Academy, WrathCombo und
+    BossMod der Füllzauber.
+- *D6, Surpanakha* (18323): Vier Ladungen; jede verstärkt die nächste um 50 % (bis dreifach), jede andere Aktion bricht
+  die Kette. RSR beginnt bei vier Ladungen und hängt nach, belegt im Code. Ob eine Webregel dazwischen fällt, ist nicht
+  gemessen.
+
+**Das Set** (sein Hinweis vom 03.11.2026: RSR wirke offenbar Zauber außerhalb des Sets oder schreibe es im Kampf um;
+1000 Nadeln stehe bei ihm nicht im Set und werde trotzdem gewirkt):
+- *Spielregel* (consolegameswiki; seit Patch 4.5, Lodestone-Patchnotes): 24 aktive Zauber; „Active actions cannot be
+  changed during combat or during certain duties"; bis zu fünf gespeicherte Sets. Das Set ändert die Hotbar nicht.
+  - Seine Frage, ob ein Patch das änderte: In den Patchnotes bis 7.5 ist keine Änderung am aktiven Set gefunden. Gesucht
+    wurde im Web, 03.11.2026; die Notizen zu 7.1 bis 7.5 sind nicht einzeln gelesen.
+  - Die Auswertung der Patches 7.5 bis 7.57 (A473) fand keine Änderung am Blaumagier.
+- *RSR am Code:*
+  - Es liest das Set jeden Frame (`ActionUpdater.UpdateSlots`, `GetActiveBlueMageActionInSlot`).
+  - Ein Blaumagier-Zauber besteht die Grundprüfung nur im Set (`ActionBasicInfo.IsOnSlot`). Außerhalb des Sets gehen nur
+    Folgezauber, die das Spiel an die Stelle eines gesetzten Zaubers legt: Weißer Tod (23268) über Eisiger Nebel,
+    Göttlicher Katarakt (23274) über Barriere.
+  - Einen Aufruf, der das Set schreibt (`SetBlueMageActions`, `AssignBlueMageActionToSlot`), gibt es im ganzen
+    Repository nicht.
+  - Die Aktionsliste der Einstellungen zeigt dagegen jeden Blaumagier-Zauber mit Schalter, auch die außerhalb des Sets
+    (in einer Gruppe ohne Namen, `RotationUpdater.GroupActions`). Das legt nahe, RSR könne sie nutzen.
+- *Andere Werkzeuge:*
+  - BossMod und WrathCombo lesen das Set nur.
+  - WrathCombo setzt einen Zauber auf Klick in seinem Einstellungsfenster auf einen freien Platz.
+  - UltimateCombo tauscht beim Schatzkarten-Tank sechs Plätze selbst, nur außerhalb des Kampfes, ohne Ziel und ohne
+    laufenden Zauber.
+  - Keines schreibt das Set im Kampf.
+- *Upstream hatte einen Setzer* (seine Frage, ob ältere Versionen das konnten; Versionsgeschichte):
+  - 82a3891d2 vom 19.12.2024: Jede Blaumagier-Rotation nannte ihre Zauber (`ActiveActions`), und RSR setzte sie als
+    aktives Set (`SetBlueMageActions`). Die Einstellung hieß „Automatically set needed Blue Mage actions" und stand unter
+    den Grundeinstellungen, ab Werk an. Die Liste der damaligen Grundrotation enthielt 1000 Nadeln.
+  - 4f322f30d vom 18.09.2025 („BLU auto set hotfix"): Aufruf abgeschaltet, mit dem Kommentar „disabled for now while i
+    figure out what is causing it to crash to desktop". Die Einstellung wurde unter neuem Namen ab Werk aus.
+  - a09dc9257 vom 24.04.2026 (Umbau des Blaumagiers, `BLU_Reborn`): Setzer und Einstellung entfernt. Seitdem gibt es
+    keine solche Einstellung mehr, weder unter Extras noch anderswo.
+  - *Am alten Code sichtbare Absturzursachen* (Schluss, nicht im Spiel belegt):
+    - Er übergab dem Client nur so viele Ids, wie die Rotation nannte. Der Client liest für das Set aber 24 Plätze
+      (`ActionManager` führt 24, `FixedSizeArray24`) und hätte dann hinter dem Feld weitergelesen.
+    - Er rief im Konstruktor der Rotation. Das ist beim Laden, ohne Prüfung auf Kampf und ohne Gewähr, dass es auf dem
+      Spiel-Thread lief.
+- *Widerspruch, offen:* Code und Spielregel sagen, 1000 Nadeln geht nur im aktiven Set. Seine Beobachtung sagt etwas
+  anderes. Möglich sind drei Dinge:
+  - Das aktive Set enthält den Zauber doch; gespeicherte Sets und Hotbar zeigen etwas anderes. Möglich ist, dass der
+    alte Setzer ihn einmal gesetzt hat (Schluss).
+  - Die Lesung liefert etwas anderes als erwartet.
+  - Ein Weg umgeht die Prüfung.
+  Statisch nicht entscheidbar; Messmittel unter Stufe 0.
+
+**Synergien aus den Wirktexten** (Spielblätter; wo eine Wirkung über den Text hinaus angenommen ist, steht es dabei):
+
+| Erzeuger | Zustand | Verbraucher | Wert gegen Schallwelle (210) | Bedingung, Grenze |
+|---|---|---|---|---|
+| Schwarzer Rösselsprung (18311) | Bind | Weißer Rösselsprung (18310): 400, setzt Slow | +190 je GCD | Danach im Wechsel: Schwarzer 400 gegen Slow, setzt Bind. Ein Kreislauf aus 400ern, solange Bind und Slow landen. Linie 20 Yalm. Bosse sind meist dagegen immun; gemessen wird, ob der Zustand landet |
+| Schlechter Atem (11388), Eisstachel (11418, 50 % Chance) | Slow | Schwarzer Rösselsprung: 400 | +190 | wie oben |
+| Aqua-Atem (11390) | Dropsy | Hochstrom (11387): 220 statt 180, Lähmung 30 s; Schneesturm (18297): gefriert | Fläche | Rudel |
+| Stimme des Widders (11419) | Deep Freeze 12 s | Ultravibration (23277): tötet gefrorene Gegner; Stimme des Drachen (11420): 400 | Rudel sofort tot | Ultravibration wirkt nicht auf höherstufige und „certain others" (Bosse). Stimme des Drachen spart 8 Yalm Innenkreis aus; der Widder trifft nur 6 Yalm. Der Drache trifft dieselben Gegner also nur nach einem Stellungswechsel, den RSR nicht macht |
+| Petrifikation Stufe 5 (11414), geringe Chance | Petrification | Bohrkanone (11398): 600; Ultravibration | +390 | nur Gegnerstufe als Vielfaches von 5, nicht höher als die eigene |
+| Eisiger Nebel (23267) + erlittener Treffer | Touch of Frost | Weißer Tod (23268): 400, Deep Freeze | +190 | nur wenn man getroffen wird (Tank) |
+| Verwirrung (11403, Stun 6 s), Bombenwurf (11396, 3 s), Spitze Zunge (11412, 4 s), Tatami-gaeshi (23266, 3 s) | Stun | Blankes Messer (11400): 450 | Verwirrung und zweimal Messer 900 gegen 630 | Messer reicht 3 Yalm. Für ihn nicht dafür in den Nahkampf gehen (CLAUDE.md, „Spielweise"). Gegner bauen Widerstand gegen Stun auf |
+| Replikator (23286) | Lightheaded 5 s | Senfbombe (23279): Schaden über Zeit nur bei Lightheaded; Replikator selbst 400 beim ersten Mal | Fläche | Wiederholung macht immun |
+| Mjam Mjam Matschkuchen (34569) | Begrimed | Großes Reinemachen (34570): Regen je Gegner, bis Potenz 300 | Erhaltung | Rudel, Tank allein |
+| Barriere (23273), 30 % der max. HP erlitten | Auspicious Trance | Göttlicher Katarakt: 500, unter Tank-Mimikry 1000 | Tank | Bewegung oder eine andere Aktion beendet die Barriere |
+| Schwinge des Urteils (34576), viermal | Winged Redemption 10 s | Mette marcato (34574): 440 statt 220 | +230 | Die Abklingzeit der Schwinge setzt sich dreimal zurück, die vierte kostet 400 |
+| Pfeife (18309) | +80 % auf den nächsten physischen Zauber | Dreizack (23264, 3 × 150), Schwinge, Messer gegen Stun | lohnt ab 263 Potenz | eigener GCD. Nicht mit Borstigkeit zusammen (Harmonized/Boost) |
+| Kribbeln (23265) | +100 Potenz auf den nächsten physischen Zauber, selbst 100 Potenz | Dreizack (+100 je Treffer nach Spielerpraxis, Text nennt es nicht), Schwinge | Dreizack: +400 gegen 210 | eigener GCD, 2 s |
+| Borstigkeit (11393) | +50 % auf den nächsten Zauber | Matra-Magie (800 unter DPS-Mimikry), Zauberatem (Schaden über Zeit), Göttlicher Katarakt, Weißer Tod | lohnt ab 420 Potenz | Vor Gesang der Gemarterten (550 über die ganze Dauer) bringt sie +275 gegen 210, wenig |
+| Mondflöte (11415) | +50 % auf allen Schaden 15 s, dann 15 s nichts | Burst (unten) | +3035 je Fenster mit Burst, −840 ohne | Sicherheit, unten |
+| Einschüchtern (11411) oder Unheimliche Aura (11421), gemeinsame Abklingzeit 60 s | +5 % erlittener Schaden (Aura nur Magie, aber Fläche) | ganze Gruppe | Gruppenwert | 15 s, passt auf das Mondflöten-Fenster |
+| Äther-Mimikry (18322) | DPS / Tank / Heiler | Matra-Magie ×2; Verschlingen 70 s, Katarakt 1000, Drachenkraft 40 %, Skiltron 100; Vitakupo 500, Gobhaut 250, Exuviation 300, Stotram heilt | Rolle | Ziel ist ein Gruppenmitglied der Rolle, nicht man selbst. Die Rolle wählt der Spieler; RSR liest sie (`IsTank`, `IsHealer`) |
+| Totalabwehr (11417) | −40 % Schaden erlitten und ausgeteilt | Goblingruß (34563): 220, von vorn 320 | Tank | nur als Tank oder allein |
+| Kampfinstinkt (23276) | +100 % Schaden und Heilung, hebt die Strafe der Totalabwehr auf | alles | ×2 | nur allein in Inhalten für mehrere Spieler |
+| Wetter Regen, Schauer, Gewitter | – | Pitsche, patsche (34580): 1000 statt 500 | +500 | Wetter des Gebiets; RSR liest es für den Blaumagier noch nicht |
+| eigener Chocobo in der Gruppe | – | Choco-Meteo (23284): 300 | Fläche | |
+| Untote | – | Heiligenstrahl: 500, Fläche ohne Abschlag | +290 | woran RSR Untote erkennt, ist offen; ohne das nur ab drei Gegnern (100 je Gegner) |
+
+**Ziel-Rotation nach Rolle** (Blue Academy 7.5, WrathCombo, BossMod; die Rolle aus der Äther-Mimikry):
+- *DPS, Einzelziel:* Füllzauber Schallwelle. Gesang der Gemarterten erneuern; Zauberatem (eine Wirkung je Gruppe) oder
+  Ewige Flammen (34579, eine je Gruppe, bis zum Kampfende).
+  - Zermalmender Geist (23275) auf Abklingzeit.
+  - Schwinge des Urteils mit Pfeife und Kribbeln, dann Mette marcato.
+  - Alle 2 Minuten das Mondflöten-Fenster. Vorher: Pfeife, Kribbeln, Zermalmender Geist. Im Fenster: Gewissenstritt
+    (J Kick), Dreizack, Monddämmerung (Nightbloom), Schwinge, Federregen, Pitsche patsche, Schwinge, Schockschlag,
+    Sterblichkeit (Being Mortal), Borstigkeit, Swiftcast, viermal Surpanakha, Matra-Magie, Phantomhast. Phantomhast
+    kanalisiert in Waning weiter (Blue Academy: „the damage buff snapshots").
+  - WrathCombo hält die Burst-Zauber zurück, sobald Monddämmerung in höchstens 30 s bereit ist.
+- *DPS, Rudel:* Hydrosog (23282) zieht zusammen. Stimme des Widders und Ultravibration räumen das Rudel ab (Blue
+  Academy, UltimateCombo). Sonst Rösselsprung-Kreislauf, Elektrogenese (18298) und die Flächenzauber.
+  - Gegen einzelne Dungeon-Bosse, die für Tod verwundbar sind: Rakete (Blue Academy, mit Liste der Bosse).
+- *Tank:* Totalabwehr; Goblingruß von vorn als Füllzauber, sonst Schallwelle; Verschlingen.
+  - Vor Tankbustern Barriere und Drachenkraft; Katarakt, sobald er bereit ist.
+  - Einschüchtern; Schlechter Atem als Minderung; Matschkuchen und Reinemachen zur Erhaltung.
+- *Heiler:* Vitakupo, Weißer Wind, Engelspeise, Stotram (Heilung), Gobhaut, Exuviation (reinigt).
+- *Bewusst nicht:*
+  - Schlussstich, Selbstzerstörung, Assimilation (der Blaumagier stirbt; Assimilation bleibt hinter seinem Schalter,
+    ab Werk aus).
+  - Bestialischer Zorn (kostet 50 % der max. HP) und Rachestoß (500 nur unter 20 % HP): nur als Option für Spieler,
+    die Schaden vor Sicherheit stellen, ab Werk aus (CLAUDE.md, „Spielweise").
+
+**Wert statt Reihenfolge** (die Behebung von D1, D4 und D5 als Klasse):
+- Ein Zauber mit festem oder prozentualem Schaden geht nur, wenn er mehr bringt als der Füllzauber in derselben Zeit.
+  - Den Schaden je Potenz misst RSR am eigenen Schallwellen-Treffer, über den Effekt-Handler, der jeden Treffer sieht.
+    Das steuert sich selbst nach Stufe und Ausrüstung nach.
+  - Bei 1000 Nadeln: 1000 gegen gemessenen Füllschaden mal 2,4 GCDs.
+  - Rakete, Raketenwerfer und Dimensionsverschiebung: erwarteter Anteil der Gegner-HP gegen den Füllschaden, nur gegen
+    Gegner ohne höhere Stufe.
+  - Ob eine Gegnerart dagegen verwundbar ist, lernt RSR aus dem Ergebnis, wie bei den gelernten Schlafwiderständen.
+- Ein Verstärker (Borstigkeit, Pfeife, Kribbeln) geht nur vor einem Verbraucher, der ihn über den Wert eines Füllzaubers
+  hebt (Schwellen in der Tabelle). Er geht nicht ins Leere: Pfeife nur vor einen physischen Zauber.
+- Füllzauber sortiert nach Potenz je GCD und nach Webraum. Schallwelle ist der Einzelziel-Füllzauber; Flächenzauber erst
+  ab ihrer Gegnerzahl.
+
+**Sicherheit** (seine Regel, mit der Wahrscheinlichkeit gewichtet):
+- Die Mondflöte geht nur, wenn alles davon zutrifft:
+  - Burst bereit: Monddämmerung oder Sterblichkeit und die Fensterzauber im Set und bereit.
+  - Keine Gefahr in den 30 s aus Fenster und Waning: kein Mitglied in der kritischen Klasse. Mit BossMod-Modul keine
+    Raidwide und kein Tankbuster auf die Gruppe vorhergesagt; ohne Modul nur reaktiv.
+  - Nicht als Tank-Mimikry: 15 s ohne Abwehr.
+  - Allein nur unter Kampfinstinkt und mit voller Gesundheit.
+  - Ohne eine dieser Bedingungen wartet sie und schreibt den Grund ins `DefenseTrace.log`.
+- Diamantrücken (11424) während Waxing beendet das Fenster sofort; er geht dort nur im Notfall.
+- Für Spieler, die Schaden vorziehen, wird die Gefahrenbedingung eine Option, ab Werk an (seine Regel).
+
+**Alle gelernten Zauber nutzen: das Set** (seine Vorgabe):
+- Gelernt ist ein Zauber, wenn `UIState.IsUnlockLinkUnlockedOrQuestCompleted` seinen `UnlockLink` bestätigt. RSR prüft
+  das schon in `ActionBasicInfo`; WrathCombo liest es ebenso.
+- Ein Set wählt RSR nach Rolle und Lage aus den gelernten Zaubern: Einzelziel-Burst, Rudel, Tank, Heiler. Bausteine
+  sind die Kerne aus Blue Academy und die Synergieketten oben, gefüllt nach Wert.
+- Schreiben nur unter diesen Bedingungen:
+  - außerhalb des Kampfes, ohne Ziel und ohne laufenden Zauber, wie UltimateCombo;
+  - auf dem Spiel-Thread, aus dem Frame-Update, nie aus einem Konstruktor;
+  - immer mit allen 24 Plätzen; leere Plätze sind 0, wie der Client sie liest;
+  - einmal je Entscheidung, nicht je Frame.
+  Danach liest RSR die Plätze zurück; schlägt das fehl, bleibt das Set des Spielers. Das sind die beiden Ursachen, an
+  denen Upstreams Setzer vermutlich abstürzte (oben).
+- *Bedrohung:* RSR ändert, was der Spieler im Zauberbuch sieht, und in manchen Inhalten verbietet das Spiel den
+  Wechsel. Darum als Option, ab Werk an (seine Vorgabe „alle gelernten nutzen"). Die Hotbar bleibt unberührt.
+- *Mithören zuerst:* Das `DefenseTrace.log` nennt das Set und die gelernten Zauber, die eine Kette bräuchte und die im
+  Set fehlen, wie UltimateCombo es je Ablauf anzeigt.
+- *Masked Carnivale* (seine Frage, 03.11.2026: ob ein Set vor dem Betreten so aus bekannten Zaubern optimiert werden
+  kann, dass es die besten Gewinnchancen hat). Ja, aus Daten, die der Client schon liefert:
+  - *Die Stufe:* Die Einweisung (`AgentAozContentBriefing`, FFXIVClientStructs b69073a) führt die gewählte Stufe
+    (`SelectedContentIndex`), ihre Gegner je Akt (`AozArrangementData`) und die Wochenaufgaben mit Bedingungen. Das
+    Blatt `AOZContent` nennt je Stufe die drei Akte, ihren Kampftyp sowie Ideal- und Standardzeit.
+  - *Die Gegner:* RSR liest das Blatt `AOZContentBriefingBNpc` schon (`MaskedCarnivaleHelper`, seit Upstreams Umbau
+    a09dc9257). Es enthält je Gegner Schwäche oder Immunität gegen sechs Elemente und vier Angriffsarten. Dazu kommt die
+    Verwundbarkeit für Slow, Petrifikation, Lähmung, Unterbrechung, Blind, Stun, Schlaf, Bind, Heavy und festen oder
+    tödlichen Schaden. Die Einweisung im Spiel zeigt dieselben Daten. RSR sperrt damit heute Zauber gegen immune
+    Gegner, wählt das Set aber nicht danach.
+  - *Die Wahl:* je Akt die gelernten Zauber nach Wert gegen diese Gegner. Schwäche zählt hoch, Immunität fällt weg,
+    eine Verwundbarkeit öffnet eine Kette aus der Synergietabelle, etwa Petrifikation mit Bohrkanone oder Ultravibration.
+    Dazu Heilung, Abwehr und Unterbrechung (Spucksardine), wo ein Gegner unterbrechbar ist.
+  - *Wann:* Das Set wird geschrieben, solange die Einweisung offen ist und eine Stufe gewählt ist, vor dem Betreten,
+    außerhalb des Kampfes. Ob das Spiel das Set in der Stufe selbst ändern lässt, ist offen; der Entwurf braucht es
+    nicht.
+  - *Grenze:* Die Blätter beschreiben Widerstände, nicht die Mechaniken einer Stufe (etwa Reflexion oder ein Gegner,
+    der zur Mitte zieht). Für die beste Gewinnchance zählen auch die Stufen-Leitfäden als zweite Quelle, je Stufe
+    geprüft. Ohne sie bleibt es eine Wahl nach Widerständen.
+
+**Stufen:**
+- *Stufe 0, Messung* (gebaut mit A506):
+  - `DefenseTrace.log` schreibt das aktive Set des Blaumagiers, sobald es sich ändert.
+  - Es schreibt jede eigene Blaumagier-Aktion, die landet, obwohl sie nicht im gelesenen Set steht; Folgezauber über
+    ihren Grundplatz ausgenommen.
+  - Das entscheidet seinen Hinweis zu 1000 Nadeln.
+- *Stufe 1, Defekte:* D1 bis D5 nach „Wert statt Reihenfolge"; D2 nach „Sicherheit"; D3 Bind statt Blind.
+- *Stufe 2, Synergien:* die Ketten aus der Tabelle. Jede Kette prüft, ob ihr Zustand landet, und gibt sie sonst für
+  diese Gegnerart auf.
+- *Stufe 3, Set:* Auswahl und Schreiben außerhalb des Kampfes.
+
+**Falsifikation:**
+- *Kein Defekt?* D1, D2 und D3 sind am Code und an den Blättern belegt. Die Rechnung zeigt D2 als Verlust auch an
+  Schaden.
+- *Option falsch?*
+  - Eine feste Reihenfolge wie bei WrathCombo trüge die Burst-Logik, aber nicht die Stufen und die Lage; die
+    Wertregel steuert sich nach.
+  - Ein Set im Kampf umzuschreiben, verbietet das Spiel.
+- *Ausgeliefert, und nichts ändert sich?*
+  - Steht ein Zauber nicht im Set, bleibt jede Regel stumm. Darum misst Stufe 0 das Set, und Stufe 3 setzt es.
+  - Ohne DPS-Mimikry bringt Matra-Magie die Hälfte; das trägt die Wertregel.
+- *Prüfgrad:* statisch an Code, Blättern, Spieler- und Werkzeugquellen; die Mondflöten-Rechnung aus Blattpotenzen.
+  Das Nachziehen von Dauerschaden in Waxing ist Spielerpraxis.
+
 ### BST — 538 LOC, 13 Configs
 
 Seit dem Upstream-Umbau (07f9f7daf, 30.09.2026) eine eigene Rotation: `GeneralGCD` mit Quelling Wave,

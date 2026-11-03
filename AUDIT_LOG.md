@@ -15064,6 +15064,51 @@ durchgehen". Als Skill `spielpatch` festgehalten (Lesetabelle in CLAUDE.md); den
 - *Prüfgrad:* statisch am Code von RSR, FFXIVClientStructs und BOCCHI; kompiliert, alle CI-Prüfungen lokal; der
   Mithörer im Spiel nicht beobachtet.
 
+### A506 · Blaumagier: Ursachen, Quellen, Konzept für Rotation, Synergien und Set; Messung des Sets (03.11.2026)
+
+- *Seine Meldung und Vorgaben:*
+  - Die Rotation nutze meist nur den Kaktor-Zauber.
+  - „nutze alle gelernten spells optimal aus, suche synergieeffekte"; „finde auch weitere sinnvolle kombinationen und
+    rotationen anhand der wirkungen der spells".
+  - Hinweise: weitere Plugins zum Erkennen; RSR wirke Zauber außerhalb des Sets; die Einstellungen legten das nahe;
+    1000 Nadeln stehe nicht in seinem Set und werde trotzdem gewirkt.
+  - Fragen: ob BossMod hilft, ob ältere Upstream-Versionen das konnten, ob die Oberfläche es anbot, ob Patches darauf
+    hinwiesen.
+  - Mit dem Auftrag gehört der Blaumagier zu seinem Profil (CLAUDE.md).
+- *Ursachen am Code* (Konzept 01, „Blaumagier"):
+  - D1: 1000 Nadeln ohne Wertvergleich vor Schallwelle; laut Blatt 6 s Wirkzeit und feste 1000 Schaden.
+  - D2: Mondflöte unter nur `InCombat`. Im Wechsel 15 s +50 % und 15 s ohne Aktion, im Mittel 75 %, ohne Heilung und
+    Abwehr.
+  - D3: Rösselsprünge lesen Blind statt Bind.
+  - D4: Pfeife vor einem magischen Zauber.
+  - D5: Heiligenstrahl und langsame Flächenzauber vor Schallwelle.
+- *Quellen:*
+  - alle 125 Blaumagier-Aktionen mit Wirktext (xivapi);
+  - Blue Academy (Patch 7.5, 16.05.2026);
+  - WrathCombo 1e64c866c, BossMod 3bbbdf5e0 (xan BLU), UltimateCombo 7fa9359 (ohne Lizenzdatei; alle Werkzeugquellen nur gelesen);
+  - consolegameswiki.
+  - BossMod liest das Set nur. UltimateCombo zeigt je Ablauf fehlende Zauber und tauscht für den Schatzkarten-Tank
+    sechs Plätze, nur außerhalb des Kampfes.
+- *Set:* RSR liest das Set jeden Frame und lässt nur Zauber daraus zu (`IsOnSlot`); Folgezauber über ihren Grundplatz.
+  Upstream setzte das Set vom 19.12.2024 an selbst (82a3891d2, „Automatically set needed Blue Mage actions", ab Werk
+  an). Am 18.09.2025 schaltete 4f322f30d den Setzer wegen Abstürzen ab; am 24.04.2026 entfernte ihn a09dc9257.
+  - Am alten Code sichtbare Ursachen (Schluss): weniger als 24 Ids übergeben, und Aufruf im Konstruktor der Rotation.
+  - Patchnotes: Die Regel steht seit 4.5; eine Änderung bis 7.5 ist nicht gefunden.
+- *Synergien und Rechnung:* Tabelle im Konzept. Mondflöten-Fenster mit Burst +3035 Potenz, ohne Burst −840.
+  Rösselsprung-Kreislauf +190 je GCD. 1000 Nadeln lohnt nur unter rund 417 Schaden je GCD Füllzauber.
+- *Gebaut, Stufe 0 (Messmittel):* `BlueMageSetTrace` schreibt ins `DefenseTrace.log`:
+  - das aktive Set, sobald es sich ändert (Platz, Name, Id);
+  - jede eigene Blaumagier-Aktion, die außerhalb des gelesenen Sets landet. Ein Folgezauber, in den sich ein
+    gesetzter Zauber gerade verwandelt (`GetAdjustedActionId`), zählt nicht.
+- *Falsifikation:* im Konzept. Hält keine Hypothese gegen D1 bis D3; D2 ist auch am Schaden ein Verlust.
+- *Masked Carnivale* (seine Frage): Ein Set je Stufe vor dem Betreten ist aus Client-Daten wählbar. Die Einweisung
+  (`AgentAozContentBriefing`) führt Stufe und Gegner je Akt; `AOZContentBriefingBNpc` (von RSR schon gelesen) führt
+  Widerstände und Verwundbarkeiten je Gegner. Grenze: Mechaniken der Stufen stehen nicht in den Blättern. Teil von
+  Stufe 3 im Konzept.
+- *TODO:* Stufe 1 (Defekte), Stufe 2 (Ketten), Stufe 3 (Set); Warten auf sein Protokoll zu 1000 Nadeln.
+- *Prüfgrad:* statisch an Code, Blättern, Spieler- und Werkzeugquellen; kompiliert, alle CI-Prüfungen lokal; die
+  Zeilen im Spiel nicht beobachtet.
+
 ## B · Commit-Register (Fork vs. `upstream/main`)
 
 ### B1 · Einzelgeprüfte Fork-Commits

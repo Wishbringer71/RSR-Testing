@@ -10,7 +10,10 @@ Betroffene: **N** Endnutzer · **R** Autoren abgeleiteter Rotationen (Namensräu
 Nach der Wirkung im Kampf: Sicherheit der Gruppe vor Schaden, gewichtet mit der Wahrscheinlichkeit, in seinem Profil
 (seine Vorgabe, 17.10.2026: „todo nach wichtigkeit abarbeiten. jeweils im loop bearbeiten").
 
-1. Fremde Repositories auf Verbesserungen für RSR prüfen: Jeder Fund kann ein Defekt im Verhalten einer Klasse sein,
+1. Blaumagier, Stufe 1: Die Mondflöte nimmt die Hälfte der Kampfzeit jede Aktion, auch Heilung und Abwehr; zuerst sie,
+   dann 1000 Nadeln und die übrigen Defekte.
+2. Blaumagier, Stufe 2 und 3: Synergieketten, dann das Set aus den gelernten Zaubern.
+3. Fremde Repositories auf Verbesserungen für RSR prüfen: Jeder Fund kann ein Defekt im Verhalten einer Klasse sein,
    den RSR heute im Kampf zeigt; zuerst die Rotationswerkzeuge für alle Jobs, Daedalus vorn (aktiv, alle Jobs,
    eigene Kampfvorhersage).
 
@@ -18,7 +21,36 @@ Danach die technische Schuld, soweit ihre Auflösungsbedingung erfüllt ist. War
 
 ## Defekte
 
+### Blaumagier, Stufe 1: Mondflöte, 1000 Nadeln, Rösselsprünge, Pfeife, Füllreihenfolge · N
+- *Wirkung:*
+  - Die Mondflöte geht im Kampf jederzeit. Danach folgen 15 s ohne jede Aktion, im Mittel 75 % Schaden.
+  - 1000 Nadeln (6 s, feste 1000) verdrängt Schallwelle.
+  - Die Rösselsprünge lesen Blind statt Bind.
+  - Pfeife verfällt vor einem magischen Zauber.
+  - Heiligenstrahl und langsame Flächenzauber gehen vor Schallwelle.
+- *Ort:* `BLU_Reborn` (`UseUtilityAndDebuffs`, `MaintainDoTs`, `UseFiller`), `BlueMageRotation` (Modify der
+  Rösselsprünge).
+- *Nächster Schritt:* Loop zu D1 bis D5. Mondflöte nur mit Burst und ohne vorhergesagte Gefahr; Wert statt
+  Reihenfolge mit gemessenem Schaden je Potenz.
+- *Konzept:* 01, „Blaumagier".
+
 ## Offene Arbeit
+
+### Blaumagier, Stufe 2: Synergieketten · N
+- *Wirkung:* Gegen Gegner, auf denen Bind und Slow landen, bringt der Rösselsprung-Kreislauf 400 statt 210 je GCD.
+  Stimme des Widders mit Ultravibration räumt Rudel ab. Pfeife und Kribbeln gehen vor Dreizack und Schwinge.
+  Schwinge des Urteils führt zu Mette marcato. Dazu die übrigen Ketten.
+- *Ort:* `BLU_Reborn`.
+- *Nächster Schritt:* nach Stufe 1; je Kette die Prüfung, ob ihr Zustand landet.
+- *Konzept:* 01, „Blaumagier", Synergietabelle.
+
+### Blaumagier, Stufe 3: Set aus den gelernten Zaubern · N
+- *Wirkung:* RSR nutzt nur die 24 Zauber im aktiven Set. Ein Set nach Rolle und Lage aus den gelernten Zaubern macht
+  die Ketten erst möglich. Im Masked Carnivale je Stufe nach den Widerständen ihrer Gegner, vor dem Betreten.
+- *Ort:* neu, außerhalb des Kampfes; `SetBlueMageActions` mit allen 24 Plätzen, auf dem Spiel-Thread, danach
+  zurücklesen.
+- *Nächster Schritt:* nach Stufe 0 (sein Protokoll) und Stufe 2.
+- *Konzept:* 01, „Blaumagier", „Alle gelernten Zauber nutzen".
 
 ### Fremde Repositories auf Verbesserungen für RSR prüfen · N, R, U
 Sein Auftrag (02.11.2026): „alle von dir gefundenen repos, die du benannt hast prüfen, ob daraus generell
@@ -109,6 +141,11 @@ den Spieldaten (`CastType`, `EffectRange`), hinter eigener Option. *Konzept:* 13
 nebeneinander gebraucht werden.
 
 ## Warten auf Daten oder Fremde
+
+- **Blaumagier: 1000 Nadeln gewirkt, obwohl nicht im Set** (sein Hinweis, 03.11.2026; A506). Im Kampf: RSR wirkt
+  laut ihm einen Zauber außerhalb des Sets; der Code lässt das nicht zu. Auflösung: die Zeilen „blue mage set" und
+  „blue mage spell outside the active set" im nächsten `DefenseTrace.log` als Blaumagier. Konzept 01, „Blaumagier",
+  „Das Set".
 
 - **Beastmaster: die Regeln schrieben am 02.11.2026 keine Zeile** (A489). Im Kampf: In einer Stunde mit allen Regeln
   (b83dc3ce9) rief RSR 28 Hörner, aber weder die Hornwahl nach Lage noch das Anfreunden noch der Katalog hinterließen

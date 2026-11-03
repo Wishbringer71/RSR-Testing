@@ -56,6 +56,9 @@ What this release changes in the fight. For the whole distance from upstream, se
   Ifrit comes ahead of the configured order and both go out at once; Garuda then comes last. Not under Searing Light,
   not while moving unless "Use Crimson Cyclone when moving" is on, and not with "Use Crimson Cyclone at any range" on.
   The Cyclone never goes beyond your distance setting.
+- **Blue Mage: the active set in the trace.** `DefenseTrace.log` now lists the Blue Mage's 24 active spells whenever
+  they change, and every own Blue Mage spell that lands although it is not in that set (a follow-up a set spell turns
+  into, such as White Death, does not count).
 - **Beastmaster: a record of the Master's Bestiary.** While the Bestiary is open, RSR writes to `BestiaryTrace.log`
   next to `DefenseTrace.log` what the game receives from each click, every context menu with its entries, every server
   command the client sends through its general command function, and the battlehorn slots as they change. It only

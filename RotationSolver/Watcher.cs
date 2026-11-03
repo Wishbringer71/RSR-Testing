@@ -1254,6 +1254,7 @@ public static class Watcher
 
 			// The trace writes what the defence chose; this line says that it went out.
 			DefenseTrace.Executed(action.Value.RowId, action.Value.Name.ExtractText());
+			Updaters.BlueMageSetTrace.Landed(action.Value);
 
 			if (action.Value.RowId == (uint)ActionID.ShirkPvE)
 			{
