@@ -455,6 +455,9 @@ statt Reihenfolge" und „Mondflöte"):
   Status sperrt es dann; es ging nie.
 - *D9, Tatami-gaeshi:* Seine Einstellung nannte Kribbeln als Zustand auf dem Ziel, ein Klon aus Kribbeln; laut Blatt setzt
   es Stun.
+- *D11, Mette marcato:* Die vierte Schwinge des Urteils gibt Winged Redemption (10 s, Mette 440 statt 220); RSR wirkte
+  Mette nie. Replikator (Peripheral Synthesis) stand ohne Bedingung vor allen Füllzaubern (220 in 2 s), auch gegen ein Ziel, das
+  gegen Lightheaded schon immun war. (Behoben mit A508, Stufe 2.)
 - *D10, Einstieg in den Rösselsprung-Kreislauf:* Er übersprang die eigene Statusvoraussetzung des Spielers statt der des
   Ziels (`skipStatusNeed` statt `skipTargetStatusNeedCheck`) und ging nie; ein Rösselsprung fiel nur, wenn Bind oder
   Slow schon von anderswo auf dem Ziel standen.
@@ -688,8 +691,34 @@ statt Reihenfolge" und „Mondflöte"):
   „Mondflöte". Messmittel im `DefenseTrace.log`: „moon flute comes" mit Fensterwert, Gewinn und Verlust; „moon flute
   held" mit dem Sicherheitsgrund, einmal je Wechsel; „damage per potency: first measure" je Stufe und Gebiet; „state
   resisted", „state did not land" und „fixed or lethal spell without effect" je gelernter Gegnerart.
-- *Stufe 2, Synergien:* die Ketten aus der Tabelle. Jede Kette prüft, ob ihr Zustand landet, und gibt sie sonst für
-  diese Gegnerart auf.
+- *Stufe 2, Synergien* (gebaut mit A508; jede Kette prüft, ob ihr Zustand landet, über `OwnHitWatch`):
+  - *Rösselsprung-Kreislauf, Pfeife und Kribbeln vor dem Dreizack:* mit Stufe 1 (A507).
+  - *Schwinge des Urteils → Mette marcato:* Unter Winged Redemption geht Mette (440) vor allem anderen der Abklingzeiten.
+  - *Borstigkeit → Matra-Magie:* nur unter DPS-Mimikry (achtmal 100: +400 für einen GCD von 210); ohne sie achtmal 50,
+    +200, weniger als der GCD. Nicht, solange die Mondflöte kommt; in Waxing geht sie.
+  - *Replikator → Senfbombe:* Replikator nur auf ein Ziel ohne Lightheaded, auf dem sein letzter Treffer den
+    Zustand gesetzt hat (400 statt 220); danach Senfbombe auf das Ziel unter eigenem Lightheaded (Schaden über Zeit,
+    15 s), nicht zweimal hintereinander. Lightheaded nutzt sich laut Wirktext ab („Repeated use"); ein Ziel, auf dem er
+    nicht mehr landet, ist für eine Weile immun, seine Art nicht. Darum je Ziel, nicht je Art.
+  - *Stimme des Widders → Ultravibration:* Widder nur, wo Ultravibration töten kann: Ziel nicht höherer Stufe, Art nicht
+    als immun gegen die Klasse gelernt, Deep Freeze auf der Art nicht als widerstanden gelernt. Seit Stufe 1 sperrt die
+    gelernte Immunität Ultravibration; ohne diese Bedingung bliebe sie bereit, und der Widder ginge jeden GCD.
+  - *Stun → Blankes Messer:* Verwirrung (6 s Stun, kein Schaden, zwei Messer: 900 gegen 630), Tatami-gaeshi (220, 3 s,
+    ein Messer) oder Bombenwurf (200, 3 s), nur wenn der Spieler schon in Messerreichweite (3 Yalm) steht, das Ziel
+    nicht betäubt ist, noch betäubt werden kann (`StunWatch`) und Stun und ein Messer überlebt. Gewöhnlich als Tank-
+    Mimikry im Nahkampf; RSR bewegt niemanden dafür.
+  - *Petrifikation Stufe 5 → Bohrkanone, Ultravibration:* unter „Use Low Chance abilities" (Wirktext: geringe Chance).
+    Die Zielprüfung liest „Enemy level must be a multiple of 5" aus dem Wirktext, für Todesstufe 5 ebenso.
+  - *Heiligenstrahl gegen Untote:* RSR lernt Untote je Art am Treffer: Liegt der Schaden näher an der erhöhten Potenz
+    (500) als an der einfachen (100), gemessen am Schaden je Potenz, ist die Art untot; dann geht der Strahl auch auf
+    einem Ziel vor Schallwelle. Gelernt wird nur, wo er schon fiel (ab drei Gegnern).
+  - *Nicht gebaut:* Pitsche, patsche wartet nicht auf Regen (das Wetter wechselt nach Spielstunden, Warten kostete den
+    Einsatz); Aqua-Atem → Hochstrom bleibt Flächenwert (180 bzw. 220 in 2 s schlägt Schallwelle nur auf mehreren Zielen).
+  - *Immunität lernen nur aus Zaubern mit HP-Schaden:* Rakete, Raketenwerfer, Dimensionsverschiebung und Schweifschraube
+    beantworten eine verfehlte Chance mit einem Fehlschlag. Verhängnis, Todesstufe 5, Petrifikation und Ultravibration
+    setzen einen Zustand oder töten; wie das Spiel dort eine verfehlte Chance meldet, ist nicht belegt, also lehren sie
+    nichts. Die gelernte Immunität sperrt aber die ganze Klasse (Schluss: Eine Art, gegen die Prozentschaden nichts
+    tut, ist meist auch gegen Tod immun).
 - *Stufe 3, Set:* Auswahl und Schreiben außerhalb des Kampfes.
 
 **Falsifikation:**
@@ -717,6 +746,11 @@ statt Reihenfolge" und „Mondflöte"):
     - Meldet das Spiel Immunität gegen festen Schaden anders als ohne Schaden, ohne Fehlschlag und ohne
       Unverwundbarkeitsstatus, lernt RSR sie nicht; welche Antwort es gibt, ist nicht belegt. Dann wiederholt sich ein
       solcher Zauber gegen diese Art; die Zeile „fixed or lethal spell without effect" fehlt dann im Protokoll.
+- *Stufe 2, gebaut:*
+  - *Kein Defekt?* D11 am Code (kein Aufruf von Mette marcato; Replikator ohne Bedingung).
+  - *Option falsch?* Verwirrung trägt keinen Schaden: Landet ihr Stun nicht, ist ein GCD verloren, bis `StunWatch` die
+    Immunität kennt. Gegen Bosse ist das die Regel; die Bedingung „noch betäubbar" fängt den zweiten Versuch.
+  - *Ausgeliefert, und nichts ändert sich?* Jede Kette braucht beide Zauber im Set; ohne Stufe 3 entscheidet sein Set.
 - *Prüfgrad:* statisch an Code, Blättern, Spieler- und Werkzeugquellen; die Mondflöten-Rechnung aus Blattpotenzen;
   Compile und alle 43 Prüfschritte grün. Das Nachziehen von Dauerschaden in Waxing ist Spielerpraxis. Im Spiel steuern
   sich Schaden je Potenz und gelernte Immunität selbst nach; Fensterwert und Haltegrund schreibt das Protokoll.

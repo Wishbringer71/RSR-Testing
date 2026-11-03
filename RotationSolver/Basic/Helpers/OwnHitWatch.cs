@@ -31,6 +31,8 @@ internal static class OwnHitWatch
 
 	private static readonly ConcurrentDictionary<uint, byte> _flatImmuneKinds = new();
 	private static readonly ConcurrentDictionary<(uint Kind, uint Status), byte> _resistedStates = new();
+	private static readonly ConcurrentDictionary<(ulong Target, uint Action), bool> _lastLanded = new();
+	private static readonly ConcurrentDictionary<uint, bool> _undeadKinds = new();
 
 	/// <summary>
 	/// The damage one point of potency has dealt on the main target, over the player's plain hits since the level or the area
@@ -135,6 +137,52 @@ internal static class OwnHitWatch
 				+ " - no spell of that class goes against this kind in this session");
 		}
 	}
+
+	/// <summary>
+	/// Records whether an own spell put a status on one target when it last hit it, for a status that wears off with
+	/// repeated use (Lightheaded): a hit without it says this enemy is immune for now, not its kind.
+	/// </summary>
+	internal static void Landed(ulong targetId, uint actionId, bool statusApplied)
+	{
+		if (!DataCenter.InCombat)
+		{
+			_lastLanded.Clear();
+		}
+
+		_lastLanded[(targetId, actionId)] = statusApplied;
+	}
+
+	/// <summary>
+	/// Whether the spell put a status on this target when it last hit it; null when it has not hit it in this fight.
+	/// </summary>
+	public static bool? LastLanded(IBattleChara? target, uint actionId)
+		=> target != null && _lastLanded.TryGetValue((target.GameObjectId, actionId), out var applied) ? applied : null;
+
+	/// <summary>
+	/// Records a hit of a spell whose text raises its potency against undead (Saintly Beam): the damage, against the measured
+	/// damage per potency, says which of the two potencies it dealt - nearer the raised one, the kind is undead. Nothing
+	/// is recorded while no damage per potency is measured.
+	/// </summary>
+	internal static void UndeadHit(uint actionId, IBattleChara target, uint amount, float basePotency, float undeadPotency)
+	{
+		var perPotency = DamagePerPotency;
+		if (target == null || target.BaseId == 0 || amount == 0 || float.IsNaN(perPotency) || undeadPotency <= basePotency)
+		{
+			return;
+		}
+
+		var dealt = amount / perPotency;
+		var undead = Math.Abs(dealt - undeadPotency) < Math.Abs(dealt - basePotency);
+		if (_undeadKinds.TryAdd(target.BaseId, undead) && undead)
+		{
+			DefenseTrace.Line($"undead kind: {target.Name.TextValue} (kind {target.BaseId}) took {amount} from action {actionId}"
+				+ $" - about {undeadPotency:F0} potency, not {basePotency:F0}");
+		}
+	}
+
+	/// <summary>Whether this enemy's kind has been seen to take a spell's raised potency against undead.</summary>
+	public static bool IsUndead(IBattleChara? target)
+		=> target != null && _undeadKinds.TryGetValue(target.BaseId, out var undead) && undead;
 
 	/// <summary>Whether a spell of the fixed-or-lethal class has been seen to do nothing to this enemy's kind.</summary>
 	public static bool FlatOrLethalDoesNothing(IBattleChara? target)

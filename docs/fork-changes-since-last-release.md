@@ -78,6 +78,14 @@ What this release changes in the fight. For the whole distance from upstream, se
   filler. Whistle no longer goes before Song of Torment, where it was lost; Whistle and Tingle now go before Triple
   Trident (Tingle never went before). The Knight's Tours now read Bind instead of Blind, and the cycle can begin: it
   starts against an enemy kind not seen to resist Bind or Slow. Tatami-gaeshi now counts as a stun.
+- **Blue Mage: spell chains.** Conviction Marcato now follows the fourth Winged Reprobation while Winged Redemption
+  lasts (440 instead of 220; it was never cast). Bristle goes before Matra Magic under DPS mimicry. Peripheral Synthesis
+  goes only on a target without Lightheaded on which it last landed, and Mustard Bomb follows on the Lightheaded
+  target; before, Peripheral Synthesis went ahead of every filler. The Ram's Voice goes for Ultravibration only where
+  Ultravibration can kill the target. Where you already stand within Sharpened Knife's reach, Faze, Tatami-gaeshi or
+  Bomb Toss stun first. Level 5 Petrify joins the low-chance spells, and Level 5 Death and Petrify skip enemies whose
+  level is not a multiple of five. Saintly Beam learns undead enemy kinds from its own hits and then goes against them
+  on one target too.
 - **Beastmaster: a record of the Master's Bestiary.** While the Bestiary is open, RSR writes to `BestiaryTrace.log`
   next to `DefenseTrace.log` what the game receives from each click, every context menu with its entries, every server
   command the client sends through its general command function, and the battlehorn slots as they change. It only

@@ -513,11 +513,18 @@ public struct ActionTargetInfo(IBaseAction action)
 			}
 		}
 
-		// The Blue Mage's fixed, percentage and lethal spells: their effect text says they do nothing to an enemy of higher
-		// level, and a kind they have been seen to do nothing to is not tried again in this session (concept 01,
-		// "Gelernte Immunität", A507).
-		if (DataCenter.Job == Job.BLU && action.Setting.IsFlatDamageDeath
-			&& (battleChara.Level > DataCenter.PlayerSyncedLevel() || OwnHitWatch.FlatOrLethalDoesNothing(battleChara)))
+		// The Blue Mage's fixed, percentage and lethal spells and Level 5 Petrify: their effect text says they do nothing to an
+		// enemy of higher level. A kind the class has been seen to do nothing to is not tried again in this session (concept
+		// 01, "Gelernte Immunität", A507).
+		if (DataCenter.Job == Job.BLU
+			&& ((ActionTooltip.IgnoresHigherLevel(action.ID) && battleChara.Level > DataCenter.PlayerSyncedLevel())
+				|| (action.Setting.IsFlatDamageDeath && OwnHitWatch.FlatOrLethalDoesNothing(battleChara))))
+		{
+			return false;
+		}
+
+		// "Enemy level must be a multiple of 5" (Level 5 Death, Level 5 Petrify): the effect text states the multiple (A507).
+		if (DataCenter.Job == Job.BLU && ActionTooltip.TryLevelMultiple(action.ID, out var multiple) && battleChara.Level % multiple != 0)
 		{
 			return false;
 		}

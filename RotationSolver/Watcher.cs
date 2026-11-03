@@ -1225,8 +1225,16 @@ public static class Watcher
 			return;
 		}
 
-		var lowerLevelOnly = ActionTooltip.IgnoresHigherLevel(action.RowId);
-		var promised = PromisedTargetStatuses(action.RowId);
+		// The class's immunity is learned from the spells that take health (Missile, Launcher, Dimensional Shift, Tail Screw):
+		// they answer a failed chance with a miss. Doom, Level 5 Death and Petrify, Ultravibration put on a status or kill,
+		// and how the game answers their failed chance is not known, so they teach nothing.
+		var lowerLevelOnly = ActionTooltip.IgnoresHigherLevel(action.RowId)
+			&& ActionTooltip.Text(action.RowId).Contains(" HP", StringComparison.Ordinal);
+		// A status that wears off with repeated use says nothing about the enemy's kind when it does not land.
+		var diminishes = ActionTooltip.StatusDiminishes(action.RowId);
+		var promised = diminishes ? new List<uint>() : PromisedTargetStatuses(action.RowId);
+		var againstUndead = ActionTooltip.TryUndeadPotency(action.RowId, out var undeadPotency)
+			& ActionTooltip.TryPotencyOn(action.RowId, 1, out var basePotency);
 		foreach (var effect in set.TargetEffects)
 		{
 			IBattleChara? target = null;
@@ -1273,9 +1281,16 @@ public static class Watcher
 				}
 			});
 
-			if (lowerLevelOnly || resisted != null || promised.Count > 0)
+			OwnHitWatch.Landed(target.GameObjectId, action.RowId, applied);
+			if (againstUndead && TryGetDamageEntry(effect, out var undeadEntry))
 			{
-				OwnHitWatch.Outcome(action.RowId, target, lowerLevelOnly, damaged, applied, missed, invulnerable, resisted ?? [], promised);
+				OwnHitWatch.UndeadHit(action.RowId, target, FullAmount(undeadEntry), basePotency, undeadPotency);
+			}
+
+			if (lowerLevelOnly || (resisted != null && !diminishes) || promised.Count > 0)
+			{
+				OwnHitWatch.Outcome(action.RowId, target, lowerLevelOnly, damaged, applied, missed, invulnerable,
+					diminishes || resisted == null ? new List<uint>() : resisted, promised);
 			}
 		}
 	}

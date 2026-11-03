@@ -10,7 +10,7 @@ Betroffene: **N** Endnutzer · **R** Autoren abgeleiteter Rotationen (Namensräu
 Nach der Wirkung im Kampf: Sicherheit der Gruppe vor Schaden, gewichtet mit der Wahrscheinlichkeit, in seinem Profil
 (seine Vorgabe, 17.10.2026: „todo nach wichtigkeit abarbeiten. jeweils im loop bearbeiten").
 
-1. Blaumagier, Stufe 2 und 3: Synergieketten, dann das Set aus den gelernten Zaubern.
+1. Blaumagier, Stufe 3: das Set aus den gelernten Zaubern; erst damit stehen die Ketten im Set.
 2. Fremde Repositories auf Verbesserungen für RSR prüfen: Jeder Fund kann ein Defekt im Verhalten einer Klasse sein,
    den RSR heute im Kampf zeigt; zuerst die Rotationswerkzeuge für alle Jobs, Daedalus vorn (aktiv, alle Jobs,
    eigene Kampfvorhersage).
@@ -21,21 +21,13 @@ Danach die technische Schuld, soweit ihre Auflösungsbedingung erfüllt ist. War
 
 ## Offene Arbeit
 
-### Blaumagier, Stufe 2: Synergieketten · N
-- *Wirkung:* Schwinge des Urteils führt zu Mette marcato (440 statt 220); Stun führt zu Blankes Messer (450),
-  Petrifikation zur Bohrkanone (600), Lightheaded zur Senfbombe; Borstigkeit geht vor Matra-Magie unter DPS-Mimikry;
-  Pitsche, patsche bei Regen; Heiligenstrahl gegen Untote. Rösselsprung-Kreislauf sowie Pfeife und Kribbeln vor dem
-  Dreizack stehen seit Stufe 1 (A507).
-- *Ort:* `BLU_Reborn`, `BlueMageRotation`.
-- *Nächster Schritt:* je Kette gegen die Synergietabelle; ob ihr Zustand landet, lernt `OwnHitWatch` seit A507.
-- *Konzept:* 01, „Blaumagier", Synergietabelle.
-
 ### Blaumagier, Stufe 3: Set aus den gelernten Zaubern · N
 - *Wirkung:* RSR nutzt nur die 24 Zauber im aktiven Set. Ein Set nach Rolle und Lage aus den gelernten Zaubern macht
   die Ketten erst möglich. Im Masked Carnivale je Stufe nach den Widerständen ihrer Gegner, vor dem Betreten.
 - *Ort:* neu, außerhalb des Kampfes; `SetBlueMageActions` mit allen 24 Plätzen, auf dem Spiel-Thread, danach
   zurücklesen.
-- *Nächster Schritt:* nach Stufe 0 (sein Protokoll) und Stufe 2.
+- *Nächster Schritt:* Loop zum Setzen außerhalb des Kampfes; sein Protokoll (Stufe 0) zeigt, ob das aktive Set
+  1000 Nadeln enthält.
 - *Konzept:* 01, „Blaumagier", „Alle gelernten Zauber nutzen".
 
 ### Fremde Repositories auf Verbesserungen für RSR prüfen · N, R, U

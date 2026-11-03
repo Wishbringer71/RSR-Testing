@@ -364,6 +364,13 @@ public sealed class BLU_Reborn : BlueMageRotation
 			{
 				return true;
 			}
+
+			// Petrification opens Drill Cannons at 600 and Ultravibration; the effect text names a low chance and a level
+			// that must be a multiple of five, which the target check reads (concept 01, Synergien, A508).
+			if (Level5PetrifyPvE.CanUse(out act))
+			{
+				return true;
+			}
 		}
 
 		if (CondensedLibraPvE.CanUse(out act))
@@ -477,12 +484,27 @@ public sealed class BLU_Reborn : BlueMageRotation
 			return true;
 		}
 
+		// Bristle lifts Matra Magic's eight hits by half: under DPS mimicry 800 to 1,200 for one GCD of 210; without it 400
+		// to 600, less than the GCD (concept 01, Synergien, A508).
+		if (IsDPS && MatraMagicPvE.Info.IsOnSlot && MatraMagicPvE.Cooldown.WillHaveOneChargeGCD(1) && !MoonFluteComing
+			&& BristlePvE.CanUse(out act))
+		{
+			return true;
+		}
+
 		if (MatraMagicPvE.CanUse(out act))
 		{
 			return true;
 		}
 
 		if (TheRoseOfDestructionPvE.CanUse(out act))
+		{
+			return true;
+		}
+
+		// The fourth Winged Reprobation grants Winged Redemption for 10 s, which lifts Conviction Marcato from 220 to 440;
+		// RSR never cast Marcato (D11, A508).
+		if (StatusHelper.PlayerHasStatus(true, StatusID.WingedRedemption) && ConvictionMarcatoPvE.CanUse(out act))
 		{
 			return true;
 		}
@@ -497,9 +519,19 @@ public sealed class BLU_Reborn : BlueMageRotation
 			return true;
 		}
 
-		// Both skip flags this action used to be called with are gone: the StatusProvide and
-		// StatusNeed settings they were working around have been removed as unsatisfiable.
-		if (PeripheralSynthesisPvE.CanUse(out act))
+		// Peripheral Synthesis deals 400 instead of 220 when it puts Lightheaded on its target, and Mustard Bomb burns a
+		// Lightheaded target for 15 s. Repeated use wears Lightheaded off until the target is immune for a while: it goes only
+		// on a target without Lightheaded on which its last hit landed it (concept 01, Synergien, A508). Unconditioned it
+		// went before every filler, at 220 in a 2 s cast.
+		if (PeripheralSynthesisPvE.CanUse(out act) && PeripheralSynthesisPvE.Target.Target is { } synthesised
+			&& !synthesised.HasStatus(true, StatusID.Lightheaded_2501)
+			&& OwnHitWatch.LastLanded(synthesised, PeripheralSynthesisPvE.ID) != false)
+		{
+			return true;
+		}
+
+		if (MustardBombPvE.CanUse(out act) && MustardBombPvE.Target.Target is { } burnt
+			&& burnt.HasStatus(true, StatusID.Lightheaded_2501) && !IsLastGCD(true, MustardBombPvE))
 		{
 			return true;
 		}
@@ -569,7 +601,8 @@ public sealed class BLU_Reborn : BlueMageRotation
 			return true;
 		}
 
-		if (SaintlyBeamPvE.CanUse(out act) && OverSonicBoom(SaintlyBeamPvE))
+		// Against a kind seen to take its raised potency (undead, 500), Saintly Beam beats Sonic Boom on one target too.
+		if (SaintlyBeamPvE.CanUse(out act) && (OwnHitWatch.IsUndead(SaintlyBeamPvE.Target.Target) || OverSonicBoom(SaintlyBeamPvE)))
 		{
 			return true;
 		}
@@ -590,6 +623,24 @@ public sealed class BLU_Reborn : BlueMageRotation
 		}
 
 		if (SharpenedKnifePvE.CanUse(out act))
+		{
+			return true;
+		}
+
+		// A stun opens Sharpened Knife at 450 (3 y): Faze stuns for 6 s, two Knives follow (900 against three fillers' 630);
+		// Tatami-gaeshi (220) and Bomb Toss (200) stun for 3 s, one Knife follows. Only where the player already stands in
+		// Knife's reach, the target can still be stunned and lives that long (concept 01, Synergien, A508).
+		if (KnifeCanFollow(FazePvE, SharpenedKnifePvE) && FazePvE.CanUse(out act, skipAoeCheck: true))
+		{
+			return true;
+		}
+
+		if (KnifeCanFollow(TatamigaeshiPvE, SharpenedKnifePvE) && TatamigaeshiPvE.CanUse(out act, skipAoeCheck: true))
+		{
+			return true;
+		}
+
+		if (KnifeCanFollow(BombTossPvE, SharpenedKnifePvE) && BombTossPvE.CanUse(out act, skipAoeCheck: true))
 		{
 			return true;
 		}
@@ -732,9 +783,15 @@ public sealed class BLU_Reborn : BlueMageRotation
 			return true;
 		}
 
-		if (TheRamsVoicePvE.CanUse(out act, skipAoeCheck: UltravibrationPvE.Info.IsOnSlot && UltravibrationPvE.Cooldown.HasOneCharge))
+		// Ram's Voice freezes for Ultravibration only where Ultravibration can kill: not against a higher level, a kind it was
+		// seen to do nothing to, or a kind Deep Freeze does not land on. Without that, the blocked Ultravibration stayed ready
+		// and Ram's Voice went every GCD (concept 01, Synergien, A508).
+		var ultravibrationKills = UltravibrationPvE.Info.IsOnSlot && UltravibrationPvE.Cooldown.HasOneCharge
+			&& CurrentTarget is { } frozen && frozen.Level <= DataCenter.PlayerSyncedLevel()
+			&& !OwnHitWatch.FlatOrLethalDoesNothing(frozen) && !OwnHitWatch.Resists(frozen, StatusID.DeepFreeze_1731);
+		if (TheRamsVoicePvE.CanUse(out act, skipAoeCheck: ultravibrationKills))
 		{
-			if (UltravibrationPvE.Info.IsOnSlot && UltravibrationPvE.Cooldown.HasOneCharge)
+			if (ultravibrationKills)
 			{
 				return true;
 			}
@@ -1092,6 +1149,24 @@ public sealed class BLU_Reborn : BlueMageRotation
 		}
 
 		return false;
+	}
+
+	/// <summary>
+	/// Whether a stun from <paramref name="stun"/> pays through <paramref name="knife"/>: Knife in the set, the target already
+	/// within Knife's reach (RSR moves nobody for damage), not stunned now, still able to be stunned (<see cref="StunWatch"/>),
+	/// and living through the stun and one Knife where its time to kill is known.
+	/// </summary>
+	private bool KnifeCanFollow(IBaseAction stun, IBaseAction knife)
+	{
+		if (!knife.Info.IsOnSlot || !stun.Info.IsOnSlot || CurrentTarget is not { } target
+			|| target.DistanceToPlayer() > knife.Info.Range || !StunWatch.CanStillBeStunned(target)
+			|| target.HasStatus(false, StatusHelper.StunStatus))
+		{
+			return false;
+		}
+
+		var ttk = target.GetCorrectedTTK();
+		return float.IsNaN(ttk) || ttk > SpellTime(stun) + SpellTime(knife);
 	}
 
 	/// <summary>

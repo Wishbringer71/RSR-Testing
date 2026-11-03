@@ -35,6 +35,9 @@ internal static class ActionTooltip
 	private static readonly Regex StatedHealthShare = new(@"(?:dealing|equal to) (?<shares>[^.|\n]*?) of (?:their|target's) (?:current )?HP", RegexOptions.Compiled);
 	private static readonly Regex StatedDamageUp = new(@"increasing damage dealt by (?<value>\d{1,3})%", RegexOptions.Compiled);
 	private const string IgnoresHigherLevelText = "no effect on enemies whose level is higher than your own";
+	private static readonly Regex StatedLevelMultiple = new(@"level must be a multiple of (?<value>\d{1,3})", RegexOptions.Compiled);
+	private static readonly Regex StatedUndeadPotency = new(@"[Pp]otency increases to (?<value>\d[\d,]*) when used against undead", RegexOptions.Compiled);
+	private const string DiminishingText = "Repeated use";
 
 	/// <summary>
 	/// The evaluated effect text of <paramref name="actionId"/>, empty when the sheet has no row for it or the
@@ -240,6 +243,40 @@ internal static class ActionTooltip
 	public static bool TryStatedDamageUp(uint actionId, out float percent)
 	{
 		return TryStated(actionId, StatedDamageUp, out percent);
+	}
+
+	/// <summary>
+	/// The number an enemy's level must be a multiple of for <paramref name="actionId"/> to affect it ("Enemy level must be a
+	/// multiple of 5", Level 5 Death and Level 5 Petrify); false when the text states none.
+	/// </summary>
+	public static bool TryLevelMultiple(uint actionId, out int multiple)
+	{
+		multiple = 0;
+		if (!TryStated(actionId, StatedLevelMultiple, out var value) || value < 1f)
+		{
+			return false;
+		}
+
+		multiple = (int)value;
+		return true;
+	}
+
+	/// <summary>
+	/// The potency <paramref name="actionId"/> deals against undead enemies, beside its first stated potency ("Potency
+	/// increases to 500 when used against undead enemies", Saintly Beam); false when the text states none.
+	/// </summary>
+	public static bool TryUndeadPotency(uint actionId, out float potency)
+	{
+		return TryStated(actionId, StatedUndeadPotency, out potency);
+	}
+
+	/// <summary>
+	/// Whether the text of <paramref name="actionId"/> says its status wears off with repeated use until targets become
+	/// immune for a while (Peripheral Synthesis' Lightheaded): a resisted status then says nothing about the enemy's kind.
+	/// </summary>
+	public static bool StatusDiminishes(uint actionId)
+	{
+		return Text(actionId).Contains(DiminishingText, StringComparison.Ordinal);
 	}
 
 	/// <summary>

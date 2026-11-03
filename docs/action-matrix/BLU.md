@@ -8,7 +8,7 @@ Erzeugt von `.github/scripts/audit/generate_action_matrix.py` am 2026-11-03; nic
 
 ## Nutzung
 
-direkt: 114 · ungenutzt: 23
+direkt: 116 · ungenutzt: 21
 
 | Stufe | Aktion | Id | Art | Nutzung |
 |---|---|---|---|---|
@@ -45,7 +45,7 @@ direkt: 114 · ungenutzt: 23
 | Job | Choco Meteor (`ChocoMeteorPvE`) | 23284 | Spell | direkt |
 | Job | Cold Fog (`ColdFogPvE`) | 23267 | Spell | direkt |
 | Job | Condensed Libra (`CondensedLibraPvE`) | 18321 | Spell | direkt |
-| Job | Conviction Marcato (`ConvictionMarcatoPvE`) | 34574 | Spell | ungenutzt |
+| Job | Conviction Marcato (`ConvictionMarcatoPvE`) | 34574 | Spell | direkt |
 | Job | Deep Clean (`DeepCleanPvE`) | 34570 | Spell | ungenutzt |
 | Job | Devour (`DevourPvE`) | 18320 | Spell | direkt |
 | Job | Diamondback (`DiamondbackPvE`) | 11424 | Spell | direkt |
@@ -82,7 +82,7 @@ direkt: 114 · ungenutzt: 23
 | Job | Laser Eye (`LaserEyePvE`) | 34577 | Spell | ungenutzt |
 | Job | Launcher (`LauncherPvE`) | 18313 | Spell | direkt |
 | Job | Level 5 Death (`Level5DeathPvE`) | 18312 | Spell | direkt |
-| Job | Level 5 Petrify (`Level5PetrifyPvE`) | 11414 | Spell | ungenutzt |
+| Job | Level 5 Petrify (`Level5PetrifyPvE`) | 11414 | Spell | direkt |
 | Job | Loom (`LoomPvE`) | 11401 | Spell | direkt |
 | Job | Lucid Dreaming (`LucidDreamingPvE`) | 7562 | Ability | direkt |
 | Job | Magic Hammer (`MagicHammerPvE`) | 18305 | Spell | direkt |
@@ -206,8 +206,11 @@ direkt: 114 · ungenutzt: 23
 | Black Knight's Tour | StatusNeed Slow | White Knight's Tour |
 | Blood Drain | Regel sperrt vorher | Goblin Punch |
 | Blood Drain | Regel sperrt vorher | Missile |
+| Bomb Toss | Regel sperrt vorher | Missile |
+| Bomb Toss | Regel prüft | Sharpened Knife |
 | Bomb Toss | Regel sperrt vorher | the Ram's Voice |
 | Bomb Toss | Regel sperrt vorher | Ultravibration |
+| Bristle | Regel prüft | Matra Magic |
 | Bristle | Regel prüft | Song of Torment |
 | Choco Meteor | Regel sperrt vorher | the Ram's Voice |
 | Choco Meteor | Regel sperrt vorher | Ultravibration |
@@ -225,6 +228,8 @@ direkt: 114 · ungenutzt: 23
 | Drill Cannons | Regel sperrt vorher | Ultravibration |
 | Eerie Soundwave | StatusNeed CriticalStrikes_1797 | Status CriticalStrikes_1797 |
 | Eerie Soundwave | StatusNeed VulnerabilityDown | Status VulnerabilityDown |
+| Faze | Regel sperrt vorher | Missile |
+| Faze | Regel prüft | Sharpened Knife |
 | Fire Angon | Regel sperrt vorher | the Ram's Voice |
 | Fire Angon | Regel sperrt vorher | Ultravibration |
 | Flying Frenzy | Regel sperrt vorher | the Ram's Voice |
@@ -273,12 +278,13 @@ direkt: 114 · ungenutzt: 23
 | Sonic Boom | Regel sperrt vorher | the Ram's Voice |
 | Sonic Boom | Regel sperrt vorher | Ultravibration |
 | Stotram | Regel sperrt vorher | Missile |
+| Tatami-gaeshi | Regel sperrt vorher | Missile |
+| Tatami-gaeshi | Regel prüft | Sharpened Knife |
 | the Dragon's Voice | Regel prüft | the Ram's Voice |
 | the Dragon's Voice | Regel sperrt vorher | the Ram's Voice |
 | the Dragon's Voice | StatusNeed DeepFreeze_1731 | the Ram's Voice |
 | the Dragon's Voice | Regel sperrt vorher | Ultravibration |
 | the Dragon's Voice | StatusNeed DeepFreeze_1731 | White Death |
-| the Ram's Voice | Regel prüft | Ultravibration |
 | Tingle | Regel prüft | Triple Trident |
 | Ultravibration | StatusNeed Petrification | Level 5 Petrify |
 | Ultravibration | StatusNeed DeepFreeze_1731 | the Ram's Voice |
@@ -357,12 +363,10 @@ Maschinelle Liste; die Bewertung je Eintrag steht im Konzept.
 - Aetheric Mimicry (`AethericMimicryPvE_19240`, Spell): ungenutzt
 - Apokalypsis (`ApokalypsisPvE`, Ability): ungenutzt
 - Avail (`AvailPvE`, Spell): ungenutzt
-- Conviction Marcato (`ConvictionMarcatoPvE`, Spell): ungenutzt
 - Deep Clean (`DeepCleanPvE`, Spell): ungenutzt
 - Final Sting (`FinalStingPvE`, Spell): ungenutzt
 - Force Field (`ForceFieldPvE`, Spell): ungenutzt
 - Laser Eye (`LaserEyePvE`, Spell): ungenutzt
-- Level 5 Petrify (`Level5PetrifyPvE`, Spell): ungenutzt
 - Mind Blast (`MindBlastPvE`, Spell): ungenutzt
 - Mortal Flame (`MortalFlamePvE`, Spell): ungenutzt
 - Peat Pelt (`PeatPeltPvE`, Spell): ungenutzt

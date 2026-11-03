@@ -15160,6 +15160,28 @@ durchgehen". Als Skill `spielpatch` festgehalten (Lesetabelle in CLAUDE.md); den
 - *Prüfgrad:* statisch an Code und Wirktexten; kompiliert ohne Warnung; alle 43 Prüfschritte lokal grün. Im Spiel nicht
   beobachtet; Schaden je Potenz und Immunität steuern sich selbst nach.
 
+### A508 · Blaumagier, Stufe 2: Synergieketten mit Landungsprüfung (03.11.2026)
+
+- *Auftrag:* wie A507; TODO „Blaumagier, Stufe 2".
+- *Befund D11:* Mette marcato wurde nie gewirkt, obwohl die vierte Schwinge des Urteils Winged Redemption gibt (Mette
+  440 statt 220). Replikator (Peripheral Synthesis) stand ohne Bedingung vor allen Füllzaubern.
+- *Regressionspfad aus A507 geschlossen:* Die gelernte Immunität sperrt Ultravibration; sie blieb bereit, und die
+  Stimme des Widders, die nur auf ihre Bereitschaft sah, wäre jeden GCD gegangen. Der Widder geht nun nur, wo
+  Ultravibration töten kann.
+- *Quellen:* Wirktexte (xivapi, englisch und deutsch, 03.11.2026): Verwirrung 6 s Stun ohne Schaden, 2 s Wirkzeit;
+  Bombenwurf 200 und 3 s; Tatami-gaeshi 220 und 3 s; Blankes Messer 450 gegen Betäubte, 3 Yalm, 1 s; Senfbombe 220 und
+  Schaden über Zeit auf Lightheaded; Replikator 400 beim Setzen von Lightheaded, „Repeated use" führt zur Immunität;
+  Matra-Magie achtmal 50 bzw. 100 unter DPS-Mimikry; Petrifikation Stufe 5 mit geringer Chance und Stufen-Vielfachem;
+  Heiligenstrahl 100, 500 gegen Untote.
+- *Gebaut:* die Ketten im Konzept 01, „Stufe 2"; dazu in `OwnHitWatch` die letzte Landung je Ziel und Zauber und die
+  untoten Arten (Schaden näher an der erhöhten Potenz), in `ActionTooltip` Stufen-Vielfaches, Potenz gegen Untote und
+  Abnutzung; in der Zielprüfung das Stufen-Vielfache und die Stufenklausel nach dem Wirktext (nun auch für
+  Petrifikation Stufe 5). Immunität der Klasse lernt RSR nur aus Zaubern mit HP-Schaden.
+- *Nicht gebaut:* Warten auf Regen für Pitsche, patsche; Aqua-Atem → Hochstrom über den Flächenwert hinaus (Gründe im
+  Konzept).
+- *Prüfgrad:* statisch an Code und Wirktexten; kompiliert ohne Warnung; alle Prüfschritte lokal. Im Spiel nicht
+  beobachtet; die Landungen steuern sich selbst nach, das Protokoll nennt gelernte Arten.
+
 ## B · Commit-Register (Fork vs. `upstream/main`)
 
 ### B1 · Einzelgeprüfte Fork-Commits
