@@ -118,10 +118,11 @@ public partial class CustomRotation
 			return false;
 		}
 
-		var isHostileTargetDummy = HostileTarget?.IsDummy() ?? false;
+		// A tincture is for a hard fight, to come through it and end it sooner; it costs money (his rule, A501). Under
+		// "high-end only" that is the game's own high-end flag - not a training dummy, where nothing is survived or ended.
 		var isInHighEndDuty = DataCenter.Territory?.IsHighEndDuty ?? false;
 
-		if (!isHostileTargetDummy && !isInHighEndDuty && DataCenter.CurrentTinctureUseType == TinctureUseType.InHighEndDuty)
+		if (!isInHighEndDuty && DataCenter.CurrentTinctureUseType == TinctureUseType.InHighEndDuty)
 		{
 			return false;
 		}

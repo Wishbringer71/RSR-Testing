@@ -371,23 +371,34 @@ wie vorher, weil der Countdown dieselbe Uhr liest (`Service.CountDownTime`). Ups
 geschlossen (Weißmagier, Viper, Tänzer, f1ef35ea1); die Methode trägt die Regel für jeden Aufrufer, auch für Astrologe,
 Weiser, Gelehrter, Schwarzmagier und die fremden Rotationen, die ohne Kampfprüfung riefen.
 
-**Tinktur in jeder Burstphase, in der sie nutzbar und vorhanden ist** (seine Vorgabe, 03.11.2026, A500). Ein Schalter
-entscheidet nur, in welchen Inhalten: „Tincture usage" je Job – nie, nur in High-End-Inhalten, überall; bei „nur
-High-End" auch auf einer Trainingspuppe. High-End ist, was das Spiel so markiert (`ContentFinderCondition.HighEndDuty`,
-xivapi 03.11.2026): 14 Inhalte – die Ultimates, der Chaotic-Raid, die vier Savage-Kämpfe der laufenden Stufe, die
-laufende Extreme- und Unreal-Prüfung. Ältere Savage- und Extreme-Kämpfe zählen nicht; dort lohnt die Tinktur, die Geld
-kostet, meist ohnehin nicht. Ob die Tinktur getrunken wird, entscheidet sonst niemand mehr:
+**Tinktur nur in schwierigen Kämpfen, dort in jeder Burstphase, in der sie nutzbar und vorhanden ist** (seine Vorgabe
+und Präzisierung, 03.11.2026, A500, A501). *Wozu:* Eine Tinktur soll helfen, einen schwierigen Kampf zu überstehen und
+merklich schneller zu beenden; sie kostet Geld, und sie für einen gewöhnlichen Kampf zu verschwenden, ist nicht klug
+(seine Worte). Daraus folgen zwei Fragen mit getrennten Antworten:
+- *Wo:* „Tincture usage" je Job – nie, nur High-End (ab Werk), überall. High-End ist, was das Spiel so markiert
+  (`ContentFinderCondition.HighEndDuty`, xivapi 03.11.2026): 14 Inhalte – die Ultimates, der Chaotic-Raid, die vier
+  Savage-Kämpfe der laufenden Stufe, die laufende Extreme- und Unreal-Prüfung. Das trifft „schwierig": Ältere Savage- und
+  Extreme-Kämpfe gleichen die Gegenstandsstufe nicht an (`ItemLevelSync` 0 bei allen Savage- und Extreme-Kämpfen von
+  7.x außerhalb der laufenden Stufe; Mindeststufe etwa 690 bis 740), also kämpft man dort mit der heutigen Ausrüstung,
+  und der Kampf ist leichter, als er gedacht war; Ultimates und Unreal gleichen an und bleiben schwer. Dungeons, Prüfungen
+  und Raids der normalen Stufe, die offene Welt und die Trainingspuppe sind gewöhnliche Kämpfe: keine Tinktur. Upstreams
+  Ausnahme für die Trainingspuppe unter „nur High-End" ist entfernt (A501) – auf ihr wird nichts überstanden und nichts
+  beendet; wer einen Burst mit Tinktur an der Puppe üben will, stellt „überall" ein. *Grenze:* Die Savage-Dungeons
+  („Criterion") trägt das Spiel nicht als High-End; dort trinkt RSR ab Werk keine Tinktur.
+- *Wann:* in jeder Burstphase des Jobs, in der sie nutzbar und vorhanden ist. Im Kampf: In einem Savage-Kampf von
+  acht bis zehn Minuten sind das zwei Tinkturen (Pull und sechste Minute; Wiederverwendung 300 s). Revolverklinge,
+  Dunkelritter und Barde tranken dort nur die im Countdown, die zweite nie; Maschinist und Viper tranken gar keine, weil
+  ihr eigener Schalter ab Werk aus stand. Gerade dort, wo die Tinktur ihr Geld wert ist, fehlte sie also.
 - *Entfernt* sind die Schalter der Rotationen, die dieselbe Frage ein zweites Mal stellten: beim Beschwörer „Use potion",
   „Potion timing" und „Only use potion during a big summon" (Upstream 444388102), beim Weißmagier „Use Tincture/Gemdraught
   when about to use Presence of Mind", bei der Viper „Experimental Pot Usage", beim Maschinisten „Use burst medicine in
   countdown". Mit Viper und Maschinist ab Werk aus trank keiner von beiden je eine Tinktur. „Ab dem zweiten Searing
   Light" brachte nie mehr Tinkturen ins Fenster als das erste (Wiederverwendung 300 s, Item 44165 `Cooldowns`: Fenster
   bei 0, 6, 12 Minuten gegen 2, 8, 14).
-- *Neu im Kampf*, wo die Rotation sie nur im Countdown trank und ohne Countdown, im Dungeon wie in jeder späteren
-  Burstphase, nie: Revolverklinge unter No Mercy, Dunkelritter im Zwei-Minuten-Fenster (`InTwoMIsBurst`), Barde unter
-  seinen Buffs (`InBurstStatus`), Maschinist unter Wildfire; die Viper weiter 5 s vor Serpent's Ire, jetzt mit erlaubtem
-  Burst („Auto Burst"). Die Tinktur im Countdown bleibt, wo die Rotation sie hatte, beim Maschinisten unter „Auto Burst"
-  wie vorher.
+- *Neu im Kampf*, wo die Rotation sie nur im Countdown trank: Revolverklinge unter No Mercy, Dunkelritter im
+  Zwei-Minuten-Fenster (`InTwoMIsBurst`), Barde unter seinen Buffs (`InBurstStatus`), Maschinist unter Wildfire; die Viper
+  weiter 5 s vor Serpent's Ire, jetzt mit erlaubtem Burst („Auto Burst"). Die Tinktur im Countdown bleibt, wo die Rotation
+  sie hatte, beim Maschinisten unter „Auto Burst" wie vorher.
 - *Begriffe* (sein Hinweis, 03.11.2026): Im Spiel heißen Heiltränke „Potion" (Kategorie „Medicine"), die Schadensbuffs
   „Gemdraught" oder „Tincture"; „pot" im englischen Spielerjargon meint die Tinktur. Upstreams „Use potion" meinte die
   Tinktur und las sich wie ein Heiltrank – auch deshalb entfernt.

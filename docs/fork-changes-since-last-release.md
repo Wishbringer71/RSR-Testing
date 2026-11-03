@@ -64,8 +64,11 @@ What this release changes in the fight. For the whole distance from upstream, se
 
 ## Tinctures and delays
 
-- **A tincture in every burst window where it is ready and in your inventory.** Only "Tincture usage" decides where
-  (never, high-end duties, anywhere). Gunbreaker, Dark Knight, Bard and Machinist drank one only in a countdown - with no
+- **A tincture in every burst window of a hard fight where it is ready and in your inventory.** A tincture is for
+  coming through a hard fight and ending it sooner, and it costs money. Only "Tincture usage" decides where (never,
+  high-end duties - the default -, anywhere); high-end is what the game marks so: the current Savage tier, the current
+  Extreme and Unreal trial, the Chaotic raid, the Ultimates. Older Savage and Extreme fights are not synced to their item
+  level and get none, nor does a training dummy any more under "high-end duties". Gunbreaker, Dark Knight, Bard and Machinist drank one only in a countdown - with no
   countdown, and in every later burst such as the sixth minute, never; they now drink it under No Mercy, in the
   two-minute window, under the Bard's buffs and under Wildfire. Viper and Machinist had a switch of their own, off by
   default, and never drank one. The rotations' own tincture switches are removed: Summoner's "Use potion", "Potion

@@ -14900,8 +14900,25 @@ durchgehen". Als Skill `spielpatch` festgehalten (Lesetabelle in CLAUDE.md); den
   - Kein Defekt? Die vier Jobs ohne Tinktur im Kampf: am Code, jede Stelle von `UseBurstMedicine` erhoben.
   - Option falsch? Die Burst-Bedingungen sind die der Rotation selbst. Beim Dunkelritter unter Stufe 80 öffnet
     `InTwoMIsBurst` jede Minute; die Tinktur geht dann ins erste nutzbare Fenster, nach seiner Vorgabe richtig.
-  - Ausgeliefert, und nichts ändert sich? Ab Werk („nur High-End") nur in jenen 14 Inhalten und auf der Puppe;
+  - Ausgeliefert, und nichts ändert sich? Ab Werk („nur High-End") nur in jenen 14 Inhalten (die Puppe seit A501 nicht);
     Verzögerungen ab Werk 0.
+- *Prüfgrad:* statisch am Code, Spielblätter; kompiliert, alle CI-Prüfungen lokal; im Spiel nicht beobachtet.
+
+### A501 · Tinktur nur in schwierigen Kämpfen: Begründung nachgetragen, keine Tinktur auf der Trainingspuppe (03.11.2026)
+
+- *Seine Frage und Präzisierung:* wo die Begründung von E2 steht und ob man Tinkturen in normalen Inhalten braucht;
+  Tinkturen sollen helfen, einen schwierigen Kampf zu überstehen und merklich schneller zu beenden, sie kosten Geld, sie
+  für 08/15 zu verschwenden ist nicht klug.
+- *Antwort:* Ab Werk trinkt RSR in normalen Inhalten keine Tinktur („Tincture usage" = nur High-End); A500 änderte nur,
+  wann in den erlaubten Inhalten. Meine Formulierung in Chat und Konzept 03 („ohne Countdown, im Dungeon") klang nach
+  Dungeon und ist berichtigt; die Begründung steht jetzt zuerst im Abschnitt (Zweck, Wo, Wann, mit Kampfbeispiel).
+- *Gemessen:* Die Savage- und Extreme-Kämpfe von 7.x außerhalb der laufenden Stufe gleichen die Gegenstandsstufe nicht an
+  (`ContentFinderCondition.ItemLevelSync` 0, xivapi 03.11.2026); die Markierung `HighEndDuty` trifft damit „schwierig".
+  Die Savage-Dungeons (Criterion) trägt sie nicht – als Grenze benannt.
+- *Gebaut:* Upstreams Ausnahme für die Trainingspuppe unter „nur High-End" entfernt (`UseBurstMedicine`).
+- *Antithesen:* „Er testet und will den Tinktur-Zeitpunkt an der Puppe sehen" – „überall" leistet das bewusst; „andere
+  parsen an der Puppe mit Tinktur" – dieselbe Einstellung; „nur High-End verpasst einen schweren Kampf" – die Criterion-
+  Dungeons, benannt, ab Werk ohne Tinktur, mit „überall" erreichbar.
 - *Prüfgrad:* statisch am Code, Spielblätter; kompiliert, alle CI-Prüfungen lokal; im Spiel nicht beobachtet.
 
 ## B · Commit-Register (Fork vs. `upstream/main`)
