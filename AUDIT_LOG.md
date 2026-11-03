@@ -15179,6 +15179,9 @@ durchgehen". Als Skill `spielpatch` festgehalten (Lesetabelle in CLAUDE.md); den
   Petrifikation Stufe 5). Immunität der Klasse lernt RSR nur aus Zaubern mit HP-Schaden.
 - *Nicht gebaut:* Warten auf Regen für Pitsche, patsche; Aqua-Atem → Hochstrom über den Flächenwert hinaus (Gründe im
   Konzept).
+- *Reihenfolge:* Vor dem Code standen die Ketten nur in der Synergietabelle des Konzepts. Ihre Bedingungen (Replikator je
+  Ziel, Widder nur mit tötender Ultravibration, Einstieg für das Messer, Untote am Treffer) kamen erst nach dem Code ins
+  Konzept; gegen die Regel „erst das Konzept". Der Inhalt ist danach Aussage für Aussage gegen den Code gelesen.
 - *Prüfgrad:* statisch an Code und Wirktexten; kompiliert ohne Warnung; alle Prüfschritte lokal. Im Spiel nicht
   beobachtet; die Landungen steuern sich selbst nach, das Protokoll nennt gelernte Arten.
 
