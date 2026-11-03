@@ -14,14 +14,14 @@ means one of two things:
   * the status identifier appears in `StatusHelper.cs`, i.e. it is part of a named list, or
   * it appears in a rotation or helper as `StatusID.<name>`.
 
-An effect nobody reads is not automatically a defect. Plenty of them belong to jobs outside the
-owner's profile, to PvP, or to duty actions, and plenty are simply not worth a decision. What the
+An effect nobody reads is not automatically a defect. Plenty of them belong to PvP or to duty
+actions outside the owner's profile, and plenty are simply not worth a decision. What the
 list is for is the opposite question - which effects the plugin could act on but currently cannot
 see, because nothing in the tree looks at them.
 
-The output separates the roles that matter for this fork's owner (tank and healer PvE) from the
-rest, because the project rule is that the survey is complete while the work is not: a finding
-outside the profile is recorded, not acted on.
+The output separates tank and healer, whose defensive rules read such effects first, from the
+other roles. Both are in the owner's profile - every combat job is (CLAUDE.md, "Nutzungsprofil";
+until A519 this survey called the other roles out of scope).
 
 Usage: python3 .github/scripts/audit/scan16.py [--all]
        --all   also list the effects that are read, and the ones outside tank/healer
@@ -192,20 +192,20 @@ def main(argv):
     print(f'{len(actions)} PvE actions, {len(listed) + len(elsewhere) + len(unread)} carrying a '
           f'control or damage-down effect.\n')
 
-    print('=== Tank and healer - the roles this fork is maintained for\n')
+    print('=== Tank and healer\n')
     gap = show('effect the tree never reads', unread, True)
     gap += show('effect read only as a single id, never as a group', elsewhere, True)
     if verbose:
         show('effect covered by a StatusHelper list', listed, True)
 
-    print('=== Other roles - recorded, not worked on\n')
+    print('=== Other roles - in the profile as well (every combat job)\n')
     other = show('effect the tree never reads', unread, False)
     if verbose:
         show('effect read only as a single id', elsewhere, False)
         show('effect covered by a StatusHelper list', listed, False)
 
-    print(f'{gap} effect(s) inside the tank/healer profile the plugin cannot currently act on, '
-          f'{other} outside it.\nAn unread effect is a candidate, not a defect: it is worth a '
+    print(f'{gap} effect(s) for tank and healer the plugin cannot currently act on, '
+          f'{other} for the other roles.\nAn unread effect is a candidate, not a defect: it is worth a '
           f'decision only where acting on it\nwould change what the rotation does.')
     return 0
 

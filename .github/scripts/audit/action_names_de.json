@@ -670,6 +670,46 @@
       "identifier": "TrickPvE",
       "kind": "action",
       "source": "xivapi v2 Action 47093, language=de, 2026-11-02"
+    },
+    {
+      "de": "Gewissenstritt",
+      "en": "J Kick",
+      "identifier": "JKickPvE",
+      "kind": "action",
+      "source": "xivapi v2 Action 18325, language=de, 2026-11-03",
+      "note": "Blue Mage leap onto the target, 25 y (A519)."
+    },
+    {
+      "de": "Rasender Sturz",
+      "en": "Flying Frenzy",
+      "identifier": "FlyingFrenzyPvE",
+      "kind": "action",
+      "source": "xivapi v2 Action 11389, language=de, 2026-11-03",
+      "note": "Blue Mage leap onto the target, 20 y (A519)."
+    },
+    {
+      "de": "Böse Ahnung",
+      "en": "Loom",
+      "identifier": "LoomPvE",
+      "kind": "action",
+      "source": "xivapi v2 Action 11401, language=de, 2026-11-03",
+      "note": "Blue Mage move to a chosen ground spot, 15 y (A519)."
+    },
+    {
+      "de": "Treten",
+      "en": "Phantom Kick",
+      "identifier": "PhantomKickPvE",
+      "kind": "action",
+      "source": "xivapi v2 Action 41595, language=de, 2026-11-03",
+      "note": "Phantom Monk leap towards the target (A519)."
+    },
+    {
+      "de": "Kreszenter Schritt",
+      "en": "Occult Featherfoot",
+      "identifier": "OccultFeatherfootPvE",
+      "kind": "action",
+      "source": "xivapi v2 Action 41600, language=de, 2026-11-03",
+      "note": "Phantom Ranger dash 15 yalms forward (A519)."
     }
   ]
 }

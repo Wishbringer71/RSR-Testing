@@ -185,6 +185,10 @@ public partial class DutyRotation
 	static partial void ModifyPhantomKickPvE(ref ActionSetting setting)
 	{
 		setting.ActionCheck = () => MonkLevel >= 1;
+		// "Leap towards your target" (effect text): its path is checked, and it stays within the reach the player allows
+		// damaging gap closers as well as the rotation's own limit (concept 05, A519).
+		setting.SpecialType = SpecialActionType.HostileMovingAttack;
+		setting.CanTarget = static t => CustomRotation.GapCloserAllowed(t, pressed: ActionID.PhantomKickPvE);
 		setting.CreateConfig = () => new ActionConfig()
 		{
 			AoeCount = 1,
@@ -612,6 +616,9 @@ public partial class DutyRotation
 	static partial void ModifyOccultFeatherfootPvE(ref ActionSetting setting)
 	{
 		setting.TargetType = TargetType.Move;
+		// "Quickly dash 15 yalms forward" (effect text): a fixed dash, its landing point checked (concept 05, A519).
+		setting.SpecialType = SpecialActionType.FixedDistanceMoveForward;
+		setting.BackstepDistance = 15;
 		setting.ActionCheck = () => RangerLevel >= 2;
 	}
 

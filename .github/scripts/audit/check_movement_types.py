@@ -7,11 +7,14 @@ automatic usage") runs only for an action whose `ActionSetting.SpecialType` is o
 `AffectsPosition`. Until A498 En Avant, Smudge, Aetherial Shift and Elusive Jump moved without a type and went out on a
 movement command unchecked; upstream added the type to three actions by hand in 7.5.7.14 (A498).
 
-This reads every PvE player action with `AffectsPosition` from xivapi v2, maps it to its identifier through
-`ActionId.resx`, and requires a moving `setting.SpecialType` in its `Modify<Name>PvE` under
-`RotationSolver/Basic/Rotations/Basic`. Actions that move the player but cannot be measured are listed in ACCEPTED with
-their reason; an accepted action that has a type by now is reported as stale. An unreachable xivapi skips the
-comparison: an outage is not a defect.
+This reads every PvE action with `AffectsPosition` from xivapi v2, maps it to its identifier through `ActionId.resx`,
+and requires a moving `setting.SpecialType` in its `Modify<Name>PvE` under `RotationSolver/Basic/Rotations/Basic` or
+`/Duties`. Measured are every job action, the Blue Mage included, and every content action (Phantom jobs, Bozja, quest
+battles) that a rotation casts - a `<Name>.CanUse(` outside a comment; one nobody casts never moves the player through
+RSR. Until A519 the Blue Mage and all content actions were left out as outside the owner's profile, and J Kick, Flying
+Frenzy, Phantom Kick and Occult Featherfoot went out unchecked. Actions that move the player but cannot be measured are
+listed in ACCEPTED with their reason; an accepted action that has a type by now is reported as stale. An unreachable
+xivapi skips the comparison: an outage is not a defect.
 
 Usage: python3 .github/scripts/audit/check_movement_types.py
 Exit code 1 for a moving action without a type, a stale acceptance, or a failed self-test.
@@ -25,6 +28,8 @@ import sys
 ROOT = pathlib.Path(__file__).resolve().parents[3]
 RESX = ROOT / 'RotationSolver.SourceGenerators' / 'Properties' / 'ActionId.resx'
 BASIC = ROOT / 'RotationSolver' / 'Basic' / 'Rotations' / 'Basic'
+DUTIES = ROOT / 'RotationSolver' / 'Basic' / 'Rotations' / 'Duties'
+CODE = ROOT / 'RotationSolver'
 API = 'https://v2.xivapi.com/api'
 
 MOVING_TYPES = {
@@ -38,6 +43,15 @@ ACCEPTED = {
     'CloudSkimPvE': 'ground target in a chosen direction ("Move quickly in the selected direction"); no fork rotation '
                     'casts it',
     'RescuePvE': 'moves the party member drawn, not the player ("Instantly draws target party member to your side")',
+    'SteadfastStancePvE': 'RSR casts it on the player only (TargetType.Self); the rush comes only "when targeting a party '
+                          'member"',
+    'NightStallionPvE': 'quest battle slide ("a sliding attack ... in a straight line before you"): no text states how '
+                        'far, and a fixed type without a distance is refused next to BossModReborn (A313)',
+    'LostSeraphStrikePvE': 'Bozja, outside the owner\'s profile: none of his recordings from 25.10. to 03.11.2026 shows '
+                           'Bozja or Zadnor; recorded, not worked on (A519)',
+    'LoomPvE': 'ground target to a chosen spot ("Move quickly to the specified location"); the Blue Mage rotation casts '
+               'it on Move Forward and it lands where ground heals go - open in TODO.md, "Böse Ahnung (Loom) '
+               'landet, wo Bodenheilungen liegen, statt vorn"',
 }
 
 
@@ -52,13 +66,14 @@ def fetch_json(url):
 
 
 def moving_rows(fetch=fetch_json):
-    """Row id -> name of every PvE player action that moves someone and belongs to a job or role (level above 0),
-    the Blue Mage left out (a limited job outside the owner's profile); None when xivapi is unreachable."""
+    """Row id -> (name, is_job) of every PvE action that moves someone: a job or role action (a player action with a
+    level above 0, the Blue Mage included) or a content action (level 0: Phantom jobs, Bozja, quest battles); None when
+    xivapi is unreachable."""
     rows = {}
     cursor = None
     while True:
-        url = (f'{API}/search?sheets=Action&limit=500&fields=Name,ClassJobLevel,ClassJob.Abbreviation'
-               '&query=%2BAffectsPosition%3Dtrue%20%2BIsPlayerAction%3Dtrue%20%2BIsPvP%3Dfalse')
+        url = (f'{API}/search?sheets=Action&limit=500&fields=Name,ClassJobLevel,IsPlayerAction'
+               '&query=%2BAffectsPosition%3Dtrue%20%2BIsPvP%3Dfalse')
         if cursor:
             url += f'&cursor={cursor}'
         answer = fetch(url)
@@ -66,12 +81,34 @@ def moving_rows(fetch=fetch_json):
             return None
         for result in answer['results']:
             fields = result.get('fields', {})
-            job = ((fields.get('ClassJob') or {}).get('fields') or {}).get('Abbreviation', '')
-            if fields.get('ClassJobLevel', 0) > 0 and job != 'BLU':
-                rows[result['row_id']] = fields.get('Name', '')
+            if fields.get('ClassJobLevel', 0) > 0:
+                if fields.get('IsPlayerAction'):
+                    rows[result['row_id']] = (fields.get('Name', ''), True)
+            else:
+                rows[result['row_id']] = (fields.get('Name', ''), False)
         cursor = answer.get('next')
         if not cursor:
             return rows
+
+
+def cast_identifiers(sources):
+    """Identifiers some rotation casts: a `<Name>.CanUse(` outside a line comment."""
+    out = set()
+    for text in sources:
+        for line in text.splitlines():
+            code = line.split('//', 1)[0]
+            out.update(re.findall(r'\b(\w+PvE(?:_\d+)?)\.CanUse\(', code))
+    return out
+
+
+def measured_rows(rows, ids, cast):
+    """Row id -> name of the actions to hold against a type: every job action, and a content action only when a
+    rotation casts it."""
+    out = {}
+    for row, (name, is_job) in rows.items():
+        if is_job or ids.get(row) in cast:
+            out[row] = name
+    return out
 
 
 def identifiers(resx_text):
@@ -132,8 +169,21 @@ def self_test():
     assert not any('DashPvE (1' in p or 'GroundMovePvE (3' in p for p in problems), problems
     assert len(problems) == 2, problems
     assert moving_rows(fetch=lambda url: None) is None
+    page = {'results': [
+        {'row_id': 10, 'fields': {'Name': 'Job Leap', 'ClassJobLevel': 30, 'IsPlayerAction': True}},
+        {'row_id': 11, 'fields': {'Name': 'Pet Leap', 'ClassJobLevel': 30, 'IsPlayerAction': False}},
+        {'row_id': 12, 'fields': {'Name': 'Cast Duty Dash', 'ClassJobLevel': 0, 'IsPlayerAction': False}},
+        {'row_id': 13, 'fields': {'Name': 'Idle Duty Dash', 'ClassJobLevel': 0, 'IsPlayerAction': False}}]}
+    fetched = moving_rows(fetch=lambda url: page)
+    assert fetched == {10: ('Job Leap', True), 12: ('Cast Duty Dash', False), 13: ('Idle Duty Dash', False)}, fetched
+    cast = cast_identifiers(['\t\tif (CastDutyDashPvE.CanUse(out act))\n',
+                             '\t\t//if (IdleDutyDashPvE.CanUse(out act))\n'])
+    assert cast == {'CastDutyDashPvE'}, cast
+    measured = measured_rows(fetched, {10: 'JobLeapPvE', 12: 'CastDutyDashPvE', 13: 'IdleDutyDashPvE'}, cast)
+    assert measured == {10: 'Job Leap', 12: 'Cast Duty Dash'}, measured
     print('self-test ok: a typed move passes, a commented-out type is caught, an acceptance holds, a stale one is '
-          'caught, an unreachable xivapi is told apart')
+          'caught, an unreachable xivapi is told apart; a content action counts once a rotation casts it, not when '
+          'the call is commented out')
 
 
 def main():
@@ -143,13 +193,18 @@ def main():
         print('xivapi unreachable: the comparison against the Action sheet is skipped.')
         return 0
     ids = identifiers(RESX.read_text(encoding='utf-8-sig'))
-    types = special_types(p.read_text(encoding='utf-8-sig') for p in sorted(BASIC.glob('*.cs')))
+    bases = sorted(BASIC.glob('*.cs')) + sorted(DUTIES.glob('*.cs'))
+    types = special_types(p.read_text(encoding='utf-8-sig') for p in bases)
+    cast = cast_identifiers(p.read_text(encoding='utf-8-sig') for p in sorted(CODE.rglob('*.cs'))
+                            if 'obj' not in p.parts and 'bin' not in p.parts)
+    rows = measured_rows(rows, ids, cast)
     problems = compare(rows, ids, types, ACCEPTED)
-    print(f'{len(rows)} PvE player actions move someone (AffectsPosition); {len(ACCEPTED)} accepted without a type.')
+    print(f'{len(rows)} PvE actions move someone (AffectsPosition) - job actions and the content actions a rotation '
+          f'casts; {len(ACCEPTED)} accepted without a type.')
     if problems:
         print('\n'.join(problems))
         print('An action that moves the player needs a moving SpecialType, or the movement safety check never runs '
-              'for it (concept 05, A498).')
+              'for it (concept 05, A498, A519).')
         return 1
     print('Every one of them carries a movement type, or is accepted with its reason.')
     return 0

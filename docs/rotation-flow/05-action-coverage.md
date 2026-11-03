@@ -148,11 +148,46 @@ solange sein Landepunkt in einer Gefahrenzone liegt. Der Befehl gilt weiter, sol
 state duration", ab Werk 3 s); vergeht die Fläche oder dreht sich der Spieler in der Zeit, geht der Sprung, sonst gar nicht.
 
 **Welche Aktion bewegt, sagen die Blätter** (`Action.AffectsPosition`). `check_movement_types.py` hält jede
-Spieleraktion des PvE mit diesem Merkmal gegen einen Bewegungstyp in ihrer Basisrotation; eine ohne Typ fällt in der CI.
-Upstream setzte den Typ in 7.5.7.14 für Dragonfire Dive, Stardiver und Forked Raiju, die ihn im Fork schon trugen (A174);
-En Avant, Smudge, Aetherial Shift und Elusive Jump hatten keinen und gingen auf den Bewegungsbefehl ungeprüft. Ausnahmen,
-je mit Grund im Skript: Shukuchi und Cloud Skim (Bodenziel in eine gewählte Richtung; keine Fork-Rotation wirkt sie, und
-einen Landepunkt hätte erst eine eigene Zielwahl), Rescue (bewegt das Gruppenmitglied, nicht den Spieler).
+Aktion des PvE mit diesem Merkmal gegen einen Bewegungstyp in ihrer Basisrotation: jede Jobaktion, der Blaumagier
+eingeschlossen, und jede Inhaltsaktion, die eine Rotation wirkt (Phantomjobs in Kreszentia, Bozja, Quest-Gefechte); eine
+ohne Typ fällt in der CI. Upstream setzte den Typ in 7.5.7.14 für Dragonfire Dive, Stardiver und Forked Raiju, die ihn im
+Fork schon trugen (A174); En Avant, Smudge, Aetherial Shift und Elusive Jump hatten keinen und gingen auf den
+Bewegungsbefehl ungeprüft.
+
+Den Blaumagier und alle Inhaltsaktionen nahm die Prüfung bis A519 aus, weil beide als außerhalb seines Profils galten.
+Ungeprüft blieben deshalb:
+- *Gewissenstritt (J Kick) und Rasender Sturz (Flying Frenzy)*, Blaumagier, „Delivers a jumping physical attack to
+  target". Die Rotation wirkt Gewissenstritt im Mondflöten-Fenster und Rasenden Sturz als Flächenfüller, aus jedem
+  Abstand in Reichweite (25 und 20 Yalm), ohne Prüfung des Wegs.
+- *Treten (Phantom Kick)*, Phantommönch, „Leap towards your target". Ab Werk aus. Eingeschaltet galt nur die eigene
+  Grenze der Phantom-Rotation (ab Werk 5 Yalm), nicht „Only use damaging gap closers within this distance".
+- *Kreszenter Schritt (Occult Featherfoot)*, Phantomwaldläufer, „Quickly dash 15 yalms forward". Lief auf „Move
+  Forward" in eine angekündigte Fläche wie vor A498 En Avant.
+
+Jetzt gilt:
+- Die drei Sprünge auf das Ziel sind `HostileMovingAttack` und tragen die Grenze „Only use damaging gap closers within
+  this distance" (`GapCloserAllowed` in der Basisrotation, wie Intervene und die Ansturme des Beastmasters, A358). Die
+  Grenze der Phantom-Rotation bleibt als zweite Obergrenze.
+- Kreszenter Schritt ist ein fester Sprung mit 15 Yalm aus dem Wirktext.
+- Im Kampf: Gewissenstritt und Rasender Sturz gehen erst, wenn der Blaumagier nah genug am Ziel steht (ab Werk unter
+  3 Yalm), auf einen Bewegungsbefehl, im Countdown oder wenn er sie selbst drückt; sonst bleiben sie bereit, und im
+  Mondflöten-Fenster fehlt dann Gewissenstritt. Die Prüfung des Wegs läuft nur mit „Check movement actions with
+  BossModReborn" (ab Werk aus); die Abstandsgrenze gilt immer.
+
+Ausnahmen, je mit Grund im Skript:
+- Shukuchi und Cloud Skim: Bodenziel in eine gewählte Richtung; keine Fork-Rotation wirkt sie, und einen Landepunkt
+  hätte erst eine eigene Zielwahl.
+- Rescue: bewegt das Gruppenmitglied, nicht den Spieler.
+- Steadfast Stance (Phantomtänzer): RSR wirkt es nur auf den Spieler. Den Ansturm gibt es nur auf ein Gruppenmitglied.
+- Night Stallion (Quest-Gefecht): Die Weite des Rutschens nennt kein Text, und ohne Weite lehnte die Prüfung neben
+  BossModReborn ab.
+- Lost Seraph Strike: Bozja liegt außerhalb seines Profils und kommt in keinem seiner Mitschnitte vom 25.10. bis
+  03.11.2026 vor. Erfasst, nicht bearbeitet.
+- Böse Ahnung (Loom), Blaumagier, „Move quickly to the specified location": ein Bodenziel. Die Rotation wirkt es auf
+  „Move Forward" (`MoveForwardGCD`). Die Zielwahl behandelt es wie eine Bodenheilung (`IsFriendly`,
+  `FindTargetAreaFriend`): Es landet an einem gespeicherten Punkt, an der Arenamitte, unter dem Boss oder bei einem
+  Gruppenmitglied, nicht in seiner Blickrichtung, und ohne Prüfung des Wegs (`TODO.md`, „Böse Ahnung (Loom) landet, wo
+  Bodenheilungen liegen, statt vorn").
 
 **Nach einem Sprung zum Ziel kein Fernangriff** (`MeleeRangedAfterMove`, Upstream). Die Fernangriffe mit diesem Typ –
 Piercing Talon, Throwing Dagger, Lightning Shot, Writhing Snap, Enpi, Shield Lob, Tomahawk, Harpe; beim Dunkelritter

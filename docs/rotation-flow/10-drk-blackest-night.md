@@ -259,8 +259,9 @@ bestätigt The Balance, die 45 s Immunität nennt es nicht, Konzept 08):
 **Grenzen:** Ein Sanctus unter Swiftcast ist nicht sichtbar, bevor es landet; kommt es nach der GCD-Frist,
 fällt die Barriere mit der Betäubung zusammen. Ein langsamerer GCD des Weißmagiers kann eine kurze Lücke
 zwischen Frist und Wirken lassen. Beides kostet höchstens eine Barriere ohne Dark Arts, also MP, kein Leben.
-Andere Flächenbetäuber als der Weißmagier liegen außerhalb seines Profils (Occult Crescent); für sie gilt
-nur die GCD-Frist. Ebenso für einen Heiler der Gefährtenunterstützung: Erkannt werden nur die Spieleraktionen
+Andere Flächenbetäuber als der Weißmagier, etwa Aktionen der Phantomjobs in Kreszentia (in seinem Profil, C153),
+erkennt die Regel nicht; für sie gilt nur die GCD-Frist (`TODO.md`, „Flächenbetäuber in Kreszentia für The Blackest
+Night"). Ebenso für einen Heiler der Gefährtenunterstützung: Erkannt werden nur die Spieleraktionen
 Holy (139) und Holy III (25860). Die Spieldaten führen dazu zahlreiche Nicht-Spieler-Zeilen gleichen Namens (etwa
 17614: 1,5 s, 8 y; 38085: 1,0 s, 8 y; xivapi, abgerufen 29.09.2026). Welche davon ein NPC der Gruppe wirkt und ob sie
 betäubt, ist nicht belegt; zudem steht ein NPC nur mit „Heal and raise party NPCs" in der Gruppenliste.

@@ -16,8 +16,11 @@ the global single/area/self/healer/tank heal ratios. The party statistics were m
 thresholds on the party's average or minimum (Horoscope, Lady of Crowns, Holos, Pneuma, the Scholar's
 emergency and Recitation, the downtime heal) read the level while their single-target neighbours read the
 forecast; `PartyMembersForecastAverHP` and `DataCenter.ForecastMinHp` are the forecast spellings. Mitigation thresholds (dying tank, Intervention, Cover,
-The Blackest Night) are not healing thresholds and are left alone, and so are Duty and PvP
-rotations and the ones under ExtraRotations, which are not the fork's to edit.
+The Blackest Night) are not healing thresholds and are left alone, and so are the PvP rotations
+and the ones under ExtraRotations, which are not the fork's to edit. The duty rotations were left out
+as well until A519, as outside the owner's profile: Occult Crescent is in it, and the Phantom heals
+(Occult Potion, Occult Elixir, Occult Chakra, Occult Resuscitation, Blessing, Phantom Judgment) and
+the Mega Potion of the Monster Hunter rotation read the health shown now.
 
 Fails on a finding. The self-test runs first.
 """
@@ -31,7 +34,7 @@ SCAN = [
     ROOT / "RotationSolver" / "RebornRotations",
     ROOT / "RotationSolver" / "Basic" / "Rotations",
 ]
-SKIP_PARTS = {"PVPRotations", "Duty", "ExtraRotations"}
+SKIP_PARTS = {"PVPRotations", "ExtraRotations"}
 
 PARTY = r"\b(?:PartyMembersAverHP|PartyMembersMinHP|LowestPartyMembersAverHP|PartyMembersDifferHP)\b"
 PLAIN = re.compile(r"\.GetHealthRatio\(\)\s*(?:<=?|>=?)|(?:<=?|>=?)\s*[\w?.]*\.GetHealthRatio\(\)"
@@ -39,7 +42,8 @@ PLAIN = re.compile(r"\.GetHealthRatio\(\)\s*(?:<=?|>=?)|(?:<=?|>=?)\s*[\w?.]*\.G
 HEAL_NAME = re.compile(
     r"\b\w*(?:Heal(?!th)|HealthSingle|HealthArea|HealthSelf|HealthHealer|HealthTank|Excog|Aetherpact|Dignity|"
     r"Synastry|Krasis|Pneuma|Soteria|Benediction|Clemency|Intuition|Equilibrium|ThrillOfBattle|"
-    r"EmergencyTactics|synastryHp|healRatio|floorHealthRatio|Indomitability|HealthDifference|Horoscope|Holos)\w*\b")
+    r"EmergencyTactics|synastryHp|healRatio|floorHealthRatio|Indomitability|HealthDifference|Horoscope|Holos|"
+    r"Blessing|Judg(?:e)?ment|Potion|Chakra|Elixir|Resuscitation)\w*\b")
 
 
 def findings_in(text):
@@ -62,6 +66,8 @@ def self_test():
     recite = "\t\tif (!IndomitabilityPvE.Cooldown.IsCoolingDown && PartyMembersAverHP <= ReciteIndomitability)\n"
     spread = "\t\t\t\t\t\tif (DataCenter.PartyMembersDifferHP < Service.Config.HealthDifference)\n"
     party_good = "\t\tif (PartyMembersForecastAverHP(true) < HoroscopeHeal && HoroscopePvE.CanUse(out act))\n"
+    phantom = "\t\t\tif (Player?.GetHealthRatio() < OccultChakraHPThreshold)\n"
+    elixir = "\t\t\tif (InCombat && (PartyMembersAverHP < OccultElixirThreshold))\n"
     assert findings_in(bad), "a plain read at a heal threshold must be caught"
     assert findings_in(party), "the party's plain average at a heal threshold must be caught"
     assert findings_in(recite), "Recitation with Indomitability is a healing threshold"
@@ -71,8 +77,11 @@ def self_test():
     assert not findings_in(good), "the forecast read must be accepted"
     assert not findings_in(mitigation), "a mitigation threshold is not a healing threshold"
     assert not findings_in(comment), "a comment is not code"
+    assert findings_in(phantom), "a Phantom heal threshold must be caught (A519)"
+    assert findings_in(elixir), "a Phantom party heal threshold must be caught (A519)"
     print("self-test ok: a plain read at a heal threshold is caught, the party's plain average, minimum and spread "
-          "and a global heal ratio too; the forecast reads, a mitigation threshold and a comment are left alone")
+          "and a global heal ratio too, the Phantom heals as well; the forecast reads, a mitigation threshold and a comment "
+          "are left alone")
 
 
 def main():

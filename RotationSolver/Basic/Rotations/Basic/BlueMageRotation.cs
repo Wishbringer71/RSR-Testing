@@ -725,7 +725,10 @@ public partial class BlueMageRotation
 
 	static partial void ModifyFlyingFrenzyPvE(ref ActionSetting setting)
 	{
-		//setting.SpecialType = SpecialActionType.MovingForward;
+		// "Delivers a jumping physical attack to target" (effect text): a leap onto the target, so its path is checked and
+		// it stays within the reach the player allows damaging gap closers (concept 05, A519).
+		setting.SpecialType = SpecialActionType.HostileMovingAttack;
+		setting.CanTarget = static t => GapCloserAllowed(t, pressed: ActionID.FlyingFrenzyPvE);
 		setting.AttackTypeOverride = AttackType.Physical;
 		setting.AspectOverride = Aspect.Blunt;
 		setting.CreateConfig = () => new ActionConfig()
@@ -1518,6 +1521,9 @@ public partial class BlueMageRotation
 
 	static partial void ModifyJKickPvE(ref ActionSetting setting)
 	{
+		// A leap onto the target like Flying Frenzy (effect text), up to 25 yalms (concept 05, A519).
+		setting.SpecialType = SpecialActionType.HostileMovingAttack;
+		setting.CanTarget = static t => GapCloserAllowed(t, pressed: ActionID.JKickPvE);
 		setting.AttackTypeOverride = AttackType.Physical;
 		setting.AspectOverride = Aspect.Blunt;
 		setting.ActionCheck = () => !StatusHelper.PlayerHasStatus(false, StatusID.Bind);

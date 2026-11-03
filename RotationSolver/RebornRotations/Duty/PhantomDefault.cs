@@ -555,12 +555,12 @@ public sealed class PhantomDefault : PhantomRotation
 			return true;
 		}
 
-		if (BlessingUseage && BlessingPvE.CanUse(out act) && (PartyMembersAverHP < PredictBlessingThreshold || Player?.GetHealthRatio() < PredictBlessingThreshold)) // Phantom heal gets a larger threshold than normal healing
+		if (BlessingUseage && BlessingPvE.CanUse(out act) && (PartyMembersForecastAverHP(true) < PredictBlessingThreshold || Player?.GetForecastHealthRatio(true) < PredictBlessingThreshold)) // Phantom heal gets a larger threshold than normal healing
 		{
 			return true;
 		}
 
-		if (PhantomJudgementUseage && (PartyMembersAverHP < PredictJudgementThreshold || Player?.GetHealthRatio() < PredictJudgementThreshold) && PhantomJudgmentPvE.CanUse(out act)) // Heal the party or self if we're below the heal + damage threshold
+		if (PhantomJudgementUseage && (PartyMembersForecastAverHP(true) < PredictJudgementThreshold || Player?.GetForecastHealthRatio(true) < PredictJudgementThreshold) && PhantomJudgmentPvE.CanUse(out act)) // Heal the party or self if we're below the heal + damage threshold
 		{
 			return true;
 		}
@@ -569,14 +569,14 @@ public sealed class PhantomDefault : PhantomRotation
 		{
 			if (!OccultPotionSelf)
 			{
-				if (OccultPotionPvE.Target.Target.GetHealthRatio() < OccultPotionThreshold)
+				if (OccultPotionPvE.Target.Target.GetForecastHealthRatio(true) < OccultPotionThreshold)
 				{
 					return true;
 				}
 			}
 			else
 			{
-				if (OccultPotionPvE.CanUse(out act, targetOverride: TargetType.Self) && Player?.GetHealthRatio() < OccultPotionThreshold)
+				if (OccultPotionPvE.CanUse(out act, targetOverride: TargetType.Self) && Player?.GetForecastHealthRatio(true) < OccultPotionThreshold)
 				{
 					return true;
 				}
@@ -585,7 +585,7 @@ public sealed class PhantomDefault : PhantomRotation
 
 		if (OccultChakraPvE.CanUse(out act) && InCombat)
 		{
-			if (Player?.GetHealthRatio() < OccultChakraHPThreshold)
+			if (Player?.GetForecastHealthRatio(true) < OccultChakraHPThreshold)
 			{
 				return true;
 			}
@@ -601,19 +601,19 @@ public sealed class PhantomDefault : PhantomRotation
 			return base.HealAreaAbility(nextGCD, out act);
 		}
 
-		if (BlessingUseage && BlessingPvE.CanUse(out act) && (PartyMembersAverHP < PredictBlessingThreshold || Player?.GetHealthRatio() < PredictBlessingThreshold)) // Phantom heal gets a larger threshold than normal healing
+		if (BlessingUseage && BlessingPvE.CanUse(out act) && (PartyMembersForecastAverHP(true) < PredictBlessingThreshold || Player?.GetForecastHealthRatio(true) < PredictBlessingThreshold)) // Phantom heal gets a larger threshold than normal healing
 		{
 			return true;
 		}
 
-		if (PhantomJudgementUseage && (PartyMembersAverHP < PredictJudgementThreshold || Player?.GetHealthRatio() < PredictJudgementThreshold) && PhantomJudgmentPvE.CanUse(out act)) // Heal the party or self if we're below the heal + damage threshold
+		if (PhantomJudgementUseage && (PartyMembersForecastAverHP(true) < PredictJudgementThreshold || Player?.GetForecastHealthRatio(true) < PredictJudgementThreshold) && PhantomJudgmentPvE.CanUse(out act)) // Heal the party or self if we're below the heal + damage threshold
 		{
 			return true;
 		}
 
 		if (OccultElixirPvE.CanUse(out act))
 		{
-			if (InCombat && (PartyMembersAverHP < OccultElixirThreshold))
+			if (InCombat && (PartyMembersForecastAverHP(true) < OccultElixirThreshold))
 			{
 				return true;
 			}
@@ -711,7 +711,7 @@ public sealed class PhantomDefault : PhantomRotation
 
 		if (OccultResuscitationPvE.CanUse(out act))
 		{
-			if (Player?.GetHealthRatio() < OccultResuscitationThreshold)
+			if (Player?.GetForecastHealthRatio() < OccultResuscitationThreshold)
 			{
 				return true;
 			}

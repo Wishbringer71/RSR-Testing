@@ -62,7 +62,10 @@ wird also nicht übergangen, nur die teuerste Antwort darauf.
 **Auch die Heilschwellen der Jobs lesen die Vorausschau** (A191): Regen, Essential Dignity, Synastry,
 Aspected Benefic, Taurochole, Krasis, Soteria, Pneuma, Kardia, Benediction, Excogitation, Emergency Tactics,
 Aetherpact, Clemency, Bloodwhetting, Thrill of Battle, Equilibrium, Nascent Flash, Second Wind, Bloodbath und
-die Untergrenze der Pull-Pflege. Abwehrschwellen (sterbender Tank, Intervention, Cover, The Blackest Night)
+die Untergrenze der Pull-Pflege; ebenso die Heilungen der Inhaltsrotationen (A519): in Kreszentia Occult Potion,
+Occult Elixir, Occult Chakra, Occult Resuscitation, Blessing und Phantom Judgment, im Monster-Hunter-Kampf Mega Potion.
+Bis A519 lasen diese den Stand, weil der Prüfer die Inhaltsrotationen als außerhalb seines Profils ausließ und seine
+Liste der Heilnamen ihre Namen nicht kannte. Abwehrschwellen (sterbender Tank, Intervention, Cover, The Blackest Night)
 sind keine Heilschwellen und bleiben am Stand. `check_heal_threshold_forecast.py` hält das in der CI fest.
 Wie weit voraus, hängt von der Heilart ab (A213, Konzept 08): Eine oGCD-Heilung blickt nur so weit voraus, wie die
 laufende Ausführungssperre reicht, eine GCD-Heilung um den Rest des GCD und ihren Wirkvorgang. Maßgeblich ist, wann

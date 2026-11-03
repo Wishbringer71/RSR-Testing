@@ -182,7 +182,9 @@
    "values": [
     "100"
    ],
-   "status": "open"
+   "status": "exception",
+   "loop": "A518",
+   "reason": "Unit conversion, not a game value: the setting is a share and the method answers in percent; in his profile since 03.11.2026 - the Blue Mage named, Occult Crescent played (A518, C153)."
   },
   {
    "file": "RotationSolver/RebornRotations/Duty/PhantomDefault.cs",
@@ -190,7 +192,9 @@
    "values": [
     "100"
    ],
-   "status": "open"
+   "status": "exception",
+   "loop": "A518",
+   "reason": "Unit conversion, not a game value: the setting is a share and the method answers in percent; in his profile since 03.11.2026 - the Blue Mage named, Occult Crescent played (A518, C153)."
   },
   {
    "file": "RotationSolver/RebornRotations/Healer/AST_Reborn.cs",
@@ -330,7 +334,9 @@
    "values": [
     "100"
    ],
-   "status": "open"
+   "status": "exception",
+   "loop": "A518",
+   "reason": "Unit conversion, not a game value: the setting is a share and the method answers in percent; in his profile since 03.11.2026 - the Blue Mage named, Occult Crescent played (A518, C153)."
   },
   {
    "file": "RotationSolver/RebornRotations/Limited Jobs/BLU_Reborn.cs",
@@ -338,7 +344,9 @@
    "values": [
     "100"
    ],
-   "status": "open"
+   "status": "exception",
+   "loop": "A518",
+   "reason": "Unit conversion, not a game value: the setting is a share and the method answers in percent; in his profile since 03.11.2026 - the Blue Mage named, Occult Crescent played (A518, C153)."
   },
   {
    "file": "RotationSolver/RebornRotations/Magical/PCT_Reborn.cs",
@@ -1107,6 +1115,16 @@
    "status": "exception",
    "loop": "A498",
    "reason": "The dash distance is stated only in the effect text (Smudge: \"Quickly dash 15 yalms forward\", ActionTransient via xivapi v2, 03.11.2026); no sheet carries it as a number, so it cannot be read at runtime"
+  },
+  {
+   "file": "RotationSolver/Basic/Rotations/Duties/PhantomRotation.cs",
+   "code": "setting.BackstepDistance = 15;",
+   "values": [
+    "15"
+   ],
+   "status": "exception",
+   "loop": "A519",
+   "reason": "The dash distance is stated only in the effect text (Occult Featherfoot: \"Quickly dash 15 yalms forward\", ActionTransient via xivapi v2, 03.11.2026); no sheet carries it as a number, so it cannot be read at runtime"
   },
   {
    "file": "RotationSolver/Basic/Rotations/Basic/WhiteMageRotation.cs",

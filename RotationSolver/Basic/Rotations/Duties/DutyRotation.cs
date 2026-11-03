@@ -382,6 +382,13 @@ public partial class DutyRotation : IDisposable
 
 	public static float PartyMembersAverHP => DataCenter.PartyMembersAverHP;
 
+	/// <summary>
+	/// <see cref="PartyMembersAverHP"/> carried forward to the moment a heal begun now would land, as "Heal ahead of
+	/// incoming damage" promises for every healing threshold; with that setting off it is the same value (A519).
+	/// </summary>
+	/// <param name="instant">An off-GCD heal, which looks ahead only as far as the current animation lock.</param>
+	public static float PartyMembersForecastAverHP(bool instant = false) => CustomRotation.PartyMembersForecastAverHP(instant);
+
 	public static bool InBurstWindow()
 	{
 		return DataCenter.CurrentRotation?.IsInBurstWindow == true;

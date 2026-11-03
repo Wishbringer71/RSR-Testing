@@ -15422,6 +15422,98 @@ Am Auftragsende gemessen: zwei neue Commits auf `upstream/main` (977601a50, Merg
 *Prüfgrad:* Diff gelesen, Leser und Aufrufer am Code verfolgt, die Statusfrage an seinen Mitschnitten gemessen, Wirktext
 von Delirium (xivapi); Compile, Prüfskripte.
 
+### A518 · Kreszentia in seinem Profil: was die falsche Einordnung zurückgestellt hatte (03.11.2026)
+
+Seine Rüge (03.11.2026): „wer sagt. das kreszentia ausserhalb meines profiles liegt? ich?" Eingeordnet als Rüge zu
+einer Ableitung von mir. Die Regel „Bozja und ähnliche Sonderinhalte" in CLAUDE.md hatte ich auf Kreszentia übertragen,
+ohne in seinen Daten und im Archiv nachzusehen. Belegt ist das Gegenteil: Am 08.09.2026 gab er an, dass er Occult
+Crescent spielt (A43, Anlass der fünf Occult-Barrieren). Süd- und Nordhorn stehen in seinen Uploads (A478;
+Schwächen-Aufzeichnungen aus dem Südhorn vom 01. bis 03.11.2026). Widerrufe: C153 (A517), C154 (A498). Im Archiv stand
+die Einordnung seit A340 (24.10.2026). Der Heilschwellen-Prüfer ließ die Inhaltsrotationen schon seit 28.09.2026 aus
+(a5fb8ea35, mit dem Grund „not the fork's to edit"). Beides kam nach seiner Angabe vom 08.09.2026.
+
+- *CLAUDE.md, „Nutzungsprofil":* Was er spielt, liegt in seinem Profil. Vor einer Einordnung als außerhalb sehe ich in
+  Uploads und Archiv nach; Kreszentia gehört dazu, und dasselbe gilt für jeden Ausschluss in einem Prüfskript.
+- *Alle Stellen derselben Einordnung, nachgeprüft:*
+  - A517: Burst-Abfrage für die Phantom-Rotation, die Klasse über alle Jobs. Nur der Dunkelritter las einen Status, den
+    das Spiel nicht mehr legt; behoben durch Upstream 7.5.7.15. Die übrigen Status liegen in seinem Mitschnitt an
+    (Samurai, Viper), Ninja und Schwarzmagier lesen keinen Status.
+  - A498: Folgeirrtum, C154.
+  - A340: die vier offenen Zeilen im Register der festen Werte (zwei Phantom-Rotation, zwei Blaumagier) sind
+    Prozentumrechnungen wie die übrigen 112 Ausnahmen; geschlossen.
+  - A400: „Occult-Crescent-Ziele erfasst" hieß: die vier Zielarten der Phantomjobs nicht gelesen. Nachgeholt in A519,
+    ohne Defekt.
+  - A41: Die fünf Occult-Barrieren, dort zurückgestellt, nahm A43 auf; nichts offen.
+  - Prüfskripte mit derselben Grenze: der Bewegungsprüfer (Blaumagier und alle Inhaltsaktionen ausgenommen), der
+    Heilschwellen-Prüfer (Inhaltsrotationen ausgenommen), der Tooltip-Prüfer (Blaumagier ausgenommen) und die
+    Status-Erhebung (`scan16.py`: nur Tank und Heiler im Profil). Die ersten beiden verbargen Defekte im Kampf (A519).
+  - Konzept 10, „Grenzen": Flächenbetäuber der Phantomjobs erkennt die Barrierenregel nicht. Neu im TODO als offene
+    Arbeit, mit geringer Wirkung (MP, kein Leben).
+
+*Prüfgrad:* Archiv, Konzepte, TODO und Register nach der Einordnung durchsucht; Statusfrage an seinem Mitschnitt gemessen.
+
+### A519 · Bewegungstypen und Heilschwellen für Blaumagier und Kreszentia: was die Prüfskripte ausgenommen hatten (03.11.2026)
+
+Folge von A518. Vier Prüfskripte setzten eine Profilgrenze, die nicht mehr gilt: Den Blaumagier hat er am 03.11.2026
+genannt, Kreszentia spielt er nach eigener Angabe seit dem 08.09.2026 (A43). Zwei davon verbargen Defekte im Kampf.
+Upstream vorher gemessen: 0 ausstehend (a560469db).
+
+- *Bewegung ohne Typ* (Konzept 05, „Welche Aktion bewegt"). Der Bewegungsprüfer hielt nur Jobaktionen ohne den
+  Blaumagier gegen einen Bewegungstyp. Mit Blaumagier und den Inhaltsaktionen, die eine Rotation wirkt, fehlten fünf:
+  - Gewissenstritt (J Kick, 25 y) und Rasender Sturz (Flying Frenzy, 20 y), Blaumagier: Sprung aufs Ziel, im
+    Mondflöten-Fenster und als Flächenfüller. Ohne Grenze gingen sie aus jedem Abstand, ohne Prüfung des Wegs.
+  - Treten (Phantom Kick), Phantommönch: Sprung aufs Ziel, ab Werk aus. Es galt nur die Grenze der Phantom-Rotation
+    (5 y), nicht die zentrale.
+  - Kreszenter Schritt (Occult Featherfoot), Phantomwaldläufer: 15 Yalm nach vorn, auf „Move Forward" ungeprüft.
+  - Böse Ahnung (Loom), Blaumagier: Bodenziel. Die Rotation wirkt es auf „Move Forward", und die Zielwahl setzt es wie
+    eine Bodenheilung (gespeicherter Punkt, Arenamitte, Boss, Gruppenmitglied). Neu im TODO als Defekt; die Zielwahl
+    für Bewegung mit Bodenziel (`FindTargetAreaMove`) erreicht heute keine Aktion.
+- *Gebaut:*
+  - Die drei Sprünge sind `HostileMovingAttack` mit `CanTarget = GapCloserAllowed` in der Basisrotation, wie Intervene
+    und die Ansturme des Beastmasters (A358). Der Einstellungstext „Only use damaging gap closers within this distance"
+    bindet. Die Grenze der Phantom-Rotation bleibt als zweite Obergrenze.
+  - Kreszenter Schritt ist ein fester Sprung mit 15 Yalm aus dem Wirktext; Ausnahme im Register wie Smudge (A498).
+  - `check_movement_types.py` misst jetzt jede Jobaktion und jede Inhaltsaktion mit `<Name>.CanUse(` außerhalb eines
+    Kommentars. Selbsttest mit gewirkter und auskommentierter Inhaltsaktion; Gegenprobe am Baum: Typ von Kreszenter
+    Schritt entfernt → `UNTYPED`.
+  - Ausnahmen mit Grund: Steadfast Stance (RSR wirkt es nur auf sich), Night Stallion (Quest-Gefecht, Weite nirgends
+    genannt), Lost Seraph Strike (Bozja: in keinem seiner Mitschnitte vom 25.10. bis 03.11.2026, die Süd- und Nordhorn
+    zeigen), Böse Ahnung (TODO).
+  - Deutsche Namen der fünf aus den Spielblättern (xivapi v2, `language=de`) in `action_names_de.json`.
+- *Heilschwellen ohne Vorausschau* (Konzept 07). Der Heilschwellen-Prüfer ließ die Inhaltsrotationen aus. Seine Liste
+  der Heilnamen kannte die Phantom-Heilungen nicht.
+  - Elf Schwellen der Phantom-Rotation lasen den Stand, gegen den Text von „Heal ahead of incoming damage" (ab Werk an):
+    Occult Potion, Occult Elixir, Occult Chakra, Occult Resuscitation, Blessing und Phantom Judgment. Dazu die zwei
+    Mega-Potion-Schwellen der Monster-Hunter-Rotation.
+  - Jetzt lesen sie die Vorausschau, als oGCD mit der Ausführungssperre (`instant`), Occult Resuscitation als GCD.
+    Dafür `DutyRotation.PartyMembersForecastAverHP`. Mit der Einstellung aus ist jeder Wert derselbe.
+  - Prüfer ohne die Ausnahme für Inhaltsrotationen, Heilnamen ergänzt, zwei Selbsttestfälle.
+- *Ohne Defekt:*
+  - Tooltip-Prüfer: Er nahm den Blaumagier aus, fand dort aber nichts. Bozja bleibt ausgenommen, gemessen an seinen
+    Mitschnitten.
+  - `scan16.py` nannte nur Tank und Heiler sein Profil. Die übrigen Rollen meldeten 0 Funde.
+  - Die vier Zielarten der Phantomjobs, die A400 nicht gelesen hatte:
+    - Dark Cannon und Shock Cannon nehmen den ersten Gegner im Kampf, der laut einer Handliste nicht immun ist (eine
+      Handliste von Gegnernamen). Fehlt ein Gegner auf der Liste, trifft die Kanone trotzdem, nur ohne Blindheit bzw. Lähmung.
+    - Battle Bell und Ringing Respite gehen auf den Angegriffenen, wenn Gruppe und Umgebung denselben nennen, sonst auf
+      den Spieler.
+- *Im Kampf:*
+  - Blaumagier: Die Sprünge gehen aus mehr als 3 Yalm (ab Werk) nur auf seinen Bewegungsbefehl, im Countdown oder auf
+    seinen eigenen Druck. Steht er weiter weg, fehlt Gewissenstritt im Mondflöten-Fenster, und der Füller wechselt.
+  - Kreszentia: Die Phantom-Heilungen kommen, wenn ein Treffer die Gesundheit unter die Schwelle bringen wird, nicht
+    erst danach.
+  - Die Prüfung des Wegs läuft nur mit „Check movement actions with BossModReborn", ab Werk aus. Die Abstandsgrenze gilt
+    immer.
+- *Falsifikation:*
+  - *Kein Defekt?* Der Text der Abstandsgrenze nennt jeden Gapcloser mit Schaden. Der Text der Vorausschau nennt jede
+    Heilschwelle. Beide wichen ab.
+  - *Option falsch?* Eine eigene Grenze je Rotation spaltete die Klasse wieder auf. A358 hat die zentrale gewählt.
+  - *Ausgeliefert, und nichts ändert sich?* Wenn er als Blaumagier am Ziel steht (0 Yalm), bleibt alles gleich. Ohne die
+    Einstellung zur Vorausschau ändert sich nichts an den Heilungen, und ohne den BossModReborn-Schalter nichts an den
+    Wegen.
+- *Prüfgrad:* statisch am Code, an den Blättern und seinen Mitschnitten; Prüfskripte mit Selbsttest und Gegenprobe;
+  kompiliert, alle CI-Prüfungen lokal; im Spiel nicht beobachtet.
+
 ## B · Commit-Register (Fork vs. `upstream/main`)
 
 ### B1 · Einzelgeprüfte Fork-Commits
@@ -15726,3 +15818,5 @@ Die offene Arbeit dazu — Reihenfolge und Abbruchbedingung der Nachprüfung —
 | C150 | A358 und Konzept 18, „Rotationseinstellungen" (25.10.2026): „Ab Werk verbrauchen ihn nur die beiden Schalter des Piktomanten" | Der Rotmagier nimmt Swiftcast im Burst für Schaden, ohne Schalter (`RDM_Reborn.AttackAbility`). Berichtigt in A500; die Wahl für ihn ist Teil der Vorlage zu E3. |
 | C151 | A500, „Gemeinsame Wiederverwendung" (03.11.2026): „Ein Vorrangschalter wurde geprüft und verworfen: Einen Trank für die Tinktur zurückzuhalten, schöbe Heilung für Schaden auf (gegen „Sicherheit vor Schaden")" | Seine Regel ist seine Entscheidung; andere Spieler können anders entscheiden (seine Präzisierung, 03.11.2026). Gebaut als Option mit seiner Regel als Voreinstellung (A502). |
 | C152 | Konzept 14, Rotmagier (A500): „Swiftcast in der Rotation verletzt seine Regel nicht: Der Rotmagier belebt mit Dualcast wieder" | Mit Dualcast höchstens einen GCD später im Stehen, im Laufen gar nicht; seine Vorgabe verlangt Swiftcast bereit (A503). |
+| C153 | A517: „Kreszentia ist ein Sonderinhalt außerhalb des genannten Profils: erfasst, kein Eingriff nötig." | Ein Schluss aus der Ähnlichkeit zu Bozja, nicht seine Angabe, und gegen seine Angabe: Er spielt Occult Crescent, so am 08.09.2026 (A43), und seine Daten zeigen es (Schwächen-Aufzeichnungen aus dem Südhorn in seinen Uploads vom 01. bis 03.11.2026, A478 Krieger im Nordhorn). Seine Rüge (03.11.2026): „wer sagt. das kreszentia ausserhalb meines profiles liegt? ich?" Unter der berichtigten Prämisse nachgeprüft: Das Halten der Phantomangriffe für den Schadensbonus der Klasse (`IsBursting`) fragte nur beim Dunkelritter einen Status, den das Spiel nicht mehr legt; das hat Upstream 7.5.7.15 behoben. Fugetsu und Fuka (Samurai), Hunter's Instinct und Swiftscaled (Viper) liegen in seinem Mitschnitt vom 03.11.2026 an; der Ninja liest Abklingzeiten, der Schwarzmagier den Job-Messwert. Kein weiterer Eingriff nötig. | CLAUDE.md, „Nutzungsprofil": Was er spielt, liegt in seinem Profil; vor jeder Einordnung als außerhalb in Uploads und Archiv nachsehen. |
+| C154 | A498: „beim Dunkelritter ist Darkside fast immer an, ‚Save for burst window‘ hält dort also kaum noch" | Ungeprüft übernommen: Der Status Darkside (751) liegt im Spiel nie an (3893 Aktionszeilen von Dunkelrittern – Hard Slash, Syphon Strike, Unleash, Souleater, Bloodspiller, Edge und Flood of Shadow – in seinen Mitschnitten vom 25.10. bis 03.11.2026, keine Zeile mit Status 751; gemessen 03.11.2026). Mit dem Code von 7.5.7.14 hielt die Phantom-Rotation die Angriffe eines Dunkelritters also für immer zurück, bis Upstream 7.5.7.15 den Messwert las (A517). | Keine; behoben durch den Merge von 7.5.7.15. |

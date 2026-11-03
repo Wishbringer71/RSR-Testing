@@ -12,13 +12,25 @@ Nach der Wirkung im Kampf: Sicherheit der Gruppe vor Schaden, gewichtet mit der 
 
 1. Nach der Wiederbelebung wartet RSR die Unverwundbarkeit ab: Ein Heiler stirbt am ersten Treffer nach dem
    Aufstehen, ohne dass RSR etwas drückt.
-2. Fremde Repositories auf Verbesserungen für RSR prüfen: Jeder Fund kann ein Defekt im Verhalten einer Klasse sein,
+2. Böse Ahnung (Loom) landet, wo Bodenheilungen liegen, statt vorn: Auf seinen Bewegungsbefehl springt der Blaumagier ungeprüft an
+   einen fremden Punkt, auch in eine Fläche.
+3. Fremde Repositories auf Verbesserungen für RSR prüfen: Jeder Fund kann ein Defekt im Verhalten einer Klasse sein,
    den RSR heute im Kampf zeigt; zuerst die Rotationswerkzeuge für alle Jobs, Daedalus vorn (aktiv, alle Jobs,
    eigene Kampfvorhersage).
+4. Flächenbetäuber in Kreszentia für The Blackest Night: kostet MP, kein Leben.
 
 Danach die technische Schuld, soweit ihre Auflösungsbedingung erfüllt ist. Warten auf Daten: unten.
 
 ## Defekte
+
+### Böse Ahnung (Loom) landet, wo Bodenheilungen liegen, statt vorn · N
+Im Kampf: Auf „Move Forward" wirkt der Blaumagier Böse Ahnung an einen gespeicherten Punkt, an die Arenamitte, unter den Boss
+oder zu einem Gruppenmitglied, nicht in seine Blickrichtung, und ohne Prüfung des Wegs. Steht dort eine Fläche, springt
+er hinein. *Ort:* `BlueMageRotation.ModifyLoomPvE` (`IsFriendly`, kein Bewegungstyp), Zielwahl `FindTargetAreaFriend`;
+die Zielwahl für Bewegung mit Bodenziel (`FindTargetAreaMove`) erreicht heute keine Aktion. *Nächster Schritt:* Loop:
+`TargetType.Move` und ein Bewegungstyp, der den Weg zum gewählten Punkt prüft; dabei klären, ob ein selbst gedrücktes
+Loom über RSR seinen Zielpunkt verliert. Shukuchi und Cloud Skim gehören zur selben Klasse. *Konzept:* 05,
+„Welche Aktion bewegt".
 
 ## Offene Arbeit
 
@@ -28,6 +40,12 @@ Im Kampf: Wiederbelebt bei 21 %, Zellexplosion auf ihn angekündigt; RSR drückt
 Transcendent, Upstream), `AutoOffWhenDead`. *Nächster Schritt:* Loop: ob Heilung und Abwehr unter Transcendent gehen,
 wenn ein angekündigter Treffer nach dessen Ende landet; ob ein Wiederbelebter wieder eingeschaltet wird. *Konzept:* 11,
 „Nach der eigenen Wiederbelebung".
+
+### Flächenbetäuber in Kreszentia für The Blackest Night · N
+Im Kampf: Betäubt ein anderer Spieler mit einer Aktion seines Phantomjobs eine Gruppe, kann der Dunkelritter seine
+Barriere in das Betäubungsfenster legen; sie bricht nicht, Dark Arts bleibt aus, es kostet MP, kein Leben. *Ort:*
+Erkennung der Flächenbetäubung (Konzept 10, „Grenzen"), heute nur Holy und Holy III. *Nächster Schritt:* die Aktionen der
+Phantomjobs mit Flächenbetäubung aus den Spielblättern erheben, Loop. *Konzept:* 10.
 
 ### Fremde Repositories auf Verbesserungen für RSR prüfen · N, R, U
 Sein Auftrag (02.11.2026): „alle von dir gefundenen repos, die du benannt hast prüfen, ob daraus generell
