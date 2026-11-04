@@ -92,8 +92,9 @@ What this release changes in the fight. For the whole distance from upstream, se
   setting. `DefenseTrace.log` notes each switch.
 - **Shield Charge on a pack, Seedsower at once.** Shield Charge hitting more than one enemy now goes
   before Trick and the axes, with every charge, instead of after everything else, where a short pull
-  rarely left it a slot. It only goes on enemies within melee range (3 y), on the one whose reach covers
-  the most of the pack. Seedsower goes out as soon as Borrow grants it, as Beastskin does.
+  rarely left it a slot. It goes on enemies within melee range (3 y) whatever `Only use damaging gap
+  closers within this distance` says, never farther, on the one whose reach covers the most of the pack;
+  every other gap closer keeps that setting. Seedsower goes out as soon as Borrow grants it, as Beastskin does.
   `DefenseTrace.log` counts Shield Charge, Borrow and every Beast Mode action per fight, by RSR or by
   hand, with how long Shield Charge stood ready with several enemies in range, and names the reason
   when it stands ready and does not go.

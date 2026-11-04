@@ -1517,7 +1517,8 @@ gilt für jeden Job.
   Steht er für eine Mechanik 15 y vom Boss, trägt ihn Brutal Rage bei 250 TP zurück in die Fläche. *Gilt:* in jeder
   Beastmaster-Rotation über `GapCloserAllowed` wie Intervene: Ziel näher als die Einstellung (ab Werk 3 y), oder er hat
   die Aktion selbst gedrückt, Vorwärts-Befehl, Countdown. Dazu der Typ `HostileMovingAttack`, der den Landepunkt gegen
-  bekannte Gefahrenflächen prüft. Schildansturm zusätzlich höchstens in der Nahkampfreichweite des Jobs (W5).
+  bekannte Gefahrenflächen prüft. Schildansturm nach eigener Grenze: bis zur Nahkampfreichweite des Jobs, unabhängig
+  von der Einstellung, nie weiter (W5).
 - *W3 – Abschluss ohne Bewegung zuerst.* Risen Fall vor Brutal Rage: gleicher Wert, kein Schritt. Zwischen Calamity und
   Hawkish Talons der, der mehr Gegner trifft (`AffectedTargets` der Zielwahl), bei Gleichstand Calamity. Die Reihenfolge
   der Affinitäten bleibt (Sunstrider vor Moonstalker); die Universality-Kombo bleibt, wo sie war. Steht er weiter als
@@ -1533,9 +1534,13 @@ gilt für jeden Job.
   Gegner bis 6 y darum mit 300. *Gilt:*
   - Trifft er mehr als einen Gegner, kommt er nach dem Abschluss und vor Dressur und Äxten, mit jeder Ladung; auf einen
     Gegner bleibt er zuletzt, und ohne Begleiter draußen hält er dort Ladungen (Upstream 8f258dbc5).
-  - Nur auf Gegner bis zur Nahkampfreichweite des Jobs (3 y, `DataCenter.JobRange`) und innerhalb der Einstellung aus
-    W2, auch wenn sie mehr erlaubt. Unter ihnen nimmt RSR den, dessen 6 y die meisten Gegner erreichen: die Mitte der
-    Gruppe. Bei Gleichstand ordnet die Zielart (ohne Tank und Heiler: wenigste LP, Konzept 03).
+  - Nur auf Gegner bis zur Nahkampfreichweite des Jobs (3 y, `DataCenter.JobRange`), unabhängig von der Einstellung aus
+    W2 (seine Entscheidung B vom 04.11.2026: „schildansturm entscheidung b"; A529): Steht sie tiefer, etwa auf 0 y,
+    springt der Schildansturm dennoch bis 3 y; steht sie höher, nie weiter als 3 y. Alle anderen Anstürme halten die
+    Einstellung. Drückt er ihn selbst, per Vorwärts-Befehl oder im Countdown, gilt keine Grenze. Unter den Gegnern bis
+    3 y nimmt RSR den, dessen 6 y die meisten Gegner erreichen: die Mitte der Gruppe. Bei Gleichstand ordnet die Zielart
+    (ohne Tank und Heiler: wenigste LP, Konzept 03). Der Landepunkt wird gegen bekannte Gefahrenflächen geprüft
+    (BossModReborn), bei 0 y nicht.
   - *Warum vorn:* Er stand als letzte Angriffsfähigkeit hinter allem, was nach Sekunden wiederkommt: Dressur (3 s),
     Äxte (5 s), Entfesseln, Borgen, Scheidender Schlag. In den Trash-Kämpfen seines Laufs (5 bis 15 s) blieb ihm kaum
     ein Platz (Schluss aus dem Code).
@@ -1546,8 +1551,12 @@ gilt für jeden Job.
     within this distance" steht auf 0,0 y. RSR verlangte „näher als" die Einstellung, und näher als 0 y steht kein
     Gegner: Jeder Ansturm war gesperrt, Schildansturm wie Brutal Rage und Hawkish Talons, bei jedem Job. Jetzt gilt die
     Grenze einschließlich, wie der Text „within" sagt und wie seine Regel: Bei 0 y am Ziel ist ein Ansturm nur Schaden.
-    In 79 der 1.051 Haltezeilen stand der nächste Gegner bei 0,0 y. Darüber hinaus, bis 3 y, sperrt seine Einstellung
-    weiter; seine Vorgabe „unter 3y" und seine Einstellung 0 y widersprechen sich dort, das entscheidet er.
+    In 79 der 1.051 Haltezeilen stand der nächste Gegner bei 0,0 y. Zwischen 0 und 3 y widersprachen sich seine Vorgabe
+    „unter 3y" und seine Einstellung 0 y; ihm vorgelegt, er entschied B: der Schildansturm nach eigener Grenze (oben),
+    die Einstellung für alle anderen Anstürme. Verworfen (A): die Einstellung auf 3 y, sie hätte jeden Ansturm aller
+    Jobs bis 3 y freigegeben.
+  - *Preis von B:* Der Schildansturm kann ihn bis zu 3 y ins Rudel ziehen, auch aus einer Stelle, an die er vor einer
+    Fläche ausgewichen ist, wenn BossModReborn die Fläche nicht kennt.
   - *Haltezeile:* Liegt er bereit, mit mehr als einem Gegner in Reichweite, und kommt nicht, schreibt RSR einmal je
     Kampf und Art des Grundes (bis A528 je Wortlaut, und der nannte den Abstand, der sich jeden Frame änderte), woran es
     liegt – ausgeschaltet, AoE-Einstellung, kein erlaubtes Ziel (mit Abstand zum nächsten

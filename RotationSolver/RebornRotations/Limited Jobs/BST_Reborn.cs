@@ -988,9 +988,8 @@ public sealed class BST_Reborn : BeastmasterRotation
 			}
 
 			kind = "no target";
-			why = $"no target it may take: nearest enemy {nearest:F1} y, melee range {DataCenter.JobRange:F0} y, gap closers "
-				+ $"within {Service.Config.DistanceForMoving2:F1} y, no new enemies {Service.Config.NoNewHostiles}, "
-				+ "else BossModReborn's dash check or the action's own conditions";
+			why = $"no target it may take: nearest enemy {nearest:F1} y, melee range {DataCenter.JobRange:F0} y, no new "
+				+ $"enemies {Service.Config.NoNewHostiles}, else BossModReborn's dash check or the action's own conditions";
 		}
 		else
 		{

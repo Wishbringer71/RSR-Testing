@@ -1374,11 +1374,13 @@ public partial class BeastmasterRotation
 
 	static partial void ModifyShieldChargePvE(ref ActionSetting setting)
 	{
-		// A rush onto the target (W2, concept 01, A486): within the reach the player allows damaging gap closers, and the
-		// landing point checked against known danger areas, as Intervene (A358). His precept of 04.11.2026 ("ansturm unter
-		// 3y nutzen", W5, A525): never further than the job's melee range.
+		// A rush onto the target (W2, W5, concept 01): the landing point checked against known danger areas, as Intervene
+		// (A358). His precept of 04.11.2026 ("ansturm unter 3y nutzen", A525) and his decision B of that day ("schildansturm
+		// entscheidung b", A529): up to the job's melee range whatever "Only use damaging gap closers within this distance"
+		// says, never farther - unless he presses it himself, moves forward by command or counts down.
 		setting.SpecialType = SpecialActionType.HostileMovingAttack;
-		setting.CanTarget = static t => GapCloserAllowed(t, DataCenter.JobRange, ActionID.ShieldChargePvE);
+		setting.CanTarget = static t => (t?.DistanceToPlayer() ?? float.MaxValue) <= DataCenter.JobRange
+			|| GapCloserAllowed(t, DataCenter.JobRange, ActionID.ShieldChargePvE);
 		setting.IsFriendly = false;
 		setting.CreateConfig = () => new ActionConfig()
 		{

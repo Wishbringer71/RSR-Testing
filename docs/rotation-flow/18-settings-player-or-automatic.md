@@ -19,7 +19,8 @@ sind, die durch routinen und ingame auswertungen besser geregelt werden können.
   zusätzlich (unten, „Abstand für Sprungangriffe"). Die Grenze gilt einschließlich, wie „within" sagt: Steht sie auf
   0 Yalm, geht ein Sprung auf ein Ziel, das er schon berührt – dann ist er nur Schaden (seine Regel). Bis A528 verlangte
   RSR „näher als", und mit 0 Yalm ging kein Sprung mehr; so stand seine Einstellung am 04.11.2026, und der Schildansturm
-  kam nie.
+  kam nie. Ausnahme nach seiner Entscheidung vom 04.11.2026: Der Schildansturm des Beastmasters geht bis zur
+  Nahkampfreichweite, unabhängig von dieser Grenze, und nie weiter (Konzept 01, W5; A529).
 - **Die Heilschwellen auf den Gruppendurchschnitt lasen den Stand – behoben.** „Heal ahead of incoming damage"
   verspricht die Vorausschau für jede Heilschwelle; sechs Schwellen der Heiler-Rotationen und die Füllheilung lasen
   die Gesundheit jetzt statt beim Eintreffen der Heilung (unten, „Heilung").

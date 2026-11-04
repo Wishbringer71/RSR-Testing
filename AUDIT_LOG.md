@@ -15860,6 +15860,18 @@ habe den schleim bislang nicht anfreunden können."
 - *Prüfgrad:* Mitschnitt und Protokoll ausgezählt, A527 am Mitschnitt nachgespielt; Compile, CI-Prüfungen lokal. Die
   neuen Zeilen im Spiel nicht beobachtet.
 
+### A529 · Schildansturm bis 3 y nach eigener Grenze (seine Entscheidung B, 04.11.2026)
+
+- *Anlass:* Vorlage aus A528: Seine Einstellung „Only use damaging gap closers within this distance" steht auf 0 y,
+  seine Vorgabe sagt „ansturm unter 3y". Seine Entscheidung: „schildansturm entscheidung b".
+- *Umgesetzt:* `ModifyShieldChargePvE`: Ziel bis `DataCenter.JobRange` (3 y) unabhängig von der Einstellung, weiter nur
+  bei eigenem Druck, Vorwärts-Befehl oder Countdown (`GapCloserAllowed`). Die Prüfung des Landepunkts bleibt. Text der
+  Einstellung nennt die Ausnahme und die Grenze einschließlich (A528); Konzepte 01 (W2, W5) und 18; Release-Text.
+- *Verworfen:* A, die Einstellung auf 3 y (gäbe jeden Ansturm aller Jobs bis 3 y frei).
+- *Preis:* bis zu 3 y Bewegung ins Rudel, auch aus einer Ausweichstelle, die BossModReborn nicht kennt.
+- *Prüfgrad:* Code, Compile, CI-Prüfungen lokal; im Spiel nicht beobachtet, die Haltezeile nennt einen Grund, wenn er
+  bereit liegt und nicht kommt.
+
 ## B · Commit-Register (Fork vs. `upstream/main`)
 
 ### B1 · Einzelgeprüfte Fork-Commits
