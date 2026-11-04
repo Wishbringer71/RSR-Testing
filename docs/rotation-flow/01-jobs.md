@@ -1191,6 +1191,11 @@ ofnature/Daedalus e3a16de vom 01.11.2026, GPL-3.0 und LGPL-3.0). Alle Werkzeugqu
   Dullahan; Gewicht setzen Mandragora und Sandwurm (Entfesseln), Gift Diremite, Wespe, Fliegenfalle (Dressur), Uragnite,
   Cobra, Damselfly. RSR liest im Crucible weder Schwäche noch Anfälligkeit; B3 ruft nach dem Wert der Dressur (offen:
   TODO „Beastmaster: im Crucible nach der Schwäche der Figur rufen").
+  - *Erstes Brett* (Stufe 30, Begleiter auf Rang 5 synchronisiert, Kader 10, drei je Kampf): Knochenritter und
+    -bischof Schlag; Erzdämon Blitz (anfällig Gift); Pisco-Dämonen-Ebenbild Hieb (Gewicht, Gift); Banemite und Miteling
+    Eis; Oger Wind, Irrlichter Wasser (Fessel, Gewicht); Endgegner Pas de Seul Stich, Sukkubus-Magierin und -Ritter
+    Feuer. Entfernbare Stärkungen: Ossify, Clear Mind, Fanaticism; reinigbare Zustände: Gift (Banemite, Pas de Seul),
+    Windburn. Die Schwäche „verhält sich wie eine Schwäche, nicht jeder Eintrag passt" (eorzeantavern).
 - *BeastHelper, Masterbeast*: auf den Crucible ausgerichtet (Wege über das Brett, Teamwahl über `XBMPetParty`,
   Gegenstände); für die Rotation nichts Neues.
 - *WrathCombo* (d9c63e468 vom 27.10.2026): `OnLastHorn` liest die Hörner wie RSR bisher, ohne das Horn des Begleiters
