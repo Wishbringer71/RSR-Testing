@@ -14,10 +14,12 @@ Nach der Wirkung im Kampf: Sicherheit der Gruppe vor Schaden, gewichtet mit der 
    Aufstehen, ohne dass RSR etwas drückt.
 2. Heilungen in „Heilung -" verpuffen: fünf GCDs Schaden und MP ohne Wirkung, solange der Status liegt; kein Leben,
    denn die Heilung wirkt dort ohnehin nicht.
-3. Fremde Repositories auf Verbesserungen für RSR prüfen: Jeder Fund kann ein Defekt im Verhalten einer Klasse sein,
+3. Heilung bricht ab, weil ein Regen-Tick die Schwelle kreuzt: verlorene Wirkzeit, das Ziel bleibt an der Schwelle.
+4. Beastmaster: Hörner zwischen den Kämpfen belegen – wartet auf seine Wahl.
+5. Fremde Repositories auf Verbesserungen für RSR prüfen: Jeder Fund kann ein Defekt im Verhalten einer Klasse sein,
    den RSR heute im Kampf zeigt; zuerst die Rotationswerkzeuge für alle Jobs, Daedalus vorn (aktiv, alle Jobs,
    eigene Kampfvorhersage).
-4. Flächenbetäuber in Kreszentia für The Blackest Night: kostet MP, kein Leben.
+6. Flächenbetäuber in Kreszentia für The Blackest Night: kostet MP, kein Leben.
 
 Danach die technische Schuld, soweit ihre Auflösungsbedingung erfüllt ist. Warten auf Daten: unten.
 
@@ -46,6 +48,19 @@ Im Kampf: Betäubt ein anderer Spieler mit einer Aktion seines Phantomjobs eine 
 Barriere in das Betäubungsfenster legen; sie bricht nicht, Dark Arts bleibt aus, es kostet MP, kein Leben. *Ort:*
 Erkennung der Flächenbetäubung (Konzept 10, „Grenzen"), heute nur Holy und Holy III. *Nächster Schritt:* die Aktionen der
 Phantomjobs mit Flächenbetäubung aus den Spielblättern erheben, Loop. *Konzept:* 10.
+
+### Beastmaster: Hörner zwischen den Kämpfen belegen – seine Entscheidung · N
+Im Kampf: Die Probe B4 zeigte am 04.11.2026, dass der Server eine Hornzuweisung im Kampf in keiner Lage annimmt,
+außerhalb in jeder. Ob RSR die Hörner zwischen den Kämpfen nach Lage belegt, entscheidet er; die Vorlage mit drei
+Optionen und Beispielen steht im Konzept. *Ort:* `BeastmasterFamiliars` (Befehl 2420), `BST_Reborn`. *Nächster Schritt:*
+seine Wahl, dann Loop. *Konzept:* 01, „Belegung der Hörner in der Rotation", „Danach – Vorlage an ihn".
+
+### Heilung bricht ab, weil ein Regen-Tick die Schwelle kreuzt · N, U
+Im Kampf: In Toto-Rak (Weißmagier, 04.11.2026) brach RSR achtmal eine Einzelheilung mitten im Wirken ab, weil das Ziel
+durch einen Tick von 8 bis 20 HP über die Schwelle stieg; die Wirkzeit war verloren, das Ziel blieb an der Schwelle.
+*Ort:* `CancelCastUpdater.ShouldStopHealing` („Stop single target GCD healing after reaching threshold", Upstream,
+experimentell). *Nächster Schritt:* Loop: abbrechen erst, wenn die Heilung zum größten Teil überheilte, statt beim
+Kreuzen der Schwelle. *Konzept:* 07.
 
 ### Fremde Repositories auf Verbesserungen für RSR prüfen · N, R, U
 Sein Auftrag (02.11.2026): „alle von dir gefundenen repos, die du benannt hast prüfen, ob daraus generell
@@ -148,12 +163,6 @@ nebeneinander gebraucht werden.
   „blue mage spell outside the active set" im nächsten `DefenseTrace.log` als Blaumagier. Konzept 01, „Blaumagier",
   „Das Set".
 
-- **Beastmaster: in welchen Lagen der Server eine Hornzuweisung im Kampf annimmt** (seine Präzisierung, 03.11.2026:
-  „ich will einfach nur austesten, in welchen situationen der wechsel klappen könnte"). Im Kampf heute: RSR wählt unter
-  den drei Begleitern seiner Hörner (B0 bis B3); die Probe B4 setzt je Lage einmal einen anderen und stellt zurück.
-  Auflösung: Zeilen „battlehorn probe" im nächsten `DefenseTrace.log` als Beastmaster in einem Kampf, je Lage TAKEN oder
-  NOT TAKEN; danach seine Entscheidung, ob RSR die Hörner nach Lage belegt. Konzept 01, „Belegung der Hörner in der
-  Rotation".
 - **Samurai nutzt Feint und Tengentsu nicht** (fremde Meldung, PR #11, unbestätigt; statisch geprüft A265). Auflösung:
   ein Protokoll eines Samurai-Kampfs („area defence open, nothing chosen" gegen „hit you"). Konzept 13.
 - **Treffer aus einer Quelle, die die Objekttabelle nicht hält** (Verdacht). Offen ist der Treffer ohne Objekt; der

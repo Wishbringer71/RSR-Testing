@@ -15573,6 +15573,36 @@ der wechsel klappen könnte" und „vielleicht muss auch einfach die kampfhaltun
   Mitschnitten; kompiliert, alle CI-Prüfungen lokal; Probe und Katalog im Spiel nicht beobachtet – die Probe misst sich
   selbst und schreibt jedes Urteil ins `DefenseTrace.log`.
 
+### A521 · Upload vom 04.11.2026: Hornzuweisung im Kampf nirgends, außerhalb überall; Katalog im Spiel (04.11.2026)
+
+Hochgeladen: `RotationSolver.7z` (`DefenseTrace.log` 08:44–09:47, `BestiaryTrace.log`, gelernte Tabellen) und ein
+ACT-Mitschnitt. Build ad1013fb8, also mit A520. Gespielt: Weißmagier in Toto-Rak, Beschwörer in kurzen Kämpfen in sechs
+Gebieten, Beastmaster in einer FATE im Südlichen Thanalan (Stufe 22–23). Seine Frage: „beastmaster hornwechsel
+analysieren".
+
+- *Probe B4, Ergebnis:*
+  - *Im Kampf:* zwölf Versuche, alle NOT TAKEN – vier Lagen (Horn bereit oder abklingend, Begleiter draußen oder
+    keiner), je einfach, nach 2421 und mit weggesteckter Waffe. Die Hornplätze blieben jedes Mal. Beim Senden meldete
+    der Mitschnitt jedes Mal Spielstatus „im Kampf" (Zeile 260, das Feld schaltete in der FATE mehrfach). Keine
+    Meldung des Servers im Chat.
+  - *Außerhalb des Kampfes:* vier Versuche, alle TAKEN, nach 0,08 bis 0,38 s, auch mit Begleiter draußen und gezogener
+    Waffe. Die Rückstellung kam jedes Mal (0,08 bis 0,45 s). Der erste Versuch trägt 26,6 s, weil RSR zwischen 09:42:06
+    und 09:42:32 nichts ausführte und das Urteil erst dann fiel; die Zeit ist kein Messwert des Servers.
+  - *Preis, falsch angegeben:* Konzept und Optionstext nannten je Versuch höchstens einen GCD. Nacheinander hielten die
+    zwölf Versuche die Hornrufe 27 s auf (Scheidender Schlag 09:42:35, nächster Ruf 09:43:02). Mit dem Zurücksetzen je
+    Gebiet hätte sich das in jedem Gebiet wiederholt. Jetzt gelten die Urteile für die Sitzung; Text und Konzept nennen
+    den Preis.
+  - *Entscheidung offen:* ob RSR die Hörner zwischen den Kämpfen belegt; Vorlage mit drei Optionen im Konzept 01.
+- *Katalog im Spiel:* „50 familiars from the sheets (Pet column Unknown4), 50 by model". Die Behebung aus A520 wirkt;
+  B3 wählte danach („its Trick brings least here (500), the best stays last"). Auf Stufe 22–23 bringen alle drei seiner
+  Begleiter 500; dort entscheidet die eingestellte Reihenfolge.
+- *Weißmagier in Toto-Rak:* achtmal „heal stopped" – ein Tick von 8 bis 20 HP hob das Ziel über die Schwelle, die
+  Wirkzeit war verloren. Neu im TODO.
+- *Übrige:* keine Tode der Gruppe. Gelernte Tabellen: Fläche und Tankbuster unverändert, `DotOnParty` neu für Gebiet
+  1039 (Toto-Rak).
+- *Aufgeräumt:* der lokale Branch `claude/fixes-after-7.5.7.13` (Remote gelöscht, nichts nur hier), `git branch -d`.
+- *Prüfgrad:* Protokoll und Mitschnitt; Code kompiliert, alle CI-Prüfungen lokal.
+
 ## B · Commit-Register (Fork vs. `upstream/main`)
 
 ### B1 · Einzelgeprüfte Fork-Commits

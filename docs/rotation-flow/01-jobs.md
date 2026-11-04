@@ -905,27 +905,50 @@ eingearbeitet werden, situationsbezogen"; A487, A488):
     Moment nach Entfesseln oder Scheidendem Schlag vor dem nächsten Ruf.
   - *Der Versuch:* RSR setzt im Kampf auf ein Horn, dessen Begleiter nicht draußen ist, einen anderen Begleiter, den
     er hat und der auf keinem Horn sitzt (Befehl 2420 mit den drei Plätzen, nur das eine Horn geändert). Je Lage und
-    Gebiet in drei Varianten nacheinander, bis eine angenommen wird:
+    Sitzung in drei Varianten nacheinander, bis eine angenommen wird:
     - *einfach:* nur der Befehl;
     - *nach dem Öffnen:* erst 2421, wie beim Öffnen des Buchs, dann 2420 – falls der Server das offene Buch erwartet;
     - *mit weggesteckter Waffe* (seine Idee, 03.11.2026: „vielleicht muss auch einfach die kampfhaltung beendet werden,
       wechsel, kampfhaltung an"): Waffe weg (Befehl 1 mit 0, 1), 2420, danach Waffe ziehen (1 mit 1, 0) – im selben
       Moment geschickt, damit keine Aktion der Rotation die Waffe dazwischen zieht. Die Werte sind die seines Clients
       aus der Aufzeichnung; dass Befehl 1 die Waffe zieht und wegsteckt, ist ein Schluss aus ihrem Muster.
-  - *Die Gegenprobe:* Außerhalb des Kampfes versucht RSR den einfachen Befehl einmal je Gebiet. Nimmt der Server ihn dort
+  - *Die Gegenprobe:* Außerhalb des Kampfes versucht RSR den einfachen Befehl einmal je Lage und Sitzung. Nimmt der Server ihn dort
     an und im Kampf nicht, liegt es am Kampf, nicht am Versuch. Außerhalb des Kampfes sperrt die gezogene Waffe nicht:
     In der Aufzeichnung nahm der Server die Zuweisung um 19:47:40 nach Kampfende mit gezogener Waffe an.
   - *Die Messung:* Zeigen die Hornplätze die Zuweisung binnen eines GCD, nimmt der Server sie an („TAKEN"), und RSR
     stellt den ursprünglichen Begleiter sofort auf demselben Weg zurück. Sonst nimmt er sie nicht an („NOT TAKEN"), und
     die nächste Variante folgt in dieser Lage. Jede Zeile im `DefenseTrace.log` nennt Variante, Lage, Waffe, Horn, beide
-    Begleiter und die Wartezeit. Ein Gebietswechsel versucht die Lagen neu, weil ein Inhalt es anders regeln kann.
+    Begleiter und die Wartezeit. Die Urteile gelten für die Sitzung. Je Gebiet neu zu versuchen, wie zuerst gebaut,
+    wiederholte den Preis (unten) in jedem Gebiet, ohne dass ein Inhalt es bisher anders regelte.
   - *Schutz der Belegung:* Solange ein Versuch oder die Rückstellung auf den Server wartet, ruft RSR kein Horn; ein Ruf
     bringt also nie den Probebegleiter. Zeigt sich die Rückstellung im Kampf nicht, schickt RSR sie nach dem Kampf erneut.
     Seine Hörner enden so, wie er sie gesetzt hat.
-  - *Im Kampf anders:* bis zu zwölf Versuche je Gebiet (vier Lagen, drei Varianten), jeder hält einen Hornruf höchstens
-    einen GCD auf; der mit weggesteckter Waffe unterbricht kurz den automatischen Angriff. Sonst nichts.
-  - *Danach:* Zeigen die Zeilen, in welchen Lagen der Server annimmt, ist zu entscheiden, ob und wie RSR die Hörner nach
-    Lage belegt (B2 und B3 über alle Begleiter statt über die drei der Hörner). Das ist seine Entscheidung.
+  - *Im Kampf anders:* bis zu zwölf Versuche je Sitzung (vier Lagen, drei Varianten). Jeder hält einen Hornruf höchstens
+    einen GCD auf, nacheinander aber zusammen: Am 04.11.2026 stand er dadurch 27 s ohne Begleiter (Scheidender Schlag
+    09:42:35, nächster Ruf 09:43:02). Der Versuch mit weggesteckter Waffe unterbricht kurz den automatischen Angriff.
+  - *Ergebnis* (sein Protokoll vom 04.11.2026, Build ad1013fb8, eine FATE im Südlichen Thanalan auf Stufe 22–23):
+    - *Im Kampf:* zwölf Versuche, alle NOT TAKEN – vier Lagen, je einfach, nach 2421 und mit weggesteckter Waffe. Die
+      Hornplätze behielten jedes Mal die Belegung. Der Spielstatus war bei jedem Senden „im Kampf" (ACT-Zeile 260).
+      Eine Meldung des Servers gibt es nicht; er übergeht den Befehl.
+    - *Außerhalb des Kampfes:* vier Versuche, alle TAKEN, nach 0,08 bis 0,38 s – auch mit Begleiter draußen und
+      gezogener Waffe. Die Rückstellung kam jedes Mal (0,08 bis 0,45 s).
+    - *Damit:* Im Kampf setzt nur der Spieler im Buch nichts und RSR per Befehl nichts; zwischen zwei Kämpfen geht es
+      jederzeit.
+  - *Danach – Vorlage an ihn* (A521): Ob RSR die Hörner zwischen den Kämpfen belegt. Die Lage des nächsten Kampfes
+    kennt RSR vorher nicht; im Kampf wählen B2 und B3 weiter unter den drei Begleitern der Hörner.
+    - *A, nichts setzen* (heute): Seine Belegung bleibt. Beispiel: Er hat Bat (Dressur heilt, Einzelziel) auf einem Horn
+      und zieht in einer FATE drei Gegner; ein dritter Begleiter mit Flächen-Dressur fehlt, B3 holt das Beste aus dem,
+      was da ist.
+    - *B, nach dem letzten Kampf im Gebiet* (Empfehlung): Nach jedem Kampf setzt RSR einen Begleiter, der heilt oder
+      schützt, den mit der besten Dressur gegen so viele Gegner, wie der letzte Kampf hatte, und den nächstbesten.
+      Beispiel: In derselben FATE sitzen ab dem zweiten Rudel zwei Flächen-Begleiter und ein heilender auf den Hörnern;
+      kommt danach ein einzelner Elitegegner, bringen Flächen-Dressuren auf einem Ziel dasselbe wie Einzelziel-
+      Dressuren gleicher Potenz, und der heilende ist für B2 da. Preis: Seine eigene Belegung ändert sich nach jedem
+      Kampf.
+    - *C, feste Vorlagen je Inhaltsart* (wie Daedalus: Einzelziel, Rudel, Gruppe, Leveln): Beispiel: Im Dungeon gilt
+      „Rudel" auch für den Boss; der beste Einzelziel-Begleiter fehlt dort.
+    - Bei gleicher Potenz aller Dressuren (Stufe 22 und 23 am 04.11.2026: alle 500) ändert keine Option etwas am
+      Schaden, nur an Heilung und Schutz.
 - *Der Weg über das Bestienbuch* (Daedalus, ofnature/Daedalus e3a16de vom 01.11.2026, `BattlehornAssigner`,
   `BattlehornGame`; Werkzeugquelle, nach eigener Angabe im Spiel aufgezeichnet): Ein Plugin bedient das Buch wie der
   Spieler. Es öffnet das „Bestienbuch des Bändigers" (Hauptkommando, MainCommand 100), blättert über dessen Rückruf

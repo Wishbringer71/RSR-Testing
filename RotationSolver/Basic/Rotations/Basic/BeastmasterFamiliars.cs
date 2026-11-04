@@ -542,8 +542,9 @@ public partial class BeastmasterRotation
 	}
 
 	// Per situation the next variant to try; a situation the server took an assignment in is Exhausted - no more probes.
+	// Kept for the session, not per area: on 04.11.2026 twelve refused probes in a row held the horn calls for 27 s, and
+	// an area reset would repeat that in every area (A521).
 	private static readonly Dictionary<HornProbeKind, HornProbeVariant> _probeNext = [];
-	private static uint _probeArea;
 	private static HornProbeStep _probeStep;
 	private static byte[] _probeOriginal = [];
 	private static byte[] _probeAwaited = [];
@@ -617,12 +618,6 @@ public partial class BeastmasterRotation
 	{
 		get
 		{
-			if (DataCenter.TerritoryID != _probeArea)
-			{
-				_probeArea = DataCenter.TerritoryID;
-				_probeNext.Clear();
-			}
-
 			if (_probeStep == HornProbeStep.None)
 			{
 				if (_restoreOwed && !DataCenter.InCombat && _probeOriginal.Length > 0)
@@ -683,8 +678,8 @@ public partial class BeastmasterRotation
 
 	/// <summary>
 	/// B4 of concept 01 (A520): puts a familiar the player has and no horn holds on a horn whose familiar is not out, to
-	/// learn whether the server takes it - in combat once per situation and variant until one is taken, out of combat once
-	/// as the control; <see cref="HornProbePending"/> judges it and puts the original back.
+	/// learn whether the server takes it - in combat once per situation and variant per session until one is taken, out of
+	/// combat once as the control; <see cref="HornProbePending"/> judges it and puts the original back.
 	/// </summary>
 	/// <returns>Whether a probe went out.</returns>
 	public static bool TryHornProbe()

@@ -61,8 +61,10 @@ What this release changes in the fight. For the whole distance from upstream, se
   for the long stint on a pack, Trick by affinity, holding back a familiar whose Release would leave -
   now has the data it reads. Before, only your horn order counted.
 - **Test whether a horn can be reassigned in a fight.** `Test battlehorn assignment in combat
-  (experimental)`, **on by default**: once per situation and area RSR puts another familiar you have
+  (experimental)`, **on by default**: once per situation RSR puts another familiar you have
   on a horn whose familiar is not out - with the horn ready or recasting, a familiar out or none -
   first with the Bestiary's command alone, then after its opening command, then with your weapon
   sheathed for it, and puts yours straight back. Out of combat it tries once as the control.
-  `DefenseTrace.log` says what the server took.
+  `DefenseTrace.log` says what the server took. Each situation is tried once per session; twelve tests in a
+  row can leave you up to half a minute without a familiar. Measured on 04.11.2026: in combat the server
+  took none, out of combat every one.

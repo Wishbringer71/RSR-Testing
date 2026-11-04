@@ -44,13 +44,14 @@ public sealed class BST_Reborn : BeastmasterRotation
 		Tooltip = "RSR tests in which situations the server lets a horn be reassigned in a fight. It puts another familiar "
 			+ "you have on a horn whose familiar is not out, with the server command the Bestiary sends, and puts your "
 			+ "familiar straight back. The situations: the horn ready or recasting, a familiar out or none (just spent, "
-			+ "before the next is called). Each is tried once per area, first the command alone, then after the "
+			+ "before the next is called). Each is tried once per session, first the command alone, then after the "
 			+ "Bestiary's opening command, then with the weapon sheathed for it and drawn again - until one is taken. Out of "
 			+ "combat it tries the command once as the control. DefenseTrace.log says for each whether the server took it. "
 			+ "While a test waits for the server, at most a GCD, no horn is called; a familiar that does not go back in the "
 			+ "fight goes back after it.\n"
-			+ "In a fight: up to twelve tests per area, each holding a horn call for at most a GCD, the sheathed one also "
-			+ "your auto-attack for a moment; your horns end as you set them.\n"
+			+ "In a fight: up to twelve tests per session, each holding a horn call for at most a GCD - in a row up to half a "
+			+ "minute without a familiar; the sheathed one also stops your auto-attack for a moment; your horns end as you "
+			+ "set them.\n"
 			+ "Off: RSR never changes your horns.")]
 	private bool HornProbeInCombat { get; set; } = true;
 
