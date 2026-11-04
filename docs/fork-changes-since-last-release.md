@@ -69,14 +69,23 @@ What this release changes in the fight. For the whole distance from upstream, se
   there. The familiar out keeps its horn, horns you changed yourself stay until the next fight ends,
   and nothing changes while the Bestiary is open or in the Crucible. `DefenseTrace.log` names every
   plan and whether the server took it.
-- **Capture marks in time.** The mark arrives about 0.6 s after Capture goes off, and a pact needs the
-  enemy to fall marked; RSR also read the enemy's time to kill up to a second too long. Capture now goes
-  on the last weaponskill whose mark still arrives before the enemy falls, with the landing measured
-  from your own presses. `DefenseTrace.log` says when the mark arrived, whether the enemy fell marked
-  and whether the pact came. The time to kill is now counted from the moment it is read for every rule
-  that uses it, as Six-sided Star's last-hit check.
+- **Capture comes first and is sure to land.** A pact needs the enemy to fall marked, and the mark
+  arrives about 0.6 s after Capture goes off. Capture now comes before every other weaponskill as soon
+  as waiting one more could let the enemy fall before that mark arrives - judged by the largest drop in
+  health it has taken within that time so far, or by its time to kill - with the landing measured from
+  your own presses. The mark comes at somewhat more HP than at the very last moment, which lowers the
+  chance per attempt a little; a missed mark loses the attempt altogether. `DefenseTrace.log` gives the
+  reason, when the mark arrived and at how much HP, whether RSR or you pressed it, whether the enemy fell
+  marked and whether the pact came. The time to kill is now counted from the moment it is read for every
+  rule that uses it, as Six-sided Star's last-hit check.
+- **Fewest HP first when you fight alone.** As a Beastmaster with no tank and no healer alive in your
+  party, RSR attacks the enemy with the least HP first, whatever your targeting setting: each enemy that
+  falls is one fewer hitting you. With a tank or a healer alive your setting applies. The Beastmaster
+  state line in `DefenseTrace.log` says whether it holds.
 - **Shield Charge on a pack, Seedsower at once.** Shield Charge hitting more than one enemy now goes
-  before Trick and the axes instead of after everything else, where a short pull rarely left it a
-  slot. Seedsower goes out as soon as Borrow grants it, as Beastskin does. `DefenseTrace.log` counts
-  Shield Charge, Borrow and every Beast Mode action per fight, with how long Shield Charge stood ready
-  with several enemies in range.
+  before Trick and the axes, with every charge, instead of after everything else, where a short pull
+  rarely left it a slot. It only goes on enemies within melee range (3 y), on the one whose reach covers
+  the most of the pack. Seedsower goes out as soon as Borrow grants it, as Beastskin does.
+  `DefenseTrace.log` counts Shield Charge, Borrow and every Beast Mode action per fight, by RSR or by
+  hand, with how long Shield Charge stood ready with several enemies in range, and names the reason
+  when it stands ready and does not go.

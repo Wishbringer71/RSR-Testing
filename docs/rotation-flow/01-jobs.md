@@ -868,35 +868,85 @@ mit ihm anfreunden kann, und das Talent dann so einsetzen, dass es wahrscheinlic
   ist; solange du nicht schon einen markierst (Capturing Interest, 4624). Hat das Spiel die Liste noch nicht geladen
   (`XBMManager.State`), oder lehnt es Anfreunden für dieses Ziel ab (`GetActionStatus` mit dem Ziel, ohne
   Abklingzeit), keiner.
-- *A2 – Wann:* mit dem letzten GCD, dessen Markierung noch vor seinem Fall ankommt. Er lebt nach dem Beginn dieses GCD
-  länger als die Markierung braucht, nach dem Beginn des nächsten nicht mehr: Landezeit < Restzeit − Rest des laufenden
-  GCD ≤ Landezeit + ein GCD. Seine LP sind dann die niedrigsten, bei denen der Pakt noch möglich ist. Weil Anfreunden
-  nicht tötet, geht es auch bei 1 LP. Ohne Schätzung der Restzeit keine Markierung.
+- *A2 – Wann* (seine Vorgabe vom 04.11.2026: „anfreunden hat oberste priorität, was nützen schnelle tode der gegner,
+  wenn man den kampf immer wiederholen muss, weil anfreunden und begleiter bekommen nicht klappt. daher muss die nutzung
+  dieser fähigkeit so sicher sein, dass immer genug zeit bleibt, damit die fähigkeit wirkt."; A525): mit dem letzten GCD,
+  dessen Markierung nach allem, was der Gegner bisher an Schaden nahm, sicher vor seinem Fall ankommt. RSR markiert,
+  sobald das Warten auf den nächsten GCD ihn vor dessen Markierung fallen lassen könnte:
+  - *Einbruch:* Seine LP sind höchstens so groß wie der größte Einbruch, den er in seiner Gesundheitshistorie (die
+    letzten 30 s, einmal je Sekunde abgetastet, `TimeToKillTracker`) über eine so lange Spanne erlitten hat: Rest des
+    laufenden GCD + ein GCD + Landezeit, auf ganze Abtastungen aufgerundet. Ist die Historie kürzer als die Spanne, gilt
+    der Einbruch seit dem ersten Treffer, auf die Spanne hochgerechnet.
+  - *Oder Restzeit:* Seine korrigierte Restzeit ist nicht länger als diese Spanne.
+  - Keine untere Grenze: Auch eine Markierung, die vielleicht zu spät kommt, geht noch. Weil Anfreunden nicht tötet, geht
+    es auch bei 1 LP. Ohne Historie (noch kein Treffer) keine Markierung. Anfreunden steht vor jeder anderen
+    Waffenfertigkeit der Rotation.
   - *Warum die Landezeit:* Der Pakt entscheidet sich beim Fall eines Gegners, der „Freundschaftsempfänglich" trägt
     (Status 4626, Wirktext). Die Markierung kommt nach der Wirkung von Anfreunden: 0,62 s später, in seinen Mitschnitten
-    vom 02.11. (Killermantis) und 03.11.2026 (Flechten-Goobbue). Fällt er vorher, gibt es keinen Pakt. RSR misst die
-    Landezeit selbst, vom Drücken bis zur Markierung, und nimmt die zuletzt gemessene. Bis zur ersten Messung gelten die
-    0,62 s.
+    vom 02.11. (Killermantis) und 03.11.2026 (Flechten-Goobbue); 0,69 s nach dem Drücken am 04.11.2026 (Zorniger Ichor).
+    Fällt er vorher, gibt es keinen Pakt. RSR misst die Landezeit selbst, vom Drücken bis zur Markierung, und nimmt die
+    zuletzt gemessene. Bis zur ersten Messung gelten die 0,62 s.
+  - *Warum der Einbruch, nicht nur die Restzeit:* Die Restzeit ist ein Mittel über bis zu 30 s; der Schaden kommt in
+    Stößen (Dressur, Entfesseln, Kritische Treffer, eingewobene Äxte). Am Zornigen Ichor am 04.11.2026 (11:52, sein
+    Mitschnitt) fiel er über 4 s im Mittel 815 LP, höchstens 1.753 (15,4 % seiner LP), also gut das Doppelte. Gerechnet
+    (`bst_capture_model.py`, 04.11.2026; Annahmen dort): Bei gleichmäßigem Fall markiert die Regel alle Kills rechtzeitig
+    (die Restzeit-Regel 98 %), in Stößen 99 % (76 %); beschleunigt sich der Fall in den letzten 5 s auf das 1,5-fache,
+    94 bis 95 % (50 bis 51 %), auf das Doppelte 83 bis 85 % (26 bis 33 %).
+  - *Der Preis:* Sie markiert früher, also bei mehr LP: im Modell bei 9 % (gleichmäßig) und 16 % (in Stößen) der LP der
+    letzten 30 s, die Restzeit-Regel bei 7 bis 8 %. Am Ichor am 04.11.2026 hätte sie um 11:52:43 bei 14,7 % markiert;
+    er selbst markierte um 11:52:46 bei 12,5 %, und der Pakt kam nicht. Wie die Chance mit den LP fällt, ist nicht belegt.
+    Der Wirktext sagt „umgekehrt proportional". Zusammenfassungen einer Suche nennen 12,5 % als Grenze (Gamer Escape)
+    und raten zu unter 10 %, bei zähen Zielen unter 5 % (Icy Veins); beide Seiten weisen Skripte ab, ungeprüft. Ist die
+    Chance wörtlich umgekehrt proportional zu den LP, bringt die späte Regel je Kill trotz ihrer Fehlschläge mehr Pakte
+    (Ichor: etwa 4 gegen 13 % LP beim Markieren); fällt sie nur grob mit den LP, die sichere. Seine Vorgabe entscheidet
+    für die sichere: Ein verpasster Kill ist sicher verloren, eine Markierung bei mehr LP nur unwahrscheinlicher.
   - *Restzeit von jetzt:* Die korrigierte Restzeit wird einmal je Sekunde abgelegt. Gelesen wird sie abzüglich ihres
     Alters, sonst ist sie bis zu 1 s zu lang (gilt für jeden Leser, `GetCorrectedTTK`).
-  - *Die Regel davor* („Restzeit nicht länger als ein GCD", aus der abgelegten Restzeit, ohne Landezeit) kam bei seinem
-    Lauf am 04.11.2026 zu spät. Anfreunden auf den Zornigen Ichor fiel 1,1 s vor dem Kampfende in die zweite Hälfte eines
-    GCD, beim zweiten Kill kam es nicht. Gerechnet (`bst_capture_model.py`): Sie markierte selbst bei genauer Vorhersage
-    52 % der Kills rechtzeitig, die jetzige 100 %, bei 10 bis 25 % Fehler in der Vorhersage 96 bis 90 %. Der Preis: Sie
-    markiert etwas früher (im Modell bei 6,6 statt 4,7 % der LP der letzten 30 s), also mit etwas kleinerer Chance je
-    Markierung.
-  - *Spur:* Wählt RSR Anfreunden, schreibt es eine Zeile. Danach schreibt es, wann die Markierung ankam (Landezeit), ob
-    der Gegner markiert fiel und ob das Spiel den Begleiter danach als freigeschaltet führt. Fällt ein Gegner, der ein
-    fehlender Begleiter wäre, ohne Markierung, schreibt es auch das, mit seiner letzten Restzeit.
+  - *Die Regeln davor:*
+    - „Restzeit nicht länger als ein GCD", aus der abgelegten Restzeit, ohne Landezeit: Sie kam am 04.11.2026 zweimal zu
+      spät. Morgens fiel Anfreunden auf den Zornigen Ichor 1,1 s vor dem Kampfende in die zweite Hälfte eines GCD. Um
+      10:47 wählte RSR es 1,7 s vor seinem Fall, und es ging nicht mehr hinaus (Build 0ee04305b).
+    - „Der letzte GCD, dessen Markierung noch ankommt" (Landezeit < Restzeit ≤ Landezeit + ein GCD, A523): Sie kam am
+      04.11.2026 nicht zum Zug, weil er Anfreunden um 11:52:46 selbst drückte (Build 3ec6f295b; keine Zeile „Capture on"
+      von RSR). Im Modell verliert sie in Stößen ein Viertel der Kills.
+  - *Spur:* Wählt RSR Anfreunden, schreibt es eine Zeile mit dem Grund: größter Einbruch über die Spanne und die LP
+    des Gegners, oder seine Restzeit. Danach schreibt es, wann die Markierung ankam (Landezeit), bei wie viel LP, und ob
+    RSR oder er sie gedrückt hat; ob der Gegner markiert fiel und ob das Spiel den Begleiter danach als freigeschaltet
+    führt. Fällt ein Gegner, der ein fehlender Begleiter wäre, ohne Markierung, schreibt es auch das, mit seiner letzten
+    Restzeit.
+  - *Verworfen:*
+    - Eine zweite Markierung später, bei weniger LP: Ob das Spiel sie annimmt und ob sie die Chance neu setzt, belegt
+      keine Quelle (Wirktext; consolegameswiki, eorzeantavern, ffxiv-offduty, 04.11.2026). Messen lässt es sich nicht:
+      Die Markierung trägt keinen Wert (Statusparameter 0 bei 100 und bei 12,5 % LP), der Wurf ist unsichtbar. Sie
+      kostete einen GCD je Versuch ohne belegten Nutzen.
+    - Ein fester GCD Vorlauf auf die Restzeit-Regel: bei gleichmäßigem Fall bei 15 statt 9 % LP, in Stößen nicht
+      sicherer (99 %), bei Beschleunigung teils besser, teils schlechter.
+    - Den Schaden am Ziel zurückhalten, bis es markiert ist: Der Begleiter schlägt weiter, und gegen einen Boss allein
+      gibt es kein anderes Ziel; der Einbruch misst schon, was kommen kann.
+    - Sofort markieren, wie WrathCombo (1e64c866c vom 03.11.2026, Werkzeugquelle: jedes Ziel, sobald es eine fehlende
+      Bestie ist): sicher, aber bei voller LP. Seine Markierung bei 100 % um 10:57 am 04.11.2026 brachte keinen Pakt.
+    - Etwa 20 s vor dem geschätzten Tod, wie Daedalus: noch mehr LP.
 - *Preis:* ein GCD je Versuch, einmal je Gegner einer Art, die du noch nicht hast; misslingt der Pakt, beim nächsten
   dieser Art. Hast du sie, nie wieder.
 - *Lagen:* In der Gruppe markiert RSR ebenso; ob der Sieg eines Mitspielers zählt, ist unbelegt, der Preis bleibt ein
-  GCD. Unter Stufensynchronisation zählt deine synchronisierte Stufe. Mehrere Bestien: eine Markierung zur Zeit.
-- Analysieren braucht die Regel nicht; die Chatmeldung zu lesen entfällt.
-- *Gegenhypothesen:* Bedeutet die 5 etwas anderes, versucht RSR es an Gegnern ohne Pakt; das Spiel lehnt das Ziel dann
-  ab, oder es kostet einen GCD je Gegner, nicht mehr – der Versuch fällt auf den letzten GCD vor seinem Tod. Kein
-  Gewinn, weil Gegner zu schnell fallen? Ohne Restzeitschätzung markiert RSR nicht; das bleibt sichtbar daran, dass
-  keine Markierung erscheint.
+  GCD. Der Einbruch enthält dann den Schaden der Gruppe. Unter Stufensynchronisation zählt deine synchronisierte Stufe.
+  Mehrere Bestien: eine Markierung zur Zeit. Drückt er Anfreunden selbst, markiert RSR diesen Gegner nicht mehr; der
+  Pakt hängt dann an seinem Zeitpunkt.
+- Analysieren braucht die Regel nicht; die Chatmeldung zu lesen entfällt. Ob die Stufe von Analysieren die aktuellen
+  LP einrechnet, ist offen (oben); täte sie es, könnte RSR markieren, sobald sie die beste Stufe meldet.
+- *Weg ohne Kampf* (ffxiv-offduty, Gemeinschaftsquelle, ungeprüft): Bestien, die nur in einem Inhalt vorkommen, soll
+  es gegen Währung aus dem Crucible als Kornago-Kürbis geben.
+- *Gegenhypothesen:*
+  - Bedeutet die 5 etwas anderes, versucht RSR es an Gegnern ohne Pakt; das Spiel lehnt das Ziel dann ab, oder es
+    kostet einen GCD je Gegner, nicht mehr.
+  - *Kein Defekt?* Die Regel davor hätte am 04.11.2026 um 11:52 vielleicht rechtzeitig markiert; sie kam nicht zum Zug.
+    Der gemessene Schaden am Ichor war aber stoßweise (Höchstwert über 4 s gut das Doppelte des Mittels), und dort
+    verliert sie im Modell ein Viertel der Kills.
+  - *Option falsch?* Der Preis oben. Er hält als Einschränkung; nach seiner Vorgabe überwiegt die Sicherheit.
+  - *Ausgeliefert, und nichts ändert sich – warum?* Ein Stoß größer als jeder der letzten 30 s (das erste Entfesseln
+    nach einer Pause, Bestienkönnen) bleibt das Restrisiko, im Modell bei Verdopplung 15 bis 17 % der Kills. Ohne
+    Historie – ein Gegner, der beim ersten Treffer fällt – markiert RSR nicht; dann sagt die Zeile „unmarked, without
+    Capture" es mit seiner letzten Restzeit.
 
 **Belegung der Hörner in der Rotation** (seine Vorgabe vom 02.11.2026: „wieso vorschlag? es soll in die rotation
 eingearbeitet werden, situationsbezogen"; A487, A488, A522):
@@ -1094,8 +1144,9 @@ ofnature/Daedalus e3a16de vom 01.11.2026, GPL-3.0 und LGPL-3.0). Alle Werkzeugqu
   Aktion des Begleiters gelandet ist, weil eine sofort folgende Axt sonst vor ihr auflöst und die Kombo verkehrt herum
   schließt; in RSR verlangt die Axt nach der Dressur das Herz, das erst die gelandete Dressur gibt (`StatusNeed`, Zweig 1
   des Kompasses). Anfreunden: Daedalus markiert etwa 20 s vor dem geschätzten Tod, um den Tod vor der Markierung zu
-  vermeiden; RSR bleibt beim letzten GCD (A2), weil die Chance mit niedrigeren LP beim Markieren steigt (offizieller
-  Job-Guide) – der Preis von A2 ist ein Gegner, der schneller fällt als geschätzt.
+  vermeiden; RSR markiert mit dem letzten GCD, dessen Markierung nach dem größten bisherigen Einbruch des Gegners noch
+  sicher ankommt (A2), also später, weil die Chance mit niedrigeren LP beim Markieren steigt (offizieller Job-Guide).
+  Der Preis von A2 ist ein Stoß, größer als jeder, den der Gegner bis dahin nahm.
 - *BeastmasterAssist* (Anzeige, keine Automatik): Empfehlungen zu den Aktionen der Kinships (Soul Crush, Scouring Ash,
   Vileskin, Scaleskin, Beastskin, Seedsower, Quelling Wave); RSR setzt alle schon ein. Neu wäre nur „TP für die
   Abschlüsse halten" (ab Stufe 50, 250 TP); ohne Messung, wie viel Potenz die Äxte darunter verlieren, nicht gewertet.
@@ -1314,7 +1365,8 @@ Lage.
 - *Zustandszeile* (A489): Sobald sich ändert, was diese Regeln und das Anfreunden lesen, schreibt RSR eine Zeile
   „beastmaster state": Begleiter der drei Hörner, wie RSR sie liest; das Horn draußen; die Optionen „Choose the
   battlehorn by the situation" und „Capture familiars you do not have yet"; ob Anfreunden eingeschaltet ist; ob das
-  Spiel die Liste der Begleiter geladen hat; Stand des Katalogs. Anlass: Am 02.11.2026 rief RSR in einer Stunde mit
+  Spiel die Liste der Begleiter geladen hat; Stand des Katalogs; ob die Zielart „wenigste LP" gilt, weil neben ihm
+  kein Tank und kein Heiler lebt (Konzept 03, A525). Anlass: Am 02.11.2026 rief RSR in einer Stunde mit
   allen Regeln (b83dc3ce9) 28 Hörner, ohne dass eine Regel eine Zeile schrieb oder den Katalog anlegte. Ob die Hörner
   leer gelesen wurden, eine Option aus war oder Anfreunden gesperrt, sagen die Dateien nicht; die Zeile sagt es beim
   nächsten Kampf.
@@ -1432,7 +1484,7 @@ gilt für jeden Job.
   Steht er für eine Mechanik 15 y vom Boss, trägt ihn Brutal Rage bei 250 TP zurück in die Fläche. *Gilt:* in jeder
   Beastmaster-Rotation über `GapCloserAllowed` wie Intervene: Ziel näher als die Einstellung (ab Werk 3 y), oder er hat
   die Aktion selbst gedrückt, Vorwärts-Befehl, Countdown. Dazu der Typ `HostileMovingAttack`, der den Landepunkt gegen
-  bekannte Gefahrenflächen prüft.
+  bekannte Gefahrenflächen prüft. Schildansturm zusätzlich höchstens in der Nahkampfreichweite des Jobs (W5).
 - *W3 – Abschluss ohne Bewegung zuerst.* Risen Fall vor Brutal Rage: gleicher Wert, kein Schritt. Zwischen Calamity und
   Hawkish Talons der, der mehr Gegner trifft (`AffectedTargets` der Zielwahl), bei Gleichstand Calamity. Die Reihenfolge
   der Affinitäten bleibt (Sunstrider vor Moonstalker); die Universality-Kombo bleibt, wo sie war. Steht er weiter als
@@ -1442,13 +1494,30 @@ gilt für jeden Job.
   Wirker, dessen Wirken sich unterbrechen lässt; sonst wie bisher. Zurückgehalten für eine Unterbrechung wird er nicht:
   Wie oft in 30 s eine kommt, hängt am Inhalt, und jede verpasste Abklingzeit kostet 300.
 - *W5 – Schildansturm auf ein Rudel vorn* (seine Beobachtung vom 04.11.2026: „schildansturm wird anscheinend nicht als
-  aoe genutzt. selbst wenn man in der gegnergruppe steht"; A524). Schildansturm (Action 44893, ab Stufe 24, 60 s, ab Stufe
-  36 drei Ladungen) trifft das Ziel und jeden Gegner bis 6 y darum mit 300. Er stand als letzte Angriffsfähigkeit hinter
-  allem, was nach Sekunden wiederkommt: Dressur (3 s), Äxte (5 s), Entfesseln, Borgen, Scheidender Schlag. In den
-  Trash-Kämpfen seines Laufs (5 bis 15 s) blieb ihm kaum ein Platz (Schluss aus dem Code, ohne Mitschnitt nicht
-  gezählt). *Gilt:* Trifft er mehr als einen Gegner, kommt er nach dem Abschluss und vor Dressur und Äxten; auf einen
-  Gegner bleibt er zuletzt. Die Abstandsgrenze aus W2 gilt weiter. *Preis:* Dressur oder Axt kommen dann einen Platz
-  später; ihre Abklingzeiten sind kurz, die 60 s des Ansturms laufen früher an.
+  aoe genutzt. selbst wenn man in der gegnergruppe steht"; seine Vorgabe vom selben Tag: „ansturm unter 3y nutzen, auf
+  den gegner in der mitte der gruppe, so dass großmöglichster schaden auf die höchste gegnerzahl gewirkt werden kann";
+  A524, A525). Schildansturm (Action 44893, ab Stufe 24, 60 s, ab Stufe 36 drei Ladungen) trifft das Ziel und jeden
+  Gegner bis 6 y darum mit 300. *Gilt:*
+  - Trifft er mehr als einen Gegner, kommt er nach dem Abschluss und vor Dressur und Äxten, mit jeder Ladung; auf einen
+    Gegner bleibt er zuletzt, und ohne Begleiter draußen hält er dort Ladungen (Upstream 8f258dbc5).
+  - Nur auf Gegner bis zur Nahkampfreichweite des Jobs (3 y, `DataCenter.JobRange`) und innerhalb der Einstellung aus
+    W2, auch wenn sie mehr erlaubt. Unter ihnen nimmt RSR den, dessen 6 y die meisten Gegner erreichen: die Mitte der
+    Gruppe. Bei Gleichstand ordnet die Zielart (ohne Tank und Heiler: wenigste LP, Konzept 03).
+  - *Warum vorn:* Er stand als letzte Angriffsfähigkeit hinter allem, was nach Sekunden wiederkommt: Dressur (3 s),
+    Äxte (5 s), Entfesseln, Borgen, Scheidender Schlag. In den Trash-Kämpfen seines Laufs (5 bis 15 s) blieb ihm kaum
+    ein Platz (Schluss aus dem Code).
+  - *Gemessen am 04.11.2026* (Build 3ec6f295b, mit W5): Im Südwald um 11:56 lag er 23 s bereit, mit mehr als einem
+    Gegner in 3 y, und kam nicht; RSR schrieb keine Zeile „Shield Charge on". Woran es lag, sagt das Protokoll nicht;
+    seine Einstellungen lagen nicht bei. Kandidaten am Code: die Aktion in RSR ausgeschaltet, die AoE-Einstellung
+    „Off" oder „Cleave", „No new hostiles" mit einem Gegner ohne Ziel in der Fläche, die Abstandseinstellung unter dem
+    Abstand zum Gegner, BossModReborns Prüfung des Landepunkts. Einige Anstürme im Mitschnitt drückte er selbst („ich
+    habe die fähigkeiten zwischendurch manuell ausgelöst, da sie nicht kamen").
+  - *Haltezeile:* Liegt er bereit, mit mehr als einem Gegner in Reichweite, und kommt nicht, schreibt RSR einmal je
+    Kampf und Grund, woran es liegt – ausgeschaltet, AoE-Einstellung, kein erlaubtes Ziel (mit Abstand zum nächsten
+    Gegner, Nahkampfreichweite, Abstandseinstellung und „No new hostiles"), oder das Ziel erreicht nur einen Gegner.
+  - *Preis:* Dressur oder Axt kommen dann einen Platz später; ihre Abklingzeiten sind kurz, die 60 s des Ansturms laufen
+    früher an. Steht er weiter als 3 y vom nächsten Gegner, kommt der Ansturm nicht, auch nicht als Einzelziel; das war
+    vorher bis zur Abstandseinstellung möglich.
 - *Bestienkönnen nach Borgen* (seine Beobachtung vom 04.11.2026: „das jeweilige bestienkönnen habe ich auch nicht
   gesehen"; A524). Borgen gibt die Kinship der Familie des Begleiters; Bestienkönnen wird dann zur Aktion dieser Familie
   (Familie aus XBMPet, im Spiel Addon 17741–17748; deutsche Namen xivapi Action language=de):
@@ -1465,8 +1534,11 @@ gilt für jeden Job.
     TODO „Beastmaster: Brechende Welle als Schaden".
   - Borgen kommt höchstens einmal je Ruf seines Horns, und das Horn mit Borgen ist ab Werk das dritte. In kurzen
     Kämpfen kommt es oft gar nicht an die Reihe; sein Bestienkönnen dann auch nicht.
-- *Kampfzeile* (A524): Am Ende jedes Kampfes schreibt RSR, wie oft Schildansturm, Borgen und jedes Bestienkönnen kamen und
-  wie lange Schildansturm bei mehr als einem Gegner in Reichweite bereit lag, ohne zu kommen.
+- *Kampfzeile* (A524): Am Ende jedes Kampfes schreibt RSR, wie oft Schildansturm, Borgen und jedes Bestienkönnen kamen –
+  von RSR oder von ihm, gezählt an den Wirkungen – und wie lange Schildansturm bei mehr als einem Gegner in Reichweite
+  bereit lag, ohne zu kommen. Bis A525 zählte sie jede Aktion in jedem Frame neu („Shield Charge 73" in einem Kampf am
+  04.11.2026), weil sie den Zeitpunkt aus der Zeit seit der letzten Aktion zurückrechnete; jetzt zählt sie die
+  Aufzeichnung der Aktionen nach ihrer Zeit.
 
 *Was WrathCombo hat* (PunishXIV/WrathCombo d9c63e468 vom 27.10.2026, BST-Dateien zuletzt am 28.09.2026 geändert;
 Werkzeugquelle, nur gelesen):

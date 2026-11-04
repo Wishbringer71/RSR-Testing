@@ -15727,6 +15727,60 @@ habe den schleim bislang nicht anfreunden können."
 - *Prüfgrad:* Code, Spielblätter, Compile, CI-Prüfungen lokal. Im Spiel nicht beobachtet; die Kampfzeile zählt es beim
   nächsten Lauf.
 
+### A525 · Beastmaster: Anfreunden sicher vor dem Fall, Zielart ohne Tank und Heiler, Schildansturm in 3 y (04.11.2026)
+
+- *Anlass:* Upload vom 04.11.2026 mittags (DefenseTrace mit Sitzungen bis Build 3ec6f295b, ACT-Mitschnitt 10:28–11:58)
+  und seine Vorgaben vom selben Tag:
+  - „anfreunden hat oberste priorität, was nützen schnelle tode der gegner, wenn man den kampf immer wiederholen muss,
+    weil anfreunden und begleiter bekommen nicht klappt. daher muss die nutzung dieser fähigkeit so sicher sein, dass
+    immer genug zeit bleibt, damit die fähigkeit wirkt."
+  - „ansturm unter 3y nutzen, auf den gegner in der mitte der gruppe, so dass großmöglichster schaden auf die höchste
+    gegnerzahl gewirkt werden kann."
+  - „da beim beastmaster kein tank bereitsteht und kein healer, ist das zielverhalten auf gegner mit niedrigen hp zu
+    priorisieren, egal wie die einstellungen der ui sind." Grund: „weniger gegener machen weniger schaden, besser als
+    möglichst viele gegner gleichmäßig runterzubringen, wie es damagedealer in gruppen machen, um möglichst effizient zu
+    sein."
+  - Hinweis: „ich habe die fähigkeiten zwischendurch manuell ausgelöst, da sie nicht kamen".
+- *Anfreunden im Mitschnitt, drei Kills des Zornigen Ichors:*
+  - 10:47 (Build 0ee04305b, Regel vor A523): RSR wählte Anfreunden 1,7 s vor dem Fall; es ging nicht mehr hinaus.
+  - 10:57: Anfreunden von Hand bei 100 % LP, Markierung 0,62 s später, Fall nach 51 s markiert, kein Pakt.
+  - 11:52 (Build 3ec6f295b, Regel A523): Anfreunden von Hand bei 12,5 % LP (keine Zeile „Capture on" von RSR),
+    Markierung 0,69 s nach dem Drücken bei 11,7 %, Fall 10,5 s später markiert (LP 0 um 11:52:56,62; die Markierung fiel
+    mit dem Tod), kein Pakt. Die Regel A523 kam nicht zum Zug.
+  - Statusparameter der Markierung 0 bei 100 und bei 12,5 % LP: Die Chance steht nicht im Status.
+  - Schaden am Ichor (11:52): über 4 s im Mittel 815 LP, höchstens 1.753 (15,4 %); stoßweise.
+- *Quellen zur Chance:* Wirktext („inversely proportional"); consolegameswiki, eorzeantavern, ffxiv-offduty ohne Zahl und
+  ohne Aussage zu einer zweiten Markierung (04.11.2026). Zusammenfassungen einer Suche nennen 12,5 % (Gamer Escape) und
+  unter 10 %, bei zähen Zielen 5 % (Icy Veins); beide Seiten weisen Skripte ab, auch über das Webarchiv – ungeprüft.
+  WrathCombo (1e64c866c, 03.11.2026) markiert sofort.
+- *Umgesetzt:*
+  - A2 nach seiner Vorgabe: Anfreunden, sobald der größte Einbruch des Gegners über Rest des GCD + ein GCD + Landezeit
+    (`TimeToKillTracker.LargestFall`, Paare bis Spanne plus größte Abtastlücke) oder seine Restzeit ihn vor der nächsten
+    Markierung fallen lassen könnte; keine untere Grenze. Spur nennt den Grund; die Markierungszeile, ob RSR oder er
+    drückte. Optionstext angepasst.
+  - Zielart „Low HP" für den Beastmaster, solange neben ihm kein Tank und kein Heiler lebt (`DataCenter.TargetingType`,
+    `NoTankNoHealerBeside`), vor seiner Einstellung, nach IPC, Befehl, DoT-Verteilung. Zustandszeile nennt es.
+  - Schildansturm nur bis zur Nahkampfreichweite (`GapCloserAllowed` mit `DataCenter.JobRange`), auf einem Rudel mit
+    jeder Ladung; Haltezeile mit Grund, wenn er bei mehr als einem Gegner bereit liegt und nicht kommt.
+  - Kampfzeile zählt die Aufzeichnung der Aktionen nach ihrer Zeit (C157).
+- *Modell* (`bst_capture_model.py` neu gefasst, Gesundheit in 0,1-s-Schritten, drei Verläufe): gleichmäßig markiert die
+  neue Regel 100 % (A523: 98 %), in Stößen 99 % (76 %), bei Beschleunigung der letzten 5 s auf 1,5-fach 94–95 % (50–51 %),
+  auf das Doppelte 83–85 % (26–33 %); LP beim Markieren 9 bzw. 16 % gegen 7–8 % (der letzten 30 s).
+- *Verworfen:* zweite Markierung später (nicht belegt, nicht messbar), fester GCD Vorlauf, Schaden zurückhalten, sofort
+  markieren, 20 s vorher (Daedalus); Zielwahl nach Schaden je LP (nicht zentral gemessen); dieselbe Zielart für alle
+  Jobs ohne ihn (seine Vorgabe vom 16.10.2026 für Einzelzielangriffe steht dagegen; ihm vorgelegt).
+- *Preis, ihm genannt:* Anfreunden markiert bei mehr LP; am Ichor hätte es um 11:52:43 bei 14,7 % markiert. Ist die
+  Chance wörtlich umgekehrt proportional, bringt die späte Regel mehr Pakte je Kill.
+- *Übrige Zeilen des Uploads:* keine Tode. Hörner zwischen den Kämpfen (B5) elfmal angenommen. Kampfzeilen mit
+  „Shield Charge 73" und „Seedsower 75": der Zählfehler. Die gelernten Tabellen gleichen der Fassung vom Morgen. Der
+  erste Kampf jeder Sitzung hatte einen Durchlauf von 41 bis 68 ms im Schritt „next action (rotation)" ohne
+  Speicherbereinigung, ebenso in den Uploads vom 01. bis 03.11.2026 bei anderen Jobs (bis 168 ms); TODO
+  „Der erste Kampf einer Sitzung hält einen Durchlauf bis 170 ms an".
+- *Offen:* TODO „Beastmaster: Ob Analysieren die LP einrechnet".
+- *Prüfgrad:* Mitschnitt und Protokoll; Modell mit Selbsttest gegen einen konstruierten Defekt; Compile ohne Warnung;
+  alle 44 CI-Prüfschritte lokal grün. Im Spiel nicht beobachtet; die Spur nennt beim nächsten Anfreunden Grund, LP und
+  Ausgang, die Haltezeile den Grund eines liegenden Schildansturms.
+
 ## B · Commit-Register (Fork vs. `upstream/main`)
 
 ### B1 · Einzelgeprüfte Fork-Commits
@@ -16035,3 +16089,4 @@ Die offene Arbeit dazu — Reihenfolge und Abbruchbedingung der Nachprüfung —
 | C154 | A498: „beim Dunkelritter ist Darkside fast immer an, ‚Save for burst window‘ hält dort also kaum noch" | Ungeprüft übernommen: Der Status Darkside (751) liegt im Spiel nie an (3893 Aktionszeilen von Dunkelrittern – Hard Slash, Syphon Strike, Unleash, Souleater, Bloodspiller, Edge und Flood of Shadow – in seinen Mitschnitten vom 25.10. bis 03.11.2026, keine Zeile mit Status 751; gemessen 03.11.2026). Mit dem Code von 7.5.7.14 hielt die Phantom-Rotation die Angriffe eines Dunkelritters also für immer zurück, bis Upstream 7.5.7.15 den Messwert las (A517). | Keine; behoben durch den Merge von 7.5.7.15. |
 | C155 | Konzept 01, B1 (A485): „Gelesen wird die der beiden Zahlenspalten, deren Werte über alle Begleiter verschieden sind" (`XBMPet.Unknown5`, `Unknown6`) | Es gibt drei Id-Spalten; die beiden geprüften sind Action und Location, die Pet-Spalte ist `Unknown4`. Der Katalog entstand auf seinem Client nie (Protokoll vom 03.11.2026). | B1 prüft alle drei; A520. |
 | C156 | `check_movement_types.py` (A498): Shukuchi ohne Bewegungstyp, „no fork rotation casts it" | Die Ninja-Basisschicht wirkt Shukuchi auf „Move Forward" (`NinjaRotation.MoveForwardAbility`); ohne Typ lief es in die Platzierung der Flächenangriffe. | Typ `GroundTargetMove`; A520. |
+| C157 | A524: Kampfzeile „beastmaster fight“: „Schildansturm, Borgen, jedes Bestienkönnen gezählt“ | Gezählt wurde jede Aktion in jedem Frame neu: Der Zeitpunkt kam aus „jetzt minus Zeit seit der letzten Aktion“ und wich in jedem Frame ab („Shield Charge 73“ in einem Kampf am 04.11.2026). | Zählung aus der Aufzeichnung der Aktionen nach ihrer Zeit; A525. |

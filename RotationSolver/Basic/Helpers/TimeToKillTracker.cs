@@ -69,6 +69,55 @@ internal static class TimeToKillTracker
 		return _histories.TryGetValue(id, out var history) ? history.Rate : float.NaN;
 	}
 
+	/// <summary>
+	/// The largest share of its health the enemy has lost within <paramref name="span"/> seconds over its recorded history:
+	/// between any two samples at most the span plus the widest gap between neighbouring samples apart, so a fall in any
+	/// window of the span lies within one pair. A history shorter than the span gives its whole fall, scaled up to the
+	/// span. NaN without two samples (concept 01, A2; A525).
+	/// </summary>
+	/// <param name="id">The enemy's object id.</param>
+	/// <param name="span">The span in seconds.</param>
+	/// <returns>The largest fall as a share of its health, or NaN.</returns>
+	internal static float LargestFall(ulong id, float span)
+	{
+		if (!_histories.TryGetValue(id, out var history) || history.Samples.Count <= 1 || span <= 0f)
+		{
+			return float.NaN;
+		}
+
+		var samples = history.Samples.ToArray();
+		var first = samples[0];
+		var last = samples[^1];
+		long gap = 0;
+		for (var i = 1; i < samples.Length; i++)
+		{
+			gap = Math.Max(gap, samples[i].Tick - samples[i - 1].Tick);
+		}
+
+		var seen = (float)TimeSpan.FromMilliseconds(last.Tick - first.Tick).TotalSeconds;
+		if (seen <= 0f)
+		{
+			return float.NaN;
+		}
+
+		if (seen < span)
+		{
+			return Math.Max(0f, first.Ratio - last.Ratio) * span / seen;
+		}
+
+		var reach = (long)TimeSpan.FromSeconds(span).TotalMilliseconds + gap;
+		var largest = 0f;
+		for (var i = 0; i < samples.Length; i++)
+		{
+			for (var j = i + 1; j < samples.Length && samples[j].Tick - samples[i].Tick <= reach; j++)
+			{
+				largest = Math.Max(largest, samples[i].Ratio - samples[j].Ratio);
+			}
+		}
+
+		return largest;
+	}
+
 	internal static void Clear()
 	{
 		_histories.Clear();

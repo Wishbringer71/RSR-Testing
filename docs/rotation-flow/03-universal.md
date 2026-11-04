@@ -582,6 +582,47 @@ der DoT tickt am längsten auf dem, der am längsten lebt. Beides ergänzt sich.
 **Prüfgrad:** statisch (Code, Statustexte über xivapi v2); Compile über die CI. Im Kampf: Bei mehreren Gegnern zeigt
 sich die Regel daran, wer zuerst und wer zuletzt einen DoT trägt.
 
+## Zielart ohne Tank und Heiler
+
+**Vorgabe des Auftraggebers (04.11.2026), wörtlich:** „da beim beastmaster kein tank bereitsteht und kein healer, ist das
+zielverhalten auf gegner mit niedrigen hp zu priorisieren, egal wie die einstellungen der ui sind." Sein Grund, im
+selben Zug: „weniger gegener machen weniger schaden, besser als möglichst viele gegner gleichmäßig runterzubringen, wie
+es damagedealer in gruppen machen, um möglichst effizient zu sein."
+
+**Geltende Regel** (`DataCenter.TargetingType`, A525): Spielt er den Beastmaster und lebt neben ihm in der Gruppe kein
+Tank und kein Heiler (`DataCenter.NoTankNoHealerBeside`), gilt die Zielart „Low HP": unter den Gegnern, die eine Aktion
+erreichen kann, der mit den wenigsten LP in Punkten. Seine eingestellte Zielart gilt dann nicht, auch ohne Option. Lebt
+ein Tank oder ein Heiler neben ihm, gilt wieder seine Zielart.
+- *Was vorgeht, wie bisher:* eine Zielart, die ein anderes Plugin über IPC setzt (AutoDuty, PvP-Modus), ein Befehl mit
+  Zielart, die eigene Sortierung einer Aktion (etwa Bewegung), die DoT-Verteilung (oben), die Stopmarker und die Gegner
+  mit Vorrang. Flächenangriffe wählen weiter das Ziel mit den meisten Treffern; nur bei Gleichstand ordnet die Zielart.
+- *Warum Punkte, nicht Prozent:* Weniger Gegner heißt: den zuerst, der am wenigsten Schaden bis zum Tod braucht. Das
+  sind seine LP in Punkten; ein Boss bei 10 % hat meist mehr als ein voller Gegner aus dem Rudel.
+- *Warum „neben ihm":* Sein Grund ist, dass niemand die Gegner hält und niemand heilt. Ein toter Tank oder Heiler hält
+  und heilt nicht; einer, der lebt, tut es, und dann trägt sein Grund nicht.
+- *Lage, die er spielt* (sein Mitschnitt vom 04.11.2026): keine Gruppe (keine Zeile 11), Kupferglocken-Mine und offene
+  Welt allein; das Protokoll meldet „no healer alive, an enemy attacks you". Ein Beastmaster kann zwar mit einer Gruppe
+  ohne Stufenbeschränkung in Inhalte (eorzeantavern, Gemeinschaftsquelle); dann gilt mit Tank oder Heiler seine Zielart.
+
+**Was im Kampf anders wird:** In einem Rudel aus fünf Gegnern fällt der schwächste zuerst, dann der nächste. Mit jedem
+toten Gegner schlägt einer weniger auf ihn ein; vorher verteilten sich Einzelzielangriffe nach seiner Zielart, bei „High
+HP" auf den stärksten. Flächenangriffe treffen weiter alle. Gegen einen Boss allein ändert sich nichts.
+- *Preis:* Wechselt das Ziel mit jedem Tod, verliert ein Nahkämpfer Weg zum nächsten, wenn der nicht schon in seiner
+  Reichweite steht; Kandidaten sind ohnehin nur Gegner in Reichweite der Aktion. Sonst kostet die Reihenfolge keinen
+  Schaden: Ein Einzelzielangriff macht auf jedem Ziel denselben (Schluss; DoTs ordnet die Verteilung oben).
+- *Anfreunden:* Es sucht sein Ziel selbst (A1); die Zielart ordnet nur, wenn mehrere Bestien zugleich fällig sind.
+
+**Gegenposition, geprüft:**
+- *Nach Schaden je LP ordnen* (wer am härtesten schlägt und am schnellsten fällt, zuerst): Weniger Gegner heißt nicht
+  weniger Schaden, wenn einer allein so viel austeilt wie drei andere. RSR misst den Schaden je Gegner auf den Spieler
+  nicht zentral, und seine Vorgabe nennt die LP. Nicht übernommen; im Rudel gleicher Gegner fällt es zusammen.
+- *Für alle Jobs:* Sein Grund gilt für jeden, der allein ohne Tank und Heiler kämpft. Für Einzelzielangriffe gilt aber
+  seine Vorgabe vom 16.10.2026, dass die gewählte Zielart gilt (oben). Ob dieselbe Lage bei den anderen Jobs dieselbe
+  Regel verdient, entscheidet er; der Code fragt die Lage zentral ab, die Ausweitung wäre eine Bedingung.
+
+**Prüfgrad:** statisch am Code; Compile über die CI. Im Kampf: Im Rudel greift er den Gegner mit den wenigsten LP an;
+die Zustandszeile des Beastmasters nennt, ob die Regel gilt.
+
 ## E · Universelle Strukturschwächen
 
 | # | Schwäche | Beleg | Stand |

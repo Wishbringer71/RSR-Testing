@@ -15,13 +15,16 @@ Nach der Wirkung im Kampf: Sicherheit der Gruppe vor Schaden, gewichtet mit der 
 2. Heilungen in „Heilung -" verpuffen: fünf GCDs Schaden und MP ohne Wirkung, solange der Status liegt; kein Leben,
    denn die Heilung wirkt dort ohnehin nicht.
 3. Heilung bricht ab, weil ein Regen-Tick die Schwelle kreuzt: verlorene Wirkzeit, das Ziel bleibt an der Schwelle.
-4. Beastmaster: Am Pull der Begleiter, der das Rudel aufhält, mit One with Nature: Das Rudel wird erst Sekunden nach dem
+4. Beastmaster: Ob Analysieren die LP einrechnet: Anfreunden markiert sicher, aber früher als nötig, wenn die Stufe der
+   Chance schon bei mehr LP die beste ist; jeder verlorene Pakt kostet einen weiteren Lauf (seine Vorgabe: Anfreunden
+   hat oberste Priorität).
+5. Beastmaster: Am Pull der Begleiter, der das Rudel aufhält, mit One with Nature: Das Rudel wird erst Sekunden nach dem
    Pull betäubt statt mit ihm.
-5. Beastmaster: Brechende Welle als Schaden: mit einem Wavekin auf dem Borgen-Horn ein Schadens-GCD, der nie kommt.
-6. Fremde Repositories auf Verbesserungen für RSR prüfen: Jeder Fund kann ein Defekt im Verhalten einer Klasse sein,
+6. Beastmaster: Brechende Welle als Schaden: mit einem Wavekin auf dem Borgen-Horn ein Schadens-GCD, der nie kommt.
+7. Fremde Repositories auf Verbesserungen für RSR prüfen: Jeder Fund kann ein Defekt im Verhalten einer Klasse sein,
    den RSR heute im Kampf zeigt; zuerst die Rotationswerkzeuge für alle Jobs, Daedalus vorn (aktiv, alle Jobs,
    eigene Kampfvorhersage).
-7. Flächenbetäuber in Kreszentia für The Blackest Night: kostet MP, kein Leben.
+8. Flächenbetäuber in Kreszentia für The Blackest Night: kostet MP, kein Leben.
 
 Danach die technische Schuld, soweit ihre Auflösungsbedingung erfüllt ist. Warten auf Daten: unten.
 
@@ -50,6 +53,15 @@ Im Kampf: Betäubt ein anderer Spieler mit einer Aktion seines Phantomjobs eine 
 Barriere in das Betäubungsfenster legen; sie bricht nicht, Dark Arts bleibt aus, es kostet MP, kein Leben. *Ort:*
 Erkennung der Flächenbetäubung (Konzept 10, „Grenzen"), heute nur Holy und Holy III. *Nächster Schritt:* die Aktionen der
 Phantomjobs mit Flächenbetäubung aus den Spielblättern erheben, Loop. *Konzept:* 10.
+
+### Beastmaster: Ob Analysieren die LP einrechnet · N
+Im Kampf: Anfreunden markiert, sobald der größte bisherige Einbruch des Gegners ihn vor der nächsten Markierung töten
+könnte (A2), am Zornigen Ichor etwa bei 15 % LP. Wie die Chance mit den LP fällt, sagt keine Quelle; Analysieren meldet
+sie in fünf Stufen. Rechnet die Stufe die aktuellen LP ein, könnte RSR markieren, sobald sie die beste meldet: sicher
+und ohne Chance zu verschenken. *Ort:* `BeastmasterFamiliars.CaptureNow`; Antwort im Chat (LogMessage 11217–11222).
+*Nächster Schritt:* Loop: RSR drückt Analysieren (Talent, 3 s, keine Feindseligkeit) auf eine fehlende Bestie, liest die
+Antwort aus dem Chat und schreibt Stufe und LP ins Protokoll; ändert sich die Stufe mit den LP, wird sie Teil von A2.
+*Konzept:* 01, „Was gilt beim Anfreunden".
 
 ### Beastmaster: Am Pull der Begleiter, der das Rudel aufhält, mit One with Nature · N
 Im Kampf: Am Pull um 10:45:05 (04.11.2026) brachten Raptor, Büffel und Fliegenfalle je 500 auf jeden Gegner; den
@@ -157,6 +169,13 @@ den Spieldaten (`CastType`, `EffectRange`), hinter eigener Option. *Konzept:* 13
 *Kosten:* Ändert sich der Ruf der Königin oder die GCD-Folge in `MCH_Reborn`, die GCD-Folge oder der Meikyo-Zweig in
 `SAM_Reborn`, Perfect Balance, die Buffs oder die GCD-Folge in `MNK_Reborn`, rechnen `machinist_balance_model.py`,
 `samurai_balance_model.py` und `monk_balance_model.py` weiter die alte Regel, und Konzept 14 nennt ihre Ergebnisse. *Auflösung:* jede solche Änderung trägt im selben Commit die Anpassung des Modells. *Konzept:* 14.
+
+### Der erste Kampf einer Sitzung hält einen Durchlauf bis 170 ms an · N
+In jedem Upload vom 01. bis 04.11.2026 und bei jedem Job: der langsamste Durchlauf des ersten Kampfes nach dem Start
+20 bis 170 ms, fast ganz im Schritt „next action (rotation)", ohne Speicherbereinigung; danach unter 10 ms. *Kosten:* ein
+Ruckler am ersten Pull je Sitzung. *Auflösung:* Loop, sobald er einen Ruckler am Pull bemerkt oder die erste Aktion
+messbar später kommt; erster Schritt: die Teilschritte der Rotation in diesem Durchlauf messen. *Konzept:* 03, „Was ein
+Frame kostet".
 
 ### Plugin-Identität ist die des Upstreams · N
 `manifest.json` unverändert (`InternalName`, URLs). *Auflösung:* seine Entscheidung, wenn beide Installationen

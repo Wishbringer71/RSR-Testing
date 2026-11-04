@@ -287,10 +287,10 @@ public partial class BeastmasterRotation
 	}
 
 	/// <summary>
-	/// A1 and A2 of concept 01 ("Was gilt beim Anfreunden", A487, A523): <paramref name="target"/> can become a familiar
-	/// the player has not got, is not marked, not above his level, the game would take Capture on it - and this is the
-	/// last weaponskill whose mark still arrives before it falls (<see cref="CaptureLanding"/>), so the mark meets the
-	/// least HP at which a pact can still come.
+	/// A1 and A2 of concept 01 ("Was gilt beim Anfreunden", A487, A525): <paramref name="target"/> can become a familiar
+	/// the player has not got, is not marked, not above his level, the game would take Capture on it - and waiting for
+	/// the next weaponskill could let it fall before that mark arrives (<see cref="CaptureNow"/>), so the mark is sure
+	/// to land at the least HP that allows it.
 	/// </summary>
 	public static unsafe bool CaptureDue(IBattleChara target)
 	{
@@ -306,8 +306,8 @@ public partial class BeastmasterRotation
 			return false;
 		}
 
-		// A2 (A523): the last weaponskill whose mark still arrives before it falls.
-		if (!LastWeaponskillBefore(target, CaptureLanding))
+		// A2 (A525): now, when waiting for the next weaponskill could let it fall before that mark arrives.
+		if (!CaptureNow(target, out _))
 		{
 			return false;
 		}
@@ -327,6 +327,43 @@ public partial class BeastmasterRotation
 	/// delay the owner's recordings showed before the first measurement (A2, A523).
 	/// </summary>
 	public static float CaptureLanding => _captureLanding >= 0f ? _captureLanding : RecordedMarkDelay;
+
+	/// <summary>
+	/// A2 of concept 01 (his precept of 04.11.2026: "so sicher sein, dass immer genug zeit bleibt"; A525): whether waiting
+	/// for the next weaponskill could let <paramref name="target"/> fall before that Capture's mark arrives. The span is
+	/// what remains of the running weaponskill, one more and the landing; it could, when the target holds no more health
+	/// than the largest fall it has taken within such a span, or its corrected time to kill is no longer. No lower bound:
+	/// a mark that may come too late still goes. False while it has taken no fall yet.
+	/// </summary>
+	/// <param name="target">The enemy.</param>
+	/// <param name="reason">Why, for the trace.</param>
+	/// <returns>True when Capture is due now.</returns>
+	public static bool CaptureNow(IBattleChara target, out string reason)
+	{
+		reason = string.Empty;
+		if (target == null)
+		{
+			return false;
+		}
+
+		var span = WeaponRemain + WeaponTotal + CaptureLanding;
+		var held = target.GetHealthRatio();
+		var fall = TimeToKillTracker.LargestFall(target.GameObjectId, span);
+		if (!float.IsNaN(fall) && fall > 0f && held <= fall)
+		{
+			reason = $"it holds {held:P1}, its largest fall within {span:F1} s was {fall:P1}";
+			return true;
+		}
+
+		var ttk = target.GetCorrectedTTK();
+		if (!float.IsNaN(ttk) && ttk <= span)
+		{
+			reason = $"its time to kill {ttk:F1} s is within {span:F1} s";
+			return true;
+		}
+
+		return false;
+	}
 
 	// An enemy in combat that would be a familiar the player lacks, followed until it falls (A2's trace, A523).
 	private readonly record struct CaptureWatch(string Name, BeastmasterPet Pet, bool Aimed, bool Marked, float Ttk);
@@ -395,8 +432,9 @@ public partial class BeastmasterRotation
 			if (marked && !watch.Marked && CapturePressedWithinGcd())
 			{
 				_captureLanding = DataCenter.DefaultGCDElapsed;
-				DefenseTrace.Line($"Capture: mark on {watch.Name} ({watch.Pet}) {_captureLanding:F2} s after the press, "
-					+ $"{hostile.GetHealthRatio():P1} HP - the next Capture counts this landing");
+				DefenseTrace.Line($"Capture: mark on {watch.Name} ({watch.Pet}) {_captureLanding:F2} s after the press "
+					+ (watch.Aimed ? "by RSR" : "by hand") + $", {hostile.GetHealthRatio():P1} HP - the next Capture counts "
+					+ "this landing");
 			}
 
 			_captureWatch[id] = watch with { Marked = watch.Marked || marked, Ttk = hostile.GetCorrectedTTK() };

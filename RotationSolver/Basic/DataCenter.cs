@@ -791,6 +791,14 @@ internal static class DataCenter
 				return TargetingTypeOverride.Value;
 			}
 
+			// The owner's precept of 04.11.2026 (concept 03, "Zielart ohne Tank und Heiler", A525): a beastmaster with no
+			// tank and no healer alive beside him attacks the enemy with the least HP first, whatever the setting -
+			// fewer enemies hit him sooner.
+			if (CurrentRotation is BeastmasterRotation && NoTankNoHealerBeside)
+			{
+				return TargetingType.LowHP;
+			}
+
 			if (Service.Config.TargetingTypes.Count == 0)
 			{
 				Service.Config.TargetingTypes.Add(TargetingType.LowHP);
@@ -1271,10 +1279,21 @@ internal static class DataCenter
 	/// <returns>True when a healer of the party is alive.</returns>
 	public static bool AnyLivingHealer(bool excludeSelf)
 	{
+		return AnyLiving(JobRole.Healer, excludeSelf);
+	}
+
+	/// <summary>
+	/// No tank and no healer of the party is alive beside the player: nobody holds the enemies off him and nobody heals
+	/// him but himself (concept 03, "Zielart ohne Tank und Heiler", A525).
+	/// </summary>
+	public static bool NoTankNoHealerBeside => !AnyLiving(JobRole.Tank, true) && !AnyLiving(JobRole.Healer, true);
+
+	private static bool AnyLiving(JobRole role, bool excludeSelf)
+	{
 		var playerId = Player.Object?.GameObjectId ?? 0;
 		foreach (var member in PartyMembers)
 		{
-			if (member != null && !member.IsDead && member.IsJobCategory(JobRole.Healer)
+			if (member != null && !member.IsDead && member.IsJobCategory(role)
 				&& !(excludeSelf && member.GameObjectId == playerId))
 			{
 				return true;

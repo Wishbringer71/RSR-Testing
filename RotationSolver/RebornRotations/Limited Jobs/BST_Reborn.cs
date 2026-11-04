@@ -57,10 +57,11 @@ public sealed class BST_Reborn : BeastmasterRotation
 
 	[RotationConfig(CombatType.PvE, Name = "Capture familiars you do not have yet",
 		Tooltip = "When an enemy you can befriend as a familiar, one you do not have yet and not above your level, is about to "
-			+ "fall, Capture marks it with the last weaponskill whose mark still arrives before it falls - at the least HP "
-			+ "at which a pact can still come: the lower its HP when marked, the likelier the pact, and none if it falls "
-			+ "before the mark arrives. Capture shares the weaponskill timer, so it costs one weaponskill per "
-			+ "attempt, and none once you have that familiar.\n"
+			+ "fall, Capture comes first and marks it with the last weaponskill whose mark is sure to arrive before it falls: "
+			+ "as soon as waiting one more weaponskill could let it fall first - by the largest fall it has taken within "
+			+ "that time so far, or by its time to kill. No pact if it falls before the mark arrives; the lower its HP when "
+			+ "marked, the likelier the pact, so the mark comes no earlier than that. Capture shares the weaponskill "
+			+ "timer, so it costs one weaponskill per attempt, and none once you have that familiar.\n"
 			+ "Off: Capture is never used.")]
 	private bool CaptureFamiliars { get; set; } = true;
 
@@ -230,15 +231,17 @@ public sealed class BST_Reborn : BeastmasterRotation
 			return true;
 		}
 
-		// W5 (concept 01, A524): Shield Charge on a pack before the actions that come back within seconds - 300 on every
-		// enemy within 6 y of the target, on a 60 s recast. Behind them it rarely found a free slot in a short pull. On one
-		// enemy it stays last, as before.
-		if (ShieldChargePvE.CanUse(out act, usedUp: CurrentPet != BeastmasterPet.None)
+		// W5 (concept 01, A524, A525): Shield Charge on a pack before the actions that come back within seconds - 300 on
+		// every enemy within 6 y of the target, on a 60 s recast; his precept of 04.11.2026: within 3 y, on the enemy in
+		// the middle of the pack, so it reaches the most, every charge. On one enemy it stays last, as before.
+		if (ShieldChargePvE.CanUse(out act, usedUp: true)
 			&& ShieldChargePvE.Target.AffectedTargets is { Length: > 1 } hit)
 		{
 			TraceHorn($"Shield Charge on {ShieldChargePvE.Target.Target?.Name}: {hit.Length} enemies in its reach");
 			return true;
 		}
+
+		WatchChargeHeld();
 
 		if (NaturalInstinct == 3 || MasteredInstinct < 3)
 		{
@@ -798,7 +801,8 @@ public sealed class BST_Reborn : BeastmasterRotation
 
 	// What the horn choice and Capture read (concept 01, "Zustandszeile", A489).
 	private readonly record struct BeastmasterState(BeastmasterPet First, BeastmasterPet Second, BeastmasterPet Third,
-		HornOrder Out, bool BySituation, bool BetweenFights, bool Capture, bool CaptureEnabled, bool ListLoaded, string Catalog);
+		HornOrder Out, bool BySituation, bool BetweenFights, bool Capture, bool CaptureEnabled, bool ListLoaded, string Catalog,
+		bool LeastHpFirst);
 
 	private static BeastmasterState? _lastState;
 
@@ -808,7 +812,7 @@ public sealed class BST_Reborn : BeastmasterRotation
 	{
 		var state = new BeastmasterState(PetOnHorn(HornOrder.FirstBattlehorn), PetOnHorn(HornOrder.SecondBattlehorn),
 			PetOnHorn(HornOrder.ThirdBattlehorn), (HornOrder)ActiveBattlehorn, HornBySituation, HornsBetweenFights, CaptureFamiliars,
-			CapturePvE.IsEnabled, FamiliarListLoaded, FamiliarCatalogState);
+			CapturePvE.IsEnabled, FamiliarListLoaded, FamiliarCatalogState, DataCenter.NoTankNoHealerBeside);
 		if (state == _lastState)
 		{
 			return;
@@ -818,7 +822,8 @@ public sealed class BST_Reborn : BeastmasterRotation
 		DefenseTrace.Line($"beastmaster state: horns {state.First}, {state.Second}, {state.Third} | out {state.Out}"
 			+ $" | choose by the situation {state.BySituation} | set between fights {state.BetweenFights}"
 			+ $" | capture {state.Capture}, action enabled {state.CaptureEnabled}"
-			+ $" | familiar list loaded {state.ListLoaded} | catalog {state.Catalog}");
+			+ $" | familiar list loaded {state.ListLoaded} | catalog {state.Catalog}"
+			+ $" | least HP first (no tank, no healer beside you) {state.LeastHpFirst}");
 	}
 	#endregion
 
@@ -938,13 +943,59 @@ public sealed class BST_Reborn : BeastmasterRotation
 		}
 	}
 
-	// A524: what the familiars' actions came to in a fight - Shield Charge, Borrow and the Beast Mode actions - and how
-	// long Shield Charge stood ready with more than one enemy in range. One line when the fight ends.
+	// A524: what the familiars' actions came to in a fight - Shield Charge, Borrow and the Beast Mode actions, by RSR or
+	// by hand - and how long Shield Charge stood ready with more than one enemy in range. One line when the fight ends.
 	private readonly Dictionary<ActionID, int> _fightUses = [];
 	private DateTime _lastUseSeen;
 	private DateTime _lastCount;
 	private float _chargeIdle;
 	private bool _counting;
+	private string _chargeHeld = string.Empty;
+
+	// W5 (A525): Shield Charge stands ready with more than one enemy within reach and does not go - why, once per fight
+	// and reason. On 04.11.2026 it stood so for 23 s in a pull in the South Shroud, and the files could not say why.
+	private void WatchChargeHeld()
+	{
+		if (!InCombat || !ShieldChargePvE.EnoughLevel || !ShieldChargePvE.Cooldown.HasOneCharge || NumberOfHostilesInRange <= 1)
+		{
+			return;
+		}
+
+		string why;
+		if (!ShieldChargePvE.IsEnabled)
+		{
+			why = "the action is switched off in RSR";
+		}
+		else if (Service.Config.AoEType != RotationSolver.Basic.Configuration.ConfigTypes.AoEType.Full)
+		{
+			why = $"the AoE setting is {Service.Config.AoEType}";
+		}
+		else if (!ShieldChargePvE.CanUse(out _, usedUp: true))
+		{
+			var nearest = float.MaxValue;
+			foreach (var hostile in DataCenter.AllHostileTargets)
+			{
+				if (hostile != null && !hostile.IsDead)
+				{
+					nearest = Math.Min(nearest, hostile.DistanceToPlayer());
+				}
+			}
+
+			why = $"no target it may take: nearest enemy {nearest:F1} y, melee range {DataCenter.JobRange:F0} y, gap closers "
+				+ $"within {Service.Config.DistanceForMoving2:F1} y, no new enemies {Service.Config.NoNewHostiles}, "
+				+ "else BossModReborn's dash check or the action's own conditions";
+		}
+		else
+		{
+			why = $"its target reaches {ShieldChargePvE.Target.AffectedTargets?.Length ?? 0} enemy";
+		}
+
+		if (why != _chargeHeld)
+		{
+			_chargeHeld = why;
+			DefenseTrace.Line($"Shield Charge held with {NumberOfHostilesInRange} enemies in range: {why}");
+		}
+	}
 
 	private static readonly ActionID[] CountedActions = [ActionID.ShieldChargePvE, ActionID.BorrowPvE, ActionID.BeastskinPvE,
 		ActionID.VileskinPvE, ActionID.CloudSkimPvE, ActionID.SeedsowerPvE, ActionID.QuellingWavePvE, ActionID.ScaleskinPvE,
@@ -960,23 +1011,40 @@ public sealed class BST_Reborn : BeastmasterRotation
 				_counting = true;
 				_fightUses.Clear();
 				_chargeIdle = 0f;
+				_chargeHeld = string.Empty;
 				_lastCount = now;
+				// The pull itself - an opening Shield Charge - goes out a moment before the combat flag: a GCD back.
+				_lastUseSeen = now.AddSeconds(-DataCenter.DefaultGCDTotal);
 			}
 
-			var usedAt = now - DataCenter.TimeSinceLastAction;
-			if (usedAt != _lastUseSeen)
+			// Every action that went out since the last look, newest first, each by the time it was recorded. Read from
+			// the time since the last action instead, each frame gave a slightly different moment and counted the same
+			// action again: "Shield Charge 73" in one fight on 04.11.2026.
+			var newest = _lastUseSeen;
+			foreach (var record in DataCenter.RecordActions)
 			{
-				_lastUseSeen = usedAt;
+				if (record.UsedTime <= _lastUseSeen)
+				{
+					break;
+				}
+
+				if (record.UsedTime > newest)
+				{
+					newest = record.UsedTime;
+				}
+
 				// Borrow becomes one action per kin (BorrowPvE_47238 to _47245): each counts as Borrow.
-				var last = DataCenter.LastAction;
-				var counted = last.ToString().StartsWith(nameof(ActionID.BorrowPvE), StringComparison.Ordinal)
+				var used = (ActionID)record.Action.RowId;
+				var counted = used.ToString().StartsWith(nameof(ActionID.BorrowPvE), StringComparison.Ordinal)
 					? ActionID.BorrowPvE
-					: last;
+					: used;
 				if (Array.IndexOf(CountedActions, counted) >= 0)
 				{
 					_fightUses[counted] = _fightUses.GetValueOrDefault(counted) + 1;
 				}
 			}
+
+			_lastUseSeen = newest;
 
 			if (ShieldChargePvE.EnoughLevel && ShieldChargePvE.Cooldown.HasOneCharge && NumberOfHostilesInRange > 1)
 			{
@@ -1002,7 +1070,7 @@ public sealed class BST_Reborn : BeastmasterRotation
 			}
 		}
 
-		DefenseTrace.Line($"beastmaster fight: Shield Charge {_fightUses.GetValueOrDefault(ActionID.ShieldChargePvE)}"
+		DefenseTrace.Line($"beastmaster fight (by RSR or by hand): Shield Charge {_fightUses.GetValueOrDefault(ActionID.ShieldChargePvE)}"
 			+ (ShieldChargePvE.EnoughLevel ? $" (ready with more than one enemy in range for {_chargeIdle:F0} s)" : " (not learned)")
 			+ $"{uses}{(uses.Length == 0 ? ", no Borrow and no Beast Mode action" : string.Empty)}");
 	}
@@ -1246,16 +1314,20 @@ public sealed class BST_Reborn : BeastmasterRotation
 	{
 		TraceState();
 
-		// A1, A2 (concept 01, A487): Capture on the last weaponskill before a familiar you lack falls.
+		// A1, A2 (concept 01, A487, A525): Capture first, on the last weaponskill whose mark is sure to arrive before a
+		// familiar you lack falls.
 		if (CaptureFamiliars && InCombat && CapturePvE.CanUse(out act))
 		{
+			var why = string.Empty;
 			if (CapturePvE.Target.Target is { } marked)
 			{
 				CaptureAimed(marked);
+				_ = CaptureNow(marked, out why);
 			}
 
 			TraceHorn($"Capture on {CapturePvE.Target.Target?.Name} ({CapturableFamiliar(CapturePvE.Target.Target)}): "
-				+ $"a familiar you do not have, its last weaponskill whose mark arrives before it falls ({CaptureLanding:F2} s)");
+				+ $"a familiar you do not have; waiting a weaponskill could let it fall before that mark arrives - {why} "
+				+ $"(landing {CaptureLanding:F2} s)");
 			return true;
 		}
 
