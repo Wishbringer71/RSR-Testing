@@ -60,11 +60,12 @@ What this release changes in the fight. For the whole distance from upstream, se
   a horn by the situation - a healing or protecting familiar when you are in danger, the area familiar
   for the long stint on a pack, Trick by affinity, holding back a familiar whose Release would leave -
   now has the data it reads. Before, only your horn order counted.
-- **Test whether a horn can be reassigned in a fight.** `Test battlehorn assignment in combat
-  (experimental)`, **on by default**: once per situation RSR puts another familiar you have
-  on a horn whose familiar is not out - with the horn ready or recasting, a familiar out or none -
-  first with the Bestiary's command alone, then after its opening command, then with your weapon
-  sheathed for it, and puts yours straight back. Out of combat it tries once as the control.
-  `DefenseTrace.log` says what the server took. Each situation is tried once per session; twelve tests in a
-  row can leave you up to half a minute without a familiar. Measured on 04.11.2026: in combat the server
-  took none, out of combat every one.
+- **Battlehorns set for the next fight.** `Set the battlehorns between fights for the next one`, **on
+  by default**: out of combat - the server takes no horn change in a fight, measured on 04.11.2026 -
+  RSR puts on your horns the familiars you have that suit what comes next. Before a pack the most
+  damage against it, area Tricks and Tempered Releases counted by the enemies they reach; before a boss
+  (the nearest enemy you have not fought yet carries a boss icon) two familiars that heal or protect
+  you, one whose Trick heals among them; after a danger in the area one more, before every fight
+  there. The familiar out keeps its horn, horns you changed yourself stay until the next fight ends,
+  and nothing changes while the Bestiary is open or in the Crucible. `DefenseTrace.log` names every
+  plan and whether the server took it.

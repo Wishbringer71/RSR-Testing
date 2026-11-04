@@ -86,6 +86,15 @@ internal static class ActionTooltip
 	}
 
 	/// <summary>
+	/// The potency the tooltip of <paramref name="actionId"/> first states, without a trace line when it states none: for
+	/// a reader that expects actions without potency, as a familiar's Tempered Release that only protects (B5, A522).
+	/// </summary>
+	public static bool TryStatedPotency(uint actionId, out float potency)
+	{
+		return TryStated(actionId, StatedPotency, out potency);
+	}
+
+	/// <summary>
 	/// The potency one use of <paramref name="actionId"/> deals over <paramref name="targets"/> enemies, as its tooltip
 	/// states it: the first enemy's potency, every further one less by the stated falloff ("30% less for all remaining
 	/// enemies"), every one alike where the text states none. False when the text states no potency.

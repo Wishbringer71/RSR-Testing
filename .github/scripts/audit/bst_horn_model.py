@@ -143,6 +143,8 @@ def play(horns, rule, enemies_at, danger_from=None, measure=None):
         t += step
     if measure is not None:
         measure["covered"] = covered / danger_steps if danger_steps else 0.0
+        # The familiar still out when the fight ends - it keeps its horn into the next fight (B5, bst_assign_model).
+        measure["last"] = current
     return total, heal_at
 
 

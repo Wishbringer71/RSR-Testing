@@ -23,6 +23,8 @@ namespace RotationSolver.Basic.Rotations.Basic;
 /// Freeze (C1, concept 01, A491).</param>
 /// <param name="ReleaseStopsByStun">That stop is a stun, which halves with each application.</param>
 /// <param name="ReleaseRadius">0 for a single-target Tempered Release, else the radius its area reaches.</param>
+/// <param name="ReleasePotency">What the Tempered Release deals each enemy it reaches: the potency its tooltip first
+/// states, times its hits for one that strikes several times ("sixfold"); 0 when it states none (B5, A522).</param>
 /// <param name="ReleaseHurtsParty">The Tempered Release's party effect deals damage over time to the party (Hypodermic
 /// Hustle; C3).</param>
 /// <param name="BorrowProtects">The Beast Mode action Borrow unlocks for its kin lowers the damage you take.</param>
@@ -30,7 +32,7 @@ namespace RotationSolver.Basic.Rotations.Basic;
 /// none.</param>
 public sealed record FamiliarProfile(BeastmasterPet Pet, uint TrickId, uint ReleaseId, float TrickRadius, float TrickPotency,
 	bool TrickHeals, bool ReleaseHeals, bool ReleaseProtects, bool ReleaseRetreats, bool ReleaseStops, bool ReleaseStopsByStun,
-	float ReleaseRadius, bool ReleaseHurtsParty, bool BorrowProtects, StatusID TrickHeart);
+	float ReleaseRadius, float ReleasePotency, bool ReleaseHurtsParty, bool BorrowProtects, StatusID TrickHeart);
 
 public partial class BeastmasterRotation
 {
@@ -88,7 +90,9 @@ public partial class BeastmasterRotation
 		_profiles[(byte)pet] = profile;
 		DefenseTrace.Line($"beastmaster familiar {pet} at level {level}: Trick {profile.TrickPotency:F0}"
 			+ $"{(profile.TrickRadius > 0f ? $" in {profile.TrickRadius:F0} y" : " single")}"
-			+ $"{(profile.TrickHeals ? ", Trick heals" : string.Empty)}{(profile.ReleaseHeals ? ", Release heals" : string.Empty)}"
+			+ $"{(profile.TrickHeals ? ", Trick heals" : string.Empty)}, Release {profile.ReleasePotency:F0}"
+			+ $"{(profile.ReleaseRadius > 0f ? $" in {profile.ReleaseRadius:F0} y" : " single")}"
+			+ $"{(profile.ReleaseHeals ? ", Release heals" : string.Empty)}"
 			+ $"{(profile.ReleaseProtects ? ", Release protects" : string.Empty)}{(profile.ReleaseRetreats ? ", Release retreats" : string.Empty)}"
 			+ $"{(profile.ReleaseStops ? $", Release stops{(profile.ReleaseStopsByStun ? " (stun)" : string.Empty)}" : string.Empty)}"
 			+ $"{(profile.ReleaseHurtsParty ? ", Release hurts the party" : string.Empty)}"
@@ -104,7 +108,7 @@ public partial class BeastmasterRotation
 	public static BeastmasterPet PetOnHorn(HornOrder horn)
 	{
 		var pets = CurrentPets;
-		var index = (int)horn - (int)HornOrder.FirstBattlehorn;
+		var index = HornSlot(horn);
 		return horn != HornOrder.None && index < pets.Length ? (BeastmasterPet)pets[index] : BeastmasterPet.None;
 	}
 
@@ -117,7 +121,11 @@ public partial class BeastmasterRotation
 		_ => false,
 	};
 
-	private static readonly HornOrder[] _threeHorns = [HornOrder.FirstBattlehorn, HornOrder.SecondBattlehorn, HornOrder.ThirdBattlehorn];
+	/// <summary>The three battlehorns, in the order the game keeps their slots.</summary>
+	protected static readonly HornOrder[] ThreeHorns = [HornOrder.FirstBattlehorn, HornOrder.SecondBattlehorn, HornOrder.ThirdBattlehorn];
+
+	/// <summary>Where <paramref name="horn"/> sits in <see cref="CurrentPets"/>.</summary>
+	protected static int HornSlot(HornOrder horn) => (int)horn - (int)HornOrder.FirstBattlehorn;
 
 	/// <summary>
 	/// Whether a horn other than the one whose familiar is out holds a familiar and is ready: one to take its place should
@@ -131,12 +139,12 @@ public partial class BeastmasterRotation
 		{
 			var active = (HornOrder)ActiveBattlehorn;
 			var slotsRead = false;
-			foreach (var horn in _threeHorns)
+			foreach (var horn in ThreeHorns)
 			{
 				slotsRead |= PetOnHorn(horn) != BeastmasterPet.None;
 			}
 
-			foreach (var horn in _threeHorns)
+			foreach (var horn in ThreeHorns)
 			{
 				if (horn != active && HornReady(horn) && (!slotsRead || PetOnHorn(horn) != BeastmasterPet.None))
 				{
@@ -428,11 +436,29 @@ public partial class BeastmasterRotation
 				|| releaseText.Contains("with Deep Freeze", StringComparison.Ordinal),
 			ReleaseStopsByStun: releaseText.Contains("with Stun", StringComparison.Ordinal),
 			ReleaseRadius: row.ReleaseRadius,
+			ReleasePotency: ActionTooltip.TryStatedPotency(row.ReleaseId, out var release) ? release * HitsOf(releaseText) : 0f,
 			ReleaseHurtsParty: releaseText.Contains("party members", StringComparison.Ordinal)
 				&& releaseText.Contains("inflicts damage over time", StringComparison.Ordinal),
 			BorrowProtects: Protects(borrowText, string.Empty),
 			TrickHeart: HeartOf(trickText));
 	}
+
+	// How often an action strikes as its tooltip words it ("a sixfold slashing physical attack"), 1 when it says nothing.
+	private static int HitsOf(string text)
+	{
+		for (var hits = Multiples.Length - 1; hits > 1; hits--)
+		{
+			if (text.Contains(Multiples[hits] + "fold", StringComparison.Ordinal))
+			{
+				return hits;
+			}
+		}
+
+		return 1;
+	}
+
+	// The words of the tooltips by the number they stand for.
+	private static readonly string[] Multiples = ["", "one", "two", "three", "four", "five", "six", "seven", "eight", "nine", "ten"];
 
 	// The heart of the affinity a tooltip states ("Instinctual Affinity: Eldritch"), 0 for none (K1, concept 01, A487).
 	private static StatusID HeartOf(string text)
@@ -513,55 +539,15 @@ public partial class BeastmasterRotation
 		_ => 0,
 	};
 
-	// B4 (concept 01, "Belegung der Hörner in der Rotation", A520): the server commands of the owner's BestiaryTrace.log of
-	// 03.11.2026. 2420 assigns the three horns, with the familiars' numbers in the book, one per horn (0 empties one): ten
-	// assignments, each shown by the slots 10 to 16 ms later. 2421 the client sends whenever the book opens. 1 draws the
-	// weapon with (1, 0) and sheathes it with (0, 1) - read from the pattern around his fight, the client's own values.
+	// B5 (concept 01, "Belegung der Hörner in der Rotation", A520 to A522): the server command of the owner's
+	// BestiaryTrace.log of 03.11.2026. 2420 assigns the three horns, with the familiars' numbers in the book, one per horn
+	// (0 empties one): ten assignments, each shown by the slots 10 to 16 ms later. The server takes it out of combat in
+	// every situation tried and in combat in none (04.11.2026, A521).
 	private const int AssignBattlehornsCommand = 2420;
-	private const int BestiaryOpenedCommand = 2421;
-	private const int WeaponCommand = 1;
 
-	// How a probe is sent: the command alone; after the book's opening command; with the weapon sheathed for it and drawn
-	// again after (his idea, 03.11.2026: "vielleicht muss auch einfach die kampfhaltung beendet werden").
-	private enum HornProbeVariant : byte
-	{
-		Plain,
-		AfterOpening,
-		Sheathed,
-		Exhausted,
-	}
-
-	// The situation of a probe: in combat or not, the horn ready or recasting, a familiar out or none.
-	private readonly record struct HornProbeKind(bool InCombat, bool HornReady, bool FamiliarOut);
-
-	private enum HornProbeStep : byte
-	{
-		None,
-		Sent,
-		Restoring,
-	}
-
-	// Per situation the next variant to try; a situation the server took an assignment in is Exhausted - no more probes.
-	// Kept for the session, not per area: on 04.11.2026 twelve refused probes in a row held the horn calls for 27 s, and
-	// an area reset would repeat that in every area (A521).
-	private static readonly Dictionary<HornProbeKind, HornProbeVariant> _probeNext = [];
-	private static HornProbeStep _probeStep;
-	private static byte[] _probeOriginal = [];
-	private static byte[] _probeAwaited = [];
-	private static DateTime _probeSentAt;
-	private static HornProbeKind _probeKind;
-	private static HornProbeVariant _probeVariant;
-	private static string _probeWhat = string.Empty;
-	private static bool _restoreOwed;
-
-	private static string KindText(HornProbeKind kind)
-		=> $"{(kind.InCombat ? "in combat" : "out of combat")}, the horn {(kind.HornReady ? "ready" : "recasting")}, "
-			+ $"{(kind.FamiliarOut ? "a familiar out" : "none out")}";
-
-	private static string WeaponText()
-		=> Player is { } player && player.StatusFlags.HasFlag(Dalamud.Game.ClientState.Objects.Enums.StatusFlags.WeaponOut)
-			? "weapon drawn"
-			: "weapon sheathed";
+	private static byte[] _assignAwaited = [];
+	private static byte[] _assignLast = [];
+	private static DateTime _assignSentAt;
 
 	private static bool SlotsShow(byte[] awaited)
 	{
@@ -582,177 +568,139 @@ public partial class BeastmasterRotation
 		return true;
 	}
 
-	// The commands of one variant, in the order the server handles them; for Sheathed the weapon is drawn again after.
-	private static string SendHorns(byte[] horns, HornProbeVariant variant)
+	/// <summary>
+	/// B5 of concept 01: puts <paramref name="first"/>, <paramref name="second"/> and <paramref name="third"/> on the three
+	/// horns with the Bestiary's server command - taken out of combat only. <see cref="BattlehornAssignmentPending"/> then
+	/// judges whether the server took it.
+	/// </summary>
+	public static void AssignBattlehorns(BeastmasterPet first, BeastmasterPet second, BeastmasterPet third)
 	{
-		static int Slot(HornOrder h) => (int)h - (int)HornOrder.FirstBattlehorn;
-		if (variant == HornProbeVariant.AfterOpening)
-		{
-			_ = GameMain.ExecuteCommand(BestiaryOpenedCommand, 0, 0, 0, 0);
-		}
-		else if (variant == HornProbeVariant.Sheathed)
-		{
-			_ = GameMain.ExecuteCommand(WeaponCommand, 0, 1, 0, 0);
-		}
-
-		var answer = GameMain.ExecuteCommand(AssignBattlehornsCommand, horns[Slot(HornOrder.FirstBattlehorn)],
-			horns[Slot(HornOrder.SecondBattlehorn)], horns[Slot(HornOrder.ThirdBattlehorn)], 0);
-		return $"the client answered {answer}";
-	}
-
-	private static void DrawWeaponAgain()
-	{
-		if (_probeVariant == HornProbeVariant.Sheathed && DataCenter.InCombat)
-		{
-			_ = GameMain.ExecuteCommand(WeaponCommand, 1, 0, 0, 0);
-		}
+		_assignAwaited = [(byte)first, (byte)second, (byte)third];
+		_assignLast = _assignAwaited;
+		_assignSentAt = DateTime.Now;
+		var answer = GameMain.ExecuteCommand(AssignBattlehornsCommand, (byte)first, (byte)second, (byte)third, 0);
+		DefenseTrace.Line($"battlehorn assignment sent: {first}, {second}, {third} - the client answered {answer}");
 	}
 
 	/// <summary>
-	/// Whether a probe of B4 still waits for the slots: while it does, no horn is called, so a call never brings the probe
-	/// familiar. Judges it on the way - shown within a GCD, the server takes an assignment in that situation and variant,
-	/// and the original familiar goes back at once, the same way; not shown, the next variant follows in that situation.
-	/// A restore not shown goes out again out of combat.
+	/// Whether an assignment of <see cref="AssignBattlehorns"/> still waits for the slots: while it does, no horn is
+	/// called, so a call never brings the familiar the horn held before. Judged on the way - shown within a GCD, the server
+	/// took it; not shown, it did not, and the horns stay as they were.
 	/// </summary>
-	public static bool HornProbePending
+	public static bool BattlehornAssignmentPending
 	{
 		get
 		{
-			if (_probeStep == HornProbeStep.None)
+			if (_assignAwaited.Length == 0)
 			{
-				if (_restoreOwed && !DataCenter.InCombat && _probeOriginal.Length > 0)
-				{
-					_restoreOwed = false;
-					_probeVariant = HornProbeVariant.Plain;
-					_probeAwaited = _probeOriginal;
-					_probeSentAt = DateTime.Now;
-					_probeStep = HornProbeStep.Restoring;
-					DefenseTrace.Line($"battlehorn probe: restore sent again out of combat, {SendHorns(_probeOriginal, HornProbeVariant.Plain)}");
-					return true;
-				}
-
 				return false;
 			}
 
-			var waited = (DateTime.Now - _probeSentAt).TotalSeconds;
-			var shown = SlotsShow(_probeAwaited);
+			var waited = (DateTime.Now - _assignSentAt).TotalSeconds;
+			var shown = SlotsShow(_assignAwaited);
 			if (!shown && waited <= DataCenter.DefaultGCDTotal)
 			{
 				return true;
 			}
 
-			if (_probeStep == HornProbeStep.Sent)
-			{
-				if (shown)
-				{
-					_probeNext[_probeKind] = HornProbeVariant.Exhausted;
-					DefenseTrace.Line($"battlehorn probe: TAKEN after {waited:F3} s, {_probeVariant}, {KindText(_probeKind)} "
-						+ $"({_probeWhat}, {WeaponText()} now) - the original goes back, {SendHorns(_probeOriginal, _probeVariant)}");
-					DrawWeaponAgain();
-					_probeAwaited = _probeOriginal;
-					_probeSentAt = DateTime.Now;
-					_probeStep = HornProbeStep.Restoring;
-					return true;
-				}
-
-				_probeNext[_probeKind] = _probeVariant + 1;
-				DrawWeaponAgain();
-				DefenseTrace.Line($"battlehorn probe: NOT TAKEN within {waited:F2} s, {_probeVariant}, {KindText(_probeKind)} "
-					+ $"({_probeWhat}) - the slots {(SlotsShow(_probeOriginal) ? "kept the original" : "changed otherwise")}"
-					+ $"{(_probeVariant + 1 == HornProbeVariant.Exhausted ? "; no variant left in this situation" : $"; next here: {_probeVariant + 1}")}");
-			}
-			else if (shown)
-			{
-				DefenseTrace.Line($"battlehorn probe: original back after {waited:F3} s");
-			}
-			else
-			{
-				_restoreOwed = true;
-				DefenseTrace.Line($"battlehorn probe: restore not shown within {waited:F2} s - sent again out of combat");
-			}
-
-			_probeStep = HornProbeStep.None;
+			DefenseTrace.Line(shown
+				? $"battlehorn assignment TAKEN after {waited:F3} s"
+				: $"battlehorn assignment NOT TAKEN within {waited:F2} s - the horns stay as they were");
+			_assignAwaited = [];
 			return false;
 		}
 	}
 
+	/// <summary>Whether the horns hold what RSR assigned last (B5): a change it did not send is the player's.</summary>
+	public static bool HornsAsAssigned => _assignLast.Length > 0 && SlotsShow(_assignLast);
+
 	/// <summary>
-	/// B4 of concept 01 (A520): puts a familiar the player has and no horn holds on a horn whose familiar is not out, to
-	/// learn whether the server takes it - in combat once per situation and variant per session until one is taken, out of
-	/// combat once as the control; <see cref="HornProbePending"/> judges it and puts the original back.
+	/// The first enemy of the next fight, as far as RSR can see one: the nearest living enemy in its enemy list (in sight,
+	/// within its range) that is not fighting yet. Null for none.
 	/// </summary>
-	/// <returns>Whether a probe went out.</returns>
-	public static bool TryHornProbe()
+	public static IBattleChara? NextEnemy()
 	{
-		if (HornProbePending || _restoreOwed || !FamiliarListLoaded || Player is not { } player || player.IsDead
-			|| player.IsCasting)
+		var player = Player;
+		if (player == null)
 		{
-			return false;
+			return null;
 		}
 
-		var slots = CurrentPets;
-		if (slots.Length < _threeHorns.Length)
+		IBattleChara? nearest = null;
+		var distance = float.MaxValue;
+		foreach (var hostile in DataCenter.AllHostileTargets)
 		{
-			return false;
-		}
-
-		var active = (HornOrder)ActiveBattlehorn;
-		foreach (var horn in _threeHorns)
-		{
-			var kind = new HornProbeKind(DataCenter.InCombat, HornReady(horn), active != HornOrder.None);
-			var variant = _probeNext.TryGetValue(kind, out var next) ? next : HornProbeVariant.Plain;
-			// Out of combat only the plain command, once: the control that the probe itself works.
-			if (horn == active || variant == HornProbeVariant.Exhausted || (!kind.InCombat && variant != HornProbeVariant.Plain))
+			if (hostile == null || hostile.IsDead || hostile.InCombat())
 			{
 				continue;
 			}
 
-			var probe = BeastmasterPet.None;
-			foreach (var pet in Enum.GetValues<BeastmasterPet>())
+			var away = Vector3.Distance(hostile.Position, player.Position);
+			if (away < distance)
 			{
-				if (pet == BeastmasterPet.None || FamiliarUnlocked(pet) != true)
-				{
-					continue;
-				}
-
-				var onHorn = false;
-				foreach (var other in _threeHorns)
-				{
-					onHorn |= PetOnHorn(other) == pet;
-				}
-
-				if (!onHorn)
-				{
-					probe = pet;
-					break;
-				}
+				distance = away;
+				nearest = hostile;
 			}
-
-			if (probe == BeastmasterPet.None)
-			{
-				return false;
-			}
-
-			_probeOriginal = slots[.._threeHorns.Length].ToArray();
-			var sent = (byte[])_probeOriginal.Clone();
-			var index = (int)horn - (int)HornOrder.FirstBattlehorn;
-			sent[index] = (byte)probe;
-			if (!kind.InCombat)
-			{
-				_probeNext[kind] = HornProbeVariant.Exhausted;
-			}
-
-			_probeKind = kind;
-			_probeVariant = variant;
-			_probeWhat = $"{horn} {(BeastmasterPet)_probeOriginal[index]} -> {probe}";
-			_probeAwaited = sent;
-			_probeSentAt = DateTime.Now;
-			_probeStep = HornProbeStep.Sent;
-			var weapon = WeaponText();
-			DefenseTrace.Line($"battlehorn probe: {_probeWhat}, {variant}, {KindText(kind)}, {weapon} - sent, {SendHorns(sent, variant)}");
-			return true;
 		}
 
-		return false;
+		return nearest;
 	}
+
+	/// <summary>
+	/// The enemies not fighting yet within <paramref name="radius"/> of <paramref name="center"/>, it among them - what an
+	/// area of that radius around it would reach, counted as <see cref="TrickValue"/> counts the enemies of a fight.
+	/// </summary>
+	public static int EnemiesWaitingAround(IBattleChara center, float radius)
+	{
+		var count = 0;
+		foreach (var hostile in DataCenter.AllHostileTargets)
+		{
+			if (hostile != null && !hostile.IsDead && !hostile.InCombat()
+				&& (hostile.GameObjectId == center.GameObjectId
+					|| Vector3.Distance(hostile.Position, center.Position) - hostile.HitboxRadius <= radius))
+			{
+				count++;
+			}
+		}
+
+		return count;
+	}
+
+	/// <summary>
+	/// The living enemies fighting you, your party or your familiar now - not those another player fights beside you in
+	/// the open world.
+	/// </summary>
+	public static int EnemiesFighting()
+	{
+		var player = Player;
+		if (player == null)
+		{
+			return 0;
+		}
+
+		var count = 0;
+		foreach (var hostile in DataCenter.AllHostileTargets)
+		{
+			if (hostile != null && !hostile.IsDead && hostile.InCombat()
+				&& Svc.Objects.SearchById(hostile.TargetObjectId) is IBattleChara target
+				&& (target.GameObjectId == player.GameObjectId || target.OwnerId == player.GameObjectId || target.IsParty()))
+			{
+				count++;
+			}
+		}
+
+		return count;
+	}
+
+	/// <summary>Whether the Bestiary is open: the player may be setting the horns himself.</summary>
+	public static unsafe bool BestiaryOpen
+	{
+		get
+		{
+			nint addon = Svc.GameGui.GetAddonByName(BestiaryAddon, 1);
+			return addon != nint.Zero && ((FFXIVClientStructs.FFXIV.Component.GUI.AtkUnitBase*)addon)->IsVisible;
+		}
+	}
+
+	private const string BestiaryAddon = "XBMMonsterNotebook";
 }

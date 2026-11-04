@@ -1128,16 +1128,6 @@
   },
   {
    "file": "RotationSolver/Basic/Rotations/Basic/BeastmasterFamiliars.cs",
-   "code": "private const int BestiaryOpenedCommand = 2421;",
-   "values": [
-    "2421"
-   ],
-   "status": "exception",
-   "loop": "A520",
-   "reason": "A server command id, not a game value in any sheet: the client sends GameMain.ExecuteCommand(2421, 0, 0, 0, 0) whenever the Bestiary opens, measured in the owner's BestiaryTrace.log of 03.11.2026 (every opening)"
-  },
-  {
-   "file": "RotationSolver/Basic/Rotations/Basic/BeastmasterFamiliars.cs",
    "code": "private const int AssignBattlehornsCommand = 2420;",
    "values": [
     "2420"
@@ -1205,6 +1195,16 @@
    "status": "exception",
    "loop": "A507",
    "reason": "Unit conversion, not a game value: Moon Flute's effect text states the damage increase in percent (A507)."
+  },
+  {
+   "file": "RotationSolver/RebornRotations/Limited Jobs/BST_Reborn.cs",
+   "code": "private const int BossSafeFamiliars = 2;",
+   "values": [
+    "2"
+   ],
+   "status": "exception",
+   "loop": "A522",
+   "reason": "How many familiars that heal or protect go on the horns before a boss: no sheet holds it, it is a choice weighed in game terms. bst_assign_model.py over 324 fights: with one, a danger after its stint found none in 36; with two, none was covered worse than with his own horns, at -0.3 % of the boss's potency on average where none came (A522)."
   }
  ]
 }

@@ -882,73 +882,139 @@ mit ihm anfreunden kann, und das Talent dann so einsetzen, dass es wahrscheinlic
   keine Markierung erscheint.
 
 **Belegung der Hörner in der Rotation** (seine Vorgabe vom 02.11.2026: „wieso vorschlag? es soll in die rotation
-eingearbeitet werden, situationsbezogen"; A487, A488):
-- *Was die Rotation situationsbezogen tut:* Sie wählt unter den drei Begleitern seiner Hörner nach Lage (B0 bis B3):
-  in der Gefahr den, der heilt oder schützt; ohne Gefahr den, dessen Dressur gegen die Gegner im Kampf am meisten
-  bringt, für den langen Einsatz.
+eingearbeitet werden, situationsbezogen"; A487, A488, A522):
+- *Was die Rotation tut:* Im Kampf wählt sie unter den drei Begleitern seiner Hörner nach Lage (B0 bis B3). Zwischen
+  den Kämpfen setzt sie die drei selbst, passend zum nächsten Kampf (B5).
 - *Der Befehl* (seine Aufzeichnung vom 03.11.2026, Build a885b43bf, zehn Zuweisungen): Jede Zuweisung im Bestienbuch
   schickt der Client als `GameMain.ExecuteCommand(2420, Horn I, Horn II, Horn III, 0)`, mit den Nummern der drei
   Begleiter im Buch (XBMPet-Id); 0 leert ein Horn. Die Hornplätze zeigen die neue Belegung 10 bis 16 ms danach; sie geht also
   über den Server. Beim Öffnen des Buchs kommt `2421` ohne Werte. Damit setzt RSR die Hörner ohne das Buch, unabhängig
   von Sprache, Filter und Sortierung. Die drei Bytes im Speicher zu überschreiben, änderte dagegen nur die Anzeige des
   Clients, nicht, was der Server beim Ruf beschwört.
-- *Im Kampf: offen, von RSR selbst zu prüfen.* In der Aufzeichnung fiel eine Menüwahl in drei Sekunden Kampfstatus, weil
-  ihn ein Gegner bei offenem Buch angriff. Der Client schickte keinen Befehl, nach Kampfende ging dieselbe Wahl durch.
-  Ein Versuch war das nicht (seine Angabe, 03.11.2026: „ich habe es beim kampf nie versucht, da mit kampf beschäftigt").
-  Seine Vorgabe (03.11.2026): „beastmaster begleiter im kampf anpassen. nicht die aktuellen, sondern die beiden anderen.
-  mal mit cooldown, mal ohne versuchen. vielleicht gibt es ja unterschiedliche blocker (wie ein bestehender cooldown, wie
-  beschworene begleiter)"; dazu seine Präzisierung: „und einmal im kampf, wenn kein begleiter draussen ist (gerade
-  verbraucht für dmg-effekt, vor rufen des nächsten)".
-- *B4 – Probe im Kampf* (seine Präzisierung, 03.11.2026: „ich will einfach nur austesten, in welchen situationen der
-  wechsel klappen könnte"; Option „Test battlehorn assignment in combat (experimental)", ab Werk an):
-  - *Die Lagen:* das Horn bereit oder abklingend, ein Begleiter draußen oder keiner, also vier. „Keiner draußen" ist der
-    Moment nach Entfesseln oder Scheidendem Schlag vor dem nächsten Ruf.
-  - *Der Versuch:* RSR setzt im Kampf auf ein Horn, dessen Begleiter nicht draußen ist, einen anderen Begleiter, den
-    er hat und der auf keinem Horn sitzt (Befehl 2420 mit den drei Plätzen, nur das eine Horn geändert). Je Lage und
-    Sitzung in drei Varianten nacheinander, bis eine angenommen wird:
-    - *einfach:* nur der Befehl;
-    - *nach dem Öffnen:* erst 2421, wie beim Öffnen des Buchs, dann 2420 – falls der Server das offene Buch erwartet;
-    - *mit weggesteckter Waffe* (seine Idee, 03.11.2026: „vielleicht muss auch einfach die kampfhaltung beendet werden,
-      wechsel, kampfhaltung an"): Waffe weg (Befehl 1 mit 0, 1), 2420, danach Waffe ziehen (1 mit 1, 0) – im selben
-      Moment geschickt, damit keine Aktion der Rotation die Waffe dazwischen zieht. Die Werte sind die seines Clients
-      aus der Aufzeichnung; dass Befehl 1 die Waffe zieht und wegsteckt, ist ein Schluss aus ihrem Muster.
-  - *Die Gegenprobe:* Außerhalb des Kampfes versucht RSR den einfachen Befehl einmal je Lage und Sitzung. Nimmt der Server ihn dort
-    an und im Kampf nicht, liegt es am Kampf, nicht am Versuch. Außerhalb des Kampfes sperrt die gezogene Waffe nicht:
-    In der Aufzeichnung nahm der Server die Zuweisung um 19:47:40 nach Kampfende mit gezogener Waffe an.
-  - *Die Messung:* Zeigen die Hornplätze die Zuweisung binnen eines GCD, nimmt der Server sie an („TAKEN"), und RSR
-    stellt den ursprünglichen Begleiter sofort auf demselben Weg zurück. Sonst nimmt er sie nicht an („NOT TAKEN"), und
-    die nächste Variante folgt in dieser Lage. Jede Zeile im `DefenseTrace.log` nennt Variante, Lage, Waffe, Horn, beide
-    Begleiter und die Wartezeit. Die Urteile gelten für die Sitzung. Je Gebiet neu zu versuchen, wie zuerst gebaut,
-    wiederholte den Preis (unten) in jedem Gebiet, ohne dass ein Inhalt es bisher anders regelte.
-  - *Schutz der Belegung:* Solange ein Versuch oder die Rückstellung auf den Server wartet, ruft RSR kein Horn; ein Ruf
-    bringt also nie den Probebegleiter. Zeigt sich die Rückstellung im Kampf nicht, schickt RSR sie nach dem Kampf erneut.
-    Seine Hörner enden so, wie er sie gesetzt hat.
-  - *Im Kampf anders:* bis zu zwölf Versuche je Sitzung (vier Lagen, drei Varianten). Jeder hält einen Hornruf höchstens
-    einen GCD auf, nacheinander aber zusammen: Am 04.11.2026 stand er dadurch 27 s ohne Begleiter (Scheidender Schlag
-    09:42:35, nächster Ruf 09:43:02). Der Versuch mit weggesteckter Waffe unterbricht kurz den automatischen Angriff.
-  - *Ergebnis* (sein Protokoll vom 04.11.2026, Build ad1013fb8, eine FATE im Südlichen Thanalan auf Stufe 22–23):
-    - *Im Kampf:* zwölf Versuche, alle NOT TAKEN – vier Lagen, je einfach, nach 2421 und mit weggesteckter Waffe. Die
-      Hornplätze behielten jedes Mal die Belegung. Der Spielstatus war bei jedem Senden „im Kampf" (ACT-Zeile 260).
-      Eine Meldung des Servers gibt es nicht; er übergeht den Befehl.
-    - *Außerhalb des Kampfes:* vier Versuche, alle TAKEN, nach 0,08 bis 0,38 s – auch mit Begleiter draußen und
-      gezogener Waffe. Die Rückstellung kam jedes Mal (0,08 bis 0,45 s).
-    - *Damit:* Im Kampf setzt nur der Spieler im Buch nichts und RSR per Befehl nichts; zwischen zwei Kämpfen geht es
-      jederzeit.
-  - *Danach – Vorlage an ihn* (A521): Ob RSR die Hörner zwischen den Kämpfen belegt. Die Lage des nächsten Kampfes
-    kennt RSR vorher nicht; im Kampf wählen B2 und B3 weiter unter den drei Begleitern der Hörner.
-    - *A, nichts setzen* (heute): Seine Belegung bleibt. Beispiel: Er hat Bat (Dressur heilt, Einzelziel) auf einem Horn
-      und zieht in einer FATE drei Gegner; ein dritter Begleiter mit Flächen-Dressur fehlt, B3 holt das Beste aus dem,
-      was da ist.
-    - *B, nach dem letzten Kampf im Gebiet* (Empfehlung): Nach jedem Kampf setzt RSR einen Begleiter, der heilt oder
-      schützt, den mit der besten Dressur gegen so viele Gegner, wie der letzte Kampf hatte, und den nächstbesten.
-      Beispiel: In derselben FATE sitzen ab dem zweiten Rudel zwei Flächen-Begleiter und ein heilender auf den Hörnern;
-      kommt danach ein einzelner Elitegegner, bringen Flächen-Dressuren auf einem Ziel dasselbe wie Einzelziel-
-      Dressuren gleicher Potenz, und der heilende ist für B2 da. Preis: Seine eigene Belegung ändert sich nach jedem
-      Kampf.
-    - *C, feste Vorlagen je Inhaltsart* (wie Daedalus: Einzelziel, Rudel, Gruppe, Leveln): Beispiel: Im Dungeon gilt
-      „Rudel" auch für den Boss; der beste Einzelziel-Begleiter fehlt dort.
-    - Bei gleicher Potenz aller Dressuren (Stufe 22 und 23 am 04.11.2026: alle 500) ändert keine Option etwas am
-      Schaden, nur an Heilung und Schutz.
+- *Im Kampf nimmt der Server keine Zuweisung an* (sein Protokoll vom 04.11.2026, Build ad1013fb8, eine FATE im
+  Südlichen Thanalan auf Stufe 22–23; A521). Auf seine Vorgabe vom 03.11.2026 („beastmaster begleiter im kampf anpassen.
+  nicht die aktuellen, sondern die beiden anderen. mal mit cooldown, mal ohne versuchen", „ich will einfach nur
+  austesten, in welchen situationen der wechsel klappen könnte") versuchte RSR den Befehl im Kampf in vier Lagen – das
+  Horn bereit oder abklingend, ein Begleiter draußen oder keiner –, je einfach, nach dem Öffnungsbefehl des Buchs
+  (`2421`) und mit weggesteckter Waffe (seine Idee: „vielleicht muss auch einfach die kampfhaltung beendet werden").
+  - *Im Kampf:* zwölf Versuche, keiner angenommen. Die Hornplätze behielten die Belegung, der Server meldete nichts.
+  - *Außerhalb des Kampfes:* vier von vier angenommen, nach 0,08 bis 0,38 s, auch mit Begleiter draußen und gezogener
+    Waffe.
+  - Die Probe ist mit ihrer Option und ihren Protokollzeilen entfernt (seine Vorgabe, 04.11.2026: „da der experimentelle
+    versuch der neubelegung der hörner im kampf erfolglos war, kann der teil inkl. logging dieser funktion entfernt
+    werden. nicht. dass ein anderer spieler diese option irrtümlich aktiviert, die keinen nutzen hat"). Sie kostete je
+    Sitzung bis zu 27 s ohne Begleiter.
+- *B5 – Belegung vor dem nächsten Kampf* (sein Vorschlag vom 04.11.2026, eine Mischung aus „nach dem letzten Kampf" und
+  „feste Vorlagen je Inhaltsart": „im dungeon hat man walltowall pulls für trashmobs. da sind aoe schäden am
+  hilfreichsten, also wie daedalus. aber wenn man zum boss kommt, vor kampfbeginn, wechsel auf eine kombination für
+  bosse/einzelgegener. zwischen den trashmob-kämpfen feststellung ob eher schutz oder dmg benötigt wird, bzw. heilung.
+  wechsel wenn ausserhalb des aggrobereiches"; Option „Set the battlehorns between fights for the next one", ab Werk an):
+  - *Wann:* nur außerhalb des Kampfes. „Außerhalb des Aggrobereichs" heißt für den Server: nicht im Kampf (oben). RSR
+    plant neu, sobald sich ändert, was die Wahl liest – ein Kampf endet, ein anderer Gegner wird zum nächsten, ein Boss
+    taucht auf, Gebiet, Stufe oder Hörner wechseln –, und schickt eine Zuweisung nur, wenn die beste Belegung von der
+    stehenden abweicht. Nicht beim Wirken, nicht tot, nicht ohne geladene Begleiterliste oder Katalog, nicht im Crucible:
+    Dort stellt das Brett die Begleiter (`XBMPetParty`, BeastHelper), und ob der Server dort zuweist, ist nicht gemessen.
+  - *Seine Hand geht vor:* Ändert er die Hörner selbst, gilt seine Belegung bis zum Ende des nächsten Kampfes; solange das
+    Bestienbuch offen ist, plant RSR nicht. Eine Änderung zählt als seine, wenn sie nicht die ist, die RSR zuletzt
+    geschickt hat. Sonst nähme RSR ihm eine bewusste Wahl vor dem Pull im selben Augenblick wieder weg.
+  - *Was als Nächstes kommt:* Der nächste Gegner ist der nächste lebende Gegner, der noch nicht kämpft, in RSRs
+    Gegnerliste (48 y, in Sicht). Trägt er das Boss-Symbol (`BNpcBase.Rank` 2 oder 6, `IsBossFromIcon`), kommt ein Boss:
+    ein Ziel. Sonst ein Rudel: so viele Gegner, wie im letzten Kampf in diesem Gebiet zugleich gegen ihn, seine Gruppe
+    oder seinen Begleiter kämpften – nicht die, die ein anderer Spieler daneben bekämpft –, mindestens so viele, wie um
+    den nächsten Gegner in der Reichweite der jeweiligen Fläche stehen.
+    - *Beleg zum Boss-Symbol:* Die drei Bosse der Kupferglocken-Mine tragen Rang 6, 6 und 2 (Kottos, BNpcBase 14460;
+      Zorniger Ichor, 14448; Gyges der Große, 14537), ihre Gegner davor 0 (14449, 1401, 1421; xivapi v2, 04.11.2026). In
+      seinem Mitschnitt vom 02.11.2026 standen die Bosse 13 bis 30 s vor dem ersten Treffer in der Objektliste.
+  - *Wie viel Sicherheit:* Vor einem Boss zwei Begleiter, die heilen oder schützen; nach einer Gefahr in diesem Gebiet
+    einer mehr – vor einem Rudel also einer, vor einem Boss drei. Gefahr ist, was B2 so nennt (vorausberechnete
+    Gesundheit unter der Linie der Fähigkeitsheilung oder Klasse 1), dazu ein Tod; sie gilt bis zum Gebietswechsel.
+    - *Messgröße der Wahrscheinlichkeit:* der Boss selbst – seine drei Tode vom 02.11.2026 fielen gegen einen Boss oder
+      FATE-Boss (A489) – und die Gefahr, die RSR in diesem Gebiet gemessen hat, also die Schadensrate gegen ihn mit allem,
+      was die Gruppe heilt. Ein Heiler in der Gruppe zählt darüber mit.
+    - *Bis zum Gebietswechsel, nicht nur nach dem letzten Kampf:* Sonst verhinderte der sichere Begleiter die Gefahr,
+      fiele beim nächsten Kampf weg und käme danach wieder; jeder zweite Kampf ohne ihn.
+  - *Die Wahl* unter allen freigeschalteten Begleitern mit Katalogeintrag, auf der Stufe des Spielers; was ein Horn
+    gerade hält, auch ein leeres, bleibt eine Wahl (sonst bliebe bei weniger Begleitern als Hörnern keine Belegung übrig):
+    1. so viele, die heilen oder schützen, wie verlangt – wie B2 es liest, je Horn nach dem, wofür es One with Nature
+       verbraucht; Aufhalten nach C1 zählt nur vor einem Rudel;
+    2. darunter die Art, die diesen Kampf am besten deckt: vor einem Boss einer, dessen Dressur heilt – B2 hält ihn die
+       ganze Gefahr draußen, ein Schutz aus Entfesseln endet nach 48 s –; vor einem Rudel einer, dessen Entfesseln es
+       aufhält (C1);
+    3. der meiste Schaden gegen diesen Kampf: die Dressur und, auf einem Horn, das One with Nature für Entfesseln
+       verbraucht, das Entfesseln – je Attacke-Wert mal die Gegner, die seine Fläche erreicht, auf ein Ziel einmal; ein
+       Mehrfachtreffer („sixfold") mit der Zahl seiner Treffer;
+    4. nach einer Gefahr im Gebiet mehr, die heilen oder schützen;
+    5. möglichst viele seiner Begleiter auf ihrem Horn;
+    6. mehr, die heilen oder schützen, dann mehr, deren Dressur heilt.
+  - *Das Horn des Begleiters draußen bleibt.* Was eine Zuweisung mit dem Begleiter draußen macht, ist nicht gemessen:
+    Die Probe änderte nur Hörner ohne Begleiter draußen. Nach einem Kampf steht meist einer draußen; dann setzt RSR die
+    beiden anderen. Beim nächsten Kampf geht er mit dem Scheidenden Schlag, und die beiden gesetzten folgen; sein One
+    with Nature hat er im letzten Kampf verbraucht (offen: TODO „Beastmaster: One with Nature vor dem nächsten Pull
+    auffrischen").
+  - *Was im Kampf anders wird* (seine Hörner vom 02.11.2026: Gespenst – sein Entfesseln Odium heilt –, Fledermaus –
+    ihre Dressur heilt –, Opo-Opo; Ergebnis des Modells unten):
+    - Vor einem Rudel setzt RSR Büffel und Raptor auf die beiden Hörner, die entfesseln. War Cry trifft das Rudel mit
+      750 und betäubt es 15 s, Foul Breath trifft es mit 1.000; Opo-Opo bleibt auf dem Horn, das borgt (Fläche wie die
+      anderen).
+    - Vor dem Boss: Fledermaus und Schleim, deren Dressur heilt; Opo-Opo steht noch draußen. Kommt die Gefahr, ruft B2
+      einen der beiden und hält ihn draußen, bis sie vorbei ist.
+    - War er im Dungeon schon in Gefahr, kommen vor dem Boss Pugil, Schleim und Fledermaus.
+  - *Gerechnet* (`bst_assign_model.py` auf dem Zyklus von `bst_horn_model.py`, 04.11.2026; Annahmen dort benannt: die bis
+    Stufe 22 fangbaren Begleiter, seine darunter, drei Rudel zu fünf je 45 s, ein Boss 150 s mit Gefahr ab 30 s):
+    - Gegenüber seinen festen Hörnern auf den Rudeln +20,0 % Attacke-Wert, am Boss +1,2 %, die Gefahr am Boss wie zuvor
+      zu 100 % gedeckt.
+    - Über 324 Fälle (Rudel 15 bis 90 s mit 2 bis 8 Gegnern, Boss 60 bis 300 s, Gefahr ab 2, 30 oder 100 s, vier
+      Hornsätze): auf den Rudeln nie weniger. Ohne Gefahr am Boss −2,5 % schlimmstenfalls, −0,3 % im Mittel; mit
+      Gefahr bis −15,2 %, weil B2 den heilenden Begleiter draußen hält (Preis von B2, unten). Die Gefahr nie schlechter
+      gedeckt als mit seinen Hörnern, im Mittel um 0,29 des Anteils besser.
+  - *Lagen:* In der offenen Welt und in FATEs ebenso: Ein Rudel ist, was zuletzt zugleich kämpfte; ein FATE-Boss mit
+    Symbol gilt als Boss. In der Gruppe mit Heiler sieht RSR seltener eine Gefahr; die Rudel bleiben dann reiner Schaden.
+    Unter Stufe 8 keine Dressur, es zählen Entfesseln (ab 18) und Sicherheit; unter 10 und 20 setzt RSR nur die Hörner,
+    die es gibt. Unter 30 kommt Entfesseln nicht mit jedem Ruf (30 s Abklingzeit); die Wahl zählt es trotzdem, B2 prüft
+    im Kampf, ob es kommt. Stufensynchronisation: auf der synchronisierten Stufe. BossModReborn liest die Regel nicht.
+  - *Spur:* Jede Zuweisung schreibt eine Zeile ins `DefenseTrace.log` – was kommt (Boss mit Namen oder Rudel mit Zahl),
+    die verlangte Sicherheit, je Horn alter und neuer Begleiter – und danach, ob der Server sie nahm. Ändert sich der Plan,
+    ohne dass eine Zuweisung nötig ist, eine Zeile „kept". Die Zustandszeile nennt die Option.
+  - *Preis:*
+    - Seine eigene Belegung ändert sich zwischen den Kämpfen; wer sie selbst setzt, schaltet die Option aus.
+    - Ein Rudel vor einem sichtbaren Boss kämpft er mit der Boss-Belegung, weil der Boss dann der nächste Gegner ist.
+    - Ein Boss, der erst beim Betreten der Arena erscheint und sofort angreift, findet die Rudel-Belegung vor; B3 wählt
+      unter ihr, und auf ein Ziel bringen Flächen-Dressuren gleich viel.
+    - Entfesseln, die schwächen oder stärken (Verwundbarkeit, Gruppenstärkung), zählen nicht als Schaden, wie in B1 bis
+      B3.
+  - *Verworfen:*
+    - Nichts setzen: auf den Rudeln 20 % weniger als B5 mit seinen Hörnern (Gerechnet).
+    - Nur nach dem letzten Kampf: Vor dem Boss stünde die Rudel-Belegung.
+    - Feste Vorlagen je Inhaltsart wie bei Daedalus: Sie kennen weder seine Begleiter noch seine Stufe, und im Dungeon
+      gälte „Rudel" auch für den Boss.
+    - Einer statt zwei vor dem Boss: ohne Gefahr +5,7 % am Boss im Mittel, aber in 36 von 324 Fällen eine spätere Gefahr
+      schlechter gedeckt, bis auf 0 %; das Horn des einen heilenden Begleiters klingt dann ab.
+    - Nur die Dressur werten (erster Entwurf): Er wählte Schutz statt Schaden aus Entfesseln (Pugil statt Raptor) und
+      brachte die Fledermaus nicht zurück; auf den Rudeln −0,6 %, die Gefahr am Boss zu 23 % statt 100 % gedeckt.
+    - Das Horn des Begleiters draußen mit umsetzen: Was mit ihm geschieht, ist nicht gemessen; der Gewinn wäre ein Horn,
+      dessen Begleiter schon ohne One with Nature draußen steht.
+    - Einen Heiler in der Gruppe eigens zählen: Die gemessene Gefahr enthält ihn schon.
+  - *Antithesen, mit Versuch der Widerlegung:*
+    - „Eine Boss-Belegung bringt keinen Schaden, jede Dressur hat 500": Für die Dressur auf ein Ziel stimmt das. Vor dem
+      Boss ändert sich die Sicherheit und das Entfesseln (Büffels Betäubung, gegen die Bosse oft immun sind, gegen
+      Schaden). Hält als Einschränkung: Der Gewinn am Boss liegt in der gedeckten Gefahr, nicht im Schaden (+1,2 %).
+    - „Zwei sichere vor jedem Boss kosten Schaden, auch wo keine Gefahr kommt": −0,3 % im Mittel, −2,5 % schlimmstenfalls;
+      mit einem dagegen in 36 von 324 Fällen eine Gefahr ohne Deckung. Nicht widerlegt; nach seiner Gewichtung überwiegt
+      die Deckung, weil Bosse ihn getötet haben (A489).
+    - „Die Gefahr bis zum Gebietswechsel hält nach einem einzelnen Fehler einen sicheren Begleiter": trifft zu. Mit
+      einem, der zugleich Fläche hat und aufhält (Büffel, Ziz, Chimäre) oder heilt (Gespenst), kostet das auf Rudeln
+      nichts; nur wer allein Einzelziel-Heiler hat, verliert auf einem Horn die Fläche. Preis benannt.
+    - „Der nächste Gegner ist nicht der nächste Kampf": In der offenen Welt steht oft einer näher, den er nicht angreift;
+      dann gilt seine Art. Ein Rudel zählt ab dem ersten Kampf nach dem letzten Kampf, und ein Boss in der Nähe bringt die
+      Boss-Belegung, die auf ein Ziel nichts an Dressur kostet.
+  - *Gegenhypothesen:*
+    - Kein Gewinn: Hat er nur Einzelziel-Begleiter, oder steht das Beste schon auf den Hörnern, ändert B5 nichts; die
+      Zeile „kept" zeigt es.
+    - Option falsch: siehe Antithesen. Ein Gegner ohne Boss-Symbol (Elite, manche FATE-Gegner) gilt als Rudel der letzten
+      Größe; B2 und B3 wählen im Kampf weiter.
+    - Ausgeliefert, und nichts ändert sich – warum? Ohne Begleiterliste oder Katalog plant RSR nicht (Zustandszeile),
+      im Crucible nicht, ohne sichtbaren Gegner nicht. Folgt ein Kampf ohne Pause auf den anderen, gibt es kein Fenster
+      außerhalb des Kampfes. Nimmt der Server nicht an, zeigt es die Zeile „NOT TAKEN".
 - *Der Weg über das Bestienbuch* (Daedalus, ofnature/Daedalus e3a16de vom 01.11.2026, `BattlehornAssigner`,
   `BattlehornGame`; Werkzeugquelle, nach eigener Angabe im Spiel aufgezeichnet): Ein Plugin bedient das Buch wie der
   Spieler. Es öffnet das „Bestienbuch des Bändigers" (Hauptkommando, MainCommand 100), blättert über dessen Rückruf
@@ -976,7 +1042,7 @@ eingearbeitet werden, situationsbezogen"; A487, A488):
     Horn wie Folgezauber an ihrem Platz. Eine Funktion wie `ChangeSupportJob` kennt der Client für die Hörner nicht;
     die Zuweisung ist ein allgemeiner Serverbefehl (oben, „Der Befehl").
   - *Was davon nutzbar ist:* Der Klick im Buch geht über `GameMain.ExecuteCommand` (oben, „Der Befehl"). RSR setzt
-    die Hörner wie BOCCHI den Phantomjob, liest die Hornplätze danach zurück und hört auf, wo der Server ablehnt.
+    die Hörner wie BOCCHI den Phantomjob nur außerhalb des Kampfes (B5) und liest die Hornplätze danach zurück.
 
 **Aufzeichnung des Bestienbuchs** (sein Auftrag vom 02.11.2026: „bau die aufzeichnung, sie soll sich dann aktivieren,
 wenn das buch auf ist, und deaktivieren, wenn es geschlossen wurde"; A488):
@@ -1087,8 +1153,9 @@ Beastmaster noch, nicht alle Fähigkeiten stehen am Anfang zur Verfügung.
 - *Wechsel nach einem verschwundenen Begleiter:* Ja; ist keiner draußen, ruft `BST_Reborn` das nächste bereite Horn.
 - *Zuordnung im Kampf:* Das Spiel führt die Begleiter der drei Hörner im `ActionManager` („selected Battlehorn pets,
   XBMPet RowIds"), die freigeschalteten im `XBMManager` (50 Bits, `IsPetUnlocked`); FFXIVClientStructs b69073a vom
-  02.11.2026, Werkzeugquelle. Eine Funktion, die die Zuordnung setzt, führt es dort nicht; gesetzt wird sie im Menü des
-  Bestienbuchs, ob auch im Kampf, ist unbelegt. RSR liest die Zuordnung und ändert sie nicht.
+  02.11.2026, Werkzeugquelle. Eine Funktion, die die Zuordnung setzt, führt es dort nicht; das Buch setzt sie mit einem
+  Serverbefehl. Im Kampf nimmt der Server keine Zuweisung an (gemessen, A521); zwischen den Kämpfen setzt RSR sie
+  selbst (B5, oben „Belegung der Hörner in der Rotation").
 - *Heilen:* ja, über die heilende Dressur (Schleim, Fledermaus) und Odium. Scouring Ash heilt 10 % nur, wenn es einen
   schädlichen Effekt entfernt. Schützen über Beastskin, Scaleskin und Seedsower (Borrow) sowie Vulcanize, Harden Shell,
   Water Wall, Smoldering Scales und Strut (Entfesseln); dazu Kontrolle.
@@ -1213,8 +1280,8 @@ Lage.
       ausrichten bringt zwischen −1,8 und +1,3 % (B4, verworfen).
     - Reinigen (Ultrasonics, Fledermaus): Die Fledermaus zählt schon über ihre heilende Dressur.
     - Stärkung entfernen (Bloodcurdling Caw, Kapgeier): Welche Stärkung eines Gegners zählt, liest RSR nirgends.
-    - Belegungen nach Inhalt wie bei Daedalus: Das ist die Wahl der drei Begleiter (Punkt „Belegung der Hörner"), nicht
-      die Wahl unter ihnen.
+    - Belegungen nach Inhalt wie bei Daedalus: Das ist die Wahl der drei Begleiter (B5, oben „Belegung der Hörner in
+      der Rotation"), nicht die Wahl unter ihnen.
   - *Gegenhypothesen:*
     - Kein Gewinn: Ohne Rudel und ohne Gefahr ändert C1 nichts. C2 ändert nur etwas mit Dodo oder Treiberameise auf einem
       Horn.
@@ -1270,10 +1337,9 @@ schon, weil die andere Aktion unter One with Nature bereit stand; ging es ohne, 
 Nature. Über einen Zyklus der drei Hörner sind das drei Entfesseln statt eines (Schluss aus dem Code, nicht gemessen). Stufensynchronisation: dieselben Grenzen auf der synchronisierten Stufe.
 Option aus: die eingestellte Reihenfolge wie bisher, B0 gilt. BossModReborn liest die Regel nicht.
 
-*Belegung der Hörner:* RSR wählt unter den drei, die er im Bestienbuch zuordnet; welche drei das sind, entscheidet die
-Wahl am meisten. Für Rudel (Dungeons beim Leveln) einer mit Flächendressur, allein in der offenen Welt einer, dessen
-Dressur heilt, oder einer, der mit Entfesseln oder Borrow schützt. Die Belegung selbst setzt RSR heute nicht (unten,
-„Belegung der Hörner in der Rotation").
+*Belegung der Hörner:* Im Kampf wählt RSR unter den drei Begleitern der Hörner; welche drei das sind, entscheidet die
+Wahl am meisten. Zwischen den Kämpfen setzt RSR sie nach dem nächsten Kampf: vor einem Rudel Flächen, vor einem Boss
+zwei, die heilen oder schützen (B5, oben „Belegung der Hörner in der Rotation").
 
 *Preis:* Die Wahl liest nur, was beim Rufen steht. Ändert sich die Zahl der Gegner im langen Einsatz, bleibt der
 Begleiter. Kegel und Linie zählt B3 wie einen Kreis um das Ziel (die Stellung des Begleiters ist beim Rufen unbekannt) –
@@ -1281,8 +1347,8 @@ bei verteilten Gegnern zu viele Treffer. Bleibt ein heilender Begleiter in der G
 kurzen Einsätze der anderen (Entfesseln, Scheidender Schlag).
 
 *Verworfen:*
-- Die Zuordnung im Kampf ändern: Das geht nur über das Menü des Bestienbuchs, und ob es im Kampf geht, ist offen
-  (unten, „Belegung der Hörner in der Rotation").
+- Die Zuordnung im Kampf ändern: Der Server nimmt sie im Kampf nicht an (gemessen, A521; oben, „Belegung der Hörner in
+  der Rotation").
 - Für Fläche mitten im Einsatz wechseln: kostet den Rest des laufenden und 90 s Horn.
 - Eine feste Drei als Schwelle (sein Vorschlag): Die Dressur trifft je Gegner gleich stark; schon ab zwei Gegnern im
   Wirkradius bringt die Flächendressur mehr. Die Drei bleibt als sein Beispiel.

@@ -15,7 +15,8 @@ Nach der Wirkung im Kampf: Sicherheit der Gruppe vor Schaden, gewichtet mit der 
 2. Heilungen in „Heilung -" verpuffen: fünf GCDs Schaden und MP ohne Wirkung, solange der Status liegt; kein Leben,
    denn die Heilung wirkt dort ohnehin nicht.
 3. Heilung bricht ab, weil ein Regen-Tick die Schwelle kreuzt: verlorene Wirkzeit, das Ziel bleibt an der Schwelle.
-4. Beastmaster: Hörner zwischen den Kämpfen belegen – wartet auf seine Wahl.
+4. Beastmaster: One with Nature vor dem nächsten Pull auffrischen: Das Rudel wird erst Sekunden nach dem Pull betäubt
+   statt mit ihm.
 5. Fremde Repositories auf Verbesserungen für RSR prüfen: Jeder Fund kann ein Defekt im Verhalten einer Klasse sein,
    den RSR heute im Kampf zeigt; zuerst die Rotationswerkzeuge für alle Jobs, Daedalus vorn (aktiv, alle Jobs,
    eigene Kampfvorhersage).
@@ -49,11 +50,13 @@ Barriere in das Betäubungsfenster legen; sie bricht nicht, Dark Arts bleibt aus
 Erkennung der Flächenbetäubung (Konzept 10, „Grenzen"), heute nur Holy und Holy III. *Nächster Schritt:* die Aktionen der
 Phantomjobs mit Flächenbetäubung aus den Spielblättern erheben, Loop. *Konzept:* 10.
 
-### Beastmaster: Hörner zwischen den Kämpfen belegen – seine Entscheidung · N
-Im Kampf: Die Probe B4 zeigte am 04.11.2026, dass der Server eine Hornzuweisung im Kampf in keiner Lage annimmt,
-außerhalb in jeder. Ob RSR die Hörner zwischen den Kämpfen nach Lage belegt, entscheidet er; die Vorlage mit drei
-Optionen und Beispielen steht im Konzept. *Ort:* `BeastmasterFamiliars` (Befehl 2420), `BST_Reborn`. *Nächster Schritt:*
-seine Wahl, dann Loop. *Konzept:* 01, „Belegung der Hörner in der Rotation", „Danach – Vorlage an ihn".
+### Beastmaster: One with Nature vor dem nächsten Pull auffrischen · N
+Im Kampf: Nach einem Kampf steht der letzte Begleiter ohne One with Nature draußen; beim nächsten Pull geht er mit dem
+Scheidenden Schlag, und erst der nächste Ruf bringt ein Entfesseln – War Cry betäubt das Rudel erst Sekunden nach dem
+Pull (Schluss aus dem Code, `BST_Reborn.AttackAbility`, nicht gemessen). Der Leitfaden der Gemeinschaft ruft außerhalb
+des Kampfes einen anderen Begleiter und dann wieder den Büffel (Hörner außerhalb 2 s). *Ort:* `BST_Reborn.GeneralAbility`
+(ruft heute nur ohne Begleiter draußen), B5. *Nächster Schritt:* Loop: Ruf außerhalb des Kampfes (1 s Wirkzeit, beim
+Laufen), Reihenfolge am Pull. *Konzept:* 01, „Belegung der Hörner in der Rotation".
 
 ### Heilung bricht ab, weil ein Regen-Tick die Schwelle kreuzt · N, U
 Im Kampf: In Toto-Rak (Weißmagier, 04.11.2026) brach RSR achtmal eine Einzelheilung mitten im Wirken ab, weil das Ziel

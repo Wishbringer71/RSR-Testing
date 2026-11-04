@@ -15603,6 +15603,60 @@ analysieren".
 - *Aufgeräumt:* der lokale Branch `claude/fixes-after-7.5.7.13` (Remote gelöscht, nichts nur hier), `git branch -d`.
 - *Prüfgrad:* Protokoll und Mitschnitt; Code kompiliert, alle CI-Prüfungen lokal.
 
+### A522 · Beastmaster: Hörner vor dem nächsten Kampf belegen (B5), Probe entfernt (04.11.2026)
+
+- *Anlass:* sein Vorschlag vom 04.11.2026, eine Mischung aus „nach dem letzten Kampf" und „feste Vorlagen je
+  Inhaltsart" (Wortlaut im Konzept 01, B5), mit dem Auftrag „konzept erstellen und kritisch im vollen loop mit antithese
+  und versuch der widerlegung prüfen. dann umsetzung, audit, codereview." Während der Arbeit seine Vorgabe: die Probe im
+  Kampf samt Protokollzeilen entfernen, damit kein anderer Spieler die nutzlose Option einschaltet.
+- *Recherche:*
+  - Begrenzte Jobs: kein Zufallsabgleich im Inhaltsfinder, Dungeons in vorgefertigten Gruppen; Beastmaster levelt ab 15
+    in Dungeons, der Büffel mit War Cry für Trash (Betäubung 15 s), „Bosses may be immune to stun", Gruppen nur aus
+    Beastmastern ohne Heiler (consolegameswiki „Limited Jobs", Gemeinschaftsquelle, abgerufen 04.11.2026).
+  - Boss-Symbol: Kottos 14460 und Zorniger Ichor 14448 Rang 6, Gyges der Große 14537 Rang 2, Trash 14449, 1401, 1421
+    Rang 0 (xivapi v2 BNpcBase). Im Mitschnitt vom 02.11.2026 standen die Bosse 13,5, 20,2 und 29,6 s vor dem ersten
+    Treffer in der Objektliste. RSRs Gegnerliste: 48 y, in Sicht, auch Gegner außerhalb des Kampfes (`TargetUpdater`).
+  - Begleiter (Blätter vom 02.11.2026): 34 von 50 Dressuren auf Fläche, alle 500 außer neun mit 450; Entfesseln
+    300 bis 2.000, drei als Mehrfachtreffer („sixfold", „sevenfold", „fivefold").
+  - Sein „Gespenst" (Hörner vom 02.11.2026, A489) ist Geshunpest (Pet 60, Odium), nicht Ghost („Geist", Pet 87); xivapi
+    Pet language=de.
+- *Optionen:* nichts setzen; nach dem letzten Kampf; feste Vorlagen; Hybrid (B5); Hybrid mit Umsetzen des Horns draußen.
+  Rückbau: Option aus.
+- *Modell* (`bst_assign_model.py`, neu, auf `bst_horn_model.py`, das jetzt den Begleiter am Kampfende meldet):
+  - Der erste Entwurf wertete nur die Dressur und verlangte vor dem Boss einen sicheren Begleiter. Mit seinen Hörnern
+    verlor er auf den Rudeln 0,6 % und deckte die Gefahr am Boss zu 23 % statt 100 %: Er nahm Pugil (Schutz) statt
+    Raptor (1.000 auf Fläche) und brachte die Fledermaus nicht zurück. Verworfen.
+  - Zweiter Entwurf: Entfesseln als Schaden, die passende Art Sicherheit (Boss: Dressur heilt; Rudel: Entfesseln hält
+    auf). Mit einem sicheren vor dem Boss in 36 von 324 Fällen eine spätere Gefahr schlechter gedeckt (bis 0 %); mit zwei
+    in keinem, Preis ohne Gefahr −0,3 % im Mittel, −2,5 % schlimmstenfalls. Gewählt: zwei, nach einer Gefahr im Gebiet
+    einer mehr.
+  - Ergebnis mit seinen Hörnern: Rudel +20,0 %, Boss +1,2 %, Gefahr am Boss 100 % gedeckt; über 324 Fälle auf Rudeln
+    nie weniger.
+- *Falsifikation:* kein Gewinn bei nur Einzelziel-Begleitern oder schon bester Belegung (Zeile „kept"); Option falsch
+  bei Boss ohne Symbol oder Rudel vor sichtbarem Boss (Preis benannt); ausgeliefert ohne Wirkung ohne Liste, Katalog,
+  sichtbaren Gegner, im Crucible oder bei nahtlosen Kämpfen. Antithesen mit Widerlegungsversuch im Konzept.
+- *Umsetzung:*
+  - `BeastmasterFamiliars`: Probe entfernt (Varianten, Lagen, Rückstellung, Befehle 2421 und 1); neu
+    `AssignBattlehorns` mit Bestätigung (`BattlehornAssignmentPending`), `HornsAsAssigned`, `NextEnemy`,
+    `EnemiesWaitingAround`, `EnemiesFighting`, `BestiaryOpen`; `FamiliarProfile.ReleasePotency` (Tooltip, Mehrfachtreffer);
+    `ThreeHorns` und `HornSlot` geschützt für die Rotation.
+  - `ActionTooltip.TryStatedPotency`: Potenz ohne Protokollzeile, für Entfesseln ohne Schaden.
+  - `BST_Reborn`: Option „Set the battlehorns between fights for the next one" statt der Probe; Kampfaufzeichnung je
+    Gebiet, Vorrang seiner Hand, Wahl über alle Belegungen; `SafeBy` als eine Sicherheitsprüfung für B2 und B5.
+  - `fixed_values.json`: Ausnahme 2421 entfernt, `BossSafeFamiliars = 2` mit diesem Loop.
+- *Code-Review (high):* sechs Befunde.
+  - Behoben: bei weniger Begleitern als freien Hörnern gab es keine Belegung (jetzt bleibt der Inhalt eines Horns, auch
+    leer, eine Wahl); die Rudelgröße zählte Gegner anderer Spieler mit (jetzt nur Gegner, die ihn, seine Gruppe oder
+    seinen Begleiter angreifen); Hornliste und Platzrechnung doppelt (jetzt aus der Basisklasse).
+  - Hingenommen: Eine Zuweisung, die der Server später als einen GCD zeigt, gilt als NOT TAKEN; zeigt sie sich danach
+    anders als geschickt, hält RSR bis zum Kampfende still. Je Stufe eine Zeile je Begleiter im Protokoll.
+  - Betroffene R: `FamiliarProfile` (öffentlich, seit A485 im Fork) hat einen Parameter mehr.
+- *TODO:* „Beastmaster: Hörner zwischen den Kämpfen belegen – seine Entscheidung" geschlossen; neu „Beastmaster: One
+  with Nature vor dem nächsten Pull auffrischen" (Fund der Recherche).
+- *Prüfgrad:* Modell mit Selbsttest gegen zwei konstruierte Defekte, Compile, alle CI-Prüfungen lokal. Die Annahme des
+  Befehls außerhalb des Kampfes ist gemessen (A521); B5 selbst nicht im Spiel beobachtet – es misst Gefahr und
+  Rudelgröße selbst, und jede Zuweisung schreibt Plan und Urteil des Servers ins `DefenseTrace.log`.
+
 ## B · Commit-Register (Fork vs. `upstream/main`)
 
 ### B1 · Einzelgeprüfte Fork-Commits

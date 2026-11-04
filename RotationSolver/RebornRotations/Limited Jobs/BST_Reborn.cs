@@ -39,21 +39,21 @@ public sealed class BST_Reborn : BeastmasterRotation
 			+ "Off: the horn order above.")]
 	private bool HornBySituation { get; set; } = true;
 
-	// Concept 01, B4 (A520): his precept of 03.11.2026 - try in combat in which situations a horn assignment works.
-	[RotationConfig(CombatType.PvE, Name = "Test battlehorn assignment in combat (experimental)",
-		Tooltip = "RSR tests in which situations the server lets a horn be reassigned in a fight. It puts another familiar "
-			+ "you have on a horn whose familiar is not out, with the server command the Bestiary sends, and puts your "
-			+ "familiar straight back. The situations: the horn ready or recasting, a familiar out or none (just spent, "
-			+ "before the next is called). Each is tried once per session, first the command alone, then after the "
-			+ "Bestiary's opening command, then with the weapon sheathed for it and drawn again - until one is taken. Out of "
-			+ "combat it tries the command once as the control. DefenseTrace.log says for each whether the server took it. "
-			+ "While a test waits for the server, at most a GCD, no horn is called; a familiar that does not go back in the "
-			+ "fight goes back after it.\n"
-			+ "In a fight: up to twelve tests per session, each holding a horn call for at most a GCD - in a row up to half a "
-			+ "minute without a familiar; the sheathed one also stops your auto-attack for a moment; your horns end as you "
-			+ "set them.\n"
+	// Concept 01, B5 (A522): his proposal of 04.11.2026 - out of combat, the familiars for the next fight. On by default:
+	// a new rule is to be tested.
+	[RotationConfig(CombatType.PvE, Name = "Set the battlehorns between fights for the next one",
+		Tooltip = "Out of combat - the only time the server takes it - RSR puts on your horns the familiars you have that suit "
+			+ "the next fight. Before a pack: the most damage against it, a Trick or Tempered Release on an area counted "
+			+ "by the enemies it reaches. Before a boss - the nearest enemy you have not fought yet carries a boss icon: "
+			+ "two familiars that heal or protect you, one whose Trick heals among them, then the most damage. Once you "
+			+ "were in danger in this area, one more that heals or protects, before every fight here. At equal value "
+			+ "your familiars stay; the horn whose familiar is out stays as it is. What each horn spends One with Nature "
+			+ "on stays your setting. Changed by hand, your horns stay until the next fight ends; nothing changes while "
+			+ "the Bestiary is open or in the Crucible.\n"
+			+ "In a fight: a pack meets the familiars that hit or stop all of it; at a boss the familiars that heal or "
+			+ "protect you are on the horns when the danger comes.\n"
 			+ "Off: RSR never changes your horns.")]
-	private bool HornProbeInCombat { get; set; } = true;
+	private bool HornsBetweenFights { get; set; } = true;
 
 	[RotationConfig(CombatType.PvE, Name = "Capture familiars you do not have yet",
 		Tooltip = "When an enemy you can befriend as a familiar, one you do not have yet and not above your level, is about to "
@@ -392,14 +392,14 @@ public sealed class BST_Reborn : BeastmasterRotation
 			}
 		}
 
-		// B4: while a test waits for the server, no horn is called, so a call never brings the test familiar.
-		var probing = HornProbePending;
-		if (ActiveBattlehorn == 0 && !probing && HornBySituation && SituationalHorn(out act))
+		// B5: while an assignment waits for the server, no horn is called, so a call never brings the familiar it replaces.
+		var assigning = BattlehornAssignmentPending;
+		if (ActiveBattlehorn == 0 && !assigning && HornBySituation && SituationalHorn(out act))
 		{
 			return true;
 		}
 
-		if (ActiveBattlehorn == 0 && !probing)
+		if (ActiveBattlehorn == 0 && !assigning)
 		{
 			act = null;
 
@@ -653,15 +653,22 @@ public sealed class BST_Reborn : BeastmasterRotation
 			return false;
 		}
 
-		var nature = EffectiveNature(horn);
 		// C1 (concept 01, A491): a Release that stops every enemy of a pack attacking you protects like one that lowers
 		// the damage you take.
-		return TrickHealsOnHorn(horn)
-			|| (nature == OneWithNatureOrder.Tempered
-				&& (familiar.ReleaseHeals || familiar.ReleaseProtects || StopsAttackers(familiar, CurrentTarget))
-				&& (BattlehornMasteryIiTrait.EnoughLevel || !TemperedReleasePvE.Cooldown.IsCoolingDown))
-			|| (nature == OneWithNatureOrder.Borrow && familiar.BorrowProtects
-				&& (BattlehornMasteryIiiTrait.EnoughLevel || !BorrowPvE.Cooldown.IsCoolingDown));
+		return SafeBy(familiar, EffectiveNature(horn), StopsAttackers(familiar, CurrentTarget),
+			BattlehornMasteryIiTrait.EnoughLevel || !TemperedReleasePvE.Cooldown.IsCoolingDown,
+			BattlehornMasteryIiiTrait.EnoughLevel || !BorrowPvE.Cooldown.IsCoolingDown);
+	}
+
+	// Whether `familiar` heals or protects you on a horn that spends One with Nature on `nature`: its Trick heals, once the
+	// player has Trick, or the action the horn spends it on heals, protects, or stops the attackers (`stops`), as far as
+	// that action comes with the call. One judgement for B2 in a fight and B5 before it.
+	private bool SafeBy(FamiliarProfile familiar, OneWithNatureOrder nature, bool stops, bool releaseComes, bool borrowComes)
+	{
+		return (familiar.TrickHeals && TrickPvE.Info.EnoughLevelAndQuest())
+			|| (nature == OneWithNatureOrder.Tempered && releaseComes
+				&& (familiar.ReleaseHeals || familiar.ReleaseProtects || stops))
+			|| (nature == OneWithNatureOrder.Borrow && borrowComes && familiar.BorrowProtects);
 	}
 
 	private HornOrder? FirstSafeReadyHorn()
@@ -777,7 +784,7 @@ public sealed class BST_Reborn : BeastmasterRotation
 
 	// What the horn choice and Capture read (concept 01, "Zustandszeile", A489).
 	private readonly record struct BeastmasterState(BeastmasterPet First, BeastmasterPet Second, BeastmasterPet Third,
-		HornOrder Out, bool BySituation, bool Capture, bool CaptureEnabled, bool ListLoaded, string Catalog);
+		HornOrder Out, bool BySituation, bool BetweenFights, bool Capture, bool CaptureEnabled, bool ListLoaded, string Catalog);
 
 	private static BeastmasterState? _lastState;
 
@@ -786,7 +793,7 @@ public sealed class BST_Reborn : BeastmasterRotation
 	private void TraceState()
 	{
 		var state = new BeastmasterState(PetOnHorn(HornOrder.FirstBattlehorn), PetOnHorn(HornOrder.SecondBattlehorn),
-			PetOnHorn(HornOrder.ThirdBattlehorn), (HornOrder)ActiveBattlehorn, HornBySituation, CaptureFamiliars,
+			PetOnHorn(HornOrder.ThirdBattlehorn), (HornOrder)ActiveBattlehorn, HornBySituation, HornsBetweenFights, CaptureFamiliars,
 			CapturePvE.IsEnabled, FamiliarListLoaded, FamiliarCatalogState);
 		if (state == _lastState)
 		{
@@ -795,7 +802,8 @@ public sealed class BST_Reborn : BeastmasterRotation
 
 		_lastState = state;
 		DefenseTrace.Line($"beastmaster state: horns {state.First}, {state.Second}, {state.Third} | out {state.Out}"
-			+ $" | choose by the situation {state.BySituation} | capture {state.Capture}, action enabled {state.CaptureEnabled}"
+			+ $" | choose by the situation {state.BySituation} | set between fights {state.BetweenFights}"
+			+ $" | capture {state.Capture}, action enabled {state.CaptureEnabled}"
 			+ $" | familiar list loaded {state.ListLoaded} | catalog {state.Catalog}");
 	}
 	#endregion
@@ -804,12 +812,331 @@ public sealed class BST_Reborn : BeastmasterRotation
 	{
 		base.UpdateInfo();
 
-		// B4 (A520): the test in combat, and its judgement and restore every frame, in combat or not.
-		if (!(HornProbeInCombat && TryHornProbe()))
+		// B5 (A522): the judgement of a sent assignment every frame, in combat or not; what the fights here showed; a change
+		// by hand; then, out of combat, the horns for the next fight.
+		_ = BattlehornAssignmentPending;
+		RecordFight();
+		WatchHand();
+		if (HornsBetweenFights)
 		{
-			_ = HornProbePending;
+			AssignBetweenFights();
 		}
 	}
+
+	#region Battlehorns between fights
+	// B5 (concept 01, "Belegung der Hörner in der Rotation", A522): his proposal of 04.11.2026 - in a dungeon the area
+	// familiars for the trash, before the boss a combination for one enemy, protection or healing where the fights showed
+	// a need for it, set while out of combat.
+
+	// Familiars that heal or protect you on the horns before a boss. With one, a danger that came after its stint found
+	// none in 36 of 324 modelled fights; with two, no danger was covered worse than with his own horns, at 0.3 % of the
+	// boss's potency on average where none came (bst_assign_model.py, 04.11.2026).
+	private const int BossSafeFamiliars = 2;
+
+	private static readonly HornOrder[] Horns = ThreeHorns;
+	private static readonly int I = HornSlot(HornOrder.FirstBattlehorn);
+	private static readonly int II = HornSlot(HornOrder.SecondBattlehorn);
+	private static readonly int III = HornSlot(HornOrder.ThirdBattlehorn);
+	private static readonly BeastmasterPet[] Pets = Enum.GetValues<BeastmasterPet>();
+
+	private uint _area;
+	private bool _fighting;
+	private int _fightPeak;
+	private int _lastPeak;
+	private bool _dangerInArea;
+	private bool _heldByHand;
+	private byte[] _slotsSeen = [];
+	private HornPlanKey? _planKey;
+	private string _planTraced = string.Empty;
+	private readonly List<BeastmasterPet> _candidates = [];
+
+	// What the choice reads; a new plan only when one of these changes.
+	private readonly record struct HornPlanKey(uint Area, int Level, bool Boss, int Required, int Pack, ulong Next,
+		byte First, byte Second, byte Third, int Out, int Candidates, OneWithNatureOrder NatureFirst,
+		OneWithNatureOrder NatureSecond, OneWithNatureOrder NatureThird);
+
+	// A familiar on a horn, as the choice weighs it.
+	private readonly record struct HornOption(BeastmasterPet Pet, bool Safe, bool Fitting, float Damage, bool TrickHeals);
+
+	// The order of the choice (concept 01, B5): the required familiars that heal or protect; among them the kind that
+	// covers this fight best; the most damage; after a danger in this area more that heal or protect; his familiars on
+	// their horns; more that heal or protect; more whose Trick heals.
+	private readonly record struct HornPlanScore(int Required, int Fitting, float Damage, int SafeAfterDanger, int Kept,
+		int Safe, int TrickHeals) : IComparable<HornPlanScore>
+	{
+		public int CompareTo(HornPlanScore other)
+		{
+			var order = Required.CompareTo(other.Required);
+			order = order != 0 ? order : Fitting.CompareTo(other.Fitting);
+			order = order != 0 ? order : Damage.CompareTo(other.Damage);
+			order = order != 0 ? order : SafeAfterDanger.CompareTo(other.SafeAfterDanger);
+			order = order != 0 ? order : Kept.CompareTo(other.Kept);
+			order = order != 0 ? order : Safe.CompareTo(other.Safe);
+			return order != 0 ? order : TrickHeals.CompareTo(other.TrickHeals);
+		}
+	}
+
+	// What the fights in this area showed: the most enemies fighting at once in the last one, and whether you were in
+	// danger in any - B2's judgement, or dead. Both start anew in another area.
+	private void RecordFight()
+	{
+		var area = DataCenter.TerritoryID;
+		if (area != _area)
+		{
+			_area = area;
+			_fighting = false;
+			_fightPeak = 0;
+			_lastPeak = 0;
+			_dangerInArea = false;
+			_heldByHand = false;
+			_planKey = null;
+		}
+
+		if (!_dangerInArea && ((InCombat && InDanger) || Player is { IsDead: true }))
+		{
+			_dangerInArea = true;
+			DefenseTrace.Line("beastmaster: danger seen in this area - one more familiar that heals or protects goes on the "
+				+ "horns before each fight here");
+		}
+
+		if (InCombat)
+		{
+			_fighting = true;
+			_fightPeak = Math.Max(_fightPeak, EnemiesFighting());
+		}
+		else if (_fighting)
+		{
+			_fighting = false;
+			_lastPeak = _fightPeak;
+			_fightPeak = 0;
+			_heldByHand = false;
+			_planKey = null;
+		}
+	}
+
+	// A change of the horns that RSR did not send is his: it stays until the next fight ends.
+	private void WatchHand()
+	{
+		var slots = CurrentPets;
+		if (slots.Length < Horns.Length)
+		{
+			return;
+		}
+
+		var changed = _slotsSeen.Length != Horns.Length;
+		for (var i = 0; !changed && i < Horns.Length; i++)
+		{
+			changed = slots[i] != _slotsSeen[i];
+		}
+
+		if (!changed)
+		{
+			return;
+		}
+
+		var first = _slotsSeen.Length == 0;
+		_slotsSeen = slots[..Horns.Length].ToArray();
+		if (!first && !_heldByHand && !BattlehornAssignmentPending && !HornsAsAssigned)
+		{
+			_heldByHand = true;
+			DefenseTrace.Line($"battlehorns changed by hand to {(BeastmasterPet)_slotsSeen[I]}, {(BeastmasterPet)_slotsSeen[II]}, "
+				+ $"{(BeastmasterPet)_slotsSeen[III]} - kept until the next fight ends");
+		}
+	}
+
+	private bool HornAvailable(HornOrder horn) => horn switch
+	{
+		HornOrder.FirstBattlehorn => FirstBattlehornPvE.Info.EnoughLevelAndQuest(),
+		HornOrder.SecondBattlehorn => SecondBattlehornPvE.Info.EnoughLevelAndQuest(),
+		HornOrder.ThirdBattlehorn => ThirdBattlehornPvE.Info.EnoughLevelAndQuest(),
+		_ => false,
+	};
+
+	// B5: out of combat, the familiars for the next fight on the horns - the horn of the familiar out, and a horn the
+	// player has not got yet, as they are.
+	private void AssignBetweenFights()
+	{
+		if (InCombat || _heldByHand || BattlehornAssignmentPending || IsInCrucible || !FamiliarListLoaded || BestiaryOpen
+			|| Player is not { IsDead: false } player || player.IsCasting || NextEnemy() is not { } next)
+		{
+			return;
+		}
+
+		var slots = CurrentPets;
+		if (slots.Length < Horns.Length)
+		{
+			return;
+		}
+
+		var boss = next.IsBossFromIcon();
+		var required = (boss ? BossSafeFamiliars : 0) + (_dangerInArea ? 1 : 0);
+		_candidates.Clear();
+		var reach = 0f;
+		foreach (var pet in Pets)
+		{
+			if (pet != BeastmasterPet.None && FamiliarUnlocked(pet) == true && FamiliarOf(pet) is { } familiar)
+			{
+				_candidates.Add(pet);
+				reach = Math.Max(reach, Math.Max(familiar.TrickRadius, familiar.ReleaseRadius));
+			}
+		}
+
+		if (_candidates.Count == 0)
+		{
+			return;
+		}
+
+		var pack = boss ? 1 : Math.Max(1, Math.Max(_lastPeak, EnemiesWaitingAround(next, reach)));
+		var key = new HornPlanKey(_area, DataCenter.PlayerSyncedLevel(), boss, required, pack, next.GameObjectId, slots[I],
+			slots[II], slots[III], ActiveBattlehorn, _candidates.Count, EffectiveNature(HornOrder.FirstBattlehorn),
+			EffectiveNature(HornOrder.SecondBattlehorn), EffectiveNature(HornOrder.ThirdBattlehorn));
+		if (key == _planKey)
+		{
+			return;
+		}
+
+		_planKey = key;
+		var current = new BeastmasterPet[Horns.Length];
+		var options = new List<HornOption>[Horns.Length];
+		for (var h = 0; h < Horns.Length; h++)
+		{
+			current[h] = PetOnHorn(Horns[h]);
+			options[h] = [];
+		}
+
+		for (var h = 0; h < Horns.Length; h++)
+		{
+			var horn = Horns[h];
+			if ((int)horn == ActiveBattlehorn || !HornAvailable(horn))
+			{
+				// The familiar out keeps its horn: what an assignment does to it is not measured.
+				options[h].Add(Option(current[h], horn, boss, next));
+				continue;
+			}
+
+			// What the horn holds now stays a choice, an empty horn too: with fewer familiars than horns no trio would be
+			// left otherwise.
+			if (current[h] == BeastmasterPet.None || !_candidates.Contains(current[h]))
+			{
+				options[h].Add(Option(current[h], horn, boss, next));
+			}
+
+			foreach (var pet in _candidates)
+			{
+				var fixedElsewhere = false;
+				for (var other = 0; other < Horns.Length; other++)
+				{
+					fixedElsewhere |= other != h && current[other] == pet
+						&& ((int)Horns[other] == ActiveBattlehorn || !HornAvailable(Horns[other]));
+				}
+
+				if (!fixedElsewhere)
+				{
+					options[h].Add(Option(pet, horn, boss, next));
+				}
+			}
+		}
+
+		var best = (BeastmasterPet[])current.Clone();
+		HornPlanScore? bestScore = null;
+		foreach (var a in options[I])
+		{
+			foreach (var b in options[II])
+			{
+				if (b.Pet != BeastmasterPet.None && b.Pet == a.Pet)
+				{
+					continue;
+				}
+
+				foreach (var c in options[III])
+				{
+					if (c.Pet != BeastmasterPet.None && (c.Pet == a.Pet || c.Pet == b.Pet))
+					{
+						continue;
+					}
+
+					var score = Score(a, b, c, current, required);
+					if (bestScore is not { } known || score.CompareTo(known) > 0)
+					{
+						bestScore = score;
+						best[I] = a.Pet;
+						best[II] = b.Pet;
+						best[III] = c.Pet;
+					}
+				}
+			}
+		}
+
+		var what = $"{(boss ? $"the boss {next.Name}" : $"a pack of {pack}")}, {required} that heal or protect"
+			+ $"{(_dangerInArea ? " (danger seen in this area)" : string.Empty)}";
+		var changes = false;
+		for (var h = 0; h < Horns.Length; h++)
+		{
+			changes |= best[h] != current[h];
+		}
+
+		if (!changes)
+		{
+			var summary = $"{boss}|{required}|{current[I]},{current[II]},{current[III]}";
+			if (summary != _planTraced)
+			{
+				_planTraced = summary;
+				DefenseTrace.Line($"battlehorns for the next fight, {what}: kept {current[I]}, {current[II]}, {current[III]}");
+			}
+
+			return;
+		}
+
+		_planTraced = string.Empty;
+		DefenseTrace.Line($"battlehorns for the next fight, {what}: I {current[I]} -> {best[I]}, II {current[II]} -> {best[II]}, "
+			+ $"III {current[III]} -> {best[III]}");
+		AssignBattlehorns(best[I], best[II], best[III]);
+	}
+
+	// What `pet` brings on `horn` before the next fight: whether it heals or protects you there (a stopping Release only
+	// before a pack, C1); whether it is the kind that covers that fight best - its Trick heals before a boss, its Tempered
+	// Release stops a pack; the damage of its Trick and, on a horn that spends One with Nature on it, its Tempered Release,
+	// each its potency times the enemies its area reaches.
+	private HornOption Option(BeastmasterPet pet, HornOrder horn, bool boss, IBattleChara next)
+	{
+		if (FamiliarOf(pet) is not { } familiar)
+		{
+			return new HornOption(pet, false, false, 0f, false);
+		}
+
+		var nature = EffectiveNature(horn);
+		var stops = !boss && familiar.ReleaseStops && familiar.ReleaseRadius > 0f;
+		var safe = SafeBy(familiar, nature, stops, releaseComes: true, borrowComes: true);
+		var trickHeals = familiar.TrickHeals && TrickPvE.Info.EnoughLevelAndQuest();
+		var fitting = safe && (boss ? trickHeals : stops && nature == OneWithNatureOrder.Tempered);
+		var damage = TrickPvE.Info.EnoughLevelAndQuest()
+			? (familiar.TrickPotency > 0f ? familiar.TrickPotency : 1f) * Hits(familiar.TrickRadius, boss, next)
+			: 0f;
+		if (nature == OneWithNatureOrder.Tempered)
+		{
+			damage += familiar.ReleasePotency * Hits(familiar.ReleaseRadius, boss, next);
+		}
+
+		return new HornOption(pet, safe, fitting, damage, trickHeals);
+	}
+
+	// The enemies an area of `radius` reaches in the next fight: one for a single target or a boss; else the most that
+	// fought at once in the last fight here, at least those waiting within its reach of the next enemy.
+	private int Hits(float radius, bool boss, IBattleChara next)
+	{
+		return radius <= 0f || boss ? 1 : Math.Max(1, Math.Max(_lastPeak, EnemiesWaitingAround(next, radius)));
+	}
+
+	private HornPlanScore Score(HornOption a, HornOption b, HornOption c, BeastmasterPet[] current, int required)
+	{
+		var safe = (a.Safe ? 1 : 0) + (b.Safe ? 1 : 0) + (c.Safe ? 1 : 0);
+		var fitting = (a.Fitting ? 1 : 0) + (b.Fitting ? 1 : 0) + (c.Fitting ? 1 : 0);
+		var kept = (a.Pet == current[I] ? 1 : 0) + (b.Pet == current[II] ? 1 : 0) + (c.Pet == current[III] ? 1 : 0);
+		var healers = (a.TrickHeals ? 1 : 0) + (b.TrickHeals ? 1 : 0) + (c.TrickHeals ? 1 : 0);
+		return new HornPlanScore(Math.Min(safe, required), required > 0 ? Math.Min(fitting, 1) : 0,
+			a.Damage + b.Damage + c.Damage, _dangerInArea ? safe : 0, kept, safe, healers);
+	}
+	#endregion
 
 	#region GCD Logic
 	protected override bool MoveForwardGCD(out IAction? act)
