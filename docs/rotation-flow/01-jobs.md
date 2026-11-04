@@ -1183,6 +1183,14 @@ ofnature/Daedalus e3a16de vom 01.11.2026, GPL-3.0 und LGPL-3.0). Alle Werkzeugqu
 - *BeastmasterAssist* (Anzeige, keine Automatik): Empfehlungen zu den Aktionen der Kinships (Soul Crush, Scouring Ash,
   Vileskin, Scaleskin, Beastskin, Seedsower, Quelling Wave); RSR setzt alle schon ein. Neu wäre nur „TP für die
   Abschlüsse halten" (ab Stufe 50, 250 TP); ohne Messung, wie viel Potenz die Äxte darunter verlieren, nicht gewertet.
+- *Crucible: Schwächen der Figuren und Schadensarten der Begleiter* (seine Frage vom 04.11.2026, welche Begleiter
+  gegen das Pisco-Dämonen-Ebenbild; Gemeinschaftsquellen consolegameswiki „First Board of the Unbroken" und
+  eorzeantavern „Beast List", 04.11.2026, ungeprüft gegen die Blätter): Jede Figur trägt eine Schwäche (eine von neun
+  Schadensarten: Hieb, Stich, Schlag, Feuer, Eis, Wasser, Wind, Erde, Blitz) und Anfälligkeiten für Zustände; ein Team
+  aus drei Begleitern je Kampf, einer draußen, aus einem Kader von 10 bis 15. Hieb machen nur Cu Sith, Puk, Mantis und
+  Dullahan; Gewicht setzen Mandragora und Sandwurm (Entfesseln), Gift Diremite, Wespe, Fliegenfalle (Dressur), Uragnite,
+  Cobra, Damselfly. RSR liest im Crucible weder Schwäche noch Anfälligkeit; B3 ruft nach dem Wert der Dressur (offen:
+  TODO „Beastmaster: im Crucible nach der Schwäche der Figur rufen").
 - *BeastHelper, Masterbeast*: auf den Crucible ausgerichtet (Wege über das Brett, Teamwahl über `XBMPetParty`,
   Gegenstände); für die Rotation nichts Neues.
 - *WrathCombo* (d9c63e468 vom 27.10.2026): `OnLastHorn` liest die Hörner wie RSR bisher, ohne das Horn des Begleiters

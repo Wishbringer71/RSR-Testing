@@ -22,6 +22,7 @@ Nach der Wirkung im Kampf: Sicherheit der Gruppe vor Schaden, gewichtet mit der 
    Chance schon bei mehr LP die beste ist; jeder verlorene Pakt kostet einen weiteren Lauf (seine Vorgabe: Anfreunden
    hat oberste Priorität).
 6. Beastmaster: Brechende Welle als Schaden: mit einem Wavekin auf dem Borgen-Horn ein Schadens-GCD, der nie kommt.
+   Danach: Beastmaster: im Crucible nach der Schwäche der Figur rufen (Schaden, kein Leben).
 7. Fremde Repositories auf Verbesserungen für RSR prüfen: Jeder Fund kann ein Defekt im Verhalten einer Klasse sein,
    den RSR heute im Kampf zeigt; zuerst die Rotationswerkzeuge für alle Jobs, Daedalus vorn (aktiv, alle Jobs,
    eigene Kampfvorhersage).
@@ -87,6 +88,12 @@ draußen (Schluss aus dem Code, `BST_Reborn.AttackAbility`). *Ort:* `BST_Reborn.
 `GeneralAbility`, B5. *Nächster Schritt:* Loop: Gleichstand nach Spiel entscheiden (vor einem Rudel der aufhaltende
 Begleiter zuerst), Ruf außerhalb des Kampfes für One with Nature; die drei Einstellungen danach nur noch für die Wahl
 nach Lage aus, mit Erklärtext. *Konzept:* 01, „Belegung der Hörner in der Rotation".
+
+### Beastmaster: im Crucible nach der Schwäche der Figur rufen · N
+Im Kampf: Gegen eine Figur des Crucible mit einer Schwäche (Pisco-Dämonen-Ebenbild: Hieb; anfällig für Gewicht und
+Gift) ruft RSR den Begleiter nach dem Wert seiner Dressur, nicht nach der Schadensart; der passende steht kürzer draußen.
+*Ort:* `BST_Reborn.SituationalHorn` (B3). *Nächster Schritt:* Recherche, ob die Blätter Schwäche und Schadensart tragen
+(XBM-Blätter, `XBMPet`); dann Loop. *Konzept:* 01, „Crucible: Schwächen der Figuren".
 
 ### Beastmaster: Brechende Welle als Schaden · N, U
 Im Kampf: Mit einem Wavekin auf dem Borgen-Horn (etwa Pugil) kommt Brechende Welle nur gegen ein Ziel mit einer der
