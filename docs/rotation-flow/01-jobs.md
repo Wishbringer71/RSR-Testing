@@ -969,8 +969,8 @@ eingearbeitet werden, situationsbezogen"; A487, A488, A522):
   - *Das Horn des Begleiters draußen bleibt.* Was eine Zuweisung mit dem Begleiter draußen macht, ist nicht gemessen:
     Die Probe änderte nur Hörner ohne Begleiter draußen. Nach einem Kampf steht meist einer draußen; dann setzt RSR die
     beiden anderen. Beim nächsten Kampf geht er mit dem Scheidenden Schlag, und die beiden gesetzten folgen; sein One
-    with Nature hat er im letzten Kampf verbraucht (offen: TODO „Beastmaster: One with Nature vor dem nächsten Pull
-    auffrischen").
+    with Nature hat er im letzten Kampf verbraucht (offen: TODO „Beastmaster: Am Pull der Begleiter, der das Rudel aufhält,
+    mit One with Nature").
   - *Was im Kampf anders wird* (seine Hörner vom 02.11.2026: Gespenst – sein Entfesseln Odium heilt –, Fledermaus –
     ihre Dressur heilt –, Opo-Opo; Ergebnis des Modells unten):
     - Vor einem Rudel setzt RSR Büffel und Raptor auf die beiden Hörner, die entfesseln. War Cry trifft das Rudel mit

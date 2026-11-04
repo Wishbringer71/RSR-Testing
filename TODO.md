@@ -15,8 +15,8 @@ Nach der Wirkung im Kampf: Sicherheit der Gruppe vor Schaden, gewichtet mit der 
 2. Heilungen in „Heilung -" verpuffen: fünf GCDs Schaden und MP ohne Wirkung, solange der Status liegt; kein Leben,
    denn die Heilung wirkt dort ohnehin nicht.
 3. Heilung bricht ab, weil ein Regen-Tick die Schwelle kreuzt: verlorene Wirkzeit, das Ziel bleibt an der Schwelle.
-4. Beastmaster: One with Nature vor dem nächsten Pull auffrischen: Das Rudel wird erst Sekunden nach dem Pull betäubt
-   statt mit ihm.
+4. Beastmaster: Am Pull der Begleiter, der das Rudel aufhält, mit One with Nature: Das Rudel wird erst Sekunden nach dem
+   Pull betäubt statt mit ihm.
 5. Beastmaster: Brechende Welle als Schaden: mit einem Wavekin auf dem Borgen-Horn ein Schadens-GCD, der nie kommt.
 6. Fremde Repositories auf Verbesserungen für RSR prüfen: Jeder Fund kann ein Defekt im Verhalten einer Klasse sein,
    den RSR heute im Kampf zeigt; zuerst die Rotationswerkzeuge für alle Jobs, Daedalus vorn (aktiv, alle Jobs,
@@ -51,13 +51,15 @@ Barriere in das Betäubungsfenster legen; sie bricht nicht, Dark Arts bleibt aus
 Erkennung der Flächenbetäubung (Konzept 10, „Grenzen"), heute nur Holy und Holy III. *Nächster Schritt:* die Aktionen der
 Phantomjobs mit Flächenbetäubung aus den Spielblättern erheben, Loop. *Konzept:* 10.
 
-### Beastmaster: One with Nature vor dem nächsten Pull auffrischen · N
-Im Kampf: Nach einem Kampf steht der letzte Begleiter ohne One with Nature draußen; beim nächsten Pull geht er mit dem
-Scheidenden Schlag, und erst der nächste Ruf bringt ein Entfesseln – War Cry betäubt das Rudel erst Sekunden nach dem
-Pull (Schluss aus dem Code, `BST_Reborn.AttackAbility`, nicht gemessen). Der Leitfaden der Gemeinschaft ruft außerhalb
-des Kampfes einen anderen Begleiter und dann wieder den Büffel (Hörner außerhalb 2 s). *Ort:* `BST_Reborn.GeneralAbility`
-(ruft heute nur ohne Begleiter draußen), B5. *Nächster Schritt:* Loop: Ruf außerhalb des Kampfes (1 s Wirkzeit, beim
-Laufen), Reihenfolge am Pull. *Konzept:* 01, „Belegung der Hörner in der Rotation".
+### Beastmaster: Am Pull der Begleiter, der das Rudel aufhält, mit One with Nature · N
+Im Kampf: Am Pull um 10:45:05 (04.11.2026) brachten Raptor, Büffel und Fliegenfalle je 500 auf jeden Gegner; den
+Gleichstand entschied die eingestellte Rufreihenfolge („First/Second/Third Horn"), Raptor kam zuerst, War Cry betäubte
+das Rudel erst nach dessen Einsatz. Unter der Belegung zwischen den Kämpfen (B5) wechselt, welcher Begleiter auf welchem
+Horn sitzt; die Reihenfolge trifft dann zufällig. Dazu steht nach einem Kampf der letzte Begleiter ohne One with Nature
+draußen (Schluss aus dem Code, `BST_Reborn.AttackAbility`). *Ort:* `BST_Reborn.SituationalHorn` (Gleichstand),
+`GeneralAbility`, B5. *Nächster Schritt:* Loop: Gleichstand nach Spiel entscheiden (vor einem Rudel der aufhaltende
+Begleiter zuerst), Ruf außerhalb des Kampfes für One with Nature; die drei Einstellungen danach nur noch für die Wahl
+nach Lage aus, mit Erklärtext. *Konzept:* 01, „Belegung der Hörner in der Rotation".
 
 ### Beastmaster: Brechende Welle als Schaden · N, U
 Im Kampf: Mit einem Wavekin auf dem Borgen-Horn (etwa Pugil) kommt Brechende Welle nur gegen ein Ziel mit einer der
