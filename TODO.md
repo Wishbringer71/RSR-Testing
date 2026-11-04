@@ -12,22 +12,26 @@ Nach der Wirkung im Kampf: Sicherheit der Gruppe vor Schaden, gewichtet mit der 
 
 1. Nach der Wiederbelebung wartet RSR die Unverwundbarkeit ab: Ein Heiler stirbt am ersten Treffer nach dem
    Aufstehen, ohne dass RSR etwas drückt.
-2. Beastmaster: Am Pull der Begleiter, der das Rudel aufhält, mit One with Nature: Allein gegen ein Rudel verbrennt der
+2. Allein ohne Heiler kommt der Heiltrank erst von Hand: RSR stand 13 s in der kritischen Klasse ohne Heilfähigkeit,
+   der Trank kam bei 5 % von Hand, er starb (Beastmaster, Sägerschrei, 04.11.2026).
+3. Beastmaster: Am Pull der Begleiter, der das Rudel aufhält, mit One with Nature: Allein gegen ein Rudel verbrennt der
    erste Begleiter Entfesseln für Schaden, und wenn die Gefahr kommt, ist nichts Schützendes übrig; er starb daran
    (Südwald, 04.11.2026).
-3. Heilungen in „Heilung -" verpuffen: fünf GCDs Schaden und MP ohne Wirkung, solange der Status liegt; kein Leben,
+4. Heilungen in „Heilung -" verpuffen: fünf GCDs Schaden und MP ohne Wirkung, solange der Status liegt; kein Leben,
    denn die Heilung wirkt dort ohnehin nicht.
-4. Heilung bricht ab, weil ein Regen-Tick die Schwelle kreuzt: verlorene Wirkzeit, das Ziel bleibt an der Schwelle.
-5. Beastmaster: Ob Analysieren die LP einrechnet: Anfreunden markiert sicher, aber früher als nötig, wenn die Stufe der
+5. Heilung bricht ab, weil ein Regen-Tick die Schwelle kreuzt: verlorene Wirkzeit, das Ziel bleibt an der Schwelle.
+6. Beastmaster: Ob Analysieren die LP einrechnet: Anfreunden markiert sicher, aber früher als nötig, wenn die Stufe der
    Chance schon bei mehr LP die beste ist; jeder verlorene Pakt kostet einen weiteren Lauf (seine Vorgabe: Anfreunden
    hat oberste Priorität).
-6. Beastmaster: Brechende Welle als Schaden: mit einem Wavekin auf dem Borgen-Horn ein Schadens-GCD, der nie kommt.
+7. Beastmaster: Feindseligkeit und Gegenstände im Crucible: Ohne Zähnefletschen trägst du jeden Treffer des Bretts
+   selbst, und kein Bestien-Heiltrank kommt von RSR; im ersten Brett starb niemand.
+8. Beastmaster: Brechende Welle als Schaden: mit einem Wavekin auf dem Borgen-Horn ein Schadens-GCD, der nie kommt.
    Danach: Beastmaster: im Crucible nach der Schwäche der Figur rufen (Schaden, kein Leben).
-7. Fremde Repositories auf Verbesserungen für RSR prüfen: Jeder Fund kann ein Defekt im Verhalten einer Klasse sein,
+9. Fremde Repositories auf Verbesserungen für RSR prüfen: Jeder Fund kann ein Defekt im Verhalten einer Klasse sein,
    den RSR heute im Kampf zeigt; zuerst die Rotationswerkzeuge für alle Jobs, Daedalus vorn (aktiv, alle Jobs,
    eigene Kampfvorhersage).
-8. Flächenbetäuber in Kreszentia für The Blackest Night: kostet MP, kein Leben.
-9. Ein Blaumagier in Heiler-Mimikry zählt nicht als Heiler: Mitspieler unter RSR heilen und mindern, als lebte keiner;
+10. Flächenbetäuber in Kreszentia für The Blackest Night: kostet MP, kein Leben.
+11. Ein Blaumagier in Heiler-Mimikry zählt nicht als Heiler: Mitspieler unter RSR heilen und mindern, als lebte keiner;
    kostet Schaden, kein Leben.
 
 Danach die technische Schuld, soweit ihre Auflösungsbedingung erfüllt ist. Warten auf Daten: unten.
@@ -52,6 +56,24 @@ und GCD-Heilungen warten nicht auf ihn. Kein Leben in Gefahr, es kostet Schaden 
 (`OnlyHealAsNonHealIfNoHealers`, `HoldPartyHeal`). *Konzept:* 07.
 
 ## Offene Arbeit
+
+### Allein ohne Heiler kommt der Heiltrank erst von Hand · N, U
+Im Kampf: Beastmaster allein gegen Myrmidonen-Prinzessin und Gefolge (Sägerschrei, 04.11.2026); seine LP fielen in 75 s
+von 93 % auf 6 %, ab 18:28:18 meldete RSR „critical class … no heal ability", den Ultratrank drückte er bei 135 von 2.415
+LP selbst, er starb 2 s später. *Ort:* `HpPotionItem.CanUse`, „Use HP potions" (Upstream, ab Werk aus, keine
+dokumentierte Entscheidung) und die feste Schwelle „Use HP potions below this HP" (50 %); der Trank liest weder Gefahr
+noch kritische Klasse noch einen lebenden Heiler. *Nächster Schritt:* Loop für alle Jobs: Trank nach der Gefahr
+(Vorhersage, kritische Klasse, kein Heiler) statt nach der festen Schwelle, Voreinstellung nach seiner Regel
+(Sicherheit vor Schaden) gegen Kosten und die 75 s, die er die Tinktur sperrt. *Konzept:* 03 („Eine Wiederverwendung
+für alle Arzneien"), 07.
+
+### Beastmaster: Feindseligkeit und Gegenstände im Crucible · N
+Im Kampf: Zähnefletschen lässt den Begleiter 45 s deinen Schaden tragen; RSRs Einstellung dafür (Upstream) ist ab Werk
+aus, und die Gegenstände des Bretts (Bestien-Heiltrank, -Pulver, Gegengift, Verhärtungsmittel) setzt RSR nie ein. *Ort:*
+`BST_Reborn.FamiliarTankSwapAbility`, `InstanceContentCrucibleOfTheUnbroken.UseItem`. *Nächster Schritt:* Loop mit dem
+Brett als Ganzem: LP von dir und den Begleitern bleiben über alle Kämpfe stehen, die Campsite heilt dich allein mehr, ein
+gefallener Begleiter fehlt bis zum Horn der Rückkehr; daraus, ob die Einstellung ab Werk an gehört und wann ein
+Gegenstand seinen Platz im Fach wert ist. *Konzept:* 01 („Tanken", „Gegenstände des Crucible").
 
 ### Nach der Wiederbelebung wartet RSR die Unverwundbarkeit ab · N, U
 Im Kampf: Wiederbelebt bei 21 %, Zellexplosion auf ihn angekündigt; RSR drückte 5 s lang nichts, der Treffer kam

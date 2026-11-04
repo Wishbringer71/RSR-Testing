@@ -658,6 +658,22 @@
       "note": "The familiar's unaspected magic attack on the target and all enemies around it, potency 1,000 (1,500 under Lingering Vantage); the familiar leaves combat after it."
     },
     {
+      "de": "Zähnefletschen",
+      "en": "Snarl",
+      "identifier": "SnarlPvE",
+      "kind": "action",
+      "source": "xivapi v2 Action 46751, language=de, 2026-11-04",
+      "note": "Crucible only: the familiar uses Threaten (de 'Drohen', Action 46752) and takes all damage meant for you for 45 s; your status 'Gedeckt' (Status 2413), its 'Deckung' (Status 2412)."
+    },
+    {
+      "de": "Provozieren",
+      "en": "Challenge",
+      "identifier": "ChallengePvE",
+      "kind": "action",
+      "source": "xivapi v2 Action 46750, language=de, 2026-11-04",
+      "note": "Crucible only: you take the top of the enmity list for 30 s and the familiar's cover ends."
+    },
+    {
       "de": "Entfesseln",
       "en": "Tempered Release",
       "identifier": "TemperedReleasePvE",

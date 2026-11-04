@@ -1196,6 +1196,18 @@ ofnature/Daedalus e3a16de vom 01.11.2026, GPL-3.0 und LGPL-3.0). Alle Werkzeugqu
     Eis; Oger Wind, Irrlichter Wasser (Fessel, Gewicht); Endgegner Pas de Seul Stich, Sukkubus-Magierin und -Ritter
     Feuer. Entfernbare Stärkungen: Ossify, Clear Mind, Fanaticism; reinigbare Zustände: Gift (Banemite, Pas de Seul),
     Windburn. Die Schwäche „verhält sich wie eine Schwäche, nicht jeder Eintrag passt" (eorzeantavern).
+- *Gegenstände des Crucible* (Blatt `XBMItem`, Zeilen 76–199, en und de, 04.11.2026): eigenes Fach mit 10 Plätzen,
+  im Kampf über die Instanz benutzt (`InstanceContentCrucibleOfTheUnbroken.UseItem(Platz, Bestie)`, Wirkung auf dein
+  Ziel; FFXIVClientStructs b69073a vom 02.11.2026, Werkzeugquelle; der Typ steht in der Bibliothek, die Dalamud
+  mitliefert). Im Mitschnitt erscheinen sie als Aktionen (Bestien-Heiltrank II/III, Bestien-Pulver I, Reißzahn des
+  Feuers und des Wassers). Darunter: Bestien-Heiltrank I–IV (10–50 % LP, du oder Begleiter), Bestien-Pulver I–III
+  (10–40 %, alle in der Nähe), Bestien-Gegengift, -Goldnadel, -Augentropfen (Zustand heilen, 25–50 % LP),
+  die Seren gegen Zustände (Bestien-Antigift-Serum und andere), Bestien-Verhärtungsmittel (−20 % Schaden, 60 s),
+  Grimoire der Unantastbarkeit (fünf Stapel Blink), Bestien-Heiltranksammlung (40 % automatisch unter 50 % LP),
+  Bestien-Lebensfeder (Reraise), Reißzahn des Feuers und andere (Flächenschaden mit Zustand),
+  Bestien-Feuerresistenzmittel und andere (Element als LP aufnehmen, 15 s). RSR setzt keinen ein. Sie kosten territory
+  tokens oder stammen aus Beute, sind also ein Vorrat für das ganze Brett (offen: TODO „Beastmaster: Feindseligkeit und
+  Gegenstände im Crucible").
 - *BeastHelper, Masterbeast*: auf den Crucible ausgerichtet (Wege über das Brett, Teamwahl über `XBMPetParty`,
   Gegenstände); für die Rotation nichts Neues.
 - *WrathCombo* (d9c63e468 vom 27.10.2026): `OnLastHorn` liest die Hörner wie RSR bisher, ohne das Horn des Begleiters
@@ -1276,9 +1288,29 @@ Beastmaster noch, nicht alle Fähigkeiten stehen am Anfang zur Verfügung.
 - *Heilen:* ja, über die heilende Dressur (Schleim, Fledermaus) und Odium. Scouring Ash heilt 10 % nur, wenn es einen
   schädlichen Effekt entfernt. Schützen über Beastskin, Scaleskin und Seedsower (Borrow) sowie Vulcanize, Harden Shell,
   Water Wall, Smoldering Scales und Strut (Entfesseln); dazu Kontrolle.
-- *Tanken:* nur im Crucible. Dort lässt Snarl den Begleiter mit Threaten die Feindseligkeit ziehen und 45 s deinen
-  Schaden auf sich nehmen; Challenge holt sie zurück. RSR hat das als Einstellung „Use Snarl and Challenge …" (ab Werk
-  aus, nur Crucible). Außerhalb des Crucible ist kein Weg belegt.
+- *Tanken:* nur im Crucible (Wirktexte, xivapi v2 Action 46750–46752, en und de, 04.11.2026). Zähnefletschen
+  (Snarl, 15 s Abklingzeit): Der Begleiter setzt Drohen (Threaten) – höchste Feindseligkeit für 15 s –, nimmt 45 s
+  sämtlichen Schaden, der dir galt (dein Status „Gedeckt", seiner „Deckung"), und nimmt dir „Erhöhte Feindseligkeit".
+  Provozieren (Challenge, 15 s): du stehst 30 s oben auf der Liste, die Deckung endet. Außerhalb des Crucible ist kein
+  Weg belegt.
+  - *In RSR:* die Einstellung „Use Snarl and Challenge …" (Upstream, ab Werk aus): Zähnefletschen ab 70 % LP des
+    Begleiters, Provozieren bei 30 %, unter 30 % deiner LP trägt der Begleiter alles, auch bis zu seinem Tod; wahlweise
+    nach dem Vergleich beider LP; ab Werk nur auf dem letzten Horn, also wenn kein anderes Horn bereitsteht. Dazu ein
+    Zähnefletschen ohne Schalter gegen Status 2552 im ersten Kampf des ersten Bretts (Upstream-Kommentar; dort wehrt
+    der Knochenritter mit Forward Guard Angriffe von vorn ab, nicht die der Begleiter, consolegameswiki).
+  - *Zyklus und Deckung (A530):* Solange der Begleiter draußen dich deckt, schickt ihn RSR nicht für den Zyklus weg –
+    kein Scheidender Schlag, kein Entfesseln, nach dem er geht (Wespes Schlussstich); die Deckung endet mit ihrer Dauer, mit Provozieren oder mit seinem Fall. Grund: Wer zähnefletschen ließ – du oder die
+    Einstellung –, wollte, dass er deinen Schaden trägt, und im Crucible greift der Gegner nur dich an; ein Treffer ist
+    also sicher. Im Upload vom 04.11.2026 abends endeten 6 von 22 Deckungen nach 0,7 bis 3,4 s durch den Scheidenden
+    Schlag des Zyklus, und die 15 s Abklingzeit sperrten die nächste. Preis: Das nächste Horn kommt bis zu 45 s später,
+    mit ihm sein Entfesseln oder Borrow, und die Abklingzeit des gehaltenen Horns beginnt erst mit seinem Rückzug. In
+    der Gefahr galt das schon (B2).
+  - *Offen (TODO „Beastmaster: Feindseligkeit und Gegenstände im Crucible"):* ob die Einstellung ab Werk an gehört. Für
+    an spricht: Ohne Tank greift der Gegner nur dich an, und die LP der Begleiter sind ein zweiter Vorrat. Dagegen,
+    nicht widerlegt: LP bleiben über das ganze Brett stehen (gemessen 04.11.2026: dieselben LP eines Begleiters zu
+    Beginn des nächsten Kampfes), die Campsite heilt dich allein um 90 %, mit einem Begleiter je 45 %, mit zweien je
+    30 % (consolegameswiki) – verteilter Schaden kostet dort Heilung –, und ein gefallener Begleiter fehlt bis zum Horn der
+    Rückkehr.
 - *Schwächen der Gegner:* keine Datenquelle. Was es gibt, sind die Schwächungen, die ein Begleiter selbst legt.
 
 *Der Zyklus:* Ein Ruf gibt One with Nature, das Horn verbraucht es nach seiner Einstellung für Entfesseln oder Borrow
@@ -1349,7 +1381,8 @@ Lage.
   - Steht einer draußen, der weder heilt noch schützt, und ein solches Horn ist bereit, geht er mit Scheidender Schlag
     (1.000 oder 1.500), und der heilende kommt. Nicht, solange er nach Snarl deinen Schaden trägt (Crucible, Status
     „Covered"): Dann nimmt er ihn dir gerade ab.
-  - Einer, dessen Dressur heilt, bleibt draußen, solange die Gefahr anhält: kein Scheidender Schlag für den Zyklus. Seine
+  - Einer, dessen Dressur heilt, bleibt draußen, solange die Gefahr anhält: kein Scheidender Schlag für den Zyklus; einer,
+    der dich nach Zähnefletschen deckt, ebenso, auch ohne Gefahr (oben, „Zyklus und Deckung"). Seine
     Heilung kommt nur, solange er draußen ist. Was Entfesseln oder Borrow bringt, läuft nach dem Rückzug weiter (oben);
     ein Begleiter, der so schützt, geht wie im Zyklus, und der nächste Ruf ist wieder einer, der heilt oder schützt.
   - Scaleskin (Barriere gegen Magie) setzt RSR in der Gefahr sofort ein, sonst nur für einen angekündigten Treffer oder

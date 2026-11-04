@@ -98,3 +98,8 @@ What this release changes in the fight. For the whole distance from upstream, se
   `DefenseTrace.log` counts Shield Charge, Borrow and every Beast Mode action per fight, by RSR or by
   hand, with how long Shield Charge stood ready with several enemies in range, and names the reason
   when it stands ready and does not go.
+- **A familiar that covers you stays (Crucible).** After Snarl - pressed by you or by `Use Snarl and
+  Challenge …` - the familiar takes all damage meant for you for 45 s. RSR no longer sends it off with
+  Parting Blow, or with a Tempered Release after which it leaves, to call the next horn while that cover
+  lasts; the cover ends with its time, with Challenge or with the familiar's fall. The next horn comes
+  up to 45 s later. `DefenseTrace.log` notes the hold once per cover.

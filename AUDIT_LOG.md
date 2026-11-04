@@ -15872,6 +15872,47 @@ habe den schleim bislang nicht anfreunden können."
 - *Prüfgrad:* Code, Compile, CI-Prüfungen lokal; im Spiel nicht beobachtet, die Haltezeile nennt einen Grund, wenn er
   bereit liegt und nicht kommt.
 
+### A530 · Upload vom 04.11.2026 abends: Crucible, Zähnefletschen gegen den Zyklus, Tod in Sägerschrei (04.11.2026)
+
+- *Anlass:* Sein Upload (DefenseTrace ab Zeile 7059, Build e202ee9d3, 16:00–19:50; ACT-Mitschnitt desselben Abends)
+  und seine Frage, was die Brett-Fertigkeiten zur Feindseligkeit und die Gegenstände des Crucible taugen.
+- *Anfreunden:* 2 von 2 Markierungen von RSR (Todesweide bei 47 %, Myrmidonen-Marschall bei 72 %), beide Pakte im
+  Bestiarium; die Spur schrieb die Wahl in jedem Frame neu (176 Zeilen in zwei Sekunden), weil sich die Zahlen darin
+  bewegen. Behoben: eine Zeile je Gegner und GCD.
+- *Schildansturm:* in 54 Kämpfen mindestens einmal (Entscheidung B wirkt, A529).
+- *Crucible, erstes Brett:* zweimal geschafft, kein Tod. 24-mal Zähnefletschen, 9-mal Provozieren, 13 Gegenstände
+  (Bestien-Heiltrank II und III, Bestien-Pulver I, Reißzahn des Feuers und des Wassers); wer drückte, zeigt der
+  Mitschnitt nicht – Provozieren fiel bei 57 bis 90 % LP des Begleiters, also nicht nach RSRs Schwellen ab Werk
+  (wahrscheinlich von Hand). Die Deckung wirkt: gegen das Pisco-Dämonen-Ebenbild 25 s kein Treffer auf ihn. Von 22
+  Deckungen endeten 6 nach 0,7 bis 3,4 s durch den Scheidenden Schlag des Zyklus (18:35:16, 18:39:00, 18:48:11,
+  18:54:45, 19:35:51, 19:48:11), 8 durch Provozieren, 3 mit ihrer Dauer. Die 15 s Abklingzeit sperrten danach jede neue
+  Deckung. In der Gefahr hielt RSR den deckenden Begleiter schon (B2), im Zyklus nicht.
+  - *Umgesetzt:* Solange er dich deckt, kein Scheidender Schlag und kein Entfesseln, nach dem er geht (Wespes
+    Schlussstich); einmal je Deckung die Zeile „… stays: it covers you after Snarl, Parting Blow waits". Preis: Das
+    nächste Horn kommt bis zu 45 s später.
+  - *Verworfen:* Zähnefletschen nur auf dem letzten Horn erzwingen – ein Druck von Hand bliebe ungeschützt, und die
+    Einstellung dafür gibt es schon (ab Werk an).
+  - *Falsifikation:* Kein Defekt? Wer zähnefletschen lässt, will die Deckung; der Zyklus nahm sie für das nächste
+    Entfesseln, im Crucible greift der Gegner nur ihn an. Option falsch? Die Alternative, das Zähnefletschen zu
+    verschieben, erreicht einen Druck von Hand nicht. Ausgeliefert, nichts ändert sich? Ohne Zähnefletschen bleibt
+    alles wie bisher; ein weiterer Weg, der den Begleiter abzieht, ist Wespes Entfesseln – mit gehalten.
+  - *Offen (TODO „Beastmaster: Feindseligkeit und Gegenstände im Crucible"):* ob Upstreams Einstellung ab Werk an
+    gehört (dagegen, nicht widerlegt: LP bleiben über das Brett stehen, die Campsite heilt allein 90 %, zu dritt je
+    30 %), und die Gegenstände des Fachs (`InstanceContentCrucibleOfTheUnbroken.UseItem`, Werkzeugquelle).
+- *Tod in Sägerschrei (18:28:33):* allein gegen Myrmidonen-Prinzessin, Marschall, Soldaten und Wache; LP 2.249 →
+  135 in 75 s. Hörner Schleim, Fledermaus, Fliegenfalle (B5 nach Gefahr im Gebiet); der Schleim draußen, seine Dressur
+  (Verdauen) heilte je etwa 70 bis 90 LP, die nächste nach 30 s, weil Begleiter-TP fehlten; die Fledermaus kam nicht,
+  weil der heilende Schleim in der Gefahr bleibt (B2). Ab 18:28:18 „critical class … no heal ability", Schuppenpanzer
+  von der Grundprüfung abgewiesen. Kein Heiltrank von RSR: „Use HP potions" ist ab Werk aus, eine Entscheidung dafür ist
+  nirgends dokumentiert; der Ultratrank kam bei 135 LP, nach Lage von Hand. Neu im TODO („Allein ohne Heiler kommt der
+  Heiltrank erst von Hand"), Reihenfolge 2.
+- *Übrige Zeilen:* Weißmagier (Halatali, Clyteum): Sanctus 22-mal nicht gestreckt, weil die Betäubung vor der
+  Landung endet, 9-mal gestreckt; Göttlicher Segen 22 von 24 an der Ladungsgrenze auf das angegriffene Mitglied. Neun
+  abgebrochene Heilungen (TODO Regen-Tick). Rechenkosten im Mittel 0,42 ms je Frame.
+- *Gelernte Tabellen:* drei neue Tankbuster aus Halatali (Feuerfluss, Blitzklauen, Gerade; 23 bis 29 % der LP des
+  Tanks), eine Flächenserie (Ersticken des Fleisches, 9,0 s); keine geänderten Einträge.
+- *Prüfgrad:* Mitschnitt und Spur ausgewertet, Code, Compile, CI-Prüfungen lokal; im Spiel nicht beobachtet.
+
 ## B · Commit-Register (Fork vs. `upstream/main`)
 
 ### B1 · Einzelgeprüfte Fork-Commits

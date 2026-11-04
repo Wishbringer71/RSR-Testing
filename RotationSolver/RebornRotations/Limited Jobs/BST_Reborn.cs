@@ -318,7 +318,8 @@ public sealed class BST_Reborn : BeastmasterRotation
 		// R1 (concept 01, A488): a Release after which the familiar leaves (Wespe's Final Sting) waits for a familiar to
 		// take its place; the horn of the familiar out starts its 90 s only with the retreat.
 		// C3 (A491): a Release that deals damage over time to the party (Hypodermic Hustle) waits while you are in danger.
-		if (nature == OneWithNatureOrder.Tempered && (!ReleaseRetreatsFamiliar || ReplacementHornReady)
+		// A530: and one after which the familiar leaves waits while it covers you after Snarl, as Parting Blow does below.
+		if (nature == OneWithNatureOrder.Tempered && (!ReleaseRetreatsFamiliar || (ReplacementHornReady && !IsCoveredByFamiliar))
 			&& !(HornBySituation && InDanger && ReleaseHurtsPartyFamiliar))
 		{
 			if (TemperedReleasePvE.IsEnabled)
@@ -354,7 +355,21 @@ public sealed class BST_Reborn : BeastmasterRotation
 		};
 		var keepForDanger = HornBySituation && ActiveBattlehorn != 0 && InDanger
 			&& TrickHealsOnHorn((HornOrder)ActiveBattlehorn);
-		if (!waitsForNature && !keepForDanger)
+
+		// A530: a familiar that covers you after Snarl (Crucible) is not sent off for the cycle - it is taking the damage
+		// meant for you, and there the enemy attacks only you. The cover ends with its time, Challenge, or its fall.
+		var keepForCover = ActiveBattlehorn != 0 && IsCoveredByFamiliar;
+		if (!keepForCover)
+		{
+			_coverHoldTraced = false;
+		}
+		else if (!_coverHoldTraced && ReplacementHornReady && !waitsForNature && !keepForDanger)
+		{
+			_coverHoldTraced = true;
+			TraceHorn($"{(HornOrder)ActiveBattlehorn} ({CurrentPet}) stays: it covers you after Snarl, Parting Blow waits");
+		}
+
+		if (!waitsForNature && !keepForDanger && !keepForCover)
 		{
 			// R1: only with another horn's familiar ready to follow - not the horn of the familiar out.
 			if (ReplacementHornReady && ((!IsLastAction(true, TrickPvE) && TrickPvE.Cooldown.HasOneCharge) || !TrickPvE.EnoughLevel))
@@ -800,6 +815,13 @@ public sealed class BST_Reborn : BeastmasterRotation
 
 	private static string _lastHornTrace = string.Empty;
 	private static DateTime _lastHornTraceAt = DateTime.MinValue;
+
+	// A530: whether the hold for this cover has been written once.
+	private static bool _coverHoldTraced;
+
+	// A530: the enemy and the time of the last Capture line.
+	private static ulong _captureTracedId;
+	private static DateTime _captureTracedAt = DateTime.MinValue;
 
 	// What the horn choice and Capture read (concept 01, "Zustandszeile", A489).
 	private readonly record struct BeastmasterState(BeastmasterPet First, BeastmasterPet Second, BeastmasterPet Third,
@@ -1334,9 +1356,19 @@ public sealed class BST_Reborn : BeastmasterRotation
 				_ = CaptureNow(marked, out why);
 			}
 
-			TraceHorn($"Capture on {CapturePvE.Target.Target?.Name} ({CapturableFamiliar(CapturePvE.Target.Target)}): "
-				+ $"a familiar you do not have; waiting a weaponskill could let it fall before that mark arrives - {why} "
-				+ $"(landing {CaptureLanding:F2} s)");
+			// A530: the choice repeats every frame until the weaponskill goes and its figures move with it; one line per
+			// enemy and weaponskill, not one per frame.
+			var chosen = CapturePvE.Target.Target?.GameObjectId ?? 0;
+			var now = DateTime.Now;
+			if (chosen != _captureTracedId || (now - _captureTracedAt).TotalSeconds >= DataCenter.DefaultGCDTotal)
+			{
+				_captureTracedId = chosen;
+				_captureTracedAt = now;
+				TraceHorn($"Capture on {CapturePvE.Target.Target?.Name} ({CapturableFamiliar(CapturePvE.Target.Target)}): "
+					+ $"a familiar you do not have; waiting a weaponskill could let it fall before that mark arrives - {why} "
+					+ $"(landing {CaptureLanding:F2} s)");
+			}
+
 			return true;
 		}
 
