@@ -1889,6 +1889,11 @@ Er leistet damit mehr, als eine berichtete Spielsitzung leisten koennte.
 - **Geglaettet und begrenzt** auf 0,25 bis 4, damit eine einzelne Spitze den Faktor nicht uebernimmt.
 - **Gelesen wird die korrigierte Zeit** (`GetCorrectedTTK` = `GetTTK` geteilt durch den Faktor). Die
   Korrektur kostet keine einzige gesetzte Zahl; sie faellt aus der Beobachtung.
+- **Von jetzt an gerechnet.** Abgelegt wird die Vorhersage einmal je Abtastung (1 Hz); gelesen wird sie
+  abzueglich der Zeit seit der Ablage, nie unter 0. Bis A523 kam sie so zurueck, wie sie abgelegt war, also bis zu
+  1 s zu lang. Das traf jede Regel mit einem Fenster unter einer Sekunde: Anfreunden des Beastmasters (Konzept 01,
+  A2) kam dadurch bei rund der Haelfte der Kills nach dem Fall (gerechnet, `bst_capture_model.py`); Six-sided Star
+  als letzter Schlag (Konzept 14, A413) konnte so den letzten GCD verpassen (Schluss aus dem Code).
 - **Gefuehrt fuer jedes Gruppenmitglied und jeden Gegner** (`TargetUpdater.UpdateTimeToKill`, A463). Fuer
   einen Gegner liest `GetTTK` Upstreams Tracker, eine Gerade ueber 30 s, die zu Beginn eines Bursts
   hinterherlaeuft; der Faktor misst genau das. Bis A463 wurde er nur fuer die Gruppe gefuehrt, und

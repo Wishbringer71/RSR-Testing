@@ -1755,9 +1755,23 @@ public partial class CustomRotation
 				return true;
 			}
 
-			var ttk = CurrentTarget is { } target && NumberOfHostilesInRange <= 1 ? target.GetCorrectedTTK() : float.NaN;
-			return !float.IsNaN(ttk) && ttk > nextBegins && ttk <= oneAfter;
+			return CurrentTarget is { } target && NumberOfHostilesInRange <= 1 && LastWeaponskillBefore(target, 0f);
 		}
+	}
+
+	/// <summary>
+	/// Whether the weaponskill chosen now is the last whose effect still finds <paramref name="target"/> alive
+	/// <paramref name="lands"/> seconds after it goes off: by its time to kill, corrected by how wrong the forecast has
+	/// been lately, it outlives that after the next weaponskill begins and would not after the one after it.
+	/// </summary>
+	/// <param name="target">The enemy.</param>
+	/// <param name="lands">How long after the weaponskill goes off its effect has to find the enemy alive - 0 for a hit,
+	/// the time to a status for one that has to carry it when it falls (Capture, A523).</param>
+	public static bool LastWeaponskillBefore(IBattleChara target, float lands)
+	{
+		var ttk = target.GetCorrectedTTK();
+		var lives = WeaponRemain + lands;
+		return !float.IsNaN(ttk) && ttk > lives && ttk <= lives + WeaponTotal;
 	}
 
 	/// <summary>

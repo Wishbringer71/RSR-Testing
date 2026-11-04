@@ -287,9 +287,10 @@ public partial class BeastmasterRotation
 	}
 
 	/// <summary>
-	/// A1 and A2 of concept 01 ("Was gilt beim Anfreunden", A487): <paramref name="target"/> can become a familiar the
-	/// player has not got, is not marked, not above his level, the game would take Capture on it - and it falls before the
-	/// next GCD by its corrected time to kill, so the mark meets the least HP it can.
+	/// A1 and A2 of concept 01 ("Was gilt beim Anfreunden", A487, A523): <paramref name="target"/> can become a familiar
+	/// the player has not got, is not marked, not above his level, the game would take Capture on it - and this is the
+	/// last weaponskill whose mark still arrives before it falls (<see cref="CaptureLanding"/>), so the mark meets the
+	/// least HP at which a pact can still come.
 	/// </summary>
 	public static unsafe bool CaptureDue(IBattleChara target)
 	{
@@ -305,8 +306,8 @@ public partial class BeastmasterRotation
 			return false;
 		}
 
-		var ttk = target.GetCorrectedTTK();
-		if (float.IsNaN(ttk) || ttk > DataCenter.DefaultGCDTotal)
+		// A2 (A523): the last weaponskill whose mark still arrives before it falls.
+		if (!LastWeaponskillBefore(target, CaptureLanding))
 		{
 			return false;
 		}
@@ -314,6 +315,137 @@ public partial class BeastmasterRotation
 		var actions = ActionManager.Instance();
 		return actions != null && actions->GetActionStatus(ActionType.Action, (uint)ActionID.CapturePvE, target.GameObjectId,
 			checkRecastActive: false, checkCastingActive: false) == 0;
+	}
+
+	// A2 (concept 01, A523): the mark of Capture arrives after its effect - 0.62 s later in both of the owner's recordings
+	// (02.11.2026 Killermantis, 03.11.2026 Flechten-Goobbue). Until RSR has measured it from the press, that delay.
+	private const float RecordedMarkDelay = 0.62f;
+	private static float _captureLanding = -1f;
+
+	/// <summary>
+	/// How long the mark of Capture takes from pressing it to arriving on the enemy: last measured in this session, or the
+	/// delay the owner's recordings showed before the first measurement (A2, A523).
+	/// </summary>
+	public static float CaptureLanding => _captureLanding >= 0f ? _captureLanding : RecordedMarkDelay;
+
+	// An enemy in combat that would be a familiar the player lacks, followed until it falls (A2's trace, A523).
+	private readonly record struct CaptureWatch(string Name, BeastmasterPet Pet, bool Aimed, bool Marked, float Ttk);
+
+	private static readonly Dictionary<ulong, CaptureWatch> _captureWatch = [];
+	private static readonly HashSet<ulong> _captureSeen = [];
+	private static readonly List<ulong> _captureGone = [];
+	private static BeastmasterPet _pactAwaited;
+	private static string _pactFrom = string.Empty;
+
+	/// <summary>A2: the rotation chose Capture on <paramref name="target"/>.</summary>
+	public static void CaptureAimed(IBattleChara target)
+	{
+		var pet = CapturableFamiliar(target);
+		_captureWatch[target.GameObjectId] = _captureWatch.TryGetValue(target.GameObjectId, out var known)
+			? known with { Aimed = true }
+			: new CaptureWatch(target.Name.TextValue, pet, true, false, target.GetCorrectedTTK());
+	}
+
+	/// <summary>
+	/// A2 (concept 01, A523): follows every living enemy in combat that would be a familiar the player lacks - when the
+	/// mark of Capture arrives on it, measured from the press; whether it falls marked; whether the game lists the familiar
+	/// after. One line each in DefenseTrace.log.
+	/// </summary>
+	public static void WatchCapture()
+	{
+		var player = Player;
+		if (player == null)
+		{
+			return;
+		}
+
+		if (_pactAwaited != BeastmasterPet.None && FamiliarUnlocked(_pactAwaited) == true)
+		{
+			DefenseTrace.Line($"Capture: pact - {_pactAwaited} from {_pactFrom} is in the bestiary now");
+			_pactAwaited = BeastmasterPet.None;
+		}
+		else if (_pactAwaited != BeastmasterPet.None && DataCenter.InCombat && _captureWatch.Count == 0)
+		{
+			DefenseTrace.Line($"Capture: no pact - {_pactFrom} fell marked, {_pactAwaited} is still not in the bestiary");
+			_pactAwaited = BeastmasterPet.None;
+		}
+
+		_captureSeen.Clear();
+		foreach (var hostile in DataCenter.AllHostileTargets)
+		{
+			if (hostile == null || hostile.IsDead || !hostile.InCombat())
+			{
+				continue;
+			}
+
+			var id = hostile.GameObjectId;
+			if (!_captureWatch.TryGetValue(id, out var watch))
+			{
+				var pet = CapturableFamiliar(hostile);
+				if (pet == BeastmasterPet.None || FamiliarUnlocked(pet) != false || hostile.Level > player.Level)
+				{
+					continue;
+				}
+
+				watch = new CaptureWatch(hostile.Name.TextValue, pet, false, false, float.NaN);
+			}
+
+			_captureSeen.Add(id);
+			var marked = hostile.HasStatus(true, StatusID.InterestCaptured);
+			if (marked && !watch.Marked && CapturePressedWithinGcd())
+			{
+				_captureLanding = DataCenter.DefaultGCDElapsed;
+				DefenseTrace.Line($"Capture: mark on {watch.Name} ({watch.Pet}) {_captureLanding:F2} s after the press, "
+					+ $"{hostile.GetHealthRatio():P1} HP - the next Capture counts this landing");
+			}
+
+			_captureWatch[id] = watch with { Marked = watch.Marked || marked, Ttk = hostile.GetCorrectedTTK() };
+		}
+
+		_captureGone.Clear();
+		foreach (var (id, watch) in _captureWatch)
+		{
+			if (!_captureSeen.Contains(id))
+			{
+				_captureGone.Add(id);
+				DefenseTrace.Line($"Capture: {watch.Name} ({watch.Pet}) fell or left "
+					+ (watch.Marked ? "marked - a pact shows in the bestiary"
+						: watch.Aimed ? "unmarked - Capture came too late for its mark"
+						: $"unmarked, without Capture - its last time to kill {watch.Ttk:F1} s, landing {CaptureLanding:F2} s"));
+				if (watch.Marked)
+				{
+					_pactAwaited = watch.Pet;
+					_pactFrom = watch.Name;
+				}
+			}
+		}
+
+		foreach (var id in _captureGone)
+		{
+			_ = _captureWatch.Remove(id);
+		}
+	}
+
+	// Whether the GCD now running began with Capture - its effect came after the press, so no later than the GCD began -
+	// so the time since that GCD began is the time since its press. The newest record comes first.
+	private static bool CapturePressedWithinGcd()
+	{
+		var elapsed = DataCenter.DefaultGCDElapsed;
+		if (elapsed <= 0f)
+		{
+			return false;
+		}
+
+		var now = DateTime.Now;
+		foreach (var record in DataCenter.RecordActions)
+		{
+			if (record.Action.RowId == (uint)ActionID.CapturePvE)
+			{
+				return (now - record.UsedTime).TotalSeconds <= elapsed;
+			}
+		}
+
+		return false;
 	}
 
 	// Where Pet.Abilities holds what a familiar's Trick and Tempered Release execute.

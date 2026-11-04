@@ -2380,7 +2380,7 @@ public static class ObjectHelper
 	private static readonly TimeSpan ForecastFreshness = TimeSpan.FromSeconds(3);
 
 	/// <summary>
-	/// <see cref="GetTTK"/> corrected by how wrong it has been lately - the value a rule should read.
+	/// <see cref="GetTTK"/> corrected by how wrong it has been lately, counted from now - the value a rule should read.
 	/// </summary>
 	/// <remarks>
 	/// Reads the forecast that <see cref="ScoreTtkForecast"/> filed rather than recomputing it.
@@ -2399,8 +2399,10 @@ public static class ObjectHelper
 			return float.NaN;
 		}
 
+		// Filed once per history sample, so up to a second old: counted from now, not from when it was filed (A523).
 		var bias = battleChara.GetTtkBias();
-		return bias > 0f ? last.Ttk / bias : last.Ttk;
+		var filed = bias > 0f ? last.Ttk / bias : last.Ttk;
+		return Math.Max(0f, filed - (float)(DateTime.Now - last.At).TotalSeconds);
 	}
 
 	/// <summary>

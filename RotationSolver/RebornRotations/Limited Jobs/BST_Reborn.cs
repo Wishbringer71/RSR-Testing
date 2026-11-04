@@ -57,8 +57,9 @@ public sealed class BST_Reborn : BeastmasterRotation
 
 	[RotationConfig(CombatType.PvE, Name = "Capture familiars you do not have yet",
 		Tooltip = "When an enemy you can befriend as a familiar, one you do not have yet and not above your level, is about to "
-			+ "fall before your next weaponskill, Capture marks it then, at the least HP it will have alive: the lower its HP "
-			+ "when marked, the likelier the pact. Capture shares the weaponskill timer, so it costs one weaponskill per "
+			+ "fall, Capture marks it with the last weaponskill whose mark still arrives before it falls - at the least HP "
+			+ "at which a pact can still come: the lower its HP when marked, the likelier the pact, and none if it falls "
+			+ "before the mark arrives. Capture shares the weaponskill timer, so it costs one weaponskill per "
 			+ "attempt, and none once you have that familiar.\n"
 			+ "Off: Capture is never used.")]
 	private bool CaptureFamiliars { get; set; } = true;
@@ -815,6 +816,12 @@ public sealed class BST_Reborn : BeastmasterRotation
 		// B5 (A522): the judgement of a sent assignment every frame, in combat or not; what the fights here showed; a change
 		// by hand; then, out of combat, the horns for the next fight.
 		_ = BattlehornAssignmentPending;
+		// A2 (A523): the mark of Capture, its landing and the pact, followed while Capture is on.
+		if (CaptureFamiliars)
+		{
+			WatchCapture();
+		}
+
 		RecordFight();
 		WatchHand();
 		if (HornsBetweenFights)
@@ -843,6 +850,7 @@ public sealed class BST_Reborn : BeastmasterRotation
 	private bool _fighting;
 	private int _fightPeak;
 	private int _lastPeak;
+	private int _waitingPeak;
 	private bool _dangerInArea;
 	private bool _heldByHand;
 	private byte[] _slotsSeen = [];
@@ -851,7 +859,7 @@ public sealed class BST_Reborn : BeastmasterRotation
 	private readonly List<BeastmasterPet> _candidates = [];
 
 	// What the choice reads; a new plan only when one of these changes.
-	private readonly record struct HornPlanKey(uint Area, int Level, bool Boss, int Required, int Pack, ulong Next,
+	private readonly record struct HornPlanKey(uint Area, int Level, bool Boss, int Required, int Pack,
 		byte First, byte Second, byte Third, int Out, int Candidates, OneWithNatureOrder NatureFirst,
 		OneWithNatureOrder NatureSecond, OneWithNatureOrder NatureThird);
 
@@ -887,6 +895,7 @@ public sealed class BST_Reborn : BeastmasterRotation
 			_fighting = false;
 			_fightPeak = 0;
 			_lastPeak = 0;
+			_waitingPeak = 0;
 			_dangerInArea = false;
 			_heldByHand = false;
 			_planKey = null;
@@ -909,6 +918,7 @@ public sealed class BST_Reborn : BeastmasterRotation
 			_fighting = false;
 			_lastPeak = _fightPeak;
 			_fightPeak = 0;
+			_waitingPeak = 0;
 			_heldByHand = false;
 			_planKey = null;
 		}
@@ -986,8 +996,12 @@ public sealed class BST_Reborn : BeastmasterRotation
 			return;
 		}
 
-		var pack = boss ? 1 : Math.Max(1, Math.Max(_lastPeak, EnemiesWaitingAround(next, reach)));
-		var key = new HornPlanKey(_area, DataCenter.PlayerSyncedLevel(), boss, required, pack, next.GameObjectId, slots[I],
+		// The most enemies seen waiting together since the last fight: it only grows until the next one. Read afresh each
+		// frame it flipped with whichever enemy was nearest - on 04.11.2026 six assignments in 1.5 s between a pack of one
+		// and of two (A523).
+		_waitingPeak = Math.Max(_waitingPeak, EnemiesWaitingAround(next, reach));
+		var pack = boss ? 1 : Math.Max(1, Math.Max(_lastPeak, _waitingPeak));
+		var key = new HornPlanKey(_area, DataCenter.PlayerSyncedLevel(), boss, required, pack, slots[I],
 			slots[II], slots[III], ActiveBattlehorn, _candidates.Count, EffectiveNature(HornOrder.FirstBattlehorn),
 			EffectiveNature(HornOrder.SecondBattlehorn), EffectiveNature(HornOrder.ThirdBattlehorn));
 		if (key == _planKey)
@@ -1010,7 +1024,7 @@ public sealed class BST_Reborn : BeastmasterRotation
 			if ((int)horn == ActiveBattlehorn || !HornAvailable(horn))
 			{
 				// The familiar out keeps its horn: what an assignment does to it is not measured.
-				options[h].Add(Option(current[h], horn, boss, next));
+				options[h].Add(Option(current[h], horn, boss, pack));
 				continue;
 			}
 
@@ -1018,7 +1032,7 @@ public sealed class BST_Reborn : BeastmasterRotation
 			// left otherwise.
 			if (current[h] == BeastmasterPet.None || !_candidates.Contains(current[h]))
 			{
-				options[h].Add(Option(current[h], horn, boss, next));
+				options[h].Add(Option(current[h], horn, boss, pack));
 			}
 
 			foreach (var pet in _candidates)
@@ -1032,7 +1046,7 @@ public sealed class BST_Reborn : BeastmasterRotation
 
 				if (!fixedElsewhere)
 				{
-					options[h].Add(Option(pet, horn, boss, next));
+					options[h].Add(Option(pet, horn, boss, pack));
 				}
 			}
 		}
@@ -1097,7 +1111,7 @@ public sealed class BST_Reborn : BeastmasterRotation
 	// before a pack, C1); whether it is the kind that covers that fight best - its Trick heals before a boss, its Tempered
 	// Release stops a pack; the damage of its Trick and, on a horn that spends One with Nature on it, its Tempered Release,
 	// each its potency times the enemies its area reaches.
-	private HornOption Option(BeastmasterPet pet, HornOrder horn, bool boss, IBattleChara next)
+	private HornOption Option(BeastmasterPet pet, HornOrder horn, bool boss, int pack)
 	{
 		if (FamiliarOf(pet) is not { } familiar)
 		{
@@ -1110,21 +1124,21 @@ public sealed class BST_Reborn : BeastmasterRotation
 		var trickHeals = familiar.TrickHeals && TrickPvE.Info.EnoughLevelAndQuest();
 		var fitting = safe && (boss ? trickHeals : stops && nature == OneWithNatureOrder.Tempered);
 		var damage = TrickPvE.Info.EnoughLevelAndQuest()
-			? (familiar.TrickPotency > 0f ? familiar.TrickPotency : 1f) * Hits(familiar.TrickRadius, boss, next)
+			? (familiar.TrickPotency > 0f ? familiar.TrickPotency : 1f) * Hits(familiar.TrickRadius, boss, pack)
 			: 0f;
 		if (nature == OneWithNatureOrder.Tempered)
 		{
-			damage += familiar.ReleasePotency * Hits(familiar.ReleaseRadius, boss, next);
+			damage += familiar.ReleasePotency * Hits(familiar.ReleaseRadius, boss, pack);
 		}
 
 		return new HornOption(pet, safe, fitting, damage, trickHeals);
 	}
 
-	// The enemies an area of `radius` reaches in the next fight: one for a single target or a boss; else the most that
-	// fought at once in the last fight here, at least those waiting within its reach of the next enemy.
-	private int Hits(float radius, bool boss, IBattleChara next)
+	// The enemies an area reaches in the next fight: one for a single target or a boss, else the pack - every enemy of
+	// it within the area, as the model assumes (a tank gathers them).
+	private static int Hits(float radius, bool boss, int pack)
 	{
-		return radius <= 0f || boss ? 1 : Math.Max(1, Math.Max(_lastPeak, EnemiesWaitingAround(next, radius)));
+		return radius <= 0f || boss ? 1 : pack;
 	}
 
 	private HornPlanScore Score(HornOption a, HornOption b, HornOption c, BeastmasterPet[] current, int required)
@@ -1152,8 +1166,13 @@ public sealed class BST_Reborn : BeastmasterRotation
 		// A1, A2 (concept 01, A487): Capture on the last weaponskill before a familiar you lack falls.
 		if (CaptureFamiliars && InCombat && CapturePvE.CanUse(out act))
 		{
+			if (CapturePvE.Target.Target is { } marked)
+			{
+				CaptureAimed(marked);
+			}
+
 			TraceHorn($"Capture on {CapturePvE.Target.Target?.Name} ({CapturableFamiliar(CapturePvE.Target.Target)}): "
-				+ "a familiar you do not have, falling before the next weaponskill");
+				+ $"a familiar you do not have, its last weaponskill whose mark arrives before it falls ({CaptureLanding:F2} s)");
 			return true;
 		}
 

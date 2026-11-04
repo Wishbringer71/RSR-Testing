@@ -15657,6 +15657,50 @@ analysieren".
   Befehls außerhalb des Kampfes ist gemessen (A521); B5 selbst nicht im Spiel beobachtet – es misst Gefahr und
   Rudelgröße selbst, und jede Zuweisung schreibt Plan und Urteil des Servers ins `DefenseTrace.log`.
 
+### A523 · Upload vom 04.11.2026 mittags: Anfreunden kam zu spät, B5 im Spiel (04.11.2026)
+
+Hochgeladen: `DefenseTrace.log` (08:44–11:13, darin 10:27–10:37 mit ad1013fb8 und ab 10:38 mit 0ee04305b) und
+`BestiaryTrace.log`. Kein ACT-Mitschnitt. Gespielt: Beastmaster Stufe 23–24 in einer FATE im Südlichen Thanalan und
+allein in der Kupferglocken-Mine, zweimal bis zum Zornigen Ichor. Seine Frage: „wird anfreunden richtig genutzt? ich
+habe den schleim bislang nicht anfreunden können."
+
+- *Der Schleim:* Er fehlt unter den 30 Begleitern, die das Spiel als freigeschaltet führt. Anfreundbar ist er am
+  Zornigen Ichor (BNpcBase 14448: Spalte 10 = 5, Modell 87/1 wie das Aussehen des Schleims, PetMirage 25); der
+  Tropfende Ichor (14449) trägt 0. Beides xivapi v2, 04.11.2026. RSR erkennt ihn richtig: „Capture on Zorniger Ichor
+  (Slime)".
+- *Befund:* Anfreunden kam einmal und zu spät, beim zweiten Kill gar nicht.
+  - 10:47:28,6 gewählt, Kampfende 10:47:29,7. Die Markierung braucht nach der Wirkung 0,62 s (gemessen in seinen
+    Mitschnitten vom 02.11., Killermantis, und 03.11., Flechten-Goobbue: Wirkung, dann Status 4626). Sie kam
+    vermutlich nach dem Fall – ein Schluss aus den Zeiten, ohne Mitschnitt nicht belegt. Ohne Markierung kein Pakt.
+  - 10:57:51 fiel er ohne Anfreunden.
+- *Ursache, am Code belegt:*
+  - `GetCorrectedTTK` las die Restzeit so, wie sie einmal je Sekunde abgelegt wird, also bis zu 1 s zu lang.
+  - A2 („Restzeit ≤ ein GCD") rechnete die Landezeit der Markierung nicht ein.
+  - Gerechnet (`bst_capture_model.py`): Selbst bei genauer Vorhersage kamen 52 % der Markierungen rechtzeitig.
+- *Behebung:*
+  - `GetCorrectedTTK` zieht das Alter der Vorhersage ab (zentral, für jeden Leser; Konzept 08).
+  - `LastWeaponskillBefore(Ziel, Landezeit)` als allgemeine Regel; `LastWeaponskillOnTarget` (A413, Mönch) nutzt sie
+    mit 0.
+  - Anfreunden markiert mit dem letzten GCD, dessen Markierung vor dem Fall ankommt. Die Landezeit misst RSR selbst vom
+    Drücken bis zum Status, bis dahin 0,62 s (Ausnahme in `fixed_values.json`).
+  - Modell: 100 % rechtzeitig bei genauer Vorhersage, 96 bis 90 % bei 10 bis 25 % Fehler; Markierung bei 6,6 statt
+    4,7 % der LP der letzten 30 s.
+  - Spur: Landezeit, „fell marked/unmarked", Pakt oder kein Pakt, unmarkiert gefallene Kandidaten mit Restzeit.
+  - Optionstext „Capture familiars you do not have yet" nennt die Landezeit.
+- *Betroffene:* Mönch – Six-sided Star als letzter Schlag liest jetzt die Restzeit von jetzt (genauer, kein neues
+  Verhalten). Blaumagier (`BlueMageRotation`, zwei Leser): bis zu 1 s kürzere Restzeit, Richtung sicherer.
+- *B5 im Spiel* (ab 10:38): 31 Zuweisungen, alle angenommen (0,1–0,4 s); vor beiden Bossen „the boss Zorniger Ichor"
+  und „the boss Kottos" mit drei sicheren Begleitern nach Gefahr im Gebiet; B2 schickte Raptor mit Scheidendem Schlag
+  für Fliegenfalle. *Defekt:* um 10:44:55 sechs Zuweisungen in 1,5 s, abwechselnd Vespula und Raptor, weil die Zahl
+  wartender Gegner mit dem jeweils nächsten Gegner zwischen 1 und 2 sprang. Behoben: Sie steigt bis zum nächsten Kampf
+  nur; jede Fläche zählt das Rudel.
+- *Übrige Zeilen:* eine Zeile Klasse 1 als Beastmaster in der FATE (10:29:25); 220-mal „single defence open, nothing
+  chosen" allein ohne Heiler, wie erwartet. Kein Tod, keine Ausnahme, keine Handänderung erkannt.
+- *Neu von ihm, danach:* Schildansturm wird auch in der Gegnergruppe nicht als Fläche genutzt; das Bestienkönnen nach
+  Borgen hat er nicht gesehen.
+- *Prüfgrad:* Protokoll; Modell mit Selbsttest gegen einen konstruierten Defekt; Compile; CI-Prüfungen lokal. Im Spiel
+  nicht beobachtet; die Spur zeigt beim nächsten Anfreunden Landezeit und Ausgang.
+
 ## B · Commit-Register (Fork vs. `upstream/main`)
 
 ### B1 · Einzelgeprüfte Fork-Commits

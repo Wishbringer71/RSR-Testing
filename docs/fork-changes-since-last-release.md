@@ -69,3 +69,9 @@ What this release changes in the fight. For the whole distance from upstream, se
   there. The familiar out keeps its horn, horns you changed yourself stay until the next fight ends,
   and nothing changes while the Bestiary is open or in the Crucible. `DefenseTrace.log` names every
   plan and whether the server took it.
+- **Capture marks in time.** The mark arrives about 0.6 s after Capture goes off, and a pact needs the
+  enemy to fall marked; RSR also read the enemy's time to kill up to a second too long. Capture now goes
+  on the last weaponskill whose mark still arrives before the enemy falls, with the landing measured
+  from your own presses. `DefenseTrace.log` says when the mark arrived, whether the enemy fell marked
+  and whether the pact came. The time to kill is now counted from the moment it is read for every rule
+  that uses it, as Six-sided Star's last-hit check.

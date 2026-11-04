@@ -868,9 +868,26 @@ mit ihm anfreunden kann, und das Talent dann so einsetzen, dass es wahrscheinlic
   ist; solange du nicht schon einen markierst (Capturing Interest, 4624). Hat das Spiel die Liste noch nicht geladen
   (`XBMManager.State`), oder lehnt es Anfreunden für dieses Ziel ab (`GetActionStatus` mit dem Ziel, ohne
   Abklingzeit), keiner.
-- *A2 – Wann:* wenn seine korrigierte Restzeit nicht länger ist als ein GCD. Dann fällt er voraussichtlich vor deinem
-  nächsten GCD, dies ist der letzte, der ihn noch lebend trifft, und seine LP sind die niedrigsten, die ein Markieren
-  noch erreicht. Weil Anfreunden nicht tötet, geht es auch bei 1 LP. Ohne Schätzung der Restzeit keine Markierung.
+- *A2 – Wann:* mit dem letzten GCD, dessen Markierung noch vor seinem Fall ankommt. Er lebt nach dem Beginn dieses GCD
+  länger als die Markierung braucht, nach dem Beginn des nächsten nicht mehr: Landezeit < Restzeit − Rest des laufenden
+  GCD ≤ Landezeit + ein GCD. Seine LP sind dann die niedrigsten, bei denen der Pakt noch möglich ist. Weil Anfreunden
+  nicht tötet, geht es auch bei 1 LP. Ohne Schätzung der Restzeit keine Markierung.
+  - *Warum die Landezeit:* Der Pakt entscheidet sich beim Fall eines Gegners, der „Freundschaftsempfänglich" trägt
+    (Status 4626, Wirktext). Die Markierung kommt nach der Wirkung von Anfreunden: 0,62 s später, in seinen Mitschnitten
+    vom 02.11. (Killermantis) und 03.11.2026 (Flechten-Goobbue). Fällt er vorher, gibt es keinen Pakt. RSR misst die
+    Landezeit selbst, vom Drücken bis zur Markierung, und nimmt die zuletzt gemessene. Bis zur ersten Messung gelten die
+    0,62 s.
+  - *Restzeit von jetzt:* Die korrigierte Restzeit wird einmal je Sekunde abgelegt. Gelesen wird sie abzüglich ihres
+    Alters, sonst ist sie bis zu 1 s zu lang (gilt für jeden Leser, `GetCorrectedTTK`).
+  - *Die Regel davor* („Restzeit nicht länger als ein GCD", aus der abgelegten Restzeit, ohne Landezeit) kam bei seinem
+    Lauf am 04.11.2026 zu spät. Anfreunden auf den Zornigen Ichor fiel 1,1 s vor dem Kampfende in die zweite Hälfte eines
+    GCD, beim zweiten Kill kam es nicht. Gerechnet (`bst_capture_model.py`): Sie markierte selbst bei genauer Vorhersage
+    52 % der Kills rechtzeitig, die jetzige 100 %, bei 10 bis 25 % Fehler in der Vorhersage 96 bis 90 %. Der Preis: Sie
+    markiert etwas früher (im Modell bei 6,6 statt 4,7 % der LP der letzten 30 s), also mit etwas kleinerer Chance je
+    Markierung.
+  - *Spur:* Wählt RSR Anfreunden, schreibt es eine Zeile. Danach schreibt es, wann die Markierung ankam (Landezeit), ob
+    der Gegner markiert fiel und ob das Spiel den Begleiter danach als freigeschaltet führt. Fällt ein Gegner, der ein
+    fehlender Begleiter wäre, ohne Markierung, schreibt es auch das, mit seiner letzten Restzeit.
 - *Preis:* ein GCD je Versuch, einmal je Gegner einer Art, die du noch nicht hast; misslingt der Pakt, beim nächsten
   dieser Art. Hast du sie, nie wieder.
 - *Lagen:* In der Gruppe markiert RSR ebenso; ob der Sieg eines Mitspielers zählt, ist unbelegt, der Preis bleibt ein
@@ -920,8 +937,11 @@ eingearbeitet werden, situationsbezogen"; A487, A488, A522):
   - *Was als Nächstes kommt:* Der nächste Gegner ist der nächste lebende Gegner, der noch nicht kämpft, in RSRs
     Gegnerliste (48 y, in Sicht). Trägt er das Boss-Symbol (`BNpcBase.Rank` 2 oder 6, `IsBossFromIcon`), kommt ein Boss:
     ein Ziel. Sonst ein Rudel: so viele Gegner, wie im letzten Kampf in diesem Gebiet zugleich gegen ihn, seine Gruppe
-    oder seinen Begleiter kämpften – nicht die, die ein anderer Spieler daneben bekämpft –, mindestens so viele, wie um
-    den nächsten Gegner in der Reichweite der jeweiligen Fläche stehen.
+    oder seinen Begleiter kämpften – nicht die, die ein anderer Spieler daneben bekämpft –, mindestens so viele, wie seit
+    dem letzten Kampf zusammen in Reichweite einer Fläche um einen nächsten Gegner standen. Diese Zahl steigt bis zum
+    nächsten Kampf nur. Neu gelesen wechselte sie beim Gehen mit dem jeweils nächsten Gegner: Am 04.11.2026 setzte RSR in
+    1,5 s sechsmal abwechselnd Vespula und Raptor (Rudel aus einem, dann aus zwei Gegnern; A523). Jede Fläche zählt das
+    ganze Rudel, wie im Modell: Ein Tank sammelt es.
     - *Beleg zum Boss-Symbol:* Die drei Bosse der Kupferglocken-Mine tragen Rang 6, 6 und 2 (Kottos, BNpcBase 14460;
       Zorniger Ichor, 14448; Gyges der Große, 14537), ihre Gegner davor 0 (14449, 1401, 1421; xivapi v2, 04.11.2026). In
       seinem Mitschnitt vom 02.11.2026 standen die Bosse 13 bis 30 s vor dem ersten Treffer in der Objektliste.
