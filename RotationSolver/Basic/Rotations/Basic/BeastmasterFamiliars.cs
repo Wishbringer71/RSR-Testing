@@ -369,28 +369,36 @@ public partial class BeastmasterRotation
 		return false;
 	}
 
-	// An enemy in combat that would be a familiar the player lacks, followed until it falls (A2's trace, A523).
-	private readonly record struct CaptureWatch(string Name, BeastmasterPet Pet, bool Aimed, bool Marked, float Ttk);
+	// An enemy in combat that would be a familiar the player lacks, followed until it falls (A2's trace, A523); when RSR
+	// last chose Capture on it (A528).
+	private readonly record struct CaptureWatch(string Name, BeastmasterPet Pet, bool Aimed, DateTime AimedAt, bool Marked,
+		float Ttk);
 
 	private static readonly Dictionary<ulong, CaptureWatch> _captureWatch = [];
 	private static readonly HashSet<ulong> _captureSeen = [];
 	private static readonly List<ulong> _captureGone = [];
-	private static BeastmasterPet _pactAwaited;
-	private static string _pactFrom = string.Empty;
+
+	// A528: a familiar whose enemy fell marked, with that enemy, until the game lists it or the body is gone while it
+	// still does not - the game enters a pact about 2 s after the fall, with the defeat (04.11.2026: Drake, Colibri,
+	// Coeurl), and a verdict at once called the Slime and the Worm "no pact".
+	private static readonly Dictionary<BeastmasterPet, (string Name, ulong Id)> _pactsAwaited = [];
+	private static readonly List<BeastmasterPet> _pactsDecided = [];
+	private static uint _pactArea;
 
 	/// <summary>A2: the rotation chose Capture on <paramref name="target"/>.</summary>
 	public static void CaptureAimed(IBattleChara target)
 	{
 		var pet = CapturableFamiliar(target);
+		var now = DateTime.Now;
 		_captureWatch[target.GameObjectId] = _captureWatch.TryGetValue(target.GameObjectId, out var known)
-			? known with { Aimed = true }
-			: new CaptureWatch(target.Name.TextValue, pet, true, false, target.GetCorrectedTTK());
+			? known with { Aimed = true, AimedAt = now }
+			: new CaptureWatch(target.Name.TextValue, pet, true, now, false, target.GetCorrectedTTK());
 	}
 
 	/// <summary>
-	/// A2 (concept 01, A523): follows every living enemy in combat that would be a familiar the player lacks - when the
-	/// mark of Capture arrives on it, measured from the press; whether it falls marked; whether the game lists the familiar
-	/// after. One line each in DefenseTrace.log.
+	/// A2 (concept 01, A523, A528): follows every living enemy in combat that would be a familiar the player lacks - when
+	/// the mark of Capture arrives on it, measured from the press, and whether RSR or the player pressed it; whether it
+	/// falls marked; whether the game lists the familiar after. One line each in DefenseTrace.log.
 	/// </summary>
 	public static void WatchCapture()
 	{
@@ -400,15 +408,29 @@ public partial class BeastmasterRotation
 			return;
 		}
 
-		if (_pactAwaited != BeastmasterPet.None && FamiliarUnlocked(_pactAwaited) == true)
+		var area = (uint)Svc.ClientState.TerritoryType;
+		var areaLeft = area != _pactArea;
+		_pactArea = area;
+		_pactsDecided.Clear();
+		foreach (var (pet, from) in _pactsAwaited)
 		{
-			DefenseTrace.Line($"Capture: pact - {_pactAwaited} from {_pactFrom} is in the bestiary now");
-			_pactAwaited = BeastmasterPet.None;
+			if (FamiliarUnlocked(pet) == true)
+			{
+				DefenseTrace.Line($"Capture: pact - {pet} from {from.Name} is in the bestiary now");
+				_pactsDecided.Add(pet);
+			}
+			else if (areaLeft || Svc.Objects.SearchById(from.Id) == null)
+			{
+				// The defeat is long through once its body is gone, or the area is left.
+				DefenseTrace.Line($"Capture: no pact - {from.Name} fell marked, {pet} is still not in the bestiary now that "
+					+ (areaLeft ? "you left the area" : "its body is gone"));
+				_pactsDecided.Add(pet);
+			}
 		}
-		else if (_pactAwaited != BeastmasterPet.None && DataCenter.InCombat && _captureWatch.Count == 0)
+
+		foreach (var pet in _pactsDecided)
 		{
-			DefenseTrace.Line($"Capture: no pact - {_pactFrom} fell marked, {_pactAwaited} is still not in the bestiary");
-			_pactAwaited = BeastmasterPet.None;
+			_ = _pactsAwaited.Remove(pet);
 		}
 
 		_captureSeen.Clear();
@@ -428,7 +450,7 @@ public partial class BeastmasterRotation
 					continue;
 				}
 
-				watch = new CaptureWatch(hostile.Name.TextValue, pet, false, false, float.NaN);
+				watch = new CaptureWatch(hostile.Name.TextValue, pet, false, DateTime.MinValue, false, float.NaN);
 			}
 
 			_captureSeen.Add(id);
@@ -436,8 +458,11 @@ public partial class BeastmasterRotation
 			if (marked && !watch.Marked && CapturePressedWithinGcd())
 			{
 				_captureLanding = DataCenter.DefaultGCDElapsed;
+				// By RSR when it chose Capture on this enemy within a weaponskill before the press.
+				var pressedAt = DateTime.Now.AddSeconds(-DataCenter.DefaultGCDElapsed);
+				var byRsr = watch.Aimed && watch.AimedAt >= pressedAt.AddSeconds(-DataCenter.DefaultGCDTotal);
 				DefenseTrace.Line($"Capture: mark on {watch.Name} ({watch.Pet}) {_captureLanding:F2} s after the press "
-					+ (watch.Aimed ? "by RSR" : "by hand") + $", {hostile.GetHealthRatio():P1} HP - the next Capture counts "
+					+ (byRsr ? "by RSR" : "by hand") + $", {hostile.GetHealthRatio():P1} HP - the next Capture counts "
 					+ "this landing");
 			}
 
@@ -451,13 +476,12 @@ public partial class BeastmasterRotation
 			{
 				_captureGone.Add(id);
 				DefenseTrace.Line($"Capture: {watch.Name} ({watch.Pet}) fell or left "
-					+ (watch.Marked ? "marked - a pact shows in the bestiary"
+					+ (watch.Marked ? "marked - whether the pact came shows in the bestiary"
 						: watch.Aimed ? "unmarked - Capture came too late for its mark"
 						: $"unmarked, without Capture - its last time to kill {watch.Ttk:F1} s, landing {CaptureLanding:F2} s"));
 				if (watch.Marked)
 				{
-					_pactAwaited = watch.Pet;
-					_pactFrom = watch.Name;
+					_pactsAwaited[watch.Pet] = (watch.Name, id);
 				}
 			}
 		}

@@ -1976,7 +1976,8 @@ public struct ActionTargetInfo(IBaseAction action)
 						var filtered = new List<IBattleChara>();
 						foreach (var t in battleChara)
 						{
-							if (t.IsHostile() && t.DistanceToPlayer() < Service.Config.DistanceForMoving2)
+							// Within the distance, the bound included, as GapCloserAllowed (A528).
+							if (t.IsHostile() && t.DistanceToPlayer() <= Service.Config.DistanceForMoving2)
 							{
 								filtered.Add(t);
 							}

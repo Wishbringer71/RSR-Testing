@@ -954,8 +954,10 @@ public sealed class BST_Reborn : BeastmasterRotation
 	private bool _counting;
 	private string _chargeHeld = string.Empty;
 
-	// W5 (A525): Shield Charge stands ready with more than one enemy within reach and does not go - why, once per fight
-	// and reason. On 04.11.2026 it stood so for 23 s in a pull in the South Shroud, and the files could not say why.
+	// W5 (A525, A528): Shield Charge stands ready with more than one enemy within reach and does not go - why, once per
+	// fight and kind of reason, with the values at that moment. On 04.11.2026 it stood so for 23 s in a pull in the South
+	// Shroud, and the files could not say why; the line then came 1,051 times in one afternoon, because the distance it
+	// names changed every frame.
 	private void WatchChargeHeld()
 	{
 		if (!InCombat || !ShieldChargePvE.EnoughLevel || !ShieldChargePvE.Cooldown.HasOneCharge || NumberOfHostilesInRange <= 1)
@@ -963,13 +965,15 @@ public sealed class BST_Reborn : BeastmasterRotation
 			return;
 		}
 
+		string kind;
 		string why;
 		if (!ShieldChargePvE.IsEnabled)
 		{
-			why = "the action is switched off in RSR";
+			kind = why = "the action is switched off in RSR";
 		}
 		else if (Service.Config.AoEType != RotationSolver.Basic.Configuration.ConfigTypes.AoEType.Full)
 		{
+			kind = "AoE setting";
 			why = $"the AoE setting is {Service.Config.AoEType}";
 		}
 		else if (!ShieldChargePvE.CanUse(out _, usedUp: true))
@@ -983,18 +987,20 @@ public sealed class BST_Reborn : BeastmasterRotation
 				}
 			}
 
+			kind = "no target";
 			why = $"no target it may take: nearest enemy {nearest:F1} y, melee range {DataCenter.JobRange:F0} y, gap closers "
 				+ $"within {Service.Config.DistanceForMoving2:F1} y, no new enemies {Service.Config.NoNewHostiles}, "
 				+ "else BossModReborn's dash check or the action's own conditions";
 		}
 		else
 		{
+			kind = "reach";
 			why = $"its target reaches {ShieldChargePvE.Target.AffectedTargets?.Length ?? 0} enemy";
 		}
 
-		if (why != _chargeHeld)
+		if (kind != _chargeHeld)
 		{
-			_chargeHeld = why;
+			_chargeHeld = kind;
 			DefenseTrace.Line($"Shield Charge held with {NumberOfHostilesInRange} enemies in range: {why}");
 		}
 	}

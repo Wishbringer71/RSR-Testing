@@ -12,14 +12,15 @@ Nach der Wirkung im Kampf: Sicherheit der Gruppe vor Schaden, gewichtet mit der 
 
 1. Nach der Wiederbelebung wartet RSR die Unverwundbarkeit ab: Ein Heiler stirbt am ersten Treffer nach dem
    Aufstehen, ohne dass RSR etwas drückt.
-2. Heilungen in „Heilung -" verpuffen: fünf GCDs Schaden und MP ohne Wirkung, solange der Status liegt; kein Leben,
+2. Beastmaster: Am Pull der Begleiter, der das Rudel aufhält, mit One with Nature: Allein gegen ein Rudel verbrennt der
+   erste Begleiter Entfesseln für Schaden, und wenn die Gefahr kommt, ist nichts Schützendes übrig; er starb daran
+   (Südwald, 04.11.2026).
+3. Heilungen in „Heilung -" verpuffen: fünf GCDs Schaden und MP ohne Wirkung, solange der Status liegt; kein Leben,
    denn die Heilung wirkt dort ohnehin nicht.
-3. Heilung bricht ab, weil ein Regen-Tick die Schwelle kreuzt: verlorene Wirkzeit, das Ziel bleibt an der Schwelle.
-4. Beastmaster: Ob Analysieren die LP einrechnet: Anfreunden markiert sicher, aber früher als nötig, wenn die Stufe der
+4. Heilung bricht ab, weil ein Regen-Tick die Schwelle kreuzt: verlorene Wirkzeit, das Ziel bleibt an der Schwelle.
+5. Beastmaster: Ob Analysieren die LP einrechnet: Anfreunden markiert sicher, aber früher als nötig, wenn die Stufe der
    Chance schon bei mehr LP die beste ist; jeder verlorene Pakt kostet einen weiteren Lauf (seine Vorgabe: Anfreunden
    hat oberste Priorität).
-5. Beastmaster: Am Pull der Begleiter, der das Rudel aufhält, mit One with Nature: Das Rudel wird erst Sekunden nach dem
-   Pull betäubt statt mit ihm.
 6. Beastmaster: Brechende Welle als Schaden: mit einem Wavekin auf dem Borgen-Horn ein Schadens-GCD, der nie kommt.
 7. Fremde Repositories auf Verbesserungen für RSR prüfen: Jeder Fund kann ein Defekt im Verhalten einer Klasse sein,
    den RSR heute im Kampf zeigt; zuerst die Rotationswerkzeuge für alle Jobs, Daedalus vorn (aktiv, alle Jobs,
@@ -74,7 +75,11 @@ Antwort aus dem Chat und schreibt Stufe und LP ins Protokoll; ändert sich die S
 *Konzept:* 01, „Was gilt beim Anfreunden".
 
 ### Beastmaster: Am Pull der Begleiter, der das Rudel aufhält, mit One with Nature · N
-Im Kampf: Am Pull um 10:45:05 (04.11.2026) brachten Raptor, Büffel und Fliegenfalle je 500 auf jeden Gegner; den
+Im Kampf, tödlich (Südwald, 04.11.2026, 13:25): Allein gegen drei Gegner, auf den Hörnern Raptor, Büffel, Fliegenfalle
+(B5: Rudel, noch keine Gefahr im Gebiet). Der Raptor kam zuerst (B3, „its Trick brings least") und setzte Entfesseln für
+Schaden ein, 1,5 s bevor RSR die Gefahr sah; War Cry des Büffels, das das Rudel 15 s betäubt, lag danach in der
+gemeinsamen Abklingzeit, Borgen samt Saatsäher war am Kampfbeginn verbraucht, kein Begleiter heilte. Von 781 auf 57 LP
+in 9 s, tot. Am Pull um 10:45:05 (04.11.2026) brachten Raptor, Büffel und Fliegenfalle je 500 auf jeden Gegner; den
 Gleichstand entschied die eingestellte Rufreihenfolge („First/Second/Third Horn"), Raptor kam zuerst, War Cry betäubte
 das Rudel erst nach dessen Einsatz. Unter der Belegung zwischen den Kämpfen (B5) wechselt, welcher Begleiter auf welchem
 Horn sitzt; die Reihenfolge trifft dann zufällig. Dazu steht nach einem Kampf der letzte Begleiter ohne One with Nature

@@ -15824,6 +15824,42 @@ habe den schleim bislang nicht anfreunden können."
 - *Prüfgrad:* Code, Modell mit Selbsttest, Compile ohne Warnung, CI-Prüfungen lokal. Im Spiel nicht beobachtet; die Spur
   „Capture on" nennt beide Einbrüche.
 
+### A528 · Upload vom 04.11.2026 nachmittags: Anfreunden nachgespielt, Pakt-Urteil zu früh, Ansturm bei 0 y, zwei Tode (04.11.2026)
+
+- *Anlass:* Upload ohne Frage (DefenseTrace 13:10–15:36, Build 59065ea56, also vor A527; ACT-Mitschnitt). Sein
+  Hinweis im selben Zug: „anfreunden wurde auch manuell ausgeführt. das nicht übersehen".
+- *Anfreunden, 18 Drücke im Mitschnitt:* RSR 5 (Doctore 16 %, Drakon 7 und 23 %, Apkallu 10 %, Coeurl 7 % LP), er 13,
+  elf davon bei vollen LP. Zuordnung: ein Druck zählt als RSRs, wenn RSR Anfreunden auf diesen Gegner bis 3 s davor
+  gewählt hatte; die Markierungszeile sagte „by RSR", sobald RSR ihn irgendwann gewählt hatte (Ose, letzter Coeurl:
+  falsch zugeordnet). Siebenmal fiel ein Drakon, nachdem RSR Anfreunden gewählt hatte und bevor der GCD frei war; die
+  Kämpfe dauerten 3 bis 7 s.
+- *Pakte:* Drakon (RSR, Markierung bei 9,8 %), Kolibri (er, 89 %), Coeurl (er, 36 %), Sandwurm (er, Druck bei vollen
+  LP; ab 14:54 auf dem Horn), Schleim aus dem Ichor um 11:52 (er, 11,7 %; erst um 15:06 in einer Boss-Planung, vorher
+  keine). Beim Sandwurm und beim Schleim schrieb RSR „no pact": Das Urteil fiel im nächsten Frame, wenn kein
+  beobachteter Gegner mehr lebte, das Spiel trägt den Pakt aber etwa 2 s nach dem Fall ein (C158). Die übrigen
+  „no pact"-Zeilen (Apkallu, Sandstein-Golem, Doctore) sind daher ungeprüft.
+- *A527 nachgespielt* (Skript im Notizordner, Annahme: Anfreunden ginge zu jedem seiner GCDs ab dem ersten Treffer):
+  rechtzeitig Drakon 12/12, Apkallu 11/11, Sandwurm 42/42, Coeurl 5/5, Sandstein-Golem 7/8, Kolibri 3/5.
+- *Schildansturm:* 1.051 Haltezeilen, alle „no target it may take ... gap closers within 0,0 y". Seine Einstellung „Only
+  use damaging gap closers within this distance" steht auf 0; RSR verlangte `<`, also nie. Jetzt `<=`
+  (`GapCloserAllowed`, Zielwahl für `HostileMovingAttack`), wie „within" und seine Regel „bei 0 Yalm nur Schaden"; alle
+  Jobs, nur an der Grenze. Zwischen 0 und 3 y widersprechen sich seine Einstellung und seine Vorgabe „unter 3y": ihm
+  vorgelegt. Die Haltezeile kommt jetzt je Kampf und Art des Grundes einmal.
+- *Zwei Tode:*
+  - 13:25 Südwald, allein gegen Coeurlklauen-Sammlerin, Zwielicht-Todesmaus und einen Goblin, sein Chocobo heilte: Der
+    Raptor (B3) setzte Entfesseln für Schaden 1,5 s vor der erkannten Gefahr ein; War Cry des Büffels lag dann in der
+    Abklingzeit, Borgen war verbraucht, kein Begleiter heilte; B2 fand keinen sicheren Horn. Von 781 auf 57 LP in 9 s.
+    TODO „Beastmaster: Am Pull der Begleiter, der das Rudel aufhält" nach vorn.
+  - 13:28 Östliches La Noscea: Cancer, Stufe 32 mit 173.700 LP, gegen ihn auf Stufe 28; Treffer für 30 und 44 % der LP,
+    tot nach 7 s. Dagegen hat der Beastmaster dieser Stufe nichts; wer den Kampf begann, zeigt der Mitschnitt nicht.
+- *Übrige Zeilen:* Hörner zwischen den Kämpfen 69 angenommen, 2 nicht. Zielart „wenigste LP" galt ab 13:14 durchgehend
+  (allein, sein Chocobo zählt nicht als Tank oder Heiler). Erster Kampf: langsamster Durchlauf 36 ms (TODO zum ersten
+  Kampf).
+- *Umgesetzt:* Pakt-Urteil erst, wenn der Körper verschwunden ist oder er das Gebiet verlässt; „by RSR" nur bei einer
+  Wahl innerhalb eines GCD vor dem Drücken; Haltezeile je Art des Grundes; Ansturm-Grenze einschließlich.
+- *Prüfgrad:* Mitschnitt und Protokoll ausgezählt, A527 am Mitschnitt nachgespielt; Compile, CI-Prüfungen lokal. Die
+  neuen Zeilen im Spiel nicht beobachtet.
+
 ## B · Commit-Register (Fork vs. `upstream/main`)
 
 ### B1 · Einzelgeprüfte Fork-Commits
@@ -16133,3 +16169,4 @@ Die offene Arbeit dazu — Reihenfolge und Abbruchbedingung der Nachprüfung —
 | C155 | Konzept 01, B1 (A485): „Gelesen wird die der beiden Zahlenspalten, deren Werte über alle Begleiter verschieden sind" (`XBMPet.Unknown5`, `Unknown6`) | Es gibt drei Id-Spalten; die beiden geprüften sind Action und Location, die Pet-Spalte ist `Unknown4`. Der Katalog entstand auf seinem Client nie (Protokoll vom 03.11.2026). | B1 prüft alle drei; A520. |
 | C156 | `check_movement_types.py` (A498): Shukuchi ohne Bewegungstyp, „no fork rotation casts it" | Die Ninja-Basisschicht wirkt Shukuchi auf „Move Forward" (`NinjaRotation.MoveForwardAbility`); ohne Typ lief es in die Platzierung der Flächenangriffe. | Typ `GroundTargetMove`; A520. |
 | C157 | A524: Kampfzeile „beastmaster fight“: „Schildansturm, Borgen, jedes Bestienkönnen gezählt“ | Gezählt wurde jede Aktion in jedem Frame neu: Der Zeitpunkt kam aus „jetzt minus Zeit seit der letzten Aktion“ und wich in jedem Frame ab („Shield Charge 73“ in einem Kampf am 04.11.2026). | Zählung aus der Aufzeichnung der Aktionen nach ihrer Zeit; A525. |
+| C158 | A525: Ichor um 11:52 „Fall 10,5 s später markiert (…), kein Pakt“; Konzept 01, A2: „der Pakt kam nicht“ | Der Pakt kam: Der Schleim war bis 11:52 nicht freigeschaltet und steht ab 15:06 auf seinem Horn. Die Zeile „no pact“ fiel im nächsten Frame, das Spiel trägt den Pakt etwa 2 s nach dem Fall ein. | Pakt-Urteil erst, wenn der Körper verschwunden ist; A528. |

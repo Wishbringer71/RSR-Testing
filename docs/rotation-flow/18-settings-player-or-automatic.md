@@ -16,7 +16,10 @@ sind, die durch routinen und ingame auswertungen besser geregelt werden können.
   gewöhnliche Zielwahl und lasen sie nicht. Der Paladin sprang mit Intervene aus bis zu 20 Yalm auf sein Ziel, sobald
   er stand; der Dragoon mit Stardiver und Dragonfire Dive ebenso, weil seine eigenen Grenzen ab Werk 20 Yalm sind. Jetzt
   liest jeder dieser Sprünge die zentrale Grenze (`CustomRotation.GapCloserAllowed`), eine Grenze der Rotation gilt
-  zusätzlich (unten, „Abstand für Sprungangriffe").
+  zusätzlich (unten, „Abstand für Sprungangriffe"). Die Grenze gilt einschließlich, wie „within" sagt: Steht sie auf
+  0 Yalm, geht ein Sprung auf ein Ziel, das er schon berührt – dann ist er nur Schaden (seine Regel). Bis A528 verlangte
+  RSR „näher als", und mit 0 Yalm ging kein Sprung mehr; so stand seine Einstellung am 04.11.2026, und der Schildansturm
+  kam nie.
 - **Die Heilschwellen auf den Gruppendurchschnitt lasen den Stand – behoben.** „Heal ahead of incoming damage"
   verspricht die Vorausschau für jede Heilschwelle; sechs Schwellen der Heiler-Rotationen und die Füllheilung lasen
   die Gesundheit jetzt statt beim Eintreffen der Heilung (unten, „Heilung").

@@ -45,6 +45,10 @@ What this release changes in the fight. For the whole distance from upstream, se
   command, leaps such as Intervene or J Kick now reach the farthest target in that cone within their
   range instead of only one within 3 yalms, as `Only use damaging gap closers within this distance`
   states.
+- **A gap closer distance of 0 now means "only onto a target you touch", not "never".** `Only use
+  damaging gap closers within this distance` now includes the distance itself. Set to 0, a leap such
+  as Shield Charge, Intervene or Stardiver goes onto an enemy you already stand against, where it moves
+  you nowhere and only deals damage; before, no leap went at all.
 
 ## Occult Crescent
 
@@ -78,8 +82,9 @@ What this release changes in the fight. For the whole distance from upstream, se
   RSR attacks anyway. The mark comes at somewhat more HP than at the very last moment, which lowers the
   chance per attempt a little; a missed mark loses the attempt altogether. `DefenseTrace.log` gives the
   reason, when the mark arrived and at how much HP, whether RSR or you pressed it, whether the enemy fell
-  marked and whether the pact came. The time to kill is now counted from the moment it is read for every
-  rule that uses it, as Six-sided Star's last-hit check.
+  marked and whether the pact came - judged once the enemy's body is gone, as the game enters a pact a
+  moment after the fall. The time to kill is now counted from the moment it is read for every rule that
+  uses it, as Six-sided Star's last-hit check.
 - **Fewest HP first when you fight alone.** As a Beastmaster or a Blue Mage with no tank and no healer
   alive in your party, RSR attacks the enemy with the least HP first, whatever your targeting setting:
   each enemy that falls is one fewer hitting you. With a tank or a healer alive your setting applies; a

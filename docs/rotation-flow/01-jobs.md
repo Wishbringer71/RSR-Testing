@@ -896,7 +896,12 @@ mit ihm anfreunden kann, und das Talent dann so einsetzen, dass es wahrscheinlic
     erste Treffer, oft der größte Teil, fehlte im Einbruch. Ein Gegner, der zwei, drei GCDs nach dem ersten Treffer
     fällt, war tot, bevor die Regel etwas sah. Gerechnet (`bst_capture_model.py`, 04.11.2026; Trash fällt 2 bis 8 s nach
     dem ersten Treffer, stoßweise): Die Regel aus A525 markierte 64 % dieser Kills rechtzeitig, die jetzige 99 % ab dem
-    zweiten Kill im Gebiet; den ersten Kill eines Gebiets 68 %, weil noch nichts gelernt ist.
+    zweiten Kill im Gebiet; den ersten Kill eines Gebiets 68 %, weil noch nichts gelernt ist. Nachgespielt an seinem
+    Mitschnitt vom 04.11.2026 nachmittags (Build 59065ea56, vor dieser Regel; Annahme: Anfreunden ginge zu jedem seiner
+    GCDs ab dem ersten Treffer): rechtzeitig markiert hätte sie Drakon 12 von 12, Apkallu 11 von 11, Sandwurm 42 von 42,
+    Coeurl 5 von 5, Sandstein-Golem 7 von 8, Kolibri 3 von 5. Die Regel davor markierte in dieser Sitzung fünfmal selbst;
+    siebenmal wählte sie Anfreunden auf einen Drakon, der fiel, bevor der GCD frei war. 13 Markierungen drückte er
+    selbst, elf davon bei vollen LP.
   - *Preis auf Trash:* Wer schneller fällt als eine Spanne, wird schon mit dem ersten GCD markiert, im Modell bei 96 % LP:
     eine kleine Chance je Kill, aber jede weitere Bestie derselben Art ist ein neuer Versuch; ein Kill ohne Markierung hat
     keinen. Fällt ein Gegner langsamer, kommt die Markierung später, bei weniger LP. Gegen einen Boss gilt der größere der
@@ -915,7 +920,11 @@ mit ihm anfreunden kann, und das Talent dann so einsetzen, dass es wahrscheinlic
     94 bis 95 % (50 bis 51 %), auf das Doppelte 83 bis 85 % (26 bis 33 %).
   - *Der Preis:* Sie markiert früher, also bei mehr LP: im Modell bei 9 % (gleichmäßig) und 16 % (in Stößen) der LP der
     letzten 30 s, die Restzeit-Regel bei 7 bis 8 %. Am Ichor am 04.11.2026 hätte sie um 11:52:43 bei 14,7 % markiert;
-    er selbst markierte um 11:52:46 bei 12,5 %, und der Pakt kam nicht. Wie die Chance mit den LP fällt, ist nicht belegt.
+    er selbst markierte um 11:52:46 bei 12,5 %, und der Pakt kam: Der Schleim war bis dahin nicht freigeschaltet, sonst
+    hätte RSR den Ichor nicht beobachtet, und steht ab 15:06 auf seinem Horn; die Zeile „no pact" kam zu früh (A528).
+    Am Nachmittag kamen Pakte bei 9,8 % (Drakon), 36 % (Coeurl), 89 % (Kolibri) und etwa 100 % LP (Sandwurm, gedrückt
+    bei vollen LP; sein Mitschnitt): Auch bei vielen LP ist die Chance nicht verschwindend, auf Gegner unter seiner
+    Stufe. Wie die Chance mit den LP fällt, ist nicht belegt.
     Der Wirktext sagt „umgekehrt proportional". Zusammenfassungen einer Suche nennen 12,5 % als Grenze (Gamer Escape)
     und raten zu unter 10 %, bei zähen Zielen unter 5 % (Icy Veins); beide Seiten weisen Skripte ab, ungeprüft. Ist die
     Chance wörtlich umgekehrt proportional zu den LP, bringt die späte Regel je Kill trotz ihrer Fehlschläge mehr Pakte
@@ -932,9 +941,12 @@ mit ihm anfreunden kann, und das Talent dann so einsetzen, dass es wahrscheinlic
       von RSR). Im Modell verliert sie in Stößen ein Viertel der Kills.
   - *Spur:* Wählt RSR Anfreunden, schreibt es eine Zeile mit dem Grund: größter Einbruch über die Spanne und die LP
     des Gegners, oder seine Restzeit. Danach schreibt es, wann die Markierung ankam (Landezeit), bei wie viel LP, und ob
-    RSR oder er sie gedrückt hat; ob der Gegner markiert fiel und ob das Spiel den Begleiter danach als freigeschaltet
-    führt. Fällt ein Gegner, der ein fehlender Begleiter wäre, ohne Markierung, schreibt es auch das, mit seiner letzten
-    Restzeit.
+    RSR oder er sie gedrückt hat – RSR, wenn es Anfreunden auf diesen Gegner innerhalb eines GCD vor dem Drücken gewählt
+    hatte –; ob der Gegner markiert fiel und ob das Spiel den Begleiter danach als freigeschaltet führt. Das Urteil „kein
+    Pakt" fällt erst, wenn der Körper des Gegners verschwunden ist oder er das Gebiet verlässt: Das Spiel trägt den Pakt
+    etwa 2 s nach dem Fall ein, mit der Niederlage (Drakon, Kolibri, Coeurl am 04.11.2026); geurteilt im nächsten Frame,
+    hieß es beim Schleim und beim Sandwurm „no pact", obwohl beide kamen (A528). Fällt ein Gegner, der ein fehlender
+    Begleiter wäre, ohne Markierung, schreibt es auch das, mit seiner letzten Restzeit.
   - *Verworfen:*
     - Eine zweite Markierung später, bei weniger LP: Ob das Spiel sie annimmt und ob sie die Chance neu setzt, belegt
       keine Quelle (Wirktext; consolegameswiki, eorzeantavern, ffxiv-offduty, 04.11.2026). Messen lässt es sich nicht:
@@ -1528,13 +1540,17 @@ gilt für jeden Job.
     Äxte (5 s), Entfesseln, Borgen, Scheidender Schlag. In den Trash-Kämpfen seines Laufs (5 bis 15 s) blieb ihm kaum
     ein Platz (Schluss aus dem Code).
   - *Gemessen am 04.11.2026* (Build 3ec6f295b, mit W5): Im Südwald um 11:56 lag er 23 s bereit, mit mehr als einem
-    Gegner in 3 y, und kam nicht; RSR schrieb keine Zeile „Shield Charge on". Woran es lag, sagt das Protokoll nicht;
-    seine Einstellungen lagen nicht bei. Kandidaten am Code: die Aktion in RSR ausgeschaltet, die AoE-Einstellung
-    „Off" oder „Cleave", „No new hostiles" mit einem Gegner ohne Ziel in der Fläche, die Abstandseinstellung unter dem
-    Abstand zum Gegner, BossModReborns Prüfung des Landepunkts. Einige Anstürme im Mitschnitt drückte er selbst („ich
-    habe die fähigkeiten zwischendurch manuell ausgelöst, da sie nicht kamen").
+    Gegner in 3 y, und kam nicht; RSR schrieb keine Zeile „Shield Charge on". Einige Anstürme im Mitschnitt drückte er
+    selbst („ich habe die fähigkeiten zwischendurch manuell ausgelöst, da sie nicht kamen").
+  - *Die Ursache* (Haltezeile am Nachmittag, Build 59065ea56, A528): Seine Einstellung „Only use damaging gap closers
+    within this distance" steht auf 0,0 y. RSR verlangte „näher als" die Einstellung, und näher als 0 y steht kein
+    Gegner: Jeder Ansturm war gesperrt, Schildansturm wie Brutal Rage und Hawkish Talons, bei jedem Job. Jetzt gilt die
+    Grenze einschließlich, wie der Text „within" sagt und wie seine Regel: Bei 0 y am Ziel ist ein Ansturm nur Schaden.
+    In 79 der 1.051 Haltezeilen stand der nächste Gegner bei 0,0 y. Darüber hinaus, bis 3 y, sperrt seine Einstellung
+    weiter; seine Vorgabe „unter 3y" und seine Einstellung 0 y widersprechen sich dort, das entscheidet er.
   - *Haltezeile:* Liegt er bereit, mit mehr als einem Gegner in Reichweite, und kommt nicht, schreibt RSR einmal je
-    Kampf und Grund, woran es liegt – ausgeschaltet, AoE-Einstellung, kein erlaubtes Ziel (mit Abstand zum nächsten
+    Kampf und Art des Grundes (bis A528 je Wortlaut, und der nannte den Abstand, der sich jeden Frame änderte), woran es
+    liegt – ausgeschaltet, AoE-Einstellung, kein erlaubtes Ziel (mit Abstand zum nächsten
     Gegner, Nahkampfreichweite, Abstandseinstellung und „No new hostiles"), oder das Ziel erreicht nur einen Gegner.
   - *Preis:* Dressur oder Axt kommen dann einen Platz später; ihre Abklingzeiten sind kurz, die 60 s des Ansturms laufen
     früher an. Steht er weiter als 3 y vom nächsten Gegner, kommt der Ansturm nicht, auch nicht als Einzelziel; das war

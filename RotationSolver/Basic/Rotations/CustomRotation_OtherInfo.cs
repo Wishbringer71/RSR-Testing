@@ -2844,8 +2844,10 @@ public partial class CustomRotation
 			return true;
 		}
 
+		// Within the distance, the bound included: set to 0, a leap onto a target he already touches is only damage (his
+		// rule; it never went before, as no distance is below 0, A528).
 		var distance = target?.DistanceToPlayer() ?? float.MaxValue;
-		return distance < Service.Config.DistanceForMoving2 && distance <= rotationLimit;
+		return distance <= Service.Config.DistanceForMoving2 && distance <= rotationLimit;
 	}
 
 	/// <summary>
