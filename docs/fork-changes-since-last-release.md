@@ -75,3 +75,8 @@ What this release changes in the fight. For the whole distance from upstream, se
   from your own presses. `DefenseTrace.log` says when the mark arrived, whether the enemy fell marked
   and whether the pact came. The time to kill is now counted from the moment it is read for every rule
   that uses it, as Six-sided Star's last-hit check.
+- **Shield Charge on a pack, Seedsower at once.** Shield Charge hitting more than one enemy now goes
+  before Trick and the axes instead of after everything else, where a short pull rarely left it a
+  slot. Seedsower goes out as soon as Borrow grants it, as Beastskin does. `DefenseTrace.log` counts
+  Shield Charge, Borrow and every Beast Mode action per fight, with how long Shield Charge stood ready
+  with several enemies in range.

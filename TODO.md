@@ -17,10 +17,11 @@ Nach der Wirkung im Kampf: Sicherheit der Gruppe vor Schaden, gewichtet mit der 
 3. Heilung bricht ab, weil ein Regen-Tick die Schwelle kreuzt: verlorene Wirkzeit, das Ziel bleibt an der Schwelle.
 4. Beastmaster: One with Nature vor dem nächsten Pull auffrischen: Das Rudel wird erst Sekunden nach dem Pull betäubt
    statt mit ihm.
-5. Fremde Repositories auf Verbesserungen für RSR prüfen: Jeder Fund kann ein Defekt im Verhalten einer Klasse sein,
+5. Beastmaster: Brechende Welle als Schaden: mit einem Wavekin auf dem Borgen-Horn ein Schadens-GCD, der nie kommt.
+6. Fremde Repositories auf Verbesserungen für RSR prüfen: Jeder Fund kann ein Defekt im Verhalten einer Klasse sein,
    den RSR heute im Kampf zeigt; zuerst die Rotationswerkzeuge für alle Jobs, Daedalus vorn (aktiv, alle Jobs,
    eigene Kampfvorhersage).
-6. Flächenbetäuber in Kreszentia für The Blackest Night: kostet MP, kein Leben.
+7. Flächenbetäuber in Kreszentia für The Blackest Night: kostet MP, kein Leben.
 
 Danach die technische Schuld, soweit ihre Auflösungsbedingung erfüllt ist. Warten auf Daten: unten.
 
@@ -57,6 +58,12 @@ Pull (Schluss aus dem Code, `BST_Reborn.AttackAbility`, nicht gemessen). Der Lei
 des Kampfes einen anderen Begleiter und dann wieder den Büffel (Hörner außerhalb 2 s). *Ort:* `BST_Reborn.GeneralAbility`
 (ruft heute nur ohne Begleiter draußen), B5. *Nächster Schritt:* Loop: Ruf außerhalb des Kampfes (1 s Wirkzeit, beim
 Laufen), Reihenfolge am Pull. *Konzept:* 01, „Belegung der Hörner in der Rotation".
+
+### Beastmaster: Brechende Welle als Schaden · N, U
+Im Kampf: Mit einem Wavekin auf dem Borgen-Horn (etwa Pugil) kommt Brechende Welle nur gegen ein Ziel mit einer der
+genannten Stärkungen; als Schaden (350, dazu TP) nie, weil ihre zweite Zeile hinter Schmetteraxt steht, die immer geht.
+*Ort:* `BST_Reborn.GeneralGCD` (Upstream 2fe925f41). *Nächster Schritt:* Loop: Wert gegen die Kombo-Waffenfertigkeiten,
+ob ein Zauber die Kombo bricht. *Konzept:* 01, „Bestienkönnen nach Borgen".
 
 ### Heilung bricht ab, weil ein Regen-Tick die Schwelle kreuzt · N, U
 Im Kampf: In Toto-Rak (Weißmagier, 04.11.2026) brach RSR achtmal eine Einzelheilung mitten im Wirken ab, weil das Ziel

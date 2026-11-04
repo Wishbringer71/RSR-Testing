@@ -230,6 +230,16 @@ public sealed class BST_Reborn : BeastmasterRotation
 			return true;
 		}
 
+		// W5 (concept 01, A524): Shield Charge on a pack before the actions that come back within seconds - 300 on every
+		// enemy within 6 y of the target, on a 60 s recast. Behind them it rarely found a free slot in a short pull. On one
+		// enemy it stays last, as before.
+		if (ShieldChargePvE.CanUse(out act, usedUp: CurrentPet != BeastmasterPet.None)
+			&& ShieldChargePvE.Target.AffectedTargets is { Length: > 1 } hit)
+		{
+			TraceHorn($"Shield Charge on {ShieldChargePvE.Target.Target?.Name}: {hit.Length} enemies in its reach");
+			return true;
+		}
+
 		if (NaturalInstinct == 3 || MasteredInstinct < 3)
 		{
 			if (TPCount >= 100 && !IsLastAction(true, PartingBlowPvE))
@@ -366,19 +376,22 @@ public sealed class BST_Reborn : BeastmasterRotation
 			return true;
 		}
 
-		if (SeedsowerPvE.CanUse(out act))
-		{
-			return true;
-		}
-
 		return base.AttackAbility(nextGCD, out act);
 	}
 
 	protected override bool GeneralAbility(IAction nextGCD, out IAction? act)
 	{
+		// The Beast Mode actions that protect go out as soon as Borrow grants them (concept 01, B2): Beastskin, and
+		// Seedsower, which lowers the damage of the enemies it reaches. Seedsower stood last among the attacks and rarely
+		// found a slot; B2 and B5 count a Seedkin familiar on a Borrow horn as protection (A524).
 		if (InCombat)
 		{
 			if (BeastskinPvE.CanUse(out act))
+			{
+				return true;
+			}
+
+			if (SeedsowerPvE.CanUse(out act))
 			{
 				return true;
 			}
@@ -823,6 +836,7 @@ public sealed class BST_Reborn : BeastmasterRotation
 		}
 
 		RecordFight();
+		CountFight();
 		WatchHand();
 		if (HornsBetweenFights)
 		{
@@ -922,6 +936,75 @@ public sealed class BST_Reborn : BeastmasterRotation
 			_heldByHand = false;
 			_planKey = null;
 		}
+	}
+
+	// A524: what the familiars' actions came to in a fight - Shield Charge, Borrow and the Beast Mode actions - and how
+	// long Shield Charge stood ready with more than one enemy in range. One line when the fight ends.
+	private readonly Dictionary<ActionID, int> _fightUses = [];
+	private DateTime _lastUseSeen;
+	private DateTime _lastCount;
+	private float _chargeIdle;
+	private bool _counting;
+
+	private static readonly ActionID[] CountedActions = [ActionID.ShieldChargePvE, ActionID.BorrowPvE, ActionID.BeastskinPvE,
+		ActionID.VileskinPvE, ActionID.CloudSkimPvE, ActionID.SeedsowerPvE, ActionID.QuellingWavePvE, ActionID.ScaleskinPvE,
+		ActionID.SoulCrushPvE, ActionID.ScouringAshPvE];
+
+	private void CountFight()
+	{
+		var now = DateTime.Now;
+		if (InCombat)
+		{
+			if (!_counting)
+			{
+				_counting = true;
+				_fightUses.Clear();
+				_chargeIdle = 0f;
+				_lastCount = now;
+			}
+
+			var usedAt = now - DataCenter.TimeSinceLastAction;
+			if (usedAt != _lastUseSeen)
+			{
+				_lastUseSeen = usedAt;
+				// Borrow becomes one action per kin (BorrowPvE_47238 to _47245): each counts as Borrow.
+				var last = DataCenter.LastAction;
+				var counted = last.ToString().StartsWith(nameof(ActionID.BorrowPvE), StringComparison.Ordinal)
+					? ActionID.BorrowPvE
+					: last;
+				if (Array.IndexOf(CountedActions, counted) >= 0)
+				{
+					_fightUses[counted] = _fightUses.GetValueOrDefault(counted) + 1;
+				}
+			}
+
+			if (ShieldChargePvE.EnoughLevel && ShieldChargePvE.Cooldown.HasOneCharge && NumberOfHostilesInRange > 1)
+			{
+				_chargeIdle += (float)(now - _lastCount).TotalSeconds;
+			}
+
+			_lastCount = now;
+			return;
+		}
+
+		if (!_counting)
+		{
+			return;
+		}
+
+		_counting = false;
+		var uses = string.Empty;
+		foreach (var counted in CountedActions)
+		{
+			if (counted != ActionID.ShieldChargePvE && _fightUses.TryGetValue(counted, out var n))
+			{
+				uses += $", {counted.ToString().Replace("PvE", string.Empty)} {n}";
+			}
+		}
+
+		DefenseTrace.Line($"beastmaster fight: Shield Charge {_fightUses.GetValueOrDefault(ActionID.ShieldChargePvE)}"
+			+ (ShieldChargePvE.EnoughLevel ? $" (ready with more than one enemy in range for {_chargeIdle:F0} s)" : " (not learned)")
+			+ $"{uses}{(uses.Length == 0 ? ", no Borrow and no Beast Mode action" : string.Empty)}");
 	}
 
 	// A change of the horns that RSR did not send is his: it stays until the next fight ends.

@@ -1441,6 +1441,32 @@ gilt für jeden Job.
   interruption"). RSR setzte ihn nur in `AttackAbility` auf das Ziel. *Gilt:* zuerst im Unterbrechungspfad auf einen
   Wirker, dessen Wirken sich unterbrechen lässt; sonst wie bisher. Zurückgehalten für eine Unterbrechung wird er nicht:
   Wie oft in 30 s eine kommt, hängt am Inhalt, und jede verpasste Abklingzeit kostet 300.
+- *W5 – Schildansturm auf ein Rudel vorn* (seine Beobachtung vom 04.11.2026: „schildansturm wird anscheinend nicht als
+  aoe genutzt. selbst wenn man in der gegnergruppe steht"; A524). Schildansturm (Action 44893, ab Stufe 24, 60 s, ab Stufe
+  36 drei Ladungen) trifft das Ziel und jeden Gegner bis 6 y darum mit 300. Er stand als letzte Angriffsfähigkeit hinter
+  allem, was nach Sekunden wiederkommt: Dressur (3 s), Äxte (5 s), Entfesseln, Borgen, Scheidender Schlag. In den
+  Trash-Kämpfen seines Laufs (5 bis 15 s) blieb ihm kaum ein Platz (Schluss aus dem Code, ohne Mitschnitt nicht
+  gezählt). *Gilt:* Trifft er mehr als einen Gegner, kommt er nach dem Abschluss und vor Dressur und Äxten; auf einen
+  Gegner bleibt er zuletzt. Die Abstandsgrenze aus W2 gilt weiter. *Preis:* Dressur oder Axt kommen dann einen Platz
+  später; ihre Abklingzeiten sind kurz, die 60 s des Ansturms laufen früher an.
+- *Bestienkönnen nach Borgen* (seine Beobachtung vom 04.11.2026: „das jeweilige bestienkönnen habe ich auch nicht
+  gesehen"; A524). Borgen gibt die Kinship der Familie des Begleiters; Bestienkönnen wird dann zur Aktion dieser Familie
+  (Familie aus XBMPet, im Spiel Addon 17741–17748; deutsche Namen xivapi Action language=de):
+  - *Biesthaut* (Beastkin, etwa Opo-Opo, Büffel) und *Saatsäher* (Seedkin, etwa Fliegenfalle): sofort im Kampf, sobald
+    Borgen sie freigibt. Saatsäher stand bis A524 als letzte Angriffsfähigkeit, hinter Schildansturm und Seelenschmerz,
+    obwohl B2 und B5 einen Seedkin auf einem Borgen-Horn als Schutz zählen.
+  - *Schuppenpanzer* (Scalekin, etwa Raptor): in der Gefahr sofort, sonst für einen angekündigten Treffer oder ohne
+    Heiler (B2).
+  - *Seelenschmerz* (Soulkin): zum Unterbrechen (W4), sonst als letzte Angriffsfähigkeit.
+  - *Gezieferpanzer* (Vilekin, etwa Vespula) nur gegen einen Rückstoß, *Wolkenstreich* (Cloudkin, etwa Fledermaus) nur als
+    Bewegung, *Läuternde Asche* (Ashkin) nur zum Reinigen.
+  - *Brechende Welle* (Wavekin, etwa Pugil): nur gegen ein Ziel mit einer der genannten Stärkungen. Die zweite Zeile, die
+    sie ohne diese Bedingung nutzen sollte, steht hinter Schmetteraxt und wird nie erreicht (Upstream 2fe925f41); offen:
+    TODO „Beastmaster: Brechende Welle als Schaden".
+  - Borgen kommt höchstens einmal je Ruf seines Horns, und das Horn mit Borgen ist ab Werk das dritte. In kurzen
+    Kämpfen kommt es oft gar nicht an die Reihe; sein Bestienkönnen dann auch nicht.
+- *Kampfzeile* (A524): Am Ende jedes Kampfes schreibt RSR, wie oft Schildansturm, Borgen und jedes Bestienkönnen kamen und
+  wie lange Schildansturm bei mehr als einem Gegner in Reichweite bereit lag, ohne zu kommen.
 
 *Was WrathCombo hat* (PunishXIV/WrathCombo d9c63e468 vom 27.10.2026, BST-Dateien zuletzt am 28.09.2026 geändert;
 Werkzeugquelle, nur gelesen):

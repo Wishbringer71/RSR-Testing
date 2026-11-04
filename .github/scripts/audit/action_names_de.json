@@ -710,6 +710,94 @@
       "kind": "action",
       "source": "xivapi v2 Action 41600, language=de, 2026-11-03",
       "note": "Phantom Ranger dash 15 yalms forward (A519)."
+    },
+    {
+      "de": "Bestienkönnen",
+      "en": "Beast Mode",
+      "identifier": "BeastModePvE",
+      "kind": "action",
+      "source": "xivapi v2 Action 44886, language=de, 2026-11-04",
+      "note": "Becomes the Beast Mode action of the kin Borrow grants (A524). His own word on 04.11.2026."
+    },
+    {
+      "de": "Schildansturm",
+      "en": "Shield Charge",
+      "identifier": "ShieldChargePvE",
+      "kind": "action",
+      "source": "xivapi v2 Action 44893, language=de, 2026-11-04",
+      "note": "Rush onto the target, 300 around it within 6 y (A524). His own word on 04.11.2026."
+    },
+    {
+      "de": "Borgen",
+      "en": "Borrow",
+      "identifier": "BorrowPvE",
+      "kind": "action",
+      "source": "xivapi v2 Action 44895, language=de, 2026-11-04",
+      "note": "Grants the Kinship of the familiar's kin for 90 s (A524)."
+    },
+    {
+      "de": "Biesthaut",
+      "en": "Beastskin",
+      "identifier": "BeastskinPvE",
+      "kind": "action",
+      "source": "xivapi v2 Action 44896, language=de, 2026-11-04",
+      "note": "Beastkin Beast Mode: physical damage taken -25 % (A524)."
+    },
+    {
+      "de": "Gezieferpanzer",
+      "en": "Vileskin",
+      "identifier": "VileskinPvE",
+      "kind": "action",
+      "source": "xivapi v2 Action 44897, language=de, 2026-11-04",
+      "note": "Vilekin Beast Mode: block, no knockback (A524)."
+    },
+    {
+      "de": "Wolkenstreich",
+      "en": "Cloud Skim",
+      "identifier": "CloudSkimPvE",
+      "kind": "action",
+      "source": "xivapi v2 Action 44898, language=de, 2026-11-04",
+      "note": "Cloudkin Beast Mode: a move (A520, A524)."
+    },
+    {
+      "de": "Saatsäher",
+      "en": "Seedsower",
+      "identifier": "SeedsowerPvE",
+      "kind": "action",
+      "source": "xivapi v2 Action 44899, language=de, 2026-11-04",
+      "note": "Seedkin Beast Mode: enemies nearby deal less damage, poison (A524). Not the enemy action Saatsalve."
+    },
+    {
+      "de": "Brechende Welle",
+      "en": "Quelling Wave",
+      "identifier": "QuellingWavePvE",
+      "kind": "action",
+      "source": "xivapi v2 Action 44900, language=de, 2026-11-04",
+      "note": "Wavekin Beast Mode, a spell (A524)."
+    },
+    {
+      "de": "Schuppenpanzer",
+      "en": "Scaleskin",
+      "identifier": "ScaleskinPvE",
+      "kind": "action",
+      "source": "xivapi v2 Action 44901, language=de, 2026-11-04",
+      "note": "Scalekin Beast Mode: a barrier against magic (A524)."
+    },
+    {
+      "de": "Seelenschmerz",
+      "en": "Soul Crush",
+      "identifier": "SoulCrushPvE",
+      "kind": "action",
+      "source": "xivapi v2 Action 44902, language=de, 2026-11-04",
+      "note": "Soulkin Beast Mode: interrupts (A486, A524)."
+    },
+    {
+      "de": "Läuternde Asche",
+      "en": "Scouring Ash",
+      "identifier": "ScouringAshPvE",
+      "kind": "action",
+      "source": "xivapi v2 Action 44903, language=de, 2026-11-04",
+      "note": "Ashkin Beast Mode: removes a status ailment (A524)."
     }
   ]
 }

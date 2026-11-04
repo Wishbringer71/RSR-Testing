@@ -15701,6 +15701,32 @@ habe den schleim bislang nicht anfreunden können."
 - *Prüfgrad:* Protokoll; Modell mit Selbsttest gegen einen konstruierten Defekt; Compile; CI-Prüfungen lokal. Im Spiel
   nicht beobachtet; die Spur zeigt beim nächsten Anfreunden Landezeit und Ausgang.
 
+### A524 · Beastmaster: Schildansturm und Bestienkönnen kamen kaum (04.11.2026)
+
+- *Anlass:* zwei Beobachtungen von ihm am 04.11.2026, als Hinweise eingeordnet: „schildansturm wird anscheinend nicht
+  als aoe genutzt. selbst wenn man in der gegnergruppe steht" und „das jeweilige bestienkönnen habe ich auch nicht
+  gesehen". Kein Mitschnitt dazu; das Protokoll zählt Angriffe nicht.
+- *Am Code und an den Blättern belegt:*
+  - Schildansturm (Action 44893): Stufe 24, 60 s, eine Ladung bis Stufe 36, Kreis 6 y um das Ziel. Zielwahl als Fläche
+    korrekt; Freigabe über `GapCloserAllowed` (unter 3 y Rand zu Rand). Stand als letzte Angriffsfähigkeit hinter
+    Dressur, Äxten, Entfesseln, Borgen und Scheidendem Schlag.
+  - Familien aus XBMPet `Unknown7` (Opo-Opo und Büffel Beastkin, Fliegenfalle Seedkin, Raptor Scalekin, Pugil Wavekin,
+    Fledermaus Cloudkin, Vespula Vilekin); Gauge-Halbbyte nach FFXIVClientStructs b69073a, Reihenfolge wie Addon
+    17741–17748. Erkennung richtig.
+  - Saatsäher stand hinter Schildansturm und Seelenschmerz, obwohl Konzept B2 sagt, er komme, sobald Borgen ihn
+    freigibt, und B5 einen Seedkin auf dem Borgen-Horn als Schutz zählt. Brechende Welle als Schaden ist unerreichbar
+    (Zeile hinter Schmetteraxt, Upstream 2fe925f41).
+  - Zum Maßstab: Am 02.11.2026 kamen in einer Stunde 3 Borgen, 1 Biesthaut, 1 Seelenschmerz (A489).
+- *Behoben:* Saatsäher sofort im Kampf wie Biesthaut (Defekt gegen das Konzept). Schildansturm (W5) vor Dressur und Äxten,
+  wenn er mehr als einen Gegner trifft. Ob er vorher gar nicht oder nur selten kam, ist nicht gezählt – Schluss aus der
+  Reihenfolge und den kurzen Kämpfen (5–15 s).
+- *Messmittel:* Kampfzeile „beastmaster fight": Schildansturm, Borgen, jedes Bestienkönnen gezählt, dazu die Sekunden,
+  die Schildansturm bei mehr als einem Gegner in Reichweite bereit lag.
+- *Offen:* TODO „Beastmaster: Brechende Welle als Schaden".
+- *Namen:* zwölf deutsche Namen aus xivapi language=de in `action_names_de.json` (Anfreunden bis Läuternde Asche).
+- *Prüfgrad:* Code, Spielblätter, Compile, CI-Prüfungen lokal. Im Spiel nicht beobachtet; die Kampfzeile zählt es beim
+  nächsten Lauf.
+
 ## B · Commit-Register (Fork vs. `upstream/main`)
 
 ### B1 · Einzelgeprüfte Fork-Commits

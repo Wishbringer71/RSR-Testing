@@ -1,6 +1,6 @@
 # BST — Abhängigkeitsmatrix
 
-Erzeugt von `.github/scripts/audit/generate_action_matrix.py` am 2026-11-02; nicht von Hand bearbeiten. Methode und Grenzen: `docs/rotation-flow/14-action-dependency-matrix.md`.
+Erzeugt von `.github/scripts/audit/generate_action_matrix.py` am 2026-11-04; nicht von Hand bearbeiten. Methode und Grenzen: `docs/rotation-flow/14-action-dependency-matrix.md`.
 
 - Basisrotation: `BeastmasterRotation`
 - Rotation: `RotationSolver/RebornRotations/Limited Jobs/BST_Reborn.cs`
@@ -8,7 +8,7 @@ Erzeugt von `.github/scripts/audit/generate_action_matrix.py` am 2026-11-02; nic
 
 ## Nutzung
 
-direkt: 33 · ungenutzt: 7 · über andere Aktion: 8
+direkt: 33 · nur gelesen: 1 · ungenutzt: 6 · über andere Aktion: 8
 
 | Stufe | Aktion | Id | Art | Nutzung |
 |---|---|---|---|---|
@@ -29,7 +29,7 @@ direkt: 33 · ungenutzt: 7 · über andere Aktion: 8
 | Job | Calamity (`CalamityPvE`) | 44933 | Weaponskill | direkt |
 | Job | Capture (`CapturePvE`) | 44880 | Ability | direkt |
 | Job | Challenge (`ChallengePvE`) | 46750 | Ability | direkt |
-| Job | Cloud Skim (`CloudSkimPvE`) | 44898 | Ability | ungenutzt — nicht zuweisbar: Begleiter oder Automatik |
+| Job | Cloud Skim (`CloudSkimPvE`) | 44898 | Ability | nur gelesen — nicht zuweisbar: Begleiter oder Automatik |
 | Job | Cloud Skim (`CloudSkimPvE_45038`) | 45038 | Ability | ungenutzt |
 | Job | Cloud Skim (`CloudSkimPvE_45039`) | 45039 | Ability | ungenutzt |
 | Job | Cloud Skim (`CloudSkimPvE_45040`) | 45040 | Ability | ungenutzt |
@@ -232,6 +232,7 @@ Jeder Aufruf der Aktion trägt eine eigene Bedingung; hält sie an, verfällt da
 - Mistral Axe: 3 Aufruf(e), **ohne Rückfall vor Ablauf**
 - Risen Fall: 1 Aufruf(e), **ohne Rückfall vor Ablauf**
 - Scaleskin: 3 Aufruf(e), **ohne Rückfall vor Ablauf**
+- Seedsower: 1 Aufruf(e), **ohne Rückfall vor Ablauf**
 - Spinning Axe: 3 Aufruf(e), **ohne Rückfall vor Ablauf**
 - Tempered Release: 1 Aufruf(e), **ohne Rückfall vor Ablauf**
 - Tempered Release: 1 Aufruf(e), **ohne Rückfall vor Ablauf**
@@ -246,7 +247,7 @@ Der Wirktext lässt Werte aus, die eine Eigenschaft oder die Stufe setzt (Potenz
 Maschinelle Liste; die Bewertung je Eintrag steht im Konzept.
 
 - Beast Mode (`BeastModePvE`, Ability): ungenutzt — Behälter: der Knopf wird zu anderen Aktionen
-- Cloud Skim (`CloudSkimPvE`, Ability): ungenutzt — nicht zuweisbar: Begleiter oder Automatik
+- Cloud Skim (`CloudSkimPvE`, Ability): nur gelesen — nicht zuweisbar: Begleiter oder Automatik
 - Cloud Skim (`CloudSkimPvE_45038`, Ability): ungenutzt
 - Cloud Skim (`CloudSkimPvE_45039`, Ability): ungenutzt
 - Cloud Skim (`CloudSkimPvE_45040`, Ability): ungenutzt
