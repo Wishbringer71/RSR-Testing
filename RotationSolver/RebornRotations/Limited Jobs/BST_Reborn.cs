@@ -59,9 +59,11 @@ public sealed class BST_Reborn : BeastmasterRotation
 		Tooltip = "When an enemy you can befriend as a familiar, one you do not have yet and not above your level, is about to "
 			+ "fall, Capture comes first and marks it with the last weaponskill whose mark is sure to arrive before it falls: "
 			+ "as soon as waiting one more weaponskill could let it fall first - by the largest fall it has taken within "
-			+ "that time so far, or by its time to kill. No pact if it falls before the mark arrives; the lower its HP when "
-			+ "marked, the likelier the pact, so the mark comes no earlier than that. Capture shares the weaponskill "
-			+ "timer, so it costs one weaponskill per attempt, and none once you have that familiar.\n"
+			+ "that time since its full health, by the largest fall any enemy in this area took within it, killing blows "
+			+ "included, or by its time to kill. Trash that falls that fast is marked with the pull, on the enemy you "
+			+ "attack anyway. No pact if it falls before the mark arrives; the lower its HP when marked, the likelier the "
+			+ "pact, so the mark comes no earlier than that. Capture shares the weaponskill timer, so it costs one "
+			+ "weaponskill per attempt, and none once you have that familiar.\n"
 			+ "Off: Capture is never used.")]
 	private bool CaptureFamiliars { get; set; } = true;
 
@@ -1314,9 +1316,11 @@ public sealed class BST_Reborn : BeastmasterRotation
 	{
 		TraceState();
 
-		// A1, A2 (concept 01, A487, A525): Capture first, on the last weaponskill whose mark is sure to arrive before a
-		// familiar you lack falls.
-		if (CaptureFamiliars && InCombat && CapturePvE.CanUse(out act))
+		// A1, A2 (concept 01, A487, A525, A527): Capture first, on the last weaponskill whose mark is sure to arrive before
+		// a familiar you lack falls. Out of combat only on the enemy RSR attacks anyway, so it pulls no other: trash that
+		// falls within a weaponskill is marked with the pull.
+		if (CaptureFamiliars && CapturePvE.CanUse(out act)
+			&& (InCombat || (CurrentTarget is { } attacked && CapturePvE.Target.Target?.GameObjectId == attacked.GameObjectId)))
 		{
 			var why = string.Empty;
 			if (CapturePvE.Target.Target is { } marked)

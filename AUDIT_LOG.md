@@ -15797,6 +15797,33 @@ habe den schleim bislang nicht anfreunden können."
   Spieler selbst als Blaumagier-Heiler hängt an denselben Lesern, das braucht einen eigenen Loop.
 - *Prüfgrad:* Code, Compile, CI-Prüfungen lokal. Im Spiel nicht beobachtet; die Spurzeile zeigt, wann die Regel gilt.
 
+### A527 · Anfreunden auf Trash: Historie ab voller LP, Einbruch des Gebiets, Markierung mit dem Pull (04.11.2026)
+
+- *Anlass:* sein Hinweis vom 04.11.2026: „anfreunden ist immer noch viel zu spät gerade bei einfachen trashmobs wie
+  apkallu sterben die mobs viel zu schnell". Ohne Upload; am Code untersucht.
+- *Ursache am Code:* `TimeToKillTracker.Record` verwirft die Historie eines Gegners bei vollen LP und tastet tote nicht
+  ab (`CurrentHp == 0`). Die Historie begann mit der ersten Abtastung nach dem ersten Treffer, einmal je Sekunde; der
+  erste Treffer und der tödliche fehlten im Einbruch. A2 (A525) markierte ohne zwei Abtastungen nicht und nie außerhalb
+  des Kampfes. Ein Gegner, der zwei, drei GCDs nach dem ersten Treffer fällt, war tot, bevor die Regel etwas sah.
+- *Umgesetzt:*
+  - `LargestFall` beginnt bei der letzten Abtastung mit vollen LP und nimmt die LP des Augenblicks als jüngsten Wert.
+  - `AreaFall`: der größte Einbruch in LP, den ein Gegner dieses Gebiets über so viele Abtastschritte erlitt, den
+    tödlichen Treffer eingeschlossen (gelesen, wenn er die Liste verlässt und sein Körper 0 LP hat, und beim
+    Kampfende), Gebietswechsel setzt ihn zurück. A2 nimmt den größeren der beiden Einbrüche.
+  - Anfreunden außerhalb des Kampfes auf sein aktuelles Ziel: `GeneralGCD` läuft auch dann (`CustomRotation_GCD`), ein
+    Schadens-GCD würde dasselbe Ziel ziehen.
+  - Die Restzeit-Schätzung (`FitRate`) liest die neuen Werte nicht; für alle anderen Leser bleibt sie, wie sie war.
+- *Modell* (`bst_capture_model.py`, Trash fällt 2 bis 8 s nach dem ersten Treffer, stoßweise): A525 markierte 64 %
+  rechtzeitig, die neue Lesart 99 % ab dem zweiten Kill eines Gebiets, den ersten 68 %; LP beim Markieren 96 % (meist mit
+  dem Pull). Selbsttest mit konstruiertem Defekt (Spanne ohne Landezeit).
+- *Preis:* Trash wird bei fast vollen LP markiert, kleine Chance je Kill; jeder weitere Gegner derselben Art ist ein
+  neuer Versuch. Gegen einen Boss gilt der größere Einbruch; war der Schaden auf Trash im Gebiet größer, markiert RSR
+  ihn früher als nach seiner eigenen Historie.
+- *Verworfen:* die Abtastrate erhöhen (Upstream-Takt für alle Leser, löst den fehlenden ersten Treffer nicht); die volle
+  Abtastung in die Restzeit-Schätzung nehmen (änderte die Restzeit für alle Jobs).
+- *Prüfgrad:* Code, Modell mit Selbsttest, Compile ohne Warnung, CI-Prüfungen lokal. Im Spiel nicht beobachtet; die Spur
+  „Capture on" nennt beide Einbrüche.
+
 ## B · Commit-Register (Fork vs. `upstream/main`)
 
 ### B1 · Einzelgeprüfte Fork-Commits

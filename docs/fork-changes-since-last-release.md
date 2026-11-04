@@ -72,8 +72,10 @@ What this release changes in the fight. For the whole distance from upstream, se
 - **Capture comes first and is sure to land.** A pact needs the enemy to fall marked, and the mark
   arrives about 0.6 s after Capture goes off. Capture now comes before every other weaponskill as soon
   as waiting one more could let the enemy fall before that mark arrives - judged by the largest drop in
-  health it has taken within that time so far, or by its time to kill - with the landing measured from
-  your own presses. The mark comes at somewhat more HP than at the very last moment, which lowers the
+  health it has taken within that time, counted from its full health, or by the largest drop any enemy
+  in the area took in that time, killing blows included, or by its time to kill - with the landing
+  measured from your own presses. Trash that falls within seconds is marked with the pull, on the enemy
+  RSR attacks anyway. The mark comes at somewhat more HP than at the very last moment, which lowers the
   chance per attempt a little; a missed mark loses the attempt altogether. `DefenseTrace.log` gives the
   reason, when the mark arrived and at how much HP, whether RSR or you pressed it, whether the enemy fell
   marked and whether the pact came. The time to kill is now counted from the moment it is read for every

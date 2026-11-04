@@ -19,8 +19,16 @@ The enemy's health is simulated in steps of 0.1 s: its last 30 s from full to ze
 come); and speeding up by a factor over its last seconds (a burst the history has not seen yet - the danger for every
 rule that reads the past). Measured over the enemy's death at every phase against the GCD and the sampling: the share
 of kills on which the mark lands before death, and the HP share left when Capture goes off.
+A second part models trash that falls within seconds of the first hit (his note of 04.11.2026: "anfreunden ist immer
+noch viel zu spät gerade bei einfachen trashmobs wie apkallu sterben die mobs viel zu schnell"; A527):
+  FALL   as above, with RSR's history as it was: it starts with the first sample after the first hit (an enemy at full
+         health has none), sampled once a second, no mark without two samples, never on the pull (in combat only)
+  QUICK  the history begins with the last sample at full health, the health of this moment counts as the newest
+         sample, and the largest fall any enemy in this area took within such a span counts as well - learned from the
+         kills before, their last fall to the death included; on the pull as well, on the enemy RSR attacks anyway
 ASSUMPTIONS, named where used: the time from pressing Capture to its effect (the connection) is NET; RSR's forecast is
-the falling rate fitted over the history (TimeToKillTracker.FitRate), without the bias correction.
+the falling rate fitted over the history (TimeToKillTracker.FitRate), without the bias correction; trash of one kind
+has the same health and falls 2 to 8 s after the first hit, in bursts, the first hit among the largest.
 """
 import math
 import random
@@ -133,6 +141,117 @@ def run(rule, kind="even", speed_up=1.0, cases=4000, seed=7, landing=LANDING):
     return landed / cases, (sum(hp_marks) / len(hp_marks) if hp_marks else float("nan"))
 
 
+def trash_course(rng, life):
+    """Health share of a trash enemy at each step from its first hit (t = 0) to its death at `life`."""
+    steps = max(1, int(round(life / STEP)))
+    half = max(1, int(round(0.5 / STEP)))
+    weights = []
+    for i in range(0, steps, half):
+        w = rng.expovariate(1.0) * (2.0 if i == 0 else 1.0)
+        weights.extend([w / half] * half)
+    weights = weights[:steps]
+    total = sum(weights)
+    hp = [1.0]
+    for w in weights:
+        hp.append(hp[-1] - w / total)
+    hp[-1] = 0.0
+    return hp
+
+
+def trash_hp(hp, t):
+    if t < 0.0:
+        return 1.0
+    i = int(math.floor(t / STEP))
+    return 0.0 if i >= len(hp) - 1 else hp[i]
+
+
+def largest_fall(samples, span):
+    """The largest fall between two samples at most span plus one sampling interval apart (LargestFall)."""
+    reach = span + SAMPLE
+    fall = 0.0
+    for i, (ti, ri) in enumerate(samples):
+        for tj, rj in samples[i + 1:]:
+            if tj - ti > reach + 1e-9:
+                break
+            fall = max(fall, ri - rj)
+    return fall
+
+
+def trash_capture(rule, hp, life, gcd_phase, sample_phase, peak, landing=LANDING):
+    """The moment Capture goes off on a trash enemy (first hit at 0), or None; and the samples RSR took of it."""
+    span = GCD + landing
+    ready = -gcd_phase if gcd_phase > 0 else 0.0
+    # The pull: the player's first weaponskill lands at 0; ready moments every GCD from it.
+    ready = 0.0
+    first_sample = sample_phase
+    samples = [(first_sample - SAMPLE, 1.0)] if rule == "QUICK" else []
+    t_sample = first_sample
+    k = 0
+    while True:
+        ready = k * GCD
+        if ready >= life:
+            return None, samples
+        while t_sample <= ready:
+            r = trash_hp(hp, t_sample)
+            if r <= 0.0:
+                break
+            if rule == "QUICK" or r < 1.0:
+                samples.append((t_sample, r))
+            t_sample += SAMPLE
+        now = trash_hp(hp, ready)
+        if rule == "FALL":
+            if k == 0 or len(samples) < 2:
+                k += 1
+                continue
+            seen = samples[-1][0] - samples[0][0]
+            fall = (samples[0][1] - samples[-1][1]) * span / seen if seen < span else largest_fall(samples, span)
+        else:
+            own = samples + [(ready, now)]
+            seen = own[-1][0] - own[0][0]
+            if seen <= 0:
+                fall = 0.0
+            elif seen < span:
+                fall = (own[0][1] - own[-1][1]) * span / seen
+            else:
+                fall = largest_fall(own, span)
+            fall = max(fall, peak)
+        if fall > 0.0 and now <= fall:
+            return ready, samples
+        k += 1
+
+
+def trash_run(rule, kills=40, areas=200, seed=11, landing=LANDING):
+    """Share of trash kills marked in time, first kill of an area apart, and the HP share at the mark."""
+    rng = random.Random(seed)
+    first_marked = later_marked = later = 0
+    hps = []
+    for _ in range(areas):
+        peak = 0.0
+        for n in range(kills):
+            life = rng.uniform(2.0, 8.0)
+            hp = trash_course(rng, life)
+            used, samples = trash_capture(rule, hp, life, rng.uniform(0.0, GCD), rng.uniform(0.0, SAMPLE), peak, landing)
+            marked = used is not None and used + LANDING < life
+            if n == 0:
+                first_marked += marked
+            else:
+                later += 1
+                later_marked += marked
+            if marked:
+                hps.append(trash_hp(hp, used))
+            # What this kill teaches about the area: its sampled falls from full health to the first sample after its
+            # death, which reads 0 (the body lies a moment; RSR looks it up when it leaves the list).
+            phase = rng.uniform(0.0, SAMPLE)
+            learned = [(phase - SAMPLE, 1.0)]
+            t = phase
+            while t < life:
+                learned.append((t, trash_hp(hp, t)))
+                t += SAMPLE
+            learned.append((t, 0.0))
+            peak = max(peak, largest_fall(learned, GCD + landing))
+    return first_marked / areas, later_marked / later, (sum(hps) / len(hps) if hps else float("nan"))
+
+
 COURSES = [("even", 1.0), ("burst", 1.0), ("even", 1.5), ("burst", 1.5), ("even", 2.0), ("burst", 2.0)]
 
 
@@ -145,6 +264,10 @@ def report():
             cells.append(f"{rule} {share:6.1%} at {hp:5.1%}")
         label = f"{kind}" + (f", last 5 s x{speed}" if speed != 1.0 else "")
         print(f"  {label:20s} " + "   ".join(cells))
+    print("Trash falling 2 to 8 s after the first hit: first kill of an area, later kills, HP share at the mark:")
+    for rule in ("FALL", "QUICK"):
+        first, later, hp = trash_run(rule)
+        print(f"  {rule:5s} first kill {first:6.1%}, later kills {later:6.1%}, HP at the mark {hp:6.1%}")
 
 
 def self_test():
@@ -168,9 +291,17 @@ def self_test():
     # Constructed defect: the safe rule without the landing (span of one GCD only) is caught on bursts.
     short, _ = run("FALL", "burst", landing=-GCD, cases=1500)
     assert short < burst_fall, (short, burst_fall)
+    # His note of 04.11.2026: on trash the history as it was comes too late; the quick reading marks the later kills.
+    _, fall_later, _ = trash_run("FALL", kills=20, areas=60)
+    _, quick_later, _ = trash_run("QUICK", kills=20, areas=60)
+    assert fall_later < 0.7 and quick_later > 0.95 and quick_later > fall_later + 0.25, (fall_later, quick_later)
+    # Constructed defect: without the landing in its span the quick reading loses trash kills.
+    _, short_later, _ = trash_run("QUICK", kills=20, areas=60, landing=-GCD)
+    assert short_later < quick_later, (short_later, quick_later)
     print("self-test ok: the stale forecast costs the old rule kills; the new rule marks an even course; the rule on the "
           "largest fall marks every kill even in bursts and stays ahead when the end speeds up, at more HP; a span "
-          "without the landing is caught")
+          "without the landing is caught; on trash the old history comes too late and the quick reading marks the "
+          "later kills")
 
 
 if __name__ == "__main__":

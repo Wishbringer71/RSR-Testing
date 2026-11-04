@@ -329,11 +329,12 @@ public partial class BeastmasterRotation
 	public static float CaptureLanding => _captureLanding >= 0f ? _captureLanding : RecordedMarkDelay;
 
 	/// <summary>
-	/// A2 of concept 01 (his precept of 04.11.2026: "so sicher sein, dass immer genug zeit bleibt"; A525): whether waiting
-	/// for the next weaponskill could let <paramref name="target"/> fall before that Capture's mark arrives. The span is
-	/// what remains of the running weaponskill, one more and the landing; it could, when the target holds no more health
-	/// than the largest fall it has taken within such a span, or its corrected time to kill is no longer. No lower bound:
-	/// a mark that may come too late still goes. False while it has taken no fall yet.
+	/// A2 of concept 01 (his precept of 04.11.2026: "so sicher sein, dass immer genug zeit bleibt"; A525, A527): whether
+	/// waiting for the next weaponskill could let <paramref name="target"/> fall before that Capture's mark arrives. The
+	/// span is what remains of the running weaponskill, one more and the landing; it could, when the target holds no more
+	/// health than the larger of two falls within such a span - its own since its last full health, and the largest any
+	/// enemy of this area took, its killing blow included -, or its corrected time to kill is no longer. No lower bound:
+	/// a mark that may come too late still goes.
 	/// </summary>
 	/// <param name="target">The enemy.</param>
 	/// <param name="reason">Why, for the trace.</param>
@@ -348,10 +349,13 @@ public partial class BeastmasterRotation
 
 		var span = WeaponRemain + WeaponTotal + CaptureLanding;
 		var held = target.GetHealthRatio();
-		var fall = TimeToKillTracker.LargestFall(target.GameObjectId, span);
-		if (!float.IsNaN(fall) && fall > 0f && held <= fall)
+		var own = TimeToKillTracker.LargestFall(target.GameObjectId, span, held);
+		var area = target.MaxHp > 0 ? TimeToKillTracker.AreaFall(span) / target.MaxHp : 0f;
+		var fall = float.IsNaN(own) ? area : Math.Max(own, area);
+		if (fall > 0f && held <= fall)
 		{
-			reason = $"it holds {held:P1}, its largest fall within {span:F1} s was {fall:P1}";
+			reason = $"it holds {held:P1}; the largest fall within {span:F1} s was {(float.IsNaN(own) ? 0f : own):P1} of its "
+				+ $"health on it, {area:P1} on an enemy here";
 			return true;
 		}
 

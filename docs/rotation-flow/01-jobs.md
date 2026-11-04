@@ -877,14 +877,31 @@ mit ihm anfreunden kann, und das Talent dann so einsetzen, dass es wahrscheinlic
   dieser fähigkeit so sicher sein, dass immer genug zeit bleibt, damit die fähigkeit wirkt."; A525): mit dem letzten GCD,
   dessen Markierung nach allem, was der Gegner bisher an Schaden nahm, sicher vor seinem Fall ankommt. RSR markiert,
   sobald das Warten auf den nächsten GCD ihn vor dessen Markierung fallen lassen könnte:
-  - *Einbruch:* Seine LP sind höchstens so groß wie der größte Einbruch, den er in seiner Gesundheitshistorie (die
-    letzten 30 s, einmal je Sekunde abgetastet, `TimeToKillTracker`) über eine so lange Spanne erlitten hat: Rest des
-    laufenden GCD + ein GCD + Landezeit, auf ganze Abtastungen aufgerundet. Ist die Historie kürzer als die Spanne, gilt
-    der Einbruch seit dem ersten Treffer, auf die Spanne hochgerechnet.
+  - *Einbruch:* Seine LP sind höchstens so groß wie der größte Einbruch über eine so lange Spanne – Rest des laufenden
+    GCD + ein GCD + Landezeit, auf ganze Abtastungen aufgerundet –, und zwar der größere von zweien:
+    - *seiner:* aus seiner Gesundheitshistorie (die letzten 30 s, einmal je Sekunde abgetastet, `TimeToKillTracker`),
+      beginnend mit der letzten Abtastung bei vollen LP, seine LP in diesem Augenblick als jüngster Wert. Ist sie kürzer
+      als die Spanne, gilt der Einbruch seit dieser vollen Abtastung, auf die Spanne hochgerechnet.
+    - *der des Gebiets:* der größte Einbruch in LP, den irgendein Gegner in diesem Gebiet über eine so lange Spanne
+      erlitten hat, seinen tödlichen Treffer eingeschlossen (die erste Abtastung nach dem Tod liest 0; der Körper liegt
+      noch einen Moment), geteilt durch seine eigenen maximalen LP. Ein Gebietswechsel setzt ihn zurück.
   - *Oder Restzeit:* Seine korrigierte Restzeit ist nicht länger als diese Spanne.
   - Keine untere Grenze: Auch eine Markierung, die vielleicht zu spät kommt, geht noch. Weil Anfreunden nicht tötet, geht
-    es auch bei 1 LP. Ohne Historie (noch kein Treffer) keine Markierung. Anfreunden steht vor jeder anderen
-    Waffenfertigkeit der Rotation.
+    es auch bei 1 LP. Anfreunden steht vor jeder anderen Waffenfertigkeit der Rotation; außerhalb des Kampfes nur auf das
+    Ziel, das RSR ohnehin angreift (sein aktuelles Ziel), damit es keinen anderen Gegner zieht.
+  - *Warum der Einbruch des Gebiets* (sein Hinweis vom 04.11.2026: „anfreunden ist immer noch viel zu spät gerade bei
+    einfachen trashmobs wie apkallu sterben die mobs viel zu schnell"; A527): Ein Gegner bei vollen LP hat bei RSR keine
+    Historie (`TimeToKillTracker.Record` verwirft sie bei vollen LP), sie beginnt mit der ersten Abtastung nach dem ersten
+    Treffer, eine je Sekunde, und den tödlichen Treffer tastet RSR nie ab. Ohne Historie markierte die Regel nicht; der
+    erste Treffer, oft der größte Teil, fehlte im Einbruch. Ein Gegner, der zwei, drei GCDs nach dem ersten Treffer
+    fällt, war tot, bevor die Regel etwas sah. Gerechnet (`bst_capture_model.py`, 04.11.2026; Trash fällt 2 bis 8 s nach
+    dem ersten Treffer, stoßweise): Die Regel aus A525 markierte 64 % dieser Kills rechtzeitig, die jetzige 99 % ab dem
+    zweiten Kill im Gebiet; den ersten Kill eines Gebiets 68 %, weil noch nichts gelernt ist.
+  - *Preis auf Trash:* Wer schneller fällt als eine Spanne, wird schon mit dem ersten GCD markiert, im Modell bei 96 % LP:
+    eine kleine Chance je Kill, aber jede weitere Bestie derselben Art ist ein neuer Versuch; ein Kill ohne Markierung hat
+    keinen. Fällt ein Gegner langsamer, kommt die Markierung später, bei weniger LP. Gegen einen Boss gilt der größere der
+    beiden Einbrüche; schlug die Gruppe auf Trash härter als auf ihn, markiert RSR ihn etwas früher als nach seiner
+    eigenen Historie.
   - *Warum die Landezeit:* Der Pakt entscheidet sich beim Fall eines Gegners, der „Freundschaftsempfänglich" trägt
     (Status 4626, Wirktext). Die Markierung kommt nach der Wirkung von Anfreunden: 0,62 s später, in seinen Mitschnitten
     vom 02.11. (Killermantis) und 03.11.2026 (Flechten-Goobbue); 0,69 s nach dem Drücken am 04.11.2026 (Zorniger Ichor).
@@ -948,9 +965,9 @@ mit ihm anfreunden kann, und das Talent dann so einsetzen, dass es wahrscheinlic
     verliert sie im Modell ein Viertel der Kills.
   - *Option falsch?* Der Preis oben. Er hält als Einschränkung; nach seiner Vorgabe überwiegt die Sicherheit.
   - *Ausgeliefert, und nichts ändert sich – warum?* Ein Stoß größer als jeder der letzten 30 s (das erste Entfesseln
-    nach einer Pause, Bestienkönnen) bleibt das Restrisiko, im Modell bei Verdopplung 15 bis 17 % der Kills. Ohne
-    Historie – ein Gegner, der beim ersten Treffer fällt – markiert RSR nicht; dann sagt die Zeile „unmarked, without
-    Capture" es mit seiner letzten Restzeit.
+    nach einer Pause, Bestienkönnen) bleibt das Restrisiko, im Modell bei Verdopplung 15 bis 17 % der Kills. Der erste
+    schnell fallende Gegner eines Gebiets bleibt ein Risiko, solange RSR dort noch keinen Fall gelernt hat; dann sagt die
+    Zeile „unmarked, without Capture" es mit seiner letzten Restzeit.
 
 **Belegung der Hörner in der Rotation** (seine Vorgabe vom 02.11.2026: „wieso vorschlag? es soll in die rotation
 eingearbeitet werden, situationsbezogen"; A487, A488, A522):
