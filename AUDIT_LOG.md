@@ -15768,7 +15768,7 @@ habe den schleim bislang nicht anfreunden können."
   auf das Doppelte 83–85 % (26–33 %); LP beim Markieren 9 bzw. 16 % gegen 7–8 % (der letzten 30 s).
 - *Verworfen:* zweite Markierung später (nicht belegt, nicht messbar), fester GCD Vorlauf, Schaden zurückhalten, sofort
   markieren, 20 s vorher (Daedalus); Zielwahl nach Schaden je LP (nicht zentral gemessen); dieselbe Zielart für alle
-  Jobs ohne ihn (seine Vorgabe vom 16.10.2026 für Einzelzielangriffe steht dagegen; ihm vorgelegt).
+  Jobs ohne ihn (seine Vorgabe vom 16.10.2026 für Einzelzielangriffe steht dagegen; ihm vorgelegt, von ihm verworfen, A526).
 - *Preis, ihm genannt:* Anfreunden markiert bei mehr LP; am Ichor hätte es um 11:52:43 bei 14,7 % markiert. Ist die
   Chance wörtlich umgekehrt proportional, bringt die späte Regel mehr Pakte je Kill.
 - *Übrige Zeilen des Uploads:* keine Tode. Hörner zwischen den Kämpfen (B5) elfmal angenommen. Kampfzeilen mit
@@ -15780,6 +15780,22 @@ habe den schleim bislang nicht anfreunden können."
 - *Prüfgrad:* Mitschnitt und Protokoll; Modell mit Selbsttest gegen einen konstruierten Defekt; Compile ohne Warnung;
   alle 44 CI-Prüfschritte lokal grün. Im Spiel nicht beobachtet; die Spur nennt beim nächsten Anfreunden Grund, LP und
   Ausgang, die Haltezeile den Grund eines liegenden Schildansturms.
+
+### A526 · Zielart ohne Tank und Heiler: nur Beastmaster und Blaumagier, Mimikry zählt (04.11.2026)
+
+- *Anlass:* seine Präzisierung zu A525: „ich habe über beastmaster gesprochen, nicht über andere jobs. der einzige job,
+  bei dem das ebenfalls passen könnte, wäre der bluemage". Die in A525 vorgelegte Ausweitung auf alle Jobs ist damit
+  verworfen; der Blaumagier ist sein Vorschlag, geprüft.
+- *Geprüft:* Allein trägt sein Grund beim Blaumagier wie beim Beastmaster. Ein Blaumagier neben ihm ist nach der
+  Job-Rolle Damage Dealer, auch in „Aetheric Mimicry: Tank" oder „: Healer"; in einer Gruppe nur aus Blaumagiern
+  griffe die Regel, obwohl ein Blaumagier-Tank die Gegner hält. Masked Carnivale: Reaktionen der Gegner auf einen Tod
+  kennt RSR für keine Zielart.
+- *Umgesetzt:* Die Regel gilt für Beastmaster und Blaumagier; `NoTankNoHealerBeside` zählt Mitspieler in der Rolle
+  ihrer Mimikry. Eine Zeile im `DefenseTrace.log`, wenn die Regel zu- oder abschaltet.
+- *Neu erfasst:* `AnyLivingHealer` liest die Mimikry nicht; ein Blaumagier-Heiler zählt für die Heil- und
+  Abwehrregeln nicht (TODO „Ein Blaumagier in Heiler-Mimikry zählt nicht als Heiler"). Hier nicht mitgeändert: Der
+  Spieler selbst als Blaumagier-Heiler hängt an denselben Lesern, das braucht einen eigenen Loop.
+- *Prüfgrad:* Code, Compile, CI-Prüfungen lokal. Im Spiel nicht beobachtet; die Spurzeile zeigt, wann die Regel gilt.
 
 ## B · Commit-Register (Fork vs. `upstream/main`)
 

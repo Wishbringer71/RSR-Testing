@@ -398,6 +398,10 @@ unter „BLM" zusammen und ist für `BLM_RP` deshalb nicht belastbar.
 Belegt die meisten Dispatch-Slots im Repo (28 überschriebene Mitglieder einschließlich Flags). `GeneralGCD` hatte
 81 Zweige auf einer Ebene; seit A4a ist es ein Dispatcher über benannte Stufen, die Reihenfolge unverändert.
 
+**Zielart:** Ohne Tank und Heiler neben ihm greift der Blaumagier den Gegner mit den wenigsten LP zuerst an, wie der
+Beastmaster; ein Blaumagier neben ihm zählt in der Rolle seiner Mimikry (Konzept 03, „Zielart ohne Tank und Heiler";
+A526).
+
 **Blaumagier: Konzept für Rotation, Synergien und Set** (sein Auftrag vom 03.11.2026: „die blaumagier rotation scheint
 nicht zu funktionieren. es wird meist nur der kaktor spell genutzt, was bei highlevel sinnfrei ist … erstelle konzept im
 loop"; dazu seine Vorgaben „nutze alle gelernten spells optimal aus, suche synergieeffekte" und „finde auch weitere

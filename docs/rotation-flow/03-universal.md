@@ -587,12 +587,16 @@ sich die Regel daran, wer zuerst und wer zuletzt einen DoT trägt.
 **Vorgabe des Auftraggebers (04.11.2026), wörtlich:** „da beim beastmaster kein tank bereitsteht und kein healer, ist das
 zielverhalten auf gegner mit niedrigen hp zu priorisieren, egal wie die einstellungen der ui sind." Sein Grund, im
 selben Zug: „weniger gegener machen weniger schaden, besser als möglichst viele gegner gleichmäßig runterzubringen, wie
-es damagedealer in gruppen machen, um möglichst effizient zu sein."
+es damagedealer in gruppen machen, um möglichst effizient zu sein." Seine Präzisierung (04.11.2026): „ich habe über
+beastmaster gesprochen, nicht über andere jobs. der einzige job, bei dem das ebenfalls passen könnte, wäre der
+bluemage" – den Blaumagier als sein Vorschlag, geprüft unten.
 
-**Geltende Regel** (`DataCenter.TargetingType`, A525): Spielt er den Beastmaster und lebt neben ihm in der Gruppe kein
-Tank und kein Heiler (`DataCenter.NoTankNoHealerBeside`), gilt die Zielart „Low HP": unter den Gegnern, die eine Aktion
-erreichen kann, der mit den wenigsten LP in Punkten. Seine eingestellte Zielart gilt dann nicht, auch ohne Option. Lebt
-ein Tank oder ein Heiler neben ihm, gilt wieder seine Zielart.
+**Geltende Regel** (`DataCenter.TargetingType`, A525, A526): Spielt er den Beastmaster oder den Blaumagier und lebt
+neben ihm in der Gruppe kein Tank und kein Heiler (`DataCenter.NoTankNoHealerBeside`), gilt die Zielart „Low HP": unter
+den Gegnern, die eine Aktion erreichen kann, der mit den wenigsten LP in Punkten. Seine eingestellte Zielart gilt dann
+nicht, auch ohne Option. Lebt ein Tank oder ein Heiler neben ihm, gilt wieder seine Zielart. Ein Blaumagier neben ihm
+zählt in der Rolle seiner Mimikry (Status „Aetheric Mimicry: Tank" oder „: Healer"); Job-Rolle allein machte ihn zum
+Damage Dealer. Für alle anderen Jobs gilt seine Zielart, wie er sie am 16.10.2026 für Einzelzielangriffe festgelegt hat.
 - *Was vorgeht, wie bisher:* eine Zielart, die ein anderes Plugin über IPC setzt (AutoDuty, PvP-Modus), ein Befehl mit
   Zielart, die eigene Sortierung einer Aktion (etwa Bewegung), die DoT-Verteilung (oben), die Stopmarker und die Gegner
   mit Vorrang. Flächenangriffe wählen weiter das Ziel mit den meisten Treffern; nur bei Gleichstand ordnet die Zielart.
@@ -612,16 +616,32 @@ HP" auf den stärksten. Flächenangriffe treffen weiter alle. Gegen einen Boss a
   Schaden: Ein Einzelzielangriff macht auf jedem Ziel denselben (Schluss; DoTs ordnet die Verteilung oben).
 - *Anfreunden:* Es sucht sein Ziel selbst (A1); die Zielart ordnet nur, wenn mehrere Bestien zugleich fällig sind.
 
+**Blaumagier (sein Vorschlag, geprüft; A526):**
+- *Wo dieselbe Lage:* Allein in der offenen Welt oder beim Lernen von Zaubern in einem Inhalt: kein Tank, kein
+  Heiler, das Rudel schlägt auf ihn. Mit „Aetheric Mimicry: Tank" und
+  Mighty Guard ist er selbst der Tank; auch dann nimmt jeder tote Gegner Schaden von ihm.
+- *Wo nicht:* In einer Gruppe mit Tank oder Heiler, auch mit Blaumagiern in deren Mimikry (eine Gruppe nur aus
+  Blaumagiern), gilt seine Zielart: Ein Tank hält die Gegner. Ohne die Mimikry zählte der Blaumagier-Tank der Gruppe
+  nicht, und die Regel griff, wo sein Grund nicht trägt.
+- *Masked Carnivale:* Die Stufen geben die Gegner vor. Manche reagieren auf den Tod eines anderen; welche, kennt RSR
+  nicht, und das gilt für jede Zielart gleich. Gegen einen Gegner allein ändert sich nichts.
+- *DoTs und Flächen:* Song of Torment, Bad Breath und die übrigen DoTs ordnet die Verteilung oben; Flächen treffen
+  weiter das größte Rudel.
+- *Kein Defekt?* Sein Grund trägt beim Blaumagier allein ebenso. *Option falsch?* Nur, wo ein Blaumagier-Tank neben
+  ihm hält; das fängt die Mimikry. *Ausgeliefert, und nichts ändert sich?* Wenn er den Blaumagier nur in Gruppen oder in
+  Stufen mit einem Gegner spielt; dann bleibt seine Zielart, und die Spurzeile sagt es.
+
 **Gegenposition, geprüft:**
 - *Nach Schaden je LP ordnen* (wer am härtesten schlägt und am schnellsten fällt, zuerst): Weniger Gegner heißt nicht
   weniger Schaden, wenn einer allein so viel austeilt wie drei andere. RSR misst den Schaden je Gegner auf den Spieler
   nicht zentral, und seine Vorgabe nennt die LP. Nicht übernommen; im Rudel gleicher Gegner fällt es zusammen.
-- *Für alle Jobs:* Sein Grund gilt für jeden, der allein ohne Tank und Heiler kämpft. Für Einzelzielangriffe gilt aber
-  seine Vorgabe vom 16.10.2026, dass die gewählte Zielart gilt (oben). Ob dieselbe Lage bei den anderen Jobs dieselbe
-  Regel verdient, entscheidet er; der Code fragt die Lage zentral ab, die Ausweitung wäre eine Bedingung.
+- *Für alle Jobs:* von ihm verworfen (Präzisierung oben); für Einzelzielangriffe gilt seine Zielart.
+
+**Spur:** Wechselt die Regel zwischen „gilt" und „gilt nicht", schreibt RSR eine Zeile ins `DefenseTrace.log`; die
+Zustandszeile des Beastmasters nennt es ebenfalls.
 
 **Prüfgrad:** statisch am Code; Compile über die CI. Im Kampf: Im Rudel greift er den Gegner mit den wenigsten LP an;
-die Zustandszeile des Beastmasters nennt, ob die Regel gilt.
+die Spurzeile nennt, ob die Regel gilt.
 
 ## E · Universelle Strukturschwächen
 

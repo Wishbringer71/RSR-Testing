@@ -78,10 +78,11 @@ What this release changes in the fight. For the whole distance from upstream, se
   reason, when the mark arrived and at how much HP, whether RSR or you pressed it, whether the enemy fell
   marked and whether the pact came. The time to kill is now counted from the moment it is read for every
   rule that uses it, as Six-sided Star's last-hit check.
-- **Fewest HP first when you fight alone.** As a Beastmaster with no tank and no healer alive in your
-  party, RSR attacks the enemy with the least HP first, whatever your targeting setting: each enemy that
-  falls is one fewer hitting you. With a tank or a healer alive your setting applies. The Beastmaster
-  state line in `DefenseTrace.log` says whether it holds.
+- **Fewest HP first when you fight alone.** As a Beastmaster or a Blue Mage with no tank and no healer
+  alive in your party, RSR attacks the enemy with the least HP first, whatever your targeting setting:
+  each enemy that falls is one fewer hitting you. With a tank or a healer alive your setting applies; a
+  Blue Mage beside you counts as the tank or healer his Aetheric Mimicry makes him. Other jobs keep your
+  setting. `DefenseTrace.log` notes each switch.
 - **Shield Charge on a pack, Seedsower at once.** Shield Charge hitting more than one enemy now goes
   before Trick and the axes, with every charge, instead of after everything else, where a short pull
   rarely left it a slot. It only goes on enemies within melee range (3 y), on the one whose reach covers

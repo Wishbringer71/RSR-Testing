@@ -25,6 +25,8 @@ Nach der Wirkung im Kampf: Sicherheit der Gruppe vor Schaden, gewichtet mit der 
    den RSR heute im Kampf zeigt; zuerst die Rotationswerkzeuge für alle Jobs, Daedalus vorn (aktiv, alle Jobs,
    eigene Kampfvorhersage).
 8. Flächenbetäuber in Kreszentia für The Blackest Night: kostet MP, kein Leben.
+9. Ein Blaumagier in Heiler-Mimikry zählt nicht als Heiler: Mitspieler unter RSR heilen und mindern, als lebte keiner;
+   kostet Schaden, kein Leben.
 
 Danach die technische Schuld, soweit ihre Auflösungsbedingung erfüllt ist. Warten auf Daten: unten.
 
@@ -38,6 +40,14 @@ fünf GCDs Schaden und MP. *Ort:* Heilzielwahl und Heilflaggen (`HealingIneffect
 ganz aufheben); der Wirktext nennt keine Stärke. *Nächster Schritt:* Loop: die Wirkung eigener Heilungen auf Träger eines
 heilsenkenden Status messen (Effekt-Handler) und daraus je Status lernen, ob Heilen dort lohnt; Abwägung gegen ein
 Mitglied in der kritischen Klasse. *Konzept:* 07.
+
+### Ein Blaumagier in Heiler-Mimikry zählt nicht als Heiler · N
+Im Kampf: Ist ein Mitspieler Blaumagier mit „Aetheric Mimicry: Healer", zählt RSR für einen Tank oder Damage Dealer
+keinen lebenden Heiler: Die Abwehr öffnet sich schon bei jedem Angriff („Without a living healer, spend your defence"),
+und GCD-Heilungen warten nicht auf ihn. Kein Leben in Gefahr, es kostet Schaden und Abklingzeiten. *Ort:*
+`DataCenter.AnyLivingHealer` liest nur die Job-Rolle; die Zielart ohne Tank und Heiler liest die Mimikry schon (A526).
+*Nächster Schritt:* Loop: dieselbe Lesart für alle Leser, mit dem Spieler selbst als Blaumagier-Heiler
+(`OnlyHealAsNonHealIfNoHealers`, `HoldPartyHeal`). *Konzept:* 07.
 
 ## Offene Arbeit
 

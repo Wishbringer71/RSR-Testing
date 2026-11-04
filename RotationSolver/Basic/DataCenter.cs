@@ -791,10 +791,10 @@ internal static class DataCenter
 				return TargetingTypeOverride.Value;
 			}
 
-			// The owner's precept of 04.11.2026 (concept 03, "Zielart ohne Tank und Heiler", A525): a beastmaster with no
-			// tank and no healer alive beside him attacks the enemy with the least HP first, whatever the setting -
-			// fewer enemies hit him sooner.
-			if (CurrentRotation is BeastmasterRotation && NoTankNoHealerBeside)
+			// The owner's precept of 04.11.2026 (concept 03, "Zielart ohne Tank und Heiler", A525, A526): a beastmaster,
+			// and on his suggestion a blue mage, with no tank and no healer alive beside him attacks the enemy with the
+			// least HP first, whatever the setting - fewer enemies hit him sooner.
+			if (LeastHpFirstAlone)
 			{
 				return TargetingType.LowHP;
 			}
@@ -1284,23 +1284,56 @@ internal static class DataCenter
 
 	/// <summary>
 	/// No tank and no healer of the party is alive beside the player: nobody holds the enemies off him and nobody heals
-	/// him but himself (concept 03, "Zielart ohne Tank und Heiler", A525).
+	/// him but himself. A blue mage beside him counts in the role of his Aetheric Mimicry (concept 03, "Zielart ohne Tank
+	/// und Heiler", A525, A526).
 	/// </summary>
-	public static bool NoTankNoHealerBeside => !AnyLiving(JobRole.Tank, true) && !AnyLiving(JobRole.Healer, true);
+	public static bool NoTankNoHealerBeside => !AnyLiving(JobRole.Tank, true, true) && !AnyLiving(JobRole.Healer, true, true);
 
-	private static bool AnyLiving(JobRole role, bool excludeSelf)
+	private static bool _leastHpFirstAlone;
+
+	// Concept 03, "Zielart ohne Tank und Heiler" (A525, A526): the job the precept names and none beside him who holds or
+	// heals; a line whenever that turns.
+	private static bool LeastHpFirstAlone
+	{
+		get
+		{
+			var holds = (CurrentRotation is BeastmasterRotation or BlueMageRotation) && NoTankNoHealerBeside;
+			if (holds != _leastHpFirstAlone)
+			{
+				_leastHpFirstAlone = holds;
+				DefenseTrace.Line(holds
+					? "targeting: least HP first - no tank and no healer alive beside you"
+					: "targeting: your setting again");
+			}
+
+			return holds;
+		}
+	}
+
+	// withMimicry: a blue mage counts in the role of his Aetheric Mimicry, not as the damage dealer his job makes him.
+	private static bool AnyLiving(JobRole role, bool excludeSelf, bool withMimicry = false)
 	{
 		var playerId = Player.Object?.GameObjectId ?? 0;
 		foreach (var member in PartyMembers)
 		{
-			if (member != null && !member.IsDead && member.IsJobCategory(role)
-				&& !(excludeSelf && member.GameObjectId == playerId))
+			if (member != null && !member.IsDead && !(excludeSelf && member.GameObjectId == playerId)
+				&& (member.IsJobCategory(role) || (withMimicry && InMimicryRole(member, role))))
 			{
 				return true;
 			}
 		}
 
 		return false;
+	}
+
+	private static bool InMimicryRole(IBattleChara member, JobRole role)
+	{
+		return role switch
+		{
+			JobRole.Tank => member.HasStatus(false, StatusID.AethericMimicryTank),
+			JobRole.Healer => member.HasStatus(false, StatusID.AethericMimicryHealer),
+			_ => false,
+		};
 	}
 
 	/// <summary>
