@@ -1257,8 +1257,8 @@
    "reason": "Unit conversion, not a game value: Moon Flute's effect text states the damage increase in percent (A507)."
   },
   {
-   "file": "RotationSolver/RebornRotations/Limited Jobs/BST_Reborn.cs",
-   "code": "private const int BossSafeFamiliars = 2;",
+   "file": "RotationSolver/Basic/Rotations/Basic/BeastmasterCrucibleTeam.cs",
+   "code": "internal const int BossSafeFamiliars = 2;",
    "values": [
     "2"
    ],

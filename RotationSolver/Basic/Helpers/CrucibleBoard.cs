@@ -28,6 +28,7 @@ internal static class CrucibleBoard
 
 	// K8 (A553): the final fight of each board, and per fight the dangerous statuses its enemies' actions inflict.
 	private static readonly HashSet<uint> _finalFights = [];
+	private static readonly Dictionary<uint, List<uint>> _boardFights = [];
 	private static readonly Dictionary<uint, HashSet<uint>> _fightAilments = [];
 	private static readonly Dictionary<uint, HashSet<uint>> _actionElements = [];
 
@@ -96,6 +97,22 @@ internal static class CrucibleBoard
 		}
 
 		return [];
+	}
+
+	/// <summary>K7 (A563): the fights of a board (XBMContentBattle row = XBMContent row), its final fight first.</summary>
+	internal static IReadOnlyList<uint> FightsOfBoard(uint board)
+	{
+		_ = Fights;
+		return _boardFights.TryGetValue(board, out var fights) ? fights : [];
+	}
+
+	/// <summary>K7 (A563): how many familiars a board's team holds - XBMContent's TeamSize (EXDSchema latest: after the 33
+	/// bonus points and ContentFinderCondition, Lumina's Unknown34); 0 when the row is missing.</summary>
+	internal static int TeamSize(uint board)
+	{
+		return Svc.Data.GetExcelSheet<Lumina.Excel.Sheets.XBMContent>()?.GetRowOrDefault(board) is { } content
+			? content.Unknown34
+			: 0;
 	}
 
 	/// <summary>Whether XBMBattleDetail row <paramref name="battleRow"/> is a board's final fight (A553).</summary>
@@ -185,13 +202,22 @@ internal static class CrucibleBoard
 		{
 			foreach (var board in boards)
 			{
+				var ofBoard = new List<uint>();
 				foreach (var fight in board)
 				{
-					if (fight.SubrowId == 0 && fight.Unknown0 != 0)
+					if (fight.Unknown0 == 0)
+					{
+						continue;
+					}
+
+					ofBoard.Add(fight.Unknown0);
+					if (fight.SubrowId == 0)
 					{
 						_ = _finalFights.Add(fight.Unknown0);
 					}
 				}
+
+				_boardFights[board.RowId] = ofBoard;
 			}
 		}
 

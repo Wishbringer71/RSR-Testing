@@ -16580,6 +16580,25 @@ habe den schleim bislang nicht anfreunden können."
 - *Prüfgrad:* Compile ohne Warnung, Prüfschritte; Wirkkette am Code. Im Spiel nicht beobachtet; Zeilen „Crucible horn
   screen: …" und die Sondenzeile beim Öffnen des Fensters.
 
+### A563 · Crucible K7: Kader auf Wunsch im Teamfenster (05.11.2026)
+
+- *Auftrag:* `TODO.md`, „Beastmaster: Crucible-Strategien", K7; Entscheidung C (A533), Weg im Feld belegt (A561).
+- *Quellen:* EXDSchema latest `XBMContent` (33 Bonusfelder, ContentFinderCondition, TeamSize, RecommendedRank,
+  SyncRank; Lumina `Unknown34` = TeamSize); Daedalus 74659a6 `CrucibleRosterLoader` (Teamfenster = Agent aktiv, nicht
+  Modus 2, Brett in `ContentId`; `TogglePet` je Begleiter, Ablehnung im Feld 25.10.2026).
+- *Gebaut:* `BeastmasterCrucibleTeam.cs`: Empfehlung (Kadergröße des Bretts; zuerst `BossSafeFamiliars` Heiler oder
+  Schützer, dann der, der die meisten noch geteilt abgedeckten Gegner aller Kämpfe des Bretts über ihre Schwäche trifft;
+  Gleichstand: über dem Rang des Bretts, dann schon im Kader), berechnet in der Aktualisierung; Umsetzen auf Knopfdruck
+  Schritt für Schritt mit `TogglePet`, Abgänge zuerst, Prüfung nach jedem Schritt, Ablehnung eines Zugangs überspringt
+  ihn für die Sitzung, Ablehnung eines Abgangs beendet. Fenster `CrucibleTeamWindow` nur bei offenem Teamfenster und
+  Beastmaster-Rotation. `BossSafeFamiliars` steht jetzt in der Basis (B5, K6, K7 lesen dieselbe Zahl).
+- *Gegenthesen:* Konzept 01 (nur Schwächen statt Schaden und Rang – darum nur auf Klick; Spielfunktion aus dem Plugin –
+  die des Fensters selbst, im Feld belegt; nicht aus dem Zeichnen gerufen).
+- *Falsifikation:* Ausgeliefert, und nichts ändert sich: Er klickt nicht – dann bleibt alles wie es ist, gewollt. Der
+  Agent liefert kein Brett in `ContentId` – dann erscheint das Fenster nicht.
+- *Prüfgrad:* Compile ohne Warnung, Prüfschritte; Wirkkette am Code. Im Spiel nicht beobachtet; Spurzeilen „crucible
+  team: …".
+
 ## B · Commit-Register (Fork vs. `upstream/main`)
 
 ### B1 · Einzelgeprüfte Fork-Commits

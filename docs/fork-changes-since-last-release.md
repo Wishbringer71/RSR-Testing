@@ -220,6 +220,11 @@ What this release changes in the fight. For the whole distance from upstream, se
   boss, the pack is the battle's enemies, a familiar that hits their weakness counts the measured bonus,
   among equals the one with more HP left - and clicks them in one at a time. Picked by hand there,
   your horns stay; you start the battle.
+- **A recommended team on the Crucible's team screen.** While you pick a board's team as a beastmaster,
+  a small window `RSR - Crucible team` lists the team RSR recommends for that board - as many as it
+  holds: two that heal or protect you, then those that hit the weaknesses of the most enemies across
+  the board's fights - with the reason for each and who would leave. Its `Apply` button changes the
+  team one familiar at a time; nothing changes without the click, and you confirm the team yourself.
 - **Snarl and Challenge are on by default (Crucible).** Without a tank the enemies attack only you,
   and your fall ends the run, while a fallen familiar costs only that familiar. `Use Snarl and
   Challenge based on your HP and your familiar's HP (Crucible only)` is now **on by default**, still on

@@ -2121,6 +2121,27 @@ on a pack once a fight, all of them in the final fight (Crucible only)".
 - *Gegenthese 3 (angeschlagene Begleiter):* Gleicher Wert ist selten; ob ein Begleiter den Kampf übersteht, beantwortet
   erst K11 mit dem gemessenen Verlust je Kampf (Sonde A556, A561).
 
+**Stufe 4, zweiter Teil: K7, Kader auf Wunsch** (A563, gebaut; Entscheidung C, A533):
+- *Wann:* Das Teamfenster des Crucible ist offen – `AgentXBMPetParty` aktiv, nicht im Hornfenster (`Mode` 2), mit
+  einem Brett in `ContentId` (Daedalus 74659a6, `CrucibleRosterLoader`, aus dem Spielbetrieb). Dann zeigt RSR ein
+  Fenster „RSR – Crucible team" mit der Empfehlung und einem Knopf „Apply"; ohne Klick ändert es nichts.
+- *Empfehlung:* so viele Begleiter, wie das Brett fasst (`XBMContent.Unknown34`, EXDSchema TeamSize: 10, 12, 14, 12,
+  15). Zuerst so viele, die heilen oder schützen (Trick heilt, Tempered Release heilt oder schützt, Borrow schützt), wie
+  B5 vor einem Boss verlangt (zwei, `BossSafeFamiliars`); dann der Reihe nach der, der die meisten noch schwach
+  abgedeckten Gegner trifft: Gewicht je Schwäche ist die Zahl der Gegner aller Kämpfe des Bretts mit ihr
+  (`XBMContentBattle` → `XBMBattleDetail`), und jeder schon gewählte Begleiter mit derselben Schwäche teilt es
+  (Gewicht durch eins plus die Zahl der schon Gewählten, die sie treffen). Bei Gleichstand zuerst, wer über dem Rang des
+  Bretts steht (`IsPetOverSyncedRank`), dann wer schon im Kader ist. Ein Unterbrecher (K4) wartet auf die Sonde A557.
+- *Umsetzen:* erst die Abgänge, dann die Zugänge, je ein `TogglePet`; danach wartet RSR, bis der Kader sich ändert,
+  höchstens einen GCD. Nimmt das Spiel einen Zugang nicht, fällt er für diese Sitzung aus der Empfehlung, und es geht
+  weiter; geht ein Abgang nicht, hört RSR auf. Jede Stufe steht in der Spur („crucible team: …"); bestätigen und
+  schließen tut er das Fenster selbst.
+- *Gegenthese 1 (Wahl nur über Schwächen):* Schaden je Begleiter und sein Rang fehlen. Teilweise widerlegt: Der Rang
+  bricht Gleichstand, der Schaden im Kampf entscheidet B3 und K6 unter den Gewählten; nicht widerlegt bleibt, dass ein
+  schwacher Begleiter mit passender Schwäche einen starken verdrängen kann. Darum nur auf Klick.
+- *Gegenthese 2 (Absturz durch Spielfunktionen):* `TogglePet` ist die Funktion des Fensters selbst, Daedalus ruft sie im
+  Spielbetrieb; RSR ruft sie nur auf Knopfdruck und nur bei offenem Teamfenster.
+
 **Stufe 1, zweiter Teil: K1 und der Rest von K3** (A549, gebaut; Daten in `CrucibleBoard`):
 - *K1, Zuschlag gemessen:* Keine Quelle nennt ihn; consolegameswiki und Eorzean Tavern sagen nur, dass Schwächen
   zählen (05.11.2026). RSR misst ihn an jedem Treffer von dir und deinen Begleitern auf einen Gegner des laufenden Kampfs.

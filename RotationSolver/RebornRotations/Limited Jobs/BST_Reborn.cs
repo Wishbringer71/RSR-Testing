@@ -1041,6 +1041,8 @@ public sealed class BST_Reborn : BeastmasterRotation
 			AssignBetweenFights();
 			SetHornsOnHornScreen();
 		}
+
+		FollowTeamRequest();
 	}
 
 	#region Battlehorns between fights
@@ -1048,10 +1050,7 @@ public sealed class BST_Reborn : BeastmasterRotation
 	// familiars for the trash, before the boss a combination for one enemy, protection or healing where the fights showed
 	// a need for it, set while out of combat.
 
-	// Familiars that heal or protect you on the horns before a boss. With one, a danger that came after its stint found
-	// none in 36 of 324 modelled fights; with two, no danger was covered worse than with his own horns, at 0.3 % of the
-	// boss's potency on average where none came (bst_assign_model.py, 04.11.2026).
-	private const int BossSafeFamiliars = 2;
+	// BossSafeFamiliars (B5, A522): in BeastmasterRotation, read by B5, K6 and K7.
 
 	private static readonly HornOrder[] Horns = ThreeHorns;
 	private static readonly int I = HornSlot(HornOrder.FirstBattlehorn);
