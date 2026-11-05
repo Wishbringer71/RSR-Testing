@@ -297,13 +297,36 @@ internal static class DotOnParty
 
 		foreach (var status in member.StatusList)
 		{
-			if (IsEnemyDot(status) && !status.CanDispel())
+			if (IsEnemyDot(status) && (!status.CanDispel() || BorneByAnother(member, status.StatusId)))
 			{
 				return false;
 			}
 		}
 
 		return true;
+	}
+
+	// A damage over time another member bears as well is left to the heal over time, not to Esuna (concept 07, "Reinigung
+	// oder Heilung", A565) - so it does not count as one Esuna is about to clear.
+	private static bool BorneByAnother(IBattleChara member, uint statusId)
+	{
+		foreach (var other in DataCenter.PartyMembers)
+		{
+			if (other == null || other.GameObjectId == member.GameObjectId || other.StatusList == null)
+			{
+				continue;
+			}
+
+			foreach (var status in other.StatusList)
+			{
+				if (status != null && status.StatusId == statusId)
+				{
+					return true;
+				}
+			}
+		}
+
+		return false;
 	}
 
 	/// <summary>Forgets everything followed - on leaving an area or a fight, where nothing of it carries over.</summary>

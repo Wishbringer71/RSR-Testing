@@ -1426,8 +1426,9 @@ internal partial class Configs : IPluginConfiguration, IM3Settings
 
 	[UI("Keep the MP a raise needs",
 		Description = "In combat and in a party, a job that can raise spends MP on damage only while the raise's cost - or "
-			+ "\"Don't raise below this MP\" where that is higher - is left afterwards. Heals, the raise itself and free casts "
-			+ "are not held.\n"
+			+ "\"Don't raise below this MP\" where that is higher - is left afterwards. The same holds for a cleanse that saves "
+			+ "no life (Esuna on Slow or Bleeding); one against a status that kills, like Doom, is free. Heals, the raise "
+			+ "itself and free casts are not held.\n"
 			+ "In a fight: a healer at 2600 MP casts no damage spell that would take him below 2400; he uses his free "
 			+ "attacks or waits for MP, and can raise a member who dies at once instead of after the MP has come back.\n"
 			+ "Off: damage spends MP down to the raise's cost and below, as before.",

@@ -557,11 +557,13 @@ public readonly struct ActionBasicInfo
 	/// Whether this action leaves the MP a raise needs (concept 11, "Das Mana für die Wiederbelebung", A469): for a job that
 	/// raises, in combat and in a party, a hostile action that costs MP goes only while the raise's cost - or "Don't raise
 	/// below this MP" where that is higher - is left after it. Heals, the raise itself, actions without MP and a cast Thin
-	/// Air makes free are untouched. The dark knight's "Keep at least 3000 MP" (A406), carried over to the raise.
+	/// Air makes free are untouched. The dark knight's "Keep at least 3000 MP" (A406), carried over to the raise. A cleanse
+	/// counts as a heal only where it saves a life - its target bears a status that kills when it runs out -, else it keeps
+	/// the reserve like damage (concept 07, "Reinigung oder Heilung", A565).
 	/// </summary>
 	private bool LeavesMpForRaise()
 	{
-		if (!Service.Config.KeepMpForRaise || _action.Setting.IsFriendly || !DataCenter.InCombat
+		if (!Service.Config.KeepMpForRaise || (_action.Setting.IsFriendly && !CleanseSavesNoLife()) || !DataCenter.InCombat
 			|| DataCenter.PartyMembers.Count <= 1)
 		{
 			return true;
@@ -582,6 +584,25 @@ public readonly struct ActionBasicInfo
 
 		var reserve = Math.Max(raise.Info.MPNeed, (uint)Math.Max(0, Service.Config.LessMPNoRaise));
 		return DataCenter.CurrentMp >= cost + reserve;
+	}
+
+	// A cleanse whose target - the one the dispel choice holds - bears no status that kills when it runs out.
+	private bool CleanseSavesNoLife()
+	{
+		if (_action.Setting.TargetType != TargetType.Dispel || DataCenter.DispelTarget?.StatusList is not { } statuses)
+		{
+			return false;
+		}
+
+		foreach (var status in statuses)
+		{
+			if (status != null && status.CanDispel() && StatusHelper.EndsInDeath((StatusID)status.StatusId))
+			{
+				return false;
+			}
+		}
+
+		return true;
 	}
 
 	/// <summary>

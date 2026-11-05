@@ -935,6 +935,70 @@ abgebrochen und die Wirkzeit gekostet. Verloren ging keine Heilung.
   Wirkung. Was sich ändert, ist die Spur, und es bleibt der seltene Fall der Regeneration über die Schwelle. Das ist der
   Umfang dieser Behebung. Wie oft dieser Fall eintritt, zählt „heal kept".
 
+## Reinigung oder Heilung
+
+**Leitfrage:** Wann geht eine Reinigung vor einer Heilung?
+
+**Wen es betrifft:** die Heiler (Weißmagier, Gelehrter, Astrologe, Weiser, Druide): Ihre Reinigung Esuna ist ein GCD
+und kostet 400 MP, sie steht also gegen eine Heilung und gegen deren Mana. Der Barde reinigt mit Warden's Paean, einer
+Fähigkeit ohne Mana, die keinem GCD den Platz nimmt; für ihn bleibt alles wie bisher – die Gründe unten treffen ihn nicht.
+
+**Was gilt (A565):** Eine Reinigung geht nur dann vor jeder Heilung, wenn sie selbst ein Leben rettet. Alles andere
+reinigt RSR erst, wenn weder Heilung noch Abwehr ansteht, und nicht mit dem Mana, das die Wiederbelebung braucht. Drei
+Arten reinigbarer Zustände, jede an den eigenen Daten des Spiels erkannt:
+
+| Art | Erkannt an | Beispiele (Standardliste) | Wann RSR reinigt |
+|---|---|---|---|
+| **tötet am Ende** | Symbol des Todesurteils (215503, sechs Doom-Zeilen) oder Wirktext mit „KO" (Necrosis 2965, Throttle 700; xivapi, 05.11.2026) | Doom (910, 3364, 4594), Necrosis (2965) | sofort, vor jeder Heilung – sie rettet ein Leben |
+| **Schaden über Zeit** | Wirktext „damage over time" (derselbe Erkenner wie „HoT gegen DoT", Konzept 08) | Bleeding (273), Poison (2104), Concussion (3521) | liegt er, solange ein Gegner in Reichweite ist, auf mehr als einem Mitglied, nie – dann antwortet die Heilung über Zeit für die Gruppe (Weißmagier, Astrologe: „HoT gegen DoT", Konzept 08; Gelehrter, Weiser: ihre Fähigkeiten über die Heilschwellen); auf einem einzigen wie die übrigen |
+| **übrige** | alles andere auf der Liste „Dispellable debuffs" | Stun, Sleep, Silence, Paralysis, Bind, Slow (561 u. a.), Blind | nur ohne Heil- und Abwehranlass und nur mit Mana über der Rücklage der Wiederbelebung |
+
+Zustände außerhalb der Liste reinigt der Heiler nach denen auf der Liste und ebenso nur, wenn nichts ansteht; bisher
+auch bei Heilbedarf, sobald kein Gegner in Reichweite stand. „Dispel every dispellable debuff" nimmt sie wie bisher alle
+dazu, vor die Heilung stellt es keine. Die Rücklage ist die der Einstellung „Keep the MP a raise needs" (ab Werk an,
+A469); ihr Text nennt jetzt auch die Reinigung. Die Dringlichkeit aus A500 – ein Zustand, der innerhalb eines GCD
+abläuft, geht ohne Verzögerung – gilt für jeden Reiniger, auch den Barden, nur noch für die erste Art: Was nicht tötet,
+endet nur. „Gruppen-HoT des Jobs" heißt auf seiner Stufe gelernt: Medica II oder III (Weißmagier), Aspected Helios oder
+Helios Conjunction (Astrologe), Whispering Dawn mit der Fee (Gelehrter), Physis oder Physis II (Weiser).
+
+**Belegt am Odin-Kampf (sein Upload vom 05.11.2026, Weißmagier, stufensynchron 50, acht Mitglieder):**
+Odin legt mit Einherjar (39 bis 41 % auf alle acht) Bleeding für 30 s auf jeden, mit anderen Angriffen Slow für 10 s.
+Beide stehen auf Upstreams Standardliste gefährlicher Zustände (Slow seit 30.04.2023, Bleeding seit 07.01.2025; seit
+24.10.2026 als eingebaute Liste), und alles auf der Liste ging vor jede Heilung (Slot 6 vor 10 und 11, Konzept 03). RSR
+warf 22-mal Esuna – 13-mal auf Bleeding, 9-mal auf Slow –, 400 MP je Wurf, zusammen 8.800 MP. Nach dem ersten
+Einherjar gingen drei Reinigungen hinaus, während ein Mitglied bei 0 % Vorausschau stand; ein anderes fiel 7 s nach
+Einherjar an Sanngetall bei 36 % – ob eine Heilung statt der Reinigung es gehalten hätte, zeigt der Mitschnitt nicht. Ab
+39:00 lag das Mana unter 2.600, um 39:42 bei 268: zu wenig für Heilungen und, unter „Keep the MP a raise needs" (ab
+Werk an; deine Stellung kenne ich nicht), für jeden Schadenszauber – darum stand der Heiler in den ruhigen Strecken still (40:26 bis 40:48 kein GCD).
+Mit dieser Regel: keine der 13 Blutungsreinigungen (acht Mitglieder, der Gruppen-HoT antwortet), die Slow-Reinigungen
+nur, solange keine Heilung ansteht und das Mana über 2.400 plus 400 liegt; mindestens 5.200 MP bleiben für
+Heilungen.
+
+**Begründung.** Seine Vorgabe oben: Oberste Priorität hat das Überleben der Gruppe, und das Mittel richtet sich nach der
+Gefahr. Eine Reinigung, die kein Leben rettet, ist kein Mittel gegen die Gefahr, die gerade tötet. Sein Hinweis vom
+05.11.2026: „Blutung ist eher etwas, was man mit einem HoT entgegenwirkt" – auf acht Mitgliedern kostet die Reinigung
+acht GCD und 3.200 MP, ein Gruppen-HoT einen. Die Rücklage folgt A469 („die Lebenden gehen vor"): Eine Reinigung, die
+kein Leben rettet, ist dort wie Schaden zu behandeln, nicht wie eine Heilung.
+
+**Verworfen.** (a) Bleeding und Slow aus der eingebauten Liste nehmen: Die Liste bleibt seine (über „Removed" in den
+Einstellungen); falsch war nicht, dass sie reinigenswert sind, sondern dass alles darauf vor jede Heilung ging. (b) Jeden
+Schaden über Zeit nie reinigen: Auf einem einzigen Mitglied nimmt eine Reinigung den ganzen restlichen Schaden für
+denselben GCD und dasselbe Mana wie ein HoT, der nur einen Teil heilt. (c) Die Restzeit- und Stapelregel von Upstream
+(über 20 s, mehr als zwei Stapel) als Maß der Gefahr: Sie sagt nichts darüber, ob der Zustand tötet; sie bleibt nur als
+Merkmal „reinigenswert" für Zustände außerhalb der Liste.
+
+**Gegenthesen.**
+- *Ein betäubter Tank wartet einen GCD auf seine Reinigung, wenn zugleich jemand Heilung braucht.* Nicht widerlegt,
+  Preis benannt: Ein Mitglied unter der Schwelle stirbt am nächsten Treffer sicher, der betäubte Tank nur, wenn in
+  diesem GCD ein Tankbuster landet – dann steht ohnehin die Abwehr an, und für die gilt dasselbe. Die Heilung geht vor.
+- *Ein Schaden über Zeit auf zwei Mitgliedern, und der Job hat (auf dieser Stufe) keinen Gruppen-HoT:* Zwei
+  Reinigungen wären billiger als das Durchheilen. Aufgenommen: Ohne Gruppen-HoT gilt der DoT wie die übrigen und wird
+  gereinigt, sobald nichts ansteht. Ebenso ohne Gegner in Reichweite, wo kein GCD gegen Schaden steht.
+- *Unter Mana-Not fällt die Reinigung einer Betäubung oder eines Schlafs bei einem anderen Mitglied weg.* Nicht
+  widerlegt, Preis benannt: Die Rücklage hält das Mana, mit dem RSR dieses Mitglied wiederbelebt, falls es fällt; eine
+  Betäubung endet von selbst, ein Schlaf mit dem nächsten Treffer. Wer sie dennoch gereinigt haben will, schaltet „Keep
+  the MP a raise needs" aus.
+
 ## Abgrenzung zur Schildanrechnung
 
 Die entfernte Schildanrechnung (`AUDIT_LOG.md` A85) hat dieselbe Größe an der falschen Stelle

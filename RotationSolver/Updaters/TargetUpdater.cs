@@ -606,7 +606,8 @@ internal static partial class TargetUpdater
 
 	private static readonly List<IBattleChara> _urgentDispel = [];
 
-	// Whether a dangerous status on the member runs out within the given seconds.
+	// Whether a status on the member that kills when it runs out does so within the given seconds (A500; A565: only those -
+	// a status that does not kill just ends, and cleansing it then gains nothing).
 	private static bool DangerousStatusEndsWithin(IBattleChara person, float seconds)
 	{
 		var statusList = person.StatusList;
@@ -618,7 +619,8 @@ internal static partial class TargetUpdater
 		for (int i = 0, n = statusList.Length; i < n; i++)
 		{
 			var status = statusList[i];
-			if (status != null && status.IsDangerous() && status.RemainingTime > 0 && status.RemainingTime <= seconds)
+			if (status != null && status.CanDispel() && StatusHelper.EndsInDeath((StatusID)status.StatusId)
+				&& status.RemainingTime > 0 && status.RemainingTime <= seconds)
 			{
 				return true;
 			}
@@ -658,6 +660,12 @@ internal static partial class TargetUpdater
 				| AutoStatus.HealSingleAbility | AutoStatus.HealSingleSpell
 				| AutoStatus.DefenseArea | AutoStatus.DefenseSingle;
 			var canDispelNonDangerous = (DataCenter.MergedStatus & busyStatus) == 0;
+
+			// A healer's cleanse is a GCD with MP against a heal (concept 07, "Reinigung oder Heilung", A565).
+			if (DataCenter.Role == JobRole.Healer)
+			{
+				return HealerDispelTarget(dispelNow, canDispelNonDangerous);
+			}
 
 			IBattleChara? closestDangerous = null;
 			var closestDangerousDist = float.MaxValue;
@@ -710,6 +718,93 @@ internal static partial class TargetUpdater
 			return closestDangerous ?? closestNonDangerous;
 		}
 		return null;
+	}
+
+	private static readonly Dictionary<uint, int> _dotBearers = [];
+
+	/// <summary>
+	/// A healer's cleanse (concept 07, "Reinigung oder Heilung", A565): one that saves a life - a status that kills when it
+	/// runs out - goes before every heal. Anything else only while no heal or defence is asked for, the listed (dangerous)
+	/// first; and a damage over time borne by more than one member, while an enemy is in reach and the job has a heal over
+	/// time for the party, not at all - that heal answers it (his note of 05.11.2026). The MP a raise needs is kept in the
+	/// action's own check (ActionBasicInfo.LeavesMpForRaise).
+	/// </summary>
+	private static IBattleChara? HealerDispelTarget(List<IBattleChara> candidates, bool nothingAsked)
+	{
+		var spreadDotsWait = DataCenter.HasHostilesInRange
+			&& DataCenter.CurrentRotation is RotationSolver.Basic.Rotations.CustomRotation { HasGroupHealOverTime: true };
+		_dotBearers.Clear();
+		if (spreadDotsWait)
+		{
+			foreach (var member in DataCenter.PartyMembers)
+			{
+				if (member?.StatusList == null)
+				{
+					continue;
+				}
+
+				foreach (var status in member.StatusList)
+				{
+					if (status != null && status.CanDispel() && StatusHelper.IsDamageOverTime([(StatusID)status.StatusId]))
+					{
+						_dotBearers[status.StatusId] = _dotBearers.GetValueOrDefault(status.StatusId) + 1;
+					}
+				}
+			}
+		}
+
+		IBattleChara? lethal = null, listed = null, other = null;
+		float lethalDist = float.MaxValue, listedDist = float.MaxValue, otherDist = float.MaxValue;
+		foreach (var person in candidates)
+		{
+			var statusList = person.StatusList;
+			if (statusList == null)
+			{
+				continue;
+			}
+
+			bool kills = false, isListed = false, any = false;
+			foreach (var status in statusList)
+			{
+				if (status == null || !status.CanDispel())
+				{
+					continue;
+				}
+
+				if (StatusHelper.EndsInDeath((StatusID)status.StatusId))
+				{
+					kills = true;
+					break;
+				}
+
+				if (spreadDotsWait && _dotBearers.GetValueOrDefault(status.StatusId) > 1)
+				{
+					continue;
+				}
+
+				any = true;
+				isListed |= status.IsDangerous();
+			}
+
+			var dist = ObjectHelper.DistanceToPlayer(person);
+			if (kills && dist < lethalDist)
+			{
+				lethal = person;
+				lethalDist = dist;
+			}
+			else if (!kills && isListed && dist < listedDist)
+			{
+				listed = person;
+				listedDist = dist;
+			}
+			else if (!kills && any && dist < otherDist)
+			{
+				other = person;
+				otherDist = dist;
+			}
+		}
+
+		return lethal ?? (nothingAsked ? listed ?? other : null);
 	}
 
 	private static void AddDispelTargets(List<IBattleChara>? members, List<IBattleChara> targetList)

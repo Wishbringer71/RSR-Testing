@@ -5,6 +5,9 @@ public partial class ScholarRotation
 	/// <inheritdoc/>
 	public override MedicineType MedicineType => MedicineType.Mind;
 
+	/// <summary>Whispering Dawn, the fairy's - with a fairy out (concept 07, "Reinigung oder Heilung", A565).</summary>
+	internal override bool HasGroupHealOverTime => WhisperingDawnPvE.EnoughLevel && DataCenter.HasPet();
+
 	#region Job Gauge
 
 	/// <summary>

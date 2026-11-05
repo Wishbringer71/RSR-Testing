@@ -162,6 +162,9 @@ public partial class AstrologianRotation
 		return TryHotAgainstDot(AspectedBeneficPvE, HeliosConjunctionPvE.EnoughLevel ? HeliosConjunctionPvE : AspectedHeliosPvE, out act);
 	}
 
+	/// <summary>Aspected Helios, later Helios Conjunction (concept 07, "Reinigung oder Heilung", A565).</summary>
+	internal override bool HasGroupHealOverTime => AspectedHeliosPvE.EnoughLevel || HeliosConjunctionPvE.EnoughLevel;
+
 	private static readonly StatusID[] CombustStatus =
 	[
 		StatusID.Combust,

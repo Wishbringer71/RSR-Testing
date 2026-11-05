@@ -14,6 +14,14 @@ What this release changes in the fight. For the whole distance from upstream, se
 
 ## Healing
 
+- **A cleanse no longer comes before a heal unless it saves a life.** A healer's Esuna went before
+  every heal for anything on the dispellable list - Slow and Bleeding among them -, one member per GCD
+  and 400 MP each, even while a member was about to die; against Odin that was 22 casts and 8,800 MP,
+  and with the MP gone there were no heals and no damage spells left. Now only a status that kills when
+  it runs out (Doom, Necrosis, Throttle) is cleansed ahead of healing. Everything else waits until no
+  heal or defence is needed, and keeps the MP a raise needs (`Keep the MP a raise needs` now says so).
+  A damage over time on more than one member is left to the job's heal over time for the party while
+  an enemy is in reach. The bard's Warden's Paean is unchanged.
 - **A blue mage counts in the role of his Aetheric Mimicry.** Every question RSR asks about a party
   member's role (`IsJobCategory`) now answers a blue mage under "Aetheric Mimicry: Healer" as a healer
   and one under "Aetheric Mimicry: Tank" as a tank. With such a healer in the party, a tank or damage

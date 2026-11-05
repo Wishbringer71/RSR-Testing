@@ -526,7 +526,9 @@ nicht mehr still heraus.
 Option „Keep the MP a raise needs", ab Werk an, A469). Für jeden Job mit Wiederbelebung (`Raise`, ab ihrer Stufe), im
 Kampf und in einer Gruppe: Eine feindliche Aktion mit Manakosten geht nur, solange nach ihr noch die Kosten der
 Wiederbelebung bleiben, oder „Don't raise below this MP", wo das höher steht. Heilungen, die Wiederbelebung selbst,
-Fähigkeiten ohne Mana und ein Zauber unter Thin Air (frei) sind nicht betroffen.
+Fähigkeiten ohne Mana und ein Zauber unter Thin Air (frei) sind nicht betroffen. Eine Reinigung gilt nur als Heilung, wo
+sie ein Leben rettet (ihr Ziel trägt einen Zustand, der am Ende tötet); sonst hält sie die Rücklage wie Schaden
+(A565, Konzept 07, „Reinigung oder Heilung": im Odin-Kampf vom 05.11.2026 nahmen 22 Reinigungen 8.800 MP).
 - *Herkunft:* die Idee des Dunkelritters „Keep at least 3000 MP" (A406) – das Mana für die Schutzaktion bleibt, die
   Schadensfähigkeiten geben nur aus, was darüber liegt –, übertragen auf die Wiederbelebung. Bei den Heilern hielt das
   bisher nur die Pflege auf dem Tank im Pull ein (`TryPullUpkeepOnTank`).

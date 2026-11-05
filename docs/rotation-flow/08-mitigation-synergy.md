@@ -1117,8 +1117,11 @@ nicht beobachtet. Weg B in seiner ersten Form ist verworfen (A430).
 - *Entfernbar* (sein Hinweis, geprüft): 90 der 340 nicht jobgebundenen DoT-Status tragen `CanDispel`, gut jeder vierte.
   Gift am häufigsten (8 von 15 Zeilen), aber nicht allein: Blutung 8 von 23, Windburn 5 von 16, Stromschlag 4 von 17,
   Brandwunde 4 von 23; Tiefkühlung und Umschlungen nie. In seinen Mitschnitten waren Gift und Stromschlag entfernbar, Blutung,
-  Brandwunde, Giftpollen und Verdauung nicht; Pollen bei Zeromus ebenso nicht. Esuna kommt in RSRs GCD-Verteilung vor
-  jeder Heilung (`CustomRotation_GCD`, `AutoStatus.Dispel`); ein entfernbarer DoT, den RSR entfernt, braucht keinen HoT.
+  Brandwunde, Giftpollen und Verdauung nicht; Pollen bei Zeromus ebenso nicht. Ein entfernbarer DoT auf mehr als einem
+  Mitglied wird beim Heiler nicht gereinigt, solange ein Gegner in Reichweite ist und der Job einen Gruppen-HoT hat –
+  dieser Pfad antwortet ihm (sein Hinweis vom 05.11.2026, „Blutung ist eher etwas, was man mit einem HoT
+  entgegenwirkt"); auf einem einzigen reinigt ihn RSR, sobald keine Heilung ansteht (Konzept 07, „Reinigung oder
+  Heilung", A565).
 - *HoT-Potenzen* (Job-Guide, 27.10.2026): Regen 250 je Tick für 18 s, 400 MP; Resega (Medica III) 250 sofort und 175
   je Tick für 15 s, 1000 MP, 2 s Wirkzeit; Medica II 250 und 150 je Tick für 15 s; Refugium (Asylum) 100 je Tick für
   24 s, oGCD alle 90 s; Göttliche Umarmung ein Schild, nach dessen Bruch oder Ablauf 200 je Tick für 15 s; Glockenspiel
@@ -1374,7 +1377,7 @@ Gesundheitstrend, den RSR hat, überschätzt ihn nach jedem Treffer (Tabelle obe
   nach dem dritten Tick, Cure II bei 62 %; H1 legt Regen beim ersten. Was das im Kampf bringt, zeigt nur das Modell –
   darum hinter einer Option.
 - *Option falsch?* Widerlegt, soweit prüfbar: Der Tickbetrag steht nach dem Schild (gemessen), ein geschluckter Tick
-  meldet 0, und H1 wartet zu Recht, bis Schaden ankommt. Entfernbare DoTs entfernt Esuna vorher; H1 lässt sie aus.
+  meldet 0, und H1 wartet zu Recht, bis Schaden ankommt. Entfernbare DoTs auf einem einzigen Mitglied entfernt Esuna, sobald nichts ansteht; auf mehreren antwortet H1 (Konzept 07, A565).
   Die HoT-Ticks des zweiten Heilers stecken in der Messung (0x604); nur ein HoT, den er im selben Augenblick legt, ist
   nicht zu sehen – Preis ein GCD. Ob prozentuale Minderung den Tick senkt, ist unbelegt; die Messung je Tick führt sie
   ohnehin mit. Ein DoT ohne festes Ende (Restzeit 9999, etwa Halbverschlungen und Giftpollen, die mit der Mechanik
@@ -1456,7 +1459,8 @@ geändert (A432):
   mehr; wer so gedeckt ist, braucht keinen. Ein HoT, der noch nicht getickt hat, hält das Mitglied bis zu seinem
   ersten Tick zurück, statt einen zweiten darauf zu legen.
 - *Esuna:* Steht Esuna an (`AutoStatus.Dispel`) und ist das Mitglied ihr Ziel, lässt dieser Pfad es aus – nur wenn
-  alle seine DoTs entfernbar sind.
+  alle seine DoTs entfernbar sind und keiner davon auch auf einem anderen Mitglied liegt; den lässt die Reinigung des
+  Heilers diesem Pfad (Konzept 07, „Reinigung oder Heilung", A565).
 - *Von oben:* nur ein Mitglied, das jetzt über seiner Schwelle steht. Wer schon darunter ist, ist der Fall der
   Heilschwellen; dorthin bringt ihn nicht mehr „der DoT allein", wie der Optionstext sagt.
 - *Schutzbedingungen der Einzelheilung:* dieselben Ausnahmen (Heilung wirkungslos, Halten für Living Dead) und die
@@ -2231,7 +2235,7 @@ sind erfasst statt bearbeitet.
 Zweite, unabhängig belegte Fundstelle: Im Schadenszweig steht der Sanctus-Block
 **vor** dem DoT-Block. Sobald `AoeCount = 3` erfüllt ist, greift Sanctus und der DoT
 wird nie gesetzt — bei einem Boss mit zwei Adds läuft also nie Dia. Dass das nicht
-gewollt ist, zeigt der DoT selbst: `ModifyDiaPvE` (`WhiteMageRotation.cs:377-395`)
+gewollt ist, zeigt der DoT selbst: `ModifyDiaPvE` (`WhiteMageRotation.cs:380-398`)
 setzt `TargetStatusProvide` gegen Nachlegen und `IsRestrictedDOT` gegen ungeeignete
 Ziele, seit Upstream 3c6ce9ee2 dazu die Potenzen für den DoT-Planer — alle Vorkehrungen
 laufen bei AoE ins Leere, weil der Zweig nicht erreicht wird. Seit A231 fällt der GCD nach einem Sanctus auf den fälligen DoT (Abschnitt „Die Regel“).

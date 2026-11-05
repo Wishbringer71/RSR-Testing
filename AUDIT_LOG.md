@@ -16632,6 +16632,49 @@ habe den schleim bislang nicht anfreunden können."
 - *Prüfgrad:* Compile, Prüfschritte; Wirkkette am Code. Im Spiel nicht beobachtet; Spurzeilen „crucible campsite: …"
   messen Grenze, Anteil und Wahl selbst.
 
+### A565 · Reinigung oder Heilung: Odin-Kampf vom 05.11.2026, 22 Esuna vor der Heilung (05.11.2026)
+
+- *Anlass:* Sein Upload vom 05.11.2026 (`DefenseTrace.log`, Build e202ee9d3 vom 04.11.; ACT-Mitschnitt), seine Frage
+  mit hoher Priorität: warum der Heiler zeitweise nichts tat, warum die Heilung beim Odin-Kampf so schlecht war, ob die
+  Änderungen der letzten ein, zwei Tage etwas zerstört haben. Dazu sein Hinweis („blutung ist eher etwas, was man mit
+  einem HoT entgegenwirkt. auch dazu gab es ein konzept"), seine Frage „und was ist, wenn upstream fehler macht?", seine
+  Rüge „falsche antwort. aktionismus! wo ist konzept?" und seine Frage, was viele einzelne Reinigungen bringen, wenn
+  währenddessen Mitglieder mangels Heilung sterben.
+- *Gemessen (Mitschnitt):* Odin in Urth's Fount, stufensynchron 50, acht Mitglieder, er als Weißmagier, 226 s. Einherjar
+  traf alle acht mit 39 bis 41 % und legte Bleeding (273, 30 s, reinigbar, 193 LP je Tick gelernt); andere Angriffe
+  Slow (561, 10 s). RSR warf 22-mal Esuna (7568; „Medica" im deutschen Client), 13-mal auf Bleeding, 9-mal auf Slow, je
+  400 MP. Drei davon gingen nach dem ersten Einherjar hinaus, während ein Mitglied bei 0 % Vorausschau stand; ein
+  anderes fiel 7 s nach Einherjar an Sanngetall bei 36 %. Mana ab 39:00 unter 2.600, 39:42 bei 268; danach kein Steinra
+  mehr (Rücklage der Wiederbelebung, A469) und 40:26 bis 40:48 kein GCD.
+- *Ursache (am Code):* Upstreams eingebaute Liste gefährlicher Zustände enthält Slow (seit 30.04.2023) und Bleeding
+  (seit 07.01.2025; seit 24.10.2026 als eingebaute Liste mit „Added/Removed"); alles darauf ging vor jede Heilung
+  (`GetDispelTarget`: gefährlich ohne Rücksicht auf Heilbedarf; Slot 6 vor 10 und 11). Die Rücklage der Wiederbelebung
+  nahm Esuna als freundliche Aktion aus. Keine Änderung der letzten zwei Tage war Ursache; Upstream-Verhalten, das ein
+  eigenes Konzept (08) als Prämisse übernommen hatte, ohne es zu prüfen (C165).
+- *Optionen:* Nullvariante; Bleeding und Slow aus der Liste (verworfen: seine Liste, falsch war die Reihenfolge); jeden
+  DoT nie reinigen (verworfen: auf einem Mitglied ist die Reinigung billiger); Restzeit- und Stapelregel als Gefahr
+  (verworfen: sagt nichts über den Tod); gewählt: Reinigung vor Heilung nur, wenn sie ein Leben rettet, sonst erst ohne
+  Heil- und Abwehranlass und mit Mana über der Rücklage; ein DoT auf mehreren Mitgliedern bei Gegner in Reichweite und
+  Gruppen-HoT des Jobs gar nicht.
+- *Gebaut:* `StatusHelper.EndsInDeath` (Wirktext „KO" oder „death"; Doom ×6, Necrosis, Throttle); `TargetUpdater`:
+  `HealerDispelTarget` für Heiler, A500-Dringlichkeit nur für Tödliches; `CustomRotation.HasGroupHealOverTime` mit den
+  Gruppen-HoTs der vier Heiler; `ActionBasicInfo.LeavesMpForRaise`: Reinigung ohne Lebensrettung hält die Rücklage
+  (Text „Keep the MP a raise needs" erweitert); `DotOnParty.OnlyDispellable`: ein geteilter DoT gilt H1. Barde unverändert.
+- *Konzept:* 07, „Reinigung oder Heilung" (vor dem Code fertig; zwei Gegenthesen aufgenommen, zwei mit Preis); 08, 03,
+  11 nachgezogen.
+- *Falsifikation:* Kein Defekt – widerlegt am Mitschnitt. Option falsch – Gegenthesen im Konzept. Ausgeliefert, und
+  nichts ändert sich: (1) Heilflaggen fehlen, obwohl Mitglieder sinken (Heilung aus) – dann reinigt RSR Gelistetes wie
+  zuvor, aber eine Gruppen-Blutung bleibt dem HoT; (2) Odin gilt nicht als Gegner in Reichweite – dann wird eine
+  Gruppen-Blutung gereinigt, aber nur ohne Heilbedarf und über der Rücklage; (3) „Keep the MP a raise needs" steht bei
+  ihm aus – dann fehlt die Mana-Grenze, der Heilvorrang bleibt.
+- *Seine Frage zu Upstream:* Ein Befund „stammt von Upstream" beantwortet nicht, ob es richtig ist; Regel in
+  `.claude/rules/konzepte.md`, die Klasse als TODO „Upstream-Verhalten, das Konzepte als gegeben nehmen".
+- *Weitere Zeilen der Sitzung:* zwei Ultratränke bei 14 und 33 % (Heiltrank geht im Gruppenkampf); eine Abbruchzeile
+  „heal stopped" nach der Landung (ee064ca63, nach seinem Build behoben); gelernt: Einherjar 49 % ungemindert, Blutung
+  273 und 320 in Gebiet 394. Die Sonde des Heiltranks (71653ce21) war nicht in seinem Build.
+- *Prüfgrad:* Mitschnitt und Code gelesen, Compile ohne Warnung, Prüfschritte; im Spiel nicht beobachtet. Die
+  Spur nennt jede Reinigung nicht eigens; der Mitschnitt zeigt sie.
+
 ## B · Commit-Register (Fork vs. `upstream/main`)
 
 ### B1 · Einzelgeprüfte Fork-Commits
@@ -16948,3 +16991,4 @@ Die offene Arbeit dazu — Reihenfolge und Abbruchbedingung der Nachprüfung —
 | C162 | A550 und Konzept 01, K11 („Stand der Umsetzung"): „Zwei Größen liefert das Spiel zur Laufzeit nicht: den Kader und das Feld. FFXIVClientStructs (aad0de6, 05.11.2026) führt im Brett nur das Inventar und `UseItem`; die Fenster des Kaders und des Wegs stehen nur in fremden Plugins mit eigenen Offsets"; TODO „K11 (Kader und Feld liefert das Spiel nicht …)" | Derselbe Stand aad0de66 führt `AgentXBMPetParty` (Kader `SelectedPetIds`, LP je Begleiter `PetCurrentHealth`/`PetMaxHealth`) und `AgentXBMStageDetailList` (Felder und Kämpfe des laufenden Bretts), beide seit 17.09.2026 (d44bc123, 3120c745), und Dalamuds Fassung enthält sie (Reflexion, 05.11.2026). Gesucht war nur unter `InstanceContentCrucibleOfTheUnbroken`. Offen bleibt allein, ob das Spiel sie im Brett füllt. | Sonde A556; Konzept 01 K11 und TODO umgestellt. |
 | C163 | A524, Konzept 01 „Bestienkönnen nach Borgen", TODO „Beastmaster: Brechende Welle als Schaden": „als Schaden nie, weil ihre zweite Zeile hinter Schmetteraxt steht, die immer geht" | Die Äxte haben Nahkampfreichweite (`Action.Range` −1), Brechende Welle 30 Yalm (Blatt `Action` 44879, 44883, 44885, 44900, 05.11.2026). Außerhalb der Nahkampfreichweite scheitern alle Äxte, und die zweite Zeile greift. Im Nahkampf wäre die Welle um etwa 70 Potenz schlechter als der Kombo-Schnitt; die Reihenfolge von Upstream war richtig. | A558: Konzept umgestellt, TODO-Punkt geschlossen; im Brett gegen Wasserschwäche zusätzlich vor den Äxten. |
 | C164 | TODO „Flächenbetäuber in Kreszentia für The Blackest Night": „Betäubt ein anderer Spieler mit einer Aktion seines Phantomjobs eine Gruppe, kann der Dunkelritter seine Barriere in das Betäubungsfenster legen" | Die Regel misst die Betäubung am Status der Gegner, gleich wer sie setzt (`SurveyStuns`); nur das sichtbare Kommen der nächsten las sie an Holy und Holy III. Die einzige Flächenbetäubung der Phantomjobs, Occult Falcon, wirkt sofort und hat kein Kommen. | A560: Punkt geschlossen; das Kommen wird über die Spieldaten erkannt statt über die zwei IDs. |
+| C165 | Konzept 08, „Schaden über Zeit: HoT gegen DoT": „Esuna kommt in RSRs GCD-Verteilung vor jeder Heilung; ein entfernbarer DoT, den RSR entfernt, braucht keinen HoT" und „Entfernbare DoTs entfernt Esuna vorher; H1 lässt sie aus" | Die Reihenfolge war Upstreams, ungeprüft übernommen. Im Odin-Kampf (05.11.2026) gingen 13 Reinigungen einer Gruppen-Blutung und 9 von Slow vor jede Heilung, auch bei einem Mitglied mit 0 % Vorausschau; 8.800 MP. Ein DoT auf mehreren Mitgliedern ist Sache des Gruppen-HoT (sein Hinweis), und eine Reinigung geht nur vor, wenn sie ein Leben rettet. | A565: Konzept 07 „Reinigung oder Heilung", 08 berichtigt, Code. |

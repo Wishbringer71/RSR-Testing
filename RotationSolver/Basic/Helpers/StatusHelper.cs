@@ -224,6 +224,36 @@ public static class StatusHelper
 	};
 
 	private static readonly System.Collections.Concurrent.ConcurrentDictionary<uint, bool> _damageOverTime = new();
+	private static readonly System.Collections.Concurrent.ConcurrentDictionary<uint, bool> _endsInDeath = new();
+
+	/// <summary>
+	/// Whether this status kills its bearer when it runs out, by its own text in the English status sheet: "Certain death
+	/// when counter reaches zero." (Doom, six rows), "... decay will result in KO." (Necrosis), "KO is imminent."
+	/// (Throttle) - the cleansable statuses that say so (xivapi, 05.11.2026). A cleanse of one of these saves a life;
+	/// concept 07, "Reinigung oder Heilung" (A565). A sheet that cannot be read answers no.
+	/// </summary>
+	internal static bool EndsInDeath(StatusID statusId)
+	{
+		return _endsInDeath.GetOrAdd((uint)statusId, static key =>
+		{
+			try
+			{
+				var sheet = Svc.Data.GetExcelSheet<Lumina.Excel.Sheets.Status>(Dalamud.Game.ClientLanguage.English);
+				if (sheet == null || !sheet.TryGetRow(key, out var row))
+				{
+					return false;
+				}
+
+				// "KO" as the game writes it, in capitals; "death" in any case.
+				var text = row.Description.ExtractText();
+				return text.Contains("KO", StringComparison.Ordinal) || text.Contains("death", StringComparison.OrdinalIgnoreCase);
+			}
+			catch (Exception)
+			{
+				return false;
+			}
+		});
+	}
 	private static readonly System.Collections.Concurrent.ConcurrentDictionary<uint, bool> _healOverTime = new();
 
 	/// <summary>

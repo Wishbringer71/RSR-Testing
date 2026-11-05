@@ -26,6 +26,9 @@ public partial class WhiteMageRotation
 		return TryHotAgainstDot(RegenPvE, MedicaIiiPvE.EnoughLevel ? MedicaIiiPvE : MedicaIiPvE, out act);
 	}
 
+	/// <summary>Medica II, later Medica III (concept 07, "Reinigung oder Heilung", A565).</summary>
+	internal override bool HasGroupHealOverTime => MedicaIiPvE.EnoughLevel || MedicaIiiPvE.EnoughLevel;
+
 	/// <summary>
 	/// Holy or Holy III stops an enemy's cast by stunning it - and every other enemy in its radius that can still be
 	/// stunned. The owner's rule of 23.10.2026: "ausserdem steht sleep nicht in konkurenz zu holy beim whm. wenn holy

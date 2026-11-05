@@ -5,6 +5,9 @@ public partial class SageRotation
 	/// <inheritdoc/>
 	public override MedicineType MedicineType => MedicineType.Mind;
 
+	/// <summary>Physis, later Physis II (concept 07, "Reinigung oder Heilung", A565).</summary>
+	internal override bool HasGroupHealOverTime => PhysisPvE.EnoughLevel || PhysisIiPvE.EnoughLevel;
+
 	#region Job Gauge
 	/// <summary>
 	/// Gets a value indicating whether Eukrasia is activated. Eukrasia = 1, none = 0

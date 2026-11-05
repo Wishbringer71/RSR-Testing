@@ -610,6 +610,12 @@ public partial class CustomRotation
 	}
 
 	/// <summary>
+	/// Whether the job has, at its level, a heal over time for the party - the answer to a damage over time on several
+	/// members, which a healer then does not cleanse one by one (concept 07, "Reinigung oder Heilung", A565).
+	/// </summary>
+	internal virtual bool HasGroupHealOverTime => false;
+
+	/// <summary>
 	/// <paramref name="group"/> where more than one member within its reach needs a heal over time against an enemy's
 	/// damage over time - a single one covers exactly one member, so from the second on the group one saves a GCD -,
 	/// else <paramref name="single"/> on the lowest of them who does not carry it yet. Each is asked with its own

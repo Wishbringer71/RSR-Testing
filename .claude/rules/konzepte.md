@@ -20,6 +20,7 @@ Lädt mit dem ersten Zugriff auf eine Datei unter `docs/`. Gilt für jede Aussag
 
 ## Konzepte
 
+- Übernimmt ein Konzept Verhalten aus Upstream-Code als Gegebenheit – eine Reihenfolge, eine eingebaute Liste, eine Schwelle –, prüfe ich es wie eigenen Code: Wirkung im Kampf, Herkunft mit Datum. „Stammt von Upstream" beantwortet nicht, ob es richtig ist (seine Frage, 05.11.2026; A565: Upstreams Reinigungsliste vor jeder Heilung, in Konzept 08 ungeprüft übernommen).
 - Mit der Erkenntnis fortschreiben, im selben Zug: Vorgabe, Messergebnis, widerlegte Annahme. Grund: Nach einer Kontextkomprimierung sind Chat und Commit-Nachricht weg, und ein Konzept mit altem Stand widerlegt die Erkenntnis.
 - Ein Gegenstand gehört in das bestehende Konzept, das ihn trägt; ein neues Dokument nur, wenn keines ihn trägt (seine Vorgabe, 01.10.2026). Länge eines Konzepts und das Muster früherer Dokumente sind kein Grund — ein zweites Dokument verteilt den Gegenstand auf zwei Stellen, und eine davon veraltet.
 - Urteilsstil: geltender Sachstand zuerst, Begründung danach, Ausgeschlossenes mit Grund. Keine Chronik der eigenen Fassungen, keine Nachträge; Änderungen einarbeiten.
