@@ -58,8 +58,18 @@ internal static class TankbusterTable
 		// Listed or measured: the plan takes it for a tankbuster as it is.
 		public required bool Tankbuster { get; init; }
 
-		// Taken for one only by the fallback of DataCenter.IsHostileCastingTank: cast at its own target, a tank (A452).
-		public required bool Aimed { get; init; }
+		// Taken for one only by the fallback of DataCenter.IsHostileCastingTank: cast at its own target, a tank (A452). Set
+		// once the fallback takes it in the cast's run: it asks within the flag's landing window, and read only when the
+		// cast was first seen, a cast then longer than two GCDs was never taken (A540).
+		public bool Aimed { get; set; }
+
+		// Aimed at a tank when first seen: the only target the fallback above takes.
+		public required bool AtTank { get; init; }
+
+		// Cast at a player who is no tank: learned in the table of aimed hits (A540). A helper's cast counts: the target is
+		// named by the cast itself, not read from whom the caster attacks - in M4 each Cell Explosion came from its own
+		// untargetable copy of the boss, one per player.
+		public required bool AtNonTank { get; init; }
 
 		public bool Open(DateTime now) => now <= (LastHit > EndsAt ? LastHit : EndsAt).AddSeconds(Window);
 	}
@@ -85,6 +95,9 @@ internal static class TankbusterTable
 		public bool AimedOnly { get; set; }
 		public string? Spoiled { get; set; }
 		public bool Incomplete { get; set; }
+
+		// On a member who is no tank: stored in the table of aimed hits, not here (A540).
+		public required bool NonTank { get; init; }
 
 		public bool Open(DateTime now) => now <= Last.AddSeconds(Window);
 	}
@@ -148,6 +161,7 @@ internal static class TankbusterTable
 				var row = Service.GetSheet<Lumina.Excel.Sheets.Action>().GetRowOrDefault(h.CastActionId);
 				var aimedAt = Svc.Objects.SearchById(h.CastTargetObjectId) as Dalamud.Game.ClientState.Objects.SubKinds.IPlayerCharacter;
 				var tankbuster = OtherConfiguration.HostileCastingTank.Contains(h.CastActionId) || TankbusterForecast.IsLearned(h.CastActionId);
+				var helper = DataCenter.AreaCastHelperIds.Contains(h.GameObjectId);
 				cast = new FollowedCast
 				{
 					Caster = h.GameObjectId,
@@ -157,10 +171,16 @@ internal static class TankbusterTable
 					TargetId = aimedAt?.GameObjectId ?? 0,
 					Window = Math.Max(row?.CastSeconds() ?? 0f, gcd),
 					Tankbuster = tankbuster,
-					Aimed = !tankbuster && aimedAt != null && aimedAt.IsJobCategory(JobRole.Tank)
-						&& !DataCenter.AreaCastHelperIds.Contains(h.GameObjectId) && DataCenter.IsHostileCastingTank(h),
+					AtTank = !tankbuster && aimedAt != null && aimedAt.IsJobCategory(JobRole.Tank) && !helper,
+					AtNonTank = aimedAt != null && !aimedAt.IsJobCategory(JobRole.Tank),
 				};
 				_casts.Add(cast);
+			}
+
+			// The fallback takes it within the flag's landing window, which a long cast reaches only later in its run.
+			if (cast.AtTank && !cast.Aimed && DataCenter.IsHostileCastingTank(h))
+			{
+				cast.Aimed = true;
 			}
 
 			cast.EndsAt = now.AddSeconds(Math.Max(0f, h.TotalCastTime - h.CurrentCastTime));
@@ -391,9 +411,12 @@ internal static class TankbusterTable
 
 		// A tankbuster reaches one target; one aimed only at its own target that reaches more is a cleave or a raidwide aimed
 		// at the tank - counted over every target, other alliance groups' too - which the area list does not hold where its
-		// intake is off or the party is small (A452). It spoils the series it would continue.
+		// intake is off or the party is small (A452). It spoils the series it would continue. So does a cast aimed at a
+		// member who is no tank whose hit reaches more: two such casts landing on him together, a mechanic failed (A540).
+		var tank = target.IsJobCategory(JobRole.Tank);
 		var aimed = !listedOrMarked && cast is { Tankbuster: false, Aimed: true };
-		if (aimed && reached > 1)
+		var atNonTank = !tank && cast is { AtNonTank: true } && cast.TargetId == target.GameObjectId;
+		if ((aimed || atNonTank) && reached > 1)
 		{
 			if (series != null)
 			{
@@ -403,7 +426,7 @@ internal static class TankbusterTable
 			return 0u;
 		}
 
-		if (!listedOrMarked && cast is not { Tankbuster: true } && !aimed && series == null)
+		if (!listedOrMarked && cast is not { Tankbuster: true } && !aimed && !atNonTank && series == null)
 		{
 			return 0u;
 		}
@@ -413,8 +436,9 @@ internal static class TankbusterTable
 		// Every reader rates the hit for a tank - the player's plan and the tank swap. A member who is not a tank lacks the
 		// tank trait's reduction, which no status carries, and has a smaller pool, so his share would raise the figure for
 		// every tank, and a failed mechanic on him could take it past his whole health (A312, as A298 for the area table).
-		// Not stored; the line stays for the trace.
-		if (!target.IsJobCategory(JobRole.Tank))
+		// A cast aimed at him goes to the table of aimed hits instead, which only the defence of a non-tank reads (A540);
+		// any other hit on him is not stored, and the line stays for the trace.
+		if (!tank && !atNonTank && series is not { NonTank: true })
 		{
 			if (share > 0f)
 			{
@@ -439,6 +463,7 @@ internal static class TankbusterTable
 				Vulnerable = CarriedVulnerability(target, appliedByHit),
 				First = now,
 				AimedOnly = true,
+				NonTank = !tank,
 			};
 			_series.Add(series);
 		}
@@ -452,7 +477,8 @@ internal static class TankbusterTable
 			cast.LastHit = now;
 		}
 
-		var via = series.AimedOnly ? ", known only as a cast at its own target" : string.Empty;
+		var via = series.NonTank ? ", aimed at a non-tank" : series.AimedOnly ? ", known only as a cast at its own target" : string.Empty;
+		var measured = series.NonTank ? "aimed hit measured" : "tankbuster measured";
 		var asKey = key != hit.RowId ? $" as #{key}" : string.Empty;
 
 		// Nothing arrived: a hit turned away by invulnerability or evasion. Zero says that something stopped it, not that the
@@ -470,7 +496,7 @@ internal static class TankbusterTable
 		if (source.CarriesDamageUp())
 		{
 			series.Spoiled ??= "the attacker carried a damage-up status";
-			DefenseTrace.Line($"tankbuster measured: {name} #{hit.RowId}{asKey} on {target.Name.TextValue} for {share:P0} of max HP{via}"
+			DefenseTrace.Line($"{measured}: {name} #{hit.RowId}{asKey} on {target.Name.TextValue} for {share:P0} of max HP{via}"
 				+ " - not stored, the attacker carried a damage-up status");
 			return key;
 		}
@@ -480,7 +506,7 @@ internal static class TankbusterTable
 		if (DataCenter.OutOfContentSync)
 		{
 			series.Spoiled ??= DataCenter.OutOfContentSyncReason;
-			DefenseTrace.Line($"tankbuster measured: {name} #{hit.RowId}{asKey} on {target.Name.TextValue} for {share:P0} of max HP{via}"
+			DefenseTrace.Line($"{measured}: {name} #{hit.RowId}{asKey} on {target.Name.TextValue} for {share:P0} of max HP{via}"
 				+ $" - not stored, {DataCenter.OutOfContentSyncReason}");
 			return key;
 		}
@@ -496,7 +522,7 @@ internal static class TankbusterTable
 		// back to the unraised maximum, as every plan reads it (concept 13). Each hit is scaled back by what stood at it.
 		var unmitigated = share * (1f + MaxHpRaise(target)) / factor;
 		series.Sum += unmitigated;
-		DefenseTrace.Line($"tankbuster measured: {name} #{hit.RowId}{asKey} on {target.Name.TextValue} for {share:P0} of max HP{via},"
+		DefenseTrace.Line($"{measured}: {name} #{hit.RowId}{asKey} on {target.Name.TextValue} for {share:P0} of max HP{via},"
 			+ $" mitigation factor {factor:F2}, unmitigated {unmitigated:P0}"
 			+ (series.Hits > 1 ? $", hit {series.Hits} of its series, together {series.Sum:P0} over {(series.Last - series.First).TotalSeconds:F1} s" : string.Empty)
 			+ (series.Vulnerable ? " under a vulnerability" : string.Empty));
@@ -508,8 +534,8 @@ internal static class TankbusterTable
 	private static void Store(Series series)
 	{
 		var span = (float)(series.Last - series.First).TotalSeconds;
-		var what = $"tankbuster series: {series.Name} #{series.Key} on {series.TargetName}, {series.Hits} hit(s) over {span:F1} s,"
-			+ $" together {series.Sum:P0} unmitigated{(series.Vulnerable ? " under a vulnerability" : string.Empty)}";
+		var what = $"{(series.NonTank ? "aimed hit series" : "tankbuster series")}: {series.Name} #{series.Key} on {series.TargetName},"
+			+ $" {series.Hits} hit(s) over {span:F1} s, together {series.Sum:P0} unmitigated{(series.Vulnerable ? " under a vulnerability" : string.Empty)}";
 		if (series.Spoiled != null || series.Incomplete || series.Sum <= 0f)
 		{
 			if (series.Sum > 0f || series.Spoiled != null)
@@ -517,6 +543,12 @@ internal static class TankbusterTable
 				DefenseTrace.Line(what + " - not stored, " + (series.Spoiled ?? "a hit was turned away"));
 			}
 
+			return;
+		}
+
+		if (series.NonTank)
+		{
+			StoreAimedHit(series, span, what);
 			return;
 		}
 
@@ -549,6 +581,57 @@ internal static class TankbusterTable
 		DefenseTrace.Line(what + (series.AimedOnly ? ", known only as a cast at its own target" : string.Empty)
 			+ (raised ? " - stored" : longer ? " - not above the stored value, its span stored"
 				: changed ? " - not above the stored value, known as a tankbuster from now on" : " - not above the stored value"));
+	}
+
+	// A series on a member who is no tank, into the table of aimed hits (A540): the same figures, under the same rules.
+	private static void StoreAimedHit(Series series, float span, string what)
+	{
+		bool raised;
+		lock (OtherConfiguration.AimedHitPotentialGate)
+		{
+			_ = OtherConfiguration.AimedHitPotential.TryGetValue(series.Key, out var reading);
+			var before = reading == null ? 0f : series.Vulnerable ? reading.UnderVulnerability : reading.Unmitigated;
+			raised = series.Sum > before;
+		}
+
+		OtherConfiguration.MeasureAimedHit(series.Key, new TankbusterReading
+		{
+			Unmitigated = series.Vulnerable ? 0f : series.Sum,
+			UnderVulnerability = series.Vulnerable ? series.Sum : 0f,
+			AimedOnly = true,
+			Span = span,
+		}, !series.Vulnerable);
+
+		DefenseTrace.Line(what + (raised ? " - stored" : " - not above the stored value"));
+	}
+
+	/// <summary>
+	/// The share of <paramref name="target"/>'s maximum HP a cast aimed at him, a member who is no tank, is expected to
+	/// take: the figure of the table of aimed hits (the one under vulnerability when he carries one and it is known) times
+	/// the mitigation standing now, as a share of his maximum HP now. Zero when the action has not been measured (A540).
+	/// </summary>
+	public static float PredictedAimedShare(uint actionId, IBattleChara target, IBattleChara? attacker)
+	{
+		if (IsPartyWide(actionId))
+		{
+			return 0f;
+		}
+
+		TankbusterReading? reading;
+		lock (OtherConfiguration.AimedHitPotentialGate)
+		{
+			_ = OtherConfiguration.AimedHitPotential.TryGetValue(actionId, out reading);
+		}
+
+		if (reading == null)
+		{
+			return 0f;
+		}
+
+		var unmitigated = target.CarriesVulnerabilityUp() && reading.UnderVulnerability > 0f
+			? reading.UnderVulnerability
+			: reading.Unmitigated;
+		return unmitigated * MitigationFactor(actionId, target, attacker) / (1f + MaxHpRaise(target));
 	}
 
 	/// <summary>

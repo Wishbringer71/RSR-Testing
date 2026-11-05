@@ -82,6 +82,65 @@ internal static class TankbusterHelp
 	/// 25.10.2026, A364). Not for the player, whose own plan decides for him, not in the single defence he commands, and
 	/// not for a heal (Aurora, Heart of Corundum in the heal path) (A373).
 	/// </summary>
+	/// <summary>
+	/// Whether a measured cast aimed at <paramref name="member"/>, a member who is no tank, calls for a defence: by the same
+	/// verdict as help for a measured tankbuster (<see cref="MeasuredHitCallsForNoHelp"/>) - its share reaches a large
+	/// shield's, or it would leave him under the single heal line -, or its figure is one the running game version has not
+	/// confirmed (concept 13, "Auf einen Nicht-Tank gezielt", A540). <paramref name="what"/> names cast, share and what it
+	/// leaves, for the trace.
+	/// </summary>
+	internal static bool AimedHitCallsForDefence(IBattleChara member, out string what)
+	{
+		what = string.Empty;
+		if (!DataCenter.AimedHitLeaves(member, out var actionId, out var share, out var left, out var caster))
+		{
+			return false;
+		}
+
+		var confirmed = OtherConfiguration.AimedHitConfirmed(actionId);
+		if (confirmed && share < DefensiveValues.LargestStatedBarrierShare && left >= Service.Config.HealthSingleSpell)
+		{
+			return false;
+		}
+
+		var name = Service.GetSheet<Lumina.Excel.Sheets.Action>().GetRowOrDefault(actionId) is { } row
+			? row.Name.ExtractText()
+			: string.Empty;
+		what = $"aimed cast {name} #{actionId} by {caster?.Name.TextValue} at {member.Name.TextValue}: {share:P0} of max HP"
+			+ $" for a non-tank, leaves {left:P0}" + (confirmed ? string.Empty : ", not confirmed in this game version");
+		return true;
+	}
+
+	/// <summary>
+	/// Whether a measured cast aimed at the player, a non-tank, calls for a defence (<see cref="AimedHitCallsForDefence"/>),
+	/// or with <paramref name="members"/> one aimed at any other party member - the help a healer gives (A540).
+	/// </summary>
+	internal static bool AimedHitCallsForDefenceInParty(bool members)
+	{
+		var player = Player.Object;
+		if (player != null && AimedHitCallsForDefence(player, out _))
+		{
+			return true;
+		}
+
+		if (!members)
+		{
+			return false;
+		}
+
+		var party = DataCenter.PartyMembers;
+		for (var i = 0; i < party.Count; i++)
+		{
+			var member = party[i];
+			if (member != null && member.GameObjectId != player?.GameObjectId && AimedHitCallsForDefence(member, out _))
+			{
+				return true;
+			}
+		}
+
+		return false;
+	}
+
 	private static bool MeasuredHitCallsForNoHelp(IBattleChara t)
 	{
 		if (IBaseAction.HealPathRunning || IBaseAction.AreaDefenceRunning || IBaseAction.CommandedDefenceRunning

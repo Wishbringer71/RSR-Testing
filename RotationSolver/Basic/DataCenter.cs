@@ -3101,6 +3101,12 @@ internal static class DataCenter
 				return true;
 			}
 
+			// A measured cast aimed at him, a non-tank, that calls for a defence (A540).
+			if (!isTank && TankbusterHelp.AimedHitCallsForDefence(player, out _))
+			{
+				return true;
+			}
+
 			return BMRTankbusterReachesPlayer;
 		}
 	}
@@ -3490,6 +3496,58 @@ internal static class DataCenter
 	/// after the same marker in this area (<see cref="TankbusterMarkerWatch.LearnedHitOn"/>), counted without what lies
 	/// on an enemy, as the plan counts it. For help from others: whether it is called for is the reader's question (A373).
 	/// </remarks>
+	/// <summary>
+	/// Whether an enemy casts a measured hit at <paramref name="member"/>, a member who is no tank, within the flag's landing
+	/// window (<see cref="IsHostileCastingBase"/>), and what it takes and leaves him: the share of his maximum HP the table
+	/// of aimed hits forecasts under the mitigation standing now, and his forecast effective health less that share. The
+	/// largest such cast counts (concept 13, "Auf einen Nicht-Tank gezielt", A540). Detection only: whether it calls for
+	/// a defence is <see cref="TankbusterHelp.AimedHitCallsForDefence"/>'s question.
+	/// </summary>
+	internal static bool AimedHitLeaves(IBattleChara member, out uint actionId, out float share, out float left,
+		out IBattleChara? caster)
+	{
+		actionId = 0;
+		share = 0f;
+		left = 0f;
+		caster = null;
+		if (member == null || member.IsDead || member.MaxHp == 0 || member.IsJobCategory(JobRole.Tank))
+		{
+			return false;
+		}
+
+		var casters = AreaCasters;
+		if (casters == null)
+		{
+			return false;
+		}
+
+		var id = member.GameObjectId;
+		for (var i = 0; i < casters.Count; i++)
+		{
+			var h = casters[i];
+			if (h == null || !h.IsValid() || h.CastTargetObjectId != id || !IsHostileCastingBase(h, _ => true))
+			{
+				continue;
+			}
+
+			var predicted = TankbusterTable.PredictedAimedShare(h.CastActionId, member, h);
+			if (predicted > share)
+			{
+				share = predicted;
+				actionId = h.CastActionId;
+				caster = h;
+			}
+		}
+
+		if (share <= 0f)
+		{
+			return false;
+		}
+
+		left = (member.GetForecastEffectiveHp() / (float)member.MaxHp) - share;
+		return true;
+	}
+
 	internal static bool AimedTankbusterLeaves(IBattleChara member, out uint actionId, out float share, out float left)
 	{
 		actionId = 0;
@@ -4610,6 +4668,15 @@ internal static class DataCenter
 		if (IsTankbusterVfxOnPlayer())
 		{
 			parts.Add("tankbuster marker on you");
+		}
+
+		var party = PartyMembers;
+		for (var i = 0; i < party.Count; i++)
+		{
+			if (party[i] is { } member && TankbusterHelp.AimedHitCallsForDefence(member, out var aimed))
+			{
+				parts.Add(aimed);
+			}
 		}
 
 		return string.Join(" | ", parts);

@@ -184,6 +184,21 @@ internal partial class OtherConfiguration
 	public static readonly object TankbusterPotentialGate = new();
 
 	/// <summary>
+	/// What an enemy cast aimed at a player who is no tank does to him, scaled back to unmitigated, as a share of his
+	/// maximum HP - keyed by the cast's action id, learned from every such player seen (concept 13, "Auf einen Nicht-Tank
+	/// gezielt", A540).
+	/// </summary>
+	/// <remarks>
+	/// Measured as the tankbuster table measures, and kept apart from it: every reader of that table rates a hit for a
+	/// tank (A312). Read by the defence of a member who is no tank, for a cast aimed at him. Stored, revised and shown as
+	/// the tankbuster table; changed on the game thread under <see cref="AimedHitPotentialGate"/>.
+	/// </remarks>
+	public static Dictionary<uint, TankbusterReading> AimedHitPotential = [];
+
+	/// <summary>Guards <see cref="AimedHitPotential"/> between the effect handler and its readers.</summary>
+	public static readonly object AimedHitPotentialGate = new();
+
+	/// <summary>
 	/// What sleeps did to each enemy action they were put on, keyed by action id - learned in play over every session
 	/// (concept 08, "Ein gegnerisches Wirken stoppen").
 	/// </summary>
@@ -732,6 +747,10 @@ internal partial class OtherConfiguration
 		TankbusterReading.Higher, TankbusterReading.IsValid, reading => reading.Unmitigated > 0f ? reading.Unmitigated : null,
 		() => TankbusterPotential, TankbusterPotentialGate, "tankbuster table");
 
+	private static readonly RevisedStore<TankbusterReading> AimedHitRevision = new(nameof(AimedHitPotential), 1,
+		TankbusterReading.Higher, TankbusterReading.IsValid, reading => reading.Unmitigated > 0f ? reading.Unmitigated : null,
+		() => AimedHitPotential, AimedHitPotentialGate, "aimed hit table");
+
 	/// <summary>
 	/// Every stored list this plugin keeps, in one place: <see cref="InitAsync"/> loads exactly these,
 	/// <see cref="Save()"/> and <see cref="SaveList"/> write exactly these.
@@ -773,6 +792,10 @@ internal partial class OtherConfiguration
 			v => { lock (TankbusterPotentialGate) { TankbusterPotential = v; } },
 			TankbusterReading.Higher, state => TankbusterStoreState = state, "rated tankbuster(s)", TankbusterReading.IsValid,
 			revision: TankbusterRevision),
+		new LearnedFile<TankbusterReading>(nameof(AimedHitPotential), CopyAimedHitPotential,
+			v => { lock (AimedHitPotentialGate) { AimedHitPotential = v; } },
+			TankbusterReading.Higher, state => AimedHitStoreState = state, "rated aimed hit(s) on non-tanks", TankbusterReading.IsValid,
+			revision: AimedHitRevision),
 		new LearnedFile<SleepReading>(nameof(SleepOutcomes), () => CopySleepStore(SleepOutcomes),
 			v => { lock (SleepStoreGate) { SleepOutcomes = v; } },
 			SleepReading.Higher, state => SleepStoreState = state, "slept action(s)"),
@@ -875,6 +898,14 @@ internal partial class OtherConfiguration
 		lock (TankbusterPotentialGate)
 		{
 			return new Dictionary<uint, TankbusterReading>(TankbusterPotential);
+		}
+	}
+
+	private static Dictionary<uint, TankbusterReading> CopyAimedHitPotential()
+	{
+		lock (AimedHitPotentialGate)
+		{
+			return new Dictionary<uint, TankbusterReading>(AimedHitPotential);
 		}
 	}
 
@@ -1034,6 +1065,9 @@ internal partial class OtherConfiguration
 
 	/// <summary>What the last save and load of the tankbuster table did, in words.</summary>
 	public static string TankbusterStoreState { get; private set; } = "not loaded yet";
+
+	/// <summary>What the last save and load of the table of aimed hits on non-tanks did, in words.</summary>
+	public static string AimedHitStoreState { get; private set; } = "not loaded yet";
 
 	/// <summary>
 	/// What the last save and the last load of the learned damage table did, in words. Read by the

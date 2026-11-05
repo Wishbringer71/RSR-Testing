@@ -207,6 +207,8 @@ Tankbuster-Ziel, Nascent Flash. Ein Befehl des Spielers (Makro „Defense") wird
   `HealthForAutoDefense`); ein angekündigter BossModReborn-Tankbuster, wenn seine Maske ihn trifft. Ist die Maske
   unbekannt, zählt sie beim Tank als Treffer — die Wahrscheinlichkeit ist dann nicht gemessen, und Sicherheit geht
   vor —, bei allen anderen nur ohne lebenden Tank (wie A220).
+  Beim Nicht-Tank zusätzlich ein gemessener Zauber, den ein Gegner gezielt auf ihn wirkt und der Minderung lohnt
+  (A540, Absatz „Auf einen Nicht-Tank gezielt").
 - *Warum nicht die Flagge sperren:* Die Einzelabwehr eines Tanks trägt auch die Hilfe am anderen Tank —
   Intervention, Urflackern, The Blackest Night und Herz des Korunds auf das Ziel eines Tankbusters (Konzept 09,
   „Hilfe für das Ziel eines Tankbusters", A328), Reflexion auf den Gegner. Ein Flag wird an den Pfaden gemessen, die
@@ -844,6 +846,62 @@ gesicherten Weg wie die Flächentabelle.
     und Marker. Eine Landung unter Liste oder Marker hebt das Kennzeichen für immer auf.
   - *Grenzen:* Einen Treffer, den ein unsichtbarer Helfer statt des Wirkers bringt, erkennt die Zuordnung nur unter dem
     Namen des Casts; bei ausgeschaltetem RSR ohne Auto-On aktualisiert RSR die Ziele nicht und verfolgt nichts.
+  - *Ob der Rückfall ihn nimmt, liest RSR, solange der Cast läuft* (A540). Der Rückfall fragt im Landefenster des
+    Flags, ein bis zwei GCDs vor dem Ende des Casts (`IsHostileCastingBase`). Bis A540 wurde er nur einmal gefragt, beim
+    ersten Sehen des Casts; ein Cast, der dann noch länger als zwei GCDs lief, galt nie als gezielt und wurde nie
+    gelernt, auch nicht bei jeder Wiederholung. Alle acht so gelernten Tankbuster seiner Tabelle vom 04.11.2026 wirken 3
+    bis 5 s. Jetzt gilt der Cast als gezielt, sobald der Rückfall in seinem Lauf greift; Ziel und Tank-Sein bleiben beim
+    ersten Sehen festgelegt.
+- **Auf einen Nicht-Tank gezielt: eine eigene Tabelle** (A540, `OtherConfiguration.AimedHitPotential`). Gelernt wird
+  der Cast eines Gegners auf einen Spieler, der kein Tank ist, gelistet oder nicht, unterbrechbar oder nicht, auch von
+  einem unsichtbaren Helfer: Das Ziel nennt der Cast selbst, anders als beim Rückfall für Tanks, der es aus dem Ziel des
+  Wirkers liest. In M4 kam jede Zellexplosion von einer eigenen unsichtbaren Kopie Lindwurms, eine je Spieler. Ob er
+  Minderung lohnt, entscheidet seine Größe, nicht seine Art. Seine Treffer werden wie beim Tank zur
+  Serie zusammengezählt und auf ungemindert zurückgerechnet (Minderung auf dem Getroffenen und am Gegner, vergrößerte
+  Maximal-LP), mit denselben Ausschlüssen: Schadenserhöhung am Gegner, Messung über der Stufe des Inhalts, ein Treffer,
+  der mehr als ein Ziel erreicht, ein abgewehrter Treffer. Abgelegt wird in der eigenen Tabelle, nicht in der
+  Tankbuster-Tabelle – deren Leser rechnen für Tanks (A312 bleibt). Form (`TankbusterReading`), Revision über
+  Spielversionen und Anzeige („Aimed hits on non-tanks") wie bei der Tankbuster-Tabelle.
+  - *Gemessen, warum die Größe entscheidet:* In seinen Mitschnitten vom 25.10. bis 03.11.2026 wirkten Gegner 239
+    Zauber gezielt auf ihn: 166 nahmen unter 10 % seiner LP (meist Blitz, Feuer und Eis von Trash), 38 bis 25 %, 28 bis
+    40 %, 7 mehr (Zellexplosion 59 und 60 %, Blitz von Angra Mainyu bis 64 %). Bei jedem gezielten Zauber zu mindern
+    kostete in sieben von zehn Fällen eine Abklingzeit für einen Treffer, den die Heilung ohnehin auffängt; fehlt sie
+    dann beim nächsten Raidwide, nimmt er dort mehr.
+  - *Wer sie liest:* `DataCenter.AimedHitLeaves` für ein Mitglied, das kein Tank ist und auf das ein Gegner einen
+    gemessenen Zauber wirkt: vorhergesagter Anteil = gelernter Wert (unter Verwundbarkeit, wenn er eine trägt und sie
+    gemessen ist) mal der jetzt stehenden Minderung, geteilt durch die Vergrößerung der Maximal-LP; was bleibt =
+    vorhergesagte effektive LP minus Anteil. Mindern lohnt nach demselben Urteil wie die Hilfe für einen gemessenen
+    Tankbuster (`TankbusterHelp.MeasuredHitCallsForNoHelp`): ab dem Anteil eines großen Schildes
+    (`LargestStatedBarrierShare`), oder wenn er unter der Einzelheilungslinie (`HealthSingleSpell`) bliebe. Ein Wert,
+    den die laufende Spielversion noch nicht bestätigt hat, zählt als lohnend, wie dort. Im Landefenster des Flags
+    (`IsHostileCastingBase`):
+    - Trifft er den Spieler selbst, öffnet sich seine Einzelabwehr, und „single hit reaches you" ist wahr; seine
+      Selbstschutz-Aktionen gehen (A233).
+    - Trifft er ein anderes Mitglied, öffnet sich die Einzelabwehr eines Heilers, und seine Hilfe geht an dieses
+      Mitglied (`FindBeAttackedTarget`), nicht an den Tank, den der Boss angreift.
+  - *Bilanz im Kampf:* M4 (Konzept 11, „Nach der eigenen Wiederbelebung"): Um 18:34:00 landete Zellexplosion auf jedem
+    der acht Spieler, auf vier Nicht-Tanks sauber mit je einem Ziel, 54 bis 71 % ihrer LP; ihn trafen zwei zugleich, das
+    wird nicht gelernt. Die Serien enden 4,7 s später und gehen in die Tabelle, sobald RSR wieder Ziele aktualisiert –
+    nach seinem Tod also spätestens mit dem Wiedereinschalten nach der Wiederbelebung um 18:34:29. Als um 18:34:29,8 die
+    nächste Zellexplosion auf ihn begann, stand ihr Wert damit fest: Ab einem GCD vor dem Einschlag öffnet sich seine
+    Einzelabwehr, und weil der Treffer erst nach seiner Unverwundbarkeit landet, darf sie diese beenden. Ein Heiler
+    neben ihm mindert ihn statt des Tanks. Kosten: Abklingzeiten nur für Treffer ab einem großen Schild oder unter die
+    Einzelheilungslinie, also für die 15 % seiner gezielten Treffer ab 25 % und für kleinere nur, wenn er schon tief
+    steht.
+  - *Verworfen:* jeden gezielten Zauber auf einen Nicht-Tank als Treffer nehmen, wie beim Tank – sieben von zehn
+    Abklingzeiten auf Trash-Blitze; nur innerhalb des Kampfes messen – derselbe Bau ohne Gedächtnis, und der erste Treffer
+    jedes Abends bliebe ungemindert; die Werte in die Tankbuster-Tabelle legen – A312.
+  - *Grenzen:* Beim ersten Mal ist die Größe unbekannt, und nichts öffnet; ab der ersten sauberen Landung gilt sie,
+    auch im selben Kampf. Die Tabelle hält je Aktion den höchsten Anteil über alle Nicht-Tanks; ein Wert vom Magier mit
+    kleinerem LP-Vorrat gilt auch für den Nahkämpfer – das überschätzt dort, in die sichere Richtung. Zwei Zauber auf
+    ihn zugleich (in M4 um 18:34:00, je zwei Ziele) werden nicht gelernt. Ein unterbrechbarer Zauber öffnet nichts, wie überall
+    im Flag (`IsHostileCastingBase`); gelernt wird er trotzdem.
+  - *Falsifikation:* Kein Defekt – widerlegt durch M4 (60 % gezielt, keine Minderung). Option falsch – die stärkste
+    Gegenposition ist die Überschätzung über alle Nicht-Tanks; sie kostet eine Abklingzeit bei einem Treffer knapp unter
+    dem Schild-Anteil, kein Leben, und hält deshalb nicht. Ausgeliefert, und nichts ändert sich – (1) beim ersten Treffer
+    eines Zaubers, der in keiner Datei steht; (2) bei einem Job ohne Einzelabwehr für sich (dann bleibt die Hilfe des
+    Heilers); (3) wenn RSR aus ist – der Effekt-Handler misst trotzdem, nur die Zuordnung zum Cast fehlt dann, und der
+    Treffer bleibt ungelernt (wie beim Tank).
 - **Kein Raidwide:** Eine Aktion der Flächenliste hat schon einmal jedes Mitglied getroffen; sie ist nicht der
   Tankbuster eines Markers, auch wenn sie das markierte Mitglied trifft, solange der Marker steht
   (`TankbusterTable.IsPartyWide`). Bis A337 zählte jede Aktion in diesem Fenster: In seinen Protokollen vom 22. und

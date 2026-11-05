@@ -226,6 +226,13 @@ internal static class StateUpdater
 		DataCenter.UnhealedUnderAttack = Service.Config.SpendDefenceWithoutHealer && !DataCenter.AnyLivingHealer(false)
 			&& EnemyAttacksPlayer();
 
+		// A measured cast aimed at the player, a non-tank, that calls for a defence; for a healer also one aimed at another
+		// member who is no tank - his help goes to that member (concept 13, "Auf einen Nicht-Tank gezielt", A540).
+		if (DataCenter.Role != JobRole.Tank && TankbusterHelp.AimedHitCallsForDefenceInParty(DataCenter.Role == JobRole.Healer))
+		{
+			return true;
+		}
+
 		if (DataCenter.Role == JobRole.Healer)
 		{
 			// A tank the hit cannot touch - Hallowed Ground or Superbolide up past it - gets nothing from

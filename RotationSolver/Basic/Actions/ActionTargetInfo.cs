@@ -3052,7 +3052,8 @@ public struct ActionTargetInfo(IBaseAction action)
 			List<IBattleChara> attachedT = [];
 			foreach (var t in battleChara)
 			{
-				if (TankbusterHelp.IsTargetToProtect(t))
+				// So does a measured cast aimed at a member who is no tank, when it calls for a defence (A540).
+				if (TankbusterHelp.IsTargetToProtect(t) || TankbusterHelp.AimedHitCallsForDefence(t, out _))
 				{
 					attachedT.Add(t);
 				}

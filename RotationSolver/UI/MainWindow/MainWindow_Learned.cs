@@ -141,6 +141,7 @@ public partial class MainWindow
 		[
 			AreaTab(game),
 			TankbusterTab(game),
+			AimedHitTab(game),
 			SimpleActionTab("Area series", "Series span", CopyAreaSeriesSpan(), span => $"{span:F1} s"),
 			SimpleActionTab("Hit series", "Hits in a row", CopyHitSeries(), hits => hits.ToString()),
 			SleepOutcomeTab(game),
@@ -196,6 +197,33 @@ public partial class MainWindow
 		Sort(rows);
 		return new LearnedTab("Tankbusters",
 			["Action", "Unmitigated", "Under vulnerability", "Series span", "Aimed only", "State", "Readings in this version"], rows);
+	}
+
+	private static LearnedTab AimedHitTab(string? game)
+	{
+		var (entries, _) = OtherConfiguration.AimedHitRevisionSnapshot();
+		var readings = new Dictionary<uint, TankbusterReading>();
+		lock (OtherConfiguration.AimedHitPotentialGate)
+		{
+			foreach (var (id, reading) in OtherConfiguration.AimedHitPotential)
+			{
+				readings[id] = reading;
+			}
+		}
+
+		var rows = new List<string[]>();
+		foreach (var (id, reading) in readings)
+		{
+			entries.TryGetValue(id, out var entry);
+			rows.Add([ActionLabel(id), $"{reading.Unmitigated * 100f:F0}%", $"{reading.UnderVulnerability * 100f:F0}%",
+				reading.Span > 0f ? $"{reading.Span:F1} s" : "-",
+				RevisionState(entry, OtherConfiguration.AimedHitConfirmed(id), game, v => $"{v.Unmitigated * 100f:F0}%"),
+				RunningReadings(entry, game)]);
+		}
+
+		Sort(rows);
+		return new LearnedTab("Aimed hits on non-tanks",
+			["Action", "Unmitigated", "Under vulnerability", "Series span", "State", "Readings in this version"], rows);
 	}
 
 	// What a revised entry is in the running game version (concept 13, rules 4 and 7, stage 3).

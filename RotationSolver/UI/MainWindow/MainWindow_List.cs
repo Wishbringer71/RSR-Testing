@@ -438,6 +438,23 @@ public partial class MainWindow
 					: ImGuiColors.DalamudGrey,
 				"Store: " + tankbusterStore);
 
+			// The table of casts aimed at members who are no tank, kept apart from the tankbusters (A540): its count and what
+			// its store last did, read the same way.
+			int aimedHitsRated;
+			lock (OtherConfiguration.AimedHitPotentialGate)
+			{
+				aimedHitsRated = OtherConfiguration.AimedHitPotential.Count;
+			}
+
+			ImGui.Text($"Aimed hits on non-tanks rated, unmitigated: {aimedHitsRated} (all hits of a cast aimed at a player who is no"
+				+ " tank together; they open his defence, or a healer's help for him, when the hit calls for it)");
+			var aimedHitStore = OtherConfiguration.AimedHitStoreState;
+			ImGui.TextColored(
+				aimedHitStore.Contains("FAILED") || aimedHitStore.Contains("MISMATCH") || aimedHitStore.Contains("NOT SAVED")
+					? ImGuiColors.DalamudRed
+					: ImGuiColors.DalamudGrey,
+				"Store: " + aimedHitStore);
+
 			_ = ImGui.TableNextColumn();
 			_allSearchable.DrawItems(Configs.ListCastingArea);
 			ImGui.TextWrapped(UiString.ConfigWindow_List_HostileCastingAreaDesc.GetDescription());

@@ -694,10 +694,10 @@ beendet, gibt es kein „erst am Ende des Fensters beginnen", das sie bis zuletz
 - *Option falsch:* Die stärkste Gegenposition ist die Bodenfläche ohne Zauber; sie bleibt als Preis benannt, sie hält
   nicht, weil RSR dort auch nach dem Fenster nichts anders täte.
 - *Ausgeliefert, und nichts ändert sich – warum?* (1) RSR war nach dem Tod aus: dafür das Wiedereinschalten; hat er
-  selbst eine Einschaltregel, greift die zuerst. (2) Kein Heil- oder Abwehrpfad wählt etwas: Ein ungelisteter Zauber
-  auf einen Nicht-Tank öffnet keine Einzelabwehr (`SingleHitReachesPlayer`, Konzept 13, A233; `TODO.md`, „Ein ungelisteter Zauber auf einen
-  Nicht-Tank öffnet keine eigene Abwehr“); es bleibt Heilung nach der Schwelle und
-  der Heiltrank nach seiner Schwelle. (3) Die Heilung reicht nicht: In M4 fehlten 75 000 LP in 4,9 s, Benediktion lag
+  selbst eine Einschaltregel, greift die zuerst. (2) Kein Heil- oder Abwehrpfad wählt etwas: Ein Zauber auf einen
+  Nicht-Tank öffnet die Einzelabwehr erst, wenn seine Größe gelernt ist (Konzept 13, „Auf einen Nicht-Tank gezielt",
+  A540) – in M4 aus den sauberen Landungen auf vier Mitspieler um 18:34:00; bis dahin bleiben Heilung nach der Schwelle
+  und der Heiltrank nach seiner Schwelle. (3) Die Heilung reicht nicht: In M4 fehlten 75 000 LP in 4,9 s, Benediktion lag
   auf Abklingzeit (gewirkt 18:33:11), Sterbenselend halbiert die Willenskraft – ob er überlebt hätte, ist unbelegt.
   Die Regel gibt die Zeit zurück; ob sie reicht, entscheidet der Kampf. (4) Das Fenster lief schon: Wird der Zauber
   erst sichtbar, wenn es fast vorbei ist, bleibt wenig gewonnen.

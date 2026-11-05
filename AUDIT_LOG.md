@@ -16092,6 +16092,35 @@ habe den schleim bislang nicht anfreunden können."
   Willenskraft, Benediktion lag auf Abklingzeit); ein ungelisteter Zauber auf einen Nicht-Tank öffnet keine Einzelabwehr
   (neu in `TODO.md`, „Ein ungelisteter Zauber auf einen Nicht-Tank öffnet keine eigene Abwehr“, Platz 2).
 
+
+### A540 · Gezielte Treffer auf Nicht-Tanks: eigene Tabelle und Abwehr; Fensterfehler der Tank-Messung (05.11.2026)
+
+- *Auftrag:* `TODO.md`, „Ein ungelisteter Zauber auf einen Nicht-Tank öffnet keine eigene Abwehr" (aus A539, Platz 2).
+- *Gemessen:* 239 gezielte Zauber auf ihn in den ACT-Mitschnitten vom 25.10. bis 03.11.2026: 166 unter 10 %, 38 bis
+  25 %, 28 bis 40 %, 7 mehr. M4: Zellexplosion (#48371) kam um 18:33:55 von acht Objekten (je eins pro Spieler, nicht
+  anvisierbar), landete um 18:34:00 auf vier Nicht-Tanks sauber mit 54 bis 71 %, auf ihm zweimal zugleich (je zwei
+  Ziele). Die Einzelabwehr eines Nicht-Tanks las nur Liste, Marker und BossModReborn; die Tankbuster-Tabelle legt
+  Nicht-Tanks nicht ab (A312).
+- *Nebenbefund, Defekt:* `TankbusterTable.UpdateCasts` setzte das Kennzeichen „gezielt" (A452) nur beim ersten Sehen über
+  `IsHostileCastingTank`, das im Landefenster des Flags fragt; ein Cast, der dann noch länger als zwei GCDs lief, wurde
+  nie gelernt. Alle acht nur-gezielt gelernten Tankbuster seiner Tabelle vom 04.11.2026 wirken 3 bis 5 s (xivapi).
+  Behoben: Das Kennzeichen wird gesetzt, sobald der Rückfall im Lauf des Casts greift.
+- *Entscheidung (Konzept 13, „Auf einen Nicht-Tank gezielt"):* eigene gelernte Tabelle `AimedHitPotential` (Form,
+  Revision, Anzeige wie die Tankbuster-Tabelle) aus Casts auf Spieler, die keine Tanks sind, auch von Helfern; Urteil wie
+  die Hilfe für einen gemessenen Tankbuster (Schild-Anteil oder unter `HealthSingleSpell`, unbestätigt zählt);
+  Leser: eigene Einzelabwehr des Nicht-Tanks, „single hit reaches you", Einzelabwehr des Heilers mit Hilfe für das
+  getroffene Mitglied. Verworfen: jeder gezielte Zauber (sieben von zehn Abklingzeiten auf Trash), nur im Kampf messen,
+  Ablage in der Tankbuster-Tabelle (A312).
+- *Selbstkorrektur im Bau:* Der erste Entwurf schloss Helfer aus, übernommen von der Tank-Regel, deren Rückfall das Ziel
+  aus dem Ziel des Wirkers liest. Beim Nicht-Tank nennt der Cast sein Ziel selbst; mit dem Ausschluss hätte die Tabelle
+  Zellexplosion nie gelernt. Entfernt, bevor er ausgeliefert war.
+- *Umsetzung:* `TankbusterTable` (`AtTank`, `AtNonTank`, `Series.NonTank`, `StoreAimedHit`, `PredictedAimedShare`),
+  `OtherConfiguration.AimedHitPotential` mit Revision, `DataCenter.AimedHitLeaves`, `TankbusterHelp.AimedHitCallsForDefence`
+  und `AimedHitCallsForDefenceInParty`, Leser in `StateUpdater`, `SingleHitReachesPlayer`, `FindBeAttackedTarget`,
+  Quellenzeile der Abwehr; Reiter „Aimed hits on non-tanks" und Speicherzeile im Listenfenster.
+- *Prüfgrad:* Compile, alle Prüfschritte grün; Wirkkette am Code; im Spiel nicht beobachtet. Messbar im nächsten
+  `DefenseTrace.log`: „aimed hit measured", „aimed hit series … stored", in der Quellenzeile „aimed cast …".
+
 ## B · Commit-Register (Fork vs. `upstream/main`)
 
 ### B1 · Einzelgeprüfte Fork-Commits

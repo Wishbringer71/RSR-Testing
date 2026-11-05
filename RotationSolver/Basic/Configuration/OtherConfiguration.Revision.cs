@@ -40,6 +40,11 @@ internal partial class OtherConfiguration
 	internal static void MeasureTankbuster(uint actionId, TankbusterReading reading, bool clean)
 		=> TankbusterRevision.Measure(actionId, reading, clean);
 
+	/// <summary>One stored series of a cast aimed at a non-tank into its table's revisions (A540).</summary>
+	/// <param name="clean">Not taken under a vulnerability.</param>
+	internal static void MeasureAimedHit(uint actionId, TankbusterReading reading, bool clean)
+		=> AimedHitRevision.Measure(actionId, reading, clean);
+
 	/// <summary>
 	/// Whether the running game version has confirmed the area table's figure for <paramref name="actionId"/>: one clean
 	/// reading at least in the running layer. Asked by every reader that would leave protection out on the figure; an
@@ -51,12 +56,19 @@ internal partial class OtherConfiguration
 	/// <summary>The same for the tankbuster table (<see cref="AreaShareConfirmed"/>).</summary>
 	internal static bool TankbusterConfirmed(uint actionId) => TankbusterRevision.Confirmed(actionId);
 
+	/// <summary>The same for the table of aimed hits on non-tanks (<see cref="AreaShareConfirmed"/>).</summary>
+	internal static bool AimedHitConfirmed(uint actionId) => AimedHitRevision.Confirmed(actionId);
+
 	/// <summary>A copy of the area table's revisions and the running game version, for the list window (concept 13, "Stufe 5").</summary>
 	internal static (Dictionary<uint, RevisionEntry<float>> Entries, string? Game) AreaRevisionSnapshot() => AreaRevision.Snapshot();
 
 	/// <summary>A copy of the tankbuster table's revisions, as <see cref="AreaRevisionSnapshot"/>.</summary>
 	internal static (Dictionary<uint, RevisionEntry<TankbusterReading>> Entries, string? Game) TankbusterRevisionSnapshot()
 		=> TankbusterRevision.Snapshot();
+
+	/// <summary>A copy of the revisions of the table of aimed hits on non-tanks, as <see cref="AreaRevisionSnapshot"/>.</summary>
+	internal static (Dictionary<uint, RevisionEntry<TankbusterReading>> Entries, string? Game) AimedHitRevisionSnapshot()
+		=> AimedHitRevision.Snapshot();
 
 	/// <summary>Whether an area share is one the table can hold: finite, not negative, at most a whole maximum HP (A298).</summary>
 	internal static bool IsValidAreaShare(float share) => float.IsFinite(share) && share >= 0f && IsWithinWholeHealth(share);

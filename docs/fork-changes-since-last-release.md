@@ -28,6 +28,21 @@ What this release changes in the fight. For the whole distance from upstream, se
   Primordial Crust nullify all healing, as Mounted does. Their bearers are no longer single-heal
   targets and no longer raise the heal flags.
 
+## Defence against hits aimed at you
+
+- **A big cast aimed at a healer or a damage dealer opens his defence.** Until now only a listed
+  tankbuster, a marker or BossModReborn did. RSR now learns, across sessions, what each enemy cast
+  aimed at a player who is no tank does to him, scaled back to unmitigated - also when an invisible
+  helper casts it, one per player, as in many spread mechanics. When such a cast comes at you again
+  and would take as much as a large shield or leave you under your single-heal line, your own
+  single-target defence opens; aimed at another member, a healer's single defence opens and its help
+  goes to that member instead of the tank the boss attacks. Small hits - most trash bolts - open
+  nothing. The list window shows the table under "Aimed hits on non-tanks"; `DefenseTrace.log`
+  names each measurement and each cast that opened a defence.
+- **Long unlisted casts on a tank are learned too.** A cast at its own target, a tank, counts as a
+  tankbuster once it reaches the window where RSR takes it for one; before, only casts seen first
+  within that window were learned, so none longer than about two GCDs.
+
 ## After you are raised
 
 - **The seconds of protection after a raise are used to heal up when a hit comes right after them.**
