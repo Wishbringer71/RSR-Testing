@@ -1290,6 +1290,10 @@ internal static class DataCenter
 	/// </summary>
 	public static bool NoTankNoHealerBeside => !AnyLiving(JobRole.Tank, true, true) && !AnyLiving(JobRole.Healer, true, true);
 
+	/// <summary>No tank of the party is alive beside the player, a blue mage counting in his mimicry's role: nobody holds the
+	/// enemies off him (concept 01, C1 at the pull, A542).</summary>
+	public static bool NoTankBeside => !AnyLiving(JobRole.Tank, true, true);
+
 	private static bool _dangerFirstAlone;
 
 	/// <summary>

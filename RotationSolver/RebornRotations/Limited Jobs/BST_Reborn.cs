@@ -705,6 +705,24 @@ public sealed class BST_Reborn : BeastmasterRotation
 			|| (nature == OneWithNatureOrder.Borrow && borrowComes && familiar.BorrowProtects);
 	}
 
+	// The first ready horn whose familiar's Tempered Release stops the pack coming at you, on a horn that spends One with
+	// Nature on it and with the Release coming with the call (C1 at the pull, concept 01, A542).
+	private HornOrder? FirstPackStopperReadyHorn()
+	{
+		foreach (var horn in ConfiguredHornOrder())
+		{
+			if (HornReady(horn) && FamiliarOf(PetOnHorn(horn)) is { } familiar
+				&& EffectiveNature(horn) == OneWithNatureOrder.Tempered
+				&& (BattlehornMasteryIiTrait.EnoughLevel || !TemperedReleasePvE.Cooldown.IsCoolingDown)
+				&& StopsPackComingAtYou(familiar, CurrentTarget))
+			{
+				return horn;
+			}
+		}
+
+		return null;
+	}
+
 	private HornOrder? FirstSafeReadyHorn()
 	{
 		foreach (var horn in ConfiguredHornOrder())
@@ -731,6 +749,15 @@ public sealed class BST_Reborn : BeastmasterRotation
 		{
 			chosen = safe;
 			why = DangerReason;
+		}
+		else if (InCombat && FirstPackStopperReadyHorn() is { } stopper)
+		{
+			// C1 at the pull (A542): a pack comes at you and nobody holds it; the familiar whose Release stops it comes
+			// first, before any danger, while its Release still finds the pack fresh and no other Release has taken the
+			// shared recast. On 04.11.2026 the Raptor came first by the configured order, its Release went for damage, and
+			// War Cry lay in the recast when the danger came 1.5 s later.
+			chosen = stopper;
+			why = "a pack comes at you and nobody holds it, its Release stops it";
 		}
 		else
 		{

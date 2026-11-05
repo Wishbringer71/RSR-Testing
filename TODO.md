@@ -12,9 +12,8 @@ Nach der Wirkung im Kampf: Sicherheit der Gruppe vor Schaden, gewichtet mit der 
 
 1. Allein ohne Heiler kommt kein Heiltrank: RSR stand 13 s in der kritischen Klasse ohne Heilfähigkeit, kein Trank
    von RSR trotz eingeschalteter Option, er drückte ihn bei 6 % selbst und starb (Beastmaster, Sägerschrei, 04.11.2026).
-2. Beastmaster: Am Pull der Begleiter, der das Rudel aufhält, mit One with Nature: Allein gegen ein Rudel verbrennt der
-   erste Begleiter Entfesseln für Schaden, und wenn die Gefahr kommt, ist nichts Schützendes übrig; er starb daran
-   (Südwald, 04.11.2026).
+2. Beastmaster: Nach dem Kampf ohne One with Nature in den nächsten: Der nächste Pull beginnt ohne Entfesseln, vor einem
+   Rudel ohne den aufhaltenden Begleiter, bis Scheidender Schlag und der nächste Ruf kommen.
 3. Heilungen in „Heilung -" verpuffen: fünf GCDs Schaden und MP ohne Wirkung, solange der Status liegt; kein Leben,
    denn die Heilung wirkt dort ohnehin nicht.
 4. Heilung bricht ab, weil ein Regen-Tick die Schwelle kreuzt: verlorene Wirkzeit, das Ziel bleibt an der Schwelle.
@@ -96,19 +95,16 @@ und ohne Chance zu verschenken. *Ort:* `BeastmasterFamiliars.CaptureNow`; Antwor
 Antwort aus dem Chat und schreibt Stufe und LP ins Protokoll; ändert sich die Stufe mit den LP, wird sie Teil von A2.
 *Konzept:* 01, „Was gilt beim Anfreunden".
 
-### Beastmaster: Am Pull der Begleiter, der das Rudel aufhält, mit One with Nature · N
-Im Kampf, tödlich (Südwald, 04.11.2026, 13:25): Allein gegen drei Gegner, auf den Hörnern Raptor, Büffel, Fliegenfalle
-(B5: Rudel, noch keine Gefahr im Gebiet). Der Raptor kam zuerst (B3, „its Trick brings least") und setzte Entfesseln für
-Schaden ein, 1,5 s bevor RSR die Gefahr sah; War Cry des Büffels, das das Rudel 15 s betäubt, lag danach in der
-gemeinsamen Abklingzeit, Borgen samt Saatsäher war am Kampfbeginn verbraucht, kein Begleiter heilte. Von 781 auf 57 LP
-in 9 s, tot. Am Pull um 10:45:05 (04.11.2026) brachten Raptor, Büffel und Fliegenfalle je 500 auf jeden Gegner; den
-Gleichstand entschied die eingestellte Rufreihenfolge („First/Second/Third Horn"), Raptor kam zuerst, War Cry betäubte
-das Rudel erst nach dessen Einsatz. Unter der Belegung zwischen den Kämpfen (B5) wechselt, welcher Begleiter auf welchem
-Horn sitzt; die Reihenfolge trifft dann zufällig. Dazu steht nach einem Kampf der letzte Begleiter ohne One with Nature
-draußen (Schluss aus dem Code, `BST_Reborn.AttackAbility`). *Ort:* `BST_Reborn.SituationalHorn` (Gleichstand),
-`GeneralAbility`, B5. *Nächster Schritt:* Loop: Gleichstand nach Spiel entscheiden (vor einem Rudel der aufhaltende
-Begleiter zuerst), Ruf außerhalb des Kampfes für One with Nature; die drei Einstellungen danach nur noch für die Wahl
-nach Lage aus, mit Erklärtext. *Konzept:* 01, „Belegung der Hörner in der Rotation".
+### Beastmaster: Nach dem Kampf ohne One with Nature in den nächsten · N
+Im Kampf: Nach einem Kampf bleibt der letzte Begleiter draußen, sein One with Nature verbraucht (Schluss aus dem Code,
+`BST_Reborn.GeneralAbility` ruft nur ohne Begleiter draußen); den nächsten Pull beginnt er ohne Entfesseln und Borrow,
+bis Scheidender Schlag und der nächste Ruf kommen – vor einem Rudel ohne den aufhaltenden Begleiter (C1 am Pull, A542).
+Belegt: Außerhalb des Kampfes hat ein Horn 2 s Abklingzeit, der Rückzug dort startet sie nicht, One with Nature ist
+dauerhaft (Wirktext Kampfhorn, Status 4601). Unbelegt: wie der Begleiter außerhalb des Kampfes zurücktritt – Scheidender
+Schlag braucht ein feindliches Ziel und zöge es. *Ort:* `BST_Reborn.GeneralAbility`, `SituationalHorn`, B5.
+*Nächster Schritt:* Wirktexte und Spielblätter auf einen Rückzug ohne Ziel durchsuchen (Befehl der Begleiterleiste,
+`ExecuteCommand` wie bei der Zuweisung, A521); findet sich einer, im Loop: außerhalb des Kampfes vor dem nächsten Gegner
+den Begleiter für diesen Kampf rufen (B5). *Konzept:* 01, „Belegung der Hörner in der Rotation".
 
 ### Beastmaster: Brechende Welle als Schaden · N, U
 Im Kampf: Mit einem Wavekin auf dem Borgen-Horn (etwa Pugil) kommt Brechende Welle nur gegen ein Ziel mit einer der

@@ -201,6 +201,20 @@ public partial class BeastmasterRotation
 	/// </summary>
 	public static bool StopsAttackers(FamiliarProfile profile, IBattleChara? target)
 	{
+		return StopsPack(profile, target, false);
+	}
+
+	/// <summary>
+	/// <see cref="StopsAttackers"/> at the pull: with no tank alive beside the player, every enemy in combat counts, whomever
+	/// it targets in the first moments - it turns to him, nobody else holds it (concept 01, C1, A542).
+	/// </summary>
+	public static bool StopsPackComingAtYou(FamiliarProfile profile, IBattleChara? target)
+	{
+		return StopsPack(profile, target, DataCenter.NoTankBeside);
+	}
+
+	private static bool StopsPack(FamiliarProfile profile, IBattleChara? target, bool anyInCombat)
+	{
 		var player = Player;
 		if (!profile.ReleaseStops || profile.ReleaseRadius <= 0f || target == null || player == null)
 		{
@@ -210,7 +224,8 @@ public partial class BeastmasterRotation
 		var attackers = 0;
 		foreach (var hostile in DataCenter.AllHostileTargets)
 		{
-			if (hostile == null || hostile.IsDead || !hostile.InCombat() || hostile.TargetObjectId != player.GameObjectId)
+			if (hostile == null || hostile.IsDead || !hostile.InCombat()
+				|| (!anyInCombat && hostile.TargetObjectId != player.GameObjectId))
 			{
 				continue;
 			}

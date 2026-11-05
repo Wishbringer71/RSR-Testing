@@ -117,6 +117,12 @@ What this release changes in the fight. For the whole distance from upstream, se
   marked and whether the pact came - judged once the enemy's body is gone, as the game enters a pact a
   moment after the fall. The time to kill is now counted from the moment it is read for every rule that
   uses it, as Six-sided Star's last-hit check.
+- **A pack that comes at you is stopped first.** With no tank alive beside you, when a pack of two or
+  more enemies is fighting and a familiar on a ready horn has a Tempered Release that stops them all
+  (War Cry, Petribreath, The Ram's Voice), RSR calls that familiar first, before any danger and
+  whatever your horn order says. Before, the order decided between equal familiars: the Raptor came
+  first, spent its Release on damage, and when the pack had you in danger 1.5 s later War Cry was in
+  the shared recast. With a tank, only enemies that target you count, as before.
 - **The most dangerous enemy first when you fight alone.** As a Beastmaster or a Blue Mage with no
   tank and no healer alive in your party, RSR attacks first the enemy whose danger per second is
   largest against its HP, whatever your targeting setting: the damage it has dealt to you and your

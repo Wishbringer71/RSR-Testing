@@ -16141,6 +16141,25 @@ habe den schleim bislang nicht anfreunden können."
   Schwäche und der Bedarf der Begleiter über das Brett (TODO „Beastmaster: Crucible-Strategien").
 - *Prüfgrad:* Compile, Prüfschritte grün; Wirkkette am Code; im Spiel nicht beobachtet.
 
+
+### A542 · Beastmaster: Am Pull zuerst der Begleiter, der das Rudel aufhält (05.11.2026)
+
+- *Auftrag:* `TODO.md`, „Beastmaster: Am Pull der Begleiter, der das Rudel aufhält, mit One with Nature" (Tod in
+  Südwald, 04.11.2026, 13:25: Gleichstand der Dressuren, Reihenfolge Raptor zuerst, Entfesseln für Schaden, War Cry danach
+  in der Abklingzeit).
+- *Belegt:* Wirktext Kampfhorn (xivapi Action 44881): außerhalb des Kampfes 2 s Abklingzeit, ein Rückzug dort startet
+  sie nicht, der Ruf gibt One with Nature und setzt die Abklingzeit von Entfesseln und Borrow zurück; Status 4601 One with
+  Nature ist dauerhaft.
+- *Entscheidung (Konzept 01, C1 „Am Pull zuerst"):* Ohne Gefahr ruft RSR zuerst den Begleiter, dessen Entfesseln das
+  Rudel aufhält, wenn sein Horn One with Nature für Entfesseln verbraucht und Entfesseln mit dem Ruf kommt; ohne Tank neben
+  ihm zählt jeder Gegner im Kampf (`BeastmasterFamiliars.StopsPackComingAtYou`, `DataCenter.NoTankBeside`). Verworfen:
+  nur den Gleichstand anders entscheiden – bei ungleichen Dressuren käme das Aufhalten weiter zu spät; das Aufhalten für die
+  Gefahr aufsparen – Entfesseln teilt sich die Abklingzeit, und der erste Begleiter hätte sie verbraucht.
+- *Offen, als TODO neu gefasst:* der Ruf außerhalb des Kampfes für One with Nature; unbelegt ist, wie der Begleiter dort
+  ohne feindliches Ziel zurücktritt.
+- *Prüfgrad:* Compile, Prüfschritte; Wirkkette am Code; im Spiel nicht beobachtet; Spurzeile „… called: a pack comes at you
+  and nobody holds it, its Release stops it".
+
 ## B · Commit-Register (Fork vs. `upstream/main`)
 
 ### B1 · Einzelgeprüfte Fork-Commits

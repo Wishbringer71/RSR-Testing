@@ -1052,8 +1052,8 @@ eingearbeitet werden, situationsbezogen"; A487, A488, A522):
   - *Das Horn des Begleiters draußen bleibt.* Was eine Zuweisung mit dem Begleiter draußen macht, ist nicht gemessen:
     Die Probe änderte nur Hörner ohne Begleiter draußen. Nach einem Kampf steht meist einer draußen; dann setzt RSR die
     beiden anderen. Beim nächsten Kampf geht er mit dem Scheidenden Schlag, und die beiden gesetzten folgen; sein One
-    with Nature hat er im letzten Kampf verbraucht (offen: TODO „Beastmaster: Am Pull der Begleiter, der das Rudel aufhält,
-    mit One with Nature").
+    with Nature hat er im letzten Kampf verbraucht (offen: TODO „Beastmaster: Nach dem Kampf ohne One with Nature in
+    den nächsten").
   - *Was im Kampf anders wird* (seine Hörner vom 02.11.2026: Gespenst – sein Entfesseln Odium heilt –, Fledermaus –
     ihre Dressur heilt –, Opo-Opo; Ergebnis des Modells unten):
     - Vor einem Rudel setzt RSR Büffel und Raptor auf die beiden Hörner, die entfesseln. War Cry trifft das Rudel mit
@@ -1386,6 +1386,15 @@ Lage.
     - *Gerechnet* (`bst_control_model.py`): Hält es zwei oder drei Angreifer 15 s auf, verhindert es in jeder Gefahr
       von 10 bis 60 s mehr Schaden als −20 % Verwundbarkeit über 48 s. Bei drei Angreifern und 30 s Gefahr ist es das
       2,5-Fache. Eine halbierte Betäubung oder ein Boss unter den Angreifern kehrt das um; deshalb die Bedingungen.
+    - *Am Pull zuerst* (A542): Kommt ein Rudel auf dich zu und lebt neben dir kein Tank, ruft RSR ohne Gefahr zuerst
+      den Begleiter, dessen Entfesseln es aufhält, vor B3 und vor der eingestellten Reihenfolge – sofern sein Horn One
+      with Nature für Entfesseln verbraucht und Entfesseln mit dem Ruf kommt. Als Angreifer zählt dann jeder Gegner im
+      Kampf, gleich wen er in den ersten Augenblicken anvisiert; er wendet sich dir zu, niemand hält ihn. Grund (Südwald,
+      04.11.2026, 13:25): Raptor, Büffel und Fliegenfalle brachten auf das Rudel je 500, den Gleichstand entschied die
+      Reihenfolge, der Raptor verbrauchte Entfesseln für Schaden, und als 1,5 s später die Gefahr kam, lag War Cry in der
+      gemeinsamen Abklingzeit; 781 auf 57 LP in 9 s, tot. Mit dem Büffel zuerst betäubt War Cry das Rudel 15 s, bevor es
+      Schaden macht. Preis: der Schaden aus dem Entfesseln des anderen Begleiters kommt später. Mit Tank zählt wie zuvor
+      nur, wer dich anvisiert.
     - *Ein Angreifer allein zählt nicht.* Das ist der Fall des Elitegegners oder Bosses (seine drei Tode vom 02.11.2026,
       A489). Ist der Gegner immun, ohne dass das Spiel es zeigt, stünde die Gefahr ohne Schutz da, und der heilende
       Begleiter käme zu spät.
