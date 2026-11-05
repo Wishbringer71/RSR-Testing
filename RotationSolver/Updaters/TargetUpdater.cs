@@ -269,6 +269,7 @@ internal static partial class TargetUpdater
 		List<IBattleChara> partyMembers = new(capacity: allTargets.Count);
 		List<IBattleChara> allianceMembers = new(capacity: allTargets.Count);
 		List<IBattleChara> hostileTargets = new(capacity: allTargets.Count);
+		List<IBattleChara> spikedHostiles = [];
 		List<IBattleChara> outOfDutyPlayers = [];
 
 		var raisetype = Service.Config.RaiseType;
@@ -317,6 +318,16 @@ internal static partial class TargetUpdater
 								continue;
 							}
 						}
+
+						// Concept 03, "Gegner mit Stacheln" (A571): spikes that damage attackers keep an enemy out of the
+						// list of targets; only an action that removes them reaches it.
+						if (member.HasSpikes())
+						{
+							spikedHostiles.Add(member);
+							TraceSpiked(member);
+							continue;
+						}
+
 						hostileTargets.Add(member);
 					}
 				}
@@ -348,6 +359,11 @@ internal static partial class TargetUpdater
 		DataCenter.PartyMembers = partyMembers;
 		DataCenter.AllianceMembers = allianceMembers;
 		DataCenter.AllHostileTargets = hostileTargets;
+		DataCenter.SpikedHostiles = spikedHostiles;
+		if (spikedHostiles.Count == 0)
+		{
+			_spikedTraced.Clear();
+		}
 		// Which of them moved since the last update, and which came into combat, for the damage areas (A350, A353).
 		HostileMovement.Update(hostileTargets);
 
@@ -983,6 +999,27 @@ internal static partial class TargetUpdater
 			else if (DataCenter.IsInSouthHorn)
 			{
 				_ = OtherConfiguration.SaveSouthHornWeaknessRecords();
+			}
+		}
+	}
+
+	private static readonly HashSet<ulong> _spikedTraced = [];
+
+	// A571: one line per enemy left alone for its spikes, until no spiked enemy is in reach.
+	private static void TraceSpiked(IBattleChara enemy)
+	{
+		if (!_spikedTraced.Add(enemy.GameObjectId))
+		{
+			return;
+		}
+
+		foreach (var status in enemy.StatusList)
+		{
+			if (status != null && status.StatusId != 0 && StatusHelper.DamagesAttackers(status.StatusId))
+			{
+				DefenseTrace.Line($"target: {enemy.Name} left alone - {status.GameData.Value.Name.ExtractText()} ({status.StatusId}) "
+					+ $"damages its attackers, {status.RemainingTime:F0} s left");
+				return;
 			}
 		}
 	}

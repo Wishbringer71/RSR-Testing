@@ -1644,6 +1644,14 @@ internal partial class Configs : IPluginConfiguration, IM3Settings
 	Filter = TargetConfig)]
 	private static readonly bool _dotTargetByHpThenExpiry = true;
 
+	// Concept 03, "Gegner mit Stacheln" (A571): an enemy whose spikes damage its attackers is no target of an attack while
+	// they stand; an action that removes them may still take it. On by default: the reflection lands with every hit, the
+	// wait costs damage, not HP (the owner's rule: safety before damage).
+	[ConditionBool, UI("Do not attack enemies whose spikes damage their attackers",
+	Description = "An enemy carrying a status whose text says it deals damage to its attackers (Blaze, Ice, Shock or Paralyzing Spikes) is no target of an attack while the status stands, for every job, ranged ones included. An action that removes that status may still target it (Quelling Wave on Blaze Spikes); its casts still count for areas and tankbusters. RSR notes each enemy it leaves alone in DefenseTrace.log.\nOff: RSR attacks it like any enemy and takes the damage it returns.",
+	Filter = TargetConfig, Section = 1)]
+	private static readonly bool _avoidSpikedEnemies = true;
+
 	[ConditionBool, UI("Never attack targets with stop markers",
 	Filter = TargetConfig, Section = 1)]
 	private static readonly bool _filterStopMark2 = false;

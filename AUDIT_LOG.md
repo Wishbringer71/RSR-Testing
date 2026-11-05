@@ -16811,6 +16811,36 @@ habe den schleim bislang nicht anfreunden können."
 - *Prüfgrad:* Compile, Prüfschritte, Modell der Skala am Konzeptbeispiel (Notizordner); Wirkkette am Code. Im Spiel nicht
   beobachtet; Fenster und Spurzeile nennen Last und Strecke, gegen die gewogen wird.
 
+### A571 · Gegner mit Stacheln: Wirktext statt Liste, Bannen vor Meiden (05.11.2026)
+
+- *Auftrag:* `TODO.md`, Defekt „Gegner mit Stacheln: Aufzählung statt Wirktext, Bannen blockiert", gefunden in der
+  Auswertung von Daedalus 74659a6 (v0.1.112: „Beastmaster kept hitting the Drake Piece through Blaze Spikes and died to the
+  reflect").
+- *Befund am Code:* Upstreams Liste unverwundbarer Zustände führt Blaze Spikes 5465 (30.09.2026, A229) und Paralyzing
+  Spikes 5434; das Statusblatt kennt weitere Stacheln (197, 198, 199, 2263, 2406, 2528, 4579, Veil of the Whorl 1724;
+  xivapi v2, Suche nach „to attackers", 05.11.2026). Im Crucible legt sich das snoll piece Ice Spikes 2528 an
+  (`XBMBattleDetailAction` 48793, Ziel „Self"); RSR griff es weiter an. Quelling Wave führt Blaze Spikes in
+  `TargetStatusNeed`, sucht aber nur in `AllHostileTargets`, die den drake piece als unverwundbar ausschließt – das
+  Bannen lief nie.
+- *Optionen:* (a) Liste ergänzen – verworfen: der nächste Stachelzustand fehlt wieder, das Bannen bleibt blockiert. (b)
+  nur nach hinten reihen – verworfen: der einzige Gegner mit Stacheln würde geschlagen (Daedalus' Feldfall). (c) Rückwurf
+  messen und gegen eine Schwelle wägen – verworfen: Zahl ohne Herleitung, Warten kostet keine LP. (d) Gewählt:
+  Erkennung am englischen Wirktext („damage to … attackers"), Ausschluss aus der Gegnerliste wie bei Unverwundbarkeit,
+  eigene Liste `DataCenter.SpikedHostiles`, aus der nur Aktionen wählen, die einen ihrer Zustände entfernen.
+  (e) Nullvariante.
+- *Gebaut:* `StatusHelper.DamagesAttackers`, `ObjectHelper.HasSpikes` (auch in `IsAttackable`), `TargetUpdater`
+  (Ausschluss, Liste, Spurzeile „target: … left alone"), `ActionTargetInfo.GetCanTargets` (Kandidaten für Aktionen mit
+  `TargetStatusNeed`), Einstellung „Do not attack enemies whose spikes damage their attackers", ab Werk an. Universell:
+  jeder Job, die Regel sitzt auf der obersten Stufe. Die Zauber solcher Gegner zählen weiter (A566 nimmt jeden
+  Gegner außerhalb der Liste auf, der einen gelisteten Zauber wirkt).
+- *Gegenthesen:* Konzept 03, „Gegner mit Stacheln" (dauerhafte Stacheln – teilweise, Preis benannt; Feindseligkeit des
+  Tanks – teilweise, Preis benannt; Bannen weiter blockiert – widerlegt).
+- *Upstream-Prämisse:* Die Ymir-Regel nennt den gespickten Sahagin „immune while Ymir is up"; Upstreams Liste schließt ihn
+  mit 5434 ohnehin immer aus. Das bleibt, wie es war.
+- *Prüfgrad:* Compile, Prüfschritte; Wirkkette am Code (Zustand → `HasSpikes` → Gegnerliste und `IsAttackable`;
+  `SpikedHostiles` → Kandidaten von Quelling Wave). Im Spiel nicht beobachtet; die Spurzeile nennt jeden gemiedenen Gegner
+  mit Zustand und Restzeit.
+
 ## B · Commit-Register (Fork vs. `upstream/main`)
 
 ### B1 · Einzelgeprüfte Fork-Commits

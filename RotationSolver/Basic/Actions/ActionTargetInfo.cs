@@ -136,6 +136,21 @@ public struct ActionTargetInfo(IBaseAction action)
 			}
 		}
 
+		// Enemies whose spikes damage their attackers (concept 03, A571) are candidates only of an action that removes one of
+		// their statuses - Quelling Wave on Blaze Spikes; every other action leaves them alone.
+		if (!action.Setting.IsFriendly && action.Setting.TargetStatusNeed is { Length: > 0 } && DataCenter.SpikedHostiles.Count > 0
+			&& !skipTargetStatusNeedCheck)
+		{
+			foreach (var spiked in DataCenter.SpikedHostiles.GetObjectInRadius(Range))
+			{
+				if (CheckStatus(spiked, skipStatusProvideCheck, skipTargetStatusNeedCheck) && CanUseTo(spiked)
+					&& action.Setting.CanTarget(spiked))
+				{
+					validTargets.Add(spiked);
+				}
+			}
+		}
+
 		return validTargets;
 	}
 

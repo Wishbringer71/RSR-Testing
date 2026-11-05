@@ -276,6 +276,29 @@ public static class ObjectHelper
 		return sipInRange;
 	}
 
+	/// <summary>
+	/// Concept 03, "Gegner mit Stacheln" (A571): whether this enemy carries a status that returns damage to its attackers
+	/// while "Do not attack enemies whose spikes damage their attackers" is on - no target of an attack, only of an action
+	/// that removes the status.
+	/// </summary>
+	internal static bool HasSpikes(this IBattleChara battleChara)
+	{
+		if (!Service.Config.AvoidSpikedEnemies || DataCenter.IsPvP)
+		{
+			return false;
+		}
+
+		foreach (var status in battleChara.StatusList)
+		{
+			if (status != null && status.StatusId != 0 && StatusHelper.DamagesAttackers(status.StatusId))
+			{
+				return true;
+			}
+		}
+
+		return false;
+	}
+
 	internal static bool IsAttackable(this IBattleChara battleChara)
 	{
 		if (Player.Object == null)
@@ -319,6 +342,11 @@ public static class ObjectHelper
 			{
 				return false;
 			}
+		}
+
+		if (battleChara.HasSpikes())
+		{
+			return false;
 		}
 
 		if (OtherConfiguration.NoHostileNames != null &&

@@ -59,6 +59,12 @@ internal static class DataCenter
 	/// </summary>
 	public static List<IBattleChara> HealToDefeatTargets { get; set; } = [];
 
+	/// <summary>
+	/// Concept 03, "Gegner mit Stacheln" (A571): the enemies in reach left out of <see cref="AllHostileTargets"/> because
+	/// their spikes damage their attackers - candidates only of an action that removes those spikes.
+	/// </summary>
+	public static List<IBattleChara> SpikedHostiles { get; set; } = [];
+
 	public static List<IBattleChara> AllHostileTargets { get; set; } = [];
 
 	/// <summary>

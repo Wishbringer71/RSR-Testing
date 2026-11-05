@@ -73,6 +73,12 @@ What this release changes in the fight. For the whole distance from upstream, se
   of the invincible list (Storm Wall, Invulnerable and the like) is no target for attacks, and its
   casts went unseen as well: a listed raidwide or tankbuster from it opened no defence and no heal
   ahead. Its listed casts now count like any other enemy's; it is still not attacked.
+- **Enemies with spikes are left alone.** An enemy whose status returns damage to its attackers (Blaze,
+  Ice, Shock or Paralyzing Spikes, by the status text) is no target of an attack while the spikes stand,
+  for every job - until now only two such statuses were listed, and the Crucible's snoll piece with Ice
+  Spikes was still hit. An action that removes the spikes may still target the enemy: Quelling Wave now
+  reaches the drake piece with Blaze Spikes, which it never found before. `Do not attack enemies whose
+  spikes damage their attackers`, **on by default**; `DefenseTrace.log` names each enemy left alone.
 - **A big cast aimed at a healer or a damage dealer opens his defence.** Until now only a listed
   tankbuster, a marker or BossModReborn did. RSR now learns, across sessions, what each enemy cast
   aimed at a player who is no tank does to him, scaled back to unmitigated - also when an invisible

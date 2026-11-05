@@ -225,6 +225,32 @@ public static class StatusHelper
 
 	private static readonly System.Collections.Concurrent.ConcurrentDictionary<uint, bool> _damageOverTime = new();
 	private static readonly System.Collections.Concurrent.ConcurrentDictionary<uint, bool> _endsInDeath = new();
+	private static readonly System.Collections.Concurrent.ConcurrentDictionary<uint, bool> _damagesAttackers = new();
+
+	// "dealing fire damage to attackers", "dealing ice damage to and slowing down attackers" (Blaze, Ice, Shock and
+	// Paralyzing Spikes, Veil of the Whorl; xivapi, 05.11.2026).
+	private static readonly System.Text.RegularExpressions.Regex DamageToAttackers = new(@"damage to (?:and [^.]*?)?attackers",
+		System.Text.RegularExpressions.RegexOptions.IgnoreCase | System.Text.RegularExpressions.RegexOptions.CultureInvariant);
+
+	/// <summary>
+	/// Whether this status returns damage to whoever attacks its bearer, by its own text in the English status sheet:
+	/// spikes of every element (concept 03, "Gegner mit Stacheln", A571). A sheet that cannot be read answers no.
+	/// </summary>
+	internal static bool DamagesAttackers(uint statusId)
+	{
+		return _damagesAttackers.GetOrAdd(statusId, static key =>
+		{
+			try
+			{
+				var sheet = Svc.Data.GetExcelSheet<Lumina.Excel.Sheets.Status>(Dalamud.Game.ClientLanguage.English);
+				return sheet != null && sheet.TryGetRow(key, out var row) && DamageToAttackers.IsMatch(row.Description.ExtractText());
+			}
+			catch (Exception)
+			{
+				return false;
+			}
+		});
+	}
 
 	/// <summary>
 	/// Whether this status kills its bearer when it runs out, by its own text in the English status sheet: "Certain death

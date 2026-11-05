@@ -702,6 +702,44 @@ Zustandszeile des Beastmasters nennt es ebenfalls.
 **Prüfgrad:** statisch am Code; Compile über die CI. Im Kampf: Im Rudel greift er den Gegner mit den wenigsten LP an;
 die Spurzeile nennt, ob die Regel gilt.
 
+## Gegner mit Stacheln
+
+*Was gilt (A571):* Ein Gegner mit einem Zustand, dessen englischer Wirktext Schaden an seinen Angreifern nennt
+(„damage to attackers", auch „damage to and slowing down attackers"), ist kein Ziel eines Angriffs, solange der Zustand
+steht – für jeden Job, Fernkämpfer eingeschlossen, weil der Text jeden Angreifer nennt. Eine Aktion, die genau diesen
+Zustand entfernt (`TargetStatusNeed`: Quelling Wave des Beastmaster auf Blaze Spikes), darf ihn wählen; Bannen geht vor
+Meiden, weil es die Stacheln für alle beendet. Seine Zauber zählen weiter für Flächen und Tankbuster (A566). RSR schreibt
+je Gegner und Zustand eine Zeile ins `DefenseTrace.log`, wenn es ihn meidet. Einstellung „Do not attack enemies whose
+spikes damage their attackers", ab Werk an; aus greift RSR ihn an wie jeden Gegner. Die Liste unverwundbarer Zustände
+bleibt daneben bestehen und editierbar.
+
+*Belege:* Statusblatt (xivapi v2, 05.11.2026): Blaze Spikes 197, 4579, 5465; Ice Spikes 198 („sometimes slowing"),
+2528; Shock Spikes 199, 2406 („sometimes stunning"), 2263; Paralyzing Spikes 5434; Veil of the Whorl 1724. Im Crucible
+legen sie sich drei Gegner mit eigener Aktion an (`XBMBattleDetailAction`, Ziel „Self"): snoll piece (Ice Spikes 2528),
+drake piece (Blaze Spikes 5465), Sahagin piece (Paralyzing Spikes 5434). Upstream führt 5465 und 5434 als unverwundbar
+(30.09.2026, A229; 5434 dazu in der Ymir-Regel, `EncounterImmunity`). Daedalus 74659a6 im Feld (v0.1.112): ein
+Beastmaster schlug den drake piece durch Blaze Spikes und starb am Rückwurf.
+
+*Begründung:* Der Rückwurf trifft mit jedem Schlag sicher; wie viel, nennt kein Blatt. Warten, bis die Stacheln ablaufen
+oder gebannt sind, kostet Schaden, keine LP – Sicherheit vor Schaden. Die Erkennung am Wirktext statt an einer Liste
+deckt jeden Stachelzustand, auch einen künftigen.
+
+*Verworfen:* (a) Upstreams Liste um 2528 und die übrigen ergänzen: ein neuer Stachelzustand fehlte wieder, und das Bannen
+bliebe blockiert. (b) Den Gegner nur nach hinten reihen: Der einzige Gegner mit Stacheln würde weiter geschlagen – genau
+Daedalus' Feldfall. (c) Den Rückwurf messen und gegen eine Schwelle wägen: eine Zahl ohne Herleitung, und das Warten
+kostet keine LP.
+
+*Gegenthese 1:* Dauerhafte Stacheln halten den Kampf an. Teilweise widerlegt: Die bekannten legt sich der Gegner mit
+einer eigenen Aktion an, und eine Aktion, die sie entfernt, bleibt erlaubt; die Spurzeile sagt, warum RSR wartet, und mit
+der Einstellung oder einem eigenen Schlag greift der Spieler an. Es bleibt: Gegen Stacheln ohne Ablauf und ohne Bannen
+steht RSR, bis er eingreift.
+*Gegenthese 2:* Ein Tank, der nicht schlägt, verliert die Feindseligkeit. Teilweise widerlegt: Wer mit RSR spielt, schlägt
+ebenso nicht, die Feindseligkeit bleibt beim Höchsten; Fähigkeiten ohne Schaden (Provokation) bleiben. Es bleibt: Ein
+Spieler ohne RSR schlägt weiter und kann sie ziehen; Preis: ein Treffer auf ihn, bis die Stacheln fallen.
+*Gegenthese 3 (ausgeliefert, und nichts ändert sich):* Das Bannen fände den Gegner weiterhin nicht, weil die Gegnerliste
+ihn ausschließt. Widerlegt: Gegner mit Stacheln stehen in einer eigenen Liste, aus der nur Aktionen wählen, die einen
+ihrer Zustände entfernen – wie die Figuren, die nur Heilung besiegt (A516).
+
 ## E · Universelle Strukturschwächen
 
 | # | Schwäche | Beleg | Stand |
