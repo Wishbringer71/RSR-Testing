@@ -1838,7 +1838,13 @@ Dullahan, Golem, Spriggan und Eisgolem (`XBMPet.InflictsInterrupt`).
   ändert sich? Im Crucible überschreibt heute A525 die Zielart; die neue Regel tritt dort an ihre Stelle, die Spur nennt
   jeden Wechsel mit Grund.
 - *K4 – Unterbrechen.* Ein Begleiter, der unterbricht, gegen anfällige Gegner mit langem Zauber (Ossify, Fanaticism,
-  Dreadwash, Confound, Raise). Welche seiner Aktionen unterbricht, ist am Blatt noch zu belegen; danach ein Loop.
+  Dreadwash, Confound, Raise). `XBMPet.InflictsInterrupt` markiert Dullahan, Golem, Spriggan und Eisgolem (ffxiv-datamining
+  `XBMPet.csv`, 05.11.2026). Welche ihrer Aktionen unterbricht, nennt kein Text: Die Befehlstexte (Iron Justice, King's
+  Will, Boulder Clap, Rockslide, Romp, Frenetic Flurry, Ice Guillotine, Frozen Heart) und die Beschreibungen in `XBMPet`
+  schweigen dazu, und die Effektart „Interrupt" führt ECommons als 75, BossModReborn als 76 (Werkzeugquellen,
+  widersprüchlich). *Sonde (A557):* Meldet der Server im Brett den Abbruch eines gegnerischen Casts (ActorControl 15),
+  schreibt RSR die letzte eigene Aktion auf diesen Gegner mit den Effektarten ihrer Einträge und dem Abstand in die Spur
+  („crucible: … stopped its cast …"). Mit diesen Zeilen der Loop: welche Aktion, wann rufen.
 - *K5 – Zustände.* Gift, Gewicht, Fessel gegen anfällige Gegner: Wirkung je Zustand nicht beziffert, nach K1 bis K4.
 - *K6 – Hörner vor dem Kampf belegen.* B5 setzt die Hörner zwischen den Kämpfen per Serverbefehl, im Crucible bisher
   nicht. Vor einem Kampf im Brett kennt RSR dessen Gegner nicht aus der Sicht, aber aus dem Blatt, sobald das Feld

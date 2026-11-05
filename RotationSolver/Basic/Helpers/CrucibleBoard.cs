@@ -422,6 +422,36 @@ internal static class CrucibleBoard
 		DefenseTrace.Line($"crucible agents ({when}): {team} | {field}");
 	}
 
+	// K4 probe (A557): per target the last action of the player's side on it, the kinds of its entries, and when.
+	private static readonly Dictionary<uint, (uint Action, List<byte> Kinds, DateTime At)> _lastOwnAction = [];
+
+	/// <summary>K4 probe (A557): an action of the player's side reached <paramref name="targetId"/>. Effect handler.</summary>
+	internal static void RecordOwnAction(uint actionId, uint targetId, List<byte> kinds)
+	{
+		if (_fight != 0 && targetId != 0)
+		{
+			_lastOwnAction[targetId] = (actionId, kinds, DateTime.Now);
+		}
+	}
+
+	/// <summary>
+	/// K4 probe (A557): the server stopped the cast of <paramref name="entityId"/> (ActorControl 15). Writes the enemy, the
+	/// control's parameters and the last action of the player's side on it, with the kinds of its entries and how long
+	/// before - the answer to which familiar action interrupts, which no text states.
+	/// </summary>
+	internal static void RecordCastStopped(uint entityId, uint p1, uint p2, uint p3, uint p4)
+	{
+		if (_fight == 0 || Svc.Objects.SearchByEntityId(entityId) is not IBattleChara enemy || !enemy.IsEnemy())
+		{
+			return;
+		}
+
+		var last = _lastOwnAction.TryGetValue(entityId, out var own)
+			? $"last own action on it {own.Action} (entry kinds {string.Join(" ", own.Kinds)}) {(DateTime.Now - own.At).TotalSeconds:F2} s before"
+			: "no own action on it in this fight";
+		DefenseTrace.Line($"crucible: {enemy.Name} stopped its cast (control {p1} {p2} {p3} {p4}); {last}");
+	}
+
 	private static void EndFight()
 	{
 		if (_fight != 0)
@@ -434,6 +464,7 @@ internal static class CrucibleBoard
 		_atStart.Clear();
 		_present.Clear();
 		_seen.Clear();
+		_lastOwnAction.Clear();
 		_ownDamage = 0d;
 		_ownDamageByElement.Clear();
 	}

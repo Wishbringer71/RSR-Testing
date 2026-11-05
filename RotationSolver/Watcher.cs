@@ -131,6 +131,11 @@ public static class Watcher
 			{
 				ActionTimelineManager.Current?.CancelInterruptedCast(DateTime.Now);
 			}
+			else if (category == CancelAbilityCategory && DataCenter.IsInCrucible)
+			{
+				// K4 probe (A557): an enemy's cast stopped on a board.
+				CrucibleBoard.RecordCastStopped(entityId, p1, p2, p3, p4);
+			}
 		}
 		catch (Exception ex)
 		{
@@ -385,6 +390,17 @@ public static class Watcher
 			{
 				CrucibleBoard.RecordHit(action.RowId, target, FullAmount(entry));
 			}
+
+			// K4 probe (A557): the last own action on each target and the kinds of its entries.
+			var kinds = new List<byte>();
+			effect.ForEach(e =>
+			{
+				if (e.type != 0 && !kinds.Contains((byte)e.type))
+				{
+					kinds.Add((byte)e.type);
+				}
+			});
+			CrucibleBoard.RecordOwnAction(action.RowId, (uint)effect.TargetID, kinds);
 		}
 	}
 

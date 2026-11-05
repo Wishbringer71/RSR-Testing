@@ -16471,6 +16471,20 @@ habe den schleim bislang nicht anfreunden können."
 - *Prüfgrad:* Compile ohne Warnung, Prüfschritte; Wirkkette am Code (Aufrufstellen in `Follow`, `EndFight`). Im Spiel nicht
   beobachtet; die Zeilen selbst sind das Messmittel.
 
+### A557 · Crucible K4: Sonde, welche Aktion eines Begleiters unterbricht (05.11.2026)
+
+- *Auftrag:* `TODO.md`, „Beastmaster: Crucible-Strategien", K4 („Welche seiner Aktionen unterbricht, ist am Blatt noch zu
+  belegen").
+- *Quellen:* ffxiv-datamining `XBMPet.csv` (`InflictsInterrupt`: Dullahan, Golem, Spriggan, Eisgolem); `Pet.Abilities`
+  dieser vier und die Wirktexte ihrer Befehle (`ActionTransient` 44969, 44970, 44979, 44980, 44991, 44992, 45027, 45028):
+  keiner nennt ein Unterbrechen; `XBMPet`-Beschreibungen ebenso. Effektart „Interrupt": ECommons 26d30b9e 75,
+  BossModReborn ae64e3309 76 – widersprüchlich, nicht tragend.
+- *Gebaut:* Der `Watcher` merkt im Brett je Gegner die letzte Aktion der eigenen Seite mit den Effektarten ihrer Einträge;
+  meldet der Server den Abbruch eines gegnerischen Casts (ActorControl 15, bisher nur für den Spieler gelesen), schreibt
+  `CrucibleBoard.RecordCastStopped` beides mit dem Abstand in die Spur.
+- *Folgen:* Mit den Zeilen ist K4 baubar (welche Aktion, auf welchen Cast, wann rufen); ohne sie wäre jede Regel geraten.
+- *Prüfgrad:* Compile ohne Warnung, Prüfschritte; im Spiel nicht beobachtet, die Zeile ist das Messmittel.
+
 ## B · Commit-Register (Fork vs. `upstream/main`)
 
 ### B1 · Einzelgeprüfte Fork-Commits

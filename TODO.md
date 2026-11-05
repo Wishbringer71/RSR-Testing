@@ -58,7 +58,7 @@ A549: Daten zur Laufzeit, K1, K2, K3 ohne den Bedarf der Begleiter), K9 (A550), 
 Zeit, Bestien-Heiltranksammlung, Schutz, Seren, Bestien-Heilmittelsammlung, Resistenzmittel, Bestien-Goldnadel,
 Bestien-Ausdauermittel, Schadensgegenstände, Stärkungsmittel im Endkampf; A555).
 *Nächster Schritt:* K6 (Hörner vor dem Kampf;
-zuerst messen, ob der Server im Brett zuweist) und K7 (Kader auf Wunsch über das Teamfenster); K4, K5, K10 (Campsite,
+zuerst messen, ob der Server im Brett zuweist) und K7 (Kader auf Wunsch über das Teamfenster); K4 (Sonde A557 „crucible: … stopped its cast" zeigt die unterbrechende Aktion), K5, K10 (Campsite,
 Laden, Weg, im eigenen Loop); K11 (Kader, LP je Begleiter und Feld: Sonde A556 „crucible agents …" zeigt, ob das Spiel sie im Brett füllt;
 danach Loop am Ende des TODO). *Konzept:* 01,
 „Crucible of the Unbroken: Bretter, Kämpfe, Strategien".
