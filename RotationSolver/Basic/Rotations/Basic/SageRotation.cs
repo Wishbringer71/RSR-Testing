@@ -110,21 +110,48 @@ public partial class SageRotation
 		setting.IsFriendly = true;
 	}
 
+	private static (ulong Tank, DateTime Since) _kardiaAggro;
+
+	/// <summary>
+	/// Kardia is due while no member carries the player's Kardion, or while another living tank than its bearer has held
+	/// the aggro that weighs most for a GCD (concept 01, SGE, "Kardia folgt der Aggro", A567).
+	/// </summary>
+	private static bool KardiaDue()
+	{
+		IBattleChara? bearer = null;
+		foreach (var m in DataCenter.PartyMembers)
+		{
+			if (m.HasStatus(true, StatusID.Kardion))
+			{
+				bearer = m;
+				break;
+			}
+		}
+
+		if (bearer == null)
+		{
+			return true;
+		}
+
+		if (ObjectHelper.TankHoldingAggro() is not { } holding || holding.GameObjectId == bearer.GameObjectId)
+		{
+			_kardiaAggro = default;
+			return false;
+		}
+
+		if (_kardiaAggro.Tank != holding.GameObjectId)
+		{
+			_kardiaAggro = (holding.GameObjectId, DateTime.Now);
+		}
+
+		return (DateTime.Now - _kardiaAggro.Since).TotalSeconds >= DataCenter.DefaultGCDTotal;
+	}
+
 	static partial void ModifyKardiaPvE(ref ActionSetting setting)
 	{
 		setting.TargetType = TargetType.Kardia;
 		setting.TargetStatusProvide = [StatusID.Kardion];
-		setting.ActionCheck = () =>
-		{
-			foreach (var m in DataCenter.PartyMembers)
-			{
-				if (m.HasStatus(true, StatusID.Kardion))
-				{
-					return false;
-				}
-			}
-			return true;
-		};
+		setting.ActionCheck = KardiaDue;
 		setting.CreateConfig = () => new ActionConfig()
 		{
 			TimeToKill = 0,

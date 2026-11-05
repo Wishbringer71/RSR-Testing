@@ -125,6 +125,29 @@ Erneuerungsgrund; Schaden verbraucht sie, und der Zweig legte sie im Pull alle p
 Barriere im Pull läuft über die gemeinsame Heilerregel `TryPullUpkeepOnTank` als Eukrasia-Ziel in Stufe 1
 (`PullBarrierDue`, Option `UsePreEukrasianDiagnosis`, ab Werk an; Konzept 15, V1).
 
+**Kardia folgt der Aggro (A567).** Kardion heilt seinen Träger, wenn der Weise bestimmte Schadenszauber landet (170
+Potenz je Treffer; Kardia ist eine Fähigkeit ohne Mana mit 5 s Wiederverwendung, Job-Guide und xivapi, 05.11.2026).
+Bisher ging Kardion auf den ersten Tank in Haltung nach der Liste „Kardia tank priority" (Upstream: Paladin, Krieger,
+Revolverklinge, Dunkelritter) und blieb dort, solange irgendein Mitglied das eigene Kardion trug – auch nach einem
+Tankwechsel, auf dem Tank, der keinen Schaden mehr nimmt. Seine Vorgabe (Konzept 07, „Vorgabe des Auftraggebers"):
+Hält der Tank die Aggro, hat er die Heilpriorität.
+- *Was gilt:* Kardion geht auf den lebenden Tank, auf den die gefährlichsten Gegner zielen: je Tank die Summe der
+  gemessenen Gefahr je Sekunde der Gegner, deren Ziel er ist (`EnemyDanger.Rate`, A541, in jedem Kampf gemessen); ehe
+  ein Treffer gemessen ist, die Summe ihrer maximalen LP (der Boss überwiegt). Zielt dieses Gewicht einen GCD lang auf
+  einen anderen Tank als den Träger, setzt RSR Kardia neu. Zielt kein Gegner auf einen Tank, und bei Gleichstand, gilt
+  die Liste wie bisher. Allein bleibt Kardion beim Spieler, ohne Tank wie bisher bei Nahkämpfern und anderen.
+- *Im Kampf:* Zwei Tanks, der Paladin hält den Boss, der Krieger übernimmt nach dem ersten Tankbuster: Bisher heilte
+  Kardion weiter den Paladin, der nun nichts mehr nahm, und der Krieger lebte von den Heilschwellen allein. Jetzt wechselt
+  Kardion einen GCD nach der Übernahme auf den Krieger.
+- *Gegenthese 1:* Ein Tankbuster auf den Nebentank zieht Kardion nicht mit – der Boss zielt dabei weiter auf den, der
+  die Aggro hält. Nicht widerlegt, Preis benannt: Kardions Heilung fehlt dem Nebentank für diesen einen Treffer; die
+  Abwehr des Tankbusters (Konzept 09) und die Heilschwellen tragen ihn.
+- *Gegenthese 2:* Ein Wechsel hin und her bei jedem kurzen Zielwechsel des Bosses. Widerlegt: Der neue Tank muss die
+  Aggro einen GCD lang halten, und Kardia hat 5 s Wiederverwendung; ein Wechsel kostet nur einen Weave-Platz.
+- *Gegenthese 3:* Ein Mitspieler-Weiser legt sein Kardion auf denselben Tank. Unverändert: Ein Tank mit fremdem
+  Kardion wird nur genommen, wenn der andere die Aggro nicht hält; mit ihr hat die Aggro Vorrang – zwei Kardion auf dem
+  Tank, der Schaden nimmt, heilen beide.
+
 ### SCH — 951 LOC, 24 Configs
 
 ```

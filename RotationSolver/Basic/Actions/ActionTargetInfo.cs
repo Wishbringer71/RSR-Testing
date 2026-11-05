@@ -2303,6 +2303,12 @@ public struct ActionTargetInfo(IBaseAction action)
 				return Player.Object;
 			}
 
+			// The tank holding the aggro first (A567); the job order of the list only where none does or at a tie.
+			if (ObjectHelper.TankHoldingAggro() is { } holding)
+			{
+				return holding;
+			}
+
 			var priority = OtherConfiguration.KardiaTankPriority;
 			var tank = FirstByJobPriority(priority, static m => m.IsJobCategory(JobRole.Tank) && m.HasStatus(false, StatusHelper.TankStanceStatus) && !m.HasStatus(false, StatusID.Kardion))
 				?? FirstByJobPriority(priority, static m => m.IsJobCategory(JobRole.Tank) && m.HasStatus(false, StatusHelper.TankStanceStatus))

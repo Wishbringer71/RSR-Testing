@@ -14,6 +14,11 @@ What this release changes in the fight. For the whole distance from upstream, se
 
 ## Healing
 
+- **Kardia follows the tank who holds the aggro.** A sage put Kardion on the first tank in stance by
+  job order and never moved it, so after a tank swap it healed the tank who no longer took damage.
+  Kardion now goes to the tank the most dangerous enemies target - by their measured damage per
+  second, before that by their maximum HP - and moves once another tank has held that aggro for a
+  GCD. The job order of `Kardia tank priority` decides only at a tie or when no enemy targets a tank.
 - **A cleanse no longer comes before a heal unless it saves a life.** A healer's Esuna went before
   every heal for anything on the dispellable list - Slow and Bleeding among them -, one member per GCD
   and 400 MP each, even while a member was about to die; against Odin that was 22 casts and 8,800 MP,

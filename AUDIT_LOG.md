@@ -16699,6 +16699,26 @@ habe den schleim bislang nicht anfreunden können."
   Tankwechsel nicht – sein Grundsatz in Konzept 07 („Hält der Tank die Aggro, hat er die Heilpriorität"); eigener Loop.
 - *Prüfgrad:* Code und Mitschnitt gelesen, Compile; im Spiel nicht beobachtet.
 
+### A567 · Upstream-Prämissen, zweiter Fund: Kardia folgt der Aggro (05.11.2026)
+
+- *Auftrag:* `TODO.md`, „Upstream-Verhalten, das Konzepte als gegeben nehmen" (A566: nächster Fund).
+- *Befund (Code):* `FindKardia` nahm den ersten Tank in Haltung nach `KardiaTankPriority` (Upstream: Paladin, Krieger,
+  Revolverklinge, Dunkelritter), und `ModifyKardiaPvE` setzte Kardia nie neu, solange irgendein Mitglied das eigene
+  Kardion trug. Nach einem Tankwechsel heilte Kardion den Tank ohne Schaden. Seine Vorgabe in Konzept 07: Hält der
+  Tank die Aggro, hat er die Heilpriorität. Kein Konzept hatte Kardia geprüft.
+- *Quellen:* Kardia (24285): Fähigkeit, 5 s Wiederverwendung, Kardion heilt 170 Potenz bei bestimmten Schadenszaubern
+  (xivapi, 05.11.2026).
+- *Optionen:* Nullvariante; Wechsel bei jedem Zielwechsel des Bosses (verworfen: hin und her bei kurzen Wechseln);
+  gewählt: der Tank mit dem schwersten Aggro-Gewicht (gemessene Gefahr je Sekunde der Gegner, die ihn anvisieren,
+  `EnemyDanger.Rate`; vor der ersten Messung ihre maximalen LP), Wechsel nach einem GCD; Liste bei Gleichstand.
+- *Gebaut:* `ObjectHelper.TankHoldingAggro`, `FindKardia` zuerst darüber, `SageRotation.KardiaDue` (Wechsel nach einem
+  GCD gehaltener Aggro). Betroffen: Weiser (Reborn) und Beirutas Weiser (gleiche Aktion).
+- *Gegenthesen:* Konzept 01, SGE (Tankbuster auf den Nebentank: Preis benannt; Hin und her: widerlegt; fremdes
+  Kardion: Aggro hat Vorrang).
+- *Falsifikation:* Kein Defekt – die Stelle wechselte am Code belegt nie. Ausgeliefert, und nichts ändert sich: wo nur
+  ein Tank oder kein Tankwechsel; wo der Boss beim Tankwechsel das Ziel nicht ändert, bliebe auch das Gewicht.
+- *Prüfgrad:* Code gelesen, Compile; im Spiel nicht beobachtet.
+
 ## B · Commit-Register (Fork vs. `upstream/main`)
 
 ### B1 · Einzelgeprüfte Fork-Commits

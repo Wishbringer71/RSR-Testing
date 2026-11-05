@@ -840,6 +840,62 @@ public static class ObjectHelper
 	/// so the kind alone is no proof of hostility: the caller adds its own evidence - a listed hostile cast, or an
 	/// action that reached a party member.
 	/// </remarks>
+	/// <summary>
+	/// The living tank of the party who holds the aggro that weighs most (concept 01, SGE, "Kardia folgt der Aggro", A567;
+	/// his rule in concept 07: the tank holding the aggro has the heal priority): per tank the measured danger per second
+	/// of the enemies targeting him (<see cref="EnemyDanger.Rate"/>), before any is measured the sum of their maximum HP.
+	/// Null while no enemy targets a tank, and at a tie.
+	/// </summary>
+	internal static IBattleChara? TankHoldingAggro()
+	{
+		List<(IBattleChara Tank, double Rate, double Hp)> held = [];
+		var anyRate = false;
+		foreach (var tank in DataCenter.PartyMembers)
+		{
+			if (tank == null || tank.IsDead || !tank.IsJobCategory(JobRole.Tank))
+			{
+				continue;
+			}
+
+			double rate = 0, hp = 0;
+			foreach (var enemy in DataCenter.AllHostileTargets)
+			{
+				if (enemy != null && enemy.TargetObjectId == tank.GameObjectId)
+				{
+					rate += EnemyDanger.Rate(enemy, out _, out _);
+					hp += enemy.MaxHp;
+				}
+			}
+
+			if (hp > 0)
+			{
+				held.Add((tank, rate, hp));
+				anyRate |= rate > 0;
+			}
+		}
+
+		// Measured danger where there is any, else the enemies' maximum HP; a tie answers nobody.
+		IBattleChara? best = null;
+		var bestWeight = 0d;
+		var tie = false;
+		foreach (var (tank, rate, hp) in held)
+		{
+			var weight = anyRate ? rate : hp;
+			if (weight > bestWeight)
+			{
+				best = tank;
+				bestWeight = weight;
+				tie = false;
+			}
+			else if (weight == bestWeight && best != null)
+			{
+				tie = true;
+			}
+		}
+
+		return tie ? null : best;
+	}
+
 	internal static bool IsEnemySideFigure(this IBattleChara battleChara)
 	{
 		return battleChara != null
