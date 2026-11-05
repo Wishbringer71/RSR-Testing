@@ -16913,6 +16913,36 @@ habe den schleim bislang nicht anfreunden können."
   A565 wie bisher; die Suche über das Blatt fand diese vier Fassungen.
 - *Prüfgrad:* Compile, Prüfschritte; Wirkkette am Code. Im Spiel nicht beobachtet.
 
+### A575 · Fremde Repositories, Daedalus: Abwehr und Kampfvorhersage ohne Fund (05.11.2026)
+
+- *Auftrag:* `TODO.md`, „Fremde Repositories auf Verbesserungen für RSR prüfen", Daedalus 74659a6 (unverändert seit
+  03.11.2026), CHANGELOG nach Befunden zu Abwehr, Tod und Kampfvorhersage durchsucht; dazu BossModReborn 577675d
+  (31.10.2026, lokaler Klon).
+- *Blickangriffe:* Daedalus dreht nie in einen Blick, um einen Zauber zu landen. RSR liest BMRs verbotene Richtungen
+  nicht (`Hints.ForbiddenDirectionsCount` liefert nur eine Zahl); BMR selbst dreht beim laufenden Zauber weg
+  (`ActionManagerEx.CalculateDesiredOrientation`, `SmartRotationTweak.GetSafeRotation`, auch für Zauber, die ein anderes
+  Plugin auslöst, weil es die Wirkinfo des Spielers liest). Ohne BMR bleibt Upstreams Liste „Gaze/Stop". Kein Bau.
+- *BMRs Reinigungsmaske:* `Hints.ShouldCleansePlayers` setzen zwei Module (Yaquaru im Tiefen Gewölbe, M12S); BMR vergibt
+  die Gruppenplätze beim Beitritt und hält sie (`WorldStateGameSync.UpdatePartyNormal`), RSR kann außer Platz 0 keinen
+  zuordnen. Kein Bau; die Wirktext-Arten A565 und A574 decken die bekannten Fälle ohne BMR.
+- *Phantom-Wiederbelebung:* Daedalus' Occult Raise wartete auf einen Heiler. RSR ruft Occult Raise (49070) und Revive
+  (41634) – beide sofort, eigene Abklingzeit 5 s – in `PhantomDefault.RaiseGCD` vor der Grundregel, ohne zu warten. Kein
+  Fund.
+- *Abwehr auf großen Pulls:* Daedalus' feste Pullgröße (3) für Tank- und Gruppenminderung; RSR misst den Schaden je
+  Gegner und Pull (Konzepte 08, 09). Kein Fund.
+- *Kampfvorhersage:* Daedalus' gebündelte Zeitleisten (Savage, Ultimate) mit BMR als Rückfall; RSR lernt Flächen und
+  Tankbuster je Zauber selbst und liest BMR. Keine Zahl ohne Herleitung übernommen.
+- *Phantomjobs, weiter:* Occult White Wind (49090, „Restores … by an amount equal to your current HP", Abklingzeit
+  150 s) – Daedalus nimmt sie früh, solange die eigenen LP etwas hergeben; RSR nimmt sie als erste Gruppenheilung
+  (`PhantomDefault.HealAreaGCD`), sobald eine ansteht. Schwach wäre sie nur bei eigenen niedrigen LP; eine Grenze dafür
+  ohne Herleitung baue ich nicht. Occult Mighty Guard als Gruppenminderung führt RSR ebenso.
+- *Zielwahl:* Daedalus' „forbidden enemy" (BMRs Zielverbote) liefert BMR nicht über IPC; die Fälle aus dem Feld decken
+  A571 und A572.
+- *Blaumagier:* Daedalus' Buch der todesimmunen Bosse (Missile, Level 5 Death) betrifft nur Schaden – erfasst, nicht
+  gebaut.
+- *Ergebnis:* Daedalus ist für Sicherheit ausgewertet (A561, A570 bis A575); weiter mit den übrigen Rotationswerkzeugen.
+- *Prüfgrad:* Quelltext und Changelog gelesen; kein Code geändert.
+
 ## B · Commit-Register (Fork vs. `upstream/main`)
 
 ### B1 · Einzelgeprüfte Fork-Commits

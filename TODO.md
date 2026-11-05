@@ -75,10 +75,10 @@ vielleicht; jeder Fund wird am Spiel belegt, bevor er ein Defekt oder eine Verbe
 Sein Auftrag vom 05.11.2026 dazu: „alle bekannten repos zu rotationen, zu beastmaster, zu bluemage analysiere, inwieweit
 erkenntisse daraus in rsr eingebracht werden können und die vorhandenen konzepte ergänzen und verbessern könnten".
 *Ort:* Grundstruktur (`RotationSolver/Basic`, Updaters, Zielwahl, Abwehr), die Rotationen unter `RebornRotations`, die
-Jobkonzepte. *Nächster Schritt:* Daedalus weiter (A561: Crucible-Automatik; A570: Kaufgewichte und Brettzustände; Stacheln A571, Flächen und Zu-Eier A572; Heiler-Triage A573): Zielwahl, Abwehr, Kampfvorhersage,
-Blaumagier, Phantomjobs, je Job die Regeln, die RSR nicht kennt; danach die übrigen in der Reihenfolge der
-Liste. Je Fund ein Loop, je Repository ein Archiveintrag mit
-Commit und Datum. *Konzept:* 15, erweitert vom Vergleich mit WrathCombo auf die übrigen Werkzeuge; je Fund dazu das
+Jobkonzepte. *Nächster Schritt:* Daedalus für Sicherheit ausgewertet (A561; A570 bis A575: Ladengewichte und Brettzustände,
+Stacheln, Flächen und Zu-Eier, Heiler-Triage, Reinigung, Abwehr und Kampfvorhersage); offen sind je Job die Regeln, die RSR
+nicht kennt, Job für Job nach seinem Profil (Maschinist zuerst, er spielt ihn am häufigsten); danach die übrigen in der
+Reihenfolge der Liste. Je Fund ein Loop, je Repository ein Archiveintrag mit Commit und Datum. *Konzept:* 15, erweitert vom Vergleich mit WrathCombo auf die übrigen Werkzeuge; je Fund dazu das
 tragende (01 Jobs, 08 Minderung, 13 Flächenschaden und Tankbuster).
 
 
