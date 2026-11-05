@@ -17279,6 +17279,27 @@ habe den schleim bislang nicht anfreunden können."
 - *Prüfgrad:* statisch, Compile ohne Warnung, Prüfskripte. Im Spiel nicht beobachtet (er hat die Bretter 2 bis 5 noch
   nicht hochgeladen); die Spurzeilen „kill rule" und „left alone … turns Physical attacks" zeigen jede Entscheidung.
 
+### A589 · Crucible K5 Stufe 1: ein stoppendes Entfesseln zählt nur gegen Anfällige (05.11.2026)
+
+- *Anlass:* TODO „Beastmaster: Crucible-Strategien", nächster Schritt K5.
+- *Quellen:* EXDSchema latest (05.11.2026): `BNpcResist` (ResistsSlow bis ResistsDeath), `XBMPet` (InflictsSlow bis
+  InflictsDeath, „use the same indexer as BNpcResist"), `XBMBattleDetail.Resist`. ffxiv-datamining `BNpcResist.csv`,
+  `XBMPet.csv`, `XBMBattleDetail.csv` (05.11.2026). Lumina der Sitzung: `BNpcResist.Unknown0` bis `Unknown10` (Boolean).
+- *Befund:* Über die 122 Gegner der Bretter sind 40 für Stun offen, 23 für Petrify; Endgegner und Elitegegner wehren fast
+  alles ab. C1 (`StopsPack`) und K6 (`Option`) zählten ein stoppendes Entfesseln ohne diese Angabe; C1 lernte die Immunität
+  erst nach dem ersten Versuch (`StunWatch`), K6 gar nicht. Auf Brett 1 sind nur Milbenbrut und Sukkubus-Ritterin für Stun
+  offen.
+- *Gebaut:* `CrucibleBoard.Enemy.Resist` (Lumina `Unknown4`), `CrucibleBoard.Ailment`, `Resists(enemy|nameId, ailment)`;
+  `StopOf(profile)` (Stun, sonst Petrify – das Blatt führt die Chimäre mit „deeply freezes" als `InflictsPetrify`);
+  `StopsPack` verwirft, wenn ein Angreifer laut Blatt abwehrt; `Option` zählt „stops" nur, wenn kein Gegner der Schlacht
+  abwehrt (`OpenToStop`).
+- *Offen (Stufe 2):* Slow, Blind, Paralysis, Sleep, Death als Schutz werten – keine Bezifferung im Text; Poison, Heavy,
+  Bind schützen nicht.
+- *Falsifikation:* Kein Defekt? Das Blatt nennt die Abwehr; ohne sie zählte K6 einen Stopp, der nicht greift. Option
+  falsch? Irrt das Blatt, bleibt `StunWatch` daneben. Ausgeliefert, und nichts ändert sich? Wenn kein stoppender Begleiter
+  im Kader steht; die Zeile „horns set for battle" zeigt die Wahl.
+- *Prüfgrad:* statisch, Compile ohne Warnung, Prüfskripte. Im Spiel nicht beobachtet.
+
 ## B · Commit-Register (Fork vs. `upstream/main`)
 
 ### B1 · Einzelgeprüfte Fork-Commits

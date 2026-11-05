@@ -1658,6 +1658,26 @@ public sealed class BST_Reborn : BeastmasterRotation
 		AssignBattlehorns(best[I], best[II], best[III]);
 	}
 
+	// K5 (A589): a stopping Release protects before a battle only when no enemy of it resists the stop by the sheet.
+	private static bool OpenToStop(FamiliarProfile familiar, CrucibleBoard.Enemy[]? battle)
+	{
+		if (battle == null)
+		{
+			return true;
+		}
+
+		var stop = StopOf(familiar);
+		foreach (var enemy in battle)
+		{
+			if (CrucibleBoard.Resists(enemy, stop) == true)
+			{
+				return false;
+			}
+		}
+
+		return true;
+	}
+
 	// What `pet` brings on `horn` before the next fight: whether it heals or protects you there (a stopping Release only
 	// before a pack, C1); whether it is the kind that covers that fight best - its Trick heals before a boss, its Tempered
 	// Release stops a pack; the damage of its Trick and, on a horn that spends One with Nature on it, its Tempered Release,
@@ -1670,7 +1690,7 @@ public sealed class BST_Reborn : BeastmasterRotation
 		}
 
 		var nature = EffectiveNature(horn);
-		var stops = !boss && familiar.ReleaseStops && familiar.ReleaseRadius > 0f;
+		var stops = !boss && familiar.ReleaseStops && familiar.ReleaseRadius > 0f && OpenToStop(familiar, battle);
 		var safe = SafeBy(familiar, nature, stops, releaseComes: true, borrowComes: true);
 		var trickHeals = familiar.TrickHeals && TrickPvE.Info.EnoughLevelAndQuest();
 		var fitting = safe && (boss ? trickHeals : stops && nature == OneWithNatureOrder.Tempered);

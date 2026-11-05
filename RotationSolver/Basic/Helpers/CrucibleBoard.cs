@@ -24,10 +24,69 @@ internal static class CrucibleBoard
 {
 	/// <summary>
 	/// One enemy of a fight: its name as the game's objects carry it, its weakness, its sheet ratings - strength and
-	/// intelligence, and its physical and magic resistance grades (A582).
+	/// intelligence, and its physical and magic resistance grades (A582) - and its row of BNpcResist (K5, A589).
 	/// </summary>
 	internal readonly record struct Enemy(uint NameId, uint Weakness, byte Strength, byte Intelligence, byte PhysResistance,
-		byte MagResistance);
+		byte MagResistance, uint Resist = 0);
+
+	/// <summary>
+	/// The statuses BNpcResist states a resistance to, in its order (EXDSchema latest, 05.11.2026: ResistsSlow to
+	/// ResistsDeath; the built Lumina reads them as Unknown0 to Unknown10). XBMPet's InflictsSlow to InflictsDeath use the
+	/// same order (concept 01, K5, A589).
+	/// </summary>
+	internal enum Ailment
+	{
+		Slow,
+		Petrify,
+		Paralysis,
+		Interrupt,
+		Blind,
+		Poison,
+		Stun,
+		Sleep,
+		Bind,
+		Heavy,
+		Death,
+	}
+
+	/// <summary>
+	/// K5 (A589): whether the enemy with <paramref name="nameId"/> in the fight in progress resists <paramref name="ailment"/>
+	/// by the sheet. Null when the fight does not list it: then what the fight teaches (the learned stun immunity) decides
+	/// alone.
+	/// </summary>
+	internal static bool? Resists(uint nameId, Ailment ailment)
+	{
+		return EnemyOf(nameId) is { } enemy ? Resists(enemy, ailment) : null;
+	}
+
+	/// <summary>
+	/// K5 (A589): whether <paramref name="enemy"/> resists <paramref name="ailment"/> by its BNpcResist row. Null when the
+	/// row cannot be read.
+	/// </summary>
+	internal static bool? Resists(Enemy enemy, Ailment ailment)
+	{
+		if (enemy.Resist == 0
+			|| Svc.Data.GetExcelSheet<Lumina.Excel.Sheets.BNpcResist>()?.GetRowOrDefault(enemy.Resist) is not { } row)
+		{
+			return null;
+		}
+
+		return ailment switch
+		{
+			Ailment.Slow => row.Unknown0,
+			Ailment.Petrify => row.Unknown1,
+			Ailment.Paralysis => row.Unknown2,
+			Ailment.Interrupt => row.Unknown3,
+			Ailment.Blind => row.Unknown4,
+			Ailment.Poison => row.Unknown5,
+			Ailment.Stun => row.Unknown6,
+			Ailment.Sleep => row.Unknown7,
+			Ailment.Bind => row.Unknown8,
+			Ailment.Heavy => row.Unknown9,
+			Ailment.Death => row.Unknown10,
+			_ => null,
+		};
+	}
 
 	private static List<(uint Row, Enemy[] Enemies)>? _fights;
 	private static readonly Dictionary<uint, string> _elementNames = [];
@@ -310,7 +369,7 @@ internal static class CrucibleBoard
 				if (enemy.Unknown0 != 0)
 				{
 					enemies.Add(new Enemy(enemy.Unknown0, enemy.Unknown10, enemy.Unknown5, enemy.Unknown6, enemy.Unknown7,
-						enemy.Unknown8));
+						enemy.Unknown8, enemy.Unknown4));
 					AddAilment(enemy.Unknown2);
 					AddAilment(enemy.Unknown3);
 				}

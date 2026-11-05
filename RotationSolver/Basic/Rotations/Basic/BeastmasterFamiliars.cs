@@ -255,7 +255,8 @@ public partial class BeastmasterRotation
 
 			if (Vector3.Distance(hostile.Position, target.Position) - hostile.HitboxRadius > profile.ReleaseRadius
 				|| hostile.IsBossFromIcon()
-				|| (profile.ReleaseStopsByStun && (!StunWatch.CanStillBeStunned(hostile) || StunWatch.Applications(hostile) > 0)))
+				|| (profile.ReleaseStopsByStun && (!StunWatch.CanStillBeStunned(hostile) || StunWatch.Applications(hostile) > 0))
+				|| CrucibleBoard.Resists(hostile.NameId, StopOf(profile)) == true)
 			{
 				return false;
 			}
@@ -264,6 +265,15 @@ public partial class BeastmasterRotation
 		}
 
 		return attackers >= PackAttackers;
+	}
+
+	/// <summary>
+	/// The status by which a stopping Tempered Release stops (concept 01, K5, A589): Stun, or Petrify for Petrification and
+	/// Deep Freeze - XBMPet marks the chimera, whose Release "deeply freezes", as inflicting Petrify.
+	/// </summary>
+	internal static CrucibleBoard.Ailment StopOf(FamiliarProfile profile)
+	{
+		return profile.ReleaseStopsByStun ? CrucibleBoard.Ailment.Stun : CrucibleBoard.Ailment.Petrify;
 	}
 
 	/// <summary>

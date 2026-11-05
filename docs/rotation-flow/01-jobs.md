@@ -1923,7 +1923,29 @@ Dullahan, Golem, Spriggan und Eisgolem (`XBMPet.InflictsInterrupt`).
     in ECommons unbenannter Typ und „StartActionCombo" (ECommons 74af164). Die Effektart „Interrupt" führt ECommons als
     75, BossModReborn als 76; welche gilt, kann sein Spielprogramm (`ffxiv_dx11.exe`, Upload 05.11.2026) entscheiden,
     sobald eine Regel sie liest.
-- *K5 – Zustände.* Gift, Gewicht, Fessel gegen anfällige Gegner: Wirkung je Zustand nicht beziffert, nach K1 bis K4.
+- *K5 – Zustände* (A589). *Daten:* Jeder Gegner eines Kampfes verweist auf eine Zeile von `BNpcResist`
+  (`XBMBattleDetail.Resist`, Lumina `Unknown4`); sie sagt je Zustand, ob er ihn abwehrt – in der Reihenfolge von EXDSchema
+  Slow, Petrify, Paralysis, Interrupt, Blind, Poison, Stun, Sleep, Bind, Heavy, Death (Lumina `Unknown0` bis `Unknown10`;
+  ffxiv-datamining `BNpcResist.csv`, 05.11.2026). Welche Zustände ein Begleiter setzt, sagt `XBMPet` (`InflictsSlow` bis
+  `InflictsDeath`, dieselbe Reihenfolge). Über alle 122 Gegner der Bretter: offen für Slow 54, Poison 53, Death 42, Heavy
+  41, Stun 40, Blind 33, Bind 31, Petrify 23, Paralysis 22, Sleep 18, Interrupt 12; die Endgegner und die meisten
+  Elitegegner wehren alles ab außer Poison, Blind oder Heavy.
+  - *Gebaut, Stufe 1 – ein stoppendes Entfesseln zählt nur gegen Anfällige:* Ein Entfesseln, das stoppt (C1: Stun, oder
+    Petrification und Deep Freeze, beide als Petrify geführt – das Blatt markiert die Chimäre, deren Entfesseln „deeply
+    freezes", als `InflictsPetrify`), gilt im Crucible weder als Schutz vor einem Rudel noch als passend (K6), wenn ein
+    Gegner des Kampfes den Zustand laut Blatt abwehrt, und wird beim Ansturm nicht vorgezogen (C1), wenn einer der
+    Angreifer ihn abwehrt. *Im Kampf:* Auf Brett 1 sind nur Milbenbrut und Sukkubus-Ritterin für Stun offen. Bis A589
+    zählte K6 den Büffel vor jedem Rudel als schützend und passend, und C1 zog ihn beim Ansturm vor, bis `StunWatch` die
+    Immunität nach dem ersten Versuch gelernt hatte – gegen Knochen-Ritter und -Bischof, Irrlichter und Pisco-Dämon
+    verpufft sein War Cry (aus Code und Blatt abgeleitet; in seinen Mitschnitten kam der Büffel auf Brett 1 nicht vor).
+    Jetzt kommt an seiner Stelle ein Begleiter, der heilt oder schützt, oder der mit dem meisten Schaden.
+    *Gegenthese 1:* Ein Gegner fehlt im Blatt (Zufallsfeld). Dann gilt wie bisher die gelernte Immunität. *Gegenthese 2:*
+    Das Blatt irrt. Die gelernte Immunität bleibt daneben; ein Gegner, den das Blatt offen nennt und der doch abwehrt,
+    fällt nach dem ersten Versuch heraus wie bisher.
+  - *Offen, Stufe 2:* Slow, Blind, Paralysis, Sleep und Death gegen Anfällige als Schutz werten. Ihre Wirkung beziffert
+    kein Text (die Entfesseln sagen „slows", „blinds", „paralyzes", „may doom"), und Sleep endet am nächsten Schaden, den
+    die Flächen des Beastmaster sofort setzen. Poison, Heavy und Bind schützen nicht: Gift ist Schaden, Gewicht und Fessel
+    halten nur die Bewegung.
 - *K6 – Hörner vor dem Kampf belegen.* B5 setzt die Hörner zwischen den Kämpfen per Serverbefehl, im Crucible bisher
   nicht. Im Brett öffnet das Spiel vor jedem Kampf das Hornfenster (`XBMPetParty`, `AgentXBMPetParty.Mode` 2); es
   behält die Hörner nicht zwischen den Kämpfen und füllt sie selbst nur bei höchstens drei im Team (Daedalus 74659a6,

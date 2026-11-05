@@ -263,6 +263,11 @@ What this release changes in the fight. For the whole distance from upstream, se
   enemy kinds on a board cast spells the game marks interruptible (`InterruptibleCasterKinds.json`). Before a
   fight with such a kind, a Soulkin familiar on a horn set to Borrow - its Soul Crush interrupts - counts on
   the horn screen ahead of damage, and the team recommendation includes one when a fight of the board needs it.
+- **A stunning or petrifying familiar counts only against enemies it can stop (Crucible).** The game
+  states for every enemy of the boards which statuses it resists; most elites and every final boss shrug
+  off a stun. A Tempered Release that stuns, petrifies or deep-freezes no longer counts as protection on
+  the horn screen before a fight whose enemies resist it, and is no longer called first at a pull of
+  such enemies - before, RSR learned the immunity only after the first try.
 - **Challenge only when the familiar could fall (Crucible).** A familiar retreating after Parting
   Blow shows 0 HP for a moment; that no longer counts as the largest hit of the fight, so Challenge no
   longer takes the damage back from a familiar at full HP every 15 s, and no Beast Potion goes into a
