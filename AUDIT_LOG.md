@@ -16675,6 +16675,30 @@ habe den schleim bislang nicht anfreunden können."
 - *Prüfgrad:* Mitschnitt und Code gelesen, Compile ohne Warnung, Prüfschritte; im Spiel nicht beobachtet. Die
   Spur nennt jede Reinigung nicht eigens; der Mitschnitt zeigt sie.
 
+### A566 · Upstream-Prämissen, erster Fund: Zauber eines anvisierbaren Gegners außerhalb der Gegnerliste (05.11.2026)
+
+- *Auftrag:* `TODO.md`, „Upstream-Verhalten, das Konzepte als gegeben nehmen" (aus A565).
+- *Erhebung:* Eingebaute Listen und ihre Prüfung in Konzepten und Archiv: `DangerousStatus` (A565), `NoCastingStatus`
+  (Konzept 03, A119, A338), die Fernkampf- und Flächenlisten (Konzepte 08, 09, 10, 13) geprüft; ungeprüft
+  `InvincibleStatus` (nur Konzepte 15, 16 am Rand), `PriorityStatus`, die Job-Vorranglisten (Dance Partner, The Spear,
+  The Balance, Kardia), `BeneficialPositions`, `NoHostileNames`.
+- *Fund:* `InvincibleStatus` (und Symbol 15024) wirkt nur auf Gegner: Wer ihn trägt, fällt aus `AllHostileTargets`
+  (Upstream, `TargetUpdater.GetAllTargets`). `AreaCasters` (Fork, A277, A303) ergänzte nur nicht anvisierbare Figuren.
+  Ein anvisierbarer Boss unter Unverwundbarkeit, der einen gelisteten Flächenangriff oder Tankbuster wirkt, öffnete
+  keine Abwehr und keine Vorausheilung. In seinen Mitschnitten zwei Fälle (Ultima-Waffe, 26.10.2026: Irdene Ewigkeit
+  32,7 s unter Unverwundbar, Klingenwind 27,7 s unter Sturmwall), beide Phasen-Enrages ohne Landung.
+- *Gebaut:* `UpdateAreaCasters` nimmt jede anvisierbare Figur der Gegnerseite auf, die das Spiel als feindlich führt,
+  nicht in der Gegnerliste steht und eine gelistete Aktion wirkt; nicht als Helfer. Angriffe bleiben unverändert.
+- *Leser:* `IsAreaCastEnemy` (über `IsEnemy`), Tankbuster-Erkennung mit Rückfall „eigenes Ziel", `TankbusterTable`,
+  `TankbusterForecast` behandeln ihn wie einen Gegner der Liste – geprüft am Code.
+- *Gegenthesen:* Konzept 13 (abbrechender Enrage, Preis benannt; außer Sicht, widerlegt über die Reichweitenprüfung).
+- *Falsifikation:* Kein Defekt – die Ausschlussregel ist am Code belegt, die Lage am Mitschnitt; Schaden daraus in
+  seinen Mitschnitten nicht. Ausgeliefert, und nichts ändert sich: Nur wo ein solcher Boss eine gelistete oder gelernte
+  Aktion wirkt; eine nie gelistete bleibt unsichtbar wie bei jedem Gegner.
+- *Nächste Funde der Klasse:* Kardia (Weiser) folgt der Job-Reihenfolge statt der Aggro und wechselt nach einem
+  Tankwechsel nicht – sein Grundsatz in Konzept 07 („Hält der Tank die Aggro, hat er die Heilpriorität"); eigener Loop.
+- *Prüfgrad:* Code und Mitschnitt gelesen, Compile; im Spiel nicht beobachtet.
+
 ## B · Commit-Register (Fork vs. `upstream/main`)
 
 ### B1 · Einzelgeprüfte Fork-Commits

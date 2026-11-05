@@ -147,7 +147,9 @@ internal static partial class TargetUpdater
 	/// because a helper stands where its area is, not where an enemy can be attacked. A helper is any untargetable
 	/// figure of the enemy side, of each of its kinds - combatant, part of an enemy, helper, or none
 	/// (ObjectHelper.IsEnemySideFigure); read as combatants only, a dungeon boss's parts cast and hit unread (A327), and
-	/// without the helper kind the helpers of trials and raids (A334).
+	/// without the helper kind the helpers of trials and raids (A334). A targetable enemy the hostile list leaves out -
+	/// behind a status of the invincible list, out of sight, on "No hostile names" - joins while it casts a listed action,
+	/// not as a helper (A566).
 	/// </remarks>
 	private static void UpdateAreaCasters()
 	{
@@ -160,9 +162,20 @@ internal static partial class TargetUpdater
 		foreach (var obj in Svc.Objects)
 		{
 			if (obj is not IBattleChara caster || caster.ObjectKind != Dalamud.Game.ClientState.Objects.Enums.ObjectKind.BattleNpc
-				|| caster.IsTargetable || !caster.HasNativeState() || !caster.IsCasting
-				|| !caster.IsEnemySideFigure())
+				|| !caster.HasNativeState() || !caster.IsCasting || !caster.IsEnemySideFigure())
 			{
+				continue;
+			}
+
+			// A targetable enemy the hostile list leaves out - behind a status of the invincible list, out of sight, on
+			// "No hostile names" - is no target, but its listed cast hits the party all the same (concept 13, A566).
+			if (caster.IsTargetable)
+			{
+				if (caster.IsEnemy() && !hostiles.Contains(caster) && DataCenter.IsListedHostileCast(caster.CastActionId))
+				{
+					casters.Add(caster);
+				}
+
 				continue;
 			}
 

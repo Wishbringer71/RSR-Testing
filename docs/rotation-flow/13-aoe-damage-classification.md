@@ -676,6 +676,21 @@ bleibt unsichtbar für die Casterkennung; sein sichtbarer Cast bleibt unbewertet
 Messwert gilt je Aktion, nicht je Welle: Treffen mehrere Helfer zugleich mit derselben Id, steht der höchste
 Einzelanteil in der Tabelle, nicht ihre Summe.
 
+**Ein anvisierbarer Gegner, den die Gegnerliste ausschließt, zählt ebenso** (A566). Die Gegnerliste
+(`AllHostileTargets`, Upstream) lässt einen Gegner aus, der einen Status der Unverwundbarkeitsliste trägt (oder das
+Symbol 15024), außer Sicht oder weiter als 48 y steht oder auf „No hostile names" steht: Er ist kein Ziel für Angriffe.
+Seine Casts treffen die Gruppe trotzdem, und `AreaCasters` nahm bis A566 nur nicht anvisierbare Figuren dazu – ein
+Boss hinter einer Unverwundbarkeit, der einen gelisteten Flächenangriff oder Tankbuster wirkt, öffnete keine Abwehr
+und keine Vorausheilung. Belegt ist die Lage in seinem Mitschnitt vom 26.10.2026 (Ultima-Waffe: Irdene Ewigkeit 32,7 s
+unter Unverwundbar, Klingenwind 27,7 s unter Sturmwall; beide brachen mit der Phase ab, Schaden entstand dort keiner).
+Jetzt nimmt `AreaCasters` auch jede anvisierbare Figur der Gegnerseite auf, die das Spiel als feindlich führt
+(`IsEnemy`), nicht in der Gegnerliste steht und eine gelistete Aktion wirkt; sie zählt nicht als Helfer
+(`AreaCastHelperIds`). Angegriffen wird sie weiterhin nicht. *Gegenthese:* Ein Phasen-Enrage, der abbricht, sobald die
+Adds fallen, öffnet die Abwehr in seinem Minderungsfenster umsonst. Preis benannt: nur wenn er gelistet ist und die
+Phase erst in den letzten Sekunden fällt; landet er, ist die Abwehr das Einzige, was noch zählt. *Gegenthese 2:* Ein
+Gegner außer Sicht wird gelesen. Widerlegt: Reichweite und Sicht prüft die Reichweitenprüfung des Casts, wie bei
+Helfern.
+
 **Tankbuster und Rückstöße von Helfern zählen ebenso** (A303). `AreaCasters` nimmt einen nicht anvisierbaren Kämpfer
 auch auf, solange er eine Aktion der Tankbuster- oder der Rückstoßliste wirkt oder einen Tankbuster, den die
 Tankbuster-Tabelle gemessen hat (`DataCenter.IsListedHostileCast`); auch hier ist die Liste der Beleg der

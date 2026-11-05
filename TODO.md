@@ -49,8 +49,9 @@ Reihenfolge als gegeben nahm (A565, C165). Dieselbe Klasse: die übrigen eingeba
 Vorrang, Unverwundbarkeit, Wirksperre; die Fernkampf- und Flächenlisten der `Resources`), die Slot-Kette (Konzept 03:
 Provoke und Reinigung vor Wiederbelebung und Heilung) und Upstreams Schwellen, auf die Konzepte bauen. *Ort:*
 `RotationSolver/Basic/Resources/StatusLists.cs`, `CustomRotation_GCD`, `CustomRotation_Ability`, die Konzepte, die sie
-zitieren. *Nächster Schritt:* je Liste und Stelle erheben, welches Konzept sie als Prämisse liest, dann je Fund der
-Loop mit Wirkung im Kampf. *Konzept:* 03, 07; Regel in `.claude/rules/konzepte.md`.
+zitieren. *Nächster Schritt:* Kardia (Weiser) nach der Aggro statt der Job-Reihenfolge, Wechsel nach dem
+Tankwechsel (A566); dann `PriorityStatus`, die Karten- und Tanzpartnerlisten, `BeneficialPositions`, die übrige
+Slot-Kette. *Konzept:* 03, 07, 13; Regel in `.claude/rules/konzepte.md`.
 
 ### Beastmaster: Crucible-Strategien · N
 Im Kampf: Fällst du im Brett, ist der Lauf verloren, und RSR plant die Begleiter nicht über das Brett: Ein Heiler, der im vierten Kampf gebraucht wird, kann bis dahin auf 25 von 550
