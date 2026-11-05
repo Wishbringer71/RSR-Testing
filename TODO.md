@@ -33,6 +33,9 @@ Nach der Wirkung im Kampf: Sicherheit der Gruppe vor Schaden, gewichtet mit der 
 10. Flächenbetäuber in Kreszentia für The Blackest Night: kostet MP, kein Leben.
 11. Ein Blaumagier in Heiler-Mimikry zählt nicht als Heiler: Mitspieler unter RSR heilen und mindern, als lebte keiner;
    kostet Schaden, kein Leben.
+12. Konzepte neu ordnen (allgemein, Rollen, Gruppen, Jobs, Inhalte): keine direkte Wirkung im Kampf; eine Regel, die
+   im Konzept eines Jobs steht, wird für dessen Gruppe übersehen, und eine Inhaltsregel ist über mehrere Konzepte
+   verteilt.
 
 Danach die technische Schuld, soweit ihre Auflösungsbedingung erfüllt ist. Warten auf Daten: unten.
 
@@ -158,6 +161,22 @@ RSR nicht kennt; danach die übrigen in der Reihenfolge der Liste. Je Fund ein L
 Commit und Datum. *Konzept:* 15, erweitert vom Vergleich mit WrathCombo auf die übrigen Werkzeuge; je Fund dazu das
 tragende (01 Jobs, 08 Minderung, 13 Flächenschaden und Tankbuster).
 
+
+### Konzepte neu ordnen: allgemein, Rollen, Gruppen, Jobs, Inhalte · N
+Sein Auftrag (05.11.2026): „generelle prüfung aller konzepte, ob eine neuorganisation nicht sinnvoll wäre: allgemein für
+alle, dann nach gruppierungen heiler, tank, melee (drei sorten = monk+samurai, schnitter+dragoon, ninja+viper),
+fernkämpfer, magier. dann weiter unterteilt auf jede einzelne klasse und auch die sonderklassen wie bluemage und
+beastmaster. parallele konzepte für dungeons, endgegner, savage, occult crescent. immer da, wo bedarf besteht und mit
+querverweisen zu den anderen betroffenen konzepten. das in einem eigenen konzept im vollen kritischen loop mit antithese
+und versuch der widerlegung analysieren und bei sinnhaftigkeit planen". Im Kampf mittelbar: Was im Konzept eines Jobs
+steht (etwa die Zielart ohne Tank und Heiler für Beastmaster und Blaumagier, das Crucible im Beastmaster-Teil), sucht
+man für eine Gruppe oder einen Inhalt nicht dort; eine Regel, die so übersehen wird, fehlt dem nächsten Job. *Ort:*
+`docs/rotation-flow/` (19 Konzepte nach Leitfrage, `01-jobs.md` allein für alle Jobs), Index `README.md`,
+`check_concept_links.py`, Verweise aus Code, Archiv und TODO auf Konzeptabschnitte. *Nächster Schritt:* eigenes
+Konzept (kein bestehendes trägt die Ordnung der Konzepte; der Index ist Navigation), Loop: Ist-Erhebung (Abschnitte je
+Ebene, Doppelungen, Verweise), Optionen mit Nullvariante, je Option Antithese und Widerlegungsversuch (Verweise
+veralten, Abschnitte doppeln sich, Prüfskripte und Archiv nennen Pfade), Plan nur bei Sinnhaftigkeit. Die Stufung folgt
+„Universell zuerst" (`.claude/rules/code.md`). *Konzept:* `README.md`, neues Konzept zur Ordnung.
 
 ## Technische Schuld
 
