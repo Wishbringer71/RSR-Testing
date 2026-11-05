@@ -16882,6 +16882,11 @@ habe den schleim bislang nicht anfreunden können."
 - *Falsifikation:* Kein Defekt – die Liste reicht: 1628 und 1604 fehlen in ihr. Option falsch – Daedalus' Liste
   übernehmen: 910 und 2976 trügen sie ohne Beleg. Ausgeliefert, und nichts ändert sich: Der Text steht anders in einem
   künftigen Zustand („fully restored") – dann bleibt er unerkannt wie heute; die Suche fand keine andere Fassung.
+- *Übrige Triage, abgeglichen:* Daedalus wählt das gefährdetste Mitglied nach festen Gewichten (Schadensrate,
+  Beschleunigung, fehlende LP, Tank- und Heilerbonus, Zeit bis zum Tod, Schild und Minderung abgezogen) – Zahlen ohne
+  Herleitung; RSR ordnet nach Gefährdungsklassen aus der vorausberechneten Gesundheit (Konzept 07), die Schild und Rate
+  schon tragen. Kein Fund. False Prediction 4269 (Phantom Oracle, „Suffering unaspected damage over time", Daedalus'
+  Vorrang-DoT) fängt RSR ohne Liste: Die DoT-Ticks gehen in `DotOnParty` und in die Gesundheitsvorhersage.
 - *Prüfgrad:* Compile, Prüfschritte; Wirkkette am Code (Wirktext → `DoomNeedHealing` → Gesundheitsanteil 0,01 und
   Heilflaggen). Im Spiel nicht beobachtet.
 
