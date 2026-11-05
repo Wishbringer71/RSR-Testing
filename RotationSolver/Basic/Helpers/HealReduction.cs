@@ -1,4 +1,4 @@
-using ECommons.DalamudServices;
+﻿using ECommons.DalamudServices;
 
 namespace RotationSolver.Basic.Helpers;
 
@@ -30,7 +30,9 @@ internal static class HealReduction
 	private static HashSet<uint> BuildReducing()
 	{
 		var result = new HashSet<uint>();
-		var sheet = Service.GetSheet<Lumina.Excel.Sheets.Status>();
+		// The English sheet whatever the client's language: the phrases below are English, and a German client read its own
+		// texts, in which none of them stands - no status was found, and the area heals counted every bearer in full (A547).
+		var sheet = Svc.Data.GetExcelSheet<Lumina.Excel.Sheets.Status>(Dalamud.Game.ClientLanguage.English);
 		if (sheet == null)
 		{
 			return result;

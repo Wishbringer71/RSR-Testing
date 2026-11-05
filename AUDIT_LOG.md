@@ -16263,6 +16263,23 @@ habe den schleim bislang nicht anfreunden können."
 - *Prüfgrad:* Compile ohne Warnung, Prüfschritte; Wirkkette am Code (Aktionseinstellung, `AttackAbility` zuletzt,
   Ereignis im `Watcher`). Im Spiel nicht beobachtet; Messmittel sind die Zeilen „gauge".
 
+### A547 · Heilsenkung las die Statustexte in der Sprache des Clients (05.11.2026)
+
+- *Anlass:* Bei der Recherche zu den Crucible-Daten (TODO „Beastmaster: Crucible-Strategien") zeigte sich:
+  `Service.GetSheet` ruft `GetExcelSheet` ohne Sprache auf, und Dalamud liefert dann die Sprache des Clients
+  (`IDataManager.GetExcelSheet`, Dalamud a740960 vom 04.11.2026: „Leave null or empty to use the default language").
+- *Defekt:* `HealReduction.BuildReducing` (A544) suchte „hp recovery" in den Statustexten aus `Service.GetSheet`. Mit
+  seinem deutschen Client stehen dort deutsche Texte; erkannt wurde kein Status, gemessen kein Durchlass, und die
+  Flächenheilung zählte jeden Träger wie vor A544 mit seinem ganzen Defizit. A544 wirkte bei ihm also nicht.
+- *Klasse erhoben:* Alle übrigen Textabgleiche auf Blättern gehen über `ActionTooltip` oder verlangen
+  `ClientLanguage.English` (`StatusHelper`, `TraitDurations`, `NoCastingStatusHelper`, `CustomRotation_DefenseHold`);
+  Suchen der Oberfläche vergleichen mit seinem eigenen Text. Betroffen war nur `HealReduction`.
+- *Behoben:* `HealReduction` liest das englische Statusblatt. `check_sheet_language.py` (mit Selbsttest, in der CI)
+  meldet jede Methode, die ein Blatt ohne Sprache holt, einen Text daraus liest und ihn mit einem festen Text vergleicht;
+  gegen den Stand vor der Behebung schlug es an.
+- *Prüfgrad:* Dalamud-Quelltext gelesen, Compile, Prüfschritte; im Spiel nicht beobachtet. Messmittel bleibt die
+  Spurzeile „heal reduction: …" (A544), die es mit deutschem Client bisher nie geben konnte.
+
 ## B · Commit-Register (Fork vs. `upstream/main`)
 
 ### B1 · Einzelgeprüfte Fork-Commits

@@ -125,6 +125,11 @@ jobs:
       - name: Check the learned tables' saving readers ask for confirmation
         run: python3 .github/scripts/audit/check_learned_readers.py
 
+      # A sheet text compared with an English phrase is read from the English sheet: without a language Dalamud returns the
+      # client's, and the owner's German client found no status lowering HP recovery (A547).
+      - name: Check sheet texts compared with English phrases come from the English sheet
+        run: python3 .github/scripts/audit/check_sheet_language.py
+
       # The list window shows every learned store with its state under the game version (concept 13, "Stufe 5"); a store
       # added without a tab is one whose decisions the owner cannot see.
       - name: Check every learned store has a tab in the list window

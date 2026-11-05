@@ -808,7 +808,10 @@ Radius einer Flächenheilung um den Wirkenden. Eine gezielte Flächenheilung wie
 Notfallheilung und Klasse 1 bleiben, wie sie sind: Ein Mitglied, bei dem weniger ankommt, braucht mehr Heilung, nicht
 später (`StatusHelper`, Abgrenzung zu `HealingIneffectiveStatus`).
 - *Welche Status:* Jeder, dessen Wirktext im Statusblatt sagt, dass die LP-Erholung sinkt oder aufgehoben ist („HP
-  recovery … reduced", „reducing HP recovery", „nullified"), beim ersten Gebrauch aus dem Blatt gelesen. Die Blätter
+  recovery … reduced", „reducing HP recovery", „nullified"), beim ersten Gebrauch aus dem Blatt gelesen – aus dem
+  englischen, gleich welche Sprache der Client spricht. Ohne Angabe liefert Dalamud die Sprache des Clients; mit seinem
+  deutschen Client fand die erste Fassung keinen Status, und die Flächenheilung zählte jeden Träger ganz (A547;
+  `check_sheet_language.py` hält das in der CI). Die Blätter
   nennen über 30 solcher Status, die meisten ohne Stärke (Heilung -, Infirmity, Healing Magic Down, Biolysis …); die
   Stärke misst RSR selbst.
 - *Messung* (Effekt-Handler, je eigener Heilung auf mehrere): Was beim Träger ankommt, geteilt durch die kleinste Menge,
