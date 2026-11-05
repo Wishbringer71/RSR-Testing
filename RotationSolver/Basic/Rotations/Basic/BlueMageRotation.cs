@@ -413,8 +413,12 @@ public partial class BlueMageRotation
 	{
 		var player = Player;
 		var manager = FFXIVClientStructs.FFXIV.Client.Game.ActionManager.Instance();
+		// Not between areas: the slots are read only in a valid frame, and a write during the load would land on a set the
+		// game is still replacing (A576 calls this every frame, RSR on or off).
 		if (DataCenter.InCombat || player == null || player.IsDead || player.IsCasting || player.TargetObject != null
-			|| manager == null || manager->ActionQueued || WeaponTotal <= 0f)
+			|| manager == null || manager->ActionQueued || WeaponTotal <= 0f
+			|| ECommons.DalamudServices.Svc.Condition[Dalamud.Game.ClientState.Conditions.ConditionFlag.BetweenAreas]
+			|| ECommons.DalamudServices.Svc.Condition[Dalamud.Game.ClientState.Conditions.ConditionFlag.BetweenAreas51])
 		{
 			return;
 		}

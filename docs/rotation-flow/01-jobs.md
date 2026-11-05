@@ -708,7 +708,8 @@ statt Reihenfolge" und „Mondflöte"):
   - Jede Änderung steht im `DefenseTrace.log` mit Platz, altem und neuem Zauber und Grund.
 - *Option* „Improve the Blue Mage set from your learned spells" in der Rotation, ab Werk an (seine Vorgabe „nutze alle
   gelernten spells optimal aus"). Seine gespeicherten Sets im Zauberbuch bleiben; ein Klick stellt sein Set wieder her.
-  Die Hotbar bleibt unberührt.
+  Die Hotbar bleibt unberührt. Die Verbesserung läuft auch bei ausgeschaltetem RSR; bis A576 lief sie nur in den 30 s
+  nach einem Kampf, bevor RSR sich abschaltete (Konzept 03, „Vierte Invariante").
 - *Bedrohung:* Ein Absturz beim Schreiben. Dagegen: der im Betrieb erprobte Weg, nur außerhalb des Kampfes, ein Platz je
   Frame, Rücklesen. Ob das Spiel einen Platz mit einem abklingenden Zauber ablehnt oder den Zauber verwirft, ist nicht
   belegt; RSR überschreibt einen solchen Platz nicht.
@@ -1060,7 +1061,9 @@ eingearbeitet werden, situationsbezogen"; A487, A488, A522):
   hilfreichsten, also wie daedalus. aber wenn man zum boss kommt, vor kampfbeginn, wechsel auf eine kombination für
   bosse/einzelgegener. zwischen den trashmob-kämpfen feststellung ob eher schutz oder dmg benötigt wird, bzw. heilung.
   wechsel wenn ausserhalb des aggrobereiches"; Option „Set the battlehorns between fights for the next one", ab Werk an):
-  - *Wann:* nur außerhalb des Kampfes. „Außerhalb des Aggrobereichs" heißt für den Server: nicht im Kampf (oben). RSR
+  - *Wann:* nur außerhalb des Kampfes. „Außerhalb des Aggrobereichs" heißt für den Server: nicht im Kampf (oben). Auch
+    bei ausgeschaltetem RSR, solange die Gegnerliste gebaut wird (automatischer Start an); ohne sie sieht die Wahl den
+    nächsten Gegner nicht und wartet (A576, Konzept 03, „Vierte Invariante"). RSR
     plant neu, sobald sich ändert, was die Wahl liest – ein Kampf endet, ein anderer Gegner wird zum nächsten, ein Boss
     taucht auf, Gebiet, Stufe oder Hörner wechseln –, und schickt eine Zuweisung nur, wenn die beste Belegung von der
     stehenden abweicht. Nicht beim Wirken, nicht tot, nicht ohne geladene Begleiterliste oder Katalog, nicht im Crucible:
@@ -2269,7 +2272,12 @@ on a pack once a fight, all of them in the final fight (Crucible only)".
 
 **Stufe 4: K6, Hörner im Hornfenster** (A561, A562, gebaut):
 - *Wann:* Das Hornfenster ist offen (`AgentXBMPetParty` aktiv, `Mode` 2), außerhalb des Kampfes, die Einstellung „Set
-  the battlehorns between fights for the next one" (B5) ist an; ihr Text nennt das Crucible jetzt.
+  the battlehorns between fights for the next one" (B5) ist an; ihr Text nennt das Crucible jetzt. Ob RSR an ist, zählt
+  nicht: Bis A576 lief die Wahl nur bei eingeschaltetem RSR, und RSR war vor dem Hornfenster stets schon aus (30 s nach
+  dem Kampf, Gebietswechsel); die Hörner blieben, wie sie standen (seine Meldung, 05.11.2026). Dasselbe galt für K7, die
+  Rast und den Laden; alle laufen jetzt als Dienst außerhalb des Kampfes (Konzept 03, „Vierte Invariante").
+- *Spur:* Kann RSR im offenen Hornfenster den anstehenden Kampf oder den Kader nicht lesen, schreibt es einmal je
+  Fenster „Crucible horn screen: … not readable"; die Hörner bleiben dann, wie sie stehen.
 - *Eingaben:* der Kader in Fensterreihenfolge mit LP (`SelectedPets`, `PetCurrentHealth`, `PetMaxHealth`), die gewählten
   Plätze in Hornreihenfolge (`SelectedPetIds`), der anstehende Kampf (erste Kampfzeile der Feldliste, Art 3) und aus
   `CrucibleBoard` dessen Gegner mit Schwäche, ihre Zahl und ob es der Endkampf ist.

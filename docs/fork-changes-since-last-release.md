@@ -169,6 +169,14 @@ What this release changes in the fight. For the whole distance from upstream, se
   there. The familiar out keeps its horn, horns you changed yourself stay until the next fight ends,
   and nothing changes while the Bestiary is open or in the Crucible. `DefenseTrace.log` names every
   plan and whether the server took it.
+- **Between fights, RSR works with RSR off.** The horns on a Crucible board's horn screen, the team
+  recommendation, the campsite and shop windows, the horns between fights and the Blue Mage set
+  improvement ran only while RSR was on - and RSR turns itself off 30 s after a fight, on an area change
+  and in cutscenes, so on a board none of them ever ran. They now run every frame you are loaded, on or
+  off, each under its own setting; the horns between fights outside the Crucible need the target lists,
+  which RSR builds while it is on or an automatic start is set. Opening the horn screen writes to
+  `DefenseTrace.log` whether RSR was on and which game states were set, and the horn screen says when it
+  cannot read the coming battle or the team.
 - **Capture comes first and is sure to land.** A pact needs the enemy to fall marked, and the mark
   arrives about 0.6 s after Capture goes off. Capture now comes before every other weaponskill as soon
   as waiting one more could let the enemy fall before that mark arrives - judged by the largest drop in

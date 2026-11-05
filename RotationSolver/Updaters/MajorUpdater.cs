@@ -56,6 +56,8 @@ internal static class MajorUpdater
 		{
 			UpdateCost.Step("invalid");
 			Run("RSRInvalidUpdate", InvalidUpdate);
+			DataCenter.HostileListLive = false;
+			Run("RotationServices", RotationServices);
 			return;
 		}
 
@@ -66,6 +68,9 @@ internal static class MajorUpdater
 		var isActivated = DataCenter.IsActivated();
 		ActivatedCoreUpdate(isActivated);
 		ActivatedHighlightUpdate(isActivated);
+		// After the frame's lists are built, on or off (concept 03, "Vierte Invariante", A576).
+		UpdateCost.Step("rotation services");
+		Run("RotationServices", RotationServices);
 		UpdateCost.Step("common");
 		CommonUpdate();
 		UpdateCost.Step("cleanup");
@@ -124,6 +129,16 @@ internal static class MajorUpdater
 		}
 	}
 
+	// A576: the rotation's services, every frame the player is loaded - RSR on or off, between areas too, where the Crucible's
+	// screens may open. Each service guards what it needs itself.
+	private static void RotationServices()
+	{
+		if (Player.Available && DataCenter.CurrentRotation is CustomRotation rotation)
+		{
+			rotation.InvokeServices();
+		}
+	}
+
 	private static void InvalidUpdate()
 	{
 		if (Svc.Condition[ConditionFlag.BetweenAreas])
@@ -144,6 +159,7 @@ internal static class MajorUpdater
 			|| Service.Config.StartOnPartyIsInCombat2) && !DataCenter.IsInDutyReplay();
 
 		UpdateCost.Step("targets");
+		DataCenter.HostileListLive = autoOnEnabled || isActivated;
 		if (autoOnEnabled || isActivated)
 		{
 			Run("(RSRActivatedCore): TargetUpdater.UpdateTargets", TargetUpdater.UpdateTargets);

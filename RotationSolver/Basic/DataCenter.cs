@@ -74,6 +74,14 @@ internal static class DataCenter
 	public static List<IBattleChara> AllHostileTargets { get; set; } = [];
 
 	/// <summary>
+	/// Whether <see cref="AllHostileTargets"/> and the other target lists were built in this frame: while RSR is on or an
+	/// automatic start is set (<c>MajorUpdater</c>). Off, the lists keep the objects of the last frame they were built in,
+	/// and those are not valid any more (concept 03, "Dritte Invariante"). A rotation service that reads them asks this
+	/// first (A576).
+	/// </summary>
+	public static bool HostileListLive { get; internal set; }
+
+	/// <summary>
 	/// The enemies whose casts the cast recognition reads: <see cref="AllHostileTargets"/>, and the untargetable
 	/// enemies - the helpers that resolve many raidwides, tankbusters and knockbacks, a boss off the field - while
 	/// they cast an action on the area list (A277) or on the tankbuster or knockback list, or a tankbuster the

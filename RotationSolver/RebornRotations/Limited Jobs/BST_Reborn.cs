@@ -1042,28 +1042,45 @@ public sealed class BST_Reborn : BeastmasterRotation
 	{
 		base.UpdateInfo();
 
-		// B5 (A522): the judgement of a sent assignment every frame, in combat or not; what the fights here showed; a change
-		// by hand; then, out of combat, the horns for the next fight.
-		_ = BattlehornAssignmentPending;
 		// A2 (A523): the mark of Capture, its landing and the pact, followed while Capture is on.
 		if (CaptureFamiliars)
 		{
 			WatchCapture();
 		}
 
-		// Stage 1 of the Crucible (A548): the fight in progress from the sheets, for K2.
-		FollowCrucible();
 		FollowFamiliarHits();
 		if ((UseCrucibleSafetyItems || UseCrucibleDamageItems) && DataCenter.State)
 		{
 			UseCrucibleItems(Service.Config.UseHpPotionsPercent, _familiarLargestHit, UseCrucibleSafetyItems, UseCrucibleDamageItems);
 		}
-		RecordFight();
 		CountFight();
+	}
+
+	// A576: what happens between fights, RSR on or off - "Turn off after combat ends" turned RSR off 30 s after each fight,
+	// and the Crucible's horn screen, team screen, campsite and shop came later; none of them ran (his report, 05.11.2026).
+	protected override void UpdateServices()
+	{
+		base.UpdateServices();
+
+		// B5 (A522): the judgement of a sent assignment every frame, in combat or not.
+		_ = BattlehornAssignmentPending;
+		// Stage 1 of the Crucible (A548) and what the fights here showed (B5): in a fight they read the hostile list, which
+		// is built only while RSR is on or an automatic start is set; out of a fight they follow the board and the area.
+		if (!InCombat || DataCenter.HostileListLive)
+		{
+			FollowCrucible();
+			RecordFight();
+		}
+
+		// A change by hand, then, out of combat, the horns for the next fight; B5 reads the next enemy from the hostile list.
 		WatchHand();
 		if (HornsBetweenFights)
 		{
-			AssignBetweenFights();
+			if (DataCenter.HostileListLive)
+			{
+				AssignBetweenFights();
+			}
+
 			SetHornsOnHornScreen();
 		}
 
@@ -1534,6 +1551,7 @@ public sealed class BST_Reborn : BeastmasterRotation
 	private DateTime _hornScreenClickAt;
 	private string _hornScreenSelection = string.Empty;
 	private string _hornScreenTraced = string.Empty;
+	private bool _hornScreenUnreadable;
 
 	private unsafe void SetHornsOnHornScreen()
 	{
@@ -1544,6 +1562,7 @@ public sealed class BST_Reborn : BeastmasterRotation
 			_hornScreenHeldByHand = false;
 			_hornScreenClicks = 0;
 			_hornScreenSelection = string.Empty;
+			_hornScreenUnreadable = false;
 			return;
 		}
 
@@ -1574,6 +1593,13 @@ public sealed class BST_Reborn : BeastmasterRotation
 		var battle = CrucibleBoard.UpcomingBattle();
 		if (battle == 0 || team.Length == 0)
 		{
+			// A576: once per screen, so a horn screen RSR leaves alone says why.
+			if (!_hornScreenUnreadable)
+			{
+				_hornScreenUnreadable = true;
+				TraceHorn($"Crucible horn screen: {(battle == 0 ? "the battle about to start" : "the team")} not readable - horns left as they are");
+			}
+
 			return;
 		}
 

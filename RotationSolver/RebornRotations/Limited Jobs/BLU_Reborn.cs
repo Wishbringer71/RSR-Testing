@@ -48,9 +48,10 @@ public sealed class BLU_Reborn : BlueMageRotation
 	public float MPGainNeed { get; set; } = 5000;
 
 	/// <inheritdoc/>
-	protected override void UpdateInfo()
+	// A576: out of combat whether RSR is on or not - before, only in the 30 s after a fight until RSR turned itself off.
+	protected override void UpdateServices()
 	{
-		base.UpdateInfo();
+		base.UpdateServices();
 		if (ImproveBlueMageSet)
 		{
 			ImproveActiveSet();

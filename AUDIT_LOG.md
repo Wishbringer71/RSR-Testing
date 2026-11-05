@@ -16943,6 +16943,44 @@ habe den schleim bislang nicht anfreunden können."
 - *Ergebnis:* Daedalus ist für Sicherheit ausgewertet (A561, A570 bis A575); weiter mit den übrigen Rotationswerkzeugen.
 - *Prüfgrad:* Quelltext und Changelog gelesen; kein Code geändert.
 
+### A576 · Dienste außerhalb des Kampfes hingen am Zustand von RSR: keine Hornwahl im Brett (05.11.2026)
+
+- *Anlass:* Seine Meldung vom 05.11.2026 (Defekt): „beim brettaufbau werden die hörner nicht ausgewählt und auch keine
+  vorschläge gemacht vor dem kampf"; dann am zweiten Kampf des ersten Bretts: „auch wieder keine auswahl der begleiter.
+  diesmal klappt auch ein/aus von rsr nicht".
+- *Ursache (am Code belegt):* Hornwahl (K6), Teamempfehlung (K7), Rast und Laden (K10), die Brett-Verfolgung und B5 liefen
+  in `BST_Reborn.UpdateInfo`, die Setverbesserung des Blaumagiers in `BLU_Reborn.UpdateInfo`. `UpdateInfo` ruft nur
+  `TryInvoke`, und `MajorUpdater` ruft das nur, solange RSR an ist (`DataCenter.IsActivated`). RSR schaltet sich ab Werk
+  30 s nach dem Kampf ab („Turn off after combat ends", `ActionUpdater.UpdateCombatInfo`), beim Gebietswechsel und in
+  Zwischensequenzen (`RSCommands.UpdateRotationState`); beim Gebietswechsel läuft der Rahmen gar nicht
+  (`MajorUpdater.IsValid`). Dass sich RSR im Hornfenster nicht einschalten ließ, zeigt einen solchen Zustand, der es in
+  jedem Frame wieder abschaltet; welcher, ist nicht belegt.
+- *Klasse:* alle `UpdateInfo`-Überschreibungen erhoben (DRK, BST, BLU); Dienste ohne Kampfaktion haben nur BST und BLU.
+- *Behebung:* `CustomRotation.UpdateServices` (geschützt, virtuell) und `InvokeServices`; `MajorUpdater` ruft sie in jedem
+  Frame mit geladener Spielfigur, im gültigen Frame nach dem Bau der Listen, im ungültigen nach `InvalidUpdate`.
+  `DataCenter.HostileListLive` sagt, ob die Listen in diesem Frame gebaut sind. BST: Bewertung einer gesendeten
+  Zuweisung, Brett-Verfolgung und Kampfaufzeichnung (im Kampf nur mit lebender Liste), Handänderung, B5 (nur mit
+  lebender Liste), K6, K7, Rast, Laden wandern aus `UpdateInfo` in `UpdateServices`. BLU: die Setverbesserung, mit
+  eigener Sperre beim Gebietswechsel. K6 schreibt einmal je Fenster, wenn es Kampf oder Kader nicht lesen kann; die
+  Sondenzeile beim Öffnen des Hornfensters nennt den Zustand von RSR und die gesetzten Zustände des Spiels.
+- *Verworfen:* RSR im Crucible nicht abschalten – widerspricht den Texten von „Turn off after combat ends" und den
+  übrigen Abschaltern; RSR beim Hornfenster selbst einschalten – ein Zustandswechsel, den der Spieler nicht verlangt hat,
+  und der Abschalter nimmt ihn im nächsten Frame zurück.
+- *Gegenthesen:* Konzept 03, „Vierte Invariante" (wer RSR ausschaltet, will keine Eingriffe; doppelte Ausführung; ein
+  Frame Versatz).
+- *Falsifikation:* Kein Defekt – widerlegt am Code: Ohne eingeschaltetes RSR erreicht kein Pfad die Hornwahl. Option
+  falsch – RSR an zu halten, scheitert am Zustand, der es abschaltet (seine zweite Meldung). Ausgeliefert, und nichts
+  ändert sich: wenn K6 selbst scheitert (anstehender Kampf oder Kader nicht lesbar, Rückruf nicht angenommen) – dann
+  steht die neue Zeile „not readable" oder „gave up after … clicks" in der Spur, und die Sondenzeile nennt die Zustände.
+- *Wirkung im Kampf:* Vor jedem Kampf im Brett stehen die Begleiter für diesen Kampf auf den Hörnern, das Teamfenster
+  zeigt seine Empfehlung, Rast und Laden ihre; der Blaumagier bekommt sein Set auch später als 30 s nach dem Kampf; B5
+  setzt die Boss-Belegung im Dungeon auch bei ausgeschaltetem RSR, sofern die Gegnerliste gebaut wird (automatischer
+  Start an). *Bleibt:* Ohne automatischen Start sieht B5 bei ausgeschaltetem RSR den nächsten Gegner nicht.
+- *Betroffene:* Endnutzer; Autoren abgeleiteter Rotationen erhalten `UpdateServices` (neu, öffentliche Schnittstelle,
+  nicht brechend).
+- *Prüfgrad:* statisch, Compile ohne Warnung, Prüfskripte. Im Spiel nicht beobachtet; die Sondenzeile „crucible agents
+  (horn screen open) … | RSR …, conditions …" und die K6-Zeilen zeigen es.
+
 ## B · Commit-Register (Fork vs. `upstream/main`)
 
 ### B1 · Einzelgeprüfte Fork-Commits

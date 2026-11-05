@@ -550,7 +550,30 @@ internal static class CrucibleBoard
 				+ $"battles {string.Join(" ", battles)}, selected {string.Join(" ", selected)}";
 		}
 
-		DefenseTrace.Line($"crucible agents ({when}): {team} | {field}");
+		DefenseTrace.Line($"crucible agents ({when}): {team} | {field} | {StateAndConditions()}");
+	}
+
+	// A576: whether RSR was on and which of the game's states that turn it off or end its update were set - his report of
+	// 05.11.2026 that turning RSR on at the horn screen did not stay.
+	private static string StateAndConditions()
+	{
+		var flags = new List<string>();
+		foreach (var flag in (ReadOnlySpan<Dalamud.Game.ClientState.Conditions.ConditionFlag>)[
+			Dalamud.Game.ClientState.Conditions.ConditionFlag.BetweenAreas,
+			Dalamud.Game.ClientState.Conditions.ConditionFlag.BetweenAreas51,
+			Dalamud.Game.ClientState.Conditions.ConditionFlag.OccupiedInCutSceneEvent,
+			Dalamud.Game.ClientState.Conditions.ConditionFlag.WatchingCutscene,
+			Dalamud.Game.ClientState.Conditions.ConditionFlag.OccupiedInEvent,
+			Dalamud.Game.ClientState.Conditions.ConditionFlag.OccupiedInQuestEvent,
+			Dalamud.Game.ClientState.Conditions.ConditionFlag.Occupied])
+		{
+			if (Svc.Condition[flag])
+			{
+				flags.Add(flag.ToString());
+			}
+		}
+
+		return $"RSR {(DataCenter.IsActivated() ? "on" : "off")}, conditions {(flags.Count == 0 ? "none of the blocking ones" : string.Join(" ", flags))}";
 	}
 
 	// K4 probe (A557): per target the last action of the player's side on it, the kinds of its entries, and when.

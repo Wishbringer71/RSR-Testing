@@ -1,4 +1,5 @@
 ﻿using ECommons.DalamudServices;
+using ECommons.Logging;
 using ECommons.ExcelServices;
 using Lumina.Excel.Sheets;
 
@@ -188,6 +189,42 @@ public partial class CustomRotation : ICustomRotation
 	/// Updates the custom fields.
 	/// </summary>
 	protected virtual void UpdateInfo() { }
+
+	/// <summary>
+	/// Services outside the rotation, called every frame the player is loaded - whether RSR is on or off, in an area
+	/// transition and in a cutscene too, after the frame's lists are built. For what chooses no combat action: reading and
+	/// operating the game's own windows, preparing a recommendation, setting things up between fights, each under its own
+	/// setting. <see cref="UpdateInfo"/> runs only while RSR is on, and RSR turns itself off 30 s after a fight by default,
+	/// on an area change and in cutscenes - exactly when these are needed (concept 03, "Vierte Invariante", A576). A
+	/// service guards itself: it reads the hostile lists only when <see cref="DataCenter.HostileListLive"/>, and acts on
+	/// the game only where the state it needs is there. Each service belongs here or in <see cref="UpdateInfo"/>, not both.
+	/// </summary>
+	protected virtual void UpdateServices() { }
+
+	private bool _servicesFailed;
+
+	/// <summary>Calls <see cref="UpdateServices"/> for an enabled rotation; a failure is logged once and stops nothing else.</summary>
+	internal void InvokeServices()
+	{
+		if (!IsEnabled)
+		{
+			return;
+		}
+
+		try
+		{
+			UpdateServices();
+			_servicesFailed = false;
+		}
+		catch (Exception ex)
+		{
+			if (!_servicesFailed)
+			{
+				_servicesFailed = true;
+				PluginLog.Error($"{GetType().Name}.UpdateServices failed: {ex}");
+			}
+		}
+	}
 
 	/// <summary>
 	///
