@@ -1309,12 +1309,15 @@ Beastmaster noch, nicht alle Fähigkeiten stehen am Anfang zur Verfügung.
     Schlag des Zyklus, und die 15 s Abklingzeit sperrten die nächste. Preis: Das nächste Horn kommt bis zu 45 s später,
     mit ihm sein Entfesseln oder Borrow, und die Abklingzeit des gehaltenen Horns beginnt erst mit seinem Rückzug. In
     der Gefahr galt das schon (B2).
-  - *Offen (TODO „Beastmaster: Crucible-Strategien", K9):* ob die Einstellung ab Werk an gehört. Für
-    an spricht: Ohne Tank greift der Gegner nur dich an, und die LP der Begleiter sind ein zweiter Vorrat. Dagegen,
-    nicht widerlegt: LP bleiben über das ganze Brett stehen (gemessen 04.11.2026: dieselben LP eines Begleiters zu
-    Beginn des nächsten Kampfes), die Campsite heilt dich allein um 90 %, mit einem Begleiter je 45 %, mit zweien je
-    30 % (consolegameswiki) – verteilter Schaden kostet dort Heilung –, und ein gefallener Begleiter fehlt bis zum Horn der
-    Rückkehr.
+  - *Ab Werk an (K9, A550):* Ohne Tank greift der Gegner nur dich an. Fällst du, ist der Lauf verloren, fällt ein
+    Begleiter, fehlt nur er bis zum Horn der Rückkehr. Die LP der Begleiter sind also ein zweiter Vorrat, und Sicherheit
+    geht vor (CLAUDE.md, „Spielweise"). Der Preis bleibt: LP bleiben über das ganze Brett stehen (gemessen 04.11.2026),
+    und die Campsite heilt dich allein um 90 %, mit einem Begleiter je 45 %, mit zweien je 30 % (consolegameswiki).
+    Verteilter Schaden kostet dort also Heilung.
+  - *Provozieren am größten Treffer (K9, A550):* Zusätzlich zu den Schwellen holt Provozieren den Schaden zurück, sobald
+    der Begleiter nicht mehr LP hält als der größte Treffer, den ein Begleiter in diesem Kampf nahm. Gemessen wird er als
+    größter Fall seiner LP von einem Bild zum nächsten; mehrere Treffer im selben Bild zählen zusammen, also eher zu groß.
+    So fällt er nicht am nächsten solchen Treffer. Unter deiner LP-Untergrenze trägt er weiter alles.
 - *Schwächen der Gegner:* keine Datenquelle. Was es gibt, sind die Schwächungen, die ein Begleiter selbst legt.
 
 *Der Zyklus:* Ein Ruf gibt One with Nature, das Horn verbraucht es nach seiner Einstellung für Entfesseln oder Borrow
@@ -1864,7 +1867,8 @@ Dullahan, Golem, Spriggan und Eisgolem (`XBMPet.InflictsInterrupt`).
   gerufenen Gegner (K2) oder ein Rudel – so hat er es am 04.11.2026 um 19:04 selbst getan. *Gegenthese:* Gegenstände
   sind ein Vorrat für das ganze Brett. Teilweise: Sicherheitsgegenstände gehen nur in der Gefahr; Schadensgegenstände
   nur auf gerufene Gegner oder vor dem Endgegner. Der Punktezuschlag ohne Gegenstände steht dagegen: Option.
-- *K9 – Feindseligkeit (Zähnefletschen, Provozieren).* Neu belegt (Wiki): Hält der Begleiter die Feindseligkeit, trägt er
+- *K9 – Feindseligkeit (Zähnefletschen, Provozieren).* Gebaut (A550; oben, „Tanken"): ab Werk an, Provozieren dazu am
+  größten Treffer des Kampfs. Neu belegt (Wiki): Hält der Begleiter die Feindseligkeit, trägt er
   die Schwächungen vermeidbarer Flächen und nimmt aus ihnen keinen Schaden. Zähnefletschen schützt dich also auch dort,
   wo du nicht ausweichst. *Gegenthese:* Seine LP bleiben über das Brett stehen, ein gefallener fehlt. Teilweise:
   Provozieren vor seinem Fall (am größten bisher gesehenen Treffer, nicht an festen 30 %) hält ihn; die Campsite heilt
@@ -1897,6 +1901,12 @@ Dullahan, Golem, Spriggan und Eisgolem (`XBMPet.InflictsInterrupt`).
   (`AgentXBMStageDetailList`, Werkzeugquelle); ob es lesbar ist, zeigt die Umsetzung, sonst gilt der Plan für alle
   Kämpfe des Bretts. *Ergebnis:* K11 ist die Planungsebene über K6, K7, K8, K9 und K10; sie alle lesen dieselbe
   Bedarfsliste.
+  *Stand der Umsetzung (A550):* Die Kämpfe je Brett liefert das Blatt (`XBMContentBattle`: Zeile je Brett 1 bis 5 mit 6,
+  7, 8, 10 und 14 Kämpfen, Unterzeile je Kampf mit Verweis auf `XBMBattleDetail`). Zwei Größen liefert das Spiel zur
+  Laufzeit nicht: den Kader und das Feld. FFXIVClientStructs (aad0de6, 05.11.2026, Werkzeugquelle) führt im Brett nur
+  das Inventar und `UseItem`; die Fenster des Kaders und des Wegs stehen nur in fremden Plugins mit eigenen Offsets.
+  Ohne Kader ist „der einzige Begleiter, der …" nicht bestimmbar, ohne Feld nicht, welche Kämpfe noch kommen. Die
+  Planungsregel ist deshalb nicht gebaut; wie diese Größen zu gewinnen sind, prüft ein eigener Loop am Ende des TODO.
 
 *Falsifikation:* Kein Defekt, weil das erste Brett zweimal ohne Tod fiel? Das gelang mit Gegenständen und Zähnefletschen
 von seiner Hand; die Meisterbretter haben Rang 20 und 25 und Gegner ohne Schwäche. Option falsch? K1 ohne gemessenen

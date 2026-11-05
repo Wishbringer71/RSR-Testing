@@ -12,8 +12,8 @@ Nach der Wirkung im Kampf: Sicherheit der Gruppe vor Schaden, gewichtet mit der 
 
 1. Allein ohne Heiler kommt kein Heiltrank: RSR stand 13 s in der kritischen Klasse ohne Heilfähigkeit, kein Trank
    von RSR trotz eingeschalteter Option, er drückte ihn bei 6 % selbst und starb (Beastmaster, Sägerschrei, 04.11.2026).
-2. Beastmaster: Crucible-Strategien: Ein K.O. beendet den Lauf, und ohne Zähnefletschen und Brett-Gegenstände von RSR
-   trägst du jeden Treffer selbst; ein Begleiter, den ein späterer Kampf braucht, kommt dort mit den LP an, die ihm die
+2. Beastmaster: Crucible-Strategien: Ein K.O. beendet den Lauf, und ohne Brett-Gegenstände von RSR fehlt dir jede
+   Heilung außer der der Begleiter; ein Begleiter, den ein späterer Kampf braucht, kommt dort mit den LP an, die ihm die
    früheren ließen.
 3. Beastmaster: Brechende Welle als Schaden: mit einem Wavekin auf dem Borgen-Horn ein Schadens-GCD, der nie kommt.
 4. Fremde Repositories auf Verbesserungen für RSR prüfen: Jeder Fund kann ein Defekt im Verhalten einer Klasse sein,
@@ -53,11 +53,10 @@ nach der Gefahr statt nach der festen Schwelle, für alle Jobs. *Konzept:* 03 (�
 Arzneien"), 07.
 
 ### Beastmaster: Crucible-Strategien · N
-Im Kampf: Fällst du im Brett, ist der Lauf verloren; RSR setzt Zähnefletschen ab Werk nicht ein (Upstream-Einstellung
-aus), keinen Brett-Gegenstand, und plant die Begleiter nicht über das Brett: Ein Heiler, der im vierten Kampf gebraucht
+Im Kampf: Fällst du im Brett, ist der Lauf verloren; RSR setzt keinen Brett-Gegenstand ein und plant die Begleiter nicht über das Brett: Ein Heiler, der im vierten Kampf gebraucht
 wird, kann bis dahin auf 25 von 550 LP gefallen sein (04.11.2026). *Ort:* `BST_Reborn` (B3, Zyklus, `FamiliarTankSwapAbility`), neu: Lesen der XBM-Blätter zur Laufzeit,
 `InstanceContentCrucibleOfTheUnbroken.UseItem`. Gebaut: Stufe 1 (A548, A549: Daten zur Laufzeit, K1, K2, K3 ohne den
-Bedarf der Begleiter). *Nächster Schritt:* K11 (Begleiter über das Brett planen: Bedarfsliste je Kampf, LP und Schaden je Einsatz) mit K9 (Zähnefletschen ab Werk, Provozieren am größten Treffer), K8 (Gegenstände, Sicherheit
+Bedarf der Begleiter); K9 (A550: Zähnefletschen ab Werk, Provozieren am größten Treffer). *Nächster Schritt:* K11 (Begleiter über das Brett planen; Kader und Feld liefert das Spiel nicht, Loop am Ende des TODO), K8 (Gegenstände, Sicherheit
 zuerst), K6 (Hörner vor dem Kampf; zuerst messen, ob der Server im Brett zuweist) und K7 (Kader auf Wunsch über das
 Teamfenster); danach K4, K5 und K10 (Campsite, Laden, Weg, im eigenen Loop). *Konzept:* 01, „Crucible of the Unbroken: Bretter, Kämpfe, Strategien".
 

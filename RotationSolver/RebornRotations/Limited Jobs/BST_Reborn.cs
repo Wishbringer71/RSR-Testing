@@ -71,9 +71,13 @@ public sealed class BST_Reborn : BeastmasterRotation
 			+ "Off: Capture and Gauge are never used.")]
 	private bool CaptureFamiliars { get; set; } = true;
 
+	// K9 of the Crucible (concept 01, A550): on by default. Without a tank the enemies attack only you, and your fall ends the
+	// run; the familiar's HP are a second store, and a fallen familiar costs that familiar, not the run.
 	[RotationConfig(CombatType.PvE, Name = "Use Snarl and Challenge based on your HP and your familiar's HP (Crucible only)",
-		Tooltip = "Off: Snarl is never used.\nOn: Snarl gives your damage to the familiar and Challenge takes it back, based on the settings below. If one of you has to die, it will be the familiar.")]
-	private bool FamiliarTankSwap { get; set; } = false;
+		Tooltip = "Off: Snarl is never used.\nOn: Snarl gives your damage to the familiar and Challenge takes it back, based on the settings below, "
+			+ "and also as soon as the familiar holds no more HP than the largest hit it has taken in this fight - the next one "
+			+ "could fell it. If one of you has to die, it will be the familiar.")]
+	private bool FamiliarTankSwap { get; set; } = true;
 
 	[RotationConfig(CombatType.PvE, Name = "Only use Snarl and Challenge on Last Horn", Parent = nameof(FamiliarTankSwap))]
 	private bool LasthornOnly { get; set; } = true;
@@ -154,6 +158,36 @@ public sealed class BST_Reborn : BeastmasterRotation
 		return base.EmergencyAbility(nextGCD, out act);
 	}
 
+	// K9 (A550): the largest drop of the familiar's HP from one frame to the next in this fight - a hit, or several landing
+	// together, which errs on the safe side; and the familiar and its HP the frame before.
+	private static uint _familiarLargestHit;
+	private static ulong _familiarWatched;
+	private static uint _familiarLastHp;
+
+	private static void FollowFamiliarHits()
+	{
+		var familiar = Familiar;
+		if (!InCombat || familiar == null)
+		{
+			if (!InCombat)
+			{
+				_familiarLargestHit = 0u;
+			}
+
+			_familiarWatched = 0;
+			return;
+		}
+
+		var hp = familiar.CurrentHp;
+		if (_familiarWatched == familiar.GameObjectId && hp < _familiarLastHp)
+		{
+			_familiarLargestHit = Math.Max(_familiarLargestHit, _familiarLastHp - hp);
+		}
+
+		_familiarWatched = familiar.GameObjectId;
+		_familiarLastHp = hp;
+	}
+
 	private bool FamiliarTankSwapAbility(out IAction? act)
 	{
 		act = null;
@@ -183,6 +217,15 @@ public sealed class BST_Reborn : BeastmasterRotation
 			shouldChallenge = !playerCritical && familiarHp <= ChallengeFamiliarHp;
 		}
 
+		// K9 (A550): the familiar would fall to the next hit as large as the largest it has taken in this fight - Challenge,
+		// unless your HP are at the floor, where the familiar takes everything.
+		var nextHitFells = !playerCritical && _familiarLargestHit > 0u && familiar!.CurrentHp <= _familiarLargestHit;
+		if (nextHitFells)
+		{
+			shouldSnarl = false;
+			shouldChallenge = true;
+		}
+
 		if (shouldSnarl)
 		{
 			if (SnarlPvE.CanUse(out act, skipTargetStatusNeedCheck: true))
@@ -195,6 +238,12 @@ public sealed class BST_Reborn : BeastmasterRotation
 		{
 			if (ChallengePvE.CanUse(out act))
 			{
+				if (nextHitFells)
+				{
+					TraceHorn($"Challenge: {CurrentPet} holds {familiar!.CurrentHp} HP, its largest hit in this fight took "
+						+ $"{_familiarLargestHit}");
+				}
+
 				return true;
 			}
 		}
@@ -947,6 +996,7 @@ public sealed class BST_Reborn : BeastmasterRotation
 
 		// Stage 1 of the Crucible (A548): the fight in progress from the sheets, for K2.
 		FollowCrucible();
+		FollowFamiliarHits();
 		RecordFight();
 		CountFight();
 		WatchHand();

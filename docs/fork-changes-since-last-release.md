@@ -185,6 +185,11 @@ What this release changes in the fight. For the whole distance from upstream, se
   weakness your damage hits counts as falling that much sooner. Before any enemy has hit, the board
   ranks enemies by the strength and intelligence the game rates them with, over their HP.
   `DefenseTrace.log` names the first measurement on each board.
+- **Snarl and Challenge are on by default (Crucible).** Without a tank the enemies attack only you,
+  and your fall ends the run, while a fallen familiar costs only that familiar. `Use Snarl and
+  Challenge based on your HP and your familiar's HP (Crucible only)` is now **on by default**, still on
+  the last horn only. Challenge now also takes the damage back as soon as the familiar holds no more
+  HP than the largest hit a familiar took in this fight, so the next such hit does not fell it.
 - **A familiar that covers you stays (Crucible).** After Snarl - pressed by you or by `Use Snarl and
   Challenge …` - the familiar takes all damage meant for you for 45 s. RSR no longer sends it off with
   Parting Blow, or with a Tempered Release after which it leaves, to call the next horn while that cover

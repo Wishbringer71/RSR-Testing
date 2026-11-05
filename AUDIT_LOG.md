@@ -16327,6 +16327,24 @@ habe den schleim bislang nicht anfreunden können."
 - *Prüfgrad:* Compile ohne Warnung, Prüfschritte; Wirkkette am Code. Im Spiel nicht beobachtet; Messmittel ist die Zeile
   „crucible: a hit on a weakness deals … more" je Brett, dazu die Zeilen aus A548.
 
+### A550 · Crucible, Stufe 2: Zähnefletschen ab Werk, Provozieren am größten Treffer (K9); K11 ohne Kader und Feld (05.11.2026)
+
+- *Auftrag:* `TODO.md`, „Beastmaster: Crucible-Strategien", Stufe 2 (K11 mit K9).
+- *K9, entschieden nach seiner Regel „Sicherheit vor Schaden":* „Use Snarl and Challenge …" ist jetzt ab Werk an.
+  Ohne Tank greift der Gegner nur ihn an, sein Fall beendet den Lauf, der Fall eines Begleiters kostet nur diesen.
+  - Antithesen geprüft: LP der Begleiter über das Brett und die geteilte Rast der Campsite (Preis, benannt); ein gefallener
+    Begleiter fehlt später (begrenzt durch Provozieren am größten Treffer und „Only use … on Last Horn", ab Werk an);
+    Upstreams Voreinstellung aus (kein Grund nach „Option und Beobachtbarkeit").
+  - Provozieren kommt zusätzlich, sobald der Begleiter nicht mehr LP hält als der größte Fall seiner LP von einem Bild
+    zum nächsten in diesem Kampf; der Optionstext nennt es.
+- *K11:* `XBMContentBattle` führt die Kämpfe je Brett (Zeilen 1 bis 5, xivapi Schema a1e24a0c). Kader und Feld liefert
+  das Spiel nicht: FFXIVClientStructs aad0de6 (05.11.2026) kennt im Brett nur Inventar und `UseItem`. Die Planungsregel
+  ist nicht gebaut; wie Kader und Feld zu gewinnen sind, prüft ein eigener Loop am Ende des TODO (seine Vorgabe vom
+  05.11.2026).
+- *Betroffene:* E – Beastmaster im Crucible mit Voreinstellungen: Zähnefletschen und Provozieren kommen jetzt ab Werk.
+- *Prüfgrad:* vollständiger Compile ohne Warnung (zwei Nullwarnungen beim ersten Lauf behoben), Prüfschritte; Wirkkette am
+  Code. Im Spiel nicht beobachtet; Spurzeile „Challenge: … its largest hit in this fight took …".
+
 ## B · Commit-Register (Fork vs. `upstream/main`)
 
 ### B1 · Einzelgeprüfte Fork-Commits
