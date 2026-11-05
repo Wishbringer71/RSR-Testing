@@ -377,9 +377,26 @@ public partial class BeastmasterRotation
 			slot = Protection(crucible, player, out why);
 		}
 
-		// 7: the same for the familiar when it would fall to a hit as large as its largest in this fight (K9's measure); in the
-		// final fight against any announced hit.
+		// 7, first (A577): heal the familiar when it would fall to a hit as large as its largest in this fight (K9's measure),
+		// before the first measured hit below his potion line as a share of its HP - with a Beast Potion ("to self or
+		// familiar"), never the last healing item: that one stays for him, his HP are the run.
 		var familiar = Familiar;
+		if (slot < 0 && InCombat && familiar != null && !familiar.IsDead && familiar.CurrentHp > 0 && familiar.MaxHp > 0
+			&& (familiarLargestHit > 0 ? familiar.CurrentHp <= familiarLargestHit : familiar.GetHealthRatio() < line)
+			&& HealItemsHeld(crucible) > 1)
+		{
+			var mark = familiarLargestHit > 0 ? Math.Min(1f, familiarLargestHit / (float)familiar.MaxHp) : line;
+			slot = BestHeal(crucible, familiar.GetHealthRatio(), mark, true);
+			if (slot >= 0)
+			{
+				on = familiar;
+				why = $"for {familiar.Name} at {familiar.CurrentHp} HP, "
+					+ (familiarLargestHit > 0 ? $"its largest hit this fight {familiarLargestHit}" : $"below {line:P0}");
+			}
+		}
+
+		// 7: the same protection for the familiar when it would fall to a hit as large as its largest in this fight (K9's
+		// measure); in the final fight against any announced hit.
 		if (slot < 0 && InCombat && familiar != null && !familiar.IsDead && familiar.CurrentHp > 0
 			&& DataCenter.IsTankbusterAimedAt(familiar)
 			&& (finalFight || (familiarLargestHit > 0 && familiar.CurrentHp <= familiarLargestHit)))
@@ -756,13 +773,15 @@ public partial class BeastmasterRotation
 
 	// The healing item that lifts the player to the line with the least, a potion before ash at the same heal; while none
 	// does, the largest.
-	private static unsafe int BestHeal(InstanceContentCrucibleOfTheUnbroken* crucible, float hp, float line)
+	private static unsafe int BestHeal(InstanceContentCrucibleOfTheUnbroken* crucible, float hp, float line, bool familiar = false)
 	{
 		var best = -1;
 		CrucibleItem bestItem = default;
 		for (var slot = 0; slot < crucible->Inventory.Length; slot++)
 		{
-			if (!TryItem(crucible, slot, CrucibleItemKind.Heal, out var item))
+			// For the familiar only what names it: Crucible Ash heals you and the allies near you, and the familiar stands at
+			// the enemy (A577).
+			if (!TryItem(crucible, slot, CrucibleItemKind.Heal, out var item) || (familiar && item.Allies))
 			{
 				continue;
 			}
@@ -780,6 +799,21 @@ public partial class BeastmasterRotation
 		}
 
 		return best;
+	}
+
+	// A577: the healing items held, any of them - the last one stays for the player.
+	private static unsafe int HealItemsHeld(InstanceContentCrucibleOfTheUnbroken* crucible)
+	{
+		var count = 0;
+		for (var slot = 0; slot < crucible->Inventory.Length; slot++)
+		{
+			if (TryItem(crucible, slot, CrucibleItemKind.Heal, out _))
+			{
+				count++;
+			}
+		}
+
+		return count;
 	}
 
 	private static unsafe int FirstOf(InstanceContentCrucibleOfTheUnbroken* crucible, CrucibleItemKind kind)

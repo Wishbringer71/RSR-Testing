@@ -243,8 +243,10 @@ What this release changes in the fight. For the whole distance from upstream, se
   poison or blindness on you; a Beastmaster Reraiser while no Reraise stands, the stronger first -
   only against a boss once Reraise is seen to go without a fall; Temporal Sand out of combat while no
   Sandstill stands; a Beast Potion Kit against a boss; against an announced hit on you the Tome of the
-  Impervious (physical), the Tome of Reflection (magic) or Crucible Tannin - the same for your
-  familiar when the hit could fell it; against the statuses the fight's enemies inflict that take
+  Impervious (physical), the Tome of Reflection (magic) or Crucible Tannin; for your familiar, when it
+  holds no more HP than the largest hit it took this fight, the Beast Potion that lifts it above that
+  with the least - never your last healing item, which stays for you - then the same protection when
+  the hit could fell it; against the statuses the fight's enemies inflict that take
   control from you or end in death (read from the board's sheets) the soul serum that names one, else a
   Beast Remedy Kit; against a hit on you whose cast carries an element the weakener of that element; a
   Crucible Needle for your petrified familiar; against a boss a Potion of Tempered Constitution. In the final fight, whose items are lost after the run, protection also goes

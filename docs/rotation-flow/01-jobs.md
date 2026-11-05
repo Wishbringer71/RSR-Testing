@@ -2210,9 +2210,22 @@ on a pack once a fight, all of them in the final fight (Crucible only)".
      physischen Treffer (`AttackType` 1 bis 4) das Grimoire der Unantastbarkeit, gegen einen magischen (5) das der
      Reflexion, sonst oder wenn es fehlt das Bestien-Verhärtungsmittel; nicht, solange Tough Skin, Blink oder Reflect
      auf dir steht.
-  7. Derselbe Schutz für deinen Begleiter gegen einen angekündigten Treffer auf ihn, wenn er nicht mehr LP hält als der
-     größte Treffer, den er in diesem Kampf nahm – dasselbe Maß, mit dem Provozieren dich zum Ziel macht (K9). Im
-     Endkampf gegen jeden angekündigten Treffer auf ihn.
+  7. Für deinen Begleiter zuerst Heilung (A577; seine Meldung vom 05.11.2026: im Kampf kein Gegenstand, der die Begleiter
+     heilt – die Einstellung verspricht „keep you and your familiar alive"): Hält er nicht mehr LP als der größte Treffer,
+     den er in diesem Kampf nahm (dasselbe Maß wie K9), vor dem ersten gemessenen Treffer unter „Use HP potions below
+     this HP" als Anteil seiner LP, der Bestien-Heiltrank („to self or familiar"), der ihn mit dem kleinsten Wert über
+     diese Marke hebt, sonst der größte. Das Bestien-Pulver nicht: Es heilt dich und die Verbündeten in deiner Nähe, und
+     der Begleiter steht am Gegner. Nie der letzte Heilgegenstand: Er bleibt dir, denn deine LP sind der Lauf, seine ein
+     Horn. Danach derselbe Schutz wie in 6 gegen einen angekündigten Treffer auf ihn, wenn er nicht mehr LP hält als
+     sein größter Treffer; im Endkampf gegen jeden angekündigten Treffer auf ihn.
+     *Gegenthese 1 (Vorrat):* Jeder Trank für ihn fehlt dir später. Widerlegt bis auf den Rest: Der letzte bleibt dir,
+     und Schritt 1 kommt vor diesem; es bleibt, dass ein früher Trank für ihn einem späteren Kampf fehlt, in dem du ihn
+     selbst bräuchtest – Preis: ein Trank je Fall, Wahrscheinlichkeit nach der Zahl der Kämpfe bis zum nächsten Laden.
+     *Gegenthese 2 (Dauerfeuer):* Trifft ein Gegner ihn ohne Pause, ginge Trank um Trank in ihn. Teilweise widerlegt: Ein
+     Trank hebt ihn über seinen größten Treffer, der nächste kommt erst, wenn er wieder darunter fällt; der letzte bleibt
+     dir; Provozieren (K9) nimmt ihm die Treffer am selben Maß.
+     *Gegenthese 3 (er fällt trotzdem):* Ein Treffer größer als jeder bisherige fällt ihn auch nach dem Trank. Nicht
+     widerlegt; das Maß lernt mit jedem Treffer dazu, und der Schutz danach greift bei angekündigten Treffern.
   8. Gegen die Zustände des Kampfes, sobald er erkannt ist und das Blatt für einen seiner Gegner einen gefährlichen
      Status führt: zuerst das Serum, dessen Text diesen Status nennt (je Status einmal im Kampf), sonst die
      Bestien-Heilmittelsammlung, solange kein Auto-remedy steht.

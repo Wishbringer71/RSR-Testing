@@ -16981,6 +16981,28 @@ habe den schleim bislang nicht anfreunden können."
 - *Prüfgrad:* statisch, Compile ohne Warnung, Prüfskripte. Im Spiel nicht beobachtet; die Sondenzeile „crucible agents
   (horn screen open) … | RSR …, conditions …" und die K6-Zeilen zeigen es.
 
+### A577 · Crucible K8: Heilgegenstände für den Begleiter (05.11.2026)
+
+- *Anlass:* Seine Meldung vom 05.11.2026 (Defekt), erstes Brett: „im kampf werden keine items zur heilung der begleiter
+  genutzt".
+- *Ursache (am Code belegt):* `UseCrucibleItems` heilte mit Gegenständen nur den Spieler (Schritt 1); für den Begleiter
+  gab es Schutz vor einem angekündigten Treffer (7) und die Goldnadel gegen Versteinerung (10). Die Einstellung heißt
+  „Use the board's items that keep you and your familiar alive"; der Name verspricht, was der Code nicht tat. Konzept 01
+  plante den Bestien-Heiltrank auf den Begleiter nur in K11 (zwischen den Kämpfen), nicht im Kampf.
+- *Behebung:* Schritt 7 heilt zuerst: Hält der Begleiter nicht mehr LP als sein größter Treffer in diesem Kampf (K9s Maß;
+  vorher seine Trankschwelle als Anteil der LP), der Bestien-Heiltrank, der ihn mit dem kleinsten Wert darüber hebt,
+  sonst der größte; nie das Bestien-Pulver (heilt dich und Verbündete in deiner Nähe), nie der letzte Heilgegenstand.
+  Danach der Schutz wie bisher. Optionstext erweitert.
+- *Gegenthesen:* Konzept 01, K8, Schritt 7 (Vorrat, Dauerfeuer, größerer Treffer).
+- *Falsifikation:* Kein Defekt – widerlegt am Code und am Text der Einstellung. Option falsch – die Alternative, den
+  Begleiter erst zwischen den Kämpfen zu heilen (K11), lässt ihn im Kampf fallen, wo er bis zum Horn der Rückkehr fehlt.
+  Ausgeliefert, und nichts ändert sich: wenn das Spiel den Trank über das Soft-Ziel nicht auf den Begleiter lenkt – dann
+  schreibt die Spur „not taken", und der Platz bleibt in diesem Kampf gesperrt; oder wenn er nur ein Heilmittel trägt.
+- *Wirkung im Kampf:* Ein Begleiter, den sein nächster Treffer fällen würde, bekommt einen Trank, solange du einen zweiten
+  hältst; er bleibt länger draußen und fehlt seltener im nächsten Kampf. *Preis:* ein Trank je Fall aus deinem Vorrat.
+- *Prüfgrad:* statisch, Compile ohne Warnung, Prüfskripte. Im Spiel nicht beobachtet; jede Verwendung steht als
+  „crucible item: … for <Begleiter> at … HP" in der Spur.
+
 ## B · Commit-Register (Fork vs. `upstream/main`)
 
 ### B1 · Einzelgeprüfte Fork-Commits
