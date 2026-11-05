@@ -16037,6 +16037,22 @@ habe den schleim bislang nicht anfreunden können."
   erreichten.
 - *Prüfgrad:* Mitschnitt und Blatt ausgewertet, kein Code; Stufe 1 im TODO.
 
+### A537 · „Wenigste LP zuerst": Erfüllt die Regel nach Schaden je Sekunde seinen Grund besser? Ja (05.11.2026)
+
+- *Anlass:* Seine Frage: „die entscheidung wenigste hp zuerst hatte einen grund. wenn der grund bei anderer entscheidung
+  besser erfüllt wird, wäre das möglich. ist dem so?" Sein Grund zu A525: „weniger gegener machen weniger schaden".
+- *Prüfung:* Ziel des Grundes ist weniger Schaden; „wenigste LP" erreicht es über die Zahl der Gegner und ist nur bei
+  gleichem Schaden aller Gegner das Minimum. Die Regel von Smith (Schaden je Sekunde durch Zeit bis zum Fall) minimiert
+  den Schaden selbst, enthält „wenigste LP" als Sonderfall und ist nie schlechter. Gemessen am Tod in Sägerschrei
+  (04.11.2026): Wache etwa 23–39 LP/s bei 606 LP, sechs Soldaten je 3–7 LP/s bei 227 LP, Marschall 39 LP/s bei 2.424 LP,
+  Prinzessin 30 LP/s bei 25.452 LP; gerechnet etwa 250 LP weniger Schaden mit der Wache zuerst. Gegenthesen (unbekannter
+  Schaden zu Beginn, Messrauschen, ladende Gegner, Laufwege) widerlegt oder eingearbeitet: Start „wenigste LP",
+  angekündigte Treffer zählen sofort, Wechsel nur über der Messunsicherheit.
+- *Ergebnis:* Seine Bedingung ist erfüllt; die Regel gilt für Beastmaster und Blaumagier ohne Tank und Heiler (Konzept 03,
+  „Zielart ohne Tank und Heiler"), im Crucible mit dem Bedarf des Bretts (K3). Umsetzung zusammen mit K3, TODO Platz 3;
+  bis dahin wirkt „wenigste LP".
+- *Prüfgrad:* Mitschnitt ausgewertet, Rechnung, kein Code.
+
 ## B · Commit-Register (Fork vs. `upstream/main`)
 
 ### B1 · Einzelgeprüfte Fork-Commits

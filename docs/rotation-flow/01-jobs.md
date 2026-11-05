@@ -1769,7 +1769,7 @@ Dullahan, Golem, Spriggan und Eisgolem (`XBMPet.InflictsInterrupt`).
   Flauros.
 - *K3 – Wen RSR angreift: größter Nutzen für den Kampf und das Brett* (seine Vorgabe vom 05.11.2026: „entscheidung, wer
   angegriffen werden soll nach analyse des größten nutzens für das gesamte spielfeld und darüber hinaus für das gesammte
-  brett"; im Crucible, A525 gilt außerhalb weiter). *Was gilt:* Zuerst fällt der Gegner mit der größten Gefahr je
+  brett"; im Crucible; außerhalb dieselbe Regel ohne den Bedarf des Bretts, Konzept 03, „Zielart ohne Tank und Heiler", A537). *Was gilt:* Zuerst fällt der Gegner mit der größten Gefahr je
   Sekunde bis zu seinem Fall: seine Gefahr je Sekunde geteilt durch die Zeit, bis er fällt. Diese Reihenfolge macht die
   Summe des Schadens über den Kampf am kleinsten (Regel von Smith, Ablaufplanung); „wenigste LP zuerst" ist ihr Sonderfall
   bei gleicher Gefahr aller Gegner. *Gefahr:* sein Schaden an dir und an deinen Begleitern, je als Anteil an den LP, die

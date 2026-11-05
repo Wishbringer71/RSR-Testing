@@ -14,26 +14,28 @@ Nach der Wirkung im Kampf: Sicherheit der Gruppe vor Schaden, gewichtet mit der 
    Aufstehen, ohne dass RSR etwas drückt.
 2. Allein ohne Heiler kommt kein Heiltrank: RSR stand 13 s in der kritischen Klasse ohne Heilfähigkeit, kein Trank
    von RSR trotz eingeschalteter Option, er drückte ihn bei 6 % selbst und starb (Beastmaster, Sägerschrei, 04.11.2026).
-3. Beastmaster: Am Pull der Begleiter, der das Rudel aufhält, mit One with Nature: Allein gegen ein Rudel verbrennt der
+3. Beastmaster und Blaumagier allein: Ziel nach Schaden je Sekunde bis zum Fall: Heute fällt zuerst, wer die wenigsten
+   LP hat, auch wenn ein anderer viel härter trifft; in Sägerschrei traf die Wache etwa 15 s länger als nötig.
+4. Beastmaster: Am Pull der Begleiter, der das Rudel aufhält, mit One with Nature: Allein gegen ein Rudel verbrennt der
    erste Begleiter Entfesseln für Schaden, und wenn die Gefahr kommt, ist nichts Schützendes übrig; er starb daran
    (Südwald, 04.11.2026).
-4. Heilungen in „Heilung -" verpuffen: fünf GCDs Schaden und MP ohne Wirkung, solange der Status liegt; kein Leben,
+5. Heilungen in „Heilung -" verpuffen: fünf GCDs Schaden und MP ohne Wirkung, solange der Status liegt; kein Leben,
    denn die Heilung wirkt dort ohnehin nicht.
-5. Heilung bricht ab, weil ein Regen-Tick die Schwelle kreuzt: verlorene Wirkzeit, das Ziel bleibt an der Schwelle.
-6. Beastmaster: Ob Analysieren die LP einrechnet: Anfreunden markiert sicher, aber früher als nötig, wenn die Stufe der
+6. Heilung bricht ab, weil ein Regen-Tick die Schwelle kreuzt: verlorene Wirkzeit, das Ziel bleibt an der Schwelle.
+7. Beastmaster: Ob Analysieren die LP einrechnet: Anfreunden markiert sicher, aber früher als nötig, wenn die Stufe der
    Chance schon bei mehr LP die beste ist; jeder verlorene Pakt kostet einen weiteren Lauf (seine Vorgabe: Anfreunden
    hat oberste Priorität).
-7. Beastmaster: Crucible-Strategien: Ein K.O. beendet den Lauf, und ohne Zähnefletschen und Brett-Gegenstände von RSR
+8. Beastmaster: Crucible-Strategien: Ein K.O. beendet den Lauf, und ohne Zähnefletschen und Brett-Gegenstände von RSR
    trägst du jeden Treffer selbst; danach Schaden: Der Feuer-Begleiter ging am 04.11. gegen den Boss, bevor die
    feuerschwachen Adds kamen.
-8. Beastmaster: Brechende Welle als Schaden: mit einem Wavekin auf dem Borgen-Horn ein Schadens-GCD, der nie kommt.
-9. Fremde Repositories auf Verbesserungen für RSR prüfen: Jeder Fund kann ein Defekt im Verhalten einer Klasse sein,
+9. Beastmaster: Brechende Welle als Schaden: mit einem Wavekin auf dem Borgen-Horn ein Schadens-GCD, der nie kommt.
+10. Fremde Repositories auf Verbesserungen für RSR prüfen: Jeder Fund kann ein Defekt im Verhalten einer Klasse sein,
    den RSR heute im Kampf zeigt; zuerst die Rotationswerkzeuge für alle Jobs, Daedalus vorn (aktiv, alle Jobs,
    eigene Kampfvorhersage), dann Beastmaster und Blaumagier (sein Auftrag vom 05.11.2026).
-10. Flächenbetäuber in Kreszentia für The Blackest Night: kostet MP, kein Leben.
-11. Ein Blaumagier in Heiler-Mimikry zählt nicht als Heiler: Mitspieler unter RSR heilen und mindern, als lebte keiner;
+11. Flächenbetäuber in Kreszentia für The Blackest Night: kostet MP, kein Leben.
+12. Ein Blaumagier in Heiler-Mimikry zählt nicht als Heiler: Mitspieler unter RSR heilen und mindern, als lebte keiner;
    kostet Schaden, kein Leben.
-12. Konzepte neu ordnen (allgemein, Rollen, Gruppen, Jobs, Inhalte): keine direkte Wirkung im Kampf; eine Regel, die
+13. Konzepte neu ordnen (allgemein, Rollen, Gruppen, Jobs, Inhalte): keine direkte Wirkung im Kampf; eine Regel, die
    im Konzept eines Jobs steht, wird für dessen Gruppe übersehen, und eine Inhaltsregel ist über mehrere Konzepte
    verteilt.
 
@@ -71,6 +73,15 @@ in den Webfenstern 18:28:02–15 bei 36 bis 25 % LP. *Ort:* `CustomRotation_Abil
 Fehl-LP, Spielstatus) und den Tinktur-Vorrang; mit dem nächsten Upload die Ursache belegen, dann Loop: der Trank
 nach der Gefahr statt nach der festen Schwelle, für alle Jobs. *Konzept:* 03 („Eine Wiederverwendung für alle
 Arzneien"), 07.
+
+### Beastmaster und Blaumagier allein: Ziel nach Schaden je Sekunde bis zum Fall · N
+Im Kampf: Ohne lebenden Tank und Heiler greift RSR heute den Gegner mit den wenigsten LP an (A525); trifft ein anderer
+viel härter, schlägt er länger. Sein Tod in Sägerschrei: Die Wache (etwa 30 LP/s, 606 LP) fiel nach sechs Soldaten
+(je etwa 5 LP/s, 227 LP), gerechnet etwa 250 LP Schaden mehr. *Ort:* `DataCenter.TargetingType` (LowHP für Beastmaster
+und Blaumagier), Zielwahl in `ActionTargetInfo`; Schaden je Quelle aus den Treffern („hit you"), angekündigte Treffer aus
+der Vorhersage. *Nächster Schritt:* Konzept steht (03, „Zielart ohne Tank und Heiler", seine Bedingung vom 05.11.2026
+erfüllt, A537); Umsetzung zusammen mit K3 des Crucible: Start „wenigste LP", Wechsel erst über der Messunsicherheit,
+Spurzeile je Wechsel. *Konzept:* 03, 01.
 
 ### Beastmaster: Crucible-Strategien · N
 Im Kampf: Fällst du im Brett, ist der Lauf verloren; RSR setzt Zähnefletschen ab Werk nicht ein (Upstream-Einstellung
