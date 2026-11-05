@@ -79,7 +79,7 @@ gerufene Gegner (am 04.11.2026 um 19:48 ging der Raptor mit Feuer gegen die Seel
 Sukkubi kamen). *Ort:* `BST_Reborn` (B3, Zyklus, `FamiliarTankSwapAbility`), neu: Lesen der XBM-Blätter zur Laufzeit,
 `InstanceContentCrucibleOfTheUnbroken.UseItem`. *Nächster Schritt:* Stufe 1: Schwäche und Gegnerliste je Kampf,
 Schadensart je Begleiter zur Laufzeit, mit Selbstprüfung beim Betreten; K1 (Zuschlag gemessen) und K2 (Horn für
-gerufene Gegner); dann K9 (Zähnefletschen ab Werk, Provozieren am größten Treffer), K8 (Gegenstände, Sicherheit
+gerufene Gegner); dann K11 (Begleiter über das Brett planen: Bedarfsliste je Kampf, LP und Schaden je Einsatz) mit K9 (Zähnefletschen ab Werk, Provozieren am größten Treffer), K8 (Gegenstände, Sicherheit
 zuerst), K6 (Hörner vor dem Kampf; zuerst messen, ob der Server im Brett zuweist) und K7 (Kader auf Wunsch über das
 Teamfenster); danach K4, K5 und K10 (Campsite, Laden, Weg, im eigenen Loop). K3 (Heiler und Wiederbeleber zuerst) wartet
 auf seine Entscheidung zu A525. *Konzept:* 01, „Crucible of the Unbroken: Bretter, Kämpfe, Strategien".

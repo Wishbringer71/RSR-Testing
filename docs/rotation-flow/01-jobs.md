@@ -1825,6 +1825,29 @@ Dullahan, Golem, Spriggan und Eisgolem (`XBMPet.InflictsInterrupt`).
   mehr; offen, im eigenen Loop: wen die Campsite heilt (dich, die heilenden, die tragenden), welche Gegenstände im Laden
   die Sicherheit tragen, welcher Weg Lager und Läden mitnimmt.
 
+- *K11 – Begleiter über das Brett planen* (sein Hinweis und seine Vorgabe vom 05.11.2026: „da begleiter über die
+  spielfelder des brettes hinweg schaden ansammeln und hp sinkt, auch strategische planung, falls begleiter mehrfach
+  eingesetzt werden sollen, damit diese an den spielfeldern, wo sie unbedingt notwendig sind, auch bereitstehen").
+  *Gemessen (04.11.2026):* Im zweiten Lauf fiel die Fledermaus – einer der beiden Heiler – bis zum vierten Kampf auf 25
+  von 550 LP, die Fliegenfalle bis zum Endgegner auf 236 von 608, der Schleim auf 265 von 462; im ersten Lauf Opo-Opo,
+  Megalokrabbe und Pugil auf etwa 55 bis 60 %. Ohne Regeneration trägt jeder Einsatz seine LP in den nächsten Kampf.
+  *Was gilt (Plan):* RSR führt je Brett eine Bedarfsliste aus dem Blatt: je Kampf die Begleiter, die dort unersetzlich
+  sind – der einzige mit der Schwäche der gerufenen Gegner (K2), der einzige, der einen unterbrechbaren Zauber stoppt
+  (K4), ein Heiler für die gefährlichen Kämpfe –, und je Begleiter seine LP und den Schaden, den er je Einsatz bisher
+  nahm. Daraus: Ein Begleiter, der später unersetzlich ist, geht in früheren Kämpfen nur auf ein Horn, wenn seine LP
+  danach für seinen Kampf reichen (K6); er trägt keinen Schaden für dich über Zähnefletschen (K9); an der Campsite ruht er
+  zuerst, wenn seine LP nicht reichen (K10); ein Bestien-Heiltrank auf ihn, wenn keine Campsite mehr vor seinem Kampf
+  liegt (K8). Fällt er trotzdem, kommt das Horn der Rückkehr vor seinem Kampf. *Gegenthese 1:* Der Weg verzweigt, Felder
+  sind zufällig – welcher Kampf kommt, steht nicht fest. Teilweise widerlegt: Die Liste gilt für die Kämpfe, die auf dem
+  gewählten Weg noch erreichbar sind, und wird nach jeder Abzweigung neu gerechnet; Zufallsfelder ziehen aus den Kämpfen
+  des Bretts. *Gegenthese 2:* Wer zurückgehalten wird, fehlt in den frühen Kämpfen, wo er ebenfalls passt. Nicht
+  widerlegt: Gegen die Gefahr, ihn im wichtigen Kampf nicht zu haben, steht die Gefahr im frühen; RSR wägt mit dem
+  gemessenen Schaden je Einsatz und hält ihn nur zurück, solange ein anderer Begleiter den frühen Kampf trägt.
+  *Gegenthese 3:* RSR kennt das aktuelle Feld nicht. Offen: Das Spiel führt das Feld im Brett
+  (`AgentXBMStageDetailList`, Werkzeugquelle); ob es lesbar ist, zeigt die Umsetzung, sonst gilt der Plan für alle
+  Kämpfe des Bretts. *Ergebnis:* K11 ist die Planungsebene über K6, K7, K8, K9 und K10; sie alle lesen dieselbe
+  Bedarfsliste.
+
 *Falsifikation:* Kein Defekt, weil das erste Brett zweimal ohne Tod fiel? Das gelang mit Gegenständen und Zähnefletschen
 von seiner Hand; die Meisterbretter haben Rang 20 und 25 und Gegner ohne Schwäche. Option falsch? K1 ohne gemessenen
 Zuschlag ist wirkungslos, aber nicht falsch; K2 kann ein Horn umsonst halten, wenn ein gerufener Gegner nie erscheint
@@ -1835,7 +1858,8 @@ anders als das Schema (wie bei `XBMPet`, Spalte `Unknown4`), fehlen Schwäche un
 beim Betreten, ob es die Daten des Bretts gelesen hat.
 
 *Stufen* (TODO „Beastmaster: Crucible-Strategien"): 1. Daten zur Laufzeit (Schwäche und Gegnerliste je Kampf,
-Schadensart je Begleiter) mit K1 und K2; 2. K9; 3. K8; 4. K6 und K7; danach K4, K5, K10. K3 nach seiner Entscheidung.
+Schadensart je Begleiter) mit K1 und K2; 2. K11 (Bedarfsliste und LP je Begleiter) mit K9; 3. K8; 4. K6 und K7; danach
+K4, K5, K10. K3 nach seiner Entscheidung.
 
 ---
 

@@ -16009,6 +16009,18 @@ habe den schleim bislang nicht anfreunden können."
   ihnen folgen und wo Inhaltskonzepte (Dungeons, Endgegner, Savage, Occult Crescent) daneben stehen.
 - *Prüfgrad:* Versionsgeschichte und Regeldateien gelesen, `check_rule_files.py` grün.
 
+### A535 · Crucible K11: Begleiter über das Brett planen (05.11.2026)
+
+- *Anlass:* Sein Hinweis und seine Vorgabe: Begleiter sammeln über die Felder Schaden, ihre LP sinken; strategisch
+  planen, damit sie dort bereitstehen, wo sie unbedingt gebraucht werden.
+- *Gemessen am Mitschnitt vom 04.11.2026:* zweiter Lauf Fledermaus 550 → 25 LP bis zum vierten Kampf, Fliegenfalle
+  608 → 236 bis zum Endgegner, Schleim 462 → 265; erster Lauf Opo-Opo 550 → 328, Megalokrabbe 487 → 298, Pugil 550 →
+  345. Der Hinweis hält.
+- *Konzept:* 01, Crucible, K11 – Bedarfsliste je Kampf (unersetzliche Begleiter aus K2, K4, Heiler), LP und Schaden je
+  Einsatz; K6, K8, K9, K10 lesen sie. Gegenthesen: Weg und Zufallsfelder (teilweise widerlegt), Zurückhalten kostet
+  frühe Kämpfe (nicht widerlegt, gewogen mit gemessenem Schaden), aktuelles Feld lesbar (offen). Stufe 2 im TODO.
+- *Prüfgrad:* Mitschnitt ausgewertet, kein Code.
+
 ## B · Commit-Register (Fork vs. `upstream/main`)
 
 ### B1 · Einzelgeprüfte Fork-Commits
