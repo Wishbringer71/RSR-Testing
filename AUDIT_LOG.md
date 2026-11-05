@@ -16053,6 +16053,17 @@ habe den schleim bislang nicht anfreunden können."
   bis dahin wirkt „wenigste LP".
 - *Prüfgrad:* Mitschnitt ausgewertet, Rechnung, kein Code.
 
+### A538 · Präzisierung zu A525/A537: Maß ist der Schutz des Spielers, Heiler-Gegner zählen (05.11.2026)
+
+- *Seine Präzisierung:* „wenigste hp zuerst hatte hintergrund, dass besiegte gegner keinen schaden mehr machen, spieler
+  sicherer ist. wenn ein heilergegner andere gegner heilt und so diese länger leben, machen sie mehr schaden, damit
+  größeres risiko für spieler. wenn ein gegner besonders viel schaden macht, gefährdet er auch. das ist ein abwägen, was
+  aktuell am sinnvollsten ist, was optimal den spieler schützt."
+- *Eingearbeitet (Konzept 03, „Zielart ohne Tank und Heiler"):* Gefahr eines Gegners = eigener Schaden je Sekunde
+  (angekündigte Treffer sofort) + bei Heilern der Schaden, den die Geheilten durch die längere Lebenszeit machen + bei
+  Wiederbelebern der Schaden des Zurückgeholten; Schaden an Begleitern, soweit er den Spieler schützt. Die Regel von Smith
+  bleibt die Abwägung; die Präzisierung bestätigt A537 und erweitert die Gefahr um die Heiler auch außerhalb des Crucible.
+
 ## B · Commit-Register (Fork vs. `upstream/main`)
 
 ### B1 · Einzelgeprüfte Fork-Commits
