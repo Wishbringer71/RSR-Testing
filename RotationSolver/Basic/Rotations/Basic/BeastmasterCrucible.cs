@@ -73,6 +73,58 @@ public partial class BeastmasterRotation
 		return coming;
 	}
 
+	private static readonly System.Text.RegularExpressions.Regex ComboPotency = new(@"Combo Potency: (?<value>[\d,]+)",
+		System.Text.RegularExpressions.RegexOptions.CultureInvariant);
+	private static uint _waveTracedFight;
+
+	/// <summary>
+	/// A558: on a board, whether Quelling Wave deals more than the axe combo's mean step on <paramref name="target"/> - its
+	/// stated potency times one plus the measured weakness bonus when its element is the target's weakness, against the mean
+	/// of Smash Axe's potency and the combo potencies of Axeblade Bite and Shieldsplitter, each with the bonus where it hits
+	/// the weakness. It preserves the combo, so it pushes the combo one GCD later; false before the bonus is measured.
+	/// </summary>
+	internal static bool WaveBeatsCombo(IBattleChara? target)
+	{
+		if (!IsInCrucible || target == null || CrucibleBoard.Fight == 0)
+		{
+			return false;
+		}
+
+		var weakness = CrucibleBoard.WeaknessOf(target.NameId);
+		var bonus = CrucibleBoard.WeaknessBonus;
+		if (weakness == 0 || bonus <= 0f || !CrucibleBoard.ElementsOf((uint)ActionID.QuellingWavePvE).Contains(weakness)
+			|| !ActionTooltip.TryStatedPotency((uint)ActionID.QuellingWavePvE, out var wave)
+			|| !ActionTooltip.TryStatedPotency((uint)ActionID.SmashAxePvE, out var first)
+			|| !ActionTooltip.TryStated((uint)ActionID.AxebladeBitePvE, ComboPotency, out var second)
+			|| !ActionTooltip.TryStated((uint)ActionID.ShieldsplitterPvE, ComboPotency, out var third))
+		{
+			return false;
+		}
+
+		var waveWorth = wave * (1f + bonus);
+		float[] steps = [Worth(ActionID.SmashAxePvE, first), Worth(ActionID.AxebladeBitePvE, second),
+			Worth(ActionID.ShieldsplitterPvE, third)];
+		var comboWorth = 0f;
+		foreach (var step in steps)
+		{
+			comboWorth += step;
+		}
+
+		comboWorth /= steps.Length;
+		var beats = waveWorth > comboWorth;
+		if (beats && _waveTracedFight != CrucibleBoard.Fight)
+		{
+			_waveTracedFight = CrucibleBoard.Fight;
+			DefenseTrace.Line($"crucible: Quelling Wave before the axes on {target.Name} ({CrucibleBoard.ElementName(weakness)} "
+				+ $"weakness, bonus {bonus:P0}): {waveWorth:F0} against the combo's mean step {comboWorth:F0}");
+		}
+
+		return beats;
+
+		float Worth(ActionID axe, float potency)
+			=> potency * (1f + (CrucibleBoard.ElementsOf((uint)axe).Contains(weakness) ? bonus : 0f));
+	}
+
 	/// <summary>
 	/// K2 (A548): <paramref name="profile"/> hits the weakness of an enemy here now that was not there when the fight began.
 	/// </summary>

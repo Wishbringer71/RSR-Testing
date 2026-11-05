@@ -1637,9 +1637,17 @@ gilt für jeden Job.
   - *Seelenschmerz* (Soulkin): zum Unterbrechen (W4), sonst als letzte Angriffsfähigkeit.
   - *Gezieferpanzer* (Vilekin, etwa Vespula) nur gegen einen Rückstoß, *Wolkenstreich* (Cloudkin, etwa Fledermaus) nur als
     Bewegung, *Läuternde Asche* (Ashkin) nur zum Reinigen.
-  - *Brechende Welle* (Wavekin, etwa Pugil): nur gegen ein Ziel mit einer der genannten Stärkungen. Die zweite Zeile, die
-    sie ohne diese Bedingung nutzen sollte, steht hinter Schmetteraxt und wird nie erreicht (Upstream 2fe925f41); offen:
-    TODO „Beastmaster: Brechende Welle als Schaden".
+  - *Brechende Welle* (Wavekin, etwa Pugil; A558): zuerst gegen ein Ziel mit einer der genannten Stärkungen, die sie
+    entfernt (+50 TP). Als Schaden: Sie ist ein sofortiger Zauber mit 350 Potenz, +10 TP und 30 Yalm Reichweite und
+    erhält die Kombo (`Action.PreservesCombo`); die Äxte haben Nahkampfreichweite und bringen 160, 500 und 600 Potenz in
+    drei GCDs, im Mittel 420 und etwa 9 TP je GCD (Wirktexte und Blatt `Action` 44879, 44883, 44885, 44900, 05.11.2026).
+    Eine eingeschobene Welle verschiebt die Kombo um einen GCD, am Kampfende fehlt einer; im Nahkampf kostet sie deshalb
+    etwa 70 Potenz. Die zweite Zeile hinter den Äxten (Upstream 2fe925f41) greift genau dann, wenn keine Axt das Ziel
+    erreicht – er steht außerhalb der Nahkampfreichweite –, und ist dort richtig. Im Brett kommt sie zusätzlich vor den
+    Äxten, wenn das Ziel wasserschwach ist und ihre Potenz mal eins plus dem gemessenen Schwächezuschlag (K1) den
+    Kombo-Schnitt übertrifft, dieser mit dem Zuschlag gerechnet, wo eine Axt die Schwäche trifft; alle Zahlen aus den
+    Wirktexten. Eine Zeile je Kampf nennt beide Werte. *Gegenthese:* Die TP-Gewinne unterscheiden sich (10 gegen etwa 9
+    je GCD) und bleiben außer Betracht; vor der ersten Messung des Zuschlags gilt die Regel nicht.
   - Borgen kommt höchstens einmal je Ruf seines Horns, und das Horn mit Borgen ist ab Werk das dritte. In kurzen
     Kämpfen kommt es oft gar nicht an die Reihe; sein Bestienkönnen dann auch nicht.
 - *Kampfzeile* (A524): Am Ende jedes Kampfes schreibt RSR, wie oft Schildansturm, Borgen und jedes Bestienkönnen kamen –

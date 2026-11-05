@@ -16485,6 +16485,23 @@ habe den schleim bislang nicht anfreunden können."
 - *Folgen:* Mit den Zeilen ist K4 baubar (welche Aktion, auf welchen Cast, wann rufen); ohne sie wäre jede Regel geraten.
 - *Prüfgrad:* Compile ohne Warnung, Prüfschritte; im Spiel nicht beobachtet, die Zeile ist das Messmittel.
 
+### A558 · Beastmaster: Brechende Welle als Schaden (05.11.2026)
+
+- *Auftrag:* `TODO.md`, „Beastmaster: Brechende Welle als Schaden".
+- *Quellen:* Wirktexte (`ActionTransient`) und Blatt `Action` 44879 Smash Axe (160), 44883 Axeblade Bite (Kombo 500, +13
+  TP), 44885 Shieldsplitter (Kombo 600, +15 TP), 44900 Quelling Wave (Zauber, sofort, 350, +10 TP, entfernt eine
+  Stärkung für +50 TP, `PreservesCombo`, Reichweite 30; die Äxte −1 = Nahkampf), xivapi 05.11.2026.
+- *Befund:* Die Prämisse des Eintrags war falsch (C163). Als Schaden im Nahkampf kostet die Welle den verschobenen
+  Kombo-GCD: 350 gegen den Schnitt von 420, die TP nahezu gleich. Außerhalb der Nahkampfreichweite ist sie der einzige
+  Schadens-GCD, und dort kommt sie schon.
+- *Gebaut:* Im Brett geht sie vor die Äxte, wenn das Ziel wasserschwach ist und Potenz mal eins plus gemessener
+  Schwächezuschlag den Kombo-Schnitt übertrifft, dieser mit Zuschlag, wo eine Axt die Schwäche trifft
+  (`BeastmasterRotation.WaveBeatsCombo`, alle Zahlen aus den Wirktexten); eine Zeile je Kampf.
+- *Falsifikation:* Kein Defekt außerhalb des Bretts – bestätigt, die Reihenfolge bleibt. Option falsch, wenn die TP den
+  Ausschlag geben: 10 gegen 9,3 je GCD, der Unterschied ändert den Vergleich nicht. Ausgeliefert, und nichts ändert sich:
+  ohne gemessenen Zuschlag oder ohne Wavekin auf dem Borgen-Horn – die Zeile fehlt dann.
+- *Prüfgrad:* Compile ohne Warnung, Prüfschritte; Rechnung aus den Wirktexten, im Spiel nicht beobachtet.
+
 ## B · Commit-Register (Fork vs. `upstream/main`)
 
 ### B1 · Einzelgeprüfte Fork-Commits
@@ -16799,3 +16816,4 @@ Die offene Arbeit dazu — Reihenfolge und Abbruchbedingung der Nachprüfung —
 | C160 | A521, Weißmagier in Toto-Rak: „achtmal „heal stopped“ – ein Tick von 8 bis 20 HP hob das Ziel über die Schwelle, die Wirkzeit war verloren“; TODO „Heilung bricht ab, weil ein Regen-Tick die Schwelle kreuzt“ | Zehn der elf Zeilen kamen nach der Wirkung der Vita; das Spiel führte keinen Abbruch aus, jede landete voll. Der Tick war die natürliche Regeneration (1 % der maximalen LP), kein Regen. Ausgeführt wurde ein Abbruch, durch die Selbstheilung des Tanks (A545). | Regel und Spur behoben (A545) |
 | C161 | A551, A552, Konzept 01 „Stufe 3: K8", TODO: deutsche Namen der Brett-Gegenstände „Bestien-Heiltrank G1 bis G4", „Asche G1 bis G3", „Wiederbeleber", „Heiltrank-Set", „Gegengift", „Augentropfen", „Gerbstoff", „Buch der Unverwundbarkeit", „Buch der Reflexion", „Mittel-Set"; Konzept 01 „Ring of Sacrifice" | Selbst gebildet oder englisch belassen, nicht nachgeschlagen. Die deutschen Spielblätter (xivapi v2, `XBMItem`, `language=de`, 05.11.2026) nennen Bestien-Heiltrank I bis IV (Zeilen 76–79), Bestien-Pulver I bis III (80–82), Bestien-Gegengift (83), Bestien-Augentropfen (85), Bestien-Lebensfeder I und II (98, 99), Bestien-Verhärtungsmittel (102), Grimoire der Reflexion (136), Grimoire der Unantastbarkeit (137), Bestien-Heiltranksammlung (140), Bestien-Heilmittelsammlung (141), Opferring (2). Code und Optionstexte waren nicht betroffen: RSR liest die englischen Texte. | Konzept 01 und TODO umgestellt; die Gegenstände stehen mit Zeile in `action_names_de.json`, `check_action_names.py` prüft die neue Art `crucible_item` gegen `XBMItem`. |
 | C162 | A550 und Konzept 01, K11 („Stand der Umsetzung"): „Zwei Größen liefert das Spiel zur Laufzeit nicht: den Kader und das Feld. FFXIVClientStructs (aad0de6, 05.11.2026) führt im Brett nur das Inventar und `UseItem`; die Fenster des Kaders und des Wegs stehen nur in fremden Plugins mit eigenen Offsets"; TODO „K11 (Kader und Feld liefert das Spiel nicht …)" | Derselbe Stand aad0de66 führt `AgentXBMPetParty` (Kader `SelectedPetIds`, LP je Begleiter `PetCurrentHealth`/`PetMaxHealth`) und `AgentXBMStageDetailList` (Felder und Kämpfe des laufenden Bretts), beide seit 17.09.2026 (d44bc123, 3120c745), und Dalamuds Fassung enthält sie (Reflexion, 05.11.2026). Gesucht war nur unter `InstanceContentCrucibleOfTheUnbroken`. Offen bleibt allein, ob das Spiel sie im Brett füllt. | Sonde A556; Konzept 01 K11 und TODO umgestellt. |
+| C163 | A524, Konzept 01 „Bestienkönnen nach Borgen", TODO „Beastmaster: Brechende Welle als Schaden": „als Schaden nie, weil ihre zweite Zeile hinter Schmetteraxt steht, die immer geht" | Die Äxte haben Nahkampfreichweite (`Action.Range` −1), Brechende Welle 30 Yalm (Blatt `Action` 44879, 44883, 44885, 44900, 05.11.2026). Außerhalb der Nahkampfreichweite scheitern alle Äxte, und die zweite Zeile greift. Im Nahkampf wäre die Welle um etwa 70 Potenz schlechter als der Kombo-Schnitt; die Reihenfolge von Upstream war richtig. | A558: Konzept umgestellt, TODO-Punkt geschlossen; im Brett gegen Wasserschwäche zusätzlich vor den Äxten. |

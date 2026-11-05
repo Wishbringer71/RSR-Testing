@@ -1542,6 +1542,12 @@ public sealed class BST_Reborn : BeastmasterRotation
 			return true;
 		}
 
+		// A558: on a board, before the axes when the target's water weakness makes it worth more than the combo's mean step.
+		if (QuellingWavePvE.CanUse(out act, skipTargetStatusNeedCheck: true) && WaveBeatsCombo(QuellingWavePvE.Target.Target))
+		{
+			return true;
+		}
+
 		if (ShieldsplitterPvE.CanUse(out act))
 		{
 			return true;
@@ -1555,6 +1561,8 @@ public sealed class BST_Reborn : BeastmasterRotation
 			return true;
 		}
 
+		// A558: as damage when no axe reaches the target - Quelling Wave reaches 30 yalms, the axes are melee; in melee it
+		// would cost about 70 potency against the combo's mean step.
 		if (QuellingWavePvE.CanUse(out act, skipTargetStatusNeedCheck: true))
 		{
 			return true;

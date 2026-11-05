@@ -14,14 +14,13 @@ Nach der Wirkung im Kampf: Sicherheit der Gruppe vor Schaden, gewichtet mit der 
    von RSR trotz eingeschalteter Option, er drückte ihn bei 6 % selbst und starb (Beastmaster, Sägerschrei, 04.11.2026).
 2. Beastmaster: Crucible-Strategien: Ein K.O. beendet den Lauf, und ein Begleiter, den ein späterer Kampf braucht, kommt dort mit den LP an, die ihm
    die früheren ließen.
-3. Beastmaster: Brechende Welle als Schaden: mit einem Wavekin auf dem Borgen-Horn ein Schadens-GCD, der nie kommt.
-4. Fremde Repositories auf Verbesserungen für RSR prüfen: Jeder Fund kann ein Defekt im Verhalten einer Klasse sein,
+3. Fremde Repositories auf Verbesserungen für RSR prüfen: Jeder Fund kann ein Defekt im Verhalten einer Klasse sein,
    den RSR heute im Kampf zeigt; zuerst die Rotationswerkzeuge für alle Jobs, Daedalus vorn (aktiv, alle Jobs,
    eigene Kampfvorhersage), dann Beastmaster und Blaumagier (sein Auftrag vom 05.11.2026).
-5. Flächenbetäuber in Kreszentia für The Blackest Night: kostet MP, kein Leben.
-6. Ein Blaumagier in Heiler-Mimikry zählt nicht als Heiler: Mitspieler unter RSR heilen und mindern, als lebte keiner;
+4. Flächenbetäuber in Kreszentia für The Blackest Night: kostet MP, kein Leben.
+5. Ein Blaumagier in Heiler-Mimikry zählt nicht als Heiler: Mitspieler unter RSR heilen und mindern, als lebte keiner;
    kostet Schaden, kein Leben.
-7. Konzepte neu ordnen (allgemein, Rollen, Gruppen, Jobs, Inhalte): keine direkte Wirkung im Kampf; eine Regel, die
+6. Konzepte neu ordnen (allgemein, Rollen, Gruppen, Jobs, Inhalte): keine direkte Wirkung im Kampf; eine Regel, die
    im Konzept eines Jobs steht, wird für dessen Gruppe übersehen, und eine Inhaltsregel ist über mehrere Konzepte
    verteilt.
 
@@ -68,12 +67,6 @@ Im Kampf: Betäubt ein anderer Spieler mit einer Aktion seines Phantomjobs eine 
 Barriere in das Betäubungsfenster legen; sie bricht nicht, Dark Arts bleibt aus, es kostet MP, kein Leben. *Ort:*
 Erkennung der Flächenbetäubung (Konzept 10, „Grenzen"), heute nur Holy und Holy III. *Nächster Schritt:* die Aktionen der
 Phantomjobs mit Flächenbetäubung aus den Spielblättern erheben, Loop. *Konzept:* 10.
-
-### Beastmaster: Brechende Welle als Schaden · N, U
-Im Kampf: Mit einem Wavekin auf dem Borgen-Horn (etwa Pugil) kommt Brechende Welle nur gegen ein Ziel mit einer der
-genannten Stärkungen; als Schaden (350, dazu TP) nie, weil ihre zweite Zeile hinter Schmetteraxt steht, die immer geht.
-*Ort:* `BST_Reborn.GeneralGCD` (Upstream 2fe925f41). *Nächster Schritt:* Loop: Wert gegen die Kombo-Waffenfertigkeiten,
-ob ein Zauber die Kombo bricht. *Konzept:* 01, „Bestienkönnen nach Borgen".
 
 ### Fremde Repositories auf Verbesserungen für RSR prüfen · N, R, U
 Sein Auftrag (02.11.2026): „alle von dir gefundenen repos, die du benannt hast prüfen, ob daraus generell

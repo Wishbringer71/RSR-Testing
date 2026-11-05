@@ -206,6 +206,9 @@ What this release changes in the fight. For the whole distance from upstream, se
   element counts the measured weakness bonus more. In the final fight - the board's items are lost
   after the run - it first uses on you every potion or item that grants you a status (strength, magic,
   intensity, evasion, haste, TP, Life Siphon), never one that inflicts a status on you.
+- **Quelling Wave against a water weakness (Crucible).** On a board Quelling Wave now goes before the axe
+  combo when the target is weak to water and its potency with the measured weakness bonus beats the
+  combo's mean step; elsewhere it stays the filler for when no axe reaches the target.
 - **Snarl and Challenge are on by default (Crucible).** Without a tank the enemies attack only you,
   and your fall ends the run, while a fallen familiar costs only that familiar. `Use Snarl and
   Challenge based on your HP and your familiar's HP (Crucible only)` is now **on by default**, still on
