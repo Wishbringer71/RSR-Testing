@@ -12,8 +12,8 @@ Nach der Wirkung im Kampf: Sicherheit der Gruppe vor Schaden, gewichtet mit der 
 
 1. Nach der Wiederbelebung wartet RSR die Unverwundbarkeit ab: Ein Heiler stirbt am ersten Treffer nach dem
    Aufstehen, ohne dass RSR etwas drückt.
-2. Allein ohne Heiler kommt der Heiltrank erst von Hand: RSR stand 13 s in der kritischen Klasse ohne Heilfähigkeit,
-   der Trank kam bei 5 % von Hand, er starb (Beastmaster, Sägerschrei, 04.11.2026).
+2. Allein ohne Heiler kommt kein Heiltrank: RSR stand 13 s in der kritischen Klasse ohne Heilfähigkeit, kein Trank
+   von RSR trotz eingeschalteter Option, er drückte ihn bei 6 % selbst und starb (Beastmaster, Sägerschrei, 04.11.2026).
 3. Beastmaster: Am Pull der Begleiter, der das Rudel aufhält, mit One with Nature: Allein gegen ein Rudel verbrennt der
    erste Begleiter Entfesseln für Schaden, und wenn die Gefahr kommt, ist nichts Schützendes übrig; er starb daran
    (Südwald, 04.11.2026).
@@ -57,15 +57,17 @@ und GCD-Heilungen warten nicht auf ihn. Kein Leben in Gefahr, es kostet Schaden 
 
 ## Offene Arbeit
 
-### Allein ohne Heiler kommt der Heiltrank erst von Hand · N, U
+### Allein ohne Heiler kommt kein Heiltrank · N, U
 Im Kampf: Beastmaster allein gegen Myrmidonen-Prinzessin und Gefolge (Sägerschrei, 04.11.2026); seine LP fielen in 75 s
 von 93 % auf 6 %, ab 18:28:18 meldete RSR „critical class … no heal ability", den Ultratrank drückte er bei 135 von 2.415
-LP selbst, er starb 2 s später. *Ort:* `HpPotionItem.CanUse`, „Use HP potions" (Upstream, ab Werk aus, keine
-dokumentierte Entscheidung) und die feste Schwelle „Use HP potions below this HP" (50 %); der Trank liest weder Gefahr
-noch kritische Klasse noch einen lebenden Heiler. *Nächster Schritt:* Loop für alle Jobs: Trank nach der Gefahr
-(Vorhersage, kritische Klasse, kein Heiler) statt nach der festen Schwelle, Voreinstellung nach seiner Regel
-(Sicherheit vor Schaden) gegen Kosten und die 75 s, die er die Tinktur sperrt. *Konzept:* 03 („Eine Wiederverwendung
-für alle Arzneien"), 07.
+LP selbst, er starb 2 s später. „Use HP potions" ist bei ihm an (seine Angabe, 05.11.2026), und RSR trank den Ultratrank
+am 23.10. und 03.11. selbst, stets unter 40 %; an allen Beastmaster-Sitzungen vom 04.11. kein einziges Mal, auch nicht
+in den Webfenstern 18:28:02–15 bei 36 bis 25 % LP. *Ort:* `CustomRotation_Ability.Ability` vor `UseHpPotion`,
+`HpPotionItem.CanUse`, `BaseItem.CanUse`; welche Bedingung hielt, zeigt der Upload nicht. *Nächster Schritt:* Die Zeile
+„critical class" für den Spieler nennt je Trank im Inventar die erste Sperre (Schalter, Schwelle,
+Fehl-LP, Spielstatus) und den Tinktur-Vorrang; mit dem nächsten Upload die Ursache belegen, dann Loop: der Trank
+nach der Gefahr statt nach der festen Schwelle, für alle Jobs. *Konzept:* 03 („Eine Wiederverwendung für alle
+Arzneien"), 07.
 
 ### Beastmaster: Feindseligkeit und Gegenstände im Crucible · N
 Im Kampf: Zähnefletschen lässt den Begleiter 45 s deinen Schaden tragen; RSRs Einstellung dafür (Upstream) ist ab Werk

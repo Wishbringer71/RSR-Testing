@@ -629,7 +629,8 @@ public partial class CustomRotation
 		act = null;
 		foreach (var member in _criticalMembers)
 		{
-			TraceEmergencyHeal(null, member, nextGCD);
+			// A531: for the player, what each potion in the bag waits for - the configuration the upload lacks.
+			TraceEmergencyHeal(null, member, nextGCD, member.GameObjectId == Player?.GameObjectId ? DescribeHpPotionsHeld() : null);
 		}
 		return false;
 	}
@@ -671,7 +672,7 @@ public partial class CustomRotation
 	/// of the GCD, or a member in the critical class for whom no heal ability could go.
 	/// </summary>
 	/// <returns>Always true, so the line can be written where the heal is accepted.</returns>
-	private static bool TraceEmergencyHeal(IBaseAction? heal, IBattleChara critical, IAction nextGCD)
+	private static bool TraceEmergencyHeal(IBaseAction? heal, IBattleChara critical, IAction nextGCD, string? potions = null)
 	{
 		var target = heal?.Target.Target;
 		var key = (heal?.ID ?? 0u, heal != null ? target?.GameObjectId ?? 0ul : critical.GameObjectId);
@@ -702,7 +703,8 @@ public partial class CustomRotation
 			? $"emergency heal ahead of {nextGCD.Name} -> {heal.Name} #{heal.ID}"
 				+ (target != null ? $" on {target.Name.TextValue} at {target.GetHealthRatio():P0}" : string.Empty)
 				+ $", critical {critical.Name.TextValue} at {forecast}% forecast"
-			: $"critical class: {critical.Name.TextValue} at {forecast}% forecast, no heal ability for it ahead of {nextGCD.Name}");
+			: $"critical class: {critical.Name.TextValue} at {forecast}% forecast, no heal ability for it ahead of {nextGCD.Name}"
+				+ (potions != null ? $" | {potions}" : string.Empty));
 		return true;
 	}
 

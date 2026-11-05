@@ -15913,6 +15913,27 @@ habe den schleim bislang nicht anfreunden können."
   Tanks), eine Flächenserie (Ersticken des Fleisches, 9,0 s); keine geänderten Einträge.
 - *Prüfgrad:* Mitschnitt und Spur ausgewertet, Code, Compile, CI-Prüfungen lokal; im Spiel nicht beobachtet.
 
+### A531 · Kein Heiltrank im Beastmaster trotz eingeschalteter Option: Messmittel statt Annahme (05.11.2026)
+
+- *Anlass:* Seine Angabe zu A530: „ich habe hp-potions nutzen eingeschaltet. das ist nicht die ursache, wenn keine
+  genutzt wurden". Widerruf C159.
+- *Befund:* RSR trank den Ultratrank (#47701) laut Spur 25-mal am 23.10. und 7-mal am 03.11., jedes Mal „below its HP
+  threshold" bei höchstens 40 %; Schalter je Gegenstand und Option waren also an, die Schwelle liegt vermutlich bei
+  40 %. Am 04.11. lagen seine LP als Beastmaster in acht Abschnitten unter 40 % (10:29, 11:06, 11:33–11:37, 11:56, 13:25 Tod,
+  14:19, 18:26, 18:28 Tod), RSR trank nie, auch nicht in den freien Webfenstern 18:28:02–15 bei 36 bis 25 %; den
+  Ultratrank um 18:28:30 drückte er selbst (keine Spurzeile „HP potion").
+- *Ausgeschlossen am Code:* Tinktur-Vorrang (der Beastmaster verlangt nie eine Tinktur, `_asksForTinctureInCombat`
+  bleibt falsch), Fehl-LP-Wächter (der Trank heilt dort 603 LP, es fehlten 1.548), Spielsperre durch Stufe (sein Druck
+  von Hand ging durch).
+- *Offen:* Schalter je Gegenstand umgestellt, Schwelle umgestellt, eine vorhergesagte Heilung im LP-Anteil
+  (`RefinedHP` zählt sie, solange sie aussteht), ein früherer Pfad im Fähigkeitsdurchlauf. Der Upload trägt seine
+  Konfiguration nicht.
+- *Gebaut (Messmittel nach der REGEL):* Die Zeile „critical class" nennt für ihn selbst je Trank im Inventar die erste
+  Sperre (`HpPotionItem.DescribeBlock`: Option, Schalter je Gegenstand, keiner im Inventar, Schwelle, Fehl-LP, Spiel)
+  und den Tinktur-Vorrang. „ready" dort heißt: Der Trank war frei, und der Durchlauf kam nicht bei ihm an.
+- *Prüfgrad:* Spuren und Mitschnitte vom 23.10. bis 04.11. ausgewertet, Code gelesen, Compile; die Ursache ist nicht
+  belegt.
+
 ## B · Commit-Register (Fork vs. `upstream/main`)
 
 ### B1 · Einzelgeprüfte Fork-Commits
@@ -16223,3 +16244,4 @@ Die offene Arbeit dazu — Reihenfolge und Abbruchbedingung der Nachprüfung —
 | C156 | `check_movement_types.py` (A498): Shukuchi ohne Bewegungstyp, „no fork rotation casts it" | Die Ninja-Basisschicht wirkt Shukuchi auf „Move Forward" (`NinjaRotation.MoveForwardAbility`); ohne Typ lief es in die Platzierung der Flächenangriffe. | Typ `GroundTargetMove`; A520. |
 | C157 | A524: Kampfzeile „beastmaster fight“: „Schildansturm, Borgen, jedes Bestienkönnen gezählt“ | Gezählt wurde jede Aktion in jedem Frame neu: Der Zeitpunkt kam aus „jetzt minus Zeit seit der letzten Aktion“ und wich in jedem Frame ab („Shield Charge 73“ in einem Kampf am 04.11.2026). | Zählung aus der Aufzeichnung der Aktionen nach ihrer Zeit; A525. |
 | C158 | A525: Ichor um 11:52 „Fall 10,5 s später markiert (…), kein Pakt“; Konzept 01, A2: „der Pakt kam nicht“ | Der Pakt kam: Der Schleim war bis 11:52 nicht freigeschaltet und steht ab 15:06 auf seinem Horn. Die Zeile „no pact“ fiel im nächsten Frame, das Spiel trägt den Pakt etwa 2 s nach dem Fall ein. | Pakt-Urteil erst, wenn der Körper verschwunden ist; A528. |
+| C159 | A530, Tod in Sägerschrei: „Kein Heiltrank von RSR: „Use HP potions" ist ab Werk aus“ als Ursache; TODO „Allein ohne Heiler kommt der Heiltrank erst von Hand“ | Seine Einstellung ist an (seine Angabe, 05.11.2026), und RSR trank den Ultratrank am 23.10. und 03.11. selbst. Die Voreinstellung war seine Konfiguration nur unterstellt; die Ursache ist offen (A531). |

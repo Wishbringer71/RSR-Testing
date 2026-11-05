@@ -334,5 +334,29 @@ public partial class CustomRotation
 
 		return act != null;
 	}
+
+	/// <summary>
+	/// A530/A531: why each HP potion in the bag does not go out now, for the trace line of a player in the critical
+	/// class - the first stopping condition of each, as the diagnostics window shows it. The global setting, the
+	/// per-item switch and the threshold are the player's configuration, which the upload does not carry.
+	/// </summary>
+	/// <returns>One phrase, "no HP potion in the bag" when there is none.</returns>
+	private string DescribeHpPotionsHeld()
+	{
+		var text = PotionsWaitForTincture() ? "held for the tincture (Hold HP and MP potions for the tincture); " : string.Empty;
+		var held = false;
+		foreach (var potion in HpPotions)
+		{
+			if (!potion.HasIt)
+			{
+				continue;
+			}
+
+			held = true;
+			text += $"{potion.Name} {potion.DescribeBlock()}; ";
+		}
+
+		return "HP potions: " + (held ? text.TrimEnd(' ', ';') : text + "none in the bag");
+	}
 	#endregion
 }
