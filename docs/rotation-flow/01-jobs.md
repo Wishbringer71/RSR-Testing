@@ -1889,14 +1889,25 @@ Dullahan, Golem, Spriggan und Eisgolem (`XBMPet.InflictsInterrupt`).
   verrauschte Messung ließe das Ziel springen – der Wechsel verlangt einen Unterschied über ihrer Unsicherheit. Nichts
   ändert sich? Im Crucible überschreibt heute A525 die Zielart; die neue Regel tritt dort an ihre Stelle, die Spur nennt
   jeden Wechsel mit Grund.
-- *K4 – Unterbrechen.* Ein Begleiter, der unterbricht, gegen anfällige Gegner mit langem Zauber (Ossify, Fanaticism,
-  Dreadwash, Confound, Raise). `XBMPet.InflictsInterrupt` markiert Dullahan, Golem, Spriggan und Eisgolem (ffxiv-datamining
-  `XBMPet.csv`, 05.11.2026). Welche ihrer Aktionen unterbricht, nennt kein Text: Die Befehlstexte (Iron Justice, King's
-  Will, Boulder Clap, Rockslide, Romp, Frenetic Flurry, Ice Guillotine, Frozen Heart) und die Beschreibungen in `XBMPet`
-  schweigen dazu, und die Effektart „Interrupt" führt ECommons als 75, BossModReborn als 76 (Werkzeugquellen,
-  widersprüchlich). *Sonde (A557):* Meldet der Server im Brett den Abbruch eines gegnerischen Casts (ActorControl 15),
-  schreibt RSR die letzte eigene Aktion auf diesen Gegner mit den Effektarten ihrer Einträge und dem Abstand in die Spur
-  („crucible: … stopped its cast …"). Mit diesen Zeilen der Loop: welche Aktion, wann rufen.
+- *K4 – Unterbrechen* (A583). Unterbrochen wird über Borrow: Bei einem Seelen-Begleiter wird Bestienmodus zu Soul Crush,
+  „Interrupts the use of a target's action", bei Erfolg 1.000 statt 300 Potenz und 100 TP (Wirktext 44902, xivapi v2).
+  Seelen-Begleiter sind die vier, die `XBMPet.InflictsInterrupt` markiert: Dullahan, Golem, Spriggan, Eisgolem
+  (ffxiv-datamining `XBMPet.csv`, 05.11.2026); eorzeantavern (Dullahan) und icy-veins (Spriggan, Golem, Eisgolem) nennen
+  Soul Crush als den Unterbrecher des Bretts (05.11.2026, Gemeinschaftsquellen). Ihre Dressuren und Entfesseln
+  unterbrechen nicht; ihre Texte schweigen dazu (A557).
+  - *Gebaut:* Soul Crush geht zuerst auf einen Gegner, dessen Zauber das Spiel als unterbrechbar meldet, sonst wie bisher
+    (W4, A486).
+  - *Offen:* welche Kämpfe unterbrechbare Zauber haben. Kein Blatt sagt es; das Spiel meldet es erst mit dem Zauber
+    (`IsCastInterruptible`). Erst mit diesem Wissen lohnt ein Seelen-Begleiter auf einem Horn, das One with Nature für
+    Borrow verbraucht (K6), und im Kader (K7). Nächster Schritt: je Gegnerart lernen, ob sie unterbrechbar zaubert, und es
+    über die Sitzung hinaus halten. Sein Kader vom 05.11.2026 hat keinen Seelen-Begleiter.
+  - *Sonde (A557):* Meldet der Server im Brett den Abbruch eines gegnerischen Casts (ActorControl 15), schreibt RSR die
+    letzte eigene Aktion auf diesen Gegner mit den Effektarten ihrer Einträge und dem Abstand in die Spur. Am 05.11.2026
+    vier Abbrüche, keiner durch eine Unterbrechung: drei mit viertem Wert 0, einer (Pisco-Dämonen-Ebenbild, viertem Wert 1)
+    0,05 s vor dem Ende des Kampfes, also sein Tod; die Effektarten 3, 62 und 27 seines Schildspalters sind Schaden, ein
+    in ECommons unbenannter Typ und „StartActionCombo" (ECommons 74af164). Die Effektart „Interrupt" führt ECommons als
+    75, BossModReborn als 76; welche gilt, kann sein Spielprogramm (`ffxiv_dx11.exe`, Upload 05.11.2026) entscheiden,
+    sobald eine Regel sie liest.
 - *K5 – Zustände.* Gift, Gewicht, Fessel gegen anfällige Gegner: Wirkung je Zustand nicht beziffert, nach K1 bis K4.
 - *K6 – Hörner vor dem Kampf belegen.* B5 setzt die Hörner zwischen den Kämpfen per Serverbefehl, im Crucible bisher
   nicht. Im Brett öffnet das Spiel vor jedem Kampf das Hornfenster (`XBMPetParty`, `AgentXBMPetParty.Mode` 2); es
@@ -2381,7 +2392,7 @@ on a pack once a fight, all of them in the final fight (Crucible only)".
   abgedeckten Gegner trifft: Gewicht je Schwäche ist die Zahl der Gegner aller Kämpfe des Bretts mit ihr
   (`XBMContentBattle` → `XBMBattleDetail`), und jeder schon gewählte Begleiter mit derselben Schwäche teilt es
   (Gewicht durch eins plus die Zahl der schon Gewählten, die sie treffen). Bei Gleichstand zuerst, wer über dem Rang des
-  Bretts steht (`IsPetOverSyncedRank`), dann wer schon im Kader ist. Ein Unterbrecher (K4) wartet auf die Sonde A557.
+  Bretts steht (`IsPetOverSyncedRank`), dann wer schon im Kader ist. Ein Seelen-Begleiter für Soul Crush (K4) wartet darauf, dass RSR weiß, welche Kämpfe unterbrechbar zaubern.
 - *Leveln (seine Vorgabe, 05.11.2026, A579):* „zum leveln der begleiter sollten die begleiter bei der anfangsauswahl des
   brettes bevorzugt werden, die hinter den anderen hinterherleveln. ausnahme: sie sind kein adäquater ersatz für die
   kämpfe aufgrund falscher eigenschaften." *Mechanik:* Jeder Begleiter im Kader eines Laufs bekommt Erfahrung, mit oder
@@ -2471,8 +2482,9 @@ on a pack once a fight, all of them in the final fight (Crucible only)".
 - *Offen (TODO „Beastmaster: Crucible-Strategien"):* Die Auto-Angriffe der Begleiter tragen 17 bis 57 % ihres Schadens
   (Brett 1, 04. und 05.11.2026: Schleim 57 %, Cu Sith 47 %, Pugil 44 %, Fliegenfalle 31 %, Riesenwurm 28 %, Fledermaus
   25 %, Raptor 17 %, Büffel 6 %), Scheidender Schlag 14 bis 51 %, die Dressur 7 bis 29 %. Der Wert eines Begleiters in
-  B3 und K6 zählt nur Dressur und Entfesseln; das Element seines Auto-Angriffs nennt kein Blatt (`Pet.AutoAction` ist 0)
-  und wäre am ersten Treffer zu lernen.
+  B3 und K6 zählt nur Dressur und Entfesseln. Den Auto-Angriff nennt das Blatt: `XBMPet.Action` (xivapi v2, 05.11.2026;
+  `Pet.AutoAction` ist 0), Element und Angriffsart decken sich mit den Treffern im Mitschnitt (Cu Sith 45187 Stich,
+  Raptor und Fliegenfalle Eis, Pugil Wasser, Riesenwurm Erde, Schleim und Fledermaus ohne).
 
 ---
 

@@ -17131,9 +17131,24 @@ habe den schleim bislang nicht anfreunden können."
   Ungemessenen (seine Vorgabe A525). Ausgeliefert, und nichts ändert sich? Ohne Zähnefletschen (Einstellung aus) wirkt
   Befund 1 nur noch auf den Bestien-Heiltrank; ohne Rückzug im Kampf gab es den falschen Treffer nie.
 - *Offen (TODO „Beastmaster: Crucible-Strategien"):* das Element der Begleiter-Auto-Angriffe im Wert eines Begleiters
-  (17 bis 57 % ihres Schadens auf Brett 1); die Gewichtung des Schadens an Begleitern nach ihrem Bedarf (K11).
+  (17 bis 57 % ihres Schadens auf Brett 1; das Blatt nennt den Auto-Angriff in `XBMPet.Action`); die Gewichtung des
+  Schadens an Begleitern nach ihrem Bedarf (K11).
 - *Prüfgrad:* statisch, Compile ohne Warnung, Prüfskripte; Ursachen an Spur und Mitschnitt belegt, der Zuschlag an zwei
   Mitschnitten gemessen. Im Spiel nicht beobachtet; die Zeile „a hit on a weakness deals" zeigt die Messung je Brett.
+
+### A583 · Crucible K4: unterbrochen wird mit Soul Crush über Borrow (05.11.2026)
+
+- *Anlass:* TODO „Beastmaster: Crucible-Strategien", K4, mit den Zeilen der Sonde A557 aus seiner Spur vom 05.11.2026.
+- *Befund Sonde:* vier Abbrüche gegnerischer Casts auf Brett 1, keiner durch eine Unterbrechung: Terrormilbe und
+  zweimal Seelenlose mit viertem Wert 0; Pisco-Dämonen-Ebenbild mit 1, 0,05 s vor „combat ended" (Tod). Die Effektarten
+  der letzten eigenen Aktion (Schildspalter: 3, 62, 27) sind Schaden, unbenannt, StartActionCombo (ECommons 74af164).
+  Sein Kader trägt keinen Begleiter mit `InflictsInterrupt`.
+- *Befund Quellen:* Unterbrechen kommt über Borrow: Seelen-Art → Bestienmodus wird Soul Crush („Interrupts the use of a
+  target's action", 44902); eorzeantavern (Dullahan) und icy-veins (Spriggan, Golem, Eisgolem), 05.11.2026. A557 hatte
+  nur die Befehle der Begleiter geprüft. Soul Crush auf unterbrechbare Zauber ist seit W4 (A486) gebaut.
+- *Konzept:* K4 neu gefasst; offen ist, welche Kämpfe unterbrechbar zaubern (kein Blatt; das Spiel meldet es mit dem
+  Zauber), danach Horn (K6) und Kader (K7).
+- *Prüfgrad:* Quellen und Spur; kein Code geändert.
 
 ## B · Commit-Register (Fork vs. `upstream/main`)
 
