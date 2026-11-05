@@ -1297,7 +1297,7 @@ Beastmaster noch, nicht alle Fähigkeiten stehen am Anfang zur Verfügung.
   sämtlichen Schaden, der dir galt (dein Status „Gedeckt", seiner „Deckung"), und nimmt dir „Erhöhte Feindseligkeit".
   Provozieren (Challenge, 15 s): du stehst 30 s oben auf der Liste, die Deckung endet. Außerhalb des Crucible ist kein
   Weg belegt.
-  - *In RSR:* die Einstellung „Use Snarl and Challenge …" (Upstream, ab Werk aus): Zähnefletschen ab 70 % LP des
+  - *In RSR:* die Einstellung „Use Snarl and Challenge …" (Upstream, im Fork ab Werk an, unten): Zähnefletschen ab 70 % LP des
     Begleiters, Provozieren bei 30 %, unter 30 % deiner LP trägt der Begleiter alles, auch bis zu seinem Tod; wahlweise
     nach dem Vergleich beider LP; ab Werk nur auf dem letzten Horn, also wenn kein anderes Horn bereitsteht. Dazu ein
     Zähnefletschen ohne Schalter gegen Status 2552 im ersten Kampf des ersten Bretts (Upstream-Kommentar; dort wehrt
