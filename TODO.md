@@ -23,13 +23,13 @@ Nach der Wirkung im Kampf: Sicherheit der Gruppe vor Schaden, gewichtet mit der 
 6. Beastmaster: Ob Analysieren die LP einrechnet: Anfreunden markiert sicher, aber früher als nötig, wenn die Stufe der
    Chance schon bei mehr LP die beste ist; jeder verlorene Pakt kostet einen weiteren Lauf (seine Vorgabe: Anfreunden
    hat oberste Priorität).
-7. Beastmaster: Feindseligkeit und Gegenstände im Crucible: Ohne Zähnefletschen trägst du jeden Treffer des Bretts
-   selbst, und kein Bestien-Heiltrank kommt von RSR; im ersten Brett starb niemand.
+7. Beastmaster: Crucible-Strategien: Ein K.O. beendet den Lauf, und ohne Zähnefletschen und Brett-Gegenstände von RSR
+   trägst du jeden Treffer selbst; danach Schaden: Der Feuer-Begleiter ging am 04.11. gegen den Boss, bevor die
+   feuerschwachen Adds kamen.
 8. Beastmaster: Brechende Welle als Schaden: mit einem Wavekin auf dem Borgen-Horn ein Schadens-GCD, der nie kommt.
-   Danach: Beastmaster: im Crucible nach der Schwäche der Figur rufen (Schaden, kein Leben).
 9. Fremde Repositories auf Verbesserungen für RSR prüfen: Jeder Fund kann ein Defekt im Verhalten einer Klasse sein,
    den RSR heute im Kampf zeigt; zuerst die Rotationswerkzeuge für alle Jobs, Daedalus vorn (aktiv, alle Jobs,
-   eigene Kampfvorhersage).
+   eigene Kampfvorhersage), dann Beastmaster und Blaumagier (sein Auftrag vom 05.11.2026).
 10. Flächenbetäuber in Kreszentia für The Blackest Night: kostet MP, kein Leben.
 11. Ein Blaumagier in Heiler-Mimikry zählt nicht als Heiler: Mitspieler unter RSR heilen und mindern, als lebte keiner;
    kostet Schaden, kein Leben.
@@ -69,13 +69,16 @@ Fehl-LP, Spielstatus) und den Tinktur-Vorrang; mit dem nächsten Upload die Ursa
 nach der Gefahr statt nach der festen Schwelle, für alle Jobs. *Konzept:* 03 („Eine Wiederverwendung für alle
 Arzneien"), 07.
 
-### Beastmaster: Feindseligkeit und Gegenstände im Crucible · N
-Im Kampf: Zähnefletschen lässt den Begleiter 45 s deinen Schaden tragen; RSRs Einstellung dafür (Upstream) ist ab Werk
-aus, und die Gegenstände des Bretts (Bestien-Heiltrank, -Pulver, Gegengift, Verhärtungsmittel) setzt RSR nie ein. *Ort:*
-`BST_Reborn.FamiliarTankSwapAbility`, `InstanceContentCrucibleOfTheUnbroken.UseItem`. *Nächster Schritt:* Loop mit dem
-Brett als Ganzem: LP von dir und den Begleitern bleiben über alle Kämpfe stehen, die Campsite heilt dich allein mehr, ein
-gefallener Begleiter fehlt bis zum Horn der Rückkehr; daraus, ob die Einstellung ab Werk an gehört und wann ein
-Gegenstand seinen Platz im Fach wert ist. *Konzept:* 01 („Tanken", „Gegenstände des Crucible").
+### Beastmaster: Crucible-Strategien · N
+Im Kampf: Fällst du im Brett, ist der Lauf verloren; RSR setzt Zähnefletschen ab Werk nicht ein (Upstream-Einstellung
+aus), keinen Brett-Gegenstand, ruft Begleiter ohne Blick auf die Schwäche der Gegner und hält keinen für später
+gerufene Gegner (am 04.11.2026 um 19:48 ging der Raptor mit Feuer gegen die Seelenlose, 40 s bevor die feuerschwachen
+Sukkubi kamen). *Ort:* `BST_Reborn` (B3, Zyklus, `FamiliarTankSwapAbility`), neu: Lesen der XBM-Blätter zur Laufzeit,
+`InstanceContentCrucibleOfTheUnbroken.UseItem`. *Nächster Schritt:* Stufe 1: Schwäche und Gegnerliste je Kampf,
+Schadensart je Begleiter zur Laufzeit, mit Selbstprüfung beim Betreten; K1 (Zuschlag gemessen) und K2 (Horn für
+gerufene Gegner); dann K9 (Zähnefletschen ab Werk, Provozieren am größten Treffer), K8 (Gegenstände, Sicherheit
+zuerst), K6 (Hörner vor dem Kampf; zuerst messen, ob der Server im Brett zuweist). K3 und K7 warten auf seine
+Entscheidung. *Konzept:* 01, „Crucible of the Unbroken: Bretter, Kämpfe, Strategien".
 
 ### Nach der Wiederbelebung wartet RSR die Unverwundbarkeit ab · N, U
 Im Kampf: Wiederbelebt bei 21 %, Zellexplosion auf ihn angekündigt; RSR drückte 5 s lang nichts, der Treffer kam
@@ -113,12 +116,6 @@ draußen (Schluss aus dem Code, `BST_Reborn.AttackAbility`). *Ort:* `BST_Reborn.
 Begleiter zuerst), Ruf außerhalb des Kampfes für One with Nature; die drei Einstellungen danach nur noch für die Wahl
 nach Lage aus, mit Erklärtext. *Konzept:* 01, „Belegung der Hörner in der Rotation".
 
-### Beastmaster: im Crucible nach der Schwäche der Figur rufen · N
-Im Kampf: Gegen eine Figur des Crucible mit einer Schwäche (Pisco-Dämonen-Ebenbild: Hieb; anfällig für Gewicht und
-Gift) ruft RSR den Begleiter nach dem Wert seiner Dressur, nicht nach der Schadensart; der passende steht kürzer draußen.
-*Ort:* `BST_Reborn.SituationalHorn` (B3). *Nächster Schritt:* Recherche, ob die Blätter Schwäche und Schadensart tragen
-(XBM-Blätter, `XBMPet`); dann Loop. *Konzept:* 01, „Crucible: Schwächen der Figuren".
-
 ### Beastmaster: Brechende Welle als Schaden · N, U
 Im Kampf: Mit einem Wavekin auf dem Borgen-Horn (etwa Pugil) kommt Brechende Welle nur gegen ein Ziel mit einer der
 genannten Stärkungen; als Schaden (350, dazu TP) nie, weil ihre zweite Zeile hinter Schmetteraxt steht, die immer geht.
@@ -141,7 +138,10 @@ vielleicht; jeder Fund wird am Spiel belegt, bevor er ein Defekt oder eine Verbe
 - *Rotationen für alle Jobs:* ofnature/Daedalus, PunishXIV/WrathCombo, ahwootech/BRUTAL, BeirutaNa1na/RotationSolverReborn
   (Fork von Upstream), RhyTamok/XIVdrg.
 - *Beastmaster:* Kriss-Hietala/BeastmasterAssist, Rin-0617/BeastHelper, lexxxgo/Masterbeast; Daedalus und WrathCombo
-  dazu ausgewertet (A488).
+  dazu ausgewertet (A488); neu (A532): erdelf/AutoDuty (Crucible-Automatik), GluttonyCombo (`BST_CrucibleAdvisor`,
+  Schwäche je Ziel), BOCXIV/Beastmaster-JP (Brett-Gegenstände), Namen aus BeastHelper; vollständige Suche offen.
+- *Blaumagier:* die Rotationswerkzeuge oben und BossMod sind ausgewertet (A506 bis A511); eigene Repositories zum
+  Blaumagier (Zaubersets, Masked Carnivale) noch zu suchen.
 - *Kampfvorhersage und Unterbrechen:* FFXIV-CombatReborn/BossmodReborn, awgil/ffxiv_bossmod, sourpuh/ffxiv_interjection.
 - *Auswertung von Kämpfen:* xivanalysis/xivanalysis, OverlayPlugin/cactbot, xiv-stats/xiv-damage-samples,
   Ahriqi/astbalanceimages.
@@ -150,6 +150,8 @@ vielleicht; jeder Fund wird am Spiel belegt, bevor er ein Defekt oder eine Verbe
   Spielquelle), LTS-FFXIV/RebornMaterial.
 - *Automatisierung und Werkzeuge:* Knightmore/Henchman, Knightmore/Underlings, getsetmind/dalamudmcp,
   t3knical/DalamudPlugins.
+Sein Auftrag vom 05.11.2026 dazu: „alle bekannten repos zu rotationen, zu beastmaster, zu bluemage analysiere, inwieweit
+erkenntisse daraus in rsr eingebracht werden können und die vorhandenen konzepte ergänzen und verbessern könnten".
 *Ort:* Grundstruktur (`RotationSolver/Basic`, Updaters, Zielwahl, Abwehr), die Rotationen unter `RebornRotations`, die
 Jobkonzepte. *Nächster Schritt:* Daedalus über alle Jobs: Zielwahl, Abwehr, Kampfvorhersage, je Job die Regeln, die
 RSR nicht kennt; danach die übrigen in der Reihenfolge der Liste. Je Fund ein Loop, je Repository ein Archiveintrag mit

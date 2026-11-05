@@ -1183,31 +1183,7 @@ ofnature/Daedalus e3a16de vom 01.11.2026, GPL-3.0 und LGPL-3.0). Alle Werkzeugqu
 - *BeastmasterAssist* (Anzeige, keine Automatik): Empfehlungen zu den Aktionen der Kinships (Soul Crush, Scouring Ash,
   Vileskin, Scaleskin, Beastskin, Seedsower, Quelling Wave); RSR setzt alle schon ein. Neu wäre nur „TP für die
   Abschlüsse halten" (ab Stufe 50, 250 TP); ohne Messung, wie viel Potenz die Äxte darunter verlieren, nicht gewertet.
-- *Crucible: Schwächen der Figuren und Schadensarten der Begleiter* (seine Frage vom 04.11.2026, welche Begleiter
-  gegen das Pisco-Dämonen-Ebenbild; Gemeinschaftsquellen consolegameswiki „First Board of the Unbroken" und
-  eorzeantavern „Beast List", 04.11.2026, ungeprüft gegen die Blätter): Jede Figur trägt eine Schwäche (eine von neun
-  Schadensarten: Hieb, Stich, Schlag, Feuer, Eis, Wasser, Wind, Erde, Blitz) und Anfälligkeiten für Zustände; ein Team
-  aus drei Begleitern je Kampf, einer draußen, aus einem Kader von 10 bis 15. Hieb machen nur Cu Sith, Puk, Mantis und
-  Dullahan; Gewicht setzen Mandragora und Sandwurm (Entfesseln), Gift Diremite, Wespe, Fliegenfalle (Dressur), Uragnite,
-  Cobra, Damselfly. RSR liest im Crucible weder Schwäche noch Anfälligkeit; B3 ruft nach dem Wert der Dressur (offen:
-  TODO „Beastmaster: im Crucible nach der Schwäche der Figur rufen").
-  - *Erstes Brett* (Stufe 30, Begleiter auf Rang 5 synchronisiert, Kader 10, drei je Kampf): Knochenritter und
-    -bischof Schlag; Erzdämon Blitz (anfällig Gift); Pisco-Dämonen-Ebenbild Hieb (Gewicht, Gift); Banemite und Miteling
-    Eis; Oger Wind, Irrlichter Wasser (Fessel, Gewicht); Endgegner Pas de Seul Stich, Sukkubus-Magierin und -Ritter
-    Feuer. Entfernbare Stärkungen: Ossify, Clear Mind, Fanaticism; reinigbare Zustände: Gift (Banemite, Pas de Seul),
-    Windburn. Die Schwäche „verhält sich wie eine Schwäche, nicht jeder Eintrag passt" (eorzeantavern).
-- *Gegenstände des Crucible* (Blatt `XBMItem`, Zeilen 76–199, en und de, 04.11.2026): eigenes Fach mit 10 Plätzen,
-  im Kampf über die Instanz benutzt (`InstanceContentCrucibleOfTheUnbroken.UseItem(Platz, Bestie)`, Wirkung auf dein
-  Ziel; FFXIVClientStructs b69073a vom 02.11.2026, Werkzeugquelle; der Typ steht in der Bibliothek, die Dalamud
-  mitliefert). Im Mitschnitt erscheinen sie als Aktionen (Bestien-Heiltrank II/III, Bestien-Pulver I, Reißzahn des
-  Feuers und des Wassers). Darunter: Bestien-Heiltrank I–IV (10–50 % LP, du oder Begleiter), Bestien-Pulver I–III
-  (10–40 %, alle in der Nähe), Bestien-Gegengift, -Goldnadel, -Augentropfen (Zustand heilen, 25–50 % LP),
-  die Seren gegen Zustände (Bestien-Antigift-Serum und andere), Bestien-Verhärtungsmittel (−20 % Schaden, 60 s),
-  Grimoire der Unantastbarkeit (fünf Stapel Blink), Bestien-Heiltranksammlung (40 % automatisch unter 50 % LP),
-  Bestien-Lebensfeder (Reraise), Reißzahn des Feuers und andere (Flächenschaden mit Zustand),
-  Bestien-Feuerresistenzmittel und andere (Element als LP aufnehmen, 15 s). RSR setzt keinen ein. Sie kosten territory
-  tokens oder stammen aus Beute, sind also ein Vorrat für das ganze Brett (offen: TODO „Beastmaster: Feindseligkeit und
-  Gegenstände im Crucible").
+- *Crucible: Bretter, Schwächen, Gegenstände:* unten, „Crucible of the Unbroken: Bretter, Kämpfe, Strategien" (A532).
 - *BeastHelper, Masterbeast*: auf den Crucible ausgerichtet (Wege über das Brett, Teamwahl über `XBMPetParty`,
   Gegenstände); für die Rotation nichts Neues.
 - *WrathCombo* (d9c63e468 vom 27.10.2026): `OnLastHorn` liest die Hörner wie RSR bisher, ohne das Horn des Begleiters
@@ -1305,7 +1281,7 @@ Beastmaster noch, nicht alle Fähigkeiten stehen am Anfang zur Verfügung.
     Schlag des Zyklus, und die 15 s Abklingzeit sperrten die nächste. Preis: Das nächste Horn kommt bis zu 45 s später,
     mit ihm sein Entfesseln oder Borrow, und die Abklingzeit des gehaltenen Horns beginnt erst mit seinem Rückzug. In
     der Gefahr galt das schon (B2).
-  - *Offen (TODO „Beastmaster: Feindseligkeit und Gegenstände im Crucible"):* ob die Einstellung ab Werk an gehört. Für
+  - *Offen (TODO „Beastmaster: Crucible-Strategien", K9):* ob die Einstellung ab Werk an gehört. Für
     an spricht: Ohne Tank greift der Gegner nur dich an, und die LP der Begleiter sind ein zweiter Vorrat. Dagegen,
     nicht widerlegt: LP bleiben über das ganze Brett stehen (gemessen 04.11.2026: dieselben LP eines Begleiters zu
     Beginn des nächsten Kampfes), die Campsite heilt dich allein um 90 %, mit einem Begleiter je 45 %, mit zweien je
@@ -1695,6 +1671,145 @@ und Gale als Starter waren es nur bei einem Rampant-Begleiter zwei). Nichts wird
 *Gegenhypothesen:* Kein Gewinn, weil der Unterschied klein ist? Den Betrag nennt kein Text; K1 kostet nichts und verliert
 nirgends. Ausgeliefert, und nichts ändert sich? Mit einem Rampant-Begleiter war Gale schon die richtige Axt; ohne Katalog
 bleibt die alte Reihenfolge.
+
+
+**Crucible of the Unbroken: Bretter, Kämpfe, Strategien** (A532). Sein Auftrag vom 05.11.2026: „alle bretter von
+crucible researchen, analysiere, strategien entwickeln. konzept bauen. im vollen kritischen loop"; dazu sein Beispiel
+als Vorschlag (K2) und seine Fragen, ob RSR im Brett Begleiter wählen und Gegenstände einsetzen kann.
+
+*Quellen* (05.11.2026): Spielblätter über xivapi v2 mit dem Schema exdschema@2:rev:a1e24a0c (`XBMContent`,
+`XBMContentBattle`, `XBMBattleDetail` mit einer Unterzeile je Gegner: Name, Schwäche, Werte, Zustandsresistenz über
+`BNpcResist`, zwei Aktionen; `XBMPet`, `Pet.Abilities`, `XBMItem`, `XBMContentCamp`), en und de mit Zeilen-Id;
+BossModReborn 577675d (31.10.2026), Module aller fünf Bretter; consolegameswiki „Crucible of the Unbroken" und „First
+Board of the Unbroken"; BeastHelper be40a1e (26.10.2026, AGPL, nur gelesen) und FFXIVClientStructs b69073a (02.11.2026),
+beide Werkzeugquellen; sein Mitschnitt vom 04.11.2026.
+
+*Regeln des Spiels, die eine Strategie tragen:*
+- Fünf Bretter (`XBMContent`): erstes Stufe 30, Rang 5, Kader 10; zweites 40, 10, 12; drittes 50, 15, 14; Erstes
+  Meisterbrett 50, 20, 12; Zweites Meisterbrett 50, 25, 15. Ein Brett ist ein Weg aus Feldern mit Abzweigungen: Kampf,
+  Elite, Endgegner, Campsite, Laden, Schatz, Zufall (Wiki).
+- Den Kader wählst du vor dem Betreten; je Kampf gehen drei auf die Hörner, einer ist draußen. Die Belegung gilt je
+  Kampf und wird vor ihm gesetzt (Wiki; seit 7.57 automatisch nur bei höchstens drei im Team).
+- Keine natürliche LP-Regeneration, für dich und die Begleiter (Wiki); deine LP bleiben von Kampf zu Kampf stehen
+  (gemessen 04.11.2026). Normale Heiltränke sind gesperrt, nur Brett-Gegenstände und Essen.
+- Campsite: Du ruhst mit bis zu einem bis vier Begleitern (`XBMContentCamp.FamiliarRecoverCount`, je Lager); die Heilung
+  teilt sich nach dem Wiki zum ersten Brett „allein 90 %, mit einem je 45 %, mit zweien je 30 %", die Hauptseite sagt,
+  du heilst immer selbst. Gemessen einmal (04.11.2026, 19:44–19:47): +30 % deiner LP. Ein gefallener Begleiter wird
+  dort nicht geheilt.
+- Fällst du, ist der Lauf verloren, außer eine Bestien-Lebensfeder, Ring of Sacrifice oder Sand der Zeit greift. Fällt
+  ein Begleiter, fehlt er bis zum Horn der Rückkehr.
+- Vermeidbare Flächen legen dem Getroffenen Verwundbarkeit oder Schadensminderung auf; hält dein Begleiter die
+  Feindseligkeit, trägt er sie, und Schaden nimmt er aus ihnen keinen. Unvermeidbare Flächen treffen euch beide (Wiki).
+- Jeder Gegner trägt eine Schwäche aus neun Arten (Hieb, Stich, Schlag, Feuer, Eis, Wasser, Wind, Erde, Blitz) oder
+  keine, dazu Anfälligkeiten für Zustände (`BNpcResist`). Wie viel mehr Schaden eine Schwäche bringt, nennt keine
+  Quelle (unbelegt).
+- Punkte (Wiki): Zuschläge für keine Gegenstände, keine Rast, keine Schwächung, kleine Teams, gefallene oder keine
+  gefallenen Begleiter. Sie stehen teils gegen deine Sicherheit; RSR richtet sich nach Sicherheit vor Schaden
+  („Spielweise"), Punkte sind kein Ziel einer Regel (meine Ableitung).
+
+*Die Bretter* (`XBMContentBattle`, `XBMBattleDetail`; Schwäche in Klammern; deutsche Namen aus den Blättern):
+- *Erstes Brett:* Knochen-Ritter und -Bischof (Schlag; der Ritter wehrt mit Forward Guard Angriffe von vorn ab, nicht
+  die der Begleiter, Ossify unterbrechbar); Erzdämonen-Ebenbild (Blitz); Pisco-Dämonen-Ebenbild (Hieb; anfällig für
+  Gift und Gewicht); Terrormilben- und Schattenmilben-Ebenbild (Eis; Tankbuster mit Gift); Oger-Ebenbild (Wind) mit
+  Irrlicht- und Riesen-Irrlicht-Ebenbild (Wasser; anfällig für Fessel und Gewicht). Endgegner Seelenlose (Pas de Seul,
+  Stich): ruft nach etwa 45 s eine Sukkubus-Magierin und zwei -Ritterinnen (Feuer; die Magierin stärkt ihn mit
+  Fanaticism, 9 s Wirkzeit, anfällig für Unterbrechen).
+- *Zweites Brett:* Manticore (Wind; Tankbuster); Taurus (Stich), ruft Ahriman (Eis; Blick mit Verhängnis); Wyvern
+  (Blitz); Leerenmagus (Erde) mit Zombie (Eis); Älterer und Jüngerer Taurus (Feuer; der Jüngere stärkt); Dämon (Hieb),
+  Böse Waffe (Eis), Eufel (Erde). Endgegner Losfrox Tintenklecks (Schlag) mit Töffelchen (Wasser).
+- *Drittes Brett:* Kavalier (Feuer) mit Knochen-Bischof (Schlag); Ymir (Eis) mit Sahagin (Schlag, Dreadwash
+  unterbrechbar); Montisaurus (Erde) mit Hahn und Henne (Schlag); Catblepus (Wind; Blick mit Versteinerung); Lakhamu
+  (Wasser) mit Golem (Wasser, stärkt); Sirene (Stich, ruft Gegner) mit schlurfendem und kriechendem Ebenbild (Feuer);
+  Kämpfer, Kaktor, Blütenkaktor (heilt), Soldat (Blitz) und Wächter (Eis, deckt andere). Endgegner Guttler (keine) mit
+  Thanatos (Blitz).
+- *Erstes Meisterbrett:* Strix (Stich; Federn als Adds); Morbol, Keimling, Ochu (Hieb) mit Aasbrühe (Eis); Titanenwurz
+  (Wind) mit Falkenkönigin (Schlag); Frostdrache und Eis-Exergon (Feuer); Gargoyle (keine; Tankbuster); Administrator,
+  Käfer, Fußsoldat, Brummonaut, Drohne (Blitz; Confound unterbrechbar) mit Kobra (Stich); Golem (Wasser); Baumschrat,
+  Schnecke, Schössling (Schlag) mit Schaudermilbe und Biloko (Eis; Biloko stärkt); Progenitrix, Granate, Bomber (Wind)
+  mit Snoll (Feuer) und Pyrobolos (Wasser). Endgegner Borgny Giftschleuder (Erde) mit vergiftender Substanz (Wasser).
+- *Zweites Meisterbrett:* Flauros und Blitz-Exergon (Erde); Gedankenschinder (Hieb) mit Fliegerpilz (Wasser);
+  Butzemann (Eis) mit Glotzauge und Bomber (Wind; Blick mit Versteinerung) und Licht-Exergon (keine); Atomos (Schlag)
+  mit Gremlins und Vodoriga (Stich), Pudding (Wind), Creme (Blitz), Fran (Erde), Bedrohlicher Dahak (Eis); Drakon
+  (Wind) mit Dornmull (Feuer), Abaddon (Wasser), Morpho (Schlag); Durga (Feuer, ruft Gegner) mit Drehturm (Schlag);
+  Medusa (Stich, ruft Gegner) mit Lamia (Stich, Raise unterbrechbar) und Zyklop (keine); Chimära (Wasser); Sphinx
+  (Hieb; Rätsel); Gigantis und Zyklop (keine) mit erstarrtem Blitz (Erde) und Zunder (Wind); Moogle-Kampf (Blitz,
+  Schlag, Wasser; Heiler und Stärker); Behemoth (Erde) mit Riese (Blitz) und Blitz-Exergon (Erde); Königs-Ahriman (Eis)
+  mit Hapalit (Wind) und Trübauge (Eis). Endgegner Lauda Spruchspalterin (keine) mit Thanatos (Blitz).
+- Häufigste Schwächen: erstes Brett gleich verteilt; zweites Eis; drittes Blitz und Schlag; Erstes Meisterbrett Blitz,
+  Wind, Schlag; Zweites Meisterbrett Schlag, Blitz, Erde, Wind.
+
+*Schadensarten der Begleiter* (`Pet.Abilities`, Aspekt und Angriffsart der Dressur D und des Entfesselns E; Pet-Zeilen
+47–97, de): Hieb Cu Sith (D, E), Puk (E), Mantis (D), Dullahan (D); Stich Schaudermilbe, Vespula (D, E), Kaktor, Kolibri
+(D, E), Treiberameise, Morbol, Kobra, Hydra, Karlabos (D); Schlag Schaf, Opo-Opo, Mandragora, Büffel, Goobbue,
+Montisaurus (D), Spriggan, Karpfenkröte (E); Feuer Baumhörnchen, Puk, Spriggan, Drakon, Chimäre (D), Raptor, Behemoth
+(E); Eis Ziz, Uragnit, Karpfenkröte, Raptor, Eisgolem (D), Chimäre (E); Wasser Pugil, Megalokrabbe, Krabbe, Apkallu,
+Salamander (D), Megalokrabbe, Apkallu, Karlabos (E); Wind Kapgeier, Fliegenfalle, Geist, Kleinlibelle, Rafflesia (D),
+Kapgeier, Baumschrat, Montisaurus (E); Erde Dodo, Golem, Riesenwurm, Baumschrat, Verrottende Goobbue (D), Golem,
+Riesenwurm (E); Blitz Kobalos, Gespenst, Adaman-Taimai, Coeurl, Behemoth (D), Coeurl (E). Unterbrechen setzen Kobalos,
+Dullahan, Golem, Spriggan und Eisgolem (`XBMPet.InflictsInterrupt`).
+
+*Strategien* (je mit Wirkung im Kampf, Abwägung, Gegenthese; Stand am Ende):
+- *K1 – Schwäche treffen.* Unter den bereiten Hörnern zählt ein Begleiter, dessen Dressur oder Entfesseln die Schwäche
+  der Gegner trifft, um den Zuschlag der Schwäche mehr (B3 rechnet heute Potenz mal Treffer). Den Zuschlag lernt RSR an
+  den eigenen Treffern: Schaden je Potenz auf schwache gegen andere Gegner, je Brett. Bis zur ersten Messung zählt er
+  nicht. *Stärke:* der passende Begleiter steht länger draußen. *Schwäche:* ohne Messung keine Wirkung; ein Brett mit
+  gleich verteilten Schwächen gewinnt wenig. *Gegenthese:* Der Zuschlag ist klein, und eine Fläche auf drei Gegner zählt
+  mehr. Nicht widerlegt, aber genau das rechnet das Produkt: Ein kleiner gemessener Zuschlag ändert die Reihenfolge
+  nicht.
+- *K2 – Horn für spätere Gegner aufheben* (sein Vorschlag, Beispiel Seelenlose). Das Blatt nennt je Kampf alle Gegner;
+  wer zu Beginn fehlt, kommt später. Trifft ein bereiter Begleiter deren Schwäche und keinen der Anwesenden, ruft RSR
+  ihn nicht im Zyklus, sondern sobald sie erscheinen, und greift sie an, bis sie fallen (die Zielart „wenigste LP" tut
+  das schon, A525). *Beleg:* Am 04.11.2026 um 19:48 kam der Raptor (Entfesseln Feuer) 8 s nach Kampfbeginn und ging
+  6 s später; sein Feuer traf die Seelenlose (Stich). Die drei feuerschwachen Sukkubi erschienen 45 s nach Beginn, alle
+  Hörner klangen ab. *Stärke:* die Gegner, die den Boss stärken oder dich zusätzlich treffen, fallen früher. *Schwäche:*
+  das gehaltene Horn ruht bis zu ihrem Erscheinen, ein Einsatz weniger im Kampf. *Gegenthese:* Die Adds fallen auch so
+  schnell (1.700 bis 2.000 LP gegen 19.600 des Bosses). Teilweise: Der Gewinn hängt am Zuschlag (K1) und an der Dauer
+  bis zum Ruf; das Halten kostet nur, solange das Horn sonst einen Einsatz hätte. Der Ruf kommt laut Blatt sicher. Gilt
+  für alle Kämpfe mit Ruf: Seelenlose, Taurus, Sirene, Ymir, Kämpfer, Strix, Progenitrix, Drakon, Durga, Medusa,
+  Flauros.
+- *K3 – Stärker und Heiler zuerst.* Gegner, deren Aktion Verbündete stärkt, heilt oder wiederbelebt (Fanaticism,
+  Rallying Cheer, Might, Healing Water, Natural Nurture, Raise, Aether Charge, Camaraderie und andere; im Blatt als Ziel
+  „Verbündeter" mit Status), vor dem mit den wenigsten LP. *Berührt seine Entscheidung A525* („wenigste LP zuerst, egal
+  wie die Einstellungen"): Vorlage an ihn, nicht umgesetzt.
+- *K4 – Unterbrechen.* Ein Begleiter, der unterbricht, gegen anfällige Gegner mit langem Zauber (Ossify, Fanaticism,
+  Dreadwash, Confound, Raise). Welche seiner Aktionen unterbricht, ist am Blatt noch zu belegen; danach ein Loop.
+- *K5 – Zustände.* Gift, Gewicht, Fessel gegen anfällige Gegner: Wirkung je Zustand nicht beziffert, nach K1 bis K4.
+- *K6 – Hörner vor dem Kampf belegen.* B5 setzt die Hörner zwischen den Kämpfen per Serverbefehl, im Crucible bisher
+  nicht. Vor einem Kampf im Brett kennt RSR dessen Gegner nicht aus der Sicht, aber aus dem Blatt, sobald das Feld
+  bekannt ist. Zwei Wege: B5s Befehl (ob der Server ihn dort annimmt, ist nicht gemessen) oder die Auswahl im Fenster
+  (`XBMPetParty`, Rückrufe; BeastHelper und AutoDuty nutzen sie, Werkzeugquellen). Belegung nach K1 und K2 mit einem
+  Heiler, wenn die Gefahr im Brett das verlangt.
+- *K7 – Kader vor dem Brett.* Die Schwächen eines Bretts und die passenden Begleiter stehen oben. Die Auswahl im
+  Bestienbuch automatisiert BeastHelper über Fensterereignisse, mit einem dokumentierten Absturz bei falschen
+  Ereignisdaten; der Gewinn gegen ein paar Klicks ist klein. Nicht gebaut; als Vorlage an ihn.
+- *K8 – Gegenstände.* Über `InstanceContentCrucibleOfTheUnbroken.UseItem(Platz, Bestie)` auf dein Ziel. Sicherheit zuerst
+  (seine Regel): Bestien-Heiltrank oder -Pulver, wenn deine LP in die Gefahr fallen und keine Heilung bereit ist;
+  Gegengift und Augentropfen gegen den passenden Zustand; Verhärtungsmittel vor einem angekündigten Tankbuster; Lebensfeder
+  oder Sand der Zeit außerhalb des Kampfes vor dem Endgegner. Schaden: der Reißzahn der passenden Schwäche auf die
+  gerufenen Gegner (K2) oder ein Rudel – so hat er es am 04.11.2026 um 19:04 selbst getan. *Gegenthese:* Gegenstände
+  sind ein Vorrat für das ganze Brett. Teilweise: Sicherheitsgegenstände gehen nur in der Gefahr; Schadensgegenstände
+  nur auf gerufene Gegner oder vor dem Endgegner. Der Punktezuschlag ohne Gegenstände steht dagegen: Option.
+- *K9 – Feindseligkeit (Zähnefletschen, Provozieren).* Neu belegt (Wiki): Hält der Begleiter die Feindseligkeit, trägt er
+  die Schwächungen vermeidbarer Flächen und nimmt aus ihnen keinen Schaden. Zähnefletschen schützt dich also auch dort,
+  wo du nicht ausweichst. *Gegenthese:* Seine LP bleiben über das Brett stehen, ein gefallener fehlt. Teilweise:
+  Provozieren vor seinem Fall (am größten bisher gesehenen Treffer, nicht an festen 30 %) hält ihn; die Campsite heilt
+  dich allein am meisten (gemessen +30 % bei geteilter Rast), also kostet verteilter Schaden dort Heilung. Empfehlung:
+  die Einstellung ab Werk an, auf dem letzten Horn, mit Provozieren am größten Treffer; Loop bei der Umsetzung.
+- *Nicht RSR:* Weg über das Brett, Laden, Fütterung, Auswahl an der Campsite, Flucht mit der Rauchbombe. Das sind
+  Entscheidungen zwischen den Kämpfen über den Vorrat des Bretts; BeastHelper und AutoDuty führen sie. RSR bleibt beim
+  Kampf und seiner Vorbereitung (Hörner).
+
+*Falsifikation:* Kein Defekt, weil das erste Brett zweimal ohne Tod fiel? Das gelang mit Gegenständen und Zähnefletschen
+von seiner Hand; die Meisterbretter haben Rang 20 und 25 und Gegner ohne Schwäche. Option falsch? K1 ohne gemessenen
+Zuschlag ist wirkungslos, aber nicht falsch; K2 kann ein Horn umsonst halten, wenn ein gerufener Gegner nie erscheint
+oder der Kampf vorher endet. Gehalten wird deshalb nur, solange ein anderer Begleiter draußen steht oder ein anderes Horn
+bereit ist; ist das gehaltene das einzige und keiner draußen, ruft RSR es: Ohne Begleiter fehlen Dressur, Kombo und
+Heilung sofort, der Zuschlag gegen die Adds später nur vielleicht. Ausgeliefert, und nichts ändert sich? Liest Lumina die XBM-Spalten
+anders als das Schema (wie bei `XBMPet`, Spalte `Unknown4`), fehlen Schwäche und Gegnerliste still; RSR schreibt deshalb
+beim Betreten, ob es die Daten des Bretts gelesen hat.
+
+*Stufen* (TODO „Beastmaster: Crucible-Strategien"): 1. Daten zur Laufzeit (Schwäche und Gegnerliste je Kampf,
+Schadensart je Begleiter) mit K1 und K2; 2. K9; 3. K8; 4. K6; danach K4, K5. K3 und K7 nach seiner Entscheidung.
 
 ---
 

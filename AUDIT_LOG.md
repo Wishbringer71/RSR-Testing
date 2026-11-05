@@ -15934,6 +15934,41 @@ habe den schleim bislang nicht anfreunden können."
 - *Prüfgrad:* Spuren und Mitschnitte vom 23.10. bis 04.11. ausgewertet, Code gelesen, Compile; die Ursache ist nicht
   belegt.
 
+### A532 · Crucible: alle Bretter aus den Blättern, Strategien K1–K9, sein Beispiel geprüft (05.11.2026)
+
+- *Anlass:* Seine Aufträge vom 05.11.2026: alle Bretter recherchieren, analysieren, Strategien und Konzept im vollen
+  Loop; seine Fragen, ob RSR im Brett Begleiter wählen und Gegenstände einsetzen kann; sein Beispiel (Vorschlag): beim
+  Endgegner des ersten Bretts den Feuer-Begleiter für die feuerschwachen Adds rufen und sie zuerst besiegen; danach ins
+  TODO: alle bekannten Repositories zu Rotationen, Beastmaster und Blaumagier auf Verbesserungen prüfen.
+- *Quellen:* xivapi v2 mit Schema exdschema@2:rev:a1e24a0c (die Standardfassung kennt die XBM-Spalten nicht):
+  `XBMContent` (fünf Bretter, Stufe, Rang, Kader), `XBMContentBattle` (Kämpfe je Brett) und `XBMBattleDetail` (je Kampf
+  eine Unterzeile je Gegner: Schwäche, Werte, `BNpcResist`, Aktionen); `Pet.Abilities` (Schadensart von Dressur und
+  Entfesseln je Begleiter); `XBMPet.Inflicts*`; `XBMContentCamp`; BossModReborn 577675d (Ruf von Adds, Unterbrechungen,
+  Tankbuster, Blicke je Modul); consolegameswiki; BeastHelper be40a1e (Teamwahl und Hornbelegung über Fensterrückrufe,
+  übernommen aus AutoDuty; Gegenstände über die Hotbar-Zuordnung des Bretts); FFXIVClientStructs b69073a
+  (`AgentXBMPetParty`: `TogglePet`, `ConfirmSelection`, `ApplyPetSelection`; `InstanceContentCrucibleOfTheUnbroken`:
+  Fach mit 10 Plätzen, `UseItem`); alle Typen stehen in Dalamuds `FFXIVClientStructs.dll` und `Lumina.Excel.dll` der
+  Bauumgebung (Zeichenkettensuche, Stand 22.10.2026).
+- *Sein Beispiel:* hält. Blatt: Endgegner Seelenlose (Pas de Seul) Stich, Sukkubus-Magierin und -Ritterin Feuer; Modul:
+  „Summon" (46927) ruft sie, die Magierin stärkt den Boss (Fanaticism, 9 s) und ist für Unterbrechen anfällig.
+  Mitschnitt 04.11.2026: Ruf 45 s nach Beginn (19:48:39), eine Magierin, zwei Ritterinnen; der Raptor (Entfesseln Feuer)
+  war 8 s nach Beginn gerufen und 6 s später fort, alle Hörner klangen beim Ruf ab. Um 19:04 traf sein Reißzahn des
+  Feuers Magierin und Ritterinnen. Feuer setzen Baumhörnchen, Puk, Spriggan, Drakon, Chimäre (Dressur), Raptor, Behemoth
+  (Entfesseln); Spriggan unterbricht zudem.
+- *Gemessen:* LP bleiben zwischen den Kämpfen stehen; eine Rast hob ihn um 30 % (19:44–19:47), passend zum Wiki des
+  ersten Bretts (geteilte Heilung), nicht zur Hauptseite (immer voll).
+- *Konzept:* 01, „Crucible of the Unbroken: Bretter, Kämpfe, Strategien": Regeln, alle Kämpfe, Schadensarten der
+  Begleiter, K1 Schwäche (Zuschlag gemessen, sonst ohne Wirkung), K2 Horn für gerufene Gegner (sein Vorschlag), K3
+  Stärker zuerst (berührt A525: Vorlage), K4 Unterbrechen, K5 Zustände, K6 Hörner vor dem Kampf, K7 Kader (Vorlage),
+  K8 Gegenstände, K9 Feindseligkeit (neu: der Begleiter mit Feindseligkeit trägt die Schwächungen vermeidbarer Flächen);
+  Falsifikation; Stufen. Die alten Stellen zu Schwächen und Gegenständen gingen darin auf.
+- *Antworten:* Team und Hörner im Brett wählt RSR heute nicht (B5 ist im Crucible aus); möglich über die Fensterrückrufe
+  oder `AgentXBMPetParty` (K6, K7). Gegenstände setzt RSR heute nicht ein; möglich über `UseItem` (K8).
+- *TODO:* „Beastmaster: Crucible-Strategien" ersetzt die beiden Crucible-Einträge; der Eintrag zu fremden Repositories
+  trägt den neuen Auftrag, Beastmaster- und Blaumagier-Quellen.
+- *Prüfgrad:* Blätter, Module und Mitschnitt ausgewertet; kein Code. Zuschlag der Schwäche und die Annahme der
+  Hornzuweisung im Brett sind unbelegt.
+
 ## B · Commit-Register (Fork vs. `upstream/main`)
 
 ### B1 · Einzelgeprüfte Fork-Commits
