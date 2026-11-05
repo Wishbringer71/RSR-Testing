@@ -71,6 +71,14 @@ public sealed class BST_Reborn : BeastmasterRotation
 			+ "Off: Capture and Gauge are never used.")]
 	private bool CaptureFamiliars { get; set; } = true;
 
+	// K8 of the Crucible, first part (concept 01, A551): the board's healing items take the place of the HP potions it locks.
+	[RotationConfig(CombatType.PvE, Name = "Use Crucible healing items below the HP potion line (Crucible only)",
+		Tooltip = "In combat on a Crucible board, when your HP fall below 'Use HP potions below this HP', RSR uses the board's "
+			+ "Beast Potion or Crucible Ash that lifts you back to that line with the least, or the largest when none does - a "
+			+ "potion before ash at the same heal, since ash heals your familiar as well. The board locks normal potions.\n"
+			+ "Off: RSR uses no board item.")]
+	private bool UseCrucibleHealItems { get; set; } = true;
+
 	// K9 of the Crucible (concept 01, A550): on by default. Without a tank the enemies attack only you, and your fall ends the
 	// run; the familiar's HP are a second store, and a fallen familiar costs that familiar, not the run.
 	[RotationConfig(CombatType.PvE, Name = "Use Snarl and Challenge based on your HP and your familiar's HP (Crucible only)",
@@ -997,6 +1005,10 @@ public sealed class BST_Reborn : BeastmasterRotation
 		// Stage 1 of the Crucible (A548): the fight in progress from the sheets, for K2.
 		FollowCrucible();
 		FollowFamiliarHits();
+		if (UseCrucibleHealItems && DataCenter.State)
+		{
+			UseCrucibleHealItem(Service.Config.UseHpPotionsPercent);
+		}
 		RecordFight();
 		CountFight();
 		WatchHand();

@@ -1947,6 +1947,26 @@ danach K4, K5, K10.
 - *Im Kampf:* Seelenlose (Stich), Raptor auf einem Horn (Entfesseln Feuer), Sukkubi (Feuer) nach 45 s. Der Raptor
   bleibt im Zyklus zurück, solange ein anderes Horn bereit ist, und kommt, sobald die Sukkubi erscheinen.
 
+**Stufe 3, erster Teil: K8, Heilgegenstände** (A551, gebaut):
+- *Gegenstände* (`XBMItem`, xivapi Schema a1e24a0c, 05.11.2026; Name in Spalte 2, Wirktext in Spalte 3, englisch): Bestien-
+  Heiltrank G1 bis G4 (Zeilen 76 bis 79, „Restores 10/23/36/50% of HP to self or familiar") und Asche G1 bis G3 (80 bis 82,
+  „… to self and nearby allies"). Die Prozentzahl liest RSR aus dem Wirktext, nicht aus einer Tabelle.
+- *Wann:* im Kampf im Brett, RSR an, wenn deine LP unter „Use HP potions below this HP" fallen. Das ist deine Linie für
+  den Heiltrank; normale Heiltränke sperrt das Brett, die Brett-Gegenstände treten an ihre Stelle. Eigene Einstellung
+  „Use Crucible healing items below the HP potion line (Crucible only)", ab Werk an.
+- *Welcher:* der kleinste, der dich wieder über die Linie hebt; reicht keiner, der größte. Bei gleicher Heilung der Trank
+  vor der Asche, denn die Asche heilt auch die Begleiter.
+- *Wie:* über `InstanceContentCrucibleOfTheUnbroken.UseItem` (FFXIVClientStructs, in Dalamuds Fassung vorhanden).
+  Der Gegenstand wirkt auf das Soft- oder Hard-Ziel; RSR setzt dazu das Soft-Ziel kurz auf dich und stellt es zurück. So
+  macht es BeastHelper (be40a1e, Werkzeugquelle, nur gelesen) über die Leiste des Bretts.
+- *Nachweis zur Laufzeit:* Nach dem Einsatz wartet RSR, bis der Platz einen anderen Gegenstand zeigt, höchstens einen GCD.
+  Bleibt er gleich, schreibt die Spur „not taken" und versucht diesen Platz in diesem Kampf nicht mehr.
+- *Nicht in diesem Teil:* Gegenmittel, Wiederbeleber, Sand der Zeit, Schutz und Reißzähne folgen. Ob ein Gegenstand
+  gerade gesperrt ist, prüft das Spiel nur über eine Funktion, die FFXIVClientStructs nicht führt; RSR prüft stattdessen
+  die Animationssperre und den Verbrauch.
+- *Gegenthese:* Gegenstände sind ein Vorrat für das ganze Brett. Teilweise widerlegt: Sie gehen erst an deiner
+  Heiltrank-Linie, und der kleinste passende zuerst. Dein Fall beendet den Lauf, ein ungenutzter Trank rettet nichts.
+
 **Stufe 1, zweiter Teil: K1 und der Rest von K3** (A549, gebaut; Daten in `CrucibleBoard`):
 - *K1, Zuschlag gemessen:* Keine Quelle nennt ihn; consolegameswiki und Eorzean Tavern sagen nur, dass Schwächen
   zählen (05.11.2026). RSR misst ihn an jedem Treffer von dir und deinen Begleitern auf einen Gegner des laufenden Kampfs.

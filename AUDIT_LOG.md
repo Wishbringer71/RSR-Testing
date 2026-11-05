@@ -16345,6 +16345,34 @@ habe den schleim bislang nicht anfreunden können."
 - *Prüfgrad:* vollständiger Compile ohne Warnung (zwei Nullwarnungen beim ersten Lauf behoben), Prüfschritte; Wirkkette am
   Code. Im Spiel nicht beobachtet; Spurzeile „Challenge: … its largest hit in this fight took …".
 
+### A551 · Crucible, Stufe 3, erster Teil: Heilgegenstände des Bretts unter der Heiltrank-Linie (K8) (05.11.2026)
+
+- *Auftrag:* `TODO.md`, „Beastmaster: Crucible-Strategien", K8 (Sicherheit zuerst).
+- *Quellen:*
+  - `XBMItem` (xivapi Schema a1e24a0c): 199 Zeilen mit Name, Wirktext und Typ. Heilend sind Bestien-Heiltrank G1 bis G4
+    („Restores 10/23/36/50% of HP to self or familiar") und Asche G1 bis G3 („… to self and nearby allies").
+  - FFXIVClientStructs aad0de6 (05.11.2026): `InstanceContentCrucibleOfTheUnbroken` mit `Inventory` (10 Plätze, `ItemId`)
+    und `UseItem(slot, beastId)`, „used on the player's current soft or hard target"; der Typ steht auch in Dalamuds
+    `FFXIVClientStructs.dll`. Typ 22 = `CrucibleOfTheUnbroken`.
+  - BeastHelper be40a1e (AGPL, nur gelesen) setzt das Soft-Ziel vor dem Einsatz auf das gewünschte Ziel. Die Sperre
+    prüft es über eine eigene Signatur, die FFXIVClientStructs nicht führt.
+- *Entscheidung (Konzept 01, „Stufe 3, erster Teil"):*
+  - `BeastmasterRotation.UseCrucibleHealItem` wird je Bild aus `UpdateInfo` aufgerufen, nur bei eingeschaltetem RSR. Es
+    setzt im Kampf im Brett, unter „Use HP potions below this HP", den kleinsten Heilgegenstand ein, der dich zur Linie
+    hebt, sonst den größten; bei gleicher Heilung den Trank vor der Asche. Gewirkt wird über das Soft-Ziel, danach
+    zurückgestellt.
+  - Nachweis zur Laufzeit: Der Platz muss den Gegenstand innerhalb eines GCD verlieren, sonst „not taken" und für den
+    Kampf gesperrt.
+  - Option „Use Crucible healing items below the HP potion line (Crucible only)", ab Werk an.
+  - Die Prozentzahl kommt aus dem englischen Wirktext; die Umrechnung in einen Anteil ist in `fixed_values.json`
+    eingetragen.
+- *Verworfen:* ein Heilgegenstand schon bei Gefahr (B1) – Gegenstände sind ein Vorrat für das Brett, die Linie ist seine;
+  eine feste Tabelle der Gegenstände (der Wirktext trägt es); die Sperrprüfung über eine Signatur aus BeastHelper (nicht in
+  FFXIVClientStructs, AGPL).
+- *Betroffene:* E – Beastmaster im Crucible.
+- *Prüfgrad:* Compile ohne Warnung, Prüfschritte; Wirkkette am Code. Im Spiel nicht beobachtet: ob `UseItem` mit dem
+  kurz gesetzten Soft-Ziel auf dich wirkt, zeigen die Zeilen „crucible item: …" und „not taken".
+
 ## B · Commit-Register (Fork vs. `upstream/main`)
 
 ### B1 · Einzelgeprüfte Fork-Commits

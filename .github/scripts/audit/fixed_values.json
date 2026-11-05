@@ -1017,6 +1017,16 @@
    "reason": "A value in the game's own BNpcBase column 10, compared, not tuned: the base rows a beastmaster can capture carry 5 (WrathCombo reads it so; four of the ten rows with the squirrel's model carry it). No source names the column; the game's GetActionStatus for Capture on the target is asked as well, so a wrong reading costs no weaponskill."
   },
   {
+   "file": "RotationSolver/Basic/Rotations/Basic/BeastmasterCrucibleItems.cs",
+   "code": "items[(ushort)row.RowId] = (percent / 100f, match.Groups[\"whom\"].Value.StartsWith(\"and\", StringComparison.Ordinal),",
+   "values": [
+    "100"
+   ],
+   "status": "exception",
+   "loop": "A551",
+   "reason": "Unit conversion, not a game value: the item's effect text states a percentage, the rule compares shares of HP."
+  },
+  {
    "file": "RotationSolver/Basic/Rotations/Basic/BeastmasterFamiliars.cs",
    "code": "private const uint GaugeNoPact = 11217;",
    "values": [
