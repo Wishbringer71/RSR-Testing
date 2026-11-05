@@ -1655,9 +1655,17 @@ internal partial class Configs : IPluginConfiguration, IM3Settings
 	// they stand; an action that removes them may still take it. On by default: the reflection lands with every hit, the
 	// wait costs damage, not HP (the owner's rule: safety before damage).
 	[ConditionBool, UI("Do not attack enemies whose spikes damage their attackers",
-	Description = "An enemy carrying a status whose text says it deals damage to its attackers (Blaze, Ice, Shock or Paralyzing Spikes) is no target of an attack while the status stands, for every job, ranged ones included. An action that removes that status may still target it (Quelling Wave on Blaze Spikes); its casts still count for areas and tankbusters. RSR notes each enemy it leaves alone in DefenseTrace.log.\nOff: RSR attacks it like any enemy and takes the damage it returns.",
+	Description = "An enemy carrying a status whose text says it turns your kind of attack back on you is no target of an attack while the status stands: spikes that deal damage to attackers (Blaze, Ice, Shock or Paralyzing Spikes) for every job, ranged ones included; a counter or reflection of physical attacks (Needles Out, Counter) for a disciple of war, the beastmaster among them; of magic for a disciple of magic; of ranged attacks for the ranged and healer roles; the blue mage counts for all. An action that removes that status may still target it (Quelling Wave on Blaze Spikes and Needles Out); its casts still count for areas and tankbusters. RSR notes each enemy it leaves alone in DefenseTrace.log.\nOff: RSR attacks it like any enemy and takes the damage it returns.",
 	Filter = TargetConfig, Section = 1)]
 	private static readonly bool _avoidSpikedEnemies = true;
+
+	// Concept 03, "Tötungsregeln", rules 2 and 3 (A588), with the fights in concept 01, K12: enemies that must fall together,
+	// after another or only in a place. On by default: a tablitaur that falls too early enrages the other (Daedalus, in the
+	// field), a morpho's death confuses you.
+	[ConditionBool, UI("Kill rules of known fights",
+	Description = "Some enemies must fall in an order no danger count finds. Enemies that must fall together (the tablitaur pair, the lamias that raise each other) are each brought down to a reserve and held there until all are: the reserve is what your measured damage clears in half the time the survivor's enrage or raise takes, so the last falls before it lands. An enemy whose death harms you while another lives or outside a place is no target then (a morpho while an abaddon lives, an abaddon while a morpho lives, a myconid outside the mindflayer's water puddles). A held enemy is caught by no area attack where its fall would harm. RSR notes each hold and release in DefenseTrace.log.\nOff: RSR attacks these enemies like any other.",
+	Filter = TargetConfig, Section = 1)]
+	private static readonly bool _killRules = true;
 
 	[ConditionBool, UI("Never attack targets with stop markers",
 	Filter = TargetConfig, Section = 1)]

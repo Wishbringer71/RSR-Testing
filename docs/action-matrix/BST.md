@@ -162,6 +162,7 @@ direkt: 34 · nur gelesen: 1 · ungenutzt: 5 · über andere Aktion: 8
 | Quelling Wave | StatusNeed BlazeSpikes_5465 | Status BlazeSpikes_5465 |
 | Quelling Wave | StatusNeed DamageUp_1225 | Status DamageUp_1225 |
 | Quelling Wave | StatusNeed MagicDamageUp_5020 | Status MagicDamageUp_5020 |
+| Quelling Wave | StatusNeed NeedlesOut | Status NeedlesOut |
 | Quelling Wave | StatusNeed PhysicalDamageUp_2074 | Status PhysicalDamageUp_2074 |
 | Quelling Wave | StatusNeed PopotoSkin | Status PopotoSkin |
 | Quelling Wave | StatusNeed WaveKinship | Status WaveKinship |

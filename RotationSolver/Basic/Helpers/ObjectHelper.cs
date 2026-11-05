@@ -291,36 +291,111 @@ public static class ObjectHelper
 	}
 
 	/// <summary>
-	/// Concept 03, "Gegner, die keine Fläche treffen darf" (A572): an enemy no attack may hit, not even an area one - spikes
-	/// that damage attackers, a stop marker while "Never attack targets with stop markers" is on, a guarded zu egg.
+	/// Concept 03, "Gegner, die keine Fläche treffen darf" (A572, A588): an enemy no attack may hit, not even an area one -
+	/// spikes that damage attackers, a stop marker while "Never attack targets with stop markers" is on, a guarded zu egg,
+	/// an enemy a kill rule holds where its fall would harm.
 	/// </summary>
 	internal static bool MustNotBeHit(this IBattleChara battleChara, ICollection<long> stopTargets)
 	{
-		return battleChara.HasSpikes() || battleChara.IsGuardedZuEgg()
+		return battleChara.HasSpikes() || battleChara.IsGuardedZuEgg() || KillOrder.MustNotBeHit(battleChara)
 			|| (Service.Config.FilterStopMark2 && !DataCenter.IsPvP && stopTargets.Contains((long)battleChara.GameObjectId));
 	}
 
 	/// <summary>
-	/// Concept 03, "Gegner mit Stacheln" (A571): whether this enemy carries a status that returns damage to its attackers
-	/// while "Do not attack enemies whose spikes damage their attackers" is on - no target of an attack, only of an action
-	/// that removes the status.
+	/// Concept 03, "Gegner mit Stacheln" (A571, A588): whether this enemy carries a status that turns the player's attacks
+	/// back on him - spikes, a counter or a reflection of the kind of attack his job makes - while "Do not attack enemies
+	/// whose spikes damage their attackers" is on: no target of an attack, only of an action that removes the status.
 	/// </summary>
 	internal static bool HasSpikes(this IBattleChara battleChara)
 	{
-		if (!Service.Config.AvoidSpikedEnemies || DataCenter.IsPvP)
-		{
-			return false;
-		}
+		return SpikeOf(battleChara) != null;
+	}
 
+	/// <summary>
+	/// Concept 03, "Tötungsregeln", rule 1 (A588): whether the next damage kills this enemy - a status whose text says so,
+	/// Stone Curse on a petrified enemy.
+	/// </summary>
+	internal static bool DiesToNextHit(this IBattleChara battleChara)
+	{
 		foreach (var status in battleChara.StatusList)
 		{
-			if (status != null && status.StatusId != 0 && StatusHelper.DamagesAttackers(status.StatusId))
+			if (status != null && status.StatusId != 0 && StatusHelper.DiesToAnyHit(status.StatusId))
 			{
 				return true;
 			}
 		}
 
 		return false;
+	}
+
+	/// <summary>The status by which <see cref="HasSpikes"/> leaves this enemy alone, or null.</summary>
+	internal static Dalamud.Game.ClientState.Statuses.IStatus? SpikeOf(IBattleChara battleChara)
+	{
+		if (!Service.Config.AvoidSpikedEnemies || DataCenter.IsPvP)
+		{
+			return null;
+		}
+
+		var mine = PlayerAttackKinds;
+		foreach (var status in battleChara.StatusList)
+		{
+			if (status != null && status.StatusId != 0 && (StatusHelper.CounteredAttacks(status.StatusId) & mine) != AttackKinds.None)
+			{
+				return status;
+			}
+		}
+
+		return null;
+	}
+
+	// The class job's rows (xivapi, 05.11.2026): ClassJobCategory 30 the disciples of war, the beastmaster among them; 31
+	// the disciples of magic; Role 3 the ranged, 4 the healers (concept 03, "Gegner mit Stacheln", A588).
+	private const uint DisciplesOfWar = 30;
+	private const uint DisciplesOfMagic = 31;
+	private const byte RangedRole = 3;
+	private const byte HealerRole = 4;
+	private static uint _attackKindsJob = uint.MaxValue;
+	private static AttackKinds _attackKinds = AttackKinds.Any;
+
+	/// <summary>
+	/// The kinds of attack the player's job makes: physical for a disciple of war, magic for a disciple of magic, from range
+	/// for the ranged and healer roles; every kind for the blue mage, whose spells are of either, and when the sheet cannot
+	/// be read.
+	/// </summary>
+	internal static AttackKinds PlayerAttackKinds
+	{
+		get
+		{
+			var job = Player.Object?.ClassJob.RowId ?? 0;
+			if (job == _attackKindsJob)
+			{
+				return _attackKinds;
+			}
+
+			_attackKindsJob = job;
+			_attackKinds = AttackKinds.Any;
+			var sheet = Svc.Data.GetExcelSheet<ClassJob>();
+			if (job != (uint)Job.BLU && sheet != null && sheet.TryGetRow(job, out var row))
+			{
+				var kinds = row.ClassJobCategory.RowId switch
+				{
+					DisciplesOfWar => AttackKinds.Physical,
+					DisciplesOfMagic => AttackKinds.Magic,
+					_ => AttackKinds.None,
+				};
+				if (row.Role is RangedRole or HealerRole)
+				{
+					kinds |= AttackKinds.Ranged;
+				}
+
+				if (kinds != AttackKinds.None)
+				{
+					_attackKinds = kinds;
+				}
+			}
+
+			return _attackKinds;
+		}
 	}
 
 	internal static bool IsAttackable(this IBattleChara battleChara)
@@ -368,7 +443,7 @@ public static class ObjectHelper
 			}
 		}
 
-		if (battleChara.HasSpikes() || battleChara.IsGuardedZuEgg())
+		if (battleChara.HasSpikes() || battleChara.IsGuardedZuEgg() || KillOrder.IsHeld(battleChara))
 		{
 			return false;
 		}
@@ -1118,6 +1193,12 @@ public static class ObjectHelper
 		if (battleChara.IsAllianceMember() || battleChara.IsParty())
 		{
 			return false;
+		}
+
+		// Concept 03, "Tötungsregeln", rule 1 (A588): the next damage kills it - one hit takes an enemy off the field.
+		if (battleChara.DiesToNextHit())
+		{
+			return true;
 		}
 
 		if (Service.Config.Treasuredungeonnumbered && DataCenter.IsInTreasureHunt)

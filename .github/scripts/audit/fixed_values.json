@@ -1461,6 +1461,151 @@
    "status": "exception",
    "loop": "A586",
    "reason": "The share of familiar damage per source as measured on the first board in his ACT logs of 04 and 05.11.2026: all familiars together dealt 74,200 damage, 23,449 by auto-attacks, 13,041 by Tricks, 14,205 by Tempered Releases, 23,387 by Parting Blow's Aetheric Burst. A fallback from measurement until every source has hit since RSR loaded (FamiliarDamageShares), not a game value."
+  },
+  {
+   "file": "RotationSolver/Basic/Helpers/ObjectHelper.cs",
+   "code": "private const uint DisciplesOfMagic = 31;",
+   "values": [
+    "31"
+   ],
+   "status": "exception",
+   "loop": "A588",
+   "reason": "The ClassJobCategory row of the disciples of magic in the game's ClassJob sheet (xivapi v2, 05.11.2026: WHM, BLM, RDM, PCT, BLU carry 31); an identifier of the game, not a tuned value. Concept 03, \"Gegner mit Stacheln\": a disciple of magic attacks with magic."
+  },
+  {
+   "file": "RotationSolver/Basic/Helpers/ObjectHelper.cs",
+   "code": "private const byte RangedRole = 3;",
+   "values": [
+    "3"
+   ],
+   "status": "exception",
+   "loop": "A588",
+   "reason": "The ClassJob sheet's Role of the ranged jobs (xivapi v2, 05.11.2026: BRD, BLM, RDM, PCT, BLU carry 3; JobRole's own ordinal 3 is the unused \"Ranged\"); an identifier of the game. Concept 03, \"Gegner mit Stacheln\": they attack from range."
+  },
+  {
+   "file": "RotationSolver/Basic/Helpers/ObjectHelper.cs",
+   "code": "private const byte HealerRole = 4;",
+   "values": [
+    "4"
+   ],
+   "status": "exception",
+   "loop": "A588",
+   "reason": "The ClassJob sheet's Role of the healers (xivapi v2, 05.11.2026: WHM 4; JobRole.Healer is the same ordinal); an identifier of the game. Concept 03, \"Gegner mit Stacheln\": healers attack from range."
+  },
+  {
+   "file": "RotationSolver/Basic/Helpers/KillOrder.cs",
+   "code": "([14556, 14555], 48214), // younger and elder tablitaur piece: Endless Slashes, then the arena is hit",
+   "values": [
+    "14556",
+    "14555",
+    "48214"
+   ],
+   "status": "exception",
+   "loop": "A588",
+   "reason": "BNpcName rows of the younger and elder tablitaur piece (xivapi v2, 05.11.2026) and the Action row of Endless Slashes, the survivor's 9 s cast before a hit across the arena (Action 48214 Cast100ms 90; BossModReborn 27be42256: \"Enrage - if one dies before the other too early\"); identifiers of the game. Concept 01, K12."
+  },
+  {
+   "file": "RotationSolver/Basic/Helpers/KillOrder.cs",
+   "code": "([14661], 49287), // lamia piece: Raise on a dead one",
+   "values": [
+    "14661",
+    "49287"
+   ],
+   "status": "exception",
+   "loop": "A588",
+   "reason": "BNpcName row of the lamia piece and Action row of its Raise, a 10 s cast on a dead lamia (xivapi v2, 05.11.2026; BossModReborn 27be42256); identifiers of the game. Concept 01, K12."
+  },
+  {
+   "file": "RotationSolver/Basic/Helpers/KillOrder.cs",
+   "code": "(14656, 14655, true), // morpho piece while an abaddon piece lives: its death confuses you",
+   "values": [
+    "14656",
+    "14655"
+   ],
+   "status": "exception",
+   "loop": "A588",
+   "reason": "BNpcName rows of the morpho piece and the abaddon piece (xivapi v2, 05.11.2026); identifiers of the game. Concept 01, K12: a morpho's death confuses you while an abaddon lives (BossModReborn 27be42256, GluttonyCombo 1.0.4.305)."
+  },
+  {
+   "file": "RotationSolver/Basic/Helpers/KillOrder.cs",
+   "code": "(14655, 14656, false), // abaddon piece while a morpho piece lives: it must eat them first",
+   "values": [
+    "14655",
+    "14656"
+   ],
+   "status": "exception",
+   "loop": "A588",
+   "reason": "BNpcName rows of the abaddon piece and the morpho piece (xivapi v2, 05.11.2026); identifiers of the game. Concept 01, K12: the abaddon eats the morphos and must not fall before them."
+  },
+  {
+   "file": "RotationSolver/Basic/Helpers/KillOrder.cs",
+   "code": "private const uint MyconidPiece = 14634;",
+   "values": [
+    "14634"
+   ],
+   "status": "exception",
+   "loop": "A588",
+   "reason": "BNpcName row of the myconid piece (xivapi v2, 05.11.2026); an identifier of the game. Concept 01, K12."
+  },
+  {
+   "file": "RotationSolver/Basic/Helpers/KillOrder.cs",
+   "code": "private const uint MindflayerPiece = 14633;",
+   "values": [
+    "14633"
+   ],
+   "status": "exception",
+   "loop": "A588",
+   "reason": "BNpcName row of the mindflayer piece (BossModReborn 27be42256 NameID 14633u, the Second Master's Board); an identifier of the game. Concept 01, K12."
+  },
+  {
+   "file": "RotationSolver/Basic/Helpers/KillOrder.cs",
+   "code": "private const uint WaterPuddle = 2005400;",
+   "values": [
+    "2005400"
+   ],
+   "status": "exception",
+   "loop": "A588",
+   "reason": "The event object of a Void Water III puddle (BossModReborn 27be42256: WaterPuddle = 0x1E9998, EventObj type); an identifier of the game. Concept 01, K12."
+  },
+  {
+   "file": "RotationSolver/Basic/Helpers/KillOrder.cs",
+   "code": "private const uint VoidWaterIII = 49200;",
+   "values": [
+    "49200"
+   ],
+   "status": "exception",
+   "loop": "A588",
+   "reason": "Action row of Void Water III, whose EffectRange (8 y in the sheet, xivapi v2, 05.11.2026) is read at runtime as the puddle's radius; an identifier of the game. Concept 01, K12."
+  },
+  {
+   "file": "RotationSolver/Basic/Helpers/KillOrder.cs",
+   "code": "private const byte SpentPuddle = 7;",
+   "values": [
+    "7"
+   ],
+   "status": "exception",
+   "loop": "A588",
+   "reason": "The event state of a spent water puddle, as BossModReborn 27be42256 filters it (MindFlayerPiece.GetVoidzones: EventState != 7); a value of the client no sheet states, taken from that tool source. Concept 01, K12."
+  },
+  {
+   "file": "RotationSolver/Basic/Helpers/KillOrder.cs",
+   "code": "private const float ReserveShareOfWindow = 0.5f;",
+   "values": [
+    "0.5f"
+   ],
+   "status": "exception",
+   "loop": "A588",
+   "reason": "Share of the survivor's window kept as the reserve (concept 03, \"Tötungsregeln\", rule 2, A588): with the reserve at the stream times the whole window nothing is left for the way to the survivor after the first falls; with half, the other half holds the way and a stream that sinks at the end; less than half adds switches without making the end safer, which depends on the reserve alone. Not a figure of the game; derived in the loop of A588."
+  },
+  {
+   "file": "RotationSolver/Basic/Helpers/ObjectHelper.cs",
+   "code": "private const uint DisciplesOfWar = 30;",
+   "values": [
+    "30"
+   ],
+   "status": "exception",
+   "loop": "A588",
+   "reason": "The ClassJobCategory row of the disciples of war in the game's ClassJob sheet (xivapi v2, 05.11.2026: PLD, MNK, BRD, DRK, VPR and the beastmaster BST carry 30); an identifier of the game, not a tuned value. Concept 03, \"Gegner mit Stacheln\": a disciple of war attacks physically."
   }
  ]
 }

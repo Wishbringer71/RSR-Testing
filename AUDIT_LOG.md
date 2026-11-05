@@ -17244,6 +17244,41 @@ habe den schleim bislang nicht anfreunden können."
 - *Prüfgrad:* statisch, Compile ohne Warnung, Prüfskripte. Im Spiel nicht beobachtet; die Zeile „casts interruptibly"
   zeigt das Lernen.
 
+### A588 · Bretter 2 bis 5: Tötungsregeln (zuerst, gemeinsam, erst danach), Gegenangriff nach Angriffsart (05.11.2026)
+
+- *Anlass:* TODO „Beastmaster: Crucible-Strategien", nächster Schritt „die Bretter 2 bis 5 Kampf für Kampf"; sein
+  Auftrag „beastmaster bei den brettern spielbar".
+- *Quellen:* BossModReborn 27be42256 (05.11.2026, Werkzeugquelle): die 35 Module der Bretter 2 bis 5, davon 30 mit
+  Zielvorrang oder Hinweisen;
+  `IPCProvider.cs` gibt keinen Zielvorrang heraus. Daedalus 74659a6 (Feldnotizen: Tablitauren 25.10., Lamien 02.11.,
+  Atomic Ray). GluttonyCombo 1.0.4.305 (15.10.2026, Abaddon und Morpho aus Mitschnitten). Blätter (xivapi v2,
+  05.11.2026): Status (Needles Out 5145, Gegenangriffs- und Rückwurf-Familie, Stone Curse 437 u. a.), Action (Endless
+  Slashes 48214 9 s, Raise 49287 10 s, Void Water III 49200 Radius 8, Spore Spill 49196 Radius 6, Quelling Wave 44900
+  Spell/Magie), BNpcName, ClassJob (Kategorie 30/31, Rolle). Gemeinschaft: consolegameswiki (Spieltext „Moisture
+  dampens the proliferation of spores!"), eorzeantavern, Forum. Sein Mitschnitt Brett 1 (05.11.2026): 202 von 221
+  Begleitertreffern auf dem Spielerziel, Folgezeit nach Wechsel meist 0 bis 1,7 s.
+- *Befund (Klassendefekt, A571):* Die Stachelerkennung las nur „damage to attackers". Gegenangriff und Rückwurf („countering
+  physical attacks", „reflected back at the dealer" …) fielen durch – im Drachen-Kampf schlug der Beastmaster den barbmole
+  unter Needles Out weiter. Die Klasse umfasst 25 Statuszeilen mit drei Arten (physisch, magisch, Fernkampf).
+- *Gebaut:* `StatusHelper.CounteredAttacks` (Arten aus dem Wirktext), `ObjectHelper.PlayerAttackKinds` (Disziplin und
+  Rolle aus `ClassJob`, Blaumagier alle), `HasSpikes`/`SpikeOf` schneiden beides; Quelling Wave bannt auch Needles Out.
+  `StatusHelper.DiesToAnyHit` und `DiesToNextHit` → Gegner mit Vorrang (Regel 1, ohne Einstellung). `KillOrder` (Regeln
+  2 und 3, Einstellung „Kill rules of known fights", ab Werk an): Tablitauren und Lamien fallen gemeinsam (Rücklage =
+  größter Strom eines Mitglieds × halbe Wirkzeit der Aktion des Überlebenden), Morpho nicht neben Abaddon und
+  umgekehrt, Myconid nur in einer lebenden Pfütze von Void Water III; zurückgehaltene fehlen in der Gegnerliste und
+  stehen, wo ihr Fall schadet, in der Flächensperre. Spurzeilen „kill rule: … held/released".
+- *Verworfen:* BossModReborns Zielvorrang (keine IPC); feste HP-Spannen für Paare (Daedalus 10 %, BossModReborn 30 %);
+  GluttonyCombos Abaddon „bis 35 % halten"; den Strom als Summe der angreifbaren Mitglieder (beim ersten Zurückhalten
+  bräche er ein, die Rücklage fiele auf null – im Review vor dem Commit gefunden); die Angriffsart je Aktion (die Äxte
+  tragen `AttackType` 0). Nicht gebaut mit Grund (Konzept 01, K12): Loosefrox/Chewchum, Gigantis-Schleime, Eisbomben,
+  feste Reihenfolgen ohne Mechanik, Golem-Herz, Atomic Ray.
+- *Falsifikation:* Kein Defekt? Needles Out traf das alte Muster nicht – belegt am Wirktext. Option falsch? Die Rücklage
+  hängt am gemessenen Strom; vor der ersten Messung hält RSR nichts, wenn die Gruppe weit auseinandersteht, reicht die
+  halbe Wirkzeit für den Weg nicht (Preis benannt). Ausgeliefert, und nichts ändert sich? Zurückgehaltene fehlen in
+  `AllHostileTargets` und stehen in `UntouchableHostiles`; die Spurzeilen zeigen jedes Halten.
+- *Prüfgrad:* statisch, Compile ohne Warnung, Prüfskripte. Im Spiel nicht beobachtet (er hat die Bretter 2 bis 5 noch
+  nicht hochgeladen); die Spurzeilen „kill rule" und „left alone … turns Physical attacks" zeigen jede Entscheidung.
+
 ## B · Commit-Register (Fork vs. `upstream/main`)
 
 ### B1 · Einzelgeprüfte Fork-Commits

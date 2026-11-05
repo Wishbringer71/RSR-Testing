@@ -85,8 +85,23 @@ What this release changes in the fight. For the whole distance from upstream, se
   Ice, Shock or Paralyzing Spikes, by the status text) is no target of an attack while the spikes stand,
   for every job - until now only two such statuses were listed, and the Crucible's snoll piece with Ice
   Spikes was still hit. An action that removes the spikes may still target the enemy: Quelling Wave now
-  reaches the drake piece with Blaze Spikes, which it never found before. `Do not attack enemies whose
-  spikes damage their attackers`, **on by default**; `DefenseTrace.log` names each enemy left alone.
+  reaches the drake piece with Blaze Spikes, which it never found before. Counters and reflections count
+  too, by the kind of attack they turn back: one that counters physical attacks (the barbmole piece's
+  Needles Out, Counter) spares a disciple of war - the beastmaster among them - and leaves a mage free to
+  attack; magic reflections spare a mage, ranged ones the ranged jobs and healers. Quelling Wave, a spell,
+  may also strip Needles Out. `Do not attack enemies whose spikes damage their attackers`, **on by
+  default**; `DefenseTrace.log` names each enemy left alone and which attacks it turns back.
+- **An enemy the next hit kills comes first.** A petrified enemy whose status says that taking damage
+  means instant death (Stone Curse - the cyclops piece under Medusa's gaze) is taken off the field with
+  one hit before it recovers, for every job.
+- **Enemies that must fall together, or after another, are held back.** A pair whose survivor enrages
+  or raises the other when one falls (the tablitaur pair, the lamias) is brought down evenly: each is
+  held at a reserve - your measured damage over half the survivor's cast - until all are there, so the
+  last falls before the enrage or raise lands. A morpho piece is not killed while an abaddon piece
+  lives (its death confuses you), the abaddon not while a morpho lives, and a myconid piece only in the
+  mindflayer's water puddles, where its death spills no spores. Held enemies are no target, and no area
+  attack catches one whose fall would harm. `Kill rules of known fights`, **on by default**;
+  `DefenseTrace.log` notes each hold and release.
 - **Area attacks spare what may not be hit.** An area attack no longer catches an enemy RSR must not
   attack: one with spikes, one with a stop marker while `Never attack targets with stop markers` is on
   (until now only the target was spared - the area still woke a sleeping enemy), and in the Crucible a

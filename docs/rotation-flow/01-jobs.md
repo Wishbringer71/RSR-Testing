@@ -2139,6 +2139,45 @@ Dullahan, Golem, Spriggan und Eisgolem (`XBMPet.InflictsInterrupt`).
   *Verworfen:* Daedalus' Freigabe der Flächen, sobald der Zu unter 15 % fällt: eine Zahl ohne Herleitung; ob ein Ei dann
   noch schadet, belegt nichts. *Gegenthese:* Ohne Flächen dauert der Kampf länger. Widerlegt im Sinne seiner Spielweise:
   Ein stärkerer Zu kostet LP, die längere Dauer Schaden.
+  - *Die übrigen Tötungsregeln der Bretter* (A588; die Regeln selbst: Konzept 03, „Tötungsregeln"; Einstellung „Kill
+    rules of known fights", ab Werk an). Quelle der Kämpfe: BossModReborn 27be42256 (05.11.2026, Werkzeugquelle,
+    Module „Contributed" oder „WIP"), Daedalus 74659a6 (Feldnotizen), GluttonyCombo 1.0.4.305 (15.10.2026, Mitschnitte),
+    die Blätter (xivapi v2, 05.11.2026).
+    - *Tablitauren, Brett 2 – gemeinsam:* younger und elder tablitaur piece (14556, 14555). Fällt einer, beginnt der
+      andere Endless Slashes (48214, 9 s Wirkzeit laut Blatt), danach trifft eine Linie von 80 × 70 Yalm die Arena
+      (48216; BossModReborn: „Enrage – if one dies before the other too early"). Daedalus im Feld (25.10.2026): ein
+      Stier fiel, der andere stand auf 72 %, der Überlebende tobte. Fenster 9 s, Rücklage 4,5 s des Stroms.
+    - *Lamien, Medusa-Kampf, Brett 5 – gemeinsam:* lamia piece (14661). Eine lebende Lamia wirkt Raise (49287, 10 s) auf
+      eine tote; unterbrechbar (K4). Fenster 10 s. Daedalus (02.11.2026): „should just balance anyway".
+    - *Morpho und Abaddon, Drachen-Kampf, Brett 5 – erst danach:* Ein morpho piece (14656) fällt nicht, solange ein
+      abaddon piece (14655) lebt – kein Ziel, keine Fläche: Sein Tod verwirrt dich (BossModReborn: „Killing MorphoPiece
+      will cause confuse debuff as well, must be eaten by AbaddonPiece"; sein Zauber Delusion Dust trifft jeden mit
+      „Confused", eorzeantavern). Ein abaddon piece ist kein Ziel, solange ein morpho piece lebt: Er frisst sie (BossModReborn:
+      „Don't kill until all MorphoPiece are dead"; GluttonyCombo: nie vor ihnen töten). Ihn treffende Flächen bleiben
+      erlaubt: Er hat viele LP, und erst sein Fall vor dem letzten Morpho schadet. *Verworfen:* GluttonyCombos „bis 35 %
+      anschlagen und halten" – eine Zahl ohne Herleitung; die Zeit bis zum Fressen kürzt es nicht, und seine Regeneration
+      (Rehabilitation, eine Minute, mit jedem Morpho erneuert; Quelling Wave entfernte sie in 15 Würfen nie) hebt den
+      Halt wieder. Lebt kein Abaddon mehr, fallen Morphos wie jeder Gegner (Wit's End verwirrt nach 16 Stufen ohnehin).
+    - *Myconiden, Gedankenschinder-Kampf, Brett 5 – nur am Ort:* Ein myconid piece (14634) fällt nur in einer Pfütze von
+      Void Water III, solange der mindflayer piece (14633) lebt – außerhalb kein Ziel, keine Fläche. Außerhalb legt sein
+      Tod Spore Spill (49196, 6 Yalm, 1 s, Gift) und eine Pilzzone; in der Pfütze nicht (Spieltext im Kampf: „Moisture
+      dampens the proliferation of spores!", consolegameswiki; eorzeantavern; Forum). Die Pfütze ist das Bodenobjekt
+      2005400 (BossModReborn 0x1E9998), ihr Radius der Wirkradius von Void Water III (49200: 8 Yalm laut Blatt);
+      verbraucht ist sie im Ereigniszustand 7 (BossModReborn, `EventState`). BossModReborn prüft mit 6 Yalm – das ist der
+      Radius von Spore Spill, nicht der Pfütze. Hinein gehst du oder BossModReborn: Dessen Modul will dich in den Pfützen
+      (`PersistentInvertibleVoidzone`, ab Kampfbeginn umgekehrt), die Myconiden folgen dir.
+    - *Versteinerter Zyklop, Medusa-Kampf:* allgemein, Konzept 03, „Ein Treffer tötet ihn".
+    - *Barbmole, Drachen-Kampf:* allgemein, Konzept 03, „Gegner mit Stacheln" (Needles Out).
+    - *Nicht gebaut, mit Grund:* Loosefrox und Chewchum (Brett 2): BossModReborn schont Chewchum, solange Loosefrox lebt,
+      Daedalus nennt sie in einem Kommentar ein Paar, das zusammen fallen muss; kein Blatt und kein Feldbeleg sagt, was
+      geschieht – die Gefahrenreihenfolge (K3) ordnet. Gigantis-Schleime (Brett 5): Welcher fallen soll, hängt daran, ob
+      der Spieler die Keule auf den anderen lenkt; RSR lenkt nicht, und ein geschonter Schleim wirkt Rupture auf die
+      ganze Arena (unterbrechbar, K4). Eisbomben des Progenitrix (Brett 4): Ihr Fall bei Feuerpfützen räumt diese;
+      Stellung ist Sache des Spielers, Ice Spikes meidet die Stachelregel. Reihenfolgen ohne Mechanik (Bavarois,
+      Boogyman, Zu-Küken, Fronten aus Zusatzgegnern vor dem Boss): K3 ordnet nach Gefahr; BossModReborn ordnet dort
+      „Zusatzgegner vor Boss" fest, K3 rechnet es. Golem-Herz (Brett 4, 20 s nach dem zweiten Golem): keine Wahl, nur
+      Schaden. Atomic Ray der Durga (49272, „pet cover will not take it", Daedalus nach icy-veins): RSR löst
+      Zähnefletschen nach LP aus, nicht nach angekündigten Flächen (K9), und rechnet nirgends mit der Deckung gegen sie.
 
 - *K11 – Begleiter über das Brett planen* (sein Hinweis und seine Vorgabe vom 05.11.2026: „da begleiter über die
   spielfelder des brettes hinweg schaden ansammeln und hp sinkt, auch strategische planung, falls begleiter mehrfach

@@ -283,6 +283,10 @@ internal static partial class TargetUpdater
 			playerEye = new Vector3(playerEye.Value.X, playerEye.Value.Y + 2.0f, playerEye.Value.Z);
 		}
 
+		// Concept 03, "Tötungsregeln" (A588): which enemies a kill rule holds back, from every battle character - a held
+		// one leaves the list below, so the rules cannot read it.
+		KillOrder.Update(allTargets);
+
 		foreach (var member in allTargets)
 		{
 			try
@@ -337,7 +341,7 @@ internal static partial class TargetUpdater
 							continue;
 						}
 
-						if (member.IsGuardedZuEgg())
+						if (member.IsGuardedZuEgg() || KillOrder.IsHeld(member))
 						{
 							continue;
 						}
@@ -1056,14 +1060,11 @@ internal static partial class TargetUpdater
 			return;
 		}
 
-		foreach (var status in enemy.StatusList)
+		if (ObjectHelper.SpikeOf(enemy) is { } status)
 		{
-			if (status != null && status.StatusId != 0 && StatusHelper.DamagesAttackers(status.StatusId))
-			{
-				DefenseTrace.Line($"target: {enemy.Name} left alone - {status.GameData.Value.Name.ExtractText()} ({status.StatusId}) "
-					+ $"damages its attackers, {status.RemainingTime:F0} s left");
-				return;
-			}
+			DefenseTrace.Line($"target: {enemy.Name} left alone - {status.GameData.Value.Name.ExtractText()} ({status.StatusId}) "
+				+ $"turns {StatusHelper.CounteredAttacks(status.StatusId)} attacks on its attackers, yours are {ObjectHelper.PlayerAttackKinds}, "
+				+ $"{status.RemainingTime:F0} s left");
 		}
 	}
 }

@@ -225,7 +225,8 @@ public static class StatusHelper
 
 	private static readonly System.Collections.Concurrent.ConcurrentDictionary<uint, bool> _damageOverTime = new();
 	private static readonly System.Collections.Concurrent.ConcurrentDictionary<uint, bool> _endsInDeath = new();
-	private static readonly System.Collections.Concurrent.ConcurrentDictionary<uint, bool> _damagesAttackers = new();
+	private static readonly System.Collections.Concurrent.ConcurrentDictionary<uint, AttackKinds> _counteredAttacks = new();
+	private static readonly System.Collections.Concurrent.ConcurrentDictionary<uint, bool> _diesToAnyHit = new();
 	private static readonly System.Collections.Concurrent.ConcurrentDictionary<uint, bool> _turnsWorse = new();
 
 	// What happens when the status runs out or stays: "When this effect expires, you will experience a Deep Freeze."
@@ -256,23 +257,84 @@ public static class StatusHelper
 		});
 	}
 
-	// "dealing fire damage to attackers", "dealing ice damage to and slowing down attackers" (Blaze, Ice, Shock and
-	// Paralyzing Spikes, Veil of the Whorl; xivapi, 05.11.2026).
-	private static readonly System.Text.RegularExpressions.Regex DamageToAttackers = new(@"damage to (?:and [^.]*?)?attackers",
+	// Concept 03, "Gegner mit Stacheln" (A571, A588), the English status texts (xivapi, 05.11.2026): spikes "dealing fire
+	// damage to attackers", "dealing ice damage to and slowing down attackers"; counters "Countering any physical attacks",
+	// "Damage taken is reduced while countering attacks", "Delivering counter damage every time an attack is suffered";
+	// reflections "All physical attacks are reflected back at the dealer", "Reflecting magic back on its caster",
+	// "Magic attacks are being absorbed and reflected". "Certain death when counter reaches zero" (Doom) is none of them.
+	private static readonly System.Text.RegularExpressions.Regex HitsAttackers = new(
+		@"damage to (?:and [^.]*?)?attackers|\bcountering\b|\bcounter damage\b",
+		System.Text.RegularExpressions.RegexOptions.IgnoreCase | System.Text.RegularExpressions.RegexOptions.CultureInvariant);
+
+	private static readonly System.Text.RegularExpressions.Regex Reflects = new(@"\breflect",
+		System.Text.RegularExpressions.RegexOptions.IgnoreCase | System.Text.RegularExpressions.RegexOptions.CultureInvariant);
+
+	private static readonly System.Text.RegularExpressions.Regex ReflectsAttacks = new(@"attack|magic|caster|dealer",
 		System.Text.RegularExpressions.RegexOptions.IgnoreCase | System.Text.RegularExpressions.RegexOptions.CultureInvariant);
 
 	/// <summary>
-	/// Whether this status returns damage to whoever attacks its bearer, by its own text in the English status sheet:
-	/// spikes of every element (concept 03, "Gegner mit Stacheln", A571). A sheet that cannot be read answers no.
+	/// Which attacks this status turns back on whoever makes them, by its own text in the English status sheet: spikes,
+	/// counters and reflections (concept 03, "Gegner mit Stacheln", A571, A588). "physical" in the text narrows it to
+	/// physical attacks, "magic" or "-aspected" to magic ones, "ranged" to attacks from range; otherwise every attack. None
+	/// for any other status, and when the sheet cannot be read.
 	/// </summary>
-	internal static bool DamagesAttackers(uint statusId)
+	internal static AttackKinds CounteredAttacks(uint statusId)
 	{
-		return _damagesAttackers.GetOrAdd(statusId, static key =>
+		return _counteredAttacks.GetOrAdd(statusId, static key =>
 		{
 			try
 			{
 				var sheet = Svc.Data.GetExcelSheet<Lumina.Excel.Sheets.Status>(Dalamud.Game.ClientLanguage.English);
-				return sheet != null && sheet.TryGetRow(key, out var row) && DamageToAttackers.IsMatch(row.Description.ExtractText());
+				if (sheet == null || !sheet.TryGetRow(key, out var row))
+				{
+					return AttackKinds.None;
+				}
+
+				var text = row.Description.ExtractText();
+				if (!HitsAttackers.IsMatch(text) && !(Reflects.IsMatch(text) && ReflectsAttacks.IsMatch(text)))
+				{
+					return AttackKinds.None;
+				}
+
+				var kinds = AttackKinds.None;
+				if (text.Contains("physical", StringComparison.OrdinalIgnoreCase))
+				{
+					kinds |= AttackKinds.Physical;
+				}
+
+				if (text.Contains("magic", StringComparison.OrdinalIgnoreCase) || text.Contains("-aspected", StringComparison.OrdinalIgnoreCase))
+				{
+					kinds |= AttackKinds.Magic;
+				}
+
+				if (text.Contains("ranged", StringComparison.OrdinalIgnoreCase))
+				{
+					kinds |= AttackKinds.Ranged;
+				}
+
+				return kinds == AttackKinds.None ? AttackKinds.Any : kinds;
+			}
+			catch (Exception)
+			{
+				return AttackKinds.None;
+			}
+		});
+	}
+
+	/// <summary>
+	/// Whether the next damage kills the bearer of this status, by its own text in the English status sheet: "Turned into
+	/// stone. Taking damage results in instant death." (Stone Curse 437, 1417, 4537, 5058; xivapi, 05.11.2026). Concept 03,
+	/// "Tötungsregeln" (A588). A sheet that cannot be read answers no.
+	/// </summary>
+	internal static bool DiesToAnyHit(uint statusId)
+	{
+		return _diesToAnyHit.GetOrAdd(statusId, static key =>
+		{
+			try
+			{
+				var sheet = Svc.Data.GetExcelSheet<Lumina.Excel.Sheets.Status>(Dalamud.Game.ClientLanguage.English);
+				return sheet != null && sheet.TryGetRow(key, out var row)
+					&& row.Description.ExtractText().Contains("Taking damage results in instant death", StringComparison.OrdinalIgnoreCase);
 			}
 			catch (Exception)
 			{
