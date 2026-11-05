@@ -17086,6 +17086,55 @@ habe den schleim bislang nicht anfreunden können."
   Fenster) – dann bleibt es beim Verhalten vor A581.
 - *Prüfgrad:* statisch, Compile ohne Warnung, Prüfskripte; Ursache an der Spur belegt. Im Spiel nicht beobachtet.
 
+### A582 · Brett 1 Kampf für Kampf: Rückzug als Treffer, Zähnefletschen auf den Gehenden, Schwäche nie gezählt, Gefahr unter der Deckung blind (05.11.2026)
+
+- *Anlass:* sein Auftrag vom 05.11.2026, „generell bei allen kämpfen prüfen ob die rota optimiert werden kann und die
+  auswahl und das timing der beschwörung" (TODO, Vorrang). Grundlage: Spur und ACT-Mitschnitt von Brett 1 (05.11.2026,
+  Build ec7aca6d4; Kämpfe 1, 3, 4, 5 und Endkampf), zur Gegenprobe der Brett-Abschnitt des Mitschnitts vom 04.11.2026.
+- *Befund 1, Rückzug als Treffer (K9, K8):* Beim Rückzug nach Ätherschub zeigt das Spiel den Begleiter ein Bild lang mit
+  0 LP (Riesenwurm 20:43:18,58, 608 → 0, kein Treffer). `FollowFamiliarHits` zählte das als größten Treffer; danach
+  provozierte RSR jeden Begleiter mit höchstens 608 LP. Kampf 1: Zähnefletschen 20:43:29,87 / Provozieren 31,65,
+  46,70 / 47,32, 01,69 / 02,32, 16,69 / 18,39, 33,43 / 34,05 – Cu Sith (574/574) deckte je 0,6 bis 1,8 s von 15 s.
+  Kampf 4 (Schleim 347 gegen 458, Rückzug der Fledermaus) und 5 (Pugil 424 gegen 458) ebenso. Dasselbe Maß las der
+  Bestien-Heiltrank für den Begleiter (A577). *Behebung:* Ein Fall auf 0 LP zählt nicht.
+- *Befund 2, Zähnefletschen auf den Gehenden:* 20:43:14,21 Scheidender Schlag, 20:43:14,84 Zähnefletschen auf den
+  Riesenwurm, Rückzug 18,58; Cu Sith ab 19,70 draußen, sein erstes Zähnefletschen 29,87. *Behebung:* `FamiliarLeaving`
+  (Scheidender Schlag oder ein Entfesseln, nach dem er geht, seit der Begleiter erschien, aus `DataCenter.LastUseOf`)
+  sperrt beide Zähnefletschen-Pfade.
+- *Befund 3, Schwächezuschlag nie gemessen (K1):* keine Zeile „a hit on a weakness deals" im ganzen Brett. Die Äxte und
+  der Auto-Angriff tragen im Aktionsblatt keine Angriffsart (xivapi v2, 05.11.2026: AttackType leer bei 44879, 44883,
+  44885, 7), das Spiel trifft mit ihnen als Hieb (Effektflagge 0x71 bei jedem Axthieb und Auto-Angriff); die Dressuren
+  steigen mit dem TP, die Auto-Angriffe haben keine Potenz im Text. Gemessen am Mitschnitt, nur Paare gleicher
+  Abwehrstufe (`PhysResistance`/`MagResistance` des Blatts), Mediane ohne kritische und direkte Treffer: 18 Paare, 1,21
+  bis 1,40, gewichtet 1,271 (Spieler-Hieb Pisco gegen Knochen 1,26 bis 1,30; Schildansturm Schlag Knochen gegen Pisco
+  1,28 bis 1,30; Fliegenfalle Eis Terrormilbe gegen Oger 1,26). Ohne Abwehrstufe verzerrt: Pugil-Wasser auf die
+  Irrlichter (Stufe 1) gegen den Oger (Stufe 2) 1,50. Folgen ohne Zuschlag: Hornbelegung Kampf 1 Raptor, Riesenwurm,
+  Cu Sith gegen die schlagschwachen Knochen bei Büffel im Kader; in den Kämpfen 3 bis 5 kam der Schwächentreffer zuerst
+  (kurzer Einsatz). *Behebung:* Element und Angriffsart aus dem Effekteintrag (`ElementsOfHit`, zweiter Parameter);
+  Aktionen mit fester Potenz oder Auto-Angriffe; Summen je Aktion und Abwehrstufe; `ElementsOf` nimmt das gesehene
+  Element vor dem Blatt; Rückfall +27 % bis zur ersten Messung des Bretts (`fixed_values.json`).
+- *Befund 4, Gefahr unter der Deckung blind, ungemessene Gegner null (K3, Konzept 03):* Treffer auf den Begleiter zählten
+  nicht; unter Zähnefletschen sah RSR die Gefahr der Gegner kaum. Ein Gegner ohne Treffer hatte Vorrang 0 und verlor gegen
+  jeden gemessenen: Endkampf 21:06:34 Sukkubus-Magierin vorn (2.020 LP), 21:06:37 zurück auf die Seelenlose (10.409 LP,
+  ein Treffer, unter 1 LP je Sekunde). *Behebung:* Treffer auf eigene Objekte zählen (`StatusHelper.IsPlayerOrOwned`);
+  ungemessene Gegner bekommen das Mittel der gemessenen, im Crucible je nach Blattwert umgerechnet, mit deren
+  Unsicherheit (`EnemyDanger.Estimate`); die Spurzeile nennt die Schätzung.
+- *Optionen verworfen:* Befund 1 über den Effekt-Handler messen (genauer je Treffer, aber mehrere Gegner im selben Bild
+  zählten nicht mehr zusammen; kleinster Eingriff gewählt). Befund 3 ohne Rückfall (der erste Kampf jedes Bretts ohne
+  Schwäche, wie am 05.11.); über alle Bretter gemittelt (verwirft, falls der Zuschlag je Brett anders ist). Befund 4 mit
+  Unsicherheit 1 für die Schätzung (der aktuelle Gegner bliebe dann immer, auch gegen die Magierin).
+- *Falsifikation:* Kein Defekt? Die Spur zeigt die Folgen je Befund. Option falsch? Befund 1: ein tödlicher Treffer hebt
+  das Maß nicht mehr (seine Größe war nie ablesbar). Befund 2: 2 bis 4 s ohne Deckung zwischen Scheidendem Schlag und
+  Rückzug, dafür etwa 10 s mehr Deckung durch den nächsten. Befund 3: Gilt der Rückfall auf einem Brett nicht, ordnet er
+  nur, wer den langen Einsatz bekommt und wer zuerst fällt, bis die Messung des Bretts ihn ersetzt. Befund 4: Ein Gegner,
+  der nie trifft, bekommt die geschätzte Gefahr; außerhalb des Crucible entspricht das „wenigste LP zuerst" unter
+  Ungemessenen (seine Vorgabe A525). Ausgeliefert, und nichts ändert sich? Ohne Zähnefletschen (Einstellung aus) wirkt
+  Befund 1 nur noch auf den Bestien-Heiltrank; ohne Rückzug im Kampf gab es den falschen Treffer nie.
+- *Offen (TODO „Beastmaster: Crucible-Strategien"):* das Element der Begleiter-Auto-Angriffe im Wert eines Begleiters
+  (17 bis 57 % ihres Schadens auf Brett 1); die Gewichtung des Schadens an Begleitern nach ihrem Bedarf (K11).
+- *Prüfgrad:* statisch, Compile ohne Warnung, Prüfskripte; Ursachen an Spur und Mitschnitt belegt, der Zuschlag an zwei
+  Mitschnitten gemessen. Im Spiel nicht beobachtet; die Zeile „a hit on a weakness deals" zeigt die Messung je Brett.
+
 ## B · Commit-Register (Fork vs. `upstream/main`)
 
 ### B1 · Einzelgeprüfte Fork-Commits

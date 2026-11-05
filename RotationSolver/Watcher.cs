@@ -388,7 +388,7 @@ public static class Watcher
 			if (TryGetDamageEntry(effect, out var entry) && Svc.Objects.SearchById(effect.TargetID) is IBattleChara target
 				&& target.IsEnemy())
 			{
-				CrucibleBoard.RecordHit(action.RowId, target, FullAmount(entry));
+				CrucibleBoard.RecordHit(action, target, entry, FullAmount(entry));
 			}
 
 			// K10 shop (A570): the player's own healing on himself - his actions and items -, for gear that adds to it.
@@ -411,15 +411,17 @@ public static class Watcher
 		}
 	}
 
-	// Concept 03, "Zielart ohne Tank und Heiler" (A541): an enemy's damage on the player and the party members, and its
-	// heals on other enemies, into its danger per second.
+	// Concept 03, "Zielart ohne Tank und Heiler" (A541, A582): an enemy's damage on the player, the party members and the
+	// player's own objects, and its heals on other enemies, into its danger per second.
 	private static void RecordEnemyDanger(ActionEffectSet set, IBattleChara source, IBattleChara player)
 	{
 		foreach (var effect in set.TargetEffects)
 		{
 			if (TryGetDamageEntry(effect, out var damage))
 			{
-				if (effect.TargetID == player.GameObjectId || IsPartyMemberId(effect.TargetID))
+				// A582: and on the player's own objects - the beastmaster's familiar takes the hits meant for him under Snarl.
+				if (effect.TargetID == player.GameObjectId || IsPartyMemberId(effect.TargetID)
+					|| StatusHelper.IsPlayerOrOwned(effect.TargetID, player.GameObjectId))
 				{
 					EnemyDanger.RecordHit(source.GameObjectId, FullAmount(damage));
 				}

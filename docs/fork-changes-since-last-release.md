@@ -230,12 +230,26 @@ What this release changes in the fight. For the whole distance from upstream, se
   `Choose the battlehorn by the situation` on. `DefenseTrace.log` says on entering a board whether the fights
   were read, names each fight with the enemies still to come, and every hold.
 - **Weaknesses count, measured (Crucible).** No source states how much more a hit on a weakness
-  deals, so RSR measures it on a board: the damage per potency of each of your and your familiars'
-  actions on the weakness against the rest. Once measured, a Trick counts every weak enemy it hits
-  with that bonus when the horn is chosen, and with no tank and healer beside you an enemy whose
-  weakness your damage hits counts as falling that much sooner. Before any enemy has hit, the board
-  ranks enemies by the strength and intelligence the game rates them with, over their HP.
-  `DefenseTrace.log` names the first measurement on each board.
+  deals, so RSR measures it on a board: each of your and your familiars' hits carries its element
+  and attack type (your axes and auto-attacks strike as slashing, though the action sheet lists no
+  type), and an action's damage on a weak enemy is set against its damage on others of the same
+  armour grade. Until a board has measured it, +27 % counts - measured on 18 such pairs in the
+  owner's logs. A Trick counts every weak enemy it hits with that bonus when the horn is chosen and
+  on the horn screen, and with no tank and healer beside you an enemy whose weakness your damage
+  hits counts as falling that much sooner. Before any enemy has hit, the board ranks enemies by the
+  strength and intelligence the game rates them with, over their HP. `DefenseTrace.log` names the
+  first measurement on each board.
+- **Challenge only when the familiar could fall (Crucible).** A familiar retreating after Parting
+  Blow shows 0 HP for a moment; that no longer counts as the largest hit of the fight, so Challenge no
+  longer takes the damage back from a familiar at full HP every 15 s, and no Beast Potion goes into a
+  full familiar.
+- **No Snarl on a familiar that is leaving (Crucible).** After Parting Blow, or a Release the familiar
+  leaves after, Snarl waits for the familiar that follows instead of covering you for the last few
+  seconds and holding its recast from the next one.
+- **Danger counts the hits on your familiar (Beastmaster, Blue Mage alone).** With no tank and healer
+  beside you, an enemy's danger counts its hits on your familiar too - under Snarl it takes all of
+  them -, and an enemy that has not hit yet counts with the danger estimated from those that have
+  (in the Crucible scaled by the game's ratings), instead of falling behind any measured enemy.
 - **The board's items that keep you and your familiar alive (Crucible).** With `Use the board's items
   that keep you and your familiar alive (Crucible only)`, **on by default**, RSR uses, one at a time:
   below `Use HP potions below this HP` in combat the Beast Potion or Crucible Ash that lifts you back

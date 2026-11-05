@@ -168,6 +168,14 @@ internal static class EnemyDanger
 		var rate = Rate(enemy, out var hits, out var announced);
 		uncertainty = announced || hits == 0 ? 0f : 1f / MathF.Sqrt(hits);
 
+		// A582: an enemy that has not hit yet, while others have, counts with the danger estimated from theirs - not 0, which
+		// lost to every measured enemy however small its rate.
+		if (rate <= 0f && Estimate(enemy, out var estimate, out var basis))
+		{
+			rate = estimate;
+			uncertainty = 1f / MathF.Sqrt(basis);
+		}
+
 		// K3 of the Crucible (concept 01, A549): its fall comes sooner by the weakness bonus on the share of damage hitting it.
 		var fallsIn = Math.Max(1u, enemy.CurrentHp) / CrucibleBoard.FallSpeedup(enemy.NameId);
 		var priority = rate <= 0f ? 0f : rate / fallsIn;
@@ -176,6 +184,43 @@ internal static class EnemyDanger
 	}
 
 	private static readonly FrameCached<Dictionary<ulong, (float Priority, float Uncertainty)>> _priorities = new(() => []);
+
+	/// <summary>
+	/// A582 (concept 03, "Ungemessene Gegner"): the danger per second of an enemy without a measured hit, from the enemies of
+	/// the fight that have one - their mean, each scaled in the Crucible by the sheet's rating of this enemy over its own
+	/// where the sheet rates both. <paramref name="basis"/> is the number of measured hits it stands on. False when no
+	/// enemy has hit yet.
+	/// </summary>
+	private static bool Estimate(IBattleChara enemy, out float estimate, out int basis)
+	{
+		estimate = 0f;
+		basis = 0;
+		var sum = 0f;
+		var count = 0;
+		var own = CrucibleBoard.SheetDanger(enemy.NameId);
+		foreach (var other in DataCenter.AllHostileTargets)
+		{
+			if (other.GameObjectId == enemy.GameObjectId || !_bySource.TryGetValue(other.GameObjectId, out var record)
+				|| record.Hits == 0)
+			{
+				continue;
+			}
+
+			var rate = (float)((record.Damage + record.HealGain) / Elapsed(record));
+			var theirs = CrucibleBoard.SheetDanger(other.NameId);
+			sum += own > 0f && theirs > 0f ? rate * own / theirs : rate;
+			count++;
+			basis += record.Hits;
+		}
+
+		if (count == 0 || sum <= 0f)
+		{
+			return false;
+		}
+
+		estimate = sum / count;
+		return true;
+	}
 
 	/// <summary>
 	/// The order of the target selection: the larger priority first, the fewer HP first while neither has one. The enemy
@@ -225,7 +270,10 @@ internal static class EnemyDanger
 		_lead = lead.GameObjectId;
 		_leadTraced = DateTime.Now;
 		var rate = Rate(lead, out var hits, out var announced);
-		DefenseTrace.Line($"targeting by danger: {lead.Name.TextValue} first, {rate:F0} HP per second over {lead.CurrentHp} HP"
-			+ $" ({hits} hit(s) measured{(announced ? ", an announced hit counted" : string.Empty)})");
+		var basis = 0;
+		var estimated = rate <= 0f && Estimate(lead, out rate, out basis);
+		DefenseTrace.Line($"targeting by danger: {lead.Name.TextValue} first, {rate:F1} HP per second over {lead.CurrentHp} HP"
+			+ $" ({hits} hit(s) measured{(announced ? ", an announced hit counted" : string.Empty)}"
+			+ $"{(estimated ? $", estimated from the other enemies' {basis} hit(s)" : string.Empty)})");
 	}
 }

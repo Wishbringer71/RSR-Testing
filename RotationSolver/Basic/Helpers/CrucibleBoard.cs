@@ -1,5 +1,6 @@
 using Dalamud.Game;
 using ECommons.DalamudServices;
+using EffectEntry = ECommons.Hooks.ActionEffectTypes.EffectEntry;
 using FFXIVClientStructs.FFXIV.Client.UI.Agent;
 
 namespace RotationSolver.Basic.Helpers;
@@ -20,8 +21,12 @@ namespace RotationSolver.Basic.Helpers;
 /// </remarks>
 internal static class CrucibleBoard
 {
-	/// <summary>One enemy of a fight: its name as the game's objects carry it, its weakness, its sheet ratings.</summary>
-	internal readonly record struct Enemy(uint NameId, uint Weakness, byte Strength, byte Intelligence);
+	/// <summary>
+	/// One enemy of a fight: its name as the game's objects carry it, its weakness, its sheet ratings - strength and
+	/// intelligence, and its physical and magic resistance grades (A582).
+	/// </summary>
+	internal readonly record struct Enemy(uint NameId, uint Weakness, byte Strength, byte Intelligence, byte PhysResistance,
+		byte MagResistance);
 
 	private static List<(uint Row, Enemy[] Enemies)>? _fights;
 	private static readonly Dictionary<uint, string> _elementNames = [];
@@ -43,10 +48,21 @@ internal static class CrucibleBoard
 	private static readonly HashSet<uint> _seen = [];
 	private static uint _tracedArea;
 
-	// K1 (A549): damage per potency of the player's and his familiars' hits on an enemy of the fight, kept apart for hits on
-	// its weakness and on anything else, per action, in this area; and in this fight the damage of that side in all, and of
-	// the actions hitting each weakness.
+	// K1 (A549, A582): damage per potency of the player's and his familiars' hits on an enemy of the fight, kept apart for
+	// hits on its weakness and on anything else, per action and resistance grade of the enemies hit (physical for slashing,
+	// piercing and blunt hits, else magic), in this area; and in this fight the damage of that side in all, and of the hits
+	// on each weakness.
 	private readonly record struct Sums(double Weak, int WeakHits, double Other, int OtherHits);
+
+	// A582: the effect entry's second parameter carries the hit's aspect in its upper half and its attack type in its lower
+	// (ECommons EffectEntry.AttackType; the third byte of ACT's effect flags) - the game's layout of a hit, not a tuned value.
+	private const int AspectShift = 4;
+
+	// A582: the weakness bonus measured in his logs of 04 and 05.11.2026 - 18 pairs of enemies of one resistance grade on the
+	// first board, weighted 1.271 -, until this board measures its own. A fallback from measurement, not a game value.
+	private const float WeaknessBonusFallback = 0.27f;
+	private static readonly Dictionary<byte, HashSet<uint>> _hitElements = [];
+	private static readonly Dictionary<uint, HashSet<uint>> _actionElementsSeen = [];
 
 	/// <summary>K10 shop (A570): what one fight cost the player - damage by how it meets his defences - and what he healed himself.</summary>
 	internal readonly record struct FightLoad(double Physical, double Magic, double Other, double Healed)
@@ -55,7 +71,7 @@ internal static class CrucibleBoard
 		internal double Damage => Physical + Magic + Other;
 	}
 
-	private static readonly Dictionary<uint, Sums> _perPotency = [];
+	private static readonly Dictionary<(uint Action, bool Physical, byte Grade), Sums> _perPotency = [];
 	private static uint _measuredIn;
 	private static double _ownDamage;
 	private static readonly Dictionary<uint, double> _ownDamageByElement = [];
@@ -286,7 +302,8 @@ internal static class CrucibleBoard
 			{
 				if (enemy.Unknown0 != 0)
 				{
-					enemies.Add(new Enemy(enemy.Unknown0, enemy.Unknown10, enemy.Unknown5, enemy.Unknown6));
+					enemies.Add(new Enemy(enemy.Unknown0, enemy.Unknown10, enemy.Unknown5, enemy.Unknown6, enemy.Unknown7,
+						enemy.Unknown8));
 					AddAilment(enemy.Unknown2);
 					AddAilment(enemy.Unknown3);
 				}
@@ -379,11 +396,19 @@ internal static class CrucibleBoard
 	}
 
 	/// <summary>
-	/// The weakness (XBMElement row) an action hits: its element (Fire to Water), else its physical attack type (Slashing,
-	/// Piercing, Blunt), matched by the English names; none for an action without either.
+	/// The weakness (XBMElement row) an action hits: once a hit of it was seen in a Crucible fight, what that hit carried
+	/// (A582); before, by the action sheet - its element (Fire to Water), else its physical attack type (Slashing, Piercing,
+	/// Blunt), matched by the English names; none for an action without either.
 	/// </summary>
 	internal static HashSet<uint> ElementsOf(uint actionId)
 	{
+		// A582: what a hit of the action carried, once one was seen - the sheet gives the beastmaster's axes no attack type,
+		// though they strike as slashing.
+		if (_actionElementsSeen.TryGetValue(actionId, out var seen))
+		{
+			return seen;
+		}
+
 		if (_actionElements.TryGetValue(actionId, out var known))
 		{
 			return known;
@@ -755,25 +780,35 @@ internal static class CrucibleBoard
 	}
 
 	/// <summary>
-	/// K1 (A549): a hit of the player or one of his familiars on <paramref name="target"/> in a fight of the Crucible. Its
-	/// damage per potency goes to its action's sums for hits on the target's weakness or on anything else; actions whose
-	/// effect text states no plain potency and actions that hit no weakness are left out. Effect handler, game thread.
+	/// K1 (A549, A582): a hit of the player or one of his familiars on <paramref name="target"/> in a fight of the Crucible,
+	/// with what the hit itself carries - its aspect and attack type from the effect entry (<paramref name="entry"/>), not
+	/// the action sheet, which gives the beastmaster's axes and auto-attack none though they strike as slashing. Its damage
+	/// per potency goes to the action's sums for hits on the target's weakness or on anything else of the same resistance
+	/// grade; only actions of a fixed potency count - a plain potency in their effect text, or an auto-attack - and hits
+	/// that strike no weakness are left out. Effect handler, game thread.
 	/// </summary>
-	internal static void RecordHit(uint actionId, IBattleChara target, uint amount)
+	internal static void RecordHit(Lumina.Excel.Sheets.Action action, IBattleChara target, EffectEntry entry, uint amount)
 	{
 		if (_fight == 0 || amount == 0)
 		{
 			return;
 		}
 
-		var elements = ElementsOf(actionId);
+		var elements = ElementsOfHit(entry);
+		if (elements.Count > 0 || _elementNames.Count > 0)
+		{
+			_actionElementsSeen[action.RowId] = elements;
+		}
+
 		_ownDamage += amount;
 		foreach (var element in elements)
 		{
 			_ownDamageByElement[element] = (_ownDamageByElement.TryGetValue(element, out var dealt) ? dealt : 0d) + amount;
 		}
 
-		if (elements.Count == 0 || !ActionTooltip.TryPlainPotency(actionId, out var potency) || potency <= 0f)
+		var potency = 1f;
+		if (elements.Count == 0 || (action.GetActionCate() != ActionCate.Autoattack
+			&& (!ActionTooltip.TryPlainPotency(action.RowId, out potency) || potency <= 0f)))
 		{
 			return;
 		}
@@ -785,19 +820,75 @@ internal static class CrucibleBoard
 			_bonusTraced = false;
 		}
 
-		var weak = WeaknessOf(target.NameId);
+		var enemy = EnemyOf(target.NameId);
+		if (enemy is not { } listed)
+		{
+			return;
+		}
+
+		var physical = AttackTypeKind.IsPhysical(entry.AttackType);
+		var key = (action.RowId, physical, physical ? listed.PhysResistance : listed.MagResistance);
 		var perPotency = amount / (double)potency;
-		var sums = _perPotency.TryGetValue(actionId, out var known) ? known : default;
-		sums = weak != 0 && elements.Contains(weak)
+		var sums = _perPotency.TryGetValue(key, out var known) ? known : default;
+		sums = listed.Weakness != 0 && elements.Contains(listed.Weakness)
 			? sums with { Weak = sums.Weak + perPotency, WeakHits = sums.WeakHits + 1 }
 			: sums with { Other = sums.Other + perPotency, OtherHits = sums.OtherHits + 1 };
-		_perPotency[actionId] = sums;
+		_perPotency[key] = sums;
 
-		if (!_bonusTraced && WeaknessBonus > 0f)
+		if (!_bonusTraced && MeasuredWeaknessBonus is { } measured)
 		{
 			_bonusTraced = true;
-			DefenseTrace.Line($"crucible: a hit on a weakness deals {WeaknessBonus:P0} more, first measured on action {actionId}");
+			DefenseTrace.Line($"crucible: a hit on a weakness deals {measured:P0} more, first measured on action {action.RowId}");
 		}
+	}
+
+	/// <summary>
+	/// A582: the weakness a hit strikes, by what the hit carries - its aspect (fire to water) in the upper half of the effect
+	/// entry's second parameter, else its attack type (slashing, piercing, blunt) in the lower -, as rows of XBMElement.
+	/// </summary>
+	internal static HashSet<uint> ElementsOfHit(EffectEntry entry)
+	{
+		if (_hitElements.TryGetValue(entry.param1, out var known))
+		{
+			return known;
+		}
+
+		_ = Fights;
+		var aspect = (Aspect)(entry.param1 >> AspectShift);
+		var type = (AttackType)entry.AttackType;
+		var name = aspect is >= Aspect.Fire and <= Aspect.Water
+			? aspect.ToString()
+			: type is >= AttackType.Slashing and <= AttackType.Blunt ? type.ToString() : string.Empty;
+		var hits = new HashSet<uint>();
+		foreach (var (row, element) in _elementNames)
+		{
+			if (name.Length > 0 && string.Equals(element, name, StringComparison.OrdinalIgnoreCase))
+			{
+				_ = hits.Add(row);
+			}
+		}
+
+		// Before the element names are read there is nothing to map; do not keep the empty answer.
+		if (_elementNames.Count > 0)
+		{
+			_hitElements[entry.param1] = hits;
+		}
+
+		return hits;
+	}
+
+	// The listed enemy of the fight in progress with this name, null when it is not listed.
+	private static Enemy? EnemyOf(uint nameId)
+	{
+		foreach (var enemy in _enemies)
+		{
+			if (enemy.NameId == nameId)
+			{
+				return enemy;
+			}
+		}
+
+		return null;
 	}
 
 	/// <summary>
@@ -884,17 +975,23 @@ internal static class CrucibleBoard
 	}
 
 	/// <summary>
-	/// K1 (A549): how much more a hit on a weakness deals in this area, measured: per action that hit both a weakness and
-	/// something else, its mean damage per potency on the weakness against the rest, weighted by the smaller of its two
-	/// counts. 0 until an action has hit both - the bonus does not count before it is measured.
+	/// K1 (A549, A582): how much more a hit on a weakness deals on this board - measured where this board has measured it,
+	/// else the fallback measured in his logs. 0 outside the Crucible.
 	/// </summary>
-	internal static float WeaknessBonus
+	internal static float WeaknessBonus => MeasuredWeaknessBonus ?? (DataCenter.IsInCrucible ? WeaknessBonusFallback : 0f);
+
+	/// <summary>
+	/// K1 (A549, A582): the weakness bonus measured in this area - per action and resistance grade that hit both a weakness
+	/// and an enemy of that grade without it, the mean damage per potency on the weakness against the rest, weighted by the
+	/// smaller of the two counts; null until one has.
+	/// </summary>
+	internal static float? MeasuredWeaknessBonus
 	{
 		get
 		{
 			if (_measuredIn != DataCenter.TerritoryID)
 			{
-				return 0f;
+				return null;
 			}
 
 			double weighted = 0d;
@@ -912,7 +1009,7 @@ internal static class CrucibleBoard
 				weights += weight;
 			}
 
-			return weights > 0d ? Math.Max(0f, (float)(weighted / weights) - 1f) : 0f;
+			return weights > 0d ? Math.Max(0f, (float)(weighted / weights) - 1f) : null;
 		}
 	}
 

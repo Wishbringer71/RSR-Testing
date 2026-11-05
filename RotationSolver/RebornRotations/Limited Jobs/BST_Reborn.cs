@@ -242,10 +242,15 @@ public sealed class BST_Reborn : BeastmasterRotation
 	}
 
 	// K9 (A550): the largest drop of the familiar's HP from one frame to the next in this fight - a hit, or several landing
-	// together, which errs on the safe side; and the familiar and its HP the frame before.
+	// together, which errs on the safe side; and the familiar and its HP the frame before. A582: a drop to 0 is no hit - the
+	// game shows a retreating familiar at 0 HP for a frame (Parting Blow, a Release it leaves after), and a killing hit
+	// shows only what was left; counted, every familiar up to that HP drew Challenge at full HP.
 	private static uint _familiarLargestHit;
 	private static ulong _familiarWatched;
 	private static uint _familiarLastHp;
+
+	// A582: when the familiar out now appeared, for whether it has been sent off since (FamiliarLeaving).
+	private static DateTime _familiarSince = DateTime.MinValue;
 
 	private static void FollowFamiliarHits()
 	{
@@ -262,13 +267,41 @@ public sealed class BST_Reborn : BeastmasterRotation
 		}
 
 		var hp = familiar.CurrentHp;
-		if (_familiarWatched == familiar.GameObjectId && hp < _familiarLastHp)
+		if (_familiarWatched == familiar.GameObjectId && hp < _familiarLastHp && hp > 0)
 		{
 			_familiarLargestHit = Math.Max(_familiarLargestHit, _familiarLastHp - hp);
 		}
 
+		if (_familiarWatched != familiar.GameObjectId)
+		{
+			_familiarSince = DateTime.Now;
+		}
+
 		_familiarWatched = familiar.GameObjectId;
 		_familiarLastHp = hp;
+	}
+
+	// A582: the familiar out has been sent off since it appeared - Parting Blow, or a Tempered Release it leaves after - and
+	// covers you only until it is gone. Snarl on it would hold the 15 s recast from the one that follows.
+	private bool FamiliarLeaving
+	{
+		get
+		{
+			if (_familiarWatched == 0)
+			{
+				return false;
+			}
+
+			var sent = DataCenter.LastUseOf(PartingBlowPvE.ID, PartingBlowPvE.AdjustedID) is { } blow && blow >= _familiarSince;
+			if (!sent && ReleaseRetreatsFamiliar)
+			{
+				sent = (DataCenter.LastUseOf(TemperedReleasePvE.ID, TemperedReleasePvE.AdjustedID) is { } release && release >= _familiarSince)
+					|| (DataCenter.LastUseOf(TemperedReleasePvE_47092.ID, TemperedReleasePvE_47092.AdjustedID) is { } other
+						&& other >= _familiarSince);
+			}
+
+			return sent;
+		}
 	}
 
 	private bool FamiliarTankSwapAbility(out IAction? act)
@@ -309,7 +342,8 @@ public sealed class BST_Reborn : BeastmasterRotation
 			shouldChallenge = true;
 		}
 
-		if (shouldSnarl)
+		// A582: not on a familiar that is leaving - it covers only until it is gone, and the recast would hold the next one's.
+		if (shouldSnarl && !FamiliarLeaving)
 		{
 			if (SnarlPvE.CanUse(out act, skipTargetStatusNeedCheck: true))
 			{
@@ -566,7 +600,8 @@ public sealed class BST_Reborn : BeastmasterRotation
 		}
 
 		// this unbound usage is for UnnamedStatus_2552, special mech in crucible board 1 fight 1
-		if (InCombat)
+		// A582: not on a familiar that is leaving.
+		if (InCombat && !FamiliarLeaving)
 		{
 			if (SnarlPvE.CanUse(out act))
 			{

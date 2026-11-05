@@ -1335,6 +1335,12 @@ Beastmaster noch, nicht alle Fähigkeiten stehen am Anfang zur Verfügung.
     Schlag des Zyklus, und die 15 s Abklingzeit sperrten die nächste. Preis: Das nächste Horn kommt bis zu 45 s später,
     mit ihm sein Entfesseln oder Borrow, und die Abklingzeit des gehaltenen Horns beginnt erst mit seinem Rückzug. In
     der Gefahr galt das schon (B2).
+  - *Kein Zähnefletschen auf einen Begleiter, der geht* (A582): Hat er seit seinem Ruf Scheidender Schlag oder ein
+    Entfesseln, nach dem er geht, bekommen, deckt er nur noch bis zu seinem Rückzug, und die 15 s Abklingzeit sperren
+    das Zähnefletschen für den nächsten. Am 05.11.2026 um 20:43:14,21 kam Scheidender Schlag, 0,6 s danach
+    Zähnefletschen auf den Riesenwurm; er deckte 3,7 s bis zu seinem Rückzug, Cu Sith kam um 20:43:19,70 und deckte erst
+    ab 20:43:29,87. Ohne das Zähnefletschen auf den gehenden deckt der nächste ab seinem Ruf. *Preis:* die 2 bis 4 s
+    zwischen Scheidendem Schlag und Rückzug trägst du selbst; dafür 10 s Deckung durch den nächsten.
   - *Ab Werk an (K9, A550):* Ohne Tank greift der Gegner nur dich an. Fällst du, ist der Lauf verloren, fällt ein
     Begleiter, fehlt nur er bis zum Horn der Rückkehr. Die LP der Begleiter sind also ein zweiter Vorrat, und Sicherheit
     geht vor (CLAUDE.md, „Spielweise"). Der Preis bleibt: LP bleiben über das ganze Brett stehen (gemessen 04.11.2026),
@@ -1344,7 +1350,17 @@ Beastmaster noch, nicht alle Fähigkeiten stehen am Anfang zur Verfügung.
     der Begleiter nicht mehr LP hält als der größte Treffer, den ein Begleiter in diesem Kampf nahm. Gemessen wird er als
     größter Fall seiner LP von einem Bild zum nächsten; mehrere Treffer im selben Bild zählen zusammen, also eher zu groß.
     So fällt er nicht am nächsten solchen Treffer. Unter deiner LP-Untergrenze trägt er weiter alles.
-- *Schwächen der Gegner:* keine Datenquelle. Was es gibt, sind die Schwächungen, die ein Begleiter selbst legt.
+    - *Ein Fall auf 0 LP zählt nicht* (A582): Zieht sich ein Begleiter zurück (Scheidender Schlag, ein Entfesseln, nach
+      dem er geht), zeigt das Spiel ihn ein Bild lang mit 0 LP, ohne Treffer – im Mitschnitt vom 05.11.2026 der
+      Riesenwurm um 20:43:18,58 von 608 auf 0, nach seinem Ätherschub. Ein tödlicher Treffer zeigt ebenso nur den Rest,
+      nicht seine Größe. RSR zählte beides: Danach galt jeder Begleiter mit höchstens 608 LP als „fällt am nächsten
+      Treffer", und auf jedes Zähnefletschen folgte 0,6 bis 1,8 s später Provozieren – in Kampf 1 fünfmal von 20:43:31
+      bis 20:44:34, auf den vollen Cu Sith; die Treffer, die er tragen sollte, nahmst du. In Kampf 4 und 5 ebenso (Schleim
+      347 und Pugil 424 LP gegen den Rückzug der Fledermaus mit 458). Dasselbe Maß hätte den Bestien-Heiltrank (K8,
+      Schritt 7) in volle Begleiter gegeben. *Preis:* Ein tödlicher Treffer hebt das Maß nicht; seine Größe war ohnehin
+      nicht ablesbar, und der Begleiter ist dann fort.
+- *Schwächen der Gegner:* nur im Crucible, aus dem Blatt `XBMBattleDetail` (K1); außerhalb führt das Spiel keine. Dazu
+  die Schwächungen, die ein Begleiter selbst legt.
 
 *Der Zyklus:* Ein Ruf gibt One with Nature, das Horn verbraucht es nach seiner Einstellung für Entfesseln oder Borrow
 („What to use One with Nature on …", ab Werk 1. und 2. Horn Entfesseln, 3. Borrow). Sobald es verbraucht ist und ein
@@ -1825,8 +1841,8 @@ Dullahan, Golem, Spriggan und Eisgolem (`XBMPet.InflictsInterrupt`).
 *Strategien* (je mit Wirkung im Kampf, Abwägung, Gegenthese; Stand am Ende):
 - *K1 – Schwäche treffen.* Unter den bereiten Hörnern zählt ein Begleiter, dessen Dressur oder Entfesseln die Schwäche
   der Gegner trifft, um den Zuschlag der Schwäche mehr (B3 rechnet heute Potenz mal Treffer). Den Zuschlag lernt RSR an
-  den eigenen Treffern: Schaden je Potenz auf schwache gegen andere Gegner, je Brett. Bis zur ersten Messung zählt er
-  nicht. *Stärke:* der passende Begleiter steht länger draußen. *Schwäche:* ohne Messung keine Wirkung; ein Brett mit
+  den eigenen Treffern je Brett (unten, „K1, Zuschlag gemessen"); bis zur ersten Messung gilt der Wert aus seinen
+  Mitschnitten, +27 % (A582). *Stärke:* der passende Begleiter steht länger draußen. *Schwäche:* ein Brett mit
   gleich verteilten Schwächen gewinnt wenig. *Gegenthese:* Der Zuschlag ist klein, und eine Fläche auf drei Gegner zählt
   mehr. Nicht widerlegt, aber genau das rechnet das Produkt: Ein kleiner gemessener Zuschlag ändert die Reihenfolge
   nicht.
@@ -1844,10 +1860,12 @@ Dullahan, Golem, Spriggan und Eisgolem (`XBMPet.InflictsInterrupt`).
 - *K3 – Wen RSR angreift: größter Nutzen für den Kampf und das Brett* (seine Vorgabe vom 05.11.2026: „entscheidung, wer
   angegriffen werden soll nach analyse des größten nutzens für das gesamte spielfeld und darüber hinaus für das gesammte
   brett"; im Crucible; außerhalb dieselbe Regel ohne den Bedarf des Bretts, Konzept 03, „Zielart ohne Tank und Heiler", A537).
-  *Gebaut* (A541, `EnemyDanger`): der allgemeine Teil – Gefahr je Sekunde aus den Treffern auf die Gruppe, angekündigte
-  Treffer, Heilungen auf andere Gegner, geteilt durch die LP, Wechsel über der Messunsicherheit –, auch im Crucible.
-  Offen in Stufe 1: die Werte des Blatts vor der ersten Messung, der Zuschlag der Schwäche (K1), Schaden an Begleitern
-  gewichtet nach ihrem Bedarf über das Brett (K11), Stärkung anderer. *Was gilt:* Zuerst fällt der Gegner mit der größten Gefahr je
+  *Gebaut* (A541, A549, A582, `EnemyDanger`): Gefahr je Sekunde aus den Treffern auf die Gruppe und auf deinen
+  Begleiter, angekündigte Treffer, Heilungen auf andere Gegner, geteilt durch die LP, Wechsel über der Messunsicherheit;
+  vor jeder Messung die Werte des Blatts; ein Gegner ohne eigene Messung mit einer Gefahr, die aus den gemessenen
+  geschätzt ist; der Zuschlag der Schwäche auf die Zeit bis zum Fall (Konzept 03, „Zielart ohne Tank und Heiler").
+  Offen: Schaden an Begleitern gewichtet nach ihrem Bedarf über das Brett (K11; heute zählt er in LP wie deiner),
+  Stärkung anderer. *Was gilt:* Zuerst fällt der Gegner mit der größten Gefahr je
   Sekunde bis zu seinem Fall: seine Gefahr je Sekunde geteilt durch die Zeit, bis er fällt. Diese Reihenfolge macht die
   Summe des Schadens über den Kampf am kleinsten (Regel von Smith, Ablaufplanung); „wenigste LP zuerst" ist ihr Sonderfall
   bei gleicher Gefahr aller Gegner. *Gefahr:* sein Schaden an dir und an deinen Begleitern, je als Anteil an den LP, die
@@ -2403,15 +2421,36 @@ on a pack once a fight, all of them in the final fight (Crucible only)".
   Spielbetrieb; RSR ruft sie nur auf Knopfdruck und nur bei offenem Teamfenster.
 
 **Stufe 1, zweiter Teil: K1 und der Rest von K3** (A549, gebaut; Daten in `CrucibleBoard`):
-- *K1, Zuschlag gemessen:* Keine Quelle nennt ihn; consolegameswiki und Eorzean Tavern sagen nur, dass Schwächen
-  zählen (05.11.2026). RSR misst ihn an jedem Treffer von dir und deinen Begleitern auf einen Gegner des laufenden Kampfs.
-  Gezählt wird der Schaden je Potenz, getrennt nach Treffern auf seine Schwäche und anderen, je Aktion und Brett.
-  - Gemessen ist erst, wenn dieselbe Aktion beides getroffen hat. So fallen Stärke und Rang des Begleiters heraus; die
-    Abwehr der Gegner bleibt drin.
-  - Der Zuschlag ist das Mittel der Verhältnisse, gewichtet nach der kleineren Zahl der Treffer; bis dahin zählt er nicht.
-  - Gezählt werden nur Aktionen mit einer einfachen Potenz im Wirktext (`ActionTooltip.TryPlainPotency`) und mit Element
-    oder physischer Angriffsart.
+- *K1, Zuschlag gemessen* (A549, neu gefasst A582): Keine Quelle nennt ihn; consolegameswiki, Eorzean Tavern,
+  fullboosts und mmogah sagen nur, dass Schwächen zählen (05.11.2026). RSR misst ihn an jedem Treffer von dir und deinen
+  Begleitern auf einen Gegner des laufenden Kampfs, je Aktion und Brett.
+  - *Was ein Treffer trifft, sagt der Treffer:* Das Spiel meldet je Treffer im Effekteintrag Element und Angriffsart
+    (zweiter Parameter: oben das Element, Feuer 1 bis Wasser 6, Ohne 7; unten die Angriffsart, Hieb 1, Stich 2,
+    Schlag 3, Magie 5; ECommons `EffectEntry.AttackType`, im ACT-Mitschnitt das dritte Byte der Flaggen). Das
+    Aktionsblatt führt bei deinen Äxten und deinem Auto-Angriff keine Angriffsart; das Spiel trifft mit ihnen als Hieb
+    (0x71 bei jedem Axthieb und jedem deiner Auto-Angriffe auf Brett 1, 05.11.2026). Bei Dressur und Entfesseln stimmen
+    Blatt und Treffer überein (Frostiger Atem 0x25 Eis, Fauliger Atem 0x15 Feuer, Gnadenloser Prankenhieb 0x71 Hieb);
+    die Auto-Angriffe der Begleiter sind eigene Aktionen mit eigenem Element (Cu Sith Stich, Raptor und Fliegenfalle
+    Eis, Pugil Wasser, Riesenwurm Erde).
+  - *Gezählt* werden Aktionen mit fester Potenz: einer einfachen im Wirktext (`ActionTooltip.TryPlainPotency`) oder
+    Auto-Angriffe (Kategorie Auto-attack). Die Dressuren steigen mit dem TP des Begleiters und bleiben draußen.
+  - *Verglichen* wird je Aktion der Schaden auf schwache Gegner mit dem auf andere derselben Abwehrstufe aus dem Blatt
+    (`PhysResistance` bei Hieb, Stich und Schlag, sonst `MagResistance`). So fallen Stärke und Rang des Begleiters und die
+    Abwehr der Gegner heraus. Die Abwehr wiegt: Derselbe Auto-Angriff des Schleims traf die Terrormilbe (Stufe 2) mit 57,
+    die Seelenlose (Stufe 5) mit 37.
+  - Der Zuschlag ist das Mittel der Verhältnisse, gewichtet nach der kleineren Zahl der Treffer.
+  - *Bis zur ersten Messung auf dem Brett* gilt +27 %: gemessen in seinen Mitschnitten vom 04. und 05.11.2026 an 18
+    Paaren gleicher Abwehrstufe, gewichtet 1,271 (Hiebe auf das Pisco-Dämonen-Ebenbild gegen die Knochen +26 bis +30 %,
+    Schildansturm als Schlag auf die Knochen gegen das Pisco +28 bis +30 %, Eis der Fliegenfalle auf die Terrormilbe
+    gegen den Oger +26 %; A582). Ein Rückfall, keine Spielangabe; die Messung des Bretts ersetzt ihn.
   - Eine Zeile nennt den ersten Messwert je Brett.
+  - *Warum neu gefasst* (A582): Auf Brett 1 maß RSR am 05.11.2026 in fünf Kämpfen keinen Zuschlag. Die Äxte galten ohne
+    Angriffsart, die Dressuren haben keine feste Potenz, die Auto-Angriffe keine im Text; übrig blieben einige
+    Entfesseln, und keines traf beide Arten. Was den Zuschlag liest, lief ohne ihn: K1 in der Hornwahl, K6 auf dem
+    Hornfenster, K3, die Reißzähne (K8) und die Flutwelle (A558). Im ersten Kampf belegte RSR die Hörner mit Raptor,
+    Riesenwurm und Cu Sith gegen die schlagschwachen Knochen, obwohl der Büffel (Dressur Schlag, Entfesseln betäubt das
+    Rudel) im Kader stand; in den Kämpfen 3 bis 5 rief es den Begleiter, der die Schwäche traf, zuerst (Cu Sith gegen
+    das Pisco, Raptor gegen die Milben, Fliegenfalle gegen den Oger): Er bekam den kurzen Einsatz statt des langen.
 - *K1 in der Hornwahl (B3):* Der Wert einer Dressur zählt jeden getroffenen Gegner, dessen Schwäche sie trifft, mit dem
   Zuschlag. Der passende Begleiter bleibt so länger draußen.
 - *K3, Zeit bis zum Fall:* Seine LP geteilt durch eins plus Zuschlag mal Anteil. Der Anteil ist der Teil deines Schadens
@@ -2419,12 +2458,21 @@ on a pack once a fight, all of them in the final fight (Crucible only)".
 - *K3 vor der ersten Messung:* Hat noch kein Gegner getroffen, reiht RSR im Crucible nach dem größeren Wert aus Stärke und
   Intelligenz des Blatts geteilt durch die LP. Bei Gleichstand und außerhalb des Crucible gilt: wenigste LP zuerst. Die
   Blattwerte sind Stufen von 1 bis 4, kein Schaden; sie ordnen nur, bis die Messung da ist.
-- *Gegenthese:* Die Abwehr schwacher und anderer Gegner unterscheidet sich, also verzerrt sie den Zuschlag. Nicht
-  widerlegt: Eine Aktion, die beide Arten trifft, mittelt über Gegner mit unterschiedlicher Abwehr, und jede weitere Messung
-  verschiebt das Mittel. Die Folge ist klein, denn K1 ordnet nur die Hörner, und K3 wechselt das Ziel nur über der
-  Messunsicherheit (A541).
-- *Ausgeliefert, und nichts ändert sich?* Trifft keine Aktion im Brett beide Arten, bleibt der Zuschlag 0, und B3 und K3
-  laufen wie vor Stufe 1. Die Zeile zum ersten Messwert fehlt dann.
+- *Gegenthese 1 (Abwehr):* Die Abwehr schwacher und anderer Gegner unterscheidet sich und verzerrt den Zuschlag.
+  Widerlegt seit A582: Verglichen wird nur innerhalb derselben Abwehrstufe; die 18 Paare streuen von 1,21 bis 1,40,
+  physisch wie magisch.
+- *Gegenthese 2 (Rückfall):* Der Wert von Brett 1 (Stufe 30) gilt auf anderen Brettern nicht. Unbelegt; die Messung des
+  Bretts ersetzt ihn, sobald eine Aktion einen schwachen und einen gleich gepanzerten anderen Gegner getroffen hat –
+  deine Äxte tun das in jedem Brett, das einen hiebschwachen Gegner führt. Bis dahin verschiebt ein falscher Wert nur,
+  welcher Begleiter den langen Einsatz bekommt und welcher Gegner zuerst fällt; Schutz und Heilung wählt B2 vorher.
+- *Ausgeliefert, und nichts ändert sich?* Wählen die Hörner und das Ziel ohnehin den Schwächentreffer, ändert der Zuschlag
+  nichts. Auf Brett 1 änderte er drei Rufe und eine Hornbelegung (oben). Fehlt auf einem Brett jedes gleich gepanzerte
+  Paar, bleibt der Rückfall; die Zeile zum ersten Messwert fehlt dann.
+- *Offen (TODO „Beastmaster: Crucible-Strategien"):* Die Auto-Angriffe der Begleiter tragen 17 bis 57 % ihres Schadens
+  (Brett 1, 04. und 05.11.2026: Schleim 57 %, Cu Sith 47 %, Pugil 44 %, Fliegenfalle 31 %, Riesenwurm 28 %, Fledermaus
+  25 %, Raptor 17 %, Büffel 6 %), Scheidender Schlag 14 bis 51 %, die Dressur 7 bis 29 %. Der Wert eines Begleiters in
+  B3 und K6 zählt nur Dressur und Entfesseln; das Element seines Auto-Angriffs nennt kein Blatt (`Pet.AutoAction` ist 0)
+  und wäre am ersten Treffer zu lernen.
 
 ---
 

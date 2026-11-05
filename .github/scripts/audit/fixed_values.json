@@ -1428,6 +1428,26 @@
    "status": "exception",
    "loop": "A579",
    "reason": "XBMContent's RecommendedRank is stored two above what the board screen shows: EXDSchema latest, \"Take this value subtract 2. It is how the exe is doing it.\"; board 2 stores 8 and shows \"Recommended Beast Rank: 6 (Sync from 10)\" (Daedalus 74659a6, field note). The game's own definition, not a tuned value."
+  },
+  {
+   "file": "RotationSolver/Basic/Helpers/CrucibleBoard.cs",
+   "code": "private const int AspectShift = 4;",
+   "values": [
+    "4"
+   ],
+   "status": "exception",
+   "loop": "A582",
+   "reason": "The effect entry's second parameter carries the hit's aspect in its upper four bits and its attack type in its lower (ECommons EffectEntry.AttackType = param1 & 0xF; the third byte of ACT's effect flags: 0x71 slashing unaspected on every beastmaster axe hit, 0x25 ice magic on Frost Breath, 0x15 fire magic on Foul Breath, his log of 05.11.2026). The game's layout of a hit, not a tuned value."
+  },
+  {
+   "file": "RotationSolver/Basic/Helpers/CrucibleBoard.cs",
+   "code": "private const float WeaknessBonusFallback = 0.27f;",
+   "values": [
+    "0.27f"
+   ],
+   "status": "exception",
+   "loop": "A582",
+   "reason": "The Crucible's weakness bonus as measured in his ACT logs of 04 and 05.11.2026 (first board): 18 pairs of one action on a weak and an equally armoured other enemy (same PhysResistance or MagResistance grade in XBMBattleDetail), medians of plain hits, weighted 1.271 (range 1.21-1.40, physical and magic alike). No source states the bonus. A fallback from measurement until the board measures its own (WeaknessBonus), not a game value; the measurement replaces it."
   }
  ]
 }
