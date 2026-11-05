@@ -1018,6 +1018,26 @@
   },
   {
    "file": "RotationSolver/Basic/Rotations/Basic/BeastmasterFamiliars.cs",
+   "code": "private const uint GaugeNoPact = 11217;",
+   "values": [
+    "11217"
+   ],
+   "status": "exception",
+   "loop": "A546",
+   "reason": "Row id of the game's LogMessage sheet, an id like an action or status id, not a tuned value: Gauge's answer that no pact is possible, the first of six rows (11217 to 11222, xivapi v2, 05.11.2026). Finding the rows by their text instead would depend on the client's language."
+  },
+  {
+   "file": "RotationSolver/Basic/Rotations/Basic/BeastmasterFamiliars.cs",
+   "code": "private const uint GaugeVeryEasy = 11222;",
+   "values": [
+    "11222"
+   ],
+   "status": "exception",
+   "loop": "A546",
+   "reason": "Row id of the game's LogMessage sheet: Gauge's answer that a pact will be very easy, the last of its five stages (11218 to 11222, xivapi v2, 05.11.2026)."
+  },
+  {
+   "file": "RotationSolver/Basic/Rotations/Basic/BeastmasterFamiliars.cs",
    "code": "private const int PackAttackers = 2;",
    "values": [
     "2"

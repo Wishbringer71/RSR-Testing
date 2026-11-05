@@ -1415,7 +1415,11 @@ public partial class BeastmasterRotation
 
 	static partial void ModifyGaugePvE(ref ActionSetting setting)
 	{
-
+		// The probe of concept 01, "Ob Analysieren die Lebenspunkte einrechnet" (A546): only on an enemy that would be a
+		// familiar the player lacks, before and after his mark.
+		setting.ActionCheck = () => InCombat;
+		setting.IsFriendly = false;
+		setting.CanTarget = static t => GaugeDue(t);
 	}
 
 	static partial void ModifyTemperedReleasePvE(ref ActionSetting setting)

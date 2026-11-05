@@ -138,6 +138,13 @@ What this release changes in the fight. For the whole distance from upstream, se
   marked and whether the pact came - judged once the enemy's body is gone, as the game enters a pact a
   moment after the fall. The time to kill is now counted from the moment it is read for every rule that
   uses it, as Six-sided Star's last-hit check.
+- **Gauge asks how hard a pact is, twice.** Whether Gauge's answer counts the beast's HP is stated
+  nowhere; it decides whether Capture could go out earlier at the same chance. With `Capture familiars
+  you do not have yet` on, RSR now uses Gauge on a beast you lack while it fights - in a weave nothing
+  else wants, once at first sight and once after your mark - and `DefenseTrace.log` writes both
+  answers with the beast's HP and whether the answer moved. The first beast whose answer moves ends
+  this for the session. The same line notes whether the game would take a second Capture on the
+  marked beast. Gauge never goes on an enemy that is not yet fighting.
 - **A pack that comes at you is stopped first.** With no tank alive beside you, when a pack of two or
   more enemies is fighting and a familiar on a ready horn has a Tempered Release that stops them all
   (War Cry, Petribreath, The Ram's Voice), RSR calls that familiar first, before any danger and

@@ -47,6 +47,7 @@ public static class Watcher
 
 		ActionEffect.ActionEffectEvent += ActionFromEnemy;
 		ActionEffect.ActionEffectEvent += ActionFromSelf;
+		Svc.Chat.LogMessage += OnLogMessage;
 
 		try
 		{
@@ -90,10 +91,24 @@ public static class Watcher
 	{
 		ActionEffect.ActionEffectEvent -= ActionFromEnemy;
 		ActionEffect.ActionEffectEvent -= ActionFromSelf;
+		Svc.Chat.LogMessage -= OnLogMessage;
 		DefenseTrace.Stop("effect handler unhooked");
 
 		_actorControlHook?.Dispose();
 		_actorControlHook = null;
+	}
+
+	// A message of the LogMessage sheet in the chat: Gauge's answer for the beastmaster's probe (concept 01, A546).
+	private static void OnLogMessage(Dalamud.Game.Chat.ILogMessage message)
+	{
+		try
+		{
+			BeastmasterRotation.GaugeAnswered(message.LogMessageId);
+		}
+		catch (Exception ex)
+		{
+			PluginLog.Error($"Error in OnLogMessage: {ex.Message}");
+		}
 	}
 
 	private static void ActorControlDetour(uint entityId, uint category, uint p1, uint p2, uint p3, uint p4, uint p5, uint p6, uint p7, uint p8, ulong targetId, byte replaying)

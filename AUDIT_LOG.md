@@ -16232,6 +16232,37 @@ habe den schleim bislang nicht anfreunden können."
 - *Prüfgrad:* Mitschnitt und Spur gemessen; Compile ohne Warnung, 43 Prüfschritte; Wirkkette am Code. Im Spiel nicht
   beobachtet; Messmittel: „heal stopped" (mit Preis) und „heal kept" (der Fall, den die frühere Fassung abbrach).
 
+### A546 · Beastmaster: Analysieren als Sonde, ob die Stufe die LP einrechnet (05.11.2026)
+
+- *Auftrag:* `TODO.md`, „Beastmaster: Ob Analysieren die LP einrechnet"; seine Vorgabe vom 05.11.2026: TODO im
+  kritischen Loop abarbeiten.
+- *Quellen:* Keine nennt, ob die Stufe von Analysieren (Gauge, Action 44882) die LP einrechnet. Der Wirktext von
+  Anfreunden lautet: „Success rate is inversely proportional to the target's HP at the time of execution" (Action
+  44880). consolegameswiki („Beastmaster", Gemeinschaftsquelle) nennt eine Schwierigkeit je Bestie („intrinsic") und den
+  Tipp „use Capture again to get a better chance". Weder der Spielstatus noch xivapi noch die Websuche belegen den Tipp
+  oder die Feindseligkeit von Analysieren. Die frühere Angabe „kein Feindseligkeit" im Konzept war unbelegt und ist
+  berichtigt.
+- *Gemessen:* Analysieren ist ein Talent ohne Wirkzeit mit 3 s Abklingzeit in Gruppe 18 (xivapi). Die Antworten sind
+  LogMessage 11217 bis 11222 (kein Pakt möglich, fünf Stufen), 11443 (zu schwach) und 11425/11455 (schon Pakt). In
+  seinen Mitschnitten kommen sie als Systemmeldung vor der Wirkung (0B39, 0AB9). Der Status Freundschaftsempfänglich trägt
+  keinen Parameter (stacks 0 in allen 16 Markierungen). Am 04.11. führten 21 Markierungen von RSR zu 10 Pakten: Apkallu
+  brauchte 5 Markierungen, Coeurl 4, Golem 3, Kolibri und Drakon je 2, fünf Arten je eine.
+- *Entscheidung (Konzept 01, „Analysieren als Sonde"):* Die Sonde ist gebaut, eine Regel nicht. RSR drückt Analysieren
+  im letzten freien Webfenster auf eine kämpfende fehlende Bestie, einmal beim ersten Sehen und einmal nach der eigenen
+  Markierung (`BeastmasterRotation.GaugeDue`, `GaugeAsked`, `GaugeAnswered`). Die Antwort liest es über
+  `IChatGui.LogMessage` (Dalamud a740960 vom 04.11.2026, Werkzeugquelle). Die Spurzeile „gauge" urteilt: wandert die
+  Stufe, endet die Sonde für die Sitzung. Sie nennt auch den Status des Spiels für ein zweites Anfreunden.
+  - Verworfen: eine Regel „markieren bei der besten Stufe", weil sie zwei Unbekannte voraussetzt (ob die Stufe die LP
+    einrechnet; wie die Chance innerhalb einer Stufe steigt).
+  - Verworfen: früh markieren und nachmarkieren, weil ungeprüft. Hielte das Spiel die erste LP fest, kostete es die
+    Chance.
+  - Verworfen: Analysieren außerhalb des Kampfs, weil die Feindseligkeit unbelegt ist.
+- *Betroffene:* E – Beastmaster mit „Capture familiars you do not have yet" (Optionstext ergänzt). R – `ModifyGaugePvE`
+  setzt `ActionCheck`, `IsFriendly` und `CanTarget`: Eine abgeleitete Rotation, die Analysieren ruft, bekommt es nur
+  noch auf eine kämpfende fehlende Bestie. Die neuen Member (`GaugeDue`, `GaugeAsked`, `GaugeAnswered`) sind intern.
+- *Prüfgrad:* Compile ohne Warnung, Prüfschritte; Wirkkette am Code (Aktionseinstellung, `AttackAbility` zuletzt,
+  Ereignis im `Watcher`). Im Spiel nicht beobachtet; Messmittel sind die Zeilen „gauge".
+
 ## B · Commit-Register (Fork vs. `upstream/main`)
 
 ### B1 · Einzelgeprüfte Fork-Commits
