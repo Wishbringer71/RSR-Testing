@@ -71,16 +71,29 @@ public sealed class BST_Reborn : BeastmasterRotation
 			+ "Off: Capture and Gauge are never used.")]
 	private bool CaptureFamiliars { get; set; } = true;
 
-	// K8 of the Crucible (concept 01, A551, A552): the board's items that keep you alive.
-	[RotationConfig(CombatType.PvE, Name = "Use the board's items that keep you alive (Crucible only)",
+	// K8 of the Crucible (concept 01, A551 to A553): the board's items that keep you and your familiar alive, and its damage
+	// items.
+	[RotationConfig(CombatType.PvE, Name = "Use the board's items that keep you and your familiar alive (Crucible only)",
 		Tooltip = "On a Crucible board RSR uses, one at a time: when your HP fall below 'Use HP potions below this HP' in combat, "
 			+ "the Beast Potion or Crucible Ash that lifts you back to that line with the least, or the largest when none does "
 			+ "(the board locks normal potions); an antidote or eye drops against poison or blindness on you; a Beastmaster "
 			+ "Reraiser while no Reraise stands, the stronger first - only against a boss once Reraise was seen to go without a "
 			+ "fall; Temporal Sand out of combat while no Sandstill stands; a Beast Potion Kit against a boss while no "
-			+ "Auto-potion stands.\n"
-			+ "Off: RSR uses no board item.")]
+			+ "Auto-potion stands; against an announced hit on you the Tome of the Impervious (physical), the Tome of "
+			+ "Reflection (magic) or Crucible Tannin - in the final fight also while an enemy attacks you; the same for your "
+			+ "familiar when the hit could fell it; against the dangerous statuses the fight's enemies inflict (they take "
+			+ "control from you or end in death) the soul serum that names one, else a Beast Remedy Kit.\n"
+			+ "Off: RSR uses none of these.")]
 	private bool UseCrucibleSafetyItems { get; set; } = true;
+
+	[RotationConfig(CombatType.PvE, Name = "Use the board's damage items: on a pack once a fight, freely in the final fight (Crucible only)",
+		Tooltip = "On a Crucible board RSR throws a fang or Celestial Sand on your target: in the final fight - the board's items "
+			+ "are lost after the run - every one, the most worth first; in any other fight one, once it hits more enemies than "
+			+ "your target. Worth is its potency times the enemies it hits, an enemy weak to its element counting the measured "
+			+ "weakness bonus more; at equal worth the one without knockback. One whose element only hits enemies still to come "
+			+ "waits for them.\n"
+			+ "Off: RSR throws none.")]
+	private bool UseCrucibleDamageItems { get; set; } = true;
 
 	// K9 of the Crucible (concept 01, A550): on by default. Without a tank the enemies attack only you, and your fall ends the
 	// run; the familiar's HP are a second store, and a fallen familiar costs that familiar, not the run.
@@ -1008,9 +1021,9 @@ public sealed class BST_Reborn : BeastmasterRotation
 		// Stage 1 of the Crucible (A548): the fight in progress from the sheets, for K2.
 		FollowCrucible();
 		FollowFamiliarHits();
-		if (UseCrucibleSafetyItems && DataCenter.State)
+		if ((UseCrucibleSafetyItems || UseCrucibleDamageItems) && DataCenter.State)
 		{
-			UseCrucibleItems(Service.Config.UseHpPotionsPercent);
+			UseCrucibleItems(Service.Config.UseHpPotionsPercent, _familiarLargestHit, UseCrucibleSafetyItems, UseCrucibleDamageItems);
 		}
 		RecordFight();
 		CountFight();

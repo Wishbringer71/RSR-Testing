@@ -1006,6 +1006,366 @@
       "kind": "crucible_item",
       "source": "xivapi v2, XBMItem row 141, language=de, 2026-11-05",
       "note": "Crucible of the Unbroken item (XBMItem, not the Item sheet); RSR reads its kind from the English text (A551, A552)."
+    },
+    {
+      "de": "Bestien-Goldnadel",
+      "en": "Crucible Needle",
+      "identifier": "84",
+      "kind": "crucible_item",
+      "source": "xivapi v2, XBMItem row 84, language=de, 2026-11-05",
+      "note": "Crucible of the Unbroken item (XBMItem, not the Item sheet); RSR reads its kind from the English text (A551 to A553)."
+    },
+    {
+      "de": "Bestien-Antigift-Serum I",
+      "en": "G1 Antipoison Soul Serum",
+      "identifier": "86",
+      "kind": "crucible_item",
+      "source": "xivapi v2, XBMItem row 86, language=de, 2026-11-05",
+      "note": "Crucible of the Unbroken item (XBMItem, not the Item sheet); RSR reads its kind from the English text (A551 to A553)."
+    },
+    {
+      "de": "Bestien-Antigift-Serum II",
+      "en": "G2 Antipoison Soul Serum",
+      "identifier": "87",
+      "kind": "crucible_item",
+      "source": "xivapi v2, XBMItem row 87, language=de, 2026-11-05",
+      "note": "Crucible of the Unbroken item (XBMItem, not the Item sheet); RSR reads its kind from the English text (A551 to A553)."
+    },
+    {
+      "de": "Bestien-Antiparalyse-Serum I",
+      "en": "G1 Antiparalysis Soul Serum",
+      "identifier": "88",
+      "kind": "crucible_item",
+      "source": "xivapi v2, XBMItem row 88, language=de, 2026-11-05",
+      "note": "Crucible of the Unbroken item (XBMItem, not the Item sheet); RSR reads its kind from the English text (A551 to A553)."
+    },
+    {
+      "de": "Bestien-Antiparalyse-Serum II",
+      "en": "G2 Antiparalysis Soul Serum",
+      "identifier": "89",
+      "kind": "crucible_item",
+      "source": "xivapi v2, XBMItem row 89, language=de, 2026-11-05",
+      "note": "Crucible of the Unbroken item (XBMItem, not the Item sheet); RSR reads its kind from the English text (A551 to A553)."
+    },
+    {
+      "de": "Bestien-Antiblind-Serum I",
+      "en": "G1 Antiblind Soul Serum",
+      "identifier": "90",
+      "kind": "crucible_item",
+      "source": "xivapi v2, XBMItem row 90, language=de, 2026-11-05",
+      "note": "Crucible of the Unbroken item (XBMItem, not the Item sheet); RSR reads its kind from the English text (A551 to A553)."
+    },
+    {
+      "de": "Bestien-Antiblind-Serum II",
+      "en": "G2 Antiblind Soul Serum",
+      "identifier": "91",
+      "kind": "crucible_item",
+      "source": "xivapi v2, XBMItem row 91, language=de, 2026-11-05",
+      "note": "Crucible of the Unbroken item (XBMItem, not the Item sheet); RSR reads its kind from the English text (A551 to A553)."
+    },
+    {
+      "de": "Bestien-Antiversteinerung-Serum I",
+      "en": "G1 Antipetrification Soul Serum",
+      "identifier": "92",
+      "kind": "crucible_item",
+      "source": "xivapi v2, XBMItem row 92, language=de, 2026-11-05",
+      "note": "Crucible of the Unbroken item (XBMItem, not the Item sheet); RSR reads its kind from the English text (A551 to A553)."
+    },
+    {
+      "de": "Bestien-Antiversteinerung-Serum II",
+      "en": "G2 Antipetrification Soul Serum",
+      "identifier": "93",
+      "kind": "crucible_item",
+      "source": "xivapi v2, XBMItem row 93, language=de, 2026-11-05",
+      "note": "Crucible of the Unbroken item (XBMItem, not the Item sheet); RSR reads its kind from the English text (A551 to A553)."
+    },
+    {
+      "de": "Bestien-Antischlaf-Serum I",
+      "en": "G1 Antisleep Soul Serum",
+      "identifier": "94",
+      "kind": "crucible_item",
+      "source": "xivapi v2, XBMItem row 94, language=de, 2026-11-05",
+      "note": "Crucible of the Unbroken item (XBMItem, not the Item sheet); RSR reads its kind from the English text (A551 to A553)."
+    },
+    {
+      "de": "Bestien-Antischlaf-Serum II",
+      "en": "G2 Antisleep Soul Serum",
+      "identifier": "95",
+      "kind": "crucible_item",
+      "source": "xivapi v2, XBMItem row 95, language=de, 2026-11-05",
+      "note": "Crucible of the Unbroken item (XBMItem, not the Item sheet); RSR reads its kind from the English text (A551 to A553)."
+    },
+    {
+      "de": "Horn der Rückkehr",
+      "en": "Blessed Horn",
+      "identifier": "96",
+      "kind": "crucible_item",
+      "source": "xivapi v2, XBMItem row 96, language=de, 2026-11-05",
+      "note": "Crucible of the Unbroken item (XBMItem, not the Item sheet); RSR reads its kind from the English text (A551 to A553)."
+    },
+    {
+      "de": "Bestien-Rauchbombe",
+      "en": "Beastly Smokebomb",
+      "identifier": "97",
+      "kind": "crucible_item",
+      "source": "xivapi v2, XBMItem row 97, language=de, 2026-11-05",
+      "note": "Crucible of the Unbroken item (XBMItem, not the Item sheet); RSR reads its kind from the English text (A551 to A553)."
+    },
+    {
+      "de": "Auge des Diebs",
+      "en": "Thief's Eye",
+      "identifier": "100",
+      "kind": "crucible_item",
+      "source": "xivapi v2, XBMItem row 100, language=de, 2026-11-05",
+      "note": "Crucible of the Unbroken item (XBMItem, not the Item sheet); RSR reads its kind from the English text (A551 to A553)."
+    },
+    {
+      "de": "Auge des Händlers",
+      "en": "Merchant's Eye",
+      "identifier": "101",
+      "kind": "crucible_item",
+      "source": "xivapi v2, XBMItem row 101, language=de, 2026-11-05",
+      "note": "Crucible of the Unbroken item (XBMItem, not the Item sheet); RSR reads its kind from the English text (A551 to A553)."
+    },
+    {
+      "de": "Bestien-Verkürzungsmittel",
+      "en": "Crucible Stimulant",
+      "identifier": "103",
+      "kind": "crucible_item",
+      "source": "xivapi v2, XBMItem row 103, language=de, 2026-11-05",
+      "note": "Crucible of the Unbroken item (XBMItem, not the Item sheet); RSR reads its kind from the English text (A551 to A553)."
+    },
+    {
+      "de": "Bestien-Stärkungsmittel",
+      "en": "Potion of Tempered Strength",
+      "identifier": "104",
+      "kind": "crucible_item",
+      "source": "xivapi v2, XBMItem row 104, language=de, 2026-11-05",
+      "note": "Crucible of the Unbroken item (XBMItem, not the Item sheet); RSR reads its kind from the English text (A551 to A553)."
+    },
+    {
+      "de": "Ungezähmte Bestien-Stärkungsmittel",
+      "en": "Potion of Feral Strength",
+      "identifier": "105",
+      "kind": "crucible_item",
+      "source": "xivapi v2, XBMItem row 105, language=de, 2026-11-05",
+      "note": "Crucible of the Unbroken item (XBMItem, not the Item sheet); RSR reads its kind from the English text (A551 to A553)."
+    },
+    {
+      "de": "Bestien-Zaubermittel",
+      "en": "Potion of Tempered Magic",
+      "identifier": "106",
+      "kind": "crucible_item",
+      "source": "xivapi v2, XBMItem row 106, language=de, 2026-11-05",
+      "note": "Crucible of the Unbroken item (XBMItem, not the Item sheet); RSR reads its kind from the English text (A551 to A553)."
+    },
+    {
+      "de": "Ungezähmte Bestien-Zaubermittel",
+      "en": "Potion of Feral Magic",
+      "identifier": "107",
+      "kind": "crucible_item",
+      "source": "xivapi v2, XBMItem row 107, language=de, 2026-11-05",
+      "note": "Crucible of the Unbroken item (XBMItem, not the Item sheet); RSR reads its kind from the English text (A551 to A553)."
+    },
+    {
+      "de": "Bestien-Aufbrausmittel",
+      "en": "Potion of Tempered Intensity",
+      "identifier": "108",
+      "kind": "crucible_item",
+      "source": "xivapi v2, XBMItem row 108, language=de, 2026-11-05",
+      "note": "Crucible of the Unbroken item (XBMItem, not the Item sheet); RSR reads its kind from the English text (A551 to A553)."
+    },
+    {
+      "de": "Ungezähmte Bestien-Aufbrausmittel",
+      "en": "Potion of Feral Intensity",
+      "identifier": "109",
+      "kind": "crucible_item",
+      "source": "xivapi v2, XBMItem row 109, language=de, 2026-11-05",
+      "note": "Crucible of the Unbroken item (XBMItem, not the Item sheet); RSR reads its kind from the English text (A551 to A553)."
+    },
+    {
+      "de": "Bestien-Wendigkeitsmittel",
+      "en": "Potion of Tempered Evasion",
+      "identifier": "110",
+      "kind": "crucible_item",
+      "source": "xivapi v2, XBMItem row 110, language=de, 2026-11-05",
+      "note": "Crucible of the Unbroken item (XBMItem, not the Item sheet); RSR reads its kind from the English text (A551 to A553)."
+    },
+    {
+      "de": "Ungezähmte Bestien-Wendigkeitsmittel",
+      "en": "Potion of Feral Evasion",
+      "identifier": "111",
+      "kind": "crucible_item",
+      "source": "xivapi v2, XBMItem row 111, language=de, 2026-11-05",
+      "note": "Crucible of the Unbroken item (XBMItem, not the Item sheet); RSR reads its kind from the English text (A551 to A553)."
+    },
+    {
+      "de": "Bestien-Ausdauermittel",
+      "en": "Potion of Tempered Constitution",
+      "identifier": "112",
+      "kind": "crucible_item",
+      "source": "xivapi v2, XBMItem row 112, language=de, 2026-11-05",
+      "note": "Crucible of the Unbroken item (XBMItem, not the Item sheet); RSR reads its kind from the English text (A551 to A553)."
+    },
+    {
+      "de": "Ungezähmte Bestien-Ausdauermittel",
+      "en": "Potion of Feral Constitution",
+      "identifier": "113",
+      "kind": "crucible_item",
+      "source": "xivapi v2, XBMItem row 113, language=de, 2026-11-05",
+      "note": "Crucible of the Unbroken item (XBMItem, not the Item sheet); RSR reads its kind from the English text (A551 to A553)."
+    },
+    {
+      "de": "Bestien-Flinkheitsmittel",
+      "en": "Potion of Breathtaking Swiftness",
+      "identifier": "114",
+      "kind": "crucible_item",
+      "source": "xivapi v2, XBMItem row 114, language=de, 2026-11-05",
+      "note": "Crucible of the Unbroken item (XBMItem, not the Item sheet); RSR reads its kind from the English text (A551 to A553)."
+    },
+    {
+      "de": "Bestien-Feder",
+      "en": "Crucible Feather",
+      "identifier": "115",
+      "kind": "crucible_item",
+      "source": "xivapi v2, XBMItem row 115, language=de, 2026-11-05",
+      "note": "Crucible of the Unbroken item (XBMItem, not the Item sheet); RSR reads its kind from the English text (A551 to A553)."
+    },
+    {
+      "de": "Bestien-Feuerresistenzmittel I",
+      "en": "G1 Wildfire Weakener",
+      "identifier": "116",
+      "kind": "crucible_item",
+      "source": "xivapi v2, XBMItem row 116, language=de, 2026-11-05",
+      "note": "Crucible of the Unbroken item (XBMItem, not the Item sheet); RSR reads its kind from the English text (A551 to A553)."
+    },
+    {
+      "de": "Bestien-Feuerresistenzmittel II",
+      "en": "G2 Wildfire Weakener",
+      "identifier": "117",
+      "kind": "crucible_item",
+      "source": "xivapi v2, XBMItem row 117, language=de, 2026-11-05",
+      "note": "Crucible of the Unbroken item (XBMItem, not the Item sheet); RSR reads its kind from the English text (A551 to A553)."
+    },
+    {
+      "de": "Bestien-Wasserresistenzmittel I",
+      "en": "G1 Wildwave Weakener",
+      "identifier": "118",
+      "kind": "crucible_item",
+      "source": "xivapi v2, XBMItem row 118, language=de, 2026-11-05",
+      "note": "Crucible of the Unbroken item (XBMItem, not the Item sheet); RSR reads its kind from the English text (A551 to A553)."
+    },
+    {
+      "de": "Bestien-Wasserresistenzmittel II",
+      "en": "G2 Wildwave Weakener",
+      "identifier": "119",
+      "kind": "crucible_item",
+      "source": "xivapi v2, XBMItem row 119, language=de, 2026-11-05",
+      "note": "Crucible of the Unbroken item (XBMItem, not the Item sheet); RSR reads its kind from the English text (A551 to A553)."
+    },
+    {
+      "de": "Bestien-Erdresistenzmittel I",
+      "en": "G1 Wildearth Weakener",
+      "identifier": "120",
+      "kind": "crucible_item",
+      "source": "xivapi v2, XBMItem row 120, language=de, 2026-11-05",
+      "note": "Crucible of the Unbroken item (XBMItem, not the Item sheet); RSR reads its kind from the English text (A551 to A553)."
+    },
+    {
+      "de": "Bestien-Erdresistenzmittel II",
+      "en": "G2 Wildearth Weakener",
+      "identifier": "121",
+      "kind": "crucible_item",
+      "source": "xivapi v2, XBMItem row 121, language=de, 2026-11-05",
+      "note": "Crucible of the Unbroken item (XBMItem, not the Item sheet); RSR reads its kind from the English text (A551 to A553)."
+    },
+    {
+      "de": "Bestien-Blitzresistenzmittel I",
+      "en": "G1 Wildthunder Weakener",
+      "identifier": "122",
+      "kind": "crucible_item",
+      "source": "xivapi v2, XBMItem row 122, language=de, 2026-11-05",
+      "note": "Crucible of the Unbroken item (XBMItem, not the Item sheet); RSR reads its kind from the English text (A551 to A553)."
+    },
+    {
+      "de": "Bestien-Blitzresistenzmittel II",
+      "en": "G2 Wildthunder Weakener",
+      "identifier": "123",
+      "kind": "crucible_item",
+      "source": "xivapi v2, XBMItem row 123, language=de, 2026-11-05",
+      "note": "Crucible of the Unbroken item (XBMItem, not the Item sheet); RSR reads its kind from the English text (A551 to A553)."
+    },
+    {
+      "de": "Bestien-Windresistenzmittel I",
+      "en": "G1 Wildgale Weakener",
+      "identifier": "124",
+      "kind": "crucible_item",
+      "source": "xivapi v2, XBMItem row 124, language=de, 2026-11-05",
+      "note": "Crucible of the Unbroken item (XBMItem, not the Item sheet); RSR reads its kind from the English text (A551 to A553)."
+    },
+    {
+      "de": "Bestien-Windresistenzmittel II",
+      "en": "G2 Wildgale Weakener",
+      "identifier": "125",
+      "kind": "crucible_item",
+      "source": "xivapi v2, XBMItem row 125, language=de, 2026-11-05",
+      "note": "Crucible of the Unbroken item (XBMItem, not the Item sheet); RSR reads its kind from the English text (A551 to A553)."
+    },
+    {
+      "de": "Bestien-Eisresistenzmittel I",
+      "en": "G1 Wildfreeze Weakener",
+      "identifier": "126",
+      "kind": "crucible_item",
+      "source": "xivapi v2, XBMItem row 126, language=de, 2026-11-05",
+      "note": "Crucible of the Unbroken item (XBMItem, not the Item sheet); RSR reads its kind from the English text (A551 to A553)."
+    },
+    {
+      "de": "Bestien-Eisresistenzmittel II",
+      "en": "G2 Wildfreeze Weakener",
+      "identifier": "127",
+      "kind": "crucible_item",
+      "source": "xivapi v2, XBMItem row 127, language=de, 2026-11-05",
+      "note": "Crucible of the Unbroken item (XBMItem, not the Item sheet); RSR reads its kind from the English text (A551 to A553)."
+    },
+    {
+      "de": "Blutsauger-Reißzahn",
+      "en": "Vampiric Fang",
+      "identifier": "134",
+      "kind": "crucible_item",
+      "source": "xivapi v2, XBMItem row 134, language=de, 2026-11-05",
+      "note": "Crucible of the Unbroken item (XBMItem, not the Item sheet); RSR reads its kind from the English text (A551 to A553)."
+    },
+    {
+      "de": "Bestien-Blutsaugerserum",
+      "en": "Vampiric Essence",
+      "identifier": "135",
+      "kind": "crucible_item",
+      "source": "xivapi v2, XBMItem row 135, language=de, 2026-11-05",
+      "note": "Crucible of the Unbroken item (XBMItem, not the Item sheet); RSR reads its kind from the English text (A551 to A553)."
+    },
+    {
+      "de": "Sternensturm",
+      "en": "Celestial Sand",
+      "identifier": "139",
+      "kind": "crucible_item",
+      "source": "xivapi v2, XBMItem row 139, language=de, 2026-11-05",
+      "note": "Crucible of the Unbroken item (XBMItem, not the Item sheet); RSR reads its kind from the English text (A551 to A553)."
+    },
+    {
+      "de": "Grimoire der Zauberschmiede",
+      "en": "Spellforge Tome",
+      "identifier": "142",
+      "kind": "crucible_item",
+      "source": "xivapi v2, XBMItem row 142, language=de, 2026-11-05",
+      "note": "Crucible of the Unbroken item (XBMItem, not the Item sheet); RSR reads its kind from the English text (A551 to A553)."
+    },
+    {
+      "de": "Grimoire des Stahlstachels",
+      "en": "Steelsting Tome",
+      "identifier": "143",
+      "kind": "crucible_item",
+      "source": "xivapi v2, XBMItem row 143, language=de, 2026-11-05",
+      "note": "Crucible of the Unbroken item (XBMItem, not the Item sheet); RSR reads its kind from the English text (A551 to A553)."
     }
   ]
 }

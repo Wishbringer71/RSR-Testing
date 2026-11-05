@@ -24,12 +24,17 @@ internal static class CrucibleBoard
 
 	private static List<(uint Row, Enemy[] Enemies)>? _fights;
 	private static readonly Dictionary<uint, string> _elementNames = [];
+
+	// K8 (A553): the final fight of each board, and per fight the dangerous statuses its enemies' actions inflict.
+	private static readonly HashSet<uint> _finalFights = [];
+	private static readonly Dictionary<uint, HashSet<uint>> _fightAilments = [];
 	private static readonly Dictionary<uint, HashSet<uint>> _actionElements = [];
 
 	private static uint _fight;
 	private static Enemy[] _enemies = [];
 	private static readonly HashSet<uint> _atStart = [];
 	private static readonly HashSet<uint> _present = [];
+	private static readonly HashSet<uint> _seen = [];
 	private static uint _tracedArea;
 
 	// K1 (A549): damage per potency of the player's and his familiars' hits on an enemy of the fight, kept apart for hits on
@@ -57,6 +62,42 @@ internal static class CrucibleBoard
 	/// <summary>Whether an enemy of this name is here now.</summary>
 	internal static bool IsHere(uint nameId) => _present.Contains(nameId);
 
+	/// <summary>
+	/// Whether an enemy of this name, listed for the fight in progress, has not been seen in it yet - it is still to come. One
+	/// that came and fell does not come again (A553; before, it counted as still to come once it was gone).
+	/// </summary>
+	internal static bool IsToCome(uint nameId) => _fight != 0 && !_seen.Contains(nameId);
+
+	/// <summary>
+	/// Whether the fight in progress is the board's final one, against its boss: subrow 0 of the board's row in
+	/// XBMContentBattle (A553). The board's items are lost after the run.
+	/// </summary>
+	internal static bool IsFinalFight => _fight != 0 && _finalFights.Contains(_fight);
+
+	/// <summary>
+	/// The dangerous statuses the enemies of the fight in progress inflict, as the sheet lists their two actions (A553):
+	/// detrimental, and taking control from their target (it cannot act or does not act on its own will) or ending in death
+	/// by their English effect text. Empty while no fight is told.
+	/// </summary>
+	internal static IReadOnlyCollection<uint> Ailments => _fight != 0 && _fightAilments.TryGetValue(_fight, out var ailments)
+		? ailments
+		: [];
+
+	/// <summary>The XBMElement row whose English name is <paramref name="name"/>, ignoring case; 0 when none is.</summary>
+	internal static uint ElementNamed(string name)
+	{
+		_ = Fights;
+		foreach (var (row, element) in _elementNames)
+		{
+			if (string.Equals(element, name, StringComparison.OrdinalIgnoreCase))
+			{
+				return row;
+			}
+		}
+
+		return 0;
+	}
+
 	private static List<(uint Row, Enemy[] Enemies)> Read()
 	{
 		var fights = new List<(uint Row, Enemy[] Enemies)>();
@@ -79,25 +120,68 @@ internal static class CrucibleBoard
 			return fights;
 		}
 
+		var actions = Svc.Data.GetExcelSheet<Lumina.Excel.Sheets.XBMBattleDetailAction>();
+		var statuses = Svc.Data.GetExcelSheet<Lumina.Excel.Sheets.Status>(ClientLanguage.English);
 		var enemies = new List<Enemy>();
 		foreach (var row in sheet)
 		{
 			enemies.Clear();
+			var ailments = new HashSet<uint>();
 			foreach (var enemy in row)
 			{
 				if (enemy.Unknown0 != 0)
 				{
 					enemies.Add(new Enemy(enemy.Unknown0, enemy.Unknown10, enemy.Unknown5, enemy.Unknown6));
+					AddAilment(enemy.Unknown2);
+					AddAilment(enemy.Unknown3);
 				}
 			}
 
 			if (enemies.Count > 0)
 			{
 				fights.Add((row.RowId, enemies.ToArray()));
+				if (ailments.Count > 0)
+				{
+					_fightAilments[row.RowId] = ailments;
+				}
+			}
+
+			// XBMBattleDetailAction: Action, Status, ActionTarget, ActionEffectType (EXDSchema latest, 05.11.2026).
+			void AddAilment(ushort action)
+			{
+				if (action != 0 && actions?.GetRowOrDefault(action) is { } detail && detail.Unknown1 != 0
+					&& statuses?.GetRowOrDefault(detail.Unknown1) is { } status && IsDangerous(status))
+				{
+					_ = ailments.Add(detail.Unknown1);
+				}
+			}
+		}
+
+		// XBMContentBattle: one row per board, a subrow per fight naming its XBMBattleDetail row; subrow 0 is the boss.
+		var boards = Svc.Data.GetSubrowExcelSheet<Lumina.Excel.Sheets.XBMContentBattle>();
+		if (boards != null)
+		{
+			foreach (var board in boards)
+			{
+				foreach (var fight in board)
+				{
+					if (fight.SubrowId == 0 && fight.Unknown0 != 0)
+					{
+						_ = _finalFights.Add(fight.Unknown0);
+					}
+				}
 			}
 		}
 
 		return fights;
+	}
+
+	// Detrimental, and it takes control from its bearer or its English effect text names death (Doom, Stone Curse).
+	private static bool IsDangerous(Lumina.Excel.Sheets.Status status)
+	{
+		return status.StatusCategory == (byte)StatusCategory.Detrimental
+			&& (status.LockActions || status.LockControl
+				|| status.Description.ExtractText().Contains("death", StringComparison.OrdinalIgnoreCase));
 	}
 
 	/// <summary>
@@ -211,7 +295,13 @@ internal static class CrucibleBoard
 			}
 		}
 
-		if (_fight != 0 || _present.Count == 0)
+		if (_fight != 0)
+		{
+			_seen.UnionWith(_present);
+			return;
+		}
+
+		if (_present.Count == 0)
 		{
 			return;
 		}
@@ -248,6 +338,7 @@ internal static class CrucibleBoard
 		}
 
 		_atStart.UnionWith(_present);
+		_seen.UnionWith(_present);
 		var coming = new List<string>();
 		foreach (var enemy in _enemies)
 		{
@@ -267,6 +358,7 @@ internal static class CrucibleBoard
 		_enemies = [];
 		_atStart.Clear();
 		_present.Clear();
+		_seen.Clear();
 		_ownDamage = 0d;
 		_ownDamageByElement.Clear();
 	}

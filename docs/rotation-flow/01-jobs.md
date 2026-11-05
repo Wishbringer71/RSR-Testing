@@ -1860,7 +1860,7 @@ Dullahan, Golem, Spriggan und Eisgolem (`XBMPet.InflictsInterrupt`).
   Vorgabe kein Grund. *Ergebnis:* C, entschieden (seine Frage zeigt den Wunsch, „auf Wunsch" schließt D aus): Wahl nach
   Abdeckung der Schwächen aller Kämpfe des Bretts, gewichtet nach Zahl der Gegner, dazu ein Heiler und, wo Gegner
   unterbrechbar wirken, einer, der unterbricht.
-- *K8 – Gegenstände.* Über `InstanceContentCrucibleOfTheUnbroken.UseItem(Platz, Bestie)` auf dein Ziel. Sicherheit zuerst
+- *K8 – Gegenstände* (gebaut: A551 bis A553, unten „Stufe 3: K8"). Über `InstanceContentCrucibleOfTheUnbroken.UseItem(Platz, Bestie)` auf dein Ziel. Sicherheit zuerst
   (seine Regel): Bestien-Heiltrank oder -Pulver, wenn deine LP in die Gefahr fallen und keine Heilung bereit ist;
   Bestien-Gegengift und Bestien-Augentropfen gegen den passenden Zustand; Bestien-Verhärtungsmittel vor einem angekündigten
   Tankbuster; Bestien-Lebensfeder oder Sand der Zeit außerhalb des Kampfes vor dem Endgegner. Schaden: der Reißzahn der passenden Schwäche auf die
@@ -1931,7 +1931,8 @@ danach K4, K5, K10.
 - *Der laufende Kampf:* Im Brett und im Kampf ist es die Zeile, die die meisten anwesenden Gegner nennt (nach `NameId`),
   bei Gleichstand die mit den wenigsten Gegnern. Nennt eine alle, ist es also sie; ein Anwesender, den kein Blatt
   führt (ein Helfer mit eigenem Namen), verdeckt den Kampf nicht. Wer beim Erkennen anwesend ist, gilt als „zu Beginn"; wer in der Zeile steht und
-  dann fehlt, als „kommt noch". Nach dem Kampf wird neu erkannt.
+  in diesem Kampf noch nicht zu sehen war, als „kommt noch" – ein Gekommener, der fällt, kommt nicht wieder. Nach dem
+  Kampf wird neu erkannt.
 - *Was ein Begleiter trifft:* Dressur und Entfesseln (`FamiliarProfile`) je mit ihrem Element (`Action.Aspect` Feuer bis
   Wasser) oder, bei physischem Aspekt, ihrer Angriffsart (Hieb, Stich, Schlag). Zugeordnet wird über die englischen Namen
   von `XBMElement` und RSRs Aufzählungen `Aspect` und `AttackType`, ohne eigene Zahl. Ein Zauber ohne Element trifft
@@ -1947,8 +1948,9 @@ danach K4, K5, K10.
 - *Im Kampf:* Seelenlose (Stich), Raptor auf einem Horn (Entfesseln Feuer), Sukkubi (Feuer) nach 45 s. Der Raptor
   bleibt im Zyklus zurück, solange ein anderes Horn bereit ist, und kommt, sobald die Sukkubi erscheinen.
 
-**Stufe 3: K8, Gegenstände für die Sicherheit** (A551, A552, gebaut; Einstellung „Use the board's items that keep you
-alive (Crucible only)", ab Werk an):
+**Stufe 3: K8, Gegenstände des Bretts** (A551 bis A553, gebaut). Zwei Einstellungen, beide ab Werk an: „Use the
+board's items that keep you and your familiar alive (Crucible only)" und „Use the board's damage items: on a pack once a
+fight, freely in the final fight (Crucible only)".
 - *Welche* (`XBMItem`, xivapi Schema a1e24a0c, 05.11.2026; Name in Spalte 2, englischer Wirktext in Spalte 3, daraus Art
   und Größe; die deutschen Namen aus demselben Blatt mit `language=de`, Zeilen in `action_names_de.json`):
   - Heilung: Bestien-Heiltrank I bis IV („Restores 10/23/36/50% of HP to self or familiar") und Bestien-Pulver I bis III
@@ -1958,27 +1960,90 @@ alive (Crucible only)", ab Werk an):
     außerhalb des Kampfes).
   - Bestien-Heiltranksammlung („Auto-potion: Restores 40% of HP automatically when HP falls below 50%", 150 s).
   - Bestien-Gegengift und Bestien-Augentropfen (heilen Gift und Blindheit und 25 % LP).
-- *Wann, einer zur Zeit, in dieser Reihenfolge:*
+  - Schutz: Bestien-Verhärtungsmittel („Grants Tough Skin to self or familiar … Reduces damage taken by 20%", 60 s),
+    Grimoire der Unantastbarkeit („five stacks of Blink … Nullifies most physical attacks", 120 s), Grimoire der
+    Reflexion („Grants Reflect … Reflects most magic attacks back at the caster", 30 s).
+  - Zustände: Bestien-Heilmittelsammlung („Grants Auto-remedy to self … Automatically cures the next status ailment
+    suffered", 240 s) und die Seren I und II (Bestien-Antigift-, -Antiparalyse-, -Antiblind-, -Antiversteinerung-,
+    -Antischlaf-Serum: „Increases poison/paralysis/blind/petrification/sleep resistance by 100%", 180 s; II auch für
+    Verbündete in der Nähe, 300 s).
+  - Schaden: die sechs Reißzähne (Feuer 2.500, die übrigen 2.000 Potenz auf das Ziel und alle Gegner in 12 Yalm; dazu je
+    Element Deep Freeze, Paralysis, Heavy, ein entfernter Stärkungszustand oder 15 Yalm Rückstoß), der
+    Blutsauger-Reißzahn (Stich, 1.500 bis 3.300 nach deinen maximalen LP, teils als LP aufgenommen) und Sternensturm
+    (Feuer 3.000 in 18 Yalm). Art, Potenz, Radius und Rückstoß liest RSR aus dem Text, das Element ordnet es über die
+    englischen Namen von `XBMElement` der Schwäche zu (wie K1).
+- *Der Endkampf:* Unterzeile 0 jedes Bretts in `XBMContentBattle` (`Unknown0`) ist der Kampf gegen den Endgegner: Zeilen
+  6, 13, 21, 31, 45 mit Seelenlose, Losfrox Tintenklecks, Guttler, Borgny Giftschleuder, Lauda Spruchspalterin (xivapi,
+  05.11.2026); die übrigen Unterzeilen sind die Kämpfe davor. Brett-Gegenstände gehen nach dem Lauf verloren, höchstens
+  zehn passen ins Inventar (consolegameswiki, „Crucible of the Unbroken", Abschnitt „Ephemeral Items", 05.11.2026). Im
+  Endkampf zählt der Vorrat deshalb nicht mehr.
+- *Die Zustände eines Kampfes:* `XBMBattleDetail` führt je Gegner zwei Aktionen (`Unknown2`, `Unknown3` →
+  `XBMBattleDetailAction`: Aktion, Status, Zielart, Wirkart als `Unknown0` bis `Unknown3`; Spaltenfolge EXDSchema latest,
+  05.11.2026). Über alle Bretter verursachen sie unter anderem Paralysis, Poison, Doom, Petrification, Blind, Confused,
+  Heavy, Hysteria, Nightmare, Stone Curse, Devoured und Down for the Count. Als gefährlich zählt ein schädlicher Status
+  (`StatusCategory` 2), der dir die Kontrolle nimmt (`LockActions` oder `LockControl`: Petrification, Hysteria, Nightmare,
+  Confused, Devoured, Down for the Count, Stone Curse) oder dessen englischer Wirktext den Tod nennt (Doom, Stone Curse).
+  Ob die Bestien-Heilmittelsammlung einen davon heilt, sagt keine Quelle („status ailment", unbelegt).
+- *Wann, einer zur Zeit, in dieser Reihenfolge* (erste Einstellung, außer 9):
   1. Im Kampf unter „Use HP potions below this HP": der Heilgegenstand, der dich mit dem kleinsten Wert wieder über die
      Linie hebt, sonst der größte; bei gleicher Heilung der Heiltrank vor dem Pulver. Normale Heiltränke sperrt das Brett.
   2. Im Kampf gegen Gift oder Blindheit auf dir das passende Mittel.
-  3. Steht kein Reraise, die stärkere Bestien-Lebensfeder, im Kampf und außerhalb. Sein Wirktext nennt keine Dauer, also gilt
-     er bis zu einem Fall. Geht er, ohne dass du fielst, schreibt die Spur das, und von da an kommt eine Lebensfeder nur
-     noch gegen einen Boss.
+  3. Steht kein Reraise, die stärkere Bestien-Lebensfeder, im Kampf und außerhalb. Ihr Wirktext nennt keine Dauer, also
+     gilt sie bis zu einem Fall. Geht Reraise, ohne dass du fielst, schreibt die Spur das, und von da an kommt eine
+     Lebensfeder nur noch gegen einen Boss.
   4. Außerhalb des Kampfes, solange kein Sandstill steht, der Sand der Zeit.
   5. Gegen einen Gegner mit Boss-Symbol, solange kein Auto-potion steht, die Bestien-Heiltranksammlung.
+  6. Schutz für dich gegen einen angekündigten Treffer auf dich: ein bekannter Tankbuster (Liste, gelernte Tabelle,
+     Markierung, BossModReborn mit dir in der Maske; `DataCenter.IsTankbusterAimedAt`) oder ein gemessener gezielter
+     Treffer, der eine Abwehr verlangt (A540). Im Endkampf auch, sobald ein Gegner dich angreift. Gegen einen
+     physischen Treffer (`AttackType` 1 bis 4) das Grimoire der Unantastbarkeit, gegen einen magischen (5) das der
+     Reflexion, sonst oder wenn es fehlt das Bestien-Verhärtungsmittel; nicht, solange Tough Skin, Blink oder Reflect
+     auf dir steht.
+  7. Derselbe Schutz für deinen Begleiter gegen einen angekündigten Treffer auf ihn, wenn er nicht mehr LP hält als der
+     größte Treffer, den er in diesem Kampf nahm – dasselbe Maß, mit dem Provozieren dich zum Ziel macht (K9). Im
+     Endkampf gegen jeden angekündigten Treffer auf ihn.
+  8. Gegen die Zustände des Kampfes, sobald er erkannt ist und das Blatt für einen seiner Gegner einen gefährlichen
+     Status führt: zuerst das Serum, dessen Text diesen Status nennt (je Status einmal im Kampf), sonst die
+     Bestien-Heilmittelsammlung, solange kein Auto-remedy steht.
+  9. Schaden (zweite Einstellung) auf dein Gegnerziel: im Endkampf jeder Schadensgegenstand, der wertvollste zuerst;
+     sonst einer je Kampf, sobald er mehr Gegner trifft als dein Ziel. Wert ist Potenz mal der Summe über die
+     getroffenen Gegner aus eins plus dem gemessenen Schwächezuschlag, wo das Element ihre Schwäche ist (K1); bei
+     Gleichstand der ohne Rückstoß. Ein Gegenstand, dessen Element nur die Schwäche noch kommender Gegner trifft, wartet
+     auf sie (wie K2).
 - *Wie:* `InstanceContentCrucibleOfTheUnbroken.UseItem` (FFXIVClientStructs, in Dalamuds Fassung vorhanden) wirkt auf
-  das Soft- oder Hard-Ziel. RSR setzt das Soft-Ziel kurz auf dich und stellt es zurück, wie BeastHelper (be40a1e,
-  Werkzeugquelle, nur gelesen). Die Status liest RSR nach ihrem englischen Namen.
+  das Soft- oder Hard-Ziel. RSR setzt das Soft-Ziel kurz auf dich, deinen Begleiter oder dein Gegnerziel und stellt es
+  zurück, wie BeastHelper (be40a1e, Werkzeugquelle, nur gelesen). Die Status liest RSR nach ihrem englischen Namen. Die
+  Reichweite eines Wurfs nennt kein Blatt; das Gegnerziel ist das, das RSR ohnehin angreift.
 - *Nachweis zur Laufzeit:* Nach dem Einsatz wartet RSR, bis der Platz einen anderen Gegenstand zeigt, höchstens einen GCD.
   Bleibt er gleich, schreibt die Spur „not taken" und versucht diesen Platz in diesem Kampf nicht mehr. Ob ein Gegenstand
   gerade gesperrt ist, prüft das Spiel über eine Funktion, die FFXIVClientStructs nicht führt; RSR prüft stattdessen die
   Animationssperre und den Verbrauch.
-- *Gegenthese:* Gegenstände sind ein Vorrat für das ganze Brett. Teilweise widerlegt: Heilung erst an deiner
-  Heiltrank-Linie und die kleinste passende zuerst; Reraise und Sandstill sind Versicherung, die nur zählt, wenn sie vor
-  dem Fall steht, denn dein Fall beendet den Lauf.
-- *Nicht in diesem Teil:* Schutz (Bestien-Verhärtungsmittel, Grimoire der Unantastbarkeit, Grimoire der Reflexion),
-  Bestien-Heilmittelsammlung und die Reißzähne.
+- *Selbstkorrektur der Sammlung:* Steht ein gefährlicher Status des Kampfes länger als einen GCD auf dir, während
+  Auto-remedy steht, heilt die Sammlung ihn nicht. Die Spur nennt ihn, und gegen einen Kampf, dessen gefährliche Status
+  alle so erkannt sind, kommt keine Sammlung mehr.
+- *Gegenthesen:*
+  - Gegenstände sind ein Vorrat für das ganze Brett. Teilweise widerlegt: Heilung erst an deiner Heiltrank-Linie und die
+    kleinste passende zuerst; Reraise und Sandstill sind Versicherung, die nur vor dem Fall zählt; Schutz nur gegen
+    angekündigte Treffer; im Endkampf ist der Vorrat wertlos.
+  - Schutz gegen jeden Angriff statt nur gegen angekündigte: Solange der Begleiter die Feindseligkeit hält (K9, ab Werk
+    an), trifft dich ein Tankbuster selten, und jeder Gegenstand wirkt einmal. Nicht widerlegt bleibt der Preis: Ein
+    unangekündigter großer Treffer findet keinen Schutz.
+  - Der Schutz für den Begleiter fehlt dir später. Er geht nur, wenn sein Fall droht; dann ziehst du die Feindseligkeit
+    ohnehin auf dich (K9), sein Fall wäre sicher, dein späterer Bedarf ist es nicht.
+  - Blink kann von den Angriffen anderer Gegner verbraucht werden, bevor der angekündigte Treffer landet. Ein wirkender
+    Gegner greift nicht automatisch an; mehrere Gegner auf dich können Stapel kosten. Preis benannt.
+  - Die Sammlung heilt den nächsten Zustand, auch einen harmlosen (Heavy). Nicht widerlegt; Preis: eine Sammlung. Das
+    Serum ist für seinen Status sicher und geht deshalb vor.
+  - Ein Schadensgegenstand je Kampf vor dem Endkampf ist eine Setzung: Wie viele Kämpfe noch kommen, liefert das Spiel
+    nicht (K11). Sie folgt seinem eigenen Spiel am 04.11.2026 um 19:04, ein Reißzahn auf ein Rudel.
+  - Ausgeliefert, und nichts ändert sich: Hält er keine dieser Gegenstände, oder erkennt RSR den Kampf nicht (Zeile
+    „crucible fight …" fehlt), ruhen 8 und 9 und der Endkampf; die Spur zeigt beides.
+- *Nicht in diesem Teil:* Die „Ungezähmten" Mittel (Ungezähmte Bestien-Stärkungsmittel und verwandte) legen dir selbst
+  Stun, Nightmare, Petrification, Blind oder Pollen auf – RSR setzt sie nie ein (Sicherheit). Offen, im TODO: die übrigen
+  Bestien-…mittel (Stärkung, Zauber, Aufbraus, Wendigkeit, Ausdauer, Flinkheit, Verkürzung), die Resistenzmittel gegen
+  ein Element, Bestien-Goldnadel und Horn der Rückkehr (Begleiter; der Kader ist nicht lesbar, K11), Bestien-Feder,
+  Bestien-Blutsaugerserum, Grimoire der Zauberschmiede und des Stahlstachels, Bestien-Rauchbombe, Auge des Diebs und des
+  Händlers.
 
 **Stufe 1, zweiter Teil: K1 und der Rest von K3** (A549, gebaut; Daten in `CrucibleBoard`):
 - *K1, Zuschlag gemessen:* Keine Quelle nennt ihn; consolegameswiki und Eorzean Tavern sagen nur, dass Schwächen

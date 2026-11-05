@@ -62,7 +62,7 @@ public partial class BeastmasterRotation
 				return false;
 			}
 
-			coming |= !CrucibleBoard.WasThereAtStart(enemy.NameId);
+			coming |= CrucibleBoard.IsToCome(enemy.NameId);
 		}
 
 		if (coming && _crucibleHeldTraced.Add(profile.Pet))

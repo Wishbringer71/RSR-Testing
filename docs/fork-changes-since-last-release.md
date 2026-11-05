@@ -185,14 +185,24 @@ What this release changes in the fight. For the whole distance from upstream, se
   weakness your damage hits counts as falling that much sooner. Before any enemy has hit, the board
   ranks enemies by the strength and intelligence the game rates them with, over their HP.
   `DefenseTrace.log` names the first measurement on each board.
-- **The board's items that keep you alive (Crucible).** With `Use the board's items that keep you
-  alive (Crucible only)`, **on by default**, RSR uses, one at a time: below `Use HP potions below this
-  HP` in combat the Beast Potion or Crucible Ash that lifts you back to that line with the least (the
-  board locks normal potions); an antidote or eye drops against poison or blindness on you; a
-  Beastmaster Reraiser while no Reraise stands, the stronger first - only against a boss once Reraise
-  is seen to go without a fall; Temporal Sand out of combat while no Sandstill stands; a Beast Potion
-  Kit against a boss. Each item's kind and size come from its own text. `DefenseTrace.log` names each
-  use, and a slot the game did not take is not tried again in that fight.
+- **The board's items that keep you and your familiar alive (Crucible).** With `Use the board's items
+  that keep you and your familiar alive (Crucible only)`, **on by default**, RSR uses, one at a time:
+  below `Use HP potions below this HP` in combat the Beast Potion or Crucible Ash that lifts you back
+  to that line with the least (the board locks normal potions); an antidote or eye drops against
+  poison or blindness on you; a Beastmaster Reraiser while no Reraise stands, the stronger first -
+  only against a boss once Reraise is seen to go without a fall; Temporal Sand out of combat while no
+  Sandstill stands; a Beast Potion Kit against a boss; against an announced hit on you the Tome of the
+  Impervious (physical), the Tome of Reflection (magic) or Crucible Tannin - the same for your
+  familiar when the hit could fell it; against the statuses the fight's enemies inflict that take
+  control from you or end in death (read from the board's sheets) the soul serum that names one, else a
+  Beast Remedy Kit. In the final fight, whose items are lost after the run, protection also goes
+  whenever an enemy attacks you. Each item's kind and size come from its own text. `DefenseTrace.log`
+  names each use, and a slot the game did not take is not tried again in that fight.
+- **The board's damage items (Crucible).** With `Use the board's damage items: on a pack once a
+  fight, freely in the final fight (Crucible only)`, **on by default**, RSR throws a fang or
+  Celestial Sand on your target: every one in the final fight, the most worth first; in any other
+  fight one, once it hits more enemies than your target. An enemy weak to its element counts the
+  measured weakness bonus more.
 - **Snarl and Challenge are on by default (Crucible).** Without a tank the enemies attack only you,
   and your fall ends the run, while a fallen familiar costs only that familiar. `Use Snarl and
   Challenge based on your HP and your familiar's HP (Crucible only)` is now **on by default**, still on

@@ -16393,6 +16393,35 @@ habe den schleim bislang nicht anfreunden können."
 - *Prüfgrad:* Compile ohne Warnung, Prüfschritte; Wirkkette am Code. Im Spiel nicht beobachtet; die Zeilen „crucible
   item: …", „not taken" und „Reraise went without a fall" zeigen es.
 
+### A553 · Crucible, K8 dritter Teil: Schutz, Zustände des Kampfes, Schadensgegenstände, Endkampf; K2 „kommt noch" (05.11.2026)
+
+- *Auftrag:* `TODO.md`, „Beastmaster: Crucible-Strategien", Rest von K8 (Schutz, Bestien-Heilmittelsammlung, Reißzähne).
+- *Quellen:* `XBMItem` 76 bis 143 (xivapi, Schema a1e24a0c, englische Wirktexte; deutsche Namen mit `language=de`, alle
+  jetzt in `action_names_de.json`). `XBMBattleDetail` → `XBMBattleDetailAction` (Aktion, Status, Zielart, Wirkart;
+  EXDSchema latest) und `Status` (`StatusCategory`, `LockActions`, `LockControl`, Wirktext) für die Zustände je Kampf.
+  `XBMContentBattle` Unterzeile 0 je Brett = Endkampf (Zeilen 6, 13, 21, 31, 45, an den Gegnernamen geprüft).
+  consolegameswiki „Crucible of the Unbroken": Gegenstände gehen nach dem Lauf verloren, höchstens zehn.
+- *Entscheidung (Konzept 01, „Stufe 3: K8, Gegenstände des Bretts"):*
+  - Schutz (erste Einstellung, jetzt „… keep you and your familiar alive"): gegen einen angekündigten Treffer auf dich
+    (`DataCenter.IsTankbusterAimedAt`, gemessener gezielter Treffer A540) das Grimoire nach Schadensart, sonst das
+    Bestien-Verhärtungsmittel; für den Begleiter, wenn er nicht mehr LP hält als sein größter Treffer im Kampf (K9); im
+    Endkampf auch bei jedem Angriff auf dich und jedem angekündigten Treffer auf den Begleiter.
+  - Zustände: Ein Kampf, dessen Gegner laut Blatt einen Status verursachen, der die Kontrolle nimmt oder mit dem Tod
+    endet, bekommt das passende Serum, sonst die Bestien-Heilmittelsammlung. Selbstkorrektur: Bleibt ein solcher Status
+    länger als einen GCD unter Auto-remedy stehen, gilt er als von ihr nicht geheilt.
+  - Schaden (neue Einstellung, ab Werk an): im Endkampf alle Schadensgegenstände, sonst einer je Kampf auf ein Rudel; Wert
+    aus Potenz, Treffern und gemessenem Schwächezuschlag; einer nur für kommende Gegner wartet (K2).
+  - K2-Fehler behoben: „kommt noch" hieß „nicht beim Start und nicht jetzt da". Ein gerufener Gegner, der gekommen und
+    gefallen war, galt danach wieder als kommend, und K2 hielt ein Horn für ihn bis zum Kampfende. Jetzt zählt, wer im
+    Kampf schon zu sehen war (`CrucibleBoard.IsToCome`).
+- *Gegenthesen:* Konzept 01 (Vorrat, Schutz nur auf Ankündigung, Begleiter vor dir, Blink von Angriffen verbraucht,
+  Sammlung auf harmlosen Zustand, ein Schadensgegenstand je Kampf als Setzung, ausgeliefert und nichts ändert sich).
+  Verworfen: die „Ungezähmten" Mittel, die dir selbst Stun, Nightmare oder Petrification auflegen.
+- *Betroffene:* E – Beastmaster im Crucible mit Voreinstellungen: Schutz, Seren, Sammlung und Schadensgegenstände kommen
+  jetzt ab Werk; K2 hält kein Horn mehr für gefallene Gegner. R – keine öffentliche Schnittstelle.
+- *Prüfgrad:* Compile ohne Warnung, Prüfschritte; Wirkkette am Code. Im Spiel nicht beobachtet; jede Verwendung schreibt
+  „crucible item: … ", die Selbstkorrektur „… stayed under Auto-remedy".
+
 ## B · Commit-Register (Fork vs. `upstream/main`)
 
 ### B1 · Einzelgeprüfte Fork-Commits
