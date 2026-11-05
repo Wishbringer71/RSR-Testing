@@ -16543,6 +16543,27 @@ habe den schleim bislang nicht anfreunden können."
   sich: richtig für heute, die Prüfung ist für die nächste Aktion dieser Art.
 - *Prüfgrad:* Compile ohne Warnung, Prüfschritte; Daten am Blatt geprüft.
 
+### A561 · Fremde Repositories, Daedalus, erster Teil: Crucible-Automatik; Sonde berichtigt (05.11.2026)
+
+- *Auftrag:* `TODO.md`, „Fremde Repositories auf Verbesserungen für RSR prüfen", Daedalus zuerst.
+- *Quelle:* ofnature/Daedalus 74659a6 (03.11.2026, LGPL, nur gelesen, Werkzeugquelle mit Feldnotizen):
+  `Services/Beastmaster/Crucible*.cs` (3.250 Zeilen: Tracker, RosterLoader, HornSetter, Walker, AutoPilot, SheetReader,
+  BonusWatcher, Hints).
+- *Befunde für K6, K7, K11:*
+  - Hornfenster vor jedem Kampf: `AgentXBMPetParty` aktiv mit `Mode` 2; das Spiel behält die Hörner nicht zwischen den
+    Kämpfen und füllt sie nur bei höchstens drei im Team. Daedalus liest dort den Kader (`SelectedPets`) mit
+    `PetCurrentHealth`/`PetMaxHealth` je Platz, die gewählten Plätze (`SelectedPetIds`) und den anstehenden Kampf aus
+    `AgentXBMStageDetailList` (Einträge der Art 3) und setzt per Rückruf des Fensters (Werte 1 und Platz), einen Klick je
+    Takt, neu gelesen nach jedem, Abbruch nach einer Höchstzahl; den Kampf startet der Spieler.
+  - Kader vor dem Brett: `TogglePet` je Begleiter, erst Abgänge, dann Zugänge, Prüfung nach jedem Schritt; eine
+    Ablehnung im Feld (25.10.2026) bricht nicht ab.
+- *Berichtigung der eigenen Sonde (A556):* Sie las `SelectedPetIds` als Kader und paarte die LP damit; der Kader ist
+  `SelectedPets`, die LP gehören zu dessen Plätzen. Jetzt so, und eine Zeile, sobald das Hornfenster aufgeht.
+- *Folgen:* K6 ist baubar (Hornfenster, Rückruf), K7 belegt, K11 hat seine Daten am Hornfenster. Je ein eigener Loop im
+  Crucible-Punkt; keine Zeile übernommen.
+- *Weiter mit Daedalus:* Zielwahl, Abwehr, Kampfvorhersage, Heiler-Triage, Blaumagier und Phantomjobs je eigener Teil.
+- *Prüfgrad:* Quelltext gelesen, Compile ohne Warnung, Prüfschritte; die Sondenzeile ist im Spiel nicht beobachtet.
+
 ## B · Commit-Register (Fork vs. `upstream/main`)
 
 ### B1 · Einzelgeprüfte Fork-Commits

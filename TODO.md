@@ -47,8 +47,8 @@ LP gefallen sein (04.11.2026). *Ort:* `BST_Reborn`, `CrucibleBoard`, `Beastmaste
 A549: Daten zur Laufzeit, K1, K2, K3 ohne den Bedarf der Begleiter), K9 (A550), K8 (A551 bis A554: Heilung, Gegenmittel, Bestien-Lebensfeder, Sand der
 Zeit, Bestien-Heiltranksammlung, Schutz, Seren, Bestien-Heilmittelsammlung, Resistenzmittel, Bestien-Goldnadel,
 Bestien-Ausdauermittel, Schadensgegenstände, Stärkungsmittel im Endkampf; A555).
-*Nächster Schritt:* K6 (Hörner vor dem Kampf;
-zuerst messen, ob der Server im Brett zuweist) und K7 (Kader auf Wunsch über das Teamfenster); K4 (Sonde A557 „crucible: … stopped its cast" zeigt die unterbrechende Aktion), K5, K10 (Campsite,
+*Nächster Schritt:* K6 (Hörner im Hornfenster vor jedem Kampf setzen, Weg belegt durch Daedalus, A561) und K7
+(Kader auf Wunsch über `TogglePet`, im Feld belegt); K4 (Sonde A557 „crucible: … stopped its cast" zeigt die unterbrechende Aktion), K5, K10 (Campsite,
 Laden, Weg, im eigenen Loop); K11 (Kader, LP je Begleiter und Feld: Sonde A556 „crucible agents …" zeigt, ob das Spiel sie im Brett füllt;
 danach Loop am Ende des TODO). *Konzept:* 01,
 „Crucible of the Unbroken: Bretter, Kämpfe, Strategien".
@@ -77,8 +77,9 @@ vielleicht; jeder Fund wird am Spiel belegt, bevor er ein Defekt oder eine Verbe
 Sein Auftrag vom 05.11.2026 dazu: „alle bekannten repos zu rotationen, zu beastmaster, zu bluemage analysiere, inwieweit
 erkenntisse daraus in rsr eingebracht werden können und die vorhandenen konzepte ergänzen und verbessern könnten".
 *Ort:* Grundstruktur (`RotationSolver/Basic`, Updaters, Zielwahl, Abwehr), die Rotationen unter `RebornRotations`, die
-Jobkonzepte. *Nächster Schritt:* Daedalus über alle Jobs: Zielwahl, Abwehr, Kampfvorhersage, je Job die Regeln, die
-RSR nicht kennt; danach die übrigen in der Reihenfolge der Liste. Je Fund ein Loop, je Repository ein Archiveintrag mit
+Jobkonzepte. *Nächster Schritt:* Daedalus weiter (A561: Crucible ausgewertet): Zielwahl, Abwehr, Kampfvorhersage,
+Heiler-Triage, Blaumagier, Phantomjobs, je Job die Regeln, die RSR nicht kennt; danach die übrigen in der Reihenfolge der
+Liste. Je Fund ein Loop, je Repository ein Archiveintrag mit
 Commit und Datum. *Konzept:* 15, erweitert vom Vergleich mit WrathCombo auf die übrigen Werkzeuge; je Fund dazu das
 tragende (01 Jobs, 08 Minderung, 13 Flächenschaden und Tankbuster).
 

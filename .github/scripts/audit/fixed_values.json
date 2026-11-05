@@ -1028,6 +1028,16 @@
   },
   {
    "file": "RotationSolver/Basic/Helpers/CrucibleBoard.cs",
+   "code": "private const uint HornScreenMode = 2;",
+   "values": [
+    "2"
+   ],
+   "status": "exception",
+   "loop": "A561",
+   "reason": "The game's mode of AgentXBMPetParty, not a tuned value: 0 pet list, 1 party preview, 2 party preview from content - the Crucible's horn screen before a battle (FFXIVClientStructs aad0de66; Daedalus 74659a6 sets the horns in that mode). Used only by the K11 probe."
+  },
+  {
+   "file": "RotationSolver/Basic/Helpers/CrucibleBoard.cs",
    "code": "if (entry.EntryType == 3 && entry.BattleDetailId != 0)",
    "values": [
     "3"

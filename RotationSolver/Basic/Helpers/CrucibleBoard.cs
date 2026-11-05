@@ -282,6 +282,7 @@ internal static class CrucibleBoard
 			TraceTeamAndField("entering the board");
 		}
 
+		FollowHornScreen();
 		if (!DataCenter.InCombat)
 		{
 			EndFight();
@@ -356,11 +357,12 @@ internal static class CrucibleBoard
 	}
 
 	/// <summary>
-	/// K11 probe (A556): what the game's agents hold on a board - the team with each familiar's HP
-	/// (<c>AgentXBMPetParty</c>: <c>SelectedPetIds</c>, <c>PetCurrentHealth</c>, <c>PetMaxHealth</c>) and the board's
-	/// fields (<c>AgentXBMStageDetailList</c>: mode 1 while a challenge runs, its entries with their XBMBattleDetail rows,
-	/// the selection). FFXIVClientStructs has both since 17.09.2026 (d44bc123, 3120c745); whether the game fills them while
-	/// a board is played and the windows are closed is not stated anywhere, so the line shows it. Fields only, no calls.
+	/// K11 probe (A556, A561): what the game's agents hold on a board - the team with each familiar's HP and the horns chosen
+	/// (<c>AgentXBMPetParty</c>: <c>SelectedPets</c> is the team in screen order with <c>PetCurrentHealth</c> and
+	/// <c>PetMaxHealth</c> per position, <c>SelectedPetIds</c> the chosen positions - as Daedalus 74659a6 reads them on the
+	/// horn screen, mode 2) and the board's fields (<c>AgentXBMStageDetailList</c>: its battle entries, at horn time the
+	/// battle about to start). Written on entering a board, when the horn screen opens, and when a fight is told and over.
+	/// Fields only, no calls.
 	/// </summary>
 	private static unsafe void TraceTeamAndField(string when)
 	{
@@ -368,18 +370,24 @@ internal static class CrucibleBoard
 		var party = AgentXBMPetParty.Instance();
 		if (party != null)
 		{
-			var ids = party->SelectedPetIds.AsSpan();
+			var pets = party->SelectedPets.AsSpan();
 			var current = party->PetCurrentHealth;
 			var max = party->PetMaxHealth;
-			var pets = new List<string>();
-			for (var i = 0; i < ids.Length; i++)
+			var members = new List<string>();
+			for (var i = 0; i < pets.Length; i++)
 			{
 				var hp = i < current.Length && i < max.Length ? $" {current[i]}/{max[i]}" : string.Empty;
-				pets.Add($"{(ids[i].PetId <= byte.MaxValue ? ((Rotations.Basic.BeastmasterPet)ids[i].PetId).ToString() : "#" + ids[i].PetId)}{hp}");
+				members.Add($"{(pets[i].PetId <= byte.MaxValue ? ((Rotations.Basic.BeastmasterPet)pets[i].PetId).ToString() : "#" + pets[i].PetId)}{hp}");
 			}
 
-			team = $"team mode {party->Mode}, content {party->ContentId}, {party->SelectedPets.Count} selected, {ids.Length} ids, "
-				+ $"{party->CandidatePets.Count} candidates: {string.Join(", ", pets)}";
+			var horns = new List<uint>();
+			foreach (var chosen in party->SelectedPetIds.AsSpan())
+			{
+				horns.Add(chosen.PetId);
+			}
+
+			team = $"team mode {party->Mode}, content {party->ContentId}, {pets.Length} in the team: {string.Join(", ", members)}; "
+				+ $"horn positions {string.Join(" ", horns)}; {party->CandidatePets.Count} candidates";
 		}
 
 		var field = "no field agent";
@@ -451,6 +459,26 @@ internal static class CrucibleBoard
 			: "no own action on it in this fight";
 		DefenseTrace.Line($"crucible: {enemy.Name} stopped its cast (control {p1} {p2} {p3} {p4}); {last}");
 	}
+
+	private static uint _hornScreenMode;
+
+	// A561: one probe line when the horn screen (pet-party agent active in mode 2) opens before a battle.
+	private static unsafe void FollowHornScreen()
+	{
+		var party = AgentXBMPetParty.Instance();
+		var mode = party != null && ((AgentInterface*)party)->IsAgentActive() ? party->Mode : uint.MaxValue;
+		if (mode != _hornScreenMode)
+		{
+			_hornScreenMode = mode;
+			if (mode == HornScreenMode)
+			{
+				TraceTeamAndField("horn screen open");
+			}
+		}
+	}
+
+	// AgentXBMPetParty.Mode: 2 = party preview from content, the horn screen before a battle (FFXIVClientStructs aad0de66).
+	private const uint HornScreenMode = 2;
 
 	private static void EndFight()
 	{

@@ -1855,10 +1855,13 @@ Dullahan, Golem, Spriggan und Eisgolem (`XBMPet.InflictsInterrupt`).
   („crucible: … stopped its cast …"). Mit diesen Zeilen der Loop: welche Aktion, wann rufen.
 - *K5 – Zustände.* Gift, Gewicht, Fessel gegen anfällige Gegner: Wirkung je Zustand nicht beziffert, nach K1 bis K4.
 - *K6 – Hörner vor dem Kampf belegen.* B5 setzt die Hörner zwischen den Kämpfen per Serverbefehl, im Crucible bisher
-  nicht. Vor einem Kampf im Brett kennt RSR dessen Gegner nicht aus der Sicht, aber aus dem Blatt, sobald das Feld
-  bekannt ist. Zwei Wege: B5s Befehl (ob der Server ihn dort annimmt, ist nicht gemessen) oder die Auswahl im Fenster
-  (`XBMPetParty`, Rückrufe; BeastHelper und AutoDuty nutzen sie, Werkzeugquellen). Belegung nach K1 und K2 mit einem
-  Heiler, wenn die Gefahr im Brett das verlangt.
+  nicht. Im Brett öffnet das Spiel vor jedem Kampf das Hornfenster (`XBMPetParty`, `AgentXBMPetParty.Mode` 2); es
+  behält die Hörner nicht zwischen den Kämpfen und füllt sie selbst nur bei höchstens drei im Team (Daedalus 74659a6,
+  03.11.2026, `CrucibleHornSetter`, Werkzeugquelle aus dem Spielbetrieb; Wiki). Dort sind der Kader mit LP je Platz
+  (`SelectedPets`, `PetCurrentHealth`), die gewählten Plätze (`SelectedPetIds`) und der anstehende Kampf
+  (`AgentXBMStageDetailList`, Eintrag der Art 3) lesbar; gesetzt wird mit dem Rückruf des Fensters, ein Klick je
+  Platz, nach jedem Klick neu gelesen, ohne den Kampf zu starten. Belegung nach K1 und K2 mit einem Heiler, wenn die
+  Gefahr im Brett das verlangt. Die Sonde (A556, A561) schreibt eine Zeile, sobald das Hornfenster aufgeht.
 - *K7 – Kader vor dem Brett* (Loop vom 05.11.2026; seine Frage, ob RSR „auf wunsch begleiter auswählen" kann; seine
   Vorgabe: das Spielerlebnis vor der Schwierigkeit der Umsetzung). *Optionen:* A nichts; B die Empfehlung zeigen, sobald
   das Teamfenster offen ist; C dazu ein Knopf „übernehmen", der sie auf deinen Wunsch setzt; D ungefragt setzen.
@@ -1867,7 +1870,9 @@ Dullahan, Golem, Spriggan und Eisgolem (`XBMPet.InflictsInterrupt`).
   (Absturz):* BeastHelper dokumentiert einen Absturz durch nachgebaute Fensterereignisse mit leerem Ereigniszeiger.
   Teilweise widerlegt: C nutzt die Spielfunktionen, die das Fenster selbst ruft (`AgentXBMPetParty.TogglePet`,
   `ConfirmSelection`), prüft nach jedem Schritt die Auswahl (`SelectedPets`) und hört bei einer Abweichung auf; ob sie aus
-  einem Plugin heraus tragen, zeigt erst der erste Lauf, die Spur nennt jeden Schritt. *Gegenthese 2:* Das Brett hat
+  einem Plugin heraus tragen, belegt Daedalus im Spielbetrieb (`CrucibleRosterLoader`, 74659a6): Sie tragen, ein
+  Begleiter kann abgelehnt werden („TogglePet(14) refused", 25.10.2026), dann geht es ohne ihn weiter; die Spur nennt
+  jeden Schritt. *Gegenthese 2:* Das Brett hat
   Abzweigungen und Zufallsfelder. Widerlegt: Das Blatt nennt alle Kämpfe des Bretts, Zufallsfelder ziehen aus ihnen.
   *Gegenthese 3:* Ein Begleiter unter dem Rang des Bretts ist schwächer. Eingearbeitet: Rang mindestens wie das Brett
   synchronisiert (`GetSyncedRank`, `IsPetOverSyncedRank`), sonst nachrangig. *Gegenthese 4 (Aufwand):* nach seiner
@@ -1921,10 +1926,12 @@ Dullahan, Golem, Spriggan und Eisgolem (`XBMPet.InflictsInterrupt`).
   Werkzeugquelle), in Dalamuds Fassung vorhanden: `AgentXBMPetParty` mit `SelectedPetIds` (Kader, `XBMPet`-Zeilen),
   `PetCurrentHealth` und `PetMaxHealth` (15 Plätze) und `Mode` (1 Vorschau des Kaders, 2 Vorschau aus dem Inhalt);
   `AgentXBMStageDetailList` mit `Mode` (1 laufendes Brett), Einträgen je Feld und Kampf (`EntryType` 3 mit
-  `BattleDetailId`, gebaut aus dem Director) und `EntrySelection`. Ob das Spiel sie füllt, während ein Brett läuft und
-  die Fenster zu sind, sagt keine Quelle. Die Sonde (A556) schreibt sie beim Betreten des Bretts, beim Erkennen eines
-  Kampfes und an seinem Ende in die Spur („crucible agents …"); sie liest nur Felder und ruft keine Spielfunktion. Die
-  Planungsregel wartet auf diese Zeilen; der Loop am Ende des TODO baut auf ihnen auf.
+  `BattleDetailId`, gebaut aus dem Director) und `EntrySelection`. Gefüllt sind sie
+  jedenfalls im Hornfenster vor jedem Kampf: Daedalus liest dort Kader, LP und den anstehenden Kampf (A561); der Kader
+  ist `SelectedPets` in Fensterreihenfolge, `SelectedPetIds` hält die gewählten Plätze, nicht Begleiter. Ob sie bei
+  geschlossenen Fenstern stehen bleiben, zeigt die Sonde (A556, A561): Sie schreibt sie beim Betreten des Bretts, beim
+  Öffnen des Hornfensters, beim Erkennen eines Kampfes und an seinem Ende („crucible agents …"), nur Felder, keine
+  Spielfunktion. Die Planungsregel setzt am Hornfenster an (K6); der Loop am Ende des TODO baut darauf auf.
 
 *Falsifikation:* Kein Defekt, weil das erste Brett zweimal ohne Tod fiel? Das gelang mit Gegenständen und Zähnefletschen
 von seiner Hand; die Meisterbretter haben Rang 20 und 25 und Gegner ohne Schwäche. Option falsch? K1 ohne gemessenen
