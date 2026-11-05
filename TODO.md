@@ -12,14 +12,12 @@ Nach der Wirkung im Kampf: Sicherheit der Gruppe vor Schaden, gewichtet mit der 
 
 1. Allein ohne Heiler kommt kein Heiltrank: RSR stand 13 s in der kritischen Klasse ohne Heilfähigkeit, kein Trank
    von RSR trotz eingeschalteter Option, er drückte ihn bei 6 % selbst und starb (Beastmaster, Sägerschrei, 04.11.2026).
-2. Upstream-Verhalten, das Konzepte als gegeben nehmen: Wie die Reinigungsliste vor jeder Heilung (A565) kann jede
-   ungeprüft übernommene Reihenfolge, Liste oder Schwelle im Kampf Heilung, Abwehr oder Wiederbelebung verdrängen.
-3. Beastmaster: Crucible-Strategien: Ein K.O. beendet den Lauf, und ein Begleiter, den ein späterer Kampf braucht, kommt dort mit den LP an, die ihm
+2. Beastmaster: Crucible-Strategien: Ein K.O. beendet den Lauf, und ein Begleiter, den ein späterer Kampf braucht, kommt dort mit den LP an, die ihm
    die früheren ließen.
-4. Fremde Repositories auf Verbesserungen für RSR prüfen: Jeder Fund kann ein Defekt im Verhalten einer Klasse sein,
+3. Fremde Repositories auf Verbesserungen für RSR prüfen: Jeder Fund kann ein Defekt im Verhalten einer Klasse sein,
    den RSR heute im Kampf zeigt; zuerst die Rotationswerkzeuge für alle Jobs, Daedalus vorn (aktiv, alle Jobs,
    eigene Kampfvorhersage), dann Beastmaster und Blaumagier (sein Auftrag vom 05.11.2026).
-5. Konzepte neu ordnen (allgemein, Rollen, Gruppen, Jobs, Inhalte): keine direkte Wirkung im Kampf; eine Regel, die
+4. Konzepte neu ordnen (allgemein, Rollen, Gruppen, Jobs, Inhalte): keine direkte Wirkung im Kampf; eine Regel, die
    im Konzept eines Jobs steht, wird für dessen Gruppe übersehen, und eine Inhaltsregel ist über mehrere Konzepte
    verteilt.
 
@@ -42,15 +40,6 @@ in den Webfenstern 18:28:02–15 bei 36 bis 25 % LP. *Ort:* `CustomRotation_Abil
 Fehl-LP, Spielstatus) und den Tinktur-Vorrang; mit dem nächsten Upload die Ursache belegen, dann Loop: der Trank
 nach der Gefahr statt nach der festen Schwelle, für alle Jobs. *Konzept:* 03 („Eine Wiederverwendung für alle
 Arzneien"), 07.
-
-### Upstream-Verhalten, das Konzepte als gegeben nehmen · N, U
-Im Kampf: Im Odin-Kampf vom 05.11.2026 gingen 22 Reinigungen von Upstreams Liste vor jede Heilung, weil Konzept 08 die
-Reihenfolge als gegeben nahm (A565, C165). Dieselbe Klasse: die übrigen eingebauten Listen (`StatusLists`: gefährlich,
-Vorrang, Unverwundbarkeit, Wirksperre; die Fernkampf- und Flächenlisten der `Resources`), die Slot-Kette (Konzept 03:
-Provoke und Reinigung vor Wiederbelebung und Heilung) und Upstreams Schwellen, auf die Konzepte bauen. *Ort:*
-`RotationSolver/Basic/Resources/StatusLists.cs`, `CustomRotation_GCD`, `CustomRotation_Ability`, die Konzepte, die sie
-zitieren. *Nächster Schritt:* `PriorityStatus`, die Karten- und Tanzpartnerlisten, `BeneficialPositions`, die
-übrige Slot-Kette. *Konzept:* 03, 07, 13; Regel in `.claude/rules/konzepte.md`.
 
 ### Beastmaster: Crucible-Strategien · N
 Im Kampf: Fällst du im Brett, ist der Lauf verloren, und RSR plant die Begleiter nicht über das Brett: Ein Heiler, der im vierten Kampf gebraucht wird, kann bis dahin auf 25 von 550

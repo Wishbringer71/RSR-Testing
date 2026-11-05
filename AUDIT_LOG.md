@@ -16719,6 +16719,24 @@ habe den schleim bislang nicht anfreunden können."
   ein Tank oder kein Tankwechsel; wo der Boss beim Tankwechsel das Ziel nicht ändert, bliebe auch das Gewicht.
 - *Prüfgrad:* Code gelesen, Compile; im Spiel nicht beobachtet.
 
+### A568 · Upstream-Prämissen, Abschluss der Erhebung (05.11.2026)
+
+- *Auftrag:* `TODO.md`, „Upstream-Verhalten, das Konzepte als gegeben nehmen"; Funde A565 (Reinigungsliste), A566
+  (Unverwundbarkeitsliste bei der Zaubererkennung), A567 (Kardia).
+- *Übrige Stellen, geprüft:*
+  - `PriorityStatus` (944 Sword of the Heavens, 1290 Vril, 2655 Who Is She; 861, 1323, 2654, 3202 bei der Übernahme
+    ausgeschieden, 24.10.2026): Angriffsziele einzelner Inhalte, wirkt nur auf die Zielwahl des Angriffs – Schaden,
+    keine Sicherheit. Bleibt seine Liste.
+  - Dance Partner, The Spear, The Balance: Ziele von Schadensbuffs nach Job-Reihenfolge – Schaden. Kardia: A567.
+  - `BeneficialPositions` und die Arenamitte: geprüft in A398 (Konzept 07, „Bodenflächen dort, wo die Gruppe steht").
+  - `NoHostileNames`, `NoProvokeNames`: leer eingebaut, seine Einträge je Gebiet.
+  - Slot-Kette (Konzept 03): GCD – Reinigung (A565), Provokation nur bei Tanks, Bewegung ohne Heilerzauber; Fähigkeiten
+    – die Notfallheilung (Slot 8) steht vor Rückstoßschutz und Reinigung (Slots 11 bis 15), eine Heilfähigkeit wartet
+    dahinter höchstens bis zum nächsten Einschub.
+- *Ergebnis:* Keine weitere Stelle mit Wirkung auf Überleben; der Punkt ist geschlossen. Die Regel in
+  `.claude/rules/konzepte.md` gilt für jede künftige Übernahme.
+- *Prüfgrad:* Code, Spielblätter und Archiv gelesen; kein Code geändert.
+
 ## B · Commit-Register (Fork vs. `upstream/main`)
 
 ### B1 · Einzelgeprüfte Fork-Commits
