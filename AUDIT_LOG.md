@@ -17003,6 +17003,31 @@ habe den schleim bislang nicht anfreunden können."
 - *Prüfgrad:* statisch, Compile ohne Warnung, Prüfskripte. Im Spiel nicht beobachtet; jede Verwendung steht als
   „crucible item: … for <Begleiter> at … HP" in der Spur.
 
+### A578 · Crucible K13: Empfehlung am Schatz (05.11.2026)
+
+- *Anlass:* Seine Meldung vom 05.11.2026: „bei den schätzen gibt es keine empfehlung, was zu wählen ist" (offene Arbeit,
+  kein Defekt: keine Einstellung versprach sie).
+- *Quellen:* consolegameswiki „Crucible of the Unbroken" (Schatz: ein Gegenstand aus halbzufälligem Vorrat, keiner
+  doppelt, zwei mit Diebesmesser); Daedalus 74659a6 (`CrucibleAutoPilot.TakeTreasure`, `CrucibleAutoPilotRules`:
+  Fenster `XBMContentsTreasure`, Angebote an den Werten 6 + 5·i, bis zu vier, Wahl `[2, i]`, Schließen `[0]`, Fenster
+  bleibt nach der ersten Wahl mit Diebesmesser offen; feste Gewichte je Wert, Werkzeugquelle aus dem Spielbetrieb).
+- *Gebaut:* Die Rangfolge des Ladens ist jetzt `RankOffers` mit einer Höchstzahl an Wahlen, die Laden (beliebig viele)
+  und Schatz (eine je Klick, Preis null) teilen; derselbe Maßstab an beiden Stellen. Bringt kein Angebot Sicherheit, ein
+  Schadensgegenstand oder eine Stärkung, sonst Ausrüstung ohne Schaden für dich. Gehaltene Ausrüstung: wie der letzte Laden
+  dieses Bretts sie zeigte, plus was RSR aus Schätzen nahm; vor dem ersten Laden ein freier Platz angenommen. Fenster
+  „RSR – Crucible treasure" mit Empfehlung, Grund und „Take"; Einstellung „Recommend what to take from a Crucible
+  treasure", ab Werk an; läuft als Dienst auch bei ausgeschaltetem RSR (A576). Vier Fensterwerte als Ausnahmen in
+  `fixed_values.json`.
+- *Verworfen:* Daedalus' feste Gewichte (eine zweite Skala neben der des Ladens, ohne Herleitung); automatische Wahl ohne
+  Klick (Entscheidung C, A533).
+- *Gegenthesen:* Konzept 01, K13 (Ausrüstung unbekannt, feste Gewichte, Wahl von Hand mit Diebesmesser).
+- *Falsifikation:* Kein Defekt – keine Einstellung versprach die Empfehlung; als Arbeit von ihm gewünscht. Option falsch –
+  eine eigene Bewertung neben dem Laden würde zwei Maßstäbe pflegen, die auseinanderlaufen. Ausgeliefert, und nichts
+  ändert sich: wenn die Werte des Fensters anders liegen als bei Daedalus – dann liest RSR keine Angebote, das Fenster
+  sagt „Nothing recommended", und die Spurzeile „crucible treasure: 0 offers" zeigt es.
+- *Prüfgrad:* statisch, Compile ohne Warnung, Prüfskripte. Im Spiel nicht beobachtet; die Spurzeile „crucible treasure:
+  … recommends …" nennt Zahl der Angebote und Wahl.
+
 ## B · Commit-Register (Fork vs. `upstream/main`)
 
 ### B1 · Einzelgeprüfte Fork-Commits

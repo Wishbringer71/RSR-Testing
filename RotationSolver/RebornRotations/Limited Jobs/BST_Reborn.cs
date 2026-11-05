@@ -130,6 +130,19 @@ public sealed class BST_Reborn : BeastmasterRotation
 			+ "Off: no window, RSR buys nothing.")]
 	private bool RecommendCrucibleShop { get; set; } = true;
 
+	// K13 (concept 01, "K13 – Schatz", A578): his report of 05.11.2026, no recommendation at a treasure.
+	[RotationConfig(CombatType.PvE, Name = "Recommend what to take from a Crucible treasure",
+		Tooltip = "While a treasure on a Crucible board is open, a window names the offer to take and why, in the order the "
+			+ "shop recommendation uses with no price: a second life while none is held; cover against a status of the board's "
+			+ "fights that ends in death; the gear that leaves you the most HP after a stretch of fights, then the most effective "
+			+ "HP; cover against the board's other statuses that cost safety; healing items; protective items. When none adds "
+			+ "safety, a damage item or a buff (spent in the final fight), else gear that does not harm you; never gear that "
+			+ "inflicts a status on you. The gear you hold is what the last shop on the board showed, and what RSR took. \"Take\" "
+			+ "in that window takes it; with a Thief's Knife the window stays open for the second pick.\n"
+			+ "In a fight: nothing - a treasure is opened between fights.\n"
+			+ "Off: no window, RSR takes nothing.")]
+	private bool RecommendCrucibleTreasure { get; set; } = true;
+
 	// K9 of the Crucible (concept 01, A550): on by default. Without a tank the enemies attack only you, and your fall ends the
 	// run; the familiar's HP are a second store, and a fallen familiar costs that familiar, not the run.
 	[RotationConfig(CombatType.PvE, Name = "Use Snarl and Challenge based on your HP and your familiar's HP (Crucible only)",
@@ -1089,6 +1102,7 @@ public sealed class BST_Reborn : BeastmasterRotation
 		FollowTeamRequest();
 		FollowCampsite(PickCampsiteRest);
 		FollowCrucibleShop(RecommendCrucibleShop);
+		FollowCrucibleTreasure(RecommendCrucibleTreasure);
 	}
 
 	#region Battlehorns between fights

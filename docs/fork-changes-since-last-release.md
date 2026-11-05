@@ -252,6 +252,12 @@ What this release changes in the fight. For the whole distance from upstream, se
   Crucible Needle for your petrified familiar; against a boss a Potion of Tempered Constitution. In the final fight, whose items are lost after the run, protection also goes
   whenever an enemy attacks you. Each item's kind and size come from its own text. `DefenseTrace.log`
   names each use, and a slot the game did not take is not tried again in that fight.
+- **What to take from a treasure (Crucible).** `Recommend what to take from a Crucible treasure`, **on by
+  default**: while a treasure is open, a window names the offer to take and why, in the order of the shop
+  recommendation with no price - a second life, cover against a deadly status of the board, the gear that
+  leaves you the most HP after a stretch of fights, cover against the other statuses, healing, then
+  protective items; when none adds safety a damage item or buff, never gear that harms you. `Take` takes
+  it; with a Thief's Knife the window stays open for the second pick.
 - **The board's damage items and buffs (Crucible).** With `Use the board's damage items and buffs:
   damage on a pack once a fight, all of them in the final fight (Crucible only)`, **on by default**,
   RSR throws a fang or Celestial Sand on your target: every one in the final fight, the most worth

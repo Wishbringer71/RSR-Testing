@@ -50,6 +50,9 @@ public partial class BeastmasterRotation
 	private static (int Coins, int Bought, int Gear, int Items, uint Board, double Fights, float Stretch)? _shopKey;
 	private static string _shopTraced = string.Empty;
 
+	// K13 (A578): the gear the last shop on this board showed held, with the slots - the treasure window does not list it.
+	private static (uint Territory, List<ushort> Gear, int Slots)? _gearSeen;
+
 	/// <summary>Whether a shop is open and the recommendation runs, for the window.</summary>
 	public static bool CrucibleShopOpen { get; private set; }
 
@@ -182,10 +185,8 @@ public partial class BeastmasterRotation
 	/// </summary>
 	private static unsafe void RecommendPurchases(ReaderXBMContentsItemShop reader, List<ReaderXBMContentsItemShop.StockEntry> stock)
 	{
-		var picks = new List<CrucibleShopPick>();
 		var budget = reader.Coins;
 		var gear = CrucibleGearTable;
-		var items = CrucibleItems;
 
 		// What is held: the items in the director's ten slots, the gear the shop lists as owned.
 		var heldItems = new List<ushort>();
@@ -234,6 +235,53 @@ public partial class BeastmasterRotation
 
 		_shopKey = key;
 
+		// Remembered for the treasure (K13, A578): the gear the shop shows held on this board, and how many slots there are.
+		var seen = new List<ushort>();
+		foreach (var piece in reader.OwnedEntries)
+		{
+			if (piece.Owned && piece.Id <= ushort.MaxValue)
+			{
+				seen.Add((ushort)piece.Id);
+			}
+		}
+
+		_gearSeen = (DataCenter.TerritoryID, seen, gearSlots);
+
+		var offers = new List<(int Row, ushort Item, int Price)>();
+		for (var r = 0; r < stock.Count; r++)
+		{
+			if (stock[r].Listed && !stock[r].Bought && stock[r].Item is > 0 and <= ushort.MaxValue)
+			{
+				offers.Add((r, (ushort)stock[r].Item, stock[r].Price));
+			}
+		}
+
+		var picks = RankOffers(offers, budget, int.MaxValue, owned, gearSlots, heldItems, itemSlots, board, out var spent);
+		CrucibleShopRecommendation = picks;
+		CrucibleShopTokens = (budget, budget - spent);
+		var traced = string.Join(", ", picks.ConvertAll(static pick => pick.Name));
+		if (traced != _shopTraced)
+		{
+			_shopTraced = traced;
+			DefenseTrace.Line($"crucible shop: {budget} tokens, weighed against {CrucibleShopBasis} - recommends "
+				+ (picks.Count > 0 ? traced + $", {budget - spent} tokens left" : "nothing"));
+		}
+	}
+
+	/// <summary>
+	/// K10 and K13 (A569, A570, A578): the offers in the order safety asks - see <see cref="RecommendPurchases"/> - as far as
+	/// <paramref name="budget"/>, the slots and <paramref name="maxPicks"/> go. <paramref name="owned"/> and
+	/// <paramref name="heldItems"/> grow with each pick. <paramref name="spentAll"/> is what the picks cost together.
+	/// </summary>
+	private static unsafe List<CrucibleShopPick> RankOffers(List<(int Row, ushort Item, int Price)> offers, int budget, int maxPicks,
+		List<CrucibleGear> owned, int gearSlots, List<ushort> heldItems, int itemSlots, uint board, out int spentAll)
+	{
+		var picks = new List<CrucibleShopPick>();
+		var gear = CrucibleGearTable;
+		var items = CrucibleItems;
+		var loads = CrucibleBoard.Loads;
+		var stretch = CrucibleBoard.FightsPerStretch;
+
 		// The board's fights: the statuses they inflict that cost safety, and their enemies' sheet strength against
 		// intelligence.
 		var fights = board != 0 ? CrucibleBoard.FightsOfBoard(board) : [];
@@ -256,15 +304,6 @@ public partial class BeastmasterRotation
 		}
 
 		var load = LoadOf(owned, loads, strength, intelligence, stretch, board != 0);
-
-		var offers = new List<(int Row, ushort Item, int Price)>();
-		for (var r = 0; r < stock.Count; r++)
-		{
-			if (stock[r].Listed && !stock[r].Bought && stock[r].Item is > 0 and <= ushort.MaxValue)
-			{
-				offers.Add((r, (ushort)stock[r].Item, stock[r].Price));
-			}
-		}
 
 		var bought = new HashSet<int>();
 		var itemsHeld = heldItems.Count;
@@ -382,15 +421,8 @@ public partial class BeastmasterRotation
 			}
 		}
 
-		CrucibleShopRecommendation = picks;
-		CrucibleShopTokens = (budget, budget - spent);
-		var traced = string.Join(", ", picks.ConvertAll(static pick => pick.Name));
-		if (traced != _shopTraced)
-		{
-			_shopTraced = traced;
-			DefenseTrace.Line($"crucible shop: {budget} tokens, weighed against {CrucibleShopBasis} - recommends "
-				+ (picks.Count > 0 ? traced + $", {budget - spent} tokens left" : "nothing"));
-		}
+		spentAll = spent;
+		return picks;
 
 		// Steps 2 and 4: a resistance or a serum against each status of the board's fights - those ending in death, or the
 		// others - that nothing held covers.
@@ -428,7 +460,7 @@ public partial class BeastmasterRotation
 		(List<int> Choice, (float Left, float Effective) Value, int Cost) ChooseFrom(int seed)
 		{
 			var tokensLeft = budget - spent;
-			var slotsLeft = gearSlots - gearHeld;
+			var slotsLeft = Math.Min(gearSlots - gearHeld, maxPicks - bought.Count);
 			var start = ShopValue(owned, load);
 			var first = protective[seed];
 			if (first.Price > tokensLeft || slotsLeft <= 0 || !Better(ShopValue([.. owned, first.Piece], load), start))
@@ -479,7 +511,8 @@ public partial class BeastmasterRotation
 
 		bool Take(int row, int price, bool isGear)
 		{
-			if (bought.Contains(row) || price > budget - spent || (isGear ? gearHeld >= gearSlots : itemsHeld >= itemSlots))
+			if (bought.Contains(row) || bought.Count >= maxPicks || price > budget - spent
+				|| (isGear ? gearHeld >= gearSlots : itemsHeld >= itemSlots))
 			{
 				return false;
 			}

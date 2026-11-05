@@ -2060,6 +2060,30 @@ Dullahan, Golem, Spriggan und Eisgolem (`XBMPet.InflictsInterrupt`).
     Preis: die Minderung im schwersten Kampf dieser Strecke. Den Weg kennt RSR nicht (K10 Weg ist nicht gebaut).
   - *Weg:* nicht gebaut. Das Brett wird gelaufen, nicht geklickt (Daedalus läuft es mit vnavmesh ab); das macht RSR zu
     einem Bot für den Weg über das Brett – eine Frage des Umfangs, die er entscheidet (Vorlage am Ende des TODO).
+- *K13 – Schatz* (A578; seine Meldung vom 05.11.2026: „bei den schätzen gibt es keine empfehlung, was zu wählen ist").
+  *Mechanik:* Ein Schatzfeld bietet einen Gegenstand aus einem halbzufälligen Vorrat zur Wahl, keinen doppelt; mit einem
+  Diebesmesser zwei (consolegameswiki, „Crucible of the Unbroken", 05.11.2026). Das Fenster `XBMContentsTreasure` führt
+  bis zu vier Angebote als `XBMItem`-Zeile an den Feldwerten 6 + 5·i, gewählt wird mit dem Rückruf `[2, i]`, geschlossen
+  mit `[0]`; nach einer Wahl mit Diebesmesser bleibt es offen (Daedalus 74659a6, `CrucibleAutoPilot.TakeTreasure` und
+  `CrucibleAutoPilotRules`, Feldnotiz 25.10.2026; Werkzeugquelle aus dem Spielbetrieb).
+  *Wahl:* dieselbe Rangfolge wie im Laden (oben), mit Preis null und einer Wahl je Klick: ein zweites Leben, solange
+  keins gehalten wird; Schutz gegen einen Zustand des Bretts, der im Tod endet; das Ausrüstungsstück, das nach der Skala
+  des Ladens am meisten LP nach der Strecke lässt, bei Gleichstand die meisten effektiven LP; Schutz gegen die übrigen
+  Zustände des Bretts; Heilgegenstände; schützende Gegenstände. Bringt kein Angebot Sicherheit, ein Gegenstand für
+  Schaden oder Stärkung (K8 setzt sie im Endkampf ein), sonst Ausrüstung, die dir nicht schadet. Ausrüstung, die dir
+  einen Zustand zufügt, nie. *Was gehalten wird:* die Gegenstände aus dem Inventar des Bretts; die Ausrüstung, wie sie
+  der letzte Laden dieses Bretts zeigte, dazu was RSR selbst aus Schätzen genommen hat.
+  *Fenster:* „RSR – Crucible treasure" mit der Empfehlung, dem Grund und einem Knopf „Take", der genau sie nimmt; ohne
+  Klick nimmt RSR nichts (wie Laden und Kader, Entscheidung C, A533). Einstellung „Recommend what to take from a
+  Crucible treasure", ab Werk an.
+  *Gegenthese 1 (Ausrüstung unbekannt):* Vor dem ersten Laden kennt RSR deine Ausrüstung nicht, und was ein Zufallsfeld
+  gab, sieht es nicht. Nicht widerlegt: Die Empfehlung kann ein Stück vorziehen, dessen Wirkung du schon trägst; Preis:
+  eine schwächere Wahl. Ausrüstungsplätze vor dem ersten Laden: RSR nimmt einen freien an.
+  *Gegenthese 2 (Daedalus' feste Gewichte):* Daedalus wertet mit festen Gewichten je Wert (LP +1,0, Schaden genommen
+  −1,5 …). RSR rechnet wie im Laden am gemessenen Schaden der Kämpfe (A570) – dieselbe Skala an beiden Stellen, keine
+  zweite.
+  *Gegenthese 3 (Wahl von Hand mit Diebesmesser):* Nimmt er die erste Wahl selbst, weiß RSR nicht, welche Zeile genommen
+  ist, und kann sie erneut empfehlen. Nicht widerlegt; das Spiel gibt sie nicht zweimal, und die zweite Wahl trifft er.
 
 - *K12 – Die Eier des Zu* (A572, aus Daedalus 74659a6, v0.1.112: „Every egg broken before it hatches makes the Zu
   stronger, and a run died there after three were broken: a weaponskill went straight into an egg, Shield Charge (it hits

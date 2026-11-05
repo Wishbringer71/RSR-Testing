@@ -1368,6 +1368,46 @@
    "status": "exception",
    "loop": "A572",
    "reason": "The zu eggs' rows in the game's BNpcName sheet (xivapi v2, 05.11.2026: both \"zu egg\"); identifiers of the game, not tuned values. Daedalus 74659a6 never attacks the same two rows."
+  },
+  {
+   "file": "RotationSolver/Basic/Rotations/Basic/BeastmasterCrucibleTreasure.cs",
+   "code": "private const int TreasureFirstOffer = 6;",
+   "values": [
+    "6"
+   ],
+   "status": "exception",
+   "loop": "A578",
+   "reason": "The treasure window XBMContentsTreasure lists its first offer's XBMItem row at value 6 (Daedalus 74659a6, CrucibleAutoPilot.TakeTreasure and CrucibleAutoPilotRules, recorded 25.10.2026 in field use). The game's layout of the window, not a tuned value; an offer that does not read as an item is left out."
+  },
+  {
+   "file": "RotationSolver/Basic/Rotations/Basic/BeastmasterCrucibleTreasure.cs",
+   "code": "private const int TreasureOfferStride = 5;",
+   "values": [
+    "5"
+   ],
+   "status": "exception",
+   "loop": "A578",
+   "reason": "Each further offer of XBMContentsTreasure sits five values after the one before (Daedalus 74659a6, CrucibleAutoPilot.TakeTreasure and CrucibleAutoPilotRules, recorded 25.10.2026 in field use). The game's layout of the window, not a tuned value."
+  },
+  {
+   "file": "RotationSolver/Basic/Rotations/Basic/BeastmasterCrucibleTreasure.cs",
+   "code": "private const int TreasureOffers = 4;",
+   "values": [
+    "4"
+   ],
+   "status": "exception",
+   "loop": "A578",
+   "reason": "XBMContentsTreasure holds at most four offers (Daedalus 74659a6, CrucibleAutoPilot.TakeTreasure and CrucibleAutoPilotRules, recorded 25.10.2026 in field use); fewer are read as zero and left out. The game's layout of the window, not a tuned value."
+  },
+  {
+   "file": "RotationSolver/Basic/Rotations/Basic/BeastmasterCrucibleTreasure.cs",
+   "code": "private const int TreasureTakeCallback = 2;",
+   "values": [
+    "2"
+   ],
+   "status": "exception",
+   "loop": "A578",
+   "reason": "The game's command of XBMContentsTreasure to take offer i ([2, i]; Daedalus 74659a6, CrucibleAutoPilot.TakeTreasure and CrucibleAutoPilotRules, recorded 25.10.2026 in field use). Not a tuned value; RSR sends it only on his click."
   }
  ]
 }
