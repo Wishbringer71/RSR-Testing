@@ -663,7 +663,8 @@ internal static partial class TargetUpdater
 		for (int i = 0, n = statusList.Length; i < n; i++)
 		{
 			var status = statusList[i];
-			if (status != null && status.CanDispel() && StatusHelper.EndsInDeath((StatusID)status.StatusId)
+			if (status != null && status.CanDispel()
+				&& (StatusHelper.EndsInDeath((StatusID)status.StatusId) || StatusHelper.TurnsWorseOnExpiry((StatusID)status.StatusId))
 				&& status.RemainingTime > 0 && status.RemainingTime <= seconds)
 			{
 				return true;
@@ -768,7 +769,8 @@ internal static partial class TargetUpdater
 
 	/// <summary>
 	/// A healer's cleanse (concept 07, "Reinigung oder Heilung", A565): one that saves a life - a status that kills when it
-	/// runs out - goes before every heal. Anything else only while no heal or defence is asked for, the listed (dangerous)
+	/// runs out - goes before every heal; one that turns into something worse when it runs out (A574) before every heal
+	/// while no member stands in the critical class. Anything else only while no heal or defence is asked for, the listed (dangerous)
 	/// first; and a damage over time borne by more than one member, while an enemy is in reach and the job has a heal over
 	/// time for the party, not at all - that heal answers it (his note of 05.11.2026). The MP a raise needs is kept in the
 	/// action's own check (ActionBasicInfo.LeavesMpForRaise).
@@ -797,8 +799,8 @@ internal static partial class TargetUpdater
 			}
 		}
 
-		IBattleChara? lethal = null, listed = null, other = null;
-		float lethalDist = float.MaxValue, listedDist = float.MaxValue, otherDist = float.MaxValue;
+		IBattleChara? lethal = null, worse = null, listed = null, other = null;
+		float lethalDist = float.MaxValue, worseDist = float.MaxValue, listedDist = float.MaxValue, otherDist = float.MaxValue;
 		foreach (var person in candidates)
 		{
 			var statusList = person.StatusList;
@@ -807,7 +809,7 @@ internal static partial class TargetUpdater
 				continue;
 			}
 
-			bool kills = false, isListed = false, any = false;
+			bool kills = false, turnsWorse = false, isListed = false, any = false;
 			foreach (var status in statusList)
 			{
 				if (status == null || !status.CanDispel())
@@ -828,6 +830,7 @@ internal static partial class TargetUpdater
 
 				any = true;
 				isListed |= status.IsDangerous();
+				turnsWorse |= StatusHelper.TurnsWorseOnExpiry((StatusID)status.StatusId);
 			}
 
 			var dist = ObjectHelper.DistanceToPlayer(person);
@@ -835,6 +838,11 @@ internal static partial class TargetUpdater
 			{
 				lethal = person;
 				lethalDist = dist;
+			}
+			else if (!kills && turnsWorse && dist < worseDist)
+			{
+				worse = person;
+				worseDist = dist;
 			}
 			else if (!kills && isListed && dist < listedDist)
 			{
@@ -848,7 +856,27 @@ internal static partial class TargetUpdater
 			}
 		}
 
-		return lethal ?? (nothingAsked ? listed ?? other : null);
+		if (lethal != null)
+		{
+			return lethal;
+		}
+
+		// A574: the heal of a member about to die saves a life now, the cleanse only when the status runs out.
+		if (worse != null)
+		{
+			var critical = false;
+			foreach (var member in DataCenter.PartyMembers)
+			{
+				critical |= member != null && !member.IsDead && member.IsInCriticalClass();
+			}
+
+			if (!critical)
+			{
+				return worse;
+			}
+		}
+
+		return nothingAsked ? listed ?? worse ?? other : null;
 	}
 
 	private static void AddDispelTargets(List<IBattleChara>? members, List<IBattleChara> targetList)

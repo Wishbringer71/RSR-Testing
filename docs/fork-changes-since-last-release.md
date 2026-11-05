@@ -14,6 +14,11 @@ What this release changes in the fight. For the whole distance from upstream, se
 
 ## Healing
 
+- **A status that turns worse when it runs out is cleansed ahead of the heals.** A cleansable status
+  whose text says what follows when it expires or stays (Freezing turns into a Deep Freeze, Half-asleep
+  into Sleep, an Aetherochemical Bomb detonates) is now cleansed before every heal while no party member
+  is about to die, and at once when it runs out within a GCD. Until now it waited behind every heal like
+  any other cleanse.
 - **Healed to full what only full HP ends.** A status whose text says it dissipates once fully
   healed is healed away as if its bearer stood at 1 %: until now only two Doom variants were listed;
   Gradual Petrification and Accretion are now healed to full as well.

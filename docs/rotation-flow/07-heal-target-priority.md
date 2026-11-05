@@ -944,12 +944,14 @@ und kostet 400 MP, sie steht also gegen eine Heilung und gegen deren Mana. Der B
 Fähigkeit ohne Mana, die keinem GCD den Platz nimmt; für ihn bleibt alles wie bisher – die Gründe unten treffen ihn nicht.
 
 **Was gilt (A565):** Eine Reinigung geht nur dann vor jeder Heilung, wenn sie selbst ein Leben rettet. Alles andere
-reinigt RSR erst, wenn weder Heilung noch Abwehr ansteht, und nicht mit dem Mana, das die Wiederbelebung braucht. Drei
-Arten reinigbarer Zustände, jede an den eigenen Daten des Spiels erkannt:
+reinigt RSR erst, wenn weder Heilung noch Abwehr ansteht, und nicht mit dem Mana, das die Wiederbelebung braucht – außer
+einem Zustand, der beim Ablauf in einen schlimmeren umschlägt (A574). Vier Arten reinigbarer Zustände, jede an den
+eigenen Daten des Spiels erkannt:
 
 | Art | Erkannt an | Beispiele (Standardliste) | Wann RSR reinigt |
 |---|---|---|---|
 | **tötet am Ende** | Symbol von Verhängnis (215503, sechs Doom-Zeilen) oder Wirktext mit „KO" (Necrosis 2965, Throttle 700; xivapi, 05.11.2026) | Doom (910, 3364, 4594), Necrosis (2965) | sofort, vor jeder Heilung – sie rettet ein Leben |
+| **schlägt beim Ablauf um** (A574) | Wirktext nennt, was beim Ablauf oder ohne Reinigung folgt: „When this effect expires …", „… when effect expires", „If not cured …", „… before it detonates" (xivapi, 05.11.2026) | Freezing 2251 (dann Deep Freeze), Half-asleep 3022 (dann Sleep), Nymian Plague 785 (Verwandlung), Aetherochemical Bomb 723 (detoniert) | vor jeder Heilung, solange kein Mitglied in der kritischen Klasse steht – dessen Heilung rettet jetzt ein Leben, die Reinigung erst beim Ablauf; läuft er innerhalb eines GCD ab, ohne Verzögerung (A500); die Rücklage der Wiederbelebung bleibt |
 | **Schaden über Zeit** | Wirktext „damage over time" (derselbe Erkenner wie „HoT gegen DoT", Konzept 08) | Bleeding (273), Poison (2104), Concussion (3521) | liegt er, solange ein Gegner in Reichweite ist, auf mehr als einem Mitglied, nie – dann antwortet die Heilung über Zeit für die Gruppe (Weißmagier, Astrologe: „HoT gegen DoT", Konzept 08; Gelehrter, Weiser: ihre Fähigkeiten über die Heilschwellen); auf einem einzigen wie die übrigen |
 | **übrige** | alles andere auf der Liste „Dispellable debuffs" | Stun, Sleep, Silence, Paralysis, Bind, Slow (561 u. a.), Blind | nur ohne Heil- und Abwehranlass und nur mit Mana über der Rücklage der Wiederbelebung |
 
@@ -962,11 +964,19 @@ Accretion 1604 (senkt jede Heilung; xivapi v2, 05.11.2026). Daedalus 74659a6 fü
 wirkte). Seine Liste nennt dazu Doom 910 und 2976: 910 ist reinigbar (erste Art oben), für 2976 sagt das Blatt nichts
 dergleichen – unbelegt, darum ohne Regel.
 
+*Warum die zweite Art (A574):* Daedalus 74659a6 im Feld: „Many dungeon/trial/raid 'cleanse or wipe' mechanics use a
+unique debuff the bot doesn't have hardcoded, so they could be missed" – Daedalus hob unbekannte reinigbare Zustände
+deshalb an. Upstreams Liste (29 Zustände) führt keinen der vier, und `IsDangerous` greift nur bei mehr als 20 s Restzeit,
+mehr als zwei Stapeln oder dem Symbol von Verhängnis; seit A565 lagen sie also hinter jeder Heilung, auch kurz vor dem
+Umschlagen. Ein Spieler im Deep Freeze oder im Sleep kann nicht ausweichen und nichts drücken; was danach trifft, trifft
+ihn voll. Die Reinigung kostet einen GCD Heilung für jemanden, der nicht in der kritischen Klasse steht – sein Abstand
+zum Tod ist größer als ein GCD.
+
 Zustände außerhalb der Liste reinigt der Heiler nach denen auf der Liste und ebenso nur, wenn nichts ansteht; bisher
 auch bei Heilbedarf, sobald kein Gegner in Reichweite stand. „Dispel every dispellable debuff" nimmt sie wie bisher alle
 dazu, vor die Heilung stellt es keine. Die Rücklage ist die der Einstellung „Keep the MP a raise needs" (ab Werk an,
 A469); ihr Text nennt jetzt auch die Reinigung. Die Dringlichkeit aus A500 – ein Zustand, der innerhalb eines GCD
-abläuft, geht ohne Verzögerung – gilt für jeden Reiniger, auch den Barden, nur noch für die erste Art: Was nicht tötet,
+abläuft, geht ohne Verzögerung – gilt für jeden Reiniger, auch den Barden, nur noch für die ersten beiden Arten: Was nicht tötet und nicht umschlägt,
 endet nur. „Gruppen-HoT des Jobs" heißt auf seiner Stufe gelernt: Medica II oder III (Weißmagier), Aspected Helios oder
 Helios Conjunction (Astrologe), Whispering Dawn mit der Fee (Gelehrter), Physis oder Physis II (Weiser).
 

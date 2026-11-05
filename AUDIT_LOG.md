@@ -16890,6 +16890,29 @@ habe den schleim bislang nicht anfreunden können."
 - *Prüfgrad:* Compile, Prüfschritte; Wirkkette am Code (Wirktext → `DoomNeedHealing` → Gesundheitsanteil 0,01 und
   Heilflaggen). Im Spiel nicht beobachtet.
 
+### A574 · Reinigung: Zustände, die beim Ablauf umschlagen (05.11.2026)
+
+- *Auftrag:* `TODO.md`, „Fremde Repositories auf Verbesserungen für RSR prüfen", Daedalus 74659a6, CHANGELOG: „Many
+  dungeon/trial/raid 'cleanse or wipe' mechanics use a unique debuff the bot doesn't have hardcoded, so they could be
+  missed. These now default to medium priority" – eine Gegenthese zu A565.
+- *Befund:* A565 stellt vor die Heilung nur, was tötet („KO", „death", Symbol von Verhängnis); alles andere kommt erst,
+  wenn nichts ansteht. Reinigbare Zustände, deren Text sagt, was beim Ablauf folgt (xivapi v2, 05.11.2026, Suche „expires",
+  „not cured", „detonate"): Freezing 2251 (Deep Freeze), Half-asleep 3022 (Sleep), Nymian Plague 785 (Verwandlung),
+  Aetherochemical Bomb 723 (Detonation). Upstreams Liste (29 Zustände) führt keinen, `IsDangerous` erfasst sie nur über
+  Restzeit, Stapel oder Symbol – sie lagen hinter jeder Heilung, auch kurz vor dem Umschlagen.
+- *Optionen:* (a) wie die tödlichen vor jeder Heilung – verworfen: Ein Mitglied in der kritischen Klasse stirbt sonst
+  einen GCD früher, die Reinigung rettet erst beim Ablauf. (b) Daedalus: alle unbekannten reinigbaren Zustände anheben –
+  verworfen: das hob A565 wegen Odin gerade auf (22 Reinigungen von Blutung und Slow). (c) Gewählt: eigene Art am
+  Wirktext, vor jeder Heilung, solange kein Mitglied in der kritischen Klasse steht; Dringlichkeit aus A500 bei Ablauf
+  innerhalb eines GCD, für jeden Reiniger. Die Rücklage der Wiederbelebung bleibt.
+- *Gebaut:* `StatusHelper.TurnsWorseOnExpiry`, `TargetUpdater.DangerousStatusEndsWithin` und `HealerDispelTarget`.
+  Konzept 07, „Reinigung oder Heilung".
+- *Falsifikation:* Kein Defekt – kommt selten vor: Die vier stehen in Dungeons und Prüfungen seines Profils (Freezing,
+  Half-asleep im Text belegt), und ein verpasster Zustand kostet Kontrolle oder einen Treffer auf einen Wehrlosen. Option
+  falsch – (a), (b) oben. Ausgeliefert, und nichts ändert sich: Ein solcher Zustand beschreibt sich anders – dann gilt
+  A565 wie bisher; die Suche über das Blatt fand diese vier Fassungen.
+- *Prüfgrad:* Compile, Prüfschritte; Wirkkette am Code. Im Spiel nicht beobachtet.
+
 ## B · Commit-Register (Fork vs. `upstream/main`)
 
 ### B1 · Einzelgeprüfte Fork-Commits

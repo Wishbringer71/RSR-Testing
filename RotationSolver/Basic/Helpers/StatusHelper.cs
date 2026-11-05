@@ -226,6 +226,35 @@ public static class StatusHelper
 	private static readonly System.Collections.Concurrent.ConcurrentDictionary<uint, bool> _damageOverTime = new();
 	private static readonly System.Collections.Concurrent.ConcurrentDictionary<uint, bool> _endsInDeath = new();
 	private static readonly System.Collections.Concurrent.ConcurrentDictionary<uint, bool> _damagesAttackers = new();
+	private static readonly System.Collections.Concurrent.ConcurrentDictionary<uint, bool> _turnsWorse = new();
+
+	// What happens when the status runs out or stays: "When this effect expires, you will experience a Deep Freeze."
+	// (Freezing), "Will succumb to Sleep when effect expires." (Half-asleep), "If not cured, you will transform into a
+	// tonberry." (Nymian Plague), "... only a matter of time before it detonates." (Aetherochemical Bomb); xivapi, 05.11.2026.
+	private static readonly System.Text.RegularExpressions.Regex WorseOnExpiry = new(
+		@"when (?:this )?effect expires|if not cured|before it detonates",
+		System.Text.RegularExpressions.RegexOptions.IgnoreCase | System.Text.RegularExpressions.RegexOptions.CultureInvariant);
+
+	/// <summary>
+	/// Concept 07, "Reinigung oder Heilung" (A574): whether this status turns into something worse when it runs out, by its
+	/// own text in the English status sheet - a Deep Freeze, a Sleep, a detonation. A status that ends in death answers no
+	/// here; <see cref="EndsInDeath"/> holds it. A sheet that cannot be read answers no.
+	/// </summary>
+	internal static bool TurnsWorseOnExpiry(StatusID statusId)
+	{
+		return !EndsInDeath(statusId) && _turnsWorse.GetOrAdd((uint)statusId, static key =>
+		{
+			try
+			{
+				var sheet = Svc.Data.GetExcelSheet<Lumina.Excel.Sheets.Status>(Dalamud.Game.ClientLanguage.English);
+				return sheet != null && sheet.TryGetRow(key, out var row) && WorseOnExpiry.IsMatch(row.Description.ExtractText());
+			}
+			catch (Exception)
+			{
+				return false;
+			}
+		});
+	}
 
 	// "dealing fire damage to attackers", "dealing ice damage to and slowing down attackers" (Blaze, Ice, Shock and
 	// Paralyzing Spikes, Veil of the Whorl; xivapi, 05.11.2026).
