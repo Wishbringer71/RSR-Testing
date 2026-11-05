@@ -15969,6 +15969,31 @@ habe den schleim bislang nicht anfreunden können."
 - *Prüfgrad:* Blätter, Module und Mitschnitt ausgewertet; kein Code. Zuschlag der Schwäche und die Annahme der
   Hornzuweisung im Brett sind unbelegt.
 
+### A533 · Offene Entscheidungen im Loop: K3, K7, Plugin-Identität; Vorrang des Spielerlebnisses (05.11.2026)
+
+- *Anlass:* Sein Auftrag vom 05.11.2026: „offene entscheidungen im todo im vollen kritischen loop mit antithese und
+  versuch der widerlegung analysieren, das ingame spielerlebnis in seiner gesamtheit hat vorrang vor schwierigkeit der
+  umsetzung, sofern überhaupt lösbar". Die Vorgabe steht in CLAUDE.md („Maßstab: das Spielgeschehen"), der Aufwand in
+  der Abwägung des Loops ist nachrangig. Offene Entscheidungen im TODO: K3 und K7 (Crucible), Plugin-Identität; die
+  übrigen Wartepunkte (PvP und Bozja, Beiruta-Heiler) hängen an seinem Profil, nicht am Aufwand.
+- *K3 (Heiler und Wiederbeleber zuerst):* Blatt: heilen Blütenkaktor, Biloko, Kupoheiler; Lamia wiederbelebt (10 s);
+  sie haben die niedrigste Konstitution ihres Kampfes oder teilen sie. Seine Begründung zu A525 („weniger gegner machen
+  weniger schaden") trägt B für Wiederbeleber und Heiler, nicht für Stärker (Betrag unbelegt). Ergebnis B, als Vorlage,
+  weil A525 seine Entscheidung ist.
+- *K7 (Kader):* C entschieden: Empfehlung im Teamfenster, Übernahme auf Knopfdruck über die Spielfunktionen des Fensters,
+  Prüfung nach jedem Schritt, Abbruch bei Abweichung. Der frühere Grund dagegen („ein paar Klicks", Absturz) war Aufwand
+  und eine Gefahr nachgebauter Fensterereignisse, die C nicht nutzt.
+- *K10:* Die Ausnahme „nicht RSR" (Campsite, Laden, Weg) stützte sich auf andere Werkzeuge, also auf Aufwand; nach der
+  Vorgabe offen, im eigenen Loop.
+- *Plugin-Identität:* BossModReborn erkennt RSR am angezeigten Namen „Rotation Solver Reborn" (`BossMod/Framework/RSR.cs`,
+  577675d) und spricht es über feste IPC-Namen `RotationSolverReborn.*` an; der interne Name bestimmt den
+  Konfigurationsordner (`ConfigDirectory`, Einstellungen und gelernte Tabellen). Eine Änderung kostet im Spiel, solange
+  nicht beide Installationen gebraucht werden; Auflösung im TODO.
+- *Seine Frage, welche Vorgabe vom 01.10. gemeint war:* `.claude/rules/konzepte.md`, „ein neues Dokument nur, wenn keines
+  ihn trägt" (Commit dca7edb62); sein Wortlaut von damals ist nicht festgehalten. Kein Widerspruch zum Auftrag eines
+  eigenen Konzepts zur Ordnung der Konzepte – keines trägt sie; mein „trotz" war falsch gewählt.
+- *Prüfgrad:* Blätter, BossMod-Quelltext und Code gelesen; kein Code geändert.
+
 ## B · Commit-Register (Fork vs. `upstream/main`)
 
 ### B1 · Einzelgeprüfte Fork-Commits

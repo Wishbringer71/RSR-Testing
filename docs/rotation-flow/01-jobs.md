@@ -1767,10 +1767,23 @@ Dullahan, Golem, Spriggan und Eisgolem (`XBMPet.InflictsInterrupt`).
   bis zum Ruf; das Halten kostet nur, solange das Horn sonst einen Einsatz hätte. Der Ruf kommt laut Blatt sicher. Gilt
   für alle Kämpfe mit Ruf: Seelenlose, Taurus, Sirene, Ymir, Kämpfer, Strix, Progenitrix, Drakon, Durga, Medusa,
   Flauros.
-- *K3 – Stärker und Heiler zuerst.* Gegner, deren Aktion Verbündete stärkt, heilt oder wiederbelebt (Fanaticism,
-  Rallying Cheer, Might, Healing Water, Natural Nurture, Raise, Aether Charge, Camaraderie und andere; im Blatt als Ziel
-  „Verbündeter" mit Status), vor dem mit den wenigsten LP. *Berührt seine Entscheidung A525* („wenigste LP zuerst, egal
-  wie die Einstellungen"): Vorlage an ihn, nicht umgesetzt.
+- *K3 – Heiler und Wiederbeleber zuerst* (Loop vom 05.11.2026, sein Auftrag, die offenen Entscheidungen zu prüfen).
+  *Erhoben (Blatt):* Gegner, deren Aktion Verbündete trifft – heilen: Blütenkaktor (Healing Water, 6 y), Biloko (Natural
+  Nurture), Kupoheiler; wiederbeleben: Lamia (Raise, 10 s Wirkzeit, unterbrechbar); decken: Wächter (Cactguard);
+  stärken: Sukkubus-Magierin, Jüngerer Taurus, Schössling, Drehturm, Zyklop (Gigantis-Kampf), Melomog. Heiler und
+  Wiederbeleber haben die niedrigste Konstitution ihres Kampfes oder teilen sie; „wenigste LP zuerst" trifft sie meist
+  ohnehin. *Optionen:* A bei „wenigste LP" bleiben (A525); B Heiler und Wiederbeleber zuerst, sonst wenigste LP; C dazu
+  Stärker; D nur unterbrechen (K4). *Im Kampf:* Medusa-Kampf, Lamia und Zyklop gleich schwach: Unter A fällt der Zyklop
+  vielleicht zuerst, und die Lamia holt ihn mit Raise auf volle LP zurück; unter B fällt die Lamia zuerst, kein Raise.
+  Kämpfer-Kampf: Der Blütenkaktor heilt in 6 y; unter A fällt zuerst, wer gerade am wenigsten hat, und er heilt weiter.
+  *Gegenthese 1 (sein Grund zu A525: „weniger gegner machen weniger schaden"):* Für Wiederbeleber widerlegt – ein Raise
+  macht einen Gegner mehr; für Heiler widerlegt – jede Heilung schiebt jeden Fall hinaus. Für Stärker hält sie: Wie viel
+  eine Stärkung bringt, nennt keine Quelle, und ein Stärker mit mehr LP hält den Fall der anderen auf; C verworfen,
+  Stärker über K4. *Gegenthese 2:* Der Weg zum Heiler führt durch die Arena. Teilweise: Die Arenen sind klein, und die
+  Ausweichbewegung bleibt bei BossModReborn. *Gegenthese 3:* Außerhalb des Crucible fehlt das Blatt. Dort zählt ein
+  Gegner erst als Heiler oder Wiederbeleber, wenn er es getan hat: Wirkung auf einen anderen Gegner, LP gestiegen oder
+  aus 0 zurück. *Falsifikation:* Kein Defekt, weil A sie meist schon trifft? Nur im Gleichstand und bei einem kräftigeren
+  Heiler nicht – genau dann kostet A einen ganzen Fall. *Ergebnis:* B. Berührt seine Entscheidung A525: Vorlage.
 - *K4 – Unterbrechen.* Ein Begleiter, der unterbricht, gegen anfällige Gegner mit langem Zauber (Ossify, Fanaticism,
   Dreadwash, Confound, Raise). Welche seiner Aktionen unterbricht, ist am Blatt noch zu belegen; danach ein Loop.
 - *K5 – Zustände.* Gift, Gewicht, Fessel gegen anfällige Gegner: Wirkung je Zustand nicht beziffert, nach K1 bis K4.
@@ -1779,9 +1792,21 @@ Dullahan, Golem, Spriggan und Eisgolem (`XBMPet.InflictsInterrupt`).
   bekannt ist. Zwei Wege: B5s Befehl (ob der Server ihn dort annimmt, ist nicht gemessen) oder die Auswahl im Fenster
   (`XBMPetParty`, Rückrufe; BeastHelper und AutoDuty nutzen sie, Werkzeugquellen). Belegung nach K1 und K2 mit einem
   Heiler, wenn die Gefahr im Brett das verlangt.
-- *K7 – Kader vor dem Brett.* Die Schwächen eines Bretts und die passenden Begleiter stehen oben. Die Auswahl im
-  Bestienbuch automatisiert BeastHelper über Fensterereignisse, mit einem dokumentierten Absturz bei falschen
-  Ereignisdaten; der Gewinn gegen ein paar Klicks ist klein. Nicht gebaut; als Vorlage an ihn.
+- *K7 – Kader vor dem Brett* (Loop vom 05.11.2026; seine Frage, ob RSR „auf wunsch begleiter auswählen" kann; seine
+  Vorgabe: das Spielerlebnis vor der Schwierigkeit der Umsetzung). *Optionen:* A nichts; B die Empfehlung zeigen, sobald
+  das Teamfenster offen ist; C dazu ein Knopf „übernehmen", der sie auf deinen Wunsch setzt; D ungefragt setzen.
+  *Im Kampf und davor:* Unter A und B wählst du 10 bis 15 Begleiter selbst und weißt nicht ohne Nachschlagen, welche Schwäche
+  das Brett verlangt; unter C ein Klick; unter D überschreibt RSR einen Kader, den du anders geplant hast. *Gegenthese 1
+  (Absturz):* BeastHelper dokumentiert einen Absturz durch nachgebaute Fensterereignisse mit leerem Ereigniszeiger.
+  Teilweise widerlegt: C nutzt die Spielfunktionen, die das Fenster selbst ruft (`AgentXBMPetParty.TogglePet`,
+  `ConfirmSelection`), prüft nach jedem Schritt die Auswahl (`SelectedPets`) und hört bei einer Abweichung auf; ob sie aus
+  einem Plugin heraus tragen, zeigt erst der erste Lauf, die Spur nennt jeden Schritt. *Gegenthese 2:* Das Brett hat
+  Abzweigungen und Zufallsfelder. Widerlegt: Das Blatt nennt alle Kämpfe des Bretts, Zufallsfelder ziehen aus ihnen.
+  *Gegenthese 3:* Ein Begleiter unter dem Rang des Bretts ist schwächer. Eingearbeitet: Rang mindestens wie das Brett
+  synchronisiert (`GetSyncedRank`, `IsPetOverSyncedRank`), sonst nachrangig. *Gegenthese 4 (Aufwand):* nach seiner
+  Vorgabe kein Grund. *Ergebnis:* C, entschieden (seine Frage zeigt den Wunsch, „auf Wunsch" schließt D aus): Wahl nach
+  Abdeckung der Schwächen aller Kämpfe des Bretts, gewichtet nach Zahl der Gegner, dazu ein Heiler und, wo Gegner
+  unterbrechbar wirken, einer, der unterbricht.
 - *K8 – Gegenstände.* Über `InstanceContentCrucibleOfTheUnbroken.UseItem(Platz, Bestie)` auf dein Ziel. Sicherheit zuerst
   (seine Regel): Bestien-Heiltrank oder -Pulver, wenn deine LP in die Gefahr fallen und keine Heilung bereit ist;
   Gegengift und Augentropfen gegen den passenden Zustand; Verhärtungsmittel vor einem angekündigten Tankbuster; Lebensfeder
@@ -1795,9 +1820,10 @@ Dullahan, Golem, Spriggan und Eisgolem (`XBMPet.InflictsInterrupt`).
   Provozieren vor seinem Fall (am größten bisher gesehenen Treffer, nicht an festen 30 %) hält ihn; die Campsite heilt
   dich allein am meisten (gemessen +30 % bei geteilter Rast), also kostet verteilter Schaden dort Heilung. Empfehlung:
   die Einstellung ab Werk an, auf dem letzten Horn, mit Provozieren am größten Treffer; Loop bei der Umsetzung.
-- *Nicht RSR:* Weg über das Brett, Laden, Fütterung, Auswahl an der Campsite, Flucht mit der Rauchbombe. Das sind
-  Entscheidungen zwischen den Kämpfen über den Vorrat des Bretts; BeastHelper und AutoDuty führen sie. RSR bleibt beim
-  Kampf und seiner Vorbereitung (Hörner).
+- *K10 – Zwischen den Kämpfen (Campsite, Laden, Weg, Rauchbombe):* bisher als „nicht RSR" ausgenommen, mit dem Grund,
+  dass andere Werkzeuge es führen. Nach seiner Vorgabe vom 05.11.2026 (Spielerlebnis vor Umsetzung) ist das kein Grund
+  mehr; offen, im eigenen Loop: wen die Campsite heilt (dich, die heilenden, die tragenden), welche Gegenstände im Laden
+  die Sicherheit tragen, welcher Weg Lager und Läden mitnimmt.
 
 *Falsifikation:* Kein Defekt, weil das erste Brett zweimal ohne Tod fiel? Das gelang mit Gegenständen und Zähnefletschen
 von seiner Hand; die Meisterbretter haben Rang 20 und 25 und Gegner ohne Schwäche. Option falsch? K1 ohne gemessenen
@@ -1809,7 +1835,7 @@ anders als das Schema (wie bei `XBMPet`, Spalte `Unknown4`), fehlen Schwäche un
 beim Betreten, ob es die Daten des Bretts gelesen hat.
 
 *Stufen* (TODO „Beastmaster: Crucible-Strategien"): 1. Daten zur Laufzeit (Schwäche und Gegnerliste je Kampf,
-Schadensart je Begleiter) mit K1 und K2; 2. K9; 3. K8; 4. K6; danach K4, K5. K3 und K7 nach seiner Entscheidung.
+Schadensart je Begleiter) mit K1 und K2; 2. K9; 3. K8; 4. K6 und K7; danach K4, K5, K10. K3 nach seiner Entscheidung.
 
 ---
 

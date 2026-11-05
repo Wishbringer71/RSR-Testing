@@ -80,8 +80,9 @@ Sukkubi kamen). *Ort:* `BST_Reborn` (B3, Zyklus, `FamiliarTankSwapAbility`), neu
 `InstanceContentCrucibleOfTheUnbroken.UseItem`. *Nächster Schritt:* Stufe 1: Schwäche und Gegnerliste je Kampf,
 Schadensart je Begleiter zur Laufzeit, mit Selbstprüfung beim Betreten; K1 (Zuschlag gemessen) und K2 (Horn für
 gerufene Gegner); dann K9 (Zähnefletschen ab Werk, Provozieren am größten Treffer), K8 (Gegenstände, Sicherheit
-zuerst), K6 (Hörner vor dem Kampf; zuerst messen, ob der Server im Brett zuweist). K3 und K7 warten auf seine
-Entscheidung. *Konzept:* 01, „Crucible of the Unbroken: Bretter, Kämpfe, Strategien".
+zuerst), K6 (Hörner vor dem Kampf; zuerst messen, ob der Server im Brett zuweist) und K7 (Kader auf Wunsch über das
+Teamfenster); danach K4, K5 und K10 (Campsite, Laden, Weg, im eigenen Loop). K3 (Heiler und Wiederbeleber zuerst) wartet
+auf seine Entscheidung zu A525. *Konzept:* 01, „Crucible of the Unbroken: Bretter, Kämpfe, Strategien".
 
 ### Nach der Wiederbelebung wartet RSR die Unverwundbarkeit ab · N, U
 Im Kampf: Wiederbelebt bei 21 %, Zellexplosion auf ihn angekündigt; RSR drückte 5 s lang nichts, der Treffer kam
@@ -245,8 +246,10 @@ messbar später kommt; erster Schritt: die Teilschritte der Rotation in diesem D
 Frame kostet".
 
 ### Plugin-Identität ist die des Upstreams · N
-`manifest.json` unverändert (`InternalName`, URLs). *Auflösung:* seine Entscheidung, wenn beide Installationen
-nebeneinander gebraucht werden.
+`manifest.json` unverändert (`InternalName`, URLs). Ein eigener interner Name verlegt den Ordner mit Einstellungen und
+gelernten Tabellen, ein eigener angezeigter Name nimmt BossModReborn die Verbindung (es erkennt RSR an „Rotation Solver
+Reborn"); beides kostet im Spiel, solange nicht beide Installationen gebraucht werden (A533). *Auflösung:* wenn er beide
+nebeneinander braucht: neuer interner Name mit Übernahme des Ordners, angezeigter Name bleibt.
 
 ## Warten auf Daten oder Fremde
 

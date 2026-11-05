@@ -108,7 +108,7 @@ Pflicht für jede nicht-triviale Aufgabe; die REGEL steht darüber.
 |---|---|---|
 | 1 | Research | Fehlerbild vom Fehler trennen; Ursache am Artefakt belegen (Code, Versionsgeschichte, Laufzeitdaten, Fremddokumentation). Erinnerung ist keine Quelle. |
 | 2 | Optionen | Lösungsraum vollständig, mit Nullvariante und Rückbau. Noch nicht bewerten. |
-| 3 | Abwägung | Je Option als SWOT im Spielgeschehen: Stärken und Schwächen (was sie selbst im Kampf bewirkt), Chancen und Bedrohungen (Lagen und fremde Einflüsse, unter denen sie nützt oder schadet – Inhalt, andere Spieler, BossMod, Patch); dazu Schweregrad, Dringlichkeit, Aufwand, Blast Radius, Folgekosten; Bilanz, was überwiegt (→ „Maßstab: das Spielgeschehen"). |
+| 3 | Abwägung | Je Option als SWOT im Spielgeschehen: Stärken und Schwächen (was sie selbst im Kampf bewirkt), Chancen und Bedrohungen (Lagen und fremde Einflüsse, unter denen sie nützt oder schadet – Inhalt, andere Spieler, BossMod, Patch); dazu Schweregrad, Dringlichkeit, Aufwand (nachrangig), Blast Radius, Folgekosten; Bilanz, was überwiegt (→ „Maßstab: das Spielgeschehen"). |
 | 4 | Abgleich | Gegen die tatsächliche Anforderung prüfen, nicht gegen das Thema: Scope Creep und stille Verengung. |
 | 5 | Review | Problemdefinition und Option gegen Annahmen, Randfälle, Wechselwirkungen. Schwächen und Bedrohungen der gewählten Option beseitigen; was bleibt, mit Preis und Wahrscheinlichkeit benennen. |
 | 6 | Falsifikation | Drei Hypothesen vertreten: kein Defekt · Option falsch · **ausgeliefert, und nichts ändert sich — warum?** Hält eine, zurück zu 2. |
@@ -125,6 +125,7 @@ Pflicht für jede nicht-triviale Aufgabe; die REGEL steht darüber.
 - Eine Spielgröße kläre ich in ihrer Bedeutung, bevor ich sie verrechne: Ein Schild verhindert Schaden und heilt nicht; Unverwundbarkeit verhindert den Tod und heilt nicht; ein Debuff drosselt den Schadensstrom und beendet ihn nicht.
 - Befunde formuliere ich als Wirkung: „die Beschwörung kommt einen GCD später und mit ihr jede weitere Demi", nicht „`searingSettled` liest die Bedingung nicht".
 - Das Verhalten anderer Spieler ist eine Annahme, nie ein tragender Grund. Ein einzelner Beschwörer setzt seinen Burst selbst.
+- Das Spielerlebnis im Spiel in seiner Gesamtheit hat Vorrang vor der Schwierigkeit der Umsetzung, sofern die Aufgabe überhaupt lösbar ist (seine Vorgabe, 05.11.2026). Aufwand entscheidet nur zwischen Lösungen, die im Kampf gleich gut sind; „zu aufwendig“ verwirft oder vertagt keine bessere.
 - Seine Mitschnitte belegen Einzelfälle aus wenigen Instanzen, nicht das Spiel (seine Vorgabe, 27.10.2026). Eine Regel beurteile ich über alle Inhalte, in denen sie greift – Spielblätter, BossMod-Module, Guides –; die Mitschnitte eichen und widerlegen, sie begrenzen nicht. Grund: „Kommt in seinen Logs nicht vor" sagt nichts über Savage, Extreme oder einen Inhalt, den er noch nicht hochgeladen hat.
 
 # Der Auftraggeber
