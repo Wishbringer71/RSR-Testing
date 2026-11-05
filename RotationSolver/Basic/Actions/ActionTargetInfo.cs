@@ -727,7 +727,7 @@ public struct ActionTargetInfo(IBaseAction action)
 
 			var selfAffects = GetCanAffects(skipStatusProvideCheck, skipTargetStatusNeedCheck, type, targetOverride);
 			selfAffects = FilterAffectsByFacing(selfAffects);
-			if (selfAffects.Count < Math.Max(1, required))
+			if (selfAffects.Count < Math.Max(1, required) || HitsUntouchable(Player.Object))
 			{
 				return null;
 			}
@@ -1694,6 +1694,12 @@ public struct ActionTargetInfo(IBaseAction action)
 
 		foreach (var t in targets)
 		{
+			// Concept 03 (A572): no centre whose area catches an enemy no attack may hit.
+			if (!action.Setting.IsFriendly && HitsUntouchable(t))
+			{
+				continue;
+			}
+
 			var count = GetCanTargetCount(t, canAffects);
 			if (count < bestCount)
 			{
@@ -1712,6 +1718,31 @@ public struct ActionTargetInfo(IBaseAction action)
 		{
 			yield return best[i];
 		}
+	}
+
+	/// <summary>
+	/// Concept 03, "Gegner, die keine Fläche treffen darf" (A572): whether this area attack, centred on
+	/// <paramref name="centre"/> (the player for an area around him), would catch an enemy no attack may hit - by the
+	/// action's shape, and for a cone around the player by his facing.
+	/// </summary>
+	private readonly bool HitsUntouchable(IBattleChara centre)
+	{
+		var untouchable = DataCenter.UntouchableHostiles;
+		if (untouchable.Count == 0 || IsSingleTarget || EffectRange <= 0 || action.Setting.IsFriendly || centre == null)
+		{
+			return false;
+		}
+
+		List<IBattleChara> caught = [];
+		foreach (var enemy in untouchable)
+		{
+			if (enemy != null && enemy.GameObjectId != centre.GameObjectId && GetCanTarget(centre, enemy))
+			{
+				caught.Add(enemy);
+			}
+		}
+
+		return caught.Count > 0 && (centre.GameObjectId != Player.Object?.GameObjectId || FilterAffectsByFacing(caught).Count > 0);
 	}
 
 	private readonly int GetCanTargetCount(IBattleChara target, IEnumerable<IBattleChara> canAffects)

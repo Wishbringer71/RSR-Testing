@@ -270,6 +270,8 @@ internal static partial class TargetUpdater
 		List<IBattleChara> allianceMembers = new(capacity: allTargets.Count);
 		List<IBattleChara> hostileTargets = new(capacity: allTargets.Count);
 		List<IBattleChara> spikedHostiles = [];
+		List<IBattleChara> untouchableHostiles = [];
+		var stopTargets = Service.Config.FilterStopMark2 ? MarkingHelper.GetStopTargets() : [];
 		List<IBattleChara> outOfDutyPlayers = [];
 
 		var raisetype = Service.Config.RaiseType;
@@ -294,6 +296,13 @@ internal static partial class TargetUpdater
 
 					if (member.DistanceToPlayer() < 48 && member.CanSeeFrom(playerEye.Value))
 					{
+						// Concept 03, "Gegner, die keine Fläche treffen darf" (A572): what no attack may hit, area ones
+						// included - whether or not it is a target.
+						if (member.MustNotBeHit(stopTargets))
+						{
+							untouchableHostiles.Add(member);
+						}
+
 						if (!ignoreInvincibility)
 						{
 							var hasInvincible = false;
@@ -325,6 +334,11 @@ internal static partial class TargetUpdater
 						{
 							spikedHostiles.Add(member);
 							TraceSpiked(member);
+							continue;
+						}
+
+						if (member.IsGuardedZuEgg())
+						{
 							continue;
 						}
 
@@ -360,6 +374,7 @@ internal static partial class TargetUpdater
 		DataCenter.AllianceMembers = allianceMembers;
 		DataCenter.AllHostileTargets = hostileTargets;
 		DataCenter.SpikedHostiles = spikedHostiles;
+		DataCenter.UntouchableHostiles = untouchableHostiles;
 		if (spikedHostiles.Count == 0)
 		{
 			_spikedTraced.Clear();

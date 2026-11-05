@@ -279,6 +279,13 @@ internal partial class Configs : IPluginConfiguration, IM3Settings
 	Description = "Prioritize Crawling Pieces, which bind you in place.",
 	Filter = DutySpecificCrucibleOfTheUnbroken)]
 	private static readonly bool _crucibleSiren = true;
+
+	// Concept 01, K12 (A572): Daedalus 74659a6 in the field - every egg broken before it hatches makes the Zu stronger, and a
+	// run died after three were broken.
+	[ConditionBool, UI("Crucible of the Unbroken - Zu logic",
+	Description = "Never hit a zu egg while a zu piece lives: every egg broken before it hatches makes the Zu stronger. Eggs are no target, and an area attack that would catch one finds another centre or waits.\nOff: eggs are enemies like any other, and area attacks catch them.",
+	Filter = DutySpecificCrucibleOfTheUnbroken)]
+	private static readonly bool _crucibleZu = true;
 	#endregion
 
 	#region PvP

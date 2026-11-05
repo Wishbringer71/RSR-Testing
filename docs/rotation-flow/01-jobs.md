@@ -2058,6 +2058,17 @@ Dullahan, Golem, Spriggan und Eisgolem (`XBMPet.InflictsInterrupt`).
   - *Weg:* nicht gebaut. Das Brett wird gelaufen, nicht geklickt (Daedalus läuft es mit vnavmesh ab); das macht RSR zu
     einem Bot für den Weg über das Brett – eine Frage des Umfangs, die er entscheidet (Vorlage am Ende des TODO).
 
+- *K12 – Die Eier des Zu* (A572, aus Daedalus 74659a6, v0.1.112: „Every egg broken before it hatches makes the Zu
+  stronger, and a run died there after three were broken: a weaponskill went straight into an egg, Shield Charge (it hits
+  everything within 6 yalms of its target) broke the two beside a hatched Cockerel, and Tempered Release went out at a
+  Pullet"). Der zu piece (Namensblatt 14572) ist ein Elitegegner des dritten Bretts; seine Eier sind „zu egg" (14575,
+  14576). *Was gilt:* Solange ein zu piece lebt, ist ein zu egg kein Ziel und trifft keine Fläche (Konzept 03, „Gegner,
+  die keine Fläche treffen darf") – Schildansturm, Parting Blow und jede andere Fläche suchen einen Mittelpunkt ohne Ei
+  oder warten. Einstellung „Crucible of the Unbroken - Zu logic", ab Werk an, neben Upstreams Ymir- und Siren-Regel.
+  *Verworfen:* Daedalus' Freigabe der Flächen, sobald der Zu unter 15 % fällt: eine Zahl ohne Herleitung; ob ein Ei dann
+  noch schadet, belegt nichts. *Gegenthese:* Ohne Flächen dauert der Kampf länger. Widerlegt im Sinne seiner Spielweise:
+  Ein stärkerer Zu kostet LP, die längere Dauer Schaden.
+
 - *K11 – Begleiter über das Brett planen* (sein Hinweis und seine Vorgabe vom 05.11.2026: „da begleiter über die
   spielfelder des brettes hinweg schaden ansammeln und hp sinkt, auch strategische planung, falls begleiter mehrfach
   eingesetzt werden sollen, damit diese an den spielfeldern, wo sie unbedingt notwendig sind, auch bereitstehen").

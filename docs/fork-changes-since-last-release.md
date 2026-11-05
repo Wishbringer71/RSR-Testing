@@ -79,6 +79,13 @@ What this release changes in the fight. For the whole distance from upstream, se
   Spikes was still hit. An action that removes the spikes may still target the enemy: Quelling Wave now
   reaches the drake piece with Blaze Spikes, which it never found before. `Do not attack enemies whose
   spikes damage their attackers`, **on by default**; `DefenseTrace.log` names each enemy left alone.
+- **Area attacks spare what may not be hit.** An area attack no longer catches an enemy RSR must not
+  attack: one with spikes, one with a stop marker while `Never attack targets with stop markers` is on
+  (until now only the target was spared - the area still woke a sleeping enemy), and in the Crucible a
+  zu egg while the zu piece lives. The area finds another centre or waits, by its shape - circle, cone,
+  line or ring - around you, a target or a spot on the ground. The zu eggs are no target either:
+  every egg broken before it hatches makes the Zu stronger. `Crucible of the Unbroken - Zu logic`,
+  **on by default**.
 - **A big cast aimed at a healer or a damage dealer opens his defence.** Until now only a listed
   tankbuster, a marker or BossModReborn did. RSR now learns, across sessions, what each enemy cast
   aimed at a player who is no tank does to him, scaled back to unmitigated - also when an invisible

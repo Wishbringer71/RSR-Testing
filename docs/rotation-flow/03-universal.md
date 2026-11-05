@@ -740,6 +740,35 @@ Spieler ohne RSR schlägt weiter und kann sie ziehen; Preis: ein Treffer auf ihn
 ihn ausschließt. Widerlegt: Gegner mit Stacheln stehen in einer eigenen Liste, aus der nur Aktionen wählen, die einen
 ihrer Zustände entfernen – wie die Figuren, die nur Heilung besiegt (A516).
 
+## Gegner, die keine Fläche treffen darf
+
+*Was gilt (A572):* Ein Gegner, den RSR nicht angreifen darf, trifft auch keine Flächenaktion: Eine Fläche, deren
+Wirkgebiet ihn einschließt, sucht sich einen anderen Mittelpunkt oder wartet – für jeden Job, Kreis, Kegel, Linie und
+Ring nach der Form der Aktion (`GetCanTarget`), Flächen um dich ebenso wie um ein Ziel oder einen Bodenpunkt. Solche
+Gegner sind:
+- Gegner mit Stacheln (oben, A571): Eine Fläche löst den Rückwurf so sicher aus wie ein Einzelschlag.
+- Gegner mit Stopp-Markierung, solange „Never attack targets with stop markers" an ist: Der Text der Einstellung bindet,
+  und eine Fläche, die einen markierten Gegner trifft, greift ihn an (Upstream schloss ihn nur als Ziel aus; die Fläche
+  weckte etwa einen Schlafenden).
+- Im Crucible die Eier des Zu, solange der Zu lebt (Konzept 01, K12).
+Gegner, die nur unverwundbar sind, gehören nicht dazu: Sie zu treffen kostet nichts.
+
+*Begründung:* Die Gefahr liegt im Treffer, nicht in der Zielwahl; eine Regel, die nur das Ziel ausschließt, lässt jede
+Fläche durch. Eine Fläche ohne den Gegner kostet Schaden, keine LP.
+
+*Verworfen:* (a) Nur das Ziel ausschließen (Stand bis A571): Jede Fläche trifft weiter. (b) Flächen ganz sperren, solange
+ein solcher Gegner lebt: Auch eine Fläche weit weg von ihm entfiele.
+
+*Gegenthese 1:* Ein Gegner wandert in die Fläche, nachdem sie ausgelöst ist. Nicht abwendbar: RSR prüft beim Auslösen;
+eine Fläche mit Wirkzeit trifft, wer bei ihrem Ende darin steht. Preis: ein Treffer, so selten wie ein Gegner, der in der
+Wirkzeit in den Kreis läuft.
+*Gegenthese 2:* Die Kegelprüfung um dich nimmt die Blickrichtung erst nach der Entfernung; ein Gegner hinter dir sperrt
+dann einen Kegel, den er nicht träfe. Widerlegt: Wie bei den Zielen der Fläche zählt `FilterAffectsByFacing` nur, wer im
+Kegel steht.
+*Gegenthese 3 (ausgeliefert, und nichts ändert sich):* Der Gegner steht in keiner Liste, die die Fläche liest. Widerlegt:
+Die Liste `DataCenter.UntouchableHostiles` baut der Zielabgleich jeden Takt aus allen Gegnern in Reichweite, auch denen,
+die die Gegnerliste ausschließt.
+
 ## E · Universelle Strukturschwächen
 
 | # | Schwäche | Beleg | Stand |

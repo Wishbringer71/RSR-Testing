@@ -1347,6 +1347,27 @@
    "status": "exception",
    "loop": "A569",
    "reason": "Percent to share: the gear's effect text states its figures in percent; the divisor is the definition of the unit, as for the item texts and the rest prompt (A551, A564)."
+  },
+  {
+   "file": "RotationSolver/Basic/Helpers/ObjectHelper.cs",
+   "code": "private const uint ZuPieceNameId = 14572;",
+   "values": [
+    "14572"
+   ],
+   "status": "exception",
+   "loop": "A572",
+   "reason": "The zu piece's row in the game's BNpcName sheet (xivapi v2, 05.11.2026: \"zu piece\"), the Crucible's third-board elite; an identifier of the game, like the NameIds of upstream's Ymir and Siren rules, not a tuned value. Daedalus 74659a6 uses the same row."
+  },
+  {
+   "file": "RotationSolver/Basic/Helpers/ObjectHelper.cs",
+   "code": "private static readonly uint[] ZuEggNameIds = [14575, 14576];",
+   "values": [
+    "14575",
+    "14576"
+   ],
+   "status": "exception",
+   "loop": "A572",
+   "reason": "The zu eggs' rows in the game's BNpcName sheet (xivapi v2, 05.11.2026: both \"zu egg\"); identifiers of the game, not tuned values. Daedalus 74659a6 never attacks the same two rows."
   }
  ]
 }

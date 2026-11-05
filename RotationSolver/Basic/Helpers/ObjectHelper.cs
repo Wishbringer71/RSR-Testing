@@ -276,6 +276,30 @@ public static class ObjectHelper
 		return sipInRange;
 	}
 
+	// Concept 01, K12 (A572): the zu piece and its eggs (BNpcName rows; Daedalus 74659a6, in the field).
+	private const uint ZuPieceNameId = 14572;
+	private static readonly uint[] ZuEggNameIds = [14575, 14576];
+
+	/// <summary>
+	/// Concept 01, K12 (A572): a zu egg while a zu piece lives and "Crucible of the Unbroken - Zu logic" is on - no target,
+	/// and no area attack may catch it.
+	/// </summary>
+	internal static bool IsGuardedZuEgg(this IBattleChara battleChara)
+	{
+		return Service.Config.CrucibleZu && DataCenter.IsInCrucible && Array.IndexOf(ZuEggNameIds, battleChara.NameId) >= 0
+			&& AnyLivingHostile(ZuPieceNameId);
+	}
+
+	/// <summary>
+	/// Concept 03, "Gegner, die keine Fläche treffen darf" (A572): an enemy no attack may hit, not even an area one - spikes
+	/// that damage attackers, a stop marker while "Never attack targets with stop markers" is on, a guarded zu egg.
+	/// </summary>
+	internal static bool MustNotBeHit(this IBattleChara battleChara, ICollection<long> stopTargets)
+	{
+		return battleChara.HasSpikes() || battleChara.IsGuardedZuEgg()
+			|| (Service.Config.FilterStopMark2 && !DataCenter.IsPvP && stopTargets.Contains((long)battleChara.GameObjectId));
+	}
+
 	/// <summary>
 	/// Concept 03, "Gegner mit Stacheln" (A571): whether this enemy carries a status that returns damage to its attackers
 	/// while "Do not attack enemies whose spikes damage their attackers" is on - no target of an attack, only of an action
@@ -344,7 +368,7 @@ public static class ObjectHelper
 			}
 		}
 
-		if (battleChara.HasSpikes())
+		if (battleChara.HasSpikes() || battleChara.IsGuardedZuEgg())
 		{
 			return false;
 		}

@@ -16841,6 +16841,31 @@ habe den schleim bislang nicht anfreunden können."
   `SpikedHostiles` → Kandidaten von Quelling Wave). Im Spiel nicht beobachtet; die Spurzeile nennt jeden gemiedenen Gegner
   mit Zustand und Restzeit.
 
+### A572 · Gegner, die keine Fläche treffen darf: Stacheln, Stopp-Markierung, Eier des Zu (05.11.2026)
+
+- *Auftrag:* `TODO.md`, „Beastmaster: Crucible-Strategien" (Zu-Eier aus Daedalus 74659a6, v0.1.112) und eine Lücke in
+  A571, die beim Weiterlesen auffiel: Eine Fläche auf einen anderen Gegner trifft den Gegner mit Stacheln mit und löst
+  den Rückwurf aus.
+- *Befund am Code:* `ActionTargetInfo` schließt einen Gegner nur als Ziel und aus der Zählung einer Fläche aus; getroffen
+  wird er trotzdem. Dieselbe Lücke hat Upstreams Einstellung „Never attack targets with stop markers"
+  (`TargetHelper.ValidityCheck`): ihr Text bindet, eine Fläche greift den markierten Gegner an. Die Eier des Zu (Namensblatt
+  14575, 14576; zu piece 14572) kennt RSR nicht; es griff sie an und zerschlug sie mit Flächen (Daedalus' Feldfall: drei
+  zerschlagene Eier, Lauf verloren).
+- *Optionen:* (a) nur das Ziel ausschließen – Stand, verworfen. (b) Flächen sperren, solange ein solcher Gegner lebt –
+  verworfen: auch eine Fläche weit weg entfiele. (c) Gewählt: eine Liste der Gegner, die nichts treffen darf
+  (`DataCenter.UntouchableHostiles`), und ein Veto je Mittelpunkt einer Fläche nach der Form der Aktion
+  (`HitsUntouchable`: `GetCanTarget`, für Kegel um dich `FilterAffectsByFacing`) – um dich, um ein Ziel, um einen
+  Bodenpunkt. (d) Daedalus' Freigabe unter 15 % LP des Zu – verworfen: Zahl ohne Herleitung.
+- *Gebaut:* `ObjectHelper.MustNotBeHit`, `IsGuardedZuEgg` (auch in `IsAttackable`), `TargetUpdater` (Liste je Takt aus
+  allen Gegnern in Reichweite; Eier aus der Gegnerliste), Veto in `GetMostCanTargetObjects` und im Pfad der Flächen um
+  dich; Einstellung „Crucible of the Unbroken - Zu logic", ab Werk an. Festwerte 14572, 14575, 14576 als Zeilen des
+  Namensblatts, Ausnahmen mit diesem Loop.
+- *Gegenthesen:* Konzept 03, „Gegner, die keine Fläche treffen darf" (Gegner läuft in eine Fläche mit Wirkzeit – Preis
+  benannt; Kegel hinter dir – widerlegt; Liste nicht gelesen – widerlegt); Konzept 01, K12 (längerer Kampf – Schaden,
+  keine LP).
+- *Prüfgrad:* Compile, Prüfschritte; Wirkkette am Code (Liste → `HitsUntouchable` → Kandidaten der Fläche). Im Spiel
+  nicht beobachtet.
+
 ## B · Commit-Register (Fork vs. `upstream/main`)
 
 ### B1 · Einzelgeprüfte Fork-Commits

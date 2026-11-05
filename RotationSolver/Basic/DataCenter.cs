@@ -65,6 +65,12 @@ internal static class DataCenter
 	/// </summary>
 	public static List<IBattleChara> SpikedHostiles { get; set; } = [];
 
+	/// <summary>
+	/// Concept 03, "Gegner, die keine Fläche treffen darf" (A572): the enemies in reach that no attack may hit, not even an
+	/// area one - spiked enemies, stop-marked ones while that setting is on, and the Zu's eggs while the Zu lives.
+	/// </summary>
+	public static List<IBattleChara> UntouchableHostiles { get; set; } = [];
+
 	public static List<IBattleChara> AllHostileTargets { get; set; } = [];
 
 	/// <summary>
