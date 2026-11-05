@@ -12,40 +12,27 @@ Nach der Wirkung im Kampf: Sicherheit der Gruppe vor Schaden, gewichtet mit der 
 
 1. Allein ohne Heiler kommt kein Heiltrank: RSR stand 13 s in der kritischen Klasse ohne Heilfähigkeit, kein Trank
    von RSR trotz eingeschalteter Option, er drückte ihn bei 6 % selbst und starb (Beastmaster, Sägerschrei, 04.11.2026).
-2. Beastmaster: Nach dem Kampf ohne One with Nature in den nächsten: Der nächste Pull beginnt ohne Entfesseln, vor einem
-   Rudel ohne den aufhaltenden Begleiter, bis Scheidender Schlag und der nächste Ruf kommen.
-3. Heilungen in „Heilung -" verpuffen: fünf GCDs Schaden und MP ohne Wirkung, solange der Status liegt; kein Leben,
-   denn die Heilung wirkt dort ohnehin nicht.
-4. Heilung bricht ab, weil ein Regen-Tick die Schwelle kreuzt: verlorene Wirkzeit, das Ziel bleibt an der Schwelle.
-5. Beastmaster: Ob Analysieren die LP einrechnet: Anfreunden markiert sicher, aber früher als nötig, wenn die Stufe der
+2. Heilung bricht ab, weil ein Regen-Tick die Schwelle kreuzt: verlorene Wirkzeit, das Ziel bleibt an der Schwelle.
+3. Beastmaster: Ob Analysieren die LP einrechnet: Anfreunden markiert sicher, aber früher als nötig, wenn die Stufe der
    Chance schon bei mehr LP die beste ist; jeder verlorene Pakt kostet einen weiteren Lauf (seine Vorgabe: Anfreunden
    hat oberste Priorität).
-6. Beastmaster: Crucible-Strategien: Ein K.O. beendet den Lauf, und ohne Zähnefletschen und Brett-Gegenstände von RSR
+4. Beastmaster: Crucible-Strategien: Ein K.O. beendet den Lauf, und ohne Zähnefletschen und Brett-Gegenstände von RSR
    trägst du jeden Treffer selbst; danach Schaden: Der Feuer-Begleiter ging am 04.11. gegen den Boss, bevor die
    feuerschwachen Adds kamen.
-7. Beastmaster: Brechende Welle als Schaden: mit einem Wavekin auf dem Borgen-Horn ein Schadens-GCD, der nie kommt.
-8. Fremde Repositories auf Verbesserungen für RSR prüfen: Jeder Fund kann ein Defekt im Verhalten einer Klasse sein,
+5. Beastmaster: Brechende Welle als Schaden: mit einem Wavekin auf dem Borgen-Horn ein Schadens-GCD, der nie kommt.
+6. Fremde Repositories auf Verbesserungen für RSR prüfen: Jeder Fund kann ein Defekt im Verhalten einer Klasse sein,
    den RSR heute im Kampf zeigt; zuerst die Rotationswerkzeuge für alle Jobs, Daedalus vorn (aktiv, alle Jobs,
    eigene Kampfvorhersage), dann Beastmaster und Blaumagier (sein Auftrag vom 05.11.2026).
-9. Flächenbetäuber in Kreszentia für The Blackest Night: kostet MP, kein Leben.
-10. Ein Blaumagier in Heiler-Mimikry zählt nicht als Heiler: Mitspieler unter RSR heilen und mindern, als lebte keiner;
+7. Flächenbetäuber in Kreszentia für The Blackest Night: kostet MP, kein Leben.
+8. Ein Blaumagier in Heiler-Mimikry zählt nicht als Heiler: Mitspieler unter RSR heilen und mindern, als lebte keiner;
    kostet Schaden, kein Leben.
-11. Konzepte neu ordnen (allgemein, Rollen, Gruppen, Jobs, Inhalte): keine direkte Wirkung im Kampf; eine Regel, die
+9. Konzepte neu ordnen (allgemein, Rollen, Gruppen, Jobs, Inhalte): keine direkte Wirkung im Kampf; eine Regel, die
    im Konzept eines Jobs steht, wird für dessen Gruppe übersehen, und eine Inhaltsregel ist über mehrere Konzepte
    verteilt.
 
 Danach die technische Schuld, soweit ihre Auflösungsbedingung erfüllt ist. Warten auf Daten: unten.
 
 ## Defekte
-
-### Heilungen in „Heilung -" (HP Recovery Down) verpuffen · N
-Im Kampf: Himmlischer Pfad setzte drei Mitglieder auf 10 % und legte 20 s „Heilung -" (Status 2852; Windurst: Die dritte
-Etappe, 03.11.2026). RSR wirkte in dieser Zeit zwei Afflatus laetitiae, Resega, Vitaga und Assise; jede Heilung brachte
-den Getroffenen ein bis zwei Prozent, gemessen etwa 98 % weniger. Erst nach Ablauf stiegen sie. Niemand starb, es kostete
-fünf GCDs Schaden und MP. *Ort:* Heilzielwahl und Heilflaggen (`HealingIneffectiveStatus` kennt nur Status, die Heilung
-ganz aufheben); der Wirktext nennt keine Stärke. *Nächster Schritt:* Loop: die Wirkung eigener Heilungen auf Träger eines
-heilsenkenden Status messen (Effekt-Handler) und daraus je Status lernen, ob Heilen dort lohnt; Abwägung gegen ein
-Mitglied in der kritischen Klasse. *Konzept:* 07.
 
 ### Ein Blaumagier in Heiler-Mimikry zählt nicht als Heiler · N
 Im Kampf: Ist ein Mitspieler Blaumagier mit „Aetheric Mimicry: Healer", zählt RSR für einen Tank oder Damage Dealer
@@ -94,19 +81,6 @@ und ohne Chance zu verschenken. *Ort:* `BeastmasterFamiliars.CaptureNow`; Antwor
 *Nächster Schritt:* Loop: RSR drückt Analysieren (Talent, 3 s, keine Feindseligkeit) auf eine fehlende Bestie, liest die
 Antwort aus dem Chat und schreibt Stufe und LP ins Protokoll; ändert sich die Stufe mit den LP, wird sie Teil von A2.
 *Konzept:* 01, „Was gilt beim Anfreunden".
-
-### Beastmaster: Nach dem Kampf ohne One with Nature in den nächsten · N
-Im Kampf: Nach einem Kampf bleibt der letzte Begleiter draußen, sein One with Nature verbraucht (Schluss aus dem Code,
-`BST_Reborn.GeneralAbility` ruft nur ohne Begleiter draußen); den nächsten Pull beginnt er ohne Entfesseln und Borrow,
-bis Scheidender Schlag und der nächste Ruf kommen – vor einem Rudel ohne den aufhaltenden Begleiter (C1 am Pull, A542).
-Belegt: Außerhalb des Kampfes hat ein Horn 2 s Abklingzeit, der Rückzug dort startet sie nicht, One with Nature ist
-dauerhaft (Wirktext Kampfhorn 44881, Status 4601); Scheidender Schlag geht nur im Kampf (Wirktext 44891). Kandidat für
-den Rückzug: der Begleiterbefehl „Away" (PetAction 1, „Order pet to leave the battlefield"); ob er für Begleiter des
-Beastmasters gilt, ist unbelegt, und RSR führt heute keinen Begleiterbefehl aus. *Ort:* `BST_Reborn.GeneralAbility`,
-`SituationalHorn`, B5. *Nächster Schritt:* Loop mit Selbstmessung: außerhalb des Kampfes, vor dem nächsten Gegner (B5),
-mit einem Begleiter ohne One with Nature draußen „Away" nur, wenn das Spiel ihn freigibt (`GetActionStatus` 0); ist
-der Begleiter einen GCD später noch draußen, gilt der Befehl in dieser Sitzung als wirkungslos, mit Spurzeile; sonst
-den Begleiter für den nächsten Kampf rufen (vor einem Rudel den aufhaltenden, C1). *Konzept:* 01, „Belegung der Hörner in der Rotation".
 
 ### Beastmaster: Brechende Welle als Schaden · N, U
 Im Kampf: Mit einem Wavekin auf dem Borgen-Horn (etwa Pugil) kommt Brechende Welle nur gegen ein Ziel mit einer der
@@ -241,6 +215,15 @@ Reborn"); beides kostet im Spiel, solange nicht beide Installationen gebraucht w
 nebeneinander braucht: neuer interner Name mit Übernahme des Ordners, angezeigter Name bleibt.
 
 ## Warten auf Daten oder Fremde
+
+- **Beastmaster: Nach dem Kampf ohne One with Nature in den nächsten** (A543). Im Kampf: Der letzte Begleiter bleibt
+  nach einem Kampf ohne One with Nature draußen; am nächsten Pull geht er beim ersten Webfenster mit Scheidendem Schlag,
+  dann kommt der Begleiter nach Lage (vor einem Rudel der aufhaltende, A542) – etwa ein GCD und der Ruf (1 s) später, als
+  wenn er schon vor dem Pull mit One with Nature draußen stünde. Ein Ruf außerhalb des Kampfes braucht einen Rückzug ohne
+  feindliches Ziel: Scheidender Schlag geht nur im Kampf (Wirktext 44891), der einzige Kandidat ist der allgemeine
+  Begleiterbefehl „Away" (PetAction 1), keinem Begleiter zugeordnet. Auflösung: ob die Begleiterleiste des Beastmasters
+  einen Befehl zum Zurücktreten führt (im Spiel sichtbar); dann Loop zum Ruf vor dem nächsten Gegner (B5). Konzept 01,
+  „Belegung der Hörner in der Rotation".
 
 - **Blaumagier: Set je Stufe im Masked Carnivale** (seine Frage, 03.11.2026; A511). Im Kampf: Vor einer Stufe stünden
   die gelernten Zauber im Set, gegen die ihre Gegner schwach oder verwundbar sind. Offen ist, was die Gegner-Ids der

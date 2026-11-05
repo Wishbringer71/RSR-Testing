@@ -534,14 +534,20 @@ internal static class StateUpdater
 
 		_healAheadTraced = announced;
 
-		if (doomNeedHealingCount > 1 || singleAbilityCount > 2
+		// The counts that call for an area heal take the deficit healing can close on each member (concept 07, A544).
+		var areaAbilityCount = ShouldHealSingle(Service.Config.HealthSingleAbility, Service.Config.HealthSingleAbilityHot, true, true);
+		var areaSpellCount = canUseHealSpell
+			? ShouldHealSingle(Service.Config.HealthSingleSpell, Service.Config.HealthSingleSpellHot, false, true)
+			: 0;
+
+		if (doomNeedHealingCount > 1 || areaAbilityCount > 2
 			|| healAheadOfHit
 			|| ShouldHealArea(partyCount, Service.Config.HealthAreaAbility, Service.Config.HealthAreaAbilityHot, areaHotRatio, true))
 		{
 			status |= AutoStatus.HealAreaAbility;
 		}
 
-		if (canUseHealSpell && (doomNeedHealingCount > 1 || singleSpellCount > 2
+		if (canUseHealSpell && (doomNeedHealingCount > 1 || areaSpellCount > 2
 			|| healAheadOfHit
 			|| ShouldHealArea(partyCount, Service.Config.HealthAreaSpell, Service.Config.HealthAreaSpellHot, areaHotRatio, false)))
 		{
@@ -699,12 +705,12 @@ internal static class StateUpdater
 		return Math.Min(1, buffTime / buffWholeTime);
 	}
 
-	private static int ShouldHealSingle(float healSingle, float healSingleHot, bool instant)
+	private static int ShouldHealSingle(float healSingle, float healSingleHot, bool instant, bool restorable = false)
 	{
 		var count = 0;
 		foreach (var member in DataCenter.PartyMembers)
 		{
-			if (ShouldHealSingle(member, healSingle, healSingleHot, instant))
+			if (ShouldHealSingle(member, healSingle, healSingleHot, instant, restorable))
 			{
 				count++;
 			}
@@ -767,7 +773,10 @@ internal static class StateUpdater
 			Service.Config.HealthSingleSpellHot, false);
 	}
 
-	private static bool ShouldHealSingle(IBattleChara target, float healSingle, float healSingleHot, bool instant)
+	// restorable: counted for the area heal, with the deficit healing can close on him (concept 07, A544); a single heal
+	// counts his true deficit.
+	private static bool ShouldHealSingle(IBattleChara target, float healSingle, float healSingleHot, bool instant,
+		bool restorable = false)
 	{
 		if (target == null)
 		{
@@ -790,6 +799,10 @@ internal static class StateUpdater
 		// than the heal it triggers needs to arrive. Identical to the current ratio while
 		// HealAheadOfDamage is off, or while the member's trend is not downward.
 		var h = target.GetForecastHealthRatio(instant);
+		if (restorable)
+		{
+			h = HealReduction.Restorable(target, h);
+		}
 
 		// Healing that lands for nothing is still excluded outright - NoNeedHealingStatus mixes
 		// that case in with genuine invulnerabilities, and only the latter get the softer

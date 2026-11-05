@@ -797,6 +797,53 @@ und die Welle dauert höchstens 38 s; dagegen steht ein sicheres Scheitern ohne 
 Mitschnitt vom 03.11.2026 (zwei Läufe: LP, Zeiten, Heilungen, Leinen, Flüche, 0-LP-Heilungen auf Verfluchte). Die Regel
 ist kompiliert und geprüft, im Spiel noch nicht beobachtet; die Zeilen oben zeigen es im nächsten Protokoll.
 
+## Heilung, die nur geschwächt ankommt
+
+**Geltender Stand** (A544, `HealReduction`): Eine Flächenheilung zählt bei einem Mitglied, das einen Status trägt, der
+die LP-Erholung senkt, nur das Defizit, das Heilung bei ihm noch schließen kann: Fehl-LP mal dem gemessenen Anteil, der
+bei ihm ankommt. Das gilt für die Gruppenmittel der Flächenschwellen (`ComputePartyHpStats`,
+`ComputeForecastAreaStats`, damit auch `PartyMembersAverHP` und die übrigen Gruppenwerte für Heilungen), für die
+Zahl der Mitglieder unter der Einzelschwelle, ab der eine Flächenheilung kommt (mehr als zwei), und für den Bedarf im
+Radius einer Flächenheilung um den Wirkenden. Eine gezielte Flächenheilung wie Vitaga folgt der Flächenflagge. Einzelheilung,
+Notfallheilung und Klasse 1 bleiben, wie sie sind: Ein Mitglied, bei dem weniger ankommt, braucht mehr Heilung, nicht
+später (`StatusHelper`, Abgrenzung zu `HealingIneffectiveStatus`).
+- *Welche Status:* Jeder, dessen Wirktext im Statusblatt sagt, dass die LP-Erholung sinkt oder aufgehoben ist („HP
+  recovery … reduced", „reducing HP recovery", „nullified"), beim ersten Gebrauch aus dem Blatt gelesen. Die Blätter
+  nennen über 30 solcher Status, die meisten ohne Stärke (Heilung -, Infirmity, Healing Magic Down, Biolysis …); die
+  Stärke misst RSR selbst.
+- *Messung* (Effekt-Handler, je eigener Heilung auf mehrere): Was beim Träger ankommt, geteilt durch die kleinste Menge,
+  die dieselbe Heilung im selben Wurf einem Mitglied ohne solchen Status brachte; je Status gemittelt über die Würfe der
+  Sitzung, höchstens 1. Die kleinste, nicht der Median: Ein kritischer Treffer bei einem Mitglied ohne Status ließe den
+  Durchlass kleiner erscheinen, als er ist; mit der kleinsten erscheint er eher größer – die Seite, auf der die
+  Flächenheilung wie bisher geht. Ungemessen gilt 1 – wie bisher. Die erste Flächenheilung auf einen Träger misst also, die
+  folgenden lesen.
+- *Spur:* eine Zeile je Status beim ersten Messwert und wenn er sich deutlich ändert: „heal reduction: <Status> … lets
+  <Anteil> of own heals through".
+
+**Befund** (Windurst, Die dritte Etappe, 03.11.2026): Himmlischer Pfad setzte drei Mitglieder auf 10 % und legte 20 s
+„Heilung -" (2852). RSR wirkte zweimal Afflatus laetitiae (16534), Resega (37010), Vitaga (131) und Assise (3571); bei
+den Getroffenen kamen je 1 bis 2 % an, gemessen rund 98 % weniger. Die Einzelheilung schloss sie schon aus (`TryHealSingleThreshold`, Ausnahme für 2852
+in Windurst); die Flächenheilung zählte sie mit, weil das Mittel der vier Schwächsten bei drei Mitgliedern auf 10 % unter
+jeder Schwelle liegt.
+
+**Bilanz im Kampf.** Besser: Nach der ersten Flächenheilung zählen die Träger mit ihrem schließbaren Defizit – bei 2 %
+Durchlass fast keins –, und die vier weiteren GCDs gehen in Schaden; MP bleibt. Bei einer schwachen Senkung (Durchlass
+80 %) zählt ein Träger auf 30 % wie einer auf 44 %: Die Flächenheilung kommt etwas seltener für ihn allein, seine
+Einzelheilung unverändert. Schlechter: Die erste Flächenheilung auf Träger geht wie bisher (sie misst). Ein Status, der
+nur Heilmagie senkt, bei einer Fähigkeit gemessen, wird als so schwach gelesen wie bei dieser – beim nächsten Zauber
+korrigiert die Messung.
+
+**Verworfen:** die Windurst-Ausnahme auf Flächenheilungen ausdehnen (eine Inhaltsregel für eine Lage, die überall
+vorkommt); die Stärke aus dem Wirktext lesen (die meisten nennen keine); Träger aus den Mitteln ganz streichen (ein
+Durchlass von 80 % ist Heilung, die er braucht).
+
+**Falsifikation:** Kein Defekt – widerlegt durch die fünf GCDs in Windurst. Option falsch – die stärkste Gegenposition
+ist das Kritrauschen einer Flächenheilung (ein kritischer Treffer je Ziel); der Bezug auf die kleinste Menge ohne Status
+lässt es nur nach oben wirken, und bei 98 % Senkung ist es bedeutungslos. Ausgeliefert, und nichts
+ändert sich – wenn die Spieldaten eine überheilte Menge als ganze Heilung melden, misst ein volles Mitglied ohne Status
+gleich viel wie sonst, der Träger aber weniger; liefern sie nur die gewirkte Menge, sinkt der Nenner bei vollen Mitgliedern
+und der Durchlass wird überschätzt – das geht in die sichere Richtung (es heilt wie bisher).
+
 ## Abgrenzung zur Schildanrechnung
 
 Die entfernte Schildanrechnung (`AUDIT_LOG.md` A85) hat dieselbe Größe an der falschen Stelle

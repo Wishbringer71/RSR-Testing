@@ -1215,6 +1215,28 @@
    "status": "exception",
    "loop": "A523",
    "reason": "Only until RSR has measured it itself: the delay between Capture's effect and Interest Captured on the enemy, 0.624 and 0.621 s in the owner's ACT recordings of 02.11.2026 (Killermantis) and 03.11.2026 (Flechten-Goobbue). No sheet holds it; every Capture that lands replaces it by the measured time from the press (A523)."
+  },
+  {
+   "file": "RotationSolver/Updaters/StateUpdater.cs",
+   "code": "if (doomNeedHealingCount > 1 || areaAbilityCount > 2",
+   "values": [
+    "1",
+    "2"
+   ],
+   "status": "exception",
+   "loop": "A544",
+   "reason": "Upstream's counts that call for an area heal - more than one member under Doom, more than two under the single threshold - kept as they were; A544 only counts each member with the deficit healing can close on him."
+  },
+  {
+   "file": "RotationSolver/Updaters/StateUpdater.cs",
+   "code": "if (canUseHealSpell && (doomNeedHealingCount > 1 || areaSpellCount > 2",
+   "values": [
+    "1",
+    "2"
+   ],
+   "status": "exception",
+   "loop": "A544",
+   "reason": "Upstream's counts that call for an area heal - more than one member under Doom, more than two under the single threshold - kept as they were; A544 only counts each member with the deficit healing can close on him."
   }
  ]
 }

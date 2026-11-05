@@ -16160,6 +16160,39 @@ habe den schleim bislang nicht anfreunden können."
 - *Prüfgrad:* Compile, Prüfschritte; Wirkkette am Code; im Spiel nicht beobachtet; Spurzeile „… called: a pack comes at you
   and nobody holds it, its Release stops it".
 
+
+### A543 · Beastmaster: Ruf außerhalb des Kampfes für One with Nature – nicht gebaut, wartet auf einen Rückzug (05.11.2026)
+
+- *Auftrag:* Rest aus A542 (sein Auftrag vom 05.11.2026: TODO weiter im kritischen Loop).
+- *Belegt:* Scheidender Schlag „Can only be executed while in combat" (Wirktext 44891); Kampfhorn außerhalb des Kampfes
+  2 s, Rückzug dort ohne Abklingzeit, One with Nature dauerhaft (44881, Status 4601). Das Begleiterblatt führt „Away"
+  (PetAction 1) als allgemeinen Befehl der alten Leiste (Away, Heel, Place, Stay, Guard, Steady, Sic, Obey), keinem
+  Begleiter zugeordnet; RSR führt keinen Begleiterbefehl aus.
+- *Heute am Pull* (`BST_Reborn.AttackAbility`): Der Begleiter ohne One with Nature wartet auf nichts, Scheidender Schlag
+  beim ersten Webfenster, sobald ein Ersatzhorn bereit ist; dann der Ruf nach Lage, vor einem Rudel der aufhaltende (A542).
+  Preis gegenüber einem vorab gerufenen Begleiter: etwa ein GCD und der Ruf (1 s); in Südwald (drei Gegner, etwa 80 LP/s)
+  gerechnet rund 160 LP, ein Fünfzehntel seiner LP – nicht gemessen.
+- *Abwägung:* „Away" mit Selbstmessung (nur bei Freigabe durch das Spiel, Abbruch nach einem GCD ohne Wirkung) brächte
+  höchstens diesen GCD; ob der Befehl für Begleiter gilt und was ein außerhalb des Kampfes gerufener Begleiter tut
+  (bleibt er, zieht er Gegner), ist unbelegt. Ein ungewollter Pull wöge schwerer als der GCD. Nicht gebaut; Auflösung im
+  TODO unter „Warten auf Daten": ob seine Begleiterleiste einen Rückzug führt.
+
+
+### A544 · Flächenheilung zählt beim Träger einer Heilsenkung nur das schließbare Defizit (05.11.2026)
+
+- *Auftrag:* `TODO.md`, „Heilungen in „Heilung -" (HP Recovery Down) verpuffen" (Windurst, 03.11.2026: zwei Afflatus
+  laetitiae, Resega, Vitaga, Assise auf drei Mitglieder bei 10 % unter Status 2852, je 1 bis 2 % angekommen).
+- *Ursache:* Die Einzelheilung schloss 2852 in Windurst schon aus (`TryHealSingleThreshold`); Flächenmittel, Zahl unter
+  der Einzelschwelle (mehr als zwei) und Bedarf im Radius zählten die Träger mit ihrem ganzen Defizit.
+- *Belegt:* Über 30 Status im Statusblatt senken laut Wirktext die LP-Erholung, die meisten ohne Stärke (xivapi, 05.11.2026).
+- *Entscheidung (Konzept 07, „Heilung, die nur geschwächt ankommt"):* `HealReduction` misst je Status den Durchlass
+  eigener Heilungen (Träger gegen die kleinste Menge ohne Status im selben Wurf, gemittelt je Sitzung); Flächenmittel,
+  Flächenauslöser und Radiusbedarf zählen beim Träger `1 − (1 − LP) × Durchlass`. Einzelheilung, Notfall und Klasse 1
+  unverändert. Verworfen: Windurst-Ausnahme ausdehnen, Stärke aus dem Wirktext, Träger ganz streichen.
+- *Betroffene:* R – `PartyMembersAverHP` und die Gruppenwerte der Heilschwellen zählen Träger ebenso; nur wenn ein Durchlass
+  unter 1 gemessen ist.
+- *Prüfgrad:* Compile, Prüfschritte; Wirkkette am Code; im Spiel nicht beobachtet; Spurzeile „heal reduction: …".
+
 ## B · Commit-Register (Fork vs. `upstream/main`)
 
 ### B1 · Einzelgeprüfte Fork-Commits

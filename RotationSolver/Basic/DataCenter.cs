@@ -1836,7 +1836,8 @@ internal static class DataCenter
 				var hp = GetPartyMemberHPRatio(member);
 				if (hp > 0)
 				{
-					_hpBuffer[hpCount++] = hp;
+					// What healing can close on him, for a member under a status that lowers it (concept 07, A544).
+					_hpBuffer[hpCount++] = HealReduction.Restorable(member, hp);
 				}
 			}
 		}
@@ -1966,7 +1967,7 @@ internal static class DataCenter
 				var hp = GetPartyMemberHPRatio(member);
 				if (hp > 0)
 				{
-					_forecastHpBuffer[count++] = hp * member.GetForecastSurvivingShare(instant);
+					_forecastHpBuffer[count++] = HealReduction.Restorable(member, hp * member.GetForecastSurvivingShare(instant));
 				}
 			}
 			catch (AccessViolationException ex)

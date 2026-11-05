@@ -763,7 +763,9 @@ public struct ActionTargetInfo(IBaseAction action)
 					continue;
 				}
 
-				if (!IBaseAction.AutoHealCheck || member.GetForecastHealthRatio(InstantHeal) < HealRatio)
+				// The deficit healing can close on him: a member under a status that lowers it is no reason for an area heal
+				// it barely reaches (concept 07, A544).
+				if (!IBaseAction.AutoHealCheck || HealReduction.Restorable(member, member.GetForecastHealthRatio(InstantHeal)) < HealRatio)
 				{
 					anyInNeed = true;
 					break;

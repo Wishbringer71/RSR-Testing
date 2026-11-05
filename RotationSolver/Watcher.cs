@@ -280,6 +280,7 @@ public static class Watcher
 	// The targets of one effect set the tankbuster table has taken, so one named twice counts once (A454); and the
 	// statuses passed for a member who is not a tank, whom the table does not store.
 	private static readonly HashSet<ulong> _tankbusterTargets = [];
+	private static readonly List<(ulong Target, uint Amount)> _ownHeals = [];
 	private static readonly List<uint> _noStatuses = [];
 
 	private static Dictionary<ulong, uint> AmountsByTarget(ActionEffectSet set, ActionEffectType type)
@@ -1431,6 +1432,20 @@ public static class Watcher
 			DefenseTrace.Executed(action.Value.RowId, action.Value.Name.ExtractText());
 			Updaters.BlueMageSetTrace.Landed(action.Value);
 			ObserveOwnHits(set, action.Value);
+
+			// What an own heal brought each member it reached: against those without a status lowering HP recovery, the
+			// share that reaches its bearers (concept 07, A544).
+			var healed = AmountsByTarget(set, ActionEffectType.Heal);
+			if (healed.Count > 1)
+			{
+				_ownHeals.Clear();
+				foreach (var (target, amount) in healed)
+				{
+					_ownHeals.Add((target, amount));
+				}
+
+				HealReduction.RecordOwnHeal(_ownHeals);
+			}
 
 			if (action.Value.RowId == (uint)ActionID.ShirkPvE)
 			{

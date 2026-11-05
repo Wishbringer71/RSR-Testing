@@ -24,6 +24,14 @@ What this release changes in the fight. For the whole distance from upstream, se
   Summoner helps with Vercure, Clemency or Physick only when the healing so far would not finish
   them before their cast ends: `Help heal figures only healing defeats as a non-healer`, **on by
   default**.
+- **No area heals spent on members whom healing barely reaches.** A status that lowers HP recovery
+  (HP Recovery Down, Infirmity, Healing Magic Down and the like - every status whose text says so)
+  is now measured on your own heals: how much reached its bearer against a member without one in the
+  same cast. Area heals then count a bearer only with the part of his missing HP that healing can
+  still close. In Windurst, after a mechanic put three members on 10 % under HP Recovery Down,
+  RSR cast five area heals that brought them 1 to 2 % each; now the first one measures, and the next
+  go into damage. Single heals, emergency heals and members about to die are unchanged: a member
+  whom healing reaches less needs more of it.
 - **No heals on players whom healing cannot reach.** The Worm's Curse (the Reiryu's tether) and
   Primordial Crust nullify all healing, as Mounted does. Their bearers are no longer single-heal
   targets and no longer raise the heal flags.
