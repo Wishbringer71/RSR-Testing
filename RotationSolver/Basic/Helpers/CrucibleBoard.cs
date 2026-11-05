@@ -1,5 +1,6 @@
 using Dalamud.Game;
 using ECommons.DalamudServices;
+using FFXIVClientStructs.FFXIV.Client.UI.Agent;
 
 namespace RotationSolver.Basic.Helpers;
 
@@ -278,6 +279,7 @@ internal static class CrucibleBoard
 				: $"crucible: {fights.Count} fights with {count} enemies read from the sheets, {_elementNames.Count} weaknesses; "
 					+ $"first enemy {EnemyName(probe.NameId)}, weak to {ElementName(probe.Weakness)}, strength {probe.Strength}, "
 					+ $"intelligence {probe.Intelligence}");
+			TraceTeamAndField("entering the board");
 		}
 
 		if (!DataCenter.InCombat)
@@ -350,10 +352,83 @@ internal static class CrucibleBoard
 
 		DefenseTrace.Line($"crucible fight {_fight}: {bestOverlap} of {_present.Count} kind(s) here listed, "
 			+ (coming.Count == 0 ? "nobody to come" : $"to come: {string.Join(", ", coming)}"));
+		TraceTeamAndField($"fight {_fight} told");
+	}
+
+	/// <summary>
+	/// K11 probe (A556): what the game's agents hold on a board - the team with each familiar's HP
+	/// (<c>AgentXBMPetParty</c>: <c>SelectedPetIds</c>, <c>PetCurrentHealth</c>, <c>PetMaxHealth</c>) and the board's
+	/// fields (<c>AgentXBMStageDetailList</c>: mode 1 while a challenge runs, its entries with their XBMBattleDetail rows,
+	/// the selection). FFXIVClientStructs has both since 17.09.2026 (d44bc123, 3120c745); whether the game fills them while
+	/// a board is played and the windows are closed is not stated anywhere, so the line shows it. Fields only, no calls.
+	/// </summary>
+	private static unsafe void TraceTeamAndField(string when)
+	{
+		var team = "no team agent";
+		var party = AgentXBMPetParty.Instance();
+		if (party != null)
+		{
+			var ids = party->SelectedPetIds.AsSpan();
+			var current = party->PetCurrentHealth;
+			var max = party->PetMaxHealth;
+			var pets = new List<string>();
+			for (var i = 0; i < ids.Length; i++)
+			{
+				var hp = i < current.Length && i < max.Length ? $" {current[i]}/{max[i]}" : string.Empty;
+				pets.Add($"{(ids[i].PetId <= byte.MaxValue ? ((Rotations.Basic.BeastmasterPet)ids[i].PetId).ToString() : "#" + ids[i].PetId)}{hp}");
+			}
+
+			team = $"team mode {party->Mode}, content {party->ContentId}, {party->SelectedPets.Count} selected, {ids.Length} ids, "
+				+ $"{party->CandidatePets.Count} candidates: {string.Join(", ", pets)}";
+		}
+
+		var field = "no field agent";
+		var stages = AgentXBMStageDetailList.Instance();
+		if (stages != null)
+		{
+			var entries = stages->Entries;
+			var stageRows = 0;
+			var battles = new List<uint>();
+			for (var i = 0; i < entries.Length; i++)
+			{
+				ref readonly var entry = ref entries[i];
+				if (entry.EntryType == 3 && entry.BattleDetailId != 0)
+				{
+					if (!battles.Contains(entry.BattleDetailId))
+					{
+						battles.Add(entry.BattleDetailId);
+					}
+				}
+				else if (entry.StageEventId != 0 || entry.EntryType != 0)
+				{
+					stageRows++;
+				}
+			}
+
+			var selected = new List<int>();
+			var selection = stages->EntrySelection;
+			for (var i = 0; i < selection.Length; i++)
+			{
+				if (selection[i] != 0)
+				{
+					selected.Add(i);
+				}
+			}
+
+			field = $"field mode {stages->Mode}, content {stages->ContentId}, built {stages->AddonInitState}, {stageRows} stage rows, "
+				+ $"battles {string.Join(" ", battles)}, selected {string.Join(" ", selected)}";
+		}
+
+		DefenseTrace.Line($"crucible agents ({when}): {team} | {field}");
 	}
 
 	private static void EndFight()
 	{
+		if (_fight != 0)
+		{
+			TraceTeamAndField($"fight {_fight} over");
+		}
+
 		_fight = 0;
 		_enemies = [];
 		_atStart.Clear();

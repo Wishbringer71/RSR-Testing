@@ -59,7 +59,8 @@ Zeit, Bestien-Heiltranksammlung, Schutz, Seren, Bestien-Heilmittelsammlung, Resi
 Bestien-Ausdauermittel, Schadensgegenstände, Stärkungsmittel im Endkampf; A555).
 *Nächster Schritt:* K6 (Hörner vor dem Kampf;
 zuerst messen, ob der Server im Brett zuweist) und K7 (Kader auf Wunsch über das Teamfenster); K4, K5, K10 (Campsite,
-Laden, Weg, im eigenen Loop); K11 (Kader und Feld liefert das Spiel nicht, Loop am Ende des TODO). *Konzept:* 01,
+Laden, Weg, im eigenen Loop); K11 (Kader, LP je Begleiter und Feld: Sonde A556 „crucible agents …" zeigt, ob das Spiel sie im Brett füllt;
+danach Loop am Ende des TODO). *Konzept:* 01,
 „Crucible of the Unbroken: Bretter, Kämpfe, Strategien".
 
 ### Flächenbetäuber in Kreszentia für The Blackest Night · N

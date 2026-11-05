@@ -1860,7 +1860,7 @@ Dullahan, Golem, Spriggan und Eisgolem (`XBMPet.InflictsInterrupt`).
   Vorgabe kein Grund. *Ergebnis:* C, entschieden (seine Frage zeigt den Wunsch, „auf Wunsch" schließt D aus): Wahl nach
   Abdeckung der Schwächen aller Kämpfe des Bretts, gewichtet nach Zahl der Gegner, dazu ein Heiler und, wo Gegner
   unterbrechbar wirken, einer, der unterbricht.
-- *K8 – Gegenstände* (gebaut: A551 bis A553, unten „Stufe 3: K8"). Über `InstanceContentCrucibleOfTheUnbroken.UseItem(Platz, Bestie)` auf dein Ziel. Sicherheit zuerst
+- *K8 – Gegenstände* (gebaut: A551 bis A555, unten „Stufe 3: K8"). Über `InstanceContentCrucibleOfTheUnbroken.UseItem(Platz, Bestie)` auf dein Ziel. Sicherheit zuerst
   (seine Regel): Bestien-Heiltrank oder -Pulver, wenn deine LP in die Gefahr fallen und keine Heilung bereit ist;
   Bestien-Gegengift und Bestien-Augentropfen gegen den passenden Zustand; Bestien-Verhärtungsmittel vor einem angekündigten
   Tankbuster; Bestien-Lebensfeder oder Sand der Zeit außerhalb des Kampfes vor dem Endgegner. Schaden: der Reißzahn der passenden Schwäche auf die
@@ -1901,12 +1901,16 @@ Dullahan, Golem, Spriggan und Eisgolem (`XBMPet.InflictsInterrupt`).
   (`AgentXBMStageDetailList`, Werkzeugquelle); ob es lesbar ist, zeigt die Umsetzung, sonst gilt der Plan für alle
   Kämpfe des Bretts. *Ergebnis:* K11 ist die Planungsebene über K6, K7, K8, K9 und K10; sie alle lesen dieselbe
   Bedarfsliste.
-  *Stand der Umsetzung (A550):* Die Kämpfe je Brett liefert das Blatt (`XBMContentBattle`: Zeile je Brett 1 bis 5 mit 6,
-  7, 8, 10 und 14 Kämpfen, Unterzeile je Kampf mit Verweis auf `XBMBattleDetail`). Zwei Größen liefert das Spiel zur
-  Laufzeit nicht: den Kader und das Feld. FFXIVClientStructs (aad0de6, 05.11.2026, Werkzeugquelle) führt im Brett nur
-  das Inventar und `UseItem`; die Fenster des Kaders und des Wegs stehen nur in fremden Plugins mit eigenen Offsets.
-  Ohne Kader ist „der einzige Begleiter, der …" nicht bestimmbar, ohne Feld nicht, welche Kämpfe noch kommen. Die
-  Planungsregel ist deshalb nicht gebaut; wie diese Größen zu gewinnen sind, prüft ein eigener Loop am Ende des TODO.
+  *Stand der Umsetzung (A550, A556):* Die Kämpfe je Brett liefert das Blatt (`XBMContentBattle`: Zeile je Brett 1 bis 5
+  mit 6, 7, 8, 10 und 14 Kämpfen, Unterzeile je Kampf mit Verweis auf `XBMBattleDetail`, Unterzeile 0 der Endkampf).
+  Kader und Feld führt FFXIVClientStructs seit 17.09.2026 (d44bc123, 3120c745; Stand aad0de66 vom 05.11.2026,
+  Werkzeugquelle), in Dalamuds Fassung vorhanden: `AgentXBMPetParty` mit `SelectedPetIds` (Kader, `XBMPet`-Zeilen),
+  `PetCurrentHealth` und `PetMaxHealth` (15 Plätze) und `Mode` (1 Vorschau des Kaders, 2 Vorschau aus dem Inhalt);
+  `AgentXBMStageDetailList` mit `Mode` (1 laufendes Brett), Einträgen je Feld und Kampf (`EntryType` 3 mit
+  `BattleDetailId`, gebaut aus dem Director) und `EntrySelection`. Ob das Spiel sie füllt, während ein Brett läuft und
+  die Fenster zu sind, sagt keine Quelle. Die Sonde (A556) schreibt sie beim Betreten des Bretts, beim Erkennen eines
+  Kampfes und an seinem Ende in die Spur („crucible agents …"); sie liest nur Felder und ruft keine Spielfunktion. Die
+  Planungsregel wartet auf diese Zeilen; der Loop am Ende des TODO baut auf ihnen auf.
 
 *Falsifikation:* Kein Defekt, weil das erste Brett zweimal ohne Tod fiel? Das gelang mit Gegenständen und Zähnefletschen
 von seiner Hand; die Meisterbretter haben Rang 20 und 25 und Gegner ohne Schwäche. Option falsch? K1 ohne gemessenen
@@ -2064,8 +2068,8 @@ on a pack once a fight, all of them in the final fight (Crucible only)".
     ankündigt, nennt keines, dann wartet es. Preis benannt.
 - *Nicht in diesem Teil:* Die „Ungezähmten" Mittel (Ungezähmte Bestien-Stärkungsmittel und verwandte) legen dir selbst
   Stun, Nightmare, Petrification, Blind oder Pollen auf – RSR setzt sie nie ein (Sicherheit). Das Horn der Rückkehr
-  belebt einen gefallenen Begleiter nur auf dem Brett, außerhalb eines Kampfes, und welcher gefallen ist, zeigt das Spiel
-  nicht (der Kader ist nicht lesbar, K11). Bestien-Rauchbombe (Flucht über das Brett-Fenster), Auge des Diebs und des
+  belebt einen gefallenen Begleiter nur auf dem Brett, außerhalb eines Kampfes; welcher gefallen ist, könnten die LP je
+  Begleiter in `AgentXBMPetParty` zeigen – ob sie im Brett gefüllt sind, misst die Sonde aus K11 (A556). Bestien-Rauchbombe (Flucht über das Brett-Fenster), Auge des Diebs und des
   Händlers (Beute und Marken, keine Wirkung im Kampf): kein Einsatz durch RSR. Grimoire der Zauberschmiede und des
   Stahlstachels machen allen Schaden magisch oder physisch, auch den der Begleiter; ob das gegen einen Gegner hilft,
   hängt an seinen Resistenzen (`PhysResistance`, `MagResistance` im Blatt, Bedeutung der Zahlen unbelegt) – kein

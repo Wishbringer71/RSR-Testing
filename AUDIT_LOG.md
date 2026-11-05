@@ -16454,6 +16454,23 @@ habe den schleim bislang nicht anfreunden können."
   Status auf einem Begleiter geht mit seinem Wechsel. Preis: die Stärkung trifft womöglich den kleineren Teil.
 - *Prüfgrad:* Compile ohne Warnung, Prüfschritte, Musterprüfung an den Texten; im Spiel nicht beobachtet.
 
+### A556 · Crucible K11: Sonde für Kader, LP je Begleiter und Feld (05.11.2026)
+
+- *Anlass:* Beim Prüfen der Gegenstände für Begleiter (Horn der Rückkehr) zeigte die Reflexion über Dalamuds
+  FFXIVClientStructs `AgentXBMPetParty` und `AgentXBMStageDetailList`; A550 hatte Kader und Feld als vom Spiel nicht
+  geliefert geführt (Widerruf C162).
+- *Quellen:* FFXIVClientStructs aad0de66 (05.11.2026, Werkzeugquelle): `AgentXBMPetParty.cs` (d44bc123, 883045f2
+  „PetHealth", e1a2c247 vom 17.09.2026), `AgentXBMStageDetailList.cs` (3120c745, 17.09.2026); Felder und Kommentare dort
+  (Mode 1 = laufendes Brett, Einträge aus dem Director, `EntryType` 3 = Kampf mit `BattleDetailId`).
+- *Gebaut:* `CrucibleBoard.TraceTeamAndField` schreibt beim Betreten eines Bretts, beim Erkennen eines Kampfes und an
+  seinem Ende eine Zeile „crucible agents (…)": Modus, Inhalt, Kader mit LP je Platz, Kandidaten; Modus, Inhalt,
+  Aufbaustand und Kampfzeilen der Feldliste, Auswahl. Nur Felder, keine Spielfunktion.
+- *Folgen:* K11, K6 und K7 (Kader auf Wunsch über `TogglePet`) hängen an dieser Antwort; das Horn der Rückkehr
+  (`UseItem(Platz, Begleiter)`) ebenso. Die Planungsregel wird erst mit den Zeilen gebaut (keine Annahme über die
+  Füllung).
+- *Prüfgrad:* Compile ohne Warnung, Prüfschritte; Wirkkette am Code (Aufrufstellen in `Follow`, `EndFight`). Im Spiel nicht
+  beobachtet; die Zeilen selbst sind das Messmittel.
+
 ## B · Commit-Register (Fork vs. `upstream/main`)
 
 ### B1 · Einzelgeprüfte Fork-Commits
@@ -16767,3 +16784,4 @@ Die offene Arbeit dazu — Reihenfolge und Abbruchbedingung der Nachprüfung —
 | C159 | A530, Tod in Sägerschrei: „Kein Heiltrank von RSR: „Use HP potions" ist ab Werk aus“ als Ursache; TODO „Allein ohne Heiler kommt der Heiltrank erst von Hand“ | Seine Einstellung ist an (seine Angabe, 05.11.2026), und RSR trank den Ultratrank am 23.10. und 03.11. selbst. Die Voreinstellung war seine Konfiguration nur unterstellt; die Ursache ist offen (A531). |
 | C160 | A521, Weißmagier in Toto-Rak: „achtmal „heal stopped“ – ein Tick von 8 bis 20 HP hob das Ziel über die Schwelle, die Wirkzeit war verloren“; TODO „Heilung bricht ab, weil ein Regen-Tick die Schwelle kreuzt“ | Zehn der elf Zeilen kamen nach der Wirkung der Vita; das Spiel führte keinen Abbruch aus, jede landete voll. Der Tick war die natürliche Regeneration (1 % der maximalen LP), kein Regen. Ausgeführt wurde ein Abbruch, durch die Selbstheilung des Tanks (A545). | Regel und Spur behoben (A545) |
 | C161 | A551, A552, Konzept 01 „Stufe 3: K8", TODO: deutsche Namen der Brett-Gegenstände „Bestien-Heiltrank G1 bis G4", „Asche G1 bis G3", „Wiederbeleber", „Heiltrank-Set", „Gegengift", „Augentropfen", „Gerbstoff", „Buch der Unverwundbarkeit", „Buch der Reflexion", „Mittel-Set"; Konzept 01 „Ring of Sacrifice" | Selbst gebildet oder englisch belassen, nicht nachgeschlagen. Die deutschen Spielblätter (xivapi v2, `XBMItem`, `language=de`, 05.11.2026) nennen Bestien-Heiltrank I bis IV (Zeilen 76–79), Bestien-Pulver I bis III (80–82), Bestien-Gegengift (83), Bestien-Augentropfen (85), Bestien-Lebensfeder I und II (98, 99), Bestien-Verhärtungsmittel (102), Grimoire der Reflexion (136), Grimoire der Unantastbarkeit (137), Bestien-Heiltranksammlung (140), Bestien-Heilmittelsammlung (141), Opferring (2). Code und Optionstexte waren nicht betroffen: RSR liest die englischen Texte. | Konzept 01 und TODO umgestellt; die Gegenstände stehen mit Zeile in `action_names_de.json`, `check_action_names.py` prüft die neue Art `crucible_item` gegen `XBMItem`. |
+| C162 | A550 und Konzept 01, K11 („Stand der Umsetzung"): „Zwei Größen liefert das Spiel zur Laufzeit nicht: den Kader und das Feld. FFXIVClientStructs (aad0de6, 05.11.2026) führt im Brett nur das Inventar und `UseItem`; die Fenster des Kaders und des Wegs stehen nur in fremden Plugins mit eigenen Offsets"; TODO „K11 (Kader und Feld liefert das Spiel nicht …)" | Derselbe Stand aad0de66 führt `AgentXBMPetParty` (Kader `SelectedPetIds`, LP je Begleiter `PetCurrentHealth`/`PetMaxHealth`) und `AgentXBMStageDetailList` (Felder und Kämpfe des laufenden Bretts), beide seit 17.09.2026 (d44bc123, 3120c745), und Dalamuds Fassung enthält sie (Reflexion, 05.11.2026). Gesucht war nur unter `InstanceContentCrucibleOfTheUnbroken`. Offen bleibt allein, ob das Spiel sie im Brett füllt. | Sonde A556; Konzept 01 K11 und TODO umgestellt. |

@@ -1027,6 +1027,16 @@
    "reason": "Unit conversion, not a game value: the item's effect text states a percentage, the rule compares shares of HP."
   },
   {
+   "file": "RotationSolver/Basic/Helpers/CrucibleBoard.cs",
+   "code": "if (entry.EntryType == 3 && entry.BattleDetailId != 0)",
+   "values": [
+    "3"
+   ],
+   "status": "exception",
+   "loop": "A556",
+   "reason": "The game's kind of an AgentXBMStageDetailList entry, not a tuned value: 0 stage, 1 stage with battles, 2 stage without battles, 3 battle detail (FFXIVClientStructs aad0de66, AgentXBMStageDetailList.StageDetailEntry, 05.11.2026). Used only by the K11 probe's trace line."
+  },
+  {
    "file": "RotationSolver/Basic/Rotations/Basic/BeastmasterFamiliars.cs",
    "code": "private const uint GaugeNoPact = 11217;",
    "values": [
