@@ -1767,23 +1767,32 @@ Dullahan, Golem, Spriggan und Eisgolem (`XBMPet.InflictsInterrupt`).
   bis zum Ruf; das Halten kostet nur, solange das Horn sonst einen Einsatz hätte. Der Ruf kommt laut Blatt sicher. Gilt
   für alle Kämpfe mit Ruf: Seelenlose, Taurus, Sirene, Ymir, Kämpfer, Strix, Progenitrix, Drakon, Durga, Medusa,
   Flauros.
-- *K3 – Heiler und Wiederbeleber zuerst* (Loop vom 05.11.2026, sein Auftrag, die offenen Entscheidungen zu prüfen).
-  *Erhoben (Blatt):* Gegner, deren Aktion Verbündete trifft – heilen: Blütenkaktor (Healing Water, 6 y), Biloko (Natural
-  Nurture), Kupoheiler; wiederbeleben: Lamia (Raise, 10 s Wirkzeit, unterbrechbar); decken: Wächter (Cactguard);
-  stärken: Sukkubus-Magierin, Jüngerer Taurus, Schössling, Drehturm, Zyklop (Gigantis-Kampf), Melomog. Heiler und
-  Wiederbeleber haben die niedrigste Konstitution ihres Kampfes oder teilen sie; „wenigste LP zuerst" trifft sie meist
-  ohnehin. *Optionen:* A bei „wenigste LP" bleiben (A525); B Heiler und Wiederbeleber zuerst, sonst wenigste LP; C dazu
-  Stärker; D nur unterbrechen (K4). *Im Kampf:* Medusa-Kampf, Lamia und Zyklop gleich schwach: Unter A fällt der Zyklop
-  vielleicht zuerst, und die Lamia holt ihn mit Raise auf volle LP zurück; unter B fällt die Lamia zuerst, kein Raise.
-  Kämpfer-Kampf: Der Blütenkaktor heilt in 6 y; unter A fällt zuerst, wer gerade am wenigsten hat, und er heilt weiter.
-  *Gegenthese 1 (sein Grund zu A525: „weniger gegner machen weniger schaden"):* Für Wiederbeleber widerlegt – ein Raise
-  macht einen Gegner mehr; für Heiler widerlegt – jede Heilung schiebt jeden Fall hinaus. Für Stärker hält sie: Wie viel
-  eine Stärkung bringt, nennt keine Quelle, und ein Stärker mit mehr LP hält den Fall der anderen auf; C verworfen,
-  Stärker über K4. *Gegenthese 2:* Der Weg zum Heiler führt durch die Arena. Teilweise: Die Arenen sind klein, und die
-  Ausweichbewegung bleibt bei BossModReborn. *Gegenthese 3:* Außerhalb des Crucible fehlt das Blatt. Dort zählt ein
-  Gegner erst als Heiler oder Wiederbeleber, wenn er es getan hat: Wirkung auf einen anderen Gegner, LP gestiegen oder
-  aus 0 zurück. *Falsifikation:* Kein Defekt, weil A sie meist schon trifft? Nur im Gleichstand und bei einem kräftigeren
-  Heiler nicht – genau dann kostet A einen ganzen Fall. *Ergebnis:* B. Berührt seine Entscheidung A525: Vorlage.
+- *K3 – Wen RSR angreift: größter Nutzen für den Kampf und das Brett* (seine Vorgabe vom 05.11.2026: „entscheidung, wer
+  angegriffen werden soll nach analyse des größten nutzens für das gesamte spielfeld und darüber hinaus für das gesammte
+  brett"; im Crucible, A525 gilt außerhalb weiter). *Was gilt:* Zuerst fällt der Gegner mit der größten Gefahr je
+  Sekunde bis zu seinem Fall: seine Gefahr je Sekunde geteilt durch die Zeit, bis er fällt. Diese Reihenfolge macht die
+  Summe des Schadens über den Kampf am kleinsten (Regel von Smith, Ablaufplanung); „wenigste LP zuerst" ist ihr Sonderfall
+  bei gleicher Gefahr aller Gegner. *Gefahr:* sein Schaden an dir und an deinen Begleitern, je als Anteil an den LP, die
+  der Getroffene für den Rest des Bretts braucht (dein Lauf, ihre Einsätze nach K11) – Schaden an einem Begleiter, der
+  später unersetzlich ist, wiegt so mehr als an einem, der nicht mehr gebraucht wird; dazu, was er für andere tut: geheilte
+  LP (Blütenkaktor, Biloko, Kupoheiler), die LP eines zurückgeholten Gegners (Raise der Lamia), der Mehrschaden der
+  Gestärkten (Sukkubus-Magierin, Jüngerer Taurus, Melomog), die Wirkung beim Erreichen des Verbündeten (Irrlichter, die zum
+  Oger laufen). *Zeit bis zum Fall:* seine LP durch deinen Schaden auf ihm, mit dem Zuschlag seiner Schwäche (K1). *Start
+  und Nachsteuern:* vor der ersten Messung die Werte des Blatts (Stärke, Intelligenz, Konstitution, Aktionen), dann der
+  gemessene Schaden je Gegner und Sekunde (`hit you` je Quelle, Treffer auf Begleiter) und die korrigierte Restzeit.
+  *Im Kampf:* Atomos-Kampf mit acht Gegnern: Pudding, Creme und Fran (Fire III, Water III, Thunder III) vor den Gremlins, auch wenn
+  ein Gremlin weniger LP hat; Medusa-Kampf: die Lamia, sobald sie Raise wirkt; Oger-Kampf: die Irrlichter, bevor sie den
+  Oger erreichen. *Gegenthese 1:* Zu Kampfbeginn fehlen Messungen. Widerlegt: Das Blatt gibt Werte je Gegner, die Messung
+  ersetzt sie nach den ersten Treffern. *Gegenthese 2:* Zielwechsel kosten Laufwege und Rhythmus. Teilweise: Gewechselt
+  wird nur, wenn die neue Reihenfolge den Unterschied über die Messunsicherheit hinaus zeigt; die Ausweichbewegung bleibt
+  bei BossModReborn. *Gegenthese 3:* Endet ein Kampf mit dem Fall des Hauptgegners, wäre er zuerst richtig. Offen: In
+  seinen Läufen fielen die Gerufenen immer vor dem Hauptgegner (04.11.2026); die Spur hält fest, ob beim Fall des
+  Hauptgegners noch Gegner leben und ob der Kampf dann endet. *Gegenthese 4 (sein Grund zu A525, „weniger gegner machen
+  weniger schaden"):* trägt die Regel – sie rechnet genau diesen Schaden, statt ihn über die LP zu schätzen.
+  *Falsifikation:* Kein Unterschied zu „wenigste LP"? Im Atomos-, Medusa- und Oger-Kampf doch. Option falsch? Eine
+  verrauschte Messung ließe das Ziel springen – der Wechsel verlangt einen Unterschied über ihrer Unsicherheit. Nichts
+  ändert sich? Im Crucible überschreibt heute A525 die Zielart; die neue Regel tritt dort an ihre Stelle, die Spur nennt
+  jeden Wechsel mit Grund.
 - *K4 – Unterbrechen.* Ein Begleiter, der unterbricht, gegen anfällige Gegner mit langem Zauber (Ossify, Fanaticism,
   Dreadwash, Confound, Raise). Welche seiner Aktionen unterbricht, ist am Blatt noch zu belegen; danach ein Loop.
 - *K5 – Zustände.* Gift, Gewicht, Fessel gegen anfällige Gegner: Wirkung je Zustand nicht beziffert, nach K1 bis K4.
@@ -1858,8 +1867,8 @@ anders als das Schema (wie bei `XBMPet`, Spalte `Unknown4`), fehlen Schwäche un
 beim Betreten, ob es die Daten des Bretts gelesen hat.
 
 *Stufen* (TODO „Beastmaster: Crucible-Strategien"): 1. Daten zur Laufzeit (Schwäche und Gegnerliste je Kampf,
-Schadensart je Begleiter) mit K1 und K2; 2. K11 (Bedarfsliste und LP je Begleiter) mit K9; 3. K8; 4. K6 und K7; danach
-K4, K5, K10. K3 nach seiner Entscheidung.
+Schadensart je Begleiter) mit K1, K2 und K3; 2. K11 (Bedarfsliste und LP je Begleiter) mit K9; 3. K8; 4. K6 und K7;
+danach K4, K5, K10.
 
 ---
 

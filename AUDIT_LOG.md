@@ -16021,6 +16021,22 @@ habe den schleim bislang nicht anfreunden können."
   frühe Kämpfe (nicht widerlegt, gewogen mit gemessenem Schaden), aktuelles Feld lesbar (offen). Stufe 2 im TODO.
 - *Prüfgrad:* Mitschnitt ausgewertet, kein Code.
 
+### A536 · Crucible K3: Ziel nach dem größten Nutzen für Kampf und Brett (05.11.2026)
+
+- *Anlass:* Seine Entscheidung zur Vorlage K3: „entscheidung, wer angegriffen werden soll nach analyse des größten
+  nutzens für das gesamte spielfeld und darüber hinaus für das gesammte brett. kritischer loop". Vorgabe für das
+  Crucible; A525 („wenigste LP zuerst" ohne Tank und Heiler) gilt außerhalb weiter.
+- *Loop:* Reihenfolge nach Gefahr je Sekunde durch Zeit bis zum Fall (Regel von Smith, minimiert den summierten
+  Schaden); Gefahr als Anteil an den LP, die der Getroffene für den Rest des Bretts braucht (du, Begleiter nach K11), plus
+  Unterstützung anderer (Heilung, Raise, Stärkung, Irrlichter zum Oger); Zeit bis zum Fall mit dem Zuschlag der Schwäche.
+  Start aus dem Blatt, dann gemessen. Gegenthesen: fehlende Messung (widerlegt), Zielwechsel (über der Messunsicherheit),
+  Kampfende mit dem Hauptgegner (offen; in seinen Läufen fielen die Gerufenen immer zuerst), sein Grund zu A525 (trägt
+  die Regel).
+- *Gemessen am Mitschnitt vom 04.11.2026:* Gerufene fielen vor dem Hauptgegner (Schattenmilben vor der Terrormilbe,
+  Sukkubi vor der Seelenlosen); im Oger-Kampf wurden die Irrlichter entfernt, ohne zu sterben, als sie den Oger
+  erreichten.
+- *Prüfgrad:* Mitschnitt und Blatt ausgewertet, kein Code; Stufe 1 im TODO.
+
 ## B · Commit-Register (Fork vs. `upstream/main`)
 
 ### B1 · Einzelgeprüfte Fork-Commits
