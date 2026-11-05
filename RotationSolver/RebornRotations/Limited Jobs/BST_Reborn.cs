@@ -103,6 +103,17 @@ public sealed class BST_Reborn : BeastmasterRotation
 			+ "Off: RSR uses none of these.")]
 	private bool UseCrucibleDamageItems { get; set; } = true;
 
+	// K10 of the Crucible (concept 01, Campsite, A564): who rests with you; resting stays your click.
+	[RotationConfig(CombatType.PvE, Name = "Pick who rests with you at a Crucible campsite (Crucible only)",
+		Tooltip = "With the campsite window open RSR selects who rests with you; resting or leaving stays your click. A rest "
+			+ "shares its healing (alone you recover 90% of your HP, with one familiar each 45%, with two each 30%), so "
+			+ "familiars rest with you only when you still come out at full HP - never worse than resting alone. Then as many "
+			+ "as bring them the most HP, up to what the campsite allows: the familiars not fallen, not at full HP and not fed "
+			+ "(resting ends a feed) with the smallest share of their HP. RSR reads the share from the game's prompt once it "
+			+ "is open and counts with it from then on. A selection you change by hand stays for that campsite.\n"
+			+ "Off: RSR selects nobody at a campsite.")]
+	private bool PickCampsiteRest { get; set; } = true;
+
 	// K9 of the Crucible (concept 01, A550): on by default. Without a tank the enemies attack only you, and your fall ends the
 	// run; the familiar's HP are a second store, and a fallen familiar costs that familiar, not the run.
 	[RotationConfig(CombatType.PvE, Name = "Use Snarl and Challenge based on your HP and your familiar's HP (Crucible only)",
@@ -1043,6 +1054,7 @@ public sealed class BST_Reborn : BeastmasterRotation
 		}
 
 		FollowTeamRequest();
+		FollowCampsite(PickCampsiteRest);
 	}
 
 	#region Battlehorns between fights

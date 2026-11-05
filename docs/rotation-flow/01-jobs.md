@@ -1895,8 +1895,49 @@ Dullahan, Golem, Spriggan und Eisgolem (`XBMPet.InflictsInterrupt`).
   die Einstellung ab Werk an, auf dem letzten Horn, mit Provozieren am größten Treffer; Loop bei der Umsetzung.
 - *K10 – Zwischen den Kämpfen (Campsite, Laden, Weg, Rauchbombe):* bisher als „nicht RSR" ausgenommen, mit dem Grund,
   dass andere Werkzeuge es führen. Nach seiner Vorgabe vom 05.11.2026 (Spielerlebnis vor Umsetzung) ist das kein Grund
-  mehr; offen, im eigenen Loop: wen die Campsite heilt (dich, die heilenden, die tragenden), welche Gegenstände im Laden
-  die Sicherheit tragen, welcher Weg Lager und Läden mitnimmt.
+  mehr.
+  - *Campsite, gebaut (A564):* Das Campsite-Fenster ist der Begleiter-Agent im Modus 4 mit sichtbarem `XBMPetParty`
+    (Daedalus 74659a6, `CrucibleAutoPilot.Rest`, im Spielbetrieb 25. und 27.10.2026; FFXIVClientStructs aad0de6 nennt
+    Modus 4 „buy feed result" – darum prüft RSR nach jedem Klick die Auswahl). Die Liste zeigt den Kader in
+    Bildschirmfolge, `SelectedPetIds` die gewählten Plätze, ein Rückruf `[1, Platz]` schaltet einen Platz um.
+    *Mechanik:* Die Rast teilt ihre Heilung, je Teilnehmer ein Anteil der eigenen maximalen LP: allein 90 %, mit einem
+    Begleiter je 45 %, mit zweien je 30 % (Wiki; 45 % zeigt die Bestätigung „Rest and recover 45%…" in Daedalus'
+    Feldnotiz, +30 % deiner LP in deiner Messung vom 04.11.2026). Für drei und vier folgt aus derselben Teilung 22,5
+    und 18 % – meine Ableitung, unbelegt. Wie viele mitruhen dürfen, legt das Lager fest (`XBMContentCamp`, Zeile als
+    Brett gelesen, Unterzeile je Lager, 1 bis 4: erstes Brett 2, 2; zweites 2, 3; drittes 3, 3; Erstes Meisterbrett 2, 4;
+    Zweites 1, 2, 3). Ein ruhender Begleiter verliert sein Futter („Familiars that rest will lose current effects of
+    feed", Addon 17657; „G2 Primafodder" gibt +30 % maximale LP, „Honey Simular" −25 % physische Verwundbarkeit,
+    `XBMItem` Typ 3), ein gefallener wird nicht geheilt.
+    *Was gilt:* RSR wählt vor, ruhen (`[3]`) oder gehen drückt er. Begleiter ruhen nur mit, wenn du trotzdem voll
+    herauskommst – du kommst nie schlechter heraus als allein. Unter dieser Bedingung die Zahl, die den Begleitern die
+    meisten LP bringt (je Begleiter höchstens, was ihm fehlt), und dafür die stehenden, nicht vollen, ungefütterten mit
+    dem kleinsten LP-Anteil; bei Gleichstand weniger. Sonst ruhst du allein. Die Grenze des Lagers lernt RSR am Klick,
+    den das Fenster nicht annimmt (oder mit dem es einen anderen abwählt); den Anteil liest es aus der Bestätigung,
+    sobald sie offen ist, und rechnet ab dann mit ihm (ohne Lesung 90 % geteilt). Futter liest es aus den Werten des
+    Fensters (`ReaderXBMPetParty.FedCurrent`, ECommons, Werkzeugquelle; Daedalus liest dieselbe Stelle); stimmen deren
+    LP nicht mit denen des Agenten überein, wählt RSR nichts. Beim Öffnen springt die Auswahl kurz auf den ganzen Kader
+    (Daedalus, im Spielbetrieb); RSR handelt erst, wenn sie einen GCD lang steht. Ändert er sie danach von Hand, bleibt
+    sie für dieses Lager. Einstellung „Pick who rests with you at a Crucible campsite (Crucible only)", ab Werk an.
+    *Beispiel:* Du bei 75 %, Fledermaus 20 %, Fliegenfalle 40 %, Schleim 90 %, Lager für zwei: Mit zweien bekommst du
+    30 % (voll) und die beiden ersten je 30 %, zusammen 60 % für die Begleiter; mit einer nur 45 %. RSR wählt Fledermaus
+    und Fliegenfalle. Du bei 40 %: Schon mit einem kämst du nur auf 85 % statt voll – du ruhst allein.
+    *Verworfen:* (a) „Use HP potions below this HP" als Grenze (meine erste Fassung): Bei 13 % brächte dich eine Rast zu
+    zweit auf 58 %, über jede übliche Linie – genau Daedalus' Feldfall vom 25.10.2026 (Rast mit dem Goobbue bei 13 %,
+    Tod im nächsten Kampf). (b) Linie plus größter bisheriger Verlust je Kampf: Vor dem Endgegner unterschätzt sie den
+    nächsten Kampf, und welches Feld folgt, kennt RSR an der Campsite nicht; sie weicht von „voll" nur ab, wo du schon
+    niedrig stehst. (c) Daedalus' feste 50 %: eine Zahl ohne Herleitung, nur ein Begleiter, und zwischen 50 und 55 %
+    kämst du nicht voll heraus.
+    *Gegenthese 1:* Bei 54 % und einem Begleiter auf 5 % ruhst du allein; du gewönnest 45 % für ihn gegen 1 % für dich.
+    Nicht widerlegt, Preis benannt: Er geht mit 5 % in den nächsten Kampf und fällt am ersten Treffer, bis zum Horn der
+    Rückkehr; K8 (Bestien-Heiltrank auf ihn) und K9 (Provozieren am größten Treffer) bleiben, und mit einem Klick nimmt
+    er ihn dazu. Dagegen steht: Deine LP sind der Lauf. *Gegenthese 2:* Der am meisten verletzte ist nicht unbedingt der,
+    den ein späterer Kampf braucht – das beantwortet erst K11 mit den Sondenzeilen. *Gegenthese 3:* Ein gefütterter
+    Begleiter mit wenig LP bleibt draußen, obwohl die Rast ihn retten könnte. Nicht widerlegt: Ob die LP das gekaufte
+    Futter wert sind, hängt am Futter; er entscheidet mit einem Klick.
+  - *Laden:* offen; was ein Laden anbietet, steht nur in den Werten seines Fensters (`XBMContentsItemShop`), deren
+    Belegung keine Quelle nennt.
+  - *Weg:* nicht gebaut. Das Brett wird gelaufen, nicht geklickt (Daedalus läuft es mit vnavmesh ab); das macht RSR zu
+    einem Bot für den Weg über das Brett – eine Frage des Umfangs, die er entscheidet (Vorlage am Ende des TODO).
 
 - *K11 – Begleiter über das Brett planen* (sein Hinweis und seine Vorgabe vom 05.11.2026: „da begleiter über die
   spielfelder des brettes hinweg schaden ansammeln und hp sinkt, auch strategische planung, falls begleiter mehrfach

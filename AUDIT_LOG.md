@@ -16599,6 +16599,39 @@ habe den schleim bislang nicht anfreunden können."
 - *Prüfgrad:* Compile ohne Warnung, Prüfschritte; Wirkkette am Code. Im Spiel nicht beobachtet; Spurzeilen „crucible
   team: …".
 
+### A564 · Crucible K10: Wer an der Campsite mitruht (05.11.2026)
+
+- *Auftrag:* `TODO.md`, „Beastmaster: Crucible-Strategien", K10 (Campsite); seine Vorgabe vom 05.11.2026
+  (Spielerlebnis vor Umsetzung) hebt die frühere Ausnahme „nicht RSR" auf.
+- *Quellen:* `XBMContentCamp` (xivapi, `Unknown0` = `FamiliarRecoverCount` laut EXDSchema; Lumina `Unknown0`): je
+  Brett und Lager 1 bis 4 Begleiter; Addon 17657 („You and … familiar can recover HP at this campsite. Familiars that
+  rest will lose current effects of feed."), 17660 (Bestätigung „Rest and recover …% of HP for you and your: …");
+  `XBMItem` Typ 3 (Futter: maximale LP, Schaden, Verwundbarkeit); Daedalus 74659a6 `CrucibleAutoPilot.Rest`
+  (Modus 4, `[1, Platz]`, `SelectedPetIds` als Plätze, Einschwingen 1 s, Feldfall 25.10.2026: Rast mit einem Begleiter
+  bei 13 % LP, Tod im nächsten Kampf; `CampsitePick` wählt einen, unter 50 % keinen); ECommons `ReaderXBMPetParty`
+  (Werkzeugquelle: je Zeile LP, maximale LP, `FedCurrent`); Wiki (90/45/30 %); seine Messung vom 04.11.2026 (+30 %).
+- *Berichtigt vor dem Bau:* Meine erste Fassung im Konzept nahm einen Begleiter und seine Heiltrank-Linie als Grenze.
+  Beides trug nicht: Das Lager nimmt bis zu vier, und mit der Linie hätte RSR Daedalus' tödlichen Feldfall
+  nachgebaut (13 % → 58 %). Neu gefasst, bevor Code entstand.
+- *Optionen:* (a) Linie als Grenze – verworfen (Feldfall). (b) Linie plus größter Verlust je Kampf – verworfen:
+  unterschätzt den Endgegner, das nächste Feld ist an der Campsite unbekannt. (c) Daedalus' feste 50 % – verworfen:
+  Zahl ohne Herleitung, ein Begleiter. (d) Gewählt: Begleiter nur, wenn du trotzdem voll herauskommst; darunter die
+  Zahl mit dem größten Gewinn für die Begleiter. (e) Nullvariante: nichts vorwählen – er wählt wie bisher.
+- *Gebaut:* `BeastmasterCrucibleCamp.cs` (`FollowCampsite`), Einstellung „Pick who rests with you at a Crucible
+  campsite (Crucible only)", ab Werk an. Ein Klick je Schritt, geprüft an `SelectedPetIds`; Grenze des Lagers gelernt am
+  abgelehnten oder verdrängenden Klick; Anteil aus der Bestätigung gelesen und ab dann verwendet; Einschwingen einen GCD;
+  Handänderung bleibt; Futter und Zeilenzuordnung über LP gegen den Agenten geprüft, sonst keine Wahl.
+- *Festwerte:* Modus 4, 0,9 (Rückfall bis zur ersten Lesung der Bestätigung), 100 (Prozent); Ausnahmen mit diesem Loop.
+- *Gegenthesen:* Konzept 01, K10 Campsite (54 % und Begleiter auf 5 %: Preis benannt; K11 offen; gefütterte bleiben
+  draußen).
+- *Falsifikation:* Kein Defekt – er wählt ohnehin selbst: Die Regel nimmt ihm den Klick und rechnet die Teilung, die das
+  Fenster nicht zeigt, bevor er ruht. Option falsch – (b) und (c) geprüft, oben. Ausgeliefert, und nichts ändert sich:
+  (1) Das Fenster steht nicht in Modus 4 – im Feld bei Daedalus so belegt; (2) ECommons liest die Zeilen anders – dann
+  hält die LP-Prüfung an und schreibt „left to you"; (3) die Auswahl flackert länger als einen GCD – dann wirkt sie wie
+  seine Hand und RSR hält an, Spurzeile „changed by hand".
+- *Prüfgrad:* Compile, Prüfschritte; Wirkkette am Code. Im Spiel nicht beobachtet; Spurzeilen „crucible campsite: …"
+  messen Grenze, Anteil und Wahl selbst.
+
 ## B · Commit-Register (Fork vs. `upstream/main`)
 
 ### B1 · Einzelgeprüfte Fork-Commits

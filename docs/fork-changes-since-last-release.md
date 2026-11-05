@@ -225,6 +225,13 @@ What this release changes in the fight. For the whole distance from upstream, se
   holds: two that heal or protect you, then those that hit the weaknesses of the most enemies across
   the board's fights - with the reason for each and who would leave. Its `Apply` button changes the
   team one familiar at a time; nothing changes without the click, and you confirm the team yourself.
+- **Who rests with you at a Crucible campsite.** A rest shares its healing - alone you recover 90% of
+  your HP, with one familiar each 45%, with two each 30%. With `Pick who rests with you at a Crucible
+  campsite (Crucible only)`, **on by default**, RSR selects familiars only when you still come out at
+  full HP, so you never come out worse than resting alone; then as many as bring them the most HP, up
+  to what the campsite allows: those not fallen, not at full HP and not fed (resting ends a feed), the
+  most hurt first. It reads the share from the game's prompt once it is open. A selection you change
+  by hand stays; resting or leaving is your click.
 - **Snarl and Challenge are on by default (Crucible).** Without a tank the enemies attack only you,
   and your fall ends the run, while a fallen familiar costs only that familiar. `Use Snarl and
   Challenge based on your HP and your familiar's HP (Crucible only)` is now **on by default**, still on

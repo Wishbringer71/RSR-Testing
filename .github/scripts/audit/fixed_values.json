@@ -1297,6 +1297,36 @@
    "status": "exception",
    "loop": "A544",
    "reason": "Upstream's counts that call for an area heal - more than one member under Doom, more than two under the single threshold - kept as they were; A544 only counts each member with the deficit healing can close on him."
+  },
+  {
+   "file": "RotationSolver/Basic/Rotations/Basic/BeastmasterCrucibleCamp.cs",
+   "code": "internal const uint CampsiteMode = 4;",
+   "values": [
+    "4"
+   ],
+   "status": "exception",
+   "loop": "A564",
+   "reason": "The game's mode of AgentXBMPetParty in which the Crucible's campsite window stands (Daedalus 74659a6 rests in it, in the field 25. and 27.10.2026); FFXIVClientStructs aad0de6 names it differently, so every click is checked against the selection. Not a tuned value."
+  },
+  {
+   "file": "RotationSolver/Basic/Rotations/Basic/BeastmasterCrucibleCamp.cs",
+   "code": "private const float RestAloneShare = 0.9f;",
+   "values": [
+    "0.9"
+   ],
+   "status": "exception",
+   "loop": "A564",
+   "reason": "What a campsite rest restores alone, of the player's maximum HP (wiki: 90 % alone, 45 % with one, 30 % with two; 45 % in the game's prompt in Daedalus' field note, +30 % in his measurement of 04.11.2026). No sheet holds it (XBMContentCamp holds only the familiar count); the game states it in the rest prompt, and from its first reading RSR counts with the prompt's share instead."
+  },
+  {
+   "file": "RotationSolver/Basic/Rotations/Basic/BeastmasterCrucibleCamp.cs",
+   "code": "var share = percent / 100f;",
+   "values": [
+    "100"
+   ],
+   "status": "exception",
+   "loop": "A564",
+   "reason": "Percent to share: the rest prompt states the share in percent; the divisor is the definition of the unit, as for the item texts (A340, A551)."
   }
  ]
 }
