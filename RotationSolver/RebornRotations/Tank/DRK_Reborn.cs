@@ -335,25 +335,22 @@ public sealed class DRK_Reborn : DarkKnightRotation
 			|| AreaStunBeingCastOnPack(inRange);
 	}
 
-	// A party member casting Holy or Holy III whose radius around them holds this pack by the same
-	// share the stun itself is counted with. The radius is the action's own, from the game data.
+	// A party member casting an action that stuns in a radius around them (A560: a cast time, an effect radius, not aimed at
+	// a spot, and "Stun Duration" in its text - today Holy and Holy III; Occult Falcon is instant and aimed at a spot, so its
+	// stun is seen only on the enemies), whose radius holds this pack by the same share the stun itself is counted with. The
+	// radius is the action's own, from the game data.
 	private static bool AreaStunBeingCastOnPack(int inRange)
 	{
 		var sheet = Service.GetSheet<Lumina.Excel.Sheets.Action>();
 		foreach (var member in DataCenter.PartyMembers)
 		{
-			if (member == null || !member.IsCasting)
+			if (member == null || !member.IsCasting || sheet.GetRowOrDefault(member.CastActionId) is not { } action
+				|| !StunsAroundCaster(action))
 			{
 				continue;
 			}
 
-			var cast = (ActionID)member.CastActionId;
-			if (cast is not (ActionID.HolyPvE or ActionID.HolyIiiPvE))
-			{
-				continue;
-			}
-
-			var radius = sheet.GetRow(member.CastActionId).EffectRange;
+			var radius = action.EffectRange;
 			var reached = 0;
 			foreach (var hostile in DataCenter.AllHostileTargets)
 			{
@@ -371,6 +368,22 @@ public sealed class DRK_Reborn : DarkKnightRotation
 		}
 
 		return false;
+	}
+
+	private static readonly System.Text.RegularExpressions.Regex StunDuration = new(@"Stun Duration: (?<value>\d+)s",
+		System.Text.RegularExpressions.RegexOptions.CultureInvariant);
+	private static readonly Dictionary<uint, bool> _stunsAroundCaster = [];
+
+	private static bool StunsAroundCaster(Lumina.Excel.Sheets.Action action)
+	{
+		if (!_stunsAroundCaster.TryGetValue(action.RowId, out var stuns))
+		{
+			stuns = action.Cast100ms > 0 && action.EffectRange > 0 && !action.TargetArea
+				&& ActionTooltip.TryStated(action.RowId, StunDuration, out _);
+			_stunsAroundCaster[action.RowId] = stuns;
+		}
+
+		return stuns;
 	}
 
 	/// <summary>

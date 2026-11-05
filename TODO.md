@@ -17,8 +17,7 @@ Nach der Wirkung im Kampf: Sicherheit der Gruppe vor Schaden, gewichtet mit der 
 3. Fremde Repositories auf Verbesserungen für RSR prüfen: Jeder Fund kann ein Defekt im Verhalten einer Klasse sein,
    den RSR heute im Kampf zeigt; zuerst die Rotationswerkzeuge für alle Jobs, Daedalus vorn (aktiv, alle Jobs,
    eigene Kampfvorhersage), dann Beastmaster und Blaumagier (sein Auftrag vom 05.11.2026).
-4. Flächenbetäuber in Kreszentia für The Blackest Night: kostet MP, kein Leben.
-5. Konzepte neu ordnen (allgemein, Rollen, Gruppen, Jobs, Inhalte): keine direkte Wirkung im Kampf; eine Regel, die
+4. Konzepte neu ordnen (allgemein, Rollen, Gruppen, Jobs, Inhalte): keine direkte Wirkung im Kampf; eine Regel, die
    im Konzept eines Jobs steht, wird für dessen Gruppe übersehen, und eine Inhaltsregel ist über mehrere Konzepte
    verteilt.
 
@@ -53,12 +52,6 @@ zuerst messen, ob der Server im Brett zuweist) und K7 (Kader auf Wunsch über da
 Laden, Weg, im eigenen Loop); K11 (Kader, LP je Begleiter und Feld: Sonde A556 „crucible agents …" zeigt, ob das Spiel sie im Brett füllt;
 danach Loop am Ende des TODO). *Konzept:* 01,
 „Crucible of the Unbroken: Bretter, Kämpfe, Strategien".
-
-### Flächenbetäuber in Kreszentia für The Blackest Night · N
-Im Kampf: Betäubt ein anderer Spieler mit einer Aktion seines Phantomjobs eine Gruppe, kann der Dunkelritter seine
-Barriere in das Betäubungsfenster legen; sie bricht nicht, Dark Arts bleibt aus, es kostet MP, kein Leben. *Ort:*
-Erkennung der Flächenbetäubung (Konzept 10, „Grenzen"), heute nur Holy und Holy III. *Nächster Schritt:* die Aktionen der
-Phantomjobs mit Flächenbetäubung aus den Spielblättern erheben, Loop. *Konzept:* 10.
 
 ### Fremde Repositories auf Verbesserungen für RSR prüfen · N, R, U
 Sein Auftrag (02.11.2026): „alle von dir gefundenen repos, die du benannt hast prüfen, ob daraus generell

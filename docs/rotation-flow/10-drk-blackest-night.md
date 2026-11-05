@@ -226,9 +226,10 @@ denn beide Bedingungen beantworten dieselbe Frage.
 **Über die Lücke zwischen zwei Sanctus trägt der Halt, solange die nächste Betäubung sichtbar kommt**
 (A215), und nur solange die Gegner noch betäubbar sind. Zwei Fälle, beide aus dem Spielzustand gelesen:
 
-- **Der Weißmagier wirkt gerade Sanctus**, und das Rudel steht in dessen Radius um ihn (Radius aus den
-  Aktionsdaten, dieselbe Anteilsregel wie bei der Betäubung selbst: mindestens zwei und mindestens die Hälfte
-  der Gegner in Reichweite). Dann landet die nächste Betäubung mit dem Ende des Wirkens. Sanctus und ab
+- **Ein Mitspieler wirkt gerade eine Flächenbetäubung um sich** (A560: eine Aktion mit Wirkzeit und Wirkradius, nicht
+  auf einen Punkt gezielt, deren Wirktext „Stun Duration" nennt – heute Sanctus und Sanctga), und das Rudel steht in
+  deren Radius um ihn (Radius aus den Aktionsdaten, dieselbe Anteilsregel wie bei der Betäubung selbst: mindestens zwei
+  und mindestens die Hälfte der Gegner in Reichweite). Dann landet die nächste Betäubung mit dem Ende des Wirkens. Sanctus und ab
   Stufe 82 Sanctga (Holy III) wirken 1,5 s, Wiederaufnahme 2,5 s, Radius 8 y, Betäubung 4 s (deutscher und
   englischer Job-Guide, abgerufen 29.09.2026).
 - **Höchstens einen globalen Cooldown nach dem Ende der Betäubung** — die Zeit, die der Weißmagier braucht,
@@ -259,12 +260,13 @@ bestätigt The Balance, die 45 s Immunität nennt es nicht, Konzept 08):
 **Grenzen:** Ein Sanctus unter Swiftcast ist nicht sichtbar, bevor es landet; kommt es nach der GCD-Frist,
 fällt die Barriere mit der Betäubung zusammen. Ein langsamerer GCD des Weißmagiers kann eine kurze Lücke
 zwischen Frist und Wirken lassen. Beides kostet höchstens eine Barriere ohne Dark Arts, also MP, kein Leben.
-Andere Flächenbetäuber als der Weißmagier, etwa Aktionen der Phantomjobs in Kreszentia (in seinem Profil, C153),
-erkennt die Regel nicht; für sie gilt nur die GCD-Frist (`TODO.md`, „Flächenbetäuber in Kreszentia für The Blackest
-Night"). Ebenso für einen Heiler der Gefährtenunterstützung: Erkannt werden nur die Spieleraktionen
-Holy (139) und Holy III (25860). Die Spieldaten führen dazu zahlreiche Nicht-Spieler-Zeilen gleichen Namens (etwa
-17614: 1,5 s, 8 y; 38085: 1,0 s, 8 y; xivapi, abgerufen 29.09.2026). Welche davon ein NPC der Gruppe wirkt und ob sie
-betäubt, ist nicht belegt; zudem steht ein NPC nur mit „Heal and raise party NPCs" in der Gruppenliste.
+Die Betäubung selbst misst die Regel am Status der Gegner, gleich wer sie setzt; nur ihr sichtbares Kommen liest sie
+am Wirken. Die einzige Flächenbetäubung der Phantomjobs in Kreszentia ist Occult Falcon (41601: sofort, auf einen Punkt,
+5 y, 4 s; Mineuchi 41603 betäubt ein Ziel; Aktionen 41570 bis 41720 und alle `Occult…`/`Phantom…` in `ActionId.resx` am
+Wirktext geprüft, xivapi, 05.11.2026): Sie trägt der Status auf den Gegnern, ein Kommen gibt es bei einer Sofortaktion
+nicht; nach ihrem Ende gilt die GCD-Frist. Ein Heiler der Gefährtenunterstützung wirkt Fassungen ohne Wirktext (17614:
+1,5 s, 8 y; 38085: 1,0 s, 8 y; ihre `ActionTransient`-Zeilen sind leer); ihr Kommen erkennt die Prüfung deshalb nicht,
+ihre Betäubung wie jede andere am Status. Ein NPC steht zudem nur mit „Heal and raise party NPCs" in der Gruppenliste.
 
 **Reprisal zuerst.** Der Pfad gibt je Gelegenheit **eine** Aktion zurück und arbeitet von oben nach
 unten (Einzelpfad, Stand 02.10.2026): große Minderung und Rampart für einen vorhergesagten Tankbuster (A241, A243) ·

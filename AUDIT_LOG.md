@@ -16526,6 +16526,23 @@ habe den schleim bislang nicht anfreunden können."
   der Gruppe – dort bleibt alles gleich.
 - *Prüfgrad:* Compile ohne Warnung, Prüfschritte; Wirkkette am Code. Im Spiel nicht beobachtet.
 
+### A560 · Flächenbetäubung für The Blackest Night: Fähigkeitsprüfung statt Holy-Liste; Kreszentia (05.11.2026)
+
+- *Auftrag:* `TODO.md`, „Flächenbetäuber in Kreszentia für The Blackest Night".
+- *Quellen:* xivapi (05.11.2026): Aktionen 41570 bis 41720 und alle `Occult…`/`Phantom…` aus `ActionId.resx` am englischen
+  Wirktext auf „Stun" geprüft: Occult Falcon (41601, sofort, Bodenziel, 5 y, Stun 4 s), Mineuchi (41603, Einzelziel,
+  6 s). Holy (139), Holy III (25860): 1,5 s, Radius 8 um den Wirkenden, „Stun Duration: 4s". NPC-Fassungen 17614, 38085
+  ohne Wirktext.
+- *Befund:* Die Prämisse des Eintrags war falsch (C164): Die Betäubung jedes Betäubers sieht die Regel am Status.
+  Kreszentia braucht nichts Eigenes.
+- *Gebaut:* `DRK_Reborn.AreaStunBeingCastOnPack` erkennt das Kommen über die Spieldaten (Wirkzeit, Radius, kein
+  Bodenziel, „Stun Duration" im Text) statt über die zwei IDs. Heute dieselben zwei Aktionen; eine künftige
+  Flächenbetäubung mit Wirkzeit trägt sie ohne Codeänderung (Universell zuerst).
+- *Falsifikation:* Kein Defekt in Kreszentia – bestätigt. Option falsch, weil der Text eine Betäubung nennt, die nicht um
+  den Wirkenden liegt? Bodenziele sind ausgeschlossen, der Radius stammt aus der Aktion. Ausgeliefert, und nichts ändert
+  sich: richtig für heute, die Prüfung ist für die nächste Aktion dieser Art.
+- *Prüfgrad:* Compile ohne Warnung, Prüfschritte; Daten am Blatt geprüft.
+
 ## B · Commit-Register (Fork vs. `upstream/main`)
 
 ### B1 · Einzelgeprüfte Fork-Commits
@@ -16841,3 +16858,4 @@ Die offene Arbeit dazu — Reihenfolge und Abbruchbedingung der Nachprüfung —
 | C161 | A551, A552, Konzept 01 „Stufe 3: K8", TODO: deutsche Namen der Brett-Gegenstände „Bestien-Heiltrank G1 bis G4", „Asche G1 bis G3", „Wiederbeleber", „Heiltrank-Set", „Gegengift", „Augentropfen", „Gerbstoff", „Buch der Unverwundbarkeit", „Buch der Reflexion", „Mittel-Set"; Konzept 01 „Ring of Sacrifice" | Selbst gebildet oder englisch belassen, nicht nachgeschlagen. Die deutschen Spielblätter (xivapi v2, `XBMItem`, `language=de`, 05.11.2026) nennen Bestien-Heiltrank I bis IV (Zeilen 76–79), Bestien-Pulver I bis III (80–82), Bestien-Gegengift (83), Bestien-Augentropfen (85), Bestien-Lebensfeder I und II (98, 99), Bestien-Verhärtungsmittel (102), Grimoire der Reflexion (136), Grimoire der Unantastbarkeit (137), Bestien-Heiltranksammlung (140), Bestien-Heilmittelsammlung (141), Opferring (2). Code und Optionstexte waren nicht betroffen: RSR liest die englischen Texte. | Konzept 01 und TODO umgestellt; die Gegenstände stehen mit Zeile in `action_names_de.json`, `check_action_names.py` prüft die neue Art `crucible_item` gegen `XBMItem`. |
 | C162 | A550 und Konzept 01, K11 („Stand der Umsetzung"): „Zwei Größen liefert das Spiel zur Laufzeit nicht: den Kader und das Feld. FFXIVClientStructs (aad0de6, 05.11.2026) führt im Brett nur das Inventar und `UseItem`; die Fenster des Kaders und des Wegs stehen nur in fremden Plugins mit eigenen Offsets"; TODO „K11 (Kader und Feld liefert das Spiel nicht …)" | Derselbe Stand aad0de66 führt `AgentXBMPetParty` (Kader `SelectedPetIds`, LP je Begleiter `PetCurrentHealth`/`PetMaxHealth`) und `AgentXBMStageDetailList` (Felder und Kämpfe des laufenden Bretts), beide seit 17.09.2026 (d44bc123, 3120c745), und Dalamuds Fassung enthält sie (Reflexion, 05.11.2026). Gesucht war nur unter `InstanceContentCrucibleOfTheUnbroken`. Offen bleibt allein, ob das Spiel sie im Brett füllt. | Sonde A556; Konzept 01 K11 und TODO umgestellt. |
 | C163 | A524, Konzept 01 „Bestienkönnen nach Borgen", TODO „Beastmaster: Brechende Welle als Schaden": „als Schaden nie, weil ihre zweite Zeile hinter Schmetteraxt steht, die immer geht" | Die Äxte haben Nahkampfreichweite (`Action.Range` −1), Brechende Welle 30 Yalm (Blatt `Action` 44879, 44883, 44885, 44900, 05.11.2026). Außerhalb der Nahkampfreichweite scheitern alle Äxte, und die zweite Zeile greift. Im Nahkampf wäre die Welle um etwa 70 Potenz schlechter als der Kombo-Schnitt; die Reihenfolge von Upstream war richtig. | A558: Konzept umgestellt, TODO-Punkt geschlossen; im Brett gegen Wasserschwäche zusätzlich vor den Äxten. |
+| C164 | TODO „Flächenbetäuber in Kreszentia für The Blackest Night": „Betäubt ein anderer Spieler mit einer Aktion seines Phantomjobs eine Gruppe, kann der Dunkelritter seine Barriere in das Betäubungsfenster legen" | Die Regel misst die Betäubung am Status der Gegner, gleich wer sie setzt (`SurveyStuns`); nur das sichtbare Kommen der nächsten las sie an Holy und Holy III. Die einzige Flächenbetäubung der Phantomjobs, Occult Falcon, wirkt sofort und hat kein Kommen. | A560: Punkt geschlossen; das Kommen wird über die Spieldaten erkannt statt über die zwei IDs. |
