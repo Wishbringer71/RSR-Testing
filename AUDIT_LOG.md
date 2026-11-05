@@ -16305,6 +16305,28 @@ habe den schleim bislang nicht anfreunden können."
   nicht beobachtet. Messmittel sind die Zeilen „crucible: …" beim Betreten (Probe der Schwäche des ersten Gegners) und je
   Kampf.
 
+### A549 · Crucible, Stufe 1, zweiter Teil: Zuschlag der Schwäche gemessen (K1), Ziel nach Blatt und Schwäche (K3) (05.11.2026)
+
+- *Auftrag:* `TODO.md`, „Beastmaster: Crucible-Strategien", Rest von Stufe 1; seine Vorgaben vom 05.11.2026 (TODO im
+  kritischen Loop, Fragen erst nach dem ganzen TODO, neue Punkte nach demselben Schema).
+- *Quellen:* Keine nennt die Höhe des Zuschlags. Die Websuche fand consolegameswiki („Crucible of the Unbroken",
+  „Beastmaster"), Eorzean Tavern und Icy Veins; sie sagen nur, dass Schwächen zählen.
+- *Entscheidung (Konzept 01, „Stufe 1, zweiter Teil"):*
+  - Die Daten (Kämpfe, Schwächen, Blattwerte, der laufende Kampf, Element je Aktion) liegen jetzt in
+    `Basic/Helpers/CrucibleBoard.cs`, damit `EnemyDanger` sie lesen kann. K2 bleibt in `BeastmasterCrucible.cs`.
+  - K1: `CrucibleBoard.RecordHit` (Watcher, jeder Treffer des Spielers und seiner Objekte im Kampf) misst den Schaden je
+    Potenz je Aktion, getrennt nach Schwäche und Rest. `WeaknessBonus` ist das gewichtete Mittel der Verhältnisse, 0 bis
+    zur ersten Aktion mit beiden Arten. `TrickValue` (B3) zählt getroffene Schwächen mit dem Zuschlag.
+  - K3: Die Zeit bis zum Fall rechnet mit eins plus Zuschlag mal Anteil des eigenen Schadens mit dieser Schwäche
+    (`FallSpeedup`). Vor dem ersten Treffer reiht `EnemyDanger.Compare` im Crucible nach dem Blattwert (Stärke,
+    Intelligenz) je LP.
+  - Verworfen: ein angenommener Zuschlag (keine Quelle, feste Zahl); der Vergleich über verschiedene Aktionen (Stärke und
+    Rang des Begleiters gingen ein); der Anteil des Begleiters statt des Elements (zählte Treffer ohne die Schwäche mit).
+- *Betroffene:* E – Beastmaster im Crucible: Hornwahl nach Lage, Zielreihenfolge ohne Tank und Heiler. R –
+  `TrickValue` (öffentlich) rechnet im Crucible mit dem Zuschlag; neue interne Klasse `CrucibleBoard`.
+- *Prüfgrad:* Compile ohne Warnung, Prüfschritte; Wirkkette am Code. Im Spiel nicht beobachtet; Messmittel ist die Zeile
+  „crucible: a hit on a weakness deals … more" je Brett, dazu die Zeilen aus A548.
+
 ## B · Commit-Register (Fork vs. `upstream/main`)
 
 ### B1 · Einzelgeprüfte Fork-Commits

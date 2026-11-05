@@ -1937,6 +1937,30 @@ danach K4, K5, K10.
 - *Im Kampf:* Seelenlose (Stich), Raptor auf einem Horn (Entfesseln Feuer), Sukkubi (Feuer) nach 45 s. Der Raptor
   bleibt im Zyklus zurück, solange ein anderes Horn bereit ist, und kommt, sobald die Sukkubi erscheinen.
 
+**Stufe 1, zweiter Teil: K1 und der Rest von K3** (A549, gebaut; Daten in `CrucibleBoard`):
+- *K1, Zuschlag gemessen:* Keine Quelle nennt ihn; consolegameswiki und Eorzean Tavern sagen nur, dass Schwächen
+  zählen (05.11.2026). RSR misst ihn an jedem Treffer von dir und deinen Begleitern auf einen Gegner des laufenden Kampfs.
+  Gezählt wird der Schaden je Potenz, getrennt nach Treffern auf seine Schwäche und anderen, je Aktion und Brett.
+  - Gemessen ist erst, wenn dieselbe Aktion beides getroffen hat. So fallen Stärke und Rang des Begleiters heraus; die
+    Abwehr der Gegner bleibt drin.
+  - Der Zuschlag ist das Mittel der Verhältnisse, gewichtet nach der kleineren Zahl der Treffer; bis dahin zählt er nicht.
+  - Gezählt werden nur Aktionen mit einer einfachen Potenz im Wirktext (`ActionTooltip.TryPlainPotency`) und mit Element
+    oder physischer Angriffsart.
+  - Eine Zeile nennt den ersten Messwert je Brett.
+- *K1 in der Hornwahl (B3):* Der Wert einer Dressur zählt jeden getroffenen Gegner, dessen Schwäche sie trifft, mit dem
+  Zuschlag. Der passende Begleiter bleibt so länger draußen.
+- *K3, Zeit bis zum Fall:* Seine LP geteilt durch eins plus Zuschlag mal Anteil. Der Anteil ist der Teil deines Schadens
+  in diesem Kampf, den Aktionen mit seiner Schwäche brachten. Gemessen, ohne Annahme, wer mehr Schaden macht.
+- *K3 vor der ersten Messung:* Hat noch kein Gegner getroffen, reiht RSR im Crucible nach dem größeren Wert aus Stärke und
+  Intelligenz des Blatts geteilt durch die LP. Bei Gleichstand und außerhalb des Crucible gilt: wenigste LP zuerst. Die
+  Blattwerte sind Stufen von 1 bis 4, kein Schaden; sie ordnen nur, bis die Messung da ist.
+- *Gegenthese:* Die Abwehr schwacher und anderer Gegner unterscheidet sich, also verzerrt sie den Zuschlag. Nicht
+  widerlegt: Eine Aktion, die beide Arten trifft, mittelt über Gegner mit unterschiedlicher Abwehr, und jede weitere Messung
+  verschiebt das Mittel. Die Folge ist klein, denn K1 ordnet nur die Hörner, und K3 wechselt das Ziel nur über der
+  Messunsicherheit (A541).
+- *Ausgeliefert, und nichts ändert sich?* Trifft keine Aktion im Brett beide Arten, bleibt der Zuschlag 0, und B3 und K3
+  laufen wie vor Stufe 1. Die Zeile zum ersten Messwert fehlt dann.
+
 ---
 
 ## Quantitative Auffälligkeiten

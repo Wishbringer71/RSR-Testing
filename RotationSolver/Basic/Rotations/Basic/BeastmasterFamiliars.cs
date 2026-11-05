@@ -171,23 +171,38 @@ public partial class BeastmasterRotation
 	public static float TrickValue(FamiliarProfile profile, IBattleChara? target)
 	{
 		var potency = profile.TrickPotency > 0f ? profile.TrickPotency : 1f;
-		if (profile.TrickRadius <= 0f || target == null)
+
+		// K1 of the Crucible (concept 01, A549): a hit on the weakness of an enemy of the fight counts with the bonus measured
+		// there; 0 elsewhere and before it is measured.
+		var bonus = CrucibleBoard.WeaknessBonus;
+		var trick = bonus > 0f ? CrucibleBoard.ElementsOf(profile.TrickId) : null;
+		float Hit(IBattleChara enemy)
+		{
+			return trick != null && trick.Contains(CrucibleBoard.WeaknessOf(enemy.NameId)) ? 1f + bonus : 1f;
+		}
+
+		if (target == null)
 		{
 			return potency;
 		}
 
-		var hits = 0;
+		if (profile.TrickRadius <= 0f)
+		{
+			return potency * Hit(target);
+		}
+
+		var hits = 0f;
 		foreach (var hostile in DataCenter.AllHostileTargets)
 		{
 			// An unpulled pack beside the target is no hit: the fight is with what is in combat.
 			if (hostile != null && !hostile.IsDead && (hostile.GameObjectId == target.GameObjectId || hostile.InCombat())
 				&& Vector3.Distance(hostile.Position, target.Position) - hostile.HitboxRadius <= profile.TrickRadius)
 			{
-				hits++;
+				hits += Hit(hostile);
 			}
 		}
 
-		return potency * Math.Max(1, hits);
+		return potency * Math.Max(1f, hits);
 	}
 
 	// C1 counts a stopping Release only against a pack (concept 01, A491): one attacker alone is the elite or boss case,

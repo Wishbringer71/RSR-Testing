@@ -1,4 +1,4 @@
-using ECommons.DalamudServices;
+﻿using ECommons.DalamudServices;
 using ECommons.GameHelpers;
 
 namespace RotationSolver.Basic.Helpers;
@@ -167,7 +167,10 @@ internal static class EnemyDanger
 
 		var rate = Rate(enemy, out var hits, out var announced);
 		uncertainty = announced || hits == 0 ? 0f : 1f / MathF.Sqrt(hits);
-		var priority = rate <= 0f ? 0f : rate / Math.Max(1u, enemy.CurrentHp);
+
+		// K3 of the Crucible (concept 01, A549): its fall comes sooner by the weakness bonus on the share of damage hitting it.
+		var fallsIn = Math.Max(1u, enemy.CurrentHp) / CrucibleBoard.FallSpeedup(enemy.NameId);
+		var priority = rate <= 0f ? 0f : rate / fallsIn;
 		cache[enemy.GameObjectId] = (priority, uncertainty);
 		return priority;
 	}
@@ -185,7 +188,11 @@ internal static class EnemyDanger
 		var pb = Priority(b, out var ub);
 		if (pa <= 0f && pb <= 0f)
 		{
-			return a.CurrentHp.CompareTo(b.CurrentHp);
+			// K3 of the Crucible (A549): before any enemy has hit, the sheet's rating of its strength over its HP; elsewhere,
+			// and for enemies the sheet does not rate, the fewer HP first.
+			var sa = CrucibleBoard.SheetDanger(a.NameId) / Math.Max(1u, a.CurrentHp);
+			var sb = CrucibleBoard.SheetDanger(b.NameId) / Math.Max(1u, b.CurrentHp);
+			return sa > 0f && sb > 0f && sa != sb ? sb.CompareTo(sa) : a.CurrentHp.CompareTo(b.CurrentHp);
 		}
 
 		var current = Svc.Targets.Target?.GameObjectId ?? 0;

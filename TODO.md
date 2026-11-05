@@ -13,8 +13,8 @@ Nach der Wirkung im Kampf: Sicherheit der Gruppe vor Schaden, gewichtet mit der 
 1. Allein ohne Heiler kommt kein Heiltrank: RSR stand 13 s in der kritischen Klasse ohne Heilfähigkeit, kein Trank
    von RSR trotz eingeschalteter Option, er drückte ihn bei 6 % selbst und starb (Beastmaster, Sägerschrei, 04.11.2026).
 2. Beastmaster: Crucible-Strategien: Ein K.O. beendet den Lauf, und ohne Zähnefletschen und Brett-Gegenstände von RSR
-   trägst du jeden Treffer selbst; danach Schaden: Der Feuer-Begleiter ging am 04.11. gegen den Boss, bevor die
-   feuerschwachen Adds kamen.
+   trägst du jeden Treffer selbst; ein Begleiter, den ein späterer Kampf braucht, kommt dort mit den LP an, die ihm die
+   früheren ließen.
 3. Beastmaster: Brechende Welle als Schaden: mit einem Wavekin auf dem Borgen-Horn ein Schadens-GCD, der nie kommt.
 4. Fremde Repositories auf Verbesserungen für RSR prüfen: Jeder Fund kann ein Defekt im Verhalten einer Klasse sein,
    den RSR heute im Kampf zeigt; zuerst die Rotationswerkzeuge für alle Jobs, Daedalus vorn (aktiv, alle Jobs,
@@ -54,13 +54,10 @@ Arzneien"), 07.
 
 ### Beastmaster: Crucible-Strategien · N
 Im Kampf: Fällst du im Brett, ist der Lauf verloren; RSR setzt Zähnefletschen ab Werk nicht ein (Upstream-Einstellung
-aus), keinen Brett-Gegenstand, ruft Begleiter ohne Blick auf die Schwäche der Gegner und hält keinen für später
-gerufene Gegner (am 04.11.2026 um 19:48 ging der Raptor mit Feuer gegen die Seelenlose, 40 s bevor die feuerschwachen
-Sukkubi kamen). *Ort:* `BST_Reborn` (B3, Zyklus, `FamiliarTankSwapAbility`), neu: Lesen der XBM-Blätter zur Laufzeit,
-`InstanceContentCrucibleOfTheUnbroken.UseItem`. Gebaut (A548): Schwäche und Gegnerliste je Kampf, Schadensart je
-Begleiter zur Laufzeit, Selbstprüfung beim Betreten, K2. *Nächster Schritt:* Rest von Stufe 1: K1 (Zuschlag gemessen)
-und K3 (über den allgemeinen Teil aus A541 hinaus: Blattwerte vor der ersten Messung, Schwäche, Bedarf der Begleiter
-über das Brett); dann K11 (Begleiter über das Brett planen: Bedarfsliste je Kampf, LP und Schaden je Einsatz) mit K9 (Zähnefletschen ab Werk, Provozieren am größten Treffer), K8 (Gegenstände, Sicherheit
+aus), keinen Brett-Gegenstand, und plant die Begleiter nicht über das Brett: Ein Heiler, der im vierten Kampf gebraucht
+wird, kann bis dahin auf 25 von 550 LP gefallen sein (04.11.2026). *Ort:* `BST_Reborn` (B3, Zyklus, `FamiliarTankSwapAbility`), neu: Lesen der XBM-Blätter zur Laufzeit,
+`InstanceContentCrucibleOfTheUnbroken.UseItem`. Gebaut: Stufe 1 (A548, A549: Daten zur Laufzeit, K1, K2, K3 ohne den
+Bedarf der Begleiter). *Nächster Schritt:* K11 (Begleiter über das Brett planen: Bedarfsliste je Kampf, LP und Schaden je Einsatz) mit K9 (Zähnefletschen ab Werk, Provozieren am größten Treffer), K8 (Gegenstände, Sicherheit
 zuerst), K6 (Hörner vor dem Kampf; zuerst messen, ob der Server im Brett zuweist) und K7 (Kader auf Wunsch über das
 Teamfenster); danach K4, K5 und K10 (Campsite, Laden, Weg, im eigenen Loop). *Konzept:* 01, „Crucible of the Unbroken: Bretter, Kämpfe, Strategien".
 

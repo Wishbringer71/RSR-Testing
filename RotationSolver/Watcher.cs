@@ -368,6 +368,26 @@ public static class Watcher
 		}
 	}
 
+	// K1 of the Crucible (concept 01, A549): every damage of the player or an object of his on an enemy of the fight in
+	// progress, for the bonus of a hit on a weakness and for the share of damage hitting each weakness.
+	private static void RecordCrucibleHits(ActionEffectSet set, IBattleChara player)
+	{
+		if (!DataCenter.IsInCrucible || CrucibleBoard.Fight == 0 || set.Source == null || set.Action is not { } action
+			|| !StatusHelper.IsPlayerOrOwned(set.Source.GameObjectId, player.GameObjectId))
+		{
+			return;
+		}
+
+		foreach (var effect in set.TargetEffects)
+		{
+			if (TryGetDamageEntry(effect, out var entry) && Svc.Objects.SearchById(effect.TargetID) is IBattleChara target
+				&& target.IsEnemy())
+			{
+				CrucibleBoard.RecordHit(action.RowId, target, FullAmount(entry));
+			}
+		}
+	}
+
 	// Concept 03, "Zielart ohne Tank und Heiler" (A541): an enemy's damage on the player and the party members, and its
 	// heals on other enemies, into its danger per second.
 	private static void RecordEnemyDanger(ActionEffectSet set, IBattleChara source, IBattleChara player)
@@ -815,6 +835,9 @@ public static class Watcher
 
 			// Healing by anyone but the player and his objects, for the rule that breaks off a single heal it made needless.
 			RecordHealsByOthers(set, playerObject);
+
+			// K1 of the Crucible (A549): the damage of the player's and his familiars' hits, for the weakness bonus.
+			RecordCrucibleHits(set, playerObject);
 
 			// A party member's Shirk on the player: his request to take the enemy he holds (TankSwapWatch).
 			if (set.Source is IBattleChara shirker && shirker.GameObjectId != playerObject.GameObjectId && shirker.IsParty()

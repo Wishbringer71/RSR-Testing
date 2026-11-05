@@ -178,6 +178,13 @@ What this release changes in the fight. For the whole distance from upstream, se
   04.11.2026 the Raptor's fire went to the boss 40 s before the fire-weak succubi came. With
   `Choose the battlehorn by the situation` on. `DefenseTrace.log` says on entering a board whether the fights
   were read, names each fight with the enemies still to come, and every hold.
+- **Weaknesses count, measured (Crucible).** No source states how much more a hit on a weakness
+  deals, so RSR measures it on a board: the damage per potency of each of your and your familiars'
+  actions on the weakness against the rest. Once measured, a Trick counts every weak enemy it hits
+  with that bonus when the horn is chosen, and with no tank and healer beside you an enemy whose
+  weakness your damage hits counts as falling that much sooner. Before any enemy has hit, the board
+  ranks enemies by the strength and intelligence the game rates them with, over their HP.
+  `DefenseTrace.log` names the first measurement on each board.
 - **A familiar that covers you stays (Crucible).** After Snarl - pressed by you or by `Use Snarl and
   Challenge …` - the familiar takes all damage meant for you for 45 s. RSR no longer sends it off with
   Parting Blow, or with a Tempered Release after which it leaves, to call the next horn while that cover
