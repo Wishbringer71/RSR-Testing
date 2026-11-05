@@ -252,6 +252,17 @@ What this release changes in the fight. For the whole distance from upstream, se
   Crucible Needle for your petrified familiar; against a boss a Potion of Tempered Constitution. In the final fight, whose items are lost after the run, protection also goes
   whenever an enemy attacks you. Each item's kind and size come from its own text. `DefenseTrace.log`
   names each use, and a slot the game did not take is not tried again in that fight.
+- **The horn screen waits until it is ready (Crucible).** The horn screen first shows the last battle's
+  horns and clears them a moment later; RSR took that clearing for your hand and left the horns alone
+  for the battle. It now reads the screen only once the field list is built and the battle readable.
+- **A familiar for enemies still to come waits from the pull (Crucible).** The battle the horn screen
+  named counts until the fight is told, so a familiar that only hits the weakness of enemies that
+  come later is held at the pull as well.
+- **Familiars that lag behind level up (Crucible).** `Prefer familiars that lag behind in rank for
+  the Crucible team`, **on by default**: the team recommendation gives a place to the lowest-ranked
+  familiar that replaces another adequately - the same weaknesses, healing or protection where
+  needed, at least the rank the game recommends for the board. On the horn screen a familiar below
+  that rank fights only when fewer others live than horns.
 - **What to take from a treasure (Crucible).** `Recommend what to take from a Crucible treasure`, **on by
   default**: while a treasure is open, a window names the offer to take and why, in the order of the shop
   recommendation with no price - a second life, cover against a deadly status of the board, the gear that

@@ -17028,6 +17028,64 @@ habe den schleim bislang nicht anfreunden können."
 - *Prüfgrad:* statisch, Compile ohne Warnung, Prüfskripte. Im Spiel nicht beobachtet; die Spurzeile „crucible treasure:
   … recommends …" nennt Zahl der Angebote und Wahl.
 
+### A579 · Crucible K7: Begleiter, die im Rang zurückliegen, zuerst in den Kader (05.11.2026)
+
+- *Anlass:* Seine Vorgabe vom 05.11.2026: „zum leveln der begleiter sollten die begleiter bei der anfangsauswahl des
+  brettes bevorzugt werden, die hinter den anderen hinterherleveln. ausnahme: sie sind kein adäquater ersatz für die
+  kämpfe aufgrund falscher eigenschaften." Eingeordnet als Vorgabe mit Ausnahme; Konzept 01, K7 „Leveln".
+- *Quellen:* `XBMContent` (xivapi, 05.11.2026): Kader, empfohlener Rang (gespeichert plus 2: EXDSchema „Take this value
+  subtract 2", Brett 2 zeigt 6 bei 8 laut Daedalus' Feldnotiz) und Synchronrang je Brett – 10/1/5, 12/6/10, 14/11/15,
+  12/16/20, 15/21/25; Lumina `Unknown34` bis `Unknown36`. `AgentXBMPetParty.GetSyncedRank`, `IsPetOverSyncedRank`
+  (FFXIVClientStructs aad0de6). Daedalus 74659a6 `CrucibleLevelPlan`: Erfahrung für jeden Begleiter im Kader, mit oder
+  ohne Horn (Werkzeugquelle, am Spiel unbestätigt).
+- *Gebaut:* Nach der bisherigen Kaderwahl tauscht RSR, vom höchsten Rang abwärts, jeden Gewählten gegen den Begleiter
+  mit dem niedrigsten Rang außerhalb des Kaders, der ihn adäquat ersetzt: trifft jede Schwäche, die nur der Gewählte im
+  Kader trifft; heilt oder schützt, wo das sonst fehlte; steht mindestens auf dem empfohlenen Rang; liegt unter dem
+  Gewählten und unter dem Höchstrang (größter Synchronrang der Bretter, 25). Grund in der Empfehlung („levels: rank … in
+  place of …"). K6: ein Begleiter unter dem empfohlenen Rang kämpft nur, wenn weniger andere leben als Hörner; bei sonst
+  gleicher Wahl der höhere synchronisierte Rang. Einstellung „Prefer familiars that lag behind in rank for the Crucible
+  team", ab Werk an. Festwert 2 (gespeicherter Rang) als Ausnahme.
+- *Gegenthesen:* Konzept 01, K7 „Leveln" (schwächer im Kampf, Erfahrung nur im Kampf, Rang über dem Synchronrang
+  unbekannt).
+- *Falsifikation:* Kein Defekt – es ist seine Vorgabe, kein Fehlverhalten. Option falsch – feste Plätze für Rückständige
+  ohne Prüfung der Eigenschaften verstießen gegen seine Ausnahme; ein reiner Gleichstandsbrecher griffe fast nie.
+  Ausgeliefert, und nichts ändert sich: wenn keiner der Rückständigen eine Schwäche des Gewählten trifft – dann tauscht
+  RSR nicht, und die Empfehlung nennt keinen „levels"-Grund.
+- *Prüfgrad:* statisch, Compile ohne Warnung, Prüfskripte. Im Spiel nicht beobachtet.
+
+### A580 · Crucible K6: Hornfenster las die Plätze des vorigen Kampfes als Handänderung (05.11.2026)
+
+- *Anlass:* Sein Upload vom 05.11.2026 (Spur ab 19:02, Build ec7aca6d4, erstes Brett 20:37 bis 21:08, durchgespielt,
+  kein Tod, eigene LP nie unter 59 %, Begleiter nie unter 40 %).
+- *Befund (Spur):* Das erste Hornfenster (20:42:06, „built 2", Kampf lesbar, keine alten Plätze) setzte Raptor,
+  Riesenwurm, Cu Sith. Die vier folgenden öffneten mit „built 1", ohne Kampfzeile und den Plätzen des vorigen Kampfes
+  („2 9 0", „0 7 8", „2 7 8", „7"); 55 ms später schrieb RSR „changed by hand to positions  – kept for this battle" und
+  setzte nichts: Es hatte die alten Plätze gemerkt und hielt das Leeren durch das Spiel für seine Hand.
+- *Behebung:* K6 liest und klickt erst, wenn das Fenster bereit ist (`AgentXBMStageDetailList.AddonInitState` 2 =
+  „entries built", FFXIVClientStructs; Kampf lesbar; Fenster sichtbar). Ein Leeren vor RSRs erstem Klick ist das Spiel.
+  Ein Fenster, das nie bereit wird, nennt RSR beim Schließen. Die Handerkennung von B5 schweigt im Brett (sie schrieb
+  nach jedem Kampf „battlehorns changed by hand to None, None, None"). Festwert 2 als Ausnahme.
+- *Gegenthese:* Leert der Spieler selbst alle Plätze, bevor RSR klickt, setzt RSR die Hörner trotzdem. Nicht widerlegt;
+  ein einzelner Klick wählt einen Platz, ein Leeren aller braucht mehrere Klicks innerhalb der ersten Augenblicke.
+- *Falsifikation:* Ausgeliefert, und nichts ändert sich: wenn das Spiel die Plätze erst nach „entries built" leert – dann
+  hält die zweite Regel (Leeren vor dem ersten Klick) es auf.
+- *Prüfgrad:* statisch, Compile ohne Warnung, Prüfskripte; Ursache an der Spur belegt. Im Spiel nicht beobachtet.
+
+### A581 · Crucible K2: der Kampf ist beim Anziehen schon bekannt (05.11.2026)
+
+- *Anlass:* Sein Hinweis vom 05.11.2026: „raptor für feuer, wo noch keine adds waren, die gegen feuer allergisch sind";
+  sein Auftrag „generell bei allen kämpfen prüfen ob die rota optimiert werden kann und die auswahl und das timing der
+  beschwörung" (TODO, Vorrang).
+- *Befund (Spur, Endkampf erstes Brett):* „FirstBattlehorn (Raptor) called" um 21:05:38, „combat started" 21:05:42, „to
+  come: Sukkubus-Magierin (Fire), Sukkubus-Ritterin (Fire)", die Sukkubi um 21:06:34. K2 wertete nur einen gemeldeten
+  Kampf aus; beim Anziehen war keiner gemeldet.
+- *Behebung:* `CrucibleBoard.Upcoming` hält den Kampf, den das Hornfenster nannte, bis ein Kampf gemeldet ist; K2 nimmt
+  ihn bis dahin mit den Gegnern, die gerade in der Gegnerliste stehen (`PresentNow`, nur bei in diesem Frame gebauter
+  Liste). Gelöscht beim Gebietswechsel und mit der Meldung des Kampfes.
+- *Falsifikation:* Ausgeliefert, und nichts ändert sich: wenn kein Hornfenster den Kampf nannte (Zufallsfeld ohne
+  Fenster) – dann bleibt es beim Verhalten vor A581.
+- *Prüfgrad:* statisch, Compile ohne Warnung, Prüfskripte; Ursache an der Spur belegt. Im Spiel nicht beobachtet.
+
 ## B · Commit-Register (Fork vs. `upstream/main`)
 
 ### B1 · Einzelgeprüfte Fork-Commits

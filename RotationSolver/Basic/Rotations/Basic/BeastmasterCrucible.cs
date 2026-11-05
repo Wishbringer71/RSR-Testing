@@ -43,26 +43,29 @@ public partial class BeastmasterRotation
 	/// </summary>
 	internal static bool HitsOnlyEnemiesToCome(FamiliarProfile profile)
 	{
-		if (CrucibleBoard.Fight == 0)
+		// A581: before combat tells the fight, the battle the horn screen named, with the enemies standing now.
+		var told = CrucibleBoard.Fight != 0;
+		var fight = told ? CrucibleBoard.Fight : CrucibleBoard.Upcoming;
+		if (fight == 0)
 		{
 			return false;
 		}
 
 		var hits = ElementsOf(profile);
 		var coming = false;
-		foreach (var enemy in CrucibleBoard.Enemies)
+		foreach (var enemy in told ? CrucibleBoard.Enemies : CrucibleBoard.EnemiesOf(fight))
 		{
 			if (enemy.Weakness == 0 || !hits.Contains(enemy.Weakness))
 			{
 				continue;
 			}
 
-			if (CrucibleBoard.IsHere(enemy.NameId))
+			if (told ? CrucibleBoard.IsHere(enemy.NameId) : CrucibleBoard.PresentNow(enemy.NameId))
 			{
 				return false;
 			}
 
-			coming |= CrucibleBoard.IsToCome(enemy.NameId);
+			coming |= told ? CrucibleBoard.IsToCome(enemy.NameId) : DataCenter.HostileListLive;
 		}
 
 		if (coming && _crucibleHeldTraced.Add(profile.Pet))

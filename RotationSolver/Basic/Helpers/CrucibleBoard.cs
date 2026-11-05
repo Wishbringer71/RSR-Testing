@@ -90,6 +90,35 @@ internal static class CrucibleBoard
 	/// </summary>
 	internal static bool IsToCome(uint nameId) => _fight != 0 && !_seen.Contains(nameId);
 
+	// A581: the battle the horn screen named last, until a fight is told - so K2 knows the enemies of a fight at its pull,
+	// before combat tells it (on 05.11.2026 the Raptor came against the Seelenlose at the pull, 55 s before the fire-weak adds).
+	private static uint _upcoming;
+
+	/// <summary>A581: the battle the horn screen named last, while no fight is told; 0 otherwise.</summary>
+	internal static uint Upcoming => _fight == 0 ? _upcoming : 0;
+
+	/// <summary>
+	/// A581: whether an enemy named <paramref name="nameId"/> stands in the hostile list now - before a fight is told, at its
+	/// pull. Read only while the list is built in this frame.
+	/// </summary>
+	internal static bool PresentNow(uint nameId)
+	{
+		if (!DataCenter.HostileListLive)
+		{
+			return false;
+		}
+
+		foreach (var hostile in DataCenter.AllHostileTargets)
+		{
+			if (hostile != null && !hostile.IsDead && hostile.NameId == nameId)
+			{
+				return true;
+			}
+		}
+
+		return false;
+	}
+
 	/// <summary>
 	/// Whether the fight in progress is the board's final one, against its boss: subrow 0 of the board's row in
 	/// XBMContentBattle (A553). The board's items are lost after the run.
@@ -156,6 +185,50 @@ internal static class CrucibleBoard
 			? content.Unknown34
 			: 0;
 	}
+
+	// XBMContent's recommended rank is stored two above what the board screen shows: "Take this value subtract 2. It is how
+	// the exe is doing it." (EXDSchema latest, XBMContent.RecommendedRank); board 2 stores 8 and shows "Recommended Beast
+	// Rank: 6 (Sync from 10)" (Daedalus 74659a6, field note). The game's own definition, not a tuned value (A579).
+	private const int RecommendedRankStored = 2;
+
+	/// <summary>
+	/// K7 (A579): the beast rank the game recommends for a board - XBMContent's RecommendedRank (Lumina's Unknown35) as the
+	/// board screen shows it; 0 when the row is missing.
+	/// </summary>
+	internal static int RecommendedRank(uint board)
+	{
+		return Svc.Data.GetExcelSheet<Lumina.Excel.Sheets.XBMContent>()?.GetRowOrDefault(board) is { } content
+			? Math.Max(1, content.Unknown35 - RecommendedRankStored)
+			: 0;
+	}
+
+	/// <summary>
+	/// K7 (A579): the highest beast rank - the highest board's sync rank (XBMContent's SyncRank, Lumina's Unknown36: 5, 10,
+	/// 15, 20, 25). A familiar there gains nothing more from a run.
+	/// </summary>
+	internal static int MaxRank
+	{
+		get
+		{
+			if (_maxRank > 0)
+			{
+				return _maxRank;
+			}
+
+			var sheet = Svc.Data.GetExcelSheet<Lumina.Excel.Sheets.XBMContent>();
+			if (sheet != null)
+			{
+				foreach (var row in sheet)
+				{
+					_maxRank = Math.Max(_maxRank, (int)row.Unknown36);
+				}
+			}
+
+			return _maxRank;
+		}
+	}
+
+	private static int _maxRank;
 
 	/// <summary>Whether XBMBattleDetail row <paramref name="battleRow"/> is a board's final fight (A553).</summary>
 	internal static bool IsFinalBattle(uint battleRow)
@@ -381,6 +454,7 @@ internal static class CrucibleBoard
 			EndFight();
 			EndStretch();
 			_tracedArea = 0;
+			_upcoming = 0;
 			return;
 		}
 
@@ -389,6 +463,7 @@ internal static class CrucibleBoard
 		{
 			EndFight();
 			EndStretch();
+			_upcoming = 0;
 			_tracedArea = DataCenter.TerritoryID;
 			var count = 0;
 			foreach (var (_, enemies) in fights)
@@ -455,6 +530,7 @@ internal static class CrucibleBoard
 				bestOverlap = overlap;
 				_fight = row;
 				_enemies = enemies;
+				_upcoming = 0;
 			}
 		}
 
@@ -613,6 +689,11 @@ internal static class CrucibleBoard
 	{
 		var party = AgentXBMPetParty.Instance();
 		var mode = party != null && ((AgentInterface*)party)->IsAgentActive() ? party->Mode : uint.MaxValue;
+		if (mode == HornScreenMode && UpcomingBattle() is var battle and not 0)
+		{
+			_upcoming = battle;
+		}
+
 		if (mode != _hornScreenMode)
 		{
 			_hornScreenMode = mode;

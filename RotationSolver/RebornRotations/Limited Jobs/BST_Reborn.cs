@@ -143,6 +143,17 @@ public sealed class BST_Reborn : BeastmasterRotation
 			+ "Off: no window, RSR takes nothing.")]
 	private bool RecommendCrucibleTreasure { get; set; } = true;
 
+	// K7 (concept 01, "Leveln", A579): his rule of 05.11.2026, the familiars that lag behind first, where they replace others adequately.
+	[RotationConfig(CombatType.PvE, Name = "Prefer familiars that lag behind in rank for the Crucible team",
+		Tooltip = "The team recommendation (team screen window) gives a familiar's place to the one with the lowest rank that "
+			+ "replaces it adequately - it hits every weakness of the board's fights only that familiar hits in the team, heals or "
+			+ "protects where that is still needed, and stands at least at the rank the game recommends for the board - so the "
+			+ "familiars that lag behind earn experience. On the horn screen a familiar below that rank fights only when fewer "
+			+ "others live than horns.\n"
+			+ "In a fight: the three on the horns are chosen as before; a familiar that only levels sits out unless it fits best.\n"
+			+ "Off: the strongest team for the board's fights, at equal worth those above the board's rank first.")]
+	private bool PreferLaggingFamiliars { get; set; } = true;
+
 	// K9 of the Crucible (concept 01, A550): on by default. Without a tank the enemies attack only you, and your fall ends the
 	// run; the familiar's HP are a second store, and a fallen familiar costs that familiar, not the run.
 	[RotationConfig(CombatType.PvE, Name = "Use Snarl and Challenge based on your HP and your familiar's HP (Crucible only)",
@@ -1099,7 +1110,7 @@ public sealed class BST_Reborn : BeastmasterRotation
 			SetHornsOnHornScreen();
 		}
 
-		FollowTeamRequest();
+		FollowTeamRequest(PreferLaggingFamiliars);
 		FollowCampsite(PickCampsiteRest);
 		FollowCrucibleShop(RecommendCrucibleShop);
 		FollowCrucibleTreasure(RecommendCrucibleTreasure);
@@ -1137,13 +1148,13 @@ public sealed class BST_Reborn : BeastmasterRotation
 
 	// A familiar on a horn, as the choice weighs it; on a Crucible board with the share of its HP left (1 elsewhere).
 	private readonly record struct HornOption(BeastmasterPet Pet, bool Safe, bool Fitting, float Damage, bool TrickHeals,
-		float Health = 1f);
+		float Health = 1f, int Rank = 0);
 
 	// The order of the choice (concept 01, B5): the required familiars that heal or protect; among them the kind that
 	// covers this fight best; the most damage; after a danger in this area more that heal or protect; his familiars on
 	// their horns; more that heal or protect; more whose Trick heals.
 	private readonly record struct HornPlanScore(int Required, int Fitting, float Damage, int SafeAfterDanger, int Kept,
-		int Safe, int TrickHeals, float Health) : IComparable<HornPlanScore>
+		int Safe, int TrickHeals, float Health, int Rank = 0) : IComparable<HornPlanScore>
 	{
 		public int CompareTo(HornPlanScore other)
 		{
@@ -1154,7 +1165,9 @@ public sealed class BST_Reborn : BeastmasterRotation
 			order = order != 0 ? order : Kept.CompareTo(other.Kept);
 			order = order != 0 ? order : Safe.CompareTo(other.Safe);
 			order = order != 0 ? order : TrickHeals.CompareTo(other.TrickHeals);
-			return order != 0 ? order : Health.CompareTo(other.Health);
+			order = order != 0 ? order : Health.CompareTo(other.Health);
+			// A579: on a board, at an otherwise equal choice the stronger by synced rank; elsewhere always equal.
+			return order != 0 ? order : Rank.CompareTo(other.Rank);
 		}
 	}
 
@@ -1338,6 +1351,13 @@ public sealed class BST_Reborn : BeastmasterRotation
 	// A change of the horns that RSR did not send is his: it stays until the next fight ends.
 	private void WatchHand()
 	{
+		// On a board the game clears the horns after each battle and K6 sets them on the horn screen, which keeps its own
+		// watch for a change by hand; B5 does not run there (A580).
+		if (IsInCrucible)
+		{
+			return;
+		}
+
 		var slots = CurrentPets;
 		if (slots.Length < Horns.Length)
 		{
@@ -1567,7 +1587,11 @@ public sealed class BST_Reborn : BeastmasterRotation
 	private DateTime _hornScreenClickAt;
 	private string _hornScreenSelection = string.Empty;
 	private string _hornScreenTraced = string.Empty;
-	private bool _hornScreenUnreadable;
+	private bool _hornScreenOpen;
+	private bool _hornScreenReady;
+
+	// AgentXBMStageDetailList.AddonInitState: 2 = entries built (FFXIVClientStructs aad0de6) - the game's state, not a tuned value.
+	private const uint StageEntriesBuilt = 2;
 
 	private unsafe void SetHornsOnHornScreen()
 	{
@@ -1575,13 +1599,21 @@ public sealed class BST_Reborn : BeastmasterRotation
 		if (!IsInCrucible || InCombat || party == null
 			|| !((FFXIVClientStructs.FFXIV.Client.UI.Agent.AgentInterface*)party)->IsAgentActive() || party->Mode != CrucibleBoard.HornScreenMode)
 		{
+			// A576, A580: a screen that closed without ever being ready says so once.
+			if (_hornScreenOpen && !_hornScreenReady)
+			{
+				TraceHorn("Crucible horn screen: closed before the battle about to start and the team could be read - horns left as they were");
+			}
+
+			_hornScreenOpen = false;
+			_hornScreenReady = false;
 			_hornScreenHeldByHand = false;
 			_hornScreenClicks = 0;
 			_hornScreenSelection = string.Empty;
-			_hornScreenUnreadable = false;
 			return;
 		}
 
+		_hornScreenOpen = true;
 		var team = party->SelectedPets.AsSpan();
 		var current = party->PetCurrentHealth;
 		var max = party->PetMaxHealth;
@@ -1591,10 +1623,26 @@ public sealed class BST_Reborn : BeastmasterRotation
 			selected.Add((int)chosen.PetId);
 		}
 
+		// A580: the screen is ready once the field agent has built its entries, the battle about to start reads and the
+		// window shows. Before, it still holds the last battle's horn positions (on 05.11.2026 four of five screens opened
+		// with them, the stage list not yet built, and cleared them 55 ms later) - what is seen then is not the player's.
+		var stages = FFXIVClientStructs.FFXIV.Client.UI.Agent.AgentXBMStageDetailList.Instance();
+		var battle = CrucibleBoard.UpcomingBattle();
+		var addon = (FFXIVClientStructs.FFXIV.Component.GUI.AtkUnitBase*)ECommons.DalamudServices.Svc.GameGui.GetAddonByName("XBMPetParty").Address;
+		if (stages == null || stages->AddonInitState < StageEntriesBuilt || battle == 0 || team.Length == 0
+			|| addon == null || !addon->IsVisible)
+		{
+			_hornScreenSelection = string.Empty;
+			return;
+		}
+
+		_hornScreenReady = true;
 		var selection = string.Join(",", selected);
 		var now = DateTime.Now;
 		var clickPending = _hornScreenClicks > 0 && (now - _hornScreenClickAt).TotalSeconds < DataCenter.DefaultGCDTotal;
-		if (_hornScreenSelection.Length > 0 && selection != _hornScreenSelection && !clickPending && !_hornScreenHeldByHand)
+		// Emptied before RSR's first click is still the game clearing the last battle's horns, not a choice.
+		var gameCleared = selection.Length == 0 && _hornScreenClicks == 0;
+		if (_hornScreenSelection.Length > 0 && selection != _hornScreenSelection && !clickPending && !gameCleared && !_hornScreenHeldByHand)
 		{
 			_hornScreenHeldByHand = true;
 			TraceHorn($"Crucible horn screen: changed by hand to positions {selection} - kept for this battle");
@@ -1606,18 +1654,6 @@ public sealed class BST_Reborn : BeastmasterRotation
 		}
 
 		_hornScreenSelection = selection;
-		var battle = CrucibleBoard.UpcomingBattle();
-		if (battle == 0 || team.Length == 0)
-		{
-			// A576: once per screen, so a horn screen RSR leaves alone says why.
-			if (!_hornScreenUnreadable)
-			{
-				_hornScreenUnreadable = true;
-				TraceHorn($"Crucible horn screen: {(battle == 0 ? "the battle about to start" : "the team")} not readable - horns left as they are");
-			}
-
-			return;
-		}
 
 		var enemies = CrucibleBoard.EnemiesOf(battle);
 		var boss = CrucibleBoard.IsFinalBattle(battle);
@@ -1632,6 +1668,18 @@ public sealed class BST_Reborn : BeastmasterRotation
 			options[h] = [];
 		}
 
+		// A579: a familiar below the rank the game recommends for this board fights only when fewer others live than horns.
+		var recommended = CrucibleBoard.RecommendedRank(party->ContentId);
+		var adequateLiving = 0;
+		for (var i = 0; i < team.Length; i++)
+		{
+			var pet = (BeastmasterPet)team[i].PetId;
+			if (i < current.Length && current[i] > 0 && (party->IsPetOverSyncedRank((uint)pet) || party->GetSyncedRank((uint)pet) >= recommended))
+			{
+				adequateLiving++;
+			}
+		}
+
 		for (var i = 0; i < team.Length; i++)
 		{
 			var pet = (BeastmasterPet)team[i].PetId;
@@ -1642,10 +1690,16 @@ public sealed class BST_Reborn : BeastmasterRotation
 				continue;
 			}
 
+			var rank = (int)party->GetSyncedRank((uint)pet);
+			if (adequateLiving >= Horns.Length && !party->IsPetOverSyncedRank((uint)pet) && rank < recommended)
+			{
+				continue;
+			}
+
 			position[pet] = i;
 			for (var h = 0; h < Horns.Length; h++)
 			{
-				options[h].Add(Option(pet, Horns[h], boss, pack, enemies) with { Health = hp / (float)full });
+				options[h].Add(Option(pet, Horns[h], boss, pack, enemies) with { Health = hp / (float)full, Rank = rank });
 			}
 		}
 
@@ -1731,12 +1785,6 @@ public sealed class BST_Reborn : BeastmasterRotation
 			return;
 		}
 
-		var addon = (FFXIVClientStructs.FFXIV.Component.GUI.AtkUnitBase*)ECommons.DalamudServices.Svc.GameGui.GetAddonByName("XBMPetParty").Address;
-		if (addon == null || !addon->IsVisible)
-		{
-			return;
-		}
-
 		// A wrong order is cleared from the back and picked again: horn order is the order of selection.
 		var click = prefix ? wanted[selected.Count] : selected[^1];
 		ReadOnlySpan<int> sent = [1, click];
@@ -1767,7 +1815,8 @@ public sealed class BST_Reborn : BeastmasterRotation
 		var kept = (a.Pet == current[I] ? 1 : 0) + (b.Pet == current[II] ? 1 : 0) + (c.Pet == current[III] ? 1 : 0);
 		var healers = (a.TrickHeals ? 1 : 0) + (b.TrickHeals ? 1 : 0) + (c.TrickHeals ? 1 : 0);
 		return new HornPlanScore(Math.Min(safe, required), required > 0 ? Math.Min(fitting, 1) : 0,
-			a.Damage + b.Damage + c.Damage, _dangerInArea ? safe : 0, kept, safe, healers, a.Health + b.Health + c.Health);
+			a.Damage + b.Damage + c.Damage, _dangerInArea ? safe : 0, kept, safe, healers, a.Health + b.Health + c.Health,
+			a.Rank + b.Rank + c.Rank);
 	}
 	#endregion
 

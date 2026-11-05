@@ -2170,6 +2170,12 @@ danach K4, K5, K10 (Campsite A564 und Laden A569 gebaut; der Weg ist eine Frage 
   Aufhalten eines Rudels (C1). Eine Zeile nennt das Halten einmal je Kampf und Horn und den Ruf.
 - *Im Kampf:* Seelenlose (Stich), Raptor auf einem Horn (Entfesseln Feuer), Sukkubi (Feuer) nach 45 s. Der Raptor
   bleibt im Zyklus zurück, solange ein anderes Horn bereit ist, und kommt, sobald die Sukkubi erscheinen.
+- *Beim Anziehen (A581; sein Hinweis vom 05.11.2026: „raptor für feuer, wo noch keine adds waren, die gegen feuer
+  allergisch sind"):* Der erste Begleiter kommt mit dem Anziehen, Sekunden bevor das Spiel den Kampf meldet; bis dahin
+  war kein Kampf bekannt, und K2 hielt nichts zurück – am 05.11.2026 kam der Raptor um 21:05:38, der Kampf begann
+  21:05:42, die Sukkubi 21:06:34. Jetzt gilt bis zur Meldung der Kampf, den das Hornfenster zuletzt nannte
+  (`CrucibleBoard.Upcoming`), mit den Gegnern, die gerade in der Gegnerliste stehen (`PresentNow`); wer aus seinem Blatt
+  dort fehlt, kommt noch. Ohne Hornfenster (kein Kampf genannt) bleibt es wie vorher.
 
 **Stufe 3: K8, Gegenstände des Bretts** (A551 bis A555, gebaut). Zwei Einstellungen, beide ab Werk an: „Use the
 board's items that keep you and your familiar alive (Crucible only)" und „Use the board's damage items and buffs: damage
@@ -2323,12 +2329,22 @@ on a pack once a fight, all of them in the final fight (Crucible only)".
   plus Schwächezuschlag mal Anteil der Gegner, deren Schwäche der Begleiter trifft (K1; vor der ersten Messung null),
   nach Gefahr im Brett einer mehr, der heilt oder schützt (B5); die schon gewählten zählen als „behalten". Als letzter
   Gleichstandsbrecher die Summe der LP-Anteile (Daedalus, Feldnotiz 30.10.2026: drei angeschlagene Begleiter auf allen
-  Hörnern, der Beastmaster tankte und fiel); außerhalb des Crucible ist sie stets gleich, B5 ändert sich dort nicht.
+  Hörnern, der Beastmaster tankte und fiel), danach die Summe der synchronisierten Ränge (A579: der stärkere bei
+  sonst gleicher Wahl); außerhalb des Crucible sind beide stets gleich, B5 ändert sich dort nicht. Ein Begleiter unter
+  dem empfohlenen Rang des Bretts kommt nur in Frage, wenn weniger andere leben als Hörner da sind (A579, K7 „Leveln").
   Spurzeile „Crucible horn screen: horns set for battle …".
 - *Klicks:* Rückruf des Fensters mit `[1, Platz]`, einer, dann neu lesen. Ist die Auswahl kein Anfang der gewünschten
   Reihenfolge, wird der zuletzt gewählte abgewählt, sonst der nächste gewünschte gewählt; höchstens doppelt so viele
   Klicks wie dreimal die Plätze im Kader, dann eine Spurzeile und Schluss. Ändert er die Auswahl selbst, bleibt sie für dieses
   Fenster. Den Kampf startet er.
+- *Bereit (A580):* RSR liest und klickt erst, wenn das Fenster bereit ist: der Feld-Agent hat seine Einträge gebaut
+  (`AgentXBMStageDetailList.AddonInitState` 2), der anstehende Kampf ist lesbar, das Fenster sichtbar. Vorher zeigt das
+  Spiel noch die Hornplätze des vorigen Kampfes und leert sie Augenblicke später: Am 05.11.2026 öffneten vier von fünf
+  Hornfenstern so (Sonde: „built 1", keine Kampfzeile, „horn positions 2 9 0"; 55 ms später leer). RSR hielt das Leeren
+  für seine Handänderung und setzte in diesen vier Kämpfen nichts. Eine Änderung zählt erst als seine, wenn RSR die
+  Auswahl des bereiten Fensters gesehen hat, und ein Leeren vor RSRs erstem Klick ist das Spiel. Wird das Fenster nie
+  bereit, schreibt RSR das beim Schließen einmal in die Spur. Die Handerkennung der Belegung im Dungeon (B5) schweigt im
+  Brett: Dort leert das Spiel die Hörner nach jedem Kampf, und sie hielt das für seine Hand.
 - *Gegenthese 1 (Absturz):* BeastHelper dokumentiert einen Absturz durch nachgebaute Fensterereignisse. Der Rückruf mit
   Werten ist ein anderer Weg; Daedalus nutzt ihn im Spielbetrieb seit 22.10.2026. Nicht widerlegt bleibt: Ein Patch
   kann die Werte des Fensters ändern; die Prüfung nach jedem Klick hält dann an.
@@ -2348,6 +2364,34 @@ on a pack once a fight, all of them in the final fight (Crucible only)".
   (`XBMContentBattle` → `XBMBattleDetail`), und jeder schon gewählte Begleiter mit derselben Schwäche teilt es
   (Gewicht durch eins plus die Zahl der schon Gewählten, die sie treffen). Bei Gleichstand zuerst, wer über dem Rang des
   Bretts steht (`IsPetOverSyncedRank`), dann wer schon im Kader ist. Ein Unterbrecher (K4) wartet auf die Sonde A557.
+- *Leveln (seine Vorgabe, 05.11.2026, A579):* „zum leveln der begleiter sollten die begleiter bei der anfangsauswahl des
+  brettes bevorzugt werden, die hinter den anderen hinterherleveln. ausnahme: sie sind kein adäquater ersatz für die
+  kämpfe aufgrund falscher eigenschaften." *Mechanik:* Jeder Begleiter im Kader eines Laufs bekommt Erfahrung, mit oder
+  ohne Horn (Daedalus 74659a6, `CrucibleLevelPlan`, Werkzeugquelle aus dem Spielbetrieb, am Spiel nicht bestätigt); der
+  Rang reicht bis 25. Am Brett zeigt das Spiel den Rang synchronisiert (`AgentXBMPetParty.GetSyncedRank`): Wer über dem
+  Synchronrang des Bretts steht (`IsPetOverSyncedRank`), zeigt ihn, darunter den eigenen. Das Brett nennt seinen
+  Synchronrang und den empfohlenen Rang (`XBMContent`, Spalten 36 und 35; der empfohlene ist der Wert minus 2, wie das
+  Spiel rechnet – EXDSchema, und Brett 2 zeigt „Recommended Beast Rank: 6 (Sync from 10)" bei 8, Daedalus' Feldnotiz):
+  erstes Brett 1 und 5, zweites 6 und 10, drittes 11 und 15, Erstes Meisterbrett 16 und 20, Zweites 21 und 25 (xivapi,
+  05.11.2026).
+  *Regel:* Nach der Wahl oben tauscht RSR, vom höchsten Rang abwärts, jeden Gewählten gegen den Begleiter mit dem
+  niedrigsten Rang außerhalb des Kaders, der ihn **adäquat ersetzt**: Er trifft jede Schwäche, die im Kader nur der
+  Gewählte trifft; er heilt oder schützt, wenn der Gewählte das tut und sonst zu wenige blieben; und er steht mindestens
+  auf dem empfohlenen Rang des Bretts. Getauscht wird nur nach unten: Der Ersatz liegt im Rang unter dem Gewählten.
+  „Falsche Eigenschaften" sind damit die fehlende Schwäche, die fehlende Heilung oder der Schutz, und ein Rang unter der
+  Empfehlung des Spiels. Begleiter auf Rang 25 lernen nichts mehr und tauschen nicht ein. Der Grund steht in der
+  Empfehlung („levels: rank …").
+  *Einstellung:* „Prefer familiars that lag behind in rank for the Crucible team", ab Werk an (seine Regel; wer den
+  stärksten Kader will, schaltet sie ab).
+  *Gegenthese 1 (schwächer im Kampf):* Ein Begleiter auf Rang 2 hat auf dem ersten Brett weniger Werte als einer auf 5.
+  Teilweise widerlegt: Er tauscht nur ein, wo er mindestens auf der Empfehlung des Spiels steht; welche drei kämpfen,
+  wählt K6 je Kampf, und K6 nimmt einen Begleiter unter der Empfehlung nur, wenn nicht genug andere leben, und bei
+  Gleichstand den höheren Rang. Es bleibt: Zwischen Empfehlung und Synchronrang kämpft ein schwächerer Begleiter, wenn
+  er der einzige ist, der eine Schwäche trifft – Preis: weniger Schaden und LP dieses Begleiters in diesem Kampf.
+  *Gegenthese 2 (Erfahrung nur im Kampf):* Gibt das Spiel Erfahrung nur für eingesetzte Begleiter, levelt der Tausch nur,
+  wenn K6 ihn aufs Horn nimmt. Nicht widerlegt, unbelegt; der Kader bleibt in jedem Fall so geeignet wie vorher.
+  *Gegenthese 3 (Rang über dem Synchronrang unbekannt):* Zwei Begleiter über dem Synchronrang sind am Brett nicht zu
+  unterscheiden. Nicht widerlegt: Unter ihnen tauscht RSR nicht; ein solcher ist für die Regel nie der Rückständige.
 - *Umsetzen:* erst die Abgänge, dann die Zugänge, je ein `TogglePet`; danach wartet RSR, bis der Kader sich ändert,
   höchstens einen GCD. Nimmt das Spiel einen Zugang nicht, fällt er für diese Sitzung aus der Empfehlung, und es geht
   weiter; geht ein Abgang nicht, hört RSR auf. Jede Stufe steht in der Spur („crucible team: …"); bestätigen und

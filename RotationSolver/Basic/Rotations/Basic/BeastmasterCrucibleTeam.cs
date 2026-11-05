@@ -72,9 +72,12 @@ public partial class BeastmasterRotation
 	/// K7: the team RSR recommends for <paramref name="board"/> - as many as it holds; first as many that heal or protect as
 	/// B5 wants before a boss, then one by one the familiar that hits the weakness of the most enemies of the board's fights
 	/// not yet covered (each enemy of a weakness counts one, shared by the familiars already chosen that hit it); at equal
-	/// worth one above the board's rank first, then one in the team already.
+	/// worth one above the board's rank first, then one in the team already. With <paramref name="levelLagging"/> (his rule
+	/// of 05.11.2026, A579) each pick, from the highest rank down, gives way to the lowest-ranked familiar outside the team
+	/// that replaces it adequately: it hits every weakness only that pick hits in the team, heals or protects where that is
+	/// still needed, stands at least at the board's recommended rank, and ranks below the pick and below the highest rank.
 	/// </summary>
-	internal static unsafe List<CrucibleTeamPick> RecommendCrucibleTeam(uint board)
+	internal static unsafe List<CrucibleTeamPick> RecommendCrucibleTeam(uint board, bool levelLagging)
 	{
 		var picks = new List<CrucibleTeamPick>();
 		var size = CrucibleBoard.TeamSize(board);
@@ -97,7 +100,7 @@ public partial class BeastmasterRotation
 
 		var team = CrucibleTeamNow();
 		var party = AgentXBMPetParty.Instance();
-		var candidates = new List<(BeastmasterPet Pet, FamiliarProfile Profile, HashSet<uint> Hits, bool Safe, bool OverRank)>();
+		var candidates = new List<TeamCandidate>();
 		foreach (var pet in Enum.GetValues<BeastmasterPet>())
 		{
 			if (pet == BeastmasterPet.None || _teamRefused.Contains(pet) || FamiliarUnlocked(pet) != true || FamiliarOf(pet) is not { } profile)
@@ -107,12 +110,14 @@ public partial class BeastmasterRotation
 
 			var safe = profile.TrickHeals || profile.ReleaseHeals || profile.ReleaseProtects || profile.BorrowProtects;
 			var overRank = party != null && party->IsPetOverSyncedRank((uint)pet);
-			candidates.Add((pet, profile, ElementsOf(profile), safe, overRank));
+			var rank = party != null ? (int)party->GetSyncedRank((uint)pet) : 0;
+			candidates.Add(new TeamCandidate(pet, ElementsOf(profile), safe, overRank, rank));
 		}
 
+		var chosen = new List<TeamCandidate>();
 		var covered = new Dictionary<uint, int>();
 		var safeTaken = 0;
-		while (picks.Count < size && candidates.Count > 0)
+		while (chosen.Count < size && candidates.Count > 0)
 		{
 			var needSafe = safeTaken < BossSafeFamiliars;
 			var best = -1;
@@ -138,23 +143,99 @@ public partial class BeastmasterRotation
 				}
 			}
 
-			var chosen = candidates[best];
+			var pick = candidates[best];
 			candidates.RemoveAt(best);
-			var hit = new List<string>();
-			foreach (var element in chosen.Hits)
+			chosen.Add(pick);
+			foreach (var element in pick.Hits)
 			{
 				covered[element] = covered.GetValueOrDefault(element) + 1;
+			}
+
+			safeTaken += pick.Safe ? 1 : 0;
+		}
+
+		// A579: leveling - a pick gives way to the lowest-ranked familiar that replaces it adequately.
+		var replaced = new Dictionary<BeastmasterPet, TeamCandidate>();
+		if (levelLagging && party != null)
+		{
+			var recommended = CrucibleBoard.RecommendedRank(board);
+			var maxRank = CrucibleBoard.MaxRank;
+			var byRank = new List<TeamCandidate>(chosen);
+			byRank.Sort((a, b) => a.OverRank != b.OverRank ? (a.OverRank ? -1 : 1) : b.Rank.CompareTo(a.Rank));
+			foreach (var pick in byRank)
+			{
+				var unique = new List<uint>();
+				foreach (var element in pick.Hits)
+				{
+					if (weight.ContainsKey(element) && covered.GetValueOrDefault(element) == 1)
+					{
+						unique.Add(element);
+					}
+				}
+
+				var safeLeft = 0;
+				foreach (var member in chosen)
+				{
+					safeLeft += member.Safe && member.Pet != pick.Pet ? 1 : 0;
+				}
+
+				var needsSafe = pick.Safe && safeLeft < BossSafeFamiliars;
+				var substitute = -1;
+				for (var i = 0; i < candidates.Count; i++)
+				{
+					var other = candidates[i];
+					if (other.OverRank || other.Rank < recommended || other.Rank >= maxRank
+						|| (!pick.OverRank && other.Rank >= pick.Rank) || (needsSafe && !other.Safe) || !other.Hits.IsSupersetOf(unique))
+					{
+						continue;
+					}
+
+					if (substitute < 0 || other.Rank < candidates[substitute].Rank
+						|| (other.Rank == candidates[substitute].Rank && team.Contains(other.Pet) && !team.Contains(candidates[substitute].Pet)))
+					{
+						substitute = i;
+					}
+				}
+
+				if (substitute < 0)
+				{
+					continue;
+				}
+
+				var joiner = candidates[substitute];
+				candidates.RemoveAt(substitute);
+				candidates.Add(pick);
+				_ = chosen.Remove(pick);
+				chosen.Add(joiner);
+				replaced[joiner.Pet] = pick;
+				foreach (var element in pick.Hits)
+				{
+					covered[element] = covered.GetValueOrDefault(element) - 1;
+				}
+
+				foreach (var element in joiner.Hits)
+				{
+					covered[element] = covered.GetValueOrDefault(element) + 1;
+				}
+			}
+		}
+
+		foreach (var pick in chosen)
+		{
+			var hit = new List<string>();
+			foreach (var element in pick.Hits)
+			{
 				if (weight.TryGetValue(element, out var enemies))
 				{
 					hit.Add($"{CrucibleBoard.ElementName(element)} ({enemies})");
 				}
 			}
 
-			safeTaken += chosen.Safe ? 1 : 0;
-			var why = (chosen.Safe ? "heals or protects; " : string.Empty)
+			var why = (pick.Safe ? "heals or protects; " : string.Empty)
 				+ (hit.Count > 0 ? $"hits {string.Join(", ", hit)}" : "no weakness of this board")
-				+ (chosen.OverRank ? string.Empty : "; below the board's rank");
-			picks.Add(new CrucibleTeamPick(chosen.Pet, why, team.Contains(chosen.Pet)));
+				+ (pick.OverRank ? string.Empty : "; below the board's rank")
+				+ (replaced.TryGetValue(pick.Pet, out var gave) ? $"; levels: rank {pick.Rank} in place of {gave.Pet} ({(gave.OverRank ? "above the board's rank" : $"rank {gave.Rank}")})" : string.Empty);
+			picks.Add(new CrucibleTeamPick(pick.Pet, why, team.Contains(pick.Pet)));
 		}
 
 		return picks;
@@ -173,10 +254,12 @@ public partial class BeastmasterRotation
 		}
 
 		// At equal worth: above the board's rank first, then one in the team already.
-		bool Before((BeastmasterPet Pet, FamiliarProfile Profile, HashSet<uint> Hits, bool Safe, bool OverRank) a,
-			(BeastmasterPet Pet, FamiliarProfile Profile, HashSet<uint> Hits, bool Safe, bool OverRank) b)
+		bool Before(TeamCandidate a, TeamCandidate b)
 			=> a.OverRank != b.OverRank ? a.OverRank : team.Contains(a.Pet) && !team.Contains(b.Pet);
 	}
+
+	// K7: a familiar the team recommendation weighs - what it hits, whether it heals or protects, its rank on this board.
+	private readonly record struct TeamCandidate(BeastmasterPet Pet, HashSet<uint> Hits, bool Safe, bool OverRank, int Rank);
 
 	/// <summary>K7: make the team <paramref name="wanted"/> - leavers first, then joiners, one TogglePet at a time.</summary>
 	public static void RequestCrucibleTeam(List<BeastmasterPet> wanted)
@@ -189,9 +272,9 @@ public partial class BeastmasterRotation
 
 	// K7: one step of a requested change each time the team has taken the last one, at most one GCD after it; a joiner the
 	// game does not take leaves the recommendation for this session, a leaver it does not take ends the change.
-	internal static void FollowTeamRequest()
+	internal static void FollowTeamRequest(bool levelLagging)
 	{
-		CrucibleTeamRecommendation = CrucibleTeamScreenOpen(out var board) ? RecommendCrucibleTeam(board) : [];
+		CrucibleTeamRecommendation = CrucibleTeamScreenOpen(out var board) ? RecommendCrucibleTeam(board, levelLagging) : [];
 		if (_teamWanted == null)
 		{
 			return;

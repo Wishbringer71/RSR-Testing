@@ -1408,6 +1408,26 @@
    "status": "exception",
    "loop": "A578",
    "reason": "The game's command of XBMContentsTreasure to take offer i ([2, i]; Daedalus 74659a6, CrucibleAutoPilot.TakeTreasure and CrucibleAutoPilotRules, recorded 25.10.2026 in field use). Not a tuned value; RSR sends it only on his click."
+  },
+  {
+   "file": "RotationSolver/RebornRotations/Limited Jobs/BST_Reborn.cs",
+   "code": "private const uint StageEntriesBuilt = 2;",
+   "values": [
+    "2"
+   ],
+   "status": "exception",
+   "loop": "A580",
+   "reason": "AgentXBMStageDetailList.AddonInitState 2 = entries built (FFXIVClientStructs aad0de6). The game's state of the field agent, not a tuned value: before it, the horn screen still shows the last battle's horn positions (his trace of 05.11.2026, four of five screens)."
+  },
+  {
+   "file": "RotationSolver/Basic/Helpers/CrucibleBoard.cs",
+   "code": "private const int RecommendedRankStored = 2;",
+   "values": [
+    "2"
+   ],
+   "status": "exception",
+   "loop": "A579",
+   "reason": "XBMContent's RecommendedRank is stored two above what the board screen shows: EXDSchema latest, \"Take this value subtract 2. It is how the exe is doing it.\"; board 2 stores 8 and shows \"Recommended Beast Rank: 6 (Sync from 10)\" (Daedalus 74659a6, field note). The game's own definition, not a tuned value."
   }
  ]
 }
