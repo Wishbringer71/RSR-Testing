@@ -100,11 +100,13 @@ Im Kampf: Nach einem Kampf bleibt der letzte Begleiter draußen, sein One with N
 `BST_Reborn.GeneralAbility` ruft nur ohne Begleiter draußen); den nächsten Pull beginnt er ohne Entfesseln und Borrow,
 bis Scheidender Schlag und der nächste Ruf kommen – vor einem Rudel ohne den aufhaltenden Begleiter (C1 am Pull, A542).
 Belegt: Außerhalb des Kampfes hat ein Horn 2 s Abklingzeit, der Rückzug dort startet sie nicht, One with Nature ist
-dauerhaft (Wirktext Kampfhorn, Status 4601). Unbelegt: wie der Begleiter außerhalb des Kampfes zurücktritt – Scheidender
-Schlag braucht ein feindliches Ziel und zöge es. *Ort:* `BST_Reborn.GeneralAbility`, `SituationalHorn`, B5.
-*Nächster Schritt:* Wirktexte und Spielblätter auf einen Rückzug ohne Ziel durchsuchen (Befehl der Begleiterleiste,
-`ExecuteCommand` wie bei der Zuweisung, A521); findet sich einer, im Loop: außerhalb des Kampfes vor dem nächsten Gegner
-den Begleiter für diesen Kampf rufen (B5). *Konzept:* 01, „Belegung der Hörner in der Rotation".
+dauerhaft (Wirktext Kampfhorn 44881, Status 4601); Scheidender Schlag geht nur im Kampf (Wirktext 44891). Kandidat für
+den Rückzug: der Begleiterbefehl „Away" (PetAction 1, „Order pet to leave the battlefield"); ob er für Begleiter des
+Beastmasters gilt, ist unbelegt, und RSR führt heute keinen Begleiterbefehl aus. *Ort:* `BST_Reborn.GeneralAbility`,
+`SituationalHorn`, B5. *Nächster Schritt:* Loop mit Selbstmessung: außerhalb des Kampfes, vor dem nächsten Gegner (B5),
+mit einem Begleiter ohne One with Nature draußen „Away" nur, wenn das Spiel ihn freigibt (`GetActionStatus` 0); ist
+der Begleiter einen GCD später noch draußen, gilt der Befehl in dieser Sitzung als wirkungslos, mit Spurzeile; sonst
+den Begleiter für den nächsten Kampf rufen (vor einem Rudel den aufhaltenden, C1). *Konzept:* 01, „Belegung der Hörner in der Rotation".
 
 ### Beastmaster: Brechende Welle als Schaden · N, U
 Im Kampf: Mit einem Wavekin auf dem Borgen-Horn (etwa Pugil) kommt Brechende Welle nur gegen ein Ziel mit einer der
