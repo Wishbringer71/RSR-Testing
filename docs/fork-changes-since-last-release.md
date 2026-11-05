@@ -214,6 +214,12 @@ What this release changes in the fight. For the whole distance from upstream, se
 - **Quelling Wave against a water weakness (Crucible).** On a board Quelling Wave now goes before the axe
   combo when the target is weak to water and its potency with the measured weakness bonus beats the
   combo's mean step; elsewhere it stays the filler for when no axe reaches the target.
+- **The horns on the Crucible's horn screen.** The game asks for the horns before each battle on a
+  board and keeps none from the last. With `Set the battlehorns between fights for the next one` (on
+  by default) RSR now picks from your team for the battle about to start - the final fight counts as a
+  boss, the pack is the battle's enemies, a familiar that hits their weakness counts the measured bonus,
+  among equals the one with more HP left - and clicks them in one at a time. Picked by hand there,
+  your horns stay; you start the battle.
 - **Snarl and Challenge are on by default (Crucible).** Without a tank the enemies attack only you,
   and your fall ends the run, while a fallen familiar costs only that familiar. `Use Snarl and
   Challenge based on your HP and your familiar's HP (Crucible only)` is now **on by default**, still on

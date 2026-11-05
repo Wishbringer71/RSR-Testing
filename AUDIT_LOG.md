@@ -16564,6 +16564,22 @@ habe den schleim bislang nicht anfreunden können."
 - *Weiter mit Daedalus:* Zielwahl, Abwehr, Kampfvorhersage, Heiler-Triage, Blaumagier und Phantomjobs je eigener Teil.
 - *Prüfgrad:* Quelltext gelesen, Compile ohne Warnung, Prüfschritte; die Sondenzeile ist im Spiel nicht beobachtet.
 
+### A562 · Crucible K6: Hörner im Hornfenster vor jedem Kampf (05.11.2026)
+
+- *Auftrag:* `TODO.md`, „Beastmaster: Crucible-Strategien", K6; Entwurf Konzept 01, „Stufe 4: K6" (A561).
+- *Gebaut:* `BST_Reborn.SetHornsOnHornScreen`, unter B5s Einstellung (Text erweitert, das Crucible war ausgenommen). B5s
+  `Option` und `Score` je Horn über den lebenden Kader; der anstehende Kampf aus `CrucibleBoard.UpcomingBattle`, seine
+  Gegner aus `EnemiesOf`, Endkampf aus `IsFinalBattle`; Schwächezuschlag nur auf dem Brett; `HornPlanScore` mit der LP
+  als letztem Gleichstandsbrecher (außerhalb des Crucible stets drei, ohne Wirkung). Klicks per `FireCallback` mit
+  `[1, Platz]`, einer je Neulesen, falsche Reihenfolge von hinten abgewählt; Handänderung hält für diesen Kampf;
+  Abbruch nach dreimal so vielen Klicks wie Plätzen.
+- *Gegenthesen:* Konzept 01 (Absturz durch nachgebaute Ereignisse – anderer Weg, im Feld bei Daedalus belegt; seine
+  Wahl – Hand hält; angeschlagene Begleiter – erst K11 misst, ob einer den Kampf übersteht).
+- *Falsifikation:* Ausgeliefert, und nichts ändert sich: wenn das Spiel die Hörner bei höchstens drei im Team ohnehin
+  setzt, oder der Rückruf nicht trägt – dann bleibt die Auswahl gleich, die Klickzahl läuft ab, die Spur sagt es.
+- *Prüfgrad:* Compile ohne Warnung, Prüfschritte; Wirkkette am Code. Im Spiel nicht beobachtet; Zeilen „Crucible horn
+  screen: …" und die Sondenzeile beim Öffnen des Fensters.
+
 ## B · Commit-Register (Fork vs. `upstream/main`)
 
 ### B1 · Einzelgeprüfte Fork-Commits

@@ -2096,19 +2096,22 @@ on a pack once a fight, all of them in the final fight (Crucible only)".
   hängt an seinen Resistenzen (`PhysResistance`, `MagResistance` im Blatt, Bedeutung der Zahlen unbelegt) – kein
   Einsatz, bis das belegt ist.
 
-**Stufe 4: K6, Hörner im Hornfenster** (Entwurf, A561; nicht gebaut):
-- *Wann:* Das Hornfenster ist offen (`AgentXBMPetParty` aktiv, `Mode` 2), die Einstellung „Set the battlehorns between
-  fights for the next one" (B5) ist an. Ihr Text nimmt das Crucible heute aus und wird mit dem Bau erweitert.
+**Stufe 4: K6, Hörner im Hornfenster** (A561, A562, gebaut):
+- *Wann:* Das Hornfenster ist offen (`AgentXBMPetParty` aktiv, `Mode` 2), außerhalb des Kampfes, die Einstellung „Set
+  the battlehorns between fights for the next one" (B5) ist an; ihr Text nennt das Crucible jetzt.
 - *Eingaben:* der Kader in Fensterreihenfolge mit LP (`SelectedPets`, `PetCurrentHealth`, `PetMaxHealth`), die gewählten
   Plätze in Hornreihenfolge (`SelectedPetIds`), der anstehende Kampf (erste Kampfzeile der Feldliste, Art 3) und aus
   `CrucibleBoard` dessen Gegner mit Schwäche, ihre Zahl und ob es der Endkampf ist.
-- *Wahl:* B5s Planer mit dem lebenden Kader als Kandidaten: Endkampf wie ein Boss (zwei, die heilen oder schützen),
-  Rudel nach der Zahl der Gegner aus dem Blatt, Schaden mit Schwächezuschlag gegen genau diese Gegner (K1), nach Gefahr
-  im Brett einer mehr, der heilt oder schützt (B5). Bei gleichem Wert der mit dem größeren LP-Anteil (Daedalus,
-  Feldnotiz 30.10.2026: drei angeschlagene Begleiter auf allen Hörnern, der Beastmaster tankte und fiel).
+- *Wahl:* B5s Optionen und Wertung, je Horn mit dessen Einstellung für One with Nature, über den lebenden Kader:
+  Endkampf wie ein Boss (zwei, die heilen oder schützen), Rudel nach der Zahl der Gegner aus dem Blatt, Schaden mal eins
+  plus Schwächezuschlag mal Anteil der Gegner, deren Schwäche der Begleiter trifft (K1; vor der ersten Messung null),
+  nach Gefahr im Brett einer mehr, der heilt oder schützt (B5); die schon gewählten zählen als „behalten". Als letzter
+  Gleichstandsbrecher die Summe der LP-Anteile (Daedalus, Feldnotiz 30.10.2026: drei angeschlagene Begleiter auf allen
+  Hörnern, der Beastmaster tankte und fiel); außerhalb des Crucible ist sie stets gleich, B5 ändert sich dort nicht.
+  Spurzeile „Crucible horn screen: horns set for battle …".
 - *Klicks:* Rückruf des Fensters mit `[1, Platz]`, einer, dann neu lesen. Ist die Auswahl kein Anfang der gewünschten
   Reihenfolge, wird der zuletzt gewählte abgewählt, sonst der nächste gewünschte gewählt; höchstens doppelt so viele
-  Klicks wie Plätze im Kader, dann eine Spurzeile und Schluss. Ändert er die Auswahl selbst, bleibt sie für dieses
+  Klicks wie dreimal die Plätze im Kader, dann eine Spurzeile und Schluss. Ändert er die Auswahl selbst, bleibt sie für dieses
   Fenster. Den Kampf startet er.
 - *Gegenthese 1 (Absturz):* BeastHelper dokumentiert einen Absturz durch nachgebaute Fensterereignisse. Der Rückruf mit
   Werten ist ein anderer Weg; Daedalus nutzt ihn im Spielbetrieb seit 22.10.2026. Nicht widerlegt bleibt: Ein Patch

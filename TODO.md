@@ -47,8 +47,8 @@ LP gefallen sein (04.11.2026). *Ort:* `BST_Reborn`, `CrucibleBoard`, `Beastmaste
 A549: Daten zur Laufzeit, K1, K2, K3 ohne den Bedarf der Begleiter), K9 (A550), K8 (A551 bis A554: Heilung, Gegenmittel, Bestien-Lebensfeder, Sand der
 Zeit, Bestien-Heiltranksammlung, Schutz, Seren, Bestien-Heilmittelsammlung, Resistenzmittel, Bestien-Goldnadel,
 Bestien-Ausdauermittel, Schadensgegenstände, Stärkungsmittel im Endkampf; A555).
-*Nächster Schritt:* K6 bauen nach Konzept 01, „Stufe 4: K6, Hörner im Hornfenster" (Weg belegt, A561) und K7
-(Kader auf Wunsch über `TogglePet`, im Feld belegt); K4 (Sonde A557 „crucible: … stopped its cast" zeigt die unterbrechende Aktion), K5, K10 (Campsite,
+*Gebaut auch:* K6 (A562, Hörner im Hornfenster). *Nächster Schritt:* K7 (Kader auf Wunsch über `TogglePet`, im Feld
+belegt); K4 (Sonde A557 „crucible: … stopped its cast" zeigt die unterbrechende Aktion), K5, K10 (Campsite,
 Laden, Weg, im eigenen Loop); K11 (Kader, LP je Begleiter und Feld: Sonde A556 „crucible agents …" zeigt, ob das Spiel sie im Brett füllt;
 danach Loop am Ende des TODO). *Konzept:* 01,
 „Crucible of the Unbroken: Bretter, Kämpfe, Strategien".

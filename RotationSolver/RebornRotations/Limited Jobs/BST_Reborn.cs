@@ -51,7 +51,11 @@ public sealed class BST_Reborn : BeastmasterRotation
 			+ "were in danger in this area, one more that heals or protects, before every fight here. At equal value "
 			+ "your familiars stay; the horn whose familiar is out stays as it is. What each horn spends One with Nature "
 			+ "on stays your setting. Changed by hand, your horns stay until the next fight ends; nothing changes while "
-			+ "the Bestiary is open or in the Crucible.\n"
+			+ "the Bestiary is open.\n"
+			+ "On a Crucible board the game asks for the horns before each battle: on that screen RSR picks from your team "
+			+ "the same way for the battle about to start - the final fight counts as a boss, the pack is the battle's enemies, "
+			+ "a familiar weak spot counts the measured weakness bonus, and among equals the one with more HP left - and "
+			+ "clicks them in, one at a time. Picked by hand there, your horns stay; you start the battle.\n"
 			+ "In a fight: a pack meets the familiars that hit or stop all of it; at a boss the familiars that heal or "
 			+ "protect you are on the horns when the danger comes.\n"
 			+ "Off: RSR never changes your horns.")]
@@ -1035,6 +1039,7 @@ public sealed class BST_Reborn : BeastmasterRotation
 		if (HornsBetweenFights)
 		{
 			AssignBetweenFights();
+			SetHornsOnHornScreen();
 		}
 	}
 
@@ -1071,14 +1076,15 @@ public sealed class BST_Reborn : BeastmasterRotation
 		byte First, byte Second, byte Third, int Out, int Candidates, OneWithNatureOrder NatureFirst,
 		OneWithNatureOrder NatureSecond, OneWithNatureOrder NatureThird);
 
-	// A familiar on a horn, as the choice weighs it.
-	private readonly record struct HornOption(BeastmasterPet Pet, bool Safe, bool Fitting, float Damage, bool TrickHeals);
+	// A familiar on a horn, as the choice weighs it; on a Crucible board with the share of its HP left (1 elsewhere).
+	private readonly record struct HornOption(BeastmasterPet Pet, bool Safe, bool Fitting, float Damage, bool TrickHeals,
+		float Health = 1f);
 
 	// The order of the choice (concept 01, B5): the required familiars that heal or protect; among them the kind that
 	// covers this fight best; the most damage; after a danger in this area more that heal or protect; his familiars on
 	// their horns; more that heal or protect; more whose Trick heals.
 	private readonly record struct HornPlanScore(int Required, int Fitting, float Damage, int SafeAfterDanger, int Kept,
-		int Safe, int TrickHeals) : IComparable<HornPlanScore>
+		int Safe, int TrickHeals, float Health) : IComparable<HornPlanScore>
 	{
 		public int CompareTo(HornPlanScore other)
 		{
@@ -1088,7 +1094,8 @@ public sealed class BST_Reborn : BeastmasterRotation
 			order = order != 0 ? order : SafeAfterDanger.CompareTo(other.SafeAfterDanger);
 			order = order != 0 ? order : Kept.CompareTo(other.Kept);
 			order = order != 0 ? order : Safe.CompareTo(other.Safe);
-			return order != 0 ? order : TrickHeals.CompareTo(other.TrickHeals);
+			order = order != 0 ? order : TrickHeals.CompareTo(other.TrickHeals);
+			return order != 0 ? order : Health.CompareTo(other.Health);
 		}
 	}
 
@@ -1456,7 +1463,7 @@ public sealed class BST_Reborn : BeastmasterRotation
 	// before a pack, C1); whether it is the kind that covers that fight best - its Trick heals before a boss, its Tempered
 	// Release stops a pack; the damage of its Trick and, on a horn that spends One with Nature on it, its Tempered Release,
 	// each its potency times the enemies its area reaches.
-	private HornOption Option(BeastmasterPet pet, HornOrder horn, bool boss, int pack)
+	private HornOption Option(BeastmasterPet pet, HornOrder horn, bool boss, int pack, CrucibleBoard.Enemy[]? battle = null)
 	{
 		if (FamiliarOf(pet) is not { } familiar)
 		{
@@ -1476,7 +1483,206 @@ public sealed class BST_Reborn : BeastmasterRotation
 			damage += familiar.ReleasePotency * Hits(familiar.ReleaseRadius, boss, pack);
 		}
 
+		// K6: on a board, the measured weakness bonus for the share of the battle's enemies weak to what it hits (K1).
+		if (battle is { Length: > 0 })
+		{
+			var hits = ElementsOf(familiar);
+			var weak = 0;
+			foreach (var enemy in battle)
+			{
+				weak += enemy.Weakness != 0 && hits.Contains(enemy.Weakness) ? 1 : 0;
+			}
+
+			damage *= 1f + (CrucibleBoard.WeaknessBonus * weak / battle.Length);
+		}
+
 		return new HornOption(pet, safe, fitting, damage, trickHeals);
+	}
+
+	// K6 (concept 01, "Stufe 4: K6, Hörner im Hornfenster", A562): on a Crucible board the horn screen before each battle
+	// (AgentXBMPetParty active in mode 2). The team in screen order with its HP (SelectedPets, PetCurrentHealth), the chosen
+	// positions in horn order (SelectedPetIds), the battle about to start (the stage list's battle entry); a click on a
+	// team member sends [1, position] to the screen and toggles it (Daedalus 74659a6, recorded 22.10.2026).
+	private bool _hornScreenHeldByHand;
+	private int _hornScreenClicks;
+	private DateTime _hornScreenClickAt;
+	private string _hornScreenSelection = string.Empty;
+	private string _hornScreenTraced = string.Empty;
+
+	private unsafe void SetHornsOnHornScreen()
+	{
+		var party = FFXIVClientStructs.FFXIV.Client.UI.Agent.AgentXBMPetParty.Instance();
+		if (!IsInCrucible || InCombat || party == null
+			|| !((FFXIVClientStructs.FFXIV.Client.UI.Agent.AgentInterface*)party)->IsAgentActive() || party->Mode != CrucibleBoard.HornScreenMode)
+		{
+			_hornScreenHeldByHand = false;
+			_hornScreenClicks = 0;
+			_hornScreenSelection = string.Empty;
+			return;
+		}
+
+		var team = party->SelectedPets.AsSpan();
+		var current = party->PetCurrentHealth;
+		var max = party->PetMaxHealth;
+		var selected = new List<int>();
+		foreach (var chosen in party->SelectedPetIds.AsSpan())
+		{
+			selected.Add((int)chosen.PetId);
+		}
+
+		var selection = string.Join(",", selected);
+		var now = DateTime.Now;
+		var clickPending = _hornScreenClicks > 0 && (now - _hornScreenClickAt).TotalSeconds < DataCenter.DefaultGCDTotal;
+		if (_hornScreenSelection.Length > 0 && selection != _hornScreenSelection && !clickPending && !_hornScreenHeldByHand)
+		{
+			_hornScreenHeldByHand = true;
+			TraceHorn($"Crucible horn screen: changed by hand to positions {selection} - kept for this battle");
+		}
+
+		if (_hornScreenHeldByHand || (clickPending && selection == _hornScreenSelection))
+		{
+			return;
+		}
+
+		_hornScreenSelection = selection;
+		var battle = CrucibleBoard.UpcomingBattle();
+		if (battle == 0 || team.Length == 0)
+		{
+			return;
+		}
+
+		var enemies = CrucibleBoard.EnemiesOf(battle);
+		var boss = CrucibleBoard.IsFinalBattle(battle);
+		var required = (boss ? BossSafeFamiliars : 0) + (_dangerInArea ? 1 : 0);
+		var pack = boss ? 1 : Math.Max(1, enemies.Length);
+		// Each horn spends One with Nature by its own setting, so each weighs the team on its own, as B5 does.
+		var none = new HornOption(BeastmasterPet.None, false, false, 0f, false, 0f);
+		var options = new List<HornOption>[Horns.Length];
+		var position = new Dictionary<BeastmasterPet, int>();
+		for (var h = 0; h < Horns.Length; h++)
+		{
+			options[h] = [];
+		}
+
+		for (var i = 0; i < team.Length; i++)
+		{
+			var pet = (BeastmasterPet)team[i].PetId;
+			var hp = i < current.Length ? current[i] : 0u;
+			var full = i < max.Length ? max[i] : 0u;
+			if (hp == 0 || full == 0 || FamiliarOf(pet) is null || position.ContainsKey(pet))
+			{
+				continue;
+			}
+
+			position[pet] = i;
+			for (var h = 0; h < Horns.Length; h++)
+			{
+				options[h].Add(Option(pet, Horns[h], boss, pack, enemies) with { Health = hp / (float)full });
+			}
+		}
+
+		for (var h = 0; h < Horns.Length; h++)
+		{
+			// A team smaller than the horns leaves a horn empty.
+			if (options[h].Count <= h)
+			{
+				options[h].Add(none);
+			}
+		}
+
+		var currentPets = new BeastmasterPet[Horns.Length];
+		for (var h = 0; h < Horns.Length; h++)
+		{
+			currentPets[h] = h < selected.Count && selected[h] < team.Length ? (BeastmasterPet)team[selected[h]].PetId : BeastmasterPet.None;
+		}
+
+		HornPlanScore? bestScore = null;
+		var best = new[] { none, none, none };
+		foreach (var a in options[I])
+		{
+			foreach (var b in options[II])
+			{
+				if (b.Pet != BeastmasterPet.None && b.Pet == a.Pet)
+				{
+					continue;
+				}
+
+				foreach (var c in options[III])
+				{
+					if (c.Pet != BeastmasterPet.None && (c.Pet == a.Pet || c.Pet == b.Pet))
+					{
+						continue;
+					}
+
+					var score = Score(a, b, c, currentPets, required);
+					if (bestScore is not { } known || score.CompareTo(known) > 0)
+					{
+						bestScore = score;
+						best = [a, b, c];
+					}
+				}
+			}
+		}
+
+		var wanted = new List<int>();
+		foreach (var option in best)
+		{
+			if (option.Pet != BeastmasterPet.None)
+			{
+				wanted.Add(position[option.Pet]);
+			}
+		}
+
+		var prefix = selected.Count <= wanted.Count;
+		for (var i = 0; prefix && i < selected.Count; i++)
+		{
+			prefix = selected[i] == wanted[i];
+		}
+
+		var plan = $"{battle}:{string.Join(",", wanted)}";
+		if (prefix && selected.Count == wanted.Count)
+		{
+			if (plan != _hornScreenTraced)
+			{
+				_hornScreenTraced = plan;
+				TraceHorn($"Crucible horn screen: horns set for battle {battle} ({(boss ? "final fight" : $"{enemies.Length} enemies")}, "
+					+ $"{required} that heal or protect): {best[0].Pet}, {best[1].Pet}, {best[2].Pet}");
+			}
+
+			return;
+		}
+
+		if (_hornScreenClicks >= team.Length * Horns.Length)
+		{
+			if (plan != _hornScreenTraced)
+			{
+				_hornScreenTraced = plan;
+				TraceHorn($"Crucible horn screen: gave up after {_hornScreenClicks} clicks - set the horns by hand");
+			}
+
+			return;
+		}
+
+		var addon = (FFXIVClientStructs.FFXIV.Component.GUI.AtkUnitBase*)ECommons.DalamudServices.Svc.GameGui.GetAddonByName("XBMPetParty").Address;
+		if (addon == null || !addon->IsVisible)
+		{
+			return;
+		}
+
+		// A wrong order is cleared from the back and picked again: horn order is the order of selection.
+		var click = prefix ? wanted[selected.Count] : selected[^1];
+		ReadOnlySpan<int> sent = [1, click];
+		var values = stackalloc FFXIVClientStructs.FFXIV.Component.GUI.AtkValue[sent.Length];
+		for (var i = 0; i < sent.Length; i++)
+		{
+			values[i] = default;
+			values[i].Type = FFXIVClientStructs.FFXIV.Component.GUI.AtkValueType.Int;
+			values[i].Int = sent[i];
+		}
+
+		addon->FireCallback((uint)sent.Length, values, true);
+		_hornScreenClicks++;
+		_hornScreenClickAt = now;
 	}
 
 	// The enemies an area reaches in the next fight: one for a single target or a boss, else the pack - every enemy of
@@ -1493,7 +1699,7 @@ public sealed class BST_Reborn : BeastmasterRotation
 		var kept = (a.Pet == current[I] ? 1 : 0) + (b.Pet == current[II] ? 1 : 0) + (c.Pet == current[III] ? 1 : 0);
 		var healers = (a.TrickHeals ? 1 : 0) + (b.TrickHeals ? 1 : 0) + (c.TrickHeals ? 1 : 0);
 		return new HornPlanScore(Math.Min(safe, required), required > 0 ? Math.Min(fitting, 1) : 0,
-			a.Damage + b.Damage + c.Damage, _dangerInArea ? safe : 0, kept, safe, healers);
+			a.Damage + b.Damage + c.Damage, _dangerInArea ? safe : 0, kept, safe, healers, a.Health + b.Health + c.Health);
 	}
 	#endregion
 

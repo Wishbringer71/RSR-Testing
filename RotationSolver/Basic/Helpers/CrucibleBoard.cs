@@ -84,6 +84,27 @@ internal static class CrucibleBoard
 		? ailments
 		: [];
 
+	/// <summary>The enemies the sheet lists for the fight in XBMBattleDetail row <paramref name="battleRow"/>.</summary>
+	internal static Enemy[] EnemiesOf(uint battleRow)
+	{
+		foreach (var (row, enemies) in Fights)
+		{
+			if (row == battleRow)
+			{
+				return enemies;
+			}
+		}
+
+		return [];
+	}
+
+	/// <summary>Whether XBMBattleDetail row <paramref name="battleRow"/> is a board's final fight (A553).</summary>
+	internal static bool IsFinalBattle(uint battleRow)
+	{
+		_ = Fights;
+		return _finalFights.Contains(battleRow);
+	}
+
 	/// <summary>The XBMElement row whose English name is <paramref name="name"/>, ignoring case; 0 when none is.</summary>
 	internal static uint ElementNamed(string name)
 	{
@@ -400,7 +421,7 @@ internal static class CrucibleBoard
 			for (var i = 0; i < entries.Length; i++)
 			{
 				ref readonly var entry = ref entries[i];
-				if (entry.EntryType == 3 && entry.BattleDetailId != 0)
+				if (entry.EntryType == BattleEntryKind && entry.BattleDetailId != 0)
 				{
 					if (!battles.Contains(entry.BattleDetailId))
 					{
@@ -477,8 +498,32 @@ internal static class CrucibleBoard
 		}
 	}
 
-	// AgentXBMPetParty.Mode: 2 = party preview from content, the horn screen before a battle (FFXIVClientStructs aad0de66).
-	private const uint HornScreenMode = 2;
+	/// <summary>AgentXBMPetParty.Mode 2: the party preview from content - the horn screen before a battle (FFXIVClientStructs
+	/// aad0de66).</summary>
+	internal const uint HornScreenMode = 2;
+
+	/// <summary>AgentXBMStageDetailList entry kind 3: a battle detail (FFXIVClientStructs aad0de66).</summary>
+	internal const uint BattleEntryKind = 3;
+
+	/// <summary>K6 (A562): the battle about to start - the first battle entry of the stage list; 0 when it lists none.</summary>
+	internal static unsafe uint UpcomingBattle()
+	{
+		var stages = AgentXBMStageDetailList.Instance();
+		if (stages == null)
+		{
+			return 0;
+		}
+
+		foreach (ref readonly var entry in stages->Entries)
+		{
+			if (entry.EntryType == BattleEntryKind && entry.BattleDetailId != 0)
+			{
+				return entry.BattleDetailId;
+			}
+		}
+
+		return 0;
+	}
 
 	private static void EndFight()
 	{

@@ -1028,23 +1028,23 @@
   },
   {
    "file": "RotationSolver/Basic/Helpers/CrucibleBoard.cs",
-   "code": "private const uint HornScreenMode = 2;",
+   "code": "internal const uint HornScreenMode = 2;",
    "values": [
     "2"
    ],
    "status": "exception",
    "loop": "A561",
-   "reason": "The game's mode of AgentXBMPetParty, not a tuned value: 0 pet list, 1 party preview, 2 party preview from content - the Crucible's horn screen before a battle (FFXIVClientStructs aad0de66; Daedalus 74659a6 sets the horns in that mode). Used only by the K11 probe."
+   "reason": "The game's mode of AgentXBMPetParty, not a tuned value: 0 pet list, 1 party preview, 2 party preview from content - the Crucible's horn screen before a battle (FFXIVClientStructs aad0de66; Daedalus 74659a6 sets the horns in that mode). Read by the K11 probe and the horn screen setter (K6, A562)."
   },
   {
    "file": "RotationSolver/Basic/Helpers/CrucibleBoard.cs",
-   "code": "if (entry.EntryType == 3 && entry.BattleDetailId != 0)",
+   "code": "internal const uint BattleEntryKind = 3;",
    "values": [
     "3"
    ],
    "status": "exception",
    "loop": "A556",
-   "reason": "The game's kind of an AgentXBMStageDetailList entry, not a tuned value: 0 stage, 1 stage with battles, 2 stage without battles, 3 battle detail (FFXIVClientStructs aad0de66, AgentXBMStageDetailList.StageDetailEntry, 05.11.2026). Used only by the K11 probe's trace line."
+   "reason": "The game's kind of an AgentXBMStageDetailList entry, not a tuned value: 0 stage, 1 stage with battles, 2 stage without battles, 3 battle detail (FFXIVClientStructs aad0de66, AgentXBMStageDetailList.StageDetailEntry, 05.11.2026). Read by the K11 probe and the horn screen setter (K6, A562)."
   },
   {
    "file": "RotationSolver/Basic/Rotations/Basic/BeastmasterFamiliars.cs",
