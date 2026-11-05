@@ -17150,6 +17150,27 @@ habe den schleim bislang nicht anfreunden können."
   Zauber), danach Horn (K6) und Kader (K7).
 - *Prüfgrad:* Quellen und Spur; kein Code geändert.
 
+### A584 · Upload 05.11.2026 abends: allgemeine Auswertung (05.11.2026)
+
+- *Dateien:* Spur 19:02–21:08 (Build ec7aca6d4, Version 7.5.7.15), ACT-Mitschnitt desselben Abends, gelernte Tabellen
+  (Stand 20:11) gegen den Upload von 17:41. Seine Frage galt dem Beastmaster auf Brett 1 (A580, A581, A582, A583); hier
+  der Rest.
+- *Weißmagier, 19:02–20:34:* Nebeltrift, Der Nabel (schwer), Abyssos 8 (normal), Labyrinth der Alten; 20 Kämpfe. Tode
+  von Mitspielern: 19:17:08 der Tänzer in Nebeltrift (94 % vor zwei gleichzeitigen Donnerkeil-Treffern), 19:33:08 einer
+  am Nabel ohne Verursacher (Sturz), 20:11:58 im Labyrinth sieben zugleich ohne Verursacher, darunter drei seiner
+  Gruppe mit 59 bis 85 % 0,5 bis 7 s davor – eine Mechanik, die sofort tötet. Keiner ist einer ausgebliebenen Heilung
+  oder Abwehr zuzuordnen; er selbst starb nicht.
+- *Zeilenarten:* Göttlicher Segen „at the cap, onto the attacked member" 30-mal, Vollkommener Ablass gegen angekündigte
+  Flächen 8-mal, „heal ahead" vor Flammende Genesis bei 61 % erwarteter Wucht; die Holy-Streckung hielt 17-mal, 41-mal
+  nicht (Betäubung endet vorher oder nichts betäubt). Schlummer auf die Gorgone (Gorgoneion, nicht unterbrechbar) wurde
+  als Immunität gelernt (Art 15048) und nicht wiederholt.
+- *Gelernte Tabellen:* `AimedHitPotential` (A540) schreibt ihre ersten Einträge: 967, 969 und 970 am Nabel (12,5 bis 18,9
+  %), 46934 Blutschwert der Seelenlose (8,4 %). Flächentabelle: neu 1365, 28931, 30961; 30981 Flammende Genesis 0,40 →
+  0,68 – die erste saubere Messung der Version 0,52 bestätigt, der Wert 0,68 aus einer unsauberen (Höchstwert über alle
+  Messungen, Konzept 13, Regel 2); 31147 sauber 0,17 gegen übernommen 0,31 (wartet nach Regel 5 auf weitere saubere).
+  Serien und Spannen ergänzt; Tankbuster-Markierung 30984 (Laser, Abyssos 8) neu.
+- *Prüfgrad:* Spur, Mitschnitt und Tabellen gelesen; keine Codeänderung aus diesem Teil.
+
 ## B · Commit-Register (Fork vs. `upstream/main`)
 
 ### B1 · Einzelgeprüfte Fork-Commits
