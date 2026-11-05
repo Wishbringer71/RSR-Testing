@@ -71,7 +71,7 @@ public sealed class BST_Reborn : BeastmasterRotation
 			+ "Off: Capture and Gauge are never used.")]
 	private bool CaptureFamiliars { get; set; } = true;
 
-	// K8 of the Crucible (concept 01, A551 to A554): the board's items that keep you and your familiar alive, and its damage
+	// K8 of the Crucible (concept 01, A551 to A555): the board's items that keep you and your familiar alive, and its damage
 	// items.
 	[RotationConfig(CombatType.PvE, Name = "Use the board's items that keep you and your familiar alive (Crucible only)",
 		Tooltip = "On a Crucible board RSR uses, one at a time: when your HP fall below 'Use HP potions below this HP' in combat, "
@@ -88,13 +88,15 @@ public sealed class BST_Reborn : BeastmasterRotation
 			+ "Off: RSR uses none of these.")]
 	private bool UseCrucibleSafetyItems { get; set; } = true;
 
-	[RotationConfig(CombatType.PvE, Name = "Use the board's damage items: on a pack once a fight, freely in the final fight (Crucible only)",
+	[RotationConfig(CombatType.PvE, Name = "Use the board's damage items and buffs: damage on a pack once a fight, all of them in the final fight (Crucible only)",
 		Tooltip = "On a Crucible board RSR throws a fang or Celestial Sand on your target: in the final fight - the board's items "
 			+ "are lost after the run - every one, the most worth first; in any other fight one, once it hits more enemies than "
 			+ "your target. Worth is its potency times the enemies it hits, an enemy weak to its element counting the measured "
 			+ "weakness bonus more; at equal worth the one without knockback. One whose element only hits enemies still to come "
-			+ "waits for them.\n"
-			+ "Off: RSR throws none.")]
+			+ "waits for them. In the final fight it first uses on you every potion or item that grants you a status (strength, "
+			+ "magic, intensity, evasion, haste, TP, Life Siphon) while that status does not stand - a magic damage increase "
+			+ "also raises the fangs; never one that inflicts a status on you.\n"
+			+ "Off: RSR uses none of these.")]
 	private bool UseCrucibleDamageItems { get; set; } = true;
 
 	// K9 of the Crucible (concept 01, A550): on by default. Without a tank the enemies attack only you, and your fall ends the

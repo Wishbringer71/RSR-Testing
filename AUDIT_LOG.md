@@ -16439,6 +16439,21 @@ habe den schleim bislang nicht anfreunden können."
 - *Prüfgrad:* Compile ohne Warnung, Prüfschritte, Musterprüfung an den 68 Texten; im Spiel nicht beobachtet. Jede
   Verwendung schreibt „crucible item: …".
 
+### A555 · Crucible, K8 fünfter Teil: Stärkungsmittel im Endkampf (05.11.2026)
+
+- *Auftrag:* `TODO.md`, „Beastmaster: Crucible-Strategien", K8 Rest (Mittel für Schaden und Tempo).
+- *Quellen:* `XBMItem` 103 bis 115, 135, 142, 143 (Wirktexte); die Reißzähne und Sternensturm: „Damage is affected by
+  magic damage increase effects of other beast gear, items, or abilities".
+- *Entscheidung (Konzept 01, „Stufe 3: K8", Punkt 12):* Im Endkampf geht jedes Mittel, das dir einen Status gibt, auf
+  dich, solange er nicht steht, vor den Schadensgegenständen. Außerhalb des Endkampfs bleiben sie liegen: Ihr Wert für
+  einen späteren Kampf ist nicht bekannt (K11), im Endkampf ist er null, weil die Gegenstände mit dem Lauf verfallen. Die
+  zweite Einstellung heißt jetzt „… damage items and buffs …" (unveröffentlicht), ihr Text nennt die Mittel.
+- *Ausgenommen:* die „Ungezähmten" Mittel (legen dir einen Status auf); Grimoire der Zauberschmiede und des Stahlstachels
+  (ändern die Schadensart aller, die Bedeutung der Resistenzzahlen im Blatt ist unbelegt).
+- *Gegenthese:* Auf dich statt auf den Begleiter: Wer im Brett mehr Schaden macht, misst RSR nicht getrennt, und ein
+  Status auf einem Begleiter geht mit seinem Wechsel. Preis: die Stärkung trifft womöglich den kleineren Teil.
+- *Prüfgrad:* Compile ohne Warnung, Prüfschritte, Musterprüfung an den Texten; im Spiel nicht beobachtet.
+
 ## B · Commit-Register (Fork vs. `upstream/main`)
 
 ### B1 · Einzelgeprüfte Fork-Commits

@@ -10,7 +10,7 @@ using FFXIVClientStructs.FFXIV.Client.Game.InstanceContent;
 namespace RotationSolver.Basic.Rotations.Basic;
 
 /// <summary>
-/// K8 of the Crucible (concept 01, "Stufe 3: K8, Gegenstände des Bretts", A551 to A554): the board's items - healing below
+/// K8 of the Crucible (concept 01, "Stufe 3: K8, Gegenstände des Bretts", A551 to A555): the board's items - healing below
 /// the player's HP potion line, a cure for poison or blindness, Reraise, Sandstill before a fight, the Beast Potion Kit
 /// against a boss, protection against an announced hit on the player or on a familiar about to fall, a serum or the Beast
 /// Remedy Kit against the fight's dangerous statuses, an absorber against an elemental hit, the Crucible Needle for a
@@ -36,6 +36,7 @@ public partial class BeastmasterRotation
 		AbsorbElement,
 		CureFamiliar,
 		MaxHp,
+		Buff,
 	}
 
 	// What an item of the board does, read once from its English effect text (XBMItem): its kind; the share it heals or
@@ -81,6 +82,8 @@ public partial class BeastmasterRotation
 	private static readonly Regex RaisesMaxHp = new(
 		@"^Grants (?<status>.+?) while also restoring \d+% of HP to self or familiar\..*?Increases maximum HP by",
 		RegexOptions.CultureInvariant | RegexOptions.Singleline);
+	private static readonly Regex GrantsBuff = new(@"^Grants (?:\w+ stacks of )?(?<status>.+?)(?: while also| to self)",
+		RegexOptions.CultureInvariant);
 	private static readonly Regex Deals = new(
 		@"deals (?:ranged )?(?<type>[a-z]+)(?: physical)? damage with a potency of (?<potency>[\d,]+) to target and all enemies within (?<radius>\d+) yalms",
 		RegexOptions.CultureInvariant | RegexOptions.IgnoreCase);
@@ -152,6 +155,10 @@ public partial class BeastmasterRotation
 				items[id] = new CrucibleItem(CrucibleItemKind.Damage, potency, false, name, string.Empty,
 					CrucibleBoard.ElementNamed(deals.Groups["type"].Value), radius,
 					text.Contains("knockback", StringComparison.OrdinalIgnoreCase));
+			}
+			else if (GrantsBuff.Match(text) is { Success: true } buff)
+			{
+				items[id] = new CrucibleItem(CrucibleItemKind.Buff, 0f, false, name, buff.Groups["status"].Value);
 			}
 		}
 
@@ -242,7 +249,8 @@ public partial class BeastmasterRotation
 	/// while no Auto-potion stands; protection against an announced hit on him, and on his familiar when it holds no more HP
 	/// than <paramref name="familiarLargestHit"/> (in the final fight against any); a serum, else the Beast Remedy Kit, against
 	/// the fight's dangerous statuses; the absorber of the element of a hit on him; the cure of his familiar's ailment; against
-	/// a boss more maximum HP. With <paramref name="damage"/>: a damage item on his target - in the final fight any,
+	/// a boss more maximum HP. With <paramref name="damage"/>: in the final fight every buff, then a damage item on his
+	/// target - in the final fight any,
 	/// else one a fight on a pack. Called every frame from the update.
 	/// </summary>
 	internal static unsafe void UseCrucibleItems(float line, uint familiarLargestHit, bool safety, bool damage)
@@ -420,6 +428,20 @@ public partial class BeastmasterRotation
 		}
 
 	Damage:
+		// 12: in the final fight every buff while its status does not stand, before the damage items it may raise.
+		if (slot < 0 && damage && finalFight)
+		{
+			for (var i = 0; i < crucible->Inventory.Length && slot < 0; i++)
+			{
+				if (TryItem(crucible, i, CrucibleItemKind.Buff, out var buff) && !PlayerHasStatusNamed(player, buff.Status))
+				{
+					slot = i;
+					on = player;
+					why = $"in the final fight, {buff.Status}";
+				}
+			}
+		}
+
 		if (slot < 0 && damage && InCombat && (finalFight || _damageItemsInFight < 1)
 			&& DamageItem(crucible, finalFight, out var damageSlot, out var target, out var damageWhy))
 		{
@@ -646,7 +668,7 @@ public partial class BeastmasterRotation
 		return -1;
 	}
 
-	// 12: the damage item of most worth on the player's target - its potency times the enemies within its radius of the target,
+	// 13: the damage item of most worth on the player's target - its potency times the enemies within its radius of the target,
 	// each counting one plus the measured weakness bonus where the item's element is its weakness; at equal worth the one
 	// without knockback. Outside the final fight only when it hits more than the target. An item whose element is the weakness
 	// only of enemies still to come waits for them (K2).

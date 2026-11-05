@@ -1948,9 +1948,9 @@ danach K4, K5, K10.
 - *Im Kampf:* Seelenlose (Stich), Raptor auf einem Horn (Entfesseln Feuer), Sukkubi (Feuer) nach 45 s. Der Raptor
   bleibt im Zyklus zurück, solange ein anderes Horn bereit ist, und kommt, sobald die Sukkubi erscheinen.
 
-**Stufe 3: K8, Gegenstände des Bretts** (A551 bis A554, gebaut). Zwei Einstellungen, beide ab Werk an: „Use the
-board's items that keep you and your familiar alive (Crucible only)" und „Use the board's damage items: on a pack once a
-fight, freely in the final fight (Crucible only)".
+**Stufe 3: K8, Gegenstände des Bretts** (A551 bis A555, gebaut). Zwei Einstellungen, beide ab Werk an: „Use the
+board's items that keep you and your familiar alive (Crucible only)" und „Use the board's damage items and buffs: damage
+on a pack once a fight, all of them in the final fight (Crucible only)".
 - *Welche* (`XBMItem`, xivapi Schema a1e24a0c, 05.11.2026; Name in Spalte 2, englischer Wirktext in Spalte 3, daraus Art
   und Größe; die deutschen Namen aus demselben Blatt mit `language=de`, Zeilen in `action_names_de.json`):
   - Heilung: Bestien-Heiltrank I bis IV („Restores 10/23/36/50% of HP to self or familiar") und Bestien-Pulver I bis III
@@ -1969,6 +1969,12 @@ fight, freely in the final fight (Crucible only)".
     maximum HP … Additionally grants Stoneskin", 50 % seiner LP, 60 s).
   - Mehr LP: Bestien-Ausdauermittel („Grants Liquid Constitution while also restoring 10% of HP to self or familiar …
     Increases maximum HP by 20% Effect ends upon combat completion").
+  - Stärkung: Bestien-Stärkungs-, -Zauber-, -Aufbraus-, -Wendigkeitsmittel („Grants Liquid Strength/Magic/Intensity/
+    Evasion to self or familiar": physischer oder magischer Schaden +30 %, kritische Trefferquote +30 %, Ausweichen
+    +25 %, 15 bis 30 s), Bestien-Verkürzungsmittel (Hasty Spirit, Wirk- und Abklingzeiten −15 %, 60 s),
+    Bestien-Flinkheitsmittel (Spirit of the Breathtaker bis Kampfende), Bestien-Feder (100 TP),
+    Bestien-Blutsaugerserum (Life Siphon, 10 % des Schadens als LP, 60 s). Die Reißzähne und Sternensturm sagen:
+    „Damage is affected by magic damage increase effects of other beast gear, items, or abilities".
   - Zustände: Bestien-Heilmittelsammlung („Grants Auto-remedy to self … Automatically cures the next status ailment
     suffered", 240 s) und die Seren I und II (Bestien-Antigift-, -Antiparalyse-, -Antiblind-, -Antiversteinerung-,
     -Antischlaf-Serum: „Increases poison/paralysis/blind/petrification/sleep resistance by 100%", 180 s; II auch für
@@ -1990,7 +1996,7 @@ fight, freely in the final fight (Crucible only)".
   (`StatusCategory` 2), der dir die Kontrolle nimmt (`LockActions` oder `LockControl`: Petrification, Hysteria, Nightmare,
   Confused, Devoured, Down for the Count, Stone Curse) oder dessen englischer Wirktext den Tod nennt (Doom, Stone Curse).
   Ob die Bestien-Heilmittelsammlung einen davon heilt, sagt keine Quelle („status ailment", unbelegt).
-- *Wann, einer zur Zeit, in dieser Reihenfolge* (erste Einstellung, außer 12):
+- *Wann, einer zur Zeit, in dieser Reihenfolge* (erste Einstellung, außer 12 und 13):
   1. Im Kampf unter „Use HP potions below this HP": der Heilgegenstand, der dich mit dem kleinsten Wert wieder über die
      Linie hebt, sonst der größte; bei gleicher Heilung der Heiltrank vor dem Pulver. Normale Heiltränke sperrt das Brett.
   2. Im Kampf gegen Gift oder Blindheit auf dir das passende Mittel.
@@ -2017,7 +2023,11 @@ fight, freely in the final fight (Crucible only)".
      15 s, der Cast landet innerhalb seiner Wirkzeit.
   10. Ist dein Begleiter versteinert (ein Status mit „Petrification" im englischen Namen), die Bestien-Goldnadel auf ihn.
   11. Gegen einen Gegner mit Boss-Symbol, solange kein Liquid Constitution steht, das Bestien-Ausdauermittel auf dich.
-  12. Schaden (zweite Einstellung) auf dein Gegnerziel: im Endkampf jeder Schadensgegenstand, der wertvollste zuerst;
+  12. Stärkung (zweite Einstellung), nur im Endkampf: jedes Mittel, das dir einen Status gibt („Grants … to self"),
+      solange er nicht steht, auf dich; vor den Schadensgegenständen, weil eine Steigerung des magischen Schadens die
+      Reißzähne mitträgt. Außerhalb des Endkampfs bleiben sie liegen: Ihr Wert für einen späteren Kampf ist nicht
+      bekannt (K11), im Endkampf ist er null.
+  13. Schaden (zweite Einstellung) auf dein Gegnerziel: im Endkampf jeder Schadensgegenstand, der wertvollste zuerst;
      sonst einer je Kampf, sobald er mehr Gegner trifft als dein Ziel. Wert ist Potenz mal der Summe über die
      getroffenen Gegner aus eins plus dem gemessenen Schwächezuschlag, wo das Element ihre Schwäche ist (K1); bei
      Gleichstand der ohne Rückstoß. Ein Gegenstand, dessen Element nur die Schwäche noch kommender Gegner trifft, wartet
@@ -2049,16 +2059,17 @@ fight, freely in the final fight (Crucible only)".
   - Ein Schadensgegenstand je Kampf vor dem Endkampf ist eine Setzung: Wie viele Kämpfe noch kommen, liefert das Spiel
     nicht (K11). Sie folgt seinem eigenen Spiel am 04.11.2026 um 19:04, ein Reißzahn auf ein Rudel.
   - Ausgeliefert, und nichts ändert sich: Hält er keine dieser Gegenstände, oder erkennt RSR den Kampf nicht (Zeile
-    „crucible fight …" fehlt), ruhen 8, 9 und 12 und der Endkampf; die Spur zeigt beides.
+    „crucible fight …" fehlt), ruhen 8, 9, 12 und 13 und der Endkampf; die Spur zeigt beides.
   - Das Resistenzmittel hilft nur, wenn der Cast das Element trägt, das er anzeigt; ein Treffer, den nur BossModReborn
     ankündigt, nennt keines, dann wartet es. Preis benannt.
 - *Nicht in diesem Teil:* Die „Ungezähmten" Mittel (Ungezähmte Bestien-Stärkungsmittel und verwandte) legen dir selbst
   Stun, Nightmare, Petrification, Blind oder Pollen auf – RSR setzt sie nie ein (Sicherheit). Das Horn der Rückkehr
   belebt einen gefallenen Begleiter nur auf dem Brett, außerhalb eines Kampfes, und welcher gefallen ist, zeigt das Spiel
   nicht (der Kader ist nicht lesbar, K11). Bestien-Rauchbombe (Flucht über das Brett-Fenster), Auge des Diebs und des
-  Händlers (Beute und Marken, keine Wirkung im Kampf): kein Einsatz durch RSR. Offen, im TODO: die Mittel für Schaden und
-  Tempo (Bestien-Stärkungs-, -Zauber-, -Aufbraus-, -Verkürzungsmittel, Bestien-Feder, Bestien-Blutsaugerserum,
-  Grimoire der Zauberschmiede und des Stahlstachels), Bestien-Wendigkeits- und -Flinkheitsmittel.
+  Händlers (Beute und Marken, keine Wirkung im Kampf): kein Einsatz durch RSR. Grimoire der Zauberschmiede und des
+  Stahlstachels machen allen Schaden magisch oder physisch, auch den der Begleiter; ob das gegen einen Gegner hilft,
+  hängt an seinen Resistenzen (`PhysResistance`, `MagResistance` im Blatt, Bedeutung der Zahlen unbelegt) – kein
+  Einsatz, bis das belegt ist.
 
 **Stufe 1, zweiter Teil: K1 und der Rest von K3** (A549, gebaut; Daten in `CrucibleBoard`):
 - *K1, Zuschlag gemessen:* Keine Quelle nennt ihn; consolegameswiki und Eorzean Tavern sagen nur, dass Schwächen

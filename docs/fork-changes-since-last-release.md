@@ -199,11 +199,13 @@ What this release changes in the fight. For the whole distance from upstream, se
   Crucible Needle for your petrified familiar; against a boss a Potion of Tempered Constitution. In the final fight, whose items are lost after the run, protection also goes
   whenever an enemy attacks you. Each item's kind and size come from its own text. `DefenseTrace.log`
   names each use, and a slot the game did not take is not tried again in that fight.
-- **The board's damage items (Crucible).** With `Use the board's damage items: on a pack once a
-  fight, freely in the final fight (Crucible only)`, **on by default**, RSR throws a fang or
-  Celestial Sand on your target: every one in the final fight, the most worth first; in any other
-  fight one, once it hits more enemies than your target. An enemy weak to its element counts the
-  measured weakness bonus more.
+- **The board's damage items and buffs (Crucible).** With `Use the board's damage items and buffs:
+  damage on a pack once a fight, all of them in the final fight (Crucible only)`, **on by default**,
+  RSR throws a fang or Celestial Sand on your target: every one in the final fight, the most worth
+  first; in any other fight one, once it hits more enemies than your target. An enemy weak to its
+  element counts the measured weakness bonus more. In the final fight - the board's items are lost
+  after the run - it first uses on you every potion or item that grants you a status (strength, magic,
+  intensity, evasion, haste, TP, Life Siphon), never one that inflicts a status on you.
 - **Snarl and Challenge are on by default (Crucible).** Without a tank the enemies attack only you,
   and your fall ends the run, while a fallen familiar costs only that familiar. `Use Snarl and
   Challenge based on your HP and your familiar's HP (Crucible only)` is now **on by default**, still on
