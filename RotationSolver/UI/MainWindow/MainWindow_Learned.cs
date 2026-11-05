@@ -146,6 +146,7 @@ public partial class MainWindow
 			SimpleActionTab("Hit series", "Hits in a row", CopyHitSeries(), hits => hits.ToString()),
 			SleepOutcomeTab(game),
 			SleepKindTab(game),
+			InterruptibleKindTab(),
 			SleepLimitTab(game),
 			DotTab(),
 			PenaltyTab(game),
@@ -327,6 +328,27 @@ public partial class MainWindow
 
 		Sort(rows);
 		return new LearnedTab("Sleep kinds", ["Enemy kind", "Resisted", "Lock"], rows);
+	}
+
+	// K4 of the Crucible (concept 01, A587): enemy kinds seen casting interruptibly on a board, by name.
+	private static LearnedTab InterruptibleKindTab()
+	{
+		var rows = new List<string[]>();
+		Dictionary<uint, int> kinds;
+		lock (OtherConfiguration.InterruptibleKindsGate)
+		{
+			kinds = new Dictionary<uint, int>(OtherConfiguration.InterruptibleCasterKinds);
+		}
+
+		var names = ECommons.DalamudServices.Svc.Data.GetExcelSheet<Lumina.Excel.Sheets.BNpcName>();
+		foreach (var (kind, fights) in kinds)
+		{
+			var name = names?.GetRowOrDefault(kind) is { } row ? row.Singular.ExtractText() : string.Empty;
+			rows.Add([name.Length > 0 ? $"{name} ({kind})" : $"name {kind}", fights.ToString()]);
+		}
+
+		Sort(rows);
+		return new LearnedTab("Interruptible casters", ["Enemy (name id)", "Fights"], rows);
 	}
 
 	private static LearnedTab SleepLimitTab(string? game)

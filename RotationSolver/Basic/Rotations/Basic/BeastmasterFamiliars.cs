@@ -62,6 +62,13 @@ public partial class BeastmasterRotation
 	/// The profile of <paramref name="pet"/> at the player's synced level, null for none or when the catalog could not be
 	/// built - the rotation then keeps its configured horn order.
 	/// </summary>
+	/// <summary>K4 (A587): the kin of <paramref name="pet"/> by the sheets (XBMPet's Classification); 0 when not known.</summary>
+	public static BeastmasterKinType KinOf(BeastmasterPet pet)
+	{
+		_familiarRows ??= BuildFamiliarRows();
+		return _familiarRows.TryGetValue((byte)pet, out var row) ? row.Kin : 0;
+	}
+
 	public static FamiliarProfile? FamiliarOf(BeastmasterPet pet)
 	{
 		if (pet == BeastmasterPet.None)

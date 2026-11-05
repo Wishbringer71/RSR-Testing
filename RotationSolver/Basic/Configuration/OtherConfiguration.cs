@@ -217,6 +217,16 @@ internal partial class OtherConfiguration
 	internal static Dictionary<uint, int> SleepResistantKinds = [];
 
 	/// <summary>
+	/// K4 of the Crucible (concept 01, A587): enemy kinds (BNpcName) seen casting a spell the game marks interruptible on a
+	/// board, with in how many fights - learned in play over every session, stored like <see cref="SleepResistantKinds"/>.
+	/// Changed and read on the game thread under <see cref="InterruptibleKindsGate"/>.
+	/// </summary>
+	internal static Dictionary<uint, int> InterruptibleCasterKinds = [];
+
+	/// <summary>Guards <see cref="InterruptibleCasterKinds"/> against the save on a pool thread.</summary>
+	internal static readonly object InterruptibleKindsGate = new();
+
+	/// <summary>
 	/// Per enemy kind (base id), the fewest sleeps it had taken in a fight before it resisted the next one - the
 	/// point where the halving of repeated sleeps ends in a temporary immunity. Learned in play over every session,
 	/// stored like <see cref="SleepOutcomes"/>; merged with the file by the lower count.
@@ -802,6 +812,9 @@ internal partial class OtherConfiguration
 		new LearnedFile<int>(nameof(SleepResistantKinds), () => CopySleepStore(SleepResistantKinds),
 			v => { lock (SleepStoreGate) { SleepResistantKinds = v; } },
 			Math.Max, state => SleepKindsStoreState = state, "resistant enemy kind(s)"),
+		new LearnedFile<int>(nameof(InterruptibleCasterKinds), CopyInterruptibleKinds,
+			v => { lock (InterruptibleKindsGate) { InterruptibleCasterKinds = v; } },
+			Math.Max, state => InterruptibleKindsStoreState = state, "enemy kind(s) casting interruptibly"),
 		new LearnedFile<int>(nameof(SleepDiminishing), () => CopySleepStore(SleepDiminishing),
 			v => { lock (SleepStoreGate) { SleepDiminishing = v; } },
 			Math.Min, state => SleepDiminishingStoreState = state, "enemy kind(s) with a sleep limit"),
@@ -1032,6 +1045,19 @@ internal partial class OtherConfiguration
 	internal static Task SaveSleepOutcomes() => SaveList(nameof(SleepOutcomes));
 
 	internal static Task SaveSleepResistantKinds() => SaveList(nameof(SleepResistantKinds));
+
+	internal static Task SaveInterruptibleCasterKinds() => SaveList(nameof(InterruptibleCasterKinds));
+
+	private static Dictionary<uint, int> CopyInterruptibleKinds()
+	{
+		lock (InterruptibleKindsGate)
+		{
+			return new Dictionary<uint, int>(InterruptibleCasterKinds);
+		}
+	}
+
+	/// <summary>What the last save and load of <see cref="InterruptibleCasterKinds"/> did, in words.</summary>
+	internal static string InterruptibleKindsStoreState { get; private set; } = "not loaded yet";
 
 	internal static Task SaveSleepDiminishing() => SaveList(nameof(SleepDiminishing));
 

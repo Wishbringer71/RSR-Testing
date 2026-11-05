@@ -1266,18 +1266,20 @@ public sealed class BST_Reborn : BeastmasterRotation
 
 	// A familiar on a horn, as the choice weighs it; on a Crucible board with the share of its HP left (1 elsewhere).
 	private readonly record struct HornOption(BeastmasterPet Pet, bool Safe, bool Fitting, float Damage, bool TrickHeals,
-		float Health = 1f, int Rank = 0);
+		float Health = 1f, int Rank = 0, bool Interrupts = false);
 
 	// The order of the choice (concept 01, B5): the required familiars that heal or protect; among them the kind that
 	// covers this fight best; the most damage; after a danger in this area more that heal or protect; his familiars on
 	// their horns; more that heal or protect; more whose Trick heals.
 	private readonly record struct HornPlanScore(int Required, int Fitting, float Damage, int SafeAfterDanger, int Kept,
-		int Safe, int TrickHeals, float Health, int Rank = 0) : IComparable<HornPlanScore>
+		int Safe, int TrickHeals, float Health, int Rank = 0, int Interrupt = 0) : IComparable<HornPlanScore>
 	{
 		public int CompareTo(HornPlanScore other)
 		{
 			var order = Required.CompareTo(other.Required);
 			order = order != 0 ? order : Fitting.CompareTo(other.Fitting);
+			// K4 (A587): before a fight with an enemy kind seen casting interruptibly, a Soul Crush ready to stop it.
+			order = order != 0 ? order : Interrupt.CompareTo(other.Interrupt);
 			order = order != 0 ? order : Damage.CompareTo(other.Damage);
 			order = order != 0 ? order : SafeAfterDanger.CompareTo(other.SafeAfterDanger);
 			order = order != 0 ? order : Kept.CompareTo(other.Kept);
@@ -1693,7 +1695,11 @@ public sealed class BST_Reborn : BeastmasterRotation
 			damage *= 1f + (CrucibleBoard.WeaknessBonus * weak / battle.Length);
 		}
 
-		return new HornOption(pet, safe, fitting, damage, trickHeals);
+		// K4 (A587): a Soulkin familiar on a horn that spends One with Nature on Borrow brings Soul Crush, which interrupts -
+		// worth it before a battle whose sheet names a kind seen casting interruptibly.
+		var interrupts = battle is { Length: > 0 } && nature == OneWithNatureOrder.Borrow
+			&& KinOf(pet) == BeastmasterKinType.Soulkin && CrucibleBoard.CastsInterruptibly(battle);
+		return new HornOption(pet, safe, fitting, damage, trickHeals, Interrupts: interrupts);
 	}
 
 	// K6 (concept 01, "Stufe 4: K6, Hörner im Hornfenster", A562): on a Crucible board the horn screen before each battle
@@ -2047,9 +2053,10 @@ public sealed class BST_Reborn : BeastmasterRotation
 		var fitting = (a.Fitting ? 1 : 0) + (b.Fitting ? 1 : 0) + (c.Fitting ? 1 : 0);
 		var kept = (a.Pet == current[I] ? 1 : 0) + (b.Pet == current[II] ? 1 : 0) + (c.Pet == current[III] ? 1 : 0);
 		var healers = (a.TrickHeals ? 1 : 0) + (b.TrickHeals ? 1 : 0) + (c.TrickHeals ? 1 : 0);
+		var interrupts = a.Interrupts || b.Interrupts || c.Interrupts ? 1 : 0;
 		return new HornPlanScore(Math.Min(safe, required), required > 0 ? Math.Min(fitting, 1) : 0,
 			a.Damage + b.Damage + c.Damage, _dangerInArea ? safe : 0, kept, safe, healers, a.Health + b.Health + c.Health,
-			a.Rank + b.Rank + c.Rank);
+			a.Rank + b.Rank + c.Rank, interrupts);
 	}
 	#endregion
 

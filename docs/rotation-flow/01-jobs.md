@@ -1897,10 +1897,25 @@ Dullahan, Golem, Spriggan und Eisgolem (`XBMPet.InflictsInterrupt`).
   unterbrechen nicht; ihre Texte schweigen dazu (A557).
   - *Gebaut:* Soul Crush geht zuerst auf einen Gegner, dessen Zauber das Spiel als unterbrechbar meldet, sonst wie bisher
     (W4, A486).
-  - *Offen:* welche Kämpfe unterbrechbare Zauber haben. Kein Blatt sagt es; das Spiel meldet es erst mit dem Zauber
-    (`IsCastInterruptible`). Erst mit diesem Wissen lohnt ein Seelen-Begleiter auf einem Horn, das One with Nature für
-    Borrow verbraucht (K6), und im Kader (K7). Nächster Schritt: je Gegnerart lernen, ob sie unterbrechbar zaubert, und es
-    über die Sitzung hinaus halten. Sein Kader vom 05.11.2026 hat keinen Seelen-Begleiter.
+  - *Welche Kämpfe, gebaut (A587):* Kein Blatt sagt es; das Spiel meldet es mit dem Zauber (`IsCastInterruptible`). RSR
+    merkt sich im Brett jede Gegnerart (BNpcName), die unterbrechbar zaubert, über alle Sitzungen
+    (`InterruptibleCasterKinds.json`, wie die schlafresistenten Arten: Zählung, nur steigend; eine Zeile beim ersten Mal je
+    Kampf). BossModReborn (27be42256, 05.11.2026, Werkzeugquelle) führt in seinen Crucible-Modulen: Verknöchern des
+    Knochen-Ritters und Blutschwert der Seelenlose („Heals caster on hit") auf Brett 1, Dreadwash (Ymir) auf Brett 3,
+    Confound (Administrator: „you will get confused for 12 seconds and most likely die") auf Brett 4, Raise der Lamia und
+    die Zauber der Schleime (Gigantis) auf Brett 5. RSR übernimmt die Liste nicht, es lernt sie im ersten Lauf.
+  - *Hornfenster (K6):* Nennt das Blatt des anstehenden Kampfes eine gelernte Art, zählt ein Seelen-Begleiter auf einem
+    Horn, das One with Nature für Borrow verbraucht, als Unterbrecher: in der Wahl nach den verlangten heilenden oder
+    schützenden und dem passenden Typ, vor dem Schaden. Grund: Ein gestoppter Confound erspart die Verwirrung, ein
+    gestopptes Raise eine zurückgeholte Lamia, ein gestopptes Verknöchern den Schadensbonus des Ritters.
+  - *Kader (K7):* Führt ein Kampf des Bretts eine gelernte Art, nimmt die Empfehlung nach den Begleitern für den Boss
+    einen Seelen-Begleiter auf, sofern er freigeschaltet ist.
+  - *Gegenthese 1:* Die Seelen-Art bringt sonst wenig (Borrow statt Entfesseln). Teilweise: Gewählt wird er nur für
+    Kämpfe mit gelernten Arten, und nur einer; das Horn mit Borrow ist ohnehin eingestellt (ab Werk das dritte).
+  - *Gegenthese 2:* Ein Zauber, der nur manchmal unterbrechbar ist, macht die Art dauerhaft zum Grund. Nicht widerlegt;
+    der Preis ist ein Seelen-Begleiter statt eines stärkeren Schadensbegleiters in diesen Kämpfen.
+  - *Ausgeliefert, und nichts ändert sich?* Vor dem ersten Kampf gegen eine Art kennt RSR sie nicht; ohne
+    Seelen-Begleiter im Bestiarium bleibt die Wahl, wie sie war. Sein Kader vom 05.11.2026 hat keinen.
   - *Sonde (A557):* Meldet der Server im Brett den Abbruch eines gegnerischen Casts (ActorControl 15), schreibt RSR die
     letzte eigene Aktion auf diesen Gegner mit den Effektarten ihrer Einträge und dem Abstand in die Spur. Am 05.11.2026
     vier Abbrüche, keiner durch eine Unterbrechung: drei mit viertem Wert 0, einer (Pisco-Dämonen-Ebenbild, viertem Wert 1)

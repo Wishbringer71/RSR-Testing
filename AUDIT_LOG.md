@@ -17222,6 +17222,28 @@ habe den schleim bislang nicht anfreunden können."
   Nichts ändert sich, wenn kein Begleiter mit passendem Auto-Angriff im Kader steht.
 - *Prüfgrad:* statisch, Compile ohne Warnung, Prüfskripte; Anteile am Mitschnitt gemessen. Im Spiel nicht beobachtet.
 
+### A587 · Crucible K4 Stufe 2: unterbrechbar zaubernde Arten lernen; Seelen-Begleiter in Hornfenster und Kader (05.11.2026)
+
+- *Anlass:* TODO „Beastmaster: Crucible-Strategien", K4 nach A583.
+- *Quellen:* BossModReborn 27be42256 (05.11.2026, Werkzeugquelle), Crucible-Module: Ossify (Knochen-Ritter, „interruptible"),
+  Blood Sword (Seelenlose, „Heals Caster on hit. Interrupt if possible."), Dreadwash (Ymir), Confound (Administrator,
+  „most likely die"), Raise (Lamia), die Schleime des Gigantis. Kein Blatt führt Unterbrechbarkeit; das Spiel meldet sie
+  mit dem Zauber.
+- *Gebaut:* `CrucibleBoard.NoteInterruptibleCasts` merkt je Kampf jede Gegnerart, die unterbrechbar zaubert, in der
+  gelernten Datei `InterruptibleCasterKinds.json` (`OtherConfiguration`, Zählung, nur steigend, eigenes Schloss) und
+  schreibt eine Zeile. `CastsInterruptibly` fragt sie für die Gegner eines Kampfes. K6: ein Seelen-Begleiter
+  (`KinOf`, XBMPet Classification) auf einem Horn mit Borrow zählt als Unterbrecher (`HornOption.Interrupts`,
+  `HornPlanScore.Interrupt` nach dem passenden Typ, vor dem Schaden). K7: nach den Begleitern für den Boss ein
+  Seelen-Begleiter, wenn ein Kampf des Bretts eine gelernte Art führt. Die Einstellungen zeigen die gelernten Arten im
+  Tab „Interruptible casters" (Konzept 13, Stufe 5; `check_learned_display.py`).
+- *Verworfen:* die Liste aus BossModReborn übernehmen (veraltet mit jedem Patch, Werkzeugquelle); ein Unterbrecher nur
+  im Kampf rufen (die Hörner stehen vor dem Kampf fest).
+- *Falsifikation:* Vor dem ersten Kampf gegen eine Art weiß RSR nichts; ohne Seelen-Begleiter im Bestiarium ändert sich
+  nichts. Ein nur manchmal unterbrechbarer Zauber macht die Art dauerhaft zum Grund – Preis: ein schwächerer Begleiter
+  in diesen Kämpfen.
+- *Prüfgrad:* statisch, Compile ohne Warnung, Prüfskripte. Im Spiel nicht beobachtet; die Zeile „casts interruptibly"
+  zeigt das Lernen.
+
 ## B · Commit-Register (Fork vs. `upstream/main`)
 
 ### B1 · Einzelgeprüfte Fork-Commits

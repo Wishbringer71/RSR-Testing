@@ -87,8 +87,11 @@ public partial class BeastmasterRotation
 		}
 
 		var weight = new Dictionary<uint, int>();
+		var interrupting = false;
 		foreach (var fight in CrucibleBoard.FightsOfBoard(board))
 		{
+			// K4 (A587): a fight with an enemy kind seen casting interruptibly asks for a Soulkin familiar (Soul Crush).
+			interrupting |= CrucibleBoard.CastsInterruptibly(CrucibleBoard.EnemiesOf(fight));
 			foreach (var enemy in CrucibleBoard.EnemiesOf(fight))
 			{
 				if (enemy.Weakness != 0)
@@ -117,15 +120,17 @@ public partial class BeastmasterRotation
 		var chosen = new List<TeamCandidate>();
 		var covered = new Dictionary<uint, int>();
 		var safeTaken = 0;
+		var soulTaken = false;
 		while (chosen.Count < size && candidates.Count > 0)
 		{
 			var needSafe = safeTaken < BossSafeFamiliars;
+			var needSoul = !needSafe && interrupting && !soulTaken && HasSoul();
 			var best = -1;
 			var bestWorth = -1f;
 			for (var i = 0; i < candidates.Count; i++)
 			{
 				var candidate = candidates[i];
-				if (needSafe && !candidate.Safe && HasSafe())
+				if ((needSafe && !candidate.Safe && HasSafe()) || (needSoul && KinOf(candidate.Pet) != BeastmasterKinType.Soulkin))
 				{
 					continue;
 				}
@@ -152,6 +157,7 @@ public partial class BeastmasterRotation
 			}
 
 			safeTaken += pick.Safe ? 1 : 0;
+			soulTaken |= KinOf(pick.Pet) == BeastmasterKinType.Soulkin;
 		}
 
 		// A579: leveling - a pick gives way to the lowest-ranked familiar that replaces it adequately.
@@ -245,6 +251,19 @@ public partial class BeastmasterRotation
 			foreach (var candidate in candidates)
 			{
 				if (candidate.Safe)
+				{
+					return true;
+				}
+			}
+
+			return false;
+		}
+
+		bool HasSoul()
+		{
+			foreach (var candidate in candidates)
+			{
+				if (KinOf(candidate.Pet) == BeastmasterKinType.Soulkin)
 				{
 					return true;
 				}

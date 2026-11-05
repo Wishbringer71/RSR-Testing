@@ -244,6 +244,10 @@ What this release changes in the fight. For the whole distance from upstream, se
   and the Trick the rest. The weakness bonus now counts on the share whose source strikes the weakness -
   auto-attack, Trick, and the Release on a horn that uses it - when the horns are chosen, on the horn screen
   and in the team recommendation. The shares are measured from the familiars' hits.
+- **A familiar that interrupts, where a fight needs one (Crucible).** RSR remembers over every session which
+  enemy kinds on a board cast spells the game marks interruptible (`InterruptibleCasterKinds.json`). Before a
+  fight with such a kind, a Soulkin familiar on a horn set to Borrow - its Soul Crush interrupts - counts on
+  the horn screen ahead of damage, and the team recommendation includes one when a fight of the board needs it.
 - **Challenge only when the familiar could fall (Crucible).** A familiar retreating after Parting
   Blow shows 0 HP for a moment; that no longer counts as the largest hit of the fight, so Challenge no
   longer takes the damage back from a familiar at full HP every 15 s, and no Beast Potion goes into a

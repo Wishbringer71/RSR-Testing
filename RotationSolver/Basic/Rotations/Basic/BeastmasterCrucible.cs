@@ -59,6 +59,7 @@ public partial class BeastmasterRotation
 	internal static void FollowCrucible()
 	{
 		CrucibleBoard.Follow();
+		CrucibleBoard.NoteInterruptibleCasts();
 		if (_crucibleHeldFight != CrucibleBoard.Fight)
 		{
 			_crucibleHeldFight = CrucibleBoard.Fight;

@@ -2,6 +2,7 @@ using Dalamud.Game;
 using ECommons.DalamudServices;
 using EffectEntry = ECommons.Hooks.ActionEffectTypes.EffectEntry;
 using FFXIVClientStructs.FFXIV.Client.UI.Agent;
+using RotationSolver.Basic.Configuration;
 
 namespace RotationSolver.Basic.Helpers;
 
@@ -455,6 +456,62 @@ internal static class CrucibleBoard
 		}
 
 		return 0;
+	}
+
+	/// <summary>K4 (A587): whether any of <paramref name="enemies"/> is a kind seen casting interruptibly on a board.</summary>
+	internal static bool CastsInterruptibly(Enemy[] enemies)
+	{
+		lock (OtherConfiguration.InterruptibleKindsGate)
+		{
+			foreach (var enemy in enemies)
+			{
+				if (OtherConfiguration.InterruptibleCasterKinds.ContainsKey(enemy.NameId))
+				{
+					return true;
+				}
+			}
+		}
+
+		return false;
+	}
+
+	// K4 (A587): the kinds already counted in this fight.
+	private static readonly HashSet<uint> _interruptibleNoted = [];
+	private static uint _interruptibleFight;
+
+	/// <summary>
+	/// K4 (A587): an enemy of the fight casting a spell the game marks interruptible - its kind is stored once per fight,
+	/// with a trace line. Called every frame with the frame's hostile list.
+	/// </summary>
+	internal static void NoteInterruptibleCasts()
+	{
+		if (_fight == 0 || !DataCenter.HostileListLive)
+		{
+			return;
+		}
+
+		if (_interruptibleFight != _fight)
+		{
+			_interruptibleFight = _fight;
+			_interruptibleNoted.Clear();
+		}
+
+		foreach (var hostile in DataCenter.AllHostileTargets)
+		{
+			if (hostile == null || !hostile.IsCasting || !hostile.IsCastInterruptible || hostile.NameId == 0
+				|| !_interruptibleNoted.Add(hostile.NameId))
+			{
+				continue;
+			}
+
+			lock (OtherConfiguration.InterruptibleKindsGate)
+			{
+				OtherConfiguration.InterruptibleCasterKinds[hostile.NameId] = OtherConfiguration.InterruptibleCasterKinds.GetValueOrDefault(hostile.NameId) + 1;
+			}
+
+			_ = OtherConfiguration.SaveInterruptibleCasterKinds();
+			DefenseTrace.Line($"crucible: {hostile.Name.TextValue} (kind {hostile.NameId}) casts interruptibly ({hostile.CastActionId}) - stored for the horns and the team");
+		}
 	}
 
 	/// <summary>
