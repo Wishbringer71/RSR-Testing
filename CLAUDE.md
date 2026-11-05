@@ -117,6 +117,13 @@ Pflicht für jede nicht-triviale Aufgabe; die REGEL steht darüber.
 | 9 | Dokumentation | Kontext, verworfene Optionen, Entscheidung, Konsequenzen; Fehlerursachen sachlich am System. |
 | 10 | Wirksamkeit | Ergebnis bewerten, erneut ab 1; Abbruch bei Plateau. |
 
+# Universell zuerst
+
+Gilt für jede Regel, im Code wie im Konzept (seine Vorgabe, 26.09.2026; für die Konzepte sein Hinweis vom 05.11.2026).
+- Eine Regel baue und beschreibe ich zuerst allgemein, für alle Fälle, in denen sie anwendbar ist — alle Jobs, alle Lagen —, an einer Stelle. Sonderregelungen spalte ich stufenweise ab; jede Stufe nutzt die darüberliegende, statt sie zu kopieren.
+- Die Stufen (seine Präzisierung): alle → Heiler · Tanks · Damage Dealer als Gesamtheit → bei Damage Dealern Fernkämpfer · Magier · Nahkämpfer → bei Nahkämpfern möglicherweise Untergruppen (Monk und Samurai · Dragoon und Schnitter · Ninja und Viper, seine Namen) → erst danach jeder Job einzeln, die begrenzten Jobs eingeschlossen. Eine Regel sitzt auf der höchsten Stufe, auf der sie für alle Mitglieder gleich gilt; welche Stufe leer bleibt, begründe ich.
+- Grund: Eine Regel nur für den Job, an dem der Fall auffiel, lässt dieselbe Lage bei allen anderen offen — im Konzept ebenso wie im Code, weil der nächste Leser sie dort sucht, wo sie für ihn gilt.
+
 # Maßstab: das Spielgeschehen
 
 - Jede Begründung, Beurteilung und Frage sagt, was im Kampf anders wird: wer wann wie viel Schaden nimmt, welche Aktion früher oder später fällt, wer überlebt, was er am Bildschirm sieht. Codestellen und Prüfgrade belegen das, sie ersetzen es nicht.

@@ -15994,6 +15994,21 @@ habe den schleim bislang nicht anfreunden können."
   eigenen Konzepts zur Ordnung der Konzepte – keines trägt sie; mein „trotz" war falsch gewählt.
 - *Prüfgrad:* Blätter, BossMod-Quelltext und Code gelesen; kein Code geändert.
 
+### A534 · „Universell zuerst" gilt auch für die Konzepte (05.11.2026)
+
+- *Anlass:* Sein Hinweis zum Auftrag, die Konzepte neu zu ordnen: „da zuvor bereits eine ähnliche anweisung wie eben
+  ergangen ist, fast wortgleich mit den aufteilungen".
+- *Befund am Artefakt:* Die Anweisung ist „Universell zuerst" vom 26.09.2026 (A159, Commit 8533c0809: „rules first
+  universal, then split into special rules"), mit seiner Präzisierung der Stufen – alle, Heiler, Tanks, Damage Dealer,
+  Fernkämpfer, Magier, Nahkämpfer, die drei Paare, dann jeder Job. Bei der Aufteilung von CLAUDE.md nach Anlässen
+  (27.10.2026, c64439b4c) kam sie unter die Entwurfsregeln für den Code (`.claude/rules/code.md`) und ordnete seither
+  nur den Code; die Konzepte blieben nach Leitfragen geordnet, `01-jobs.md` trägt alle Jobs. Die Ablage hat seine
+  Anweisung auf den Code verengt.
+- *Behoben:* Die Regel steht jetzt in CLAUDE.md („Universell zuerst") und gilt für Code und Konzepte; `code.md` verweist
+  darauf. Der TODO-Eintrag „Konzepte neu ordnen" nimmt die Stufen als gesetzt; der Loop klärt nur noch, wie die Konzepte
+  ihnen folgen und wo Inhaltskonzepte (Dungeons, Endgegner, Savage, Occult Crescent) daneben stehen.
+- *Prüfgrad:* Versionsgeschichte und Regeldateien gelesen, `check_rule_files.py` grün.
+
 ## B · Commit-Register (Fork vs. `upstream/main`)
 
 ### B1 · Einzelgeprüfte Fork-Commits
