@@ -80,7 +80,7 @@ Diese Datei gilt in jeder Lage. Die übrigen Regeln stehen je genau einmal im Re
 - Kann er es im Kampf sehen, oder hat er es entschieden? Sonst nicht fragen.
 - Bleibt sie danach offen: mit den Sachverhalten im Spiel dargestellt, jeder Vorschlag mit einem Beispiel aus dem Kampf belegt (seine Vorgabe, 26.10.2026).
 - Betrifft es meine Hilfsmittel oder einen Schaden, den ich verursacht habe? Dann nicht zur Wahl stellen.
-- Sonst gebündelt, mit durchgerechneten Konsequenzen und Empfehlung (→ „Vorlagen an ihn").
+- Sonst gebündelt, erst nach vollständiger Abarbeitung des ganzen TODO, mit durchgerechneten Konsequenzen und Empfehlung (→ „Vorlagen an ihn"); jede Frage zuvor in einem eigenen Loop kritisch geprüft, mit Lösungsvorschlägen und Antithese (seine Vorgabe, 05.11.2026). Bis dahin arbeite ich die übrigen Punkte ab; ein Punkt, der an der Frage hängt, wartet, die anderen nicht.
 
 **Bevor ich etwas als fertig melde**
 - Wirkkette am Code, Richtigkeit und Bilanz am Spielgeschehen, Nachsteuerung, wo die Antwort erst zur Laufzeit fällt (→ „Definition of Done").
