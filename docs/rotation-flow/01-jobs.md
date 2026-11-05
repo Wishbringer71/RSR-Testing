@@ -2500,8 +2500,9 @@ on a pack once a fight, all of them in the final fight (Crucible only)".
     Riesenwurm und Cu Sith gegen die schlagschwachen Knochen, obwohl der Büffel (Dressur Schlag, Entfesseln betäubt das
     Rudel) im Kader stand; in den Kämpfen 3 bis 5 rief es den Begleiter, der die Schwäche traf, zuerst (Cu Sith gegen
     das Pisco, Raptor gegen die Milben, Fliegenfalle gegen den Oger): Er bekam den kurzen Einsatz statt des langen.
-- *K1 in der Hornwahl (B3):* Der Wert einer Dressur zählt jeden getroffenen Gegner, dessen Schwäche sie trifft, mit dem
-  Zuschlag. Der passende Begleiter bleibt so länger draußen.
+- *K1 in der Hornwahl (B3):* Der Wert einer Dressur zählt jeden getroffenen Gegner mit dem Zuschlag auf den Anteil des
+  Begleiterschadens, der seine Schwäche trifft (unten, „K1 über alle Schadensquellen"). Der passende Begleiter bleibt so
+  länger draußen.
 - *K3, Zeit bis zum Fall:* Seine LP geteilt durch eins plus Zuschlag mal Anteil. Der Anteil ist der Teil deines Schadens
   in diesem Kampf, den Aktionen mit seiner Schwäche brachten. Gemessen, ohne Annahme, wer mehr Schaden macht.
 - *K3 vor der ersten Messung:* Hat noch kein Gegner getroffen, reiht RSR im Crucible nach dem größeren Wert aus Stärke und
@@ -2517,12 +2518,26 @@ on a pack once a fight, all of them in the final fight (Crucible only)".
 - *Ausgeliefert, und nichts ändert sich?* Wählen die Hörner und das Ziel ohnehin den Schwächentreffer, ändert der Zuschlag
   nichts. Auf Brett 1 änderte er drei Rufe und eine Hornbelegung (oben). Fehlt auf einem Brett jedes gleich gepanzerte
   Paar, bleibt der Rückfall; die Zeile zum ersten Messwert fehlt dann.
-- *Offen (TODO „Beastmaster: Crucible-Strategien"):* Die Auto-Angriffe der Begleiter tragen 17 bis 57 % ihres Schadens
-  (Brett 1, 04. und 05.11.2026: Schleim 57 %, Cu Sith 47 %, Pugil 44 %, Fliegenfalle 31 %, Riesenwurm 28 %, Fledermaus
-  25 %, Raptor 17 %, Büffel 6 %), Scheidender Schlag 14 bis 51 %, die Dressur 7 bis 29 %. Der Wert eines Begleiters in
-  B3 und K6 zählt nur Dressur und Entfesseln. Den Auto-Angriff nennt das Blatt: `XBMPet.Action` (xivapi v2, 05.11.2026;
-  `Pet.AutoAction` ist 0), Element und Angriffsart decken sich mit den Treffern im Mitschnitt (Cu Sith 45187 Stich,
-  Raptor und Fliegenfalle Eis, Pugil Wasser, Riesenwurm Erde, Schleim und Fledermaus ohne).
+- *K1 über alle Schadensquellen* (A586): Ein Begleiter schlägt mit vier Quellen zu – Auto-Angriff, Dressur,
+  Entfesseln, Scheidender Schlag. Auf Brett 1 (04. und 05.11.2026, alle Begleiter zusammen, 74.200 Schaden) trugen die
+  Auto-Angriffe 32 %, Scheidender Schlag 32 %, Entfesseln 19 %, die Dressur 18 % (je Begleiter: Auto-Angriffe 17 bis
+  57 %, Dressur 7 bis 43 %). Bis A586 zählte der Wert eines Begleiters (B3, K6) die Schwäche nur über Dressur und
+  Entfesseln, und K6 zählte sie dann für den ganzen Begleiter: Der Raptor (Dressur Eis) galt gegen die Milben voll als
+  Schwächentreffer, die Fliegenfalle (Dressur Wind, Auto-Angriff Eis) gar nicht.
+  - *Was gilt:* Der Zuschlag wirkt auf den Teil des Schadens, dessen Quelle die Schwäche trifft: Wert × (1 + Zuschlag ×
+    Anteil). Anteil = Summe der Anteile der Quellen mit diesem Element, geteilt durch die Summe der Quellen, die der
+    Begleiter auf diesem Horn hat (Entfesseln nur auf einem Horn, das One with Nature dafür verbraucht); Scheidender
+    Schlag trifft nie (ohne Element). Die Anteile misst RSR an den Treffern aller Begleiter seit dem Laden; bis jede
+    Quelle getroffen hat, gelten die Anteile von Brett 1.
+  - *Auto-Angriff:* `XBMPet.Action` (Lumina `Unknown5`, neben `Pet`; EXDSchema latest: Description, TrickDescription,
+    TemperedDescription, Icon, Pet, Action, …), erkannt als die Spalte, deren Zeilen alle auf einen Auto-Angriff
+    zeigen. Sein Element zählt auch für K2 (wen der Begleiter trifft) und K7 (welche Schwächen der Kader deckt).
+  - *Im Kampf (Brett 1):* Gegen die Milben (Eis) zählt der Raptor (Dressur Eis, Auto-Angriff Eis, Entfesseln Feuer) mit
+    einem Anteil von 0,50 auf einem Entfessel-Horn, die Fliegenfalle (Auto-Angriff Eis) mit 0,32; gegen die Seelenlose
+    (Stich) Cu Sith über seine Auto-Angriffe mit 0,32, vorher gar nicht.
+  - *Gegenthese:* Die Anteile je Begleiter weichen stark ab (Schleim 57 % Auto-Angriff, Raptor 17 %). Nicht widerlegt;
+    gemessen wird über alle Begleiter, weil je Begleiter die Treffer eines Bretts nicht reichen. Der Fehler verschiebt
+    nur, wie stark eine Schwäche zählt, nicht ob.
 
 ---
 

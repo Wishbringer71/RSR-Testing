@@ -12,7 +12,10 @@ public partial class BeastmasterRotation
 	private static readonly HashSet<BeastmasterPet> _crucibleHeldTraced = [];
 	private static uint _crucibleHeldFight;
 
-	/// <summary>The weaknesses (XBMElement rows) the Trick and the Tempered Release of <paramref name="profile"/> hit.</summary>
+	/// <summary>
+	/// The weaknesses (XBMElement rows) the Trick, the Tempered Release and the auto-attack of <paramref name="profile"/> hit
+	/// (A586: the auto-attack carries a large part of a familiar's damage).
+	/// </summary>
 	internal static HashSet<uint> ElementsOf(FamiliarProfile profile)
 	{
 		if (_familiarElements.TryGetValue(profile.Pet, out var known))
@@ -22,8 +25,34 @@ public partial class BeastmasterRotation
 
 		var hits = new HashSet<uint>(CrucibleBoard.ElementsOf(profile.TrickId));
 		hits.UnionWith(CrucibleBoard.ElementsOf(profile.ReleaseId));
+		if (profile.AutoId != 0)
+		{
+			hits.UnionWith(CrucibleBoard.ElementsOf(profile.AutoId));
+		}
+
 		_familiarElements[profile.Pet] = hits;
 		return hits;
+	}
+
+	/// <summary>
+	/// K1 over every source (concept 01, A586): the share of <paramref name="profile"/>'s damage whose source strikes
+	/// <paramref name="weakness"/> - its auto-attack, Trick and, on a horn that spends One with Nature on it
+	/// (<paramref name="release"/>), Tempered Release, each with its share of familiar damage (CrucibleBoard), over the
+	/// shares of the sources it has there, Parting Blow among them (it strikes no weakness). 0 for no weakness.
+	/// </summary>
+	internal static float WeakShare(FamiliarProfile profile, uint weakness, bool release)
+	{
+		if (weakness == 0)
+		{
+			return 0f;
+		}
+
+		var shares = CrucibleBoard.FamiliarDamageShares;
+		var all = shares.Auto + shares.Trick + shares.Parting + (release ? shares.Release : 0f);
+		var weak = (profile.AutoId != 0 && CrucibleBoard.ElementsOf(profile.AutoId).Contains(weakness) ? shares.Auto : 0f)
+			+ (CrucibleBoard.ElementsOf(profile.TrickId).Contains(weakness) ? shares.Trick : 0f)
+			+ (release && CrucibleBoard.ElementsOf(profile.ReleaseId).Contains(weakness) ? shares.Release : 0f);
+		return all > 0f ? weak / all : 0f;
 	}
 
 	/// <summary>Follows the Crucible every frame (stage 1, A548).</summary>

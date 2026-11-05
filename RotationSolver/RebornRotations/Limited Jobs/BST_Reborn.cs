@@ -1083,7 +1083,7 @@ public sealed class BST_Reborn : BeastmasterRotation
 
 				ready++;
 				// Before the player has Trick no familiar brings one: all alike, the configured order decides.
-				var value = hasTrick ? TrickValue(familiar, CurrentTarget) : 0f;
+				var value = hasTrick ? TrickValue(familiar, CurrentTarget, EffectiveNature(horn) == OneWithNatureOrder.Tempered) : 0f;
 				var isSafe = HornIsSafe(horn);
 				if (value < bestValue || (value == bestValue && bestSafe && !isSafe))
 				{
@@ -1680,14 +1680,14 @@ public sealed class BST_Reborn : BeastmasterRotation
 			damage += familiar.ReleasePotency * Hits(familiar.ReleaseRadius, boss, pack);
 		}
 
-		// K6: on a board, the measured weakness bonus for the share of the battle's enemies weak to what it hits (K1).
+		// K6: on a board, the weakness bonus on the share of the familiar's damage whose source strikes each enemy's weakness,
+		// over the battle's enemies (K1 over every source, A586).
 		if (battle is { Length: > 0 })
 		{
-			var hits = ElementsOf(familiar);
-			var weak = 0;
+			var weak = 0f;
 			foreach (var enemy in battle)
 			{
-				weak += enemy.Weakness != 0 && hits.Contains(enemy.Weakness) ? 1 : 0;
+				weak += WeakShare(familiar, enemy.Weakness, nature == OneWithNatureOrder.Tempered);
 			}
 
 			damage *= 1f + (CrucibleBoard.WeaknessBonus * weak / battle.Length);

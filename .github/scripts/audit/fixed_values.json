@@ -1448,6 +1448,19 @@
    "status": "exception",
    "loop": "A582",
    "reason": "The Crucible's weakness bonus as measured in his ACT logs of 04 and 05.11.2026 (first board): 18 pairs of one action on a weak and an equally armoured other enemy (same PhysResistance or MagResistance grade in XBMBattleDetail), medians of plain hits, weighted 1.271 (range 1.21-1.40, physical and magic alike). No source states the bonus. A fallback from measurement until the board measures its own (WeaknessBonus), not a game value; the measurement replaces it."
+  },
+  {
+   "file": "RotationSolver/Basic/Helpers/CrucibleBoard.cs",
+   "code": "private static readonly (float Auto, float Trick, float Release, float Parting) FamiliarSharesFallback = (0.32f, 0.18f, 0.19f, 0.32f);",
+   "values": [
+    "0.32f",
+    "0.18f",
+    "0.19f",
+    "0.32f"
+   ],
+   "status": "exception",
+   "loop": "A586",
+   "reason": "The share of familiar damage per source as measured on the first board in his ACT logs of 04 and 05.11.2026: all familiars together dealt 74,200 damage, 23,449 by auto-attacks, 13,041 by Tricks, 14,205 by Tempered Releases, 23,387 by Parting Blow's Aetheric Burst. A fallback from measurement until every source has hit since RSR loaded (FamiliarDamageShares), not a game value."
   }
  ]
 }

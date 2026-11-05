@@ -388,7 +388,7 @@ public static class Watcher
 			if (TryGetDamageEntry(effect, out var entry) && Svc.Objects.SearchById(effect.TargetID) is IBattleChara target
 				&& target.IsEnemy())
 			{
-				CrucibleBoard.RecordHit(action, target, entry, FullAmount(entry));
+				CrucibleBoard.RecordHit(action, target, entry, FullAmount(entry), set.Source.GameObjectId != player.GameObjectId);
 			}
 
 			// K10 shop (A570): the player's own healing on himself - his actions and items -, for gear that adds to it.

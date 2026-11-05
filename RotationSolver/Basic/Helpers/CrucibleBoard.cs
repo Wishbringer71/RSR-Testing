@@ -62,6 +62,12 @@ internal static class CrucibleBoard
 	// first board, weighted 1.271 -, until this board measures its own. A fallback from measurement, not a game value.
 	private const float WeaknessBonusFallback = 0.27f;
 	private static readonly Dictionary<byte, HashSet<uint>> _hitElements = [];
+
+	// A586: the familiars' damage by source since RSR loaded - auto-attack, Trick, Tempered Release, the rest (Parting Blow's
+	// Aetheric Burst) -, and the shares measured on the first board in his logs of 04 and 05.11.2026 (74,200 damage of all
+	// familiars: 32, 18, 19 and 32 %) until every source has hit.
+	private static double _familiarAuto, _familiarTrick, _familiarRelease, _familiarOther;
+	private static readonly (float Auto, float Trick, float Release, float Parting) FamiliarSharesFallback = (0.32f, 0.18f, 0.19f, 0.32f);
 	private static readonly Dictionary<uint, HashSet<uint>> _actionElementsSeen = [];
 
 	/// <summary>K10 shop (A570): what one fight cost the player - damage by how it meets his defences - and what he healed himself.</summary>
@@ -787,11 +793,17 @@ internal static class CrucibleBoard
 	/// grade; only actions of a fixed potency count - a plain potency in their effect text, or an auto-attack - and hits
 	/// that strike no weakness are left out. Effect handler, game thread.
 	/// </summary>
-	internal static void RecordHit(Lumina.Excel.Sheets.Action action, IBattleChara target, EffectEntry entry, uint amount)
+	internal static void RecordHit(Lumina.Excel.Sheets.Action action, IBattleChara target, EffectEntry entry, uint amount,
+		bool byFamiliar = false)
 	{
 		if (_fight == 0 || amount == 0)
 		{
 			return;
+		}
+
+		if (byFamiliar)
+		{
+			RecordFamiliarDamage(action, amount);
 		}
 
 		var elements = ElementsOfHit(entry);
@@ -839,6 +851,44 @@ internal static class CrucibleBoard
 		{
 			_bonusTraced = true;
 			DefenseTrace.Line($"crucible: a hit on a weakness deals {measured:P0} more, first measured on action {action.RowId}");
+		}
+	}
+
+	// A586: a familiar's hit by its source, the familiar out being the player's current one.
+	private static void RecordFamiliarDamage(Lumina.Excel.Sheets.Action action, uint amount)
+	{
+		var profile = BeastmasterRotation.FamiliarOf(BeastmasterRotation.CurrentPet);
+		if (action.GetActionCate() == ActionCate.Autoattack)
+		{
+			_familiarAuto += amount;
+		}
+		else if (profile != null && action.RowId == profile.TrickId)
+		{
+			_familiarTrick += amount;
+		}
+		else if (profile != null && action.RowId == profile.ReleaseId)
+		{
+			_familiarRelease += amount;
+		}
+		else
+		{
+			_familiarOther += amount;
+		}
+	}
+
+	/// <summary>
+	/// A586 (concept 01, "K1 über alle Schadensquellen"): the share of familiar damage each source carries - measured over
+	/// every familiar's hits since RSR loaded once each source has hit, else the shares of the first board in his logs.
+	/// </summary>
+	internal static (float Auto, float Trick, float Release, float Parting) FamiliarDamageShares
+	{
+		get
+		{
+			var all = _familiarAuto + _familiarTrick + _familiarRelease + _familiarOther;
+			return _familiarAuto > 0d && _familiarTrick > 0d && _familiarRelease > 0d && _familiarOther > 0d
+				? ((float)(_familiarAuto / all), (float)(_familiarTrick / all), (float)(_familiarRelease / all),
+					(float)(_familiarOther / all))
+				: FamiliarSharesFallback;
 		}
 	}
 

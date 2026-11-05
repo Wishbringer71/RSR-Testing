@@ -30,16 +30,18 @@ namespace RotationSolver.Basic.Rotations.Basic;
 /// <param name="BorrowProtects">The Beast Mode action Borrow unlocks for its kin lowers the damage you take.</param>
 /// <param name="TrickHeart">The heart its Trick grants, by the instinctual affinity its tooltip states; 0 when it states
 /// none.</param>
+/// <param name="AutoId">The action of its auto-attack (XBMPet's Action column, A586); 0 when the sheet's column could not be
+/// told.</param>
 public sealed record FamiliarProfile(BeastmasterPet Pet, uint TrickId, uint ReleaseId, float TrickRadius, float TrickPotency,
 	bool TrickHeals, bool ReleaseHeals, bool ReleaseProtects, bool ReleaseRetreats, bool ReleaseStops, bool ReleaseStopsByStun,
-	float ReleaseRadius, float ReleasePotency, bool ReleaseHurtsParty, bool BorrowProtects, StatusID TrickHeart);
+	float ReleaseRadius, float ReleasePotency, bool ReleaseHurtsParty, bool BorrowProtects, StatusID TrickHeart, uint AutoId = 0);
 
 public partial class BeastmasterRotation
 {
 	// What the sheets say of a familiar regardless of level: the actions its Trick and Tempered Release execute, the reach of
 	// the Trick, and its kin.
 	private readonly record struct FamiliarRow(uint TrickId, uint ReleaseId, float TrickRadius, float ReleaseRadius,
-		BeastmasterKinType Kin);
+		BeastmasterKinType Kin, uint AutoId = 0);
 
 	// Built once from the sheets; null until then, empty when the familiar's Pet row cannot be told (B1).
 	private static Dictionary<byte, FamiliarRow>? _familiarRows;
@@ -168,17 +170,16 @@ public partial class BeastmasterRotation
 	/// within its radius of the target. A cone or a line counts like a circle around the target: where the familiar will
 	/// stand is not known when it is called.
 	/// </summary>
-	public static float TrickValue(FamiliarProfile profile, IBattleChara? target)
+	public static float TrickValue(FamiliarProfile profile, IBattleChara? target, bool release = true)
 	{
 		var potency = profile.TrickPotency > 0f ? profile.TrickPotency : 1f;
 
-		// K1 of the Crucible (concept 01, A549): a hit on the weakness of an enemy of the fight counts with the bonus measured
-		// there; 0 elsewhere and before it is measured.
+		// K1 of the Crucible (concept 01, A549, A586): a hit on the weakness of an enemy of the fight counts with the bonus on
+		// the share of the familiar's damage whose source strikes that weakness; 0 outside the Crucible.
 		var bonus = CrucibleBoard.WeaknessBonus;
-		var trick = bonus > 0f ? CrucibleBoard.ElementsOf(profile.TrickId) : null;
 		float Hit(IBattleChara enemy)
 		{
-			return trick != null && trick.Contains(CrucibleBoard.WeaknessOf(enemy.NameId)) ? 1f + bonus : 1f;
+			return bonus > 0f ? 1f + (bonus * WeakShare(profile, CrucibleBoard.WeaknessOf(enemy.NameId), release)) : 1f;
 		}
 
 		if (target == null)
@@ -722,6 +723,25 @@ public partial class BeastmasterRotation
 
 			var petOf = columns[petColumn].Read;
 
+			// A586: the auto-attack is the column beside it whose every row leads to an auto-attack action (EXDSchema latest:
+			// Pet, then Action); none when no column does, and the auto-attack does not count.
+			Func<XBMPet, uint>? autoOf = null;
+			for (var i = 0; i < columns.Length; i++)
+			{
+				var read = columns[i].Read;
+				var autos = i != petColumn;
+				foreach (var row in rows)
+				{
+					autos &= actions.TryGetRow(read(row), out var auto) && auto.GetActionCate() == ActionCate.Autoattack;
+				}
+
+				if (autos && rows.Count > 0)
+				{
+					autoOf = read;
+					break;
+				}
+			}
+
 			foreach (var row in rows)
 			{
 				var pet = pets.GetRow(petOf(row));
@@ -731,7 +751,8 @@ public partial class BeastmasterRotation
 				var releaseRadius = actions.TryGetRow(release, out var releaseRow) && releaseRow.CastType > 1
 					? releaseRow.EffectRange
 					: 0f;
-				catalog[(byte)row.RowId] = new FamiliarRow(trick, release, radius, releaseRadius, (BeastmasterKinType)row.Unknown7);
+				catalog[(byte)row.RowId] = new FamiliarRow(trick, release, radius, releaseRadius, (BeastmasterKinType)row.Unknown7,
+					autoOf != null ? autoOf(row) : 0u);
 
 				// The Pet row leads back to its XBMPet row (Pet.Unknown18); one that does not is not trusted for a model.
 				if (pet.Unknown18 == row.RowId && mirages.TryGetRow(pet.Unknown8, out var mirage)
@@ -776,7 +797,8 @@ public partial class BeastmasterRotation
 			ReleaseHurtsParty: releaseText.Contains("party members", StringComparison.Ordinal)
 				&& releaseText.Contains("inflicts damage over time", StringComparison.Ordinal),
 			BorrowProtects: Protects(borrowText, string.Empty),
-			TrickHeart: HeartOf(trickText));
+			TrickHeart: HeartOf(trickText),
+			AutoId: row.AutoId);
 	}
 
 	// How often an action strikes as its tooltip words it ("a sixfold slashing physical attack"), 1 when it says nothing.

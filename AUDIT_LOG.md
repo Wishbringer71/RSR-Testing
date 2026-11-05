@@ -17201,6 +17201,27 @@ habe den schleim bislang nicht anfreunden können."
 - *Prüfgrad:* statisch, Compile ohne Warnung, Prüfskripte; die Verzögerung am Mitschnitt belegt. Im Spiel nicht
   beobachtet.
 
+### A586 · Crucible K1 über alle Schadensquellen: Auto-Angriff und Anteile im Begleiterwert (05.11.2026)
+
+- *Anlass:* TODO „Beastmaster: Crucible-Strategien", offener Punkt aus A582.
+- *Befund:* Auf Brett 1 (04. und 05.11.2026) trugen die Auto-Angriffe aller Begleiter 32 % ihres Schadens (23.449 von
+  74.200), Scheidender Schlag 32 %, Entfesseln 19 %, die Dressur 18 %. Der Begleiterwert in B3 zählte die Schwäche nur
+  über die Dressur, K6 über Dressur und Entfesseln für den ganzen Begleiter; den Auto-Angriff nirgends. `XBMPet.Action`
+  (Lumina `Unknown5`, EXDSchema latest) nennt ihn, Element und Angriffsart decken sich mit dem Mitschnitt.
+- *Gebaut:* Der Katalog liest die Spalte, deren Zeilen alle auf einen Auto-Angriff zeigen (`FamiliarProfile.AutoId`,
+  am Ende angehängt mit Vorgabe 0). `ElementsOf(profile)` nimmt sein Element auf (K2, K7). `WeakShare` gibt den Anteil
+  des Begleiterschadens, dessen Quelle die Schwäche trifft – Anteile je Quelle aus allen Begleitertreffern seit dem Laden
+  (`CrucibleBoard.FamiliarDamageShares`), bis jede Quelle getroffen hat die von Brett 1 (`fixed_values.json`);
+  Entfesseln nur auf einem Horn, das One with Nature dafür verbraucht. B3 (`TrickValue`) und K6 (`Option`) rechnen Wert
+  × (1 + Zuschlag × Anteil).
+- *Gerechnet:* gegen die Milben Raptor 0,50 (vorher 1,0), Fliegenfalle 0,32 (vorher 0); gegen die Seelenlose Cu Sith 0,32
+  (vorher 0).
+- *Verworfen:* Anteile je Begleiter (die Treffer eines Bretts reichen nicht); Potenz des Auto-Angriffs (kein Text nennt
+  sie).
+- *Falsifikation:* Die Anteile weichen je Begleiter stark ab; der Fehler verschiebt nur, wie stark eine Schwäche zählt.
+  Nichts ändert sich, wenn kein Begleiter mit passendem Auto-Angriff im Kader steht.
+- *Prüfgrad:* statisch, Compile ohne Warnung, Prüfskripte; Anteile am Mitschnitt gemessen. Im Spiel nicht beobachtet.
+
 ## B · Commit-Register (Fork vs. `upstream/main`)
 
 ### B1 · Einzelgeprüfte Fork-Commits
