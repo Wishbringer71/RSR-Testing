@@ -114,6 +114,19 @@ public sealed class BST_Reborn : BeastmasterRotation
 			+ "Off: RSR selects nobody at a campsite.")]
 	private bool PickCampsiteRest { get; set; } = true;
 
+	// K10 of the Crucible (concept 01, Laden, A569): what to buy in a shop; buying stays your click.
+	[RotationConfig(CombatType.PvE, Name = "Recommend what to buy in a Crucible shop (Crucible only)",
+		Tooltip = "While a shop on a board is open RSR shows a window with what to buy and why, safety first, as far as your "
+			+ "tokens and slots go: a second life while you hold none; protective gear, the choice that raises your effective HP "
+			+ "the most (your maximum HP against the damage that reaches you, weighed by the damage you took in this area - "
+			+ "physical, magic or other - and before your first hit there by the board's enemies); gear that heals; a "
+			+ "resistance or serum against each ailment of the board's fights that nothing you hold covers; healing items; "
+			+ "protective items. Never feed, never gear that inflicts a status on you, nothing for damage. A piece that slows "
+			+ "you says so. \"Buy\" in that window buys the list row by row; when the game asks, your answer decides. Without "
+			+ "the click RSR buys nothing.\n"
+			+ "Off: no window, RSR buys nothing.")]
+	private bool RecommendCrucibleShop { get; set; } = true;
+
 	// K9 of the Crucible (concept 01, A550): on by default. Without a tank the enemies attack only you, and your fall ends the
 	// run; the familiar's HP are a second store, and a fallen familiar costs that familiar, not the run.
 	[RotationConfig(CombatType.PvE, Name = "Use Snarl and Challenge based on your HP and your familiar's HP (Crucible only)",
@@ -1055,6 +1068,7 @@ public sealed class BST_Reborn : BeastmasterRotation
 
 		FollowTeamRequest();
 		FollowCampsite(PickCampsiteRest);
+		FollowCrucibleShop(RecommendCrucibleShop);
 	}
 
 	#region Battlehorns between fights

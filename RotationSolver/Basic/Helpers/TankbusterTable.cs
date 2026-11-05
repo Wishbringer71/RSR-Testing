@@ -254,8 +254,8 @@ internal static class TankbusterTable
 
 	private static DamageKind KindOf(uint attackType)
 	{
-		return attackType is >= (uint)AttackType.Slashing and <= (uint)AttackType.Shot ? DamageKind.Physical
-			: attackType == (uint)AttackType.Magic ? DamageKind.Magical
+		return AttackTypeKind.IsPhysical(attackType) ? DamageKind.Physical
+			: AttackTypeKind.IsMagic(attackType) ? DamageKind.Magical
 			: DamageKind.Other;
 	}
 
@@ -733,9 +733,9 @@ internal static class TankbusterTable
 					continue;
 				}
 
-				var reduction = attackType is >= (uint)AttackType.Slashing and <= (uint)AttackType.Shot
+				var reduction = AttackTypeKind.IsPhysical(attackType)
 					? value.EnemyPhysical
-					: attackType == (uint)AttackType.Magic
+					: AttackTypeKind.IsMagic(attackType)
 						? value.EnemyMagical
 						: Math.Min(value.EnemyPhysical, value.EnemyMagical);
 				if (reduction > 0f)

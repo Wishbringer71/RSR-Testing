@@ -416,6 +416,12 @@ public static class Watcher
 				{
 					EnemyDanger.RecordHit(source.GameObjectId, FullAmount(damage));
 				}
+
+				// K10 shop (A569): what the player takes in the Crucible, physical or magic, for the gear that guards it.
+				if (effect.TargetID == player.GameObjectId && DataCenter.IsInCrucible && set.Action is { } action)
+				{
+					CrucibleBoard.RecordTaken(action.AttackType.RowId, FullAmount(damage));
+				}
 			}
 			else if (effect.GetSpecificTypeEffect(ActionEffectType.Heal, out var heal)
 				&& DataCenter.AllHostileTargetIds.Contains(effect.TargetID)

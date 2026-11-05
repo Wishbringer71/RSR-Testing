@@ -50,3 +50,23 @@ public enum AttackType : byte
 	/// </summary>
 	LimitBreak = 8,
 }
+
+/// <summary>
+/// How a hit of an <see cref="AttackType"/> row meets the target's defences: physical (slashing, piercing, blunt, shot) or
+/// magic; any other row (breath, sound, limit break) meets neither. One place for the tankbuster plan, the learned
+/// tankbusters, the incoming-damage checks and the Crucible.
+/// </summary>
+internal static class AttackTypeKind
+{
+	/// <summary>Slashing, piercing, blunt or shot: met by physical mitigation and vulnerability.</summary>
+	internal static bool IsPhysical(uint attackType)
+	{
+		return attackType is >= (uint)AttackType.Slashing and <= (uint)AttackType.Shot;
+	}
+
+	/// <summary>Magic: met by magic mitigation and vulnerability.</summary>
+	internal static bool IsMagic(uint attackType)
+	{
+		return attackType == (uint)AttackType.Magic;
+	}
+}

@@ -50,6 +50,12 @@ internal static class CrucibleBoard
 	private static readonly Dictionary<uint, double> _ownDamageByElement = [];
 	private static bool _bonusTraced;
 
+	// K10 shop (A569): the damage the player took from enemies in this area, by how it meets his defences.
+	private static uint _takenIn;
+	private static double _takenPhysical;
+	private static double _takenMagic;
+	private static double _takenOther;
+
 	private static List<(uint Row, Enemy[] Enemies)> Fights => _fights ??= Read();
 
 	/// <summary>The fight in progress: its XBMBattleDetail row, 0 while none is told.</summary>
@@ -84,6 +90,25 @@ internal static class CrucibleBoard
 	internal static IReadOnlyCollection<uint> Ailments => _fight != 0 && _fightAilments.TryGetValue(_fight, out var ailments)
 		? ailments
 		: [];
+
+	/// <summary>K10 shop (A569): the dangerous statuses the fight in XBMBattleDetail row <paramref name="battleRow"/> inflicts.</summary>
+	internal static IReadOnlyCollection<uint> AilmentsOf(uint battleRow)
+	{
+		_ = Fights;
+		return _fightAilments.TryGetValue(battleRow, out var ailments) ? ailments : [];
+	}
+
+	/// <summary>K10 shop (A569): every fight the sheets list, for when the board is not known.</summary>
+	internal static List<uint> AllFights()
+	{
+		var rows = new List<uint>();
+		foreach (var (row, _) in Fights)
+		{
+			rows.Add(row);
+		}
+
+		return rows;
+	}
 
 	/// <summary>The enemies the sheet lists for the fight in XBMBattleDetail row <paramref name="battleRow"/>.</summary>
 	internal static Enemy[] EnemiesOf(uint battleRow)
@@ -613,6 +638,48 @@ internal static class CrucibleBoard
 			DefenseTrace.Line($"crucible: a hit on a weakness deals {WeaknessBonus:P0} more, first measured on action {actionId}");
 		}
 	}
+
+	/// <summary>
+	/// K10 shop (A569): a hit of an enemy on the player in the Crucible, <paramref name="amount"/> damage of an action of
+	/// <paramref name="attackType"/> (the action sheet's AttackType). Kept per area. Effect handler, game thread.
+	/// </summary>
+	internal static void RecordTaken(uint attackType, uint amount)
+	{
+		if (amount == 0)
+		{
+			return;
+		}
+
+		if (_takenIn != DataCenter.TerritoryID)
+		{
+			_takenIn = DataCenter.TerritoryID;
+			_takenPhysical = 0d;
+			_takenMagic = 0d;
+			_takenOther = 0d;
+		}
+
+		if (AttackTypeKind.IsPhysical(attackType))
+		{
+			_takenPhysical += amount;
+		}
+		else if (AttackTypeKind.IsMagic(attackType))
+		{
+			_takenMagic += amount;
+		}
+		else
+		{
+			_takenOther += amount;
+		}
+	}
+
+	/// <summary>
+	/// K10 shop (A569): the damage the player took from enemies in this area - physical, magic and other - or null before
+	/// the first hit.
+	/// </summary>
+	internal static (double Physical, double Magic, double Other)? Taken =>
+		_takenIn == DataCenter.TerritoryID && _takenPhysical + _takenMagic + _takenOther > 0d
+			? (_takenPhysical, _takenMagic, _takenOther)
+			: null;
 
 	/// <summary>
 	/// K1 (A549): how much more a hit on a weakness deals in this area, measured: per action that hit both a weakness and

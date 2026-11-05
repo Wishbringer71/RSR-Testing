@@ -1957,8 +1957,72 @@ Dullahan, Golem, Spriggan und Eisgolem (`XBMPet.InflictsInterrupt`).
     den ein späterer Kampf braucht – das beantwortet erst K11 mit den Sondenzeilen. *Gegenthese 3:* Ein gefütterter
     Begleiter mit wenig LP bleibt draußen, obwohl die Rast ihn retten könnte. Nicht widerlegt: Ob die LP das gekaufte
     Futter wert sind, hängt am Futter; er entscheidet mit einem Klick.
-  - *Laden:* offen; was ein Laden anbietet, steht nur in den Werten seines Fensters (`XBMContentsItemShop`), deren
-    Belegung keine Quelle nennt.
+  - *Laden, gebaut (A569):* Das Ladenfenster `XBMContentsItemShop` führt deine Marken, je Angebot gezeigt,
+    `XBMItem`-Zeile, Preis, ermäßigt und verkauft, dann deine Gegenstände und deine Ausrüstung (ECommons
+    `ReaderXBMContentsItemShop`, Werkzeugquelle; Daedalus 74659a6 liest dieselben Stellen, Aufnahme 22.10.2026, und kauft
+    Zeile r mit dem Rückruf `[2, r]`). Gegenstände hältst du höchstens zehn (`InstanceContentCrucibleOfTheUnbroken`,
+    zehn Plätze), Ausrüstung ebenso (zehn Plätze im Fenster; Daedalus: das Spiel lehnt ein elftes Stück ab).
+    Ausrüstung wirkt ohne Zutun bis zum Ende des Laufs, Gegenstände verbraucht K8. Die Art steht im Blatt
+    (`XBMItemType`: „Beast Gear", „Crucible Item", Futter).
+    *Was gilt:* Solange der Laden offen ist, zeigt das Fenster „RSR - Crucible shop" eine Kaufliste mit Preis und Grund
+    je Posten; „Buy" kauft sie Zeile für Zeile, geprüft am Verkauft-Merker. Fragt das Spiel nach, wartet RSR auf deine
+    Antwort: nach Ja die nächste Zeile, nach Nein endet der Kauf; ebenso, wenn das Spiel eine Zeile nicht annimmt (ob der
+    Kauf nachfragt, ist unbelegt – BeastHelper be40a1e beantwortet eine Kaufrückfrage, „noch nicht im Spiel bestätigt").
+    Ohne den Klick kauft RSR nichts (wie K7, Entscheidung C in A533: ein Schritt, den keiner zurücknimmt, nur auf deinen
+    Wunsch). Das Fenster steht, solange der Laden offen ist, auch wenn die Liste leer ist, mit dem Grund; jede neue Liste
+    geht ins `DefenseTrace.log`. Die Liste, Sicherheit zuerst, solange Marken und Plätze reichen:
+    1. Ein zweites Leben, solange du keines hältst: Ring of Sacrifice oder ein Gegenstand mit Reraise.
+    2. Schutzausrüstung, die Auswahl mit den höchsten wirksamen LP, die Marken und Plätze zulassen. Wirksame LP:
+       (1 + maximale LP) / ((1 − erlittener Schaden) × (p × (1 − physische Verwundbarkeit) × (1 − Ausweichen)
+       + m × (1 − magische Verwundbarkeit) + s)), über alle gehaltenen Stücke multipliziert. p, m und s sind die Anteile
+       physischen, magischen und sonstigen Schadens, den du in diesem Gebiet genommen hast, nach der Angriffsart der
+       treffenden Aktion (`Action.AttackType`: Hieb bis Schuss physisch, Magie magisch, alles andere sonstig – dieselbe
+       Zuordnung wie Tankbuster und K8), zurückgerechnet auf die Zeit ohne deine gehaltene Ausrüstung. Bis zum ersten
+       Treffer im Gebiet stehen dafür die Anteile von Stärke und Intelligenz der Gegner des Bretts im Blatt (s = 0; meine
+       Zuordnung: Stärke trifft physisch, Intelligenz magisch); ohne Brett (der Stufenagent nennt keines) die aller
+       Kämpfe des Crucible. Ausweichen zählt als Chance, einem physischen Treffer zu entgehen, gestapelte Stücke
+       multiplizieren (beides meine Ableitung, unbelegt). Nicht gezählt: Blockstärke (wie oft du blockst, ist
+       unbekannt) und Zufallswirkungen (Blink, Steinhaut, Rehabilitation, Aufsaugen) – die Liste unterschätzt diese
+       Stücke, sie überschätzt keines. Gesucht wird über jede Startwahl: je Angebot einmal als erstes gesetzt, danach
+       Stück für Stück das mit dem größten Gewinn je Marke; von allen so gefundenen Auswahlen gilt die mit den höchsten
+       wirksamen LP, bei Gleichstand die billigere. Die Zeile nennt, was das Stück an Bewegung oder Aktionstempo kostet
+       (Genji Armor: Bewegung −20 %; Ice Shield: Slow +10 %), gegengerechnet mit deiner übrigen Ausrüstung (Mystic Boots:
+       Bewegung +50 %).
+    3. Ausrüstung, die heilt: zuerst LP am Kampfende (Ring of Curing), dann mehr Heilung durch Aktionen und Gegenstände.
+    4. Ein Serum oder eine Resistenz gegen jeden Zustand, den ein Kampf des Bretts zufügt und den weder ein gehaltener
+       Gegenstand noch deine Ausrüstung deckt.
+    5. Heiltränke, der stärkste zuerst, bei Gleichstand der billigere.
+    6. Schutzgegenstände: Minderung nach ihrem Anteil, Abwehr physischer, Reflexion magischer Angriffe.
+    Nie: Futter (die Rast beendet es, Campsite oben); Ausrüstung, die dir selbst einen Zustand zufügt (Thunder Axe:
+    Betäubung, Demonic Helm: Todesurteil, Flame Knife: Ketten, Wind Mask: Keen Edge, Schaden über Zeit auf dir) – wie K8
+    nie einen Gegenstand nimmt, der dir einen Zustand zufügt. Ausrüstung, die die wirksamen LP senkt, hat keinen Gewinn und fällt heraus (Empress Hairpin). Schaden
+    empfiehlt die Liste nicht; was du dazu kaufst, nutzt K8. Einstellung „Recommend what to buy in a Crucible shop
+    (Crucible only)", ab Werk an; sie zeigt das Fenster, kaufen tut der Knopf.
+    *Beispiel (Preise angenommen):* 1.200 Marken, sieben Gegenstände, ein Brett, dessen Endkampf lähmt. Im Laden Ring of
+    Sacrifice (400), Mythril Armor (500, −15 % erlittener Schaden, +15 % LP), Crimson Ribbon (300, Lähmung, Blindheit,
+    Versteinerung) und zwei Heiltränke. Die Liste: Ring of Sacrifice (zweites Leben), Mythril Armor (+35 % wirksame LP),
+    Crimson Ribbon (gegen die Lähmung); für die Tränke reichen die Marken nicht mehr. Mit 900 Marken endet sie nach der
+    Rüstung.
+    *Verworfen:* (a) ungefragt kaufen (Daedalus' Autopilot): Marken sind auch Punkte (Coin Clutcher, Rolling in Riches),
+    und was du sparst, entscheidest du. (b) Nur anzeigen ohne Knopf: Jede Zeile wäre ein eigener Klick und eine Rückfrage
+    mehr; der Knopf kostet nichts, solange er nur auf Wunsch kauft. (c) Schaden mitempfehlen: Sicherheit zuerst; Schaden
+    verkürzt die Kämpfe, aber um wie viel, hängt an deinem Anteil am Schaden der Begleiter – unbekannt.
+    *Gegenthese 1:* Genji Armor (+30 % LP, −20 % erlittener Schaden) verlangsamt dich um 20 %; eine Fläche, der du
+    sonst entkämst, trifft dich. Widerlegt bis auf einen Fall: Der Weg aus der Fläche dauert ein Viertel länger; das
+    ändert nur etwas, wenn du ihn mit weniger als einem Fünftel der Wegzeit Vorsprung geschafft hättest. Auch dann
+    trifft dich der Treffer mit 80 % Schaden auf 130 % LP, also mit 62 % seines Anteils ohne die Rüstung, während sie
+    jeden anderen Treffer ebenso mindert. Den Ausgang kehrt sie nur bei einer Fläche um, deren Schaden ohne die Rüstung
+    mehr als das 1,6-Fache deiner LP beträgt (eine Fläche, die töten soll), und nur bei spätem Ausweichen (meine
+    Rechnung; wie viele solche Flächen ein Brett führt, ist unbelegt). Die Zeile nennt die Verlangsamung, Mystic Boots
+    heben sie auf. Ice Shield (Slow +10 %) ebenso: Deine Aktionen kommen um ein Zehntel langsamer (meine Lesart nach dem
+    Gegenstück Haste im selben Blatt: Wirk- und Abklingzeit, Auto-Angriff), dein Schadenseingang sinkt um drei Zehntel.
+    *Gegenthese 2:* Der Gewinn je Marke bevorzugt billige Stücke vor einem teuren besseren. Widerlegt für ein teures
+    Stück: Die Suche setzt jedes Angebot einmal an den Anfang. Es bleibt der Fall zweier teurer Stücke gegen mehrere
+    billige mit höherem Gewinn je Marke; dort liegt die Auswahl wenige Prozent wirksamer LP unter der besten (Beispiel:
+    zwei Stücke zu 500 Marken mit je +30 % gegen eines davon und zwei zu 200 mit je +13 %: 1,66 statt 1,69; meine
+    Rechnung). *Gegenthese 3:* p und m aus dem Blatt sagen nichts über den Schaden selbst. Widerlegt: Ab dem ersten
+    Treffer im Gebiet zählt dein gemessener Schaden; das Blatt trägt nur bis dahin, also im Laden vor dem ersten Kampf
+    eines Bretts.
   - *Weg:* nicht gebaut. Das Brett wird gelaufen, nicht geklickt (Daedalus läuft es mit vnavmesh ab); das macht RSR zu
     einem Bot für den Weg über das Brett – eine Frage des Umfangs, die er entscheidet (Vorlage am Ende des TODO).
 
@@ -2008,7 +2072,7 @@ beim Betreten, ob es die Daten des Bretts gelesen hat.
 
 *Stufen* (TODO „Beastmaster: Crucible-Strategien"): 1. Daten zur Laufzeit (Schwäche und Gegnerliste je Kampf,
 Schadensart je Begleiter) mit K1, K2 und K3; 2. K11 (Bedarfsliste und LP je Begleiter) mit K9; 3. K8; 4. K6 und K7;
-danach K4, K5, K10.
+danach K4, K5, K10 (Campsite A564 und Laden A569 gebaut; der Weg ist eine Frage des Umfangs an ihn).
 
 **Stufe 1, erster Teil: Daten und K2** (A548, gebaut; K1 und der Rest von K3 folgen):
 - *Kämpfe aus dem Blatt:* `XBMBattleDetail` hat eine Zeile je Kampf und eine Unterzeile je Gegner. Gelesen werden der

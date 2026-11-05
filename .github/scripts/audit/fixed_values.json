@@ -1327,6 +1327,26 @@
    "status": "exception",
    "loop": "A564",
    "reason": "Percent to share: the rest prompt states the share in percent; the divisor is the definition of the unit, as for the item texts (A340, A551)."
+  },
+  {
+   "file": "RotationSolver/Basic/Rotations/Basic/BeastmasterCrucibleShop.cs",
+   "code": "private const int ShopBuyCallback = 2;",
+   "values": [
+    "2"
+   ],
+   "status": "exception",
+   "loop": "A569",
+   "reason": "The game's command of the Crucible shop window XBMContentsItemShop to buy a row ([2, row]; Daedalus 74659a6, recorded 22.10.2026; BeastHelper be40a1e after AutoDuty's Screens.ItemShop.Buy). Not a tuned value; every click is checked at the row's sold flag."
+  },
+  {
+   "file": "RotationSolver/Basic/Rotations/Basic/BeastmasterCrucibleShop.cs",
+   "code": "return percent / 100f;",
+   "values": [
+    "100"
+   ],
+   "status": "exception",
+   "loop": "A569",
+   "reason": "Percent to share: the gear's effect text states its figures in percent; the divisor is the definition of the unit, as for the item texts and the rest prompt (A551, A564)."
   }
  ]
 }

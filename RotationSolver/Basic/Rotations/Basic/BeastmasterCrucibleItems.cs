@@ -535,9 +535,9 @@ public partial class BeastmasterRotation
 		}
 
 		var attackType = AttackTypeAt(chara);
-		var slot = attackType is >= (uint)AttackType.Slashing and <= (uint)AttackType.Shot
+		var slot = AttackTypeKind.IsPhysical(attackType)
 			? FirstOf(crucible, CrucibleItemKind.NullifyPhysical)
-			: attackType == (uint)AttackType.Magic
+			: AttackTypeKind.IsMagic(attackType)
 				? FirstOf(crucible, CrucibleItemKind.ReflectMagic)
 				: -1;
 		if (slot < 0)

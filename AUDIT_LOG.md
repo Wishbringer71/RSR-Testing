@@ -16737,6 +16737,44 @@ habe den schleim bislang nicht anfreunden können."
   `.claude/rules/konzepte.md` gilt für jede künftige Übernahme.
 - *Prüfgrad:* Code, Spielblätter und Archiv gelesen; kein Code geändert.
 
+### A569 · Crucible K10: Was im Laden zu kaufen ist (05.11.2026)
+
+- *Auftrag:* `TODO.md`, „Beastmaster: Crucible-Strategien", K10 (Laden); seine Vorgabe vom 05.11.2026 (Spielerlebnis
+  vor Umsetzung).
+- *Quellen:* `XBMItem` (75 Stücke Bestienausrüstung, Wirktexte englisch; Typ über `XBMItemType` „Beast Gear"); ECommons
+  `ReaderXBMContentsItemShop` (Werkzeugquelle: Marken, Angebote je fünf Werte, Gegenstände, Ausrüstung); Daedalus
+  74659a6 (Aufnahme 22.10.2026, Kauf mit `[2, Zeile]`); BeastHelper be40a1e (26.10.2026; Kaufreihenfolge aus AutoDuty
+  als feste Liste – Genji Armor an neunter Stelle von 75 –, Kaufrückfrage beantwortet, „noch nicht im Spiel
+  bestätigt"); `Action.AttackType` für die Schadensart je Treffer, wie Tankbuster und K8.
+- *Optionen:* (a) ungefragt kaufen (Daedalus, BeastHelper) – verworfen: Marken sind auch Punkte, ein Kauf ist nicht
+  zurückzunehmen (Entscheidung C, A533). (b) nur anzeigen – verworfen: jede Zeile ein eigener Klick. (c) feste
+  Reihenfolge wie AutoDuty – verworfen: sie kennt weder Marken noch das Brett noch den genommenen Schaden. (d) Gewählt:
+  Liste nach Sicherheit, Kauf auf Knopfdruck. (e) Nullvariante: er kauft wie bisher von Hand.
+- *Gegenthesen, aufgelöst (Konzept 01, K10 Laden):* (1) Genji Armor verlangsamt: Der Ausgang kippt nur bei einer
+  tödlichen Fläche und spätem Ausweichen; die Zeile nennt die Bewegung, gegengerechnet mit der übrigen Ausrüstung.
+  (2) Billig vor besser: Die Suche setzt jedes Angebot einmal an den Anfang; Rest zwei teure gegen mehrere billige,
+  1,66 statt 1,69 im Beispiel (Modell im Notizordner, gegen dieselbe Rechnung). (3) Blatt statt Schaden: Ab dem ersten
+  Treffer im Gebiet zählt der gemessene Schaden, zurückgerechnet auf die Zeit ohne gehaltene Ausrüstung.
+- *Gefunden beim Bau:* Wind Mask fügt dir Keen Edge zu („Inflicts damage over time on self") – die erste Fassung der
+  Erkennung las nur „inflict" klein und hätte sie empfohlen; jetzt ohne Groß- und Kleinschreibung. Ice Shield führt
+  „Slow +10 %", das die erste Fassung nicht las; jetzt gelesen und in der Zeile genannt.
+- *Gebaut:* `BeastmasterCrucibleShop.cs` (`FollowCrucibleShop`, `RecommendPurchases`, `BuyNext`), Fenster
+  „RSR - Crucible shop" (`CrucibleShopWindow`), Einstellung „Recommend what to buy in a Crucible shop (Crucible only)",
+  ab Werk an. `CrucibleBoard.RecordTaken`/`Taken` je Gebiet aus dem Watcher (Treffer eines Gegners auf dich im
+  Crucible). Neu gerechnet nur, wenn sich Marken, Käufe, Gehaltenes, Brett oder Schaden ändern; jede neue Liste als
+  Spurzeile „crucible shop: …". Rückfrage des Spiels: Ja kauft weiter, Nein beendet.
+- *Klasse:* Die Einordnung physisch/magisch stand an sechs Stellen einzeln (Tankbuster-Plan, gelernte Tankbuster zweimal,
+  `IsPhysicalDamageIncoming`/`IsMagicalDamageIncoming`, K8, erzeugte `DefensiveValues`); jetzt einmal in
+  `AttackTypeKind`, der Generator schreibt sie ebenso.
+- *Festwerte:* 2 (Kaufbefehl des Fensters), 100 (Prozent); Ausnahmen mit diesem Loop.
+- *Falsifikation:* Kein Defekt – er kauft ohnehin selbst: Die Liste rechnet, was das Fenster nicht zeigt (wirksame LP
+  gegen den genommenen Schaden, Lücken bei Zuständen des Bretts). Option falsch – (a) bis (c) oben. Ausgeliefert, und
+  nichts ändert sich: (1) Der Leser trifft die Werte nicht – dann bleibt die Liste leer, das Fenster sagt es, die
+  Spurzeile auch; (2) der Kauf fragt nach und RSR liefe weiter – es wartet, solange die Rückfrage offen ist; (3) kein
+  Treffer im Gebiet vor dem ersten Laden – dann zählt das Blatt, und das Fenster nennt, wogegen gewogen wird.
+- *Prüfgrad:* Compile, Prüfschritte, Modell der Erkennung über alle 75 Blattzeilen und der Auswahl; Wirkkette am Code.
+  Im Spiel nicht beobachtet; die Spurzeile „crucible shop: …" und das Fenster zeigen Liste und Grundlage selbst.
+
 ## B · Commit-Register (Fork vs. `upstream/main`)
 
 ### B1 · Einzelgeprüfte Fork-Commits

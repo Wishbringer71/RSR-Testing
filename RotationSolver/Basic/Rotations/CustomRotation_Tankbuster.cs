@@ -578,9 +578,9 @@ public partial class CustomRotation
 			var self = canSelf ? value.SelfAgainst(cast.AttackType) : 0f;
 			var enemy = cast.Learned
 				? 0f
-				: cast.AttackType is >= (uint)AttackType.Slashing and <= (uint)AttackType.Shot
+				: AttackTypeKind.IsPhysical(cast.AttackType)
 					? value.EnemyPhysical
-					: cast.AttackType == (uint)AttackType.Magic
+					: AttackTypeKind.IsMagic(cast.AttackType)
 						? value.EnemyMagical
 						: Math.Min(value.EnemyPhysical, value.EnemyMagical);
 			var barrier = canSelf ? value.Barrier + value.MaxHp : 0f;

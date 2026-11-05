@@ -2344,7 +2344,7 @@ internal static class DataCenter
 	/// </summary>
 	public static bool IsMagicalDamageIncoming()
 	{
-		return AnyHostileCasting(static action => action.AttackType.RowId == 5);
+		return AnyHostileCasting(static action => AttackTypeKind.IsMagic(action.AttackType.RowId));
 	}
 
 	/// <summary>
@@ -2357,7 +2357,7 @@ internal static class DataCenter
 	/// </remarks>
 	public static bool IsPhysicalDamageIncoming()
 	{
-		return AnyHostileCasting(static action => action.AttackType.RowId is >= 1 and <= 4);
+		return AnyHostileCasting(static action => AttackTypeKind.IsPhysical(action.AttackType.RowId));
 	}
 
 	private static bool AnyHostileCasting(Func<Action, bool> check)

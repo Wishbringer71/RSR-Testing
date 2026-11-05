@@ -46,8 +46,8 @@ public readonly record struct DefensiveValue(
 	/// </summary>
 	public float SelfAgainst(uint attackType)
 	{
-		var split = attackType is >= (uint)AttackType.Slashing and <= (uint)AttackType.Shot ? SelfPhysical
-			: attackType == (uint)AttackType.Magic ? SelfMagical
+		var split = AttackTypeKind.IsPhysical(attackType) ? SelfPhysical
+			: AttackTypeKind.IsMagic(attackType) ? SelfMagical
 			: Math.Min(SelfPhysical, SelfMagical);
 		return 1f - ((1f - Self) * (1f - split));
 	}

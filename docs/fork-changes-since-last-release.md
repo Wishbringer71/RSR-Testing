@@ -249,6 +249,15 @@ What this release changes in the fight. For the whole distance from upstream, se
   to what the campsite allows: those not fallen, not at full HP and not fed (resting ends a feed), the
   most hurt first. It reads the share from the game's prompt once it is open. A selection you change
   by hand stays; resting or leaving is your click.
+- **What to buy in a Crucible shop.** With `Recommend what to buy in a Crucible shop (Crucible only)`,
+  **on by default**, a small window `RSR - Crucible shop` lists what to buy and why while a board's
+  shop is open, safety first as far as your tokens and slots go: a second life while you hold none;
+  the protective gear that raises your effective HP the most, weighed by the physical, magic and other
+  damage you took in this area (before your first hit there, by the board's enemies); gear that heals;
+  a resistance or serum against each ailment of the board's fights that nothing you hold covers;
+  healing items; protective items. Never feed, never gear that harms you (such as Thunder Axe or Wind
+  Mask). A piece that slows you says so. `Buy` buys the list row by row; when the game asks, your
+  answer decides. Without the click RSR buys nothing.
 - **Snarl and Challenge are on by default (Crucible).** Without a tank the enemies attack only you,
   and your fall ends the run, while a fallen familiar costs only that familiar. `Use Snarl and
   Challenge based on your HP and your familiar's HP (Crucible only)` is now **on by default**, still on
