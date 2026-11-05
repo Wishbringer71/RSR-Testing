@@ -200,6 +200,16 @@ public static class TargetFilter
 			return false;
 		}
 
+		// A blue mage counts in the role of his Aetheric Mimicry, as DataCenter.Role does for the player: every reader asks
+		// what a member does in the party, not what his job is (concept 03, A559).
+		if (battleChara.IsJobs(Job.BLU))
+		{
+			var mimicry = battleChara.HasStatus(false, StatusID.AethericMimicryTank) ? JobRole.Tank
+				: battleChara.HasStatus(false, StatusID.AethericMimicryHealer) ? JobRole.Healer
+				: JobRole.RangedMagical;
+			return mimicry == role;
+		}
+
 		var map = GetRoleMap();
 		return map.TryGetValue(role, out var set) && battleChara.IsJobs(set);
 	}

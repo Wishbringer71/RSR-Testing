@@ -14,6 +14,11 @@ What this release changes in the fight. For the whole distance from upstream, se
 
 ## Healing
 
+- **A blue mage counts in the role of his Aetheric Mimicry.** Every question RSR asks about a party
+  member's role (`IsJobCategory`) now answers a blue mage under "Aetheric Mimicry: Healer" as a healer
+  and one under "Aetheric Mimicry: Tank" as a tank. With such a healer in the party, a tank or damage
+  dealer no longer spends his defence on every attack as if no healer lived, and heals wait for him as
+  for any healer; a blue mage tank counts as the party's tank.
 - **Figures that only healing defeats are healed.** Some fights bring in friendly figures that die
   only when healed to full with single-target heals, such as the four Reiryu in Shinryu (Unreal).
   They appear at 1 HP, tether a player each and fly off at the end of their cast unless healed in

@@ -16502,6 +16502,30 @@ habe den schleim bislang nicht anfreunden können."
   ohne gemessenen Zuschlag oder ohne Wavekin auf dem Borgen-Horn – die Zeile fehlt dann.
 - *Prüfgrad:* Compile ohne Warnung, Prüfschritte; Rechnung aus den Wirktexten, im Spiel nicht beobachtet.
 
+### A559 · Ein Blaumagier in Mimikry zählt überall in deren Rolle (05.11.2026)
+
+- *Auftrag:* `TODO.md`, Defekt „Ein Blaumagier in Heiler-Mimikry zählt nicht als Heiler".
+- *Befund (Klasse):* `IsJobCategory` las nur den Job; die Mimikry kannte allein die Zielart ohne Tank und Heiler (A526,
+  `withMimicry`). Leser: `AnyLivingHealer` (sechs Stellen: Abwehr ohne Heiler im `StateUpdater` und in Tankbuster- und
+  Haltelogik, `HoldPartyHeal`, `GcdHealsAllowed`, `OnlyHealAsNonHealIfNoHealers`), `PartyTank`, Tankbuster auf Tanks,
+  und 34 weitere Abfragen nach Tank oder Heiler in `RotationSolver/Basic` und den Updatern.
+- *Behebung an der zentralen Stelle:* `IsJobCategory` gibt für einen Blaumagier die Rolle seiner Mimikry (Tank, Heiler,
+  sonst magischer Fernkämpfer), wie `DataCenter.Role` es für den Spieler schon tat. `AnyLiving` und `InMimicryRole`
+  verlieren ihre Sonderlesart.
+- *Im Kampf:* Mit einem Blaumagier-Heiler in der Gruppe öffnet ein Tank oder Damage Dealer seine Abwehr nicht mehr bei
+  jedem Angriff, und GCD-Heilungen von Nicht-Heilern warten wie bei jedem Heiler; ein Blaumagier-Tank gilt als Tank für
+  Heilreihenfolge, Tankbuster und `PartyTank`. Ist der Spieler selbst der Heiler-Blaumagier, zählt er sich wie jeder
+  Heiler (`AnyLivingHealer(false)`); `OnlyHealAsNonHealIfNoHealers` hält ihn nicht, weil seine Rolle Heiler ist.
+- *Betroffene:* E – Gruppen mit Blaumagiern (seine Blaumagier-Gruppen, Masked Carnivale allein ändert nichts). R –
+  `IsJobCategory` (öffentlich) antwortet für Blaumagier jetzt nach der Mimikry; kein Leser in RSR fragt über sie nach
+  Nahkampf oder Fernkampf, eine abgeleitete Rotation, die das tut, sieht einen Heiler- oder Tank-Blaumagier nicht mehr
+  als magischen Fernkämpfer.
+- *Falsifikation:* Kein Defekt? Ein Heiler-Blaumagier heilt (Pom Cure, White Wind); als Damage Dealer gezählt, rechnete
+  RSR mit einer Gruppe ohne Heilung. Option falsch, weil ein Blaumagier-Heiler schwächer heilt? Er ist der Heiler dieser
+  Gruppe; die kritische Klasse hebt jede Halteregel weiter auf. Ausgeliefert, und nichts ändert sich: ohne Blaumagier in
+  der Gruppe – dort bleibt alles gleich.
+- *Prüfgrad:* Compile ohne Warnung, Prüfschritte; Wirkkette am Code. Im Spiel nicht beobachtet.
+
 ## B · Commit-Register (Fork vs. `upstream/main`)
 
 ### B1 · Einzelgeprüfte Fork-Commits

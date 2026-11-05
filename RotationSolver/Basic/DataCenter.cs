@@ -1288,11 +1288,11 @@ internal static class DataCenter
 	/// him but himself. A blue mage beside him counts in the role of his Aetheric Mimicry (concept 03, "Zielart ohne Tank
 	/// und Heiler", A525, A526).
 	/// </summary>
-	public static bool NoTankNoHealerBeside => !AnyLiving(JobRole.Tank, true, true) && !AnyLiving(JobRole.Healer, true, true);
+	public static bool NoTankNoHealerBeside => !AnyLiving(JobRole.Tank, true) && !AnyLiving(JobRole.Healer, true);
 
 	/// <summary>No tank of the party is alive beside the player, a blue mage counting in his mimicry's role: nobody holds the
 	/// enemies off him (concept 01, C1 at the pull, A542).</summary>
-	public static bool NoTankBeside => !AnyLiving(JobRole.Tank, true, true);
+	public static bool NoTankBeside => !AnyLiving(JobRole.Tank, true);
 
 	private static bool _dangerFirstAlone;
 
@@ -1318,14 +1318,13 @@ internal static class DataCenter
 		}
 	}
 
-	// withMimicry: a blue mage counts in the role of his Aetheric Mimicry, not as the damage dealer his job makes him.
-	private static bool AnyLiving(JobRole role, bool excludeSelf, bool withMimicry = false)
+	// A blue mage counts in the role of his Aetheric Mimicry through IsJobCategory (A526, A559).
+	private static bool AnyLiving(JobRole role, bool excludeSelf)
 	{
 		var playerId = Player.Object?.GameObjectId ?? 0;
 		foreach (var member in PartyMembers)
 		{
-			if (member != null && !member.IsDead && !(excludeSelf && member.GameObjectId == playerId)
-				&& (member.IsJobCategory(role) || (withMimicry && InMimicryRole(member, role))))
+			if (member != null && !member.IsDead && !(excludeSelf && member.GameObjectId == playerId) && member.IsJobCategory(role))
 			{
 				return true;
 			}
@@ -1334,15 +1333,6 @@ internal static class DataCenter
 		return false;
 	}
 
-	private static bool InMimicryRole(IBattleChara member, JobRole role)
-	{
-		return role switch
-		{
-			JobRole.Tank => member.HasStatus(false, StatusID.AethericMimicryTank),
-			JobRole.Healer => member.HasStatus(false, StatusID.AethericMimicryHealer),
-			_ => false,
-		};
-	}
 
 	/// <summary>
 	/// No healer is alive and an enemy attacks the player, with "Without a living healer, spend your defence to stay
