@@ -47,7 +47,7 @@ LP gefallen sein (04.11.2026). *Ort:* `BST_Reborn`, `CrucibleBoard`, `Beastmaste
 A549: Daten zur Laufzeit, K1, K2, K3 ohne den Bedarf der Begleiter), K9 (A550), K8 (A551 bis A554: Heilung, Gegenmittel, Bestien-Lebensfeder, Sand der
 Zeit, Bestien-Heiltranksammlung, Schutz, Seren, Bestien-Heilmittelsammlung, Resistenzmittel, Bestien-Goldnadel,
 Bestien-Ausdauermittel, Schadensgegenstände, Stärkungsmittel im Endkampf; A555).
-*Gebaut auch:* K6 (A562, Hörner im Hornfenster), K7 (A563, Kader auf Wunsch im Teamfenster), K10 Campsite (A564, wer mitruht), K10 Laden (A569, Kaufliste im Ladenfenster, Kauf auf Wunsch). *Nächster Schritt:* K4 (Sonde A557 „crucible: … stopped its cast" zeigt die unterbrechende Aktion), K5; K10 Weg ist eine Frage des Umfangs an ihn, am Ende des TODO; K11 (Kader, LP je Begleiter und Feld: Sonde A556 „crucible agents …" zeigt, ob das Spiel sie im Brett füllt;
+*Gebaut auch:* K6 (A562, Hörner im Hornfenster), K7 (A563, Kader auf Wunsch im Teamfenster), K10 Campsite (A564, wer mitruht), K10 Laden (A569, A570: Kaufliste im Ladenfenster, Kauf auf Wunsch). *Nächster Schritt:* K4 (Sonde A557 „crucible: … stopped its cast" zeigt die unterbrechende Aktion), K5; K10 Weg ist eine Frage des Umfangs an ihn, am Ende des TODO; K11 (Kader, LP je Begleiter und Feld: Sonde A556 „crucible agents …" zeigt, ob das Spiel sie im Brett füllt;
 danach Loop am Ende des TODO). *Konzept:* 01,
 „Crucible of the Unbroken: Bretter, Kämpfe, Strategien".
 
@@ -75,7 +75,7 @@ vielleicht; jeder Fund wird am Spiel belegt, bevor er ein Defekt oder eine Verbe
 Sein Auftrag vom 05.11.2026 dazu: „alle bekannten repos zu rotationen, zu beastmaster, zu bluemage analysiere, inwieweit
 erkenntisse daraus in rsr eingebracht werden können und die vorhandenen konzepte ergänzen und verbessern könnten".
 *Ort:* Grundstruktur (`RotationSolver/Basic`, Updaters, Zielwahl, Abwehr), die Rotationen unter `RebornRotations`, die
-Jobkonzepte. *Nächster Schritt:* Daedalus weiter (A561: Crucible ausgewertet): Zielwahl, Abwehr, Kampfvorhersage,
+Jobkonzepte. *Nächster Schritt:* Daedalus weiter (A561: Crucible-Automatik; A570: Kaufgewichte und Brettzustände; offen im Crucible: Zu-Eier, Rückwurf durch Blaze Spikes): Zielwahl, Abwehr, Kampfvorhersage,
 Heiler-Triage, Blaumagier, Phantomjobs, je Job die Regeln, die RSR nicht kennt; danach die übrigen in der Reihenfolge der
 Liste. Je Fund ein Loop, je Repository ein Archiveintrag mit
 Commit und Datum. *Konzept:* 15, erweitert vom Vergleich mit WrathCombo auf die übrigen Werkzeuge; je Fund dazu das

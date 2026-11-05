@@ -391,6 +391,13 @@ public static class Watcher
 				CrucibleBoard.RecordHit(action.RowId, target, FullAmount(entry));
 			}
 
+			// K10 shop (A570): the player's own healing on himself - his actions and items -, for gear that adds to it.
+			if (effect.TargetID == player.GameObjectId && set.Source.GameObjectId == player.GameObjectId
+				&& effect.GetSpecificTypeEffect(ActionEffectType.Heal, out var heal))
+			{
+				CrucibleBoard.RecordHealed(FullAmount(heal));
+			}
+
 			// K4 probe (A557): the last own action on each target and the kinds of its entries.
 			var kinds = new List<byte>();
 			effect.ForEach(e =>

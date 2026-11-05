@@ -949,7 +949,7 @@ Arten reinigbarer Zustände, jede an den eigenen Daten des Spiels erkannt:
 
 | Art | Erkannt an | Beispiele (Standardliste) | Wann RSR reinigt |
 |---|---|---|---|
-| **tötet am Ende** | Symbol des Todesurteils (215503, sechs Doom-Zeilen) oder Wirktext mit „KO" (Necrosis 2965, Throttle 700; xivapi, 05.11.2026) | Doom (910, 3364, 4594), Necrosis (2965) | sofort, vor jeder Heilung – sie rettet ein Leben |
+| **tötet am Ende** | Symbol von Verhängnis (215503, sechs Doom-Zeilen) oder Wirktext mit „KO" (Necrosis 2965, Throttle 700; xivapi, 05.11.2026) | Doom (910, 3364, 4594), Necrosis (2965) | sofort, vor jeder Heilung – sie rettet ein Leben |
 | **Schaden über Zeit** | Wirktext „damage over time" (derselbe Erkenner wie „HoT gegen DoT", Konzept 08) | Bleeding (273), Poison (2104), Concussion (3521) | liegt er, solange ein Gegner in Reichweite ist, auf mehr als einem Mitglied, nie – dann antwortet die Heilung über Zeit für die Gruppe (Weißmagier, Astrologe: „HoT gegen DoT", Konzept 08; Gelehrter, Weiser: ihre Fähigkeiten über die Heilschwellen); auf einem einzigen wie die übrigen |
 | **übrige** | alles andere auf der Liste „Dispellable debuffs" | Stun, Sleep, Silence, Paralysis, Bind, Slow (561 u. a.), Blind | nur ohne Heil- und Abwehranlass und nur mit Mana über der Rücklage der Wiederbelebung |
 

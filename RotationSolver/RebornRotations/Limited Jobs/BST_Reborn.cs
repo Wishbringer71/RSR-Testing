@@ -117,13 +117,14 @@ public sealed class BST_Reborn : BeastmasterRotation
 	// K10 of the Crucible (concept 01, Laden, A569): what to buy in a shop; buying stays your click.
 	[RotationConfig(CombatType.PvE, Name = "Recommend what to buy in a Crucible shop (Crucible only)",
 		Tooltip = "While a shop on a board is open RSR shows a window with what to buy and why, safety first, as far as your "
-			+ "tokens and slots go: a second life while you hold none; protective gear, the choice that raises your effective HP "
-			+ "the most (your maximum HP against the damage that reaches you, weighed by the damage you took in this area - "
-			+ "physical, magic or other - and before your first hit there by the board's enemies); gear that heals; a "
-			+ "resistance or serum against each ailment of the board's fights that nothing you hold covers; healing items; "
-			+ "protective items. Never feed, never gear that inflicts a status on you, nothing for damage. A piece that slows "
-			+ "you says so. \"Buy\" in that window buys the list row by row; when the game asks, your answer decides. Without "
-			+ "the click RSR buys nothing.\n"
+			+ "tokens and slots go: a second life while you hold none; cover against each status of the board's fights that ends "
+			+ "in death; protective and healing gear, the choice that leaves you the most HP after a stretch of fights between "
+			+ "campsites ending with the heaviest - measured from your fights: the damage you took by kind, your own healing, the "
+			+ "fights between campsites; before your first fight one fight counts as a full HP bar -, then the most effective HP; "
+			+ "cover against the board's other statuses that cost safety (control, actions prevented, damage over time); healing "
+			+ "items; protective items. Never feed, never gear that inflicts a status on you, nothing for damage. A piece that "
+			+ "slows you says so. \"Buy\" in that window buys the list row by row; when the game asks, your answer decides. "
+			+ "Without the click RSR buys nothing.\n"
 			+ "Off: no window, RSR buys nothing.")]
 	private bool RecommendCrucibleShop { get; set; } = true;
 

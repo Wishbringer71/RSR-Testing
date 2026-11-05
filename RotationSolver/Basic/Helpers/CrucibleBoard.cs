@@ -30,6 +30,10 @@ internal static class CrucibleBoard
 	private static readonly HashSet<uint> _finalFights = [];
 	private static readonly Dictionary<uint, List<uint>> _boardFights = [];
 	private static readonly Dictionary<uint, HashSet<uint>> _fightAilments = [];
+
+	// K10 shop (A570): per fight the statuses its enemies' actions inflict that cost safety - the dangerous ones above, and
+	// those that prevent actions only sometimes (Paralysis) or deal damage over time (Poison).
+	private static readonly Dictionary<uint, HashSet<uint>> _fightHarms = [];
 	private static readonly Dictionary<uint, HashSet<uint>> _actionElements = [];
 
 	private static uint _fight;
@@ -44,17 +48,27 @@ internal static class CrucibleBoard
 	// the actions hitting each weakness.
 	private readonly record struct Sums(double Weak, int WeakHits, double Other, int OtherHits);
 
+	/// <summary>K10 shop (A570): what one fight cost the player - damage by how it meets his defences - and what he healed himself.</summary>
+	internal readonly record struct FightLoad(double Physical, double Magic, double Other, double Healed)
+	{
+		/// <summary>All the damage of the fight.</summary>
+		internal double Damage => Physical + Magic + Other;
+	}
+
 	private static readonly Dictionary<uint, Sums> _perPotency = [];
 	private static uint _measuredIn;
 	private static double _ownDamage;
 	private static readonly Dictionary<uint, double> _ownDamageByElement = [];
 	private static bool _bonusTraced;
 
-	// K10 shop (A569): the damage the player took from enemies in this area, by how it meets his defences.
-	private static uint _takenIn;
-	private static double _takenPhysical;
-	private static double _takenMagic;
-	private static double _takenOther;
+	// K10 shop (A569, A570): the load of each fight on the player - the damage he took by how it meets his defences, and
+	// his own healing on himself - in this area and over every board since RSR loaded; and the fights between campsites.
+	private static FightLoad _fightLoad;
+	private static uint _areaLoadsIn;
+	private static (int Fights, FightLoad Sum, FightLoad Heaviest) _areaLoads;
+	private static (int Fights, FightLoad Sum, FightLoad Heaviest) _allLoads;
+	private static int _stretchFights;
+	private static (int Stretches, int Fights) _stretches;
 
 	private static List<(uint Row, Enemy[] Enemies)> Fights => _fights ??= Read();
 
@@ -91,11 +105,14 @@ internal static class CrucibleBoard
 		? ailments
 		: [];
 
-	/// <summary>K10 shop (A569): the dangerous statuses the fight in XBMBattleDetail row <paramref name="battleRow"/> inflicts.</summary>
-	internal static IReadOnlyCollection<uint> AilmentsOf(uint battleRow)
+	/// <summary>
+	/// K10 shop (A570): the statuses the fight in XBMBattleDetail row <paramref name="battleRow"/> inflicts that cost safety:
+	/// the dangerous ones, and those that prevent actions only sometimes or deal damage over time.
+	/// </summary>
+	internal static IReadOnlyCollection<uint> HarmsOf(uint battleRow)
 	{
 		_ = Fights;
-		return _fightAilments.TryGetValue(battleRow, out var ailments) ? ailments : [];
+		return _fightHarms.TryGetValue(battleRow, out var harms) ? harms : [];
 	}
 
 	/// <summary>K10 shop (A569): every fight the sheets list, for when the board is not known.</summary>
@@ -191,6 +208,7 @@ internal static class CrucibleBoard
 		{
 			enemies.Clear();
 			var ailments = new HashSet<uint>();
+			var harms = new HashSet<uint>();
 			foreach (var enemy in row)
 			{
 				if (enemy.Unknown0 != 0)
@@ -208,15 +226,30 @@ internal static class CrucibleBoard
 				{
 					_fightAilments[row.RowId] = ailments;
 				}
+
+				if (harms.Count > 0)
+				{
+					_fightHarms[row.RowId] = harms;
+				}
 			}
 
 			// XBMBattleDetailAction: Action, Status, ActionTarget, ActionEffectType (EXDSchema latest, 05.11.2026).
 			void AddAilment(ushort action)
 			{
-				if (action != 0 && actions?.GetRowOrDefault(action) is { } detail && detail.Unknown1 != 0
-					&& statuses?.GetRowOrDefault(detail.Unknown1) is { } status && IsDangerous(status))
+				if (action == 0 || actions?.GetRowOrDefault(action) is not { } detail || detail.Unknown1 == 0
+					|| statuses?.GetRowOrDefault(detail.Unknown1) is not { } status)
+				{
+					return;
+				}
+
+				if (IsDangerous(status))
 				{
 					_ = ailments.Add(detail.Unknown1);
+					_ = harms.Add(detail.Unknown1);
+				}
+				else if (CostsSafety(status))
+				{
+					_ = harms.Add(detail.Unknown1);
 				}
 			}
 		}
@@ -255,6 +288,21 @@ internal static class CrucibleBoard
 		return status.StatusCategory == (byte)StatusCategory.Detrimental
 			&& (status.LockActions || status.LockControl
 				|| status.Description.ExtractText().Contains("death", StringComparison.OrdinalIgnoreCase));
+	}
+
+	// A570: detrimental, and by its English effect text it prevents actions, if only sometimes (Paralysis: "sometimes
+	// preventing the execution of actions"), or deals damage over time (Poison: "causing damage over time"). Blind, which
+	// only lowers accuracy, is neither.
+	private static bool CostsSafety(Lumina.Excel.Sheets.Status status)
+	{
+		if (status.StatusCategory != (byte)StatusCategory.Detrimental)
+		{
+			return false;
+		}
+
+		var text = status.Description.ExtractText();
+		return text.Contains("execution of actions", StringComparison.OrdinalIgnoreCase)
+			|| text.Contains("damage over time", StringComparison.OrdinalIgnoreCase);
 	}
 
 	/// <summary>
@@ -330,14 +378,17 @@ internal static class CrucibleBoard
 	{
 		if (!DataCenter.IsInCrucible)
 		{
-			_tracedArea = 0;
 			EndFight();
+			EndStretch();
+			_tracedArea = 0;
 			return;
 		}
 
 		var fights = Fights;
 		if (_tracedArea != DataCenter.TerritoryID)
 		{
+			EndFight();
+			EndStretch();
 			_tracedArea = DataCenter.TerritoryID;
 			var count = 0;
 			foreach (var (_, enemies) in fights)
@@ -546,6 +597,11 @@ internal static class CrucibleBoard
 			{
 				TraceTeamAndField("horn screen open");
 			}
+			else if (mode == BeastmasterRotation.CampsiteMode)
+			{
+				// A570: a campsite closes the stretch of fights since the board's entry or the last campsite.
+				EndStretch();
+			}
 		}
 	}
 
@@ -581,6 +637,7 @@ internal static class CrucibleBoard
 		if (_fight != 0)
 		{
 			TraceTeamAndField($"fight {_fight} over");
+			FinishLoad();
 		}
 
 		_fight = 0;
@@ -640,46 +697,87 @@ internal static class CrucibleBoard
 	}
 
 	/// <summary>
-	/// K10 shop (A569): a hit of an enemy on the player in the Crucible, <paramref name="amount"/> damage of an action of
-	/// <paramref name="attackType"/> (the action sheet's AttackType). Kept per area. Effect handler, game thread.
+	/// K10 shop (A569): a hit of an enemy on the player in a fight of the Crucible, <paramref name="amount"/> damage of an
+	/// action of <paramref name="attackType"/> (the action sheet's AttackType). Effect handler, game thread.
 	/// </summary>
 	internal static void RecordTaken(uint attackType, uint amount)
 	{
-		if (amount == 0)
+		if (_fight == 0 || amount == 0)
 		{
 			return;
 		}
 
-		if (_takenIn != DataCenter.TerritoryID)
-		{
-			_takenIn = DataCenter.TerritoryID;
-			_takenPhysical = 0d;
-			_takenMagic = 0d;
-			_takenOther = 0d;
-		}
+		_fightLoad = AttackTypeKind.IsPhysical(attackType) ? _fightLoad with { Physical = _fightLoad.Physical + amount }
+			: AttackTypeKind.IsMagic(attackType) ? _fightLoad with { Magic = _fightLoad.Magic + amount }
+			: _fightLoad with { Other = _fightLoad.Other + amount };
+	}
 
-		if (AttackTypeKind.IsPhysical(attackType))
+	/// <summary>
+	/// K10 shop (A570): the player's own healing on himself in a fight of the Crucible - his actions and items. Effect
+	/// handler, game thread.
+	/// </summary>
+	internal static void RecordHealed(uint amount)
+	{
+		if (_fight != 0 && amount != 0)
 		{
-			_takenPhysical += amount;
-		}
-		else if (AttackTypeKind.IsMagic(attackType))
-		{
-			_takenMagic += amount;
-		}
-		else
-		{
-			_takenOther += amount;
+			_fightLoad = _fightLoad with { Healed = _fightLoad.Healed + amount };
 		}
 	}
 
 	/// <summary>
-	/// K10 shop (A569): the damage the player took from enemies in this area - physical, magic and other - or null before
-	/// the first hit.
+	/// K10 shop (A570): the player's load per fight - the mean and the heaviest fight - in this area, else over every board
+	/// since RSR loaded (<c>HereOnly</c> false); null before the first fight ended.
 	/// </summary>
-	internal static (double Physical, double Magic, double Other)? Taken =>
-		_takenIn == DataCenter.TerritoryID && _takenPhysical + _takenMagic + _takenOther > 0d
-			? (_takenPhysical, _takenMagic, _takenOther)
-			: null;
+	internal static (FightLoad Mean, FightLoad Heaviest, bool HereOnly)? Loads
+	{
+		get
+		{
+			var (fights, sum, heaviest) = _areaLoadsIn == DataCenter.TerritoryID && _areaLoads.Fights > 0 ? _areaLoads : _allLoads;
+			if (fights == 0)
+			{
+				return null;
+			}
+
+			var mean = new FightLoad(sum.Physical / fights, sum.Magic / fights, sum.Other / fights, sum.Healed / fights);
+			return (mean, heaviest, _areaLoadsIn == DataCenter.TerritoryID && _areaLoads.Fights > 0);
+		}
+	}
+
+	/// <summary>K10 shop (A570): the mean number of fights between two campsites (or a board's entry and exit); 0 before the first.</summary>
+	internal static float FightsPerStretch => _stretches.Stretches > 0 ? _stretches.Fights / (float)_stretches.Stretches : 0f;
+
+	// A570: the fight just over joins the loads of its area and of every board.
+	private static void FinishLoad()
+	{
+		if (_areaLoadsIn != _tracedArea)
+		{
+			_areaLoadsIn = _tracedArea;
+			_areaLoads = default;
+		}
+
+		_areaLoads = Add(_areaLoads, _fightLoad);
+		_allLoads = Add(_allLoads, _fightLoad);
+		_fightLoad = default;
+		_stretchFights++;
+
+		static (int Fights, FightLoad Sum, FightLoad Heaviest) Add((int Fights, FightLoad Sum, FightLoad Heaviest) loads, FightLoad load)
+		{
+			return (loads.Fights + 1,
+				new FightLoad(loads.Sum.Physical + load.Physical, loads.Sum.Magic + load.Magic, loads.Sum.Other + load.Other,
+					loads.Sum.Healed + load.Healed),
+				load.Damage > loads.Heaviest.Damage ? load : loads.Heaviest);
+		}
+	}
+
+	// A570: a campsite, or the board's end, closes the stretch of fights since the last one.
+	private static void EndStretch()
+	{
+		if (_stretchFights > 0)
+		{
+			_stretches = (_stretches.Stretches + 1, _stretches.Fights + _stretchFights);
+			_stretchFights = 0;
+		}
+	}
 
 	/// <summary>
 	/// K1 (A549): how much more a hit on a weakness deals in this area, measured: per action that hit both a weakness and

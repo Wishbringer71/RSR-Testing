@@ -252,12 +252,15 @@ What this release changes in the fight. For the whole distance from upstream, se
 - **What to buy in a Crucible shop.** With `Recommend what to buy in a Crucible shop (Crucible only)`,
   **on by default**, a small window `RSR - Crucible shop` lists what to buy and why while a board's
   shop is open, safety first as far as your tokens and slots go: a second life while you hold none;
-  the protective gear that raises your effective HP the most, weighed by the physical, magic and other
-  damage you took in this area (before your first hit there, by the board's enemies); gear that heals;
-  a resistance or serum against each ailment of the board's fights that nothing you hold covers;
-  healing items; protective items. Never feed, never gear that harms you (such as Thunder Axe or Wind
-  Mask). A piece that slows you says so. `Buy` buys the list row by row; when the game asks, your
-  answer decides. Without the click RSR buys nothing.
+  cover against each status of the board's fights that ends in death (Doom); protective and healing
+  gear, the choice that leaves you the most HP after a stretch of fights between campsites ending with
+  the heaviest - measured from your fights: the damage you took by kind, your own healing and the
+  fights between campsites - so the Ring of Curing goes ahead of armour where fights wear you down,
+  and armour ahead of it where a campsite comes before each fight; then cover against the board's
+  other statuses that cost safety (Paralysis, Poison); healing items; protective items. Never feed,
+  never gear that harms you (such as Thunder Axe or Wind Mask). A piece that slows you says so. `Buy`
+  buys the list row by row; when the game asks, your answer decides. Without the click RSR buys
+  nothing.
 - **Snarl and Challenge are on by default (Crucible).** Without a tank the enemies attack only you,
   and your fall ends the run, while a fallen familiar costs only that familiar. `Use Snarl and
   Challenge based on your HP and your familiar's HP (Crucible only)` is now **on by default**, still on

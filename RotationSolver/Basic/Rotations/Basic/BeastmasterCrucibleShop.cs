@@ -47,7 +47,7 @@ public partial class BeastmasterRotation
 
 	private static List<int>? _shopWanted;
 	private static (int Row, DateTime At)? _shopLastBuy;
-	private static (int Coins, int Bought, int Gear, int Items, uint Board, double Taken)? _shopKey;
+	private static (int Coins, int Bought, int Gear, int Items, uint Board, double Fights, float Stretch)? _shopKey;
 	private static string _shopTraced = string.Empty;
 
 	/// <summary>Whether a shop is open and the recommendation runs, for the window.</summary>
@@ -174,10 +174,11 @@ public partial class BeastmasterRotation
 	}
 
 	/// <summary>
-	/// K10: the purchases, safety first, while tokens and slots last: a second life while none is held; protective gear by
-	/// its gain in effective HP per token; gear that heals; a serum or resistance against each ailment the board's fights
-	/// inflict that nothing held covers; healing items, the strongest first; protective items. Never feed, never gear that
-	/// inflicts a status on you, no damage.
+	/// K10 (A569, A570): the purchases, safety first, while tokens and slots last: a second life while none is held; cover
+	/// against each status of the board's fights that ends in death; protective and healing gear by the HP the player comes
+	/// out with from a stretch of fights that ends with the heaviest; cover against the other statuses of the board's fights
+	/// that cost safety; healing items, the strongest first; protective items. Never feed, never gear that inflicts a status
+	/// on its bearer, nothing for damage.
 	/// </summary>
 	private static unsafe void RecommendPurchases(ReaderXBMContentsItemShop reader, List<ReaderXBMContentsItemShop.StockEntry> stock)
 	{
@@ -214,9 +215,10 @@ public partial class BeastmasterRotation
 			}
 		}
 
-		// Weighed again only when something it weighs has changed: tokens, purchases, what is held, the board, the damage.
+		// Weighed again only when something it weighs has changed: tokens, purchases, what is held, the board, the fights.
 		var board = AgentXBMStageDetailList.Instance() is var stages && stages != null ? stages->ContentId : 0;
-		var taken = CrucibleBoard.Taken;
+		var loads = CrucibleBoard.Loads;
+		var stretch = CrucibleBoard.FightsPerStretch;
 		var boughtRows = 0;
 		foreach (var entry in stock)
 		{
@@ -224,7 +226,7 @@ public partial class BeastmasterRotation
 		}
 
 		var key = (budget, boughtRows, owned.Count, heldItems.Count, board,
-			taken is { } sums ? sums.Physical + sums.Magic + sums.Other : 0d);
+			loads is { } measured ? measured.Mean.Damage + measured.Heaviest.Damage + measured.Mean.Healed : 0d, stretch);
 		if (_shopKey == key)
 		{
 			return;
@@ -232,7 +234,8 @@ public partial class BeastmasterRotation
 
 		_shopKey = key;
 
-		// The board's fights: the ailments they inflict, and their enemies' sheet strength against intelligence.
+		// The board's fights: the statuses they inflict that cost safety, and their enemies' sheet strength against
+		// intelligence.
 		var fights = board != 0 ? CrucibleBoard.FightsOfBoard(board) : [];
 		if (fights.Count == 0)
 		{
@@ -240,7 +243,7 @@ public partial class BeastmasterRotation
 		}
 
 		float strength = 0f, intelligence = 0f;
-		var ailments = new HashSet<uint>();
+		var harms = new HashSet<uint>();
 		foreach (var fight in fights)
 		{
 			foreach (var enemy in CrucibleBoard.EnemiesOf(fight))
@@ -249,38 +252,10 @@ public partial class BeastmasterRotation
 				intelligence += enemy.Intelligence;
 			}
 
-			ailments.UnionWith(CrucibleBoard.AilmentsOf(fight));
+			harms.UnionWith(CrucibleBoard.HarmsOf(fight));
 		}
 
-		// What the gear is weighed against: the damage the player took here, taken back to before the gear he holds;
-		// until the first hit, the board's enemies by the sheet.
-		float physical, magic, other;
-		if (taken is { } measured)
-		{
-			float physicalHeld = 1f, magicHeld = 1f;
-			foreach (var piece in owned)
-			{
-				physicalHeld *= (1f - piece.PhysicalVulnerability) * (1f - piece.Evasion);
-				magicHeld *= 1f - piece.MagicVulnerability;
-			}
-
-			var rawPhysical = (float)measured.Physical / Math.Max(physicalHeld, float.Epsilon);
-			var rawMagic = (float)measured.Magic / Math.Max(magicHeld, float.Epsilon);
-			var all = rawPhysical + rawMagic + (float)measured.Other;
-			physical = rawPhysical / all;
-			magic = rawMagic / all;
-			other = (float)measured.Other / all;
-			CrucibleShopBasis = $"the damage you took here: {physical:P0} physical, {magic:P0} magic, {other:P0} other";
-		}
-		else
-		{
-			physical = strength + intelligence > 0f ? strength / (strength + intelligence) : 0f;
-			magic = strength + intelligence > 0f ? intelligence / (strength + intelligence) : 0f;
-			other = 0f;
-			CrucibleShopBasis = board != 0
-				? $"no hit taken here yet - this board's enemies: {physical:P0} strength, {magic:P0} intelligence"
-				: $"no hit taken here yet, board unknown - all Crucible enemies: {physical:P0} strength, {magic:P0} intelligence";
-		}
+		var load = LoadOf(owned, loads, strength, intelligence, stretch, board != 0);
 
 		var offers = new List<(int Row, ushort Item, int Price)>();
 		for (var r = 0; r < stock.Count; r++)
@@ -328,8 +303,12 @@ public partial class BeastmasterRotation
 			}
 		}
 
-		// 2. Protective gear: the choice with the most effective HP that tokens and slots allow - every offer once first,
-		// then piece by piece the most gain per token; of all these the one with the most, at a tie the cheaper.
+		// 2. Against each status of the board's fights that ends in death: neither HP nor mitigation help against it.
+		CoverStatuses(true);
+
+		// 3. Protective and healing gear: the choice that leaves the most HP after a stretch of fights ending with the
+		// heaviest, then the most effective HP - every offer once first, then piece by piece the most gain per token; of all
+		// these the best, at a tie the cheaper.
 		var protective = new List<(int Row, CrucibleGear Piece, int Price)>();
 		foreach (var (row, id, price) in offers)
 		{
@@ -340,15 +319,15 @@ public partial class BeastmasterRotation
 		}
 
 		var bestChoice = new List<int>();
-		var bestHp = EffectiveHp(owned, physical, magic, other);
+		var best = ShopValue(owned, load);
 		var bestCost = 0;
 		for (var seed = 0; seed < protective.Count; seed++)
 		{
-			var (choice, hp, cost) = ChooseFrom(seed);
-			if (hp > bestHp || (hp == bestHp && cost < bestCost && choice.Count > 0))
+			var (choice, value, cost) = ChooseFrom(seed);
+			if (choice.Count > 0 && (Better(value, best) || (value == best && cost < bestCost)))
 			{
 				bestChoice = choice;
-				bestHp = hp;
+				best = value;
 				bestCost = cost;
 			}
 		}
@@ -367,59 +346,20 @@ public partial class BeastmasterRotation
 		foreach (var index in bestChoice)
 		{
 			var (row, piece, price) = protective[index];
-			var before = EffectiveHp(owned, physical, magic, other);
+			var before = ShopValue(owned, load);
 			_ = Take(row, price, true);
 			owned.Add(piece);
-			var gain = EffectiveHp(owned, physical, magic, other) / before - 1f;
-			picks.Add(new CrucibleShopPick(row, piece.Name, price, $"+{gain:P0} effective HP"
+			var after = ShopValue(owned, load);
+			picks.Add(new CrucibleShopPick(row, piece.Name, price,
+				(after.Left > before.Left
+					? $"{after.Left - before.Left:+0%;-0%} of your HP left after a stretch of {load.Stretch:0.#} fights"
+					: $"+{(after.Effective / before.Effective) - 1f:P0} effective HP against your heaviest fight")
 				+ (piece.Movement < 0f ? $", movement {piece.Movement:+0%;-0%} (with all your gear {movement - 1f:+0%;-0%})" : string.Empty)
 				+ (piece.Slow > 0f ? $", Slow {piece.Slow:+0%;-0%}: your actions come slower" : string.Empty)));
 		}
 
-		// 3. Gear that heals: HP at the end of each battle first, then more healing from actions and items.
-		foreach (var curing in new[] { true, false })
-		{
-			foreach (var (row, id, price) in ByValue(offers, o => gear.TryGetValue(o.Item, out var piece) && !piece.SelfHarm
-				? (curing ? piece.Curing : piece.Recovery) : 0f))
-			{
-				var piece = gear[id];
-				if (Take(row, price, true))
-				{
-					owned.Add(piece);
-					picks.Add(new CrucibleShopPick(row, piece.Name, price, curing
-						? $"recovers {piece.Curing:P0} of your HP after each battle"
-						: $"+{piece.Recovery:P0} healing from actions and items"));
-				}
-			}
-		}
-
-		// 4. Against each ailment of the board's fights that nothing held covers.
-		foreach (var ailment in ailments)
-		{
-			var name = StatusName(ailment);
-			if (name.Length == 0 || Covered(name))
-			{
-				continue;
-			}
-
-			foreach (var (row, id, price) in offers)
-			{
-				if (gear.TryGetValue(id, out var piece) && !piece.SelfHarm && GearResistsAilment(piece, name) && Take(row, price, true))
-				{
-					owned.Add(piece);
-					picks.Add(new CrucibleShopPick(row, piece.Name, price, $"immune to {name}, which this board inflicts"));
-					break;
-				}
-
-				if (items.TryGetValue(id, out var item) && item.Kind == CrucibleItemKind.ResistAilment && item.Status.Length > 0
-					&& name.Contains(item.Status, StringComparison.OrdinalIgnoreCase) && Take(row, price, false))
-				{
-					heldItems.Add(id);
-					picks.Add(new CrucibleShopPick(row, item.Name, price, $"against {name}, which this board inflicts"));
-					break;
-				}
-			}
-		}
+		// 4. Against each other status of the board's fights that costs safety: control, actions prevented, damage over time.
+		CoverStatuses(false);
 
 		// 5. Healing items, the strongest first; 6. protective items by their share.
 		foreach (var kinds in new[] { new[] { CrucibleItemKind.Heal }, new[] { CrucibleItemKind.Mitigate,
@@ -452,26 +392,66 @@ public partial class BeastmasterRotation
 				+ (picks.Count > 0 ? traced + $", {budget - spent} tokens left" : "nothing"));
 		}
 
-		// One choice of protective gear, starting with offer <paramref name="seed"/>: its pieces, effective HP and cost.
-		(List<int> Choice, float Hp, int Cost) ChooseFrom(int seed)
+		// Steps 2 and 4: a resistance or a serum against each status of the board's fights - those ending in death, or the
+		// others - that nothing held covers.
+		void CoverStatuses(bool death)
 		{
+			foreach (var ailment in harms)
+			{
+				var name = StatusName(ailment);
+				if (StatusHelper.EndsInDeath((StatusID)ailment) != death || name.Length == 0 || Covered(name))
+				{
+					continue;
+				}
+
+				foreach (var (row, id, price) in offers)
+				{
+					if (gear.TryGetValue(id, out var piece) && !piece.SelfHarm && GearResistsAilment(piece, name) && Take(row, price, true))
+					{
+						owned.Add(piece);
+						picks.Add(new CrucibleShopPick(row, piece.Name, price, $"immune to {name}, which this board inflicts"));
+						break;
+					}
+
+					if (items.TryGetValue(id, out var item) && item.Kind == CrucibleItemKind.ResistAilment && item.Status.Length > 0
+						&& name.Contains(item.Status, StringComparison.OrdinalIgnoreCase) && Take(row, price, false))
+					{
+						heldItems.Add(id);
+						picks.Add(new CrucibleShopPick(row, item.Name, price, $"against {name}, which this board inflicts"));
+						break;
+					}
+				}
+			}
+		}
+
+		// One choice of protective gear, starting with offer <paramref name="seed"/>: its pieces, value and cost.
+		(List<int> Choice, (float Left, float Effective) Value, int Cost) ChooseFrom(int seed)
+		{
+			var tokensLeft = budget - spent;
+			var slotsLeft = gearSlots - gearHeld;
+			var start = ShopValue(owned, load);
+			var first = protective[seed];
+			if (first.Price > tokensLeft || slotsLeft <= 0 || !Better(ShopValue([.. owned, first.Piece], load), start))
+			{
+				return ([], start, 0);
+			}
+
 			var choice = new List<int>();
 			var set = new List<CrucibleGear>(owned);
 			var cost = 0;
-			var tokensLeft = budget - spent;
-			var slotsLeft = gearSlots - gearHeld;
-			var hp = EffectiveHp(set, physical, magic, other);
+			var value = start;
 			var next = seed;
 			while (next >= 0)
 			{
-				var (_, piece, price) = protective[next];
-				set.Add(piece);
+				set.Add(protective[next].Piece);
 				choice.Add(next);
-				cost += price;
-				hp = EffectiveHp(set, physical, magic, other);
+				cost += protective[next].Price;
+				value = ShopValue(set, load);
 
+				// The next piece: the most HP left per token while any piece adds to it, else the most effective HP per token.
 				next = -1;
-				var bestWorth = 0f;
+				var bestLeft = 0f;
+				var bestEffective = 0f;
 				for (var i = 0; i < protective.Count; i++)
 				{
 					if (choice.Contains(i) || protective[i].Price > tokensLeft - cost || choice.Count >= slotsLeft)
@@ -480,23 +460,21 @@ public partial class BeastmasterRotation
 					}
 
 					set.Add(protective[i].Piece);
-					var gain = EffectiveHp(set, physical, magic, other) / hp - 1f;
+					var with = ShopValue(set, load);
 					set.RemoveAt(set.Count - 1);
-					var worth = gain / Math.Max(protective[i].Price, 1);
-					if (gain > 0f && worth > bestWorth)
+					var price = Math.Max(protective[i].Price, 1);
+					var left = (with.Left - value.Left) / price;
+					var effective = ((with.Effective / value.Effective) - 1f) / price;
+					if (left > bestLeft || (bestLeft <= 0f && left <= 0f && with.Left >= value.Left && effective > bestEffective))
 					{
 						next = i;
-						bestWorth = worth;
+						bestLeft = Math.Max(left, bestLeft);
+						bestEffective = left > 0f ? bestEffective : effective;
 					}
 				}
 			}
 
-			// A seed that does not fit, or does not raise the effective HP, gives no choice.
-			var before = EffectiveHp(owned, physical, magic, other);
-			return protective[seed].Price > tokensLeft || slotsLeft <= 0
-				|| EffectiveHp([.. owned, protective[seed].Piece], physical, magic, other) <= before
-				? ([], before, 0)
-				: (choice, hp, cost);
+			return (choice, value, cost);
 		}
 
 		bool Take(int row, int price, bool isGear)
@@ -559,6 +537,12 @@ public partial class BeastmasterRotation
 		}
 	}
 
+	// Step 3 compares two values: more HP left after the stretch, at a tie more effective HP.
+	private static bool Better((float Left, float Effective) value, (float Left, float Effective) than)
+	{
+		return value.Left > than.Left || (value.Left == than.Left && value.Effective > than.Effective);
+	}
+
 	private static bool GearResistsAilment(CrucibleGear piece, string ailment)
 	{
 		foreach (var resisted in piece.Resists)
@@ -573,25 +557,84 @@ public partial class BeastmasterRotation
 		return false;
 	}
 
+	// What step 3 weighs the gear against, in shares of the player's maximum HP without gear: the damage of a mean and of the
+	// heaviest fight by how it meets his defences, his own healing a fight, and the fights between two campsites.
+	private readonly record struct ShopLoad(float Physical, float Magic, float Other, float HeavyPhysical, float HeavyMagic,
+		float HeavyOther, float Healed, float Stretch);
+
 	/// <summary>
-	/// Effective HP of the player with <paramref name="gear"/>, in shares of his HP without it: maximum HP over the damage
-	/// that reaches him - damage taken, and physical (with evasion) and magic vulnerability weighed by the shares of physical,
-	/// magic and other damage. Pieces multiply (concept 01, K10 Laden: an assumption, as is evasion as a chance to escape a
-	/// physical hit).
+	/// K10 step 3 (A570): the measured fights taken back to the player without his gear; before the first, a fight counts as
+	/// a full HP bar split by the board's enemies' strength against intelligence, and without a measured stretch one fight.
 	/// </summary>
-	private static float EffectiveHp(List<CrucibleGear> gear, float physical, float magic, float other)
+	private static ShopLoad LoadOf(List<CrucibleGear> owned, (CrucibleBoard.FightLoad Mean, CrucibleBoard.FightLoad Heaviest, bool HereOnly)? loads,
+		float strength, float intelligence, float stretch, bool boardKnown)
 	{
-		float hp = 1f, taken = 1f, physicalTaken = 1f, magicTaken = 1f;
+		var fights = Math.Max(stretch, 1f);
+		var stretchText = stretch > 0f ? $"{stretch:0.#} fights between campsites" : "no stretch between campsites measured yet, one fight counts";
+		var player = Player;
+		if (loads is not { } measured || player == null || player.MaxHp == 0)
+		{
+			var all = strength + intelligence;
+			var physical = all > 0f ? strength / all : 0f;
+			var magic = all > 0f ? intelligence / all : 0f;
+			var other = all > 0f ? 0f : 1f;
+			CrucibleShopBasis = $"no fight measured yet - a fight counted as a full HP bar, {physical:P0} physical by "
+				+ (boardKnown ? "this board's" : "all Crucible") + $" enemies' strength; {stretchText}";
+			return new ShopLoad(physical, magic, other, physical, magic, other, 0f, fights);
+		}
+
+		float hp = 1f, taken = 1f, physicalHeld = 1f, magicHeld = 1f, recovery = 0f;
+		foreach (var piece in owned)
+		{
+			hp *= 1f + piece.MaxHp;
+			taken *= 1f - piece.DamageTaken;
+			physicalHeld *= (1f - piece.PhysicalVulnerability) * (1f - piece.Evasion);
+			magicHeld *= 1f - piece.MagicVulnerability;
+			recovery += piece.Recovery;
+		}
+
+		var maxHp = (float)player.MaxHp;
+		var bare = maxHp / hp;
+		var (mean, heaviest, hereOnly) = measured;
+		CrucibleShopBasis = $"{(hereOnly ? "the fights here" : "the fights on every board since RSR loaded")}: a fight cost you "
+			+ $"{mean.Damage / maxHp:P0} of your HP, the heaviest {heaviest.Damage / maxHp:P0}, you healed yourself "
+			+ $"{mean.Healed / maxHp:P0} a fight; {stretchText}";
+		return new ShopLoad(Share(mean.Physical, physicalHeld), Share(mean.Magic, magicHeld), Share(mean.Other, 1f),
+			Share(heaviest.Physical, physicalHeld), Share(heaviest.Magic, magicHeld), Share(heaviest.Other, 1f),
+			(float)(mean.Healed / (1f + recovery) / bare), fights);
+
+		float Share(double amount, float held)
+		{
+			return (float)(amount / Math.Max(held * taken, float.Epsilon) / bare);
+		}
+	}
+
+	/// <summary>
+	/// K10 step 3 (A570), with <paramref name="gear"/> held: the share of his maximum HP the player comes out with from a
+	/// stretch of fights that ends with the heaviest - each fight before it costs its mean damage less his own healing and
+	/// the HP back at its end, the heaviest its damage less his healing -, and his effective HP against the heaviest fight's
+	/// mix. Pieces multiply (concept 01, K10 Laden: an assumption, as is evasion as a chance to escape a physical hit).
+	/// </summary>
+	private static (float Left, float Effective) ShopValue(List<CrucibleGear> gear, ShopLoad load)
+	{
+		float hp = 1f, taken = 1f, physical = 1f, magic = 1f, recovery = 0f, curing = 0f;
 		foreach (var piece in gear)
 		{
 			hp *= 1f + piece.MaxHp;
 			taken *= 1f - piece.DamageTaken;
-			physicalTaken *= (1f - piece.PhysicalVulnerability) * (1f - piece.Evasion);
-			magicTaken *= 1f - piece.MagicVulnerability;
+			physical *= (1f - piece.PhysicalVulnerability) * (1f - piece.Evasion);
+			magic *= 1f - piece.MagicVulnerability;
+			recovery += piece.Recovery;
+			curing += piece.Curing;
 		}
 
-		var mix = physical + magic + other > 0f ? (physical * physicalTaken) + (magic * magicTaken) + other : 1f;
-		return hp / Math.Max(taken * mix, float.Epsilon);
+		var mean = taken * ((load.Physical * physical) + (load.Magic * magic) + load.Other) / hp;
+		var heavyBare = load.HeavyPhysical + load.HeavyMagic + load.HeavyOther;
+		var heavy = taken * ((load.HeavyPhysical * physical) + (load.HeavyMagic * magic) + load.HeavyOther) / hp;
+		var healed = load.Healed * (1f + recovery) / hp;
+		var left = 1f - ((load.Stretch - 1f) * Math.Max(0f, mean - healed - curing)) - Math.Max(0f, heavy - healed);
+		var effective = heavyBare > 0f ? heavyBare / Math.Max(heavy, float.Epsilon) : hp / Math.Max(taken, float.Epsilon);
+		return (left, effective);
 	}
 
 	private static Dictionary<ushort, CrucibleGear> CrucibleGearTable => _crucibleGear ??= ReadCrucibleGear();

@@ -1429,7 +1429,7 @@ Lage.
     Reihenfolge. Bei einem Gegner heißt das meist: der heilende bleibt, ohne Schaden zu kosten.
 - *Nutzen jenseits von Schaden, Heilung und Schutz* (A491; TODO-Punkt aus A488). Die Wirktexte aller 50 Begleiter
   (xivapi v2, 02.11.2026) legen diesen Nutzen fast ganz ins Entfesseln. Die Dressur trägt nur Blind (Dodo, Riesenwurm),
-  Gift, Albtraum (Baumschrat) und eine kleine Chance auf Todesurteil (Geist). Was davon die Wahl ändert:
+  Gift, Albtraum (Baumschrat) und eine kleine Chance auf Verhängnis (Geist). Was davon die Wahl ändert:
   - *C1 – Aufhalten zählt als Schutz gegen ein Rudel.* Ein Entfesseln, das die Gegner um das Ziel aufhält, zählt in B2
     und B3 wie eines, das schützt: Betäubung (War Cry, Büffel, 15 s um den Begleiter), Versteinerung (Petribreath, Ziz,
     21 s im Kegel), Tiefkühlung (The Ram's Voice, Chimäre, 20 s). Das Statusblatt trägt bei allen drei `LockActions`
@@ -1454,7 +1454,7 @@ Lage.
       Begleiter käme zu spät.
     - *Nicht gezählt:* Schlaf (Lullaby, Schaf) – der nächste Treffer weckt, und RSR greift weiter an (Gemeinschaftsquelle,
       Konzept 08). Lähmung (nur „sometimes"). Fesseln, Schwere, Rückstoß, Heranziehen – sie halten keinen Gegner auf, der
-      schon an dir steht. Todesurteil und einstellige LP – nur eine Chance. Stone Gaze (Kobra) – trifft nur das Ziel, also
+      schon an dir steht. Verhängnis und einstellige LP – nur eine Chance. Stone Gaze (Kobra) – trifft nur das Ziel, also
       nie ein Rudel.
   - *C2 – Elementarschutz zählt nicht als Schutz* (Defekt in B1, ohne Option). Strut (Dodo: Erdschaden −15 %) und Formic
     Pheromones (Treiberameise: Wasser-, Erd- und Eisschaden −15 %) galten wegen „damage taken" als Schutz. Gegen
@@ -1972,41 +1972,66 @@ Dullahan, Golem, Spriggan und Eisgolem (`XBMPet.InflictsInterrupt`).
     Wunsch). Das Fenster steht, solange der Laden offen ist, auch wenn die Liste leer ist, mit dem Grund; jede neue Liste
     geht ins `DefenseTrace.log`. Die Liste, Sicherheit zuerst, solange Marken und Plätze reichen:
     1. Ein zweites Leben, solange du keines hältst: Ring of Sacrifice oder ein Gegenstand mit Reraise.
-    2. Schutzausrüstung, die Auswahl mit den höchsten wirksamen LP, die Marken und Plätze zulassen. Wirksame LP:
-       (1 + maximale LP) / ((1 − erlittener Schaden) × (p × (1 − physische Verwundbarkeit) × (1 − Ausweichen)
-       + m × (1 − magische Verwundbarkeit) + s)), über alle gehaltenen Stücke multipliziert. p, m und s sind die Anteile
-       physischen, magischen und sonstigen Schadens, den du in diesem Gebiet genommen hast, nach der Angriffsart der
-       treffenden Aktion (`Action.AttackType`: Hieb bis Schuss physisch, Magie magisch, alles andere sonstig – dieselbe
-       Zuordnung wie Tankbuster und K8), zurückgerechnet auf die Zeit ohne deine gehaltene Ausrüstung. Bis zum ersten
-       Treffer im Gebiet stehen dafür die Anteile von Stärke und Intelligenz der Gegner des Bretts im Blatt (s = 0; meine
-       Zuordnung: Stärke trifft physisch, Intelligenz magisch); ohne Brett (der Stufenagent nennt keines) die aller
-       Kämpfe des Crucible. Ausweichen zählt als Chance, einem physischen Treffer zu entgehen, gestapelte Stücke
-       multiplizieren (beides meine Ableitung, unbelegt). Nicht gezählt: Blockstärke (wie oft du blockst, ist
-       unbekannt) und Zufallswirkungen (Blink, Steinhaut, Rehabilitation, Aufsaugen) – die Liste unterschätzt diese
-       Stücke, sie überschätzt keines. Gesucht wird über jede Startwahl: je Angebot einmal als erstes gesetzt, danach
-       Stück für Stück das mit dem größten Gewinn je Marke; von allen so gefundenen Auswahlen gilt die mit den höchsten
-       wirksamen LP, bei Gleichstand die billigere. Die Zeile nennt, was das Stück an Bewegung oder Aktionstempo kostet
-       (Genji Armor: Bewegung −20 %; Ice Shield: Slow +10 %), gegengerechnet mit deiner übrigen Ausrüstung (Mystic Boots:
-       Bewegung +50 %).
-    3. Ausrüstung, die heilt: zuerst LP am Kampfende (Ring of Curing), dann mehr Heilung durch Aktionen und Gegenstände.
-    4. Ein Serum oder eine Resistenz gegen jeden Zustand, den ein Kampf des Bretts zufügt und den weder ein gehaltener
-       Gegenstand noch deine Ausrüstung deckt.
+    2. Gegen jeden Zustand der Kämpfe des Bretts, der mit dem Tod endet (Wirktext nennt KO oder den Tod: Verhängnis,
+       Steinfluch – Status 5421, 437), eine Resistenz oder ein Serum, sofern nichts Gehaltenes ihn deckt. Grund: Gegen
+       ihn helfen weder LP noch Minderung.
+    3. Schutz- und Heilausrüstung auf einer Skala: die LP, mit denen du aus einer Strecke von Kämpfen kommst, die mit
+       dem schwersten endet – L = 1 − (n − 1) × max(0, D − h − c) − max(0, Dmax − h), als Anteil deiner maximalen LP.
+       *D* und *Dmax* sind dein Schaden in einem Kampf, im Mittel und im schwersten, mit der Ausrüstung:
+       (1 − erlittener Schaden) × (P × (1 − physische Verwundbarkeit) × (1 − Ausweichen) + M × (1 − magische
+       Verwundbarkeit) + S) / (1 + maximale LP), über alle Stücke multipliziert. P, M und S sind dein gemessener
+       physischer, magischer und sonstiger Schaden je beendetem Kampf, nach der Angriffsart der treffenden Aktion
+       (`Action.AttackType`: Hieb bis Schuss physisch, Magie magisch, alles andere sonstig – dieselbe Zuordnung wie
+       Tankbuster und K8), zurückgerechnet auf die Zeit ohne deine gehaltene Ausrüstung, in diesem Gebiet, sonst im
+       Lauf. Ohne Messung kostet ein Kampf eine volle Leiste, geteilt nach Stärke und Intelligenz der Gegner des Bretts
+       im Blatt (meine Zuordnung: Stärke trifft physisch, Intelligenz magisch; ohne Brett alle Kämpfe des Crucible).
+       *h* ist deine eigene Heilung auf dich je Kampf (deine Aktionen und Gegenstände), gemessen wie D, mal 1 plus der
+       Mehrheilung der Ausrüstung, geteilt durch ihren LP-Faktor; ohne Messung 0, dann zählt Mehrheilung nichts. *c*
+       sind die LP am Kampfende (Ring of Curing). *n* sind die Kämpfe zwischen zwei Lagern, im Lauf gemessen (Kämpfe
+       vom Betreten des Bretts oder vom letzten Lagerfenster bis zum nächsten), bis zur ersten Messung 1 – dann zählt
+       nur der schwerste Kampf, und Schutz geht vor Heilung am Kampfende. RSR wählt die Auswahl mit dem größten L; bringt
+       kein Stück mehr L, zählen die wirksamen LP (1 + maximale LP) / ((1 − erlittener Schaden) × (P' × … + S')) mit
+       den Anteilen P', M', S' – Schutz gegen den Kampf, der schwerer wird als jeder gemessene, etwa den Endkampf.
+       Ausweichen zählt als Chance, einem physischen Treffer zu entgehen, gestapelte Stücke multiplizieren (beides
+       meine Ableitung, unbelegt). Nicht gezählt: Blockstärke (wie oft du blockst, ist unbekannt) und Zufallswirkungen
+       (Blink, Steinhaut, Rehabilitation, Aufsaugen) – die Liste unterschätzt diese Stücke, sie überschätzt keines.
+       Gesucht wird über jede Startwahl: je Angebot einmal als erstes gesetzt, danach Stück für Stück das mit dem
+       größten Gewinn je Marke; von allen so gefundenen Auswahlen gilt die beste, bei Gleichstand die billigere. Die
+       Zeile nennt, was das Stück an Bewegung oder Aktionstempo kostet (Genji Armor: Bewegung −20 %; Ice Shield: Slow
+       +10 %), gegengerechnet mit deiner übrigen Ausrüstung (Mystic Boots: Bewegung +50 %).
+    4. Gegen jeden übrigen Zustand der Kämpfe des Bretts, der dich die Sicherheit kostet – er nimmt dir die Kontrolle,
+       verhindert Aktionen, auch nur manchmal (Paralyse, Status 5382 und 5388: „sometimes preventing the execution of
+       actions"), oder fügt Schaden über Zeit zu (Gift, 5140 und 5141) –, eine Resistenz oder ein Serum, sofern nichts
+       Gehaltenes ihn deckt. Blind (5381, 5389) nicht: Es senkt nur deine Trefferquote. Daedalus 74659a6 führt dieselben
+       Zustände je Brett aus einem Brettführer (zweites Brett Verhängnis; drittes Paralyse; Erstes Meisterbrett Gift und
+       Paralyse, „poison resistance trivializes it"; Zweites Meisterbrett Paralyse, Verhängnis, Stein,
+       „anti-paralysis mandatory"); die Blätter geben für jedes Brett mindestens diese.
     5. Heiltränke, der stärkste zuerst, bei Gleichstand der billigere.
     6. Schutzgegenstände: Minderung nach ihrem Anteil, Abwehr physischer, Reflexion magischer Angriffe.
     Nie: Futter (die Rast beendet es, Campsite oben); Ausrüstung, die dir selbst einen Zustand zufügt (Thunder Axe:
-    Betäubung, Demonic Helm: Todesurteil, Flame Knife: Ketten, Wind Mask: Keen Edge, Schaden über Zeit auf dir) – wie K8
-    nie einen Gegenstand nimmt, der dir einen Zustand zufügt. Ausrüstung, die die wirksamen LP senkt, hat keinen Gewinn und fällt heraus (Empress Hairpin). Schaden
-    empfiehlt die Liste nicht; was du dazu kaufst, nutzt K8. Einstellung „Recommend what to buy in a Crucible shop
-    (Crucible only)", ab Werk an; sie zeigt das Fenster, kaufen tut der Knopf.
-    *Beispiel (Preise angenommen):* 1.200 Marken, sieben Gegenstände, ein Brett, dessen Endkampf lähmt. Im Laden Ring of
-    Sacrifice (400), Mythril Armor (500, −15 % erlittener Schaden, +15 % LP), Crimson Ribbon (300, Lähmung, Blindheit,
-    Versteinerung) und zwei Heiltränke. Die Liste: Ring of Sacrifice (zweites Leben), Mythril Armor (+35 % wirksame LP),
-    Crimson Ribbon (gegen die Lähmung); für die Tränke reichen die Marken nicht mehr. Mit 900 Marken endet sie nach der
-    Rüstung.
+    Betäubung, Demonic Helm: Verhängnis, Flame Knife: Chains of Condemnation, Wind Mask: Keen Edge, Schaden über Zeit auf
+    dir) – wie K8 nie einen Gegenstand nimmt, der dir einen Zustand zufügt. Ausrüstung, die nichts davon hebt, fällt
+    heraus (Empress Hairpin senkt die maximalen LP). Schaden empfiehlt die Liste nicht; was du dazu kaufst, nutzt K8.
+    Einstellung „Recommend what to buy in a Crucible shop (Crucible only)", ab Werk an; sie zeigt das Fenster, kaufen
+    tut der Knopf.
+    *Belege der Skala:* Daedalus 74659a6 im Feld: „Every Crucible death so far was HP attrition (no healing, HP carried
+    between battles)"; „Your HP does not refill between a board's battles and your death ends the board" (v0.1.104).
+    Seine Messung vom 04.11.2026 (K11) zeigt dasselbe an den Begleitern.
+    *Beispiel (Preise angenommen):* 900 Marken, Ring of Curing (600, 25 % am Kampfende) und Mythril Armor (600, −15 %
+    erlittener Schaden, +15 % LP) im Laden, gemessen D = 30 %, Dmax = 50 % je Kampf, keine eigene Heilung, n = 3. Ohne
+    beides: L = 1 − 2 × 0,30 − 0,50 = −0,10, du fielst im dritten Kampf. Ring: 1 − 2 × 0,05 − 0,50 = 0,40. Rüstung:
+    D 0,22, Dmax 0,37: 1 − 2 × 0,22 − 0,37 = 0,19. RSR empfiehlt den Ring. Mit n = 1 (vor jedem Kampf ein Lager): Ring
+    0,50, Rüstung 0,63 – die Rüstung. Ein Brett, dessen Endkampf Verhängnis zufügt, und Soulreaper's Armor im Laden:
+    Sie kommt vor beidem (Schritt 2).
     *Verworfen:* (a) ungefragt kaufen (Daedalus' Autopilot): Marken sind auch Punkte (Coin Clutcher, Rolling in Riches),
     und was du sparst, entscheidest du. (b) Nur anzeigen ohne Knopf: Jede Zeile wäre ein eigener Klick und eine Rückfrage
     mehr; der Knopf kostet nichts, solange er nur auf Wunsch kauft. (c) Schaden mitempfehlen: Sicherheit zuerst; Schaden
-    verkürzt die Kämpfe, aber um wie viel, hängt an deinem Anteil am Schaden der Begleiter – unbekannt.
+    verkürzt die Kämpfe, aber um wie viel, hängt an deinem Anteil am Schaden der Begleiter – unbekannt. (d) Schutz vor
+    Heilung am Kampfende, nach wirksamen LP allein (meine erste Fassung, A569): Bei mittlerem Schaden je Kampf rettet der
+    Ring mehr LP, wie das Beispiel zeigt; die wirksamen LP sehen nur den einzelnen Treffer. (e) Daedalus' feste
+    Gewichte je Wert (Maximum HP 1,0, Damage Taken 1,5, Ring of Curing 1,2 je Prozent): Zahlen ohne Herleitung, blind
+    für den gemessenen Schaden. (f) Nur Zustände, die Kontrolle nehmen oder töten (meine erste Fassung): Paralyse und
+    Gift fehlten, die Daedalus' Brettführer für drei Bretter verlangt.
     *Gegenthese 1:* Genji Armor (+30 % LP, −20 % erlittener Schaden) verlangsamt dich um 20 %; eine Fläche, der du
     sonst entkämst, trifft dich. Widerlegt bis auf einen Fall: Der Weg aus der Fläche dauert ein Viertel länger; das
     ändert nur etwas, wenn du ihn mit weniger als einem Fünftel der Wegzeit Vorsprung geschafft hättest. Auch dann
@@ -2018,11 +2043,18 @@ Dullahan, Golem, Spriggan und Eisgolem (`XBMPet.InflictsInterrupt`).
     Gegenstück Haste im selben Blatt: Wirk- und Abklingzeit, Auto-Angriff), dein Schadenseingang sinkt um drei Zehntel.
     *Gegenthese 2:* Der Gewinn je Marke bevorzugt billige Stücke vor einem teuren besseren. Widerlegt für ein teures
     Stück: Die Suche setzt jedes Angebot einmal an den Anfang. Es bleibt der Fall zweier teurer Stücke gegen mehrere
-    billige mit höherem Gewinn je Marke; dort liegt die Auswahl wenige Prozent wirksamer LP unter der besten (Beispiel:
-    zwei Stücke zu 500 Marken mit je +30 % gegen eines davon und zwei zu 200 mit je +13 %: 1,66 statt 1,69; meine
-    Rechnung). *Gegenthese 3:* p und m aus dem Blatt sagen nichts über den Schaden selbst. Widerlegt: Ab dem ersten
-    Treffer im Gebiet zählt dein gemessener Schaden; das Blatt trägt nur bis dahin, also im Laden vor dem ersten Kampf
-    eines Bretts.
+    billige mit höherem Gewinn je Marke; dort liegt die Auswahl wenig unter der besten (Beispiel in wirksamen LP: zwei
+    Stücke zu 500 Marken mit je +30 % gegen eines davon und zwei zu 200 mit je +13 %: 1,66 statt 1,69; meine Rechnung).
+    *Gegenthese 3:* Gemessene Kämpfe sagen wenig über den Endkampf, der härter trifft. Teilweise widerlegt: Dmax ist der
+    schwerste gemessene Kampf, und bringt kein Stück mehr L, entscheiden die wirksamen LP – Schutz gegen den Kampf über
+    jedem gemessenen. Es bleibt: Liegt der Endkampf weit über Dmax, kann ein Ring of Curing vor einer Rüstung stehen,
+    die dort mehr gerettet hätte; Preis: die Minderung des Rüstungsstücks im Endkampf. Wahrscheinlichkeit: nur bei
+    knappen Marken und langen Strecken, wo der Ring auf den Strecken davor mehr LP rettet.
+    *Gegenthese 4:* n aus früheren Strecken passt nicht zum Rest des Bretts. Teilweise widerlegt: Jedes Brett führt zwei
+    oder drei Lager (`XBMContentCamp`: 2, 2, 2, 2, 3), die Strecken ähneln sich also; die Ausrüstung hält den ganzen
+    Lauf, und für ihn zählt die übliche Strecke, nicht die laufende. Bis zur ersten Messung zählt n = 1 und damit Schutz
+    vor Heilung am Kampfende. Es bleibt: Ist die nächste Strecke kürzer als die gemessenen, überschätzt RSR den Ring;
+    Preis: die Minderung im schwersten Kampf dieser Strecke. Den Weg kennt RSR nicht (K10 Weg ist nicht gebaut).
   - *Weg:* nicht gebaut. Das Brett wird gelaufen, nicht geklickt (Daedalus läuft es mit vnavmesh ab); das macht RSR zu
     einem Bot für den Weg über das Brett – eine Frage des Umfangs, die er entscheidet (Vorlage am Ende des TODO).
 

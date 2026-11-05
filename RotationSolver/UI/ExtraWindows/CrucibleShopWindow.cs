@@ -38,7 +38,7 @@ internal class CrucibleShopWindow : Window
 
 		if (BeastmasterRotation.CrucibleShopBasis.Length > 0)
 		{
-			ImGui.TextUnformatted($"Protective gear weighed against {BeastmasterRotation.CrucibleShopBasis}.");
+			ImGui.TextUnformatted($"Gear weighed against {BeastmasterRotation.CrucibleShopBasis}.");
 		}
 
 		if (picks.Count > 0 && ImGui.Button("Buy"))

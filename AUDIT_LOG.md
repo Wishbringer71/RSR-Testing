@@ -16775,6 +16775,42 @@ habe den schleim bislang nicht anfreunden können."
 - *Prüfgrad:* Compile, Prüfschritte, Modell der Erkennung über alle 75 Blattzeilen und der Auswahl; Wirkkette am Code.
   Im Spiel nicht beobachtet; die Spurzeile „crucible shop: …" und das Fenster zeigen Liste und Grundlage selbst.
 
+### A570 · Crucible K10 Laden: Abnutzung gegen Schutz, Zustände, die Sicherheit kosten (05.11.2026)
+
+- *Auftrag:* `TODO.md`, „Fremde Repositories auf Verbesserungen für RSR prüfen", Daedalus weiter; der erste Fund traf
+  den eben gebauten Laden (A569).
+- *Quelle:* ofnature/Daedalus 74659a6 (03.11.2026, unverändert seit A561): `Data/CrucibleAutoPilotRules.cs`
+  (`TreasureWeights`: „Every Crucible death so far was HP attrition (no healing, HP carried between battles), so staying
+  alive outranks damage", Ring of Curing 1,2 je Prozent; `WantedResistances` je Brett aus einem Brettführer), CHANGELOG
+  v0.1.104 („Your HP does not refill between a board's battles and your death ends the board").
+- *Befunde gegen A569:* (1) Schutz ging vor Heilung am Kampfende, gewogen nur nach wirksamen LP. Bei mittlerem Schaden je
+  Kampf rettet Ring of Curing mehr LP als eine Rüstung (Modell: 30 % je Kampf, schwerster 50 %, drei Kämpfe zwischen
+  Lagern – Ring 40 %, Rüstung 19 % LP am Ende der Strecke; vor jedem Kampf ein Lager – Rüstung 63 %, Ring 50 %).
+  (2) Schritt 4 deckte nur Zustände, die Kontrolle nehmen oder töten; Paralyse (5382, 5388: „sometimes preventing the
+  execution of actions") und Gift (5140, 5141) fehlten – die Blätter führen sie auf den Brettern 2 bis 5, Daedalus
+  verlangt Paralyseschutz auf dem Zweiten Meisterbrett.
+- *Optionen:* (a) feste Reihenfolge Ring vor Rüstung – verworfen: falsch, wo vor jedem Kampf ein Lager liegt. (b)
+  Daedalus' Gewichte – verworfen: ohne Herleitung, blind für den gemessenen Schaden. (c) Verlust je Kampf allein –
+  verworfen: sieht den schwersten Kampf nicht. (d) Gewählt: LP nach einer Strecke von n Kämpfen, die mit dem schwersten
+  endet, aus gemessener Last je Kampf (Schaden nach Art, eigene Heilung) und gemessenen Kämpfen zwischen Lagern; bei
+  Gleichstand wirksame LP. (e) Nullvariante: A569 lassen.
+- *Gebaut:* `CrucibleBoard`: Last je Kampf (`RecordTaken` nur im erkannten Kampf, `RecordHealed` für die eigene Heilung
+  auf sich, aus dem Watcher), je Gebiet und über alle Bretter seit dem Laden von RSR (`Loads`), Strecken zwischen Lagern
+  (`FightsPerStretch`, geschlossen am Lagerfenster, Modus 4, und am Ende des Bretts), Zustände, die Sicherheit kosten
+  (`HarmsOf`; die Liste für K8 bleibt). Laden: Schritt 2 Zustände, die töten; Schritt 3 die neue Skala (`ShopValue`,
+  `LoadOf`); Schritt 4 die übrigen. Optionstext, Fenster und Release-Text nachgezogen.
+- *Gegenthesen:* Konzept 01, K10 Laden (3: Endkampf über Dmax – teilweise, Preis benannt; 4: n aus früheren Strecken –
+  teilweise, Preis benannt).
+- *Falsifikation:* Kein Defekt – Schutz zuerst ist sicherer: Das Modell zeigt das Gegenteil, sobald zwischen zwei Lagern
+  mehr als ein Kampf liegt. Option falsch – (a) bis (c) oben. Ausgeliefert, und nichts ändert sich: (1) Kein Kampf
+  erkannt (`Fight` 0) – dann bleibt die Last leer und es gilt die Reihenfolge von A569; das Fenster sagt „no fight
+  measured yet"; (2) das Lagerfenster wird nicht gesehen – dann bleibt n bei 1, ebenso; (3) die Heilung des Rings landet
+  im Kampf und zählt als eigene Heilung – dann zählt RSR ihn doppelt (unbelegt, ob sie als Aktion vor dem Kampfende
+  ankommt).
+- *Namen:* C166 (Verhängnis statt eines selbst gebildeten Namens).
+- *Prüfgrad:* Compile, Prüfschritte, Modell der Skala am Konzeptbeispiel (Notizordner); Wirkkette am Code. Im Spiel nicht
+  beobachtet; Fenster und Spurzeile nennen Last und Strecke, gegen die gewogen wird.
+
 ## B · Commit-Register (Fork vs. `upstream/main`)
 
 ### B1 · Einzelgeprüfte Fork-Commits
@@ -17092,3 +17128,4 @@ Die offene Arbeit dazu — Reihenfolge und Abbruchbedingung der Nachprüfung —
 | C163 | A524, Konzept 01 „Bestienkönnen nach Borgen", TODO „Beastmaster: Brechende Welle als Schaden": „als Schaden nie, weil ihre zweite Zeile hinter Schmetteraxt steht, die immer geht" | Die Äxte haben Nahkampfreichweite (`Action.Range` −1), Brechende Welle 30 Yalm (Blatt `Action` 44879, 44883, 44885, 44900, 05.11.2026). Außerhalb der Nahkampfreichweite scheitern alle Äxte, und die zweite Zeile greift. Im Nahkampf wäre die Welle um etwa 70 Potenz schlechter als der Kombo-Schnitt; die Reihenfolge von Upstream war richtig. | A558: Konzept umgestellt, TODO-Punkt geschlossen; im Brett gegen Wasserschwäche zusätzlich vor den Äxten. |
 | C164 | TODO „Flächenbetäuber in Kreszentia für The Blackest Night": „Betäubt ein anderer Spieler mit einer Aktion seines Phantomjobs eine Gruppe, kann der Dunkelritter seine Barriere in das Betäubungsfenster legen" | Die Regel misst die Betäubung am Status der Gegner, gleich wer sie setzt (`SurveyStuns`); nur das sichtbare Kommen der nächsten las sie an Holy und Holy III. Die einzige Flächenbetäubung der Phantomjobs, Occult Falcon, wirkt sofort und hat kein Kommen. | A560: Punkt geschlossen; das Kommen wird über die Spieldaten erkannt statt über die zwei IDs. |
 | C165 | Konzept 08, „Schaden über Zeit: HoT gegen DoT": „Esuna kommt in RSRs GCD-Verteilung vor jeder Heilung; ein entfernbarer DoT, den RSR entfernt, braucht keinen HoT" und „Entfernbare DoTs entfernt Esuna vorher; H1 lässt sie aus" | Die Reihenfolge war Upstreams, ungeprüft übernommen. Im Odin-Kampf (05.11.2026) gingen 13 Reinigungen einer Gruppen-Blutung und 9 von Slow vor jede Heilung, auch bei einem Mitglied mit 0 % Vorausschau; 8.800 MP. Ein DoT auf mehreren Mitgliedern ist Sache des Gruppen-HoT (sein Hinweis), und eine Reinigung geht nur vor, wenn sie ein Leben rettet. | A565: Konzept 07 „Reinigung oder Heilung", 08 berichtigt, Code. |
+| C166 | Konzept 01 (Begleiter-Nutzen A491, Entfesseln, K10 Laden A569) und Konzept 07 („Reinigung oder Heilung", A565): „Todesurteil" als deutscher Name des Zustands Doom | Der Name war selbst gebildet. Das deutsche Spielblatt nennt Status 5421 „Verhängnis" (xivapi v2, `language=de`, 05.11.2026); an allen vier Stellen ersetzt. Ebenso im Ladenabschnitt: Paralyse (5382), Stein (4891), Steinfluch (437), Blind (5381), Betäubung (Status 2) aus demselben Blatt; Chains of Condemnation englisch, weil kein deutscher Beleg vorliegt. A491 führt das Wort als Teil seines damaligen Wortlauts; in A515 ist „Todesurteil" der Name einer Gegneraktion aus seinem Mitschnitt, kein Zustand. |
