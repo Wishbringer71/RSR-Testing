@@ -14,6 +14,9 @@ What this release changes in the fight. For the whole distance from upstream, se
 
 ## Healing
 
+- **Healed to full what only full HP ends.** A status whose text says it dissipates once fully
+  healed is healed away as if its bearer stood at 1 %: until now only two Doom variants were listed;
+  Gradual Petrification and Accretion are now healed to full as well.
 - **Kardia follows the tank who holds the aggro.** A sage put Kardion on the first tank in stance by
   job order and never moved it, so after a tank swap it healed the tank who no longer took damage.
   Kardion now goes to the tank the most dangerous enemies target - by their measured damage per

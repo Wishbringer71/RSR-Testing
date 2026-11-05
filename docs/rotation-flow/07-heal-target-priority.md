@@ -953,6 +953,15 @@ Arten reinigbarer Zustände, jede an den eigenen Daten des Spiels erkannt:
 | **Schaden über Zeit** | Wirktext „damage over time" (derselbe Erkenner wie „HoT gegen DoT", Konzept 08) | Bleeding (273), Poison (2104), Concussion (3521) | liegt er, solange ein Gegner in Reichweite ist, auf mehr als einem Mitglied, nie – dann antwortet die Heilung über Zeit für die Gruppe (Weißmagier, Astrologe: „HoT gegen DoT", Konzept 08; Gelehrter, Weiser: ihre Fähigkeiten über die Heilschwellen); auf einem einzigen wie die übrigen |
 | **übrige** | alles andere auf der Liste „Dispellable debuffs" | Stun, Sleep, Silence, Paralysis, Bind, Slow (561 u. a.), Blind | nur ohne Heil- und Abwehranlass und nur mit Mana über der Rücklage der Wiederbelebung |
 
+*Was keine Reinigung nimmt, nimmt volle Heilung (A573):* Sagt der englische Wirktext „Effect dissipates once fully
+healed", endet der Zustand erst bei vollen LP und ist nicht reinigbar (`CanDispel` nein). RSR heilt seinen Träger, als
+stünde er bei 1 %, bis er voll ist (`DoomNeedHealing`: Gesundheitsanteil 0,01, Heilflaggen) – bisher nur für Upstreams
+Liste Doom 1769 und 5473, jetzt für jeden Zustand mit diesem Text: auch Gradual Petrification 1628 (wird zu Stein) und
+Accretion 1604 (senkt jede Heilung; xivapi v2, 05.11.2026). Daedalus 74659a6 führt dieselbe Regel als Liste („Doomed
+(it clears only at 100%)"; ein Spieler starb zweimal bei 83 bis 85 % an seinem Verhängnis, während der Heiler Schaden
+wirkte). Seine Liste nennt dazu Doom 910 und 2976: 910 ist reinigbar (erste Art oben), für 2976 sagt das Blatt nichts
+dergleichen – unbelegt, darum ohne Regel.
+
 Zustände außerhalb der Liste reinigt der Heiler nach denen auf der Liste und ebenso nur, wenn nichts ansteht; bisher
 auch bei Heilbedarf, sobald kein Gegner in Reichweite stand. „Dispel every dispellable debuff" nimmt sie wie bisher alle
 dazu, vor die Heilung stellt es keine. Die Rücklage ist die der Einstellung „Keep the MP a raise needs" (ab Werk an,

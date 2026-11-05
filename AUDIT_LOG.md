@@ -16866,6 +16866,25 @@ habe den schleim bislang nicht anfreunden können."
 - *Prüfgrad:* Compile, Prüfschritte; Wirkkette am Code (Liste → `HitsUntouchable` → Kandidaten der Fläche). Im Spiel
   nicht beobachtet.
 
+### A573 · Zustände, die nur volle Heilung beendet: Wirktext statt Liste (05.11.2026)
+
+- *Auftrag:* `TODO.md`, „Fremde Repositories auf Verbesserungen für RSR prüfen", Daedalus 74659a6, Heiler-Triage
+  (`HealerPartyHelper`: `DoomStatusIds` 910, 1769, 2976, „Doomed (it clears only at 100%)"; Feldfall 26.09.2026: zweimal
+  tot bei 83 bis 85 % LP, während der Weise Schaden wirkte).
+- *Befund am Code:* Upstreams `StatusHelper.DoomHealStatus` (Doom 1769, 5473, seit 30.04.2026) setzt den Träger auf
+  1 % Gesundheit (`ComputeHealthRatio`) und öffnet die Heilflaggen (`StateUpdater`) – eine Liste. Der englische Wirktext
+  „Effect dissipates once fully healed" steht bei vier Zuständen (xivapi v2, 05.11.2026): 1769, 5473, Gradual
+  Petrification 1628, Accretion 1604; die beiden letzten fehlten, ihr Träger wurde nicht voll geheilt.
+- *Abgleich mit Daedalus:* Doom 910 ist reinigbar (A565, erste Art), für 2976 nennt das Blatt kein Ende bei voller
+  Heilung – keine Regel ohne Beleg.
+- *Gebaut:* `StatusHelper.EndsWhenFullyHealed` (Wirktext, je Zustand zwischengespeichert), `DoomNeedHealing` und
+  `PlayerDoomNeedHealing` lesen ihn zusätzlich zur Liste. Konzept 07, „Reinigung oder Heilung".
+- *Falsifikation:* Kein Defekt – die Liste reicht: 1628 und 1604 fehlen in ihr. Option falsch – Daedalus' Liste
+  übernehmen: 910 und 2976 trügen sie ohne Beleg. Ausgeliefert, und nichts ändert sich: Der Text steht anders in einem
+  künftigen Zustand („fully restored") – dann bleibt er unerkannt wie heute; die Suche fand keine andere Fassung.
+- *Prüfgrad:* Compile, Prüfschritte; Wirkkette am Code (Wirktext → `DoomNeedHealing` → Gesundheitsanteil 0,01 und
+  Heilflaggen). Im Spiel nicht beobachtet.
+
 ## B · Commit-Register (Fork vs. `upstream/main`)
 
 ### B1 · Einzelgeprüfte Fork-Commits

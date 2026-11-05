@@ -1505,7 +1505,50 @@ public static class StatusHelper
 			return false;
 		}
 
-		return PlayerHasStatus(false, DoomHealStatus);
+		return PlayerHasStatus(false, DoomHealStatus) || HasStatusEndedByFullHealing(Player.Object);
+	}
+
+	private static readonly System.Collections.Concurrent.ConcurrentDictionary<uint, bool> _endsWhenFullyHealed = new();
+
+	/// <summary>
+	/// Concept 07, "Reinigung oder Heilung" (A573): whether this status ends only once its bearer is fully healed, by its
+	/// own text in the English status sheet ("Effect dissipates once fully healed": Doom 1769 and 5473, Gradual
+	/// Petrification 1628, Accretion 1604; xivapi, 05.11.2026). A sheet that cannot be read answers no.
+	/// </summary>
+	internal static bool EndsWhenFullyHealed(uint statusId)
+	{
+		return _endsWhenFullyHealed.GetOrAdd(statusId, static key =>
+		{
+			try
+			{
+				var sheet = Svc.Data.GetExcelSheet<Lumina.Excel.Sheets.Status>(Dalamud.Game.ClientLanguage.English);
+				return sheet != null && sheet.TryGetRow(key, out var row)
+					&& row.Description.ExtractText().Contains("dissipates once fully healed", StringComparison.OrdinalIgnoreCase);
+			}
+			catch (Exception)
+			{
+				return false;
+			}
+		});
+	}
+
+	// A573: whether the character carries a status that ends only at full HP.
+	private static bool HasStatusEndedByFullHealing(IBattleChara character)
+	{
+		if (character.StatusList == null)
+		{
+			return false;
+		}
+
+		foreach (var status in character.StatusList)
+		{
+			if (status != null && status.StatusId != 0 && EndsWhenFullyHealed(status.StatusId))
+			{
+				return true;
+			}
+		}
+
+		return false;
 	}
 
 	/// <summary>
@@ -1542,7 +1585,7 @@ public static class StatusHelper
 				return false;
 			}
 
-			if (HasStatus(fresh, false, DoomHealStatus))
+			if (HasStatus(fresh, false, DoomHealStatus) || HasStatusEndedByFullHealing(fresh))
 			{
 				return true;
 			}
