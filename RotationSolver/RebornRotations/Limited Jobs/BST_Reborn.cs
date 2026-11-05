@@ -32,8 +32,10 @@ public sealed class BST_Reborn : BeastmasterRotation
 			+ "horn is back. At equal damage the one that heals or protects you stays. When your HP is falling below the line "
 			+ "at which RSR heals you with abilities, a familiar that heals or protects you (its Trick, or what its horn "
 			+ "spends One with Nature on) is called first, one that does neither leaves by Parting Blow for it, one whose "
-			+ "Trick heals you is not sent off while the danger lasts, and Scaleskin goes up at once. Only what you have at "
-			+ "your level counts.\n"
+			+ "Trick heals you is not sent off while the danger lasts, and Scaleskin goes up at once. With no tank beside you, "
+			+ "a familiar whose Tempered Release stops a whole pack fighting you comes first. In the Crucible, a familiar that "
+			+ "hits only the weakness of enemies still to come in this fight waits for them while another horn is ready, and "
+			+ "comes first once they appear. Only what you have at your level counts.\n"
 			+ "In a fight: on a pack the area familiar keeps the long stint, and when you are losing health the healing "
 			+ "familiar comes at once instead of at its turn.\n"
 			+ "Off: the horn order above.")]
@@ -754,6 +756,21 @@ public sealed class BST_Reborn : BeastmasterRotation
 	// against the enemies around the target first, so the best stays last; at equal value one that heals or protects
 	// stays, then the configured order. A horn without a familiar does not count (B0). Without a catalog, or with no
 	// horn ready, the configured order below decides.
+	// K2 (concept 01, A548): the first ready horn, in the configured order, whose familiar hits the weakness of an enemy that
+	// came after the fight began.
+	private HornOrder? FirstHornForEnemiesThatCame()
+	{
+		foreach (var horn in ConfiguredHornOrder())
+		{
+			if (HornReady(horn) && FamiliarOf(PetOnHorn(horn)) is { } familiar && HitsEnemyThatCame(familiar))
+			{
+				return horn;
+			}
+		}
+
+		return null;
+	}
+
 	private bool SituationalHorn(out IAction? act)
 	{
 		act = null;
@@ -773,12 +790,30 @@ public sealed class BST_Reborn : BeastmasterRotation
 			chosen = stopper;
 			why = "a pack comes at you and nobody holds it, its Release stops it";
 		}
+		else if (InCombat && FirstHornForEnemiesThatCame() is { } came)
+		{
+			// K2 (concept 01, A548): enemies that came later are here, and a ready familiar hits their weakness.
+			chosen = came;
+			why = "enemies that came later are weak to it";
+		}
 		else
 		{
 			var bestValue = float.MaxValue;
 			var bestSafe = true;
 			var ready = 0;
 			var hasTrick = TrickPvE.Info.EnoughLevelAndQuest();
+
+			// K2 (A548): a familiar that hits only enemies still to come waits for them, while another horn is ready.
+			var anotherReady = false;
+			foreach (var horn in ConfiguredHornOrder())
+			{
+				if (HornReady(horn) && FamiliarOf(PetOnHorn(horn)) is { } candidate && !HitsOnlyEnemiesToCome(candidate))
+				{
+					anotherReady = true;
+					break;
+				}
+			}
+
 			foreach (var horn in ConfiguredHornOrder())
 			{
 				if (!HornReady(horn) || PetOnHorn(horn) == BeastmasterPet.None)
@@ -789,6 +824,11 @@ public sealed class BST_Reborn : BeastmasterRotation
 				if (FamiliarOf(PetOnHorn(horn)) is not { } familiar)
 				{
 					return false;
+				}
+
+				if (anotherReady && HitsOnlyEnemiesToCome(familiar))
+				{
+					continue;
 				}
 
 				ready++;
@@ -905,6 +945,8 @@ public sealed class BST_Reborn : BeastmasterRotation
 			WatchCapture();
 		}
 
+		// Stage 1 of the Crucible (A548): the fight in progress from the sheets, for K2.
+		FollowCrucible();
 		RecordFight();
 		CountFight();
 		WatchHand();

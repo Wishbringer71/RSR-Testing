@@ -1911,6 +1911,32 @@ beim Betreten, ob es die Daten des Bretts gelesen hat.
 Schadensart je Begleiter) mit K1, K2 und K3; 2. K11 (Bedarfsliste und LP je Begleiter) mit K9; 3. K8; 4. K6 und K7;
 danach K4, K5, K10.
 
+**Stufe 1, erster Teil: Daten und K2** (A548, gebaut; K1 und der Rest von K3 folgen):
+- *Kämpfe aus dem Blatt:* `XBMBattleDetail` hat eine Zeile je Kampf und eine Unterzeile je Gegner. Gelesen werden der
+  Name (`BNpcName`) und die Schwäche (`XBMElement`). Die Reihenfolge der Spalten belegt EXDSchema, Zweig latest
+  (abgerufen 05.11.2026, Werkzeugquelle): Name, Icon, Action1, Action2, Resist, Strength, Intelligence, PhysResistance,
+  MagResistance, Constitution, Weakness. Die gebaute Lumina liest sie als `Unknown0` bis `Unknown10`; ihre benannte
+  Fassung (`Experimental`) ist als vorläufig gesperrt (PendingExcelSchema), wie bei `XBMPet`.
+  Probe: Der Knochen-Ritter (Zeile 1, Unterzeile 0) trägt 7 = Schlag, wie oben.
+- *Der laufende Kampf:* Im Brett und im Kampf ist es die Zeile, die die meisten anwesenden Gegner nennt (nach `NameId`),
+  bei Gleichstand die mit den wenigsten Gegnern. Nennt eine alle, ist es also sie; ein Anwesender, den kein Blatt
+  führt (ein Helfer mit eigenem Namen), verdeckt den Kampf nicht. Wer beim Erkennen anwesend ist, gilt als „zu Beginn"; wer in der Zeile steht und
+  dann fehlt, als „kommt noch". Nach dem Kampf wird neu erkannt.
+- *Was ein Begleiter trifft:* Dressur und Entfesseln (`FamiliarProfile`) je mit ihrem Element (`Action.Aspect` Feuer bis
+  Wasser) oder, bei physischem Aspekt, ihrer Angriffsart (Hieb, Stich, Schlag). Zugeordnet wird über die englischen Namen
+  von `XBMElement` und RSRs Aufzählungen `Aspect` und `AttackType`, ohne eigene Zahl. Ein Zauber ohne Element trifft
+  keine Schwäche.
+- *Selbstprüfung beim Betreten:* Eine Zeile „crucible: … fights … read" nennt, wie viele Kämpfe und Gegner gelesen sind,
+  und als Probe die Schwäche des ersten Gegners. Fehlt sie oder steht dort 0, ruhen die Regeln dieser Stufe, und die
+  Zeile sagt es. Erkennt RSR einen Kampf, nennt eine Zeile die Anwesenden und die Kommenden mit ihrer Schwäche.
+- *K2, gebaut:* In der Hornwahl nach Lage (B3, unter „familiars by the situation") wird ein bereites Horn im Zyklus
+  übersprungen, dessen Begleiter die Schwäche eines kommenden Gegners trifft und keine der Anwesenden. Das gilt nur,
+  solange ein anderes, nicht gehaltenes Horn bereit ist; sonst kommt er wie bisher (Falsifikation oben). Erscheint ein
+  Kommender, dessen Schwäche ein bereiter Begleiter trifft, wird dieser zuerst gerufen – nach Gefahr (B1) und dem
+  Aufhalten eines Rudels (C1). Eine Zeile nennt das Halten einmal je Kampf und Horn und den Ruf.
+- *Im Kampf:* Seelenlose (Stich), Raptor auf einem Horn (Entfesseln Feuer), Sukkubi (Feuer) nach 45 s. Der Raptor
+  bleibt im Zyklus zurück, solange ein anderes Horn bereit ist, und kommt, sobald die Sukkubi erscheinen.
+
 ---
 
 ## Quantitative Auffälligkeiten

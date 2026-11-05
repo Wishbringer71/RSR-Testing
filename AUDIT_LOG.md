@@ -16280,6 +16280,31 @@ habe den schleim bislang nicht anfreunden können."
 - *Prüfgrad:* Dalamud-Quelltext gelesen, Compile, Prüfschritte; im Spiel nicht beobachtet. Messmittel bleibt die
   Spurzeile „heal reduction: …" (A544), die es mit deutschem Client bisher nie geben konnte.
 
+### A548 · Crucible, Stufe 1, erster Teil: Kämpfe und Schwächen aus dem Blatt, K2 (05.11.2026)
+
+- *Auftrag:* `TODO.md`, „Beastmaster: Crucible-Strategien", Stufe 1; seine Vorgabe vom 05.11.2026: TODO im kritischen
+  Loop abarbeiten. K2 ist sein Vorschlag (Seelenlose, 04.11.2026), im Loop von A532 bis A536 geprüft.
+- *Quellen:* xivapi v2 mit Schema a1e24a0c (`XBMBattleDetail`: Knochen-Ritter Name 14531, Weakness 7; `XBMElement` 1 bis
+  9: Fire, Wind, Earth, Lightning, Ice, Water, Blunt, Piercing, Slashing; `Pet.Abilities` 47 bis 97 mit Aspekt 1 bis 6 für
+  Elemente und Aspekt 7 mit Angriffsart 1 bis 3 für Hieb, Stich, Schlag). EXDSchema, Zweig latest (05.11.2026) für die
+  Reihenfolge der Spalten. Die gebaute Lumina (Reflexion über `Lumina.Excel.dll` der Build-Umgebung) führt die Spalten als
+  `Unknown0` bis `Unknown10`; die benannte Fassung unter `Experimental` bricht den Build (PendingExcelSchema).
+- *Entscheidung (Konzept 01, „Stufe 1, erster Teil"):*
+  - `BeastmasterCrucible.cs` liest die Kämpfe und die Schwächen. Der laufende Kampf ist die Zeile mit der größten
+    Überdeckung der Anwesenden, bei Gleichstand die kleinste.
+  - Was ein Begleiter trifft, liest es aus Aspekt oder Angriffsart von Dressur und Entfesseln, zugeordnet über die
+    englischen Namen von `XBMElement` und die Aufzählungen `Aspect` und `AttackType`.
+  - Die Spur schreibt beim Betreten die Selbstprüfung samt Probe, je Kampf die Kommenden und das Halten.
+  - K2 in `SituationalHorn` unter „familiars by the situation": Gehalten wird nur, solange ein anderes, nicht gehaltenes
+    Horn bereit ist. Ein Begleiter für Erschienene kommt nach B1 und C1 zuerst.
+  - Verworfen: die benannten Experimental-Blätter (gesperrt, vorläufig); eine Zahlentabelle von Aspekt zu Element (die
+    Namen tragen es); Obermenge allein (ein ungelisteter Helfer verdeckte den Kampf).
+- *Betroffene:* E – Beastmaster im Crucible mit „familiars by the situation". R – neue interne Member von
+  `BeastmasterRotation`; `BST_Reborn.SituationalHorn` hat einen Zweig mehr.
+- *Prüfgrad:* Compile ohne Warnung, Prüfschritte; Wirkkette am Code; die Spaltenbelegung am Blatt über xivapi. Im Spiel
+  nicht beobachtet. Messmittel sind die Zeilen „crucible: …" beim Betreten (Probe der Schwäche des ersten Gegners) und je
+  Kampf.
+
 ## B · Commit-Register (Fork vs. `upstream/main`)
 
 ### B1 · Einzelgeprüfte Fork-Commits

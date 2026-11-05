@@ -170,6 +170,14 @@ What this release changes in the fight. For the whole distance from upstream, se
   `DefenseTrace.log` counts Shield Charge, Borrow and every Beast Mode action per fight, by RSR or by
   hand, with how long Shield Charge stood ready with several enemies in range, and names the reason
   when it stands ready and does not go.
+- **A horn waits for the enemies that come later (Crucible).** RSR now reads every fight of the
+  boards from the game data: its enemies and their weaknesses, and which weakness each familiar's
+  Trick and Tempered Release hits. In a fight where enemies join later - the Soulless one calls her
+  succubi after about 45 s - a familiar that hits only their weakness is kept on its horn while
+  another horn is ready, and called first once they appear (after danger and stopping a pack). On
+  04.11.2026 the Raptor's fire went to the boss 40 s before the fire-weak succubi came. With
+  `Choose the battlehorn by the situation` on. `DefenseTrace.log` says on entering a board whether the fights
+  were read, names each fight with the enemies still to come, and every hold.
 - **A familiar that covers you stays (Crucible).** After Snarl - pressed by you or by `Use Snarl and
   Challenge …` - the familiar takes all damage meant for you for 45 s. RSR no longer sends it off with
   Parting Blow, or with a Tempered Release after which it leaves, to call the next horn while that cover
