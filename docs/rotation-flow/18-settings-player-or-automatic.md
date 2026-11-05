@@ -240,8 +240,9 @@ Prüfung).
   A477).
 - **Nicht gebaut, zu klein:** Die Lilie am Überlauf auf Afflatus solatii statt laetitiae, wo sie mehr heilt, hätte an
   seinen Abenden 0 und höchstens 4 % mehr wirksame Lilienheilung gebracht (nicht jede fiel am Überlauf). Eine
-  Flächenheilung abzubrechen, wenn die Gruppe während des Wirkens anderweitig hochgeheilt wird, wie es „Stop single
-  target GCD healing after reaching threshold" für Einzelheilungen tut, hätte 2 von 15 Flächenheilungen betroffen.
+  Flächenheilung abzubrechen, wenn die Gruppe während des Wirkens anderweitig hochgeheilt wird, wie es „Stop
+  single-target GCD heals once the target is above the threshold" für Einzelheilungen tut (Konzept 07), hätte 2 von 15
+  Flächenheilungen betroffen.
 - **Wenn er die Gruppe voller halten will:** Um 10 Punkte höhere Schwellen senken im Modell die Tote in der Leichtgruppe
   mit Treffern ohne Vorwarnung von 2,7 auf 0 je 100 Kämpfe und die Zeit unter 30 % auf ein Drittel, im Raid von 5,7 auf
   4,0 und auf die Hälfte – für 2 bis 3 Heilzauber mehr je Heiler und 180 s (rund 3 bis 4 % seiner GCDs), 3 bis 9 Punkte

@@ -1948,7 +1948,16 @@ public static class StatusHelper
 	/// </summary>
 	private static bool IsFromPlayer(IStatus status, ulong playerId)
 	{
-		if (status.SourceId == playerId)
+		return IsPlayerOrOwned(status.SourceId, playerId);
+	}
+
+	/// <summary>
+	/// Whether <paramref name="objectId"/> is the player or an object the player owns or has owned in this area - pet,
+	/// summons, companions -, read from the same ids as the "from self" test of the statuses.
+	/// </summary>
+	internal static bool IsPlayerOrOwned(ulong objectId, ulong playerId)
+	{
+		if (objectId == playerId)
 		{
 			return true;
 		}
@@ -1959,7 +1968,7 @@ public static class StatusHelper
 			NoteOwnedObjects();
 		}
 
-		return _playerOwned.Contains(status.SourceId);
+		return _playerOwned.Contains(objectId);
 	}
 
 	/// <summary>

@@ -15,8 +15,10 @@ internal static class CancelCastUpdater
 	// The raise last broken off because another lands first, so the trace names it once.
 	private static (uint Action, ulong Target, float Total) _raiseStopTraced;
 
-	// The single-target heal being cast: whether its target needed it and the target's HP when it began.
-	private static (uint Action, ulong Target, float Elapsed, bool NeededAtStart, uint HpAtStart, bool Traced) _singleHealCast;
+	// The single-target heal being cast: whether its target needed it, the target's HP and the time when it began, and
+	// whether the trace has named it.
+	private static (uint Action, ulong Target, float Elapsed, bool NeededAtStart, uint HpAtStart, DateTime Start, bool Traced,
+		bool Kept) _singleHealCast;
 
 	internal static unsafe void UpdateCancelCast()
 	{
@@ -118,15 +120,22 @@ internal static class CancelCastUpdater
 	}
 
 	/// <summary>
-	/// "Stop single target GCD healing after reaching threshold": the target of the heal being cast needed it
-	/// when the cast began, has been healed since, and no longer needs it.
+	/// "Stop single-target GCD heals once the target is above the threshold": the target of the heal being cast needed it
+	/// when the cast began, healing by another has landed on him since, his health is above what it was then, and he no
+	/// longer needs it (concept 07, "Einen Heilzauber abbrechen, den andere überflüssig gemacht haben", A545).
 	/// </summary>
 	/// <remarks>
-	/// It used to ask whether anybody still called for a heal spell. That flag reads the forecast as well, and the
+	/// <para>It used to ask whether anybody still called for a heal spell. That flag reads the forecast as well, and the
 	/// forecast drops out as soon as a falling trend levels off - with nobody healed, a heal begun for a predicted
 	/// danger was broken off and begun again at the next hit. It also broke off casts that are no threshold heal at
 	/// all: a barrier on a tank at full health, such as the Adloquium before Recitation runs out (A314). Both stayed
-	/// hidden while the setting had no effect; it only reaches the casts since upstream 7.5.7.5 (A332).
+	/// hidden while the setting had no effect; it only reaches the casts since upstream 7.5.7.5 (A332).</para>
+	///
+	/// <para>Then it took any rise of the target's health for healing, and the own heal in flight for a need met. The
+	/// option's text names another healer's healing. In his log of 04.11.2026 ten of eleven "heal stopped" came after the
+	/// cast's own effect had arrived - the server had resolved it, the game ignored the cancel and the heal landed in
+	/// full -, set off by the tick of natural regeneration (1 % of maximum HP) and the own heal counted ahead. So a cast whose
+	/// own effect has arrived is no longer judged, and only healing by another counts (<see cref="HealFromOthers"/>).</para>
 	/// </remarks>
 	private static bool ShouldStopHealing(IPlayerCharacter player, IBattleChara? castTarget)
 	{
@@ -143,25 +152,48 @@ internal static class CancelCastUpdater
 		if (_singleHealCast.Action != player.CastActionId || _singleHealCast.Target != castTarget.GameObjectId
 			|| player.CurrentCastTime < _singleHealCast.Elapsed)
 		{
-			_singleHealCast = (player.CastActionId, castTarget.GameObjectId, player.CurrentCastTime, needed, castTarget.CurrentHp, false);
+			_singleHealCast = (player.CastActionId, castTarget.GameObjectId, player.CurrentCastTime, needed, castTarget.CurrentHp,
+				DateTime.Now.AddSeconds(-player.CurrentCastTime), false, false);
 			return false;
 		}
 
 		_singleHealCast.Elapsed = player.CurrentCastTime;
 
-		var stop = DataCenter.InCombat
-			&& !CustomRotation.HealingWhileDoingNothing
-			&& DataCenter.CommandNextAction?.AdjustedID != player.CastActionId
-			&& _singleHealCast.NeededAtStart && !needed
-			&& castTarget.CurrentHp > _singleHealCast.HpAtStart;
-
-		if (stop && !_singleHealCast.Traced)
+		// The cast's own effect has arrived while its bar still runs: resolved, nothing left to stop.
+		if ((uint)DataCenter.LastAction == player.CastActionId
+			&& DataCenter.TimeSinceLastAction.TotalSeconds < player.CurrentCastTime)
 		{
-			_singleHealCast.Traced = true;
-			DefenseTrace.Line($"heal stopped: {castTarget.Name.TextValue} healed from {_singleHealCast.HpAtStart} to "
-				+ $"{castTarget.CurrentHp} HP during the cast, above the single heal threshold");
+			return false;
 		}
 
-		return stop;
+		if (!DataCenter.InCombat || CustomRotation.HealingWhileDoingNothing
+			|| DataCenter.CommandNextAction?.AdjustedID == player.CastActionId
+			|| !_singleHealCast.NeededAtStart || needed || castTarget.CurrentHp <= _singleHealCast.HpAtStart)
+		{
+			return false;
+		}
+
+		HealFromOthers.Follow(castTarget);
+		if (!HealFromOthers.LandedSince(castTarget.GameObjectId, _singleHealCast.Start))
+		{
+			if (!_singleHealCast.Kept)
+			{
+				_singleHealCast.Kept = true;
+				DefenseTrace.Line($"heal kept: {castTarget.Name.TextValue} rose from {_singleHealCast.HpAtStart} to "
+					+ $"{castTarget.CurrentHp} HP during the cast, above the single heal threshold, with no healing by others");
+			}
+
+			return false;
+		}
+
+		if (!_singleHealCast.Traced)
+		{
+			_singleHealCast.Traced = true;
+			DefenseTrace.Line($"heal stopped: {castTarget.Name.TextValue} healed by others from {_singleHealCast.HpAtStart} to "
+				+ $"{castTarget.CurrentHp} HP after {player.CurrentCastTime:F1} of {player.TotalCastTime:F1} s cast, above the "
+				+ "single heal threshold");
+		}
+
+		return true;
 	}
 }

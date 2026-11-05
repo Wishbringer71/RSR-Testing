@@ -484,6 +484,16 @@
    "reason": "Protocol bit of the action effect: marks an amount whose third byte is carried separately (cactbot LogGuide, Ability Damage). Stated in no game sheet, so it cannot be derived at runtime."
   },
   {
+   "file": "RotationSolver/Watcher.cs",
+   "code": "var to = sourceId != 0 && (entry.flags & 0x80) != 0 ? sourceId : targetId;",
+   "values": [
+    "0x80"
+   ],
+   "status": "exception",
+   "loop": "A545",
+   "reason": "Protocol bit of the action effect: the entry lands on the source, as the self-heal of an attack (BossModReborn ActionEffect.AtSource; Storm's Path in his log of 04.11.2026). Stated in no game sheet, as the 0x40 bit beside it, so it cannot be derived at runtime."
+  },
+  {
    "file": "RotationSolver/Basic/Actions/HpPotionItem.cs",
    "code": "_percentNq = dataNq[0] / 100f;",
    "values": [

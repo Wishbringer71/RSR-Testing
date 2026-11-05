@@ -32,6 +32,19 @@ What this release changes in the fight. For the whole distance from upstream, se
   RSR cast five area heals that brought them 1 to 2 % each; now the first one measures, and the next
   go into damage. Single heals, emergency heals and members about to die are unchanged: a member
   whom healing reaches less needs more of it.
+- **A single heal is broken off only for healing by someone else.** With `Stop single-target GCD heals
+  once the target is above the threshold (Experimental)` on, a heal used to stop as soon as its target
+  rose above the threshold during the cast, whatever lifted him: the 1 % of maximum HP that comes back
+  on its own with every server tick in combat, your own Regen, or your own heal once it had already
+  gone off. Now it stops only when healing by someone else lands on the target during the cast and
+  puts him above the threshold, as the setting says: another healer, an NPC, the target's own
+  self-heal such as Storm's Path or Bloodbath, or a heal over time someone else put on him. A cast
+  whose own effect has already arrived is no longer judged - the game has resolved it and ignores a
+  cancel. `DefenseTrace.log` names each stop with the cast time it cost, and once per cast a heal
+  that runs on although its target rose above the threshold without help.
+- **The self-heal of an attack counts on you.** Bloodbath, Storm's Path, Abyssal Drain and the like
+  were read as healing on the enemy hit; RSR now counts them on you while they are on their way, as
+  it does with its own heals.
 - **No heals on players whom healing cannot reach.** The Worm's Curse (the Reiryu's tether) and
   Primordial Crust nullify all healing, as Mounted does. Their bearers are no longer single-heal
   targets and no longer raise the heal flags.

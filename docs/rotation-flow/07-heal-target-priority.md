@@ -844,6 +844,94 @@ lässt es nur nach oben wirken, und bei 98 % Senkung ist es bedeutungslos. Ausge
 gleich viel wie sonst, der Träger aber weniger; liefern sie nur die gewirkte Menge, sinkt der Nenner bei vollen Mitgliedern
 und der Durchlass wird überschätzt – das geht in die sichere Richtung (es heilt wie bisher).
 
+## Einen Heilzauber abbrechen, den andere überflüssig gemacht haben
+
+**Geltender Stand** („Stop single-target GCD heals once the target is above the threshold (Experimental)", ab Werk
+aus; `CancelCastUpdater.ShouldStopHealing`, A332, A545). Der Text der Option bindet: „If another healer's healing puts
+the target above the healing threshold while you're casting, the cast is interrupted so you don't waste MP." Ein
+Einzelheilzauber (`GCDSingleHeal`) bricht im Kampf ab, wenn alle vier Bedingungen gelten:
+- Das Ziel brauchte die Heilung, als der Zauber begann – dieselbe Entscheidung wie die Heilflagge
+  (`StateUpdater.NeedsSingleHealSpell`).
+- Seitdem ist Heilung eines anderen auf ihm gelandet (`HealFromOthers`). Das ist zum einen eine Aktion, deren
+  LP-Anstieg während des Wirkens ankam; als Quelle zählt jeder außer dem Spieler und seinen Objekten, also ein anderer
+  Heiler, ein NPC oder das Ziel selbst (Sturmkeil, Blutbad). Ihre Wirkung darf schon vor dem Beginn gemeldet sein, es
+  zählt die Landung. Zum anderen zählt ein Tick über Zeit, während das Ziel eine Heilung über Zeit eines anderen trägt.
+  Nicht zählen die eigene Heilung, die des eigenen Begleiters (Eos, Selene, Mondstein-Karfunkel; Blatt `Pet`, Zeilen 6,
+  7, 16) und die natürliche Regeneration.
+- Seine Gesundheit liegt über dem Stand bei Beginn.
+- Es braucht die Heilung jetzt nicht mehr.
+
+Drei Ausnahmen gelten. Die Füllheilung bricht nicht ab (`HealingWhileDoingNothing`, „Die Füllheilung"). Ein Befehl des
+Spielers für genau diesen Zauber bricht nicht ab. Und ein Zauber, dessen eigene Wirkung schon eingetroffen ist, wird
+nicht mehr beurteilt: Der Server hat ihn aufgelöst, ein Abbruch ändert nichts mehr. Jeder Abbruch schreibt eine Zeile
+ins `DefenseTrace.log` mit Ziel, Anstieg und der abgelaufenen Wirkzeit, also dem Preis des Abbruchs. Hebt nur eigene
+Heilung oder die Regeneration das Ziel über die Schwelle, schreibt der Zauber einmal „heal kept". Diese Zeile misst, wie
+oft der Fall eintritt, den die frühere Fassung abbrach.
+
+**Mechanik** (gemessen an seinem Mitschnitt vom 04.11.2026, Toto-Rak, 46 Vita):
+- Der Server löst einen Zauber vor dem Ende des Wirkbalkens auf. Die Wirkung der Vita kam 0,98 s nach Beginn eines
+  1,49-s-Wirkens. Ein Abbruch danach bleibt ohne Folge: Es gab keine Abbruchzeile, und die Heilung landete voll.
+- Den LP-Anstieg zeigt der Client erst mit dem Ergebnis der Wirkung: bei der Vita 1,0 s nach ihr, beim Sturmkeil 1,5 s.
+  Bis dahin rechnet RSR die eigene Heilung im Flug auf (`RefinedHP`); das Ziel braucht in dieser Zeit nichts mehr.
+- Im Kampf kommt je Servertick (3 s) 1 % der maximalen LP hinzu (abgerundet), ohne Wirkung und ohne Tick einer Heilung.
+  Das zeigt Zeile 39 des Mitschnitts, zehnmal von zehn: 912 → +9, 1013 → +10, 804 → +8. Das ist die natürliche
+  Regeneration. Eine Spielquelle dazu ist nicht gesucht; der Satz steht auf der Messung.
+- Ein Abbruch gibt den GCD frei. Nach dem Abbruch um 09:22:30 begann 0,18 s später Steinra. Verloren ist die
+  abgelaufene Wirkzeit, nicht der GCD.
+- Heilungen über Zeit meldet das Spiel je Ziel als einen gesammelten Tick ohne Quelle (cactbot LogGuide, Zeile 24;
+  Werkzeugquelle). Ein Tick zählt deshalb als fremd, wenn das Ziel eine Heilung über Zeit eines anderen trägt. Trägt
+  es dazu eine eigene, zählt er trotzdem ganz.
+- Die Selbstheilung einer Angriffsaktion steht im Wirkungspaket beim getroffenen Gegner, gekennzeichnet als „an der
+  Quelle": Bit 0x80 im Byte, das ECommons `flags` nennt. Belege: BossModReborn, `ActionEffect.AtSource`, Commit
+  27be42256 vom 05.11.2026 (Werkzeugquelle), und im Mitschnitt der Sturmkeil, der den Tank um 104 LP heilte. Der
+  Effekt-Handler ordnet solche Heilung der Quelle zu (`Watcher.AmountsByTarget`), für fremde wie für eigene Aktionen.
+  Unter einem eigenen Blutbad rechnet die Vorhersage die eigene Heilung im Flug seitdem beim Spieler auf, nicht mehr
+  beim Gegner.
+
+**Befund** (Toto-Rak, Weißmagier, Build ad1013fb8): Bei 46 Vita standen elf Zeilen „heal stopped" im Protokoll; einen
+Abbruch führte das Spiel aber nur einmal aus.
+- *Zehn Fälle:* Die Vita war schon aufgelöst, ihre Wirkung 0,8 s vor der Zeile eingetroffen. Der Tick der natürlichen
+  Regeneration hob die Gesundheit über den Stand bei Beginn, und die eigene, schon gemeldete Heilung nahm den Bedarf. Die
+  Zeile behauptete einen Abbruch, den es nicht gab; jede dieser Vita landete voll.
+- *Der eine Abbruch (09:22:30):* Der Sturmkeil des Tanks hob ihn 0,13 s nach Beginn von 66 auf 77 %. 0,18 s danach begann
+  Steinra, und 3 s später endete der Kampf.
+
+Die Annahme im TODO und in A521 ist damit widerlegt (C160): Dort hieß es, ein Regen-Tick habe achtmal eine Heilung
+abgebrochen und die Wirkzeit gekostet. Verloren ging keine Heilung.
+
+**Bilanz im Kampf.**
+- *Besser:* Die Regel bricht nur ab, wenn Heilung eines anderen das Ziel über die Schwelle gehoben hat. Hebt die
+  Regeneration oder ein eigener Regen-Tick ein Ziel knapp unter der Schwelle darüber, läuft der Zauber weiter und heilt
+  noch voll. Nach der früheren Fassung brach er ab und begann erst eine Wirkzeit später neu. Die Spur nennt nur noch
+  Abbrüche, die das Spiel ausführt, mit ihrem Preis.
+- *Schlechter:* Hebt Eos oder Selene das Ziel über die Schwelle, läuft der Zauber weiter, mit Überheilung und MP
+  wie ohne die Option. Ein gesammelter Tick aus eigenem und fremdem HoT zählt ganz als fremd.
+- *Was die Option selbst kostet, bleibt:* Ein abgebrochener Zauber fehlt dem Ziel als Polster. Kommt ein Treffer ohne
+  Vorwarnung, steht es um die Heilmenge tiefer, als wenn der Zauber gelandet wäre. Deshalb bleibt sie ab Werk aus. Das
+  ist meine Ableitung aus „Sicherheit vor Schaden" (CLAUDE.md, „Spielweise"); er hat sie an, wie die Zeilen in seinem
+  Protokoll zeigen.
+
+**Verworfen.**
+- *Abbrechen erst, wenn die Heilung zum größten Teil überheilte* (der Vorschlag im TODO): Das widerspricht dem Text
+  („once the target is above the threshold"), und der Text bindet. Die Sorge dahinter, ein Tick knapp über die Schwelle,
+  trägt die Messung nicht: Keiner der elf Fälle war ein solcher Abbruch.
+- *Einen Anstieg über die Regeneration hinaus verlangen* (mehr als 1 %): eine feste Zahl, und ein eigener Regen-Tick
+  zählte weiter.
+- *Nur die eigene Heilung im Flug ausschließen:* Dann hebt die Regeneration weiter ein Ziel knapp unter der Schwelle
+  darüber. Am 04.11. ist das nicht beobachtet, möglich ist es bei jedem Zauber, in dessen Wirkzeit ein Servertick fällt.
+  Der Text nennt zudem ausdrücklich Heilung eines anderen.
+
+**Falsifikation.**
+- *Kein Defekt:* widerlegt. Zehn von elf Zeilen behaupten einen Abbruch, den das Spiel nicht ausführte, und die Regel
+  zählte, was ihr Text ausschließt.
+- *Option falsch:* Die stärkste Gegenposition ist, dass die Zuordnung fremde Heilung verfehlt und die Option dann nichts
+  mehr abbricht. Die Wirkung einer Aktion kommt vor ihrem Anstieg (im Mitschnitt 1,0 und 1,5 s), die Landung wird also
+  gesehen. Landet fremde Heilung vor dem Beginn, ist sie im Stand bei Beginn enthalten. Die Selbstheilung trägt ihre
+  Kennung im Mitschnitt (Sturmkeil). Einen Tick über Zeit sieht RSR schon heute (`DotOnParty`).
+- *Ausgeliefert, und nichts ändert sich:* An den elf Fällen ändert sich im Kampf fast nichts, denn zehn waren ohne
+  Wirkung. Was sich ändert, ist die Spur, und es bleibt der seltene Fall der Regeneration über die Schwelle. Das ist der
+  Umfang dieser Behebung. Wie oft dieser Fall eintritt, zählt „heal kept".
+
 ## Abgrenzung zur Schildanrechnung
 
 Die entfernte Schildanrechnung (`AUDIT_LOG.md` A85) hat dieselbe Größe an der falschen Stelle

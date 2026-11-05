@@ -16193,6 +16193,45 @@ habe den schleim bislang nicht anfreunden können."
   unter 1 gemessen ist.
 - *Prüfgrad:* Compile, Prüfschritte; Wirkkette am Code; im Spiel nicht beobachtet; Spurzeile „heal reduction: …".
 
+### A545 · Heilabbruch nur für Heilung anderer; kein Urteil mehr nach der eigenen Wirkung (05.11.2026)
+
+- *Auftrag:* `TODO.md`, „Heilung bricht ab, weil ein Regen-Tick die Schwelle kreuzt" (Toto-Rak, Weißmagier, 04.11.2026,
+  A521); seine Vorgabe vom 05.11.2026: TODO im kritischen Loop abarbeiten.
+- *Messung* (sein Mitschnitt und `DefenseTrace.log` vom 04.11.2026, Build ad1013fb8; Uhr der Spur rund 0,5 s nach der des
+  Mitschnitts): Bei 46 Vita standen elf Zeilen „heal stopped" im Protokoll. In zehn Fällen kam die Wirkung der Vita
+  (Zeile 21) rund 0,8 s vor der Zeile und 0,98 s nach Wirkbeginn eines 1,49-s-Wirkens; es gab keine Abbruchzeile (23),
+  und die Heilung landete voll (Beispiel 09:14:47: 502 → 843 LP, +332 Vita, +9 Regeneration). Der Anstieg über den Stand
+  bei Beginn war jedes Mal der Tick der natürlichen Regeneration: Zeile 39, genau 1 % der maximalen LP (912 → +9, 1013 →
+  +10, 804 → +8), im 3-s-Takt, ohne Heilwirkung. Den Bedarf nahm die eigene, schon gemeldete Vita (`RefinedHP` rechnet sie
+  bis zum Anstieg auf). Einmal führte das Spiel einen Abbruch aus (09:22:30): Der Sturmkeil des Tanks (Selbstheilung, 104
+  LP, Wirkung 1,5 s vor dem Anstieg) hob ihn 0,13 s nach Beginn von 66 auf 77 %; 0,18 s später begann Steinra, 3 s
+  später endete der Kampf.
+- *Ursache:* Die Regel wertete jeden Anstieg als Heilung und die eigene Heilung im Flug als gedeckten Bedarf. Ihr Text
+  nennt Heilung eines anderen („If another healer's healing puts the target above the healing threshold"). Nach der
+  eigenen Wirkung war der Zauber aufgelöst; der Abbruch blieb ohne Folge, die Spurzeile behauptete ihn trotzdem.
+- *Belegt:* Selbstheilungen einer Angriffsaktion stehen beim getroffenen Gegner mit Bit 0x80 im Byte `flags`
+  (BossModReborn `ActionEffect.AtSource`, Commit 27be42256 vom 05.11.2026, Werkzeugquelle; im Mitschnitt Sturmkeil
+  `4|688000`, cactbot LogGuide: Blutbad-Beispiel). Heilungen über Zeit kommen als ein gesammelter Tick ohne Quelle
+  (LogGuide, Zeile 24). Deutsche Namen: Blutbad (Action 7542), Sturmkeil (Action 42), Eos, Selene, Mondstein-Karfunkel
+  (Pet 6, 7, 16), xivapi v2 `language=de`.
+- *Entscheidung (Konzept 07, „Einen Heilzauber abbrechen, den andere überflüssig gemacht haben"):*
+  `CancelCastUpdater.ShouldStopHealing` urteilt nicht mehr, sobald die eigene Wirkung des Zaubers eingetroffen ist
+  (`LastAction` gleich der Zauber, jünger als seine Wirkzeit), und bricht nur ab, wenn seit Beginn Heilung eines anderen
+  gelandet ist (`HealFromOthers`: Wirkung einer Quelle außer Spieler, seinen Objekten und Gegnern, gehalten bis zum
+  LP-Anstieg; HoT-Tick, während das Ziel einen fremden HoT trägt). `Watcher.AmountsByTarget` ordnet Einträge mit Bit 0x80
+  der Quelle zu und zählt alle Einträge eines Typs je Ziel. Spur: „heal stopped" mit abgelaufener Wirkzeit; „heal kept"
+  einmal je Zauber, wenn nur eigene Heilung oder Regeneration das Ziel über die Schwelle hob. Voreinstellung bleibt aus
+  (Ableitung aus „Sicherheit vor Schaden": ein abgebrochener Zauber fehlt als Polster). Verworfen: Abbruch erst bei
+  überwiegender Überheilung (widerspricht dem Optionstext), Anstieg über 1 % (feste Zahl, eigener HoT zählte weiter), nur
+  die eigene Heilung im Flug ausschließen (Regeneration bliebe).
+- *Betroffene:* E – jeder Job mit `GCDSingleHeal` (vier Heiler, Clemency, Physick, Vercure, Blaumagier,
+  Spezialaktionen) bei eingeschalteter Option. R – über `AmountsByTarget`: Die eigene Selbstheilung einer Angriffsaktion
+  (Blutbad, Sturmkeil, Abyssal Drain) steht in `HealHP` beim Spieler statt beim Gegner; die Heilvorhersage rechnet sie
+  ihm bis zum Anstieg auf, `RecordHealEffect` misst sie unter der Angriffsaktion (gelesen wird dort nur Lux Solaris).
+  `StatusHelper.IsPlayerOrOwned` ist die Eigentümerprüfung der Status, jetzt für Objekt-Ids lesbar.
+- *Prüfgrad:* Mitschnitt und Spur gemessen; Compile ohne Warnung, 43 Prüfschritte; Wirkkette am Code. Im Spiel nicht
+  beobachtet; Messmittel: „heal stopped" (mit Preis) und „heal kept" (der Fall, den die frühere Fassung abbrach).
+
 ## B · Commit-Register (Fork vs. `upstream/main`)
 
 ### B1 · Einzelgeprüfte Fork-Commits
@@ -16504,3 +16543,4 @@ Die offene Arbeit dazu — Reihenfolge und Abbruchbedingung der Nachprüfung —
 | C157 | A524: Kampfzeile „beastmaster fight“: „Schildansturm, Borgen, jedes Bestienkönnen gezählt“ | Gezählt wurde jede Aktion in jedem Frame neu: Der Zeitpunkt kam aus „jetzt minus Zeit seit der letzten Aktion“ und wich in jedem Frame ab („Shield Charge 73“ in einem Kampf am 04.11.2026). | Zählung aus der Aufzeichnung der Aktionen nach ihrer Zeit; A525. |
 | C158 | A525: Ichor um 11:52 „Fall 10,5 s später markiert (…), kein Pakt“; Konzept 01, A2: „der Pakt kam nicht“ | Der Pakt kam: Der Schleim war bis 11:52 nicht freigeschaltet und steht ab 15:06 auf seinem Horn. Die Zeile „no pact“ fiel im nächsten Frame, das Spiel trägt den Pakt etwa 2 s nach dem Fall ein. | Pakt-Urteil erst, wenn der Körper verschwunden ist; A528. |
 | C159 | A530, Tod in Sägerschrei: „Kein Heiltrank von RSR: „Use HP potions" ist ab Werk aus“ als Ursache; TODO „Allein ohne Heiler kommt der Heiltrank erst von Hand“ | Seine Einstellung ist an (seine Angabe, 05.11.2026), und RSR trank den Ultratrank am 23.10. und 03.11. selbst. Die Voreinstellung war seine Konfiguration nur unterstellt; die Ursache ist offen (A531). |
+| C160 | A521, Weißmagier in Toto-Rak: „achtmal „heal stopped“ – ein Tick von 8 bis 20 HP hob das Ziel über die Schwelle, die Wirkzeit war verloren“; TODO „Heilung bricht ab, weil ein Regen-Tick die Schwelle kreuzt“ | Zehn der elf Zeilen kamen nach der Wirkung der Vita; das Spiel führte keinen Abbruch aus, jede landete voll. Der Tick war die natürliche Regeneration (1 % der maximalen LP), kein Regen. Ausgeführt wurde ein Abbruch, durch die Selbstheilung des Tanks (A545). | Regel und Spur behoben (A545) |

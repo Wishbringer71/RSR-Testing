@@ -1778,6 +1778,7 @@ internal static class DataCenter
 		}
 
 		ConfirmPendingHeal(member);
+		HealFromOthers.Follow(member);
 
 		var id = member.GameObjectId;
 
@@ -2227,6 +2228,7 @@ internal static class DataCenter
 		TimeToKillTracker.Clear();
 		DotTickTracker.Clear();
 		DotOnParty.Clear();
+		HealFromOthers.Clear();
 		ActionPenaltyWatch.Clear();
 		_partyHpStatsCacheTick = long.MinValue;
 		_timeLastActionUsed = DateTime.Now;

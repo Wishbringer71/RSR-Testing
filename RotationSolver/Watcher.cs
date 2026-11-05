@@ -110,6 +110,7 @@ public static class Watcher
 			else if (category == HotTickCategory)
 			{
 				DotOnParty.RecordHotTick(entityId, p1, p2);
+				HealFromOthers.RecordTick(entityId, p1);
 			}
 			else if (category == CancelAbilityCategory && entityId == Player.Object?.EntityId)
 			{
@@ -283,15 +284,28 @@ public static class Watcher
 	private static readonly List<(ulong Target, uint Amount)> _ownHeals = [];
 	private static readonly List<uint> _noStatuses = [];
 
+	// What each object took of one kind of amount from one effect set. An entry the game marks as landing on the source - bit
+	// 0x80 of the byte ECommons calls flags, BossModReborn's ActionEffect.AtSource - goes to the source: the self-heal of an
+	// attack (Storm's Path, Bloodbath) stands among the struck enemy's effects, as Storm's Path's 104 HP on the warrior in his
+	// log of 04.11.2026. Read by target alone, it was a heal on that enemy, and an own one never showed as healing in flight
+	// on the player (concept 07, "Einen Heilzauber abbrechen, den andere überflüssig gemacht haben", A545).
 	private static Dictionary<ulong, uint> AmountsByTarget(ActionEffectSet set, ActionEffectType type)
 	{
 		var result = new Dictionary<ulong, uint>();
+		var sourceId = set.Source?.GameObjectId ?? 0;
 		foreach (var effect in set.TargetEffects)
 		{
-			if (effect.GetSpecificTypeEffect(type, out var entry))
+			var targetId = effect.TargetID;
+			effect.ForEach(entry =>
 			{
-				result[effect.TargetID] = FullAmount(entry);
-			}
+				if (entry.type != type)
+				{
+					return;
+				}
+
+				var to = sourceId != 0 && (entry.flags & 0x80) != 0 ? sourceId : targetId;
+				result[to] = (result.TryGetValue(to, out var sum) ? sum : 0) + FullAmount(entry);
+			});
 		}
 
 		return result;
@@ -315,6 +329,29 @@ public static class Watcher
 	// from his damage intake (re-audit of A189 and A205, 29.09.2026).
 	private static bool IsDamageEntry(ActionEffectType type)
 		=> type is ActionEffectType.Damage or ActionEffectType.BlockedDamage or ActionEffectType.ParriedDamage;
+
+	// Concept 07, "Einen Heilzauber abbrechen, den andere überflüssig gemacht haben" (A545): a heal on a party member from a
+	// source that is neither the player nor one of his objects nor an enemy - another healer, an NPC, the member himself.
+	private static void RecordHealsByOthers(ActionEffectSet set, IBattleChara player)
+	{
+		if (set.Source == null || IsHostileSource(set)
+			|| StatusHelper.IsPlayerOrOwned(set.Source.GameObjectId, player.GameObjectId))
+		{
+			return;
+		}
+
+		foreach (var (targetId, amount) in AmountsByTarget(set, ActionEffectType.Heal))
+		{
+			foreach (var member in DataCenter.PartyMembers)
+			{
+				if (member != null && member.GameObjectId == targetId)
+				{
+					HealFromOthers.RecordEffect(member, amount);
+					break;
+				}
+			}
+		}
+	}
 
 	// Concept 03, "Zielart ohne Tank und Heiler" (A541): an enemy's damage on the player and the party members, and its
 	// heals on other enemies, into its danger per second.
@@ -760,6 +797,9 @@ public static class Watcher
 			ActionPenaltyWatch.ObserveLanding(set);
 
 			TraceHitFromUnreadSource(set, playerObject);
+
+			// Healing by anyone but the player and his objects, for the rule that breaks off a single heal it made needless.
+			RecordHealsByOthers(set, playerObject);
 
 			// A party member's Shirk on the player: his request to take the enemy he holds (TankSwapWatch).
 			if (set.Source is IBattleChara shirker && shirker.GameObjectId != playerObject.GameObjectId && shirker.IsParty()
