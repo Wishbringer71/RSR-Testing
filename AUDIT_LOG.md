@@ -17171,6 +17171,36 @@ habe den schleim bislang nicht anfreunden können."
   Serien und Spannen ergänzt; Tankbuster-Markierung 30984 (Laser, Abyssos 8) neu.
 - *Prüfgrad:* Spur, Mitschnitt und Tabellen gelesen; keine Codeänderung aus diesem Teil.
 
+### A585 · Crucible K11 Stufe 1: Kader-LP hängen einen Kampf nach; Reserve für den Endkampf (05.11.2026)
+
+- *Anlass:* TODO „Beastmaster: Crucible-Strategien", K11, mit den Sondenzeilen A556/A561 aus seiner Spur vom
+  05.11.2026 (Brett 1) und dem ACT-Mitschnitt.
+- *Befund 1 (Feldagent):* `AgentXBMStageDetailList` nennt im Hornfenster und im Kampf nur den anstehenden Kampf (eine
+  Zeile); der weitere Weg ist nicht lesbar, sicher kommt nur der Endkampf.
+- *Befund 2 (Defekt, Kader-LP):* `AgentXBMPetParty.PetCurrentHealth` übernimmt die Verluste eines Kampfes erst mit der
+  Meldung des nächsten (Fledermaus im Hornfenster 20:52:14 mit 608, beim Ruf 20:54:08 mit 458; Raptor 535 gegen 395;
+  Schleim vor Kampf 5 511 gegen 228), nach einer Campsite sofort (21:05:17). Die Gleichstandsregel nach LP in K6 las
+  damit Werte von vor dem letzten Kampf.
+- *Behebung:* `FollowFamiliarHits` misst jeden Einsatz im Brett (LP beim Erscheinen, beim Gehen, gefallen) und hält je
+  Begleiter die LP, mit denen er ging, neben dem Wert des Agenten in diesem Moment; `EffectiveHealth` nimmt sie, solange
+  der Agent noch denselben Wert zeigt. K6 liest sie für Zulassung, Rang-Ausschluss und Gleichstand.
+- *Gebaut, K11 Stufe 1:* `HeldForFinal` bestimmt vor jedem Kampf außer dem Endkampf die heilenden oder schützenden
+  Begleiter des Plans, den der Endkampf jetzt bekäme (`BestPlan`, aus der Hornwahl gelöst), und hält davon jeden zurück,
+  dem nach einem weiteren Verlust wie dem größten des Bretts weniger als ein solcher bliebe – solange
+  die Hörner voll werden und genug heilende oder schützende für diesen Kampf bleiben; sonst kehrt der mit den meisten LP
+  zuerst zurück. Die Zeile „horns set for battle" nennt die Zurückgehaltenen.
+- *Gerechnet (Brett 1):* Maß vor Kampf 5 283 (Schleim, Kampf 4); Fledermaus 458 und Schleim 228 wären in Kampf 5
+  zurückgeblieben.
+- *Verworfen:* Messung von Hornfenster zu Hornfenster (die Werte hängen nach); feste Sperre der Reserve ohne Messung
+  (hielte Heiler auch mit vollen LP aus jedem frühen Kampf); den Weg einrechnen (nicht lesbar).
+- *Falsifikation:* Kein Defekt? Die LP im Hornfenster weichen am Mitschnitt um bis zu 283 ab. Option falsch? Das Maß
+  stammt oft vom Begleiter unter Zähnefletschen und hält eher zu oft zurück; die Campsite bleibt ungerechnet. Nichts
+  ändert sich? Bei Hörnern von Hand, vor dem ersten gemessenen Einsatz und bei Reserve mit LP für zwei Verluste.
+- *Offen:* Die Campsite-Wahl (K10) verlangt gleiche LP in Fenster und Agent; ob der Agent an der Campsite nachgezogen
+  hat, zeigt die nächste Campsite.
+- *Prüfgrad:* statisch, Compile ohne Warnung, Prüfskripte; die Verzögerung am Mitschnitt belegt. Im Spiel nicht
+  beobachtet.
+
 ## B · Commit-Register (Fork vs. `upstream/main`)
 
 ### B1 · Einzelgeprüfte Fork-Commits

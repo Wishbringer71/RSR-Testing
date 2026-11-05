@@ -252,8 +252,27 @@ public sealed class BST_Reborn : BeastmasterRotation
 	// A582: when the familiar out now appeared, for whether it has been sent off since (FamiliarLeaving).
 	private static DateTime _familiarSince = DateTime.MinValue;
 
+	// K11 (concept 01, A585): the use of the familiar out - which one, its HP when it appeared, its last HP above 0, whether
+	// it fell -; per familiar the HP it last left a fight with and what the team agent showed for it then (the agent takes
+	// a fight's losses over only with the next fight, a campsite at once); the largest loss of one use on this board.
+	private static BeastmasterPet _usePet = BeastmasterPet.None;
+	private static uint _useStartHp;
+	private static uint _useLastHp;
+	private static bool _useFell;
+	private static readonly Dictionary<BeastmasterPet, (uint Hp, uint AgentHp)> _petSeenHp = [];
+	private static uint _largestLossPerUse;
+	private static uint _petSeenArea;
+
 	private static void FollowFamiliarHits()
 	{
+		if (_petSeenArea != DataCenter.TerritoryID)
+		{
+			_petSeenArea = DataCenter.TerritoryID;
+			_petSeenHp.Clear();
+			_largestLossPerUse = 0u;
+			_usePet = BeastmasterPet.None;
+		}
+
 		var familiar = Familiar;
 		if (!InCombat || familiar == null)
 		{
@@ -262,6 +281,7 @@ public sealed class BST_Reborn : BeastmasterRotation
 				_familiarLargestHit = 0u;
 			}
 
+			CloseFamiliarUse();
 			_familiarWatched = 0;
 			return;
 		}
@@ -274,11 +294,74 @@ public sealed class BST_Reborn : BeastmasterRotation
 
 		if (_familiarWatched != familiar.GameObjectId)
 		{
+			CloseFamiliarUse();
 			_familiarSince = DateTime.Now;
+			_usePet = IsInCrucible ? CurrentPet : BeastmasterPet.None;
+			_useStartHp = hp;
+			_useLastHp = hp;
+			_useFell = false;
 		}
 
+		if (hp > 0)
+		{
+			_useLastHp = hp;
+		}
+
+		_useFell |= familiar.IsDead;
 		_familiarWatched = familiar.GameObjectId;
 		_familiarLastHp = hp;
+	}
+
+	// K11 (A585): the use of the familiar that just left - its loss into the board's measure, the HP it left with (0 when it
+	// fell) beside what the team agent shows for it now.
+	private static unsafe void CloseFamiliarUse()
+	{
+		if (_usePet == BeastmasterPet.None)
+		{
+			return;
+		}
+
+		var left = _useFell ? 0u : _useLastHp;
+		if (_useStartHp > left)
+		{
+			_largestLossPerUse = Math.Max(_largestLossPerUse, _useStartHp - left);
+		}
+
+		if (AgentHealth(_usePet) is { } agent)
+		{
+			_petSeenHp[_usePet] = (left, agent);
+		}
+
+		_usePet = BeastmasterPet.None;
+	}
+
+	// The HP the team agent (AgentXBMPetParty) shows for `pet`, null when it is not in the team or the agent is not there.
+	private static unsafe uint? AgentHealth(BeastmasterPet pet)
+	{
+		var party = FFXIVClientStructs.FFXIV.Client.UI.Agent.AgentXBMPetParty.Instance();
+		if (party == null)
+		{
+			return null;
+		}
+
+		var team = party->SelectedPets.AsSpan();
+		var current = party->PetCurrentHealth;
+		for (var i = 0; i < team.Length && i < current.Length; i++)
+		{
+			if ((BeastmasterPet)team[i].PetId == pet)
+			{
+				return current[i];
+			}
+		}
+
+		return null;
+	}
+
+	// K11 (A585): a familiar's HP for the choice between fights - what it last left a fight with while the agent has not
+	// taken that fight over (it still shows what it showed then), else the agent's.
+	private static uint EffectiveHealth(BeastmasterPet pet, uint agentHp)
+	{
+		return _petSeenHp.TryGetValue(pet, out var seen) && seen.AgentHp == agentHp ? seen.Hp : agentHp;
 	}
 
 	// A582: the familiar out has been sent off since it appeared - Parting Blow, or a Tempered Release it leaves after - and
@@ -1704,21 +1787,24 @@ public sealed class BST_Reborn : BeastmasterRotation
 		}
 
 		// A579: a familiar below the rank the game recommends for this board fights only when fewer others live than horns.
+		// K11 (A585): with the HP it last left a fight with, while the agent has not taken that fight over.
 		var recommended = CrucibleBoard.RecommendedRank(party->ContentId);
 		var adequateLiving = 0;
 		for (var i = 0; i < team.Length; i++)
 		{
 			var pet = (BeastmasterPet)team[i].PetId;
-			if (i < current.Length && current[i] > 0 && (party->IsPetOverSyncedRank((uint)pet) || party->GetSyncedRank((uint)pet) >= recommended))
+			if (i < current.Length && EffectiveHealth(pet, current[i]) > 0
+				&& (party->IsPetOverSyncedRank((uint)pet) || party->GetSyncedRank((uint)pet) >= recommended))
 			{
 				adequateLiving++;
 			}
 		}
 
+		var candidates = new List<(BeastmasterPet Pet, int Position, uint Hp, uint Full, int Rank)>();
 		for (var i = 0; i < team.Length; i++)
 		{
 			var pet = (BeastmasterPet)team[i].PetId;
-			var hp = i < current.Length ? current[i] : 0u;
+			var hp = i < current.Length ? EffectiveHealth(pet, current[i]) : 0u;
 			var full = i < max.Length ? max[i] : 0u;
 			if (hp == 0 || full == 0 || FamiliarOf(pet) is null || position.ContainsKey(pet))
 			{
@@ -1732,6 +1818,17 @@ public sealed class BST_Reborn : BeastmasterRotation
 			}
 
 			position[pet] = i;
+			candidates.Add((pet, i, hp, full, rank));
+		}
+
+		var held = boss ? [] : HeldForFinal(party->ContentId, candidates, boss, pack, enemies, required, none);
+		foreach (var (pet, _, hp, full, rank) in candidates)
+		{
+			if (held.Contains(pet))
+			{
+				continue;
+			}
+
 			for (var h = 0; h < Horns.Length; h++)
 			{
 				options[h].Add(Option(pet, Horns[h], boss, pack, enemies) with { Health = hp / (float)full, Rank = rank });
@@ -1753,33 +1850,7 @@ public sealed class BST_Reborn : BeastmasterRotation
 			currentPets[h] = h < selected.Count && selected[h] < team.Length ? (BeastmasterPet)team[selected[h]].PetId : BeastmasterPet.None;
 		}
 
-		HornPlanScore? bestScore = null;
-		var best = new[] { none, none, none };
-		foreach (var a in options[I])
-		{
-			foreach (var b in options[II])
-			{
-				if (b.Pet != BeastmasterPet.None && b.Pet == a.Pet)
-				{
-					continue;
-				}
-
-				foreach (var c in options[III])
-				{
-					if (c.Pet != BeastmasterPet.None && (c.Pet == a.Pet || c.Pet == b.Pet))
-					{
-						continue;
-					}
-
-					var score = Score(a, b, c, currentPets, required);
-					if (bestScore is not { } known || score.CompareTo(known) > 0)
-					{
-						bestScore = score;
-						best = [a, b, c];
-					}
-				}
-			}
-		}
+		var best = BestPlan(options, currentPets, required, none);
 
 		var wanted = new List<int>();
 		foreach (var option in best)
@@ -1803,7 +1874,8 @@ public sealed class BST_Reborn : BeastmasterRotation
 			{
 				_hornScreenTraced = plan;
 				TraceHorn($"Crucible horn screen: horns set for battle {battle} ({(boss ? "final fight" : $"{enemies.Length} enemies")}, "
-					+ $"{required} that heal or protect): {best[0].Pet}, {best[1].Pet}, {best[2].Pet}");
+					+ $"{required} that heal or protect): {best[0].Pet}, {best[1].Pet}, {best[2].Pet}"
+					+ (held.Count > 0 ? $"; held for the final fight, a use costing up to {_largestLossPerUse} HP: {string.Join(", ", held)}" : string.Empty));
 			}
 
 			return;
@@ -1834,6 +1906,132 @@ public sealed class BST_Reborn : BeastmasterRotation
 		addon->FireCallback((uint)sent.Length, values, true);
 		_hornScreenClicks++;
 		_hornScreenClickAt = now;
+	}
+
+	// The plan of three horns the score ranks first, from each horn's options; a familiar on one horn only.
+	private HornOption[] BestPlan(List<HornOption>[] options, BeastmasterPet[] currentPets, int required, HornOption none)
+	{
+		HornPlanScore? bestScore = null;
+		var best = new[] { none, none, none };
+		foreach (var a in options[I])
+		{
+			foreach (var b in options[II])
+			{
+				if (b.Pet != BeastmasterPet.None && b.Pet == a.Pet)
+				{
+					continue;
+				}
+
+				foreach (var c in options[III])
+				{
+					if (c.Pet != BeastmasterPet.None && (c.Pet == a.Pet || c.Pet == b.Pet))
+					{
+						continue;
+					}
+
+					var score = Score(a, b, c, currentPets, required);
+					if (bestScore is not { } known || score.CompareTo(known) > 0)
+					{
+						bestScore = score;
+						best = [a, b, c];
+					}
+				}
+			}
+		}
+
+		return best;
+	}
+
+	// K11 (concept 01, "Stufe 1: den Endkampf versorgen", A585): before a fight that is not the board's final, the familiars
+	// that heal or protect in the plan the final fight would get now - its reserve -, held off this fight when one more use
+	// as large as the largest of the board would leave less than another such use for the final; as long as without them
+	// the horns fill and as many heal or protect as this fight requires. Else the one with the most HP comes back first.
+	// None before a use has been measured.
+	private HashSet<BeastmasterPet> HeldForFinal(uint board, List<(BeastmasterPet Pet, int Position, uint Hp, uint Full, int Rank)> candidates,
+		bool boss, int pack, CrucibleBoard.Enemy[] enemies, int required, HornOption none)
+	{
+		var held = new HashSet<BeastmasterPet>();
+		var loss = _largestLossPerUse;
+		var fights = CrucibleBoard.FightsOfBoard(board);
+		if (loss == 0u || fights.Count == 0 || !CrucibleBoard.IsFinalBattle(fights[0]))
+		{
+			return held;
+		}
+
+		var final = CrucibleBoard.EnemiesOf(fights[0]);
+		var finalOptions = new List<HornOption>[Horns.Length];
+		for (var h = 0; h < Horns.Length; h++)
+		{
+			finalOptions[h] = [];
+			foreach (var (pet, _, hp, full, rank) in candidates)
+			{
+				finalOptions[h].Add(Option(pet, Horns[h], true, 1, final) with { Health = hp / (float)full, Rank = rank });
+			}
+
+			if (finalOptions[h].Count <= h)
+			{
+				finalOptions[h].Add(none);
+			}
+		}
+
+		var nobody = new BeastmasterPet[Horns.Length];
+		var finalRequired = BossSafeFamiliars + (_dangerInArea ? 1 : 0);
+		var reserve = new List<(BeastmasterPet Pet, uint Hp)>();
+		foreach (var option in BestPlan(finalOptions, nobody, finalRequired, none))
+		{
+			if (option.Pet == BeastmasterPet.None || !option.Safe)
+			{
+				continue;
+			}
+
+			foreach (var candidate in candidates)
+			{
+				if (candidate.Pet == option.Pet && (candidate.Hp < loss || candidate.Hp - loss < loss))
+				{
+					reserve.Add((candidate.Pet, candidate.Hp));
+				}
+			}
+		}
+
+		// The one with the least HP is held longest: released from the most HP down.
+		reserve.Sort((a, b) => a.Hp.CompareTo(b.Hp));
+		foreach (var (pet, _) in reserve)
+		{
+			_ = held.Add(pet);
+		}
+
+		while (held.Count > 0 && !Enough())
+		{
+			_ = held.Remove(reserve[^1].Pet);
+			reserve.RemoveAt(reserve.Count - 1);
+		}
+
+		return held;
+
+		bool Enough()
+		{
+			var left = 0;
+			var safe = 0;
+			foreach (var (pet, _, _, _, _) in candidates)
+			{
+				if (held.Contains(pet))
+				{
+					continue;
+				}
+
+				left++;
+				for (var h = 0; h < Horns.Length; h++)
+				{
+					if (Option(pet, Horns[h], boss, pack, enemies).Safe)
+					{
+						safe++;
+						break;
+					}
+				}
+			}
+
+			return left >= Math.Min(Horns.Length, candidates.Count) && safe >= required;
+		}
 	}
 
 	// The enemies an area reaches in the next fight: one for a single target or a boss, else the pack - every enemy of

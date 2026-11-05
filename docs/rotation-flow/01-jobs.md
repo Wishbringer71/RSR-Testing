@@ -2159,6 +2159,44 @@ Dullahan, Golem, Spriggan und Eisgolem (`XBMPet.InflictsInterrupt`).
   geschlossenen Fenstern stehen bleiben, zeigt die Sonde (A556, A561): Sie schreibt sie beim Betreten des Bretts, beim
   Öffnen des Hornfensters, beim Erkennen eines Kampfes und an seinem Ende („crucible agents …"), nur Felder, keine
   Spielfunktion. Die Planungsregel setzt am Hornfenster an (K6); der Loop am Ende des TODO baut darauf auf.
+  *Was die Sonde zeigt (05.11.2026, Brett 1):* Kader und LP sind im Hornfenster, im Kampf und an der Campsite gefüllt;
+  der Feldagent nennt nur den anstehenden Kampf (eine Zeile), den weiteren Weg nicht. Sicher kommt nur der Endkampf.
+  *Die LP des Kaders hängen einen Kampf nach* (A585): Der Agent übernimmt die Verluste eines Kampfes erst mit der
+  Meldung des nächsten, nach einer Campsite sofort. Die Fledermaus stand im Hornfenster vor Kampf 4 (20:52:14) mit
+  608 LP, erschien in Kampf 4 aber mit 458 (ACT, 20:54:08); der Raptor ebenso (535 angezeigt, 395 beim Ruf). Im Kampf
+  sieht RSR die wahren LP am Begleiter selbst: Er erscheint mit dem Stand, mit dem er zuletzt ging. Die LP, mit denen
+  RSR wählt (K6, K11), sind deshalb je Begleiter die zuletzt im Kampf gesehenen, solange der Agent seither nicht
+  nachgezogen hat; zieht er nach (nächster Kampf, Campsite), gilt wieder er. Ein Begleiter, der fiel, zählt mit 0.
+  Verluste je Einsatz auf Brett 1 (Ruf bis Rückzug): Raptor 140, Cu Sith 277 (unter Zähnefletschen), Fledermaus 150,
+  Schleim 283, Fliegenfalle 310, Pugil 209; vor dem Endkampf gewannen Raptor und Schleim an der Campsite je 153.
+  *Stufe 1, gebaut (A585): den Endkampf versorgen.*
+  - *Reserve:* Vor jedem anderen Kampf bestimmt RSR im Hornfenster, wen es für den Endkampf des Bretts belegen würde –
+    dieselbe Wahl wie dort (Boss, so viele, die heilen oder schützen, wie `BossSafeFamiliars` verlangt, nach einer Gefahr
+    im Gebiet einer mehr), aus dem lebenden Kader mit seinen LP. Die heilenden oder schützenden davon sind die Reserve.
+  - *Verlust je Einsatz:* gemessen im Kampf, je Ruf: LP beim Erscheinen minus LP beim Gehen (beim Fall alle). Maß ist
+    der größte Verlust auf dem Brett (eher zu groß).
+  - *Regel:* Ein Reserve-Begleiter geht in einem früheren Kampf auf kein Horn, wenn ihm nach einem weiteren solchen
+    Verlust weniger als ein Verlust für den Endkampf bliebe – solange ohne ihn so viele heilende oder schützende
+    Begleiter bleiben, wie dieser Kampf verlangt, und jedes Horn belegt wird. Sonst wird der mit den meisten LP zuerst
+    wieder zugelassen. Vor der ersten Messung keine Sperre. Eine Zeile je gesperrtem Begleiter.
+  - *Im Kampf (Brett 1, gerechnet):* Vor Kampf 5 lag das Maß bei 283 (Schleim in Kampf 4). Fledermaus (458) und
+    Schleim (228; der Agent zeigte noch 511), die Heiler des Endkampfs, wären in Kampf 5 nicht auf ein Horn gekommen,
+    solange andere die Hörner füllen und dieser Kampf keinen Heiler verlangt; er setzte die Fledermaus dort von Hand,
+    sie verlor nichts. Der Fall
+    vom 04.11.2026 (Fledermaus bis zum vierten Kampf auf 25 von 550) kam aus einer Gefahr im Gebiet, nach der jeder Kampf
+    einen Heiler verlangt: Dann nimmt RSR zuerst einen heilenden oder schützenden Begleiter außerhalb der Reserve.
+  - *Gegenthese 1 (Campsite):* Eine Campsite zwischen jetzt und dem Endkampf heilt 30 bis 90 %; die Regel rechnet sie
+    nicht ein und hält die Reserve öfter zurück als nötig. Preis: ein Begleiter, dessen Dressur heilt, fehlt in einem
+    frühen Kampf ohne Gefahr – dort fragt B2 ihn nicht; mit Gefahr verlangt der Kampf ihn, und er kommt.
+  - *Gegenthese 2 (Maß):* Der größte Fall stammt oft aus einem Begleiter, der unter Zähnefletschen alles trug; ein
+    Heiler auf einem anderen Horn verliert weniger. Nicht widerlegt; das Maß hält eher zu oft zurück, nie zu selten.
+  - *Gegenthese 3 (früher Tod):* Wer die Reserve schont, kann im frühen Kampf fallen. Widerlegt, soweit RSR es sieht:
+    Verlangt der Kampf heilende oder schützende Begleiter, bleiben sie; nur Schaden geht verloren.
+  - *Ausgeliefert, und nichts ändert sich?* Wenn die Reserve genug LP für zwei Verluste hat, oder vor der ersten Messung,
+    oder wenn er die Hörner von Hand setzt.
+  - *Offen:* Die Campsite-Wahl (K10) liest Fenster und Agent und überlässt dir die Wahl, wenn ihre LP sich unterscheiden
+    („the window's HP … is not the team's"); ob der Agent dort nachgezogen hat, zeigt die nächste Campsite mit RSR
+    (A576 läuft seitdem auch bei ausgeschaltetem RSR).
 
 *Falsifikation:* Kein Defekt, weil das erste Brett zweimal ohne Tod fiel? Das gelang mit Gegenständen und Zähnefletschen
 von seiner Hand; die Meisterbretter haben Rang 20 und 25 und Gegner ohne Schwäche. Option falsch? K1 ohne gemessenen

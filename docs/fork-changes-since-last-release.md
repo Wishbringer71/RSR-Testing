@@ -243,6 +243,12 @@ What this release changes in the fight. For the whole distance from upstream, se
   Blow shows 0 HP for a moment; that no longer counts as the largest hit of the fight, so Challenge no
   longer takes the damage back from a familiar at full HP every 15 s, and no Beast Potion goes into a
   full familiar.
+- **Healers kept for the final fight (Crucible).** Before any fight but the board's final, the familiars
+  that heal or protect in the plan the final would get sit out when one more use as costly as the largest
+  measured on the board would leave them too little for the final - as long as the horns still fill and
+  this fight gets as many that heal or protect as it needs. The horn screen now chooses with the HP each
+  familiar really has: the team list in the game takes a fight's losses over only when the next fight
+  begins, so RSR keeps the HP each familiar left its last fight with.
 - **No Snarl on a familiar that is leaving (Crucible).** After Parting Blow, or a Release the familiar
   leaves after, Snarl waits for the familiar that follows instead of covering you for the last few
   seconds and holding its recast from the next one.
