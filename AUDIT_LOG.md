@@ -16121,6 +16121,26 @@ habe den schleim bislang nicht anfreunden können."
 - *Prüfgrad:* Compile, alle Prüfschritte grün; Wirkkette am Code; im Spiel nicht beobachtet. Messbar im nächsten
   `DefenseTrace.log`: „aimed hit measured", „aimed hit series … stored", in der Quellenzeile „aimed cast …".
 
+
+### A541 · Beastmaster und Blaumagier allein: Ziel nach Gefahr je Sekunde über LP gebaut (05.11.2026)
+
+- *Auftrag:* `TODO.md`, „Beastmaster und Blaumagier allein: Ziel nach Schaden je Sekunde bis zum Fall" (Konzept 03 aus
+  A537, A538; Konzept 01, K3).
+- *Umsetzung:* `EnemyDanger` misst je Gegner im Effekt-Handler den Schaden auf ihn und die Mitglieder (Auto-Attacken
+  eingeschlossen) und seine Heilungen auf andere Gegner (geheilte LP mal Restzeit je LP des Geheilten mal dessen Schaden
+  je Sekunde); angekündigt zählt ein Zauber auf ihn oder einer, der ihn erreicht, mit der gelernten Größe (Tabelle
+  gezielter Treffer bzw. Tankbuster-Tabelle beim Tank, sonst Flächentabelle über `DataCenter.LearnedAreaShare`) über die
+  Restzeit. Vorrang = Gefahr je Sekunde ÷ LP; ohne Messung „wenigste LP". Das aktuelle Ziel bleibt, bis ein anderer
+  abzüglich seiner Unsicherheit über dem eigenen zuzüglich dessen liegt (1/√n bei n Treffern, angekündigt null). Greift
+  in `ActionTargetInfo.FindHostileRaw` unter `DataCenter.DangerFirstAlone` (vorher `LeastHpFirstAlone`); geleert mit
+  den Ziellisten. Spurzeile „targeting by danger: …" je Führungswechsel, höchstens einmal je GCD.
+- *Prüfmittel:* `check_learned_readers.py` kennt die Tabelle gezielter Treffer und deren sparenden Leser
+  `AimedHitCallsForDefence`; der neue Flächenleser steht als schützend in der Lesertabelle von Konzept 13.
+- *Grenzen:* Wiederbeleber unter den Gegnern zählen nicht eigens; Schaden am Begleiter zählt außerhalb des Crucible
+  nicht; Flächenangriffe ordnen bei Gleichstand weiter nach „wenigste LP". Für K3 im Crucible bleiben Blattwerte,
+  Schwäche und der Bedarf der Begleiter über das Brett (TODO „Beastmaster: Crucible-Strategien").
+- *Prüfgrad:* Compile, Prüfschritte grün; Wirkkette am Code; im Spiel nicht beobachtet.
+
 ## B · Commit-Register (Fork vs. `upstream/main`)
 
 ### B1 · Einzelgeprüfte Fork-Commits

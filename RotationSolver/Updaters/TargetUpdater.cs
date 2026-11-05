@@ -60,6 +60,7 @@ internal static partial class TargetUpdater
 			DotOnParty.Clear();
 			ActionPenaltyWatch.Clear();
 			TankbusterTable.ClearCasts();
+			EnemyDanger.Clear();
 			DataCenter.LastStrikeByEnemy.Clear();
 			// Through the delays, so their timers start again with the next target instead of carrying this one over.
 			DataCenter.ProvokeTarget = _provokeDelay.Delay<IBattleChara>(null);

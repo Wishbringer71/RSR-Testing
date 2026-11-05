@@ -3024,6 +3024,14 @@ public struct ActionTargetInfo(IBaseAction action)
 				return MinBy(battleChara, hostileOrder);
 			}
 
+			// Alone without tank and healer as a beastmaster or blue mage: the most dangerous per HP first (A541).
+			if (!commandTargeting.HasValue && !IsSortType(effectiveType) && DataCenter.DangerFirstAlone)
+			{
+				var lead = MinBy(battleChara, EnemyDanger.Compare);
+				EnemyDanger.NoteLead(lead);
+				return lead;
+			}
+
 			var sort = commandTargeting.HasValue || IsSortType(effectiveType) ? effectiveType : ToTargetType(DataCenter.TargetingType);
 			return PickByTargeting(battleChara, sort);
 		}

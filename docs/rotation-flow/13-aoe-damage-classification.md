@@ -1649,7 +1649,8 @@ hat mindestens eine saubere Messung. Ist die Spielversion nicht lesbar, ist nich
 erneut, solange sie fehlt. Ein Eintrag ohne laufende Schicht – nur aus der alten Datei oder aus einer früheren Version –
 ist übernommen.
 
-**Die Leser, je nach Richtung** (alle Stellen, die eine der beiden Tabellen lesen, A481):
+**Die Leser, je nach Richtung** (alle Stellen, die eine der Tabellen lesen, A481; die Tabelle gezielter Treffer auf
+Nicht-Tanks seit A540):
 
 | Leser | Richtung | übernommen, unbestätigt |
 |---|---|---|
@@ -1662,6 +1663,8 @@ ist übernommen.
 | angekündigter Anteil: Vorausheilung, Halt für den Treffer, wen er tötet (`AnnouncedAreaShare`) | schützt | gilt |
 | Tankbuster-Plan: Bündel, Unverwundbarkeit, „alles" (`TankbusterTable.PredictedShare`) | schützt | gilt |
 | Tankwechsel (`TankSwapWatch`), bekannter Tankbuster (`IsLearned`), Seriendauern | schützt | gilt |
+| Abwehr gegen einen gezielten Treffer auf einen Nicht-Tank (`TankbusterHelp.AimedHitCallsForDefence`, A540) | spart, wo der Wert klein ist | lohnend: die Abwehr öffnet |
+| Gefahr eines Gegners für die Zielwahl allein (`DataCenter.LearnedAreaShare`, `EnemyDanger`, A541) | schützt: ein höherer Wert macht den Wirker nur dringender | gilt |
 | Anzeige im Listenfenster (`MainWindow_Learned`, Stufe 5) | zeigt nur | als übernommen benannt |
 
 Ein schützender Leser ist mit einem kleinen übernommenen Wert nie weniger schützend als ohne Wert: Er reagiert erst ab

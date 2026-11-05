@@ -794,7 +794,8 @@ internal static class DataCenter
 			// The owner's precept of 04.11.2026 (concept 03, "Zielart ohne Tank und Heiler", A525, A526): a beastmaster,
 			// and on his suggestion a blue mage, with no tank and no healer alive beside him attacks the enemy with the
 			// least HP first, whatever the setting - fewer enemies hit him sooner.
-			if (LeastHpFirstAlone)
+			// Its order is EnemyDanger's in the target selection; read as a targeting type, it is the fewest HP first.
+			if (DangerFirstAlone)
 			{
 				return TargetingType.LowHP;
 			}
@@ -1289,20 +1290,23 @@ internal static class DataCenter
 	/// </summary>
 	public static bool NoTankNoHealerBeside => !AnyLiving(JobRole.Tank, true, true) && !AnyLiving(JobRole.Healer, true, true);
 
-	private static bool _leastHpFirstAlone;
+	private static bool _dangerFirstAlone;
 
-	// Concept 03, "Zielart ohne Tank und Heiler" (A525, A526): the job the precept names and none beside him who holds or
-	// heals; a line whenever that turns.
-	private static bool LeastHpFirstAlone
+	/// <summary>
+	/// Concept 03, "Zielart ohne Tank und Heiler" (A525, A526, A541): the job the precept names and none beside him who
+	/// holds or heals. The enemy to attack first is then the one <see cref="EnemyDanger.Compare"/> puts first - danger per
+	/// second against its HP, the fewest HP while nothing is measured. A line whenever that turns.
+	/// </summary>
+	internal static bool DangerFirstAlone
 	{
 		get
 		{
 			var holds = (CurrentRotation is BeastmasterRotation or BlueMageRotation) && NoTankNoHealerBeside;
-			if (holds != _leastHpFirstAlone)
+			if (holds != _dangerFirstAlone)
 			{
-				_leastHpFirstAlone = holds;
+				_dangerFirstAlone = holds;
 				DefenseTrace.Line(holds
-					? "targeting: least HP first - no tank and no healer alive beside you"
+					? "targeting: the most dangerous per HP first - no tank and no healer alive beside you"
 					: "targeting: your setting again");
 			}
 
@@ -3503,6 +3507,16 @@ internal static class DataCenter
 	/// largest such cast counts (concept 13, "Auf einen Nicht-Tank gezielt", A540). Detection only: whether it calls for
 	/// a defence is <see cref="TankbusterHelp.AimedHitCallsForDefence"/>'s question.
 	/// </summary>
+	/// <summary>
+	/// The area table's figure for <paramref name="actionId"/>, zero when it has none: for the danger an enemy announces
+	/// (<see cref="EnemyDanger"/>), a reader that only protects - a higher figure makes the caster more urgent, and none
+	/// leaves it as it was (concept 13, "Stufe 2", A541).
+	/// </summary>
+	internal static float LearnedAreaShare(uint actionId)
+	{
+		return OtherConfiguration.HostileCastingAreaPotential.TryGetValue(actionId, out var share) ? share : 0f;
+	}
+
 	internal static bool AimedHitLeaves(IBattleChara member, out uint actionId, out float share, out float left,
 		out IBattleChara? caster)
 	{

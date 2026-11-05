@@ -1,5 +1,5 @@
 #!/usr/bin/env python3
-"""Every reader of the area and tankbuster tables that would leave protection out asks whether the running game version
+"""Every reader of the area, tankbuster and aimed-hit tables that would leave protection out asks whether the running game version
 has confirmed the figure (concept 13, "Stufe 2", rule 11; his decision A451).
 
 Since stage 2 a figure taken over from an earlier game version protects as before but saves nothing until a clean reading
@@ -23,7 +23,7 @@ import sys
 from pathlib import Path
 
 SKIPPED = ('.github', 'bin', 'obj')
-TABLE = re.compile(r'\b(?:HostileCastingAreaPotential|TankbusterPotential)\b(?!Gate)')
+TABLE = re.compile(r'\b(?:HostileCastingAreaPotential|TankbusterPotential|AimedHitPotential)\b(?!Gate)')
 READING_FILES = {
     'RotationSolver/Basic/Configuration/OtherConfiguration.cs',
     'RotationSolver/Basic/Configuration/OtherConfiguration.Revision.cs',
@@ -43,6 +43,7 @@ SAVERS = [  # (file, method name, token its body must hold)
     ('RotationSolver/Basic/DataCenter.cs', 'AnnouncedHitIsSmall', '_announcedAreaShareConfirmed'),
     ('RotationSolver/Basic/Rotations/CustomRotation_Tankbuster.cs', 'HoldDefenceForTankbuster', 'Cast.Confirmed'),
     ('RotationSolver/Basic/Helpers/TankbusterHelp.cs', 'MeasuredHitCallsForNoHelp', 'TankbusterConfirmed'),
+    ('RotationSolver/Basic/Helpers/TankbusterHelp.cs', 'AimedHitCallsForDefence', 'AimedHitConfirmed'),
 ]
 COMMENT = re.compile(r'^\s*//')
 
@@ -111,7 +112,8 @@ def tree(**overrides):
         'RotationSolver/Basic/Rotations/CustomRotation_Tankbuster.cs':
             'private bool HoldDefenceForTankbuster()\n{\n if (!plan.Cast.Confirmed) { return false; }\n}\n',
         'RotationSolver/Basic/Helpers/TankbusterHelp.cs':
-            'private static bool MeasuredHitCallsForNoHelp(IBattleChara t)\n{\n if (!OtherConfiguration.TankbusterConfirmed(a)) { return false; }\n}\n',
+            'private static bool MeasuredHitCallsForNoHelp(IBattleChara t)\n{\n if (!OtherConfiguration.TankbusterConfirmed(a)) { return false; }\n}\n'
+            'internal static bool AimedHitCallsForDefence(IBattleChara m, out string w)\n{\n var c = OtherConfiguration.AimedHitConfirmed(a);\n}\n',
     }
     savers.update(overrides)
     return savers

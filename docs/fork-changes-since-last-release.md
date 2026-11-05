@@ -117,11 +117,17 @@ What this release changes in the fight. For the whole distance from upstream, se
   marked and whether the pact came - judged once the enemy's body is gone, as the game enters a pact a
   moment after the fall. The time to kill is now counted from the moment it is read for every rule that
   uses it, as Six-sided Star's last-hit check.
-- **Fewest HP first when you fight alone.** As a Beastmaster or a Blue Mage with no tank and no healer
-  alive in your party, RSR attacks the enemy with the least HP first, whatever your targeting setting:
-  each enemy that falls is one fewer hitting you. With a tank or a healer alive your setting applies; a
-  Blue Mage beside you counts as the tank or healer his Aetheric Mimicry makes him. Other jobs keep your
-  setting. `DefenseTrace.log` notes each switch.
+- **The most dangerous enemy first when you fight alone.** As a Beastmaster or a Blue Mage with no
+  tank and no healer alive in your party, RSR attacks first the enemy whose danger per second is
+  largest against its HP, whatever your targeting setting: the damage it has dealt to you and your
+  party in this fight per second, a hit it is casting at you with the size RSR has learned for it, and
+  for an enemy that heals the others, the damage its heals let them deal. Until any enemy has hit,
+  that is the enemy with the least HP. The enemy you attack stays your target until another is surely
+  more urgent beyond the measuring error, so the target does not jump. Example: a guard hitting for
+  30 HP a second goes down before six soldiers hitting for 5 each, though each soldier has less HP.
+  With a tank or a healer alive your setting applies; a Blue Mage beside you counts as the tank or
+  healer his Aetheric Mimicry makes him. Other jobs keep your setting. `DefenseTrace.log` notes each
+  change of the lead.
 - **Shield Charge on a pack, Seedsower at once.** Shield Charge hitting more than one enemy now goes
   before Trick and the axes, with every charge, instead of after everything else, where a short pull
   rarely left it a slot. It goes on enemies within melee range (3 y) whatever `Only use damaging gap

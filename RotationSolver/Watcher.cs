@@ -315,6 +315,42 @@ public static class Watcher
 	private static bool IsDamageEntry(ActionEffectType type)
 		=> type is ActionEffectType.Damage or ActionEffectType.BlockedDamage or ActionEffectType.ParriedDamage;
 
+	// Concept 03, "Zielart ohne Tank und Heiler" (A541): an enemy's damage on the player and the party members, and its
+	// heals on other enemies, into its danger per second.
+	private static void RecordEnemyDanger(ActionEffectSet set, IBattleChara source, IBattleChara player)
+	{
+		foreach (var effect in set.TargetEffects)
+		{
+			if (TryGetDamageEntry(effect, out var damage))
+			{
+				if (effect.TargetID == player.GameObjectId || IsPartyMemberId(effect.TargetID))
+				{
+					EnemyDanger.RecordHit(source.GameObjectId, FullAmount(damage));
+				}
+			}
+			else if (effect.GetSpecificTypeEffect(ActionEffectType.Heal, out var heal)
+				&& DataCenter.AllHostileTargetIds.Contains(effect.TargetID)
+				&& Svc.Objects.SearchById(effect.TargetID) is IBattleChara healed)
+			{
+				EnemyDanger.RecordHeal(source.GameObjectId, healed, FullAmount(heal));
+			}
+		}
+
+		static bool IsPartyMemberId(ulong id)
+		{
+			var party = DataCenter.PartyMembers;
+			for (var i = 0; i < party.Count; i++)
+			{
+				if (party[i]?.GameObjectId == id)
+				{
+					return true;
+				}
+			}
+
+			return false;
+		}
+	}
+
 	private static bool TryGetDamageEntry(TargetEffect effect, out EffectEntry entry)
 	{
 		var found = false;
@@ -749,6 +785,9 @@ public static class Watcher
 						break;
 					}
 				}
+
+				// How dangerous it is: its damage on the party, and its heals on other enemies (concept 03, A541).
+				RecordEnemyDanger(set, striker, playerObject);
 			}
 
 			// The first auto-attack after a swap Shirk shows whom the enemy attacks now.
