@@ -1736,7 +1736,7 @@ beide Werkzeugquellen; sein Mitschnitt vom 04.11.2026.
   teilt sich nach dem Wiki zum ersten Brett „allein 90 %, mit einem je 45 %, mit zweien je 30 %", die Hauptseite sagt,
   du heilst immer selbst. Gemessen einmal (04.11.2026, 19:44–19:47): +30 % deiner LP. Ein gefallener Begleiter wird
   dort nicht geheilt.
-- Fällst du, ist der Lauf verloren, außer eine Bestien-Lebensfeder, Ring of Sacrifice oder Sand der Zeit greift. Fällt
+- Fällst du, ist der Lauf verloren, außer eine Bestien-Lebensfeder, ein Opferring oder Sand der Zeit greift. Fällt
   ein Begleiter, fehlt er bis zum Horn der Rückkehr.
 - Vermeidbare Flächen legen dem Getroffenen Verwundbarkeit oder Schadensminderung auf; hält dein Begleiter die
   Feindseligkeit, trägt er sie, und Schaden nimmt er aus ihnen keinen. Unvermeidbare Flächen treffen euch beide (Wiki).
@@ -1862,8 +1862,8 @@ Dullahan, Golem, Spriggan und Eisgolem (`XBMPet.InflictsInterrupt`).
   unterbrechbar wirken, einer, der unterbricht.
 - *K8 – Gegenstände.* Über `InstanceContentCrucibleOfTheUnbroken.UseItem(Platz, Bestie)` auf dein Ziel. Sicherheit zuerst
   (seine Regel): Bestien-Heiltrank oder -Pulver, wenn deine LP in die Gefahr fallen und keine Heilung bereit ist;
-  Gegengift und Augentropfen gegen den passenden Zustand; Verhärtungsmittel vor einem angekündigten Tankbuster; Lebensfeder
-  oder Sand der Zeit außerhalb des Kampfes vor dem Endgegner. Schaden: der Reißzahn der passenden Schwäche auf die
+  Bestien-Gegengift und Bestien-Augentropfen gegen den passenden Zustand; Bestien-Verhärtungsmittel vor einem angekündigten
+  Tankbuster; Bestien-Lebensfeder oder Sand der Zeit außerhalb des Kampfes vor dem Endgegner. Schaden: der Reißzahn der passenden Schwäche auf die
   gerufenen Gegner (K2) oder ein Rudel – so hat er es am 04.11.2026 um 19:04 selbst getan. *Gegenthese:* Gegenstände
   sind ein Vorrat für das ganze Brett. Teilweise: Sicherheitsgegenstände gehen nur in der Gefahr; Schadensgegenstände
   nur auf gerufene Gegner oder vor dem Endgegner. Der Punktezuschlag ohne Gegenstände steht dagegen: Option.
@@ -1950,23 +1950,23 @@ danach K4, K5, K10.
 **Stufe 3: K8, Gegenstände für die Sicherheit** (A551, A552, gebaut; Einstellung „Use the board's items that keep you
 alive (Crucible only)", ab Werk an):
 - *Welche* (`XBMItem`, xivapi Schema a1e24a0c, 05.11.2026; Name in Spalte 2, englischer Wirktext in Spalte 3, daraus Art
-  und Größe):
-  - Heilung: Bestien-Heiltrank G1 bis G4 („Restores 10/23/36/50% of HP to self or familiar") und Asche G1 bis G3 („… to
-    self and nearby allies").
-  - Wiederbeleber G1 und G2 („Grants Reraise to self … 70/95% chance of automatic revival upon KO", keine Dauer genannt).
+  und Größe; die deutschen Namen aus demselben Blatt mit `language=de`, Zeilen in `action_names_de.json`):
+  - Heilung: Bestien-Heiltrank I bis IV („Restores 10/23/36/50% of HP to self or familiar") und Bestien-Pulver I bis III
+    („… to self and nearby allies").
+  - Bestien-Lebensfeder I und II („Grants Reraise to self … 70/95% chance of automatic revival upon KO", keine Dauer genannt).
   - Sand der Zeit („Grants Sandstill to self … Returns you to the moment combat commences upon incapacitation", nur
     außerhalb des Kampfes).
-  - Heiltrank-Set („Auto-potion: Restores 40% of HP automatically when HP falls below 50%", 150 s).
-  - Gegengift und Augentropfen (heilen Gift und Blindheit und 25 % LP).
+  - Bestien-Heiltranksammlung („Auto-potion: Restores 40% of HP automatically when HP falls below 50%", 150 s).
+  - Bestien-Gegengift und Bestien-Augentropfen (heilen Gift und Blindheit und 25 % LP).
 - *Wann, einer zur Zeit, in dieser Reihenfolge:*
   1. Im Kampf unter „Use HP potions below this HP": der Heilgegenstand, der dich mit dem kleinsten Wert wieder über die
-     Linie hebt, sonst der größte; bei gleicher Heilung der Trank vor der Asche. Normale Heiltränke sperrt das Brett.
+     Linie hebt, sonst der größte; bei gleicher Heilung der Heiltrank vor dem Pulver. Normale Heiltränke sperrt das Brett.
   2. Im Kampf gegen Gift oder Blindheit auf dir das passende Mittel.
-  3. Steht kein Reraise, der stärkere Wiederbeleber, im Kampf und außerhalb. Sein Wirktext nennt keine Dauer, also gilt
-     er bis zu einem Fall. Geht er, ohne dass du fielst, schreibt die Spur das, und von da an kommt ein Wiederbeleber nur
+  3. Steht kein Reraise, die stärkere Bestien-Lebensfeder, im Kampf und außerhalb. Sein Wirktext nennt keine Dauer, also gilt
+     er bis zu einem Fall. Geht er, ohne dass du fielst, schreibt die Spur das, und von da an kommt eine Lebensfeder nur
      noch gegen einen Boss.
   4. Außerhalb des Kampfes, solange kein Sandstill steht, der Sand der Zeit.
-  5. Gegen einen Gegner mit Boss-Symbol, solange kein Auto-potion steht, das Heiltrank-Set.
+  5. Gegen einen Gegner mit Boss-Symbol, solange kein Auto-potion steht, die Bestien-Heiltranksammlung.
 - *Wie:* `InstanceContentCrucibleOfTheUnbroken.UseItem` (FFXIVClientStructs, in Dalamuds Fassung vorhanden) wirkt auf
   das Soft- oder Hard-Ziel. RSR setzt das Soft-Ziel kurz auf dich und stellt es zurück, wie BeastHelper (be40a1e,
   Werkzeugquelle, nur gelesen). Die Status liest RSR nach ihrem englischen Namen.
@@ -1977,7 +1977,8 @@ alive (Crucible only)", ab Werk an):
 - *Gegenthese:* Gegenstände sind ein Vorrat für das ganze Brett. Teilweise widerlegt: Heilung erst an deiner
   Heiltrank-Linie und die kleinste passende zuerst; Reraise und Sandstill sind Versicherung, die nur zählt, wenn sie vor
   dem Fall steht, denn dein Fall beendet den Lauf.
-- *Nicht in diesem Teil:* Schutz (Gerbstoff, Buch der Unverwundbarkeit, Buch der Reflexion), Mittel-Set und Reißzähne.
+- *Nicht in diesem Teil:* Schutz (Bestien-Verhärtungsmittel, Grimoire der Unantastbarkeit, Grimoire der Reflexion),
+  Bestien-Heilmittelsammlung und die Reißzähne.
 
 **Stufe 1, zweiter Teil: K1 und der Rest von K3** (A549, gebaut; Daten in `CrucibleBoard`):
 - *K1, Zuschlag gemessen:* Keine Quelle nennt ihn; consolegameswiki und Eorzean Tavern sagen nur, dass Schwächen

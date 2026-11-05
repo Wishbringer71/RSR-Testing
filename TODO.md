@@ -56,9 +56,9 @@ Arzneien"), 07.
 Im Kampf: Fällst du im Brett, ist der Lauf verloren; Schutzgegenstände und Reißzähne setzt RSR nicht ein, und es
 plant die Begleiter nicht über das Brett: Ein Heiler, der im vierten Kampf gebraucht wird, kann bis dahin auf 25 von 550
 LP gefallen sein (04.11.2026). *Ort:* `BST_Reborn`, `CrucibleBoard`, `BeastmasterCrucible*.cs`. *Gebaut:* Stufe 1 (A548,
-A549: Daten zur Laufzeit, K1, K2, K3 ohne den Bedarf der Begleiter), K9 (A550), K8 (A551, A552: Heilung, Gegenmittel, Wiederbeleber, Sand der
-Zeit, Heiltrank-Set).
-*Nächster Schritt:* K8 Rest (Schutz, Mittel-Set, Reißzähne); K6 (Hörner vor dem Kampf;
+A549: Daten zur Laufzeit, K1, K2, K3 ohne den Bedarf der Begleiter), K9 (A550), K8 (A551, A552: Heilung, Gegenmittel, Bestien-Lebensfeder, Sand der
+Zeit, Bestien-Heiltranksammlung).
+*Nächster Schritt:* K8 Rest (Schutz, Bestien-Heilmittelsammlung, Reißzähne); K6 (Hörner vor dem Kampf;
 zuerst messen, ob der Server im Brett zuweist) und K7 (Kader auf Wunsch über das Teamfenster); K4, K5, K10 (Campsite,
 Laden, Weg, im eigenen Loop); K11 (Kader und Feld liefert das Spiel nicht, Loop am Ende des TODO). *Konzept:* 01,
 „Crucible of the Unbroken: Bretter, Kämpfe, Strategien".

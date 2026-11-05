@@ -30,7 +30,8 @@ ROOT = os.path.abspath(os.path.join(HERE, '..', '..', '..'))
 DICT_PATH = os.path.join(HERE, 'action_names_de.json')
 RESX = os.path.join(ROOT, 'RotationSolver.SourceGenerators', 'Properties', 'ActionId.resx')
 
-VALID_KINDS = ('action', 'status', 'item', 'job')
+# crucible_item: a Crucible of the Unbroken item, by its row in XBMItem (not the Item sheet).
+VALID_KINDS = ('action', 'status', 'item', 'crucible_item', 'job')
 
 
 def load_identifiers(text):
@@ -136,14 +137,17 @@ def self_test(identifiers):
     some = sorted(identifiers)[0]
     entries = {'entries': [{'de': 'Eins', 'en': 'One', 'identifier': some, 'kind': 'action', 'source': 'user'},
                            {'de': 'Feder', 'en': 'Down', 'identifier': '4570', 'kind': 'item', 'source': 'user'},
+                           {'de': 'Sand', 'en': 'Sand', 'identifier': '138', 'kind': 'crucible_item', 'source': 'user'},
                            {'de': 'Paladin', 'en': 'Paladin', 'identifier': 'PLD', 'kind': 'job', 'source': 'user'}]}
 
-    def answer(name_of_action, name_of_item):
+    def answer(name_of_action, name_of_item, name_of_crucible_item='Sand'):
         def fake(url):
             if '/Action?' in url:
                 return {'rows': [{'row_id': identifiers[some], 'fields': {'Name': name_of_action}}]}
             if '/Item?' in url:
                 return {'rows': [{'row_id': 4570, 'fields': {'Name': name_of_item}}]}
+            if '/XBMItem?' in url:
+                return {'rows': [{'row_id': 138, 'fields': {'Name': name_of_crucible_item}}]}
             if 'language=en' in url:
                 return {'rows': [{'row_id': 19, 'fields': {'Abbreviation': 'PLD'}}]}
             return {'rows': [{'row_id': 19, 'fields': {'Name': 'Paladin'}}]}
@@ -153,6 +157,8 @@ def self_test(identifiers):
         raise AssertionError('names the game confirms were reported')
     if len(check_against_game(entries, identifiers, answer('Zwei', 'Feder')) or []) != 1:
         raise AssertionError('a name the game contradicts was not reported')
+    if len(check_against_game(entries, identifiers, answer('Eins', 'Feder', 'Zeit')) or []) != 1:
+        raise AssertionError('a Crucible item name the game contradicts was not reported')
     if check_against_game(entries, identifiers, lambda url: None) is not None:
         raise AssertionError('an unreachable xivapi was not told apart from a clean result')
 
@@ -179,18 +185,18 @@ def fetch_json(url):
 def game_names(entries, identifiers, fetch=fetch_json):
     """German game name per entry (by position), or None when the game data cannot be read.
 
-    Actions by the row id of their identifier, items by their id, jobs by the English
-    abbreviation. A missing row is an empty name, which then contradicts the entry.
+    Actions by the row id of their identifier, items and Crucible items by their id, jobs by the
+    English abbreviation. A missing row is an empty name, which then contradicts the entry.
     """
-    wanted = {'action': {}, 'item': {}}
+    wanted = {'action': {}, 'item': {}, 'crucible_item': {}}
     for i, entry in enumerate(entries):
         if entry.get('kind') == 'action' and entry.get('identifier') in identifiers:
             wanted['action'][i] = identifiers[entry['identifier']]
-        elif entry.get('kind') == 'item' and str(entry.get('identifier', '')).isdigit():
-            wanted['item'][i] = int(entry['identifier'])
+        elif entry.get('kind') in ('item', 'crucible_item') and str(entry.get('identifier', '')).isdigit():
+            wanted[entry['kind']][i] = int(entry['identifier'])
 
     names = {}
-    for kind, sheet in (('action', 'Action'), ('item', 'Item')):
+    for kind, sheet in (('action', 'Action'), ('item', 'Item'), ('crucible_item', 'XBMItem')):
         rows = sorted(set(wanted[kind].values()))
         if not rows:
             continue
