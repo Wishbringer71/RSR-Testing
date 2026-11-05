@@ -2096,6 +2096,28 @@ on a pack once a fight, all of them in the final fight (Crucible only)".
   hängt an seinen Resistenzen (`PhysResistance`, `MagResistance` im Blatt, Bedeutung der Zahlen unbelegt) – kein
   Einsatz, bis das belegt ist.
 
+**Stufe 4: K6, Hörner im Hornfenster** (Entwurf, A561; nicht gebaut):
+- *Wann:* Das Hornfenster ist offen (`AgentXBMPetParty` aktiv, `Mode` 2), die Einstellung „Set the battlehorns between
+  fights for the next one" (B5) ist an. Ihr Text nimmt das Crucible heute aus und wird mit dem Bau erweitert.
+- *Eingaben:* der Kader in Fensterreihenfolge mit LP (`SelectedPets`, `PetCurrentHealth`, `PetMaxHealth`), die gewählten
+  Plätze in Hornreihenfolge (`SelectedPetIds`), der anstehende Kampf (erste Kampfzeile der Feldliste, Art 3) und aus
+  `CrucibleBoard` dessen Gegner mit Schwäche, ihre Zahl und ob es der Endkampf ist.
+- *Wahl:* B5s Planer mit dem lebenden Kader als Kandidaten: Endkampf wie ein Boss (zwei, die heilen oder schützen),
+  Rudel nach der Zahl der Gegner aus dem Blatt, Schaden mit Schwächezuschlag gegen genau diese Gegner (K1), nach Gefahr
+  im Brett einer mehr, der heilt oder schützt (B5). Bei gleichem Wert der mit dem größeren LP-Anteil (Daedalus,
+  Feldnotiz 30.10.2026: drei angeschlagene Begleiter auf allen Hörnern, der Beastmaster tankte und fiel).
+- *Klicks:* Rückruf des Fensters mit `[1, Platz]`, einer, dann neu lesen. Ist die Auswahl kein Anfang der gewünschten
+  Reihenfolge, wird der zuletzt gewählte abgewählt, sonst der nächste gewünschte gewählt; höchstens doppelt so viele
+  Klicks wie Plätze im Kader, dann eine Spurzeile und Schluss. Ändert er die Auswahl selbst, bleibt sie für dieses
+  Fenster. Den Kampf startet er.
+- *Gegenthese 1 (Absturz):* BeastHelper dokumentiert einen Absturz durch nachgebaute Fensterereignisse. Der Rückruf mit
+  Werten ist ein anderer Weg; Daedalus nutzt ihn im Spielbetrieb seit 22.10.2026. Nicht widerlegt bleibt: Ein Patch
+  kann die Werte des Fensters ändern; die Prüfung nach jedem Klick hält dann an.
+- *Gegenthese 2 (seine Wahl):* Er setzt die Hörner vielleicht selbst. Eine Handänderung hält; die Einstellung schaltet es
+  ab.
+- *Gegenthese 3 (angeschlagene Begleiter):* Gleicher Wert ist selten; ob ein Begleiter den Kampf übersteht, beantwortet
+  erst K11 mit dem gemessenen Verlust je Kampf (Sonde A556, A561).
+
 **Stufe 1, zweiter Teil: K1 und der Rest von K3** (A549, gebaut; Daten in `CrucibleBoard`):
 - *K1, Zuschlag gemessen:* Keine Quelle nennt ihn; consolegameswiki und Eorzean Tavern sagen nur, dass Schwächen
   zählen (05.11.2026). RSR misst ihn an jedem Treffer von dir und deinen Begleitern auf einen Gegner des laufenden Kampfs.
