@@ -247,6 +247,7 @@ public partial class CustomRotation
 		IBaseAction.AreaDefenceRunning = false;
 		IBaseAction.HealPathRunning = false;
 		IBaseAction.CommandedDefenceRunning = false;
+		IBaseAction.ProtectiveChoices.Clear();
 
 		try
 		{

@@ -28,6 +28,23 @@ What this release changes in the fight. For the whole distance from upstream, se
   Primordial Crust nullify all healing, as Mounted does. Their bearers are no longer single-heal
   targets and no longer raise the heal flags.
 
+## After you are raised
+
+- **The seconds of protection after a raise are used to heal up when a hit comes right after them.**
+  After a raise you are invulnerable to most damage for 5 s, until you begin any action - a cast ends
+  it as it starts. RSR used to press nothing in that time. Now, when an enemy cast at you or reaching
+  you lands only after those seconds, or a party member is about to die, RSR heals and protects in
+  them: heals, defences and an HP potion, chosen as usual; damage, buffs and raises still wait. It
+  keeps waiting while any announced hit, a marker on you or a BossModReborn prediction could land
+  within the protection. `Heal and protect yourself while the raise protection lasts`, **on by
+  default**. Example: raised at 21 % with a 60 % hit cast at you that lands half a second after the
+  protection ends, you get those 5 s to heal instead of none.
+- **RSR comes back on when you are raised in a fight.** `Turn off when you die` switched RSR off and
+  left it off after a raise. `Turn back on when you are raised in combat`, **on by default**: RSR
+  comes back as it was - Auto, Manual or targeting only - once you stand up while the fight goes on.
+  Not after you switched it yourself, changed zones or the fight ended. `DefenseTrace.log` notes the
+  switch-off, the switch-on and every decision about the protection.
+
 ## Leaps and dashes
 
 - **Blue Mage and Phantom leaps keep to the gap-closer distance.** J Kick and Flying Frenzy (Blue

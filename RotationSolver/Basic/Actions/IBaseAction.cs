@@ -49,6 +49,15 @@ public interface IBaseAction : IAction
 	// that path - he commanded a defence, not every one (concept 09).
 	internal static bool CommandedDefenceRunning { get; set; } = false;
 
+	// The ids a heal or defence path found usable in this cycle of the rotation, cleared where the cycle begins. The
+	// game's sheets do not tell a heal from a buff, so what heals or protects is read from where RSR chose it: under
+	// the raise protection only such an action may end it (concept 11, "Nach der eigenen Wiederbelebung", A539).
+	internal static HashSet<uint> ProtectiveChoices { get; } = [];
+
+	// Whether the path running now heals or defends: the heal paths, the area defence, the single defence.
+	internal static bool ProtectivePathRunning => HealPathRunning || AreaDefenceRunning
+		|| TargetOverride is TargetType.Heal or TargetType.BeAttacked;
+
 	internal static void ResetOverrides()
 	{
 		TargetOverride = null;

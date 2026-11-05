@@ -115,7 +115,8 @@ namespace RotationSolver.Commands
 				return;
 			}
 
-			if (StatusHelper.PlayerHasStatus(false, StatusID.Transcendent))
+			// Any action begun ends the raise protection; it waits unless a heal or a defence is worth more now (A539).
+			if (StatusHelper.PlayerHasStatus(false, StatusID.Transcendent) && !MaySpendRaiseProtection(nextAction))
 			{
 				return;
 			}
@@ -334,6 +335,92 @@ namespace RotationSolver.Commands
 			}
 		}
 
+		// The raise protection (Transcendent) ends with the first action begun - a cast at its start, an instant, an item
+		// (his logs, 25.10. to 03.11.2026). It is spent on a heal, a defence or an HP potion that a heal or defence path
+		// chose, when an announced hit on the player lands only after it ends or a member is about to die, and no
+		// announced hit, marker or prediction can land while it lasts (concept 11, "Nach der eigenen Wiederbelebung",
+		// A539). One trace line per window and verdict.
+		private static bool MaySpendRaiseProtection(IAction nextAction)
+		{
+			if (!Service.Config.SpendRaiseProtection || !DataCenter.InCombat
+				|| (nextAction is not HpPotionItem
+					&& (nextAction is not IBaseAction action || !IBaseAction.ProtectiveChoices.Contains(action.ID))))
+			{
+				return false;
+			}
+
+			var remaining = RaiseProtection.Remaining;
+			if (remaining > _raiseTraceRemaining)
+			{
+				_raiseKeptTraced = _raiseSpentTraced = false;
+			}
+			_raiseTraceRemaining = remaining;
+
+			if (RaiseProtection.FirstWithin(remaining) is { } within)
+			{
+				if (!_raiseKeptTraced)
+				{
+					_raiseKeptTraced = true;
+					DefenseTrace.Line($"raise protection kept for {nextAction.Name}: {within.Name} can land within it"
+						+ $" ({within.LandsIn:F1} s, {remaining:F1} s left)");
+				}
+				return false;
+			}
+
+			string? reason = null;
+			if (RaiseProtection.FirstAfter(remaining, Service.Config.BMRRaidwideMitWindow, Service.Config.BMRTankbusterMitWindow)
+				is { } after)
+			{
+				reason = $"{after.Name} lands {after.LandsIn - remaining:F1} s after it";
+			}
+			else if (CriticalMemberName() is { } critical)
+			{
+				reason = $"{critical} is about to die";
+			}
+
+			if (reason == null)
+			{
+				return false;
+			}
+
+			if (!_raiseSpentTraced)
+			{
+				_raiseSpentTraced = true;
+				DefenseTrace.Line($"raise protection given up for {nextAction.Name}: {reason}, {remaining:F1} s left");
+			}
+			return true;
+		}
+
+		private static float _raiseTraceRemaining;
+		private static bool _raiseKeptTraced;
+		private static bool _raiseSpentTraced;
+
+		// The player or a party member in the heal chain's critical class (concept 07).
+		private static string? CriticalMemberName()
+		{
+			if (Player.Object is { } player && player.IsInCriticalClass())
+			{
+				return "you";
+			}
+
+			var party = DataCenter.PartyMembers;
+			for (var i = 0; i < party.Count; i++)
+			{
+				var member = party[i];
+				if (member != null && !member.IsDead && member.IsInCriticalClass())
+				{
+					return member.Name.TextValue;
+				}
+			}
+
+			return null;
+		}
+
+		// What "Turn off when you die" switched off in a fight, so that a raise in the same fight switches it back on
+		// ("Turn back on when you are raised in combat", concept 11, A539). Null when nothing is pending.
+		private static StateCommandType? _offByDeath;
+		private static uint _offByDeathTerritory;
+
 		internal static void UpdateRotationState()
 		{
 			try
@@ -353,8 +440,24 @@ namespace RotationSolver.Commands
 				var jobChanged = currentJob != _previousJob;
 				_previousJob = currentJob;
 
+				var diesInPvE = Service.Config.AutoOffWhenDead && DataCenter.Territory != null && !DataCenter.Territory.IsPvP
+					&& Player.Object.CurrentHp == 0;
+
+				// Turned off by death in a fight, by RSR's own state - not by AutoDuty, the henched mode or another plugin's
+				// IPC state, which keep theirs.
+				if (diesInPvE && DataCenter.State && DataCenter.InCombat && !DataCenter.IsAutoDuty && !DataCenter.IsHenched
+					&& DataCenter.IpcOverrides == null)
+				{
+					_offByDeath = DataCenter.IsTargetOnly ? StateCommandType.TargetOnly
+						: DataCenter.IsManual ? StateCommandType.Manual
+						: StateCommandType.Auto;
+					_offByDeathTerritory = DataCenter.TerritoryID;
+					DefenseTrace.Line($"RSR off: you died in combat (Turn off when you die), {_offByDeath} again if you are raised in this fight"
+						+ (Service.Config.AutoOnWhenRaised ? string.Empty : " - Turn back on when you are raised in combat is off"));
+				}
+
 				if (Svc.Condition[ConditionFlag.LoggingOut] ||
-					(Service.Config.AutoOffWhenDead && DataCenter.Territory != null && !DataCenter.Territory.IsPvP && Player.Object.CurrentHp == 0) ||
+					diesInPvE ||
 					(Service.Config.AutoOffWhenDeadPvP && DataCenter.Territory != null && DataCenter.Territory.IsPvP && Player.Object.CurrentHp == 0) ||
 					(Service.Config.AutoOffPvPMatchEnd && Svc.Condition[ConditionFlag.PvPDisplayActive]) ||
 					(Service.Config.AutoOffCutScene && !DataCenter.IsAutoDuty && Svc.Condition[ConditionFlag.OccupiedInCutSceneEvent]) ||
@@ -370,6 +473,26 @@ namespace RotationSolver.Commands
 
 					ActionUpdater.AutoCancelTime = DateTime.MinValue;
 					return;
+				}
+
+				// Back on after a raise in the same fight: the reason for turning off - dead, nothing to do - is gone. Not
+				// once he switched RSR himself, changed zones or the fight ended (wipe, return to the start).
+				if (_offByDeath is { } wasOn)
+				{
+					if (DataCenter.State || !DataCenter.InCombat || DataCenter.TerritoryID != _offByDeathTerritory)
+					{
+						_offByDeath = null;
+					}
+					else if (Player.Object.CurrentHp > 0)
+					{
+						_offByDeath = null;
+						if (Service.Config.AutoOnWhenRaised)
+						{
+							DefenseTrace.Line($"RSR on again ({wasOn}): raised in combat");
+							DoStateCommandType(wasOn);
+							return;
+						}
+					}
 				}
 
 				if (Service.Config.AutoOnPvPMatchStart &&

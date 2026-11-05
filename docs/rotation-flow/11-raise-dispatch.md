@@ -592,26 +592,124 @@ nicht messbar. Wer sie an hat, konnte ohne Swiftcast niemanden hochholen.
 
 ## Nach der eigenen Wiederbelebung
 
+**Geltender Stand** (A539):
+- **Unter Temporärer Unverwundbarkeit** (Transcendent, Status 418, 5 s nach der Annahme einer Wiederbelebung) drückt RSR
+  Heilung und Schutz, wenn ein angekündigter Treffer erst nach ihrem Ende landet; sonst wartet es wie bisher. Alle
+  Bedingungen zusammen:
+  1. `Heal and protect yourself while the raise protection lasts` ist an (ab Werk an), und er ist im Kampf.
+  2. Die nächste Aktion ist ein Heiltrank, oder RSR hat sie in einem Heil- oder Abwehrpfad gewählt (Einzel- und
+     Flächenheilung, Notfallheilung, Einzel- und Flächenabwehr). Schaden, Buffs und die Wiederbelebung anderer warten.
+  3. Kein angekündigter Treffer landet, solange sie läuft: kein Zauber eines Gegners auf ihn oder mit einer Form, die
+     ihn erreicht (`CastReachesPlayer`, gelistet oder nicht), der vor ihrem Ende fertig ist; kein Tankbuster-, Sammel-
+     oder Trefferserien-Marker auf ihm, weil dessen Zeitpunkt unbekannt ist; keine Vorhersage von BossModReborn für
+     einen Raidwide oder einen Tankbuster auf ihn vor ihrem Ende.
+  4. Es gibt etwas zu schützen: Ein solcher Zauber endet erst nach ihr, oder BossModReborn sagt einen Raidwide oder
+     Tankbuster auf ihn nach ihr voraus, innerhalb ihres Minderungsfensters (`BMRRaidwideMitWindow`, `BMRTankbusterMitWindow`); oder er selbst oder
+     ein Mitglied steht in der kritischen Klasse (Konzept 07).
+
+  `DefenseTrace.log` schreibt je Fenster einmal, ob und warum RSR den Schutz für eine solche Aktion aufgibt („raise
+  protection given up for <Aktion>: <Treffer> lands … s after it" oder „… <Mitglied> is about to die") oder hält („raise
+  protection kept for <Aktion>: <Treffer> can land within it"). Für Schaden schreibt es nichts; der wartet wie bisher.
+- **Wieder an nach der Wiederbelebung:** Hat `Turn off when you die` RSR im Kampf ausgeschaltet, schaltet
+  `Turn back on when you are raised in combat` (ab Werk an, unter `Turn off when you die`) es in derselben Art (Auto,
+  Manuell, nur Ziel) wieder an, sobald er lebt und noch im Kampf ist. Nicht danach: Hat er RSR zwischendurch selbst
+  geschaltet, die Zone gewechselt oder endete der Kampf (Wipe, Rückkehr zum Startpunkt), bleibt es aus. AutoDuty, der
+  Henched-Modus und ein Zustand, den ein anderes Plugin mit eigenen Vorgaben über IPC gesetzt hat, bleiben unberührt; PvP
+  ebenso, dort gilt die eigene Einstellung. `DefenseTrace.log` schreibt das Aus beim Tod („RSR off: you died in combat
+  …") und das Wiedereinschalten („RSR on again (<Art>): raised in combat").
+
 **Befund aus seinem Mitschnitt** (ACT und `DefenseTrace.log` vom 03.11.2026, Weißmagier in AAC Heavyweight M4, Build
-a885b43bf): Er nahm die Wiederbelebung um 18:34:29,26 an und stand bei 41 569 von 197 953 LP (21 %), mit
-Transcendent (Status 418, 5 s), Sterbenselend und 2 000 MP. 0,5 s später begann Lindwurm Zellexplosion auf ihn (4,7 s).
-Transcendent lief um 18:34:34,29 ab, der Treffer kam um 18:34:34,74 mit 60 % seiner LP, er starb. Zwischen Annahme
-und Tod drückte RSR nichts: keine Heilung auf sich, keine Abwehr, keine Zeile in der `DefenseTrace.log`.
+a885b43bf): Er nahm die Wiederbelebung um 18:34:29,26 an und stand bei 41 569 von 197 953 LP (21 %), mit Temporärer
+Unverwundbarkeit (5 s), Sterbenselend und 2 255 MP. 0,49 s später begann Lindwurm Zellexplosion (#48371) auf ihn,
+4,7 s. Die Unverwundbarkeit lief um 18:34:34,29 ab, der Treffer kam um 18:34:34,74 mit 118 379 LP (60 %), er starb.
+Zwischen Annahme und Tod drückte RSR nichts, und im Fenster traf ihn nichts sonst: Die 5 s schützten gegen keinen
+Treffer und kosteten die ganze Zeit, in der eine Heilung oder Minderung noch angekommen wäre. Die Größe kannte RSR nicht:
+Zellexplosion stand in keiner gelernten Tabelle; dieselbe Aktion hatte ihn 34 s vorher mit 59 und 62 % getötet. Ob RSR
+in den 5 s an war, zeigt der Mitschnitt nicht: Das Effekt-Protokoll schreibt auch bei ausgeschaltetem RSR („hit you"),
+Entscheidungszeilen wären nur bei einem offenen Pfad gekommen, und bei 21 % lag er über der kritischen Linie (ab Werk
+15 %).
 
-**Zwei Regeln erklären das, beide nicht vom Fork:**
-- *Unter Transcendent wird nichts gedrückt* (`RSCommands_Actions`, Upstream b90750d63 vom 12.11.2025, „prevent actions
-  when Transcendent"). Der Wirktext begründet es: „temporarily invulnerable to most damage. Status ends upon execution of
-  an action." Eine Aktion beendet den Schutz. Die Regel fragt aber nicht, ob ein angekündigter Treffer erst nach dem
-  Ende des Schutzes landet. Dann kostet das Warten die einzige Zeit, in der eine Heilung noch ankäme.
-- *„Turn off when you die"* (`AutoOffWhenDead`, ab Werk an) schaltet RSR beim Tod aus. Wieder an geht es nur über
-  die Einschaltregeln seiner Konfiguration, die nicht messbar ist. Ob RSR in diesen 5 s an war, zeigt der Mitschnitt
-  nicht; unter Transcendent hätte es so oder so nichts gedrückt.
+**Mechanik, gemessen** (alle ACT-Mitschnitte vom 25.10. bis 03.11.2026, fünf Abende, jeder Spieler der Gruppe):
+- Wirktext: „Recently resurrected and temporarily invulnerable to most damage. Status ends upon execution of an
+  action." (deutsch „Wird nach dem Ausführen eines Kommandos automatisch entfernt.", xivapi Status 418).
+- 208 Fenster. Die Unverwundbarkeit endete auf die Millisekunde mit dem *Beginn* eines Zaubers (Zeile 20, etwa
+  Vitra, Kurieren, Karfunkel-Beschwörung), mit jeder sofortigen Aktion, mit einem Gegenstand und mit dem Reittier. Ein
+  Zauber kostet sie also schon beim Beginn, nicht erst bei der Wirkung.
+- 79 Spieler warteten die vollen 5 s, 129 handelten früher.
+- In 31 Fenstern traf ein Gegner den Träger, solange sie lief; 24 dieser Treffer kündigte ein Zauber derselben Aktion an.
+  Gegen diese Treffer wirkt sie, und Bedingung 3 hält sie dafür.
+- In 32 Fenstern traf ihn ein Gegner binnen 5 s nach ihrem Ende, 12 Träger starben binnen 10 s danach. Ein Zauber auf
+  den Träger, der in ihr begann und nach ihr endete, kam einmal vor: der Fall oben. Treffer über die Form eines Zaubers
+  zählt die Messung nicht, weil der Mitschnitt keine Formen kennt.
 
-**Offen für den Loop** (`TODO.md`, „Nach der Wiederbelebung wartet RSR die Unverwundbarkeit ab"): ob eine Heilung oder
-Abwehr unter Transcendent gehen soll, wenn ein angekündigter Treffer nach dessen Ende landet und den Spieler töten
-kann. Dazu, ob es hier gereicht hätte: Benediction lief noch ab (gewirkt 18:33:11), und von 21 % auf über 60 %
-effektive LP in 5 s braucht mehrere Heilungen oder Schild und Minderung zusammen. Und ob „Turn off when you die" einen
-Wiederbelebten wieder einschalten soll.
+**Warum so.** Die Sperre (Upstream b90750d63, 12.11.2025, „prevent actions when Transcendent", ohne weitere
+Begründung) schützt die Unverwundbarkeit vor der eigenen Aktion. Wert hat sie nur gegen Treffer, die landen, solange
+sie läuft. Landet keiner angekündigt darin, kostet eine Aktion nur den Schutz gegen unangekündigte Treffer im Rest des
+Fensters (in seinen Mitschnitten 7 von 208 Fenstern mit einem Treffer ohne vorausgehenden Zauber derselben Aktion); kommt ein angekündigter Treffer nach ihr, kostet das
+Warten jede Heilung und Minderung, die bis dahin noch hätte gehen können. Weil der Zauber sie schon bei seinem Beginn
+beendet, gibt es kein „erst am Ende des Fensters beginnen", das sie bis zuletzt hielte.
+
+**Optionen und Bilanz im Kampf:**
+- *Nullvariante (warten):* schützt in den 31 Fenstern mit Treffer darin; kostet bis zu 5 s Vorbereitung vor jedem
+  Treffer danach – in M4 sein Leben. Rückbau: keiner nötig.
+- *Sperre ganz aufheben:* jede Aktion sofort, auch Schaden. Stärke: 2 GCDs mehr Schaden. Schwäche: In den 31 Fenstern
+  träfe der Treffer einen Spieler mit rund 20 % LP und Sterbenselend. Verworfen: Sicherheit vor Schaden, und der
+  Treffer darin ist meist angekündigt, also vermeidbar.
+- *Heilung und Schutz ohne Dringlichkeit:* jede Heilung, die RSR wählt, auch eine Füllheilung auf ein anderes Mitglied
+  bei 67 %. Schwäche: gibt den Schutz für eine Heilung auf, die 5 s warten könnte. Verworfen.
+- *Erst am Ende des Fensters handeln:* hält den Schutz bis kurz vor Ablauf, gibt aber nur einen GCD Vorbereitung; ein
+  Zauberbeginn beendet ihn trotzdem. Verworfen: gegenüber der gewählten Regel kein Gewinn an Schutz, weil nach
+  Bedingung 3 darin ohnehin nichts angekündigt landet.
+- *Gewählt:* Heilung und Schutz bei Gefahr nach dem Fenster, sonst warten. Stärke: In M4 hätte RSR ab 18:34:29,8 vier
+  bis fünf Sekunden gehabt – Heilung auf sich, Heiltrank, bei offenem Abwehrpfad Minderung. Schwäche: Ein unangekündigter
+  Treffer im Rest des Fensters trifft ihn; Preis selten (7 von 208 Fenstern, siehe oben), Ausmaß im Mitschnitt nicht
+  getrennt gemessen.
+  Chance: Ein Mitglied in der kritischen Klasse bekommt die Notfallheilung 5 s früher. Bedrohung: Ein Marker oder eine
+  BossModReborn-Vorhersage ohne Zeitpunkt würde als „danach" gelesen und den Schutz kosten – deshalb zählen Marker immer
+  als „darin" (Bedingung 3), und BossModReborn nur mit seiner Zeit.
+- *Ausschalten beim Tod:* Nullvariante (aus bleiben) lässt einen Wiederbelebten im Kampf ohne RSR, bis er es merkt; bei
+  einem Heiler fehlt der Gruppe bis dahin die Heilung. `Turn off when you die` ab Werk aus stellen verworfen: Sein Text
+  bindet, und nach einem Wipe soll RSR aus sein. Beim Tod nur noch nach einem Wipe ausschalten verworfen: widerspricht
+  dem Text. Gewählt: wieder an, nur wenn der Tod es ausgeschaltet hat und der Kampf weitergeht – genau die Lage, in der
+  der Grund des Ausschaltens (tot, nichts zu tun) entfallen ist.
+
+**Gegenthesen, geprüft:**
+- *„Die Unverwundbarkeit ist dazu da, aus Bodenflächen zu laufen; jede Aktion vorher ist falsch."* Laufen beendet sie
+  nach dem Wirktext nicht (er nennt nur das Ausführen einer Aktion), und eine Heilung im Stand verhindert das Laufen nicht. Ein Zauber
+  bindet ihn allerdings: Steht er in einer Fläche, die vor ihrem Ende landet, hält Bedingung 3 – die Fläche ist ein
+  angekündigter Zauber, der ihn erreicht. Eine Bodenfläche ohne Zauber (stehende Pfütze) kennt RSR nicht; Bedingung 3
+  schützt dort nicht. Preis: ein Zauber im Stand in einer stehenden Fläche, solange RSR ohnehin eine Heilung gewählt hat;
+  seine Bewegungsprüfungen für Zauber gelten wie sonst.
+- *„Mit Sterbenselend (Willenskraft –50 %, xivapi Status 44) heilt er sich kaum; dann ist der Schutz mehr wert."* Die
+  eigene Heilung ist schwächer; Heiltrank, Minderung und Schild eines Abwehrpfads hängen davon nicht oder anders ab, und
+  ohne angekündigten Treffer darin kostet die Aktion keinen Schutz gegen einen solchen. Ob es in M4 gereicht hätte, ist
+  offen (unten). Die Gegenthese widerlegt den Nutzen nicht, sie begrenzt ihn.
+- *„Die Größe des Treffers ist unbekannt; ein kleiner Treffer danach rechtfertigt nichts."* Heilung wählt RSR nur unter
+  ihrer Schwelle; ein frisch Wiederbelebter steht fast immer darunter, und die Heilung braucht er nach dem Fenster
+  ohnehin. Was der Schutz in dieser Zeit verliert, ist nach Bedingung 3 nur der unangekündigte Treffer.
+
+**Falsifikation:**
+- *Kein Defekt:* widerlegt – das Warten kostete in M4 die ganze Vorbereitungszeit vor einem angekündigten Treffer, und
+  das Fenster schützte gegen nichts.
+- *Option falsch:* Die stärkste Gegenposition ist die Bodenfläche ohne Zauber; sie bleibt als Preis benannt, sie hält
+  nicht, weil RSR dort auch nach dem Fenster nichts anders täte.
+- *Ausgeliefert, und nichts ändert sich – warum?* (1) RSR war nach dem Tod aus: dafür das Wiedereinschalten; hat er
+  selbst eine Einschaltregel, greift die zuerst. (2) Kein Heil- oder Abwehrpfad wählt etwas: Ein ungelisteter Zauber
+  auf einen Nicht-Tank öffnet keine Einzelabwehr (`SingleHitReachesPlayer`, Konzept 13, A233; `TODO.md`, „Ein ungelisteter Zauber auf einen
+  Nicht-Tank öffnet keine eigene Abwehr“); es bleibt Heilung nach der Schwelle und
+  der Heiltrank nach seiner Schwelle. (3) Die Heilung reicht nicht: In M4 fehlten 75 000 LP in 4,9 s, Benediktion lag
+  auf Abklingzeit (gewirkt 18:33:11), Sterbenselend halbiert die Willenskraft – ob er überlebt hätte, ist unbelegt.
+  Die Regel gibt die Zeit zurück; ob sie reicht, entscheidet der Kampf. (4) Das Fenster lief schon: Wird der Zauber
+  erst sichtbar, wenn es fast vorbei ist, bleibt wenig gewonnen.
+
+**Grenzen:**
+- Die Wiederbelebung eines anderen Mitglieds wartet unter dem eigenen Schutz wie bisher; sie ist ein Zauber, der den
+  eigenen Schutz mit seinem Beginn beendet, und lag nicht im Auftrag.
+- Gewählt wird über die Pfade, nicht über die Aktion: Die Spielblätter trennen Heilung nicht von Buffs (Cure und
+  Battle Litany haben beide keine feindliche Zielbarkeit, Medica und Assize beide Angriffsart Magie). Deshalb merkt sich
+  RSR je Durchlauf, welche Aktionen ein Heil- oder Abwehrpfad brauchbar fand (`IBaseAction.ProtectiveChoices`).
+- Ob RSR ihn im M4-Fall wieder eingeschaltet hätte, hängt von seiner Konfiguration ab, die nicht messbar ist; die neue
+  Spurzeile beim Aus und Wieder-an macht es im nächsten Mitschnitt sichtbar.
 
 ## Bekannte Mängel neben diesem Konzept
 

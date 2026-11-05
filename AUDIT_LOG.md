@@ -16064,6 +16064,34 @@ habe den schleim bislang nicht anfreunden können."
   Wiederbelebern der Schaden des Zurückgeholten; Schaden an Begleitern, soweit er den Spieler schützt. Die Regel von Smith
   bleibt die Abwägung; die Präzisierung bestätigt A537 und erweitert die Gefahr um die Heiler auch außerhalb des Crucible.
 
+
+### A539 · Nach der Wiederbelebung: Schutz für Heilung aufgeben, Wiedereinschalten (05.11.2026)
+
+- *Auftrag:* `TODO.md`, „Nach der Wiederbelebung wartet RSR die Unverwundbarkeit ab" (sein Auftrag vom 05.11.2026: TODO
+  nach Wichtigkeit, je im Loop). Befund aus A515 (M4, 03.11.2026).
+- *Gemessen in allen ACT-Mitschnitten vom 25.10. bis 03.11.2026 (208 Fenster, jeder Spieler):* Temporäre
+  Unverwundbarkeit (Status 418, xivapi de) endet mit dem Beginn eines Zaubers (Zeile 20), jeder sofortigen Aktion,
+  einem Gegenstand und dem Reittier, auf die Millisekunde. 79 warteten 5 s, 129 handelten früher. In 31 Fenstern traf
+  ein Gegner den Träger darin, 24 davon mit einem Zauber derselben Aktion davor; in 32 binnen 5 s danach; 12 Träger
+  starben binnen 10 s danach. Ein Zauber auf den Träger über das Ende hinaus: einmal, der M4-Fall. Der Spielkampfstatus
+  blieb über Tod und Wiederbelebung an (ACT-Zeile 260). Zellexplosion (#48371) stand in keiner gelernten Tabelle.
+- *Ursache:* Upstreams Sperre (b90750d63) wartet auch, wenn darin nichts angekündigt landet und danach ein Treffer
+  kommt; `Turn off when you die` lässt RSR nach der Wiederbelebung aus.
+- *Entscheidung (Konzept 11, „Nach der eigenen Wiederbelebung"):* Heilung, Abwehr und Heiltrank aus den Heil- und
+  Abwehrpfaden dürfen den Schutz beenden, wenn ein angekündigter Treffer erst nach ihm landet oder ein Mitglied in der
+  kritischen Klasse steht, und nichts Angekündigtes darin landen kann (Marker zählen immer als darin); Option ab Werk an.
+  Wiedereinschalten in derselben Art, wenn der Tod RSR im Kampf ausschaltete und er im selben Kampf und derselben Zone
+  wieder lebt; Option ab Werk an. Verworfen: Sperre ganz aufheben, Heilung ohne Dringlichkeit, erst am Fensterende,
+  `Turn off when you die` ab Werk aus, nur nach Wipe ausschalten.
+- *Umsetzung:* `RaiseProtection` (Erkennung: erster angekündigter Treffer darin und danach), `IBaseAction.ProtectiveChoices`
+  (Ids, die ein Heil- oder Abwehrpfad im Durchlauf brauchbar fand, gefüllt in `BaseAction.CanUse`, geleert in `Invoke`),
+  Entscheidung `RSCommands.MaySpendRaiseProtection`, Wiedereinschalten in `UpdateRotationState`; Spurzeilen „raise
+  protection given up/kept", „RSR off: you died in combat", „RSR on again".
+- *Prüfgrad:* Compile, 43 Prüfschritte grün; Wirkkette am Code (Dispatch → Sperre → Entscheidung → `Use`); im Spiel
+  nicht beobachtet. Offen und benannt: ob die gewonnene Zeit in M4 gereicht hätte (Sterbenselend halbiert die
+  Willenskraft, Benediktion lag auf Abklingzeit); ein ungelisteter Zauber auf einen Nicht-Tank öffnet keine Einzelabwehr
+  (neu in `TODO.md`, „Ein ungelisteter Zauber auf einen Nicht-Tank öffnet keine eigene Abwehr“, Platz 2).
+
 ## B · Commit-Register (Fork vs. `upstream/main`)
 
 ### B1 · Einzelgeprüfte Fork-Commits

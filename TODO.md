@@ -10,10 +10,10 @@ Betroffene: **N** Endnutzer · **R** Autoren abgeleiteter Rotationen (Namensräu
 Nach der Wirkung im Kampf: Sicherheit der Gruppe vor Schaden, gewichtet mit der Wahrscheinlichkeit, in seinem Profil
 (seine Vorgabe, 17.10.2026: „todo nach wichtigkeit abarbeiten. jeweils im loop bearbeiten").
 
-1. Nach der Wiederbelebung wartet RSR die Unverwundbarkeit ab: Ein Heiler stirbt am ersten Treffer nach dem
-   Aufstehen, ohne dass RSR etwas drückt.
-2. Allein ohne Heiler kommt kein Heiltrank: RSR stand 13 s in der kritischen Klasse ohne Heilfähigkeit, kein Trank
+1. Allein ohne Heiler kommt kein Heiltrank: RSR stand 13 s in der kritischen Klasse ohne Heilfähigkeit, kein Trank
    von RSR trotz eingeschalteter Option, er drückte ihn bei 6 % selbst und starb (Beastmaster, Sägerschrei, 04.11.2026).
+2. Ein ungelisteter Zauber auf einen Nicht-Tank öffnet keine eigene Abwehr: Zellexplosion nahm dem Weißmagier
+   59 bis 62 % je Treffer, RSR minderte nichts; zweimal starb er daran (M4, 03.11.2026).
 3. Beastmaster und Blaumagier allein: Ziel nach Schaden je Sekunde bis zum Fall: Heute fällt zuerst, wer die wenigsten
    LP hat, auch wenn ein anderer viel härter trifft; in Sägerschrei traf die Wache etwa 15 s länger als nötig.
 4. Beastmaster: Am Pull der Begleiter, der das Rudel aufhält, mit One with Nature: Allein gegen ein Rudel verbrennt der
@@ -74,6 +74,16 @@ Fehl-LP, Spielstatus) und den Tinktur-Vorrang; mit dem nächsten Upload die Ursa
 nach der Gefahr statt nach der festen Schwelle, für alle Jobs. *Konzept:* 03 („Eine Wiederverwendung für alle
 Arzneien"), 07.
 
+### Ein ungelisteter Zauber auf einen Nicht-Tank öffnet keine eigene Abwehr · N
+Im Kampf: Lindwurm wirkte Zellexplosion (#48371, 4,7 s) gezielt auf den Weißmagier, je Treffer 59 bis 62 % seiner LP
+(M4, 03.11.2026). RSR öffnete keine eigene Minderung: Beim Nicht-Tank zählt die Einzelabwehr nur gelistete Tankbuster,
+Marker und BossModReborn, den gezielten ungelisteten Zauber nur beim Tank. Er starb um 18:34:00 an zwei Treffern zugleich
+und nach der Wiederbelebung am dritten. *Ort:* `DataCenter.SingleHitReachesPlayer` (A233); die Tankbuster-Tabelle legt
+Treffer auf Nicht-Tanks nicht ab (A312), die Größe solcher Zauber misst also niemand über den Kampf hinaus. *Nächster
+Schritt:* Loop: ob und ab welcher gemessenen Größe ein gezielter Zauber auf einen Nicht-Tank seine Minderung öffnet,
+woher die Größe kommt (Messung je Aktion und Ziel im Kampf, gelernt über Sitzungen), und was es an Abklingzeiten kostet,
+wenn viele kleine gezielte Zauber kommen. *Konzept:* 13, 11 („Nach der eigenen Wiederbelebung").
+
 ### Beastmaster und Blaumagier allein: Ziel nach Schaden je Sekunde bis zum Fall · N
 Im Kampf: Ohne lebenden Tank und Heiler greift RSR heute den Gegner mit den wenigsten LP an (A525); trifft ein anderer
 viel härter, schlägt er länger. Sein Tod in Sägerschrei: Die Wache (etwa 30 LP/s, 606 LP) fiel nach sechs Soldaten
@@ -93,13 +103,6 @@ Schadensart je Begleiter zur Laufzeit, mit Selbstprüfung beim Betreten; K1 (Zus
 gerufene Gegner) und K3 (Ziel nach dem größten Nutzen für Kampf und Brett, seine Vorgabe); dann K11 (Begleiter über das Brett planen: Bedarfsliste je Kampf, LP und Schaden je Einsatz) mit K9 (Zähnefletschen ab Werk, Provozieren am größten Treffer), K8 (Gegenstände, Sicherheit
 zuerst), K6 (Hörner vor dem Kampf; zuerst messen, ob der Server im Brett zuweist) und K7 (Kader auf Wunsch über das
 Teamfenster); danach K4, K5 und K10 (Campsite, Laden, Weg, im eigenen Loop). *Konzept:* 01, „Crucible of the Unbroken: Bretter, Kämpfe, Strategien".
-
-### Nach der Wiederbelebung wartet RSR die Unverwundbarkeit ab · N, U
-Im Kampf: Wiederbelebt bei 21 %, Zellexplosion auf ihn angekündigt; RSR drückte 5 s lang nichts, der Treffer kam
-0,45 s nach Ablauf von Transcendent, er starb (M4, 03.11.2026). *Ort:* `RSCommands_Actions` (Sperre unter
-Transcendent, Upstream), `AutoOffWhenDead`. *Nächster Schritt:* Loop: ob Heilung und Abwehr unter Transcendent gehen,
-wenn ein angekündigter Treffer nach dessen Ende landet; ob ein Wiederbelebter wieder eingeschaltet wird. *Konzept:* 11,
-„Nach der eigenen Wiederbelebung".
 
 ### Flächenbetäuber in Kreszentia für The Blackest Night · N
 Im Kampf: Betäubt ein anderer Spieler mit einer Aktion seines Phantomjobs eine Gruppe, kann der Dunkelritter seine

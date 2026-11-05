@@ -354,6 +354,11 @@ public class BaseAction : IBaseAction
 
 		Target = PreviewTarget.Value;
 
+		if (IBaseAction.ProtectivePathRunning)
+		{
+			_ = IBaseAction.ProtectiveChoices.Add(ID);
+		}
+
 		ActionTracer.Accept(this);
 		return true;
 	}

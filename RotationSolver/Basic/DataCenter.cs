@@ -2738,7 +2738,7 @@ internal static class DataCenter
 		}
 	}
 
-	private static bool IsAreaVfxReachingPlayer()
+	internal static bool IsAreaVfxReachingPlayer()
 	{
 		var player = Player.Object;
 		if (player == null || VfxDataQueue == null || VfxDataQueue.IsEmpty)

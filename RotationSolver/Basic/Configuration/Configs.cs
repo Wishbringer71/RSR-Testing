@@ -453,6 +453,14 @@ internal partial class Configs : IPluginConfiguration, IM3Settings
 	Filter = BasicAutoSwitch)]
 	private static readonly bool _autoOffWhenDead = true;
 
+	[ConditionBool, UI("Turn back on when you are raised in combat",
+		Description = "When \"Turn off when you die\" turned RSR off in a fight and you are raised while it goes on, RSR "
+			+ "comes back on as it was - Auto, Manual or targeting only. Not after you switched it yourself, changed zones "
+			+ "or the fight ended. AutoDuty and other plugins that set the state keep it.\nIn a fight: you act again as soon "
+			+ "as you stand up, instead of standing idle until you notice.",
+		Parent = nameof(AutoOffWhenDead))]
+	private static readonly bool _autoOnWhenRaised = true;
+
 	[ConditionBool, UI("Turn off when a duty is completed",
 	Filter = BasicAutoSwitch)]
 	private static readonly bool _autoOffWhenDutyCompleted = true;
@@ -619,6 +627,16 @@ internal partial class Configs : IPluginConfiguration, IM3Settings
 		Description = "Lets tanks and DPS heal with abilities such as Vercure and Bloodbath.",
 		Filter = HealingActionCondition, Section = 4)]
 	private static readonly bool _useHealWhenNotAHealer = true;
+
+	[ConditionBool, UI("Heal and protect yourself while the raise protection lasts",
+		Description = "After a raise you are invulnerable to most damage for 5 s, until you begin any action. When an enemy "
+			+ "cast at you or reaching you lands only after that, or a party member is about to die, RSR heals and protects "
+			+ "during those seconds - heals, defences, an HP potion; no damage, no buffs, no raise. It waits as before while "
+			+ "any announced hit, a marker on you or a BossModReborn prediction could land within them.\nIn a fight: up to "
+			+ "5 s more to heal up before the hit that comes right after; the protection is lost against a hit nobody "
+			+ "announced in the rest of those seconds.",
+		Filter = HealingActionCondition, Section = 4)]
+	private static readonly bool _spendRaiseProtection = true;
 
 	[JobConfig, UI("Interrupt enemy casts",
 		Filter = AutoActionUsage, Section = 3,
