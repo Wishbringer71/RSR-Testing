@@ -16422,6 +16422,23 @@ habe den schleim bislang nicht anfreunden können."
 - *Prüfgrad:* Compile ohne Warnung, Prüfschritte; Wirkkette am Code. Im Spiel nicht beobachtet; jede Verwendung schreibt
   „crucible item: … ", die Selbstkorrektur „… stayed under Auto-remedy".
 
+### A554 · Crucible, K8 vierter Teil: Resistenzmittel gegen ein Element, Bestien-Goldnadel, Bestien-Ausdauermittel (05.11.2026)
+
+- *Auftrag:* `TODO.md`, „Beastmaster: Crucible-Strategien", K8 Rest, zuerst die Gegenstände für die Sicherheit.
+- *Quellen:* `XBMItem` 84, 112, 116 bis 127 (englische Wirktexte, Schema a1e24a0c). Die Einordnung aller Gegenstände 76
+  bis 143 ist an ihren Texten mit derselben Musterfolge nachgeprüft: jeder in der beabsichtigten Art, ohne Einsatz nur
+  die, die Konzept 01 ausnimmt.
+- *Entscheidung (Konzept 01, „Stufe 3: K8", Punkte 9 bis 11):* das Resistenzmittel des Elements, das ein Cast auf dich
+  oder eine Fläche, die dich erreicht, trägt (Element über `CrucibleBoard.ElementsOf`, wie K1); die Goldnadel, sobald
+  der Begleiter einen Status mit dem Namen der Heilung trägt; das Ausdauermittel gegen einen Boss. Unter der ersten
+  Einstellung, deren Text die drei jetzt nennt.
+- *Ausgenommen mit Grund:* Horn der Rückkehr (welcher Begleiter fiel, zeigt das Spiel nicht, K11), Rauchbombe, Auge des
+  Diebs und des Händlers; offen im TODO die Mittel für Schaden und Tempo, Wendigkeit und Flinkheit.
+- *Gegenthese:* Ein Treffer, den nur BossModReborn ankündigt, nennt kein Element; dann wartet das Resistenzmittel. Preis
+  benannt.
+- *Prüfgrad:* Compile ohne Warnung, Prüfschritte, Musterprüfung an den 68 Texten; im Spiel nicht beobachtet. Jede
+  Verwendung schreibt „crucible item: …".
+
 ## B · Commit-Register (Fork vs. `upstream/main`)
 
 ### B1 · Einzelgeprüfte Fork-Commits

@@ -12,9 +12,9 @@ Nach der Wirkung im Kampf: Sicherheit der Gruppe vor Schaden, gewichtet mit der 
 
 1. Allein ohne Heiler kommt kein Heiltrank: RSR stand 13 s in der kritischen Klasse ohne Heilfähigkeit, kein Trank
    von RSR trotz eingeschalteter Option, er drückte ihn bei 6 % selbst und starb (Beastmaster, Sägerschrei, 04.11.2026).
-2. Beastmaster: Crucible-Strategien: Ein K.O. beendet den Lauf; Schutz und Reißzähne aus dem Brett setzt RSR nicht ein,
-   und ein Begleiter, den ein späterer Kampf braucht, kommt dort mit den
-   LP an, die ihm die früheren ließen.
+2. Beastmaster: Crucible-Strategien: Ein K.O. beendet den Lauf; die Mittel für Schaden und Tempo setzt RSR nicht ein,
+   und ein Begleiter, den ein späterer Kampf braucht, kommt dort mit den LP an, die ihm
+   die früheren ließen.
 3. Beastmaster: Brechende Welle als Schaden: mit einem Wavekin auf dem Borgen-Horn ein Schadens-GCD, der nie kommt.
 4. Fremde Repositories auf Verbesserungen für RSR prüfen: Jeder Fund kann ein Defekt im Verhalten einer Klasse sein,
    den RSR heute im Kampf zeigt; zuerst die Rotationswerkzeuge für alle Jobs, Daedalus vorn (aktiv, alle Jobs,
@@ -53,13 +53,13 @@ nach der Gefahr statt nach der festen Schwelle, für alle Jobs. *Konzept:* 03 (�
 Arzneien"), 07.
 
 ### Beastmaster: Crucible-Strategien · N
-Im Kampf: Fällst du im Brett, ist der Lauf verloren; die Kampf- und Resistenzmittel und die Gegenstände für
-Begleiter setzt RSR nicht ein, und es plant die Begleiter nicht über das Brett: Ein Heiler, der im vierten Kampf gebraucht wird, kann bis dahin auf 25 von 550
+Im Kampf: Fällst du im Brett, ist der Lauf verloren; die Mittel für Schaden und Tempo setzt RSR nicht ein, und es plant die Begleiter nicht über das Brett: Ein Heiler, der im vierten Kampf gebraucht wird, kann bis dahin auf 25 von 550
 LP gefallen sein (04.11.2026). *Ort:* `BST_Reborn`, `CrucibleBoard`, `BeastmasterCrucible*.cs`. *Gebaut:* Stufe 1 (A548,
-A549: Daten zur Laufzeit, K1, K2, K3 ohne den Bedarf der Begleiter), K9 (A550), K8 (A551 bis A553: Heilung, Gegenmittel, Bestien-Lebensfeder, Sand der
-Zeit, Bestien-Heiltranksammlung, Schutz, Seren, Bestien-Heilmittelsammlung, Schadensgegenstände).
-*Nächster Schritt:* K8 Rest (Bestien-…mittel, Resistenzmittel gegen ein Element, Bestien-Goldnadel, Horn der Rückkehr; Konzept 01,
-„Nicht in diesem Teil"); K6 (Hörner vor dem Kampf;
+A549: Daten zur Laufzeit, K1, K2, K3 ohne den Bedarf der Begleiter), K9 (A550), K8 (A551 bis A554: Heilung, Gegenmittel, Bestien-Lebensfeder, Sand der
+Zeit, Bestien-Heiltranksammlung, Schutz, Seren, Bestien-Heilmittelsammlung, Resistenzmittel, Bestien-Goldnadel,
+Bestien-Ausdauermittel, Schadensgegenstände).
+*Nächster Schritt:* K8 Rest (Mittel für Schaden und Tempo, Bestien-Wendigkeits- und -Flinkheitsmittel; Konzept 01, „Nicht in diesem
+Teil"); K6 (Hörner vor dem Kampf;
 zuerst messen, ob der Server im Brett zuweist) und K7 (Kader auf Wunsch über das Teamfenster); K4, K5, K10 (Campsite,
 Laden, Weg, im eigenen Loop); K11 (Kader und Feld liefert das Spiel nicht, Loop am Ende des TODO). *Konzept:* 01,
 „Crucible of the Unbroken: Bretter, Kämpfe, Strategien".

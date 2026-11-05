@@ -1948,7 +1948,7 @@ danach K4, K5, K10.
 - *Im Kampf:* Seelenlose (Stich), Raptor auf einem Horn (Entfesseln Feuer), Sukkubi (Feuer) nach 45 s. Der Raptor
   bleibt im Zyklus zurück, solange ein anderes Horn bereit ist, und kommt, sobald die Sukkubi erscheinen.
 
-**Stufe 3: K8, Gegenstände des Bretts** (A551 bis A553, gebaut). Zwei Einstellungen, beide ab Werk an: „Use the
+**Stufe 3: K8, Gegenstände des Bretts** (A551 bis A554, gebaut). Zwei Einstellungen, beide ab Werk an: „Use the
 board's items that keep you and your familiar alive (Crucible only)" und „Use the board's damage items: on a pack once a
 fight, freely in the final fight (Crucible only)".
 - *Welche* (`XBMItem`, xivapi Schema a1e24a0c, 05.11.2026; Name in Spalte 2, englischer Wirktext in Spalte 3, daraus Art
@@ -1963,6 +1963,12 @@ fight, freely in the final fight (Crucible only)".
   - Schutz: Bestien-Verhärtungsmittel („Grants Tough Skin to self or familiar … Reduces damage taken by 20%", 60 s),
     Grimoire der Unantastbarkeit („five stacks of Blink … Nullifies most physical attacks", 120 s), Grimoire der
     Reflexion („Grants Reflect … Reflects most magic attacks back at the caster", 30 s).
+  - Gegen ein Element: die Bestien-Feuer-, -Wasser-, -Erd-, -Blitz-, -Wind- und -Eisresistenzmittel I und II („Grants
+    Through Fire to self and nearby allies … 50/70% chance to absorb fire damage as HP", 15 s).
+  - Für den Begleiter: Bestien-Goldnadel („Instantly cures most instances of petrification for familiar, restoring 50% of
+    maximum HP … Additionally grants Stoneskin", 50 % seiner LP, 60 s).
+  - Mehr LP: Bestien-Ausdauermittel („Grants Liquid Constitution while also restoring 10% of HP to self or familiar …
+    Increases maximum HP by 20% Effect ends upon combat completion").
   - Zustände: Bestien-Heilmittelsammlung („Grants Auto-remedy to self … Automatically cures the next status ailment
     suffered", 240 s) und die Seren I und II (Bestien-Antigift-, -Antiparalyse-, -Antiblind-, -Antiversteinerung-,
     -Antischlaf-Serum: „Increases poison/paralysis/blind/petrification/sleep resistance by 100%", 180 s; II auch für
@@ -1984,7 +1990,7 @@ fight, freely in the final fight (Crucible only)".
   (`StatusCategory` 2), der dir die Kontrolle nimmt (`LockActions` oder `LockControl`: Petrification, Hysteria, Nightmare,
   Confused, Devoured, Down for the Count, Stone Curse) oder dessen englischer Wirktext den Tod nennt (Doom, Stone Curse).
   Ob die Bestien-Heilmittelsammlung einen davon heilt, sagt keine Quelle („status ailment", unbelegt).
-- *Wann, einer zur Zeit, in dieser Reihenfolge* (erste Einstellung, außer 9):
+- *Wann, einer zur Zeit, in dieser Reihenfolge* (erste Einstellung, außer 12):
   1. Im Kampf unter „Use HP potions below this HP": der Heilgegenstand, der dich mit dem kleinsten Wert wieder über die
      Linie hebt, sonst der größte; bei gleicher Heilung der Heiltrank vor dem Pulver. Normale Heiltränke sperrt das Brett.
   2. Im Kampf gegen Gift oder Blindheit auf dir das passende Mittel.
@@ -2005,7 +2011,13 @@ fight, freely in the final fight (Crucible only)".
   8. Gegen die Zustände des Kampfes, sobald er erkannt ist und das Blatt für einen seiner Gegner einen gefährlichen
      Status führt: zuerst das Serum, dessen Text diesen Status nennt (je Status einmal im Kampf), sonst die
      Bestien-Heilmittelsammlung, solange kein Auto-remedy steht.
-  9. Schaden (zweite Einstellung) auf dein Gegnerziel: im Endkampf jeder Schadensgegenstand, der wertvollste zuerst;
+  9. Gegen einen Treffer mit Element: Ist ein Treffer auf dich angekündigt (wie 6) oder erreicht dich ein Flächentreffer
+     (`DataCenter.AreaHitReachesPlayer`), und trägt ein laufender Cast dabei ein Element (`CrucibleBoard.ElementsOf`,
+     wie K1), das Resistenzmittel dieses Elements mit der höheren Chance, solange sein Status nicht steht. Es wirkt
+     15 s, der Cast landet innerhalb seiner Wirkzeit.
+  10. Ist dein Begleiter versteinert (ein Status mit „Petrification" im englischen Namen), die Bestien-Goldnadel auf ihn.
+  11. Gegen einen Gegner mit Boss-Symbol, solange kein Liquid Constitution steht, das Bestien-Ausdauermittel auf dich.
+  12. Schaden (zweite Einstellung) auf dein Gegnerziel: im Endkampf jeder Schadensgegenstand, der wertvollste zuerst;
      sonst einer je Kampf, sobald er mehr Gegner trifft als dein Ziel. Wert ist Potenz mal der Summe über die
      getroffenen Gegner aus eins plus dem gemessenen Schwächezuschlag, wo das Element ihre Schwäche ist (K1); bei
      Gleichstand der ohne Rückstoß. Ein Gegenstand, dessen Element nur die Schwäche noch kommender Gegner trifft, wartet
@@ -2037,13 +2049,16 @@ fight, freely in the final fight (Crucible only)".
   - Ein Schadensgegenstand je Kampf vor dem Endkampf ist eine Setzung: Wie viele Kämpfe noch kommen, liefert das Spiel
     nicht (K11). Sie folgt seinem eigenen Spiel am 04.11.2026 um 19:04, ein Reißzahn auf ein Rudel.
   - Ausgeliefert, und nichts ändert sich: Hält er keine dieser Gegenstände, oder erkennt RSR den Kampf nicht (Zeile
-    „crucible fight …" fehlt), ruhen 8 und 9 und der Endkampf; die Spur zeigt beides.
+    „crucible fight …" fehlt), ruhen 8, 9 und 12 und der Endkampf; die Spur zeigt beides.
+  - Das Resistenzmittel hilft nur, wenn der Cast das Element trägt, das er anzeigt; ein Treffer, den nur BossModReborn
+    ankündigt, nennt keines, dann wartet es. Preis benannt.
 - *Nicht in diesem Teil:* Die „Ungezähmten" Mittel (Ungezähmte Bestien-Stärkungsmittel und verwandte) legen dir selbst
-  Stun, Nightmare, Petrification, Blind oder Pollen auf – RSR setzt sie nie ein (Sicherheit). Offen, im TODO: die übrigen
-  Bestien-…mittel (Stärkung, Zauber, Aufbraus, Wendigkeit, Ausdauer, Flinkheit, Verkürzung), die Resistenzmittel gegen
-  ein Element, Bestien-Goldnadel und Horn der Rückkehr (Begleiter; der Kader ist nicht lesbar, K11), Bestien-Feder,
-  Bestien-Blutsaugerserum, Grimoire der Zauberschmiede und des Stahlstachels, Bestien-Rauchbombe, Auge des Diebs und des
-  Händlers.
+  Stun, Nightmare, Petrification, Blind oder Pollen auf – RSR setzt sie nie ein (Sicherheit). Das Horn der Rückkehr
+  belebt einen gefallenen Begleiter nur auf dem Brett, außerhalb eines Kampfes, und welcher gefallen ist, zeigt das Spiel
+  nicht (der Kader ist nicht lesbar, K11). Bestien-Rauchbombe (Flucht über das Brett-Fenster), Auge des Diebs und des
+  Händlers (Beute und Marken, keine Wirkung im Kampf): kein Einsatz durch RSR. Offen, im TODO: die Mittel für Schaden und
+  Tempo (Bestien-Stärkungs-, -Zauber-, -Aufbraus-, -Verkürzungsmittel, Bestien-Feder, Bestien-Blutsaugerserum,
+  Grimoire der Zauberschmiede und des Stahlstachels), Bestien-Wendigkeits- und -Flinkheitsmittel.
 
 **Stufe 1, zweiter Teil: K1 und der Rest von K3** (A549, gebaut; Daten in `CrucibleBoard`):
 - *K1, Zuschlag gemessen:* Keine Quelle nennt ihn; consolegameswiki und Eorzean Tavern sagen nur, dass Schwächen

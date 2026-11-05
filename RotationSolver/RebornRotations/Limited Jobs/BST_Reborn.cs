@@ -71,7 +71,7 @@ public sealed class BST_Reborn : BeastmasterRotation
 			+ "Off: Capture and Gauge are never used.")]
 	private bool CaptureFamiliars { get; set; } = true;
 
-	// K8 of the Crucible (concept 01, A551 to A553): the board's items that keep you and your familiar alive, and its damage
+	// K8 of the Crucible (concept 01, A551 to A554): the board's items that keep you and your familiar alive, and its damage
 	// items.
 	[RotationConfig(CombatType.PvE, Name = "Use the board's items that keep you and your familiar alive (Crucible only)",
 		Tooltip = "On a Crucible board RSR uses, one at a time: when your HP fall below 'Use HP potions below this HP' in combat, "
@@ -82,7 +82,9 @@ public sealed class BST_Reborn : BeastmasterRotation
 			+ "Auto-potion stands; against an announced hit on you the Tome of the Impervious (physical), the Tome of "
 			+ "Reflection (magic) or Crucible Tannin - in the final fight also while an enemy attacks you; the same for your "
 			+ "familiar when the hit could fell it; against the dangerous statuses the fight's enemies inflict (they take "
-			+ "control from you or end in death) the soul serum that names one, else a Beast Remedy Kit.\n"
+			+ "control from you or end in death) the soul serum that names one, else a Beast Remedy Kit; against a hit on you "
+			+ "whose cast carries an element, the weakener of that element; a Crucible Needle for your petrified familiar; "
+			+ "against a boss a Potion of Tempered Constitution.\n"
 			+ "Off: RSR uses none of these.")]
 	private bool UseCrucibleSafetyItems { get; set; } = true;
 

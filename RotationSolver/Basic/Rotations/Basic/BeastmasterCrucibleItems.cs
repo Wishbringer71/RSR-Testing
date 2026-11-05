@@ -10,10 +10,11 @@ using FFXIVClientStructs.FFXIV.Client.Game.InstanceContent;
 namespace RotationSolver.Basic.Rotations.Basic;
 
 /// <summary>
-/// K8 of the Crucible (concept 01, "Stufe 3: K8, Gegenstände des Bretts", A551 to A553): the board's items - healing below
+/// K8 of the Crucible (concept 01, "Stufe 3: K8, Gegenstände des Bretts", A551 to A554): the board's items - healing below
 /// the player's HP potion line, a cure for poison or blindness, Reraise, Sandstill before a fight, the Beast Potion Kit
 /// against a boss, protection against an announced hit on the player or on a familiar about to fall, a serum or the Beast
-/// Remedy Kit against the fight's dangerous statuses, and the damage items - on a pack once a fight, freely in the final
+/// Remedy Kit against the fight's dangerous statuses, an absorber against an elemental hit, the Crucible Needle for a
+/// petrified familiar, more maximum HP against a boss, and the damage items - on a pack once a fight, freely in the final
 /// fight, whose items are lost after the run.
 /// </summary>
 public partial class BeastmasterRotation
@@ -32,6 +33,9 @@ public partial class BeastmasterRotation
 		AutoRemedy,
 		ResistAilment,
 		Damage,
+		AbsorbElement,
+		CureFamiliar,
+		MaxHp,
 	}
 
 	// What an item of the board does, read once from its English effect text (XBMItem): its kind; the share it heals or
@@ -69,6 +73,14 @@ public partial class BeastmasterRotation
 	private static readonly Regex Mitigates = new(@"Reduces damage taken by (?<share>\d+)%", RegexOptions.CultureInvariant);
 	private static readonly Regex Resists = new(@"^Increases (?<ailment>\w+) resistance by \d+% for self (?<whom>or familiar|and nearby allies)",
 		RegexOptions.CultureInvariant);
+	private static readonly Regex AbsorbsElement = new(
+		@"^Grants (?<status>.+?) to self and nearby allies\..*?(?<share>\d+)% chance to absorb (?<type>[a-z]+) damage as HP",
+		RegexOptions.CultureInvariant | RegexOptions.Singleline);
+	private static readonly Regex CuresFamiliar = new(@"^Instantly cures most instances of (?<ailment>\w+) for familiar",
+		RegexOptions.CultureInvariant);
+	private static readonly Regex RaisesMaxHp = new(
+		@"^Grants (?<status>.+?) while also restoring \d+% of HP to self or familiar\..*?Increases maximum HP by",
+		RegexOptions.CultureInvariant | RegexOptions.Singleline);
 	private static readonly Regex Deals = new(
 		@"deals (?:ranged )?(?<type>[a-z]+)(?: physical)? damage with a potency of (?<potency>[\d,]+) to target and all enemies within (?<radius>\d+) yalms",
 		RegexOptions.CultureInvariant | RegexOptions.IgnoreCase);
@@ -114,6 +126,19 @@ public partial class BeastmasterRotation
 			else if (GrantsStatus.Match(text) is { Success: true } grants && ProtectionKind(text, out var kind, out var mitigates))
 			{
 				items[id] = new CrucibleItem(kind, mitigates, false, name, grants.Groups["status"].Value);
+			}
+			else if (AbsorbsElement.Match(text) is { Success: true } absorbs && Share(absorbs, out var absorbChance))
+			{
+				items[id] = new CrucibleItem(CrucibleItemKind.AbsorbElement, absorbChance, true, name, absorbs.Groups["status"].Value,
+					CrucibleBoard.ElementNamed(absorbs.Groups["type"].Value));
+			}
+			else if (CuresFamiliar.Match(text) is { Success: true } curesFamiliar)
+			{
+				items[id] = new CrucibleItem(CrucibleItemKind.CureFamiliar, 0f, false, name, curesFamiliar.Groups["ailment"].Value);
+			}
+			else if (RaisesMaxHp.Match(text) is { Success: true } maxHp)
+			{
+				items[id] = new CrucibleItem(CrucibleItemKind.MaxHp, 0f, false, name, maxHp.Groups["status"].Value);
 			}
 			else if (Resists.Match(text) is { Success: true } resists)
 			{
@@ -216,7 +241,8 @@ public partial class BeastmasterRotation
 	/// without a fall, only against a boss); out of combat Sandstill while none stands; against a boss the Beast Potion Kit
 	/// while no Auto-potion stands; protection against an announced hit on him, and on his familiar when it holds no more HP
 	/// than <paramref name="familiarLargestHit"/> (in the final fight against any); a serum, else the Beast Remedy Kit, against
-	/// the fight's dangerous statuses. With <paramref name="damage"/>: a damage item on his target - in the final fight any,
+	/// the fight's dangerous statuses; the absorber of the element of a hit on him; the cure of his familiar's ailment; against
+	/// a boss more maximum HP. With <paramref name="damage"/>: a damage item on his target - in the final fight any,
 	/// else one a fight on a pack. Called every frame from the update.
 	/// </summary>
 	internal static unsafe void UseCrucibleItems(float line, uint familiarLargestHit, bool safety, bool damage)
@@ -362,6 +388,35 @@ public partial class BeastmasterRotation
 		if (slot < 0 && InCombat && CrucibleBoard.Ailments.Count > 0)
 		{
 			slot = AgainstAilments(crucible, player, out covers, out why);
+		}
+
+		// 9: the absorber of the element a cast carries that is announced on him or whose area reaches him.
+		if (slot < 0 && InCombat && (HitAnnouncedOn(player) || DataCenter.AreaHitReachesPlayer))
+		{
+			slot = AgainstElement(crucible, player, out why);
+		}
+
+		// 10: the cure for the ailment the familiar carries, on it.
+		if (slot < 0 && familiar != null && !familiar.IsDead && familiar.CurrentHp > 0)
+		{
+			slot = FamiliarCure(crucible, familiar, out why);
+			if (slot >= 0)
+			{
+				on = familiar;
+			}
+		}
+
+		// 11: against a boss, more maximum HP while none stands.
+		if (slot < 0 && InCombat && bossFighting)
+		{
+			for (var i = 0; i < crucible->Inventory.Length && slot < 0; i++)
+			{
+				if (TryItem(crucible, i, CrucibleItemKind.MaxHp, out var raise) && !PlayerHasStatusNamed(player, raise.Status))
+				{
+					slot = i;
+					why = $"against a boss, no {raise.Status} stands";
+				}
+			}
 		}
 
 	Damage:
@@ -541,7 +596,57 @@ public partial class BeastmasterRotation
 		}
 	}
 
-	// 9: the damage item of most worth on the player's target - its potency times the enemies within its radius of the target,
+	// 9: the elements of the casts in progress aimed at him, and with an area hit reaching him of all casts in progress; the
+	// absorber of such an element with the highest chance, while its status does not stand on him.
+	private static unsafe int AgainstElement(InstanceContentCrucibleOfTheUnbroken* crucible, IBattleChara player, out string why)
+	{
+		why = string.Empty;
+		var areaReaches = DataCenter.AreaHitReachesPlayer;
+		var elements = new HashSet<uint>();
+		var casters = DataCenter.AreaCasters;
+		for (var i = 0; i < casters.Count; i++)
+		{
+			var caster = casters[i];
+			if (caster != null && caster.IsCasting && (areaReaches || caster.CastTargetObjectId == player.GameObjectId))
+			{
+				elements.UnionWith(CrucibleBoard.ElementsOf(caster.CastActionId));
+			}
+		}
+
+		var best = -1;
+		var chance = 0f;
+		for (var slot = 0; slot < crucible->Inventory.Length; slot++)
+		{
+			if (TryItem(crucible, slot, CrucibleItemKind.AbsorbElement, out var item) && elements.Contains(item.Element)
+				&& !PlayerHasStatusNamed(player, item.Status) && item.Value > chance)
+			{
+				best = slot;
+				chance = item.Value;
+				why = $"against a {CrucibleBoard.ElementName(item.Element)} hit on you";
+			}
+		}
+
+		return best;
+	}
+
+	// 10: the item that cures the ailment the familiar carries, by the English name of its status.
+	private static unsafe int FamiliarCure(InstanceContentCrucibleOfTheUnbroken* crucible, IBattleChara familiar, out string why)
+	{
+		why = string.Empty;
+		for (var slot = 0; slot < crucible->Inventory.Length; slot++)
+		{
+			if (TryItem(crucible, slot, CrucibleItemKind.CureFamiliar, out var item) && item.Status.Length > 0
+				&& PlayerHasStatusNamed(familiar, item.Status))
+			{
+				why = $"for {familiar.Name}, against {item.Status}";
+				return slot;
+			}
+		}
+
+		return -1;
+	}
+
+	// 12: the damage item of most worth on the player's target - its potency times the enemies within its radius of the target,
 	// each counting one plus the measured weakness bonus where the item's element is its weakness; at equal worth the one
 	// without knockback. Outside the final fight only when it hits more than the target. An item whose element is the weakness
 	// only of enemies still to come waits for them (K2).

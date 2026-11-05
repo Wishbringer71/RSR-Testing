@@ -195,7 +195,8 @@ What this release changes in the fight. For the whole distance from upstream, se
   Impervious (physical), the Tome of Reflection (magic) or Crucible Tannin - the same for your
   familiar when the hit could fell it; against the statuses the fight's enemies inflict that take
   control from you or end in death (read from the board's sheets) the soul serum that names one, else a
-  Beast Remedy Kit. In the final fight, whose items are lost after the run, protection also goes
+  Beast Remedy Kit; against a hit on you whose cast carries an element the weakener of that element; a
+  Crucible Needle for your petrified familiar; against a boss a Potion of Tempered Constitution. In the final fight, whose items are lost after the run, protection also goes
   whenever an enemy attacks you. Each item's kind and size come from its own text. `DefenseTrace.log`
   names each use, and a slot the game did not take is not tried again in that fight.
 - **The board's damage items (Crucible).** With `Use the board's damage items: on a pack once a
