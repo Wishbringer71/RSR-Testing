@@ -1947,25 +1947,37 @@ danach K4, K5, K10.
 - *Im Kampf:* Seelenlose (Stich), Raptor auf einem Horn (Entfesseln Feuer), Sukkubi (Feuer) nach 45 s. Der Raptor
   bleibt im Zyklus zurück, solange ein anderes Horn bereit ist, und kommt, sobald die Sukkubi erscheinen.
 
-**Stufe 3, erster Teil: K8, Heilgegenstände** (A551, gebaut):
-- *Gegenstände* (`XBMItem`, xivapi Schema a1e24a0c, 05.11.2026; Name in Spalte 2, Wirktext in Spalte 3, englisch): Bestien-
-  Heiltrank G1 bis G4 (Zeilen 76 bis 79, „Restores 10/23/36/50% of HP to self or familiar") und Asche G1 bis G3 (80 bis 82,
-  „… to self and nearby allies"). Die Prozentzahl liest RSR aus dem Wirktext, nicht aus einer Tabelle.
-- *Wann:* im Kampf im Brett, RSR an, wenn deine LP unter „Use HP potions below this HP" fallen. Das ist deine Linie für
-  den Heiltrank; normale Heiltränke sperrt das Brett, die Brett-Gegenstände treten an ihre Stelle. Eigene Einstellung
-  „Use Crucible healing items below the HP potion line (Crucible only)", ab Werk an.
-- *Welcher:* der kleinste, der dich wieder über die Linie hebt; reicht keiner, der größte. Bei gleicher Heilung der Trank
-  vor der Asche, denn die Asche heilt auch die Begleiter.
-- *Wie:* über `InstanceContentCrucibleOfTheUnbroken.UseItem` (FFXIVClientStructs, in Dalamuds Fassung vorhanden).
-  Der Gegenstand wirkt auf das Soft- oder Hard-Ziel; RSR setzt dazu das Soft-Ziel kurz auf dich und stellt es zurück. So
-  macht es BeastHelper (be40a1e, Werkzeugquelle, nur gelesen) über die Leiste des Bretts.
+**Stufe 3: K8, Gegenstände für die Sicherheit** (A551, A552, gebaut; Einstellung „Use the board's items that keep you
+alive (Crucible only)", ab Werk an):
+- *Welche* (`XBMItem`, xivapi Schema a1e24a0c, 05.11.2026; Name in Spalte 2, englischer Wirktext in Spalte 3, daraus Art
+  und Größe):
+  - Heilung: Bestien-Heiltrank G1 bis G4 („Restores 10/23/36/50% of HP to self or familiar") und Asche G1 bis G3 („… to
+    self and nearby allies").
+  - Wiederbeleber G1 und G2 („Grants Reraise to self … 70/95% chance of automatic revival upon KO", keine Dauer genannt).
+  - Sand der Zeit („Grants Sandstill to self … Returns you to the moment combat commences upon incapacitation", nur
+    außerhalb des Kampfes).
+  - Heiltrank-Set („Auto-potion: Restores 40% of HP automatically when HP falls below 50%", 150 s).
+  - Gegengift und Augentropfen (heilen Gift und Blindheit und 25 % LP).
+- *Wann, einer zur Zeit, in dieser Reihenfolge:*
+  1. Im Kampf unter „Use HP potions below this HP": der Heilgegenstand, der dich mit dem kleinsten Wert wieder über die
+     Linie hebt, sonst der größte; bei gleicher Heilung der Trank vor der Asche. Normale Heiltränke sperrt das Brett.
+  2. Im Kampf gegen Gift oder Blindheit auf dir das passende Mittel.
+  3. Steht kein Reraise, der stärkere Wiederbeleber, im Kampf und außerhalb. Sein Wirktext nennt keine Dauer, also gilt
+     er bis zu einem Fall. Geht er, ohne dass du fielst, schreibt die Spur das, und von da an kommt ein Wiederbeleber nur
+     noch gegen einen Boss.
+  4. Außerhalb des Kampfes, solange kein Sandstill steht, der Sand der Zeit.
+  5. Gegen einen Gegner mit Boss-Symbol, solange kein Auto-potion steht, das Heiltrank-Set.
+- *Wie:* `InstanceContentCrucibleOfTheUnbroken.UseItem` (FFXIVClientStructs, in Dalamuds Fassung vorhanden) wirkt auf
+  das Soft- oder Hard-Ziel. RSR setzt das Soft-Ziel kurz auf dich und stellt es zurück, wie BeastHelper (be40a1e,
+  Werkzeugquelle, nur gelesen). Die Status liest RSR nach ihrem englischen Namen.
 - *Nachweis zur Laufzeit:* Nach dem Einsatz wartet RSR, bis der Platz einen anderen Gegenstand zeigt, höchstens einen GCD.
-  Bleibt er gleich, schreibt die Spur „not taken" und versucht diesen Platz in diesem Kampf nicht mehr.
-- *Nicht in diesem Teil:* Gegenmittel, Wiederbeleber, Sand der Zeit, Schutz und Reißzähne folgen. Ob ein Gegenstand
-  gerade gesperrt ist, prüft das Spiel nur über eine Funktion, die FFXIVClientStructs nicht führt; RSR prüft stattdessen
-  die Animationssperre und den Verbrauch.
-- *Gegenthese:* Gegenstände sind ein Vorrat für das ganze Brett. Teilweise widerlegt: Sie gehen erst an deiner
-  Heiltrank-Linie, und der kleinste passende zuerst. Dein Fall beendet den Lauf, ein ungenutzter Trank rettet nichts.
+  Bleibt er gleich, schreibt die Spur „not taken" und versucht diesen Platz in diesem Kampf nicht mehr. Ob ein Gegenstand
+  gerade gesperrt ist, prüft das Spiel über eine Funktion, die FFXIVClientStructs nicht führt; RSR prüft stattdessen die
+  Animationssperre und den Verbrauch.
+- *Gegenthese:* Gegenstände sind ein Vorrat für das ganze Brett. Teilweise widerlegt: Heilung erst an deiner
+  Heiltrank-Linie und die kleinste passende zuerst; Reraise und Sandstill sind Versicherung, die nur zählt, wenn sie vor
+  dem Fall steht, denn dein Fall beendet den Lauf.
+- *Nicht in diesem Teil:* Schutz (Gerbstoff, Buch der Unverwundbarkeit, Buch der Reflexion), Mittel-Set und Reißzähne.
 
 **Stufe 1, zweiter Teil: K1 und der Rest von K3** (A549, gebaut; Daten in `CrucibleBoard`):
 - *K1, Zuschlag gemessen:* Keine Quelle nennt ihn; consolegameswiki und Eorzean Tavern sagen nur, dass Schwächen

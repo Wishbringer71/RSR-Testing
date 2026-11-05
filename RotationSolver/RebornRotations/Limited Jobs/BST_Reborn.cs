@@ -71,13 +71,16 @@ public sealed class BST_Reborn : BeastmasterRotation
 			+ "Off: Capture and Gauge are never used.")]
 	private bool CaptureFamiliars { get; set; } = true;
 
-	// K8 of the Crucible, first part (concept 01, A551): the board's healing items take the place of the HP potions it locks.
-	[RotationConfig(CombatType.PvE, Name = "Use Crucible healing items below the HP potion line (Crucible only)",
-		Tooltip = "In combat on a Crucible board, when your HP fall below 'Use HP potions below this HP', RSR uses the board's "
-			+ "Beast Potion or Crucible Ash that lifts you back to that line with the least, or the largest when none does - a "
-			+ "potion before ash at the same heal, since ash heals your familiar as well. The board locks normal potions.\n"
+	// K8 of the Crucible (concept 01, A551, A552): the board's items that keep you alive.
+	[RotationConfig(CombatType.PvE, Name = "Use the board's items that keep you alive (Crucible only)",
+		Tooltip = "On a Crucible board RSR uses, one at a time: when your HP fall below 'Use HP potions below this HP' in combat, "
+			+ "the Beast Potion or Crucible Ash that lifts you back to that line with the least, or the largest when none does "
+			+ "(the board locks normal potions); an antidote or eye drops against poison or blindness on you; a Beastmaster "
+			+ "Reraiser while no Reraise stands, the stronger first - only against a boss once Reraise was seen to go without a "
+			+ "fall; Temporal Sand out of combat while no Sandstill stands; a Beast Potion Kit against a boss while no "
+			+ "Auto-potion stands.\n"
 			+ "Off: RSR uses no board item.")]
-	private bool UseCrucibleHealItems { get; set; } = true;
+	private bool UseCrucibleSafetyItems { get; set; } = true;
 
 	// K9 of the Crucible (concept 01, A550): on by default. Without a tank the enemies attack only you, and your fall ends the
 	// run; the familiar's HP are a second store, and a fallen familiar costs that familiar, not the run.
@@ -1005,9 +1008,9 @@ public sealed class BST_Reborn : BeastmasterRotation
 		// Stage 1 of the Crucible (A548): the fight in progress from the sheets, for K2.
 		FollowCrucible();
 		FollowFamiliarHits();
-		if (UseCrucibleHealItems && DataCenter.State)
+		if (UseCrucibleSafetyItems && DataCenter.State)
 		{
-			UseCrucibleHealItem(Service.Config.UseHpPotionsPercent);
+			UseCrucibleItems(Service.Config.UseHpPotionsPercent);
 		}
 		RecordFight();
 		CountFight();

@@ -12,8 +12,8 @@ Nach der Wirkung im Kampf: Sicherheit der Gruppe vor Schaden, gewichtet mit der 
 
 1. Allein ohne Heiler kommt kein Heiltrank: RSR stand 13 s in der kritischen Klasse ohne Heilfähigkeit, kein Trank
    von RSR trotz eingeschalteter Option, er drückte ihn bei 6 % selbst und starb (Beastmaster, Sägerschrei, 04.11.2026).
-2. Beastmaster: Crucible-Strategien: Ein K.O. beendet den Lauf; von den Brett-Gegenständen setzt RSR nur die heilenden
-   ein, keinen Wiederbeleber und kein Gegenmittel, und ein Begleiter, den ein späterer Kampf braucht, kommt dort mit den
+2. Beastmaster: Crucible-Strategien: Ein K.O. beendet den Lauf; Schutz und Reißzähne aus dem Brett setzt RSR nicht ein,
+   und ein Begleiter, den ein späterer Kampf braucht, kommt dort mit den
    LP an, die ihm die früheren ließen.
 3. Beastmaster: Brechende Welle als Schaden: mit einem Wavekin auf dem Borgen-Horn ein Schadens-GCD, der nie kommt.
 4. Fremde Repositories auf Verbesserungen für RSR prüfen: Jeder Fund kann ein Defekt im Verhalten einer Klasse sein,
@@ -53,11 +53,12 @@ nach der Gefahr statt nach der festen Schwelle, für alle Jobs. *Konzept:* 03 (�
 Arzneien"), 07.
 
 ### Beastmaster: Crucible-Strategien · N
-Im Kampf: Fällst du im Brett, ist der Lauf verloren; von den Brett-Gegenständen setzt RSR nur die heilenden ein, und es
+Im Kampf: Fällst du im Brett, ist der Lauf verloren; Schutzgegenstände und Reißzähne setzt RSR nicht ein, und es
 plant die Begleiter nicht über das Brett: Ein Heiler, der im vierten Kampf gebraucht wird, kann bis dahin auf 25 von 550
 LP gefallen sein (04.11.2026). *Ort:* `BST_Reborn`, `CrucibleBoard`, `BeastmasterCrucible*.cs`. *Gebaut:* Stufe 1 (A548,
-A549: Daten zur Laufzeit, K1, K2, K3 ohne den Bedarf der Begleiter), K9 (A550), K8 erster Teil (A551: Heilgegenstände).
-*Nächster Schritt:* K8 Rest (Gegenmittel, Wiederbeleber, Sand der Zeit, Schutz, Reißzähne); K6 (Hörner vor dem Kampf;
+A549: Daten zur Laufzeit, K1, K2, K3 ohne den Bedarf der Begleiter), K9 (A550), K8 (A551, A552: Heilung, Gegenmittel, Wiederbeleber, Sand der
+Zeit, Heiltrank-Set).
+*Nächster Schritt:* K8 Rest (Schutz, Mittel-Set, Reißzähne); K6 (Hörner vor dem Kampf;
 zuerst messen, ob der Server im Brett zuweist) und K7 (Kader auf Wunsch über das Teamfenster); K4, K5, K10 (Campsite,
 Laden, Weg, im eigenen Loop); K11 (Kader und Feld liefert das Spiel nicht, Loop am Ende des TODO). *Konzept:* 01,
 „Crucible of the Unbroken: Bretter, Kämpfe, Strategien".

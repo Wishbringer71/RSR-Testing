@@ -185,12 +185,14 @@ What this release changes in the fight. For the whole distance from upstream, se
   weakness your damage hits counts as falling that much sooner. Before any enemy has hit, the board
   ranks enemies by the strength and intelligence the game rates them with, over their HP.
   `DefenseTrace.log` names the first measurement on each board.
-- **The board's healing items when your HP fall below your potion line (Crucible).** The board locks
-  normal potions. With `Use Crucible healing items below the HP potion line (Crucible only)`, **on by
-  default**, RSR uses a Beast Potion or Crucible Ash when your HP fall below `Use HP potions below this
-  HP`: the one that lifts you back to that line with the least, or the largest when none does, a
-  potion before ash at the same heal. It reads each item's heal from its own text. `DefenseTrace.log`
-  names each use, and a slot the game did not take is not tried again in that fight.
+- **The board's items that keep you alive (Crucible).** With `Use the board's items that keep you
+  alive (Crucible only)`, **on by default**, RSR uses, one at a time: below `Use HP potions below this
+  HP` in combat the Beast Potion or Crucible Ash that lifts you back to that line with the least (the
+  board locks normal potions); an antidote or eye drops against poison or blindness on you; a
+  Beastmaster Reraiser while no Reraise stands, the stronger first - only against a boss once Reraise
+  is seen to go without a fall; Temporal Sand out of combat while no Sandstill stands; a Beast Potion
+  Kit against a boss. Each item's kind and size come from its own text. `DefenseTrace.log` names each
+  use, and a slot the game did not take is not tried again in that fight.
 - **Snarl and Challenge are on by default (Crucible).** Without a tank the enemies attack only you,
   and your fall ends the run, while a fallen familiar costs only that familiar. `Use Snarl and
   Challenge based on your HP and your familiar's HP (Crucible only)` is now **on by default**, still on

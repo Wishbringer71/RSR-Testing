@@ -16373,6 +16373,26 @@ habe den schleim bislang nicht anfreunden können."
 - *Prüfgrad:* Compile ohne Warnung, Prüfschritte; Wirkkette am Code. Im Spiel nicht beobachtet: ob `UseItem` mit dem
   kurz gesetzten Soft-Ziel auf dich wirkt, zeigen die Zeilen „crucible item: …" und „not taken".
 
+### A552 · Crucible, K8 zweiter Teil: Wiederbeleber, Sand der Zeit, Heiltrank-Set, Gegenmittel (05.11.2026)
+
+- *Auftrag:* `TODO.md`, „Beastmaster: Crucible-Strategien", Rest von K8 (Sicherheit zuerst).
+- *Quellen:* `XBMItem` 83, 85, 98, 99, 138, 140 (xivapi Schema a1e24a0c, vollständige Wirktexte). Für den Wiederbeleber
+  nennt der Text keine Dauer, Sand der Zeit „only outside of combat", das Heiltrank-Set 150 s.
+- *Entscheidung (Konzept 01, „Stufe 3: K8, Gegenstände für die Sicherheit"):*
+  - Die Einstellung heißt jetzt „Use the board's items that keep you alive (Crucible only)", ab Werk an; sie war noch nicht
+    veröffentlicht.
+  - Die Art jedes Gegenstands liest RSR aus seinem englischen Wirktext. Die Reihenfolge: Heilung unter der Linie,
+    Gegenmittel, Wiederbeleber, Sand der Zeit außerhalb des Kampfes, Heiltrank-Set gegen einen Boss.
+  - Selbstkorrektur beim Wiederbeleber: Die Annahme „steht bis zum Fall" wird gemessen. Geht Reraise ohne Fall, gilt er
+    nur noch gegen einen Boss, mit einer Spurzeile.
+- *Gegenthesen:*
+  - Wiederbeleber gleich verbrauchen ist teuer, falls Reraise mit dem Kampf endet. Abgefangen durch die Selbstkorrektur;
+    der Preis ist ein Wiederbeleber.
+  - Das Heiltrank-Set nur gegen einen Boss lässt es in harten Elite-Kämpfen liegen. Nicht widerlegt; die Boss-Erkennung
+    ist das Symbol. Elitefelder erkennt RSR nicht.
+- *Prüfgrad:* Compile ohne Warnung, Prüfschritte; Wirkkette am Code. Im Spiel nicht beobachtet; die Zeilen „crucible
+  item: …", „not taken" und „Reraise went without a fall" zeigen es.
+
 ## B · Commit-Register (Fork vs. `upstream/main`)
 
 ### B1 · Einzelgeprüfte Fork-Commits

@@ -1018,7 +1018,7 @@
   },
   {
    "file": "RotationSolver/Basic/Rotations/Basic/BeastmasterCrucibleItems.cs",
-   "code": "items[(ushort)row.RowId] = (percent / 100f, match.Groups[\"whom\"].Value.StartsWith(\"and\", StringComparison.Ordinal),",
+   "code": "share = percent / 100f;",
    "values": [
     "100"
    ],
