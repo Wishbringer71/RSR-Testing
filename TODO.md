@@ -185,7 +185,7 @@ nebeneinander braucht: neuer interner Name mit Übernahme des Ordners, angezeigt
 ## Warten auf Daten oder Fremde
 
 - **Teraflare bricht auf Shinryu Unreal ab: welcher Abbrecher** (seine Meldung, 06.11.2026; A629). Im Kampf: In der
-  letzten Phase startet sein LB3 und bricht wieder ab, mehrfach. RSR fängt Limit Breaks seit A629 nicht mehr ab und
+  letzten Phase startet sein LB3 und bricht wieder ab, mehrfach. RSR reicht Limit Breaks unverändert ans Spiel und
   schreibt jeden eigenen Abbruch mit Grund. Offen ist, ob BossMods KI ausweicht (Spielraum kürzer als die Restwirkzeit von
   4,5 s) oder BossMod abbricht. Auflösung: `DefenseTrace.log` und Dalamud-Log eines solchen Versuchs („cast cancelled by
   RSR" gegen „[AI] Movement will interrupt cast" oder „[CancelCast]"); liegt es an BossMod, Meldung dort. Konzept 03,
