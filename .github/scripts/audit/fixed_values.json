@@ -1736,6 +1736,16 @@
    "status": "exception",
    "loop": "A621",
    "reason": "Row id of the game's LogMessage sheet that ActionManager.GetActionInRangeOrLoS returns when the target is out of range (\"Target is not in range.\", xivapi v2, 06.11.2026); RSR then leaves the sight to its own ray."
+  },
+  {
+   "file": "RotationSolver/Basic/Helpers/DeepDungeonPomanders.cs",
+   "code": "if (member.EntityId is not 0 and not 0xE0000000)",
+   "values": [
+    "0xE0000000"
+   ],
+   "status": "exception",
+   "loop": "A625",
+   "reason": "The game's id for no object, which an empty slot of the deep dungeon's party record carries; a sentinel, not a quantity of the game (Dalamud ObjectTable.SearchByEntityId and BuddyList.InvalidEntityId test the same value; BossModReborn sanitizes it to 0). No sheet states it."
   }
  ]
 }

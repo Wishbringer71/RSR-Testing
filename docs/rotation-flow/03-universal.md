@@ -1097,8 +1097,8 @@ denselben Weg braucht.
 *Was gilt (A614):* Verwandelt ein Gegenstand des Gewölbes dich, drückt RSR die Angriffe der Form, die das Spiel gerade
 zulässt – für jeden Job gleich, in allen 52 Gebieten der Tiefen Gewölbe (Blatt `TerritoryType`, Nutzungsart 31, xivapi
 06.11.2026; Pflichtrotation „Deep Dungeon", `DeepDungeonRotation`). Welche Form du hast, fragt RSR nicht ab: Es probiert
-die bekannten Formaktionen, und das Spiel lässt nur die der laufenden Form zu (`ActionManagerStatusValid`). Die übrigen
-Gegenstände des Gewölbes – Pomander, Magicite – setzt RSR noch nicht (TODO „Tiefe Gewölbe: Pomander und Magicite", A621).
+die bekannten Formaktionen, und das Spiel lässt nur die der laufenden Form zu (`ActionManagerStatusValid`). Die
+Pomander stehen unten („Tiefe Gewölbe: Pomander").
 - Die Formen und ihre Aktionen: Manticore Pummel, Succubus Void Fire II, Kuribu Heavenly Judge (Blatt `Transformation`,
   Zeilen 42, 43, 49); Dreadnaught Wrecking Ball und Rotosmash, Bomb Big Burst (BossMod `DeepDungeon.cs`, Werkzeugquelle;
   das Blatt führt für diese Formen keine Aktion). Reichweite, Wirkzeit, Fläche und Bodenziel kommen aus dem Aktionsblatt
@@ -1128,6 +1128,70 @@ AoE" gilt auch hier.
 *Gegenthese 2 (ausgeliefert, und nichts ändert sich):* „Use duty actions" ist aus, oder das Spiel meldet die Aktion trotz
 Verwandlung nicht frei. Ab Werk ist es an; ob das Spiel sie frei meldet, ist nicht beobachtet – die Spur zeigt es.
 *Gegenthese 3 – Andere Pflichtrotationen für dieselben Gebiete:* keine (Stand 06.11.2026).
+
+## Tiefe Gewölbe: Pomander
+
+*Was gilt (A625):* Allein in einem Tiefen Gewölbe setzt RSR die Pomander, die vor einem Treffer schützen oder einen Tod
+abwenden, für jeden Job gleich – Option „Use the deep dungeon's pomanders against bosses and in danger when alone", ab
+Werk an.
+- **Gegen einen Boss** (ein Gegner mit Boss-Symbol, `ObjectHelper.IsBossFromIcon`; die Bosse von Pilgers Pfad tragen
+  Rang 2, BNpcBase 17933, 18546, 18666): Steel („Decreases damage received by 40%"), Strength („Increases damage dealt
+  and HP recovered via healing magic by 30%") und Haste („swiftly execute weaponskills, spells, and auto-attacks"), jeder,
+  solange er im Bestand ist und nicht schon wirkt. Vor dem Pull, sobald der Boss in Sicht steht (in der Gegnerliste: bis
+  48 y, in Sicht), sonst im Kampf, solange er kämpft (`DataCenter.BossInCombat`, dieselbe Erkennung wie für die
+  Gegenstände im Crucible). Vor dem Pull, weil jeder Einsatz die Aktionen sperrt (BossMod setzt nach `UsePomander` 2,1 s,
+  Werkzeugquelle): drei Pomander im Kampf kosteten zu Beginn des Bosskampfs mehrere GCDs, vor dem Pull keinen. Steel und
+  Strength wirken 8 min (consolegameswiki, Pilgrim's Traverse, 06.11.2026) und decken einen Bosskampf samt Anlauf; mehr
+  als drei je Sorte hält niemand, ein vierter verfällt.
+- **Vor dem eigenen Tod** (im Kampf in der kritischen Klasse, `ObjectHelper.IsInCriticalClass`): Raising („Instantly
+  raises the first party member to be KO'd"), solange er nicht schon wirkt – er greift erst beim K.O., und dann ist es zu
+  spät, ihn zu setzen; das Wiki rät genau dazu („Useful if player is about to die during a solo run"). Danach Witching
+  („Transforms all targets within range…", Radius der Aktion des Pomanders aus dem Action-Blatt, 6269: 20 y nach der
+  Seite), sobald ein Gegner, der kein Boss ist, dich in diesem Radius angreift: Er wird 30 s zu Frosch, Imp oder Huhn und
+  trifft mit höchstens 60 % (Werkzeugquelle consolegameswiki).
+- **Erkannt am englischen Wirktext** des Blatts `DeepDungeonItem` (wie die Status), nicht an Zeilen: Pomander und
+  Protomander derselben Wirkung zählen gleich. Welcher Gegenstand auf welchem der 16 Plätze liegt, sagt das Blatt
+  `DeepDungeon` (Spalte PomanderSlot, Zeile = Gewölbe des Direktors, `DeepDungeonId`), wie BossMod es liest; jedes der
+  vier Gewölbe führt jede der fünf Wirkungen auf genau einem Platz (Blätter, 06.11.2026), ein zweiter Einsatz derselben
+  Wirkung kann also nicht folgen. Anzahl und Bit „aktiv" liest RSR aus dem Gewölbe selbst (`InstanceContentDeepDungeon`,
+  `Items`), eingesetzt wird über `UsePomander`, einmal je Bild, solange RSR läuft, ohne Animationssperre und ohne Wirken.
+- **Ein Einsatz gilt**, bis die Anzahl fällt oder der Pomander wirkt, höchstens einen GCD. Nimmt das Spiel ihn nicht,
+  versucht RSR diesen Platz bis zum Ende des Kampfs oder bis zum nächsten Stockwerk nicht wieder; die Spurzeile dazu nennt
+  das Bit „usable" des Spiels, dessen Bedeutung nur an seinem Namen in ClientStructs belegt ist und deshalb keinen Einsatz
+  sperrt. Eine Spurzeile je Einsatz mit Grund.
+- **Nie in der Gruppe:** Der Bestand ist geteilt (consolegameswiki); was ein Mitspieler damit vorhat, ist eine Annahme.
+  Die Gruppenliste des Gewölbes (`Party`, Plätze ohne Objekt-Id zählen nicht) und die Gruppenliste von RSR müssen beide
+  „allein" sagen.
+
+*Im Kampf:* Allein in Pilgers Pfad stirbt man auf Stein 31 und tiefer ohne aktiven Raising, und der Lauf ist verloren
+(consolegameswiki, „Party KOs"). Bisher setzte RSR keinen Pomander: Steel und Raising lagen im Bestand, während der Boss
+traf und der Spieler fiel. Jetzt betritt er die Arena des Bosses auf Stockwerk 10, RSR setzt Steel, Strength und Haste,
+bevor er angreift, und der erste Treffer des Bosses kommt um 40 % gemindert; fällt er unter die Schwelle der kritischen
+Klasse, steht Raising, bevor der nächste Treffer ihn tötet. BossModReborns Gewölbe-Automatik setzt Pomander nur gegen
+Überlauf (drei gleiche, eine goldene Truhe mit einem vierten; 27be422, 05.11.2026), Magicite gar nicht – die beiden setzen
+also nichts doppelt; ruft RSR `UsePomander`, reiht BossMod es in seine eigene Warteschlange und führt es aus.
+
+*Nicht gebaut, mit Grund:*
+- Weihrauch (Pilgers Pfad), Magicite (Himmelssäule), Demiklone (Eureka Orthos): Welche Sorte auf welchem der drei Plätze
+  liegt, sagt `InstanceContentDeepDungeon` je Gewölbe anders (die Spalte MagiciteSlot des Blatts ist für Pilgers Pfad
+  leer), und gegen den Boss stehen mehrere zur Wahl (Barkbalm: +100 % maximale LP; Poisonfruit: 10 s Unverwundbarkeit und
+  großer Schaden; Wiki) – erst mit belegter Zuordnung.
+- Pomander, die das ganze Stockwerk treffen (Petrification, Storms, Lethargy, Frailty), Purity und Purification und die
+  Karten- und Beutepomander: Entscheidungen über den Weg durch das Stockwerk, nicht über einen Moment im Kampf.
+- Einen Steel für den letzten Boss eines Satzes aufheben: Wo der Satz endet, liest RSR nicht; gegen jeden Boss eingesetzt
+  füllt die goldene Truhe nach, und über drei hinaus verfällt er ohnehin.
+- Raising schon vor dem Bosskampf statt in der Gefahr: Ob seine Wirkung über das Stockwerk hält, ist unbelegt, und ab
+  Stein 81 erscheint er nicht mehr – ein früh gesetzter, der mit dem Stockwerk verfällt, fehlt später.
+
+*Gegenthese 1 – Der Bestand fehlt später:* Steel gegen einen leichten Boss fehlt gegen einen schweren. Preis benannt; gegen
+das Aufheben spricht der Überlauf bei drei.
+*Gegenthese 2 – Die Sperre in der Gefahr:* Raising im Kampf sperrt die Aktionen für die Dauer seines Einsatzes, in der
+keine Abwehr fällt. Preis benannt; dagegen steht der Verlust des ganzen Laufs, und Raising wirkt beim K.O., gleich ob die
+Abwehr noch kam. Eine flackernde kritische Klasse setzt ihn höchstens früher, er wirkt bis zum K.O.; Witching nur mit
+einem Angreifer in Reichweite.
+*Gegenthese 3 (ausgeliefert, und nichts ändert sich):* Er spielt die Gewölbe nur in der Gruppe, die Option ist aus, oder
+RSR ist vor dem Pull aus (Auto-Start erst im Kampf); dann bleibt es beim Einsatz im Kampf oder wie bisher. Die Spurzeile
+zeigt jeden Einsatz.
 
 ## Bewegungssperre beim Wirken und die KI von BossMod
 

@@ -26,8 +26,8 @@ BossMod-Module) die Rotation des Beastmasters, die Wahl der Begleiter und den Ze
 3. Bewegungssperre beim Wirken gegen das Ausweichen der BossMod-KI: Mit „Lock movement while casting" an steht die
    Figur während jedes Zaubers still, auch wenn die KI von BossMod aus einer Fläche laufen will; nur in dieser
    Kombination, dort aber mit einem Treffer, dem der Spieler nicht ausweicht.
-4. Tiefe Gewölbe: Pomander und Magicite: Allein beendet ein K.O. den Lauf, und RSR nutzt im Kampf keinen Pomander,
-   der Schaden mindert oder wiederbelebt, und kein Magicite gegen den Boss.
+4. Tiefe Gewölbe: Magicite, Demiklone und Weihrauch: Gegen den Boss bleiben die stärksten Gegenstände des Gewölbes
+   ungenutzt (Weihrauch: +100 % maximale LP oder 10 s Unverwundbarkeit), allein wie in der Gruppe.
 5. Blaumagier: Satz je Carnivale-Stufe: Im Masked Carnivale schlägt RSR keinen Satz für die Stufe vor, deren Mechanik
    bestimmte Zauber verlangt.
 6. Limit Break allein: Ohne andere Spieler füllt sich die Leiste, und RSR nutzt sie nie; der Preis ist eine Sperre
@@ -82,15 +82,14 @@ dessen Ende landet; die Optionen A, B (Empfehlung: die Sperre weicht der KI) und
 Vorlage an ihn, gebündelt am Ende des TODO (der Optionstext bindet). *Konzept:* 03, „Bewegungssperre beim Wirken und die
 KI von BossMod".
 
-### Tiefe Gewölbe: Pomander und Magicite · N
-Im Kampf: In einem Gewölbe wie Pilgers Pfad nutzt RSR keinen Pomander und kein Magicite; allein beendet ein K.O. den
-Lauf, wenn kein Pomander of Raising wirkt, und ein Bosskampf ohne Pomander of Steel oder Strength dauert länger unter
-denselben Treffern. BossModReborn setzt Pomander nur in seiner Gewölbe-Automatik, allein und je Pomander ab Werk aus
-(27be422, 05.11.2026). *Ort:* `InstanceContentDeepDungeon` (FFXIVClientStructs: Pomander, Magicite, `UsePomander`), neben
-den Brett-Gegenständen des Crucible (A551) als Gegenstände eines Inhalts; die Verwandlungen (A614). *Nächster Schritt:*
-Loop – welche Pomander und Magicite im Kampf wirken (Wirktexte der Blätter, deutsche Namen nur belegt), wann sie sich
-lohnen (Bossboden, angekündigter Treffer, Gefahr je Sekunde), in der Gruppe wie allein, und wie RSR neben BossMods
-Automatik nichts doppelt setzt. *Konzept:* 03 („Tiefe Gewölbe").
+### Tiefe Gewölbe: Magicite, Demiklone und Weihrauch · N
+Im Kampf: RSR setzt allein die Pomander gegen den Boss und vor dem eigenen Tod (A625), aber kein Magicite (Himmelssäule),
+keinen Demiklon (Eureka Orthos) und keinen Weihrauch (Pilgers Pfad); gegen den Boss bleiben damit +100 % maximale LP,
+10 s Unverwundbarkeit und großer Schaden im Bestand. *Ort:* `DeepDungeonPomanders` (`InstanceContentDeepDungeon.Magicite`,
+`UseStone`). *Nächster Schritt:* Zuordnung der drei Plätze je Gewölbe belegen – Himmelssäule: vier Sorten der Spalte
+MagiciteSlot (DeepDungeonMagicStone) auf drei Plätzen; Eureka Orthos: DeepDungeonDemiclone; Pilgers Pfad: die Spalte ist
+leer, Quelle suchen (ClientStructs, BossMod, Blätter) –, dann Loop, welche gegen welchen Boss wann. *Konzept:* 03
+(„Tiefe Gewölbe: Pomander").
 
 ### Limit Break allein · N
 Im Kampf: RSR nutzt nie ein Limit Break. Ohne andere Spieler – Duty Support, Trust, Solo-Inhalte – füllt sich die Leiste,

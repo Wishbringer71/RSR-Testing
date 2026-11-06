@@ -290,6 +290,13 @@ What this release changes in the fight. For the whole distance from upstream, se
   where enough enemies stand or Rotosmash, Big Burst - through the duty rotation "Deep Dungeon"
   (`Use duty actions`). Rocky Roll, the Mudball's 25-yalm dash, goes only on a move-forward command.
   Each transformation writes a line to `DefenseTrace.log` naming the attacks the game allowed.
+- **Alone in a deep dungeon, RSR uses the pomanders that keep you alive.** New option `Use the deep
+  dungeon's pomanders against bosses and in danger when alone`, on by default, for every job: Steel,
+  Strength and Haste against a boss - before the pull once it stands in sight, so their lock costs no
+  attack in the fight - and, when you are about to die, Raising while none is active, then Witching on
+  an enemy that attacks you within its 20 yalms. Never in a party, since the stock is shared. Before,
+  Steel and Raising stayed in the stock while the boss hit and the run ended. Each use and each refusal
+  writes a line to `DefenseTrace.log`.
 
 ## Occult Crescent
 

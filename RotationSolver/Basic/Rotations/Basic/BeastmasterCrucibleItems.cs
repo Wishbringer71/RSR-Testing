@@ -324,7 +324,7 @@ public partial class BeastmasterRotation
 		}
 
 		var hp = player.GetHealthRatio();
-		var bossFighting = BossFighting();
+		var bossFighting = DataCenter.BossInCombat;
 		var finalFight = InCombat && CrucibleBoard.IsFinalFight;
 		var slot = -1;
 		var why = string.Empty;
@@ -850,19 +850,6 @@ public partial class BeastmasterRotation
 		item = default;
 		var id = crucible->Inventory[slot].ItemId;
 		return id != 0 && !_crucibleSlotsRefused.Contains(slot) && CrucibleItems.TryGetValue(id, out item) && item.Kind == kind;
-	}
-
-	private static bool BossFighting()
-	{
-		foreach (var hostile in DataCenter.AllHostileTargets)
-		{
-			if (hostile != null && !hostile.IsDead && hostile.InCombat() && hostile.IsBossFromIcon())
-			{
-				return true;
-			}
-		}
-
-		return false;
 	}
 
 	// Reraise is assumed to stand until a fall, since its text names no duration. Seen to go while the player lives, it is

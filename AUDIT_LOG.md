@@ -18213,6 +18213,46 @@ habe den schleim bislang nicht anfreunden können."
 - *9 Dokumentation:* Konzept 01 (R1, B2), Release-Text. TODO „Beastmaster: Final Sting nach den LP des Ziels"
   geschlossen; (3) und (4) im Konzept als nicht gebaut mit Grund.
 
+### A625 · Tiefe Gewölbe: Pomander gegen den Boss und vor dem eigenen Tod, allein, für jeden Job (06.11.2026)
+
+- *Anlass:* TODO „Tiefe Gewölbe: Pomander und Magicite" (seine Angabe, 06.11.2026: „ich spiele tiefe gewölbe. z.b. das
+  in ill mheg"), nach den Beastmaster-Punkten.
+- *1 Research:* ClientStructs (ausgeliefert mit Dalamud, Reflexionssonde; Quelle 0adb2e5, 06.11.2026):
+  `EventFramework.GetInstanceContentDeepDungeon`, `InstanceContentDeepDungeon.Items[16]` {ItemId, Count, Flags mit
+  IsUsable Bit 0 und IsActive Bit 1}, `Party[4]`, `Magicite[3]`, `DeepDungeonId`, `Floor`, `UsePomander(slot)` („Returns
+  an error if the player's animation lock is greater than 0"), `UseStone(slot)`. IsUsable kam am 30.10.2026 mit einem
+  Sammel-Commit (bee7720), Bedeutung nur am Namen belegt. BossModReborn (27be422, 05.11.2026): Platz → Gegenstand über
+  das Blatt `DeepDungeon`, Spalte PomanderSlot, Zeile = `DeepDungeonId` (1 Palast, 2 Himmelssäule, 3 Eureka Orthos,
+  4 Pilgers Pfad); `Active` liest es für Intuition; `UsePomander` hakt es in seine Warteschlange und setzt danach selbst
+  2,1 s Animationssperre; seine Automatik setzt Pomander nur gegen Überlauf. Blätter (xivapi v2, 06.11.2026): alle vier
+  Gewölbe führen Strength, Steel, Witching und Raising auf genau einem Platz, Pilgers Pfad dazu Haste (Zeile 36, Aktion
+  44616); Witching 6269 EffectRange 20; MagiciteSlot: Himmelssäule vier Magicite auf drei Plätzen, Eureka Orthos
+  Demiklone, Palast und Pilgers Pfad leer. consolegameswiki (Pilgrim's Traverse, 06.11.2026): Steel und Strength 8 min,
+  Haste 10 %, Raising „Useful if player is about to die during a solo run", ab Stein 81 nicht mehr; ohne aktiven Raising
+  beendet der Tod aller den Lauf; Inventar geteilt, drei je Sorte. Gegnerliste von RSR: bis 48 y in Sicht, auch außerhalb
+  des Kampfes.
+- *2 Optionen:* (0) belassen; (1) allein gegen den Boss Steel, Strength, Haste, in der kritischen Klasse Raising und
+  Witching; (1a) dazu den Einsatz gegen den Boss vor dem Pull; (2) auch in der Gruppe; (3) Raising zu Beginn jedes
+  Bosskampfs; (4) Magicite, Weihrauch, Demiklone.
+- *3 Abwägung:* (1) mindert die Bosstreffer um 40 % und wendet den Tod ab, der allein den Lauf beendet; Preis: Sperre je
+  Einsatz. (1a) nimmt die Sperre aus dem Kampf: drei Einsätze im Kampf kosteten mehrere GCDs zu Beginn. (2) verbraucht
+  geteilten Bestand nach Annahmen über Mitspieler. (3) spart die Sperre in der Gefahr, verbraucht aber Raising, dessen
+  Wirkung über das Stockwerk hinaus unbelegt ist und der ab Stein 81 nicht nachkommt. (4) Zuordnung der Plätze je Gewölbe
+  unbelegt.
+- *5 Review:* Abgewiesene Plätze erst nach Kampfende oder auf dem nächsten Stockwerk wieder, damit vor dem Pull kein
+  Versuch je GCD folgt; „allein" verlangt die Gruppenliste des Gewölbes und die von RSR; die Boss-Erkennung im Kampf
+  zentral (`DataCenter.BossInCombat`, zuvor privat in den Crucible-Gegenständen).
+- *6 Falsifikation:* Kein Defekt? Ohne RSR liegen Steel und Raising im Bestand, während der Spieler fällt – die Regel
+  setzt sie nicht. Option falsch? Hielte Raising nur das Stockwerk, wäre (3) teurer, nicht (1); hält IsUsable eine
+  andere Bedeutung, sperrt es nichts, weil es nur in der Spurzeile steht. Ausgeliefert, nichts ändert sich? Nur in der
+  Gruppe gespielt, Option aus, oder RSR erst im Kampf an (dann der Einsatz im Kampf). Im Spiel nicht beobachtet; die
+  Spurzeilen „deep dungeon: …" zeigen jeden Einsatz und jede Abweisung.
+- *7 Gebaut:* `DeepDungeonPomanders` (Helpers), gerufen in `CustomRotation.TryInvoke` nach `UpdateInfo`; Option
+  `UseDeepDungeonPomanders` (ab Werk an); `DataCenter.BossInCombat`. *8 Nachweis:* Compile 0 Fehler 0 Warnungen,
+  Prüfungen. Ausnahme 0xE0000000 (Kennung „kein Objekt") in `fixed_values.json`.
+- *9 Dokumentation:* Konzept 03 („Tiefe Gewölbe: Pomander"), Release-Text. TODO auf Magicite, Demiklone und Weihrauch
+  verengt.
+
 ## B · Commit-Register (Fork vs. `upstream/main`)
 
 ### B1 · Einzelgeprüfte Fork-Commits

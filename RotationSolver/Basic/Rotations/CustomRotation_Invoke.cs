@@ -16,6 +16,7 @@ public partial class CustomRotation
 		try
 		{
 			UpdateInfo();
+			DeepDungeonPomanders.Use();
 			UpdatePreview();
 
 			CountingOfLastUsing = CountingOfCombatTimeUsing = 0;

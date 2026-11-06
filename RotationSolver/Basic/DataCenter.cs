@@ -984,6 +984,26 @@ internal static class DataCenter
 
 	public static bool InCombat { get; set; } = false;
 
+	/// <summary>
+	/// Whether an enemy with a boss icon (<see cref="ObjectHelper.IsBossFromIcon"/>) is alive and fighting. One reading for
+	/// the Crucible's items and the deep dungeon's pomanders (A625).
+	/// </summary>
+	internal static bool BossInCombat
+	{
+		get
+		{
+			foreach (var hostile in AllHostileTargets)
+			{
+				if (hostile != null && !hostile.IsDead && hostile.InCombat() && hostile.IsBossFromIcon())
+				{
+					return true;
+				}
+			}
+
+			return false;
+		}
+	}
+
 	public static bool DrawingActions { get; set; } = false;
 
 	private static RandomDelay _notInCombatDelay = new(() => Service.Config.NotInCombatDelay);
