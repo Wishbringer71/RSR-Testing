@@ -17528,6 +17528,22 @@ habe den schleim bislang nicht anfreunden können."
   nicht.
 - *Prüfgrad:* statisch. Nichts gebaut.
 
+### A601 · Schadensausteiler nach Daedalus, gemeinsame Bausteine: nichts zu bauen (06.11.2026)
+
+- *Anlass:* TODO „Fremde Repositories", Rolle Schadensausteiler, zuerst das Gemeinsame (ofnature/Daedalus c4a788f,
+  `Common/Helpers`: `BurstHoldHelper`, `MechanicCastGate`, `PlayerSafetyHelper`, `ForwardDashGuard`, `TargetedDashGuard`,
+  `MeleeRangeKeeping`).
+- *Deckt sich:* Feste Vorwärtssprünge prüfen ihren Landepunkt gegen BossMods Gefahrenflächen (A498); Smudge geht nur über
+  „Move forward" (`MoveForwardAbility`). Unter erzwungener Bewegung (March) startet kein Zauber, weil RSR keinen Zauber
+  in Bewegung beginnt (`ActionBasicInfo.NeedsCasting`). Gezielte Sprünge laufen über die BossMod-Prüfung der Bewegung
+  (`ShouldCheckMoveSafety`, A519).
+- *Nicht übertragbar:* Die Zaubersperre vor einem angekündigten Treffer hält bei Daedalus die eigene Bewegungsführung frei;
+  ein Treffer unterbricht keinen Zauber, und RSR bewegt den Spieler nicht. Abstand halten im Nahkampf (`MeleeRangeKeeping`)
+  und die Bodenprüfung über vnavmesh gehören zur Bewegung. Die Burst-Taste (`BurstHoldHelper`) ersetzt in RSR der
+  Burst-Schalter.
+- *Prüfgrad:* statisch. Nichts gebaut. Nächster Schritt: die Schadensausteiler je Gruppe (Fernkämpfer, Magier,
+  Nahkämpfer).
+
 ## B · Commit-Register (Fork vs. `upstream/main`)
 
 ### B1 · Einzelgeprüfte Fork-Commits
