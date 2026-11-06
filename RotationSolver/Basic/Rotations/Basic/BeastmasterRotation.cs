@@ -601,7 +601,7 @@ public partial class BeastmasterRotation
 	/// <summary>
 	///
 	/// </summary>
-	public static unsafe int MasteredInstinct => (TjobGauge->Instinct & 0xC) >> 2;
+	public static unsafe int MasteredInstinct => Gauge->MasteredInstinct;
 
 	/// <summary>
 	///
@@ -619,7 +619,7 @@ public partial class BeastmasterRotation
 	/// <summary>
 	///
 	/// </summary>
-	public static unsafe int NaturalInstinct => TjobGauge->Instinct & 0x3;
+	public static unsafe int NaturalInstinct => Gauge->NaturalInstinct;
 
 	/// <summary>
 	///
@@ -637,17 +637,17 @@ public partial class BeastmasterRotation
 	/// <summary>
 	///
 	/// </summary>
-	public static unsafe byte FamiliarTPAtLastUse => TjobGauge->FamiliarTPAtLastUse;
+	public static unsafe byte FamiliarTPAtLastUse => Gauge->PetTPAtLastUse;
 
 	/// <summary>
 	///
 	/// </summary>
-	public static unsafe byte ActiveBattlehorn => TjobGauge->ActiveBattlehorn;
+	public static unsafe byte ActiveBattlehorn => Gauge->ActiveBattlehorn;
 
 	/// <summary>
 	/// 
 	/// </summary>
-	public static unsafe byte KinshipState => TjobGauge->KinshipState;
+	public static unsafe byte KinshipState => Gauge->KinshipState;
 
 	/// <summary>
 	/// 
@@ -657,51 +657,59 @@ public partial class BeastmasterRotation
 	/// <summary>
 	/// 
 	/// </summary>
-	public static unsafe KinshipBorrowed KinshipStateText => (KinshipBorrowed)TjobGauge->KinshipState;
+	public static unsafe KinshipBorrowed KinshipStateText => (KinshipBorrowed)Gauge->KinshipState;
 
 	/// <summary>
 	///
 	/// </summary>
-	public static BeastmasterKinType KinshipKinType => (BeastmasterKinType)(KinshipState >> 4);
+	public static unsafe BeastmasterKinType KinshipKinType => (BeastmasterKinType)Gauge->KinshipClassification;
 
 	/// <summary>
 	///
 	/// </summary>
-	public static byte KinshipBattlehorn => (byte)(KinshipState & 0x0F);
+	public static unsafe byte KinshipBattlehorn => Gauge->KinshipBattlehorn;
 
 	/// <summary>
 	///
 	/// </summary>
-	public static unsafe byte TPCount => TjobGauge->BSTTP;
+	public static unsafe byte TPCount => Gauge->TPGauge;
 
 	/// <summary>
 	///
 	/// </summary>
-	public static unsafe byte PetTPCount => TjobGauge->FamiliarTPGauge;
+	public static unsafe byte PetTPCount => Gauge->PetTPGauge;
 
 	/// <summary>
 	///
 	/// </summary>
-	public static unsafe BeastmasterAffinity InstinctualComboState => TjobGauge->InstinctualComboState;
+	public static unsafe BeastmasterAffinity InstinctualComboState => (BeastmasterAffinity)Gauge->InstinctualComboState;
 
 	/// <summary>
 	///
 	/// </summary>
-	public static unsafe BeastmasterAffinity CurrentAffinity => TjobGauge->CurrentAffinity;
+	public static unsafe BeastmasterAffinity CurrentAffinity => (BeastmasterAffinity)(byte)Gauge->CurrentAffinity;
 
 	/// <summary>
 	///
 	/// </summary>
-	public static unsafe byte ChainCount => TjobGauge->ChainCount;
+	public static unsafe byte ChainCount => Gauge->ChainCount;
 
 	/// <summary>
-	///
+	/// The gauge as ClientStructs lays it out (A621): the field offsets come from the FFXIVClientStructs that Dalamud ships, so a
+	/// patch that moves them is followed with Dalamud's update instead of reading the wrong bytes until RSR is rebuilt.
 	/// </summary>
+	private static unsafe FFXIVClientStructs.FFXIV.Client.Game.Gauge.BeastmasterGauge* Gauge => &FFXIVClientStructs.FFXIV.Client.Game.JobGaugeManager.Instance()->Beastmaster;
+
+	/// <summary>
+	/// The gauge at RSR's own fixed offsets, from before ClientStructs carried it.
+	/// </summary>
+	[Obsolete("Fixed offsets that a patch can move; read the properties of BeastmasterRotation instead (A621).")]
 	public unsafe static TempGauge* TjobGauge => (TempGauge*)((nint)FFXIVClientStructs.FFXIV.Client.Game.JobGaugeManager.StaticAddressPointers.pInstance + 0x08);
 
 	/// <summary>
-	///
+	/// The gauge at RSR's own fixed offsets, from before ClientStructs carried it.
 	/// </summary>
+	[Obsolete("Fixed offsets that a patch can move; read the properties of BeastmasterRotation instead (A621).")]
 	public unsafe static TempGauge JobGauge => *TjobGauge;
 
 	/// <summary>

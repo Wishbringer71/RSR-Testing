@@ -855,6 +855,14 @@ the Unbroken"); er hat ihn am 31.10.2026 genannt („z.B. Optimierung beastmaste
   aber ohne Referenz und ohne einen Mitschnitt von ihm wäre das eine Annahme. Mit seinem ersten Mitschnitt als
   Beastmaster (ACT oder DefenseTrace) wird das gemessen.
 
+**Die Leiste liest RSR aus ClientStructs (A621):** TP, TP des Begleiters, aktives Horn, Kompass, Kombozahl,
+Verwandtschaft und Instinkte kommen aus `JobGaugeManager.Instance()->Beastmaster` (FFXIVClientStructs
+`BeastmasterGauge`, in Dalamuds Verteilung vom 20.10.2026), nicht mehr aus Upstreams eigener Kopie mit festen
+Abständen (`TempGauge`, 2fe925f41, 10.09.2026; beide Lagen sind heute gleich). Im Kampf: Verschiebt ein Patch die
+Felder, folgt RSR mit Dalamuds Aktualisierung, ohne neu gebaut zu werden – die Kopie läse falsche Bytes, und der
+Beastmaster wählte Äxte, Hörner und Kombos nach Unsinn, bis jemand sie nachzöge. `TjobGauge` und `JobGauge` bleiben
+für abgeleitete Rotationen, als veraltet markiert.
+
 **Geprüft am 03.11.2026 (A510), kein weiterer Defekt belegbar:** dieselben Fehlerklassen wie beim Blaumagier (A507,
 A508) am Beastmaster gesucht.
 - *Überspring-Schalter:* Die Äxte, der Trick und die Finisher überspringen die eigene Voraussetzung des Spielers
