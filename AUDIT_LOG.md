@@ -17995,6 +17995,27 @@ habe den schleim bislang nicht anfreunden können."
   Mitschnitten; im Spiel nicht beobachtet.
 - *9 Dokumentation:* Konzept 09 („Ein gemeldeter Treffer, der tötet"), Release-Text.
 
+### A618 · BossMods Rollen-KI: die übrigen Kandidaten (06.11.2026)
+
+- *Anlass:* TODO „Fremde Repositories", BossmodReborn 27be422 (05.11.2026, Werkzeugquelle), `Autorotation/Standard/xan/AI`:
+  Rollen-KI für Heiler, Tanks, Nah- und Fernkampf, Magier. Funde mit Änderung: A612 (Unterbrechen, Provozieren), A613/A614
+  (Tiefe Gewölbe), A615 (Rotmagier über Vercure), A616 (Resurrection Restricted), A617 (gemeldeter tödlicher Treffer).
+- *Ohne Änderung geprüft:*
+  - Esuna erst bei Restzeit: RSRs `StatusHelper.CanDispel` verlangt schon `RemainingTime > 1 + DefaultGCDRemain`.
+  - Kein Tomahawk unter Berserk/Inner Release (`ShouldRanged`): RSR nimmt Tanks aus dem Fernangriff beim Herangehen aus
+    (C4, A605: Aggro beim Pull); der Rest ist ein Gewinn weniger Potenz einmal je Minute.
+  - Reihenfolge der Wiederbelebung und „wird schon belebt": RSRs `GetPriorityDeathTarget` staffelt Tank, Heiler,
+    Ersatzrezzer (Konzept 11) und lässt Belebte (`RaiseStatus`) und von anderen Belebte (`RaisedByOthers`, A293) aus.
+  - Arm's Length, sobald mehrere Gegner angreifen: `ArmsLengthSlowsPull` (A194, A236) bei Paladin, Dunkelritter,
+    Revolverklinge und Krieger.
+  - Sacred Soil auf die beste Abdeckung (`GetBestPartyCoverage`, Kreise durch Paare von Mitgliedern): RSR wählt den Platz
+    an dem Mitglied, das die meisten deckt (`GroundAreaCoveringMost`, A398); ein Punkt zwischen zwei Gruppen deckt bei
+    15 Yalm Radius (Action-Blatt, Zeile 188, xivapi 06.11.2026) mehr nur, wo die Gruppe weiter als das Feld auseinandersteht.
+- *Neu ins TODO:* Limit Break allein (`Melee.cs`, `Ranged.cs` `AutoLB`: ohne anderen Spieler in der Gruppe und mit
+  laufendem Modul). RSR nutzt nie ein Limit Break; im Duty Support käme es dem Kampf zugute, kostet aber eine Sperre von
+  mehreren Sekunden mitten in Mechaniken – eigener Loop.
+- *Offen:* die Jobmodule (`xan`, `akechi`, `veyn`).
+
 ## B · Commit-Register (Fork vs. `upstream/main`)
 
 ### B1 · Einzelgeprüfte Fork-Commits

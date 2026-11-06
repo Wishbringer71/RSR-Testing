@@ -31,7 +31,9 @@ BossMod-Module) die Rotation des Beastmasters, die Wahl der Begleiter und den Ze
    eigene Kampfvorhersage), dann Beastmaster und Blaumagier (sein Auftrag vom 05.11.2026).
 5. Blaumagier: Satz je Carnivale-Stufe: Im Masked Carnivale schlägt RSR keinen Satz für die Stufe vor, deren Mechanik
    bestimmte Zauber verlangt.
-6. Konzepte neu ordnen (allgemein, Rollen, Gruppen, Jobs, Inhalte): keine direkte Wirkung im Kampf; eine Regel, die
+6. Limit Break allein: Ohne andere Spieler füllt sich die Leiste, und RSR nutzt sie nie; der Preis ist eine Sperre
+   von Sekunden mitten in Mechaniken.
+7. Konzepte neu ordnen (allgemein, Rollen, Gruppen, Jobs, Inhalte): keine direkte Wirkung im Kampf; eine Regel, die
    im Konzept eines Jobs steht, wird für dessen Gruppe übersehen, und eine Inhaltsregel ist über mehrere Konzepte
    verteilt.
 
@@ -106,12 +108,18 @@ erkenntisse daraus in rsr eingebracht werden können und die vorhandenen konzept
 Jobkonzepte. *Nächster Schritt:* die Rotationswerkzeuge sind ausgewertet (Daedalus A561, A570 bis A575,
 A591 bis A607; die übrigen A608); offen sind die Beastmaster-Repositories (vollständige Suche), die Blaumagier-
 Repositories (Suche) und danach die übrigen Gruppen der Liste; Beastmaster-Suche: A609, Blaumagier-Suche: A611.
-Kampfvorhersage: interjection ist eine Anzeige (A334); BossMods Rollen-KI läuft (A612 Unterbrechen und Provozieren,
-A613/A614 Tiefe Gewölbe, A615 Rotmagier über Vercure, A616 „Resurrection Restricted", A617 Unverwundbarkeit gegen einen
-gemeldeten tödlichen Treffer); offen dort Tank (Abtausch gegen mehrere Angreifer), Heiler (Platz von Sacred Soil),
-Limit-Break allein – und die Jobmodule. Je Fund ein Loop, je Repository ein Archiveintrag mit Commit und Datum. *Konzept:* 15, erweitert vom Vergleich mit WrathCombo auf die übrigen Werkzeuge; je Fund dazu das
+Kampfvorhersage: interjection ist eine Anzeige (A334); BossMods Rollen-KI ist ausgewertet (A612 bis A618); offen dort
+die Jobmodule (`xan`, `akechi`, `veyn`). Je Fund ein Loop, je Repository ein Archiveintrag mit Commit und Datum. *Konzept:* 15, erweitert vom Vergleich mit WrathCombo auf die übrigen Werkzeuge; je Fund dazu das
 tragende (01 Jobs, 08 Minderung, 13 Flächenschaden und Tankbuster).
 
+
+### Limit Break allein · N
+Im Kampf: RSR nutzt nie ein Limit Break. Ohne andere Spieler – Duty Support, Trust, Solo-Inhalte – füllt sich die Leiste,
+und niemand nutzt sie; BossModReborns Rollen-KI wirkt dort das Limit Break des Jobs, wenn ein Modul läuft (A618). Preis:
+eine Sperre von mehreren Sekunden, in der keine Bewegung geht. *Ort:* `CustomRotation` (zentral, alle Rollen), Limit
+Breaks je Rolle aus dem Action-Blatt. *Nächster Schritt:* Loop – wann die Sperre sicher ist (kein angekündigter Treffer
+in ihrer Dauer), welches Limit Break je Rolle (Heiler Stufe 3 nur mit Toten, Tank nur vor einem Treffer), ob nur mit
+NPCs in der Gruppe. *Konzept:* 03.
 
 ### Blaumagier: Satz je Carnivale-Stufe · N
 Im Kampf: Im Masked Carnivale schreibt RSR nie ins Set (A510), und einen Satz für die Stufe schlägt es nicht vor; viele Stufen
