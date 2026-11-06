@@ -170,6 +170,16 @@ Einziger Heiler ohne `GeneralAbility`-Override und einziger mit
 `SpeedAbility`. Als einziger Heiler ohne Pflege auf dem Tank im Pull: Er hat keinen Sofortschild (Adloquium
 hat Wirkzeit), und Stehenbleiben ist erst am Ende des Wall-to-Wall vorgesehen (Konzept 15, V1).
 
+**Deployment Tactics nur mit jemandem, der den Schild bekommt (A597).** Die Aktion verbreitet das Galvanize ihres
+Ziels auf die Gruppenmitglieder im Umkreis (Wirktext PvE: „Extends Galvanize effect cast on self or target party member
+to other nearby party members"; Aktionsblatt: Wirkradius 30 y, Abklingzeit 120 s, ab Stufe 88 laut Merkmal 90 s; Catalyze verbreitet nur die PvP-
+Fassung). Die Zielwahl (`FindDeploymentTacticsTarget`, Upstream 14b907736) nahm das Mitglied mit dem größten Catalyze-
+bzw. Galvanize-Schild und meldete „nearby allies“, ohne sie zu zählen. Jetzt zählt ein Kandidat nur, wenn mindestens
+ein anderes lebendes Mitglied im Wirkradius um ihn steht. Im Kampf: Steht der Tank mit dem kritischen Adloquium allein
+am Boss, während die Gruppe weiter als 30 y entfernt ist, ging Deployment Tactics bisher für niemanden hinaus und fehlte
+beim nächsten Raidwide; jetzt wartet es. Ob es einen kleineren Galvanize eines Mitglieds ersetzt, nennt keine Quelle;
+Mitglieder mit Galvanize zählen deshalb mit (Daedalus zählt nur die ohne).
+
 ---
 
 ## Tanks

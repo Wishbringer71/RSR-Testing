@@ -142,6 +142,10 @@ What this release changes in the fight. For the whole distance from upstream, se
   hit was covered anyway, and the next raidwide inside the 90 to 120 seconds of the cooldown came without it. With
   `Restrict mitigations to not overlap`, the machinist's Dismantle now also waits while another player's Troubadour
   or Shield Samba stands, not only your own Tactician.
+- **Deployment Tactics only with someone to receive the shield.** A scholar's Deployment Tactics spreads the
+  target's Galvanize to the party members within its radius; it went out on the member with the largest shield even
+  when nobody stood within that radius, and its 90-second cooldown was missing at the next raidwide. It now waits until
+  another party member is in reach.
 
 ## After you are raised
 

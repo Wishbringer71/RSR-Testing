@@ -17457,6 +17457,27 @@ habe den schleim bislang nicht anfreunden können."
   Zählung „ohne Wirkbalken" ist eine Obergrenze, weil Helfer nicht zugeordnet sind.
 - *Prüfgrad:* statisch und Mitschnitt. Konzept 08 fortgeschrieben. Nichts gebaut.
 
+### A597 · Gelehrter nach Daedalus: Deployment Tactics nur mit jemandem, der den Schild bekommt (06.11.2026)
+
+- *Anlass:* TODO „Fremde Repositories", Gelehrter (ofnature/Daedalus c4a788f, `AthenaCore`).
+- *Deckt sich:* Verhängnis bis zur vollen Gesundheit mit Lustrate (A573; Energy Drain verbraucht Aetherflow nur, wenn die
+  nächste Ladung binnen zwei GCDs kommt, eine Reserve gegen Lustrate gibt es nicht); Gruppennotfall
+  (`PartyMembersForecastAverHP < EmergencyHealPercent` öffnet Fey Blessing und Indomitability vor allen anderen Wegen);
+  Recitation nur, wenn die Folgeheilung im Buff hinausgeht (Daedalus nennt RSR als Herkunft); Feenband über den Status
+  am Mitglied (ebenso); Wiederbelebung außerhalb des Kampfes und auf unsicherem Boden wie beim Weißmagier (A594, A595).
+- *Befund:* `FindDeploymentTacticsTarget` (Upstream 14b907736, 22.05.2025) meldet „largest shield, and nearby allies“,
+  zählt aber keine. Wirktext PvE: „Extends Galvanize effect cast on self or target party member to other nearby party
+  members"; Aktionsblatt 3585: Wirkradius 30 y, Abklingzeit 120 s, Merkmal 494 ab Stufe 88: 90 s. Steht niemand im
+  Umkreis des Schildträgers, geht die Abklingzeit für nichts.
+- *Gebaut:* Ein Kandidat zählt nur mit mindestens einem anderen lebenden Mitglied im Wirkradius, gelesen aus dem
+  Aktionsblatt (ohne Zeile keine Prüfung, Verhalten wie bisher).
+- *Verworfen:* Nur Mitglieder ohne Galvanize zählen (Daedalus) – ob ein größerer Galvanize einen kleineren ersetzt, nennt
+  keine Quelle; eine Mindestzahl (fester Wert).
+- *Falsifikation:* Kein Defekt? Ohne Prüfung geht die Aktion auch allein. Option falsch? Ein Mitglied knapp außerhalb
+  der 30 y wartet die Aktion ab, bis jemand dazukommt – richtig, sie wirkte sonst auf niemanden. Ausgeliefert, und nichts
+  ändert sich? Wo die Gruppe ohnehin beisammensteht, also in den meisten Raidwide-Lagen.
+- *Prüfgrad:* statisch, Compile ohne Warnung. Im Spiel nicht beobachtet.
+
 ## B · Commit-Register (Fork vs. `upstream/main`)
 
 ### B1 · Einzelgeprüfte Fork-Commits

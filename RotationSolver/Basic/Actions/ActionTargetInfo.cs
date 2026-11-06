@@ -2380,6 +2380,11 @@ public struct ActionTargetInfo(IBaseAction action)
 				return null;
 			}
 
+			// The spread radius from the game's own action row; without it the check below is skipped.
+			var spreadRadius = Service.GetSheet<Lumina.Excel.Sheets.Action>().GetRowOrDefault((uint)ActionID.DeploymentTacticsPvE) is { } deployment
+				? (float)deployment.EffectRange
+				: 0f;
+
 			IBattleChara? bestCatalyze = null;
 			uint bestCatalyzeShield = 0;
 
@@ -2395,6 +2400,14 @@ public struct ActionTargetInfo(IBaseAction action)
 
 				var shield = ObjectHelper.GetObjectShield(battleChara);
 				if (shield == 0)
+				{
+					continue;
+				}
+
+				// The action spreads this member's Galvanize to the others around them; with nobody there it
+				// spends its recast on nothing and is missing at the next raidwide (A597). Members who already
+				// carry a Galvanize count: no source says whether a larger one replaces it.
+				if (spreadRadius > 0f && !HasOtherMemberWithin(battleChara, spreadRadius))
 				{
 					continue;
 				}
@@ -2436,6 +2449,24 @@ public struct ActionTargetInfo(IBaseAction action)
 			}
 
 			return null;
+		}
+
+		static bool HasOtherMemberWithin(IBattleChara center, float radius)
+		{
+			foreach (var member in DataCenter.PartyMembers)
+			{
+				if (member == null || member.IsDead || member.GameObjectId == center.GameObjectId)
+				{
+					continue;
+				}
+
+				if (Vector3.Distance(center.Position, member.Position) - member.HitboxRadius <= radius)
+				{
+					return true;
+				}
+			}
+
+			return false;
 		}
 
 		IBattleChara? FindProvokeTarget()
