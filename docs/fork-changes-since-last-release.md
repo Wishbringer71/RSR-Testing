@@ -204,6 +204,9 @@ What this release changes in the fight. For the whole distance from upstream, se
   while reaching melee range takes less than a GCD times one minus the ranged attack's potency over
   the combo starter's, by the tooltips. Standing, stepping aside or with Enhanced Enpi or Enhanced
   Piercing Talon up, the ranged attack goes as before; tanks keep theirs for the pull.
+- **Kunai's Bane spares a pack about to fall.** It now carries Trick Attack's time-to-kill threshold,
+  which it replaces from level 92 with the same 60 s recast and the same debuff; it had gone onto every
+  pack, also one about to fall.
 
 ## Pictomancer
 

@@ -548,6 +548,9 @@ public partial class NinjaRotation
 		setting.CreateConfig = () => new ActionConfig()
 		{
 			AoeCount = 1,
+			// Trick Attack's threshold: Kunai's Bane replaces it from level 92 with the same 60 s recast and the same 10 %
+			// for 15 s, and went onto a pack about to fall without it (A606).
+			TimeToKill = 10,
 		};
 	}
 

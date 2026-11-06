@@ -17668,6 +17668,27 @@ habe den schleim bislang nicht anfreunden können."
   der Starter dem Fernangriff gleich (Viper: Steel Fangs gegen Writhing Snap), wartet nichts; ebenso im Stand.
 - *Prüfgrad:* statisch, kompiliert ohne Warnung; im Spiel nicht beobachtet.
 
+### A606 · Nahkämpfer nach Daedalus, Rest: Kunai's Bane trägt Trick Attacks Schwelle (06.11.2026)
+
+- *Anlass:* TODO „Fremde Repositories", Nahkämpfer (ofnature/Daedalus c4a788f: `KratosCore` Mönch, `NikeCore` Samurai,
+  `ZeusCore` Dragoon, `ThanatosCore` Schnitter, `HermesCore` Ninja, `EchidnaCore` Viper); gelesen wurden die Regeln mit
+  Spielbeleg (Feldnotizen, Wirktexte), nicht jede Zeile.
+- *Befund, Ninja:* Daedalus hält Trick Attack, wenn die Gruppe gleich fällt (Feldnotiz: viermal auf Gegnern unter 10 % am
+  Kampfende, Xelphatol). RSR: Trick Attack trägt Upstreams „Time to kill" 10 s (seit A591 an der Zeit bis zum Fall der
+  Gruppe gemessen); Kunai's Bane, ab Stufe 92 sein Nachfolger (Aktionsblatt 2258, 36958: beide 60 s, +10 % für 15 s),
+  trug keine – ab 92 fiel er auf jede Gruppe. Gebaut: dieselbe Schwelle (`ModifyKunaisBanePvE`, Ausnahme in
+  `fixed_values.json`).
+- *Deckt sich oder eigener Fehler bei Daedalus:* Samurai außerhalb der Reichweite (A605); Mönch-Positionen nur in der
+  Coeurl-Form (RSR zeigt Positionen, entscheidet nicht danach); Dragoon-Kombo-Kennungen und Schnitter-Gluttony
+  (Daedalus' eigene Fehler); Viper ohne Feldnotiz.
+- *Falsifikation:* (1) Kein Defekt? Am Code: Kunai's Bane ohne Schwelle, Trick Attack mit. (2) Option falsch? Einwand: Die
+  Schwelle verschiebt den Debuff auf die nächste Gruppe, Shadow Walker hält 20 s – geht er verloren, fehlt ein Suiton.
+  Upstreams Schwelle gilt für Trick Attack seit jeher; eine eigene Herleitung trennte die Stufen. (3) Ausgeliefert, nichts
+  ändert sich? Eine gespeicherte Einstellung von Kunai's Bane behält ihren Wert (`TimeToKill` hat keine Übernahme neuer
+  Voreinstellungen); zu Beginn eines Pulls fehlt die Messung, er geht wie bisher.
+- *Prüfgrad:* statisch, kompiliert ohne Warnung; im Spiel nicht beobachtet. Die Nahkämpfer sind damit durch; nächste
+  Barde und Tänzer.
+
 ## B · Commit-Register (Fork vs. `upstream/main`)
 
 ### B1 · Einzelgeprüfte Fork-Commits

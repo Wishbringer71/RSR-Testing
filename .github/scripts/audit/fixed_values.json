@@ -1606,6 +1606,16 @@
    "status": "exception",
    "loop": "A588",
    "reason": "The ClassJobCategory row of the disciples of war in the game's ClassJob sheet (xivapi v2, 05.11.2026: PLD, MNK, BRD, DRK, VPR and the beastmaster BST carry 30); an identifier of the game, not a tuned value. Concept 03, \"Gegner mit Stacheln\": a disciple of war attacks physically."
+  },
+  {
+   "file": "RotationSolver/Basic/Rotations/Basic/NinjaRotation.cs",
+   "code": "TimeToKill = 10,",
+   "values": [
+    "10"
+   ],
+   "status": "exception",
+   "loop": "A606",
+   "reason": "Upstream's time-to-kill threshold of Trick Attack (ModifyTrickAttackPvE), carried to Kunai's Bane, which replaces it from level 92 with the same 60 s recast and the same 10 % for 15 s (Action sheet 2258, 36958). One threshold for one role; a derivation of its own would part the two levels (A606)."
   }
  ]
 }
