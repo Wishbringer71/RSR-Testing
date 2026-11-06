@@ -106,10 +106,10 @@ erkenntisse daraus in rsr eingebracht werden können und die vorhandenen konzept
 Jobkonzepte. *Nächster Schritt:* die Rotationswerkzeuge sind ausgewertet (Daedalus A561, A570 bis A575,
 A591 bis A607; die übrigen A608); offen sind die Beastmaster-Repositories (vollständige Suche), die Blaumagier-
 Repositories (Suche) und danach die übrigen Gruppen der Liste; Beastmaster-Suche: A609, Blaumagier-Suche: A611.
-Kampfvorhersage: interjection ist eine Anzeige (A334); BossMod läuft (A612: Unterbrechen und Provozieren); offen dort
-die übrigen Kandidaten der Rollen-KI – Wiederbelebung (Sperrstatus „Resurrection Restricted", Rotmagier über Vercure,
-Reihenfolge), Tank (Fernangriff unter Berserk und Inner Release, Abtausch gegen mehrere Angreifer, Unverwundbarkeit
-bei tödlichem Treffer), Heiler (Restzeit vor Esuna, Platz von Sacred Soil) – und die Jobmodule. Je Fund ein Loop, je Repository ein Archiveintrag mit Commit und Datum. *Konzept:* 15, erweitert vom Vergleich mit WrathCombo auf die übrigen Werkzeuge; je Fund dazu das
+Kampfvorhersage: interjection ist eine Anzeige (A334); BossMods Rollen-KI läuft (A612 Unterbrechen und Provozieren,
+A613/A614 Tiefe Gewölbe, A615 Rotmagier über Vercure, A616 „Resurrection Restricted"); offen dort Tank (Abtausch gegen
+mehrere Angreifer, Unverwundbarkeit bei tödlichem Treffer), Heiler (Platz von Sacred Soil), Limit-Break allein – und die
+Jobmodule. Je Fund ein Loop, je Repository ein Archiveintrag mit Commit und Datum. *Konzept:* 15, erweitert vom Vergleich mit WrathCombo auf die übrigen Werkzeuge; je Fund dazu das
 tragende (01 Jobs, 08 Minderung, 13 Flächenschaden und Tankbuster).
 
 

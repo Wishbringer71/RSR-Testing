@@ -87,6 +87,7 @@ internal static partial class TargetUpdater
 		DataCenter.UpdateTankbusterTargets();
 		UpdateCastsByOthers();
 		DataCenter.DeathTarget = GetDeathTarget();
+		TraceDutyOnlyRaise();
 		DataCenter.DispelTarget = GetDispelTarget();
 		// Enemy damage over time on the party, after the party list and the Esuna target it leaves out (A432).
 		DotOnParty.Update();
@@ -564,6 +565,36 @@ internal static partial class TargetUpdater
 			{
 				PluginLog.Error($"Error in CollectHostileTargets: {ex.Message}");
 			}
+		}
+	}
+
+	private static ulong _dutyOnlyCorpse;
+	private static bool _dutyRestrictionSeen;
+
+	/// <summary>
+	/// Concept 11, "Tote, die nur die Wiederbelebung des Inhalts aufhebt" (A616): one line per change in DefenseTrace.log -
+	/// the corpse RSR picked is one only the duty's own raises bring back, and the mana kept for the job's raise is free here.
+	/// </summary>
+	private static void TraceDutyOnlyRaise()
+	{
+		var corpse = DataCenter.DeathTarget;
+		var id = corpse != null && corpse.OnlyDutyRaisesReach() ? corpse.GameObjectId : 0;
+		if (id != _dutyOnlyCorpse)
+		{
+			_dutyOnlyCorpse = id;
+			if (corpse != null && id != 0)
+			{
+				DefenseTrace.Line($"raise: the dead {(Job)corpse.ClassJob.RowId} comes back only by the duty's own raises; the job's raise and the feather leave them");
+			}
+		}
+
+		var restricted = ObjectHelper.DutyRestrictsResurrection;
+		if (restricted != _dutyRestrictionSeen)
+		{
+			_dutyRestrictionSeen = restricted;
+			DefenseTrace.Line(restricted
+				? "raise: only the duty's own raises bring anyone back here; the mana kept for the job's raise is free"
+				: "raise: the job's raise works here again");
 		}
 	}
 

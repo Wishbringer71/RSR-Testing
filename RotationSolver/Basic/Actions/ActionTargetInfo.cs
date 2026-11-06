@@ -836,6 +836,13 @@ public struct ActionTargetInfo(IBaseAction action)
 			return null;
 		}
 
+		// Concept 11, "Tote, die nur die Wiederbelebung des Inhalts aufhebt" (A616): a job's raise leaves a corpse only the
+		// duty's own raises bring back; the duty's raises take it.
+		if (!action.Info.IsDutyAction && target.IsDead && target.OnlyDutyRaisesReach())
+		{
+			return null;
+		}
+
 		if (ShouldCheckMoveSafety() && !CheckMovementSafety(target.Position, target))
 		{
 			return null;

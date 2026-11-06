@@ -598,6 +598,13 @@ public readonly struct ActionBasicInfo
 			return true;
 		}
 
+		// Where only the duty's own raises bring anyone back, the job's raise lifts nobody, and its mana is kept for
+		// nothing (concept 11, "Tote, die nur die Wiederbelebung des Inhalts aufhebt", A616); those raises cost no mana.
+		if (ObjectHelper.DutyRestrictsResurrection)
+		{
+			return true;
+		}
+
 		var reserve = Math.Max(raise.Info.MPNeed, (uint)Math.Max(0, Service.Config.LessMPNoRaise));
 		return DataCenter.CurrentMp >= cost + reserve;
 	}

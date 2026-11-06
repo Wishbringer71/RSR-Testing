@@ -236,6 +236,37 @@ public static class StatusHelper
 		@"when (?:this )?effect expires|if not cured|before it detonates",
 		System.Text.RegularExpressions.RegexOptions.IgnoreCase | System.Text.RegularExpressions.RegexOptions.CultureInvariant);
 
+	private static readonly System.Collections.Concurrent.ConcurrentDictionary<uint, bool> _restrictsResurrection = new();
+
+	/// <summary>
+	/// Concept 11, "Tote, die nur die Wiederbelebung des Inhalts aufhebt" (A616): whether this status lets only the duty's
+	/// own means raise its bearer, by its text in the English status sheet - "making resurrection by certain means
+	/// impossible" (1755), "Resurrection by certain means is impossible." (2449, 3380), "Resurrection can only be attempted
+	/// by certain means." (4262); xivapi, 06.11.2026. A sheet that cannot be read answers no.
+	/// </summary>
+	internal static bool RestrictsResurrection(uint statusId)
+	{
+		return _restrictsResurrection.GetOrAdd(statusId, static key =>
+		{
+			try
+			{
+				var sheet = Svc.Data.GetExcelSheet<Lumina.Excel.Sheets.Status>(Dalamud.Game.ClientLanguage.English);
+				if (sheet == null || !sheet.TryGetRow(key, out var row))
+				{
+					return false;
+				}
+
+				var text = row.Description.ExtractText();
+				return text.Contains("resurrection", StringComparison.OrdinalIgnoreCase)
+					&& text.Contains("by certain means", StringComparison.OrdinalIgnoreCase);
+			}
+			catch (Exception)
+			{
+				return false;
+			}
+		});
+	}
+
 	/// <summary>
 	/// Concept 07, "Reinigung oder Heilung" (A574): whether this status turns into something worse when it runs out, by its
 	/// own text in the English status sheet - a Deep Freeze, a Sleep, a detonation. A status that ends in death answers no

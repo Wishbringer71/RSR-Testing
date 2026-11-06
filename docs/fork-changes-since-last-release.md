@@ -154,6 +154,14 @@ What this release changes in the fight. For the whole distance from upstream, se
   Swiftcast the raise waited up to Swiftcast's whole recast. RSR now casts Vercure on you there (no
   enemy needed, also at full HP) and Verraise with the Dualcast it brings - where `Hard-cast raise`
   allows a hard cast, and standing.
+- **No job raise where only the duty's own raises work.** In the Forked Tower, Delubrum Reginae
+  (Savage) and the Baldesion Arsenal everyone carries Resurrection Restricted, and only the duty's
+  raises (Revive, Occult Raise, Lost Arise, Raise L) or a healer limit break bring the dead back.
+  RSR still picked the dead for Raise, Resurrection, Ascend, Egeiro, Verraise, Angel Whisper and the
+  Phoenix Down, spending Swiftcast and casts on raises that bring nobody back while the next GCD
+  waited. Those now leave such a body to the duty's own raise, and the mana kept back for the job's
+  raise is free for heals and damage there. `DefenseTrace.log` notes each such body and when the
+  rule starts and ends.
 
 ## After you are raised
 

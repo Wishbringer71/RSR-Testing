@@ -17923,6 +17923,46 @@ habe den schleim bislang nicht anfreunden können."
 - *7 Gebaut:* `RDM_Reborn.RaiseGCD`. *8 Nachweis:* statisch, Compile, Prüfskripte; im Spiel nicht beobachtet.
 - *9 Dokumentation:* Konzept 11 („Wiederbelebung ohne Swiftcast"), Release-Text.
 
+### A616 · Wiederbelebung: Tote, die nur die Mittel des Inhalts aufheben (06.11.2026)
+
+- *Anlass:* TODO „Fremde Repositories", BossMod-Rollen-KI (BossmodReborn 27be422, 05.11.2026, Werkzeugquelle): `xan/AI/Healer.cs`
+  `AutoRaise` und `Caster.cs` lassen jede Wiederbelebung aus, solange der Spieler „Resurrection Restricted" (1755, 2449,
+  3380, beim Heiler auch 4262) trägt.
+- *1 Research:* Status-Blatt (xivapi, 06.11.2026): vier Status „Resurrection Restricted" (deutsch „Wiederbelebungsbegrenzung",
+  Zeile 4262), Texte „resurrection by certain means impossible" bzw. „can only be attempted by certain means", dauerhaft;
+  keine weiteren Treffer auf „certain means". Gemeinschaftsquellen (consolegameswiki): Gabelturm Blut nur Revive und das
+  Heiler-Limit-Break, Gabelturm Magie dazu Occult Raise, Baldesion-Arsenal „not by normal means", Delubrum Reginae (Savage)
+  „a very limited number of ways". Action-Blatt: Job-Wiederbelebungen tragen ihren Job, die der Inhalte `ClassJob` -1; RSR
+  erzeugt diese als `IsDutyAction`. RSR filterte in `GetDeath` nur 4263 („Resurrection Denied"); `CanBeRaised` fragt die
+  Zielart (`CanUseActionOnTarget`), `ActionManagerStatusValid` das Spiel ohne Ziel, `BaseAction.Use` löst ohne weitere
+  Prüfung aus. Ein Heiler wirkte im Gabelturm Swiftcast und Raise auf einen Toten, den Raise nicht aufhebt; lehnt das
+  Spiel ab, wählt RSR den Rezz im nächsten Bild wieder (leerer GCD, mit „Raise Player First" auch ohne Heilung), lässt es
+  wirken, kosten Versuche je 8 s und 2400 MP; welches, ist von hier nicht messbar. Kreszentia liegt in seinem Profil
+  (A43, A478); in seinen Mitschnitten (zehn Archive, 25.10.–05.11.2026) kommt keiner der Status vor.
+- *2 Optionen:* (0) belassen; (1) Job-Wiederbelebung und Feder lassen Tote mit dem Status aus, die des Inhalts nehmen sie;
+  (2) wie BossMod: jede Wiederbelebung aus, solange der Spieler den Status trägt; (3) das Spiel mit Ziel fragen
+  (`GetActionStatus` mit Ziel-Id).
+- *3 Abwägung:* (1). Stärke: Heilung und Schaden laufen weiter, während der Tote liegt; Revive und Occult Raise heben ihn
+  auf; die Manarücklage (2400 MP) ist im Inhalt frei. Schwäche: Ein Inhalt, in dem der Status Job-Wiederbelebungen doch
+  zuließe, verlöre sie – keine Quelle nennt einen. (2) sperrte auch Revive, das RSR in Kreszentia selbst wirkt
+  (`PhantomDefault.RaiseGCD`). (3) belegt nichts: Ob die Ablehnung im Client oder erst am Server fällt, ist unbelegt.
+- *5 Review:* Ob ein Toter seine dauerhaften Status im Client zeigt, ist unbelegt; deshalb zählt auch der Status des
+  Spielers (der Status gilt für den Inhalt, Schluss aus den Texten und BossMods Lesart). `DeathTarget` bleibt gesetzt,
+  die Prüfung sitzt nach der Zielwahl jeder Aktion; die öffentliche Methode `FindTargetByType` bleibt unverändert.
+  Swiftcast für den Rezz und das Warten von Searing Light fragen `Raise.CanUse` und fallen mit weg. 4262 bei 0 Stapeln
+  bleibt ohne Regel (unbelegt, ob der Status dann zu 4263 wird; eine Regel auf `Param` 0 sperrte bei falscher Lesart
+  Revive im ganzen Gabelturm).
+- *6 Falsifikation:* Kein Defekt? Widerlegt: Kein Pfad fragt das Spiel mit dem Ziel, also ist der Tote Ziel. Option
+  falsch? Nur, wenn ein Job-Rezz trotz des Status wirkt; alle Quellen sagen das Gegenteil, Konfidenz mittel
+  (Gemeinschaftsquellen und eine Werkzeugquelle, kein offizieller Text). Ausgeliefert, nichts ändert sich? Er spielt
+  diese Inhalte selten; dafür die Spurzeile, sobald es geschieht.
+- *7 Gebaut:* `StatusHelper.RestrictsResurrection`, `ObjectHelper.OnlyDutyRaisesReach`/`DutyRestrictsResurrection`,
+  `ActionTargetInfo` (nach der Zielwahl), `PhoenixDownItem.TargetAcceptsTheFeather`, `ActionBasicInfo.LeavesMpForRaise`,
+  Spurzeilen in `TargetUpdater.TraceDutyOnlyRaise`. *8 Nachweis:* statisch, Compile, Prüfskripte; im Spiel nicht
+  beobachtet.
+- *9 Dokumentation:* Konzept 11 („Tote, die nur die Wiederbelebung des Inhalts aufhebt"), Konzept 12 Zeilenangabe
+  nachgezogen, Release-Text, TODO.
+
 ## B · Commit-Register (Fork vs. `upstream/main`)
 
 ### B1 · Einzelgeprüfte Fork-Commits

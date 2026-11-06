@@ -525,6 +525,54 @@ Hauptursache des Wiederbelebungsdefekts. Im Kampf änderte die Umstellung nichts
 (`RaisePendingAndCastable`) diese Jobs schon über `Raise` erreichte; ein künftiger Rezzer-Job fällt
 nicht mehr still heraus.
 
+### Tote, die nur die Wiederbelebung des Inhalts aufhebt
+
+**Die Job-Wiederbelebung und die Phönixfeder lassen einen Toten aus, den nur die Mittel des Inhalts aufheben** (A616):
+Trägt der Tote oder der Spieler selbst einen Status, dessen englischer Wirktext sagt, dass eine Wiederbelebung „by
+certain means" unmöglich ist oder nur „by certain means" versucht werden kann (`StatusHelper.RestrictsResurrection`),
+nehmen Raise, Resurrection, Ascend, Egeiro, Verraise, Angel Whisper und die Feder ihn nicht als Ziel; die
+Wiederbelebungen des Inhalts (`IsDutyAction`: Revive, Occult Raise, Lost Arise, Lost Sacrifice, Variant Raise) nehmen ihn
+weiter. Die Manarücklage für die Wiederbelebung (unten) entfällt, solange der Spieler einen solchen Status trägt.
+`DeathTarget` bleibt gesetzt, damit die Wiederbelebung des Inhalts ihn findet; die Prüfung sitzt nach der Zielwahl jeder
+Aktion (`ActionTargetInfo`: keine `IsDutyAction` auf einem Toten, `ObjectHelper.OnlyDutyRaisesReach`) und in
+`PhoenixDownItem.TargetAcceptsTheFeather`. Damit fallen auch Swiftcast für den Rezz (`RaisePendingAndCastable`, der Weg
+über `RaiseSpell`) und das Warten von Searing Light auf den Rezz weg, weil sie `Raise.CanUse` fragen. Ein Befehlsziel
+(`GetCommandTarget`) bleibt, wie er es setzt.
+- *Die Status* (Status-Blatt, xivapi, 06.11.2026; alle „Resurrection Restricted", deutsch „Wiederbelebungsbegrenzung"
+  nach Zeile 4262, dauerhaft, nicht reinigbar): 1755 „The influence of Eureka-forged weapons is making resurrection by
+  certain means impossible." (Baldesion-Arsenal), 2449 und 3380 „Resurrection by certain means is impossible." (2449
+  Delubrum Reginae; 3380 keinem Inhalt zugeordnet), 4262 „Resurrection can only be attempted by certain means. Each
+  resurrection expends 1 stack, rendering all means of revival impossible after reaching 0." (Gabelturm in Kreszentia,
+  bis 5 Stapel). Weitere Treffer auf „certain means" hat das Blatt nicht. 4263 „Resurrection Denied" („impossible by any
+  means") schließt `GetDeath` schon seit Upstream für jede Wiederbelebung aus.
+- *Welche Mittel wirken* (Gemeinschaftsquellen, kein offizieller Text gesichtet): im Gabelturm Blut nur Revive des
+  Chemikers und das Limit-Break der Heiler, im Gabelturm Magie dazu Occult Raise (consolegameswiki, „Revive",
+  „Occult Raise"); im Baldesion-Arsenal „not by normal means", in Delubrum Reginae (Savage) „a very limited number of ways"
+  (consolegameswiki). BossModReborn (Werkzeugquelle, 27be422, 05.11.2026) lässt seine Wiederbelebung der Heiler und
+  Magier ganz aus, sobald der Spieler einen dieser Status trägt (`xan/AI/Healer.cs` `AutoRaise`, `Caster.cs`). Die
+  Wiederbelebungen der Inhalte haben im Action-Blatt keinen Job (`ClassJob` -1), die der Jobs ihren (CNJ, ACN, AST, RDM,
+  BLU, SGE); RSR führt dieselbe Trennung als `IsDutyAction` aus dem Generator.
+- *Warum der Spieler mitzählt:* Der Status gilt für den Inhalt, jeder Spieler darin trägt ihn (Schluss aus den
+  Wirktexten und aus BossModReborns Lesart). Ob ein Toter seine dauerhaften Status im Client noch zeigt, ist nicht
+  belegt; der eigene Status des Lebenden zeigt den Inhalt sicher.
+- *Im Kampf vorher:* Im Gabelturm wählte `GetDeathTarget` jeden Toten (es filterte nur 4263), und
+  `Raise.CanUse` fragt das Spiel ohne Ziel (`GetActionStatus(ActionType.Action, ID)`), `CanBeRaised` nur die Zielart
+  (`CanUseActionOnTarget`). Ein Heiler wirkte Swiftcast und Raise auf einen Toten, den Raise nicht aufhebt. Lehnt das Spiel
+  den Zauber beim Auslösen ab, wählt RSR ihn im nächsten Bild wieder: Der GCD bleibt leer, solange der Tote liegt – mit
+  „Raise Player First" auch für jede Heilung; lässt es ihn wirken, kostet jeder Versuch 8 s und 2400 MP. Welches von
+  beiden das Spiel tut, ist von hier nicht messbar; beides ist Verlust, die Behebung gilt für beide.
+- *Im Kampf nachher:* Der Heiler heilt und greift weiter an, während der Tote liegt; hat er Revive oder Occult Raise,
+  hebt er ihn damit auf. Ein Beschwörer oder Rotmagier verliert kein Swiftcast an einen Rezz, der nicht wirkt. Die
+  Manarücklage von 2400 MP (Raise) steht im ganzen Inhalt für Heilung und Schaden bereit; Revive und Occult Raise kosten
+  kein Mana, Lost Arise und Raise L verbrauchen Einsätze, keines.
+- *Messmittel:* `DefenseTrace.log` schreibt je Wechsel eine Zeile, wenn die Job-Wiederbelebung einen Toten auslässt
+  („raise: … only the duty's own raises"), und wenn die Manarücklage im Inhalt entfällt.
+- *Ausgeschlossen:* Ein Toter mit 4262 bei 0 Stapeln – der Text sagt, dann wirkt nichts mehr; ob der Status dann zu 4263
+  wird (den RSR schon auslässt) oder mit 0 stehen bleibt, ist unbelegt, und eine Regel auf `Param` 0 würde bei falscher
+  Lesart Revive im ganzen Gabelturm sperren. Swiftcast bleibt in diesen Inhalten zurückgehalten wie überall (seine
+  Vorgabe, 03.11.2026); Revive und Occult Raise wirken sofort und brauchen es nicht, der Gewinn wäre ein Schadenszauber
+  je Minute in einem Inhalt.
+
 ### Das Mana für die Wiederbelebung
 
 **Ein Schadenszauber gibt nur das Mana aus, das über der Wiederbelebung liegt** (`ActionBasicInfo.LeavesMpForRaise`,

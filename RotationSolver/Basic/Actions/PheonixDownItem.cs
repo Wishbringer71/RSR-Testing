@@ -96,6 +96,12 @@ internal class PhoenixDownItem : BaseItem
 	/// </summary>
 	private unsafe bool TargetAcceptsTheFeather(IBattleChara target)
 	{
+		// Only the duty's own raises bring this corpse back (concept 11, A616); the feather is none of them.
+		if (target.OnlyDutyRaisesReach())
+		{
+			return false;
+		}
+
 		var manager = ActionManager.Instance();
 		if (manager == null)
 		{
