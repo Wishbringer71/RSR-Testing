@@ -1,6 +1,6 @@
 # RPR — Abhängigkeitsmatrix
 
-Erzeugt von `.github/scripts/audit/generate_action_matrix.py` am 2026-10-31; nicht von Hand bearbeiten. Methode und Grenzen: `docs/rotation-flow/14-action-dependency-matrix.md`.
+Erzeugt von `.github/scripts/audit/generate_action_matrix.py` am 2026-11-06; nicht von Hand bearbeiten. Methode und Grenzen: `docs/rotation-flow/14-action-dependency-matrix.md`.
 
 - Basisrotation: `ReaperRotation`
 - Rotation: `RotationSolver/RebornRotations/Melee/RPR_Reborn.cs`
@@ -147,6 +147,7 @@ direkt: 42 · über andere Aktion: 3
 | Gluttony | Regel prüft | Feint |
 | Gluttony | Regel prüft | Plentiful Harvest |
 | Grim Swathe | Regel prüft | Gluttony |
+| Harpe | Regel prüft | Slice |
 | Infernal Slice | Regel prüft | Slice |
 | Infernal Slice | Regel prüft | Waxing Slice |
 | Shadow of Death | Regel prüft | Arcane Circle |

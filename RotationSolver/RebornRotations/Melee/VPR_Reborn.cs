@@ -1063,7 +1063,9 @@ public sealed class VPR_Reborn : ViperRotation
 			return true;
 		}
 
-		if ((UFGhosting || (!UFGhosting && NoAbilityReady)) && WrithingSnapPvE.CanUse(out act))
+		// Closing on the target: the melee GCD a moment later beats the ranged one (concept 03, "C4", A605).
+		if ((UFGhosting || (!UFGhosting && NoAbilityReady)) && !MeleeWorthWaitingFor(SteelFangsPvE, WrithingSnapPvE)
+			&& WrithingSnapPvE.CanUse(out act))
 		{
 			return true;
 		}

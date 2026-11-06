@@ -1,6 +1,6 @@
 # NIN — Abhängigkeitsmatrix
 
-Erzeugt von `.github/scripts/audit/generate_action_matrix.py` am 2026-10-31; nicht von Hand bearbeiten. Methode und Grenzen: `docs/rotation-flow/14-action-dependency-matrix.md`.
+Erzeugt von `.github/scripts/audit/generate_action_matrix.py` am 2026-11-06; nicht von Hand bearbeiten. Methode und Grenzen: `docs/rotation-flow/14-action-dependency-matrix.md`.
 
 - Basisrotation: `NinjaRotation`
 - Rotation: `RotationSolver/RebornRotations/Melee/NIN_Reborn.cs`
@@ -226,6 +226,7 @@ direkt: 54 · nur gelesen: 1 · ungenutzt: 1 · über andere Aktion: 6
 | Ten | Regel sperrt vorher | Trick Attack |
 | Tenri Jindo | Regel prüft | Bunshin |
 | Tenri Jindo | Regel prüft | Mug |
+| Throwing Dagger | Regel prüft | Spinning Edge |
 | Trick Attack | StatusNeed Hidden | Hide |
 | Trick Attack | Regel prüft | Kunai's Bane |
 | Trick Attack | StatusNeed ShadowWalker | Suiton |

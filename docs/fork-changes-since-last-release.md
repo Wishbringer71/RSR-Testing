@@ -197,6 +197,14 @@ What this release changes in the fight. For the whole distance from upstream, se
   in both Black Mage rotations: once you stand outside your Ley Lines in combat, Retrace brings the
   circle back under you while it still lasts beyond the next GCD, never right after placing it.
 
+## Melee damage dealers
+
+- **No ranged attack while closing in.** A Samurai, Dragoon, Ninja, Reaper or Viper running at its
+  target no longer throws its ranged attack when the first melee hit is only a moment away: it waits
+  while reaching melee range takes less than a GCD times one minus the ranged attack's potency over
+  the combo starter's, by the tooltips. Standing, stepping aside or with Enhanced Enpi or Enhanced
+  Piercing Talon up, the ranged attack goes as before; tanks keep theirs for the pull.
+
 ## Pictomancer
 
 - **Striking Muse no longer waits with full charges.** It still waits for Starry Muse, but only while its

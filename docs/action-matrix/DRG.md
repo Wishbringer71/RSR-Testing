@@ -1,6 +1,6 @@
 # DRG — Abhängigkeitsmatrix
 
-Erzeugt von `.github/scripts/audit/generate_action_matrix.py` am 2026-10-31; nicht von Hand bearbeiten. Methode und Grenzen: `docs/rotation-flow/14-action-dependency-matrix.md`.
+Erzeugt von `.github/scripts/audit/generate_action_matrix.py` am 2026-11-06; nicht von Hand bearbeiten. Methode und Grenzen: `docs/rotation-flow/14-action-dependency-matrix.md`.
 
 - Basisrotation: `DragoonRotation`
 - Rotation: `RotationSolver/RebornRotations/Melee/DRG_Reborn.cs`
@@ -142,6 +142,7 @@ direkt: 40
 | Nastrond | Regel sperrt vorher | Dragonfire Dive |
 | Nastrond | StatusNeed NastrondReady | Geirskogul |
 | Nastrond | Regel sperrt vorher | Stardiver |
+| Piercing Talon | Regel prüft | True Thrust |
 | Piercing Talon | Regel prüft | Winged Glide |
 | Rise of the Dragon | Regel sperrt vorher | Disembowel |
 | Rise of the Dragon | Regel sperrt vorher | Dragonfire Dive |

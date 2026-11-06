@@ -865,6 +865,36 @@ internal static class DataCenter
 
 	public static bool IsMoving => Player.IsMoving || BMRIsMoving;
 
+	private static ulong _closingTargetId;
+	private static float _closingLastDistance;
+	private static DateTime _closingLastRead = DateTime.MinValue;
+	private static float _closingSpeed;
+
+	/// <summary>
+	/// Yalms per second by which the distance between the player and <paramref name="target"/> shrinks, from this read and
+	/// the last one; 0 on a new target or after more than a GCD without a read, negative while it grows (concept 03, "C4",
+	/// A605).
+	/// </summary>
+	internal static float ClosingSpeed(IBattleChara target)
+	{
+		var now = DateTime.Now;
+		var distance = target.DistanceToPlayer();
+		var since = (float)(now - _closingLastRead).TotalSeconds;
+		if (target.GameObjectId != _closingTargetId || since > DefaultGCDTotal)
+		{
+			_closingTargetId = target.GameObjectId;
+			_closingSpeed = 0f;
+		}
+		else if (since > 0f)
+		{
+			_closingSpeed = (_closingLastDistance - distance) / since;
+		}
+
+		_closingLastDistance = distance;
+		_closingLastRead = now;
+		return _closingSpeed;
+	}
+
 	internal static float StopMovingRaw { get; set; }
 
 	internal static float MovingRaw { get; set; }

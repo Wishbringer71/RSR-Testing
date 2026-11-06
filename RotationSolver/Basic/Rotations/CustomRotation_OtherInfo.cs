@@ -64,6 +64,35 @@ public partial class CustomRotation
 	public static bool CastStartBlocked => !HasSwift && ActionBasicInfo.CastStartBlockedNow(false);
 
 	/// <summary>
+	/// Whether a melee job's ranged attack should wait because the player is closing on his target: reaching the range of
+	/// the combo starter in t seconds, waiting pays while t &lt; GCD * (1 - ranged potency / starter potency) - the whole
+	/// sequence shifts by t and loses t / GCD of a melee GCD at the end, while the first GCD lands as a melee hit instead of
+	/// the ranged one. Potencies from the tooltips; standing, stepping aside or moving away the ranged attack goes as before
+	/// (concept 03, "C4", A605).
+	/// </summary>
+	/// <param name="starter">The job's melee combo starter.</param>
+	/// <param name="ranged">The job's ranged attack.</param>
+	protected static bool MeleeWorthWaitingFor(IBaseAction starter, IBaseAction ranged)
+	{
+		if (CurrentTarget is not { } target || !target.IsAttackable())
+		{
+			return false;
+		}
+
+		var gap = target.DistanceToPlayer() - starter.TargetInfo.Range;
+		var speed = DataCenter.ClosingSpeed(target);
+		if (gap <= 0f || speed <= 0f
+			|| !ActionTooltip.TryStatedPotency(starter.Info.AdjustedID, out var meleePotency)
+			|| !ActionTooltip.TryStatedPotency(ranged.Info.AdjustedID, out var rangedPotency)
+			|| meleePotency <= rangedPotency)
+		{
+			return false;
+		}
+
+		return gap / speed < DataCenter.DefaultGCDTotal * (1f - (rangedPotency / meleePotency));
+	}
+
+	/// <summary>
 	/// Whether a damage over time on <paramref name="target"/> is worth putting on again before it is due, because no spell
 	/// with a cast time can start (<see cref="CastStartBlocked"/>) and the GCD would otherwise stay empty. With R seconds left
 	/// of its duration D it pushes the next refresh back by D - R and so saves that share of a later filler; its MP net of

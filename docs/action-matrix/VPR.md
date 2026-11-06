@@ -1,6 +1,6 @@
 # VPR — Abhängigkeitsmatrix
 
-Erzeugt von `.github/scripts/audit/generate_action_matrix.py` am 2026-10-31; nicht von Hand bearbeiten. Methode und Grenzen: `docs/rotation-flow/14-action-dependency-matrix.md`.
+Erzeugt von `.github/scripts/audit/generate_action_matrix.py` am 2026-11-06; nicht von Hand bearbeiten. Methode und Grenzen: `docs/rotation-flow/14-action-dependency-matrix.md`.
 
 - Basisrotation: `ViperRotation`
 - Rotation: `RotationSolver/RebornRotations/Melee/VPR_Reborn.cs`
@@ -177,6 +177,7 @@ direkt: 49 · ungenutzt: 3
 | Vicewinder | Regel sperrt vorher | Hunter's Coil |
 | Vicewinder | Regel sperrt vorher | Swiftskin's Coil |
 | Writhing Snap | Regel sperrt vorher | Hunter's Coil |
+| Writhing Snap | Regel prüft | Steel Fangs |
 | Writhing Snap | Regel sperrt vorher | Swiftskin's Coil |
 
 ## Wechselwirkungen und Zeit

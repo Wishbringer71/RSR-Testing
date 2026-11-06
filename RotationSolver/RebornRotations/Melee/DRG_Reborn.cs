@@ -445,7 +445,10 @@ public sealed class DRG_Reborn : DragoonRotation
 			}
 		}
 
-		if (!IsLastAction(true, WingedGlidePvE) && PiercingTalonPvE.CanUse(out act))
+		// Closing on the target: the melee GCD a moment later beats the ranged one (concept 03, "C4", A605).
+		if (!IsLastAction(true, WingedGlidePvE)
+			&& (StatusHelper.PlayerHasStatus(true, StatusID.EnhancedPiercingTalon) || !MeleeWorthWaitingFor(TrueThrustPvE, PiercingTalonPvE))
+			&& PiercingTalonPvE.CanUse(out act))
 		{
 			return true;
 		}

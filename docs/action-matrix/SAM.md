@@ -1,6 +1,6 @@
 # SAM — Abhängigkeitsmatrix
 
-Erzeugt von `.github/scripts/audit/generate_action_matrix.py` am 2026-10-31; nicht von Hand bearbeiten. Methode und Grenzen: `docs/rotation-flow/14-action-dependency-matrix.md`.
+Erzeugt von `.github/scripts/audit/generate_action_matrix.py` am 2026-11-06; nicht von Hand bearbeiten. Methode und Grenzen: `docs/rotation-flow/14-action-dependency-matrix.md`.
 
 - Basisrotation: `SamuraiRotation`
 - Rotation: `RotationSolver/RebornRotations/Melee/SAM_Reborn.cs`
@@ -101,6 +101,7 @@ direkt: 43 · nur gelesen: 2 · über andere Aktion: 1
 
 | Aktion | Beziehung | zu |
 |---|---|---|
+| Enpi | Regel prüft | Hakaze |
 | Gekko | ComboIds | Jinpu |
 | Hagakure | Regel prüft | Midare Setsugekka |
 | Higanbana | Regel sperrt vorher | Ogi Namikiri |

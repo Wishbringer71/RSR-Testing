@@ -17640,6 +17640,34 @@ habe den schleim bislang nicht anfreunden können."
   langer Kämpfe ändert sich nichts, gewollt.
 - *Prüfgrad:* statisch am Code, Spielblätter; kompiliert ohne Warnung; im Spiel nicht beobachtet.
 
+### A605 · Nahkämpfer: Beim Herankommen wartet der Fernangriff (06.11.2026)
+
+- *Anlass:* TODO „Fremde Repositories", Nahkämpfer (ofnature/Daedalus c4a788f, `NikeOutOfMeleePolicy`, Feldnotiz vom
+  24.09.2026, Shinryu: der Samurai warf Enpi, während er auf sein Ziel zulief).
+- *Befund:* In RSR geht der Fernangriff der Nahkämpfer als letzter Zweig (Konzept 03 „C4"), sobald kein Nahkampf-GCD
+  trifft – auch im Anlauf: Ein Samurai, der eine Gruppe erreicht, wirft Enpi (100 Potenz) und wartet danach die volle
+  Wiederaufladung ab, bevor der erste Nahkampf-GCD fällt. RSR maß die Annäherung nicht. Betroffen: Samurai, Dragoon,
+  Ninja, Schnitter, Viper; der Mönch hat keinen Rückfall, die Tanks bleiben außen (ihr Fernangriff bindet im Anlauf die
+  Gegner, Konzept 02).
+- *Ableitung (meine):* Wartet der GCD t Sekunden, verschiebt sich die Folge um t (am Kampfende im Mittel t/GCD eines
+  Nahkampf-GCD weniger); dafür fällt der erste GCD als Nahkampf statt als Fernangriff. Warten lohnt, solange
+  t < GCD · (1 − P_Fern/P_Nah), P aus den Wirktexten, P_Nah der Kombo-Starter (der schwächste Nahkampf-GCD).
+- *Optionen:* (a) Nullvariante; (b) Daedalus: Gap-Closer zuerst, Warten bis zu einem GCD; (c) Warten nach der Ableitung,
+  ohne Gap-Closer. Rückbau: die fünf Aufrufe.
+- *Abwägung:* (b) holt ihn mit einem Sprung in den Nahkampf – seine Vorgabe schließt Bewegung für Schaden aus; das
+  Warten bis zu einem GCD kostet, wo der Fernangriff stärker ist (Enhanced Enpi 270 gegen Gyofu). (c) gewählt: wartet nur,
+  wo es sich rechnet, nie mit verstärktem Fernangriff (Enhanced Enpi, Enhanced Piercing Talon).
+- *Gebaut:* `DataCenter.ClosingSpeed` (Abstand zum aktuellen Ziel aus zwei Lesungen, neu nach mehr als einem GCD ohne
+  Lesung); `CustomRotation.MeleeWorthWaitingFor(starter, ranged)`; Samurai (Hakaze/Enpi), Dragoon (True Thrust/Piercing
+  Talon), Ninja (Spinning Edge/Throwing Dagger), Schnitter (Slice/Harpe), Viper (Steel Fangs/Writhing Snap). Konzept 03
+  „C4".
+- *Falsifikation:* (1) Kein Defekt? Am Code: der Rückfall fragt nur, ob ein Nahkampf-GCD geht. (2) Option falsch? Einwand:
+  Das Ziel bewegt sich, die Schätzung irrt – steht er oder weicht er aus, ist die Geschwindigkeit null, der Fernangriff
+  geht; eine Fehlschätzung kostet höchstens die Wartezeit unter der Schranke. Einwand Aggro: Ein Nahkämpfer zieht im Anlauf
+  mit dem Fernangriff Feindseligkeit – Warten mindert das, Sicherheit gewinnt. (3) Ausgeliefert, nichts ändert sich? Steht
+  der Starter dem Fernangriff gleich (Viper: Steel Fangs gegen Writhing Snap), wartet nichts; ebenso im Stand.
+- *Prüfgrad:* statisch, kompiliert ohne Warnung; im Spiel nicht beobachtet.
+
 ## B · Commit-Register (Fork vs. `upstream/main`)
 
 ### B1 · Einzelgeprüfte Fork-Commits
