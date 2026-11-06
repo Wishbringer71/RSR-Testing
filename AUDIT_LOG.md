@@ -17416,6 +17416,23 @@ habe den schleim bislang nicht anfreunden können."
 - *Offen beim Weißmagier:* Co-Heiler-Zurückhaltung, Vorausheilung auf Schadensspitzen, Benediction in zwei Stufen, Assize.
 - *Prüfgrad:* statisch (Code beider Seiten). Nichts gebaut.
 
+### A595 · Bewegungssperre beim Wirken gegen die KI von BossMod: Loop, Vorlage am Ende des TODO (06.11.2026)
+
+- *Anlass:* TODO „Bewegungssperre beim Wirken gegen das Ausweichen der BossMod-KI" (A594).
+- *Research:* `MovingUpdater.UpdateCanMove` sperrt die Bewegung während jedes Zaubers (Option „Lock movement while
+  casting", ab Werk aus); lösen nur Taste, R1, beide Maustasten. BossmodReborn 27be422: Die KI bewegt sich während eines
+  Zaubers nur, wenn ihr Spielraum unter der Restwirkzeit weniger 0,5 s liegt (`AIController.Update`, `mustMoveNow`), sonst
+  hält sie Zauber zurück; ihren Abbruch (`ForceCancelCastMechanic`) setzt sie nur bei Blick und Pyretisch. Seine
+  Konfiguration ist nicht hochgeladen; die Lage gilt für beide Stellungen der Option.
+- *Optionen:* A so lassen; B die Sperre weicht der KI (`Movement.IsMoving`); C nur aus Gefahr (nicht baubar, BossMod gibt
+  die Flächen nicht heraus). Empfehlung B, im Konzept 03 mit Kampfbeispiel (Wiederbeleben 8 s, Fläche nach 3 s).
+- *Warum nicht selbst:* Der Optionstext nennt keine Ausnahme und bindet; B ändert sein Verhalten und damit den Text.
+  Vorlage gebündelt am Ende des TODO.
+- *Falsifikation:* Kein Defekt? Ohne KI oder ohne Option tritt nichts ein; mit beiden steht die Figur in der Fläche.
+  Option falsch? B bricht einen Zauber ab, den die KI nicht hätte abbrechen müssen – nach BossMods Spielraumregel nicht.
+  Ausgeliefert, nichts ändert sich? Nichts ausgeliefert.
+- *Prüfgrad:* statisch (RSR, BossmodReborn 27be422). Nichts gebaut.
+
 ## B · Commit-Register (Fork vs. `upstream/main`)
 
 ### B1 · Einzelgeprüfte Fork-Commits

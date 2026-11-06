@@ -74,8 +74,10 @@ wenn eine Fläche mitten im Zauber erscheint. Neue Zauber startet RSR nicht, sol
 `NeedsCasting`); einen laufenden bricht BossMod nur bei Blick- und Pyretisch-Mechaniken selbst ab
 (`ForceCancelCastMechanic`), nicht für eine Fläche. Daedalus verlor so einen Heiler mitten in der Wiederbelebung (Feldnotiz
 02.08.2026, `ResurrectionModule`). Der Optionstext bindet und nennt keine Ausnahme. *Ort:* `MovingUpdater.UpdateCanMove`,
-`DataCenter.NoPoslock`, `BMRInfo_IPCSubscriber` (`AI.IsNavigating`). *Nächster Schritt:* voller Loop – ob die Sperre der
-KI weichen soll (Text, Absicht der Option, Lagen mit und ohne KI), sonst Vorlage an ihn. *Konzept:* 03.
+`DataCenter.NoPoslock`, `Movement.IsMoving`. Loop durch (A595): Die KI läuft mitten im Zauber nur, wenn der Treffer vor
+dessen Ende landet; die Optionen A, B (Empfehlung: die Sperre weicht der KI) und C stehen im Konzept. *Nächster Schritt:*
+Vorlage an ihn, gebündelt am Ende des TODO (der Optionstext bindet). *Konzept:* 03, „Bewegungssperre beim Wirken und die
+KI von BossMod".
 
 ### Fremde Repositories auf Verbesserungen für RSR prüfen · N, R, U
 Sein Auftrag (02.11.2026): „alle von dir gefundenen repos, die du benannt hast prüfen, ob daraus generell

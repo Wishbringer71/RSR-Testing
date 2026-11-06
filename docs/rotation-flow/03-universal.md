@@ -919,6 +919,35 @@ Nicht abwendbar ohne Weg-Messung; die Spur nennt die Rücklage, und der Rest des
 Sie fehlen in der Gegnerliste (`DataCenter.AllHostileTargets`), aus der jede Aktion ihr Ziel wählt, und stehen in der
 Liste, die Flächen meiden.
 
+## Bewegungssperre beim Wirken und die KI von BossMod
+
+**Geltender Stand:** Mit „Lock movement while casting" („Stops your character from moving while casting, and while using
+the actions ticked below.", ab Werk aus) setzt `MovingUpdater.UpdateCanMove` die Bewegungssperre des Spiels für die ganze
+Wirkzeit jedes Zaubers und vor einem Zauber, den RSR gleich drückt. Lösen lässt sie nur der Spieler: Modifikatortaste,
+R1 am Gamepad, beide Maustasten (`DataCenter.NoPoslock`). Neue Zauber startet RSR nicht, solange BossMod den Spieler
+bewegt (`BMRIsMoving` in `ActionBasicInfo.NeedsCasting`). Einen laufenden bricht BossMod selbst ab, aber nur bei Blick-
+und Pyretisch-Mechaniken (`ForceCancelCastMechanic`, `Plugin.cs` mit `CancelCastTweak`, BossmodReborn 27be422); der
+zweite Abbruchweg in `CancelCastUpdater` hängt an „Use BossModReborn's timeline for proactive mitigation" (Upstream
+f72a0a93e) und ändert daneben nichts.
+
+**Was im Kampf geschieht:** Die KI von BossMod bewegt sich während eines Zaubers nur, wenn sie muss: Ihr Spielraum bis zum
+Treffer ist kürzer als die Restwirkzeit weniger 0,5 s (`AIController`, `mustMoveNow`), sonst wartet sie den Zauber ab.
+Genau in diesem Fall hält die Sperre die Figur fest. Beispiel: Ein Weißmagier ohne Spontaneität beginnt Wiederbeleben (8 s, Aktion 125);
+nach 3 s erscheint unter ihm eine Fläche, die in 3 s landet. Die KI will laufen, die Sperre hält, der Treffer landet
+mit der Wiederbelebung noch im Wirken. Daedalus verlor so einen Heiler (Feldnotiz 02.08.2026, `ResurrectionModule`).
+Ohne die KI steuert der Spieler selbst und löst die Sperre mit seiner Taste; ohne die Option läuft die KI ohnehin.
+
+**Offen zur Entscheidung des Auftraggebers** (der Optionstext nennt keine Ausnahme und bindet; gebündelt am Ende des TODO):
+- *A, so lassen:* Die Sperre hält, wie ihr Text sagt. Preis: mit Option und KI jeder Treffer, der mitten in einem Zauber
+  erscheint und vor dessen Ende landet.
+- *B, die Sperre weicht der KI (Empfehlung):* Bewegt BossMod den Spieler (`Movement.IsMoving`, schon je Bild gelesen),
+  gibt RSR die Sperre frei; der Zauber bricht ab und kommt danach neu. Der Text bekäme den Zusatz „… unless BossMod's AI
+  moves you out of danger". Stärke: weicht nur, wo die KI muss (oben); Schwäche: ein abgebrochener Zauber kostet seine
+  Wirkzeit, bei Wiederbeleben bis 8 s. Gegenthese: Die KI folgt auch einem Anführer – dann wartet sie den Zauber nach ihrem
+  Spielraum ab, und RSR startet keinen neuen, solange sie läuft.
+- *C, nur aus Gefahr:* BossMod gibt seine Gefahrenflächen nicht über die Schnittstelle heraus; heute nicht baubar, und
+  B trifft dieselben Fälle, weil die KI mitten im Zauber nur aus Gefahr läuft.
+
 ## E · Universelle Strukturschwächen
 
 | # | Schwäche | Beleg | Stand |
