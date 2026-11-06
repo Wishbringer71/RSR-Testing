@@ -2494,6 +2494,15 @@ Dullahan, Golem, Spriggan und Eisgolem (`XBMPet.InflictsInterrupt`).
   sieht RSR die wahren LP am Begleiter selbst: Er erscheint mit dem Stand, mit dem er zuletzt ging. Die LP, mit denen
   RSR wählt (K6, K11), sind deshalb je Begleiter die zuletzt im Kampf gesehenen, solange der Agent seither nicht
   nachgezogen hat; zieht er nach (nächster Kampf, Campsite), gilt wieder er. Ein Begleiter, der fiel, zählt mit 0.
+  *Abtreten ist kein Fall* (A637): Nach dem Scheidenden Schlag oder einem Entfesseln, nach dem er abtritt, meldet das
+  Objekt des Begleiters bis zum Verschwinden „tot". RSR zählte das als Fall, der Einsatz ging mit 0 LP in die Messung, und
+  der größte Verlust je Einsatz stand nach dem ersten Abtreten bei den vollen LP des Begleiters. Am 06.11.2026 waren das
+  550 nach Kampf 1, obwohl kein Begleiter fiel: Gigantoad trat um 17:25:24 mit 550 von 550 ab, der Mitschnitt führt auf
+  dem ganzen Brett keinen Tod eines Begleiters. Auf diesem Wert ruhten die Reserve für den Endkampf (Stufe 1 unten), die
+  Rast (K10, K14) und der Weg (K10 „Weg": ein Heiler des Endkampfs galt erst ab dem Doppelten als versorgt, also nie).
+  Ein Fall zählt deshalb nur, solange der Begleiter nicht fortgeschickt ist (`FamiliarLeaving`); seine LP gehen mit dem
+  letzten gelesenen Wert über 0 in die Messung. Ein Begleiter, der nach dem Fortschicken noch fällt, bevor er
+  verschwindet, zählt mit diesem Wert – selten, und dann um höchstens einen Treffer zu niedrig.
   Verluste je Einsatz auf Brett 1 (Ruf bis Rückzug): Raptor 140, Cu Sith 277 (unter Zähnefletschen), Fledermaus 150,
   Schleim 283, Fliegenfalle 310, Pugil 209; vor dem Endkampf gewannen Raptor und Schleim an der Campsite je 153.
   *Stufe 1, gebaut (A585): den Endkampf versorgen.*
@@ -2766,12 +2775,26 @@ on a pack once a fight, all of them in the final fight (Crucible only)".
 - *Gegenthese 2 (seine Wahl):* Er setzt die Hörner vielleicht selbst. Eine Handänderung hält; die Einstellung schaltet es
   ab.
 - *Gegenthese 3 (angeschlagene Begleiter):* Gleicher Wert ist selten; ob ein Begleiter den Kampf übersteht, beantwortet
-  erst K11 mit dem gemessenen Verlust je Kampf (Sonde A556, A561). *Gemessen (06.11.2026, Brett 1, A634):* Die
-  Gegenthese hält. Der Schaden entschied jeden Kampf, die LP nie: Gigantoad lag in drei von fünf Kämpfen auf einem Horn,
-  Spriggan, Morbol, Lamb und Apkallu in je zwei; Gigantoad fiel von 550 auf 241 LP, Morbol auf 272. Dodo, Treant und
-  Mantis standen bis zum Endkampf mit vollen LP, Dodo nie auf einem Horn. Offen im TODO „Beastmaster: Hörner im Brett
-  nach Schaden, die LP der Begleiter zählen nie" (seine Frage, ob der Vorschlag oder die Nutzung falsch ist: die
-  Nutzung).
+  erst K11 mit dem gemessenen Verlust je Kampf (Sonde A556, A561). *Gemessen (06.11.2026, Brett 1, A634, A637):* Der
+  Schaden entschied jeden Kampf: Gigantoad lag in drei von fünf Kämpfen auf einem Horn, Spriggan, Morbol, Lamb und
+  Apkallu in je zwei; Dodo, Treant und Mantis standen bis zum Endkampf mit vollen LP, Dodo nie auf einem Horn. Gekostet
+  hat das nichts: Der größte Verlust eines Einsatzes war 343 (Lamb in Kampf 5), jeder gewählte Begleiter stand bei der
+  Wahl darüber, keiner fiel, und die vollen hätten weniger Schaden gebracht. Ungenutzte LP am Ende des Bretts kosten
+  nichts, ein schwächerer Begleiter kostet Schaden in diesem Kampf. Zu seiner Frage, ob Vorschlag oder Nutzung falsch
+  war: der Kader stimmte, die Nutzung kostete auf Brett 1 nichts; falsch war die Messung des Verlusts (A637, K11
+  „Abtreten ist kein Fall"), und eine Lücke bleibt – ein Begleiter, der einen Einsatz nicht mehr übersteht (unten).
+- *Übersteht den Einsatz* (A637): Liegen die LP eines Begleiters nicht über dem größten auf diesem Brett gemessenen
+  Verlust eines Einsatzes, könnte er in diesem Kampf fallen. Er zählt dann nicht als einer, der heilt oder schützt –
+  seine Heilung endet mit seinem Fall –, und unter sonst gleichen Plänen gewinnt der mit mehr Begleitern, die den
+  Einsatz überstehen, vor dem Schaden. Vor der ersten Messung überstehen ihn alle; außerhalb des Crucible ändert sich
+  nichts.
+  - *Im Kampf vorher:* Am 04.11.2026 stand die Fledermaus bis zum vierten Kampf bei 25 von 550 LP und zählte weiter als
+    Heilerin; ein Einsatz kostete auf Brett 1 bis zu 310 (A585). Sie wäre beim ersten Treffer gefallen, ihre Heilung mit ihr.
+    *Nachher:* Ein anderer, der heilt oder schützt und den Einsatz übersteht, nimmt ihr Horn; gibt es keinen, steht sie
+    als Letzte dort, denn die Hörner füllen sich weiter.
+  - *Gegenthese (ausgeliefert, und nichts ändert sich):* Auf Brett 1 vom 06.11.2026 ändert sich nichts – jeder Gewählte
+    überstand seinen Einsatz. Die Regel greift erst, wenn ein Begleiter so weit gefallen ist; dann fehlt ohne sie der
+    Heiler, mit dem B2 rechnet. Den Bedarf späterer Kämpfe außer dem Endkampf (K11, Bedarfsliste) trägt sie nicht.
 
 **Stufe 4, zweiter Teil: K7, Kader auf Wunsch** (A563, gebaut; Entscheidung C, A533):
 - *Wann:* Das Teamfenster des Crucible ist offen – `AgentXBMPetParty` aktiv, nicht im Hornfenster (`Mode` 2), mit

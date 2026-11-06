@@ -363,6 +363,12 @@ What this release changes in the fight. For the whole distance from upstream, se
 
 ## Beastmaster
 
+- **A familiar sent off is no longer counted as fallen (Crucible).** Its object reads as dead while it
+  leaves; RSR took that for a fall, so the largest loss of one use stood at a familiar's full HP after the first
+  retreat, and the reserve for the final fight, the campsite, the feed and the route hint all weighed with it.
+- **A familiar that could fall in this fight counts last (Crucible).** On the horn screen a familiar whose HP do
+  not exceed the largest loss of one use on this board no longer counts as one that heals or protects, and plans
+  with familiars that outlast their use come before more damage.
 - **A healing familiar stays while you could not outlast its absence (alone).** With no healer alive, a
   familiar whose Trick heals you is no longer sent off for the next horn while, without its healing - your HP
   and barrier against the damage per second the enemies deal - you would fall before the enemies do or before

@@ -296,7 +296,9 @@ public sealed class BST_Reborn : BeastmasterRotation
 	private static uint _largestLossPerUse;
 	private static uint _petSeenArea;
 
-	private static void FollowFamiliarHits()
+	// A637: `leaving` - the familiar out has been sent off (FamiliarLeaving); its object reads as dead until it is gone, and
+	// that is no fall.
+	private static void FollowFamiliarHits(bool leaving)
 	{
 		if (_petSeenArea != DataCenter.TerritoryID)
 		{
@@ -380,7 +382,7 @@ public sealed class BST_Reborn : BeastmasterRotation
 			_useLastHp = hp;
 		}
 
-		_useFell |= familiar.IsDead;
+		_useFell |= familiar.IsDead && !leaving;
 		_familiarWatched = familiar.GameObjectId;
 		_familiarLastHp = hp;
 	}
@@ -1417,7 +1419,7 @@ public sealed class BST_Reborn : BeastmasterRotation
 			WatchCapture();
 		}
 
-		FollowFamiliarHits();
+		FollowFamiliarHits(FamiliarLeaving);
 		if ((UseCrucibleSafetyItems || UseCrucibleDamageItems) && DataCenter.State)
 		{
 			UseCrucibleItems(Service.Config.UseHpPotionsPercent, _familiarLargestHit, UseCrucibleSafetyItems, UseCrucibleDamageItems);
@@ -1491,14 +1493,15 @@ public sealed class BST_Reborn : BeastmasterRotation
 		OneWithNatureOrder NatureSecond, OneWithNatureOrder NatureThird);
 
 	// A familiar on a horn, as the choice weighs it; on a Crucible board with the share of its HP left (1 elsewhere).
+	// A637: `Lasts` - its HP stand above the largest loss of one use measured on this board (always outside the Crucible).
 	private readonly record struct HornOption(BeastmasterPet Pet, bool Safe, bool Fitting, float Damage, bool TrickHeals,
-		float Health = 1f, int Rank = 0, bool Interrupts = false);
+		float Health = 1f, int Rank = 0, bool Interrupts = false, bool Lasts = true);
 
 	// The order of the choice (concept 01, B5): the required familiars that heal or protect; among them the kind that
 	// covers this fight best; the most damage; after a danger in this area more that heal or protect; his familiars on
-	// their horns; more that heal or protect; more whose Trick heals.
+	// their horns; more that heal or protect; more whose Trick heals. A637: before the damage, more that outlast a use.
 	private readonly record struct HornPlanScore(int Required, int Fitting, float Damage, int SafeAfterDanger, int Kept,
-		int Safe, int TrickHeals, float Health, int Rank = 0, int Interrupt = 0) : IComparable<HornPlanScore>
+		int Safe, int TrickHeals, float Health, int Rank = 0, int Interrupt = 0, int Lasting = 0) : IComparable<HornPlanScore>
 	{
 		public int CompareTo(HornPlanScore other)
 		{
@@ -1506,6 +1509,8 @@ public sealed class BST_Reborn : BeastmasterRotation
 			order = order != 0 ? order : Fitting.CompareTo(other.Fitting);
 			// K4 (A587): before a fight with an enemy kind seen casting interruptibly, a Soul Crush ready to stop it.
 			order = order != 0 ? order : Interrupt.CompareTo(other.Interrupt);
+			// A637 (concept 01, K6 "Übersteht den Einsatz"): a familiar that could fall in this fight only after those that last.
+			order = order != 0 ? order : Lasting.CompareTo(other.Lasting);
 			order = order != 0 ? order : Damage.CompareTo(other.Damage);
 			order = order != 0 ? order : SafeAfterDanger.CompareTo(other.SafeAfterDanger);
 			order = order != 0 ? order : Kept.CompareTo(other.Kept);
@@ -2030,7 +2035,7 @@ public sealed class BST_Reborn : BeastmasterRotation
 		var required = (boss ? BossSafeFamiliars : 0) + (_dangerInArea ? 1 : 0);
 		var pack = boss ? 1 : Math.Max(1, enemies.Length);
 		// Each horn spends One with Nature by its own setting, so each weighs the team on its own, as B5 does.
-		var none = new HornOption(BeastmasterPet.None, false, false, 0f, false, 0f);
+		var none = new HornOption(BeastmasterPet.None, false, false, 0f, false, 0f, Lasts: false);
 		var options = new List<HornOption>[Horns.Length];
 		var position = new Dictionary<BeastmasterPet, int>();
 		for (var h = 0; h < Horns.Length; h++)
@@ -2083,7 +2088,12 @@ public sealed class BST_Reborn : BeastmasterRotation
 
 			for (var h = 0; h < Horns.Length; h++)
 			{
-				options[h].Add(Option(pet, Horns[h], boss, pack, enemies) with { Health = hp / (float)full, Rank = rank });
+				options[h].Add(Option(pet, Horns[h], boss, pack, enemies) with
+				{
+					Health = hp / (float)full,
+					Rank = rank,
+					Lasts = _largestLossPerUse == 0u || hp > _largestLossPerUse,
+				});
 			}
 		}
 
@@ -2312,14 +2322,16 @@ public sealed class BST_Reborn : BeastmasterRotation
 
 	private HornPlanScore Score(HornOption a, HornOption b, HornOption c, BeastmasterPet[] current, int required)
 	{
-		var safe = (a.Safe ? 1 : 0) + (b.Safe ? 1 : 0) + (c.Safe ? 1 : 0);
+		// A637: one that could fall in this fight heals or protects only until it falls - it counts as neither.
+		var safe = (a.Safe && a.Lasts ? 1 : 0) + (b.Safe && b.Lasts ? 1 : 0) + (c.Safe && c.Lasts ? 1 : 0);
+		var lasting = (a.Lasts ? 1 : 0) + (b.Lasts ? 1 : 0) + (c.Lasts ? 1 : 0);
 		var fitting = (a.Fitting ? 1 : 0) + (b.Fitting ? 1 : 0) + (c.Fitting ? 1 : 0);
 		var kept = (a.Pet == current[I] ? 1 : 0) + (b.Pet == current[II] ? 1 : 0) + (c.Pet == current[III] ? 1 : 0);
 		var healers = (a.TrickHeals ? 1 : 0) + (b.TrickHeals ? 1 : 0) + (c.TrickHeals ? 1 : 0);
 		var interrupts = a.Interrupts || b.Interrupts || c.Interrupts ? 1 : 0;
 		return new HornPlanScore(Math.Min(safe, required), required > 0 ? Math.Min(fitting, 1) : 0,
 			a.Damage + b.Damage + c.Damage, _dangerInArea ? safe : 0, kept, safe, healers, a.Health + b.Health + c.Health,
-			a.Rank + b.Rank + c.Rank, interrupts);
+			a.Rank + b.Rank + c.Rank, interrupts, lasting);
 	}
 	#endregion
 

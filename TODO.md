@@ -19,24 +19,22 @@ auswahl und das timing der beschwörung" – je Kampf aller fünf Bretter (Gegne
 BossMod-Module) die Rotation des Beastmasters, die Wahl der Begleiter und den Zeitpunkt ihres Aufrufs im Loop prüfen
 (Beispiel seiner Beobachtung: der Raptor gegen Feuer, bevor feueranfällige Gegner da waren; A581).
 
-1. Beastmaster: Hörner im Brett nach Schaden, die LP der Begleiter zählen nie: Fünf Begleiter trugen das Brett, zwei
-   davon bis unter die Hälfte ihrer LP, drei blieben voll (seine Frage, 06.11.2026).
-2. Beastmaster: Konzept und Code im vollen Loop (sein Auftrag, 06.11.2026), mit seinem Vorschlag, die Kämpfe eines
+1. Beastmaster: Konzept und Code im vollen Loop (sein Auftrag, 06.11.2026), mit seinem Vorschlag, die Kämpfe eines
    Inhalts vorab zu prüfen: Die Belegung vor einem Kampf kennt die Gefahr eines Gebiets erst, wenn sie eingetreten ist.
-3. Heiltrank nach der Gefahr statt nach der festen Schwelle: Allein ohne Heiler kommt der Trank erst unter der
+2. Heiltrank nach der Gefahr statt nach der festen Schwelle: Allein ohne Heiler kommt der Trank erst unter der
    eingestellten Schwelle, auch wenn RSR den Fall unter 10 % schon vorhersagt.
-4. Beastmaster: Crucible-Strategien: Ein K.O. beendet den Lauf, und ein Begleiter, den ein späterer Kampf braucht, kommt
+3. Beastmaster: Crucible-Strategien: Ein K.O. beendet den Lauf, und ein Begleiter, den ein späterer Kampf braucht, kommt
    dort mit den LP an, die ihm die früheren ließen.
-5. Tinktur: Schalter je Gegenstand ab Werk aus: Auf jedem Job, auf dem er die Tinktur nicht von Hand eingeschaltet hat,
+4. Tinktur: Schalter je Gegenstand ab Werk aus: Auf jedem Job, auf dem er die Tinktur nicht von Hand eingeschaltet hat,
    kommt sie nie, gegen den Text von „Tincture usage".
-6. Jobkonfiguration: Jobs ohne gespeicherten Eintrag teilen eine Liste: Schaltet er auf einem neu gespielten Job eine
+5. Jobkonfiguration: Jobs ohne gespeicherten Eintrag teilen eine Liste: Schaltet er auf einem neu gespielten Job eine
    Aktion aus, ist sie auf jedem anderen in derselben Sitzung neu gespielten Job ebenfalls aus.
-7. Bewegungssperre beim Wirken gegen das Ausweichen der BossMod-KI: Mit „Lock movement while casting" an steht die
+6. Bewegungssperre beim Wirken gegen das Ausweichen der BossMod-KI: Mit „Lock movement while casting" an steht die
    Figur während jedes Zaubers still, auch wenn die KI von BossMod aus einer Fläche laufen will; nur in dieser
    Kombination, dort aber mit einem Treffer, dem der Spieler nicht ausweicht.
-8. Blaumagier: Set nach den Widerständen der Stufe: Im Masked Carnivale wählt der Satz des Stufenführers Füllzauber
+7. Blaumagier: Set nach den Widerständen der Stufe: Im Masked Carnivale wählt der Satz des Stufenführers Füllzauber
    nach Beispielen; gegen welches Element die Gegner der Stufe schwach oder immun sind, zählt dabei nicht.
-9. Konzepte neu ordnen (allgemein, Rollen, Gruppen, Jobs, Inhalte): keine direkte Wirkung im Kampf; eine Regel, die
+8. Konzepte neu ordnen (allgemein, Rollen, Gruppen, Jobs, Inhalte): keine direkte Wirkung im Kampf; eine Regel, die
    im Konzept eines Jobs steht, wird für dessen Gruppe übersehen, und eine Inhaltsregel ist über mehrere Konzepte
    verteilt.
 
@@ -48,14 +46,6 @@ der Beastmaster-Vorrang, dann jeder übrige Punkt dieser Liste, dann die Konzept
 Code-Review; was diese finden, kommt wieder hierher und in dieselbe Reihenfolge, jeder Schritt im vollständigen Loop.
 
 ## Defekte
-
-### Beastmaster: Hörner im Brett nach Schaden, die LP der Begleiter zählen nie · N
-Im Kampf: Auf Brett 1 (06.11.2026) trugen Gigantoad (dreimal), Spriggan, Morbol, Lamb und Apkallu die fünf Kämpfe;
-Gigantoad fiel von 550 auf 241 LP, Morbol auf 272, Dodo, Treant und Mantis blieben voll, Dodo kam nie auf ein Horn.
-Ungenutzte LP am Ende des Bretts sind verschenkt, ein abgenutzter Begleiter fehlt, wenn er unersetzlich wird. *Ort:*
-`BST_Reborn` `HornPlanScore` (LP an neunter Stelle, nach dem Schaden), `SetHornsOnHornScreen`, `HeldForFinal`.
-*Nächster Schritt:* Loop K6 mit K11: die Last über den Kader verteilen – Schaden je Begleiter gegen seine LP und den
-Bedarf der noch erreichbaren Kämpfe. *Konzept:* 01, K6 („Gegenthese 3"), K11.
 
 ### Tinktur: Schalter je Gegenstand ab Werk aus · N, U
 Im Kampf: „Tincture usage" sagt „the tincture goes in each burst window where it is ready and in your inventory"; auf
@@ -96,7 +86,7 @@ LP gefallen sein (04.11.2026). *Ort:* `BST_Reborn`, `CrucibleBoard`, `Beastmaste
 A549: Daten zur Laufzeit, K1, K2, K3 ohne den Bedarf der Begleiter), K9 (A550), K8 (A551 bis A554: Heilung, Gegenmittel, Bestien-Lebensfeder, Sand der
 Zeit, Bestien-Heiltranksammlung, Schutz, Seren, Bestien-Heilmittelsammlung, Resistenzmittel, Bestien-Goldnadel,
 Bestien-Ausdauermittel, Schadensgegenstände, Stärkungsmittel im Endkampf; A555).
-*Gebaut auch:* K6 (A562, Hörner im Hornfenster), K7 (A563, Kader auf Wunsch im Teamfenster), K10 Campsite (A564, wer mitruht), K10 Laden (A569, A570: Kaufliste im Ladenfenster, Kauf auf Wunsch), K12 (A572, Eier des Zu), K13 (A578, Schatz: Empfehlung im Schatzfenster, Wahl auf Wunsch), Bretter 2 bis 5 (A588: Tötungsregeln, Gegenangriff nach Angriffsart), K5 Stufe 1 (A589: Stopp nur gegen Anfällige), K11 Stufe 2 (A590: Zähnefletschen und Campsite nach Bedarf des Endkampfs). *Nächster Schritt:* K5 Stufe 2 (Slow, Blind, Paralysis, Sleep, Death als Schutz, sobald eine Bezifferung belegt ist); die Bretter 2 bis 5 am ersten Mitschnitt prüfen (Spurzeilen „kill rule", „left alone"). *Konzept:* 01,
+*Gebaut auch:* K6 (A562, Hörner im Hornfenster), K7 (A563, Kader auf Wunsch im Teamfenster), K10 Campsite (A564, wer mitruht), K10 Laden (A569, A570: Kaufliste im Ladenfenster, Kauf auf Wunsch), K12 (A572, Eier des Zu), K13 (A578, Schatz: Empfehlung im Schatzfenster, Wahl auf Wunsch), Bretter 2 bis 5 (A588: Tötungsregeln, Gegenangriff nach Angriffsart), K5 Stufe 1 (A589: Stopp nur gegen Anfällige), K11 Stufe 2 (A590: Zähnefletschen und Campsite nach Bedarf des Endkampfs). *Nächster Schritt:* K11 Bedarf späterer Kämpfe außer dem Endkampf (ein Begleiter, der dort als einziger eine Schwäche trifft oder unterbricht, geht vorher nur auf ein Horn, wenn seine LP danach reichen); K5 Stufe 2 (Slow, Blind, Paralysis, Sleep, Death als Schutz, sobald eine Bezifferung belegt ist); die Bretter 2 bis 5 am ersten Mitschnitt prüfen (Spurzeilen „kill rule", „left alone"). *Konzept:* 01,
 „Crucible of the Unbroken: Bretter, Kämpfe, Strategien".
 
 ### Bewegungssperre beim Wirken gegen das Ausweichen der BossMod-KI · N, U

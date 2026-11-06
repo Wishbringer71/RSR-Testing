@@ -18632,6 +18632,32 @@ habe den schleim bislang nicht anfreunden können."
   netto rund 42 LP je Sekunde, 60 s rund 2.500 bei 2.369 LP, ein Trank deckt die Lücke), im Spiel nicht gesehen.
 - *9 Dokumentation:* Konzept 01 B2 (zwei neue Punkte), 03 (Verweis), TODO-Defekt geschlossen.
 
+### A637 · Crucible: Abtreten ist kein Fall; ein Begleiter, der den Einsatz nicht übersteht, zählt nicht als Heiler (06.11.2026)
+
+- *Anlass:* TODO-Defekt aus A634 und seine Frage (06.11.2026): „warum werden begleiter fürs brett vorgeschlagen, aber
+  dann nur ein paar wiederholt genutzt? entweder ist der vorschlag falsch, oder die nutzung".
+- *1 Research:* Kader von RSR (17:24:03), auf den Hörnern Gigantoad dreimal, Spriggan, Morbol, Lamb, Apkallu je
+  zweimal, Dodo nie. Die Wahl reiht die LP an neunter Stelle, nach dem Schaden. Der Mitschnitt zeigt je Einsatz 0 bis
+  343 LP Verlust (Lamb, Kampf 5); jeder Gewählte stand bei der Wahl darüber, kein Begleiter fiel auf dem Brett (keine
+  Zeile 25 eines Begleiters). RSR maß den größten Verlust nach Kampf 1 aber mit 550: Gigantoad trat um 17:25:24 mit 550
+  von 550 ab, der Einsatz schloss mit 0 – nur möglich, wenn `familiar.IsDead` während des Abtretens wahr war. Auf
+  diesem Wert ruhten die Reserve für den Endkampf, `FinalLossPerUse` (Rast, Futter, Weg: ein Heiler galt erst ab
+  1.100 LP als versorgt, also nie) und `ShortForFinal`.
+- *Berichtigt:* Meine Antwort im Chat („die Nutzung ist falsch: … LP an neunter Stelle") stimmte für Brett 1 nicht:
+  Die Häufung kostete dort nichts, die vollen Begleiter hätten weniger Schaden gebracht. Falsch war die Messung, und
+  eine Lücke bleibt (unten).
+- *2–6:* Messung: ein Fall nur, solange der Begleiter nicht fortgeschickt ist (`FamiliarLeaving`). Wahl: Optionen (0)
+  nichts, (a) Schaden mal LP-Anteil (ohne Herleitung, verworfen), (b) LP nach vorn vor den Schaden (kostet Schaden ohne
+  Risiko, verworfen), (c) „übersteht den Einsatz" – LP über dem größten gemessenen Verlust eines Einsatzes – vor dem
+  Schaden, und ein Heiler, der ihn nicht übersteht, zählt nicht als Heiler. Gegenthese 3 hält für Brett 1 vom 06.11.
+  (nichts ändert sich), nicht für den 04.11. (Fledermaus bei 25 von 550 als Heilerin gezählt). Ein leeres Horn zählt als
+  „übersteht nicht", sonst bliebe bei kleinem Kader ein Horn leer statt besetzt.
+- *7 Gebaut:* `FollowFamiliarHits(leaving)`; `HornOption.Lasts`, `HornPlanScore.Lasting` vor `Damage`, sichere nur mit
+  `Lasts`; Hornfenster setzt `Lasts` aus `_largestLossPerUse`.
+- *8 Nachweis:* Compile (0 Warnungen), Prüfungen; Rechnung am Mitschnitt; im Spiel nicht gesehen.
+- *9 Dokumentation:* Konzept 01 K6 (Messung berichtigt, „Übersteht den Einsatz"), K11 („Abtreten ist kein Fall"); TODO:
+  Defekt geschlossen, Bedarf späterer Kämpfe unter „Crucible-Strategien".
+
 ## B · Commit-Register (Fork vs. `upstream/main`)
 
 ### B1 · Einzelgeprüfte Fork-Commits
