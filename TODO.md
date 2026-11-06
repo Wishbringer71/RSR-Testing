@@ -23,10 +23,13 @@ BossMod-Module) die Rotation des Beastmasters, die Wahl der Begleiter und den Ze
    von RSR trotz eingeschalteter Option, er drückte ihn bei 6 % selbst und starb (Beastmaster, Sägerschrei, 04.11.2026).
 2. Beastmaster: Crucible-Strategien: Ein K.O. beendet den Lauf, und ein Begleiter, den ein späterer Kampf braucht, kommt dort mit den LP an, die ihm
    die früheren ließen.
-3. Fremde Repositories auf Verbesserungen für RSR prüfen: Jeder Fund kann ein Defekt im Verhalten einer Klasse sein,
+3. Bewegungssperre beim Wirken gegen das Ausweichen der BossMod-KI: Mit „Lock movement while casting" an steht die
+   Figur während jedes Zaubers still, auch wenn die KI von BossMod aus einer Fläche laufen will; nur in dieser
+   Kombination, dort aber mit einem Treffer, dem der Spieler nicht ausweicht.
+4. Fremde Repositories auf Verbesserungen für RSR prüfen: Jeder Fund kann ein Defekt im Verhalten einer Klasse sein,
    den RSR heute im Kampf zeigt; zuerst die Rotationswerkzeuge für alle Jobs, Daedalus vorn (aktiv, alle Jobs,
    eigene Kampfvorhersage), dann Beastmaster und Blaumagier (sein Auftrag vom 05.11.2026).
-4. Konzepte neu ordnen (allgemein, Rollen, Gruppen, Jobs, Inhalte): keine direkte Wirkung im Kampf; eine Regel, die
+5. Konzepte neu ordnen (allgemein, Rollen, Gruppen, Jobs, Inhalte): keine direkte Wirkung im Kampf; eine Regel, die
    im Konzept eines Jobs steht, wird für dessen Gruppe übersehen, und eine Inhaltsregel ist über mehrere Konzepte
    verteilt.
 
@@ -64,6 +67,16 @@ Bestien-Ausdauermittel, Schadensgegenstände, Stärkungsmittel im Endkampf; A555
 *Gebaut auch:* K6 (A562, Hörner im Hornfenster), K7 (A563, Kader auf Wunsch im Teamfenster), K10 Campsite (A564, wer mitruht), K10 Laden (A569, A570: Kaufliste im Ladenfenster, Kauf auf Wunsch), K12 (A572, Eier des Zu), K13 (A578, Schatz: Empfehlung im Schatzfenster, Wahl auf Wunsch), Bretter 2 bis 5 (A588: Tötungsregeln, Gegenangriff nach Angriffsart), K5 Stufe 1 (A589: Stopp nur gegen Anfällige), K11 Stufe 2 (A590: Zähnefletschen und Campsite nach Bedarf des Endkampfs). *Nächster Schritt:* K5 Stufe 2 (Slow, Blind, Paralysis, Sleep, Death als Schutz, sobald eine Bezifferung belegt ist); die Bretter 2 bis 5 am ersten Mitschnitt prüfen (Spurzeilen „kill rule", „left alone"); K10 Weg ist eine Frage des Umfangs an ihn, am Ende des TODO. *Konzept:* 01,
 „Crucible of the Unbroken: Bretter, Kämpfe, Strategien".
 
+### Bewegungssperre beim Wirken gegen das Ausweichen der BossMod-KI · N, U
+Im Kampf: Mit „Lock movement while casting" („Stops your character from moving while casting …", ab Werk aus) setzt
+`MovingUpdater` während jedes Zaubers die Bewegungssperre des Spiels; die KI von BossMod kann dann nicht laufen, auch
+wenn eine Fläche mitten im Zauber erscheint. Neue Zauber startet RSR nicht, solange BossMod läuft (`BMRIsMoving` in
+`NeedsCasting`); einen laufenden bricht BossMod nur bei Blick- und Pyretisch-Mechaniken selbst ab
+(`ForceCancelCastMechanic`), nicht für eine Fläche. Daedalus verlor so einen Heiler mitten in der Wiederbelebung (Feldnotiz
+02.08.2026, `ResurrectionModule`). Der Optionstext bindet und nennt keine Ausnahme. *Ort:* `MovingUpdater.UpdateCanMove`,
+`DataCenter.NoPoslock`, `BMRInfo_IPCSubscriber` (`AI.IsNavigating`). *Nächster Schritt:* voller Loop – ob die Sperre der
+KI weichen soll (Text, Absicht der Option, Lagen mit und ohne KI), sonst Vorlage an ihn. *Konzept:* 03.
+
 ### Fremde Repositories auf Verbesserungen für RSR prüfen · N, R, U
 Sein Auftrag (02.11.2026): „alle von dir gefundenen repos, die du benannt hast prüfen, ob daraus generell
 verbesserungen für rsr entstehen könnten, für die grundstruktur, für die rotationen und das verhalten der einzelnen
@@ -94,8 +107,10 @@ nicht kennt, Job für Job nach seinem Profil (Maschinist zuerst, er spielt ihn a
 Reihenfolge der Liste. Maschinist in Arbeit (Daedalus 74659a6, 03.11.2026): Full Metal Field und Reassemble treffen RSR
 nicht (Job-Guide: „not affected by Reassemble", RSR setzt es nicht darauf). Königin, Overdrive und das Maß „letzter
 Gegner" gebaut (A591, Konzept 14, „Das Ende der Gruppe"); Gruppenminderung als Familie für Barde, Maschinist und Tänzer
-gebaut (A592, Konzept 08); Flächensperre und Ladungsgrenze geprüft, nichts zu bauen (A593, Konzept 14). Nächster Job:
-die Heiler (Sicherheit der Gruppe), dann Tanks, dann die Schadensausteiler. Je Fund ein Loop, je Repository ein Archiveintrag mit Commit und Datum. *Konzept:* 15, erweitert vom Vergleich mit WrathCombo auf die übrigen Werkzeuge; je Fund dazu das
+gebaut (A592, Konzept 08); Flächensperre und Ladungsgrenze geprüft, nichts zu bauen (A593, Konzept 14). Heiler (Sicherheit
+der Gruppe): Weißmagier, erster Durchgang A594; offen beim Weißmagier Co-Heiler-Zurückhaltung, Vorausheilung auf
+Schadensspitzen, Benediction in zwei Stufen, Assize; dann Gelehrter, Astrologe, Weiser, dann Tanks, dann die
+Schadensausteiler. Je Fund ein Loop, je Repository ein Archiveintrag mit Commit und Datum. *Konzept:* 15, erweitert vom Vergleich mit WrathCombo auf die übrigen Werkzeuge; je Fund dazu das
 tragende (01 Jobs, 08 Minderung, 13 Flächenschaden und Tankbuster).
 
 

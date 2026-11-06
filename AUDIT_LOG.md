@@ -17396,6 +17396,26 @@ habe den schleim bislang nicht anfreunden können."
   Nichts ausgeliefert.
 - *Prüfgrad:* statisch, Spielblatt, Job-Guide. Konzept 14, Tabelle „Weitere Punkte, gegen The Balance geprüft".
 
+### A594 · Weißmagier nach Daedalus, erster Durchgang (06.11.2026)
+
+- *Anlass:* TODO „Fremde Repositories", Heiler nach dem Maschinisten; ofnature/Daedalus c4a788f (05.11.2026),
+  `ApolloCore` (Weißmagier), Regeln aus den Kommentaren der Module und Helfer.
+- *Deckt sich:* Lilien vor dem Überlauf (Daedalus: bei 3/3 oder 2/3 kurz vor der nächsten; `WHM_Reborn`: „Use Lily at max
+  stacks/about to overcap", zwei Lilien und die nächste in `LilyOvercapTime` GCDs); Thin Air nur nach der Jobquest
+  (`ModifyThinAirPvE.UnlockedByQuestID` 67259, `ActionBasicInfo` prüft sie); Verhängnis bis zur vollen Gesundheit (A573).
+- *Nicht übertragbar:* Wiederbelebung wartet außerhalb des Kampfes nicht auf Thin Air oder Swiftcast – eine Grenze von
+  Daedalus (dort laufen Fähigkeiten nur im Kampf), RSR wirkt sie auch außerhalb.
+- *Ausgeschlossen:* Swiftcast für eine Heilung in Bewegung unter Stufe 50 – widerspricht seiner Vorgabe, Swiftcast für
+  Wiederbelebungen bereitzuhalten (CLAUDE.md, „Spielweise").
+- *Zauberabbruch auf BossMods Mechaniksignal:* `CancelCastUpdater` bricht nur mit „Use BossModReborn's timeline for
+  proactive mitigation" ab (Upstream f72a0a93e, 04.08.2026), deren Text davon nichts sagt; BossMod bricht bei
+  `ForceCancelCastMechanic` aber selbst ab (`Plugin.cs`, `CancelCastTweak.ShouldCancel` mit `force`, BossmodReborn
+  27be422), der zweite Weg ändert im Spiel nichts. Nicht geändert.
+- *Neu im TODO:* „Bewegungssperre beim Wirken gegen das Ausweichen der BossMod-KI" (Daedalus' Feldnotiz vom 02.08.2026:
+  Heiler starb mitten in der Wiederbelebung, weil das Ausweichen angehalten war).
+- *Offen beim Weißmagier:* Co-Heiler-Zurückhaltung, Vorausheilung auf Schadensspitzen, Benediction in zwei Stufen, Assize.
+- *Prüfgrad:* statisch (Code beider Seiten). Nichts gebaut.
+
 ## B · Commit-Register (Fork vs. `upstream/main`)
 
 ### B1 · Einzelgeprüfte Fork-Commits
