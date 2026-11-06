@@ -1364,13 +1364,15 @@ public partial class CustomRotation
 	}
 
 	/// <summary>
-	/// Is the <see cref="AverageTTK"/> larger than <paramref name="time"/>. True while no time to kill is known yet.
+	/// Whether the hostiles in combat last longer than <paramref name="time"/>: the time until the last of them falls
+	/// (<see cref="DataCenter.PackTimeToKill"/>, concept 14, "Das Ende der Gruppe", A591). True while no fall is measured
+	/// yet.
 	/// </summary>
 	/// <param name="time">Time</param>
 	/// <returns>Is Longer.</returns>
 	public static bool IsLongerThan(float time)
 	{
-		return !DataCenter.IsAverageTTKKnown || AverageTTK > time;
+		return !DataCenter.IsPackTimeToKillKnown || DataCenter.PackTimeToKill > time;
 	}
 
 	/// <summary>

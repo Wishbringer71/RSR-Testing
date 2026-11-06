@@ -1033,6 +1033,63 @@ internal static class DataCenter
 		}
 	}
 
+	private static float _packTTK = float.PositiveInfinity;
+	private static bool _packTTKKnown;
+	private static long _packTTKCacheTick = long.MinValue;
+
+	/// <summary>
+	/// Concept 14, "Das Ende der Gruppe" (A591): the time until the last hostile in combat falls - their HP over their
+	/// common fall per second from the health history, as if the damage went on to the others after each fall. It answers
+	/// "how long is there something to hit", where <see cref="AverageTTK"/> answers "when does the average hostile fall": a
+	/// hostile without a measured fall left the mean, and a boss beside a few adds averaged with them. PositiveInfinity
+	/// while no hostile in combat has a measured fall.
+	/// </summary>
+	public static float PackTimeToKill
+	{
+		get
+		{
+			var now = Environment.TickCount64;
+			if (_packTTKCacheTick != long.MinValue && now - _packTTKCacheTick < AverageTtkTtlMs)
+			{
+				return _packTTK;
+			}
+
+			var health = 0f;
+			var fall = 0f;
+			var targets = AllHostileTargets;
+			for (int i = 0, n = targets.Count; i < n; i++)
+			{
+				var hostile = targets[i];
+				if (hostile == null || hostile.CurrentHp == 0 || !hostile.InCombat())
+				{
+					continue;
+				}
+
+				health += hostile.CurrentHp;
+				var rate = TimeToKillTracker.GetRate(hostile.GameObjectId);
+				if (!float.IsNaN(rate) && rate > 0f)
+				{
+					fall += rate * hostile.MaxHp;
+				}
+			}
+
+			_packTTKKnown = fall > 0f;
+			_packTTK = _packTTKKnown ? health / fall : float.PositiveInfinity;
+			_packTTKCacheTick = now;
+			return _packTTK;
+		}
+	}
+
+	/// <summary>False while no hostile in combat has a measured fall; <see cref="PackTimeToKill"/> is PositiveInfinity then.</summary>
+	public static bool IsPackTimeToKillKnown
+	{
+		get
+		{
+			_ = PackTimeToKill;
+			return _packTTKKnown;
+		}
+	}
+
 	/// <summary>
 	/// False while no hostile has a time to kill yet, e.g. early in a pull or during downtime. <see cref="AverageTTK"/> is
 	/// PositiveInfinity then, so a consumer comparing it with > or >= lets the action through.

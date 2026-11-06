@@ -8,6 +8,41 @@ public partial class MachinistRotation
 	/// <inheritdoc/>
 	public override MedicineType MedicineType => MedicineType.Dexterity;
 
+	// Concept 14, "Das Ende der Gruppe" (A591): whether the Battery stays from the end of one fight to the start of the next
+	// in the same area - stated by no text, measured here: null until the first such pair is seen.
+	private static bool? _batteryKept;
+	private static bool _batteryWasInCombat;
+	private static byte _batteryAtEnd;
+	private static uint _batteryArea;
+
+	/// <summary>
+	/// Whether the Battery has been seen to stay between two fights in the same area (concept 14, A591). Only then is
+	/// holding the Automaton Queen back from a pack about to fall worth it; while it is unknown, or was seen lost, a part of
+	/// her damage beats none.
+	/// </summary>
+	public static bool BatteryKeptBetweenFights => _batteryKept == true;
+
+	/// <inheritdoc/>
+	protected override void UpdateServices()
+	{
+		base.UpdateServices();
+		var inCombat = InCombat;
+		if (_batteryWasInCombat && !inCombat)
+		{
+			_batteryAtEnd = Battery;
+			_batteryArea = DataCenter.TerritoryID;
+		}
+		else if (!_batteryWasInCombat && inCombat && _batteryKept == null && _batteryAtEnd > 0
+			&& _batteryArea == DataCenter.TerritoryID)
+		{
+			_batteryKept = Battery >= _batteryAtEnd;
+			DefenseTrace.Line($"machinist: Battery {_batteryAtEnd} at the end of the last fight, {Battery} at the start of this one "
+				+ $"- it {(_batteryKept == true ? "stays" : "does not stay")} between fights");
+		}
+
+		_batteryWasInCombat = inCombat;
+	}
+
 	#region Job Gauge
 	/// <summary>
 	/// Gets a value indicating whether the player is currently Overheated.
@@ -133,7 +168,7 @@ public partial class MachinistRotation
 	{
 		if (!InCombat || IsOverheated || HasExcavatorReady || HasFullMetalMachinist || DataCenter.IsHostileCastingAOE
 			|| !ActionTooltip.TryStatedDuration(FlamethrowerPvE.ID, out var duration)
-			|| (DataCenter.IsAverageTTKKnown && DataCenter.AverageTTK < duration) || !DamageAreaSettled(FlamethrowerPvE))
+			|| (DataCenter.IsPackTimeToKillKnown && DataCenter.PackTimeToKill < duration) || !DamageAreaSettled(FlamethrowerPvE))
 		{
 			return false;
 		}

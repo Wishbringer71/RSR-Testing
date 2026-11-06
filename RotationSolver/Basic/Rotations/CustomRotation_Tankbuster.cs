@@ -723,7 +723,7 @@ public partial class CustomRotation
 	{
 		var invulnerability = Invulnerability;
 		return invulnerability != null && invulnerability.Config.IsEnabled && invulnerability.Info.EnoughLevelAndQuest()
-			&& invulnerability.Info.IsOnSlot && DataCenter.AverageTTK >= invulnerability.Config.TimeToKill
+			&& invulnerability.Info.IsOnSlot && DataCenter.PackTimeToKill >= invulnerability.Config.TimeToKill
 			&& invulnerability.Cooldown.WillHaveOneCharge(Math.Max(0f, seconds));
 	}
 

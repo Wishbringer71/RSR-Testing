@@ -79,7 +79,16 @@ public sealed class MCH_Reborn : MachinistRotation
 		// BossModReborn only: without a prediction the pause is known when it has begun, which is too
 		// late. Rook Overdrive is the button; it becomes Queen Overdrive with the trait.
 		if (InCombat && IsRobotActive && BMRDowntimeWithin(DataCenter.DefaultGCDTotal) && BMRDowntimeIn < SummonTime
-			&& RookOverdrivePvE.CanUse(out act))
+			&& RookOverdrivePvE.CanUse(out act, skipTTKCheck: true))
+		{
+			return true;
+		}
+
+		// Concept 14, "Das Ende der Gruppe" (A591): the same finisher in the last GCD before the pack falls, when the queen
+		// would outlive it - her automatic one comes "immediately before shutting down" and then hits nothing. The action's
+		// time-to-kill lock (16 s) is skipped: it refused the finisher exactly when it was needed.
+		if (InCombat && IsRobotActive && DataCenter.IsPackTimeToKillKnown && DataCenter.PackTimeToKill <= DataCenter.DefaultGCDTotal
+			&& DataCenter.PackTimeToKill < SummonTime && RookOverdrivePvE.CanUse(out act, skipTTKCheck: true))
 		{
 			return true;
 		}
@@ -681,15 +690,25 @@ public sealed class MCH_Reborn : MachinistRotation
 			return false;
 		}
 
+		// Concept 14, "Das Ende der Gruppe" (A591): once the Battery is seen to stay between fights, the queen keeps her
+		// action's time-to-kill lock against the time until the pack falls, and waits out a predicted pause within it -
+		// her Battery then pays in full in the next fight. While that is unknown, she comes as before: a part beats none.
+		var holdable = BatteryKeptBetweenFights;
+		var deploy = AutomatonQueenPvE.EnoughLevel ? AutomatonQueenPvE : RookAutoturretPvE;
+		if (holdable && BMRDowntimeWithin(deploy.Config.TimeToKill))
+		{
+			return false;
+		}
+
 		// Opener
 		if (Battery == 60 && IsLastGCD(false, ExcavatorPvE) && CombatTime < 15)
 		{
-			if (AutomatonQueenPvE.EnoughLevel && AutomatonQueenPvE.CanUse(out act, skipTTKCheck: true))
+			if (AutomatonQueenPvE.EnoughLevel && AutomatonQueenPvE.CanUse(out act, skipTTKCheck: !holdable))
 			{
 				return true;
 			}
 
-			if (!AutomatonQueenPvE.EnoughLevel && RookAutoturretPvE.CanUse(out act, skipTTKCheck: true))
+			if (!AutomatonQueenPvE.EnoughLevel && RookAutoturretPvE.CanUse(out act, skipTTKCheck: !holdable))
 			{
 				return true;
 			}
@@ -698,12 +717,12 @@ public sealed class MCH_Reborn : MachinistRotation
 		// Only allow battery usage if the current transition matches the expected step
 		if (foundStepPair)
 		{
-			if (AutomatonQueenPvE.EnoughLevel && AutomatonQueenPvE.CanUse(out act, skipTTKCheck: true))
+			if (AutomatonQueenPvE.EnoughLevel && AutomatonQueenPvE.CanUse(out act, skipTTKCheck: !holdable))
 			{
 				return true;
 			}
 
-			if (!AutomatonQueenPvE.EnoughLevel && RookAutoturretPvE.CanUse(out act, skipTTKCheck: true))
+			if (!AutomatonQueenPvE.EnoughLevel && RookAutoturretPvE.CanUse(out act, skipTTKCheck: !holdable))
 			{
 				return true;
 			}
@@ -713,12 +732,12 @@ public sealed class MCH_Reborn : MachinistRotation
 		if ((nextGCD.IsTheSameTo(false, CleanShotPvE, HeatedCleanShotPvE) && Battery > 90)
 			|| (nextGCD.IsTheSameTo(false, HotShotPvE, AirAnchorPvE, ChainSawPvE, ExcavatorPvE) && Battery > 80))
 		{
-			if (AutomatonQueenPvE.EnoughLevel && AutomatonQueenPvE.CanUse(out act, skipTTKCheck: true))
+			if (AutomatonQueenPvE.EnoughLevel && AutomatonQueenPvE.CanUse(out act, skipTTKCheck: !holdable))
 			{
 				return true;
 			}
 
-			if (!AutomatonQueenPvE.EnoughLevel && RookAutoturretPvE.CanUse(out act, skipTTKCheck: true))
+			if (!AutomatonQueenPvE.EnoughLevel && RookAutoturretPvE.CanUse(out act, skipTTKCheck: !holdable))
 			{
 				return true;
 			}

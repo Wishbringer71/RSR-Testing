@@ -431,6 +431,42 @@ seltener — holt diese Jobs in die Bearbeitung (A162).
   vorhersagt. Ein bereiter Fire's Reply oder Wind's Reply geht vor. Ohne Zeitleiste ist eine Pause erst bekannt, wenn
   sie begonnen hat; den Rückzug aus einer großen Fläche sagt nichts voraus.
 
+**Das Ende der Gruppe (A591).** Was eine Aktion über ihre Laufzeit einbringt – eine Beschwörung, ein Buff, eine
+Unverwundbarkeit, ein Kanal –, lohnt nur, solange es etwas zu treffen gibt.
+- **Stufe „alle":** die *Restzeit der Gruppe* (`DataCenter.PackTimeToKill`): die LP aller Gegner im Kampf geteilt durch
+  ihren gemeinsamen LP-Verlust je Sekunde (Anteil je Sekunde mal maximale LP aus der LP-Historie, `TimeToKillTracker`).
+  Das ist die Zeit, bis der letzte fällt, wenn dein Schaden und der der Gruppe nach jedem Fall auf die übrigen geht.
+  Unbekannt, solange kein Gegner einen gemessenen Verlust hat; dann lässt jeder Leser die Aktion durch wie bisher.
+- **Leser:** die Restzeit-Sperre jeder Aktion („Time-to-kill threshold required for this action to be used",
+  `BaseAction`), `IsLongerThan` (Ninja, die Heilsperre am Kampfende), Doton, Flamethrower, die Bereitschaft der
+  Unverwundbarkeit. Bis A591 lasen sie den Mittelwert der Restzeiten aller Gegner (`AverageTTK`, Upstream). Der
+  Mittelwert beantwortet „wann fällt der durchschnittliche Gegner", nicht „wann fällt der letzte":
+  - Ein Gegner ohne gemessenen Verlust fehlte im Mittel. Schlug der Maschinist einen Gegner aus einer Gruppe an, galt
+    dessen Restzeit als die des Kampfes: Fiel er in 3 s, sperrte die Sperre (16 s) die Königin, obwohl drei weitere
+    standen.
+  - Boss und Adds mittelten sich: 300 s Boss und vier Adds zu je 5 s ergaben 64 s.
+  `AverageTTK` bleibt als öffentliche Größe für abgeleitete Rotationen bestehen.
+- **Maschinist, die Königin auf einer fallenden Gruppe:** `MCH_Reborn` ruft sie ohne Restzeit-Sperre (Upstream seit
+  6d77e5089, 20.06.2025). Die Königin wirkt 12 s (Wirktext 16501) und braucht einen Anlauf bis zum ersten Schlag (Daedalus
+  74659a6: „ramps ~5s"). Fällt die Gruppe vorher, verpufft die Batterie – wenn sie bis zum nächsten Kampf ohnehin bliebe,
+  wäre Zurückhalten besser; verfällt sie, ist ein Teil des Schadens besser als keiner. Ob sie bleibt, nennt kein Text
+  (Job-Guide, consolegameswiki, The Balance; Daedalus behauptet es: „Battery carries to the next pull"). *Gebaut:* RSR
+  misst es selbst (`MachinistRotation.BatteryKeptBetweenFights`): die Batterie am Ende eines Kampfes gegen die am Beginn des
+  nächsten im selben Gebiet, eine Spurzeile beim ersten Befund. Steht fest, dass sie bleibt, gilt die Restzeit-Sperre der
+  Königin (16 s, Upstreams Wert in der Aktion: 12 s Wirkzeit und Anlauf) gegen die Restzeit der Gruppe und gegen eine
+  vorhergesagte Pause (BossModReborn); sonst ruft RSR sie wie bisher.
+- **Maschinist, Queen Overdrive vor dem Fall der Gruppe:** Ungewirkt fällt ihr Abschluss „automatically immediately before
+  shutting down" – stirbt die Gruppe vorher, trifft er nichts. RSR drückt Queen Overdrive (darunter Rook Overdrive) im
+  letzten GCD vor dem Fall der Gruppe, wenn die Königin länger liefe als die Gruppe lebt, wie schon vor einer
+  vorhergesagten Pause. Die Restzeit-Sperre der Aktion (16 s, Upstream) gilt dafür nicht: Sie verweigerte den Abschluss
+  genau dann, wenn er nötig ist.
+- *Gegenthese 1:* Die Restzeit der Gruppe zählt Gegner, die noch niemand schlägt, und überschätzt so die Restzeit eines
+  Bosses, der allein fällt, während Adds stehen bleiben. Hingenommen: Solange Adds stehen, gibt es etwas zu treffen – die
+  Frage der Sperre. *Gegenthese 2:* Gegner im Kampf außer Reichweite zählen mit. Gezählt wird nur, wer in der Gegnerliste
+  steht (Reichweite und Sicht wie für die Zielwahl). *Gegenthese 3 (ausgeliefert, und nichts ändert sich):* Ohne
+  gemessenen Verlust bleibt alles beim Alten; bei einer Gruppe aus gleichen Gegnern unter einer Fläche liegen Mittel und
+  Restzeit der Gruppe beieinander.
+
 **Bestehendes Pausenverhalten bleibt, wie es ist,** weil es eine andere Frage beantwortet: Der Monk lädt
 schon Chakra, wenn kein Gegner in **seiner** Reichweite steht (3 Yalm, auch wenn er nur für eine Mechanik
 herausläuft); der Machinist verschießt Heat vor einer vorhergesagten Pause (`BmrDumpBeforeDowntime`, ab

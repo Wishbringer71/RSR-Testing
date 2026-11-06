@@ -380,7 +380,8 @@ public class BaseAction : IBaseAction
 
 	private bool IsTimeToKillValid()
 	{
-		return Config.TimeToKill <= 0 || !DataCenter.IsAverageTTKKnown || DataCenter.AverageTTK >= Config.TimeToKill;
+		// Concept 14, "Das Ende der Gruppe" (A591): until the last hostile in combat falls, not the average one.
+		return Config.TimeToKill <= 0 || !DataCenter.IsPackTimeToKillKnown || DataCenter.PackTimeToKill >= Config.TimeToKill;
 	}
 
 	/// <inheritdoc/>

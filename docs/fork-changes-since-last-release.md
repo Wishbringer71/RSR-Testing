@@ -3,6 +3,20 @@
 What this release changes in the fight. For the whole distance from upstream, see
 [`fork-changes-in-play.md`](fork-changes-in-play.md).
 
+## When the pack is about to fall
+
+- **"Time to kill" now means "until the last enemy falls".** An action's time-to-kill threshold, and every rule
+  that asks how long the fight lasts (the Ninja's Mug, Dokumori and Doton, Flamethrower, a tank's invulnerability, the
+  heal lock at the end of a fight), read the average of the enemies' times to kill. An enemy nobody had hit yet dropped out of
+  that average - hit one of four and its 3 seconds counted as the fight's - and a boss beside a few adds averaged
+  with them. It now reads the HP of every enemy in combat over their common fall per second: the time until there
+  is nothing left to hit.
+- **The Machinist's queen and the falling pack.** Queen Overdrive (Rook Overdrive) now goes in the last GCD before
+  the pack falls when the queen would outlive it - her automatic finisher otherwise hits nothing - and the
+  action's 16-second lock no longer refuses it then. RSR measures whether your Battery stays from one fight to the
+  next in the same area; once it does, the queen keeps her time-to-kill lock against a pack about to fall and
+  waits out a predicted pause, so her Battery pays in full in the next fight. Until then she comes as before.
+
 ## Summoner and other pet jobs
 
 - **A shield that still stands is not cast again after a summon.** Radiant Aegis is put on by

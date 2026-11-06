@@ -224,12 +224,12 @@ public partial class NinjaRotation
 
 	/// <summary>
 	/// Whether the enemies live through Doton's duration, its tooltip's "Duration": The Balance, Ninja Basic Guide, "Use
-	/// on 2+ targets if targets remain in it for the full duration". Read against the average time to kill of the
-	/// hostiles; true while that is unknown or the duration cannot be read, as before.
+	/// on 2+ targets if targets remain in it for the full duration". Read against the time until the last hostile in combat
+	/// falls (concept 14, "Das Ende der Gruppe", A591); true while that is unknown or the duration cannot be read, as before.
 	/// </summary>
-	protected bool DotonOutlived => !DataCenter.IsAverageTTKKnown
+	protected bool DotonOutlived => !DataCenter.IsPackTimeToKillKnown
 		|| !ActionTooltip.TryStatedDuration(DotonPvE.ID, out var duration)
-		|| DataCenter.AverageTTK >= duration;
+		|| DataCenter.PackTimeToKill >= duration;
 	#endregion
 
 	#region Draw Debug

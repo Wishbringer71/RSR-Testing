@@ -17316,6 +17316,31 @@ habe den schleim bislang nicht anfreunden können."
   Vor der ersten Verlustmessung, im Endkampf, oder wenn die Heiler genug LP haben – die Spurzeile „no Snarl on …" zeigt es.
 - *Prüfgrad:* statisch, Compile ohne Warnung, Prüfskripte. Im Spiel nicht beobachtet.
 
+### A591 · Das Ende der Gruppe: Restzeit bis zum letzten Gegner; Königin und Overdrive vor dem Fall (06.11.2026)
+
+- *Anlass:* TODO „Fremde Repositories", Maschinist nach Daedalus 74659a6: Königin auf einer Gruppe, die vor ihrem Ertrag
+  fällt; Queen Overdrive vor dem Ende der Gruppe; das Maß „letzter Gegner" statt `AverageTTK` für alle Jobs.
+- *Quellen:* Wirktext Automaton Queen (16501: „Duration: 12s", „Shuts down when time expires or upon execution of Queen
+  Overdrive"); Queen Overdrive („triggered automatically immediately before shutting down", Konzept 14); Daedalus 74659a6
+  (`BuffModule`: „Never deploy onto a dying pack — the Queen ramps ~5s", `PackTtkEstimator`: Gruppen-LP über Fallrate,
+  Feldfall 01.07.2026). Ob die Batterie zwischen Kämpfen bleibt, nennt keine Quelle (Job-Guide, consolegameswiki,
+  The Balance); Daedalus behauptet es.
+- *Befund:* `AverageTTK` (Upstream) mittelt die Restzeiten der Gegner mit gemessenem Verlust: Ein ungeschlagener Gegner
+  fehlt, Boss und Adds mitteln sich. Gelesen von der Restzeit-Sperre jeder Aktion, `IsLongerThan`, Doton, Flamethrower und
+  der Unverwundbarkeit. `MCH_Reborn` umgeht die Sperre bei der Königin ganz (6d77e5089); die Sperre von Queen Overdrive
+  (16 s) verweigerte den Abschluss, wenn die Gruppe bald fällt.
+- *Gebaut:* `DataCenter.PackTimeToKill` (LP der Gegner im Kampf über ihren gemeinsamen Verlust je Sekunde) für alle Leser;
+  `AverageTTK` bleibt als öffentliche Größe. `MachinistRotation.BatteryKeptBetweenFights` misst die Batterie über die
+  Kampfpause im selben Gebiet (Spurzeile). `MCH_Reborn`: Königin mit Restzeit-Sperre und Pausenhalt nur, wenn die Batterie
+  bleibt; Overdrive im letzten GCD vor dem Fall der Gruppe und vor der Pause ohne Restzeit-Sperre.
+- *Verworfen:* Daedalus' LP-Schwelle des stärksten Gegners (fester Wert); das Mittel beibehalten und nur die Königin
+  ändern (der Fehler des Mittels trifft jeden Leser); die Königin ohne Wissen über die Batterie halten (verfällt sie,
+  kostet der Halt den ganzen Schaden).
+- *Falsifikation:* Kein Defekt? Ein ungeschlagener Gegner fehlte im Mittel – belegt am Code. Option falsch? Die Restzeit der
+  Gruppe überschätzt bei Adds, die niemand schlägt; dann gibt es etwas zu treffen, die Frage der Sperre. Ausgeliefert, und
+  nichts ändert sich? Ohne gemessenen Verlust wie bisher; die Königin hält erst nach der ersten Batteriemessung.
+- *Prüfgrad:* statisch, Compile ohne Warnung, Prüfskripte. Im Spiel nicht beobachtet.
+
 ## B · Commit-Register (Fork vs. `upstream/main`)
 
 ### B1 · Einzelgeprüfte Fork-Commits

@@ -92,11 +92,9 @@ Jobkonzepte. *Nächster Schritt:* Daedalus für Sicherheit ausgewertet (A561; A5
 Stacheln, Flächen und Zu-Eier, Heiler-Triage, Reinigung, Abwehr und Kampfvorhersage); offen sind je Job die Regeln, die RSR
 nicht kennt, Job für Job nach seinem Profil (Maschinist zuerst, er spielt ihn am häufigsten); danach die übrigen in der
 Reihenfolge der Liste. Maschinist in Arbeit (Daedalus 74659a6, 03.11.2026): Full Metal Field und Reassemble treffen RSR
-nicht (Job-Guide: „not affected by Reassemble", RSR setzt es nicht darauf). Offen: die Königin auf einer Gruppe, die vor
-ihrem Abschluss stirbt – `MCH_Reborn` überspringt die TTK-Sperre der Einstellung (seit 6d77e5089); Queen Overdrive vor
-dem Ende der Gruppe, das die Sperre von 16 s heute gerade dann verweigert; das Zurückhalten vor einer vorhergesagten
-Pause (The Balance); ob die Batterie außerhalb des Kampfes bleibt, ist unbelegt (Messung im Code); das Maß „letzter
-Gegner im Kampf stirbt" statt des Mittelwerts `AverageTTK` für alle Jobs prüfen. Konzept 14, Abschnitt Maschinist. Je Fund ein Loop, je Repository ein Archiveintrag mit Commit und Datum. *Konzept:* 15, erweitert vom Vergleich mit WrathCombo auf die übrigen Werkzeuge; je Fund dazu das
+nicht (Job-Guide: „not affected by Reassemble", RSR setzt es nicht darauf). Königin, Overdrive und das Maß „letzter
+Gegner" gebaut (A591, Konzept 14, „Das Ende der Gruppe"); danach die übrigen Maschinisten-Regeln aus Daedalus, dann der
+nächste Job. Je Fund ein Loop, je Repository ein Archiveintrag mit Commit und Datum. *Konzept:* 15, erweitert vom Vergleich mit WrathCombo auf die übrigen Werkzeuge; je Fund dazu das
 tragende (01 Jobs, 08 Minderung, 13 Flächenschaden und Tankbuster).
 
 
