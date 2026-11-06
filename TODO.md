@@ -19,19 +19,17 @@ auswahl und das timing der beschwörung" – je Kampf aller fünf Bretter (Gegne
 BossMod-Module) die Rotation des Beastmasters, die Wahl der Begleiter und den Zeitpunkt ihres Aufrufs im Loop prüfen
 (Beispiel seiner Beobachtung: der Raptor gegen Feuer, bevor feueranfällige Gegner da waren; A581).
 
-1. Snarl und Challenge über ihr gemeinsames Fenster: Ein Snarl auf einen Begleiter, der den Dauerschaden der nächsten
-   15 s nicht übersteht, lässt sich nicht zurücknehmen (gemeinsame Abklingzeit); sein K.O. kostet ihn für das Brett.
-2. Allein ohne Heiler kommt kein Heiltrank: RSR stand 13 s in der kritischen Klasse ohne Heilfähigkeit, kein Trank
+1. Allein ohne Heiler kommt kein Heiltrank: RSR stand 13 s in der kritischen Klasse ohne Heilfähigkeit, kein Trank
    von RSR trotz eingeschalteter Option, er drückte ihn bei 6 % selbst und starb (Beastmaster, Sägerschrei, 04.11.2026).
-3. Beastmaster: Crucible-Strategien: Ein K.O. beendet den Lauf, und ein Begleiter, den ein späterer Kampf braucht, kommt dort mit den LP an, die ihm
+2. Beastmaster: Crucible-Strategien: Ein K.O. beendet den Lauf, und ein Begleiter, den ein späterer Kampf braucht, kommt dort mit den LP an, die ihm
    die früheren ließen.
-4. Bewegungssperre beim Wirken gegen das Ausweichen der BossMod-KI: Mit „Lock movement while casting" an steht die
+3. Bewegungssperre beim Wirken gegen das Ausweichen der BossMod-KI: Mit „Lock movement while casting" an steht die
    Figur während jedes Zaubers still, auch wenn die KI von BossMod aus einer Fläche laufen will; nur in dieser
    Kombination, dort aber mit einem Treffer, dem der Spieler nicht ausweicht.
-5. Fremde Repositories auf Verbesserungen für RSR prüfen: Jeder Fund kann ein Defekt im Verhalten einer Klasse sein,
+4. Fremde Repositories auf Verbesserungen für RSR prüfen: Jeder Fund kann ein Defekt im Verhalten einer Klasse sein,
    den RSR heute im Kampf zeigt; zuerst die Rotationswerkzeuge für alle Jobs, Daedalus vorn (aktiv, alle Jobs,
    eigene Kampfvorhersage), dann Beastmaster und Blaumagier (sein Auftrag vom 05.11.2026).
-6. Konzepte neu ordnen (allgemein, Rollen, Gruppen, Jobs, Inhalte): keine direkte Wirkung im Kampf; eine Regel, die
+5. Konzepte neu ordnen (allgemein, Rollen, Gruppen, Jobs, Inhalte): keine direkte Wirkung im Kampf; eine Regel, die
    im Konzept eines Jobs steht, wird für dessen Gruppe übersehen, und eine Inhaltsregel ist über mehrere Konzepte
    verteilt.
 
@@ -47,16 +45,6 @@ Code-Review; was diese finden, kommt wieder hierher und in dieselbe Reihenfolge,
 Keine offenen.
 
 ## Offene Arbeit
-
-### Snarl und Challenge über ihr gemeinsames Fenster · N
-Im Kampf: Snarl (46751) und Challenge (46750) teilen die Abklingzeit-Gruppe 81 mit 15 s (Aktionsblatt). Nach einem Snarl
-holt Challenge die Aggro erst nach 15 s zurück; RSR entscheidet nach den HP-Anteilen (`TankSwap`) und dem größten
-Einzeltreffer des Begleiters (A550, A582), nicht nach dem Schaden, den der Begleiter in diesen 15 s nehmen wird. Ein Begleiter
-mit genug HP für einen Treffer, aber nicht für das Fenster, fällt unter Snarl; im Crucible fehlt er dann dem Rest des Bretts.
-*Ort:* `BST_Reborn` (Snarl/Challenge-Zweig), `_familiarLargestHit`. *Nächster Schritt:* Loop – erwarteter Verlust je
-Darsteller über das Fenster (Schaden je Sekunde während er hält, größter Treffer), Snarl nur auf einen Begleiter, der ihn
-übersteht, Challenge zurück nur, wenn der Spieler ihn übersteht; Quelle: xenofei/CrucibleSux be66eda (`AggroAdvisor`, A609).
-*Konzept:* 01 (K9).
 
 ### Allein ohne Heiler kommt kein Heiltrank · N, U
 Im Kampf: Beastmaster allein gegen Myrmidonen-Prinzessin und Gefolge (Sägerschrei, 04.11.2026); seine LP fielen in 75 s

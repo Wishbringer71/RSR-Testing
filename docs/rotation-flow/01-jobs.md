@@ -1371,6 +1371,18 @@ Beastmaster noch, nicht alle Fähigkeiten stehen am Anfang zur Verfügung.
       347 und Pugil 424 LP gegen den Rückzug der Fledermaus mit 458). Dasselbe Maß hätte den Bestien-Heiltrank (K8,
       Schritt 7) in volle Begleiter gegeben. *Preis:* Ein tödlicher Treffer hebt das Maß nicht; seine Größe war ohnehin
       nicht ablesbar, und der Begleiter ist dann fort.
+  - *Über das ganze Fenster* (A610; Quelle CrucibleSux be66eda, `AggroAdvisor`): Zähnefletschen und Provozieren teilen
+    ihre Abklingzeit (Aktionsblatt 46751, 46750: Gruppe 81, 15 s). Wer die Gegner nach einem Wechsel hält, hält sie also
+    das ganze Fenster; der größte Einzeltreffer allein sagt nicht, ob er es übersteht. Der erwartete Verlust eines
+    Darstellers im Fenster ist der größere aus seinem Schaden je Sekunde, solange er hält, mal 15 s, und seinem größten
+    Treffer. Der Schaden je Sekunde wird je Kampf gemessen, für den Begleiter je Begleiter (ein neuer misst neu), solange er
+    hält; ohne Messung zählt der gemessene Schadensstrom der Gegner (`EnemyDanger`, A541). Dann gilt:
+    - Zähnefletschen nur auf einen Begleiter, der das Fenster übersteht – außer du hältst es selbst nicht über deiner
+      LP-Untergrenze; dann trägt er es, wie bisher unter der Untergrenze (dein Fall beendet den Lauf, seiner kostet nur ihn).
+    - Provozieren, sobald der Begleiter das nächste Fenster nicht übersteht und du es über deiner Untergrenze hältst.
+    - Hält es keiner, bleibt die Aggro beim Begleiter.
+    *Preis:* Ein Begleiter, der vorher bei gleichem LP-Anteil die Treffer nahm, nimmt sie jetzt nicht, wenn sein Strom ihn im
+    Fenster fallen ließe – die LP trägst dann du, solange du über der Untergrenze bleibst.
 - *Schwächen der Gegner:* nur im Crucible, aus dem Blatt `XBMBattleDetail` (K1); außerhalb führt das Spiel keine. Dazu
   die Schwächungen, die ein Begleiter selbst legt.
 

@@ -17738,6 +17738,33 @@ habe den schleim bislang nicht anfreunden können."
   (BeastieBuddy) – deckt RSRs Bestiarium-Aufzeichnung.
 - *Prüfgrad:* statisch (README, `Tactics.cs`, `AggroController.cs`). Nächster Schritt: der Loop zum Fund.
 
+### A610 · Snarl und Challenge über ihr gemeinsames Fenster (06.11.2026)
+
+- *Anlass:* TODO „Snarl und Challenge über ihr gemeinsames Fenster" (Fund A609, CrucibleSux `AggroAdvisor`), Vorrang als
+  Beastmaster-Punkt.
+- *Mechanik:* Snarl 46751 und Challenge 46750 teilen Abklingzeit-Gruppe 81, 15 s (Aktionsblatt über xivapi, 06.11.2026);
+  nach einem Wechsel hält der neue Halter das ganze Fenster.
+- *Befund:* RSR entschied nach LP-Anteilen (`TankSwap`) und dem größten Einzeltreffer des Begleiters (A550, A582): ein
+  Begleiter mit LP für einen Treffer, aber nicht für 15 s seines Schadensstroms, bekam Snarl und fiel – im Crucible fehlt er
+  dem Rest des Bretts. Den Strom auf den Spieler las die Regel nicht.
+- *Optionen:* (a) Nullvariante; (b) CrucibleSux: erwarteter Verlust je Darsteller über das Fenster plus feste Reserve und
+  Vorgabe ohne Messung (25 %); (c) wie (b) ohne feste Werte: Messung je Kampf (Begleiter je Begleiter), ohne Messung der
+  gemessene Schadensstrom der Gegner (`EnemyDanger`), der größte Treffer als Untergrenze des Verlusts. Rückbau: der Zweig.
+- *Abwägung:* (b) braucht zwei feste Zahlen ohne Beleg. (c) gewählt; Preis: Ein Begleiter, den sein Strom im Fenster fallen
+  ließe, nimmt keine Treffer mehr, die du dann trägst, solange du über der Untergrenze bleibst.
+- *Gebaut:* `BST_Reborn.FollowFamiliarHits` misst Verlust und Haltezeit von Begleiter und Spieler (eine Pause über einem
+  GCD zählt nicht); `HoldingRate` (gemessen ab einem GCD Haltezeit, sonst der Strom der Gegner); im Snarl/Challenge-Zweig:
+  kein Snarl auf einen Begleiter, der fiele; Challenge nur, wenn du das Fenster über der Untergrenze hältst; Snarl, wenn du
+  es nicht hältst und er schon; hält es keiner, bleibt die Aggro bei ihm. Unter der Untergrenze wie bisher. Konzept 01
+  („Über das ganze Fenster").
+- *Falsifikation:* (1) Kein Defekt? Am Code: nur Anteile und Einzeltreffer, kein Strom. (2) Option falsch? Einwand: der
+  Strom aller Gegner ist nicht der Strom auf den Begleiter (Abwehr verschieden) – deshalb zählt er nur bis zur eigenen
+  Messung, ein GCD Halten genügt. Einwand: der Spieler trägt jetzt öfter – nur, solange er über seiner Untergrenze bleibt.
+  (3) Ausgeliefert, nichts ändert sich? Bei schwachem Strom deckt das Fenster jeder Begleiter mit LP über dem größten
+  Treffer; dann entscheidet wie bisher der Anteil.
+- *Prüfgrad:* statisch, kompiliert ohne Warnung; im Spiel nicht beobachtet. Der Trace nennt beim Provozieren den
+  erwarteten Verlust beider im Fenster.
+
 ## B · Commit-Register (Fork vs. `upstream/main`)
 
 ### B1 · Einzelgeprüfte Fork-Commits

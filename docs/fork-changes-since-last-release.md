@@ -232,6 +232,13 @@ What this release changes in the fight. For the whole distance from upstream, se
 
 ## Beastmaster
 
+- **Snarl and Challenge over the window they share.** The two share one 15 s recast, so whoever holds the
+  enemies after a swap holds them for all of it. No Snarl now goes onto a familiar whose damage taken
+  per second while holding, over that window, or its largest hit would fell it; Challenge takes the
+  enemies back only when you would stay above your HP floor for the window, and Snarl goes when you
+  would not but the familiar would. Rates are measured per fight, per familiar, and fall back to the
+  enemies' measured damage before one has held for a GCD.
+
 - **Familiars by the situation now work.** The familiar catalog was never built: RSR looked for the
   link from a familiar to its actions in the wrong two columns of the game data. Every rule that picks
   a horn by the situation - a healing or protecting familiar when you are in danger, the area familiar

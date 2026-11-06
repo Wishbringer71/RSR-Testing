@@ -249,6 +249,15 @@ public sealed class BST_Reborn : BeastmasterRotation
 	private static ulong _familiarWatched;
 	private static uint _familiarLastHp;
 
+	// A610: per fight, the HP the familiar out and the player lost while they held the enemies, and for how long - the
+	// familiar's anew with each familiar. Read with the window Snarl and Challenge share (FamiliarTankSwapAbility).
+	private static uint _familiarHeldLoss;
+	private static float _familiarHeldSeconds;
+	private static uint _playerHeldLoss;
+	private static float _playerHeldSeconds;
+	private static uint _playerLastHp;
+	private static DateTime _heldLastRead = DateTime.MinValue;
+
 	// A582: when the familiar out now appeared, for whether it has been sent off since (FamiliarLeaving).
 	private static DateTime _familiarSince = DateTime.MinValue;
 
@@ -281,6 +290,10 @@ public sealed class BST_Reborn : BeastmasterRotation
 			if (!InCombat)
 			{
 				_familiarLargestHit = 0u;
+				_familiarHeldLoss = 0u;
+				_familiarHeldSeconds = 0f;
+				_playerHeldLoss = 0u;
+				_playerHeldSeconds = 0f;
 			}
 
 			CloseFamiliarUse();
@@ -293,6 +306,38 @@ public sealed class BST_Reborn : BeastmasterRotation
 		{
 			_familiarLargestHit = Math.Max(_familiarLargestHit, _familiarLastHp - hp);
 		}
+
+		// A610: the holder's loss and time; a pause longer than a GCD between reads is no holding time.
+		var now = DateTime.Now;
+		var since = (float)(now - _heldLastRead).TotalSeconds;
+		_heldLastRead = now;
+		var playerHp = Player?.CurrentHp ?? 0u;
+		if (_familiarWatched != familiar.GameObjectId)
+		{
+			_familiarHeldLoss = 0u;
+			_familiarHeldSeconds = 0f;
+		}
+		else if (since > 0f && since <= DataCenter.DefaultGCDTotal)
+		{
+			if (IsFamiliarTanking(familiar))
+			{
+				_familiarHeldSeconds += since;
+				if (hp < _familiarLastHp && hp > 0)
+				{
+					_familiarHeldLoss += _familiarLastHp - hp;
+				}
+			}
+			else if (PlayerHeldByEnemies())
+			{
+				_playerHeldSeconds += since;
+				if (playerHp < _playerLastHp)
+				{
+					_playerHeldLoss += _playerLastHp - playerHp;
+				}
+			}
+		}
+
+		_playerLastHp = playerHp;
 
 		if (_familiarWatched != familiar.GameObjectId)
 		{
@@ -391,6 +436,43 @@ public sealed class BST_Reborn : BeastmasterRotation
 
 	private static (uint Fight, BeastmasterPet Pet) _sparedForFinal;
 
+	// A610: whether an enemy in combat attacks the player.
+	private static bool PlayerHeldByEnemies()
+	{
+		if (Player is not { } player)
+		{
+			return false;
+		}
+
+		foreach (var hostile in DataCenter.AllHostileTargets)
+		{
+			if (hostile.TargetObjectId == player.GameObjectId)
+			{
+				return true;
+			}
+		}
+
+		return false;
+	}
+
+	// A610: the HP a holder loses per second - measured while it held for at least a GCD, else the enemies' measured stream
+	// on the party (EnemyDanger, A541).
+	private static float HoldingRate(uint loss, float seconds)
+	{
+		if (seconds >= DataCenter.DefaultGCDTotal)
+		{
+			return loss / seconds;
+		}
+
+		var stream = 0f;
+		foreach (var hostile in DataCenter.AllHostileTargets)
+		{
+			stream += EnemyDanger.Rate(hostile, out _, out _);
+		}
+
+		return stream;
+	}
+
 	private bool FamiliarTankSwapAbility(out IAction? act)
 	{
 		act = null;
@@ -420,13 +502,25 @@ public sealed class BST_Reborn : BeastmasterRotation
 			shouldChallenge = !playerCritical && familiarHp <= ChallengeFamiliarHp;
 		}
 
-		// K9 (A550): the familiar would fall to the next hit as large as the largest it has taken in this fight - Challenge,
-		// unless your HP are at the floor, where the familiar takes everything.
-		var nextHitFells = !playerCritical && _familiarLargestHit > 0u && familiar!.CurrentHp <= _familiarLargestHit;
+		// K9 (A550, A610): Snarl and Challenge share one recast, so whoever holds after a swap holds that whole window. The
+		// familiar falls in it when its HP do not cover the larger of its holding rate over the window and its largest hit in
+		// this fight; you hold it while your HP stay over the floor. Unless your HP are at the floor, where the familiar
+		// takes everything: Challenge when the familiar would fall and you would not, no Snarl onto a familiar that would
+		// fall, Snarl when you would not hold the window and it would; when neither would, the familiar keeps it.
+		var window = SnarlPvE.Cooldown.RecastTimeOneChargeRaw;
+		var familiarLoss = Math.Max(HoldingRate(_familiarHeldLoss, _familiarHeldSeconds) * window, _familiarLargestHit);
+		var playerLoss = HoldingRate(_playerHeldLoss, _playerHeldSeconds) * window;
+		var nextHitFells = !playerCritical && familiarLoss > 0f && familiar!.CurrentHp <= familiarLoss;
+		var playerHoldsWindow = Player.CurrentHp - playerLoss > PlayerHpFloor * Player.MaxHp;
 		if (nextHitFells)
 		{
 			shouldSnarl = false;
-			shouldChallenge = true;
+			shouldChallenge = playerHoldsWindow;
+		}
+		else if (!playerCritical && !playerHoldsWindow)
+		{
+			shouldSnarl = true;
+			shouldChallenge = false;
 		}
 
 		// K11 stage 2 (A590): before the final fight, not on a familiar the final fight needs to heal or protect while its HP
@@ -459,8 +553,8 @@ public sealed class BST_Reborn : BeastmasterRotation
 			{
 				if (nextHitFells)
 				{
-					TraceHorn($"Challenge: {CurrentPet} holds {familiar!.CurrentHp} HP, its largest hit in this fight took "
-						+ $"{_familiarLargestHit}");
+					TraceHorn($"Challenge: {CurrentPet} holds {familiar!.CurrentHp} HP, it would lose {familiarLoss:F0} in the "
+						+ $"{window:F0} s Snarl and Challenge share (largest hit in this fight {_familiarLargestHit}), you {playerLoss:F0}");
 				}
 
 				return true;
