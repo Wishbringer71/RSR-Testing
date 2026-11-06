@@ -270,6 +270,8 @@ public sealed class BST_Reborn : BeastmasterRotation
 			_petSeenArea = DataCenter.TerritoryID;
 			_petSeenHp.Clear();
 			_largestLossPerUse = 0u;
+			FinalHealers.Clear();
+			FinalLossPerUse = 0u;
 			_usePet = BeastmasterPet.None;
 		}
 
@@ -387,6 +389,8 @@ public sealed class BST_Reborn : BeastmasterRotation
 		}
 	}
 
+	private static (uint Fight, BeastmasterPet Pet) _sparedForFinal;
+
 	private bool FamiliarTankSwapAbility(out IAction? act)
 	{
 		act = null;
@@ -423,6 +427,21 @@ public sealed class BST_Reborn : BeastmasterRotation
 		{
 			shouldSnarl = false;
 			shouldChallenge = true;
+		}
+
+		// K11 stage 2 (A590): before the final fight, not on a familiar the final fight needs to heal or protect while its HP
+		// would not keep a loss for it - under Snarl it takes all that was yours, and only items and the campsite give it
+		// back; your HP its Tricks heal again there. Unless your HP are at the floor.
+		if (shouldSnarl && !playerCritical && IsInCrucible && CrucibleBoard.Fight != 0
+			&& !CrucibleBoard.IsFinalBattle(CrucibleBoard.Fight) && ShortForFinal(CurrentPet, familiar!.CurrentHp))
+		{
+			shouldSnarl = false;
+			if (_sparedForFinal != (CrucibleBoard.Fight, CurrentPet))
+			{
+				_sparedForFinal = (CrucibleBoard.Fight, CurrentPet);
+				DefenseTrace.Line($"beastmaster: no Snarl on {CurrentPet} at {familiar.CurrentHp} HP - the final fight needs it to "
+					+ $"heal or protect, and a use costs up to {FinalLossPerUse} HP on this board");
+			}
 		}
 
 		// A582: not on a familiar that is leaving - it covers only until it is gone, and the recast would hold the next one's.
@@ -2003,19 +2022,21 @@ public sealed class BST_Reborn : BeastmasterRotation
 		var nobody = new BeastmasterPet[Horns.Length];
 		var finalRequired = BossSafeFamiliars + (_dangerInArea ? 1 : 0);
 		var reserve = new List<(BeastmasterPet Pet, uint Hp)>();
+		FinalHealers.Clear();
+		FinalLossPerUse = loss;
 		foreach (var option in BestPlan(finalOptions, nobody, finalRequired, none))
 		{
-			if (option.Pet == BeastmasterPet.None || !option.Safe)
+			if (option.Pet != BeastmasterPet.None && option.Safe)
 			{
-				continue;
+				_ = FinalHealers.Add(option.Pet);
 			}
+		}
 
-			foreach (var candidate in candidates)
+		foreach (var candidate in candidates)
+		{
+			if (ShortForFinal(candidate.Pet, candidate.Hp))
 			{
-				if (candidate.Pet == option.Pet && (candidate.Hp < loss || candidate.Hp - loss < loss))
-				{
-					reserve.Add((candidate.Pet, candidate.Hp));
-				}
+				reserve.Add((candidate.Pet, candidate.Hp));
 			}
 		}
 

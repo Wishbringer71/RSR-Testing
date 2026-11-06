@@ -141,7 +141,7 @@ public partial class BeastmasterRotation
 			return;
 		}
 
-		var hurt = new List<(int Position, float Share)>();
+		var hurt = new List<(int Position, float Share, bool Short)>();
 		for (var i = 0; i < pets.Length && i < current.Length && i < max.Length; i++)
 		{
 			// The window's rows carry the feed; they are read only where their HP is the team's at the same position.
@@ -155,11 +155,12 @@ public partial class BeastmasterRotation
 			// A fallen familiar is not healed there, one at full HP takes a share for nothing, a fed one loses its feed.
 			if (current[i] > 0 && current[i] < max[i] && rows[i].FedCurrent == 0)
 			{
-				hurt.Add((i, current[i] / (float)max[i]));
+				hurt.Add((i, current[i] / (float)max[i], ShortForFinal((BeastmasterPet)pets[i].PetId, current[i])));
 			}
 		}
 
-		hurt.Sort((a, b) => a.Share.CompareTo(b.Share));
+		// K11 stage 2 (A590): a familiar the final fight needs to heal or protect, short of HP for it, rests first.
+		hurt.Sort((a, b) => a.Short != b.Short ? b.Short.CompareTo(a.Short) : a.Share.CompareTo(b.Share));
 		var self = player.CurrentHp / (float)player.MaxHp;
 		var resting = 0;
 		var bestGain = 0f;

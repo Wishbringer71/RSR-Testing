@@ -277,7 +277,10 @@ What this release changes in the fight. For the whole distance from upstream, se
   measured on the board would leave them too little for the final - as long as the horns still fill and
   this fight gets as many that heal or protect as it needs. The horn screen now chooses with the HP each
   familiar really has: the team list in the game takes a fight's losses over only when the next fight
-  begins, so RSR keeps the HP each familiar left its last fight with.
+  begins, so RSR keeps the HP each familiar left its last fight with. Those healers also take no Snarl in
+  an earlier fight while they are that short - under Snarl a familiar takes all that was yours, and only
+  items and the campsite give its HP back - unless your HP are at the floor; and at a campsite they rest
+  first.
 - **No Snarl on a familiar that is leaving (Crucible).** After Parting Blow, or a Release the familiar
   leaves after, Snarl waits for the familiar that follows instead of covering you for the last few
   seconds and holding its recast from the next one.

@@ -2270,6 +2270,27 @@ Dullahan, Golem, Spriggan und Eisgolem (`XBMPet.InflictsInterrupt`).
     Verlangt der Kampf heilende oder schützende Begleiter, bleiben sie; nur Schaden geht verloren.
   - *Ausgeliefert, und nichts ändert sich?* Wenn die Reserve genug LP für zwei Verluste hat, oder vor der ersten Messung,
     oder wenn er die Hörner von Hand setzt.
+  *Stufe 2, gebaut (A590): Zähnefletschen und Campsite nach Bedarf.* Endkampf-Heiler heißen die Begleiter, die in der
+  Wahl für den Endkampf heilen oder schützen (Stufe 1, aus dem letzten Hornfenster vor einem anderen Kampf); knapp ist
+  einer, dem nach einem weiteren Verlust in Höhe des größten auf dem Brett weniger als ein solcher bliebe – dasselbe Maß
+  wie die Reserve.
+  - *Zähnefletschen:* In einem Kampf vor dem Endkampf geht es nicht auf einen knappen Endkampf-Heiler, außer deine LP
+    stehen an der Untergrenze (`PlayerHpFloor`). Unter Zähnefletschen nimmt er alles, was dir galt (Brett 1: Cu Sith
+    verlor so 277 LP, der größte Verlust des Bretts), und seine LP kommen nur über Gegenstände und die Campsite zurück;
+    deine heilen er und die anderen Heiler im Endkampf mit jeder Dressur wieder auf. *Im Kampf:* Vor Kampf 5 auf Brett 1
+    stand die Fledermaus mit 458 LP bei einem Maß von 283 – knapp; deckte sie dich dort, fehlte sie im Endkampf. *Preis:*
+    Du trägst die Treffer dieses Kampfes selbst, bis zur Untergrenze; dort deckt sie dich wieder.
+  - *Campsite:* Unter den Verwundeten ruhen zuerst die knappen Endkampf-Heiler, dann wie bisher die am stärksten
+    verwundeten (K10). *Im Kampf:* Ein Heiler bei 60 % ruht vor einem Schadensbegleiter bei 40 %, wenn die Campsite nur
+    einen mitnimmt und der Heiler knapp ist; der Schadensbegleiter verliert die Heilung, nicht den Endkampf.
+  - *Verworfen:* Unersetzliche Schwächentreffer für den Endkampf zurückhalten wie die Heiler. Sie bringen dort Schaden,
+    kein Überleben; früh geschont, verlängern sie die frühen Kämpfe um denselben Schaden. Die Bilanz ist offen, solange
+    kein Endkampf am Schaden scheitert; der Endkampf wählt sie ohnehin (K6, Schwäche im Wert).
+  - *Gegenthese 1:* Die Endkampf-Wahl stammt aus dem letzten Hornfenster; seither können LP und Kader sich geändert
+    haben. Teilweise: Die Wahl ändert sich nur mit dem Kader, die LP liest die Regel jetzt (Begleiter draußen,
+    Campsite-Fenster). *Gegenthese 2:* Ohne Zähnefletschen fällst du schneller. Widerlegt bis zur Untergrenze, ab der es
+    wieder gilt. *Ausgeliefert, und nichts ändert sich?* Vor der ersten Verlustmessung, im Endkampf und wenn die
+    Endkampf-Heiler genug LP haben; die Spur nennt jedes verweigerte Zähnefletschen.
   - *Offen:* Die Campsite-Wahl (K10) liest Fenster und Agent und überlässt dir die Wahl, wenn ihre LP sich unterscheiden
     („the window's HP … is not the team's"); ob der Agent dort nachgezogen hat, zeigt die nächste Campsite mit RSR
     (A576 läuft seitdem auch bei ausgeschaltetem RSR).

@@ -17300,6 +17300,22 @@ habe den schleim bislang nicht anfreunden können."
   im Kader steht; die Zeile „horns set for battle" zeigt die Wahl.
 - *Prüfgrad:* statisch, Compile ohne Warnung, Prüfskripte. Im Spiel nicht beobachtet.
 
+### A590 · Crucible K11 Stufe 2: Zähnefletschen und Campsite nach dem Bedarf des Endkampfs (06.11.2026)
+
+- *Anlass:* TODO „Beastmaster: Crucible-Strategien", K11 Stufe 2 (Konzept 01: „er trägt keinen Schaden für dich über
+  Zähnefletschen (K9); an der Campsite ruht er zuerst, wenn seine LP nicht reichen (K10)").
+- *Gebaut:* `BeastmasterRotation.FinalHealers` und `FinalLossPerUse` (aus `HeldForFinal`, A585), `ShortForFinal` als
+  einziges Maß für Reserve, Zähnefletschen und Campsite. `FamiliarTankSwapAbility`: vor dem Endkampf kein Zähnefletschen auf
+  einen knappen Endkampf-Heiler, außer an der Untergrenze deiner LP; eine Spurzeile je Kampf und Begleiter. Campsite
+  (`BeastmasterCrucibleCamp`): knappe Endkampf-Heiler zuerst, dann nach Verwundung.
+- *Begründung:* Brett 1: Cu Sith verlor unter Zähnefletschen 277 LP, den größten Verlust des Bretts; die LP eines
+  Begleiters kommen nur über Gegenstände und Campsite zurück, deine heilen die Heiler im Endkampf wieder auf.
+- *Verworfen:* Schwächentreffer für den Endkampf zurückhalten (Schaden, kein Überleben; Bilanz ohne Messung offen).
+- *Falsifikation:* Kein Defekt? K9 wog nur deine und seine LP-Anteile, nicht seinen Bedarf im Endkampf. Option falsch? Du
+  trägst die Treffer bis zur Untergrenze selbst; dort greift Zähnefletschen wieder. Ausgeliefert, und nichts ändert sich?
+  Vor der ersten Verlustmessung, im Endkampf, oder wenn die Heiler genug LP haben – die Spurzeile „no Snarl on …" zeigt es.
+- *Prüfgrad:* statisch, Compile ohne Warnung, Prüfskripte. Im Spiel nicht beobachtet.
+
 ## B · Commit-Register (Fork vs. `upstream/main`)
 
 ### B1 · Einzelgeprüfte Fork-Commits
