@@ -18560,8 +18560,18 @@ habe den schleim bislang nicht anfreunden können."
   einen Ultratrank (HQ, +696 LP bei 1.383); RSR meldete ab 18:12:45 „critical class" bei 9 % Vorhersage, jeder Trank
   „Schalter aus" (A635); Tod 18:12:58, der Gegner bei 60 %. TODO „Beastmaster allein: der heilende Begleiter geht für
   den Zyklus".
-- *Offen aus diesem Upload:* die Weißmagier-Sitzungen, die übrigen Zeilenarten („single defence open, nothing chosen"
-  333-mal) und die gelernten Tabellen gegen die vorige Fassung – Teil des laufenden Auftrags.
+- *Weißmagier (Ktisis Hyperboreia, Nebeltrift):* Drei Gruppenmitglieder starben, keiner heilbar. Um 16:48:22 traf
+  Ladon-Lords „Pyrischer Rumms" ein Mitglied bei 84 % mit 74.064 Schaden auf 42.571 LP (ein Treffer, den die Gruppe
+  teilen muss, allein genommen). Um 17:03:18 starben zwei Mitglieder aus vollen LP (173.783 und über 200.000) ohne
+  tödlichen Treffer im Mitschnitt; das Erdbeben davor nahm je rund 77.000. RSR legte Göttlicher Segen, Vollkommener
+  Ablass und Linderung auf die Flächen und Tankbuster der Spur.
+- *Übrige Zeilen:* „single defence open, nothing chosen" (333-mal) kommt fast ganz aus den Beastmaster-Kämpfen allein:
+  ohne Heiler öffnet jeder Angriff die Flagge, Biesthaut war in Abklingzeit, eine andere Einzelabwehr hat der Job nicht.
+  Kein Defekt, die Zeile wiederholt sich alle 2,5 s.
+- *Gelernte Tabellen gegen den Upload vom 05.11.2026 abends:* Flächen 298 → 303 (fünf neu, drei verschoben), Serien
+  10 → 11, Serien auf dir 39 → 41, Tankbuster 83 → 86 (einer mit neuem Wert unter Verwundbarkeit), gezielte Treffer
+  4 → 6; nichts verschwunden. Die neuen Ids (25180 bis 25902, 45351 bis 47022) passen zu den gespielten Inhalten, am
+  Mitschnitt nicht einzeln geprüft. Neu im Upload: `InterruptibleCasterKinds.json` (K4).
 - *Prüfgrad:* Spur und Mitschnitt ausgewertet, Code gelesen, Compile, Prüfungen; die beiden Behebungen im Spiel nicht
   gesehen.
 
