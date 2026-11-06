@@ -23,12 +23,11 @@ BossMod-Module) die Rotation des Beastmasters, die Wahl der Begleiter und den Ze
    von RSR trotz eingeschalteter Option, er drückte ihn bei 6 % selbst und starb (Beastmaster, Sägerschrei, 04.11.2026).
 2. Beastmaster: Crucible-Strategien: Ein K.O. beendet den Lauf, und ein Begleiter, den ein späterer Kampf braucht, kommt dort mit den LP an, die ihm
    die früheren ließen.
-3. Bewegungssperre beim Wirken gegen das Ausweichen der BossMod-KI: Mit „Lock movement while casting" an steht die
+3. Beastmaster: Final Sting nach den LP des Ziels: Gegen einen Boss trifft Final Sting bei vollen LP mit 2.000 Potenz,
+   bei niedrigen bis 3.000; RSR setzt es, sobald ein Ersatzhorn bereit ist.
+4. Bewegungssperre beim Wirken gegen das Ausweichen der BossMod-KI: Mit „Lock movement while casting" an steht die
    Figur während jedes Zaubers still, auch wenn die KI von BossMod aus einer Fläche laufen will; nur in dieser
    Kombination, dort aber mit einem Treffer, dem der Spieler nicht ausweicht.
-4. Fremde Repositories auf Verbesserungen für RSR prüfen: Jeder Fund kann ein Defekt im Verhalten einer Klasse sein,
-   den RSR heute im Kampf zeigt; zuerst die Rotationswerkzeuge für alle Jobs, Daedalus vorn (aktiv, alle Jobs,
-   eigene Kampfvorhersage), dann Beastmaster und Blaumagier (sein Auftrag vom 05.11.2026).
 5. Tiefe Gewölbe: Pomander und Magicite: Allein beendet ein K.O. den Lauf, und RSR nutzt im Kampf keinen Pomander,
    der Schaden mindert oder wiederbelebt, und kein Magicite gegen den Boss.
 6. Blaumagier: Satz je Carnivale-Stufe: Im Masked Carnivale schlägt RSR keinen Satz für die Stufe vor, deren Mechanik
@@ -73,6 +72,13 @@ Bestien-Ausdauermittel, Schadensgegenstände, Stärkungsmittel im Endkampf; A555
 *Gebaut auch:* K6 (A562, Hörner im Hornfenster), K7 (A563, Kader auf Wunsch im Teamfenster), K10 Campsite (A564, wer mitruht), K10 Laden (A569, A570: Kaufliste im Ladenfenster, Kauf auf Wunsch), K12 (A572, Eier des Zu), K13 (A578, Schatz: Empfehlung im Schatzfenster, Wahl auf Wunsch), Bretter 2 bis 5 (A588: Tötungsregeln, Gegenangriff nach Angriffsart), K5 Stufe 1 (A589: Stopp nur gegen Anfällige), K11 Stufe 2 (A590: Zähnefletschen und Campsite nach Bedarf des Endkampfs). *Nächster Schritt:* K5 Stufe 2 (Slow, Blind, Paralysis, Sleep, Death als Schutz, sobald eine Bezifferung belegt ist); die Bretter 2 bis 5 am ersten Mitschnitt prüfen (Spurzeilen „kill rule", „left alone"); K10 Weg ist eine Frage des Umfangs an ihn, am Ende des TODO. *Konzept:* 01,
 „Crucible of the Unbroken: Bretter, Kämpfe, Strategien".
 
+### Beastmaster: Final Sting nach den LP des Ziels · N
+Im Kampf: Final Sting (Wespe) trifft mit 2.000 Potenz, steigend bis 3.000 mit sinkenden LP des Ziels (Wirktext); RSR
+setzt es, sobald ein Ersatzhorn bereit ist (R1). Auf den Brett-Boss „Seelenlose" traf es bei 97,2 % LP mit 1.547, bei
+3,6 % mit 2.675 (seine Mitschnitte, A623). *Ort:* `BST_Reborn` (R1, Entfesseln), `BeastmasterFamiliars`. *Nächster
+Schritt:* Loop – wann das Halten lohnt (Zeit bis zum Fall gemessen, Zyklus der Hörner, Wert des Ersatzbegleiters,
+Gefahr), wann nicht (Kleingegner, die es ohnehin tötet). *Konzept:* 01 (BST, R1).
+
 ### Bewegungssperre beim Wirken gegen das Ausweichen der BossMod-KI · N, U
 Im Kampf: Mit „Lock movement while casting" („Stops your character from moving while casting …", ab Werk aus) setzt
 `MovingUpdater` während jedes Zaubers die Bewegungssperre des Spiels; die KI von BossMod kann dann nicht laufen, auch
@@ -84,36 +90,6 @@ wenn eine Fläche mitten im Zauber erscheint. Neue Zauber startet RSR nicht, sol
 dessen Ende landet; die Optionen A, B (Empfehlung: die Sperre weicht der KI) und C stehen im Konzept. *Nächster Schritt:*
 Vorlage an ihn, gebündelt am Ende des TODO (der Optionstext bindet). *Konzept:* 03, „Bewegungssperre beim Wirken und die
 KI von BossMod".
-
-### Fremde Repositories auf Verbesserungen für RSR prüfen · N, R, U
-Sein Auftrag (02.11.2026): „alle von dir gefundenen repos, die du benannt hast prüfen, ob daraus generell
-verbesserungen für rsr entstehen könnten, für die grundstruktur, für die rotationen und das verhalten der einzelnen
-klassen". Im Kampf: Was ein anderes Werkzeug für eine Mechanik, eine Lage oder einen Job gelöst hat, fehlt RSR
-vielleicht; jeder Fund wird am Spiel belegt, bevor er ein Defekt oder eine Verbesserung heißt. Code nur lesen, nicht
-übernehmen (Lizenzen: GPL, AGPL, LGPL, MIT, ohne Lizenz). Die Repositories, nach Zweck:
-- *Beastmaster:* Kriss-Hietala/BeastmasterAssist, Rin-0617/BeastHelper, lexxxgo/Masterbeast, xenofei/CrucibleSux, rail2025/BeastieBuddy (A609); Daedalus und WrathCombo
-  dazu ausgewertet (A488); neu (A532): erdelf/AutoDuty (Crucible-Automatik), GluttonyCombo (`BST_CrucibleAdvisor`,
-  Schwäche je Ziel), BOCXIV/Beastmaster-JP (Brett-Gegenstände), Namen aus BeastHelper; vollständige Suche offen.
-- *Blaumagier:* die Rotationswerkzeuge oben und BossMod sind ausgewertet (A506 bis A511); eigene Repositories gesucht
-  (A611: BlueMageSetBuilder, BLUnion, BetterInBlue, BlueMageHelper).
-- *Kampfvorhersage und Unterbrechen:* FFXIV-CombatReborn/BossmodReborn, awgil/ffxiv_bossmod, sourpuh/ffxiv_interjection.
-- *Auswertung von Kämpfen:* xivanalysis/xivanalysis, OverlayPlugin/cactbot, xiv-stats/xiv-damage-samples,
-  Ahriqi/astbalanceimages.
-- *Spiel-API und Spieldaten:* goatcorp/Dalamud, aers/FFXIVClientStructs, NightmareXIV/ECommons, NotAdam/Lumina,
-  xivdev/EXDSchema, xivapi/ffxiv-datamining, SapphireServer/Sapphire (Server-Nachbau: Formeln und Abläufe, keine
-  Spielquelle), LTS-FFXIV/RebornMaterial.
-- *Automatisierung und Werkzeuge:* Knightmore/Henchman, Knightmore/Underlings, getsetmind/dalamudmcp,
-  t3knical/DalamudPlugins.
-Sein Auftrag vom 05.11.2026 dazu: „alle bekannten repos zu rotationen, zu beastmaster, zu bluemage analysiere, inwieweit
-erkenntisse daraus in rsr eingebracht werden können und die vorhandenen konzepte ergänzen und verbessern könnten".
-*Ort:* Grundstruktur (`RotationSolver/Basic`, Updaters, Zielwahl, Abwehr), die Rotationen unter `RebornRotations`, die
-Jobkonzepte. *Nächster Schritt:* ausgewertet sind die Rotationswerkzeuge (Daedalus A561, A570 bis A575,
-A591 bis A607; die übrigen A608), die Beastmaster-Suche (A609), die Blaumagier-Suche (A611) und die Kampfvorhersage
-(interjection ist eine Anzeige, A334; BossMod: Rollen-KI A612 bis A618, Jobmodule A619) und die Auswertung von Kämpfen
-(A620: cactbots Raidwides und Tankbuster als mitgelieferte Listen) und die Spiel-API (A621: Beastmaster-Leiste und
-Sichtlinie aus dem Spiel; A622: Bibliotheken und Spieldaten ohne Fund). Offen ist die Automatisierung. Je Fund ein Loop, je Repository ein Archiveintrag mit Commit und Datum. *Konzept:* 15, erweitert vom Vergleich mit WrathCombo auf die übrigen Werkzeuge; je Fund dazu das
-tragende (01 Jobs, 08 Minderung, 13 Flächenschaden und Tankbuster).
-
 
 ### Tiefe Gewölbe: Pomander und Magicite · N
 Im Kampf: In einem Gewölbe wie Pilgers Pfad nutzt RSR keinen Pomander und kein Magicite; allein beendet ein K.O. den

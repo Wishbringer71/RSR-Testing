@@ -18143,6 +18143,39 @@ habe den schleim bislang nicht anfreunden können."
 - *Sapphire* aab9cb23 (06.10.2026): Server-Nachbau für Version 3.3 (2016); seine Formeln belegen den heutigen Kampf nicht.
 - *Ergebnis:* kein Fund; die Gruppe Spiel-API ist mit A621 ausgewertet, offen bleibt die Automatisierung.
 
+### A623 · Automatisierung: Henchman, Underlings, dalamudmcp, DalamudPlugins; ein neues Beastmaster-Werkzeug (06.11.2026)
+
+- *Anlass:* TODO „Fremde Repositories", letzte Gruppe Automatisierung und Werkzeuge.
+- *Knightmore/Henchman* c5fa50e (29.10.2026): Die Signatur von „No Fall Damage" (`HacksUI.cs`) ist seit 5813feb
+  (15.07.2026) unverändert, RSRs Übernahme (A276) also aktuell. Neu sind Farm-Automatiken (Alexandrit, Jagdziele,
+  Schatzwächter), die ein Rotations-Plugin über Underlings' `CombatAutomation` einschalten (WrathCombo ab Werk, RSR
+  wählbar) und die Gegner mit dem Spieler an der Spitze der Feindseligkeit aus `UIState.Hater` lesen. RSR erkennt
+  Gegner im Kampf über Kampfstatus und Ziel (`ObjectHelper.IsEngaged`); nichts zu übernehmen.
+- *Knightmore/Underlings:* nicht öffentlich (Klon verlangt Anmeldung, wie in A276); wie Henchman RSR anspricht, ist
+  deshalb nicht lesbar.
+- *getsetmind/dalamudmcp* 731458f (26.08.2026): unverändert seit der Prüfung in A362.
+- *t3knical/DalamudPlugins* dbb1209 (06.11.2026): ein Plugin-Verzeichnis mit neun Paketen ohne Quelltext. Sein
+  „BeastMasterHelper" ist ein Fork von anmili2022/Beastmaster (ohne Lizenz); die Anleitung
+  (`docs/RH-BMR-BMH-Users-Guide.md`) beschreibt Schalter, Borgen oder Entfesseln je Kampf über ein zweites Plugin,
+  Deckung durch Zähnefletschen und für die Campsite „prefer the branch when hurt" – ein Datenpunkt für die offene Frage
+  K10 Weg (Konzept 01), keine Regel.
+- *anmili2022/Beastmaster* 2a0d9f2 (09.10.2026, chinesischer Client), neu gegenüber der Suche A609:
+  - *Sperren nach Entfesseln und Scheidendem Schlag* (je 5 s: kein Parting Blow nach Tempered Release, weder Trick noch
+    Elementaxt nach Parting Blow; `BeastmasterFinalStrikeLock`, ohne Begründung). Gemessen in seinen 14 ACT-Mitschnitten
+    (25.10.–05.11.2026): Von 238 Tempered Releases landete das Entfesseln des Begleiters vor jedem Parting Blow, dieser
+    frühestens 0,76 s danach (Median 2,4 s); die neun ohne Entfesseln innerhalb von 15 s hatten keinen Parting Blow davor.
+    Kein Defekt; RSR braucht die Sperre nicht.
+  - *Empfohlene Kader* (Insekten: Mantis, Wespe, Cu Sith; Wasser: Salamander, Megalocrab, Karlabos oder Pinguin), die
+    Verwundbarkeit zuerst legen und den Schadensbegleiter zuletzt rufen. Konzept 01 rechnet das Ausrichten von Schwächung
+    und Stärkung (B4: −1,8 bis +1,3 %, verworfen) und wählt Kader und Hörner nach eigener Wertung (B5, K6, K7); eine
+    Gemeinschaftsempfehlung ohne Messung ändert daran nichts.
+  - *Final Sting erst unter 25 % LP des Bosses* (Gemeinschaftsempfehlung „Insekten, hohe Stufe 1"). Der Wirktext nennt
+    Potenz 2.000, „increases up to 3,000 as the target's HP decreases". RSR setzt es, sobald ein Ersatzhorn bereit ist
+    (R1). In seinen Mitschnitten 17 Einsätze: auf Kleingegner meist bei vollen LP, dort mit mehr Schaden als LP; auf den
+    Boss „Seelenlose" (19.617 LP) einmal bei 97,2 % mit 1.547 und einmal bei 3,6 % mit 2.675. Neuer TODO-Punkt unter dem
+    Beastmaster-Vorrang („Beastmaster: Final Sting nach den LP des Ziels").
+- *Ergebnis:* TODO „Fremde Repositories" ist mit A608 bis A623 ausgewertet und geschlossen.
+
 ## B · Commit-Register (Fork vs. `upstream/main`)
 
 ### B1 · Einzelgeprüfte Fork-Commits
