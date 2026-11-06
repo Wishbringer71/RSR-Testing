@@ -18716,6 +18716,35 @@ habe den schleim bislang nicht anfreunden können."
 - *9 Dokumentation:* Konzept 01 B3 („Kein Nachfolger auf Vorrat"), B2 („Danach wieder einer, der heilt"), Verworfen;
   Release-Text.
 
+### A640 · Beastmaster: Rufe gleichmäßig verteilt, durchgespielt; Erholung der Hörner auf dem Brett gemessen (06.11.2026)
+
+- *Anlass:* Seine Rückfrage zu A639 (06.11.2026): „wieso kommen in drei minuten drei rufe. theoretisch können in der
+  recoveryzeit eines rufes drei rufe erfolgen. jeweils am anfang, nach 1/3, nach 2/3 und dann wenn recovery des ersten
+  abgelaufen ist", dazu „einfach mal die möglichkeiten durchspielen". Einordnung: Vorschlag (Verteilung), Prüfaufgabe.
+- *1 Research:* Wirktext der Hörner (xivapi v2 ActionTransient 44881, 44892, 44894): die Erholung beginnt im Kampf mit
+  dem Rückzug des Begleiters; keine Eigenschaft ändert sie (Trait 692, 754, 755). Seine ACT-Mitschnitte 02. bis
+  06.11.2026, Rückzug im Kampf bis zum nächsten Ruf desselben Horns bei durchgehendem Kampfstatus: außerhalb des Crucible
+  kein Fall unter 95 s; auf Brett 1 am 06.11.2026 Horn I 66,5 s nach seinem Scheidenden Schlag bereit (Lambs Scheidender
+  Schlag um 17:34:46 setzt ein bereites Ersatzhorn voraus, um 17:34:49 kam Horn I als „the only horn ready"), Horn III
+  65,7 s danach noch nicht (Horn II um 17:33:47 „the only horn ready"). Die Uhr des Protokolls lag 2,1 s vor ACT. Daedalus
+  nennt 70 s. Kampfdauern mit Hornruf: außerhalb 225, Median 11 s, 88 % unter 60 s; Brett 1 20, Median 91 s.
+- *Prämisse berichtigt:* Rufe bei 0, 30, 60 s bringen das erste Horn erst 90 s nach seinem Rückzug zurück; drei Rufe je
+  Erholung gehen nur mit einer halben Erholung je Begleiter. Die drei Rufe in drei Minuten aus A639 gehören zum
+  Nachfolger auf Vorrat.
+- *2 Optionen:* (0) heute; (a) sein Takt, jeder eine halbe Erholung (EVEN); (b) Mischform: Pull wie heute, danach jeder
+  Abschnitt geteilt (SPREAD); (c) Vorrat (RESERVE, A639).
+- *3–6* (`bst_horn_model.py`, Annahmen dort): (a) beim Pull ein Ruf statt drei, −41 bis −58 % in 30 s, −3 bis −16 % in
+  zwei bis fünf Minuten, Nachfolger 22 bis 75 % der Zeit; (b) beim Pull wie heute, auf dem Brett im Mittel −3,7 bis
+  −4,5 %, Nachfolger 29 statt 9 %; (c) −9 bis −37 %, immer ein Nachfolger. Nach dem Pull ist heute ohnehin nur je ein
+  Horn bereit, der lange Einsatz wechselt reihum. Der Nachfolger hilft nur bei Gefahr mit heilendem Nachfolger, beim
+  Fall des Begleiters oder bei nachkommenden Gegnern; vor einem Boss lösen die zwei heilenden aus B5 einander ab, auf
+  Brett 1 fiel kein Begleiter, und die Gefahr fand Lamb bereit. Gegenthese 1 (kein Gewinn) hält für (a) und (c); für (b)
+  ist der Preis sicher, der Gewinn ungemessen.
+- *7:* nichts gebaut; Konzept 01 R1 (Erholung mit Messung und Quelle) und B3 („Gleichmäßig verteilt statt drei beim
+  Pull"); Modell: Regeln EVEN und SPREAD, Erholung als Parameter, Anteil der Zeit mit Nachfolger, Selbsttest.
+- *8 Nachweis:* Modell-Selbsttest; Messung an seinen Mitschnitten (Skripte im Notizordner der Sitzung, nicht
+  versioniert: Auswertung eines Uploads).
+
 ## B · Commit-Register (Fork vs. `upstream/main`)
 
 ### B1 · Einzelgeprüfte Fork-Commits

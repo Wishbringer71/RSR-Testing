@@ -1477,9 +1477,15 @@ Lage.
     Entfesseln bei einem Begleiter, dessen Entfesseln es laut Wirktext tut („Familiar retreats from combat upon
     execution"; heute nur Wespes Schlussstich, xivapi v2 Action 44954, language=de: 2.000 bis 3.000, steigend mit
     sinkenden LP des Ziels). Im Kampf beginnt die Abklingzeit eines Horns erst mit dem Rückzug seines Begleiters
-    (Wirktext der Hörner) und dauert 90 s (consolegameswiki, BeastmasterAssist; Daedalus nennt 70 s allein nach drei
-    Rückzügen in 40 s – Werkzeugquellen; das Blatt führt 2 s, den Wert außerhalb des Kampfes). Das Horn des Begleiters
-    draußen ist deshalb nie sein Ersatz.
+    (Wirktext der Hörner: „During combat, recast timer cooldown will begin once your familiar has retreated", xivapi v2
+    ActionTransient 44881, 44892, 44894) und dauert außerhalb des Crucible 90 s (consolegameswiki, BeastmasterAssist –
+    Werkzeugquellen; das Blatt führt 2 s, den Wert außerhalb des Kampfes). Auf Brett 1 ist sie kürzer: Am 06.11.2026
+    (17:32 bis 17:35, ein Kampf ohne Pause) war Horn I 66,5 s nach seinem Scheidenden Schlag bereit, Horn III 65,7 s
+    danach noch nicht – rund 66 s ab dem Scheidenden Schlag, der Rückzug folgt ihm um ein bis drei Sekunden (A640;
+    Daedalus nennt 70 s). Außerhalb des Crucible kam in seinen Mitschnitten (02. bis 06.11.2026) kein Horn im
+    durchgehenden Kampf früher als 95 s nach dem Scheidenden Schlag zurück; die 90 s widerspricht dort nichts. RSR liest
+    die Restzeit aus dem Spiel (`HornRecastRemaining`), nicht aus einer Zahl. Das Horn des Begleiters draußen ist deshalb
+    nie sein Ersatz.
     - *Gilt:* RSR setzt beide nur, wenn ein anderes Horn mit einem Begleiter bereit ist. Ist die Belegung nicht lesbar
       (alle drei Plätze leer, obwohl einer draußen ist), zählt jedes andere bereite Horn. Schlussstich wartet dann, Wespe
       kämpft weiter und geht, sobald ein anderes Horn bereit ist; der Scheidende Schlag wartet ohnehin auf Entfesseln.
@@ -1635,7 +1641,8 @@ Lage.
     Zyklus ruft weiter jedes bereite Horn; ein Nachfolger, der heilt, kommt aus B5 und der Ablösung unter B2.
     - *Was ein Nachfolger kostet:* Jeder Ruf bringt One with Nature, also ein Entfesseln oder Borrow, und beim Abtreten
       einen Scheidenden Schlag (1.000 oder 1.500 auf Ziel und Umstehende). Ein Horn, das wartet, fehlt dem Zyklus: In drei
-      Minuten kommen drei Rufe statt fünf, beim Pull zwei statt drei, und der Begleiter draußen bleibt jedes Mal bis zu
+      Minuten kommen drei Rufe statt fünf (auf dem Brett vier statt sieben, Erholung dort rund 66 s), beim Pull zwei
+      statt drei, und der Begleiter draußen bleibt jedes Mal bis zu
       90 s. Gerechnet (`bst_horn_model.py`, Regel RESERVE, ohne Gefahr; Annahmen dort, darunter 200 Potenz je Sekunde
       eigener Schaden): 8 bis 10 % weniger Schaden über drei Minuten gegen ein Ziel, 20 bis 39 % weniger in einem
       Rudelkampf von 30 bis 60 s – dort fehlt ein Scheidender Schlag auf vier Gegner.
@@ -1674,6 +1681,45 @@ Lage.
       offen bleibt die Lücke oben. Option falsch – die Varianten sind gerechnet, keine deckt mehr, ohne in jedem Kampf
       einen Ruf zu kosten. Ausgeliefert, und nichts ändert sich – hier: nichts ausgeliefert; die Ablösung unter B2 ändert
       nur, wer nach einem heilenden Begleiter kommt.
+  - *Gleichmäßig verteilt statt drei beim Pull* (seine Rückfrage vom 06.11.2026: „wieso kommen in drei minuten drei rufe.
+    theoretisch können in der recoveryzeit eines rufes drei rufe erfolgen. jeweils am anfang, nach 1/3, nach 2/3 und dann
+    wenn recovery des ersten abgelaufen ist" und „einfach mal die möglichkeiten durchspielen"; Einordnung: Vorschlag; A640).
+    Der Zyklus bleibt, wie er ist.
+    - *Die Prämisse:* Die Erholung eines Horns beginnt mit dem Rückzug seines Begleiters, nicht mit dem Ruf (R1). Rufe bei
+      0, 30 und 60 s brächten das erste Horn nicht bei 90 s zurück, sondern 90 s nach seinem Rückzug bei 30 s, also bei
+      120 s; der dritte Begleiter bliebe von 60 bis 120 s. Drei Rufe je Erholung gehen nur, wenn jeder Begleiter eine halbe
+      Erholung bleibt: draußen 45 s (Rufe bei 0, 45, 90, 135 s), auf Brett 1 rund 33 s. Die drei Rufe in drei Minuten
+      der vorigen Antwort gehörten zum Nachfolger auf Vorrat, nicht zu dieser Verteilung.
+    - *Durchgespielt* (`bst_horn_model.py`, Regeln RULES, SPREAD, EVEN, RESERVE; Puk, Wespe, Schleim; Annahmen dort, darunter
+      200 Potenz je Sekunde eigener Schaden und 5 s für einen kurzen Einsatz; Erholung 90 s draußen, 66 s auf dem Brett):
+      - *Heute* (zwei kurz, einer lang): drei Rufe in den ersten 10 s, danach zwei je Erholung – draußen in drei Minuten
+        fünf, auf dem Brett sieben. Ein Nachfolger steht nach dem Pull fast nie bereit (3 bis 8 % der Zeit in Kämpfen ab
+        zwei Minuten). Nach dem Pull ist ohnehin immer nur ein Horn bereit; der lange Einsatz wechselt reihum zwischen
+        allen drei Begleitern.
+      - *Sein Takt* (EVEN, jeder eine halbe Erholung): auf lange Sicht ebenso zwei Rufe je Erholung, aber beim Pull nur
+        einer. Ein Nachfolger steht 22 bis 75 % der Zeit bereit (je länger der Kampf, desto weniger: 100 % gelten nur,
+        solange das dritte Horn noch nie gerufen war). Kosten: in 30 s 41 % (ein Ziel) bis 58 % (Rudel aus vier)
+        weniger Schaden, in 60 s 9 bis 38 %, in zwei bis fünf Minuten 3 bis 16 % – die Entfesseln und Scheidenden
+        Schläge des Pulls fehlen, und im Rudel bleibt die Flächendressur nur ein Drittel der Zeit draußen.
+      - *Mischform* (SPREAD, beim Pull wie heute, danach geht der Begleiter in der Mitte bis zur Rückkehr des
+        übernächsten Horns statt bei der des nächsten – 45 und 45 s statt 5 und 85 s): gleich viele Rufe beim Pull, auf
+        lange Sicht dieselbe Rate; ein Nachfolger steht 13 bis 32 % der Zeit bereit. Endet der Kampf mitten in einem
+        solchen Abschnitt, fehlt der zweite Ruf: −3 bis −8 %, in anderen Längen ±0 bis +4 %.
+      - *Nachfolger auf Vorrat* (RESERVE, oben): immer ein Nachfolger, ein Ruf je Erholung, 9 bis 37 % weniger.
+    - *Bewertet im Kampf:* Der Nachfolger zählt nur, wenn er heilt oder schützt und die Gefahr dann kommt, wenn der
+      Begleiter draußen fällt, oder wenn Gegner nachkommen. Vor einem Boss lösen die zwei heilenden Begleiter aus B5
+      einander ohnehin ab (B2, „Danach wieder einer, der heilt").
+      - *Seine Kämpfe* (Kampfstatus des Spiels in seinen Mitschnitten vom 02. bis 06.11.2026, Kämpfe mit einem Hornruf):
+        außerhalb des Crucible 225, im Median 11 s, 88 % unter 60 s – dort ändert die Mischform nichts, und sein Takt
+        kostet den Pull; auf Brett 1 20 Kämpfe, im Median 91 s (82 bis 127 s).
+      - *Auf dem Brett* (Erholung 66 s, Kämpfe von 80 bis 150 s gemittelt): die Mischform 3,7 % (ein Ziel) bis 4,5 %
+        (Rudel) weniger, ein Nachfolger in 29 statt 9 % der Zeit; sein Takt 9,5 bis 21,5 % weniger, Nachfolger 60 %; der
+        Vorrat 14 bis 35 % weniger.
+      - Der Preis ist sicher, der Gewinn hängt an Lagen, die er nicht gemessen hat: Auf Brett 1 fiel kein Begleiter (K6),
+        und die Gefahr im fünften Kampf fand den heilenden Lamb bereit (B2). Nicht gebaut.
+    - *Gegenthesen:* Kein Gewinn durch den Takt – gerechnet bestätigt. Option falsch – die Mischform ist die einzige
+      Verteilung ohne Verlust beim Pull; ihr Nutzen liegt in den Lagen, die B2 und B5 abdecken. Ausgeliefert, und nichts
+      ändert sich: entfällt, nichts ausgeliefert.
 - *Nutzen jenseits von Schaden, Heilung und Schutz* (A491; TODO-Punkt aus A488). Die Wirktexte aller 50 Begleiter
   (xivapi v2, 02.11.2026) legen diesen Nutzen fast ganz ins Entfesseln. Die Dressur trägt nur Blind (Dodo, Riesenwurm),
   Gift, Albtraum (Baumschrat) und eine kleine Chance auf Verhängnis (Geist). Was davon die Wahl ändert:
