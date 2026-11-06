@@ -142,27 +142,48 @@ public partial class BeastmasterRotation
 	/// the familiar out is never its own replacement, whatever the game answers for it. With the slots unreadable - all
 	/// empty although a familiar is out - every other ready horn counts.
 	/// </summary>
-	public static bool ReplacementHornReady
+	public static bool ReplacementHornReady => ReplacementHornReadyWithin(0);
+
+	/// <summary>
+	/// Whether such a horn (<see cref="ReplacementHornReady"/>) is ready now or its recast runs out within
+	/// <paramref name="seconds"/> (R1 in a board's final fight, concept 01, A624).
+	/// </summary>
+	public static bool ReplacementHornReadyWithin(float seconds)
 	{
-		get
+		var active = (HornOrder)ActiveBattlehorn;
+		var slotsRead = false;
+		foreach (var horn in ThreeHorns)
 		{
-			var active = (HornOrder)ActiveBattlehorn;
-			var slotsRead = false;
-			foreach (var horn in ThreeHorns)
-			{
-				slotsRead |= PetOnHorn(horn) != BeastmasterPet.None;
-			}
-
-			foreach (var horn in ThreeHorns)
-			{
-				if (horn != active && HornReady(horn) && (!slotsRead || PetOnHorn(horn) != BeastmasterPet.None))
-				{
-					return true;
-				}
-			}
-
-			return false;
+			slotsRead |= PetOnHorn(horn) != BeastmasterPet.None;
 		}
+
+		foreach (var horn in ThreeHorns)
+		{
+			if (horn != active && (HornReady(horn) || (seconds > 0 && HornRecastRemaining(horn) <= seconds))
+				&& (!slotsRead || PetOnHorn(horn) != BeastmasterPet.None))
+			{
+				return true;
+			}
+		}
+
+		return false;
+	}
+
+	// The seconds until a horn's running recast ends, as the game counts it. A horn not ready for another reason - its
+	// level, its familiar out - has no recast running and never comes back in time.
+	private static unsafe float HornRecastRemaining(HornOrder horn)
+	{
+		var id = (uint)(horn switch
+		{
+			HornOrder.FirstBattlehorn => ActionID.FirstBattlehornPvE,
+			HornOrder.SecondBattlehorn => ActionID.SecondBattlehornPvE,
+			HornOrder.ThirdBattlehorn => ActionID.ThirdBattlehornPvE,
+			_ => default,
+		});
+		var manager = ActionManager.Instance();
+		return id == 0 || !manager->IsRecastTimerActive(ActionType.Action, id)
+			? float.MaxValue
+			: manager->GetRecastTime(ActionType.Action, id) - manager->GetRecastTimeElapsed(ActionType.Action, id);
 	}
 
 	/// <summary>

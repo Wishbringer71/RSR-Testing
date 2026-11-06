@@ -300,6 +300,13 @@ What this release changes in the fight. For the whole distance from upstream, se
 
 ## Beastmaster
 
+- **Final Sting instead of Parting Blow when the wasp makes way in danger.** In danger a familiar that neither
+  heals nor protects leaves for one that does; the wasp left by Parting Blow (1,000 potency) while its Final
+  Sting (2,000 to 3,000, and Lingering Vantage for the next Parting Blow) was ready and retreats it the same
+  way. It now leaves with Final Sting.
+- **Final Sting before the last fight of a board ends.** Final Sting waits for another horn to be ready, so you
+  are never left without a familiar. In a board's final fight it now goes before the enemies fall when no other
+  horn would be back before then; held, it was lost, and after that fight no horn is needed.
 - **The gauge is read where the game keeps it.** TP, the familiar's TP, the active horn, the compass,
   the combo count, Kinship and the instincts now come from the gauge layout Dalamud ships, not from a copy
   with fixed offsets. After a patch that moves them, the Beastmaster keeps choosing axes, horns and combos

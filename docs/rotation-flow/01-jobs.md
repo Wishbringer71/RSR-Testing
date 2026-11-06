@@ -1425,13 +1425,37 @@ Lage.
       kämpft weiter und geht, sobald ein anderes Horn bereit ist; der Scheidende Schlag wartet ohnehin auf Entfesseln.
       „Only use Snarl and Challenge on Last Horn" liest dieselbe Frage: der letzte Begleiter heißt, kein anderes Horn
       ist bereit.
+    - *Gilt seit A624, im Endkampf eines Bretts:* Fällt die Gruppe, bevor ein anderes Horn bereit wird – die gemessene
+      Zeit, bis der letzte Gegner im Kampf fällt (`DataCenter.PackTimeToKill`, Konzept 14, „Das Ende der Gruppe"), gegen
+      die Restzeit der Abklingzeiten der übrigen Hörner (`BeastmasterRotation.ReplacementHornReadyWithin`) –, geht
+      Schlussstich sofort, außer die Wespe deckt dich nach Zähnefletschen. Nach dem Endkampf endet das Brett, kein Horn wird
+      mehr gebraucht (`CrucibleBoard.IsFinalFight`, wie bei den Gegenständen des Bretts).
+    - *Außerhalb des Endkampfs hält R1 weiter, mit Grund:* Abtreten im Kampf startet die 90 s des Horns, außerhalb nicht.
+      Die Pausen zwischen seinen Kämpfen als Beastmaster waren kurz (04. und 05.11.2026: Median 7 s, 90 % unter 75 s, 338
+      Pausen); das Horn fehlte dann in den nächsten Kämpfen, und ein Begleiter bringt in 60 s mehr als Schlussstich
+      (Dressur, Entfesseln, Scheidender Schlag). Der Preis ist gemessen: Am 04.11.2026 kam die Wespe um 11:48:06 gegen
+      Kottos (9.970 LP), beide anderen Hörner liefen ab, Kottos fiel 15 s später; zwischen den Kämpfen belegte RSR Horn I
+      neu (Wespe → Raptor), die Wespe verließ das Feld, Schlussstich verfiel – das Horn war frei. Von 21 Wespen-Einsätzen
+      endeten 4 ohne Schlussstich (A624).
+    - *Nicht gebaut – Halten bis zu niedrigen LP, solange Ersatz bereit ist* (Empfehlung einer Gemeinschaft, „unter 25 %
+      des Bosses", anmili2022/Beastmaster, A623): Ist ein Ersatzhorn bereit, verschiebt jedes Halten den ganzen Zyklus der
+      Hörner; die Potenz steigt um höchstens 1.000 über den LP-Anteil, der in der Zeit fällt. Beispiel Seelenlose (19.617
+      LP, in seinem Mitschnitt rund 60 s): 10 s Halten bringen etwa 170 Potenz und schieben den nächsten Begleiter um
+      10 s – bei drei Einsätzen zu je rund 2.500 Potenz in 90 s rund 830. Die Empfehlung gilt dort, wo die Wespe der
+      letzte Begleiter des Kampfes ist; das ist der Fall oben.
+    - *Nicht gebaut – Schlussstich erst im letzten GCD vor dem Fall* (wie Queen Overdrive, A591): Vom Entfesseln bis zur
+      Aktion des Begleiters vergingen in seinen Mitschnitten im Median 0,09 s, bei 8 % über 2,5 s, bis 10,8 s, wenn er
+      erst hinlaufen muss (229 Fälle, 25.10.–05.11.2026); im letzten GCD ginge jeder zwölfte verloren. Wer die
+      Verzögerung je Sitzung misst, könnte später halten – eine zweite Stufe.
     - *Bisher:* Für den Scheidenden Schlag genügte irgendein bereites Horn, Schlussstich prüfte keines. Meldet das Spiel
       das Horn des Begleiters draußen als bereit – seine Abklingzeit läuft ja noch nicht –, ging er mit 1.000 oder 1.500,
       und du standest bis zu 90 s ohne Begleiter: keine Dressur, keine Kombo, kein Entfesseln, keine Heilung aus ihm.
       Ob das Spiel es so meldet, ist unbelegt; die Bedingung ist in beiden Fällen richtig, für Schlussstich ohnehin.
-    - *Preis:* Am Ende eines Kampfes wäre ein Abtreten ohne Ersatz reiner Gewinn (bis 1.500 oder 3.000); RSR kennt das
-      Kampfende nicht verlässlich – die Restzeit eines Ziels sagt nichts über Nachzügler. Unter Stufe 10, mit einem
-      Horn, kein Scheidender Schlag.
+    - *Preis:* Der Scheidende Schlag ohne Ersatz am Ende eines Kampfes (bis 1.500) bleibt aus: Ohne Entfesseln danach
+      bringt er weniger als der Begleiter, der bis zum Fall weiterkämpft und sein Horn für den nächsten Kampf frei hält
+      (außerhalb des Kampfes beginnt keine Abklingzeit). Die Zeit bis zum Fall zählt seit A591 jeden Gegner im Kampf,
+      nicht mehr nur das Ziel; Gegner, die erst noch kommen, kennt sie nicht. Unter Stufe 10, mit einem Horn, kein
+      Scheidender Schlag.
 - *B1 – Katalog aus den Spieldaten.* Je Begleiter auf einem Horn: Dressur und Entfesseln aus `Pet.Abilities` (erste und
   zweite Aktion). Zum Begleiter führt `XBMPet`; die Spalte mit seiner Pet-Zeile hat in Lumina keinen Namen. Gelesen wird die
   der drei Id-Spalten (Lumina `Unknown4` bis `Unknown6`, im EXDSchema in dieser Reihenfolge Pet, Action, Location), deren
@@ -1461,7 +1485,9 @@ Lage.
   - RSR ruft unter den bereiten Hörnern zuerst einen Begleiter, der heilt oder schützt.
   - Steht einer draußen, der weder heilt noch schützt, und ein solches Horn ist bereit, geht er mit Scheidender Schlag
     (1.000 oder 1.500), und der heilende kommt. Nicht, solange er nach Snarl deinen Schaden trägt (Crucible, Status
-    „Covered"): Dann nimmt er ihn dir gerade ab.
+    „Covered"): Dann nimmt er ihn dir gerade ab. Tritt er mit seinem Entfesseln ab (Wespe) und steht One with Nature,
+    geht er mit Schlussstich (2.000 bis 3.000, dazu Lingering Vantage für den nächsten Scheidenden Schlag) – derselbe
+    Rückzug (A624). Am 04.11.2026 um 13:16:27 ging die Wespe in der Gefahr mit dem Scheidenden Schlag, Schlussstich verfiel.
   - Einer, dessen Dressur heilt, bleibt draußen, solange die Gefahr anhält: kein Scheidender Schlag für den Zyklus; einer,
     der dich nach Zähnefletschen deckt, ebenso, auch ohne Gefahr (oben, „Zyklus und Deckung"). Seine
     Heilung kommt nur, solange er draußen ist. Was Entfesseln oder Borrow bringt, läuft nach dem Rückzug weiter (oben);

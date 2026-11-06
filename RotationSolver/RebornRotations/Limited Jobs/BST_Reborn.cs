@@ -220,11 +220,24 @@ public sealed class BST_Reborn : BeastmasterRotation
 		// Not while Snarl has the familiar taking your damage (Crucible): then it is the one sparing you.
 		if (HornBySituation && InCombat && ActiveBattlehorn != 0 && InDanger && !HornIsSafe((HornOrder)ActiveBattlehorn)
 			&& !StatusHelper.PlayerHasStatus(false, StatusID.Covered_2413)
-			&& FirstSafeReadyHorn() is { } safe && PartingBlowPvE.CanUse(out act))
+			&& FirstSafeReadyHorn() is { } safe)
 		{
-			TraceHorn($"{(HornOrder)ActiveBattlehorn} ({CurrentPet}) leaves by Parting Blow: you are in danger, {safe}"
-				+ $" ({PetOnHorn(safe)}) heals, protects or stops your attackers");
-			return true;
+			// A624: a familiar that retreats with its own Release (Final Sting) leaves with it - the same retreat, twice the
+			// potency of Parting Blow, and Lingering Vantage for the next one.
+			if (ReleaseRetreatsFamiliar && HasOneWithNature
+				&& EffectiveNature((HornOrder)ActiveBattlehorn) == OneWithNatureOrder.Tempered && TemperedReleaseNow(out act))
+			{
+				TraceHorn($"{(HornOrder)ActiveBattlehorn} ({CurrentPet}) leaves by its Release: you are in danger, {safe}"
+					+ $" ({PetOnHorn(safe)}) heals, protects or stops your attackers");
+				return true;
+			}
+
+			if (PartingBlowPvE.CanUse(out act))
+			{
+				TraceHorn($"{(HornOrder)ActiveBattlehorn} ({CurrentPet}) leaves by Parting Blow: you are in danger, {safe}"
+					+ $" ({PetOnHorn(safe)}) heals, protects or stops your attackers");
+				return true;
+			}
 		}
 
 		if (InCombat && FamiliarTankSwap)
@@ -685,21 +698,21 @@ public sealed class BST_Reborn : BeastmasterRotation
 		// take its place; the horn of the familiar out starts its 90 s only with the retreat.
 		// C3 (A491): a Release that deals damage over time to the party (Hypodermic Hustle) waits while you are in danger.
 		// A530: and one after which the familiar leaves waits while it covers you after Snarl, as Parting Blow does below.
-		if (nature == OneWithNatureOrder.Tempered && (!ReleaseRetreatsFamiliar || (ReplacementHornReady && !IsCoveredByFamiliar))
-			&& !(HornBySituation && InDanger && ReleaseHurtsPartyFamiliar))
+		// A624: in a board's final fight it goes before the pack falls when no other familiar could follow before then -
+		// held, it was lost, and after the final fight no horn is needed.
+		var releaseBeforeFall = ReleaseRetreatsFamiliar && InCombat && IsInCrucible && CrucibleBoard.IsFinalFight
+			&& DataCenter.IsPackTimeToKillKnown && !ReplacementHornReadyWithin(DataCenter.PackTimeToKill);
+		if (nature == OneWithNatureOrder.Tempered
+			&& (!ReleaseRetreatsFamiliar || ((ReplacementHornReady || releaseBeforeFall) && !IsCoveredByFamiliar))
+			&& !(HornBySituation && InDanger && ReleaseHurtsPartyFamiliar) && TemperedReleaseNow(out act))
 		{
-			if (TemperedReleasePvE.IsEnabled)
+			if (releaseBeforeFall && !ReplacementHornReady)
 			{
-				if (TemperedReleasePvE_47092.CanUse(out act))
-				{
-					return true;
-				}
+				TraceHorn($"{(HornOrder)ActiveBattlehorn} ({CurrentPet}) releases before the pack falls in "
+					+ $"{DataCenter.PackTimeToKill:F1} s: no other horn is back before then, and the board ends with this fight");
 			}
 
-			if (TemperedReleasePvE.CanUse(out act))
-			{
-				return true;
-			}
+			return true;
 		}
 
 		if (nature == OneWithNatureOrder.Borrow)
@@ -1015,6 +1028,17 @@ public sealed class BST_Reborn : BeastmasterRotation
 
 	private readonly List<HornOrder> _hornOrder = [];
 	private static readonly HornOrder[] AllHorns = Enum.GetValues<HornOrder>();
+
+	// The familiar's Tempered Release, by whichever of its two actions the game offers (R1, B2; A624).
+	private bool TemperedReleaseNow(out IAction? act)
+	{
+		if (TemperedReleasePvE.IsEnabled && TemperedReleasePvE_47092.CanUse(out act))
+		{
+			return true;
+		}
+
+		return TemperedReleasePvE.CanUse(out act);
+	}
 
 	// B0: what `horn` spends One with Nature on, as far as the player has the action and RSR may use it: its setting;
 	// Borrow that cannot come is Tempered Release, the only other use; neither when Tempered Release cannot come either.

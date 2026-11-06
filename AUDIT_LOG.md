@@ -18176,6 +18176,43 @@ habe den schleim bislang nicht anfreunden können."
     Beastmaster-Vorrang („Beastmaster: Final Sting nach den LP des Ziels").
 - *Ergebnis:* TODO „Fremde Repositories" ist mit A608 bis A623 ausgewertet und geschlossen.
 
+### A624 · Beastmaster: Final Sting – in der Gefahr statt Scheidendem Schlag, im Endkampf vor dem Fall der Gruppe (06.11.2026)
+
+- *Anlass:* TODO „Beastmaster: Final Sting nach den LP des Ziels" (A623, Gemeinschaftsempfehlung „unter 25 % des
+  Bosses"), unter dem Beastmaster-Vorrang.
+- *1 Research:* Wirktexte (xivapi v2): Final Sting 2.000, „increases up to 3,000 as the target's HP decreases", die Wespe
+  tritt ab, Lingering Vantage 60 s („Next Parting Blow will deal increased damage", 1.500 statt 1.000); Hörner: „During
+  combat, recast timer cooldown will begin once your familiar has retreated. Retreat outside of combat will not affect
+  recast timer"; One with Nature läuft ohne Zeitgrenze (seine Mitschnitte: 9999). Seine 14 ACT-Mitschnitte (25.10.–
+  05.11.2026) mit dem DefenseTrace vom 04.11. (ad1013fb8): 21 Wespen-Einsätze (BNpcBase 18925), 17 mit Final Sting, auf
+  Kleingegner meist bei vollen LP mit mehr Schaden als LP, auf Seelenlose (19.617 LP) bei 97,2 % 1.547 und bei 3,6 %
+  2.675. Ohne Final Sting: zwei ohne jede Aktion (außerhalb des Kampfes gerufen); 11:48:06 gegen Kottos (9.970 LP):
+  beide anderen Hörner liefen ab, R1 hielt Final Sting, Kottos fiel 15 s später, zwischen den Kämpfen belegte B5 Horn I
+  neu (Wespe → Raptor), die Wespe verließ das Feld; 13:16:27: B2 schickte die Wespe in der Gefahr mit dem Scheidenden
+  Schlag weg („leaves by Parting Blow: you are in danger, ThirdBattlehorn (FlyingTrap) heals"), Final Sting verfiel.
+  Vom Entfesseln bis zur Aktion des Begleiters: Median 0,09 s, 8 % über 2,5 s, bis 10,8 s (229 Fälle). Pausen zwischen
+  seinen Kämpfen als Beastmaster: Median 7 s, 90 % unter 75 s (338).
+- *2 Optionen:* (0) belassen; (1) in der Gefahr Final Sting statt Scheidendem Schlag; (2) vor dem Fall der Gruppe ohne
+  Ersatz rechtzeitig abtreten – überall oder nur im Endkampf eines Bretts; (3) halten bis zu niedrigen LP, solange Ersatz
+  bereit ist; (4) erst im letzten GCD vor dem Fall.
+- *3 Abwägung:* (1) derselbe Rückzug mit 2.000 bis 3.000 statt 1.000 und Lingering Vantage für den nächsten Begleiter;
+  keine Schwäche. (2) überall: Im Kampf abgetreten, startet das Horn seine 90 s; bei Pausen von Sekunden fehlte es in
+  den nächsten Kämpfen, und ein Begleiter bringt in 60 s mehr als Final Sting. Im Endkampf eines Bretts endet das Brett,
+  kein Horn wird mehr gebraucht – reiner Gewinn. (3) verschiebt bei bereitem Ersatz den Zyklus: Seelenlose, 10 s Halten
+  ≈ 170 Potenz gegen ≈ 830 verschobene. (4) verlöre jeden zwölften Schlussstich an die Laufzeit des Begleiters.
+- *5 Review:* (2) liest die gemessene Zeit bis zum Fall der letzten Gegnerin im Kampf (A591) und die Restzeit der
+  Abklingzeiten der übrigen Hörner aus dem Spiel; ohne Messung hält R1 wie bisher; eine Wespe, die nach Zähnefletschen
+  deckt, bleibt. (1) nur, wenn das Horn One with Nature auf Entfesseln setzt.
+- *6 Falsifikation:* Kein Defekt? Widerlegt durch 13:16:27; für (2) im Endkampf ist der Verlust in den Mitschnitten
+  nicht gesehen, der Mechanismus derselbe wie 11:48. Option falsch? Unterschätzt die Zeit bis zum Fall Nachzügler, die
+  erst kommen, steht der Spieler bis zum nächsten Horn ohne Begleiter – im Endkampf, wo ohnehin alles fällt. Ausgeliefert,
+  nichts ändert sich? Wenn die Wespe nie im Endkampf ohne Ersatz steht und nie in der Gefahr draußen ist.
+- *7 Gebaut:* `BeastmasterRotation.ReplacementHornReadyWithin` (mit `ReplacementHornReady` als Fall 0, eine Stelle),
+  `BST_Reborn`: R1 im Endkampf, B2 mit Final Sting, `TemperedReleaseNow` für beide. *8 Nachweis:* Compile, Prüfungen;
+  im Spiel nicht beobachtet, die Spurzeilen „leaves by its Release" und „releases before the pack falls" zeigen es.
+- *9 Dokumentation:* Konzept 01 (R1, B2), Release-Text. TODO „Beastmaster: Final Sting nach den LP des Ziels"
+  geschlossen; (3) und (4) im Konzept als nicht gebaut mit Grund.
+
 ## B · Commit-Register (Fork vs. `upstream/main`)
 
 ### B1 · Einzelgeprüfte Fork-Commits

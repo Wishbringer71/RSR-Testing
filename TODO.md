@@ -23,18 +23,16 @@ BossMod-Module) die Rotation des Beastmasters, die Wahl der Begleiter und den Ze
    von RSR trotz eingeschalteter Option, er drückte ihn bei 6 % selbst und starb (Beastmaster, Sägerschrei, 04.11.2026).
 2. Beastmaster: Crucible-Strategien: Ein K.O. beendet den Lauf, und ein Begleiter, den ein späterer Kampf braucht, kommt dort mit den LP an, die ihm
    die früheren ließen.
-3. Beastmaster: Final Sting nach den LP des Ziels: Gegen einen Boss trifft Final Sting bei vollen LP mit 2.000 Potenz,
-   bei niedrigen bis 3.000; RSR setzt es, sobald ein Ersatzhorn bereit ist.
-4. Bewegungssperre beim Wirken gegen das Ausweichen der BossMod-KI: Mit „Lock movement while casting" an steht die
+3. Bewegungssperre beim Wirken gegen das Ausweichen der BossMod-KI: Mit „Lock movement while casting" an steht die
    Figur während jedes Zaubers still, auch wenn die KI von BossMod aus einer Fläche laufen will; nur in dieser
    Kombination, dort aber mit einem Treffer, dem der Spieler nicht ausweicht.
-5. Tiefe Gewölbe: Pomander und Magicite: Allein beendet ein K.O. den Lauf, und RSR nutzt im Kampf keinen Pomander,
+4. Tiefe Gewölbe: Pomander und Magicite: Allein beendet ein K.O. den Lauf, und RSR nutzt im Kampf keinen Pomander,
    der Schaden mindert oder wiederbelebt, und kein Magicite gegen den Boss.
-6. Blaumagier: Satz je Carnivale-Stufe: Im Masked Carnivale schlägt RSR keinen Satz für die Stufe vor, deren Mechanik
+5. Blaumagier: Satz je Carnivale-Stufe: Im Masked Carnivale schlägt RSR keinen Satz für die Stufe vor, deren Mechanik
    bestimmte Zauber verlangt.
-7. Limit Break allein: Ohne andere Spieler füllt sich die Leiste, und RSR nutzt sie nie; der Preis ist eine Sperre
+6. Limit Break allein: Ohne andere Spieler füllt sich die Leiste, und RSR nutzt sie nie; der Preis ist eine Sperre
    von Sekunden mitten in Mechaniken.
-8. Konzepte neu ordnen (allgemein, Rollen, Gruppen, Jobs, Inhalte): keine direkte Wirkung im Kampf; eine Regel, die
+7. Konzepte neu ordnen (allgemein, Rollen, Gruppen, Jobs, Inhalte): keine direkte Wirkung im Kampf; eine Regel, die
    im Konzept eines Jobs steht, wird für dessen Gruppe übersehen, und eine Inhaltsregel ist über mehrere Konzepte
    verteilt.
 
@@ -71,13 +69,6 @@ Zeit, Bestien-Heiltranksammlung, Schutz, Seren, Bestien-Heilmittelsammlung, Resi
 Bestien-Ausdauermittel, Schadensgegenstände, Stärkungsmittel im Endkampf; A555).
 *Gebaut auch:* K6 (A562, Hörner im Hornfenster), K7 (A563, Kader auf Wunsch im Teamfenster), K10 Campsite (A564, wer mitruht), K10 Laden (A569, A570: Kaufliste im Ladenfenster, Kauf auf Wunsch), K12 (A572, Eier des Zu), K13 (A578, Schatz: Empfehlung im Schatzfenster, Wahl auf Wunsch), Bretter 2 bis 5 (A588: Tötungsregeln, Gegenangriff nach Angriffsart), K5 Stufe 1 (A589: Stopp nur gegen Anfällige), K11 Stufe 2 (A590: Zähnefletschen und Campsite nach Bedarf des Endkampfs). *Nächster Schritt:* K5 Stufe 2 (Slow, Blind, Paralysis, Sleep, Death als Schutz, sobald eine Bezifferung belegt ist); die Bretter 2 bis 5 am ersten Mitschnitt prüfen (Spurzeilen „kill rule", „left alone"); K10 Weg ist eine Frage des Umfangs an ihn, am Ende des TODO. *Konzept:* 01,
 „Crucible of the Unbroken: Bretter, Kämpfe, Strategien".
-
-### Beastmaster: Final Sting nach den LP des Ziels · N
-Im Kampf: Final Sting (Wespe) trifft mit 2.000 Potenz, steigend bis 3.000 mit sinkenden LP des Ziels (Wirktext); RSR
-setzt es, sobald ein Ersatzhorn bereit ist (R1). Auf den Brett-Boss „Seelenlose" traf es bei 97,2 % LP mit 1.547, bei
-3,6 % mit 2.675 (seine Mitschnitte, A623). *Ort:* `BST_Reborn` (R1, Entfesseln), `BeastmasterFamiliars`. *Nächster
-Schritt:* Loop – wann das Halten lohnt (Zeit bis zum Fall gemessen, Zyklus der Hörner, Wert des Ersatzbegleiters,
-Gefahr), wann nicht (Kleingegner, die es ohnehin tötet). *Konzept:* 01 (BST, R1).
 
 ### Bewegungssperre beim Wirken gegen das Ausweichen der BossMod-KI · N, U
 Im Kampf: Mit „Lock movement while casting" („Stops your character from moving while casting …", ab Werk aus) setzt
