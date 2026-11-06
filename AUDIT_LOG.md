@@ -17509,6 +17509,25 @@ habe den schleim bislang nicht anfreunden können."
 - *Heiler damit abgeschlossen* (A594, A596 bis A599); nächste Rolle: Tanks.
 - *Prüfgrad:* statisch. Nichts gebaut.
 
+### A600 · Tanks nach Daedalus: nichts zu bauen (06.11.2026)
+
+- *Anlass:* TODO „Fremde Repositories", Rolle Tanks (ofnature/Daedalus c4a788f: `Common/Helpers/TankSwap*`,
+  `TankTargetingHelper`, `TankRoleHelper`, Module `ThemisCore`, `AresCore`, `NyxCore`, `HephaestusCore`).
+- *Tankwechsel nach Stapeln:* Daedalus wechselt auch ohne Tankbuster, sobald ein stapelbarer Status „damage taken is
+  increased" eine eingestellte Stapelzahl erreicht, und stimmt den Wechsel zwischen zwei eigenen Clients ab
+  (`TankSwapSequencer`: Anfrage, Bestätigung, Provoke, Shirk). RSR wechselt nach einem Tankbuster, wenn eine Wiederholung
+  tötete, und rechnet die Verwundbarkeit ein (`TankSwapWatch`, `VulnerabilityUpRemaining`, Konzept 09, „Tankwechsel nach
+  einem Tankbuster"). Ein Wechsel allein nach Stapelzahl gegen einen menschlichen Co-Tank, dessen Plan RSR nicht kennt,
+  provozierte gegen ihn; das Verhalten anderer Spieler trägt keine Regel. Nicht übernommen.
+- *Deckt sich:* Haltung ohne Kampfbindung, sobald RSR handelt (`ShouldAddTankStance`, `CustomRotation_Ability`); Abwehr auf
+  großen Pulls nach gemessenem Schaden (A575, Konzepte 08, 09); Bloodwhetting und andere Selbstheilung vor Schadens-oGCDs
+  (Abwehr- und Heilwege laufen in RSR vor `AttackAbility`); The Blackest Night für Dark Arts (Konzept 10); Reichweite
+  je Aktion aus dem Spiel statt eines eigenen Nahkampfmodells; Lückenschließer nicht als Fortbewegung (seine Vorgabe,
+  „Spielweise").
+- *Nicht übertragbar:* Unmend zum Sammeln im Wall-to-Wall und die Bewegungsführung mit AutoDuty – RSR bewegt den Spieler
+  nicht.
+- *Prüfgrad:* statisch. Nichts gebaut.
+
 ## B · Commit-Register (Fork vs. `upstream/main`)
 
 ### B1 · Einzelgeprüfte Fork-Commits
