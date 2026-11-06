@@ -145,18 +145,9 @@ public static class Watcher
 
 	public static string ShowStrSelf { get; private set; } = string.Empty;
 
-	// Amounts of damage and healing are read through FullAmount, never from .value alone. The entry
-	// stores an amount as a 16-bit value; a larger one carries its third byte in the byte ECommons
-	// calls mult, and only then is bit 0x40 of the byte it calls flags set ("a lot of damage":
-	// cactbot's LogGuide, "Ability Damage" - bytes ABCD, C = 0x40, total = D A B). So .value alone
-	// wrapped every hit or heal above 65,535 points - a level 100 raidwide on a tank, a Benediction
-	// on one - and the measured shares came out too small, so a big area hit could be rated small.
-	// EffectEntry.Damage adds mult without looking at the flag; where the byte means something else
-	// that would inflate a small hit for good, because the store only ever raises a value.
-	// ActionEffectSet.GetSpecificTypeEffect returns .value too ("Is this value or Damage? IDK about
-	// it." in its source), so heals are collected here instead.
+	// Amounts are read in full, never from .value alone (ActionEffectReading.FullAmount).
 	private static uint FullAmount(EffectEntry entry)
-		=> (entry.flags & 0x40) != 0 ? entry.Damage : entry.value;
+		=> ActionEffectReading.FullAmount(entry);
 
 	// What a listed area hit measures on one member: its amount as a share of his maximum HP - or nothing,
 	// when the amount reaches his whole health and the barrier he carries (A298). Such a hit kills from
@@ -323,7 +314,7 @@ public static class Watcher
 					return;
 				}
 
-				var to = sourceId != 0 && (entry.flags & 0x80) != 0 ? sourceId : targetId;
+				var to = sourceId != 0 && ActionEffectReading.LandsOnSource(entry) ? sourceId : targetId;
 				result[to] = (result.TryGetValue(to, out var sum) ? sum : 0) + FullAmount(entry);
 			});
 		}
@@ -342,13 +333,9 @@ public static class Watcher
 	// cast stays, so going back to an older ECommons cannot reopen it (A296).
 	private static ActionType ActionTypeOf(ActionEffectSet set) => (ActionType)(byte)set.Header.ActionType;
 
-	// Damage the game reports as blocked or parried is damage taken all the same, at a reduced amount:
-	// effect types 5 and 6 beside 3 (ECommons ActionEffectType). Read as Damage only, a tankbuster a
-	// paladin blocked - under Sheltron every one is blocked - counted as no hit: its marker was learned
-	// away as "not a tankbuster", a listed area cast as having missed him, and the amount went missing
-	// from his damage intake (re-audit of A189 and A205, 29.09.2026).
+	// Damage, blocked and parried damage (ActionEffectReading.IsDamage).
 	private static bool IsDamageEntry(ActionEffectType type)
-		=> type is ActionEffectType.Damage or ActionEffectType.BlockedDamage or ActionEffectType.ParriedDamage;
+		=> ActionEffectReading.IsDamage(type);
 
 	// Concept 07, "Einen Heilzauber abbrechen, den andere überflüssig gemacht haben" (A545): a heal on a party member from a
 	// source that is neither the player nor one of his objects nor an enemy - another healer, an NPC, the member himself.

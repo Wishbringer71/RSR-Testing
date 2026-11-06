@@ -17963,6 +17963,38 @@ habe den schleim bislang nicht anfreunden können."
 - *9 Dokumentation:* Konzept 11 („Tote, die nur die Wiederbelebung des Inhalts aufhebt"), Konzept 12 Zeilenangabe
   nachgezogen, Release-Text, TODO.
 
+### A617 · Tank: Unverwundbarkeit gegen einen gemeldeten tödlichen Treffer (06.11.2026)
+
+- *Anlass:* TODO „Fremde Repositories", BossMod-Rollen-KI (BossmodReborn 27be422, Werkzeugquelle): `xan/AI/Tank.cs` `AutoMit`
+  drückt Holmgang und Living Dead, sobald `PendingHPRaw <= 0` – die LP nach gemeldetem, noch nicht zugefügtem Schaden.
+- *1 Research:* Messung an seinen Mitschnitten (690 Treffer auf ihn, 25.10.–05.11.2026, Zeile 21/22 gegen Zeile 37 derselben
+  Sequenz): Median 0,58 s von der Meldung bis zum Abzug, 95 % bis 1,34 s, kürzest 0,18 s, längstens 3,6 s. RSR drückt die
+  Unverwundbarkeit nur unter „Use invulnerability below this HP" (15 %, angezeigte LP; `WarriorRotation`,
+  `DarkKnightRotation`, `GunbreakerRotation` `EmergencyAbility`) und im Plan für gemessene Tankbuster; ein Treffer aus
+  höherer LP, den kein Plan vorhersah, tötete ohne Druck. Der Client führt die gemeldeten Effekte je Charakter
+  (`BattleChara.ActionEffectHandler.IncomingEffects`, 32 Plätze, `TargetConfirmed`; ClientStructs 0adb2e5, 06.11.2026);
+  BossModReborn liest sie je Akteur als eingehende (`WorldStateGameSync`). In seinen zehn Archiven starb er nie als Tank.
+- *2 Optionen:* (0) belassen; (1) die Liste des Clients lesen, Unverwundbarkeit bei Schaden ≥ LP + Barriere; (2) eigene
+  Erfassung im Effekt-Handler mit Landung an der LP; (3) wie BossMod nur Holmgang und Living Dead.
+- *3 Abwägung:* (1) mit der LP-Landung aus (2) als zweiter Prüfung. Stärke: der Tank überlebt eine Welle, die ihn aus 15–30 %
+  tötet, in den 0,6 s bis zum Abzug. Schwäche: Ein Fehlauslöser verbraucht die Unverwundbarkeit, die der Plan für den
+  nächsten gemessenen tödlichen Tankbuster gewählt hätte. (3) ließe Paladin und Revolverklinge sterben, wo ihre
+  Unverwundbarkeit vielleicht doch hält; ohne sie fallen sie sicher.
+- *5 Review:* Heilungen im Flug zählen nicht (Reihenfolge unbekannt, eine spätere rettet nicht). Barriere zählt
+  (`GetObjectShield`); zieht die Meldung sie schon ab, löst die Regel später aus, nie früher. Alte Einträge (Tod, Gebiet,
+  Laden) zählen nicht: Sequenz über dem Stand beim Lesebeginn. Effekt-Bits an eine Stelle verlegt
+  (`ActionEffectReading`, Watcher liest sie dort; zwei Ausnahmen in `fixed_values.json` mitgezogen).
+- *6 Falsifikation:* Kein Defekt? Widerlegt: Kein Pfad sieht Schaden vor dem Abzug. Option falsch? Fehlauslöser bleiben
+  möglich (Preis benannt); dass Holmgangs Untergrenze beim Zufügen zählt, ist Gemeinschaftswissen und BossMods Lesart,
+  für Hallowed Ground und Superbolide unbelegt. Ausgeliefert, nichts ändert sich? Setzte der Client `TargetConfirmed`
+  nicht, trüge die LP-Landung; stünden die Einträge nicht am Ziel, bliebe `Pending` 0 und die Regel still – die Spurzeile
+  der gemessenen Wartezeit zeigt, ob gelesen wird.
+- *7 Gebaut:* `ReportedDamage` (Update je Bild in `TargetUpdater.UpdateTargets`), `ActionEffectReading`,
+  `CustomRotation.InvulnerabilityAgainstReportedDeath` vor allen Notfähigkeiten, Option „Use the invulnerability when damage
+  already reported would kill you" (ab Werk an). *8 Nachweis:* statisch, Compile, Prüfskripte, Messung der Spanne an den
+  Mitschnitten; im Spiel nicht beobachtet.
+- *9 Dokumentation:* Konzept 09 („Ein gemeldeter Treffer, der tötet"), Release-Text.
+
 ## B · Commit-Register (Fork vs. `upstream/main`)
 
 ### B1 · Einzelgeprüfte Fork-Commits

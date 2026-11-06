@@ -99,6 +99,11 @@ public partial class CustomRotation
 			return EmergencyHealAheadOfGcd(nextGCD, out act);
 		}
 
+		if (InvulnerabilityAgainstReportedDeath(out act))
+		{
+			return true;
+		}
+
 		if (!DataCenter.MergedStatus.HasFlag(AutoStatus.NoCasting) && ActiveDutyRotation?.EmergencyAbility(nextGCD, out act) == true)
 		{
 			return true;
@@ -1240,6 +1245,32 @@ public partial class CustomRotation
 
 		TankSwapWatch.PlanSwapShirk(TankSwapWatch.DangerSource, receiver, TankSwapWatch.Ratio);
 		DefenseTrace.Decision($"tank swap ({danger}; {TankSwapWatch.Detail})", act);
+		return true;
+	}
+
+	/// <summary>
+	/// Concept 09, "Ein gemeldeter Treffer, der tötet" (A617): the damage the game has reported on the tank and not yet
+	/// taken (<see cref="ReportedDamage"/>) reaches his HP and barrier - his invulnerability goes now, in the moment between
+	/// the report and the damage, ahead of every other emergency action. Heals on their way are not counted: a heal that
+	/// lands after the hit saves nobody.
+	/// </summary>
+	private bool InvulnerabilityAgainstReportedDeath(out IAction? act)
+	{
+		act = null;
+		if (!Service.Config.InvulnerabilityAgainstReportedDeath || DataCenter.Role != JobRole.Tank || Invulnerability is not { } invulnerability
+			|| Player is not { } player || player.IsDead)
+		{
+			return false;
+		}
+
+		var reported = ReportedDamage.Pending;
+		var barrier = player.GetObjectShield();
+		if (reported == 0 || reported < player.CurrentHp + barrier || !invulnerability.CanUse(out act))
+		{
+			return false;
+		}
+
+		DefenseTrace.Decision($"reported damage {reported} reaches your {player.CurrentHp} HP and {barrier} barrier before it lands", act);
 		return true;
 	}
 

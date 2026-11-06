@@ -486,7 +486,7 @@
    "reason": "Upstream's lead for Rekindle before the Phoenix phase ends - the longer of its two branches, which the fork merged into one (d67ae59af); upstream's timing, derived nowhere else (A340)."
   },
   {
-   "file": "RotationSolver/Watcher.cs",
+   "file": "RotationSolver/Basic/Helpers/ActionEffectReading.cs",
    "code": "=> (entry.flags & 0x40) != 0 ? entry.Damage : entry.value;",
    "values": [
     "0x40"
@@ -496,8 +496,8 @@
    "reason": "Protocol bit of the action effect: marks an amount whose third byte is carried separately (cactbot LogGuide, Ability Damage). Stated in no game sheet, so it cannot be derived at runtime."
   },
   {
-   "file": "RotationSolver/Watcher.cs",
-   "code": "var to = sourceId != 0 && (entry.flags & 0x80) != 0 ? sourceId : targetId;",
+   "file": "RotationSolver/Basic/Helpers/ActionEffectReading.cs",
+   "code": "=> (entry.flags & 0x80) != 0;",
    "values": [
     "0x80"
    ],

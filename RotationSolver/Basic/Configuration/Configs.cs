@@ -985,6 +985,11 @@ internal partial class Configs : IPluginConfiguration, IM3Settings
 		Parent = nameof(UseAbility), PvEFilter = JobFilterType.Tank)]
 	private static readonly bool _invulnerabilityBeforeLethalTankbuster = true;
 
+	[ConditionBool, UI("Use the invulnerability when damage already reported would kill you",
+		Description = "The game reports a hit some tenths of a second before it takes the HP (0.58 s in the median in the owner's logs). When the damage reported on you and not yet taken reaches your HP and barrier, your invulnerability - Holmgang, Living Dead, Hallowed Ground, Superbolide - goes out at once, ahead of every other emergency action, whatever your HP threshold. Heals on their way are not counted: whether they land before the hit is not known.\nIn a fight: a wave of hits from a pull that would take you from 25 % to nothing is caught in the moment between its report and its damage, instead of the invulnerability waiting for an HP under the threshold that never shows. Price: where a heal does land first, the invulnerability is spent and missing for the next tankbuster.",
+		Parent = nameof(UseAbility), PvEFilter = JobFilterType.Tank)]
+	private static readonly bool _invulnerabilityAgainstReportedDeath = true;
+
 	[ConditionBool, UI("Spread Reprisal and the party mitigation over a run of area attacks",
 		Description = "As a tank: after Reprisal or your party mitigation - Divine Veil, Passage of Arms, Shake It Off, Dark Missionary, Heart of Light -, the other waits while the first still works, a barrier until it is used up, so the next area attack gets one as well. Both go together when a party member is in danger, or the announced area attack, as measured, would put an unprotected member there.\nIn a fight: two area attacks in a row each get a tool instead of the first getting both and the second none; a big one still gets both.",
 		Parent = nameof(UseAbility), PvEFilter = JobFilterType.Tank)]

@@ -107,9 +107,9 @@ Jobkonzepte. *Nächster Schritt:* die Rotationswerkzeuge sind ausgewertet (Daeda
 A591 bis A607; die übrigen A608); offen sind die Beastmaster-Repositories (vollständige Suche), die Blaumagier-
 Repositories (Suche) und danach die übrigen Gruppen der Liste; Beastmaster-Suche: A609, Blaumagier-Suche: A611.
 Kampfvorhersage: interjection ist eine Anzeige (A334); BossMods Rollen-KI läuft (A612 Unterbrechen und Provozieren,
-A613/A614 Tiefe Gewölbe, A615 Rotmagier über Vercure, A616 „Resurrection Restricted"); offen dort Tank (Abtausch gegen
-mehrere Angreifer, Unverwundbarkeit bei tödlichem Treffer), Heiler (Platz von Sacred Soil), Limit-Break allein – und die
-Jobmodule. Je Fund ein Loop, je Repository ein Archiveintrag mit Commit und Datum. *Konzept:* 15, erweitert vom Vergleich mit WrathCombo auf die übrigen Werkzeuge; je Fund dazu das
+A613/A614 Tiefe Gewölbe, A615 Rotmagier über Vercure, A616 „Resurrection Restricted", A617 Unverwundbarkeit gegen einen
+gemeldeten tödlichen Treffer); offen dort Tank (Abtausch gegen mehrere Angreifer), Heiler (Platz von Sacred Soil),
+Limit-Break allein – und die Jobmodule. Je Fund ein Loop, je Repository ein Archiveintrag mit Commit und Datum. *Konzept:* 15, erweitert vom Vergleich mit WrathCombo auf die übrigen Werkzeuge; je Fund dazu das
 tragende (01 Jobs, 08 Minderung, 13 Flächenschaden und Tankbuster).
 
 

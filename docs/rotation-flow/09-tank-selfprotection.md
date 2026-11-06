@@ -833,6 +833,52 @@ Tankbuster in mehreren Teilen zählt als einer, wenn die Teile innerhalb eines G
 Selbsttest, statisch, Compile; im Spiel nicht beobachtet. Die Abwehr schreibt in `DefenseTrace.log`, warum sie offen
 steht und wann der nächste Tankbuster fällig ist; der Plan vermerkt, wenn er ohne Heiler nichts zurückhält.
 
+## Ein gemeldeter Treffer, der tötet
+
+**Sachstand** (A617). Erreicht der Schaden, den das Spiel auf dem Tank schon gemeldet, aber noch nicht zugefügt hat, seine
+LP samt Barriere, drückt RSR die Unverwundbarkeit seines Jobs – Holmgang, Living Dead, Hallowed Ground, Superbolide –
+sofort, vor jeder anderen Notfähigkeit (`CustomRotation.InvulnerabilityAgainstReportedDeath`, Option „Use the
+invulnerability when damage already reported would kill you", ab Werk an). Der Plan für gemessene Tankbuster und die
+Notschwelle „Use invulnerability below this HP" bleiben, wie sie sind.
+- *Die Meldung kommt vor dem Schaden:* Das Spiel meldet einen Treffer (Aktionseffekt) und zieht die LP erst ab, wenn
+  das Ergebnis eintrifft. An 690 Treffern auf ihn (Mitschnitte 25.10.–05.11.2026, Zeile 21/22 gegen Zeile 37 derselben
+  Sequenz) lagen dazwischen im Median 0,58 s, bei 95 % höchstens 1,34 s, kürzest 0,18 s, längstens 3,6 s. Der Client
+  führt die gemeldeten Treffer je Charakter (`BattleChara.ActionEffectHandler.IncomingEffects`, 32 Plätze;
+  `TargetConfirmed`, sobald das Ergebnis eintrifft; ClientStructs 0adb2e5, 06.11.2026, Werkzeugquelle). RSR liest dort
+  die Einträge auf dem Spieler (`ReportedDamage`): Schaden, geblockter und parierter Schaden, nicht der auf die Quelle
+  zurückfallende Teil; große Werte wie ECommons (`Damage`, mit dem Multiplikator).
+- *Warum die Unverwundbarkeit noch wirkt:* Holmgangs Untergrenze zählt beim Zufügen, nicht beim Snapshot (Abschnitt
+  „Mechanik"); BossModReborns Tank-KI drückt Holmgang und Living Dead in genau dieser Lage und lässt Hallowed Ground und
+  Superbolide aus, weil diese den Treffer nach der Meldung nicht mehr abfingen (`xan/AI/Tank.cs` `AutoMit`, 27be422,
+  Werkzeugquelle, vom Spiel unbelegt). RSR drückt alle vier: Der Auslöser ist ein Tod, gegen den nichts anderes mehr
+  hilft. Fängt die Unverwundbarkeit ihn ab, lebt der Tank; tut sie es nicht, kostet sie nur ihre Abklingzeit für die
+  Zeit nach der Wiederbelebung. Superbolide setzt die LP auf 1, bei einem tödlichen Treffer ohne Belang.
+- *Wie lange ein Eintrag zählt:* von seinem ersten Sehen, bis das Spiel ihn bestätigt oder LP und Barriere seitdem um
+  ihn gefallen sind – die zweite Prüfung trägt die Regel auch, wenn die Markierung des Clients (nur durch ClientStructs
+  belegt) ausbliebe; ohne sie zählte jeder Treffer ein ganzes Fenster und addierte sich zum nächsten. Wird er nie
+  zugefügt – Schaden über den Tod hinaus, unter einer Unverwundbarkeit, ganz in einer Barriere (BossModReborn: „we won't
+  get confirmation") –, endet er nach der längsten Wartezeit von Meldung bis Zufügen, die RSR in dieser Sitzung gemessen
+  hat, vor der ersten Messung nach einem GCD (über dem 99. Perzentil von 2,1 s der Mitschnitte). Was beim Laden, nach einem Tod oder
+  einem Gebietswechsel schon im Speicher steht, zählt nicht: Die Sequenz des Servers steigt, ein neuer Treffer liegt
+  über allen alten.
+- *Was nicht gegengerechnet wird:* gemeldete Heilungen. Ob sie vor oder nach dem Treffer zugefügt werden, sagt die
+  Meldung nicht, und eine Heilung danach rettet nicht. Die Barriere zählt (`ShieldPercentage` der Maximalgesundheit),
+  weil sie den Treffer beim Zufügen auffängt; zieht die Meldung sie schon ab, löst die Regel zu spät aus, nie zu früh.
+- *Im Kampf vorher:* Ein Krieger bei 25 % LP nimmt im Pull eine Welle von Angriffen über 30 %; die Meldungen kommen
+  0,6 s vor dem Abzug. Holmgang ging erst unter 15 % angezeigter LP, die nie angezeigt wurden – er fiel. *Nachher:*
+  Holmgang geht in diesen 0,6 s, er steht mit 1 LP, und die Heiler haben 10 s.
+- *Preis:* Ein Fehlauslöser – eine Heilung, die doch vorher landet, eine Barriere, die die Meldung schon abzieht –
+  verbraucht die Unverwundbarkeit, die der Plan für den nächsten gemessenen tödlichen Tankbuster gewählt hätte. Er wählt
+  dann Minderungen, und reichen sie nicht, kommt dieser Treffer ohne. Der Tankwechsel nach einem Tankbuster (Abschnitt
+  „Tankwechsel") rechnet mit der Unverwundbarkeit nur, wenn sie bereit ist, und bleibt davon unberührt.
+- *Grenzen:* Unter einer Animations- oder Fertigkeitensperre geht nichts; der Druck muss beim Server sein, bevor der
+  Schaden zugefügt wird (Median 0,58 s, kürzest 0,18 s), und ob er es ist, sagt erst der nächste Mitschnitt. Nur der
+  Spieler: Die Unverwundbarkeit eines Tanks wirkt auf ihn selbst.
+- *Messmittel:* `DefenseTrace.log` schreibt die Entscheidung mit gemeldetem Schaden, LP und Barriere, und je Sitzung,
+  wenn die gemessene längste Wartezeit wächst.
+- *Universell:* Die Regel steht für die Rolle Tank an einer Stelle; jede Unverwundbarkeit ist die des Jobs
+  (`Invulnerability`). Andere Rollen haben keine Fähigkeit, die einen schon gemeldeten Treffer abfängt.
+
 ## Krieger: Urimpuls für sich oder Urflackern für andere
 
 **Seine Vorgabe (29.09.2026), im Wortlaut:** „nascent flash dahingehend im vollständigen loop bewerten: ist der

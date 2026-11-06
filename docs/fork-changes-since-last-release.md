@@ -91,6 +91,12 @@ What this release changes in the fight. For the whole distance from upstream, se
 
 ## Defence against hits aimed at you
 
+- **The invulnerability against a hit already on its way.** The game reports a hit some tenths of
+  a second before it takes the HP (0.58 s in the median in the owner's logs). Once the damage
+  reported on a tank and not yet taken reaches his HP and barrier, Holmgang, Living Dead, Hallowed
+  Ground or Superbolide goes out at once, ahead of every other emergency action, instead of waiting
+  for an HP under the threshold that never shows. Option `Use the invulnerability when damage
+  already reported would kill you`, on by default. Heals on their way are not counted.
 - **A boss behind an invulnerability still counts when it casts.** A targetable enemy carrying a status
   of the invincible list (Storm Wall, Invulnerable and the like) is no target for attacks, and its
   casts went unseen as well: a listed raidwide or tankbuster from it opened no defence and no heal

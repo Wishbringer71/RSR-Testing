@@ -38,6 +38,8 @@ internal static partial class TargetUpdater
 
 	internal static void UpdateTargets()
 	{
+		// Damage reported on the player and not yet taken, every frame, so its waits are measured in and out of combat (A617).
+		ReportedDamage.Update();
 		DataCenter.TargetsByRange.Clear();
 		DataCenter.AllTargets = GetAllTargets();
 
