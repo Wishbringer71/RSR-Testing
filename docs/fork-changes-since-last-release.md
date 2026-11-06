@@ -363,6 +363,10 @@ What this release changes in the fight. For the whole distance from upstream, se
 
 ## Beastmaster
 
+- **A dungeon's danger is remembered (Beastmaster).** Where a danger came, RSR keeps the area and the highest
+  level it came at (`DangerousAreas.json`, tab `Dangerous areas`). Entering it again at that level or lower,
+  the battlehorns take one more familiar that heals or protects from the first pull, not only after the first
+  danger of the run.
 - **A familiar sent off is no longer counted as fallen (Crucible).** Its object reads as dead while it
   leaves; RSR took that for a fall, so the largest loss of one use stood at a familiar's full HP after the first
   retreat, and the reserve for the final fight, the campsite, the feed and the route hint all weighed with it.

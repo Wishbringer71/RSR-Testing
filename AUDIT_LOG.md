@@ -18658,6 +18658,28 @@ habe den schleim bislang nicht anfreunden können."
 - *9 Dokumentation:* Konzept 01 K6 (Messung berichtigt, „Übersteht den Einsatz"), K11 („Abtreten ist kein Fall"); TODO:
   Defekt geschlossen, Bedarf späterer Kämpfe unter „Crucible-Strategien".
 
+### A638 · Beastmaster B5: die Gefahr eines Gebiets über die Sitzung hinaus (06.11.2026)
+
+- *Anlass:* Sein Vorschlag (06.11.2026): „für jedes noch anstehende dungeon oder raid, wo der beastmaster noch begleiter
+  bekommen kann, vorab eine prüfung der möglichen kämpfe durchgeführt werden, damit nicht immer die falschen begleiter
+  vorab ausgesucht werden." Einordnung: Vorschlag, Prüfaufgabe.
+- *1 Research:* B5 setzt „danger seen in this area" beim ersten Ereignis und löscht es beim Gebietswechsel; jeder Lauf
+  beginnt ohne Wissen. In Sägerschrei am 06.11.2026 gingen die ersten drei Kämpfe ohne verlangten sicheren Begleiter,
+  die Gefahr kam um 18:05:31. Die Spielblätter nennen je Inhalt nur den letzten Boss (`InstanceContent.BNpcBaseBoss`,
+  xivapi 06.11.2026), keine Mechaniken; BossMod meldet Vorhersagen erst im Kampf.
+- *2 Optionen:* (0) nichts; (a) Gefahr je Gebiet über die Sitzung hinaus, mit der Stufe; (b) je Gebiet und Boss; (c)
+  Mechaniken vor dem ersten Lauf aus den BossMod-Modulen.
+- *3–6:* (a) wirkt ab dem zweiten Lauf, ist eine Messung und gilt für jedes Gebiet; die Stufe begrenzt sie, sonst hielte
+  eine alte Gefahr für immer einen Schadensbegleiter vom Horn. (b) verfeinert, aber die bestehende Regel gilt bewusst
+  für das ganze Gebiet („Bis zum Gebietswechsel"). (c) braucht die Module je Dungeon und einen Weg, sie vor dem Kampf zu
+  lesen – offen im TODO. Gegenthese 3: Im ersten Lauf und auf höherer Stufe ändert sich nichts; der Gewinn liegt in
+  jedem weiteren Lauf auf seiner Stufe.
+- *7 Gebaut:* gelernte Datei `DangerousAreas.json` (`OtherConfiguration`, nur steigend, eigenes Schloss, Reiter
+  „Dangerous areas"); `RecordFight` liest sie, sobald der Spieler im Gebiet ist, und schreibt die Stufe beim ersten
+  Ereignis je Gebietsbesuch; Spurzeile „danger seen in this area before, up to level …".
+- *8 Nachweis:* Compile (0 Warnungen), `check_learned_display.py`; im Spiel nicht gesehen.
+- *9 Dokumentation:* Konzept 01 B5; TODO „Beastmaster: Konzept und Code im vollen Loop" (Stufe c offen).
+
 ## B · Commit-Register (Fork vs. `upstream/main`)
 
 ### B1 · Einzelgeprüfte Fork-Commits

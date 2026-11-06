@@ -227,6 +227,16 @@ internal partial class OtherConfiguration
 	internal static readonly object InterruptibleKindsGate = new();
 
 	/// <summary>
+	/// B5 of the beastmaster (concept 01, A638): per area (TerritoryType), the highest level of the player at which a
+	/// danger came there - learned in play over every session, only rising. Changed and read on the game thread under
+	/// <see cref="DangerousAreasGate"/>.
+	/// </summary>
+	internal static Dictionary<uint, int> DangerousAreas = [];
+
+	/// <summary>Guards <see cref="DangerousAreas"/> against the save on a pool thread.</summary>
+	internal static readonly object DangerousAreasGate = new();
+
+	/// <summary>
 	/// Per enemy kind (base id), the fewest sleeps it had taken in a fight before it resisted the next one - the
 	/// point where the halving of repeated sleeps ends in a temporary immunity. Learned in play over every session,
 	/// stored like <see cref="SleepOutcomes"/>; merged with the file by the lower count.
@@ -816,6 +826,9 @@ internal partial class OtherConfiguration
 		new LearnedFile<int>(nameof(InterruptibleCasterKinds), CopyInterruptibleKinds,
 			v => { lock (InterruptibleKindsGate) { InterruptibleCasterKinds = v; } },
 			Math.Max, state => InterruptibleKindsStoreState = state, "enemy kind(s) casting interruptibly"),
+		new LearnedFile<int>(nameof(DangerousAreas), CopyDangerousAreas,
+			v => { lock (DangerousAreasGate) { DangerousAreas = v; } },
+			Math.Max, state => DangerousAreasStoreState = state, "area(s) with a danger seen"),
 		new LearnedFile<int>(nameof(SleepDiminishing), () => CopySleepStore(SleepDiminishing),
 			v => { lock (SleepStoreGate) { SleepDiminishing = v; } },
 			Math.Min, state => SleepDiminishingStoreState = state, "enemy kind(s) with a sleep limit"),
@@ -1059,6 +1072,19 @@ internal partial class OtherConfiguration
 
 	/// <summary>What the last save and load of <see cref="InterruptibleCasterKinds"/> did, in words.</summary>
 	internal static string InterruptibleKindsStoreState { get; private set; } = "not loaded yet";
+
+	internal static Task SaveDangerousAreas() => SaveList(nameof(DangerousAreas));
+
+	private static Dictionary<uint, int> CopyDangerousAreas()
+	{
+		lock (DangerousAreasGate)
+		{
+			return new Dictionary<uint, int>(DangerousAreas);
+		}
+	}
+
+	/// <summary>What the last save and load of <see cref="DangerousAreas"/> did, in words.</summary>
+	internal static string DangerousAreasStoreState { get; private set; } = "not loaded yet";
 
 	internal static Task SaveSleepDiminishing() => SaveList(nameof(SleepDiminishing));
 

@@ -20,7 +20,7 @@ BossMod-Module) die Rotation des Beastmasters, die Wahl der Begleiter und den Ze
 (Beispiel seiner Beobachtung: der Raptor gegen Feuer, bevor feueranfällige Gegner da waren; A581).
 
 1. Beastmaster: Konzept und Code im vollen Loop (sein Auftrag, 06.11.2026), mit seinem Vorschlag, die Kämpfe eines
-   Inhalts vorab zu prüfen: Die Belegung vor einem Kampf kennt die Gefahr eines Gebiets erst, wenn sie eingetreten ist.
+   Inhalts vorab zu prüfen: Vor dem ersten Lauf eines Dungeons wählt die Belegung, ohne seine Kämpfe zu kennen.
 2. Heiltrank nach der Gefahr statt nach der festen Schwelle: Allein ohne Heiler kommt der Trank erst unter der
    eingestellten Schwelle, auch wenn RSR den Fall unter 10 % schon vorhersagt.
 3. Beastmaster: Crucible-Strategien: Ein K.O. beendet den Lauf, und ein Begleiter, den ein späterer Kampf braucht, kommt
@@ -65,12 +65,13 @@ Instanz (Kopie der Vorgabe); Wirkung auf gespeicherte Konfigurationen. *Konzept:
 
 ### Beastmaster: Konzept und Code im vollen Loop · N
 Sein Auftrag (06.11.2026): „vollständiger loop über konzept beastmaster und jeglichen code, der den beastmaster
-berührt. optimieren, dynamisieren, verbessern". Dazu sein Vorschlag vom selben Abend: für jeden Dungeon und Raid, in dem
-der Beastmaster noch Begleiter bekommen kann, die möglichen Kämpfe vorab prüfen, damit die Belegung nicht falsch
-vorgewählt wird. Im Kampf heute: B5 kennt die Gefahr eines Gebiets erst nach ihrem Eintreten und den nächsten Kampf erst
-mit seinen Gegnern in der Objektliste. *Ort:* Konzept 01 BST ganz; `BST_Reborn`, `BeastmasterRotation*`, `CrucibleBoard`,
-`CrucibleRoute`, `BeastmasterCrucible*`, die Crucible-Fenster. *Nächster Schritt:* nach den beiden Beastmaster-Defekten
-oben; Erhebung je Regel (fester Wert, Momentaufnahme statt Verlauf, Doppelung), Loop je Fund. *Konzept:* 01, BST.
+berührt. optimieren, dynamisieren, verbessern". Dazu sein Vorschlag vom selben Abend, die Kämpfe eines Inhalts vorab zu
+prüfen: Vor dem ersten Lauf eines Dungeons kennt die Belegung seine Kämpfe nicht; die Spielblätter nennen nur den
+letzten Boss, Mechaniken nur fremde Quellen. *Ort:* Konzept 01 BST ganz; `BST_Reborn`, `BeastmasterRotation*`,
+`CrucibleBoard`, `CrucibleRoute`, `BeastmasterCrucible*`, die Crucible-Fenster. *Nächster Schritt:* die BossMod-Module
+der Dungeons, in denen er fängt, vorab lesen (Bosse, Flächen, Tankbuster, Adds) und prüfen, ob B5 sie vor dem ersten Lauf
+nutzen kann; dann die Erhebung je Regel (Momentaufnahme statt Verlauf, Doppelung), Loop je Fund. *Konzept:* 01, BST
+(B5 „Die Gefahr eines Gebiets über die Sitzung hinaus").
 
 ### Heiltrank nach der Gefahr statt nach der festen Schwelle · N
 Im Kampf: Allein ohne Heiler geht der Trank erst unter „Use HP potions below this HP", auch wenn RSR den Fall schon

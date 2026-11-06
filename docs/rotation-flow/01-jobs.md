@@ -1144,13 +1144,30 @@ eingearbeitet werden, situationsbezogen"; A487, A488, A522):
       was die Gruppe heilt. Ein Heiler in der Gruppe zählt darüber mit.
     - *Bis zum Gebietswechsel, nicht nur nach dem letzten Kampf:* Sonst verhinderte der sichere Begleiter die Gefahr,
       fiele beim nächsten Kampf weg und käme danach wieder; jeder zweite Kampf ohne ihn.
-    - *Sein Vorschlag (06.11.2026), offen:* „für jedes noch anstehende dungeon oder raid, wo der beastmaster noch
-      begleiter bekommen kann, vorab eine prüfung der möglichen kämpfe durchgeführt werden, damit nicht immer die
-      falschen begleiter vorab ausgesucht werden." Heute kennt B5 die Gefahr eines Gebiets erst, nachdem sie eingetreten
-      ist, und den nächsten Kampf erst, wenn seine Gegner in der Objektliste stehen. Am selben Abend starb er in
-      Sägerschrei gegen den Riesen-Tunnelwurm (31.815 LP, ein Schadensstrom von rund 3 % seiner LP je Sekunde); die
-      Hörner trugen Schleim, Fledermaus und Cu Sith, die Fledermaus ging um 18:12:16 für den Zyklus, bevor eine Gefahr
-      gemeldet war. Prüfaufgabe im Beastmaster-Loop (TODO „Beastmaster: Konzept und Code im vollen Loop").
+    - *Die Gefahr eines Gebiets über die Sitzung hinaus* (A638; sein Vorschlag vom 06.11.2026: „für jedes noch
+      anstehende dungeon oder raid, wo der beastmaster noch begleiter bekommen kann, vorab eine prüfung der möglichen
+      kämpfe durchgeführt werden, damit nicht immer die falschen begleiter vorab ausgesucht werden"). RSR merkt sich je
+      Gebiet die höchste Stufe, auf der dort eine Gefahr eintrat (gelernte Datei `DangerousAreas.json`, nur steigend).
+      Betrittst du das Gebiet auf dieser Stufe oder darunter, gilt die Gefahr ab dem ersten Pull: vor jedem Rudel einer,
+      vor jedem Boss drei, die heilen oder schützen – wie bisher erst nach der ersten Gefahr. Auf einer höheren Stufe
+      weiß RSR es nicht und wartet wie bisher.
+      - *Im Kampf vorher:* Am 06.11.2026 betrat er Sägerschrei um 18:04; die ersten drei Kämpfe gingen ohne verlangten
+        sicheren Begleiter (18:04:16: Worm, Raptor, Cu Sith), im dritten trat um 18:05:31 die Gefahr ein, ab da einer vor
+        jedem Rudel und drei vor jedem Boss. Am 04.11.2026 war er schon einmal dort und starb gegen die
+        Myrmidonen-Prinzessin (A530). *Nachher:* Beim nächsten Betreten auf derselben Stufe gilt die Gefahr ab dem ersten
+        Pull.
+      - *Warum die Stufe:* Eine Gefahr auf Stufe 25 sagt etwas über Stufe 25 und darunter; mit höherer Stufe wird ein
+        Dungeon leichter, und eine Gefahr von früher hielte sonst für immer einen Schadensbegleiter vom Horn.
+      - *Warum nicht vor dem ersten Lauf:* Die Spielblätter nennen je Inhalt nur den letzten Boss
+        (`InstanceContent.BNpcBaseBoss`, xivapi 06.11.2026), keine Mechaniken. Was ein Kampf bringt, wissen vor dem ersten
+        Lauf nur fremde Quellen (BossMod-Module je Inhalt, Werkzeugquelle), und BossMod meldet seine Vorhersagen erst im
+        Kampf. Offen im TODO „Beastmaster: Konzept und Code im vollen Loop": die Module der Dungeons, in denen er fängt,
+        vorab lesen.
+      - *Preis:* Auf dieser Stufe gehen auch die Rudel des Gebiets mit einem Schadensbegleiter weniger – wie heute nach
+        der ersten Gefahr („Bis zum Gebietswechsel" oben).
+      - *Gegenthese (ausgeliefert, und nichts ändert sich):* Beim ersten Lauf und auf einer höheren Stufe gilt nichts
+        Neues; trat die Gefahr wie am 06.11.2026 früh im Lauf ein, änderte sich nur der Anfang. Der Gewinn liegt im
+        zweiten und jedem weiteren Lauf auf seiner Stufe – beim Fangen läuft er dieselben Dungeons mehrmals.
   - *Die Wahl* unter allen freigeschalteten Begleitern mit Katalogeintrag, auf der Stufe des Spielers; was ein Horn
     gerade hält, auch ein leeres, bleibt eine Wahl (sonst bliebe bei weniger Begleitern als Hörnern keine Belegung übrig):
     1. so viele, die heilen oder schützen, wie verlangt – wie B2 es liest, je Horn nach dem, wofür es One with Nature

@@ -147,6 +147,7 @@ public partial class MainWindow
 			SleepOutcomeTab(game),
 			SleepKindTab(game),
 			InterruptibleKindTab(),
+			DangerousAreaTab(),
 			SleepLimitTab(game),
 			DotTab(),
 			PenaltyTab(game),
@@ -349,6 +350,27 @@ public partial class MainWindow
 
 		Sort(rows);
 		return new LearnedTab("Interruptible casters", ["Enemy (name id)", "Fights"], rows);
+	}
+
+	// B5 of the beastmaster (concept 01, A638): areas where a danger came, with the highest level of the player then.
+	private static LearnedTab DangerousAreaTab()
+	{
+		var rows = new List<string[]>();
+		Dictionary<uint, int> areas;
+		lock (OtherConfiguration.DangerousAreasGate)
+		{
+			areas = new Dictionary<uint, int>(OtherConfiguration.DangerousAreas);
+		}
+
+		var sheet = ECommons.DalamudServices.Svc.Data.GetExcelSheet<Lumina.Excel.Sheets.TerritoryType>();
+		foreach (var (area, level) in areas)
+		{
+			var name = sheet?.GetRowOrDefault(area) is { } row ? row.PlaceName.ValueNullable?.Name.ExtractText() ?? string.Empty : string.Empty;
+			rows.Add([name.Length > 0 ? $"{name} ({area})" : $"area {area}", level.ToString()]);
+		}
+
+		Sort(rows);
+		return new LearnedTab("Dangerous areas", ["Area (territory id)", "Up to level"], rows);
 	}
 
 	private static LearnedTab SleepLimitTab(string? game)

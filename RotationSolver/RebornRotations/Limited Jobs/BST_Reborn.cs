@@ -1,4 +1,5 @@
 ﻿using System.ComponentModel;
+using RotationSolver.Basic.Configuration;
 
 namespace RotationSolver.RebornRotations.Melee;
 
@@ -1481,6 +1482,8 @@ public sealed class BST_Reborn : BeastmasterRotation
 	private int _lastPeak;
 	private int _waitingPeak;
 	private bool _dangerInArea;
+	private bool _dangerRecorded;
+	private bool _dangerKnownChecked;
 	private bool _heldByHand;
 	private byte[] _slotsSeen = [];
 	private HornPlanKey? _planKey;
@@ -1535,15 +1538,59 @@ public sealed class BST_Reborn : BeastmasterRotation
 			_lastPeak = 0;
 			_waitingPeak = 0;
 			_dangerInArea = false;
+			_dangerRecorded = false;
+			_dangerKnownChecked = false;
 			_heldByHand = false;
 			_planKey = null;
 		}
 
-		if (!_dangerInArea && ((InCombat && InDanger) || Player is { IsDead: true }))
+		// A638 (concept 01, B5): a danger seen in this area before, at this level or above, counts from the first pull. Read
+		// once the player is there - at the change of area itself the player may still be loading.
+		if (!_dangerKnownChecked && Player is { } entering)
 		{
-			_dangerInArea = true;
-			DefenseTrace.Line("beastmaster: danger seen in this area - one more familiar that heals or protects goes on the "
-				+ "horns before each fight here");
+			_dangerKnownChecked = true;
+			int known;
+			lock (OtherConfiguration.DangerousAreasGate)
+			{
+				known = OtherConfiguration.DangerousAreas.GetValueOrDefault(area);
+			}
+
+			if (!_dangerInArea && known > 0 && entering.Level <= known)
+			{
+				_dangerInArea = true;
+				DefenseTrace.Line($"beastmaster: danger seen in this area before, up to level {known} - one more familiar that "
+					+ "heals or protects goes on the horns from the first fight here");
+			}
+		}
+
+		if ((InCombat && InDanger) || Player is { IsDead: true })
+		{
+			if (!_dangerInArea)
+			{
+				_dangerInArea = true;
+				DefenseTrace.Line("beastmaster: danger seen in this area - one more familiar that heals or protects goes on the "
+					+ "horns before each fight here");
+			}
+
+			// A638: remembered for this area over every session, with the highest level it came at.
+			if (!_dangerRecorded && Player is { } player)
+			{
+				_dangerRecorded = true;
+				var changed = false;
+				lock (OtherConfiguration.DangerousAreasGate)
+				{
+					if (OtherConfiguration.DangerousAreas.GetValueOrDefault(area) < player.Level)
+					{
+						OtherConfiguration.DangerousAreas[area] = player.Level;
+						changed = true;
+					}
+				}
+
+				if (changed)
+				{
+					_ = OtherConfiguration.SaveDangerousAreas();
+				}
+			}
 		}
 
 		if (InCombat)
