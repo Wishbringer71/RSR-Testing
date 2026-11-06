@@ -1705,6 +1705,17 @@
    "status": "exception",
    "loop": "A614",
    "reason": "Territory identities of the deep dungeons (TerritoryType rows with intended use 31: Palace of the Dead, Heaven-on-High, Eureka Orthos, Pilgrim's Traverse; xivapi 06.11.2026), the form every duty rotation names its territories in (DutyTerritoryAttribute); identities, not tunables (A614)."
+  },
+  {
+   "file": "RotationSolver/Basic/Configuration/OtherConfiguration.cs",
+   "code": "new SetList(nameof(HostileCastingArea), [.. ActionLists.HostileCastingArea, .. CactbotCasts.HostileCastingArea], () => HostileCastingArea, v => HostileCastingArea = v, 41147, 41763),",
+   "values": [
+    "41147",
+    "41763"
+   ],
+   "status": "exception",
+   "loop": "A620",
+   "reason": "Upstream's own retired ids of its area list, unchanged; the line is the fork's only because it now ships cactbot's casts beside upstream's list. Action ids the game names, not quantities to derive."
   }
  ]
 }

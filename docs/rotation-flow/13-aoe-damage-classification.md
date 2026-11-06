@@ -109,6 +109,36 @@ Landung hebt den Anteil –, die Zeile macht das Auslassen nur lesbar.
 Aktion der bisher gespielten Inhalte ihre Minderung wert. Ohne diese Unterscheidung hätte die Sonde
 einen abgeschalteten Baustein als unwirksamen gemeldet.
 
+## Die mitgelieferten Listen: Upstream und cactbot
+
+**Die eingebaute Flächen- und Tankbuster-Liste enthält neben Upstreams Einträgen (`ActionLists`) die Casts, die cactbot
+als Raidwide oder Tankbuster ansagt** (`CactbotCasts.g.cs`, A620). Beide zusammen sind die Vorgabe, auf der die
+Abweichung des Nutzers liegt (`OtherConfiguration.SetList`: gespeichert wird nur, was er hinzufügt oder entfernt), also
+erreichen neue Einträge auch bestehende Konfigurationen.
+- *Warum:* Ein Cast kommt sonst erst nach seinem ersten Treffer in die Liste – ein Flächencast unter „Record enemy AoE
+  actions" erst, wenn er alle Mitglieder einer Gruppe ab vier traf, ein Tankbuster ohne Marker erst über die
+  Tankbuster-Tabelle nach seinem ersten Wirken auf den Tank. Bis dahin öffnet nur eine Vorhersage von BossModReborn die
+  Abwehr, und die fehlt, wo kein Modul läuft oder eines die Art nicht vorhersagt (seine Begründung der eigenen Liste,
+  oben). In Kreszentia, wo er meist ohne Gruppe spielt, kam so nie ein Cast in die Liste (A299).
+- *Quelle:* `OverlayPlugin/cactbot`, `ui/raidboss/data`, Trigger vom Typ „StartsUsing" mit der Ansage `Responses.aoe`
+  oder `bigAoe` (Fläche) und `tankBuster`, `tankBusterSwap`, `sharedTankBuster`, `tankCleave` (Tankbuster); die Id ist
+  die des Casts, wie RSR sie am Wirkenden liest. Werkzeugquelle, Apache-2.0; übernommen sind Aktions-Ids, kein Code. Am
+  Stand e79ea7f (08.10.2026): 705 Flächencasts, davon 263 schon bei Upstream, und 409 Tankbuster, davon 14 bei Upstream;
+  unter den fehlenden 15 Flächencasts aus Kreszentia Süd, 10 aus Windurst, 4 Flächencasts und 3 Tankbuster aus Mistwake.
+  Ids, die Upstream aus seiner Liste genommen hat (`retired` in `OtherConfiguration`), bleiben draußen.
+- *Erzeugt, nicht geschrieben:* `.github/scripts/audit/cactbot_casts.py generate <cactbot>` schreibt die Datei aus einem
+  cactbot-Stand und nennt Commit und Datum im Kopf; die CI prüft mit `cactbot_casts.py --check`, dass jede Id eine Zeile
+  des Action-Blatts ist und keine Spieleraktion (xivapi, übersprungen, wenn es nicht erreichbar ist), und der Selbsttest
+  hält die Lesart der Trigger.
+- *Im Kampf:* Der erste Raidwide eines neuen Kampfes öffnet Gruppenminderung und Heilung vorab wie jeder gelistete und
+  unbewertete Cast (Abschnitt „Antwort", erste Entscheidung); sein Treffer wird gemessen, und von da an zählt der
+  Anteil. Der erste Tankbuster öffnet die Einzelabwehr des Tanks und die Hilfe der Heiler wie ein gelisteter.
+- *Preis:* Wo cactbot einen Cast als Raidwide ansagt, der nur wenig nimmt, kostet sein erstes Auftreten eine
+  Gruppenminderung; danach lässt die Größenregel ihn aus. Wer „Record enemy AoE actions" ausschaltet, um die gelieferte
+  Liste zu behalten, bekommt die cactbot-Einträge als Teil dieser Lieferung.
+- *Grenzen:* Neue Inhalte erst, wenn cactbot sie führt und die Datei neu erzeugt wird; Casts, deren Schaden von einer
+  anderen Id kommt, misst RSR wie bisher an ihrer Landung.
+
 ## Wen ein gelisteter Flächencast erreicht
 
 **Zwei Fragen, zwei Leser (A218).** Die Flächenabwehr-Flagge öffnet Gruppenminderungen — Reflexion,

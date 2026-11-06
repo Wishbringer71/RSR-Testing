@@ -91,6 +91,14 @@ What this release changes in the fight. For the whole distance from upstream, se
 
 ## Defence against hits aimed at you
 
+- **The first raidwide and tankbuster of a fight are known before they hit.** RSR put an area cast on
+  its list only after it had hit every member of a party of four or more, and learned a tankbuster
+  without a marker only after its first cast at the tank; until then only a BossModReborn
+  prediction opened the defence. The shipped lists now also hold the casts cactbot announces as a
+  raidwide (688) or a tankbuster (401), so their first appearance opens mitigation, the heal ahead
+  and the tank's own defence where no module predicts them - Occult Crescent's field fights among
+  them, where RSR never listed a cast because the owner plays them without a party.
+
 - **The invulnerability against a hit already on its way.** The game reports a hit some tenths of
   a second before it takes the HP (0.58 s in the median in the owner's logs). Once the damage
   reported on a tank and not yet taken reaches his HP and barrier, Holmgang, Living Dead, Hallowed

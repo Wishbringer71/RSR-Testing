@@ -18040,6 +18040,38 @@ habe den schleim bislang nicht anfreunden können."
   - Die übrigen Kommentare betreffen Schadensreihenfolgen (Burst-Ausrichtung, Überlauf von Ladungen und Leisten), die
     Daedalus' Durchgang schon gegen RSR gestellt hat (A594 bis A607), ohne neuen Befund.
 
+### A620 · Werkzeuge der Kampfauswertung; cactbots Raidwides und Tankbuster als mitgelieferte Listen (06.11.2026)
+
+- *Anlass:* TODO „Fremde Repositories", Gruppe Auswertung von Kämpfen.
+- *Stand der Quellen:* xivanalysis f532855 (25.09.2026) – derselbe Stand wie der Katalog A234, nichts Neues;
+  xiv-stats/xiv-damage-samples – nur E12S von 2021 (A258); Ahriqi/astbalanceimages b695e13 (11.08.2024) – ein
+  Eröffnungsbild des Astrologen von The Balance, nichts für RSR; OverlayPlugin/cactbot e79ea7f (08.10.2026), bisher nur
+  nach Tankbuster-Schaden durchsucht (A258).
+- *1 Research:* cactbots Trigger (`ui/raidboss/data`, Typ „StartsUsing") sagen 705 Casts als Raidwide und 409 als
+  Tankbuster an; RSRs mitgelieferte Listen (`ActionLists`) enthalten 263 bzw. 14 davon. Ein Flächencast kommt sonst erst
+  unter „Record enemy AoE actions" nach seinem ersten Treffer auf alle einer Gruppe ab vier in die Liste, ein Tankbuster
+  ohne Marker erst über die Tankbuster-Tabelle; bis dahin öffnet nur eine BossModReborn-Vorhersage die Abwehr. In seiner
+  gelernten Tabelle (26.10.2026) standen 8 der 10 fehlenden Windurst-Casts und keiner der 15 aus Kreszentia Süd, wo er
+  ohne Gruppe spielt (A299). BossMod führt für Mistwake ein Modul (Earthquake, Thunder III) – cactbot ergänzt vor allem
+  dort, wo kein Modul läuft oder eines die Art nicht vorhersagt, seine Begründung der eigenen Liste.
+- *2 Optionen:* (0) belassen; (1) cactbots Ids als mitgelieferte Liste, erzeugt und in der CI gegen das Action-Blatt
+  geprüft; (2) zur Laufzeit aus cactbot laden; (3) nur die Inhalte seines Profils.
+- *3 Abwägung:* (1). Stärke: Der erste Raidwide und Tankbuster eines Kampfes ohne Vorhersage öffnet Minderung, Heilung
+  vorab und Einzelabwehr; danach misst RSR wie bisher. Schwäche: Ein von cactbot als Raidwide angesagter kleiner Cast
+  kostet beim ersten Auftreten eine Gruppenminderung. (2) bräuchte Netz und eine fremde Datei zur Laufzeit; (3) ließe
+  Inhalte aus, die er noch nicht gespielt hat.
+- *5 Review:* Nur „StartsUsing" (Cast-Id, wie RSR sie am Wirkenden liest), keine Schadens-Ids; Upstreams zurückgezogene Ids
+  bleiben draußen; die Liste liegt in der Vorgabe, auf der die Abweichung des Nutzers liegt, erreicht also bestehende
+  Konfigurationen. Geprüft: 688 Flächen- und 401 Tankbuster-Casts, jede eine gegnerische Aktion des Action-Blatts.
+- *6 Falsifikation:* Kein Defekt? Widerlegt: Der erste Cast blieb ohne Vorhersage ungedeckt. Option falsch? Fehlansagen
+  kosten einmal je Cast eine Minderung, die Messung korrigiert. Ausgeliefert, nichts ändert sich? Wo BossMod vorhersagt
+  oder RSR schon gelernt hat, ja; sichtbar in neuen Inhalten und ohne BossMod.
+- *7 Gebaut:* `.github/scripts/audit/cactbot_casts.py` (generate, `--check`, `--self-test`, zwei CI-Stufen),
+  `RotationSolver/Basic/Resources/CactbotCasts.g.cs`, `OtherConfiguration` (beide Listen als Vorgabe), Ausnahme in
+  `fixed_values.json` für Upstreams zurückgezogene Ids auf der berührten Zeile. *8 Nachweis:* Selbsttest, Prüfung gegen
+  das Action-Blatt (xivapi), Compile; im Spiel nicht beobachtet.
+- *9 Dokumentation:* Konzept 13 („Die mitgelieferten Listen: Upstream und cactbot"), Release-Text.
+
 ## B · Commit-Register (Fork vs. `upstream/main`)
 
 ### B1 · Einzelgeprüfte Fork-Commits

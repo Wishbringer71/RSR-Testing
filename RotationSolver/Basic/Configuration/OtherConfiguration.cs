@@ -784,7 +784,8 @@ internal partial class OtherConfiguration
 		new OrderList(nameof(KardiaTankPriority), JobPriorityLists.KardiaTankPriority, () => KardiaTankPriority, v => KardiaTankPriority = v),
 		new MapList<string>(nameof(NoHostileNames), TerritoryLists.NoHostileNames, () => NoHostileNames, v => NoHostileNames = v),
 		new MapList<string>(nameof(NoProvokeNames), TerritoryLists.NoProvokeNames, () => NoProvokeNames, v => NoProvokeNames = v),
-		new SetList(nameof(HostileCastingArea), ActionLists.HostileCastingArea, () => HostileCastingArea, v => HostileCastingArea = v, 41147, 41763),
+		// Upstream's list and the casts cactbot announces (concept 13, "Die mitgelieferten Listen", A620).
+		new SetList(nameof(HostileCastingArea), [.. ActionLists.HostileCastingArea, .. CactbotCasts.HostileCastingArea], () => HostileCastingArea, v => HostileCastingArea = v, 41147, 41763),
 		// The game thread is the only writer of this table, and the copy is taken there.
 		new LearnedFile<float>(nameof(HostileCastingAreaPotential),
 			() => new Dictionary<uint, float>(HostileCastingAreaPotential), v => HostileCastingAreaPotential = v,
@@ -827,7 +828,7 @@ internal partial class OtherConfiguration
 		new LearnedFile<uint>(nameof(ActionPenaltyCasts), CopyActionPenaltyCasts,
 			v => { lock (ActionPenaltyGate) { ActionPenaltyCasts = v; } },
 			Math.Max, state => ActionPenaltyStoreState = state, "enemy action(s) laying a status that damages every action"),
-		new SetList(nameof(HostileCastingTank), ActionLists.HostileCastingTank, () => HostileCastingTank, v => HostileCastingTank = v,
+		new SetList(nameof(HostileCastingTank), [.. ActionLists.HostileCastingTank, .. CactbotCasts.HostileCastingTank], () => HostileCastingTank, v => HostileCastingTank = v,
 			13364, 13365, 13367, 13371, 13375, 13385, 13388, 13438, 13444, 13452, 13454, 13462, 13475),
 		new MapList<Vector3>(nameof(BeneficialPositions), TerritoryLists.BeneficialPositions, () => BeneficialPositions, v => BeneficialPositions = v),
 		new LocalFile<RotationSolverRecord>(nameof(RotationSolverRecord), () => RotationSolverRecord, v => RotationSolverRecord = v),
