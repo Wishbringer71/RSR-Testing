@@ -17371,6 +17371,8 @@ habe den schleim bislang nicht anfreunden können."
   Spiel gemessen (Ersetzen). Option falsch? Endet die fremde vor dem Treffer, geht die eigene wie bisher. Ausgeliefert, und
   nichts ändert sich? Ohne Modul oder ohne zweiten dieser Jobs in der Gruppe – dort war nichts falsch. Die Zurückhaltung
   der drei bleibt gleich (eine Ladung, Reserve immer echt).
+- *Nebenbei:* Der Release-Text von A591 setzte „Time to kill" in Anführungszeichen; `check_setting_names.py` las das als
+  Einstellungsnamen (fast „Boss time to kill"), und die CI schlug für 55154e02f fehl. Umformuliert in diesem Commit.
 - *Prüfgrad:* statisch, Mitschnitt (Spielmechanik), Compile ohne Warnung, 44 Prüfschritte. Die geänderten Zweige im Spiel
   nicht beobachtet.
 
