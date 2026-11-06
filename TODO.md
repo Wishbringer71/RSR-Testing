@@ -26,13 +26,11 @@ BossMod-Module) die Rotation des Beastmasters, die Wahl der Begleiter und den Ze
 3. Bewegungssperre beim Wirken gegen das Ausweichen der BossMod-KI: Mit „Lock movement while casting" an steht die
    Figur während jedes Zaubers still, auch wenn die KI von BossMod aus einer Fläche laufen will; nur in dieser
    Kombination, dort aber mit einem Treffer, dem der Spieler nicht ausweicht.
-4. Tiefe Gewölbe: Magicite, Demiklone und Weihrauch: Gegen den Boss bleiben die stärksten Gegenstände des Gewölbes
-   ungenutzt (Weihrauch: +100 % maximale LP oder 10 s Unverwundbarkeit), allein wie in der Gruppe.
-5. Blaumagier: Satz je Carnivale-Stufe: Im Masked Carnivale schlägt RSR keinen Satz für die Stufe vor, deren Mechanik
+4. Blaumagier: Satz je Carnivale-Stufe: Im Masked Carnivale schlägt RSR keinen Satz für die Stufe vor, deren Mechanik
    bestimmte Zauber verlangt.
-6. Limit Break allein: Ohne andere Spieler füllt sich die Leiste, und RSR nutzt sie nie; der Preis ist eine Sperre
+5. Limit Break allein: Ohne andere Spieler füllt sich die Leiste, und RSR nutzt sie nie; der Preis ist eine Sperre
    von Sekunden mitten in Mechaniken.
-7. Konzepte neu ordnen (allgemein, Rollen, Gruppen, Jobs, Inhalte): keine direkte Wirkung im Kampf; eine Regel, die
+6. Konzepte neu ordnen (allgemein, Rollen, Gruppen, Jobs, Inhalte): keine direkte Wirkung im Kampf; eine Regel, die
    im Konzept eines Jobs steht, wird für dessen Gruppe übersehen, und eine Inhaltsregel ist über mehrere Konzepte
    verteilt.
 
@@ -81,15 +79,6 @@ wenn eine Fläche mitten im Zauber erscheint. Neue Zauber startet RSR nicht, sol
 dessen Ende landet; die Optionen A, B (Empfehlung: die Sperre weicht der KI) und C stehen im Konzept. *Nächster Schritt:*
 Vorlage an ihn, gebündelt am Ende des TODO (der Optionstext bindet). *Konzept:* 03, „Bewegungssperre beim Wirken und die
 KI von BossMod".
-
-### Tiefe Gewölbe: Magicite, Demiklone und Weihrauch · N
-Im Kampf: RSR setzt allein die Pomander gegen den Boss und vor dem eigenen Tod (A625), aber kein Magicite (Himmelssäule),
-keinen Demiklon (Eureka Orthos) und keinen Weihrauch (Pilgers Pfad); gegen den Boss bleiben damit +100 % maximale LP,
-10 s Unverwundbarkeit und großer Schaden im Bestand. *Ort:* `DeepDungeonPomanders` (`InstanceContentDeepDungeon.Magicite`,
-`UseStone`). *Nächster Schritt:* Zuordnung der drei Plätze je Gewölbe belegen – Himmelssäule: vier Sorten der Spalte
-MagiciteSlot (DeepDungeonMagicStone) auf drei Plätzen; Eureka Orthos: DeepDungeonDemiclone; Pilgers Pfad: die Spalte ist
-leer, Quelle suchen (ClientStructs, BossMod, Blätter) –, dann Loop, welche gegen welchen Boss wann. *Konzept:* 03
-(„Tiefe Gewölbe: Pomander").
 
 ### Limit Break allein · N
 Im Kampf: RSR nutzt nie ein Limit Break. Ohne andere Spieler – Duty Support, Trust, Solo-Inhalte – füllt sich die Leiste,
@@ -196,6 +185,13 @@ Reborn"); beides kostet im Spiel, solange nicht beide Installationen gebraucht w
 nebeneinander braucht: neuer interner Name mit Übernahme des Ordners, angezeigter Name bleibt.
 
 ## Warten auf Daten oder Fremde
+
+- **Tiefe Gewölbe: welcher Weihrauch auf welchem Platz in Pilgers Pfad** (A626). Im Kampf: Allein in Pilgers Pfad setzt
+  RSR Barkbalm vor dem Bosskampf und Poisonfruit in der Gefahr nur, wenn es den Platz lesen kann; das Blatt nennt dort
+  keine Zuordnung, und Poisonfruit und Barkbalm teilen den Wert 5. Gelesen wird über den Statusagenten des Gewölbes, ob
+  der ohne offenes Fenster gefüllt ist, ist unbelegt. Auflösung: die Zeilen „deep dungeon stones" eines Laufs in Pilgers
+  Pfad mit Weihrauch im Bestand; dann die Zuordnung fest aus Wert und Agent. Konzept 03, „Tiefe Gewölbe: Magicite,
+  Demiklone und Weihrauch".
 
 - **Beastmaster: Ob Analysieren die LP einrechnet** (A546). Im Kampf: Anfreunden markiert sicher, aber vielleicht früher
   als nötig oder mit weniger Chance als möglich; jeder verlorene Pakt kostet einen weiteren Lauf (seine Vorgabe:

@@ -294,9 +294,17 @@ What this release changes in the fight. For the whole distance from upstream, se
   dungeon's pomanders against bosses and in danger when alone`, on by default, for every job: Steel,
   Strength and Haste against a boss - before the pull once it stands in sight, so their lock costs no
   attack in the fight - and, when you are about to die, Raising while none is active, then Witching on
-  an enemy that attacks you within its 20 yalms. Never in a party, since the stock is shared. Before,
-  Steel and Raising stayed in the stock while the boss hit and the run ended. Each use and each refusal
-  writes a line to `DefenseTrace.log`.
+  an enemy that attacks you within its 20 yalms, once until you have left that danger. Never in a party,
+  since the stock is shared. Before, Steel and Raising stayed in the stock while the boss hit and the run
+  ended. Each use and each refusal writes a line to `DefenseTrace.log`.
+- **Alone in a deep dungeon, RSR uses magicite, demiclones and incense.** New option `Use the deep
+  dungeon's magicite, demiclones and incense against bosses and in danger when alone`, on by default,
+  after the pomanders: when you are about to die, Inferno, Crag or Vortex Magicite - or Poisonfruit
+  Incense off a boss floor - so the floor's enemies fall and you stand invulnerable for 10 s; against a
+  boss in combat Elder Magicite or a demiclone (Unei, then Onion Knight, then Doga); Barkbalm Incense
+  before a boss pull, so you enter with double HP. Mazeroot stays with you. Which stone a slot holds is
+  read from the dungeon's status data, else from the game sheets; once per floor `DefenseTrace.log` notes
+  what each slot was read as.
 
 ## Occult Crescent
 

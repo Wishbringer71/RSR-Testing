@@ -18253,6 +18253,47 @@ habe den schleim bislang nicht anfreunden können."
 - *9 Dokumentation:* Konzept 03 („Tiefe Gewölbe: Pomander"), Release-Text. TODO auf Magicite, Demiklone und Weihrauch
   verengt.
 
+### A626 · Tiefe Gewölbe: Magicite, Demiklone und Weihrauch allein, für jeden Job; Witching nicht doppelt (06.11.2026)
+
+- *Anlass:* TODO „Tiefe Gewölbe: Magicite, Demiklone und Weihrauch" (aus A625 verengt).
+- *1 Research:* Blätter (xivapi v2 und Lumina der Dalamud-Auslieferung, Reflexionssonde, 06.11.2026):
+  `DeepDungeonMagicStone` (Name, Tooltip, Icon) 1 Inferno, 2 Crag, 3 Vortex, 4 Elder Magicite, 5 Poisonfruit Incense;
+  `DeepDungeonDemiclone` (TitleCase, Description, Icon) 1 Unei, 2 Doga, 3 Onion Knight, 4 Mazeroot, 5 Barkbalm Incense;
+  Symbole 27966 bis 27975, je Stein verschieden; die Texte sind Erzählung, keine Wirkung. `DeepDungeon.MagiciteSlot`:
+  Himmelssäule MagicStone 1-4, Eureka Orthos Demiclone 1-3 und 0, Palast und Pilgers Pfad leer. ClientStructs
+  (0adb2e5): `InstanceContentDeepDungeon.Magicite[3]`, `UseStone(slot 0-2)`; `AgentDeepDungeonStatus.Data->Magicite[4]`
+  mit ItemId („DeepDungeonMagicStone for Magicite"), Icon und Name, am 30.10.2026 im Sammel-Commit bee7720, von keinem
+  Werkzeug in den Klonen gelesen. BossModReborn (27be422): öffnet keine Silbertruhe mehr, sobald alle drei Werte über 0
+  liegen; `AutoMagicite`/`AutoDemiclone` ohne Leser. Wirkungen (consolegameswiki, Heaven-on-High, Eureka Orthos,
+  Pilgrim's Traverse, 06.11.2026): Inferno, Crag, Vortex töten alle Nicht-Boss-Gegner des Stockwerks, schwerer Schaden am
+  Boss, 10 s Unverwundbarkeit; Elder tötet den Boss („may not work if the boss is not aggroed first"); Unei heilt und
+  schildet 20 %, Doga Schaden und Versteinerung, Onion Knight Schaden und Heilung; Mazeroot Karte, Fallen, Durchgang;
+  Barkbalm +100 % maximale LP für das Stockwerk und eine Fee („Particularly useful for bosses"); Poisonfruit auf normalen
+  Stockwerken 10 s Unverwundbarkeit und alle Gegner tot, auf Bossstockwerken Schaden am Boss.
+- *2 Optionen:* (0) belassen; (1) Rettungssteine in der kritischen Klasse, Elder und Demiklon im Bosskampf, Barkbalm vor
+  dem Pull; (2) Schadenssteine auch ohne Gefahr gegen den Boss; (3) Zuordnung nur über die Blattspalte (ohne Pilgers
+  Pfad); (4) nur eine Spurzeile bis zum Upload.
+- *3 Abwägung:* (1) wendet den Tod ab, der allein den Lauf beendet, und erleichtert den Bosskampf; Preis: der Stein fehlt
+  später, zwei Sperren in derselben Gefahr, wenn Raising vorausgeht. (2) Schaden gegen eine spätere Rettung – verworfen,
+  Sicherheit vor Schaden. (3) ließe sein Gewölbe aus. (4) machte ihn zum Teil des Regelkreises, wo die Regel schon mit
+  dem Agenten wirken kann.
+- *5 Review:* Der Platz trägt die Sorte, 0 leer – abgeleitet aus BossMod, nicht belegt. Lesart: der Agenteneintrag am
+  selben Platz mit demselben Gegenstand, sonst der einzige mit diesem Gegenstand; sein Symbol bestimmt den Stein, auch wo
+  Poisonfruit und Barkbalm den Wert 5 teilen; sonst die Blattspalte (`RowRef.TryGetValue` prüft den Blatttyp). Ohne
+  Lesart bleibt der Platz unberührt. Je Anlass ein Stein: die Rettung erst wieder nach Verlassen der kritischen Klasse,
+  Elder und Demiklon einmal je Kampf, Barkbalm einmal je Stockwerk. Dabei gefunden: Witching (A625) wäre in derselben
+  Lage nachgesetzt worden, weil die verwandelten Gegner weiter auf den Spieler zielen; jetzt dieselbe Sperre.
+- *6 Falsifikation:* Kein Defekt? Ohne die Regel blieben Inferno und Barkbalm im Bestand, während der Spieler fiel. Option
+  falsch? Ist der Wert eines Platzes keine Sorte, liest die Blattspalte falsch; die Spurzeile je Stockwerk zeigt Wert und
+  Agent nebeneinander. Ausgeliefert, nichts ändert sich? In Pilgers Pfad, wenn der Agent ohne Fenster leer ist – dann
+  nichts, die Spurzeile zeigt es (TODO „Warten auf Daten"). Im Spiel nicht beobachtet.
+- *7 Gebaut:* `DeepDungeonStones` (Helpers), gerufen in `CustomRotation.TryInvoke`, wenn `DeepDungeonPomanders.Use` in
+  diesem Bild nichts setzt (gibt jetzt `bool` zurück; `Alone`, `BossInSight`, `Free` geteilt); Option
+  `UseDeepDungeonStones` (ab Werk an); Text der Pomander-Option ohne „incense and magicite". *8 Nachweis:* Compile
+  0 Fehler 0 Warnungen, 46 Prüfungen.
+- *9 Dokumentation:* Konzept 03 („Tiefe Gewölbe: Magicite, Demiklone und Weihrauch", Witching-Sperre in „Tiefe Gewölbe:
+  Pomander"), Release-Text. TODO-Punkt geschlossen; die Platzzuordnung in Pilgers Pfad unter „Warten auf Daten".
+
 ## B · Commit-Register (Fork vs. `upstream/main`)
 
 ### B1 · Einzelgeprüfte Fork-Commits

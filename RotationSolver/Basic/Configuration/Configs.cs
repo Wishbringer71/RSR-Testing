@@ -576,9 +576,19 @@ internal partial class Configs : IPluginConfiguration, IM3Settings
 		+ "not active, so the boss hits less and falls sooner - before the pull once the boss stands in sight, so their lock costs "
 		+ "no attack in the fight; when you are about to die, Raising while it is not active, so the fall does not end the run, "
 		+ "then Witching on an enemy that attacks you within its radius. Never in a party, since the inventory is shared. "
-		+ "Floor-wide and map pomanders, incense and magicite stay with you.",
+		+ "Floor-wide and map pomanders stay with you.",
 	Filter = AutoActionUsage, Section = 5)]
 	private static readonly bool _useDeepDungeonPomanders = true;
+
+	[ConditionBool, UI("Use the deep dungeon's magicite, demiclones and incense against bosses and in danger when alone",
+	Description = "In a fight: alone in a deep dungeon, every job uses when you are about to die a stone that kills the floor's "
+		+ "enemies and makes you invulnerable for 10 s (Inferno, Crag or Vortex Magicite; Poisonfruit Incense off a boss floor), so "
+		+ "the fall does not end the run; against a boss in combat Elder Magicite or a demiclone (Unei, Onion Knight, Doga); against "
+		+ "a boss Barkbalm Incense, before the pull once the boss stands in sight, so you enter the fight with double HP. Never "
+		+ "Mazeroot, never in a party, after the pomanders. Which stone a slot holds is read from the dungeon's status data, "
+		+ "else from the sheets; a slot neither names is left alone.",
+	Filter = AutoActionUsage, Section = 5)]
+	private static readonly bool _useDeepDungeonStones = true;
 
 	[ConditionBool, UI("Use AoE on marked targets",
 	Description = "AoE actions may hit targets with attack markers.",

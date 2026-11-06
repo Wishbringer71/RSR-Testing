@@ -1148,7 +1148,9 @@ Werk an.
   spät, ihn zu setzen; das Wiki rät genau dazu („Useful if player is about to die during a solo run"). Danach Witching
   („Transforms all targets within range…", Radius der Aktion des Pomanders aus dem Action-Blatt, 6269: 20 y nach der
   Seite), sobald ein Gegner, der kein Boss ist, dich in diesem Radius angreift: Er wird 30 s zu Frosch, Imp oder Huhn und
-  trifft mit höchstens 60 % (Werkzeugquelle consolegameswiki).
+  trifft mit höchstens 60 % (Werkzeugquelle consolegameswiki). Ein zweiter Witching erst, nachdem du die kritische Klasse
+  verlassen hast: Die verwandelten Gegner zielen weiter auf dich, und ohne diese Sperre folgte der nächste, sobald die
+  Sperre des ersten endet (A626).
 - **Erkannt am englischen Wirktext** des Blatts `DeepDungeonItem` (wie die Status), nicht an Zeilen: Pomander und
   Protomander derselben Wirkung zählen gleich. Welcher Gegenstand auf welchem der 16 Plätze liegt, sagt das Blatt
   `DeepDungeon` (Spalte PomanderSlot, Zeile = Gewölbe des Direktors, `DeepDungeonId`), wie BossMod es liest; jedes der
@@ -1172,10 +1174,7 @@ Klasse, steht Raising, bevor der nächste Treffer ihn tötet. BossModReborns Gew
 also nichts doppelt; ruft RSR `UsePomander`, reiht BossMod es in seine eigene Warteschlange und führt es aus.
 
 *Nicht gebaut, mit Grund:*
-- Weihrauch (Pilgers Pfad), Magicite (Himmelssäule), Demiklone (Eureka Orthos): Welche Sorte auf welchem der drei Plätze
-  liegt, sagt `InstanceContentDeepDungeon` je Gewölbe anders (die Spalte MagiciteSlot des Blatts ist für Pilgers Pfad
-  leer), und gegen den Boss stehen mehrere zur Wahl (Barkbalm: +100 % maximale LP; Poisonfruit: 10 s Unverwundbarkeit und
-  großer Schaden; Wiki) – erst mit belegter Zuordnung.
+- Weihrauch, Magicite und Demiklone: eigener Abschnitt („Tiefe Gewölbe: Magicite, Demiklone und Weihrauch").
 - Pomander, die das ganze Stockwerk treffen (Petrification, Storms, Lethargy, Frailty), Purity und Purification und die
   Karten- und Beutepomander: Entscheidungen über den Weg durch das Stockwerk, nicht über einen Moment im Kampf.
 - Einen Steel für den letzten Boss eines Satzes aufheben: Wo der Satz endet, liest RSR nicht; gegen jeden Boss eingesetzt
@@ -1192,6 +1191,64 @@ einem Angreifer in Reichweite.
 *Gegenthese 3 (ausgeliefert, und nichts ändert sich):* Er spielt die Gewölbe nur in der Gruppe, die Option ist aus, oder
 RSR ist vor dem Pull aus (Auto-Start erst im Kampf); dann bleibt es beim Einsatz im Kampf oder wie bisher. Die Spurzeile
 zeigt jeden Einsatz.
+
+## Tiefe Gewölbe: Magicite, Demiklone und Weihrauch
+
+*Was gilt (A626):* Allein in einem Tiefen Gewölbe setzt RSR die Steine des Gewölbes – drei Plätze
+(`InstanceContentDeepDungeon.Magicite`), Einsatz über `UseStone` – für jeden Job gleich, nach den Pomandern (die
+gehen im selben Bild vor). Option „Use the deep dungeon's magicite, demiclones and incense against bosses and in danger
+when alone", ab Werk an.
+- **Rettung vor dem eigenen Tod** (im Kampf in der kritischen Klasse): ein Stein, der alle Gegner des Stockwerks außer
+  Bossen tötet und der Gruppe 10 s Unverwundbarkeit gibt – Inferno-, Crag- oder Vortex-Magicite (Himmelssäule; gegen
+  einen Boss dazu schwerer Schaden), ohne Boss auch Poisonfruit-Weihrauch (Pilgers Pfad). Auf einem Bossstockwerk macht
+  Poisonfruit nur Schaden am Boss und rettet nicht; dort bleibt er liegen.
+- **Gegen einen Boss im Kampf:** Elder-Magicite (tötet den Boss; „may not work if the boss is not aggroed first", deshalb
+  erst im Kampf), sonst ein Demiklon (Eureka Orthos): Unei zuerst (heilt, schildet 20 % der maximalen LP), dann Onion
+  Knight (Schaden und Heilung), dann Doga (Schaden, Versteinerung in der Fläche).
+- **Gegen einen Boss vor dem Pull**, sobald er in Sicht steht, sonst im Kampf: Barkbalm-Weihrauch (für das Stockwerk
+  +100 % maximale LP der Gruppe; eine Fee, die Schaden macht und unter 70 % LP heilt; „Particularly useful for bosses").
+- **Nie:** Mazeroot-Weihrauch – Karte, Fallen, Durchgang: eine Entscheidung über den Weg, nicht über den Kampf.
+- **Wirkungen nur im Wiki:** Die Blätter `DeepDungeonMagicStone` (Name, Tooltip) und `DeepDungeonDemiclone` (TitleCase,
+  Description) führen Erzählung, keine Wirkung; die Wirkungen stehen in consolegameswiki (Heaven-on-High, Eureka Orthos,
+  Pilgrim's Traverse, 06.11.2026; Werkzeugquelle). RSR erkennt einen Stein deshalb an seinem englischen Namen im Blatt,
+  nicht an einem Wirktext.
+- **Welcher Stein auf welchem Platz:** Jeder Platz trägt einen Wert, 0 heißt leer – abgeleitet, nicht belegt: BossMod
+  öffnet keine Silbertruhe mehr, sobald alle drei Werte über 0 liegen (27be422), und man hält höchstens drei Steine.
+  Gelesen wird zuerst der Statusagent des Gewölbes (`AgentDeepDungeonStatus.Data->Magicite`: je Eintrag Gegenstand und
+  Symbol): der Eintrag am selben Platz mit demselben Gegenstand, sonst der einzige Eintrag mit diesem Gegenstand; sein
+  Symbol (27966 bis 27975, je Stein verschieden) bestimmt die Zeile in einem der beiden Blätter. Sonst der Wert als Zeile
+  des Blatts, das die Spalte MagiciteSlot des Gewölbes nennt (Himmelssäule: `DeepDungeonMagicStone`, Eureka Orthos:
+  `DeepDungeonDemiclone`). Pilgers Pfad nennt keine Spalte, und Poisonfruit (Magicite-Blatt 5) und Barkbalm
+  (Demiklon-Blatt 5) teilen den Wert 5 – dort trägt nur das Symbol. Ob der Agent ohne offenes Statusfenster gefüllt ist,
+  ist unbelegt; ein Platz, den keine Lesart bestimmt, bleibt unberührt.
+- **Spur:** Je Stockwerk eine Zeile im `DefenseTrace.log` mit den drei Werten, den Einträgen des Agenten und der Lesart je
+  Platz – ein Upload aus Pilgers Pfad belegt die Zuordnung –, dazu eine Zeile je Einsatz und je Abweisung.
+- **Einsatz wie bei den Pomandern:** einmal je Bild, solange RSR läuft, ohne Animationssperre und ohne Wirken; gilt, bis
+  der Platz einen anderen Wert zeigt, höchstens einen GCD; ein abgewiesener Platz erst nach dem Kampf oder auf dem
+  nächsten Stockwerk wieder. Je Anlass einer: eine Rettung erst wieder, nachdem du die kritische Klasse verlassen hast
+  (die Gegner fallen, bevor die Unverwundbarkeit sichtbar ist, und ohne Sperre folgte der zweite Stein); Elder und ein
+  Demiklon einmal je Kampf; Barkbalm einmal je Stockwerk, er gilt für das ganze. Nie in der Gruppe: Der Bestand ist geteilt (Wiki, Heaven-on-High: „kept in a shared
+  inventory"), dieselbe Prüfung wie bei den Pomandern.
+
+*Im Kampf:* Allein in der Himmelssäule auf Stockwerk 23 fällt der Spieler unter die Schwelle der kritischen Klasse, drei
+Gegner greifen an; RSR setzt Inferno-Magicite, alle Gegner des Stockwerks fallen, und er steht 10 s unverwundbar. In Pilgers
+Pfad betritt er die Arena auf Stockwerk 30, RSR brennt Barkbalm, bevor er angreift, und er geht mit doppelten LP in den
+Bosskampf. In Eureka Orthos kommt Unei zu Beginn des Bosskampfs und heilt mit.
+
+*Nicht gebaut, mit Grund:*
+- Poisonfruit oder ein Primal-Magicite gegen den Boss ohne Gefahr: Schaden am Boss gegen die Rettung auf einem späteren
+  Stockwerk – die Sicherheit geht vor, ein Tod beendet den Lauf allein.
+- Ein Demiklon vor dem Pull: Wie lange er bleibt, ist unbelegt.
+- Halten für den letzten Boss eines Satzes: Wo der Satz endet, liest RSR nicht.
+
+*Gegenthese 1 – Der Stein fehlt später:* Inferno gegen einen Notfall auf Stockwerk 12 fehlt gegen den Boss auf 20. Preis
+benannt; der Notfall beendet sonst den Lauf, der Boss nur vielleicht.
+*Gegenthese 2 – Der Tod während der Beschwörung:* „if the user dies during Feo Ul's animation, the attack will not go off,
+but the item will still be consumed" (Poisonfruit). Preis benannt; Raising geht im selben Fall vorher (Pomander zuerst).
+*Gegenthese 3 (ausgeliefert, und nichts ändert sich):* In Pilgers Pfad ist der Agent ohne Fenster leer – dann bleibt dort
+alles wie bisher; die Spurzeile je Stockwerk zeigt es, und ein Upload belegt die Zuordnung. In Himmelssäule und Eureka
+Orthos trägt die Spalte, solange die abgeleitete Bedeutung des Werts stimmt; stimmt sie nicht, zeigt die Spurzeile den
+Widerspruch zum Agenten.
 
 ## Bewegungssperre beim Wirken und die KI von BossMod
 

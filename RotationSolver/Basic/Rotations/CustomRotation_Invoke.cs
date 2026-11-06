@@ -16,7 +16,11 @@ public partial class CustomRotation
 		try
 		{
 			UpdateInfo();
-			DeepDungeonPomanders.Use();
+			if (!DeepDungeonPomanders.Use())
+			{
+				DeepDungeonStones.Use();
+			}
+
 			UpdatePreview();
 
 			CountingOfLastUsing = CountingOfCombatTimeUsing = 0;

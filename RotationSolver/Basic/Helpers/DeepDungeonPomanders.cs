@@ -42,10 +42,17 @@ internal static class DeepDungeonPomanders
 	private static readonly HashSet<int> _refused = [];
 	private static bool _fought;
 	private static byte _floor;
+
+	// Witching acts at once, and the transformed enemies still aim at you while you stay in the critical class; the next one
+	// waits until you have left it.
+	private static bool _witchingArmed = true;
 	private static (int Slot, byte Count, DateTime At, string Name) _pending = (-1, 0, DateTime.MinValue, string.Empty);
 
-	/// <summary>Called every frame RSR runs, from the rotation's update. Uses at most one pomander.</summary>
-	internal static unsafe void Use()
+	/// <summary>
+	/// Called every frame RSR runs, from the rotation's update. Uses at most one pomander; true while one is used this frame or
+	/// pending, so the dungeon's stones wait (<see cref="DeepDungeonStones"/>).
+	/// </summary>
+	internal static unsafe bool Use()
 	{
 		var framework = EventFramework.Instance();
 		var dungeon = framework != null && DataCenter.IsInDeepDungeons ? framework->GetInstanceContentDeepDungeon() : null;
@@ -54,7 +61,7 @@ internal static class DeepDungeonPomanders
 		{
 			_refused.Clear();
 			_pending = (-1, 0, DateTime.MinValue, string.Empty);
-			return;
+			return false;
 		}
 
 		// A refused slot is tried again after the fight, or on the next floor.
@@ -77,7 +84,7 @@ internal static class DeepDungeonPomanders
 			}
 			else if ((DateTime.Now - _pending.At).TotalSeconds < DataCenter.DefaultGCDTotal)
 			{
-				return;
+				return true;
 			}
 			else
 			{
@@ -88,26 +95,21 @@ internal static class DeepDungeonPomanders
 			}
 		}
 
-		if (!Alone(dungeon))
+		if (!Alone(dungeon) || !Free(player))
 		{
-			return;
-		}
-
-		var actions = FFXIVClientStructs.FFXIV.Client.Game.ActionManager.Instance();
-		if (actions == null || actions->AnimationLock > 0f || player.IsCasting)
-		{
-			return;
+			return false;
 		}
 
 		var definition = Svc.Data.GetExcelSheet<Lumina.Excel.Sheets.DeepDungeon>()?.GetRowOrDefault(dungeon->DeepDungeonId);
 		if (definition == null)
 		{
-			return;
+			return false;
 		}
 
 		var slots = definition.Value.PomanderSlot;
 		var boss = DataCenter.InCombat ? DataCenter.BossInCombat : BossInSight();
 		var critical = DataCenter.InCombat && player.IsInCriticalClass();
+		_witchingArmed |= !critical;
 		for (var effect = 0; effect < Effects.Length; effect++)
 		{
 			var when = Effects[effect].When;
@@ -130,10 +132,12 @@ internal static class DeepDungeonPomanders
 					continue;
 				}
 
-				if (when == Moment.AgainstAttacker && !AttackedWithin(player, item.Radius))
+				if (when == Moment.AgainstAttacker && (!_witchingArmed || !AttackedWithin(player, item.Radius)))
 				{
 					continue;
 				}
+
+				_witchingArmed &= when != Moment.AgainstAttacker;
 
 				var name = Svc.Data.GetExcelSheet<Lumina.Excel.Sheets.DeepDungeonItem>(ClientLanguage.English)?
 					.GetRowOrDefault(slots[slot].RowId)?.Name.ExtractText() ?? slots[slot].RowId.ToString();
@@ -143,9 +147,18 @@ internal static class DeepDungeonPomanders
 					+ (when == Moment.AgainstBoss ? (DataCenter.InCombat ? "a boss is fighting" : "a boss stands in sight before the pull")
 						: when == Moment.BeforeDeath
 						? "you stand in the critical class" : "you stand in the critical class and are attacked in its radius"));
-				return;
+				return true;
 			}
 		}
+
+		return false;
+	}
+
+	// No animation lock and no cast: the game takes a pomander or a stone only then.
+	internal static unsafe bool Free(IBattleChara player)
+	{
+		var actions = FFXIVClientStructs.FFXIV.Client.Game.ActionManager.Instance();
+		return actions != null && actions->AnimationLock <= 0f && !player.IsCasting;
 	}
 
 	// Which of the effects an item has, and the radius of its action; -1 for none of them. Read once per item.
@@ -176,7 +189,7 @@ internal static class DeepDungeonPomanders
 	}
 
 	// The dungeon's own party record and RSR's party list must both say alone.
-	private static unsafe bool Alone(InstanceContentDeepDungeon* dungeon)
+	internal static unsafe bool Alone(InstanceContentDeepDungeon* dungeon)
 	{
 		if (DataCenter.PartyMembers.Count > 1)
 		{
@@ -196,7 +209,7 @@ internal static class DeepDungeonPomanders
 	}
 
 	// Out of combat: an enemy with a boss icon in the list of enemies (in sight, within its range), the pull still to come.
-	private static bool BossInSight()
+	internal static bool BossInSight()
 	{
 		foreach (var hostile in DataCenter.AllHostileTargets)
 		{
