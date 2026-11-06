@@ -17689,6 +17689,21 @@ habe den schleim bislang nicht anfreunden können."
 - *Prüfgrad:* statisch, kompiliert ohne Warnung; im Spiel nicht beobachtet. Die Nahkämpfer sind damit durch; nächste
   Barde und Tänzer.
 
+### A607 · Barde und Tänzer nach Daedalus: nichts zu bauen; Daedalus abgeschlossen (06.11.2026)
+
+- *Anlass:* TODO „Fremde Repositories", letzte Gruppe (ofnature/Daedalus c4a788f: `CalliopeCore` Barde,
+  `TerpsichoreCore` Tänzer), Regeln mit Spielbeleg.
+- *Deckt sich:* Barde unter Stufe 56 erneuert die DoTs vor dem Ablauf (Daedalus: Feldnotiz Aurum Vale, 3 bis 8 s Lücke
+  beim Warten aufs Ende) – RSR erneuert im Fenster der Statusprüfung bzw. des DoT-Planers, nicht nach dem Ablauf; Quick
+  Nock und Ladonsbite gehen auf ein Ziel (RSRs Zielwahl am Blatt); Iron Jaws zuerst, Bloodletter vor dem Überlauf.
+- *Nicht übertragbar:* Tänzer tanzt außerhalb des Kampfes nicht in Schleife (Daedalus' Feldnotiz unter Questgegnern): RSR
+  wirkt Standard Step dort nur, wenn Standard Finish in 5 s endet, und schaltet sich 30 s nach dem Kampf ab – höchstens
+  ein Tanz, dessen Puffer der nächste Pull nutzt.
+- *Daedalus abgeschlossen:* Maschinist (A591 bis A593), Heiler (A594, A596 bis A599), Tanks (A600), Gemeinsames (A601),
+  Magier (A602 bis A604), Nahkämpfer (A605, A606), Barde und Tänzer (A607). Nächster Schritt im TODO: die übrigen
+  Repositories der Liste.
+- *Prüfgrad:* statisch (Kommentare und Code der Module, RSR-Code). Nichts gebaut.
+
 ## B · Commit-Register (Fork vs. `upstream/main`)
 
 ### B1 · Einzelgeprüfte Fork-Commits

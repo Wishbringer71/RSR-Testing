@@ -103,16 +103,9 @@ vielleicht; jeder Fund wird am Spiel belegt, bevor er ein Defekt oder eine Verbe
 Sein Auftrag vom 05.11.2026 dazu: „alle bekannten repos zu rotationen, zu beastmaster, zu bluemage analysiere, inwieweit
 erkenntisse daraus in rsr eingebracht werden können und die vorhandenen konzepte ergänzen und verbessern könnten".
 *Ort:* Grundstruktur (`RotationSolver/Basic`, Updaters, Zielwahl, Abwehr), die Rotationen unter `RebornRotations`, die
-Jobkonzepte. *Nächster Schritt:* Daedalus für Sicherheit ausgewertet (A561; A570 bis A575: Ladengewichte und Brettzustände,
-Stacheln, Flächen und Zu-Eier, Heiler-Triage, Reinigung, Abwehr und Kampfvorhersage); offen sind je Job die Regeln, die RSR
-nicht kennt, Job für Job nach seinem Profil (Maschinist zuerst, er spielt ihn am häufigsten); danach die übrigen in der
-Reihenfolge der Liste. Maschinist in Arbeit (Daedalus 74659a6, 03.11.2026): Full Metal Field und Reassemble treffen RSR
-nicht (Job-Guide: „not affected by Reassemble", RSR setzt es nicht darauf). Königin, Overdrive und das Maß „letzter
-Gegner" gebaut (A591, Konzept 14, „Das Ende der Gruppe"); Gruppenminderung als Familie für Barde, Maschinist und Tänzer
-gebaut (A592, Konzept 08); Flächensperre und Ladungsgrenze geprüft, nichts zu bauen (A593, Konzept 14). Heiler (Sicherheit
-der Gruppe): Heiler geprüft (A594, A596 bis A599), Tanks (A600), Gemeinsames der Schadensausteiler (A601), Magier (A602: der Schwarzmagier lief ohne Xenoglossy, Retrace ab Werk an);
-Astrologe und Weiser im Laufen (A603), Striking Muse mit vollen Ladungen (A604); Nahkämpfer (A605: Fernangriff beim
-Herankommen; A606: Kunai's Bane); nächste Barde und Tänzer. Je Fund ein Loop, je Repository ein Archiveintrag mit Commit und Datum. *Konzept:* 15, erweitert vom Vergleich mit WrathCombo auf die übrigen Werkzeuge; je Fund dazu das
+Jobkonzepte. *Nächster Schritt:* Daedalus ist ausgewertet (A561, A570 bis A575, A591 bis A607); offen sind die übrigen
+Repositories der Liste, zuerst die Rotationswerkzeuge (WrathCombo erneut gegen Konzept 15, BRUTAL, BeirutaNa1na,
+XIVdrg). Je Fund ein Loop, je Repository ein Archiveintrag mit Commit und Datum. *Konzept:* 15, erweitert vom Vergleich mit WrathCombo auf die übrigen Werkzeuge; je Fund dazu das
 tragende (01 Jobs, 08 Minderung, 13 Flächenschaden und Tankbuster).
 
 
