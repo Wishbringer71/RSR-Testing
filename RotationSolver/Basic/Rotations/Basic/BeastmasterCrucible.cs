@@ -12,6 +12,10 @@ public partial class BeastmasterRotation
 	internal static readonly HashSet<BeastmasterPet> FinalHealers = [];
 	internal static uint FinalLossPerUse;
 
+	// K14 (concept 01, A631): every familiar of that plan, healers and protectors first, and the final fight it was made for.
+	internal static readonly List<BeastmasterPet> FinalTeam = [];
+	internal static uint FinalBattle;
+
 	/// <summary>
 	/// K11 (A585, A590): whether <paramref name="pet"/>, one the final fight needs to heal or protect, would keep less than
 	/// one more loss as large as the board's largest after another such loss. No before the first measured loss.

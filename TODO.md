@@ -21,10 +21,10 @@ BossMod-Module) die Rotation des Beastmasters, die Wahl der Begleiter und den Ze
 
 1. Allein ohne Heiler kommt kein Heiltrank: RSR stand 13 s in der kritischen Klasse ohne Heilfähigkeit, kein Trank
    von RSR trotz eingeschalteter Option, er drückte ihn bei 6 % selbst und starb (Beastmaster, Sägerschrei, 04.11.2026).
-2. Crucible: Endkampf vorbereiten – Campsite und Futter: Welche Begleiter an der letzten Campsite mitruhen, wählt RSR
-   ohne Anzeige vor, und nur, wenn du voll herauskommst; Futter empfiehlt es nie. Vor dem Endkampf entscheidet beides,
-   mit wie vielen LP seine Heiler und Kämpfer dort ankommen.
-3. Hilfsfenster im Stil von RebornMaterial: Die Empfehlungsfenster (Team, Laden, Schatz, Masked Carnivale) sind
+2. Crucible: Weghinweis für den nächsten Schritt: An jeder Gabelung entscheidest du ohne Hinweis, ob der Weg über
+   Lager, Laden, Schatz oder einen weiteren Kampf führt; ob deine LP, die der Begleiter und dein Vorrat ihn tragen, siehst
+   du erst dort.
+3. Hilfsfenster im Stil von RebornMaterial: Die Empfehlungsfenster (Team, Laden, Schatz, Campsite, Masked Carnivale) sind
    schlichte ImGui-Listen; was empfohlen ist und warum, liest sich vor dem Kampf schwer.
 4. Beastmaster: Crucible-Strategien: Ein K.O. beendet den Lauf, und ein Begleiter, den ein späterer Kampf braucht, kommt dort mit den LP an, die ihm
    die früheren ließen.
@@ -62,24 +62,24 @@ Fehl-LP, Spielstatus) und den Tinktur-Vorrang; mit dem nächsten Upload die Ursa
 nach der Gefahr statt nach der festen Schwelle, für alle Jobs. *Konzept:* 03 („Eine Wiederverwendung für alle
 Arzneien"), 07.
 
-### Crucible: Endkampf vorbereiten – Campsite und Futter · N
-Seine Vorschläge (06.11.2026): „beim letzten rasten vor dem endgegnern im brett wäre eine empfehlung hilfreich, welche
-beiden begleiter man zum heilen auswählen sollte" und „beim händler für essen im brett sollte nahrung für die begleiter
-gegen endgegner brett empfohlen werden, welche nahrung für welchen begleiter. also drei stück". Im Kampf: Wer an der
-letzten Campsite mitruht, kommt mit 30 % mehr LP in den Endkampf; Futter gibt einem Begleiter etwa +30 % maximale LP
-oder −25 % physische Verwundbarkeit. Fehlt beides, trägst du die Treffer des Endgegners allein. RSR wählt an der
-Campsite still vor (A564), knappe Endkampf-Heiler zuerst (A590), aber nur, wenn du selbst voll herauskommst, und gar
-nicht, wenn Fenster und Agent verschiedene LP zeigen; Futter schließt die Ladenempfehlung aus (A569, meine Ableitung:
-die Rast beendet es). *Ort:* Campsite (K10, `SelectedPetIds`), Laden (K10, `RankOffers`), `HeldForFinal`/`FinalHealers`
-(K11), Fenster wie `RSR - Crucible team`. *Nächster Schritt:* Loop – die letzte Campsite und der letzte Laden vor dem
-Endkampf, ein Plan für den Endkampf (wer kämpft, wer heilt, wer ruht, welches Futter wer bekommt, Reihenfolge von Rast
-und Fütterung), Empfehlung mit Grund im Fenster, Übernahme auf Klick; prüfen, warum die Vorauswahl bei ihm nicht sichtbar
-war. *Konzept:* 01, K10 und K11.
+### Crucible: Weghinweis für den nächsten Schritt · N
+Seine Vorgabe (06.11.2026): „und auf den brettern von crucible generell hinweise, welche wege man nehmen sollte, basierend
+auf gesundheit der begleiter, ausstattung, verbrauchsgegenständen, eigenen heilbedarf", „immer für den nächsten
+schritt", „die empfehlung soll sich am aktuellen stand des fortschritts ausrichten" und „den kann man halt nicht am
+anfang des brettes fürs ganze brett voraussehen, sondern für den oder die nächsten schritte. ähnlich der vorausplanung
+beim schach". Im Kampf: Wer mit verletzten Heilern und wenig LP in einen weiteren Kampf statt zum Lager geht, trägt den
+nächsten Kampf mit dem Rest; wer bei voller Gesundheit das Lager nimmt, verschenkt den Schatz oder den Laden. *Ort:*
+`CrucibleRoute` (Felder, Wege, letzter Kampf, A631), K10/K11 (Lasten, LP, `HeldForFinal`), K8 (Gegenstände), Fenster.
+*Nächster Schritt:* Loop – an der nächsten Gabelung je Seite, was sie bringt (Kampf, Lager, Laden, Schatz, Zufall) gegen
+deine LP und deinen Heilbedarf (gemessene Lasten), die LP der Begleiter für die nächsten Kämpfe und den Endkampf, deine
+Ausrüstung und Gegenstände, einen oder wenige Züge vorausgerechnet und nach jedem Feld neu; Hinweis mit Grund in einem
+Fenster. *Konzept:* 01, K10 „Weg“
+und K14.
 
 ### Hilfsfenster im Stil von RebornMaterial · N
 Sein Vorschlag (06.11.2026): „das hilfsfenster sollte evtl. besser aussehen und den rebornmaterials entsprechen". Im
 Kampf mittelbar: Eine Empfehlung, die man vor dem Kampf nicht auf einen Blick liest, wird übergangen. *Ort:*
-`RotationSolver/UI/ExtraWindows/` (Crucible-Team, -Laden, -Schatz, Masked-Carnivale-Satz), RebornMaterial
+`RotationSolver/UI/ExtraWindows/` (Crucible-Team, -Laden, -Schatz, -Campsite, Masked-Carnivale-Satz), RebornMaterial
 (`/home/user/ext/RebornMaterial`). *Nächster Schritt:* Loop – was RebornMaterial bietet und wie das Hauptfenster es
 nutzt, ein gemeinsames Gerüst für alle Hilfsfenster (Universell zuerst), dann je Fenster. *Konzept:* 03 (Fenster).
 
@@ -89,7 +89,7 @@ LP gefallen sein (04.11.2026). *Ort:* `BST_Reborn`, `CrucibleBoard`, `Beastmaste
 A549: Daten zur Laufzeit, K1, K2, K3 ohne den Bedarf der Begleiter), K9 (A550), K8 (A551 bis A554: Heilung, Gegenmittel, Bestien-Lebensfeder, Sand der
 Zeit, Bestien-Heiltranksammlung, Schutz, Seren, Bestien-Heilmittelsammlung, Resistenzmittel, Bestien-Goldnadel,
 Bestien-Ausdauermittel, Schadensgegenstände, Stärkungsmittel im Endkampf; A555).
-*Gebaut auch:* K6 (A562, Hörner im Hornfenster), K7 (A563, Kader auf Wunsch im Teamfenster), K10 Campsite (A564, wer mitruht), K10 Laden (A569, A570: Kaufliste im Ladenfenster, Kauf auf Wunsch), K12 (A572, Eier des Zu), K13 (A578, Schatz: Empfehlung im Schatzfenster, Wahl auf Wunsch), Bretter 2 bis 5 (A588: Tötungsregeln, Gegenangriff nach Angriffsart), K5 Stufe 1 (A589: Stopp nur gegen Anfällige), K11 Stufe 2 (A590: Zähnefletschen und Campsite nach Bedarf des Endkampfs). *Nächster Schritt:* K5 Stufe 2 (Slow, Blind, Paralysis, Sleep, Death als Schutz, sobald eine Bezifferung belegt ist); die Bretter 2 bis 5 am ersten Mitschnitt prüfen (Spurzeilen „kill rule", „left alone"); K10 Weg ist eine Frage des Umfangs an ihn, am Ende des TODO. *Konzept:* 01,
+*Gebaut auch:* K6 (A562, Hörner im Hornfenster), K7 (A563, Kader auf Wunsch im Teamfenster), K10 Campsite (A564, wer mitruht), K10 Laden (A569, A570: Kaufliste im Ladenfenster, Kauf auf Wunsch), K12 (A572, Eier des Zu), K13 (A578, Schatz: Empfehlung im Schatzfenster, Wahl auf Wunsch), Bretter 2 bis 5 (A588: Tötungsregeln, Gegenangriff nach Angriffsart), K5 Stufe 1 (A589: Stopp nur gegen Anfällige), K11 Stufe 2 (A590: Zähnefletschen und Campsite nach Bedarf des Endkampfs). *Nächster Schritt:* K5 Stufe 2 (Slow, Blind, Paralysis, Sleep, Death als Schutz, sobald eine Bezifferung belegt ist); die Bretter 2 bis 5 am ersten Mitschnitt prüfen (Spurzeilen „kill rule", „left alone"). *Konzept:* 01,
 „Crucible of the Unbroken: Bretter, Kämpfe, Strategien".
 
 ### Bewegungssperre beim Wirken gegen das Ausweichen der BossMod-KI · N, U

@@ -30,6 +30,44 @@ public partial class BeastmasterRotation
 	private static readonly Regex OfferedShare = new(@"(?<share>\d+)\s*%", RegexOptions.Compiled);
 	private static readonly Dictionary<int, float> _restShareOffered = [];
 
+	// ClientStructs 0adb2e5 names the pet party's modes: 3 buy feed, 4 buy feed result, 5 feed detail. Daedalus saw the campsite
+	// window in mode 4; with 3 or 5 seen since the window opened, or a feed in it, mode 4 is a feeding, not a campsite (A631).
+	internal const uint FeedBuyMode = 3;
+	internal const uint FeedDetailMode = 5;
+	private static bool _feedFlow;
+	private static List<int>? _campsiteRequested;
+	private static string _finalRestTraced = string.Empty;
+
+	/// <summary>One familiar the campsite window recommends to rest, and why.</summary>
+	public readonly record struct CrucibleCampPick(BeastmasterPet Pet, float Share, string Why);
+
+	/// <summary>Whether the campsite window is open and RSR reads it.</summary>
+	public static bool CrucibleCampOpen { get; private set; }
+
+	/// <summary>What RSR selects here without a click, and why.</summary>
+	public static string CrucibleCampSummary { get; private set; } = string.Empty;
+
+	/// <summary>K14: at the last campsite before the final fight, who should rest for it; empty elsewhere.</summary>
+	public static IReadOnlyList<CrucibleCampPick> CrucibleCampRecommendation { get; private set; } = [];
+
+	/// <summary>K14: what the recommendation leaves the player with, for the window.</summary>
+	public static string CrucibleCampOutcome { get; private set; } = string.Empty;
+
+	/// <summary>K14: while a familiar is to be fed, the familiar the feed is meant for; empty otherwise.</summary>
+	public static string CrucibleFeedTarget { get; private set; } = string.Empty;
+
+	/// <summary>The window's "Apply": the recommendation is selected, one click at a time; resting stays the player's click.</summary>
+	public static void RequestCrucibleCamp()
+	{
+		_campsiteRequested = [];
+		foreach (var pick in CrucibleCampRecommendation)
+		{
+			_campsiteRequested.Add((int)pick.Pet);
+		}
+
+		_campsiteHeld = false;
+	}
+
 	private static int? _campsiteLimit;
 	private static bool _campsiteHeld;
 	private static string? _campsiteSelection;
@@ -49,9 +87,19 @@ public partial class BeastmasterRotation
 		var party = AgentXBMPetParty.Instance();
 		var player = Player;
 		var screen = (AtkUnitBase*)Svc.GameGui.GetAddonByName("XBMPetParty").Address;
+		var active = party != null && ((AgentInterface*)party)->IsAgentActive();
+		var visible = screen != null && screen->IsVisible;
+		_feedFlow = active && (_feedFlow || party->Mode is FeedBuyMode or FeedDetailMode
+			|| (visible && new ReaderXBMPetParty(screen).FeedItem.ItemId != 0));
+		FollowFeeding(party, screen, _feedFlow && visible && DataCenter.IsInCrucible);
 		if (!pick || !DataCenter.IsInCrucible || InCombat || party == null || player == null || player.MaxHp == 0
-			|| !((AgentInterface*)party)->IsAgentActive() || party->Mode != CampsiteMode || screen == null || !screen->IsVisible)
+			|| !active || party->Mode != CampsiteMode || !visible || _feedFlow)
 		{
+			CrucibleCampOpen = false;
+			CrucibleCampSummary = string.Empty;
+			CrucibleCampRecommendation = [];
+			CrucibleCampOutcome = string.Empty;
+			_campsiteRequested = null;
 			_campsiteLimit = null;
 			_campsiteHeld = false;
 			_campsiteSelection = null;
@@ -61,6 +109,7 @@ public partial class BeastmasterRotation
 			return;
 		}
 
+		CrucibleCampOpen = true;
 		var selected = new List<int>();
 		foreach (var chosen in party->SelectedPetIds.AsSpan())
 		{
@@ -141,7 +190,7 @@ public partial class BeastmasterRotation
 			return;
 		}
 
-		var hurt = new List<(int Position, float Share, bool Short)>();
+		var hurt = new List<(int Position, float Share, bool Short, BeastmasterPet Pet)>();
 		for (var i = 0; i < pets.Length && i < current.Length && i < max.Length; i++)
 		{
 			// The window's rows carry the feed; they are read only where their HP is the team's at the same position.
@@ -155,7 +204,7 @@ public partial class BeastmasterRotation
 			// A fallen familiar is not healed there, one at full HP takes a share for nothing, a fed one loses its feed.
 			if (current[i] > 0 && current[i] < max[i] && rows[i].FedCurrent == 0)
 			{
-				hurt.Add((i, current[i] / (float)max[i], ShortForFinal((BeastmasterPet)pets[i].PetId, current[i])));
+				hurt.Add((i, current[i] / (float)max[i], ShortForFinal((BeastmasterPet)pets[i].PetId, current[i]), (BeastmasterPet)pets[i].PetId));
 			}
 		}
 
@@ -164,6 +213,7 @@ public partial class BeastmasterRotation
 		var self = player.CurrentHp / (float)player.MaxHp;
 		var resting = 0;
 		var bestGain = 0f;
+		_campsiteLimit ??= CrucibleRoute.CampsiteLimit();
 		for (var n = 1; n <= hurt.Count && (_campsiteLimit is not { } limit || n <= limit); n++)
 		{
 			var share = RestShare(n);
@@ -189,6 +239,26 @@ public partial class BeastmasterRotation
 		for (var i = 0; i < resting; i++)
 		{
 			wanted.Add(hurt[i].Position);
+		}
+
+		CrucibleCampSummary = resting > 0
+			? $"RSR selects {DescribeResting(pets, wanted, current, max)} - you come out at full HP"
+			: hurt.Count == 0
+				? "RSR selects nobody - no familiar here is standing, unfed and short of HP"
+				: $"RSR selects nobody - at {self:P0} you would not come out at full HP with a familiar";
+		RecommendForFinal(hurt, self);
+
+		// The window's "Apply": his choice from the recommendation, clicked toward like RSR's own.
+		if (_campsiteRequested is { } requested)
+		{
+			wanted.Clear();
+			for (var i = 0; i < pets.Length; i++)
+			{
+				if (requested.Contains((int)pets[i].PetId))
+				{
+					wanted.Add(i);
+				}
+			}
 		}
 
 		// One click toward the pick: take off whoever should not rest, then add the next one to rest.
@@ -247,6 +317,7 @@ public partial class BeastmasterRotation
 		static void Hold(string why)
 		{
 			_campsiteHeld = true;
+			CrucibleCampSummary = why;
 			DefenseTrace.Line(why);
 		}
 	}
@@ -294,6 +365,71 @@ public partial class BeastmasterRotation
 		}
 
 		return true;
+	}
+
+	// K14 (A631): at the last campsite before the final fight, the familiars that should rest for it - healers and protectors
+	// of the final fight's plan first, then the rest of that plan, then the others by their share of HP - as many as the
+	// campsite takes, with the share the player comes out with.
+	private static void RecommendForFinal(List<(int Position, float Share, bool Short, BeastmasterPet Pet)> hurt, float self)
+	{
+		if (CrucibleRoute.CampsiteAfterAnotherBattle() != false || hurt.Count == 0)
+		{
+			CrucibleCampRecommendation = [];
+			CrucibleCampOutcome = string.Empty;
+			return;
+		}
+
+		var ranked = new List<(int Position, float Share, bool Short, BeastmasterPet Pet)>(hurt);
+		ranked.Sort((a, b) =>
+		{
+			var order = FinalHealers.Contains(b.Pet).CompareTo(FinalHealers.Contains(a.Pet));
+			if (order == 0)
+			{
+				order = FinalTeam.Contains(b.Pet).CompareTo(FinalTeam.Contains(a.Pet));
+			}
+
+			return order != 0 ? order : a.Share.CompareTo(b.Share);
+		});
+
+		var count = Math.Min(ranked.Count, _campsiteLimit ?? ranked.Count);
+		var picks = new List<CrucibleCampPick>();
+		for (var i = 0; i < count; i++)
+		{
+			var (_, share, _, pet) = ranked[i];
+			picks.Add(new CrucibleCampPick(pet, share, FinalHealers.Contains(pet)
+				? "heals or protects in the final fight's plan"
+				: FinalTeam.Contains(pet) ? "fights in the final fight's plan" : "the most hurt of the others"));
+		}
+
+		CrucibleCampRecommendation = picks;
+		var traced = string.Join(", ", picks.ConvertAll(static pick => pick.Pet.ToString()));
+		if (traced != _finalRestTraced)
+		{
+			_finalRestTraced = traced;
+			DefenseTrace.Line($"crucible campsite: last before the final fight - for it rest with {traced} "
+				+ $"(final plan {string.Join(", ", FinalTeam)}, healers {string.Join(", ", FinalHealers)}; at most {_campsiteLimit?.ToString() ?? "unknown"})");
+		}
+
+		var each = RestShare(count);
+		var after = Math.Min(1f, self + each);
+		CrucibleCampOutcome = $"Last campsite before the final fight: each gets {each:P0} of their HP; you come out at {after:P0}"
+			+ (after < 1f ? $" instead of full (resting alone: {Math.Min(1f, self + RestShare(0)):P0})" : string.Empty)
+			+ (FinalTeam.Count == 0 ? " - no final-fight plan yet (it is made at a horn screen before another fight)" : string.Empty);
+
+	}
+
+	// K14 (A631): while a familiar is to be fed, the one the feed is meant for - the familiar of the final fight's plan the feed
+	// suits best (BeastmasterCrucibleShop) - shown, never clicked.
+	private static unsafe void FollowFeeding(AgentXBMPetParty* party, AtkUnitBase* screen, bool feeding)
+	{
+		if (!feeding || party == null || screen == null)
+		{
+			CrucibleFeedTarget = string.Empty;
+			return;
+		}
+
+		var item = (ushort)new ReaderXBMPetParty(screen).FeedItem.ItemId;
+		CrucibleFeedTarget = item == 0 ? "Feeding: no feed read in the window" : FeedTargetText(item);
 	}
 
 	private static string DescribeResting(Span<AgentXBMPetParty.PartyEntry> pets, List<int> wanted, Span<uint> current, Span<uint> max)

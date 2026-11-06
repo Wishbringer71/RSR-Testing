@@ -259,6 +259,7 @@ public partial class BeastmasterRotation
 		var picks = RankOffers(offers, budget, int.MaxValue, owned, gearSlots, heldItems, itemSlots, board, out var spent);
 		CrucibleShopRecommendation = picks;
 		CrucibleShopTokens = (budget, budget - spent);
+		RecommendFeed(offers, budget - spent);
 		var traced = string.Join(", ", picks.ConvertAll(static pick => pick.Name));
 		if (traced != _shopTraced)
 		{
@@ -668,6 +669,234 @@ public partial class BeastmasterRotation
 		var left = 1f - ((load.Stretch - 1f) * Math.Max(0f, mean - healed - curing)) - Math.Max(0f, heavy - healed);
 		var effective = heavyBare > 0f ? heavyBare / Math.Max(heavy, float.Epsilon) : hp / Math.Max(taken, float.Epsilon);
 		return (left, effective);
+	}
+
+	/// <summary>K14 (A631): one feed for one familiar of the final fight's plan, its price and whether the tokens the list leaves
+	/// pay for it.</summary>
+	public readonly record struct CrucibleFeedPick(int Row, string Feed, BeastmasterPet Pet, int Price, bool Affordable, string Why);
+
+	/// <summary>K14: the feed for the final fight while a shop is open, healers and protectors first; empty without a plan.</summary>
+	public static IReadOnlyList<CrucibleFeedPick> CrucibleFeedRecommendation { get; private set; } = [];
+
+	/// <summary>K14: whether a campsite can still come before the final fight, and what that means for the feed.</summary>
+	public static string CrucibleFeedNote { get; private set; } = string.Empty;
+
+	// What a feed does, read once from its English effect text (XBMItem, kind "Feed"): the shares it changes, the share of HP
+	// it restores when eaten, the damage it adds, whether it harms its eater, whether it keeps feed over a rest, and the kins
+	// it suits ("[Suitable for beastkin, ... and ashkin.]").
+	private readonly record struct CrucibleFeed(string Name, float MaxHp, float DamageTaken, float PhysicalVulnerability,
+		float MagicVulnerability, float Evasion, float Restore, float Damage, bool SelfHarm, bool Preserves, HashSet<string> Kins);
+
+	private static readonly Regex FeedRestore = new(@"Restores (?<share>\d+)% of HP upon consumption", RegexOptions.CultureInvariant);
+	private static readonly Regex FeedDamage = new(@"Damage Dealt \+(?<share>\d+)%", RegexOptions.CultureInvariant);
+	private static readonly Regex FeedKins = new(@"Suitable for (?<kins>[^\]]+)", RegexOptions.CultureInvariant);
+	private const string FeedPreservesText = "Preserves the effects of feed";
+
+	private static Dictionary<ushort, CrucibleFeed>? _crucibleFeed;
+	private static string _feedTraced = string.Empty;
+	private static Dictionary<ushort, CrucibleFeed> CrucibleFeedTable => _crucibleFeed ??= ReadCrucibleFeed();
+
+	// K14 (A631): for each familiar of the final fight's plan, healers and protectors first, the feed on offer that suits its
+	// kin and keeps it longest in the final fight - its effective HP: the share it has now plus what eating restores, at most
+	// the new maximum, over the damage it takes after the feed's cuts, weighed by the final enemies' strength against
+	// intelligence; at a tie more damage, then the cheaper. One feed each, never one that harms its eater.
+	private static unsafe void RecommendFeed(List<(int Row, ushort Item, int Price)> offers, int left)
+	{
+		var feeds = CrucibleFeedTable;
+		var picks = new List<CrucibleFeedPick>();
+		if (FinalTeam.Count == 0)
+		{
+			CrucibleFeedRecommendation = picks;
+			CrucibleFeedNote = "No final-fight plan yet: it is made at a horn screen before another fight.";
+			return;
+		}
+
+		float strength = 0f, intelligence = 0f;
+		foreach (var enemy in CrucibleBoard.EnemiesOf(FinalBattle))
+		{
+			strength += enemy.Strength;
+			intelligence += enemy.Intelligence;
+		}
+
+		var all = strength + intelligence;
+		var physical = all > 0f ? strength / all : 0f;
+		var magic = all > 0f ? intelligence / all : 0f;
+		var other = all > 0f ? 0f : 1f;
+
+		var shares = new Dictionary<BeastmasterPet, float>();
+		var party = AgentXBMPetParty.Instance();
+		if (party != null)
+		{
+			var pets = party->SelectedPets.AsSpan();
+			for (var i = 0; i < pets.Length && i < party->PetCurrentHealth.Length && i < party->PetMaxHealth.Length; i++)
+			{
+				if (party->PetMaxHealth[i] > 0)
+				{
+					shares[(BeastmasterPet)pets[i].PetId] = party->PetCurrentHealth[i] / (float)party->PetMaxHealth[i];
+				}
+			}
+		}
+
+		var taken = new HashSet<int>();
+		foreach (var pet in FinalTeam)
+		{
+			var kin = KinOf(pet).ToString().ToLowerInvariant();
+			var share = shares.TryGetValue(pet, out var known) ? known : 1f;
+			var bare = Survival(default, share);
+			(int Row, ushort Item, int Price, float Gain, float Damage)? best = null;
+			foreach (var (row, item, price) in offers)
+			{
+				if (taken.Contains(row) || !feeds.TryGetValue(item, out var feed) || feed.SelfHarm || !feed.Kins.Contains(kin))
+				{
+					continue;
+				}
+
+				var gain = Survival(feed, share) - bare;
+				if (best is not { } b || gain > b.Gain || (gain == b.Gain && (feed.Damage > b.Damage
+					|| (feed.Damage == b.Damage && price < b.Price))))
+				{
+					best = (row, item, price, gain, feed.Damage);
+				}
+			}
+
+			if (best is not { } chosen)
+			{
+				continue;
+			}
+
+			_ = taken.Add(chosen.Row);
+			var eaten = feeds[chosen.Item];
+			var affordable = chosen.Price <= left;
+			left -= affordable ? chosen.Price : 0;
+			picks.Add(new CrucibleFeedPick(chosen.Row, eaten.Name, pet, chosen.Price, affordable,
+				$"{(FinalHealers.Contains(pet) ? "heals or protects" : "fights")} in the final; at {share:P0} HP its effective HP "
+				+ $"rises {chosen.Gain / bare:P0}" + (eaten.Damage > 0f ? $", damage +{eaten.Damage:P0}" : string.Empty)));
+		}
+
+		CrucibleFeedRecommendation = picks;
+		var feedTrace = string.Join(", ", picks.ConvertAll(static pick => $"{pick.Feed} -> {pick.Pet}"));
+		if (feedTrace != _feedTraced)
+		{
+			_feedTraced = feedTrace;
+			DefenseTrace.Line($"crucible shop: feed for the final fight ({string.Join(", ", FinalTeam)}): "
+				+ (picks.Count > 0 ? feedTrace : "none on offer suits them") + $"; campsite after this shop: {CrucibleRoute.CampsiteAfterShop()?.ToString() ?? "unknown"}");
+		}
+
+		CrucibleFeedNote = (picks.Count == 0 ? "None on offer suits the familiars of the final fight's plan. " : string.Empty)
+			+ CrucibleRoute.CampsiteAfterShop() switch
+		{
+			false => "No campsite can come before the final fight: the feed lasts into it.",
+			true => "A campsite can still come: a fed familiar that rests there loses its feed (RSR does not rest a fed one; Lily Simular keeps it).",
+			_ => "Where this shop stands on the board is not known: a fed familiar that rests at a later campsite loses its feed.",
+		};
+
+		float Survival(CrucibleFeed feed, float now)
+		{
+			var max = 1f + feed.MaxHp;
+			var hp = Math.Min(max, now + (feed.Restore * max));
+			var hit = (1f - feed.DamageTaken) * ((physical * (1f - feed.PhysicalVulnerability) * (1f - feed.Evasion))
+				+ (magic * (1f - feed.MagicVulnerability)) + other);
+			return hp / Math.Max(hit, float.Epsilon);
+		}
+	}
+
+	/// <summary>K14 (A631): for the feed being given, the familiar of the shop's recommendation it was meant for.</summary>
+	internal static string FeedTargetText(ushort item)
+	{
+		var feeds = CrucibleFeedTable;
+		var name = feeds.TryGetValue(item, out var feed) ? feed.Name : $"item {item}";
+		foreach (var pick in CrucibleFeedRecommendation)
+		{
+			if (pick.Feed == name)
+			{
+				return $"Feed {name}: give it to {pick.Pet} ({pick.Why}).";
+			}
+		}
+
+		foreach (var pet in FinalTeam)
+		{
+			if (feed.Kins != null && feed.Kins.Contains(KinOf(pet).ToString().ToLowerInvariant()))
+			{
+				return $"Feed {name}: suits {pet} of the final fight's plan.";
+			}
+		}
+
+		return $"Feed {name}: no familiar of the final fight's plan was recommended for it.";
+	}
+
+	private static Dictionary<ushort, CrucibleFeed> ReadCrucibleFeed()
+	{
+		var feeds = new Dictionary<ushort, CrucibleFeed>();
+		var sheet = Svc.Data.GetExcelSheet<Lumina.Excel.Sheets.XBMItem>(ClientLanguage.English);
+		var kinds = Svc.Data.GetExcelSheet<Lumina.Excel.Sheets.XBMItemType>(ClientLanguage.English);
+		if (sheet == null || kinds == null)
+		{
+			return feeds;
+		}
+
+		var feedKind = uint.MaxValue;
+		foreach (var kind in kinds)
+		{
+			if (kind.Unknown0.ExtractText() == "Feed")
+			{
+				feedKind = kind.RowId;
+			}
+		}
+
+		foreach (var row in sheet)
+		{
+			if (row.Unknown13 != feedKind)
+			{
+				continue;
+			}
+
+			var text = row.Unknown3.ExtractText();
+			float maxHp = 0f, taken = 0f, physical = 0f, magic = 0f, evasion = 0f, damage = 0f;
+			foreach (Match stat in GearStat.Matches(text))
+			{
+				var share = Percent(stat.Groups["share"].Value) * (stat.Groups["sign"].Value == "-" ? -1f : 1f);
+				switch (stat.Groups["stat"].Value)
+				{
+					case "Maximum HP": maxHp += share; break;
+					case "Damage Taken": taken -= share; break;
+					case "Physical Vulnerability": physical -= share; break;
+					case "Magic Vulnerability": magic -= share; break;
+					case "Evasion": evasion += share; break;
+					default: break;
+				}
+			}
+
+			foreach (Match dealt in FeedDamage.Matches(text))
+			{
+				damage += Percent(dealt.Groups["share"].Value);
+			}
+
+			var kins = new HashSet<string>();
+			if (FeedKins.Match(text) is { Success: true } suits)
+			{
+				foreach (var part in suits.Groups["kins"].Value.Replace(" and ", ",", StringComparison.Ordinal).Split(','))
+				{
+					var kin = part.Trim().TrimEnd('.').Trim();
+					if (kin.Length > 0)
+					{
+						_ = kins.Add(kin.ToLowerInvariant());
+					}
+				}
+			}
+
+			feeds[(ushort)row.RowId] = new CrucibleFeed(row.Unknown2.ExtractText(), maxHp, taken, physical, magic, evasion,
+				FeedRestore.Match(text) is { Success: true } restore ? Percent(restore.Groups["share"].Value) : 0f, damage,
+				GearSelfHarm.IsMatch(text) || text.Contains("on self", StringComparison.Ordinal),
+				text.Contains(FeedPreservesText, StringComparison.Ordinal), kins);
+		}
+
+		return feeds;
+
+		static float Percent(string digits)
+		{
+			_ = float.TryParse(digits, NumberStyles.Integer, CultureInfo.InvariantCulture, out var percent);
+			return percent / 100f;
+		}
 	}
 
 	private static Dictionary<ushort, CrucibleGear> CrucibleGearTable => _crucibleGear ??= ReadCrucibleGear();

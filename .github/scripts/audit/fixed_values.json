@@ -1758,6 +1758,118 @@
    "status": "exception",
    "loop": "A628",
    "reason": "Upper bound of a Limit Break's animation lock per level until RSR has measured its own: no sheet states the lock (consolegameswiki: 'noticeable animation lock', no figures). Measured in the owner's 15 ACT logs of 25.10.-05.11.2026 on 70 Limit Breaks of other players as the shortest gap from the hit to the same player's next action, reaction included, so an upper bound: level 1 Braver 4.36, Skyshard 3.65; level 2 Starstorm 5.80, Desperado 4.76, Bladedance 4.37; level 3 Vermilion Scourge 8.39, Doom of the Living 4.23. The first own use replaces it."
+  },
+  {
+   "file": "RotationSolver/Basic/Helpers/CrucibleRoute.cs",
+   "code": "Enemy = 2,",
+   "values": [
+    "2"
+   ],
+   "status": "exception",
+   "loop": "A631",
+   "reason": "The kind of a Crucible board space as the client stores it in XBMContentStageEvent (1 start, 2 enemy, 3 elite, 4 boss, 5 shop, 6 campsite, 7 treasure, 8 random; Daedalus c4a788f CrucibleRoute.cs, read off the client 31.10.2026 and checked against two wiki board layouts). The game's own definition, not a tuned value."
+  },
+  {
+   "file": "RotationSolver/Basic/Helpers/CrucibleRoute.cs",
+   "code": "Elite = 3,",
+   "values": [
+    "3"
+   ],
+   "status": "exception",
+   "loop": "A631",
+   "reason": "The kind of a Crucible board space as the client stores it in XBMContentStageEvent (1 start, 2 enemy, 3 elite, 4 boss, 5 shop, 6 campsite, 7 treasure, 8 random; Daedalus c4a788f CrucibleRoute.cs, read off the client 31.10.2026 and checked against two wiki board layouts). The game's own definition, not a tuned value."
+  },
+  {
+   "file": "RotationSolver/Basic/Helpers/CrucibleRoute.cs",
+   "code": "Boss = 4,",
+   "values": [
+    "4"
+   ],
+   "status": "exception",
+   "loop": "A631",
+   "reason": "The kind of a Crucible board space as the client stores it in XBMContentStageEvent (1 start, 2 enemy, 3 elite, 4 boss, 5 shop, 6 campsite, 7 treasure, 8 random; Daedalus c4a788f CrucibleRoute.cs, read off the client 31.10.2026 and checked against two wiki board layouts). The game's own definition, not a tuned value."
+  },
+  {
+   "file": "RotationSolver/Basic/Helpers/CrucibleRoute.cs",
+   "code": "Shop = 5,",
+   "values": [
+    "5"
+   ],
+   "status": "exception",
+   "loop": "A631",
+   "reason": "The kind of a Crucible board space as the client stores it in XBMContentStageEvent (1 start, 2 enemy, 3 elite, 4 boss, 5 shop, 6 campsite, 7 treasure, 8 random; Daedalus c4a788f CrucibleRoute.cs, read off the client 31.10.2026 and checked against two wiki board layouts). The game's own definition, not a tuned value."
+  },
+  {
+   "file": "RotationSolver/Basic/Helpers/CrucibleRoute.cs",
+   "code": "Campsite = 6,",
+   "values": [
+    "6"
+   ],
+   "status": "exception",
+   "loop": "A631",
+   "reason": "The kind of a Crucible board space as the client stores it in XBMContentStageEvent (1 start, 2 enemy, 3 elite, 4 boss, 5 shop, 6 campsite, 7 treasure, 8 random; Daedalus c4a788f CrucibleRoute.cs, read off the client 31.10.2026 and checked against two wiki board layouts). The game's own definition, not a tuned value."
+  },
+  {
+   "file": "RotationSolver/Basic/Helpers/CrucibleRoute.cs",
+   "code": "Treasure = 7,",
+   "values": [
+    "7"
+   ],
+   "status": "exception",
+   "loop": "A631",
+   "reason": "The kind of a Crucible board space as the client stores it in XBMContentStageEvent (1 start, 2 enemy, 3 elite, 4 boss, 5 shop, 6 campsite, 7 treasure, 8 random; Daedalus c4a788f CrucibleRoute.cs, read off the client 31.10.2026 and checked against two wiki board layouts). The game's own definition, not a tuned value."
+  },
+  {
+   "file": "RotationSolver/Basic/Helpers/CrucibleRoute.cs",
+   "code": "Random = 8,",
+   "values": [
+    "8"
+   ],
+   "status": "exception",
+   "loop": "A631",
+   "reason": "The kind of a Crucible board space as the client stores it in XBMContentStageEvent (1 start, 2 enemy, 3 elite, 4 boss, 5 shop, 6 campsite, 7 treasure, 8 random; Daedalus c4a788f CrucibleRoute.cs, read off the client 31.10.2026 and checked against two wiki board layouts). The game's own definition, not a tuned value."
+  },
+  {
+   "file": "RotationSolver/Basic/Helpers/CrucibleRoute.cs",
+   "code": "private const int MoveColumn = 0, KindColumn = 1, IndexColumn = 2;",
+   "values": [
+    "2"
+   ],
+   "status": "exception",
+   "loop": "A631",
+   "reason": "Raw column of XBMContentStageEvent / XBMContentStageEventMap as Daedalus c4a788f reads them (CrucibleSheetReader; the sheets carry no column names, EXDSchema has no XBM schemas). The game's layout, not a tuned value."
+  },
+  {
+   "file": "RotationSolver/Basic/Helpers/CrucibleRoute.cs",
+   "code": "private const int CellKindColumn = 2, CellNodeColumn = 3, CellNextColumn = 4;",
+   "values": [
+    "2",
+    "3",
+    "4"
+   ],
+   "status": "exception",
+   "loop": "A631",
+   "reason": "Raw column of XBMContentStageEvent / XBMContentStageEventMap as Daedalus c4a788f reads them (CrucibleSheetReader; the sheets carry no column names, EXDSchema has no XBM schemas). The game's layout, not a tuned value."
+  },
+  {
+   "file": "RotationSolver/Basic/Rotations/Basic/BeastmasterCrucibleCamp.cs",
+   "code": "internal const uint FeedBuyMode = 3;",
+   "values": [
+    "3"
+   ],
+   "status": "exception",
+   "loop": "A631",
+   "reason": "The game's mode of AgentXBMPetParty while a familiar is fed (FFXIVClientStructs 0adb2e5: 3 buy feed, 5 feed detail); with either seen, mode 4 is the feed result and not a campsite, and RSR clicks nothing there. The game's own definition, not a tuned value."
+  },
+  {
+   "file": "RotationSolver/Basic/Rotations/Basic/BeastmasterCrucibleCamp.cs",
+   "code": "internal const uint FeedDetailMode = 5;",
+   "values": [
+    "5"
+   ],
+   "status": "exception",
+   "loop": "A631",
+   "reason": "The game's mode of AgentXBMPetParty while a familiar is fed (FFXIVClientStructs 0adb2e5: 3 buy feed, 5 feed detail); with either seen, mode 4 is the feed result and not a campsite, and RSR clicks nothing there. The game's own definition, not a tuned value."
   }
  ]
 }

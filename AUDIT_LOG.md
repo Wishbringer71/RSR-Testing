@@ -18441,6 +18441,47 @@ habe den schleim bislang nicht anfreunden können."
 - *9 Dokumentation:* Konzept 03 „Limit Break allein" neu gegliedert (alle Rollen, dann je Rolle), Release-Text, TODO-Punkt
   geschlossen.
 
+### A631 · Crucible: Endkampf vorbereiten – Lager und Futter; der Weg aus den Blättern (06.11.2026)
+
+- *Anlass:* Seine Vorschläge (06.11.2026): Empfehlung an der letzten Campsite vor dem Endgegner, welche zwei Begleiter
+  mitruhen; beim Händler Futter für die Begleiter gegen den Endgegner, welches für welchen, drei Stück. Einordnung:
+  Vorschläge (Prüfaufgabe); das zweite widerspricht meiner Ableitung „Nie: Futter" (A569), deren Grund (die Rast beendet
+  Futter) vor dem Endkampf nicht trägt.
+- *1 Research:* Brettaufbau aus den Rohdaten (ffxiv-datamining 44948e4, Daedalus c4a788f `CrucibleRoute.cs` und
+  `CrucibleSheetReader.cs`, Werkzeugquelle): Felder je Zug mit Art (1 Start … 8 Zufall), Index (Kampf → `XBMContentBattle`,
+  Zufall → `XBMContentRandomStageEvent` → `XBMRandomStageEvent`), Wege im Plan `XBMContentStageEventMap`. Die Anzahl der
+  Lager je Brett passte zunächst nicht zu `XBMContentCamp` (Brett 2 und 4); mit den Lager-Optionen der Zufallsfelder passt
+  sie auf allen fünf Brettern: Unterzeile = Index des Lagers, `FamiliarRecoverCount` die Grenze. Das Spiel führt das
+  aktuelle Feld nicht (ClientStructs 0adb2e5; Daedalus nimmt die Position); der letzte Kampf kommt aus dem Hornfenster.
+  Futter: 39 Zeilen der Art „Feed" in `XBMItem` (Maximum HP, Damage Taken, Verwundbarkeiten, Heilung beim Fressen, Schaden,
+  „Suitable for …kin", Lily Simular hält Futter über die Rast, drei fügen sich selbst einen Zustand zu). Begleiterfenster
+  (ClientStructs): Modus 3 „buy feed", 4 „buy feed result", 5 „feed detail"; ECommons 65be12d liest das Futter im Fenster.
+- *Nebenbefund (Defekt-Risiko):* Die Campsite-Wahl erkennt das Lager an Modus 4; den nennt ClientStructs „buy feed result".
+  Kaufte er Futter, konnte RSR im Fütterungsfenster klicken. Behoben: Modus 3 oder 5 gesehen oder Futter im Fenster → kein
+  Klick. Unbelegt, ob das Futterfeld am Lager leer ist; ist es das nicht, zeigt das Fenster „Feeding" und RSR wählt nicht –
+  sichtbar, nicht schädlich.
+- *2 Optionen:* Lager: (0) belassen; (1) am letzten Lager ohne Klick für die Endkampf-Begleiter rasten; (2) Empfehlung mit
+  Grund und „Apply", Vorauswahl bleibt. Futter: (0) nie; (1) an jedem Laden; (2) an jedem Laden mit Vermerk, ob ein Lager
+  folgt; (3) nach Schaden.
+- *3 Abwägung:* Lager (1) rechnet deine LP gegen die Heilung der Endkampf-Heiler, ohne gemessene Endkampflast auf ihnen –
+  verworfen; (2) gibt dir die Wahl mit beiden Zahlen. Futter (1) verliert sich am Lager, (3) widerspricht Sicherheit vor
+  Schaden; (2) gewählt.
+- *5 Review:* Endkampfplan entstand nur nach einer Verlustmessung (`HeldForFinal` brach vorher ab) – jetzt immer, die
+  Reserve wartet weiter auf die Messung. `FinalTeam` mit Heilern zuerst. Zufallsfelder zählen als mögliches Lager und
+  möglicher Kampf (vorsichtig).
+- *6 Falsifikation:* Kein Defekt? Ohne Hinweis entscheidet er an der letzten Campsite ohne den Endkampfplan. Option falsch?
+  Der Plan ist vom letzten Hornfenster; die LP liest die Empfehlung jetzt. Ausgeliefert, nichts ändert sich? Ohne
+  Hornfenster in diesem Lauf (kein letzter Kampf) oder ohne Futter im Angebot; die Spurzeilen zeigen es.
+- *7 Gebaut:* `CrucibleRoute` (Felder, Wege, Lagergrenzen, letzter Kampf, `CampsiteAfterAnotherBattle`, `CampsiteAfterShop`,
+  `CampsiteLimit`); `CrucibleBoard` meldet den Kampf des Hornfensters; `FinalTeam`/`FinalBattle`; Campsite: Sperre im
+  Futterkauf, Empfehlung am letzten Lager, „Apply", Fenster `RSR - Crucible campsite` (auch beim Füttern: wem das Futter
+  zugedacht ist); Laden: Futter je Endkampf-Begleiter (wirksame LP gegen Stärke/Intelligenz der Endgegner, Art passend,
+  nie selbstschädigend), Vermerk zum Lager danach. Ausnahmen in `fixed_values.json` (Arten, Spalten, Futtermodi).
+- *8 Nachweis:* Compile (0 Warnungen), 48 Prüfungen; im Spiel nicht beobachtet. Messmittel: Spurzeilen „crucible route",
+  „crucible campsite: last before the final fight", „crucible shop: feed for the final fight".
+- *9 Dokumentation:* Konzept 01 K14, K10 (Campsite, Laden, Weg); TODO-Punkt geschlossen. Während der Arbeit seine Vorgabe
+  zum Weghinweis (mit drei Präzisierungen) ins TODO und Konzept 01 K10 „Weg" eingetragen.
+
 ## B · Commit-Register (Fork vs. `upstream/main`)
 
 ### B1 · Einzelgeprüfte Fork-Commits

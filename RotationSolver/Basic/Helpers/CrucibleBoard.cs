@@ -602,6 +602,7 @@ internal static class CrucibleBoard
 			EndStretch();
 			_tracedArea = 0;
 			_upcoming = 0;
+			CrucibleRoute.Reset();
 			return;
 		}
 
@@ -611,6 +612,7 @@ internal static class CrucibleBoard
 			EndFight();
 			EndStretch();
 			_upcoming = 0;
+			CrucibleRoute.Reset();
 			_tracedArea = DataCenter.TerritoryID;
 			var count = 0;
 			foreach (var (_, enemies) in fights)
@@ -839,6 +841,7 @@ internal static class CrucibleBoard
 		if (mode == HornScreenMode && UpcomingBattle() is var battle and not 0)
 		{
 			_upcoming = battle;
+			CrucibleRoute.NoteBattle(battle);
 		}
 
 		if (mode != _hornScreenMode)

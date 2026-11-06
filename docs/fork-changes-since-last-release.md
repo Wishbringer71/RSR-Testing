@@ -545,7 +545,18 @@ What this release changes in the fight. For the whole distance from upstream, se
   full HP, so you never come out worse than resting alone; then as many as bring them the most HP, up
   to what the campsite allows: those not fallen, not at full HP and not fed (resting ends a feed), the
   most hurt first. It reads the share from the game's prompt once it is open. A selection you change
-  by hand stays; resting or leaving is your click.
+  by hand stays; resting or leaving is your click. A window `RSR - Crucible campsite` now shows that
+  selection and why, and how many may rest comes from the game data (each campsite of the board has its
+  own limit).
+- **The last campsite before the final fight recommends whom to rest for it.** RSR reads each board's
+  spaces and the ways between them from the game data and knows the last battle you went into, so it
+  sees when no further campsite can come before the boss. There the campsite window recommends who
+  should rest for the final fight - the familiars that heal or protect in RSR's plan for it first, then
+  the rest of that plan, then the most hurt - as many as the campsite takes, with the HP you come out
+  with; `Apply` selects them, resting stays your click.
+- **No clicks while you feed a familiar.** The game shows the familiar window when feed is given too;
+  RSR no longer reads it as a campsite there and clicks nothing. Its window names the familiar the feed
+  was meant for.
 - **What to buy in a Crucible shop.** With `Recommend what to buy in a Crucible shop (Crucible only)`,
   **on by default**, a small window `RSR - Crucible shop` lists what to buy and why while a board's
   shop is open, safety first as far as your tokens and slots go: a second life while you hold none;
@@ -558,6 +569,13 @@ What this release changes in the fight. For the whole distance from upstream, se
   never gear that harms you (such as Thunder Axe or Wind Mask). A piece that slows you says so. `Buy`
   buys the list row by row; when the game asks, your answer decides. Without the click RSR buys
   nothing.
+- **Feed for the final fight.** Below the shop list the window recommends one feed for each familiar of
+  RSR's plan for the final fight - healers and protectors first - from the feed on offer that suits its
+  kin, by how much longer it keeps the familiar standing there: maximum HP, HP restored on eating,
+  less damage taken, less physical or magic vulnerability against the final enemies' strength and
+  intelligence; at a tie more damage. Never feed that harms its eater. It says whether the tokens the
+  list leaves pay for it and whether a campsite can still come (resting there ends a feed). You buy and
+  feed it yourself.
 - **Snarl and Challenge are on by default (Crucible).** Without a tank the enemies attack only you,
   and your fall ends the run, while a fallen familiar costs only that familiar. `Use Snarl and
   Challenge based on your HP and your familiar's HP (Crucible only)` is now **on by default**, still on

@@ -50,5 +50,22 @@ internal class CrucibleShopWindow : Window
 		{
 			ImGui.TextUnformatted(BeastmasterRotation.CrucibleShopStatus);
 		}
+
+		// K14 (A631): feed for the final fight, one per familiar of its plan; bought and fed by hand.
+		var feed = BeastmasterRotation.CrucibleFeedRecommendation;
+		if (feed.Count > 0 || BeastmasterRotation.CrucibleFeedNote.Length > 0)
+		{
+			ImGui.Separator();
+			ImGui.TextUnformatted(feed.Count > 0 ? "Feed for the final fight (buy and feed by hand):" : "Feed for the final fight:");
+			foreach (var pick in feed)
+			{
+				ImGui.TextUnformatted($"{pick.Feed} ({pick.Price}{(pick.Affordable ? string.Empty : ", beyond the tokens the list leaves")}) -> {pick.Pet}: {pick.Why}");
+			}
+
+			if (BeastmasterRotation.CrucibleFeedNote.Length > 0)
+			{
+				ImGui.TextUnformatted(BeastmasterRotation.CrucibleFeedNote);
+			}
+		}
 	}
 }

@@ -2102,9 +2102,9 @@ Dullahan, Golem, Spriggan und Eisgolem (`XBMPet.InflictsInterrupt`).
     LP nicht mit denen des Agenten überein, wählt RSR nichts. Beim Öffnen springt die Auswahl kurz auf den ganzen Kader
     (Daedalus, im Spielbetrieb); RSR handelt erst, wenn sie einen GCD lang steht. Ändert er sie danach von Hand, bleibt
     sie für dieses Lager. Einstellung „Pick who rests with you at a Crucible campsite (Crucible only)", ab Werk an.
-    *Sein Vorschlag (06.11.2026):* „beim letzten rasten vor dem endgegnern im brett wäre eine empfehlung hilfreich,
-    welche beiden begleiter man zum heilen auswählen sollte" – offen im TODO „Crucible: Endkampf vorbereiten – Campsite
-    und Futter".
+    Das Fenster „RSR - Crucible campsite" zeigt diese Vorauswahl mit Grund; an der letzten Campsite vor dem Endkampf
+    empfiehlt es dazu, wer für ihn mitruht (K14, A631, sein Vorschlag vom 06.11.2026). Die Grenze des Lagers steht im
+    Blatt (`XBMContentCamp`, Unterzeile = Index des Lagers auf dem Brett, K14), gelernt wird nur noch eine kleinere.
     *Beispiel:* Du bei 75 %, Fledermaus 20 %, Fliegenfalle 40 %, Schleim 90 %, Lager für zwei: Mit zweien bekommst du
     30 % (voll) und die beiden ersten je 30 %, zusammen 60 % für die Begleiter; mit einer nur 45 %. RSR wählt Fledermaus
     und Fliegenfalle. Du bei 40 %: Schon mit einem kämst du nur auf 85 % statt voll – du ruhst allein.
@@ -2172,10 +2172,8 @@ Dullahan, Golem, Spriggan und Eisgolem (`XBMPet.InflictsInterrupt`).
        „anti-paralysis mandatory"); die Blätter geben für jedes Brett mindestens diese.
     5. Heiltränke, der stärkste zuerst, bei Gleichstand der billigere.
     6. Schutzgegenstände: Minderung nach ihrem Anteil, Abwehr physischer, Reflexion magischer Angriffe.
-    Nie: Futter (die Rast beendet es, Campsite oben; meine Ableitung – sein Vorschlag vom 06.11.2026 dagegen: „beim
-    händler für essen im brett sollte nahrung für die begleiter gegen endgegner brett empfohlen werden, welche nahrung
-    für welchen begleiter. also drei stück", offen im TODO „Crucible: Endkampf vorbereiten – Campsite und Futter");
-    Ausrüstung, die dir selbst einen Zustand zufügt (Thunder Axe:
+    Nie Futter in dieser Liste (die Rast beendet es, Campsite oben); Futter für den Endkampf empfiehlt das Fenster
+    getrennt darunter, je Begleiter des Endkampfplans eins (K14, A631, sein Vorschlag vom 06.11.2026); Ausrüstung, die dir selbst einen Zustand zufügt (Thunder Axe:
     Betäubung, Demonic Helm: Verhängnis, Flame Knife: Chains of Condemnation, Wind Mask: Keen Edge, Schaden über Zeit auf
     dir) – wie K8 nie einen Gegenstand nimmt, der dir einen Zustand zufügt. Ausrüstung, die nichts davon hebt, fällt
     heraus (Empress Hairpin senkt die maximalen LP). Schaden empfiehlt die Liste nicht; was du dazu kaufst, nutzt K8.
@@ -2221,11 +2219,72 @@ Dullahan, Golem, Spriggan und Eisgolem (`XBMPet.InflictsInterrupt`).
     oder drei Lager (`XBMContentCamp`: 2, 2, 2, 2, 3), die Strecken ähneln sich also; die Ausrüstung hält den ganzen
     Lauf, und für ihn zählt die übliche Strecke, nicht die laufende. Bis zur ersten Messung zählt n = 1 und damit Schutz
     vor Heilung am Kampfende. Es bleibt: Ist die nächste Strecke kürzer als die gemessenen, überschätzt RSR den Ring;
-    Preis: die Minderung im schwersten Kampf dieser Strecke. Den Weg kennt RSR nicht (K10 Weg ist nicht gebaut).
-  - *Weg:* nicht gebaut. Das Brett wird gelaufen, nicht geklickt (Daedalus läuft es mit vnavmesh ab); das macht RSR zu
-    einem Bot für den Weg über das Brett – eine Frage des Umfangs, die er entscheidet (Vorlage am Ende des TODO).
+    Preis: die Minderung im schwersten Kampf dieser Strecke. Den Weg, den du nimmst, kennt RSR nicht; seit A631 kennt es
+    das Brett und den letzten Kampf (K14).
+  - *Weg:* Seine Vorgabe (06.11.2026): „und auf den brettern von crucible generell hinweise, welche wege man nehmen sollte,
+    basierend auf gesundheit der begleiter, ausstattung, verbrauchsgegenständen, eigenen heilbedarf", „immer für den
+    nächsten schritt", „die empfehlung soll sich am aktuellen stand des fortschritts ausrichten" und „den kann man halt
+    nicht am anfang des brettes fürs ganze brett voraussehen, sondern für den oder die nächsten schritte. ähnlich der
+    vorausplanung beim schach" (Präzisierungen): gerechnet wird ab dem Feld, auf dem du stehst, mit dem, was der Lauf bis
+    dahin gebracht hat, einen oder wenige Züge voraus und nach jedem Feld neu – kein Plan fürs ganze Brett. Gebaut wird der Hinweis für die nächste Gabelung, nicht das Laufen: Das Brett wird gelaufen, nicht
+    geklickt (Daedalus läuft es mit vnavmesh ab), und danach hat er nicht gefragt. Die Felder und Wege liest RSR seit A631
+    aus den Blättern (K14, „Der Weg aus den Blättern"); offen im TODO „Crucible: Weghinweis für den nächsten Schritt".
     Werkzeugquelle für die Vorlage: BeastMasterHelper (t3knical, Fork von anmili2022/Beastmaster) bevorzugt an einer
     Abzweigung die Campsite, wenn der Spieler verletzt ist, und prüft die LP des Kaders (Anleitung, 06.11.2026, A623).
+- *K14 – Endkampf vorbereiten: Lager und Futter* (A631; seine Vorschläge vom 06.11.2026: „beim letzten rasten vor dem
+  endgegnern im brett wäre eine empfehlung hilfreich, welche beiden begleiter man zum heilen auswählen sollte" und „beim
+  händler für essen im brett sollte nahrung für die begleiter gegen endgegner brett empfohlen werden, welche nahrung für
+  welchen begleiter. also drei stück"). *Im Kampf:* Wer an der letzten Campsite mitruht, kommt mit einem Anteil von
+  30 % (zu zweit) mehr LP in den Endkampf; Futter gibt einem Begleiter bis zu +50 % maximale LP, −10 bis −35 % erlittenen
+  Schaden oder weniger Verwundbarkeit. Ohne beides trägst du die Treffer des Endgegners, wenn seine Heiler fallen.
+  - *Der Weg aus den Blättern* (Daedalus c4a788f, `CrucibleRoute.cs`, am Client gelesen 31.10.2026 und an zwei Brettplänen
+    des Wikis Feld für Feld geprüft; Werkzeugquelle): `XBMContentStageEvent` hat je Brett eine Unterzeile je Feld, roh
+    gelesen Spalte 0 der Zug, 1 die Art (1 Start, 2 Gegner, 3 Elite, 4 Endgegner, 5 Laden, 6 Campsite, 7 Schatz, 8
+    Zufall), 2 ein Index – bei einem Kampf die Unterzeile von `XBMContentBattle` (0 der Endgegner), bei einem Zufallsfeld
+    die von `XBMContentRandomStageEvent`, deren Zeile in `XBMRandomStageEvent` nennt, was es werden kann (Art, Index).
+    `XBMContentStageEventMap` zeichnet das Brett: Zeilen mit Art größer 1 sind Wege von Feld zu Feld. Die Blätter tragen
+    keine Spaltennamen (EXDSchema ohne XBM-Schemas, 09.09.2026); RSR liest sie roh wie Daedalus. Brett 1: Zug 1 Gegner,
+    2 Gegner|Gegner, 3 Campsite|Schatz, 4 Gegner, 5 Schatz, 6 Elite, 7 Schatz|Campsite, 8 Laden, 9 Endgegner.
+  - *Wo du stehst:* Das Spiel führt das Feld nirgends (ClientStructs 0adb2e5: weder Agent noch Direktor; Daedalus
+    bestimmt es aus der Position auf dem Brettplan). RSR kennt den letzten Kampf: Das Hornfenster nennt ihn
+    (`XBMBattleDetail`-Zeile), und die ist auf genau einem Feld. Das widerlegt Gegenthese 3 von K11, soweit sie den
+    letzten Kampf betrifft.
+  - *Letzte Campsite:* Eine Campsite ist die letzte, wenn vom letzten Kampf aus keine weitere – auch kein Zufallsfeld, das
+    eine werden kann – erst nach einem weiteren Kampf erreichbar ist. Ohne lesbaren Plan (keine Wegzeilen) gilt keine als
+    die letzte. Brett 1: die auf Zug 7; die auf Zug 3 nicht, weil nach dem Kampf auf Zug 4 noch eine kommen kann.
+  - *Empfehlung an der Campsite:* Das Fenster „RSR - Crucible campsite" zeigt, wen RSR vorwählt und warum (K10 wie
+    bisher: nur wenn du voll herauskommst). An der letzten Campsite empfiehlt es dazu, wer für den Endkampf mitruhen soll:
+    unter den stehenden, ungefütterten, nicht vollen Begleitern zuerst die Heiler und Schützer aus dem Plan des Endkampfs
+    (K11, `FinalHealers`), dann die übrigen Begleiter dieses Plans, dann die übrigen nach ihrem LP-Anteil; so viele, wie
+    das Lager nimmt (gelernt; vorher alle, die zählen). Es nennt, mit welchem Anteil du herauskommst. „Apply" wählt die
+    Empfehlung im Fenster; ruhen drückst du. Die Vorauswahl ohne Klick bleibt bei K10: Deine LP sind der Lauf, und ob
+    dein Rest gegen die Heilung deiner Heiler im Endkampf trägt, entscheidest du mit dem Klick.
+  - *Futter für den Endkampf:* Das Ladenfenster empfiehlt für jeden Begleiter aus dem Plan des Endkampfs (drei Hörner)
+    ein Futter aus dem Angebot, das zu seiner Art passt („Suitable for …kin", `XBMItem`, Art „Feed"; Art je Begleiter aus
+    `XBMPet`). Maß ist, was ihn im Endkampf hält: seine wirksamen LP – Anteil jetzt plus Heilung beim Fressen, höchstens
+    die neuen maximalen LP, geteilt durch den erlittenen Schaden nach Abzug von Schaden, physischer und magischer
+    Verwundbarkeit und Ausweichen, gewichtet mit Stärke gegen Intelligenz der Gegner des Endkampfs (Blatt). Bei Gleichstand
+    mehr Schaden. Nie Futter, das sich selbst einen Zustand zufügt (Blood, Mucus, Black Scorpion Simular), wie bei
+    Ausrüstung. Heiler und Schützer zuerst, jeder Begleiter eins, so weit die Marken nach der Kaufliste reichen; darüber
+    hinaus mit Vermerk. Ob eine Campsite danach noch kommen kann, steht dabei: Ruht ein Gefütterter dort, verliert er das
+    Futter („Familiars that rest will lose current effects of feed"); Lily Simular hält es. Gekauft und gefüttert wird von
+    Hand.
+  - *Beim Füttern:* Öffnet das Begleiterfenster zum Füttern (`AgentXBMPetParty` Modus 3 „buy feed", 4 „buy feed result",
+    5 „feed detail", ClientStructs 0adb2e5; das Futter in `ReaderXBMPetParty.FeedItem`, ECommons 65be12d), nennt das
+    Fenster, wem es zugedacht ist. RSR klickt dort nichts.
+  - *Sperre:* Die Campsite-Wahl (K10) erkennt das Lager an Modus 4. Den nennt ClientStructs „buy feed result"; Daedalus
+    sah ihn im Spiel an der Campsite. Läuft ein Futterkauf (Modus 3 oder 5 gesehen, seit das Fenster offen ist, oder ein
+    Futter im Fenster), klickt RSR dort nicht: Ein Klick wählte sonst, wer frisst.
+  - *Verworfen:* (a) Am letzten Lager ohne Klick für die Begleiter rasten, auch wenn du nicht voll herauskommst – die
+    Bilanz hängt an Endkampf-Lasten, die nur für dich gemessen sind; (b) Futter schon an jedem Laden – vor einer Campsite
+    geht es verloren oder hält den Begleiter vom Rasten ab; (c) Futter nach Schaden zuerst – Sicherheit vor Schaden.
+  - *Gegenthese 1:* Der Plan des Endkampfs stammt vom letzten Hornfenster; seither änderten sich LP. Teilweise widerlegt:
+    Er ändert sich mit dem Kader, kaum mit den LP; die Empfehlung liest die LP jetzt. *Gegenthese 2:* Ein Zufallsfeld wird
+    keine Campsite, und die als „nicht letzte" gezeigte war doch die letzte. Preis: Die Empfehlung fürs Ende fehlt dort,
+    die Vorauswahl bleibt. *Gegenthese 3:* Ob „Maximum HP +X %" die aktuellen LP mit hebt, steht nirgends; gerechnet wird
+    ohne (die kleinere Annahme). *Ausgeliefert, und nichts ändert sich?* Ohne Hornfenster in diesem Lauf (kein letzter
+    Kampf bekannt) oder ohne Futter im Angebot.
+
 - *K13 – Schatz* (A578; seine Meldung vom 05.11.2026: „bei den schätzen gibt es keine empfehlung, was zu wählen ist").
   *Mechanik:* Ein Schatzfeld bietet einen Gegenstand aus einem halbzufälligen Vorrat zur Wahl, keinen doppelt; mit einem
   Diebesmesser zwei (consolegameswiki, „Crucible of the Unbroken", 05.11.2026). Das Fenster `XBMContentsTreasure` führt
@@ -2406,7 +2465,8 @@ beim Betreten, ob es die Daten des Bretts gelesen hat.
 
 *Stufen* (TODO „Beastmaster: Crucible-Strategien"): 1. Daten zur Laufzeit (Schwäche und Gegnerliste je Kampf,
 Schadensart je Begleiter) mit K1, K2 und K3; 2. K11 (Bedarfsliste und LP je Begleiter) mit K9; 3. K8; 4. K6 und K7;
-danach K4, K5, K10 (Campsite A564 und Laden A569 gebaut; der Weg ist eine Frage des Umfangs an ihn).
+danach K4, K5, K10 (Campsite A564 und Laden A569 gebaut; der Weghinweis für den nächsten Schritt ist seine Vorgabe vom
+06.11.2026, offen).
 
 **Stufe 1, erster Teil: Daten und K2** (A548, gebaut; K1 und der Rest von K3 folgen):
 - *Kämpfe aus dem Blatt:* `XBMBattleDetail` hat eine Zeile je Kampf und eine Unterzeile je Gegner. Gelesen werden der

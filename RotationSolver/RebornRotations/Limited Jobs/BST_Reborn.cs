@@ -293,6 +293,8 @@ public sealed class BST_Reborn : BeastmasterRotation
 			_petSeenHp.Clear();
 			_largestLossPerUse = 0u;
 			FinalHealers.Clear();
+			FinalTeam.Clear();
+			FinalBattle = 0u;
 			FinalLossPerUse = 0u;
 			_usePet = BeastmasterPet.None;
 		}
@@ -2116,7 +2118,7 @@ public sealed class BST_Reborn : BeastmasterRotation
 		var held = new HashSet<BeastmasterPet>();
 		var loss = _largestLossPerUse;
 		var fights = CrucibleBoard.FightsOfBoard(board);
-		if (loss == 0u || fights.Count == 0 || !CrucibleBoard.IsFinalBattle(fights[0]))
+		if (fights.Count == 0 || !CrucibleBoard.IsFinalBattle(fights[0]))
 		{
 			return held;
 		}
@@ -2141,13 +2143,28 @@ public sealed class BST_Reborn : BeastmasterRotation
 		var finalRequired = BossSafeFamiliars + (_dangerInArea ? 1 : 0);
 		var reserve = new List<(BeastmasterPet Pet, uint Hp)>();
 		FinalHealers.Clear();
+		FinalTeam.Clear();
 		FinalLossPerUse = loss;
+		FinalBattle = fights[0];
 		foreach (var option in BestPlan(finalOptions, nobody, finalRequired, none))
 		{
-			if (option.Pet != BeastmasterPet.None && option.Safe)
+			if (option.Pet != BeastmasterPet.None)
 			{
-				_ = FinalHealers.Add(option.Pet);
+				// K14 (A631): the final fight's plan as a whole - the campsite and the feed before it read it.
+				FinalTeam.Add(option.Pet);
+				if (option.Safe)
+				{
+					_ = FinalHealers.Add(option.Pet);
+				}
 			}
+		}
+
+		FinalTeam.Sort((a, b) => FinalHealers.Contains(b).CompareTo(FinalHealers.Contains(a)));
+
+		// The reserve waits for a measured use (A585); the plan above does not.
+		if (loss == 0u)
+		{
+			return held;
 		}
 
 		foreach (var candidate in candidates)
