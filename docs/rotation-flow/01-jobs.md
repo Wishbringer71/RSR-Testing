@@ -1159,10 +1159,12 @@ eingearbeitet werden, situationsbezogen"; A487, A488, A522):
       - *Warum die Stufe:* Eine Gefahr auf Stufe 25 sagt etwas über Stufe 25 und darunter; mit höherer Stufe wird ein
         Dungeon leichter, und eine Gefahr von früher hielte sonst für immer einen Schadensbegleiter vom Horn.
       - *Warum nicht vor dem ersten Lauf:* Die Spielblätter nennen je Inhalt nur den letzten Boss
-        (`InstanceContent.BNpcBaseBoss`, xivapi 06.11.2026), keine Mechaniken. Was ein Kampf bringt, wissen vor dem ersten
-        Lauf nur fremde Quellen (BossMod-Module je Inhalt, Werkzeugquelle), und BossMod meldet seine Vorhersagen erst im
-        Kampf. Offen im TODO „Beastmaster: Konzept und Code im vollen Loop": die Module der Dungeons, in denen er fängt,
-        vorab lesen.
+        (`InstanceContent.BNpcBaseBoss`, xivapi 06.11.2026), keine Mechaniken. BossMod meldet seine Vorhersagen erst im
+        Kampf; seine Module (BossModReborn 27be422, 05.11.2026, Werkzeugquelle) führen je Boss die Aktionen mit Form und
+        Rolle – beim Riesen-Tunnelwurm etwa Bodenloser Sand als „raidwide", Sandsturm und Sandzyklon als Einzelziel –,
+        aber keine Schadenswerte und keine Rudel. Vorab aus ihnen gelesen hätte B5 vor einem Boss nur, was es dort ohnehin
+        tut: zwei, die heilen oder schützen. In Sägerschrei kam die Gefahr im dritten Rudel, vor jedem Boss. Deshalb nicht
+        gebaut; die Gefahr eines Rudels sagt vor dem ersten Lauf keine Quelle voraus.
       - *Preis:* Auf dieser Stufe gehen auch die Rudel des Gebiets mit einem Schadensbegleiter weniger – wie heute nach
         der ersten Gefahr („Bis zum Gebietswechsel" oben).
       - *Gegenthese (ausgeliefert, und nichts ändert sich):* Beim ersten Lauf und auf einer höheren Stufe gilt nichts

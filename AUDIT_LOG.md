@@ -18671,14 +18671,15 @@ habe den schleim bislang nicht anfreunden können."
   Mechaniken vor dem ersten Lauf aus den BossMod-Modulen.
 - *3–6:* (a) wirkt ab dem zweiten Lauf, ist eine Messung und gilt für jedes Gebiet; die Stufe begrenzt sie, sonst hielte
   eine alte Gefahr für immer einen Schadensbegleiter vom Horn. (b) verfeinert, aber die bestehende Regel gilt bewusst
-  für das ganze Gebiet („Bis zum Gebietswechsel"). (c) braucht die Module je Dungeon und einen Weg, sie vor dem Kampf zu
-  lesen – offen im TODO. Gegenthese 3: Im ersten Lauf und auf höherer Stufe ändert sich nichts; der Gewinn liegt in
+  für das ganze Gebiet („Bis zum Gebietswechsel"). (c) geprüft am Modul des Riesen-Tunnelwurms (BossModReborn 27be422): Aktionen
+  mit Form und Rolle, keine Schadenswerte, keine Rudel; vor einem Boss stehen ohnehin zwei sichere Begleiter, und in
+  Sägerschrei kam die Gefahr im dritten Rudel – nicht gebaut. Gegenthese 3: Im ersten Lauf und auf höherer Stufe ändert sich nichts; der Gewinn liegt in
   jedem weiteren Lauf auf seiner Stufe.
 - *7 Gebaut:* gelernte Datei `DangerousAreas.json` (`OtherConfiguration`, nur steigend, eigenes Schloss, Reiter
   „Dangerous areas"); `RecordFight` liest sie, sobald der Spieler im Gebiet ist, und schreibt die Stufe beim ersten
   Ereignis je Gebietsbesuch; Spurzeile „danger seen in this area before, up to level …".
 - *8 Nachweis:* Compile (0 Warnungen), `check_learned_display.py`; im Spiel nicht gesehen.
-- *9 Dokumentation:* Konzept 01 B5; TODO „Beastmaster: Konzept und Code im vollen Loop" (Stufe c offen).
+- *9 Dokumentation:* Konzept 01 B5 („Warum nicht vor dem ersten Lauf"); Vorschlag damit abgeschlossen.
 
 ## B · Commit-Register (Fork vs. `upstream/main`)
 
