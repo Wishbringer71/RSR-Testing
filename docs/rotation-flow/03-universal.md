@@ -607,7 +607,7 @@ merklich schneller zu beenden; sie kostet Geld, und sie für einen gewöhnlichen
     Grund zum Aussparen – Preis, Vorrat – hängt am Gegenstand, nicht am Job.
   - *Gegenthese 3 (ausgeliefert, und nichts ändert sich):* Am 06.11.2026 hätte C den Tod nicht verhindert: Er trank um
     18:12:33 selbst einen Ultratrank (HQ, +696 LP bei 50 %), danach war 75 s keiner frei; gestorben ist er am
-    Schadensstrom ohne heilenden Begleiter (TODO „Beastmaster allein: der heilende Begleiter geht für den Zyklus"). Am
+    Schadensstrom ohne heilenden Begleiter (seither hält ihn B2, Konzept 01, A636). Am
     04.11.2026 hätte RSR unter seiner Schwelle getrunken (sie steht nicht im Upload; ab Werk 50 %, seine Spuren zeigen
     Tränke bei höchstens 40 %, A531); der Fehl-LP-Wächter hält dort nicht (bei 2.785 LP heilt der Ultratrank HQ 696,
     bei 40 % fehlen 1.671). Für den gemeldeten Fehler – als Beastmaster nie ein Trank – widerlegt.

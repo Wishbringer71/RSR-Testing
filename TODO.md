@@ -19,27 +19,24 @@ auswahl und das timing der beschwörung" – je Kampf aller fünf Bretter (Gegne
 BossMod-Module) die Rotation des Beastmasters, die Wahl der Begleiter und den Zeitpunkt ihres Aufrufs im Loop prüfen
 (Beispiel seiner Beobachtung: der Raptor gegen Feuer, bevor feueranfällige Gegner da waren; A581).
 
-1. Beastmaster allein: der heilende Begleiter geht für den Zyklus: In Sägerschrei schickte RSR die Fledermaus bei 85 %
-   LP für den nächsten Begleiter fort; ein Schadensstrom von rund 3 % je Sekunde tötete ihn 40 s später, der Gegner
-   stand bei 60 % (06.11.2026).
-2. Beastmaster: Hörner im Brett nach Schaden, die LP der Begleiter zählen nie: Fünf Begleiter trugen das Brett, zwei
+1. Beastmaster: Hörner im Brett nach Schaden, die LP der Begleiter zählen nie: Fünf Begleiter trugen das Brett, zwei
    davon bis unter die Hälfte ihrer LP, drei blieben voll (seine Frage, 06.11.2026).
-3. Beastmaster: Konzept und Code im vollen Loop (sein Auftrag, 06.11.2026), mit seinem Vorschlag, die Kämpfe eines
+2. Beastmaster: Konzept und Code im vollen Loop (sein Auftrag, 06.11.2026), mit seinem Vorschlag, die Kämpfe eines
    Inhalts vorab zu prüfen: Die Belegung vor einem Kampf kennt die Gefahr eines Gebiets erst, wenn sie eingetreten ist.
-4. Heiltrank nach der Gefahr statt nach der festen Schwelle: Allein ohne Heiler kommt der Trank erst unter der
+3. Heiltrank nach der Gefahr statt nach der festen Schwelle: Allein ohne Heiler kommt der Trank erst unter der
    eingestellten Schwelle, auch wenn RSR den Fall unter 10 % schon vorhersagt.
-5. Beastmaster: Crucible-Strategien: Ein K.O. beendet den Lauf, und ein Begleiter, den ein späterer Kampf braucht, kommt
+4. Beastmaster: Crucible-Strategien: Ein K.O. beendet den Lauf, und ein Begleiter, den ein späterer Kampf braucht, kommt
    dort mit den LP an, die ihm die früheren ließen.
-6. Tinktur: Schalter je Gegenstand ab Werk aus: Auf jedem Job, auf dem er die Tinktur nicht von Hand eingeschaltet hat,
+5. Tinktur: Schalter je Gegenstand ab Werk aus: Auf jedem Job, auf dem er die Tinktur nicht von Hand eingeschaltet hat,
    kommt sie nie, gegen den Text von „Tincture usage".
-7. Jobkonfiguration: Jobs ohne gespeicherten Eintrag teilen eine Liste: Schaltet er auf einem neu gespielten Job eine
+6. Jobkonfiguration: Jobs ohne gespeicherten Eintrag teilen eine Liste: Schaltet er auf einem neu gespielten Job eine
    Aktion aus, ist sie auf jedem anderen in derselben Sitzung neu gespielten Job ebenfalls aus.
-8. Bewegungssperre beim Wirken gegen das Ausweichen der BossMod-KI: Mit „Lock movement while casting" an steht die
+7. Bewegungssperre beim Wirken gegen das Ausweichen der BossMod-KI: Mit „Lock movement while casting" an steht die
    Figur während jedes Zaubers still, auch wenn die KI von BossMod aus einer Fläche laufen will; nur in dieser
    Kombination, dort aber mit einem Treffer, dem der Spieler nicht ausweicht.
-9. Blaumagier: Set nach den Widerständen der Stufe: Im Masked Carnivale wählt der Satz des Stufenführers Füllzauber
+8. Blaumagier: Set nach den Widerständen der Stufe: Im Masked Carnivale wählt der Satz des Stufenführers Füllzauber
    nach Beispielen; gegen welches Element die Gegner der Stufe schwach oder immun sind, zählt dabei nicht.
-10. Konzepte neu ordnen (allgemein, Rollen, Gruppen, Jobs, Inhalte): keine direkte Wirkung im Kampf; eine Regel, die
+9. Konzepte neu ordnen (allgemein, Rollen, Gruppen, Jobs, Inhalte): keine direkte Wirkung im Kampf; eine Regel, die
    im Konzept eines Jobs steht, wird für dessen Gruppe übersehen, und eine Inhaltsregel ist über mehrere Konzepte
    verteilt.
 
@@ -51,17 +48,6 @@ der Beastmaster-Vorrang, dann jeder übrige Punkt dieser Liste, dann die Konzept
 Code-Review; was diese finden, kommt wieder hierher und in dieselbe Reihenfolge, jeder Schritt im vollständigen Loop.
 
 ## Defekte
-
-### Beastmaster allein: der heilende Begleiter geht für den Zyklus · N
-Im Kampf: Allein gegen den Riesen-Tunnelwurm in Sägerschrei (06.11.2026, 31.815 LP) verlor er gleichmäßig rund 80 LP
-je Sekunde von 2.785. Um 18:12:16, bei 85 % LP, schickte RSR die Fledermaus – deren Dressur heilt – mit dem Scheidenden
-Schlag fort, weil ein anderes Horn bereit war; es kam Cu Sith. Bis 18:12:58 fiel er auf 0, der Gegner stand bei 60 %.
-Die Gefahr (B2) meldete RSR erst bei 9 % Vorhersage, als die Fledermaus nicht mehr bereit war. Auf Brett 1 rief RSR
-Morbol zweimal und schickte ihn je eine Sekunde später wieder fort (17:32:24/32:53, 17:33:45/33:46). *Ort:*
-`BST_Reborn` Zyklus (`PartingBlowPvE` bei bereitem Ersatz, `keepForDanger` nur unter B2-Gefahr), B2 (`InDanger`).
-*Nächster Schritt:* Loop: Gefahr aus dem Verlauf – Zeit bis zum eigenen Fall gegen die Zeit bis zum Fall des Gegners –
-statt aus der Momentaufnahme; ein Ruf, den B2 im nächsten Augenblick zurücknimmt, unterbleibt. *Konzept:* 01, BST
-(B2, Zyklus R1).
 
 ### Beastmaster: Hörner im Brett nach Schaden, die LP der Begleiter zählen nie · N
 Im Kampf: Auf Brett 1 (06.11.2026) trugen Gigantoad (dreimal), Spriggan, Morbol, Lamb und Apkallu die fünf Kämpfe;

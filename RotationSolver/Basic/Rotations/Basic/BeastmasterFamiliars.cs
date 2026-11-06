@@ -169,9 +169,11 @@ public partial class BeastmasterRotation
 		return false;
 	}
 
-	// The seconds until a horn's running recast ends, as the game counts it. A horn not ready for another reason - its
-	// level, its familiar out - has no recast running and never comes back in time.
-	private static unsafe float HornRecastRemaining(HornOrder horn)
+	/// <summary>
+	/// The seconds until a horn's running recast ends, as the game counts it. A horn not ready for another reason - its
+	/// level, its familiar out - has no recast running and never comes back in time (float.MaxValue).
+	/// </summary>
+	protected static unsafe float HornRecastRemaining(HornOrder horn)
 	{
 		var id = (uint)(horn switch
 		{

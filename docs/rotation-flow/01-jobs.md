@@ -1537,6 +1537,53 @@ Lage.
     ohne Heiler. Beastskin und Seedsower setzt es ohnehin ein, sobald Borrow sie freigibt.
   - *Messgröße der Wahrscheinlichkeit:* deine vorausberechnete Gesundheit (`GetForecastHealthRatio`, sofort landend wie
     bei Second Wind), also die gemessene Schadensrate.
+  - *Der heilende Begleiter bleibt, solange du ohne ihn vor der Entlastung fällst* (A636; sein Tod in Sägerschrei,
+    06.11.2026). Ohne lebenden Heiler in der Gruppe (`DataCenter.AnyLivingHealer`) tritt ein Begleiter, dessen Dressur
+    heilt, für den Zyklus (R1) nicht ab, solange du ohne seine Heilung fallen würdest, bevor Entlastung kommt – auch
+    ohne Gefahr im Augenblick.
+    - *Zeit bis zum Fall ohne ihn:* deine LP samt Barriere (`GetEffectiveHp`) durch den Schaden je Sekunde, den die
+      Gegner im Kampf zugefügt und angekündigt haben (`EnemyDanger.Rate`, je Gegner seit seinem ersten Treffer).
+      Gemessen vor jeder Heilung: Die Heilung des Begleiters steckt nicht darin. Die Rate zählt auch Treffer auf die
+      übrige Gruppe und deine Begleiter; mit anderen in der Gruppe hält die Regel also eher zu früh als zu spät.
+    - *Entlastung:* das Frühere von zwei Dingen – die Gegner fallen (`DataCenter.PackTimeToKill`, sobald gemessen), oder
+      ein anderes Horn mit einem Begleiter, dessen Dressur heilt, ist bereit (Restzeit seiner Abklingzeit, wie das Spiel
+      sie zählt). Sein eigenes Horn zählt nicht; dessen Abklingzeit beginnt erst mit seinem Abtreten.
+    - *Messgröße der Wahrscheinlichkeit:* die gemessenen Schadensraten der Gegner gegen ihre gemessene Fallzeit und die
+      Abklingzeiten der Hörner. Ohne Treffer der Gegner gibt es keinen Grund zum Halten.
+    - *Im Kampf vorher:* Um 18:12:16, bei 2.369 von 2.785 LP (85 %), schickte RSR die Fledermaus für Cu Sith fort. Der
+      Riesen-Tunnelwurm hatte bis dahin zweimal getroffen (Sandsturm 272 um 18:12:11, ein Angriff 171 um 18:12:14; zwei
+      Angriffe gingen für 0 daneben): rund 89 LP je Sekunde, ohne Heilung 27 s bis zum Fall. Über den ganzen Kampf traf
+      er rund 65 bis 80 LP je Sekunde (Angriffe alle 3 s mit 104 bis 179, Sandsturm 272 und 276, Sandzyklon 100 und
+      129). Der Wurm brauchte noch rund 60 s; das nächste Horn mit heilender Dressur (Schleim, Horn I, Abklingzeit seit
+      18:11:34) war 48 s später bereit. Um 18:12:58 war er tot, der Wurm bei 60 %. *Nachher:* Die
+      Fledermaus bleibt, Cu Sith kommt nicht. Mit ihr verlor er netto rund 42 LP je Sekunde (18:12:06 bis 18:12:16), in
+      60 s also rund 2.500 – knapp über seinen 2.369 LP; ein Heiltrank (A635) deckt die Lücke. Das ist eine Rechnung
+      mit gleichbleibenden Raten, nicht gemessen.
+    - *Preis:* Solange die Regel gilt, steht der Zyklus: kein weiteres Entfesseln, kein Schaden des nächsten
+      Begleiters, der Kampf dauert länger. Die Regel liest die längere Fallzeit der Gegner und hält dann weiter – gewollt,
+      denn ohne die Heilung fällst du zuerst.
+    - *Mit einem Heiler in der Gruppe gilt sie nicht:* Dessen Heilung steckt nicht im Schaden der Gegner, die Regel hielte
+      den heilenden Begleiter sonst in fast jedem Gruppenkampf; dort gilt B2 wie oben.
+    - *Verworfen:* (a) Deine Fallzeit aus der eigenen Gesundheitshistorie (`GetCorrectedTTK`) gegen die Fallzeit der
+      Gegner: Sie enthält die Heilung des Begleiters, beginnt erst mit dem ersten Treffer und stand um 18:12:16 bei rund
+      68 s gegen rund 60 s – die Fledermaus wäre trotzdem gegangen. (b) Den heilenden Begleiter immer halten (verworfen
+      unten): Ohne Treffer kostet das je 90 s einen kurzen Einsatz für nichts.
+    - *Gegenthese (ausgeliefert, und nichts ändert sich):* Früh im Kampf stehen wenige Treffer, die Rate schwankt. Um
+      18:12:16 standen zwei; selbst mit dem gemittelten Wert des ganzen Kampfes (65 bis 80 LP je Sekunde, 30 bis 36 s)
+      liegt der Fall weit vor der Entlastung (48 s). Ohne gemessene Fallzeit der Gegner zählt nur das nächste heilende
+      Horn; ohne ein solches gilt unendlich, und der Begleiter bleibt, solange du fällst. Widerlegt für diesen Kampf;
+      ein Kampf, in dem die ersten Treffer viel kleiner sind als die späteren, hält den Begleiter zu spät – dagegen
+      steht weiter B2 im Augenblick.
+  - *Ruf in der Gefahr wartet auf den heilenden oder schützenden Begleiter* (A636; Brett 1, Kampf 5, 06.11.2026). Ist
+    in der Gefahr keines dieser Hörner bereit, aber eines innerhalb eines GCD (`DefaultGCDTotal`), ruft RSR kein anderes:
+    B2 schickte es im nächsten Augenblick wieder fort, und sein Horn liefe 90 s ohne seinen Einsatz. Die Gefahr zählt für
+    den Ruf auch vor dem Kampf: Stehen deine LP schon unter der Linie – im Brett kehren sie zwischen den Kämpfen nicht
+    zurück (K10) –, kommt schon vor dem Pull einer, der heilt oder schützt.
+    - *Im Kampf vorher:* Um 17:32:24 rief RSR vor dem Pull Morbol (B3), um 17:32:32,95 – 0,6 s nach Kampfbeginn – schickte
+      B2 ihn für Lamb fort; um 17:33:45,65 rief es Morbol als „einziges bereites Horn", 1,2 s später war Lambs Horn
+      bereit und Morbol ging wieder. Zweimal lief Morbols Horn 90 s für rund eine Sekunde. *Nachher:* Vor dem Pull
+      kommt Lamb; um 17:33:45 wartet RSR die 1,2 s auf Lamb, Morbols Horn bleibt für später.
+    - *Preis:* Bis zu einem GCD ohne Begleiter, wo sonst einer eine Sekunde dastünde.
 - *B3 – Der Begleiter, der bleibt, zuletzt.* Ohne Gefahr ruft RSR unter mehreren bereiten Hörnern zuerst den, dessen
   Dressur gegen die Gegner um das Ziel am wenigsten bringt.
   - Der zuletzt gerufene bleibt, bis das erste Horn zurück ist (der lange Einsatz). Die anderen gehen nach Entfesseln oder

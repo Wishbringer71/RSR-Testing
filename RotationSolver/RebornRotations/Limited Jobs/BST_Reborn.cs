@@ -745,8 +745,8 @@ public sealed class BST_Reborn : BeastmasterRotation
 			OneWithNatureOrder.Borrow => KinshipBattlehorn != ActiveBattlehorn,
 			_ => false,
 		};
-		var keepForDanger = HornBySituation && ActiveBattlehorn != 0 && InDanger
-			&& TrickHealsOnHorn((HornOrder)ActiveBattlehorn);
+		var keepForDanger = HornBySituation && ActiveBattlehorn != 0
+			&& ((InDanger && TrickHealsOnHorn((HornOrder)ActiveBattlehorn)) || HealerFamiliarHolds());
 
 		// A530: a familiar that covers you after Snarl (Crucible) is not sent off for the cycle - it is taking the damage
 		// meant for you, and there the enemy attacks only you. The cover ends with its time, Challenge, or its fall.
@@ -1093,6 +1093,74 @@ public sealed class BST_Reborn : BeastmasterRotation
 		}
 	}
 
+	private bool _healerHoldTraced;
+
+	// B2 (concept 01, A636): with no healer alive in the party, a familiar whose Trick heals stays out of the cycle while,
+	// without its healing, you would fall before relief comes - the enemies in combat falling, or another horn with a
+	// familiar whose Trick heals being ready. Without its healing: your HP and barrier over the damage per second the
+	// enemies in combat dealt and announce (EnemyDanger, measured before any heal). Its own horn is no relief: its recast
+	// starts only when it leaves.
+	private bool HealerFamiliarHolds()
+	{
+		var active = (HornOrder)ActiveBattlehorn;
+		if (!InCombat || ActiveBattlehorn == 0 || DataCenter.AnyLivingHealer(false) || !TrickHealsOnHorn(active)
+			|| Player is not { IsDead: false } player)
+		{
+			_healerHoldTraced = false;
+			return false;
+		}
+
+		var rate = 0f;
+		foreach (var enemy in DataCenter.AllHostileTargets)
+		{
+			if (enemy != null && enemy.CurrentHp > 0 && enemy.InCombat())
+			{
+				rate += EnemyDanger.Rate(enemy, out _, out _);
+			}
+		}
+
+		if (rate <= 0f)
+		{
+			_healerHoldTraced = false;
+			return false;
+		}
+
+		var fallsIn = player.GetEffectiveHp() / rate;
+		var relief = DataCenter.IsPackTimeToKillKnown ? DataCenter.PackTimeToKill : float.PositiveInfinity;
+		foreach (var horn in ThreeHorns)
+		{
+			if (horn != active && PetOnHorn(horn) != BeastmasterPet.None && TrickHealsOnHorn(horn))
+			{
+				relief = Math.Min(relief, HornReady(horn) ? 0f : HornRecastRemaining(horn));
+			}
+		}
+
+		var holds = fallsIn < relief;
+		if (holds && !_healerHoldTraced)
+		{
+			TraceHorn($"{active} ({CurrentPet}) stays: without its healing you fall in {fallsIn:F1} s at {rate:F0} HP per "
+				+ $"second, relief in {(float.IsInfinity(relief) ? "no measured time" : $"{relief:F1} s")}");
+		}
+
+		_healerHoldTraced = holds;
+		return holds;
+	}
+
+	// Whether a horn with a familiar that heals or protects you comes back within `seconds` (B2, concept 01, A636).
+	private bool SafeHornReadyWithin(float seconds)
+	{
+		foreach (var horn in ThreeHorns)
+		{
+			if (!HornReady(horn) && PetOnHorn(horn) != BeastmasterPet.None && HornRecastRemaining(horn) <= seconds
+				&& HornIsSafe(horn))
+			{
+				return true;
+			}
+		}
+
+		return false;
+	}
+
 	// Whether the familiar on `horn` heals or protects you, by what the player has: its Trick, or what the horn spends One
 	// with Nature on - and that only when it comes with the call (the recast reset of Battlehorn Mastery II and III, or
 	// the action not recasting), not up to 30 s later.
@@ -1176,10 +1244,17 @@ public sealed class BST_Reborn : BeastmasterRotation
 		act = null;
 		HornOrder? chosen = null;
 		var why = string.Empty;
-		if (InCombat && InDanger && FirstSafeReadyHorn() is { } safe)
+		// B2 (A636): the danger counts before the pull too - on a board your HP does not return between fights.
+		if (InDanger && FirstSafeReadyHorn() is { } safe)
 		{
 			chosen = safe;
 			why = DangerReason;
+		}
+		else if (InDanger && SafeHornReadyWithin(DataCenter.DefaultGCDTotal))
+		{
+			// A636: one that heals or protects is back within a GCD - another called now would be sent off for it at once,
+			// its horn spent for a second.
+			return false;
 		}
 		else if (InCombat && FirstPackStopperReadyHorn() is { } stopper)
 		{

@@ -18607,6 +18607,31 @@ habe den schleim bislang nicht anfreunden können."
   den Tod nicht verhindert (eigener Trank um 18:12:33, 75 s Wiederverwendung); am 04.11.2026 hätte RSR unter seiner
   Schwelle getrunken.
 
+### A636 · Beastmaster: der heilende Begleiter bleibt, solange du ohne ihn vor der Entlastung fällst; Ruf in der Gefahr wartet (06.11.2026)
+
+- *Anlass:* TODO-Defekt aus A634 (sein Tod in Sägerschrei, 06.11.2026) und Brett 1, Kampf 5; seine Frage „warum ist
+  die todo für beastmaster noch nicht abgearbeitet?" – der letzte Zug endete mit einem Bericht statt mit der Arbeit.
+- *1 Research:* Der Zyklus (R1) schickt einen Begleiter mit heilender Dressur fort, sobald ein anderes Horn bereit ist;
+  B2 hielt ihn nur bei einer Gefahr im Augenblick (Vorhersage unter der Linie der Fähigkeitsheilung oder Klasse 1). Um
+  18:12:16 bei 85 % LP ging die Fledermaus für Cu Sith, 42 s später war er tot. In der Gefahr ohne bereites heilendes
+  Horn rief B3 jedes bereite Horn: Morbol kam zweimal und ging je rund eine Sekunde später für Lamb. Der Ruf in der
+  Gefahr verlangte den Kampf; vor dem Pull mit LP unter der Linie (im Brett kehren sie nicht zurück) rief B3 Morbol.
+- *2 Optionen:* (0) nichts; (a) Gefahr, wenn deine Fallzeit aus der Gesundheitshistorie (`GetCorrectedTTK`) unter der
+  Fallzeit der Gegner liegt; (b) Halten, solange du ohne die Heilung des Begleiters – Schaden der Gegner vor jeder
+  Heilung (`EnemyDanger.Rate`) gegen deine LP samt Barriere – vor der Entlastung fällst (Gegner fallen oder ein anderes
+  heilendes Horn ist bereit); (c) den heilenden Begleiter immer halten.
+- *3 Abwägung, 6 Falsifikation:* (a) hätte um 18:12:16 rund 68 s gegen rund 60 s gezeigt, keine Gefahr: Gegenthese 3
+  hält, verworfen. (c) kostet ohne Treffer je 90 s einen kurzen Einsatz (früher verworfen). (b) zeigt 27 s gegen 48 s
+  und hält die Fledermaus; mit dem Mittel des ganzen Kampfes 30 bis 36 s, ebenso. Mit einem Heiler in der Gruppe gilt
+  (b) nicht: dessen Heilung steckt nicht im Schaden der Gegner. Ruf in der Gefahr: warten, wenn ein heilendes oder
+  schützendes Horn innerhalb eines GCD bereit wird; die Gefahr zählt auch vor dem Pull.
+- *7 Gebaut:* `BST_Reborn.HealerFamiliarHolds` (im Zyklus neben der Gefahr im Augenblick, unter „Choose the battlehorn
+  by the situation"), Spurzeile „… stays: without its healing you fall in …"; `SafeHornReadyWithin`; der Ruf in der
+  Gefahr ohne Kampfbedingung. `HornRecastRemaining` jetzt `protected`.
+- *8 Nachweis:* Compile (0 Warnungen), Prüfungen; Rechnung mit gleichbleibenden Raten im Konzept (mit der Fledermaus
+  netto rund 42 LP je Sekunde, 60 s rund 2.500 bei 2.369 LP, ein Trank deckt die Lücke), im Spiel nicht gesehen.
+- *9 Dokumentation:* Konzept 01 B2 (zwei neue Punkte), 03 (Verweis), TODO-Defekt geschlossen.
+
 ## B · Commit-Register (Fork vs. `upstream/main`)
 
 ### B1 · Einzelgeprüfte Fork-Commits
