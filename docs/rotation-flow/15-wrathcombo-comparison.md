@@ -14,6 +14,9 @@ vorhanden, die den eigenen plugin verbessern könnten? im loop nach erledigter a
 Spielquelle: Es zeigt, wie ein zweites Werkzeug entscheidet. Spielmechanik ist am offiziellen Job-Guide
 belegt, wo sie trägt. Code wird nicht übernommen.
 
+**Nachgeprüft am 06.11.2026 (1e64c866c, 03.11.2026; A608):** fünf Commits seit 5365eb1ed – Ninja-Mudras innen umgebaut,
+eine Konfliktwarnung gegen BossMods Autorotation per Reflexion; für RSR nichts zu übernehmen (Begründung im Archiv).
+
 **Nachgeprüft am 16.10.2026: 33 Commits seit dem 25.09.2026 (A296).** Seine Frage: „bringen die änderungen inhaltlich
 sinn für rsr und bringt eine adaptierung was?"
 - *Gewinn, indirekt:* WrathCombo zieht ECommons nach. ECommons 3.2.1.26 (Commit 26d30b9, 15.10.2026) liest die

@@ -17704,6 +17704,22 @@ habe den schleim bislang nicht anfreunden können."
   Repositories der Liste.
 - *Prüfgrad:* statisch (Kommentare und Code der Module, RSR-Code). Nichts gebaut.
 
+### A608 · Übrige Rotationswerkzeuge der Liste: nichts zu bauen; BRUTAL war falsch eingeordnet (06.11.2026)
+
+- *Anlass:* TODO „Fremde Repositories", Rotationswerkzeuge nach Daedalus.
+- *ahwootech/BRUTAL* (7a3b72d, 27.10.2026): ein C#-Framework für Spiele (Kitten Space Agency), kein Rotationswerkzeug; in
+  der Liste unter „Rotationen für alle Jobs" falsch eingeordnet. Gestrichen.
+- *BeirutaNa1na/RotationSolverReborn* (3d4b358, 02.11.2026, einziger Zweig `main`): Stand von Upstream 7.5.7.14, im Fork
+  enthalten (A486 ff., Upstream-Merge 3d4b358f4).
+- *RhyTamok/XIVdrg* (d0bb76b, 27.06.2026): Grafiken der Dragoon-Seiten von The Balance (Opener, BiS, Solver-Daten); der
+  Opener ist gegen The Balance 7.5 geprüft (Konzept 14, „Dragoon und Viper: Opener").
+- *PunishXIV/WrathCombo* (1e64c866c, 03.11.2026; fünf Commits seit 5365eb1ed, dem Stand von Konzept 15): Ninja-Mudra-Zustand
+  innen umgebaut (gelernt statt Stufe – RSR prüft Stufe und Freischaltquest, `EnoughLevelAndQuest`); Erkennung von BossMods
+  Autorotation, Auto-Target und manueller Warteschlange per Reflexion als Konfliktwarnung. Nicht gebaut: RSR steuert keine
+  BossMod-Vorlagen, ein Bedarf ist nicht belegt, und die Reflexion in BossMods Interna bräche mit jeder Änderung dort.
+- *Prüfgrad:* statisch (Repositories und Commits gelesen). Nächster Schritt: die Beastmaster-Repositories (vollständige
+  Suche), dann die Blaumagier-Repositories (Suche).
+
 ## B · Commit-Register (Fork vs. `upstream/main`)
 
 ### B1 · Einzelgeprüfte Fork-Commits
