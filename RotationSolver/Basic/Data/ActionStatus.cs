@@ -1,7 +1,8 @@
 ﻿namespace RotationSolver.Basic.Data;
 
 /// <summary>
-/// Values returned by ActionManager.GetActionStatus
+/// Values returned by ActionManager.GetActionStatus, and by ActionManager.GetActionInRangeOrLoS for its range and sight
+/// (LogMessage rows of the game).
 /// </summary>
 public enum ActionStatus : uint
 {
@@ -9,6 +10,16 @@ public enum ActionStatus : uint
 	/// The action can be used.
 	/// </summary>
 	None = 0,
+
+	/// <summary>
+	/// "Target not in line of sight." (concept 03, "Sichtlinie: das Urteil des Spiels zuerst", A621)
+	/// </summary>
+	NotInLineOfSight = 562,
+
+	/// <summary>
+	/// "Target is not in range."
+	/// </summary>
+	OutOfRange = 566,
 
 	/// <summary>
 	/// Not enough HP.

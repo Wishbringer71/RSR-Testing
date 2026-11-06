@@ -29,11 +29,13 @@ BossMod-Module) die Rotation des Beastmasters, die Wahl der Begleiter und den Ze
 4. Fremde Repositories auf Verbesserungen für RSR prüfen: Jeder Fund kann ein Defekt im Verhalten einer Klasse sein,
    den RSR heute im Kampf zeigt; zuerst die Rotationswerkzeuge für alle Jobs, Daedalus vorn (aktiv, alle Jobs,
    eigene Kampfvorhersage), dann Beastmaster und Blaumagier (sein Auftrag vom 05.11.2026).
-5. Blaumagier: Satz je Carnivale-Stufe: Im Masked Carnivale schlägt RSR keinen Satz für die Stufe vor, deren Mechanik
+5. Tiefe Gewölbe: Pomander und Magicite: Allein beendet ein K.O. den Lauf, und RSR nutzt im Kampf keinen Pomander,
+   der Schaden mindert oder wiederbelebt, und kein Magicite gegen den Boss.
+6. Blaumagier: Satz je Carnivale-Stufe: Im Masked Carnivale schlägt RSR keinen Satz für die Stufe vor, deren Mechanik
    bestimmte Zauber verlangt.
-6. Limit Break allein: Ohne andere Spieler füllt sich die Leiste, und RSR nutzt sie nie; der Preis ist eine Sperre
+7. Limit Break allein: Ohne andere Spieler füllt sich die Leiste, und RSR nutzt sie nie; der Preis ist eine Sperre
    von Sekunden mitten in Mechaniken.
-7. Konzepte neu ordnen (allgemein, Rollen, Gruppen, Jobs, Inhalte): keine direkte Wirkung im Kampf; eine Regel, die
+8. Konzepte neu ordnen (allgemein, Rollen, Gruppen, Jobs, Inhalte): keine direkte Wirkung im Kampf; eine Regel, die
    im Konzept eines Jobs steht, wird für dessen Gruppe übersehen, und eine Inhaltsregel ist über mehrere Konzepte
    verteilt.
 
@@ -108,10 +110,20 @@ erkenntisse daraus in rsr eingebracht werden können und die vorhandenen konzept
 Jobkonzepte. *Nächster Schritt:* ausgewertet sind die Rotationswerkzeuge (Daedalus A561, A570 bis A575,
 A591 bis A607; die übrigen A608), die Beastmaster-Suche (A609), die Blaumagier-Suche (A611) und die Kampfvorhersage
 (interjection ist eine Anzeige, A334; BossMod: Rollen-KI A612 bis A618, Jobmodule A619) und die Auswertung von Kämpfen
-(A620: cactbots Raidwides und Tankbuster als mitgelieferte Listen). Offen sind die Spiel-API und die Automatisierung, in
-dieser Reihenfolge. Je Fund ein Loop, je Repository ein Archiveintrag mit Commit und Datum. *Konzept:* 15, erweitert vom Vergleich mit WrathCombo auf die übrigen Werkzeuge; je Fund dazu das
+(A620: cactbots Raidwides und Tankbuster als mitgelieferte Listen) und die Spiel-API (A621: Beastmaster-Leiste und
+Sichtlinie aus dem Spiel; A622: Bibliotheken und Spieldaten ohne Fund). Offen ist die Automatisierung. Je Fund ein Loop, je Repository ein Archiveintrag mit Commit und Datum. *Konzept:* 15, erweitert vom Vergleich mit WrathCombo auf die übrigen Werkzeuge; je Fund dazu das
 tragende (01 Jobs, 08 Minderung, 13 Flächenschaden und Tankbuster).
 
+
+### Tiefe Gewölbe: Pomander und Magicite · N
+Im Kampf: In einem Gewölbe wie Pilgers Pfad nutzt RSR keinen Pomander und kein Magicite; allein beendet ein K.O. den
+Lauf, wenn kein Pomander of Raising wirkt, und ein Bosskampf ohne Pomander of Steel oder Strength dauert länger unter
+denselben Treffern. BossModReborn setzt Pomander nur in seiner Gewölbe-Automatik, allein und je Pomander ab Werk aus
+(27be422, 05.11.2026). *Ort:* `InstanceContentDeepDungeon` (FFXIVClientStructs: Pomander, Magicite, `UsePomander`), neben
+den Brett-Gegenständen des Crucible (A551) als Gegenstände eines Inhalts; die Verwandlungen (A614). *Nächster Schritt:*
+Loop – welche Pomander und Magicite im Kampf wirken (Wirktexte der Blätter, deutsche Namen nur belegt), wann sie sich
+lohnen (Bossboden, angekündigter Treffer, Gefahr je Sekunde), in der Gruppe wie allein, und wie RSR neben BossMods
+Automatik nichts doppelt setzt. *Konzept:* 03 („Tiefe Gewölbe").
 
 ### Limit Break allein · N
 Im Kampf: RSR nutzt nie ein Limit Break. Ohne andere Spieler – Duty Support, Trust, Solo-Inhalte – füllt sich die Leiste,

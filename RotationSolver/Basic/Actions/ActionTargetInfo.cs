@@ -306,7 +306,9 @@ public struct ActionTargetInfo(IBaseAction action)
 		}
 		else
 		{
-			return tar.CanSee();
+			// Concept 03, "Sichtlinie: das Urteil des Spiels zuerst" (A621): the game decides whether the action sees the
+			// target; a spot on the ground keeps RSR's ray, as nothing states how the game answers for one.
+			return IsTargetArea ? tar.CanSee() : tar.InSightFor(action.Info.AdjustedID);
 		}
 	}
 

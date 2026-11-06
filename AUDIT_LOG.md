@@ -18072,6 +18072,77 @@ habe den schleim bislang nicht anfreunden können."
   das Action-Blatt (xivapi), Compile; im Spiel nicht beobachtet.
 - *9 Dokumentation:* Konzept 13 („Die mitgelieferten Listen: Upstream und cactbot"), Release-Text.
 
+### A621 · Spiel-API: ClientStructs und Dalamud gegen RSR; die Beastmaster-Leiste und die Sichtlinie aus dem Spiel (06.11.2026)
+
+- *Anlass:* TODO „Fremde Repositories", Gruppe Spiel-API und Spieldaten.
+- *Stand der Quellen:* aers/FFXIVClientStructs 0adb2e5 (06.11.2026); Dalamud trägt b69073a (02.11.2026), seine Verteilung
+  vom 20.10.2026 die Fassung, gegen die RSR baut. goatcorp/Dalamud a740960 (04.11.2026). Werkzeugquellen zum Vergleich:
+  WrathCombo 1e64c866c (03.11.2026), Daedalus c4a788f (05.11.2026), BossModReborn 27be422 (05.11.2026).
+- *1 Research:* Jede kampfnahe Struktur von ClientStructs gegen RSRs Zugriffe gehalten. RSR liest schon `Hate` (Tankwechsel),
+  `LimitBreakController`, `ActionEffectHandler` (A617), `DutyActionManager`, die Leisten über Dalamuds Hüllen; diese lassen
+  von den Feldern nur Nebensachen aus (Paladin: Confiteor-Kombo, Viper: Reawakened-Zeit, beide über angepasste Aktion und
+  Status gelesen). Funde:
+  - *Beastmaster-Leiste:* Upstream liest sie über eine eigene Kopie mit festen Abständen (`TempGauge`, 2fe925f41,
+    10.09.2026), ClientStructs führt sie als `BeastmasterGauge` mit denselben Lagen und Bitfeldern (Verwandtschaft:
+    Horn untere, Klasse obere vier Bit; Instinkte: natürlich Bit 0–1, gemeistert 2–3). Feldabstände eines geladenen Typs
+    berechnet die Laufzeit aus der Assembly, die Dalamud liefert; die Kopie bleibt auf den alten Zahlen.
+  - *Sichtlinie:* `ActionManager.GetActionInRangeOrLoS` ist die Prüfung des Spiels (0 in Sicht, 562 verdeckt, 566 außer
+    Reichweite; LogMessage, xivapi v2); RSR prüft mit einem eigenen Strahl (Augenhöhe 2 Yalm für jede Figur, 33 ms Zwischen-
+    speicher) und fragt das Spiel nie. WrathCombo fragt es für das Ziel seiner Reinigung, Daedalus für jede Reichweite. In
+    14 ACT-Mitschnitten (25.10.–05.11.2026) steht „Du kannst das Ziel nicht sehen." kein einziges Mal – Fehlermeldungen
+    schreibt ACT (Code 083C), ob auch für die Aktionen eines Plugins, ist unbelegt; der umgekehrte Fall (Strahl
+    verdeckt, Spiel nicht) bleibt in Mitschnitten unsichtbar. Alle 106 Spieleraktionen mit Gruppenziel verlangen laut
+    Action-Blatt eine Sichtlinie; `ActionBasicInfo.RequiresLineOfSight` liest niemand.
+  - *Tiefe Gewölbe:* `InstanceContentDeepDungeon` führt Pomander, Magicite und `UsePomander`; RSR nutzt nichts davon.
+    BossModReborn setzt Pomander nur in seiner Gewölbe-Automatik, allein und je Pomander ab Werk aus. Gehört zur Klasse
+    der Gegenstände eines Inhalts, die RSR im Crucible schon nutzt (A551) – neuer TODO-Punkt, nicht hier gebaut.
+  - *Dalamud:* Seit 414fac72/ab952f92 (11.09.2026) prüft Dalamud, dass Eigenschaften von Spielobjekten im Hauptthread
+    gelesen werden, vorerst nur im Entwicklermodus mit Ausnahme. RSRs Hintergrundaufgaben (Konfiguration laden und
+    speichern, Ablaufexport, `LoadAsync` nach dem Lesen der Datei) schreiben nur vorbereitete Daten; die Initialisierung
+    läuft über `Svc.Framework.Run`. Kein Zugriff außerhalb gefunden. `IUnlockState.IsXBMPetUnlocked` (05ca8ae, 07.09.2026)
+    beantwortet, was RSR schon über `IsPetUnlocked` liest. `Buddy.DutyHelperInfo` (Duty Support) gehört zu TODO
+    „Limit Break allein".
+- *2 Optionen:* Leiste: (0) belassen · (1) Eigenschaften aus `JobGaugeManager.Instance()->Beastmaster`, `TempGauge` als
+  veraltet behalten · (2) `TempGauge` entfernen. Sichtlinie: (0) belassen · (1) für befreundete Ziele das Spiel fragen,
+  Strahl als Rückfall · (2) zusätzlich die Gegnerliste über eine Ersatzaktion · (3) nur protokollieren.
+- *3 Abwägung:* Leiste (1): heute gleiche Werte; nach einem Patch, der die Felder verschiebt, folgt der Beastmaster mit
+  Dalamuds Aktualisierung, statt Äxte, Hörner und Kombos nach falschen Bytes zu wählen. Bedrohung: Ein umbenanntes Feld
+  bricht den Pfad zur Laufzeit – dasselbe gilt für jeden ClientStructs-Zugriff RSRs. (2) bräche abgeleitete Rotationen.
+  Sichtlinie (1): Was das Spiel zur Laufzeit liefert, hat Vorrang (seine Vorgabe, 12.10.2026); RSR heilt, wen das Spiel
+  heilen lässt, statt eine abgelehnte Heilung jedes Bild neu zu wählen oder ein sichtbares Mitglied auszulassen. Preis:
+  eine Frage je Ziel und 33 ms. (2) bräuchte für jeden Job eine Aktion mit Sichtpflicht und passender Reichweite – erst,
+  wenn die Protokollzeile Abweichungen zeigt. (3) wäre eine Datensammlung ohne Nachsteuerung.
+- *5 Review:* Flächen am Boden behalten den Strahl (Antwort des Spiels für einen Punkt unbelegt). Nur 0 und 562 gelten und
+  werden 33 ms je Ziel gehalten; die Annahme, dass die Sichtlinie nicht von der Aktion abhängt, kostet im Irrtum höchstens
+  diese Spanne. Der Zwischenspeicher leert sich mit dem des Strahls (Gebietswechsel, Überlauf).
+- *6 Falsifikation:* Kein Defekt? Leiste: heute ja – der Gewinn liegt nach einem verschiebenden Patch. Sichtlinie: offen,
+  die Zeile misst es; die Regel folgt in beiden Fällen dem Spiel. Option falsch? Würde das Spiel für ein befreundetes Ziel
+  falsch antworten, lehnte es dieselbe Aktion beim Auslösen genauso ab. Ausgeliefert, nichts ändert sich? Bei beiden
+  möglich, solange keine Abweichung eintritt; Kosten: eine Spielfrage je Ziel.
+- *7 Gebaut:* `BeastmasterRotation` (Eigenschaften aus `BeastmasterGauge`, `TjobGauge`/`JobGauge` veraltet),
+  `ObjectHelper.InSightFor`, `ActionTargetInfo.CanUseTo`, `ActionStatus.NotInLineOfSight`/`OutOfRange`, Ausnahmen in
+  `fixed_values.json`. *8 Nachweis:* Compile gegen Dalamuds ClientStructs (0 Fehler, 0 Warnungen), alle lokalen CI-Stufen;
+  im Spiel nicht beobachtet, die Abweichungszeile im `DefenseTrace.log` ist das Messmittel.
+- *9 Dokumentation:* Konzept 03 („Sichtlinie: das Urteil des Spiels zuerst"), Konzept 01 (BST, „Die Leiste liest RSR aus
+  ClientStructs"), TODO „Tiefe Gewölbe: Pomander und Magicite", Release-Text.
+
+### A622 · Spieldaten und Bibliotheken: ECommons, RebornMaterial, Lumina, EXDSchema, ffxiv-datamining, Sapphire (06.11.2026)
+
+- *Anlass:* TODO „Fremde Repositories", Rest der Gruppe Spiel-API und Spieldaten.
+- *ECommons* 6e3524d (30.10.2026): RSR nutzt 3.2.1.26 (14.10.2026), das neueste Paket; danach nur Nullsicherheit in
+  `Struct()`/`Character()` und `CircularSelect`, unveröffentlicht. RSR prüft vor jedem `Struct()` auf null. Nichts zu tun.
+- *RebornMaterial* 0bd2517 (01.11.2026): Paket 7.5.7.6 erschien am 02.11.2026 04:32 UTC nach dem letzten Commit und
+  enthält alles, auch den Schriftfix vom 29.10. RSR nutzt es. Nichts zu tun.
+- *Lumina* 8802d66 (27.10.2026) liest Spieldateien; RSR liest Blätter zur Laufzeit über Dalamuds Lumina, der Generator
+  (`RotationSolver.GameData`) über Lumina 7.7.2. Nichts für den Kampf.
+- *EXDSchema* e773c41 (Zweig ver/2026.09.01, 09.09.2026, dieselbe Fassung wie xivapi): benennt an den Crucible-Blättern
+  nur, was RSR schon liest (`XBMBattleDetail.Resist`, `XBMPet.Pet`/`Action`); `PhysResistance`/`MagResistance` bleiben in
+  ihrer Bedeutung unbelegt (Konzept 01, K5). Nichts Neues.
+- *ffxiv-datamining* 44948e4 (20.10.2026): Blätter als CSV, auch deutsch – ein Rückfall für die Namensprüfung, falls
+  xivapi ausfällt; xivapi antwortet. Nichts für den Kampf.
+- *Sapphire* aab9cb23 (06.10.2026): Server-Nachbau für Version 3.3 (2016); seine Formeln belegen den heutigen Kampf nicht.
+- *Ergebnis:* kein Fund; die Gruppe Spiel-API ist mit A621 ausgewertet, offen bleibt die Automatisierung.
+
 ## B · Commit-Register (Fork vs. `upstream/main`)
 
 ### B1 · Einzelgeprüfte Fork-Commits

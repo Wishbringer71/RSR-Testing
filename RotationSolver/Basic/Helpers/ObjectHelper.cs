@@ -3113,6 +3113,10 @@ public static class ObjectHelper
 		if (Svc.Condition[ConditionFlag.BetweenAreas] || _losCache.Count > 4096)
 		{
 			_losCache.Clear();
+
+			// The game's answers hold only friendly targets, fewer than the ray's; they go with it (A621).
+			_gameSightCache.Clear();
+			_sightDisagreement.Clear();
 		}
 	}
 
@@ -3169,6 +3173,68 @@ public static class ObjectHelper
 			Visible = visible
 		};
 		return visible;
+	}
+
+	// The game's last clear answer on whether the player sees a target (in sight or blocked), as long as both stand still.
+	private static readonly Dictionary<ulong, LosCacheEntry> _gameSightCache = [];
+
+	// The targets on which the game's answer and RSR's ray disagree right now: a trace line marks where it begins.
+	private static readonly HashSet<ulong> _sightDisagreement = [];
+
+	/// <summary>
+	/// Whether <paramref name="actionId"/> reaches <paramref name="target"/> past walls, by the game's own range and sight check
+	/// (concept 03, "Sichtlinie: das Urteil des Spiels zuerst", A621): in sight or blocked as the game answers; any other answer -
+	/// out of range among them - leaves it to RSR's ray (<see cref="CanSee"/>).
+	/// </summary>
+	internal static unsafe bool InSightFor(this IBattleChara target, uint actionId)
+	{
+		if (target == null || Player.Object is not { } player || target.Struct() == null)
+		{
+			return false;
+		}
+
+		MaybeResetLosCache();
+
+		var playerPos = player.Position;
+		var targetPos = target.Position;
+		var id = target.GameObjectId;
+		var now = Environment.TickCount64;
+		if (_gameSightCache.TryGetValue(id, out var cached) && now <= cached.ExpiresAt
+			&& Vector3.DistanceSquared(playerPos, cached.PlayerPos) <= LosPosEpsilonSq
+			&& Vector3.DistanceSquared(targetPos, cached.TargetPos) <= LosPosEpsilonSq)
+		{
+			return cached.Visible;
+		}
+
+		var ray = target.CanSee();
+		var answer = (ActionStatus)ActionManager.GetActionInRangeOrLoS(actionId,
+			(FFXIVClientStructs.FFXIV.Client.Game.Object.GameObject*)player.Address,
+			(FFXIVClientStructs.FFXIV.Client.Game.Object.GameObject*)target.Address);
+		if (answer is not (ActionStatus.None or ActionStatus.NotInLineOfSight))
+		{
+			return ray;
+		}
+
+		var seen = answer == ActionStatus.None;
+		_gameSightCache[id] = new LosCacheEntry
+		{
+			PlayerPos = playerPos,
+			TargetPos = targetPos,
+			ExpiresAt = now + LosTtlMs,
+			Visible = seen,
+		};
+
+		if (seen == ray)
+		{
+			_ = _sightDisagreement.Remove(id);
+		}
+		else if (_sightDisagreement.Add(id))
+		{
+			DefenseTrace.Line($"line of sight: the game {(seen ? "sees" : "does not see")} {target.Name} for {actionId}, RSR's ray "
+				+ $"{(ray ? "does" : "does not")}; the game's answer counts");
+		}
+
+		return seen;
 	}
 
 	internal static bool CanSee(this IBattleChara battleChara, float playerYOffset = 2.0f, float targetYOffset = 2.0f)

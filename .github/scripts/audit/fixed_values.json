@@ -1716,6 +1716,26 @@
    "status": "exception",
    "loop": "A620",
    "reason": "Upstream's own retired ids of its area list, unchanged; the line is the fork's only because it now ships cactbot's casts beside upstream's list. Action ids the game names, not quantities to derive."
+  },
+  {
+   "file": "RotationSolver/Basic/Data/ActionStatus.cs",
+   "code": "NotInLineOfSight = 562,",
+   "values": [
+    "562"
+   ],
+   "status": "exception",
+   "loop": "A621",
+   "reason": "Row id of the game's LogMessage sheet that ActionManager.GetActionInRangeOrLoS returns when the target is not in sight (\"Target not in line of sight.\", xivapi v2, 06.11.2026), like the enum's other members: an answer of the game, not a quantity to derive."
+  },
+  {
+   "file": "RotationSolver/Basic/Data/ActionStatus.cs",
+   "code": "OutOfRange = 566,",
+   "values": [
+    "566"
+   ],
+   "status": "exception",
+   "loop": "A621",
+   "reason": "Row id of the game's LogMessage sheet that ActionManager.GetActionInRangeOrLoS returns when the target is out of range (\"Target is not in range.\", xivapi v2, 06.11.2026); RSR then leaves the sight to its own ray."
   }
  ]
 }

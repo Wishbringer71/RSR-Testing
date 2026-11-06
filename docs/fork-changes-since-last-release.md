@@ -28,6 +28,12 @@ What this release changes in the fight. For the whole distance from upstream, se
 
 ## Healing
 
+- **The game decides whether a party member is in sight.** Whether a heal, a buff or a raise reaches a
+  member behind a pillar is now the game's own answer, the check the hotbar uses to mark an action out of
+  range. RSR's own ray, with one eye height for every race and enemy size, decides only where the game
+  gives no clear answer, such as a member out of range. Before, a heal the ray allowed and the game refused
+  was chosen again every frame while the member stood hidden, and a member the ray missed got no heal at
+  all. Where the two disagree, `DefenseTrace.log` writes a line.
 - **A status that turns worse when it runs out is cleansed ahead of the heals.** A cleansable status
   whose text says what follows when it expires or stays (Freezing turns into a Deep Freeze, Half-asleep
   into Sleep, an Aetherochemical Bomb detonates) is now cleansed before every heal while no party member
@@ -294,6 +300,10 @@ What this release changes in the fight. For the whole distance from upstream, se
 
 ## Beastmaster
 
+- **The gauge is read where the game keeps it.** TP, the familiar's TP, the active horn, the compass,
+  the combo count, Kinship and the instincts now come from the gauge layout Dalamud ships, not from a copy
+  with fixed offsets. After a patch that moves them, the Beastmaster keeps choosing axes, horns and combos
+  from the right values as soon as Dalamud updates.
 - **Snarl and Challenge over the window they share.** The two share one 15 s recast, so whoever holds the
   enemies after a swap holds them for all of it. No Snarl now goes onto a familiar whose damage taken
   per second while holding, over that window, or its largest hit would fell it; Challenge takes the
