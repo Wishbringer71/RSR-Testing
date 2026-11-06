@@ -17374,6 +17374,28 @@ habe den schleim bislang nicht anfreunden können."
 - *Prüfgrad:* statisch, Mitschnitt (Spielmechanik), Compile ohne Warnung, 44 Prüfschritte. Die geänderten Zweige im Spiel
   nicht beobachtet.
 
+### A593 · Maschinist nach Daedalus: Flächensperre und Ladungsgrenze (06.11.2026)
+
+- *Anlass:* TODO „Fremde Repositories", die beiden übrigen Maschinisten-Regeln aus Daedalus (ofnature/Daedalus c4a788f,
+  05.11.2026): `DamageModule` hält die Flächenreihe 3 s nach dem Erreichen der Schwelle fest („prevent rapid ST/AoE
+  toggling when enemy count fluctuates … mobs dying, targeting cache, trust aggro"); `BuffModule` wirft Gauss Round und
+  Ricochet bei drei Ladungen sofort („Kickstart").
+- *Ladungsgrenze:* deckt sich; Daedalus nennt die Herkunft selbst („RSR AttackAbility lines 177–199"), `MCH_Reborn` wirft bei
+  nicht laufender Abklingzeit eine Ladung.
+- *Flächensperre:* Spielblatt `Action.PreservesCombo` (xivapi, 06.11.2026): Scattergun und Spread Shot falsch, Drill, Air
+  Anchor, Chain Saw, Auto Crossbow, Heat Blast und Blazing Shot wahr. Scattergun bricht also die Heated-Kombination, und
+  in `MCH_Reborn` steht Scattergun vor den Kombischritten. Die Sperre selbst hielte die Fläche auf zwei Gegnern (Job-Guide:
+  Scattergun 130 je Gegner, Heated Split/Slug/Clean 220/320/420) und verliert dort; RSR zählt je Aktion in ihrer Gestalt,
+  das Schwanken, gegen das Daedalus sperrt, kommt aus dessen Zählung im 12-Yalm-Kreis. Nicht übernommen.
+- *Abschluss bei genau drei Gegnern:* Heated Clean Shot (420, 10 Batterie, 5 Heat) gegen Scattergun (390, 10 Heat). Mit dem
+  Batteriewert von The Balance (266 je 10, Stand 7.3) gewinnt der Abschluss; ohne ihn und mit einem Wert für Heat
+  Scattergun. Kein Tooltip nennt die Werte – dieselbe Lage wie die Bioblaster-Grenze in Konzept 14, dort ebenfalls nicht
+  gebaut. Nicht gebaut.
+- *Falsifikation:* Kein Defekt? Ja: Die Sperre bringt RSR nichts, die Ladungsgrenze besteht. Option falsch? Der Abschluss
+  bei drei bliebe ein Gewinn nur unter einem Batteriewert, den die Quellen nicht tragen. Ausgeliefert, nichts ändert sich?
+  Nichts ausgeliefert.
+- *Prüfgrad:* statisch, Spielblatt, Job-Guide. Konzept 14, Tabelle „Weitere Punkte, gegen The Balance geprüft".
+
 ## B · Commit-Register (Fork vs. `upstream/main`)
 
 ### B1 · Einzelgeprüfte Fork-Commits
