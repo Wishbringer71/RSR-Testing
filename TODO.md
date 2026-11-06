@@ -29,7 +29,9 @@ BossMod-Module) die Rotation des Beastmasters, die Wahl der Begleiter und den Ze
 4. Fremde Repositories auf Verbesserungen für RSR prüfen: Jeder Fund kann ein Defekt im Verhalten einer Klasse sein,
    den RSR heute im Kampf zeigt; zuerst die Rotationswerkzeuge für alle Jobs, Daedalus vorn (aktiv, alle Jobs,
    eigene Kampfvorhersage), dann Beastmaster und Blaumagier (sein Auftrag vom 05.11.2026).
-5. Konzepte neu ordnen (allgemein, Rollen, Gruppen, Jobs, Inhalte): keine direkte Wirkung im Kampf; eine Regel, die
+5. Blaumagier: Satz je Carnivale-Stufe: Im Masked Carnivale schlägt RSR keinen Satz für die Stufe vor, deren Mechanik
+   bestimmte Zauber verlangt.
+6. Konzepte neu ordnen (allgemein, Rollen, Gruppen, Jobs, Inhalte): keine direkte Wirkung im Kampf; eine Regel, die
    im Konzept eines Jobs steht, wird für dessen Gruppe übersehen, und eine Inhaltsregel ist über mehrere Konzepte
    verteilt.
 
@@ -88,8 +90,8 @@ vielleicht; jeder Fund wird am Spiel belegt, bevor er ein Defekt oder eine Verbe
 - *Beastmaster:* Kriss-Hietala/BeastmasterAssist, Rin-0617/BeastHelper, lexxxgo/Masterbeast, xenofei/CrucibleSux, rail2025/BeastieBuddy (A609); Daedalus und WrathCombo
   dazu ausgewertet (A488); neu (A532): erdelf/AutoDuty (Crucible-Automatik), GluttonyCombo (`BST_CrucibleAdvisor`,
   Schwäche je Ziel), BOCXIV/Beastmaster-JP (Brett-Gegenstände), Namen aus BeastHelper; vollständige Suche offen.
-- *Blaumagier:* die Rotationswerkzeuge oben und BossMod sind ausgewertet (A506 bis A511); eigene Repositories zum
-  Blaumagier (Zaubersets, Masked Carnivale) noch zu suchen.
+- *Blaumagier:* die Rotationswerkzeuge oben und BossMod sind ausgewertet (A506 bis A511); eigene Repositories gesucht
+  (A611: BlueMageSetBuilder, BLUnion, BetterInBlue, BlueMageHelper).
 - *Kampfvorhersage und Unterbrechen:* FFXIV-CombatReborn/BossmodReborn, awgil/ffxiv_bossmod, sourpuh/ffxiv_interjection.
 - *Auswertung von Kämpfen:* xivanalysis/xivanalysis, OverlayPlugin/cactbot, xiv-stats/xiv-damage-samples,
   Ahriqi/astbalanceimages.
@@ -103,9 +105,16 @@ erkenntisse daraus in rsr eingebracht werden können und die vorhandenen konzept
 *Ort:* Grundstruktur (`RotationSolver/Basic`, Updaters, Zielwahl, Abwehr), die Rotationen unter `RebornRotations`, die
 Jobkonzepte. *Nächster Schritt:* die Rotationswerkzeuge sind ausgewertet (Daedalus A561, A570 bis A575,
 A591 bis A607; die übrigen A608); offen sind die Beastmaster-Repositories (vollständige Suche), die Blaumagier-
-Repositories (Suche) und danach die übrigen Gruppen der Liste; Beastmaster-Suche: A609. Je Fund ein Loop, je Repository ein Archiveintrag mit Commit und Datum. *Konzept:* 15, erweitert vom Vergleich mit WrathCombo auf die übrigen Werkzeuge; je Fund dazu das
+Repositories (Suche) und danach die übrigen Gruppen der Liste; Beastmaster-Suche: A609, Blaumagier-Suche: A611; nächste die Kampfvorhersage (BossMod, interjection). Je Fund ein Loop, je Repository ein Archiveintrag mit Commit und Datum. *Konzept:* 15, erweitert vom Vergleich mit WrathCombo auf die übrigen Werkzeuge; je Fund dazu das
 tragende (01 Jobs, 08 Minderung, 13 Flächenschaden und Tankbuster).
 
+
+### Blaumagier: Satz je Carnivale-Stufe · N
+Im Kampf: Im Masked Carnivale schreibt RSR nie ins Set (A510), und einen Satz für die Stufe schlägt es nicht vor; viele Stufen
+verlangen bestimmte Zauber für ihre Mechanik (Blue Academy, mage.blue, Stufenführer). *Ort:* `BlueMageRotation`
+(Set-Verbesserer), ein Fenster wie die Crucible-Empfehlungen. *Nächster Schritt:* Loop – je Stufe Pflicht- und
+Empfehlungszauber aus Blue Academy belegen, Vorschlag mit Anwenden auf Klick (wie K7), nicht selbsttätig. Vorbild:
+BlueMageSetBuilder, BLUnion (A611). *Konzept:* 01 (Blaumagier, Set).
 
 ### Konzepte neu ordnen: allgemein, Rollen, Gruppen, Jobs, Inhalte · N
 Sein Auftrag (05.11.2026): „generelle prüfung aller konzepte, ob eine neuorganisation nicht sinnvoll wäre: allgemein für

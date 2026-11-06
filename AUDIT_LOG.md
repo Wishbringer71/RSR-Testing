@@ -17765,6 +17765,20 @@ habe den schleim bislang nicht anfreunden können."
 - *Prüfgrad:* statisch, kompiliert ohne Warnung; im Spiel nicht beobachtet. Der Trace nennt beim Provozieren den
   erwarteten Verlust beider im Fenster.
 
+### A611 · Blaumagier-Repositories, Suche: ein Satz je Carnivale-Stufe fehlt RSR (06.11.2026)
+
+- *Anlass:* TODO „Fremde Repositories", Blaumagier: Suche nach eigenen Repositories (Websuche 06.11.2026).
+- *Gefunden:* joshua88wa/FFXIV-Dalamud-BlueMageSetBuilder (213d3d9, 19.10.2026: bester 24-Zauber-Satz je Inhalt und
+  Rolle aus den gelernten Zaubern; je Carnivale-Stufe ein Satz aus Blue Academys Stufenführer – Pflicht zuerst, dann
+  Empfehlung –, fehlende Pflichtzauber oben gewarnt), letsI-MA/BLUnion (ba7a51d, 28.10.2026: Sätze für alle 32 Stufen,
+  Stand der Gruppe), NotNite/BetterInBlue (beliebig viele Sätze), markjsosnowski/BlueMageHelper.
+- *Deckt sich:* der Satz außerhalb des Carnivale aus den gelernten Zaubern (A509, A510).
+- *Fund:* Im Masked Carnivale schreibt RSR nie ins Set (A510: ein nach Element gewählter Füllzauber konnte dort einen
+  immunen Gegner treffen); einen Satz je Stufe schlägt RSR nicht vor. Die Stufen verlangen bestimmte Zauber (Mechanik, nicht
+  Schaden), die Blue Academy je Stufe nennt (mage.blue, „Masked Carnivale"). Ins TODO als offene Arbeit; Quelle ist
+  Blue Academy selbst, nicht die Daten der Plugins (Lizenz und Stand).
+- *Prüfgrad:* statisch (README, `CarnivaleSets.cs`, `Profiles.cs`).
+
 ## B · Commit-Register (Fork vs. `upstream/main`)
 
 ### B1 · Einzelgeprüfte Fork-Commits
