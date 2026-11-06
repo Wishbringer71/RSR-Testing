@@ -410,8 +410,9 @@ Strängen — die breiteste Filler-Struktur im Repo.
 ├ 1  Burst     Flare Star
 ├ 2  Phase     InFireOrIce (Kernautomat, ausgelagert)
 ├ 3  Element   AddElementBase
-├ 4  Filler    Scathe
-└ 5  Erhalt    MaintainStatus
+├ 4  Bewegung  PolyglotWhileCastBlocked, Firestarter in Astral Fire (kein Zauber startbar, A602)
+├ 5  Filler    Scathe
+└ 6  Erhalt    MaintainStatus
 ```
 
 Fast die gesamte Logik liegt in privaten Hilfsmethoden statt in `GeneralGCD` — **das architektonische Gegenmodell zu

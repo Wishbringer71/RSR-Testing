@@ -129,6 +129,28 @@ public partial class BlackMageRotation
 	public static byte MaxSoulCount => DataCenter.PlayerSyncedLevel() >= 35 ? (byte)3 : DataCenter.PlayerSyncedLevel() >= 20 ? (byte)2 : (byte)1;
 
 	/// <summary>
+	/// Spends a Polyglot stack when no spell with a cast time can start: Xenoglossy, or Foul where it out-damages
+	/// Xenoglossy on the targets it hits (A344). A stack spent now only loses its later timing; the GCD otherwise goes to
+	/// Scathe or nowhere (concept 03, "C6", A602).
+	/// </summary>
+	protected bool PolyglotWhileCastBlocked(out IAction? act)
+	{
+		act = null;
+		if (!CastStartBlocked)
+		{
+			return false;
+		}
+
+		if (FoulPvE.CanUse(out act, skipAoeCheck: !XenoglossyPvE.EnoughLevel) && (!XenoglossyPvE.EnoughLevel
+			|| ActionTooltip.AreaOutdamagesSingle(FoulPvE.ID, FoulPvE.Target.AffectedTargets.Length, XenoglossyPvE.ID)))
+		{
+			return true;
+		}
+
+		return XenoglossyPvE.CanUse(out act);
+	}
+
+	/// <summary>
 	/// A check with variable max stacks of Polyglot based on the trait level.
 	/// </summary>
 	public static bool IsPolyglotStacksMaxed => EnhancedPolyglotIiTrait.EnoughLevel

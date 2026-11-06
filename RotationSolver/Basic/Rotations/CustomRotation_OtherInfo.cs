@@ -56,6 +56,14 @@ public partial class CustomRotation
 	public static bool HasSwift => StatusHelper.PlayerHasStatus(true, StatusHelper.SwiftcastStatus);
 
 	/// <summary>
+	/// No spell with a cast time can start now: the player moves without the movement lock, BossMod's AI moves him, a
+	/// knockback runs or no-casting is commanded, and no Swiftcast, Triplecast or Dualcast makes the next spell instant. What
+	/// a caster can still use then is an instant GCD (concept 03, "C6").
+	/// </summary>
+	[Description("Cast start blocked")]
+	public static bool CastStartBlocked => !HasSwift && ActionBasicInfo.CastStartBlockedNow(false);
+
+	/// <summary>
 	/// 
 	/// </summary>
 	[Description("Has tank stance")]

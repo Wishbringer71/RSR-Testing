@@ -438,6 +438,40 @@ Samurai (nicht in den ersten 15 GCDs eines High-End-Kampfs, `CombatElapsedLessGC
 Heiler: Swiftcast+Raise. Melee: Combo-Rettung. Struktur identisch — *verlasse
 die Methode, bevor Rotationslogik läuft* —, Formulierung jedes Mal neu.
 
+### C6 · Zaubernde, wenn kein Zauber startbar ist
+
+**Lage.** RSR beginnt keinen Zauber mit Wirkzeit, solange der Spieler läuft und die Bewegungssperre nicht gilt („Lock
+movement while casting" aus – ab Werk aus – oder von ihm gelöst), BossMods KI ihn bewegt oder einen Zauber abbricht,
+ein Rückstoß läuft oder „No casting" befohlen ist; ausgenommen ist ein Status, der den nächsten Zauber sofort wirken
+lässt (Swiftcast, Triplecast, Dualcast). Diese Bedingung steht einmal, `CustomRotation.CastStartBlocked`; dieselbe
+prüft `ActionBasicInfo.NeedsCasting` für jede Aktion, dort zusätzlich ein Status, der vor dem Ende der Wirkzeit landet
+und jede Aktion schädigt (A439). Dann bleibt ein Sofort-GCD oder keiner. Mit Bewegungssperre wirkt RSR im Laufen weiter
+und hält den Spieler an („Bewegungssperre beim Wirken und die KI von BossMod", unten); dann greift diese Regel nicht.
+
+**Regel, für alle Zaubernden (Heiler, Magier, Blaumagier).** Ein GCD, der dann leer bleibt, ist ganz verloren. Ein
+vorgezogener Sofort-GCD verliert höchstens seine spätere Lage: Polyglot, Farbe, Addersting oder eine Ladung fehlen
+später, wären dort aber auch nur ein GCD gewesen. Deshalb geht der stärkste Sofort-GCD, dessen Ressource keinen anderen
+Zweck hat, vor einem schwächeren und vor keinem. Ein DoT ohne Direktschaden lohnt, solange er nicht eben erst gesetzt
+ist: Er schiebt die nächste Erneuerung im Stand um Dauer weniger Restzeit nach hinten und erspart damit diesen Anteil
+eines Füllers (Astrologe: Combust III 70 je 3 s über 30 s, Fall Malefic 270; Weiser: Eukrasian Dosis III 90 je 3 s
+über 30 s; Spielblätter über xivapi, 06.11.2026); sofort erneut gesetzt bringt er nichts und kostet MP. Swiftcast
+zählt hier nicht, wo der Job damit wiederbelebt (Konzept 11).
+
+| Job | Sofort-GCDs, wenn kein Zauber startbar ist | Stand |
+|---|---|---|
+| Weißmagier | Glare IV, Afflatus Misery, Lilien in Pausen; danach Dia jeden GCD („Use DOT while moving even if it does not need refresh", ab Werk an; Dia trifft auch direkt) | deckt sich |
+| Gelehrter | Ruin II nach „Seconds you must be moving before Ruin II will be used" (ab Werk 0 s) | deckt sich |
+| Weiser | Phlegma, im Laufen auch die letzte Ladung; Toxikon; Eukrasian Dosis nur zur Erneuerung | Lücke: Eukrasian Dosis (Fund aus A602, TODO „Fremde Repositories auf Verbesserungen für RSR prüfen") |
+| Astrologe | Lightspeed, im Laufen beide Ladungen („Use both stacks of Lightspeed while moving", ab Werk an); Combust nur zur Erneuerung | Lücke: Combust (ebenso) |
+| Schwarzmagier | Triplecast im Laufen; Paradox, Firestarter, High Thunder zur Erneuerung; Xenoglossy oder Foul vor Scathe | **geändert (A602):** vorher Scathe (100 Potenz, 800 MP) vor Xenoglossy (890, ohne MP), in `BLM_RP` gar nichts |
+| Beschwörer | Ruin IV, Titans Edelsteine, Slipstream mit Swiftcast (Konzept 14) | deckt sich |
+| Rotmagier | Dualcast-Folge; ohne Dualcast Acceleration, Grand Impact, Enchanted Reprise | deckt sich |
+| Piktomant | Hämmer, Holy in White, Comet in Black (`PaintWhileMoving`) | deckt sich |
+| Blaumagier | die Wertregel wählt unter den Zaubern, die gerade wirkbar sind (Konzept 01) | deckt sich durch die Struktur |
+
+Die Regel steht je Job, weil die Sofort-GCDs und ihre Ressourcen je Job verschieden sind; zentral ist nur die
+Bedingung. Eine Gruppenstufe dazwischen bleibt leer: Weder die Heiler noch die Magier teilen einen Sofort-GCD.
+
 ---
 
 ## D · Was tatsächlich zentral gelöst ist (Positivliste)

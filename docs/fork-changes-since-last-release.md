@@ -186,6 +186,17 @@ What this release changes in the fight. For the whole distance from upstream, se
   as Shield Charge, Intervene or Stardiver goes onto an enemy you already stand against, where it moves
   you nowhere and only deals damage; before, no leap went at all.
 
+## Black Mage
+
+- **Xenoglossy on the move.** When no spell with a cast time can start - you move without the
+  movement lock, BossMod's AI moves you, a knockback runs - and Triplecast and Paradox are spent, the
+  Black Mage now uses Xenoglossy (or Foul where it hits harder) and, in Astral Fire, a Firestarter
+  Fire III before Scathe. Polyglot was otherwise held until it overflowed while Scathe took the GCD for
+  800 MP; the Powerdox rotation used nothing.
+- **Retrace on by default.** `Use Retrace when out of Leylines in combat and standing still` is now on
+  in both Black Mage rotations: once you stand outside your Ley Lines in combat, Retrace brings the
+  circle back under you while it still lasts beyond the next GCD, never right after placing it.
+
 ## Occult Crescent
 
 - **Phantom heals heal ahead of incoming damage.** Occult Potion, Occult Elixir, Occult Chakra,

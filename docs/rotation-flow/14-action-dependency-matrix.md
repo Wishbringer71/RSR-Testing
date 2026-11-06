@@ -907,9 +907,10 @@ Stufe 92 ändert sich nichts. Upstream hat dieselbe Bedingung in `BeirutaPCT` ge
 
 ### Schwarzmagier: Feuer und Eis, Ley Lines
 
-**Deckt sich bis auf Ley Lines** (26.10.2026, A386), gegen The Balance, Black Mage Basic Guide („Patch Applicable: 7.4",
-19.12.2025; er nennt Regeln, keine Folge im Zwei-Minuten-Fenster). Geprüft an `BLM_Default`; `BLM_RP` („Powerdox",
-ausdrücklich zum Testen) trägt dieselben Ley-Lines-Einstellungen.
+**Deckt sich bis auf Ley Lines (A386), das Laufen und Retrace (A602)**, gegen The Balance, Black Mage Basic Guide
+(„Patch Applicable: 7.4", 19.12.2025, abgerufen 26.10. und 06.11.2026; er nennt Regeln, keine Folge im
+Zwei-Minuten-Fenster). Geprüft an `BLM_Default`; `BLM_RP` („Powerdox", ausdrücklich zum Testen) trägt dieselben
+Ley-Lines- und Retrace-Einstellungen und dieselbe Regel fürs Laufen.
 
 | Punkt | The Balance | RSR | Stand |
 |---|---|---|---|
@@ -919,6 +920,21 @@ ausdrücklich zum Testen) trägt dieselben Ley-Lines-Einstellungen.
 | Amplifier, Xenoglossy | Amplifier etwa auf Abklingzeit ohne Polyglot-Überlauf; keine Xenoglossy verschenken | Amplifier nur ohne vollen Polyglot und nicht in den letzten 10 s von Enochian; Xenoglossy bei vollem Polyglot vor Enochian-Ende oder Amplifier (A379) | deckt sich |
 | Triplecast, Swiftcast | vor allem fürs Laufen und Einweben | Triplecast im Laufen, im Wechsel ins Eis und in Astral Fire; Swiftcast im Wechsel ins Eis – der Schwarzmagier hat keine Wiederbelebung | deckt sich im Zweck |
 | Ley Lines | „roughly off cooldown at the next available weaving window", die zweite Ladung für ein Fenster, das man durchstehen kann | bis A386 nie: die Einstellung dazu kam abgeschaltet | **geändert:** ab Werk an; RSR setzt Ley Lines im Stehen und hält die zweite Ladung zurück (ohne „Use both stacks of Leylines automatically"); nicht, während ein Gegner einen Flächenangriff wirkt (`ModifyLeyLinesPvE`, für jede Schwarzmagier-Rotation) |
+| Laufen | „utilizing polyglot stacks for Xenoglossy for movement/weaving/damage as needed"; Triplecast und Swiftcast vor allem fürs Laufen | Triplecast im Laufen; ist kein Zauber startbar, Paradox, Firestarter in Astral Fire, Xenoglossy oder Foul, erst dann Scathe (`BlackMageRotation.PolyglotWhileCastBlocked`, Konzept 03 „C6") | **geändert (A602):** vorher Scathe vor Xenoglossy, Polyglot nur am Überlauf |
+| Retrace | „If you need to move out of your Ley Lines for a longer duration … Retrace … once per Ley Lines duration" | im Kampf, im Stand außerhalb des Kreises, solange er noch einen GCD hält, nicht direkt nach Ley Lines | **geändert (A602):** ab Werk an; der zweite Zweig ohne diese Sperren entfällt |
+
+*Laufen im Kampf:* Läuft er ohne Bewegungssperre oder führt ihn BossMods KI, und sind Triplecast und Paradox verbraucht,
+wirkte RSR Scathe – 100 Potenz für 800 MP, in Astral Fire die halbe MP eines Fire IV – und hielt bis zu drei Polyglot
+für den Überlauf. Jetzt fällt Xenoglossy mit 890 Potenz, in einer Gruppe Foul, wo es nach den Potenzen mehr trifft
+(A344). *Schwäche:* Ein Stapel, der im Laufen fällt, fehlt später im Wechsel ins Eis, wo RSR ihn zum Einweben von
+Manafont oder Transpose nutzt; Manafont fällt bei 0 MP ohnehin, der Wechsel kommt mit einem gewirkten Blizzard III.
+*Bedrohung:* keine für die Sicherheit – es ändert nur, welcher Schaden fällt. *Überwiegt:* der Gewinn; derselbe Stapel
+hätte später nur einen GCD ersetzt, im Laufen ersetzt er einen leeren oder einen Scathe.
+
+*Retrace im Kampf:* Muss er den Kreis verlassen, war die Ladung vertan, solange er nicht zurückging. Retrace setzt ihn
+unter ihn, sobald er außerhalb steht, ohne die Dauer zurückzusetzen; seine Abklingzeit (40 s) ist kürzer als die von Ley
+Lines und dient nichts anderem. *Schwäche:* Geht er danach an die alte Stelle zurück, steht er wieder außerhalb; der Kreis
+ist dann so verloren wie vorher. *Überwiegt:* der Gewinn, ein Einsatz kostet nur einen Webplatz.
 
 *Ley Lines im Kampf:* *Stärke:* der Haste-Kreis fällt, wo The Balance ihn setzt, statt nie. *Schwäche:* muss er den Kreis
 verlassen, ist die Ladung vertan; das kostet Schaden, keine Sicherheit – RSR hält ihn nicht im Kreis. *Bedrohung:*

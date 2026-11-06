@@ -17544,6 +17544,46 @@ habe den schleim bislang nicht anfreunden können."
 - *Prüfgrad:* statisch. Nichts gebaut. Nächster Schritt: die Schadensausteiler je Gruppe (Fernkämpfer, Magier,
   Nahkämpfer).
 
+### A602 · Magier nach Daedalus: der Schwarzmagier lief ohne Xenoglossy; Retrace ab Werk an (06.11.2026)
+
+- *Anlass:* TODO „Fremde Repositories", Gruppe Magier (ofnature/Daedalus c4a788f, 05.11.2026: `HecateCore` Schwarzmagier,
+  `PersephoneCore` Beschwörer, `CirceCore` Rotmagier, `IrisCore` Piktomant).
+- *Befund, Schwarzmagier im Laufen:* Ist kein Zauber mit Wirkzeit startbar – er läuft ohne Bewegungssperre, BossMods KI
+  führt ihn, ein Rückstoß läuft – und sind Triplecast und Paradox verbraucht, wirkte `BLM_Default` Scathe (Aktion 156:
+  100 Potenz, 800 MP; Spielblätter über xivapi) und hielt Polyglot bis zum Überlauf; `BLM_RP` wirkte nichts. Xenoglossy
+  wirkt sofort (Aktion 16507: 890 Potenz, 1 Polyglot). The Balance (Black Mage Basic Guide, 06.11.2026): „utilizing
+  polyglot stacks for Xenoglossy for movement/weaving/damage as needed"; Daedalus spendet Polyglot im Laufen
+  (`TryPushMovementAction`). Die Klasse über alle Zaubernden erhoben (Konzept 03, „C6"): Weißmagier, Gelehrter,
+  Beschwörer, Rotmagier, Piktomant und Blaumagier haben einen Sofort-GCD fürs Laufen; Astrologe und Weiser setzen ihren
+  DoT ohne Direktschaden nur zur Erneuerung (offen, nächster Loop).
+- *Optionen:* (a) Nullvariante; (b) Polyglot im Laufen mit Rückhalt eines Stapels (Daedalus, `PolyglotMovementReserve`);
+  (c) Polyglot, sobald kein Zauber startbar ist, vor Scathe; Firestarter in Astral Fire ebenso. Rückbau: die Aufrufe.
+- *Abwägung:* (a) kostet je Lauf ohne Triplecast 790 Potenz je GCD und in Astral Fire MP. (b) hält einen Stapel für ein
+  späteres Laufen, verliert dafür jetzt den GCD; ein GCD jetzt wiegt so viel wie einer später. (c) gewählt; Preis: der
+  Stapel fehlt im Wechsel ins Eis als Webhilfe (Manafont fällt bei 0 MP ohnehin).
+- *Gebaut:* `CustomRotation.CastStartBlocked` (eine Bedingung, `ActionBasicInfo.NeedsCasting` liest dieselbe,
+  `CastStartBlockedNow`); `BlackMageRotation.PolyglotWhileCastBlocked` (Foul nach dem Potenzvergleich von A344, sonst
+  Xenoglossy); `BLM_Default` vor Scathe, dazu Firestarter in Astral Fire; `BLM_RP` vor Despair. Mit Bewegungssperre wirkt
+  RSR im Laufen weiter; dort ändert sich nichts.
+- *Befund, Retrace:* „Use Retrace when out of Leylines in combat and standing still" kam ab Werk aus (Upstream, ohne
+  Begründung); stand die Option an, lief ein zweiter Zweig in `EmergencyAbility` ohne „in combat" und ohne die Sperre
+  direkt nach Ley Lines. The Balance: Retrace „once per Ley Lines duration", wenn man den Kreis länger verlassen muss.
+  Gebaut: ab Werk an in beiden Rotationen (seine Vorgabe zur Voreinstellung; Vorbild A386), der Zweig in
+  `EmergencyAbility` entfällt.
+- *Deckt sich, nichts zu bauen:* Schwarzmagier auf niedriger Stufe – der zweite Umbral-Ice-Stapel ab Stufe 20 (Merkmal
+  458), der dritte ab 35 (459), Transpose vor Blizzard im Wechsel (Daedalus' Feldnotizen beschreiben eigene Fehler);
+  Beschwörer (Crimson Strike, Rekindle aufs schwächste Mitglied, Demi nur mit Carbuncle laut Wirktext); Rotmagier
+  (Engagement aus der Ferne verhindert RSRs Reichweitenprüfung am Blatt; Manafication nach A464); Piktomant bis auf
+  Striking Muse.
+- *Offen (nächster Loop):* Striking Muse hält eine Ladung, solange Starry Muse in 60 s zurückkommt
+  (`burstTimingCheckerStriking`), auch mit zwei vollen Ladungen – dann verfällt Abklingzeit, wo Starry später kommt
+  (kurze Kämpfe, Pausen).
+- *Falsifikation:* (1) Kein Defekt? Der Pfad `GeneralGCD` → `AddElementBase` → Scathe ist am Code belegt, Polyglot nur
+  am Überlauf. (2) Option falsch? Stärkster Einwand: ein Stapel für ein späteres Laufen (b) – trägt nicht, ein später
+  verlorener GCD wiegt nicht mehr als der jetzige. (3) Ausgeliefert, nichts ändert sich? Mit Bewegungssperre an und ohne
+  KI wirkt RSR im Laufen weiter; ohne Polyglot bleibt es Scathe; eine gespeicherte Einstellung „Retrace" aus bleibt aus.
+- *Prüfgrad:* statisch am Code, Spielblätter, The Balance; kompiliert ohne Warnung; im Spiel nicht beobachtet.
+
 ## B · Commit-Register (Fork vs. `upstream/main`)
 
 ### B1 · Einzelgeprüfte Fork-Commits

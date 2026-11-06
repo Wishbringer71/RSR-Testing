@@ -536,9 +536,7 @@ public readonly struct ActionBasicInfo
 			return false;
 		}
 
-		if (DataCenter.SpecialType == SpecialCommandType.NoCasting ||
-			(DateTime.Now > DataCenter.KnockbackStart && DateTime.Now < DataCenter.KnockbackFinished) ||
-			(DataCenter.NoPoslock && DataCenter.IsMoving && !skipCastingCheck) || DataCenter.BMRForceCancelCast || DataCenter.BMRIsMoving
+		if (CastStartBlockedNow(skipCastingCheck)
 			// A cast still under way when a status that damages every action lands kills (A439).
 			|| (!DataCenter.IsPvP && ActionPenaltyWatch.WouldMeetLanding(CastTime)))
 		{
@@ -547,6 +545,17 @@ public readonly struct ActionBasicInfo
 
 		return false;
 	}
+
+	/// <summary>
+	/// Whether no spell with a cast time may start now, whatever the spell: no-casting is commanded, a knockback runs, the
+	/// player moves without the movement lock, or BossMod's AI moves or cancels. The Swiftcast-type statuses are checked by
+	/// the caller (concept 03, "C6").
+	/// </summary>
+	internal static bool CastStartBlockedNow(bool skipCastingCheck)
+		=> DataCenter.SpecialType == SpecialCommandType.NoCasting
+			|| (DateTime.Now > DataCenter.KnockbackStart && DateTime.Now < DataCenter.KnockbackFinished)
+			|| (DataCenter.NoPoslock && DataCenter.IsMoving && !skipCastingCheck)
+			|| DataCenter.BMRForceCancelCast || DataCenter.BMRIsMoving;
 
 	private bool IsActionEnabled()
 	{

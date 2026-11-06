@@ -20,8 +20,10 @@ public class BLM_Default : BlackMageRotation
 	[RotationConfig(CombatType.PvE, Name = "Use both stacks of Leylines automatically")]
 	public bool Leyline2Madness { get; set; } = false;
 
+	// On by default (A602): The Balance, Black Mage Basic Guide, uses Retrace "once per Ley Lines duration" when the circle
+	// has to be left for longer; its 40 s recast serves nothing else.
 	[RotationConfig(CombatType.PvE, Name = "Use Retrace when out of Leylines in combat and standing still")]
-	public bool UseRetrace { get; set; } = false;
+	public bool UseRetrace { get; set; } = true;
 	#endregion
 
 	#region Tracking Properties
@@ -60,10 +62,7 @@ public class BLM_Default : BlackMageRotation
 	[RotationDesc]
 	protected override bool EmergencyAbility(IAction nextGCD, out IAction? act)
 	{
-		if (UseRetrace && RetracePvE.CanUse(out act))
-		{
-			return true;
-		}
+		// Retrace runs in GeneralAbility only, with its option's "in combat" and the hold right after Ley Lines (A602).
 		//To Fire
 		if (CurrentMp >= 7200 && UmbralIceStacks == 2 && ParadoxPvE.EnoughLevel)
 		{
@@ -258,6 +257,18 @@ public class BLM_Default : BlackMageRotation
 		}
 
 		if (AddElementBase(out act))
+		{
+			return true;
+		}
+
+		// No spell with a cast time can start: Xenoglossy (890, no MP) or a Firestarter Fire III before Scathe (100 for
+		// 800 MP, in Astral Fire half a Fire IV) (A602).
+		if (PolyglotWhileCastBlocked(out act))
+		{
+			return true;
+		}
+
+		if (CastStartBlocked && InAstralFire && HasFire && FireIiiPvE.CanUse(out act))
 		{
 			return true;
 		}

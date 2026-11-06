@@ -1,6 +1,6 @@
 # BLM — Abhängigkeitsmatrix
 
-Erzeugt von `.github/scripts/audit/generate_action_matrix.py` am 2026-10-31; nicht von Hand bearbeiten. Methode und Grenzen: `docs/rotation-flow/14-action-dependency-matrix.md`.
+Erzeugt von `.github/scripts/audit/generate_action_matrix.py` am 2026-11-06; nicht von Hand bearbeiten. Methode und Grenzen: `docs/rotation-flow/14-action-dependency-matrix.md`.
 
 - Basisrotation: `BlackMageRotation`
 - Rotation: `RotationSolver/RebornRotations/Magical/BLM_Default.cs`, `RotationSolver/RebornRotations/Magical/BLM_RP.cs`
@@ -141,7 +141,7 @@ keine im Wirktext
 
 Jeder Aufruf der Aktion trägt eine eigene Bedingung; hält sie an, verfällt das Fenster (Konzept 14, „Werden die Fenster genutzt"). Kandidaten, von Hand bewertet.
 
-- Retrace: 3 Aufruf(e), **ohne Rückfall vor Ablauf**
+- Retrace: 2 Aufruf(e), **ohne Rückfall vor Ablauf**
 
 ### Unvollständige Beschreibungen
 

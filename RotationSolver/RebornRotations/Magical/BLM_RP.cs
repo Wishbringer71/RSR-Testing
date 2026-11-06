@@ -14,8 +14,9 @@ public class BLM_RP : BlackMageRotation
 	[RotationConfig(CombatType.PvE, Name = "Use both stacks of Leylines automatically")]
 	public bool Leyline2Madness { get; set; } = false;
 
+	// On by default (A602), as in BLM_Default.
 	[RotationConfig(CombatType.PvE, Name = "Use Retrace when out of Leylines in combat and standing still")]
-	public bool UseRetrace { get; set; } = false;
+	public bool UseRetrace { get; set; } = true;
 
 	[RotationConfig(CombatType.PvE, Name = "Use Gemdraught/Tincture/pot")]
 	public bool UseMedicine { get; set; } = false;
@@ -179,6 +180,12 @@ public class BLM_RP : BlackMageRotation
 			{
 				return true;
 			}
+		}
+
+		// No spell with a cast time can start: a Polyglot spell instead of an empty GCD (A602).
+		if (PolyglotWhileCastBlocked(out act))
+		{
+			return true;
 		}
 
 		if (DespairPvE.CanUse(out act))
