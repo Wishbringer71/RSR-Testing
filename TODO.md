@@ -23,15 +23,18 @@ BossMod-Module) die Rotation des Beastmasters, die Wahl der Begleiter und den Ze
    von RSR trotz eingeschalteter Option, er drückte ihn bei 6 % selbst und starb (Beastmaster, Sägerschrei, 04.11.2026).
 2. Beastmaster: Crucible-Strategien: Ein K.O. beendet den Lauf, und ein Begleiter, den ein späterer Kampf braucht, kommt dort mit den LP an, die ihm
    die früheren ließen.
-3. Bewegungssperre beim Wirken gegen das Ausweichen der BossMod-KI: Mit „Lock movement while casting" an steht die
+3. Tiefe Gewölbe: kein Gewölbe-Trank in Himmelssäule und Eureka Orthos: Allein trinkt RSR dort nur gewöhnliche
+   Tränke, nicht die des Gewölbes.
+4. Tiefe Gewölbe: Verwandlung: Verwandelt, hat der Spieler andere Aktionen, und RSR drückt keine.
+5. Bewegungssperre beim Wirken gegen das Ausweichen der BossMod-KI: Mit „Lock movement while casting" an steht die
    Figur während jedes Zaubers still, auch wenn die KI von BossMod aus einer Fläche laufen will; nur in dieser
    Kombination, dort aber mit einem Treffer, dem der Spieler nicht ausweicht.
-4. Fremde Repositories auf Verbesserungen für RSR prüfen: Jeder Fund kann ein Defekt im Verhalten einer Klasse sein,
+6. Fremde Repositories auf Verbesserungen für RSR prüfen: Jeder Fund kann ein Defekt im Verhalten einer Klasse sein,
    den RSR heute im Kampf zeigt; zuerst die Rotationswerkzeuge für alle Jobs, Daedalus vorn (aktiv, alle Jobs,
    eigene Kampfvorhersage), dann Beastmaster und Blaumagier (sein Auftrag vom 05.11.2026).
-5. Blaumagier: Satz je Carnivale-Stufe: Im Masked Carnivale schlägt RSR keinen Satz für die Stufe vor, deren Mechanik
+7. Blaumagier: Satz je Carnivale-Stufe: Im Masked Carnivale schlägt RSR keinen Satz für die Stufe vor, deren Mechanik
    bestimmte Zauber verlangt.
-6. Konzepte neu ordnen (allgemein, Rollen, Gruppen, Jobs, Inhalte): keine direkte Wirkung im Kampf; eine Regel, die
+8. Konzepte neu ordnen (allgemein, Rollen, Gruppen, Jobs, Inhalte): keine direkte Wirkung im Kampf; eine Regel, die
    im Konzept eines Jobs steht, wird für dessen Gruppe übersehen, und eine Inhaltsregel ist über mehrere Konzepte
    verteilt.
 
@@ -69,6 +72,22 @@ Bestien-Ausdauermittel, Schadensgegenstände, Stärkungsmittel im Endkampf; A555
 *Gebaut auch:* K6 (A562, Hörner im Hornfenster), K7 (A563, Kader auf Wunsch im Teamfenster), K10 Campsite (A564, wer mitruht), K10 Laden (A569, A570: Kaufliste im Ladenfenster, Kauf auf Wunsch), K12 (A572, Eier des Zu), K13 (A578, Schatz: Empfehlung im Schatzfenster, Wahl auf Wunsch), Bretter 2 bis 5 (A588: Tötungsregeln, Gegenangriff nach Angriffsart), K5 Stufe 1 (A589: Stopp nur gegen Anfällige), K11 Stufe 2 (A590: Zähnefletschen und Campsite nach Bedarf des Endkampfs). *Nächster Schritt:* K5 Stufe 2 (Slow, Blind, Paralysis, Sleep, Death als Schutz, sobald eine Bezifferung belegt ist); die Bretter 2 bis 5 am ersten Mitschnitt prüfen (Spurzeilen „kill rule", „left alone"); K10 Weg ist eine Frage des Umfangs an ihn, am Ende des TODO. *Konzept:* 01,
 „Crucible of the Unbroken: Bretter, Kämpfe, Strategien".
 
+### Tiefe Gewölbe: kein Gewölbe-Trank in Himmelssäule und Eureka Orthos · N
+Im Kampf: Allein in der Himmelssäule oder in Eureka Orthos trinkt RSR bei niedrigen LP nur gewöhnliche Tränke; den Trank
+des Gewölbes, den BossMod dort nimmt (`DeepDungeon.cs`: Empyrean Potion, Gegenstand 23163, bzw. Orthos Potion, 38944),
+lässt es liegen. Im Palast der Toten und im Pilgerpfad nimmt RSR den eigenen (Sustaining bzw. Pilgrim's Potion).
+*Ort:* `CustomRotation_Items` (`GetHpPotions`, die Zweige je Gewölbe), `DataCenter.IsIn*`. *Nächster Schritt:* Loop –
+Gegenstände, Wirkung, Abklinggruppe und Erholungsstatus je Gewölbe aus den Blättern; die Zweige je Gewölbe zu einer
+Regel „Trank des laufenden Inhalts" zusammenfassen (universell zuerst). *Konzept:* 03 („Eine Wiederverwendung für alle
+Arzneien").
+
+### Tiefe Gewölbe: Verwandlung · N
+Im Kampf: Verwandelt ein Gewölbe-Gegenstand den Spieler (Status Transfiguration 565 bzw. 4708; BossMod kennt Manticore,
+Succubus, Kuribu, Dreadnaught, Bomb, Mudball), stehen nur die Aktionen der Verwandlung zur Verfügung; RSR kennt
+sie nicht und drückt nichts, bis die Verwandlung endet. *Ort:* Pfad der Sonderaktionen (`DutyRotation`), Status in
+`StatusID`. *Nächster Schritt:* Loop – Verwandlungen, ihre Aktionen und Statusdaten aus den Blättern (Namen deutsch nur
+belegt), Wirkung je Verwandlung; dann wie eine Aufgabenaktion. *Konzept:* 03, neu für Tiefe Gewölbe.
+
 ### Bewegungssperre beim Wirken gegen das Ausweichen der BossMod-KI · N, U
 Im Kampf: Mit „Lock movement while casting" („Stops your character from moving while casting …", ab Werk aus) setzt
 `MovingUpdater` während jedes Zaubers die Bewegungssperre des Spiels; die KI von BossMod kann dann nicht laufen, auch
@@ -105,7 +124,11 @@ erkenntisse daraus in rsr eingebracht werden können und die vorhandenen konzept
 *Ort:* Grundstruktur (`RotationSolver/Basic`, Updaters, Zielwahl, Abwehr), die Rotationen unter `RebornRotations`, die
 Jobkonzepte. *Nächster Schritt:* die Rotationswerkzeuge sind ausgewertet (Daedalus A561, A570 bis A575,
 A591 bis A607; die übrigen A608); offen sind die Beastmaster-Repositories (vollständige Suche), die Blaumagier-
-Repositories (Suche) und danach die übrigen Gruppen der Liste; Beastmaster-Suche: A609, Blaumagier-Suche: A611; nächste die Kampfvorhersage (BossMod, interjection). Je Fund ein Loop, je Repository ein Archiveintrag mit Commit und Datum. *Konzept:* 15, erweitert vom Vergleich mit WrathCombo auf die übrigen Werkzeuge; je Fund dazu das
+Repositories (Suche) und danach die übrigen Gruppen der Liste; Beastmaster-Suche: A609, Blaumagier-Suche: A611.
+Kampfvorhersage: interjection ist eine Anzeige (A334); BossMod läuft (A612: Unterbrechen und Provozieren); offen dort
+die übrigen Kandidaten der Rollen-KI – Wiederbelebung (Sperrstatus „Resurrection Restricted", Rotmagier über Vercure,
+Reihenfolge), Tank (Fernangriff unter Berserk und Inner Release, Abtausch gegen mehrere Angreifer, Unverwundbarkeit
+bei tödlichem Treffer), Heiler (Restzeit vor Esuna, Platz von Sacred Soil) – und die Jobmodule. Je Fund ein Loop, je Repository ein Archiveintrag mit Commit und Datum. *Konzept:* 15, erweitert vom Vergleich mit WrathCombo auf die übrigen Werkzeuge; je Fund dazu das
 tragende (01 Jobs, 08 Minderung, 13 Flächenschaden und Tankbuster).
 
 

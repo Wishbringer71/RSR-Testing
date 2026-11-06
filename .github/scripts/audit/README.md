@@ -447,14 +447,15 @@ Erhebung vollständig zu führen ist, die Bearbeitung aber dem Nutzungsprofil fo
 Ergebnis des ersten Laufs: **ein** Fund im Tank- und Heilerprofil, der eine Entscheidung
 ändert — Rückstoß (Arm’s Length). Er ist behoben, und damit hat sich die Klasse verschoben: der
 Scan meldet heute Wirkungen, die nur noch als **einzelne Id** gelesen werden statt als Gruppe —
-dieselbe Alterung wie bei den Statuslisten, eine Ebene tiefer, und in `TODO.md` geführt.
+dieselbe Alterung wie bei den Statuslisten, eine Ebene tiefer. Die Minderungen darunter liest die
+Minderungserhebung, die Kontrollwirkungen stammen aus Inhalten außerhalb des Profils.
 Die laufenden Zahlen nennt der Lauf; hier stehen sie nicht, weil sie dort altern würden. Der Wirktext der Verlangsamung nennt
 ausdrücklich die Verzögerung der **Automatikangriffe**, aus denen Trash-Gegner den Großteil
 ihres Schadens liefern; die Drosselung liegt damit in der Größenordnung von Rampart. Genutzt
-ist der Befund in der Barrierenregel des Dunkelritters (`PackSlowed`); die Frage, ob Rückstoß (Arm’s Length)
-auch **als** Minderungswerkzeug gewirkt werden soll, steht in `TODO.md`, weil sie mit ihrer
-Rolle als einzigem Rückstoßschutz kollidiert. Die übrigen Treffer liegen in Bozja und den
-Tiefen Gewölben und sind erfasst, nicht bearbeitet.
+ist der Befund in der Barrierenregel des Dunkelritters (`PackSlowed`) und in der Pull-Regel der
+vier Tanks (`ArmsLengthSlowsPull`): Rückstoß (Arm’s Length) geht im Pull auch für seine
+Verlangsamung (A194, A236; Konzept 08). Die übrigen Treffer sind Aktionen aus Bozja und
+Eureka (Logos), Inhalten, die er nicht genannt hat; sie sind erfasst, nicht bearbeitet.
 
 Der Selbsttest deckt die Unterscheidung ab, die den Scan trägt: Ein Kontrolleffekt wird
 erkannt, eine reine Heilung nicht, und die Rollenzuordnung trennt Tank, Heiler und den Rest.

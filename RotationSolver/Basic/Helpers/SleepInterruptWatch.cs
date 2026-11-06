@@ -334,7 +334,7 @@ public static class SleepInterruptWatch
 	public static bool IsAreaCastToStop(IBattleChara enemy)
 	{
 		return enemy != null && enemy.IsCasting && enemy.CastActionId != 0 && !IsUnstoppable(enemy.CastActionId)
-			&& ReachesParty(enemy);
+			&& enemy.CastAreaReachesParty();
 	}
 
 	/// <summary>
@@ -351,13 +351,17 @@ public static class SleepInterruptWatch
 	/// at least 2 s, no cone, no ring, no area under 8 y, and its setting "Interrupt enemy casts", which casters never see):
 	/// the decision checks the time, and the shape does not make a stopped cast less stopped. Whether sleeps have failed on
 	/// the action is not read here: a stun stops what a sleep may not.
+	/// The interruptible and the known stoppable cast count only from an enemy in the fight, as for the melee interrupt
+	/// (concept 03, "Unterbrechen, Betäuben, Provozieren: welcher Gegner", A612): an idle enemy aims its cast at nobody, and
+	/// a stop would only pull it. An area attack that reaches the party counts from any enemy.
 	/// </remarks>
 	/// <param name="enemy">The enemy.</param>
 	/// <returns>True for such a cast.</returns>
 	public static bool IsCastWorthStopping(IBattleChara enemy)
 	{
 		return enemy != null && enemy.IsCasting && enemy.CastActionId != 0
-			&& (ReachesParty(enemy) || enemy.IsCastInterruptible || IsKnownStoppedOnOne(enemy.CastActionId));
+			&& (enemy.CastAreaReachesParty()
+				|| (enemy.IsEngaged() && (enemy.IsCastInterruptible || IsKnownStoppedOnOne(enemy.CastActionId))));
 	}
 
 	// A cast on a single target - a debuff on one member - that a sleep has stopped before: known to be stoppable. An
@@ -374,24 +378,6 @@ public static class SleepInterruptWatch
 		{
 			return OtherConfiguration.SleepOutcomes.TryGetValue(actionId, out var reading) && reading.Stopped > 0;
 		}
-	}
-
-	// An area attack that reaches the player or two living members, by the shape of the action.
-	private static bool ReachesParty(IBattleChara enemy)
-	{
-		var act = Service.GetSheet<Lumina.Excel.Sheets.Action>().GetRowOrDefault(enemy.CastActionId) ?? default;
-		if (act.RowId == 0)
-		{
-			return false;
-		}
-
-		var shape = (CastType)act.CastType;
-		if (act.EffectRange == 0 && shape is CastType.Targeted or CastType.Unknown)
-		{
-			return false;
-		}
-
-		return DataCenter.AreaCastReachesParty(enemy, act);
 	}
 
 	/// <summary>

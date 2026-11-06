@@ -20,8 +20,13 @@ internal static partial class TargetUpdater
 	private static RandomDelay _interruptDelay = new(() => Service.Config.InterruptDelay);
 	private static RandomDelay _provokeDelay = new(() => Service.Config.ProvokeDelay);
 
-	// The enemy the provoke waits for, the member it turned to, and since when (A500).
-	private static (ulong Enemy, ulong Member, DateTime Since) _provokeTurn;
+	// Per enemy the provoke waits for: the member it turned to, and since when (A500). Per enemy since every action chooses
+	// among all of them (A612); one shared record would restart with each enemy read and never see a strike.
+	private static readonly Dictionary<ulong, (ulong Member, DateTime Since)> _provokeTurns = [];
+
+	// The enemies that qualify for an interrupt or a provoke in this frame, before the delays.
+	private static readonly List<IBattleChara> _interruptQualified = [];
+	private static readonly List<IBattleChara> _provokeQualified = [];
 
 	private static readonly List<IBattleChara> _raiseCandidates = [];
 	private static readonly List<IBattleChara> _dispelCandidates = [];
@@ -63,8 +68,13 @@ internal static partial class TargetUpdater
 			EnemyDanger.Clear();
 			DataCenter.LastStrikeByEnemy.Clear();
 			// Through the delays, so their timers start again with the next target instead of carrying this one over.
-			DataCenter.ProvokeTarget = _provokeDelay.Delay<IBattleChara>(null);
-			DataCenter.InterruptTarget = _interruptDelay.Delay<IBattleChara>(null);
+			_ = _provokeDelay.Delay(false);
+			_ = _interruptDelay.Delay(false);
+			DataCenter.ProvokeCandidates.Clear();
+			DataCenter.InterruptCandidates.Clear();
+			_provokeTurns.Clear();
+			DataCenter.ProvokeTarget = null;
+			DataCenter.InterruptTarget = null;
 			UpdateTimeToKill();
 			return;
 		}
@@ -88,20 +98,29 @@ internal static partial class TargetUpdater
 		// walk behind it runs only when one of them comes up.
 		bool? autoProvokeAllowed = null;
 		bool AutoProvokeAllowed() => autoProvokeAllowed ??= Service.Config.AutoProvokeForTank || StateUpdater.CountPartyTanks() < 2;
-		var provokeCandidate = (DataCenter.Role == JobRole.Tank || StatusHelper.PlayerHasStatus(true, StatusID.VariantUltimatumSet))
-			? GetFirstHostileTarget(target => target.CanProvoke(AutoProvokeAllowed))
-			: null; // Calculating this per frame rather than on-demand is actually a fair amount worse
-		// The delay never outlasts the point where the provoke could come too late (his rule, A500): taking the enemy from
-		// a co-tank - in danger, or ahead of a tankbuster - does not wait at all, and an enemy that turned to another
-		// member waits only until its first hit on him.
-		DataCenter.ProvokeTarget = _provokeDelay.Delay(provokeCandidate)
-			?? (provokeCandidate is { } enemy && ProvokeCannotWait(enemy) ? enemy : null);
+		_provokeQualified.Clear();
+		if (DataCenter.Role == JobRole.Tank || StatusHelper.PlayerHasStatus(true, StatusID.VariantUltimatumSet))
+		{
+			// Calculating this per frame rather than on-demand is actually a fair amount worse
+			CollectHostileTargets(_provokeQualified, target => target.CanProvoke(AutoProvokeAllowed));
+		}
+
+		// Every qualifying enemy, not the first: each action takes the first among its own candidates (concept 03,
+		// "Unterbrechen, Betäuben, Provozieren: welcher Gegner", A612). The delay counts from the first one, as before, and
+		// never outlasts the point where the provoke could come too late (his rule, A500): taking the enemy from a co-tank
+		// - in danger, or ahead of a tankbuster - does not wait at all, and an enemy that turned to another member waits
+		// only until its first hit on him.
+		FillReady(DataCenter.ProvokeCandidates, _provokeQualified, _provokeDelay.Delay(_provokeQualified.Count > 0), ProvokeCannotWait);
+		ForgetProvokeTurns();
+		DataCenter.ProvokeTarget = DataCenter.ProvokeCandidates.Count > 0 ? DataCenter.ProvokeCandidates[0] : null;
+
 		// Tanks, Melee, RDM, and various phantom and duty actions can interrupt so just deal with it. The delay never outlasts
 		// the cast: with one GCD of it left the interrupt goes now, since one that waits past the cast's end is no interrupt.
-		var interruptCandidate = GetFirstHostileTarget(ObjectHelper.CanInterrupt);
-		DataCenter.InterruptTarget = _interruptDelay.Delay(interruptCandidate)
-			?? (interruptCandidate is { } caster && caster.TotalCastTime - caster.CurrentCastTime <= DataCenter.DefaultGCDTotal
-				? interruptCandidate : null);
+		_interruptQualified.Clear();
+		CollectHostileTargets(_interruptQualified, ObjectHelper.CanInterrupt);
+		FillReady(DataCenter.InterruptCandidates, _interruptQualified, _interruptDelay.Delay(_interruptQualified.Count > 0),
+			caster => caster.TotalCastTime - caster.CurrentCastTime <= DataCenter.DefaultGCDTotal);
+		DataCenter.InterruptTarget = DataCenter.InterruptCandidates.Count > 0 ? DataCenter.InterruptCandidates[0] : null;
 
 		if (DataCenter.IsInOccultCrescentOp && Service.Config.ElementalWeaknessTracking)
 		{
@@ -123,13 +142,65 @@ internal static partial class TargetUpdater
 			return true;
 		}
 
-		if (_provokeTurn.Enemy != enemy.GameObjectId || _provokeTurn.Member != member.GameObjectId)
+		if (!_provokeTurns.TryGetValue(enemy.GameObjectId, out var turn) || turn.Member != member.GameObjectId)
 		{
-			_provokeTurn = (enemy.GameObjectId, member.GameObjectId, DateTime.Now);
+			turn = (member.GameObjectId, DateTime.Now);
+			_provokeTurns[enemy.GameObjectId] = turn;
 		}
 
 		return DataCenter.LastStrikeByEnemy.TryGetValue(enemy.GameObjectId, out var strike)
-			&& strike.Target == member.GameObjectId && strike.At >= _provokeTurn.Since;
+			&& strike.Target == member.GameObjectId && strike.At >= turn.Since;
+	}
+
+	// Keeps the turn of each enemy that still qualifies for a provoke and drops the others, so an enemy that qualifies
+	// again later starts a new turn.
+	private static void ForgetProvokeTurns()
+	{
+		if (_provokeTurns.Count == 0)
+		{
+			return;
+		}
+
+		List<ulong>? gone = null;
+		foreach (var id in _provokeTurns.Keys)
+		{
+			var stillQualifies = false;
+			foreach (var enemy in _provokeQualified)
+			{
+				if (enemy.GameObjectId == id)
+				{
+					stillQualifies = true;
+					break;
+				}
+			}
+
+			if (!stillQualifies)
+			{
+				(gone ??= []).Add(id);
+			}
+		}
+
+		if (gone != null)
+		{
+			foreach (var id in gone)
+			{
+				_ = _provokeTurns.Remove(id);
+			}
+		}
+	}
+
+	// The qualifying enemies that may be acted on now: all of them once the delay has run, otherwise those that cannot wait.
+	private static void FillReady(List<IBattleChara> ready, List<IBattleChara> qualified, bool delayRunOut,
+		Func<IBattleChara, bool> cannotWait)
+	{
+		ready.Clear();
+		foreach (var enemy in qualified)
+		{
+			if (delayRunOut || cannotWait(enemy))
+			{
+				ready.Add(enemy);
+			}
+		}
 	}
 
 	/// <summary>
@@ -471,12 +542,13 @@ internal static partial class TargetUpdater
 		return allTargets;
 	}
 
-	private static IBattleChara? GetFirstHostileTarget(Func<IBattleChara, bool> predicate)
+	// Every hostile target that satisfies the predicate, in the order of the hostile list.
+	private static void CollectHostileTargets(List<IBattleChara> into, Func<IBattleChara, bool> predicate)
 	{
 		var hostileTargets = DataCenter.AllHostileTargets;
 		if (hostileTargets == null)
 		{
-			return null;
+			return;
 		}
 
 		foreach (var target in hostileTargets)
@@ -485,15 +557,14 @@ internal static partial class TargetUpdater
 			{
 				if (predicate(target))
 				{
-					return target;
+					into.Add(target);
 				}
 			}
 			catch (Exception ex)
 			{
-				PluginLog.Error($"Error in GetFirstHostileTarget: {ex.Message}");
+				PluginLog.Error($"Error in CollectHostileTargets: {ex.Message}");
 			}
 		}
-		return null;
 	}
 
 	private static IBattleChara? GetDeathTarget()

@@ -2188,6 +2188,61 @@ public static class ObjectHelper
 
 	private static readonly ConcurrentDictionary<uint, bool> _effectRangeCheck = [];
 
+	/// <summary>
+	/// Whether <paramref name="enemy"/> takes part in a fight: the game counts it in combat, it has a target, or its cast
+	/// aims at someone other than itself. An enemy that has been pulled shows at least one of them; one that stands idle,
+	/// casting for itself, none (concept 03, "Unterbrechen, Betäuben, Provozieren: welcher Gegner", A612).
+	/// </summary>
+	/// <param name="enemy">The enemy.</param>
+	/// <returns>True for an enemy in a fight.</returns>
+	internal static bool IsEngaged(this IBattleChara enemy)
+	{
+		return enemy != null
+			&& (enemy.InCombat() || enemy.TargetObject is not null
+				|| (enemy.IsCasting && enemy.CastTargetObjectId != enemy.GameObjectId
+					&& Svc.Objects.SearchById(enemy.CastTargetObjectId) is not null));
+	}
+
+	/// <summary>
+	/// Whether <paramref name="enemy"/> is casting an area attack that reaches the party - the player or two living
+	/// members, by the shape of the action (<see cref="DataCenter.AreaCastReachesParty"/>).
+	/// </summary>
+	/// <param name="enemy">The enemy.</param>
+	/// <returns>True for such a cast.</returns>
+	internal static bool CastAreaReachesParty(this IBattleChara enemy)
+	{
+		if (enemy == null || !enemy.IsCasting || enemy.CastActionId == 0)
+		{
+			return false;
+		}
+
+		var act = Service.GetSheet<Lumina.Excel.Sheets.Action>().GetRowOrDefault(enemy.CastActionId) ?? default;
+		if (act.RowId == 0)
+		{
+			return false;
+		}
+
+		var shape = (CastType)act.CastType;
+		if (act.EffectRange == 0 && shape is CastType.Targeted or CastType.Unknown)
+		{
+			return false;
+		}
+
+		return DataCenter.AreaCastReachesParty(enemy, act);
+	}
+
+	/// <summary>
+	/// Whether stopping <paramref name="enemy"/>'s cast protects anyone: the enemy takes part in the fight
+	/// (<see cref="IsEngaged"/>), or its cast is an area attack that reaches the party (<see cref="CastAreaReachesParty"/>).
+	/// Read by every interrupt, stun and sleep that stops a cast (concept 03, A612).
+	/// </summary>
+	/// <param name="enemy">The enemy.</param>
+	/// <returns>True when stopping the cast protects someone.</returns>
+	internal static bool CastThreatensParty(this IBattleChara enemy)
+	{
+		return enemy.IsEngaged() || enemy.CastAreaReachesParty();
+	}
+
 	internal static bool CanInterrupt(this IBattleChara battleChara)
 	{
 		if (battleChara == null)
@@ -2210,6 +2265,13 @@ public static class ObjectHelper
 		}
 
 		if (!Service.Config.InterruptibleMoreCheck)
+		{
+			return false;
+		}
+
+		// Concept 03, "Unterbrechen, Betäuben, Provozieren: welcher Gegner" (A612): an enemy outside the fight aims its
+		// cast at nobody; stopping it protects no one and pulls it.
+		if (!battleChara.CastThreatensParty())
 		{
 			return false;
 		}

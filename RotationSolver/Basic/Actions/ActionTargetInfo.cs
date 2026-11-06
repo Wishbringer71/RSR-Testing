@@ -2471,16 +2471,30 @@ public struct ActionTargetInfo(IBaseAction action)
 
 		IBattleChara? FindProvokeTarget()
 		{
-			if (battleChara != null && DataCenter.ProvokeTarget != null)
+			return FirstCandidateInReach(DataCenter.ProvokeCandidates);
+		}
+
+		// The first of the candidates RSR wants acted on that is among this action's own targets - in its range and
+		// attackable by the engage setting -, so one it cannot reach does not hold it back from one it can (concept 03,
+		// "Unterbrechen, Betäuben, Provozieren: welcher Gegner", A612).
+		IBattleChara? FirstCandidateInReach(List<IBattleChara> candidates)
+		{
+			if (battleChara == null)
+			{
+				return null;
+			}
+
+			foreach (var candidate in candidates)
 			{
 				foreach (var o in battleChara)
 				{
-					if (o.GameObjectId == DataCenter.ProvokeTarget.GameObjectId)
+					if (o.GameObjectId == candidate.GameObjectId)
 					{
-						return DataCenter.ProvokeTarget;
+						return o;
 					}
 				}
 			}
+
 			return null;
 		}
 
@@ -3012,19 +3026,7 @@ public struct ActionTargetInfo(IBaseAction action)
 
 		IBattleChara? FindInterruptTarget()
 		{
-			if (battleChara == null || DataCenter.InterruptTarget == null)
-			{
-				return null;
-			}
-
-			foreach (var o in battleChara)
-			{
-				if (o.GameObjectId == DataCenter.InterruptTarget.GameObjectId)
-				{
-					return DataCenter.InterruptTarget;
-				}
-			}
-			return null;
+			return FirstCandidateInReach(DataCenter.InterruptCandidates);
 		}
 
 		IBattleChara? FindHostile()

@@ -1069,7 +1069,8 @@ Außerhalb der Einzelabwehr:
 - **Holmgang** als Notfall bei „Health of dying tank" (ab Werk 15 %).
 - **Abschütteln** als Gruppenheilung und Flächenabwehr.
 - **Urflackern**: Abschnitt „Krieger: Urimpuls für sich oder Urflackern für andere".
-- **Tiefschlag** und **Zwischenruf**: zentral, nicht auf Bosse.
+- **Tiefschlag** und **Zwischenruf**: zentral, nicht auf Bosse, nur auf Gegner, deren Wirken jemanden bedroht (Konzept 03,
+  „Unterbrechen, Betäuben, Provozieren: welcher Gegner", A612).
 
 ### Die Regeln je Fähigkeit, mit Grund
 

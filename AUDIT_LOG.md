@@ -17779,6 +17779,68 @@ habe den schleim bislang nicht anfreunden können."
   Blue Academy selbst, nicht die Daten der Plugins (Lizenz und Stand).
 - *Prüfgrad:* statisch (README, `CarnivaleSets.cs`, `Profiles.cs`).
 
+### A612 · Unterbrechen, Betäuben, Provozieren: nur, was bedroht, und das Ziel wählt jede Aktion (06.11.2026)
+
+- *Anlass:* TODO „Fremde Repositories", Gruppe Kampfvorhersage. BossMods KI unterbricht und betäubt nur Gegner im Kampf:
+  „note "in combat" check here, as deep dungeon enemies can randomly cast interruptible spells out of combat -
+  interjecting causes aggro" (ffxiv_bossmod a9f4e5f1f, 20.01.2025; BossmodReborn 27be422 vom 05.11.2026,
+  `AIBase.ShouldInterrupt`; Werkzeugquelle). sourpuh/ffxiv_interjection (5ce8bde, 01.05.2026) ist eine Anzeige, schon A334.
+- *Seine Rüge dazwischen (06.11.2026):* „falsche annahme, ich spiele tiefe gewölbe. z.b. das in ill mheg". Ich hatte die
+  Tiefen Gewölbe als Sonderinhalt außerhalb des Profils eingeordnet, weil ich in seinen `DefenseTrace.log` kein Gebiet
+  dazu fand; A427 (Pilgerpfad, 26.10.2026) hatte ich übersehen, weil ich nur nach „Pilgers Pfad" (Blattname) suchte.
+  Einordnung: Hinweis zu seinem Profil, mit Rüge. Eingetragen: CLAUDE.md, „Nutzungsprofil" (genannt; das Fehlen in den
+  Uploads belegt keinen Ausschluss). Pilgers Pfad liegt in Norvrandt (ContentFinderCondition 1032, Gebiet 1281),
+  Inhaltsart „Tiefe Gewölbe" (ContentType 21, xivapi de).
+- *Neu geprüft, was als außerhalb galt:* (a) Konzept 08 und die Prüfskript-README nannten die übrigen Treffer von
+  `scan16.py` „Bozja und Tiefe Gewölbe": falsch zugeordnet, es sind Bozja (Lost Paralyze III) und Eureka (Paralyze L,
+  Paralyze L III, `EurekaMagiaAction` 16) – C168. (b) A452 ließ offen, ob Tiefe Gewölbe „über der Stufe" melden: Ihre
+  `ContentFinderCondition` führt `ClassJobLevelSync` 0 (174, 540, 897, 1032, 1038), also lernt RSR dort (Konzept 13).
+  (c) BossMods Modul für Tiefe Gewölbe (`DeepDungeon.cs`): zwei Funde ins TODO (Tränke in Himmelssäule und Eureka
+  Orthos; Verwandlung).
+- *1 Research, RSR:* `TargetUpdater` wählte je Bild **einen** Unterbrechungs- und einen Provozier-Gegner
+  (`GetFirstHostileTarget` über `AllHostileTargets`, bis 48 y, Reihenfolge der Objekttabelle aus `GetAllTargets`, nicht
+  sortiert); `ActionTargetInfo.FindInterruptTarget`/`FindProvokeTarget` gaben ihn nur zurück, wenn er unter den Zielen
+  der Aktion stand (Reichweite, `IsAttackable` mit der Zielart). `CanInterrupt` las keinen Kampfstatus; `CanProvoke` die
+  Zielart, keine Reichweite. Allein in einem Gebiet stellt die Zielart ab Werk (`AllTargetsWhenSoloInDuty`) jeden Gegner
+  als angreifbar. Derselbe Fehler am Tiefschlag (`ModifyLowBlowPvE`, jedes Wirken eines Nicht-Bosses) und am Stopp der
+  Heiler und Magier (`SleepInterruptWatch.IsCastWorthStopping`).
+- *1 Research, sein Mitschnitt 26.10.2026 (Pilgerpfad 71–90):* 514 Wirken von Gegnern, 199 davon vor der ersten
+  Berührung mit der Gruppe; ohne Bosse: Gegner, die gerade gezogen wurden (Geläuterte Korruption, Rollsalve, 2,4 bis
+  10,8 s vor dem ersten Treffer) und nie berührte Helfer der Bosskämpfe (Kugelblitz, Arkaner Zylinder, Geläuterte
+  Beschimpfung als Abbilder), die nicht anvisierbar sind. Einen ungezogenen Zauberer zeigt dieser Mitschnitt nicht.
+- *2 Optionen:* (0) belassen; (1) nur die Kampfprüfung; (2) nur die Wahl je Aktion; (3) beides, mit der Ausnahme einer
+  Fläche auf die Gruppe, an allen Stellen der Klasse; (4) den einen Kandidaten auf die größte eigene Reichweite
+  begrenzen; (5) die Liste nach Entfernung sortieren. Rückbau: der Commit.
+- *3 Abwägung:* (3) gewählt. Stärken: Eine Unterbrechung erreicht den Zauberer, den sie erreichen kann; ein ungezogener
+  Gegner wird nicht durch einen Stopp gezogen. Schwächen: ein Gegner ohne Kampfstatus, Ziel und Wirkziel, dessen
+  Einzelziel-Wirken doch jemanden träfe – keiner bekannt; die Fläche auf die Gruppe zählt weiter. Chancen: Rudel mit
+  mehreren Magiern, offene Welt, Kreszentia mit vielen Gegnern im Umkreis. Bedrohungen: keine von BossMod (kein Pfad
+  liest es). (1) allein lässt den fernen Gegner vorn; (2) allein zieht weiter den Ungezogenen; (4) kennt die Zielart
+  nicht; (5) ebenso, und die nächste Aktion fände wieder nur einen.
+- *4 Abgleich:* Der BossMod-Fund ist die Kampfprüfung; die Wahl je Aktion ist ein Defekt derselben Stelle, als Klasse
+  behoben (Unterbrechen und Provozieren).
+- *5 Review:* Die Verzögerungen behalten ihre Bedeutung (ab dem ersten Kandidaten; `RandomDelay` misst nur, ob einer da
+  ist). Die Abwendung des Provozierten verfolgt RSR je Gegner (`_provokeTurns`); ein geteilter Eintrag begänne mit jedem
+  gelesenen Gegner neu und sähe nie einen Treffer. `InterruptTarget`/`ProvokeTarget` bleiben (erster bereiter Kandidat)
+  für die Statusflaggen und abgeleitete Rotationen. `HostileMovement.Engaged` war dieselbe Erkennung: jetzt
+  `ObjectHelper.IsEngaged` für beide (Ziel über `TargetObject` statt Roh-Id, dazu das Wirkziel).
+- *6 Falsifikation:* Kein Defekt? Widerlegt: Die Gegnerliste ist nicht nach Entfernung sortiert. Option falsch (ein
+  gerade gezogener Gegner zählt nicht)? Sein Ziel und das Wirkziel tragen die Erkennung ohne Kampfstatus; Gegner mit
+  Fläche zählen immer. Ausgeliefert, nichts ändert sich? In der Gruppe schloss die Zielart Ungezogene schon aus, und
+  meist zaubert nur einer – dann bleibt es gleich; es ändert sich, sobald mehrere zaubern oder einer außer Reichweite
+  vorn steht, und allein bei einem ungezogenen Zauberer.
+- *7 Gebaut:* `ObjectHelper.IsEngaged`, `CastAreaReachesParty` (aus `SleepInterruptWatch` hierher), `CastThreatensParty`;
+  `CanInterrupt` und `ModifyLowBlowPvE` lesen sie, `IsCastWorthStopping` die Kampfprüfung für unterbrechbare und bekannt
+  stoppbare Wirken; `DataCenter.InterruptCandidates`/`ProvokeCandidates`, gefüllt in `TargetUpdater` (`FillReady`,
+  `ForgetProvokeTurns`), gelesen in `ActionTargetInfo.FirstCandidateInReach`. Text von „Stop an enemy's cast with the
+  job's stun or a sleep (experimental)" um „while that enemy is fighting" ergänzt: dieselbe Regel wie die Unterbrechung
+  der Nahkämpfer, als deren Gegenstück er den Stopp angelegt hat (23.10.2026); seine Begründung bleibt unberührt.
+- *8 Nachweis:* statisch, Compile (`cloud_build.sh`, ohne Warnung), Prüfskripte; im Spiel nicht beobachtet.
+- *9 Dokumentation:* Konzept 03 („Unterbrechen, Betäuben, Provozieren: welcher Gegner", neu), 08 (Stopp, Erkennung),
+  09 (Tiefschlag, Zwischenruf), 13 (Tiefe Gewölbe lernen); Release-Text.
+- *Betroffene:* Endnutzer (alle Jobs mit Unterbrechung, Betäubung, Provozieren, Schlaf-Stopp); abgeleitete Rotationen
+  über `InterruptTarget`/`ProvokeTarget` (gleiche Bedeutung: erster bereiter Kandidat) und `TargetType.Interrupt`/`Provoke`.
+
 ## B · Commit-Register (Fork vs. `upstream/main`)
 
 ### B1 · Einzelgeprüfte Fork-Commits
@@ -18098,3 +18160,4 @@ Die offene Arbeit dazu — Reihenfolge und Abbruchbedingung der Nachprüfung —
 | C165 | Konzept 08, „Schaden über Zeit: HoT gegen DoT": „Esuna kommt in RSRs GCD-Verteilung vor jeder Heilung; ein entfernbarer DoT, den RSR entfernt, braucht keinen HoT" und „Entfernbare DoTs entfernt Esuna vorher; H1 lässt sie aus" | Die Reihenfolge war Upstreams, ungeprüft übernommen. Im Odin-Kampf (05.11.2026) gingen 13 Reinigungen einer Gruppen-Blutung und 9 von Slow vor jede Heilung, auch bei einem Mitglied mit 0 % Vorausschau; 8.800 MP. Ein DoT auf mehreren Mitgliedern ist Sache des Gruppen-HoT (sein Hinweis), und eine Reinigung geht nur vor, wenn sie ein Leben rettet. | A565: Konzept 07 „Reinigung oder Heilung", 08 berichtigt, Code. |
 | C166 | Konzept 01 (Begleiter-Nutzen A491, Entfesseln, K10 Laden A569) und Konzept 07 („Reinigung oder Heilung", A565): „Todesurteil" als deutscher Name des Zustands Doom | Der Name war selbst gebildet. Das deutsche Spielblatt nennt Status 5421 „Verhängnis" (xivapi v2, `language=de`, 05.11.2026); an allen vier Stellen ersetzt. Ebenso im Ladenabschnitt: Paralyse (5382), Stein (4891), Steinfluch (437), Blind (5381), Betäubung (Status 2) aus demselben Blatt; Chains of Condemnation englisch, weil kein deutscher Beleg vorliegt. A491 führt das Wort als Teil seines damaligen Wortlauts; in A515 ist „Todesurteil" der Name einer Gegneraktion aus seinem Mitschnitt, kein Zustand. |
 | C167 | C77: „Die Zurückhaltung rechnet jetzt selbst, ob die Reserve gefährdet ist (Ladung übrig, oder nächste vor dem vorhergesagten Ereignis zurück)“; ebenso Konzept 08, „Zwei Ladungen“: „Die Frage wird nicht vorgelegt, sondern im Kampf entschieden“ | Kein Aufrufer übergab `BMRShouldRefreshBefore` eine Aktion; ohne sie galt die Reserve immer als echt, die Rechnung lief nie. Übergeben, hätte sie für eine bereite Aktion mit einer Ladung die Restzeit 0 gelesen und die Zurückhaltung abgeschaltet. Der Text der Option („Radiant Aegis, Tactician, Troubadour or Shield Samba wait for the second instead of being eaten by the first“) beschreibt das Verhalten, das tatsächlich lief | Rechnung berichtigt (ohne ladende Ladung die volle Abklingzeit); Barde, Maschinist und Tänzer übergeben ihre Aktion (eine Ladung, Reserve echt, Verhalten gleich); Schimmerschild nicht, weil der Optionstext bindet. Konzept 08 auf diesen Stand gebracht (A592) |
+| C168 | Konzept 08 („Die Erhebung dazu ist geführt …") und Prüfskript-README zu `scan16.py`: „Die übrigen Treffer der Erhebung liegen in Bozja und den Tiefen Gewölben, also außerhalb des Nutzungsprofils" | Die Treffer sind Bozja (Lost Paralyze III) und Eureka (Paralyze L, Paralyze L III; `EurekaMagiaAction` 16, xivapi 06.11.2026), nicht Tiefe Gewölbe; und die Tiefen Gewölbe liegen in seinem Profil (seine Rüge, 06.11.2026; A427 Pilgerpfad) | Beide Stellen berichtigt; Eureka bleibt erfasst, bis er es nennt (A612) |

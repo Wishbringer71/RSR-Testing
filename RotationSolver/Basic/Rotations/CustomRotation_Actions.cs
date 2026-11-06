@@ -76,7 +76,9 @@ public partial class CustomRotation
 	{
 		setting.CanTarget = o =>
 		{
-			return o is IBattleChara b && !b.IsBossFromIcon() && !IsMoving && b.CastActionId != 0 && (!b.IsCastInterruptible || ActionID.InterjectPvE.IsCoolingDown());
+			// Only a cast that threatens someone (concept 03, A612): a stun on an idle enemy only pulls it.
+			return o is IBattleChara b && !b.IsBossFromIcon() && !IsMoving && b.CastActionId != 0 && (!b.IsCastInterruptible || ActionID.InterjectPvE.IsCoolingDown())
+				&& b.CastThreatensParty();
 		};
 	}
 

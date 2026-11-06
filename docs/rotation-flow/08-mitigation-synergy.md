@@ -1534,10 +1534,10 @@ geändert (A432):
   auswerten. gerade beim debuff des mimiks wäre sie sinnvoll, falls sie durchgeht."
 - Hinweis (27.10.2026): „ich habe schlaf auf mimik selbst gecasted. wahrscheinlich zu spät oder slbst unterbrochen".
 
-**Sachstand (A329, A334, A427):** Heiler und Magier stoppen das Wirken eines Gegners, der kein Boss ist, wenn es eine
-Fläche auf die Gruppe ist, ein Wirken, das das Spiel als unterbrechbar führt – jedes, nicht nur, was ein Nahkämpfer
-mit Stolperfalle stoppt –, oder ein Wirken auf ein einzelnes Ziel, das ein Schlaf schon einmal abgebrochen hat,
-solange es lang genug läuft. Zuerst mit dem eigenen Stopper des Jobs: beim Weißmagier Sanctus bzw.
+**Sachstand (A329, A334, A427, A612):** Heiler und Magier stoppen das Wirken eines Gegners, der kein Boss ist, wenn es
+eine Fläche auf die Gruppe ist, oder – solange der Gegner kämpft – ein Wirken, das das Spiel als unterbrechbar führt
+(jedes, nicht nur, was ein Nahkämpfer mit Stolperfalle stoppt) oder ein Wirken auf ein einzelnes Ziel, das ein Schlaf
+schon einmal abgebrochen hat; jeweils solange es lang genug läuft. Zuerst mit dem eigenen Stopper des Jobs: beim Weißmagier Sanctus bzw.
 Sanctga, der jeden nicht immunen Gegner im Umkreis betäubt. Wo der nicht reicht, mit Schlummer bzw. Schlaf. Was die
 Versuche zeigen, speichert RSR über die Sitzung hinaus und richtet jede weitere Entscheidung danach. Option „Stop an
 enemy's cast with the job's stun or a sleep (experimental)", ab Werk an. Jeder Versuch steht in `DefenseTrace.log`.
@@ -1632,11 +1632,15 @@ Belege abgerufen 18.10.2026 (xivapi v2, Blätter `Action` und `Status`, englisch
 - ein Gegner der Feindesliste, kein Boss (Rang 2 und 6 im Blatt BNpcBase), dessen Wirken
   - eine Fläche ist, die dich oder zwei lebende Mitglieder erreicht (`DataCenter.AreaCastReachesParty`) – hier testet
     jeder Schlaf weiter, ob er sie stoppt;
-  - **oder** das das Spiel als unterbrechbar führt (`IsCastInterruptible`), jedes: ohne die Grenzen der Stolperfalle
+  - **oder**, solange der Gegner kämpft (`ObjectHelper.IsEngaged`: im Kampf, mit Ziel oder mit einem Wirken auf
+    jemanden; wie für die Unterbrechung der Nahkämpfer, Konzept 03, „Unterbrechen, Betäuben, Provozieren: welcher
+    Gegner", A612 – ein untätiger Gegner zielt auf niemanden, und der Stopp zöge ihn nur), eines, das das Spiel als
+    unterbrechbar führt (`IsCastInterruptible`), jedes: ohne die Grenzen der Stolperfalle
     der Nahkämpfer (`ObjectHelper.CanInterrupt`: mindestens 2 s, kein Kegel, kein Ring, keine Fläche unter 8 y) und
     ohne deren Einstellung „Interrupt enemy casts" (seine Vorgabe vom 27.10.2026, „auf alle als unterbrechbare
     aktionen"). Die Wirkzeit prüft die Entscheidung, die Form ändert nichts daran, dass ein Abbruch hilft;
-  - **oder** ein Wirken auf ein einzelnes Ziel ist, das ein Schlaf schon einmal abgebrochen hat (`SleepOutcomes`,
+  - **oder**, ebenso nur von einem kämpfenden Gegner, ein Wirken auf ein einzelnes Ziel ist, das ein Schlaf schon
+    einmal abgebrochen hat (`SleepOutcomes`,
     mindestens ein Abbruch): bekannt unterbrechbar, etwa ein Debuff auf ein Mitglied. Eine Fläche zählt dagegen nur,
     wenn sie die Gruppe erreicht – sonst kostet der Abbruch einen GCD für nichts;
 - für den Schlaf: ohne Sleep Resistance, nicht von einer gespeicherten widerstehenden Art, in diesem Kampf seltener
@@ -2256,8 +2260,9 @@ Verlangsamung +20 % auf jeden physischen Angreifer für 15 Sekunden. Der Wirktex
 der Verlangsamung nennt ausdrücklich die Verzögerung der **Automatikangriffe**,
 aus denen Trash-Gegner den Großteil ihres Schadens liefern — die Wirkung liegt
 damit in derselben Größenordnung wie Rampart. Die übrigen Treffer der Erhebung
-liegen in Bozja und den Tiefen Gewölben, also außerhalb des Nutzungsprofils, und
-sind erfasst statt bearbeitet.
+sind Aktionen aus Bozja (Lost Paralyze III) und Eureka (die Logos-Aktionen Paralyze L
+und Paralyze L III, Blatt `EurekaMagiaAction`, xivapi 06.11.2026) – Inhalte, die er
+nicht genannt hat; sie sind erfasst statt bearbeitet (CLAUDE.md, „Nutzungsprofil").
 
 Zweite, unabhängig belegte Fundstelle: Im Schadenszweig steht der Sanctus-Block
 **vor** dem DoT-Block. Sobald `AoeCount = 3` erfüllt ist, greift Sanctus und der DoT

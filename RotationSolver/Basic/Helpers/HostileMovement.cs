@@ -102,7 +102,7 @@ internal static class HostileMovement
 				continue;
 			}
 
-			if (!Engaged(enemy))
+			if (!enemy.IsEngaged())
 			{
 				_ = _outOfCombat.Add(id);
 				_ = _cameIntoCombat.Remove(id);
@@ -316,12 +316,6 @@ internal static class HostileMovement
 		DefenseTrace.Line($"damage area {laid.Name} ({laid.Duration:F0} s, on {laid.LaidOn.Count}): enemies in it "
 			+ $"{laid.Held:F1} s, the ones it was laid on alive outside it {laid.Left:F1} s"
 			+ (Service.Config.DamageAreasWhereEnemiesStay ? string.Empty : " (rule off)"));
-	}
-
-	// In combat by its own flag, or attacking someone: a target is the other sign of an enemy that has been pulled.
-	private static bool Engaged(IBattleChara enemy)
-	{
-		return enemy.InCombat() || enemy.TargetObjectId is not 0 and not 0xE0000000;
 	}
 
 	private static bool NearTank(Vector3 pos, float hitbox)

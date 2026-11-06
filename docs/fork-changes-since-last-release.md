@@ -164,6 +164,23 @@ What this release changes in the fight. For the whole distance from upstream, se
   Not after you switched it yourself, changed zones or the fight ended. `DefenseTrace.log` notes the
   switch-off, the switch-on and every decision about the protection.
 
+## Interrupts, stuns and provoke
+
+- **Each interrupt and provoke picks an enemy it can reach.** RSR used to choose one caster per moment
+  from every enemy within 48 yalms, in no particular order, and only then check whether Interject, Head
+  Graze, Leg Sweep or a Phantom interrupt could reach it. When that one stood out of range - or was an
+  enemy your `Engage settings` leave alone - nothing was interrupted, even with a second caster right
+  in front of you. Now every enemy worth interrupting is a candidate, and each action takes the first
+  one in its own range. The same for Provoke: an enemy on your healer 10 yalms away is taken even while
+  another one 30 yalms away attacks a mage. `Interrupt delay range` and `Provoke delay range` work as
+  before.
+- **No interrupt, stun or sleep on an enemy that is not fighting.** An enemy that has not been pulled -
+  in the combat state, with a target, or casting at someone - and casts for itself is left alone:
+  stopping it protects nobody and pulls it, which in a deep dungeon brings a second pack. This applies
+  to every interrupt, to Low Blow on a cast that cannot be interrupted, and to the healer and caster
+  stop of `Stop an enemy's cast with the job's stun or a sleep (experimental)`. An area attack that
+  reaches you or two party members is still stopped, whoever casts it.
+
 ## Leaps and dashes
 
 - **Blue Mage and Phantom leaps keep to the gap-closer distance.** J Kick and Flying Frenzy (Blue

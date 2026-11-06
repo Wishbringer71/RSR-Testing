@@ -973,7 +973,11 @@ Lauf – wie viel, hängt vom Abstand der Stufen ab und ist nicht gemessen. Abge
 Aktion zu klein, und im nächsten synchronisierten Lauf sparte die Größenregel die Minderung oder der Plan das Bündel.
 Deshalb legt keiner der drei Speicher, die eine Größe lernen, eine solche Messung ab: Tankbuster-Tabelle
 („not stored, above the level the content syncs to"), Flächentabelle samt der Bewertung mit 0 (A366) und der DoT-Speicher
-(Konzept 08). Ein Inhalt ohne Synchronisationsstufe – die offene Welt – gilt als synchron, wie bisher. Dasselbe gilt
+(Konzept 08). Ein Inhalt ohne Synchronisationsstufe – die offene Welt – gilt als synchron, wie bisher. Ebenso die
+Tiefen Gewölbe: Ihre `ContentFinderCondition` führt keine Synchronisationsstufe (`ClassJobLevelSync` 0 für Palast der
+Toten, Himmelssäule, Eureka Orthos und Pilgers Pfad, xivapi 06.11.2026), also lernt RSR dort – die Flächentabelle
+führt Valfodr aus dem Pilgerpfad (oben). Ob die Ausrüstungsstärke, die das Gewölbe selbst führt, die Treffer
+verschiebt, ist nicht gemessen; eine schwächere zeigt größere Treffer, die sichere Richtung. Dasselbe gilt
 in einer Gruppe ohne Beschränkung bei gleicher Stufe: Dort fehlt die Gegenstandsstufengrenze, und jeder Treffer fällt
 ebenso kleiner aus. Erkannt wird sie an der Inhaltssuche (`DataCenter.InUnrestrictedParty`, A466):
 `ContentsFinderQueueInfo.PoppedContentIsUnrestrictedParty` beschreibt den zuletzt aus der Warteschlange gekommenen

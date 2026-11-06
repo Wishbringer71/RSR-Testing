@@ -135,9 +135,29 @@ internal static class DataCenter
 	public static HashSet<ulong> TargetedPartyMembers { get; set; } = [];
 	internal static HashSet<ulong> AllHostileTargetIds { get; } = [];
 
+	/// <summary>
+	/// The first of <see cref="InterruptCandidates"/>, for the status flag and derived rotations; the actions choose
+	/// among all of them (concept 03, "Unterbrechen, Betäuben, Provozieren: welcher Gegner", A612).
+	/// </summary>
 	public static IBattleChara? InterruptTarget { get; set; }
 
+	/// <summary>
+	/// The first of <see cref="ProvokeCandidates"/>, for the status flag and derived rotations (A612).
+	/// </summary>
 	public static IBattleChara? ProvokeTarget { get; set; }
+
+	/// <summary>
+	/// Every enemy whose cast an interrupt should stop now, past the interrupt delay or with a GCD of its cast left, in
+	/// the order of the hostile list. Each action takes the first among its own candidates - in its range and attackable
+	/// by the engage setting -, so an enemy it cannot reach does not hold it back from one it can (concept 03, A612).
+	/// </summary>
+	internal static List<IBattleChara> InterruptCandidates { get; } = [];
+
+	/// <summary>
+	/// Every enemy a tank should provoke now, past the provoke delay or unable to wait, in the order of the hostile list;
+	/// chosen per action as <see cref="InterruptCandidates"/> (A612).
+	/// </summary>
+	internal static List<IBattleChara> ProvokeCandidates { get; } = [];
 
 	/// <summary>
 	/// Whom each enemy last struck, and when, from the effect handler. The provoke delay ends with an enemy's first hit on
