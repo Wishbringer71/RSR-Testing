@@ -17494,6 +17494,21 @@ habe den schleim bislang nicht anfreunden können."
   tiefer auf den Schwächeren; Notfälle laufen über die kritische Klasse. Kein Gewinn, der eine Änderung trägt.
 - *Prüfgrad:* statisch. Nichts gebaut.
 
+### A599 · Weiser nach Daedalus: nichts zu bauen; Heiler abgeschlossen (06.11.2026)
+
+- *Anlass:* TODO „Fremde Repositories", Weiser (ofnature/Daedalus c4a788f, `AsclepiusCore`).
+- *Deckt sich:* Addersgall vor dem Überlauf (Druochole bei drei Stapeln kurz vor dem vierten, auf das Ziel oder den
+  Weisen, A203); Diagnosis erst unter Druochole: Die Einzelheil-Schwelle für Fähigkeiten liegt ab Werk über der für Zauber
+  (`HealthSingleAbility` 0,7, `HealthSingleSpell` 0,65), es gibt kein Band, in dem nur Diagnosis ginge – das Band, das
+  Daedalus schließt; Holos, Haima, Physis, Panhaima für einen Tank bei leerem Addersgall (`HealSingleAbility`); Swiftcast
+  bleibt für die Wiederbelebung (Daedalus hat seine Notfall-Diagnosis mit Swiftcast nach einem Feldbericht ebenso
+  zurückgenommen); Verhängnis (A573); Zurückhaltung als Co-Heiler (Herkunft RSR).
+- *Nicht übernommen:* Holos für ein einzelnes kritisches Mitglied, das kein Tank ist, bei leerem Addersgall. Holos ist die
+  Gruppenminderung mit 120 s Abklingzeit (Aktionsblatt 24310); für einen Schadensausteiler bleibt die Einzelheilung, und die kritische Klasse
+  trägt den Notfall.
+- *Heiler damit abgeschlossen* (A594, A596 bis A599); nächste Rolle: Tanks.
+- *Prüfgrad:* statisch. Nichts gebaut.
+
 ## B · Commit-Register (Fork vs. `upstream/main`)
 
 ### B1 · Einzelgeprüfte Fork-Commits

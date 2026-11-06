@@ -110,8 +110,7 @@ Reihenfolge der Liste. Maschinist in Arbeit (Daedalus 74659a6, 03.11.2026): Full
 nicht (Job-Guide: „not affected by Reassemble", RSR setzt es nicht darauf). Königin, Overdrive und das Maß „letzter
 Gegner" gebaut (A591, Konzept 14, „Das Ende der Gruppe"); Gruppenminderung als Familie für Barde, Maschinist und Tänzer
 gebaut (A592, Konzept 08); Flächensperre und Ladungsgrenze geprüft, nichts zu bauen (A593, Konzept 14). Heiler (Sicherheit
-der Gruppe): Weißmagier geprüft (A594, A596), Gelehrter (A597), Astrologe (A598); nächster Weiser, dann Tanks,
-dann die Schadensausteiler. Je Fund ein Loop, je Repository ein Archiveintrag mit Commit und Datum. *Konzept:* 15, erweitert vom Vergleich mit WrathCombo auf die übrigen Werkzeuge; je Fund dazu das
+der Gruppe): Heiler geprüft (A594, A596 bis A599); nächste Rolle die Tanks, dann die Schadensausteiler. Je Fund ein Loop, je Repository ein Archiveintrag mit Commit und Datum. *Konzept:* 15, erweitert vom Vergleich mit WrathCombo auf die übrigen Werkzeuge; je Fund dazu das
 tragende (01 Jobs, 08 Minderung, 13 Flächenschaden und Tankbuster).
 
 
