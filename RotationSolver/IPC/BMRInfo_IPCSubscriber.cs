@@ -23,5 +23,8 @@ internal static class BMRInfo_IPCSubscriber
 	[EzIPC("Movement.IsMoving", true)]
 	internal static readonly Func<bool>? IsMoving;
 
+	[EzIPC("Hints.MaxCastTime", true)]
+	internal static readonly Func<float>? MaxCastTime;
+
 	internal static void Dispose() => IPCSubscriber_Common.DisposeAll(_disposalTokens);
 }

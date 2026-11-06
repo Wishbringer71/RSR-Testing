@@ -1250,6 +1250,58 @@ alles wie bisher; die Spurzeile je Stockwerk zeigt es, und ein Upload belegt die
 Orthos trägt die Spalte, solange die abgeleitete Bedeutung des Werts stimmt; stimmt sie nicht, zeigt die Spurzeile den
 Widerspruch zum Agenten.
 
+## Limit Break allein
+
+*Was gilt (A628):* Ist kein anderer Spieler in der Gruppe – Duty Support, Trust, allein –, setzt RSR als Damage Dealer
+(Nahkampf, Fernkampf, Magie) das Limit Break des Jobs, sobald die Leiste voll ist – Option „Use the Limit Break when no
+other player is in the party", ab Werk an.
+- **Leiste voll:** `LimitBreakController`: Einheiten ≥ Balken × Einheiten je Balken. Gesetzt wird die Stufe der Balkenzahl
+  (`LimitBreak1/2/3` des Jobs, aus `ClassJob` erzeugt). Warten bringt dann nichts mehr: Die Leiste füllt nicht über voll.
+- **Allein:** In der Gruppenliste von RSR steht kein Spieler außer dir; NPCs zählen nicht. Mit einem Spieler entscheiden
+  Menschen über die Leiste, und RSR nimmt sie ihnen nicht weg. Eine Leiste gibt es erst ab vier Gruppenmitgliedern
+  (Wiki); ganz allein ist sie leer, und die Regel ruht.
+- **Kein Treffer in der Sperre:** Ein Limit Break sperrt die Bewegung für seine Wirkzeit und danach eine Animationssperre
+  („noticeable animation lock … higher-level limit breaks have longer animation locks", consolegameswiki, Limit Break,
+  06.11.2026). Das Fenster ist Wirkzeit (Action-Blatt) plus Sperre; in ihm darf kein angekündigter Treffer auf dich
+  liegen – ein Cast auf dich oder dich erreichend, ein Marker, ein Raidwide oder Tankbuster von BossMod
+  (`RaiseProtection.FirstWithin`, dieselbe Frage wie beim Schutz nach der Wiederbelebung) –, die KI von BossMod darf
+  nicht laufen, ihre Wurfzeitgrenze (`Hints.MaxCastTime`: BossMod senkt sie, bevor seine KI oder eine Mechanik dich
+  bewegt, und bricht einen längeren Wurf ab) muss die Wirkzeit tragen, und du stehst nicht in der kritischen Klasse.
+- **Die Sperre:** Kein Blatt nennt sie. RSR misst sie selbst: Fällt die Leiste nach seinem Einsatz, gilt die erste
+  Animationssperre nach dem Ende der Wirkzeit (`ActionManager.AnimationLock`) für dieses Limit Break in der Sitzung.
+  Bis dahin die Obergrenze je Stufe aus seinen Mitschnitten (15 ACT-Mitschnitte 25.10.–05.11.2026, 70 Limit Breaks von
+  Mitspielern; kürzeste Lücke vom Treffer bis zur nächsten Aktion desselben Spielers, Reaktionszeit eingeschlossen):
+  Stufe 1 4,4 s (Braver 4,36, Skyshard 3,65), Stufe 2 5,8 s (Starstorm 5,80, Desperado 4,76, Bladedance 4,37), Stufe 3
+  8,4 s (Vermilion Scourge 8,39, Doom of the Living 4,23).
+- **Lohnt es:** Die Gegner im Kampf leben länger als das Fenster (`IsLongerThan`, solange die Zeit bis zum Fall
+  unbekannt ist, gilt das).
+- Eine Spurzeile je Einsatz mit Stufe und Fenster, eine je gemessener Sperre.
+
+*Im Kampf:* Im Duty Support füllt sich die Leiste über einen Dungeon; bisher blieb sie voll stehen. Jetzt setzt ein
+Schwarzmagier Starstorm (3 s Wirkzeit, 10 y) auf die Gruppe, sobald beide Balken voll sind und in den nächsten 8,8 s kein
+Cast auf ihn zielt oder ihn erreicht; kommt ein Raidwide in 6 s, wartet er, bis es vorbei ist.
+
+*Begründung:* Upstream sperrt jedes Limit Break in der Grundprüfung (`ActionBasicInfo`, 54fba5714, 23.08.2025: „potential
+issues with PvE LB being incorrectly activated"), nachdem ein früherer Pfad sie an allen Prüfungen vorbei freigab. Die
+Sperre bleibt; nur dieser Pfad öffnet sie für die Dauer seiner Prüfung (`IBaseAction.LimitBreakPathRunning`), und alle
+übrigen Prüfungen gelten. BossModReborns Rollen-KI setzt das Limit Break unter derselben Bedingung (kein anderer Spieler)
+nur mit laufendem Modul (A618); RSR braucht kein Modul, weil es die Treffer selbst sieht.
+
+*Nicht gebaut, mit Grund:*
+- Tank und Heiler: Ihr Limit Break mindert oder heilt die Gruppe; wann es lohnt, gehört in die Abwehr- und Heilketten
+  (vor einem angekündigten Raidwide, bei mehreren Mitgliedern in der kritischen Klasse, Stufe 3 mit Toten) – TODO
+  „Limit Break allein: Tank und Heiler".
+- Ein Limit Break vor voller Leiste am Ende eines Kampfs: Die Leiste bleibt in der Instanz stehen, außer an Prüfpunkten
+  mancher Prüfungen und Raids, an denen das Spiel sie zurücksetzt („the limit break gauge will reset when reaching a
+  certain point in the duty", Wiki); dort geht ein Rest verloren. Preis benannt.
+
+*Gegenthese 1 – Ein Treffer ohne Ankündigung:* Eine Fläche ohne Cast trifft in der Sperre. Preis benannt; RSR sieht sie
+nicht, ebenso wenig ohne Limit Break bei jedem anderen Zauber mit Wirkzeit.
+*Gegenthese 2 – Die Obergrenze ist zu kurz:* Ein Limit Break, das in seinen Mitschnitten nicht vorkommt (etwa Big Shot,
+Meteor), sperrt länger als die Stufe sagt. Die erste eigene Messung ersetzt die Grenze.
+*Gegenthese 3 (ausgeliefert, und nichts ändert sich):* Er spielt nur mit anderen Spielern, als Tank oder Heiler, oder die
+Leiste füllt sich nie ganz. Dann bleibt alles wie bisher.
+
 ## Bewegungssperre beim Wirken und die KI von BossMod
 
 **Geltender Stand:** Mit „Lock movement while casting" („Stops your character from moving while casting, and while using

@@ -275,6 +275,12 @@ public partial class CustomRotation
 				? TankbusterForecast.NextOnPlayerIn
 				: null;
 
+			// A full Limit Break bar with no other player in the party and no hit in its lock (concept 03, A628).
+			if (LimitBreakWhenAlone(out var limitBreak))
+			{
+				return limitBreak;
+			}
+
 			gcdAction = GCD();
 			IBaseAction.IgnoreClipping = false;
 

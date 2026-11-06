@@ -461,7 +461,7 @@ public readonly struct ActionBasicInfo
 			}
 		}
 
-		if (IsLimitBreak)
+		if (IsLimitBreak && !IBaseAction.LimitBreakPathRunning)
 		{
 			return false;
 		}

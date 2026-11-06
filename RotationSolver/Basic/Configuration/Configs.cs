@@ -590,6 +590,14 @@ internal partial class Configs : IPluginConfiguration, IM3Settings
 	Filter = AutoActionUsage, Section = 5)]
 	private static readonly bool _useDeepDungeonStones = true;
 
+	[ConditionBool, UI("Use the Limit Break when no other player is in the party",
+	Description = "In a fight: with only NPC companions (Duty Support, Trust), a damage dealer uses the job's Limit Break of the "
+		+ "full bar, so the bar no longer stands full for the rest of the duty - but only while no announced hit on you lands "
+		+ "within its cast and animation lock, BossMod's AI is not moving you and you are not about to die, so the lock does "
+		+ "not keep you in an area. With another player in the party the bar stays theirs too. Tanks and healers: not yet.",
+	Filter = AutoActionUsage, Section = 5)]
+	private static readonly bool _useLimitBreakWhenAlone = true;
+
 	[ConditionBool, UI("Use AoE on marked targets",
 	Description = "AoE actions may hit targets with attack markers.",
 	Parent = nameof(ChooseAttackMark))]

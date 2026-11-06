@@ -5233,6 +5233,12 @@ internal static class DataCenter
 	public static bool BMRForceCancelCastAI { get; set; }
 
 	/// <summary>
+	/// The longest cast BossMod expects to finish before its AI or a mechanic moves the player (<c>Hints.MaxCastTime</c>);
+	/// float.MaxValue without BossMod. A longer cast is interrupted (A628).
+	/// </summary>
+	public static float BMRMaxCastTime { get; set; } = float.MaxValue;
+
+	/// <summary>
 	/// True if BossMod is moving.
 	/// </summary>
 	public static bool BMRIsMoving { get; set; }
@@ -5368,6 +5374,7 @@ internal static class DataCenter
 		BMRSpecialModeType = SpecialMode.Normal;
 		BMRForceCancelCast = false;
 		BMRForceCancelCastAI = false;
+		BMRMaxCastTime = float.MaxValue;
 		BMRIsMoving = false;
 		BMRDebugTimelineRaidwide = float.MaxValue;
 		BMRDebugTimelineTankbuster = float.MaxValue;

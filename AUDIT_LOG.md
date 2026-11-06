@@ -18329,6 +18329,44 @@ habe den schleim bislang nicht anfreunden können."
   Stufe 3), Release-Text. TODO-Punkt geschlossen; der Datenwarte-Eintrag „Blaumagier: Set je Stufe im Masked
   Carnivale" (A511) wird offene Arbeit „Blaumagier: Set nach den Widerständen der Stufe".
 
+### A628 · Limit Break ohne andere Spieler, für Damage Dealer; seine Meldung zum Teraflare auf Shinryu (06.11.2026)
+
+- *Anlass:* TODO „Limit Break allein" (A618). Während des Loops seine Meldung: Teraflare (LB3 des Beschwörers) auf Shinryu
+  Unreal in der letzten Phase startet und bricht ab, „wie ein Stottern" – ob die Limit-Break-Sperre das verursacht und ob
+  BossModReborn dagegen wirkt.
+- *1 Research:* Upstream sperrt jedes Limit Break in `ActionBasicInfo` (54fba5714, 23.08.2025, „potential issues with PvE LB
+  being incorrectly activated"; vorher gab `IsLimitBreak` die Prüfung frei, 86353061e, 2024). Jeder Job führt
+  `LimitBreak1/2/3` (aus `ClassJob`). `LimitBreakController` (ClientStructs): Balken, Einheiten, `GetActionId(character,
+  level)`. Wiki (consolegameswiki, Limit Break, 06.11.2026): Leiste erst ab vier Mitgliedern, „noticeable animation lock",
+  ohne Zahlen; Rücksetzen an Prüfpunkten mancher Prüfungen. Sperre gemessen an 70 Limit Breaks von Mitspielern in seinen
+  15 ACT-Mitschnitten (kürzeste Lücke bis zur nächsten Aktion): Braver 4,36, Bladedance 4,37, Skyshard 3,65, Starstorm
+  5,80, Desperado 4,76, Doom of the Living 4,23, Vermilion Scourge 8,39 s; eigene Limit Breaks keine. Wirkzeiten: Blatt
+  (Stufe 1 2 s, 2 3 s, 3 4,5 s). BossModReborns Rollen-KI (xan `Melee.cs`): ohne anderen Spieler und mit Modul Stufe 2 und
+  3. BossMod (27be422): `AIController` läuft während eines Wurfs los, wenn der Spielraum kürzer ist als die Restwirkzeit
+  − 0,5 s, und hält dann Würfe (`HoldCasts`, `MaxCastTime` 0); `CancelCastTweak` bricht bei verbotenem Ziel und
+  Mechanik-Abbruch ab; da03be9 (09.10.2026) behob eine Wurf/Abbruch-Schleife mit externen Plugins. RSR liest
+  `Movement.IsMoving` (Bewegung oder gehaltene Würfe), nicht `Hints.MaxCastTime`, und spiegelt den Mechanik-Abbruch in
+  `CancelCastUpdater`. `ActionQueueManager` fängt Limit Breaks von Hand ab; die Sperre führt den Befehl nie aus.
+- *2 Optionen:* (0) belassen; (1) alle Rollen; (2) Damage Dealer zuerst, Tank und Heiler über ihre Ketten; (3) die Sperre
+  von Upstream aufheben; (4) eigener Durchlass nur für diesen Pfad.
+- *3 Abwägung:* (2)+(4): Die volle Leiste bringt im Duty Support Schaden, der sonst ungenutzt bleibt; Preis: Sperre von
+  Sekunden ohne Bewegung – nur ohne angekündigten Treffer im Fenster, ohne laufende KI und innerhalb der Wurfzeitgrenze
+  von BossMod. (3) holte den Fehler zurück, den Upstream abstellte. (1) Tank und Heiler gehören in die Abwehr- und
+  Heilketten.
+- *5 Review:* Fenster = Wirkzeit + Sperre; die Sperre misst RSR am eigenen Einsatz (erste Animationssperre nach der
+  Wirkzeit, sobald die Leiste fiel), bis dahin die Obergrenze je Stufe aus den Mitschnitten (Ausnahme in
+  `fixed_values.json`). Die Stufe nennt das Spiel (`GetActionId`). Nur ohne anderen Spieler.
+- *6 Falsifikation:* Kein Defekt? Die volle Leiste stand im Duty Support bis zum Ende. Option falsch? Eine Fläche ohne Cast
+  trifft in der Sperre – wie bei jedem Wurf. Ausgeliefert, nichts ändert sich? Nur in Gruppen mit Spielern, als Tank oder
+  Heiler. Im Spiel nicht beobachtet; Spurzeilen „limit break: …".
+- *7 Gebaut:* `CustomRotation_LimitBreak.cs` (vor der GCD-Wahl in `Invoke`), `IBaseAction.LimitBreakPathRunning` als
+  Durchlass der Sperre, Option `UseLimitBreakWhenAlone`, `DataCenter.BMRMaxCastTime` (IPC `Hints.MaxCastTime`).
+  *8 Nachweis:* Compile 0 Fehler 0 Warnungen, 48 Prüfungen.
+- *9 Dokumentation:* Konzept 03 („Limit Break allein"), Release-Text. TODO: der Punkt wird „Limit Break allein: Tank und
+  Heiler"; neu unter Defekte „Limit Break von Hand bricht ab" mit der Wirkkette seiner Meldung – die Sperre verhindert
+  seinen Druck nicht, solange „Also pass your press to the game" an ist; den Abbruch machen BossMods KI, BossMods
+  Wurfabbruch oder RSRs Spiegel davon möglich.
+
 ## B · Commit-Register (Fork vs. `upstream/main`)
 
 ### B1 · Einzelgeprüfte Fork-Commits

@@ -3,6 +3,17 @@
 What this release changes in the fight. For the whole distance from upstream, see
 [`fork-changes-in-play.md`](fork-changes-in-play.md).
 
+## Limit Break with NPC companions
+
+- **A damage dealer uses the full Limit Break bar when no other player is in the party.** New option
+  `Use the Limit Break when no other player is in the party`, on by default: in Duty Support or with a
+  Trust, the job's Limit Break of the full bar (the level the game names for your class) once no
+  announced hit on you lands within its cast and animation lock, BossMod's AI is not moving you, the cast
+  fits BossMod's cast-time limit and you are not about to die. Before, the bar stood full for the rest
+  of the duty. The lock is measured on your first use; until then an upper bound per level from logged
+  Limit Breaks counts. Tanks and healers are not covered yet. With another player in the party nothing
+  changes; a Limit Break you press yourself is untouched by this rule.
+
 ## When the pack is about to fall
 
 - **Time to kill now runs until the last enemy falls.** An action's time-to-kill threshold, and every rule

@@ -26,8 +26,7 @@ BossMod-Module) die Rotation des Beastmasters, die Wahl der Begleiter und den Ze
 3. Bewegungssperre beim Wirken gegen das Ausweichen der BossMod-KI: Mit „Lock movement while casting" an steht die
    Figur während jedes Zaubers still, auch wenn die KI von BossMod aus einer Fläche laufen will; nur in dieser
    Kombination, dort aber mit einem Treffer, dem der Spieler nicht ausweicht.
-4. Limit Break allein: Ohne andere Spieler füllt sich die Leiste, und RSR nutzt sie nie; der Preis ist eine Sperre
-   von Sekunden mitten in Mechaniken.
+4. Limit Break allein: Tank und Heiler: Ohne andere Spieler bleibt die Leiste als Tank oder Heiler voll stehen.
 5. Blaumagier: Set nach den Widerständen der Stufe: Im Masked Carnivale wählt der Satz des Stufenführers Füllzauber
    nach Beispielen; gegen welches Element die Gegner der Stufe schwach oder immun sind, zählt dabei nicht.
 6. Konzepte neu ordnen (allgemein, Rollen, Gruppen, Jobs, Inhalte): keine direkte Wirkung im Kampf; eine Regel, die
@@ -43,7 +42,20 @@ Code-Review; was diese finden, kommt wieder hierher und in dieselbe Reihenfolge,
 
 ## Defekte
 
-Keine offenen.
+### Limit Break von Hand bricht ab: Beschwörer, Shinryu Unreal, letzte Phase · N, U
+Im Kampf (seine Meldung, 06.11.2026): Auf Shinryus Rücken, Shinryu mittig im Ziel, um ihn und seine Flügel mit Teraflare
+(LB3, 4,5 s Wirkzeit, 15 y um den Zielpunkt) zu treffen, startet der Wurf und bricht ab, wieder und wieder – „wie ein
+Stottern". Wirkkette am Code: Die Limit-Break-Sperre von Upstream (`ActionBasicInfo`, 54fba5714) hält nur RSRs eigene Wahl
+auf. Seinen Druck fängt RSR ab (`ActionQueueManager`: Limit Breaks sind nicht ausgenommen) und reiht ihn als Befehl ein,
+den die Sperre nie ausführt; mit „Also pass your press to the game" (ab Werk an) erreicht der Druck das Spiel trotzdem,
+ohne diese Option würde er ganz verschluckt. Den Abbruch selbst machen drei Wege möglich: BossMods KI läuft los, wenn ihr
+Ausweichen nicht bis zum Ende des Wurfs warten kann (`AIController`: Spielraum kürzer als Restwirkzeit − 0,5 s), BossMod
+bricht ab bei verbotenem Ziel oder einem Mechanik-Abbruch (`CancelCastTweak`), und RSR spiegelt diesen Mechanik-Abbruch
+selbst (`CancelCastUpdater`, „Use BossMod timeline"). BossMod behob am 09.10.2026 eine Wurf/Abbruch-Schleife mit externen
+Plugins (da03be9). *Ort:* `ActionQueueManager.ShouldInterceptAction`, `CancelCastUpdater`. *Nächster Schritt:* Loop –
+Limit Breaks von Hand unverändert ans Spiel durchreichen (sein Ziel bleibt), eine Spurzeile, wenn RSR einen Wurf abbricht,
+mit Grund, und Dalamud-Log oder ACT-Mitschnitt des Abends (Abbruchzeile 23, „[AI] Movement will interrupt cast") für den
+Abbrecher. *Konzept:* 03 („Limit Break allein").
 
 ## Offene Arbeit
 
@@ -80,13 +92,11 @@ dessen Ende landet; die Optionen A, B (Empfehlung: die Sperre weicht der KI) und
 Vorlage an ihn, gebündelt am Ende des TODO (der Optionstext bindet). *Konzept:* 03, „Bewegungssperre beim Wirken und die
 KI von BossMod".
 
-### Limit Break allein · N
-Im Kampf: RSR nutzt nie ein Limit Break. Ohne andere Spieler – Duty Support, Trust, Solo-Inhalte – füllt sich die Leiste,
-und niemand nutzt sie; BossModReborns Rollen-KI wirkt dort das Limit Break des Jobs, wenn ein Modul läuft (A618). Preis:
-eine Sperre von mehreren Sekunden, in der keine Bewegung geht. *Ort:* `CustomRotation` (zentral, alle Rollen), Limit
-Breaks je Rolle aus dem Action-Blatt. *Nächster Schritt:* Loop – wann die Sperre sicher ist (kein angekündigter Treffer
-in ihrer Dauer), welches Limit Break je Rolle (Heiler Stufe 3 nur mit Toten, Tank nur vor einem Treffer), ob nur mit
-NPCs in der Gruppe. *Konzept:* 03.
+### Limit Break allein: Tank und Heiler · N
+Im Kampf: Ohne andere Spieler setzen Damage Dealer das Limit Break der vollen Leiste (A628); als Tank oder Heiler bleibt
+sie voll stehen. *Ort:* `CustomRotation_LimitBreak.cs`, die Abwehr- und Heilketten. *Nächster Schritt:* Loop – Tank vor
+einem angekündigten Raidwide auf die Gruppe, Heiler bei mehreren Mitgliedern in der kritischen Klasse, Stufe 3 mit Toten;
+die Sperre wie bei den Damage Dealern gemessen. *Konzept:* 03 („Limit Break allein").
 
 ### Blaumagier: Set nach den Widerständen der Stufe · N
 Im Kampf: Der Satz je Stufe (A627) folgt dem Stufenführer; wo der Führer nur ein Beispiel nennt („Water filler spell, such

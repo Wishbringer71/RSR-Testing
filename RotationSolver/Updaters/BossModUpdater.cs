@@ -24,6 +24,7 @@ internal static class BossModUpdater
 			DataCenter.BMRForceCancelCast = BMRInfo_IPCSubscriber.ForceCancelCast?.Invoke() ?? false;
 			DataCenter.BMRForceCancelCastAI = BMRInfo_IPCSubscriber.ForceCancelCastAI?.Invoke() ?? false;
 			DataCenter.BMRIsMoving = BMRInfo_IPCSubscriber.IsMoving?.Invoke() ?? false;
+			DataCenter.BMRMaxCastTime = BMRInfo_IPCSubscriber.MaxCastTime?.Invoke() ?? float.MaxValue;
 
 			DataCenter.BMRActiveModuleName = BMRTimeline_IPCSubscriber.ActiveModuleName?.Invoke();
 

@@ -1746,6 +1746,18 @@
    "status": "exception",
    "loop": "A625",
    "reason": "The game's id for no object, which an empty slot of the deep dungeon's party record carries; a sentinel, not a quantity of the game (Dalamud ObjectTable.SearchByEntityId and BuddyList.InvalidEntityId test the same value; BossModReborn sanitizes it to 0). No sheet states it."
+  },
+  {
+   "file": "RotationSolver/Basic/Rotations/CustomRotation_LimitBreak.cs",
+   "code": "private static readonly float[] LockBounds = [4.4f, 5.8f, 8.4f];",
+   "values": [
+    "4.4",
+    "5.8",
+    "8.4"
+   ],
+   "status": "exception",
+   "loop": "A628",
+   "reason": "Upper bound of a Limit Break's animation lock per level until RSR has measured its own: no sheet states the lock (consolegameswiki: 'noticeable animation lock', no figures). Measured in the owner's 15 ACT logs of 25.10.-05.11.2026 on 70 Limit Breaks of other players as the shortest gap from the hit to the same player's next action, reaction included, so an upper bound: level 1 Braver 4.36, Skyshard 3.65; level 2 Starstorm 5.80, Desperado 4.76, Bladedance 4.37; level 3 Vermilion Scourge 8.39, Doom of the Living 4.23. The first own use replaces it."
   }
  ]
 }
