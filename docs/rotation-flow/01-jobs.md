@@ -2228,7 +2228,45 @@ Dullahan, Golem, Spriggan und Eisgolem (`XBMPet.InflictsInterrupt`).
     vorausplanung beim schach" (Präzisierungen): gerechnet wird ab dem Feld, auf dem du stehst, mit dem, was der Lauf bis
     dahin gebracht hat, einen oder wenige Züge voraus und nach jedem Feld neu – kein Plan fürs ganze Brett. Gebaut wird der Hinweis für die nächste Gabelung, nicht das Laufen: Das Brett wird gelaufen, nicht
     geklickt (Daedalus läuft es mit vnavmesh ab), und danach hat er nicht gefragt. Die Felder und Wege liest RSR seit A631
-    aus den Blättern (K14, „Der Weg aus den Blättern"); offen im TODO „Crucible: Weghinweis für den nächsten Schritt".
+    aus den Blättern (K14, „Der Weg aus den Blättern").
+    *Wo du stehst (A632):* Am Hornfenster das Feld des Kampfs (K14). Öffnet danach das Fenster einer Campsite, eines Ladens
+    oder eines Schatzes, ist es das Feld dieser Art – oder ein Zufallsfeld, das sie werden kann – unter den nächsten Feldern.
+    Gibt es dort keins, bleibt das letzte bekannte Feld. So folgt RSR dem Lauf Feld für Feld, ohne Position.
+    *Was gilt (A632):* Hat das aktuelle Feld mehr als einen Nachfolger, zeigt das Fenster „RSR - Crucible route" außerhalb
+    des Kampfs je Abzweig, was er bis einschließlich des nächsten Kampfs bringt, und empfiehlt einen. Benannt wird ein
+    Abzweig nach seinem Feld (Campsite, Laden, Schatz, Zufall, Gegner, Elite), nicht nach links oder rechts: Daedalus fand
+    Gabelungen, deren Seiten im Blatt andersherum stehen.
+    - *Vorausrechnung (seine Präzisierung: wie beim Schach):* je Abzweig die Felder bis einschließlich des nächsten Kampfs;
+      an einer Gabelung dazwischen die bessere Fortsetzung (die wählst du dann selbst), an einem Zufallsfeld die schlechtere
+      seiner Möglichkeiten (Sicherheit vor Glück). Danach rechnet RSR am nächsten Feld neu.
+    - *Zustand:* deine LP-Anteil jetzt; dein Vorrat an Heilgegenständen als Anteil deiner LP (K8, nur die für dich); der
+      niedrigste LP-Anteil der Heiler und Schützer aus dem Endkampfplan (K11, K14) und deren größter Verlust je Einsatz
+      (`FinalLossPerUse`).
+    - *Felder:* Campsite wie K10 – Begleiter ruhen nur mit, wenn du voll herauskommst, so viele, wie das Lager nimmt
+      (`XBMContentCamp`); Laden, Schatz: keine LP, aber Gegenstände (vermerkt, Marken genannt); Gegner: die mittlere
+      gemessene Last eines Kampfs abzüglich deiner Heilung (`CrucibleBoard.Loads`, wie K10 Laden); Elite und Endgegner: die
+      schwerste gemessene; die Heiler verlieren je Kampf ihren größten Verlust je Einsatz.
+    - *Sicher* ist ein Abzweig, wenn du nach seinem Kampf mit Vorrat noch einen schwersten Kampf trägst und kein Endkampf-
+      Heiler knapp wird (K11, `ShortForFinal`). Empfohlen wird unter den sicheren der, der Gegenstände bringt (Schatz, Laden
+      mit Marken), sonst der mit den meisten LP danach; ist keiner sicher, der, nach dem du mit Vorrat am höchsten stehst,
+      bei Gleichstand der mit den gesünderen Heilern.
+    - *Vor der ersten gemessenen Last:* keine Rechnung; die Campsite, solange du oder ein Endkampf-Heiler nicht voll steht,
+      sonst der Abzweig mit Gegenständen. Das Fenster sagt es.
+    - *Im Kampf:* Du stehst nach Kampf 3 auf Brett 1 bei 55 %, zwei Bestien-Heiltränke (je 30 %) im Vorrat, die Fledermaus
+      als Endkampf-Heiler bei 40 %; die nächste Gabelung führt zu einer Campsite oder einem Schatz, danach ein Gegner mit
+      gemessenen 35 % Last, der schwerste Kampf kostete 50 %. Über den Schatz endest du bei 20 % + 60 % Vorrat = 80 % ≥ 50 %
+      für dich, aber die Fledermaus bliebe knapp (unter zwei Verlusten je Einsatz) – nicht sicher. Über die Campsite ruht
+      die Fledermaus mit, denn mit einem Begleiter kommst du voll heraus (55 % + 45 %; mit zweien nur 85 %); sie steht dann
+      bei 85 %, du nach dem Gegner bei 65 % + Vorrat. Sicher; empfohlen wird die Campsite.
+    - *Verworfen:* (a) ein Plan fürs ganze Brett beim Betreten – seine Präzisierung; (b) Punkte und Marken als Ziel – er
+      nannte Gesundheit, Ausrüstung, Vorrat und Heilbedarf; (c) links/rechts – siehe oben.
+    - *Gegenthese 1:* Die mittlere Last stammt aus anderen Kämpfen; der nächste ist schwerer. Teilweise widerlegt: Elite und
+      Endgegner rechnen mit der schwersten, und „sicher" verlangt einen schwersten Kampf Reserve. *Gegenthese 2:* RSR verliert
+      die Spur (ein Fenster, das es nicht liest; ein Zufallsfeld, das ein anderes Fenster öffnet). Dann rechnet es vom
+      letzten bekannten Feld und zeigt Abzweige, die schon hinter dir liegen; das Fenster nennt das Feld, von dem es rechnet.
+      *Gegenthese 3:* Gegenstände aus Schatz und Laden sind nicht bezifferbar, bevor man sie sieht. Nicht widerlegt: Sie
+      zählen nur als Vorzug unter sicheren Abzweigen. *Ausgeliefert, und nichts ändert sich?* Ohne Hornfenster im Lauf, ohne
+      Wegzeilen im Blatt oder auf Gabelungen ohne Unterschied bis zum nächsten Kampf.
     Werkzeugquelle für die Vorlage: BeastMasterHelper (t3knical, Fork von anmili2022/Beastmaster) bevorzugt an einer
     Abzweigung die Campsite, wenn der Spieler verletzt ist, und prüft die LP des Kaders (Anleitung, 06.11.2026, A623).
 - *K14 – Endkampf vorbereiten: Lager und Futter* (A631; seine Vorschläge vom 06.11.2026: „beim letzten rasten vor dem
@@ -2465,8 +2503,7 @@ beim Betreten, ob es die Daten des Bretts gelesen hat.
 
 *Stufen* (TODO „Beastmaster: Crucible-Strategien"): 1. Daten zur Laufzeit (Schwäche und Gegnerliste je Kampf,
 Schadensart je Begleiter) mit K1, K2 und K3; 2. K11 (Bedarfsliste und LP je Begleiter) mit K9; 3. K8; 4. K6 und K7;
-danach K4, K5, K10 (Campsite A564 und Laden A569 gebaut; der Weghinweis für den nächsten Schritt ist seine Vorgabe vom
-06.11.2026, offen).
+danach K4, K5, K10 (Campsite A564, Laden A569 und der Weghinweis A632 gebaut).
 
 **Stufe 1, erster Teil: Daten und K2** (A548, gebaut; K1 und der Rest von K3 folgen):
 - *Kämpfe aus dem Blatt:* `XBMBattleDetail` hat eine Zeile je Kampf und eine Unterzeile je Gegner. Gelesen werden der

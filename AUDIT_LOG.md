@@ -18482,6 +18482,35 @@ habe den schleim bislang nicht anfreunden können."
 - *9 Dokumentation:* Konzept 01 K14, K10 (Campsite, Laden, Weg); TODO-Punkt geschlossen. Während der Arbeit seine Vorgabe
   zum Weghinweis (mit drei Präzisierungen) ins TODO und Konzept 01 K10 „Weg" eingetragen.
 
+### A632 · Crucible: Weghinweis für den nächsten Schritt (06.11.2026)
+
+- *Anlass:* Seine Vorgabe (06.11.2026): Hinweise auf den Brettern, welche Wege man nehmen sollte, nach Gesundheit der
+  Begleiter, Ausstattung, Verbrauchsgegenständen und eigenem Heilbedarf; Präzisierungen: „immer für den nächsten schritt",
+  „am aktuellen stand des fortschritts ausrichten", „nicht am anfang des brettes fürs ganze brett …, ähnlich der
+  vorausplanung beim schach". Beantwortet die gebündelte Frage „K10 Weg" (Umfang): Hinweis ja; das Laufen nicht gefragt.
+- *1 Research:* Brett und Wege aus den Blättern (A631). Das aktuelle Feld führt das Spiel nicht; RSR setzt es aus dem
+  Hornfenster (Kampf) und den Fenstern von Campsite, Laden und Schatz zusammen (Feld dieser Art unter den nächsten). Lasten
+  je Kampf: `CrucibleBoard.Loads` (K10 Laden, A570); Heilgegenstände: K8-Tabelle; Endkampf-Heiler und Verlust je Einsatz:
+  K11 (A585, A590), Plan seit A631 immer. Daedalus läuft das Brett und wählt Gabelungen nach eigener Regel (Campsite
+  zuletzt, Feldnotiz 27.10.2026) und fand Gabelungen mit vertauschten Seiten – darum benennt RSR Abzweige nach Feld.
+- *2 Optionen:* (0) kein Hinweis; (1) Plan fürs ganze Brett beim Betreten; (2) je Gabelung eine Strecke voraus, neu je
+  Feld; (3) mehrere Strecken voraus.
+- *3 Abwägung:* (1) widerspricht seiner Präzisierung; (3) rechnet über Kämpfe, deren Lasten nur gemittelt bekannt sind,
+  und vervielfacht den Fehler; (2) bis einschließlich des nächsten Kampfs – dort fällt die Entscheidung, die der Abzweig
+  trägt.
+- *5 Review:* Zufallsfelder schlechtestenfalls; Gabelungen innerhalb der Strecke wählt der Spieler später, also die bessere.
+  Campsite wie K10 (Begleiter nur, wenn du voll herauskommst). Vor der ersten Last keine Rechnung. Die Lagererkennung für die
+  Spur liest das Begleiterfenster selbst, nicht die Campsite-Option.
+- *6 Falsifikation:* Kein Defekt? Ohne Hinweis entscheidet er an der Gabelung ohne Zahlen. Option falsch? Mittlere Last
+  unterschätzt einen schweren Kampf – Elite und Endgegner rechnen mit der schwersten, und „sicher" verlangt einen schwersten
+  Kampf Reserve. Ausgeliefert, nichts ändert sich? Ohne Hornfenster im Lauf, ohne Wegzeilen oder ohne Unterschied zwischen
+  den Abzweigen bis zum nächsten Kampf.
+- *7 Gebaut:* `CrucibleRoute.Current`, `NoteSpace`, `Map`, `Node.Options`; `BeastmasterCrucibleRoute.cs`
+  (`FollowCrucibleRoute`, Vorausrechnung, Empfehlung, Spurzeile „crucible route: … recommends …"); Option
+  `Recommend which way to take on a Crucible board`, an; Fenster `RSR - Crucible route`.
+- *8 Nachweis:* Compile (0 Warnungen), 48 Prüfungen; im Spiel nicht beobachtet.
+- *9 Dokumentation:* Konzept 01 K10 „Weg"; TODO-Punkt geschlossen.
+
 ## B · Commit-Register (Fork vs. `upstream/main`)
 
 ### B1 · Einzelgeprüfte Fork-Commits

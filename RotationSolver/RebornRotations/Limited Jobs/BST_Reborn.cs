@@ -143,6 +143,17 @@ public sealed class BST_Reborn : BeastmasterRotation
 			+ "Off: no window, RSR takes nothing.")]
 	private bool RecommendCrucibleTreasure { get; set; } = true;
 
+	// K10 "Weg" (concept 01, A632): his rule of 06.11.2026 - route hints for the next step, from the run's progress.
+	[RotationConfig(CombatType.PvE, Name = "Recommend which way to take on a Crucible board",
+		Tooltip = "Between fights on a Crucible board, at the next fork a window shows each way: where its next fight leaves "
+			+ "you and the healers of the final fight's plan, by the measured load of a fight, your own healing, your healing "
+			+ "items and what a campsite restores; whether that is safe (one more heaviest fight in reserve, no final healer "
+			+ "short); and recommends one - among safe ways the one with items, else the one that leaves you the most HP. "
+			+ "Computed again on every space, one stretch ahead.\n"
+			+ "In a fight: nothing.\n"
+			+ "Off: no window.")]
+	private bool RecommendCrucibleRoute { get; set; } = true;
+
 	// K7 (concept 01, "Leveln", A579): his rule of 05.11.2026, the familiars that lag behind first, where they replace others adequately.
 	[RotationConfig(CombatType.PvE, Name = "Prefer familiars that lag behind in rank for the Crucible team",
 		Tooltip = "The team recommendation (team screen window) gives a familiar's place to the one with the lowest rank that "
@@ -1371,6 +1382,7 @@ public sealed class BST_Reborn : BeastmasterRotation
 		FollowCampsite(PickCampsiteRest);
 		FollowCrucibleShop(RecommendCrucibleShop);
 		FollowCrucibleTreasure(RecommendCrucibleTreasure);
+		FollowCrucibleRoute(RecommendCrucibleRoute);
 	}
 
 	#region Battlehorns between fights

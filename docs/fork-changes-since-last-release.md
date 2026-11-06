@@ -554,6 +554,14 @@ What this release changes in the fight. For the whole distance from upstream, se
   should rest for the final fight - the familiars that heal or protect in RSR's plan for it first, then
   the rest of that plan, then the most hurt - as many as the campsite takes, with the HP you come out
   with; `Apply` selects them, resting stays your click.
+- **Which way to take on a Crucible board.** With `Recommend which way to take on a Crucible board`,
+  **on by default**, a window `RSR - Crucible route` shows between fights, at the next fork, each way by
+  its space (campsite, shop, treasure, random, enemy, elite) and where its next fight leaves you and the
+  healers of RSR's final-fight plan - from the measured load of a fight, your own healing, the healing
+  items you hold and what a campsite restores - whether that is safe (one more heaviest fight in reserve,
+  no final healer short), and which way it recommends: among safe ways the one with items, else the one
+  that leaves you the most HP. It follows the run space by space (the battle at the horn screen, the
+  campsite, shop or treasure window that opens) and computes one stretch ahead, again on every space.
 - **No clicks while you feed a familiar.** The game shows the familiar window when feed is given too;
   RSR no longer reads it as a campsite there and clicks nothing. Its window names the familiar the feed
   was meant for.

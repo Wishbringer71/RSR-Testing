@@ -21,19 +21,16 @@ BossMod-Module) die Rotation des Beastmasters, die Wahl der Begleiter und den Ze
 
 1. Allein ohne Heiler kommt kein Heiltrank: RSR stand 13 s in der kritischen Klasse ohne Heilfähigkeit, kein Trank
    von RSR trotz eingeschalteter Option, er drückte ihn bei 6 % selbst und starb (Beastmaster, Sägerschrei, 04.11.2026).
-2. Crucible: Weghinweis für den nächsten Schritt: An jeder Gabelung entscheidest du ohne Hinweis, ob der Weg über
-   Lager, Laden, Schatz oder einen weiteren Kampf führt; ob deine LP, die der Begleiter und dein Vorrat ihn tragen, siehst
-   du erst dort.
-3. Hilfsfenster im Stil von RebornMaterial: Die Empfehlungsfenster (Team, Laden, Schatz, Campsite, Masked Carnivale) sind
+2. Hilfsfenster im Stil von RebornMaterial: Die Empfehlungsfenster (Team, Laden, Schatz, Campsite, Weg, Masked Carnivale) sind
    schlichte ImGui-Listen; was empfohlen ist und warum, liest sich vor dem Kampf schwer.
-4. Beastmaster: Crucible-Strategien: Ein K.O. beendet den Lauf, und ein Begleiter, den ein späterer Kampf braucht, kommt dort mit den LP an, die ihm
+3. Beastmaster: Crucible-Strategien: Ein K.O. beendet den Lauf, und ein Begleiter, den ein späterer Kampf braucht, kommt dort mit den LP an, die ihm
    die früheren ließen.
-5. Bewegungssperre beim Wirken gegen das Ausweichen der BossMod-KI: Mit „Lock movement while casting" an steht die
+4. Bewegungssperre beim Wirken gegen das Ausweichen der BossMod-KI: Mit „Lock movement while casting" an steht die
    Figur während jedes Zaubers still, auch wenn die KI von BossMod aus einer Fläche laufen will; nur in dieser
    Kombination, dort aber mit einem Treffer, dem der Spieler nicht ausweicht.
-6. Blaumagier: Set nach den Widerständen der Stufe: Im Masked Carnivale wählt der Satz des Stufenführers Füllzauber
+5. Blaumagier: Set nach den Widerständen der Stufe: Im Masked Carnivale wählt der Satz des Stufenführers Füllzauber
    nach Beispielen; gegen welches Element die Gegner der Stufe schwach oder immun sind, zählt dabei nicht.
-7. Konzepte neu ordnen (allgemein, Rollen, Gruppen, Jobs, Inhalte): keine direkte Wirkung im Kampf; eine Regel, die
+6. Konzepte neu ordnen (allgemein, Rollen, Gruppen, Jobs, Inhalte): keine direkte Wirkung im Kampf; eine Regel, die
    im Konzept eines Jobs steht, wird für dessen Gruppe übersehen, und eine Inhaltsregel ist über mehrere Konzepte
    verteilt.
 
@@ -62,24 +59,10 @@ Fehl-LP, Spielstatus) und den Tinktur-Vorrang; mit dem nächsten Upload die Ursa
 nach der Gefahr statt nach der festen Schwelle, für alle Jobs. *Konzept:* 03 („Eine Wiederverwendung für alle
 Arzneien"), 07.
 
-### Crucible: Weghinweis für den nächsten Schritt · N
-Seine Vorgabe (06.11.2026): „und auf den brettern von crucible generell hinweise, welche wege man nehmen sollte, basierend
-auf gesundheit der begleiter, ausstattung, verbrauchsgegenständen, eigenen heilbedarf", „immer für den nächsten
-schritt", „die empfehlung soll sich am aktuellen stand des fortschritts ausrichten" und „den kann man halt nicht am
-anfang des brettes fürs ganze brett voraussehen, sondern für den oder die nächsten schritte. ähnlich der vorausplanung
-beim schach". Im Kampf: Wer mit verletzten Heilern und wenig LP in einen weiteren Kampf statt zum Lager geht, trägt den
-nächsten Kampf mit dem Rest; wer bei voller Gesundheit das Lager nimmt, verschenkt den Schatz oder den Laden. *Ort:*
-`CrucibleRoute` (Felder, Wege, letzter Kampf, A631), K10/K11 (Lasten, LP, `HeldForFinal`), K8 (Gegenstände), Fenster.
-*Nächster Schritt:* Loop – an der nächsten Gabelung je Seite, was sie bringt (Kampf, Lager, Laden, Schatz, Zufall) gegen
-deine LP und deinen Heilbedarf (gemessene Lasten), die LP der Begleiter für die nächsten Kämpfe und den Endkampf, deine
-Ausrüstung und Gegenstände, einen oder wenige Züge vorausgerechnet und nach jedem Feld neu; Hinweis mit Grund in einem
-Fenster. *Konzept:* 01, K10 „Weg“
-und K14.
-
 ### Hilfsfenster im Stil von RebornMaterial · N
 Sein Vorschlag (06.11.2026): „das hilfsfenster sollte evtl. besser aussehen und den rebornmaterials entsprechen". Im
 Kampf mittelbar: Eine Empfehlung, die man vor dem Kampf nicht auf einen Blick liest, wird übergangen. *Ort:*
-`RotationSolver/UI/ExtraWindows/` (Crucible-Team, -Laden, -Schatz, -Campsite, Masked-Carnivale-Satz), RebornMaterial
+`RotationSolver/UI/ExtraWindows/` (Crucible-Team, -Laden, -Schatz, -Campsite, -Weg, Masked-Carnivale-Satz), RebornMaterial
 (`/home/user/ext/RebornMaterial`). *Nächster Schritt:* Loop – was RebornMaterial bietet und wie das Hauptfenster es
 nutzt, ein gemeinsames Gerüst für alle Hilfsfenster (Universell zuerst), dann je Fenster. *Konzept:* 03 (Fenster).
 

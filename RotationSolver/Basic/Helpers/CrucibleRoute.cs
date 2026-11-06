@@ -34,7 +34,10 @@ internal static class CrucibleRoute
 	private const int MoveColumn = 0, KindColumn = 1, IndexColumn = 2;
 	private const int CellKindColumn = 2, CellNodeColumn = 3, CellNextColumn = 4;
 
-	private readonly record struct Node(int Move, Space Kind, uint Battle, bool MayBeCampsite, bool MayBeBattle, List<int> Camps);
+	/// <summary>A space: its move, kind, battle (XBMBattleDetail row), what a random space can become, and the rest limits of
+	/// the campsites it is or can be.</summary>
+	internal readonly record struct Node(int Move, Space Kind, uint Battle, bool MayBeCampsite, bool MayBeBattle, List<int> Camps,
+		List<(Space Kind, uint Battle)> Options);
 
 	// Camps: how many familiars rest with the player at each campsite of the board (XBMContentCamp, a subrow per campsite
 	// index - the index of a campsite space or of a random space's campsite option).
@@ -43,6 +46,10 @@ internal static class CrucibleRoute
 	private static Dictionary<uint, Board>? _boards;
 	private static (uint Board, int Node) _lastBattle = (0, -1);
 	private static uint _lastNoted;
+	private static int _current = -1;
+
+	/// <summary>The space RSR follows the run on: the last battle, or a campsite, shop or treasure opened after it; -1 unknown.</summary>
+	internal static int Current => _current;
 
 	/// <summary>The board and space of the last battle the horn screen named in this run; board 0 before the first.</summary>
 	internal static (uint Board, int Node) LastBattle => _lastBattle;
@@ -52,7 +59,38 @@ internal static class CrucibleRoute
 	{
 		_lastBattle = (0, -1);
 		_lastNoted = 0;
+		_current = -1;
 	}
+
+	/// <summary>
+	/// A window of <paramref name="kind"/> opened (campsite, shop, treasure): the run stands on the next space of that kind - or a
+	/// random space that can be it - after the space it stood on. Nothing changes when none is next.
+	/// </summary>
+	internal static void NoteSpace(Space kind)
+	{
+		if (_lastBattle.Board == 0 || _current < 0 || !Boards.TryGetValue(_lastBattle.Board, out var route) || route.Next == null
+			|| route.Nodes[_current].Kind == kind)
+		{
+			return;
+		}
+
+		foreach (var next in route.Next[_current])
+		{
+			var node = route.Nodes[next];
+			if (node.Kind == kind || (node.Kind == Space.Random && node.Options.Exists(o => o.Kind == kind)))
+			{
+				_current = next;
+				DefenseTrace.Line($"crucible route: on the {kind} at move {node.Move}");
+				return;
+			}
+		}
+	}
+
+	/// <summary>The spaces of the board the run is on, and the ways between them; null while none is known.</summary>
+	internal static (Node[] Nodes, List<int>[] Next, List<int> Camps)? Map
+		=> _lastBattle.Board != 0 && Boards.TryGetValue(_lastBattle.Board, out var route) && route.Next != null
+			? (route.Nodes, route.Next, route.Camps)
+			: null;
 
 	/// <summary>The horn screen named <paramref name="battleDetail"/> (an XBMBattleDetail row): the space it stands on.</summary>
 	internal static void NoteBattle(uint battleDetail)
@@ -70,6 +108,7 @@ internal static class CrucibleRoute
 				if (route.Nodes[i].Battle == battleDetail && (_lastBattle.Board != board || _lastBattle.Node != i))
 				{
 					_lastBattle = (board, i);
+					_current = i;
 					DefenseTrace.Line($"crucible route: battle {battleDetail} is board {board}, move {route.Nodes[i].Move} "
 						+ $"({route.Nodes[i].Kind}) - {(route.Next == null ? "the board's ways are unread" : "ways read")}");
 					return;
@@ -346,6 +385,7 @@ internal static class CrucibleRoute
 					var battle = kind is Space.Enemy or Space.Elite or Space.Boss && index >= 0 && index < ofBoard.Count ? ofBoard[index] : 0u;
 					bool camp = kind == Space.Campsite, fight = kind is Space.Enemy or Space.Elite;
 					var camps = new List<int>();
+					var becomes = new List<(Space, uint)>();
 					if (camp)
 					{
 						camps.Add(index);
@@ -355,6 +395,8 @@ internal static class CrucibleRoute
 					{
 						foreach (var (option, optionIndex) in can)
 						{
+							becomes.Add((option, option is Space.Enemy or Space.Elite && optionIndex >= 0 && optionIndex < ofBoard.Count
+								? ofBoard[optionIndex] : 0u));
 							if (option == Space.Campsite)
 							{
 								camp = true;
@@ -365,7 +407,7 @@ internal static class CrucibleRoute
 						}
 					}
 
-					nodes.Add(new Node(row.ReadInt8Column(MoveColumn), kind, battle, camp, fight, camps));
+					nodes.Add(new Node(row.ReadInt8Column(MoveColumn), kind, battle, camp, fight, camps, becomes));
 				}
 
 				List<int>[]? next = null;
