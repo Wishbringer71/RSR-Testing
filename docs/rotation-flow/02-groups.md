@@ -249,7 +249,9 @@ flowchart TD
 
 1. **Gruppen-Minderung** (Troubadour/Tactician/Shield Samba) —
    dieselbe Rolle, dieselbe Dauer (15 s), dieselbe BMR-Auslösung (`BMRShouldRefreshBefore` vor Raidwide und
-   Tankbuster).
+   Tankbuster). Die drei sind eine Familie: Die neue ersetzt die stehende, gleich von wem, und aufgefrischt wird nur,
+   wenn keine der drei den angekündigten Treffer noch abdeckt (Konzept 08, „Eine fremde Minderung derselben Familie
+   zählt wie die eigene", A592).
 2. **Level-Ketten dominieren den Filler.**
 3. **Kein Raise, keine GCD-Heilung; Second Wind in `HealSingleAbility` bei allen drei.**
 

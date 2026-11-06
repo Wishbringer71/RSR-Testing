@@ -173,7 +173,7 @@ public sealed class MCH_Reborn : MachinistRotation
 	{
 		if ((!MultiTact || (MultiTact && NumberOfAllHostilesInMaxRange > 1))
 			&& !HoldAreaDefense(IsOverheated || BurstWeaveSlotContested, "Machinist: Overheat or burst weave slot")
-			&& BMRShouldRefreshBefore(BMRRaidwideIn, DefensiveValues.DurationOf(TacticianPvE.ID), true, null, StatusID.Tactician_1951, StatusID.Tactician_2177)
+			&& BMRShouldRefreshBefore(BMRRaidwideIn, TacticianPvE)
 			&& TacticianPvE.CanUse(out act, skipStatusProvideCheck: true))
 		{
 			return true;
@@ -196,7 +196,9 @@ public sealed class MCH_Reborn : MachinistRotation
 			}
 		}
 
-		if (!MitOverlap || (MitOverlap && !StatusHelper.PlayerHasStatus(true, StatusID.Tactician_1951, StatusID.Tactician_2177)))
+		// The option names mitigations, not ours: a bard's Troubadour or a dancer's Shield Samba overlaps
+		// Dismantle exactly as our own Tactician does (A592).
+		if (!MitOverlap || (MitOverlap && !StatusHelper.PlayerHasStatus(false, StatusHelper.RangePhysicalDefense)))
 		{
 			if (DismantlePvE.CanUse(out act))
 			{
@@ -212,7 +214,7 @@ public sealed class MCH_Reborn : MachinistRotation
 	{
 		if ((!MultiTact || (MultiTact && NumberOfAllHostilesInMaxRange > 1))
 			&& !HoldSingleDefense(IsOverheated || BurstWeaveSlotContested, "Machinist: Overheat or burst weave slot")
-			&& BMRShouldRefreshBefore(BMRTankbusterIn, DefensiveValues.DurationOf(TacticianPvE.ID), true, null, StatusID.Tactician_1951, StatusID.Tactician_2177)
+			&& BMRShouldRefreshBefore(BMRTankbusterIn, TacticianPvE)
 			&& TacticianPvE.CanUse(out act, skipStatusProvideCheck: true))
 		{
 			return true;

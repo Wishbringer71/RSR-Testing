@@ -1989,9 +1989,10 @@ public partial class CustomRotation
 	/// <param name="action">
 	/// The action this refresh would spend, when the caller can name it. Read by the hold below: an
 	/// action with a charge to spare, or with its next charge back before the predicted event, is not
-	/// held, because the reserve A9 protects is not at risk. Radiant Aegis is the case ("Enhanced
-	/// Radiant Aegis [480]: Maximum Charges: 2") while Troubadour, Tactician and Shield Samba have
-	/// one.
+	/// held, because the reserve A9 protects is not at risk. Troubadour, Tactician and Shield Samba pass
+	/// theirs and have one charge, so their reserve is always real. Radiant Aegis has two from level 88
+	/// ("Enhanced Radiant Aegis [480]: Maximum Charges: 2") and is not passed: the option's own text has
+	/// it wait for the bigger hit instead of being spent on the small one.
 	/// </param>
 	/// <param name="statusIDs">The status or statuses whose remaining time decides the refresh.</param>
 	public static bool BMRShouldRefreshBefore(float predictedIn, float statusDuration, bool statusFromSelf, IBattleChara? target, IBaseAction? action, params StatusID[] statusIDs)
@@ -2033,9 +2034,17 @@ public partial class CustomRotation
 		//
 		// The A9 case itself is untouched: there was no prediction at all there, so this branch is
 		// never reached for it.
+		//
+		// "The next one is back" counts from the moment of spending. With a charge already recharging
+		// that is its remaining time; with none recharging - a single-charge action that is ready, or
+		// every charge full - spending starts a full recast. The remaining time reads 0 there only
+		// because nothing is recharging yet, and read as "back at once" it would have waved every
+		// ready single-charge action through.
 		var reserveSurvivesSpending = action != null
 			&& (action.Cooldown.CurrentCharges > 1
-				|| action.Cooldown.RecastTimeRemainOneCharge <= predictedIn);
+				|| (action.Cooldown.IsCoolingDown
+					? action.Cooldown.RecastTimeRemainOneCharge
+					: action.Cooldown.RecastTimeOneChargeRaw) <= predictedIn);
 
 		if (Service.Config.HoldProactiveMitigationForSmallCast
 			&& DataCenter.AnnouncedHitIsSmall
@@ -2063,6 +2072,33 @@ public partial class CustomRotation
 	public static bool BMRShouldRefreshBefore(float predictedIn, float statusDuration, bool statusFromSelf, IBattleChara? target, params StatusID[] statusIDs)
 	{
 		return BMRShouldRefreshBefore(predictedIn, statusDuration, statusFromSelf, target, null, statusIDs);
+	}
+
+	/// <summary>
+	/// As above, for an action that declares on itself which statuses already do its job on the player
+	/// (<see cref="ActionSetting.StatusProvide"/>), and whether only its own count
+	/// (<see cref="ActionSetting.StatusFromSelf"/>). The proactive refresh then asks the same question
+	/// as the action's own status check, so the two cannot drift apart.
+	/// </summary>
+	/// <remarks>
+	/// Written for Troubadour, Tactician and Shield Samba, each of which "cannot be stacked" with the
+	/// other two. The game replaces a standing one with the new one whoever cast it (measured in the
+	/// owner's logs, A592), so casting ours while another player's still covers the predicted hit
+	/// gains nothing for that hit and spends the cooldown the next one needed. Their reactive path
+	/// always checked the whole family; the proactive one checked only the player's own status.
+	/// </remarks>
+	/// <param name="predictedIn">One of the BMR*In values: seconds until the predicted event.</param>
+	/// <param name="action">The action the refresh would spend; also read by the hold above.</param>
+	public static bool BMRShouldRefreshBefore(float predictedIn, IBaseAction action)
+	{
+		var statuses = action.Setting.StatusProvide;
+		if (statuses == null || statuses.Length == 0)
+		{
+			return false;
+		}
+
+		var fromSelf = action.Setting.StatusFromSelf;
+		return BMRShouldRefreshBefore(predictedIn, DefensiveValues.DurationOf(action.ID), fromSelf, fromSelf ? null : Player, action, statuses);
 	}
 
 	/// <summary>

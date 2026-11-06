@@ -226,7 +226,10 @@ gewählten Trank mit dem Zweig, der ihn freigab, und den HP.
   Liturgy auf den nächsten Treffer.
   - **Kein Stapelschutz im Sinn der Spielmechanik:** Verschiedene Status wirken zusammen. Nur
     derselbe Status aus zwei Quellen (Reflexion zweier Tanks, Addle, Feint; Kerachole und Taurochole)
-    wirkt nicht doppelt, und das regelt RSR getrennt davon (`StatusFromSelf = false`).
+    wirkt nicht doppelt, ebenso eine Familie, deren Wirktext es sagt („cannot be stacked with":
+    Troubadour, Tactician, Shield Samba; Galvanize und Eukrasian Diagnosis). Das regelt RSR getrennt davon
+    (`StatusFromSelf = false`, die Familie als `StatusProvide`), für die proaktive Ebene in „Eine fremde
+    Minderung derselben Familie zählt wie die eigene".
   - **Vorteil:** Zwei Raidwides im Abstand von 20 bis 60 s bekommen beide etwas. Ohne Streckung ginge
     alles auf den ersten, und Plenary käme erst nach 60 s zurück. Das ist sein Prinzip aus „Wozu die
     Aussetzbedingungen da sind": strecken statt verdoppeln, solange die Gruppe hält.
@@ -538,6 +541,28 @@ Abwehrpfaden, also für einen angekündigten oder gemessenen Treffer. Die einzig
 seiner eigenen Gesundheitsschwelle („Health threshold needed to use Tengentsu/ThirdEye outside of AOE mit scenarios.",
 deren Text nur Tengentsu und Third Eye nennt). Dort fehlte Feint dann für den nächsten Raidwide. Sie ist entfernt (A408).
 
+**Eine fremde Minderung derselben Familie zählt wie die eigene (A592).** Troubadour, Tactician und Shield Samba mindern
+gleich (15 % ab Stufe 98, je 15 s) und tragen im Wirktext „Effect cannot be stacked with …" für die beiden anderen. Was
+das Spiel dann tut, zeigen seine Mitschnitte (25.10. bis 05.11.2026; 36 Würfe von 16 anderen Spielern über eine stehende
+fremde Minderung der Familie): **Die neue ersetzt die stehende.** Bei 63 Zielen verschwand die alte im selben
+Augenblick, in dem die neue kam, auch mit voller Restzeit, in fünf der sechs Paarungen (Troubadour über Tactician kam
+nicht vor); fünfmal lief die alte mit unter
+1 s Rest vorher ab; nie standen beide zugleich. Daraus folgt die Regel für die proaktive Ebene: Barde, Maschinist und
+Tänzer frischen vor einem angekündigten Raidwide oder Tankbuster nur auf, wenn **keine** Minderung der Familie – gleich
+von wem – den Treffer noch abdeckt. Endet eine fremde vor dem Treffer, geht die eigene hinaus und ersetzt sie; das
+kostet nichts, weil die neue alles abdeckt, was die alte noch abgedeckt hätte. Die Familie fragt die Regel bei der Aktion
+selbst ab (`StatusProvide` mit `StatusFromSelf = false`, dieselbe Liste wie die reaktive Ebene,
+`BMRShouldRefreshBefore(vorhergesagt, Aktion)`), sie steht also nur an einer Stelle.
+- *Im Kampf:* Mit einem zweiten dieser Jobs in der Gruppe warf RSR die eigene über die fremde, sobald die eigene fehlte –
+  der Treffer war ohnehin gedeckt, die Abklingzeit (120 s, ab Stufe 88 je ein Merkmal: 90 s) verbrannt, und der nächste Raidwide
+  in dieser Zeit kam ohne. Jetzt bleibt sie für ihn. Die reaktive Ebene prüfte die Familie schon immer.
+- *Grenze:* Gelesen wird der Status am Spieler. Hat die fremde Minderung ein Gruppenmitglied verfehlt, das die eigene
+  erreichen würde, bleibt es für diesen Treffer ungemindert; die eigene dafür auszugeben hieße, eine Minderung für
+  alle beim nächsten Raidwide gegen eine für einen Einzelnen jetzt zu tauschen, und vor einem Raidwide steht die Gruppe
+  meist beisammen.
+- *Demontage des Maschinisten* zählt „Restrict mitigations to not overlap" ebenso gegen die ganze Familie: Ihr Text
+  nennt Minderungen, nicht eigene, und eine fremde Troubadour überlappt wie das eigene Tactician.
+
 **Der Ausfall ist still, und das ist der eigentliche Mangel.** Beide Ausfallarten — kein Modul, oder
 ein Modul, das Raidwides nicht fuehrt — erreichen den Baum als `float.MaxValue`, und jede Pruefung
 gegen ein Zeitfenster liest das als „es kommt nichts". Eine ausbleibende Minderung sieht damit aus
@@ -590,36 +615,32 @@ an**, mit `ProactiveMitigationHeld` als Sonde.
 meint, der gerade laeuft. Laeuft nichts, oder ist der laufende Cast nie gemessen worden, wird keine
 Aussage getroffen und die Vorhersage wie bisher befolgt.
 
-#### Zwei Ladungen — und warum sie hier trotzdem nicht ausgespielt werden
+#### Zwei Ladungen: Schimmerschild wartet trotzdem
 
-**Schimmerschild hat auf Stufe 100 zwei Ladungen**, belegt am Merkmalstext: „Enhanced Radiant Aegis
-[480] — Allows the accumulation of charges for consecutive uses of Radiant Aegis. Maximum Charges:
-2“ (Angabe des Auftraggebers, am Merkmal bestätigt). Troubadour, Tactician und Shield Samba haben
-eine.
+**Schimmerschild wartet auf den großen Treffer, auch mit zwei Ladungen.** So sagt es der Text der Option, und er bindet:
+„Stops a mitigation that fires from a BossMod prediction from being spent on a small area cast when a bigger one is
+coming right behind it … Radiant Aegis, Tactician, Troubadour or Shield Samba wait for the second instead of being
+eaten by the first." Zwei Ladungen hat er ab Stufe 88 („Enhanced Radiant Aegis [480]: Maximum Charges: 2", Angabe des
+Auftraggebers, am Merkmal bestätigt); Troubadour, Tactician und Shield Samba haben eine.
 
-**Damit scheint der Fall gelöst:** Bei zwei Treffern in Folge deckt eine Ladung den ersten, die
-zweite den zweiten — beide voll, ohne Raten. **Diese Lösung wird nicht genommen, und der Grund ist
-eine dokumentierte Entscheidung des Auftraggebers.**
+**Die Rechnung, ob das Ausgeben die Reserve nimmt, gibt es (C77), sie entscheidet aber nur für Aktionen, die der Aufrufer
+übergibt.** Ausgeben ist danach unbedenklich, wenn noch eine Ladung steht **oder** die nächste vor dem vorhergesagten
+Ereignis zurück ist. Übergeben werden seit A592 Troubadour, Tactician und Shield Samba (über
+`BMRShouldRefreshBefore(vorhergesagt, Aktion)`), Schimmerschild nicht. Für eine bereite Aktion mit einer Ladung beginnt
+mit dem Ausgeben die volle Abklingzeit, und die Rechnung zählt diese, nicht die Restzeit einer Ladung, die noch gar
+nicht lädt. Die Reserve ist bei den dreien also immer echt, und ihre Zurückhaltung gilt unverändert. Bis A592 übergab
+kein Aufrufer eine Aktion, die Rechnung lief also nie; übergeben hätte sie für eine bereite Aktion mit einer Ladung
+„sofort zurück" gelesen und die Zurückhaltung abgeschaltet.
 
-A9 (`6704335d`) hat den ungegateten Radiant-Aegis-Zweig auf seine Meldung hin entfernt, der Schild
-gehe ohne Gefahr hinaus. Die dort festgehaltene Begründung ist genau diese: **„`usedUp: true` gab
-dabei auch die zweite Ladung frei — bei echter Gefahr war keine mehr da.“** Er hat es bei der Arbeit
-an dieser Regel wiederholt: die Doppelzündung von Schimmerschild war neben Addle einer der ersten
-Fehler, die der Fork behoben hat.
-Eine zweite Ursache der Doppelzündung, gemeldet am 03.11.2026, lag nicht in einem Zweig, sondern im Blick auf
-den eigenen Schild: Jede Beschwörung ersetzt Karfunkel, das den Schild gelegt hat, und danach galt er als fremd.
-Behoben zentral in Konzept 03, „Vom Spieler heißt auch: von einem Objekt, das ihm gehörte" (A514).
+**Warum die Reserve überhaupt zählt:** A9 (`6704335d`) hat den ungegateten Radiant-Aegis-Zweig auf seine Meldung hin
+entfernt, der Schild gehe ohne Gefahr hinaus; festgehalten ist: **„`usedUp: true` gab dabei auch die zweite Ladung
+frei — bei echter Gefahr war keine mehr da.“** Er hat es bei der Arbeit an dieser Regel wiederholt: Die Doppelzündung von
+Schimmerschild war neben Addle einer der ersten Fehler, die der Fork behoben hat. Der A9-Fall selbst liegt außerhalb
+dieses Zweigs: Dort gab es keine Vorhersage.
 
-**Die Frage wird nicht vorgelegt, sondern im Kampf entschieden — und das ist der Unterschied
-zwischen dem Buchstaben seiner Entscheidung und ihrem Grund.** A9 verbietet nicht „die zweite Ladung
-ausgeben“, sondern nennt die Folge: „bei echter Gefahr war keine mehr da.“ Das ist eine Aussage
-über **Verfügbarkeit**, und Verfügbarkeit ist zur Laufzeit ausrechenbar:
-
-> Ausgeben ist unbedenklich, wenn danach noch eine Ladung steht **oder** die nächste vor dem
-> vorhergesagten Ereignis zurück ist. Sonst ist die Reserve echt, und die Zurückhaltung gilt.
-
-Der A9-Fall selbst bleibt unberührt: Dort gab es überhaupt keine Vorhersage, dieser Zweig wird also
-nie erreicht.
+Eine zweite Ursache der Doppelzündung, gemeldet am 03.11.2026, lag nicht in einem Zweig, sondern im Blick auf den
+eigenen Schild: Jede Beschwörung ersetzt Karfunkel, das den Schild gelegt hat, und danach galt er als fremd. Behoben
+zentral in Konzept 03, „Vom Spieler heißt auch: von einem Objekt, das ihm gehörte" (A514).
 
 ### Die Regel bewertet sich selbst, statt eine Ablesung zu verlangen
 

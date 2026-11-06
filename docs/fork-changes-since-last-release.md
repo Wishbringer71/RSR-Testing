@@ -5,7 +5,7 @@ What this release changes in the fight. For the whole distance from upstream, se
 
 ## When the pack is about to fall
 
-- **"Time to kill" now means "until the last enemy falls".** An action's time-to-kill threshold, and every rule
+- **Time to kill now runs until the last enemy falls.** An action's time-to-kill threshold, and every rule
   that asks how long the fight lasts (the Ninja's Mug, Dokumori and Doton, Flamethrower, a tank's invulnerability, the
   heal lock at the end of a fight), read the average of the enemies' times to kill. An enemy nobody had hit yet dropped out of
   that average - hit one of four and its 3 seconds counted as the fight's - and a boss beside a few adds averaged
@@ -135,6 +135,13 @@ What this release changes in the fight. For the whole distance from upstream, se
 - **Long unlisted casts on a tank are learned too.** A cast at its own target, a tank, counts as a
   tankbuster once it reaches the window where RSR takes it for one; before, only casts seen first
   within that window were learned, so none longer than about two GCDs.
+- **A bard's, machinist's or dancer's party mitigation is not cast over another one.** Troubadour, Tactician
+  and Shield Samba cannot stack, and the game replaces a standing one with the new one whoever cast it. Ahead of a
+  raidwide or tankbuster that BossMod announces, RSR now casts yours only when none of the three still covers the hit.
+  Before, with a second of these jobs in the party, yours went out over theirs as soon as your own had run out: the
+  hit was covered anyway, and the next raidwide inside the 90 to 120 seconds of the cooldown came without it. With
+  `Restrict mitigations to not overlap`, the machinist's Dismantle now also waits while another player's Troubadour
+  or Shield Samba stands, not only your own Tactician.
 
 ## After you are raised
 

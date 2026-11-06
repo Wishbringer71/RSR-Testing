@@ -93,8 +93,9 @@ Stacheln, Flächen und Zu-Eier, Heiler-Triage, Reinigung, Abwehr und Kampfvorher
 nicht kennt, Job für Job nach seinem Profil (Maschinist zuerst, er spielt ihn am häufigsten); danach die übrigen in der
 Reihenfolge der Liste. Maschinist in Arbeit (Daedalus 74659a6, 03.11.2026): Full Metal Field und Reassemble treffen RSR
 nicht (Job-Guide: „not affected by Reassemble", RSR setzt es nicht darauf). Königin, Overdrive und das Maß „letzter
-Gegner" gebaut (A591, Konzept 14, „Das Ende der Gruppe"); danach die übrigen Maschinisten-Regeln aus Daedalus, dann der
-nächste Job. Je Fund ein Loop, je Repository ein Archiveintrag mit Commit und Datum. *Konzept:* 15, erweitert vom Vergleich mit WrathCombo auf die übrigen Werkzeuge; je Fund dazu das
+Gegner" gebaut (A591, Konzept 14, „Das Ende der Gruppe"); Gruppenminderung als Familie für Barde, Maschinist und Tänzer
+gebaut (A592, Konzept 08); offen aus Daedalus: die Sperre gegen Wechsel zwischen Flächen- und Einzelzielreihe und
+Gauss Round/Ricochet nur an der Ladungsgrenze, dann der nächste Job. Je Fund ein Loop, je Repository ein Archiveintrag mit Commit und Datum. *Konzept:* 15, erweitert vom Vergleich mit WrathCombo auf die übrigen Werkzeuge; je Fund dazu das
 tragende (01 Jobs, 08 Minderung, 13 Flächenschaden und Tankbuster).
 
 

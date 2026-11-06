@@ -17341,6 +17341,39 @@ habe den schleim bislang nicht anfreunden können."
   nichts ändert sich? Ohne gemessenen Verlust wie bisher; die Königin hält erst nach der ersten Batteriemessung.
 - *Prüfgrad:* statisch, Compile ohne Warnung, Prüfskripte. Im Spiel nicht beobachtet.
 
+### A592 · Gruppenminderung der Fernkämpfer: eine fremde der Familie zählt wie die eigene (06.11.2026)
+
+- *Anlass:* TODO „Fremde Repositories", Maschinist nach Daedalus (`BuffModule.TryPushPartyMitigation`: „Shield Samba /
+  Troubadour / Tactician are one non-stacking buff family — skipped while ANY of the three is already on the player");
+  dasselbe bei BossMod (`xan/AI/Ranged.cs`, ffxiv_bossmod 6e410ef8b) und WrathCombo (`ALL_Ranged_Mitigation`, 1e64c866c).
+- *Befund:* Die BossMod-Zweige von Barde, Maschinist und Tänzer (`DefenseAreaAbility`, `DefenseSingleAbility`, je zwei)
+  fragten in `BMRShouldRefreshBefore` nur den eigenen Status und riefen `CanUse(skipStatusProvideCheck: true)`; die
+  Familienprüfung der Aktion (`StatusProvide = RangePhysicalDefense`, `StatusFromSelf = false`) lief also nur reaktiv.
+  Mit einem zweiten dieser Jobs in der Gruppe ging die eigene über eine fremde, die den angekündigten Treffer noch deckte.
+- *Mechanik, gemessen:* Wirktext „Effect cannot be stacked with …" (`ActionId.resx`), was das Spiel dann tut, nennt keine
+  Quelle (consolegameswiki, Suche). Seine ACT-Mitschnitte 25.10.–05.11.2026 (Zeilen 21/22, 26, 30; Status 0x78E, 0x79F,
+  0x722): 36 Würfe von 16 anderen Spielern über eine stehende fremde Minderung; bei 63 Zielen Verlust der alten und Erhalt
+  der neuen im selben Zeitstempel, auch mit voller Restzeit, in fünf der sechs Paarungen; fünfmal lief die alte (unter 1 s)
+  vorher ab; nie beide zugleich. Die neue ersetzt die stehende.
+- *Gebaut:* `BMRShouldRefreshBefore(vorhergesagt, Aktion)` liest Statusliste und Quelle aus der Einstellung der Aktion
+  (eine Stelle, dieselbe Frage wie die reaktive Prüfung); die sechs Aufrufe nutzen sie. Maschinist: „Restrict mitigations
+  to not overlap" sperrt Dismantle gegen die ganze Familie (Text nennt Minderungen, nicht eigene).
+- *Zweiter Befund im selben Helfer:* Die Reserveprüfung (C77) bekam von keinem Aufrufer eine Aktion und lief nie; übergeben,
+  hätte sie für eine bereite Aktion mit einer Ladung „sofort zurück" gelesen (`RecastTimeRemainOneCharge` 0, weil nichts
+  lädt) und die Zurückhaltung abgeschaltet. Berichtigt: ohne ladende Ladung zählt die volle Abklingzeit. Schimmerschild
+  bekommt die Aktion nicht: Der Text von „Hold a predicted mitigation while a small cast is running" lässt ihn auf den
+  großen Treffer warten, und der Text bindet (C167).
+- *Verworfen:* (a) Warten, bis eine fremde ausläuft, auch wenn sie vor dem Treffer endet – nur richtig, wenn das Spiel die
+  zweite abwiese; gemessen ersetzt es, die frühe eigene deckt alles, was die fremde gedeckt hätte. (b) Die Gruppe statt des
+  Spielers fragen (wen die fremde verfehlt hat) – tauscht die Minderung aller beim nächsten Raidwide gegen die eines
+  Einzelnen jetzt. (c) Je Rotation die Familie ausschreiben – drei Kopien der Liste, die die Aktion schon trägt.
+- *Falsifikation:* Kein Defekt? Pfad am Code belegt (Statusfrage nur eigen, Familienprüfung übersprungen); Wirkung im
+  Spiel gemessen (Ersetzen). Option falsch? Endet die fremde vor dem Treffer, geht die eigene wie bisher. Ausgeliefert, und
+  nichts ändert sich? Ohne Modul oder ohne zweiten dieser Jobs in der Gruppe – dort war nichts falsch. Die Zurückhaltung
+  der drei bleibt gleich (eine Ladung, Reserve immer echt).
+- *Prüfgrad:* statisch, Mitschnitt (Spielmechanik), Compile ohne Warnung, 44 Prüfschritte. Die geänderten Zweige im Spiel
+  nicht beobachtet.
+
 ## B · Commit-Register (Fork vs. `upstream/main`)
 
 ### B1 · Einzelgeprüfte Fork-Commits
@@ -17659,3 +17692,4 @@ Die offene Arbeit dazu — Reihenfolge und Abbruchbedingung der Nachprüfung —
 | C164 | TODO „Flächenbetäuber in Kreszentia für The Blackest Night": „Betäubt ein anderer Spieler mit einer Aktion seines Phantomjobs eine Gruppe, kann der Dunkelritter seine Barriere in das Betäubungsfenster legen" | Die Regel misst die Betäubung am Status der Gegner, gleich wer sie setzt (`SurveyStuns`); nur das sichtbare Kommen der nächsten las sie an Holy und Holy III. Die einzige Flächenbetäubung der Phantomjobs, Occult Falcon, wirkt sofort und hat kein Kommen. | A560: Punkt geschlossen; das Kommen wird über die Spieldaten erkannt statt über die zwei IDs. |
 | C165 | Konzept 08, „Schaden über Zeit: HoT gegen DoT": „Esuna kommt in RSRs GCD-Verteilung vor jeder Heilung; ein entfernbarer DoT, den RSR entfernt, braucht keinen HoT" und „Entfernbare DoTs entfernt Esuna vorher; H1 lässt sie aus" | Die Reihenfolge war Upstreams, ungeprüft übernommen. Im Odin-Kampf (05.11.2026) gingen 13 Reinigungen einer Gruppen-Blutung und 9 von Slow vor jede Heilung, auch bei einem Mitglied mit 0 % Vorausschau; 8.800 MP. Ein DoT auf mehreren Mitgliedern ist Sache des Gruppen-HoT (sein Hinweis), und eine Reinigung geht nur vor, wenn sie ein Leben rettet. | A565: Konzept 07 „Reinigung oder Heilung", 08 berichtigt, Code. |
 | C166 | Konzept 01 (Begleiter-Nutzen A491, Entfesseln, K10 Laden A569) und Konzept 07 („Reinigung oder Heilung", A565): „Todesurteil" als deutscher Name des Zustands Doom | Der Name war selbst gebildet. Das deutsche Spielblatt nennt Status 5421 „Verhängnis" (xivapi v2, `language=de`, 05.11.2026); an allen vier Stellen ersetzt. Ebenso im Ladenabschnitt: Paralyse (5382), Stein (4891), Steinfluch (437), Blind (5381), Betäubung (Status 2) aus demselben Blatt; Chains of Condemnation englisch, weil kein deutscher Beleg vorliegt. A491 führt das Wort als Teil seines damaligen Wortlauts; in A515 ist „Todesurteil" der Name einer Gegneraktion aus seinem Mitschnitt, kein Zustand. |
+| C167 | C77: „Die Zurückhaltung rechnet jetzt selbst, ob die Reserve gefährdet ist (Ladung übrig, oder nächste vor dem vorhergesagten Ereignis zurück)“; ebenso Konzept 08, „Zwei Ladungen“: „Die Frage wird nicht vorgelegt, sondern im Kampf entschieden“ | Kein Aufrufer übergab `BMRShouldRefreshBefore` eine Aktion; ohne sie galt die Reserve immer als echt, die Rechnung lief nie. Übergeben, hätte sie für eine bereite Aktion mit einer Ladung die Restzeit 0 gelesen und die Zurückhaltung abgeschaltet. Der Text der Option („Radiant Aegis, Tactician, Troubadour or Shield Samba wait for the second instead of being eaten by the first“) beschreibt das Verhalten, das tatsächlich lief | Rechnung berichtigt (ohne ladende Ladung die volle Abklingzeit); Barde, Maschinist und Tänzer übergeben ihre Aktion (eine Ladung, Reserve echt, Verhalten gleich); Schimmerschild nicht, weil der Optionstext bindet. Konzept 08 auf diesen Stand gebracht (A592) |
