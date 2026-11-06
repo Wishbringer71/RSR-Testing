@@ -1,5 +1,6 @@
-using Dalamud.Interface.Windowing;
+using Dalamud.Interface;
 using ECommons.DalamudServices;
+using RebornMaterial;
 using RotationSolver.Basic.Rotations.Basic;
 
 namespace RotationSolver.UI.ExtraWindows;
@@ -8,14 +9,10 @@ namespace RotationSolver.UI.ExtraWindows;
 /// K7 of the Crucible (concept 01, A563): while the team screen of a board is open and the beastmaster rotation runs, the
 /// team RSR recommends, why, and a button that makes the team that. Nothing changes without the click (decision C, A533).
 /// </summary>
-internal class CrucibleTeamWindow : Window
+internal class CrucibleTeamWindow : RecommendationWindow
 {
-	private const ImGuiWindowFlags WindowFlags = ImGuiWindowFlags.NoCollapse | ImGuiWindowFlags.AlwaysAutoResize;
-
-	public CrucibleTeamWindow() : base("RSR - Crucible team", WindowFlags)
+	public CrucibleTeamWindow() : base("RSR - Crucible team")
 	{
-		IsOpen = true;
-		RespectCloseHotkey = false;
 	}
 
 	public override bool DrawConditions()
@@ -28,34 +25,30 @@ internal class CrucibleTeamWindow : Window
 	{
 		var picks = BeastmasterRotation.CrucibleTeamRecommendation;
 		var team = BeastmasterRotation.CrucibleTeamNow();
-		ImGui.TextUnformatted($"Recommended for this board ({picks.Count}):");
-		foreach (var pick in picks)
-		{
-			ImGui.TextUnformatted($"{(pick.InTeam ? "  " : "+ ")}{pick.Pet}: {pick.Why}");
-		}
-
 		var wanted = new List<BeastmasterPet>();
-		foreach (var pick in picks)
+		using (Section("crucible_team", "Team for this board", FontAwesomeIcon.Users, $"{picks.Count} familiars"))
 		{
-			wanted.Add(pick.Pet);
-		}
-
-		foreach (var member in team)
-		{
-			if (!wanted.Contains(member))
+			foreach (var pick in picks)
 			{
-				ImGui.TextUnformatted($"- {member}: leaves the team");
+				wanted.Add(pick.Pet);
+				Line($"{pick.Pet}", pick.InTeam ? "in team" : "joins", pick.InTeam ? M3Severity.Info : M3Severity.Success);
+				Note(pick.Why);
+			}
+
+			foreach (var member in team)
+			{
+				if (!wanted.Contains(member))
+				{
+					Line($"{member}", "leaves", M3Severity.Warning);
+				}
 			}
 		}
 
-		if (ImGui.Button("Apply") && picks.Count > 0)
+		if (Action("##crucible_team_apply", "Apply", FontAwesomeIcon.Check, picks.Count > 0))
 		{
 			BeastmasterRotation.RequestCrucibleTeam(wanted);
 		}
 
-		if (BeastmasterRotation.CrucibleTeamStatus.Length > 0)
-		{
-			ImGui.TextUnformatted(BeastmasterRotation.CrucibleTeamStatus);
-		}
+		Note(BeastmasterRotation.CrucibleTeamStatus);
 	}
 }

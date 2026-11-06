@@ -1,5 +1,6 @@
-using Dalamud.Interface.Windowing;
+using Dalamud.Interface;
 using ECommons.DalamudServices;
+using RebornMaterial;
 using RotationSolver.Basic.Rotations.Basic;
 
 namespace RotationSolver.UI.ExtraWindows;
@@ -9,14 +10,10 @@ namespace RotationSolver.UI.ExtraWindows;
 /// selects to rest and why, and at the last campsite before the final fight whom to rest for it, with a button that selects
 /// them; while a familiar is to be fed, whom the feed is meant for. Resting and feeding stay the player's clicks.
 /// </summary>
-internal class CrucibleCampWindow : Window
+internal class CrucibleCampWindow : RecommendationWindow
 {
-	private const ImGuiWindowFlags WindowFlags = ImGuiWindowFlags.NoCollapse | ImGuiWindowFlags.AlwaysAutoResize;
-
-	public CrucibleCampWindow() : base("RSR - Crucible campsite", WindowFlags)
+	public CrucibleCampWindow() : base("RSR - Crucible campsite")
 	{
-		IsOpen = true;
-		RespectCloseHotkey = false;
 	}
 
 	public override bool DrawConditions()
@@ -29,13 +26,17 @@ internal class CrucibleCampWindow : Window
 	{
 		if (BeastmasterRotation.CrucibleFeedTarget.Length > 0)
 		{
-			ImGui.TextUnformatted(BeastmasterRotation.CrucibleFeedTarget);
+			using (Section("crucible_feeding", "Feeding", FontAwesomeIcon.Utensils))
+			{
+				Line(BeastmasterRotation.CrucibleFeedTarget);
+			}
+
 			return;
 		}
 
-		if (BeastmasterRotation.CrucibleCampSummary.Length > 0)
+		using (Section("crucible_camp", "Campsite", FontAwesomeIcon.Campground))
 		{
-			ImGui.TextUnformatted(BeastmasterRotation.CrucibleCampSummary);
+			Note(BeastmasterRotation.CrucibleCampSummary);
 		}
 
 		var picks = BeastmasterRotation.CrucibleCampRecommendation;
@@ -44,14 +45,18 @@ internal class CrucibleCampWindow : Window
 			return;
 		}
 
-		ImGui.TextUnformatted("For the final fight, rest with:");
-		foreach (var pick in picks)
+		using (Section("crucible_camp_final", "Rest for the final fight", FontAwesomeIcon.Bed, "last campsite before it"))
 		{
-			ImGui.TextUnformatted($"  {pick.Pet} at {pick.Share:P0}: {pick.Why}");
+			foreach (var pick in picks)
+			{
+				Line($"{pick.Pet}", $"{pick.Share:P0}", M3Severity.Info);
+				Note(pick.Why);
+			}
+
+			Note(BeastmasterRotation.CrucibleCampOutcome);
 		}
 
-		ImGui.TextUnformatted(BeastmasterRotation.CrucibleCampOutcome);
-		if (ImGui.Button("Apply"))
+		if (Action("##crucible_camp_apply", "Apply", FontAwesomeIcon.Check))
 		{
 			BeastmasterRotation.RequestCrucibleCamp();
 		}

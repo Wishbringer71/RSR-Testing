@@ -3,6 +3,14 @@
 What this release changes in the fight. For the whole distance from upstream, see
 [`fork-changes-in-play.md`](fork-changes-in-play.md).
 
+## Recommendation windows
+
+- **The recommendation windows look like the rest of RSR.** The Crucible team, shop, treasure,
+  campsite and route windows and the Masked Carnivale set window now share RebornMaterial's look: each
+  part a titled card, each recommendation a line with a badge (take, safe, joins, not learned, beyond
+  your tokens), the reasons in muted text, the action as a Material button that is greyed out while
+  there is nothing to do. What they recommend is unchanged.
+
 ## Limit Break with NPC companions
 
 - **The full Limit Break bar is used when no other player is in the party.** New option

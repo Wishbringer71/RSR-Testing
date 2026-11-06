@@ -1,22 +1,19 @@
-using Dalamud.Interface.Windowing;
+using Dalamud.Interface;
 using ECommons.DalamudServices;
+using RebornMaterial;
 using RotationSolver.Basic.Rotations.Basic;
 
 namespace RotationSolver.UI.ExtraWindows;
 
 /// <summary>
-/// K10 of the Crucible (concept 01, Laden, A569): while a shop on a board is open and the beastmaster rotation runs, what RSR
-/// recommends buying, why, what it weighs the protective gear against, and a button that buys the list. Nothing is bought
-/// without the click (decision C, A533).
+/// K10 of the Crucible (concept 01, Laden, A569; feed for the final fight, K14, A631): while a shop on a board is open and the
+/// beastmaster rotation runs, what RSR recommends buying, why, what it weighs the protective gear against, a button that buys
+/// the list, and the feed for the final fight. Nothing is bought without the click (decision C, A533).
 /// </summary>
-internal class CrucibleShopWindow : Window
+internal class CrucibleShopWindow : RecommendationWindow
 {
-	private const ImGuiWindowFlags WindowFlags = ImGuiWindowFlags.NoCollapse | ImGuiWindowFlags.AlwaysAutoResize;
-
-	public CrucibleShopWindow() : base("RSR - Crucible shop", WindowFlags)
+	public CrucibleShopWindow() : base("RSR - Crucible shop")
 	{
-		IsOpen = true;
-		RespectCloseHotkey = false;
 	}
 
 	public override bool DrawConditions()
@@ -28,43 +25,45 @@ internal class CrucibleShopWindow : Window
 	{
 		var picks = BeastmasterRotation.CrucibleShopRecommendation;
 		var (tokens, left) = BeastmasterRotation.CrucibleShopTokens;
-		ImGui.TextUnformatted(picks.Count > 0
-			? $"Recommended ({tokens} tokens, {left} left after these):"
-			: $"Nothing recommended ({tokens} tokens): nothing here adds safety within your tokens and slots.");
-		foreach (var pick in picks)
+		using (Section("crucible_shop", "Buy", FontAwesomeIcon.ShoppingCart, $"{tokens} tokens, {left} left after these"))
 		{
-			ImGui.TextUnformatted($"{pick.Name} ({pick.Price}): {pick.Why}");
+			if (picks.Count == 0)
+			{
+				Note("Nothing here adds safety within your tokens and slots.");
+			}
+
+			foreach (var pick in picks)
+			{
+				Line(pick.Name, $"{pick.Price}");
+				Note(pick.Why);
+			}
+
+			if (BeastmasterRotation.CrucibleShopBasis.Length > 0)
+			{
+				Note($"Gear weighed against {BeastmasterRotation.CrucibleShopBasis}.");
+			}
 		}
 
-		if (BeastmasterRotation.CrucibleShopBasis.Length > 0)
-		{
-			ImGui.TextUnformatted($"Gear weighed against {BeastmasterRotation.CrucibleShopBasis}.");
-		}
-
-		if (picks.Count > 0 && ImGui.Button("Buy"))
+		if (Action("##crucible_shop_buy", "Buy", FontAwesomeIcon.ShoppingCart, picks.Count > 0))
 		{
 			BeastmasterRotation.RequestCrucibleShop();
 		}
 
-		if (BeastmasterRotation.CrucibleShopStatus.Length > 0)
-		{
-			ImGui.TextUnformatted(BeastmasterRotation.CrucibleShopStatus);
-		}
+		Note(BeastmasterRotation.CrucibleShopStatus);
 
 		// K14 (A631): feed for the final fight, one per familiar of its plan; bought and fed by hand.
 		var feed = BeastmasterRotation.CrucibleFeedRecommendation;
 		if (feed.Count > 0 || BeastmasterRotation.CrucibleFeedNote.Length > 0)
 		{
-			ImGui.Separator();
-			ImGui.TextUnformatted(feed.Count > 0 ? "Feed for the final fight (buy and feed by hand):" : "Feed for the final fight:");
-			foreach (var pick in feed)
+			using (Section("crucible_feed", "Feed for the final fight", FontAwesomeIcon.Utensils, "buy and feed by hand"))
 			{
-				ImGui.TextUnformatted($"{pick.Feed} ({pick.Price}{(pick.Affordable ? string.Empty : ", beyond the tokens the list leaves")}) -> {pick.Pet}: {pick.Why}");
-			}
+				foreach (var pick in feed)
+				{
+					Line($"{pick.Feed} -> {pick.Pet}", $"{pick.Price}", pick.Affordable ? M3Severity.Success : M3Severity.Warning);
+					Note(pick.Affordable ? pick.Why : $"{pick.Why}; beyond the tokens the list leaves");
+				}
 
-			if (BeastmasterRotation.CrucibleFeedNote.Length > 0)
-			{
-				ImGui.TextUnformatted(BeastmasterRotation.CrucibleFeedNote);
+				Note(BeastmasterRotation.CrucibleFeedNote);
 			}
 		}
 	}

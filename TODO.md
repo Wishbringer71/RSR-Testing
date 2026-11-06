@@ -21,16 +21,14 @@ BossMod-Module) die Rotation des Beastmasters, die Wahl der Begleiter und den Ze
 
 1. Allein ohne Heiler kommt kein Heiltrank: RSR stand 13 s in der kritischen Klasse ohne Heilfähigkeit, kein Trank
    von RSR trotz eingeschalteter Option, er drückte ihn bei 6 % selbst und starb (Beastmaster, Sägerschrei, 04.11.2026).
-2. Hilfsfenster im Stil von RebornMaterial: Die Empfehlungsfenster (Team, Laden, Schatz, Campsite, Weg, Masked Carnivale) sind
-   schlichte ImGui-Listen; was empfohlen ist und warum, liest sich vor dem Kampf schwer.
-3. Beastmaster: Crucible-Strategien: Ein K.O. beendet den Lauf, und ein Begleiter, den ein späterer Kampf braucht, kommt dort mit den LP an, die ihm
+2. Beastmaster: Crucible-Strategien: Ein K.O. beendet den Lauf, und ein Begleiter, den ein späterer Kampf braucht, kommt dort mit den LP an, die ihm
    die früheren ließen.
-4. Bewegungssperre beim Wirken gegen das Ausweichen der BossMod-KI: Mit „Lock movement while casting" an steht die
+3. Bewegungssperre beim Wirken gegen das Ausweichen der BossMod-KI: Mit „Lock movement while casting" an steht die
    Figur während jedes Zaubers still, auch wenn die KI von BossMod aus einer Fläche laufen will; nur in dieser
    Kombination, dort aber mit einem Treffer, dem der Spieler nicht ausweicht.
-5. Blaumagier: Set nach den Widerständen der Stufe: Im Masked Carnivale wählt der Satz des Stufenführers Füllzauber
+4. Blaumagier: Set nach den Widerständen der Stufe: Im Masked Carnivale wählt der Satz des Stufenführers Füllzauber
    nach Beispielen; gegen welches Element die Gegner der Stufe schwach oder immun sind, zählt dabei nicht.
-6. Konzepte neu ordnen (allgemein, Rollen, Gruppen, Jobs, Inhalte): keine direkte Wirkung im Kampf; eine Regel, die
+5. Konzepte neu ordnen (allgemein, Rollen, Gruppen, Jobs, Inhalte): keine direkte Wirkung im Kampf; eine Regel, die
    im Konzept eines Jobs steht, wird für dessen Gruppe übersehen, und eine Inhaltsregel ist über mehrere Konzepte
    verteilt.
 
@@ -58,13 +56,6 @@ in den Webfenstern 18:28:02–15 bei 36 bis 25 % LP. *Ort:* `CustomRotation_Abil
 Fehl-LP, Spielstatus) und den Tinktur-Vorrang; mit dem nächsten Upload die Ursache belegen, dann Loop: der Trank
 nach der Gefahr statt nach der festen Schwelle, für alle Jobs. *Konzept:* 03 („Eine Wiederverwendung für alle
 Arzneien"), 07.
-
-### Hilfsfenster im Stil von RebornMaterial · N
-Sein Vorschlag (06.11.2026): „das hilfsfenster sollte evtl. besser aussehen und den rebornmaterials entsprechen". Im
-Kampf mittelbar: Eine Empfehlung, die man vor dem Kampf nicht auf einen Blick liest, wird übergangen. *Ort:*
-`RotationSolver/UI/ExtraWindows/` (Crucible-Team, -Laden, -Schatz, -Campsite, -Weg, Masked-Carnivale-Satz), RebornMaterial
-(`/home/user/ext/RebornMaterial`). *Nächster Schritt:* Loop – was RebornMaterial bietet und wie das Hauptfenster es
-nutzt, ein gemeinsames Gerüst für alle Hilfsfenster (Universell zuerst), dann je Fenster. *Konzept:* 03 (Fenster).
 
 ### Beastmaster: Crucible-Strategien · N
 Im Kampf: Fällst du im Brett, ist der Lauf verloren, und RSR plant die Begleiter nicht über das Brett: Ein Heiler, der im vierten Kampf gebraucht wird, kann bis dahin auf 25 von 550

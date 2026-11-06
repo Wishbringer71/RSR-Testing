@@ -1,5 +1,6 @@
-using Dalamud.Interface.Windowing;
+using Dalamud.Interface;
 using ECommons.DalamudServices;
+using RebornMaterial;
 using RotationSolver.Basic.Rotations.Basic;
 
 namespace RotationSolver.UI.ExtraWindows;
@@ -8,14 +9,10 @@ namespace RotationSolver.UI.ExtraWindows;
 /// K10 "Weg" of the Crucible (concept 01, A632): between fights on a board and with a fork ahead, each way with where its next
 /// fight leaves the player and the final fight's healers, and the way RSR recommends. Walking stays the player's.
 /// </summary>
-internal class CrucibleRouteWindow : Window
+internal class CrucibleRouteWindow : RecommendationWindow
 {
-	private const ImGuiWindowFlags WindowFlags = ImGuiWindowFlags.NoCollapse | ImGuiWindowFlags.AlwaysAutoResize;
-
-	public CrucibleRouteWindow() : base("RSR - Crucible route", WindowFlags)
+	public CrucibleRouteWindow() : base("RSR - Crucible route")
 	{
-		IsOpen = true;
-		RespectCloseHotkey = false;
 	}
 
 	public override bool DrawConditions()
@@ -26,12 +23,16 @@ internal class CrucibleRouteWindow : Window
 
 	public override void Draw()
 	{
-		ImGui.TextUnformatted("Next fork:");
-		foreach (var option in BeastmasterRotation.CrucibleRouteHint)
+		using (Section("crucible_route", "Next fork", FontAwesomeIcon.Route))
 		{
-			ImGui.TextUnformatted($"{(option.Recommended ? "> " : "  ")}{option.Way}: {option.Outcome}{(option.Safe ? " - safe" : string.Empty)}");
-		}
+			foreach (var option in BeastmasterRotation.CrucibleRouteHint)
+			{
+				Line(option.Way, option.Recommended ? "take" : option.Safe ? "safe" : null,
+					option.Recommended ? M3Severity.Success : M3Severity.Info);
+				Note(option.Outcome);
+			}
 
-		ImGui.TextUnformatted(BeastmasterRotation.CrucibleRouteBasis);
+			Note(BeastmasterRotation.CrucibleRouteBasis);
+		}
 	}
 }

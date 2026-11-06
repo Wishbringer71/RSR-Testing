@@ -18511,6 +18511,24 @@ habe den schleim bislang nicht anfreunden können."
 - *8 Nachweis:* Compile (0 Warnungen), 48 Prüfungen; im Spiel nicht beobachtet.
 - *9 Dokumentation:* Konzept 01 K10 „Weg"; TODO-Punkt geschlossen.
 
+### A633 · Hilfsfenster im Stil von RebornMaterial (06.11.2026)
+
+- *Anlass:* Sein Vorschlag (06.11.2026): „das hilfsfenster sollte evtl. besser aussehen und den rebornmaterials
+  entsprechen". Einordnung: Vorschlag; „Universell zuerst" macht daraus alle Empfehlungsfenster.
+- *1 Research:* RebornMaterial 0bd2517 (README: M3Style, M3Card, M3Text-Rollen, M3Badge, M3Widgets); RSR nutzt es im
+  Hauptfenster und in den Zusatzfenstern (`StateControlWindow`, `FullControlWindow`: `M3Style.Push(M3Density.Tight)` in
+  `PreDraw`, Freigabe in `PostDraw`; `FirstStartTutorialWindow`: `M3Card.Begin`, `M3Widgets.Button`). Die sechs
+  Empfehlungsfenster zeichneten rohe ImGui-Zeilen und -Knöpfe.
+- *2 Optionen:* (0) belassen; (1) je Fenster M3 einbauen; (2) ein gemeinsames Gerüst, das alle erben.
+- *3 Abwägung:* (1) kopiert Darstellung sechsmal und veraltet ungleich; (2) eine Stelle, neue Fenster erben sie.
+- *6 Falsifikation:* Kein Defekt? Vorschlag, kein Defekt. Option falsch? Breiten mit Umbruch bräuchten feste Zahlen –
+  nicht gebaut. Ausgeliefert, nichts ändert sich? Nur, wenn M3 im Fenster nicht greift; das Schema ist dasselbe wie in den
+  anderen Zusatzfenstern.
+- *7 Gebaut:* `RecommendationWindow` (Stil, `Section`, `Line` mit Badge, `Note`, `Action`); Team, Laden (mit Futter),
+  Schatz, Campsite, Weg und Masked-Carnivale-Satz darauf. Inhalte unverändert.
+- *8 Nachweis:* Compile (0 Warnungen), Prüfungen; im Spiel nicht gesehen.
+- *9 Dokumentation:* Konzept 03 „Hilfsfenster"; TODO-Punkt geschlossen.
+
 ## B · Commit-Register (Fork vs. `upstream/main`)
 
 ### B1 · Einzelgeprüfte Fork-Commits

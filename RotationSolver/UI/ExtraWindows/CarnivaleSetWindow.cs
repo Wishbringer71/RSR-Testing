@@ -1,5 +1,6 @@
-using Dalamud.Interface.Windowing;
+using Dalamud.Interface;
 using ECommons.DalamudServices;
+using RebornMaterial;
 using RotationSolver.Basic.Rotations.Basic;
 
 namespace RotationSolver.UI.ExtraWindows;
@@ -9,14 +10,10 @@ namespace RotationSolver.UI.ExtraWindows;
 /// rotation runs, the spells Blue Academy's guide names for the chosen stage, and a button that puts them into the active
 /// set. Nothing changes without the click.
 /// </summary>
-internal class CarnivaleSetWindow : Window
+internal class CarnivaleSetWindow : RecommendationWindow
 {
-	private const ImGuiWindowFlags WindowFlags = ImGuiWindowFlags.NoCollapse | ImGuiWindowFlags.AlwaysAutoResize;
-
-	public CarnivaleSetWindow() : base("RSR - Masked Carnivale set", WindowFlags)
+	public CarnivaleSetWindow() : base("RSR - Masked Carnivale set")
 	{
-		IsOpen = true;
-		RespectCloseHotkey = false;
 	}
 
 	public override bool DrawConditions()
@@ -26,41 +23,40 @@ internal class CarnivaleSetWindow : Window
 
 	public override void Draw()
 	{
-		if (ImGui.Button("<"))
+		if (Action("##carnivale_previous", "", FontAwesomeIcon.ChevronLeft))
 		{
 			BlueMageRotation.ShiftCarnivaleStage(-1);
 		}
 
 		ImGui.SameLine();
-		ImGui.TextUnformatted($"Stage {BlueMageRotation.CarnivaleStage}: {BlueMageRotation.CarnivaleStageName}");
+		M3Text.Draw($"Stage {BlueMageRotation.CarnivaleStage}: {BlueMageRotation.CarnivaleStageName}", M3TextStyle.Title);
 		ImGui.SameLine();
-		if (ImGui.Button(">"))
+		if (Action("##carnivale_next", "", FontAwesomeIcon.ChevronRight))
 		{
 			BlueMageRotation.ShiftCarnivaleStage(1);
 		}
 
 		var picks = BlueMageRotation.CarnivaleProposal;
-		if (picks.Count == 0)
+		using (Section("carnivale_set", "Spells for this stage", FontAwesomeIcon.BookOpen, "mage.blue stage guides"))
 		{
-			ImGui.TextUnformatted("Blue Academy's guide names no spell for this stage.");
-			return;
+			if (picks.Count == 0)
+			{
+				Note("Blue Academy's guide names no spell for this stage.");
+			}
+
+			foreach (var pick in picks)
+			{
+				Line(pick.Text, pick.Spell == 0 ? "not learned" : pick.InSet ? "in set" : "adds",
+					pick.Spell == 0 ? M3Severity.Warning : pick.InSet ? M3Severity.Info : M3Severity.Success);
+				Note(pick.Required ? "required" : "recommended");
+			}
 		}
 
-		foreach (var pick in picks)
-		{
-			var mark = pick.Spell == 0 ? "?" : pick.InSet ? " " : "+";
-			ImGui.TextUnformatted($"{mark} {(pick.Required ? "Required" : "Recommended")}: {pick.Text}");
-		}
-
-		ImGui.TextUnformatted("+ goes into the set, ? is not learned. Source: mage.blue stage guides.");
-		if (ImGui.Button("Apply") && !BlueMageRotation.CarnivaleApplying)
+		if (Action("##carnivale_apply", "Apply", FontAwesomeIcon.Check, picks.Count > 0 && !BlueMageRotation.CarnivaleApplying))
 		{
 			BlueMageRotation.RequestCarnivaleSet();
 		}
 
-		if (BlueMageRotation.CarnivaleStatus.Length > 0)
-		{
-			ImGui.TextUnformatted(BlueMageRotation.CarnivaleStatus);
-		}
+		Note(BlueMageRotation.CarnivaleStatus);
 	}
 }

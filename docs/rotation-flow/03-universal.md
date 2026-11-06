@@ -1382,6 +1382,19 @@ trotzdem in Gefahr, ist das der Preis.
 ganz, oder als Tank greift weder Flächenabwehr noch Zugregel (beide stehen ab Werk an) und als Heiler steht nie mehr als
 ein Mitglied in der kritischen Klasse. Dann bleibt alles wie bisher.
 
+## Hilfsfenster
+
+*Was gilt (A633, sein Vorschlag vom 06.11.2026: „das hilfsfenster sollte evtl. besser aussehen und den rebornmaterials
+entsprechen"):* Alle Empfehlungsfenster – Crucible-Team, -Laden, -Schatz, -Campsite, -Weg und der Masked-Carnivale-Satz –
+teilen ein Gerüst (`RecommendationWindow`): das Schema von RebornMaterial für das ganze Fenster in der knappen Dichte, wie
+die übrigen Zusatzfenster von RSR (`M3Style.Push(M3Density.Tight)`), jeder Teil als Karte mit Titel und Symbol, jede
+Empfehlung als Zeile mit einem Badge (empfohlen, sicher, hinzu; Warnung, wo etwas fehlt oder nicht bezahlbar ist), Gründe
+und Grundlagen in der gedämpften Textrolle, die Aktion als gefüllter Material-Knopf, der ausgegraut ist, solange nichts zu
+tun ist. *Im Kampf mittelbar:* Was empfohlen ist und warum, steht getrennt; vor dem Kampf liest man den Badge, nicht die
+ganze Zeile. *Universell zuerst:* Das Gerüst sitzt einmal; ein neues Fenster erbt es, statt Darstellung zu kopieren.
+*Nicht gebaut:* Fensterbreite mit Umbruch – feste Breiten wären Zahlen ohne Herleitung; die Fenster passen ihre Größe dem
+Inhalt an wie bisher.
+
 ## Bewegungssperre beim Wirken und die KI von BossMod
 
 **Geltender Stand:** Mit „Lock movement while casting" („Stops your character from moving while casting, and while using

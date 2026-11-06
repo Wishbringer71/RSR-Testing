@@ -1,22 +1,18 @@
-using Dalamud.Interface.Windowing;
+using Dalamud.Interface;
 using ECommons.DalamudServices;
+using RebornMaterial;
 using RotationSolver.Basic.Rotations.Basic;
 
 namespace RotationSolver.UI.ExtraWindows;
 
 /// <summary>
-/// K13 of the Crucible (concept 01, "K13 – Schatz", A578): while a treasure on a board is open and the beastmaster rotation
-/// runs, the offer RSR recommends taking, why, and a button that takes it. Nothing is taken without the click (decision C,
-/// A533).
+/// K13 of the Crucible (concept 01, A578): while a treasure on a board is open and the beastmaster rotation runs, the offer RSR
+/// recommends, why, and a button that takes it. Nothing is taken without the click.
 /// </summary>
-internal class CrucibleTreasureWindow : Window
+internal class CrucibleTreasureWindow : RecommendationWindow
 {
-	private const ImGuiWindowFlags WindowFlags = ImGuiWindowFlags.NoCollapse | ImGuiWindowFlags.AlwaysAutoResize;
-
-	public CrucibleTreasureWindow() : base("RSR - Crucible treasure", WindowFlags)
+	public CrucibleTreasureWindow() : base("RSR - Crucible treasure")
 	{
-		IsOpen = true;
-		RespectCloseHotkey = false;
 	}
 
 	public override bool DrawConditions()
@@ -26,22 +22,25 @@ internal class CrucibleTreasureWindow : Window
 
 	public override void Draw()
 	{
-		if (BeastmasterRotation.CrucibleTreasureRecommendation is { } pick)
+		var pick = BeastmasterRotation.CrucibleTreasureRecommendation;
+		using (Section("crucible_treasure", "Take", FontAwesomeIcon.Gift))
 		{
-			ImGui.TextUnformatted($"Take {pick.Name} (offer {pick.Row + 1}): {pick.Why}");
-			if (ImGui.Button("Take"))
+			if (pick is { } chosen)
 			{
-				BeastmasterRotation.RequestCrucibleTreasure();
+				Line(chosen.Name, $"offer {chosen.Row + 1}");
+				Note(chosen.Why);
+			}
+			else
+			{
+				Note("Nothing recommended: no offer adds safety or damage, and the gear here would harm you.");
 			}
 		}
-		else
+
+		if (Action("##crucible_treasure_take", "Take", FontAwesomeIcon.HandHolding, pick != null))
 		{
-			ImGui.TextUnformatted("Nothing recommended: no offer adds safety or damage, and the gear here would harm you.");
+			BeastmasterRotation.RequestCrucibleTreasure();
 		}
 
-		if (BeastmasterRotation.CrucibleTreasureStatus.Length > 0)
-		{
-			ImGui.TextUnformatted(BeastmasterRotation.CrucibleTreasureStatus);
-		}
+		Note(BeastmasterRotation.CrucibleTreasureStatus);
 	}
 }
