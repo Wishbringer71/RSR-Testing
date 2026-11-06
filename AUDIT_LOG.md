@@ -18681,6 +18681,41 @@ habe den schleim bislang nicht anfreunden können."
 - *8 Nachweis:* Compile (0 Warnungen), `check_learned_display.py`; im Spiel nicht gesehen.
 - *9 Dokumentation:* Konzept 01 B5 („Warum nicht vor dem ersten Lauf"); Vorschlag damit abgeschlossen.
 
+### A639 · Beastmaster: kein Nachfolger auf Vorrat; nach einem heilenden Begleiter wieder einer, der heilt (06.11.2026)
+
+- *Anlass:* Sein Vorschlag und seine Frage (06.11.2026): „Drei Begleiter, zeitlich so verteilt, dass immer ein
+  Begleiter als Nachfolger gerufen werden kann. Nicht dass alle drei Begleiter kurz hintereinander gerufen und sofort
+  wieder weggeschickt werden. Bringt das was, oder hat es Nachteile?" Einordnung: Vorschlag, Prüfaufgabe.
+- *1 Research:* Der Zyklus (Konzept 01, R1, B3) ruft jedes bereite Horn; die Abklingzeit von 90 s beginnt mit dem
+  Rückzug. Jeder Ruf bringt One with Nature (Entfesseln oder Borrow) und beim Abtreten einen Scheidenden Schlag auf Ziel
+  und Umstehende. B5 setzt vor einem Boss zwei Begleiter, die heilen oder schützen, nach einer Gefahr im Gebiet drei;
+  A636 hält einen heilenden, solange du ohne ihn vor der Entlastung fielest. In Sägerschrei (DefenseTrace 06.11.2026)
+  lief Horn I seit 18:11:34 ab, weil im Kampf davor der Raptor in der Gefahr für den Büffel ging; erst um 18:11:48 belegte
+  B5 Horn I mit dem Schleim – die Abklingzeit gehört dem Horn.
+- *2 Optionen:* (0) nichts; (a) sein Vorschlag wörtlich, irgendein Horn auf Vorrat (Modellregel RESERVE); (b) ein Horn,
+  das heilt oder schützt, auf Vorrat, gerufen in der Gefahr (SAFE_RESERVE); (c) den heilenden zuletzt rufen und bis zum
+  Ende halten, wo Gefahr wahrscheinlich ist (KEEP_HEALER); Rückbau je Option: Regel entfernen.
+- *3 Abwägung* (`bst_horn_model.py`, Annahmen dort): (a) drei statt fünf Rufe in 180 s, zwei statt drei beim Pull;
+  −8 bis −10 % über drei Minuten, −20 bis −39 % im Rudelkampf von 30 bis 60 s; Deckung einer Gefahr im Rudel sinkt (Puk,
+  Wespe, Schleim 84 → 55 %; mit Coblyn 38 → 5 %), weil B3 im Rudel den heilenden mit Einzeldressur zuerst ruft und der
+  mit der Flächendressur wartet. (b) 100 % gedeckt, −8 bis −26 %; Heilung erst unter der Linie, später als der
+  heilende Begleiter draußen. (c) 100 % gedeckt nur mit heilender Dressur, −10 % über drei Minuten, −8 bis −17 % im Rudel
+  mit Flächendressur daneben. Mit zwei heilenden auf den Hörnern (B5 vor dem Boss) deckt der Zyklus heute schon 100 %.
+- *4 Abgleich:* Seine Frage zielt auf einen Nachfolger, der im Kampf hilft; der wörtliche Vorrat liefert ihn nur zufällig.
+- *5 Review:* Die Lücke von heute ist ein einzelner heilender Begleiter, der vor dem ersten Treffer geht (A636 hält ihn
+  ab dem ersten Treffer oder der ersten Ankündigung). (b) und (c) schlössen nur sie und kosteten in jeder Lage einen Ruf
+  je 90 s. Dabei gefunden: Geht ein heilender, weil das Horn eines anderen heilenden bereit ist (Entlastung nach A636),
+  ruft B3 bei gleichem Wert zuerst einen anderen für einen kurzen Einsatz – so lange fehlt die Heilung.
+- *6 Falsifikation:* Kein Defekt – für den Vorrat richtig, für die Ablösung nicht. Option falsch – die Ablösung gilt nur
+  ohne lebenden Heiler und solange du vor den Gegnern fielest. Ausgeliefert, und nichts ändert sich – in Gefahr im
+  Augenblick ruft B2 ohnehin einen heilenden; die Regel wirkt bei Gefahr im Verlauf und gleichem oder höherem Wert.
+- *7 Gebaut:* `SecondsToFallUnhealed` (aus `HealerFamiliarHolds` gelöst, von beiden gelesen); `HealingHornWhileFalling`
+  in `SituationalHorn` nach C1, vor K2 und B3. Vorrat (a) bis (c) nicht gebaut; im Modell als verworfene Regeln mit
+  Selbsttest.
+- *8 Nachweis:* Compile (0 Warnungen), 50 Prüfschritte, Modell-Selbsttest; im Spiel nicht gesehen.
+- *9 Dokumentation:* Konzept 01 B3 („Kein Nachfolger auf Vorrat"), B2 („Danach wieder einer, der heilt"), Verworfen;
+  Release-Text.
+
 ## B · Commit-Register (Fork vs. `upstream/main`)
 
 ### B1 · Einzelgeprüfte Fork-Commits

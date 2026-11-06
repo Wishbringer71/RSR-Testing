@@ -1569,6 +1569,24 @@ Lage.
       sie zählt). Sein eigenes Horn zählt nicht; dessen Abklingzeit beginnt erst mit seinem Abtreten.
     - *Messgröße der Wahrscheinlichkeit:* die gemessenen Schadensraten der Gegner gegen ihre gemessene Fallzeit und die
       Abklingzeiten der Hörner. Ohne Treffer der Gegner gibt es keinen Grund zum Halten.
+    - *Danach wieder einer, der heilt* (A639, bei der Prüfung seines Vorschlags unter B3 gefunden). Geht er, weil ein
+      anderes Horn mit heilender Dressur bereit ist, kommt dieses als nächstes. Unter derselben Bedingung – kein Heiler
+      lebt, und du fielest ohne Heilung, bevor die Gegner fallen (Zeit bis zum Fall wie oben gegen
+      `DataCenter.PackTimeToKill`, ohne Messung unendlich) – ruft RSR unter den bereiten Hörnern zuerst einen Begleiter,
+      dessen Dressur heilt, in der eingestellten Reihenfolge; vor K2 und B3, nach C1 beim Pull. Bisher behielt der
+      heilende bei gleichem Wert den langen Einsatz und kam deshalb zuletzt: Dazwischen kam ein anderer für einen kurzen
+      Einsatz (Entfesseln oder Borrow, eine Dressur, Scheidender Schlag), und so lange fehlte die Heilung.
+      - *Im Kampf:* Gegen den Riesen-Tunnelwurm wäre die Fledermaus mit dieser Regel bis 18:13:04 geblieben, als das Horn
+        des Schleims zurück war; danach käme bisher Cu Sith für einen kurzen Einsatz, erst dann der Schleim. Die
+        Fledermaus heilte dort rund 23 bis 47 LP je Sekunde (Wurm 65 bis 89, Verlust mit ihr 42); ein kurzer Einsatz von
+        rund 5 s (Annahme des Modells) kostete rund 100 bis 250 LP. *Nachher:* Der Schleim folgt der Fledermaus direkt.
+        Eine Rechnung, nicht gemessen; er starb um 18:12:58, vor diesem Augenblick.
+      - *Preis:* Der andere Begleiter kommt erst, wenn kein heilender bereit ist oder die Rechnung keinen mehr verlangt –
+        in dieser Lage ein Ruf weniger; den heilenden hält dann ohnehin die Regel oben.
+      - *Gegenthese (ausgeliefert, und nichts ändert sich):* Steht deine Gesundheit schon unter der Linie, ruft B2 ohnehin
+        zuerst einen, der heilt; ist die Dressur des heilenden weniger wert als die des anderen, kam er schon bisher
+        zuerst. Die Regel wirkt dazwischen: Gefahr im Verlauf, nicht im Augenblick, bei gleichem oder höherem Wert. Mit
+        einem lebenden Heiler gilt sie nicht, wie die Regel oben.
     - *Im Kampf vorher:* Um 18:12:16, bei 2.369 von 2.785 LP (85 %), schickte RSR die Fledermaus für Cu Sith fort. Der
       Riesen-Tunnelwurm hatte bis dahin zweimal getroffen (Sandsturm 272 um 18:12:11, ein Angriff 171 um 18:12:14; zwei
       Angriffe gingen für 0 daneben): rund 89 LP je Sekunde, ohne Heilung 27 s bis zum Fall. Über den ganzen Kampf traf
@@ -1611,6 +1629,51 @@ Lage.
     das Ziel, mindestens das Ziel. Eine ungezogene Gruppe daneben zählt nicht.
   - Bei gleichem Wert behält ein Begleiter, der heilt oder schützt, den langen Einsatz; danach die eingestellte
     Reihenfolge. Bei einem Gegner heißt das meist: der heilende bleibt, ohne Schaden zu kosten.
+  - *Kein Nachfolger auf Vorrat* (sein Vorschlag vom 06.11.2026: „Drei Begleiter, zeitlich so verteilt, dass immer ein
+    Begleiter als Nachfolger gerufen werden kann. Nicht dass alle drei Begleiter kurz hintereinander gerufen und sofort
+    wieder weggeschickt werden. Bringt das was, oder hat es Nachteile?"; Einordnung: Vorschlag, Prüfaufgabe; A639). Der
+    Zyklus ruft weiter jedes bereite Horn; ein Nachfolger, der heilt, kommt aus B5 und der Ablösung unter B2.
+    - *Was ein Nachfolger kostet:* Jeder Ruf bringt One with Nature, also ein Entfesseln oder Borrow, und beim Abtreten
+      einen Scheidenden Schlag (1.000 oder 1.500 auf Ziel und Umstehende). Ein Horn, das wartet, fehlt dem Zyklus: In drei
+      Minuten kommen drei Rufe statt fünf, beim Pull zwei statt drei, und der Begleiter draußen bleibt jedes Mal bis zu
+      90 s. Gerechnet (`bst_horn_model.py`, Regel RESERVE, ohne Gefahr; Annahmen dort, darunter 200 Potenz je Sekunde
+      eigener Schaden): 8 bis 10 % weniger Schaden über drei Minuten gegen ein Ziel, 20 bis 39 % weniger in einem
+      Rudelkampf von 30 bis 60 s – dort fehlt ein Scheidender Schlag auf vier Gegner.
+    - *Was er bringt:* Ein Nachfolger hilft in drei Lagen – in der Gefahr (B2), wenn der Begleiter draußen fällt, und wenn
+      Gegner nachkommen, die ein anderer an ihrer Schwäche trifft (K2). In der Gefahr nur, wenn er heilt oder schützt.
+      Welcher wartet, entschiede sonst die Reihenfolge von B3, und die ruft im Rudel einen heilenden Begleiter mit
+      Einzeldressur zuerst: Auf Vorrat bliebe der mit der Flächendressur. Gerechnet (Gefahr ab einer beliebigen Sekunde
+      bis zum Ende, Rudel aus vier für 40 s, dann ein Gegner): mit Puk, Wespe und Schleim heute 84 % der Gefahr gedeckt,
+      mit Vorrat 55 %; mit Coblyn statt Schleim 38 % gegen 5 %. Ein Begleiter fiel auf Brett 1 nie (K6); wie oft er
+      anderswo fällt, ist nicht gemessen.
+    - *Was heute schon einen Nachfolger stellt:* Vor einem Boss setzt B5 zwei Begleiter, die heilen oder schützen, nach
+      einer Gefahr im Gebiet drei. Zwei mit heilender Dressur lösen einander ab: Der eine geht, wenn das Horn des anderen
+      bereit ist, und der andere kommt als nächster (B2, „Danach wieder einer, der heilt"). Gerechnet (Wespe, Schleim
+      und ein zweiter heilender Begleiter, ein Ziel, 180 s): Der Zyklus deckt 100 % der Gefahrenbeginne innerhalb eines
+      GCD, mit fünf Rufen; mit Vorrat ebenso, mit drei Rufen und 7,6 % weniger Schaden. Steht nur einer auf den Hörnern,
+      hält ihn A636, sobald ein Gegner getroffen oder angekündigt hat und kein Heiler lebt.
+    - *Was offen bleibt, mit Preis:* Ein einzelner heilender Begleiter, der geht, bevor ein Gegner getroffen oder
+      angekündigt hat – im Rudel ruft B3 ihn bei Einzeldressur zuerst –, fehlt danach bis zu 90 s. Das Modell kennt
+      A636 nicht; seine Werte für heute sind eine Untergrenze: Mit Puk, Wespe und Schleim findet die Gefahr ihn im
+      Rudelkampf in 22 % (60 s) bis 46 % (30 s) der Fälle innerhalb eines GCD. Die Lücke ist der Augenblick vor dem ersten
+      Treffer; trifft ein Gegner, solange er draußen ist, bleibt er.
+    - *Geprüft und nicht gebaut:*
+      - Sein Vorschlag wörtlich, irgendein Horn auf Vorrat: Kosten oben, der Schutz hängt am Zufall der Reihenfolge, im
+        Rudel sinkt er.
+      - Ein Horn, das heilt oder schützt, auf Vorrat, gerufen erst in der Gefahr (Regel SAFE_RESERVE): 100 % der
+        Gefahrenbeginne gedeckt, 8 bis 26 % weniger Schaden. Die Heilung beginnt aber erst, wenn deine vorausberechnete
+        Gesundheit unter der Linie liegt; ein heilender Begleiter, der schon draußen ist, heilt vorher. Gegen den
+        Riesen-Tunnelwurm (65 bis 89 LP je Sekunde, B2) brächte der Vorrat die Heilung später als der Zyklus mit A636.
+      - Den heilenden Begleiter zuletzt rufen und bis zum Ende halten, wo Gefahr wahrscheinlich ist (Regel KEEP_HEALER):
+        100 % gedeckt, wo seine Dressur heilt; nichts, wo der Begleiter nur mit dem Entfesseln schützt; 10 % weniger
+        Schaden über drei Minuten, 8 bis 17 % im Rudel, wo seine Einzeldressur die Flächendressur ersetzt.
+      - Beide schlössen nur die Lücke vor dem ersten Treffer und kosteten in jedem Kampf ihrer Lage einen Ruf je 90 s.
+        Vor einem Rudel setzt B5 nach einer Gefahr meist einen, der es aufhält (C1), und den ruft C1 beim Pull ohnehin
+        zuerst.
+    - *Gegenthesen:* Kein Defekt – richtig für die Lagen mit zwei Heilenden und für die Zeit nach dem ersten Treffer;
+      offen bleibt die Lücke oben. Option falsch – die Varianten sind gerechnet, keine deckt mehr, ohne in jedem Kampf
+      einen Ruf zu kosten. Ausgeliefert, und nichts ändert sich – hier: nichts ausgeliefert; die Ablösung unter B2 ändert
+      nur, wer nach einem heilenden Begleiter kommt.
 - *Nutzen jenseits von Schaden, Heilung und Schutz* (A491; TODO-Punkt aus A488). Die Wirktexte aller 50 Begleiter
   (xivapi v2, 02.11.2026) legen diesen Nutzen fast ganz ins Entfesseln. Die Dressur trägt nur Blind (Dodo, Riesenwurm),
   Gift, Albtraum (Baumschrat) und eine kleine Chance auf Verhängnis (Geist). Was davon die Wahl ändert:
@@ -1732,8 +1795,7 @@ kurzen Einsätze der anderen (Entfesseln, Scheidender Schlag).
 - Jeden Begleiter, der heilt oder schützt, in der Gefahr draußen halten (der erste Entwurf von B2): Ein Schutz aus
   Entfesseln läuft nach 48 s ab, und solange er draußen bleibt, kommt kein anderer (Gerechnet).
 - Vileskin in der Gefahr: Was ein Block beim Beastmaster abfängt, ist unbelegt; für einen Rückstoß fehlte es dann 90 s.
-- Den heilenden Begleiter als Reserve zurückhalten: Der Zyklus ruft jedes bereite Horn; zurückhalten hieße, ihn ganz zu
-  sparen, und kostete je 90 s einen kurzen Einsatz.
+- Einen Begleiter als Nachfolger zurückhalten, auch den heilenden: B3, „Kein Nachfolger auf Vorrat" (A639).
 - Schwächen der Gegner lernen: keine Datenquelle; aus eigenen Treffern je Element denkbar, später.
 - Eine Tabelle der 50 Begleiter im Code: veraltet mit jedem Patch, die Spielblätter haben alles.
 

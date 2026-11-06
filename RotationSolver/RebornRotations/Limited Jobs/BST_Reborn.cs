@@ -1106,29 +1106,13 @@ public sealed class BST_Reborn : BeastmasterRotation
 	private bool HealerFamiliarHolds()
 	{
 		var active = (HornOrder)ActiveBattlehorn;
-		if (!InCombat || ActiveBattlehorn == 0 || DataCenter.AnyLivingHealer(false) || !TrickHealsOnHorn(active)
-			|| Player is not { IsDead: false } player)
+		var fallsIn = SecondsToFallUnhealed(out var rate);
+		if (ActiveBattlehorn == 0 || !TrickHealsOnHorn(active) || float.IsPositiveInfinity(fallsIn))
 		{
 			_healerHoldTraced = false;
 			return false;
 		}
 
-		var rate = 0f;
-		foreach (var enemy in DataCenter.AllHostileTargets)
-		{
-			if (enemy != null && enemy.CurrentHp > 0 && enemy.InCombat())
-			{
-				rate += EnemyDanger.Rate(enemy, out _, out _);
-			}
-		}
-
-		if (rate <= 0f)
-		{
-			_healerHoldTraced = false;
-			return false;
-		}
-
-		var fallsIn = player.GetEffectiveHp() / rate;
 		var relief = DataCenter.IsPackTimeToKillKnown ? DataCenter.PackTimeToKill : float.PositiveInfinity;
 		foreach (var horn in ThreeHorns)
 		{
@@ -1147,6 +1131,51 @@ public sealed class BST_Reborn : BeastmasterRotation
 
 		_healerHoldTraced = holds;
 		return holds;
+	}
+
+	// B2 (A636): in combat with no healer alive in the party, the seconds until you fall without healing - your HP and
+	// barrier over the damage per second the enemies in combat dealt and announce (EnemyDanger, measured before any heal).
+	// Infinity with a healer alive, out of combat, or before any enemy has hit or announced.
+	private static float SecondsToFallUnhealed(out float rate)
+	{
+		rate = 0f;
+		if (!InCombat || DataCenter.AnyLivingHealer(false) || Player is not { IsDead: false } player)
+		{
+			return float.PositiveInfinity;
+		}
+
+		foreach (var enemy in DataCenter.AllHostileTargets)
+		{
+			if (enemy != null && enemy.CurrentHp > 0 && enemy.InCombat())
+			{
+				rate += EnemyDanger.Rate(enemy, out _, out _);
+			}
+		}
+
+		return rate > 0f ? player.GetEffectiveHp() / rate : float.PositiveInfinity;
+	}
+
+	// B2 (concept 01, "Danach wieder einer, der heilt", A639): while without healing you would fall before the enemies in
+	// combat do, the first ready horn, in the configured order, whose familiar's Trick heals - so one healing familiar
+	// follows another that left for it, instead of a short stint of another familiar in between.
+	private HornOrder? HealingHornWhileFalling(out float fallsIn)
+	{
+		fallsIn = SecondsToFallUnhealed(out _);
+		var enemiesFall = DataCenter.IsPackTimeToKillKnown ? DataCenter.PackTimeToKill : float.PositiveInfinity;
+		if (!(fallsIn < enemiesFall))
+		{
+			return null;
+		}
+
+		foreach (var horn in ConfiguredHornOrder())
+		{
+			if (HornReady(horn) && PetOnHorn(horn) != BeastmasterPet.None && TrickHealsOnHorn(horn))
+			{
+				return horn;
+			}
+		}
+
+		return null;
 	}
 
 	// Whether a horn with a familiar that heals or protects you comes back within `seconds` (B2, concept 01, A636).
@@ -1267,6 +1296,13 @@ public sealed class BST_Reborn : BeastmasterRotation
 			// War Cry lay in the recast when the danger came 1.5 s later.
 			chosen = stopper;
 			why = "a pack comes at you and nobody holds it, its Release stops it";
+		}
+		else if (InCombat && HealingHornWhileFalling(out var fallsIn) is { } healing)
+		{
+			// B2 (A639): one healing familiar follows another - B3 below would put it last at equal value, after a short
+			// stint of another familiar without healing.
+			chosen = healing;
+			why = $"without healing you fall in {fallsIn:F1} s, before the enemies; its Trick heals";
 		}
 		else if (InCombat && FirstHornForEnemiesThatCame() is { } came)
 		{

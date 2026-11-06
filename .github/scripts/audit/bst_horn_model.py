@@ -14,6 +14,12 @@ choose among the ready horns are compared:
   WEAKEN RULES, and a Tempered Release that weakens what another ready familiar's Trick deals, or strengthens you, first
          (the rejected B4: kept here to show why)
   KEEPALL RULES, but every familiar that heals or protects stays out while the danger lasts (the draft of B2, rejected)
+  RESERVE RULES, but a familiar leaves only while, after the next call, another horn stays ready - always a successor
+         in reserve (his proposal of 06.11.2026, A639)
+  SAFE_RESERVE RULES, but a horn whose familiar heals or protects is called only in a danger or when no other is ready:
+         the cycle runs on the others, and the successor in reserve is one that helps in a danger (A639, the variant)
+  KEEP_HEALER RULES, but a familiar whose Trick heals is called after the others and then stays out to the end - its
+         healing runs before any danger (A639, the counter-variant)
 Measured: potency over the fight; in a danger the seconds until a familiar that heals or protects is out, and the share
 of the danger covered - a familiar whose Trick heals out, or a protection of a Tempered Release running.
 
@@ -44,6 +50,8 @@ FAMILIARS = {
     "Mantis": dict(trick=(500, False, "slash"), release=("weaken", 0.10, "physical", 30), safe=None),
     "Dullahan": dict(trick=(450, True, "slash"), release=("buff", 0.10, "physical", 30), safe=None),
 }
+# ASSUMPTION: a second familiar whose Trick heals, like the Slime - B5 sets two that heal or protect before a boss (A639).
+FAMILIARS["Slime II"] = dict(FAMILIARS["Slime"])
 PHYSICAL = {"pierce", "slash", "blunt"}
 
 
@@ -64,7 +72,11 @@ def choose(ready, rule, enemies, danger, ttk):
     """The horn to call now among the ready ones (familiar names, in the configured order)."""
     if rule == "FIXED":
         return ready[0]
-    # RULES and WEAKEN
+    # RULES, WEAKEN, RESERVE and SAFE_RESERVE
+    if rule == "SAFE_RESERVE" and not danger and any(not FAMILIARS[name]["safe"] for name in ready):
+        ready = [name for name in ready if not FAMILIARS[name]["safe"]]
+    if rule == "KEEP_HEALER" and any(FAMILIARS[name]["safe"] != "trick" for name in ready):
+        ready = [name for name in ready if FAMILIARS[name]["safe"] != "trick"]
     if danger:
         safe = [name for name in ready if FAMILIARS[name]["safe"]]
         if safe:
@@ -86,15 +98,15 @@ def keeps_out(name, rule):
     return rule != "FIXED" and FAMILIARS[name]["safe"] == "trick"
 
 
-def play(horns, rule, enemies_at, danger_from=None, measure=None):
+def play(horns, rule, enemies_at, danger_from=None, measure=None, fight=FIGHT):
     """Potency over the fight and the seconds from the danger to a safe familiar; with measure a dict, it also gets
     the share of the danger covered."""
     ready_at = {name: 0.0 for name in horns}
     t, total, effects, heal_at = 0.0, 0.0, [], None
     current, leave_at, next_trick = None, 0.0, 0.0
-    covered = danger_steps = 0
+    covered = danger_steps = calls = 0
     step = 0.5
-    while t < FIGHT:
+    while t < fight:
         enemies = enemies_at(t)
         danger = danger_from is not None and t >= danger_from
         if danger and current and not FAMILIARS[current]["safe"] and rule != "FIXED" \
@@ -109,10 +121,24 @@ def play(horns, rule, enemies_at, danger_from=None, measure=None):
         if current is None:
             ready = [n for n in horns if ready_at[n] <= t]
             if ready:
-                current = choose(ready, rule, enemies, danger, ttk=FIGHT - t)
+                current = choose(ready, rule, enemies, danger, ttk=fight - t)
+                calls += 1
                 ready_at[current] = float("inf")
-                others = any(ready_at[n] <= t for n in horns if n != current)
-                leave_at = t + SHORT_STINT if others else min(ready_at[n] for n in horns if n != current)
+                if rule == "KEEP_HEALER" and FAMILIARS[current]["safe"] == "trick":
+                    leave_at = float("inf")
+                elif rule == "SAFE_RESERVE" and not FAMILIARS[current]["safe"]:
+                    # Leave once another horn that is not the reserve is ready.
+                    due = min((ready_at[n] for n in horns if n != current and not FAMILIARS[n]["safe"]),
+                              default=float("inf"))
+                    leave_at = max(t + SHORT_STINT, due)
+                elif rule == "RESERVE":
+                    # Leave once two other horns are ready: one follows, one stays in reserve.
+                    others_due = sorted(ready_at[n] for n in horns if n != current)
+                    due = others_due[1] if len(others_due) >= 2 else float("inf")
+                    leave_at = max(t + SHORT_STINT, due)
+                else:
+                    others = any(ready_at[n] <= t for n in horns if n != current)
+                    leave_at = t + SHORT_STINT if others else min(ready_at[n] for n in horns if n != current)
                 kind, value, what, seconds = FAMILIARS[current]["release"]
                 if kind == "damage":
                     total += value * enemies
@@ -143,6 +169,8 @@ def play(horns, rule, enemies_at, danger_from=None, measure=None):
         t += step
     if measure is not None:
         measure["covered"] = covered / danger_steps if danger_steps else 0.0
+        # Each call brings a Tempered Release or Borrow and, at the retreat, a Parting Blow.
+        measure["calls"] = calls
         # The familiar still out when the fight ends - it keeps its horn into the next fight (B5, bst_assign_model).
         measure["last"] = current
     return total, heal_at
@@ -189,6 +217,52 @@ def report():
             print(f"  {', '.join(horns):22s} from {start:5.1f} s: " + "   ".join(cells))
 
 
+RESERVE_RULES = ("RULES", "RESERVE", "SAFE_RESERVE", "KEEP_HEALER")
+RESERVE_SETS = (["Wespe", "Mantis", "Slime"], ["Puk", "Wespe", "Slime"], ["Puk", "Wespe", "Coblyn"])
+
+
+def report_reserve():
+    print("\nA successor always ready (A639): calls and potency against RULES, no danger:")
+    for fight, scenario in ((30.0, "pack of four throughout"), (60.0, "pack of four throughout"),
+                            (180.0, "single target, 180 s"), (180.0, "pack of four for 40 s, then one")):
+        for horns in RESERVE_SETS:
+            cells, base = [], None
+            for rule in RESERVE_RULES:
+                m = {}
+                total, _ = play(horns, rule, SCENARIOS[scenario], measure=m, fight=fight)
+                base = base or total
+                cells.append(f"{rule} {m['calls']} {(total / base - 1) * 100:+5.1f} %")
+            print(f"  {', '.join(horns):20s} {scenario:24s} {fight:4.0f} s ({base:6.0f}): " + ", ".join(cells))
+    print("\n  A danger that starts at any second of the fight (every 2.5 s) and lasts to its end: the share of starts with a "
+          "familiar that heals or protects out within a GCD, and the share of the danger covered:")
+    for horns in RESERVE_SETS + (["Wespe", "Slime", "Slime II"],):
+        for fight, scenario in ((180.0, "single target, 180 s"), (180.0, "pack of four for 40 s, then one"),
+                                (30.0, "pack of four throughout"), (60.0, "pack of four throughout")):
+            cells = []
+            for rule in RESERVE_RULES:
+                fast, covered = danger_sweep(horns, rule, SCENARIOS[scenario], fight=fight)
+                cells.append(f"{rule} {fast:5.1%} {covered:5.1%}")
+            print(f"  {', '.join(horns):20s} {scenario:24s} {fight:4.0f} s " + "   ".join(cells))
+    print("\n  Two familiars whose Trick heals (B5 before a boss), one enemy, 180 s, no danger:")
+    for rule in RESERVE_RULES:
+        m = {}
+        total, _ = play(["Wespe", "Slime", "Slime II"], rule, SCENARIOS["single target, 180 s"], measure=m)
+        print(f"  {rule:12s} calls {m['calls']}, potency {total:6.0f}")
+
+
+def danger_sweep(horns, rule, enemies_at, gcd=2.5, fight=FIGHT):
+    """Over danger starts every GCD: the share with a familiar that heals or protects out within a GCD, and the mean
+    share of the danger covered."""
+    starts = [i * gcd for i in range(int(fight / gcd) - 1)]
+    fast = covered = 0.0
+    for start in starts:
+        m = {}
+        _, heal = play(horns, rule, enemies_at, danger_from=start, measure=m, fight=fight)
+        fast += heal is not None and heal <= gcd
+        covered += m["covered"]
+    return fast / len(starts), covered / len(starts)
+
+
 def self_test():
     # One enemy: the rules never lose potency against the configured order (every Trick alike; only which familiar keeps
     # the long stint, and so how often each Tempered Release comes, can change).
@@ -221,6 +295,21 @@ def self_test():
     f, _ = play(["Slime", "Wespe", "Coblyn"], "FIXED", SCENARIOS["single target, 180 s"])
     r, _ = play(["Slime", "Wespe", "Coblyn"], "RULES", SCENARIOS["single target, 180 s"])
     assert r >= f - 1e-6, (f, r)
+    # A639: a successor always in reserve costs calls and potency in every fight; left to the order of B3 it covers a
+    # danger worse than today on a pack, while two familiars whose Trick heals already relieve each other.
+    for scenario in SCENARIOS:
+        mr, mv = {}, {}
+        r, _ = play(["Puk", "Wespe", "Slime"], "RULES", SCENARIOS[scenario], measure=mr)
+        v, _ = play(["Puk", "Wespe", "Slime"], "RESERVE", SCENARIOS[scenario], measure=mv)
+        assert mv["calls"] < mr["calls"] and v < r, (scenario, mr, mv, r, v)
+    _, today = danger_sweep(["Puk", "Wespe", "Slime"], "RULES", SCENARIOS["pack of four for 40 s, then one"])
+    _, reserve = danger_sweep(["Puk", "Wespe", "Slime"], "RESERVE", SCENARIOS["pack of four for 40 s, then one"])
+    assert reserve < today - 0.2, (today, reserve)
+    fast, _ = danger_sweep(["Wespe", "Slime", "Slime II"], "RULES", SCENARIOS["single target, 180 s"])
+    assert fast == 1.0, fast
+    lone, _ = danger_sweep(["Puk", "Wespe", "Slime"], "RULES", SCENARIOS["pack of four throughout"], fight=60.0)
+    held, _ = danger_sweep(["Puk", "Wespe", "Slime"], "SAFE_RESERVE", SCENARIOS["pack of four throughout"], fight=60.0)
+    assert lone < 0.5 and held == 1.0, (lone, held)
     # Constructed defect: keeping the best Trick first instead of last loses against the fixed order on a pack.
     global choose
     original = choose
@@ -239,10 +328,12 @@ def self_test():
         choose = original
     print("self-test ok: one enemy loses nothing, a pack keeps the area familiar longest, danger brings the healing "
           "familiar at once and keeps it while the danger lasts, a protecting one is not kept past its release, the rejected "
-          "B4 loses on one enemy, and calling the best Trick first is caught")
+          "B4 loses on one enemy, a successor in reserve costs calls and on a pack cover, two healing familiars relieve "
+          "each other, and calling the best Trick first is caught")
 
 
 if __name__ == "__main__":
     self_test()
     if "--self-test" not in sys.argv:
         report()
+        report_reserve()

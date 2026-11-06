@@ -377,7 +377,10 @@ What this release changes in the fight. For the whole distance from upstream, se
   familiar whose Trick heals you is no longer sent off for the next horn while, without its healing - your HP
   and barrier against the damage per second the enemies deal - you would fall before the enemies do or before
   another healing familiar's horn is back. In danger, a horn that would be sent off again at once is no longer
-  called when a healing or protecting one is back within a GCD, and the danger counts before the pull too.
+  called when a healing or protecting one is back within a GCD, and the danger counts before the pull too. When it
+  leaves because another healing familiar's horn is back, that one comes next: while you would fall before the
+  enemies, a familiar whose Trick heals is called before the others, instead of after a short stint of one that
+  does not heal.
 - **Final Sting instead of Parting Blow when the wasp makes way in danger.** In danger a familiar that neither
   heals nor protects leaves for one that does; the wasp left by Parting Blow (1,000 potency) while its Final
   Sting (2,000 to 3,000, and Lingering Vantage for the next Parting Blow) was ready and retreats it the same
