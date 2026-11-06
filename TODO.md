@@ -19,17 +19,19 @@ auswahl und das timing der beschwörung" – je Kampf aller fünf Bretter (Gegne
 BossMod-Module) die Rotation des Beastmasters, die Wahl der Begleiter und den Zeitpunkt ihres Aufrufs im Loop prüfen
 (Beispiel seiner Beobachtung: der Raptor gegen Feuer, bevor feueranfällige Gegner da waren; A581).
 
-1. Allein ohne Heiler kommt kein Heiltrank: RSR stand 13 s in der kritischen Klasse ohne Heilfähigkeit, kein Trank
+1. Snarl und Challenge über ihr gemeinsames Fenster: Ein Snarl auf einen Begleiter, der den Dauerschaden der nächsten
+   15 s nicht übersteht, lässt sich nicht zurücknehmen (gemeinsame Abklingzeit); sein K.O. kostet ihn für das Brett.
+2. Allein ohne Heiler kommt kein Heiltrank: RSR stand 13 s in der kritischen Klasse ohne Heilfähigkeit, kein Trank
    von RSR trotz eingeschalteter Option, er drückte ihn bei 6 % selbst und starb (Beastmaster, Sägerschrei, 04.11.2026).
-2. Beastmaster: Crucible-Strategien: Ein K.O. beendet den Lauf, und ein Begleiter, den ein späterer Kampf braucht, kommt dort mit den LP an, die ihm
+3. Beastmaster: Crucible-Strategien: Ein K.O. beendet den Lauf, und ein Begleiter, den ein späterer Kampf braucht, kommt dort mit den LP an, die ihm
    die früheren ließen.
-3. Bewegungssperre beim Wirken gegen das Ausweichen der BossMod-KI: Mit „Lock movement while casting" an steht die
+4. Bewegungssperre beim Wirken gegen das Ausweichen der BossMod-KI: Mit „Lock movement while casting" an steht die
    Figur während jedes Zaubers still, auch wenn die KI von BossMod aus einer Fläche laufen will; nur in dieser
    Kombination, dort aber mit einem Treffer, dem der Spieler nicht ausweicht.
-4. Fremde Repositories auf Verbesserungen für RSR prüfen: Jeder Fund kann ein Defekt im Verhalten einer Klasse sein,
+5. Fremde Repositories auf Verbesserungen für RSR prüfen: Jeder Fund kann ein Defekt im Verhalten einer Klasse sein,
    den RSR heute im Kampf zeigt; zuerst die Rotationswerkzeuge für alle Jobs, Daedalus vorn (aktiv, alle Jobs,
    eigene Kampfvorhersage), dann Beastmaster und Blaumagier (sein Auftrag vom 05.11.2026).
-5. Konzepte neu ordnen (allgemein, Rollen, Gruppen, Jobs, Inhalte): keine direkte Wirkung im Kampf; eine Regel, die
+6. Konzepte neu ordnen (allgemein, Rollen, Gruppen, Jobs, Inhalte): keine direkte Wirkung im Kampf; eine Regel, die
    im Konzept eines Jobs steht, wird für dessen Gruppe übersehen, und eine Inhaltsregel ist über mehrere Konzepte
    verteilt.
 
@@ -45,6 +47,16 @@ Code-Review; was diese finden, kommt wieder hierher und in dieselbe Reihenfolge,
 Keine offenen.
 
 ## Offene Arbeit
+
+### Snarl und Challenge über ihr gemeinsames Fenster · N
+Im Kampf: Snarl (46751) und Challenge (46750) teilen die Abklingzeit-Gruppe 81 mit 15 s (Aktionsblatt). Nach einem Snarl
+holt Challenge die Aggro erst nach 15 s zurück; RSR entscheidet nach den HP-Anteilen (`TankSwap`) und dem größten
+Einzeltreffer des Begleiters (A550, A582), nicht nach dem Schaden, den der Begleiter in diesen 15 s nehmen wird. Ein Begleiter
+mit genug HP für einen Treffer, aber nicht für das Fenster, fällt unter Snarl; im Crucible fehlt er dann dem Rest des Bretts.
+*Ort:* `BST_Reborn` (Snarl/Challenge-Zweig), `_familiarLargestHit`. *Nächster Schritt:* Loop – erwarteter Verlust je
+Darsteller über das Fenster (Schaden je Sekunde während er hält, größter Treffer), Snarl nur auf einen Begleiter, der ihn
+übersteht, Challenge zurück nur, wenn der Spieler ihn übersteht; Quelle: xenofei/CrucibleSux be66eda (`AggroAdvisor`, A609).
+*Konzept:* 01 (K9).
 
 ### Allein ohne Heiler kommt kein Heiltrank · N, U
 Im Kampf: Beastmaster allein gegen Myrmidonen-Prinzessin und Gefolge (Sägerschrei, 04.11.2026); seine LP fielen in 75 s
@@ -85,7 +97,7 @@ verbesserungen für rsr entstehen könnten, für die grundstruktur, für die rot
 klassen". Im Kampf: Was ein anderes Werkzeug für eine Mechanik, eine Lage oder einen Job gelöst hat, fehlt RSR
 vielleicht; jeder Fund wird am Spiel belegt, bevor er ein Defekt oder eine Verbesserung heißt. Code nur lesen, nicht
 übernehmen (Lizenzen: GPL, AGPL, LGPL, MIT, ohne Lizenz). Die Repositories, nach Zweck:
-- *Beastmaster:* Kriss-Hietala/BeastmasterAssist, Rin-0617/BeastHelper, lexxxgo/Masterbeast; Daedalus und WrathCombo
+- *Beastmaster:* Kriss-Hietala/BeastmasterAssist, Rin-0617/BeastHelper, lexxxgo/Masterbeast, xenofei/CrucibleSux, rail2025/BeastieBuddy (A609); Daedalus und WrathCombo
   dazu ausgewertet (A488); neu (A532): erdelf/AutoDuty (Crucible-Automatik), GluttonyCombo (`BST_CrucibleAdvisor`,
   Schwäche je Ziel), BOCXIV/Beastmaster-JP (Brett-Gegenstände), Namen aus BeastHelper; vollständige Suche offen.
 - *Blaumagier:* die Rotationswerkzeuge oben und BossMod sind ausgewertet (A506 bis A511); eigene Repositories zum
@@ -103,7 +115,7 @@ erkenntisse daraus in rsr eingebracht werden können und die vorhandenen konzept
 *Ort:* Grundstruktur (`RotationSolver/Basic`, Updaters, Zielwahl, Abwehr), die Rotationen unter `RebornRotations`, die
 Jobkonzepte. *Nächster Schritt:* die Rotationswerkzeuge sind ausgewertet (Daedalus A561, A570 bis A575,
 A591 bis A607; die übrigen A608); offen sind die Beastmaster-Repositories (vollständige Suche), die Blaumagier-
-Repositories (Suche) und danach die übrigen Gruppen der Liste. Je Fund ein Loop, je Repository ein Archiveintrag mit Commit und Datum. *Konzept:* 15, erweitert vom Vergleich mit WrathCombo auf die übrigen Werkzeuge; je Fund dazu das
+Repositories (Suche) und danach die übrigen Gruppen der Liste; Beastmaster-Suche: A609. Je Fund ein Loop, je Repository ein Archiveintrag mit Commit und Datum. *Konzept:* 15, erweitert vom Vergleich mit WrathCombo auf die übrigen Werkzeuge; je Fund dazu das
 tragende (01 Jobs, 08 Minderung, 13 Flächenschaden und Tankbuster).
 
 

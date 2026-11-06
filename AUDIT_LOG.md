@@ -17720,6 +17720,24 @@ habe den schleim bislang nicht anfreunden können."
 - *Prüfgrad:* statisch (Repositories und Commits gelesen). Nächster Schritt: die Beastmaster-Repositories (vollständige
   Suche), dann die Blaumagier-Repositories (Suche).
 
+### A609 · Beastmaster-Repositories, Suche: CrucibleSux mit einem Sicherheitsfund, BeastieBuddy, CruciblePilot (06.11.2026)
+
+- *Anlass:* TODO „Fremde Repositories", Beastmaster: vollständige Suche (Websuche 06.11.2026, GitHub und aetherfeed).
+- *Neu gefunden:* xenofei/CrucibleSux (be66eda, 19.10.2026: Warteschlange der Bretter über AutoDuty, Bereitschaft,
+  Teamvorschlag, Kampfprotokoll; verwendet RSR oder BossMod für den Kampf), rail2025/BeastieBuddy (6a39010, 16.09.2026:
+  durchsuchbares Bestiarium), CruciblePilot (Eintrag auf aetherfeed: Automatik über AutoDuty mit Bewertung der Begleiter;
+  kein Quelltext gefunden).
+- *Fund, Sicherheit (CrucibleSux `AggroAdvisor`):* Snarl und Challenge teilen eine Abklingzeit (Aktionsblatt 46751, 46750:
+  Gruppe 81, 15 s). CrucibleSux entscheidet, wer das nächste Fenster hält, nach dem erwarteten Verlust
+  max(Schaden je Sekunde × 15 s, größter Treffer) plus Reserve, Sicherheit zuerst, die Untergrenze des Spielers höher. RSR
+  liest nur HP-Anteile und den größten Einzeltreffer des Begleiters (A550, A582): Ein Snarl auf einen Begleiter, der einen
+  Treffer, aber nicht das Fenster übersteht, lässt ihn fallen. Ins TODO mit Vorrang („Snarl und Challenge über ihr
+  gemeinsames Fenster").
+- *Nicht übernommen:* Punktewertung der Bretter (Selfless, Willing Sacrifice, Economic Ethos, Habitual Hoarder, Beast Squad
+  III mit nur drei Begleitern) – Punkte, keine Sicherheit; seine Regel ist Sicherheit vor Schaden. Bestiarium-Suche
+  (BeastieBuddy) – deckt RSRs Bestiarium-Aufzeichnung.
+- *Prüfgrad:* statisch (README, `Tactics.cs`, `AggroController.cs`). Nächster Schritt: der Loop zum Fund.
+
 ## B · Commit-Register (Fork vs. `upstream/main`)
 
 ### B1 · Einzelgeprüfte Fork-Commits
