@@ -197,6 +197,13 @@ What this release changes in the fight. For the whole distance from upstream, se
   in both Black Mage rotations: once you stand outside your Ley Lines in combat, Retrace brings the
   circle back under you while it still lasts beyond the next GCD, never right after placing it.
 
+## Pictomancer
+
+- **Striking Muse no longer waits with full charges.** It still waits for Starry Muse, but only while its
+  two charges would not both stand full before it; then one goes now and the other is back for Starry
+  Muse. With the burst off RSR never presses Starry Muse, and Striking Muse had waited for it for the
+  rest of the fight.
+
 ## Astrologian and Sage
 
 - **Combust and Eukrasian Dosis on the move.** When no spell with a cast time can start and Lightspeed,

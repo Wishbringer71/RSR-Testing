@@ -17613,6 +17613,33 @@ habe den schleim bislang nicht anfreunden können."
   halben Dauer übrig geht nichts – im Mittel in jedem zweiten Lauf.
 - *Prüfgrad:* statisch am Code, Spielblätter, Ableitung; kompiliert ohne Warnung; im Spiel nicht beobachtet.
 
+### A604 · Striking Muse wartet nicht mit vollen Ladungen; mit dem Burst aus wartete sie für immer (06.11.2026)
+
+- *Anlass:* Fund aus A602 (Daedalus `IrisBurstHelper` hält Striking Muse ohne Gruppen-Burst nicht zurück).
+- *Quellen:* Spielblätter über xivapi (06.11.2026): Striking Muse 60 s, „Maximum Charges: 2" (Merkmal 540, Stufe 86);
+  Scenic Muse 120 s; Starry Muse +5 % für sich und die Gruppe, 20 s.
+- *Befund:* `PCT_Reborn` hält Striking Muse, solange Scenic Muse in 60 s zurückkommt und Starry Muse nicht liegt
+  (`burstTimingCheckerStriking`), ohne auf die Ladungen zu sehen. In langen Kämpfen steht die zweite Ladung genau zu
+  Starry Muse voll; kommt Starry Muse später (Phase ohne Ziel), lädt Striking Muse bis dahin nicht. Mit dem Burst aus wirkt
+  RSR Starry Muse nie: Scenic Muse steht bereit, die Regel hielt Striking Muse dann unbegrenzt – kein Hammer-Kombo mehr
+  nach dem ersten (der Countdown-Zweig wirkt nur vor dem Kampf).
+- *Erhebung der Klasse:* alle Halteregeln mit Abklingzeit-Frist der Reborn-Rotationen; nur Striking Muse hält eine Aktion
+  mit mehreren Ladungen (Lance Charge und Swiftcast haben eine, Bhavacakra und Lord of Crowns halten eine Ressource).
+- *Optionen:* (a) Nullvariante; (b) Striking Muse auf Abklingzeit (Daedalus ohne Gruppen-Burst); (c) halten, solange die
+  Ladungen bis zum Ende des Wartens nicht voll stünden. Rückbau: die Zeile.
+- *Abwägung:* (b) verliert die +5 % auf jedes Kombo auch dort, wo das Warten nichts kostet. (c) gewählt: hält, wo es nichts
+  kostet; geht, sobald es Abklingzeit kosten würde. Rechnung: eine Sekunde mit voller Ladung kostet 1/60 eines Kombos, die
+  Ausrichtung bringt 5 % davon; ab drei Sekunden überwiegt der Verlust, und (c) gibt ihn nie her.
+- *Gebaut:* `CustomRotation.HoldCapsCharges(action, holdSeconds)` neben `HoldCostsUse`; `PCT_Reborn` mit der Restzeit von
+  Scenic Muse, mit dem Burst aus unbegrenzt; Upstreams Frist 60 s liest jetzt die Abklingzeit einer Ladung von Striking
+  Muse (dieselben 60 s laut Blatt), weil die Zeile angefasst wurde. Konzept 14 („Eine Abklingzeit wartet auf einen Buff nur, wo das keinen
+  Einsatz kostet", Pictomancer-Tabelle).
+- *Falsifikation:* (1) Kein Defekt? Burst aus: am Code belegt, Striking Muse fällt nie. Burst an: im Gleichtakt kein
+  Verlust – der Defekt liegt in den Lagen außerhalb. (2) Option falsch? Einwand: Ohne Starry-Ausrichtung verliert jedes
+  Kombo 5 % – gilt nur für das eine, das sonst Abklingzeit verlöre. (3) Ausgeliefert, nichts ändert sich? Im Gleichtakt
+  langer Kämpfe ändert sich nichts, gewollt.
+- *Prüfgrad:* statisch am Code, Spielblätter; kompiliert ohne Warnung; im Spiel nicht beobachtet.
+
 ## B · Commit-Register (Fork vs. `upstream/main`)
 
 ### B1 · Einzelgeprüfte Fork-Commits

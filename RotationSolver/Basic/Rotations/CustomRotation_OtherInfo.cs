@@ -1877,6 +1877,25 @@ public partial class CustomRotation
 	}
 
 	/// <summary>
+	/// Whether holding <paramref name="action"/> for <paramref name="holdSeconds"/> lets all its charges stand full before the
+	/// hold ends: the recharge stops there, and every second at the maximum is recast lost that pushes each later use back.
+	/// Using one charge now leaves the next one back for the buff it waited for (concept 14, A604).
+	/// </summary>
+	/// <param name="action">The charged action that would wait.</param>
+	/// <param name="holdSeconds">How long from now it would wait.</param>
+	/// <returns>True when its charges would be full before the hold ends.</returns>
+	public static bool HoldCapsCharges(IBaseAction action, float holdSeconds)
+	{
+		if (action == null || holdSeconds <= 0f)
+		{
+			return false;
+		}
+
+		var max = action.Cooldown.MaxCharges;
+		return max > 1 && action.Cooldown.WillHaveXCharges(max, holdSeconds);
+	}
+
+	/// <summary>
 	/// True when BMR reports a vulnerability window within the specified seconds.
 	/// Always false when BMR is inactive, or when the user has UseBmrTimeline disabled.
 	/// </summary>

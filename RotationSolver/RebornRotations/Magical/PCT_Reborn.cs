@@ -171,7 +171,11 @@ public sealed class PCT_Reborn : PictomancerRotation
 
 	protected override bool AttackAbility(IAction nextGCD, out IAction? act)
 	{
-		var burstTimingCheckerStriking = !ScenicMusePvE.Cooldown.WillHaveOneCharge(60) || HasStarryMuse || !StarryMusePvE.EnoughLevel;
+		// Striking Muse waits for Starry Muse within one of its charge recasts (upstream's 60 s), and only while its charges
+		// would not stand full before it (A604). With the burst off RSR never presses Starry Muse, so the wait has no end.
+		var burstTimingCheckerStriking = !ScenicMusePvE.Cooldown.WillHaveOneCharge(StrikingMusePvE.Cooldown.RecastTimeOneChargeRaw)
+			|| HasStarryMuse || !StarryMusePvE.EnoughLevel
+			|| HoldCapsCharges(StrikingMusePvE, IsBurst ? ScenicMusePvE.Cooldown.RecastTimeRemainOneCharge : float.MaxValue);
 		// Bursts
 		var adjustCombatTimeForOpener = DataCenter.PlayerSyncedLevel() < 92 ? 2 : 5;
 		if (StarryMusePvE.CanUse(out act) && CombatTime > adjustCombatTimeForOpener && IsBurst)

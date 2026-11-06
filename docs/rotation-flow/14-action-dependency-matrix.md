@@ -899,7 +899,7 @@ Stufe 92 ändert sich nichts. Upstream hat dieselbe Bedingung in `BeirutaPCT` ge
 
 | Punkt | The Balance | RSR (`PCT_Reborn`) | Stand |
 |---|---|---|---|
-| Starry Muse und Vorbereitung | Striking Muse, Starry Sky Motif und Wing- oder Maw-Muse vor dem Fenster bereit | Starry Muse im Burst nach der Opener-Zeit; Striking Muse hält eine Ladung, solange Starry Muse in 60 s zurückkommt; Motive vor Starry Muse gemalt, unter ihr keines | deckt sich |
+| Starry Muse und Vorbereitung | Striking Muse, Starry Sky Motif und Wing- oder Maw-Muse vor dem Fenster bereit | Starry Muse im Burst nach der Opener-Zeit; Striking Muse hält eine Ladung, solange Starry Muse in 60 s zurückkommt und die Ladungen bis dahin nicht voll stünden (A604); Motive vor Starry Muse gemalt, unter ihr keines | deckt sich |
 | Subtractive Palette | ab 50 Palette, Starry Muse gibt einen freien Einsatz | sobald nutzbar und nicht schon aktiv | deckt sich |
 | Farbe | höchstens fünf Ladungen White Paint; Holy in White fürs Laufen, Comet in Black stärker | Überlaufschutz bei der eingestellten Grenze (ab Werk 5, die Obergrenze des Spiels) außerhalb von Starry Muse, Comet vor Holy; Holy/Comet im Laufen als Einstellung | deckt sich |
 | Living Muses, Mog, Madeen | 1000 Potenz je Muse, drei Ladungen zu 40 s; keine Haltevorgabe | Fanged Muse und Madeen in Starry Muse, sonst auf Ladung | deckt sich |
@@ -1031,6 +1031,18 @@ die Abklingzeit wie vorher.
   dann verschiebt das Warten nichts auf Dauer. Andere halten eine Ressource statt einer Abklingzeit (Ninki, Heat,
   Soul, Shroud, Karten); für sie zählt das Überlaufen, nicht der Einsatz. Eine Abklingzeit, die bei jedem Warten weiter
   wandert, hat nur der Rotmagier: Manafication mit 110 s auf Embolden mit 120 s.
+- *Ladungen, die voll stehen* (`CustomRotation.HoldCapsCharges`, A604): Wartet eine Aktion mit mehreren Ladungen, lädt
+  sie nicht weiter, sobald alle voll sind; jede Sekunde dort ist verlorene Abklingzeit und schiebt jeden späteren Einsatz
+  nach hinten. Sie wartet deshalb nur, solange ihre Ladungen bis zum Ende des Wartens nicht voll stünden; sonst geht
+  eine jetzt, und die nächste ist zum Buff wieder da. Lange hält so nur der Pictomancer: Striking Muse (zwei Ladungen zu
+  60 s, Merkmal 540, Spielblätter über xivapi, 06.11.2026) bis zu 60 s auf Starry Muse (Scenic Muse 120 s). In langen
+  Kämpfen steht die zweite Ladung genau zu Starry Muse voll; kommt Starry Muse später – eine Phase ohne Ziel, der Burst
+  aus –, verlor sie bis dahin Abklingzeit. Mit dem Burst aus wirkt RSR Starry Muse nie; Scenic Muse steht dann bereit,
+  und die alte Regel hielt Striking Muse unbegrenzt – jetzt gilt das Warten als endlos, Striking Muse geht, sobald die
+  Ladungen voll stünden. Der Preis der Regel: Ein Hammer-Kombo fällt dann außerhalb von Starry Muse
+  (+5 % der Gruppe); eine Sekunde mit voller Ladung kostet 1/60 eines Kombos, die Ausrichtung bringt 5 % davon – ab drei
+  Sekunden überwiegt der Verlust (meine Rechnung). Die übrigen Halteregeln mit Frist betreffen Aktionen mit einer Ladung
+  (Lance Charge, Swiftcast) oder eine Ressource (Bhavacakra, Lord of Crowns), erhoben am 06.11.2026.
 - *Im Kampf, Rotmagier:* Ausgerichtet bleibt jede Manafication, bis die letzte vor dem Tod des Bosses ausfiele; die
   geht dann sofort. Modell (A464; Potenzen des Job-Guides, eigenes Embolden +10 %, Kampfdauer 5 bis 15 min gleich
   verteilt): gegenüber dem bloßen Warten +310 Potenz je Kampf bei genauer Zeit bis zum Tod, +135 bis +176 bei 10 bis
