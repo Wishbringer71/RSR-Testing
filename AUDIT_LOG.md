@@ -17584,6 +17584,35 @@ habe den schleim bislang nicht anfreunden können."
   KI wirkt RSR im Laufen weiter; ohne Polyglot bleibt es Scathe; eine gespeicherte Einstellung „Retrace" aus bleibt aus.
 - *Prüfgrad:* statisch am Code, Spielblätter, The Balance; kompiliert ohne Warnung; im Spiel nicht beobachtet.
 
+### A603 · Astrologe und Weiser setzen ihren DoT im Laufen vor seiner Zeit, wo es sich je MP lohnt (06.11.2026)
+
+- *Anlass:* Fund aus A602 – Astrologe und Weiser haben keinen Sofort-GCD, wenn kein Zauber startbar ist und Lightspeed
+  bzw. Toxikon und Phlegma fehlen; ihr DoT ging nur zur Erneuerung (Statusprüfung, `DotPlanner`). Der GCD blieb leer, die
+  Füllheilung nahm ihn nur unter ihrer Linie.
+- *Quellen:* Spielblätter über xivapi (06.11.2026): Combust III 70 je 3 s über 30 s, 400 MP; Fall Malefic 270, 400 MP;
+  Eukrasian Dosis III 90 je 3 s über 30 s, 400 MP. The Balance (Astrologian, Sage Basic Guide) nennt kein frühes
+  Erneuern im Laufen, xivanalysis wertet abgeschnittene DoT-Zeit als Verlust – gemessen gegen einen GCD im Stand.
+- *Ableitung (meine):* Bei voller Laufzeit zählt nur die Zahl der Erneuerungen im Stand. Mit Restzeit R gesetzt, rückt die
+  nächste um D − R nach hinten und erspart im Mittel (D − R)/D eines Füllers; die MP abzüglich der ersparten Erneuerung
+  sind R/D. Je MP mindestens so gut wie der Füller, solange R ≤ D · M_Füller / (M_Füller + M_DoT), bei gleichen MP D/2.
+- *Optionen:* (a) Nullvariante; (b) DoT in jedem leeren GCD (wie Upstreams Weißmagier mit Dia, der aber direkt trifft);
+  (c) DoT bis zur halben Dauer (allgemein: Schwelle aus den MP), nur auf einem Ziel, das R überlebt, und nicht, solange die
+  Füllheilung heilen würde. Rückbau: die zwei Aufrufe.
+- *Abwägung:* (b) setzt den DoT ohne Direktschaden immer wieder neu, jedes Mal 400 MP für fast nichts – MP fehlen dem
+  Heiler später für Heilung. (c) gewählt: Gewinn je Einsatz mindestens die Hälfte eines Füllers, MP nie schlechter
+  angelegt als im Stand; die Füllheilung bleibt vorn (Sicherheit vor Schaden).
+- *Gebaut:* `CustomRotation.DotWorthWhileCastBlocked(dot, filler, target)` (allgemein, je Job anzubinden); `AST_Reborn`
+  am Ende von `GeneralGCD` mit der Combust- und Malefic-Stufe; `SGE_Reborn` als Eukrasia-Ziel in `ChoiceEukrasia`
+  nach der Fläche, die Ausführung überspringt dann die Erneuerungsprüfung (`_eukrasiaDotWhileCastBlocked`, zurückgesetzt
+  mit jedem neuen Ziel). Konzept 03 „C6", 01, 07.
+- *Falsifikation:* (1) Kein Defekt? Pfad am Code: Gravity und Malefic mit Wirkzeit, Combust nur zur Erneuerung, danach
+  nichts – gilt. (2) Option falsch? Stärkster Einwand xivanalysis: abgeschnittene DoT-Zeit ist Verlust – trifft nur einen
+  GCD, der sonst einen Füller trüge; hier bliebe er leer. Zweiter Einwand: jede Restzeit unter D wäre Schaden – ja, aber
+  mit MP, die der Heiler später braucht; die Schwelle hält den Preis beim Füller. (3) Ausgeliefert, nichts ändert sich?
+  Mit Bewegungssperre wirkt RSR im Laufen weiter; mit Lightspeed, Toxikon oder Phlegma geht zuerst das; mit mehr als der
+  halben Dauer übrig geht nichts – im Mittel in jedem zweiten Lauf.
+- *Prüfgrad:* statisch am Code, Spielblätter, Ableitung; kompiliert ohne Warnung; im Spiel nicht beobachtet.
+
 ## B · Commit-Register (Fork vs. `upstream/main`)
 
 ### B1 · Einzelgeprüfte Fork-Commits

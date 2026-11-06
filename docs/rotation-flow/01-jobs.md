@@ -91,7 +91,8 @@ GeneralGCD
   ├ 1  Sustain        TrySustainAspectedBeneficOnTank
   ├ 2  AoE            Gravity II → Gravity          (Level-Kette)
   ├ 3  DoT            Combust III → II → Combust    (Level-Kette)
-  └ 4  Filler         Fall Malefic → IV → III → II → Malefic  (Level-Kette)
+  ├ 4  Filler         Fall Malefic → IV → III → II → Malefic  (Level-Kette)
+  └ 5  Bewegung       Combust vor seiner Zeit, wenn kein Zauber startbar ist (Konzept 03 „C6", A603)
 ```
 
 Die flachste Heiler-Leiter: drei reine Level-Ketten hintereinander, keine
@@ -110,7 +111,7 @@ GeneralGCD
   ├ 1  Reaktiv        DoEukrasianPrognosis II / Prognosis / Diagnosis
   ├ 2  Ressource      Phlegma (Ladungs-Overcap)
   ├ 3  Zustand        Party-/Tank-Scan
-  ├ 4  Bewegung       Toxikon bei IsMoving
+  ├ 4  Bewegung       Toxikon bei IsMoving; Eukrasian Dosis vor ihrer Zeit als Eukrasia-Ziel, wenn kein Zauber startbar ist (A603)
   ├ 5  AoE            Eukrasian Dyskrasia → Dyskrasia
   ├ 6  DoT            Eukrasian Dosis III → II → Dosis  (Level-Kette)
   ├ 7  Filler         Dosis

@@ -197,6 +197,14 @@ What this release changes in the fight. For the whole distance from upstream, se
   in both Black Mage rotations: once you stand outside your Ley Lines in combat, Retrace brings the
   circle back under you while it still lasts beyond the next GCD, never right after placing it.
 
+## Astrologian and Sage
+
+- **Combust and Eukrasian Dosis on the move.** When no spell with a cast time can start and Lightspeed,
+  Toxikon or Phlegma are not there, the Astrologian puts Combust and the Sage Eukrasian Dosis on again
+  before they are due, instead of leaving the GCD empty - while at most half their duration is left
+  (each MP then buys at least as much as a Malefic or a Dosis), on a target that outlives it, and not
+  while `Use GCD heals when there's nothing else to do` would heal.
+
 ## Occult Crescent
 
 - **Phantom heals heal ahead of incoming damage.** Occult Potion, Occult Elixir, Occult Chakra,

@@ -527,7 +527,8 @@ die Flächenheilung, wenn mehr als zwei Mitglieder unter der Linie stehen und di
 liegt, sonst die Einzelheilung – zuerst die der Spezialaktionen, dann die des Jobs (die Regel unten, „Was gilt").
 
 Sie läuft in Pausen ohne angreifbares Ziel – ein Boss wird unanvisierbar, eine Welle ist tot und die nächste noch nicht
-da, die Ziele stehen außer Reichweite – und bei einem Zaubernden in Bewegung ohne sofort wirkenden Angriff. Sie gilt
+da, die Ziele stehen außer Reichweite – und bei einem Zaubernden in Bewegung ohne sofort wirkenden Angriff; ein DoT vor
+seiner Zeit (Astrologe, Weiser; Konzept 03, „C6") tritt ihr dann zurück, solange sie heilen würde. Sie gilt
 für jeden Job mit einer GCD-Heilung: die vier Heiler, den Paladin (Clemency, hinter seinen eigenen Schwellen), den
 Beschwörer (Physick, mit „Healbot" oder bis Stufe 30), den Rotmagier (Vercure), den Blaumagier und die Spezialaktionen
 (Okkulte Sichel, Bozja, Variante, Hardboiled). Einen Schadens-GCD kostet sie nie, es gab keinen; sie kostet MP, beim

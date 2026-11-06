@@ -756,6 +756,17 @@ public sealed class AST_Reborn : AstrologianRotation
 			return true;
 		}
 
+		// No spell with a cast time can start: Combust again before it is due, where that pays per MP at least as well as
+		// the filler (concept 03, "C6", A603).
+		var combust = CombustIiiPvE.EnoughLevel ? CombustIiiPvE : CombustIiPvE.EnoughLevel ? CombustIiPvE : CombustPvE;
+		var malefic = FallMaleficPvE.EnoughLevel ? FallMaleficPvE : MaleficIvPvE.EnoughLevel ? MaleficIvPvE
+			: MaleficIiiPvE.EnoughLevel ? MaleficIiiPvE : MaleficIiPvE.EnoughLevel ? MaleficIiPvE : MaleficPvE;
+		if (CastStartBlocked && combust.CanUse(out act, skipStatusProvideCheck: true)
+			&& DotWorthWhileCastBlocked(combust, malefic, combust.Target.Target))
+		{
+			return true;
+		}
+
 		return base.GeneralGCD(out act);
 	}
 	#endregion

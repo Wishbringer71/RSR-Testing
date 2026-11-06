@@ -64,6 +64,48 @@ public partial class CustomRotation
 	public static bool CastStartBlocked => !HasSwift && ActionBasicInfo.CastStartBlockedNow(false);
 
 	/// <summary>
+	/// Whether a damage over time on <paramref name="target"/> is worth putting on again before it is due, because no spell
+	/// with a cast time can start (<see cref="CastStartBlocked"/>) and the GCD would otherwise stay empty. With R seconds left
+	/// of its duration D it pushes the next refresh back by D - R and so saves that share of a later filler; its MP net of
+	/// the saved refresh is the share R / D. That pays per MP at least as well as the filler while
+	/// R &lt;= D * fillerMp / (fillerMp + dotMp), on a target that outlives R. It yields while the filler heal would heal,
+	/// which only runs when no attack does (concept 03, "C6").
+	/// </summary>
+	/// <param name="dot">The damage over time, with its <see cref="ActionSetting.Dot"/> duration and target statuses.</param>
+	/// <param name="filler">The GCD it replaces when standing, for its MP.</param>
+	/// <param name="target">The enemy it would go on.</param>
+	protected static bool DotWorthWhileCastBlocked(IBaseAction dot, IBaseAction filler, IBattleChara? target)
+	{
+		var setting = dot.Setting;
+		if (!CastStartBlocked || target == null || setting.Dot == null || setting.TargetStatusProvide == null)
+		{
+			return false;
+		}
+
+		if (Service.Config.HealWhenNothingTodo && DataCenter.ForecastMinHp(false) < Service.Config.HealWhenNothingTodoBelow)
+		{
+			return false;
+		}
+
+		var left = target.StatusTime(setting.StatusFromSelf, setting.TargetStatusProvide);
+		if (left == float.MaxValue)
+		{
+			return false;
+		}
+
+		var ttk = target.GetTTK();
+		if (!float.IsNaN(ttk) && ttk <= left)
+		{
+			return false;
+		}
+
+		float dotMp = dot.Info.MPNeed;
+		float fillerMp = filler.Info.MPNeed;
+		var limit = dotMp + fillerMp > 0 ? setting.Dot.Duration * fillerMp / (fillerMp + dotMp) : setting.Dot.Duration;
+		return left <= limit;
+	}
+
+	/// <summary>
 	/// 
 	/// </summary>
 	[Description("Has tank stance")]

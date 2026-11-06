@@ -537,6 +537,22 @@ public sealed class SGE_Reborn : SageRotation
 	// action's own targeting picks.
 	private bool _eukrasiaDiagnosisForTank;
 
+	// Set while the aim is Eukrasian Dosis before it is due because no spell with a cast time can start (concept 03, "C6"):
+	// the dosis then skips its refresh window.
+	private bool _eukrasiaDotWhileCastBlocked;
+
+	// The Eukrasian Dosis and Dosis of the current level, and whether putting the dosis on again now pays (A603).
+	private IBaseAction EukrasianDosisAtLevel => EukrasianDosisIiiPvE.EnoughLevel ? EukrasianDosisIiiPvE
+		: EukrasianDosisIiPvE.EnoughLevel ? EukrasianDosisIiPvE : EukrasianDosisPvE;
+
+	private bool DosisWhileCastBlocked()
+	{
+		var dosis = EukrasianDosisAtLevel;
+		var filler = DosisIiiPvE.EnoughLevel ? DosisIiiPvE : DosisIiPvE.EnoughLevel ? DosisIiPvE : DosisPvE;
+		return CastStartBlocked && dosis.EnoughLevel && dosis.IsEnabled
+			&& dosis.CanUse(out _, skipStatusProvideCheck: true) && DotWorthWhileCastBlocked(dosis, filler, dosis.Target.Target);
+	}
+
 	// Eukrasian Diagnosis's own list, widened by the barrier its effect text says it cannot stack with.
 	private static readonly StatusID[] TankBarrierHeld = [StatusID.EukrasianDiagnosis, StatusID.Galvanize, StatusID.EukrasianPrognosis];
 
@@ -559,6 +575,7 @@ public sealed class SGE_Reborn : SageRotation
 		}
 
 		_EukrasiaActionAim = act;
+		_eukrasiaDotWhileCastBlocked = false;
 	}
 
 	// Clears the Eukrasia action aim, effectively resetting any planned Eukrasia action.
@@ -569,6 +586,7 @@ public sealed class SGE_Reborn : SageRotation
 			_lastEukrasiaActionAim = _EukrasiaActionAim;
 			_EukrasiaActionAim = null;
 			_eukrasiaDiagnosisForTank = false;
+			_eukrasiaDotWhileCastBlocked = false;
 			if (HasEukrasia && ((InCombat && HasHostilesInMaxRange && nextGCD == null && SecondsSinceLastNextGCDChange >= 2f) || (!InCombat && !HasHostilesInMaxRange)))
 			{
 				StatusHelper.StatusOff(StatusID.Eukrasia);
@@ -611,6 +629,13 @@ public sealed class SGE_Reborn : SageRotation
 			&& EukrasianDyskrasiaPvE.CanUse(out _))
 		{
 			SetEukrasia(EukrasianDyskrasiaPvE);
+		}
+		// No spell with a cast time can start: the dosis before it is due, where that pays (concept 03, "C6", A603).
+		else if (!MergedStatus.HasFlag(AutoStatus.DefenseSingle) && !MergedStatus.HasFlag(AutoStatus.DefenseArea)
+			&& DosisWhileCastBlocked())
+		{
+			SetEukrasia(EukrasianDosisAtLevel);
+			_eukrasiaDotWhileCastBlocked = _EukrasiaActionAim == EukrasianDosisAtLevel;
 		}
 		else if ((!EukrasianDyskrasiaPvE.CanUse(out _) || !DyskrasiaPvE.CanUse(out _))
 			&& EukrasianDosisIiiPvE.CanUse(out _) && EukrasianDosisIiiPvE.EnoughLevel && (!MergedStatus.HasFlag(AutoStatus.DefenseSingle) && !MergedStatus.HasFlag(AutoStatus.DefenseArea)) && EukrasianDosisIiiPvE.IsEnabled)
@@ -754,7 +779,7 @@ public sealed class SGE_Reborn : SageRotation
 				return false;
 			}
 
-			if (EukrasianDosisIiiPvE.CanUse(out act))
+			if (EukrasianDosisIiiPvE.CanUse(out act, skipStatusProvideCheck: _eukrasiaDotWhileCastBlocked))
 			{
 				return true;
 			}
@@ -778,7 +803,7 @@ public sealed class SGE_Reborn : SageRotation
 				return false;
 			}
 
-			if (EukrasianDosisIiPvE.CanUse(out act))
+			if (EukrasianDosisIiPvE.CanUse(out act, skipStatusProvideCheck: _eukrasiaDotWhileCastBlocked))
 			{
 				return true;
 			}
@@ -802,7 +827,7 @@ public sealed class SGE_Reborn : SageRotation
 				return false;
 			}
 
-			if (EukrasianDosisPvE.CanUse(out act))
+			if (EukrasianDosisPvE.CanUse(out act, skipStatusProvideCheck: _eukrasiaDotWhileCastBlocked))
 			{
 				return true;
 			}
