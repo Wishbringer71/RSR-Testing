@@ -147,6 +147,14 @@ What this release changes in the fight. For the whole distance from upstream, se
   when nobody stood within that radius, and its 90-second cooldown was missing at the next raidwide. It now waits until
   another party member is in reach.
 
+## Raising
+
+- **Red Mage raises with no enemy around.** Verraise needs Dualcast, which in a fight the next Jolt
+  gives. Between two packs or while the boss cannot be targeted no spell gave it, and without
+  Swiftcast the raise waited up to Swiftcast's whole recast. RSR now casts Vercure on you there (no
+  enemy needed, also at full HP) and Verraise with the Dualcast it brings - where `Hard-cast raise`
+  allows a hard cast, and standing.
+
 ## After you are raised
 
 - **The seconds of protection after a raise are used to heal up when a hit comes right after them.**

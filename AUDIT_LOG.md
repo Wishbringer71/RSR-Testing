@@ -17904,6 +17904,25 @@ habe den schleim bislang nicht anfreunden können."
 - *9 Dokumentation:* Konzept 03 („Tiefe Gewölbe: Verwandlung"), TODO-Punkt entfernt, Release-Text.
 - *Betroffene:* Endnutzer in Tiefen Gewölben; Autoren abgeleiteter Rotationen über den neuen öffentlichen Schalter.
 
+### A615 · Rotmagier: Wiederbelebung ohne Gegner über Vercure (06.11.2026)
+
+- *Anlass:* TODO „Fremde Repositories", BossMod-Rollen-KI (`Caster.cs`, BossmodReborn 27be422, Werkzeugquelle): ohne
+  Swiftcast holt die KI Dualcast mit Vercure und wirkt dann Verraise.
+- *1 Research:* `ModifyVerraisePvE` verlangt Dualcast (`StatusNeed`); hartgewirkt wird Verraise also nie, gegen Konzept 11
+  („Verraise wird hartgewirkt", berichtigt). Im Kampf gibt das nächste Jolt den Dualcast (Konzept 11: rund 2,5 s). Ohne
+  anvisierbaren Gegner gab kein Zauber Dualcast; „Use Vercure for Dualcast when out of combat" (ab Werk aus) gilt nur
+  außerhalb des Kampfes und unabhängig von einem Toten. `TryRaise` bietet die Wiederbelebung erst ohne, dann mit
+  Hartwirk an (`HardCastRaiseType`), Swiftcast geht im ersten Durchgang vor.
+- *2 Optionen:* (0) belassen; (1) Vercure im Hartwirk-Weg, wenn Jolt nicht geht; (2) „Use Vercure …" ab Werk an.
+- *3 Abwägung:* (1). Stärke: Der Tote steht nach rund zwei GCDs statt nach bis zu 60 s, zwischen zwei Rudeln und in
+  Phasen ohne Ziel. Schwäche: 2 s Wirkzeit im Stehen; nur wo die Hartwirk-Einstellung es erlaubt. (2) wirkte Vercure
+  auch ohne Toten und nur außerhalb des Kampfes.
+- *6 Falsifikation:* Kein Defekt? Widerlegt: ohne Jolt-Ziel kein Dualcast. Option falsch? Mit Gegnern bleibt Jolt (Schaden)
+  der Weg; Vercure nur, wo Jolt nicht geht. Ausgeliefert, nichts ändert sich? Vercure fände bei voller LP kein Heilziel –
+  deshalb auf dich selbst (`TargetType.Self`); „Hard-cast raise" ohne Hartwirk lässt es aus, wie es sein Text sagt.
+- *7 Gebaut:* `RDM_Reborn.RaiseGCD`. *8 Nachweis:* statisch, Compile, Prüfskripte; im Spiel nicht beobachtet.
+- *9 Dokumentation:* Konzept 11 („Wiederbelebung ohne Swiftcast"), Release-Text.
+
 ## B · Commit-Register (Fork vs. `upstream/main`)
 
 ### B1 · Einzelgeprüfte Fork-Commits

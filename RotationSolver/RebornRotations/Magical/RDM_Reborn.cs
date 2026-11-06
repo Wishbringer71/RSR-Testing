@@ -341,6 +341,16 @@ public sealed class RDM_Reborn : RedMageRotation
 			return true;
 		}
 
+		// Concept 11, "Wiederbelebung ohne Swiftcast" (A615): Verraise needs Dualcast, which in a fight the next Jolt hands
+		// out. With no enemy to cast it on - between pulls, the boss untargetable - no spell did, and the raise waited for
+		// Swiftcast up to its whole recast. Vercure needs no enemy and brings Dualcast in one cast; on the player, who need
+		// not be hurt. The raise path offers it where it would offer a hard cast, so the hard cast setting still decides.
+		if (!HasDualcast && !HasSwift && !JoltPvE.CanUse(out _)
+			&& VercurePvE.CanUse(out act, skipStatusProvideCheck: true, targetOverride: TargetType.Self))
+		{
+			return true;
+		}
+
 		return base.RaiseGCD(out act);
 	}
 

@@ -1,6 +1,6 @@
 # RDM — Abhängigkeitsmatrix
 
-Erzeugt von `.github/scripts/audit/generate_action_matrix.py` am 2026-10-31; nicht von Hand bearbeiten. Methode und Grenzen: `docs/rotation-flow/14-action-dependency-matrix.md`.
+Erzeugt von `.github/scripts/audit/generate_action_matrix.py` am 2026-11-06; nicht von Hand bearbeiten. Methode und Grenzen: `docs/rotation-flow/14-action-dependency-matrix.md`.
 
 - Basisrotation: `RedMageRotation`
 - Rotation: `RotationSolver/RebornRotations/Magical/RDM_Reborn.cs`
@@ -171,6 +171,11 @@ direkt: 44 · nur gelesen: 5 · ungenutzt: 1 · über andere Aktion: 2
 | Grand Impact | Regel prüft | Enchanted Reprise |
 | Grand Impact | StatusNeed GrandImpactReady | Status GrandImpactReady |
 | Grand Impact | Regel prüft | Swiftcast |
+| Jolt | Regel sperrt vorher | Resolution |
+| Jolt | Regel sperrt vorher | Riposte |
+| Jolt | Regel sperrt vorher | Scorch |
+| Jolt | Regel prüft | Vercure |
+| Jolt | Regel sperrt vorher | Zwerchhau |
 | Manafication | Regel prüft | Embolden |
 | Prefulgence | StatusNeed PrefulgenceReady | Status PrefulgenceReady |
 | Redoublement | ComboIds | Zwerchhau |
@@ -193,6 +198,7 @@ direkt: 44 · nur gelesen: 5 · ungenutzt: 1 · über andere Aktion: 2
 | Swiftcast | Regel prüft | Verthunder III |
 | Swiftcast | Regel prüft | Verthunder |
 | Veraero | Regel prüft | Veraero III |
+| Vercure | Regel prüft | Jolt |
 | Vercure | Regel sperrt vorher | Resolution |
 | Vercure | Regel sperrt vorher | Riposte |
 | Vercure | Regel sperrt vorher | Scorch |

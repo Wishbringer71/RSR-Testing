@@ -143,7 +143,8 @@ verändert.
 
 Der Rotmagier fällt aus der Reihe: Dualcast steht in `StatusHelper.SwiftcastStatus`, also ist
 `HasSwift` nach jedem Zauber wahr und Stufe (A) greift mit eingeschalteter Einstellung ohnehin; mit ausgeschalteter
-nimmt der nächste Zauber das Dualcast, und Verraise wird hartgewirkt (unten).
+nimmt der nächste Zauber das Dualcast, und Verraise kommt mit einem späteren (unten). Hartgewirkt wird Verraise nie: Es
+verlangt Dualcast (`ModifyVerraisePvE`, `StatusNeed`).
 
 **Mit der Einstellung aus geht ein laufender Swiftcast oder Dualcast erst dann in die Wiederbelebung, wenn er sonst
 ungenutzt abliefe** (seine Vorgabe, 03.11.2026: „bevor was verschwendet wird, ist es zu nutzen. das haben wir auch bei
@@ -239,6 +240,10 @@ einen langen Savage-Kampf). Werte aus den Spielblättern (xivapi, 03.11.2026), S
 - *Wiederbelebung ohne Swiftcast* (er klingt im Mittel noch 20 s ab):
   - im Stehen sofort, wenn Dualcast gerade läuft (nach jedem hartgewirkten Zauber), sonst einen GCD später, rund 2,5 s
     (Jolt III 2 s Wirkzeit, dann Verraise mit Dualcast);
+  - ohne Gegner für Jolt – zwischen zwei Rudeln, der Boss nicht anvisierbar – über Vercure auf dich selbst (2 s, kein
+    Gegner nötig, auch bei voller LP), dann Verraise mit Dualcast (A615, BossMods Magier-KI ebenso). Vorher gab dort kein
+    Zauber Dualcast, und die Wiederbelebung wartete auf Swiftcast, bis zu seiner ganzen Erholzeit. Vercure geht über den
+    Hartwirk-Zweig, also nur, wo „Hard-cast raise" einen Hartwirk erlaubt, und nur im Stehen;
   - jede weitere Wiederbelebung einen GCD später;
   - im Laufen gar nicht, bis der Rotmagier 2 s stehen kann: Acceleration gilt nur für Verthunder III, Veraero III und
     Impact (Wirktext), nicht für Verraise, und Verraise selbst wirkt 10 s.
