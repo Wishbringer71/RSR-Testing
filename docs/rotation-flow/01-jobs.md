@@ -1144,6 +1144,13 @@ eingearbeitet werden, situationsbezogen"; A487, A488, A522):
       was die Gruppe heilt. Ein Heiler in der Gruppe zählt darüber mit.
     - *Bis zum Gebietswechsel, nicht nur nach dem letzten Kampf:* Sonst verhinderte der sichere Begleiter die Gefahr,
       fiele beim nächsten Kampf weg und käme danach wieder; jeder zweite Kampf ohne ihn.
+    - *Sein Vorschlag (06.11.2026), offen:* „für jedes noch anstehende dungeon oder raid, wo der beastmaster noch
+      begleiter bekommen kann, vorab eine prüfung der möglichen kämpfe durchgeführt werden, damit nicht immer die
+      falschen begleiter vorab ausgesucht werden." Heute kennt B5 die Gefahr eines Gebiets erst, nachdem sie eingetreten
+      ist, und den nächsten Kampf erst, wenn seine Gegner in der Objektliste stehen. Am selben Abend starb er in
+      Sägerschrei gegen den Riesen-Tunnelwurm (31.815 LP, ein Schadensstrom von rund 3 % seiner LP je Sekunde); die
+      Hörner trugen Schleim, Fledermaus und Cu Sith, die Fledermaus ging um 18:12:16 für den Zyklus, bevor eine Gefahr
+      gemeldet war. Prüfaufgabe im Beastmaster-Loop (TODO „Beastmaster: Konzept und Code im vollen Loop").
   - *Die Wahl* unter allen freigeschalteten Begleitern mit Katalogeintrag, auf der Stufe des Spielers; was ein Horn
     gerade hält, auch ein leeres, bleibt eine Wahl (sonst bliebe bei weniger Begleitern als Hörnern keine Belegung übrig):
     1. so viele, die heilen oder schützen, wie verlangt – wie B2 es liest, je Horn nach dem, wofür es One with Nature
@@ -2712,12 +2719,21 @@ on a pack once a fight, all of them in the final fight (Crucible only)".
 - *Gegenthese 2 (seine Wahl):* Er setzt die Hörner vielleicht selbst. Eine Handänderung hält; die Einstellung schaltet es
   ab.
 - *Gegenthese 3 (angeschlagene Begleiter):* Gleicher Wert ist selten; ob ein Begleiter den Kampf übersteht, beantwortet
-  erst K11 mit dem gemessenen Verlust je Kampf (Sonde A556, A561).
+  erst K11 mit dem gemessenen Verlust je Kampf (Sonde A556, A561). *Gemessen (06.11.2026, Brett 1, A634):* Die
+  Gegenthese hält. Der Schaden entschied jeden Kampf, die LP nie: Gigantoad lag in drei von fünf Kämpfen auf einem Horn,
+  Spriggan, Morbol, Lamb und Apkallu in je zwei; Gigantoad fiel von 550 auf 241 LP, Morbol auf 272. Dodo, Treant und
+  Mantis standen bis zum Endkampf mit vollen LP, Dodo nie auf einem Horn. Offen im TODO „Beastmaster: Hörner im Brett
+  nach Schaden, die LP der Begleiter zählen nie" (seine Frage, ob der Vorschlag oder die Nutzung falsch ist: die
+  Nutzung).
 
 **Stufe 4, zweiter Teil: K7, Kader auf Wunsch** (A563, gebaut; Entscheidung C, A533):
 - *Wann:* Das Teamfenster des Crucible ist offen – `AgentXBMPetParty` aktiv, nicht im Hornfenster (`Mode` 2), mit
-  einem Brett in `ContentId` (Daedalus 74659a6, `CrucibleRosterLoader`, aus dem Spielbetrieb). Dann zeigt RSR ein
-  Fenster „RSR – Crucible team" mit der Empfehlung und einem Knopf „Apply"; ohne Klick ändert es nichts.
+  einem Brett in `ContentId` (Daedalus 74659a6, `CrucibleRosterLoader`, aus dem Spielbetrieb), und nicht auf einem
+  Brett. Dann zeigt RSR ein Fenster „RSR – Crucible team" mit der Empfehlung und einem Knopf „Apply"; ohne Klick ändert
+  es nichts. *Nicht auf dem Brett* (seine Meldung, 06.11.2026, A634): Der Kader steht für den Lauf fest, aber derselbe
+  Agent ist dort an der Campsite (`Mode` 4), beim Füttern (3 bis 5) und zwischen den Kämpfen (6) aktiv; RSR bot den
+  Wechsel um 17:35 und 17:38 an, das Spiel nahm ihn nicht („The game did not remove Treant"). Daedalus'
+  `CrucibleRosterLoader` prüft das Brett ebenso wenig.
 - *Empfehlung:* so viele Begleiter, wie das Brett fasst (`XBMContent.Unknown34`, EXDSchema TeamSize: 10, 12, 14, 12,
   15). Zuerst so viele, die heilen oder schützen (Trick heilt, Tempered Release heilt oder schützt, Borrow schützt), wie
   B5 vor einem Boss verlangt (zwei, `BossSafeFamiliars`); dann der Reihe nach der, der die meisten noch schwach

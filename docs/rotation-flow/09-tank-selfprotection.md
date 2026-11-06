@@ -858,7 +858,10 @@ Notschwelle „Use invulnerability below this HP" bleiben, wie sie sind.
   belegt) ausbliebe; ohne sie zählte jeder Treffer ein ganzes Fenster und addierte sich zum nächsten. Wird er nie
   zugefügt – Schaden über den Tod hinaus, unter einer Unverwundbarkeit, ganz in einer Barriere (BossModReborn: „we won't
   get confirmation") –, endet er nach der längsten Wartezeit von Meldung bis Zufügen, die RSR in dieser Sitzung gemessen
-  hat, vor der ersten Messung nach einem GCD (über dem 99. Perzentil von 2,1 s der Mitschnitte). Was beim Laden, nach einem Tod oder
+  hat, vor der ersten Messung nach einem GCD (über dem 99. Perzentil von 2,1 s der Mitschnitte). Ein Eintrag, der
+  zugefügt ist, misst seine Wartezeit einmal und zählt danach nicht mehr, solange das Spiel ihn noch führt (A634): Am
+  06.11.2026 maß RSR einen zugefügten Eintrag in jedem Durchlauf neu, die längste Wartezeit wuchs um einen Durchlauf je
+  Durchlauf bis auf rund 100 s, und ein nie zugefügter Treffer hätte so lange als ausstehend gezählt. Was beim Laden, nach einem Tod oder
   einem Gebietswechsel schon im Speicher steht, zählt nicht: Die Sequenz des Servers steigt, ein neuer Treffer liegt
   über allen alten.
 - *Was nicht gegengerechnet wird:* gemeldete Heilungen. Ob sie vor oder nach dem Treffer zugefügt werden, sagt die

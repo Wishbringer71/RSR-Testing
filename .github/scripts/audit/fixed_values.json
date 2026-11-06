@@ -12,7 +12,7 @@
    "reason": "Rank of a role in a tie-break order (healer 0, tank 1, others 2) beside the 0 and 1 above it; an ordinal of a tie-break order for equal points, not a figure of the game (A340)."
   },
   {
-   "file": "RotationSolver/Basic/Actions/PheonixDownItem.cs",
+   "file": "RotationSolver/Basic/Actions/PhoenixDownItem.cs",
    "code": "return manager->GetActionStatus(ActionType.Item, hq ? ID + 1000000 : ID, target.GameObjectId) == 0;",
    "values": [
     "1000000"

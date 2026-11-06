@@ -29,6 +29,9 @@ internal static unsafe class ReportedDamage
 	private readonly record struct Seen(long Tick, long EffectiveHp);
 
 	private static readonly Dictionary<uint, Seen> _firstSeen = [];
+	// Entries that have landed by the fall of health and barrier, kept until the list drops them: measured once, never again
+	// counted (his trace of 06.11.2026: measured every frame, the longest wait grew by a frame at a time to 100 s, A634).
+	private static readonly HashSet<uint> _landed = [];
 	private static readonly HashSet<uint> _present = [];
 	private static readonly List<uint> _gone = [];
 	private static uint _baseline;
@@ -50,6 +53,7 @@ internal static unsafe class ReportedDamage
 		{
 			_territory = DataCenter.TerritoryID;
 			_firstSeen.Clear();
+			_landed.Clear();
 			_reading = false;
 			return;
 		}
@@ -81,6 +85,12 @@ internal static unsafe class ReportedDamage
 				continue;
 			}
 
+			if (_landed.Contains(sequence))
+			{
+				_ = _present.Add(sequence);
+				continue;
+			}
+
 			if (entry.TargetConfirmed)
 			{
 				if (_firstSeen.Remove(sequence, out var confirmed))
@@ -109,6 +119,8 @@ internal static unsafe class ReportedDamage
 			if (effectiveHp + amount <= first.EffectiveHp)
 			{
 				MeasureWait(now - first.Tick);
+				_ = _firstSeen.Remove(sequence);
+				_ = _landed.Add(sequence);
 				continue;
 			}
 
@@ -132,6 +144,8 @@ internal static unsafe class ReportedDamage
 		{
 			_ = _firstSeen.Remove(sequence);
 		}
+
+		_landed.IntersectWith(_present);
 	}
 
 	private static void MeasureWait(long waitMs)

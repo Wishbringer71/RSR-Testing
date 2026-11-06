@@ -1804,7 +1804,7 @@ Die Behebung stammt aus PR #7 und war mit dem Revert verlorengegangen; sie ist z
 
 **Befund.** `HardCastOnlyHealer` und `HardCastOnlyHealerSwiftCooldown` bauten zwei Mengen toter beziehungsweise vorhandener **Heiler der eigenen Gruppe** und verglichen ihre Größe. Die gemeinte Frage ist eine andere: Hartwirken kostet acht Sekunden GCD und lohnt nur, wenn es sonst niemand übernehmen kann. Drei Abweichungen:
 
-1. **Heiler statt Rezzer.** Ein lebender Beschwörer oder Rotmagier belebt ebenso wieder. Der Baum weiß das an anderer Stelle bereits — `PheonixDownItem.AnyLivingRaiserInParty` zählt Heiler, SMN und RDM.
+1. **Heiler statt Rezzer.** Ein lebender Beschwörer oder Rotmagier belebt ebenso wieder. Der Baum weiß das an anderer Stelle bereits — `PhoenixDownItem.AnyLivingRaiserInParty` zählt Heiler, SMN und RDM.
 2. **Der Spieler war aus beiden Mengen gefiltert.** Als einziger Heiler sind damit beide leer: `0 == 0` trifft zu, die Nachbedingung `deadhealers.Count > 0` nicht. **In jeder Vierergruppe und solo wurde nie hart gewirkt** — genau dort, wo Hartwirken der einzige Weg ist, dass überhaupt jemand hochkommt.
 3. **Ein Größenvergleich kann „niemand sonst" nicht ausdrücken,** nur „so viele tot wie vorhanden".
 
@@ -1824,11 +1824,11 @@ Die Behebung stammt aus PR #7 und war mit dem Revert verlorengegangen; sie ist z
 
 **Anlass:** Der Auftraggeber hat die gemeinte Bedingung genannt — kein Rezzer in der Gruppe oder alle tot, dann Feder, soweit der Inhalt es zulässt — und sie an einem Szenario ausgeschrieben: In einer Achtergruppe eines Allianzraids sind die eigenen Heiler tot und niemand in der eigenen Gruppe kann wiederbeleben; dann soll ein Federträger einen Heiler hochbringen, bei mehreren Trägern auch den zweiten, und wenn auch in den anderen Allianzgruppen keine Heiler und Rezzer mehr leben, ebenso dort.
 
-**Ausgangslage.** Die Bedingung stand bereits richtig im Code (`PheonixDownItem.CanUseThis` mit `!AnyLivingRaiserInParty()`), und die Inhaltssperre ebenfalls: `BaseItem.CanUse` fragt `GetActionStatus` gegen `ConfigurationHelper.BadStatus`, das Spiel meldet also selbst, wenn Gegenstände im Inhalt verboten sind. Gefehlt hat allein der Aufruf — `UsePhoenixDown` hatte keinen.
+**Ausgangslage.** Die Bedingung stand bereits richtig im Code (`PhoenixDownItem.CanUseThis` mit `!AnyLivingRaiserInParty()`), und die Inhaltssperre ebenfalls: `BaseItem.CanUse` fragt `GetActionStatus` gegen `ConfigurationHelper.BadStatus`, das Spiel meldet also selbst, wenn Gegenstände im Inhalt verboten sind. Gefehlt hat allein der Aufruf — `UsePhoenixDown` hatte keinen.
 
 **Der Defekt, der die Verdrahtung blockiert hätte.** `UsePhoenixDown` wirkte die Feder **selbst** (`phoenixdown.Use()`) und setzte zusätzlich `act`. Das Hausmuster für Gegenstände ist aber das Melden — `CustomRotation_Ability.cs` hängt den Heiltrank über `UseHpPotion(nextGCD, out act)` ein, und `RSCommands.DoAction` ruft `Use()` auf dem gemeldeten Ergebnis auf. Eine Einhängung nach Hausmuster hätte also **zwei Federn für eine Leiche** verbraucht. Der Grund für das Selbstwirken entfällt zudem: `BaseItem.Use` führt für Item 4570 einen eigenen Zweig, der auf `DataCenter.DeathTarget` zielt und HQ wie NQ behandelt. Der `Use()`-Aufruf ist entfernt, die Methode meldet jetzt nur.
 
-**Bezugsmenge vereinheitlicht.** `AnyLivingRaiserInParty` in `PheonixDownItem` und die neue Rezzer-Prüfung aus A58 stellten dieselbe Frage in zwei Fassungen. Beide zeigen jetzt auf `DataCenter.AnyLivingRaiser(bool excludeSelf)`: dieselbe Menge nach `RaiseType` — Gruppe bei `PartyOnly` und `PartyHealersOnly`, Gruppe und Allianz unter den Allianzmodi und `All`, `AllOutOfDuty` ausgenommen — und dieselben Rezzerjobs (Heiler, Beschwörer, Rotmagier). Der Unterschied liegt allein im Parameter, und er ist sachlich: Die Feder fragt „kann das niemand richtig", zählt den Spieler also mit, weil ein lebender Rezzer seinen Zauber statt eines Gegenstands benutzt; die Hartwirkmodi fragen „kann es jemand **anders**", dort ist der Spieler der Entscheidende.
+**Bezugsmenge vereinheitlicht.** `AnyLivingRaiserInParty` in `PhoenixDownItem` und die neue Rezzer-Prüfung aus A58 stellten dieselbe Frage in zwei Fassungen. Beide zeigen jetzt auf `DataCenter.AnyLivingRaiser(bool excludeSelf)`: dieselbe Menge nach `RaiseType` — Gruppe bei `PartyOnly` und `PartyHealersOnly`, Gruppe und Allianz unter den Allianzmodi und `All`, `AllOutOfDuty` ausgenommen — und dieselben Rezzerjobs (Heiler, Beschwörer, Rotmagier). Der Unterschied liegt allein im Parameter, und er ist sachlich: Die Feder fragt „kann das niemand richtig", zählt den Spieler also mit, weil ein lebender Rezzer seinen Zauber statt eines Gegenstands benutzt; die Hartwirkmodi fragen „kann es jemand **anders**", dort ist der Spieler der Entscheidende.
 
 **Einhängung.** Im Fähigkeitenpfad hinter der Heilung, vor dem Angriff: Jemanden am Leben zu halten geht vor, jemanden aufzusammeln kostet nur ein Einschiebefenster. Die Zielüberschreibung setzt `UsePhoenixDown` selbst und stellt sie wieder her. Die Fähigkeitensperre in `DoAction` greift nicht, weil sie `nextAction is BaseAction` prüft und ein `BaseItem` das nicht ist.
 
@@ -1846,7 +1846,7 @@ Die Behebung stammt aus PR #7 und war mit dem Revert verlorengegangen; sie ist z
 
 **Befund 1 — die Rezzereigenschaft ignorierte die Stufe.** `DataCenter.HasLivingRaiser` zählte jeden lebenden Heiler, Beschwörer und Rotmagier als Rezzer, während `CanRaise()` für den Spieler selbst seit jeher Stufe 12 beziehungsweise 64 verlangt. Ein Rotmagier unter 64 — jeder stufensynchronisierte Durchgang durch ältere Inhalte — hielt damit die Feder zurück, die dort der einzige Weg war. Beide Stellen teilen sich jetzt dieselben zwei Konstanten. Die Stufe eines Gruppenmitglieds stammt aus `ICharacter.Level`; ob der Wert in einem synchronisierten Inhalt die synchronisierte oder die wahre Stufe meldet, ist von hier nicht entschieden und ausdrücklich so vermerkt.
 
-**Befund 2 — die Zieleignung der Feder war als Zauberfrage gestellt.** `PheonixDownItem.ItemCheck` und `UsePhoenixDown` fragten beide `ObjectHelper.CanBeRaised`, also `CanUseActionOnTarget` gegen den Zauber Wiederbelebung. Die Feder fragt jetzt den Spielclient nach sich selbst: `GetActionStatus(ActionType.Item, 4570, Ziel) == 0`. Das beantwortet Reichweite, Sichtlinie, Wiederbelebbarkeit, Inhaltsverbot und einen bereits laufenden Wiederbelebungsstatus in einer Frage — und deckt damit genau die Spanne ab, nach der der Auftraggeber gefragt hat. `== 0` statt der Liste `BadStatus`, weil eine zielbezogene Ablehnung in dieser Liste nicht vorkommt und sonst als Erlaubnis gelesen würde.
+**Befund 2 — die Zieleignung der Feder war als Zauberfrage gestellt.** `PhoenixDownItem.ItemCheck` und `UsePhoenixDown` fragten beide `ObjectHelper.CanBeRaised`, also `CanUseActionOnTarget` gegen den Zauber Wiederbelebung. Die Feder fragt jetzt den Spielclient nach sich selbst: `GetActionStatus(ActionType.Item, 4570, Ziel) == 0`. Das beantwortet Reichweite, Sichtlinie, Wiederbelebbarkeit, Inhaltsverbot und einen bereits laufenden Wiederbelebungsstatus in einer Frage — und deckt damit genau die Spanne ab, nach der der Auftraggeber gefragt hat. `== 0` statt der Liste `BadStatus`, weil eine zielbezogene Ablehnung in dieser Liste nicht vorkommt und sonst als Erlaubnis gelesen würde.
 
 **Befund 3 — eine wirkungslose Zielüberschreibung.** `UsePhoenixDown` legte `TargetType.Death` um seine Schleife. `BaseItem` liest `DataCenter.DeathTarget` in `CanUse` wie in `Use` unmittelbar und kennt das Überschreibungssystem nicht; die Überschreibung wirkte nichts und täuschte eine Zielwahl vor. Entfernt.
 
@@ -18528,6 +18528,74 @@ habe den schleim bislang nicht anfreunden können."
   Schatz, Campsite, Weg und Masked-Carnivale-Satz darauf. Inhalte unverändert.
 - *8 Nachweis:* Compile (0 Warnungen), Prüfungen; im Spiel nicht gesehen.
 - *9 Dokumentation:* Konzept 03 „Hilfsfenster"; TODO-Punkt geschlossen.
+
+### A634 · Upload vom 06.11.2026 abends: Brett 1, Sägerschrei, gemeldeter Schaden, Kaderfenster auf dem Brett (06.11.2026)
+
+- *Anlass:* Sein Upload (DefenseTrace mit zwei Builds, 0e08c42a0 und 3c5a481da; ACT-Mitschnitt Network_30304_20261106)
+  mit dem Auftrag „analysieren und optimieren im loop. danach prüfen, warum im brett später der wechsel der begleiter
+  angeboten wurde, obwohl das gar nicht geht"; im Lauf seine Fragen zum Trank (A635), zu Vorschlag und Nutzung der
+  Begleiter, sein Vorschlag zur Vorabprüfung der Kämpfe je Inhalt und sein Auftrag, Konzept und Code des Beastmasters
+  im vollen Loop zu prüfen.
+- *Gebiete:* Ktisis Hyperboreia (Weißmagier, 16:37–16:57), Nebeltrift (17:00–17:15), Brett 1 (17:24:37–17:43:07),
+  Coerthas Central Highlands (17:44–17:55), Sägerschrei (18:04–18:13, Beastmaster, Tod 18:12:58).
+- *Kaderfenster auf dem Brett:* `CrucibleTeamScreenOpen` schloss nur das Hornfenster (Modus 2) aus. Auf dem Brett ist
+  derselbe Agent an der Campsite (4), beim Füttern (3 bis 5) und zwischen den Kämpfen (6) aktiv; RSR bot um 17:35:28 und
+  17:38:09 den Kader an, sein Klick scheiterte („The game did not remove Treant"). Das Konzept (K7, „Kader vor dem
+  Brett") meinte das Fenster vor dem Brett; der Code wich ab. Behoben: nicht im Crucible (`DataCenter.IsInCrucible`).
+  Daedalus' `CrucibleRosterLoader` hat dieselbe Lücke (Werkzeugquelle, 74659a6).
+- *Gemeldeter Schaden (A617):* Ein zugefügter Eintrag wurde in jedem Durchlauf neu gemessen, solange das Spiel ihn
+  führte; die längste Wartezeit wuchs um einen Durchlauf je Durchlauf bis auf rund 100 s (8.663 Spurzeilen „longest
+  wait"). Ein nie zugefügter Treffer (in einer Barriere, unter Unverwundbarkeit) hätte so bis zu 100 s als ausstehend
+  gezählt und eine Unverwundbarkeit ohne Not auslösen können. Das Konzept (09, „Wie lange ein Eintrag zählt") ließ den
+  Eintrag mit dem Fall der LP enden; der Code wich ab. Behoben: einmal messen, danach bis zum Verschwinden nicht mehr
+  zählen (`ReportedDamage._landed`).
+- *Brett 1:* Kämpfe 1, 3, 4, 5 (Elite) und Endkampf, kein Tod, Schatz genommen, Rast um 17:37:25 von Hand gesetzt. Der
+  Kader war RSRs Vorschlag (17:24:03); auf den Hörnern lagen Gigantoad dreimal, Spriggan, Morbol, Lamb und Apkallu je
+  zweimal, Treant und Mantis einmal, Dodo nie; Squirrel und Adamantoise hielt RSR für den Endkampf. Gigantoad fiel von
+  550 auf 241 LP, Morbol auf 272. Ursache: `HornPlanScore` reiht die LP an neunter Stelle, nach dem Schaden (Konzept 01
+  K6, Gegenthese 3, war offen). In Kampf 5 rief RSR Morbol zweimal und schickte ihn je eine Sekunde später für Lamb
+  fort. Beides TODO (Defekte).
+- *Sägerschrei:* Allein gegen den Riesen-Tunnelwurm (31.815 LP) verlor er rund 80 LP je Sekunde von 2.785; um 18:12:16
+  schickte der Zyklus die Fledermaus (Dressur heilt) bei 85 % LP fort, es kam Cu Sith; um 18:12:33 trank er selbst
+  einen Ultratrank (HQ, +696 LP bei 1.383); RSR meldete ab 18:12:45 „critical class" bei 9 % Vorhersage, jeder Trank
+  „Schalter aus" (A635); Tod 18:12:58, der Gegner bei 60 %. TODO „Beastmaster allein: der heilende Begleiter geht für
+  den Zyklus".
+- *Offen aus diesem Upload:* die Weißmagier-Sitzungen, die übrigen Zeilenarten („single defence open, nothing chosen"
+  333-mal) und die gelernten Tabellen gegen die vorige Fassung – Teil des laufenden Auftrags.
+- *Prüfgrad:* Spur und Mitschnitt ausgewertet, Code gelesen, Compile, Prüfungen; die beiden Behebungen im Spiel nicht
+  gesehen.
+
+### A635 · Heiltrank: Schalter je Gegenstand für alle Jobs; Konzept vor Code mechanisch gesichert (06.11.2026)
+
+- *Anlass:* Seine Meldung (06.11.2026): „der beastmaster nutzt tränke immer noch nicht. wieder sägerschrei. keine
+  nutzung. sind die tränke überhaupt in der rota des beastmasters verankert? da andere klassen ja funktionieren"; dann
+  „ich habe tränke aktiviert … was erzählst du über schalter tränke aus?" und „du trägst schon wieder ein konzept nach,
+  nachdem du code geschrieben hast?".
+- *1 Research:* Das Messmittel aus A531 nannte für jeden Trank „off: this item is not enabled (per-item switch …)". Die
+  Einstellung „Use HP potions" prüft `DescribeBlock` vorher, sie war an. Der Schalter je Gegenstand liegt je Job
+  (`[JobConfig] _rotationItemConfig`, Generator: `Dictionary<Job, …>`) und ist ab Werk aus (`ItemConfig.IsEnabled`,
+  Upstream 3e9b5b164, 31.01.2024); Aktionen stehen ab Werk an (`ActionConfig`). Der Trankpfad ist zentral
+  (`CustomRotation_Ability` → `UseHpPotion`) und läuft für den Beastmaster; die Spurzeile kommt aus ihm. Die Ursache von
+  A531 ist damit belegt; C159 bleibt richtig (die Einstellung war an).
+- *2–6:* im Konzept 03 („Schalter je Gegenstand"): Optionen A bis E, Abwägung im Kampf, Folgen zweiter Ordnung,
+  drei Gegenthesen. Ergebnis C: ein Ausschluss für alle Jobs (`Configs.ExcludedConsumables`), ab Werk leer, für Heil-
+  und Manatränke und die Phönixfeder; gespeicherte Stellungen je Job liest RSR für diese drei nicht mehr. Tinkturen
+  bleiben je Job (TODO „Tinktur: Schalter je Gegenstand ab Werk aus").
+- *Reihenfolge, sachlich am System:* Der Code entstand vor dem Konzept, gegen die Vorgabe vom 29.10.2026; die Regel
+  stand nur im Text. Danach wurde der Loop im Konzept vollständig geführt und der Code dagegen geprüft; er entsprach C,
+  ergänzt um den Hinweis in der Aktionsliste („This switch holds for every job", erst ins Konzept, dann in den Code).
+  Neu: `concept_first.py`, PreToolUse-Hook auf Edit und Write unter `RotationSolver*/`, weist ab, solange keine Änderung
+  unter `docs/` offen ist (außer im Merge); Selbsttest in der CI. Er sieht nicht, ob die offene Konzeptänderung zu
+  dieser Codeänderung gehört; er fängt den Fall „Code ohne vorher geschriebenes Konzept".
+- *Nebenbei:* Die Datei der Phönixfeder hieß seit Upstream 0b29eaa6c (19.08.2025) `PheonixDownItem.cs`, die Klasse
+  `PhoenixDownItem`; umbenannt (sein Hinweis), Verweise in `fixed_values.json`, `action_names_de.json` und vier
+  Archivstellen berichtigt. Ein Merge Upstreams an dieser Datei läuft über Gits Umbenennungserkennung.
+- *Gefunden, offen:* Der Generator legt für einen Job ohne Eintrag die Vorgabeinstanz des Feldes selbst ab; bei
+  Wörterbüchern teilen alle neu gespielten Jobs einer Sitzung dieselbe (TODO „Jobkonfiguration: Jobs ohne gespeicherten
+  Eintrag teilen eine Liste").
+- *8 Nachweis:* Compile (0 Warnungen), Selbsttest des Hooks; im Spiel nicht gesehen. Am 06.11.2026 hätte die Änderung
+  den Tod nicht verhindert (eigener Trank um 18:12:33, 75 s Wiederverwendung); am 04.11.2026 hätte RSR unter seiner
+  Schwelle getrunken.
 
 ## B · Commit-Register (Fork vs. `upstream/main`)
 

@@ -42,6 +42,9 @@ internal class HpPotionItem : BaseItem
 
 	protected override bool CanUseThis => Service.Config.UseHpPotions;
 
+	/// <inheritdoc/>
+	public override bool SwitchForAllJobs => true;
+
 	/// <summary>
 	/// The potions of special content that regenerate (Rehabilitation) instead of healing at once, each usable only in its
 	/// own content: Sustaining (Palace of the Dead), Eurekan (Eureka), Empyrean (Heaven-on-High), Orthos (Eureka Orthos),
@@ -108,7 +111,7 @@ internal class HpPotionItem : BaseItem
 
 		if (!IsEnabled)
 		{
-			return "off: this item is not enabled (per-item switch, separate from the setting above)";
+			return "off: switched off in the action list (for every job)";
 		}
 
 		if (!HasIt)

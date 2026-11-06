@@ -137,6 +137,12 @@ public partial class MainWindow
 				_activeAction.IsEnabled = isEnabled;
 			}
 
+			// A635: the switch of an HP or MP potion or a Phoenix Down holds for every job (concept 03, "Schalter je Gegenstand").
+			if (_activeAction is BaseItem { SwitchForAllJobs: true })
+			{
+				ImGui.TextDisabled("This switch holds for every job.");
+			}
+
 			const string key = "Action Enable Popup";
 			var cmd = ToCommandStr(OtherCommandType.ToggleActions, _activeAction.ToString()!);
 			ImGuiHelper.DrawHotKeysPopup(key, cmd);

@@ -9,6 +9,9 @@ internal class MpPotionItem : BaseItem
 
 	protected override bool CanUseThis => Service.Config.UseMpPotions;
 
+	/// <inheritdoc/>
+	public override bool SwitchForAllJobs => true;
+
 	public MpPotionItem(Item item) : base(item)
 	{
 		var data = _item.ItemAction.Value!.DataHQ;

@@ -60,6 +60,12 @@ What this release changes in the fight. For the whole distance from upstream, se
 
 ## Healing
 
+- **One switch per potion, for every job.** HP and MP potions and Phoenix Down are switched in the action
+  list for all jobs at once, and none is off by default; `Use HP potions`, `Use MP potions` and `Use
+  Phoenix Down` decide when they go. Before, every job kept its own switch per item, off until switched
+  on by hand, so with `Use HP potions` on a job drank nothing where its potions had not been switched on -
+  a beastmaster alone among them. Switching an item off now takes it out for every job; the earlier
+  per-job switches of these items are no longer read.
 - **The game decides whether a party member is in sight.** Whether a heal, a buff or a raise reaches a
   member behind a pillar is now the game's own answer, the check the hotbar uses to mark an action out of
   range. RSR's own ray, with one eye height for every race and enemy size, decides only where the game

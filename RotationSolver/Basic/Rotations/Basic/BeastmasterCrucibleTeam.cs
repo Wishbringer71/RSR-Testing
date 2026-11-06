@@ -31,14 +31,16 @@ public partial class BeastmasterRotation
 
 	/// <summary>
 	/// Whether the Crucible's team screen is open: the pet-party agent active, not in the horn screen, with a board in
-	/// ContentId (Daedalus 74659a6, CrucibleRosterLoader). <paramref name="board"/> is that XBMContent row.
+	/// ContentId (Daedalus 74659a6, CrucibleRosterLoader), and not on a board - the team is fixed for the run, and there the
+	/// same agent stands at the campsite, while feeding and between fights (his report of 06.11.2026, A634).
+	/// <paramref name="board"/> is that XBMContent row.
 	/// </summary>
 	public static unsafe bool CrucibleTeamScreenOpen(out uint board)
 	{
 		board = 0;
 		var party = AgentXBMPetParty.Instance();
-		if (party == null || !((AgentInterface*)party)->IsAgentActive() || party->Mode == CrucibleBoard.HornScreenMode
-			|| party->ContentId == 0)
+		if (DataCenter.IsInCrucible || party == null || !((AgentInterface*)party)->IsAgentActive()
+			|| party->Mode == CrucibleBoard.HornScreenMode || party->ContentId == 0)
 		{
 			return false;
 		}

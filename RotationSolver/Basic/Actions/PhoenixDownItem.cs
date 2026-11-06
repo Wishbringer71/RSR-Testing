@@ -27,6 +27,9 @@ internal class PhoenixDownItem : BaseItem
 	/// </summary>
 	internal bool RaisePending => CanUseThis && HasIt && DataCenter.DeathTarget is { } target && TargetAcceptsTheFeather(target);
 
+	/// <inheritdoc/>
+	public override bool SwitchForAllJobs => true;
+
 	/// <summary>
 	/// Whether the player is expected to live through the feather's cast: his health is not falling on balance, or the
 	/// self-correcting forecast puts his fall past the cast (<see cref="ObjectHelper.GetCorrectedTTK"/>).

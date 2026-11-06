@@ -19,16 +19,27 @@ auswahl und das timing der beschwörung" – je Kampf aller fünf Bretter (Gegne
 BossMod-Module) die Rotation des Beastmasters, die Wahl der Begleiter und den Zeitpunkt ihres Aufrufs im Loop prüfen
 (Beispiel seiner Beobachtung: der Raptor gegen Feuer, bevor feueranfällige Gegner da waren; A581).
 
-1. Allein ohne Heiler kommt kein Heiltrank: RSR stand 13 s in der kritischen Klasse ohne Heilfähigkeit, kein Trank
-   von RSR trotz eingeschalteter Option, er drückte ihn bei 6 % selbst und starb (Beastmaster, Sägerschrei, 04.11.2026).
-2. Beastmaster: Crucible-Strategien: Ein K.O. beendet den Lauf, und ein Begleiter, den ein späterer Kampf braucht, kommt dort mit den LP an, die ihm
-   die früheren ließen.
-3. Bewegungssperre beim Wirken gegen das Ausweichen der BossMod-KI: Mit „Lock movement while casting" an steht die
+1. Beastmaster allein: der heilende Begleiter geht für den Zyklus: In Sägerschrei schickte RSR die Fledermaus bei 85 %
+   LP für den nächsten Begleiter fort; ein Schadensstrom von rund 3 % je Sekunde tötete ihn 40 s später, der Gegner
+   stand bei 60 % (06.11.2026).
+2. Beastmaster: Hörner im Brett nach Schaden, die LP der Begleiter zählen nie: Fünf Begleiter trugen das Brett, zwei
+   davon bis unter die Hälfte ihrer LP, drei blieben voll (seine Frage, 06.11.2026).
+3. Beastmaster: Konzept und Code im vollen Loop (sein Auftrag, 06.11.2026), mit seinem Vorschlag, die Kämpfe eines
+   Inhalts vorab zu prüfen: Die Belegung vor einem Kampf kennt die Gefahr eines Gebiets erst, wenn sie eingetreten ist.
+4. Heiltrank nach der Gefahr statt nach der festen Schwelle: Allein ohne Heiler kommt der Trank erst unter der
+   eingestellten Schwelle, auch wenn RSR den Fall unter 10 % schon vorhersagt.
+5. Beastmaster: Crucible-Strategien: Ein K.O. beendet den Lauf, und ein Begleiter, den ein späterer Kampf braucht, kommt
+   dort mit den LP an, die ihm die früheren ließen.
+6. Tinktur: Schalter je Gegenstand ab Werk aus: Auf jedem Job, auf dem er die Tinktur nicht von Hand eingeschaltet hat,
+   kommt sie nie, gegen den Text von „Tincture usage".
+7. Jobkonfiguration: Jobs ohne gespeicherten Eintrag teilen eine Liste: Schaltet er auf einem neu gespielten Job eine
+   Aktion aus, ist sie auf jedem anderen in derselben Sitzung neu gespielten Job ebenfalls aus.
+8. Bewegungssperre beim Wirken gegen das Ausweichen der BossMod-KI: Mit „Lock movement while casting" an steht die
    Figur während jedes Zaubers still, auch wenn die KI von BossMod aus einer Fläche laufen will; nur in dieser
    Kombination, dort aber mit einem Treffer, dem der Spieler nicht ausweicht.
-4. Blaumagier: Set nach den Widerständen der Stufe: Im Masked Carnivale wählt der Satz des Stufenführers Füllzauber
+9. Blaumagier: Set nach den Widerständen der Stufe: Im Masked Carnivale wählt der Satz des Stufenführers Füllzauber
    nach Beispielen; gegen welches Element die Gegner der Stufe schwach oder immun sind, zählt dabei nicht.
-5. Konzepte neu ordnen (allgemein, Rollen, Gruppen, Jobs, Inhalte): keine direkte Wirkung im Kampf; eine Regel, die
+10. Konzepte neu ordnen (allgemein, Rollen, Gruppen, Jobs, Inhalte): keine direkte Wirkung im Kampf; eine Regel, die
    im Konzept eines Jobs steht, wird für dessen Gruppe übersehen, und eine Inhaltsregel ist über mehrere Konzepte
    verteilt.
 
@@ -41,21 +52,57 @@ Code-Review; was diese finden, kommt wieder hierher und in dieselbe Reihenfolge,
 
 ## Defekte
 
-- Keine offenen.
+### Beastmaster allein: der heilende Begleiter geht für den Zyklus · N
+Im Kampf: Allein gegen den Riesen-Tunnelwurm in Sägerschrei (06.11.2026, 31.815 LP) verlor er gleichmäßig rund 80 LP
+je Sekunde von 2.785. Um 18:12:16, bei 85 % LP, schickte RSR die Fledermaus – deren Dressur heilt – mit dem Scheidenden
+Schlag fort, weil ein anderes Horn bereit war; es kam Cu Sith. Bis 18:12:58 fiel er auf 0, der Gegner stand bei 60 %.
+Die Gefahr (B2) meldete RSR erst bei 9 % Vorhersage, als die Fledermaus nicht mehr bereit war. Auf Brett 1 rief RSR
+Morbol zweimal und schickte ihn je eine Sekunde später wieder fort (17:32:24/32:53, 17:33:45/33:46). *Ort:*
+`BST_Reborn` Zyklus (`PartingBlowPvE` bei bereitem Ersatz, `keepForDanger` nur unter B2-Gefahr), B2 (`InDanger`).
+*Nächster Schritt:* Loop: Gefahr aus dem Verlauf – Zeit bis zum eigenen Fall gegen die Zeit bis zum Fall des Gegners –
+statt aus der Momentaufnahme; ein Ruf, den B2 im nächsten Augenblick zurücknimmt, unterbleibt. *Konzept:* 01, BST
+(B2, Zyklus R1).
+
+### Beastmaster: Hörner im Brett nach Schaden, die LP der Begleiter zählen nie · N
+Im Kampf: Auf Brett 1 (06.11.2026) trugen Gigantoad (dreimal), Spriggan, Morbol, Lamb und Apkallu die fünf Kämpfe;
+Gigantoad fiel von 550 auf 241 LP, Morbol auf 272, Dodo, Treant und Mantis blieben voll, Dodo kam nie auf ein Horn.
+Ungenutzte LP am Ende des Bretts sind verschenkt, ein abgenutzter Begleiter fehlt, wenn er unersetzlich wird. *Ort:*
+`BST_Reborn` `HornPlanScore` (LP an neunter Stelle, nach dem Schaden), `SetHornsOnHornScreen`, `HeldForFinal`.
+*Nächster Schritt:* Loop K6 mit K11: die Last über den Kader verteilen – Schaden je Begleiter gegen seine LP und den
+Bedarf der noch erreichbaren Kämpfe. *Konzept:* 01, K6 („Gegenthese 3"), K11.
+
+### Tinktur: Schalter je Gegenstand ab Werk aus · N, U
+Im Kampf: „Tincture usage" sagt „the tincture goes in each burst window where it is ready and in your inventory"; auf
+jedem Job, auf dem er die Tinktur nicht in der Aktionsliste eingeschaltet hat, kommt sie nie. *Ort:* `ItemConfig.IsEnabled`
+(ab Werk aus), `BaseItem.CanUse`, `MedicineItem`. *Nächster Schritt:* Loop wie A635, aber je Job (die Einstellung gilt je
+Job, die Tinktur hängt am Hauptwert): Schalter als Ausschluss, ab Werk an; wie mit gespeicherten Stellungen umgehen, die
+seine Wahl sein können (Tinkturen kosten). *Konzept:* 03, „Schalter je Gegenstand".
+
+### Jobkonfiguration: Jobs ohne gespeicherten Eintrag teilen eine Liste · N, U
+Im Kampf: Schaltet er auf einem Job, den er noch nie gespielt hat, eine Aktion oder einen Gegenstand aus, gilt das in
+derselben Sitzung für jeden anderen neu gespielten Job ebenso und wird für beide gespeichert. *Ort:*
+`JobConfigGenerator`: Der Getter legt für einen Job ohne Eintrag die Vorgabeinstanz des Feldes selbst ab
+(`dict[Job] = _rotationActionConfig`), bei Wörterbüchern dieselbe für alle. *Nächster Schritt:* Loop: je Job eine eigene
+Instanz (Kopie der Vorgabe); Wirkung auf gespeicherte Konfigurationen. *Konzept:* 03, „Schalter je Gegenstand".
 
 ## Offene Arbeit
 
-### Allein ohne Heiler kommt kein Heiltrank · N, U
-Im Kampf: Beastmaster allein gegen Myrmidonen-Prinzessin und Gefolge (Sägerschrei, 04.11.2026); seine LP fielen in 75 s
-von 93 % auf 6 %, ab 18:28:18 meldete RSR „critical class … no heal ability", den Ultratrank drückte er bei 135 von 2.415
-LP selbst, er starb 2 s später. „Use HP potions" ist bei ihm an (seine Angabe, 05.11.2026), und RSR trank den Ultratrank
-am 23.10. und 03.11. selbst, stets unter 40 %; an allen Beastmaster-Sitzungen vom 04.11. kein einziges Mal, auch nicht
-in den Webfenstern 18:28:02–15 bei 36 bis 25 % LP. *Ort:* `CustomRotation_Ability.Ability` vor `UseHpPotion`,
-`HpPotionItem.CanUse`, `BaseItem.CanUse`; welche Bedingung hielt, zeigt der Upload nicht. *Nächster Schritt:* Die Zeile
-„critical class" für den Spieler nennt je Trank im Inventar die erste Sperre (Schalter, Schwelle,
-Fehl-LP, Spielstatus) und den Tinktur-Vorrang; mit dem nächsten Upload die Ursache belegen, dann Loop: der Trank
-nach der Gefahr statt nach der festen Schwelle, für alle Jobs. *Konzept:* 03 („Eine Wiederverwendung für alle
-Arzneien"), 07.
+### Beastmaster: Konzept und Code im vollen Loop · N
+Sein Auftrag (06.11.2026): „vollständiger loop über konzept beastmaster und jeglichen code, der den beastmaster
+berührt. optimieren, dynamisieren, verbessern". Dazu sein Vorschlag vom selben Abend: für jeden Dungeon und Raid, in dem
+der Beastmaster noch Begleiter bekommen kann, die möglichen Kämpfe vorab prüfen, damit die Belegung nicht falsch
+vorgewählt wird. Im Kampf heute: B5 kennt die Gefahr eines Gebiets erst nach ihrem Eintreten und den nächsten Kampf erst
+mit seinen Gegnern in der Objektliste. *Ort:* Konzept 01 BST ganz; `BST_Reborn`, `BeastmasterRotation*`, `CrucibleBoard`,
+`CrucibleRoute`, `BeastmasterCrucible*`, die Crucible-Fenster. *Nächster Schritt:* nach den beiden Beastmaster-Defekten
+oben; Erhebung je Regel (fester Wert, Momentaufnahme statt Verlauf, Doppelung), Loop je Fund. *Konzept:* 01, BST.
+
+### Heiltrank nach der Gefahr statt nach der festen Schwelle · N
+Im Kampf: Allein ohne Heiler geht der Trank erst unter „Use HP potions below this HP", auch wenn RSR den Fall schon
+vorhersagt (Sägerschrei, 06.11.2026: „critical class … 9 % forecast" bei 34 % LP).
+*Ort:* `CustomRotation_Items.UseHpPotion`,
+`HpPotionItem.CanUse`, `CanUseEmergency`. *Nächster Schritt:* Loop: die Notfallabzweigung (heute nur gegen einen
+Tankbuster) auf die vorhergesagte kritische Klasse ausdehnen, für alle Jobs; der Text der Schwelle bindet. *Konzept:* 03
+(„Eine Wiederverwendung für alle Arzneien"), 07.
 
 ### Beastmaster: Crucible-Strategien · N
 Im Kampf: Fällst du im Brett, ist der Lauf verloren, und RSR plant die Begleiter nicht über das Brett: Ein Heiler, der im vierten Kampf gebraucht wird, kann bis dahin auf 25 von 550
