@@ -17873,6 +17873,37 @@ habe den schleim bislang nicht anfreunden können."
 - *8 Nachweis:* statisch, Compile (`cloud_build.sh`, ohne Warnung), Prüfskripte; im Spiel nicht beobachtet.
 - *9 Dokumentation:* Konzept 03 („Regenerationstränke der Sonderinhalte"), TODO-Punkt entfernt, Release-Text.
 
+### A614 · Tiefe Gewölbe: die Angriffe der Verwandlung (06.11.2026)
+
+- *Anlass:* TODO „Tiefe Gewölbe: Verwandlung" (aus A612, BossMod `DeepDungeon.cs`, BossmodReborn 27be422).
+- *1 Research:* Verwandelt (Status Transfiguration 565 bzw. 4708; elf Zeilen dieses Namens im Blatt) hat der Spieler nur
+  die Aktionen der Form. Blatt `Transformation`: Zeile 42 Pummel (6273), 43 Void Fire II (6274), 49 Heavenly Judge
+  (6871); für 54, 55, 244 keine Aktion. BossMod (Werkzeugquelle): Dreadnaught Rotosmash (32781), Bomb Big Burst
+  (44629), Mudball Rocky Roll (44628); dazu im Aktionsblatt Wrecking Ball (32782, Fläche 5 y, 2,5 s, „increasing damage
+  taken"). Rocky Roll: „Quickly dash 25 yalms forward, dealing damage to targets in your path". RSR: Die Aktionen
+  erzeugt der Generator in `DutyRotation`; kein Code nutzte sie. Als Pflichtaktionen verlangt `IsOnSlot` einen Platz in
+  `DataCenter.DutyActions` – dort stehen sie nie. Orbonne löst dieselbe Lage mit einer frühen Freigabe in `BasicCheck`
+  über `ActionManagerStatusValid`. 52 Gebiete mit Nutzungsart 31 (xivapi 06.11.2026).
+- *2 Optionen:* (0) belassen; (1) Pflichtrotation mit Formliste je Status; (2) Pflichtrotation, die alle Formaktionen
+  probiert, und das Spiel lässt die der Form zu; (3) zentral in jeder Rotation. Rückbau: der Commit.
+- *3 Abwägung:* (2). Stärken: keine Formliste, die für drei Formen ohne Blattbeleg wäre; das Spiel entscheidet. Schwäche:
+  die Freigabe ohne Stufen- und Slotprüfung – begrenzt auf Aktionen mit dem neuen Schalter. (3) braucht die Aktionen,
+  die nur `DutyRotation` trägt.
+- *5 Review:* Rocky Roll bewegt den Spieler; selbsttätig widerspräche er seiner Spielweise (Bewegung für Schaden), also
+  nur auf „Move forward", mit Bewegungstyp und Weite aus dem Blatt (`check_movement_types.py` grün). Flächenformen
+  greifen auch Einzelgegner an (`skipAoeCheck`), der Dreadnaught nimmt die Fläche nur ab der Gegnerzahl.
+- *6 Falsifikation:* Kein Defekt? Widerlegt: kein Aufrufer. Option falsch? Eine Formfläche zieht wie jede Fläche; die
+  Einstellung gegen das Ziehen gilt. Ausgeliefert, nichts ändert sich? Hielt zuerst (`IsOnSlot`), behoben mit
+  `ActionSetting.IsTransformationAction`; ob das Spiel die Formaktion frei meldet, ist nicht beobachtet – Messmittel:
+  die Zeile „transformed in a deep dungeon: the game allows …" im `DefenseTrace.log`.
+- *7 Gebaut:* `ActionSetting.IsTransformationAction`, früher Weg in `ActionBasicInfo.BasicCheck`;
+  `DeepDungeonRotation` (52 Gebiete, Modify der sieben Aktionen); `DeepDungeonDefault` (`EmergencyGCD`,
+  `MoveForwardGCD`, Spurzeile). Ausnahmen für die Gebietslisten (Identitäten). Konzept 12: Zeilenangabe 663 → 670
+  (Inhalt geprüft, unverändert).
+- *8 Nachweis:* statisch, Compile (ohne Warnung), Prüfskripte; im Spiel nicht beobachtet.
+- *9 Dokumentation:* Konzept 03 („Tiefe Gewölbe: Verwandlung"), TODO-Punkt entfernt, Release-Text.
+- *Betroffene:* Endnutzer in Tiefen Gewölben; Autoren abgeleiteter Rotationen über den neuen öffentlichen Schalter.
+
 ## B · Commit-Register (Fork vs. `upstream/main`)
 
 ### B1 · Einzelgeprüfte Fork-Commits

@@ -1053,6 +1053,42 @@ hat ein Ziel und bleibt Kandidat; daran ändert sich nichts.
 und meist zaubert nur einer. Dann ändert sich nichts; es ändert sich, sobald mehrere zaubern oder einer außer Reichweite
 vorn steht – in Rudeln mit mehreren Magiern, in der offenen Welt und in Kreszentia mit vielen Gegnern im Umkreis.
 
+## Tiefe Gewölbe: Verwandlung
+
+*Was gilt (A614):* Verwandelt ein Gegenstand des Gewölbes dich, drückt RSR die Angriffe der Form, die das Spiel gerade
+zulässt – für jeden Job gleich, in allen 52 Gebieten der Tiefen Gewölbe (Blatt `TerritoryType`, Nutzungsart 31, xivapi
+06.11.2026; Pflichtrotation „Deep Dungeon", `DeepDungeonRotation`). Welche Form du hast, fragt RSR nicht ab: Es probiert
+die bekannten Formaktionen, und das Spiel lässt nur die der laufenden Form zu (`ActionManagerStatusValid`).
+- Die Formen und ihre Aktionen: Manticore Pummel, Succubus Void Fire II, Kuribu Heavenly Judge (Blatt `Transformation`,
+  Zeilen 42, 43, 49); Dreadnaught Wrecking Ball und Rotosmash, Bomb Big Burst (BossMod `DeepDungeon.cs`, Werkzeugquelle;
+  das Blatt führt für diese Formen keine Aktion). Reichweite, Wirkzeit, Fläche und Bodenziel kommen aus dem Aktionsblatt
+  wie bei jeder Aktion.
+- Beim Dreadnaught geht Wrecking Ball (Fläche, 2,5 s) ab der Gegnerzahl für Flächen, sonst Rotosmash. Die Formen mit
+  nur einer Fläche (Succubus, Kuribu, Bomb) greifen auch einen einzelnen Gegner damit an.
+- *Rocky Roll* (Mudball, ein Sprint 25 y nach vorn, Schaden auf dem Weg) geht nur auf den Befehl „Move forward"
+  (`MoveForwardGCD`), wie jeder schadende Sprint aus der Ferne: Selbsttätig holte er dich für Schaden aus deiner
+  Stellung, im Gewölbe womöglich auf eine Falle (seine Spielweise: „Nichts empfehlen, was ihn für Schaden aus einer
+  sicheren Position holt"). Er trägt den Bewegungstyp eines festen Sprints wie En Avant, die Weite aus dem
+  Aktionsblatt; mit „Check movement actions with BossModReborn (Experimental)" wird sein Landepunkt geprüft.
+- *Spur:* Mit jeder Verwandlung eine Zeile ins `DefenseTrace.log` – welche Formaktionen das Spiel zulässt –, damit ein
+  Upload zeigt, ob die Kette greift.
+
+*Im Kampf:* Im Palast der Toten als Manticore schlägt RSR Pummel auf das Ziel, statt bis zum Ende der Verwandlung
+nichts zu tun; in Eureka Orthos als Dreadnaught gegen drei Gegner Wrecking Ball.
+
+*Begründung:* Verwandelt sind die Aktionen des Jobs gesperrt. RSR prüfte sie weiter, keine ging, und die Formaktionen
+kannte es nur als Pflichtaktionen, die auf der Pflichtleiste stehen müssen (`IsOnSlot`) – dort stehen sie nie. Das
+Muster, die Leiste nicht zu prüfen und dem Spiel zu folgen, nutzt RSR schon für die Sonderaktionen in Orbonne.
+
+*Verworfen:* (a) Die Form am Status ablesen und je Form eine Liste führen: Für drei Formen nennt das Blatt keine Aktion,
+und das Spiel weiß ohnehin, welche gilt. (b) Rocky Roll selbsttätig auf das Ziel: Bewegung für Schaden (oben).
+
+*Gegenthese 1 – Eine Formfläche zieht Gegner, die noch nicht kämpfen:* wie jede Fläche; „Don't pull new enemies with
+AoE" gilt auch hier.
+*Gegenthese 2 (ausgeliefert, und nichts ändert sich):* „Use duty actions" ist aus, oder das Spiel meldet die Aktion trotz
+Verwandlung nicht frei. Ab Werk ist es an; ob das Spiel sie frei meldet, ist nicht beobachtet – die Spur zeigt es.
+*Gegenthese 3 – Andere Pflichtrotationen für dieselben Gebiete:* keine (Stand 06.11.2026).
+
 ## Bewegungssperre beim Wirken und die KI von BossMod
 
 **Geltender Stand:** Mit „Lock movement while casting" („Stops your character from moving while casting, and while using

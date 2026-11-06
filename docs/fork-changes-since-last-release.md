@@ -248,6 +248,12 @@ What this release changes in the fight. For the whole distance from upstream, se
   runs, next to an ordinary potion rather than instead of it: an ordinary one first, the regeneration in
   the next window. Before, Heaven-on-High and Eureka Orthos had none, and in the Palace of the Dead and
   Pilgrim's Traverse any ordinary potion in the bag won over it, so it was hardly ever drunk.
+- **Transformed in a deep dungeon, RSR attacks with the form.** As Manticore, Succubus, Kuribu,
+  Dreadnaught or Bomb your job's actions are locked, and RSR used to do nothing until the form ended.
+  It now uses the form's attack the game allows - Pummel, Void Fire II, Heavenly Judge, Wrecking Ball
+  where enough enemies stand or Rotosmash, Big Burst - through the duty rotation "Deep Dungeon"
+  (`Use duty actions`). Rocky Roll, the Mudball's 25-yalm dash, goes only on a move-forward command.
+  Each transformation writes a line to `DefenseTrace.log` naming the attacks the game allowed.
 
 ## Occult Crescent
 

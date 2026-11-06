@@ -429,6 +429,13 @@ public readonly struct ActionBasicInfo
 			return true;
 		}
 
+		// Concept 03, "Tiefe Gewölbe: Verwandlung" (A614): the attack of a form stands on no duty slot and carries no level
+		// or unlock of the job, so the checks below would refuse it; the game says whether the player's form has it now.
+		if (_action.Setting.IsTransformationAction)
+		{
+			return IsActionCheckValid() && ActionManagerStatusValid() && !NeedsCasting(skipCastingCheck);
+		}
+
 		if (!EnoughLevel)
 		{
 			return false;
