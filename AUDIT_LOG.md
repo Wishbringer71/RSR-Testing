@@ -17435,6 +17435,28 @@ habe den schleim bislang nicht anfreunden können."
   Ausgeliefert, nichts ändert sich? Nichts ausgeliefert.
 - *Prüfgrad:* statisch (RSR, BossmodReborn 27be422). Nichts gebaut.
 
+### A596 · Weißmagier nach Daedalus, zweiter Durchgang: nichts zu bauen (06.11.2026)
+
+- *Anlass:* die in A594 offenen Weißmagier-Regeln (ofnature/Daedalus c4a788f).
+- *Assize:* Daedalus setzt es zusätzlich als Heilung, wenn genug Mitglieder verletzt sind (feste Zahl und Schwelle); das
+  unterscheidet sich nur, wo Daedalus es für den Burst zurückhält. `WHM_Reborn` setzt es auf Abklingzeit (The Balance,
+  Konzept 14), die Heilung fällt dabei an. Dass die Minderungs- und Heilbilanz sie nicht kennt, steht in Konzept 08
+  („Die Lücke").
+- *Benediction in zwei Stufen:* Daedalus hebt die Notfallschwelle bei 500 und 800 Schaden je Sekunde an (feste Werte) und
+  heilt „proaktiv" bei hohem Eingang. RSR prüft die vorausberechnete Gesundheit (`GetForecastHealthRatio(true)`), in die
+  der gemessene Eingang schon eingeht – dieselbe Frage ohne feste Zahlen.
+- *Zurückhaltung als Co-Heiler:* übernommen von RSR („RSR GCDHeal parity"). Die Anrechnung laufender Heilungen eines
+  anderen Heilers vor dem eigenen Start ist nicht übernommen: Bricht dessen Zauber ab, kommt die eigene Heilung zu spät;
+  RSR bricht stattdessen ab, wenn fremde Heilung während des eigenen Zaubers landet (A545) – Sicherheit vor Ersparnis.
+- *Vorausheilung auf Schadensspitzen:* Zeitleiste und Spitze im Verlauf hat RSR (Konzept 08, „Heilung vor dem
+  angekündigten Treffer"). Die Mustervorhersage je Mitglied (`DamageTrendService.PredictNextSpike`) in seinen Mitschnitten
+  gemessen (Skript im Notizordner, nicht im Repository: ACT-Zeilen 20, 21/22, Treffer ab 20 % der maximalen LP auf
+  Mitglieder, kein Wirkbalken derselben Quelle in 15 s, Reihen ab drei Treffern mit Abständen 3–60 s innerhalb 15 %):
+  4.212 Treffer, 9 periodische Reihen – 5 Auto-Angriffe (3–4 s), eine unregelmäßig, 4 × Eissturm (29,6 s), der doch einen
+  Wirkbalken hat (8 Casts im selben Mitschnitt, andere Figur oder Aktions-Id). Nichts, was RSR nicht schon sieht. Die
+  Zählung „ohne Wirkbalken" ist eine Obergrenze, weil Helfer nicht zugeordnet sind.
+- *Prüfgrad:* statisch und Mitschnitt. Konzept 08 fortgeschrieben. Nichts gebaut.
+
 ## B · Commit-Register (Fork vs. `upstream/main`)
 
 ### B1 · Einzelgeprüfte Fork-Commits

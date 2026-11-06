@@ -585,7 +585,13 @@ und die Plan-Rechnung der Tanks (Konzept 09). Erhoben: Jede der acht Rotationen 
 hängt allein an der Vorhersage. Die proaktive Ebene vor dem Cast lässt sich aus der Messung nicht bauen, weil ihr der
 Zeitpunkt fehlt. **Grenze:** Ein Treffer ohne Wirkbalken und ohne Modul ist vorher nicht zu sehen; dort bleibt nur die
 Heilung danach. Einen Kampfverlauf zu lernen (Zeit vom Beginn oder von einem Cast bis zum Treffer) wäre ein eigenes
-Vorhaben, nicht beauftragt.
+Vorhaben, nicht beauftragt. Die einfachere Form, die Daedalus baut – je Mitglied aus den Abständen früherer Spitzen die
+nächste vorhersagen (`DamageTrendService.PredictNextSpike`, ab drei Spitzen) –, fände in seinen Mitschnitten nichts, was
+RSR nicht schon sieht (A596): Von 4.212 Treffern ab 20 % der maximalen LP auf Mitglieder (25.10. bis 05.11.2026) kehren
+nur 9 Reihen ohne Wirkbalken derselben Quelle in festem Abstand wieder; 5 davon sind Auto-Angriffe im Takt von 3 bis 4 s,
+die der gemessene Schadenseingang in der vorausberechneten Gesundheit schon trägt, eine ist unregelmäßig, und die 4
+übrigen (Eissturm, 29,6 s) haben doch einen Wirkbalken, den eine andere Figur oder eine andere Aktions-Id zaubert. Nicht
+gebaut.
 
 ### BMR sagt wann, nicht wie hart — und daran wird die Abklingzeit verschenkt
 
