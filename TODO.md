@@ -23,18 +23,16 @@ BossMod-Module) die Rotation des Beastmasters, die Wahl der Begleiter und den Ze
    von RSR trotz eingeschalteter Option, er drückte ihn bei 6 % selbst und starb (Beastmaster, Sägerschrei, 04.11.2026).
 2. Beastmaster: Crucible-Strategien: Ein K.O. beendet den Lauf, und ein Begleiter, den ein späterer Kampf braucht, kommt dort mit den LP an, die ihm
    die früheren ließen.
-3. Tiefe Gewölbe: kein Gewölbe-Trank in Himmelssäule und Eureka Orthos: Allein trinkt RSR dort nur gewöhnliche
-   Tränke, nicht die des Gewölbes.
-4. Tiefe Gewölbe: Verwandlung: Verwandelt, hat der Spieler andere Aktionen, und RSR drückt keine.
-5. Bewegungssperre beim Wirken gegen das Ausweichen der BossMod-KI: Mit „Lock movement while casting" an steht die
+3. Tiefe Gewölbe: Verwandlung: Verwandelt, hat der Spieler andere Aktionen, und RSR drückt keine.
+4. Bewegungssperre beim Wirken gegen das Ausweichen der BossMod-KI: Mit „Lock movement while casting" an steht die
    Figur während jedes Zaubers still, auch wenn die KI von BossMod aus einer Fläche laufen will; nur in dieser
    Kombination, dort aber mit einem Treffer, dem der Spieler nicht ausweicht.
-6. Fremde Repositories auf Verbesserungen für RSR prüfen: Jeder Fund kann ein Defekt im Verhalten einer Klasse sein,
+5. Fremde Repositories auf Verbesserungen für RSR prüfen: Jeder Fund kann ein Defekt im Verhalten einer Klasse sein,
    den RSR heute im Kampf zeigt; zuerst die Rotationswerkzeuge für alle Jobs, Daedalus vorn (aktiv, alle Jobs,
    eigene Kampfvorhersage), dann Beastmaster und Blaumagier (sein Auftrag vom 05.11.2026).
-7. Blaumagier: Satz je Carnivale-Stufe: Im Masked Carnivale schlägt RSR keinen Satz für die Stufe vor, deren Mechanik
+6. Blaumagier: Satz je Carnivale-Stufe: Im Masked Carnivale schlägt RSR keinen Satz für die Stufe vor, deren Mechanik
    bestimmte Zauber verlangt.
-8. Konzepte neu ordnen (allgemein, Rollen, Gruppen, Jobs, Inhalte): keine direkte Wirkung im Kampf; eine Regel, die
+7. Konzepte neu ordnen (allgemein, Rollen, Gruppen, Jobs, Inhalte): keine direkte Wirkung im Kampf; eine Regel, die
    im Konzept eines Jobs steht, wird für dessen Gruppe übersehen, und eine Inhaltsregel ist über mehrere Konzepte
    verteilt.
 
@@ -71,15 +69,6 @@ Zeit, Bestien-Heiltranksammlung, Schutz, Seren, Bestien-Heilmittelsammlung, Resi
 Bestien-Ausdauermittel, Schadensgegenstände, Stärkungsmittel im Endkampf; A555).
 *Gebaut auch:* K6 (A562, Hörner im Hornfenster), K7 (A563, Kader auf Wunsch im Teamfenster), K10 Campsite (A564, wer mitruht), K10 Laden (A569, A570: Kaufliste im Ladenfenster, Kauf auf Wunsch), K12 (A572, Eier des Zu), K13 (A578, Schatz: Empfehlung im Schatzfenster, Wahl auf Wunsch), Bretter 2 bis 5 (A588: Tötungsregeln, Gegenangriff nach Angriffsart), K5 Stufe 1 (A589: Stopp nur gegen Anfällige), K11 Stufe 2 (A590: Zähnefletschen und Campsite nach Bedarf des Endkampfs). *Nächster Schritt:* K5 Stufe 2 (Slow, Blind, Paralysis, Sleep, Death als Schutz, sobald eine Bezifferung belegt ist); die Bretter 2 bis 5 am ersten Mitschnitt prüfen (Spurzeilen „kill rule", „left alone"); K10 Weg ist eine Frage des Umfangs an ihn, am Ende des TODO. *Konzept:* 01,
 „Crucible of the Unbroken: Bretter, Kämpfe, Strategien".
-
-### Tiefe Gewölbe: kein Gewölbe-Trank in Himmelssäule und Eureka Orthos · N
-Im Kampf: Allein in der Himmelssäule oder in Eureka Orthos trinkt RSR bei niedrigen LP nur gewöhnliche Tränke; den Trank
-des Gewölbes, den BossMod dort nimmt (`DeepDungeon.cs`: Empyrean Potion, Gegenstand 23163, bzw. Orthos Potion, 38944),
-lässt es liegen. Im Palast der Toten und im Pilgerpfad nimmt RSR den eigenen (Sustaining bzw. Pilgrim's Potion).
-*Ort:* `CustomRotation_Items` (`GetHpPotions`, die Zweige je Gewölbe), `DataCenter.IsIn*`. *Nächster Schritt:* Loop –
-Gegenstände, Wirkung, Abklinggruppe und Erholungsstatus je Gewölbe aus den Blättern; die Zweige je Gewölbe zu einer
-Regel „Trank des laufenden Inhalts" zusammenfassen (universell zuerst). *Konzept:* 03 („Eine Wiederverwendung für alle
-Arzneien").
 
 ### Tiefe Gewölbe: Verwandlung · N
 Im Kampf: Verwandelt ein Gewölbe-Gegenstand den Spieler (Status Transfiguration 565 bzw. 4708; BossMod kennt Manticore,

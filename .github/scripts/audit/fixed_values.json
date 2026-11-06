@@ -155,16 +155,28 @@
    "reason": "Structural count measured to the decision: the running GCD plus one cast, and every healer's healing GCD casts within one GCD (Cure 1.5 s, Cure II 2.0 s, Benefic II 1.5 s, Adloquium 2.0 s, Diagnosis 1.5 s against 2.5 s recast, xivapi 24.10.2026); scaled by the player's real GCD (A340)."
   },
   {
-   "file": "RotationSolver/Basic/Rotations/CustomRotation_Items.cs",
-   "code": "if ((DataCenter.IsHostileCastingTankBusterAtMe || DataCenter.BMRTankbusterReachesPlayer) && a.ID != 47102 && a.ID != 22306 && a.ID != 20309 && a.CanUseEmergency(out _))",
+   "file": "RotationSolver/Basic/Actions/HpPotionItem.cs",
+   "code": "private static readonly uint[] ContentRegenerationIds = [20309, 22306, 23163, 38944, 47102];",
    "values": [
-    "47102",
+    "20309",
     "22306",
-    "20309"
+    "23163",
+    "38944",
+    "47102"
    ],
    "status": "exception",
-   "loop": "A340",
-   "reason": "Item identities (Pilgrim's Potion 47102, Eurekan Potion 22306, Sustaining Potion 20309, xivapi 24.10.2026), the content potions upstream's list excludes from ordinary use in the same file; identities, not tunables (A340)."
+   "loop": "A613",
+   "reason": "Item identities of the content potions that regenerate (Sustaining, Eurekan, Empyrean, Orthos, Pilgrim's Potion): exactly the items whose item action is action 8667 in cooldown group 60 (xivapi, 06.11.2026); identities, not tunables, kept in one place instead of the three per-content ids before (A340, A613)."
+  },
+  {
+   "file": "RotationSolver/Basic/Rotations/CustomRotation_Items.cs",
+   "code": "if ((isMedicineCategory && i.FilterGroup == 8) || HpPotionItem.IsContentRegenerationId(i.RowId))",
+   "values": [
+    "8"
+   ],
+   "status": "exception",
+   "loop": "A613",
+   "reason": "Upstream's Item sheet filter group of the ordinary HP potions, as the neighbouring lines read 6 for medicines and 9 for MP potions; a sheet category, not a figure of the game. The line changed only in its second half (A613)."
   },
   {
    "file": "RotationSolver/Basic/Rotations/CustomRotation_OtherInfo.cs",

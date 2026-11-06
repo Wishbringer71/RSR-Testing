@@ -1,4 +1,5 @@
-﻿using Lumina.Excel.Sheets;
+﻿using ECommons.DalamudServices;
+using Lumina.Excel.Sheets;
 
 namespace RotationSolver.Basic.Rotations;
 
@@ -36,7 +37,7 @@ public partial class CustomRotation
 					mpPotions.Add(new MpPotionItem(i));
 				}
 
-				if ((isMedicineCategory && i.FilterGroup == 8) || i.RowId is 22306 or 47102 or 20309)
+				if ((isMedicineCategory && i.FilterGroup == 8) || HpPotionItem.IsContentRegenerationId(i.RowId))
 				{
 					hpPotions.Add(new HpPotionItem(i));
 				}
@@ -256,9 +257,8 @@ public partial class CustomRotation
 			// Ultra-Potion 690 - and the last three all restore 25 % in HQ (20 % in NQ), so they tie
 			// wherever the percentage binds. Not relying on the list running strongest-first either: that order
 			// is a property of GetHpPotions and would silently invert this rule if it ever changed.
-			// The content-specific branches below deliberately keep ">=", so the potion meant for
-			// that duty wins a tie against an ordinary one.
-			if (a.ID != 47102 && a.ID != 22306 && a.ID != 20309 && a.CanUse(out _, true))
+			// The content potions that regenerate are no rival here; they follow below (A613).
+			if (!a.IsContentRegeneration && a.CanUse(out _, true))
 			{
 				if (best == null || a.MaxHp > best.MaxHp || (a.MaxHp == best.MaxHp && a.ItemLevel < best.ItemLevel))
 				{
@@ -273,39 +273,12 @@ public partial class CustomRotation
 			// just tanks, can be caught under-margin. CanUseEmergency drops the HP% gate but keeps the same
 			// missing-HP guard against wasting the potion via overheal. The BMR half used to ask only whether a
 			// tankbuster comes, so a healer at 60 % drank for one on the tank (A284).
-			if ((DataCenter.IsHostileCastingTankBusterAtMe || DataCenter.BMRTankbusterReachesPlayer) && a.ID != 47102 && a.ID != 22306 && a.ID != 20309 && a.CanUseEmergency(out _))
+			if ((DataCenter.IsHostileCastingTankBusterAtMe || DataCenter.BMRTankbusterReachesPlayer) && !a.IsContentRegeneration && a.CanUseEmergency(out _))
 			{
 				if (best == null || a.MaxHp > best.MaxHp || (a.MaxHp == best.MaxHp && a.ItemLevel < best.ItemLevel))
 				{
 					best = a;
 					bestIsEmergency = !a.CanUse(out _, true);
-					bestIsOrdinary = false;
-				}
-			}
-
-			if ((DataCenter.IsInPilgrimsTraverse || DataCenter.IsInTheFinalVerse) && a.ID == 47102 && a.CanUse(out _, true) && !StatusHelper.PlayerHasStatus(false, StatusID.Rehabilitation_4191))
-			{
-				if (best == null || a.MaxHp >= best.MaxHp)
-				{
-					best = a;
-					bestIsOrdinary = false;
-				}
-			}
-
-			if (DataCenter.IsInEurekaFieldOp && a.ID == 22306 && !StatusHelper.PlayerHasStatus(false, StatusID.Rehabilitation_648) && a.CanUse(out _, true))
-			{
-				if (best == null || a.MaxHp >= best.MaxHp)
-				{
-					best = a;
-					bestIsOrdinary = false;
-				}
-			}
-
-			if (DataCenter.IsInPalaceOfTheDead && a.ID == 20309 && !StatusHelper.PlayerHasStatus(false, StatusID.Rehabilitation_648) && a.CanUse(out _, true))
-			{
-				if (best == null || a.MaxHp >= best.MaxHp)
-				{
-					best = a;
 					bestIsOrdinary = false;
 				}
 			}
@@ -326,6 +299,22 @@ public partial class CustomRotation
 			best = null;
 		}
 
+		// Concept 03, "Regenerationstränke der Sonderinhalte" (A613): a content potion that regenerates shares no recast with
+		// the others, so it is its own decision under the same threshold, after an ordinary potion chosen now, and only
+		// while no Rehabilitation runs. The game refuses it outside its content, which CanUse asks.
+		if (best == null && !PlayerRegenerates())
+		{
+			foreach (var a in HpPotions)
+			{
+				if (a.IsContentRegeneration && a.CanUse(out _, true))
+				{
+					best = a;
+					bestIsEmergency = false;
+					break;
+				}
+			}
+		}
+
 		act = best;
 		if (best != null)
 		{
@@ -333,6 +322,49 @@ public partial class CustomRotation
 		}
 
 		return act != null;
+	}
+
+	private static HashSet<uint>? _rehabilitationIds;
+
+	/// <summary>
+	/// Whether a Rehabilitation runs on the player - the regeneration of a content potion, any of the status rows of that
+	/// name, read from the English sheet so the client language does not matter (A613).
+	/// </summary>
+	private static bool PlayerRegenerates()
+	{
+		if (_rehabilitationIds == null)
+		{
+			var ids = new HashSet<uint>();
+			var sheet = Svc.Data.GetExcelSheet<Lumina.Excel.Sheets.Status>(Dalamud.Game.ClientLanguage.English);
+			if (sheet != null)
+			{
+				foreach (var row in sheet)
+				{
+					if (row.Name.ExtractText() == "Rehabilitation")
+					{
+						_ = ids.Add(row.RowId);
+					}
+				}
+			}
+
+			_rehabilitationIds = ids;
+		}
+
+		var statuses = ECommons.GameHelpers.Player.Object?.StatusList;
+		if (statuses == null)
+		{
+			return false;
+		}
+
+		foreach (var status in statuses)
+		{
+			if (status != null && _rehabilitationIds.Contains(status.StatusId))
+			{
+				return true;
+			}
+		}
+
+		return false;
 	}
 
 	/// <summary>

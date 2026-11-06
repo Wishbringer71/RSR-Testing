@@ -17841,6 +17841,38 @@ habe den schleim bislang nicht anfreunden können."
 - *Betroffene:* Endnutzer (alle Jobs mit Unterbrechung, Betäubung, Provozieren, Schlaf-Stopp); abgeleitete Rotationen
   über `InterruptTarget`/`ProvokeTarget` (gleiche Bedeutung: erster bereiter Kandidat) und `TargetType.Interrupt`/`Provoke`.
 
+### A613 · Regenerationstränke der Sonderinhalte: eine eigene Entscheidung, in allen vier Gewölben (06.11.2026)
+
+- *Anlass:* TODO „Tiefe Gewölbe: kein Gewölbe-Trank in Himmelssäule und Eureka Orthos" (aus A612, BossMod
+  `DeepDungeon.cs`, BossmodReborn 27be422).
+- *1 Research:* Spielblätter (xivapi 06.11.2026): Sustaining (20309), Empyrean (23163), Orthos (38944), Pilgrim's Potion
+  (47102) legen Rehabilitation für 30 s, Eurekan Potion (22306) für 40 s; jeder nur in seinem Inhalt („Only available
+  for use in …"); alle fünf über ItemAction mit Aktion 8667, Abklinggruppe 60, und kein anderer Gegenstand. Die
+  ItemAction-Daten tragen keine Prozent und Obergrenze (Pilgrim's Potion 11854, 0), `HpPotionItem.MaxHp` ergab 0. Das
+  Blatt Status führt elf Zeilen „Rehabilitation". RSR: `GetHpPotions` nahm nur drei der fünf; die Zweige je Gebiet
+  (Pilgerpfad, Eureka, Palast der Toten) wählten den Sondertrank nur mit `MaxHp >= best.MaxHp`, also nie neben einem
+  gewöhnlichen; Himmelssäule und Eureka Orthos fehlten. Die Kreszentia-Tränke (Occult Potion 47741, Occult Elixir 47743)
+  laufen über Phantom-Aktionen (`PhantomRotation`), nicht hier. BossMod: Regenerationstrank im Kampf unter 60 % (Tanks
+  40 %) ohne Rehabilitation 648, daneben der stärkste gewöhnliche unter 30 % (Werkzeugquelle).
+- *2 Optionen:* (0) belassen; (1) zwei Zweige für die fehlenden Gewölbe nachtragen; (2) die Menge der Regeneration schätzen
+  und im Vergleich lassen; (3) eine eigene Entscheidung unter derselben Schwelle; (4) wie (3) mit eigener Schwelle wie
+  BossMod. Rückbau: der Commit.
+- *3 Abwägung:* (3). Stärken: in allen fünf Inhalten, ohne Gebietsprüfung (das Spiel lehnt außerhalb ab), neben dem
+  gewöhnlichen statt gegen ihn – beide teilen keine Wiederverwendung. Schwächen: Die Regeneration kommt über 30 s; gegen
+  einen Absturz geht der gewöhnliche zuerst. (1) ließe den Vergleichsfehler stehen; (2) wägt, was nicht abzuwägen ist;
+  (4) bringt eine Zahl ohne Herleitung.
+- *5 Review:* Feder- und Tinkturhalt nullen nur einen gewöhnlichen Trank; danach geht der Regenerationstrank, weil er keine
+  der beiden Wiederverwendungen teilt. Gegen einen Tankbuster zählt er nicht. Rehabilitation erkannt am englischen
+  Statusnamen (alle Zeilen), nicht an 648/4191, deren Zuordnung zu den Tränken nicht belegt ist.
+- *6 Falsifikation:* Kein Defekt? Widerlegt: `MaxHp` 0 und fehlende Gewölbe. Option falsch? Läuft eine Rehabilitation aus
+  einer anderen Quelle, wartet der Trank; keine bekannte Jobaktion legt einen Status dieses Namens. Ausgeliefert, nichts
+  ändert sich? „Use HP potions" ist ab Werk aus; bei ihm an (05.11.2026).
+- *7 Gebaut:* `HpPotionItem.ContentRegenerationIds`, `IsContentRegeneration`; `GetHpPotions` liest sie; `UseHpPotion`
+  ohne die drei Gebietszweige, mit der eigenen Entscheidung danach (`PlayerRegenerates`). Ausnahme A340 durch zwei
+  Einträge ersetzt (Id-Liste, Filtergruppe 8 in der geänderten Zeile).
+- *8 Nachweis:* statisch, Compile (`cloud_build.sh`, ohne Warnung), Prüfskripte; im Spiel nicht beobachtet.
+- *9 Dokumentation:* Konzept 03 („Regenerationstränke der Sonderinhalte"), TODO-Punkt entfernt, Release-Text.
+
 ## B · Commit-Register (Fork vs. `upstream/main`)
 
 ### B1 · Einzelgeprüfte Fork-Commits

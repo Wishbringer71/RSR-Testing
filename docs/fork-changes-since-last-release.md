@@ -240,6 +240,15 @@ What this release changes in the fight. For the whole distance from upstream, se
   (each MP then buys at least as much as a Malefic or a Dosis), on a target that outlives it, and not
   while `Use GCD heals when there's nothing else to do` would heal.
 
+## Deep dungeons and Eureka
+
+- **The regeneration potion of each deep dungeon and of Eureka is used.** Sustaining, Empyrean, Orthos,
+  Pilgrim's and Eurekan Potion grant Rehabilitation and share no recast with ordinary potions. RSR now
+  drinks the one of the content you are in below `Use HP potions below this HP` while no Rehabilitation
+  runs, next to an ordinary potion rather than instead of it: an ordinary one first, the regeneration in
+  the next window. Before, Heaven-on-High and Eureka Orthos had none, and in the Palace of the Dead and
+  Pilgrim's Traverse any ordinary potion in the bag won over it, so it was hardly ever drunk.
+
 ## Occult Crescent
 
 - **Phantom heals heal ahead of incoming damage.** Occult Potion, Occult Elixir, Occult Chakra,

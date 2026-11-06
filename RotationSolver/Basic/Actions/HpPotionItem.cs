@@ -42,8 +42,30 @@ internal class HpPotionItem : BaseItem
 
 	protected override bool CanUseThis => Service.Config.UseHpPotions;
 
+	/// <summary>
+	/// The potions of special content that regenerate (Rehabilitation) instead of healing at once, each usable only in its
+	/// own content: Sustaining (Palace of the Dead), Eurekan (Eureka), Empyrean (Heaven-on-High), Orthos (Eureka Orthos),
+	/// Pilgrim's (Pilgrim's Traverse) - the items with the action 8667 in cooldown group 60 (xivapi, 06.11.2026; concept
+	/// 03, "Regenerationstränke der Sonderinhalte", A613).
+	/// </summary>
+	private static readonly uint[] ContentRegenerationIds = [20309, 22306, 23163, 38944, 47102];
+
+	/// <summary>Whether the item is one of <see cref="ContentRegenerationIds"/>.</summary>
+	internal static bool IsContentRegenerationId(uint id)
+	{
+		return Array.IndexOf(ContentRegenerationIds, id) >= 0;
+	}
+
+	/// <summary>
+	/// Whether this potion regenerates instead of healing at once (<see cref="ContentRegenerationIds"/>). Its item action
+	/// states no percentage and cap, so <see cref="MaxHp"/> is 0, and it does not share the recast of the others: it is
+	/// its own decision, not a rival of an ordinary potion (A613).
+	/// </summary>
+	public bool IsContentRegeneration { get; }
+
 	public HpPotionItem(Item item) : base(item)
 	{
+		IsContentRegeneration = IsContentRegenerationId(item.RowId);
 		var data = _item.ItemAction.Value!.DataHQ;
 		_percent = data[0] / 100f;
 		_maxHp = data[1];
