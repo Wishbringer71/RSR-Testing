@@ -105,11 +105,10 @@ vielleicht; jeder Fund wird am Spiel belegt, bevor er ein Defekt oder eine Verbe
 Sein Auftrag vom 05.11.2026 dazu: „alle bekannten repos zu rotationen, zu beastmaster, zu bluemage analysiere, inwieweit
 erkenntisse daraus in rsr eingebracht werden können und die vorhandenen konzepte ergänzen und verbessern könnten".
 *Ort:* Grundstruktur (`RotationSolver/Basic`, Updaters, Zielwahl, Abwehr), die Rotationen unter `RebornRotations`, die
-Jobkonzepte. *Nächster Schritt:* die Rotationswerkzeuge sind ausgewertet (Daedalus A561, A570 bis A575,
-A591 bis A607; die übrigen A608); offen sind die Beastmaster-Repositories (vollständige Suche), die Blaumagier-
-Repositories (Suche) und danach die übrigen Gruppen der Liste; Beastmaster-Suche: A609, Blaumagier-Suche: A611.
-Kampfvorhersage: interjection ist eine Anzeige (A334); BossMods Rollen-KI ist ausgewertet (A612 bis A618); offen dort
-die Jobmodule (`xan`, `akechi`, `veyn`). Je Fund ein Loop, je Repository ein Archiveintrag mit Commit und Datum. *Konzept:* 15, erweitert vom Vergleich mit WrathCombo auf die übrigen Werkzeuge; je Fund dazu das
+Jobkonzepte. *Nächster Schritt:* ausgewertet sind die Rotationswerkzeuge (Daedalus A561, A570 bis A575,
+A591 bis A607; die übrigen A608), die Beastmaster-Suche (A609), die Blaumagier-Suche (A611) und die Kampfvorhersage
+(interjection ist eine Anzeige, A334; BossMod: Rollen-KI A612 bis A618, Jobmodule A619). Offen sind die Auswertung von
+Kämpfen, die Spiel-API und die Automatisierung, in dieser Reihenfolge. Je Fund ein Loop, je Repository ein Archiveintrag mit Commit und Datum. *Konzept:* 15, erweitert vom Vergleich mit WrathCombo auf die übrigen Werkzeuge; je Fund dazu das
 tragende (01 Jobs, 08 Minderung, 13 Flächenschaden und Tankbuster).
 
 

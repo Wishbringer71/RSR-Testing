@@ -18016,6 +18016,30 @@ habe den schleim bislang nicht anfreunden können."
   mehreren Sekunden mitten in Mechaniken – eigener Loop.
 - *Offen:* die Jobmodule (`xan`, `akechi`, `veyn`).
 
+### A619 · BossMods Jobmodule (xan, akechi, veyn) gegen RSR (06.11.2026)
+
+- *Anlass:* TODO „Fremde Repositories", BossmodReborn 27be422 (05.11.2026, Werkzeugquelle), `Autorotation/Standard`:
+  `xan` (alle Kampfjobs, Beastmaster, Blaumagier, `Basexan`, `AI/Phantom.cs`), `akechi` (BLM, DRG, DRK, GNB, MCH, PLD, SCH,
+  PvP), `veyn` (BRD, WAR); gelesen über ihre Begründungskommentare und die Stellen dazu.
+- *Ohne Änderung, mit Grund:*
+  - `xan/Melee/BST.cs` ist nur die Kombo (41 Zeilen); RSRs Beastmaster reicht weit darüber (Konzept 01).
+  - `Basexan`: Aktionen auf sterbende Ziele (`useOnDyingTarget`) – RSR misst die Zeit bis zum Fall (A591); Raid-Buffs
+    ohne Mitspieler, die welche haben, werden nicht erwartet – RSR hält nur, wo es nichts kostet (Aufgabe „Halten für
+    einen Buff").
+  - `AI/Phantom.cs` (Kreszentia): Starfall nur bei LP und Barriere über 90 % – RSRs Regel ist mindestens so vorsichtig
+    (über 90 %, Tank über 120 %, sonst mit Unverwundbarkeit, `PhantomDefault`); Rauch, Quickstep, Defend, Magic Shell,
+    Blazing Spellblade, Occult Libra, Occult Dispel, Revive, Occult Raise führt RSR. Die Listen `UndesirableStatus`
+    (darunter 4539 Invincibility des Guardian Knight) und `SlowableMobs` haben in BossMod keinen Leser; ob 4539 bannbar
+    ist, belegt keiner der beiden Werkzeuge (RSRs `PhantomDispellable` vermerkt es als offen), das Status-Blatt sagt
+    nichts darüber.
+  - Gelehrter: Art of War von Stufe 46 bis 53 auch auf ein Ziel (`xan/Healers/SCH.cs`) – RSR rechnet die Stufen mit den
+    Merkmalen ebenso (`SCH_Reborn.GeneralGCD`). Die Potenzen im Action-Blatt sind die der Stufe 100 (Ruin II 220,
+    Art of War 165) und taugen für tiefere Stufen nicht.
+  - Dunkelritter: Blut vor Delirium nicht überlaufen lassen – RSR seit A197 (höchstens 70 Blut, The Balance).
+  - `akechi/AkechiTools`: das Ziel mit Wildfire zuerst – nur PvP (`WildfirePlayerPvP`), außerhalb seines Profils.
+  - Die übrigen Kommentare betreffen Schadensreihenfolgen (Burst-Ausrichtung, Überlauf von Ladungen und Leisten), die
+    Daedalus' Durchgang schon gegen RSR gestellt hat (A594 bis A607), ohne neuen Befund.
+
 ## B · Commit-Register (Fork vs. `upstream/main`)
 
 ### B1 · Einzelgeprüfte Fork-Commits
