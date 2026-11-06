@@ -79,8 +79,26 @@ internal static class CancelCastUpdater
 			if (uiState != null)
 			{
 				uiState->Hotbar.CancelCast();
+				TraceCancel(player, stopForDeadTarget ? "target dead" : hasNoCastingStatus ? "no-casting status resolves"
+					: castMeetsPenalty ? "a status that damages every action lands" : tarHasRaise ? "target already raised"
+					: raiseLandsFirstElsewhere ? "another raise lands first" : tarHasGuard ? "target under Guard"
+					: bmrForceCancelCast ? "BossMod asks to cancel (mechanic or its AI)" : "heal no longer needed");
 			}
 		}
+	}
+
+	private static (uint Action, DateTime At) _cancelTraced = (0, DateTime.MinValue);
+
+	// One line per cast RSR cancels, with the reason, so an upload tells RSR's cancels from BossMod's and the game's (A629).
+	private static void TraceCancel(IBattleChara player, string reason)
+	{
+		if (_cancelTraced.Action == player.CastActionId && (DateTime.Now - _cancelTraced.At).TotalSeconds < player.TotalCastTime)
+		{
+			return;
+		}
+
+		_cancelTraced = (player.CastActionId, DateTime.Now);
+		DefenseTrace.Line($"cast cancelled by RSR: #{player.CastActionId} after {player.CurrentCastTime:F1} of {player.TotalCastTime:F1} s - {reason}");
 	}
 
 	/// <summary>

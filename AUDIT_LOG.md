@@ -18367,6 +18367,34 @@ habe den schleim bislang nicht anfreunden können."
   seinen Druck nicht, solange „Also pass your press to the game" an ist; den Abbruch machen BossMods KI, BossMods
   Wurfabbruch oder RSRs Spiegel davon möglich.
 
+### A629 · Limit Break von Hand: nicht abfangen; jeder Wurfabbruch durch RSR mit Spurzeile (06.11.2026)
+
+- *Anlass:* Seine Meldung (06.11.2026): Teraflare des Beschwörers auf Shinryu Unreal, letzte Phase, auf Shinryus Rücken,
+  Shinryu mittig im Ziel, um ihn und die Flügel zu treffen – „ich starte lb3, er stoppt, ich starte, er stoppt. wie ein
+  stottern"; seine Fragen: ob die Limit-Break-Sperre das verursacht, ob BossModReborn dagegen wirkt. Einordnung: Hinweis auf
+  einen Defekt, als solcher ins TODO.
+- *1 Research:* Wirkkette am Code (A628): `ActionQueueManager.ShouldInterceptAction` nahm Limit Breaks nicht aus; der Druck
+  wurde als Befehl eingereiht, `ActionBasicInfo` (Sperre 54fba5714) ließ ihn nie zu; mit „Also pass your press to the game"
+  (ab Werk an) lief der Druck trotzdem ins Spiel, sonst wurde er verschluckt. Ein Abbruch kommt daher nicht von der Sperre.
+  Teraflare (Action 4246): 4,5 s Wirkzeit, Bodenziel, 15 y. BossMod (27be422): `AIController` bewegt während eines Wurfs,
+  wenn der Spielraum kürzer ist als Restwirkzeit − 0,5 s, und hält danach Würfe; `CancelCastTweak` bricht bei verbotenem
+  Ziel oder Mechanik-Abbruch ab; da03be9 (09.10.2026) behob eine Wurf/Abbruch-Schleife mit externen Plugins. Das Modul
+  `Un2Shinryu` verbietet nur Reiryu während Dragonflight. RSRs `CancelCastUpdater` spiegelt BossMods Mechanik-Abbruch
+  (Upstream f72a0a93e) – dieselbe Entscheidung wie BossMods eigener Abbruch.
+- *2 Optionen:* (0) belassen; (1) Limit Breaks nicht abfangen; (2) abfangen und die Sperre für Befehle öffnen; (3) RSRs
+  Spiegel entfernen; (4) eine Spurzeile je eigenem Abbruch.
+- *3 Abwägung:* (1) lässt seinen Druck und sein Ziel unangetastet; (2) ließe RSR ein eigenes Ziel wählen – nicht der Punkt
+  zwischen Shinryu und seinen Flügeln. (3) ändert am Ausgang nichts, BossMod bricht selbst ab, und es ist Upstreams Code.
+  (4) trennt RSRs Abbrüche von BossMods.
+- *6 Falsifikation:* Kein Defekt? Mit „Also pass your press to the game" aus ging sein Limit Break gar nicht. Option falsch?
+  Liegt das Stottern an BossMods KI, ändert (1) daran nichts – deshalb (4) und der Eintrag unter „Warten auf Daten".
+  Ausgeliefert, nichts ändert sich? Dann zeigt das Fehlen der Spurzeile, dass BossMod oder das Spiel abbrach.
+- *7 Gebaut:* `ShouldInterceptAction` nimmt `ActionCate.LimitBreak`/`LimitBreak_15` aus; `CancelCastUpdater.TraceCancel`
+  („cast cancelled by RSR: #… after … of … s - <Grund>", einmal je Wurf). *8 Nachweis:* Compile, Prüfungen; im Spiel nicht
+  beobachtet.
+- *9 Dokumentation:* Konzept 03 („Limit Break allein", „Von Hand gedrückt"), Release-Text. TODO: Defekt geschlossen, der
+  Abbrecher unter „Warten auf Daten".
+
 ## B · Commit-Register (Fork vs. `upstream/main`)
 
 ### B1 · Einzelgeprüfte Fork-Commits

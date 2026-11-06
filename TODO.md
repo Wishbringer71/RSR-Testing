@@ -42,20 +42,7 @@ Code-Review; was diese finden, kommt wieder hierher und in dieselbe Reihenfolge,
 
 ## Defekte
 
-### Limit Break von Hand bricht ab: Beschwörer, Shinryu Unreal, letzte Phase · N, U
-Im Kampf (seine Meldung, 06.11.2026): Auf Shinryus Rücken, Shinryu mittig im Ziel, um ihn und seine Flügel mit Teraflare
-(LB3, 4,5 s Wirkzeit, 15 y um den Zielpunkt) zu treffen, startet der Wurf und bricht ab, wieder und wieder – „wie ein
-Stottern". Wirkkette am Code: Die Limit-Break-Sperre von Upstream (`ActionBasicInfo`, 54fba5714) hält nur RSRs eigene Wahl
-auf. Seinen Druck fängt RSR ab (`ActionQueueManager`: Limit Breaks sind nicht ausgenommen) und reiht ihn als Befehl ein,
-den die Sperre nie ausführt; mit „Also pass your press to the game" (ab Werk an) erreicht der Druck das Spiel trotzdem,
-ohne diese Option würde er ganz verschluckt. Den Abbruch selbst machen drei Wege möglich: BossMods KI läuft los, wenn ihr
-Ausweichen nicht bis zum Ende des Wurfs warten kann (`AIController`: Spielraum kürzer als Restwirkzeit − 0,5 s), BossMod
-bricht ab bei verbotenem Ziel oder einem Mechanik-Abbruch (`CancelCastTweak`), und RSR spiegelt diesen Mechanik-Abbruch
-selbst (`CancelCastUpdater`, „Use BossMod timeline"). BossMod behob am 09.10.2026 eine Wurf/Abbruch-Schleife mit externen
-Plugins (da03be9). *Ort:* `ActionQueueManager.ShouldInterceptAction`, `CancelCastUpdater`. *Nächster Schritt:* Loop –
-Limit Breaks von Hand unverändert ans Spiel durchreichen (sein Ziel bleibt), eine Spurzeile, wenn RSR einen Wurf abbricht,
-mit Grund, und Dalamud-Log oder ACT-Mitschnitt des Abends (Abbruchzeile 23, „[AI] Movement will interrupt cast") für den
-Abbrecher. *Konzept:* 03 („Limit Break allein").
+- Keine offenen.
 
 ## Offene Arbeit
 
@@ -196,6 +183,13 @@ Reborn"); beides kostet im Spiel, solange nicht beide Installationen gebraucht w
 nebeneinander braucht: neuer interner Name mit Übernahme des Ordners, angezeigter Name bleibt.
 
 ## Warten auf Daten oder Fremde
+
+- **Teraflare bricht auf Shinryu Unreal ab: welcher Abbrecher** (seine Meldung, 06.11.2026; A629). Im Kampf: In der
+  letzten Phase startet sein LB3 und bricht wieder ab, mehrfach. RSR fängt Limit Breaks seit A629 nicht mehr ab und
+  schreibt jeden eigenen Abbruch mit Grund. Offen ist, ob BossMods KI ausweicht (Spielraum kürzer als die Restwirkzeit von
+  4,5 s) oder BossMod abbricht. Auflösung: `DefenseTrace.log` und Dalamud-Log eines solchen Versuchs („cast cancelled by
+  RSR" gegen „[AI] Movement will interrupt cast" oder „[CancelCast]"); liegt es an BossMod, Meldung dort. Konzept 03,
+  „Limit Break allein".
 
 - **Tiefe Gewölbe: welcher Weihrauch auf welchem Platz in Pilgers Pfad** (A626). Im Kampf: Allein in Pilgers Pfad setzt
   RSR Barkbalm vor dem Bosskampf und Poisonfruit in der Gefahr nur, wenn es den Platz lesen kann; das Blatt nennt dort

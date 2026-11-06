@@ -231,6 +231,13 @@ namespace RotationSolver.Updaters
 				return false;
 			}
 
+			// A Limit Break the player presses is his: queued, RSR would never run it (upstream's block in the basic check)
+			// and would pick its own target, not the spot he chose (concept 03, "Limit Break allein", A629).
+			if (type is ActionCate.LimitBreak or ActionCate.LimitBreak_15)
+			{
+				return false;
+			}
+
 			if (!Service.Config.InterceptSpell3 && type == ActionCate.Spell)
 			{
 				return false;

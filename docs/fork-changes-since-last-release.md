@@ -13,6 +13,11 @@ What this release changes in the fight. For the whole distance from upstream, se
   of the duty. The lock is measured on your first use; until then an upper bound per level from logged
   Limit Breaks counts. Tanks and healers are not covered yet. With another player in the party nothing
   changes; a Limit Break you press yourself is untouched by this rule.
+- **A Limit Break you press is no longer intercepted.** RSR used to queue it like any other press and
+  then never ran it; with `Also pass your press to the game` off it was lost. It now goes to the game
+  as you pressed it, on the target you chose. Each cast RSR itself cancels writes a line to
+  `DefenseTrace.log` with the reason, so a cast that keeps breaking off shows whether RSR or BossMod
+  stopped it.
 
 ## When the pack is about to fall
 
