@@ -17478,6 +17478,22 @@ habe den schleim bislang nicht anfreunden können."
   ändert sich? Wo die Gruppe ohnehin beisammensteht, also in den meisten Raidwide-Lagen.
 - *Prüfgrad:* statisch, Compile ohne Warnung. Im Spiel nicht beobachtet.
 
+### A598 · Astrologe nach Daedalus: nichts zu bauen (06.11.2026)
+
+- *Anlass:* TODO „Fremde Repositories", Astrologe (ofnature/Daedalus c4a788f, `AstraeaCore`).
+- *Deckt sich:* Die Regen-Fassungen von Helios und Benefic nicht über ihren laufenden HoT (`StatusProvide`
+  HeliosConjunction, AspectedHelios; `TargetStatusProvide` AspectedBenefic); Essential Dignity nach Ladungen gestaffelt
+  (`EssentialDignityThird/Second/Last`), und GCD-Heilungen weichen, wenn sie dasselbe Ziel nimmt (`AST_Reborn`,
+  `shouldUseEssentialDignity`); Lady of Crowns vor dem nächsten Ziehen (`AstralDrawPvE.Cooldown.WillHaveOneCharge(3)`) und
+  unter der Gruppenschwelle; Earthly Star mit Restzeit-Sperre, seit A591 bis zum letzten Gegner; Verhängnis (A573);
+  Zurückhaltung als Co-Heiler (Herkunft RSR); Wiederbelebung wie A594, A595.
+- *Geprüft, nicht geändert:* Flächenheilung schon bei zwei Verletzten in einer Vierergruppe (Daedalus: „never require 3
+  injured in 4-man content"). RSR öffnet sie ab drei unter der Einzelschwelle oder über Mittel und Streuung
+  (`StateUpdater`, Upstream 2023). Bei zwei Verletzten bringt eine Flächenheilung je GCD dieselbe Heilung auf die
+  Verletzten wie eine Einzelheilung (Helios 400 je Ziel gegen Benefic II 800 auf eines, Aktionsblatt 3600 und 3610), die Einzelheilung aber
+  tiefer auf den Schwächeren; Notfälle laufen über die kritische Klasse. Kein Gewinn, der eine Änderung trägt.
+- *Prüfgrad:* statisch. Nichts gebaut.
+
 ## B · Commit-Register (Fork vs. `upstream/main`)
 
 ### B1 · Einzelgeprüfte Fork-Commits
