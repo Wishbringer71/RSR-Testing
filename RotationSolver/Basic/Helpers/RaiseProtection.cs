@@ -1,5 +1,6 @@
 using ECommons.GameHelpers;
 using Action = Lumina.Excel.Sheets.Action;
+using RotationSolver.Basic.Configuration;
 
 namespace RotationSolver.Basic.Helpers;
 
@@ -97,6 +98,49 @@ internal static class RaiseProtection
 			{
 				return new("a BossModReborn tankbuster", tankbuster);
 			}
+		}
+
+		return null;
+	}
+
+	/// <summary>
+	/// The first announced hit within <paramref name="remaining"/> seconds the player could only avoid by moving: a stack or hit
+	/// series marker on him, or an enemy cast whose shape reaches him, that is not aimed at him and is no listed area cast. A
+	/// raidwide or a cast at him is no such hit - no step avoids it. Null when none (concept 03, "Limit Break allein", A630).
+	/// </summary>
+	/// <remarks>The area list does not tell a raidwide from an area one can leave (concept 13); a listed one counts as unavoidable.</remarks>
+	internal static AnnouncedHitOnPlayer? FirstDodgeableWithin(float remaining)
+	{
+		if (DataCenter.IsAreaVfxReachingPlayer())
+		{
+			return new("a stack or hit series marker on you", 0f);
+		}
+
+		var player = Player.Object;
+		var hostiles = DataCenter.AllHostileTargets;
+		if (player == null || hostiles == null)
+		{
+			return null;
+		}
+
+		for (var i = 0; i < hostiles.Count; i++)
+		{
+			var h = hostiles[i];
+			if (h == null || !h.IsValid() || !h.IsCasting || h.CastTargetObjectId == player.GameObjectId
+				|| OtherConfiguration.HostileCastingArea.Contains(h.CastActionId) || !DataCenter.CastReachesPlayer(h))
+			{
+				continue;
+			}
+
+			var left = Math.Max(0f, h.TotalCastTime - h.CurrentCastTime);
+			if (left > remaining)
+			{
+				continue;
+			}
+
+			var action = Service.GetSheet<Action>().GetRowOrDefault(h.CastActionId);
+			var name = action.HasValue ? action.Value.Name.ExtractText() : string.Empty;
+			return new($"{name} #{h.CastActionId} from {h.Name.TextValue}", left);
 		}
 
 		return null;

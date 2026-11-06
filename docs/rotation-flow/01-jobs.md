@@ -2102,6 +2102,9 @@ Dullahan, Golem, Spriggan und Eisgolem (`XBMPet.InflictsInterrupt`).
     LP nicht mit denen des Agenten überein, wählt RSR nichts. Beim Öffnen springt die Auswahl kurz auf den ganzen Kader
     (Daedalus, im Spielbetrieb); RSR handelt erst, wenn sie einen GCD lang steht. Ändert er sie danach von Hand, bleibt
     sie für dieses Lager. Einstellung „Pick who rests with you at a Crucible campsite (Crucible only)", ab Werk an.
+    *Sein Vorschlag (06.11.2026):* „beim letzten rasten vor dem endgegnern im brett wäre eine empfehlung hilfreich,
+    welche beiden begleiter man zum heilen auswählen sollte" – offen im TODO „Crucible: Endkampf vorbereiten – Campsite
+    und Futter".
     *Beispiel:* Du bei 75 %, Fledermaus 20 %, Fliegenfalle 40 %, Schleim 90 %, Lager für zwei: Mit zweien bekommst du
     30 % (voll) und die beiden ersten je 30 %, zusammen 60 % für die Begleiter; mit einer nur 45 %. RSR wählt Fledermaus
     und Fliegenfalle. Du bei 40 %: Schon mit einem kämst du nur auf 85 % statt voll – du ruhst allein.
@@ -2169,7 +2172,10 @@ Dullahan, Golem, Spriggan und Eisgolem (`XBMPet.InflictsInterrupt`).
        „anti-paralysis mandatory"); die Blätter geben für jedes Brett mindestens diese.
     5. Heiltränke, der stärkste zuerst, bei Gleichstand der billigere.
     6. Schutzgegenstände: Minderung nach ihrem Anteil, Abwehr physischer, Reflexion magischer Angriffe.
-    Nie: Futter (die Rast beendet es, Campsite oben); Ausrüstung, die dir selbst einen Zustand zufügt (Thunder Axe:
+    Nie: Futter (die Rast beendet es, Campsite oben; meine Ableitung – sein Vorschlag vom 06.11.2026 dagegen: „beim
+    händler für essen im brett sollte nahrung für die begleiter gegen endgegner brett empfohlen werden, welche nahrung
+    für welchen begleiter. also drei stück", offen im TODO „Crucible: Endkampf vorbereiten – Campsite und Futter");
+    Ausrüstung, die dir selbst einen Zustand zufügt (Thunder Axe:
     Betäubung, Demonic Helm: Verhängnis, Flame Knife: Chains of Condemnation, Wind Mask: Keen Edge, Schaden über Zeit auf
     dir) – wie K8 nie einen Gegenstand nimmt, der dir einen Zustand zufügt. Ausrüstung, die nichts davon hebt, fällt
     heraus (Empress Hairpin senkt die maximalen LP). Schaden empfiehlt die Liste nicht; was du dazu kaufst, nutzt K8.

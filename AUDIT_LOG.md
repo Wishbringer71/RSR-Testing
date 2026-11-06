@@ -18395,6 +18395,52 @@ habe den schleim bislang nicht anfreunden können."
 - *9 Dokumentation:* Konzept 03 („Limit Break allein", „Von Hand gedrückt"), Release-Text. TODO: Defekt geschlossen, der
   Abbrecher unter „Warten auf Daten".
 
+### A630 · Limit Break allein für Tank und Heiler; BossMods Wurfzeitgrenze über die ganze Sperre (06.11.2026)
+
+- *Anlass:* TODO „Limit Break allein: Tank und Heiler" (A628: ohne andere Spieler blieb die Leiste als Tank oder Heiler
+  voll stehen). Auftrag „weiter in todo, voller kritischer loop".
+- *1 Research:* Action-Blatt (xivapi v2, 06.11.2026): Shield Wall 197, Stronghold 198, Last Bastion 199, Land Waker 4240,
+  Dark Force 4241, Gunmetal Soul 17105 ohne Wirkzeit, Reichweite 50; Wirktexte 20 % / 10 s, 40 % / 15 s, 80 % / 12 s, die
+  Job-Texte der Stufe 3 leer. Healing Wind 206, Breath of the Earth 207, Pulse of Life 208, Angel Feathers 4247, Astral
+  Stasis 4248, Techne Makre 24859: 2 s Wirkzeit, Reichweite 50; 25 / 60 / 100 % und „including ones KO'd". consolegameswiki
+  (Limit Break, Stronghold, Last Bastion, Gunmetal Soul, Shield Wall, 06.11.2026): Tank 20 % 10 s, 40 % 12 s, 80 % 8 s,
+  Sperre 1,93 / 3,86 / 3,86 s; Heiler Sperre 2,1 / 5,1 / 8,1 s nach 2 s Wirkzeit; Stufe 3 aller Jobs einer Rolle
+  „functionally identical"; Stufe 3 der Heiler belebt ohne Schwäche mit vollen LP und MP. Blatt und Wiki widersprechen sich
+  in der Dauer (15/12 gegen 12/8 s) – RSR misst. Aktion und Status tragen in de, en, fr, ja denselben Namen (xivapi,
+  Status 194, 195, 196, 863, 864, 1931). BossmodReborn 27be422: Auto-LB nur für Nah- und Fernkampf mit laufendem Modul
+  (`Melee.cs`, `Ranged.cs`), Tank und Heiler nur als geplante Strategie (`GenericUtility.LBOption`); `AIHints.MaxCastTime`
+  „maximal time we can spend casting before we need to move", aus `NormalMovement` (Spielraum bis zum Gehen). RSR:
+  Flächen- und Einzelabwehr-Flaggen (`StateUpdater.ShouldAddDefenseArea/Single`), `TankPullOnPlayer`,
+  `UnhealedUnderAttack`, `EmergencyHealAheadOfGcd`, kritische Klasse (`HealthForDyingTanks` auf die Vorhersage).
+- *Nebenbefund (Klasse):* A628 hielt BossMods Wurfzeitgrenze nur gegen die Wirkzeit; in der Sperre bis 8 s danach kann der
+  Spieler ebenso wenig gehen. Jetzt gegen Wirkzeit plus Sperre, für alle Rollen.
+- *2 Optionen:* (0) belassen; (1) Tank und Heiler sofort bei voller Leiste; (2) Tank auf die Rufe der Abwehr (Gruppen-
+  treffer, Treffer auf ihn, Zugregel, kein Heiler), Heiler bei mehr als einem Mitglied in der kritischen Klasse und auf
+  Stufe 3 bei Toten; (3) nur Stufe 3; (4) in jeder Jobrotation einzeln. Rückbau: die Option.
+- *3 Abwägung:* (1) mindert ohne Treffer und heilt ohne Verletzte, die Sperre kostet trotzdem. (3) gibt es in Leichtgruppen
+  (zwei Balken) nie, also im Duty Support kaum. (4) widerspricht „Universell zuerst". (2) setzt die Leiste genau dort ein,
+  wo die Abwehr ohnehin fragt und die Füllung sonst verloren ginge; Preis die Sperre (Tank bis 4 s, Heiler bis 10 s).
+- *4 Abgleich:* Der TODO-Eintrag nannte Raidwide, kritische Klasse und Stufe 3 mit Toten; die Treffer auf den Tank selbst
+  (Tankbuster, Zugregel) folgen aus derselben Wirkung – das Limit Break mindert ihn mit. Keine stille Verengung.
+- *5 Review:* Ein Heiler-Limit-Break wirkt 2 s; ein sofortiger Notfallheiler geht vor (`Ability(…, emergencyHealOnly)`).
+  Tank in der kritischen Klasse: Unverwundbarkeit vor der Sperre. Ein Raidwide ist für Tank und Heiler der Grund, kein
+  Hindernis; gesperrt wird nur ein Treffer, dem man ausweicht (`RaiseProtection.FirstDodgeableWithin`). Die Flächenliste
+  trennt Raidwide und ausweichbare Fläche nicht (technische Schuld) – mit Modul fängt `MaxCastTime` es ab, ohne Modul Preis.
+  Ein Treffer weiter weg als der Status steht: Dauer gemessen, sonst Wirktext, sonst die kürzeste der Stufen des Jobs.
+- *6 Falsifikation:* Kein Defekt? Eine volle Leiste verliert jede Füllung, während angekündigte Treffer ungemindert landen
+  und Mitglieder sterben – Sicherheit bleibt liegen. Option falsch? Heiler-Stufe 1 heilt vielleicht nicht mehr als die
+  Heilzauber derselben 4 s; ausgelöst wird aber nur in Gefahr, wo zählt, dass alle zugleich geheilt werden, und die Leiste
+  füllt sich wieder. Ausgeliefert, nichts ändert sich? Nur mit Spielern, ohne volle Leiste, oder wenn weder Abwehr noch
+  kritische Klasse greifen.
+- *7 Gebaut:* `CustomRotation_LimitBreak.cs`: Rollenweiche (`TankLimitBreakReason`, `HealerLimitBreakReason`, Damage
+  Dealer wie A628), `DataCenter.BMRMaxCastTime < window` für alle, Dauermessung am Status gleichen Namens
+  (`MeasureLimitBreakDuration`), Spurzeile erst beim gemeldeten Einsatz (`NoteLimitBreakReported`); `Invoke`: Heiler nach
+  der Notfall-Fähigkeit; `RaiseProtection.FirstDodgeableWithin`; Optionstext. Keine neue Zahl.
+- *8 Nachweis:* Compile (0 Warnungen), 48 Prüfungen; im Spiel nicht beobachtet. Messmittel: Spurzeilen „limit break: …
+  (level, role) - <Grund>", „lock … measured", „status … measured".
+- *9 Dokumentation:* Konzept 03 „Limit Break allein" neu gegliedert (alle Rollen, dann je Rolle), Release-Text, TODO-Punkt
+  geschlossen.
+
 ## B · Commit-Register (Fork vs. `upstream/main`)
 
 ### B1 · Einzelgeprüfte Fork-Commits

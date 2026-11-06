@@ -591,10 +591,12 @@ internal partial class Configs : IPluginConfiguration, IM3Settings
 	private static readonly bool _useDeepDungeonStones = true;
 
 	[ConditionBool, UI("Use the Limit Break when no other player is in the party",
-	Description = "In a fight: with only NPC companions (Duty Support, Trust), a damage dealer uses the job's Limit Break of the "
-		+ "full bar, so the bar no longer stands full for the rest of the duty - but only while no announced hit on you lands "
-		+ "within its cast and animation lock, BossMod's AI is not moving you and you are not about to die, so the lock does "
-		+ "not keep you in an area. With another player in the party the bar stays theirs too. Tanks and healers: not yet.",
+	Description = "In a fight: with only NPC companions (Duty Support, Trust), you use the job's Limit Break of the full bar, so the "
+		+ "bar no longer stands full for the rest of the duty. A damage dealer uses it while no announced hit on you lands within "
+		+ "its cast and animation lock; a tank against an announced hit on the party or on him, or once the pull rule calls for "
+		+ "defence; a healer when more than one member is about to die, or at level 3 to raise the dead, after any instant "
+		+ "emergency heal. Never while BossMod would have to move you within its cast and lock, nor while a tank or damage "
+		+ "dealer is about to die. With another player in the party the bar stays theirs too.",
 	Filter = AutoActionUsage, Section = 5)]
 	private static readonly bool _useLimitBreakWhenAlone = true;
 

@@ -275,9 +275,16 @@ public partial class CustomRotation
 				? TankbusterForecast.NextOnPlayerIn
 				: null;
 
-			// A full Limit Break bar with no other player in the party and no hit in its lock (concept 03, A628).
-			if (LimitBreakWhenAlone(out var limitBreak))
+			// A full Limit Break bar with no other player in the party, when the role calls for it (concept 03, A628, A630).
+			if (LimitBreakWhenAlone(out var limitBreak) && limitBreak != null)
 			{
+				// A healer's Limit Break casts 2 s: an instant heal for a member about to die goes ahead of it.
+				if (DataCenter.Role == JobRole.Healer && Ability(limitBreak, out var emergency, emergencyHealOnly: true))
+				{
+					return emergency;
+				}
+
+				NoteLimitBreakReported();
 				return limitBreak;
 			}
 

@@ -21,15 +21,19 @@ BossMod-Module) die Rotation des Beastmasters, die Wahl der Begleiter und den Ze
 
 1. Allein ohne Heiler kommt kein Heiltrank: RSR stand 13 s in der kritischen Klasse ohne Heilfähigkeit, kein Trank
    von RSR trotz eingeschalteter Option, er drückte ihn bei 6 % selbst und starb (Beastmaster, Sägerschrei, 04.11.2026).
-2. Beastmaster: Crucible-Strategien: Ein K.O. beendet den Lauf, und ein Begleiter, den ein späterer Kampf braucht, kommt dort mit den LP an, die ihm
+2. Crucible: Endkampf vorbereiten – Campsite und Futter: Welche Begleiter an der letzten Campsite mitruhen, wählt RSR
+   ohne Anzeige vor, und nur, wenn du voll herauskommst; Futter empfiehlt es nie. Vor dem Endkampf entscheidet beides,
+   mit wie vielen LP seine Heiler und Kämpfer dort ankommen.
+3. Hilfsfenster im Stil von RebornMaterial: Die Empfehlungsfenster (Team, Laden, Schatz, Masked Carnivale) sind
+   schlichte ImGui-Listen; was empfohlen ist und warum, liest sich vor dem Kampf schwer.
+4. Beastmaster: Crucible-Strategien: Ein K.O. beendet den Lauf, und ein Begleiter, den ein späterer Kampf braucht, kommt dort mit den LP an, die ihm
    die früheren ließen.
-3. Bewegungssperre beim Wirken gegen das Ausweichen der BossMod-KI: Mit „Lock movement while casting" an steht die
+5. Bewegungssperre beim Wirken gegen das Ausweichen der BossMod-KI: Mit „Lock movement while casting" an steht die
    Figur während jedes Zaubers still, auch wenn die KI von BossMod aus einer Fläche laufen will; nur in dieser
    Kombination, dort aber mit einem Treffer, dem der Spieler nicht ausweicht.
-4. Limit Break allein: Tank und Heiler: Ohne andere Spieler bleibt die Leiste als Tank oder Heiler voll stehen.
-5. Blaumagier: Set nach den Widerständen der Stufe: Im Masked Carnivale wählt der Satz des Stufenführers Füllzauber
+6. Blaumagier: Set nach den Widerständen der Stufe: Im Masked Carnivale wählt der Satz des Stufenführers Füllzauber
    nach Beispielen; gegen welches Element die Gegner der Stufe schwach oder immun sind, zählt dabei nicht.
-6. Konzepte neu ordnen (allgemein, Rollen, Gruppen, Jobs, Inhalte): keine direkte Wirkung im Kampf; eine Regel, die
+7. Konzepte neu ordnen (allgemein, Rollen, Gruppen, Jobs, Inhalte): keine direkte Wirkung im Kampf; eine Regel, die
    im Konzept eines Jobs steht, wird für dessen Gruppe übersehen, und eine Inhaltsregel ist über mehrere Konzepte
    verteilt.
 
@@ -58,6 +62,27 @@ Fehl-LP, Spielstatus) und den Tinktur-Vorrang; mit dem nächsten Upload die Ursa
 nach der Gefahr statt nach der festen Schwelle, für alle Jobs. *Konzept:* 03 („Eine Wiederverwendung für alle
 Arzneien"), 07.
 
+### Crucible: Endkampf vorbereiten – Campsite und Futter · N
+Seine Vorschläge (06.11.2026): „beim letzten rasten vor dem endgegnern im brett wäre eine empfehlung hilfreich, welche
+beiden begleiter man zum heilen auswählen sollte" und „beim händler für essen im brett sollte nahrung für die begleiter
+gegen endgegner brett empfohlen werden, welche nahrung für welchen begleiter. also drei stück". Im Kampf: Wer an der
+letzten Campsite mitruht, kommt mit 30 % mehr LP in den Endkampf; Futter gibt einem Begleiter etwa +30 % maximale LP
+oder −25 % physische Verwundbarkeit. Fehlt beides, trägst du die Treffer des Endgegners allein. RSR wählt an der
+Campsite still vor (A564), knappe Endkampf-Heiler zuerst (A590), aber nur, wenn du selbst voll herauskommst, und gar
+nicht, wenn Fenster und Agent verschiedene LP zeigen; Futter schließt die Ladenempfehlung aus (A569, meine Ableitung:
+die Rast beendet es). *Ort:* Campsite (K10, `SelectedPetIds`), Laden (K10, `RankOffers`), `HeldForFinal`/`FinalHealers`
+(K11), Fenster wie `RSR - Crucible team`. *Nächster Schritt:* Loop – die letzte Campsite und der letzte Laden vor dem
+Endkampf, ein Plan für den Endkampf (wer kämpft, wer heilt, wer ruht, welches Futter wer bekommt, Reihenfolge von Rast
+und Fütterung), Empfehlung mit Grund im Fenster, Übernahme auf Klick; prüfen, warum die Vorauswahl bei ihm nicht sichtbar
+war. *Konzept:* 01, K10 und K11.
+
+### Hilfsfenster im Stil von RebornMaterial · N
+Sein Vorschlag (06.11.2026): „das hilfsfenster sollte evtl. besser aussehen und den rebornmaterials entsprechen". Im
+Kampf mittelbar: Eine Empfehlung, die man vor dem Kampf nicht auf einen Blick liest, wird übergangen. *Ort:*
+`RotationSolver/UI/ExtraWindows/` (Crucible-Team, -Laden, -Schatz, Masked-Carnivale-Satz), RebornMaterial
+(`/home/user/ext/RebornMaterial`). *Nächster Schritt:* Loop – was RebornMaterial bietet und wie das Hauptfenster es
+nutzt, ein gemeinsames Gerüst für alle Hilfsfenster (Universell zuerst), dann je Fenster. *Konzept:* 03 (Fenster).
+
 ### Beastmaster: Crucible-Strategien · N
 Im Kampf: Fällst du im Brett, ist der Lauf verloren, und RSR plant die Begleiter nicht über das Brett: Ein Heiler, der im vierten Kampf gebraucht wird, kann bis dahin auf 25 von 550
 LP gefallen sein (04.11.2026). *Ort:* `BST_Reborn`, `CrucibleBoard`, `BeastmasterCrucible*.cs`. *Gebaut:* Stufe 1 (A548,
@@ -78,12 +103,6 @@ wenn eine Fläche mitten im Zauber erscheint. Neue Zauber startet RSR nicht, sol
 dessen Ende landet; die Optionen A, B (Empfehlung: die Sperre weicht der KI) und C stehen im Konzept. *Nächster Schritt:*
 Vorlage an ihn, gebündelt am Ende des TODO (der Optionstext bindet). *Konzept:* 03, „Bewegungssperre beim Wirken und die
 KI von BossMod".
-
-### Limit Break allein: Tank und Heiler · N
-Im Kampf: Ohne andere Spieler setzen Damage Dealer das Limit Break der vollen Leiste (A628); als Tank oder Heiler bleibt
-sie voll stehen. *Ort:* `CustomRotation_LimitBreak.cs`, die Abwehr- und Heilketten. *Nächster Schritt:* Loop – Tank vor
-einem angekündigten Raidwide auf die Gruppe, Heiler bei mehreren Mitgliedern in der kritischen Klasse, Stufe 3 mit Toten;
-die Sperre wie bei den Damage Dealern gemessen. *Konzept:* 03 („Limit Break allein").
 
 ### Blaumagier: Set nach den Widerständen der Stufe · N
 Im Kampf: Der Satz je Stufe (A627) folgt dem Stufenführer; wo der Führer nur ein Beispiel nennt („Water filler spell, such
@@ -189,7 +208,7 @@ nebeneinander braucht: neuer interner Name mit Übernahme des Ordners, angezeigt
   schreibt jeden eigenen Abbruch mit Grund. Offen ist, ob BossMods KI ausweicht (Spielraum kürzer als die Restwirkzeit von
   4,5 s) oder BossMod abbricht. Auflösung: `DefenseTrace.log` und Dalamud-Log eines solchen Versuchs („cast cancelled by
   RSR" gegen „[AI] Movement will interrupt cast" oder „[CancelCast]"); liegt es an BossMod, Meldung dort. Konzept 03,
-  „Limit Break allein".
+  „Limit Break allein", Absatz „Von Hand gedrückt".
 
 - **Tiefe Gewölbe: welcher Weihrauch auf welchem Platz in Pilgers Pfad** (A626). Im Kampf: Allein in Pilgers Pfad setzt
   RSR Barkbalm vor dem Bosskampf und Poisonfruit in der Gefahr nur, wenn es den Platz lesen kann; das Blatt nennt dort

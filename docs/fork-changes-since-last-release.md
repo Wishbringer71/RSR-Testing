@@ -5,14 +5,22 @@ What this release changes in the fight. For the whole distance from upstream, se
 
 ## Limit Break with NPC companions
 
-- **A damage dealer uses the full Limit Break bar when no other player is in the party.** New option
+- **The full Limit Break bar is used when no other player is in the party.** New option
   `Use the Limit Break when no other player is in the party`, on by default: in Duty Support or with a
-  Trust, the job's Limit Break of the full bar (the level the game names for your class) once no
-  announced hit on you lands within its cast and animation lock, BossMod's AI is not moving you, the cast
-  fits BossMod's cast-time limit and you are not about to die. Before, the bar stood full for the rest
-  of the duty. The lock is measured on your first use; until then an upper bound per level from logged
-  Limit Breaks counts. Tanks and healers are not covered yet. With another player in the party nothing
-  changes; a Limit Break you press yourself is untouched by this rule.
+  Trust, the job's Limit Break of the full bar (the level the game names for your class). Before, the
+  bar stood full for the rest of the duty.
+  - A damage dealer uses it once no announced hit on you lands within its cast and animation lock and
+    you are not about to die.
+  - A tank uses it against an announced hit on the party or on you (a raidwide, a tankbuster, a pull
+    that calls for defence, or attacks with no healer alive), while its status still stands when the
+    hit lands and you are not about to die; before the job's own mitigations, which stay for the next.
+  - A healer uses it when more than one member is about to die, or at level 3 when a member is dead and
+    not being raised - after any instant emergency heal, since the Limit Break casts for 2 seconds.
+  - Never while BossMod's AI is moving you or would have to move you within the cast and animation lock,
+    and for tanks and healers never while a hit you would have to step out of lands in that time.
+  - The lock and a tank's status duration are measured on your first use; until then an upper bound per
+    level from logged Limit Breaks and the duration the effect text states count. With another player in
+    the party nothing changes; a Limit Break you press yourself is untouched by this rule.
 - **A Limit Break you press is no longer intercepted.** RSR used to queue it like any other press and
   then never ran it; with `Also pass your press to the game` off it was lost. It now goes to the game
   as you pressed it, on the target you chose. Each cast RSR itself cancels writes a line to
