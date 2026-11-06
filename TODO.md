@@ -26,10 +26,10 @@ BossMod-Module) die Rotation des Beastmasters, die Wahl der Begleiter und den Ze
 3. Bewegungssperre beim Wirken gegen das Ausweichen der BossMod-KI: Mit „Lock movement while casting" an steht die
    Figur während jedes Zaubers still, auch wenn die KI von BossMod aus einer Fläche laufen will; nur in dieser
    Kombination, dort aber mit einem Treffer, dem der Spieler nicht ausweicht.
-4. Blaumagier: Satz je Carnivale-Stufe: Im Masked Carnivale schlägt RSR keinen Satz für die Stufe vor, deren Mechanik
-   bestimmte Zauber verlangt.
-5. Limit Break allein: Ohne andere Spieler füllt sich die Leiste, und RSR nutzt sie nie; der Preis ist eine Sperre
+4. Limit Break allein: Ohne andere Spieler füllt sich die Leiste, und RSR nutzt sie nie; der Preis ist eine Sperre
    von Sekunden mitten in Mechaniken.
+5. Blaumagier: Set nach den Widerständen der Stufe: Im Masked Carnivale wählt der Satz des Stufenführers Füllzauber
+   nach Beispielen; gegen welches Element die Gegner der Stufe schwach oder immun sind, zählt dabei nicht.
 6. Konzepte neu ordnen (allgemein, Rollen, Gruppen, Jobs, Inhalte): keine direkte Wirkung im Kampf; eine Regel, die
    im Konzept eines Jobs steht, wird für dessen Gruppe übersehen, und eine Inhaltsregel ist über mehrere Konzepte
    verteilt.
@@ -88,12 +88,13 @@ Breaks je Rolle aus dem Action-Blatt. *Nächster Schritt:* Loop – wann die Spe
 in ihrer Dauer), welches Limit Break je Rolle (Heiler Stufe 3 nur mit Toten, Tank nur vor einem Treffer), ob nur mit
 NPCs in der Gruppe. *Konzept:* 03.
 
-### Blaumagier: Satz je Carnivale-Stufe · N
-Im Kampf: Im Masked Carnivale schreibt RSR nie ins Set (A510), und einen Satz für die Stufe schlägt es nicht vor; viele Stufen
-verlangen bestimmte Zauber für ihre Mechanik (Blue Academy, mage.blue, Stufenführer). *Ort:* `BlueMageRotation`
-(Set-Verbesserer), ein Fenster wie die Crucible-Empfehlungen. *Nächster Schritt:* Loop – je Stufe Pflicht- und
-Empfehlungszauber aus Blue Academy belegen, Vorschlag mit Anwenden auf Klick (wie K7), nicht selbsttätig. Vorbild:
-BlueMageSetBuilder, BLUnion (A611). *Konzept:* 01 (Blaumagier, Set).
+### Blaumagier: Set nach den Widerständen der Stufe · N
+Im Kampf: Der Satz je Stufe (A627) folgt dem Stufenführer; wo der Führer nur ein Beispiel nennt („Water filler spell, such
+as Water Cannon"), wählt RSR ohne Blick auf die Gegner, und ein Füllzauber, gegen den ein Gegner der Stufe immun ist,
+kann im Set landen. Die Gegner je Akt stehen in den Blättern (`AOZContent` → `AOZArrangement`/`AOZBoss` →
+`AOZContentBriefingBNpc`, A627), nicht erst in der Einweisung. *Ort:* `BlueMageCarnivaleSet.cs`. *Nächster Schritt:*
+Loop – Schwäche und Immunität der Gegner der Stufe in die Wahl der Füllzauber und ins Fenster, gegen die Messzeile
+„carnivale briefing" (A511) gegengeprüft. *Konzept:* 01 („Masked Carnivale").
 
 ### Konzepte neu ordnen: allgemein, Rollen, Gruppen, Jobs, Inhalte · N
 Sein Auftrag (05.11.2026): „generelle prüfung aller konzepte, ob eine neuorganisation nicht sinnvoll wäre: allgemein für
@@ -208,12 +209,6 @@ nebeneinander braucht: neuer interner Name mit Übernahme des Ordners, angezeigt
   Begleiterbefehl „Away" (PetAction 1), keinem Begleiter zugeordnet. Auflösung: ob die Begleiterleiste des Beastmasters
   einen Befehl zum Zurücktreten führt (im Spiel sichtbar); dann Loop zum Ruf vor dem nächsten Gegner (B5). Konzept 01,
   „Belegung der Hörner in der Rotation".
-
-- **Blaumagier: Set je Stufe im Masked Carnivale** (seine Frage, 03.11.2026; A511). Im Kampf: Vor einer Stufe stünden
-  die gelernten Zauber im Set, gegen die ihre Gegner schwach oder verwundbar sind. Offen ist, was die Gegner-Ids der
-  Einweisung sind. Auflösung: die Zeile „carnivale briefing" im nächsten `DefenseTrace.log`, nachdem er die Einweisung
-  als Blaumagier geöffnet und eine Stufe gewählt hat; dann Loop zur Wahl als eigene Option. Konzept 01, „Masked
-  Carnivale".
 
 - **Blaumagier: 1000 Nadeln gewirkt, obwohl nicht im Set** (sein Hinweis, 03.11.2026; A506). Im Kampf: RSR wirkt
   laut ihm einen Zauber außerhalb des Sets; der Code lässt das nicht zu. Auflösung: die Zeilen „blue mage set" und

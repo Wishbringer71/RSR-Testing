@@ -741,16 +741,50 @@ statt Reihenfolge" und „Mondflöte"):
   - *Wann:* Das Set wird geschrieben, solange die Einweisung offen ist und eine Stufe gewählt ist, vor dem Betreten,
     außerhalb des Kampfes. Ob das Spiel das Set in der Stufe selbst ändern lässt, ist offen; der Entwurf braucht es
     nicht.
-  - *Nicht belegt, darum noch nicht gebaut:* Was die Gegner-Ids der Einweisung (`AozArrangementData.Enemies`) sind,
-    sagt FFXIVClientStructs nicht. Dass sie Zeilen von `AOZContentBriefingBNpc` sind, ist ein Schluss. Messmittel (A511):
-    Beim Öffnen der Einweisung als Blaumagier schreibt `DefenseTrace.log` je gewählter Stufe „carnivale briefing" mit
-    den Ids je Akt und dem Namen, den das Blatt für jede nennt. Stimmen die Namen mit den Gegnern der Stufe überein,
-    trägt der Schluss.
+  - *Die Gegner einer Stufe stehen in den Blättern* (A627): `AOZContent` (die Zeile, deren Order die Stufe ist) nennt je
+    Akt Kampftyp und Zeile – Kampftyp 1 eine Gruppe in `AOZArrangement` (Unterzeilen mit `AOZContentBriefingBNpc`), 2 und
+    3 einen Boss in `AOZBoss` (Werkzeugquelle BlueMageSetBuilder 213d3d9, dort gegen die Stufennamen geprüft). Die Wahl
+    nach Widerständen hängt damit nicht an den Ids der Einweisung (`AozArrangementData.Enemies`), deren Bedeutung
+    FFXIVClientStructs nicht nennt; die Messzeile „carnivale briefing" (A511) bleibt als Gegenprobe. Gebaut ist diese
+    Wahl noch nicht (TODO „Blaumagier: Set nach den Widerständen der Stufe").
   - *Und seine Entscheidung:* Für eine Stufe wählt er sein Set selbst; seit A510 schreibt der Verbesserer nach einer
-    eigenen Änderung nicht mehr hinein. Eine Stufenwahl durch RSR wäre darum eine eigene Option, die er einschaltet.
+    eigenen Änderung nicht mehr hinein. Ein Satz für eine Stufe geht deshalb nur auf seinen Klick ins Set (unten).
   - *Grenze:* Die Blätter beschreiben Widerstände, nicht die Mechaniken einer Stufe (etwa Reflexion oder ein Gegner,
-    der zur Mitte zieht). Für die beste Gewinnchance zählen auch die Stufen-Leitfäden als zweite Quelle, je Stufe
-    geprüft. Ohne sie bleibt es eine Wahl nach Widerständen.
+    der zur Mitte zieht). Diese tragen die Stufenführer von Blue Academy (unten).
+- *Satz je Stufe aus den Stufenführern* (A627): Solange die Einweisung des Masked Carnivale offen ist und ein Blaumagier
+  spielt, zeigt das Fenster „RSR - Masked Carnivale set" für die gewählte Stufe die Zauber, die der Stufenführer von
+  Blue Academy (mage.blue) nötig oder empfohlen nennt, und schreibt sie auf „Apply" ins aktive Set; ohne den Klick
+  ändert sich nichts.
+  - *Die Daten:* `carnivale_sets.py` liest die Führer (RoarkGit/Blue-Academy, Abschnitte „Required Spells" und
+    „Recommended Spells") und die Zaubernummern (RoarkGit/Limited-Job-Data) in `CarnivaleSets.g.cs`: je Stufe die Punkte
+    der Listen, je Punkt die genannten Zauber als Nummern in der Reihenfolge des Texts, ob er nötig oder empfohlen ist,
+    ob er nur Beispiele nennt („such as") und ob er einen Füllzauber meint („filler"). Nur diese Tatsachen, kein Text:
+    Blue Academy nennt keine Lizenz. Zwei CI-Schritte halten das Lesen mit einem Selbsttest und jede Nummer gegen das
+    Blatt `AozActionTransient`.
+  - *Die Zauber im Spiel:* Nummer → `AozActionTransient` (Spalte Number) → `AozAction.Action`; gelernt heißt, wie beim
+    Verbesserer, freigeschaltet (`IsQuestUnlocked`). Je Punkt gilt der erste gelernte der genannten Zauber; bei einem
+    Füllzauber-Beispiel, das nicht gelernt ist, ein gelernter Zauber desselben Elements (`Action.Aspect`) und derselben
+    Abklinggruppe mit höchstens dessen Abklingzeit. Was keiner deckt, zeigt das Fenster als fehlend mit den Namen.
+  - *Die Stufe:* der Eintrag, den die Einweisung gewählt hat (`AozContentData.SelectedContentIndex`, als Stufe Index + 1
+    gelesen – ein Schluss), mit dem Namen der Stufe aus `ContentFinderCondition` (Inhaltstyp Masked Carnivale, nach
+    Inhalt geordnet) in der Sprache des Clients, damit ein Fehlgriff neben dem Namen der Einweisung sichtbar ist; zwei
+    Knöpfe wechseln die Stufe.
+  - *Schreiben:* auf „Apply", außerhalb des Kampfes, nicht zwischen Gebieten, ein Platz je Bild über
+    `AssignBlueMageActionToSlot` mit Rücklesen, wie der Verbesserer. Nötige Zauber zuerst, dann empfohlene; was schon im
+    Set steht, bleibt, wo es steht. Erst freie Plätze, dann Plätze, deren Zauber kein Punkt der Stufe nennt, vom
+    letzten Platz an rückwärts (die vorderen Plätze trägt meist sein eigenes Gerüst). Lehnt das Spiel einen Platz ab,
+    hält das Schreiben mit einer Meldung im Fenster an. Der Verbesserer sieht die Änderung als die des Spielers und
+    schreibt in dieser Sitzung nichts mehr hinein (A510) – das Set für die Stufe bleibt stehen.
+  - *Im Kampf:* Er öffnet die Einweisung für Stufe 26, das Fenster nennt Exuviation und Eerie Soundwave als nötig,
+    Plaincracker als empfohlen; zwei stehen im Set, Eerie Soundwave fehlt, „Apply" setzt ihn auf den letzten Platz mit
+    einem Füllzauber, den die Stufe nicht nennt. Ohne ihn bleibt der Mirrorknight in Akt 1 unter Alternate Plumage
+    „functionally invulnerable to damage" (Führer zu Stufe 26), und die Stufe ist nicht zu gewinnen.
+  - *Gegenthese 1 – Der Führer veraltet:* Blue Academy datiert jeden Führer mit Patch; der Generator liest den Stand
+    seines Laufs, und die CI prüft nur die Nummern. Preis benannt: Ein neuer Führer kommt mit dem nächsten Lauf.
+  - *Gegenthese 2 – Die falsche Stufe:* Liest RSR den Index falsch, steht der Name der falschen Stufe im Fenster neben
+    dem der Einweisung; „Apply" schreibt nur auf seinen Klick.
+  - *Gegenthese 3 (ausgeliefert, und nichts ändert sich):* Er öffnet die Einweisung nicht als Blaumagier oder klickt nie.
+    Dann bleibt alles wie bisher.
 
 **Stufen:**
 - *Stufe 0, Messung* (gebaut mit A506):
@@ -790,8 +824,8 @@ statt Reihenfolge" und „Mondflöte"):
     setzen einen Zustand oder töten; wie das Spiel dort eine verfehlte Chance meldet, ist nicht belegt, also lehren sie
     nichts. Die gelernte Immunität sperrt aber die ganze Klasse (Schluss: Eine Art, gegen die Prozentschaden nichts
     tut, ist meist auch gegen Tod immun).
-- *Stufe 3, Set* (gebaut mit A509): „Verbessern statt ersetzen" oben. Offen bleibt die Wahl je Stufe im Masked
-  Carnivale (unten); der Verbesserer schreibt dort wie überall, nach Wert ohne die Widerstände der Stufe.
+- *Stufe 3, Set* (gebaut mit A509): „Verbessern statt ersetzen" oben; der Satz je Stufe aus den Stufenführern auf
+  Klick mit A627. Offen bleibt die Wahl nach den Widerständen der Stufe.
 
 **Falsifikation:**
 - *Kein Defekt?* D1, D2 und D3 sind am Code und an den Blättern belegt. Die Rechnung zeigt D2 als Verlust auch an

@@ -18294,6 +18294,41 @@ habe den schleim bislang nicht anfreunden können."
 - *9 Dokumentation:* Konzept 03 („Tiefe Gewölbe: Magicite, Demiklone und Weihrauch", Witching-Sperre in „Tiefe Gewölbe:
   Pomander"), Release-Text. TODO-Punkt geschlossen; die Platzzuordnung in Pilgers Pfad unter „Warten auf Daten".
 
+### A627 · Blaumagier: Satz je Masked-Carnivale-Stufe aus den Stufenführern, auf Klick (06.11.2026)
+
+- *Anlass:* TODO „Blaumagier: Satz je Carnivale-Stufe" (A611).
+- *1 Research:* Blue Academy (RoarkGit/Blue-Academy 0f5aaf1, 03.11.2026; Quelle von mage.blue, ohne Lizenzangabe): je
+  Stufe ein Führer mit „Required Spells" (14 Führer) und „Recommended Spells" (18), Punkte mit Zauberschlüsseln
+  (`{{< spell key >}}`), Beispiele als „such as", Füllzauber als „filler". Zaubernummern: RoarkGit/Limited-Job-Data
+  (39dd5c2, `spell/spell.yaml`). Blätter: `AozActionTransient.Number` ist die Nummer im Zauberbuch und teilt die Zeilen
+  mit `AozAction` (Nummer 1 → Zeile 3 → Water Cannon 11385; 36 → 1000 Needles; 42 → Doom); `Action.Aspect` trägt das
+  Element (Water Cannon 6). Einweisung: `AgentAozContentBriefing.AozContentData.SelectedContentIndex` (Bedeutung als
+  Stufe − 1 nur geschlossen). Stufennamen: `ContentFinderCondition` mit Inhaltstyp Masked Carnivale, nach Inhalt
+  geordnet. BlueMageSetBuilder (213d3d9, BSD-0) und BLUnion (ba7a51d, MIT) führen dieselben Listen aus Blue Academy;
+  BlueMageSetBuilder liest dazu die Gegner je Akt aus `AOZContent` → `AOZArrangement`/`AOZBoss` →
+  `AOZContentBriefingBNpc` – damit hängt die Wahl nach Widerständen nicht mehr an den Ids der Einweisung (A511).
+- *2 Optionen:* (0) belassen; (1) Fenster mit Vorschlag und Anwenden auf Klick, Daten aus eigenem Generator; (2) die
+  Liste eines der beiden Plugins übernehmen; (3) selbsttätig schreiben.
+- *3 Abwägung:* (1) setzt die Zauber, ohne die eine Stufe nicht zu gewinnen ist (Stufe 26: Eerie Soundwave gegen
+  Alternate Plumage), auf einen Klick; seine Entscheidung bleibt. (2) übernähme fremde Ableitung statt der Quelle.
+  (3) widerspricht A510 (im Masked Carnivale schreibt RSR nie selbst, die Stufenwahl ist seine).
+- *5 Review:* Nur Tatsachen aus den Führern, kein Text. Je Punkt der erste gelernte Zauber, für ein Füllzauber-Beispiel
+  ein gelernter desselben Elements und derselben Abklinggruppe mit höchstens dessen Abklingzeit. Schreiben wie der
+  Verbesserer (ein Platz je Bild, Rücklesen, außerhalb des Kampfes); freie Plätze zuerst, dann von hinten Plätze, deren
+  Zauber kein Punkt nennt. Der Verbesserer wartet währenddessen und sieht danach eine Änderung des Spielers (A510).
+  Ein falsch gelesener Index zeigt sich am Stufennamen im Fenster; zwei Knöpfe wechseln die Stufe.
+- *6 Falsifikation:* Kein Defekt? Ohne das Fenster setzt er die Pflichtzauber jeder Stufe von Hand nach einem Führer
+  außerhalb des Spiels. Option falsch? Veraltet ein Führer, schlägt RSR den alten Stand vor, bis der Generator erneut
+  läuft. Ausgeliefert, nichts ändert sich? Er öffnet die Einweisung nicht als Blaumagier oder klickt nicht. Im Spiel
+  nicht beobachtet.
+- *7 Gebaut:* `.github/scripts/audit/carnivale_sets.py` (generate, `--check`, `--self-test`; zwei CI-Schritte) →
+  `CarnivaleSets.g.cs` (24 Stufen, 64 Punkte); `BlueMageRotation` (`BlueMageCarnivaleSet.cs`: Vorschlag, Schreiben,
+  `UpdateServices`), `CarnivaleSetWindow`; der Verbesserer wartet während des Schreibens. *8 Nachweis:* Compile
+  0 Fehler 0 Warnungen, 48 Prüfungen; Nummern gegen `AozActionTransient` (xivapi).
+- *9 Dokumentation:* Konzept 01 („Satz je Stufe aus den Stufenführern", „Die Gegner einer Stufe stehen in den Blättern",
+  Stufe 3), Release-Text. TODO-Punkt geschlossen; der Datenwarte-Eintrag „Blaumagier: Set je Stufe im Masked
+  Carnivale" (A511) wird offene Arbeit „Blaumagier: Set nach den Widerständen der Stufe".
+
 ## B · Commit-Register (Fork vs. `upstream/main`)
 
 ### B1 · Einzelgeprüfte Fork-Commits

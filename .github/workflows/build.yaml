@@ -187,6 +187,14 @@ jobs:
       - name: Check the cactbot cast ids against the Action sheet
         run: python3 .github/scripts/audit/cactbot_casts.py --check
 
+      # The Blue Mage's set proposal per Masked Carnivale stage carries the spells Blue Academy's stage guides name
+      # (concept 01, A627). The file is generated from Blue Academy and Limited-Job-Data checkouts; this holds the guide
+      # reading and every spell number against the AozActionTransient sheet, skipping the sheet part when xivapi is down.
+      - name: Check the Masked Carnivale sets taken from Blue Academy
+        run: python3 .github/scripts/audit/carnivale_sets.py --self-test
+      - name: Check the Masked Carnivale spell numbers against AozActionTransient
+        run: python3 .github/scripts/audit/carnivale_sets.py --check
+
       # The movement safety check runs only for an action with a moving SpecialType; which actions move is the Action
       # sheet's AffectsPosition. Four dashes went out unchecked without a type until A498. Skips when xivapi is down.
       - name: Check every action that moves the player carries a movement type

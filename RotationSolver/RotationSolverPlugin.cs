@@ -38,6 +38,7 @@ public sealed class RotationSolverPlugin : IAsyncDalamudPlugin
 	private static StateControlWindow? _stateControlWindow;
 	private static CrucibleTeamWindow? _crucibleTeamWindow;
 	private static CrucibleShopWindow? _crucibleShopWindow;
+	private static CarnivaleSetWindow? _carnivaleSetWindow;
 	private static CrucibleTreasureWindow? _crucibleTreasureWindow;
 	private static EasterEggWindow? _easterEggWindow;
 	private static FirstStartTutorialWindow? _firstStartTutorialWindow;
@@ -77,6 +78,7 @@ public sealed class RotationSolverPlugin : IAsyncDalamudPlugin
 		_stateControlWindow = new();
 		_crucibleTeamWindow = new();
 		_crucibleShopWindow = new();
+		_carnivaleSetWindow = new();
 		_crucibleTreasureWindow = new();
 		_easterEggWindow = new();
 		_firstStartTutorialWindow = new();
@@ -93,6 +95,7 @@ public sealed class RotationSolverPlugin : IAsyncDalamudPlugin
 		windowSystem.AddWindow(_stateControlWindow);
 		windowSystem.AddWindow(_crucibleTeamWindow);
 		windowSystem.AddWindow(_crucibleShopWindow);
+		windowSystem.AddWindow(_carnivaleSetWindow);
 		windowSystem.AddWindow(_crucibleTreasureWindow);
 		windowSystem.AddWindow(_easterEggWindow);
 		windowSystem.AddWindow(_firstStartTutorialWindow);

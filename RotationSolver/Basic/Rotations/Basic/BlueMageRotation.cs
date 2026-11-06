@@ -423,6 +423,12 @@ public partial class BlueMageRotation
 			return;
 		}
 
+		// While the window writes a set for a Masked Carnivale stage, the improver waits (A627).
+		if (CarnivaleApplying)
+		{
+			return;
+		}
+
 		var slots = DataCenter.BluSlots;
 
 		// A set the player changed themselves - a saved set loaded, a spell for a Masked Carnivale stage put in - is his

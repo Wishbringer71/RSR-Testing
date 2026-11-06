@@ -313,6 +313,16 @@ What this release changes in the fight. For the whole distance from upstream, se
   fights, compare the health a member is heading for with their thresholds, as `Heal ahead of
   incoming damage` states for every healing threshold. With that setting off nothing changes.
 
+## Blue Mage
+
+- **A set per Masked Carnivale stage, on your click.** With the Carnivale briefing open as a Blue Mage,
+  the window `RSR - Masked Carnivale set` shows the spells Blue Academy's guide (mage.blue) names as
+  required and recommended for the chosen stage - the first one you have learned of each point, for a
+  filler example you lack a learned spell of the same element - and which are missing. `Apply` puts the
+  missing ones into your active set: free slots first, then from the last slot back the slots holding a
+  spell the guide does not name. Nothing changes without the click, and the set improver leaves the set
+  alone afterwards. The stage name shows beside the briefing's; two buttons switch the stage.
+
 ## Beastmaster
 
 - **Final Sting instead of Parting Blow when the wasp makes way in danger.** In danger a familiar that neither
