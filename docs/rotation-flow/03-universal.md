@@ -1139,9 +1139,12 @@ Arena räumt, oder Wiederbelebung des Gefallenen –, muss so fallen, dass der L
   Drittel deines Schadens) eine Sekunde lang gegen W/2 des ganzen Stroms.
 - *Vor der ersten Messung* (r unbekannt) hält RSR nichts: Alle Mitglieder stehen dann noch voll.
 
-**3 · Erst nach einem anderen, oder nur an einem Ort.** Ein Gegner, dessen Fall schadet, solange ein anderer lebt, oder
-außerhalb eines Ortes, ist in dieser Lage kein Ziel; wo sein Fall selbst schadet, trifft ihn auch keine Fläche. Die
-Lagen stehen je Kampf in K12; ein Ort ist ein Bodenobjekt des Kampfes mit dem Wirkradius der Aktion, die es legt.
+**3 · Erst nach einem anderen, nur an einem Ort, oder nur zu einer Zeit.** Ein Gegner, dessen Fall schadet, solange
+ein anderer lebt, außerhalb eines Ortes oder zu einer Zeit, ist in dieser Lage kein Ziel; wo sein Fall selbst schadet,
+trifft ihn auch keine Fläche. Die Lagen stehen je Kampf in K12; ein Ort ist ein Bodenobjekt des Kampfes mit dem
+Wirkradius der Aktion, die es legt; eine Zeit liest RSR an dem Objekt, das sie anzeigt, und an der gemessenen Laufzeit
+deines Tastendrucks bis zum Treffer. Schadet sein Fall zu spät ebenso – ein Wirken, das ungebrochen dasselbe auslöst –,
+geht er außerhalb dieser Zeit jedem Gegner vor wie in Regel 1.
 
 *Einstellung* „Kill rules of known fights", ab Werk an: Regeln 2 und 3; aus greift RSR diese Gegner an wie jeden. Regel
 1 gilt ohne Einstellung. Die Zu-Regel behält ihre eigene (K12, A572).

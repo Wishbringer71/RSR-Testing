@@ -1236,6 +1236,12 @@ public static class ObjectHelper
 			return true;
 		}
 
+		// Rule 3, only at a time (A675): an enemy whose fall a kill rule wants now - a later one harms as much.
+		if (KillOrder.IsFirst(battleChara))
+		{
+			return true;
+		}
+
 		if (Service.Config.Treasuredungeonnumbered && DataCenter.IsInTreasureHunt)
 		{
 			if (icon == 60687 || icon == 60688 || icon == 60689 || icon == 60690 || icon == 60691)

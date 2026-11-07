@@ -19,8 +19,7 @@ auswahl und das timing der beschwörung" – je Kampf aller fünf Bretter (Gegne
 BossMod-Module) die Rotation des Beastmasters, die Wahl der Begleiter und den Zeitpunkt ihres Aufrufs im Loop prüfen
 (Beispiel seiner Beobachtung: der Raptor gegen Feuer, bevor feueranfällige Gegner da waren; A581).
 
-1. Crucible-Zielfolge: Final Hourglass und Roulette – ein Bruch zur falschen Zeit tötet sicher (Beastmaster, Vorrang,
-   Sicherheit); danach Crucible-Wechselwirkungen, Stufe 2 – die übrigen Paare (Schaden).
+1. Crucible-Wechselwirkungen, Stufe 2 – die übrigen Paare (Beastmaster, Vorrang; Schaden).
 2. Blaumagier: RSRs nächste Aktion beendet Apokalypsis und Chelonian Gate – Schaden und Minderung des Spielers enden
    nach einem GCD statt nach 10 s.
 3. Kegel und Ringe gegnerischer Zauber genau messen: Zauber- und Kanalbeginn nutzen RSRs Erkennung bei Kegel und Ring
@@ -47,13 +46,6 @@ auf jeden Schadens- und Schutzkanal gehört, den RSR nicht selbst beendet (Unive
 *Konzept:* 14, „Wo Angriff die Abwehr beendet: die Kanäle".
 
 ## Offene Arbeit
-
-### Crucible-Zielfolge: Final Hourglass und Roulette · N
-Im Kampf: Gegen Königs-Ahriman (Zweites Meisterbrett) bricht RSR die Final Hourglass, wann immer K3 sie wählt – zeigt
-die Roulette-Nadel beim nächsten Tick auf dich, feuert Death und legt Verhängnis, das sicher tötet; ungebrochen trifft
-Death ebenso, wenn ihr Wirken endet. Nächster Schritt: Loop – die Sanduhr früh zu Fall bringen, den brechenden Schlag
-halten, solange ein Tick nach dem Bruch den Kegel auf dich richtet (Nadel, Takt, Bruchverzug), allgemein unter
-„Gegner, die nicht getroffen werden dürfen"; Kampfbeispiel. Konzept 21, K3 und K12, Konzept 03; Quelle A667, A674.
 
 ### Crucible-Wechselwirkungen, Stufe 2 · N
 Im Kampf und auf dem Brett: Tötungsstapel (Dämonische Rüstung, Tonikum-Futter) zählen weder in der Zielwahl noch im

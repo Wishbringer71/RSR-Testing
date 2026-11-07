@@ -19832,6 +19832,44 @@ Erster Teil des TODO „Crucible-Zielfolge" (Quelle A667), mit seinem Auftrag, w
 *Prüfgrad:* Compile ohne Warnung, Prüfskripte; Quellen am Quelltext (BMR, Tekz, GluttonyCombo) und an xivapi (Aktionen
 49418–50940, BNpcName 14689). Im Spiel nicht beobachtet.
 
+### A675 · Sanduhr des Königs-Ahriman: Tötungsregel „nur zu einer Zeit“ (07.11.2026)
+
+Zweiter Teil des TODO „Crucible-Zielfolge" (A667, A674); der Punkt ist damit geschlossen.
+
+- *1 Research:* Mechanik und Quellen in A674 und Konzept 21, K12 „Königs-Ahriman". Code: Die Sanduhr hatte nie
+  getroffen und stand in K3 mit dem Mittel des Kampfs (A582/A674) – neben Hapalit und Dirty Eye womöglich nie
+  angegriffen (GluttonyCombo verlor so einen Lauf) –, und wurde sie angegriffen, brach der Schlag sie zu jeder Zeit.
+  RSR misst die Laufzeit eines Tastendrucks bis zur Antwort (`TankbusterForecast.RoundTrip`); Kegel feindlicher Zauber
+  zählt RSR als Kreis, weil kein Blatt ihren Winkel nennt (`DataCenter.CastReachesPlayer`); Death hat kein Omen.
+- *2 Optionen:* (0) nichts; (a) GluttonyCombos Halteregel – 75 % LP, Kegel 60°, Bruchverzug 0,3–1,4 s fest; (b) Halten
+  mit Halbebene, gemessenem Takt und gemessener Laufzeit; (c) aus dem Kegel gehen; (d) Zielwechsel des Begleiters
+  steuern.
+- *3 Abwägung:* (0) Death trifft in einem Viertel bis der Hälfte der Brüche (Modell), GluttonyCombo: 6 von 12 Roulettes,
+  jedes tödlich. (a) halbiert die Wartezeit, trifft aber bei breiterem Kegel und schrägem Stand; drei feste Zahlen.
+  (b) tötet bei keinem Kegel unter 180°; Preis: ein Viertel der Zeit frei, Halten höchstens drei Takte (4,7 s) je Schlag
+  ab dem zweiten. (c) Roulette bindet dich. (d) Der Beastmaster hat keinen Befehl dafür.
+- *Gebaut:* Konzept 03, Regel 3 „nur zu einer Zeit" (mit „zuerst", wo ein später Fall ebenso schadet); Konzept 21, K12
+  „Königs-Ahriman"; `KillOrder.HoldAgainstTheNeedle`, `FollowNeedle`, `WaitForSafePress`, `PressAims`, `Faces`,
+  `DoomResisted`, `IsFirst`, `ObserveAction`; `ObjectHelper.IsTopPriorityHostile` liest `IsFirst`; der Watcher meldet jede
+  Aktion. Nicht halten bei vollen LP, mit „Doom Resistance +100%", ohne gelesene Nadel (Spurzeile) und wenn der nächste
+  sichere Druck nach dem Wirkende bräche.
+- *5 Review:* Die erste Konzeptfassung nannte „die Hälfte der Zeit frei"; das Modell zeigte ein Viertel – die Halbebene
+  zählt zwei Richtungen, sobald du nicht genau auf einer Achse stehst. Vor dem Commit berichtigt.
+- *Modell:* `roulette_needle_model.py` mit Selbsttest: Kegel 45°, 60°, 89°, Verzug 0,4–0,67 s und 0 bis ein Takt, Stand
+  nahe der Achse und schräg – die Regel lässt keinen tödlichen Druck durch, frei ein Viertel, Wartezeit höchstens 4,7 s;
+  die Fehlervarianten (Richtung zum Druckzeitpunkt, ohne Laufzeit, ohne Regel) töten.
+- *6 Falsifikation:* Kein Defekt? Widerlegt: ohne Regel trifft Death in einem Viertel bis der Hälfte der Brüche, ohne
+  Vorrang womöglich beim Wirkende. Option falsch? Die schmalere (a) kauft Zeit mit einem Tod bei breitem Kegel; die
+  Wartezeit kostet bei rund 25 s Wirkzeit keinen Bruch, das Wirkende hebt das Halten auf. Ausgeliefert, nichts ändert
+  sich? Wenn die Nadel nicht unter ihrer Basis steht (Spurzeile nennt es), die Einstellung „Kill rules of known fights"
+  aus ist, oder dein Begleiter sie bricht – Preis mit Wahrscheinlichkeit im Konzept.
+- *Festwerte (Ausnahmen, `fixed_values.json`):* 14689, 19738, 49422, 5421 (Kennungen des Spiels); 1,5605 s und 0,49 s
+  (GluttonyCombos Aufzeichnungen, nur bis zur eigenen Messung an der Nadel); 4 Achsen und die Mitte einer Spanne
+  (Geometrie).
+
+*Prüfgrad:* Compile ohne Warnung, Prüfskripte, Modell mit Selbsttest; Mechanik aus Werkzeugquellen (GluttonyCombo,
+Tekz, BMR) und Blättern (xivapi). Im Spiel nicht beobachtet; den Kampf hat er nach seinen Uploads noch nicht gespielt.
+
 ## B · Commit-Register (Fork vs. `upstream/main`)
 
 ### B1 · Einzelgeprüfte Fork-Commits

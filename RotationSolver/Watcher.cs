@@ -849,6 +849,12 @@ public static class Watcher
 			// A landing that lays a status damaging every action teaches its action, from any source (A439).
 			ActionPenaltyWatch.ObserveLanding(set);
 
+			// Concept 21, K12 (A675): the roulette needle's Death, for where its beat falls before the needle turns.
+			if (set.Action is { } observed)
+			{
+				KillOrder.ObserveAction(observed.RowId);
+			}
+
 			TraceHitFromUnreadSource(set, playerObject);
 
 			// Healing by anyone but the player and his objects, for the rule that breaks off a single heal it made needless.

@@ -178,16 +178,9 @@ Dullahan, Golem, Spriggan und Eisgolem (`XBMPet.InflictsInterrupt`).
   und zählt in K3 wie jeder Ungemessene das Mittel der übrigen. *Was gilt:* Ein ungemessener Gegner zählt zuerst mit der gemessenen Gefahr seiner Art
   in diesem Gebiet (Konzept 03, „Ungemessene Gegner", A674) – die zweite Charge eines Kampfs, und jede in einem späteren
   Kampf desselben Bretts, steht damit von ihrem Erscheinen an mit der Gefahr der ersten. Die erste zählt bis dahin mit dem
-  Mittel des Kampfs, nach dem Blatt gewichtet (A582), und mit ihrem Wirken, sobald sie es ankündigt. *Offen (TODO
-  „Crucible-Zielfolge"):* Königs-Ahriman auf dem Zweiten Meisterbrett (Elite 4, Zug 13 rechts). Roulette bindet dich
-  neben eine Final Hourglass (BNpcName 14689) und setzt eine namenlose Nadel in die Mitte (BNpcBase 19738), die nur
-  entlang der vier Achsen zeigt und alle 1,56 s eine Vierteldrehung weiterrückt. Bricht die Sanduhr, feuert der nächste
-  Tick Death (49422, Kegel, 23 Yalm laut Blatt) entlang der Nadel; Death legt Verhängnis, das sich nicht entfernen lässt
-  und in GluttonyCombos Aufzeichnungen sechsmal von sechs tötete. Ungebrochen traf Death ebenfalls, als ihr Wirken von
-  rund 25 s endete (GluttonyCombo cb5bf32, 07.11.2026: `BST_CrucibleLogic.HourglassNeedleHold`, `BST_CrucibleData`,
-  Lauf vom 03.10.2026; Werkzeugquelle, die Halteregel dort laut Versionshinweis im Spiel unbestätigt; Icy Veins: „The
-  hourglass cleaves in the cursor's direction when it dies"; Tekz: Sanduhr Vorrang 6, Nadel −1). Zu bauen: Die Sanduhr
-  fällt früh, aber der brechende Schlag nicht, solange ein Tick nach dem Bruch den Kegel auf dich richtet. *Gegenthesen A674:* (1) Eine Art schadet je Kampf anders. Widerlegt: Gezählt
+  Mittel des Kampfs, nach dem Blatt gewichtet (A582), und mit ihrem Wirken, sobald sie es ankündigt. *Die Sanduhr
+  des Königs-Ahriman* (Zweites Meisterbrett, Elite 4, Zug 13 rechts) schadet erst mit ihrem Fall; Regel und Quellen:
+  K12, „Königs-Ahriman". *Gegenthesen A674:* (1) Eine Art schadet je Kampf anders. Widerlegt: Gezählt
   wird ihre Gefahr je Sekunde bis zum Fall, über ihre ganze Lebenszeit – genau die Größe, nach der K3 reiht –, und die
   eigene Messung ersetzt sie mit dem ersten Treffer; ein anderes Brett ist ein anderes Gebiet. (2) Ein gefallener Gegner
   verdünnte seine Art über die Zeit nach seinem Tod. Beseitigt: Seine Zeit endet, wo er zuletzt in der Gegnerliste stand
@@ -921,6 +914,55 @@ Dullahan, Golem, Spriggan und Eisgolem (`XBMPet.InflictsInterrupt`).
       verbraucht ist sie im Ereigniszustand 7 (BossModReborn, `EventState`). BossModReborn prüft mit 6 Yalm – das ist der
       Radius von Spore Spill, nicht der Pfütze. Hinein gehst du oder BossModReborn: Dessen Modul will dich in den Pfützen
       (`PersistentInvertibleVoidzone`, ab Kampfbeginn umgekehrt), die Myconiden folgen dir.
+    - *Königs-Ahriman, Zweites Meisterbrett – nur zu einer Zeit, sonst zuerst (A675):* Roulette (49418) bindet dich neben
+      eine final hourglass (14689) und setzt eine namenlose Nadel in die Mitte (BNpcBase 19738). Die Nadel zeigt nur
+      entlang der vier Achsen und rückt in festem Takt eine Vierteldrehung weiter; bricht die Sanduhr, feuert der nächste
+      Takt Death (49422, Kegel, 23 Yalm laut Blatt) entlang der Nadel, und Death legt Verhängnis (5421, „Certain death
+      when counter reaches zero", nicht entfernbar; xivapi v2, 07.11.2026). Ungebrochen trifft Death ebenso, wenn ihr
+      Wirken nach rund 25 s endet. Quellen: GluttonyCombo cb5bf32 (07.11.2026, BSD-3; `BST_CrucibleLogic`,
+      `BST_CrucibleData`: Aufzeichnungen ihrer Läufe – Death tötete sechsmal von sechs, Takt 1,5605 s aus 16 Death, Drehung
+      0,49 s nach dem Takt, Treffer bis Bruch 0,4 und 0,67 s, größter Treffer 67 % ihrer LP; ihre Halteregel laut
+      Versionshinweis im Spiel unbestätigt), Icy Veins („The hourglass cleaves in the cursor's direction when it dies"),
+      Tekz' Modul (Sanduhr Vorrang 6, Nadel −1). *Was gilt:*
+      - *Zuerst:* Die Sanduhr geht jedem Gegner vor (Konzept 03, Regel 3): Ihr Wirkende tötet wie ein Bruch zur falschen
+        Zeit. GluttonyCombo verlor einen Lauf, weil sie neben Hapalit und Dirty Eye nie angegriffen wurde.
+      - *Nicht zur falschen Zeit:* Hat sie LP verloren, ist sie kein Ziel und trifft keine Fläche, solange ein Bruch durch
+        einen Schlag jetzt Death auf dich lenken kann. Der Bruch landet frühestens nach der gemessenen Laufzeit eines
+        Tastendrucks bis zur Antwort des Servers (`RoundTrip`) und spätestens einen Takt danach (die gemessenen 0,4 und
+        0,67 s liegen darunter); Death feuert am ersten Takt danach – je Druck einer von zwei aufeinanderfolgenden Takten.
+        Ein Takt trifft dich, wenn die Nadel dann in deine Halbebene zeigt und du in Reichweite von Death stehst (samt
+        deines Trefferkreises): Die Breite des Kegels nennt kein Blatt, aber kein Kegel unter 180° erreicht dich von der
+        Seite oder von hinten.
+      - *Takt aus der Nadel:* Den Takt misst RSR am Abstand zweier Drehungen, den Drehsinn an der Drehung, den Versatz des
+        Takts vor der Drehung an einem beobachteten Death mit der Drehung danach; bis dahin gelten GluttonyCombos
+        Messungen (1,5605 s, 0,49 s).
+      - *Nicht halten:* bei vollen LP – der erste Schlag bricht sie nicht (größter gemessener Treffer 67 %); wenn getragene
+        Ausrüstung gegen Verhängnis feit („Doom Resistance +100%") – dann fällt sie, sobald es geht; solange die Nadel
+        nicht gelesen ist (keine Drehung gesehen); und wenn der nächste sichere Druck erst nach dem Ende ihres Wirkens
+        bräche – dann trifft Death ohnehin, und warten gewinnt nichts.
+      - *Wie lange:* In deine Halbebene zeigen zwei der vier Richtungen, sobald du nicht genau auf einer Achse stehst – ein
+        Viertel der Zeit ist frei, das Halten endet spätestens nach drei Takten (rund 4,7 s); ihr Wirken lässt rund 25 s.
+        Der Preis ist Zeit, nicht LP: Eine schmalere Annahme (GluttonyCombos 60°) gäbe die Hälfte frei, träfe dich aber, wenn
+        der Kegel breiter ist und du schräg stehst. Modell `roulette_needle_model.py` (07.11.2026): Bei Kegeln von 45°, 60°
+        und 89° halber Breite und einem Verzug von 0 bis einem Takt bricht kein freigegebener Druck die Sanduhr auf dich;
+        ohne Regel trifft Death in einem Viertel bis der Hälfte der Brüche, mit der Richtung zum Zeitpunkt des Drucks oder
+        ohne Laufzeit ebenfalls.
+      *Im Kampf:* Roulette bindet dich östlich der Mitte, etwas nördlich der Achse; die Nadel rückt jeden Takt weiter
+      (Norden, Westen, Süden, Osten). In deine Hälfte zeigen Osten und Norden. Dein erster Schlag nimmt der Sanduhr 60 %.
+      Als dein nächster GCD bereit ist, wären die möglichen Takte des Bruchs „Süden, Osten": RSR schlägt sie nicht, sondern
+      den Hapalit, bis die möglichen Takte „Westen, Süden" sind – höchstens drei Takte –; dann bricht der Schlag sie, und
+      Death geht ins Leere. Ohne die Regel bräche der Schlag sie sofort, und Death träfe dich beim Takt nach Osten:
+      Verhängnis, nach 6 s tot, Lauf beendet.
+      *Gegenthesen:* (1) Dein Begleiter bricht sie zur falschen Zeit. Er folgt deinem Ziel (meist binnen 1,7 s, Konzept
+      03, „Gegner mit Stacheln") und trifft sie also auch, nachdem RSR sie freigab, und noch bis zu 1,7 s in einen
+      unsicheren Abschnitt hinein. Preis: Liegen ihre LP unter einem Schlag des Begleiters, bricht er sie mit der
+      Wahrscheinlichkeit des unsicheren Anteils (die Hälfte, schräg drei Viertel) – nicht abwendbar ohne Befehl an den
+      Begleiter, den der Beastmaster nicht hat; RSRs eigener Schlag, der größte, fällt nur noch in sichere Abschnitte.
+      (2) Ein erster Schlag bricht sie doch (eine Stärkung über 50 % auf 67 %). Dann gilt der Zufall des Takts wie ohne
+      Regel. (3) Ausgeliefert, und nichts ändert sich: Die Nadel ist kein Ziel und steht in keiner Gegnerliste. RSR sucht
+      sie in der ganzen Objekttabelle nach ihrer Basis; findet es sie nicht, hält es nichts, und die Spur nennt es.
+      *Verworfen:* GluttonyCombos Schwelle „75 % LP" und Kegelbreite 60°: Zahlen, wo das Spiel einen Zustand (LP verloren)
+      und die Geometrie (Halbebene) liefert. Aus dem Kegel gehen: Roulette bindet dich.
     - *Versteinerter Zyklop, Medusa-Kampf:* allgemein, Konzept 03, „Ein Treffer tötet ihn".
     - *Barbmole, Drachen-Kampf:* allgemein, Konzept 03, „Gegner mit Stacheln" (Needles Out).
     - *Nicht gebaut, mit Grund:* Loosefrox und Chewchum (Brett 2): BossModReborn schont Chewchum, solange Loosefrox lebt,

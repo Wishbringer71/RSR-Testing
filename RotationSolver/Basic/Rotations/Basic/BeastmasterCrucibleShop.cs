@@ -157,7 +157,7 @@ public partial class BeastmasterRotation
 	}
 
 	// A673: whether the gear this run wears makes the player immune to the status named ("Petrification Resistance +100%").
-	private static bool WornResists(string status)
+	internal static bool WornResists(string status)
 	{
 		if (_gearSeen is not { } seen || seen.Run != CrucibleBoard.Run)
 		{

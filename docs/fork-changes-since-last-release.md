@@ -58,6 +58,12 @@ What this release changes in the fight. For the whole distance from upstream, se
   fight's other enemies, even when another of its kind had hit already: a second Aetheric Charge stood like an average
   enemy. It now counts with the danger its kind showed in this area - each enemy measured until it fell -; only enemies
   that stood in the target list count, not hidden helpers carrying a boss's name.
+- **The King Ahriman piece's hourglass is broken only when it is safe.** Breaking the final hourglass makes the roulette
+  needle's next beat fire Death along it, and its Doom kills; left alone, Death fires when its cast ends. RSR now puts
+  the hourglass before every other enemy, and once it is hit holds every attack on it - area attacks too - while a press
+  could break it on a beat that points into your half. It reads the needle's heading and beat from the game, measures the
+  round trip of your presses, and lets go when gear makes you immune to Doom, when the needle is not readable, or when
+  waiting would outlast the cast. Setting "Kill rules of known fights".
 - **The way window plans a flight.** With a Beastly Smokebomb held, the way window weighs fighting and fleeing at each
   enemy space ahead and names the fight to flee ("Flee the fight at move 5 with a smoke bomb"); elites and bosses cannot
   be fled. While the Coward's Knife is worn it tells you to take the escape when offered. A treasure counts two items

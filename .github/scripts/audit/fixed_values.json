@@ -1910,6 +1910,86 @@
    "status": "exception",
    "loop": "A661",
    "reason": "Unit of the learned loads per Crucible fight (CrucibleFightLoads.json): whole percent of the player's maximum HP, the unit the windows show; a choice of unit, not a figure of the game (A661). Also the unit of the learned campsite rest per board (CrucibleCampPools.json, A667)."
+  },
+  {
+   "file": "RotationSolver/Basic/Helpers/KillOrder.cs",
+   "code": "private const uint FinalHourglass = 14689;",
+   "values": [
+    "14689"
+   ],
+   "status": "exception",
+   "loop": "A675",
+   "reason": "BNpcName row of the final hourglass the King Ahriman piece's Roulette spawns (xivapi v2, 07.11.2026; GluttonyCombo cb5bf32 HourglassNameId); an identifier of the game. Concept 21, K12."
+  },
+  {
+   "file": "RotationSolver/Basic/Helpers/KillOrder.cs",
+   "code": "private const uint RouletteNeedle = 19738;",
+   "values": [
+    "19738"
+   ],
+   "status": "exception",
+   "loop": "A675",
+   "reason": "BNpcBase of the Roulette's needle, a nameless actor whose rotation is Death's heading (GluttonyCombo cb5bf32 NeedleBaseId; Tekz RoulettePiece 19738); an identifier of the game. Concept 21, K12."
+  },
+  {
+   "file": "RotationSolver/Basic/Helpers/KillOrder.cs",
+   "code": "private const uint NeedleDeath = 49422;",
+   "values": [
+    "49422"
+   ],
+   "status": "exception",
+   "loop": "A675",
+   "reason": "Action row of Death, the needle's cone (xivapi v2, 07.11.2026: CastType 13, EffectRange 23, read at runtime); an identifier of the game. Concept 21, K12."
+  },
+  {
+   "file": "RotationSolver/Basic/Helpers/KillOrder.cs",
+   "code": "private const uint DeathDoom = 5421;",
+   "values": [
+    "5421"
+   ],
+   "status": "exception",
+   "loop": "A675",
+   "reason": "Status row of the Doom Death lays (xivapi v2, 07.11.2026: \"Certain death when counter reaches zero\", CanDispel false); its English name is read at runtime for the gear that resists it. Concept 21, K12."
+  },
+  {
+   "file": "RotationSolver/Basic/Helpers/KillOrder.cs",
+   "code": "private const double BeatFallback = 1.5605;",
+   "values": [
+    "1.5605"
+   ],
+   "status": "exception",
+   "loop": "A675",
+   "reason": "The needle's beat until RSR has seen two turns: GluttonyCombo cb5bf32, 16 recorded Death casts one beat apart. Replaced by the beat measured between two turns. No sheet holds it. Concept 21, K12."
+  },
+  {
+   "file": "RotationSolver/Basic/Helpers/KillOrder.cs",
+   "code": "private const double BeatBeforeTurnFallback = 0.49;",
+   "values": [
+    "0.49"
+   ],
+   "status": "exception",
+   "loop": "A675",
+   "reason": "How long before the needle's turn its beat falls, until RSR has seen a Death and the turn after it: GluttonyCombo cb5bf32 (the needle turns 0.49 s after each beat). Replaced by the measurement. No sheet holds it. Concept 21, K12."
+  },
+  {
+   "file": "RotationSolver/Basic/Helpers/KillOrder.cs",
+   "code": "private const int Quarters = 4;",
+   "values": [
+    "4"
+   ],
+   "status": "exception",
+   "loop": "A675",
+   "reason": "The four axes the needle points along (GluttonyCombo: every recorded heading): geometry of the mechanic, not a tunable value. Concept 21, K12."
+  },
+  {
+   "file": "RotationSolver/Basic/Helpers/KillOrder.cs",
+   "code": "if (!PressAims(start + (Beat / 2d), lag, needle, player, reach))",
+   "values": [
+    "2"
+   ],
+   "status": "exception",
+   "loop": "A675",
+   "reason": "The middle of a span of one beat in which the answer does not change: geometry of the search, not a claim about the game. Concept 21, K12."
   }
  ]
 }

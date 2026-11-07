@@ -1740,10 +1740,10 @@ internal partial class Configs : IPluginConfiguration, IM3Settings
 	private static readonly bool _avoidSpikedEnemies = true;
 
 	// Concept 03, "Tötungsregeln", rules 2 and 3 (A588), with the fights in concept 21, K12: enemies that must fall together,
-	// after another or only in a place. On by default: a tablitaur that falls too early enrages the other (Daedalus, in the
+	// after another, only in a place or only at a time. On by default: a tablitaur that falls too early enrages the other (Daedalus, in the
 	// field), a morpho's death confuses you.
 	[ConditionBool, UI("Kill rules of known fights",
-	Description = "Some enemies must fall in an order no danger count finds. Enemies that must fall together (the tablitaur pair, the lamias that raise each other) are each brought down to a reserve and held there until all are: the reserve is what your measured damage clears in half the time the survivor's enrage or raise takes, so the last falls before it lands. An enemy whose death harms you while another lives or outside a place is no target then (a morpho while an abaddon lives, an abaddon while a morpho lives, a myconid outside the mindflayer's water puddles). A held enemy is caught by no area attack where its fall would harm. RSR notes each hold and release in DefenseTrace.log.\nOff: RSR attacks these enemies like any other.",
+	Description = "Some enemies must fall in an order no danger count finds. Enemies that must fall together (the tablitaur pair, the lamias that raise each other) are each brought down to a reserve and held there until all are: the reserve is what your measured damage clears in half the time the survivor's enrage or raise takes, so the last falls before it lands. An enemy whose death harms you while another lives or outside a place is no target then (a morpho while an abaddon lives, an abaddon while a morpho lives, a myconid outside the mindflayer's water puddles). An enemy whose death harms you at one time but not another, and as much when it falls too late, comes before every other and is held only while a hit now could break it at the wrong time (the King Ahriman piece's final hourglass, while the roulette needle could point Death at you on the beat after the break). A held enemy is caught by no area attack where its fall would harm. RSR notes each hold and release in DefenseTrace.log.\nOff: RSR attacks these enemies like any other.",
 	Filter = TargetConfig, Section = 1)]
 	private static readonly bool _killRules = true;
 
