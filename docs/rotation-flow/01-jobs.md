@@ -2750,9 +2750,10 @@ Heilung sofort, der Zuschlag gegen die Adds später nur vielleicht. Ausgeliefert
 anders als das Schema (wie bei `XBMPet`, Spalte `Unknown4`), fehlen Schwäche und Gegnerliste still; RSR schreibt deshalb
 beim Betreten, ob es die Daten des Bretts gelesen hat.
 
-*Stufen* (TODO „Beastmaster: Crucible-Strategien"): 1. Daten zur Laufzeit (Schwäche und Gegnerliste je Kampf,
-Schadensart je Begleiter) mit K1, K2 und K3; 2. K11 (Bedarfsliste und LP je Begleiter) mit K9; 3. K8; 4. K6 und K7;
-danach K4, K5, K10 (Campsite A564, Laden A569 und der Weghinweis A632 gebaut).
+*Stufen* (alle gebaut): 1. Daten zur Laufzeit (Schwäche und Gegnerliste je Kampf, Schadensart je Begleiter) mit K1, K2
+und K3; 2. K11 (Bedarfsliste und LP je Begleiter) mit K9, Stufe 3 A643; 3. K8; 4. K6 und K7; danach K4, K5 (Stufe 2 A644),
+K10 (Campsite A564, Laden A569, Weghinweis A632). Offen ist nur die Prüfung der Bretter 2 bis 5 an seinem ersten Lauf
+dort (TODO, „Warten auf Daten": „Beastmaster: Bretter 2 bis 5 am ersten Mitschnitt prüfen").
 
 **Stufe 1, erster Teil: Daten und K2** (A548, gebaut; K1 und der Rest von K3 folgen):
 - *Kämpfe aus dem Blatt:* `XBMBattleDetail` hat eine Zeile je Kampf und eine Unterzeile je Gegner. Gelesen werden der

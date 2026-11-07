@@ -19,18 +19,16 @@ auswahl und das timing der beschwörung" – je Kampf aller fünf Bretter (Gegne
 BossMod-Module) die Rotation des Beastmasters, die Wahl der Begleiter und den Zeitpunkt ihres Aufrufs im Loop prüfen
 (Beispiel seiner Beobachtung: der Raptor gegen Feuer, bevor feueranfällige Gegner da waren; A581).
 
-1. Beastmaster: Crucible-Strategien: Ein K.O. beendet den Lauf, und ein Begleiter, den ein späterer Kampf braucht, kommt
-   dort mit den LP an, die ihm die früheren ließen.
-2. Tinktur: Schalter je Gegenstand ab Werk aus: Auf jedem Job, auf dem er die Tinktur nicht von Hand eingeschaltet hat,
+1. Tinktur: Schalter je Gegenstand ab Werk aus: Auf jedem Job, auf dem er die Tinktur nicht von Hand eingeschaltet hat,
    kommt sie nie, gegen den Text von „Tincture usage".
-3. Jobkonfiguration: Jobs ohne gespeicherten Eintrag teilen eine Liste: Schaltet er auf einem neu gespielten Job eine
+2. Jobkonfiguration: Jobs ohne gespeicherten Eintrag teilen eine Liste: Schaltet er auf einem neu gespielten Job eine
    Aktion aus, ist sie auf jedem anderen in derselben Sitzung neu gespielten Job ebenfalls aus.
-4. Bewegungssperre beim Wirken gegen das Ausweichen der BossMod-KI: Mit „Lock movement while casting" an steht die
+3. Bewegungssperre beim Wirken gegen das Ausweichen der BossMod-KI: Mit „Lock movement while casting" an steht die
    Figur während jedes Zaubers still, auch wenn die KI von BossMod aus einer Fläche laufen will; nur in dieser
    Kombination, dort aber mit einem Treffer, dem der Spieler nicht ausweicht.
-5. Blaumagier: Set nach den Widerständen der Stufe: Im Masked Carnivale wählt der Satz des Stufenführers Füllzauber
+4. Blaumagier: Set nach den Widerständen der Stufe: Im Masked Carnivale wählt der Satz des Stufenführers Füllzauber
    nach Beispielen; gegen welches Element die Gegner der Stufe schwach oder immun sind, zählt dabei nicht.
-6. Konzepte neu ordnen (allgemein, Rollen, Gruppen, Jobs, Inhalte): keine direkte Wirkung im Kampf; eine Regel, die
+5. Konzepte neu ordnen (allgemein, Rollen, Gruppen, Jobs, Inhalte): keine direkte Wirkung im Kampf; eine Regel, die
    im Konzept eines Jobs steht, wird für dessen Gruppe übersehen, und eine Inhaltsregel ist über mehrere Konzepte
    verteilt.
 
@@ -58,15 +56,6 @@ derselben Sitzung für jeden anderen neu gespielten Job ebenso und wird für bei
 Instanz (Kopie der Vorgabe); Wirkung auf gespeicherte Konfigurationen. *Konzept:* 03, „Schalter je Gegenstand".
 
 ## Offene Arbeit
-
-### Beastmaster: Crucible-Strategien · N
-Im Kampf: Fällst du im Brett, ist der Lauf verloren, und RSR plant die Begleiter nicht über das Brett: Ein Heiler, der im vierten Kampf gebraucht wird, kann bis dahin auf 25 von 550
-LP gefallen sein (04.11.2026). *Ort:* `BST_Reborn`, `CrucibleBoard`, `BeastmasterCrucible*.cs`. *Gebaut:* Stufe 1 (A548,
-A549: Daten zur Laufzeit, K1, K2, K3 ohne den Bedarf der Begleiter), K9 (A550), K8 (A551 bis A554: Heilung, Gegenmittel, Bestien-Lebensfeder, Sand der
-Zeit, Bestien-Heiltranksammlung, Schutz, Seren, Bestien-Heilmittelsammlung, Resistenzmittel, Bestien-Goldnadel,
-Bestien-Ausdauermittel, Schadensgegenstände, Stärkungsmittel im Endkampf; A555).
-*Gebaut auch:* K6 (A562, Hörner im Hornfenster), K7 (A563, Kader auf Wunsch im Teamfenster), K10 Campsite (A564, wer mitruht), K10 Laden (A569, A570: Kaufliste im Ladenfenster, Kauf auf Wunsch), K12 (A572, Eier des Zu), K13 (A578, Schatz: Empfehlung im Schatzfenster, Wahl auf Wunsch), Bretter 2 bis 5 (A588: Tötungsregeln, Gegenangriff nach Angriffsart), K5 Stufe 1 (A589: Stopp nur gegen Anfällige), K11 Stufe 2 (A590: Zähnefletschen und Campsite nach Bedarf des Endkampfs). *Gebaut auch:* K11 Stufe 3 (A643: der einzige Unterbrecher für einen späteren Kampf), K5 Stufe 2 (A644: gesenkte Treffsicherheit mit Zahl als Schutz). *Nächster Schritt:* die Bretter 2 bis 5 am ersten Mitschnitt prüfen (Spurzeilen „kill rule", „left alone"). *Konzept:* 01,
-„Crucible of the Unbroken: Bretter, Kämpfe, Strategien".
 
 ### Bewegungssperre beim Wirken gegen das Ausweichen der BossMod-KI · N, U
 Im Kampf: Mit „Lock movement while casting" („Stops your character from moving while casting …", ab Werk aus) setzt
@@ -178,6 +167,13 @@ Reborn"); beides kostet im Spiel, solange nicht beide Installationen gebraucht w
 nebeneinander braucht: neuer interner Name mit Übernahme des Ordners, angezeigter Name bleibt.
 
 ## Warten auf Daten oder Fremde
+
+- **Beastmaster: Bretter 2 bis 5 am ersten Mitschnitt prüfen** (Crucible-Strategien K1 bis K14 gebaut, zuletzt A643,
+  A644). Im Kampf: Tötungsregeln (Tablitauren, Lamien, Morpho und Abaddon, Myconid in der Pfütze), Gegenangriff nach
+  Angriffsart und die Eier des Zu sind aus Blättern, BossMod-Modulen und Daedalus' Feldnotizen gebaut, aber nicht an einem
+  seiner Läufe gesehen. Auflösung: `DefenseTrace.log` und ACT-Mitschnitt seines ersten Laufs auf einem der Bretter 2 bis 5
+  – die Zeilen „kill rule: … held/released", „left alone", „crucible route" und die Tode; dann je Abweichung Loop.
+  Konzept 01, „Crucible of the Unbroken: Bretter, Kämpfe, Strategien".
 
 - **Teraflare bricht auf Shinryu Unreal ab: welcher Abbrecher** (seine Meldung, 06.11.2026; A629). Im Kampf: In der
   letzten Phase startet sein LB3 und bricht wieder ab, mehrfach. RSR reicht Limit Breaks unverändert ans Spiel und
