@@ -9,7 +9,10 @@ Anlass: Er lädt Dateien hoch, mit oder ohne Frage dazu.
 
 ## Regeln
 
-- Er zeichnet seine Kämpfe mit ACT auf (seine Angabe); FFLogs-Reports sind also möglich.
+- Er zeichnet seine Kämpfe mit ACT auf (seine Angabe); FFLogs-Reports sind also möglich. Zugang zur FFLogs-API (v2,
+  Token über `https://www.fflogs.com/oauth/token`, Client-Credentials): die Umgebungsvariablen `FFLogsClientID` und
+  `FFLogsClientSecret` seiner Umgebung (eingetragen 07.11.2026). Werte und Token nie ausgeben, nie in eine Datei des
+  Repositorys.
 - Was er hochlädt – `DefenseTrace.log`, die gelernten Dateien, ACT-Mitschnitte –, werte ich jedes Mal auch allgemein aus,
   wenn er eine bestimmte Frage dazu stellt (seine Vorgabe, 25.10.2026): erst seine Frage, dann alle übrigen Kämpfe,
   Zeilenarten und Dateien. Grund: Eine Frage zu einem Boss lässt den Rest des Abends ungeprüft.
