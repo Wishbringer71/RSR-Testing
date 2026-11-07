@@ -46,6 +46,10 @@ What this release changes in the fight. For the whole distance from upstream, se
   measured, with the duration your gear gives it (Ice Shield, Hexed Hat). While you wear or choose a Crimson Ribbon, soul
   serums count as 50 % heals, and the ribbon counts the serums you hold; the Potion of Breathtaking Swiftness counts the
   three Blink it adds to a held Tome of the Impervious.
+- **Feral potions under protection.** RSR read no feral potion. It now uses one like its tempered counterpart while the
+  gear you wear makes you immune to the status it lays on you: the Umbral Wristlet against Stun, the Crimson Ribbon
+  against Petrification and Blind, Silver Specs against Blind. Feral Magic (Nightmare) and Feral Constitution (Pollen)
+  have no such gear and stay unused.
 - **Damage items stop counting overkill.** A fang counted its full potency on every enemy it reached; three shadow mites
   with 522 HP took 1,304 to 1,600 each. RSR now measures what its damage items deal per potency on their hits and counts
   each enemy at most at its HP left - in a fight ahead at the most HP it saw that kind with -, so an item waits for the

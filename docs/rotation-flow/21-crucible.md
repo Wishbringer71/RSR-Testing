@@ -1304,8 +1304,14 @@ on a pack once a fight, all of them in the final fight (Crucible only)".
       8 % erlittener Schaden, 60 bis 180 s), bei einer Kombo mit Begleiterfertigkeit (Stimulanzöl-Simulakrum). Die
       Stärkungen der kritischen Trefferquote und des Ausweichens tragen die ersten beiden; sie gehen im Endkampf zu
       Beginn und wirken so am längsten – keine Änderung. Tötungsstapel machen schwache Gegner wertvoll: Ein
-      Flächengegenstand, der drei Schattenmilben tötet, gibt drei Stapel für den Rest des Kampfes – in Zielwahl (K3) und
-      Wert (13) offen (Stufe 2).
+      Flächengegenstand, der drei Schattenmilben tötet, gibt mit Dämonischer Rüstung drei Stapel High Wire (je −5 %
+      erlittener Schaden, +10 % Schaden, 180 s, bis vier; Tonikum-Futter für den Begleiter je −8 %, 60 s), Magnum-Wasser
+      dem Begleiter Regeneration. *Bewertet (A672):* Ein Stapel ist Schutz über die Zeit nach der Tötung; Wert (13) zählt
+      Potenz, Zielwahl (K3) Gefahr je Sekunde bis zum Fall – keine der beiden misst ihn. Auf Brett 1 brächten drei Milben
+      auf einmal −15 % für den Rest eines Kampfes, der 4 bis 18 % deiner LP kostete: höchstens rund 2 % je Kampf. Offen
+      (TODO „Crucible-Wechselwirkungen, Stufe 2"): den Wert eines Schadensgegenstands in verhinderter Gefahr rechnen
+      (Gefahr je Sekunde der Gegner, die er tötet, über die Restdauer des Kampfes, dazu der Schutz der Stapel), dann
+      zählen Überschuss und Stapel in derselben Einheit.
     - *Rast und Futter:* Ein ruhender Begleiter verliert sein Futter, mit Lilien-Simulakrum nicht; mit
       Lassi-Simulakrum füllt ihn die Rast ganz. Die Campsite wählt danach (K10, „Futter an der Rast", A669). Arzneibeutel:
       ein zufälliger Bestien-Trank je Rast, auf der Skala mit dem kleinsten je sicherer Campsite (K13, A669).
@@ -1316,10 +1322,19 @@ on a pack once a fight, all of them in the final fight (Crucible only)".
       physisch, auch den der Begleiter. Die Abwehrstufe wirkt (derselbe Auto-Angriff traf Stufe 2 mit 57, Stufe 5 mit
       37), und unter Zauberschmiede trägt das Zaubermittel jeden Angriff. Ob die Umwandlung den Aspekt und damit die
       Schwäche behält, ist unbelegt – offen (Stufe 2, mit Messung nach dem Einsatz).
-    - *Ungezähmte Mittel:* Sie geben mehr (+45 % physisch, +50 % magisch oder kritisch) und legen dir einen Zustand auf
-      (Betäubung 15 s, Nightmare 30 s, Versteinerung 15 s, Blind 30 s, Pollen 180 s). RSR liest sie nicht und nimmt sie
-      nicht. Rote Schleife (Versteinerung, Blind, Lähmung +100 %), Silberrandbinokel (Blind) oder ein stehendes Serum
-      nehmen dem Ungezähmten Aufbraus- und Wendigkeitsmittel den Preis – offen (Stufe 2).
+    - *Ungezähmte Mittel (A673):* Sie geben mehr als ihr gezähmtes Gegenstück (Stärke +45 % physisch, Magie +50 %,
+      Intensität +50 % kritisch, Ausweichen +25 % für 60 statt 30 s, Konstitution +30 % maximale LP) und legen dir einen
+      Zustand auf: Betäubung 15 s, Nightmare 30 s („Troubled sleep is preventing the execution of actions", Status 5383),
+      Versteinerung 15 s, Blind 30 s, Pollen 180 s (Schaden über Zeit, Status 1507). RSR liest sie wie das gezähmte Mittel
+      – Stärkung, bei Konstitution maximale LP – und nimmt sie nur, solange getragene Ausrüstung dich gegen genau diesen
+      Zustand feit („… Resistance +100%"): Umbral-Armband gegen Betäubung, Rote Schleife gegen Versteinerung und Blind,
+      Silberrandbinokel gegen Blind. Gegen Nightmare und Pollen feit keine Ausrüstung (Schwarze Kapuze schützt vor Schlaf;
+      ob das Nightmare deckt, ist unbelegt – RSR nimmt es nicht an); diese beiden nimmt RSR nie. Ein Serum zählt nicht als
+      Schutz: Welchen Status es dir gibt und ob er steht, liest RSR nicht. Grund: K8 nimmt nie einen Gegenstand, der dir
+      einen Zustand zufügt; mit der Resistenz kommt der Zustand nicht an, und das Mittel ist das stärkere ohne Preis.
+      *Gegenthese A673-1 (+100 % nicht immun):* Hält die Resistenz den Zustand nicht immer ab, trifft er dich doch.
+      Teilweise widerlegt: Der Laden zählt dieselbe Resistenz als Schutz gegen tödliche Zustände (Schritt 2), das Spiel
+      nennt sie „+100%"; Preis: ein Zustand, falls doch nicht – eine Betäubung von 15 s im Endkampf.
     - *Punkte:* „Habitual Horder" (zehn Gegenstände am Ende, 1.000 Punkte) steht gegen „nichts verfällt"; seine Meldung
       gilt der Nutzung, Punkte nannte er nicht – RSR richtet sich nach der Nutzung.
     - *Gegenthese A666-1 (Flinkheitsmittel früh):* Geht es mit dem Grimoire in einem frühen Kampf, fehlt es im Endkampf

@@ -55,7 +55,13 @@ public partial class BeastmasterRotation
 		uint Element = 0, float Radius = 0f, bool Knockback = false, string Afflicts = "", string BonusStatus = "",
 		float Bonus = 0f, bool RaisesMagic = false, uint LowersResist = 0, float HealShare = 0f, string HealCarrying = "",
 		string GainsFrom = "", float Duration = 0f, string LongerWith = "", float LongerDuration = 0f, int Stacks = 0,
-		int MoreStacks = 0, float AutoBelow = 0f, float Expires = 0f, float ExpiresWith = 0f);
+		int MoreStacks = 0, float AutoBelow = 0f, float Expires = 0f, float ExpiresWith = 0f, string SelfStatus = "");
+
+	// A673: a feral potion - "Inflicts Petrification while also granting Liquid Intensity to self or familiar", "Inflicts
+	// Pollen while also granting Liquid Constitution and restoring 10% of HP".
+	private static readonly Regex InflictsSelf = new(
+		@"^Inflicts (?<self>[A-Z][\w' -]*?) while also granting (?<status>[A-Z][\w' -]*?)(?: and restoring| to self)",
+		RegexOptions.CultureInvariant);
 
 	// A670: Auto-potion - "Restores 40% of HP automatically when HP falls below 50%", "50% chance for the effect to expire when
 	// triggered. Chance is reduced to 10% when under the effect of Spirit of the Breathtaker."
@@ -181,6 +187,14 @@ public partial class BeastmasterRotation
 					&& Percent(expires.Groups["reduced"].Value, out expiryWith);
 				items[id] = new CrucibleItem(CrucibleItemKind.AutoPotion, autoShare, false, name, AutoBelow: below,
 					Expires: expiry, ExpiresWith: expiryWith);
+			}
+			else if (InflictsSelf.Match(text) is { Success: true } feral)
+			{
+				// A673: as its tempered counterpart - a buff, or maximum HP -, with the status it lays on the player.
+				items[id] = new CrucibleItem(text.Contains("Increases maximum HP", StringComparison.Ordinal) ? CrucibleItemKind.MaxHp
+					: CrucibleItemKind.Buff, 0f, false, name, feral.Groups["status"].Value,
+					RaisesMagic: text.Contains("Increases magic damage dealt", StringComparison.Ordinal),
+					SelfStatus: feral.Groups["self"].Value);
 			}
 			else if (text.Contains(EscapeText, StringComparison.Ordinal))
 			{
@@ -1378,6 +1392,12 @@ public partial class BeastmasterRotation
 		item = default;
 		var id = crucible->Inventory[slot].ItemId;
 		if (id == 0 || _crucibleSlotsRefused.Contains(slot) || !CrucibleItems.TryGetValue(id, out item))
+		{
+			return false;
+		}
+
+		// A673: an item that lays a status on the player only while the gear worn makes him immune to it.
+		if (item.SelfStatus.Length > 0 && !WornResists(item.SelfStatus))
 		{
 			return false;
 		}

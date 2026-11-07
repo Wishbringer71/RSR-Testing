@@ -57,10 +57,10 @@ Mechanik am Modul und an den Blättern (Zeiger, Platzen), allgemeine Regel „vo
 Konzept 21, K3 und K12; Quelle A667.
 
 ### Crucible-Wechselwirkungen, Stufe 2 · N
-Im Kampf und auf dem Brett: Tötungsstapel (Dämonische Rüstung, Stimulanztrunk-Simulakrum) zählen weder in der Zielwahl
-noch im Wert eines Flächengegenstands; die Zauberbücher und die Ungezähmten Mittel nimmt RSR nicht.
-Nächster Schritt: je Paar der Loop in der Reihenfolge Sicherheit vor Schaden – Tötungsstapel, Zauberbücher
-mit Messung nach dem Einsatz, Ungezähmte Mittel unter Schutz. Konzept 21, K8 („Wechselwirkungen", A666), K10, K14, Weg.
+Im Kampf und auf dem Brett: Tötungsstapel (Dämonische Rüstung, Tonikum-Futter) zählen weder in der Zielwahl noch im
+Wert eines Flächengegenstands – beide rechnen nicht in verhindertem Schaden; die Zauberbücher nimmt RSR nicht. Nächster
+Schritt: je Paar der Loop in der Reihenfolge Sicherheit vor Schaden – Wert der Schadensgegenstände in verhinderter Gefahr
+(dann Tötungsstapel), Zauberbücher mit Messung nach dem Einsatz. Konzept 21, K8 („Wechselwirkungen", A666), K10, K14, Weg.
 
 ### Kegel und Ringe gegnerischer Zauber genau messen · N
 Im Kampf: RSRs Formprüfung (`DataCenter.AreaCastReaches`) misst einen Kegel und einen Ring als vollen Kreis um den

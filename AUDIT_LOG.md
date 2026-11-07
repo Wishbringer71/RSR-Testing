@@ -19780,6 +19780,26 @@ Fünftes Paar aus TODO „Crucible-Wechselwirkungen, Stufe 2" (Gegenthese A665-3
 *Prüfgrad:* Compile ohne Warnung, Prüfskripte; Aktionszuordnung am Blatt und am Mitschnitt belegt. Im Spiel nicht
 beobachtet.
 
+### A673 · Crucible: Ungezähmte Mittel unter Resistenz; Tötungsstapel bewertet (07.11.2026)
+
+Sechstes Paar aus TODO „Crucible-Wechselwirkungen, Stufe 2", dazu die Bewertung der Tötungsstapel.
+
+- *1 Research:* Wirktexte 104–113 (Gezähmte und Ungezähmte Mittel), Statusblatt (Nightmare 5383 „Troubled sleep is
+  preventing the execution of actions", Pollen 1507 „causing damage over time"), Resistenz-Ausrüstung (Crimson Ribbon,
+  Silver Specs, Umbral Wristlet, Black Cowl …). Code: Kein Ungezähmtes Mittel wurde gelesen (Text beginnt mit
+  „Inflicts", keine Regex) – nie genommen, auch nicht mit Schleife.
+- *Gebaut (Konzept 21 K8 „Ungezähmte Mittel"):* `InflictsSelf` liest Zustand und Stärkung; das Mittel gilt als Stärkung
+  bzw. maximale LP wie das gezähmte, mit `SelfStatus`. `TryItem` gibt es nur heraus, solange getragene Ausrüstung gegen
+  genau diesen Zustand feit (`WornResists`). Nightmare und Pollen: kein Schutz, nie.
+- *Tötungsstapel bewertet (K8 „Auslöser"):* High Wire mit Dämonischer Rüstung (−5 %, +10 %, 180 s, bis vier),
+  Tonikum-Futter (−8 %, +15 %, 60 s), Magnum-Wasser (Regeneration). Wert (13) und Zielwahl (K3) rechnen nicht in
+  verhindertem Schaden; auf Brett 1 höchstens rund 2 % LP je Kampf. Offen mit dem nächsten Schritt im TODO.
+- *6 Falsifikation:* Kein Defekt? Widerlegt am Code (nie gelesen). Option falsch? +100 % könnte nicht immun sein
+  (A673-1, teilweise widerlegt). Ausgeliefert, nichts ändert sich? Ohne Resistenz-Ausrüstung – dann wie bisher nie.
+
+*Prüfgrad:* Compile ohne Warnung, Prüfskripte; Regex an allen fünf Rohtexten, Schutz je Zustand am Blatt. Im Spiel nicht
+beobachtet.
+
 ## B · Commit-Register (Fork vs. `upstream/main`)
 
 ### B1 · Einzelgeprüfte Fork-Commits

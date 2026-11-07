@@ -156,6 +156,26 @@ public partial class BeastmasterRotation
 		return false;
 	}
 
+	// A673: whether the gear this run wears makes the player immune to the status named ("Petrification Resistance +100%").
+	private static bool WornResists(string status)
+	{
+		if (_gearSeen is not { } seen || seen.Run != CrucibleBoard.Run)
+		{
+			return false;
+		}
+
+		var gear = CrucibleGearTable;
+		foreach (var id in seen.Gear)
+		{
+			if (gear.TryGetValue(id, out var piece) && GearResistsAilment(piece, status))
+			{
+				return true;
+			}
+		}
+
+		return false;
+	}
+
 	// A668: whether gear holds a piece of the English name an item's text names after "When carrying" ("crimson ribbon").
 	private static bool Carries(List<CrucibleGear> gear, string name)
 	{
