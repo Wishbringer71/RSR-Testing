@@ -19180,6 +19180,34 @@ RebornMaterials Praxis); „ich will von dir keine nicht nutzbaren fenster bekom
 *Prüfgrad:* Compile ohne Warnung; Prüfskripte; Layoutmodell in Dear ImGui 1.93 mit Ersatzschrift (nicht Dalamud, nicht
 RebornMaterials Malen, nicht Axis); Kontrast gerechnet. Im Spiel nicht beobachtet.
 
+### A655 · Tooltips: Optionsbeschreibungen beim Lesemaß umgebrochen; die Regel an einer Stelle (07.11.2026)
+
+Defekt aus A654 („Tooltips: lange Optionsbeschreibungen werden rechts abgeschnitten"), nach seinen Vorgaben vom
+07.11.2026 zu den Fenstern gleich mit ihnen bearbeitet.
+
+- *1 Research:* `ImguiTooltips.ShowTooltip` öffnet ein Fenster mit Auto-Größe, 150 bis 1200 px × Skalierung. Die
+  Beschreibung einer Option steht darin ungebrochen (`ImGui.Text` für einen Text, `ImGui.BulletText` in
+  `Searchable.RowTooltip` und `Searchable.ShowTooltip`), sobald „Show setting descriptions inline" aus ist (ab Werk an).
+  Über `M3Tooltip.Handler` laufen auch die Tooltips von RebornMaterial hindurch. 204 Beschreibungen erhoben, 133 mit
+  Zeilen über 80 Zeichen, 30 über 170, die längste 2239. Im Modell steht die längste in einer Zeile, 1200 px breit,
+  der Rest abgeschnitten. Der Rotations-Tooltip der Navigation bricht die Beschreibung mit `ImGui.TextWrapped` am
+  Fensterrand um – dieselbe Klasse wie A654: Er wird so schmal wie seine übrigen Zeilen.
+- *2–5 Optionen:* (a) Tooltip in fester Breite: eine Zahl ohne Bezug zum Text, kurze Tooltips zu breit. (b) Umbruch
+  an einer Stelle, die aus dem Text kommt, nach derselben Regel wie in den Fenstern. Gebaut: (b), ohne Preis.
+- *Universell zuerst:* Die Regel steht einmal in `ReadableText` (50, 65, 75 Zeichen je Absatz in Zeichen des Textes
+  selbst), und `RecommendationWindow` liest sie daraus.
+- *6 Falsifikation:* Kein Defekt? Im Modell nachgestellt (1200 px, abgeschnitten). Option falsch? Mit Auto-Größe
+  wächst der Tooltip auf die berechnete Umbruchstelle, statt an seinem Rand zu brechen. Im Modell: 470 × 592 px,
+  Zeilen bis 66 Zeichen, nichts abgeschnitten, mit und ohne Aufzählungspunkt. Ausgeliefert, nichts ändert sich? Nur
+  bei Tooltips, die eigenen Inhalt mit langen ungebrochenen Zeilen zeichnen. Dazu die Zeitleiste
+  (`ActionTimelineWindow`, kurze Zeilen) und die Hinweiszeilen (`TextDisabled`, kurz) gelesen; beide nicht betroffen.
+- *Prüfmittel:* `check_window_layout.py` prüft auch den Inhalt jedes `ImguiTooltips.ShowTooltip(() => …)`. Gegen die
+  alte Fassung der Navigation schlägt es an, gegen die neue nicht. `window_layout_model.py` spielt den Tooltip alt und
+  neu durch.
+
+*Prüfgrad:* Compile ohne Warnung; Prüfskripte; Layoutmodell in Dear ImGui 1.93 mit Ersatzschrift. Im Spiel nicht
+beobachtet.
+
 ## B · Commit-Register (Fork vs. `upstream/main`)
 
 ### B1 · Einzelgeprüfte Fork-Commits

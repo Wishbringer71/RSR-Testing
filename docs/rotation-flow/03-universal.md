@@ -1422,6 +1422,12 @@ allgemeinen Regeln, nicht die Vorgaben einer Bibliothek:
   Inhalt oder die Breite, folgt die Höhe. Zieht er es kürzer, bleibt es so und rollt, bis er es wieder bis zum Inhalt
   aufzieht; höher als der Inhalt geht nicht, dort stünde nichts. Grundlage: Windows UX Guide („Size controls to eliminate
   unnecessary scrolling"; „If the first thing users do is resize a window […], its size is wrong").
+- *Tooltips.* Ihr Text bricht nach derselben Regel um – bis 75 Zeichen eine Zeile, sonst bei 65, je Absatz in Zeichen
+  des Textes selbst –, an einer Stelle, die aus dem Text kommt und nicht vom Fensterrand; der Tooltip wächst mit seinem
+  Inhalt wie bisher. Vorher stand jede Optionsbeschreibung ungebrochen in einem Fenster von höchstens 1200 px: 30
+  Beschreibungen hatten Zeilen über 170 Zeichen, die längste 2239, und ihr Rest lag außerhalb (A654, A655). Das gilt für jeden
+  Tooltip, der über `ImguiTooltips` läuft, auch für die von RebornMaterial (`M3Tooltip.Handler`), für die Beschreibungen
+  der Optionen und die der Rotationen. Die Regel sitzt einmal (`ReadableText`), Fenster und Tooltips lesen sie.
 - *Gespeicherte Größe.* Eine Breite unter der Mindestbreite kann unter diesen Regeln nicht entstehen; findet das Fenster
   beim ersten Bild einer Sitzung eine, stammt sie aus dem früheren Auto-Größenmodus (im Modell 116 px, A654), und es nimmt die
   Startbreite. Die Position bleibt.
@@ -1449,8 +1455,8 @@ einmal; ein neues Fenster erbt Größe, Satz und Messung, statt sie zu kopieren.
 spielt das Gerüst in einer echten Dear ImGui (imgui-bundle, ImGui 1.93) Bild für Bild durch: Startgröße, Mindestgröße,
 gespeicherte Altgröße, kürzer gezogene und wieder aufgezogene Höhe, wachsender Inhalt, doppelte Textgröße; es zeigt
 auch den alten Fehler (Teamfenster 116 × 664 px, Titel abgeschnitten). Es misst die Logik in ImGui, nicht Dalamud und
-nicht RebornMaterial; Schrift ist dort eine Ersatzschrift. `check_window_layout.py` weist in der CI jedes Fenster ab,
-das den Auto-Größenmodus mit umbrechendem Text verbindet. *Unbelegt:* der Zeilenabstand innerhalb eines umbrochenen
+nicht RebornMaterial; Schrift ist dort eine Ersatzschrift. `check_window_layout.py` weist in der CI jedes Fenster und
+jeden Tooltip ab, der den Auto-Größenmodus mit Umbruch am eigenen Rand verbindet. *Unbelegt:* der Zeilenabstand innerhalb eines umbrochenen
 Absatzes. ImGui setzt Zeilen im Abstand der Schrifthöhe, wie die Voreinstellung „normal" der Browser. Die 1,5-fache
 Schriftgröße von WCAG 1.4.8 (AAA) misst am Geviert, das ImGui für Axis nicht ausweist; AA und der Windows UX Guide
 verlangen keinen Mindestabstand.

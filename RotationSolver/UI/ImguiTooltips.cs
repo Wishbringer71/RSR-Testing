@@ -29,7 +29,8 @@ internal static class ImguiTooltips
 	{
 		if (!string.IsNullOrEmpty(text))
 		{
-			ShowTooltip(() => ImGui.Text(text));
+			// Broken at the readable line length, not left to run up to the 1200 px limit and beyond (A654).
+			ShowTooltip(() => ReadableText.Draw(text));
 		}
 	}
 

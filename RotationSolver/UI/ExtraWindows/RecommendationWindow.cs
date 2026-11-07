@@ -26,12 +26,6 @@ namespace RotationSolver.UI.ExtraWindows;
 /// </summary>
 internal abstract class RecommendationWindow : Window
 {
-	// Line length in characters of the text itself (concept 03, "Hilfsfenster", A654): the readable range is 50 to 75
-	// (Emil Ruder, Baymard Institute), the Windows UX Guide sets 65, WCAG 2.2 1.4.8 at most 80.
-	private const int ShortestLine = 50;
-	private const int LineMeasure = 65;
-	private const int LongestSingleLine = 75;
-
 	private M3Style.Scope _theme;
 
 	// Measured while drawing, in pixels and window coordinates; applied before the next frame.
@@ -223,20 +217,15 @@ internal abstract class RecommendationWindow : Window
 	}
 
 	/// <summary>
-	/// A text that wraps at the card's or window's edge. Its widths count in its own characters (its width over its
-	/// length): one line up to <see cref="LongestSingleLine"/>, else <see cref="LineMeasure"/> at the start, never fewer
-	/// than <see cref="ShortestLine"/>.
+	/// A text that wraps at the card's or window's edge. The window opens at the text's readable line length and never
+	/// gets narrower than its shortest readable line (<see cref="ReadableText"/>).
 	/// </summary>
 	private void Text(string text, M3TextStyle style)
 	{
 		var start = ImGui.GetCursorPosX();
-		var width = ImGui.CalcTextSize(text).X;
-		var chars = text.Length;
-		var shortest = chars <= ShortestLine ? width : width * ShortestLine / chars;
-		var opening = chars <= LongestSingleLine ? width : width * LineMeasure / chars;
 		var right = InsetRight();
-		_minWidth = MathF.Max(_minWidth, start + shortest + right);
-		_startWidth = MathF.Max(_startWidth, start + opening + right);
+		_minWidth = MathF.Max(_minWidth, start + ReadableText.Shortest(text) + right);
+		_startWidth = MathF.Max(_startWidth, start + ReadableText.Column(text) + right);
 
 		if (!_inCard)
 		{

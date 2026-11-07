@@ -14,7 +14,9 @@ model runs the frame of RecommendationWindow - the sizing, the measuring helpers
 - its height is its content's, down to the bottom of the screen, follows a change of content or width, and stays where
   the player drags it shorter until the player drags it back;
 - a width saved by the old auto-size mode (116 px) is replaced by the start width on the first frame;
-- at twice the text size, and on a small screen, the same holds.
+- at twice the text size, and on a small screen, the same holds;
+- a tooltip (ImguiTooltips: auto-size, 150 to 1200 px) breaks a long description at the same line length and shows all
+  of it, where the old one ran it on in one line past its 1200 px.
 
 It also runs the old construction and checks that it shows the defect (self-test: a check that passes the old window is
 no check). Three constructed defects - no minimum width, no height that follows, no replacement of the old width -
@@ -243,10 +245,8 @@ class Recommendation:
     def text(self, text):
         start = imgui.get_cursor_pos_x()
         if not self.legacy:
-            width = imgui.calc_text_size(text).x
-            chars = len(text)
-            shortest = width if chars <= SHORTEST_LINE else width * SHORTEST_LINE / chars
-            opening = width if chars <= LONGEST_SINGLE_LINE else width * LINE_MEASURE / chars
+            shortest = readable_column(text, SHORTEST_LINE, SHORTEST_LINE)
+            opening = readable_column(text)
             self.min_width = max(self.min_width, start + shortest + self.inset_right())
             self.start_width = max(self.start_width, start + opening + self.inset_right())
         wraps = self.in_card or not self.legacy
@@ -397,6 +397,81 @@ def team_content(picks, status="Team set: 3 familiars. Confirm it on the screen.
         w.action("Apply")
         w.note(status)
     return content
+
+
+# ---- ReadableText and the tooltip (ImguiTooltips.ShowTooltip)
+def readable_column(text, measure=LINE_MEASURE, single=LONGEST_SINGLE_LINE):
+    """ReadableText.Column: per paragraph its whole width up to `single` characters, else `measure` of them."""
+    widest = 0.0
+    for paragraph in text.split("\n"):
+        if paragraph:
+            width = imgui.calc_text_size(paragraph).x
+            widest = max(widest, width if len(paragraph) <= single else width * measure / len(paragraph))
+    return widest
+
+
+DESCRIPTION = " ".join(["As a tank: against a tankbuster the table has measured, RSR uses the mitigation that covers it"] * 23)
+
+
+class Tooltip:
+    """ImguiTooltips.ShowTooltip with ReadableText.Draw (new) or ImGui.Text (old)."""
+
+    def __init__(self, text, old=False, bullet=False):
+        self.text, self.old, self.bullet = text, old, bullet
+        self.size = (0.0, 0.0)
+        self.lines, self.cut = [], []
+
+    def run(self, ctx):
+        imgui.set_next_window_size_constraints(imgui.ImVec2(150, 0), imgui.ImVec2(1200, 1500))
+        imgui.set_next_window_pos(imgui.ImVec2(10, 10))
+        flags = (imgui.WindowFlags_.no_decoration.value | imgui.WindowFlags_.always_auto_resize.value
+                 | imgui.WindowFlags_.no_saved_settings.value | imgui.WindowFlags_.no_inputs.value)
+        imgui.begin("tooltip", None, flags)
+        if self.bullet:
+            imgui.bullet()
+            imgui.same_line()
+        start = imgui.get_cursor_pos_x()
+        if self.old:
+            imgui.text_unformatted(self.text)
+            wrap = 1e9
+        else:
+            wrap = readable_column(self.text)
+            imgui.push_text_wrap_pos(start + wrap)
+            imgui.text_unformatted(self.text)
+            imgui.pop_text_wrap_pos()
+        size = imgui.get_window_size()
+        self.size = (size.x, size.y)
+        visible = size.x - imgui.get_style().window_padding.x - start
+        self.lines, self.cut = [], []
+        font, px = imgui.get_font(), imgui.get_font_size()
+        for paragraph in self.text.split("\n"):
+            rest = paragraph
+            while rest:
+                cut = font.calc_word_wrap_position_python(px, rest, wrap)
+                piece = rest[:cut].rstrip() or rest[:1]
+                self.lines.append(piece)
+                if imgui.calc_text_size(piece).x > visible + 0.5:
+                    self.cut.append(piece)
+                rest = rest[max(cut, 1):].lstrip()
+        imgui.end()
+
+
+def scenario_tooltip(failures):
+    print("tooltip with a long option description")
+    for label, old, expect_ok in (("old (ImGui.Text, BulletText)", True, False), ("new (ReadableText.Draw)", False, True)):
+        for bullet in (False, True):
+            ctx = Context()
+            tip = Tooltip(DESCRIPTION + "\nRight-click for the matching chat command.", old=old, bullet=bullet)
+            ctx.frames([tip], 4)
+            longest = max(len(x) for x in tip.lines)
+            print(f"  {label}{' with bullet' if bullet else ''}: {tip.size[0]:.0f} x {tip.size[1]:.0f} px, longest line"
+                  f" {longest} characters, {len(tip.cut)} line(s) cut off")
+            if expect_ok:
+                check("tooltip shows all of the description", not tip.cut, "", failures)
+                check("tooltip lines at most 75 characters", longest <= LONGEST_SINGLE_LINE, "", failures)
+                check("tooltip lines reach the measure", longest >= SHORTEST_LINE, "", failures)
+            else:
+                check("the old tooltip cuts the description off (self-test of the checks)", bool(tip.cut), "", failures)
 
 
 def check(name, ok, detail, failures):
@@ -592,6 +667,7 @@ def main():
     scenario_saved_old_width(failures)
     scenario_resize(failures)
     scenario_scale_and_screen(failures)
+    scenario_tooltip(failures)
     caught = self_test()
     if args.png:
         out = Path(args.png)

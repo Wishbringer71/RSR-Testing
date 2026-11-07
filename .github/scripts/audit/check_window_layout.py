@@ -9,7 +9,9 @@ What this checks: every C# file under RotationSolver/ that names AlwaysAutoResiz
 the window - ImGui.TextWrapped, PushTextWrapPos() or PushTextWrapPos(0), an M3Card (which wraps at its right inset),
 M3Text with wrap: true, or a rotation's DisplayRotationStatus (TextWrapped in its base). Wrapping at a computed
 position - a measure of characters from the cursor - is not relative to the window and passes. A file that combines both
-on purpose is listed in ALLOWED with the reason it still lays out.
+on purpose is listed in ALLOWED with the reason it still lays out. A tooltip is such a window too (ImguiTooltips sizes
+it to its content), so the content handed to ImguiTooltips.ShowTooltip(() => ...) is held to the same rule wherever it
+is written; ReadableText.Draw breaks at the text's own line length and passes.
 
 WHAT THIS CHECKS, STATED HONESTLY: the pattern in one file, not the layout. A window whose wrapping text sits in another
 file escapes it; `window_layout_model.py` measures the layout of the recommendation windows in Dear ImGui.
@@ -48,16 +50,30 @@ def strip_comments(code):
     return "\n".join(line.split("//")[0] for line in code.splitlines())
 
 
+TOOLTIP = re.compile(r"\bImguiTooltips\.ShowTooltip\s*\(\s*\(\)\s*=>")
+
+
+def tooltip_bodies(code):
+    """The lambdas handed to ImguiTooltips.ShowTooltip, up to their closing parenthesis."""
+    for match in TOOLTIP.finditer(code):
+        depth, i = 1, match.end()
+        while i < len(code) and depth:
+            depth += {"(": 1, ")": -1}.get(code[i], 0)
+            i += 1
+        yield code[match.end():i]
+
+
 def findings(files):
-    """(path, what wraps) for every file that sizes itself to content wrapping at its own edge."""
+    """(path, what wraps) for every file that sizes itself, or a tooltip, to content wrapping at its own edge."""
     found = []
     for path, text in files:
         code = strip_comments(text)
-        if not AUTO.search(code):
-            continue
-        for pattern, what in WRAPS:
-            if pattern.search(code):
-                found.append((path, what))
+        scopes = ([code] if AUTO.search(code) else []) + [("tooltip", body) for body in tooltip_bodies(code)]
+        for scope in scopes:
+            kind, body = scope if isinstance(scope, tuple) else ("window", scope)
+            hit = next((what for pattern, what in WRAPS if pattern.search(body)), None)
+            if hit:
+                found.append((path, hit if kind == "window" else f"{hit} in a tooltip"))
                 break
     return found
 
@@ -73,6 +89,9 @@ def self_test():
         ("auto + measured wrap", "ImGuiWindowFlags.AlwaysAutoResize; ImGui.PushTextWrapPos(ImGui.GetCursorPosX() + measure);", False),
         ("resizable + card", "ImGuiWindowFlags.NoCollapse; using (M3Card.Begin(\"x\")) {}", False),
         ("auto in a comment", "// AlwaysAutoResize\nusing (M3Card.Begin(\"x\")) {}", False),
+        ("tooltip wraps at its edge", "ImguiTooltips.ShowTooltip(() =>\n{\n ImGui.Text(a);\n ImGui.TextWrapped(b);\n});", True),
+        ("tooltip at the readable length", "ImguiTooltips.ShowTooltip(() =>\n{\n ReadableText.Draw(b);\n});", False),
+        ("wrapped text outside a tooltip", "ImguiTooltips.ShowTooltip(() => ImGui.Text(a));\nImGui.TextWrapped(b);", False),
     ]
     ok = True
     for name, code, expected in cases:
@@ -86,7 +105,7 @@ def self_test():
 def main():
     if not self_test():
         return 1
-    print("self-test ok: auto-size with edge wrapping is found, measured wrapping and resizable windows pass.")
+    print("self-test ok: auto-size and tooltips with edge wrapping are found, measured wrapping and resizable windows pass.")
     files = [(p.relative_to(ROOT).as_posix(), p.read_text(encoding="utf-8", errors="replace"))
              for p in sorted((ROOT / "RotationSolver").rglob("*.cs"))
              if "/obj/" not in p.as_posix() and "/bin/" not in p.as_posix()]

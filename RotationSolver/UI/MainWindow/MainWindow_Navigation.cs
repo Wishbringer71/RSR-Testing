@@ -301,7 +301,9 @@ public partial class MainWindow
 
 				if (!string.IsNullOrEmpty(rotation.Description))
 				{
-					ImGui.TextWrapped(rotation.Description);
+					// The tooltip sizes itself to its content: wrapping at its edge would keep it as narrow as its other
+					// lines; the readable line length comes from the text (A654).
+					ReadableText.Draw(rotation.Description);
 				}
 
 				ImGui.Separator();

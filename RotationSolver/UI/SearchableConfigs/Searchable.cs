@@ -276,10 +276,18 @@ internal abstract class Searchable(PropertyInfo property) : ISearchable
 
 		ImguiTooltips.ShowTooltip(() =>
 		{
-			ImGui.BulletText(description);
+			Bulleted(description);
 			ImGui.Separator();
 			ImGui.TextDisabled(hint);
 		});
+	}
+
+	/// <summary>A bulleted description broken at the readable line length; BulletText would run it on in one line (A654).</summary>
+	private static void Bulleted(string description)
+	{
+		ImGui.Bullet();
+		ImGui.SameLine();
+		ReadableText.Draw(description);
 	}
 
 	protected void RowInteractions(in M3RowInfo row)
@@ -295,7 +303,7 @@ internal abstract class Searchable(PropertyInfo property) : ISearchable
 		{
 			ImguiTooltips.ShowTooltip(() =>
 			{
-				ImGui.BulletText(description);
+				Bulleted(description);
 				ImGui.Separator();
 			});
 		}

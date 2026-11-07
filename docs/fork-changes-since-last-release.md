@@ -13,3 +13,7 @@ What this release changes in the fight. For the whole distance from upstream, se
   drag it back. A narrow size saved by the old windows is replaced on first opening. Card titles are a size above the
   text, each recommendation's verdict is a chip in text size, and a line's reason sits right under it with a line of
   space before the next recommendation.
+- **Tooltips are broken at a readable length.** A setting's description in its tooltip (with "Show setting
+  descriptions inline" off) ran on in one line up to 1200 px and was cut off there; the longest have over 2000
+  characters. Every tooltip text now breaks at 65 characters (up to 75 stay on one line), and the tooltip grows with
+  it. The rotation tooltip in the navigation no longer wraps its description at the width of its shortest lines.
