@@ -760,7 +760,32 @@ Dullahan, Golem, Spriggan und Eisgolem (`XBMPet.InflictsInterrupt`).
   LP-Anteile, die es dir über den Rest des Bretts bringt. Ausrüstung: der Schaden, den sie in den übrigen Kämpfen
   verhindert (mittlere Last je Kampf, schwerste für Elite und Endgegner, Ausweichen nur gegen den physischen Teil),
   dazu ihre Mehrheilung auf die gehaltenen Heilgegenstände („Increases HP recovery …" mal Vorrat). Heilgegenstand: seine
-  Heilung, mit der Mehrheilung deiner Ausrüstung, höchstens was du noch heilen kannst (K10, A659). Schützender Gegenstand: sein Anteil des schwersten Kampfs. Die
+  Heilung, mit der Mehrheilung deiner Ausrüstung, höchstens was du noch heilen kannst (K10, A659). Schützender Gegenstand
+  (A668): was er im schwersten gemessenen Kampf abfängt, solange er steht – die Minderung ihren Anteil am Schaden im besten
+  Fenster ihrer Dauer, die Reflexion den magischen Schaden darin, Blink die physischen Treffer in Folge, so viele wie
+  Stapel, innerhalb seiner Dauer. Die Treffer misst RSR wie die Last (Zeit, Schaden, Angriffsart, in diesem Gebiet, sonst
+  über alle Bretter seit dem Laden); ohne gemessene Treffer zählt der ganze Kampf. Dauer und Stapel liest RSR aus dem
+  Wirktext („Duration: 60s", „Grants five stacks of Blink"). *Paare:* Ausrüstung, die die Dauer eines Gegenstands
+  verlängert („When carrying an ice shield, duration increases to 90s"), zählt den Zuwachs auf die gehaltenen; ein
+  angebotener Gegenstand zählt mit der Dauer, die deine Ausrüstung ihm gibt. Ein Mittel, dessen Status einem gehaltenen
+  Gegenstand mehr gibt (Spirit of the Breathtaker: drei Blink mehr), zählt diesen Zuwachs. Trägst du eine Rote Schleife
+  oder wählt die Skala sie, heilt jedes Serum 50 % seines Ziels („When carrying a crimson ribbon, restores 50% …"): Es
+  zählt als Heilgegenstand, und die Schleife zählt die Heilung der gehaltenen Seren, beides höchstens was du noch heilen
+  kannst. *Grund (A668):* Bis dahin zählte ein Schutzgegenstand den ganzen schwersten Kampf. Auf Brett 1 dauerte ein Kampf
+  61 bis 148 s (15 Kämpfe am 07.11.2026, ACT-Mitschnitt); das beste 30-s-Fenster hielt 51 bis 100 % seines Schadens, im
+  Endkampf 55 %, das beste 60-s-Fenster im Endkampf 83 %, das 90-s-Fenster 92 %; die fünf stärksten Treffer in Folge 48
+  bis 100 %, im Endkampf 48 % (27 Treffer, 23 davon Auto-Angriffe; alle Werte über alle Angriffsarten, den magischen
+  Anteil trennt der Mitschnitt nicht). Ein Gegenstand von 30 s zählte so im Endkampf fast doppelt und konnte einen
+  Heilgegenstand verdrängen, der mehr bringt. Eine gleichmäßige Verteilung (Dauer durch
+  Kampflänge, dort 20 bis 49 %) unterschätzt: Der Schaden ballt sich. *Gegenthese A668-1 (bestes Fenster):* K8 setzt
+  Schutz gegen einen angekündigten Treffer oder im Endkampf, solange ein Gegner dich angreift – nicht genau am Anfang des
+  besten Fensters. Nicht widerlegt; das beste Fenster ist eine obere Grenze, die Skala überschätzt Schutz weniger als
+  zuvor, nicht gar nicht – Preis benannt. *Gegenthese A668-2 (Schleife ohne Seren):* Seren, die erst ein späterer Laden
+  bringt, zählen beim Kauf der Schleife nicht. Nicht widerlegt; was ein Laden anbietet, steht nirgends. *Gegenthese
+  A668-3 (Messung der Sitzung):* Die Treffer gelten seit dem Laden von RSR; nach einem Neustart zählt bis zum ersten
+  Kampf der ganze Kampf. Widerlegt für die Skala: Ohne gemessenen Kampf gilt sie ohnehin nicht (Reihenfolge oben). Die
+  Heiltranksammlung zählt die Skala nicht (Auto-potion: 40 % erst unter 50 % LP, nur gegen einen Boss), und mit ihr nicht
+  das Diebesgewand, das sie verlängert – offen (TODO „Crucible-Wechselwirkungen, Stufe 2"). Die
   übrigen Kämpfe sind die auf dem kürzesten Weg zum Endgegner, der Endgegner eingeschlossen. Was die Skala nicht misst –
   Bewegung, Block, Hast, kritische Treffer, Schaden, Absorbieren eines Elements –, nennt das Fenster beim Angebot, statt es
   zu verschweigen. Vor der ersten gemessenen Last zählt die Reihenfolge oben.
@@ -1202,7 +1227,8 @@ on a pack once a fight, all of them in the final fight (Crucible only)".
       Gegenstands einen Status, den ein gehaltenes Mittel dir gibt, geht das Mittel zuerst. (5) Die Seren heilen 50 %
       der LP ihres Ziels, solange du eine Rote Schleife trägst („When carrying a crimson ribbon, restores 50% of target's
       total HP"): RSR zählt sie dann als Heilgegenstand – in Schritt 1, im Überschuss über die anstehenden Kämpfe und in
-      den Summen –, ihr Schutz kommt dazu (A666). (6) Das Bestien-Ausdauermittel (+20 % maximale LP bis Kampfende) geht
+      den Summen –, ihr Schutz kommt dazu (A666); im Laden und auf dem Schatzfeld zählen sie so, sobald die Schleife
+      getragen oder gewählt ist, und die Schleife zählt die gehaltenen Seren mit (K13, A668). (6) Das Bestien-Ausdauermittel (+20 % maximale LP bis Kampfende) geht
       gegen einen Boss vor dem Heilgegenstand (11 vor 1, A664) und damit vor dem Blutsauger-Reißzahn, dessen Potenz mit
       den maximalen LP steigt (1.500 bis 3.300); außerhalb eines Bosskampfs nicht vorgezogen – es fehlte dem nächsten.
     - *Dauer durch Ausrüstung:* Bestien-Verhärtungsmittel mit Eisschild 90 statt 60 s, Bestien-Verkürzungsmittel mit
@@ -1210,7 +1236,12 @@ on a pack once a fight, all of them in the final fight (Crucible only)".
       Rüstung 90 s, Grimoire der Reflexion mit Verhextem Hut 60 s, Heiltranksammlung mit Diebesgewand 240 statt 150 s,
       Bestien-Feder mit Ring der Euphorie 250 statt 100 TP. Beim Einsatz liest keine Regel die Dauer – Schutz geht gegen
       angekündigte Treffer, Stärkung im Endkampf zu Beginn –, die Wahl im Kampf ändert sich nicht. Im Laden und auf dem
-      Schatzfeld hebt das Paar den Wert beider: offen (TODO „Crucible-Wechselwirkungen, Stufe 2").
+      Schatzfeld zählt die Skala den Zuwachs bei den Schutzgegenständen – Verhärtungsmittel mit Eisschild, Grimoire der
+      Reflexion mit Verhextem Hut – und die drei Blink mehr, die das Flinkheitsmittel dem Grimoire der Unantastbarkeit gibt
+      (K13, A668); im Endkampf von Brett 1 lag im besten 60-s-Fenster 83 % des Schadens, im besten 30-s-Fenster 55 %
+      (07.11.2026, über alle Angriffsarten; den magischen Anteil trennt der Mitschnitt nicht). Die
+      übrigen Paare tragen nichts, was die Skala misst (Stärkung, TP, Lebensentzug), und die Heiltranksammlung zählt sie
+      noch nicht: offen (TODO „Crucible-Wechselwirkungen, Stufe 2").
     - *Auslöser an Ausrüstung und Futter:* bei kritischem Treffer (Bestienmesser, Donnerrüstung, Bananen-, Zitronen-,
       Tarantel-Simulakrum u. a.), beim Ausweichen (Ninja-Gewand, Kopfsalat-Simulakrum), beim Blocken (Windschild,
       Schützender Schild), bei erlittenem Schaden (Engelsrobe, Trugweste, Rosenrüstung u. a.), bei einer Tötung (Dämonische

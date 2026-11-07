@@ -154,6 +154,23 @@ internal static class CrucibleBoard
 	private static int _stretchFights;
 	private static (int Stretches, int Fights) _stretches;
 
+	// A668: the hits on the player in the fight in progress - seconds since its first hit, damage, kind -, and those of the
+	// heaviest fight in this area and over every board, kept with the loads above, for the share a protection catches.
+	private static readonly List<Hit> _fightHits = [];
+	private static DateTime _fightFirstHit;
+	private static List<Hit> _areaHeaviestHits = [];
+	private static List<Hit> _allHeaviestHits = [];
+
+	/// <summary>A668: how a hit on the player meets his defences, by the attack type of its action.</summary>
+	internal enum HitKind : byte
+	{
+		Physical,
+		Magic,
+		Other,
+	}
+
+	private readonly record struct Hit(double At, float Amount, HitKind Kind);
+
 	private static List<(uint Row, Enemy[] Enemies)> Fights => _fights ??= Read();
 
 	/// <summary>The fight in progress: its XBMBattleDetail row, 0 while none is told.</summary>
@@ -1096,9 +1113,78 @@ internal static class CrucibleBoard
 			return;
 		}
 
-		_fightLoad = AttackTypeKind.IsPhysical(attackType) ? _fightLoad with { Physical = _fightLoad.Physical + amount }
-			: AttackTypeKind.IsMagic(attackType) ? _fightLoad with { Magic = _fightLoad.Magic + amount }
-			: _fightLoad with { Other = _fightLoad.Other + amount };
+		var kind = AttackTypeKind.IsPhysical(attackType) ? HitKind.Physical
+			: AttackTypeKind.IsMagic(attackType) ? HitKind.Magic
+			: HitKind.Other;
+		_fightLoad = kind switch
+		{
+			HitKind.Physical => _fightLoad with { Physical = _fightLoad.Physical + amount },
+			HitKind.Magic => _fightLoad with { Magic = _fightLoad.Magic + amount },
+			_ => _fightLoad with { Other = _fightLoad.Other + amount },
+		};
+
+		var now = DateTime.Now;
+		if (_fightHits.Count == 0)
+		{
+			_fightFirstHit = now;
+		}
+
+		_fightHits.Add(new Hit((now - _fightFirstHit).TotalSeconds, amount, kind));
+	}
+
+	/// <summary>
+	/// K13 (A668): of the damage of <paramref name="kind"/> (every kind with null) the heaviest fight dealt the player - in
+	/// this area, else over every board, as <see cref="Loads"/> -, the largest share that falls within
+	/// <paramref name="seconds"/> of one of its hits, counting at most <paramref name="hits"/> hits of that kind in a row (0:
+	/// any number): what a protection of that duration, or of that many stacks, catches when it stands from that hit on. 1
+	/// while no hit of that kind was recorded.
+	/// </summary>
+	internal static float CaughtShare(double seconds, int hits, HitKind? kind)
+	{
+		var series = _areaLoadsIn == DataCenter.TerritoryID && _areaLoads.Fights > 0 ? _areaHeaviestHits : _allHeaviestHits;
+		double total = 0d, best = 0d;
+		foreach (var hit in series)
+		{
+			if (kind == null || hit.Kind == kind)
+			{
+				total += hit.Amount;
+			}
+		}
+
+		if (total <= 0d)
+		{
+			return 1f;
+		}
+
+		for (var first = 0; first < series.Count; first++)
+		{
+			if (kind != null && series[first].Kind != kind)
+			{
+				continue;
+			}
+
+			var caught = 0d;
+			var counted = 0;
+			for (var next = first; next < series.Count && series[next].At - series[first].At < seconds; next++)
+			{
+				if (kind != null && series[next].Kind != kind)
+				{
+					continue;
+				}
+
+				if (hits > 0 && counted >= hits)
+				{
+					break;
+				}
+
+				caught += series[next].Amount;
+				counted++;
+			}
+
+			best = Math.Max(best, caught);
+		}
+
+		return (float)(best / total);
 	}
 
 	/// <summary>
@@ -1144,11 +1230,24 @@ internal static class CrucibleBoard
 		{
 			_areaLoadsIn = _tracedArea;
 			_areaLoads = default;
+			_areaHeaviestHits = [];
+		}
+
+		// A668: the hits of the heaviest fight, by the same test as its load below.
+		if (_fightLoad.Damage > _areaLoads.Heaviest.Damage)
+		{
+			_areaHeaviestHits = [.. _fightHits];
+		}
+
+		if (_fightLoad.Damage > _allLoads.Heaviest.Damage)
+		{
+			_allHeaviestHits = [.. _fightHits];
 		}
 
 		_areaLoads = Add(_areaLoads, _fightLoad);
 		_allLoads = Add(_allLoads, _fightLoad);
 		_fightLoad = default;
+		_fightHits.Clear();
 		_stretchFights++;
 
 		static (int Fights, FightLoad Sum, FightLoad Heaviest) Add((int Fights, FightLoad Sum, FightLoad Heaviest) loads, FightLoad load)

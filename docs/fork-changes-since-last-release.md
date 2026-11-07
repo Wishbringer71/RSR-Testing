@@ -40,6 +40,12 @@ What this release changes in the fight. For the whole distance from upstream, se
   by the very choice the final fight's horn screen makes, again whenever HP, feed or a measured loss change, and feed
   counts in every horn choice on a board (damage dealt, damage taken). A familiar fed for the final fight stays on its
   horn there.
+- **Protection is weighed by what it catches.** The shop and treasure scale counted a protective item as your whole
+  heaviest fight. On board 1 fights last 61 to 148 s, and the best 30 s held 55 % of the final fight's damage, the five
+  hits in a row 48 %. The scale now counts what falls within the item's duration (Blink: its stacks) in the heaviest fight
+  measured, with the duration your gear gives it (Ice Shield, Hexed Hat). While you wear or choose a Crimson Ribbon, soul
+  serums count as 50 % heals, and the ribbon counts the serums you hold; the Potion of Breathtaking Swiftness counts the
+  three Blink it adds to a held Tome of the Impervious.
 - **A campsite rest is read per board.** The rest shares a different whole on each board (board 1: 90 %, 45 % each
   with one familiar; the First Master's Board: 150 %, 75 % each). RSR now learns it per board from the rest prompt,
   caps each share at 100 %, and assumes the smallest known until it has read the board – a reading from one board no

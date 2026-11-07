@@ -47,11 +47,14 @@ public partial class BeastmasterRotation
 	// target (Celestial Sand: fire); for a buff whether it raises magic damage, which the damage items carry; the share of HP
 	// it restores while a piece of beast gear is carried, and that piece (A666: the soul serums with a crimson ribbon); and
 	// the status of the player's own its text names, which another item may grant first (A666: Spirit of the Breathtaker
-	// for the Tome of the Impervious and the Beast Potion Kit).
+	// for the Tome of the Impervious and the Beast Potion Kit); and (A668) how long its status stands, how long while a piece
+	// of beast gear is carried and that piece ("When carrying an ice shield, duration increases to 90s"), the stacks it grants
+	// and the stacks more under the status it gains from.
 	private readonly record struct CrucibleItem(CrucibleItemKind Kind, float Value, bool Allies, string Name, string Status = "",
 		uint Element = 0, float Radius = 0f, bool Knockback = false, string Afflicts = "", string BonusStatus = "",
 		float Bonus = 0f, bool RaisesMagic = false, uint LowersResist = 0, float HealShare = 0f, string HealCarrying = "",
-		string GainsFrom = "");
+		string GainsFrom = "", float Duration = 0f, string LongerWith = "", float LongerDuration = 0f, int Stacks = 0,
+		int MoreStacks = 0);
 
 	private static Dictionary<ushort, CrucibleItem>? _crucibleItems;
 
@@ -107,6 +110,16 @@ public partial class BeastmasterRotation
 	private static readonly Regex BonusOnStatus = new(
 		@"Targets suffering from (?<status>[A-Z][A-Za-z']*(?: [A-Z][A-Za-z']*)*) receive additional damage with a potency of (?<bonus>[\d,]+)",
 		RegexOptions.CultureInvariant);
+	// A668: the status's own duration opens a line of the text; "Stun Duration: 15s" (a feral potion's price) does not.
+	private static readonly Regex StatusDuration = new(@"^Duration: (?<seconds>\d+)s", RegexOptions.CultureInvariant | RegexOptions.Multiline);
+	private static readonly Regex DurationWith = new(
+		@"When carrying (?:an? )?(?<gear>[a-z][a-z' -]*?), duration increases to (?<seconds>\d+)s", RegexOptions.CultureInvariant);
+	private static readonly Regex StacksOf = new(@"Grants (?<count>[a-z]+|\d+) stacks of", RegexOptions.CultureInvariant);
+	private static readonly Regex MoreStacksOf = new(@"Effect: Grants (?<count>[a-z]+|\d+) additional stacks", RegexOptions.CultureInvariant);
+
+	// A668: a count as the item texts write it ("Grants five stacks of Blink"), its index the number - words of the language.
+	private static readonly string[] CountWords = ["zero", "one", "two", "three", "four", "five", "six", "seven", "eight", "nine", "ten"];
+
 	private static readonly Regex Deals = new(
 		@"deals (?:ranged )?(?<type>[a-z]+)(?: physical)? damage with a potency of (?<potency>[\d,]+) to target and all enemies within (?<radius>\d+) yalms",
 		RegexOptions.CultureInvariant | RegexOptions.IgnoreCase);
@@ -215,19 +228,35 @@ public partial class BeastmasterRotation
 
 		foreach (var (id, text) in texts)
 		{
-			if (!items.TryGetValue(id, out var item) || item.Kind == CrucibleItemKind.Buff)
+			if (!items.TryGetValue(id, out var item))
 			{
 				continue;
 			}
 
-			foreach (var status in granted)
+			// A668: how long its status stands, how long with a piece of beast gear, and its stacks.
+			var longer = DurationWith.Match(text);
+			item = item with
 			{
-				if (text.Contains(status, StringComparison.Ordinal))
+				Duration = StatusDuration.Match(text) is { Success: true } duration ? Seconds(duration) : 0f,
+				LongerWith = longer.Success ? longer.Groups["gear"].Value : string.Empty,
+				LongerDuration = longer.Success ? Seconds(longer) : 0f,
+				Stacks = StacksOf.Match(text) is { Success: true } stacks ? Count(stacks) : 0,
+				MoreStacks = MoreStacksOf.Match(text) is { Success: true } more ? Count(more) : 0,
+			};
+
+			if (item.Kind != CrucibleItemKind.Buff)
+			{
+				foreach (var status in granted)
 				{
-					items[id] = item with { GainsFrom = status };
-					break;
+					if (text.Contains(status, StringComparison.Ordinal))
+					{
+						item = item with { GainsFrom = status };
+						break;
+					}
 				}
 			}
+
+			items[id] = item;
 		}
 
 		return items;
@@ -237,6 +266,18 @@ public partial class BeastmasterRotation
 			var parsed = float.TryParse(match.Groups["share"].Value, NumberStyles.Float, CultureInfo.InvariantCulture, out var percent);
 			share = percent / 100f;
 			return parsed;
+		}
+
+		static float Seconds(Match match)
+		{
+			return float.TryParse(match.Groups["seconds"].Value, NumberStyles.Float, CultureInfo.InvariantCulture, out var seconds) ? seconds : 0f;
+		}
+
+		static int Count(Match match)
+		{
+			var count = match.Groups["count"].Value;
+			return int.TryParse(count, NumberStyles.None, CultureInfo.InvariantCulture, out var number) ? number
+				: Math.Max(Array.IndexOf(CountWords, count), 0);
 		}
 
 		// A status the item grants that mitigates, nullifies physical or reflects magic attacks, or cures the next ailment.
@@ -1245,12 +1286,13 @@ public partial class BeastmasterRotation
 		return best;
 	}
 
-	// The share of HP an item restores: a healing item's, or one that heals while a piece of beast gear the run wears is carried
-	// (A666); 0 for any other.
-	private static float HealShareOf(CrucibleItem item)
+	// The share of HP an item restores: a healing item's, or one that heals while a piece of beast gear is carried (A666) - the
+	// gear the run wears, or (A668, the shop's scale) the gear <paramref name="gear"/> it weighs; 0 for any other.
+	private static float HealShareOf(CrucibleItem item, List<CrucibleGear>? gear = null)
 	{
 		return item.Kind == CrucibleItemKind.Heal ? item.Value
-			: item.HealShare > 0f && WearsGearNamed(item.HealCarrying) ? item.HealShare : 0f;
+			: item.HealShare > 0f && (gear != null ? Carries(gear, item.HealCarrying) : WearsGearNamed(item.HealCarrying))
+				? item.HealShare : 0f;
 	}
 
 	// An item of kind in slot; asked for a heal, also an item that heals while a piece of beast gear the run wears is carried

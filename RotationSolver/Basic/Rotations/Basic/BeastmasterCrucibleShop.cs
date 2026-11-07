@@ -106,6 +106,74 @@ public partial class BeastmasterRotation
 		return false;
 	}
 
+	// A668: whether gear holds a piece of the English name an item's text names after "When carrying" ("crimson ribbon").
+	private static bool Carries(List<CrucibleGear> gear, string name)
+	{
+		if (name.Length == 0)
+		{
+			return false;
+		}
+
+		foreach (var piece in gear)
+		{
+			if (string.Equals(piece.Name, name, StringComparison.OrdinalIgnoreCase))
+			{
+				return true;
+			}
+		}
+
+		return false;
+	}
+
+	// A668: whether an item held grants the status <paramref name="status"/> (Spirit of the Breathtaker).
+	private static bool GrantsHeld(List<ushort> held, string status)
+	{
+		if (status.Length == 0)
+		{
+			return false;
+		}
+
+		foreach (var id in held)
+		{
+			if (CrucibleItems.TryGetValue(id, out var item) && item.Kind == CrucibleItemKind.Buff
+				&& string.Equals(item.Status, status, StringComparison.OrdinalIgnoreCase))
+			{
+				return true;
+			}
+		}
+
+		return false;
+	}
+
+	/// <summary>
+	/// K13 (A668): what a protective item catches in the heaviest fight, as a share of your HP - the mitigation its share of the
+	/// damage in the best window of its duration, the reflection the magic damage in it, Blink the physical hits in a row, as
+	/// many as its stacks -, its duration as the gear gives it and its stacks with the items held; and that duration, those
+	/// stacks and the share of the fight's damage of its kind caught.
+	/// </summary>
+	private static (float Value, double Seconds, int Stacks, float Share) ProtectionValue(CrucibleItem item, List<CrucibleGear> gear,
+		List<ushort> held, (float Heavy, float HeavyPhysical, float HeavyMagic) load)
+	{
+		var seconds = item.LongerDuration > 0f && Carries(gear, item.LongerWith) ? item.LongerDuration
+			: item.Duration > 0f ? item.Duration : double.MaxValue;
+		var stacks = item.Stacks + (item.MoreStacks > 0 && GrantsHeld(held, item.GainsFrom) ? item.MoreStacks : 0);
+		var (heavy, kind) = item.Kind switch
+		{
+			CrucibleItemKind.Mitigate => (item.Value * load.Heavy, (CrucibleBoard.HitKind?)null),
+			CrucibleItemKind.NullifyPhysical => (load.HeavyPhysical, CrucibleBoard.HitKind.Physical),
+			CrucibleItemKind.ReflectMagic => (load.HeavyMagic, CrucibleBoard.HitKind.Magic),
+			_ => (0f, null),
+		};
+
+		if (heavy <= 0f)
+		{
+			return (0f, seconds, stacks, 0f);
+		}
+
+		var share = CrucibleBoard.CaughtShare(seconds, item.Kind == CrucibleItemKind.NullifyPhysical ? stacks : 0, kind);
+		return (heavy * share, seconds, stacks, share);
+	}
+
 	/// <summary>Whether a shop is open and the recommendation runs, for the window.</summary>
 	public static bool CrucibleShopOpen { get; private set; }
 
@@ -513,24 +581,32 @@ public partial class BeastmasterRotation
 				+ (piece.Slow > 0f ? $", Slow {piece.Slow:+0%;-0%}: your actions come slower" : string.Empty)));
 		}
 
-		// 5. Healing items, the strongest first; 6. protective items by their share.
-		foreach (var kinds in new[] { new[] { CrucibleItemKind.Heal }, new[] { CrucibleItemKind.Mitigate,
-			CrucibleItemKind.NullifyPhysical, CrucibleItemKind.ReflectMagic } })
+		// 5. Healing items, the strongest first - a soul serum among them while you carry a crimson ribbon (A668).
+		foreach (var (row, id, price) in ByValue(offers, o => items.TryGetValue(o.Item, out var item)
+			&& HealShareOf(item, owned) is var share && share > 0f ? share + 1f : 0f))
 		{
-			foreach (var (row, id, price) in ByValue(offers, o => items.TryGetValue(o.Item, out var item)
-				&& Array.IndexOf(kinds, item.Kind) >= 0 ? item.Value + 1f : 0f))
+			var item = items[id];
+			if (Take(row, price, false))
 			{
-				var item = items[id];
-				if (Take(row, price, false))
+				picks.Add(new CrucibleShopPick(row, ClientItemName(id, item.Name), price, $"heals {HealShareOf(item, owned):P0}"
+					+ (item.Kind == CrucibleItemKind.Heal && item.Allies ? " to you and allies" : string.Empty)
+					+ (item.Kind != CrucibleItemKind.Heal ? $" while you carry a {item.HealCarrying}" : string.Empty)));
+			}
+		}
+
+		// 6. Protective items by their share.
+		foreach (var (row, id, price) in ByValue(offers, o => items.TryGetValue(o.Item, out var item)
+			&& item.Kind is CrucibleItemKind.Mitigate or CrucibleItemKind.NullifyPhysical or CrucibleItemKind.ReflectMagic ? item.Value + 1f : 0f))
+		{
+			var item = items[id];
+			if (Take(row, price, false))
+			{
+				picks.Add(new CrucibleShopPick(row, ClientItemName(id, item.Name), price, item.Kind switch
 				{
-					picks.Add(new CrucibleShopPick(row, ClientItemName(id, item.Name), price, item.Kind switch
-					{
-						CrucibleItemKind.Heal => $"heals {item.Value:P0}{(item.Allies ? " to you and allies" : string.Empty)}",
-						CrucibleItemKind.Mitigate => $"{item.Value:P0} less damage taken",
-						CrucibleItemKind.NullifyPhysical => "nullifies physical attacks",
-						_ => "reflects magic attacks",
-					}));
-				}
+					CrucibleItemKind.Mitigate => $"{item.Value:P0} less damage taken",
+					CrucibleItemKind.NullifyPhysical => "nullifies physical attacks",
+					_ => "reflects magic attacks",
+				}));
 			}
 		}
 
@@ -625,10 +701,11 @@ public partial class BeastmasterRotation
 				var open = new List<(int Row, ushort Item, int Price)>();
 				foreach (var offer in offers)
 				{
+					// A668: every item, the scale weighs what it brings - a serum heals once a crimson ribbon is chosen, a buff
+					// counts what it adds to an item held.
 					if (!bought.Contains(offer.Row) && !chosen.Exists(c => c.Row == offer.Row) && offer.Price <= tokens
 						&& (gear.TryGetValue(offer.Item, out var piece) ? !piece.SelfHarm && gearLeft > 0
-							: items.TryGetValue(offer.Item, out var item) && itemsLeft > 0 && item.Kind is CrucibleItemKind.Heal
-								or CrucibleItemKind.Mitigate or CrucibleItemKind.NullifyPhysical or CrucibleItemKind.ReflectMagic))
+							: items.ContainsKey(offer.Item) && itemsLeft > 0))
 					{
 						open.Add(offer);
 					}
@@ -691,7 +768,7 @@ public partial class BeastmasterRotation
 				{
 					held.Add(id);
 					itemsLeft--;
-					if (items.TryGetValue(id, out var item) && item.Kind == CrucibleItemKind.Heal)
+					if (items.TryGetValue(id, out var item) && HealShareOf(item, set) > 0f)
 					{
 						healed += value;
 					}
@@ -919,7 +996,7 @@ public partial class BeastmasterRotation
 		{
 			if (items.TryGetValue(id, out var heal))
 			{
-				holding += HealShareOf(heal);
+				holding += HealShareOf(heal, owned);
 			}
 		}
 
@@ -936,12 +1013,45 @@ public partial class BeastmasterRotation
 					continue;
 				}
 
-				var with = RawLoad([.. owned, piece], load);
+				List<CrucibleGear> withPiece = [.. owned, piece];
+				var with = RawLoad(withPiece, load);
 				var prevented = Math.Max(0f, (normal * (now.Mean - with.Mean)) + (heavy * (now.Heavy - with.Heavy)));
 				var healing = piece.Recovery * held;
 				var curing = piece.Curing > 0f
 					? (normal * Math.Min(piece.Curing, with.Mean)) + (heavy * Math.Min(piece.Curing, with.Heavy))
 					: 0f;
+
+				// A668: what the piece lets the items held do - heal (a soul serum with a crimson ribbon), up to what you can
+				// still heal, or stand longer (a tannin with an ice shield), on the heaviest fight with the piece.
+				var enabled = 0f;
+				var extended = 0f;
+				var longerNames = new List<string>();
+				foreach (var heldId in heldItems)
+				{
+					if (!items.TryGetValue(heldId, out var heldItem))
+					{
+						continue;
+					}
+
+					if (HealShareOf(heldItem, owned) <= 0f)
+					{
+						enabled += HealShareOf(heldItem, withPiece);
+					}
+
+					if (string.Equals(piece.Name, heldItem.LongerWith, StringComparison.OrdinalIgnoreCase))
+					{
+						var withLoad = (with.Heavy, with.HeavyPhysical, with.HeavyMagic);
+						var gain = ProtectionValue(heldItem, withPiece, heldItems, withLoad).Value
+							- ProtectionValue(heldItem, owned, heldItems, withLoad).Value;
+						if (gain > 0f)
+						{
+							extended += gain;
+							longerNames.Add($"{ClientItemName(heldId, heldItem.Name)} {heldItem.LongerDuration:0} s instead of {heldItem.Duration:0} s");
+						}
+					}
+				}
+
+				var healingEnabled = Math.Min(enabled * (1f + with.Recovery), healable);
 				var parts = new List<string>();
 				if (prevented > 0f)
 				{
@@ -958,7 +1068,17 @@ public partial class BeastmasterRotation
 					parts.Add($"recovers ~{curing:P0} after the fights left");
 				}
 
-				var value = prevented + healing + curing;
+				if (healingEnabled > 0f)
+				{
+					parts.Add($"lets items you hold heal: ~{healingEnabled:P0}");
+				}
+
+				if (extended > 0f)
+				{
+					parts.Add($"{string.Join(", ", longerNames)}: ~{extended:P0}");
+				}
+
+				var value = prevented + healing + curing + healingEnabled + extended;
 				if (value <= 0f)
 				{
 					parts.Add(now.Mean <= 0f && now.Heavy <= 0f
@@ -976,26 +1096,30 @@ public partial class BeastmasterRotation
 			}
 			else if (items.TryGetValue(id, out var item))
 			{
-				var full = Math.Min(1f, item.Value * (1f + now.Recovery));
-				var value = item.Kind switch
-				{
-					CrucibleItemKind.Heal => Math.Min(full, healable),
-					CrucibleItemKind.Mitigate => item.Value * now.Heavy,
-					CrucibleItemKind.NullifyPhysical => now.HeavyPhysical,
-					CrucibleItemKind.ReflectMagic => now.HeavyMagic,
-					_ => 0f,
-				};
-				result.Add((row, id, value, item.Kind switch
-				{
-					CrucibleItemKind.Heal => (value < full
+				// A668: a soul serum heals while the gear weighed carries a crimson ribbon; a protection catches what falls in its
+				// duration; a buff counts what its status adds to an item held (three more Blink).
+				var heals = HealShareOf(item, owned);
+				var full = Math.Min(1f, heals * (1f + now.Recovery));
+				var nowLoad = (now.Heavy, now.HeavyPhysical, now.HeavyMagic);
+				var (protects, seconds, stacks, caught) = ProtectionValue(item, owned, heldItems, nowLoad);
+				var (gives, givesTo) = item.Kind == CrucibleItemKind.Buff ? GainOfHeld(item, id) : (0f, string.Empty);
+				var value = heals > 0f ? Math.Min(full, healable) : protects > 0f ? protects : gives;
+				var lasting = seconds < double.MaxValue ? $" for {seconds:0} s" : string.Empty;
+				result.Add((row, id, value, heals > 0f
+					? (value < full
 						? $"used once, heals ~{full:P0}, of which ~{value:P0} can still be needed: the fights left and what you miss come to at most ~{worst:P0}, you hold ~{holding * (1f + now.Recovery):P0} in healing"
-						: $"used once, heals ~{value:P0}") + (item.Allies ? " to you and the allies near you" : string.Empty),
-					CrucibleItemKind.Mitigate => $"used once, {item.Value:P0} less damage: ~{value:P0} of your heaviest fight",
-					CrucibleItemKind.NullifyPhysical => $"used once, nullifies physical attacks: ~{value:P0} of your heaviest fight",
-					CrucibleItemKind.ReflectMagic => $"used once, reflects magic attacks: ~{value:P0} of your heaviest fight",
-					CrucibleItemKind.Reraise => "a second life (weighed before this scale)",
-					_ => $"no HP on this scale ({item.Kind.ToString().ToLowerInvariant()})",
-				}));
+						: $"used once, heals ~{value:P0}")
+						+ (item.Kind == CrucibleItemKind.Heal && item.Allies ? " to you and the allies near you" : string.Empty)
+						+ (item.Kind != CrucibleItemKind.Heal ? $" while you carry a {item.HealCarrying}" : string.Empty)
+					: item.Kind switch
+					{
+						CrucibleItemKind.Mitigate => $"used once, {item.Value:P0} less damage{lasting}: ~{value:P0}, the {caught:P0} of your heaviest fight's damage that fell within it",
+						CrucibleItemKind.NullifyPhysical => $"used once, nullifies {stacks} physical hits{lasting}: ~{value:P0}, {caught:P0} of your heaviest fight's physical damage",
+						CrucibleItemKind.ReflectMagic => $"used once, reflects magic attacks{lasting}: ~{value:P0}, {caught:P0} of your heaviest fight's magic damage",
+						CrucibleItemKind.Reraise => "a second life (weighed before this scale)",
+						CrucibleItemKind.Buff when gives > 0f => $"used before {givesTo}, adds to it: ~{value:P0}",
+						_ => $"no HP on this scale ({item.Kind.ToString().ToLowerInvariant()})",
+					}));
 			}
 			else
 			{
@@ -1004,6 +1128,36 @@ public partial class BeastmasterRotation
 		}
 
 		return result;
+
+		// A668: what a buff's status adds to the protective items held that gain from it (Spirit of the Breathtaker: three
+		// more Blink for the Tome of the Impervious), and their names.
+		(float Gain, string To) GainOfHeld(CrucibleItem buff, ushort buffId)
+		{
+			if (buff.Status.Length == 0)
+			{
+				return (0f, string.Empty);
+			}
+
+			List<ushort> withBuff = [.. heldItems, buffId];
+			var nowLoad = (now.Heavy, now.HeavyPhysical, now.HeavyMagic);
+			var gain = 0f;
+			var names = new List<string>();
+			foreach (var heldId in heldItems)
+			{
+				if (items.TryGetValue(heldId, out var heldItem)
+					&& string.Equals(heldItem.GainsFrom, buff.Status, StringComparison.OrdinalIgnoreCase))
+				{
+					var more = ProtectionValue(heldItem, owned, withBuff, nowLoad).Value - ProtectionValue(heldItem, owned, heldItems, nowLoad).Value;
+					if (more > 0f)
+					{
+						gain += more;
+						names.Add(ClientItemName(heldId, heldItem.Name));
+					}
+				}
+			}
+
+			return (gain, string.Join(", ", names));
+		}
 	}
 
 	// The load of a fight with this gear, as a share of your HP: the mean, the heaviest and its physical and magic parts, and

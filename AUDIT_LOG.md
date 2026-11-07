@@ -19639,6 +19639,44 @@ Quellen und Plugins".
 *Prüfgrad:* Compile ohne Warnung; Prüfskripte. Statisch gegen Wiki und Recherche; im Spiel nicht beobachtet, die Spur
 nennt jede Lesung mit dem Anteil, den RSR erwartet hatte.
 
+### A668 · Crucible-Skala: Schutz nach dem, was er in seiner Dauer abfängt; Seren mit Roter Schleife und Dauer-Paare im Laden (07.11.2026)
+
+Erstes Paar aus TODO „Crucible-Wechselwirkungen, Stufe 2" (Sicherheit vor Schaden): Laden und Schatzfeld werteten ein
+Ausrüstungsstück ohne die Gegenstände, die es heilen lässt oder verlängert.
+
+- *1 Research:* Wirktexte aller 206 `XBMItem`-Zeilen (xivapi, englisch, Zeilenumbruch als Trenner): Seren 86–95 heilen mit
+  Roter Schleife 50 % ihres Ziels; Dauer mit Ausrüstung: Verhärtungsmittel 60/90 s (Eisschild), Grimoire der Reflexion
+  30/60 s (Verhexter Hut), Heiltranksammlung 150/240 s (Diebesgewand), Stimulanztrunk, Aufbrausmittel, Lebensentzug (keine
+  LP auf der Skala); Grimoire der Unantastbarkeit fünf Blink, drei mehr unter Spirit of the Breathtaker. Code: Die Skala
+  (`OfferScale`) zählte Seren nie (Art „ResistAilment" fiel aus der Auswahl), die Schleife nur mit ihren Resistenzen
+  („nicht gezählt"), und jeden Schutzgegenstand als den ganzen schwersten Kampf (`item.Value * now.Heavy`, Blink und
+  Reflexion den ganzen physischen oder magischen Teil).
+- *Messung (ACT-Mitschnitt 07.11.2026, 15 Kämpfe auf Brett 1, Skript im Notizordner):* Kampfdauer 61–148 s, Endkampf
+  121–148 s. Bestes 30-s-Fenster 51–100 % des Schadens eines Kampfes (Endkampf 55 %), 60 s 51–100 % (83 %), 90 s
+  (92 %); fünf Treffer in Folge 48–100 % (Endkampf 48 %, 27 Treffer, 23 Auto-Angriffe). Gleichmäßige Verteilung (Dauer
+  durch Länge) gäbe 20–49 % – der Schaden ballt sich. Über alle Angriffsarten; den magischen Anteil trennt der Mitschnitt
+  nicht.
+- *2 Optionen:* (0) nichts – Schutz zählt doppelt, Seren nie. (a) Dauer durch Kampflänge – unterschätzt, widerlegt an der
+  Messung. (b) bestes Fenster der gemessenen Treffer des schwersten Kampfes, je Art, Blink nach Stapeln. (c) gelernte
+  Trefferreihe je Kampf über Sitzungen – mehr Speicher, dieselbe Größe wie die Last der Sitzung, die die Skala ohnehin
+  liest. Gewählt (b): misst dasselbe wie die Last, an derselben Stelle, steuert sich je Gebiet nach.
+- *Gebaut (Konzept 21 K13, K8):* `CrucibleBoard` hält die Treffer des laufenden Kampfes (Zeit, Schaden, Art) und die des
+  schwersten Kampfes je Gebiet und über alle Bretter, nach derselben Prüfung wie seine Last; `CaughtShare` gibt den
+  größten Anteil, der in die Dauer fällt, höchstens so viele Treffer der Art wie Stapel. Gegenstände tragen Dauer,
+  Verlängerung mit Ausrüstung und Stapel aus dem Text. Auf der Skala: Schutz nach `ProtectionValue`; Seren als Heilung,
+  sobald die gewogene Ausrüstung die Schleife hält; ein Ausrüstungsstück zählt die Heilung, die es gehaltenen Gegenständen
+  gibt, und die Verlängerung ihres Schutzes; ein Mittel zählt, was sein Status einem gehaltenen Gegenstand gibt (drei
+  Blink). Vor der ersten Messung zählen Seren mit getragener Schleife in Schritt 5.
+- *Fehler auf dem Weg:* Die Dauer-Regex trennte zuerst an „ / ", dem Trenner meiner Notizdatei; die Blatttexte trennen
+  mit Zeilenumbruch – am Rohtext geprüft und auf Zeilenanfang umgestellt, bevor etwas ausgeliefert war.
+- *6 Falsifikation:* Kein Defekt? Widerlegt an der Messung und am Code (Seren 0, Schutz 100 %). Option falsch? Das beste
+  Fenster ist eine obere Grenze (K8 setzt Schutz am angekündigten Treffer, nicht genau dort) – Preis benannt, kleiner als
+  zuvor. Ausgeliefert, nichts ändert sich? Wenn kein Laden und kein Schatz Schutz, Seren oder Schleife anbietet, und vor
+  dem ersten gemessenen Kampf; die Heiltranksammlung zählt die Skala weiter nicht – offen im TODO.
+
+*Prüfgrad:* Compile ohne Warnung, 52 Prüfschritte; Regex statisch gegen alle 206 Rohtexte; Fenster am Mitschnitt
+gemessen. Im Spiel nicht beobachtet; jede Empfehlung nennt im Fenster Dauer, Stapel und den gefangenen Anteil.
+
 ## B · Commit-Register (Fork vs. `upstream/main`)
 
 ### B1 · Einzelgeprüfte Fork-Commits
