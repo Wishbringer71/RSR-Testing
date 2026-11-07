@@ -87,7 +87,7 @@ Diese Datei gilt in jeder Lage. Die übrigen Regeln stehen je genau einmal im Re
 **Bevor ich etwas als fertig melde**
 - Wirkkette am Code, Richtigkeit und Bilanz am Spielgeschehen, Nachsteuerung, wo die Antwort erst zur Laufzeit fällt (→ „Definition of Done").
 - Konzept, `TODO.md` und Archiv fortgeschrieben.
-- Am Auftragsende Upstream erneut synchronisiert und ausgewertet (Skill `upstream-sync`).
+- Am Auftragsende Upstream erneut synchronisiert und ausgewertet (Skill `upstream-sync`), die ausgewerteten Quellen auf Aktualisierungen mit Nutzen geprüft (→ „Quellen", `konzepte.md`).
 - Prüfgrad benannt.
 
 **Bevor ich einen Zug beende**

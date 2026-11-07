@@ -1,0 +1,215 @@
+{
+ "about": "Sources RSR's concepts were checked against, each at the commit last evaluated. check_source_updates.py measures them against their remote; after evaluating an update, --record moves the entry.",
+ "sources": [
+  {
+   "repo": "aers/FFXIVClientStructs",
+   "commit": "0adb2e545ac53cacc9341c1d030eb1a9495af49c",
+   "date": "2026-11-06",
+   "use": "Client-API"
+  },
+  {
+   "repo": "Ahriqi/astbalanceimages",
+   "commit": "b695e13fce23d6c2b8a878223423409f57dc99d3",
+   "date": "2024-08-11",
+   "use": "Astrologe-Referenz"
+  },
+  {
+   "repo": "anmili2022/Beastmaster",
+   "commit": "2a0d9f2592863765d91259c5f23d9395a10f6786",
+   "date": "2026-10-09",
+   "use": "Beastmaster-Helfer (A623, A667)"
+  },
+  {
+   "repo": "awgil/ffxiv_bossmod",
+   "commit": "6e410ef8bb912fc70e3c1f97eedfb77a7dc4dfc0",
+   "date": "2026-11-03",
+   "use": "BossMod (Original)"
+  },
+  {
+   "repo": "BeirutaNa1na/RotationSolverReborn",
+   "commit": "3d4b358f4de06293a2aad8cefb4a1911c27aca3c",
+   "date": "2026-11-02",
+   "use": "Beiruta-Rotationen"
+  },
+  {
+   "repo": "dajoey/lalalazy",
+   "commit": "09c6ddf67",
+   "date": "2026-11-07",
+   "use": "GluttonyCombo, LazyCrucible: Crucible-Aufzeichnungen, Sanduhr, Futter (A674, A679)"
+  },
+  {
+   "repo": "FFXIV-CombatReborn/BossmodReborn",
+   "commit": "27be422560eb801893b093d9157323585eeae0eb",
+   "date": "2026-11-05",
+   "use": "Crucible-Module, Mechaniken, Vertrag mit RSR (Konzept 21, Code.md)"
+  },
+  {
+   "repo": "getsetmind/dalamudmcp",
+   "commit": "731458f034b4560afcfa99819b0dfc9c68904a85",
+   "date": "2026-08-26",
+   "use": "Automatisierung (A160)"
+  },
+  {
+   "repo": "goatcorp/Dalamud",
+   "commit": "a74096043b58d69b08af214ac724f3d42c3a238b",
+   "date": "2026-11-04",
+   "use": "Client-API"
+  },
+  {
+   "repo": "joshua88wa/FFXIV-Dalamud-BlueMageSetBuilder",
+   "commit": "213d3d9e588e2e5425b30c56cc7074cdaa28ce74",
+   "date": "2026-10-19",
+   "use": "Blaumagier-Sätze"
+  },
+  {
+   "repo": "Knightmore/Henchman",
+   "commit": "c5fa50e60d6e86acbac70ca255b29956fd9275ea",
+   "date": "2026-10-29",
+   "use": "Automatisierung (A160)"
+  },
+  {
+   "repo": "Kriss-Hietala/BeastmasterAssist",
+   "commit": "db9e2e3",
+   "date": "2026-11-02",
+   "use": "Beastmaster (A488)"
+  },
+  {
+   "repo": "Kyuros1/BeastKeeper",
+   "commit": "778532a",
+   "date": "2026-10-01",
+   "use": "Beastmaster-Team (A667)"
+  },
+  {
+   "repo": "Landelor/XelsCombatAI",
+   "commit": "35fcc6504180c0bfc6392757e3fdc4a713f0ed12",
+   "date": "2026-10-18",
+   "use": "Kampf-KI"
+  },
+  {
+   "repo": "letsI-MA/BLUnion",
+   "commit": "ba7a51dc19e09e3e1353b4ea4f9eca078196a48c",
+   "date": "2026-10-28",
+   "use": "Blaumagier"
+  },
+  {
+   "repo": "lexxxgo/Masterbeast",
+   "commit": "712bddd",
+   "date": "2026-11-02",
+   "use": "Beastmaster (A488)"
+  },
+  {
+   "repo": "LTS-FFXIV/RebornMaterial",
+   "commit": "0bd2517ebf601436ecdd8c8ebc1aaac07b7694c0",
+   "date": "2026-11-01",
+   "use": "Oberfläche (Hilfsfenster)"
+  },
+  {
+   "repo": "NightmareXIV/ECommons",
+   "commit": "6e3524d0c6d229b854d300d949b6a315aab97ab3",
+   "date": "2026-10-30",
+   "use": "Client-API"
+  },
+  {
+   "repo": "NotAdam/Lumina",
+   "commit": "8802d66a3cb3032be2fcf998bb10e864221bdb13",
+   "date": "2026-10-27",
+   "use": "Blätter lesen"
+  },
+  {
+   "repo": "ofnature/Daedalus",
+   "commit": "2644cbe4b0f6f72d8ae9aca172bff796e2fff329",
+   "date": "2026-11-06",
+   "use": "Feldnotizen, Rotationen aller Jobs, Crucible (A600, A660)"
+  },
+  {
+   "repo": "OverlayPlugin/cactbot",
+   "commit": "e79ea7f16093be5b80cda0e2d5bc8eb899d6fb4b",
+   "date": "2026-10-08",
+   "use": "Mitschnittformat, Zeitleisten"
+  },
+  {
+   "repo": "PunishXIV/Orbwalker",
+   "commit": "fcfdb56bcb520f1d6480b89ac9725d7ee70fc9aa",
+   "date": "2026-09-16",
+   "use": "Bewegung beim Wirken"
+  },
+  {
+   "repo": "PunishXIV/WrathCombo",
+   "commit": "1e64c866c937d9c1d7d246824d80e9361fb626ce",
+   "date": "2026-11-03",
+   "use": "anderes Rotationswerkzeug (konzepte.md)"
+  },
+  {
+   "repo": "rail2025/BeastieBuddy",
+   "commit": "6a39010c534e05525909ab77d5a575709f7aafbf",
+   "date": "2026-09-16",
+   "use": "Bestiarium (A609)"
+  },
+  {
+   "repo": "RhyTamok/XIVdrg",
+   "commit": "d0bb76b5c623338d0b45611c70216434206d5175",
+   "date": "2026-06-27",
+   "use": "Dragoon"
+  },
+  {
+   "repo": "Rin-0617/BeastHelper",
+   "commit": "be40a1e",
+   "date": "2026-11-02",
+   "use": "Beastmaster, Crucible-Daten (A488, A532)"
+  },
+  {
+   "repo": "RoarkGit/Blue-Academy",
+   "commit": "0f5aaf1e50eddc1409c5f28fc4ad3928f3b2e69e",
+   "date": "2026-11-03",
+   "use": "Blaumagier-Sätze"
+  },
+  {
+   "repo": "RoarkGit/Limited-Job-Data",
+   "commit": "39dd5c280c9d15142af2c76a7e0a6603b96b0670",
+   "date": "2026-11-03",
+   "use": "begrenzte Jobs"
+  },
+  {
+   "repo": "SapphireServer/Sapphire",
+   "commit": "aab9cb2347eb0ec42e85ee3e117a0c177b9b3070",
+   "date": "2026-10-06",
+   "use": "Server-Nachbau (Mechanik)"
+  },
+  {
+   "repo": "t3knical/DalamudPlugins",
+   "commit": "fe84470",
+   "date": "2026-11-07",
+   "use": "Tekz-BossmodReborn-Fork (Zielvorrang je Kampf), BeastMasterHelper (A667)"
+  },
+  {
+   "repo": "xenofei/CrucibleSux",
+   "commit": "be66eda3a75b69a402ea92647c629e6a3c552e57",
+   "date": "2026-10-19",
+   "use": "Crucible-Warteschlange, AggroAdvisor (A609, A667)"
+  },
+  {
+   "repo": "xivanalysis/xivanalysis",
+   "commit": "f532855e635bdfb4211cec8128d582dadfdc6a75",
+   "date": "2026-09-25",
+   "use": "Bewertung je Job (konzepte.md)"
+  },
+  {
+   "repo": "xivapi/ffxiv-datamining",
+   "commit": "44948e4cda5846eab0baa9872122a888fcc4f1b1",
+   "date": "2026-10-20",
+   "use": "Spieldaten"
+  },
+  {
+   "repo": "xivdev/EXDSchema",
+   "commit": "01386944cedc24d67b69949daca7a0cdf84b3eaf",
+   "date": "2026-09-09",
+   "use": "Spaltennamen der Blätter"
+  },
+  {
+   "repo": "Zinochron/BeastMastr",
+   "commit": "c52b572",
+   "date": "2026-09-21",
+   "use": "Beastmaster-Datenansicht (A667)"
+  }
+ ]
+}

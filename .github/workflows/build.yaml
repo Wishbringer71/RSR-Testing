@@ -305,6 +305,11 @@ jobs:
       - name: Check the concept-first hook against constructed edits in a constructed repository
         run: python3 .github/scripts/audit/concept_first.py --self-test
 
+      # The sources the concepts were checked against stand at the commit last evaluated (source_versions.json); the
+      # script that measures them against their remotes is tried on constructed local repositories, without network.
+      - name: Check the source update check against constructed repositories
+        run: python3 .github/scripts/audit/check_source_updates.py --self-test
+
       - name: Check every Markdown table has its header and delimiter row
         run: python3 .github/scripts/audit/check_md_tables.py
 

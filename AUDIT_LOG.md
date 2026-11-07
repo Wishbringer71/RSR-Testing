@@ -19976,6 +19976,28 @@ cb5bf32, 07.11.2026) liegt das Crucible-Plugin LazyCrucible (Auswahlfenster, Lad
 *Prüfgrad:* Compile ohne Warnung, Prüfskripte. Die Regel des Spiels („nie zweimal") ist eine Beobachtung in fremden
 Aufzeichnungen; im Spiel nicht von RSR beobachtet.
 
+### A680 · Quellen auf Aktualisierungen mit Nutzen prüfen: Liste, Prüfskript, erste Messung (07.11.2026)
+
+Seine Vorgabe (eingeordnet als Vorgabe zur Arbeitsweise): „Und immer auch ob Aktualisierungen da sind, welche Nutzen
+bringen" – zu seinem Auftrag, für den Beastmaster weitere Quellen und Plugins zu suchen.
+
+- *Ist:* Die Regel in `konzepte.md` verlangte, einen Klon vor jeder Aussage auf den Stand seines Remotes zu bringen; ob
+  eine schon ausgewertete Quelle seitdem weitergewachsen ist, fragte keine Regel, und kein Verzeichnis hielt fest, auf
+  welchem Stand eine Quelle ausgewertet war. Die Stände standen verstreut im Archiv und in den Klonen.
+- *Gebaut:* `source_versions.json` – 35 Quellen mit dem zuletzt ausgewerteten Commit, Datum und Zweck (29 Klone unter
+  `/home/user/ext`, WrathCombo, und aus A488, A667, A679 die nicht geklonten: t3knical/DalamudPlugins fe84470,
+  dajoey/lalalazy, Kyuros1/BeastKeeper, Zinochron/BeastMastr, lexxxgo/Masterbeast, Rin-0617/BeastHelper,
+  Kriss-Hietala/BeastmasterAssist). `check_source_updates.py` misst jede gegen ihr Remote (`git ls-remote`, kein Klon)
+  und nennt, was sich bewegt hat; `--record` trägt den neuen Stand nach der Auswertung ein; Selbsttest an konstruierten
+  lokalen Repositories (bewegt, aktuell, unerreichbar, fehlerhaft), in der CI. Regel: `konzepte.md` „Quellen", Prüfpunkt
+  in CLAUDE.md „Bevor ich etwas als fertig melde".
+- *Erste Messung (07.11.2026):* 34 von 35 auf dem ausgewerteten Stand, darunter BossModReborn 27be422 und Daedalus
+  2644cbe. Bewegt: dajoey/lalalazy cb5bf32 → 09c6ddf („changelog: scrub quoted requester reports …; add release privacy
+  gate") – nur Änderungsprotokolle, Paketdateien und ein Prüfskript für deren Veröffentlichung, keine Logik von
+  GluttonyCombo oder LazyCrucible; für RSR ohne Nutzen, eingetragen.
+
+*Prüfgrad:* Selbsttest des Skripts, Messung gegen alle 35 Remotes; Prüfskripte.
+
 ## B · Commit-Register (Fork vs. `upstream/main`)
 
 ### B1 · Einzelgeprüfte Fork-Commits
