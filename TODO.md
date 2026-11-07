@@ -48,10 +48,11 @@ auf jeden Schadens- und Schutzkanal gehört, den RSR nicht selbst beendet (Unive
 ## Offene Arbeit
 
 ### Crucible-Wechselwirkungen, Stufe 2 · N
-Im Kampf und auf dem Brett: Tötungsstapel (Dämonische Rüstung, Tonikum-Futter) zählen weder in der Zielwahl noch im
-Wert eines Flächengegenstands – beide rechnen nicht in verhindertem Schaden; die Zauberbücher nimmt RSR nicht. Nächster
-Schritt: je Paar der Loop in der Reihenfolge Sicherheit vor Schaden – Wert der Schadensgegenstände in verhinderter Gefahr
-(dann Tötungsstapel), Zauberbücher mit Messung nach dem Einsatz. Konzept 21, K8 („Wechselwirkungen", A666), K10, K14, Weg.
+Im Kampf: Tötungsstapel (Dämonische Rüstung, Tonikum-Futter) zählen nicht im Wert eines Schadensgegenstands, der seit
+A676 in ersparter Last rechnet – ob die Tötung durch einen Gegenstand einen Stapel gibt, belegt kein Text; die
+Zauberbücher nimmt RSR nicht. Nächster Schritt: Tötungsstapel mit Selbstmessung (kommt nach einer Tötung durch einen
+Gegenstand ein Stapel?), dann Zauberbücher mit Messung nach dem Einsatz. Konzept 21, K8 („Auslöser", „Zauberbücher",
+Schritt 13).
 
 ### Kegel und Ringe gegnerischer Zauber genau messen · N
 Im Kampf: RSRs Formprüfung (`DataCenter.AreaCastReaches`) misst einen Kegel und einen Ring als vollen Kreis um den

@@ -198,6 +198,37 @@ internal static class CrucibleBoard
 	/// </summary>
 	internal static float? BattleLoad(uint battle)
 	{
+		return LearnedLoad(battle);
+	}
+
+	/// <summary>
+	/// K8 step 13 (A676): what the fight in progress can still cost the player - its learned load less what it cost him so
+	/// far, both as a share of his maximum HP without his gear; null while the fight has no learned load, and once it cost
+	/// him more than that: then it is heavier than any before, and what is left is unknown.
+	/// </summary>
+	internal static float? LoadLeft()
+	{
+		if (_fight == 0 || LearnedLoad(_fight) is not { } load || Player.Object is not { MaxHp: > 0u } player)
+		{
+			return null;
+		}
+
+		var left = load - BareShare(_fightLoad, player.MaxHp);
+		return left > 0f ? left : null;
+	}
+
+	// A661: a fight's damage taken back to the player without his gear - his maximum HP, the damage he takes, his physical
+	// and magic vulnerability and evasion, as the shop weighs them.
+	private static float BareShare(FightLoad load, uint maxHp)
+	{
+		var (hp, taken, physical, magic) = Rotations.Basic.BeastmasterRotation.WornFactors();
+		var bare = maxHp / Math.Max(hp, float.Epsilon);
+		return (float)(((load.Physical / Math.Max(physical, float.Epsilon)) + (load.Magic / Math.Max(magic, float.Epsilon))
+			+ load.Other) / Math.Max(taken, float.Epsilon) / bare);
+	}
+
+	private static float? LearnedLoad(uint battle)
+	{
 		lock (OtherConfiguration.CrucibleFightLoadsGate)
 		{
 			return OtherConfiguration.CrucibleFightLoads.TryGetValue(battle, out var percent) ? percent / (float)PercentScale : null;
@@ -1326,10 +1357,7 @@ internal static class CrucibleBoard
 			return;
 		}
 
-		var (hp, taken, physical, magic) = Rotations.Basic.BeastmasterRotation.WornFactors();
-		var bare = player.MaxHp / Math.Max(hp, float.Epsilon);
-		var share = ((_fightLoad.Physical / Math.Max(physical, float.Epsilon)) + (_fightLoad.Magic / Math.Max(magic, float.Epsilon))
-			+ _fightLoad.Other) / Math.Max(taken, float.Epsilon) / bare;
+		var share = BareShare(_fightLoad, player.MaxHp);
 		var percent = (int)Math.Ceiling(share * PercentScale);
 		lock (OtherConfiguration.CrucibleFightLoadsGate)
 		{

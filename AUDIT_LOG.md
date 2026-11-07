@@ -19870,6 +19870,35 @@ Zweiter Teil des TODO „Crucible-Zielfolge" (A667, A674); der Punkt ist damit g
 *Prüfgrad:* Compile ohne Warnung, Prüfskripte, Modell mit Selbsttest; Mechanik aus Werkzeugquellen (GluttonyCombo,
 Tekz, BMR) und Blättern (xivapi). Im Spiel nicht beobachtet; den Kampf hat er nach seinen Uploads noch nicht gespielt.
 
+### A676 · Crucible-Schadensgegenstände: Wert in ersparter Last (07.11.2026)
+
+Drittes Paar aus TODO „Crucible-Wechselwirkungen, Stufe 2" (Wert in verhinderter Gefahr, Voraussetzung der
+Tötungsstapel).
+
+- *1 Research:* `DamageItem` wog einen Gegenstand in Potenz (A672: je Gegner höchstens seine LP) und ließ ihn gehen, wenn
+  er hier mindestens so viel Potenz brachte wie im besten anstehenden Kampf; der Endkampf mit seinen vielen LP gewann
+  so fast immer. Vorhanden: gelernte Last je Kampf (`CrucibleFightLoads`, A661), Schaden je Potenz der Gegenstände und
+  größte LP je Art (A672), die Arten je Kampf aus dem Blatt, was noch kommt (`IsToCome`).
+- *2 Optionen:* (0) Potenz; (a) Gefahr je Sekunde der Gegner (`EnemyDanger`) mal ihrer Restzeit – zählt auch Treffer auf
+  den Begleiter und steht für anstehende Kämpfe nicht zur Verfügung; (b) Last des Kampfes mal Anteil der Gegner-LP, den
+  der Gegenstand nimmt – jetzt mit der Restlast, später mit der gelernten Last; dieselbe Einheit auf beiden Seiten.
+- *3 Abwägung:* (b) gewählt: Sicherheit vor Schaden, eine Einheit für jetzt und später (Anteil deiner LP), alle Teile
+  gemessen. Preis: Annahme, dass die Last mit den abzutragenden Gegner-LP sinkt; die gelernte Last ist die schwerste.
+- *Gebaut:* `CrucibleBoard.LoadLeft` (gelernte Last minus das schon Erlittene, beides ohne Ausrüstung; null, wenn der
+  Kampf schwerer ist als je zuvor), `BareShare` aus `LearnLoad` herausgelöst; `EnemyHpNow`, `AheadSpared`; in
+  `DamageItem` der Vergleich und die Wahl unter mehreren in ersparter Last, sonst Potenz wie zuvor; die Spur nennt den
+  Anteil.
+- *4 Abgleich:* Seine Vorgabe „das zum letzten Kampf am besten passende dort, das andere vorher, wo es am ehesten passt"
+  (A664): „passt" misst jetzt, was der Gegenstand dir erspart. Die Begründung in A672 („ging dort statt im Endkampf, wo
+  die Sukkubi ihn ganz nehmen") war meine Ableitung in Potenz; sie gilt nur noch, wo keine Last gelernt ist.
+- *6 Falsifikation:* Kein Defekt? Potenz auf einen harmlosen Gegner mit vielen LP erspart keine LP, und der Endkampf
+  gewann fast jeden Vergleich. Option falsch? (a) mischt Begleiterschaden hinein und kennt anstehende Kämpfe nicht.
+  Ausgeliefert, nichts ändert sich? Ohne gelernte Last eines Kampfes (vor seinem ersten Ende mit RSR), ohne Messung des
+  Schadens je Potenz oder einer Art bleibt die Potenz; im Endkampf geht jeder Gegenstand ohnehin.
+
+*Prüfgrad:* Compile ohne Warnung, Prüfskripte. Das Rechenbeispiel im Konzept ist angenommen (welche Last zum Milbenkampf
+gehört, ist nicht gemessen). Im Spiel nicht beobachtet.
+
 ## B · Commit-Register (Fork vs. `upstream/main`)
 
 ### B1 · Einzelgeprüfte Fork-Commits

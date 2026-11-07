@@ -916,6 +916,8 @@ public partial class BeastmasterRotation
 		var bestHits = 0;
 		var bestKnockback = false;
 		var bestAhead = 0f;
+		var bestSpared = 0f;
+		var bestSparedAhead = 0f;
 		var fighting = 0;
 		foreach (var hostile in DataCenter.AllHostileTargets)
 		{
@@ -927,6 +929,11 @@ public partial class BeastmasterRotation
 
 		var ending = finalFight && FinalFightEnding(crucible);
 		var ahead = finalFight ? null : CrucibleRoute.BattlesAhead();
+
+		// A676: the load this fight can still cost you and the enemy HP it stands on - those fighting and the kinds still to
+		// come at the most HP seen on them; null where a part is unknown, and the items are weighed by potency.
+		var loadLeft = CrucibleBoard.LoadLeft();
+		var poolNow = EnemyHpNow();
 		_layers.Clear();
 		for (var i = 0; i < crucible->Inventory.Length; i++)
 		{
@@ -937,6 +944,7 @@ public partial class BeastmasterRotation
 
 			var hits = 0;
 			var worth = 0f;
+			var removed = 0d;
 			foreach (var hostile in DataCenter.AllHostileTargets)
 			{
 				if (hostile == null || hostile.IsDead || !hostile.InCombat() || !InReach(item, target, hostile))
@@ -951,7 +959,13 @@ public partial class BeastmasterRotation
 
 				// A672: at most what the enemy has left, by the measured damage per potency of the items.
 				worth += perPotency is { } dpp && dpp > 0f ? Math.Min(add, hostile.CurrentHp / dpp) : add;
+				removed += perPotency is { } hpp && hpp > 0f ? Math.Min(add * hpp, hostile.CurrentHp) : 0d;
 			}
+
+			// A676: the load it spares you here, and in the best fight ahead; both or neither.
+			float? spared = loadLeft is { } left && poolNow is { } pool && pool > 0d && perPotency is > 0f
+				? (float)(left * Math.Min(1d, removed / pool)) : null;
+			var sparedAhead = spared != null && !finalFight ? AheadSpared(item, ahead, bonus) : null;
 
 			if (!ending && MoreCanCome(item, target, hits, out var coming))
 			{
@@ -960,7 +974,10 @@ public partial class BeastmasterRotation
 			}
 
 			var later = AheadWorth(item, ahead, bonus);
-			if (!(finalFight || (hits > 1 && worth >= later)) || (item.Knockback && hits < fighting && !ending))
+			var goesHere = spared is { } s && (finalFight || sparedAhead is not null)
+				? finalFight || (hits > 1 && s >= sparedAhead!.Value)
+				: finalFight || (hits > 1 && worth >= later);
+			if (!goesHere || (item.Knockback && hits < fighting && !ending))
 			{
 				continue;
 			}
@@ -975,10 +992,15 @@ public partial class BeastmasterRotation
 				_layers.Add((i, string.Empty, item.LowersResist));
 			}
 
-			if (worth > bestWorth || (worth == bestWorth && bestKnockback && !item.Knockback))
+			// A676: among those that go, the one that spares the most load where it is known, else the most potency.
+			var rank = spared ?? worth;
+			var bestRank = spared != null ? bestSpared : bestWorth;
+			if (slot < 0 || rank > bestRank || (rank == bestRank && bestKnockback && !item.Knockback))
 			{
 				slot = i;
 				bestWorth = worth;
+				bestSpared = spared ?? 0f;
+				bestSparedAhead = sparedAhead ?? 0f;
 				bestHits = hits;
 				bestKnockback = item.Knockback;
 				bestAhead = later;
@@ -1010,6 +1032,7 @@ public partial class BeastmasterRotation
 		why = $"on {target.Name}, {bestHits} enemies within reach"
 			+ (laysFirst.Length > 0 ? $", first {laysFirst} for {chosen.Name}, which gains from it" : string.Empty)
 			+ (ending ? ", final fight ends soon" : finalFight ? ", final fight"
+				: bestSpared > 0f ? $", spares {bestSpared:P0} of your HP here against at most {bestSparedAhead:P0} in a fight ahead"
 				: $", worth {bestWorth:F0} here against at most {bestAhead:F0} in a fight ahead");
 		return true;
 	}
@@ -1186,6 +1209,81 @@ public partial class BeastmasterRotation
 			}
 
 			best = Math.Max(best, worth);
+		}
+
+		return best;
+	}
+
+	// A676: the enemy HP the fight in progress stands on - the enemies fighting at their HP, and each kind of its sheet still
+	// to come at the most HP RSR saw it with; null when such a kind was never seen.
+	private static double? EnemyHpNow()
+	{
+		var pool = 0d;
+		foreach (var hostile in DataCenter.AllHostileTargets)
+		{
+			if (hostile != null && !hostile.IsDead && hostile.InCombat())
+			{
+				pool += hostile.CurrentHp;
+			}
+		}
+
+		foreach (var enemy in CrucibleBoard.Enemies)
+		{
+			if (!CrucibleBoard.IsToCome(enemy.NameId))
+			{
+				continue;
+			}
+
+			var hp = CrucibleBoard.MaxHpSeen(enemy.NameId);
+			if (hp == 0u)
+			{
+				return null;
+			}
+
+			pool += hp;
+		}
+
+		return pool;
+	}
+
+	// A676: the load a damage item spares in the best fight ahead - the fight's learned load times the share of its kinds'
+	// HP (the most seen on each) the item takes, all kinds for an item with a radius, the best one for a single target; null
+	// when a fight ahead has no learned load, a kind was never seen, or the damage per potency is unmeasured.
+	private static float? AheadSpared(CrucibleItem item, HashSet<uint>? ahead, float bonus)
+	{
+		if (ahead == null || CrucibleBoard.ItemDamagePerPotency is not { } dpp || dpp <= 0f)
+		{
+			return null;
+		}
+
+		var best = 0f;
+		foreach (var battle in ahead)
+		{
+			if (CrucibleBoard.BattleLoad(battle) is not { } load)
+			{
+				return null;
+			}
+
+			var pool = 0d;
+			var taken = 0d;
+			foreach (var enemy in CrucibleBoard.EnemiesOf(battle))
+			{
+				var hp = CrucibleBoard.MaxHpSeen(enemy.NameId);
+				if (hp == 0u)
+				{
+					return null;
+				}
+
+				var each = 1f + (item.Element != 0 && enemy.Weakness == item.Element ? bonus : 0f);
+				var hit = Math.Min(item.Value * each * dpp, hp);
+				pool += hp;
+				taken = item.Radius > 0f ? taken + hit : Math.Max(taken, hit);
+			}
+
+			if (pool > 0d)
+			{
+				best = Math.Max(best, (float)(load * Math.Min(1d, taken / pool)));
+			}
 		}
 
 		return best;

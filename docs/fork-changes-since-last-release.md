@@ -54,6 +54,11 @@ What this release changes in the fight. For the whole distance from upstream, se
   with 522 HP took 1,304 to 1,600 each. RSR now measures what its damage items deal per potency on their hits and counts
   each enemy at most at its HP left - in a fight ahead at the most HP it saw that kind with -, so an item waits for the
   fight where it is not wasted.
+- **Damage items go where they spare you the most HP.** Where RSR knows the fights' loads, a damage item is weighed by
+  the load it spares: the load a fight can still cost you times the share of the enemies' HP the item takes. In the fight
+  in progress that is its learned load less what it cost you so far; in a fight ahead its learned load. Potency on a
+  harmless enemy with many HP spares nothing, so items no longer wait for the final fight by default. Without a learned
+  load, the damage per potency or a kind's HP, potency decides as before.
 - **An enemy that has not hit yet counts with its kind.** Before its first hit an enemy ranked by the mean danger of the
   fight's other enemies, even when another of its kind had hit already: a second Aetheric Charge stood like an average
   enemy. It now counts with the danger its kind showed in this area - each enemy measured until it fell -; only enemies

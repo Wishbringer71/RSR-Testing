@@ -1283,8 +1283,28 @@ on a pack once a fight, all of them in the final fight (Crucible only)".
      Aktionen, ohne Schwächezuschlag, je Gebiet. Am 07.11.2026 auf Brett 1: 1.140 bis 1.192 Schaden je 2.000 Potenz auf
      die Terrormilbe (0,57 bis 0,6), 1.304 bis 1.600 auf die Schattenmilbe mit 522 LP – zwei Drittel des Treffers dort
      verfielen. Im besten anstehenden Kampf zählt jede Art höchstens die größten LP, die RSR an ihr gesehen hat; ohne
-     Messung zählt der Treffer voll wie zuvor. Grund: Drei Milben zählten wie drei volle Treffer, und der Gegenstand ging
-     dort statt im Endkampf, wo die Sukkubi ihn ganz nehmen. Legt ein Gegenstand, der jetzt ebenfalls ginge, den Status, den der gewählte
+     Messung zählt der Treffer voll wie zuvor. Grund: Drei Milben zählten wie drei volle Treffer – zwei Drittel des
+     Treffers waren kein Schaden. *Wert in verhinderter Last (A676):* Wo RSR die Last der Kämpfe kennt, wiegt es einen
+     Schadensgegenstand nicht nach Potenz, sondern nach der Last, die er dir erspart: die Last, die der Kampf noch bringt,
+     mal dem Anteil der Gegner-LP, den er nimmt. Jetzt ist das die gelernte Last dieses Kampfes (K10, „Last je Kampf")
+     abzüglich dessen, was er dich schon kostete, und der Anteil seines Schadens (Potenz mal gemessenem Schaden je Potenz,
+     je Gegner höchstens seine LP) an den LP der Gegner im Kampf samt der Arten, die noch kommen (die größten LP, die RSR an
+     ihnen sah); in einem anstehenden Kampf seine gelernte Last mal dem Anteil an den LP seiner Arten. Der Gegenstand geht
+     jetzt, wenn er hier mindestens so viel Last erspart wie im besten anstehenden Kampf; unter mehreren, die gehen, der
+     mit der größten. Fehlt eine Last, der Schaden je Potenz oder die LP einer Art, gilt der Vergleich in Potenz wie oben; ebenso, wenn
+     der Kampf dich schon mehr kostete als je zuvor – was er noch bringt, ist dann unbekannt.
+     *Grund:* Sicherheit vor Schaden: Potenz auf einen harmlosen Gegner erspart keine LP, und deine LP tragen von Kampf zu
+     Kampf bis zur Rast. Die Annahme dahinter: Ein Kampf kostet dich im Verhältnis zu den Gegner-LP, die du noch abtragen
+     musst – nimmt der Gegenstand ein Drittel davon, endet der Kampf um ein Drittel früher. *Im Kampf (Rechenbeispiel; welche
+     Last zum Milbenkampf gehört und die LP des Endkampfs sind nicht gemessen):* Kostet der Milbenkampf 18 % und nimmt ein
+     Reißzahn dort drei Schattenmilben (je 522 LP) und einen Teil der Terrormilbe – angenommen zwei Fünftel der Gegner-LP –,
+     erspart er rund 7 % deiner LP; nimmt er im Endkampf (35 %) ein Fünfzigstel der Gegner-LP, unter 1 %. Er geht im
+     Milbenkampf; nach Potenz wartete er auf den Endkampf. *Gegenthesen:* (1) Die gelernte Last ist die schwerste, nicht die übliche; ein
+     anstehender Kampf wirkt so schwerer als jetzt. Gleich für alle Kämpfe; im eigenen Kampf zieht RSR das schon Erlittene
+     ab. Preis: Ein Gegenstand wartet eher, als dass er zu früh geht – im Endkampf geht er ohnehin. (2) Die Last folgt nicht
+     den Gegner-LP (ein harmloser Boss mit vielen LP, gefährliche kleine Zusatzgegner). Dann zählt ein Treffer auf die
+     kleinen zu wenig; die Zielwahl (K3) bringt sie ohnehin zuerst. (3) Ausgeliefert, und nichts ändert sich: Ohne gelernte
+     Last eines Kampfes (vor seinem ersten Ende mit RSR) bleibt die Potenz. Legt ein Gegenstand, der jetzt ebenfalls ginge, den Status, den der gewählte
      ausnutzt, auf das Ziel, geht er zuerst (Reißzahn des Eises vor dem des Feuers): Beide gehen nacheinander, und nur
      diese Reihenfolge bringt die Zusatzpotenz. Ein Gegenstand,
      dessen Element nur die Schwäche noch kommender Gegner trifft, wartet auf sie (wie K2).
@@ -1374,10 +1394,10 @@ on a pack once a fight, all of them in the final fight (Crucible only)".
       erlittener Schaden, +10 % Schaden, 180 s, bis vier; Tonikum-Futter für den Begleiter je −8 %, 60 s), Magnum-Wasser
       dem Begleiter Regeneration. *Bewertet (A672):* Ein Stapel ist Schutz über die Zeit nach der Tötung; Wert (13) zählt
       Potenz, Zielwahl (K3) Gefahr je Sekunde bis zum Fall – keine der beiden misst ihn. Auf Brett 1 brächten drei Milben
-      auf einmal −15 % für den Rest eines Kampfes, der 4 bis 18 % deiner LP kostete: höchstens rund 2 % je Kampf. Offen
-      (TODO „Crucible-Wechselwirkungen, Stufe 2"): den Wert eines Schadensgegenstands in verhinderter Gefahr rechnen
-      (Gefahr je Sekunde der Gegner, die er tötet, über die Restdauer des Kampfes, dazu der Schutz der Stapel), dann
-      zählen Überschuss und Stapel in derselben Einheit.
+      auf einmal −15 % für den Rest eines Kampfes, der 4 bis 18 % deiner LP kostete: höchstens rund 2 % je Kampf. Den Wert
+      eines Schadensgegenstands rechnet RSR seit A676 in ersparter Last (Schritt 13); die Stapel gehören in dieselbe
+      Einheit – Offen (TODO „Crucible-Wechselwirkungen, Stufe 2"): Ob die Tötung durch einen Gegenstand einen Stapel gibt
+      („upon defeating an enemy"), belegt kein Text.
     - *Rast und Futter:* Ein ruhender Begleiter verliert sein Futter, mit Lilien-Simulakrum nicht; mit
       Lassi-Simulakrum füllt ihn die Rast ganz. Die Campsite wählt danach (K10, „Futter an der Rast", A669). Arzneibeutel:
       ein zufälliger Bestien-Trank je Rast, auf der Skala mit dem kleinsten je sicherer Campsite (K13, A669).
