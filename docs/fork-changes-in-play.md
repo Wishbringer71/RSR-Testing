@@ -548,7 +548,7 @@ the low 16 bits only, and a raidwide that hit a tank harder than that could be r
   tankbuster hits you anyway. Your stance goes on first if it is off. If the enemy's next tankbuster
   still hits him, RSR stops taking that enemy on an announcement for the rest of the fight.
   `Provoke when there is another tank in the party` does only what its text names, and `Provoke
-  anything not on the no provoke list.` respects the list.
+  any enemy not on the Don't provoke list` respects the list.
 - **A tankbuster of several hits is planned as one.** The tankbuster table adds up what all hits of one cast take on a
   tank - also hits that land under another id or from a helper, matched to the cast by its name - and keeps the sum
   under the cast the plan reads, with the time from the first hit to the last. The plan sizes its mitigation for the sum

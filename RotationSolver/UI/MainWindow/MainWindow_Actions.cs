@@ -137,7 +137,8 @@ public partial class MainWindow
 				_activeAction.IsEnabled = isEnabled;
 			}
 
-			// A635: the switch of an HP or MP potion or a Phoenix Down holds for every job (concept 03, "Schalter je Gegenstand").
+			// A635, A645: the switch of an HP or MP potion, a Phoenix Down or a tincture holds for every job (concept 03,
+			// "Schalter je Gegenstand", "Schalter der Tinkturen").
 			if (_activeAction is BaseItem { SwitchForAllJobs: true })
 			{
 				ImGui.TextDisabled("This switch holds for every job.");

@@ -28,8 +28,12 @@ DOCS = (Path('docs/fork-changes-in-play.md'), Path('docs/fork-changes-since-last
 SOURCE_DIRS = (Path('RotationSolver'),)
 
 LABEL = re.compile(r'(?:\bUI\(\s*|\bName\s*=\s*|\bDescription\s*=\s*|\[Description\(\s*)"(?P<label>[^"]{4,})"')
-# Backticks stay on one line; straight quotes may wrap, as the documents break at a fixed width.
-QUOTED = re.compile(r'`(?P<b>[^`\n]{6,160})`|"(?P<q>[^"]{6,200})"')
+# Both may wrap, as the documents break at a fixed width; a backtick span ends at a blank line or a list item. Any
+# backtick span is matched, short ones too, so a span too short to be a setting name does not leave its closing
+# backtick to open the next one; the length is checked in findings(). A wrapped name was never read before (A645:
+# `Use Phoenix Down`, with no setting of that text, passed broken over two lines).
+QUOTED = re.compile(r'`(?P<b>(?:[^`\n]|\n(?!\s*\n|\s*[-*+]\s))*)`|"(?P<q>[^"]{6,200})"')
+BACKTICK_NAME = range(6, 161)
 SETTING_WORD = re.compile(r'\b(?:settings?|options?|switch(?:es|ed)?)\b', re.IGNORECASE)
 REMOVED_WORD = re.compile(r'\bremoved\b', re.IGNORECASE)
 SENTENCE_END = re.compile(r'[.!?](?:\s|$)|\n\s*\n|\n\s*[-*+]\s')
@@ -84,6 +88,8 @@ def findings(text, known):
     """[(quoted text, reason)] for each quoted text that names a setting no setting has."""
     out = []
     for m in QUOTED.finditer(text):
+        if m.group('b') is not None and len(m.group('b')) not in BACKTICK_NAME:
+            continue
         candidate = ' '.join((m.group('b') or m.group('q')).split())
         # A setting text starts with a capital and has words; identifiers, file names, log lines do not.
         if not candidate[:1].isupper() or ' ' not in candidate or matches(candidate, known):
@@ -113,14 +119,17 @@ def self_test():
         ('The trace line "Sleep resisted by an enemy" names it.\n\nThe setting is on.', 0),
         ('The setting "Target colour of the ring" was removed.', 0),
         ('The setting "Target colour of the ring" is on.', 1),
+        ('With `Skip mitigation for\n  small area casts` on, the setting waits.', 0),
+        ('With `Skip mitigation for\n  big area casts` on, the setting waits.', 1),
+        ('The `K1` step and the setting `Skip mitigation for small area casts` hold.', 0),
     ]
     for text, expected in cases:
         got = len(findings(text, known))
         if got != expected:
             print(f'self-test FAILED: {text!r} gave {got} finding(s), expected {expected}')
             return False
-    print('self-test ok: a wrong and a nearly right setting name are caught; a right one, an abbreviated one,'
-          ' a window text, a quoted log line and a removed setting are left alone')
+    print('self-test ok: a wrong and a nearly right setting name are caught, wrapped over a line too; a right one,'
+          ' an abbreviated one, a window text, a quoted log line and a removed setting are left alone')
     return True
 
 

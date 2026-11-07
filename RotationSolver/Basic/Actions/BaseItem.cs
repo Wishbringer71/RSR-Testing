@@ -73,10 +73,11 @@ public class BaseItem : IBaseItem
 
 	/// <summary>
 	/// Whether this item's switch holds for every job at once (A635). An HP or MP potion and a Phoenix Down are the same item
-	/// for every job, and one global setting ("Use HP potions", "Use MP potions", "Use Phoenix Down") says when they go. Their
+	/// for every job, and one global setting ("Use HP potions", "Use MP potions", "Use Phoenix Down (Experimental)") says when they go. Their
 	/// switch kept per job and off by default left that setting without effect on every job where the item had not been
 	/// switched on by hand (a Beastmaster died twice in Sägerschrei with "Use HP potions" on). For these the switch only
-	/// excludes, for every job, and nothing is excluded by default.
+	/// excludes, for every job, and nothing is excluded by default. Tinctures follow the same rule (A645); where a job
+	/// drinks them is its "Tincture usage".
 	/// </summary>
 	public virtual bool SwitchForAllJobs => false;
 

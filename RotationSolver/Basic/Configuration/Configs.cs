@@ -64,7 +64,7 @@ internal partial class Configs : IPluginConfiguration, IM3Settings
 	public List<ActionEventInfo> Events { get; private set; } = [];
 	public SortedSet<Job> DisabledJobs { get; private set; } = [];
 
-	/// <summary>The HP and MP potions and Phoenix Downs switched off in the action list - for every job (A635).</summary>
+	/// <summary>The HP and MP potions, Phoenix Downs and tinctures switched off in the action list - for every job (A635, A645).</summary>
 	public SortedSet<uint> ExcludedConsumables { get; private set; } = [];
 
 	public string[] RotationLibs { get; set; } = [];

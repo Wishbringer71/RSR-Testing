@@ -55,6 +55,11 @@ internal class MedicineItem : BaseItem
 		};
 	}
 
+	// Switched for every job as an exclusion, like the potions (A645): whether a job drinks tinctures and where is its
+	// "Tincture usage"; which grade is a question of the item. The per-job switch, off by default since upstream
+	// 3e9b5b164, kept the tincture out of every burst on each job where it had not been switched on by hand.
+	public override bool SwitchForAllJobs => true;
+
 	// A tincture is used like an action and would end a running Flamethrower channel (A380).
 	protected override bool CanUseThis => !DataCenter.FlamethrowerChannelRunning && CustomRotation.TinctureAllowedHere;
 }

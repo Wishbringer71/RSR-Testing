@@ -64,12 +64,14 @@ What this release changes in the fight. For the whole distance from upstream, se
   the potion came only at the next weave window, a GCD later. With no healer alive in the party it now also reads your
   HP at the next weave window, a GCD ahead, as the critical class does; the guard against overhealing stays. The
   Crucible's healing items read the same.
-- **One switch per potion, for every job.** HP and MP potions and Phoenix Down are switched in the action
-  list for all jobs at once, and none is off by default; `Use HP potions`, `Use MP potions` and `Use
-  Phoenix Down` decide when they go. Before, every job kept its own switch per item, off until switched
-  on by hand, so with `Use HP potions` on a job drank nothing where its potions had not been switched on -
-  a beastmaster alone among them. Switching an item off now takes it out for every job; the earlier
-  per-job switches of these items are no longer read.
+- **One switch per potion and tincture, for every job.** HP and MP potions, Phoenix Down and tinctures are
+  switched in the action list for all jobs at once, and none is off by default; `Use HP potions`, `Use MP
+  potions`, `Use Phoenix Down (Experimental)` and each job's `Tincture usage` decide when they go. Before, every job kept
+  its own switch per item, off until switched on by hand, so with `Use HP potions` on a job drank nothing
+  where its potions had not been switched on - a beastmaster alone among them - and no job drank a
+  tincture in a high-end fight unless it had been switched on there. Switching an item off now takes it
+  out for every job; the earlier per-job switches of these items are no longer read. To keep a job
+  without tinctures, set its `Tincture usage` to not use them.
 - **The game decides whether a party member is in sight.** Whether a heal, a buff or a raise reaches a
   member behind a pillar is now the game's own answer, the check the hotbar uses to mark an action out of
   range. RSR's own ray, with one eye height for every race and enemy size, decides only where the game

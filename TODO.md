@@ -19,16 +19,14 @@ auswahl und das timing der beschwörung" – je Kampf aller fünf Bretter (Gegne
 BossMod-Module) die Rotation des Beastmasters, die Wahl der Begleiter und den Zeitpunkt ihres Aufrufs im Loop prüfen
 (Beispiel seiner Beobachtung: der Raptor gegen Feuer, bevor feueranfällige Gegner da waren; A581).
 
-1. Tinktur: Schalter je Gegenstand ab Werk aus: Auf jedem Job, auf dem er die Tinktur nicht von Hand eingeschaltet hat,
-   kommt sie nie, gegen den Text von „Tincture usage".
-2. Jobkonfiguration: Jobs ohne gespeicherten Eintrag teilen eine Liste: Schaltet er auf einem neu gespielten Job eine
+1. Jobkonfiguration: Jobs ohne gespeicherten Eintrag teilen eine Liste: Schaltet er auf einem neu gespielten Job eine
    Aktion aus, ist sie auf jedem anderen in derselben Sitzung neu gespielten Job ebenfalls aus.
-3. Bewegungssperre beim Wirken gegen das Ausweichen der BossMod-KI: Mit „Lock movement while casting" an steht die
+2. Bewegungssperre beim Wirken gegen das Ausweichen der BossMod-KI: Mit „Lock movement while casting" an steht die
    Figur während jedes Zaubers still, auch wenn die KI von BossMod aus einer Fläche laufen will; nur in dieser
    Kombination, dort aber mit einem Treffer, dem der Spieler nicht ausweicht.
-4. Blaumagier: Set nach den Widerständen der Stufe: Im Masked Carnivale wählt der Satz des Stufenführers Füllzauber
+3. Blaumagier: Set nach den Widerständen der Stufe: Im Masked Carnivale wählt der Satz des Stufenführers Füllzauber
    nach Beispielen; gegen welches Element die Gegner der Stufe schwach oder immun sind, zählt dabei nicht.
-5. Konzepte neu ordnen (allgemein, Rollen, Gruppen, Jobs, Inhalte): keine direkte Wirkung im Kampf; eine Regel, die
+4. Konzepte neu ordnen (allgemein, Rollen, Gruppen, Jobs, Inhalte): keine direkte Wirkung im Kampf; eine Regel, die
    im Konzept eines Jobs steht, wird für dessen Gruppe übersehen, und eine Inhaltsregel ist über mehrere Konzepte
    verteilt.
 
@@ -40,13 +38,6 @@ der Beastmaster-Vorrang, dann jeder übrige Punkt dieser Liste, dann die Konzept
 Code-Review; was diese finden, kommt wieder hierher und in dieselbe Reihenfolge, jeder Schritt im vollständigen Loop.
 
 ## Defekte
-
-### Tinktur: Schalter je Gegenstand ab Werk aus · N, U
-Im Kampf: „Tincture usage" sagt „the tincture goes in each burst window where it is ready and in your inventory"; auf
-jedem Job, auf dem er die Tinktur nicht in der Aktionsliste eingeschaltet hat, kommt sie nie. *Ort:* `ItemConfig.IsEnabled`
-(ab Werk aus), `BaseItem.CanUse`, `MedicineItem`. *Nächster Schritt:* Loop wie A635, aber je Job (die Einstellung gilt je
-Job, die Tinktur hängt am Hauptwert): Schalter als Ausschluss, ab Werk an; wie mit gespeicherten Stellungen umgehen, die
-seine Wahl sein können (Tinkturen kosten). *Konzept:* 03, „Schalter je Gegenstand".
 
 ### Jobkonfiguration: Jobs ohne gespeicherten Eintrag teilen eine Liste · N, U
 Im Kampf: Schaltet er auf einem Job, den er noch nie gespielt hat, eine Aktion oder einen Gegenstand aus, gilt das in

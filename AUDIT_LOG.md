@@ -18834,6 +18834,32 @@ habe den schleim bislang nicht anfreunden können."
 - *8 Nachweis:* Compile (0 Warnungen); im Spiel nicht gesehen.
 - *9 Dokumentation:* Konzept 01 K5 Stufe 2; TODO: Schritt geschlossen; Release-Text.
 
+### A645 · Tinktur: Schalter für alle Jobs als Ausschluss, ab Werk keiner aus (07.11.2026)
+
+- *Anlass:* TODO „Tinktur: Schalter je Gegenstand ab Werk aus" (gefunden in A635), Punkt 1 der Reihenfolge nach dem
+  Beastmaster-Vorrang.
+- *1 Research:* `MedicineItem` erbte den Schalter je Job (`[JobConfig] _rotationItemConfig`), ab Werk aus
+  (`ItemConfig.IsEnabled`). Herkunft: Upstream 3e9b5b164 (31.01.2024, „refactor for configs") ersetzte die Liste
+  ausgeschlossener Gegenstände für alle Jobs (`GlobalConfig.DisabledItems`, ab Werk leer) durch die Konfiguration je
+  Job; aus „nicht ausgeschlossen" wurde „nicht eingeschaltet", Aktionen blieben ab Werk an (`ActionConfig._isEnable`).
+  `BaseItem.CanUse` prüft den Schalter vor allem anderen; alle 21 Kampfrotationen rufen `UseBurstMedicine`. Seine
+  Konfiguration steht in keinem Upload, seine Stellungen sind nicht messbar. Bonusdeckel je Grad (`ItemFood` 557, 665,
+  xivapi 07.11.2026): Grade 6 Tincture of Strength +189, Grade 2 Gemdraught of Intelligence +392 (HQ).
+- *2–6:* im Konzept 03 („Schalter der Tinkturen"): Optionen A bis F, Abwägung im Kampf, Folgen zweiter Ordnung, drei
+  Gegenthesen. Ergebnis C, wie A635: Ausschluss für alle Jobs; ob ein Job trinkt, sagt „Tincture usage" je Job.
+- *7 Gebaut:* `MedicineItem.SwitchForAllJobs` an; Kommentare an `BaseItem`, `Configs.ExcludedConsumables` und der
+  Aktionsliste nachgezogen. Der Hinweis „This switch holds for every job" erscheint damit auch unter den Tinkturen.
+- *Nebenbei, Prüfmittel:* `check_setting_names.py` las Namen in Backticks nur auf einer Zeile; 47 umbrochene Namen der
+  beiden Release-Texte blieben ungeprüft. Gefunden, weil der neu gesetzte Satz „`Use Phoenix Down`" auf eine Zeile
+  rückte: Die Einstellung heißt „Use Phoenix Down (Experimental)" (berichtigt im Release-Text, im Konzept 03 und am
+  `BaseItem`). Behoben: Backtick-Namen dürfen umbrechen, enden an Leerzeile und Listenpunkt; kurze Spannen werden
+  mitgelesen, damit ihr schließender Backtick keine neue öffnet; Selbsttest um drei Fälle ergänzt. Der zweite Fund:
+  `docs/fork-changes-in-play.md` nannte „Provoke anything not on the no provoke list."; Upstream 64413ccef
+  (24.10.2026) benannte sie in „Provoke any enemy not on the Don't provoke list" um, berichtigt.
+- *8 Nachweis:* Compile (0 Warnungen), 49 Prüfschritte; im Spiel nicht gesehen.
+- *9 Dokumentation:* Konzept 03; TODO: Eintrag entfernt, Reihenfolge fortgeschrieben; Release-Text („One switch per
+  potion and tincture, for every job").
+
 ## B · Commit-Register (Fork vs. `upstream/main`)
 
 ### B1 · Einzelgeprüfte Fork-Commits
