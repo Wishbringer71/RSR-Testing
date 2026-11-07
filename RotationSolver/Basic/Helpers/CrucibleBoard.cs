@@ -1188,6 +1188,27 @@ internal static class CrucibleBoard
 	}
 
 	/// <summary>
+	/// K13 (A670): of the damage the heaviest fight dealt the player, the share within <paramref name="seconds"/> of its first
+	/// hit - what an item set at the start of a fight and standing that long (the Beast Potion Kit) is there for. 1 while no
+	/// hit was recorded.
+	/// </summary>
+	internal static float ShareFromStart(double seconds)
+	{
+		var series = _areaLoadsIn == DataCenter.TerritoryID && _areaLoads.Fights > 0 ? _areaHeaviestHits : _allHeaviestHits;
+		double total = 0d, early = 0d;
+		foreach (var hit in series)
+		{
+			total += hit.Amount;
+			if (hit.At < seconds)
+			{
+				early += hit.Amount;
+			}
+		}
+
+		return total > 0d ? (float)(early / total) : 1f;
+	}
+
+	/// <summary>
 	/// K10 shop (A570): the player's own healing on himself in a fight of the Crucible - his actions and items. Effect
 	/// handler, game thread.
 	/// </summary>

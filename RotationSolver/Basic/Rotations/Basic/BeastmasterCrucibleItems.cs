@@ -54,7 +54,15 @@ public partial class BeastmasterRotation
 		uint Element = 0, float Radius = 0f, bool Knockback = false, string Afflicts = "", string BonusStatus = "",
 		float Bonus = 0f, bool RaisesMagic = false, uint LowersResist = 0, float HealShare = 0f, string HealCarrying = "",
 		string GainsFrom = "", float Duration = 0f, string LongerWith = "", float LongerDuration = 0f, int Stacks = 0,
-		int MoreStacks = 0);
+		int MoreStacks = 0, float AutoBelow = 0f, float Expires = 0f, float ExpiresWith = 0f);
+
+	// A670: Auto-potion - "Restores 40% of HP automatically when HP falls below 50%", "50% chance for the effect to expire when
+	// triggered. Chance is reduced to 10% when under the effect of Spirit of the Breathtaker."
+	private static readonly Regex AutoRestores = new(@"Restores (?<share>\d+)% of HP automatically when HP falls below (?<below>\d+)%",
+		RegexOptions.CultureInvariant);
+	private static readonly Regex ExpiresChance = new(
+		@"(?<chance>\d+)% chance for the effect to expire when triggered\. Chance is reduced to (?<reduced>\d+)%",
+		RegexOptions.CultureInvariant);
 
 	private static Dictionary<ushort, CrucibleItem>? _crucibleItems;
 
@@ -157,7 +165,19 @@ public partial class BeastmasterRotation
 			}
 			else if (text.StartsWith("Grants Auto-potion to self", StringComparison.Ordinal))
 			{
-				items[id] = new CrucibleItem(CrucibleItemKind.AutoPotion, 0f, false, name);
+				// A670: what it restores, below which share of HP, and the chance it expires when it does - alone and under the
+				// status it gains from.
+				var auto = AutoRestores.Match(text);
+				var expires = ExpiresChance.Match(text);
+				var autoShare = 0f;
+				var below = 0f;
+				var expiry = 0f;
+				var expiryWith = 0f;
+				_ = auto.Success && Share(auto, out autoShare) && Percent(auto.Groups["below"].Value, out below);
+				_ = expires.Success && Percent(expires.Groups["chance"].Value, out expiry)
+					&& Percent(expires.Groups["reduced"].Value, out expiryWith);
+				items[id] = new CrucibleItem(CrucibleItemKind.AutoPotion, autoShare, false, name, AutoBelow: below,
+					Expires: expiry, ExpiresWith: expiryWith);
 			}
 			else if (Cures.Match(text) is { Success: true } cure)
 			{
@@ -263,7 +283,12 @@ public partial class BeastmasterRotation
 
 		static bool Share(Match match, out float share)
 		{
-			var parsed = float.TryParse(match.Groups["share"].Value, NumberStyles.Float, CultureInfo.InvariantCulture, out var percent);
+			return Percent(match.Groups["share"].Value, out share);
+		}
+
+		static bool Percent(string digits, out float share)
+		{
+			var parsed = float.TryParse(digits, NumberStyles.Float, CultureInfo.InvariantCulture, out var percent);
 			share = percent / 100f;
 			return parsed;
 		}

@@ -19706,6 +19706,28 @@ Zweites Paar aus TODO „Crucible-Wechselwirkungen, Stufe 2".
 *Prüfgrad:* Compile ohne Warnung, Prüfskripte; Textmuster gegen alle 206 Rohtexte (je genau ein Treffer). Im Spiel nicht
 beobachtet; die Spur nennt die Lesung der Rast mit der Zahl der füllenden Begleiter.
 
+### A670 · Crucible-Skala: Heiltranksammlung nach dem, was sie unter der Linie heilt; Diebesgewand und Flinkheitsmittel (07.11.2026)
+
+Drittes Paar aus TODO „Crucible-Wechselwirkungen, Stufe 2".
+
+- *1 Research:* Beast Potion Kit (Zeile 140): „Grants Auto-potion to self. Auto-potion Effect: Restores 40% of HP
+  automatically when HP falls below 50% / 50% chance for the effect to expire when triggered. Chance is reduced to 10% when
+  under the effect of Spirit of the Breathtaker. Duration: 150s / When carrying thief's garb, duration increases to 240s".
+  K8 setzt sie zu Beginn eines Bosskampfs (Schritt „against a boss, no Auto-potion stands"). Code: Art `AutoPotion` mit
+  Wert 0; die Skala gab „no HP on this scale" – nie gekauft, nie auf dem Schatzfeld gewählt, das Diebesgewand zählte die
+  Verlängerung nicht.
+- *2 Optionen:* (0) nichts. (a) als Heiltrank von 40 % – überschätzt, sie heilt nur unter der Linie. (b) was unter der
+  Linie fällt, mal Anteil ab Kampfbeginn in ihrer Dauer, mal Erwartungswert der Auslösungen. Gewählt (b).
+- *Gebaut (Konzept 21 K13 „Heiltranksammlung"):* Text gelesen (Anteil, Linie, Verfall allein und unter dem Status);
+  `CrucibleBoard.ShareFromStart` gibt den Anteil des schwersten Kampfes in den ersten Sekunden; `AutoPotionValue` auf der
+  Skala, beim Diebesgewand als Verlängerung, beim Flinkheitsmittel als Zuwachs; eine gewählte Sammlung zählt gegen die
+  noch nötige Heilung. Beispiele im Konzept nachgerechnet (0 %, 40 %, 55 %, mit Flinkheitsmittel 67 %).
+- *6 Falsifikation:* Kein Defekt? Widerlegt am Code (Wert 0). Option falsch? Eine gehaltene Sammlung zählt nicht in der
+  gehaltenen Heilung (A670-1, Preis: ein Trank zu viel). Ausgeliefert, nichts ändert sich? Wenn deine Tränke dich über
+  der Linie halten – dann zählt sie richtig nichts.
+
+*Prüfgrad:* Compile ohne Warnung, Prüfskripte; Textmuster am Rohtext; Beispiele nachgerechnet. Im Spiel nicht beobachtet.
+
 ## B · Commit-Register (Fork vs. `upstream/main`)
 
 ### B1 · Einzelgeprüfte Fork-Commits

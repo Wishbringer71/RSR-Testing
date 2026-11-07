@@ -197,6 +197,33 @@ public partial class BeastmasterRotation
 		return (heavy * share, seconds, stacks, share);
 	}
 
+	/// <summary>
+	/// K13 (A670): what an Auto-potion item (Beast Potion Kit) is worth, as a share of your HP - of what you can still heal,
+	/// <paramref name="healable"/>, the part that would take you below its line, of that the share of the heaviest fight in
+	/// its duration from the start (as the gear gives it), and of that the expected restores: the first sure, each further one
+	/// with the chance the effect did not expire (less under the status it gains from, as held), each at most what is left;
+	/// and that duration and chance.
+	/// </summary>
+	private static (float Value, double Seconds, float Expires) AutoPotionValue(CrucibleItem item, List<CrucibleGear> gear,
+		List<ushort> held, float healable, float recovery)
+	{
+		var seconds = item.LongerDuration > 0f && Carries(gear, item.LongerWith) ? item.LongerDuration
+			: item.Duration > 0f ? item.Duration : double.MaxValue;
+		var expires = item.ExpiresWith > 0f && GrantsHeld(held, item.GainsFrom) ? item.ExpiresWith : item.Expires;
+		var restores = item.Value * (1f + recovery);
+		var below = Math.Max(0f, healable - (1f - item.AutoBelow)) * CrucibleBoard.ShareFromStart(seconds);
+		var value = 0f;
+		var chance = 1f;
+		while (restores > 0f && below > 0f && chance > 0f)
+		{
+			value += chance * Math.Min(restores, below);
+			below -= restores;
+			chance *= 1f - expires;
+		}
+
+		return (value, seconds, expires);
+	}
+
 	/// <summary>Whether a shop is open and the recommendation runs, for the window.</summary>
 	public static bool CrucibleShopOpen { get; private set; }
 
@@ -791,7 +818,8 @@ public partial class BeastmasterRotation
 				{
 					held.Add(id);
 					itemsLeft--;
-					if (items.TryGetValue(id, out var item) && HealShareOf(item, set) > 0f)
+					// A670: what an Auto-potion restores counts against the healing still needed, as a potion's does.
+					if (items.TryGetValue(id, out var item) && (HealShareOf(item, set) > 0f || item.Kind == CrucibleItemKind.AutoPotion))
 					{
 						healed += value;
 					}
@@ -1064,8 +1092,8 @@ public partial class BeastmasterRotation
 					if (string.Equals(piece.Name, heldItem.LongerWith, StringComparison.OrdinalIgnoreCase))
 					{
 						var withLoad = (with.Heavy, with.HeavyPhysical, with.HeavyMagic);
-						var gain = ProtectionValue(heldItem, withPiece, heldItems, withLoad).Value
-							- ProtectionValue(heldItem, owned, heldItems, withLoad).Value;
+						var gain = HeldValue(heldItem, withPiece, heldItems, withLoad, with.Recovery)
+							- HeldValue(heldItem, owned, heldItems, withLoad, with.Recovery);
 						if (gain > 0f)
 						{
 							extended += gain;
@@ -1143,7 +1171,10 @@ public partial class BeastmasterRotation
 				var nowLoad = (now.Heavy, now.HeavyPhysical, now.HeavyMagic);
 				var (protects, seconds, stacks, caught) = ProtectionValue(item, owned, heldItems, nowLoad);
 				var (gives, givesTo) = item.Kind == CrucibleItemKind.Buff ? GainOfHeld(item, id) : (0f, string.Empty);
-				var value = heals > 0f ? Math.Min(full, healable) : protects > 0f ? protects : gives;
+				var (restores, autoSeconds, expires) = item.Kind == CrucibleItemKind.AutoPotion
+					? AutoPotionValue(item, owned, heldItems, healable, now.Recovery)
+					: (0f, double.MaxValue, 0f);
+				var value = heals > 0f ? Math.Min(full, healable) : protects > 0f ? protects : restores > 0f ? restores : gives;
 				var lasting = seconds < double.MaxValue ? $" for {seconds:0} s" : string.Empty;
 				result.Add((row, id, value, heals > 0f
 					? (value < full
@@ -1157,6 +1188,9 @@ public partial class BeastmasterRotation
 						CrucibleItemKind.NullifyPhysical => $"used once, nullifies {stacks} physical hits{lasting}: ~{value:P0}, {caught:P0} of your heaviest fight's physical damage",
 						CrucibleItemKind.ReflectMagic => $"used once, reflects magic attacks{lasting}: ~{value:P0}, {caught:P0} of your heaviest fight's magic damage",
 						CrucibleItemKind.Reraise => "a second life (weighed before this scale)",
+						CrucibleItemKind.AutoPotion => restores > 0f
+							? $"used against a boss, restores {item.Value:P0} below {item.AutoBelow:P0} of your HP for {autoSeconds:0} s, expiring with {expires:P0} each time: ~{value:P0} of the ~{healable:P0} your healing leaves"
+							: $"restores only below {item.AutoBelow:P0} of your HP, and your healing keeps you above it (~{healable:P0} left to heal)",
 						CrucibleItemKind.Buff when gives > 0f => $"used before {givesTo}, adds to it: ~{value:P0}",
 						_ => $"no HP on this scale ({item.Kind.ToString().ToLowerInvariant()})",
 					}));
@@ -1187,7 +1221,7 @@ public partial class BeastmasterRotation
 				if (items.TryGetValue(heldId, out var heldItem)
 					&& string.Equals(heldItem.GainsFrom, buff.Status, StringComparison.OrdinalIgnoreCase))
 				{
-					var more = ProtectionValue(heldItem, owned, withBuff, nowLoad).Value - ProtectionValue(heldItem, owned, heldItems, nowLoad).Value;
+					var more = HeldValue(heldItem, owned, withBuff, nowLoad, now.Recovery) - HeldValue(heldItem, owned, heldItems, nowLoad, now.Recovery);
 					if (more > 0f)
 					{
 						gain += more;
@@ -1197,6 +1231,16 @@ public partial class BeastmasterRotation
 			}
 
 			return (gain, string.Join(", ", names));
+		}
+
+		// A668, A670: what an item held is worth with this gear and these items - a protection by what it catches, an
+		// Auto-potion by what it restores below its line.
+		float HeldValue(CrucibleItem heldItem, List<CrucibleGear> gear, List<ushort> held,
+			(float Heavy, float HeavyPhysical, float HeavyMagic) heavyLoad, float recovery)
+		{
+			return heldItem.Kind == CrucibleItemKind.AutoPotion
+				? AutoPotionValue(heldItem, gear, held, healable, recovery).Value
+				: ProtectionValue(heldItem, gear, held, heavyLoad).Value;
 		}
 	}
 

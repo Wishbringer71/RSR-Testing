@@ -803,9 +803,22 @@ Dullahan, Golem, Spriggan und Eisgolem (`XBMPet.InflictsInterrupt`).
   zuvor, nicht gar nicht – Preis benannt. *Gegenthese A668-2 (Schleife ohne Seren):* Seren, die erst ein späterer Laden
   bringt, zählen beim Kauf der Schleife nicht. Nicht widerlegt; was ein Laden anbietet, steht nirgends. *Gegenthese
   A668-3 (Messung der Sitzung):* Die Treffer gelten seit dem Laden von RSR; nach einem Neustart zählt bis zum ersten
-  Kampf der ganze Kampf. Widerlegt für die Skala: Ohne gemessenen Kampf gilt sie ohnehin nicht (Reihenfolge oben). Die
-  Heiltranksammlung zählt die Skala nicht (Auto-potion: 40 % erst unter 50 % LP, nur gegen einen Boss), und mit ihr nicht
-  das Diebesgewand, das sie verlängert – offen (TODO „Crucible-Wechselwirkungen, Stufe 2"). Die
+  Kampf der ganze Kampf. Widerlegt für die Skala: Ohne gemessenen Kampf gilt sie ohnehin nicht (Reihenfolge oben).
+  *Heiltranksammlung (A670):* Auto-potion stellt 40 % her, sobald deine LP unter 50 % fallen, und verfällt beim Auslösen
+  mit 50 % (unter Spirit of the Breathtaker 10 %); K8 setzt sie zu Beginn eines Bosskampfs, sie steht 150 s (mit
+  Diebesgewand 240 s). Die Skala zählt, was davon unter die Linie fällt: von dem, was du noch heilen kannst, der Teil, der
+  dich unter 50 % brächte, davon der Anteil des schwersten Kampfes in den ersten 150 s ab seinem ersten Treffer, und
+  davon der Erwartungswert der Auslösungen – die erste sicher, jede weitere mit der Chance, dass die vorige nicht verfiel,
+  jede höchstens, was dann noch fehlt. Alle Werte liest RSR aus dem Text. Das Diebesgewand zählt den Zuwachs der Dauer,
+  das Flinkheitsmittel den der Chance. *Beispiel (ohne Mehrheilung, der schwerste Kampf ganz in 150 s):* Fehlen dir bis
+  einschließlich des Endkampfs nach deinen Tränken noch
+  90 %, brächte dich das 40 % unter die Linie: Die erste Auslösung zählt 40 %. Fehlen 120 %: 40 % und mit 50 % weitere
+  30 %, zusammen 55 %; mit dem Flinkheitsmittel 67 %. Fehlen nur 40 %, zählt sie nichts – deine Tränke tragen dich, und
+  K8 setzt die Sammlung ohnehin erst gegen einen Boss. *Gegenthese A670-1 (gehaltene Sammlung):* Eine gehaltene Sammlung
+  zählt nicht in der Heilung, die du schon hältst; die Skala kann für dieselbe Not einen Trank dazu wählen. Nicht
+  widerlegt; ihr Wert hängt an derselben Not, die er deckt – Preis: ein Trank zu viel, nie einer zu wenig.
+  *Gegenthese A670-2 (Bosskampf kürzer):* Dauert der Bosskampf kürzer als 150 s, bringt das Diebesgewand nichts; das
+  zählt die Skala so, weil der Anteil nach 150 s dann 0 ist. Die
   übrigen Kämpfe sind die auf dem kürzesten Weg zum Endgegner, der Endgegner eingeschlossen. Was die Skala nicht misst –
   Bewegung, Block, Hast, kritische Treffer, Schaden, Absorbieren eines Elements –, nennt das Fenster beim Angebot, statt es
   zu verschweigen. Vor der ersten gemessenen Last zählt die Reihenfolge oben.
@@ -1260,8 +1273,8 @@ on a pack once a fight, all of them in the final fight (Crucible only)".
       Reflexion mit Verhextem Hut – und die drei Blink mehr, die das Flinkheitsmittel dem Grimoire der Unantastbarkeit gibt
       (K13, A668); im Endkampf von Brett 1 lag im besten 60-s-Fenster 83 % des Schadens, im besten 30-s-Fenster 55 %
       (07.11.2026, über alle Angriffsarten; den magischen Anteil trennt der Mitschnitt nicht). Die
-      übrigen Paare tragen nichts, was die Skala misst (Stärkung, TP, Lebensentzug), und die Heiltranksammlung zählt sie
-      noch nicht: offen (TODO „Crucible-Wechselwirkungen, Stufe 2").
+      Heiltranksammlung mit Diebesgewand zählt sie ebenso (K13, A670); die übrigen Paare tragen nichts, was die Skala
+      misst (Stärkung, TP, Lebensentzug).
     - *Auslöser an Ausrüstung und Futter:* bei kritischem Treffer (Bestienmesser, Donnerrüstung, Bananen-, Zitronen-,
       Tarantel-Simulakrum u. a.), beim Ausweichen (Ninja-Gewand, Kopfsalat-Simulakrum), beim Blocken (Windschild,
       Schützender Schild), bei erlittenem Schaden (Engelsrobe, Trugweste, Rosenrüstung u. a.), bei einer Tötung (Dämonische

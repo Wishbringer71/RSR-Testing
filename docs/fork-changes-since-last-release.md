@@ -46,6 +46,10 @@ What this release changes in the fight. For the whole distance from upstream, se
   measured, with the duration your gear gives it (Ice Shield, Hexed Hat). While you wear or choose a Crimson Ribbon, soul
   serums count as 50 % heals, and the ribbon counts the serums you hold; the Potion of Breathtaking Swiftness counts the
   three Blink it adds to a held Tome of the Impervious.
+- **The Beast Potion Kit has a value on the scale.** It counted nothing before. It now counts what it restores below
+  its 50 % line: of the healing your potions leave you short, the part that would take you below half, within its
+  duration from the start of the heaviest fight, with the chance each restore expires. Thief's Garb counts its longer
+  duration, the Potion of Breathtaking Swiftness its lower chance to expire.
 - **Fed familiars rest where their feed allows it.** A familiar fed a Lily Simular keeps its feed through a rest, and
   RSR now lets it rest like an unfed one; before, no fed familiar ever rested. A rest fills a familiar fed a Lassi Simular;
   without the Lily it rests only when it comes out with more effective HP than it has. The Chemist's Satchel counts the
