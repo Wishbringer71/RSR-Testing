@@ -55,6 +55,10 @@ What this release changes in the fight. For the whole distance from upstream, se
   and was broken by the move, or, with `Lock movement while casting`, held you in place past the leeway. While
   you hold a movement key yourself, that zero is not counted, so the movement lock works as you set it. Each
   time a spell is held for this, `DefenseTrace.log` writes one line.
+- **Casters take their instant when no spell fits.** When even the job's shortest spell does not fit under
+  that limit, or would still be casting when a status that damages every action lands, RSR now counts it as
+  "no spell can start", like moving: a Black Mage spends Polyglot, an Astrologian or Sage puts the damage over
+  time on again where that pays. Before, only each spell was held, and the GCD could stay empty.
 
 ## When the pack is about to fall
 

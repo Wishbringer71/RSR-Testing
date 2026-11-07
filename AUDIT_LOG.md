@@ -18977,6 +18977,39 @@ habe den schleim bislang nicht anfreunden können."
 - *9 Dokumentation:* Konzept 03 (Abschnitt neu, C6), TODO (Eintrag fortgeschrieben, nächster Schritt seine Entscheidung zu
   H und K'), Release-Text.
 
+### A650 · Bewegungssperre: dritter Loop zum Optimum (H2, KK); Code-Review: kein Zauber passt, auch für C6 (07.11.2026)
+
+- *Anlass:* seine Frage „entscheidungen erneut im kritischen vollem loop mit antithese und versuch der widerlegung prüfen.
+  gibt es noch was besseres? problem von allen allen seiten betrachten. ich will das optimum" (zu A649), und seine Vorgabe
+  im selben Zug: „danach audit, codereview und bei problemen erneuten loop mit versuch das optimum zu erreichen".
+- *1 Research:* BossmodReborn 27be422 (origin/main unverändert, 07.11.2026): `CastSettleHold` hält nach einem
+  zauberbrechenden Gang Zauber zurück, bis die Figur 0,5 s steht (gegen die Schleife mit RSR); ohne Modul liegt die Karte
+  um den Spieler (`AIHintsBuilder`), `IsPositionSafe` fällt also nur in einer Fläche; BossMods eigene Sperre
+  (`MovementBlocked`) hält auch die KI an (`allowAuto = !MovementBlocked`, der Kommentar dazu ist veraltet) – nur zur
+  Einordnung, sie ist unter RSR aus. RSR: `RaiseProtection.FirstDodgeableWithin` erkennt ausweichbare Treffer aus der Form
+  gegnerischer Zauber (A630), unabhängig von BossMod; `DataCenter.AreaHitPending` trägt schon „Don't break Passage of Arms"
+  und „Don't break Collective Unconscious". Spielblätter (xivapi v2, 07.11.2026): Suche „or moving" in ActionTransient,
+  13 Aktionen, darunter Numinosum (3613, 18 s) und Meditieren (7497, 15 s), die die Sperre nicht kennt, und vier des
+  Blaumagiers bzw. Sonderinhalte; Status Arms Up 1176, Collective Unconscious 849, Improvisation 2695 auf Mitgliedern.
+- *Befund:* Eine Freigabe im Zauber kostet nichts, solange niemand geht – die KI wartet nach ihrem Spielraum, der
+  Spieler geht nur mit seiner Hand. Unsichere Gefahrenzeichen taugen deshalb zum Freigeben, nicht zum Sperren eines
+  Zauberbeginns; im Kanal kostet eine Freigabe ihn, weil die KI den Kanal nicht kennt.
+- *2–6:* im Konzept 03 neu gefasst: A, B, BZ, S, G (neu: Freigabe bei Gefahr am Ort, BossMods Ort oder RSRs Erkennung),
+  P1, P-Ort, P-RSR (neu verworfen: ein ungelernter Raidwide gälte als ausweichbar), Daedalus' Freigabe, V, C, K, KK (neu:
+  Schutzkanal hält nur, solange er andere schützt und ein Gruppentreffer aussteht, nie gegen die eigene Taste), Häkchen
+  für alle Kanäle, die beim Gehen enden. Ergebnis H2 (S + BZ + G) und KK statt H und K' aus A649; drei Gegenthesen,
+  (c) „KK stellt den Tank in die Fläche" bleibt seine Gewichtung.
+- *Audit und Code-Review:* P1 sperrte Zauber je Aktion, `CastStartBlocked` wusste davon nichts – bei Grenze null
+  (Rückstoß, nur Sofortzauber) griffen die Sofort-Wege aus C6 nicht (Polyglot, DoT-Erneuerung bei Astrologe und Weise),
+  der GCD konnte leer bleiben. Dieselbe Klasse bei A439 (Status, der jede Aktion schädigt). Behoben:
+  `ActionBasicInfo.NoCastFitsNow` (kürzester Zauber der Rotation unter keiner der beiden Grenzen, je Spielbild über
+  `IFramework.LastUpdate` zwischengespeichert, Dalamud a7409604), `CustomRotation.CastStartBlocked` liest es. Spurzeile von
+  P1 umformuliert (nennt die Grenze und den ersten zurückgehaltenen Zauber). Konzept 12: Zeilenangabe erneut nachgezogen.
+  Sonst ohne Befund: Schnittstelle fehlt in älterem BossMod → null → kein Eingriff; `IsMoveRequested` und die Null aus der
+  Taste kommen aus derselben Quelle (`MovementOverride.UserMove`), können also nicht auseinanderlaufen.
+- *Prüfgrad:* statisch und Compile (0 Warnungen), 50 Prüfschritte; im Spiel nicht beobachtet.
+- *Dokumentation:* Konzept 03 (Grundlagen, Lösungen, C6), TODO, Release-Text, Namensliste (Numinosum, Meditieren, Feuka).
+
 ## B · Commit-Register (Fork vs. `upstream/main`)
 
 ### B1 · Einzelgeprüfte Fork-Commits

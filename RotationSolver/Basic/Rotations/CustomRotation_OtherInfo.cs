@@ -57,11 +57,13 @@ public partial class CustomRotation
 
 	/// <summary>
 	/// No spell with a cast time can start now: the player moves without the movement lock, BossMod's AI moves him, a
-	/// knockback runs or no-casting is commanded, and no Swiftcast, Triplecast or Dualcast makes the next spell instant. What
-	/// a caster can still use then is an instant GCD (concept 03, "C6").
+	/// knockback runs or no-casting is commanded, or the job's shortest cast fits neither under BossMod's cast limit nor
+	/// before a status that damages every action lands; and no Swiftcast, Triplecast or Dualcast makes the next spell
+	/// instant. What a caster can still use then is an instant GCD (concept 03, "C6").
 	/// </summary>
 	[Description("Cast start blocked")]
-	public static bool CastStartBlocked => !HasSwift && ActionBasicInfo.CastStartBlockedNow(false);
+	public static bool CastStartBlocked => !HasSwift
+		&& (ActionBasicInfo.CastStartBlockedNow(false) || ActionBasicInfo.NoCastFitsNow());
 
 	/// <summary>
 	/// Whether a melee job's ranged attack should wait because the player is closing on his target: reaching the range of

@@ -1398,6 +1398,30 @@
       "kind": "action",
       "source": "game data, xivapi v2 Action 7561 language=de, 2026-11-07",
       "note": "Role action of healers and casters: the next spell is cast instantly."
+    },
+    {
+      "de": "Numinosum",
+      "en": "Collective Unconscious",
+      "identifier": "CollectiveUnconsciousPvE",
+      "kind": "action",
+      "source": "game data, xivapi v2 Action 3613 language=de, 2026-11-07",
+      "note": "Astrologian channel, 18 s; ends upon using another action or moving (ActionTransient 3613). Party status 849, regeneration 956."
+    },
+    {
+      "de": "Meditieren",
+      "en": "Meditate",
+      "identifier": "MeditatePvE",
+      "kind": "action",
+      "source": "game data, xivapi v2 Action 7497 language=de, 2026-11-07",
+      "note": "Samurai channel, 15 s; ends upon using another action or moving (ActionTransient 7497)."
+    },
+    {
+      "de": "Feuka",
+      "en": "Fire IV",
+      "identifier": "FireIvPvE",
+      "kind": "action",
+      "source": "game data, xivapi v2 Action 3577 language=de, 2026-11-07",
+      "note": "Black Mage filler in Astral Fire."
     }
   ]
 }

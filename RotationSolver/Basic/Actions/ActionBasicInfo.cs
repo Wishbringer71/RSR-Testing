@@ -1,4 +1,5 @@
 ﻿using ECommons.ExcelServices;
+using ECommons.DalamudServices;
 using ECommons.GameHelpers;
 using FFXIVClientStructs.FFXIV.Client.Game;
 using FFXIVClientStructs.FFXIV.Client.Game.UI;
@@ -569,7 +570,7 @@ public readonly struct ActionBasicInfo
 	internal static bool ExceedsBossModCastLimit(float castTime, string name)
 	{
 		var limit = DataCenter.BMRMaxCastTime;
-		if (castTime <= limit || DataCenter.BMRMoveRequested)
+		if (!BossModCastLimitRefuses(castTime))
 		{
 			if (limit == float.MaxValue)
 			{
@@ -582,10 +583,76 @@ public readonly struct ActionBasicInfo
 		if (_tracedCastLimit == float.MaxValue)
 		{
 			_tracedCastLimit = limit;
-			DefenseTrace.Line($"cast held for BossMod's cast limit: {name} needs {castTime:F2} s, BossMod allows {limit:F2} s");
+			DefenseTrace.Line($"BossMod's cast limit of {limit:F2} s holds longer casts; first held: {name}, {castTime:F2} s");
 		}
 
 		return true;
+	}
+
+	/// <summary>The test of <see cref="ExceedsBossModCastLimit"/>, without its trace line.</summary>
+	private static bool BossModCastLimitRefuses(float castTime)
+		=> castTime > DataCenter.BMRMaxCastTime && !DataCenter.BMRMoveRequested;
+
+	/// <summary>
+	/// Whether no spell of the current rotation can start now for a reason that depends on its cast time: the shortest cast
+	/// the job has now is longer than BossMod's cast limit, or would still be under way when a status that damages every
+	/// action lands (A439). Then no cast can start, as with <see cref="CastStartBlockedNow"/>, and a caster's instant GCD is
+	/// due (concept 03, "C6", A650).
+	/// </summary>
+	internal static bool NoCastFitsNow()
+	{
+		var limited = DataCenter.BMRMaxCastTime < float.MaxValue && !DataCenter.BMRMoveRequested;
+		var landing = !DataCenter.IsPvP && ActionPenaltyWatch.LandsOnPlayerIn() < float.MaxValue;
+		if (!limited && !landing)
+		{
+			return false;
+		}
+
+		var shortest = ShortestCastNow();
+		return shortest < float.MaxValue
+			&& ((limited && BossModCastLimitRefuses(shortest)) || (landing && ActionPenaltyWatch.WouldMeetLanding(shortest)));
+	}
+
+	// The game frame ShortestCastNow last answered for, and its answer: CastStartBlocked is read several times a frame.
+	private static DateTime _shortestCastFrame;
+	private static float _shortestCast = float.MaxValue;
+
+	// The shortest cast time among the rotation's enabled GCDs at the player's level, as the game adjusts it now (a proc that
+	// makes a spell instant takes it out); float.MaxValue when the rotation has none. Once per game frame.
+	private static float ShortestCastNow()
+	{
+		var frame = Svc.Framework.LastUpdate;
+		if (frame == _shortestCastFrame)
+		{
+			return _shortestCast;
+		}
+
+		_shortestCastFrame = frame;
+		_shortestCast = float.MaxValue;
+		var actions = DataCenter.CurrentRotation?.AllBaseActions;
+		if (actions == null)
+		{
+			return _shortestCast;
+		}
+
+		var shortest = float.MaxValue;
+
+		foreach (var action in actions)
+		{
+			if (!action.Info.IsGeneralGCD || !action.EnoughLevel || !action.IsEnabled)
+			{
+				continue;
+			}
+
+			var cast = action.Info.CastTime;
+			if (cast > 0f && cast < shortest)
+			{
+				shortest = cast;
+			}
+		}
+
+		_shortestCast = shortest;
+		return shortest;
 	}
 
 	/// <summary>
