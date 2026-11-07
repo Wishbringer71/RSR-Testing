@@ -1593,6 +1593,23 @@ Lage.
         zuerst einen, der heilt; ist die Dressur des heilenden weniger wert als die des anderen, kam er schon bisher
         zuerst. Die Regel wirkt dazwischen: Gefahr im Verlauf, nicht im Augenblick, bei gleichem oder höherem Wert. Mit
         einem lebenden Heiler gilt sie nicht, wie die Regel oben.
+    - *Wechsel zum heilenden Begleiter nach dem Verlauf* (A642, Erhebung „Augenblickswert statt Verlauf" seines Auftrags
+      vom 06.11.2026). Unter derselben Bedingung – kein Heiler lebt, du fielest ohne Heilung, bevor die Gegner fallen –
+      geht ein Begleiter, der weder heilt noch schützt, sobald ein Horn mit heilender Dressur bereit ist, auch ohne Gefahr
+      im Augenblick: wie oben mit Schlussstich, wenn er mit seinem Entfesseln abtritt, sonst – nachdem er sein One with
+      Nature verbraucht hat (B0), denn es ist noch keine Gefahr da – mit dem Scheidenden Schlag; nicht, solange er dich
+      nach Zähnefletschen deckt. Bisher wechselte B2 erst, wenn deine vorausberechnete Gesundheit
+      schon unter der Linie lag; der heilende Begleiter kam damit erst, als die Gefahr da war, und heilte von dort.
+      - *Im Kampf:* Nach dem Pull steht ein Begleiter ohne Heilung draußen, die Gegner treffen dich mit 80 LP je Sekunde,
+        2.400 LP tragen dich 30 s, die Gegner brauchen 50 s. Sobald das Horn des Schleims zurück ist, geht der andere, und
+        der Schleim heilt ab da – nicht erst, wenn du unter der Heillinie stehst (bei 50 % rund 15 s später). Eine
+        Rechnung mit gleichbleibenden Raten, nicht gemessen.
+      - *Messgröße der Wahrscheinlichkeit:* dieselbe wie oben – Schadensraten der Gegner gegen ihre gemessene Fallzeit.
+      - *Preis:* Der lange Einsatz des anderen endet früher; sein Scheidender Schlag kommt dafür früher, und der heilende
+        Begleiter bringt sein eigenes One with Nature.
+      - *Gegenthese (ausgeliefert, und nichts ändert sich):* Ist kein Horn mit heilender Dressur bereit, ändert sich
+        nichts; ebenso, wenn der Begleiter draußen schützt (sein Schutz läuft nach dem Rückzug weiter, sein noch nicht
+        verbrauchtes One with Nature aber ginge verloren – deshalb bleibt er) oder ein Heiler lebt.
     - *Im Kampf vorher:* Um 18:12:16, bei 2.369 von 2.785 LP (85 %), schickte RSR die Fledermaus für Cu Sith fort. Der
       Riesen-Tunnelwurm hatte bis dahin zweimal getroffen (Sandsturm 272 um 18:12:11, ein Angriff 171 um 18:12:14; zwei
       Angriffe gingen für 0 daneben): rund 89 LP je Sekunde, ohne Heilung 27 s bis zum Fall. Über den ganzen Kampf traf
@@ -2794,13 +2811,18 @@ on a pack once a fight, all of them in the final fight (Crucible only)".
      Reflexion, sonst oder wenn es fehlt das Bestien-Verhärtungsmittel; nicht, solange Tough Skin, Blink oder Reflect
      auf dir steht.
   7. Für deinen Begleiter zuerst Heilung (A577; seine Meldung vom 05.11.2026: im Kampf kein Gegenstand, der die Begleiter
-     heilt – die Einstellung verspricht „keep you and your familiar alive"): Hält er nicht mehr LP als der größte Treffer,
-     den er in diesem Kampf nahm (dasselbe Maß wie K9), vor dem ersten gemessenen Treffer unter „Use HP potions below
-     this HP" als Anteil seiner LP, der Bestien-Heiltrank („to self or familiar"), der ihn mit dem kleinsten Wert über
+     heilt – die Einstellung verspricht „keep you and your familiar alive"): Hält er nicht mehr LP als er bis zum nächsten
+     Webfenster verlieren kann – der größte Treffer, den er in diesem Kampf nahm (dasselbe Maß wie K9), und, solange die
+     Gegner ihn angreifen, sein gemessener Verlust je Sekunde beim Halten (K9, A610) über einen GCD Vorlauf, das Größere
+     (A642) –, vor dem ersten gemessenen Treffer unter „Use HP potions below this HP" als Anteil seiner LP, der Bestien-Heiltrank („to self or familiar"), der ihn mit dem kleinsten Wert über
      diese Marke hebt, sonst der größte. Das Bestien-Pulver nicht: Es heilt dich und die Verbündeten in deiner Nähe, und
      der Begleiter steht am Gegner. Nie der letzte Heilgegenstand: Er bleibt dir, denn deine LP sind der Lauf, seine ein
      Horn. Danach derselbe Schutz wie in 6 gegen einen angekündigten Treffer auf ihn, wenn er nicht mehr LP hält als
-     sein größter Treffer; im Endkampf gegen jeden angekündigten Treffer auf ihn.
+     er bis zum nächsten Webfenster verlieren kann; im Endkampf gegen jeden angekündigten Treffer auf ihn.
+     *Warum der Verlust je Sekunde* (A642): Halten ihn vier Gegner mit je 100 alle 3 s, verliert er rund 130 LP je
+     Sekunde; sein größter Treffer bleibt 100, und bei 400 LP fiele er im nächsten GCD, ohne dass der größte Treffer es
+     anzeigt. Herausfordern liest dieselbe Rate schon (K9); bleibt es aus, weil du das Fenster nicht hieltest, ist der
+     Trank der Rest. Eine Rechnung, nicht gemessen; auf Brett 1 fiel kein Begleiter.
      *Gegenthese 1 (Vorrat):* Jeder Trank für ihn fehlt dir später. Widerlegt bis auf den Rest: Der letzte bleibt dir,
      und Schritt 1 kommt vor diesem; es bleibt, dass ein früher Trank für ihn einem späteren Kampf fehlt, in dem du ihn
      selbst bräuchtest – Preis: ein Trank je Fall, Wahrscheinlichkeit nach der Zahl der Kämpfe bis zum nächsten Laden.

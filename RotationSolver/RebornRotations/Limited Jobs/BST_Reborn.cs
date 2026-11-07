@@ -228,25 +228,44 @@ public sealed class BST_Reborn : BeastmasterRotation
 			return true;
 		}
 
-		// B2: in danger, a familiar that neither heals nor protects you leaves for a ready one that does.
+		// B2: in danger, a familiar that neither heals nor protects you leaves for a ready one that does; with no healer alive
+		// also while without healing you would fall before the enemies, for one whose Trick heals (A642) - the danger in
+		// its course, not only once your forecast health is under the line.
 		// Not while Snarl has the familiar taking your damage (Crucible): then it is the one sparing you.
-		if (HornBySituation && InCombat && ActiveBattlehorn != 0 && InDanger && !HornIsSafe((HornOrder)ActiveBattlehorn)
-			&& !StatusHelper.PlayerHasStatus(false, StatusID.Covered_2413)
-			&& FirstSafeReadyHorn() is { } safe)
+		HornOrder? swapTo = null;
+		var why = "you are in danger";
+		if (HornBySituation && InCombat && ActiveBattlehorn != 0 && !HornIsSafe((HornOrder)ActiveBattlehorn)
+			&& !StatusHelper.PlayerHasStatus(false, StatusID.Covered_2413))
+		{
+			if (InDanger && FirstSafeReadyHorn() is { } ready)
+			{
+				swapTo = ready;
+			}
+			// Not in danger yet, so the familiar out first spends its One with Nature - unless its Release is the retreat.
+			else if ((!WaitsForNature(EffectiveNature((HornOrder)ActiveBattlehorn))
+					|| (ReleaseRetreatsFamiliar && EffectiveNature((HornOrder)ActiveBattlehorn) == OneWithNatureOrder.Tempered))
+				&& HealingHornWhileFalling(out var fallsIn) is { } healing)
+			{
+				swapTo = healing;
+				why = $"without healing you fall in {fallsIn:F1} s, before the enemies";
+			}
+		}
+
+		if (swapTo is { } safe)
 		{
 			// A624: a familiar that retreats with its own Release (Final Sting) leaves with it - the same retreat, twice the
 			// potency of Parting Blow, and Lingering Vantage for the next one.
 			if (ReleaseRetreatsFamiliar && HasOneWithNature
 				&& EffectiveNature((HornOrder)ActiveBattlehorn) == OneWithNatureOrder.Tempered && TemperedReleaseNow(out act))
 			{
-				TraceHorn($"{(HornOrder)ActiveBattlehorn} ({CurrentPet}) leaves by its Release: you are in danger, {safe}"
+				TraceHorn($"{(HornOrder)ActiveBattlehorn} ({CurrentPet}) leaves by its Release: {why}, {safe}"
 					+ $" ({PetOnHorn(safe)}) heals, protects or stops your attackers");
 				return true;
 			}
 
 			if (PartingBlowPvE.CanUse(out act))
 			{
-				TraceHorn($"{(HornOrder)ActiveBattlehorn} ({CurrentPet}) leaves by Parting Blow: you are in danger, {safe}"
+				TraceHorn($"{(HornOrder)ActiveBattlehorn} ({CurrentPet}) leaves by Parting Blow: {why}, {safe}"
 					+ $" ({PetOnHorn(safe)}) heals, protects or stops your attackers");
 				return true;
 			}
@@ -502,6 +521,20 @@ public sealed class BST_Reborn : BeastmasterRotation
 		return stream;
 	}
 
+	// K8 item 7 (concept 01, A642): what the familiar out can lose before the next weave window - its largest hit in this
+	// fight (K9), and while enemies attack it its holding rate over a GCD's lead, the larger. A hit counts once; a stream of
+	// small ones from several enemies shows only in the rate.
+	private static uint FamiliarLossAhead(IBattleChara? familiar)
+	{
+		var loss = (float)_familiarLargestHit;
+		if (familiar != null && IsFamiliarTanking(familiar))
+		{
+			loss = Math.Max(loss, HoldingRate(_familiarHeldLoss, _familiarHeldSeconds) * ObjectHelper.GetHealLeadTime());
+		}
+
+		return (uint)loss;
+	}
+
 	private bool FamiliarTankSwapAbility(out IAction? act)
 	{
 		act = null;
@@ -741,13 +774,7 @@ public sealed class BST_Reborn : BeastmasterRotation
 
 		// B0: Parting Blow waits only for the use the horn spends One with Nature on - none on "Neither", none for an
 		// action the player has not got. B2: a familiar whose Trick heals you is not sent off while the danger lasts.
-		var waitsForNature = HasOneWithNature && nature switch
-		{
-			OneWithNatureOrder.Tempered => true,
-			// Borrow is refused while this horn's own Kinship runs, and that Kinship stands still while the familiar is out.
-			OneWithNatureOrder.Borrow => KinshipBattlehorn != ActiveBattlehorn,
-			_ => false,
-		};
+		var waitsForNature = WaitsForNature(nature);
 		var keepForDanger = HornBySituation && ActiveBattlehorn != 0
 			&& ((InDanger && TrickHealsOnHorn((HornOrder)ActiveBattlehorn)) || HealerFamiliarHolds());
 
@@ -1046,6 +1073,19 @@ public sealed class BST_Reborn : BeastmasterRotation
 	private static readonly HornOrder[] AllHorns = Enum.GetValues<HornOrder>();
 
 	// The familiar's Tempered Release, by whichever of its two actions the game offers (R1, B2; A624).
+	// B0: whether the familiar out still waits for the use its horn spends One with Nature on - none on "Neither", none for
+	// an action the player has not got (`nature` is EffectiveNature of its horn).
+	private static bool WaitsForNature(OneWithNatureOrder nature)
+	{
+		return HasOneWithNature && nature switch
+		{
+			OneWithNatureOrder.Tempered => true,
+			// Borrow is refused while this horn's own Kinship runs, and that Kinship stands still while the familiar is out.
+			OneWithNatureOrder.Borrow => KinshipBattlehorn != ActiveBattlehorn,
+			_ => false,
+		};
+	}
+
 	private bool TemperedReleaseNow(out IAction? act)
 	{
 		if (TemperedReleasePvE.IsEnabled && TemperedReleasePvE_47092.CanUse(out act))
@@ -1459,7 +1499,8 @@ public sealed class BST_Reborn : BeastmasterRotation
 		FollowFamiliarHits(FamiliarLeaving);
 		if ((UseCrucibleSafetyItems || UseCrucibleDamageItems) && DataCenter.State)
 		{
-			UseCrucibleItems(Service.Config.UseHpPotionsPercent, _familiarLargestHit, UseCrucibleSafetyItems, UseCrucibleDamageItems);
+			UseCrucibleItems(Service.Config.UseHpPotionsPercent, FamiliarLossAhead(Familiar), UseCrucibleSafetyItems,
+				UseCrucibleDamageItems);
 		}
 		CountFight();
 	}

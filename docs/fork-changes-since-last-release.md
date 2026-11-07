@@ -384,7 +384,12 @@ What this release changes in the fight. For the whole distance from upstream, se
   called when a healing or protecting one is back within a GCD, and the danger counts before the pull too. When it
   leaves because another healing familiar's horn is back, that one comes next: while you would fall before the
   enemies, a familiar whose Trick heals is called before the others, instead of after a short stint of one that
-  does not heal.
+  does not heal. Under the same condition a familiar that neither heals nor protects makes way for one whose Trick
+  heals as soon as that horn is ready - after it has spent One with Nature, or with Final Sting -, not only once your
+  forecast health is under the line.
+- **The familiar's Beast Potion by its loss per second (Crucible).** The Beast Potion for the familiar also reads its
+  measured loss per second while enemies attack it, over a GCD's lead, not only its largest hit: several small hits
+  can fell it before one large one shows.
 - **Final Sting instead of Parting Blow when the wasp makes way in danger.** In danger a familiar that neither
   heals nor protects leaves for one that does; the wasp left by Parting Blow (1,000 potency) while its Final
   Sting (2,000 to 3,000, and Lingering Vantage for the next Parting Blow) was ready and retreats it the same

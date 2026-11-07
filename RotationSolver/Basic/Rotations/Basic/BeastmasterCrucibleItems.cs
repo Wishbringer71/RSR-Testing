@@ -247,13 +247,14 @@ public partial class BeastmasterRotation
 	/// largest; in combat a cure for the poison or blindness he carries; Reraise while none stands (once Reraise was seen to go
 	/// without a fall, only against a boss); out of combat Sandstill while none stands; against a boss the Beast Potion Kit
 	/// while no Auto-potion stands; protection against an announced hit on him, and on his familiar when it holds no more HP
-	/// than <paramref name="familiarLargestHit"/> (in the final fight against any); a serum, else the Beast Remedy Kit, against
+	/// than <paramref name="familiarLossAhead"/>, what it can lose before the next weave window (in the final fight against
+	/// any); a serum, else the Beast Remedy Kit, against
 	/// the fight's dangerous statuses; the absorber of the element of a hit on him; the cure of his familiar's ailment; against
 	/// a boss more maximum HP. With <paramref name="damage"/>: in the final fight every buff, then a damage item on his
 	/// target - in the final fight any,
 	/// else one a fight on a pack. Called every frame from the update.
 	/// </summary>
-	internal static unsafe void UseCrucibleItems(float line, uint familiarLargestHit, bool safety, bool damage)
+	internal static unsafe void UseCrucibleItems(float line, uint familiarLossAhead, bool safety, bool damage)
 	{
 		var player = Player;
 		if (!DataCenter.IsInCrucible || player == null || player.MaxHp == 0)
@@ -379,29 +380,30 @@ public partial class BeastmasterRotation
 			slot = Protection(crucible, player, out why);
 		}
 
-		// 7, first (A577): heal the familiar when it would fall to a hit as large as its largest in this fight (K9's measure),
-		// before the first measured hit below his potion line as a share of its HP - with a Beast Potion ("to self or
-		// familiar"), never the last healing item: that one stays for him, his HP are the run.
+		// 7, first (A577, A642): heal the familiar when it would fall before the next weave window - to a hit as large as its
+		// largest in this fight (K9's measure), or at its measured holding rate while enemies attack it -, before the first
+		// measured loss below his potion line as a share of its HP - with a Beast Potion ("to self or familiar"), never the
+		// last healing item: that one stays for him, his HP are the run.
 		var familiar = Familiar;
 		if (slot < 0 && InCombat && familiar != null && !familiar.IsDead && familiar.CurrentHp > 0 && familiar.MaxHp > 0
-			&& (familiarLargestHit > 0 ? familiar.CurrentHp <= familiarLargestHit : familiar.GetHealthRatio() < line)
+			&& (familiarLossAhead > 0 ? familiar.CurrentHp <= familiarLossAhead : familiar.GetHealthRatio() < line)
 			&& HealItemsHeld(crucible) > 1)
 		{
-			var mark = familiarLargestHit > 0 ? Math.Min(1f, familiarLargestHit / (float)familiar.MaxHp) : line;
+			var mark = familiarLossAhead > 0 ? Math.Min(1f, familiarLossAhead / (float)familiar.MaxHp) : line;
 			slot = BestHeal(crucible, familiar.GetHealthRatio(), mark, true);
 			if (slot >= 0)
 			{
 				on = familiar;
 				why = $"for {familiar.Name} at {familiar.CurrentHp} HP, "
-					+ (familiarLargestHit > 0 ? $"its largest hit this fight {familiarLargestHit}" : $"below {line:P0}");
+					+ (familiarLossAhead > 0 ? $"it can lose {familiarLossAhead} before the next weave" : $"below {line:P0}");
 			}
 		}
 
-		// 7: the same protection for the familiar when it would fall to a hit as large as its largest in this fight (K9's
-		// measure); in the final fight against any announced hit.
+		// 7: the same protection for the familiar when it would fall before the next weave window (above); in the final fight
+		// against any announced hit.
 		if (slot < 0 && InCombat && familiar != null && !familiar.IsDead && familiar.CurrentHp > 0
 			&& DataCenter.IsTankbusterAimedAt(familiar)
-			&& (finalFight || (familiarLargestHit > 0 && familiar.CurrentHp <= familiarLargestHit)))
+			&& (finalFight || (familiarLossAhead > 0 && familiar.CurrentHp <= familiarLossAhead)))
 		{
 			slot = Protection(crucible, familiar, out why);
 			if (slot >= 0)

@@ -18766,6 +18766,33 @@ habe den schleim bislang nicht anfreunden können."
 - *9 Dokumentation:* Konzept 03 („Die Schwelle nach der Vorhersage, wo kein Heiler lebt"), Konzept 01 K8; TODO-Punkt
   geschlossen; Release-Text.
 
+### A642 · Beastmaster: Erhebung „Augenblickswert statt Verlauf"; Wechsel zum Heiler und Bestientrank nach dem Verlauf (07.11.2026)
+
+- *Anlass:* TODO „Beastmaster: Konzept und Code im vollen Loop" (sein Auftrag vom 06.11.2026), sein Auftrag vom
+  07.11.2026, den Beastmaster abzuschließen.
+- *1 Erhebung* (`BST_Reborn`, `BeastmasterRotation`, `BeastmasterFamiliars`, `BeastmasterCrucible*`; Suche nach LP-,
+  Schwellen- und Vorhersage-Lesern, dazu jede Entscheidung in `EmergencyAbility`, `GeneralAbility`, `AttackAbility`):
+  - Verlauf schon gelesen: Gefahr (B2, vorausberechnete Gesundheit), Halten des Heilers (A636), Ruf nach einem Heiler
+    (A639), Zähnefletschen und Herausfordern (Haltrate, A610), Zielwahl (EnemyDanger, A541), Hornwahl im Brett (gemessene
+    Verluste, A637), Trank und Heilgegenstand des Bretts (A641).
+  - Augenblick, wo ein Verlauf gemessen ist: (i) der Wechsel zu einem Begleiter, der heilt, kam nur bei Gefahr im
+    Augenblick; (ii) der Bestientrank für den Begleiter las nur seinen größten Treffer, nicht seinen Verlust je Sekunde
+    unter mehreren Gegnern.
+  - Augenblick mit Grund: Scaleskin in der Gefahr (Barriere, kurz), Ruhe und Weg (Stand der LP zu dem Zeitpunkt), die
+    Ressourcen der Rotation (TP, Kompass).
+  - Doppelung: die Wartebedingung für One with Nature stand nur im Zyklus; der neue Wechsel braucht sie auch –
+    `WaitsForNature` geteilt.
+- *2–6* zu (i): (0) nichts; (a) Wechsel im Verlauf zu jedem, der heilt oder schützt; (b) nur zu einem, dessen Dressur
+  heilt, nach dem Verbrauch von One with Nature. (a) spräche einen Schutz aus Entfesseln zu, der 48 s läuft und keinen
+  Verlauf umkehrt; (b) folgt A636 und A639. Gegenthese 3: ohne bereites heilendes Horn oder mit Heiler ändert sich nichts.
+  Zu (ii): (0) nichts; (a) Verlust je Sekunde über einen GCD Vorlauf, solange Gegner ihn angreifen, gegen den größten
+  Treffer, das Größere. Gegenthese 1: Herausfordern liest die Rate schon; bleibt es aus (du hieltest das Fenster nicht),
+  ist der Trank der Rest.
+- *7 Gebaut:* `EmergencyAbility` (Wechsel nach Verlauf mit Spurgrund), `WaitsForNature`, `FamiliarLossAhead`,
+  `UseCrucibleItems(…, familiarLossAhead, …)`.
+- *8 Nachweis:* Compile (0 Warnungen); im Spiel nicht gesehen.
+- *9 Dokumentation:* Konzept 01 B2 („Wechsel zum heilenden Begleiter nach dem Verlauf"), K8 Punkt 7; Release-Text.
+
 ## B · Commit-Register (Fork vs. `upstream/main`)
 
 ### B1 · Einzelgeprüfte Fork-Commits
