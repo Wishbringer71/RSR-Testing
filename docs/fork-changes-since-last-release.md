@@ -43,3 +43,8 @@ What this release changes in the fight. For the whole distance from upstream, se
   token. A healing item counts only as far as you could still need it: the fights left, each as heavy as your heaviest,
   plus what you miss now, less the healing you hold. Covers against the board's statuses that cost control or deal
   damage over time now come before this scale.
+- **Adds that run to their boss are met, not chased.** RSR measures which enemies run to another enemy and when each
+  arrives, learning from the first of a kind to vanish where its kind arrives. Of equally urgent enemies, the one nearest
+  to you comes first, so you meet the Ogre's wisps instead of running after the one that arrives next. Just before the
+  first of them arrives and blows up, the Beastmaster snarls so the familiar's Cover takes the blast and its Vulnerability
+  Up, unless the next loss would fell the familiar.

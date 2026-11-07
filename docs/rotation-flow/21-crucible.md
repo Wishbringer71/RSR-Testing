@@ -108,8 +108,12 @@ Dullahan, Golem, Spriggan und Eisgolem (`XBMPet.InflictsInterrupt`).
   Begleiter, angekündigte Treffer, Heilungen auf andere Gegner, geteilt durch die LP, Wechsel über der Messunsicherheit;
   vor jeder Messung die Werte des Blatts; ein Gegner ohne eigene Messung mit einer Gefahr, die aus den gemessenen
   geschätzt ist; der Zuschlag der Schwäche auf die Zeit bis zum Fall (Konzept 03, „Zielart ohne Tank und Heiler").
-  Offen: Schaden an Begleitern gewichtet nach ihrem Bedarf über das Brett (K11; heute zählt er in LP wie deiner),
-  Stärkung anderer. *Was gilt:* Zuerst fällt der Gegner mit der größten Gefahr je
+  Geprüft und verworfen (A660): Schaden an Begleitern nach ihrem Bedarf über das Brett gewichten – die Gefahr eines
+  Gegners ist, was er austeilt, gleich wen es trifft; wer es nimmt, entscheidet K9 nach den LP und K11 nach dem Bedarf.
+  Eine Umrechnung zwischen deinen LP und denen eines Begleiters gibt keine Quelle her, und unter Zähnefletschen trifft
+  jeder Gegner denselben, die Reihenfolge änderte sich nicht. Stärkung anderer: Auf Brett 1 unterbricht K4 die
+  Fanaticism der Sukkubus-Magierin (Aktion 46928; in seinem Lauf vom 07.11.2026 um 16:13:12 gestoppt), und A582 stellt
+  sie nach dem Blatt vorn; die Größe einer Stärkung nennt kein Blatt. *Was gilt:* Zuerst fällt der Gegner mit der größten Gefahr je
   Sekunde bis zu seinem Fall: seine Gefahr je Sekunde geteilt durch die Zeit, bis er fällt. Diese Reihenfolge macht die
   Summe des Schadens über den Kampf am kleinsten (Regel von Smith, Ablaufplanung); „wenigste LP zuerst" ist ihr Sonderfall
   bei gleicher Gefahr aller Gegner. *Gefahr:* sein Schaden an dir und an deinen Begleitern, je als Anteil an den LP, die
@@ -129,6 +133,36 @@ Dullahan, Golem, Spriggan und Eisgolem (`XBMPet.InflictsInterrupt`).
   seinen Läufen fielen die Gerufenen immer vor dem Hauptgegner (04.11.2026); die Spur hält fest, ob beim Fall des
   Hauptgegners noch Gegner leben und ob der Kampf dann endet. *Gegenthese 4 (sein Grund zu A525, „weniger gegner machen
   weniger schaden"):* trägt die Regel – sie rechnet genau diesen Schaden, statt ihn über die LP zu schätzen.
+  *Gegner, die zu einem Verbündeten laufen* (A660; sein Hinweis vom 07.11.2026: „die irrlichter kommen von aussen aus
+  vier richtungen und fliegen auf den mittigen oger zu. wenn sie ihn erreichen, entsteht schaden beim spieler. also
+  muss der spieler zu den irrlichtern rennen. oder es muss ein aoe (falls vorhanden) gezündet werden, der alle
+  irrlichter zusammen trifft, wenn sie gerade nah genug beieinander sind, aber noch weit genug weg vom oger"). *Im
+  Kampf:* Der Oger von Brett 1 wird nach 52 bis 55 s unangreifbar (Burning Ward, 46918, Status 4175; BossModReborn
+  27be422, Daedalus 2644cbe, Werkzeugquellen); je Welle kommen sechs Irrlicht-Ebenbilder (171 LP) und zwei Riesen-
+  Irrlicht-Ebenbilder (1575 LP) aus vier Richtungen zur Mitte und explodieren dort (Verbrannte Erde, 46919 und 49728,
+  60 y) – Schaden und Verwundbarkeit + bei dem, den sie treffen (Daedalus: in 17 Kämpfen bekam der Begleiter unter
+  Deckung 14 von 15 Stapeln, ohne Deckung der Spieler 13 von 14; 14 Tode in 17 Kämpfen). Gemessen an seinen Läufen vom
+  05., 06. und 07.11.2026: Ankunft 9 bis 25 s nach dem Erscheinen; in fünf Oger-Kämpfen starb kein Irrlicht. Am
+  07.11. sprang RSRs Ziel 30 s lang zwischen ihnen (Spur 16:03:25 bis 16:03:55), jedes traf es einmal, und der Oger
+  stand währenddessen unangreifbar bei 4532 LP.
+  *Was gilt:* RSR misst je Gegner, ob er auf einen anderen Gegner zuläuft – sein Abstand zum Gegner mit den meisten
+  LP sinkt seit seinem Erscheinen – und daraus seine Ankunft: verbleibender Weg geteilt durch die gemessene
+  Annäherung. Den Abstand, bei dem einer seiner Art ohne Tod verschwindet, lernt RSR beim ersten Verschwinden (je
+  Gegnerart, im Lauf); vorher gilt der Rand der Trefferkreise. Damit: (1) Unter gleich dringlichen Gegnern – gleiche
+  Gefahr je LP, wie sechs gleiche Irrlichter – kommt der dir nächste zuerst, denn Laufweg ist verlorener Schaden; bei
+  laufenden Gegnern holt so jeder Schlag einen, der dir entgegenkommt, statt dich zu einem zu schicken, der vorher
+  ankommt. (2) Steht die erste Ankunft binnen der Zeit bevor, die Zähnefletschen braucht, bis die Deckung steht (ein
+  GCD), und deckt dich der Begleiter nicht, kommt Zähnefletschen, sofern K9 es nicht verbietet (der Begleiter fiele):
+  Die Explosion und ihre Verwundbarkeit treffen dann ihn, nicht dich. (3) Flächen: Die vorhandenen Regeln zählen die
+  laufenden Gegner wie alle; aus vier Richtungen liegen sie erst nahe der Mitte beisammen, und dorthin führt (1).
+  *Nicht gebaut, mit Grund:* eine Fläche zurückhalten, bis mehr Irrlichter in Reichweite kommen – wie viele noch kommen
+  und wann, sagt die Annäherung je Gegner nur für die schon sichtbaren, und eine gehaltene Fläche, die keinen weiteren
+  trifft, kostet ihren Einsatz; die Flächenregeln feuern ab zwei in Reichweite. *Gegenthese 1:* Der Nächste ist bald
+  angekommen, und der Schlag ist verloren. Teilweise widerlegt: Er kommt dir entgegen und ist in Reichweite, ein
+  Irrlicht fällt in einem Schlag (171 LP); ein Riesen-Irrlicht braucht mehrere, und kommt es vorher an, war jeder
+  andere Weg länger. *Gegenthese 2:* Zähnefletschen schickt den Begleiter in die Explosion. Gewollt: Seine LP sind ein
+  Horn, deine der Lauf (K11), und K9 verbietet es, wenn ihn der nächste Verlust fällen würde. *Ausgeliefert, und nichts
+  ändert sich?* Wenn du selbst woanders stehst (RSR bewegt dich nicht) oder kein Begleiter draußen ist.
   *Falsifikation:* Kein Unterschied zu „wenigste LP"? Im Atomos-, Medusa- und Oger-Kampf doch. Option falsch? Eine
   verrauschte Messung ließe das Ziel springen – der Wechsel verlangt einen Unterschied über ihrer Unsicherheit. Nichts
   ändert sich? Im Crucible überschreibt heute A525 die Zielart; die neue Regel tritt dort an ihre Stelle, die Spur nennt
@@ -705,9 +739,8 @@ Dullahan, Golem, Spriggan und Eisgolem (`XBMPet.InflictsInterrupt`).
   des Bretts. *Gegenthese 2:* Wer zurückgehalten wird, fehlt in den frühen Kämpfen, wo er ebenfalls passt. Nicht
   widerlegt: Gegen die Gefahr, ihn im wichtigen Kampf nicht zu haben, steht die Gefahr im frühen; RSR wägt mit dem
   gemessenen Schaden je Einsatz und hält ihn nur zurück, solange ein anderer Begleiter den frühen Kampf trägt.
-  *Gegenthese 3:* RSR kennt das aktuelle Feld nicht. Offen: Das Spiel führt das Feld im Brett
-  (`AgentXBMStageDetailList`, Werkzeugquelle); ob es lesbar ist, zeigt die Umsetzung, sonst gilt der Plan für alle
-  Kämpfe des Bretts. *Ergebnis:* K11 ist die Planungsebene über K6, K7, K8, K9 und K10; sie alle lesen dieselbe
+  *Gegenthese 3:* RSR kennt das aktuelle Feld nicht. Widerlegt (A632, A656): Das Hornfenster nennt den Kampf, der auf
+  genau einem Feld liegt, und RSR merkt sich, ob dessen Kampf vorbei ist. *Ergebnis:* K11 ist die Planungsebene über K6, K7, K8, K9 und K10; sie alle lesen dieselbe
   Bedarfsliste.
   *Stand der Umsetzung (A550, A556):* Die Kämpfe je Brett liefert das Blatt (`XBMContentBattle`: Zeile je Brett 1 bis 5
   mit 6, 7, 8, 10 und 14 Kämpfen, Unterzeile je Kampf mit Verweis auf `XBMBattleDetail`, Unterzeile 0 der Endkampf).
@@ -786,9 +819,9 @@ Dullahan, Golem, Spriggan und Eisgolem (`XBMPet.InflictsInterrupt`).
     Campsite-Fenster). *Gegenthese 2:* Ohne Zähnefletschen fällst du schneller. Widerlegt bis zur Untergrenze, ab der es
     wieder gilt. *Ausgeliefert, und nichts ändert sich?* Vor der ersten Verlustmessung, im Endkampf und wenn die
     Endkampf-Heiler genug LP haben; die Spur nennt jedes verweigerte Zähnefletschen.
-  - *Offen:* Die Campsite-Wahl (K10) liest Fenster und Agent und überlässt dir die Wahl, wenn ihre LP sich unterscheiden
-    („the window's HP … is not the team's"); ob der Agent dort nachgezogen hat, zeigt die nächste Campsite mit RSR
-    (A576 läuft seitdem auch bei ausgeschaltetem RSR).
+  - *Campsite und Agent:* Die Campsite-Wahl (K10) liest Fenster und Agent und überlässt dir die Wahl, wenn ihre LP sich
+    unterscheiden („the window's HP … is not the team's"). In seinem Lauf vom 07.11.2026 stimmten beide: RSR ließ Drakon
+    und Golem ruhen und erwartete 30 % je Begleiter, das Spiel bot 30 % (Spur 16:04:49 bis 16:05:04).
   *Stufe 3, gebaut (A643): der einzige Unterbrecher für einen späteren Kampf.* Steht im lebenden Kader genau ein
   Seelen-Begleiter (Soul Crush über Borrow, K4) und verbraucht ein Horn One with Nature für Borrow, dann gehört er zur
   Reserve, wenn ein noch erreichbarer Kampf des Bretts eine Gegnerart führt, die RSR unterbrechbar zaubern sah

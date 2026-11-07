@@ -292,6 +292,9 @@ public sealed class BST_Reborn : BeastmasterRotation
 	private static uint _familiarLargestHit;
 	private static ulong _familiarWatched;
 
+	// A660: the fight in which Snarl came for an arriving enemy, for one trace line.
+	private static uint _snarlForArrival;
+
 	// A658: the largest such hit any familiar took on this board - K8 item 7's mark before a familiar's first hit in a fight.
 	private static uint _familiarLargestHitOnBoard;
 	private static uint _familiarLastHp;
@@ -589,6 +592,21 @@ public sealed class BST_Reborn : BeastmasterRotation
 		{
 			shouldSnarl = true;
 			shouldChallenge = false;
+		}
+
+		// A660 (concept 21, K3): an enemy running to another arrives within a GCD and blows up there (the Ogre's wisps) - with
+		// the familiar's Cover up, the blast and its Vulnerability Up land on the familiar, not on you. Not onto a familiar
+		// the next loss would fell.
+		if (!shouldSnarl && !nextHitFells && !IsCoveredByFamiliar && Approach.SoonestArrival is { } arrival
+			&& arrival <= DataCenter.DefaultGCDTotal)
+		{
+			shouldSnarl = true;
+			shouldChallenge = false;
+			if (_snarlForArrival != CrucibleBoard.Fight)
+			{
+				_snarlForArrival = CrucibleBoard.Fight;
+				DefenseTrace.Line($"beastmaster: Snarl - an enemy running to another arrives in {arrival:F1} s; the familiar's Cover takes it");
+			}
 		}
 
 		// K11 stage 2 (A590): before the final fight, not on a familiar the final fight needs to heal or protect while its HP

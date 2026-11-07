@@ -237,7 +237,8 @@ internal static class EnemyDanger
 			// and for enemies the sheet does not rate, the fewer HP first.
 			var sa = CrucibleBoard.SheetDanger(a.NameId) / Math.Max(1u, a.CurrentHp);
 			var sb = CrucibleBoard.SheetDanger(b.NameId) / Math.Max(1u, b.CurrentHp);
-			return sa > 0f && sb > 0f && sa != sb ? sb.CompareTo(sa) : a.CurrentHp.CompareTo(b.CurrentHp);
+			return sa > 0f && sb > 0f && sa != sb ? sb.CompareTo(sa)
+				: a.CurrentHp != b.CurrentHp ? a.CurrentHp.CompareTo(b.CurrentHp) : Nearer(a, b);
 		}
 
 		var current = Svc.Targets.Target?.GameObjectId ?? 0;
@@ -252,7 +253,14 @@ internal static class EnemyDanger
 		}
 
 		var byPriority = pb.CompareTo(pa);
-		return byPriority != 0 ? byPriority : a.CurrentHp.CompareTo(b.CurrentHp);
+		return byPriority != 0 ? byPriority : a.CurrentHp != b.CurrentHp ? a.CurrentHp.CompareTo(b.CurrentHp) : Nearer(a, b);
+	}
+
+	// A660 (concept 21, K3): of two equally urgent enemies - the same danger over the same HP, as six alike wisps - the one
+	// nearer to the player: the way there is damage lost, and one running at him meets him instead of arriving first.
+	private static int Nearer(IBattleChara a, IBattleChara b)
+	{
+		return a.DistanceToPlayer().CompareTo(b.DistanceToPlayer());
 	}
 
 	private static ulong _lead;

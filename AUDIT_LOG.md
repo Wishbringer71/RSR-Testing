@@ -19345,6 +19345,43 @@ TODO „Laden: Ausrüstung und Gegenstände auf einer Skala" (aus A656); Beastma
 *Prüfgrad:* Compile ohne Warnung; Prüfskripte. Im Spiel nicht beobachtet; jede Liste steht als „crucible shop: … recommends
 …" in der Spur.
 
+### A660 · Crucible K3: Gegner, die zu einem Verbündeten laufen (Irrlichter des Ogers); offene Stellen von K3 und K11 geschlossen (07.11.2026)
+
+Beastmaster-Vorrang (seine Rüge vom 07.11.2026: „du bist mit beastmaster noch nicht fertig"); offene Stellen in Konzept 21
+erhoben. Sein Hinweis vom selben Abend (eingeordnet als Hinweis mit Vorschlag): „die irrlichter kommen von aussen aus
+vier richtungen und fliegen auf den mittigen oger zu. wenn sie ihn erreichen, entsteht schaden beim spieler. also muss
+der spieler zu den irrlichtern rennen. oder es muss ein aoe (falls vorhanden) gezündet werden, der alle irrlichter
+zusammen trifft, wenn sie gerade nah genug beieinander sind, aber noch weit genug weg vom oger".
+
+- *1 Research:* Seine Läufe 05., 06., 07.11. (ACT): je Oger-Kampf sechs Irrlicht-Ebenbilder (171 LP) und zwei Riesen
+  (1575 LP), Ankunft 9 bis 25 s nach dem Erscheinen, in fünf Kämpfen kein Irrlicht gestorben; Explosionen trafen den
+  Spieler mit bis zu 7 % (49728). 07.11.: RSRs Ziel sprang 16:03:25 bis 16:03:55 zwischen ihnen, je ein Treffer; der Oger
+  stand unangreifbar bei 4532 LP. BossModReborn 27be422 (`OgrePiece`): Burning Ward 46918 / Status 4175 Unverwundbarkeit,
+  Verbrannte Erde 46919/49728 Reichweite 60. Daedalus 2644cbe: Ward nach 52 bis 55 s, 19 s Marsch, Deckung nimmt die
+  Verwundbarkeit (14 von 15 Stapeln), 14 Tode in 17 Kämpfen; Flächen (Parting Blow 7 y, Fang 11 y) erst, wenn alle
+  Adds in Reichweite liegen. `EnemyDanger.Compare`: bei gleicher Dringlichkeit entschied die Listenreihenfolge.
+- *2–5 Optionen und Abwägung:* (a) nächster zuerst bei gleicher Dringlichkeit – Laufweg ist verlorener Schaden; (b)
+  Ankunft je Gegner messen (Annäherung an den Gegner mit den meisten LP, Ankunftsabstand je Art gelernt); (c)
+  Zähnefletschen binnen eines GCD vor der ersten Ankunft (Deckung nimmt Explosion und Verwundbarkeit); (d) Fläche
+  halten, bis mehr in Reichweite kommen – verworfen: Wie viele noch kommen, zeigt die Annäherung nur für sichtbare, eine
+  gehaltene Fläche, die keinen weiteren trifft, kostet ihren Einsatz; die Flächenregeln feuern ab zwei. (e) Schaden an
+  Begleitern nach Bedarf gewichten – verworfen (keine Umrechnung zwischen deinen und Begleiter-LP; unter Zähnefletschen
+  ändert sie die Reihenfolge nicht; wer nimmt, entscheiden K9 und K11). (f) Stärkung anderer messen – nicht gebaut: K4
+  unterbricht Fanaticism (07.11. 16:13:12), A582 stellt die Magierin vorn, die Größe nennt kein Blatt.
+- *6 Falsifikation:* Kein Defekt? Widerlegt am 07.11. (30 s ohne Wirkung). Option falsch? Der Nächste kommt vielleicht
+  vorher an – er kommt dir entgegen, ein Irrlicht fällt in einem Schlag. Zähnefletschen schickt den Begleiter in die
+  Explosion – gewollt, K9 verbietet es bei einem Begleiter, den der nächste Verlust fällen würde. Ausgeliefert, nichts
+  ändert sich? Wo der Spieler woanders steht (RSR bewegt ihn nicht), ohne Begleiter, bevor das erste Irrlicht seiner Art
+  verschwand (dann Rand der Trefferkreise als Ankunft).
+- *7 Gebaut:* `Approach` (Ziel, Annäherung, Ankunft, gelernter Ankunftsabstand; Spurzeile beim Lernen), Aufruf im
+  `TargetUpdater`; `EnemyDanger.Nearer` als letzte Entscheidung in `Compare`; K9 in `BST_Reborn`: Zähnefletschen vor der
+  Ankunft, Spurzeile je Kampf.
+- *9 Dokumentation:* Konzept 21 K3 (verworfen, Stärkung, „Gegner, die zu einem Verbündeten laufen"), K11 (Feld und
+  Campsite-Agent mit seinen Daten geschlossen).
+
+*Prüfgrad:* Compile ohne Warnung; Prüfskripte; Messung an drei ACT-Mitschnitten. Im Spiel nicht beobachtet; „approach:"
+und „beastmaster: Snarl - an enemy running …" stehen in der Spur.
+
 ## B · Commit-Register (Fork vs. `upstream/main`)
 
 ### B1 · Einzelgeprüfte Fork-Commits
