@@ -1006,7 +1006,10 @@ internal static class CrucibleBoard
 		}
 
 		var elements = ElementsOfHit(entry);
-		if (elements.Count > 0 || _elementNames.Count > 0)
+
+		// A678: a hit a tome converted measures the tome, and does not teach the elements of its action.
+		var converted = MeasureTome(action, target, entry, amount, elements);
+		if (!converted && (elements.Count > 0 || _elementNames.Count > 0))
 		{
 			_actionElementsSeen[action.RowId] = elements;
 		}
@@ -1294,6 +1297,83 @@ internal static class CrucibleBoard
 
 	/// <summary>A672: the most HP an enemy of this name was seen with in the session; 0 before it was hit.</summary>
 	internal static uint MaxHpSeen(uint nameId) => _maxHpSeen.TryGetValue(nameId, out var hp) ? hp : 0u;
+
+	// A678: the tome RSR took and until when it stands; the gain measured per tome kind on this board; whether the first
+	// converted hit was traced.
+	private static (bool ToMagic, DateTime Until)? _tome;
+	private static readonly Dictionary<bool, (double Sum, int Samples)> _tomeGain = [];
+	private static uint _tomeGainIn;
+	private static bool _tomeTraced;
+
+	/// <summary>A678: RSR took a tome that makes every attack magic (or physical) for <paramref name="seconds"/>.</summary>
+	internal static void TomeUsed(bool toMagic, float seconds)
+	{
+		if (seconds > 0f)
+		{
+			_tome = (toMagic, DateTime.Now.AddSeconds(seconds));
+			_tomeTraced = false;
+		}
+	}
+
+	/// <summary>
+	/// A678: what a tome of this kind multiplied the damage by on this board - each converted hit against the same action in
+	/// its own kind on the same enemy kind -, null until measured.
+	/// </summary>
+	internal static float? TomeGain(bool toMagic)
+	{
+		return _tomeGainIn == DataCenter.TerritoryID && _tomeGain.TryGetValue(toMagic, out var gain) && gain.Samples > 0
+			? (float)(gain.Sum / gain.Samples) : null;
+	}
+
+	// A678: whether this hit came converted by the tome RSR took - in the tome's kind while its action has the other -, and
+	// if so its gain over the same action in its own kind on the same enemy kind, the same weakness counted on both sides.
+	private static bool MeasureTome(Lumina.Excel.Sheets.Action action, IBattleChara target, EffectEntry entry, uint amount,
+		HashSet<uint> elements)
+	{
+		if (_tome is not { } tome || DateTime.Now > tome.Until)
+		{
+			return false;
+		}
+
+		var hitPhysical = AttackTypeKind.IsPhysical(entry.AttackType);
+		var ownPhysical = AttackTypeKind.IsPhysical(action.AttackType.RowId);
+		if (hitPhysical == tome.ToMagic || hitPhysical == ownPhysical)
+		{
+			return false;
+		}
+
+		if (!_tomeTraced)
+		{
+			_tomeTraced = true;
+			DefenseTrace.Line($"crucible: a hit the {(tome.ToMagic ? "magic" : "physical")} tome converted (action {action.RowId}) carries "
+				+ (elements.Count > 0 ? $"element(s) {string.Join(", ", elements)}" : "no element"));
+		}
+
+		var potency = 1f;
+		if (EnemyOf(target.NameId) is not { } listed
+			|| (action.GetActionCate() != ActionCate.Autoattack && (!ActionTooltip.TryPlainPotency(action.RowId, out potency) || potency <= 0f))
+			|| !_perPotency.TryGetValue((action.RowId, ownPhysical, ownPhysical ? listed.PhysResistance : listed.MagResistance), out var own))
+		{
+			return true;
+		}
+
+		var normallyWeak = listed.Weakness != 0 && _actionElementsSeen.TryGetValue(action.RowId, out var normal) && normal.Contains(listed.Weakness);
+		var (sum, hits) = normallyWeak ? (own.Weak, own.WeakHits) : (own.Other, own.OtherHits);
+		if (hits == 0 || sum <= 0d)
+		{
+			return true;
+		}
+
+		if (_tomeGainIn != DataCenter.TerritoryID)
+		{
+			_tomeGainIn = DataCenter.TerritoryID;
+			_tomeGain.Clear();
+		}
+
+		var (gainSum, samples) = _tomeGain.TryGetValue(tome.ToMagic, out var known) ? known : default;
+		_tomeGain[tome.ToMagic] = (gainSum + (amount / (double)potency / (sum / hits)), samples + 1);
+		return true;
+	}
 
 	/// <summary>
 	/// K8 "Auslöser" (A677): whether a kill by a damage item grants the worn gear's kill stack - measured this session: an

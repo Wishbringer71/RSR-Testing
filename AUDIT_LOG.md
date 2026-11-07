@@ -19924,6 +19924,33 @@ Viertes Paar aus TODO „Crucible-Wechselwirkungen, Stufe 2"; baut auf A676.
 *Prüfgrad:* Compile ohne Warnung, Prüfskripte; Regex an allen Rohtexten (trifft Demonic Armor und Crucible Tonic, nur
 Ausrüstung wird gelesen). Im Spiel nicht beobachtet.
 
+### A678 · Crucible: Zauberbücher im Endkampf, mit Messung des Gewinns (07.11.2026)
+
+Letztes Paar aus TODO „Crucible-Wechselwirkungen, Stufe 2"; der Punkt ist damit geschlossen.
+
+- *1 Research:* Wirktexte (xivapi v2 XBMItem 142, 143): Spellforge Tome „Ensures all attacks deal magic damage. Effects
+  also apply to familiars. Duration: 180s", Steelsting Tome dasselbe physisch. Synergien: Magie-Ausrüstung und -Futter
+  (Staff of the Wise, Wind Armor +20 %, Orange-Juice +30 %, Pineapple-Juice +50 %), das Zaubermittel (+30 %), die
+  Abwehrstufe (K1). Unbelegt: ob der umgewandelte Treffer seinen Aspekt behält, wie er gegen die andere Abwehr wirkt.
+  Suche (07.11.2026): keine Quelle nennt es; GluttonyCombo (cb5bf32) führt die Bücher nur als Angriffsgegenstand ohne
+  Regel. RSR nahm die Bücher nie (keine Lesung).
+- *Code:* K1 schlüsselt den Schaden je Potenz nach Aktion, tatsächlicher Schadensart des Treffers und Abwehrstufe; ein
+  Treffer ohne Element fällt vor dieser Messung heraus, und jeder Treffer schrieb die Elemente seiner Aktion neu.
+- *2 Optionen:* (0) nie; (a) nach Blatt (Abwehrstufen) und Ausrüstung schätzen – zwei unbelegte Annahmen; (b) wie eine
+  Stärkung im Endkampf, ungemessen erst an dessen Ende (es verfiele ohnehin), gemessen am Anfang, mit Messung des
+  Gewinns an jedem umgewandelten Treffer.
+- *3 Abwägung:* (b) kostet ungemessen nichts als die letzten Sekunden eines Endkampfs mit womöglich weniger Schaden und
+  liefert danach den gemessenen Gewinn. Gewählt (b).
+- *Gebaut:* `ConvertText`, Art `Convert` mit `ToMagic`; Schritt 12 im Endkampf vor den Stärkungen; `TomeUsed`,
+  `TomeGain` je Brett, `MeasureTome` vor der Elementlesung: umgewandelter Treffer gegen dieselbe Aktion in ihrer Art auf
+  derselben Gegnerart, gleiche Schwäche; die Spur nennt das Element des ersten umgewandelten Treffers; umgewandelte
+  Treffer lehren die Elemente ihrer Aktion nicht mehr.
+- *6 Falsifikation:* Kein Defekt? Ein Buch im Vorrat verfiel ungenutzt. Option falsch? (a) setzte zwei unbelegte
+  Wirkungen voraus. Ausgeliefert, nichts ändert sich? Ohne Buch, ohne umgewandelten Treffer einer Aktion mit gemessener
+  eigener Art auf derselben Gegnerart (dann ungemessen, nächster Lauf), bei einem selbst genommenen Buch.
+
+*Prüfgrad:* Compile ohne Warnung, Prüfskripte; Regex an den Rohtexten 142, 143. Im Spiel nicht beobachtet.
+
 ## B · Commit-Register (Fork vs. `upstream/main`)
 
 ### B1 · Einzelgeprüfte Fork-Commits

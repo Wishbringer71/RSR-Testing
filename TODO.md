@@ -19,10 +19,9 @@ auswahl und das timing der beschwörung" – je Kampf aller fünf Bretter (Gegne
 BossMod-Module) die Rotation des Beastmasters, die Wahl der Begleiter und den Zeitpunkt ihres Aufrufs im Loop prüfen
 (Beispiel seiner Beobachtung: der Raptor gegen Feuer, bevor feueranfällige Gegner da waren; A581).
 
-1. Crucible-Wechselwirkungen, Stufe 2 – die Zauberbücher (Beastmaster, Vorrang; Schaden).
-2. Blaumagier: RSRs nächste Aktion beendet Apokalypsis und Chelonian Gate – Schaden und Minderung des Spielers enden
+1. Blaumagier: RSRs nächste Aktion beendet Apokalypsis und Chelonian Gate – Schaden und Minderung des Spielers enden
    nach einem GCD statt nach 10 s.
-3. Kegel und Ringe gegnerischer Zauber genau messen: Zauber- und Kanalbeginn nutzen RSRs Erkennung bei Kegel und Ring
+2. Kegel und Ringe gegnerischer Zauber genau messen: Zauber- und Kanalbeginn nutzen RSRs Erkennung bei Kegel und Ring
    nicht, und mehrere Leser sehen hinter einem Kegel oder im Innenkreis eines Rings eine Gefahr, die keine ist.
 
 Danach die technische Schuld, soweit ihre Auflösungsbedingung erfüllt ist. Warten auf Daten: unten.
@@ -46,12 +45,6 @@ auf jeden Schadens- und Schutzkanal gehört, den RSR nicht selbst beendet (Unive
 *Konzept:* 14, „Wo Angriff die Abwehr beendet: die Kanäle".
 
 ## Offene Arbeit
-
-### Crucible-Wechselwirkungen, Stufe 2 · N
-Im Kampf: Die Zauberbücher (Grimoire der Zauberschmiede, des Stahlstachels: 180 s jeder Angriff magisch oder physisch)
-nimmt RSR nicht; ob die Umwandlung den Aspekt und damit die Schwäche behält, ist unbelegt. Nächster Schritt: Loop mit
-Messung nach dem Einsatz (Schaden je Potenz und Schwächezuschlag vor und unter dem Buch). Konzept 21, K8
-(„Zauberbücher").
 
 ### Kegel und Ringe gegnerischer Zauber genau messen · N
 Im Kampf: RSRs Formprüfung (`DataCenter.AreaCastReaches`) misst einen Kegel und einen Ring als vollen Kreis um den

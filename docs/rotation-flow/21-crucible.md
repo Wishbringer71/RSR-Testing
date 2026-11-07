@@ -1413,10 +1413,25 @@ on a pack once a fight, all of them in the final fight (Crucible only)".
     - *Weg:* Feiglingsmesser (35 % Flucht von normalen Gegnerfeldern, danach Guerrilla Tactics), Bestien-Rauchbombe
       (Flucht) und Diebesmesser (zwei Gegenstände auf Schatzfeldern) zählen im Wegfenster und auf der Skala (Weg,
       „Flucht"; K13; A671).
-    - *Zauberbücher:* Grimoire der Zauberschmiede und des Stahlstachels machen 180 s jeden Angriff magisch oder
-      physisch, auch den der Begleiter. Die Abwehrstufe wirkt (derselbe Auto-Angriff traf Stufe 2 mit 57, Stufe 5 mit
-      37), und unter Zauberschmiede trägt das Zaubermittel jeden Angriff. Ob die Umwandlung den Aspekt und damit die
-      Schwäche behält, ist unbelegt – offen (Stufe 2, mit Messung nach dem Einsatz).
+    - *Zauberbücher (A678):* Grimoire der Zauberschmiede und des Stahlstachels machen 180 s jeden Angriff magisch oder
+      physisch, auch den der Begleiter („Ensures all attacks deal magic damage", „… deliver physical damage"). Die
+      Abwehrstufe wirkt (derselbe Auto-Angriff traf Stufe 2 mit 57, Stufe 5 mit 37), und unter Zauberschmiede trägt das
+      Zaubermittel jeden Angriff. Was ein Buch bringt, belegt kein Text: ob der umgewandelte Treffer seinen Aspekt und
+      damit die Schwäche behält, und wie er gegen die andere Abwehr wirkt; keine Quelle nennt es (Suche 07.11.2026:
+      consolegameswiki, icy-veins, GluttonyCombo führt die Bücher nur als Angriffsgegenstand). *Was gilt:* Ein Buch geht
+      wie eine Stärkung nur im Endkampf (12). Hat RSR auf diesem Brett gemessen, dass es den Schaden hebt, geht es zu
+      Beginn, vor den Stärkungen – das Zaubermittel trägt dann jeden Angriff; ungemessen geht es, wenn der Endkampf endet
+      (dieselbe Bedingung wie bei den Schadensgegenständen, 13): Danach verfiele es, und sein Einsatz misst; gemessen ohne
+      Gewinn nie. *Messung:* Solange ein Buch wirkt, das RSR nahm, ist ein Treffer umgewandelt, wenn er in der Art des Buchs
+      kommt und seine Aktion die andere hat. RSR teilt seinen Schaden je Potenz durch den derselben Aktion in ihrer
+      eigenen Art auf derselben Gegnerart (K1, gleiche Abwehrstufe, gleiche Schwäche); das Mittel ist der Gewinn, je
+      Brett. Ob ein umgewandelter Treffer ein Element trägt, nennt die Spur beim ersten. *Gegenthesen:* (1) Am Ende des
+      Endkampfs wirkt es nur Sekunden: Die Messung braucht einen umgewandelten Treffer einer Aktion, deren eigene Art auf
+      dieser Gegnerart gemessen ist; fehlt er, bleibt das Buch ungemessen, und der nächste Lauf misst wieder. (2) Der
+      Gewinn hängt an den Gegnern: Er gilt je Brett, gemessen an dessen Endkampf, und geht im nächsten Lauf desselben
+      Bretts zu Beginn. Preis: Wo ein Brett wiederholt läuft, zählt der Endkampf; ein Buch in früheren Kämpfen nimmt RSR
+      nicht, wie keine Stärkung. (3) Ausgeliefert, und nichts ändert sich: Ohne Buch im Vorrat; ein Buch, das du selbst
+      nimmst, misst RSR nicht.
     - *Ungezähmte Mittel (A673):* Sie geben mehr als ihr gezähmtes Gegenstück (Stärke +45 % physisch, Magie +50 %,
       Intensität +50 % kritisch, Ausweichen +25 % für 60 statt 30 s, Konstitution +30 % maximale LP) und legen dir einen
       Zustand auf: Betäubung 15 s, Nightmare 30 s („Troubled sleep is preventing the execution of actions", Status 5383),

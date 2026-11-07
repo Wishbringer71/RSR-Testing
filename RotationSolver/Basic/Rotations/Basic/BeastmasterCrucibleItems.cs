@@ -38,6 +38,7 @@ public partial class BeastmasterRotation
 		MaxHp,
 		Buff,
 		Escape,
+		Convert,
 	}
 
 	// What an item of the board does, read once from its English effect text (XBMItem): its kind; the share it heals or
@@ -55,7 +56,12 @@ public partial class BeastmasterRotation
 		uint Element = 0, float Radius = 0f, bool Knockback = false, string Afflicts = "", string BonusStatus = "",
 		float Bonus = 0f, bool RaisesMagic = false, uint LowersResist = 0, float HealShare = 0f, string HealCarrying = "",
 		string GainsFrom = "", float Duration = 0f, string LongerWith = "", float LongerDuration = 0f, int Stacks = 0,
-		int MoreStacks = 0, float AutoBelow = 0f, float Expires = 0f, float ExpiresWith = 0f, string SelfStatus = "");
+		int MoreStacks = 0, float AutoBelow = 0f, float Expires = 0f, float ExpiresWith = 0f, string SelfStatus = "",
+		bool ToMagic = false);
+
+	// A678: a tome - "Ensures all attacks deal magic damage", "Ensures all attacks deliver physical damage".
+	private static readonly Regex ConvertText = new(@"^Ensures all attacks (?:deal|deliver) (?<kind>magic|physical) damage",
+		RegexOptions.CultureInvariant);
 
 	// A673: a feral potion - "Inflicts Petrification while also granting Liquid Intensity to self or familiar", "Inflicts
 	// Pollen while also granting Liquid Constitution and restoring 10% of HP".
@@ -195,6 +201,10 @@ public partial class BeastmasterRotation
 					: CrucibleItemKind.Buff, 0f, false, name, feral.Groups["status"].Value,
 					RaisesMagic: text.Contains("Increases magic damage dealt", StringComparison.Ordinal),
 					SelfStatus: feral.Groups["self"].Value);
+			}
+			else if (ConvertText.Match(text) is { Success: true } convert)
+			{
+				items[id] = new CrucibleItem(CrucibleItemKind.Convert, 0f, false, name, ToMagic: convert.Groups["kind"].Value == "magic");
 			}
 			else if (text.Contains(EscapeText, StringComparison.Ordinal))
 			{
@@ -631,6 +641,25 @@ public partial class BeastmasterRotation
 		var damageReady = slot < 0 && damage && InCombat
 			&& DamageItem(crucible, finalFight, out damageSlot, out damageTarget, out damageWhy);
 
+		// 12, A678: in the final fight a tome - at its start once RSR measured on this board that it raises the damage, while
+		// the fight ends when unmeasured (it expires with the board, and its use measures it), never once measured without gain;
+		// before the buffs, so a magic one carries every attack.
+		if (slot < 0 && damage && finalFight && !TomeStands)
+		{
+			var ending = FinalFightEnding(crucible);
+			for (var i = 0; i < crucible->Inventory.Length && slot < 0; i++)
+			{
+				if (TryItem(crucible, i, CrucibleItemKind.Convert, out var tome)
+					&& CrucibleBoard.TomeGain(tome.ToMagic) is var gain && (gain > 1f || (gain == null && ending)))
+				{
+					slot = i;
+					on = player;
+					why = gain is { } measured ? $"in the final fight, {tome.Name}: it raised the damage by {measured - 1f:P0} on this board"
+						: $"the final fight ends, {tome.Name} unmeasured - it would expire, and its use measures it";
+				}
+			}
+		}
+
 		// 12: in the final fight every buff while its status does not stand, before the damage items it may raise; one that
 		// raises magic damage, while a damage item is held, only right before one goes (A665) - the damage waits for its
 		// enemies, and the buff lasts 15 s.
@@ -695,6 +724,12 @@ public partial class BeastmasterRotation
 		}
 
 		var item = CrucibleItems[used];
+		if (item.Kind == CrucibleItemKind.Convert)
+		{
+			_tomeUntil = DateTime.Now.AddSeconds(item.Duration);
+			CrucibleBoard.TomeUsed(item.ToMagic, item.Duration);
+		}
+
 		if (item.Kind == CrucibleItemKind.ResistAilment)
 		{
 			_ = _serumCovers.Add(covers);
@@ -1331,6 +1366,11 @@ public partial class BeastmasterRotation
 
 		return 0;
 	}
+
+	// A678: until when the tome RSR took stands - one at a time.
+	private static DateTime _tomeUntil = DateTime.MinValue;
+
+	private static bool TomeStands => DateTime.Now < _tomeUntil;
 
 	private static readonly Dictionary<uint, float> _itemPotencyOfAction = [];
 

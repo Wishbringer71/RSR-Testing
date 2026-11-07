@@ -62,6 +62,11 @@ What this release changes in the fight. For the whole distance from upstream, se
 - **Kill stacks count once RSR has seen them.** With Demonic Armor a kill grants a stack of High Wire (5 % less damage
   taken, up to four). A damage item that kills now also counts what its stacks spare you in the rest of the fight - but
   only after RSR has seen, in this session, that a kill by an item grants a stack; the trace names the result.
+- **Tomes in the final fight, measured.** RSR never used the Spellforge and Steelsting Tomes. Like a buff they now go in
+  the final fight only: unmeasured when the fight ends (they would expire, and their use measures them), at its start
+  once RSR measured on that board that they raise the damage, never once they did not. RSR compares each hit a tome
+  converted with the same action in its own kind on the same enemy kind, and the trace names whether the converted hit
+  keeps its element.
 - **An enemy that has not hit yet counts with its kind.** Before its first hit an enemy ranked by the mean danger of the
   fight's other enemies, even when another of its kind had hit already: a second Aetheric Charge stood like an average
   enemy. It now counts with the danger its kind showed in this area - each enemy measured until it fell -; only enemies
