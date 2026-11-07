@@ -60,6 +60,10 @@ What this release changes in the fight. For the whole distance from upstream, se
 
 ## Healing
 
+- **HP potions by the forecast when no healer lives.** `Use HP potions below this HP` read your HP now; with a fast fall
+  the potion came only at the next weave window, a GCD later. With no healer alive in the party it now also reads your
+  HP at the next weave window, a GCD ahead, as the critical class does; the guard against overhealing stays. The
+  Crucible's healing items read the same.
 - **One switch per potion, for every job.** HP and MP potions and Phoenix Down are switched in the action
   list for all jobs at once, and none is off by default; `Use HP potions`, `Use MP potions` and `Use
   Phoenix Down` decide when they go. Before, every job kept its own switch per item, off until switched

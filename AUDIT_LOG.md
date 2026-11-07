@@ -18745,6 +18745,27 @@ habe den schleim bislang nicht anfreunden können."
 - *8 Nachweis:* Modell-Selbsttest; Messung an seinen Mitschnitten (Skripte im Notizordner der Sitzung, nicht
   versioniert: Auswertung eines Uploads).
 
+### A641 · Heiltrank und Heilgegenstand des Bretts: Schwelle nach der Vorhersage, wo kein Heiler lebt (07.11.2026)
+
+- *Anlass:* TODO „Heiltrank nach der Gefahr statt nach der festen Schwelle" (Sägerschrei 06.11.2026: 34 % LP, „critical
+  class … 9 % forecast"); sein Auftrag vom 07.11.2026, den Beastmaster mit allen offenen Punkten abzuschließen.
+- *1 Research:* `HpPotionItem.CanUse` las die LP jetzt gegen „Use HP potions below this HP"; über der Schwelle nur gegen
+  einen Tankbuster (`CanUseEmergency`, A284). Der Heilgegenstand des Bretts (`UseCrucibleItems`) las dieselbe Schwelle mit
+  den LP jetzt. Die kritische Klasse liest die LP einen GCD voraus (`GetForecastSurvivingShare`, Restzeit aus der
+  Gesundheitshistorie).
+- *2 Optionen:* (0) nichts; (a) die kritische Klasse als zweiter Notfall, über der Schwelle; (b) die Schwelle gegen die
+  vorhergesagten LP, für alle; (c) wie (b), aber nur ohne lebenden Heiler; (d) sofortige Vorhersage statt einen GCD voraus.
+- *3–6:* (a) tränke über seiner Schwelle, wo sie unter der Linie der kritischen Klasse liegt – gegen den Text. (b) mit
+  Heiler: dessen nächste große Heilung steht in keinem Verlauf, Tanks mit schwankenden LP tränken alle 75 s und sperrten
+  die Tinktur. (d) ändert fast nichts, weil ein Trank im Webfenster geht und das nächste einen GCD später kommt. (c):
+  ohne Heiler kehrt niemand den Verlauf um; der Trank geht bis zu einen GCD früher, der Wächter gegen Überheilung bleibt.
+  Gegenthese 3: Mit „Heal ahead of damage" aus oder ohne gemessenen Fall bleibt alles wie zuvor.
+- *7 Gebaut:* `HpPotionItem.ThresholdHealthRatio` (jetzt, ohne lebenden Heiler zusätzlich die Vorhersage einen GCD
+  voraus); `CanUse`, `DescribeBlock` und der Heilgegenstand des Bretts lesen sie.
+- *8 Nachweis:* Compile (0 Warnungen); im Spiel nicht gesehen.
+- *9 Dokumentation:* Konzept 03 („Die Schwelle nach der Vorhersage, wo kein Heiler lebt"), Konzept 01 K8; TODO-Punkt
+  geschlossen; Release-Text.
+
 ## B · Commit-Register (Fork vs. `upstream/main`)
 
 ### B1 · Einzelgeprüfte Fork-Commits

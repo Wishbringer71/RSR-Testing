@@ -86,7 +86,19 @@ internal class HpPotionItem : BaseItem
 			return false;
 		}
 
-		return Player.Available && ObjectHelper.GetPlayerHealthRatio() <= Service.Config.UseHpPotionsPercent && Player.Object.MaxHp - Player.Object.CurrentHp >= MaxHp && base.CanUse(out item);
+		return Player.Available && ThresholdHealthRatio() <= Service.Config.UseHpPotionsPercent && Player.Object.MaxHp - Player.Object.CurrentHp >= MaxHp && base.CanUse(out item);
+	}
+
+	/// <summary>
+	/// The player's health that "Use HP potions below this HP" reads (concept 03, "Die Schwelle nach der Vorhersage, wo
+	/// kein Heiler lebt", A641): now, and - with no healer alive in the party - the lower forecast for the next weave
+	/// window, a GCD on, as the critical class reads it. Nobody else turns the measured fall around then, and a potion
+	/// that misses this window goes a GCD later. The board's healing items read the same.
+	/// </summary>
+	internal static float ThresholdHealthRatio()
+	{
+		var now = ObjectHelper.GetPlayerHealthRatio();
+		return DataCenter.AnyLivingHealer(false) ? now : Math.Min(now, ObjectHelper.GetForecastPlayerHealthRatio());
 	}
 
 	/// <summary>
@@ -124,10 +136,11 @@ internal class HpPotionItem : BaseItem
 			return "no player";
 		}
 
-		var ratio = ObjectHelper.GetPlayerHealthRatio();
+		var ratio = ThresholdHealthRatio();
 		if (ratio > Service.Config.UseHpPotionsPercent)
 		{
-			return $"health {ratio:P0} is above the threshold {Service.Config.UseHpPotionsPercent:P0}";
+			return $"health {ratio:P0} (now or, with no healer alive, at the next weave) is above the threshold "
+				+ $"{Service.Config.UseHpPotionsPercent:P0}";
 		}
 
 		var missing = Player.Object.MaxHp - Player.Object.CurrentHp;

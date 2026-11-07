@@ -21,20 +21,18 @@ BossMod-Module) die Rotation des Beastmasters, die Wahl der Begleiter und den Ze
 
 1. Beastmaster: Konzept und Code im vollen Loop (sein Auftrag, 06.11.2026): Regeln, die an einem Augenblickswert
    entscheiden, reagieren erst, wenn die Lage schon da ist.
-2. Heiltrank nach der Gefahr statt nach der festen Schwelle: Allein ohne Heiler kommt der Trank erst unter der
-   eingestellten Schwelle, auch wenn RSR den Fall unter 10 % schon vorhersagt.
-3. Beastmaster: Crucible-Strategien: Ein K.O. beendet den Lauf, und ein Begleiter, den ein späterer Kampf braucht, kommt
+2. Beastmaster: Crucible-Strategien: Ein K.O. beendet den Lauf, und ein Begleiter, den ein späterer Kampf braucht, kommt
    dort mit den LP an, die ihm die früheren ließen.
-4. Tinktur: Schalter je Gegenstand ab Werk aus: Auf jedem Job, auf dem er die Tinktur nicht von Hand eingeschaltet hat,
+3. Tinktur: Schalter je Gegenstand ab Werk aus: Auf jedem Job, auf dem er die Tinktur nicht von Hand eingeschaltet hat,
    kommt sie nie, gegen den Text von „Tincture usage".
-5. Jobkonfiguration: Jobs ohne gespeicherten Eintrag teilen eine Liste: Schaltet er auf einem neu gespielten Job eine
+4. Jobkonfiguration: Jobs ohne gespeicherten Eintrag teilen eine Liste: Schaltet er auf einem neu gespielten Job eine
    Aktion aus, ist sie auf jedem anderen in derselben Sitzung neu gespielten Job ebenfalls aus.
-6. Bewegungssperre beim Wirken gegen das Ausweichen der BossMod-KI: Mit „Lock movement while casting" an steht die
+5. Bewegungssperre beim Wirken gegen das Ausweichen der BossMod-KI: Mit „Lock movement while casting" an steht die
    Figur während jedes Zaubers still, auch wenn die KI von BossMod aus einer Fläche laufen will; nur in dieser
    Kombination, dort aber mit einem Treffer, dem der Spieler nicht ausweicht.
-7. Blaumagier: Set nach den Widerständen der Stufe: Im Masked Carnivale wählt der Satz des Stufenführers Füllzauber
+6. Blaumagier: Set nach den Widerständen der Stufe: Im Masked Carnivale wählt der Satz des Stufenführers Füllzauber
    nach Beispielen; gegen welches Element die Gegner der Stufe schwach oder immun sind, zählt dabei nicht.
-8. Konzepte neu ordnen (allgemein, Rollen, Gruppen, Jobs, Inhalte): keine direkte Wirkung im Kampf; eine Regel, die
+7. Konzepte neu ordnen (allgemein, Rollen, Gruppen, Jobs, Inhalte): keine direkte Wirkung im Kampf; eine Regel, die
    im Konzept eines Jobs steht, wird für dessen Gruppe übersehen, und eine Inhaltsregel ist über mehrere Konzepte
    verteilt.
 
@@ -69,14 +67,6 @@ berührt. optimieren, dynamisieren, verbessern". Im Kampf heute: Regeln, die an 
 entscheiden, wo RSR einen Verlauf misst, reagieren erst, wenn die Lage schon da ist (Beispiel A636). *Ort:* Konzept 01 BST ganz; `BST_Reborn`, `BeastmasterRotation*`,
 `CrucibleBoard`, `CrucibleRoute`, `BeastmasterCrucible*`, die Crucible-Fenster. *Nächster Schritt:* die Erhebung je Regel
 (Momentaufnahme statt Verlauf, Doppelung), Loop je Fund. *Konzept:* 01, BST.
-
-### Heiltrank nach der Gefahr statt nach der festen Schwelle · N
-Im Kampf: Allein ohne Heiler geht der Trank erst unter „Use HP potions below this HP", auch wenn RSR den Fall schon
-vorhersagt (Sägerschrei, 06.11.2026: „critical class … 9 % forecast" bei 34 % LP).
-*Ort:* `CustomRotation_Items.UseHpPotion`,
-`HpPotionItem.CanUse`, `CanUseEmergency`. *Nächster Schritt:* Loop: die Notfallabzweigung (heute nur gegen einen
-Tankbuster) auf die vorhergesagte kritische Klasse ausdehnen, für alle Jobs; der Text der Schwelle bindet. *Konzept:* 03
-(„Eine Wiederverwendung für alle Arzneien"), 07.
 
 ### Beastmaster: Crucible-Strategien · N
 Im Kampf: Fällst du im Brett, ist der Lauf verloren, und RSR plant die Begleiter nicht über das Brett: Ein Heiler, der im vierten Kampf gebraucht wird, kann bis dahin auf 25 von 550

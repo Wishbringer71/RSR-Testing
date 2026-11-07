@@ -323,7 +323,9 @@ public partial class BeastmasterRotation
 			return;
 		}
 
-		var hp = player.GetHealthRatio();
+		// Read as "Use HP potions below this HP" reads it (concept 03, A641): on a board no healer lives, so the forecast
+		// for the next weave window counts too.
+		var hp = HpPotionItem.ThresholdHealthRatio();
 		var bossFighting = DataCenter.BossInCombat;
 		var finalFight = InCombat && CrucibleBoard.IsFinalFight;
 		var slot = -1;
