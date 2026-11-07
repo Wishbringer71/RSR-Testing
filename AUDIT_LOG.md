@@ -19208,6 +19208,82 @@ Defekt aus A654 („Tooltips: lange Optionsbeschreibungen werden rechts abgeschn
 *Prüfgrad:* Compile ohne Warnung; Prüfskripte; Layoutmodell in Dear ImGui 1.93 mit Ersatzschrift. Im Spiel nicht
 beobachtet.
 
+### A656 · Crucible: Weg links oder rechts mit Grund, nach dem Kampf; Schatz auf einer Skala mit Grund je Angebot (07.11.2026)
+
+Seine Fragen vom 07.11.2026, je mit Bild. Eingeordnet: Weg – Vorschlag („Da wäre eine empfehlung hilfreich. eher links
+oder rechts gehen … solche empfehlungen gehören auch ingame rein"), Schatz – Frage und Vorgabe („der grund der auswahl
+sollte im tooltip drin stehen"), Zeitpunkt – Hinweis („der kampf kann doch noch den zustand von mir und meinen
+begleitern beeinflussen"), Hörner – Frage (A657, TODO).
+
+- *1 Research:* Weg (A632): Das Fenster nannte die Felder ohne Seite und rechnete nur bis zum nächsten Feld; es stand
+  schon am Hornfenster vor dem Kampf des Felds (Spur seines Laufs: 16:00:14, vor Kampf 5). `XBMContentStageEventMap`
+  Art 1 zeichnet je Feld seine Zelle (X Osten, Y Süden). Schatz: Die Rangfolge der Liste (A578) stellte jede
+  Ausrüstung mit Gewinn vor jeden Heilgegenstand; die Mehrheilung zählte nur an gemessener Heilung im Kampf.
+- *2–5 Optionen:* Weg: (0) wie bisher; (a) nur das nächste Feld; (b) bis zum Zusammenlauf der Wege, dann bis zur
+  nächsten Campsite oder zum Endgegner – gebaut; Seite aus dem Kreuzprodukt Start→Endgegner mit dem Schritt. Zeitpunkt:
+  erst, wenn der Kampf des Felds vorbei ist (`CrucibleRoute.CurrentDone`, Kampfbeginn und -ende je Feld). Schatz: (0)
+  Rangfolge; (a) feste Gewichte (Daedalus) – verworfen, keine Herleitung; (b) eine Skala in LP-Anteilen über die
+  übrigen Kämpfe des kürzesten Wegs (`CrucibleRoute.FightsAhead`) – gebaut, mit dem, was sie nicht misst, im Text.
+- *Seine Lagen nachgerechnet:* Weg Zug 1: rechts (Schatz) rund 92 % gegen links (Campsite) rund 81 % an der Campsite
+  von Zug 7, beide sicher; die Campsite belebt keinen gefallenen Begleiter. Schatz Zug 3: Pulver 40 % gegen Schuhe
+  rund 6 %; die Wahl stimmte, ihr Grund fehlte.
+- *6 Falsifikation:* Kein Defekt? Widerlegt an seinen Bildern (kein Grund, keine Seite, vor dem Kampf). Option falsch?
+  Gegenthesen im Konzept (K10 „Weg", K13 „Eine Skala"): Kamera – das Feld steht neben der Richtung; feste Gewichte –
+  dieselbe Skala wie der Laden. Ausgeliefert, nichts ändert sich? Ohne Brettplan im Blatt, vor der ersten gemessenen
+  Last (dann die Rangfolge) und auf Gabelungen ohne Unterschied bis zur nächsten Rast.
+- *7 Gebaut:* `CrucibleRoute` (Zellen, `NoteCombat`, `CurrentDone`, `FightsAhead`), `BeastmasterCrucibleRoute` (Seite,
+  Horizont, `CrucibleRouteWhy`), `RankOffers(oneScale)`, `OfferScale`, `CrucibleTreasureOffers` mit Namen in der Sprache
+  des Clients; Wegfenster zeigt den Grund, Schatzfenster jedes Angebot mit Urteil.
+- *9 Dokumentation:* Konzept 21 K10 „Weg", K13; Konzept 03 „Hilfsfenster" (Grund und Wiedererkennen). TODO „Laden:
+  Ausrüstung und Gegenstände auf einer Skala".
+
+*Prüfgrad:* Compile ohne Warnung; Prüfskripte; Layoutmodell (Schatzfenster mit vier Angeboten: 499 × 441 px, nichts
+abgeschnitten, längste Zeile 65 Zeichen). Im Spiel nicht beobachtet.
+
+### A657 · Crucible-Laden: Marken im deutschen Client, getragene Ausrüstung, Futterplätze; Upload vom 07.11.2026 (07.11.2026)
+
+Seine Bilder vom 07.11.2026 aus dem Laden auf Zug 8 von Brett 1 („so ok?"; „mehr verfüttern als felder da sind, ist
+nicht möglich. also warum vorschlag für drake?" – ein Hinweis auf die Mechanik und eine Frage) und seine Uploads
+(DefenseTrace mit drei Sitzungen, Build e852b2cf7 ab 15:42; zwei ACT-Mitschnitte; gelernte Tabellen).
+
+- *Defekt 1, Marken:* Das Spiel zeigte 1421 Marken, das Fenster „1 tokens" und „Nothing here adds safety". Ursache:
+  ECommons `ReaderXBMContentsItemShop.Coins` nimmt `DigitParsers.FirstNumber`, das nur das Komma als Tausendertrenner
+  kennt; der deutsche Client schreibt „1.421". Bei 978 und 888 Marken (unter 1000) las RSR richtig – das bestätigt die
+  Ursache. Klasse: Zahlen aus Fenstertexten; außer Marken und Preisen liest RSR Zahlen nur aus englischen Blättern
+  (`ActionTooltip`, Wirktexte). Behebung: `CountIn` liest die Ziffern der ersten Zahl, gleich welcher Trenner zwischen
+  den Dreiergruppen steht.
+- *Defekt 2, getragene Ausrüstung:* Empfohlen „858 Mythril Armor", das Spiel lehnte ab („Du besitzt die Mithril-Rüstung
+  bereits …"), RSR stoppte an Zeile 14. Er hatte sie auf Zug 5 aus einem Schatz genommen (Spur 15:59:55, RSRs Knopf).
+  Ursache: `RankOffers` schloss ein Angebot, das unter der Ausrüstung steht, nicht aus, und `ShopValue` rechnete es als
+  zweites Stück. Behebung: `Unworn` vor jeder Wahl; was RSR aus einem Schatz nahm, zählt im Laden als getragen, falls
+  dessen Liste es noch nicht zeigt. Preis: Verkauft er ein solches Stück im Laden, hält RSR es für getragen.
+- *Defekt 3, Futter:* Die Ladenliste empfahl nach jedem Kauf dem Begleiter das nächstbeste Futter (Spur 16:05:25 bis
+  16:10:16: Toast, Porcinipilz, Frischkäse, dann Honig, Eier, Beeren, Banane), ohne seine Futterplätze zu kennen, und
+  nahm das erste passende Angebot auch ohne Gewinn (Banane: Ätherausbruch und Schaden nach kritischem Treffer, beide
+  ungezählt, „effective HP rises 0 %"). Drakon hatte beide Plätze belegt. Das Begleiterfenster führt je Begleiter
+  belegte und mögliche Plätze und das Futter (ECommons `FedCurrent`, `FedMax`, `FedItems`; Werkzeugquelle). Behebung:
+  `NoteFeedSlots` merkt sie, sooft das Fenster steht; empfohlen wird nur für freie Plätze, erst je Begleiter einer,
+  Heiler zuerst, nur mit Gewinn an wirksamen LP, danach nur Schaden mit diesem Grund; beim Füttern rechnet RSR mit den
+  Plätzen, die das Fenster jetzt zeigt. Namen von Futter und Begleitern in der Sprache des Clients.
+- *Messung, die eine Gegenthese löst (K14, Gegenthese 3):* Kaktor 550/550 vor dem Frischkäse-Simulakrum, 763/823
+  danach: „Maximum HP +50 %" hebt die LP nicht mit, die Heilung beim Fressen zählt auf das neue Maximum.
+- *Optionen und Falsifikation:* Marken – (a) ECommons ändern (fremdes Repository, nicht meine Zuständigkeit), (b) eigene
+  Lesung – gebaut. Ausgeliefert, nichts ändert sich? Bei Trennern außerhalb von Punkt, Komma, Apostroph und Leerzeichen
+  (keiner bekannt). Futter – Gegenthese: Ruht ein Gefütterter an der Campsite und folgt der Laden ohne Kampf, sieht RSR
+  die Plätze bis zum nächsten Fenster belegt; Preis benannt (Konzept 21, K14). Liest ECommons `FedMax` falsch (0), gilt
+  ein Platz je Begleiter wie bisher.
+- *Upload allgemein:* Sitzung 1 (Build cc9f30ade, ein zweiter Charakter, Beastmaster im Zentralen Hochland von
+  Coerthas, 19 Kämpfe) und 2 (Tiefer Wald): keine Tode; die häufigste Zeile „single defence open, nothing chosen …
+  refused before: Schuppenpanzer (BasicCheck)" ist Bestienkönnen ohne Borgen, nicht verfügbar, ohne Wirkung im Kampf.
+  Sitzung 3: Brett 1 gewonnen, kein Tod; der Weghinweis kam noch vor dem Kampf (alter Build, A656 behebt es). Gelernte
+  Tabellen gegen den 06.11.: `AimedHitPotential` neu 46935 (Seelenlose, 6,8 % gezielt), `InterruptibleCasterKinds`
+  zählt hoch, `DotOnParty` mehr Ticks; plausibel am Mitschnitt.
+- *Dokumentation:* Konzept 21 K10 „Laden, gebaut" (Marken, Getragenes), K14 (Futterplätze, Gewinn, Namen, seine Lage,
+  Gegenthesen), K8 Schritt 7 (seine Frage zu den Hörnern); TODO „Angeschlagene Begleiter auf den Hörnern".
+
+*Prüfgrad:* Compile ohne Warnung; Prüfskripte; Ursachen an der Spur und an seinen Bildern belegt. Die neuen Lesungen
+(`FedMax`, `FedItems`) im Spiel nicht beobachtet; jede Änderung der Plätze schreibt „crucible feed slots: …" in die Spur.
+
 ## B · Commit-Register (Fork vs. `upstream/main`)
 
 ### B1 · Einzelgeprüfte Fork-Commits

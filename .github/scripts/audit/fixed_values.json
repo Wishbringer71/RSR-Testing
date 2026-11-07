@@ -1841,7 +1841,7 @@
   },
   {
    "file": "RotationSolver/Basic/Helpers/CrucibleRoute.cs",
-   "code": "private const int CellKindColumn = 2, CellNodeColumn = 3, CellNextColumn = 4;",
+   "code": "private const int CellXColumn = 0, CellYColumn = 1, CellKindColumn = 2, CellNodeColumn = 3, CellNextColumn = 4;",
    "values": [
     "2",
     "3",

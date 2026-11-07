@@ -8,40 +8,44 @@ using Space = RotationSolver.Basic.Helpers.CrucibleRoute.Space;
 namespace RotationSolver.Basic.Rotations.Basic;
 
 /// <summary>
-/// K10 "Weg" of the Crucible (concept 21, A632; the owner's rule of 06.11.2026): at the next fork of the board, which way to
-/// take - from where the run stands, one stretch ahead, by the player's HP and healing items, the final fight's healers and
-/// the measured load of a fight; computed again on every space.
+/// K10 "Weg" of the Crucible (concept 21, A632, A656; the owner's rules of 06.11.2026 and 07.11.2026): at the next fork of the
+/// board, which way to take - once the space the run stands on is done, by the player's HP and healing items, the final fight's
+/// healers and the measured load of a fight, up to the next rest after the ways meet again; each way named by its side on the
+/// drawn board and its spaces, the recommendation with its reason against the others.
 /// </summary>
 public partial class BeastmasterRotation
 {
-	/// <summary>One way at the next fork: what it is, where it leaves the player and the healers, whether it is safe.</summary>
+	/// <summary>One way at the next fork: its side and spaces, where it leaves the player and the healers, whether it is safe.</summary>
 	public readonly record struct CrucibleRouteOption(string Way, string Outcome, bool Safe, bool Recommended);
 
-	/// <summary>The ways at the next fork, the recommended one marked; empty without a fork ahead.</summary>
+	/// <summary>The ways at the next fork, left to right, the recommended one marked; empty without a fork ahead.</summary>
 	public static IReadOnlyList<CrucibleRouteOption> CrucibleRouteHint { get; private set; } = [];
 
-	/// <summary>Why, and from which space RSR computes.</summary>
+	/// <summary>Why the recommended way, against the others.</summary>
+	public static string CrucibleRouteWhy { get; private set; } = string.Empty;
+
+	/// <summary>From which space RSR computes, and with what load.</summary>
 	public static string CrucibleRouteBasis { get; private set; } = string.Empty;
 
 	private static string _routeTraced = string.Empty;
 
-	// The state a stretch is walked with: the player's share of HP, the lowest share of the final fight's healers, and whether
-	// the way passes items (treasure, shop, a random space).
-	private readonly record struct RouteState(float Player, float Healer, bool Items);
+	// The state a way is walked with: the player's share of HP, the lowest share of the final fight's healers, whether it passes
+	// items (treasure, shop, a random space) or a campsite, and the space it stops before (the next rest, the boss; -1 the end).
+	private readonly record struct RouteState(float Player, float Healer, bool Items, bool Rested, int Stop);
 
 	/// <summary>
-	/// Follows the run on the board every frame out of combat - the campsite, shop or treasure window that opens places it -
-	/// and, when <paramref name="hint"/>, computes the hint for the next fork.
+	/// Follows the run on the board every frame - the campsite, shop or treasure window that opens places it, a fight that ends
+	/// finishes its space - and, when <paramref name="hint"/>, computes the hint for the next fork once the space is done.
 	/// </summary>
 	internal static unsafe void FollowCrucibleRoute(bool hint)
 	{
 		if (!DataCenter.IsInCrucible)
 		{
-			CrucibleRouteHint = [];
-			CrucibleRouteBasis = string.Empty;
+			ClearRouteHint();
 			return;
 		}
 
+		CrucibleRoute.NoteCombat(InCombat);
 		if (!InCombat)
 		{
 			if (Visible("XBMContentsItemShop"))
@@ -60,12 +64,12 @@ public partial class BeastmasterRotation
 			}
 		}
 
+		// The way is chosen after the space's fight, with the HP that fight left (his rule of 07.11.2026).
 		var at = CrucibleRoute.Current;
-		if (!hint || InCombat || CrucibleRoute.Map is not { } map || at < 0 || at >= map.Next.Length || map.Next[at].Count <= 1
-			|| Player is not { MaxHp: > 0 } player)
+		if (!hint || InCombat || !CrucibleRoute.CurrentDone || CrucibleRoute.Map is not { } map || at < 0 || at >= map.Next.Length
+			|| map.Next[at].Count <= 1 || Player is not { MaxHp: > 0 } player)
 		{
-			CrucibleRouteHint = [];
-			CrucibleRouteBasis = string.Empty;
+			ClearRouteHint();
 			return;
 		}
 
@@ -106,14 +110,41 @@ public partial class BeastmasterRotation
 			heaviest = (float)Math.Max(0d, (measured.Heaviest.Damage - measured.Heaviest.Healed) / max);
 		}
 
-		var start = new RouteState(self, healer, false);
-		var options = new List<(string Way, RouteState End)>();
+		// Where the ways meet again: the earliest space every way reaches.
+		var reach = new List<HashSet<int>>();
 		foreach (var next in map.Next[at])
 		{
-			options.Add((Describe(map.Nodes[next]), Walk(next, start, 0)));
+			reach.Add(Reachable(next));
 		}
 
-		// Safe: one more heaviest fight in reserve with the items held, and no healer of the final fight short.
+		var merge = -1;
+		for (var i = 0; i < map.Nodes.Length; i++)
+		{
+			var all = true;
+			foreach (var set in reach)
+			{
+				all &= set.Contains(i);
+			}
+
+			if (all && (merge < 0 || map.Nodes[i].Move < map.Nodes[merge].Move))
+			{
+				merge = i;
+			}
+		}
+
+		var start = new RouteState(self, healer, false, false, -1);
+		var options = new List<(int Next, float Turn, string Side, string Way, RouteState End)>();
+		foreach (var next in map.Next[at])
+		{
+			var (turn, side) = SideOf(next);
+			var fields = Fields(next);
+			options.Add((next, turn, side, side.Length > 0 ? $"{side}: {fields}" : fields, Walk(next, start, false, 0)));
+		}
+
+		// Left first, as the board is drawn from the start towards the final fight.
+		options.Sort(static (a, b) => b.Turn.CompareTo(a.Turn));
+
+		// Safe: one more heaviest fight in reserve with the items held at the next rest, and no healer of the final fight short.
 		bool IsSafe(RouteState end) => end.Player + potions >= heaviest && (loss == 0f || end.Healer >= loss + loss);
 
 		var best = -1;
@@ -128,25 +159,27 @@ public partial class BeastmasterRotation
 		var hintList = new List<CrucibleRouteOption>();
 		for (var i = 0; i < options.Count; i++)
 		{
-			var (way, end) = options[i];
-			hintList.Add(new CrucibleRouteOption(way, loads == null
+			var end = options[i].End;
+			hintList.Add(new CrucibleRouteOption(options[i].Way, loads == null
 				? $"you {self:P0}, final healers {healer:P0} now"
-				: $"after its next fight you ~{end.Player:P0} (+{potions:P0} in healing items), final healers ~{end.Healer:P0}"
-					+ (end.Items ? ", passes items" : string.Empty),
+				: $"at {StopName(end.Stop)}: you ~{end.Player:P0} (+{potions:P0} in healing items), final healers ~{end.Healer:P0}"
+					+ (end.Rested ? ", rested" : string.Empty) + (end.Items ? ", passes items" : string.Empty),
 				loads != null && IsSafe(end), i == best));
 		}
 
 		CrucibleRouteHint = hintList;
-		CrucibleRouteBasis = $"From the {map.Nodes[at].Kind} at move {map.Nodes[at].Move}, one stretch ahead; "
+		CrucibleRouteWhy = Why();
+		CrucibleRouteBasis = $"From the {map.Nodes[at].Kind} at move {map.Nodes[at].Move}, after its fight; "
 			+ (loads == null
-				? "no fight measured yet - the campsite while you or a final healer is hurt, else the way with items"
+				? "no fight measured yet"
 				: $"a fight costs ~{mean:P0} of your HP, the heaviest ~{heaviest:P0}");
 		var traced = $"{at}:{best}";
 		if (traced != _routeTraced)
 		{
 			_routeTraced = traced;
 			DefenseTrace.Line($"crucible route: at move {map.Nodes[at].Move} recommends {options[best].Way} - "
-				+ string.Join("; ", hintList.ConvertAll(static o => $"{o.Way}: {o.Outcome}{(o.Safe ? ", safe" : string.Empty)}")));
+				+ string.Join("; ", hintList.ConvertAll(static o => $"{o.Way}: {o.Outcome}{(o.Safe ? ", safe" : string.Empty)}"))
+				+ $" - {CrucibleRouteWhy}");
 		}
 
 		// Among safe ways the one with items, else the more HP; with none safe the more HP, then the healthier healers.
@@ -172,13 +205,145 @@ public partial class BeastmasterRotation
 			return a.Player != b.Player ? a.Player > b.Player : a.Healer > b.Healer;
 		}
 
-		// A stretch from a space: through it, to and through the next fight; at a fork the better way, a random space at worst.
-		RouteState Walk(int index, RouteState state, int depth)
+		// The recommended way against each other one, in what the other would have brought.
+		string Why()
+		{
+			var (_, _, side, way, end) = options[best];
+			var name = side.Length > 0 ? side.ToLowerInvariant() : way;
+			if (loads == null)
+			{
+				return $"Take the {name} way: no fight measured yet - "
+					+ (self < 1f || healer < 1f ? "the campsite while you or a final healer is hurt" : "the way with items, nothing is hurt");
+			}
+
+			var reasons = new List<string>();
+			for (var i = 0; i < options.Count; i++)
+			{
+				if (i == best)
+				{
+					continue;
+				}
+
+				var other = options[i];
+				var otherName = other.Side.Length > 0 ? $"the {other.Side.ToLowerInvariant()} way" : other.Way;
+				if (!IsSafe(end))
+				{
+					reasons.Add($"no way is safe; this one leaves you highest (~{end.Player + potions:P0} with items at {StopName(end.Stop)})");
+				}
+				else if (!IsSafe(other.End))
+				{
+					reasons.Add(other.End.Player + potions < heaviest
+						? $"{otherName} would bring you to {StopName(other.End.Stop)} at ~{other.End.Player:P0} with {potions:P0} in items, "
+							+ $"below your heaviest fight (~{heaviest:P0})"
+						: $"{otherName} would leave a final healer at ~{other.End.Healer:P0}, under two of its losses a use");
+				}
+				else if (end.Items && !other.End.Items)
+				{
+					reasons.Add($"both ways are safe up to {StopName(end.Stop)}; {otherName}"
+						+ (other.End.Rested ? " and its campsite" : string.Empty)
+						+ $" would leave you {other.End.Player - end.Player:+0%;-0%;+0%} and the final healers "
+						+ $"{other.End.Healer - end.Healer:+0%;-0%;+0%} there, this one brings items");
+				}
+				else
+				{
+					reasons.Add($"both ways are safe; this one leaves you {end.Player - other.End.Player:+0%;-0%;+0%} and the final healers "
+						+ $"{end.Healer - other.End.Healer:+0%;-0%;+0%} against {otherName} at {StopName(end.Stop)}");
+				}
+			}
+
+			return $"Take the {name} way: {string.Join("; ", reasons)}.";
+		}
+
+		// The side of a way as the board is drawn, seen from the start towards the final fight: the sign of the turn from the
+		// board's direction to the step onto the way (the grid's rows grow south, so they are turned round). Empty when the map
+		// draws none of the spaces.
+		(float Turn, string Side) SideOf(int next)
+		{
+			int first = -1, last = -1;
+			for (var i = 0; i < map.Nodes.Length; i++)
+			{
+				if (map.Nodes[i].Kind == Space.Start)
+				{
+					first = i;
+				}
+				else if (map.Nodes[i].Kind == Space.Boss)
+				{
+					last = i;
+				}
+			}
+
+			if (first < 0 || last < 0 || !Drawn(first) || !Drawn(last) || !Drawn(at) || !Drawn(next))
+			{
+				return (0f, string.Empty);
+			}
+
+			float forwardX = map.Cells[last].X - map.Cells[first].X, forwardY = map.Cells[first].Y - map.Cells[last].Y;
+			float stepX = map.Cells[next].X - map.Cells[at].X, stepY = map.Cells[at].Y - map.Cells[next].Y;
+			var turn = (forwardX * stepY) - (forwardY * stepX);
+			return (turn, turn > 0f ? "Left" : turn < 0f ? "Right" : "Straight on");
+		}
+
+		bool Drawn(int index) => index < map.Cells.Length && map.Cells[index].X >= 0 && map.Cells[index].Y >= 0;
+
+		// The spaces of a way up to where the ways meet again.
+		string Fields(int next)
+		{
+			var parts = new List<string>();
+			var index = next;
+			while (index >= 0 && index != merge && parts.Count < map.Nodes.Length)
+			{
+				parts.Add(FieldName(map.Nodes[index]));
+				if (map.Next[index].Count != 1)
+				{
+					if (map.Next[index].Count > 1)
+					{
+						parts.Add("a fork");
+					}
+
+					break;
+				}
+
+				index = map.Next[index][0];
+			}
+
+			return string.Join(", then ", parts);
+		}
+
+		HashSet<int> Reachable(int from)
+		{
+			var seen = new HashSet<int>();
+			var queue = new Queue<int>();
+			queue.Enqueue(from);
+			while (queue.Count > 0)
+			{
+				var index = queue.Dequeue();
+				if (index < 0 || index >= map.Nodes.Length || !seen.Add(index))
+				{
+					continue;
+				}
+
+				foreach (var next in map.Next[index])
+				{
+					queue.Enqueue(next);
+				}
+			}
+
+			return seen;
+		}
+
+		string StopName(int stop) => stop < 0
+			? "the end of the board"
+			: map.Nodes[stop].Kind == Space.Boss ? "the final fight" : $"the campsite at move {map.Nodes[stop].Move}";
+
+		// A way from a space: through it and on, to the next campsite after the ways meet or the final fight; at a fork the
+		// better way, a random space at worst.
+		RouteState Walk(int index, RouteState state, bool merged, int depth)
 		{
 			var node = map.Nodes[index];
-			if (depth > map.Nodes.Length)
+			merged |= index == merge;
+			if (depth > map.Nodes.Length || node.Kind == Space.Boss || (merged && node.Kind == Space.Campsite))
 			{
-				return state;
+				return state with { Stop = index };
 			}
 
 			if (node.Kind == Space.Random && node.Options.Count > 0)
@@ -186,7 +351,7 @@ public partial class BeastmasterRotation
 				RouteState? worst = null;
 				foreach (var (kind, _) in node.Options)
 				{
-					var end = Continue(index, Apply(kind, index, state with { Items = true }), kind, depth);
+					var end = Continue(index, Apply(kind, index, state with { Items = true }), merged, depth);
 					if (worst is not { } w || Better(w, end))
 					{
 						worst = end;
@@ -196,27 +361,27 @@ public partial class BeastmasterRotation
 				return worst ?? state;
 			}
 
-			return Continue(index, Apply(node.Kind, index, state), node.Kind, depth);
+			return Continue(index, Apply(node.Kind, index, state), merged, depth);
 		}
 
-		RouteState Continue(int index, RouteState state, Space kind, int depth)
+		RouteState Continue(int index, RouteState state, bool merged, int depth)
 		{
-			if (kind is Space.Enemy or Space.Elite or Space.Boss || map.Next[index].Count == 0)
+			if (map.Next[index].Count == 0)
 			{
-				return state;
+				return state with { Stop = -1 };
 			}
 
-			RouteState? best = null;
+			RouteState? bestEnd = null;
 			foreach (var next in map.Next[index])
 			{
-				var end = Walk(next, state, depth + 1);
-				if (best is not { } b || Better(end, b))
+				var end = Walk(next, state, merged, depth + 1);
+				if (bestEnd is not { } b || Better(end, b))
 				{
-					best = end;
+					bestEnd = end;
 				}
 			}
 
-			return best ?? state;
+			return bestEnd ?? state;
 		}
 
 		RouteState Apply(Space kind, int index, RouteState state)
@@ -248,6 +413,7 @@ public partial class BeastmasterRotation
 					{
 						Player = Math.Min(1f, state.Player + each),
 						Healer = resting > 0 ? Math.Min(1f, state.Healer + each) : state.Healer,
+						Rested = true,
 					};
 				case Space.Shop or Space.Treasure:
 					return state with { Items = true };
@@ -267,13 +433,25 @@ public partial class BeastmasterRotation
 		}
 	}
 
-	private static string Describe(CrucibleRoute.Node node)
+	private static void ClearRouteHint()
+	{
+		CrucibleRouteHint = [];
+		CrucibleRouteWhy = string.Empty;
+		CrucibleRouteBasis = string.Empty;
+	}
+
+	private static string FieldName(CrucibleRoute.Node node)
 	{
 		return node.Kind switch
 		{
-			Space.Enemy or Space.Elite or Space.Boss => $"{node.Kind} (battle {node.Battle}) at move {node.Move}",
-			Space.Random => $"Random at move {node.Move} ({string.Join(" or ", node.Options.ConvertAll(static o => o.Kind.ToString()))})",
-			_ => $"{node.Kind} at move {node.Move}",
+			Space.Enemy => "fight",
+			Space.Elite => "elite fight",
+			Space.Boss => "final fight",
+			Space.Shop => "shop",
+			Space.Campsite => "campsite",
+			Space.Treasure => "treasure",
+			Space.Random => $"random ({string.Join(" or ", node.Options.ConvertAll(static o => o.Kind.ToString().ToLowerInvariant()))})",
+			_ => node.Kind.ToString().ToLowerInvariant(),
 		};
 	}
 

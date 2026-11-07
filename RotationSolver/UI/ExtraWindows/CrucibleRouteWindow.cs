@@ -32,6 +32,7 @@ internal class CrucibleRouteWindow : RecommendationWindow
 				Note(option.Outcome);
 			}
 
+			Note(BeastmasterRotation.CrucibleRouteWhy);
 			Note(BeastmasterRotation.CrucibleRouteBasis);
 		}
 	}

@@ -399,6 +399,38 @@ def team_content(picks, status="Team set: 3 familiars. Confirm it on the screen.
     return content
 
 
+# ---- the treasure window (A656): every offer with its verdict, the recommended one first; names in the client's language
+OFFERS = [
+    ("Bestien-Pulver III", "take", "used once, heals ~40 % to you and the allies near you"),
+    ("Mystische Schuhe", "offer 2", "lasts the whole board, ~6 % in all: prevents ~1 % of your HP in the 3 fights left; "
+                                    "+15 % on the 36 % of your healing items: ~5 %; not counted: Movement Speed"),
+    ("Ninja-Augenklappe", "offer 1", "lasts the whole board, ~0 % in all: adds nothing against the damage your fights "
+                                     "dealt; not counted: Haste, Critical Hit Rate"),
+    ("Flammenschild", "offer 4", "lasts the whole board, ~0 % in all: adds nothing against the damage your fights dealt; "
+                                 "not counted: Block Strength, absorbing damage as HP"),
+]
+
+
+def treasure_content(offers):
+    def content(w):
+        with w.section("Take", "each offer, what it brings you over the rest of the board"):
+            for name, chip, verdict in offers:
+                w.line(name, chip)
+                w.note(verdict)
+        w.action("Take")
+        w.note("")
+    return content
+
+
+def scenario_treasure(failures):
+    print("treasure window with four offers and their verdicts")
+    ctx = Context()
+    window = Recommendation("treasure", treasure_content(OFFERS))
+    ctx.frames([window], 8)
+    m = checks_open(window, ctx, failures, "opens at")
+    check("height is the content's", abs(m["height"] - m["need"]) <= 1.0, "", failures)
+
+
 # ---- ReadableText and the tooltip (ImguiTooltips.ShowTooltip)
 def readable_column(text, measure=LINE_MEASURE, single=LONGEST_SINGLE_LINE):
     """ReadableText.Column: per paragraph its whole width up to `single` characters, else `measure` of them."""
@@ -668,6 +700,7 @@ def main():
     scenario_resize(failures)
     scenario_scale_and_screen(failures)
     scenario_tooltip(failures)
+    scenario_treasure(failures)
     caught = self_test()
     if args.png:
         out = Path(args.png)

@@ -1422,6 +1422,11 @@ allgemeinen Regeln, nicht die Vorgaben einer Bibliothek:
   Inhalt oder die Breite, folgt die Höhe. Zieht er es kürzer, bleibt es so und rollt, bis er es wieder bis zum Inhalt
   aufzieht; höher als der Inhalt geht nicht, dort stünde nichts. Grundlage: Windows UX Guide („Size controls to eliminate
   unnecessary scrolling"; „If the first thing users do is resize a window […], its size is wrong").
+- *Grund und Wiedererkennen.* Jede Empfehlung nennt im Fenster ihren Grund gegen die Alternativen – was die andere Wahl
+  gebracht hätte, in derselben Einheit –, die Dinge mit den Namen, die das Spiel zeigt (Sprache des Clients), und das,
+  woran man die Wahl im Spiel findet (Richtung auf dem Brett, Name im Fenster des Spiels) statt einer inneren Nummer
+  wie „offer 2" (seine Vorgaben vom 07.11.2026: „solche empfehlungen gehören auch ingame rein", „der grund der auswahl
+  sollte im tooltip drin stehen"; A656). Grundlage: ISO 9241-110, Selbstbeschreibungsfähigkeit.
 - *Tooltips.* Ihr Text bricht nach derselben Regel um – bis 75 Zeichen eine Zeile, sonst bei 65, je Absatz in Zeichen
   des Textes selbst –, an einer Stelle, die aus dem Text kommt und nicht vom Fensterrand; der Tooltip wächst mit seinem
   Inhalt wie bisher. Vorher stand jede Optionsbeschreibung ungebrochen in einem Fenster von höchstens 1200 px: 30
