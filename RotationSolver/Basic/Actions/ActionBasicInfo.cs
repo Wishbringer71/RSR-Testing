@@ -552,7 +552,10 @@ public readonly struct ActionBasicInfo
 			// BossMod must move the player before a longer cast could end; its own rotation skips such casts too (A649).
 			|| ExceedsBossModCastLimit(CastTime, Name)
 			// Under the movement lock RSR casts while the player walks and holds the player - not on a walk out of danger (A651).
-			|| (!DataCenter.NoPoslock && DataCenter.IsMoving && MovementLock.SpotInDanger(CastTime)))
+			|| (!DataCenter.NoPoslock && DataCenter.IsMoving && MovementLock.SpotInDanger(CastTime))
+			// A hit a step certainly avoids lands before the spell would end: the step breaks it, or the player stands in the
+			// hit (A652).
+			|| MovementLock.CertainDodgeableWithin(CastTime) is not null)
 		{
 			return true;
 		}
@@ -600,7 +603,8 @@ public readonly struct ActionBasicInfo
 	/// <summary>
 	/// Whether no spell of the current rotation can start now for a reason that depends on its cast time: the shortest cast
 	/// the job has now is longer than BossMod's cast limit, would still be under way when a status that damages every
-	/// action lands (A439), or the player walks under the movement lock while danger reaches the spot before it ends (A651).
+	/// action lands (A439), the player walks under the movement lock while danger reaches the spot before it ends (A651), or
+	/// a hit a step certainly avoids lands before it ends (A652).
 	/// Then no cast can start, as with <see cref="CastStartBlockedNow"/>, and a caster's instant GCD is due (concept 03,
 	/// "C6", A650).
 	/// </summary>
@@ -609,7 +613,8 @@ public readonly struct ActionBasicInfo
 		var limited = DataCenter.BMRMaxCastTime < float.MaxValue && !DataCenter.BMRMoveRequested;
 		var landing = !DataCenter.IsPvP && ActionPenaltyWatch.LandsOnPlayerIn() < float.MaxValue;
 		var walkingLocked = !DataCenter.NoPoslock && DataCenter.IsMoving;
-		if (!limited && !landing && !walkingLocked)
+		var certainHit = MovementLock.CertainDodgeableWithin(float.MaxValue);
+		if (!limited && !landing && !walkingLocked && certainHit is null)
 		{
 			return false;
 		}
@@ -617,7 +622,7 @@ public readonly struct ActionBasicInfo
 		var shortest = ShortestCastNow();
 		return shortest < float.MaxValue
 			&& ((limited && BossModCastLimitRefuses(shortest)) || (landing && ActionPenaltyWatch.WouldMeetLanding(shortest))
-				|| (walkingLocked && MovementLock.SpotInDanger(shortest)));
+				|| (walkingLocked && MovementLock.SpotInDanger(shortest)) || (certainHit is { } hit && shortest >= hit.LandsIn));
 	}
 
 	// The game frame ShortestCastNow last answered for, and its answer: CastStartBlocked is read several times a frame.

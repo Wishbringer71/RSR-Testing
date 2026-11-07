@@ -64,14 +64,22 @@ What this release changes in the fight. For the whole distance from upstream, se
   in danger before the spell ends: BossMod forbids it, or RSR sees a hit only a step avoids. Before a spell the
   same, and while you walk out of danger RSR starts no spell that would stop you there. Before, the lock held you -
   and BossMod's AI - in the area to the end of the cast bar.
-- **Every channel that ends on moving is held, against BossMod's walking for position only.** Beside Passage of
-  Arms, Flamethrower and Improvisation the lock now knows Collective Unconscious, Meditate, and the Blue Mage's
-  Phantom Flurry, Apokalypsis and Chelonian Gate; all are ticked by default except Meditate, which fills downtime
-  you walk in. A channel lets go when danger lands on your spot before it ends (with BossMod's AI walking, its walk
-  to the destination counted in); Passage of Arms holds on against the AI while its Arms Up covers a party member
-  about to die before an announced party hit and you are not about to die. RSR does not start one of these
-  channels on a spot BossMod forbids, with or without the lock. Each release, and each hold while BossMod wanted
-  to move you, writes a line to `DefenseTrace.log`.
+- **Every channel that ends on moving is held against BossMod's walking for position, until walking is needed.** Beside
+  Passage of Arms, Flamethrower and Improvisation the lock now knows Collective Unconscious, Meditate, and the Blue
+  Mage's Phantom Flurry, Apokalypsis and Chelonian Gate, all ticked by default. With BossMod's movement module the
+  channel runs as long as BossMod's own leeway on its path lasts - the limit up to which BossMod lets its own spell
+  finish; with the classic AI it lets go when a zone on your spot, read from BossMod's zone list, or a hit RSR sees
+  lands before the channel ends. Without the AI it lets go at any danger. Passage of Arms holds on against the AI only
+  while its Arms Up covers a party member about to die before an announced party hit, you are not about to die, and
+  neither Divine Veil nor Reprisal is ready - with one of them you leave and RSR uses it for the hit. Meditate holds
+  only against the AI, only while BossMod's timeline shows the pause outlasting the walk, and never against your own
+  movement. RSR does not start one of these channels where its first step would end it: on a spot BossMod forbids,
+  before a cast that certainly reaches you, or while BossMod's AI walks once the game's lock has been seen not to stop
+  it. Each release, and each hold while BossMod wanted to move you, writes a line to `DefenseTrace.log`.
+- **No spell that a hit you must step out of would break.** When an enemy cast certainly reaches you - a circle or a
+  line, not aimed at you, and leaving a party member outside - and lands before a spell would end, RSR does not start
+  that spell; an instant goes instead, and when no spell fits, the caster's instant paths take over. A cast that
+  reaches the whole party is a raidwide and holds nothing back.
 
 ## When the pack is about to fall
 

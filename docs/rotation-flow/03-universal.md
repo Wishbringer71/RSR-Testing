@@ -1407,37 +1407,64 @@ Inhalt an wie bisher.
 
 ## Bewegungssperre beim Wirken und die KI von BossMod
 
-**Geltender Stand** (A649–A651): „Lock movement while casting" (ab Werk aus) hält die Figur, damit Bewegung keinen Zauber
+**Geltender Stand** (A649–A652): „Lock movement while casting" (ab Werk aus) hält die Figur, damit Bewegung keinen Zauber
 und keinen Kanal bricht – aber nie dort, wo Bewegung schützt. Text: „Stops your character from moving while casting,
 until the spell can no longer be interrupted, and while using the actions ticked below. It never holds you in danger:
 BossMod's AI and you can still move out. A ticked party mitigation holds against BossMod's AI only while it covers a
-party member in danger before an announced hit." (Eine Gruppenminderung, die mit ihrem Kanal endet, trägt in seinen
-Jobs nur Waffengang.) Die Entscheidung fällt je Bild in `MovementLock`
+party member in danger before an announced hit." Die Entscheidung fällt je Bild in `MovementLock`
 (`MovingUpdater.UpdateCanMove` liest sie); lösen kann der Spieler weiter mit Modifikatortaste, R1 oder beiden Maustasten
 (`DataCenter.NoPoslock`).
 - *Zauber:* Die Sperre hält, bis das Spiel die Antwort auf den Zauber hat (`CastInfo.ResponseSourceSequence` gleich
   `SourceSequence`, Beginn des Gleitfensters), und hält nicht, solange BossMod dich bewegt (`Movement.IsMoving`) oder dein
-  Ort in Gefahr ist: BossMod verbietet ihn (`Hints.IsPositionSafe`), oder RSR sieht einen Treffer, dem nur ein Schritt
-  entgeht, vor dem Ende des Zaubers (`RaiseProtection.FirstDodgeableWithin`). Vor einem Zauber ebenso; gehst du dann in
-  der Gefahr, beginnt RSR keinen Zauber (`ActionBasicInfo.CastStartBlockedNow`, `NeedsCasting`), stehst du, wirkt RSR.
-- *Kanäle* (angehakt; Waffengang, Numinosum, Tanzimprovisation, Flammenwerfer, Phantom Flurry, Apokalypsis, Chelonian
-  Gate ab Werk an, Meditieren aus): Die Sperre hält gegen das Nachrücken der KI; eine weitere Aktion beendet den Kanal
-  weiter – ob RSR sie zurückhält, regeln die Aktionssperren je Job (Konzept 14, „Wo Angriff die Abwehr beendet"). Sie gibt frei, wenn du in Gefahr selbst
-  gehen willst (`Movement.IsMoveRequested`); ohne gehende KI bei jeder Gefahr; mit gehender KI (`AI.IsNavigating`), wenn
-  der Treffer vor dem Ende des Kanals plus dem Weg zum Ziel der KI landet (BossMods verbotener Ort und früheste Fläche,
-  `Hints.ForbiddenZonesNextActivation`, `AI.NaviTargetPos`, `AI.PlayerSpeed`; oder RSRs eigene Erkennung) – außer der
-  Kanal hält eine Gruppenminderung, die mit ihm endet, und sie deckt gerade ein anderes Mitglied, das in der kritischen
-  Klasse steht (Arms Up von deinem Waffengang), ein Gruppentreffer steht aus (`DataCenter.AreaHitPending`) und du selbst
-  stehst nicht in ihr. Dann hält er gegen die KI. Numinosum und Tanzimprovisation halten so nicht: Die Minderung des
-  Numinosums (Status 849, 10 s) vergibt das Wirken einmal, sie bleibt nach dem Abbruch (Wirktext, Schluss aus dem
-  Textaufbau); der Kanal erneuert nur das Regen im Ring, wie der Tanz nur sein Regen. Ein Regen bewahrt niemanden vor
-  einem angekündigten Treffer – dafür bliebe der Heiler oder Tänzer in der Fläche.
-- *Kanalbeginn:* Einen Kanal aus dieser Liste beginnt RSR nicht, solange BossMod deinen Ort verbietet – die KI oder du
-  gehst dort ohnehin, und der Kanal endete beim ersten Schritt (`MovementLock.ChannelStartBarred`), mit und ohne Sperre.
+  Ort in Gefahr ist: BossMod legt eine Fläche darauf, oder RSR sieht einen Treffer, dem nur ein Schritt entgeht, vor dem
+  Ende des Zaubers (`RaiseProtection.FirstDodgeableWithin`). Vor einem Zauber ebenso; gehst du dann in der Gefahr,
+  beginnt RSR keinen Zauber (`ActionBasicInfo.CastStartBlockedNow`, `NeedsCasting`), stehst du, wirkt RSR.
+- *Kanäle* (alle acht angehakt ab Werk; Waffengang, Numinosum, Tanzimprovisation, Flammenwerfer, Meditieren, Phantom
+  Flurry, Apokalypsis, Chelonian Gate): Die Sperre hält gegen das Nachrücken der KI. Eine weitere Aktion beendet den Kanal
+  weiter; ob RSR sie zurückhält, regeln die Aktionssperren je Job (Konzept 14, „Wo Angriff die Abwehr beendet"), und damit
+  auch, wie lange ein Kanal läuft, der nichts mehr trägt. Freigabe:
+  - *Du gehst in Gefahr* (`Movement.IsMoveRequested`): sofort.
+  - *Ohne gehende KI* bei jeder Gefahr bis zum Ende des Kanals: Dann geht nur, wer mit der Hand geht, die Freigabe kostet
+    nichts.
+  - *Mit gehender KI* (`AI.IsNavigating`) erst, wenn Gehen nötig wird, denn die KI kennt den Kanal nicht und geht sofort.
+    Mit BossMods Bewegungsmodul sagt dessen Spielraum auf dem eigenen Weg, wie lange du noch stehen kannst
+    (BossModReborn `Hints.MaxCastTime` = `LeewaySeconds` des Wegs, `NormalMovement`): Die Sperre hält, solange er über null liegt –
+    dieselbe Grenze, bis zu der BossMod selbst einen Zauber zu Ende wirken lässt. Die klassische KI meldet keinen
+    Spielraum (Grenze unbegrenzt); dann gibt die Sperre frei, sobald eine Fläche an deinem Ort vor dem Ende seines Zwecks
+    plus dem Weg zum Ziel der KI aktiv wird (`AI.NaviTargetPos`, `AI.PlayerSpeed`), oder ein Treffer aus RSRs Erkennung.
+    Der Zweck eines Gruppenschutzes wie Waffengang endet mit dem angekündigten Gruppentreffer (BossMods Raidwide oder
+    ein gelisteter Flächenzauber im Wirken), der eines anderen Kanals mit seiner Restzeit.
+    Die Aktivierung je Ort liest RSR aus BossMods Flächenliste (`AIHints.ForbiddenZones`: Form und Aktivierung je
+    Fläche, über `DalamudReflector`), sonst gilt die früheste Fläche überhaupt (`Hints.ForbiddenZonesNextActivation`).
+  - *Waffengang hält in Gefahr*, solange sein Arms Up ein anderes Mitglied in der kritischen Klasse deckt, ein
+    Gruppentreffer aussteht (`DataCenter.AreaHitPending`), du selbst nicht in ihr stehst und weder Heiliger Quell noch
+    Reflexion bereit ist – mit einer von beiden geht der Paladin, und RSRs Flächenabwehr setzt sie für den Treffer
+    (Konzept 09, Regel 9). Die Gruppe verliert dann keine Minderung, und der Tank steht nicht in der Fläche. Numinosum
+    und Tanzimprovisation halten so nicht: Die Minderung des Numinosums (Status 849, 10 s) vergibt das Wirken einmal und
+    sie bleibt nach dem Abbruch (Wirktext, Schluss aus dem Textaufbau); der Kanal erneuert nur das Regen im Ring, der
+    Tanz nur sein Regen. Was das Regen nach dem Gang nicht mehr heilt, heilt RSRs Heilung nach den LP – gehen kostet
+    dort nichts, was nicht ersetzt wird.
+  - *Meditieren* hält nur gegen die KI und nur, solange BossMods Zeitleiste die Pause länger anzeigt als den Weg zum
+    Ziel der KI (`Timeline.NextDowntimeEndIn`): RSR wirkt es nur in einer Pause ohne Gegner in Reichweite
+    (`InCombatPause`), und das Kenki ist dann gewonnen, ohne dass der Samurai zu spät kommt. Ohne bekanntes Pausenende,
+    mit deiner Taste und ohne KI hält es nicht – in einer Pause gehst du dorthin, wo der Kampf weitergeht.
+- *Kanalbeginn:* Einen Kanal aus dieser Liste beginnt RSR nicht, wenn ihn ein Schritt beendete, bevor er etwas trägt
+  (`MovementLock.ChannelStartBarred`), mit und ohne Sperre: Eine Fläche von BossMod an deinem Ort oder ein Zauber, der
+  dich sicher erreicht, landet innerhalb seines Zwecks – Waffengang bis zum Gruppentreffer, für den er gewirkt wird,
+  sonst seine Dauer (`DefensiveValues.DurationByActionId`) –, oder BossMods KI geht und muss sofort weiter (Spielraum
+  null) oder wird von der Sperre des Spiels nachweislich nicht angehalten (in der Sitzung gemessen: die Figur ging,
+  während die Sperre hielt und BossMod gehen wollte). Sicher erreicht heißt: ein Kreis oder eine Linie, nicht auf dich
+  gezielt, die dich erreicht und ein lebendes Mitglied auslässt – dem entgeht ein Schritt; ein Zauber, der alle erreicht,
+  ist ein Raidwide, und vor ihm beginnt Waffengang gerade. Waffengang für einen Raidwide in 3 s beginnt also auch, wenn
+  unter dem Paladin eine Fläche in 8 s folgt. Numinosum beginnt immer: Seine Minderung bleibt nach dem Abbruch.
 - *Zauberbeginn:* Keinen Zauber über BossMods Wurfzeitgrenze (A649); passt kein Zauber des Jobs, gilt „kein Zauber
   startbar" für C6 (A650).
+- *BossMod ohne diese Schnittstellen* gibt es im Spiel nicht: Ältere Fassungen laufen nach Dalamud-Änderungen und
+  Spielpatches nicht mehr (sein Hinweis, 07.11.2026). Die jüngste der gelesenen Funktionen kam mit BossmodReborn f4764f0
+  (21.07.2026); Dalamud zog danach Lumina 7.7.0 für einen Spielpatch nach (09505638, 22.09.2026). Den Standardwert, den
+  eine fehlende Funktion unter `SafeWrapper.AnyException` liefert (Grenze 0 s, „kein Ort sicher"), sieht RSR deshalb nicht.
 - *Spurzeilen:* je Freigabe eine (Grund, Aktion, Restzeit, Ort sicher), und je Episode eine, ob die Figur ging, während die
-  Sperre hielt und BossMod gehen wollte – das misst, ob die Sperre des Spiels BossMod überhaupt anhält.
+  Sperre hielt und BossMod gehen wollte – zugleich die Messung, nach der sich der Kanalbeginn richtet.
 
 Einen laufenden Zauber bricht BossMod selbst nur bei Blick- und Pyretisch-Mechaniken ab (`ForceCancelCastMechanic`,
 `Plugin.cs` mit `CancelCastTweak`); der zweite Abbruchweg in `CancelCastUpdater` hängt an „Use BossModReborn's timeline
@@ -1503,46 +1530,69 @@ auf unsicherem Boden.
 - *Eine Freigabe im Zauber kostet nichts, solange niemand geht.* Die KI wartet im Zauber, solange ihr Spielraum reicht; der
   Spieler geht nur mit seiner Hand. Deshalb gibt die Sperre im Zauber bei jedem Gefahrenzeichen frei, auch bei unsicheren
   (ein Ort, den BossMod vorsichtig verbietet; ein Treffer, den RSRs Erkennung für ausweichbar hält), und gibt das
-  Gleitfenster frei, in dem nichts den Zauber mehr bricht. Ein Zauberbeginn dagegen wird nur nach sicheren Zeichen
-  gesperrt: Gehen in Gefahr, BossMods Wurfzeitgrenze. Ein ungelernter Raidwide, den RSRs Erkennung für ausweichbar hält,
-  sperrte sonst eine harte Heilung genau vor dem Raidwide.
+  Gleitfenster frei, in dem nichts den Zauber mehr bricht.
+- *Ein Zauberbeginn wird nur nach sicheren Zeichen gesperrt:* Gehen in Gefahr, BossMods Wurfzeitgrenze, und ein Zauber aus
+  RSRs Erkennung, der dich erreicht, ein lebendes Mitglied auslässt und vor dem Ende des eigenen Zaubers landet
+  (`MovementLock.CertainDodgeableWithin`): Dort müsstest du im Zauber gehen oder den Treffer nehmen; RSR wirkt stattdessen
+  sofort, und passt kein Zauber mehr, greifen die Sofortwege aus C6. Ein Zauber, der alle erreicht, sperrt nicht – so
+  sperrt ein ungelernter Raidwide keine harte Heilung genau vor sich, der Grund, aus dem RSRs Erkennung hier zuerst
+  verworfen war (P-RSR). Allein, ohne ein Mitglied zum Vergleich, bleibt es bei BossMods Zeichen.
 - *Geht BossMod mitten im Zauber, gibt die Sperre nach.* BossMod geht dort nur, wenn sein Ziel sonst unerreichbar wird
   (`mustMoveNow`); es kennt Weg, Spielraum und Ziel, RSR nicht. Nach dem Abbruch hält BossMod neue Zauber zurück, bis die
   Figur steht (`CastSettleHold`), RSR wirkt bis dahin nicht (`BMRIsMoving`) – keine Schleife.
-- *Im Kanal kostet eine Freigabe den Kanal,* weil die KI ihn nicht kennt und sofort geht. Deshalb dort die zeitliche
-  Bedingung, und ohne gehende KI die freie Freigabe wie im Zauber.
+- *Im Kanal kostet eine Freigabe den Kanal,* weil die KI ihn nicht kennt und sofort geht. Deshalb hält die Sperre dort, bis
+  Gehen nötig wird: mit BossMods Spielraum auf dem eigenen Weg genau so lange wie BossMod einen Zauber, ohne ihn bis zur
+  Fläche an deinem Ort, gerechnet mit Restzeit und Weg. Ohne gehende KI gibt sie frei wie im Zauber.
 - *Schutzkanal gegen Tank:* Bleibt der Tank in der Fläche, nimmt er den Treffer; geht er, verliert die Gruppe die Minderung.
-  Die Regel „Sicherheit der Gruppe geht vor, gewichtet mit der Wahrscheinlichkeit" entscheidet das zur Laufzeit: Halten
-  nur, wo die Minderung ein Leben schützt (ein gedecktes Mitglied in der kritischen Klasse, Gruppentreffer angekündigt)
-  und der Tank nicht selbst in Not ist; sonst ausweichen, und RSRs Flächenabwehr sucht für den Treffer die nächste
-  Minderung (Konzept 09, Regel 9). Beispiel: Paladin mit Waffengang für einen Raidwide in 4 s, eine Fläche unter ihm in
-  2 s. Steht hinter ihm ein Heiler mit 25 % LP und Arms Up, bleibt er; steht niemand gefährdet im Kegel, geht er.
-- *Meditieren ab Werk aus:* Es füllt Leerlauf, in dem der Samurai zum nächsten Ziel geht; die Sperre hielte ihn bis zu
-  15 s fest. Die übrigen Kanäle ab Werk an: Wer einen Kanal laufen lässt, will dort stehen, denn ein Schritt beendet ihn;
-  die Sperre nimmt nur der KI das Nachrücken, gibt bei Gefahr frei und bei der Löse-Taste. Hält RSR keine weitere Aktion
-  zurück, endet der Kanal mit ihr, und die Sperre mit ihm – kein Preis, nur weniger Nutzen.
+  Die Lösung nimmt beides mit: Hat der Paladin eine andere Gruppenminderung bereit (Heiliger Quell, Reflexion), geht er,
+  und RSRs Flächenabwehr setzt sie für denselben Treffer. Nur ohne Ersatz entscheidet seine Regel „Sicherheit der Gruppe
+  geht vor, gewichtet mit der Wahrscheinlichkeit" zur Laufzeit: Halten nur, wo die Minderung ein Leben schützt (ein
+  gedecktes Mitglied in der kritischen Klasse, Gruppentreffer angekündigt) und der Tank nicht selbst in Not ist.
+  Beispiel: Paladin mit Waffengang für einen Raidwide in 4 s, eine Fläche unter ihm in 2 s, hinter ihm ein Heiler mit 25 %
+  LP und Arms Up. Ist Heiliger Quell bereit, geht er, und der Schild liegt vor dem Raidwide auf dem Heiler; sind beide
+  verbraucht, bleibt er, nimmt die Fläche und der Heiler überlebt den Raidwide. Steht niemand gefährdet im Kegel, geht er.
+- *Heilkanäle in Gefahr:* Numinosum und Tanzimprovisation tragen nach dem Wirken nur noch ein Regen. Geht der Heiler oder
+  Tänzer, heilt RSR das Fehlende nach den LP; bleibt er, nimmt er die Fläche für ein Regen. Gehen verliert nichts, was
+  nicht ersetzt wird.
+- *Meditieren:* Es füllt eine Pause, in der der Samurai zum nächsten Ziel geht. Die Sperre hält es deshalb nur dort, wo
+  bekannt ist, dass beides geht – BossMods Zeitleiste zeigt die Pause länger als den Weg –, und nie gegen die Hand des
+  Spielers. So ist das Kenki gewonnen, ohne dass der Samurai zu spät kommt, und das Häkchen steht ab Werk an.
+- *Die übrigen Kanäle ab Werk an:* Wer einen Kanal laufen lässt, will dort stehen, denn ein Schritt beendet ihn; die Sperre
+  nimmt der KI das Nachrücken, gibt bei Gefahr frei und bei der Löse-Taste. Hält RSR keine weitere Aktion zurück, endet der
+  Kanal mit ihr und die Sperre mit ihm.
+- *Was die Option selbst bleibt:* „Lock movement while casting" an heißt auch, dass RSR einen Spieler, der mit der Hand
+  geht, für einen Zauber anhält. Ob er das will, ist seine Spielweise: Sein absichtlicher Schritt und der Schritt, den die
+  Sperre verhindern soll, sind dieselbe Eingabe, keine Konstruktion trennt sie. Deshalb bleibt sie eine Option, ab Werk
+  aus wie bei Upstream; alles, was sie tut, ist ohne Preis an der Sicherheit.
 
 **Verworfen:**
 - *A, so lassen:* Fälle 1 und 2 treffen; ohne KI steht der Spieler in der Fläche fest.
 - *B, die ganze Sperre weicht der KI* (A595): opferte jeden Kanal dem Nachrücken (C169).
 - *P-Ort, Zauberbeginn nach BossMods Flächen* (Daedalus `MechanicCastGate`): rechnet mit der frühesten Fläche überhaupt und
   sperrt vor jedem Raidwide.
-- *P-RSR, Zauberbeginn nach RSRs Erkennung:* sperrte harte Heilung vor einem ungelernten Raidwide.
 - *Daedalus' Freigabe* (Fläche oder Schaden irgendwo im Fenster Restwirkzeit + 1,5 s): gröber als BossMods eigene
   Entscheidung.
 - *V, der Wert eines Zaubers gegen den Treffer:* BossMods Flächen tragen keinen Schaden, und ein gelernter Schaden sagt
   nichts über Verwundbarkeit und andere Folgen.
+- *Mit der klassischen KI bis zur Fläche minus Weg halten:* Der Weg ist dort nur die Gerade zum Ziel; BossMods echter Weg
+  um andere Flächen ist länger, und ein zu kurz geschätzter Weg ließe die Figur in der Fläche. Mit dem Bewegungsmodul
+  rechnet BossMod den echten Weg selbst – dort hält die Sperre genau so lange.
+- *Die KI über BossModReborns Pause anhalten* (`AI.PauseMovement`, Konfiguration `ForbidMovement`): Die Pause wird gespeichert
+  und hält auch das Ausweichen an – so starb Daedalus' Heiler; BossModReborns vorübergehende Fassung (`Configuration.SetTransient`)
+  hebt beim Zurücksetzen auch fremde Überschreibungen auf. RSR misst stattdessen, ob die Sperre des Spiels die KI anhält,
+  und beginnt sonst keinen Kanal, den die KI sofort bräche.
 - *Eigene Häkchen für Fixed Sign und Banner of Solemn Clarity:* Eureka und Bozja liegen nicht in seinem Profil (erfasst).
 
 **Gegenthesen:**
 - *1 – kein Defekt:* Hält die Sperre BossMods Gehen gar nicht an, ändert die Freigabe für die KI nichts; Gleitfenster und
-  Gefahr helfen dem Spieler ohne KI trotzdem. Die Spurzeile misst es.
+  Gefahr helfen dem Spieler ohne KI trotzdem. Die Messung erkennt es und hält dann keinen Kanal mehr für die KI offen.
 - *2 – Regel falsch:* (a) „Wer in der Fläche steht, will fertig wirken" – die Freigabe zwingt niemanden zu gehen. (b) „Eine
   fast fertige Wiederbelebung ist mehr wert als der Treffer" – BossMod geht nur, wenn es bis zum Treffer nicht mehr ins
   Gleitfenster reicht; tötet der Treffer den Heiler, ist auch die Wiederbelebung verloren. (c) „Der Tank sollte nie in der
-  Fläche bleiben" – er bleibt nur, wo ein gefährdetes Mitglied ohne die Minderung stürbe und er selbst nicht in Not ist.
-  (d) „Die früheste Fläche ist nicht die unter dir" – dann endet ein Kanal zu früh; die Schnittstelle nennt den Zeitpunkt
-  je Ort nicht, RSRs eigene Erkennung gibt ihn für gegnerische Zauber genau. Grenze der Daten, kein Preis einer Wahl.
+  Fläche bleiben" – er bleibt nur ohne Ersatzminderung und nur, wo ein gefährdetes Mitglied ohne Waffengang stürbe und er
+  selbst nicht in Not ist. (d) „BossMods Spielraum ist zu knapp" – er ist BossMods eigene Grenze für Zauber; die
+  Freigabe fällt im selben Bild, in dem er null wird. (e) „Die Flächenliste ist BossMods Inneres" – fehlt sie oder ändert
+  BossMod sie, gilt die früheste Fläche überhaupt: die Freigabe kommt früher, nie später.
 - *3 – ausgeliefert, und nichts ändert sich:* ohne Option (ab Werk aus) oder ohne Fläche. Die Spurzeilen zeigen, ob und
   wie oft die Regel greift.
 

@@ -4632,6 +4632,39 @@ internal static class DataCenter
 	}
 
 	/// <summary>
+	/// Whether an enemy cast certainly reaches the player and a step avoids it: not aimed at him, of a shape measured exactly
+	/// here (a circle or a line - a cone and a ring count as a full circle in <see cref="AreaCastReaches"/>, and someone
+	/// behind the cone or inside the ring would count as hit), and leaving a living party member other than him outside -
+	/// unlike a raidwide, which reaches everyone. False without such a member to compare (concept 03, "Bewegungssperre beim
+	/// Wirken und die KI von BossMod", A652).
+	/// </summary>
+	internal static bool CastCertainlyDodgeable(IBattleChara h)
+	{
+		var player = Player.Object;
+		if (player == null || h == null || !h.IsValid() || !h.IsCasting || h.CastTargetObjectId == player.GameObjectId
+			|| !TryGetCastAction(h, out var act))
+		{
+			return false;
+		}
+
+		var measured = (CastType)act.CastType is CastType.Circle or CastType.StraightLine || act.CastType == LineFromCasterCastType;
+		if (!measured || !AreaCastReaches(h, act, player))
+		{
+			return false;
+		}
+
+		foreach (var member in PartyMembers)
+		{
+			if (member != null && member.GameObjectId != player.GameObjectId && !member.IsDead && !AreaCastReaches(h, act, member))
+			{
+				return true;
+			}
+		}
+
+		return false;
+	}
+
+	/// <summary>
 	/// Whether a listed area cast reaches <paramref name="member"/>, from the shape the game data gives it.
 	/// </summary>
 	/// <remarks>

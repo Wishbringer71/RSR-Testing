@@ -491,17 +491,17 @@ internal partial class Configs : IPluginConfiguration, IM3Settings
 	private static readonly bool _showInfoOnToast = false;
 
 	[ConditionBool, UI("Lock movement while casting",
-	Description = "Stops your character from moving while casting, until the spell can no longer be interrupted, and while using the actions ticked below. It never holds you in danger: BossMod's AI and you can still move out. A ticked party mitigation holds against BossMod's AI only while it covers a party member in danger before an announced hit.",
+	Description = "Stops your character from moving while casting, until the spell can no longer be interrupted, and while using the actions ticked below. It never holds you in danger: BossMod's AI and you can still move out. A ticked party mitigation holds against BossMod's AI only while it covers a party member in danger before an announced hit and no other party mitigation is ready.",
 	Filter = Extra)]
 	private static readonly bool _poslockCasting = false;
 
-	// The channels that end upon moving (concept 03, "Bewegungssperre beim Wirken und die KI von BossMod", A651): on, as who
-	// lets a channel run means to stand there and the lock yields to danger; Meditate off, as it fills downtime the Samurai
-	// walks in.
+	// The channels that end upon moving (concept 03, "Bewegungssperre beim Wirken und die KI von BossMod", A651, A652): on, as
+	// who lets a channel run means to stand there and the lock yields to danger; Meditate holds only where the pause is
+	// known to outlast the walk.
 	[UI("", Action = ActionID.PassageOfArmsPvE,
 		Description = "Holds you still while Passage of Arms runs, so a step does not end it - another action still does. It lets go when danger reaches your spot before the channel ends - BossMod forbids the spot, or RSR sees a hit only a "
 		+ "step avoids. BossMod's AI walking only for position does not end it. While BossMod's AI walks you out of danger, it still holds as long as the channel "
-		+ "covers a party member in danger of dying before an announced party hit and you are not in danger of dying yourself.\nIn a fight: the party behind you keeps the damage reduction up to the announced hit instead of losing it at BossMod's first positioning step.",
+		+ "covers a party member in danger of dying before an announced party hit, you are not in danger of dying yourself, and neither Divine Veil nor Reprisal is ready - with one of them you leave, and RSR uses it for the hit.\nIn a fight: the party behind you keeps the damage reduction up to the announced hit instead of losing it at BossMod's first positioning step.",
 		Parent = nameof(PoslockCasting))]
 	public bool PosPassageOfArms { get; set; } = true;
 
@@ -524,10 +524,10 @@ internal partial class Configs : IPluginConfiguration, IM3Settings
 	public bool PosCollectiveUnconscious { get; set; } = true;
 
 	[UI("", Action = ActionID.MeditatePvE,
-		Description = "Holds you still while Meditate runs, so a step does not end it - another action still does. It lets go when danger reaches your spot before the channel ends - BossMod forbids the spot, or RSR sees a hit only a "
-		+ "step avoids. BossMod's AI walking only for position does not end it.\nIn a fight: the Kenki Gauge keeps filling in downtime. Off by default: downtime is when you walk to the next position, and the lock would keep you from it.",
+		Description = "Holds you still while Meditate runs, so a step does not end it - but only against BossMod's AI, and only while BossMod's timeline shows the pause lasting longer than the AI's walk to its destination. "
+		+ "Your own movement always ends it, and without the AI it does not hold. It lets go when danger reaches your spot.\nIn a fight: the Kenki Gauge keeps filling through a pause, and the Samurai still arrives when the fight goes on.",
 		Parent = nameof(PoslockCasting))]
-	public bool PosMeditate { get; set; } = false;
+	public bool PosMeditate { get; set; } = true;
 
 	[UI("", Action = ActionID.PhantomFlurryPvE,
 		Description = "Holds you still while Phantom Flurry runs, so a step does not end it - another action still does. It lets go when danger reaches your spot before the channel ends - BossMod forbids the spot, or RSR sees a hit only a "

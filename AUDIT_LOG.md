@@ -19051,6 +19051,44 @@ habe den schleim bislang nicht anfreunden können."
 - *Dokumentation:* Konzept 03 („Bewegungssperre beim Wirken und die KI von BossMod"), 14 (Kanäle), 11, 18, 12
   (Zeilenangabe), TODO (Punkt geschlossen, Blaumagier-Defekt neu), Release-Text, CLAUDE.md; Widerruf C170.
 
+### A652 · Bewegungssperre: fünfter Loop, jede gekappte Entscheidung bis zum Optimum verbessert (07.11.2026)
+
+- *Anlass:* seine Präzisierungen zu A651, alle 07.11.2026: „bei einem optimum ohne entscheidung haben entscheidungen nicht
+  einfach gekappt zu werden. die entscheidungen sind solange nachzuforschen, bis auch dort ein optimum gefunden wurde";
+  „und ich habe nie gesagt, dass gekappt werden soll. das hast du darein interpretiert"; „also ist das optimum zu
+  verbessern und nicht die entscheidung zu kappen". A651 hatte Entscheidungen durch Wahl einer Seite erledigt
+  (Meditieren ab Werk aus, keine Gruppenausnahme für Heilkanäle, „Grenze der Daten" bei der frühesten Fläche, Kanal- und
+  Zauberbeginn nur nach BossMods Zeichen). CLAUDE.md-Punkt mit seinen Worten neu gefasst: Kappen ist keine Verbesserung.
+- *Sein Hinweis:* Ältere BossMod-Fassungen laufen nach Dalamud-Änderungen und Spielpatches nicht mehr. Geprüft: Die
+  gelesenen Endpunkte gibt es seit cb0b588 (27.06.2026) und f4764f0 (21.07.2026), Dalamud zog Lumina 7.7.0 am 22.09.2026
+  nach (09505638). Eine Vorhandenprüfung (`HasFunction`) gegen den Standardwert von `SafeWrapper.AnyException` ist damit
+  unnötig und nicht gebaut.
+- *1 Research:* BossmodReborn 27be422: `Hints.MaxCastTime` ist mit dem Bewegungsmodul der Spielraum des eigenen Wegs
+  (`NormalMovement`, `navi.LeewaySeconds`), mit der klassischen KI unbegrenzt, null bei gedrückter Taste;
+  `Hints.IsPositionSafe` ist die Sprungprüfung (`ActionPredicate.IsDashSafe`, auch `ForbidDashes`, in einem Modul gesetzt);
+  `AIHints.ForbiddenZones` trägt Form und Aktivierung je Fläche (`Plugin._hints`). Xel's Combat AI (35fcc65) liest sie per
+  Reflection, nur gelesen. Ob die Spielsperre BossMods Gang anhält, belegt keine Quelle (Orbwalker fcfdb56 nutzt denselben
+  Zähler und hakt die Maus-Bewegung zusätzlich) – zur Laufzeit gemessen. RSRs Formprüfung misst Kegel und Ring als
+  vollen Kreis (`AreaCastReaches`). `UIInputData.IsInputIdDown` könnte die Bewegungstasten lesen; nicht gebraucht.
+- *Verbesserungen statt Kappen:* (a) Kanal mit gehender KI hält bis BossMods Spielraum null (Bewegungsmodul), mit der
+  klassischen KI bis zur Fläche am eigenen Ort (Reflection, Rückfall früheste Fläche) vor dem Ende seines Zwecks plus Weg;
+  Zweck eines Gruppenschutzes bis zum angekündigten Gruppentreffer. (b) Waffengang geht in Gefahr, wenn Heiliger Quell
+  oder Reflexion bereit ist; sonst Laufzeitgewichtung wie A651. (c) Numinosum und Tanzimprovisation gehen in Gefahr; das
+  Regen ersetzt RSRs Heilung nach LP. (d) Meditieren hält nur gegen die KI, nur mit bekanntem Pausenende länger als der
+  Weg, nie gegen die Hand; ab Werk an. (e) Zauberbeginn auch nach RSRs Erkennung, wo sie sicher ist: Kreis oder Linie,
+  nicht auf den Spieler, erreicht ihn, lässt ein lebendes Mitglied aus (`DataCenter.CastCertainlyDodgeable`); C6 bekommt
+  dieselbe Grenze. (f) Kanalbeginn gesperrt, wenn ein Schritt ihn vor seinem Zweck beendete; Numinosum nie. (g) Messung,
+  ob die Spielsperre die KI anhält; sonst kein Kanalbeginn, solange die KI geht. (h) Kein Vorhalt vor Meditieren.
+- *Verworfen:* BossMods KI-Pause (`AI.PauseMovement`, `ForbidMovement`: gespeichert, hält auch das Ausweichen);
+  vorübergehende Konfiguration (`ClearTransient` hebt fremde Überschreibungen auf); mit der klassischen KI bis Fläche
+  minus Weg halten (gerader Weg unterschätzt BossMods echten).
+- *Bleibt und ist keine gekappte Entscheidung:* „Lock movement while casting" selbst (ab Werk aus): RSR hält dann einen
+  Spieler, der mit der Hand geht, für einen Zauber an; sein absichtlicher Schritt und der verhinderte sind dieselbe
+  Eingabe – eine Spielweise. Kegel und Ringe genau messen: neu im TODO, als Auftragspunkt.
+- *Prüfgrad:* statisch und Compile (0 Warnungen), 51 Prüfschritte; im Spiel nicht beobachtet. Messmittel: Spurzeilen je
+  Freigabe und je Halt gegen BossMods Gang, Zeile beim Messergebnis „Sperre hält die KI nicht".
+- *Dokumentation:* Konzept 03, 12 (Zeilenangabe), Häkchentexte, Release-Text, TODO, CLAUDE.md; Widerruf C171.
+
 ## B · Commit-Register (Fork vs. `upstream/main`)
 
 ### B1 · Einzelgeprüfte Fork-Commits
@@ -19373,3 +19411,4 @@ Die offene Arbeit dazu — Reihenfolge und Abbruchbedingung der Nachprüfung —
 | C168 | Konzept 08 („Die Erhebung dazu ist geführt …") und Prüfskript-README zu `scan16.py`: „Die übrigen Treffer der Erhebung liegen in Bozja und den Tiefen Gewölben, also außerhalb des Nutzungsprofils" | Die Treffer sind Bozja (Lost Paralyze III) und Eureka (Paralyze L, Paralyze L III; `EurekaMagiaAction` 16, xivapi 06.11.2026), nicht Tiefe Gewölbe; und die Tiefen Gewölbe liegen in seinem Profil (seine Rüge, 06.11.2026; A427 Pilgerpfad) | Beide Stellen berichtigt; Eureka bleibt erfasst, bis er es nennt (A612) |
 | C169 | A595 und Konzept 03 („Bewegungssperre beim Wirken und die KI von BossMod"): „B, die Sperre weicht der KI (Empfehlung)" für die ganze Option; „Daedalus verlor so einen Heiler" | B gäbe auch die angehakten Kanäle frei (Waffengang, Flammenwerfer, Tanzimprovisation), die BossMod nicht kennt: Dort geht die KI auch zum Nachrücken, und jeder Schritt beendet den Kanal (ActionTransient 7385, 7418, 16014). Daedalus' Heiler starb an Daedalus' eigener Pause über `AI.PauseMovement`, nicht an RSRs Sperre (`CastMovementHoldService`, Daedalus c4a788f) | Konzept 03 neu gefasst: Empfehlung H (nur Zauber weichen der KI und enden mit der Antwort des Spiels) und K' für Kanäle; die Feldnotiz als Daedalus' eigener Fall geführt (A649) |
 | C170 | A650 („Status Arms Up 1176, Collective Unconscious 849, Improvisation 2695 auf Mitgliedern" als das, was ein Schutzkanal hält; „(c) KK stellt den Tank in die Fläche bleibt seine Gewichtung") und TODO („Nächster Schritt: seine Entscheidung zu H2, KK und den Häkchen") | 849 vergibt das Wirken einmal, die Minderung bleibt nach dem Abbruch; 2695 ist ein Regen – nur Arms Up endet mit seinem Kanal. Die Gewichtung von Tank gegen Gruppe entscheidet seine Regel zur Laufzeit; ein Optimum braucht keine Entscheidung (seine Vorgabe, 07.11.2026) | Gebaut ohne Vorlage (A651): Halten gegen die KI nur mit Waffengang und nur, wo die Minderung ein gefährdetes Mitglied vor einem angekündigten Treffer deckt |
+| C171 | A651 und Konzept 03 (Stand A651): „Meditieren ab Werk aus"; „Was bleibt, ist eine Grenze der Daten, kein Preis einer Wahl: die früheste Fläche ist global"; Kanal mit gehender KI gibt frei, „wenn der Treffer vor dem Ende des Kanals plus dem Weg … landet"; Kanal- und Zauberbeginn nur nach BossMods Zeichen; A651 „Eingetragen in CLAUDE.md" mit „Vorgelegt wird nur …" als Lesart, eine Entscheidung durch Wahl zu erledigen | Jede dieser Stellen erledigte eine Entscheidung durch Wahl einer Seite; seine Präzisierungen (07.11.2026) verlangen, die Lösung zu verbessern. Die Fläche je Ort ist in BossMods Hinweisen lesbar, der Spielraum des Wegs in `Hints.MaxCastTime`, das Pausenende in der Zeitleiste, und RSRs Erkennung ist für Kreis und Linie mit Gruppenvergleich sicher | Gebaut nach A652; CLAUDE.md: „Kappen ist keine Verbesserung" |

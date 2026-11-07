@@ -147,7 +147,7 @@ Aus den Wirktexten; Art je Aktion: Abwehr (bewertet in `DefensiveValues` oder Wi
 
 | Aktion | Art | Befund | Gegenseite |
 |---|---|---|---|
-| Meditate | sonstige | endet bei jeder weiteren Aktion oder Bewegung (Kanal); keine Aktionssperre: RSRs nächste Aktion beendet ihn; Bewegungssperre: PosMeditate (aus; wirkt nur mit PoslockCasting) | jede Aktion |
+| Meditate | sonstige | endet bei jeder weiteren Aktion oder Bewegung (Kanal); keine Aktionssperre: RSRs nächste Aktion beendet ihn; Bewegungssperre: PosMeditate (an; wirkt nur mit PoslockCasting) | jede Aktion |
 
 ### Verlängerung, Aufbau, Umschalten
 
