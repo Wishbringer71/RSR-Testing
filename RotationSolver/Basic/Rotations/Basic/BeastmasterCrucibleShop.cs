@@ -27,7 +27,30 @@ public partial class BeastmasterRotation
 	// battle - whether it revives you, whether it inflicts a status on you, and the ailments it makes you immune to.
 	private readonly record struct CrucibleGear(string Name, float MaxHp, float DamageTaken, float PhysicalVulnerability,
 		float MagicVulnerability, float Evasion, float Movement, float Slow, float Recovery, float Curing, bool Life,
-		bool SelfHarm, List<string> Resists);
+		bool SelfHarm, List<string> Resists, string RestItem = "");
+
+	// A669: gear that brings an item at each rest - "Procures one random beast potion upon resting at campsites".
+	private static readonly Regex GearRestItem = new(@"Procures one random (?<item>[a-z][a-z' -]*?) upon resting at campsites",
+		RegexOptions.CultureInvariant);
+
+	/// <summary>
+	/// K13 (A669): the least an item of the kind <paramref name="kind"/> heals ("beast potion": G1 to G4 Beast Potion, the
+	/// G1's 10 %) - which one a rest brings is chance; 0 where no healing item of that kind is known.
+	/// </summary>
+	private static float LeastHealOf(string kind)
+	{
+		var least = 0f;
+		foreach (var item in CrucibleItems.Values)
+		{
+			if (item.Kind == CrucibleItemKind.Heal && item.Name.EndsWith(kind, StringComparison.OrdinalIgnoreCase)
+				&& (least <= 0f || item.Value < least))
+			{
+				least = item.Value;
+			}
+		}
+
+		return least;
+	}
 
 	private static readonly Regex GearStat = new(
 		@"(?<stat>Maximum HP|Damage Taken|Physical Vulnerability|Magic Vulnerability|Evasion|Movement Speed|Slow) (?<sign>[+-])(?<share>\d+)%",
@@ -1052,6 +1075,18 @@ public partial class BeastmasterRotation
 				}
 
 				var healingEnabled = Math.Min(enabled * (1f + with.Recovery), healable);
+
+				// A669: an item at each rest (Chemist's Satchel) - the least it can be, at each campsite on every way to the
+				// final fight, up to what you can still heal besides.
+				var restHealing = 0f;
+				var rests = 0;
+				if (piece.RestItem.Length > 0 && CrucibleRoute.CampsitesAhead() is { } campsites && campsites > 0)
+				{
+					rests = campsites;
+					restHealing = Math.Min(campsites * LeastHealOf(piece.RestItem) * (1f + with.Recovery),
+						Math.Max(0f, healable - healingEnabled));
+				}
+
 				var parts = new List<string>();
 				if (prevented > 0f)
 				{
@@ -1078,7 +1113,12 @@ public partial class BeastmasterRotation
 					parts.Add($"{string.Join(", ", longerNames)}: ~{extended:P0}");
 				}
 
-				var value = prevented + healing + curing + healingEnabled + extended;
+				if (restHealing > 0f)
+				{
+					parts.Add($"a {piece.RestItem} at each of the {rests} campsite(s) on every way, the weakest counted: ~{restHealing:P0}");
+				}
+
+				var value = prevented + healing + curing + healingEnabled + extended + restHealing;
 				if (value <= 0f)
 				{
 					parts.Add(now.Mean <= 0f && now.Heavy <= 0f
@@ -1313,7 +1353,42 @@ public partial class BeastmasterRotation
 	// it restores when eaten, the damage it adds, whether it harms its eater, whether it keeps feed over a rest, and the kins
 	// it suits ("[Suitable for beastkin, ... and ashkin.]").
 	private readonly record struct CrucibleFeed(string Name, float MaxHp, float DamageTaken, float PhysicalVulnerability,
-		float MagicVulnerability, float Evasion, float Restore, float Damage, bool SelfHarm, bool Preserves, HashSet<string> Kins);
+		float MagicVulnerability, float Evasion, float Restore, float Damage, bool SelfHarm, bool Preserves, HashSet<string> Kins,
+		bool FillsAtRest = false);
+
+	// A669: a feed after which a rest at a campsite fills its eater's HP instead of the shared share (Lassi Simular).
+	private const string FeedFillsAtRestText = "Completely restores HP at campsites";
+
+	/// <summary>
+	/// K10 Campsite (A669): what the feed <paramref name="ids"/> means for a rest - whether it outlasts the rest (Lily Simular),
+	/// whether the rest fills the eater's HP (Lassi Simular), and the factors of its maximum HP and of the damage it takes.
+	/// </summary>
+	private static (bool Keeps, bool Fills, float Hp, float Taken) FeedAtRest(ReadOnlySpan<ushort> ids)
+	{
+		var keeps = false;
+		var fills = false;
+		float hp = 1f, taken = 1f;
+		var feeds = CrucibleFeedTable;
+		foreach (var id in ids)
+		{
+			if (feeds.TryGetValue(id, out var feed))
+			{
+				keeps |= feed.Preserves;
+				fills |= feed.FillsAtRest;
+				hp *= 1f + feed.MaxHp;
+				taken *= 1f - feed.DamageTaken;
+			}
+		}
+
+		return (keeps, fills, hp, taken);
+	}
+
+	// A669: whether a rest fills this familiar's HP, by the feed last seen on it in this run.
+	private static bool RestFills(BeastmasterPet pet)
+	{
+		var (_, _, known, slots) = SlotsOf(pet);
+		return known && FeedAtRest(slots.Items).Fills;
+	}
 
 	private static readonly Regex FeedRestore = new(@"Restores (?<share>\d+)% of HP upon consumption", RegexOptions.CultureInvariant);
 	private static readonly Regex FeedDamage = new(@"Damage Dealt \+(?<share>\d+)%", RegexOptions.CultureInvariant);
@@ -1805,7 +1880,8 @@ public partial class BeastmasterRotation
 			feeds[(ushort)row.RowId] = new CrucibleFeed(row.Unknown2.ExtractText(), maxHp, taken, physical, magic, evasion,
 				FeedRestore.Match(text) is { Success: true } restore ? Percent(restore.Groups["share"].Value) : 0f, damage,
 				GearSelfHarm.IsMatch(text) || text.Contains("on self", StringComparison.Ordinal),
-				text.Contains(FeedPreservesText, StringComparison.Ordinal), kins);
+				text.Contains(FeedPreservesText, StringComparison.Ordinal), kins,
+				text.Contains(FeedFillsAtRestText, StringComparison.Ordinal));
 		}
 
 		return feeds;
@@ -1872,7 +1948,8 @@ public partial class BeastmasterRotation
 			gear[(ushort)row.RowId] = new CrucibleGear(row.Unknown2.ExtractText(), maxHp, taken, physical, magic, evasion, movement, slow,
 				GearRecovery.Match(text) is { Success: true } recovery ? Percent(recovery.Groups["share"].Value) : 0f,
 				GearCuring.Match(text) is { Success: true } curing ? Percent(curing.Groups["share"].Value) : 0f,
-				text.StartsWith("Revives beastmaster upon KO", StringComparison.Ordinal), GearSelfHarm.IsMatch(text), resists);
+				text.StartsWith("Revives beastmaster upon KO", StringComparison.Ordinal), GearSelfHarm.IsMatch(text), resists,
+				GearRestItem.Match(text) is { Success: true } restItem ? restItem.Groups["item"].Value : string.Empty);
 		}
 
 		return gear;

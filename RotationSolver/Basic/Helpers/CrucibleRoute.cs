@@ -190,6 +190,67 @@ internal static class CrucibleRoute
 	}
 
 	/// <summary>
+	/// K13 (A669): the fewest campsites on any way from where the run stands to the final fight - the campsites every way
+	/// passes; the space it stands on counts while it is not done, a random space that can become one does not. Null while
+	/// the board or its ways are unknown.
+	/// </summary>
+	internal static int? CampsitesAhead()
+	{
+		if (_lastBattle.Board == 0 || _current < 0 || !Boards.TryGetValue(_lastBattle.Board, out var route) || route.Next == null
+			|| _current >= route.Nodes.Length)
+		{
+			return null;
+		}
+
+		var memo = new Dictionary<int, int>();
+		if (!_done)
+		{
+			return From(_current);
+		}
+
+		int? fewest = null;
+		foreach (var next in route.Next[_current])
+		{
+			var ahead = From(next);
+			if (fewest is not { } f || ahead < f)
+			{
+				fewest = ahead;
+			}
+		}
+
+		return fewest ?? 0;
+
+		int From(int index)
+		{
+			if (memo.TryGetValue(index, out var known))
+			{
+				return known;
+			}
+
+			var own = route.Nodes[index].Kind == Space.Campsite ? 1 : 0;
+			memo[index] = own;
+			if (route.Nodes[index].Kind == Space.Boss || route.Next[index].Count == 0)
+			{
+				return own;
+			}
+
+			int? rest = null;
+			foreach (var next in route.Next[index])
+			{
+				var ahead = From(next);
+				if (rest is not { } r || ahead < r)
+				{
+					rest = ahead;
+				}
+			}
+
+			var total = own + (rest ?? 0);
+			memo[index] = total;
+			return total;
+		}
+	}
+
+	/// <summary>
 	/// K10 Campsite and shop (concept 21, A661): the load of the heaviest way from where the run stands - each battle with
 	/// <paramref name="load"/> of its XBMBattleDetail row, a random space with its heaviest battle - to the next campsite
 	/// (<paramref name="toCampsite"/>; a way without one runs to the final fight, included) or to the final fight. The space

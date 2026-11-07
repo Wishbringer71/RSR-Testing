@@ -125,8 +125,19 @@ public partial class BeastmasterRotation
 			selected.Add((int)chosen.PetId);
 		}
 
-		// While the rest prompt is open it speaks for the selection as it stands; nothing is clicked under it.
-		if (ReadOfferedShare(selected.Count))
+		// While the rest prompt is open it speaks for the selection as it stands; nothing is clicked under it. A669: the
+		// familiars selected that a rest fills (Lassi Simular) may not share the whole - the reading takes them as not sharing.
+		var selectedPets = party->SelectedPets.AsSpan();
+		var filling = 0;
+		foreach (var position in selected)
+		{
+			if (position >= 0 && position < selectedPets.Length && RestFills((BeastmasterPet)selectedPets[position].PetId))
+			{
+				filling++;
+			}
+		}
+
+		if (ReadOfferedShare(selected.Count, filling))
 		{
 			return;
 		}
@@ -199,7 +210,7 @@ public partial class BeastmasterRotation
 			return;
 		}
 
-		var hurt = new List<(int Position, float Share, bool Short, BeastmasterPet Pet)>();
+		var hurt = new List<(int Position, float Share, bool Short, BeastmasterPet Pet, bool Fills, float Need)>();
 		for (var i = 0; i < pets.Length && i < current.Length && i < max.Length; i++)
 		{
 			// The window's rows carry the feed; they are read only where their HP is the team's at the same position.
@@ -210,15 +221,46 @@ public partial class BeastmasterRotation
 				return;
 			}
 
-			// A fallen familiar is not healed there, one at full HP takes a share for nothing, a fed one loses its feed.
-			if (current[i] > 0 && current[i] < max[i] && rows[i].FedCurrent == 0)
+			// A fallen familiar is not healed there, one at full HP takes a share for nothing.
+			if (current[i] == 0 || current[i] >= max[i])
 			{
-				hurt.Add((i, current[i] / (float)max[i], ShortForFinal((BeastmasterPet)pets[i].PetId, current[i]), (BeastmasterPet)pets[i].PetId));
+				continue;
 			}
+
+			// A669: a fed one loses its feed unless a Lily Simular keeps it; a rest fills one fed a Lassi Simular, and without
+			// the Lily it rests only to more effective HP than now - full HP without its feed against its HP now through the
+			// damage its feed takes off.
+			var share = current[i] / (float)max[i];
+			var misses = 1f - share;
+			var fed = new List<ushort>();
+			foreach (var entry in rows[i].FedItems)
+			{
+				if (entry.ItemId is > 0 and <= ushort.MaxValue)
+				{
+					fed.Add((ushort)entry.ItemId);
+				}
+			}
+
+			var (keeps, fills, feedHp, feedTaken) = FeedAtRest(fed.ToArray());
+			if (rows[i].FedCurrent > 0 && !keeps)
+			{
+				var bare = max[i] / Math.Max(feedHp, float.Epsilon);
+				if (!fills || bare <= current[i] / Math.Max(feedTaken, float.Epsilon))
+				{
+					continue;
+				}
+
+				misses = (bare - current[i]) / max[i];
+			}
+
+			hurt.Add((i, share, ShortForFinal((BeastmasterPet)pets[i].PetId, current[i]), (BeastmasterPet)pets[i].PetId, fills, misses));
 		}
 
-		// K11 stage 2 (A590): a familiar the final fight needs to heal or protect, short of HP for it, rests first.
-		hurt.Sort((a, b) => a.Short != b.Short ? b.Short.CompareTo(a.Short) : a.Share.CompareTo(b.Share));
+		// K11 stage 2 (A590): a familiar the final fight needs to heal or protect, short of HP for it, rests first; then the
+		// most a rest brings it (A669: all it misses where the rest fills it), then the least HP.
+		var one = RestShare(1);
+		hurt.Sort((a, b) => a.Short != b.Short ? b.Short.CompareTo(a.Short)
+			: Brings(b, one).CompareTo(Brings(a, one)) is var byGain && byGain != 0 ? byGain : a.Share.CompareTo(b.Share));
 		var self = player.CurrentHp / (float)player.MaxHp;
 		var resting = 0;
 		var bestGain = 0f;
@@ -235,7 +277,7 @@ public partial class BeastmasterRotation
 			var gain = 0f;
 			for (var i = 0; i < n; i++)
 			{
-				gain += Math.Min(1f - hurt[i].Share, share);
+				gain += Brings(hurt[i], share);
 			}
 
 			if (gain > bestGain)
@@ -254,9 +296,15 @@ public partial class BeastmasterRotation
 		CrucibleCampSummary = resting > 0
 			? $"RSR selects {DescribeResting(pets, wanted, current, max)} - {Outcome(self + RestShare(resting), need)}"
 			: hurt.Count == 0
-				? "RSR selects nobody - no familiar here is standing, unfed and short of HP"
+				? "RSR selects nobody - no familiar here is standing, short of HP and able to rest without losing its feed for less"
 				: $"RSR selects nobody - {Shortfall(self, need)}";
-		RecommendForFinal(hurt, self);
+		var ranked = new List<(int Position, float Share, bool Short, BeastmasterPet Pet)>(hurt.Count);
+		foreach (var familiar in hurt)
+		{
+			ranked.Add((familiar.Position, familiar.Share, familiar.Short, familiar.Pet));
+		}
+
+		RecommendForFinal(ranked, self);
 
 		// The window's "Apply": his choice from the recommendation, clicked toward like RSR's own.
 		if (_campsiteRequested is { } requested)
@@ -302,7 +350,7 @@ public partial class BeastmasterRotation
 					? $"crucible campsite: rest with {resting} ({DescribeResting(pets, wanted, current, max)}) - "
 						+ $"{Outcome(self + RestShare(resting), need)}, {RestShare(resting):P0} each brings them {bestGain:P0} of their HP in all"
 					: hurt.Count == 0
-						? "crucible campsite: rest alone - no familiar here is standing, unfed and short of HP"
+						? "crucible campsite: rest alone - no familiar here is standing, short of HP and able to rest without losing its feed for less"
 						: _campsiteLimit == 0
 							? "crucible campsite: rest alone - this campsite takes no familiar"
 							: $"crucible campsite: rest alone - {Shortfall(self, need)} ({RestShare(1):P0} each)");
@@ -328,6 +376,13 @@ public partial class BeastmasterRotation
 			_campsiteHeld = true;
 			CrucibleCampSummary = why;
 			DefenseTrace.Line(why);
+		}
+
+		// What a rest brings a familiar, as a share of its HP: all it misses where the rest fills it (A669), else the share
+		// each gets, at most what it misses.
+		static float Brings((int Position, float Share, bool Short, BeastmasterPet Pet, bool Fills, float Need) familiar, float each)
+		{
+			return familiar.Fills ? familiar.Need : Math.Min(familiar.Need, each);
 		}
 	}
 
@@ -401,9 +456,10 @@ public partial class BeastmasterRotation
 		}
 	}
 
-	// The rest prompt, while the campsite window is open: the share it offers for the familiars selected now. True while a
-	// prompt is open over the window.
-	private static unsafe bool ReadOfferedShare(int familiars)
+	// The rest prompt, while the campsite window is open: the share it offers for the familiars selected now, of which
+	// <paramref name="filling"/> a rest fills (A669: taken as not sharing the whole - the smaller whole). True while a prompt
+	// is open over the window.
+	private static unsafe bool ReadOfferedShare(int familiars, int filling)
 	{
 		var prompt = (AddonSelectYesno*)Svc.GameGui.GetAddonByName("SelectYesno").Address;
 		if (prompt == null || !prompt->IsVisible)
@@ -421,12 +477,13 @@ public partial class BeastmasterRotation
 		// Capped at all of one's HP, a share tells only "at least": the whole is known from a share below it.
 		var share = percent / (float)CrucibleBoard.PercentScale;
 		var key = (CrucibleRoute.LastBattle.Board, CrucibleRoute.Current);
-		var pool = share * (1 + familiars);
+		var pool = share * (1 + familiars - filling);
 		if (share < 1f && (!_restPoolRead.TryGetValue(key, out var known) || known != pool))
 		{
 			var expected = RestShare(familiars);
 			_restPoolRead[key] = pool;
 			DefenseTrace.Line($"crucible campsite: the game offers {share:P0} each with {familiars} familiars, RSR expected {expected:P0}"
+				+ (filling > 0 ? $" ({filling} of them filled by their feed, counted as not sharing)" : string.Empty)
 				+ $" - a rest here shares {pool:P0}");
 			var whole = (int)Math.Round(pool * CrucibleBoard.PercentScale);
 			var learned = false;

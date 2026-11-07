@@ -313,8 +313,24 @@ Dullahan, Golem, Spriggan und Eisgolem (`XBMPet.InflictsInterrupt`).
     Liegen deine LP nach der Rast darüber, darf deine Rast kürzer ausfallen als allein; kennt RSR einen Kampf auf diesen
     Wegen noch nicht oder kennt es die Wege nicht, musst du voll herauskommen. Unter dieser Bedingung die Zahl, die den
     Begleitern die meisten LP bringt (je Begleiter höchstens, was ihm fehlt), und dafür die stehenden, nicht vollen,
-    ungefütterten mit dem kleinsten LP-Anteil; bei Gleichstand weniger. Sonst ruhst du allein. Das Fenster nennt die
-    Strecke und ihre Last. Ein Zufallsfeld zählt mit seinem schwersten möglichen Kampf und nie als Campsite.
+    deren Futter die Rast nicht kostet (unten), mit dem kleinsten LP-Anteil; bei Gleichstand weniger. Sonst ruhst du
+    allein. Das Fenster nennt die Strecke und ihre Last.
+    *Futter an der Rast (A669):* Ruht ein Gefütterter, endet sein Futter – außer er aß ein Lilien-Simulakrum („Preserves
+    the effects of feed when resting at a campsite"): Er ruht wie ein Ungefütterter und behält es. Aß er ein
+    Lassi-Simulakrum („Completely restores HP at campsites"; consolegameswiki „Beast Feed", 07.11.2026: „Satiety is reset
+    and feed bonuses are lost if the familiar is restored at a campsite space unless if they have been fed a Lily
+    Simular"), füllt ihn die Rast ganz statt des Anteils. Ohne Lilie ruht er nur, wenn er danach mehr wirksame LP hat als
+    jetzt – volle LP ohne sein Futter gegen seine LP jetzt durch den Schadensfaktor seines Futters (erlittener Schaden) –,
+    denn sein Futter endet mit der Rast. Jeder andere Gefütterte ohne Lilie ruht nicht. Ob ein Begleiter, den die Rast
+    ganz füllt, den Anteil der übrigen mitteilt, ist unbelegt: RSR rechnet deinen Anteil, als teile er mit (er zählt in
+    n), und liest das Angebot des Spiels, als teile er nicht (der kleinere Gesamtanteil) – beides gibt dir eher zu wenig
+    Rast als zu viel. Grund: Bis A669 ruhte kein Gefütterter, auch keiner mit Lilie, deren einziger Zweck diese Rast ist
+    (K8 nannte das als gebaut; C178), und ein Lassi-Begleiter bekam an der Rast nur den Anteil. *Gegenthese A669-1 (Lassi
+    ohne Lilie):* Ruht er, verliert er für den Endkampf auch +30 % maximale LP und anderes Futter. Widerlegt in seinem
+    Maß: Er ruht nur, wenn seine wirksamen LP danach höher sind; was das Futter an Schaden gibt, wiegt die Regel nicht –
+    Preis: weniger Schaden, Sicherheit vor Schaden. *Gegenthese A669-2 (Teilen unbelegt):* oben, beide Annahmen zur
+    sicheren Seite. *Ausgeliefert, und nichts ändert sich?* Wenn vor einer Rast keiner gefüttert ist – K14 empfiehlt
+    Futter für den Endkampf, nach der letzten Rast –; dann trifft die Regel, was du selbst vorher fütterst. Ein Zufallsfeld zählt mit seinem schwersten möglichen Kampf und nie als Campsite.
     *Last je Kampf (A661):* Am Ende jedes Kampfs merkt sich RSR je Kampf (`XBMBattleDetail`-Zeile) den Schaden, den du
     genommen hast, als Anteil deiner maximalen LP ohne Ausrüstung – zurückgerechnet mit den Stücken, die du da trugst
     (maximale LP, erlittener Schaden, physische und magische Verwundbarkeit, Ausweichen, wie K10 Laden) –, auf ganze
@@ -642,7 +658,8 @@ Dullahan, Golem, Spriggan und Eisgolem (`XBMPet.InflictsInterrupt`).
   - *Empfehlung an der Campsite:* Das Fenster „RSR - Crucible campsite" zeigt, wen RSR vorwählt und warum (K10: so
     viele, wie deine LP danach die Strecke bis zur nächsten Rast tragen, A661). An der letzten Campsite empfiehlt es
     dazu, wer für den Endkampf mitruhen soll:
-    unter den stehenden, ungefütterten, nicht vollen Begleitern zuerst die Heiler und Schützer aus dem Plan des Endkampfs
+    unter den stehenden, nicht vollen Begleitern, deren Futter die Rast nicht kostet (K10, „Futter an der Rast"), zuerst
+    die Heiler und Schützer aus dem Plan des Endkampfs
     (K11, `FinalHealers`), dann die übrigen Begleiter dieses Plans, dann die übrigen nach ihrem LP-Anteil; so viele, wie
     das Lager nimmt (gelernt; vorher alle, die zählen). Es nennt, mit welchem Anteil du herauskommst. „Apply" wählt die
     Empfehlung im Fenster; ruhen drückst du. Die Vorauswahl ohne Klick bleibt bei K10: Deine LP sind der Lauf, und ob
@@ -771,7 +788,10 @@ Dullahan, Golem, Spriggan und Eisgolem (`XBMPet.InflictsInterrupt`).
   Gegenstand mehr gibt (Spirit of the Breathtaker: drei Blink mehr), zählt diesen Zuwachs. Trägst du eine Rote Schleife
   oder wählt die Skala sie, heilt jedes Serum 50 % seines Ziels („When carrying a crimson ribbon, restores 50% …"): Es
   zählt als Heilgegenstand, und die Schleife zählt die Heilung der gehaltenen Seren, beides höchstens was du noch heilen
-  kannst. *Grund (A668):* Bis dahin zählte ein Schutzgegenstand den ganzen schwersten Kampf. Auf Brett 1 dauerte ein Kampf
+  kannst. Der Arzneibeutel („Procures one random beast potion upon resting at campsites", A669) zählt je Campsite, die
+  auf jedem Weg zum Endgegner liegt, den kleinsten Bestien-Trank (G1 bis G4: 10, 23, 36, 50 %, also 10 %), mit der
+  Mehrheilung deiner Ausrüstung, höchstens was du noch heilen kannst: Welcher kommt, ist Zufall, und eine Campsite auf
+  nur einem Weg ist nicht sicher – die Skala unterschätzt ihn eher. *Grund (A668):* Bis dahin zählte ein Schutzgegenstand den ganzen schwersten Kampf. Auf Brett 1 dauerte ein Kampf
   61 bis 148 s (15 Kämpfe am 07.11.2026, ACT-Mitschnitt); das beste 30-s-Fenster hielt 51 bis 100 % seines Schadens, im
   Endkampf 55 %, das beste 60-s-Fenster im Endkampf 83 %, das 90-s-Fenster 92 %; die fünf stärksten Treffer in Folge 48
   bis 100 %, im Endkampf 48 % (27 Treffer, 23 davon Auto-Angriffe; alle Werte über alle Angriffsarten, den magischen
@@ -1251,9 +1271,9 @@ on a pack once a fight, all of them in the final fight (Crucible only)".
       Beginn und wirken so am längsten – keine Änderung. Tötungsstapel machen schwache Gegner wertvoll: Ein
       Flächengegenstand, der drei Schattenmilben tötet, gibt drei Stapel für den Rest des Kampfes – in Zielwahl (K3) und
       Wert (13) offen (Stufe 2).
-    - *Rast und Futter:* Ein ruhender Begleiter verliert sein Futter, mit Lilien-Simulakrum nicht (K14, gebaut A657,
-      A662). Lassi-Simulakrum: volle LP an der Rast statt des Anteils – offen (Stufe 2, K10). Arzneibeutel: ein
-      zufälliger Bestien-Trank je Rast – offen (Stufe 2, Weg und K10).
+    - *Rast und Futter:* Ein ruhender Begleiter verliert sein Futter, mit Lilien-Simulakrum nicht; mit
+      Lassi-Simulakrum füllt ihn die Rast ganz. Die Campsite wählt danach (K10, „Futter an der Rast", A669). Arzneibeutel:
+      ein zufälliger Bestien-Trank je Rast, auf der Skala mit dem kleinsten je sicherer Campsite (K13, A669).
     - *Weg:* Feiglingsmesser (35 % Flucht von normalen Gegnerfeldern, danach Guerrilla Tactics), Bestien-Rauchbombe
       (Flucht) senken die erwartete Last eines Feldes; Diebesmesser gibt zwei Gegenstände auf Schatzfeldern – offen
       (Stufe 2, Weg).

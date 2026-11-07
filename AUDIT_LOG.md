@@ -19677,6 +19677,35 @@ Ausrüstungsstück ohne die Gegenstände, die es heilen lässt oder verlängert.
 *Prüfgrad:* Compile ohne Warnung, 52 Prüfschritte; Regex statisch gegen alle 206 Rohtexte; Fenster am Mitschnitt
 gemessen. Im Spiel nicht beobachtet; jede Empfehlung nennt im Fenster Dauer, Stapel und den gefangenen Anteil.
 
+### A669 · Crucible-Rast: Lilie hält das Futter, Lassi füllt; Arzneibeutel auf der Skala (07.11.2026)
+
+Zweites Paar aus TODO „Crucible-Wechselwirkungen, Stufe 2".
+
+- *1 Research:* consolegameswiki „Beast Feed" (07.11.2026): „Satiety is reset and feed bonuses are lost if the familiar is
+  restored at a campsite space unless if they have been fed a Lily Simular"; Lassi Simular „Completely restores HP at
+  campsites" (Zeile 203), Lily Simular „Preserves the effects of feed when resting at a campsite" (166), Chemist's Satchel
+  „Procures one random beast potion upon resting at campsites" (4; G1 bis G4 Beast Potion 10, 23, 36, 50 %). Code: Die
+  Campsite nahm nur Ungefütterte (`FedCurrent == 0`); `CrucibleFeed.Preserves` wurde gelesen, aber nirgends ausgewertet –
+  K8 nannte die Lilie dagegen „gebaut (A657, A662)" (C178). Der Beutel hatte auf der Skala keinen Wert.
+- *Fall im Kampf:* Ein Begleiter mit Lilie und 40 % LP ruhte nie, obwohl die Rast ihn heilt und sein Futter bleibt; er ging
+  mit 40 % in die nächsten Kämpfe. Ein Lassi-Begleiter mit Lilie bekam statt voller LP nichts.
+- *2 Optionen:* (0) nichts. (a) Gefütterte mit Lilie wie Ungefütterte; Lassi füllt. (b) dazu Lassi ohne Lilie nach
+  wirksamen LP. (c) jeden Gefütterten nach seinem Futterwert gegen die LP abwägen – braucht eine Bewertung jedes Futters
+  über die Kämpfe bis zum Endkampf, die K14 nur für den Endkampfplan führt. Gewählt (b): Was die Rast ohne Verlust bringt,
+  nimmt sie; was sie nur gegen Futter tauscht, nimmt sie nur beim Lassi, dessen Rast den Tausch selbst ausgleicht.
+- *Gebaut (Konzept 21 K10 „Futter an der Rast", K13, K14):* `FeedAtRest` liest je Begleiter Bewahren, Füllen und die
+  Faktoren seines Futters aus den Futterplätzen des Fensters; die Campsite nimmt Gefütterte mit Lilie, Lassi ohne Lilie nur
+  zu mehr wirksamen LP; ein Begleiter, den die Rast füllt, bringt alles, was ihm fehlt, und steht in der Reihung danach
+  vorn. Das Angebot des Spiels liest RSR mit füllenden Begleitern als nicht teilend (kleinerer Gesamtanteil). Der Beutel
+  zählt je Campsite auf jedem Weg (`CrucibleRoute.CampsitesAhead`) den kleinsten Bestien-Trank.
+- *6 Falsifikation:* Kein Defekt? Widerlegt am Code (Lilie nie gelesen). Option falsch? Ob ein füllender Begleiter den
+  Anteil teilt, ist unbelegt; beide Annahmen zur sicheren Seite. Ausgeliefert, nichts ändert sich? Wenn vor einer Rast
+  keiner gefüttert ist – K14 empfiehlt Futter erst für den Endkampf –, und wenn kein Weg sicher über eine Campsite führt
+  (Beutel 0).
+
+*Prüfgrad:* Compile ohne Warnung, Prüfskripte; Textmuster gegen alle 206 Rohtexte (je genau ein Treffer). Im Spiel nicht
+beobachtet; die Spur nennt die Lesung der Rast mit der Zahl der füllenden Begleiter.
+
 ## B · Commit-Register (Fork vs. `upstream/main`)
 
 ### B1 · Einzelgeprüfte Fork-Commits
@@ -20006,3 +20035,4 @@ Die offene Arbeit dazu — Reihenfolge und Abbruchbedingung der Nachprüfung —
 | C175 | Konzept 21 Weg (Stand A656–A662): „*Sicher* ist ein Abzweig, wenn du an der nächsten Rast oder vor dem Endgegner mit Vorrat noch einen schwersten Kampf trägst und kein Endkampf-Heiler knapp wird"; „die Heiler verlieren je Kampf ihren größten Verlust je Einsatz"; Gegenthese 1 „bleibt aber auf diese Strecke beschränkt, für die die Rast entscheidet" | Mit einem Verlust je Einsatz über 50 % (Brett 1: 62 %) war kein Weg sicher, und die Rast gewann immer; der Laden auf jedem Weg machte „bringt Gegenstände" wertlos; die Strecke bis zur Rast sah den Endkampf nicht. Ersetzt durch die Summe aller Kämpfe bis einschließlich Endkampf (A663). | A663 |
 | C176 | A660 und Konzept 21 K3 (Stand A660–A664): „Auf Brett 1 unterbricht K4 die Fanaticism der Sukkubus-Magierin (Aktion 46928; in seinem Lauf vom 07.11.2026 um 16:13:12 gestoppt)" | Ihr Tod stoppte den Cast: 351 Schaden auf 37 LP um 16:13:11,9, Abbruch 16:13:12,3, Todeszeile 2 s später; ebenso 18:11:50 und 18:46:09. Eine Unterbrechung durch einen Begleiter ist nicht belegt (A665). | A665 |
 | C177 | A664 und Konzept 21 K8 (Stand A664): „*Synergien (geprüft):*" mit der Magiesteigerung und dem Ausdauermittel | Geprüft waren zwei; die Wirktexte nennen weitere – Reißzahn des Feuers unter Deep Freeze, Ausrüstung, die Mittel verlängert oder Seren heilen lässt, Spirit of the Breathtaker, Tötungsstapel, Futter an der Rast (A665, A666). | A665 |
+| C178 | Konzept 21 K8 „Rast und Futter" (Stand A666): „Ein ruhender Begleiter verliert sein Futter, mit Lilien-Simulakrum nicht (K14, gebaut A657, A662)" | Gebaut war nur der Verlust: Die Campsite nahm keinen Gefütterten, auch keinen mit Lilie; `Preserves` wurde gelesen, aber nirgends ausgewertet. | A669 |
