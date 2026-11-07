@@ -21,7 +21,7 @@ internal class CarnivaleSetWindow : RecommendationWindow
 		return Svc.ClientState.IsLoggedIn && DataCenter.CurrentRotation is BlueMageRotation && BlueMageRotation.CarnivaleStage > 0;
 	}
 
-	public override void Draw()
+	protected override void DrawContent()
 	{
 		if (Action("##carnivale_previous", "", FontAwesomeIcon.ChevronLeft))
 		{
@@ -29,7 +29,7 @@ internal class CarnivaleSetWindow : RecommendationWindow
 		}
 
 		ImGui.SameLine();
-		M3Text.Draw($"Stage {BlueMageRotation.CarnivaleStage}: {BlueMageRotation.CarnivaleStageName}", M3TextStyle.Title);
+		Title($"Stage {BlueMageRotation.CarnivaleStage}: {BlueMageRotation.CarnivaleStageName}");
 		ImGui.SameLine();
 		if (Action("##carnivale_next", "", FontAwesomeIcon.ChevronRight))
 		{

@@ -22,7 +22,7 @@ internal class CrucibleCampWindow : RecommendationWindow
 			&& (BeastmasterRotation.CrucibleCampOpen || BeastmasterRotation.CrucibleFeedTarget.Length > 0);
 	}
 
-	public override void Draw()
+	protected override void DrawContent()
 	{
 		if (BeastmasterRotation.CrucibleFeedTarget.Length > 0)
 		{

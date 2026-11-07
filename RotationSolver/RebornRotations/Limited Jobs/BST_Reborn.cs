@@ -86,8 +86,8 @@ public sealed class BST_Reborn : BeastmasterRotation
 			+ "fall; Temporal Sand out of combat while no Sandstill stands; a Beast Potion Kit against a boss while no "
 			+ "Auto-potion stands; against an announced hit on you the Tome of the Impervious (physical), the Tome of "
 			+ "Reflection (magic) or Crucible Tannin - in the final fight also while an enemy attacks you; for your familiar, when "
-			+ "it holds no more HP than the largest hit it took this fight (before the first, below 'Use HP potions below this "
-			+ "HP'), the Beast Potion that lifts it above that with the least - never your last healing item, which stays for "
+			+ "it holds no more HP than the largest hit it took this fight (before its first, the largest hit a familiar took on "
+			+ "this board; before any, below 'Use HP potions below this HP'), the Beast Potion that lifts it above that with the least - never your last healing item, which stays for "
 			+ "you - and then the same protection when the hit could fell it; against the dangerous statuses the fight's enemies inflict (they take "
 			+ "control from you or end in death) the soul serum that names one, else a Beast Remedy Kit; against a hit on you "
 			+ "whose cast carries an element, the weakener of that element; a Crucible Needle for your petrified familiar; "
@@ -291,6 +291,12 @@ public sealed class BST_Reborn : BeastmasterRotation
 	// shows only what was left; counted, every familiar up to that HP drew Challenge at full HP.
 	private static uint _familiarLargestHit;
 	private static ulong _familiarWatched;
+
+	// A660: the fight in which Snarl came for an arriving enemy, for one trace line.
+	private static uint _snarlForArrival;
+
+	// A658: the largest such hit any familiar took on this board - K8 item 7's mark before a familiar's first hit in a fight.
+	private static uint _familiarLargestHitOnBoard;
 	private static uint _familiarLastHp;
 
 	// A610: per fight, the HP the familiar out and the player lost while they held the enemies, and for how long - the
@@ -325,6 +331,7 @@ public sealed class BST_Reborn : BeastmasterRotation
 			_petSeenArea = DataCenter.TerritoryID;
 			_petSeenHp.Clear();
 			_largestLossPerUse = 0u;
+			_familiarLargestHitOnBoard = 0u;
 			FinalHealers.Clear();
 			FinalTeam.Clear();
 			FinalBattle = 0u;
@@ -353,6 +360,7 @@ public sealed class BST_Reborn : BeastmasterRotation
 		if (_familiarWatched == familiar.GameObjectId && hp < _familiarLastHp && hp > 0)
 		{
 			_familiarLargestHit = Math.Max(_familiarLargestHit, _familiarLastHp - hp);
+			_familiarLargestHitOnBoard = Math.Max(_familiarLargestHitOnBoard, _familiarLargestHit);
 		}
 
 		// A610: the holder's loss and time; a pause longer than a GCD between reads is no holding time.
@@ -523,10 +531,11 @@ public sealed class BST_Reborn : BeastmasterRotation
 
 	// K8 item 7 (concept 21, A642): what the familiar out can lose before the next weave window - its largest hit in this
 	// fight (K9), and while enemies attack it its holding rate over a GCD's lead, the larger. A hit counts once; a stream of
-	// small ones from several enemies shows only in the rate.
+	// small ones from several enemies shows only in the rate. A658: before its first hit in this fight, the largest hit a
+	// familiar took on this board - one that comes out with fewer HP falls to the first such hit otherwise.
 	private static uint FamiliarLossAhead(IBattleChara? familiar)
 	{
-		var loss = (float)_familiarLargestHit;
+		var loss = (float)(_familiarLargestHit > 0u ? _familiarLargestHit : _familiarLargestHitOnBoard);
 		if (familiar != null && IsFamiliarTanking(familiar))
 		{
 			loss = Math.Max(loss, HoldingRate(_familiarHeldLoss, _familiarHeldSeconds) * ObjectHelper.GetHealLeadTime());
@@ -583,6 +592,21 @@ public sealed class BST_Reborn : BeastmasterRotation
 		{
 			shouldSnarl = true;
 			shouldChallenge = false;
+		}
+
+		// A660 (concept 21, K3): an enemy running to another arrives within a GCD and blows up there (the Ogre's wisps) - with
+		// the familiar's Cover up, the blast and its Vulnerability Up land on the familiar, not on you. Not onto a familiar
+		// the next loss would fell.
+		if (!shouldSnarl && !nextHitFells && !IsCoveredByFamiliar && Approach.SoonestArrival is { } arrival
+			&& arrival <= DataCenter.DefaultGCDTotal)
+		{
+			shouldSnarl = true;
+			shouldChallenge = false;
+			if (_snarlForArrival != CrucibleBoard.Fight)
+			{
+				_snarlForArrival = CrucibleBoard.Fight;
+				DefenseTrace.Line($"beastmaster: Snarl - an enemy running to another arrives in {arrival:F1} s; the familiar's Cover takes it");
+			}
 		}
 
 		// K11 stage 2 (A590): before the final fight, not on a familiar the final fight needs to heal or protect while its HP

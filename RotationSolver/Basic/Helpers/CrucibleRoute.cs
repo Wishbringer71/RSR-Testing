@@ -29,10 +29,13 @@ internal static class CrucibleRoute
 		Random = 8,
 	}
 
-	// The raw columns as Daedalus c4a788f reads them (CrucibleSheetReader): a space's move, kind and index; a drawn cell's kind,
-	// its space and the space a way leads to.
+	// The raw columns as Daedalus c4a788f reads them (CrucibleSheetReader): a space's move, kind and index; a drawn cell's grid
+	// column (east) and row (south) - Daedalus 2644cbe -, its kind, its space and the space a way leads to.
 	private const int MoveColumn = 0, KindColumn = 1, IndexColumn = 2;
-	private const int CellKindColumn = 2, CellNodeColumn = 3, CellNextColumn = 4;
+	private const int CellXColumn = 0, CellYColumn = 1, CellKindColumn = 2, CellNodeColumn = 3, CellNextColumn = 4;
+
+	// A drawn cell of kind 1 is the space itself; above it a way, 0 padding.
+	private const byte SpaceCell = 1;
 
 	/// <summary>A space: its move, kind, battle (XBMBattleDetail row), what a random space can become, and the rest limits of
 	/// the campsites it is or can be.</summary>
@@ -40,16 +43,39 @@ internal static class CrucibleRoute
 		List<(Space Kind, uint Battle)> Options);
 
 	// Camps: how many familiars rest with the player at each campsite of the board (XBMContentCamp, a subrow per campsite
-	// index - the index of a campsite space or of a random space's campsite option).
-	private sealed record Board(Node[] Nodes, List<int>[]? Next, List<int> Camps);
+	// index - the index of a campsite space or of a random space's campsite option). Cells: where each space is drawn on the
+	// board's grid (column east, row south; -1 where the map draws none).
+	private sealed record Board(Node[] Nodes, List<int>[]? Next, List<int> Camps, (int X, int Y)[] Cells);
 
 	private static Dictionary<uint, Board>? _boards;
 	private static (uint Board, int Node) _lastBattle = (0, -1);
 	private static uint _lastNoted;
 	private static int _current = -1;
+	private static bool _done;
+	private static bool _fighting;
 
 	/// <summary>The space RSR follows the run on: the last battle, or a campsite, shop or treasure opened after it; -1 unknown.</summary>
 	internal static int Current => _current;
+
+	/// <summary>
+	/// Whether the space RSR follows the run on is done: a campsite, shop or treasure as soon as its window opened, a battle once
+	/// a fight ran and ended after its horn screen named it (concept 21, K10 "Weg", "Wann"; his rule of 07.11.2026).
+	/// </summary>
+	internal static bool CurrentDone => _done;
+
+	/// <summary>Every frame on a board: a fight that ends after the horn screen named the battle finishes its space.</summary>
+	internal static void NoteCombat(bool inCombat)
+	{
+		if (inCombat)
+		{
+			_fighting = true;
+		}
+		else if (_fighting)
+		{
+			_fighting = false;
+			_done = true;
+		}
+	}
 
 	/// <summary>The board and space of the last battle the horn screen named in this run; board 0 before the first.</summary>
 	internal static (uint Board, int Node) LastBattle => _lastBattle;
@@ -60,6 +86,8 @@ internal static class CrucibleRoute
 		_lastBattle = (0, -1);
 		_lastNoted = 0;
 		_current = -1;
+		_done = false;
+		_fighting = false;
 	}
 
 	/// <summary>
@@ -80,17 +108,86 @@ internal static class CrucibleRoute
 			if (node.Kind == kind || (node.Kind == Space.Random && node.Options.Exists(o => o.Kind == kind)))
 			{
 				_current = next;
+				_done = true;
 				DefenseTrace.Line($"crucible route: on the {kind} at move {node.Move}");
 				return;
 			}
 		}
 	}
 
-	/// <summary>The spaces of the board the run is on, and the ways between them; null while none is known.</summary>
-	internal static (Node[] Nodes, List<int>[] Next, List<int> Camps)? Map
+	/// <summary>The spaces of the board the run is on, the ways between them and where each is drawn; null while none is known.</summary>
+	internal static (Node[] Nodes, List<int>[] Next, List<int> Camps, (int X, int Y)[] Cells)? Map
 		=> _lastBattle.Board != 0 && Boards.TryGetValue(_lastBattle.Board, out var route) && route.Next != null
-			? (route.Nodes, route.Next, route.Camps)
+			? (route.Nodes, route.Next, route.Camps, route.Cells)
 			: null;
+
+	/// <summary>
+	/// The fights on the shortest way from where the run stands to the final fight, the final fight included (concept 21, K13,
+	/// A656): normal ones (an enemy, a random space that can be a battle) and heavy ones (elite, boss). The space the run stands
+	/// on counts while it is not done. Null while the board or its ways are unknown.
+	/// </summary>
+	internal static (int Normal, int Heavy)? FightsAhead()
+	{
+		if (_lastBattle.Board == 0 || _current < 0 || !Boards.TryGetValue(_lastBattle.Board, out var route) || route.Next == null
+			|| _current >= route.Nodes.Length)
+		{
+			return null;
+		}
+
+		var memo = new Dictionary<int, (int Normal, int Heavy)>();
+		if (!_done)
+		{
+			return From(_current);
+		}
+
+		(int Normal, int Heavy)? best = null;
+		foreach (var next in route.Next[_current])
+		{
+			var ahead = From(next);
+			if (best is not { } b || ahead.Normal + ahead.Heavy < b.Normal + b.Heavy)
+			{
+				best = ahead;
+			}
+		}
+
+		return best ?? (0, 0);
+
+		(int Normal, int Heavy) From(int index)
+		{
+			if (memo.TryGetValue(index, out var known))
+			{
+				return known;
+			}
+
+			var node = route.Nodes[index];
+			(int Normal, int Heavy) own = node.Kind switch
+			{
+				Space.Elite or Space.Boss => (0, 1),
+				Space.Enemy => (1, 0),
+				_ => node.MayBeBattle ? (1, 0) : (0, 0),
+			};
+
+			memo[index] = own;
+			if (node.Kind == Space.Boss || route.Next[index].Count == 0)
+			{
+				return own;
+			}
+
+			(int Normal, int Heavy)? rest = null;
+			foreach (var next in route.Next[index])
+			{
+				var ahead = From(next);
+				if (rest is not { } r || ahead.Normal + ahead.Heavy < r.Normal + r.Heavy)
+				{
+					rest = ahead;
+				}
+			}
+
+			var total = rest is { } found ? (own.Normal + found.Normal, own.Heavy + found.Heavy) : own;
+			memo[index] = total;
+			return total;
+		}
+	}
 
 	/// <summary>The horn screen named <paramref name="battleDetail"/> (an XBMBattleDetail row): the space it stands on.</summary>
 	internal static void NoteBattle(uint battleDetail)
@@ -109,6 +206,8 @@ internal static class CrucibleRoute
 				{
 					_lastBattle = (board, i);
 					_current = i;
+					_done = false;
+					_fighting = false;
 					DefenseTrace.Line($"crucible route: battle {battleDetail} is board {board}, move {route.Nodes[i].Move} "
 						+ $"({route.Nodes[i].Kind}) - {(route.Next == null ? "the board's ways are unread" : "ways read")}");
 					return;
@@ -342,7 +441,7 @@ internal static class CrucibleRoute
 			return true;
 		}
 
-		route = new Board([], null, []);
+		route = new Board([], null, [], []);
 		return false;
 	}
 
@@ -391,19 +490,26 @@ internal static class CrucibleRoute
 			}
 
 			var ways = new Dictionary<uint, List<(int From, int To)>>();
+			var drawnAt = new Dictionary<uint, Dictionary<int, (int X, int Y)>>();
 			foreach (var board in excel.GetSubrowSheet<RawSubrow>(name: "XBMContentStageEventMap"))
 			{
 				var list = new List<(int, int)>();
+				var cells = new Dictionary<int, (int X, int Y)>();
 				foreach (var row in board)
 				{
-					// Kind 1 is the space itself, 0 padding; above 1 a way drawn from Node to Next.
-					if (row.ReadUInt8Column(CellKindColumn) > (byte)Space.Start)
+					var cellKind = row.ReadUInt8Column(CellKindColumn);
+					if (cellKind > SpaceCell)
 					{
 						list.Add((row.ReadUInt8Column(CellNodeColumn), row.ReadUInt8Column(CellNextColumn)));
+					}
+					else if (cellKind == SpaceCell)
+					{
+						cells[row.ReadUInt8Column(CellNodeColumn)] = (row.ReadUInt8Column(CellXColumn), row.ReadUInt8Column(CellYColumn));
 					}
 				}
 
 				ways[board.RowId] = list;
+				drawnAt[board.RowId] = cells;
 			}
 
 			var restCounts = new Dictionary<uint, List<int>>();
@@ -475,7 +581,14 @@ internal static class CrucibleRoute
 
 				if (nodes.Count > 0)
 				{
-					boards[board.RowId] = new Board([.. nodes], next, restCounts.TryGetValue(board.RowId, out var rest) ? rest : []);
+					var cells = new (int X, int Y)[nodes.Count];
+					var placed = drawnAt.TryGetValue(board.RowId, out var at) ? at : [];
+					for (var i = 0; i < cells.Length; i++)
+					{
+						cells[i] = placed.TryGetValue(i, out var cell) ? cell : (-1, -1);
+					}
+
+					boards[board.RowId] = new Board([.. nodes], next, restCounts.TryGetValue(board.RowId, out var rest) ? rest : [], cells);
 				}
 			}
 		}

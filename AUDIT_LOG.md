@@ -19121,6 +19121,267 @@ Löschungen").
 *Prüfgrad:* Release-API und Workflow-Lauf gelesen, Prüfskripte; die Übergabe gegen den Release-Text abgeglichen (jeder
 der 103 Einträge steht im Gesamtbild).
 
+### A654 · Empfehlungsfenster: lesbar nach den allgemeinen Regeln, größenveränderbar, Layout in Dear ImGui gemessen (07.11.2026)
+
+Sein Befund (07.11.2026): „das fenster welches für den beastmaster, crucible, brett entwickelt wurde ist zu schmal und
+kann weder in höhe noch breite angepasst werden. so nicht nutzbar". Seine Vorgaben im selben Zug: „es gibt
+allgemeingültige ui/ux regeln, wie etwas gut erkennbar und lesbar sein muss. das wurde missachtet" (Vorgabe, mit Rüge);
+„dabei ist für mich uninteressant, was upstream macht" (Präzisierung: Maßstab sind die Regeln, nicht Upstreams oder
+RebornMaterials Praxis); „ich will von dir keine nicht nutzbaren fenster bekommen" (Vorgabe). Eingetragen in
+`.claude/rules/code.md`, „Oberfläche", und Konzept 03, „Hilfsfenster".
+
+- *1 Research, Ursache:* `RecommendationWindow` (A633) setzte `ImGuiWindowFlags.AlwaysAutoResize`; RebornMaterials
+  Karte bricht ihren Text an ihrem rechten Rand um (`M3Card.PushContentWrap`, 0bd2517), also am Fensterrand. Der Inhalt
+  fordert so nie mehr Breite, als das Fenster hat; die Breite ergibt sich aus dem breitesten Element, das nicht umbricht.
+  Die Kartentitel zählen nicht dazu, weil RebornMaterial sie auf die Zeichenliste malt (kein Element). Der
+  Auto-Größenmodus sperrt zudem das Ziehen in beide Richtungen. In einer echten Dear ImGui nachgestellt
+  (imgui-bundle 1.93, headless): Teamfenster 116 × 664 px, Titel abgeschnitten („Team for t"), Begleiternamen in
+  Einzelbuchstaben, das Fenster läuft unten aus dem Bild; mit nur einem Absatz und Knopf 59 × 331 px. Die Breite hing
+  an der Statuszeile unter dem Knopf, die erst nach „Apply" Text trägt.
+- *Normen (Quellen gelesen 07.11.2026):* WCAG 2.2: 1.4.3 Kontrast 4,5:1; 1.4.4 Text bis 200 % ohne Verlust; 1.4.8
+  (AAA) Zeilen höchstens 80 Zeichen, Zeilenabstand 1,5; 1.4.11 Nicht-Text 3:1; 2.5.8 Ziel 24 × 24 px. ISO 9241-110:
+  Steuerbarkeit. Microsoft Windows UX Guide (Layout, Window Management, UX-Checkliste): Startgröße nach Inhalt, kein
+  abgeschnittener Inhalt, Mindestgröße, wo der Inhalt sonst unbrauchbar wird, Zeilen 65 (Checkliste) bzw. 80 Zeichen,
+  Zusammengehöriges eng, Getrenntes weit, „If the first thing users do is resize a window […], its size is wrong".
+  Baymard (nach Emil Ruder): 50–75 Zeichen; zu kurze Zeilen brechen den Lesefluss. Nielsen Norman Group: Gesetz der Nähe.
+- *Messung der übrigen Regeln:* Kontrast am Schema von RebornMaterial (0bd2517) nachgerechnet, sechs Akzentfarben,
+  schwarzes und weißes Spielbild unter dem zu 97 % deckenden Fenster: Fließtext ≥ 13,28:1, Gründe ≥ 10,08:1, Badge-Text
+  6,2:1, Knopf 7,69:1 – erfüllt. Verletzt: Kartentitel (TitleMedium 16 px) gleich groß wie der Fließtext (Dalamuds
+  Standardschrift Axis 12 pt = 16 px, Dalamud a7409604) – keine Hierarchie; Badge-Text 11 px, unter der kleinsten
+  Axis-Größe des Spiels (9,6 pt = 12,8 px); Empfehlung, Grund und nächste Empfehlung im selben Abstand – keine Gruppen.
+- *2–5 Optionen und Abwägung:* (a) Auto-Größe behalten, feste Umbruchbreite: Breite stimmt, Höhe nicht ziehbar – gegen
+  seine Angabe. (b) Größe frei, feste Startgröße (`DefaultSize` mit `FirstUseEver`): eine Zahl ohne Bezug zum Inhalt,
+  greift nicht bei seiner gespeicherten Altgröße. (c) Größe frei, Start- und Mindestbreite aus dem Text gemessen,
+  Höhe folgt dem Inhalt, bis er sie kürzer zieht. (c) gebaut: kein Preis außer Code; Startbreite in Zeichen des Textes
+  selbst (Breite durch Länge), daher ohne angenommene Zeichenbreite.
+- *6 Falsifikation:* Kein Defekt? Im Modell nachgestellt, siehe oben. Option falsch? Das Modell zieht die Ränder mit der
+  Maus: kürzer (bleibt, rollt), länger (stoppt am Inhalt, folgt wieder), breiter (Höhe folgt), schmaler (stoppt bei
+  50 Zeichen); 200 % Textgröße; 800 × 400 Bildschirm – alles hält. Ausgeliefert, nichts ändert sich? Seine
+  gespeicherte Altgröße (Auto-Größenmodus) würde `FirstUseEver` übergehen; deshalb ersetzt das erste Bild einer Sitzung
+  eine Breite unter der Mindestbreite durch die Startbreite – im Modell nachgestellt (116 px → 459 px).
+- *7 Umsetzung:* `RecommendationWindow` neu: ohne Auto-Größe; misst beim Zeichnen je Text und Element die nötige
+  Breite, setzt vor dem nächsten Bild Mindestbreite, Höchsthöhe und, wo fällig, die Größe (`Size`,
+  `SizeConstraints`, Dalamud skaliert beides); Titel als Element in der kleinsten Titelrolle über dem Fließtext; Chip in
+  Textgröße auf der Container-Rolle (Kontrast ≥ 7,23:1); eine Zeilenhöhe zwischen Empfehlungen. Die sechs Fenster
+  zeichnen in `DrawContent`; der Carnivale-Kopf nutzt `Title`. Feste Werte 50, 65, 75 mit Quelle in
+  `fixed_values.json`.
+- *Prüfmittel:* `window_layout_model.py` (Modell, Selbsttest gegen drei eingebaute Defekte; Bilder mit `--png`);
+  `check_window_layout.py` weist Auto-Größe mit Umbruch am eigenen Rand ab, mit Selbsttest; zugelassen mit Grund:
+  `DiagnosticsWindow` (ungebrochene Zeilen setzen die Breite) und das Rücksetz-Popup im Hauptfenster
+  (Mindestbreite 380 px × Skalierung).
+- *Klasse:* Die Fork-Fenster erhoben (`git log --diff-filter=A upstream/main..HEAD -- RotationSolver/UI`): sechs
+  Empfehlungsfenster (behoben), `DiagnosticsWindow` (Auto-Größe ohne Ziehen, ungebrochene Zeilen, nutzbar; er nutzt es
+  nicht), die Tabellenansicht der gelernten Tabellen (Tabelle im ziehbaren Hauptfenster, Spalten ziehbar). Dabei
+  gefunden: Tooltips (`ImguiTooltips`) zeigen Optionsbeschreibungen ungebrochen bis 1200 px; 30 Beschreibungen des
+  Forks haben Zeilen über 170 Zeichen und werden abgeschnitten – Defekt im TODO.
+- *Unbelegt:* der Zeilenabstand in einem umbrochenen Absatz (ImGui: Schrifthöhe; WCAG 1.4.8 misst am Geviert, das ImGui
+  für Axis nicht ausweist).
+
+*Prüfgrad:* Compile ohne Warnung; Prüfskripte; Layoutmodell in Dear ImGui 1.93 mit Ersatzschrift (nicht Dalamud, nicht
+RebornMaterials Malen, nicht Axis); Kontrast gerechnet. Im Spiel nicht beobachtet.
+
+### A655 · Tooltips: Optionsbeschreibungen beim Lesemaß umgebrochen; die Regel an einer Stelle (07.11.2026)
+
+Defekt aus A654 („Tooltips: lange Optionsbeschreibungen werden rechts abgeschnitten"), nach seinen Vorgaben vom
+07.11.2026 zu den Fenstern gleich mit ihnen bearbeitet.
+
+- *1 Research:* `ImguiTooltips.ShowTooltip` öffnet ein Fenster mit Auto-Größe, 150 bis 1200 px × Skalierung. Die
+  Beschreibung einer Option steht darin ungebrochen (`ImGui.Text` für einen Text, `ImGui.BulletText` in
+  `Searchable.RowTooltip` und `Searchable.ShowTooltip`), sobald „Show setting descriptions inline" aus ist (ab Werk an).
+  Über `M3Tooltip.Handler` laufen auch die Tooltips von RebornMaterial hindurch. 204 Beschreibungen erhoben, 133 mit
+  Zeilen über 80 Zeichen, 30 über 170, die längste 2239. Im Modell steht die längste in einer Zeile, 1200 px breit,
+  der Rest abgeschnitten. Der Rotations-Tooltip der Navigation bricht die Beschreibung mit `ImGui.TextWrapped` am
+  Fensterrand um – dieselbe Klasse wie A654: Er wird so schmal wie seine übrigen Zeilen.
+- *2–5 Optionen:* (a) Tooltip in fester Breite: eine Zahl ohne Bezug zum Text, kurze Tooltips zu breit. (b) Umbruch
+  an einer Stelle, die aus dem Text kommt, nach derselben Regel wie in den Fenstern. Gebaut: (b), ohne Preis.
+- *Universell zuerst:* Die Regel steht einmal in `ReadableText` (50, 65, 75 Zeichen je Absatz in Zeichen des Textes
+  selbst), und `RecommendationWindow` liest sie daraus.
+- *6 Falsifikation:* Kein Defekt? Im Modell nachgestellt (1200 px, abgeschnitten). Option falsch? Mit Auto-Größe
+  wächst der Tooltip auf die berechnete Umbruchstelle, statt an seinem Rand zu brechen. Im Modell: 470 × 592 px,
+  Zeilen bis 66 Zeichen, nichts abgeschnitten, mit und ohne Aufzählungspunkt. Ausgeliefert, nichts ändert sich? Nur
+  bei Tooltips, die eigenen Inhalt mit langen ungebrochenen Zeilen zeichnen. Dazu die Zeitleiste
+  (`ActionTimelineWindow`, kurze Zeilen) und die Hinweiszeilen (`TextDisabled`, kurz) gelesen; beide nicht betroffen.
+- *Prüfmittel:* `check_window_layout.py` prüft auch den Inhalt jedes `ImguiTooltips.ShowTooltip(() => …)`. Gegen die
+  alte Fassung der Navigation schlägt es an, gegen die neue nicht. `window_layout_model.py` spielt den Tooltip alt und
+  neu durch.
+
+*Prüfgrad:* Compile ohne Warnung; Prüfskripte; Layoutmodell in Dear ImGui 1.93 mit Ersatzschrift. Im Spiel nicht
+beobachtet.
+
+### A656 · Crucible: Weg links oder rechts mit Grund, nach dem Kampf; Schatz auf einer Skala mit Grund je Angebot (07.11.2026)
+
+Seine Fragen vom 07.11.2026, je mit Bild. Eingeordnet: Weg – Vorschlag („Da wäre eine empfehlung hilfreich. eher links
+oder rechts gehen … solche empfehlungen gehören auch ingame rein"), Schatz – Frage und Vorgabe („der grund der auswahl
+sollte im tooltip drin stehen"), Zeitpunkt – Hinweis („der kampf kann doch noch den zustand von mir und meinen
+begleitern beeinflussen"), Hörner – Frage (A657, TODO).
+
+- *1 Research:* Weg (A632): Das Fenster nannte die Felder ohne Seite und rechnete nur bis zum nächsten Feld; es stand
+  schon am Hornfenster vor dem Kampf des Felds (Spur seines Laufs: 16:00:14, vor Kampf 5). `XBMContentStageEventMap`
+  Art 1 zeichnet je Feld seine Zelle (X Osten, Y Süden). Schatz: Die Rangfolge der Liste (A578) stellte jede
+  Ausrüstung mit Gewinn vor jeden Heilgegenstand; die Mehrheilung zählte nur an gemessener Heilung im Kampf.
+- *2–5 Optionen:* Weg: (0) wie bisher; (a) nur das nächste Feld; (b) bis zum Zusammenlauf der Wege, dann bis zur
+  nächsten Campsite oder zum Endgegner – gebaut; Seite aus dem Kreuzprodukt Start→Endgegner mit dem Schritt. Zeitpunkt:
+  erst, wenn der Kampf des Felds vorbei ist (`CrucibleRoute.CurrentDone`, Kampfbeginn und -ende je Feld). Schatz: (0)
+  Rangfolge; (a) feste Gewichte (Daedalus) – verworfen, keine Herleitung; (b) eine Skala in LP-Anteilen über die
+  übrigen Kämpfe des kürzesten Wegs (`CrucibleRoute.FightsAhead`) – gebaut, mit dem, was sie nicht misst, im Text.
+- *Seine Lagen nachgerechnet:* Weg Zug 1: rechts (Schatz) rund 92 % gegen links (Campsite) rund 81 % an der Campsite
+  von Zug 7, beide sicher; die Campsite belebt keinen gefallenen Begleiter. Schatz Zug 3: Pulver 40 % gegen Schuhe
+  rund 6 %; die Wahl stimmte, ihr Grund fehlte.
+- *6 Falsifikation:* Kein Defekt? Widerlegt an seinen Bildern (kein Grund, keine Seite, vor dem Kampf). Option falsch?
+  Gegenthesen im Konzept (K10 „Weg", K13 „Eine Skala"): Kamera – das Feld steht neben der Richtung; feste Gewichte –
+  dieselbe Skala wie der Laden. Ausgeliefert, nichts ändert sich? Ohne Brettplan im Blatt, vor der ersten gemessenen
+  Last (dann die Rangfolge) und auf Gabelungen ohne Unterschied bis zur nächsten Rast.
+- *7 Gebaut:* `CrucibleRoute` (Zellen, `NoteCombat`, `CurrentDone`, `FightsAhead`), `BeastmasterCrucibleRoute` (Seite,
+  Horizont, `CrucibleRouteWhy`), `RankOffers(oneScale)`, `OfferScale`, `CrucibleTreasureOffers` mit Namen in der Sprache
+  des Clients; Wegfenster zeigt den Grund, Schatzfenster jedes Angebot mit Urteil.
+- *9 Dokumentation:* Konzept 21 K10 „Weg", K13; Konzept 03 „Hilfsfenster" (Grund und Wiedererkennen). TODO „Laden:
+  Ausrüstung und Gegenstände auf einer Skala".
+
+*Prüfgrad:* Compile ohne Warnung; Prüfskripte; Layoutmodell (Schatzfenster mit vier Angeboten: 499 × 441 px, nichts
+abgeschnitten, längste Zeile 65 Zeichen). Im Spiel nicht beobachtet.
+
+### A657 · Crucible-Laden: Marken im deutschen Client, getragene Ausrüstung, Futterplätze; Upload vom 07.11.2026 (07.11.2026)
+
+Seine Bilder vom 07.11.2026 aus dem Laden auf Zug 8 von Brett 1 („so ok?"; „mehr verfüttern als felder da sind, ist
+nicht möglich. also warum vorschlag für drake?" – ein Hinweis auf die Mechanik und eine Frage) und seine Uploads
+(DefenseTrace mit drei Sitzungen, Build e852b2cf7 ab 15:42; zwei ACT-Mitschnitte; gelernte Tabellen).
+
+- *Defekt 1, Marken:* Das Spiel zeigte 1421 Marken, das Fenster „1 tokens" und „Nothing here adds safety". Ursache:
+  ECommons `ReaderXBMContentsItemShop.Coins` nimmt `DigitParsers.FirstNumber`, das nur das Komma als Tausendertrenner
+  kennt; der deutsche Client schreibt „1.421". Bei 978 und 888 Marken (unter 1000) las RSR richtig – das bestätigt die
+  Ursache. Klasse: Zahlen aus Fenstertexten; außer Marken und Preisen liest RSR Zahlen nur aus englischen Blättern
+  (`ActionTooltip`, Wirktexte). Behebung: `CountIn` liest die Ziffern der ersten Zahl, gleich welcher Trenner zwischen
+  den Dreiergruppen steht.
+- *Defekt 2, getragene Ausrüstung:* Empfohlen „858 Mythril Armor", das Spiel lehnte ab („Du besitzt die Mithril-Rüstung
+  bereits …"), RSR stoppte an Zeile 14. Er hatte sie auf Zug 5 aus einem Schatz genommen (Spur 15:59:55, RSRs Knopf).
+  Ursache: `RankOffers` schloss ein Angebot, das unter der Ausrüstung steht, nicht aus, und `ShopValue` rechnete es als
+  zweites Stück. Behebung: `Unworn` vor jeder Wahl; was RSR aus einem Schatz nahm, zählt im Laden als getragen, falls
+  dessen Liste es noch nicht zeigt. Preis: Verkauft er ein solches Stück im Laden, hält RSR es für getragen.
+- *Defekt 3, Futter:* Die Ladenliste empfahl nach jedem Kauf dem Begleiter das nächstbeste Futter (Spur 16:05:25 bis
+  16:10:16: Toast, Porcinipilz, Frischkäse, dann Honig, Eier, Beeren, Banane), ohne seine Futterplätze zu kennen, und
+  nahm das erste passende Angebot auch ohne Gewinn (Banane: Ätherausbruch und Schaden nach kritischem Treffer, beide
+  ungezählt, „effective HP rises 0 %"). Drakon hatte beide Plätze belegt. Das Begleiterfenster führt je Begleiter
+  belegte und mögliche Plätze und das Futter (ECommons `FedCurrent`, `FedMax`, `FedItems`; Werkzeugquelle). Behebung:
+  `NoteFeedSlots` merkt sie, sooft das Fenster steht; empfohlen wird nur für freie Plätze, erst je Begleiter einer,
+  Heiler zuerst, nur mit Gewinn an wirksamen LP, danach nur Schaden mit diesem Grund; beim Füttern rechnet RSR mit den
+  Plätzen, die das Fenster jetzt zeigt. Namen von Futter und Begleitern in der Sprache des Clients.
+- *Messung, die eine Gegenthese löst (K14, Gegenthese 3):* Kaktor 550/550 vor dem Frischkäse-Simulakrum, 763/823
+  danach: „Maximum HP +50 %" hebt die LP nicht mit, die Heilung beim Fressen zählt auf das neue Maximum.
+- *Optionen und Falsifikation:* Marken – (a) ECommons ändern (fremdes Repository, nicht meine Zuständigkeit), (b) eigene
+  Lesung – gebaut. Ausgeliefert, nichts ändert sich? Bei Trennern außerhalb von Punkt, Komma, Apostroph und Leerzeichen
+  (keiner bekannt). Futter – Gegenthese: Ruht ein Gefütterter an der Campsite und folgt der Laden ohne Kampf, sieht RSR
+  die Plätze bis zum nächsten Fenster belegt; Preis benannt (Konzept 21, K14). Liest ECommons `FedMax` falsch (0), gilt
+  ein Platz je Begleiter wie bisher.
+- *Upload allgemein:* Sitzung 1 (Build cc9f30ade, ein zweiter Charakter, Beastmaster im Zentralen Hochland von
+  Coerthas, 19 Kämpfe) und 2 (Tiefer Wald): keine Tode; die häufigste Zeile „single defence open, nothing chosen …
+  refused before: Schuppenpanzer (BasicCheck)" ist Bestienkönnen ohne Borgen, nicht verfügbar, ohne Wirkung im Kampf.
+  Sitzung 3: Brett 1 gewonnen, kein Tod; der Weghinweis kam noch vor dem Kampf (alter Build, A656 behebt es). Gelernte
+  Tabellen gegen den 06.11.: `AimedHitPotential` neu 46935 (Seelenlose, 6,8 % gezielt), `InterruptibleCasterKinds`
+  zählt hoch, `DotOnParty` mehr Ticks; plausibel am Mitschnitt.
+- *Dokumentation:* Konzept 21 K10 „Laden, gebaut" (Marken, Getragenes), K14 (Futterplätze, Gewinn, Namen, seine Lage,
+  Gegenthesen), K8 Schritt 7 (seine Frage zu den Hörnern); TODO „Angeschlagene Begleiter auf den Hörnern".
+
+*Prüfgrad:* Compile ohne Warnung; Prüfskripte; Ursachen an der Spur und an seinen Bildern belegt. Die neuen Lesungen
+(`FedMax`, `FedItems`) im Spiel nicht beobachtet; jede Änderung der Plätze schreibt „crucible feed slots: …" in die Spur.
+
+### A658 · Crucible: Angeschlagene Begleiter – früh heilen nur vor dem ersten Treffer, mit dem Maß des Bretts (07.11.2026)
+
+TODO „Angeschlagene Begleiter auf den Hörnern" aus seiner Frage vom 07.11.2026 (Ziz 264/487, Golem 439/550 auf den
+Hörnern: „warum werden die nicht vorab geheilt im kampf?"); Beastmaster-Vorrang. Seine Rüge vom selben Abend („warum
+hast du gestoppt? du bist mit beastmaster noch nicht fertig") betraf, dass ich den Punkt angekündigt statt begonnen hatte.
+
+- *1 Research:* Die LP der Begleiter tragen sich über das Brett (Agentenwerte zwischen den Kämpfen, Daedalus „HP
+  carries over"). K8 Schritt 7 heilt bei der Marke „größter Treffer in diesem Kampf oder Halterate über einen GCD";
+  vor dem ersten Treffer im Kampf galt „Use HP potions below this HP" (ab Werk 50 %) als Anteil. Sein Lauf: Golem bekam
+  bei 118 LP den Bestien-Heiltrank III (15:58:53); Ziz und Golem standen nicht im Endkampfplan; Golem ruhte auf Zug 7.
+- *2 Optionen:* (0) wie bisher; (a) früh unter festem Anteil (Daedalus 35 %); (b) Heiler des Endkampfplans nach der
+  letzten Campsite früh; (c) gesunde vor angeschlagenen auf die Hörner; (d) außerhalb des Kampfs; (e) vor dem ersten
+  Treffer im Kampf der größte Einzeltreffer eines Begleiters auf diesem Brett als Marke.
+- *3–5 Abwägung im Kampf:* Ein Trank heilt früh dieselbe Menge wie spät; früh verliert er gegen eine Campsite (umsonst),
+  gegen einen Begleiter, den kein späterer Kampf braucht, und durch Überheilung. Früh gewinnt nur gegen einen Treffer,
+  der vor dem Trank fällt – vor dem ersten Treffer im Kampf misst RSR nichts, und die Trankschwelle ist keine Größe der
+  Gegner. (a) verschenkt Tränke vor einer Campsite; (b) läuft ins Leere, weil K11 einen knappen Endkampf-Heiler von den
+  Hörnern hält, und kommt er doch, heilt die Marke dieselbe Menge; (c) verworfen in A637; (d) unbelegt und nach (b)
+  unnötig. Gewählt: (e).
+- *6 Falsifikation:* Kein Defekt? Für seinen Fall richtig – die Antwort ist „nein, und aus diesen Gründen". Für den
+  ersten Treffer eines Kampfs hält die Lücke: Ein Begleiter mit 30 % kommt bei 50 % Trankschwelle zwar zum Trank, einer
+  mit 55 % unter einem Bretttreffer von 60 % nicht. Option falsch? Überschätzt der Bretttreffer einen leichten Kampf,
+  kommt der Trank früher, nicht größer (BestHeal nimmt den kleinsten, der darüber hebt). Ausgeliefert, nichts ändert
+  sich? Im ersten Kampf eines Bretts (kein Maß), bei einem Heilgegenstand (der letzte bleibt dir) und wenn der Begleiter
+  über dem Bretttreffer steht – in seinem Lauf 07.11. der Normalfall.
+- *7 Gebaut:* `_familiarLargestHitOnBoard` (je Gebiet), `FamiliarLossAhead` nimmt es vor dem ersten Treffer im Kampf;
+  Optionstext „Use the board's items that keep you and your familiar alive" nachgezogen.
+- *9 Dokumentation:* Konzept 21 K8 Schritt 7 (Marke, „Vor dem ersten Treffer", „Früher heilen?", Verworfenes); TODO-Eintrag
+  entfernt.
+
+*Prüfgrad:* Compile ohne Warnung; Prüfskripte. Im Spiel nicht beobachtet; jede Heilung schreibt „crucible item: … for
+<Begleiter> at … HP, it can lose …" in die Spur.
+
+### A659 · Crucible-Laden: Ausrüstung und Gegenstände auf einer Skala; Zustände vor der Skala (07.11.2026)
+
+TODO „Laden: Ausrüstung und Gegenstände auf einer Skala" (aus A656); Beastmaster-Vorrang.
+
+- *1 Research:* `RankOffers` kaufte nach Leben (1) und tödlichen Zuständen (2) die Ausrüstung mit dem größten L (3), dann
+  Zustände (4), Tränke (5), Schutzgegenstände (6). Jede Ausrüstung mit Gewinn ging jedem Trank vor. Sein Laden auf Zug 8
+  von Brett 1 (Spur 16:08:51, 978 Marken): „Mythril Armor, G1 Beast Potion" – die Rüstung mit „+4 %" für 858 Marken,
+  der Trank (10 %) nur mit dem Rest. Der Schatz rechnete seit A656 beides auf einer Skala (`OfferScale`).
+- *2 Optionen:* (0) wie bisher; (a) die Skala des Schatzes auch im Laden, Stück für Stück nach Wert je Marke, über jede
+  Startwahl; (b) wie (a), Tränke ohne Obergrenze; (c) wie (a), Tränke bis zur erwarteten Last (Mittel); (d) wie (a),
+  Tränke bis zur schlimmsten Last (jeder Kampf so schwer wie der schwerste gemessene) plus fehlende LP.
+- *3–5 Abwägung im Kampf:* (b) kauft zehn Tränke vor jeder Rüstung, auch wo drei Kämpfe zu 18 % bleiben und du 36 %
+  hältst – Marken für LP, die du nicht heilen kannst. (c) unterschätzt einen Kampf über dem Mittel, also gerade den, in
+  dem der Trank zählt. (d) kauft keinen Trank, der in keinem gemessenen Verlauf gebraucht würde, und keinen weniger, als
+  der schwerste Verlauf braucht. Gewählt: (d). Zustände (4) vor die Skala: Sie decken, was LP nicht abfangen, und die
+  Skala wiegt nur LP; vorher verdrängte eine Rüstung mit wenigen Prozent ein Paralyse-Serum, wenn die Marken knapp waren.
+- *6 Falsifikation:* Kein Defekt? Widerlegt an seinem Laden (Rüstung vor Trank). Option falsch? Der Endkampf kann
+  schwerer sein als jeder gemessene – Annahme benannt; sein Endkampf auf Brett 1 lag im Rahmen. Vorrat für spätere Läden:
+  nicht widerlegt, Preis im Konzept. Ausgeliefert, nichts ändert sich? Vor der ersten Messung (alte Reihenfolge) und wo
+  nur Ausrüstung oder nur Tränke im Angebot stehen.
+- *7 Gebaut:* `RankOffers`: Zustände vor der Skala; `ChooseOnScale`/`ScaleFrom` (Startwahl, Wert je Marke, Skala nach
+  jedem Stück neu); `OfferScale` mit gehaltenen Heilgegenständen und Obergrenze, auch im Schatz.
+- *9 Dokumentation:* Konzept 21 K10 (Liste, „Eine Skala, sobald ein Kampf gemessen ist", „Warum die Zustände vor der
+  Skala", Gegenthese), K13 (Laden, Obergrenze); TODO-Eintrag entfernt.
+
+*Prüfgrad:* Compile ohne Warnung; Prüfskripte. Im Spiel nicht beobachtet; jede Liste steht als „crucible shop: … recommends
+…" in der Spur.
+
+### A660 · Crucible K3: Gegner, die zu einem Verbündeten laufen (Irrlichter des Ogers); offene Stellen von K3 und K11 geschlossen (07.11.2026)
+
+Beastmaster-Vorrang (seine Rüge vom 07.11.2026: „du bist mit beastmaster noch nicht fertig"); offene Stellen in Konzept 21
+erhoben. Sein Hinweis vom selben Abend (eingeordnet als Hinweis mit Vorschlag): „die irrlichter kommen von aussen aus
+vier richtungen und fliegen auf den mittigen oger zu. wenn sie ihn erreichen, entsteht schaden beim spieler. also muss
+der spieler zu den irrlichtern rennen. oder es muss ein aoe (falls vorhanden) gezündet werden, der alle irrlichter
+zusammen trifft, wenn sie gerade nah genug beieinander sind, aber noch weit genug weg vom oger".
+
+- *1 Research:* Seine Läufe 05., 06., 07.11. (ACT): je Oger-Kampf sechs Irrlicht-Ebenbilder (171 LP) und zwei Riesen
+  (1575 LP), Ankunft 9 bis 25 s nach dem Erscheinen, in fünf Kämpfen kein Irrlicht gestorben; Explosionen trafen den
+  Spieler mit bis zu 7 % (49728). 07.11.: RSRs Ziel sprang 16:03:25 bis 16:03:55 zwischen ihnen, je ein Treffer; der Oger
+  stand unangreifbar bei 4532 LP. BossModReborn 27be422 (`OgrePiece`): Burning Ward 46918 / Status 4175 Unverwundbarkeit,
+  Verbrannte Erde 46919/49728 Reichweite 60. Daedalus 2644cbe: Ward nach 52 bis 55 s, 19 s Marsch, Deckung nimmt die
+  Verwundbarkeit (14 von 15 Stapeln), 14 Tode in 17 Kämpfen; Flächen (Parting Blow 7 y, Fang 11 y) erst, wenn alle
+  Adds in Reichweite liegen. `EnemyDanger.Compare`: bei gleicher Dringlichkeit entschied die Listenreihenfolge.
+- *2–5 Optionen und Abwägung:* (a) nächster zuerst bei gleicher Dringlichkeit – Laufweg ist verlorener Schaden; (b)
+  Ankunft je Gegner messen (Annäherung an den Gegner mit den meisten LP, Ankunftsabstand je Art gelernt); (c)
+  Zähnefletschen binnen eines GCD vor der ersten Ankunft (Deckung nimmt Explosion und Verwundbarkeit); (d) Fläche
+  halten, bis mehr in Reichweite kommen – verworfen: Wie viele noch kommen, zeigt die Annäherung nur für sichtbare, eine
+  gehaltene Fläche, die keinen weiteren trifft, kostet ihren Einsatz; die Flächenregeln feuern ab zwei. (e) Schaden an
+  Begleitern nach Bedarf gewichten – verworfen (keine Umrechnung zwischen deinen und Begleiter-LP; unter Zähnefletschen
+  ändert sie die Reihenfolge nicht; wer nimmt, entscheiden K9 und K11). (f) Stärkung anderer messen – nicht gebaut: K4
+  unterbricht Fanaticism (07.11. 16:13:12), A582 stellt die Magierin vorn, die Größe nennt kein Blatt.
+- *6 Falsifikation:* Kein Defekt? Widerlegt am 07.11. (30 s ohne Wirkung). Option falsch? Der Nächste kommt vielleicht
+  vorher an – er kommt dir entgegen, ein Irrlicht fällt in einem Schlag. Zähnefletschen schickt den Begleiter in die
+  Explosion – gewollt, K9 verbietet es bei einem Begleiter, den der nächste Verlust fällen würde. Ausgeliefert, nichts
+  ändert sich? Wo der Spieler woanders steht (RSR bewegt ihn nicht), ohne Begleiter, bevor das erste Irrlicht seiner Art
+  verschwand (dann Rand der Trefferkreise als Ankunft).
+- *7 Gebaut:* `Approach` (Ziel, Annäherung, Ankunft, gelernter Ankunftsabstand; Spurzeile beim Lernen), Aufruf im
+  `TargetUpdater`; `EnemyDanger.Nearer` als letzte Entscheidung in `Compare`; K9 in `BST_Reborn`: Zähnefletschen vor der
+  Ankunft, Spurzeile je Kampf.
+- *9 Dokumentation:* Konzept 21 K3 (verworfen, Stärkung, „Gegner, die zu einem Verbündeten laufen"), K11 (Feld und
+  Campsite-Agent mit seinen Daten geschlossen).
+
+*Prüfgrad:* Compile ohne Warnung; Prüfskripte; Messung an drei ACT-Mitschnitten. Im Spiel nicht beobachtet; „approach:"
+und „beastmaster: Snarl - an enemy running …" stehen in der Spur.
+
 ## B · Commit-Register (Fork vs. `upstream/main`)
 
 ### B1 · Einzelgeprüfte Fork-Commits
@@ -19444,3 +19705,4 @@ Die offene Arbeit dazu — Reihenfolge und Abbruchbedingung der Nachprüfung —
 | C169 | A595 und Konzept 03 („Bewegungssperre beim Wirken und die KI von BossMod"): „B, die Sperre weicht der KI (Empfehlung)" für die ganze Option; „Daedalus verlor so einen Heiler" | B gäbe auch die angehakten Kanäle frei (Waffengang, Flammenwerfer, Tanzimprovisation), die BossMod nicht kennt: Dort geht die KI auch zum Nachrücken, und jeder Schritt beendet den Kanal (ActionTransient 7385, 7418, 16014). Daedalus' Heiler starb an Daedalus' eigener Pause über `AI.PauseMovement`, nicht an RSRs Sperre (`CastMovementHoldService`, Daedalus c4a788f) | Konzept 03 neu gefasst: Empfehlung H (nur Zauber weichen der KI und enden mit der Antwort des Spiels) und K' für Kanäle; die Feldnotiz als Daedalus' eigener Fall geführt (A649) |
 | C170 | A650 („Status Arms Up 1176, Collective Unconscious 849, Improvisation 2695 auf Mitgliedern" als das, was ein Schutzkanal hält; „(c) KK stellt den Tank in die Fläche bleibt seine Gewichtung") und TODO („Nächster Schritt: seine Entscheidung zu H2, KK und den Häkchen") | 849 vergibt das Wirken einmal, die Minderung bleibt nach dem Abbruch; 2695 ist ein Regen – nur Arms Up endet mit seinem Kanal. Die Gewichtung von Tank gegen Gruppe entscheidet seine Regel zur Laufzeit; ein Optimum braucht keine Entscheidung (seine Vorgabe, 07.11.2026) | Gebaut ohne Vorlage (A651): Halten gegen die KI nur mit Waffengang und nur, wo die Minderung ein gefährdetes Mitglied vor einem angekündigten Treffer deckt |
 | C171 | A651 und Konzept 03 (Stand A651): „Meditieren ab Werk aus"; „Was bleibt, ist eine Grenze der Daten, kein Preis einer Wahl: die früheste Fläche ist global"; Kanal mit gehender KI gibt frei, „wenn der Treffer vor dem Ende des Kanals plus dem Weg … landet"; Kanal- und Zauberbeginn nur nach BossMods Zeichen; A651 „Eingetragen in CLAUDE.md" mit „Vorgelegt wird nur …" als Lesart, eine Entscheidung durch Wahl zu erledigen | Jede dieser Stellen erledigte eine Entscheidung durch Wahl einer Seite; seine Präzisierungen (07.11.2026) verlangen, die Lösung zu verbessern. Die Fläche je Ort ist in BossMods Hinweisen lesbar, der Spielraum des Wegs in `Hints.MaxCastTime`, das Pausenende in der Zeitleiste, und RSRs Erkennung ist für Kreis und Linie mit Gruppenvergleich sicher | Gebaut nach A652; CLAUDE.md: „Kappen ist keine Verbesserung" |
+| C172 | A633 und Konzept 03 (Stand A633): „*Nicht gebaut:* Fensterbreite mit Umbruch – feste Breiten wären Zahlen ohne Herleitung; die Fenster passen ihre Größe dem Inhalt an wie bisher"; A633, Falsifikation: „Breiten mit Umbruch bräuchten feste Zahlen – nicht gebaut" | Mit Auto-Größe und Umbruch am Kartenrand passte sich das Fenster nicht dem Inhalt an: es blieb so schmal wie sein schmalstes nicht umbrechendes Element (im Modell 116 px, Titel abgeschnitten) und ließ sich nicht ziehen. Die Breite ist aus dem Text ableitbar (Zeichen des Textes selbst, Lesemaß 50–75 Zeichen) | Gebaut nach A654 |

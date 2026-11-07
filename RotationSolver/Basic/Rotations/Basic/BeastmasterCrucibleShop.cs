@@ -1,4 +1,5 @@
 using System.Globalization;
+using System.Text;
 using System.Text.RegularExpressions;
 using Dalamud.Game;
 using ECommons.DalamudServices;
@@ -47,7 +48,7 @@ public partial class BeastmasterRotation
 
 	private static List<int>? _shopWanted;
 	private static (int Row, DateTime At)? _shopLastBuy;
-	private static (int Coins, int Bought, int Gear, int Items, uint Board, double Fights, float Stretch)? _shopKey;
+	private static (int Coins, int Bought, int Gear, int Items, uint Board, double Fights, float Stretch, int Feed)? _shopKey;
 	private static string _shopTraced = string.Empty;
 
 	// K13 (A578): the gear the last shop on this board showed held, with the slots - the treasure window does not list it.
@@ -185,7 +186,7 @@ public partial class BeastmasterRotation
 	/// </summary>
 	private static unsafe void RecommendPurchases(ReaderXBMContentsItemShop reader, List<ReaderXBMContentsItemShop.StockEntry> stock)
 	{
-		var budget = reader.Coins;
+		var budget = CountIn(reader.CoinsString);
 		var gear = CrucibleGearTable;
 
 		// What is held: the items in the director's ten slots, the gear the shop lists as owned.
@@ -207,12 +208,33 @@ public partial class BeastmasterRotation
 
 		var owned = new List<CrucibleGear>();
 		var gearSlots = 0;
+		var seen = new List<ushort>();
 		foreach (var piece in reader.OwnedEntries)
 		{
 			gearSlots++;
-			if (piece.Owned && piece.Id <= ushort.MaxValue && gear.TryGetValue((ushort)piece.Id, out var held))
+			if (piece.Owned && piece.Id <= ushort.MaxValue)
 			{
-				owned.Add(held);
+				seen.Add((ushort)piece.Id);
+				if (gear.TryGetValue((ushort)piece.Id, out var held))
+				{
+					owned.Add(held);
+				}
+			}
+		}
+
+		// What RSR took from a treasure on this board counts as worn, should the shop's list not show it yet (A657).
+		if (_gearSeen is { } before && before.Territory == DataCenter.TerritoryID)
+		{
+			foreach (var id in before.Gear)
+			{
+				if (!seen.Contains(id))
+				{
+					seen.Add(id);
+					if (gear.TryGetValue(id, out var taken))
+					{
+						owned.Add(taken);
+					}
+				}
 			}
 		}
 
@@ -227,7 +249,7 @@ public partial class BeastmasterRotation
 		}
 
 		var key = (budget, boughtRows, owned.Count, heldItems.Count, board,
-			loads is { } measured ? measured.Mean.Damage + measured.Heaviest.Damage + measured.Mean.Healed : 0d, stretch);
+			loads is { } measured ? measured.Mean.Damage + measured.Heaviest.Damage + measured.Mean.Healed : 0d, stretch, _feedSlotsSeen);
 		if (_shopKey == key)
 		{
 			return;
@@ -235,16 +257,7 @@ public partial class BeastmasterRotation
 
 		_shopKey = key;
 
-		// Remembered for the treasure (K13, A578): the gear the shop shows held on this board, and how many slots there are.
-		var seen = new List<ushort>();
-		foreach (var piece in reader.OwnedEntries)
-		{
-			if (piece.Owned && piece.Id <= ushort.MaxValue)
-			{
-				seen.Add((ushort)piece.Id);
-			}
-		}
-
+		// Remembered for the treasure (K13, A578): the gear held on this board, and how many slots there are.
 		_gearSeen = (DataCenter.TerritoryID, seen, gearSlots);
 
 		var offers = new List<(int Row, ushort Item, int Price)>();
@@ -252,7 +265,7 @@ public partial class BeastmasterRotation
 		{
 			if (stock[r].Listed && !stock[r].Bought && stock[r].Item is > 0 and <= ushort.MaxValue)
 			{
-				offers.Add((r, (ushort)stock[r].Item, stock[r].Price));
+				offers.Add((r, (ushort)stock[r].Item, CountIn(stock[r].PriceString.TextValue)));
 			}
 		}
 
@@ -275,13 +288,14 @@ public partial class BeastmasterRotation
 	/// <paramref name="heldItems"/> grow with each pick. <paramref name="spentAll"/> is what the picks cost together.
 	/// </summary>
 	private static unsafe List<CrucibleShopPick> RankOffers(List<(int Row, ushort Item, int Price)> offers, int budget, int maxPicks,
-		List<CrucibleGear> owned, int gearSlots, List<ushort> heldItems, int itemSlots, uint board, out int spentAll)
+		List<CrucibleGear> owned, int gearSlots, List<ushort> heldItems, int itemSlots, uint board, out int spentAll, bool oneScale = false)
 	{
 		var picks = new List<CrucibleShopPick>();
 		var gear = CrucibleGearTable;
 		var items = CrucibleItems;
 		var loads = CrucibleBoard.Loads;
 		var stretch = CrucibleBoard.FightsPerStretch;
+		offers = Unworn(offers, owned);
 
 		// The board's fights: the statuses they inflict that cost safety, and their enemies' sheet strength against
 		// intelligence.
@@ -332,13 +346,13 @@ public partial class BeastmasterRotation
 
 			if (gear.TryGetValue(id, out var piece) && piece.Life && !piece.SelfHarm && Take(row, price, true))
 			{
-				picks.Add(new CrucibleShopPick(row, piece.Name, price, "a second life: revives you by sacrificing your familiar"));
+				picks.Add(new CrucibleShopPick(row, ClientItemName(id, piece.Name), price, "a second life: revives you by sacrificing your familiar"));
 				owned.Add(piece);
 				life = true;
 			}
 			else if (items.TryGetValue(id, out var item) && item.Kind == CrucibleItemKind.Reraise && Take(row, price, false))
 			{
-				picks.Add(new CrucibleShopPick(row, item.Name, price, $"a second life: Reraise, {item.Value:P0} chance"));
+				picks.Add(new CrucibleShopPick(row, ClientItemName(id, item.Name), price, $"a second life: Reraise, {item.Value:P0} chance"));
 				life = true;
 			}
 		}
@@ -346,15 +360,64 @@ public partial class BeastmasterRotation
 		// 2. Against each status of the board's fights that ends in death: neither HP nor mitigation help against it.
 		CoverStatuses(true);
 
+		// 4 (A659: before the HP scale). Against each other status of the board's fights that costs safety - control, actions
+		// prevented, damage over time: what HP and mitigation do not stop; the scale weighs only HP.
+		CoverStatuses(false);
+
+		// A single pick (a treasure, A656): gear and items on one scale - the HP each brings over the rest of the board - once a
+		// fight is measured; the order below stays for the shop and before the first measurement.
+		if (oneScale)
+		{
+			_offerScale = [];
+		}
+
+		if (oneScale && loads != null)
+		{
+			var top = -1;
+			var scale = OfferScale(offers, owned, load, heldItems, 0f);
+			_offerScale = scale;
+			for (var i = 0; i < scale.Count && picks.Count < maxPicks; i++)
+			{
+				if (!bought.Contains(scale[i].Row) && scale[i].Value > 0f && (top < 0 || scale[i].Value > scale[top].Value))
+				{
+					top = i;
+				}
+			}
+
+			if (top >= 0)
+			{
+				var (row, id, _, why) = scale[top];
+				foreach (var offer in offers)
+				{
+					if (offer.Row == row && Take(row, offer.Price, gear.ContainsKey(id)))
+					{
+						picks.Add(new CrucibleShopPick(row, ClientItemName(id, EnglishItemName(id)), offer.Price, why));
+						spentAll = spent;
+						return picks;
+					}
+				}
+			}
+		}
+
+		// 3, 5, 6 on one scale once a fight is measured (A659): gear, healing and protective items by the HP each brings over
+		// the fights to the boss, piece by piece the most per token, from every start; of all choices the most, at a tie the
+		// cheaper.
+		if (!oneScale && loads != null)
+		{
+			ChooseOnScale();
+			spentAll = spent;
+			return picks;
+		}
+
 		// 3. Protective and healing gear: the choice that leaves the most HP after a stretch of fights ending with the
 		// heaviest, then the most effective HP - every offer once first, then piece by piece the most gain per token; of all
 		// these the best, at a tie the cheaper.
-		var protective = new List<(int Row, CrucibleGear Piece, int Price)>();
+		var protective = new List<(int Row, CrucibleGear Piece, int Price, ushort Id)>();
 		foreach (var (row, id, price) in offers)
 		{
 			if (!bought.Contains(row) && gear.TryGetValue(id, out var piece) && !piece.SelfHarm)
 			{
-				protective.Add((row, piece, price));
+				protective.Add((row, piece, price, id));
 			}
 		}
 
@@ -385,21 +448,18 @@ public partial class BeastmasterRotation
 
 		foreach (var index in bestChoice)
 		{
-			var (row, piece, price) = protective[index];
+			var (row, piece, price, pieceId) = protective[index];
 			var before = ShopValue(owned, load);
 			_ = Take(row, price, true);
 			owned.Add(piece);
 			var after = ShopValue(owned, load);
-			picks.Add(new CrucibleShopPick(row, piece.Name, price,
+			picks.Add(new CrucibleShopPick(row, ClientItemName(pieceId, piece.Name), price,
 				(after.Left > before.Left
 					? $"{after.Left - before.Left:+0%;-0%} of your HP left after a stretch of {load.Stretch:0.#} fights"
 					: $"+{(after.Effective / before.Effective) - 1f:P0} effective HP against your heaviest fight")
 				+ (piece.Movement < 0f ? $", movement {piece.Movement:+0%;-0%} (with all your gear {movement - 1f:+0%;-0%})" : string.Empty)
 				+ (piece.Slow > 0f ? $", Slow {piece.Slow:+0%;-0%}: your actions come slower" : string.Empty)));
 		}
-
-		// 4. Against each other status of the board's fights that costs safety: control, actions prevented, damage over time.
-		CoverStatuses(false);
 
 		// 5. Healing items, the strongest first; 6. protective items by their share.
 		foreach (var kinds in new[] { new[] { CrucibleItemKind.Heal }, new[] { CrucibleItemKind.Mitigate,
@@ -411,7 +471,7 @@ public partial class BeastmasterRotation
 				var item = items[id];
 				if (Take(row, price, false))
 				{
-					picks.Add(new CrucibleShopPick(row, item.Name, price, item.Kind switch
+					picks.Add(new CrucibleShopPick(row, ClientItemName(id, item.Name), price, item.Kind switch
 					{
 						CrucibleItemKind.Heal => $"heals {item.Value:P0}{(item.Allies ? " to you and allies" : string.Empty)}",
 						CrucibleItemKind.Mitigate => $"{item.Value:P0} less damage taken",
@@ -442,7 +502,7 @@ public partial class BeastmasterRotation
 					if (gear.TryGetValue(id, out var piece) && !piece.SelfHarm && GearResistsAilment(piece, name) && Take(row, price, true))
 					{
 						owned.Add(piece);
-						picks.Add(new CrucibleShopPick(row, piece.Name, price, $"immune to {name}, which this board inflicts"));
+						picks.Add(new CrucibleShopPick(row, ClientItemName(id, piece.Name), price, $"immune to {name}, which this board inflicts"));
 						break;
 					}
 
@@ -450,11 +510,143 @@ public partial class BeastmasterRotation
 						&& name.Contains(item.Status, StringComparison.OrdinalIgnoreCase) && Take(row, price, false))
 					{
 						heldItems.Add(id);
-						picks.Add(new CrucibleShopPick(row, item.Name, price, $"against {name}, which this board inflicts"));
+						picks.Add(new CrucibleShopPick(row, ClientItemName(id, item.Name), price, $"against {name}, which this board inflicts"));
 						break;
 					}
 				}
 			}
+		}
+
+		// A659: the choice on the scale - from every start (-1: none set first), piece by piece the offer with the most HP
+		// per token, the scale weighed anew on what is chosen; then taken, each with the reason it had when chosen.
+		void ChooseOnScale()
+		{
+			var bestPicks = new List<(int Row, ushort Item, int Price, float Value, string Why)>();
+			var bestValue = 0f;
+			var bestCost = 0;
+			for (var seed = -1; seed < offers.Count; seed++)
+			{
+				var (chosen, value, cost) = ScaleFrom(seed);
+				if (chosen.Count > 0 && (value > bestValue || (value == bestValue && cost < bestCost)))
+				{
+					bestPicks = chosen;
+					bestValue = value;
+					bestCost = cost;
+				}
+			}
+
+			foreach (var (row, id, price, _, why) in bestPicks)
+			{
+				var isGear = gear.TryGetValue(id, out var piece);
+				if (Take(row, price, isGear))
+				{
+					if (isGear)
+					{
+						owned.Add(piece);
+					}
+					else
+					{
+						heldItems.Add(id);
+					}
+
+					picks.Add(new CrucibleShopPick(row, ClientItemName(id, EnglishItemName(id)), price, why
+						+ (isGear && piece.Movement < 0f ? $", movement {piece.Movement:+0%;-0%}" : string.Empty)
+						+ (isGear && piece.Slow > 0f ? $", Slow {piece.Slow:+0%;-0%}: your actions come slower" : string.Empty)));
+				}
+			}
+		}
+
+		(List<(int Row, ushort Item, int Price, float Value, string Why)> Chosen, float Value, int Cost) ScaleFrom(int seed)
+		{
+			var chosen = new List<(int Row, ushort Item, int Price, float Value, string Why)>();
+			var set = new List<CrucibleGear>(owned);
+			var held = new List<ushort>(heldItems);
+			var tokens = budget - spent;
+			var gearLeft = gearSlots - gearHeld;
+			var itemsLeft = itemSlots - itemsHeld;
+			var picksLeft = maxPicks - bought.Count;
+			float total = 0f, healed = 0f;
+			var cost = 0;
+			var first = true;
+			while (picksLeft > 0)
+			{
+				var open = new List<(int Row, ushort Item, int Price)>();
+				foreach (var offer in offers)
+				{
+					if (!bought.Contains(offer.Row) && !chosen.Exists(c => c.Row == offer.Row) && offer.Price <= tokens
+						&& (gear.TryGetValue(offer.Item, out var piece) ? !piece.SelfHarm && gearLeft > 0
+							: items.TryGetValue(offer.Item, out var item) && itemsLeft > 0 && item.Kind is CrucibleItemKind.Heal
+								or CrucibleItemKind.Mitigate or CrucibleItemKind.NullifyPhysical or CrucibleItemKind.ReflectMagic))
+					{
+						open.Add(offer);
+					}
+				}
+
+				var scale = OfferScale(open, set, load, held, healed);
+				var next = -1;
+				var bestPerToken = 0f;
+				for (var i = 0; i < scale.Count; i++)
+				{
+					if (scale[i].Value <= 0f)
+					{
+						continue;
+					}
+
+					var price = 0;
+					foreach (var offer in open)
+					{
+						if (offer.Row == scale[i].Row)
+						{
+							price = offer.Price;
+						}
+					}
+
+					var perToken = scale[i].Value / Math.Max(price, 1);
+					if (first && seed >= 0 ? scale[i].Row == offers[seed].Row : perToken > bestPerToken)
+					{
+						next = i;
+						bestPerToken = perToken;
+					}
+				}
+
+				first = false;
+				if (next < 0)
+				{
+					break;
+				}
+
+				var (row, id, value, why) = scale[next];
+				var cost1 = 0;
+				foreach (var offer in open)
+				{
+					if (offer.Row == row)
+					{
+						cost1 = offer.Price;
+					}
+				}
+
+				chosen.Add((row, id, cost1, value, why));
+				total += value;
+				cost += cost1;
+				tokens -= cost1;
+				picksLeft--;
+				if (gear.TryGetValue(id, out var taken))
+				{
+					set.Add(taken);
+					gearLeft--;
+				}
+				else
+				{
+					held.Add(id);
+					itemsLeft--;
+					if (items.TryGetValue(id, out var item) && item.Kind == CrucibleItemKind.Heal)
+					{
+						healed += value;
+					}
+				}
+			}
+
+			return (chosen, total, cost);
 		}
 
 		// One choice of protective gear, starting with offer <paramref name="seed"/>: its pieces, value and cost.
@@ -649,6 +841,234 @@ public partial class BeastmasterRotation
 	/// the HP back at its end, the heaviest its damage less his healing -, and his effective HP against the heaviest fight's
 	/// mix. Pieces multiply (concept 21, K10 Laden: an assumption, as is evasion as a chance to escape a physical hit).
 	/// </summary>
+	/// <summary>
+	/// K13 (A656): every offer on one scale - the share of your HP it brings over the rest of the board. Gear: the damage it
+	/// prevents in the fights left on the shortest way to the final fight (mean load for a fight, heaviest for elite and boss),
+	/// its extra healing on the healing items held, its recovery after each fight up to what a fight costs. A healing item: its
+	/// heal with your gear's extra healing. A protective item: its share of your heaviest fight. What the scale does not
+	/// measure is named, not left out.
+	/// </summary>
+	private static List<(int Row, ushort Item, float Value, string Why)> OfferScale(List<(int Row, ushort Item, int Price)> offers,
+		List<CrucibleGear> owned, ShopLoad load, List<ushort> heldItems, float healedChosen)
+	{
+		var result = new List<(int, ushort, float, string)>();
+		var gear = CrucibleGearTable;
+		var items = CrucibleItems;
+		var (normal, heavy) = CrucibleRoute.FightsAhead() ?? (1, 1);
+		var fights = normal + heavy;
+		var held = HealingHeldShare();
+		var now = RawLoad(owned, load);
+
+		// A659: what a healing item can still heal - the fights to the boss, each as heavy as your heaviest measured, and what
+		// you miss now, less the healing you hold and the choice has taken already.
+		var holding = 0f;
+		foreach (var id in heldItems)
+		{
+			if (items.TryGetValue(id, out var heal) && heal.Kind == CrucibleItemKind.Heal)
+			{
+				holding += heal.Value;
+			}
+		}
+
+		var worst = (fights * now.Heavy) + (1f - (Player is { MaxHp: > 0u } player ? player.GetHealthRatio() : 1f));
+		var healable = Math.Max(0f, worst - (holding * (1f + now.Recovery)) - healedChosen);
+		foreach (var (row, id, _) in offers)
+		{
+			if (gear.TryGetValue(id, out var piece))
+			{
+				if (piece.SelfHarm)
+				{
+					result.Add((row, id, 0f, "harms you: never taken"));
+					continue;
+				}
+
+				var with = RawLoad([.. owned, piece], load);
+				var prevented = Math.Max(0f, (normal * (now.Mean - with.Mean)) + (heavy * (now.Heavy - with.Heavy)));
+				var healing = piece.Recovery * held;
+				var curing = piece.Curing > 0f
+					? (normal * Math.Min(piece.Curing, with.Mean)) + (heavy * Math.Min(piece.Curing, with.Heavy))
+					: 0f;
+				var parts = new List<string>();
+				if (prevented > 0f)
+				{
+					parts.Add($"prevents ~{prevented:P0} of your HP in the {fights} fights left");
+				}
+
+				if (healing > 0f)
+				{
+					parts.Add($"+{piece.Recovery:P0} on the {held:P0} of your healing items: ~{healing:P0}");
+				}
+
+				if (curing > 0f)
+				{
+					parts.Add($"recovers ~{curing:P0} after the fights left");
+				}
+
+				var value = prevented + healing + curing;
+				if (value <= 0f)
+				{
+					parts.Add(now.Mean <= 0f && now.Heavy <= 0f
+						? "nothing to prevent: your fights cost you nothing measured"
+						: "adds nothing against the damage your fights dealt");
+				}
+
+				var uncounted = UncountedEffects(id);
+				if (uncounted.Length > 0)
+				{
+					parts.Add($"not counted: {uncounted}");
+				}
+
+				result.Add((row, id, value, $"lasts the whole board, ~{value:P0} in all: {string.Join("; ", parts)}"));
+			}
+			else if (items.TryGetValue(id, out var item))
+			{
+				var full = Math.Min(1f, item.Value * (1f + now.Recovery));
+				var value = item.Kind switch
+				{
+					CrucibleItemKind.Heal => Math.Min(full, healable),
+					CrucibleItemKind.Mitigate => item.Value * now.Heavy,
+					CrucibleItemKind.NullifyPhysical => now.HeavyPhysical,
+					CrucibleItemKind.ReflectMagic => now.HeavyMagic,
+					_ => 0f,
+				};
+				result.Add((row, id, value, item.Kind switch
+				{
+					CrucibleItemKind.Heal => (value < full
+						? $"used once, heals ~{full:P0}, of which ~{value:P0} can still be needed: your {fights} fights left cost at most ~{worst:P0}, you hold ~{holding * (1f + now.Recovery):P0} in healing"
+						: $"used once, heals ~{value:P0}") + (item.Allies ? " to you and the allies near you" : string.Empty),
+					CrucibleItemKind.Mitigate => $"used once, {item.Value:P0} less damage: ~{value:P0} of your heaviest fight",
+					CrucibleItemKind.NullifyPhysical => $"used once, nullifies physical attacks: ~{value:P0} of your heaviest fight",
+					CrucibleItemKind.ReflectMagic => $"used once, reflects magic attacks: ~{value:P0} of your heaviest fight",
+					CrucibleItemKind.Reraise => "a second life (weighed before this scale)",
+					_ => $"no HP on this scale ({item.Kind.ToString().ToLowerInvariant()})",
+				}));
+			}
+			else
+			{
+				result.Add((row, id, 0f, "not read by RSR"));
+			}
+		}
+
+		return result;
+	}
+
+	// The load of a fight with this gear, as a share of your HP: the mean, the heaviest and its physical and magic parts, and
+	// the extra healing of the gear.
+	private static (float Mean, float Heavy, float HeavyPhysical, float HeavyMagic, float Recovery) RawLoad(List<CrucibleGear> gear,
+		ShopLoad load)
+	{
+		float hp = 1f, taken = 1f, physical = 1f, magic = 1f, recovery = 0f;
+		foreach (var piece in gear)
+		{
+			hp *= 1f + piece.MaxHp;
+			taken *= 1f - piece.DamageTaken;
+			physical *= (1f - piece.PhysicalVulnerability) * (1f - piece.Evasion);
+			magic *= 1f - piece.MagicVulnerability;
+			recovery += piece.Recovery;
+		}
+
+		var heavyPhysical = taken * load.HeavyPhysical * physical / hp;
+		var heavyMagic = taken * load.HeavyMagic * magic / hp;
+		return (taken * ((load.Physical * physical) + (load.Magic * magic) + load.Other) / hp,
+			heavyPhysical + heavyMagic + (taken * load.HeavyOther / hp), heavyPhysical, heavyMagic, recovery);
+	}
+
+	// What a piece of gear does that the scale does not measure, from its English effect text: a stat of its own name
+	// ("Haste +5%") other than those the scale reads, a faster pace, and an element it absorbs.
+	private static string UncountedEffects(ushort id)
+	{
+		var text = Svc.Data.GetExcelSheet<Lumina.Excel.Sheets.XBMItem>(ClientLanguage.English)?.GetRowOrDefault(id)?.Unknown3.ExtractText();
+		if (string.IsNullOrEmpty(text))
+		{
+			return string.Empty;
+		}
+
+		var names = new List<string>();
+		foreach (Match stat in AnyStat.Matches(text))
+		{
+			var name = stat.Groups["stat"].Value.Trim();
+			if (name is not ("Maximum HP" or "Damage Taken" or "Physical Vulnerability" or "Magic Vulnerability" or "Evasion" or "Slow")
+				&& !names.Contains(name))
+			{
+				names.Add(name);
+			}
+		}
+
+		if (text.Contains("absorb", StringComparison.OrdinalIgnoreCase))
+		{
+			names.Add("absorbing damage as HP");
+		}
+
+		return string.Join(", ", names);
+	}
+
+	private static readonly Regex AnyStat = new(@"(?<stat>[A-Z][A-Za-z' ]*?) \+\d+%", RegexOptions.CultureInvariant);
+
+	/// <summary>
+	/// The offers without gear already worn (A657): a shop lists a piece you wear, and the game refuses to sell it - "You
+	/// already own the Mythril Armor" - while the list weighed it as a second piece on the first.
+	/// </summary>
+	private static List<(int Row, ushort Item, int Price)> Unworn(List<(int Row, ushort Item, int Price)> offers, List<CrucibleGear> owned)
+	{
+		var gear = CrucibleGearTable;
+		var left = new List<(int Row, ushort Item, int Price)>(offers.Count);
+		foreach (var offer in offers)
+		{
+			if (!gear.TryGetValue(offer.Item, out var piece) || !owned.Contains(piece))
+			{
+				left.Add(offer);
+			}
+		}
+
+		return left;
+	}
+
+	/// <summary>
+	/// A count as the shop writes it, in the grouping of the client's language - "1.421" in German, "1,421" in English: the
+	/// digits of the first number, whatever stands between its groups of three (A657). ECommons' FirstNumber knows only the
+	/// comma and read "1.421" as 1. 0 where the text holds no number.
+	/// </summary>
+	private static int CountIn(string text)
+	{
+		var match = GroupedCount.Match(text);
+		if (!match.Success)
+		{
+			return 0;
+		}
+
+		var digits = new StringBuilder(match.Length);
+		foreach (var c in match.Value)
+		{
+			if (char.IsAsciiDigit(c))
+			{
+				_ = digits.Append(c);
+			}
+		}
+
+		return int.TryParse(digits.ToString(), NumberStyles.None, CultureInfo.InvariantCulture, out var count) ? count : 0;
+	}
+
+	private static readonly Regex GroupedCount = new(@"\d{1,3}(?:[.,'\s\u00A0\u202F]\d{3}(?!\d))+|\d+", RegexOptions.CultureInvariant);
+
+	// K13 (A656): the last single pick's scale, offer by offer, for the treasure window.
+	private static List<(int Row, ushort Item, float Value, string Why)> _offerScale = [];
+
+	/// <summary>An item's English name from RSR's tables, or its row.</summary>
+	private static string EnglishItemName(ushort id)
+	{
+		return CrucibleGearTable.TryGetValue(id, out var piece) ? piece.Name
+			: CrucibleItems.TryGetValue(id, out var item) ? item.Name
+			: CrucibleFeedTable.TryGetValue(id, out var feed) ? feed.Name
+			: $"item {id}";
+	}
+
+	/// <summary>An item's name as the game shows it, in the client's language (A656); the English name where the sheet has none.</summary>
+	private static string ClientItemName(ushort id, string english)
+	{
+		var name = Svc.Data.GetExcelSheet<Lumina.Excel.Sheets.XBMItem>()?.GetRowOrDefault(id)?.Unknown2.ExtractText();
+		return string.IsNullOrEmpty(name) ? english : name;
+	}
+
 	private static (float Left, float Effective) ShopValue(List<CrucibleGear> gear, ShopLoad load)
 	{
 		float hp = 1f, taken = 1f, physical = 1f, magic = 1f, recovery = 0f, curing = 0f;
@@ -696,21 +1116,145 @@ public partial class BeastmasterRotation
 	private static string _feedTraced = string.Empty;
 	private static Dictionary<ushort, CrucibleFeed> CrucibleFeedTable => _crucibleFeed ??= ReadCrucibleFeed();
 
-	// K14 (A631): for each familiar of the final fight's plan, healers and protectors first, the feed on offer that suits its
-	// kin and keeps it longest in the final fight - its effective HP: the share it has now plus what eating restores, at most
-	// the new maximum, over the damage it takes after the feed's cuts, weighed by the final enemies' strength against
-	// intelligence; at a tie more damage, then the cheaper. One feed each, never one that harms its eater.
-	private static unsafe void RecommendFeed(List<(int Row, ushort Item, int Price)> offers, int left)
+	// K14 (A657): each familiar's feed slots as the familiar window last showed them on this board - how many it holds, how
+	// many it can hold, which - and its name in the client's language; counted up at each change for the shop's key.
+	private readonly record struct FeedSlots(int Fed, int Max, ushort[] Items, string Name);
+
+	private static readonly Dictionary<BeastmasterPet, FeedSlots> _feedSlots = [];
+	private static uint _feedSlotsTerritory;
+	private static int _feedSlotsSeen;
+
+	/// <summary>
+	/// K14 (A657): while the familiar window shows - at a horn screen, a campsite, a feeding - each familiar's feed slots,
+	/// read only where the window's rows are the team's (same count, same HP at each position, as at the campsite).
+	/// </summary>
+	internal static unsafe void NoteFeedSlots(AgentXBMPetParty* party, AtkUnitBase* screen)
 	{
-		var feeds = CrucibleFeedTable;
-		var picks = new List<CrucibleFeedPick>();
-		if (FinalTeam.Count == 0)
+		if (party == null || screen == null || !screen->IsVisible || !DataCenter.IsInCrucible)
 		{
-			CrucibleFeedRecommendation = picks;
-			CrucibleFeedNote = "No final-fight plan yet: it is made at a horn screen before another fight.";
 			return;
 		}
 
+		if (_feedSlotsTerritory != DataCenter.TerritoryID)
+		{
+			_feedSlotsTerritory = DataCenter.TerritoryID;
+			_feedSlots.Clear();
+			_feedSlotsSeen++;
+		}
+
+		var pets = party->SelectedPets.AsSpan();
+		var current = party->PetCurrentHealth;
+		var max = party->PetMaxHealth;
+		var seen = new List<(BeastmasterPet Pet, FeedSlots Slots)>(pets.Length);
+		try
+		{
+			var rows = new ReaderXBMPetParty(screen).TeamEntries;
+			if (rows.Count != pets.Length)
+			{
+				return;
+			}
+
+			for (var i = 0; i < rows.Count; i++)
+			{
+				if (i >= current.Length || i >= max.Length || rows[i].MaxHP != max[i] || rows[i].HP != current[i])
+				{
+					return;
+				}
+
+				var items = new List<ushort>();
+				foreach (var entry in rows[i].FedItems)
+				{
+					if (entry.ItemId is > 0 and <= ushort.MaxValue)
+					{
+						items.Add((ushort)entry.ItemId);
+					}
+				}
+
+				seen.Add(((BeastmasterPet)pets[i].PetId, new FeedSlots((int)rows[i].FedCurrent, (int)rows[i].FedMax, [.. items],
+					rows[i].Name.TextValue)));
+			}
+		}
+		catch (Exception ex) when (ex is InvalidCastException or ArgumentOutOfRangeException)
+		{
+			return;
+		}
+
+		var changed = new List<string>();
+		foreach (var (pet, slots) in seen)
+		{
+			if (!_feedSlots.TryGetValue(pet, out var known) || known.Fed != slots.Fed || known.Max != slots.Max
+				|| known.Name != slots.Name || !known.Items.AsSpan().SequenceEqual(slots.Items))
+			{
+				_feedSlots[pet] = slots;
+				changed.Add($"{pet} {slots.Fed}/{slots.Max}");
+			}
+		}
+
+		if (changed.Count > 0)
+		{
+			_feedSlotsSeen++;
+			DefenseTrace.Line($"crucible feed slots: {string.Join(", ", changed)}");
+		}
+	}
+
+	/// <summary>A familiar's name as the familiar window shows it, in the client's language; the English name before that.</summary>
+	internal static string FamiliarName(BeastmasterPet pet)
+	{
+		return _feedSlots.TryGetValue(pet, out var slots) && slots.Name.Length > 0 ? slots.Name : pet.ToString();
+	}
+
+	// K14: a familiar's free feed slots and the feed it holds, as last seen on this board; one free slot and no feed where
+	// the window was not seen here or read no maximum (Known false).
+	private static (int Free, List<CrucibleFeed> Eaten, bool Known, FeedSlots Slots) SlotsOf(BeastmasterPet pet)
+	{
+		var eaten = new List<CrucibleFeed>();
+		if (_feedSlotsTerritory != DataCenter.TerritoryID || !_feedSlots.TryGetValue(pet, out var slots) || slots.Max <= 0
+			|| slots.Fed > slots.Max)
+		{
+			return (1, eaten, false, default);
+		}
+
+		var feeds = CrucibleFeedTable;
+		foreach (var item in slots.Items)
+		{
+			if (feeds.TryGetValue(item, out var feed))
+			{
+				eaten.Add(feed);
+			}
+		}
+
+		return (slots.Max - slots.Fed, eaten, true, slots);
+	}
+
+	// K14: the familiars of the final fight's plan, healers and protectors first.
+	private static List<BeastmasterPet> FeedOrder()
+	{
+		var order = new List<BeastmasterPet>(FinalTeam.Count);
+		foreach (var pet in FinalTeam)
+		{
+			if (FinalHealers.Contains(pet))
+			{
+				order.Add(pet);
+			}
+		}
+
+		foreach (var pet in FinalTeam)
+		{
+			if (!FinalHealers.Contains(pet))
+			{
+				order.Add(pet);
+			}
+		}
+
+		return order;
+	}
+
+	// K14: what the final fight deals - the share of strength and intelligence among its enemies (the sheet), or all of it as
+	// other damage without them - and each familiar's share of its HP now.
+	private readonly record struct FeedContext(float Physical, float Magic, float Other, Dictionary<BeastmasterPet, float> Shares);
+
+	private static unsafe FeedContext ReadFeedContext()
+	{
 		float strength = 0f, intelligence = 0f;
 		foreach (var enemy in CrucibleBoard.EnemiesOf(FinalBattle))
 		{
@@ -719,10 +1263,6 @@ public partial class BeastmasterRotation
 		}
 
 		var all = strength + intelligence;
-		var physical = all > 0f ? strength / all : 0f;
-		var magic = all > 0f ? intelligence / all : 0f;
-		var other = all > 0f ? 0f : 1f;
-
 		var shares = new Dictionary<BeastmasterPet, float>();
 		var party = AgentXBMPetParty.Instance();
 		if (party != null)
@@ -737,40 +1277,127 @@ public partial class BeastmasterRotation
 			}
 		}
 
-		var taken = new HashSet<int>();
-		foreach (var pet in FinalTeam)
+		return new FeedContext(all > 0f ? strength / all : 0f, all > 0f ? intelligence / all : 0f, all > 0f ? 0f : 1f, shares);
+	}
+
+	// K14: how long a familiar holds in the final fight - its effective HP: the share it has now plus what eating
+	// <paramref name="added"/> restores, at most the new maximum, over the damage it takes after the cuts of all its feed
+	// (multiplied like gear; unbelegt). The maximum HP of the feed already eaten is in the share now.
+	private static float Survival(CrucibleFeed added, List<CrucibleFeed> eaten, float now, FeedContext context)
+	{
+		var max = 1f + added.MaxHp;
+		var hp = Math.Min(max, now + (added.Restore * max));
+		var taken = 1f - added.DamageTaken;
+		var physicalCut = (1f - added.PhysicalVulnerability) * (1f - added.Evasion);
+		var magicCut = 1f - added.MagicVulnerability;
+		foreach (var feed in eaten)
 		{
-			var kin = KinOf(pet).ToString().ToLowerInvariant();
-			var share = shares.TryGetValue(pet, out var known) ? known : 1f;
-			var bare = Survival(default, share);
-			(int Row, ushort Item, int Price, float Gain, float Damage)? best = null;
-			foreach (var (row, item, price) in offers)
-			{
-				if (taken.Contains(row) || !feeds.TryGetValue(item, out var feed) || feed.SelfHarm || !feed.Kins.Contains(kin))
-				{
-					continue;
-				}
+			taken *= 1f - feed.DamageTaken;
+			physicalCut *= (1f - feed.PhysicalVulnerability) * (1f - feed.Evasion);
+			magicCut *= 1f - feed.MagicVulnerability;
+		}
 
-				var gain = Survival(feed, share) - bare;
-				if (best is not { } b || gain > b.Gain || (gain == b.Gain && (feed.Damage > b.Damage
-					|| (feed.Damage == b.Damage && price < b.Price))))
-				{
-					best = (row, item, price, gain, feed.Damage);
-				}
-			}
+		var hit = taken * ((context.Physical * physicalCut) + (context.Magic * magicCut) + context.Other);
+		return hp / Math.Max(hit, float.Epsilon);
+	}
 
-			if (best is not { } chosen)
+	// K14: of the offers not yet taken that suit <paramref name="pet"/> and do not harm it, the one that keeps it longest on
+	// top of its feed - or, with <paramref name="damageOnly"/>, one that adds no HP but counted damage; at a tie more damage,
+	// then the cheaper. Null where none adds anything.
+	private static (int Row, ushort Item, int Price, float Gain, float Bare)? BestFeed(BeastmasterPet pet,
+		List<(int Row, ushort Item, int Price)> offers, HashSet<int> taken, List<CrucibleFeed> eaten, FeedContext context, bool damageOnly)
+	{
+		var feeds = CrucibleFeedTable;
+		var kin = KinOf(pet).ToString().ToLowerInvariant();
+		var share = context.Shares.TryGetValue(pet, out var known) ? known : 1f;
+		var bare = Survival(default, eaten, share, context);
+		(int Row, ushort Item, int Price, float Gain, float Bare)? best = null;
+		var bestDamage = 0f;
+		foreach (var (row, item, price) in offers)
+		{
+			if (taken.Contains(row) || !feeds.TryGetValue(item, out var feed) || feed.SelfHarm || !feed.Kins.Contains(kin))
 			{
 				continue;
 			}
 
-			_ = taken.Add(chosen.Row);
-			var eaten = feeds[chosen.Item];
-			var affordable = chosen.Price <= left;
-			left -= affordable ? chosen.Price : 0;
-			picks.Add(new CrucibleFeedPick(chosen.Row, eaten.Name, pet, chosen.Price, affordable,
-				$"{(FinalHealers.Contains(pet) ? "heals or protects" : "fights")} in the final; at {share:P0} HP its effective HP "
-				+ $"rises {chosen.Gain / bare:P0}" + (eaten.Damage > 0f ? $", damage +{eaten.Damage:P0}" : string.Empty)));
+			var gain = Survival(feed, eaten, share, context) - bare;
+			if (damageOnly ? gain > 0f || feed.Damage <= 0f : gain <= 0f)
+			{
+				continue;
+			}
+
+			if (best is not { } b || gain > b.Gain || (gain == b.Gain && (feed.Damage > bestDamage
+				|| (feed.Damage == bestDamage && price < b.Price))))
+			{
+				best = (row, item, price, gain, bare);
+				bestDamage = feed.Damage;
+			}
+		}
+
+		return best;
+	}
+
+	// K14 (A631, A657): for the free feed slots of the final fight's plan, healers and protectors first, the feed on offer
+	// that keeps each familiar longest in the final fight on top of what it holds - a slot each in turn - then what adds only
+	// damage. Never a feed that adds neither, never one that harms its eater.
+	private static void RecommendFeed(List<(int Row, ushort Item, int Price)> offers, int left)
+	{
+		var feeds = CrucibleFeedTable;
+		var picks = new List<CrucibleFeedPick>();
+		if (FinalTeam.Count == 0)
+		{
+			CrucibleFeedRecommendation = picks;
+			CrucibleFeedNote = "No final-fight plan yet: it is made at a horn screen before another fight.";
+			return;
+		}
+
+		var context = ReadFeedContext();
+		var order = FeedOrder();
+		var slots = new Dictionary<BeastmasterPet, (int Free, List<CrucibleFeed> Eaten, bool Known, FeedSlots Slots)>();
+		var unseen = new List<string>();
+		var open = 0;
+		foreach (var pet in order)
+		{
+			var held = SlotsOf(pet);
+			slots[pet] = held;
+			open += held.Free;
+			if (!held.Known)
+			{
+				unseen.Add(FamiliarName(pet));
+			}
+		}
+
+		var taken = new HashSet<int>();
+		foreach (var damageOnly in (bool[])[false, true])
+		{
+			bool any;
+			do
+			{
+				any = false;
+				foreach (var pet in order)
+				{
+					var held = slots[pet];
+					if (held.Free <= 0 || BestFeed(pet, offers, taken, held.Eaten, context, damageOnly) is not { } chosen)
+					{
+						continue;
+					}
+
+					any = true;
+					_ = taken.Add(chosen.Row);
+					var eaten = feeds[chosen.Item];
+					held.Eaten.Add(eaten);
+					slots[pet] = held with { Free = held.Free - 1 };
+					var affordable = chosen.Price <= left;
+					left -= affordable ? chosen.Price : 0;
+					var share = context.Shares.TryGetValue(pet, out var known) ? known : 1f;
+					var effect = chosen.Gain > 0f ? $"effective HP +{chosen.Gain / chosen.Bare:P0} at {share:P0} HP" : "no HP";
+					var slot = held.Known ? $"feed slot {held.Slots.Max - held.Free + 1} of {held.Slots.Max}" : "its feed slots not seen yet";
+					picks.Add(new CrucibleFeedPick(chosen.Row, ClientItemName(chosen.Item, eaten.Name), pet, chosen.Price, affordable,
+						$"{(FinalHealers.Contains(pet) ? "heals or protects" : "fights")} in the final: {effect}"
+						+ (eaten.Damage > 0f ? $", damage +{eaten.Damage:P0}" : string.Empty) + $"; {slot}"));
+				}
+			}
+			while (any);
 		}
 
 		CrucibleFeedRecommendation = picks;
@@ -779,49 +1406,74 @@ public partial class BeastmasterRotation
 		{
 			_feedTraced = feedTrace;
 			DefenseTrace.Line($"crucible shop: feed for the final fight ({string.Join(", ", FinalTeam)}): "
-				+ (picks.Count > 0 ? feedTrace : "none on offer suits them") + $"; campsite after this shop: {CrucibleRoute.CampsiteAfterShop()?.ToString() ?? "unknown"}");
+				+ (picks.Count > 0 ? feedTrace : open == 0 ? "no free feed slot" : "none on offer adds HP or damage")
+				+ $"; campsite after this shop: {CrucibleRoute.CampsiteAfterShop()?.ToString() ?? "unknown"}");
 		}
 
-		CrucibleFeedNote = (picks.Count == 0 ? "None on offer suits the familiars of the final fight's plan. " : string.Empty)
-			+ CrucibleRoute.CampsiteAfterShop() switch
+		var why = picks.Count > 0 ? string.Empty
+			: open == 0 ? "Every familiar of the final fight's plan has its feed slots filled. "
+			: "Nothing on offer adds HP or damage to a familiar of the final fight's plan with a free feed slot. ";
+		if (unseen.Count > 0)
+		{
+			why += $"Feed slots of {string.Join(", ", unseen)} not seen on this board yet: one each assumed. ";
+		}
+
+		CrucibleFeedNote = why + CrucibleRoute.CampsiteAfterShop() switch
 		{
 			false => "No campsite can come before the final fight: the feed lasts into it.",
 			true => "A campsite can still come: a fed familiar that rests there loses its feed (RSR does not rest a fed one; Lily Simular keeps it).",
 			_ => "Where this shop stands on the board is not known: a fed familiar that rests at a later campsite loses its feed.",
 		};
-
-		float Survival(CrucibleFeed feed, float now)
-		{
-			var max = 1f + feed.MaxHp;
-			var hp = Math.Min(max, now + (feed.Restore * max));
-			var hit = (1f - feed.DamageTaken) * ((physical * (1f - feed.PhysicalVulnerability) * (1f - feed.Evasion))
-				+ (magic * (1f - feed.MagicVulnerability)) + other);
-			return hp / Math.Max(hit, float.Epsilon);
-		}
 	}
 
-	/// <summary>K14 (A631): for the feed being given, the familiar of the shop's recommendation it was meant for.</summary>
+	/// <summary>
+	/// K14 (A631, A657): for the feed being given, the familiar of the final fight's plan with a free feed slot - as the
+	/// window shows them now - it keeps longest, else the one it adds most damage to; or why none.
+	/// </summary>
 	internal static string FeedTargetText(ushort item)
 	{
-		var feeds = CrucibleFeedTable;
-		var name = feeds.TryGetValue(item, out var feed) ? feed.Name : $"item {item}";
-		foreach (var pick in CrucibleFeedRecommendation)
+		if (!CrucibleFeedTable.TryGetValue(item, out var feed))
 		{
-			if (pick.Feed == name)
+			return $"Feeding: item {item} is not a feed RSR reads.";
+		}
+
+		var name = ClientItemName(item, feed.Name);
+		if (FinalTeam.Count == 0)
+		{
+			return $"Feed {name}: no final-fight plan yet.";
+		}
+
+		var context = ReadFeedContext();
+		var offer = new List<(int Row, ushort Item, int Price)> { (0, item, 0) };
+		var none = new HashSet<int>();
+		var open = 0;
+		foreach (var damageOnly in (bool[])[false, true])
+		{
+			(BeastmasterPet Pet, float Gain, float Bare, int Free, bool Known, int Max)? best = null;
+			open = 0;
+			foreach (var pet in FeedOrder())
 			{
-				return $"Feed {name}: give it to {pick.Pet} ({pick.Why}).";
+				var (free, eaten, known, slots) = SlotsOf(pet);
+				open += free;
+				if (free > 0 && BestFeed(pet, offer, none, eaten, context, damageOnly) is { } fit
+					&& (best is not { } b || fit.Gain > b.Gain))
+				{
+					best = (pet, fit.Gain, fit.Bare, free, known, slots.Max);
+				}
+			}
+
+			if (best is { } chosen)
+			{
+				var share = context.Shares.TryGetValue(chosen.Pet, out var known) ? known : 1f;
+				var effect = chosen.Gain > 0f ? $"effective HP +{chosen.Gain / chosen.Bare:P0} at {share:P0} HP" : $"damage +{feed.Damage:P0}, no HP";
+				var slot = chosen.Known ? $"slot {chosen.Max - chosen.Free + 1} of {chosen.Max}" : "its feed slots not seen yet";
+				return $"Feed {name}: give it to {FamiliarName(chosen.Pet)} ({(FinalHealers.Contains(chosen.Pet) ? "heals or protects" : "fights")} in the final; {effect}; {slot}).";
 			}
 		}
 
-		foreach (var pet in FinalTeam)
-		{
-			if (feed.Kins != null && feed.Kins.Contains(KinOf(pet).ToString().ToLowerInvariant()))
-			{
-				return $"Feed {name}: suits {pet} of the final fight's plan.";
-			}
-		}
-
-		return $"Feed {name}: no familiar of the final fight's plan was recommended for it.";
+		return open == 0
+			? $"Feed {name}: every familiar of the final fight's plan has its feed slots filled."
+			: $"Feed {name}: it adds no HP or counted damage to a familiar of the final fight's plan with a free feed slot.";
 	}
 
 	private static Dictionary<ushort, CrucibleFeed> ReadCrucibleFeed()

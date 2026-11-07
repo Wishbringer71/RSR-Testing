@@ -21,7 +21,7 @@ internal class CrucibleRouteWindow : RecommendationWindow
 			&& BeastmasterRotation.CrucibleRouteHint.Count > 0;
 	}
 
-	public override void Draw()
+	protected override void DrawContent()
 	{
 		using (Section("crucible_route", "Next fork", FontAwesomeIcon.Route))
 		{
@@ -32,6 +32,7 @@ internal class CrucibleRouteWindow : RecommendationWindow
 				Note(option.Outcome);
 			}
 
+			Note(BeastmasterRotation.CrucibleRouteWhy);
 			Note(BeastmasterRotation.CrucibleRouteBasis);
 		}
 	}

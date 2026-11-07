@@ -20,19 +20,33 @@ internal class CrucibleTreasureWindow : RecommendationWindow
 		return Svc.ClientState.IsLoggedIn && DataCenter.CurrentRotation is BeastmasterRotation && BeastmasterRotation.CrucibleTreasureOpen;
 	}
 
-	public override void Draw()
+	protected override void DrawContent()
 	{
 		var pick = BeastmasterRotation.CrucibleTreasureRecommendation;
-		using (Section("crucible_treasure", "Take", FontAwesomeIcon.Gift))
+		using (Section("crucible_treasure", "Take", FontAwesomeIcon.Gift, "each offer, what it brings you over the rest of the board"))
 		{
-			if (pick is { } chosen)
-			{
-				Line(chosen.Name, $"offer {chosen.Row + 1}");
-				Note(chosen.Why);
-			}
-			else
+			if (pick == null)
 			{
 				Note("Nothing recommended: no offer adds safety or damage, and the gear here would harm you.");
+			}
+
+			// A656: every offer with its reason, the recommended one first and marked.
+			foreach (var offer in BeastmasterRotation.CrucibleTreasureOffers)
+			{
+				if (offer.Recommended)
+				{
+					Line(offer.Name, "take");
+					Note(offer.Verdict);
+				}
+			}
+
+			foreach (var offer in BeastmasterRotation.CrucibleTreasureOffers)
+			{
+				if (!offer.Recommended)
+				{
+					Line(offer.Name, $"offer {offer.Row + 1}", M3Severity.Neutral);
+					Note(offer.Verdict);
+				}
 			}
 		}
 

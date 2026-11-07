@@ -21,7 +21,7 @@ internal class CrucibleShopWindow : RecommendationWindow
 		return Svc.ClientState.IsLoggedIn && DataCenter.CurrentRotation is BeastmasterRotation && BeastmasterRotation.CrucibleShopOpen;
 	}
 
-	public override void Draw()
+	protected override void DrawContent()
 	{
 		var picks = BeastmasterRotation.CrucibleShopRecommendation;
 		var (tokens, left) = BeastmasterRotation.CrucibleShopTokens;
@@ -51,7 +51,7 @@ internal class CrucibleShopWindow : RecommendationWindow
 
 		Note(BeastmasterRotation.CrucibleShopStatus);
 
-		// K14 (A631): feed for the final fight, one per familiar of its plan; bought and fed by hand.
+		// K14 (A631, A657): feed for the final fight, for the free feed slots of its plan; bought and fed by hand.
 		var feed = BeastmasterRotation.CrucibleFeedRecommendation;
 		if (feed.Count > 0 || BeastmasterRotation.CrucibleFeedNote.Length > 0)
 		{
@@ -59,7 +59,8 @@ internal class CrucibleShopWindow : RecommendationWindow
 			{
 				foreach (var pick in feed)
 				{
-					Line($"{pick.Feed} -> {pick.Pet}", $"{pick.Price}", pick.Affordable ? M3Severity.Success : M3Severity.Warning);
+					Line($"{pick.Feed} -> {BeastmasterRotation.FamiliarName(pick.Pet)}", $"{pick.Price}",
+						pick.Affordable ? M3Severity.Success : M3Severity.Warning);
 					Note(pick.Affordable ? pick.Why : $"{pick.Why}; beyond the tokens the list leaves");
 				}
 

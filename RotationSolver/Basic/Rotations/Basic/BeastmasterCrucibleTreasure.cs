@@ -32,6 +32,12 @@ public partial class BeastmasterRotation
 	/// <summary>What the take did last, for the window.</summary>
 	public static string CrucibleTreasureStatus { get; private set; } = string.Empty;
 
+	/// <summary>K13 (A656): one offer of the open treasure, its name in the client's language, and what it is worth.</summary>
+	public readonly record struct CrucibleOfferVerdict(int Row, string Name, string Verdict, bool Recommended);
+
+	/// <summary>K13 (A656): every offer of the open treasure with its verdict, the recommended one marked; empty while none is open.</summary>
+	public static IReadOnlyList<CrucibleOfferVerdict> CrucibleTreasureOffers { get; private set; } = [];
+
 	/// <summary>K13: take the recommended offer.</summary>
 	public static void RequestCrucibleTreasure()
 	{
@@ -49,6 +55,7 @@ public partial class BeastmasterRotation
 		{
 			CrucibleTreasureOpen = false;
 			CrucibleTreasureRecommendation = null;
+			CrucibleTreasureOffers = [];
 			_treasureTaken.Clear();
 			_treasureWanted = null;
 			_treasureKey = string.Empty;
@@ -172,7 +179,7 @@ public partial class BeastmasterRotation
 		}
 
 		_treasureKey = key;
-		var picks = RankOffers(offers, int.MaxValue, 1, owned, gearSlots, heldItems, itemSlots, board, out _);
+		var picks = RankOffers(offers, int.MaxValue, 1, owned, gearSlots, heldItems, itemSlots, board, out _, true);
 		CrucibleShopPick? pick = picks.Count > 0 ? picks[0] : null;
 
 		// Nothing adds safety: a damage item or a buff (K8 spends them in the final fight), else gear that does not harm you.
@@ -183,21 +190,50 @@ public partial class BeastmasterRotation
 			{
 				if (items.TryGetValue(id, out var item) && item.Kind is CrucibleItemKind.Damage or CrucibleItemKind.Buff)
 				{
-					pick = new CrucibleShopPick(row, item.Name, 0, "nothing here adds safety; for damage in the final fight");
+					pick = new CrucibleShopPick(row, ClientItemName(id, item.Name), 0, "nothing here adds safety; for damage in the final fight");
 					break;
 				}
 			}
 
 			foreach (var (row, id, _) in offers)
 			{
-				if (pick == null && gear.TryGetValue(id, out var piece) && !piece.SelfHarm)
+				if (pick == null && gear.TryGetValue(id, out var piece) && !piece.SelfHarm && !owned.Contains(piece))
 				{
-					pick = new CrucibleShopPick(row, piece.Name, 0, "nothing here adds safety; it does not harm you");
+					pick = new CrucibleShopPick(row, ClientItemName(id, piece.Name), 0, "nothing here adds safety; it does not harm you");
 				}
 			}
 		}
 
 		CrucibleTreasureRecommendation = pick;
+
+		// Every offer with its verdict (A656): what the scale gives it, else why it stands behind the pick.
+		var verdicts = new List<CrucibleOfferVerdict>(offers.Count);
+		foreach (var (row, id, _) in offers)
+		{
+			var chosenRow = pick is { } p && p.Row == row;
+			var verdict = chosenRow ? pick!.Value.Why : string.Empty;
+			if (!chosenRow)
+			{
+				foreach (var weighed in _offerScale)
+				{
+					if (weighed.Row == row)
+					{
+						verdict = weighed.Why;
+					}
+				}
+			}
+
+			if (verdict.Length == 0)
+			{
+				verdict = gear.TryGetValue(id, out var worn) && owned.Contains(worn) ? "you already wear it"
+					: CrucibleBoard.Loads == null ? "behind the pick in the order before a fight is measured: a second life, deadly statuses, protective gear, other statuses, healing, protection"
+					: "behind the pick";
+			}
+
+			verdicts.Add(new CrucibleOfferVerdict(row, ClientItemName(id, EnglishItemName(id)), verdict, chosenRow));
+		}
+
+		CrucibleTreasureOffers = verdicts;
 		DefenseTrace.Line($"crucible treasure: {offers.Count} offers, weighed against {CrucibleShopBasis} - recommends "
 			+ (pick is { } chosen ? $"{chosen.Name} (offer {chosen.Row + 1}): {chosen.Why}" : "nothing"));
 	}

@@ -91,6 +91,11 @@ public partial class BeastmasterRotation
 		var visible = screen != null && screen->IsVisible;
 		_feedFlow = active && (_feedFlow || party->Mode is FeedBuyMode or FeedDetailMode
 			|| (visible && new ReaderXBMPetParty(screen).FeedItem.ItemId != 0));
+		if (active && visible)
+		{
+			NoteFeedSlots(party, screen);
+		}
+
 		FollowFeeding(party, screen, _feedFlow && visible && DataCenter.IsInCrucible);
 		if (!pick || !DataCenter.IsInCrucible || InCombat || party == null || player == null || player.MaxHp == 0
 			|| !active || party->Mode != CampsiteMode || !visible || _feedFlow)

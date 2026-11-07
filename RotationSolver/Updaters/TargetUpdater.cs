@@ -460,6 +460,9 @@ internal static partial class TargetUpdater
 		// Which of them moved since the last update, and which came into combat, for the damage areas (A350, A353).
 		HostileMovement.Update(hostileTargets);
 
+		// Which of them run to another enemy, and when each arrives (concept 21, K3, A660).
+		Approach.Update(hostileTargets);
+
 		// Which party members an enemy is pointing at, collected once here rather than asked per
 		// member later. The hostile list is built in this loop anyway and each enemy names its
 		// target outright, so the cost is one pass over the enemies and the answer becomes a lookup.

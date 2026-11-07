@@ -1395,15 +1395,76 @@ ein Mitglied in der kritischen Klasse. Dann bleibt alles wie bisher.
 ## Hilfsfenster
 
 *Was gilt (A633, sein Vorschlag vom 06.11.2026: „das hilfsfenster sollte evtl. besser aussehen und den rebornmaterials
-entsprechen"):* Alle Empfehlungsfenster – Crucible-Team, -Laden, -Schatz, -Campsite, -Weg und der Masked-Carnivale-Satz –
-teilen ein Gerüst (`RecommendationWindow`): das Schema von RebornMaterial für das ganze Fenster in der knappen Dichte, wie
-die übrigen Zusatzfenster von RSR (`M3Style.Push(M3Density.Tight)`), jeder Teil als Karte mit Titel und Symbol, jede
-Empfehlung als Zeile mit einem Badge (empfohlen, sicher, hinzu; Warnung, wo etwas fehlt oder nicht bezahlbar ist), Gründe
-und Grundlagen in der gedämpften Textrolle, die Aktion als gefüllter Material-Knopf, der ausgegraut ist, solange nichts zu
-tun ist. *Im Kampf mittelbar:* Was empfohlen ist und warum, steht getrennt; vor dem Kampf liest man den Badge, nicht die
-ganze Zeile. *Universell zuerst:* Das Gerüst sitzt einmal; ein neues Fenster erbt es, statt Darstellung zu kopieren.
-*Nicht gebaut:* Fensterbreite mit Umbruch – feste Breiten wären Zahlen ohne Herleitung; die Fenster passen ihre Größe dem
-Inhalt an wie bisher.
+entsprechen"; A654, seine Vorgaben vom 07.11.2026: „es gibt allgemeingültige ui/ux regeln, wie etwas gut erkennbar und
+lesbar sein muss. das wurde missachtet", „dabei ist für mich uninteressant, was upstream macht", „ich will von dir keine
+nicht nutzbaren fenster bekommen"):* Alle Empfehlungsfenster – Crucible-Team, -Laden, -Schatz, -Campsite, -Weg und der
+Masked-Carnivale-Satz – teilen ein Gerüst (`RecommendationWindow`): das Schema von RebornMaterial in der knappen Dichte,
+jeder Teil als Karte mit Symbol und Titel, jede Empfehlung als Zeile mit einem Chip für das Urteil (empfohlen, sicher,
+hinzu; Warnung, wo etwas fehlt oder nicht bezahlbar ist), Gründe und Grundlagen in der gedämpften Textrolle, die Aktion
+als gefüllter Material-Knopf, der ausgegraut ist, solange nichts zu tun ist. Maßstab für Größe und Satz sind die
+allgemeinen Regeln, nicht die Vorgaben einer Bibliothek:
+
+- *Größe frei, in Breite und Höhe.* Der Spieler zieht das Fenster an jedem Rand; ImGui merkt sich die Größe. Grundlage:
+  ISO 9241-110, Steuerbarkeit; Windows UX Guide: „Use resizable windows whenever practical to avoid scroll bars and
+  truncated data".
+- *Startbreite nach dem Inhalt.* Ein Text bis 75 Zeichen steht in einer Zeile; ein längerer bricht bei 65 Zeichen um. Das
+  Fenster ist so breit wie der breiteste Text danach, höchstens so breit wie der Bildschirm. Gemessen wird in Zeichen des
+  Textes selbst (Breite durch Zeichenzahl), nicht in einer angenommenen Zeichenbreite. Grundlage: Windows UX Guide („consider
+  limiting line widths to 65 characters"; „Choose a default window size appropriate for its contents"); Emil Ruder und
+  Baymard (50–75 Zeichen); WCAG 2.2, 1.4.8 (höchstens 80).
+- *Mindestbreite.* Kein Text wird schmaler als 50 seiner Zeichen gesetzt, außer er ist kürzer; nichts, was nicht umbricht –
+  Titelzeile, Chip, Knopf –, wird abgeschnitten. Unter 50 Zeichen springt das Auge zu oft zurück und bricht den Lesefluss
+  (Ruder, Baymard); kürzer zieht das Fenster nicht. Grundlage: Windows UX Guide („Set a minimum window size if there is a
+  size below which the content is no longer usable"); WCAG 2.2, 1.4.4 (kein Verlust von Inhalt). Breiter darf er es
+  ziehen; die Zeilen werden dann länger, und das ist seine Wahl (WCAG 1.4.8 verlangt, dass 80 Zeichen erreichbar sind,
+  Technik G204).
+- *Höhe folgt dem Inhalt.* Das Fenster ist so hoch wie sein Inhalt, bis zur Unterkante des Bildschirms; ändert sich der
+  Inhalt oder die Breite, folgt die Höhe. Zieht er es kürzer, bleibt es so und rollt, bis er es wieder bis zum Inhalt
+  aufzieht; höher als der Inhalt geht nicht, dort stünde nichts. Grundlage: Windows UX Guide („Size controls to eliminate
+  unnecessary scrolling"; „If the first thing users do is resize a window […], its size is wrong").
+- *Grund und Wiedererkennen.* Jede Empfehlung nennt im Fenster ihren Grund gegen die Alternativen – was die andere Wahl
+  gebracht hätte, in derselben Einheit –, die Dinge mit den Namen, die das Spiel zeigt (Sprache des Clients), und das,
+  woran man die Wahl im Spiel findet (Richtung auf dem Brett, Name im Fenster des Spiels) statt einer inneren Nummer
+  wie „offer 2" (seine Vorgaben vom 07.11.2026: „solche empfehlungen gehören auch ingame rein", „der grund der auswahl
+  sollte im tooltip drin stehen"; A656). Grundlage: ISO 9241-110, Selbstbeschreibungsfähigkeit.
+- *Tooltips.* Ihr Text bricht nach derselben Regel um – bis 75 Zeichen eine Zeile, sonst bei 65, je Absatz in Zeichen
+  des Textes selbst –, an einer Stelle, die aus dem Text kommt und nicht vom Fensterrand; der Tooltip wächst mit seinem
+  Inhalt wie bisher. Vorher stand jede Optionsbeschreibung ungebrochen in einem Fenster von höchstens 1200 px: 30
+  Beschreibungen hatten Zeilen über 170 Zeichen, die längste 2239, und ihr Rest lag außerhalb (A654, A655). Das gilt für jeden
+  Tooltip, der über `ImguiTooltips` läuft, auch für die von RebornMaterial (`M3Tooltip.Handler`), für die Beschreibungen
+  der Optionen und die der Rotationen. Die Regel sitzt einmal (`ReadableText`), Fenster und Tooltips lesen sie.
+- *Gespeicherte Größe.* Eine Breite unter der Mindestbreite kann unter diesen Regeln nicht entstehen; findet das Fenster
+  beim ersten Bild einer Sitzung eine, stammt sie aus dem früheren Auto-Größenmodus (im Modell 116 px, A654), und es nimmt die
+  Startbreite. Die Position bleibt.
+- *Hierarchie.* Kartentitel stehen in der kleinsten Titelrolle von RebornMaterial, die größer ist als der Fließtext:
+  TitleLarge (19 px × Textskalierung), sonst HeadlineSmall. Die Rolle, die RebornMaterial selbst nimmt (TitleMedium,
+  16 px), ist bei Dalamuds Standardschrift (Axis 12 pt = 16 px, Dalamud a7409604) so groß wie der Fließtext. Ein Titel,
+  der sich nur durch die Stelle vom Text unterscheidet, gibt dem Auge keinen Einstieg. Grundlage: Windows UX Guide,
+  „Focus".
+- *Chips in Textgröße.* Das Urteil steht in der Schrift des Fließtexts, Farbe aus den Container-Rollen des Schemas
+  (Erfolg, Info, Warnung). RebornMaterials Badge setzt es in 11 px, kleiner als die kleinste Axis-Größe des Spiels
+  (9,6 pt = 12,8 px). Die Bedeutung trägt das Wort, nicht die Farbe allein (WCAG 2.2, 1.4.1).
+- *Nähe.* Eine Empfehlung und ihr Grund stehen eng beieinander (Abstand der Dichte), zwischen zwei Empfehlungen und vor
+  einer Grundlage am Ende einer Karte eine Zeilenhöhe – der Absatzabstand von 1 em, den Browser vorgeben. Grundlage:
+  Gesetz der Nähe (Nielsen Norman Group: „Items close together are likely to be perceived as part of the same group");
+  Windows UX Guide („Related elements are close together and unrelated elements are relatively far apart").
+- *Kontrast*, gerechnet am 07.11.2026 am Schema von RebornMaterial (0bd2517) für sechs Akzentfarben, vor schwarzem und
+  vor weißem Spielbild (Fensterhintergrund zu 97 % deckend): Fließtext ≥ 13,2:1, Gründe ≥ 10,0:1, Chips ≥ 7,2:1,
+  Knopfbeschriftung ≥ 7,6:1 – alle über 4,5:1 (WCAG 2.2, 1.4.3). Die Chipfläche hebt sich mit 1,85:1 von der Karte ab;
+  1.4.11 verlangt 3:1 nur für Bedienelemente und Grafik, die zum Verstehen nötig ist, und der Chip ist keins, sein
+  Wort trägt die Aussage. Knöpfe sind mindestens 40 px × Skalierung hoch, über den 24 px von WCAG 2.2, 2.5.8.
+
+*Im Kampf mittelbar:* Was empfohlen ist und warum, steht getrennt; vor dem Kampf liest man den Chip, nicht die ganze
+Zeile, und das Fenster ist beim ersten Erscheinen lesbar, ohne dass er es zieht. *Universell zuerst:* Das Gerüst sitzt
+einmal; ein neues Fenster erbt Größe, Satz und Messung, statt sie zu kopieren. *Messmittel:* `window_layout_model.py`
+spielt das Gerüst in einer echten Dear ImGui (imgui-bundle, ImGui 1.93) Bild für Bild durch: Startgröße, Mindestgröße,
+gespeicherte Altgröße, kürzer gezogene und wieder aufgezogene Höhe, wachsender Inhalt, doppelte Textgröße; es zeigt
+auch den alten Fehler (Teamfenster 116 × 664 px, Titel abgeschnitten). Es misst die Logik in ImGui, nicht Dalamud und
+nicht RebornMaterial; Schrift ist dort eine Ersatzschrift. `check_window_layout.py` weist in der CI jedes Fenster und
+jeden Tooltip ab, der den Auto-Größenmodus mit Umbruch am eigenen Rand verbindet. *Unbelegt:* der Zeilenabstand innerhalb eines umbrochenen
+Absatzes. ImGui setzt Zeilen im Abstand der Schrifthöhe, wie die Voreinstellung „normal" der Browser. Die 1,5-fache
+Schriftgröße von WCAG 1.4.8 (AAA) misst am Geviert, das ImGui für Axis nicht ausweist; AA und der Windows UX Guide
+verlangen keinen Mindestabstand.
 
 ## Bewegungssperre beim Wirken und die KI von BossMod
 
