@@ -19754,6 +19754,32 @@ Viertes Paar aus TODO „Crucible-Wechselwirkungen, Stufe 2".
 *Prüfgrad:* Compile ohne Warnung, Prüfskripte; Textmuster am Rohtext. Im Spiel nicht beobachtet; das Wegfenster nennt das
 Fluchtfeld.
 
+### A672 · Crucible-Schadensgegenstände: Wert je Gegner höchstens seine LP (Überschuss) (07.11.2026)
+
+Fünftes Paar aus TODO „Crucible-Wechselwirkungen, Stufe 2" (Gegenthese A665-3).
+
+- *1 Research (ACT-Mitschnitt 07.11.2026):* Der Treffer eines Gegenstands kommt vom Spieler unter der Aktion seines
+  englischen Namens (xivapi Action: Fang of Wind 47011, Fang of Water 47008, Fang of Ice 47007 …). Reißzahn des Windes
+  (2.000 Potenz): Terrormilbe 1.192 und 1.140, Schattenmilbe 1.326 und 1.304 bei 522 LP; Reißzahn des Wassers: 1.186 und
+  1.600. Schaden je Potenz rund 0,57 bis 0,8, im Mittel 0,65. Code: `DamageItem` zählte Potenz mal Gegner ohne Grenze,
+  `AheadWorth` ebenso.
+- *2 Optionen:* (0) nichts. (a) feste Grenze je Gegnerart – kein Beleg. (b) Schaden je Potenz der Gegenstände zur
+  Laufzeit messen, je Gegner höchstens seine LP; für anstehende Kämpfe die größten gesehenen LP der Art. Gewählt (b),
+  steuert sich je Gebiet nach.
+- *Gebaut (Konzept 21 K8 Schritt 13, „Überschuss"):* `BeastmasterRotation.ItemPotencyOfAction` (Potenz des Gegenstands
+  zur Aktion seines Namens), `CrucibleBoard.ItemDamagePerPotency` (ohne Schwächezuschlag, je Gebiet) und `MaxHpSeen`
+  (größte LP je Gegnerart in der Sitzung); Wertung hier gegen die aktuellen LP, im besten anstehenden Kampf gegen die
+  gesehenen.
+- *Wirkung am Fall:* Reißzahn auf Terrormilbe und drei Milben: rund 4.400 statt 8.000 Potenz – er geht dort nur noch,
+  wenn kein anstehender Kampf mehr bringt; im Endkampf geht er ohnehin spätestens vor dessen Ende.
+- *6 Falsifikation:* Kein Defekt? Widerlegt am Mitschnitt (zwei Drittel des Treffers auf die Milbe verfielen). Option
+  falsch? Ein kritischer Treffer hebt die Messung; der Mittelwert dämpft ihn – Preis: die Grenze schwankt um eine
+  Streuung. Ausgeliefert, nichts ändert sich? Vor dem ersten Gegenstand eines Gebiets und gegen Arten, die RSR noch nicht
+  getroffen hat – dann zählt der Treffer voll wie zuvor.
+
+*Prüfgrad:* Compile ohne Warnung, Prüfskripte; Aktionszuordnung am Blatt und am Mitschnitt belegt. Im Spiel nicht
+beobachtet.
+
 ## B · Commit-Register (Fork vs. `upstream/main`)
 
 ### B1 · Einzelgeprüfte Fork-Commits

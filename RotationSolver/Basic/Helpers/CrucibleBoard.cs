@@ -140,6 +140,12 @@ internal static class CrucibleBoard
 	}
 
 	private static readonly Dictionary<(uint Action, bool Physical, byte Grade), Sums> _perPotency = [];
+
+	// A672: the most HP each enemy kind (name) was seen with, over the session; the damage per potency of the player's damage
+	// items in this area.
+	private static readonly Dictionary<uint, uint> _maxHpSeen = [];
+	private static (double Sum, int Hits) _itemPerPotency;
+	private static uint _itemMeasuredIn;
 	private static uint _measuredIn;
 	private static double _ownDamage;
 	private static readonly Dictionary<uint, double> _ownDamageByElement = [];
@@ -979,6 +985,27 @@ internal static class CrucibleBoard
 			_ownDamageByElement[element] = (_ownDamageByElement.TryGetValue(element, out var dealt) ? dealt : 0d) + amount;
 		}
 
+		// A672: the most HP each enemy kind was seen with, and the damage per potency of the player's damage items - their hit
+		// is the action of the item's name -, taken back from a hit on a weakness by its bonus; by area, as K1.
+		if (target.MaxHp > 0u)
+		{
+			_maxHpSeen[target.NameId] = Math.Max(_maxHpSeen.TryGetValue(target.NameId, out var seen) ? seen : 0u, target.MaxHp);
+		}
+
+		if (!byFamiliar && Rotations.Basic.BeastmasterRotation.ItemPotencyOfAction(action.RowId) is var itemPotency && itemPotency > 0f
+			&& EnemyOf(target.NameId) is { } hitEnemy)
+		{
+			if (_itemMeasuredIn != DataCenter.TerritoryID)
+			{
+				_itemMeasuredIn = DataCenter.TerritoryID;
+				_itemPerPotency = default;
+			}
+
+			var weak = hitEnemy.Weakness != 0 && elements.Contains(hitEnemy.Weakness);
+			var perItemPotency = amount / (itemPotency * (weak ? 1f + WeaknessBonus : 1f));
+			_itemPerPotency = (_itemPerPotency.Sum + perItemPotency, _itemPerPotency.Hits + 1);
+		}
+
 		var potency = 1f;
 		if (elements.Count == 0 || (action.GetActionCate() != ActionCate.Autoattack
 			&& (!ActionTooltip.TryPlainPotency(action.RowId, out potency) || potency <= 0f)))
@@ -1219,6 +1246,16 @@ internal static class CrucibleBoard
 			_fightLoad = _fightLoad with { Healed = _fightLoad.Healed + amount };
 		}
 	}
+
+	/// <summary>
+	/// K8 step 13 (A672): the damage per potency of the player's damage items, measured on their hits in this area without
+	/// the weakness bonus; null before the first.
+	/// </summary>
+	internal static float? ItemDamagePerPotency
+		=> _itemMeasuredIn == DataCenter.TerritoryID && _itemPerPotency.Hits > 0 ? (float)(_itemPerPotency.Sum / _itemPerPotency.Hits) : null;
+
+	/// <summary>A672: the most HP an enemy of this name was seen with in the session; 0 before it was hit.</summary>
+	internal static uint MaxHpSeen(uint nameId) => _maxHpSeen.TryGetValue(nameId, out var hp) ? hp : 0u;
 
 	/// <summary>
 	/// K10 shop (A570): the player's load per fight - the mean and the heaviest fight - in this area, else over every board

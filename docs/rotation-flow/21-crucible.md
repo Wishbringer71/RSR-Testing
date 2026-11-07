@@ -1210,8 +1210,15 @@ on a pack once a fight, all of them in the final fight (Crucible only)".
      wie im besten anstehenden Kampf, sobald er mehr Gegner trifft als dein Ziel; einer mit Rückstoß nur, wenn er jeden
      trifft, der kämpft, im Endkampf auch dann spätestens vor dessen Ende („Über das Brett", A664). Wert ist Potenz mal
      der Summe über die getroffenen Gegner aus eins plus dem gemessenen Schwächezuschlag, wo das Element ihre Schwäche
-     ist (K1), und der Zusatzpotenz eines Status, den das Ziel trägt (Reißzahn des Feuers unter Deep Freeze); bei
-     Gleichstand der ohne Rückstoß. Legt ein Gegenstand, der jetzt ebenfalls ginge, den Status, den der gewählte
+     ist (K1), und der Zusatzpotenz eines Status, den das Ziel trägt (Reißzahn des Feuers unter Deep Freeze), je Gegner
+     höchstens seine LP (A672: seine LP durch den gemessenen Schaden je Potenz der Gegenstände); bei Gleichstand der ohne
+     Rückstoß. *Überschuss (A672):* Der Treffer eines Gegenstands kommt von dir unter der Aktion seines englischen Namens
+     (Reißzahn des Windes, Aktion 47011; Reißzahn des Wassers 47008); RSR misst daran den Schaden je Potenz, wie K1 den der
+     Aktionen, ohne Schwächezuschlag, je Gebiet. Am 07.11.2026 auf Brett 1: 1.140 bis 1.192 Schaden je 2.000 Potenz auf
+     die Terrormilbe (0,57 bis 0,6), 1.304 bis 1.600 auf die Schattenmilbe mit 522 LP – zwei Drittel des Treffers dort
+     verfielen. Im besten anstehenden Kampf zählt jede Art höchstens die größten LP, die RSR an ihr gesehen hat; ohne
+     Messung zählt der Treffer voll wie zuvor. Grund: Drei Milben zählten wie drei volle Treffer, und der Gegenstand ging
+     dort statt im Endkampf, wo die Sukkubi ihn ganz nehmen. Legt ein Gegenstand, der jetzt ebenfalls ginge, den Status, den der gewählte
      ausnutzt, auf das Ziel, geht er zuerst (Reißzahn des Eises vor dem des Feuers): Beide gehen nacheinander, und nur
      diese Reihenfolge bringt die Zusatzpotenz. Ein Gegenstand,
      dessen Element nur die Schwäche noch kommender Gegner trifft, wartet auf sie (wie K2).
@@ -1339,8 +1346,8 @@ on a pack once a fight, all of them in the final fight (Crucible only)".
     der weder trifft noch wirkt (eingeschläfert, gelähmt, ein Objekt), hält den Gegenstand auf. Nicht widerlegt; außerhalb
     des Endkampfs bleibt er für die anstehenden, im Endkampf geht er vor dessen Ende – Preis: die Treffer auf Gegner, die
     in der Wartezeit fallen. *Gegenthese A665-3 (Überschuss):* Ein Treffer auf einen Gegner mit weniger LP als der Treffer
-    zählt voll – die Milben (522 LP) nahmen 1.304 bis 1.600. Nicht widerlegt: Der Wert überschätzt Rudel schwacher
-    Gegner; offen im TODO („Crucible-Wechselwirkungen, Stufe 2"). *Ausgeliefert, und nichts ändert sich?* Wenn die kommenden Gegner beim
+    zählt voll – die Milben (522 LP) nahmen 1.304 bis 1.600. Seit A672 widerlegt, sobald ein Gegenstand gemessen ist:
+    je Gegner höchstens seine LP (13, „Überschuss"). *Ausgeliefert, und nichts ändert sich?* Wenn die kommenden Gegner beim
     Erscheinen schon getroffen oder gewirkt haben, oder das Blatt die späte Art nicht führt – dann geht der Gegenstand
     wie bisher.
 - *Wie:* `InstanceContentCrucibleOfTheUnbroken.UseItem` (FFXIVClientStructs, in Dalamuds Fassung vorhanden) wirkt auf

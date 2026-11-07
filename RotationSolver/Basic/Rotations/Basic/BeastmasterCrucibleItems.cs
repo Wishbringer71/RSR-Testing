@@ -897,6 +897,7 @@ public partial class BeastmasterRotation
 		}
 
 		var bonus = CrucibleBoard.WeaknessBonus;
+		var perPotency = CrucibleBoard.ItemDamagePerPotency;
 		var bestWorth = 0f;
 		var bestHits = 0;
 		var bestKnockback = false;
@@ -931,8 +932,11 @@ public partial class BeastmasterRotation
 
 				hits++;
 				var each = 1f + (item.Element != 0 && CrucibleBoard.WeaknessOf(hostile.NameId) == item.Element ? bonus : 0f);
-				worth += item.Value * each
+				var add = (item.Value * each)
 					+ (item.BonusStatus.Length > 0 && PlayerHasStatusNamed(hostile, item.BonusStatus) ? item.Bonus * each : 0f);
+
+				// A672: at most what the enemy has left, by the measured damage per potency of the items.
+				worth += perPotency is { } dpp && dpp > 0f ? Math.Min(add, hostile.CurrentHp / dpp) : add;
 			}
 
 			if (!ending && MoreCanCome(item, target, hits, out var coming))
@@ -1141,7 +1145,8 @@ public partial class BeastmasterRotation
 
 	// A664: what a damage item could bring in the best fight still ahead (the final one included) - its potency times each
 	// enemy kind the sheet lists for that fight, one plus the weakness bonus where its element is the kind's weakness; an
-	// item without a radius only the best single kind. 0 while no fight ahead is known.
+	// item without a radius only the best single kind. A672: each kind at most the most HP RSR saw it with, by the measured
+	// damage per potency of the items. 0 while no fight ahead is known.
 	private static float AheadWorth(CrucibleItem item, HashSet<uint>? ahead, float bonus)
 	{
 		var best = 0f;
@@ -1150,19 +1155,57 @@ public partial class BeastmasterRotation
 			return best;
 		}
 
+		var perPotency = CrucibleBoard.ItemDamagePerPotency;
 		foreach (var battle in ahead)
 		{
-			var weight = 0f;
+			var worth = 0f;
 			foreach (var enemy in CrucibleBoard.EnemiesOf(battle))
 			{
 				var each = 1f + (item.Element != 0 && enemy.Weakness == item.Element ? bonus : 0f);
-				weight = item.Radius > 0f ? weight + each : Math.Max(weight, each);
+				var add = item.Value * each;
+				if (perPotency is { } dpp && dpp > 0f && CrucibleBoard.MaxHpSeen(enemy.NameId) is var hp && hp > 0u)
+				{
+					add = Math.Min(add, hp / dpp);
+				}
+
+				worth = item.Radius > 0f ? worth + add : Math.Max(worth, add);
 			}
 
-			best = Math.Max(best, item.Value * weight);
+			best = Math.Max(best, worth);
 		}
 
 		return best;
+	}
+
+	private static readonly Dictionary<uint, float> _itemPotencyOfAction = [];
+
+	/// <summary>
+	/// K8 step 13 (A672): the potency of the damage item whose hit comes as action <paramref name="actionId"/> - the action of
+	/// the item's English name ("Fang of Wind", action 47011) -, 0 for any other action.
+	/// </summary>
+	internal static float ItemPotencyOfAction(uint actionId)
+	{
+		if (_itemPotencyOfAction.TryGetValue(actionId, out var known))
+		{
+			return known;
+		}
+
+		var potency = 0f;
+		var name = Svc.Data.GetExcelSheet<Lumina.Excel.Sheets.Action>(ClientLanguage.English)?.GetRowOrDefault(actionId)?.Name.ExtractText();
+		if (!string.IsNullOrEmpty(name))
+		{
+			foreach (var item in CrucibleItems.Values)
+			{
+				if (item.Kind == CrucibleItemKind.Damage && string.Equals(item.Name, name, StringComparison.OrdinalIgnoreCase))
+				{
+					potency = item.Value;
+					break;
+				}
+			}
+		}
+
+		_itemPotencyOfAction[actionId] = potency;
+		return potency;
 	}
 
 	// A664: healing no fight ahead needs - what the healing items held heal beyond the heaviest sum of the fights ahead up
