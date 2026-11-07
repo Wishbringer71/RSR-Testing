@@ -59,9 +59,12 @@ What this release changes in the fight. For the whole distance from upstream, se
   while an enemy outside its reach has neither hit nor cast yet – the shadow mites stand still for seconds after they
   appear, then run in – or, while it reaches only its target, a kind of the fight has not appeared yet (the final
   boss's succubi), it waits. In the final fight it goes at the latest when the fight could end before every item held
-  had its turn, a knockback fang included. The Potion of Tempered Magic goes right before the first fang, Fang of Ice
-  before Fang of Fire, which deals 1,000 potency more to a target in Deep Freeze. The trace names the items you hold at
-  the start and the end of each fight.
+  had its turn, a knockback fang included. The trace names the items you hold at the start and the end of each fight.
+- **Crucible items in the order their texts reward.** The Potion of Tempered Magic goes right before the first fang;
+  Fang of Ice before Fang of Fire, which deals 1,000 potency more to a target in Deep Freeze; Celestial Sand, which
+  lowers its target's fire resistance, before Fang of Fire; the Potion of Breathtaking Swiftness right before the Tome
+  of the Impervious (three more Blink stacks) or the Beast Potion Kit (Auto-potion rarely expires). While you carry a
+  crimson ribbon, the soul serums count as the 50 % heals they then are.
 - **Gear and feed belong to the run.** A new run on the same board no longer inherits the gear and feed slots of the
   last one.
 - **A familiar is healed before a first hit could fell it.** Before a familiar takes its first hit in a fight, RSR

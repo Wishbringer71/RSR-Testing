@@ -83,6 +83,29 @@ public partial class BeastmasterRotation
 		return (hp, taken, physical, magic);
 	}
 
+	/// <summary>
+	/// A666: whether the gear this run wears holds a piece of the English name <paramref name="name"/> ("crimson ribbon"), as an
+	/// item's text names it after "When carrying".
+	/// </summary>
+	private static bool WearsGearNamed(string name)
+	{
+		if (name.Length == 0 || _gearSeen is not { } seen || seen.Run != CrucibleBoard.Run)
+		{
+			return false;
+		}
+
+		var sheet = Svc.Data.GetExcelSheet<Lumina.Excel.Sheets.XBMItem>(ClientLanguage.English);
+		foreach (var id in seen.Gear)
+		{
+			if (sheet?.GetRowOrDefault(id) is { } row && string.Equals(row.Unknown2.ExtractText(), name, StringComparison.OrdinalIgnoreCase))
+			{
+				return true;
+			}
+		}
+
+		return false;
+	}
+
 	/// <summary>Whether a shop is open and the recommendation runs, for the window.</summary>
 	public static bool CrucibleShopOpen { get; private set; }
 
@@ -894,9 +917,9 @@ public partial class BeastmasterRotation
 		var holding = 0f;
 		foreach (var id in heldItems)
 		{
-			if (items.TryGetValue(id, out var heal) && heal.Kind == CrucibleItemKind.Heal)
+			if (items.TryGetValue(id, out var heal))
 			{
-				holding += heal.Value;
+				holding += HealShareOf(heal);
 			}
 		}
 

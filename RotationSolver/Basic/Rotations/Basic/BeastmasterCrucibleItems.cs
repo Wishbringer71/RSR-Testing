@@ -43,11 +43,15 @@ public partial class BeastmasterRotation
 	// mitigates, the chance it revives with, or its potency; whether it reaches the allies nearby as well; its name; the
 	// status it grants, or for a serum the ailment it resists; for a damage item its element (XBMElement), radius and whether
 	// it knocks back, the status it lays on its target, and the status on a target that adds potency to it (A665: Fang of Ice
-	// lays Deep Freeze, Fang of Fire deals 1,000 more to a target in it); for a buff whether it raises magic damage, which
-	// the damage items carry.
+	// lays Deep Freeze, Fang of Fire deals 1,000 more to a target in it) and the element whose resistance it lowers on its
+	// target (Celestial Sand: fire); for a buff whether it raises magic damage, which the damage items carry; the share of HP
+	// it restores while a piece of beast gear is carried, and that piece (A666: the soul serums with a crimson ribbon); and
+	// the status of the player's own its text names, which another item may grant first (A666: Spirit of the Breathtaker
+	// for the Tome of the Impervious and the Beast Potion Kit).
 	private readonly record struct CrucibleItem(CrucibleItemKind Kind, float Value, bool Allies, string Name, string Status = "",
 		uint Element = 0, float Radius = 0f, bool Knockback = false, string Afflicts = "", string BonusStatus = "",
-		float Bonus = 0f, bool RaisesMagic = false);
+		float Bonus = 0f, bool RaisesMagic = false, uint LowersResist = 0, float HealShare = 0f, string HealCarrying = "",
+		string GainsFrom = "");
 
 	private static Dictionary<ushort, CrucibleItem>? _crucibleItems;
 
@@ -68,7 +72,7 @@ public partial class BeastmasterRotation
 	private static readonly HashSet<ushort> _damageWaitTraced = [];
 	private static (int Run, uint Fight) _damageWaitFight;
 	private static bool _heldTracedInCombat;
-	private static readonly List<(int Slot, string Status)> _layers = [];
+	private static readonly List<(int Slot, string Status, uint Element)> _layers = [];
 	private static (uint Fight, bool Final) _heldTracedFight;
 	private static readonly HashSet<uint> _notCuredByRemedy = [];
 	private static readonly Dictionary<uint, DateTime> _ailmentUnderRemedySince = [];
@@ -94,6 +98,10 @@ public partial class BeastmasterRotation
 		RegexOptions.CultureInvariant | RegexOptions.Singleline);
 	private static readonly Regex GrantsBuff = new(@"^Grants (?:\w+ stacks of )?(?<status>.+?)(?: while also| to self)",
 		RegexOptions.CultureInvariant);
+	private static readonly Regex LowersResist = new(@"Reduces target's (?<type>[a-z]+) resistance by \d+%",
+		RegexOptions.CultureInvariant);
+	private static readonly Regex HealsCarrying = new(
+		@"When carrying (?:an? )?(?<gear>[a-z][a-z' -]*?), restores (?<share>\d+)% of target's total HP", RegexOptions.CultureInvariant);
 	private static readonly Regex AfflictsTarget = new(@"Afflicts target with (?<status>[A-Z][A-Za-z']*(?: [A-Z][A-Za-z']*)*)",
 		RegexOptions.CultureInvariant);
 	private static readonly Regex BonusOnStatus = new(
@@ -114,11 +122,13 @@ public partial class BeastmasterRotation
 			return items;
 		}
 
+		var texts = new Dictionary<ushort, string>();
 		foreach (var row in sheet)
 		{
 			var text = row.Unknown3.ExtractText();
 			var name = row.Unknown2.ExtractText();
 			var id = (ushort)row.RowId;
+			texts[id] = text;
 			if (HealsShare.Match(text) is { Success: true } heal && Share(heal, out var healed))
 			{
 				items[id] = new CrucibleItem(CrucibleItemKind.Heal, healed,
@@ -160,8 +170,12 @@ public partial class BeastmasterRotation
 			}
 			else if (Resists.Match(text) is { Success: true } resists)
 			{
+				var heals = HealsCarrying.Match(text);
+				var healShare = 0f;
+				var carrying = heals.Success && Share(heals, out healShare) ? heals.Groups["gear"].Value : string.Empty;
 				items[id] = new CrucibleItem(CrucibleItemKind.ResistAilment, 0f,
-					resists.Groups["whom"].Value.StartsWith("and", StringComparison.Ordinal), name, resists.Groups["ailment"].Value);
+					resists.Groups["whom"].Value.StartsWith("and", StringComparison.Ordinal), name, resists.Groups["ailment"].Value,
+					HealShare: healShare, HealCarrying: carrying);
 			}
 			else if (Deals.Match(text) is { Success: true } deals
 				&& float.TryParse(deals.Groups["potency"].Value, NumberStyles.AllowThousands, CultureInfo.InvariantCulture, out var potency)
@@ -178,12 +192,41 @@ public partial class BeastmasterRotation
 					CrucibleBoard.ElementNamed(deals.Groups["type"].Value), radius,
 					text.Contains("knockback", StringComparison.OrdinalIgnoreCase),
 					AfflictsTarget.Match(text) is { Success: true } lays ? lays.Groups["status"].Value : string.Empty,
-					bonusOn.Success ? bonusOn.Groups["status"].Value : string.Empty, bonus);
+					bonusOn.Success ? bonusOn.Groups["status"].Value : string.Empty, bonus,
+					LowersResist: LowersResist.Match(text) is { Success: true } lowers
+						? CrucibleBoard.ElementNamed(lowers.Groups["type"].Value) : 0u);
 			}
 			else if (GrantsBuff.Match(text) is { Success: true } buff)
 			{
 				items[id] = new CrucibleItem(CrucibleItemKind.Buff, 0f, false, name, buff.Groups["status"].Value,
 					RaisesMagic: text.Contains("Increases magic damage dealt", StringComparison.Ordinal));
+			}
+		}
+
+		// A666: an item whose text names a status of the player's own that a buff of the board grants gains from that buff.
+		var granted = new List<string>();
+		foreach (var item in items.Values)
+		{
+			if (item.Kind == CrucibleItemKind.Buff && item.Status.Length > 0)
+			{
+				granted.Add(item.Status);
+			}
+		}
+
+		foreach (var (id, text) in texts)
+		{
+			if (!items.TryGetValue(id, out var item) || item.Kind == CrucibleItemKind.Buff)
+			{
+				continue;
+			}
+
+			foreach (var status in granted)
+			{
+				if (text.Contains(status, StringComparison.Ordinal))
+				{
+					items[id] = item with { GainsFrom = status };
+					break;
+				}
 			}
 		}
 
@@ -527,6 +570,24 @@ public partial class BeastmasterRotation
 			why = damageWhy;
 		}
 
+		// A666: the chosen item gains from a status of the player's own that a held buff grants (Spirit of the Breathtaker for
+		// the Tome of the Impervious and the Beast Potion Kit): that buff first, the item next.
+		if (slot >= 0 && CrucibleItems.TryGetValue(crucible->Inventory[slot].ItemId, out var chosenItem)
+			&& chosenItem.GainsFrom.Length > 0 && !PlayerHasStatusNamed(player, chosenItem.GainsFrom))
+		{
+			for (var i = 0; i < crucible->Inventory.Length; i++)
+			{
+				if (i != slot && TryItem(crucible, i, CrucibleItemKind.Buff, out var grants)
+					&& string.Equals(grants.Status, chosenItem.GainsFrom, StringComparison.Ordinal))
+				{
+					why = $"first {grants.Status}, which {chosenItem.Name} gains from";
+					slot = i;
+					on = player;
+					break;
+				}
+			}
+		}
+
 		var targets = TargetSystem.Instance();
 		if (slot < 0 || targets == null)
 		{
@@ -814,7 +875,12 @@ public partial class BeastmasterRotation
 
 			if (item.Afflicts.Length > 0 && !PlayerHasStatusNamed(target, item.Afflicts))
 			{
-				_layers.Add((i, item.Afflicts));
+				_layers.Add((i, item.Afflicts, 0u));
+			}
+
+			if (item.LowersResist != 0)
+			{
+				_layers.Add((i, string.Empty, item.LowersResist));
 			}
 
 			if (worth > bestWorth || (worth == bestWorth && bestKnockback && !item.Knockback))
@@ -832,16 +898,18 @@ public partial class BeastmasterRotation
 			return false;
 		}
 
-		// The chosen one gains from a status another that would go now lays on the target: that one first.
+		// The chosen one gains from what another that would go now lays on the target - a status it deals more to, or a lower
+		// resistance to its element (A666: Celestial Sand before Fang of Fire): that one first.
 		var laysFirst = string.Empty;
-		if (TryItem(crucible, slot, CrucibleItemKind.Damage, out var chosen) && chosen.BonusStatus.Length > 0)
+		if (TryItem(crucible, slot, CrucibleItemKind.Damage, out var chosen))
 		{
-			foreach (var (layer, status) in _layers)
+			foreach (var (layer, status, element) in _layers)
 			{
-				if (layer != slot && string.Equals(status, chosen.BonusStatus, StringComparison.OrdinalIgnoreCase))
+				if (layer != slot && ((chosen.BonusStatus.Length > 0 && string.Equals(status, chosen.BonusStatus, StringComparison.OrdinalIgnoreCase))
+					|| (element != 0 && element == chosen.Element)))
 				{
 					slot = layer;
-					laysFirst = status;
+					laysFirst = status.Length > 0 ? status : "the lower resistance";
 					break;
 				}
 			}
@@ -1177,11 +1245,37 @@ public partial class BeastmasterRotation
 		return best;
 	}
 
+	// The share of HP an item restores: a healing item's, or one that heals while a piece of beast gear the run wears is carried
+	// (A666); 0 for any other.
+	private static float HealShareOf(CrucibleItem item)
+	{
+		return item.Kind == CrucibleItemKind.Heal ? item.Value
+			: item.HealShare > 0f && WearsGearNamed(item.HealCarrying) ? item.HealShare : 0f;
+	}
+
+	// An item of kind in slot; asked for a heal, also an item that heals while a piece of beast gear the run wears is carried
+	// (A666: a soul serum with a crimson ribbon restores 50 %), seen as the heal it then is.
 	private static unsafe bool TryItem(InstanceContentCrucibleOfTheUnbroken* crucible, int slot, CrucibleItemKind kind, out CrucibleItem item)
 	{
 		item = default;
 		var id = crucible->Inventory[slot].ItemId;
-		return id != 0 && !_crucibleSlotsRefused.Contains(slot) && CrucibleItems.TryGetValue(id, out item) && item.Kind == kind;
+		if (id == 0 || _crucibleSlotsRefused.Contains(slot) || !CrucibleItems.TryGetValue(id, out item))
+		{
+			return false;
+		}
+
+		if (item.Kind == kind)
+		{
+			return true;
+		}
+
+		if (kind == CrucibleItemKind.Heal && item.HealShare > 0f && WearsGearNamed(item.HealCarrying))
+		{
+			item = item with { Kind = CrucibleItemKind.Heal, Value = item.HealShare, Allies = false };
+			return true;
+		}
+
+		return false;
 	}
 
 	// Reraise is assumed to stand until a fall, since its text names no duration. Seen to go while the player lives, it is

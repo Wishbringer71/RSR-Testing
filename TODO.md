@@ -19,9 +19,11 @@ auswahl und das timing der beschwörung" – je Kampf aller fünf Bretter (Gegne
 BossMod-Module) die Rotation des Beastmasters, die Wahl der Begleiter und den Zeitpunkt ihres Aufrufs im Loop prüfen
 (Beispiel seiner Beobachtung: der Raptor gegen Feuer, bevor feueranfällige Gegner da waren; A581).
 
-1. Blaumagier: RSRs nächste Aktion beendet Apokalypsis und Chelonian Gate – Schaden und Minderung des Spielers enden
+1. Crucible-Wechselwirkungen, Stufe 2 – Ausrüstung, Futter, Weg und Zielwahl lesen die Paare noch nicht (Beastmaster,
+   Vorrang).
+2. Blaumagier: RSRs nächste Aktion beendet Apokalypsis und Chelonian Gate – Schaden und Minderung des Spielers enden
    nach einem GCD statt nach 10 s.
-2. Kegel und Ringe gegnerischer Zauber genau messen: Zauber- und Kanalbeginn nutzen RSRs Erkennung bei Kegel und Ring
+3. Kegel und Ringe gegnerischer Zauber genau messen: Zauber- und Kanalbeginn nutzen RSRs Erkennung bei Kegel und Ring
    nicht, und mehrere Leser sehen hinter einem Kegel oder im Innenkreis eines Rings eine Gefahr, die keine ist.
 
 Danach die technische Schuld, soweit ihre Auflösungsbedingung erfüllt ist. Warten auf Daten: unten.
@@ -45,6 +47,17 @@ auf jeden Schadens- und Schutzkanal gehört, den RSR nicht selbst beendet (Unive
 *Konzept:* 14, „Wo Angriff die Abwehr beendet: die Kanäle".
 
 ## Offene Arbeit
+
+### Crucible-Wechselwirkungen, Stufe 2 · N
+Im Kampf und auf dem Brett: Laden und Schatzfeld werten ein Ausrüstungsstück ohne die Gegenstände, die es verlängert
+oder heilen lässt (Rote Schleife und gehaltene Seren, Diebesgewand und Heiltranksammlung u. a.); Tötungsstapel (Dämonische
+Rüstung, Stimulanztrunk-Simulakrum) zählen weder in der Zielwahl noch im Wert eines Flächengegenstands; das
+Lassi-Simulakrum (volle LP an der Rast) zählt an der Campsite nicht, der Arzneibeutel nicht für die Rast; Feiglingsmesser,
+Rauchbombe und Diebesmesser zählen auf dem Weg nicht; die Zauberbücher und die Ungezähmten Mittel nimmt RSR nicht; der
+Wert eines Schadensgegenstands zählt einen Gegner mit weniger LP als der Treffer voll (Milben: 522 LP, 1.304 bis 1.600
+Schaden). Nächster Schritt: je Paar der Loop in der Reihenfolge Sicherheit vor Schaden – Seren und Schleife im Laden,
+Lassi an der Rast, Flucht auf dem Weg, Tötungsstapel und Überschuss, Zauberbücher mit Messung nach dem Einsatz,
+Ungezähmte Mittel unter Schutz. Konzept 21, K8 („Wechselwirkungen", A666), K10, K14, Weg.
 
 ### Kegel und Ringe gegnerischer Zauber genau messen · N
 Im Kampf: RSRs Formprüfung (`DataCenter.AreaCastReaches`) misst einen Kegel und einen Ring als vollen Kreis um den

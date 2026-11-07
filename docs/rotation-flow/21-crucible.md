@@ -1172,21 +1172,65 @@ on a pack once a fight, all of them in the final fight (Crucible only)".
     – sonst wirft er die Überlebenden aus dem Kreis, in dem Begleiter und Flächen die übrigen treffen. Im Endkampf geht er
     spätestens vor dessen Ende (oben), auch wenn ein Gegner fern bleibt; bis A665 verfiel er dort. Bis A664 entschied der
     Rückstoß nur bei gleichem Wert.
-  - *Synergien (geprüft, Wirktexte `XBMItem`, xivapi 07.11.2026):* Stärkung des magischen Schadens trägt die Reißzähne
-    und Sternensturm („Damage is affected by magic damage increase effects"); das Bestien-Zaubermittel („Increases magic
-    damage dealt by 30%", 15 s) geht deshalb unmittelbar vor dem ersten Schadensgegenstand, nicht zu Beginn des
-    Endkampfs – seit A665 wartet der Schaden dort auf die Gegner, und 15 s ab Kampfbeginn wären vorbei, bevor die
-    Sukkubi kommen. Die übrigen Stärkungen (physischer Schaden, kritische Trefferquote, Ausweichen, Bewegung, Wirk- und
-    Abklingzeiten) tragen deine eigenen Angriffe, gleich wann, und gehen weiter zu Beginn. Der Reißzahn des Feuers
-    („Targets suffering from Deep Freeze receive additional damage with a potency of 1,000") folgt dem Reißzahn des Eises,
-    der sein Ziel mit Deep Freeze belegt (20 s): Hältst du beide, geht der des Eises zuerst, und der des Feuers trifft
-    mit 3.500 statt 2.500 Potenz (13). Nimmt das Ziel Deep Freeze nicht an, geht der des Feuers danach ohne Zuschlag;
-    er wartet nur, solange der des Eises gehalten wird. Das
-    Bestien-Ausdauermittel hebt die maximalen LP um 20 % bis Kampfende, und Heilgegenstände heilen einen Anteil der
-    maximalen LP: Steht es nicht und kämpft ein Gegner mit Boss-Symbol, geht es vor dem Heilgegenstand (11 vor 1). Das
-    Blutsaugerserum (10 % des Schadens als LP) bringt mehr, wo viel Schaden fällt – es bleibt bei 12. Stärkung außerhalb
-    des Endkampfs: nicht gebaut – der Endkampf nimmt jedes Mittel, sobald sein Status endet (15 bis 30 s; der Endkampf auf
-    Brett 1 dauerte 157 s), ein übriges bleibt dort selten; Gegenthese unten.
+  - *Wechselwirkungen (A666; alle 203 Wirktexte von `XBMItem` – Ausrüstung, Gegenstände, Futter –, xivapi 07.11.2026;
+    consolegameswiki „Crucible Items" und „Crucible of the Unbroken", 07.11.2026, nennen dieselben Paare, keine weiteren;
+    seine Vorgabe vom 07.11.2026, sie zu Beginn zu erheben):* Jeder Querverweis eines Textes auf einen anderen Gegenstand,
+    ein Ausrüstungsstück oder einen Status, und wo RSR darüber entscheidet:
+    - *Gebaut, beim Einsatz im Kampf:* (1) Stärkung des magischen Schadens trägt die Reißzähne, Sternensturm, die
+      Gegenschläge der Rosenrüstung und die Zusatztreffer der Elementäxte (Flammende, Frostige Axt u. a.) („affected by magic damage increase effects");
+      das Bestien-Zaubermittel („Increases magic damage dealt by 30%", 15 s) geht unmittelbar vor dem ersten
+      Schadensgegenstand (12, A665) – 15 s ab Beginn des Endkampfs wären vorbei, bevor die Sukkubi kommen. (2) Reißzahn
+      des Eises legt Deep Freeze (20 s), der des Feuers trifft darunter mit 1.000 Potenz mehr; der des Eises geht zuerst
+      (13, A665). Deep Freeze aus dem Entfesseln der Chimäre zählt ebenso, RSR liest den Status am Ziel. (3) Sternensturm
+      senkt die Feuerresistenz des Ziels um 20 % (60 s): Ginge der Reißzahn des Feuers, geht Sternensturm zuerst (13,
+      A666); er gibt 50 TP je getroffenem Gegner. (4) Spirit of the Breathtaker (Bestien-Flinkheitsmittel, bis
+      Kampfende) gibt dem Grimoire der Unantastbarkeit drei Blink mehr (acht statt fünf) und senkt die Verfallschance
+      des Auto-potion der Bestien-Heiltranksammlung von 50 auf 10 %: Geht eines der beiden, geht das Flinkheitsmittel
+      unmittelbar davor (A666), auch außerhalb des Endkampfs. RSR liest das aus dem Text: Nennt der Text eines
+      Gegenstands einen Status, den ein gehaltenes Mittel dir gibt, geht das Mittel zuerst. (5) Die Seren heilen 50 %
+      der LP ihres Ziels, solange du eine Rote Schleife trägst („When carrying a crimson ribbon, restores 50% of target's
+      total HP"): RSR zählt sie dann als Heilgegenstand – in Schritt 1, im Überschuss über die anstehenden Kämpfe und in
+      den Summen –, ihr Schutz kommt dazu (A666). (6) Das Bestien-Ausdauermittel (+20 % maximale LP bis Kampfende) geht
+      gegen einen Boss vor dem Heilgegenstand (11 vor 1, A664) und damit vor dem Blutsauger-Reißzahn, dessen Potenz mit
+      den maximalen LP steigt (1.500 bis 3.300); außerhalb eines Bosskampfs nicht vorgezogen – es fehlte dem nächsten.
+    - *Dauer durch Ausrüstung:* Bestien-Verhärtungsmittel mit Eisschild 90 statt 60 s, Bestien-Verkürzungsmittel mit
+      Diebeshandschuhen 90 s, Aufbrausmittel mit Silberrandbinokel 60 statt 30 s, Blutsaugerserum mit Dämonischer
+      Rüstung 90 s, Grimoire der Reflexion mit Verhextem Hut 60 s, Heiltranksammlung mit Diebesgewand 240 statt 150 s,
+      Bestien-Feder mit Ring der Euphorie 250 statt 100 TP. Beim Einsatz liest keine Regel die Dauer – Schutz geht gegen
+      angekündigte Treffer, Stärkung im Endkampf zu Beginn –, die Wahl im Kampf ändert sich nicht. Im Laden und auf dem
+      Schatzfeld hebt das Paar den Wert beider: offen (TODO „Crucible-Wechselwirkungen, Stufe 2").
+    - *Auslöser an Ausrüstung und Futter:* bei kritischem Treffer (Bestienmesser, Donnerrüstung, Bananen-, Zitronen-,
+      Tarantel-Simulakrum u. a.), beim Ausweichen (Ninja-Gewand, Kopfsalat-Simulakrum), beim Blocken (Windschild,
+      Schützender Schild), bei erlittenem Schaden (Engelsrobe, Trugweste, Rosenrüstung u. a.), bei einer Tötung (Dämonische
+      Rüstung; Stimulanztrunk- und Weihwasser-Simulakrum: High Wire bis vier Stapel, je +10 bis 15 % Schaden und −5 bis
+      8 % erlittener Schaden, 60 bis 180 s), bei einer Kombo mit Begleiterfertigkeit (Stimulanzöl-Simulakrum). Die
+      Stärkungen der kritischen Trefferquote und des Ausweichens tragen die ersten beiden; sie gehen im Endkampf zu
+      Beginn und wirken so am längsten – keine Änderung. Tötungsstapel machen schwache Gegner wertvoll: Ein
+      Flächengegenstand, der drei Schattenmilben tötet, gibt drei Stapel für den Rest des Kampfes – in Zielwahl (K3) und
+      Wert (13) offen (Stufe 2).
+    - *Rast und Futter:* Ein ruhender Begleiter verliert sein Futter, mit Lilien-Simulakrum nicht (K14, gebaut A657,
+      A662). Lassi-Simulakrum: volle LP an der Rast statt des Anteils – offen (Stufe 2, K10). Arzneibeutel: ein
+      zufälliger Bestien-Trank je Rast – offen (Stufe 2, Weg und K10).
+    - *Weg:* Feiglingsmesser (35 % Flucht von normalen Gegnerfeldern, danach Guerrilla Tactics), Bestien-Rauchbombe
+      (Flucht) senken die erwartete Last eines Feldes; Diebesmesser gibt zwei Gegenstände auf Schatzfeldern – offen
+      (Stufe 2, Weg).
+    - *Zauberbücher:* Grimoire der Zauberschmiede und des Stahlstachels machen 180 s jeden Angriff magisch oder
+      physisch, auch den der Begleiter. Die Abwehrstufe wirkt (derselbe Auto-Angriff traf Stufe 2 mit 57, Stufe 5 mit
+      37), und unter Zauberschmiede trägt das Zaubermittel jeden Angriff. Ob die Umwandlung den Aspekt und damit die
+      Schwäche behält, ist unbelegt – offen (Stufe 2, mit Messung nach dem Einsatz).
+    - *Ungezähmte Mittel:* Sie geben mehr (+45 % physisch, +50 % magisch oder kritisch) und legen dir einen Zustand auf
+      (Betäubung 15 s, Nightmare 30 s, Versteinerung 15 s, Blind 30 s, Pollen 180 s). RSR liest sie nicht und nimmt sie
+      nicht. Rote Schleife (Versteinerung, Blind, Lähmung +100 %), Silberrandbinokel (Blind) oder ein stehendes Serum
+      nehmen dem Ungezähmten Aufbraus- und Wendigkeitsmittel den Preis – offen (Stufe 2).
+    - *Punkte:* „Habitual Horder" (zehn Gegenstände am Ende, 1.000 Punkte) steht gegen „nichts verfällt"; seine Meldung
+      gilt der Nutzung, Punkte nannte er nicht – RSR richtet sich nach der Nutzung.
+    - *Gegenthese A666-1 (Flinkheitsmittel früh):* Geht es mit dem Grimoire in einem frühen Kampf, fehlt es im Endkampf
+      (Bewegung +20 %, Ausweichen +5 %, Giftresistenz). Nicht widerlegt; drei Blink oder ein Auto-potion, das bleibt,
+      wiegen in dem Kampf, in dem sie gebraucht werden, mehr als Bewegung im Endkampf – Preis benannt. *Gegenthese
+      A666-2 (Serum als Heilung):* Geht ein Serum als Heilung, fehlt es gegen den Zustand eines späteren Kampfes.
+      Teilweise widerlegt: Sein Schutz wirkt 180 bis 300 s ab dem Einsatz mit; es bleibt der Preis für einen Zustand in
+      einem späteren Kampf. *Ausgeliefert, und nichts ändert sich?* Ohne die Paare im Vorrat; ohne gelesene Ausrüstung
+      (vor der ersten Anzeige im Lauf) zählen die Seren nicht als Heilung.
   - *Gegenthese A664-1 (Heilung früh):* Ein früh genommener Trank fehlt, wenn ein Kampf schwerer wird als je zuvor. Nur
     der Überschuss über die schwerste Summe geht, und nur ohne Überheilen; Preis: der Überschuss, wenn ein Kampf alle
     früheren übertrifft. *Gegenthese A664-2 (Schätzung der Gegner):* Ein späterer Kampf mit vielen Gegnern einer Art wäre
@@ -1205,7 +1249,7 @@ on a pack once a fight, all of them in the final fight (Crucible only)".
     des Endkampfs bleibt er für die anstehenden, im Endkampf geht er vor dessen Ende – Preis: die Treffer auf Gegner, die
     in der Wartezeit fallen. *Gegenthese A665-3 (Überschuss):* Ein Treffer auf einen Gegner mit weniger LP als der Treffer
     zählt voll – die Milben (522 LP) nahmen 1.304 bis 1.600. Nicht widerlegt: Der Wert überschätzt Rudel schwacher
-    Gegner; offen im TODO („Überschuss je Gegner"). *Ausgeliefert, und nichts ändert sich?* Wenn die kommenden Gegner beim
+    Gegner; offen im TODO („Crucible-Wechselwirkungen, Stufe 2"). *Ausgeliefert, und nichts ändert sich?* Wenn die kommenden Gegner beim
     Erscheinen schon getroffen oder gewirkt haben, oder das Blatt die späte Art nicht führt – dann geht der Gegenstand
     wie bisher.
 - *Wie:* `InstanceContentCrucibleOfTheUnbroken.UseItem` (FFXIVClientStructs, in Dalamuds Fassung vorhanden) wirkt auf

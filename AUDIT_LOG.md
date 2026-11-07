@@ -19573,6 +19573,35 @@ dass es jetzt durch zufall gefunden wurde. wirft kein gutes bild auf deine leist
 *Prüfgrad:* Compile ohne Warnung; Prüfskripte (52 Schritte, 0 fehlgeschlagen). Analyse am Mitschnitt; das neue Verhalten
 ist im Spiel nicht beobachtet, die Spur nennt jede Wartezeit, jeden Einsatz und den Vorrat.
 
+### A666 · Crucible-Wechselwirkungen: alle Wirktexte erhoben; Sternensturm vor Feuer, Flinkheitsmittel vor Grimoire und Heiltranksammlung, Seren mit Roter Schleife als Heilung (07.11.2026)
+
+Anlass: seine Rüge vom 07.11.2026 (A665) – Synergien gehören zu Beginn vollständig erhoben, auch im Netz.
+
+- *1 Research:* alle 203 Wirktexte von `XBMItem` (Ausrüstung, Gegenstände, Futter; xivapi en und de, 07.11.2026) nach
+  Querverweisen durchsucht („When carrying", „suffering from", „affected by … increase effects", Statusnamen anderer
+  Texte); consolegameswiki „Crucible Items" und „Crucible of the Unbroken" (07.11.2026) nennen dieselben Paare, keine
+  weiteren, dazu „Familiars that rest will lose all effects of Beast Feed unless … Lily Simular" (in K14 seit A657) und
+  „a familiar that has consumed a Lassi Simular will restore all HP at a campsite" (nicht gebaut). Ergebnis im Konzept
+  21 K8, „Wechselwirkungen": gebaut beim Einsatz (Zaubermittel vor Schaden, Eis vor Feuer, Sternensturm vor Feuer,
+  Flinkheitsmittel vor Grimoire der Unantastbarkeit und Heiltranksammlung, Seren mit Roter Schleife als Heilung,
+  Ausdauermittel vor Heilung gegen Boss); ohne Wirkung auf die Wahl im Kampf (Dauern durch Ausrüstung, Auslöser für
+  kritische Treffer und Ausweichen); offen mit Plan (Laden und Schatz, Tötungsstapel, Lassi, Arzneibeutel, Flucht,
+  Diebesmesser, Zauberbücher, Ungezähmte Mittel, Überschuss je Gegner).
+- *2–5 Optionen und Abwägung:* Je Paar (0) nicht lesen, (a) aus dem Text lesen und die Reihenfolge danach richten. Für
+  die drei gebauten kostet (a) nichts außer dem Flinkheitsmittel, das früher geht (Gegenthese A666-1) und dem Serum, das
+  als Heilung geht (A666-2); beide Preise benannt. Allgemein gebaut, nicht je Gegenstand: Ein Text, der einen Status
+  nennt, den ein anderes Mittel gibt, holt dieses Mittel vor; ein Gegenstand, der die Resistenz eines Elements senkt,
+  geht vor dem dieses Elements; „When carrying …, restores …" macht einen Gegenstand zur Heilung, solange das Stück
+  getragen wird.
+- *6 Falsifikation:* Kein Defekt? Widerlegt: Die Paare standen in den Texten, RSR las sie nicht. Option falsch? Nimmt
+  ein Ziel die gesenkte Resistenz nicht an, geht der Reißzahn danach ohne Zuschlag – kein Verlust. Ausgeliefert, nichts
+  ändert sich? Ohne die Paare im Vorrat; vor der ersten Anzeige der Ausrüstung im Lauf zählen die Seren nicht.
+- *Ablauf:* Die drei Regeln standen im Code, bevor das Konzept sie führte; das Konzept folgte im selben Zug, der Code
+  wurde daran geprüft (Leser der Heilart: Schritt 1, Überschuss, Weg über `TryItem`, Laden über `HealShareOf`).
+
+*Prüfgrad:* Compile ohne Warnung; Prüfskripte. Im Spiel nicht beobachtet; jeder Vorzug steht als „crucible item: …,
+first …" in der Spur.
+
 ## B · Commit-Register (Fork vs. `upstream/main`)
 
 ### B1 · Einzelgeprüfte Fork-Commits
