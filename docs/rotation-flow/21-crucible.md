@@ -46,7 +46,8 @@ beide Werkzeugquellen; sein Mitschnitt vom 04.11.2026.
   die der Begleiter, Ossify unterbrechbar); Erzdämonen-Ebenbild (Blitz); Pisco-Dämonen-Ebenbild (Hieb; anfällig für
   Gift und Gewicht); Terrormilben- und Schattenmilben-Ebenbild (Eis; Tankbuster mit Gift); Oger-Ebenbild (Wind) mit
   Irrlicht- und Riesen-Irrlicht-Ebenbild (Wasser; anfällig für Fessel und Gewicht). Endgegner Seelenlose (Pas de Seul,
-  Stich): ruft nach etwa 45 s eine Sukkubus-Magierin und zwei -Ritterinnen (Feuer; die Magierin stärkt ihn mit
+  Stich): ruft nach etwa 50 s (sein Mitschnitt vom 07.11.2026: in drei Läufen 48 bis 50 s nach dem ersten Treffer) eine
+  Sukkubus-Magierin und zwei -Ritterinnen (Feuer; die Magierin stärkt ihn mit
   Fanaticism, 9 s Wirkzeit, anfällig für Unterbrechen).
 - *Zweites Brett:* Manticore (Wind; Tankbuster); Taurus (Stich), ruft Ahriman (Eis; Blick mit Verhängnis); Wyvern
   (Blitz); Leerenmagus (Erde) mit Zombie (Eis); Älterer und Jüngerer Taurus (Feuer; der Jüngere stärkt); Dämon (Hieb),
@@ -111,9 +112,10 @@ Dullahan, Golem, Spriggan und Eisgolem (`XBMPet.InflictsInterrupt`).
   Geprüft und verworfen (A660): Schaden an Begleitern nach ihrem Bedarf über das Brett gewichten – die Gefahr eines
   Gegners ist, was er austeilt, gleich wen es trifft; wer es nimmt, entscheidet K9 nach den LP und K11 nach dem Bedarf.
   Eine Umrechnung zwischen deinen LP und denen eines Begleiters gibt keine Quelle her, und unter Zähnefletschen trifft
-  jeder Gegner denselben, die Reihenfolge änderte sich nicht. Stärkung anderer: Auf Brett 1 unterbricht K4 die
-  Fanaticism der Sukkubus-Magierin (Aktion 46928; in seinem Lauf vom 07.11.2026 um 16:13:12 gestoppt), und A582 stellt
-  sie nach dem Blatt vorn; die Größe einer Stärkung nennt kein Blatt. *Was gilt:* Zuerst fällt der Gegner mit der größten Gefahr je
+  jeder Gegner denselben, die Reihenfolge änderte sich nicht. Stärkung anderer: Auf Brett 1 soll K4 die
+  Fanaticism der Sukkubus-Magierin (Aktion 46928) unterbrechen, und A582 stellt sie nach dem Blatt vorn; die Größe einer
+  Stärkung nennt kein Blatt. Eine Unterbrechung ist in keinem seiner Läufe belegt: In allen vier vom 07.11.2026 stoppte
+  ihr Tod den Cast (16:13:12 nach 351 Schaden auf 37 LP; 18:11:50 und 18:46:09 ebenso, „Sonde" in K4, A665). *Was gilt:* Zuerst fällt der Gegner mit der größten Gefahr je
   Sekunde bis zu seinem Fall: seine Gefahr je Sekunde geteilt durch die Zeit, bis er fällt. Diese Reihenfolge macht die
   Summe des Schadens über den Kampf am kleinsten (Regel von Smith, Ablaufplanung); „wenigste LP zuerst" ist ihr Sonderfall
   bei gleicher Gefahr aller Gegner. *Gefahr:* sein Schaden an dir und an deinen Begleitern, je als Anteil an den LP, die
@@ -200,7 +202,10 @@ Dullahan, Golem, Spriggan und Eisgolem (`XBMPet.InflictsInterrupt`).
     0,05 s vor dem Ende des Kampfes, also sein Tod; die Effektarten 3, 62 und 27 seines Schildspalters sind Schaden, ein
     in ECommons unbenannter Typ und „StartActionCombo" (ECommons 74af164). Die Effektart „Interrupt" führt ECommons als
     75, BossModReborn als 76; welche gilt, kann sein Spielprogramm (`ffxiv_dx11.exe`, Upload 05.11.2026) entscheiden,
-    sobald eine Regel sie liest.
+    sobald eine Regel sie liest. Am 07.11.2026 (18:08) 17 Abbrüche: zehn mit viertem Wert 0, nach denen die Wirkung kam
+    (Tödliche Durchbohrung traf 0,3 s danach; ACT „Cancelled"), und sieben mit 1 (ACT „Interrupted"), jeder mit dem
+    Tod des Wirkenden – sein letzter Treffer überstieg seine LP, die Todeszeile folgte 2 s später (A665). Der vierte Wert
+    1 ist der Tod, keine Unterbrechung; eine Unterbrechung durch einen Begleiter ist bis heute nicht beobachtet.
 - *K5 – Zustände* (A589). *Daten:* Jeder Gegner eines Kampfes verweist auf eine Zeile von `BNpcResist`
   (`XBMBattleDetail.Resist`, Lumina `Unknown4`); sie sagt je Zustand, ob er ihn abwehrt – in der Reihenfolge von EXDSchema
   Slow, Petrify, Paralysis, Interrupt, Blind, Poison, Stun, Sleep, Bind, Heavy, Death (Lumina `Unknown0` bis `Unknown10`;
@@ -1110,15 +1115,21 @@ on a pack once a fight, all of them in the final fight (Crucible only)".
   10. Ist dein Begleiter versteinert (ein Status mit „Petrification" im englischen Namen), die Bestien-Goldnadel auf ihn.
   11. Gegen einen Gegner mit Boss-Symbol, solange kein Liquid Constitution steht, das Bestien-Ausdauermittel auf dich.
   12. Stärkung (zweite Einstellung), nur im Endkampf: jedes Mittel, das dir einen Status gibt („Grants … to self"),
-      solange er nicht steht, auf dich; vor den Schadensgegenständen, weil eine Steigerung des magischen Schadens die
-      Reißzähne mitträgt. Außerhalb des Endkampfs bleiben sie liegen: Ihr Wert für einen späteren Kampf ist nicht
-      bekannt (K11), im Endkampf ist er null.
-  13. Schaden (zweite Einstellung) auf dein Gegnerziel: im Endkampf jeder Schadensgegenstand, der wertvollste zuerst;
-     sonst der, der hier mindestens so viel bringt wie im besten anstehenden Kampf, sobald er mehr Gegner trifft als dein
-     Ziel; einer mit Rückstoß nur, wenn er jeden trifft, der kämpft („Über das Brett", A664). Wert ist Potenz mal der Summe über die
-     getroffenen Gegner aus eins plus dem gemessenen Schwächezuschlag, wo das Element ihre Schwäche ist (K1); bei
-     Gleichstand der ohne Rückstoß. Ein Gegenstand, dessen Element nur die Schwäche noch kommender Gegner trifft, wartet
-     auf sie (wie K2).
+      solange er nicht steht, auf dich. Eines, das den magischen Schaden steigert („Increases magic damage dealt",
+      Bestien-Zaubermittel, 15 s), geht, solange du einen Schadensgegenstand hältst, erst unmittelbar vor ihm: wenn einer
+      jetzt ginge (13), kommt zuerst das Mittel, im nächsten Zug der Gegenstand („Synergien", A665). Außerhalb des
+      Endkampfs bleiben sie liegen: Ihr Wert für einen späteren Kampf ist nicht bekannt (K11), im Endkampf ist er null.
+  13. Schaden (zweite Einstellung) auf dein Gegnerziel, sobald kein weiterer Gegner mehr in seine Reichweite kommen kann
+     („Zeitpunkt im Kampf", A665): im Endkampf jeder Schadensgegenstand, der wertvollste zuerst, spätestens wenn der
+     Kampf enden könnte, bevor alle gehaltenen Gegenstände genommen sind; sonst der, der hier mindestens so viel bringt
+     wie im besten anstehenden Kampf, sobald er mehr Gegner trifft als dein Ziel; einer mit Rückstoß nur, wenn er jeden
+     trifft, der kämpft, im Endkampf auch dann spätestens vor dessen Ende („Über das Brett", A664). Wert ist Potenz mal
+     der Summe über die getroffenen Gegner aus eins plus dem gemessenen Schwächezuschlag, wo das Element ihre Schwäche
+     ist (K1), und der Zusatzpotenz eines Status, den das Ziel trägt (Reißzahn des Feuers unter Deep Freeze); bei
+     Gleichstand der ohne Rückstoß. Legt ein Gegenstand, der jetzt ebenfalls ginge, den Status, den der gewählte
+     ausnutzt, auf das Ziel, geht er zuerst (Reißzahn des Eises vor dem des Feuers): Beide gehen nacheinander, und nur
+     diese Reihenfolge bringt die Zusatzpotenz. Ein Gegenstand,
+     dessen Element nur die Schwäche noch kommender Gegner trifft, wartet auf sie (wie K2).
 - *Über das Brett (A664; seine Vorgaben vom 07.11.2026):* „nach dem letzten fight ist zuviel ungenutzt und verfällt.
   sollte besser über alle kämpfe eines bretts hinweg genutzt werden, so dass möglichst das zum letzten kampf am besten
   passende dort genutzt wird, das andere vorher in den kämpfen, wo es am ehesten passt"; „synergieeffekte der items prüfen
@@ -1138,11 +1149,39 @@ on a pack once a fight, all of them in the final fight (Crucible only)".
     anstehenden Kampf; im Endkampf jeder. Das ersetzt „einer je Kampf" – die Setzung stand nur, weil die Kämpfe davor
     unbekannt waren (K14 kennt sie). So bleibt für den Endkampf, was dort am meisten bringt (ein Element, das die Schwäche
     des Endgegners trifft), und ein Reißzahn für Rudel geht im Rudel.
+  - *Zeitpunkt im Kampf (zu 13; A665; sein Hinweis vom 07.11.2026):* „bei rückstoßeffekt wird einer der gegner ins aus
+    geschleudert, die anderen sind vom effekt zu weit entfernt. somit war der effekt wahrscheinlich zu früh." Sein
+    Mitschnitt vom 07.11.2026 (Build vor A664) bestätigt ihn in allen drei Läufen: Der Reißzahn ging 0,06, 0,7 und 0,2 s
+    nach dem Erscheinen der drei Schattenmilben, traf die Terrormilbe und die eine Milbe, die 5 bis 11 Yalm von ihr
+    erschien; die beiden anderen erschienen 17 bis 25 Yalm entfernt (Reichweite 12 Yalm plus 1,8 Yalm Größe), standen 4
+    bis 6 s und liefen dann in 2 bis 3 s zum Begleiter. Die getroffene Milbe flog 7 statt 15 Yalm – bis an den Rand der
+    Arena, 22,5 Yalm von ihrer Mitte (meine Folgerung aus den Positionen) – und fiel an den 1.304 bis 1.600 Schaden (522
+    LP), nicht am Rand. Bis A665 ging ein Schadensgegenstand, sobald er zwei Gegner traf. Es gilt: Ein
+    Schadensgegenstand wartet, solange noch ein Gegner in seine Reichweite kommen kann – (a) ein Gegner außerhalb, der
+    weder getroffen noch gewirkt hat (`EnemyDanger`, laufender Cast): Er ist unterwegs oder steht nach dem Erscheinen wie
+    die Milben; wer von außerhalb trifft oder wirkt, kämpft von dort und kommt nicht; (b) solange er nur sein Ziel trifft,
+    eine Gegnerart dieses Kampfes, die das Blatt führt und die noch nicht erschien (K2) – im Endkampf von Brett 1 kommen
+    die drei Sukkubi 48 bis 50 s nach dem ersten Treffer, in allen drei Läufen. Kann keiner mehr kommen, entscheidet die Regel oben. Außerhalb des
+    Endkampfs verliert Warten nichts: Endet der Kampf, bleibt der Gegenstand für die anstehenden. Im Endkampf geht er
+    spätestens, wenn der Gegner mit den meisten LP – mit ihm endet der Kampf – nach seiner korrigierten Restzeit fällt,
+    bevor die gehaltenen Schadens- und Stärkungsgegenstände je einen GCD bekommen haben. Grund: Ein Gegner, der in die
+    Reichweite läuft, ist ein Treffer mehr ohne Preis; ein Gegenstand, der nach dem Endkampf übrig ist, ist verloren.
+    Die unzielbaren Helfer des Endgegners (Brett 1: elf Kopien der Seelenlosen mit 44 LP) stehen in keiner Gegnerliste
+    und halten nichts auf.
   - *Rückstoß (zu 13; sein Hinweis):* Ein Gegenstand mit Rückstoß geht nur, wenn er jeden Gegner trifft, der gerade kämpft
-    – sonst wirft er die Getroffenen aus dem Kreis, in dem Begleiter und Flächen die übrigen treffen. Bis A664 entschied
-    der Rückstoß nur bei gleichem Wert.
-  - *Synergien (geprüft):* Stärkung des magischen Schadens trägt die Reißzähne und Sternensturm („Damage is affected by
-    magic damage increase effects"), deshalb im Endkampf die Stärkung vor dem Schaden (12 vor 13, wie bisher). Das
+    – sonst wirft er die Überlebenden aus dem Kreis, in dem Begleiter und Flächen die übrigen treffen. Im Endkampf geht er
+    spätestens vor dessen Ende (oben), auch wenn ein Gegner fern bleibt; bis A665 verfiel er dort. Bis A664 entschied der
+    Rückstoß nur bei gleichem Wert.
+  - *Synergien (geprüft, Wirktexte `XBMItem`, xivapi 07.11.2026):* Stärkung des magischen Schadens trägt die Reißzähne
+    und Sternensturm („Damage is affected by magic damage increase effects"); das Bestien-Zaubermittel („Increases magic
+    damage dealt by 30%", 15 s) geht deshalb unmittelbar vor dem ersten Schadensgegenstand, nicht zu Beginn des
+    Endkampfs – seit A665 wartet der Schaden dort auf die Gegner, und 15 s ab Kampfbeginn wären vorbei, bevor die
+    Sukkubi kommen. Die übrigen Stärkungen (physischer Schaden, kritische Trefferquote, Ausweichen, Bewegung, Wirk- und
+    Abklingzeiten) tragen deine eigenen Angriffe, gleich wann, und gehen weiter zu Beginn. Der Reißzahn des Feuers
+    („Targets suffering from Deep Freeze receive additional damage with a potency of 1,000") folgt dem Reißzahn des Eises,
+    der sein Ziel mit Deep Freeze belegt (20 s): Hältst du beide, geht der des Eises zuerst, und der des Feuers trifft
+    mit 3.500 statt 2.500 Potenz (13). Nimmt das Ziel Deep Freeze nicht an, geht der des Feuers danach ohne Zuschlag;
+    er wartet nur, solange der des Eises gehalten wird. Das
     Bestien-Ausdauermittel hebt die maximalen LP um 20 % bis Kampfende, und Heilgegenstände heilen einen Anteil der
     maximalen LP: Steht es nicht und kämpft ein Gegner mit Boss-Symbol, geht es vor dem Heilgegenstand (11 vor 1). Das
     Blutsaugerserum (10 % des Schadens als LP) bringt mehr, wo viel Schaden fällt – es bleibt bei 12. Stärkung außerhalb
@@ -1153,9 +1192,22 @@ on a pack once a fight, all of them in the final fight (Crucible only)".
     früheren übertrifft. *Gegenthese A664-2 (Schätzung der Gegner):* Ein späterer Kampf mit vielen Gegnern einer Art wäre
     der bessere Ort. Nicht widerlegt; die Schätzung irrt zu früh statt zu spät, und zu spät heißt nach dem Endkampf
     verfallen – seine Meldung. *Gegenthese A664-3 (Stärkung früher):* Hält er mehr Mittel eines Status, als der Endkampf
-    nacheinander nimmt, verfällt der Rest. Nicht widerlegt; sein Log zeigt, ob das vorkommt. *Ausgeliefert, und nichts
+    nacheinander nimmt, verfällt der Rest. Nicht widerlegt; die Spur nennt seit A665 zu Beginn und Ende jedes Kampfes,
+    was er hält („Nachweis zur Laufzeit"). *Ausgeliefert, und nichts
     ändert sich?* Ohne Weg aus den Blättern (dann zählt kein anstehender Kampf, und der Gegenstand geht wie im Endkampf)
     und wo Schutz, Seren und Resistenzmittel an Anlässen hängen, die nicht kommen – die bleiben, wie bisher.
+  - *Gegenthese A665-1 (Warten kostet den Endkampf):* Der Gegenstand wartet auf die Sukkubi, und der Endgegner fällt
+    vorher. Widerlegt: Er geht spätestens, wenn der Endgegner nach seiner korrigierten Restzeit fällt, bevor jeder
+    gehaltene Gegenstand einen GCD bekam; ist die Restzeit nicht bekannt (unverwundbar, eben erst getroffen), wartet er
+    weiter – Preis: ein Endgegner, der ohne messbare Restzeit fällt, lässt ihn liegen, Wahrscheinlichkeit gering, weil
+    die Restzeit nach 2 s Schaden steht. *Gegenthese A665-2 (Gegner, der nie kommt und nie handelt):* Ein Gegner außerhalb,
+    der weder trifft noch wirkt (eingeschläfert, gelähmt, ein Objekt), hält den Gegenstand auf. Nicht widerlegt; außerhalb
+    des Endkampfs bleibt er für die anstehenden, im Endkampf geht er vor dessen Ende – Preis: die Treffer auf Gegner, die
+    in der Wartezeit fallen. *Gegenthese A665-3 (Überschuss):* Ein Treffer auf einen Gegner mit weniger LP als der Treffer
+    zählt voll – die Milben (522 LP) nahmen 1.304 bis 1.600. Nicht widerlegt: Der Wert überschätzt Rudel schwacher
+    Gegner; offen im TODO („Überschuss je Gegner"). *Ausgeliefert, und nichts ändert sich?* Wenn die kommenden Gegner beim
+    Erscheinen schon getroffen oder gewirkt haben, oder das Blatt die späte Art nicht führt – dann geht der Gegenstand
+    wie bisher.
 - *Wie:* `InstanceContentCrucibleOfTheUnbroken.UseItem` (FFXIVClientStructs, in Dalamuds Fassung vorhanden) wirkt auf
   das Soft- oder Hard-Ziel. RSR setzt das Soft-Ziel kurz auf dich, deinen Begleiter oder dein Gegnerziel und stellt es
   zurück, wie BeastHelper (be40a1e, Werkzeugquelle, nur gelesen). Die Status liest RSR nach ihrem englischen Namen. Die
@@ -1163,7 +1215,9 @@ on a pack once a fight, all of them in the final fight (Crucible only)".
 - *Nachweis zur Laufzeit:* Nach dem Einsatz wartet RSR, bis der Platz einen anderen Gegenstand zeigt, höchstens einen GCD.
   Bleibt er gleich, schreibt die Spur „not taken" und versucht diesen Platz in diesem Kampf nicht mehr. Ob ein Gegenstand
   gerade gesperrt ist, prüft das Spiel über eine Funktion, die FFXIVClientStructs nicht führt; RSR prüft stattdessen die
-  Animationssperre und den Verbrauch.
+  Animationssperre und den Verbrauch. Zu Beginn und am Ende jedes Kampfes nennt die Spur, was du hältst („crucible items
+  at the start of fight …", „… after it"); wartet ein Schadensgegenstand auf kommende Gegner, nennt sie es einmal je
+  Kampf. Was nach dem Endkampf übrig ist, steht damit in der Spur (A665; seine Meldung, zu viel verfalle).
 - *Selbstkorrektur der Sammlung:* Steht ein gefährlicher Status des Kampfes länger als einen GCD auf dir, während
   Auto-remedy steht, heilt die Sammlung ihn nicht. Die Spur nennt ihn, und gegen einen Kampf, dessen gefährliche Status
   alle so erkannt sind, kommt keine Sammlung mehr.

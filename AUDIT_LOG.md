@@ -19528,6 +19528,51 @@ wahrscheinlich zu früh. kommt noch per log".
 *Prüfgrad:* Compile ohne Warnung; Prüfskripte. Im Spiel nicht beobachtet; jede Wahl steht als „crucible item: …" mit
 Grund und Wert in der Spur, sein Log prüft nach.
 
+### A665 · Upload 07.11.2026 18:08: Brett 1 dreimal; Schadensgegenstände warten auf kommende Gegner; Eis vor Feuer; Vorrat in der Spur (07.11.2026)
+
+Sein Upload (ACT-Mitschnitt 18:08, `RotationSolver.7z`; Spur 17:50–19:07, Build 2f4247d33 – vor A661 bis A664) und seine
+Prüfaufgaben aus „Warten auf Daten" (A661–A664). Sein Hinweis (eingeordnet als Hinweis): „bei rückstoßeffekt wird einer
+der gegner ins aus geschleudert, die anderen sind vom effekt zu weit entfernt. somit war der effekt wahrscheinlich zu
+früh." Seine Rüge (eingeordnet als Vorgabe zur Arbeitsweise, `.claude/rules/konzepte.md`): „sowas nannte ich
+synergieeffekte und das solltest du bereits ganz am anfang analysieren und researchen und im internet suchen. schön,
+dass es jetzt durch zufall gefunden wurde. wirft kein gutes bild auf deine leistung".
+
+- *Nachprüfung A661–A664 am alten Build:* Weg „no way is safe" bei Heilern von 100 % und −119 bis −173 % je Zug –
+  die Ursache von A663. Rast mit einem Begleiter (17:57:55) und „rest alone" vor dem Endkampf in Lauf 3 – A661.
+  Goobbue: Plan Kobalos, Goobbue, Kolibri (zwei Heiler), Endkampf Karpfenkröte, Kobalos, Morbol („3 that heal or
+  protect"), Goobbue dreimal gefüttert und voll – Plan und Wahl rechneten getrennt und ohne Futter; A662 rechnet beide
+  mit einer Funktion und dem Futter, die Abweichung kann so nicht mehr entstehen. Gegenstände je Lauf: Sand der Zeit,
+  ein Reißzahn auf die Terrormilbe, im Endkampf nur das Aufbrausmittel – den Vorrat schrieb die Spur nicht.
+- *Rückstoß (sein Hinweis) am Mitschnitt:* In allen drei Läufen ging der Reißzahn 0,06, 0,7 und 0,2 s nach dem
+  Erscheinen der drei Schattenmilben und traf die Terrormilbe und die eine Milbe, die 5 bis 11 Yalm entfernt erschien;
+  die anderen standen 17 bis 25 Yalm entfernt 4 bis 6 s still und liefen dann in 2 bis 3 s zum Begleiter. Die getroffene
+  Milbe flog 7 Yalm an den Rand und fiel an 1.304 bis 1.600 Schaden (522 LP). Sein Schluss stimmt; die Klasse ist jeder
+  Schadensgegenstand, nicht nur der mit Rückstoß, und im Endkampf (Sukkubi 48 bis 50 s nach dem ersten Treffer) ging
+  jeder sofort auf den Endgegner allein.
+- *Gebaut (Konzept 21 K8, „Zeitpunkt im Kampf", 12, 13, „Synergien"):* Ein Schadensgegenstand wartet, solange ein
+  Gegner außerhalb seiner Reichweite weder getroffen noch gewirkt hat (`EnemyDanger.HasActed`, laufender Cast) oder,
+  solange er nur sein Ziel trifft, eine Gegnerart des Kampfes noch fehlt; im Endkampf geht er spätestens, wenn der
+  Gegner mit den meisten LP nach seiner korrigierten Restzeit fällt, bevor jeder gehaltene Schadens- und
+  Stärkungsgegenstand einen GCD hatte – auch einer mit Rückstoß, der dort bis A665 verfiel. Das Bestien-Zaubermittel
+  geht unmittelbar vor dem ersten Schadensgegenstand. Reißzahn des Eises vor dem des Feuers (Deep Freeze, +1.000
+  Potenz), aus den Wirktexten gelesen. Die Spur nennt den Vorrat zu Beginn und Ende jedes Kampfes und das Warten.
+- *Abbruch-Sonde (K4):* 17 Abbrüche; vierter Wert 1 (ACT „Interrupted") fiel in allen sieben Fällen mit dem Tod des
+  Wirkenden zusammen, auch der Fanatismus der Magierin um 16:13:12, den Konzept und A660 als Unterbrechung durch K4
+  führten (C176).
+- *Synergien:* A664 nannte sie „geprüft" und prüfte zwei (C177). Die Erhebung aller Wirktexte holt A666 nach.
+- *Allgemein:* 15 Kämpfe, kein Tod. Häufigste Zeile „single defence open, nothing chosen … Schuppenpanzer
+  (BasicCheck)" ×294, ohne Wirkung im Kampf (A657). Gelernte Tabellen gegen den Vormittag: Marker
+  `1339:tank_lockon02k1` jetzt mit Treffer (Tödliche Durchbohrung 46906, 5,1 s; in den ersten beiden Läufen traf sie
+  den Begleiter), `AimedHitPotential` 46906 neu, `InterruptibleCasterKinds` zählt hoch, `DotOnParty` mehr Ticks;
+  plausibel am Mitschnitt. Mitten im Kampf vergehende Schattenmilben lernt `Approach` als „angekommen" (3,6 bis 4,3 y).
+- *6 Falsifikation:* Kein Defekt? Widerlegt an drei Läufen. Option falsch? Ein Gegner, der nie kommt und nie handelt,
+  hält den Gegenstand auf – außerhalb des Endkampfs bleibt er, im Endkampf geht er vor dessen Ende; Preis benannt
+  (Gegenthese A665-2). Ausgeliefert, nichts ändert sich? Wenn Kommende beim Erscheinen schon handeln oder das Blatt die
+  späte Art nicht führt.
+
+*Prüfgrad:* Compile ohne Warnung; Prüfskripte (52 Schritte, 0 fehlgeschlagen). Analyse am Mitschnitt; das neue Verhalten
+ist im Spiel nicht beobachtet, die Spur nennt jede Wartezeit, jeden Einsatz und den Vorrat.
+
 ## B · Commit-Register (Fork vs. `upstream/main`)
 
 ### B1 · Einzelgeprüfte Fork-Commits
@@ -19855,3 +19900,5 @@ Die offene Arbeit dazu — Reihenfolge und Abbruchbedingung der Nachprüfung —
 | C173 | A659 und Konzept 21 K10 Laden (Stand A659): „Den Endkampf rechnet sie so schwer wie deinen schwersten gemessenen (meine Annahme; im Endkampf von Brett 1 am 07.11.2026 trafen dich seine Zauber mit 1 bis 9 %, wie in den Kämpfen davor)"; A659, Falsifikation: „sein Endkampf auf Brett 1 lag im Rahmen" | Die Treffer glichen denen davor, der Kampf nicht: Er dauerte doppelt so lange und kostete 35 % deiner LP gegen 18 % im schwersten davor (ACT-Mitschnitt 07.11.2026). Die Obergrenze für Heiltränke lag dort bei der Hälfte. Ersetzt durch die Last je Kampf (A661). | A661 |
 | C174 | Konzept 21 K14, Gegenthese 1 (Stand A631–A660): „Der Plan des Endkampfs stammt vom letzten Hornfenster; seither änderten sich LP. Teilweise widerlegt: Er ändert sich mit dem Kader, kaum mit den LP" | Der Plan rechnete ohne „übersteht den Einsatz" und ohne Futter, die Wahl am Endkampf mit beidem und den LP danach; in seinem Lauf vom 07.11.2026 lag der gefütterte Goobbue am Endkampf nicht auf einem Horn. Ersetzt durch eine Rechnung für Plan und Wahl (A662). | A662 |
 | C175 | Konzept 21 Weg (Stand A656–A662): „*Sicher* ist ein Abzweig, wenn du an der nächsten Rast oder vor dem Endgegner mit Vorrat noch einen schwersten Kampf trägst und kein Endkampf-Heiler knapp wird"; „die Heiler verlieren je Kampf ihren größten Verlust je Einsatz"; Gegenthese 1 „bleibt aber auf diese Strecke beschränkt, für die die Rast entscheidet" | Mit einem Verlust je Einsatz über 50 % (Brett 1: 62 %) war kein Weg sicher, und die Rast gewann immer; der Laden auf jedem Weg machte „bringt Gegenstände" wertlos; die Strecke bis zur Rast sah den Endkampf nicht. Ersetzt durch die Summe aller Kämpfe bis einschließlich Endkampf (A663). | A663 |
+| C176 | A660 und Konzept 21 K3 (Stand A660–A664): „Auf Brett 1 unterbricht K4 die Fanaticism der Sukkubus-Magierin (Aktion 46928; in seinem Lauf vom 07.11.2026 um 16:13:12 gestoppt)" | Ihr Tod stoppte den Cast: 351 Schaden auf 37 LP um 16:13:11,9, Abbruch 16:13:12,3, Todeszeile 2 s später; ebenso 18:11:50 und 18:46:09. Eine Unterbrechung durch einen Begleiter ist nicht belegt (A665). | A665 |
+| C177 | A664 und Konzept 21 K8 (Stand A664): „*Synergien (geprüft):*" mit der Magiesteigerung und dem Ausdauermittel | Geprüft waren zwei; die Wirktexte nennen weitere – Reißzahn des Feuers unter Deep Freeze, Ausrüstung, die Mittel verlängert oder Seren heilen lässt, Spirit of the Breathtaker, Tötungsstapel, Futter an der Rast (A665, A666). | A665 |

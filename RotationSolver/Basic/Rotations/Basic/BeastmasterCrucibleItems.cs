@@ -42,9 +42,12 @@ public partial class BeastmasterRotation
 	// What an item of the board does, read once from its English effect text (XBMItem): its kind; the share it heals or
 	// mitigates, the chance it revives with, or its potency; whether it reaches the allies nearby as well; its name; the
 	// status it grants, or for a serum the ailment it resists; for a damage item its element (XBMElement), radius and whether
-	// it knocks back.
+	// it knocks back, the status it lays on its target, and the status on a target that adds potency to it (A665: Fang of Ice
+	// lays Deep Freeze, Fang of Fire deals 1,000 more to a target in it); for a buff whether it raises magic damage, which
+	// the damage items carry.
 	private readonly record struct CrucibleItem(CrucibleItemKind Kind, float Value, bool Allies, string Name, string Status = "",
-		uint Element = 0, float Radius = 0f, bool Knockback = false);
+		uint Element = 0, float Radius = 0f, bool Knockback = false, string Afflicts = "", string BonusStatus = "",
+		float Bonus = 0f, bool RaisesMagic = false);
 
 	private static Dictionary<ushort, CrucibleItem>? _crucibleItems;
 
@@ -59,6 +62,14 @@ public partial class BeastmasterRotation
 	// In this fight: the dangerous statuses a serum covers, the damage items used. For the session: the statuses Auto-remedy
 	// was seen not to cure, and since when each dangerous status has stood on the player under Auto-remedy.
 	private static readonly HashSet<uint> _serumCovers = [];
+
+	// A665: the damage items whose waiting the trace named, per run and fight; whether the items held were traced in combat,
+	// and for which fight.
+	private static readonly HashSet<ushort> _damageWaitTraced = [];
+	private static (int Run, uint Fight) _damageWaitFight;
+	private static bool _heldTracedInCombat;
+	private static readonly List<(int Slot, string Status)> _layers = [];
+	private static (uint Fight, bool Final) _heldTracedFight;
 	private static readonly HashSet<uint> _notCuredByRemedy = [];
 	private static readonly Dictionary<uint, DateTime> _ailmentUnderRemedySince = [];
 
@@ -82,6 +93,11 @@ public partial class BeastmasterRotation
 		@"^Grants (?<status>.+?) while also restoring \d+% of HP to self or familiar\..*?Increases maximum HP by",
 		RegexOptions.CultureInvariant | RegexOptions.Singleline);
 	private static readonly Regex GrantsBuff = new(@"^Grants (?:\w+ stacks of )?(?<status>.+?)(?: while also| to self)",
+		RegexOptions.CultureInvariant);
+	private static readonly Regex AfflictsTarget = new(@"Afflicts target with (?<status>[A-Z][A-Za-z']*(?: [A-Z][A-Za-z']*)*)",
+		RegexOptions.CultureInvariant);
+	private static readonly Regex BonusOnStatus = new(
+		@"Targets suffering from (?<status>[A-Z][A-Za-z']*(?: [A-Z][A-Za-z']*)*) receive additional damage with a potency of (?<bonus>[\d,]+)",
 		RegexOptions.CultureInvariant);
 	private static readonly Regex Deals = new(
 		@"deals (?:ranged )?(?<type>[a-z]+)(?: physical)? damage with a potency of (?<potency>[\d,]+) to target and all enemies within (?<radius>\d+) yalms",
@@ -151,13 +167,23 @@ public partial class BeastmasterRotation
 				&& float.TryParse(deals.Groups["potency"].Value, NumberStyles.AllowThousands, CultureInfo.InvariantCulture, out var potency)
 				&& float.TryParse(deals.Groups["radius"].Value, NumberStyles.Float, CultureInfo.InvariantCulture, out var radius))
 			{
+				var bonusOn = BonusOnStatus.Match(text);
+				var bonus = 0f;
+				if (bonusOn.Success)
+				{
+					_ = float.TryParse(bonusOn.Groups["bonus"].Value, NumberStyles.AllowThousands, CultureInfo.InvariantCulture, out bonus);
+				}
+
 				items[id] = new CrucibleItem(CrucibleItemKind.Damage, potency, false, name, string.Empty,
 					CrucibleBoard.ElementNamed(deals.Groups["type"].Value), radius,
-					text.Contains("knockback", StringComparison.OrdinalIgnoreCase));
+					text.Contains("knockback", StringComparison.OrdinalIgnoreCase),
+					AfflictsTarget.Match(text) is { Success: true } lays ? lays.Groups["status"].Value : string.Empty,
+					bonusOn.Success ? bonusOn.Groups["status"].Value : string.Empty, bonus);
 			}
 			else if (GrantsBuff.Match(text) is { Success: true } buff)
 			{
-				items[id] = new CrucibleItem(CrucibleItemKind.Buff, 0f, false, name, buff.Groups["status"].Value);
+				items[id] = new CrucibleItem(CrucibleItemKind.Buff, 0f, false, name, buff.Groups["status"].Value,
+					RaisesMagic: text.Contains("Increases magic damage dealt", StringComparison.Ordinal));
 			}
 		}
 
@@ -250,8 +276,10 @@ public partial class BeastmasterRotation
 	/// than <paramref name="familiarLossAhead"/>, what it can lose before the next weave window (in the final fight against
 	/// any); a serum, else the Beast Remedy Kit, against
 	/// the fight's dangerous statuses; the absorber of the element of a hit on him; the cure of his familiar's ailment; against
-	/// a boss more maximum HP. With <paramref name="damage"/>: in the final fight every buff, then a damage item on his
-	/// target - in the final fight any, else on a pack where it brings at least as much as in the best fight ahead (A664).
+	/// a boss more maximum HP. With <paramref name="damage"/>: in the final fight every buff - one that raises magic damage
+	/// right before a damage item - then a damage item on his target once no other enemy can still come into its reach - in the
+	/// final fight any, at the latest before it could end, else on a pack where it brings at least as much as in the best fight
+	/// ahead (A664, A665). Traces the items held at the start and the end of each fight.
 	/// Called every frame from the update.
 	/// </summary>
 	internal static unsafe void UseCrucibleItems(float line, uint familiarLossAhead, bool safety, bool damage)
@@ -278,6 +306,7 @@ public partial class BeastmasterRotation
 		}
 
 		var crucible = (InstanceContentCrucibleOfTheUnbroken*)director;
+		TraceHeldItems(crucible);
 		if (!InCombat)
 		{
 			_crucibleSlotsRefused.Clear();
@@ -465,25 +494,36 @@ public partial class BeastmasterRotation
 		}
 
 	Damage:
-		// 12: in the final fight every buff while its status does not stand, before the damage items it may raise.
+		var damageSlot = -1;
+		IBattleChara? damageTarget = null;
+		var damageWhy = string.Empty;
+		var damageReady = slot < 0 && damage && InCombat
+			&& DamageItem(crucible, finalFight, out damageSlot, out damageTarget, out damageWhy);
+
+		// 12: in the final fight every buff while its status does not stand, before the damage items it may raise; one that
+		// raises magic damage, while a damage item is held, only right before one goes (A665) - the damage waits for its
+		// enemies, and the buff lasts 15 s.
 		if (slot < 0 && damage && finalFight)
 		{
+			var holdsDamage = Holds(crucible, CrucibleItemKind.Damage);
 			for (var i = 0; i < crucible->Inventory.Length && slot < 0; i++)
 			{
-				if (TryItem(crucible, i, CrucibleItemKind.Buff, out var buff) && !PlayerHasStatusNamed(player, buff.Status))
+				if (TryItem(crucible, i, CrucibleItemKind.Buff, out var buff) && !PlayerHasStatusNamed(player, buff.Status)
+					&& (!buff.RaisesMagic || !holdsDamage || damageReady))
 				{
 					slot = i;
 					on = player;
-					why = $"in the final fight, {buff.Status}";
+					why = buff.RaisesMagic && holdsDamage
+						? $"in the final fight, {buff.Status} right before the damage item it raises"
+						: $"in the final fight, {buff.Status}";
 				}
 			}
 		}
 
-		if (slot < 0 && damage && InCombat
-			&& DamageItem(crucible, finalFight, out var damageSlot, out var target, out var damageWhy))
+		if (slot < 0 && damageReady && damageTarget != null)
 		{
 			slot = damageSlot;
-			on = target;
+			on = damageTarget;
 			why = damageWhy;
 		}
 
@@ -702,16 +742,20 @@ public partial class BeastmasterRotation
 	}
 
 	// 13: the damage item of most worth on the player's target - its potency times the enemies within its radius of the target,
-	// each counting one plus the measured weakness bonus where the item's element is its weakness; at equal worth the one
-	// without knockback. Outside the final fight only when it hits more than the target and brings at least as much here as in
-	// the best fight ahead (A664); one with knockback only when it hits every enemy fighting. An item whose element is the
-	// weakness only of enemies still to come waits for them (K2).
+	// each counting one plus the measured weakness bonus where the item's element is its weakness, and the added potency on
+	// each of them carrying the status it gains from; at equal worth the one without knockback. It waits while another enemy
+	// can still come into its reach (A665); in the final fight it goes, at the latest, once the fight could end before every
+	// damage and buff item held had its GCD. Outside the final fight only when it hits more than the target and brings at
+	// least as much here as in the best fight ahead (A664); one with knockback only when it hits every enemy fighting, in the
+	// final fight at the latest before its end. An item whose element is the weakness only of enemies still to come waits
+	// for them (K2). Where another item that would go now lays the status the chosen one gains from on the target, that one
+	// goes first (Fang of Ice before Fang of Fire).
 	private static unsafe bool DamageItem(InstanceContentCrucibleOfTheUnbroken* crucible, bool finalFight, out int slot,
-		out IBattleChara target, out string why)
+		out IBattleChara? target, out string why)
 	{
 		slot = -1;
 		why = string.Empty;
-		target = HostileTarget!;
+		target = HostileTarget;
 		if (target == null || target.IsDead || !target.InCombat())
 		{
 			return false;
@@ -731,7 +775,9 @@ public partial class BeastmasterRotation
 			}
 		}
 
+		var ending = finalFight && FinalFightEnding(crucible);
 		var ahead = finalFight ? null : CrucibleRoute.BattlesAhead();
+		_layers.Clear();
 		for (var i = 0; i < crucible->Inventory.Length; i++)
 		{
 			if (!TryItem(crucible, i, CrucibleItemKind.Damage, out var item) || OnlyForEnemiesToCome(item.Element))
@@ -740,23 +786,38 @@ public partial class BeastmasterRotation
 			}
 
 			var hits = 0;
-			var weight = 0f;
+			var worth = 0f;
 			foreach (var hostile in DataCenter.AllHostileTargets)
 			{
-				if (hostile == null || hostile.IsDead || !hostile.InCombat()
-					|| Vector3.Distance(hostile.Position, target.Position) > item.Radius + hostile.HitboxRadius)
+				if (hostile == null || hostile.IsDead || !hostile.InCombat() || !InReach(item, target, hostile))
 				{
 					continue;
 				}
 
 				hits++;
-				weight += 1f + (item.Element != 0 && CrucibleBoard.WeaknessOf(hostile.NameId) == item.Element ? bonus : 0f);
+				var each = 1f + (item.Element != 0 && CrucibleBoard.WeaknessOf(hostile.NameId) == item.Element ? bonus : 0f);
+				worth += item.Value * each
+					+ (item.BonusStatus.Length > 0 && PlayerHasStatusNamed(hostile, item.BonusStatus) ? item.Bonus * each : 0f);
 			}
 
-			var worth = item.Value * weight;
+			if (!ending && MoreCanCome(item, target, hits, out var coming))
+			{
+				TraceWaiting(item, crucible->Inventory[i].ItemId, coming);
+				continue;
+			}
+
 			var later = AheadWorth(item, ahead, bonus);
-			if ((finalFight || (hits > 1 && worth >= later)) && (!item.Knockback || hits >= fighting)
-				&& (worth > bestWorth || (worth == bestWorth && bestKnockback && !item.Knockback)))
+			if (!(finalFight || (hits > 1 && worth >= later)) || (item.Knockback && hits < fighting && !ending))
+			{
+				continue;
+			}
+
+			if (item.Afflicts.Length > 0 && !PlayerHasStatusNamed(target, item.Afflicts))
+			{
+				_layers.Add((i, item.Afflicts));
+			}
+
+			if (worth > bestWorth || (worth == bestWorth && bestKnockback && !item.Knockback))
 			{
 				slot = i;
 				bestWorth = worth;
@@ -771,9 +832,169 @@ public partial class BeastmasterRotation
 			return false;
 		}
 
+		// The chosen one gains from a status another that would go now lays on the target: that one first.
+		var laysFirst = string.Empty;
+		if (TryItem(crucible, slot, CrucibleItemKind.Damage, out var chosen) && chosen.BonusStatus.Length > 0)
+		{
+			foreach (var (layer, status) in _layers)
+			{
+				if (layer != slot && string.Equals(status, chosen.BonusStatus, StringComparison.OrdinalIgnoreCase))
+				{
+					slot = layer;
+					laysFirst = status;
+					break;
+				}
+			}
+		}
+
 		why = $"on {target.Name}, {bestHits} enemies within reach"
-			+ (finalFight ? ", final fight" : $", worth {bestWorth:F0} here against at most {bestAhead:F0} in a fight ahead");
+			+ (laysFirst.Length > 0 ? $", first {laysFirst} for {chosen.Name}, which gains from it" : string.Empty)
+			+ (ending ? ", final fight ends soon" : finalFight ? ", final fight"
+				: $", worth {bestWorth:F0} here against at most {bestAhead:F0} in a fight ahead");
 		return true;
+	}
+
+	// Whether hostile stands within the reach of item thrown at target: its radius from the target plus the hostile's size.
+	private static bool InReach(CrucibleItem item, IBattleChara target, IBattleChara hostile)
+	{
+		return Vector3.Distance(hostile.Position, target.Position) <= item.Radius + hostile.HitboxRadius;
+	}
+
+	// A665: whether another enemy can still come into the reach of item thrown at target - one outside it that has neither
+	// hit nor cast (on its way, or standing after it appeared, as the shadow mites stand 4 to 6 s), or, while it reaches only
+	// the target, a kind of this fight the sheet lists that has not appeared yet. One that hits or casts from out there
+	// fights from there.
+	private static bool MoreCanCome(CrucibleItem item, IBattleChara target, int hits, out string coming)
+	{
+		coming = string.Empty;
+		foreach (var hostile in DataCenter.AllHostileTargets)
+		{
+			if (hostile != null && !hostile.IsDead && !InReach(item, target, hostile) && !hostile.IsCasting
+				&& !EnemyDanger.HasActed(hostile.GameObjectId))
+			{
+				coming = $"{hostile.Name} outside it, not acted yet";
+				return true;
+			}
+		}
+
+		if (hits > 1)
+		{
+			return false;
+		}
+
+		foreach (var enemy in CrucibleBoard.Enemies)
+		{
+			if (CrucibleBoard.IsToCome(enemy.NameId))
+			{
+				coming = $"enemy kind {enemy.NameId} of this fight, not here yet";
+				return true;
+			}
+		}
+
+		return false;
+	}
+
+	// A665: in the final fight, whether it could end before every damage and buff item held had its GCD - by the corrected
+	// time to kill of the enemy with the most HP fighting, the one it ends with; not while that time is unknown.
+	private static unsafe bool FinalFightEnding(InstanceContentCrucibleOfTheUnbroken* crucible)
+	{
+		IBattleChara? last = null;
+		foreach (var hostile in DataCenter.AllHostileTargets)
+		{
+			if (hostile != null && !hostile.IsDead && hostile.InCombat() && hostile.MaxHp > (last?.MaxHp ?? 0u))
+			{
+				last = hostile;
+			}
+		}
+
+		if (last == null)
+		{
+			return false;
+		}
+
+		var ttk = last.GetCorrectedTTK();
+		if (float.IsNaN(ttk))
+		{
+			ttk = last.GetTTK();
+		}
+
+		if (float.IsNaN(ttk))
+		{
+			return false;
+		}
+
+		var held = 0;
+		for (var i = 0; i < crucible->Inventory.Length; i++)
+		{
+			if (TryItem(crucible, i, CrucibleItemKind.Damage, out _) || TryItem(crucible, i, CrucibleItemKind.Buff, out _))
+			{
+				held++;
+			}
+		}
+
+		return ttk <= held * DataCenter.DefaultGCDTotal;
+	}
+
+	// A665: once per run, fight and item, that a damage item waits and for whom.
+	private static void TraceWaiting(CrucibleItem item, ushort id, string coming)
+	{
+		var fight = (CrucibleBoard.Run, CrucibleBoard.Fight);
+		if (_damageWaitFight != fight)
+		{
+			_damageWaitFight = fight;
+			_damageWaitTraced.Clear();
+		}
+
+		if (_damageWaitTraced.Add(id))
+		{
+			DefenseTrace.Line($"crucible item: {item.Name} waits - {coming} can still come into its {item.Radius:F0} y");
+		}
+	}
+
+	// Whether an item of kind is held in a slot the game has not refused.
+	private static unsafe bool Holds(InstanceContentCrucibleOfTheUnbroken* crucible, CrucibleItemKind kind)
+	{
+		for (var i = 0; i < crucible->Inventory.Length; i++)
+		{
+			if (TryItem(crucible, i, kind, out _))
+			{
+				return true;
+			}
+		}
+
+		return false;
+	}
+
+	// A665: at the start of each fight, once it is known, and at its end, the items held - what is left after the final fight
+	// is lost.
+	private static unsafe void TraceHeldItems(InstanceContentCrucibleOfTheUnbroken* crucible)
+	{
+		var starts = InCombat && !_heldTracedInCombat && CrucibleBoard.Fight != 0;
+		if (!starts && (InCombat || !_heldTracedInCombat))
+		{
+			return;
+		}
+
+		_heldTracedInCombat = starts;
+		if (starts)
+		{
+			_heldTracedFight = (CrucibleBoard.Fight, CrucibleBoard.IsFinalFight);
+		}
+
+		var names = new List<string>();
+		var sheet = Svc.Data.GetExcelSheet<Lumina.Excel.Sheets.XBMItem>(ClientLanguage.English);
+		for (var i = 0; i < crucible->Inventory.Length; i++)
+		{
+			var id = crucible->Inventory[i].ItemId;
+			if (id != 0)
+			{
+				names.Add(CrucibleItems.TryGetValue(id, out var item) ? item.Name
+					: sheet?.GetRowOrDefault(id)?.Unknown2.ExtractText() ?? $"item {id}");
+			}
+		}
+
+		DefenseTrace.Line($"crucible items {(InCombat ? "at the start of" : "after")} fight {_heldTracedFight.Fight}"
+			+ $"{(_heldTracedFight.Final ? " (final)" : string.Empty)}: {(names.Count == 0 ? "none" : string.Join(", ", names))}");
 	}
 
 	// A664: what a damage item could bring in the best fight still ahead (the final one included) - its potency times each

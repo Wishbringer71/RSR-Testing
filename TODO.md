@@ -129,13 +129,15 @@ nebeneinander braucht: neuer interner Name mit Übernahme des Ordners, angezeigt
 
 ## Warten auf Daten oder Fremde
 
-- **Crucible: Lager, Weg, Endkampfplan und Gegenstände an seinem Log nachprüfen** (A661 bis A664; seine Vorgabe vom
-  07.11.2026: „vorab im vollen kritischen loop prüfen, und auch nach einspielung der logs"). Im Kampf: mehr Begleiter an
-  der Campsite, der Schatz statt der Rast, wo beide sicher sind, der Plan des Endkampfs gleich der Wahl am Endkampf,
-  übrige Heilung vor dem Endkampf, Schadensgegenstände nach Wert über die Kämpfe, Rückstoß nur auf alle. Auflösung:
-  `DefenseTrace.log` und ACT-Mitschnitt seines nächsten Laufs – die Zeilen „crucible fight …: … stored", „crucible
-  campsite", „crucible route", „Crucible final fight's plan", „crucible item" und sein Rückstoß-Fall; dann je Abweichung
-  Loop. Konzept 21, K8 („Über das Brett"), K10, K14, Weg.
+- **Crucible: Lager, Weg, Endkampfplan und Gegenstände an seinem Log nachprüfen** (A661 bis A665; seine Vorgabe vom
+  07.11.2026: „vorab im vollen kritischen loop prüfen, und auch nach einspielung der logs"). Sein Lauf von 18:08 lief
+  auf einem Build davor und bestätigte die Ursachen (A665). Im Kampf: mehr Begleiter an der Campsite, der Schatz statt
+  der Rast, wo beide sicher sind, der Plan des Endkampfs gleich der Wahl am Endkampf, übrige Heilung vor dem Endkampf,
+  Schadensgegenstände nach Wert über die Kämpfe und erst, wenn kein Gegner mehr in ihre Reichweite kommt, Eis vor Feuer,
+  das Zaubermittel vor dem Schaden, nichts übrig nach dem Endkampf. Auflösung: `DefenseTrace.log` und ACT-Mitschnitt
+  seines nächsten Laufs ab A665 – die Zeilen „crucible fight …: … stored", „crucible campsite", „crucible route",
+  „Crucible final fight's plan", „crucible item" (auch „waits"), „crucible items at the start of/after fight"; dann je
+  Abweichung Loop. Konzept 21, K8 („Über das Brett", „Zeitpunkt im Kampf"), K10, K14, Weg.
 
 - **Beastmaster: Bretter 2 bis 5 am ersten Mitschnitt prüfen** (Crucible-Strategien K1 bis K14 gebaut, zuletzt A643,
   A644). Im Kampf: Tötungsregeln (Tablitauren, Lamien, Morpho und Abaddon, Myconid in der Pfütze), Gegenangriff nach

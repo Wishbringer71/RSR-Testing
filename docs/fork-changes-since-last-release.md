@@ -55,6 +55,13 @@ What this release changes in the fight. For the whole distance from upstream, se
   used without overhealing, also above your potion line, and in the final fight all of it. A damage item goes where it
   brings most: in this fight if it hits as much here as in the best fight ahead, else it waits; one with knockback only
   when it hits every enemy fighting. Against a boss the Beast Tonic comes before a healing item, which then heals more.
+- **A damage item waits for the enemies still coming.** A fang no longer goes the moment a second enemy is in reach:
+  while an enemy outside its reach has neither hit nor cast yet – the shadow mites stand still for seconds after they
+  appear, then run in – or, while it reaches only its target, a kind of the fight has not appeared yet (the final
+  boss's succubi), it waits. In the final fight it goes at the latest when the fight could end before every item held
+  had its turn, a knockback fang included. The Potion of Tempered Magic goes right before the first fang, Fang of Ice
+  before Fang of Fire, which deals 1,000 potency more to a target in Deep Freeze. The trace names the items you hold at
+  the start and the end of each fight.
 - **Gear and feed belong to the run.** A new run on the same board no longer inherits the gear and feed slots of the
   last one.
 - **A familiar is healed before a first hit could fell it.** Before a familiar takes its first hit in a fight, RSR

@@ -74,6 +74,15 @@ internal static class EnemyDanger
 		}
 	}
 
+	/// <summary>
+	/// Whether <paramref name="source"/> has hit the player, a party member or one of the player's own objects, or healed
+	/// another enemy, since the records were last cleared (concept 21, K8, "Zeitpunkt im Kampf", A665).
+	/// </summary>
+	internal static bool HasActed(ulong source)
+	{
+		return _bySource.TryGetValue(source, out var record) && (record.Hits > 0 || record.Healed > 0d);
+	}
+
 	/// <summary>Forgets every record: out of combat, or when the lists are cleared.</summary>
 	internal static void Clear()
 	{
