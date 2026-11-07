@@ -96,6 +96,11 @@ public class JobConfigGenerator : IIncrementalGenerator
 				}
 
 				var attributeStr = attributeNames.Count == 0 ? "" : $"[{string.Join(", ", attributeNames)}]";
+
+				// A job without an entry gets the default. A value or a string is copied by the assignment; any other
+				// reference type is one object, and storing the field itself made every job first read in a session share
+				// it - a change on one changed all of them, and the default itself (A646). Those get their own copy.
+				var defaultCopy = Util.CopyOfDefault(fieldType, fieldStr, variableName);
 				var propertyCode = $$"""
                     [JsonProperty]
                     private Dictionary<Job, {{fieldStr}}> {{variableName}}Dict = new();
@@ -107,7 +112,7 @@ public class JobConfigGenerator : IIncrementalGenerator
                         get
                         {
                             if ({{variableName}}Dict.TryGetValue(DataCenter.Job, out var value)) return value;
-                            return {{variableName}}Dict[DataCenter.Job] = {{variableName}};
+                            return {{variableName}}Dict[DataCenter.Job] = {{defaultCopy}};
                         }
                         set
                         {

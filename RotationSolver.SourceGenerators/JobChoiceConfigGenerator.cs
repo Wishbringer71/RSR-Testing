@@ -70,6 +70,9 @@ public class JobChoiceConfigGenerator : IIncrementalGenerator
 					}
 
 					var attributeStr = attributeNames.Count == 0 ? "" : $"[{string.Join(", ", attributeNames)}]";
+
+					// Each job and rotation without an entry gets its own copy of the default (A646): storing the field
+					// itself made every rotation first changed in a session share one list of settings.
 					var propertyCode = $$"""
                         [JsonProperty]
                         private Dictionary<Job, Dictionary<string, {{fieldStr}}>> {{variableName}}Dict = new();
@@ -87,7 +90,7 @@ public class JobChoiceConfigGenerator : IIncrementalGenerator
 
                                 if (!dict.TryGetValue(RotationChoice, out var value))
                                 {
-                                    value = dict[RotationChoice] = {{variableName}};
+                                    value = dict[RotationChoice] = {{Util.CopyOfDefault(fieldType, fieldStr, variableName)}};
                                 }
 
                                 return value;

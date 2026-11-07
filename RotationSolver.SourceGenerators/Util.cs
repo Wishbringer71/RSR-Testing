@@ -115,6 +115,22 @@ namespace RotationSolver.SourceGenerators
 		public static string Table(this string str) => "    " + str.Replace("\n", "\n    ");
 
 		/// <summary>
+		/// The expression that gives a job its own default of a per-job setting field (A646). A value or a string is
+		/// copied by the assignment and keeps the field; any other reference type - a list of action, item or rotation
+		/// settings - is copied through the serializer that also saves it, so no two jobs share one object and the
+		/// default itself never changes.
+		/// </summary>
+		/// <param name="fieldType">The field's type.</param>
+		/// <param name="fieldTypeName">The field's type as the generated code names it.</param>
+		/// <param name="variableName">The field.</param>
+		public static string CopyOfDefault(ITypeSymbol fieldType, string fieldTypeName, string variableName)
+		{
+			return fieldType.IsReferenceType && fieldType.SpecialType != SpecialType.System_String
+				? $"Newtonsoft.Json.JsonConvert.DeserializeObject<{fieldTypeName}>(Newtonsoft.Json.JsonConvert.SerializeObject({variableName}))!"
+				: variableName;
+		}
+
+		/// <summary>
 		/// Converts the input string to PascalCase.
 		/// </summary>
 		/// <param name="input">The input string.</param>

@@ -11,6 +11,17 @@ What this release changes in the fight. For the whole distance from upstream, se
   your tokens), the reasons in muted text, the action as a Material button that is greyed out while
   there is nothing to do. What they recommend is unchanged.
 
+## Settings per job
+
+- **Each job keeps its own settings from the first time you play it.** The action list, the items and
+  the rotation settings are kept per job. A job or rotation you used for the first time shared one list
+  with every other one first used in the same session: switching `Use GCDs to heal …` off on a new
+  astrologian switched it off on a new scholar too, and `Limit Panhaima to multihit party stacks` on a
+  new sage also switched on `Limit Macrocosmos to multihit party stacks` on a new astrologian, the two
+  settings being stored under one name; switching off a role action such as Swiftcast or Arm's Length
+  switched it off on every such job. Each job and rotation now starts from its own defaults, and a change
+  stays where you make it. Settings saved before keep their values.
+
 ## Limit Break with NPC companions
 
 - **The full Limit Break bar is used when no other player is in the party.** New option

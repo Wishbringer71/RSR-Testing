@@ -18860,6 +18860,27 @@ habe den schleim bislang nicht anfreunden können."
 - *9 Dokumentation:* Konzept 03; TODO: Eintrag entfernt, Reihenfolge fortgeschrieben; Release-Text („One switch per
   potion and tincture, for every job").
 
+### A646 · Jobkonfiguration: jeder Job eine eigene Kopie der Voreinstellung (07.11.2026)
+
+- *Anlass:* TODO „Jobkonfiguration: Jobs ohne gespeicherten Eintrag teilen eine Liste" (gefunden in A635).
+- *1 Research:* Der Getter aus `JobConfigGenerator` legt für einen Job ohne Eintrag das Feld selbst ab
+  (`Dict[DataCenter.Job] = _field`), der aus `JobChoiceConfigGenerator` ebenso je Job und Rotation; eingeführt mit
+  Upstream 40c987beb (05.02.2024, „fix: code generator thing"; davor gab der Getter das Feld zurück, ohne es abzulegen).
+  Im erzeugten Code betrifft das drei Felder mit Referenztyp: `_rotationActionConfig`, `_rotationItemConfig`
+  (`[JobConfig]`) und `_rotationConfigurations` (`[JobChoiceConfig]`); die übrigen 32 sind Zahlen, Schalter, Auswahlen
+  oder Zeichenketten. `BaseAction.Config` legt Einträge schon beim Lesen an, `RotationConfigBase.Value` erst beim Setzen.
+  Serialisiert wird ohne Referenzerhalt (`JsonConvert.SerializeObject(this)`), gespeicherte Abschriften sind nach dem
+  Neustart getrennt. Von 325 Namen der Rotationseinstellungen tragen zehn mehrere Rotationen, darunter
+  `MultiHitRestrict` für Panhaima (Weiser) und Macrocosmos (Astrologe).
+- *2–6:* im Konzept 03 („Jeder Job seine eigene Liste"): Optionen A bis D, Abwägung, drei Gegenthesen. Ergebnis B.
+- *7 Gebaut:* `Util.CopyOfDefault` – für Referenztypen außer Zeichenketten eine Abschrift über den Serialisierer, sonst
+  das Feld; beide Generatoren nutzen es. Im erzeugten Code geprüft (`EmitCompilerGeneratedFiles`): genau die drei Felder
+  bekommen die Abschrift.
+- *8 Nachweis:* Compile (0 Warnungen), Prüfungen, erzeugter Code gelesen; im Spiel nicht gesehen. Gespeicherte
+  Abschriften früherer Sitzungen bleiben, wie sie sind.
+- *9 Dokumentation:* Konzept 03; TODO: Eintrag entfernt, Defekte leer, Reihenfolge fortgeschrieben; Release-Text
+  („Each job keeps its own settings from the first time you play it").
+
 ## B · Commit-Register (Fork vs. `upstream/main`)
 
 ### B1 · Einzelgeprüfte Fork-Commits

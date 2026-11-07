@@ -19,14 +19,12 @@ auswahl und das timing der beschwörung" – je Kampf aller fünf Bretter (Gegne
 BossMod-Module) die Rotation des Beastmasters, die Wahl der Begleiter und den Zeitpunkt ihres Aufrufs im Loop prüfen
 (Beispiel seiner Beobachtung: der Raptor gegen Feuer, bevor feueranfällige Gegner da waren; A581).
 
-1. Jobkonfiguration: Jobs ohne gespeicherten Eintrag teilen eine Liste: Schaltet er auf einem neu gespielten Job eine
-   Aktion aus, ist sie auf jedem anderen in derselben Sitzung neu gespielten Job ebenfalls aus.
-2. Bewegungssperre beim Wirken gegen das Ausweichen der BossMod-KI: Mit „Lock movement while casting" an steht die
+1. Bewegungssperre beim Wirken gegen das Ausweichen der BossMod-KI: Mit „Lock movement while casting" an steht die
    Figur während jedes Zaubers still, auch wenn die KI von BossMod aus einer Fläche laufen will; nur in dieser
    Kombination, dort aber mit einem Treffer, dem der Spieler nicht ausweicht.
-3. Blaumagier: Set nach den Widerständen der Stufe: Im Masked Carnivale wählt der Satz des Stufenführers Füllzauber
+2. Blaumagier: Set nach den Widerständen der Stufe: Im Masked Carnivale wählt der Satz des Stufenführers Füllzauber
    nach Beispielen; gegen welches Element die Gegner der Stufe schwach oder immun sind, zählt dabei nicht.
-4. Konzepte neu ordnen (allgemein, Rollen, Gruppen, Jobs, Inhalte): keine direkte Wirkung im Kampf; eine Regel, die
+3. Konzepte neu ordnen (allgemein, Rollen, Gruppen, Jobs, Inhalte): keine direkte Wirkung im Kampf; eine Regel, die
    im Konzept eines Jobs steht, wird für dessen Gruppe übersehen, und eine Inhaltsregel ist über mehrere Konzepte
    verteilt.
 
@@ -39,12 +37,7 @@ Code-Review; was diese finden, kommt wieder hierher und in dieselbe Reihenfolge,
 
 ## Defekte
 
-### Jobkonfiguration: Jobs ohne gespeicherten Eintrag teilen eine Liste · N, U
-Im Kampf: Schaltet er auf einem Job, den er noch nie gespielt hat, eine Aktion oder einen Gegenstand aus, gilt das in
-derselben Sitzung für jeden anderen neu gespielten Job ebenso und wird für beide gespeichert. *Ort:*
-`JobConfigGenerator`: Der Getter legt für einen Job ohne Eintrag die Vorgabeinstanz des Feldes selbst ab
-(`dict[Job] = _rotationActionConfig`), bei Wörterbüchern dieselbe für alle. *Nächster Schritt:* Loop: je Job eine eigene
-Instanz (Kopie der Vorgabe); Wirkung auf gespeicherte Konfigurationen. *Konzept:* 03, „Schalter je Gegenstand".
+Keiner offen.
 
 ## Offene Arbeit
 
