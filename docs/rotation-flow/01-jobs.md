@@ -2698,6 +2698,29 @@ Dullahan, Golem, Spriggan und Eisgolem (`XBMPet.InflictsInterrupt`).
   - *Offen:* Die Campsite-Wahl (K10) liest Fenster und Agent und überlässt dir die Wahl, wenn ihre LP sich unterscheiden
     („the window's HP … is not the team's"); ob der Agent dort nachgezogen hat, zeigt die nächste Campsite mit RSR
     (A576 läuft seitdem auch bei ausgeschaltetem RSR).
+  *Stufe 3, gebaut (A643): der einzige Unterbrecher für einen späteren Kampf.* Steht im lebenden Kader genau ein
+  Seelen-Begleiter (Soul Crush über Borrow, K4) und verbraucht ein Horn One with Nature für Borrow, dann gehört er zur
+  Reserve, wenn ein noch erreichbarer Kampf des Bretts eine Gegnerart führt, die RSR unterbrechbar zaubern sah
+  (`InterruptibleCasterKinds.json`, K4), der anstehende aber keine – mit demselben Maß und denselben Grenzen wie die
+  Endkampf-Heiler: knapp, wenn ihm nach einem weiteren Verlust in Höhe des größten auf dem Brett weniger als ein solcher
+  bliebe; zurückgehalten nur, solange die Hörner sich füllen und dieser Kampf genug heilende oder schützende behält.
+  *Noch erreichbar:* die Kämpfe auf den Wegen ab dem anstehenden Feld (`CrucibleRoute.BattlesAhead`, auch was ein
+  Zufallsfeld werden kann, der Endkampf eingeschlossen); sind die Wege nicht gelesen, alle Kämpfe des Bretts.
+  - *Im Kampf:* Auf Brett 4 zaubert der Administrator Confound („you will get confused for 12 seconds and most likely
+    die", BossModReborn, Werkzeugquelle); unterbrechen kann nur Soul Crush. Kam der einzige Seelen-Begleiter in den
+    Kämpfen davor auf ein Horn, nahm er dort Schaden und stand im Kampf des Administrators mit zu wenig LP – oder fiel.
+    *Nachher:* Er bleibt in den Kämpfen davor vom Horn, sobald ein weiterer Einsatz ihn unter das Maß brächte. Gelernt
+    sind bisher zwei Arten von Brett 1 (BNpcName 14531, 14542, seine Datei vom 06.11.2026); jede weitere lernt RSR beim
+    ersten Zauber.
+  - *Nicht so – der einzige Schwächentreffer eines späteren Kampfes:* aus demselben Grund wie für den Endkampf (Stufe 2,
+    verworfen): Er bringt dort Schaden, kein Überleben, und früh geschont verlängert er die frühen Kämpfe um denselben
+    Schaden. Ein Heiler für einen späteren gefährlichen Kampf: Die Gefahr eines Kampfes kennt RSR vorher nicht; nach einer
+    Gefahr im Gebiet verlangt jeder Kampf einen (B5), und die Reserve hält die des Endkampfs.
+  - *Gegenthese 1 (kein Gewinn):* Soul Crush geht nur, wenn sein Horn Borrow verbraucht und die Kinship läuft; ohne
+    solches Horn hält die Regel nichts zurück. *Gegenthese 2 (Preis):* In den Kämpfen davor fehlt er – ein Schadens-
+    oder Schutzbegleiter mehr auf dem Horn; mit Unterbrechern im anstehenden Kampf bleibt er. *Ausgeliefert, und nichts
+    ändert sich?* Vor der ersten Verlustmessung, ohne gelernte Art auf dem weiteren Weg, mit zwei Seelen-Begleitern im
+    Kader oder wenn er genug LP für zwei Verluste hat.
 
 *Falsifikation:* Kein Defekt, weil das erste Brett zweimal ohne Tod fiel? Das gelang mit Gegenständen und Zähnefletschen
 von seiner Hand; die Meisterbretter haben Rang 20 und 25 und Gegner ohne Schwäche. Option falsch? K1 ohne gemessenen

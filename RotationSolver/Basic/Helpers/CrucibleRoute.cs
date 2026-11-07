@@ -118,6 +118,51 @@ internal static class CrucibleRoute
 	}
 
 	/// <summary>
+	/// The battles (XBMBattleDetail rows) still reachable on the board's ways after the last battle, what a random space can
+	/// become included, the boss's too (concept 01, K11 stage 3, A643). Null while no battle is known or the ways were not read.
+	/// </summary>
+	internal static HashSet<uint>? BattlesAhead()
+	{
+		if (!TryStart(out var route, out var start) || route.Next == null)
+		{
+			return null;
+		}
+
+		var battles = new HashSet<uint>();
+		var seen = new HashSet<int>();
+		var queue = new Queue<int>(route.Next[start]);
+		while (queue.Count > 0)
+		{
+			var index = queue.Dequeue();
+			if (index < 0 || index >= route.Nodes.Length || !seen.Add(index))
+			{
+				continue;
+			}
+
+			var node = route.Nodes[index];
+			if (node.Battle != 0)
+			{
+				_ = battles.Add(node.Battle);
+			}
+
+			foreach (var (_, battle) in node.Options)
+			{
+				if (battle != 0)
+				{
+					_ = battles.Add(battle);
+				}
+			}
+
+			foreach (var next in route.Next[index])
+			{
+				queue.Enqueue(next);
+			}
+		}
+
+		return battles;
+	}
+
+	/// <summary>
 	/// Whether a campsite - or a random space that can become one - can still come after another battle, from the last battle
 	/// on. False: the campsite after this battle is the last before the boss. Null while no battle is known or the board's ways
 	/// were not read.

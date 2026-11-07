@@ -18793,6 +18793,26 @@ habe den schleim bislang nicht anfreunden können."
 - *8 Nachweis:* Compile (0 Warnungen); im Spiel nicht gesehen.
 - *9 Dokumentation:* Konzept 01 B2 („Wechsel zum heilenden Begleiter nach dem Verlauf"), K8 Punkt 7; Release-Text.
 
+### A643 · Crucible K11 Stufe 3: der einzige Unterbrecher für einen späteren Kampf (07.11.2026)
+
+- *Anlass:* TODO „Beastmaster: Crucible-Strategien", nächster Schritt „K11 Bedarf späterer Kämpfe außer dem Endkampf (ein
+  Begleiter, der dort als einziger eine Schwäche trifft oder unterbricht, geht vorher nur auf ein Horn, wenn seine LP
+  danach reichen)"; sein Auftrag vom 07.11.2026.
+- *1 Research:* Unterbrechen geht im Brett nur über Soul Crush, die Bestien-Aktion der Seelen-Begleiter über Borrow (K4,
+  A583); gelernt sind die unterbrechbar zaubernden Arten über Sitzungen (`InterruptibleCasterKinds.json`; seine Datei vom
+  06.11.2026: 14531, 14542). Die Wege des Bretts liest `CrucibleRoute` (A631), das anstehende Feld setzt das Hornfenster.
+  Die Reserve für den Endkampf (`HeldForFinal`, A585) hält knappe Endkampf-Heiler mit dem größten Verlust je Einsatz.
+- *2 Optionen:* (0) nichts; (a) der einzige Unterbrecher eines erreichbaren Kampfes in die Reserve; (b) dazu der einzige
+  Schwächentreffer; (c) dazu ein Heiler je gefährlichem späterem Kampf.
+- *3–6:* (b) verworfen wie für den Endkampf (A590): Schaden, kein Überleben; früh geschont verlängert er die frühen Kämpfe.
+  (c): Die Gefahr eines Kampfes kennt RSR vorher nicht; nach einer Gefahr verlangt jeder Kampf einen (B5). (a): Confound
+  des Administrators (Brett 4, „most likely die", BossModReborn) stoppt nur Soul Crush. Gegenthese 3: ohne Horn auf
+  Borrow, ohne gelernte Art voraus, mit zwei Seelen-Begleitern oder vor der ersten Verlustmessung ändert sich nichts.
+- *7 Gebaut:* `CrucibleRoute.BattlesAhead`; `SoleInterrupterAhead` in `HeldForFinal` mit demselben Maß; Spurzusatz „for a
+  later battle's interrupt".
+- *8 Nachweis:* Compile (0 Warnungen); im Spiel nicht gesehen.
+- *9 Dokumentation:* Konzept 01 K11 Stufe 3; TODO: Schritt K11 geschlossen.
+
 ## B · Commit-Register (Fork vs. `upstream/main`)
 
 ### B1 · Einzelgeprüfte Fork-Commits

@@ -2261,7 +2261,8 @@ public sealed class BST_Reborn : BeastmasterRotation
 				_hornScreenTraced = plan;
 				TraceHorn($"Crucible horn screen: horns set for battle {battle} ({(boss ? "final fight" : $"{enemies.Length} enemies")}, "
 					+ $"{required} that heal or protect): {best[0].Pet}, {best[1].Pet}, {best[2].Pet}"
-					+ (held.Count > 0 ? $"; held for the final fight, a use costing up to {_largestLossPerUse} HP: {string.Join(", ", held)}" : string.Empty));
+					+ (held.Count > 0 ? $"; held for the final fight, a use costing up to {_largestLossPerUse} HP: {string.Join(", ", held)}" : string.Empty)
+					+ (InterrupterHeld.Overlaps(held) ? $" (for a later battle's interrupt: {string.Join(", ", InterrupterHeld)})" : string.Empty));
 			}
 
 			return;
@@ -2333,10 +2334,62 @@ public sealed class BST_Reborn : BeastmasterRotation
 	// as large as the largest of the board would leave less than another such use for the final; as long as without them
 	// the horns fill and as many heal or protect as this fight requires. Else the one with the most HP comes back first.
 	// None before a use has been measured.
+	// K11 stage 3 (A643): the Soulkin familiars the reserve keeps for a later battle's interrupt, for the trace.
+	private static readonly HashSet<BeastmasterPet> InterrupterHeld = [];
+
+	// K11 stage 3 (A643): the only Soulkin familiar of the living team and its HP, when a horn spends One with Nature on
+	// Borrow, the battle about to start has no enemy kind seen casting interruptibly and a battle still reachable on the board
+	// has one (all the board's battles while its ways are unread); else null.
+	private (BeastmasterPet Pet, uint Hp)? SoleInterrupterAhead(uint board,
+		List<(BeastmasterPet Pet, int Position, uint Hp, uint Full, int Rank)> candidates, CrucibleBoard.Enemy[] enemies)
+	{
+		if (CrucibleBoard.CastsInterruptibly(enemies))
+		{
+			return null;
+		}
+
+		var borrowHorn = false;
+		foreach (var horn in Horns)
+		{
+			borrowHorn |= EffectiveNature(horn) == OneWithNatureOrder.Borrow;
+		}
+
+		(BeastmasterPet Pet, uint Hp)? soul = null;
+		foreach (var candidate in candidates)
+		{
+			if (KinOf(candidate.Pet) == BeastmasterKinType.Soulkin)
+			{
+				if (soul != null)
+				{
+					return null;
+				}
+
+				soul = (candidate.Pet, candidate.Hp);
+			}
+		}
+
+		if (soul == null || !borrowHorn)
+		{
+			return null;
+		}
+
+		IEnumerable<uint> ahead = CrucibleRoute.BattlesAhead() is { } reachable ? reachable : CrucibleBoard.FightsOfBoard(board);
+		foreach (var battle in ahead)
+		{
+			if (CrucibleBoard.CastsInterruptibly(CrucibleBoard.EnemiesOf(battle)))
+			{
+				return soul;
+			}
+		}
+
+		return null;
+	}
+
 	private HashSet<BeastmasterPet> HeldForFinal(uint board, List<(BeastmasterPet Pet, int Position, uint Hp, uint Full, int Rank)> candidates,
 		bool boss, int pack, CrucibleBoard.Enemy[] enemies, int required, HornOption none)
 	{
 		var held = new HashSet<BeastmasterPet>();
+		InterrupterHeld.Clear();
 		var loss = _largestLossPerUse;
 		var fights = CrucibleBoard.FightsOfBoard(board);
 		if (fights.Count == 0 || !CrucibleBoard.IsFinalBattle(fights[0]))
@@ -2394,6 +2447,16 @@ public sealed class BST_Reborn : BeastmasterRotation
 			{
 				reserve.Add((candidate.Pet, candidate.Hp));
 			}
+		}
+
+		// K11 stage 3 (concept 01, A643): the team's only Soulkin familiar - Soul Crush over Borrow, the board's only
+		// interrupt - when a battle still reachable has an enemy kind seen casting interruptibly and this one has none; by
+		// the same measure as the final fight's healers.
+		if (SoleInterrupterAhead(board, candidates, enemies) is { } soul && (soul.Hp < loss || soul.Hp - loss < loss)
+			&& !reserve.Exists(r => r.Pet == soul.Pet))
+		{
+			reserve.Add(soul);
+			_ = InterrupterHeld.Add(soul.Pet);
 		}
 
 		// The one with the least HP is held longest: released from the most HP down.

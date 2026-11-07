@@ -19,20 +19,18 @@ auswahl und das timing der beschwörung" – je Kampf aller fünf Bretter (Gegne
 BossMod-Module) die Rotation des Beastmasters, die Wahl der Begleiter und den Zeitpunkt ihres Aufrufs im Loop prüfen
 (Beispiel seiner Beobachtung: der Raptor gegen Feuer, bevor feueranfällige Gegner da waren; A581).
 
-1. Beastmaster: Konzept und Code im vollen Loop (sein Auftrag, 06.11.2026): Regeln, die an einem Augenblickswert
-   entscheiden, reagieren erst, wenn die Lage schon da ist.
-2. Beastmaster: Crucible-Strategien: Ein K.O. beendet den Lauf, und ein Begleiter, den ein späterer Kampf braucht, kommt
+1. Beastmaster: Crucible-Strategien: Ein K.O. beendet den Lauf, und ein Begleiter, den ein späterer Kampf braucht, kommt
    dort mit den LP an, die ihm die früheren ließen.
-3. Tinktur: Schalter je Gegenstand ab Werk aus: Auf jedem Job, auf dem er die Tinktur nicht von Hand eingeschaltet hat,
+2. Tinktur: Schalter je Gegenstand ab Werk aus: Auf jedem Job, auf dem er die Tinktur nicht von Hand eingeschaltet hat,
    kommt sie nie, gegen den Text von „Tincture usage".
-4. Jobkonfiguration: Jobs ohne gespeicherten Eintrag teilen eine Liste: Schaltet er auf einem neu gespielten Job eine
+3. Jobkonfiguration: Jobs ohne gespeicherten Eintrag teilen eine Liste: Schaltet er auf einem neu gespielten Job eine
    Aktion aus, ist sie auf jedem anderen in derselben Sitzung neu gespielten Job ebenfalls aus.
-5. Bewegungssperre beim Wirken gegen das Ausweichen der BossMod-KI: Mit „Lock movement while casting" an steht die
+4. Bewegungssperre beim Wirken gegen das Ausweichen der BossMod-KI: Mit „Lock movement while casting" an steht die
    Figur während jedes Zaubers still, auch wenn die KI von BossMod aus einer Fläche laufen will; nur in dieser
    Kombination, dort aber mit einem Treffer, dem der Spieler nicht ausweicht.
-6. Blaumagier: Set nach den Widerständen der Stufe: Im Masked Carnivale wählt der Satz des Stufenführers Füllzauber
+5. Blaumagier: Set nach den Widerständen der Stufe: Im Masked Carnivale wählt der Satz des Stufenführers Füllzauber
    nach Beispielen; gegen welches Element die Gegner der Stufe schwach oder immun sind, zählt dabei nicht.
-7. Konzepte neu ordnen (allgemein, Rollen, Gruppen, Jobs, Inhalte): keine direkte Wirkung im Kampf; eine Regel, die
+6. Konzepte neu ordnen (allgemein, Rollen, Gruppen, Jobs, Inhalte): keine direkte Wirkung im Kampf; eine Regel, die
    im Konzept eines Jobs steht, wird für dessen Gruppe übersehen, und eine Inhaltsregel ist über mehrere Konzepte
    verteilt.
 
@@ -61,20 +59,13 @@ Instanz (Kopie der Vorgabe); Wirkung auf gespeicherte Konfigurationen. *Konzept:
 
 ## Offene Arbeit
 
-### Beastmaster: Konzept und Code im vollen Loop · N
-Sein Auftrag (06.11.2026): „vollständiger loop über konzept beastmaster und jeglichen code, der den beastmaster
-berührt. optimieren, dynamisieren, verbessern". Im Kampf heute: Regeln, die an einem Augenblickswert
-entscheiden, wo RSR einen Verlauf misst, reagieren erst, wenn die Lage schon da ist (Beispiel A636). *Ort:* Konzept 01 BST ganz; `BST_Reborn`, `BeastmasterRotation*`,
-`CrucibleBoard`, `CrucibleRoute`, `BeastmasterCrucible*`, die Crucible-Fenster. *Nächster Schritt:* die Erhebung je Regel
-(Momentaufnahme statt Verlauf, Doppelung), Loop je Fund. *Konzept:* 01, BST.
-
 ### Beastmaster: Crucible-Strategien · N
 Im Kampf: Fällst du im Brett, ist der Lauf verloren, und RSR plant die Begleiter nicht über das Brett: Ein Heiler, der im vierten Kampf gebraucht wird, kann bis dahin auf 25 von 550
 LP gefallen sein (04.11.2026). *Ort:* `BST_Reborn`, `CrucibleBoard`, `BeastmasterCrucible*.cs`. *Gebaut:* Stufe 1 (A548,
 A549: Daten zur Laufzeit, K1, K2, K3 ohne den Bedarf der Begleiter), K9 (A550), K8 (A551 bis A554: Heilung, Gegenmittel, Bestien-Lebensfeder, Sand der
 Zeit, Bestien-Heiltranksammlung, Schutz, Seren, Bestien-Heilmittelsammlung, Resistenzmittel, Bestien-Goldnadel,
 Bestien-Ausdauermittel, Schadensgegenstände, Stärkungsmittel im Endkampf; A555).
-*Gebaut auch:* K6 (A562, Hörner im Hornfenster), K7 (A563, Kader auf Wunsch im Teamfenster), K10 Campsite (A564, wer mitruht), K10 Laden (A569, A570: Kaufliste im Ladenfenster, Kauf auf Wunsch), K12 (A572, Eier des Zu), K13 (A578, Schatz: Empfehlung im Schatzfenster, Wahl auf Wunsch), Bretter 2 bis 5 (A588: Tötungsregeln, Gegenangriff nach Angriffsart), K5 Stufe 1 (A589: Stopp nur gegen Anfällige), K11 Stufe 2 (A590: Zähnefletschen und Campsite nach Bedarf des Endkampfs). *Nächster Schritt:* K11 Bedarf späterer Kämpfe außer dem Endkampf (ein Begleiter, der dort als einziger eine Schwäche trifft oder unterbricht, geht vorher nur auf ein Horn, wenn seine LP danach reichen); K5 Stufe 2 (Slow, Blind, Paralysis, Sleep, Death als Schutz, sobald eine Bezifferung belegt ist); die Bretter 2 bis 5 am ersten Mitschnitt prüfen (Spurzeilen „kill rule", „left alone"). *Konzept:* 01,
+*Gebaut auch:* K6 (A562, Hörner im Hornfenster), K7 (A563, Kader auf Wunsch im Teamfenster), K10 Campsite (A564, wer mitruht), K10 Laden (A569, A570: Kaufliste im Ladenfenster, Kauf auf Wunsch), K12 (A572, Eier des Zu), K13 (A578, Schatz: Empfehlung im Schatzfenster, Wahl auf Wunsch), Bretter 2 bis 5 (A588: Tötungsregeln, Gegenangriff nach Angriffsart), K5 Stufe 1 (A589: Stopp nur gegen Anfällige), K11 Stufe 2 (A590: Zähnefletschen und Campsite nach Bedarf des Endkampfs). *Gebaut auch:* K11 Stufe 3 (A643: der einzige Unterbrecher für einen späteren Kampf). *Nächster Schritt:* K5 Stufe 2 (Slow, Blind, Paralysis, Sleep, Death als Schutz, sobald eine Bezifferung belegt ist); die Bretter 2 bis 5 am ersten Mitschnitt prüfen (Spurzeilen „kill rule", „left alone"). *Konzept:* 01,
 „Crucible of the Unbroken: Bretter, Kämpfe, Strategien".
 
 ### Bewegungssperre beim Wirken gegen das Ausweichen der BossMod-KI · N, U

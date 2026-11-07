@@ -510,6 +510,10 @@ What this release changes in the fight. For the whole distance from upstream, se
   Blow shows 0 HP for a moment; that no longer counts as the largest hit of the fight, so Challenge no
   longer takes the damage back from a familiar at full HP every 15 s, and no Beast Potion goes into a
   full familiar.
+- **The only interrupter kept for a later battle (Crucible).** When the team holds exactly one Soulkin familiar
+  (Soul Crush over Borrow, the board's only interrupt), a horn spends One with Nature on Borrow, and a battle still
+  reachable on the board's ways has an enemy kind seen casting interruptibly while the one about to start has none, the
+  horn screen keeps it back like the final fight's healers - by the same measure, as long as the horns fill.
 - **Healers kept for the final fight (Crucible).** Before any fight but the board's final, the familiars
   that heal or protect in the plan the final would get sit out when one more use as costly as the largest
   measured on the board would leave them too little for the final - as long as the horns still fill and
