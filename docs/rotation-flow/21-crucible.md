@@ -68,7 +68,7 @@ beide Werkzeugquellen; sein Mitschnitt vom 04.11.2026.
   (Wind) mit Dornmull (Feuer), Abaddon (Wasser), Morpho (Schlag); Durga (Feuer, ruft Gegner) mit Drehturm (Schlag);
   Medusa (Stich, ruft Gegner) mit Lamia (Stich, Raise unterbrechbar) und Zyklop (keine); Chimära (Wasser); Sphinx
   (Hieb; Rätsel); Gigantis und Zyklop (keine) mit erstarrtem Blitz (Erde) und Zunder (Wind); Moogle-Kampf (Blitz,
-  Schlag, Wasser; Heiler und Stärker); Behemoth (Erde) mit Riese (Blitz) und Blitz-Exergon (Erde); Königs-Ahriman (Eis)
+  Schlag, Wasser; Heiler und Stärker); Behemoth (Erde) mit Riese (Blitz) und Blitz-Exergon (Erde); Königs-Ahriman-Ebenbild (Eis)
   mit Hapalit (Wind) und Trübauge (Eis). Endgegner Lauda Spruchspalterin (keine) mit Thanatos (Blitz).
 - Häufigste Schwächen: erstes Brett gleich verteilt; zweites Eis; drittes Blitz und Schlag; Erstes Meisterbrett Blitz,
   Wind, Schlag; Zweites Meisterbrett Schlag, Blitz, Erde, Wind.
