@@ -19284,6 +19284,39 @@ nicht möglich. also warum vorschlag für drake?" – ein Hinweis auf die Mechan
 *Prüfgrad:* Compile ohne Warnung; Prüfskripte; Ursachen an der Spur und an seinen Bildern belegt. Die neuen Lesungen
 (`FedMax`, `FedItems`) im Spiel nicht beobachtet; jede Änderung der Plätze schreibt „crucible feed slots: …" in die Spur.
 
+### A658 · Crucible: Angeschlagene Begleiter – früh heilen nur vor dem ersten Treffer, mit dem Maß des Bretts (07.11.2026)
+
+TODO „Angeschlagene Begleiter auf den Hörnern" aus seiner Frage vom 07.11.2026 (Ziz 264/487, Golem 439/550 auf den
+Hörnern: „warum werden die nicht vorab geheilt im kampf?"); Beastmaster-Vorrang. Seine Rüge vom selben Abend („warum
+hast du gestoppt? du bist mit beastmaster noch nicht fertig") betraf, dass ich den Punkt angekündigt statt begonnen hatte.
+
+- *1 Research:* Die LP der Begleiter tragen sich über das Brett (Agentenwerte zwischen den Kämpfen, Daedalus „HP
+  carries over"). K8 Schritt 7 heilt bei der Marke „größter Treffer in diesem Kampf oder Halterate über einen GCD";
+  vor dem ersten Treffer im Kampf galt „Use HP potions below this HP" (ab Werk 50 %) als Anteil. Sein Lauf: Golem bekam
+  bei 118 LP den Bestien-Heiltrank III (15:58:53); Ziz und Golem standen nicht im Endkampfplan; Golem ruhte auf Zug 7.
+- *2 Optionen:* (0) wie bisher; (a) früh unter festem Anteil (Daedalus 35 %); (b) Heiler des Endkampfplans nach der
+  letzten Campsite früh; (c) gesunde vor angeschlagenen auf die Hörner; (d) außerhalb des Kampfs; (e) vor dem ersten
+  Treffer im Kampf der größte Einzeltreffer eines Begleiters auf diesem Brett als Marke.
+- *3–5 Abwägung im Kampf:* Ein Trank heilt früh dieselbe Menge wie spät; früh verliert er gegen eine Campsite (umsonst),
+  gegen einen Begleiter, den kein späterer Kampf braucht, und durch Überheilung. Früh gewinnt nur gegen einen Treffer,
+  der vor dem Trank fällt – vor dem ersten Treffer im Kampf misst RSR nichts, und die Trankschwelle ist keine Größe der
+  Gegner. (a) verschenkt Tränke vor einer Campsite; (b) läuft ins Leere, weil K11 einen knappen Endkampf-Heiler von den
+  Hörnern hält, und kommt er doch, heilt die Marke dieselbe Menge; (c) verworfen in A637; (d) unbelegt und nach (b)
+  unnötig. Gewählt: (e).
+- *6 Falsifikation:* Kein Defekt? Für seinen Fall richtig – die Antwort ist „nein, und aus diesen Gründen". Für den
+  ersten Treffer eines Kampfs hält die Lücke: Ein Begleiter mit 30 % kommt bei 50 % Trankschwelle zwar zum Trank, einer
+  mit 55 % unter einem Bretttreffer von 60 % nicht. Option falsch? Überschätzt der Bretttreffer einen leichten Kampf,
+  kommt der Trank früher, nicht größer (BestHeal nimmt den kleinsten, der darüber hebt). Ausgeliefert, nichts ändert
+  sich? Im ersten Kampf eines Bretts (kein Maß), bei einem Heilgegenstand (der letzte bleibt dir) und wenn der Begleiter
+  über dem Bretttreffer steht – in seinem Lauf 07.11. der Normalfall.
+- *7 Gebaut:* `_familiarLargestHitOnBoard` (je Gebiet), `FamiliarLossAhead` nimmt es vor dem ersten Treffer im Kampf;
+  Optionstext „Use the board's items that keep you and your familiar alive" nachgezogen.
+- *9 Dokumentation:* Konzept 21 K8 Schritt 7 (Marke, „Vor dem ersten Treffer", „Früher heilen?", Verworfenes); TODO-Eintrag
+  entfernt.
+
+*Prüfgrad:* Compile ohne Warnung; Prüfskripte. Im Spiel nicht beobachtet; jede Heilung schreibt „crucible item: … for
+<Begleiter> at … HP, it can lose …" in die Spur.
+
 ## B · Commit-Register (Fork vs. `upstream/main`)
 
 ### B1 · Einzelgeprüfte Fork-Commits

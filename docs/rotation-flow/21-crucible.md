@@ -909,7 +909,8 @@ on a pack once a fight, all of them in the final fight (Crucible only)".
      heilt – die Einstellung verspricht „keep you and your familiar alive"): Hält er nicht mehr LP als er bis zum nächsten
      Webfenster verlieren kann – der größte Treffer, den er in diesem Kampf nahm (dasselbe Maß wie K9), und, solange die
      Gegner ihn angreifen, sein gemessener Verlust je Sekunde beim Halten (K9, A610) über einen GCD Vorlauf, das Größere
-     (A642) –, vor dem ersten gemessenen Treffer unter „Use HP potions below this HP" als Anteil seiner LP, der Bestien-Heiltrank („to self or familiar"), der ihn mit dem kleinsten Wert über
+     (A642) –, vor seinem ersten Treffer im Kampf der größte Einzeltreffer eines Begleiters auf diesem Brett (A658), vor
+     jeder Messung unter „Use HP potions below this HP" als Anteil seiner LP, der Bestien-Heiltrank („to self or familiar"), der ihn mit dem kleinsten Wert über
      diese Marke hebt, sonst der größte. Das Bestien-Pulver nicht: Es heilt dich und die Verbündeten in deiner Nähe, und
      der Begleiter steht am Gegner. Nie der letzte Heilgegenstand: Er bleibt dir, denn deine LP sind der Lauf, seine ein
      Horn. Danach derselbe Schutz wie in 6 gegen einen angekündigten Treffer auf ihn, wenn er nicht mehr LP hält als
@@ -918,11 +919,24 @@ on a pack once a fight, all of them in the final fight (Crucible only)".
      Sekunde; sein größter Treffer bleibt 100, und bei 400 LP fiele er im nächsten GCD, ohne dass der größte Treffer es
      anzeigt. Herausfordern liest dieselbe Rate schon (K9); bleibt es aus, weil du das Fenster nicht hieltest, ist der
      Trank der Rest. Eine Rechnung, nicht gemessen; auf Brett 1 fiel kein Begleiter.
-     *Früher heilen?* Seine Frage vom 07.11.2026 zu Ziz (264/487) und Golem (439/550) auf den Hörnern: „warum werden
-     die nicht vorab geheilt im kampf?" In seinem Kampf 4 bekam Golem bei 118 LP den Bestien-Heiltrank III (Spur
-     15:58:53); Ziz blieb über seinem Verlust und bekam keinen. Ein früher Trank heilt dieselbe Menge, solange er nicht
-     überheilt, denn die LP tragen sich über das Brett; er kostet den Trank früher, und den Vorrat brauchst du. Offen
-     (TODO „Angeschlagene Begleiter auf den Hörnern").
+     *Vor dem ersten Treffer im Kampf* (A658): die Marke ist der größte Einzeltreffer, den ein Begleiter auf diesem
+     Brett nahm, solange er in diesem Kampf noch keinen nahm; erst ohne jede Messung auf dem Brett „Use HP potions below
+     this HP" als Anteil seiner LP. Grund: Ein Begleiter, der mit wenig LP auf ein Horn kommt, fällt sonst am ersten
+     Treffer, wenn seine LP über deiner Trankschwelle, aber unter dem Treffer liegen, den die Gegner dieses Bretts
+     austeilen; nach dem ersten Treffer im Kampf gilt dessen Maß wie bisher.
+     *Früher heilen?* (seine Frage vom 07.11.2026 zu Ziz 264/487 und Golem 439/550 auf den Hörnern: „warum werden die
+     nicht vorab geheilt im kampf?"; A658): Nein, außer vor dem ersten Treffer wie eben. Seine LP tragen sich über das
+     Brett, und ein Trank heilt früh dieselbe Menge wie spät – früh kostet er nur den Trank früher, und dreierlei
+     spricht für spät: Eine Campsite heilt ihn umsonst (in seinem Lauf ruhte Golem auf Zug 7), ein Begleiter, den kein
+     späterer Kampf braucht, braucht die LP nicht (Ziz und Golem standen nicht im Endkampfplan), und spät überheilt der
+     Trank nicht. Früh spricht nur dafür, dass er den Treffer nicht übersteht, bevor der Trank kommt – das deckt die
+     Marke. In seinem Kampf 4 bekam Golem bei 118 LP den Bestien-Heiltrank III (Spur 15:58:53); Ziz blieb darüber.
+     *Verworfen:* (a) früh heilen unter einem festen Anteil (Daedalus: unter 35 % „worn") – eine Zahl ohne Herleitung,
+     und vor einer Campsite verschenkt sie Tränke, die dir im Endkampf fehlen; (b) einen Heiler des Endkampfplans, dem
+     die LP dafür fehlen, nach der letzten Campsite früh heilen – K11 hält ihn dann ohnehin von den Hörnern, und kommt
+     er doch, heilt ihn die Marke in derselben Menge; (c) gesunde vor angeschlagenen auf die Hörner (A637, Variante b:
+     kostet Schaden ohne Risiko, solange er den Einsatz übersteht); (d) außerhalb des Kampfs heilen – ob ein Trank einen
+     nicht gerufenen Begleiter erreicht, ist unbelegt, und nötig ist es nach (b) nicht.
      *Gegenthese 1 (Vorrat):* Jeder Trank für ihn fehlt dir später. Widerlegt bis auf den Rest: Der letzte bleibt dir,
      und Schritt 1 kommt vor diesem; es bleibt, dass ein früher Trank für ihn einem späteren Kampf fehlt, in dem du ihn
      selbst bräuchtest – Preis: ein Trank je Fall, Wahrscheinlichkeit nach der Zahl der Kämpfe bis zum nächsten Laden.

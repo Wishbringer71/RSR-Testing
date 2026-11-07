@@ -19,13 +19,11 @@ auswahl und das timing der beschwörung" – je Kampf aller fünf Bretter (Gegne
 BossMod-Module) die Rotation des Beastmasters, die Wahl der Begleiter und den Zeitpunkt ihres Aufrufs im Loop prüfen
 (Beispiel seiner Beobachtung: der Raptor gegen Feuer, bevor feueranfällige Gegner da waren; A581).
 
-1. Angeschlagene Begleiter auf den Hörnern: Ein Begleiter, der mit halben LP auf ein Horn kommt, bekommt einen Trank
-   erst, wenn ihn sein nächster Verlust fällen könnte – die LP, die er über das Brett trägt, bleiben bis dahin niedrig.
-2. Laden: Ausrüstung und Gegenstände auf einer Skala – die Kaufliste stellt jede Ausrüstung mit messbarem Gewinn vor
+1. Laden: Ausrüstung und Gegenstände auf einer Skala – die Kaufliste stellt jede Ausrüstung mit messbarem Gewinn vor
    jeden Heilgegenstand, auch wenn der Trank mehr LP bringt.
-3. Blaumagier: RSRs nächste Aktion beendet Apokalypsis und Chelonian Gate – Schaden und Minderung des Spielers enden
+2. Blaumagier: RSRs nächste Aktion beendet Apokalypsis und Chelonian Gate – Schaden und Minderung des Spielers enden
    nach einem GCD statt nach 10 s.
-4. Kegel und Ringe gegnerischer Zauber genau messen: Zauber- und Kanalbeginn nutzen RSRs Erkennung bei Kegel und Ring
+3. Kegel und Ringe gegnerischer Zauber genau messen: Zauber- und Kanalbeginn nutzen RSRs Erkennung bei Kegel und Ring
    nicht, und mehrere Leser sehen hinter einem Kegel oder im Innenkreis eines Rings eine Gefahr, die keine ist.
 
 Danach die technische Schuld, soweit ihre Auflösungsbedingung erfüllt ist. Warten auf Daten: unten.
@@ -49,16 +47,6 @@ auf jeden Schadens- und Schutzkanal gehört, den RSR nicht selbst beendet (Unive
 *Konzept:* 14, „Wo Angriff die Abwehr beendet: die Kanäle".
 
 ## Offene Arbeit
-
-### Angeschlagene Begleiter auf den Hörnern · N
-Im Kampf (seine Frage vom 07.11.2026 zu Ziz 264/487 und Golem 439/550 auf den Hörnern: „warum werden die nicht vorab
-geheilt im kampf?"): K8 Schritt 7 heilt einen Begleiter erst, wenn er nicht mehr LP hält, als er bis zum nächsten
-Webfenster verlieren kann (A577, A642); die Hornwahl nimmt ihn, solange er einen Einsatz übersteht (A637). Seine LP
-tragen sich über das Brett; ein früher Trank heilt dieselbe Menge, solange er nicht überheilt, und kostet dich den Trank
-früher. *Ort:* `BeastmasterCrucibleItems` (Schritt 7), Hornwahl in `BST_Reborn`. *Nächster Schritt:* Loop über den
-Zeitpunkt – Trank auf einen angeschlagenen Begleiter, der im Plan des Endkampfs heilt oder schützt, sobald Vorrat und
-Überheilung es tragen, gegen den Vorrat für dich; ob ein Trank außerhalb des Kampfs einen nicht gerufenen Begleiter
-erreicht, ist unbelegt. *Konzept:* 21, K8 Schritt 7, K11.
 
 ### Laden: Ausrüstung und Gegenstände auf einer Skala · N
 Im Kampf: Die Kaufliste (`RankOffers`, Schritte 3 bis 6) stellt jede Ausrüstung mit messbarem Gewinn vor jeden

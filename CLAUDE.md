@@ -92,7 +92,7 @@ Diese Datei gilt in jeder Lage. Die übrigen Regeln stehen je genau einmal im Re
 
 **Bevor ich einen Zug beende**
 - Beenden darf ich einen Zug nur mit einem Ergebnis, einem Blocker oder einer Frage, die nur er beantworten kann (seine Vorgabe, zweimal gerügt). Grund: Eine Ankündigung ohne Ausführung lässt ihn warten, und es passiert nichts.
-- Kündige ich Arbeit an, beginne ich sie im selben Zug und arbeite sie ab. Zum Weitermachen braucht es keine Zustimmung von ihm.
+- Kündige ich Arbeit an, beginne ich sie im selben Zug und arbeite sie ab. Zum Weitermachen braucht es keine Zustimmung von ihm. Ein Ergebnis mit dem Hinweis auf den nächsten offenen Punkt beendet keinen Zug, solange der Punkt zum Auftrag gehört (seine Rüge, 07.11.2026: „du bist mit beastmaster noch nicht fertig").
 
 **Bevor ich committe und pushe**
 - Identität unverändert, Commit klein.

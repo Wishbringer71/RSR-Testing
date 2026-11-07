@@ -35,3 +35,6 @@ What this release changes in the fight. For the whole distance from upstream, se
   window whenever it shows and recommends feed for free slots only – first one per familiar of the final fight's plan,
   healers and protectors first – and only feed that adds effective HP, or damage after those. While you feed, the
   window names the familiar with a free slot that the feed helps most, or says that none has one.
+- **A familiar is healed before a first hit could fell it.** Before a familiar takes its first hit in a fight, RSR
+  measures it against the largest hit any familiar took on the board so far, instead of your potion line, and gives it
+  a Beast Potion when its HP do not cover that hit. Your last healing item still stays for you.
