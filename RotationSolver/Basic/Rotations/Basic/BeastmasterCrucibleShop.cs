@@ -360,6 +360,10 @@ public partial class BeastmasterRotation
 		// 2. Against each status of the board's fights that ends in death: neither HP nor mitigation help against it.
 		CoverStatuses(true);
 
+		// 4 (A659: before the HP scale). Against each other status of the board's fights that costs safety - control, actions
+		// prevented, damage over time: what HP and mitigation do not stop; the scale weighs only HP.
+		CoverStatuses(false);
+
 		// A single pick (a treasure, A656): gear and items on one scale - the HP each brings over the rest of the board - once a
 		// fight is measured; the order below stays for the shop and before the first measurement.
 		if (oneScale)
@@ -370,7 +374,7 @@ public partial class BeastmasterRotation
 		if (oneScale && loads != null)
 		{
 			var top = -1;
-			var scale = OfferScale(offers, owned, load);
+			var scale = OfferScale(offers, owned, load, heldItems, 0f);
 			_offerScale = scale;
 			for (var i = 0; i < scale.Count && picks.Count < maxPicks; i++)
 			{
@@ -393,6 +397,16 @@ public partial class BeastmasterRotation
 					}
 				}
 			}
+		}
+
+		// 3, 5, 6 on one scale once a fight is measured (A659): gear, healing and protective items by the HP each brings over
+		// the fights to the boss, piece by piece the most per token, from every start; of all choices the most, at a tie the
+		// cheaper.
+		if (!oneScale && loads != null)
+		{
+			ChooseOnScale();
+			spentAll = spent;
+			return picks;
 		}
 
 		// 3. Protective and healing gear: the choice that leaves the most HP after a stretch of fights ending with the
@@ -446,9 +460,6 @@ public partial class BeastmasterRotation
 				+ (piece.Movement < 0f ? $", movement {piece.Movement:+0%;-0%} (with all your gear {movement - 1f:+0%;-0%})" : string.Empty)
 				+ (piece.Slow > 0f ? $", Slow {piece.Slow:+0%;-0%}: your actions come slower" : string.Empty)));
 		}
-
-		// 4. Against each other status of the board's fights that costs safety: control, actions prevented, damage over time.
-		CoverStatuses(false);
 
 		// 5. Healing items, the strongest first; 6. protective items by their share.
 		foreach (var kinds in new[] { new[] { CrucibleItemKind.Heal }, new[] { CrucibleItemKind.Mitigate,
@@ -504,6 +515,138 @@ public partial class BeastmasterRotation
 					}
 				}
 			}
+		}
+
+		// A659: the choice on the scale - from every start (-1: none set first), piece by piece the offer with the most HP
+		// per token, the scale weighed anew on what is chosen; then taken, each with the reason it had when chosen.
+		void ChooseOnScale()
+		{
+			var bestPicks = new List<(int Row, ushort Item, int Price, float Value, string Why)>();
+			var bestValue = 0f;
+			var bestCost = 0;
+			for (var seed = -1; seed < offers.Count; seed++)
+			{
+				var (chosen, value, cost) = ScaleFrom(seed);
+				if (chosen.Count > 0 && (value > bestValue || (value == bestValue && cost < bestCost)))
+				{
+					bestPicks = chosen;
+					bestValue = value;
+					bestCost = cost;
+				}
+			}
+
+			foreach (var (row, id, price, _, why) in bestPicks)
+			{
+				var isGear = gear.TryGetValue(id, out var piece);
+				if (Take(row, price, isGear))
+				{
+					if (isGear)
+					{
+						owned.Add(piece);
+					}
+					else
+					{
+						heldItems.Add(id);
+					}
+
+					picks.Add(new CrucibleShopPick(row, ClientItemName(id, EnglishItemName(id)), price, why
+						+ (isGear && piece.Movement < 0f ? $", movement {piece.Movement:+0%;-0%}" : string.Empty)
+						+ (isGear && piece.Slow > 0f ? $", Slow {piece.Slow:+0%;-0%}: your actions come slower" : string.Empty)));
+				}
+			}
+		}
+
+		(List<(int Row, ushort Item, int Price, float Value, string Why)> Chosen, float Value, int Cost) ScaleFrom(int seed)
+		{
+			var chosen = new List<(int Row, ushort Item, int Price, float Value, string Why)>();
+			var set = new List<CrucibleGear>(owned);
+			var held = new List<ushort>(heldItems);
+			var tokens = budget - spent;
+			var gearLeft = gearSlots - gearHeld;
+			var itemsLeft = itemSlots - itemsHeld;
+			var picksLeft = maxPicks - bought.Count;
+			float total = 0f, healed = 0f;
+			var cost = 0;
+			var first = true;
+			while (picksLeft > 0)
+			{
+				var open = new List<(int Row, ushort Item, int Price)>();
+				foreach (var offer in offers)
+				{
+					if (!bought.Contains(offer.Row) && !chosen.Exists(c => c.Row == offer.Row) && offer.Price <= tokens
+						&& (gear.TryGetValue(offer.Item, out var piece) ? !piece.SelfHarm && gearLeft > 0
+							: items.TryGetValue(offer.Item, out var item) && itemsLeft > 0 && item.Kind is CrucibleItemKind.Heal
+								or CrucibleItemKind.Mitigate or CrucibleItemKind.NullifyPhysical or CrucibleItemKind.ReflectMagic))
+					{
+						open.Add(offer);
+					}
+				}
+
+				var scale = OfferScale(open, set, load, held, healed);
+				var next = -1;
+				var bestPerToken = 0f;
+				for (var i = 0; i < scale.Count; i++)
+				{
+					if (scale[i].Value <= 0f)
+					{
+						continue;
+					}
+
+					var price = 0;
+					foreach (var offer in open)
+					{
+						if (offer.Row == scale[i].Row)
+						{
+							price = offer.Price;
+						}
+					}
+
+					var perToken = scale[i].Value / Math.Max(price, 1);
+					if (first && seed >= 0 ? scale[i].Row == offers[seed].Row : perToken > bestPerToken)
+					{
+						next = i;
+						bestPerToken = perToken;
+					}
+				}
+
+				first = false;
+				if (next < 0)
+				{
+					break;
+				}
+
+				var (row, id, value, why) = scale[next];
+				var cost1 = 0;
+				foreach (var offer in open)
+				{
+					if (offer.Row == row)
+					{
+						cost1 = offer.Price;
+					}
+				}
+
+				chosen.Add((row, id, cost1, value, why));
+				total += value;
+				cost += cost1;
+				tokens -= cost1;
+				picksLeft--;
+				if (gear.TryGetValue(id, out var taken))
+				{
+					set.Add(taken);
+					gearLeft--;
+				}
+				else
+				{
+					held.Add(id);
+					itemsLeft--;
+					if (items.TryGetValue(id, out var item) && item.Kind == CrucibleItemKind.Heal)
+					{
+						healed += value;
+					}
+				}
+			}
+
+			return (chosen, total, cost);
 		}
 
 		// One choice of protective gear, starting with offer <paramref name="seed"/>: its pieces, value and cost.
@@ -706,7 +849,7 @@ public partial class BeastmasterRotation
 	/// measure is named, not left out.
 	/// </summary>
 	private static List<(int Row, ushort Item, float Value, string Why)> OfferScale(List<(int Row, ushort Item, int Price)> offers,
-		List<CrucibleGear> owned, ShopLoad load)
+		List<CrucibleGear> owned, ShopLoad load, List<ushort> heldItems, float healedChosen)
 	{
 		var result = new List<(int, ushort, float, string)>();
 		var gear = CrucibleGearTable;
@@ -715,6 +858,20 @@ public partial class BeastmasterRotation
 		var fights = normal + heavy;
 		var held = HealingHeldShare();
 		var now = RawLoad(owned, load);
+
+		// A659: what a healing item can still heal - the fights to the boss, each as heavy as your heaviest measured, and what
+		// you miss now, less the healing you hold and the choice has taken already.
+		var holding = 0f;
+		foreach (var id in heldItems)
+		{
+			if (items.TryGetValue(id, out var heal) && heal.Kind == CrucibleItemKind.Heal)
+			{
+				holding += heal.Value;
+			}
+		}
+
+		var worst = (fights * now.Heavy) + (1f - (Player is { MaxHp: > 0u } player ? player.GetHealthRatio() : 1f));
+		var healable = Math.Max(0f, worst - (holding * (1f + now.Recovery)) - healedChosen);
 		foreach (var (row, id, _) in offers)
 		{
 			if (gear.TryGetValue(id, out var piece))
@@ -765,9 +922,10 @@ public partial class BeastmasterRotation
 			}
 			else if (items.TryGetValue(id, out var item))
 			{
+				var full = Math.Min(1f, item.Value * (1f + now.Recovery));
 				var value = item.Kind switch
 				{
-					CrucibleItemKind.Heal => Math.Min(1f, item.Value * (1f + now.Recovery)),
+					CrucibleItemKind.Heal => Math.Min(full, healable),
 					CrucibleItemKind.Mitigate => item.Value * now.Heavy,
 					CrucibleItemKind.NullifyPhysical => now.HeavyPhysical,
 					CrucibleItemKind.ReflectMagic => now.HeavyMagic,
@@ -775,7 +933,9 @@ public partial class BeastmasterRotation
 				};
 				result.Add((row, id, value, item.Kind switch
 				{
-					CrucibleItemKind.Heal => $"used once, heals ~{value:P0}{(item.Allies ? " to you and the allies near you" : string.Empty)}",
+					CrucibleItemKind.Heal => (value < full
+						? $"used once, heals ~{full:P0}, of which ~{value:P0} can still be needed: your {fights} fights left cost at most ~{worst:P0}, you hold ~{holding * (1f + now.Recovery):P0} in healing"
+						: $"used once, heals ~{value:P0}") + (item.Allies ? " to you and the allies near you" : string.Empty),
 					CrucibleItemKind.Mitigate => $"used once, {item.Value:P0} less damage: ~{value:P0} of your heaviest fight",
 					CrucibleItemKind.NullifyPhysical => $"used once, nullifies physical attacks: ~{value:P0} of your heaviest fight",
 					CrucibleItemKind.ReflectMagic => $"used once, reflects magic attacks: ~{value:P0} of your heaviest fight",

@@ -19,11 +19,9 @@ auswahl und das timing der beschwörung" – je Kampf aller fünf Bretter (Gegne
 BossMod-Module) die Rotation des Beastmasters, die Wahl der Begleiter und den Zeitpunkt ihres Aufrufs im Loop prüfen
 (Beispiel seiner Beobachtung: der Raptor gegen Feuer, bevor feueranfällige Gegner da waren; A581).
 
-1. Laden: Ausrüstung und Gegenstände auf einer Skala – die Kaufliste stellt jede Ausrüstung mit messbarem Gewinn vor
-   jeden Heilgegenstand, auch wenn der Trank mehr LP bringt.
-2. Blaumagier: RSRs nächste Aktion beendet Apokalypsis und Chelonian Gate – Schaden und Minderung des Spielers enden
+1. Blaumagier: RSRs nächste Aktion beendet Apokalypsis und Chelonian Gate – Schaden und Minderung des Spielers enden
    nach einem GCD statt nach 10 s.
-3. Kegel und Ringe gegnerischer Zauber genau messen: Zauber- und Kanalbeginn nutzen RSRs Erkennung bei Kegel und Ring
+2. Kegel und Ringe gegnerischer Zauber genau messen: Zauber- und Kanalbeginn nutzen RSRs Erkennung bei Kegel und Ring
    nicht, und mehrere Leser sehen hinter einem Kegel oder im Innenkreis eines Rings eine Gefahr, die keine ist.
 
 Danach die technische Schuld, soweit ihre Auflösungsbedingung erfüllt ist. Warten auf Daten: unten.
@@ -47,13 +45,6 @@ auf jeden Schadens- und Schutzkanal gehört, den RSR nicht selbst beendet (Unive
 *Konzept:* 14, „Wo Angriff die Abwehr beendet: die Kanäle".
 
 ## Offene Arbeit
-
-### Laden: Ausrüstung und Gegenstände auf einer Skala · N
-Im Kampf: Die Kaufliste (`RankOffers`, Schritte 3 bis 6) stellt jede Ausrüstung mit messbarem Gewinn vor jeden
-Heilgegenstand; der Schatz rechnet beide auf einer Skala (LP über den Rest des Bretts), der Laden noch nicht.
-*Ort:* `BeastmasterCrucibleShop.RankOffers`. *Nächster Schritt:* Loop über die Auswahl mehrerer Stücke unter Marken und
-Plätzen auf der Skala (`OfferScale`), mit dem Vorrat für spätere Läden. *Konzept:* 21, K10 „Laden, gebaut", K13 „Eine
-Skala für Ausrüstung und Gegenstände".
 
 ### Kegel und Ringe gegnerischer Zauber genau messen · N
 Im Kampf: RSRs Formprüfung (`DataCenter.AreaCastReaches`) misst einen Kegel und einen Ring als vollen Kreis um den

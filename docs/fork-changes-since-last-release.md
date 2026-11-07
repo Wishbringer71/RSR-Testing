@@ -38,3 +38,8 @@ What this release changes in the fight. For the whole distance from upstream, se
 - **A familiar is healed before a first hit could fell it.** Before a familiar takes its first hit in a fight, RSR
   measures it against the largest hit any familiar took on the board so far, instead of your potion line, and gives it
   a Beast Potion when its HP do not cover that hit. Your last healing item still stays for you.
+- **The shop weighs gear and items on one scale.** Once a fight is measured, gear, healing items and protective items
+  are chosen together by the share of your HP each brings over the fights to the boss, piece by piece the most per
+  token. A healing item counts only as far as you could still need it: the fights left, each as heavy as your heaviest,
+  plus what you miss now, less the healing you hold. Covers against the board's statuses that cost control or deal
+  damage over time now come before this scale.

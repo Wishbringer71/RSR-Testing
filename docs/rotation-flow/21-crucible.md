@@ -316,7 +316,8 @@ Dullahan, Golem, Spriggan und Eisgolem (`XBMPet.InflictsInterrupt`).
     Kauf nachfragt, ist unbelegt – BeastHelper be40a1e beantwortet eine Kaufrückfrage, „noch nicht im Spiel bestätigt").
     Ohne den Klick kauft RSR nichts (wie K7, Entscheidung C in A533: ein Schritt, den keiner zurücknimmt, nur auf deinen
     Wunsch). Das Fenster steht, solange der Laden offen ist, auch wenn die Liste leer ist, mit dem Grund; jede neue Liste
-    geht ins `DefenseTrace.log`. Die Liste, Sicherheit zuerst, solange Marken und Plätze reichen:
+    geht ins `DefenseTrace.log`. Die Liste, Sicherheit zuerst, solange Marken und Plätze reichen – 1, 2 und 4 zuerst,
+    dann 3, 5 und 6 auf einer Skala (A659, unten):
     1. Ein zweites Leben, solange du keines hältst: Ring of Sacrifice oder ein Gegenstand mit Reraise.
     2. Gegen jeden Zustand der Kämpfe des Bretts, der mit dem Tod endet (Wirktext nennt KO oder den Tod: Verhängnis,
        Steinfluch – Status 5421, 437), eine Resistenz oder ein Serum, sofern nichts Gehaltenes ihn deckt. Grund: Gegen
@@ -354,6 +355,25 @@ Dullahan, Golem, Spriggan und Eisgolem (`XBMPet.InflictsInterrupt`).
        „anti-paralysis mandatory"); die Blätter geben für jedes Brett mindestens diese.
     5. Heiltränke, der stärkste zuerst, bei Gleichstand der billigere.
     6. Schutzgegenstände: Minderung nach ihrem Anteil, Abwehr physischer, Reflexion magischer Angriffe.
+    *Eine Skala, sobald ein Kampf gemessen ist (A659; TODO aus A656):* Nach 1, 2 und 4 wählt RSR Ausrüstung,
+    Heilgegenstände und Schutzgegenstände zusammen auf der Skala des Schatzes (K13, „Eine Skala für Ausrüstung und
+    Gegenstände"): der Anteil deiner LP, den jedes Angebot über die Kämpfe bis zum Endgegner bringt. Gewählt wird Stück
+    für Stück das mit dem größten Wert je Marke, neu gerechnet nach jedem Stück (Ausrüstung auf die gewählte, Tränke auf
+    die gewählten), über jede Startwahl wie in 3; von allen Auswahlen gilt die mit dem größten Wert, bei Gleichstand die
+    billigere. Ein Heilgegenstand zählt höchstens, was du noch heilen kannst: die Kämpfe bis zum Endgegner, jeder so
+    schwer wie dein schwerster gemessener, plus was dir jetzt fehlt, abzüglich der Heilung, die du schon hältst und die
+    die Auswahl schon nahm. Grund: Vorher stand jede Ausrüstung mit messbarem Gewinn vor jedem Trank. Im Laden auf Zug 8
+    von Brett 1 (nur noch der Endgegner, 07.11.2026) empfahl RSR so die Mithril-Rüstung für 858 Marken mit „+4 %"; der
+    Bestien-Heiltrank I für 35 Marken bringt 10 %, sofern du sie noch heilen kannst. Die Obergrenze verhindert das
+    Gegenteil, zehn Tränke für drei Kämpfe zu 18 %. Den Endkampf rechnet sie so schwer wie deinen schwersten gemessenen
+    (meine Annahme; im Endkampf von Brett 1 am 07.11.2026 trafen dich seine Zauber mit 1 bis 9 %, wie in den Kämpfen
+    davor). Vor der ersten Messung gelten 3, 5 und 6 in dieser Reihenfolge.
+    *Warum die Zustände vor der Skala (A659):* 4 deckt, was LP und Minderung nicht abfangen – Kontrolle, verhinderte
+    Aktionen, Schaden über Zeit, der dich auch bei vollen LP weiter trifft; die Skala wiegt nur LP. Vorher stand 3 vor
+    4: Eine Rüstung mit wenigen Prozent ging einem Paralyse-Serum vor, wenn die Marken nicht für beides reichten.
+    *Gegenthese (Vorrat für spätere Läden):* Marken, die jetzt in Tränke gehen, fehlen einem besseren Angebot später.
+    Nicht widerlegt, Preis benannt: Was ein späterer Laden anbietet, steht nirgends; ein Trank behält seinen Wert, und
+    die Obergrenze kauft keinen, den du nicht brauchst.
     Nie Futter in dieser Liste (die Rast beendet es, Campsite oben); Futter für den Endkampf empfiehlt das Fenster
     getrennt darunter, für die freien Futterplätze der Begleiter des Endkampfplans (K14, A631, A657, sein Vorschlag vom
     06.11.2026); Ausrüstung, die dir selbst einen Zustand zufügt (Thunder Axe:
@@ -590,7 +610,7 @@ Dullahan, Golem, Spriggan und Eisgolem (`XBMPet.InflictsInterrupt`).
   LP-Anteile, die es dir über den Rest des Bretts bringt. Ausrüstung: der Schaden, den sie in den übrigen Kämpfen
   verhindert (mittlere Last je Kampf, schwerste für Elite und Endgegner, Ausweichen nur gegen den physischen Teil),
   dazu ihre Mehrheilung auf die gehaltenen Heilgegenstände („Increases HP recovery …" mal Vorrat). Heilgegenstand: seine
-  Heilung, mit der Mehrheilung deiner Ausrüstung. Schützender Gegenstand: sein Anteil des schwersten Kampfs. Die
+  Heilung, mit der Mehrheilung deiner Ausrüstung, höchstens was du noch heilen kannst (K10, A659). Schützender Gegenstand: sein Anteil des schwersten Kampfs. Die
   übrigen Kämpfe sind die auf dem kürzesten Weg zum Endgegner, der Endgegner eingeschlossen. Was die Skala nicht misst –
   Bewegung, Block, Hast, kritische Treffer, Schaden, Absorbieren eines Elements –, nennt das Fenster beim Angebot, statt es
   zu verschweigen. Vor der ersten gemessenen Last zählt die Reihenfolge oben.
@@ -606,8 +626,8 @@ Dullahan, Golem, Spriggan und Eisgolem (`XBMPet.InflictsInterrupt`).
   Heilgegenstand, und die Schuhe zählten nur nicht, weil die Laden-Skala ihre Mehrheilung allein an der im Kampf
   gemessenen Heilung maß. Mit gezählter Mehrheilung hätte die alte Rangfolge die Schuhe (rund 6 %) vor das Pulver
   (40 %) gestellt.
-  *Der Laden:* Er kauft mehrere Stücke mit Marken; die Skala ersetzt dort noch nicht die Rangfolge (TODO, „Laden:
-  Ausrüstung und Gegenstände auf einer Skala").
+  *Der Laden:* Er wählt mehrere Stücke mit Marken auf derselben Skala, Stück für Stück nach dem Wert je Marke (K10,
+  „Eine Skala, sobald ein Kampf gemessen ist", A659).
   *Gegenthese 1 (Ausrüstung unbekannt):* Vor dem ersten Laden kennt RSR deine Ausrüstung nicht, und was ein Zufallsfeld
   gab, sieht es nicht. Nicht widerlegt: Die Empfehlung kann ein Stück vorziehen, dessen Wirkung du schon trägst; Preis:
   eine schwächere Wahl. Ausrüstungsplätze vor dem ersten Laden: RSR nimmt einen freien an.

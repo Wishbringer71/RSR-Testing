@@ -19317,6 +19317,34 @@ hast du gestoppt? du bist mit beastmaster noch nicht fertig") betraf, dass ich d
 *Prüfgrad:* Compile ohne Warnung; Prüfskripte. Im Spiel nicht beobachtet; jede Heilung schreibt „crucible item: … for
 <Begleiter> at … HP, it can lose …" in die Spur.
 
+### A659 · Crucible-Laden: Ausrüstung und Gegenstände auf einer Skala; Zustände vor der Skala (07.11.2026)
+
+TODO „Laden: Ausrüstung und Gegenstände auf einer Skala" (aus A656); Beastmaster-Vorrang.
+
+- *1 Research:* `RankOffers` kaufte nach Leben (1) und tödlichen Zuständen (2) die Ausrüstung mit dem größten L (3), dann
+  Zustände (4), Tränke (5), Schutzgegenstände (6). Jede Ausrüstung mit Gewinn ging jedem Trank vor. Sein Laden auf Zug 8
+  von Brett 1 (Spur 16:08:51, 978 Marken): „Mythril Armor, G1 Beast Potion" – die Rüstung mit „+4 %" für 858 Marken,
+  der Trank (10 %) nur mit dem Rest. Der Schatz rechnete seit A656 beides auf einer Skala (`OfferScale`).
+- *2 Optionen:* (0) wie bisher; (a) die Skala des Schatzes auch im Laden, Stück für Stück nach Wert je Marke, über jede
+  Startwahl; (b) wie (a), Tränke ohne Obergrenze; (c) wie (a), Tränke bis zur erwarteten Last (Mittel); (d) wie (a),
+  Tränke bis zur schlimmsten Last (jeder Kampf so schwer wie der schwerste gemessene) plus fehlende LP.
+- *3–5 Abwägung im Kampf:* (b) kauft zehn Tränke vor jeder Rüstung, auch wo drei Kämpfe zu 18 % bleiben und du 36 %
+  hältst – Marken für LP, die du nicht heilen kannst. (c) unterschätzt einen Kampf über dem Mittel, also gerade den, in
+  dem der Trank zählt. (d) kauft keinen Trank, der in keinem gemessenen Verlauf gebraucht würde, und keinen weniger, als
+  der schwerste Verlauf braucht. Gewählt: (d). Zustände (4) vor die Skala: Sie decken, was LP nicht abfangen, und die
+  Skala wiegt nur LP; vorher verdrängte eine Rüstung mit wenigen Prozent ein Paralyse-Serum, wenn die Marken knapp waren.
+- *6 Falsifikation:* Kein Defekt? Widerlegt an seinem Laden (Rüstung vor Trank). Option falsch? Der Endkampf kann
+  schwerer sein als jeder gemessene – Annahme benannt; sein Endkampf auf Brett 1 lag im Rahmen. Vorrat für spätere Läden:
+  nicht widerlegt, Preis im Konzept. Ausgeliefert, nichts ändert sich? Vor der ersten Messung (alte Reihenfolge) und wo
+  nur Ausrüstung oder nur Tränke im Angebot stehen.
+- *7 Gebaut:* `RankOffers`: Zustände vor der Skala; `ChooseOnScale`/`ScaleFrom` (Startwahl, Wert je Marke, Skala nach
+  jedem Stück neu); `OfferScale` mit gehaltenen Heilgegenständen und Obergrenze, auch im Schatz.
+- *9 Dokumentation:* Konzept 21 K10 (Liste, „Eine Skala, sobald ein Kampf gemessen ist", „Warum die Zustände vor der
+  Skala", Gegenthese), K13 (Laden, Obergrenze); TODO-Eintrag entfernt.
+
+*Prüfgrad:* Compile ohne Warnung; Prüfskripte. Im Spiel nicht beobachtet; jede Liste steht als „crucible shop: … recommends
+…" in der Spur.
+
 ## B · Commit-Register (Fork vs. `upstream/main`)
 
 ### B1 · Einzelgeprüfte Fork-Commits
