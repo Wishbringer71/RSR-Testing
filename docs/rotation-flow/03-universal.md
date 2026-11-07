@@ -1554,7 +1554,9 @@ KI, sobald nichts hält, weil sie den Kanal nicht kennt – eine Freigabe im Kan
 - *Alle Kanäle:* Die Häkchen kennen drei der Kanäle, die beim Gehen enden. Numinosum (Astrologe; „Don't break Collective
   Unconscious" schützt ihn nur vor eigenen Aktionen) und Meditieren (Samurai) fehlen, dazu die des Blaumagiers. Ein Häkchen
   je solchem Kanal, gegen den Wirktext der Spielblätter in der CI gehalten, schließt die Lücke; was ein neuer Patch
-  hinzufügt, meldet die Prüfung.
+  hinzufügt, meldet die Prüfung. Voreinstellung (wirksam erst mit der Sperre selbst, die ab Werk aus ist): Numinosum an,
+  weil es wie Waffengang die Gruppe vor einem angekündigten Treffer schützt und KK es nur dann hält; Meditieren aus, weil
+  es Leerlauf füllt, in dem der Samurai zum nächsten Ziel geht, und die Sperre ihn sonst festhielte.
 
 **Ergebnis:** B ist nicht das Optimum, und H aus der vorigen Prüfung auch nicht. Am besten ist **H2**: Im Zauber endet die
 Sperre mit der Antwort des Spiels (S) und hält nicht, solange BossMod dich bewegt (BZ) oder dein Ort in Gefahr ist (G);
