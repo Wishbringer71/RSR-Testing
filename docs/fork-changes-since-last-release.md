@@ -54,6 +54,10 @@ What this release changes in the fight. For the whole distance from upstream, se
   with 522 HP took 1,304 to 1,600 each. RSR now measures what its damage items deal per potency on their hits and counts
   each enemy at most at its HP left - in a fight ahead at the most HP it saw that kind with -, so an item waits for the
   fight where it is not wasted.
+- **An enemy that has not hit yet counts with its kind.** Before its first hit an enemy ranked by the mean danger of the
+  fight's other enemies, even when another of its kind had hit already: a second Aetheric Charge stood like an average
+  enemy. It now counts with the danger its kind showed in this area - each enemy measured until it fell -; only enemies
+  that stood in the target list count, not hidden helpers carrying a boss's name.
 - **The way window plans a flight.** With a Beastly Smokebomb held, the way window weighs fighting and fleeing at each
   enemy space ahead and names the fight to flee ("Flee the fight at move 5 with a smoke bomb"); elites and bosses cannot
   be fled. While the Coward's Knife is worn it tells you to take the escape when offered. A treasure counts two items

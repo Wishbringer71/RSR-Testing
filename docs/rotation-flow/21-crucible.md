@@ -169,6 +169,30 @@ Dullahan, Golem, Spriggan und Eisgolem (`XBMPet.InflictsInterrupt`).
   verrauschte Messung ließe das Ziel springen – der Wechsel verlangt einen Unterschied über ihrer Unsicherheit. Nichts
   ändert sich? Im Crucible überschreibt heute A525 die Zielart; die neue Regel tritt dort an ihre Stelle, die Spur nennt
   jeden Wechsel mit Grund.
+  *Gegner, die erst später schaden (A674; Quelle A667):* Auf Brett 2 setzt der Taurus mit Ray of Ignorance eine Aetheric
+  Charge auf dich, die in Ringen von 6, 12 und 18 Yalm platzt, hohen Magieschaden macht und Damage Down legt (BMR
+  27be422 `TaurusPiece.AethericCharge`, CrucibleSux-Recherche 12; Tekz' Modul reiht sie hinter die Ahrimane, deren Blick
+  Verhängnis legt und die sich selbst sprengen). Die Charge wirkt ihre Platzer selbst (48146–48148, je 1,5 s Wirkzeit;
+  BMR 27be422), zwölf im Abstand von 3,07 s, je vier auf 6, 12 und 18 Yalm (Tekz `AethericChargeBursts`); sie ist
+  angreifbar (Tekz-Vorrang 3). Ihre Treffer zählen damit bei ihr selbst. Bis zum ersten Platzen hat sie nicht getroffen
+  und zählt in K3 wie jeder Ungemessene das Mittel der übrigen. *Was gilt:* Ein ungemessener Gegner zählt zuerst mit der gemessenen Gefahr seiner Art
+  in diesem Gebiet (Konzept 03, „Ungemessene Gegner", A674) – die zweite Charge eines Kampfs, und jede in einem späteren
+  Kampf desselben Bretts, steht damit von ihrem Erscheinen an mit der Gefahr der ersten. Die erste zählt bis dahin mit dem
+  Mittel des Kampfs, nach dem Blatt gewichtet (A582), und mit ihrem Wirken, sobald sie es ankündigt. *Offen (TODO
+  „Crucible-Zielfolge"):* Königs-Ahriman auf dem Zweiten Meisterbrett (Elite 4, Zug 13 rechts). Roulette bindet dich
+  neben eine Final Hourglass (BNpcName 14689) und setzt eine namenlose Nadel in die Mitte (BNpcBase 19738), die nur
+  entlang der vier Achsen zeigt und alle 1,56 s eine Vierteldrehung weiterrückt. Bricht die Sanduhr, feuert der nächste
+  Tick Death (49422, Kegel, 23 Yalm laut Blatt) entlang der Nadel; Death legt Verhängnis, das sich nicht entfernen lässt
+  und in GluttonyCombos Aufzeichnungen sechsmal von sechs tötete. Ungebrochen traf Death ebenfalls, als ihr Wirken von
+  rund 25 s endete (GluttonyCombo cb5bf32, 07.11.2026: `BST_CrucibleLogic.HourglassNeedleHold`, `BST_CrucibleData`,
+  Lauf vom 03.10.2026; Werkzeugquelle, die Halteregel dort laut Versionshinweis im Spiel unbestätigt; Icy Veins: „The
+  hourglass cleaves in the cursor's direction when it dies"; Tekz: Sanduhr Vorrang 6, Nadel −1). Zu bauen: Die Sanduhr
+  fällt früh, aber der brechende Schlag nicht, solange ein Tick nach dem Bruch den Kegel auf dich richtet. *Gegenthesen A674:* (1) Eine Art schadet je Kampf anders. Widerlegt: Gezählt
+  wird ihre Gefahr je Sekunde bis zum Fall, über ihre ganze Lebenszeit – genau die Größe, nach der K3 reiht –, und die
+  eigene Messung ersetzt sie mit dem ersten Treffer; ein anderes Brett ist ein anderes Gebiet. (2) Ein gefallener Gegner
+  verdünnte seine Art über die Zeit nach seinem Tod. Beseitigt: Seine Zeit endet, wo er zuletzt in der Gegnerliste stand
+  oder traf. (3) Unsichtbare Helfer mit dem Namen des Bosses machten die Art des Bosses zur Summe von Einzeltreffern über
+  je einen GCD. Beseitigt: Es zählen nur Gegner, die in der Gegnerliste standen.
 - *K4 – Unterbrechen* (A583). Unterbrochen wird über Borrow: Bei einem Seelen-Begleiter wird Bestienmodus zu Soul Crush,
   „Interrupts the use of a target's action", bei Erfolg 1.000 statt 300 Potenz und 100 TP (Wirktext 44902, xivapi v2).
   Seelen-Begleiter sind die vier, die `XBMPet.InflictsInterrupt` markiert: Dullahan, Golem, Spriggan, Eisgolem

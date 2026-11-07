@@ -19800,6 +19800,38 @@ Sechstes Paar aus TODO „Crucible-Wechselwirkungen, Stufe 2", dazu die Bewertun
 *Prüfgrad:* Compile ohne Warnung, Prüfskripte; Regex an allen fünf Rohtexten, Schutz je Zustand am Blatt. Im Spiel nicht
 beobachtet.
 
+### A674 · Gefahrenfolge: Art vor Mittel; Aetheric Charge und Sanduhr recherchiert (07.11.2026)
+
+Erster Teil des TODO „Crucible-Zielfolge" (Quelle A667), mit seinem Auftrag, weitere Quellen und Plugins zu suchen.
+
+- *1 Research:* BMR 27be422 `TaurusPiece`: Die Aetheric Charge (BNpcBase 0x4C55) wirkt Burst1–3 (48146–48148, 1,5 s,
+  6/12/18 Yalm) selbst; Tekz `AethericChargeBursts`: zwölf Platzer im Abstand von 3,07 s, je vier je Größe, Vorrang 3.
+  Code: Ein ungemessener Gegner zählte in `EnemyDanger.Priority` das Mittel der übrigen (A582), auch wenn eine Charge
+  derselben Art schon getroffen hatte.
+- *Gebaut (Konzept 03 „Ungemessene Gegner", Konzept 21 K3):* `KindRate` – Gefahr je Sekunde der Art (NameId) aus diesem
+  Gebiet, lebende Gegner dieses Kampfs und die beim Leeren gefalteten früherer Kämpfe, vor dem Mittel des Kampfs;
+  Unsicherheit über die Treffer der Art. Die Zeit eines Gegners endet, wo er zuletzt in der Gegnerliste stand oder traf
+  (`Seen` je Aktualisierung, `Last`); es zählen nur Gegner, die in der Liste standen.
+- *5 Review (beim Gegenlesen des eigenen Entwurfs):* Die erste Fassung teilte den Schaden eines gefallenen Gegners durch
+  die Zeit bis zum Leeren und zählte unsichtbare Helfer mit dem Namen des Bosses (je ein Treffer über einen GCD); beides
+  vor dem Commit beseitigt. Der Bezug auf die Sitzung wurde zum Gebiet: derselbe Name schadet in Inhalten anderer Stufe
+  anders.
+- *6 Falsifikation:* Kein Defekt? Die zweite Charge stand wie ein Durchschnittsgegner, obwohl ihre Art gemessen war.
+  Option falsch? Das Blatt-gewichtete Mittel (A582) kennt die Art nicht; die Messung der Art ist näher. Ausgeliefert,
+  nichts ändert sich? Nur, wenn die Treffer nicht bei der Charge zählten – sie wirkt die Platzer selbst (BMR) – oder sie
+  nicht angreifbar wäre (Tekz-Vorrang 3).
+- *Sanduhr (Königs-Ahriman) recherchiert, offen:* GluttonyCombo cb5bf32 (07.11.2026, BSD-3) belegt die Mechanik aus
+  Aufzeichnungen: Roulette bindet dich neben die Final Hourglass (BNpcName 14689), die Nadel (BNpcBase 19738) zeigt nur
+  entlang der Achsen und tickt alle 1,5605 s, dreht 0,49 s danach um −90°; der Tick nach dem Bruch feuert Death (49422,
+  Kegel 23 Yalm laut Blatt) mit Verhängnis 5421 (6 s, nicht entfernbar, 6 von 6 tödlich); Bruch 0,3–1,4 s nach dem
+  Druck; ungebrochen traf Death bei Wirkende (~24,7 s). Icy Veins (Suchauszug) und Tekz (Sanduhr 6, Nadel −1)
+  stützen es. Die bisherige Konzeptzeile „belegt keine Quelle" ist damit überholt und ersetzt; die Regel folgt im eigenen
+  Loop (TODO „Crucible-Zielfolge: Final Hourglass und Roulette"), vor dem Rest von Stufe 2, weil es um einen sicheren Tod
+  geht.
+
+*Prüfgrad:* Compile ohne Warnung, Prüfskripte; Quellen am Quelltext (BMR, Tekz, GluttonyCombo) und an xivapi (Aktionen
+49418–50940, BNpcName 14689). Im Spiel nicht beobachtet.
+
 ## B · Commit-Register (Fork vs. `upstream/main`)
 
 ### B1 · Einzelgeprüfte Fork-Commits

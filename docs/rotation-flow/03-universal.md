@@ -896,7 +896,15 @@ Seine eingestellte Zielart gilt dann nicht, auch ohne Option.
   Sukkubus-Magierin (2.020 LP; laut Blatt stärkt sie die anderen) zurück auf die Seelenlose (10.409 LP), deren einer
   gemessener Treffer unter 1 LP je Sekunde ergab. Mit dem Blatt (Seelenlose 5, Magierin 2) steht die Magierin mit 40 %
   der Gefahr der Seelenlose bei einem Fünftel ihrer LP vorn. Hat noch kein Gegner getroffen, gilt wie bisher das Blatt
-  allein, außerhalb wenigste LP.
+  allein, außerhalb wenigste LP. *Art vor Mittel (A674):* Hat in diesem Gebiet schon ein Gegner derselben Art (Name)
+  getroffen – in diesem Kampf oder einem früheren –, gilt zuerst die gemessene Gefahr der Art (Mittel über ihre gemessenen
+  Gegner), ihre Unsicherheit die ihrer Treffer; erst ohne sie das Mittel des Kampfs. Grund: Eine zweite Aetheric Charge
+  (Konzept 21, K3) oder ein zweites Irrlicht zählte das Mittel fremder Gegner, obwohl seine Art schon gemessen war.
+  Gemessen wird je Gegner seine Gefahr je Sekunde bis zu seinem Fall: vom ersten Treffer bis zuletzt in der Gegnerliste
+  gesehen oder zuletzt getroffen – ein gefallener Gegner verdünnt sich nicht über die Zeit nach seinem Tod. Es zählen nur
+  Gegner, die in der Gegnerliste standen; unsichtbare Helfer, die den Namen ihres Bosses tragen und je einmal treffen,
+  blähten die Art sonst auf. Das Gebiet grenzt die Art ein, weil derselbe Name in einem Inhalt anderer Stufe anders
+  schadet.
 - *Vorrang* = Gefahr je Sekunde ÷ LP. Bei gleicher Gefahr ist das „wenigste LP zuerst".
 - *Wechsel nur über der Messunsicherheit:* Der Gegner, den er gerade angreift, bleibt, bis ein anderer sicher dringender
   ist: dessen Vorrang abzüglich seiner Unsicherheit über dem eigenen zuzüglich dessen. Die Unsicherheit eines gemessenen

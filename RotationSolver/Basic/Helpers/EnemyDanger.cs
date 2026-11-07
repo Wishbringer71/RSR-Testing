@@ -26,9 +26,35 @@ internal static class EnemyDanger
 		public int Hits;
 		public double Healed;
 		public double HealGain;
+		public uint NameId;
+		public ulong Source;
+		public uint Area;
+
+		// A674: whether it stood among the hostile targets, and the last moment it did so or hit - where its time ends once
+		// it has fallen.
+		public bool Listed;
+		public DateTime Last;
 	}
 
 	private static readonly Dictionary<ulong, Record> _bySource = [];
+
+	// A674: per enemy kind (name), the danger per second of its enemies measured in this session's earlier fights - the sum of
+	// their rates, how many, and their hits.
+	private static readonly Dictionary<uint, (double Rate, int Enemies, int Hits)> _byKind = [];
+	private static uint _byKindIn;
+
+	private static Record NewRecord(ulong source)
+	{
+		var now = DateTime.Now;
+		return new Record
+		{
+			First = now,
+			Last = now,
+			Source = source,
+			Area = DataCenter.TerritoryID,
+			NameId = Svc.Objects.SearchById(source) is IBattleChara chara ? chara.NameId : 0u,
+		};
+	}
 
 	/// <summary>An enemy's hit on the player or a party member, for <paramref name="amount"/> HP. Effect handler.</summary>
 	internal static void RecordHit(ulong source, uint amount)
@@ -40,12 +66,32 @@ internal static class EnemyDanger
 
 		if (!_bySource.TryGetValue(source, out var record))
 		{
-			record = new Record { First = DateTime.Now };
+			record = NewRecord(source);
 			_bySource[source] = record;
 		}
 
 		record.Damage += amount;
 		record.Hits++;
+		record.Last = DateTime.Now;
+	}
+
+	/// <summary>A674: the hostile targets of this update - each one with a record stands in the list now.</summary>
+	internal static void Seen(List<IBattleChara> hostiles)
+	{
+		if (_bySource.Count == 0)
+		{
+			return;
+		}
+
+		var now = DateTime.Now;
+		foreach (var hostile in hostiles)
+		{
+			if (hostile != null && _bySource.TryGetValue(hostile.GameObjectId, out var record))
+			{
+				record.Listed = true;
+				record.Last = now;
+			}
+		}
 	}
 
 	/// <summary>
@@ -62,7 +108,7 @@ internal static class EnemyDanger
 
 		if (!_bySource.TryGetValue(source, out var record))
 		{
-			record = new Record { First = DateTime.Now };
+			record = NewRecord(source);
 			_bySource[source] = record;
 		}
 
@@ -83,11 +129,63 @@ internal static class EnemyDanger
 		return _bySource.TryGetValue(source, out var record) && (record.Hits > 0 || record.Healed > 0d);
 	}
 
-	/// <summary>Forgets every record: out of combat, or when the lists are cleared.</summary>
+	/// <summary>
+	/// Forgets every record: out of combat, or when the lists are cleared. A674: what each enemy with a hit showed stays for its
+	/// kind, for the enemies of that kind still unmeasured.
+	/// </summary>
 	internal static void Clear()
 	{
+		foreach (var (_, record) in _bySource)
+		{
+			if (record.Hits > 0 && record.NameId != 0u && record.Listed)
+			{
+				// The kinds hold for one area: the same name in content of another level deals other damage.
+				if (record.Area != _byKindIn)
+				{
+					_byKind.Clear();
+					_byKindIn = record.Area;
+				}
+
+				var (rate, enemies, hits) = _byKind.TryGetValue(record.NameId, out var known) ? known : default;
+				_byKind[record.NameId] = (rate + ((record.Damage + record.HealGain) / Elapsed(record)), enemies + 1, hits + record.Hits);
+			}
+		}
+
 		_bySource.Clear();
 		_lead = 0;
+	}
+
+	// A674: the danger per second of enemies of this kind measured in this area - its other enemies in this fight and
+	// those of earlier fights, each until it fell -, and their hits; false when none of the kind has hit.
+	private static bool KindRate(IBattleChara enemy, out float rate, out int hits)
+	{
+		rate = 0f;
+		hits = 0;
+		if (enemy.NameId == 0u)
+		{
+			return false;
+		}
+
+		var (sum, enemies, kindHits) = _byKindIn == DataCenter.TerritoryID && _byKind.TryGetValue(enemy.NameId, out var known)
+			? known : default;
+		hits = kindHits;
+		foreach (var (source, record) in _bySource)
+		{
+			if (source != enemy.GameObjectId && record.NameId == enemy.NameId && record.Hits > 0 && record.Listed)
+			{
+				sum += (record.Damage + record.HealGain) / Elapsed(record);
+				enemies++;
+				hits += record.Hits;
+			}
+		}
+
+		if (enemies == 0 || sum <= 0d)
+		{
+			return false;
+		}
+
+		rate = (float)(sum / enemies);
+		return true;
 	}
 
 	/// <summary>
@@ -117,10 +215,12 @@ internal static class EnemyDanger
 		return _bySource.TryGetValue(enemy, out var record) ? (float)(record.Damage / Elapsed(record)) : 0f;
 	}
 
-	// From the first hit to now, at least a GCD: one hit right now is no rate of its own.
+	// From the first hit to now, at least a GCD: one hit right now is no rate of its own. A674: an enemy that stood in the
+	// hostile list and is gone from it has fallen (or left), and its time ends where it was last seen or hit.
 	private static double Elapsed(Record record)
 	{
-		return Math.Max((DateTime.Now - record.First).TotalSeconds, DataCenter.DefaultGCDTotal);
+		var end = record.Listed && !DataCenter.AllHostileTargetIds.Contains(record.Source) ? record.Last : DateTime.Now;
+		return Math.Max((end - record.First).TotalSeconds, DataCenter.DefaultGCDTotal);
 	}
 
 	// A hit the enemy announces by its cast now: at the player, or reaching him, with the share the learned tables give
@@ -176,6 +276,13 @@ internal static class EnemyDanger
 
 		var rate = Rate(enemy, out var hits, out var announced);
 		uncertainty = announced || hits == 0 ? 0f : 1f / MathF.Sqrt(hits);
+
+		// A674: an enemy that has not hit yet counts first with the danger its kind showed in this session.
+		if (rate <= 0f && KindRate(enemy, out var kind, out var kindHits))
+		{
+			rate = kind;
+			uncertainty = 1f / MathF.Sqrt(kindHits);
+		}
 
 		// A582: an enemy that has not hit yet, while others have, counts with the danger estimated from theirs - not 0, which
 		// lost to every measured enemy however small its rate.

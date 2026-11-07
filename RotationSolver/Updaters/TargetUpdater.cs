@@ -516,6 +516,9 @@ internal static partial class TargetUpdater
 		{
 			_ = DataCenter.AllHostileTargetIds.Add(hostile.GameObjectId);
 		}
+
+		// A674: which enemies with a danger record still stand in the list, so a fallen one's rate ends with it.
+		EnemyDanger.Seen(hostileTargets);
 	}
 
 	private static List<IBattleChara> GetAllTargets()
