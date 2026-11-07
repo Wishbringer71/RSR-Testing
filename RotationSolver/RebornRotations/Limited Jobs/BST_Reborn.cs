@@ -1245,14 +1245,16 @@ public sealed class BST_Reborn : BeastmasterRotation
 
 		// C1 (concept 01, A491): a Release that stops every enemy of a pack attacking you protects like one that lowers
 		// the damage you take.
-		return SafeBy(familiar, EffectiveNature(horn), StopsAttackers(familiar, CurrentTarget),
+		// K5 stage 2 (A644): one that lowers their accuracy by a stated figure, where it lands, too.
+		return SafeBy(familiar, EffectiveNature(horn), StopsAttackers(familiar, CurrentTarget) || LowersAttackersAccuracy(familiar),
 			BattlehornMasteryIiTrait.EnoughLevel || !TemperedReleasePvE.Cooldown.IsCoolingDown,
 			BattlehornMasteryIiiTrait.EnoughLevel || !BorrowPvE.Cooldown.IsCoolingDown);
 	}
 
 	// Whether `familiar` heals or protects you on a horn that spends One with Nature on `nature`: its Trick heals, once the
-	// player has Trick, or the action the horn spends it on heals, protects, or stops the attackers (`stops`), as far as
-	// that action comes with the call. One judgement for B2 in a fight and B5 before it.
+	// player has Trick, or the action the horn spends it on heals, protects, or holds the attackers off (`stops`: stops
+	// them, or lowers their accuracy by a stated figure - K5 stage 2, A644), as far as that action comes with the call. One
+	// judgement for B2 in a fight and B5 before it.
 	private bool SafeBy(FamiliarProfile familiar, OneWithNatureOrder nature, bool stops, bool releaseComes, bool borrowComes)
 	{
 		return (familiar.TrickHeals && TrickPvE.Info.EnoughLevelAndQuest())
@@ -2014,17 +2016,19 @@ public sealed class BST_Reborn : BeastmasterRotation
 	}
 
 	// K5 (A589): a stopping Release protects before a battle only when no enemy of it resists the stop by the sheet.
-	private static bool OpenToStop(FamiliarProfile familiar, CrucibleBoard.Enemy[]? battle)
+	private static bool OpenToStop(FamiliarProfile familiar, CrucibleBoard.Enemy[]? battle) => OpenTo(battle, StopOf(familiar));
+
+	// K5 (A589, A644): whether no enemy of the battle resists `ailment` by the sheet; true without a battle.
+	private static bool OpenTo(CrucibleBoard.Enemy[]? battle, CrucibleBoard.Ailment ailment)
 	{
 		if (battle == null)
 		{
 			return true;
 		}
 
-		var stop = StopOf(familiar);
 		foreach (var enemy in battle)
 		{
-			if (CrucibleBoard.Resists(enemy, stop) == true)
+			if (CrucibleBoard.Resists(enemy, ailment) == true)
 			{
 				return false;
 			}
@@ -2046,7 +2050,9 @@ public sealed class BST_Reborn : BeastmasterRotation
 
 		var nature = EffectiveNature(horn);
 		var stops = !boss && familiar.ReleaseStops && familiar.ReleaseRadius > 0f && OpenToStop(familiar, battle);
-		var safe = SafeBy(familiar, nature, stops, releaseComes: true, borrowComes: true);
+		// K5 stage 2 (A644): a Release that lowers the enemies' accuracy by a stated figure protects where none resists Blind.
+		var blinds = familiar.ReleaseLowersAccuracy && OpenTo(battle, CrucibleBoard.Ailment.Blind);
+		var safe = SafeBy(familiar, nature, stops || blinds, releaseComes: true, borrowComes: true);
 		var trickHeals = familiar.TrickHeals && TrickPvE.Info.EnoughLevelAndQuest();
 		var fitting = safe && (boss ? trickHeals : stops && nature == OneWithNatureOrder.Tempered);
 		var damage = TrickPvE.Info.EnoughLevelAndQuest()

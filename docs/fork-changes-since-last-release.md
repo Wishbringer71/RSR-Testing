@@ -501,6 +501,10 @@ What this release changes in the fight. For the whole distance from upstream, se
   enemy kinds on a board cast spells the game marks interruptible (`InterruptibleCasterKinds.json`). Before a
   fight with such a kind, a Soulkin familiar on a horn set to Borrow - its Soul Crush interrupts - counts on
   the horn screen ahead of damage, and the team recommendation includes one when a fight of the board needs it.
+- **A familiar that lowers the enemies' accuracy by a stated figure protects (Crucible and outside).** Sticky Tongue and
+  Ultrasonics state "Reduces target(s)' accuracy by 10%"; such a Tempered Release now counts as protection in the danger
+  swap, between fights and on the horn screen - on a board only where no enemy resists Blind by the sheet. Slow,
+  Paralysis and Blind without a figure still count as damage only.
 - **A stunning or petrifying familiar counts only against enemies it can stop (Crucible).** The game
   states for every enemy of the boards which statuses it resists; most elites and every final boss shrug
   off a stun. A Tempered Release that stuns, petrifies or deep-freezes no longer counts as protection on

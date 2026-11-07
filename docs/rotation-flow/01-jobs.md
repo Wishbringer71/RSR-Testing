@@ -2232,10 +2232,29 @@ Dullahan, Golem, Spriggan und Eisgolem (`XBMPet.InflictsInterrupt`).
     *Gegenthese 1:* Ein Gegner fehlt im Blatt (Zufallsfeld). Dann gilt wie bisher die gelernte Immunität. *Gegenthese 2:*
     Das Blatt irrt. Die gelernte Immunität bleibt daneben; ein Gegner, den das Blatt offen nennt und der doch abwehrt,
     fällt nach dem ersten Versuch heraus wie bisher.
-  - *Offen, Stufe 2:* Slow, Blind, Paralysis, Sleep und Death gegen Anfällige als Schutz werten. Ihre Wirkung beziffert
-    kein Text (die Entfesseln sagen „slows", „blinds", „paralyzes", „may doom"), und Sleep endet am nächsten Schaden, den
-    die Flächen des Beastmaster sofort setzen. Poison, Heavy und Bind schützen nicht: Gift ist Schaden, Gewicht und Fessel
-    halten nur die Bewegung.
+  - *Gebaut, Stufe 2 (A644) – gesenkte Treffsicherheit zählt als Schutz, wo sie beziffert ist:* Zwei Entfesseln nennen
+    eine Zahl: Sticky Tongue („Reduces target's accuracy by 10%", 44996) und Ultrasonics („Reduces targets' accuracy by
+    10%", 44972; ActionTransient, xivapi v2, 07.11.2026); `XBMPet` führt beide Begleiter als `InflictsBlind`. Ein solches
+    Entfesseln zählt in B2, B5 und im Hornfenster (K6) wie eines, das schützt – die getroffenen Gegner treffen laut
+    Wirktext um 10 % schlechter, eine Größe wie die der Schutzentfesseln (Water Wall: magische Verwundbarkeit −20 %) –,
+    im Crucible aber
+    nur, wenn kein Gegner des Kampfes (vor ihm) bzw. keiner der kämpfenden Gegner (in ihm) laut `BNpcResist` Blind abwehrt.
+    Außerhalb des Crucible kennt RSR keine Abwehr und zählt es.
+    - *Im Kampf:* Vor einem Rudel aus Gegnern, die Blind nicht abwehren, und einer Gefahr im Gebiet setzt das Hornfenster
+      einen Begleiter mit Ultrasonics als den verlangten schützenden, wenn keiner da ist, der heilt, schützt oder stoppt;
+      bisher zählte er nur mit seinem Schaden, und das Horn blieb ohne Schutz.
+  - *Nicht gebaut, mit Grund:* Slow (Regurgitate, Bad Breath, Formic Pheromones), Paralysis (Pins and Nails, Charged
+    Whisker, Bad Breath) und Blind ohne Zahl beziffert kein Text („Afflicts targets with Slow"; die Statustexte 9, 15, 17
+    nennen keine Größe). Als Schutz gezählt, könnten sie einen Begleiter vom Horn drängen, der nachweislich heilt oder
+    schützt – im Kampf ein Verlust an Sicherheit, den kein Beleg aufwiegt; als Schaden zählen sie weiter. Formic Pheromones
+    mindert zwar Wasser, Erde und Eis um 15 %, zählt aber nach C2 nicht: Eine Minderung, die Elemente nennt, hält
+    physischen Schaden nicht ab. Sleep endet am nächsten
+    Schaden, den die Flächen des Beastmaster sofort setzen; Death („may doom", „Occasionally reduces enemy HP to a single
+    digit") ist ein zufälliger Fall des Gegners, also Schaden. Poison, Heavy und Bind schützen nicht: Gift ist Schaden,
+    Gewicht und Fessel halten nur die Bewegung.
+  - *Gegenthese (ausgeliefert, und nichts ändert sich):* Ohne einen der beiden Begleiter im Kader, auf einem Horn ohne
+    Entfesseln oder gegen Gegner, die Blind abwehren – die Endgegner wehren fast alles ab außer Poison, Blind oder Heavy,
+    dort zählt es also.
 - *K6 – Hörner vor dem Kampf belegen.* B5 setzt die Hörner zwischen den Kämpfen per Serverbefehl, im Crucible bisher
   nicht. Im Brett öffnet das Spiel vor jedem Kampf das Hornfenster (`XBMPetParty`, `AgentXBMPetParty.Mode` 2); es
   behält die Hörner nicht zwischen den Kämpfen und füllt sie selbst nur bei höchstens drei im Team (Daedalus 74659a6,

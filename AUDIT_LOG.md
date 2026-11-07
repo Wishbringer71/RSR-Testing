@@ -18813,6 +18813,27 @@ habe den schleim bislang nicht anfreunden können."
 - *8 Nachweis:* Compile (0 Warnungen); im Spiel nicht gesehen.
 - *9 Dokumentation:* Konzept 01 K11 Stufe 3; TODO: Schritt K11 geschlossen.
 
+### A644 · Crucible K5 Stufe 2: gesenkte Treffsicherheit mit Zahl zählt als Schutz; Slow, Paralysis, Blind ohne Zahl nicht (07.11.2026)
+
+- *Anlass:* TODO „Beastmaster: Crucible-Strategien", Schritt „K5 Stufe 2 (Slow, Blind, Paralysis, Sleep, Death als
+  Schutz, sobald eine Bezifferung belegt ist)"; sein Auftrag vom 07.11.2026.
+- *1 Research:* Statustexte ohne Größe (Status 9, 1346, 3493 Slow; 15 Blind; 17 Paralysis; 3 Sleep; 210 Doom). Die
+  Entfesseln der Begleiter (ActionTransient, xivapi v2, 07.11.2026): Sticky Tongue 44996 und Ultrasonics 44972 „Reduces
+  target(s)' accuracy by 10%"; Regurgitate 44982, Bad Breath 45012, Formic Pheromones 45008 (Slow), Pins and Nails 44944,
+  Charged Whisker 45000 (Paralysis) ohne Größe. `XBMPet` (ffxiv-datamining): InflictsSlow 3, InflictsBlind 5,
+  InflictsParalysis 3, InflictsSleep 2, InflictsDeath 3 Begleiter.
+- *2–6:* (a) die gesenkte Treffsicherheit mit Zahl als Schutz, gegen Anfällige; (b) alle fünf Zustände als Schutz; (c)
+  ihre Wirkung selbst messen (Schaden je Sekunde der Gegner mit und ohne Zustand). (b) verdrängte ohne Beleg einen
+  Begleiter, der nachweislich heilt oder schützt. (c) braucht je Zustand Gegner mit und ohne ihn und je Zustand drei
+  Begleiter von fünfzig; bis zu einer belastbaren Zahl zählen sie als Schaden, ohne Sicherheitsverlust – nicht gebaut.
+  Sleep endet am Flächenschaden, Death ist ein zufälliger Fall (Schaden). Gegenthese 3: ohne einen der beiden Begleiter,
+  ohne Entfesseln-Horn oder gegen Blind-Abwehr ändert sich nichts.
+- *7 Gebaut:* `FamiliarProfile.ReleaseLowersAccuracy` aus dem Wirktext; `LowersAttackersAccuracy` (Kampf: keiner der
+  kämpfenden Gegner wehrt Blind ab); `OpenTo` (vor dem Kampf, mit `OpenToStop` geteilt); `HornIsSafe` und `Option` zählen
+  es als Abhalten (`SafeBy`).
+- *8 Nachweis:* Compile (0 Warnungen); im Spiel nicht gesehen.
+- *9 Dokumentation:* Konzept 01 K5 Stufe 2; TODO: Schritt geschlossen; Release-Text.
+
 ## B · Commit-Register (Fork vs. `upstream/main`)
 
 ### B1 · Einzelgeprüfte Fork-Commits

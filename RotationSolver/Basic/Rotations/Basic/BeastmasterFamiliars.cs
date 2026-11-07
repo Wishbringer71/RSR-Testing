@@ -32,9 +32,12 @@ namespace RotationSolver.Basic.Rotations.Basic;
 /// none.</param>
 /// <param name="AutoId">The action of its auto-attack (XBMPet's Action column, A586); 0 when the sheet's column could not be
 /// told.</param>
+/// <param name="ReleaseLowersAccuracy">The Tempered Release states a lower accuracy of the enemies it hits, with a figure
+/// ("Reduces targets' accuracy by 10%"; concept 01, K5 stage 2, A644).</param>
 public sealed record FamiliarProfile(BeastmasterPet Pet, uint TrickId, uint ReleaseId, float TrickRadius, float TrickPotency,
 	bool TrickHeals, bool ReleaseHeals, bool ReleaseProtects, bool ReleaseRetreats, bool ReleaseStops, bool ReleaseStopsByStun,
-	float ReleaseRadius, float ReleasePotency, bool ReleaseHurtsParty, bool BorrowProtects, StatusID TrickHeart, uint AutoId = 0);
+	float ReleaseRadius, float ReleasePotency, bool ReleaseHurtsParty, bool BorrowProtects, StatusID TrickHeart, uint AutoId = 0,
+	bool ReleaseLowersAccuracy = false);
 
 public partial class BeastmasterRotation
 {
@@ -245,6 +248,29 @@ public partial class BeastmasterRotation
 	/// at least two of them in combat, each within its radius of <paramref name="target"/>, none with a boss icon, and for
 	/// a stun none immune or stunned since its last immunity (the next stun is halved).
 	/// </summary>
+	/// <summary>
+	/// Whether the lower accuracy <paramref name="profile"/>'s Tempered Release states lands on the enemies in combat: none of
+	/// them resists Blind by the sheet (concept 01, K5 stage 2, A644). Outside the Crucible no resistance is known.
+	/// </summary>
+	public static bool LowersAttackersAccuracy(FamiliarProfile profile)
+	{
+		if (!profile.ReleaseLowersAccuracy)
+		{
+			return false;
+		}
+
+		foreach (var hostile in DataCenter.AllHostileTargets)
+		{
+			if (hostile != null && !hostile.IsDead && hostile.InCombat()
+				&& CrucibleBoard.Resists(hostile.NameId, CrucibleBoard.Ailment.Blind) == true)
+			{
+				return false;
+			}
+		}
+
+		return true;
+	}
+
 	public static bool StopsAttackers(FamiliarProfile profile, IBattleChara? target)
 	{
 		return StopsPack(profile, target, false);
@@ -838,7 +864,8 @@ public partial class BeastmasterRotation
 				&& releaseText.Contains("inflicts damage over time", StringComparison.Ordinal),
 			BorrowProtects: Protects(borrowText, string.Empty),
 			TrickHeart: HeartOf(trickText),
-			AutoId: row.AutoId);
+			AutoId: row.AutoId,
+			ReleaseLowersAccuracy: releaseText.Contains("accuracy by", StringComparison.Ordinal));
 	}
 
 	// How often an action strikes as its tooltip words it ("a sixfold slashing physical attack"), 1 when it says nothing.
