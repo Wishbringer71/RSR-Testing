@@ -46,6 +46,16 @@ What this release changes in the fight. For the whole distance from upstream, se
   `DefenseTrace.log` with the reason, so a cast that keeps breaking off shows whether RSR or BossMod
   stopped it.
 
+## Casting while BossMod plans to move you
+
+- **No spell that BossMod already knows you must leave.** When BossModReborn reports how long you may still
+  cast before you have to move (its cast limit: set by its movement module from the leeway on its path, and to
+  zero while a knockback is pending or casts are held), RSR no longer starts a spell that lasts longer -
+  BossMod's own rotation skips such spells the same way. An instant GCD goes instead. Before, the spell started
+  and was broken by the move, or, with `Lock movement while casting`, held you in place past the leeway. While
+  you hold a movement key yourself, that zero is not counted, so the movement lock works as you set it. Each
+  time a spell is held for this, `DefenseTrace.log` writes one line.
+
 ## When the pack is about to fall
 
 - **Time to kill now runs until the last enemy falls.** An action's time-to-kill threshold, and every rule

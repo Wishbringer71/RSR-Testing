@@ -26,5 +26,9 @@ internal static class BMRInfo_IPCSubscriber
 	[EzIPC("Hints.MaxCastTime", true)]
 	internal static readonly Func<float>? MaxCastTime;
 
+	// Whether the player holds a movement key; BossMod then sets MaxCastTime to zero (AIHintsBuilder.Update).
+	[EzIPC("Movement.IsMoveRequested", true)]
+	internal static readonly Func<bool>? IsMoveRequested;
+
 	internal static void Dispose() => IPCSubscriber_Common.DisposeAll(_disposalTokens);
 }

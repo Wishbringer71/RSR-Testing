@@ -5239,6 +5239,13 @@ internal static class DataCenter
 	public static float BMRMaxCastTime { get; set; } = float.MaxValue;
 
 	/// <summary>
+	/// True while the player holds a movement key, as BossMod reads it (<c>Movement.IsMoveRequested</c>). BossMod
+	/// then sets <see cref="BMRMaxCastTime"/> to zero, which says nothing about danger (concept 03, "Bewegungssperre beim
+	/// Wirken und die KI von BossMod").
+	/// </summary>
+	public static bool BMRMoveRequested { get; set; }
+
+	/// <summary>
 	/// True if BossMod is moving.
 	/// </summary>
 	public static bool BMRIsMoving { get; set; }
@@ -5375,6 +5382,7 @@ internal static class DataCenter
 		BMRForceCancelCast = false;
 		BMRForceCancelCastAI = false;
 		BMRMaxCastTime = float.MaxValue;
+		BMRMoveRequested = false;
 		BMRIsMoving = false;
 		BMRDebugTimelineRaidwide = float.MaxValue;
 		BMRDebugTimelineTankbuster = float.MaxValue;

@@ -1366,6 +1366,38 @@
       "kind": "crucible_item",
       "source": "xivapi v2, XBMItem row 143, language=de, 2026-11-05",
       "note": "Crucible of the Unbroken item (XBMItem, not the Item sheet); RSR reads its kind from the English text (A551 to A553)."
+    },
+    {
+      "de": "Flammenwerfer",
+      "en": "Flamethrower",
+      "identifier": "FlamethrowerPvE",
+      "kind": "action",
+      "source": "game data, xivapi v2 Action 7418 language=de, 2026-11-07",
+      "note": "Machinist channel, 10 s; ends upon using another action or moving (ActionTransient 7418)."
+    },
+    {
+      "de": "Tanzimprovisation",
+      "en": "Improvisation",
+      "identifier": "ImprovisationPvE",
+      "kind": "action",
+      "source": "game data, xivapi v2 Action 16014 language=de, 2026-11-07",
+      "note": "Dancer channel, 15 s; ends upon using another action or moving (ActionTransient 16014)."
+    },
+    {
+      "de": "Wiederbeleben",
+      "en": "Raise",
+      "identifier": "RaisePvE",
+      "kind": "action",
+      "source": "game data, xivapi v2 Action 125 language=de, 2026-11-07",
+      "note": "White Mage raise, 8 s cast."
+    },
+    {
+      "de": "Spontaneität",
+      "en": "Swiftcast",
+      "identifier": "SwiftcastPvE",
+      "kind": "action",
+      "source": "game data, xivapi v2 Action 7561 language=de, 2026-11-07",
+      "note": "Role action of healers and casters: the next spell is cast instantly."
     }
   ]
 }

@@ -18932,6 +18932,51 @@ habe den schleim bislang nicht anfreunden können."
 - *9 Dokumentation:* Konzept 20; TODO: Eintrag entfernt; Archiv bleibt (`archive.py` findet die Konzepte eines Eintrags
   durch Suche, auch in den neuen Dateien).
 
+### A649 · Bewegungssperre gegen BossMods KI: Empfehlung B erweitert geprüft, Hybride, Wurfzeitgrenze beim Zauberbeginn (07.11.2026)
+
+- *Anlass:* seine Frage „empfehlung b erweitert im kritischen loop prüfen. gibt es eine bessere hybride lösung, oder ist
+  die empfehlung das optimum?" (A595).
+- *1 Research:* BossmodReborn 27be422 (05.11.2026): `AIController.Update` geht mitten im Zauber nur bei Spielraum ≤
+  Restwirkzeit − 0,5 s, sonst ab der eigenen Aktionswirkung (`MoveMightInterruptCast = false`, Gleitfenster); der Spielraum
+  ist `ThetaStar.PathLeeway` (Zeitreserve vor verbotenen Flächen auf dem Weg). `MoveMightInterruptCast` gilt nur bei
+  Wirkzeit – Kanäle ohne Balken kennt BossMod nicht. `Movement.IsMoving` = erzwungene Bewegung oder zurückgehaltene Zauber;
+  Setzer der erzwungenen Bewegung: KI, `NormalMovement`, Quest-Kämpfe, FATE, fünf Module, `AIRotationModule` (FRU, M02S,
+  M04S, Ex3). `Hints.MaxCastTime`: Spielraum aus `NormalMovement` (Leeway), null bei gehaltenen Zaubern, anstehendem
+  Rückstoß, Strategie „nur Sofortzauber" und gedrückter Bewegungstaste (`AIHintsBuilder.Update`, `Plugin.DrawUI`); BossMods
+  eigene Rotation überspringt längere Zauber (`ActionQueue`). Schnittstelle auch `Movement.IsMoveRequested`,
+  `Hints.IsPositionSafe`, `Hints.ForbiddenZonesNextActivation` (früheste Fläche überhaupt), `AI.NaviTargetPos`,
+  `AI.PlayerSpeed`. FFXIVClientStructs 0adb2e5 (06.11.2026): `CastInfo.Response*` beim Eintreffen der Aktionswirkung
+  gesetzt, „cast can't be cancelled - this is the start of the slidecast window". Daedalus c4a788f (05.11.2026): eigene
+  Pause über `AI.PauseMovement` (`CastMovementHoldService`), Freigabe bei Schaden oder Fläche im Fenster Restwirkzeit +
+  1,5 s; `MechanicCastGate` (kein harter Zauber bei unsicherem Ort oder naher Fläche oder Schaden irgendwo); harte
+  Wiederbelebung nur auf sicherem Boden; die Feldnotiz vom 02.08.2026 betrifft diese eigene Pause, nicht RSRs Sperre.
+  Spielblätter (xivapi v2, ActionTransient, 07.11.2026): Waffengang 18 s, Flammenwerfer 10 s, Tanzimprovisation 15 s,
+  jeweils „Effect ends upon using another action or moving". RSR: `MovingUpdater.UpdateCanMove` sperrt die ganze Wirkzeit,
+  vor einem gleich gedrückten Zauber und während der angehakten Kanäle (`PosPassageOfArms`, `PosFlameThrower`,
+  `PosImprovisation`, ab Werk aus); `MaxCastTime` nur im Limit Break gelesen (A628, A630). Ob die Sperre des Spiels BossMods
+  Gehen anhält, belegt keine Quelle (Schluss aus `MovementOverride`).
+- *Befunde gegen A595:* (a) Eine zweite Lage: BossMods KI plant das Losgehen für das Gleitfenster, die Sperre hält bis
+  zum Ende des Balkens – eine Fläche mit Spielraum unter diesem Rest trifft (Beispiel im Konzept). (b) B über die ganze
+  Option opferte die Kanäle jedem Nachrücken der KI; Waffengang endete beim ersten Schritt des Bosses. (c) RSR beginnt
+  Zauber über BossMods Wurfzeitgrenze, die BossMods eigene Rotation auslässt – Klasse zu A628, dort nur fürs Limit Break.
+- *2–6:* im Konzept 03: A, B, BZ (nur Zauber weichen), S (Ende mit der Antwort des Spiels), P1 (Wurfzeitgrenze), P-Ort
+  (Daedalus `MechanicCastGate`, verworfen: früheste Fläche überhaupt, Raidwide sperrt harte Heilung), Daedalus' Freigabe
+  (verworfen, gröber als BZ), V (nicht baubar), C (in BZ), K (Kanäle weichen der Gefahr, zeitlich begrenzt über früheste
+  Fläche und Weg der KI), K' (Schutzkanäle halten für den angekündigten Gruppentreffer); je Kampfbeispiel und drei
+  Gegenthesen. Ergebnis: B nicht das Optimum; Empfehlung H = BZ + S für Zauber, K' für Kanäle, P1 sofort.
+- *Warum P1 ohne ihn:* berührt weder die Sperre noch einen Optionstext; dieselbe Tatsache wie beim Limit Break (A628), dort
+  nur auf einer Ebene darunter. Ausgenommen die Null aus seiner eigenen Bewegungstaste – mit Sperre ginge RSR sonst beim
+  Drücken einer Taste nicht mehr in den Zauber, und das änderte sein Verhalten.
+- *7 Gebaut:* `ActionBasicInfo.ExceedsBossModCastLimit` in `NeedsCasting` (nach `CastStartBlockedNow`, also nur, wenn
+  BossMod nicht schon bewegt), eine Spurzeile je Episode; `Movement.IsMoveRequested` abonniert
+  (`BMRInfo_IPCSubscriber`, `DataCenter.BMRMoveRequested`, `BossModUpdater`, `ResetBmrData`). Namensliste: Flammenwerfer,
+  Tanzimprovisation, Wiederbeleben, Spontaneität aus den deutschen Spielblättern. Konzept 12: Zeilenangabe von
+  `IsStatusProvided` nachgezogen (Methode unverändert, verschoben).
+- *8 Nachweis:* Compile 0 Warnungen, 50 Prüfschritte grün. Prüfgrad: statisch und Compile; im Spiel nicht beobachtet –
+  die Spurzeile „cast held for BossMod's cast limit" zeigt in seinen Uploads, ob und wie oft P1 greift.
+- *9 Dokumentation:* Konzept 03 (Abschnitt neu, C6), TODO (Eintrag fortgeschrieben, nächster Schritt seine Entscheidung zu
+  H und K'), Release-Text.
+
 ## B · Commit-Register (Fork vs. `upstream/main`)
 
 ### B1 · Einzelgeprüfte Fork-Commits
@@ -19252,3 +19297,4 @@ Die offene Arbeit dazu — Reihenfolge und Abbruchbedingung der Nachprüfung —
 | C166 | Konzept 01 (Begleiter-Nutzen A491, Entfesseln, K10 Laden A569) und Konzept 07 („Reinigung oder Heilung", A565): „Todesurteil" als deutscher Name des Zustands Doom | Der Name war selbst gebildet. Das deutsche Spielblatt nennt Status 5421 „Verhängnis" (xivapi v2, `language=de`, 05.11.2026); an allen vier Stellen ersetzt. Ebenso im Ladenabschnitt: Paralyse (5382), Stein (4891), Steinfluch (437), Blind (5381), Betäubung (Status 2) aus demselben Blatt; Chains of Condemnation englisch, weil kein deutscher Beleg vorliegt. A491 führt das Wort als Teil seines damaligen Wortlauts; in A515 ist „Todesurteil" der Name einer Gegneraktion aus seinem Mitschnitt, kein Zustand. |
 | C167 | C77: „Die Zurückhaltung rechnet jetzt selbst, ob die Reserve gefährdet ist (Ladung übrig, oder nächste vor dem vorhergesagten Ereignis zurück)“; ebenso Konzept 08, „Zwei Ladungen“: „Die Frage wird nicht vorgelegt, sondern im Kampf entschieden“ | Kein Aufrufer übergab `BMRShouldRefreshBefore` eine Aktion; ohne sie galt die Reserve immer als echt, die Rechnung lief nie. Übergeben, hätte sie für eine bereite Aktion mit einer Ladung die Restzeit 0 gelesen und die Zurückhaltung abgeschaltet. Der Text der Option („Radiant Aegis, Tactician, Troubadour or Shield Samba wait for the second instead of being eaten by the first“) beschreibt das Verhalten, das tatsächlich lief | Rechnung berichtigt (ohne ladende Ladung die volle Abklingzeit); Barde, Maschinist und Tänzer übergeben ihre Aktion (eine Ladung, Reserve echt, Verhalten gleich); Schimmerschild nicht, weil der Optionstext bindet. Konzept 08 auf diesen Stand gebracht (A592) |
 | C168 | Konzept 08 („Die Erhebung dazu ist geführt …") und Prüfskript-README zu `scan16.py`: „Die übrigen Treffer der Erhebung liegen in Bozja und den Tiefen Gewölben, also außerhalb des Nutzungsprofils" | Die Treffer sind Bozja (Lost Paralyze III) und Eureka (Paralyze L, Paralyze L III; `EurekaMagiaAction` 16, xivapi 06.11.2026), nicht Tiefe Gewölbe; und die Tiefen Gewölbe liegen in seinem Profil (seine Rüge, 06.11.2026; A427 Pilgerpfad) | Beide Stellen berichtigt; Eureka bleibt erfasst, bis er es nennt (A612) |
+| C169 | A595 und Konzept 03 („Bewegungssperre beim Wirken und die KI von BossMod"): „B, die Sperre weicht der KI (Empfehlung)" für die ganze Option; „Daedalus verlor so einen Heiler" | B gäbe auch die angehakten Kanäle frei (Waffengang, Flammenwerfer, Tanzimprovisation), die BossMod nicht kennt: Dort geht die KI auch zum Nachrücken, und jeder Schritt beendet den Kanal (ActionTransient 7385, 7418, 16014). Daedalus' Heiler starb an Daedalus' eigener Pause über `AI.PauseMovement`, nicht an RSRs Sperre (`CastMovementHoldService`, Daedalus c4a788f) | Konzept 03 neu gefasst: Empfehlung H (nur Zauber weichen der KI und enden mit der Antwort des Spiels) und K' für Kanäle; die Feldnotiz als Daedalus' eigener Fall geführt (A649) |

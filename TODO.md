@@ -20,8 +20,9 @@ BossMod-Module) die Rotation des Beastmasters, die Wahl der Begleiter und den Ze
 (Beispiel seiner Beobachtung: der Raptor gegen Feuer, bevor feueranfällige Gegner da waren; A581).
 
 1. Bewegungssperre beim Wirken gegen das Ausweichen der BossMod-KI: Mit „Lock movement while casting" an steht die
-   Figur während jedes Zaubers still, auch wenn die KI von BossMod aus einer Fläche laufen will; nur in dieser
-   Kombination, dort aber mit einem Treffer, dem der Spieler nicht ausweicht.
+   Figur während jedes Zaubers und jedes angehakten Kanals still, auch wenn die KI von BossMod aus einer Fläche laufen
+   will, und bis zum Ende des Balkens auch im Gleitfenster; nur in dieser Kombination, dort aber mit einem Treffer, dem
+   der Spieler nicht ausweicht.
 
 Danach die technische Schuld, soweit ihre Auflösungsbedingung erfüllt ist. Warten auf Daten: unten.
 
@@ -38,15 +39,13 @@ Keiner offen.
 
 ### Bewegungssperre beim Wirken gegen das Ausweichen der BossMod-KI · N, U
 Im Kampf: Mit „Lock movement while casting" („Stops your character from moving while casting …", ab Werk aus) setzt
-`MovingUpdater` während jedes Zaubers die Bewegungssperre des Spiels; die KI von BossMod kann dann nicht laufen, auch
-wenn eine Fläche mitten im Zauber erscheint. Neue Zauber startet RSR nicht, solange BossMod läuft (`BMRIsMoving` in
-`NeedsCasting`); einen laufenden bricht BossMod nur bei Blick- und Pyretisch-Mechaniken selbst ab
-(`ForceCancelCastMechanic`), nicht für eine Fläche. Daedalus verlor so einen Heiler mitten in der Wiederbelebung (Feldnotiz
-02.08.2026, `ResurrectionModule`). Der Optionstext bindet und nennt keine Ausnahme. *Ort:* `MovingUpdater.UpdateCanMove`,
-`DataCenter.NoPoslock`, `Movement.IsMoving`. Loop durch (A595): Die KI läuft mitten im Zauber nur, wenn der Treffer vor
-dessen Ende landet; die Optionen A, B (Empfehlung: die Sperre weicht der KI) und C stehen im Konzept. *Nächster Schritt:*
-Vorlage an ihn, gebündelt am Ende des TODO (der Optionstext bindet). *Konzept:* 03, „Bewegungssperre beim Wirken und die
-KI von BossMod".
+`MovingUpdater` während jedes Zaubers und jedes angehakten Kanals (Waffengang, Flammenwerfer, Tanzimprovisation) die
+Bewegungssperre des Spiels. Die KI von BossMod kann dann weder mitten im Zauber aus einer Fläche gehen noch, wie sie es
+plant, im Gleitfenster; im Kanal hält die Sperre sie auch in Gefahr. Der Optionstext bindet und nennt keine Ausnahme. *Ort:* `MovingUpdater.UpdateCanMove`,
+`DataCenter.NoPoslock`, `Movement.IsMoving`, `CastInfo.ResponseSourceSequence`. Loop durch (A595, A649): B ist nicht das
+Optimum, weil sie auch die Kanäle jedem Nachrücken der KI opferte; Empfehlung H für Zauber (die Sperre weicht der KI und
+endet mit der Antwort des Spiels) und K' für Kanäle, Vorlage im Konzept. *Nächster Schritt:* seine Entscheidung zu H und
+K'. *Konzept:* 03, „Bewegungssperre beim Wirken und die KI von BossMod".
 
 ## Technische Schuld
 

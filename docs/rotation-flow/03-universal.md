@@ -459,7 +459,8 @@ movement while casting" aus – ab Werk aus – oder von ihm gelöst), BossMods 
 ein Rückstoß läuft oder „No casting" befohlen ist; ausgenommen ist ein Status, der den nächsten Zauber sofort wirken
 lässt (Swiftcast, Triplecast, Dualcast). Diese Bedingung steht einmal, `CustomRotation.CastStartBlocked`; dieselbe
 prüft `ActionBasicInfo.NeedsCasting` für jede Aktion, dort zusätzlich ein Status, der vor dem Ende der Wirkzeit landet
-und jede Aktion schädigt (A439). Dann bleibt ein Sofort-GCD oder keiner. Mit Bewegungssperre wirkt RSR im Laufen weiter
+und jede Aktion schädigt (A439), und BossMods Wurfzeitgrenze, wenn der Zauber länger wirkt (A649). Dann bleibt ein
+Sofort-GCD oder keiner. Mit Bewegungssperre wirkt RSR im Laufen weiter
 und hält den Spieler an („Bewegungssperre beim Wirken und die KI von BossMod", unten); dann greift diese Regel nicht.
 
 **Regel, für alle Zaubernden (Heiler, Magier, Blaumagier).** Ein GCD, der dann leer bleibt, ist ganz verloren. Ein
@@ -1405,30 +1406,137 @@ Inhalt an wie bisher.
 
 **Geltender Stand:** Mit „Lock movement while casting" („Stops your character from moving while casting, and while using
 the actions ticked below.", ab Werk aus) setzt `MovingUpdater.UpdateCanMove` die Bewegungssperre des Spiels für die ganze
-Wirkzeit jedes Zaubers und vor einem Zauber, den RSR gleich drückt. Lösen lässt sie nur der Spieler: Modifikatortaste,
-R1 am Gamepad, beide Maustasten (`DataCenter.NoPoslock`). Neue Zauber startet RSR nicht, solange BossMod den Spieler
-bewegt (`BMRIsMoving` in `ActionBasicInfo.NeedsCasting`). Einen laufenden bricht BossMod selbst ab, aber nur bei Blick-
-und Pyretisch-Mechaniken (`ForceCancelCastMechanic`, `Plugin.cs` mit `CancelCastTweak`, BossmodReborn 27be422); der
-zweite Abbruchweg in `CancelCastUpdater` hängt an „Use BossModReborn's timeline for proactive mitigation" (Upstream
-f72a0a93e) und ändert daneben nichts.
+Wirkzeit jedes Zaubers, vor einem Zauber, den RSR gleich drückt, und solange einer der angehakten Kanäle läuft:
+Waffengang (Passage of Arms), Flammenwerfer (Flamethrower), Tanzimprovisation (Improvisation), je ab Werk aus. Lösen
+lässt sie nur der Spieler: Modifikatortaste, R1 am Gamepad, beide Maustasten (`DataCenter.NoPoslock`). Neue Zauber
+startet RSR nicht, solange BossMod den Spieler bewegt (`BMRIsMoving` in `ActionBasicInfo.CastStartBlockedNow`), und
+keinen, der länger wirkt, als BossMod Zeit bis zum nötigen Gehen meldet (`Hints.MaxCastTime`, die Wurfzeitgrenze, in
+`ActionBasicInfo.NeedsCasting`; A649) – außer die Grenze steht nur deshalb auf null, weil der Spieler selbst eine
+Bewegungstaste drückt (`Movement.IsMoveRequested`): Dann gilt die Sperre, wie er sie eingestellt hat. Einen laufenden
+Zauber bricht BossMod selbst nur bei Blick- und Pyretisch-Mechaniken ab (`ForceCancelCastMechanic`, `Plugin.cs` mit
+`CancelCastTweak`); der zweite Abbruchweg in `CancelCastUpdater` hängt an „Use BossModReborn's timeline for proactive
+mitigation" (Upstream f72a0a93e) und ändert daneben nichts.
 
-**Was im Kampf geschieht:** Die KI von BossMod bewegt sich während eines Zaubers nur, wenn sie muss: Ihr Spielraum bis zum
-Treffer ist kürzer als die Restwirkzeit weniger 0,5 s (`AIController`, `mustMoveNow`), sonst wartet sie den Zauber ab.
-Genau in diesem Fall hält die Sperre die Figur fest. Beispiel: Ein Weißmagier ohne Spontaneität beginnt Wiederbeleben (8 s, Aktion 125);
-nach 3 s erscheint unter ihm eine Fläche, die in 3 s landet. Die KI will laufen, die Sperre hält, der Treffer landet
-mit der Wiederbelebung noch im Wirken. Daedalus verlor so einen Heiler (Feldnotiz 02.08.2026, `ResurrectionModule`).
-Ohne die KI steuert der Spieler selbst und löst die Sperre mit seiner Taste; ohne die Option läuft die KI ohnehin.
+**Wie BossMods KI mit einem Zauber umgeht** (BossmodReborn 27be422, 05.11.2026, Werkzeugquelle):
+- Sie sieht jeden Zauber, auch RSRs, an der Aktionsanforderung (`ActionManagerEx.UseActionDetour`,
+  `MoveMightInterruptCast`).
+- Mitten im Zauber geht sie nur, wenn ihr Spielraum nicht mehr bis zum Gleitfenster reicht: Spielraum ≤ Restwirkzeit
+  − 0,5 s (`AIController.Update`, `mustMoveNow`). Der Spielraum ist die kleinste Zeitreserve auf ihrem Weg, bevor dort eine
+  verbotene Fläche aktiv wird (`ThetaStar.PathLeeway`); er misst Gefahr. Einem Anführer oder Ziel folgt sie im Zauber
+  nicht.
+- Sonst wartet sie und geht los, sobald das Spiel die Antwort auf den Zauber hat (`MoveMightInterruptCast = false` bei der
+  eigenen Aktionswirkung). Ab dann bricht Bewegung den Zauber nicht mehr: das Gleitfenster („at this point cast can't be
+  cancelled - this is the start of the slidecast window", `CastInfo.ResponseSourceSequence`, FFXIVClientStructs 0adb2e5,
+  06.11.2026), nach BossMods und RSRs Kommentaren rund 0,5 s vor dem Ende des Balkens.
+- Kanäle ohne Zauberbalken kennt sie nicht (`MoveMightInterruptCast` gilt nur bei laufender Wirkzeit): Während Waffengang,
+  Flammenwerfer oder Tanzimprovisation geht sie zu jedem Ziel, auch nur um nachzurücken, und jeder Schritt beendet den
+  Kanal („Effect ends upon using another action or moving", ActionTransient 7385, 7418, 16014, xivapi v2, 07.11.2026).
+- Ihr Gehen sieht RSR als `Movement.IsMoving` (erzwungene Bewegung oder zurückgehaltene Zauber). Mit dem Bewegungsmodul
+  ihrer Autorotation (`NormalMovement`, Wirkstrategie „Leeway") meldet sie den Spielraum vorab als Wurfzeitgrenze, und
+  ihre eigene Rotation beginnt keinen längeren Zauber (`ActionQueue`, `candidate.CastTime > hints.MaxCastTime`). Mit der
+  klassischen KI ist die Grenze unbegrenzt, oder null, solange sie Zauber zurückhält, ein Rückstoß ansteht oder der Spieler
+  eine Bewegungstaste drückt (`AIHintsBuilder.Update`).
+- Ob die Sperre des Spiels auch BossMods Gehen anhält, steht in keiner Quelle. Abgeleitet: BossMod ersetzt die Eingabe des
+  Spielers in der Gehfunktion (`MovementOverride`), und dieselbe Sperre hält diese Eingabe an (Schluss, nicht gemessen; die
+  Spurzeile der Empfehlung misst es).
 
-**Offen zur Entscheidung des Auftraggebers** (der Optionstext nennt keine Ausnahme und bindet; gebündelt am Ende des TODO):
-- *A, so lassen:* Die Sperre hält, wie ihr Text sagt. Preis: mit Option und KI jeder Treffer, der mitten in einem Zauber
-  erscheint und vor dessen Ende landet.
-- *B, die Sperre weicht der KI (Empfehlung):* Bewegt BossMod den Spieler (`Movement.IsMoving`, schon je Bild gelesen),
-  gibt RSR die Sperre frei; der Zauber bricht ab und kommt danach neu. Der Text bekäme den Zusatz „… unless BossMod's AI
-  moves you out of danger". Stärke: weicht nur, wo die KI muss (oben); Schwäche: ein abgebrochener Zauber kostet seine
-  Wirkzeit, bei Wiederbeleben bis 8 s. Gegenthese: Die KI folgt auch einem Anführer – dann wartet sie den Zauber nach ihrem
-  Spielraum ab, und RSR startet keinen neuen, solange sie läuft.
-- *C, nur aus Gefahr:* BossMod gibt seine Gefahrenflächen nicht über die Schnittstelle heraus; heute nicht baubar, und
-  B trifft dieselben Fälle, weil die KI mitten im Zauber nur aus Gefahr läuft.
+**Was im Kampf geschieht, mit Option und KI:**
+1. *Treffer mitten im Zauber.* Ein Weißmagier ohne Spontaneität beginnt Wiederbeleben (8 s, Aktion 125); nach 3 s
+   erscheint unter ihm eine Fläche, die 3 s später landet, 1 s Weg hinaus. Der Spielraum (rund 2 s) reicht nicht bis zum
+   Gleitfenster (in 4,5 s); die KI will sofort gehen, die Sperre hält, der Treffer landet mit der Wiederbelebung noch im
+   Wirken.
+2. *Losgehen im Gleitfenster.* Ein Schwarzmagier wirkt 2,5 s; nach 1 s erscheint eine Fläche, die bei 3,2 s landet, 1 s Weg
+   hinaus. Der Spielraum reicht knapp bis zum Gleitfenster; die KI plant, dort (bei etwa 2,0 s) loszugehen, und wäre bei
+   3,0 s draußen. Die Sperre hält bis zum Ende des Balkens; draußen erst bei 3,5 s, nach dem Treffer. So trifft jede Fläche,
+   deren Spielraum am Beginn des Gleitfensters kürzer ist als der Rest des Balkens.
+3. *Kanal.* Ein Paladin hält Waffengang für einen angekündigten Raidwide; der Boss rückt, die KI will nachrücken – die
+   Sperre hält, Waffengang bleibt (gewollt). Erscheint eine Fläche unter ihm, hält die Sperre ihn ebenso.
+4. *Zauberbeginn gegen die Wurfzeitgrenze* (bis A649): Mit dem Bewegungsmodul meldete BossMod etwa 1,2 s bis zum nötigen
+   Gehen, und RSR begann trotzdem einen Zauber von 1,5 s. Ohne Sperre brach der Gang ihn ab, mit Sperre hielt sie den
+   Spieler über seinen Spielraum hinaus.
+
+Ohne KI steuert der Spieler selbst; die Sperre hält auch ihn bis zum Ende des Balkens, und das Gleitfenster bleibt
+ungenutzt, es sei denn, er drückt die Taste. Ohne die Option läuft die KI ohnehin, und RSR beginnt im Laufen keinen
+Zauber.
+
+Daedalus kam an dieselbe Stelle mit einer eigenen Pause (`AI.PauseMovement`), die BossMods Ausweichen für den ganzen Zauber
+anhielt: Ein Heiler starb mitten in der Wiederbelebung (Feldnotiz 02.08.2026, `ResurrectionModule`; Daedalus c4a788f,
+05.11.2026, Werkzeugquelle). Seitdem gibt Daedalus die Pause frei, sobald ein Schaden oder eine Fläche vor dem Ende des
+Zaubers liegt („a dead cast beats a dead toon", `CastMovementHoldService`), und beginnt eine harte Wiederbelebung nicht
+auf unsicherem Boden.
+
+**Die Lösungen im Kampf:**
+- *A – so lassen.* Stärke: Die Sperre hält, wie ihr Text sagt; kein Zauber und kein Kanal bricht. Schwäche: Die Fälle 1
+  und 2 treffen bei jeder solchen Fläche; der Spieler ohne KI verschenkt das Gleitfenster. Bedrohung: In Savage und
+  Extreme erscheinen Flächen oft mitten in Wirkzeiten, und Treffer hinterlassen Verwundbarkeit.
+- *B – die ganze Sperre weicht der KI* (bisherige Empfehlung, A595). Für Zauber richtig: Mitten im Zauber geht die KI nur
+  aus Not, im Gleitfenster planmäßig; beides gibt B frei (Fälle 1, 2). Für Kanäle falsch: Dort geht die KI auch, um
+  nachzurücken; B gäbe jedes Mal frei, und Waffengang endete beim ersten Schritt des Bosses – die Gruppe verlöre die
+  Minderung, für die der Paladin ihn gesetzt hat (`PLD_Reborn`, `DefenseAreaAbility`). In dieser Form verworfen.
+- *BZ – nur die Sperre des Zaubers weicht der KI.* Stärke: Fälle 1 und 2, entschieden von BossMod, das Weg und Spielraum
+  kennt; auch Skript-Bewegungen (Quest-Kämpfe, erzwungener Marsch, FATE, Kampfstrategien einzelner Module) laufen nicht
+  mehr gegen die Sperre. Schwäche: Ein abgebrochener Zauber kostet seine bisherige Wirkzeit, bei Wiederbeleben bis 7,5 s;
+  RSR beginnt ihn neu, sobald die KI steht. Bedrohung: Ginge BossMod künftig auch ohne Not mitten im Zauber (wie die
+  Version, gegen die Daedalus seine Pause baute, Feldnotiz 20.07.2026 in `CastMovementHoldService`), bräche BZ Zauber ohne
+  Gefahr – Schaden, keine Sicherheit; die Spurzeile je Freigabe zeigt es.
+- *S – die Sperre endet mit der Antwort des Spiels.* Hat das Spiel die Antwort auf den laufenden Zauber
+  (`ResponseSourceSequence` gleich `SourceSequence`), kann Bewegung ihn nicht mehr brechen; die Sperre endet dort, mit und
+  ohne BossMod. Stärke: Kein Zauber geht verloren; Spieler und KI gewinnen das Gleitfenster – Fall 2 auch dann, wenn
+  BossMod das Gehen nicht meldet, und der Spieler ohne KI bei jedem Zauber einen Augenblick mehr zum Ausweichen. Schwäche:
+  keine im Kampf; wörtlich gilt „while casting" bis zum Ende des Balkens. Bedrohung: hohe Latenz – kommt die Antwort spät,
+  gewinnt S wenig, verliert aber nichts.
+- *P1 – kein Zauber über die Wurfzeitgrenze* (gebaut, A649; geltender Stand). Stärke: Was BossMod vorab weiß, kommt nicht
+  zum Konflikt (Fall 4); RSR nimmt einen Sofort-GCD (C6). Schwäche: wirkt nur mit dem Bewegungsmodul, einer Wirkstrategie
+  „nur Sofortzauber" oder bei anstehendem Rückstoß; mit der klassischen KI fast nie, weil sie dann schon geht. Ändert die
+  Sperre nicht und berührt keinen Optionstext.
+- *P-Ort – Zauberbeginn nach BossMods Flächen* (Daedalus `MechanicCastGate`): kein harter Zauber, solange der Ort unsicher
+  ist oder irgendeine Fläche oder ein Schaden vor seinem Ende kommt. Verworfen: Die Zeit gilt der frühesten Fläche
+  überhaupt, nicht der unter dem Spieler, und ein Raidwide sperrt mit – ein Heiler begänne kurz vor einem Raidwide keine
+  harte Heilung, genau wenn sie zählt. Mit KI bringt es nichts, weil sie eine Fläche verlässt, bevor RSR einen Zauber
+  beginnt (`BMRIsMoving`).
+- *Daedalus' Freigabe* (Fläche oder Schaden irgendwo im Fenster Restwirkzeit + 1,5 s): gröber als BZ, aus globalen Zeiten
+  statt aus dem Weg geschätzt; verworfen.
+- *V – der Wert entscheidet* (eine fast fertige Wiederbelebung gegen einen überlebbaren Treffer): nicht baubar. BossMods
+  Flächen tragen weder Schaden noch den gegnerischen Zauber, aus dem RSRs gelernte Tabellen den Schaden kennen.
+- *C – nur aus Gefahr:* in BZ enthalten.
+- *K – Kanäle weichen der Gefahr.* Während eines Kanals gibt RSR frei, wenn die KI navigiert (`AI.IsNavigating`), BossMod
+  den Ort des Spielers verbietet (`Hints.IsPositionSafe` falsch) und die früheste Fläche vor dem Ende des Kanals plus dem
+  Weg zum Ziel der KI aktiv wird (`Hints.ForbiddenZonesNextActivation`, `AI.NaviTargetPos`, `AI.PlayerSpeed`); sonst hält
+  die Sperre gegen das Nachrücken. Beispiel: Ein Maschinist mit Flammenwerfer (10 s), nach 4 s eine Fläche unter ihm, die
+  3 s später landet – K gibt frei, er geht, der Kanal endet 3 s vor seinem Ende. Stärke: Ausweichen im Kanal, ohne ihn dem
+  Nachrücken zu opfern. Schwäche: Die früheste Fläche ist die irgendwo, nicht die unter ihm; landet seine erst nach dem
+  Kanal und eine andere früher, endet der Kanal unnötig. Bedrohung: Ohne Ziel der KI gilt der Weg als null, und K gibt
+  später frei als nötig.
+- *K' – Schutzkanäle halten für den Gruppentreffer.* Wie K, doch Waffengang und Tanzimprovisation halten, solange ein
+  angekündigter Gruppentreffer (Raidwide von BossMod, gelisteter Flächen-Cast; `AutoStatus.DefenseArea`) vor ihrem Ende
+  landet. Beispiel: Paladin mit Waffengang für einen Raidwide in 4 s, unter ihm eine Fläche in 2 s. Mit K geht er, und die
+  Gruppe hinter ihm nimmt den Raidwide ohne die 15 % Minderung; mit K' bleibt er, nimmt die Fläche mit 100 % Blockrate,
+  und die Gruppe behält die Minderung. Stärke: Die Gruppe behält den Schutz, für den der Kanal gesetzt wurde. Schwäche:
+  Der Tank nimmt den Treffer samt etwaiger Verwundbarkeit. Was überwiegt, hängt am Schaden der Fläche, den RSR nicht kennt.
+
+**Ergebnis:** B ist nicht das Optimum. Besser sind für Zauber BZ und S zusammen (H), dazu P1 (gebaut), und für Kanäle K'
+(Flammenwerfer weicht wie in K, die Schutzkanäle halten für den Gruppentreffer). H statt BZ allein, weil S das Gleitfenster
+auch ohne BossMods Meldung und für den Spieler ohne KI freigibt; mit KI geben in Fall 2 beide frei, ohne sich zu stören.
+Der Text bekäme: „Stops your character from moving while casting until the spell can no longer be interrupted, and while
+using the actions ticked below. BossMod's AI can still move you out of danger." Dazu eine Spurzeile je Freigabe: Grund
+(BossMod, Antwort des Spiels, Gefahr im Kanal), Aktion, Restzeit und ob der Spieler vorher stand, während BossMod gehen
+wollte – sie misst zugleich, ob die Sperre BossMod überhaupt anhält.
+
+**Gegenthesen** zu H und K':
+- *1 – kein Defekt:* Hält die Sperre BossMods Gehen gar nicht an, gibt es mit KI keinen Konflikt, und BZ ändert nichts.
+  Nicht widerlegt, aber ohne Preis: BZ gibt dann frei, wo ohnehin nichts hielt, und S hilft dem Spieler ohne KI
+  unabhängig davon. Die Spurzeile entscheidet es.
+- *2 – Option falsch:* Stärkste Form: „Eine Wiederbelebung, die in 2 s fertig ist, ist mehr wert als ein Treffer."
+  BossMod geht mitten im Zauber nur, wenn es bis zum Treffer nicht mehr ins Gleitfenster reicht; der Treffer ist
+  angekündigt, also wahrscheinlich, und tötet er den Heiler, ist auch die Wiederbelebung verloren. Spontaneität bleibt für
+  Wiederbelebungen bereit (Konzept 11), und P1 verhindert den Beginn, wo BossMod es vorab weiß. Widerlegt, soweit RSR den
+  Schaden der Fläche nicht kennt (V).
+- *3 – ausgeliefert, und nichts ändert sich:* Er spielt ohne die Option (ab Werk aus) oder ohne die KI, oder BossMods Modul
+  verbietet die Fläche nicht. Dann bleibt S für den Spieler ohne KI, und P1 nur mit dem Bewegungsmodul. Die Spurzeilen
+  zeigen, ob und wie oft es greift.
+
+**Offen zur Entscheidung des Auftraggebers:** H und K' ändern das Verhalten seiner Option und ihren Text, und der Text
+bindet; gebündelt am Ende des TODO. P1 berührt beides nicht und ist gebaut.
 
 ## E · Universelle Strukturschwächen
 

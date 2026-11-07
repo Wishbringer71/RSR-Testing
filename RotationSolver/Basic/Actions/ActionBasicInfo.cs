@@ -545,12 +545,47 @@ public readonly struct ActionBasicInfo
 
 		if (CastStartBlockedNow(skipCastingCheck)
 			// A cast still under way when a status that damages every action lands kills (A439).
-			|| (!DataCenter.IsPvP && ActionPenaltyWatch.WouldMeetLanding(CastTime)))
+			|| (!DataCenter.IsPvP && ActionPenaltyWatch.WouldMeetLanding(CastTime))
+			// BossMod must move the player before a longer cast could end; its own rotation skips such casts too (A649).
+			|| ExceedsBossModCastLimit(CastTime, Name))
 		{
 			return true;
 		}
 
 		return false;
+	}
+
+	// The cast limit of the episode that has been traced; unlimited again once BossMod lifts it.
+	private static float _tracedCastLimit = float.MaxValue;
+
+	/// <summary>
+	/// Whether BossMod needs the player to move before a cast of this length could end (<c>Hints.MaxCastTime</c>: "maximal
+	/// time we can spend casting before we need to move"). It is set from the AI's leeway on its path by BossMod's movement
+	/// module, and to zero while a knockback is pending, while casts are held, or under an instants-only cast strategy; a
+	/// longer cast would be broken by the move, or, under the movement lock, hold the player past the leeway. While the
+	/// player holds a movement key, BossMod's zero only reflects that key, and the movement lock decides as the player set it
+	/// (concept 03, "Bewegungssperre beim Wirken und die KI von BossMod"). One trace line per episode.
+	/// </summary>
+	internal static bool ExceedsBossModCastLimit(float castTime, string name)
+	{
+		var limit = DataCenter.BMRMaxCastTime;
+		if (castTime <= limit || DataCenter.BMRMoveRequested)
+		{
+			if (limit == float.MaxValue)
+			{
+				_tracedCastLimit = float.MaxValue;
+			}
+
+			return false;
+		}
+
+		if (_tracedCastLimit == float.MaxValue)
+		{
+			_tracedCastLimit = limit;
+			DefenseTrace.Line($"cast held for BossMod's cast limit: {name} needs {castTime:F2} s, BossMod allows {limit:F2} s");
+		}
+
+		return true;
 	}
 
 	/// <summary>
