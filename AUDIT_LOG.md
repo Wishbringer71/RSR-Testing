@@ -19089,6 +19089,38 @@ habe den schleim bislang nicht anfreunden können."
   Freigabe und je Halt gegen BossMods Gang, Zeile beim Messergebnis „Sperre hält die KI nicht".
 - *Dokumentation:* Konzept 03, 12 (Zeilenangabe), Häkchentexte, Release-Text, TODO, CLAUDE.md; Widerruf C171.
 
+### A653 · Release 7.5.7.15+wsh1 veröffentlicht, Release-Text übergeben, neuer Zweig (07.11.2026)
+
+Sein Auftrag (07.11.2026): „branch zu main, compile, release, neuen branch" – die Freigabe (`CLAUDE.md`, „Grenzen und
+Löschungen").
+
+- *Vorher gemessen:* Upstream abgeglichen (0 ausstehend, Tag 7.5.7.15 im Verlauf); `main` (6f625f239) Vorfahr des
+  Arbeitszweigs, 161 Commits voraus; Tag `7.5.7.15+wsh1` frei auf `origin`; Versionsangaben auf 7.5.7.15+wsh1; CI auf
+  9dd28f30b grün.
+- *Zweig zu `main`:* `main` auf `claude/fixes-after-7.5.7.14` (9dd28f30b) vorgespult und gepusht. Kompiliert ohne
+  Warnung und Fehler.
+- *Release:* `publish.yaml` per `workflow_dispatch` auf `main` mit `7.5.7.15+wsh1`, Lauf 42365710841 erfolgreich.
+  Release auf 9dd28f30b, `latest.zip` 3 525 170 Bytes, Digest sha256:39114234…4a49, Text mit allen 20 Abschnitten des
+  Release-Texts.
+- *Übergabe:* `fork-changes-in-play.md` steht auf Upstream 7.5.7.15; die 103 Einträge sind in die Themen eingearbeitet:
+  Empfehlungsfenster bei „Seeing what the rules decide"; Einstellungen je Job, Limit Break allein, die fallende Gruppe,
+  Tränke und Tinkturen je Gegenstand, Ziele mit Stacheln und Tötungsregeln, Schwarzmagier, Nahkämpfer, Pictomancer,
+  Astrologe und Weise, Tiefe Gewölbe, Blaumagier und Beastmaster bei „Damage and rotation"; Zauber unter BossMods
+  Bewegungsplan, Bewegungssperre und Sprünge bei „Movement safety"; der Schild unter Begleitern bei „Shields and
+  barriers"; Tränke nach der Vorhersage, Reinigung, Heilabbruch und Phantom-Heilungen bei „Healing — when it lands";
+  Sichtlinie, Kardia, Figuren, die nur Heilung besiegt, und gesenkte Heilwirkung bei „Healing — who it picks"; die
+  Abwehr gegen Treffer, Unterbrechung und Provokation bei „Mitigation and defensives"; die Unverwundbarkeit gegen einen
+  gemeldeten Treffer bei „Tank self-protection"; Wiederbelebung und die Zeit danach bei „Raising".
+  `fork-changes-since-last-release.md` beginnt mit „Changes since 7.5.7.15+wsh1". `CHANGELOG.md`: Abschnitt
+  7.5.7.15+wsh1 mit drei Ergänzungen der öffentlichen Schnittstelle (`ActionSetting.IsTransformationAction`,
+  `MaskedCarnivaleHelper.ResistanceTo`, die Crucible-Empfehlungen des `BeastmasterRotation`).
+- *Zweige:* `claude/fixes-after-7.5.7.15` von `main` nach seiner Namensvorgabe, die Übergabe darauf und `main`
+  vorgespult. `claude/fixes-after-7.5.7.14` ist vollständig gemergt und ein Löschfall auf `origin` (Ref-Löschungen sind
+  der Sitzung gesperrt).
+
+*Prüfgrad:* Release-API und Workflow-Lauf gelesen, Prüfskripte; die Übergabe gegen den Release-Text abgeglichen (jeder
+der 103 Einträge steht im Gesamtbild).
+
 ## B · Commit-Register (Fork vs. `upstream/main`)
 
 ### B1 · Einzelgeprüfte Fork-Commits

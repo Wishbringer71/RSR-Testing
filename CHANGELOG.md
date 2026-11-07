@@ -23,6 +23,31 @@ are not reconstructed here.
 
 ## Unreleased
 
+## 7.5.7.15+wsh1
+
+### Addition to RotationSolver: deep dungeon transformations
+
+New on `ActionSetting`: `IsTransformationAction` marks an attack of a deep dungeon transformation (Manticore, Succubus,
+Kuribu, Dreadnaught, Bomb, Mudball). Such an action stands on no duty slot and carries no level or unlock of the job;
+its basic check asks only whether the game allows it now (A614).
+
+### Addition to RotationSolver: what a Carnivale enemy does to an action
+
+New on `MaskedCarnivaleHelper`: `ResistanceTo(IBattleChara?, IBaseAction?)` and `ResistanceTo(uint, Action)` - immune,
+weak or normal from the `AOZContentBriefingBNpc` sheet, by the action's elements and its attack type, so an enemy
+immune to blunt is immune to a physical spell such as Revenge Blast (A647).
+
+### Addition to RotationSolver: the Beastmaster's Crucible recommendations
+
+New public members of `BeastmasterRotation` that the recommendation windows read and drive: the campsite
+(`CrucibleCampOpen`, `CrucibleCampSummary`, `CrucibleCampRecommendation` of `CrucibleCampPick`, `CrucibleCampOutcome`,
+`CrucibleFeedTarget`, `RequestCrucibleCamp()`), the route at the next fork (`CrucibleRouteHint` of
+`CrucibleRouteOption`, `CrucibleRouteBasis`), the shop (`CrucibleShopPick`, `CrucibleFeedPick`, `RequestCrucibleShop()`),
+the team (`CrucibleTeamPick`, `RequestCrucibleTeam(List<BeastmasterPet>)`) and the treasure (`RequestCrucibleTreasure()`).
+Each request carries out the window's button: the shop buys the recommended rows one at a time, each checked before the
+next; the team changes one familiar at a time, leavers first; the treasure takes the recommended offer; the campsite
+selects its recommendation, while resting stays the player's click.
+
 ## 7.5.7.14+wsh1
 
 ### Addition to RotationSolver: Swiftcast kept for the raise
