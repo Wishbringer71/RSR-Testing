@@ -40,6 +40,10 @@ What this release changes in the fight. For the whole distance from upstream, se
   by the very choice the final fight's horn screen makes, again whenever HP, feed or a measured loss change, and feed
   counts in every horn choice on a board (damage dealt, damage taken). A familiar fed for the final fight stays on its
   horn there.
+- **A campsite rest is read per board.** The rest shares a different whole on each board (board 1: 90 %, 45 % each
+  with one familiar; the First Master's Board: 150 %, 75 % each). RSR now learns it per board from the rest prompt,
+  caps each share at 100 %, and assumes the smallest known until it has read the board – a reading from one board no
+  longer makes a rest on another look larger than it is (tab "Crucible campsites").
 - **More familiars rest with you at a campsite.** RSR learns, over every session, the heaviest damage each fight of a
   board dealt you, without your gear (tab "Crucible fights"). A campsite lets familiars rest with you while your HP
   after the rest still carry the heaviest way to the next campsite – or to the final fight on a way without one – with

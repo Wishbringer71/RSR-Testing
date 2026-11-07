@@ -149,6 +149,7 @@ public partial class MainWindow
 			InterruptibleKindTab(),
 			DangerousAreaTab(),
 			CrucibleFightLoadTab(),
+			CrucibleCampPoolTab(),
 			SleepLimitTab(game),
 			DotTab(),
 			PenaltyTab(game),
@@ -394,6 +395,26 @@ public partial class MainWindow
 
 		Sort(rows);
 		return new LearnedTab("Crucible fights", ["Fight (first enemy)", "Heaviest, of HP without gear"], rows);
+	}
+
+	// K10 of the Crucible (concept 21, Campsite, A667): per board, the whole a campsite rest shares among the player and the
+	// familiars resting, the smallest read.
+	private static LearnedTab CrucibleCampPoolTab()
+	{
+		var rows = new List<string[]>();
+		Dictionary<uint, int> pools;
+		lock (OtherConfiguration.CrucibleCampPoolsGate)
+		{
+			pools = new Dictionary<uint, int>(OtherConfiguration.CrucibleCampPools);
+		}
+
+		foreach (var (board, percent) in pools)
+		{
+			rows.Add([$"board {board}", $"{percent} %"]);
+		}
+
+		Sort(rows);
+		return new LearnedTab("Crucible campsites", ["Board", "A rest shares, smallest read"], rows);
 	}
 
 	private static LearnedTab SleepLimitTab(string? game)

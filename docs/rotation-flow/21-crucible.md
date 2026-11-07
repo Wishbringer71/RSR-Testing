@@ -294,10 +294,14 @@ Dullahan, Golem, Spriggan und Eisgolem (`XBMPet.InflictsInterrupt`).
     (Daedalus 74659a6, `CrucibleAutoPilot.Rest`, im Spielbetrieb 25. und 27.10.2026; FFXIVClientStructs aad0de6 nennt
     Modus 4 „buy feed result" – darum prüft RSR nach jedem Klick die Auswahl). Die Liste zeigt den Kader in
     Bildschirmfolge, `SelectedPetIds` die gewählten Plätze, ein Rückruf `[1, Platz]` schaltet einen Platz um.
-    *Mechanik:* Die Rast teilt ihre Heilung, je Teilnehmer ein Anteil der eigenen maximalen LP: allein 90 %, mit einem
-    Begleiter je 45 %, mit zweien je 30 % (Wiki; 45 % zeigt die Bestätigung „Rest and recover 45%…" in Daedalus'
-    Feldnotiz, +30 % deiner LP in deiner Messung vom 04.11.2026). Für drei und vier folgt aus derselben Teilung 22,5
-    und 18 % – meine Ableitung, unbelegt. Wie viele mitruhen dürfen, legt das Lager fest (`XBMContentCamp`, Zeile als
+    *Mechanik:* Die Rast teilt einen Gesamtanteil auf dich und die mitruhenden Begleiter, je Teilnehmer ein Anteil der
+    eigenen maximalen LP, höchstens 100 %. Der Gesamtanteil hängt am Brett: auf Brett 1 90 % (allein 90 %, mit einem
+    Begleiter je 45 %, mit zweien je 30 %; Wiki; „Rest and recover 45%…" in Daedalus' Feldnotiz; 30 % mit zweien in
+    seinen drei Läufen vom 07.11.2026 aus der Bestätigung gelesen), auf dem Ersten Meisterbrett an der Campsite von Zug 6
+    150 % (allein 100 %, gekappt, mit einem je 75 %, zwei 50 %, drei 37 %, vier 30 %; consolegameswiki „First Master's
+    Board" und die Recherche von CrucibleSux, 07.11.2026). Für die übrigen Bretter und Lager nennt keine Quelle Zahlen,
+    und kein Blatt führt den Gesamtanteil (`XBMContentCamp` hat nur `FamiliarRecoverCount`, EXDSchema latest
+    a1e24a0c). Wie viele mitruhen dürfen, legt das Lager fest (`XBMContentCamp`, Zeile als
     Brett gelesen, Unterzeile je Lager, 1 bis 4: erstes Brett 2, 2; zweites 2, 3; drittes 3, 3; Erstes Meisterbrett 2, 4;
     Zweites 1, 2, 3). Ein ruhender Begleiter verliert sein Futter („Familiars that rest will lose current effects of
     feed", Addon 17657; „G2 Primafodder" gibt +30 % maximale LP, „Honey Simular" −25 % physische Verwundbarkeit,
@@ -321,8 +325,16 @@ Dullahan, Golem, Spriggan und Eisgolem (`XBMPet.InflictsInterrupt`).
     Feldern (K14, „Der Weg aus den Blättern"), und der Endkampf ist schwerer als jeder davor – Brett 1 am 07.11.2026
     (ACT-Mitschnitt, Schaden auf dich je Kampf durch deine maximalen LP): 4, 18, 3 und 17 % (Elite), der Endkampf 35 %.
     Der schwerste bisherige Kampf hätte ihn halbiert, ein Mittel noch mehr.
-    den das Fenster nicht annimmt (oder mit dem es einen anderen abwählt); den Anteil liest es aus der Bestätigung,
-    sobald sie offen ist, und rechnet ab dann mit ihm (ohne Lesung 90 % geteilt). Futter liest es aus den Werten des
+    *Anteil der Rast (A667):* Den Anteil liest RSR aus der Bestätigung, sobald sie offen ist: Gesamtanteil = gelesener
+    Anteil × Teilnehmer, solange der Anteil unter 100 % liegt – darüber ist er gekappt und sagt nur „mindestens". Er
+    gilt für dieses Lager sofort und wird je Brett gelernt, über alle Sitzungen der kleinste gelesene (gelernte Datei
+    `CrucibleCampPools.json`, Reiter „Crucible campsites"): Zwei Lager eines Bretts können sich unterscheiden, und der
+    kleinere überschätzt nie. Ohne Lesung gilt 90 %, der kleinste bekannte. Jeder Teilnehmer bekommt den Gesamtanteil
+    geteilt durch die Teilnehmer, höchstens 100 %. Bis A667 galt eine Lesung für jedes Brett und jedes Lager, ohne
+    Kappung: Nach dem Meisterbrett hätte RSR auf Brett 1 mit einem Begleiter 75 % statt 45 % erwartet – ein Begleiter
+    mehr ruht, und du kommst mit 30 % deiner LP weniger heraus, als die Rechnung trägt. Grund der Regel: Eine zu kleine
+    Rast lässt einen Begleiter weniger heilen, eine zu große lässt dich zu schwach in den nächsten Kampf.
+    Die Grenze des Lagers lernt RSR am Klick, den das Fenster nicht annimmt (oder mit dem es einen anderen abwählt). Futter liest es aus den Werten des
     Fensters (`ReaderXBMPetParty.FedCurrent`, ECommons, Werkzeugquelle; Daedalus liest dieselbe Stelle); stimmen deren
     LP nicht mit denen des Agenten überein, wählt RSR nichts. Beim Öffnen springt die Auswahl kurz auf den ganzen Kader
     (Daedalus, im Spielbetrieb); RSR handelt erst, wenn sie einen GCD lang steht. Ändert er sie danach von Hand, bleibt

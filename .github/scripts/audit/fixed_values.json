@@ -1320,16 +1320,6 @@
    "reason": "What a campsite rest restores alone, of the player's maximum HP (wiki: 90 % alone, 45 % with one, 30 % with two; 45 % in the game's prompt in Daedalus' field note, +30 % in his measurement of 04.11.2026). No sheet holds it (XBMContentCamp holds only the familiar count); the game states it in the rest prompt, and from its first reading RSR counts with the prompt's share instead."
   },
   {
-   "file": "RotationSolver/Basic/Rotations/Basic/BeastmasterCrucibleCamp.cs",
-   "code": "var share = percent / 100f;",
-   "values": [
-    "100"
-   ],
-   "status": "exception",
-   "loop": "A564",
-   "reason": "Percent to share: the rest prompt states the share in percent; the divisor is the definition of the unit, as for the item texts (A340, A551)."
-  },
-  {
    "file": "RotationSolver/Basic/Rotations/Basic/BeastmasterCrucibleShop.cs",
    "code": "private const int ShopBuyCallback = 2;",
    "values": [
@@ -1913,13 +1903,13 @@
   },
   {
    "file": "RotationSolver/Basic/Helpers/CrucibleBoard.cs",
-   "code": "private const int PercentScale = 100;",
+   "code": "internal const int PercentScale = 100;",
    "values": [
     "100"
    ],
    "status": "exception",
    "loop": "A661",
-   "reason": "Unit of the learned loads per Crucible fight (CrucibleFightLoads.json): whole percent of the player's maximum HP, the unit the windows show; a choice of unit, not a figure of the game (A661)."
+   "reason": "Unit of the learned loads per Crucible fight (CrucibleFightLoads.json): whole percent of the player's maximum HP, the unit the windows show; a choice of unit, not a figure of the game (A661). Also the unit of the learned campsite rest per board (CrucibleCampPools.json, A667)."
   }
  ]
 }

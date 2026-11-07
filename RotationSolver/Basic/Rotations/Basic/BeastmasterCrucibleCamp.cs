@@ -5,6 +5,7 @@ using ECommons.UIHelpers.AtkReaderImplementations;
 using FFXIVClientStructs.FFXIV.Client.UI;
 using FFXIVClientStructs.FFXIV.Client.UI.Agent;
 using FFXIVClientStructs.FFXIV.Component.GUI;
+using RotationSolver.Basic.Configuration;
 
 namespace RotationSolver.Basic.Rotations.Basic;
 
@@ -20,15 +21,17 @@ public partial class BeastmasterRotation
 	// checked against the selection it should have made.
 	internal const uint CampsiteMode = 4;
 
-	// What a rest restores alone, of the player's maximum HP; with n familiars each gets this divided by 1 + n (wiki: 90 %
-	// alone, 45 % with one, 30 % with two; 45 % in the game's prompt in Daedalus' field note, +30 % in his measurement of
-	// 04.11.2026). Only until the game's prompt has been read once: from then on its percentage counts.
+	// The whole a rest shares among the player and the familiars resting, of each one's maximum HP, where no prompt of the
+	// board was read: the smallest known (board 1: 90 % alone, 45 % each with one, 30 % with two - wiki, Daedalus' field
+	// note, his runs of 07.11.2026; the First Master's Board's sixth move shares 150 %, A667).
 	private const float RestAloneShare = 0.9f;
 
 	// The share the game's rest prompt offers, by the number of familiars resting ("Rest and recover 45% of HP for you
 	// and your: ...", Addon 17660): any number before a percent sign, in any client language.
 	private static readonly Regex OfferedShare = new(@"(?<share>\d+)\s*%", RegexOptions.Compiled);
-	private static readonly Dictionary<int, float> _restShareOffered = [];
+
+	// A667: the whole read at a campsite of this run - board and space - which counts there at once.
+	private static readonly Dictionary<(uint Board, int Node), float> _restPoolRead = [];
 
 	// ClientStructs 0adb2e5 names the pet party's modes: 3 buy feed, 4 buy feed result, 5 feed detail. Daedalus saw the campsite
 	// window in mode 4; with 3 or 5 seen since the window opened, or a feed in it, mode 4 is a feeding, not a campsite (A631).
@@ -372,21 +375,30 @@ public partial class BeastmasterRotation
 				+ (need == null ? "a fight on the ways to the next rest was never measured with RSR" : "the way to the next rest can cost a full bar");
 	}
 
-	/// <summary>The share of his maximum HP each of the player and <paramref name="familiars"/> familiars recover in one rest.</summary>
+	/// <summary>
+	/// The share of his maximum HP each of the player and <paramref name="familiars"/> familiars recover in one rest: the
+	/// whole of this campsite as read here, else the smallest whole read on this board, else the smallest known, divided
+	/// among everyone resting, at most all of one's HP (concept 21, K10 Campsite, A667).
+	/// </summary>
 	private static float RestShare(int familiars)
 	{
-		if (_restShareOffered.TryGetValue(familiars, out var offered))
+		return Math.Min(1f, RestPool() / (1 + familiars));
+	}
+
+	private static float RestPool()
+	{
+		var board = CrucibleRoute.LastBattle.Board;
+		if (_restPoolRead.TryGetValue((board, CrucibleRoute.Current), out var here))
 		{
-			return offered;
+			return here;
 		}
 
-		// Any prompt read so far tells the whole: the game divides one rest among everyone resting.
-		foreach (var (count, share) in _restShareOffered)
+		lock (OtherConfiguration.CrucibleCampPoolsGate)
 		{
-			return share * (1 + count) / (1 + familiars);
+			return OtherConfiguration.CrucibleCampPools.TryGetValue(board, out var percent)
+				? percent / (float)CrucibleBoard.PercentScale
+				: RestAloneShare;
 		}
-
-		return RestAloneShare / (1 + familiars);
 	}
 
 	// The rest prompt, while the campsite window is open: the share it offers for the familiars selected now. True while a
@@ -406,12 +418,31 @@ public partial class BeastmasterRotation
 			return true;
 		}
 
-		var share = percent / 100f;
-		if (!_restShareOffered.TryGetValue(familiars, out var known) || known != share)
+		// Capped at all of one's HP, a share tells only "at least": the whole is known from a share below it.
+		var share = percent / (float)CrucibleBoard.PercentScale;
+		var key = (CrucibleRoute.LastBattle.Board, CrucibleRoute.Current);
+		var pool = share * (1 + familiars);
+		if (share < 1f && (!_restPoolRead.TryGetValue(key, out var known) || known != pool))
 		{
 			var expected = RestShare(familiars);
-			_restShareOffered[familiars] = share;
-			DefenseTrace.Line($"crucible campsite: the game offers {share:P0} each with {familiars} familiars, RSR expected {expected:P0}");
+			_restPoolRead[key] = pool;
+			DefenseTrace.Line($"crucible campsite: the game offers {share:P0} each with {familiars} familiars, RSR expected {expected:P0}"
+				+ $" - a rest here shares {pool:P0}");
+			var whole = (int)Math.Round(pool * CrucibleBoard.PercentScale);
+			var learned = false;
+			lock (OtherConfiguration.CrucibleCampPoolsGate)
+			{
+				if (!OtherConfiguration.CrucibleCampPools.TryGetValue(key.Board, out var stored) || whole < stored)
+				{
+					OtherConfiguration.CrucibleCampPools[key.Board] = whole;
+					learned = true;
+				}
+			}
+
+			if (learned)
+			{
+				_ = OtherConfiguration.SaveCrucibleCampPools();
+			}
 		}
 
 		return true;

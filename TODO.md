@@ -20,7 +20,7 @@ BossMod-Module) die Rotation des Beastmasters, die Wahl der Begleiter und den Ze
 (Beispiel seiner Beobachtung: der Raptor gegen Feuer, bevor feueranfällige Gegner da waren; A581).
 
 1. Crucible-Wechselwirkungen, Stufe 2 – Ausrüstung, Futter, Weg und Zielwahl lesen die Paare noch nicht (Beastmaster,
-   Vorrang).
+   Vorrang); danach die Crucible-Zielfolge (Final Hourglass, Roulette, Aetheric Charge).
 2. Blaumagier: RSRs nächste Aktion beendet Apokalypsis und Chelonian Gate – Schaden und Minderung des Spielers enden
    nach einem GCD statt nach 10 s.
 3. Kegel und Ringe gegnerischer Zauber genau messen: Zauber- und Kanalbeginn nutzen RSRs Erkennung bei Kegel und Ring
@@ -47,6 +47,14 @@ auf jeden Schadens- und Schutzkanal gehört, den RSR nicht selbst beendet (Unive
 *Konzept:* 14, „Wo Angriff die Abwehr beendet: die Kanäle".
 
 ## Offene Arbeit
+
+### Crucible-Zielfolge: Final Hourglass, Roulette, Aetheric Charge · N
+Im Kampf: Gegen Königs-Ahriman (Zweites Meisterbrett) soll Final Hourglass zuerst fallen und Roulette nicht getroffen
+werden (BossmodReborn Tekz 1.0.68.6; eorzeantavern: die Sanduhr fällt, wenn Roulettes Zeiger nicht auf dich zeigt);
+gegen den Taurus (Brett 2) Aetheric Charge vor den übrigen, bevor sie in 6, 12, 18 Yalm platzt und Damage Down legt.
+RSRs Gefahrenfolge (K3) sieht beide nicht, weil sie bis zum Platzen keinen Schaden machen. Nächster Schritt: Loop –
+Mechanik am Modul und an den Blättern (Zeiger, Platzen), allgemeine Regel „vor dem Platzen fallen", Kampfbeispiel.
+Konzept 21, K3 und K12; Quelle A667.
 
 ### Crucible-Wechselwirkungen, Stufe 2 · N
 Im Kampf und auf dem Brett: Laden und Schatzfeld werten ein Ausrüstungsstück ohne die Gegenstände, die es verlängert

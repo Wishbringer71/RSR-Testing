@@ -167,7 +167,7 @@ internal static class CrucibleBoard
 
 	// A661: the unit of the learned loads per fight (CrucibleFightLoads.json) - whole percent of the player's maximum HP, as
 	// the window shows them; a choice of unit, not a figure of the game.
-	private const int PercentScale = 100;
+	internal const int PercentScale = 100;
 
 	/// <summary>
 	/// K10 Campsite (A661): the heaviest damage the player took in <paramref name="battle"/> (an XBMBattleDetail row), as a

@@ -19602,6 +19602,43 @@ Anlass: seine Rüge vom 07.11.2026 (A665) – Synergien gehören zu Beginn volls
 *Prüfgrad:* Compile ohne Warnung; Prüfskripte. Im Spiel nicht beobachtet; jeder Vorzug steht als „crucible item: …,
 first …" in der Spur.
 
+### A667 · Beastmaster-Quellen und Plugins, neue Suche; Rast teilt je Brett einen anderen Anteil (07.11.2026)
+
+Sein Auftrag (eingeordnet als Vorgabe): „Todo für beastmaster weiter im Loop, recherchiere, suche. Auch nach weiteren
+Quellen und Plugins".
+
+- *1 Research, Plugins (Websuche 07.11.2026, Klone lesend):* neu gefunden Kyuros1/BeastKeeper (778532a, 01.10.2026,
+  AGPL-3.0: merkt sich das Team), Zinochron/BeastMastr (c52b572, 21.09.2026, AGPL-3.0: Datenansicht, früh) und
+  t3knical/DalamudPlugins (fe84470, 07.11.2026) mit BeastMasterHelper 0.10.5.2 (englischer Fork von anmili2022/Beastmaster,
+  ohne Lizenz, nur Binärpaket – nicht gelesen) und BossmodReborn Tekz 1.0.68.6 (BSD-3, Binärpaket, mit ilspycmd gelesen):
+  Module aller fünf Bretter mit Zielprioritäten je Kampf. Erneut gemessen: xenofei/CrucibleSux be66eda (wie A609),
+  anmili2022/Beastmaster 2a0d9f2 (wie A623), BossModReborn 27be42256 (wie Konzept 21). Leitfäden: icy-veins,
+  Power Up Gaming, mmogah, fullboosts, eorzeantavern, consolegameswiki („First Master's Board", „Crucible Items").
+- *Abgleich Tekz gegen Konzept 21:* Brett 1 gleich (Bischof vor Ritter, Magierin vor Ritterin vor Seelenlose). Bedingte
+  Ziele sind gedeckt: Stachelstatus (Paralyzing Spikes 5434, Blaze Spikes 5465, Needles Out 5145) erkennt RSRs
+  Stachelregel am Wirktext, Morpho/Abaddon, Myconid in der Pfütze, versteinerter Zyklop, Zu-Eier, Tablitauren,
+  Unverwundbarkeit. Nicht gedeckt: Königs-Ahriman (Brett 5) mit Final Hourglass zuerst und Roulette nicht angreifen
+  (eorzeantavern: Roulette bindet dich an eine Sanduhr, die fällt, wenn der Zeiger nicht auf dich zeigt), Taurus
+  (Brett 2) mit Aetheric Charge vor den übrigen (platzt in 6, 12, 18 Yalm und legt Damage Down) – ins TODO.
+- *Fund, Sicherheit (CrucibleSux-Recherche, consolegameswiki):* Die Rast des Ersten Meisterbretts (Zug 6) teilt 150 %
+  (allein 100 %, gekappt; einer je 75 %), die von Brett 1 90 %. RSR las einen Anteil und rechnete ihn für jedes Brett
+  und jedes Lager weiter, ohne Kappung, und vergaß ihn nie. Nach dem Meisterbrett hätte es auf Brett 1 mit einem
+  Begleiter 75 % statt 45 % erwartet: ein Begleiter mehr ruht, du kommst mit 30 % deiner LP weniger heraus, als die
+  Rechnung trägt.
+- *Gebaut (Konzept 21 K10, „Anteil der Rast"):* Gesamtanteil = gelesener Anteil × Teilnehmer, nur unter 100 %; gilt
+  im Lager sofort, je Brett gelernt der kleinste (`CrucibleCampPools.json`, Reiter „Crucible campsites"), ohne Lesung
+  90 %; je Teilnehmer höchstens 100 %. Dazu der Satzanfang „Die Grenze des Lagers lernt RSR am Klick", den die
+  Umschreibung in A661 abgeschnitten hatte.
+- *Nicht übernommen:* Punktewertung (wie A609), Teamwahl nach drei Begleitern (Beast Squad III) – Punkte, keine
+  Sicherheit; seine Entscheidung, wenn er Punkte will.
+- *6 Falsifikation:* Kein Defekt? Widerlegt an den Wikizahlen gegen den Code. Option falsch? Zwei Lager eines Bretts
+  mit verschiedenem Anteil: der kleinere gilt dem größeren, bis dort gelesen ist – zu wenig Rast, nie zu viel.
+  Ausgeliefert, nichts ändert sich? Auf Brett 1 nicht, solange er nur dort spielt; der Fehler wirkte erst nach einem
+  anderen Brett.
+
+*Prüfgrad:* Compile ohne Warnung; Prüfskripte. Statisch gegen Wiki und Recherche; im Spiel nicht beobachtet, die Spur
+nennt jede Lesung mit dem Anteil, den RSR erwartet hatte.
+
 ## B · Commit-Register (Fork vs. `upstream/main`)
 
 ### B1 · Einzelgeprüfte Fork-Commits

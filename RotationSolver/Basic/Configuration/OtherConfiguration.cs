@@ -247,6 +247,17 @@ internal partial class OtherConfiguration
 	internal static readonly object CrucibleFightLoadsGate = new();
 
 	/// <summary>
+	/// K10 of the Crucible (concept 21, Campsite, A667): per board (the route's board row), the whole a campsite rest shares
+	/// among the player and the familiars resting, in percent of each one's maximum HP - read from the game's rest prompt
+	/// where it is not capped at 100 %, the smallest read over every session. Changed and read on the game thread under
+	/// <see cref="CrucibleCampPoolsGate"/>.
+	/// </summary>
+	internal static Dictionary<uint, int> CrucibleCampPools = [];
+
+	/// <summary>Guards <see cref="CrucibleCampPools"/> against the save on a pool thread.</summary>
+	internal static readonly object CrucibleCampPoolsGate = new();
+
+	/// <summary>
 	/// Per enemy kind (base id), the fewest sleeps it had taken in a fight before it resisted the next one - the
 	/// point where the halving of repeated sleeps ends in a temporary immunity. Learned in play over every session,
 	/// stored like <see cref="SleepOutcomes"/>; merged with the file by the lower count.
@@ -842,6 +853,9 @@ internal partial class OtherConfiguration
 		new LearnedFile<int>(nameof(CrucibleFightLoads), CopyCrucibleFightLoads,
 			v => { lock (CrucibleFightLoadsGate) { CrucibleFightLoads = v; } },
 			Math.Max, state => CrucibleFightLoadsStoreState = state, "Crucible fight(s) with a measured load"),
+		new LearnedFile<int>(nameof(CrucibleCampPools), CopyCrucibleCampPools,
+			v => { lock (CrucibleCampPoolsGate) { CrucibleCampPools = v; } },
+			Math.Min, state => CrucibleCampPoolsStoreState = state, "Crucible board(s) with a read campsite rest"),
 		new LearnedFile<int>(nameof(SleepDiminishing), () => CopySleepStore(SleepDiminishing),
 			v => { lock (SleepStoreGate) { SleepDiminishing = v; } },
 			Math.Min, state => SleepDiminishingStoreState = state, "enemy kind(s) with a sleep limit"),
@@ -1089,6 +1103,19 @@ internal partial class OtherConfiguration
 	internal static Task SaveDangerousAreas() => SaveList(nameof(DangerousAreas));
 
 	internal static Task SaveCrucibleFightLoads() => SaveList(nameof(CrucibleFightLoads));
+
+	internal static Task SaveCrucibleCampPools() => SaveList(nameof(CrucibleCampPools));
+
+	private static Dictionary<uint, int> CopyCrucibleCampPools()
+	{
+		lock (CrucibleCampPoolsGate)
+		{
+			return new Dictionary<uint, int>(CrucibleCampPools);
+		}
+	}
+
+	/// <summary>What the last save and load of <see cref="CrucibleCampPools"/> did, in words.</summary>
+	internal static string CrucibleCampPoolsStoreState { get; private set; } = "not loaded yet";
 
 	private static Dictionary<uint, int> CopyCrucibleFightLoads()
 	{
