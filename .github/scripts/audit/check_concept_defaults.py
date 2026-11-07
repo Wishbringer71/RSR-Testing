@@ -34,8 +34,11 @@ SOURCE_DIRS = (Path('RotationSolver'),)
 
 # `public bool Name { get; set; } = true;` - the form both the configuration class and every
 # rotation file use for a switchable setting.
+# The `[ConditionBool]` form is a private static readonly field whose generated property drops the underscore; without
+# `static` here it went unread, and its label borrowed the default of the next setting - a ticked child of
+# "Lock movement while casting" (A651).
 DEFINITION = re.compile(
-    r'(?:public|private)\s+(?:readonly\s+)?bool\s+_?([A-Za-z][A-Za-z0-9_]*)'
+    r'(?:public|private)\s+(?:static\s+)?(?:readonly\s+)?bool\s+_?([A-Za-z][A-Za-z0-9_]*)'
     r'(?:\s*\{\s*get;\s*set;\s*\})?\s*=\s*(true|false)\s*;')
 
 # The wordings the concepts actually use, German and English, in the sentence around the name.
@@ -46,8 +49,11 @@ _END = r'(?![A-Za-zÄÖÜäöüß])'
 ON = (r'(?:Standard\s+an' + _END + r'|voreingestellt\s+an' + _END + r'|Voreinstellung\s+an' + _END
       + r'|on\s+by\s+default|Standard\s+ein' + _END + r'|ab\s+Werk\s+\**an' + _END
       + r'|Vorgabe(?:wert)?\s+\**an' + _END + r'|\**an\**\s+als\s+Vorgabewert)')
-OFF = (r'(?:Standard\s+aus|voreingestellt\s+aus|Voreinstellung\s+aus|off\s+by\s+default'
-       r'|ab\s+Werk\s+\**aus|Vorgabe(?:wert)?\s+\**aus|\**aus\**\s+als\s+Vorgabewert)')
+# The same guard on "aus": "seine Vorgabe ausschließt" read as "Vorgabe aus", a default off for the setting named
+# before it (A651).
+OFF = (r'(?:Standard\s+aus' + _END + r'|voreingestellt\s+aus' + _END + r'|Voreinstellung\s+aus' + _END
+       + r'|off\s+by\s+default|ab\s+Werk\s+\**aus' + _END + r'|Vorgabe(?:wert)?\s+\**aus' + _END
+       + r'|\**aus\**\s+als\s+Vorgabewert)')
 CLAIM = re.compile(r'`([A-Z][A-Za-z0-9_]{3,})`(?P<between>[^`]{0,200}?)(?P<value>' + ON + '|' + OFF + ')',
                    re.IGNORECASE | re.DOTALL)
 
@@ -299,6 +305,9 @@ def selftest():
     wrong, _ = check('`AlphaSetting` steht ab Werk andersherum.', defaults)
     if wrong:
         raise AssertionError('"an" inside a longer word was read as a claim')
+    wrong, _ = check('`BetaSetting` greift nie, was seine Vorgabe ausschließt.', defaults)
+    if wrong:
+        raise AssertionError('"aus" inside a longer word was read as a claim')
 
     source = ('[UI("Heal ahead of a cast", Filter = X)]\n public bool HealAhead { get; set; } = true;\n'
               '[UI("Cast count for that", Filter = X)]\n public int CastCount { get; set; } = 3;\n'
@@ -314,6 +323,10 @@ def selftest():
         raise AssertionError('a quotation that is no setting text was scored')
     if not check_labels('- **x** — `Heal ahead\n  of a cast`, **off by default**.', labels):
         raise AssertionError('a setting text wrapped over two lines went unread')
+    field = label_map('[ConditionBool, UI("Lock it while casting", Filter = X)]\n private static readonly bool _lockIt = false;\n'
+                      '[UI("", Parent = nameof(LockIt))]\n public bool LockChild { get; set; } = true;')
+    if field.get('lock it while casting') != ('LockIt', 'false'):
+        raise AssertionError('a ConditionBool field was passed over for the next setting: %s' % field)
     stopped = label_map('[UI("Lock it during mitigations.", Filter = X)]\n public bool LockIt { get; set; } = true;')
     if not check_labels('`Lock it during mitigations` is off by default.', stopped):
         raise AssertionError('a UI text with a closing full stop did not match its quotation without one')

@@ -59,6 +59,19 @@ What this release changes in the fight. For the whole distance from upstream, se
   that limit, or would still be casting when a status that damages every action lands, RSR now counts it as
   "no spell can start", like moving: a Black Mage spends Polyglot, an Astrologian or Sage puts the damage over
   time on again where that pays. Before, only each spell was held, and the GCD could stay empty.
+- **`Lock movement while casting` no longer holds you in danger.** During a spell it lets go once the game has the
+  spell (the slidecast window, where moving no longer breaks it), while BossMod's AI moves you, or when your spot is
+  in danger before the spell ends: BossMod forbids it, or RSR sees a hit only a step avoids. Before a spell the
+  same, and while you walk out of danger RSR starts no spell that would stop you there. Before, the lock held you -
+  and BossMod's AI - in the area to the end of the cast bar.
+- **Every channel that ends on moving is held, against BossMod's walking for position only.** Beside Passage of
+  Arms, Flamethrower and Improvisation the lock now knows Collective Unconscious, Meditate, and the Blue Mage's
+  Phantom Flurry, Apokalypsis and Chelonian Gate; all are ticked by default except Meditate, which fills downtime
+  you walk in. A channel lets go when danger lands on your spot before it ends (with BossMod's AI walking, its walk
+  to the destination counted in); Passage of Arms holds on against the AI while its Arms Up covers a party member
+  about to die before an announced party hit and you are not about to die. RSR does not start one of these
+  channels on a spot BossMod forbids, with or without the lock. Each release, and each hold while BossMod wanted
+  to move you, writes a line to `DefenseTrace.log`.
 
 ## When the pack is about to fall
 

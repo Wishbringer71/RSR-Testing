@@ -5249,6 +5249,21 @@ internal static class DataCenter
 	/// True if BossMod is moving.
 	/// </summary>
 	public static bool BMRIsMoving { get; set; }
+
+	/// <summary>True while BossMod's AI steers the player toward a destination (<c>AI.IsNavigating</c>).</summary>
+	public static bool BMRIsNavigating { get; set; }
+
+	/// <summary>Where BossMod's AI steers the player (<c>AI.NaviTargetPos</c>); null when it does not.</summary>
+	public static Vector3? BMRNaviTargetPos { get; set; }
+
+	/// <summary>The player's movement speed as BossMod's AI reads it (<c>AI.PlayerSpeed</c>); zero without it.</summary>
+	public static float BMRPlayerSpeed { get; set; }
+
+	/// <summary>
+	/// Seconds until the earliest of BossMod's forbidden zones turns active, wherever it lies
+	/// (<c>Hints.ForbiddenZonesNextActivation</c>); float.MaxValue without one.
+	/// </summary>
+	public static float BMRForbiddenZonesNextActivation { get; set; } = float.MaxValue;
 	public static float BMRDebugTimelineRaidwide { get; set; } = float.MaxValue;
 	public static float BMRDebugTimelineTankbuster { get; set; } = float.MaxValue;
 	public static float BMRDebugHintsRaidwide { get; set; } = float.MaxValue;
@@ -5384,6 +5399,10 @@ internal static class DataCenter
 		BMRMaxCastTime = float.MaxValue;
 		BMRMoveRequested = false;
 		BMRIsMoving = false;
+		BMRIsNavigating = false;
+		BMRNaviTargetPos = null;
+		BMRPlayerSpeed = 0f;
+		BMRForbiddenZonesNextActivation = float.MaxValue;
 		BMRDebugTimelineRaidwide = float.MaxValue;
 		BMRDebugTimelineTankbuster = float.MaxValue;
 		BMRDebugHintsRaidwide = float.MaxValue;

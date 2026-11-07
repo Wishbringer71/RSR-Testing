@@ -26,6 +26,10 @@ internal static class BossModUpdater
 			DataCenter.BMRIsMoving = BMRInfo_IPCSubscriber.IsMoving?.Invoke() ?? false;
 			DataCenter.BMRMaxCastTime = BMRInfo_IPCSubscriber.MaxCastTime?.Invoke() ?? float.MaxValue;
 			DataCenter.BMRMoveRequested = BMRInfo_IPCSubscriber.IsMoveRequested?.Invoke() ?? false;
+			DataCenter.BMRIsNavigating = BMRInfo_IPCSubscriber.IsNavigating?.Invoke() ?? false;
+			DataCenter.BMRNaviTargetPos = BMRInfo_IPCSubscriber.NaviTargetPos?.Invoke();
+			DataCenter.BMRPlayerSpeed = BMRInfo_IPCSubscriber.PlayerSpeed?.Invoke() ?? 0f;
+			DataCenter.BMRForbiddenZonesNextActivation = BMRInfo_IPCSubscriber.ForbiddenZonesNextActivation?.Invoke() ?? float.MaxValue;
 
 			DataCenter.BMRActiveModuleName = BMRTimeline_IPCSubscriber.ActiveModuleName?.Invoke();
 

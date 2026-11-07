@@ -19010,6 +19010,47 @@ habe den schleim bislang nicht anfreunden können."
 - *Prüfgrad:* statisch und Compile (0 Warnungen), 50 Prüfschritte; im Spiel nicht beobachtet.
 - *Dokumentation:* Konzept 03 (Grundlagen, Lösungen, C6), TODO, Release-Text, Namensliste (Numinosum, Meditieren, Feuka).
 
+### A651 · Bewegungssperre: vierter Loop, jeder Preis beseitigt und gebaut; zwei Prüfmittel lasen falsch (07.11.2026)
+
+- *Anlass:* seine Vorgabe zu A650: „wenn ich ein optimum haben will, sollte das so gut sein, dass keine entscheidung
+  nötig ist. entscheidungen müssen getroffen werden, wenn bei jeder alternative eine kröte zu schlucken ist. wenn etwas
+  perfekt ist, dann braucht es keiner entscheidung. also hast du nicht geliefert". Eingetragen in CLAUDE.md („Bevor ich
+  ihn frage oder ihm etwas vorlege": Ein Optimum braucht keine Entscheidung).
+- *1 Research:* BossmodReborn 27be422 veröffentlicht `AI.IsNavigating`, `AI.NaviTargetPos`, `AI.PlayerSpeed` und
+  `Hints.ForbiddenZonesNextActivation` (früheste Aktivierung über alle Flächen, nicht je Ort). Statusblatt
+  (`Status.resx`): Collective Unconscious 849 „Damage taken is reduced" – die Minderung vergibt das Wirken einmal für
+  10 s, sie bleibt nach dem Abbruch (Wirktext, Schluss aus dem Textaufbau, wie Konzept 14); der Kanal erneuert nur Wheel
+  of Fortune (Regen) im Ring. Improvisation 2695 ist ein Regen. Nur Arms Up (1176) endet mit seinem Kanal.
+- *2–6, je Preis aus A650 eine Konstruktion:* (a) „Der Tank bleibt in der Fläche" – Laufzeitgewichtung nach seiner Regel
+  (Sicherheit der Gruppe, gewichtet mit der Wahrscheinlichkeit): Halten gegen die KI nur, solange eine Gruppenminderung,
+  die mit dem Kanal endet, ein Mitglied in der kritischen Klasse deckt, ein Gruppentreffer aussteht und der Spieler nicht
+  selbst in ihr steht; sonst ausweichen. Das trifft nur Waffengang; für Numinosum und Tanzimprovisation bliebe der
+  Heiler oder Tänzer für ein Regen in der Fläche – verworfen. (b) Kanal mit gehender KI: Zeithorizont Restzeit plus Weg
+  zum Ziel der KI (`NaviTargetPos`, `PlayerSpeed`). (c) Der Spieler in Gefahr: seine Taste löst immer
+  (`IsMoveRequested`). (d) Zauberbeginn beim Gehen aus der Gefahr mit Sperre: kein Zauber, der ihn dort anhielte
+  (`NeedsCasting`, `NoCastFitsNow`). (e) Kanalbeginn auf einem Ort, den BossMod verbietet: keiner, mit und ohne Sperre
+  (`MovementLock.ChannelStartBarred`). (f) Häkchen für alle acht Kanäle der Jobs mit Stufe, ab Werk an außer Meditieren
+  (füllt Leerlauf, in dem der Samurai geht); die drei bisherigen standen aus – Voreinstellung ist der sinnvollere Wert
+  (`code.md`, „Option und Beobachtbarkeit"). Gebaut in `MovementLock` (neu) und `MovingUpdater`. Was bleibt, ist eine
+  Grenze der Daten, kein Preis einer Wahl: die früheste Fläche ist global, und ob die Sperre des Spiels BossMods Gehen
+  anhält, misst erst die Spurzeile.
+- *Häkchentexte:* je Kanal, was er im Kampf hält, und dass eine weitere Aktion ihn weiter beendet; Numinosum: die
+  Minderung bleibt ohnehin.
+- *Prüfmittel:* `check_channel_locks.py` (neu, CI) hält `MovementLock.Channels` gegen ActionTransient („or moving",
+  Stufe > 0, nicht PvP; gleichnamige Zeile wie Phantom Flurrys Abschluss 23289 gilt als derselbe Kanal).
+  `check_concept_defaults.py` las `private static readonly bool` nicht: „Lock movement while casting" erbte den Wert der
+  nächsten Einstellung (eines Häkchens, jetzt an). Behoben, dazu fehlte bei „aus" die Wortgrenze, die „an" seit A250 hat
+  („seine Vorgabe ausschließt" galt als „Vorgabe aus"); beide mit Selbsttest. Die nun gelesenen Zuordnungen fanden zwei
+  mehrdeutige Konzeptsätze (11, 18), eindeutig gefasst. `generate_action_matrix.py` las kein Argument zwischen Aktion
+  und `Parent`: Mit Erklärungstext zeigte die Matrix die Kanäle ohne Bewegungssperre; behoben, mit Selbsttest.
+- *Neu erfasst:* Drückt der Blaumagier Apokalypsis oder Chelonian Gate, beendet RSRs nächste Aktion sie; die
+  Flammenwerfer-Regel sitzt beim einen Job (TODO „Blaumagier: RSRs nächste Aktion beendet Apokalypsis und Chelonian
+  Gate"). Konzept 14 nannte Apokalypsis noch „außerhalb seines Profils" (Blaumagier gehört seit 03.11.2026 dazu).
+- *Prüfgrad:* statisch und Compile (0 Warnungen), 51 Prüfschritte; im Spiel nicht beobachtet. Messmittel: je Freigabe
+  eine Spurzeile mit Grund, je Halt gegen BossMods Gehen eine, ob die Figur ging.
+- *Dokumentation:* Konzept 03 („Bewegungssperre beim Wirken und die KI von BossMod"), 14 (Kanäle), 11, 18, 12
+  (Zeilenangabe), TODO (Punkt geschlossen, Blaumagier-Defekt neu), Release-Text, CLAUDE.md; Widerruf C170.
+
 ## B · Commit-Register (Fork vs. `upstream/main`)
 
 ### B1 · Einzelgeprüfte Fork-Commits
@@ -19331,3 +19372,4 @@ Die offene Arbeit dazu — Reihenfolge und Abbruchbedingung der Nachprüfung —
 | C167 | C77: „Die Zurückhaltung rechnet jetzt selbst, ob die Reserve gefährdet ist (Ladung übrig, oder nächste vor dem vorhergesagten Ereignis zurück)“; ebenso Konzept 08, „Zwei Ladungen“: „Die Frage wird nicht vorgelegt, sondern im Kampf entschieden“ | Kein Aufrufer übergab `BMRShouldRefreshBefore` eine Aktion; ohne sie galt die Reserve immer als echt, die Rechnung lief nie. Übergeben, hätte sie für eine bereite Aktion mit einer Ladung die Restzeit 0 gelesen und die Zurückhaltung abgeschaltet. Der Text der Option („Radiant Aegis, Tactician, Troubadour or Shield Samba wait for the second instead of being eaten by the first“) beschreibt das Verhalten, das tatsächlich lief | Rechnung berichtigt (ohne ladende Ladung die volle Abklingzeit); Barde, Maschinist und Tänzer übergeben ihre Aktion (eine Ladung, Reserve echt, Verhalten gleich); Schimmerschild nicht, weil der Optionstext bindet. Konzept 08 auf diesen Stand gebracht (A592) |
 | C168 | Konzept 08 („Die Erhebung dazu ist geführt …") und Prüfskript-README zu `scan16.py`: „Die übrigen Treffer der Erhebung liegen in Bozja und den Tiefen Gewölben, also außerhalb des Nutzungsprofils" | Die Treffer sind Bozja (Lost Paralyze III) und Eureka (Paralyze L, Paralyze L III; `EurekaMagiaAction` 16, xivapi 06.11.2026), nicht Tiefe Gewölbe; und die Tiefen Gewölbe liegen in seinem Profil (seine Rüge, 06.11.2026; A427 Pilgerpfad) | Beide Stellen berichtigt; Eureka bleibt erfasst, bis er es nennt (A612) |
 | C169 | A595 und Konzept 03 („Bewegungssperre beim Wirken und die KI von BossMod"): „B, die Sperre weicht der KI (Empfehlung)" für die ganze Option; „Daedalus verlor so einen Heiler" | B gäbe auch die angehakten Kanäle frei (Waffengang, Flammenwerfer, Tanzimprovisation), die BossMod nicht kennt: Dort geht die KI auch zum Nachrücken, und jeder Schritt beendet den Kanal (ActionTransient 7385, 7418, 16014). Daedalus' Heiler starb an Daedalus' eigener Pause über `AI.PauseMovement`, nicht an RSRs Sperre (`CastMovementHoldService`, Daedalus c4a788f) | Konzept 03 neu gefasst: Empfehlung H (nur Zauber weichen der KI und enden mit der Antwort des Spiels) und K' für Kanäle; die Feldnotiz als Daedalus' eigener Fall geführt (A649) |
+| C170 | A650 („Status Arms Up 1176, Collective Unconscious 849, Improvisation 2695 auf Mitgliedern" als das, was ein Schutzkanal hält; „(c) KK stellt den Tank in die Fläche bleibt seine Gewichtung") und TODO („Nächster Schritt: seine Entscheidung zu H2, KK und den Häkchen") | 849 vergibt das Wirken einmal, die Minderung bleibt nach dem Abbruch; 2695 ist ein Regen – nur Arms Up endet mit seinem Kanal. Die Gewichtung von Tank gegen Gruppe entscheidet seine Regel zur Laufzeit; ein Optimum braucht keine Entscheidung (seine Vorgabe, 07.11.2026) | Gebaut ohne Vorlage (A651): Halten gegen die KI nur mit Waffengang und nur, wo die Minderung ein gefährdetes Mitglied vor einem angekündigten Treffer deckt |

@@ -145,9 +145,9 @@ beendet es seinen eigenen Kanal also mit dem nächsten GCD oder der nächsten F�
 
 | Aktion | Was der Kanal trägt (Wirktext) | Was nach dem Abbruch bleibt | RSR-Sperre (Voreinstellung) |
 |---|---|---|---|
-| Passage of Arms (Paladin) | Blockrate 100 %, Gruppe im Kegel hinter ihm nimmt 85 % Schaden, 18 s | nichts | `PldlockCasting` (an): hält GCD und Fähigkeiten, solange der angekündigte Treffer aussteht (`DataCenter.AreaHitPending`). `PosPassageOfArms` (aus) sperrt Bewegung, nur mit `PoslockCasting` (aus) |
-| Collective Unconscious (Astrologe) | Ring 18 s, darin Wheel of Fortune (Regen) fortlaufend | Minderung −10 % für 10 s, als Zusatzeffekt beim Wirken vergeben (Schluss aus dem Textaufbau, Status 849 ist eigener Status) | `AstlockCasting` (aus), gebaut wie beim Paladin |
-| Improvisation (Tänzer) | Stapel Rising Rhythm alle 3 s bis 4; Regen 15 s | Regen (Schluss aus dem Textaufbau) | keine Aktionssperre; Bewegungssperre `PosImprovisation` (aus), nur mit `PoslockCasting` (aus) |
+| Passage of Arms (Paladin) | Blockrate 100 %, Gruppe im Kegel hinter ihm nimmt 85 % Schaden, 18 s | nichts | `PldlockCasting` (an): hält GCD und Fähigkeiten, solange der angekündigte Treffer aussteht (`DataCenter.AreaHitPending`). `PosPassageOfArms` (an) sperrt Bewegung, nur mit `PoslockCasting` (aus) |
+| Collective Unconscious (Astrologe) | Ring 18 s, darin Wheel of Fortune (Regen) fortlaufend | Minderung −10 % für 10 s, als Zusatzeffekt beim Wirken vergeben (Schluss aus dem Textaufbau, Status 849 ist eigener Status) | `AstlockCasting` (aus), gebaut wie beim Paladin; Bewegungssperre `PosCollectiveUnconscious` (an), nur mit `PoslockCasting` (aus) |
+| Improvisation (Tänzer) | Stapel Rising Rhythm alle 3 s bis 4; Regen 15 s | Regen (Schluss aus dem Textaufbau) | keine Aktionssperre; Bewegungssperre `PosImprovisation` (an), nur mit `PoslockCasting` (aus) |
 
 **Im Kampf:**
 - **Paladin:** RSR wirkt Passage of Arms nur, wenn ein Flächentreffer angekündigt ist (Zauberleiste
@@ -183,11 +183,13 @@ Kegel vor ihm (`DataCenter.FlamethrowerChannelRunning`) –, verweigert `BaseAct
 („KeepsTheFlamethrowerChannel"), einen Trank ebenso (`MedicineItem`). Durch geht, was ein Sicherheitsweg verlangt –
 Heilung, Flächen- und Einzelabwehr, Unterbrechung, Reinigung, Wiederbelebung, Provokation, Schutz gegen Rückstoß – und was
 der Spieler drückt. Sicherheit vor Schaden: Der Kanal ist Schaden, und ein Treffer wiegt mehr als die restlichen Ticks.
-Bewegt sich der Spieler, endet der Kanal ohnehin; RSR sperrt seine Bewegung nur mit „Lock movement while casting" und
-dem Haken bei Flamethrower (beide ab Werk aus). Steht kein Gegner mehr im Kegel, gibt die Sperre frei, und die nächste
+Bewegt sich der Spieler, endet der Kanal ohnehin; RSR sperrt seine Bewegung nur mit „Lock movement while casting" (ab
+Werk aus) und dem Haken bei Flamethrower (ab Werk an; wann sie nachgibt: Konzept 03, „Bewegungssperre beim Wirken und
+die KI von BossMod"). Steht kein Gegner mehr im Kegel, gibt die Sperre frei, und die nächste
 Aktion beendet den leeren Kanal. `DefenseTrace.log` schreibt bei jedem Ende, wie lange er lief, die letzte Aktion und
-ob der Spieler sich bewegte. Apokalypsis (Blaumagier) ist derselbe Kanal als Linie; außerhalb seines Profils erfasst,
-keine Sperre. Meditate (Samurai) wirkt RSR nur in der Pause. Dort beendet ihn jede Abwehr oder Heilung, die
+ob der Spieler sich bewegte. Apokalypsis (Blaumagier) ist derselbe Kanal als Linie, Chelonian Gate ein
+Schutzkanal (−20 %, 10 s); RSR wirkt beide nicht selbst, und drückt sie der Spieler, beendet RSRs nächste Aktion sie –
+keine Aktionssperre hält sie (offen: TODO „Blaumagier: RSRs nächste Aktion beendet Apokalypsis und Chelonian Gate"). Meditate (Samurai) wirkt RSR nur in der Pause. Dort beendet ihn jede Abwehr oder Heilung, die
 ohne Gegner in Reichweite fällt: die eigene Heilung (Second Wind, Bloodbath), Tengentsu und Third Eye
 bei angekündigtem Treffer auf ihn oder eigener niedriger Gesundheit. Sicherheit vor Kenki — so gewollt.
 Die Rückhaltung von Abwehr im Burst steht in Konzept 08, „Die Abwehrsperren".

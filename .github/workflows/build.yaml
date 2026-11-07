@@ -179,6 +179,12 @@ jobs:
       - name: Check the German action-name dictionary resolves
         run: python3 .github/scripts/audit/check_action_names.py
 
+      # The movement lock knows the channels that end upon moving (concept 03, A651); one it lacks is walked off by
+      # BossMod's AI with nothing to hold it. This holds the list against the game's ActionTransient sheet (xivapi),
+      # skipping when xivapi is unreachable.
+      - name: Check the movement lock's channel list against the game data
+        run: python3 .github/scripts/audit/check_channel_locks.py
+
       # The shipped area and tankbuster lists carry the casts cactbot announces (concept 13, A620). The file is generated
       # from a cactbot checkout; this holds its reading of the triggers and every id against the Action sheet (an enemy
       # action, no player action), skipping the sheet part when xivapi is unreachable.

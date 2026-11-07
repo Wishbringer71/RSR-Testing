@@ -19,10 +19,8 @@ auswahl und das timing der beschwörung" – je Kampf aller fünf Bretter (Gegne
 BossMod-Module) die Rotation des Beastmasters, die Wahl der Begleiter und den Zeitpunkt ihres Aufrufs im Loop prüfen
 (Beispiel seiner Beobachtung: der Raptor gegen Feuer, bevor feueranfällige Gegner da waren; A581).
 
-1. Bewegungssperre beim Wirken gegen das Ausweichen der BossMod-KI: Mit „Lock movement while casting" an steht die
-   Figur während jedes Zaubers und jedes angehakten Kanals still, auch wenn die KI von BossMod oder der Spieler selbst
-   aus einer Fläche gehen will, und bis zum Ende des Balkens auch im Gleitfenster; Numinosum und Meditieren schützt sie
-   gar nicht. Nur mit der Option, dort aber mit einem Treffer, dem der Spieler nicht ausweicht.
+1. Blaumagier: RSRs nächste Aktion beendet Apokalypsis und Chelonian Gate – Schaden und Minderung des Spielers enden
+   nach einem GCD statt nach 10 s.
 
 Danach die technische Schuld, soweit ihre Auflösungsbedingung erfüllt ist. Warten auf Daten: unten.
 
@@ -33,21 +31,20 @@ Code-Review; was diese finden, kommt wieder hierher und in dieselbe Reihenfolge,
 
 ## Defekte
 
-Keiner offen.
+### Blaumagier: RSRs nächste Aktion beendet Apokalypsis und Chelonian Gate · N
+Im Kampf: Drückt der Blaumagier Apokalypsis (Linie, 10 s Schaden) oder Chelonian Gate (−20 % Schaden, 10 s, danach
+Auspicious Trance), beendet RSRs nächste Aktion den Kanal („Effect ends upon using another action or moving"); RSR wirkt
+beide nicht selbst, und keine Aktionssperre hält sie. Beim Flammenwerfer hält RSR dagegen jede Aktion außer den
+Sicherheitswegen zurück (`DataCenter.FlamethrowerChannelRunning`, `BaseAction.CanUse`, „KeepsTheFlamethrowerChannel");
+die Regel sitzt beim einen Job statt bei allen Kanälen, die ein Spieler laufen lässt. Die Bewegungssperre hält diese
+Kanäle; ohne Aktionssperre endet ihr Nutzen mit RSRs nächster Aktion. *Ort:* `DataCenter.FlamethrowerChannelRunning`,
+`BaseAction.CanUse`, `MedicineItem.CanUseThis`, `MovementLock.Channels`. *Nächster Schritt:* Loop, ob die Flammenwerfer-Regel
+auf jeden Schadens- und Schutzkanal gehört, den RSR nicht selbst beendet (Universell zuerst), mit den Sicherheitswegen.
+*Konzept:* 14, „Wo Angriff die Abwehr beendet: die Kanäle".
 
 ## Offene Arbeit
 
-### Bewegungssperre beim Wirken gegen das Ausweichen der BossMod-KI · N, U
-Im Kampf: Mit „Lock movement while casting" („Stops your character from moving while casting …", ab Werk aus) setzt
-`MovingUpdater` während jedes Zaubers und jedes angehakten Kanals (Waffengang, Flammenwerfer, Tanzimprovisation) die
-Bewegungssperre des Spiels. Weder BossMods KI noch der Spieler kommen dann mitten im Zauber aus einer Fläche, die KI auch
-nicht, wie sie es plant, im Gleitfenster; im Kanal hält die Sperre auch in Gefahr. Numinosum und Meditieren, die beim Gehen
-ebenso enden, kennt sie nicht. Der Optionstext bindet und nennt keine Ausnahme. *Ort:* `MovingUpdater.UpdateCanMove`,
-`DataCenter.NoPoslock`, `Configs` (Häkchen), `Movement.IsMoving`, `Hints.IsPositionSafe`,
-`RaiseProtection.FirstDodgeableWithin`, `CastInfo.ResponseSourceSequence`. Loop durch (A595, A649, A650): Empfehlung H2 für
-Zauber (Ende mit der Antwort des Spiels, Freigabe, solange BossMod bewegt oder der Ort in Gefahr ist), KK für Kanäle, ein
-Häkchen je Kanal, der beim Gehen endet; Vorlage im Konzept. *Nächster Schritt:* seine Entscheidung zu H2, KK und den
-Häkchen. *Konzept:* 03, „Bewegungssperre beim Wirken und die KI von BossMod".
+Keine offen.
 
 ## Technische Schuld
 

@@ -519,7 +519,9 @@ public readonly struct ActionBasicInfo
 			return false;
 		}
 
-		return !NeedsCasting(skipCastingCheck) && (!IsGeneralGCD || !IsStatusProvidedDuringGCD()) && IsActionCheckValid() && IsRotationCheckValid();
+		return !NeedsCasting(skipCastingCheck) && (!IsGeneralGCD || !IsStatusProvidedDuringGCD()) && IsActionCheckValid() && IsRotationCheckValid()
+			// A channel that ends upon moving does not start where BossMod forbids the spot: its first step ends it (A651).
+			&& !MovementLock.ChannelStartBarred(AdjustedID);
 	}
 
 	private bool NeedsCasting(bool skipCastingCheck)
@@ -548,7 +550,9 @@ public readonly struct ActionBasicInfo
 			// A cast still under way when a status that damages every action lands kills (A439).
 			|| (!DataCenter.IsPvP && ActionPenaltyWatch.WouldMeetLanding(CastTime))
 			// BossMod must move the player before a longer cast could end; its own rotation skips such casts too (A649).
-			|| ExceedsBossModCastLimit(CastTime, Name))
+			|| ExceedsBossModCastLimit(CastTime, Name)
+			// Under the movement lock RSR casts while the player walks and holds the player - not on a walk out of danger (A651).
+			|| (!DataCenter.NoPoslock && DataCenter.IsMoving && MovementLock.SpotInDanger(CastTime)))
 		{
 			return true;
 		}
@@ -595,22 +599,25 @@ public readonly struct ActionBasicInfo
 
 	/// <summary>
 	/// Whether no spell of the current rotation can start now for a reason that depends on its cast time: the shortest cast
-	/// the job has now is longer than BossMod's cast limit, or would still be under way when a status that damages every
-	/// action lands (A439). Then no cast can start, as with <see cref="CastStartBlockedNow"/>, and a caster's instant GCD is
-	/// due (concept 03, "C6", A650).
+	/// the job has now is longer than BossMod's cast limit, would still be under way when a status that damages every
+	/// action lands (A439), or the player walks under the movement lock while danger reaches the spot before it ends (A651).
+	/// Then no cast can start, as with <see cref="CastStartBlockedNow"/>, and a caster's instant GCD is due (concept 03,
+	/// "C6", A650).
 	/// </summary>
 	internal static bool NoCastFitsNow()
 	{
 		var limited = DataCenter.BMRMaxCastTime < float.MaxValue && !DataCenter.BMRMoveRequested;
 		var landing = !DataCenter.IsPvP && ActionPenaltyWatch.LandsOnPlayerIn() < float.MaxValue;
-		if (!limited && !landing)
+		var walkingLocked = !DataCenter.NoPoslock && DataCenter.IsMoving;
+		if (!limited && !landing && !walkingLocked)
 		{
 			return false;
 		}
 
 		var shortest = ShortestCastNow();
 		return shortest < float.MaxValue
-			&& ((limited && BossModCastLimitRefuses(shortest)) || (landing && ActionPenaltyWatch.WouldMeetLanding(shortest)));
+			&& ((limited && BossModCastLimitRefuses(shortest)) || (landing && ActionPenaltyWatch.WouldMeetLanding(shortest))
+				|| (walkingLocked && MovementLock.SpotInDanger(shortest)));
 	}
 
 	// The game frame ShortestCastNow last answered for, and its answer: CastStartBlocked is read several times a frame.

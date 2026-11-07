@@ -1,6 +1,6 @@
 # BLU — Abhängigkeitsmatrix
 
-Erzeugt von `.github/scripts/audit/generate_action_matrix.py` am 2026-11-03; nicht von Hand bearbeiten. Methode und Grenzen: `docs/rotation-flow/14-action-dependency-matrix.md`.
+Erzeugt von `.github/scripts/audit/generate_action_matrix.py` am 2026-11-07; nicht von Hand bearbeiten. Methode und Grenzen: `docs/rotation-flow/14-action-dependency-matrix.md`.
 
 - Basisrotation: `BlueMageRotation`
 - Rotation: `RotationSolver/RebornRotations/Limited Jobs/BLU_Reborn.cs`
@@ -313,8 +313,8 @@ Aus den Wirktexten; Art je Aktion: Abwehr (bewertet in `DefensiveValues` oder Wi
 |---|---|---|---|
 | Angel's Snack | Heilung | gemeinsame Abklingzeit (Heilung / Abwehr) | Dragon Force |
 | Angel's Snack | Heilung | gemeinsame Abklingzeit (Heilung / Angriff) | Matra Magic |
-| Apokalypsis | Angriff | endet bei jeder weiteren Aktion oder Bewegung (Kanal); keine Aktionssperre: RSRs nächste Aktion beendet ihn | jede Aktion |
-| Chelonian Gate | Abwehr | endet bei jeder weiteren Aktion oder Bewegung (Kanal); keine Aktionssperre: RSRs nächste Aktion beendet ihn | jede Aktion |
+| Apokalypsis | Angriff | endet bei jeder weiteren Aktion oder Bewegung (Kanal); keine Aktionssperre: RSRs nächste Aktion beendet ihn; Bewegungssperre: PosApokalypsis (an; wirkt nur mit PoslockCasting) | jede Aktion |
+| Chelonian Gate | Abwehr | endet bei jeder weiteren Aktion oder Bewegung (Kanal); keine Aktionssperre: RSRs nächste Aktion beendet ihn; Bewegungssperre: PosChelonianGate (an; wirkt nur mit PoslockCasting) | jede Aktion |
 | Chelonian Gate | Abwehr | gemeinsame Abklingzeit (Abwehr / Angriff) | Ruby Dynamics |
 | Chelonian Gate | Abwehr | gemeinsame Abklingzeit (Abwehr / Angriff) | The Rose of Destruction |
 | Dragon Force | Abwehr | gemeinsame Abklingzeit (Abwehr / Angriff) | Matra Magic |

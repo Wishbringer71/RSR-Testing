@@ -1,6 +1,6 @@
 # AST — Abhängigkeitsmatrix
 
-Erzeugt von `.github/scripts/audit/generate_action_matrix.py` am 2026-10-31; nicht von Hand bearbeiten. Methode und Grenzen: `docs/rotation-flow/14-action-dependency-matrix.md`.
+Erzeugt von `.github/scripts/audit/generate_action_matrix.py` am 2026-11-07; nicht von Hand bearbeiten. Methode und Grenzen: `docs/rotation-flow/14-action-dependency-matrix.md`.
 
 - Basisrotation: `AstrologianRotation`
 - Rotation: `RotationSolver/RebornRotations/Healer/AST_Reborn.cs`
@@ -161,7 +161,7 @@ Aus den Wirktexten; Art je Aktion: Abwehr (bewertet in `DefensiveValues` oder Wi
 
 | Aktion | Art | Befund | Gegenseite |
 |---|---|---|---|
-| Collective Unconscious | Abwehr | endet bei jeder weiteren Aktion oder Bewegung (Kanal); Aktionssperre: AstlockCasting (aus) hält GCD, AstlockCasting (aus) hält Fähigkeit | jede Aktion |
+| Collective Unconscious | Abwehr | endet bei jeder weiteren Aktion oder Bewegung (Kanal); Aktionssperre: AstlockCasting (aus) hält GCD, AstlockCasting (aus) hält Fähigkeit; Bewegungssperre: PosCollectiveUnconscious (an; wirkt nur mit PoslockCasting) | jede Aktion |
 
 ### Verlängerung, Aufbau, Umschalten
 

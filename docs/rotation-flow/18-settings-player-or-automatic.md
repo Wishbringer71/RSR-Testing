@@ -353,7 +353,7 @@ im Code.
 generiert als rezz, also muss verhindert werden, dass swiftcast für rezz nicht bereitsteht, außer spieler will explizit
 nicht mit swiftcast rezzen"; A503). Wirkung und Rechnung in Konzept 11, „Swiftcast bleibt für die Wiederbelebung bereit".
 - *Gebaut:* Swiftcast ist für die Wiederbelebung zurückgelegt, solange sie gelernt ist und „Raise with Swiftcast or
-  Dualcast" an steht. Schaden nimmt ihn nur, wo der Spieler es ausdrücklich wählt: die Einstellung aus oder ein
+  Dualcast" (ab Werk an) an steht. Schaden nimmt ihn nur, wo der Spieler es ausdrücklich wählt: die Einstellung aus oder ein
   Schadensschalter der Rotation (ab Werk aus). Der Rotmagier, der Swiftcast im Burst ohne Schalter nahm (C150), hat
   jetzt „Use Swiftcast for damage", ab Werk aus. Mit der Einstellung aus nimmt die Wiederbelebung einen schon laufenden
   Swiftcast oder Dualcast nur noch, bevor er ungenutzt abliefe (seine Vorgabe, A504; Konzept 11).

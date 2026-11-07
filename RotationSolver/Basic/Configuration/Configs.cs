@@ -491,18 +491,61 @@ internal partial class Configs : IPluginConfiguration, IM3Settings
 	private static readonly bool _showInfoOnToast = false;
 
 	[ConditionBool, UI("Lock movement while casting",
-	Description = "Stops your character from moving while casting, and while using the actions ticked below.",
+	Description = "Stops your character from moving while casting, until the spell can no longer be interrupted, and while using the actions ticked below. It never holds you in danger: BossMod's AI and you can still move out. A ticked party mitigation holds against BossMod's AI only while it covers a party member in danger before an announced hit.",
 	Filter = Extra)]
 	private static readonly bool _poslockCasting = false;
 
-	[UI("", Action = ActionID.PassageOfArmsPvE, Parent = nameof(PoslockCasting))]
-	public bool PosPassageOfArms { get; set; } = false;
+	// The channels that end upon moving (concept 03, "Bewegungssperre beim Wirken und die KI von BossMod", A651): on, as who
+	// lets a channel run means to stand there and the lock yields to danger; Meditate off, as it fills downtime the Samurai
+	// walks in.
+	[UI("", Action = ActionID.PassageOfArmsPvE,
+		Description = "Holds you still while Passage of Arms runs, so a step does not end it - another action still does. It lets go when danger reaches your spot before the channel ends - BossMod forbids the spot, or RSR sees a hit only a "
+		+ "step avoids. BossMod's AI walking only for position does not end it. While BossMod's AI walks you out of danger, it still holds as long as the channel "
+		+ "covers a party member in danger of dying before an announced party hit and you are not in danger of dying yourself.\nIn a fight: the party behind you keeps the damage reduction up to the announced hit instead of losing it at BossMod's first positioning step.",
+		Parent = nameof(PoslockCasting))]
+	public bool PosPassageOfArms { get; set; } = true;
 
-	[UI("", Action = ActionID.FlamethrowerPvE, Parent = nameof(PoslockCasting))]
-	public bool PosFlameThrower { get; set; } = false;
+	[UI("", Action = ActionID.FlamethrowerPvE,
+		Description = "Holds you still while Flamethrower runs, so a step does not end it - another action still does. It lets go when danger reaches your spot before the channel ends - BossMod forbids the spot, or RSR sees a hit only a "
+		+ "step avoids. BossMod's AI walking only for position does not end it.\nIn a fight: the flames keep burning the enemies before you instead of breaking at BossMod's first positioning step.",
+		Parent = nameof(PoslockCasting))]
+	public bool PosFlameThrower { get; set; } = true;
 
-	[UI("", Action = ActionID.ImprovisationPvE, Parent = nameof(PoslockCasting))]
-	public bool PosImprovisation { get; set; } = false;
+	[UI("", Action = ActionID.ImprovisationPvE,
+		Description = "Holds you still while Improvisation runs, so a step does not end it - another action still does. It lets go when danger reaches your spot before the channel ends - BossMod forbids the spot, or RSR sees a hit only a "
+		+ "step avoids. BossMod's AI walking only for position does not end it.\nIn a fight: the dance keeps healing you and the party nearby and gathers Rising Rhythm until the next action ends it, instead of breaking at BossMod's first positioning step.",
+		Parent = nameof(PoslockCasting))]
+	public bool PosImprovisation { get; set; } = true;
+
+	[UI("", Action = ActionID.CollectiveUnconsciousPvE,
+		Description = "Holds you still while Collective Unconscious runs, so a step does not end it - another action still does. It lets go when danger reaches your spot before the channel ends - BossMod forbids the spot, or RSR sees a hit only a "
+		+ "step avoids. BossMod's AI walking only for position does not end it.\nIn a fight: the ring keeps renewing its regen on the party standing in it instead of breaking at BossMod's first positioning step. Its damage reduction stays either way.",
+		Parent = nameof(PoslockCasting))]
+	public bool PosCollectiveUnconscious { get; set; } = true;
+
+	[UI("", Action = ActionID.MeditatePvE,
+		Description = "Holds you still while Meditate runs, so a step does not end it - another action still does. It lets go when danger reaches your spot before the channel ends - BossMod forbids the spot, or RSR sees a hit only a "
+		+ "step avoids. BossMod's AI walking only for position does not end it.\nIn a fight: the Kenki Gauge keeps filling in downtime. Off by default: downtime is when you walk to the next position, and the lock would keep you from it.",
+		Parent = nameof(PoslockCasting))]
+	public bool PosMeditate { get; set; } = false;
+
+	[UI("", Action = ActionID.PhantomFlurryPvE,
+		Description = "Holds you still while Phantom Flurry runs, so a step does not end it - another action still does. It lets go when danger reaches your spot before the channel ends - BossMod forbids the spot, or RSR sees a hit only a "
+		+ "step avoids. BossMod's AI walking only for position does not end it.\nIn a fight: the flurry keeps hitting up to its finishing blow instead of breaking at BossMod's first positioning step.",
+		Parent = nameof(PoslockCasting))]
+	public bool PosPhantomFlurry { get; set; } = true;
+
+	[UI("", Action = ActionID.ApokalypsisPvE,
+		Description = "Holds you still while Apokalypsis runs, so a step does not end it - another action still does. It lets go when danger reaches your spot before the channel ends - BossMod forbids the spot, or RSR sees a hit only a "
+		+ "step avoids. BossMod's AI walking only for position does not end it.\nIn a fight: the beam keeps hitting the enemies before you instead of breaking at BossMod's first positioning step.",
+		Parent = nameof(PoslockCasting))]
+	public bool PosApokalypsis { get; set; } = true;
+
+	[UI("", Action = ActionID.ChelonianGatePvE,
+		Description = "Holds you still while Chelonian Gate runs, so a step does not end it - another action still does. It lets go when danger reaches your spot before the channel ends - BossMod forbids the spot, or RSR sees a hit only a "
+		+ "step avoids. BossMod's AI walking only for position does not end it.\nIn a fight: the gate keeps your damage taken lower and can still turn into Auspicious Trance instead of breaking at BossMod's first positioning step.",
+		Parent = nameof(PoslockCasting))]
+	public bool PosChelonianGate { get; set; } = true;
 
 	[UI("Unlock movement while holding both mouse buttons", Parent = nameof(PoslockCasting))]
 	public bool PosLockMouse { get; set; } = false;

@@ -364,7 +364,9 @@ def kind_of(text, rated):
 LOCK_LINE = re.compile(r"if \(Service\.Config\.(\w+) && DataCenter\.Job == (?:[\w.]+\.)?Job\.\w+(.*?)\)\s*$", re.M)
 LAST_ACTION = re.compile(r"IsLastAction\(ActionID\.(\w+PvE)\)")
 OPTION_DEFAULT = re.compile(r"private static readonly bool _(\w+) = (true|false);")
-MOVE_LOCK = re.compile(r"Action = ActionID\.(\w+PvE), Parent = nameof\(PoslockCasting\)\)\]\s*"
+# A tick may carry its explanation between the action and the parent (A651); without room for it the channels read as
+# having no movement lock at all.
+MOVE_LOCK = re.compile(r"Action = ActionID\.(\w+PvE),[^\]]*?Parent = nameof\(PoslockCasting\)\)\]\s*"
                        r"public bool (\w+) \{ get; set; \} = (true|false);")
 
 
@@ -1188,7 +1190,8 @@ def self_test():
         "\t\tif (Service.Config.PldlockCasting && DataCenter.Job == Job.PLD && IsLastAction(ActionID.PassageOfArmsPvE)"
         " && DataCenter.MergedStatus.HasFlag(AutoStatus.DefenseArea))\n",
         "private static readonly bool _pldlockCasting = false;\n"
-        "[UI(\"\", Action = ActionID.PassageOfArmsPvE, Parent = nameof(PoslockCasting))]\n"
+        "[UI(\"\", Action = ActionID.PassageOfArmsPvE,\n\t\tDescription = \"Holds you still.\"\n\t\t+ \"In a fight: x.\",\n"
+        "\t\tParent = nameof(PoslockCasting))]\n"
         "\tpublic bool PosPassageOfArms { get; set; } = false;")
     if got.get("PassageOfArmsPvE") != [("PldlockCasting", False, "GCD", False),
                                        ("PldlockCasting", False, "Fähigkeit", True),

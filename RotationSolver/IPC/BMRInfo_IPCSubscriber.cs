@@ -30,5 +30,17 @@ internal static class BMRInfo_IPCSubscriber
 	[EzIPC("Movement.IsMoveRequested", true)]
 	internal static readonly Func<bool>? IsMoveRequested;
 
+	// Seconds until the earliest forbidden zone anywhere turns active; float.MaxValue without one.
+	[EzIPC("Hints.ForbiddenZonesNextActivation", true)]
+	internal static readonly Func<float>? ForbiddenZonesNextActivation;
+
+	// Where BossMod's AI steers the player; null when it does not.
+	[EzIPC("AI.NaviTargetPos", true)]
+	internal static readonly Func<Vector3?>? NaviTargetPos;
+
+	// The player's movement speed as BossMod's AI reads it, in yalms per second.
+	[EzIPC("AI.PlayerSpeed", true)]
+	internal static readonly Func<float>? PlayerSpeed;
+
 	internal static void Dispose() => IPCSubscriber_Common.DisposeAll(_disposalTokens);
 }

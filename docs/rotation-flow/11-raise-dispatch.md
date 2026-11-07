@@ -723,8 +723,8 @@ beendet, gibt es kein „erst am Ende des Fensters beginnen", das sie bis zuletz
   BossModReborn-Vorhersage ohne Zeitpunkt würde als „danach" gelesen und den Schutz kosten – deshalb zählen Marker immer
   als „darin" (Bedingung 3), und BossModReborn nur mit seiner Zeit.
 - *Ausschalten beim Tod:* Nullvariante (aus bleiben) lässt einen Wiederbelebten im Kampf ohne RSR, bis er es merkt; bei
-  einem Heiler fehlt der Gruppe bis dahin die Heilung. `Turn off when you die` ab Werk aus stellen verworfen: Sein Text
-  bindet, und nach einem Wipe soll RSR aus sein. Beim Tod nur noch nach einem Wipe ausschalten verworfen: widerspricht
+  einem Heiler fehlt der Gruppe bis dahin die Heilung. `Turn off when you die` (ab Werk an) ab Werk abzuschalten
+  verworfen: Sein Text bindet, und nach einem Wipe soll RSR aus sein. Beim Tod nur noch nach einem Wipe ausschalten verworfen: widerspricht
   dem Text. Gewählt: wieder an, nur wenn der Tod es ausgeschaltet hat und der Kampf weitergeht – genau die Lage, in der
   der Grund des Ausschaltens (tot, nichts zu tun) entfallen ist.
 
