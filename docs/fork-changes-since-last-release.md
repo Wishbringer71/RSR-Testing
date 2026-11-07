@@ -46,6 +46,11 @@ What this release changes in the fight. For the whole distance from upstream, se
   each fight at its own load; only where a fight on those ways was never measured do you have to come out at full HP.
   The way window and the shop's limit for healing items use the same loads, so the final fight no longer counts as
   heavy as the heaviest fight before it.
+- **The way window weighs every fight up to the final one.** Each way is walked to the end of the board, each fight at
+  its learned load, with the rests on it. A way is safe when you live through all of them with the items you hold and
+  the final fight's weakest healer can take one use there; RSR's reserve keeps that healer off earlier fights instead of
+  counting its losses. Among safe ways the one with more spaces with items wins, so a shop every way passes no longer
+  tips it to the campsite.
 - **Gear and feed belong to the run.** A new run on the same board no longer inherits the gear and feed slots of the
   last one.
 - **A familiar is healed before a first hit could fell it.** Before a familiar takes its first hit in a fight, RSR

@@ -19460,6 +19460,39 @@ futter verschwendet" (Beobachtung eines Defekts).
 *Prüfgrad:* Compile ohne Warnung; Prüfskripte; Wirkkette am Code (Plan und Wahl über `BoardOption`/`BestPlan`). Im Spiel nicht
 beobachtet; „Crucible final fight's plan: …" und „crucible shop: feed for the final fight …" stehen in der Spur.
 
+### A663 · Crucible-Weg: über alle anstehenden Kämpfe; Heiler nach K11; Gegenstände je Feld (07.11.2026)
+
+Seine Frage (eingeordnet als Frage mit Beobachtung): „es wird immer nur camp vorgeschlagen. ist die auswahl so korrekt?",
+dazu seine Vorgabe vom selben Abend: „sich immer auf die summe der anstehenden kämpfe ausrichten".
+
+- *1 Research (am Code, mit seinen Zahlen):* (a) `IsSafe` verlangte am Ende zwei größte Verluste je Einsatz für den
+  schwächsten Endkampf-Heiler und zog ihm in jedem Kampf einen ab. Auf Brett 1 betrug der Verlust bis zu 343 von 550 LP
+  (62 %, A637): zwei sind mehr als ein voller Begleiter, jeder Weg war unsicher, und unter unsicheren gewann `Better` den
+  Weg mit mehr LP für dich – den mit der Rast. (b) `Items` war ein Ja/Nein; der Laden auf Zug 8 liegt auf jedem Weg, also
+  brachte jeder Weg Gegenstände, und die LP entschieden – wieder die Rast. (c) Die Rechnung endete vor der nächsten
+  Campsite nach dem Zusammenlauf und sah den Endkampf (35 %) oft nicht; die Reserve war der schwerste bisherige Kampf.
+  K11 hält einen Endkampf-Heiler zurück, sobald ihm nach einem Einsatz keiner mehr bliebe – die Rechnung nahm das nicht an.
+- *2 Optionen:* (0) wie bisher; (a) nur den Heiler-Abzug je Kampf streichen; (b) Summe aller Kämpfe bis einschließlich
+  Endkampf, Heiler nach K11, sicher = du überlebst mit Vorrat und der Heiler übersteht einen Einsatz im Endkampf,
+  Gegenstände je Feld gezählt.
+- *3–5 Abwägung im Kampf:* (0) empfiehlt bei einem Verlust über 50 % jedes Mal die Rast – auch voll, wo ein Schatz einen
+  Gegenstand bringt und nichts kostet. (a) lässt (b) und (c) aus dem Research stehen. (b) gewählt: in seiner Lage vom
+  07.11. rechts (Schatz), links 45 % und drei Felder mit Gegenständen, rechts 20 % plus 36 % Vorrat und vier; im
+  Gegenbeispiel (55 %, 35 % und 50 % vor dir, Heilerin 40 % bei 45 % Verlust) links, die Rast. Zwei Verluste bleiben das
+  Maß der Reserve vor einem anderen Kampf (K11), im Endkampf braucht der Heiler einen.
+- *6 Falsifikation:* Kein Defekt? Widerlegt an (a) mit seinen Zahlen. Option falsch? Eine Gefahr im Gebiet holt einen
+  knappen Heiler doch auf ein Horn (B5) – selten, Preis benannt. Bis zum Endkampf zu rechnen zählt eine spätere Rast, die
+  du vielleicht nicht nimmst – an der Gabelung zählt die bessere Fortsetzung, die RSR dir dort wieder empfiehlt.
+  Ausgeliefert, nichts ändert sich? Wenn die Summe ohne Rast dein Ende wäre – dann bleibt die Rast, und das ist richtig.
+- *7 Gebaut:* `BeastmasterCrucibleRoute`: `RouteState` mit Zahl der Felder mit Gegenständen, Heiler zu Beginn des
+  Endkampfs und unbekannter Last; `Walk` bis einschließlich Endkampf; `Apply` mit der Last je Kampf, sonst Mittel oder
+  schwerster, sonst unbekannt; Heiler nach K11; `IsSafe`, `Better`, Texte im Fenster.
+- *9 Dokumentation:* Konzept 21 Weg (Vorausrechnung, Felder, Sicher, Gegenstände je Feld, Beispiele, seine Frage,
+  Gegenthesen); TODO-Eintrag entfernt.
+
+*Prüfgrad:* Compile ohne Warnung; Prüfskripte; beide Beispiele mit dem Code von Hand nachgerechnet. Im Spiel nicht
+beobachtet; „crucible route: at move … recommends …" steht in der Spur, sein Log prüft nach.
+
 ## B · Commit-Register (Fork vs. `upstream/main`)
 
 ### B1 · Einzelgeprüfte Fork-Commits
@@ -19786,3 +19819,4 @@ Die offene Arbeit dazu — Reihenfolge und Abbruchbedingung der Nachprüfung —
 | C172 | A633 und Konzept 03 (Stand A633): „*Nicht gebaut:* Fensterbreite mit Umbruch – feste Breiten wären Zahlen ohne Herleitung; die Fenster passen ihre Größe dem Inhalt an wie bisher"; A633, Falsifikation: „Breiten mit Umbruch bräuchten feste Zahlen – nicht gebaut" | Mit Auto-Größe und Umbruch am Kartenrand passte sich das Fenster nicht dem Inhalt an: es blieb so schmal wie sein schmalstes nicht umbrechendes Element (im Modell 116 px, Titel abgeschnitten) und ließ sich nicht ziehen. Die Breite ist aus dem Text ableitbar (Zeichen des Textes selbst, Lesemaß 50–75 Zeichen) | Gebaut nach A654 |
 | C173 | A659 und Konzept 21 K10 Laden (Stand A659): „Den Endkampf rechnet sie so schwer wie deinen schwersten gemessenen (meine Annahme; im Endkampf von Brett 1 am 07.11.2026 trafen dich seine Zauber mit 1 bis 9 %, wie in den Kämpfen davor)"; A659, Falsifikation: „sein Endkampf auf Brett 1 lag im Rahmen" | Die Treffer glichen denen davor, der Kampf nicht: Er dauerte doppelt so lange und kostete 35 % deiner LP gegen 18 % im schwersten davor (ACT-Mitschnitt 07.11.2026). Die Obergrenze für Heiltränke lag dort bei der Hälfte. Ersetzt durch die Last je Kampf (A661). | A661 |
 | C174 | Konzept 21 K14, Gegenthese 1 (Stand A631–A660): „Der Plan des Endkampfs stammt vom letzten Hornfenster; seither änderten sich LP. Teilweise widerlegt: Er ändert sich mit dem Kader, kaum mit den LP" | Der Plan rechnete ohne „übersteht den Einsatz" und ohne Futter, die Wahl am Endkampf mit beidem und den LP danach; in seinem Lauf vom 07.11.2026 lag der gefütterte Goobbue am Endkampf nicht auf einem Horn. Ersetzt durch eine Rechnung für Plan und Wahl (A662). | A662 |
+| C175 | Konzept 21 Weg (Stand A656–A662): „*Sicher* ist ein Abzweig, wenn du an der nächsten Rast oder vor dem Endgegner mit Vorrat noch einen schwersten Kampf trägst und kein Endkampf-Heiler knapp wird"; „die Heiler verlieren je Kampf ihren größten Verlust je Einsatz"; Gegenthese 1 „bleibt aber auf diese Strecke beschränkt, für die die Rast entscheidet" | Mit einem Verlust je Einsatz über 50 % (Brett 1: 62 %) war kein Weg sicher, und die Rast gewann immer; der Laden auf jedem Weg machte „bringt Gegenstände" wertlos; die Strecke bis zur Rast sah den Endkampf nicht. Ersetzt durch die Summe aller Kämpfe bis einschließlich Endkampf (A663). | A663 |

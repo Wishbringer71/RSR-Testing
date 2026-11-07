@@ -29,9 +29,12 @@ public partial class BeastmasterRotation
 
 	private static string _routeTraced = string.Empty;
 
-	// The state a way is walked with: the player's share of HP, the lowest share of the final fight's healers, whether it passes
-	// items (treasure, shop, a random space) or a campsite, and the space it stops before (the next rest, the boss; -1 the end).
-	private readonly record struct RouteState(float Player, float Healer, bool Items, bool Rested, int Stop);
+	// The state a way is walked with (A663: to the final fight, included): the player's share of HP, the lowest share of the
+	// final fight's healers and that share as the final fight starts, how many spaces with items it passes (treasure, shop, a
+	// random space), whether it passes a campsite, the space it ends on (the boss; -1 the end), and whether a fight on it
+	// has no load known yet.
+	private readonly record struct RouteState(float Player, float Healer, int Items, bool Rested, int Stop, float HealerAtFinal = 1f,
+		bool Unknown = false);
 
 	/// <summary>
 	/// Follows the run on the board every frame - the campsite, shop or treasure window that opens places it, a fight that ends
@@ -132,7 +135,7 @@ public partial class BeastmasterRotation
 			}
 		}
 
-		var start = new RouteState(self, healer, false, false, -1);
+		var start = new RouteState(self, healer, 0, false, -1, healer);
 		var options = new List<(int Next, float Turn, string Side, string Way, RouteState End)>();
 		foreach (var next in map.Next[at])
 		{
@@ -144,8 +147,12 @@ public partial class BeastmasterRotation
 		// Left first, as the board is drawn from the start towards the final fight.
 		options.Sort(static (a, b) => b.Turn.CompareTo(a.Turn));
 
-		// Safe: one more heaviest fight in reserve with the items held at the next rest, and no healer of the final fight short.
-		bool IsSafe(RouteState end) => end.Player + potions >= heaviest && (loss == 0f || end.Healer >= loss + loss);
+		// A663: every way to the final fight weighed, or none - a fight with no load known leaves the old rule.
+		var weighed = options.TrueForAll(static o => !o.End.Unknown);
+
+		// Safe (A663): you live through every fight up to the final one, included, with the items held, and the final fight's
+		// weakest healer outlasts a use as it starts.
+		bool IsSafe(RouteState end) => end.Player + potions > 0f && (loss == 0f || end.HealerAtFinal > loss);
 
 		var best = -1;
 		for (var i = 0; i < options.Count; i++)
@@ -160,19 +167,19 @@ public partial class BeastmasterRotation
 		for (var i = 0; i < options.Count; i++)
 		{
 			var end = options[i].End;
-			hintList.Add(new CrucibleRouteOption(options[i].Way, loads == null
+			hintList.Add(new CrucibleRouteOption(options[i].Way, !weighed
 				? $"you {self:P0}, final healers {healer:P0} now"
-				: $"at {StopName(end.Stop)}: you ~{end.Player:P0} (+{potions:P0} in healing items), final healers ~{end.Healer:P0}"
-					+ (end.Rested ? ", rested" : string.Empty) + (end.Items ? ", passes items" : string.Empty),
-				loads != null && IsSafe(end), i == best));
+				: $"after {StopName(end.Stop)}: you ~{end.Player:P0} (+{potions:P0} in healing items), final healers ~{end.HealerAtFinal:P0} as it starts"
+					+ (end.Rested ? ", rested" : string.Empty) + (end.Items > 0 ? $", {end.Items} space(s) with items" : string.Empty),
+				weighed && IsSafe(end), i == best));
 		}
 
 		CrucibleRouteHint = hintList;
 		CrucibleRouteWhy = Why();
 		CrucibleRouteBasis = $"From the {map.Nodes[at].Kind} at move {map.Nodes[at].Move}, after its fight; "
-			+ (loads == null
-				? "no fight measured yet"
-				: $"a fight costs ~{mean:P0} of your HP, the heaviest ~{heaviest:P0}");
+			+ (!weighed
+				? "a fight ahead was never measured"
+				: "each fight with the heaviest damage it ever dealt you, all fights up to the final one");
 		var traced = $"{at}:{best}";
 		if (traced != _routeTraced)
 		{
@@ -182,13 +189,14 @@ public partial class BeastmasterRotation
 				+ $" - {CrucibleRouteWhy}");
 		}
 
-		// Among safe ways the one with items, else the more HP; with none safe the more HP, then the healthier healers.
+		// Among safe ways the one with more spaces with items, else the more HP; with none safe the more HP, then the healthier
+		// healers. A663: spaces with items counted, so that the shop every way passes decides nothing.
 		bool Better(RouteState a, RouteState b)
 		{
-			if (loads == null)
+			if (a.Unknown || b.Unknown)
 			{
 				var hurt = self < 1f || healer < 1f;
-				return hurt ? a.Player + a.Healer > b.Player + b.Healer : a.Items && !b.Items;
+				return hurt ? a.Rested && !b.Rested : a.Items > b.Items;
 			}
 
 			bool safeA = IsSafe(a), safeB = IsSafe(b);
@@ -199,10 +207,10 @@ public partial class BeastmasterRotation
 
 			if (safeA && a.Items != b.Items)
 			{
-				return a.Items;
+				return a.Items > b.Items;
 			}
 
-			return a.Player != b.Player ? a.Player > b.Player : a.Healer > b.Healer;
+			return a.Player != b.Player ? a.Player > b.Player : a.HealerAtFinal > b.HealerAtFinal;
 		}
 
 		// The recommended way against each other one, in what the other would have brought.
@@ -210,9 +218,9 @@ public partial class BeastmasterRotation
 		{
 			var (_, _, side, way, end) = options[best];
 			var name = side.Length > 0 ? side.ToLowerInvariant() : way;
-			if (loads == null)
+			if (!weighed)
 			{
-				return $"Take the {name} way: no fight measured yet - "
+				return $"Take the {name} way: a fight ahead was never measured - "
 					+ (self < 1f || healer < 1f ? "the campsite while you or a final healer is hurt" : "the way with items, nothing is hurt");
 			}
 
@@ -228,26 +236,26 @@ public partial class BeastmasterRotation
 				var otherName = other.Side.Length > 0 ? $"the {other.Side.ToLowerInvariant()} way" : other.Way;
 				if (!IsSafe(end))
 				{
-					reasons.Add($"no way is safe; this one leaves you highest (~{end.Player + potions:P0} with items at {StopName(end.Stop)})");
+					reasons.Add($"no way is safe; this one leaves you highest (~{end.Player + potions:P0} with items after {StopName(end.Stop)})");
 				}
 				else if (!IsSafe(other.End))
 				{
-					reasons.Add(other.End.Player + potions < heaviest
-						? $"{otherName} would bring you to {StopName(other.End.Stop)} at ~{other.End.Player:P0} with {potions:P0} in items, "
-							+ $"below your heaviest fight (~{heaviest:P0})"
-						: $"{otherName} would leave a final healer at ~{other.End.Healer:P0}, under two of its losses a use");
+					reasons.Add(other.End.Player + potions <= 0f
+						? $"{otherName} would leave you at ~{other.End.Player:P0} after {StopName(other.End.Stop)} with {potions:P0} in items - "
+							+ "the fights up to it can cost more than you hold"
+						: $"{otherName} would bring a final healer to the final fight at ~{other.End.HealerAtFinal:P0}, under one of its losses a use");
 				}
-				else if (end.Items && !other.End.Items)
+				else if (end.Items > other.End.Items)
 				{
 					reasons.Add($"both ways are safe up to {StopName(end.Stop)}; {otherName}"
 						+ (other.End.Rested ? " and its campsite" : string.Empty)
 						+ $" would leave you {other.End.Player - end.Player:+0%;-0%;+0%} and the final healers "
-						+ $"{other.End.Healer - end.Healer:+0%;-0%;+0%} there, this one brings items");
+						+ $"{other.End.HealerAtFinal - end.HealerAtFinal:+0%;-0%;+0%}, this one passes {end.Items - other.End.Items} more space(s) with items");
 				}
 				else
 				{
 					reasons.Add($"both ways are safe; this one leaves you {end.Player - other.End.Player:+0%;-0%;+0%} and the final healers "
-						+ $"{end.Healer - other.End.Healer:+0%;-0%;+0%} against {otherName} at {StopName(end.Stop)}");
+						+ $"{end.HealerAtFinal - other.End.HealerAtFinal:+0%;-0%;+0%} against {otherName} after {StopName(end.Stop)}");
 				}
 			}
 
@@ -335,13 +343,18 @@ public partial class BeastmasterRotation
 			? "the end of the board"
 			: map.Nodes[stop].Kind == Space.Boss ? "the final fight" : $"the campsite at move {map.Nodes[stop].Move}";
 
-		// A way from a space: through it and on, to the next campsite after the ways meet or the final fight; at a fork the
-		// better way, a random space at worst.
+		// A way from a space: through it and on to the final fight, included (A663, his rule of 07.11.2026: "sich immer auf die
+		// summe der anstehenden kämpfe ausrichten"); at a fork the better way, a random space at worst.
 		RouteState Walk(int index, RouteState state, bool merged, int depth)
 		{
 			var node = map.Nodes[index];
 			merged |= index == merge;
-			if (depth > map.Nodes.Length || node.Kind == Space.Boss || (merged && node.Kind == Space.Campsite))
+			if (node.Kind == Space.Boss)
+			{
+				return Apply(node.Kind, node.Battle, index, state with { HealerAtFinal = state.Healer }) with { Stop = index };
+			}
+
+			if (depth > map.Nodes.Length)
 			{
 				return state with { Stop = index };
 			}
@@ -351,7 +364,7 @@ public partial class BeastmasterRotation
 				RouteState? worst = null;
 				foreach (var (kind, battle) in node.Options)
 				{
-					var end = Continue(index, Apply(kind, battle, index, state with { Items = true }), merged, depth);
+					var end = Continue(index, Apply(kind, battle, index, state), merged, depth);
 					if (worst is not { } w || Better(w, end))
 					{
 						worst = end;
@@ -417,12 +430,20 @@ public partial class BeastmasterRotation
 						Rested = true,
 					};
 				case Space.Shop or Space.Treasure:
-					return state with { Items = true };
-				// A661: a fight with the heaviest damage it ever dealt you; one never measured with the mean or heaviest here.
-				case Space.Enemy:
-					return state with { Player = state.Player - (LoadNow(battle) ?? mean), Healer = state.Healer - loss };
-				case Space.Elite or Space.Boss:
-					return state with { Player = state.Player - (LoadNow(battle) ?? heaviest), Healer = state.Healer - loss };
+					return state with { Items = state.Items + 1 };
+				// A661: a fight with the heaviest damage it ever dealt you; one never measured with the mean or heaviest here,
+				// and with neither unknown. A663: the final fight's healer loses a use only while one would be left after it -
+				// else K11 holds it - and the final fight itself takes none from the share it starts it with.
+				case Space.Enemy or Space.Elite or Space.Boss:
+					var fallback = loads == null ? (float?)null : kind == Space.Enemy ? mean : heaviest;
+					var cost = LoadNow(battle) ?? fallback;
+					var fights = kind != Space.Boss && loss > 0f && state.Healer >= loss + loss;
+					return state with
+					{
+						Player = state.Player - (cost ?? 0f),
+						Healer = fights ? state.Healer - loss : state.Healer,
+						Unknown = state.Unknown || cost == null,
+					};
 				default:
 					return state;
 			}

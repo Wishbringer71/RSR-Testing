@@ -528,11 +528,12 @@ Dullahan, Golem, Spriggan und Eisgolem (`XBMPet.InflictsInterrupt`).
       „vertauschten Seiten", deretwegen A632 nur das Feld nannte, betrafen die Reihenfolge der Zeilen in
       `XBMContentStageEvent` und die Weltkoordinaten von Daedalus' Laufweg (`KnownFlippedForks`, 27.10.2026), nicht den
       gezeichneten Plan. Das Feld steht weiter dabei, falls die Kamera anders blickt.
-    - *Vorausrechnung (seine Präzisierung: wie beim Schach):* je Abzweig die Felder bis zum ersten Feld, das jeder
-      Abzweig erreicht (Zusammenlauf), dann weiter bis vor die nächste Campsite oder den Endgegner: Erst dort zeigt sich,
-      ob man die Rast hier braucht. An einer Gabelung dazwischen die bessere Fortsetzung (die wählst du dann selbst), an
-      einem Zufallsfeld die schlechtere seiner Möglichkeiten (Sicherheit vor Glück); ein Zufallsfeld zählt nicht als
-      Rast. Danach rechnet RSR am nächsten Feld neu.
+    - *Vorausrechnung (seine Präzisierung: wie beim Schach; seine Vorgabe vom 07.11.2026: „sich immer auf die summe
+      der anstehenden kämpfe ausrichten"; A663):* je Abzweig alle Felder bis einschließlich des Endkampfs. An einer
+      Gabelung dazwischen die bessere Fortsetzung (die wählst du dann selbst), an einem Zufallsfeld die schlechtere
+      seiner Möglichkeiten (Sicherheit vor Glück); ein Zufallsfeld zählt nicht als Rast. Danach rechnet RSR am nächsten
+      Feld neu. Bis A663 endete die Rechnung vor der nächsten Campsite nach dem Zusammenlauf; was danach kam – auf Brett 1
+      der Endkampf mit 35 % –, sah sie nicht.
     - *Zustand:* deine LP-Anteil jetzt; dein Vorrat an Heilgegenständen als Anteil deiner LP (K8, nur die für dich); der
       niedrigste LP-Anteil der Heiler und Schützer aus dem Endkampfplan (K11, K14) und deren größter Verlust je Einsatz
       (`FinalLossPerUse`).
@@ -541,46 +542,63 @@ Dullahan, Golem, Spriggan und Eisgolem (`XBMPet.InflictsInterrupt`).
       ein toter Begleiter spricht also nicht für die Campsite. Laden, Schatz: keine LP, aber Gegenstände (vermerkt, Marken
       genannt). Ein Kampf mit seiner Last je Kampf (K10 Campsite, A661); ein noch ungelernter Gegner mit der mittleren
       gemessenen Last eines Kampfs abzüglich deiner Heilung (`CrucibleBoard.Loads`, wie K10 Laden), Elite und Endgegner
-      mit der schwersten gemessenen; die Heiler verlieren je Kampf ihren größten Verlust je Einsatz.
-    - *Sicher* ist ein Abzweig, wenn du an der nächsten Rast oder vor dem Endgegner mit Vorrat noch einen schwersten Kampf
-      trägst und kein Endkampf-Heiler knapp wird (K11, `ShortForFinal`). Empfohlen wird unter den sicheren der, der
-      Gegenstände bringt (Schatz, Laden mit Marken), sonst der mit den meisten LP danach; ist keiner sicher, der, nach dem
-      du mit Vorrat am höchsten stehst, bei Gleichstand der mit den gesünderen Heilern.
+      mit der schwersten gemessenen. Der Endkampf-Heiler verliert in einem Kampf vor dem Endkampf seinen größten Verlust
+      je Einsatz nur, solange er danach noch einen übrig hätte – sonst hält K11 ihn zurück, und er verliert nichts (A663).
+    - *Sicher* ist ein Abzweig, wenn du nach dem Endkampf mit Vorrat noch lebst – die Summe aller Kämpfe bis dorthin, jeder
+      mit seiner Last, die Rasten dazwischen –, und wenn der schwächste Endkampf-Heiler vor dem Endkampf einen Einsatz
+      übersteht (seine LP über seinem größten Verlust je Einsatz, wie „übersteht den Einsatz" am Hornfenster, K6).
+      Empfohlen wird unter den sicheren der mit den meisten Feldern, die Gegenstände bringen (Schatz, Laden; ein
+      Zufallsfeld nur, wenn schon seine schlechteste Möglichkeit einer ist), sonst der mit den meisten LP danach; ist
+      keiner sicher, der, nach dem du mit Vorrat am höchsten stehst, bei Gleichstand der mit den gesünderen
+      Heilern. *Warum nicht mehr zwei Verluste (A663):* Bis A663 verlangte „sicher" am Ende zwei größte Verluste für den
+      Heiler und zog ihm in jedem Kampf einen ab. Auf Brett 1 kostete ein Einsatz bis zu 343 von 550 LP (62 %, A637):
+      Zwei sind mehr als ein voller Begleiter. Jeder Weg war unsicher, und unter unsicheren gewann der mit der Rast, weil
+      sie deine LP hebt – seine Beobachtung „es wird immer nur camp vorgeschlagen". Zwei Verluste sind das Maß der Reserve
+      vor einem *anderen* Kampf (K11: dann bleibt einer für den Endkampf); im Endkampf braucht er einen.
     - *Grund im Fenster:* Die Empfehlung nennt, was der andere Abzweig gebracht hätte – bei Campsite gegen Gegenstände
-      die LP, die die Rast dir und den Endkampf-Heilern bis zur nächsten Rast mehr ließe, und ob beide Wege sicher sind –
-      und wo die nächste Rast liegt.
-    - *Seine Frage (07.11.2026, offen – `TODO.md`, „Crucible-Weg: nur Campsite empfohlen"):* „es wird immer nur camp
-      vorgeschlagen. ist die auswahl so korrekt?" Am Code: Auf jedem Weg verliert der schwächste Endkampf-Heiler je Kampf
-      seinen größten Verlust je Einsatz, gleich ob er dort auf einem Horn steht oder K11 ihn zurückhält; „sicher" verlangt
-      an der Stelle zwei solche Verluste. Ohne Rast wird so fast jeder Weg unsicher, und unter unsicheren gewinnt der mit
-      mehr LP für dich – der mit der Campsite. Und die Reserve vor dem Endkampf ist der schwerste bisherige Kampf, nicht
-      der Endkampf (A661). Prüfung im Loop gegen seine Vorgabe „sich immer auf die summe der anstehenden kämpfe
-      ausrichten".
-    - *Vor der ersten gemessenen Last:* keine Rechnung; die Campsite, solange du oder ein Endkampf-Heiler nicht voll steht,
-      sonst der Abzweig mit Gegenständen. Das Fenster sagt es.
-    - *Im Kampf (seine Lage, 07.11.2026):* Brett 1 nach Zug 1, du bei rund 93 %, ein Kampf kostete rund 4 %, Vorrat 36 %,
-      Endkampf-Heiler voll. Links Gegner und Campsite, rechts Gegner und Schatz; zusammen laufen die Wege in Zug 4, die
-      nächste Campsite liegt rechts nach dem Elitegegner (Zug 7). Bis vor sie: links 100 % nach der Rast, dann zwei Kämpfe
-      (Zug 4, Elite in Zug 6) auf rund 92 %; rechts rund 81 %. Beide sicher; empfohlen: rechts, der Schatz. Die Rast
-      brächte dir rund 11 % und den Heilern nichts, die sie schon voll stehen. Das bestätigt seine Einschätzung.
-    - *Im Kampf (Gegenbeispiel):* Nach Kampf 3 bei 55 %, zwei Bestien-Heiltränke (je 30 %), die Fledermaus als
-      Endkampf-Heilerin bei 40 %, ein Kampf kostet 35 %, der schwerste 50 %. Rechts über den Schatz kommt die Fledermaus
-      knapp an die nächste Rast – nicht sicher. Links ruht sie mit (du kommst mit einem Begleiter voll heraus), sie steht
-      danach bei 85 %. Empfohlen: links, die Campsite.
+      die LP, die die Rast dir und den Endkampf-Heilern bis nach dem Endkampf mehr ließe, und ob beide Wege sicher sind.
+    - *Seine Frage (07.11.2026):* „es wird immer nur camp vorgeschlagen. ist die auswahl so korrekt?" Nein (A663), aus
+      drei Gründen, je an ihrer Stelle: zwei Verluste je Einsatz für den Heiler (*Warum nicht mehr zwei Verluste*), ein
+      Laden auf jedem Weg (*Gegenstände je Feld*, unten) und die Rechnung, die vor der nächsten Rast endete
+      (*Vorausrechnung*). Sein Log prüft das nach (Skill „upload-auswertung").
+    - *Vor der ersten Last:* Kennt RSR einen Kampf auf einem Weg weder aus der Last je Kampf noch aus einem gemessenen
+      Kampf dieser Sitzung, keine Rechnung: die Campsite, solange du oder ein Endkampf-Heiler nicht voll steht, sonst der
+      Abzweig mit Gegenständen. Das Fenster sagt es.
+    - *Im Kampf (seine Lage, 07.11.2026, gerechnet mit den Lasten seines Laufs):* Brett 1 nach Zug 1, du bei rund 93 %,
+      Vorrat 36 %, Endkampf-Heiler voll. Links Gegner und Campsite, rechts Gegner und Schatz; zusammen laufen die Wege
+      in Zug 4; danach Zug 4 (3 %), Schatz auf Zug 5, Elite (17 %), auf Zug 7 Schatz oder Campsite, Laden, Endkampf
+      (35 %). Den Gegner auf Zug 2 rechnet RSR auf beiden Seiten mit 18 %. Links: 75 %, Rast auf 100 %, nach Zug 4 und 6
+      80 %; auf Zug 7 ist der Schatz die bessere Fortsetzung (beide sicher, ein Gegenstand mehr), nach dem Endkampf 45 %,
+      drei Felder mit Gegenständen. Rechts: 75 %, Schatz, nach Zug 4 und 6 55 %, Schatz auf Zug 7, nach dem Endkampf 20 %
+      und 36 % Vorrat, vier Felder. Beide sicher; empfohlen: rechts, ein Gegenstand mehr – wie seine Einschätzung.
+      *Gegenstände je Feld (A663):* Bis A663 zählte nur, ob ein Weg überhaupt Gegenstände bringt. Der Laden auf Zug 8
+      liegt auf jedem Weg; mit ihm brachte jeder Weg Gegenstände, es entschieden deine LP danach, und die Rast gewann –
+      die zweite Hälfte von „es wird immer nur camp vorgeschlagen". Jetzt zählen die Felder mit Gegenständen; was jeder Weg
+      hat, hebt sich auf.
+    - *Im Kampf (Gegenbeispiel):* Nach Kampf 3 bei 55 %, Vorrat 30 %, noch ein Kampf zu 35 %, dann der Endkampf zu 50 %;
+      die Fledermaus als Endkampf-Heilerin bei 40 %, ihr größter Verlust je Einsatz 45 %. Rechts über den Schatz:
+      55 − 35 − 50 = −30, mit Vorrat 0 – du überlebst nicht sicher, und die Fledermaus übersteht keinen Einsatz (40 unter
+      45). Links ruht sie nach dem Kampf mit dir (20 % plus 45 % sind 65 %, über den 50 % des Endkampfs), sie steht danach
+      bei 85 %, du gehst mit 15 % aus dem Endkampf. Empfohlen: links, die Campsite.
     - *Verworfen:* (a) ein Plan fürs ganze Brett beim Betreten – seine Präzisierung; (b) Punkte und Marken als Ziel – er
       nannte Gesundheit, Ausrüstung, Vorrat und Heilbedarf; (c) die Rechnung bis zum ersten Kampf des Abzweigs (A632) –
       sie sah nicht, was die Abzweige unterscheidet: Auf Brett 1 liegen Campsite und Schatz hinter je einem Gegner, das
       Fenster verglich zwei gleiche Gegner und nannte die Seite nicht.
-    - *Gegenthese 1:* Die mittlere Last stammt aus anderen Kämpfen; der nächste ist schwerer. Teilweise widerlegt: Elite und
-      Endgegner rechnen mit der schwersten, und „sicher" verlangt einen schwersten Kampf Reserve. Bis zur nächsten Rast
-      sind es auf den fünf Brettern ein bis drei Kämpfe; der Fehler der Mittelung wächst mit ihnen, bleibt aber auf
-      diese Strecke beschränkt, für die die Rast entscheidet. *Gegenthese 2:* RSR verliert die Spur (ein Fenster, das es
+    - *Gegenthese 1:* Die mittlere Last stammt aus anderen Kämpfen; der nächste ist schwerer. Seit A661 trägt jeder Kampf,
+      den RSR einmal sah, seine eigene schwerste Last; die Mittelung bleibt nur für Kämpfe, die es auf keinem Lauf sah,
+      und Elite und Endgegner rechnen dann mit der schwersten. *Gegenthese A663-1 (Heiler im Kampf):* Verlangt eine
+      Gefahr im Gebiet einen Heiler mehr (B5), kommt ein knapper Endkampf-Heiler doch auf ein Horn und verliert mehr, als
+      die Rechnung annimmt. Preis benannt: selten, und das Hornfenster zeigt es. *Gegenthese A663-2 (Summe statt
+      Strecke):* Bis zum Endkampf zu rechnen lässt eine spätere Rast mitzählen, die du vielleicht nicht nimmst. Nicht so
+      gebaut: An einer Gabelung zählt die bessere Fortsetzung, die du dort selbst wählst und die RSR dir dann wieder
+      empfiehlt. *Gegenthese 2:* RSR verliert die Spur (ein Fenster, das es
       nicht liest; ein Zufallsfeld, das ein anderes Fenster öffnet). Dann rechnet es vom letzten bekannten Feld und zeigt
       Abzweige, die schon hinter dir liegen; das Fenster nennt das Feld, von dem es rechnet. *Gegenthese 3:* Gegenstände
       aus Schatz und Laden sind nicht bezifferbar, bevor man sie sieht. Nicht widerlegt: Sie zählen nur als Vorzug unter
       sicheren Abzweigen. *Gegenthese 4 (Kamera):* Blickt er vom Endgegner zurück, sind links und rechts vertauscht.
       Teilweise widerlegt: Das Feld steht neben der Richtung. *Ausgeliefert, und nichts ändert sich?* Ohne Hornfenster im
-      Lauf, ohne Brettplan im Blatt oder auf Gabelungen ohne Unterschied bis zur nächsten Rast.
+      Lauf, ohne Brettplan im Blatt, auf Gabelungen ohne Unterschied bis zum Endkampf, oder wenn dir die Summe der Kämpfe
+      auf dem Weg ohne Rast den Tod brächte – dann bleibt es bei der Campsite, und das ist richtig.
     Werkzeugquelle für die Vorlage: BeastMasterHelper (t3knical, Fork von anmili2022/Beastmaster) bevorzugt an einer
     Abzweigung die Campsite, wenn der Spieler verletzt ist, und prüft die LP des Kaders (Anleitung, 06.11.2026, A623).
 - *K14 – Endkampf vorbereiten: Lager und Futter* (A631; seine Vorschläge vom 06.11.2026: „beim letzten rasten vor dem
