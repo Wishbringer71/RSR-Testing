@@ -297,10 +297,25 @@ Dullahan, Golem, Spriggan und Eisgolem (`XBMPet.InflictsInterrupt`).
     Zweites 1, 2, 3). Ein ruhender Begleiter verliert sein Futter („Familiars that rest will lose current effects of
     feed", Addon 17657; „G2 Primafodder" gibt +30 % maximale LP, „Honey Simular" −25 % physische Verwundbarkeit,
     `XBMItem` Typ 3), ein gefallener wird nicht geheilt.
-    *Was gilt:* RSR wählt vor, ruhen (`[3]`) oder gehen drückt er. Begleiter ruhen nur mit, wenn du trotzdem voll
-    herauskommst – du kommst nie schlechter heraus als allein. Unter dieser Bedingung die Zahl, die den Begleitern die
-    meisten LP bringt (je Begleiter höchstens, was ihm fehlt), und dafür die stehenden, nicht vollen, ungefütterten mit
-    dem kleinsten LP-Anteil; bei Gleichstand weniger. Sonst ruhst du allein. Die Grenze des Lagers lernt RSR am Klick,
+    *Was gilt:* RSR wählt vor, ruhen (`[3]`) oder gehen drückt er. Begleiter ruhen mit, solange deine LP nach der Rast
+    die schwerste Strecke bis zur nächsten Rast tragen (A661; seine Meldung vom 07.11.2026, unten): Auf jedem Weg von
+    hier zählt RSR die Kämpfe bis zur nächsten Campsite – auf einem Weg ohne sie bis einschließlich des Endkampfs –,
+    jeden mit dem schwersten Schaden, den er dir je gemacht hat (*Last je Kampf*, unten), und nimmt den schwersten Weg.
+    Liegen deine LP nach der Rast darüber, darf deine Rast kürzer ausfallen als allein; kennt RSR einen Kampf auf diesen
+    Wegen noch nicht oder kennt es die Wege nicht, musst du voll herauskommen. Unter dieser Bedingung die Zahl, die den
+    Begleitern die meisten LP bringt (je Begleiter höchstens, was ihm fehlt), und dafür die stehenden, nicht vollen,
+    ungefütterten mit dem kleinsten LP-Anteil; bei Gleichstand weniger. Sonst ruhst du allein. Das Fenster nennt die
+    Strecke und ihre Last. Ein Zufallsfeld zählt mit seinem schwersten möglichen Kampf und nie als Campsite.
+    *Last je Kampf (A661):* Am Ende jedes Kampfs merkt sich RSR je Kampf (`XBMBattleDetail`-Zeile) den Schaden, den du
+    genommen hast, als Anteil deiner maximalen LP ohne Ausrüstung – zurückgerechnet mit den Stücken, die du da trugst
+    (maximale LP, erlittener Schaden, physische und magische Verwundbarkeit, Ausweichen, wie K10 Laden) –, auf ganze
+    Prozent aufgerundet, nur steigend, über alle Sitzungen (gelernte Datei `CrucibleFightLoads.json`, Reiter
+    „Crucible fights"). Gelesen wird er mit der Ausrüstung von jetzt: mal (1 − erlittener Schaden), geteilt durch
+    (1 + maximale LP). Die Verwundbarkeiten nach Art lässt die Lesung weg, weil die Datei die Art nicht trägt; sie
+    überschätzt dann, nie unter. Deine eigene Heilung zieht sie nicht ab. Grund: Die Kämpfe liegen fest auf ihren
+    Feldern (K14, „Der Weg aus den Blättern"), und der Endkampf ist schwerer als jeder davor – Brett 1 am 07.11.2026
+    (ACT-Mitschnitt, Schaden auf dich je Kampf durch deine maximalen LP): 4, 18, 3 und 17 % (Elite), der Endkampf 35 %.
+    Der schwerste bisherige Kampf hätte ihn halbiert, ein Mittel noch mehr.
     den das Fenster nicht annimmt (oder mit dem es einen anderen abwählt); den Anteil liest es aus der Bestätigung,
     sobald sie offen ist, und rechnet ab dann mit ihm (ohne Lesung 90 % geteilt). Futter liest es aus den Werten des
     Fensters (`ReaderXBMPetParty.FedCurrent`, ECommons, Werkzeugquelle; Daedalus liest dieselbe Stelle); stimmen deren
@@ -312,17 +327,36 @@ Dullahan, Golem, Spriggan und Eisgolem (`XBMPet.InflictsInterrupt`).
     Blatt (`XBMContentCamp`, Unterzeile = Index des Lagers auf dem Brett, K14), gelernt wird nur noch eine kleinere.
     *Beispiel:* Du bei 75 %, Fledermaus 20 %, Fliegenfalle 40 %, Schleim 90 %, Lager für zwei: Mit zweien bekommst du
     30 % (voll) und die beiden ersten je 30 %, zusammen 60 % für die Begleiter; mit einer nur 45 %. RSR wählt Fledermaus
-    und Fliegenfalle. Du bei 40 %: Schon mit einem kämst du nur auf 85 % statt voll – du ruhst allein.
+    und Fliegenfalle. Du bei 40 %, Strecke bis zur nächsten Rast 55 %: Mit einem kommst du auf 85 %, mit zweien auf 70 %
+    – beides über 55 %; RSR nimmt zwei. Kennt RSR einen Kampf der Strecke noch nicht, ruhst du allein (85 % statt voll).
+    *Im Kampf (seine Lage, 07.11.2026, Brett 1):* Lager für zwei, du bei 876 LP (rund 68 %), Goobbue 55 %, Spriggan
+    116/491 (24 %). Mit einem kommst du voll heraus, mit zweien auf 98 %. Die Regel vor A661 nahm nur den Goobbue („you
+    come out at full HP"); er setzte den Spriggan von Hand dazu. Mit den Lasten seines Laufs vom 07.11.: Auf Zug 3 liegen
+    rechts bis zur Campsite auf Zug 7 die Kämpfe auf Zug 4 und 6 (3 + 17 = 20 %), links über den Schatz bis
+    einschließlich des Endkampfs 55 % – 98 % liegen darüber, Goobbue und Spriggan ruhen, der Spriggan steht danach bei
+    54 %. Auf Zug 7 (nur noch der Endkampf, 35 %) ebenso.
     *Verworfen:* (a) „Use HP potions below this HP" als Grenze (meine erste Fassung): Bei 13 % brächte dich eine Rast zu
     zweit auf 58 %, über jede übliche Linie – genau Daedalus' Feldfall vom 25.10.2026 (Rast mit dem Goobbue bei 13 %,
-    Tod im nächsten Kampf). (b) Linie plus größter bisheriger Verlust je Kampf: Vor dem Endgegner unterschätzt sie den
-    nächsten Kampf, und welches Feld folgt, kennt RSR an der Campsite nicht; sie weicht von „voll" nur ab, wo du schon
-    niedrig stehst. (c) Daedalus' feste 50 %: eine Zahl ohne Herleitung, nur ein Begleiter, und zwischen 50 und 55 %
-    kämst du nicht voll heraus.
-    *Gegenthese 1:* Bei 54 % und einem Begleiter auf 5 % ruhst du allein; du gewönnest 45 % für ihn gegen 1 % für dich.
-    Nicht widerlegt, Preis benannt: Er geht mit 5 % in den nächsten Kampf und fällt am ersten Treffer, bis zum Horn der
-    Rückkehr; K8 (Bestien-Heiltrank auf ihn) und K9 (Provozieren am größten Treffer) bleiben, und mit einem Klick nimmt
-    er ihn dazu. Dagegen steht: Deine LP sind der Lauf. *Gegenthese 2:* Der am meisten verletzte ist nicht unbedingt der,
+    Tod im nächsten Kampf). (b) Linie plus größter bisheriger Verlust je Kampf: ein Kampf statt der Strecke, und der
+    größte bisherige unterschätzt den Endkampf (35 gegen 18 % auf Brett 1). (c) Daedalus' feste 50 %: eine Zahl ohne
+    Herleitung, nur ein Begleiter, und zwischen 50 und 55 % kämst du nicht voll heraus. (d) Voll herauskommen, immer
+    (A564 bis A661, meine Ableitung): Du kommst nie schlechter heraus als allein, aber ein Begleiter auf 24 % bleibt
+    draußen, wo dir 2 % fehlen, die keine Strecke braucht – seine Meldung. (e) Jeder Kampf so schwer wie der schwerste
+    gemessene (die Obergrenze des Ladens vor A661): unterschätzt den Endkampf wie (b). (f) Bis zum Endkampf statt bis zur
+    nächsten Rast: Die nächste Rast heilt dich allein um 90 %, bis dorthin musst du tragen; der Weg über den Schatz
+    zählt den Endkampf ohnehin mit.
+    *Gegenthese 1 (erledigt mit A661):* Bei 54 % und einem Begleiter auf 5 % ruhtest du allein; du gewönnest 45 % für ihn
+    gegen 1 % für dich. Jetzt ruht er mit, sobald die Strecke weniger als 99 % kostet; nur auf einem Brett, dessen
+    Kämpfe RSR noch nicht kennt, bleibt es beim alten Preis (er geht mit 5 % in den nächsten Kampf; K8 und K9 bleiben,
+    und mit einem Klick nimmt er ihn dazu). *Gegenthese A661-1:* Ein Kampf trifft dich schwerer als je zuvor. Dann
+    kommst du tiefer an als in jedem früheren Lauf; die Heilgegenstände (K8) bleiben, und RSR merkt sich den neuen
+    Höchstwert. Die Strecke zählt jeden Kampf mit seinem schwersten Lauf, zusammen also schwerer als jeder einzelne Lauf.
+    *Gegenthese A661-4:* Ein Kampf, in dem du fielst, steht mit dem Schaden bis zu deinem Fall in der Datei, also mit
+    rund einer vollen Leiste; jede Strecke über ihn verlangt danach volle LP wie vor A661. Nicht widerlegt, Preis
+    benannt: Ein Kampf, der dich einmal ganz geleert hat, kann es wieder; die Begleiter ruhen dort seltener mit. Der Reiter
+    „Crucible fights" zeigt den Wert; die Datei löschst du von Hand, wenn du anders spielst. *Gegenthese A661-2:* Du nimmst den leichteren Weg. Dann war die Bedingung strenger als nötig; ein Begleiter ruht
+    vielleicht nicht mit, wo er dürfte – Preis klein, Richtung sicher. *Gegenthese A661-3:* Die Begleiter heilen dich im
+    Kampf; der gelernte Schaden ist der ohne deren Heilung abgezogen, er überschätzt also. *Gegenthese 2:* Der am meisten verletzte ist nicht unbedingt der,
     den ein späterer Kampf braucht – das beantwortet erst K11 mit den Sondenzeilen. *Gegenthese 3:* Ein gefütterter
     Begleiter mit wenig LP bleibt draußen, obwohl die Rast ihn retten könnte. Nicht widerlegt: Ob die LP das gekaufte
     Futter wert sind, hängt am Futter; er entscheidet mit einem Klick.
@@ -394,14 +428,17 @@ Dullahan, Golem, Spriggan und Eisgolem (`XBMPet.InflictsInterrupt`).
     Gegenstände"): der Anteil deiner LP, den jedes Angebot über die Kämpfe bis zum Endgegner bringt. Gewählt wird Stück
     für Stück das mit dem größten Wert je Marke, neu gerechnet nach jedem Stück (Ausrüstung auf die gewählte, Tränke auf
     die gewählten), über jede Startwahl wie in 3; von allen Auswahlen gilt die mit dem größten Wert, bei Gleichstand die
-    billigere. Ein Heilgegenstand zählt höchstens, was du noch heilen kannst: die Kämpfe bis zum Endgegner, jeder so
-    schwer wie dein schwerster gemessener, plus was dir jetzt fehlt, abzüglich der Heilung, die du schon hältst und die
-    die Auswahl schon nahm. Grund: Vorher stand jede Ausrüstung mit messbarem Gewinn vor jedem Trank. Im Laden auf Zug 8
-    von Brett 1 (nur noch der Endgegner, 07.11.2026) empfahl RSR so die Mithril-Rüstung für 858 Marken mit „+4 %"; der
+    billigere. Ein Heilgegenstand zählt höchstens, was du noch heilen kannst: die Kämpfe auf dem schwersten Weg bis
+    einschließlich des Endkampfs, jeder mit seiner Last je Kampf (Campsite oben, A661), ein noch ungelernter so schwer wie
+    dein schwerster gemessener, plus was dir jetzt fehlt, abzüglich der Heilung, die du schon hältst und die die Auswahl
+    schon nahm. Grund: Vorher stand jede Ausrüstung mit messbarem Gewinn vor jedem Trank. Im Laden auf Zug 8 von Brett 1
+    (nur noch der Endgegner, 07.11.2026) empfahl RSR so die Mithril-Rüstung für 858 Marken mit „+4 %"; der
     Bestien-Heiltrank I für 35 Marken bringt 10 %, sofern du sie noch heilen kannst. Die Obergrenze verhindert das
-    Gegenteil, zehn Tränke für drei Kämpfe zu 18 %. Den Endkampf rechnet sie so schwer wie deinen schwersten gemessenen
-    (meine Annahme; im Endkampf von Brett 1 am 07.11.2026 trafen dich seine Zauber mit 1 bis 9 %, wie in den Kämpfen
-    davor). Vor der ersten Messung gelten 3, 5 und 6 in dieser Reihenfolge.
+    Gegenteil, zehn Tränke für drei Kämpfe zu 18 %. *Berichtigt (A661):* Bis A661 rechnete sie jeden Kampf, den Endkampf
+    eingeschlossen, so schwer wie deinen schwersten gemessenen, mit der Begründung, im Endkampf von Brett 1 hätten dich
+    seine Zauber mit 1 bis 9 % getroffen wie davor. Das stimmte je Treffer, nicht je Kampf: Der Endkampf dauerte doppelt so
+    lange und kostete dich 35 %, der schwerste davor 18 % – die Obergrenze lag dort bei der Hälfte dessen, was du heilen
+    musstest. Vor der ersten Messung gelten 3, 5 und 6 in dieser Reihenfolge.
     *Warum die Zustände vor der Skala (A659):* 4 deckt, was LP und Minderung nicht abfangen – Kontrolle, verhinderte
     Aktionen, Schaden über Zeit, der dich auch bei vollen LP weiter trifft; die Skala wiegt nur LP. Vorher stand 3 vor
     4: Eine Rüstung mit wenigen Prozent ging einem Paralyse-Serum vor, wenn die Marken nicht für beides reichten.
@@ -499,11 +536,12 @@ Dullahan, Golem, Spriggan und Eisgolem (`XBMPet.InflictsInterrupt`).
     - *Zustand:* deine LP-Anteil jetzt; dein Vorrat an Heilgegenständen als Anteil deiner LP (K8, nur die für dich); der
       niedrigste LP-Anteil der Heiler und Schützer aus dem Endkampfplan (K11, K14) und deren größter Verlust je Einsatz
       (`FinalLossPerUse`).
-    - *Felder:* Campsite wie K10 – Begleiter ruhen nur mit, wenn du voll herauskommst, so viele, wie das Lager nimmt
-      (`XBMContentCamp`); einen gefallenen Begleiter heilt sie nicht (Wiki, oben), ein toter Begleiter spricht also nicht
-      für die Campsite. Laden, Schatz: keine LP, aber Gegenstände (vermerkt, Marken genannt); Gegner: die mittlere
-      gemessene Last eines Kampfs abzüglich deiner Heilung (`CrucibleBoard.Loads`, wie K10 Laden); Elite und Endgegner:
-      die schwerste gemessene; die Heiler verlieren je Kampf ihren größten Verlust je Einsatz.
+    - *Felder:* Campsite wie K10 – Begleiter ruhen mit, solange deine LP danach die Strecke bis zur nächsten Rast tragen
+      (A661), so viele, wie das Lager nimmt (`XBMContentCamp`); einen gefallenen Begleiter heilt sie nicht (Wiki, oben),
+      ein toter Begleiter spricht also nicht für die Campsite. Laden, Schatz: keine LP, aber Gegenstände (vermerkt, Marken
+      genannt). Ein Kampf mit seiner Last je Kampf (K10 Campsite, A661); ein noch ungelernter Gegner mit der mittleren
+      gemessenen Last eines Kampfs abzüglich deiner Heilung (`CrucibleBoard.Loads`, wie K10 Laden), Elite und Endgegner
+      mit der schwersten gemessenen; die Heiler verlieren je Kampf ihren größten Verlust je Einsatz.
     - *Sicher* ist ein Abzweig, wenn du an der nächsten Rast oder vor dem Endgegner mit Vorrat noch einen schwersten Kampf
       trägst und kein Endkampf-Heiler knapp wird (K11, `ShortForFinal`). Empfohlen wird unter den sicheren der, der
       Gegenstände bringt (Schatz, Laden mit Marken), sonst der mit den meisten LP danach; ist keiner sicher, der, nach dem
@@ -511,6 +549,13 @@ Dullahan, Golem, Spriggan und Eisgolem (`XBMPet.InflictsInterrupt`).
     - *Grund im Fenster:* Die Empfehlung nennt, was der andere Abzweig gebracht hätte – bei Campsite gegen Gegenstände
       die LP, die die Rast dir und den Endkampf-Heilern bis zur nächsten Rast mehr ließe, und ob beide Wege sicher sind –
       und wo die nächste Rast liegt.
+    - *Seine Frage (07.11.2026, offen – `TODO.md`, „Crucible-Weg: nur Campsite empfohlen"):* „es wird immer nur camp
+      vorgeschlagen. ist die auswahl so korrekt?" Am Code: Auf jedem Weg verliert der schwächste Endkampf-Heiler je Kampf
+      seinen größten Verlust je Einsatz, gleich ob er dort auf einem Horn steht oder K11 ihn zurückhält; „sicher" verlangt
+      an der Stelle zwei solche Verluste. Ohne Rast wird so fast jeder Weg unsicher, und unter unsicheren gewinnt der mit
+      mehr LP für dich – der mit der Campsite. Und die Reserve vor dem Endkampf ist der schwerste bisherige Kampf, nicht
+      der Endkampf (A661). Prüfung im Loop gegen seine Vorgabe „sich immer auf die summe der anstehenden kämpfe
+      ausrichten".
     - *Vor der ersten gemessenen Last:* keine Rechnung; die Campsite, solange du oder ein Endkampf-Heiler nicht voll steht,
       sonst der Abzweig mit Gegenständen. Das Fenster sagt es.
     - *Im Kampf (seine Lage, 07.11.2026):* Brett 1 nach Zug 1, du bei rund 93 %, ein Kampf kostete rund 4 %, Vorrat 36 %,
@@ -559,8 +604,9 @@ Dullahan, Golem, Spriggan und Eisgolem (`XBMPet.InflictsInterrupt`).
   - *Letzte Campsite:* Eine Campsite ist die letzte, wenn vom letzten Kampf aus keine weitere – auch kein Zufallsfeld, das
     eine werden kann – erst nach einem weiteren Kampf erreichbar ist. Ohne lesbaren Plan (keine Wegzeilen) gilt keine als
     die letzte. Brett 1: die auf Zug 7; die auf Zug 3 nicht, weil nach dem Kampf auf Zug 4 noch eine kommen kann.
-  - *Empfehlung an der Campsite:* Das Fenster „RSR - Crucible campsite" zeigt, wen RSR vorwählt und warum (K10 wie
-    bisher: nur wenn du voll herauskommst). An der letzten Campsite empfiehlt es dazu, wer für den Endkampf mitruhen soll:
+  - *Empfehlung an der Campsite:* Das Fenster „RSR - Crucible campsite" zeigt, wen RSR vorwählt und warum (K10: so
+    viele, wie deine LP danach die Strecke bis zur nächsten Rast tragen, A661). An der letzten Campsite empfiehlt es
+    dazu, wer für den Endkampf mitruhen soll:
     unter den stehenden, ungefütterten, nicht vollen Begleitern zuerst die Heiler und Schützer aus dem Plan des Endkampfs
     (K11, `FinalHealers`), dann die übrigen Begleiter dieses Plans, dann die übrigen nach ihrem LP-Anteil; so viele, wie
     das Lager nimmt (gelernt; vorher alle, die zählen). Es nennt, mit welchem Anteil du herauskommst. „Apply" wählt die
@@ -581,10 +627,24 @@ Dullahan, Golem, Spriggan und Eisgolem (`XBMPet.InflictsInterrupt`).
     zwei, Geist fünf. Das Begleiterfenster (`XBMPetParty`) führt je Begleiter, wie viele er trägt und tragen kann, und
     welche (ECommons `FedCurrent`, `FedMax`, `FedItems`, Werte 72, 73 und ab 7 einer Zeile, Werkzeugquelle; Daedalus
     2644cbe liest 72 an derselben Stelle). RSR merkt sich das je Begleiter, sooft das Fenster steht – am Hornfenster vor
-    jedem Kampf, an der Campsite, beim Füttern –, für dieses Brett. Empfohlen wird nur für einen freien Platz: erst je
-    Begleiter einer, Heiler und Schützer zuerst, dann die zweiten Plätze, so weit die Marken nach der Kaufliste reichen;
-    darüber hinaus mit Vermerk. Hat RSR das Fenster auf diesem Brett noch nicht gesehen, oder liest es keinen Höchstwert,
-    gilt je Begleiter ein Platz, und das Fenster sagt es. Grund: Vorher empfahl RSR jedem Begleiter eins, ohne seine
+    jedem Kampf, an der Campsite, beim Füttern –, für diesen Lauf (A662: bis dahin für das Gebiet; ein neuer Lauf auf
+    demselben Brett ist dasselbe Gebiet und erbte so die Plätze und die Ausrüstung des vorigen, bis das Fenster wieder
+    stand). Empfohlen wird nur für einen freien Platz, Stück für Stück (A662): das Paar aus Futter und Begleiter, das
+    einem Heiler oder Schützer des Plans am meisten bringt, dann das, das einem der übrigen am meisten bringt, so weit die
+    Marken nach der Kaufliste reichen; darüber hinaus mit Vermerk. Die Liste nennt die Reihenfolge, und beim Füttern
+    nennt RSR für das Futter in der Hand nach derselben Regel den Empfänger – wer der Liste folgt, bekommt dort dieselben
+    Namen. Den Begleiter nennt das Fenster mit seinen LP, wie das Begleiterfenster sie zeigt („Kolibri 374/487"), nicht
+    nur mit einem Anteil. Hat RSR das Fenster in diesem Lauf noch nicht gesehen, oder liest es keinen Höchstwert,
+    gilt je Begleiter ein Platz, und das Fenster sagt es. *Warum Stück für Stück (A662):* Bis A662 verteilte die Liste
+    reihum (je Begleiter einer, Heiler zuerst, dann die zweiten Plätze), das Füttern nannte den mit dem größten Gewinn –
+    zwei Regeln. In seinem Laden auf Zug 8 (07.11.2026) stand in der Liste Meerengel für den Goobbue und Champignon für
+    den Kolibri; nach dem Meerengel nannte das Füttern für den Champignon den Goobbue. Reihum hing zudem an der
+    Kaufreihenfolge: Wer erst den Meerengel fütterte, bekam für den Champignon wieder den ersten in der Runde. Stück für
+    Stück, Heiler zuerst, folgt dem Zweck des Futters (die Heiler des Endkampfs halten dich und die anderen) und gibt in
+    jeder Reihenfolge, die der Liste folgt, dieselben Empfänger. *Gegenthese:* Ein Schadensbegleiter auf wenig LP bekommt
+    nichts, solange einem Heiler ein Futter noch etwas bringt. Nicht widerlegt, Preis benannt: Schaden vor Sicherheit
+    tauscht seine Vorgabe nicht; sein Futter kommt, sobald die Heiler nichts mehr gewinnen oder keinen Platz haben. Grund
+    der Plätze: Vorher empfahl RSR jedem Begleiter eins, ohne seine
     Plätze zu kennen, und nahm das erste passende Angebot auch ohne Gewinn: Bananen-Simulakrum für Drakon, der beide
     Plätze belegt hatte, mit „effective HP rises 0 %"; „heals or protects" vor dem Grund war die Rolle des Begleiters
     und las sich als Wirkung des Futters.
@@ -598,17 +658,38 @@ Dullahan, Golem, Spriggan und Eisgolem (`XBMPet.InflictsInterrupt`).
     Begleiterfenster nennt), sonst englisch.
   - *Beim Füttern:* Öffnet das Begleiterfenster zum Füttern (`AgentXBMPetParty` Modus 3 „buy feed", 4 „buy feed result",
     5 „feed detail", ClientStructs 0adb2e5; das Futter in `ReaderXBMPetParty.FeedItem`, ECommons 65be12d), nennt das
-    Fenster, wem es zugedacht ist, nach den Plätzen, die das Fenster jetzt zeigt: der Begleiter des Endkampfplans mit
-    freiem Platz, dem es am meisten bringt; hat keiner einen freien Platz oder bringt es keinem etwas, sagt es das.
-    RSR klickt dort nichts.
+    Fenster, wem es zugedacht ist, nach den Plätzen, die das Fenster jetzt zeigt, mit der Regel der Liste: unter den
+    Heilern und Schützern des Endkampfplans mit freiem Platz der, dem es am meisten bringt, sonst unter den übrigen; hat
+    keiner einen freien Platz oder bringt es keinem etwas, sagt es das. RSR klickt dort nichts.
   - *Sperre:* Die Campsite-Wahl (K10) erkennt das Lager an Modus 4. Den nennt ClientStructs „buy feed result"; Daedalus
     sah ihn im Spiel an der Campsite. Läuft ein Futterkauf (Modus 3 oder 5 gesehen, seit das Fenster offen ist, oder ein
     Futter im Fenster), klickt RSR dort nicht: Ein Klick wählte sonst, wer frisst.
   - *Verworfen:* (a) Am letzten Lager ohne Klick für die Begleiter rasten, auch wenn du nicht voll herauskommst – die
     Bilanz hängt an Endkampf-Lasten, die nur für dich gemessen sind; (b) Futter schon an jedem Laden – vor einer Campsite
     geht es verloren oder hält den Begleiter vom Rasten ab; (c) Futter nach Schaden zuerst – Sicherheit vor Schaden.
-  - *Gegenthese 1:* Der Plan des Endkampfs stammt vom letzten Hornfenster; seither änderten sich LP. Teilweise widerlegt:
-    Er ändert sich mit dem Kader, kaum mit den LP; die Empfehlung liest die LP jetzt. *Gegenthese Futterplätze:* Ruht ein
+  - *Der Plan des Endkampfs (A662; seine Meldung vom 07.11.2026: „ich sollte gobue füttern und dann wird sie nicht für
+    den kampf genommen. also war das futter verschwendet"):* Futter, Rast für den Endkampf und Reserve (K11) lesen einen
+    Plan; das Hornfenster des Endkampfs wählt die Hörner. Beides ist jetzt dieselbe Rechnung mit denselben Eingaben: LP
+    jetzt (K11, wie das Hornfenster sie liest), „übersteht den Einsatz", synchronisierter Rang, Futter. RSR rechnet den
+    Plan neu, sobald sich davon etwas ändert, außerhalb des Kampfes auf dem Brett, nicht nur am Hornfenster vor einem
+    anderen Kampf (wie bisher nur mit „Set the battlehorns between fights", denn ohne sie wählt RSR die Hörner nicht).
+    „Übersteht den Einsatz" zählt im Plan mit den LP von jetzt erst, wenn keine Campsite mehr kommen kann: Davor zählen
+    alle als überstehend, weil eine Rast ihre LP noch hebt und der Plan sagt, wen sie heben soll (K11: ein knapper
+    Endkampf-Heiler ruht zuerst); danach sind die LP von jetzt die im Endkampf. Futter zählt in jeder Hornwahl auf dem Brett (K6): Ein Begleiter mit „Damage Dealt +x %" bringt
+    entsprechend mehr Schaden, einer mit „Damage Taken −x %" übersteht einen Einsatz, wenn seine LP über dem größten
+    Verlust je Einsatz mal dem verbleibenden Anteil liegen. Damit hebt Futter nur den Wert dessen, der es frisst: Ein
+    Plan, der ihn enthielt, bleibt der beste oder wird von einem anderen mit ihm geschlagen – das Futter geht nicht an
+    einen, den die Hornwahl danach liegen lässt. *Im Kampf vorher:* Der Plan stammte vom Hornfenster vor dem Elitekampf,
+    mit den LP von damals, ohne „übersteht den Einsatz" (alle zählten als überstehend) und ohne Futter; am Endkampf wählte
+    RSR mit den LP danach, mit dieser Prüfung und wieder ohne Futter neu. In seinem Lauf stand im Laden „Meerengel →
+    Goobbue, heals or protects in the final" und „Champignon → Kolibri"; gefüttert wurden der Goobbue, am Endkampf lagen
+    Karpfenkröte, Morbol und Kobalos auf den Hörnern. Welche der Abweichungen dort den Ausschlag gab, zeigt keine Spur
+    (keine Datei zu diesem Lauf); dass zwei Rechnungen mit verschiedenen Eingaben liefen, ist am Code belegt.
+    *Gegenthese (gleichauf):* Unter gleichem Schaden entscheidet am Hornfenster noch, wer schon auf einem Horn steht
+    („behalten", B5). Das ändert den Plan nur bei exakt gleichem Schaden, nach Heilern und „übersteht den Einsatz".
+    *Gegenthese (LP fallen nach dem Futter):* Auf Brett 1 liegt zwischen dem letzten Laden und dem Endkampf kein Kampf
+    (Zug 8 Laden, Zug 9 Endgegner); liegt auf einem Brett einer dazwischen, rechnet RSR den Plan danach neu, und das
+    Futter kann an einen gegangen sein, der dort fiel – derselbe Preis wie jede Vorbereitung vor einem Kampf. *Gegenthese Futterplätze:* Ruht ein
     Gefütterter an der Campsite und kommt der Laden ohne Kampf danach (Brett 1: Zug 7 Campsite, Zug 8 Laden), sieht RSR
     seine Plätze noch belegt, bis das Fenster wieder steht. Nicht widerlegt, Preis benannt: Die Ladenliste empfiehlt ihm
     dann zu wenig; beim Füttern liest RSR die Plätze neu und nennt ihn. RSR selbst lässt keinen Gefütterten ruhen
@@ -799,7 +880,8 @@ Dullahan, Golem, Spriggan und Eisgolem (`XBMPet.InflictsInterrupt`).
   - *Ausgeliefert, und nichts ändert sich?* Wenn die Reserve genug LP für zwei Verluste hat, oder vor der ersten Messung,
     oder wenn er die Hörner von Hand setzt.
   *Stufe 2, gebaut (A590): Zähnefletschen und Campsite nach Bedarf.* Endkampf-Heiler heißen die Begleiter, die in der
-  Wahl für den Endkampf heilen oder schützen (Stufe 1, aus dem letzten Hornfenster vor einem anderen Kampf); knapp ist
+  Wahl für den Endkampf heilen oder schützen (Stufe 1; seit A662 neu gerechnet, sobald sich LP, Futter oder Hörner
+  ändern, mit der Rechnung des Hornfensters, K14 „Der Plan des Endkampfs"); knapp ist
   einer, dem nach einem weiteren Verlust in Höhe des größten auf dem Brett weniger als ein solcher bliebe – dasselbe Maß
   wie die Reserve.
   - *Zähnefletschen:* In einem Kampf vor dem Endkampf geht es nicht auf einen knappen Endkampf-Heiler, außer deine LP
@@ -1016,6 +1098,17 @@ on a pack once a fight, all of them in the final fight (Crucible only)".
      getroffenen Gegner aus eins plus dem gemessenen Schwächezuschlag, wo das Element ihre Schwäche ist (K1); bei
      Gleichstand der ohne Rückstoß. Ein Gegenstand, dessen Element nur die Schwäche noch kommender Gegner trifft, wartet
      auf sie (wie K2).
+- *Über das Brett (seine Vorgaben vom 07.11.2026, offen – `TODO.md`, „Crucible: Gegenstände über die Kämpfe des Bretts"):*
+  „nach dem letzten fight ist zuviel ungenutzt und verfällt. sollte besser über alle kämpfe eines bretts hinweg genutzt
+  werden, so dass möglichst das zum letzten kampf am besten passende dort genutzt wird, das andere vorher in den kämpfen,
+  wo es am ehesten passt"; „synergieeffekte der items prüfen und optimieren"; „sich immer auf die summe der anstehenden
+  kämpfe ausrichten" (Vorgaben, Kriterien für 12 und 13 und jede Regel dieses Konzepts, die einen Vorrat oder eine
+  Strecke wiegt). Stand dagegen: Stärkung nur im Endkampf (12), Schaden einer je Kampf davor (13) – beides mit der
+  Begründung, die Zahl der Kämpfe sei unbekannt; seit K14 („Der Weg aus den Blättern") kennt RSR jeden Kampf bis zum
+  Endgegner samt Gegnern, Schwächen und Zahl, die Begründung trägt nicht mehr. *Sein Hinweis (07.11.2026):* „bei
+  rückstoßeffekt wird einer der gegner ins aus geschleudert, die anderen sind vom effekt zu weit entfernt. somit war der
+  effekt wahrscheinlich zu früh" – der Reißzahn mit 15 Yalm Rückstoß (13) ging, als nur ein Gegner nahe stand; sein Log
+  folgt.
 - *Wie:* `InstanceContentCrucibleOfTheUnbroken.UseItem` (FFXIVClientStructs, in Dalamuds Fassung vorhanden) wirkt auf
   das Soft- oder Hard-Ziel. RSR setzt das Soft-Ziel kurz auf dich, deinen Begleiter oder dein Gegnerziel und stellt es
   zurück, wie BeastHelper (be40a1e, Werkzeugquelle, nur gelesen). Die Status liest RSR nach ihrem englischen Namen. Die
@@ -1074,6 +1167,9 @@ on a pack once a fight, all of them in the final fight (Crucible only)".
   Hörnern, der Beastmaster tankte und fiel), danach die Summe der synchronisierten Ränge (A579: der stärkere bei
   sonst gleicher Wahl); außerhalb des Crucible sind beide stets gleich, B5 ändert sich dort nicht. Ein Begleiter unter
   dem empfohlenen Rang des Bretts kommt nur in Frage, wenn weniger andere leben als Hörner da sind (A579, K7 „Leveln").
+  Futter zählt (A662): Schaden mal (1 + „Damage Dealt" seines Futters), und er übersteht den Einsatz, wenn seine LP über
+  dem größten Verlust je Einsatz mal (1 − „Damage Taken" seines Futters) liegen; jedes Futter multipliziert wie bei
+  Ausrüstung (meine Ableitung). Der Plan des Endkampfs ist dieselbe Wahl (K14).
   Spurzeile „Crucible horn screen: horns set for battle …".
 - *Klicks:* Rückruf des Fensters mit `[1, Platz]`, einer, dann neu lesen. Ist die Auswahl kein Anfang der gewünschten
   Reihenfolge, wird der zuletzt gewählte abgewählt, sonst der nächste gewünschte gewählt; höchstens doppelt so viele

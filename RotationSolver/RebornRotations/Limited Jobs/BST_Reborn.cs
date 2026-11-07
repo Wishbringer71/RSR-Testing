@@ -1557,6 +1557,7 @@ public sealed class BST_Reborn : BeastmasterRotation
 			}
 
 			SetHornsOnHornScreen();
+			RefreshFinalPlan();
 		}
 
 		FollowTeamRequest(PreferLaggingFamiliars);
@@ -2197,39 +2198,10 @@ public sealed class BST_Reborn : BeastmasterRotation
 			options[h] = [];
 		}
 
-		// A579: a familiar below the rank the game recommends for this board fights only when fewer others live than horns.
-		// K11 (A585): with the HP it last left a fight with, while the agent has not taken that fight over.
-		var recommended = CrucibleBoard.RecommendedRank(party->ContentId);
-		var adequateLiving = 0;
-		for (var i = 0; i < team.Length; i++)
+		var candidates = BoardCandidates(party);
+		foreach (var candidate in candidates)
 		{
-			var pet = (BeastmasterPet)team[i].PetId;
-			if (i < current.Length && EffectiveHealth(pet, current[i]) > 0
-				&& (party->IsPetOverSyncedRank((uint)pet) || party->GetSyncedRank((uint)pet) >= recommended))
-			{
-				adequateLiving++;
-			}
-		}
-
-		var candidates = new List<(BeastmasterPet Pet, int Position, uint Hp, uint Full, int Rank)>();
-		for (var i = 0; i < team.Length; i++)
-		{
-			var pet = (BeastmasterPet)team[i].PetId;
-			var hp = i < current.Length ? EffectiveHealth(pet, current[i]) : 0u;
-			var full = i < max.Length ? max[i] : 0u;
-			if (hp == 0 || full == 0 || FamiliarOf(pet) is null || position.ContainsKey(pet))
-			{
-				continue;
-			}
-
-			var rank = (int)party->GetSyncedRank((uint)pet);
-			if (adequateLiving >= Horns.Length && !party->IsPetOverSyncedRank((uint)pet) && rank < recommended)
-			{
-				continue;
-			}
-
-			position[pet] = i;
-			candidates.Add((pet, i, hp, full, rank));
+			position[candidate.Pet] = candidate.Position;
 		}
 
 		var held = boss ? [] : HeldForFinal(party->ContentId, candidates, boss, pack, enemies, required, none);
@@ -2242,12 +2214,7 @@ public sealed class BST_Reborn : BeastmasterRotation
 
 			for (var h = 0; h < Horns.Length; h++)
 			{
-				options[h].Add(Option(pet, Horns[h], boss, pack, enemies) with
-				{
-					Health = hp / (float)full,
-					Rank = rank,
-					Lasts = _largestLossPerUse == 0u || hp > _largestLossPerUse,
-				});
+				options[h].Add(BoardOption(pet, Horns[h], boss, pack, enemies, hp, full, rank));
 			}
 		}
 
@@ -2323,6 +2290,169 @@ public sealed class BST_Reborn : BeastmasterRotation
 		addon->FireCallback((uint)sent.Length, values, true);
 		_hornScreenClicks++;
 		_hornScreenClickAt = now;
+	}
+
+	// K6 (A579, A585): the living team on the board as the horn screen weighs it - in screen order, with the HP each last
+	// left a fight with while the agent has not taken that fight over, its full HP and synced rank; a familiar below the rank
+	// the game recommends for this board only when fewer others live than horns.
+	private unsafe List<(BeastmasterPet Pet, int Position, uint Hp, uint Full, int Rank)> BoardCandidates(
+		FFXIVClientStructs.FFXIV.Client.UI.Agent.AgentXBMPetParty* party)
+	{
+		var team = party->SelectedPets.AsSpan();
+		var current = party->PetCurrentHealth;
+		var max = party->PetMaxHealth;
+		var recommended = CrucibleBoard.RecommendedRank(party->ContentId);
+		var adequateLiving = 0;
+		for (var i = 0; i < team.Length; i++)
+		{
+			var pet = (BeastmasterPet)team[i].PetId;
+			if (i < current.Length && EffectiveHealth(pet, current[i]) > 0
+				&& (party->IsPetOverSyncedRank((uint)pet) || party->GetSyncedRank((uint)pet) >= recommended))
+			{
+				adequateLiving++;
+			}
+		}
+
+		var candidates = new List<(BeastmasterPet Pet, int Position, uint Hp, uint Full, int Rank)>();
+		var seen = new HashSet<BeastmasterPet>();
+		for (var i = 0; i < team.Length; i++)
+		{
+			var pet = (BeastmasterPet)team[i].PetId;
+			var hp = i < current.Length ? EffectiveHealth(pet, current[i]) : 0u;
+			var full = i < max.Length ? max[i] : 0u;
+			if (hp == 0 || full == 0 || FamiliarOf(pet) is null || !seen.Add(pet))
+			{
+				continue;
+			}
+
+			var rank = (int)party->GetSyncedRank((uint)pet);
+			if (adequateLiving >= Horns.Length && !party->IsPetOverSyncedRank((uint)pet) && rank < recommended)
+			{
+				continue;
+			}
+
+			candidates.Add((pet, i, hp, full, rank));
+		}
+
+		return candidates;
+	}
+
+	// K6, K14 (A662): a familiar as the horn choice weighs it on a board - its share of HP, synced rank, whether its HP
+	// outlast the largest loss of a use on this board, and its feed: damage times (1 + its Damage Dealt), the loss times
+	// (1 - its Damage Taken). The same for the battle about to start and for the final fight's plan.
+	private HornOption BoardOption(BeastmasterPet pet, HornOrder horn, bool boss, int pack, CrucibleBoard.Enemy[] enemies,
+		uint hp, uint full, int rank)
+	{
+		var (dealt, taken) = FeedFactors(pet);
+		var option = Option(pet, horn, boss, pack, enemies);
+		return option with
+		{
+			Damage = option.Damage * dealt,
+			Health = hp / (float)full,
+			Rank = rank,
+			Lasts = _largestLossPerUse == 0u || hp > _largestLossPerUse * taken,
+		};
+	}
+
+	// K14 (A631, A662): the final fight's plan from these candidates - the choice its horn screen makes with them - for the
+	// campsite, the feed and the reserve (K11); false where the board has no final fight in the sheets. While a campsite can
+	// still come, every familiar counts as outlasting a use (its HP may yet be restored, and the plan says whom to restore);
+	// once none can, its HP now are its HP in the final fight and count as the horn screen counts them.
+	private bool PlanFinal(uint board, List<(BeastmasterPet Pet, int Position, uint Hp, uint Full, int Rank)> candidates, HornOption none)
+	{
+		var restAhead = CrucibleRoute.CampsiteAhead();
+		var fights = CrucibleBoard.FightsOfBoard(board);
+		if (fights.Count == 0 || !CrucibleBoard.IsFinalBattle(fights[0]))
+		{
+			return false;
+		}
+
+		var final = CrucibleBoard.EnemiesOf(fights[0]);
+		var finalOptions = new List<HornOption>[Horns.Length];
+		for (var h = 0; h < Horns.Length; h++)
+		{
+			finalOptions[h] = [];
+			foreach (var (pet, _, hp, full, rank) in candidates)
+			{
+				var option = BoardOption(pet, Horns[h], true, 1, final, hp, full, rank);
+				finalOptions[h].Add(restAhead ? option with { Lasts = true } : option);
+			}
+
+			if (finalOptions[h].Count <= h)
+			{
+				finalOptions[h].Add(none);
+			}
+		}
+
+		FinalHealers.Clear();
+		FinalTeam.Clear();
+		FinalLossPerUse = _largestLossPerUse;
+		FinalBattle = fights[0];
+		foreach (var option in BestPlan(finalOptions, new BeastmasterPet[Horns.Length], BossSafeFamiliars + (_dangerInArea ? 1 : 0), none))
+		{
+			if (option.Pet != BeastmasterPet.None)
+			{
+				FinalTeam.Add(option.Pet);
+				if (option.Safe)
+				{
+					_ = FinalHealers.Add(option.Pet);
+				}
+			}
+		}
+
+		FinalTeam.Sort((a, b) => FinalHealers.Contains(b).CompareTo(FinalHealers.Contains(a)));
+		return true;
+	}
+
+	private int _finalPlanKey;
+
+	// K14 (A662): out of combat on a board, the final fight's plan again whenever what it weighs has changed - the team's HP,
+	// the feed, the largest loss of a use, a danger in this area -, so that the campsite and the shop read the plan the final
+	// horn screen will choose.
+	private unsafe void RefreshFinalPlan()
+	{
+		var party = FFXIVClientStructs.FFXIV.Client.UI.Agent.AgentXBMPetParty.Instance();
+		if (!IsInCrucible || InCombat || party == null || party->ContentId == 0 || party->SelectedPets.AsSpan().Length == 0)
+		{
+			return;
+		}
+
+		var candidates = BoardCandidates(party);
+		var key = new HashCode();
+		key.Add(party->ContentId);
+		key.Add(_largestLossPerUse);
+		key.Add(_dangerInArea);
+		key.Add(FeedSlotsSeen);
+		key.Add(CrucibleRoute.CampsiteAhead());
+		foreach (var horn in Horns)
+		{
+			key.Add(EffectiveNature(horn));
+		}
+
+		foreach (var (pet, _, hp, full, rank) in candidates)
+		{
+			key.Add(pet);
+			key.Add(hp);
+			key.Add(full);
+			key.Add(rank);
+		}
+
+		var hash = key.ToHashCode();
+		if (hash == _finalPlanKey)
+		{
+			return;
+		}
+
+		_finalPlanKey = hash;
+		var before = string.Join(", ", FinalTeam);
+		if (PlanFinal(party->ContentId, candidates, new HornOption(BeastmasterPet.None, false, false, 0f, false, 0f, Lasts: false)))
+		{
+			var after = string.Join(", ", FinalTeam);
+			if (after != before)
+			{
+				TraceHorn($"Crucible final fight's plan: {after} (healers {string.Join(", ", FinalHealers)}) - was {(before.Length > 0 ? before : "none")}");
+			}
+		}
 	}
 
 	// The plan of three horns the score ranks first, from each horn's options; a familiar on one horn only.
@@ -2421,49 +2551,12 @@ public sealed class BST_Reborn : BeastmasterRotation
 		var held = new HashSet<BeastmasterPet>();
 		InterrupterHeld.Clear();
 		var loss = _largestLossPerUse;
-		var fights = CrucibleBoard.FightsOfBoard(board);
-		if (fights.Count == 0 || !CrucibleBoard.IsFinalBattle(fights[0]))
+		if (!PlanFinal(board, candidates, none))
 		{
 			return held;
 		}
 
-		var final = CrucibleBoard.EnemiesOf(fights[0]);
-		var finalOptions = new List<HornOption>[Horns.Length];
-		for (var h = 0; h < Horns.Length; h++)
-		{
-			finalOptions[h] = [];
-			foreach (var (pet, _, hp, full, rank) in candidates)
-			{
-				finalOptions[h].Add(Option(pet, Horns[h], true, 1, final) with { Health = hp / (float)full, Rank = rank });
-			}
-
-			if (finalOptions[h].Count <= h)
-			{
-				finalOptions[h].Add(none);
-			}
-		}
-
-		var nobody = new BeastmasterPet[Horns.Length];
-		var finalRequired = BossSafeFamiliars + (_dangerInArea ? 1 : 0);
 		var reserve = new List<(BeastmasterPet Pet, uint Hp)>();
-		FinalHealers.Clear();
-		FinalTeam.Clear();
-		FinalLossPerUse = loss;
-		FinalBattle = fights[0];
-		foreach (var option in BestPlan(finalOptions, nobody, finalRequired, none))
-		{
-			if (option.Pet != BeastmasterPet.None)
-			{
-				// K14 (A631): the final fight's plan as a whole - the campsite and the feed before it read it.
-				FinalTeam.Add(option.Pet);
-				if (option.Safe)
-				{
-					_ = FinalHealers.Add(option.Pet);
-				}
-			}
-		}
-
-		FinalTeam.Sort((a, b) => FinalHealers.Contains(b).CompareTo(FinalHealers.Contains(a)));
 
 		// The reserve waits for a measured use (A585); the plan above does not.
 		if (loss == 0u)

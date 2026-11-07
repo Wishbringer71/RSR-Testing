@@ -1910,6 +1910,16 @@
    "status": "exception",
    "loop": "A654",
    "reason": "Longest text kept on one line, in windows and tooltips, in characters of the text itself: the upper end of the readable range (Ruder, Baymard: 50-75), so a text a little over 65 does not leave a few words on a second line. A rule of legibility, not a figure of the game (A654)."
+  },
+  {
+   "file": "RotationSolver/Basic/Helpers/CrucibleBoard.cs",
+   "code": "private const int PercentScale = 100;",
+   "values": [
+    "100"
+   ],
+   "status": "exception",
+   "loop": "A661",
+   "reason": "Unit of the learned loads per Crucible fight (CrucibleFightLoads.json): whole percent of the player's maximum HP, the unit the windows show; a choice of unit, not a figure of the game (A661)."
   }
  ]
 }

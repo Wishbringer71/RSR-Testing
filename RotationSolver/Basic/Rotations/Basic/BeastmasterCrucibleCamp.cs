@@ -77,10 +77,11 @@ public partial class BeastmasterRotation
 	private static (int Position, bool Select, int Before, DateTime At)? _campsiteClick;
 
 	/// <summary>
-	/// K10: with the campsite window open, one click a time toward the pick: no familiar when the player would not come
-	/// out at full HP with one; else the number of familiars that brings them the most HP while he still does, and for it
-	/// the standing, unfed familiars not at full HP with the smallest share of their HP. Never presses rest. Called every
-	/// frame from the update; <paramref name="pick"/> is the rotation's setting.
+	/// K10: with the campsite window open, one click a time toward the pick: the number of familiars that brings them the
+	/// most HP while the player's HP after the rest still carry the heaviest way to the next campsite (A661) - full HP where
+	/// a fight on those ways was never measured -, and for it the standing, unfed familiars not at full HP with the smallest
+	/// share of their HP. Never presses rest. Called every frame from the update; <paramref name="pick"/> is the rotation's
+	/// setting.
 	/// </summary>
 	internal static unsafe void FollowCampsite(bool pick)
 	{
@@ -219,10 +220,11 @@ public partial class BeastmasterRotation
 		var resting = 0;
 		var bestGain = 0f;
 		_campsiteLimit ??= CrucibleRoute.CampsiteLimit();
+		var need = StretchNeed();
 		for (var n = 1; n <= hurt.Count && (_campsiteLimit is not { } limit || n <= limit); n++)
 		{
 			var share = RestShare(n);
-			if (self + share < 1f)
+			if (!Carries(self + share, need))
 			{
 				continue;
 			}
@@ -247,10 +249,10 @@ public partial class BeastmasterRotation
 		}
 
 		CrucibleCampSummary = resting > 0
-			? $"RSR selects {DescribeResting(pets, wanted, current, max)} - you come out at full HP"
+			? $"RSR selects {DescribeResting(pets, wanted, current, max)} - {Outcome(self + RestShare(resting), need)}"
 			: hurt.Count == 0
 				? "RSR selects nobody - no familiar here is standing, unfed and short of HP"
-				: $"RSR selects nobody - at {self:P0} you would not come out at full HP with a familiar";
+				: $"RSR selects nobody - {Shortfall(self, need)}";
 		RecommendForFinal(hurt, self);
 
 		// The window's "Apply": his choice from the recommendation, clicked toward like RSR's own.
@@ -294,14 +296,13 @@ public partial class BeastmasterRotation
 			{
 				_campsiteTraced = plan;
 				DefenseTrace.Line(resting > 0
-					? $"crucible campsite: rest with {resting} ({DescribeResting(pets, wanted, current, max)}) - you come out at full HP, "
-						+ $"{RestShare(resting):P0} each brings them {bestGain:P0} of their HP in all"
+					? $"crucible campsite: rest with {resting} ({DescribeResting(pets, wanted, current, max)}) - "
+						+ $"{Outcome(self + RestShare(resting), need)}, {RestShare(resting):P0} each brings them {bestGain:P0} of their HP in all"
 					: hurt.Count == 0
 						? "crucible campsite: rest alone - no familiar here is standing, unfed and short of HP"
 						: _campsiteLimit == 0
 							? "crucible campsite: rest alone - this campsite takes no familiar"
-							: $"crucible campsite: rest alone - at {self:P0} you would not come out at full HP with a familiar "
-								+ $"({RestShare(1):P0} each)");
+							: $"crucible campsite: rest alone - {Shortfall(self, need)} ({RestShare(1):P0} each)");
 			}
 
 			return;
@@ -325,6 +326,50 @@ public partial class BeastmasterRotation
 			CrucibleCampSummary = why;
 			DefenseTrace.Line(why);
 		}
+	}
+
+	/// <summary>
+	/// K10 (A661): the heaviest way from where the run stands to the next campsite - the final fight included on a way
+	/// without one -, each fight with the heaviest damage it ever dealt the player, with the gear worn now; null where a fight
+	/// on those ways was never measured or the board's ways are unknown.
+	/// </summary>
+	internal static float? StretchNeed()
+	{
+		return CrucibleRoute.WorstAhead(true, LoadNow);
+	}
+
+	/// <summary>
+	/// K10 (A661): the heaviest damage <paramref name="battle"/> ever dealt the player, as a share of his maximum HP with the
+	/// gear worn now - the learned share without gear, times the damage he takes, over his raised maximum (his
+	/// vulnerabilities by kind left out: the learned share carries no kind, so it errs high); null before it was measured.
+	/// </summary>
+	internal static float? LoadNow(uint battle)
+	{
+		var (hp, taken, _, _) = WornFactors();
+		return CrucibleBoard.BattleLoad(battle) is { } bare ? bare * taken / Math.Max(hp, float.Epsilon) : null;
+	}
+
+	// K10 (A661): whether the player's HP after a rest (a share, above 1 when the rest would fill more than he misses) carry
+	// the way ahead - above its load, or full where that is unknown or a full bar or more.
+	internal static bool Carries(float after, float? need)
+	{
+		return need is { } stretch && stretch < 1f ? after > stretch : after >= 1f;
+	}
+
+	private static string Outcome(float after, float? need)
+	{
+		return after >= 1f
+			? "you come out at full HP"
+			: $"you come out at {after:P0}, above the {need ?? 1f:P0} the heaviest way to the next rest can cost you";
+	}
+
+	private static string Shortfall(float self, float? need)
+	{
+		var one = Math.Min(1f, self + RestShare(1));
+		return need is { } stretch && stretch < 1f
+			? $"with a familiar you would come out at {one:P0}, not above the {stretch:P0} the heaviest way to the next rest can cost you"
+			: $"with a familiar you would come out at {one:P0}, not full - "
+				+ (need == null ? "a fight on the ways to the next rest was never measured with RSR" : "the way to the next rest can cost a full bar");
 	}
 
 	/// <summary>The share of his maximum HP each of the player and <paramref name="familiars"/> familiars recover in one rest.</summary>
@@ -442,7 +487,7 @@ public partial class BeastmasterRotation
 		var parts = new List<string>();
 		foreach (var position in wanted)
 		{
-			parts.Add($"{(BeastmasterPet)pets[position].PetId} at {current[position] / (float)max[position]:P0}");
+			parts.Add($"{FamiliarName((BeastmasterPet)pets[position].PetId)} ({current[position]}/{max[position]})");
 		}
 
 		return string.Join(", ", parts);

@@ -117,9 +117,9 @@ public partial class BeastmasterRotation
 			if (offer.Row == row && CrucibleGearTable.ContainsKey(offer.Item))
 			{
 				// The treasure window does not list the gear held; what RSR took joins what the last shop showed.
-				if (_gearSeen is not { } held || held.Territory != DataCenter.TerritoryID)
+				if (_gearSeen is not { } held || held.Run != CrucibleBoard.Run)
 				{
-					held = (DataCenter.TerritoryID, [], 0);
+					held = (CrucibleBoard.Run, [], 0);
 				}
 
 				held.Gear.Add(offer.Item);
@@ -152,7 +152,7 @@ public partial class BeastmasterRotation
 		var gear = CrucibleGearTable;
 		var owned = new List<CrucibleGear>();
 		var gearSlots = 0;
-		if (_gearSeen is { } seen && seen.Territory == DataCenter.TerritoryID)
+		if (_gearSeen is { } seen && seen.Run == CrucibleBoard.Run)
 		{
 			gearSlots = seen.Slots;
 			foreach (var id in seen.Gear)

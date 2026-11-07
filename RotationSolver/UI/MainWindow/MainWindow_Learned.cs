@@ -148,6 +148,7 @@ public partial class MainWindow
 			SleepKindTab(game),
 			InterruptibleKindTab(),
 			DangerousAreaTab(),
+			CrucibleFightLoadTab(),
 			SleepLimitTab(game),
 			DotTab(),
 			PenaltyTab(game),
@@ -371,6 +372,28 @@ public partial class MainWindow
 
 		Sort(rows);
 		return new LearnedTab("Dangerous areas", ["Area (territory id)", "Up to level"], rows);
+	}
+
+	// K10 of the Crucible (concept 21, Campsite, A661): per fight, the heaviest damage the player took in it, in percent of
+	// his maximum HP without his Crucible gear; the fight by its first enemy.
+	private static LearnedTab CrucibleFightLoadTab()
+	{
+		var rows = new List<string[]>();
+		Dictionary<uint, int> loads;
+		lock (OtherConfiguration.CrucibleFightLoadsGate)
+		{
+			loads = new Dictionary<uint, int>(OtherConfiguration.CrucibleFightLoads);
+		}
+
+		foreach (var (fight, percent) in loads)
+		{
+			var enemies = CrucibleBoard.EnemiesOf(fight);
+			var name = enemies.Length > 0 ? CrucibleBoard.EnemyName(enemies[0].NameId) : string.Empty;
+			rows.Add([name.Length > 0 ? $"{name} (fight {fight})" : $"fight {fight}", $"{percent} %"]);
+		}
+
+		Sort(rows);
+		return new LearnedTab("Crucible fights", ["Fight (first enemy)", "Heaviest, of HP without gear"], rows);
 	}
 
 	private static LearnedTab SleepLimitTab(string? game)

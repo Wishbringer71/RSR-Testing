@@ -189,6 +189,101 @@ internal static class CrucibleRoute
 		}
 	}
 
+	/// <summary>
+	/// K10 Campsite and shop (concept 21, A661): the load of the heaviest way from where the run stands - each battle with
+	/// <paramref name="load"/> of its XBMBattleDetail row, a random space with its heaviest battle - to the next campsite
+	/// (<paramref name="toCampsite"/>; a way without one runs to the final fight, included) or to the final fight. The space
+	/// the run stands on counts while it is not done. Null while the board or its ways are unknown, or a battle on any way
+	/// has no load.
+	/// </summary>
+	internal static float? WorstAhead(bool toCampsite, Func<uint, float?> load)
+	{
+		if (_lastBattle.Board == 0 || _current < 0 || !Boards.TryGetValue(_lastBattle.Board, out var route) || route.Next == null
+			|| _current >= route.Nodes.Length)
+		{
+			return null;
+		}
+
+		return WorstAhead(_current, _done, toCampsite, load);
+	}
+
+	/// <summary>
+	/// As <see cref="WorstAhead(bool, Func{uint, float?})"/>, from space <paramref name="from"/> of the board the run is on,
+	/// counting that space itself unless <paramref name="fromDone"/> - for the way window's look ahead.
+	/// </summary>
+	internal static float? WorstAhead(int from, bool fromDone, bool toCampsite, Func<uint, float?> load)
+	{
+		if (_lastBattle.Board == 0 || !Boards.TryGetValue(_lastBattle.Board, out var route) || route.Next == null
+			|| from < 0 || from >= route.Nodes.Length)
+		{
+			return null;
+		}
+
+		var memo = new Dictionary<int, float?>();
+		if (!fromDone)
+		{
+			return From(from, true);
+		}
+
+		return Rest(from);
+
+		// The heaviest of the ways on from a space, the space itself not counted; 0 at a dead end.
+		float? Rest(int index)
+		{
+			float? worst = 0f;
+			foreach (var next in route.Next[index])
+			{
+				if (From(next, false) is not { } ahead)
+				{
+					return null;
+				}
+
+				worst = Math.Max(worst.Value, ahead);
+			}
+
+			return worst;
+		}
+
+		float? From(int index, bool first)
+		{
+			if (memo.TryGetValue(index, out var known))
+			{
+				return known;
+			}
+
+			var node = route.Nodes[index];
+			if (toCampsite && !first && node.Kind == Space.Campsite)
+			{
+				memo[index] = 0f;
+				return 0f;
+			}
+
+			float? own = 0f;
+			switch (node.Kind)
+			{
+				case Space.Enemy or Space.Elite or Space.Boss:
+					own = node.Battle != 0 ? load(node.Battle) : null;
+					break;
+				case Space.Random:
+					foreach (var (_, battle) in node.Options)
+					{
+						if (battle != 0)
+						{
+							own = load(battle) is { } option && own is { } sofar ? Math.Max(sofar, option) : null;
+						}
+					}
+
+					break;
+			}
+
+			var total = own is { } here && (node.Kind == Space.Boss || route.Next[index].Count == 0 ? 0f : Rest(index)) is { } after
+				? here + after
+				: (float?)null;
+			memo[index] = total;
+			return total;
+		}
+	}
+
 	/// <summary>The horn screen named <paramref name="battleDetail"/> (an XBMBattleDetail row): the space it stands on.</summary>
 	internal static void NoteBattle(uint battleDetail)
 	{
@@ -404,6 +499,22 @@ internal static class CrucibleRoute
 		}
 
 		return fewest;
+	}
+
+	/// <summary>
+	/// K14 (A662): whether a campsite - or a random space that can become one - can still come before the final fight from
+	/// where the run stands; the space it stands on counts while it is not done. True while the board or its ways are unknown,
+	/// as nothing then says the HP stay as they are.
+	/// </summary>
+	internal static bool CampsiteAhead()
+	{
+		if (_lastBattle.Board == 0 || _current < 0 || !Boards.TryGetValue(_lastBattle.Board, out var route) || route.Next == null
+			|| _current >= route.Nodes.Length)
+		{
+			return true;
+		}
+
+		return (!_done && route.Nodes[_current].MayBeCampsite) || CampsiteReachable(route, _current);
 	}
 
 	private static bool CampsiteReachable(Board route, int from)

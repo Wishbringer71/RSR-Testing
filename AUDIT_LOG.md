@@ -19382,6 +19382,84 @@ zusammen trifft, wenn sie gerade nah genug beieinander sind, aber noch weit genu
 *Prüfgrad:* Compile ohne Warnung; Prüfskripte; Messung an drei ACT-Mitschnitten. Im Spiel nicht beobachtet; „approach:"
 und „beastmaster: Snarl - an enemy running …" stehen in der Spur.
 
+### A661 · Crucible-Campsite: Begleiter ruhen mit, solange deine LP die Strecke bis zur nächsten Rast tragen; Last je Kampf gelernt (07.11.2026)
+
+Seine Meldung (Screenshot Campsite, eingeordnet als Beobachtung mit seiner Wahl von Hand, kein Vorgabe-Wortlaut): „es wurde
+nur ein begleiter vorgeschlagen und ausgewählt. ich habe zweiten jetzt manuell ausgewählt zum heilen". Lager für zwei, du
+876 LP (rund 68 %), Goobbue 55 %, Spriggan 116/491.
+
+- *1 Research:* `FollowCampsite` ließ Begleiter nur mitruhen, wenn du voll herauskommst (A564 Option d, meine Ableitung).
+  Mit zweien kämst du auf 98 % – RSR nahm einen. Der Preis stand als Gegenthese 1 im Konzept. Sein ACT-Mitschnitt vom
+  07.11.2026 (Brett 1, Schaden auf dich je Kampf durch deine maximalen LP): 4, 18, 3, 17 % (Elite), Endkampf 35 %. Die
+  Verwerfung von (b) in A564 stützte sich auf „das nächste Feld ist an der Campsite unbekannt" – seit A631/A632 kennt
+  RSR den Weg und je Feld den Kampf (`XBMContentStageEvent`). Klasse: Die Obergrenze für Heiltränke (A659) und die
+  Wegempfehlung rechneten den Endkampf so schwer wie den schwersten gemessenen (18 %); die Begründung in Konzept 21
+  („seine Zauber trafen mit 1 bis 9 % wie davor") galt je Treffer, nicht je Kampf.
+- *2 Optionen:* (0) voll herauskommen wie bisher; (a) Linie; (b) größter bisheriger Verlust je Kampf; (c) feste 50 %;
+  (d) jeder Kampf so schwer wie der schwerste gemessene; (e) Strecke bis zum Endkampf; (f) Strecke bis zur nächsten Rast
+  auf dem schwersten Weg, jeder Kampf mit seiner gelernten Last, ungelernt voll.
+- *3–5 Abwägung im Kampf:* (0) lässt den Spriggan auf 24 %, wo dir 2 % fehlen, die keine Strecke braucht. (b) und (d)
+  unterschätzen den Endkampf um die Hälfte – bei 30 % vor dem Endgegner ruhten zwei mit, du gingst mit 60 % in 35 %.
+  (e) verlangt mehr als nötig: Die nächste Rast heilt dich allein um 90 %. (f) gewählt: Auf Brett 1 mit seinen Lasten
+  von Zug 3 rechts 20 %, links bis einschließlich Endkampf 55 % – 98 % liegen darüber, beide ruhen; ohne Messung
+  bleibt (0). Die Last wird über Sitzungen gelernt (`CrucibleFightLoads.json`, nur steigend, ohne Ausrüstung
+  zurückgerechnet, gelesen mit der Ausrüstung von jetzt ohne die Verwundbarkeiten nach Art – überschätzt, nie unter).
+  Sonst hätte jede Sitzung (er baut vor dem Spielen neu) den ersten Lauf ohne Endkampf-Last.
+- *6 Falsifikation:* Kein Defekt? Widerlegt an seiner Handwahl und an 2 % gegen 30 %. Option falsch? Ein Kampf trifft
+  schwerer als je zuvor – dann landest du tiefer als in jedem früheren Lauf, K8 bleibt, der neue Höchstwert wird gelernt;
+  ein Kampf mit deinem Fall steht mit rund einer Leiste und verlangt danach volle LP (Preis benannt). Ausgeliefert,
+  nichts ändert sich? Im ersten Lauf eines Bretts mit diesem Build (nichts gelernt) und wo kein Begleiter verletzt ist.
+- *7 Gebaut:* `OtherConfiguration.CrucibleFightLoads` (gelernte Datei, Reiter „Crucible fights"); `CrucibleBoard.LearnLoad`
+  am Kampfende, `BattleLoad`, `Run`; `CrucibleRoute.WorstAhead`; `BeastmasterRotation.WornFactors`, `StretchNeed`,
+  `LoadNow`, `Carries`; `FollowCampsite` (Bedingung, Texte mit LP wie im Spiel); Wegempfehlung (Kampf mit gelernter Last,
+  Campsite mit derselben Regel); `OfferScale` (Obergrenze auf dem schwersten Weg mit gelernten Lasten).
+  `window_layout_model.py`: Szenario Lagerfenster (504 × 491 px, nichts abgeschnitten, längste Zeile 69 Zeichen).
+- *Festwerte:* `PercentScale = 100` (Einheit der Datei, ganze Prozent wie im Fenster) mit diesem Loop.
+- *9 Dokumentation:* Konzept 21 K10 Campsite („Was gilt", „Last je Kampf", Beispiel, seine Lage, Verworfen (b) bis (f),
+  Gegenthesen), K10 Laden (Obergrenze, Berichtigung), Weg („Felder"), K14 (Empfehlung an der Campsite).
+
+*Prüfgrad:* Compile ohne Warnung; Prüfskripte; Lasten am ACT-Mitschnitt vom 07.11.2026 gemessen, die Strecken für Brett 1
+daraus gerechnet. Im Spiel nicht beobachtet; „crucible fight …: … stored" und „crucible campsite: …" stehen in der Spur.
+
+### A662 · Crucible: Plan des Endkampfs = Wahl des Endkampfs; Futter zählt in der Hornwahl; eine Futterregel; Lauf statt Gebiet (07.11.2026)
+
+Seine Meldungen (Screenshots Laden und Brettaufbau Zug 9): „kobalo hat keine zwei plätze für futter. fehler bei analyse"
+(eingeordnet als Beobachtung) und „ich sollte gobue füttern und dann wird sie nicht für den kampf genommen. also war das
+futter verschwendet" (Beobachtung eines Defekts).
+
+- *1 Research:* Kobalos: Die Ladenliste nannte „Champignon → Kolibri, feed slot 1 of 2" mit 77 % – Kolibri 374/487, zwei
+  Plätze; Kobalos (535/535, ein Platz) nannte RSR nicht. Blatt `XBMPet`: Zeile 54 Kobalos (coblyn), 79 Kolibri (colibri).
+  Keine Fehlanalyse der Plätze, aber zwei verwechselbare Namen und ein Anteil statt der LP, die das Spiel zeigt. Dazu ein
+  echter Widerspruch: Die Liste verteilte reihum (Meerengel → Goobbue, Champignon → Kolibri), das Füttern nannte je
+  Futter den größten Gewinn (Champignon → Goobbue). Goobbue: Der Plan des Endkampfs (`FinalTeam`) entstand in
+  `HeldForFinal` am Hornfenster vor dem letzten Kampf davor, mit den LP von damals, ohne „übersteht den Einsatz" (alle
+  galten als überstehend) und ohne Futter; am Endkampf wählte `SetHornsOnHornScreen` mit den LP danach, mit dieser
+  Prüfung und wieder ohne Futter neu. Zwei Rechnungen mit verschiedenen Eingaben – am Code belegt; welche Abweichung in
+  seinem Lauf den Ausschlag gab, zeigt keine Spur (keine Datei zu diesem Lauf). Konzept 21 K14 Gegenthese 1 („er ändert
+  sich kaum mit den LP") war damit widerlegt. Beim Lesen gefunden: Ausrüstung (`_gearSeen`) und Futterplätze hingen am
+  Gebiet; ein neuer Lauf auf demselben Brett erbte sie.
+- *2 Optionen:* (a) Plan einfrieren, sobald investiert ist; (b) eine Rechnung für Plan und Endkampf, Futter in der
+  Bewertung, Plan neu bei jeder Änderung; (c) beim Füttern nur Begleiter nennen, die sicher genommen werden.
+  Futterregel: reihum (bisher Liste), größter Gewinn (bisher Füttern), Stück für Stück mit Heilern zuerst.
+- *3–5 Abwägung im Kampf:* (a) hält einen Plan, der nach einem Fall nicht mehr stimmt. (c) braucht (b). (b) gewählt: Futter
+  hebt nur den Wert dessen, der frisst, also bleibt ein Plan mit ihm der beste oder wird von einem mit ihm geschlagen. Im
+  Plan zählt „übersteht den Einsatz" mit den LP von jetzt erst, wenn keine Campsite mehr kommen kann – davor sagt der Plan,
+  wen die Rast heben soll (K11). Futter: Stück für Stück, Heiler zuerst, je Stück dort, wo es am meisten bringt – dieselbe
+  Regel in Liste und Füttern, und reihum hing an der Kaufreihenfolge. LP wie im Begleiterfenster („Kolibri 374/487").
+- *6 Falsifikation:* Kein Defekt? Widerlegt am Code (zwei Rechnungen). Option falsch? Gleicher Schaden: „behalten" am
+  Hornfenster bricht den Gleichstand anders als der Plan – nur bei exakt gleichem Schaden. Ausgeliefert, nichts ändert
+  sich? Ohne „Set the battlehorns between fights" (dann wählt RSR keine Hörner) und vor dem ersten Hornfenster eines Laufs.
+- *7 Gebaut:* `BST_Reborn`: `BoardCandidates`, `BoardOption` (LP, Rang, übersteht mit Futter, Schaden mit Futter),
+  `PlanFinal`, `RefreshFinalPlan` (Schlüssel aus Kader, LP, Futter, größtem Verlust, Gefahr, Campsite voraus; Spurzeile
+  „Crucible final fight's plan: …"); `HeldForFinal` nutzt `PlanFinal`. Laden: `FeedFactors`, `FeedSlotsSeen`, `NextFeed`,
+  `Shown`, Kontext mit LP; Liste und Füttern über `NextFeed`. `CrucibleRoute.CampsiteAhead`. Ausrüstung und Futterplätze je
+  `CrucibleBoard.Run`. Lagerfenster: Namen in der Sprache des Clients.
+- *9 Dokumentation:* Konzept 21 K14 („Futter für den Endkampf", „Beim Füttern", „Der Plan des Endkampfs", Gegenthesen),
+  K6 Stufe 4 („Futter zählt"), K11 Stufe 2.
+
+*Prüfgrad:* Compile ohne Warnung; Prüfskripte; Wirkkette am Code (Plan und Wahl über `BoardOption`/`BestPlan`). Im Spiel nicht
+beobachtet; „Crucible final fight's plan: …" und „crucible shop: feed for the final fight …" stehen in der Spur.
+
 ## B · Commit-Register (Fork vs. `upstream/main`)
 
 ### B1 · Einzelgeprüfte Fork-Commits
@@ -19706,3 +19784,5 @@ Die offene Arbeit dazu — Reihenfolge und Abbruchbedingung der Nachprüfung —
 | C170 | A650 („Status Arms Up 1176, Collective Unconscious 849, Improvisation 2695 auf Mitgliedern" als das, was ein Schutzkanal hält; „(c) KK stellt den Tank in die Fläche bleibt seine Gewichtung") und TODO („Nächster Schritt: seine Entscheidung zu H2, KK und den Häkchen") | 849 vergibt das Wirken einmal, die Minderung bleibt nach dem Abbruch; 2695 ist ein Regen – nur Arms Up endet mit seinem Kanal. Die Gewichtung von Tank gegen Gruppe entscheidet seine Regel zur Laufzeit; ein Optimum braucht keine Entscheidung (seine Vorgabe, 07.11.2026) | Gebaut ohne Vorlage (A651): Halten gegen die KI nur mit Waffengang und nur, wo die Minderung ein gefährdetes Mitglied vor einem angekündigten Treffer deckt |
 | C171 | A651 und Konzept 03 (Stand A651): „Meditieren ab Werk aus"; „Was bleibt, ist eine Grenze der Daten, kein Preis einer Wahl: die früheste Fläche ist global"; Kanal mit gehender KI gibt frei, „wenn der Treffer vor dem Ende des Kanals plus dem Weg … landet"; Kanal- und Zauberbeginn nur nach BossMods Zeichen; A651 „Eingetragen in CLAUDE.md" mit „Vorgelegt wird nur …" als Lesart, eine Entscheidung durch Wahl zu erledigen | Jede dieser Stellen erledigte eine Entscheidung durch Wahl einer Seite; seine Präzisierungen (07.11.2026) verlangen, die Lösung zu verbessern. Die Fläche je Ort ist in BossMods Hinweisen lesbar, der Spielraum des Wegs in `Hints.MaxCastTime`, das Pausenende in der Zeitleiste, und RSRs Erkennung ist für Kreis und Linie mit Gruppenvergleich sicher | Gebaut nach A652; CLAUDE.md: „Kappen ist keine Verbesserung" |
 | C172 | A633 und Konzept 03 (Stand A633): „*Nicht gebaut:* Fensterbreite mit Umbruch – feste Breiten wären Zahlen ohne Herleitung; die Fenster passen ihre Größe dem Inhalt an wie bisher"; A633, Falsifikation: „Breiten mit Umbruch bräuchten feste Zahlen – nicht gebaut" | Mit Auto-Größe und Umbruch am Kartenrand passte sich das Fenster nicht dem Inhalt an: es blieb so schmal wie sein schmalstes nicht umbrechendes Element (im Modell 116 px, Titel abgeschnitten) und ließ sich nicht ziehen. Die Breite ist aus dem Text ableitbar (Zeichen des Textes selbst, Lesemaß 50–75 Zeichen) | Gebaut nach A654 |
+| C173 | A659 und Konzept 21 K10 Laden (Stand A659): „Den Endkampf rechnet sie so schwer wie deinen schwersten gemessenen (meine Annahme; im Endkampf von Brett 1 am 07.11.2026 trafen dich seine Zauber mit 1 bis 9 %, wie in den Kämpfen davor)"; A659, Falsifikation: „sein Endkampf auf Brett 1 lag im Rahmen" | Die Treffer glichen denen davor, der Kampf nicht: Er dauerte doppelt so lange und kostete 35 % deiner LP gegen 18 % im schwersten davor (ACT-Mitschnitt 07.11.2026). Die Obergrenze für Heiltränke lag dort bei der Hälfte. Ersetzt durch die Last je Kampf (A661). | A661 |
+| C174 | Konzept 21 K14, Gegenthese 1 (Stand A631–A660): „Der Plan des Endkampfs stammt vom letzten Hornfenster; seither änderten sich LP. Teilweise widerlegt: Er ändert sich mit dem Kader, kaum mit den LP" | Der Plan rechnete ohne „übersteht den Einsatz" und ohne Futter, die Wahl am Endkampf mit beidem und den LP danach; in seinem Lauf vom 07.11.2026 lag der gefütterte Goobbue am Endkampf nicht auf einem Horn. Ersetzt durch eine Rechnung für Plan und Wahl (A662). | A662 |

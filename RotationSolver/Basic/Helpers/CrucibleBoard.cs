@@ -1,5 +1,6 @@
 using Dalamud.Game;
 using ECommons.DalamudServices;
+using ECommons.GameHelpers;
 using EffectEntry = ECommons.Hooks.ActionEffectTypes.EffectEntry;
 using FFXIVClientStructs.FFXIV.Client.UI.Agent;
 using RotationSolver.Basic.Configuration;
@@ -102,6 +103,7 @@ internal static class CrucibleBoard
 	private static readonly Dictionary<uint, HashSet<uint>> _actionElements = [];
 
 	private static uint _fight;
+	private static int _run;
 	private static Enemy[] _enemies = [];
 	private static readonly HashSet<uint> _atStart = [];
 	private static readonly HashSet<uint> _present = [];
@@ -156,6 +158,28 @@ internal static class CrucibleBoard
 
 	/// <summary>The fight in progress: its XBMBattleDetail row, 0 while none is told.</summary>
 	internal static uint Fight => _fight;
+
+	/// <summary>
+	/// The run on a board (A662): counted up each time the player enters one. A new run on the same board is the same area,
+	/// so what holds for one run - the gear worn, the feed eaten - is kept by run, not by area.
+	/// </summary>
+	internal static int Run => _run;
+
+	// A661: the unit of the learned loads per fight (CrucibleFightLoads.json) - whole percent of the player's maximum HP, as
+	// the window shows them; a choice of unit, not a figure of the game.
+	private const int PercentScale = 100;
+
+	/// <summary>
+	/// K10 Campsite (A661): the heaviest damage the player took in <paramref name="battle"/> (an XBMBattleDetail row), as a
+	/// share of his maximum HP without his Crucible gear, over every session; null while it was never fought with RSR.
+	/// </summary>
+	internal static float? BattleLoad(uint battle)
+	{
+		lock (OtherConfiguration.CrucibleFightLoadsGate)
+		{
+			return OtherConfiguration.CrucibleFightLoads.TryGetValue(battle, out var percent) ? percent / (float)PercentScale : null;
+		}
+	}
 
 	/// <summary>The enemies of the fight in progress, as the sheet lists them.</summary>
 	internal static Enemy[] Enemies => _enemies;
@@ -611,6 +635,7 @@ internal static class CrucibleBoard
 		{
 			EndFight();
 			EndStretch();
+			_run++;
 			_upcoming = 0;
 			CrucibleRoute.Reset();
 			_tracedArea = DataCenter.TerritoryID;
@@ -1110,9 +1135,11 @@ internal static class CrucibleBoard
 	/// <summary>K10 shop (A570): the mean number of fights between two campsites (or a board's entry and exit); 0 before the first.</summary>
 	internal static float FightsPerStretch => _stretches.Stretches > 0 ? _stretches.Fights / (float)_stretches.Stretches : 0f;
 
-	// A570: the fight just over joins the loads of its area and of every board.
+	// A570: the fight just over joins the loads of its area and of every board. A661: and, without the gear worn, the
+	// learned load of this fight, should it be its heaviest.
 	private static void FinishLoad()
 	{
+		LearnLoad();
 		if (_areaLoadsIn != _tracedArea)
 		{
 			_areaLoadsIn = _tracedArea;
@@ -1131,6 +1158,35 @@ internal static class CrucibleBoard
 					loads.Sum.Healed + load.Healed),
 				load.Damage > loads.Heaviest.Damage ? load : loads.Heaviest);
 		}
+	}
+
+	// A661: the damage of the fight just over, taken back to the player without his gear - his maximum HP, the damage he
+	// takes, his physical and magic vulnerability and evasion, as the shop weighs them -, in whole percent rounded up.
+	private static void LearnLoad()
+	{
+		if (_fight == 0 || _fightLoad.Damage <= 0d || Player.Object is not { MaxHp: > 0u } player)
+		{
+			return;
+		}
+
+		var (hp, taken, physical, magic) = Rotations.Basic.BeastmasterRotation.WornFactors();
+		var bare = player.MaxHp / Math.Max(hp, float.Epsilon);
+		var share = ((_fightLoad.Physical / Math.Max(physical, float.Epsilon)) + (_fightLoad.Magic / Math.Max(magic, float.Epsilon))
+			+ _fightLoad.Other) / Math.Max(taken, float.Epsilon) / bare;
+		var percent = (int)Math.Ceiling(share * PercentScale);
+		lock (OtherConfiguration.CrucibleFightLoadsGate)
+		{
+			if (OtherConfiguration.CrucibleFightLoads.TryGetValue(_fight, out var known) && known >= percent)
+			{
+				return;
+			}
+
+			OtherConfiguration.CrucibleFightLoads[_fight] = percent;
+		}
+
+		_ = OtherConfiguration.SaveCrucibleFightLoads();
+		DefenseTrace.Line($"crucible fight {_fight}: cost you {_fightLoad.Damage:F0} HP, {percent} % of your HP without gear - "
+			+ "its heaviest so far, stored");
 	}
 
 	// A570: a campsite, or the board's end, closes the stretch of fights since the last one.

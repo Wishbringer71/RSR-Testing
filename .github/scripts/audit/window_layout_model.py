@@ -431,6 +431,41 @@ def scenario_treasure(failures):
     check("height is the content's", abs(m["height"] - m["need"]) <= 1.0, "", failures)
 
 
+# ---- the campsite window (A661, A662): the feeding, the pick with its stretch, the rest for the final fight; familiars
+# named with their HP as the familiar window shows them
+FEEDING = ("Feed Champignon-Simulakrum: give it to Goobbue 550/550 (heals or protects in the final; effective HP +11 % "
+           "at 550/550 HP; slot 3 of 3).")
+CAMP_PICK = ("RSR selects Goobbue (302/550), Spriggan (116/491) - you come out at 98 %, above the 55 % the heaviest way to "
+             "the next rest can cost you")
+FINAL_REST = [("Goobbue", "55 %", "heals or protects in the final fight's plan"),
+              ("Spriggan", "24 %", "fights in the final fight's plan")]
+FINAL_OUTCOME = ("Last campsite before the final fight: each gets 30 % of their HP; you come out at 98 % instead of full "
+                 "(resting alone: 100 %)")
+
+
+def camp_content(w):
+    with w.section("Feeding"):
+        w.line(FEEDING)
+    with w.section("Campsite"):
+        w.note(CAMP_PICK)
+    with w.section("Rest for the final fight", "last campsite before it"):
+        for pet, chip, why in FINAL_REST:
+            w.line(pet, chip)
+            w.note(why)
+        w.note(FINAL_OUTCOME)
+    w.action("Apply")
+    w.note("")
+
+
+def scenario_camp(failures):
+    print("campsite window with the feeding, the pick and the rest for the final fight")
+    ctx = Context()
+    window = Recommendation("camp", camp_content)
+    ctx.frames([window], 8)
+    m = checks_open(window, ctx, failures, "opens at")
+    check("height is the content's", abs(m["height"] - m["need"]) <= 1.0, "", failures)
+
+
 # ---- ReadableText and the tooltip (ImguiTooltips.ShowTooltip)
 def readable_column(text, measure=LINE_MEASURE, single=LONGEST_SINGLE_LINE):
     """ReadableText.Column: per paragraph its whole width up to `single` characters, else `measure` of them."""
@@ -701,6 +736,7 @@ def main():
     scenario_scale_and_screen(failures)
     scenario_tooltip(failures)
     scenario_treasure(failures)
+    scenario_camp(failures)
     caught = self_test()
     if args.png:
         out = Path(args.png)

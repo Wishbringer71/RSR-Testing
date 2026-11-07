@@ -51,8 +51,37 @@ public partial class BeastmasterRotation
 	private static (int Coins, int Bought, int Gear, int Items, uint Board, double Fights, float Stretch, int Feed)? _shopKey;
 	private static string _shopTraced = string.Empty;
 
-	// K13 (A578): the gear the last shop on this board showed held, with the slots - the treasure window does not list it.
-	private static (uint Territory, List<ushort> Gear, int Slots)? _gearSeen;
+	// K13 (A578): the gear the last shop of this run showed held, with the slots - the treasure window does not list it.
+	// A662: by run (CrucibleBoard.Run), not by area - a new run on the same board is the same area and starts without gear.
+	private static (int Run, List<ushort> Gear, int Slots)? _gearSeen;
+
+	/// <summary>
+	/// K10 Campsite (A661): what the gear worn in this run makes of the player's defences - his maximum HP (1 + its raises),
+	/// the damage he takes, and his physical and magic vulnerability with evasion, each as a factor, multiplied over the
+	/// pieces as the shop weighs them; all 1 before the run shows any gear.
+	/// </summary>
+	internal static (float Hp, float Taken, float Physical, float Magic) WornFactors()
+	{
+		float hp = 1f, taken = 1f, physical = 1f, magic = 1f;
+		if (_gearSeen is not { } seen || seen.Run != CrucibleBoard.Run)
+		{
+			return (hp, taken, physical, magic);
+		}
+
+		var gear = CrucibleGearTable;
+		foreach (var id in seen.Gear)
+		{
+			if (gear.TryGetValue(id, out var piece))
+			{
+				hp *= 1f + piece.MaxHp;
+				taken *= 1f - piece.DamageTaken;
+				physical *= (1f - piece.PhysicalVulnerability) * (1f - piece.Evasion);
+				magic *= 1f - piece.MagicVulnerability;
+			}
+		}
+
+		return (hp, taken, physical, magic);
+	}
 
 	/// <summary>Whether a shop is open and the recommendation runs, for the window.</summary>
 	public static bool CrucibleShopOpen { get; private set; }
@@ -222,8 +251,8 @@ public partial class BeastmasterRotation
 			}
 		}
 
-		// What RSR took from a treasure on this board counts as worn, should the shop's list not show it yet (A657).
-		if (_gearSeen is { } before && before.Territory == DataCenter.TerritoryID)
+		// What RSR took from a treasure in this run counts as worn, should the shop's list not show it yet (A657, A662).
+		if (_gearSeen is { } before && before.Run == CrucibleBoard.Run)
 		{
 			foreach (var id in before.Gear)
 			{
@@ -257,8 +286,8 @@ public partial class BeastmasterRotation
 
 		_shopKey = key;
 
-		// Remembered for the treasure (K13, A578): the gear held on this board, and how many slots there are.
-		_gearSeen = (DataCenter.TerritoryID, seen, gearSlots);
+		// Remembered for the treasure (K13, A578): the gear held in this run, and how many slots there are.
+		_gearSeen = (CrucibleBoard.Run, seen, gearSlots);
 
 		var offers = new List<(int Row, ushort Item, int Price)>();
 		for (var r = 0; r < stock.Count; r++)
@@ -859,8 +888,9 @@ public partial class BeastmasterRotation
 		var held = HealingHeldShare();
 		var now = RawLoad(owned, load);
 
-		// A659: what a healing item can still heal - the fights to the boss, each as heavy as your heaviest measured, and what
-		// you miss now, less the healing you hold and the choice has taken already.
+		// A659, A661: what a healing item can still heal - the fights on the heaviest way to the boss, each with the heaviest
+		// damage it ever dealt you (one never measured as heavy as your heaviest here), and what you miss now, less the
+		// healing you hold and the choice has taken already.
 		var holding = 0f;
 		foreach (var id in heldItems)
 		{
@@ -870,7 +900,8 @@ public partial class BeastmasterRotation
 			}
 		}
 
-		var worst = (fights * now.Heavy) + (1f - (Player is { MaxHp: > 0u } player ? player.GetHealthRatio() : 1f));
+		var ahead = CrucibleRoute.WorstAhead(false, battle => LoadNow(battle) ?? now.Heavy) ?? (fights * now.Heavy);
+		var worst = ahead + (1f - (Player is { MaxHp: > 0u } player ? player.GetHealthRatio() : 1f));
 		var healable = Math.Max(0f, worst - (holding * (1f + now.Recovery)) - healedChosen);
 		foreach (var (row, id, _) in offers)
 		{
@@ -934,7 +965,7 @@ public partial class BeastmasterRotation
 				result.Add((row, id, value, item.Kind switch
 				{
 					CrucibleItemKind.Heal => (value < full
-						? $"used once, heals ~{full:P0}, of which ~{value:P0} can still be needed: your {fights} fights left cost at most ~{worst:P0}, you hold ~{holding * (1f + now.Recovery):P0} in healing"
+						? $"used once, heals ~{full:P0}, of which ~{value:P0} can still be needed: the fights left and what you miss come to at most ~{worst:P0}, you hold ~{holding * (1f + now.Recovery):P0} in healing"
 						: $"used once, heals ~{value:P0}") + (item.Allies ? " to you and the allies near you" : string.Empty),
 					CrucibleItemKind.Mitigate => $"used once, {item.Value:P0} less damage: ~{value:P0} of your heaviest fight",
 					CrucibleItemKind.NullifyPhysical => $"used once, nullifies physical attacks: ~{value:P0} of your heaviest fight",
@@ -1116,12 +1147,12 @@ public partial class BeastmasterRotation
 	private static string _feedTraced = string.Empty;
 	private static Dictionary<ushort, CrucibleFeed> CrucibleFeedTable => _crucibleFeed ??= ReadCrucibleFeed();
 
-	// K14 (A657): each familiar's feed slots as the familiar window last showed them on this board - how many it holds, how
+	// K14 (A657, A662): each familiar's feed slots as the familiar window last showed them in this run - how many it holds, how
 	// many it can hold, which - and its name in the client's language; counted up at each change for the shop's key.
 	private readonly record struct FeedSlots(int Fed, int Max, ushort[] Items, string Name);
 
 	private static readonly Dictionary<BeastmasterPet, FeedSlots> _feedSlots = [];
-	private static uint _feedSlotsTerritory;
+	private static int _feedSlotsRun;
 	private static int _feedSlotsSeen;
 
 	/// <summary>
@@ -1135,9 +1166,9 @@ public partial class BeastmasterRotation
 			return;
 		}
 
-		if (_feedSlotsTerritory != DataCenter.TerritoryID)
+		if (_feedSlotsRun != CrucibleBoard.Run)
 		{
-			_feedSlotsTerritory = DataCenter.TerritoryID;
+			_feedSlotsRun = CrucibleBoard.Run;
 			_feedSlots.Clear();
 			_feedSlotsSeen++;
 		}
@@ -1203,12 +1234,12 @@ public partial class BeastmasterRotation
 		return _feedSlots.TryGetValue(pet, out var slots) && slots.Name.Length > 0 ? slots.Name : pet.ToString();
 	}
 
-	// K14: a familiar's free feed slots and the feed it holds, as last seen on this board; one free slot and no feed where
+	// K14: a familiar's free feed slots and the feed it holds, as last seen in this run; one free slot and no feed where
 	// the window was not seen here or read no maximum (Known false).
 	private static (int Free, List<CrucibleFeed> Eaten, bool Known, FeedSlots Slots) SlotsOf(BeastmasterPet pet)
 	{
 		var eaten = new List<CrucibleFeed>();
-		if (_feedSlotsTerritory != DataCenter.TerritoryID || !_feedSlots.TryGetValue(pet, out var slots) || slots.Max <= 0
+		if (_feedSlotsRun != CrucibleBoard.Run || !_feedSlots.TryGetValue(pet, out var slots) || slots.Max <= 0
 			|| slots.Fed > slots.Max)
 		{
 			return (1, eaten, false, default);
@@ -1251,7 +1282,8 @@ public partial class BeastmasterRotation
 
 	// K14: what the final fight deals - the share of strength and intelligence among its enemies (the sheet), or all of it as
 	// other damage without them - and each familiar's share of its HP now.
-	private readonly record struct FeedContext(float Physical, float Magic, float Other, Dictionary<BeastmasterPet, float> Shares);
+	private readonly record struct FeedContext(float Physical, float Magic, float Other, Dictionary<BeastmasterPet, float> Shares,
+		Dictionary<BeastmasterPet, string> Health);
 
 	private static unsafe FeedContext ReadFeedContext()
 	{
@@ -1264,6 +1296,7 @@ public partial class BeastmasterRotation
 
 		var all = strength + intelligence;
 		var shares = new Dictionary<BeastmasterPet, float>();
+		var health = new Dictionary<BeastmasterPet, string>();
 		var party = AgentXBMPetParty.Instance();
 		if (party != null)
 		{
@@ -1273,11 +1306,79 @@ public partial class BeastmasterRotation
 				if (party->PetMaxHealth[i] > 0)
 				{
 					shares[(BeastmasterPet)pets[i].PetId] = party->PetCurrentHealth[i] / (float)party->PetMaxHealth[i];
+					health[(BeastmasterPet)pets[i].PetId] = $"{party->PetCurrentHealth[i]}/{party->PetMaxHealth[i]}";
 				}
 			}
 		}
 
-		return new FeedContext(all > 0f ? strength / all : 0f, all > 0f ? intelligence / all : 0f, all > 0f ? 0f : 1f, shares);
+		return new FeedContext(all > 0f ? strength / all : 0f, all > 0f ? intelligence / all : 0f, all > 0f ? 0f : 1f, shares, health);
+	}
+
+	// K14 (A662): a familiar as the familiar window shows it - its name and HP ("Kolibri 374/487") - so that it is not taken
+	// for one of a like name.
+	private static string Shown(BeastmasterPet pet, FeedContext context)
+	{
+		return context.Health.TryGetValue(pet, out var hp) ? $"{FamiliarName(pet)} {hp}" : FamiliarName(pet);
+	}
+
+	/// <summary>
+	/// K6, K14 (A662): what the feed <paramref name="pet"/> carries in this run makes of it - its damage as a factor
+	/// (1 + each Damage Dealt) and the damage it takes as one (1 - each Damage Taken), multiplied over its feed; 1 and 1
+	/// without feed or outside a board.
+	/// </summary>
+	internal static (float Dealt, float Taken) FeedFactors(BeastmasterPet pet)
+	{
+		float dealt = 1f, taken = 1f;
+		if (!DataCenter.IsInCrucible)
+		{
+			return (dealt, taken);
+		}
+
+		foreach (var feed in SlotsOf(pet).Eaten)
+		{
+			dealt *= 1f + feed.Damage;
+			taken *= 1f - feed.DamageTaken;
+		}
+
+		return (dealt, taken);
+	}
+
+	/// <summary>K14 (A662): counted up at each change of the feed slots read, for whoever weighs the feed.</summary>
+	internal static int FeedSlotsSeen => _feedSlotsSeen;
+
+	// K14 (A662): of the familiars of the final fight's plan with a free slot - its healers and protectors first, the others
+	// only where none of them gains - the one the best of the offers not yet taken suits most: the most effective HP, or with
+	// <paramref name="damageOnly"/> the most damage. Null where none gains.
+	private static (BeastmasterPet Pet, (int Row, ushort Item, int Price, float Gain, float Bare) Fit)? NextFeed(
+		List<(int Row, ushort Item, int Price)> offers, HashSet<int> taken,
+		Dictionary<BeastmasterPet, (int Free, List<CrucibleFeed> Eaten, bool Known, FeedSlots Slots)> slots, FeedContext context,
+		bool damageOnly)
+	{
+		var feeds = CrucibleFeedTable;
+		foreach (var healers in (bool[])[true, false])
+		{
+			(BeastmasterPet Pet, (int Row, ushort Item, int Price, float Gain, float Bare) Fit)? best = null;
+			foreach (var (pet, held) in slots)
+			{
+				if (FinalHealers.Contains(pet) != healers || held.Free <= 0
+					|| BestFeed(pet, offers, taken, held.Eaten, context, damageOnly) is not { } fit)
+				{
+					continue;
+				}
+
+				if (best is not { } b || (damageOnly ? feeds[fit.Item].Damage > feeds[b.Fit.Item].Damage : fit.Gain > b.Fit.Gain))
+				{
+					best = (pet, fit);
+				}
+			}
+
+			if (best != null)
+			{
+				return best;
+			}
+		}
+
+		return null;
 	}
 
 	// K14: how long a familiar holds in the final fight - its effective HP: the share it has now plus what eating
@@ -1367,37 +1468,28 @@ public partial class BeastmasterRotation
 			}
 		}
 
+		// A662: piece by piece, the healers and protectors of the plan first, each piece where it gains most - the rule the
+		// feeding names its eater by, so that following this list in its order gives the same names there.
 		var taken = new HashSet<int>();
 		foreach (var damageOnly in (bool[])[false, true])
 		{
-			bool any;
-			do
+			while (NextFeed(offers, taken, slots, context, damageOnly) is { } next)
 			{
-				any = false;
-				foreach (var pet in order)
-				{
-					var held = slots[pet];
-					if (held.Free <= 0 || BestFeed(pet, offers, taken, held.Eaten, context, damageOnly) is not { } chosen)
-					{
-						continue;
-					}
-
-					any = true;
-					_ = taken.Add(chosen.Row);
-					var eaten = feeds[chosen.Item];
-					held.Eaten.Add(eaten);
-					slots[pet] = held with { Free = held.Free - 1 };
-					var affordable = chosen.Price <= left;
-					left -= affordable ? chosen.Price : 0;
-					var share = context.Shares.TryGetValue(pet, out var known) ? known : 1f;
-					var effect = chosen.Gain > 0f ? $"effective HP +{chosen.Gain / chosen.Bare:P0} at {share:P0} HP" : "no HP";
-					var slot = held.Known ? $"feed slot {held.Slots.Max - held.Free + 1} of {held.Slots.Max}" : "its feed slots not seen yet";
-					picks.Add(new CrucibleFeedPick(chosen.Row, ClientItemName(chosen.Item, eaten.Name), pet, chosen.Price, affordable,
-						$"{(FinalHealers.Contains(pet) ? "heals or protects" : "fights")} in the final: {effect}"
-						+ (eaten.Damage > 0f ? $", damage +{eaten.Damage:P0}" : string.Empty) + $"; {slot}"));
-				}
+				var (pet, chosen) = next;
+				var held = slots[pet];
+				_ = taken.Add(chosen.Row);
+				var eaten = feeds[chosen.Item];
+				held.Eaten.Add(eaten);
+				slots[pet] = held with { Free = held.Free - 1 };
+				var affordable = chosen.Price <= left;
+				left -= affordable ? chosen.Price : 0;
+				var hp = context.Health.TryGetValue(pet, out var shown) ? shown : "unread";
+				var effect = chosen.Gain > 0f ? $"effective HP +{chosen.Gain / chosen.Bare:P0} at {hp} HP" : "no HP";
+				var slot = held.Known ? $"feed slot {held.Slots.Max - held.Free + 1} of {held.Slots.Max}" : "its feed slots not seen yet";
+				picks.Add(new CrucibleFeedPick(chosen.Row, ClientItemName(chosen.Item, eaten.Name), pet, chosen.Price, affordable,
+					$"{(FinalHealers.Contains(pet) ? "heals or protects" : "fights")} in the final: {effect}"
+					+ (eaten.Damage > 0f ? $", damage +{eaten.Damage:P0}" : string.Empty) + $"; {slot}"));
 			}
-			while (any);
 		}
 
 		CrucibleFeedRecommendation = picks;
@@ -1415,7 +1507,7 @@ public partial class BeastmasterRotation
 			: "Nothing on offer adds HP or damage to a familiar of the final fight's plan with a free feed slot. ";
 		if (unseen.Count > 0)
 		{
-			why += $"Feed slots of {string.Join(", ", unseen)} not seen on this board yet: one each assumed. ";
+			why += $"Feed slots of {string.Join(", ", unseen)} not seen in this run yet: one each assumed. ";
 		}
 
 		CrucibleFeedNote = why + CrucibleRoute.CampsiteAfterShop() switch
@@ -1446,28 +1538,25 @@ public partial class BeastmasterRotation
 		var context = ReadFeedContext();
 		var offer = new List<(int Row, ushort Item, int Price)> { (0, item, 0) };
 		var none = new HashSet<int>();
+		var slots = new Dictionary<BeastmasterPet, (int Free, List<CrucibleFeed> Eaten, bool Known, FeedSlots Slots)>();
 		var open = 0;
+		foreach (var pet in FeedOrder())
+		{
+			slots[pet] = SlotsOf(pet);
+			open += slots[pet].Free;
+		}
+
+		// A662: the rule of the shop's list - its healers and protectors first, where it gains most.
 		foreach (var damageOnly in (bool[])[false, true])
 		{
-			(BeastmasterPet Pet, float Gain, float Bare, int Free, bool Known, int Max)? best = null;
-			open = 0;
-			foreach (var pet in FeedOrder())
+			if (NextFeed(offer, none, slots, context, damageOnly) is { } next)
 			{
-				var (free, eaten, known, slots) = SlotsOf(pet);
-				open += free;
-				if (free > 0 && BestFeed(pet, offer, none, eaten, context, damageOnly) is { } fit
-					&& (best is not { } b || fit.Gain > b.Gain))
-				{
-					best = (pet, fit.Gain, fit.Bare, free, known, slots.Max);
-				}
-			}
-
-			if (best is { } chosen)
-			{
-				var share = context.Shares.TryGetValue(chosen.Pet, out var known) ? known : 1f;
-				var effect = chosen.Gain > 0f ? $"effective HP +{chosen.Gain / chosen.Bare:P0} at {share:P0} HP" : $"damage +{feed.Damage:P0}, no HP";
-				var slot = chosen.Known ? $"slot {chosen.Max - chosen.Free + 1} of {chosen.Max}" : "its feed slots not seen yet";
-				return $"Feed {name}: give it to {FamiliarName(chosen.Pet)} ({(FinalHealers.Contains(chosen.Pet) ? "heals or protects" : "fights")} in the final; {effect}; {slot}).";
+				var (pet, fit) = next;
+				var held = slots[pet];
+				var hp = context.Health.TryGetValue(pet, out var shown) ? shown : "unread";
+				var effect = fit.Gain > 0f ? $"effective HP +{fit.Gain / fit.Bare:P0} at {hp} HP" : $"damage +{feed.Damage:P0}, no HP";
+				var slot = held.Known ? $"slot {held.Slots.Max - held.Free + 1} of {held.Slots.Max}" : "its feed slots not seen yet";
+				return $"Feed {name}: give it to {Shown(pet, context)} ({(FinalHealers.Contains(pet) ? "heals or protects" : "fights")} in the final; {effect}; {slot}).";
 			}
 		}
 

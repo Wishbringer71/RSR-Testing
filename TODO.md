@@ -19,9 +19,13 @@ auswahl und das timing der beschwörung" – je Kampf aller fünf Bretter (Gegne
 BossMod-Module) die Rotation des Beastmasters, die Wahl der Begleiter und den Zeitpunkt ihres Aufrufs im Loop prüfen
 (Beispiel seiner Beobachtung: der Raptor gegen Feuer, bevor feueranfällige Gegner da waren; A581).
 
-1. Blaumagier: RSRs nächste Aktion beendet Apokalypsis und Chelonian Gate – Schaden und Minderung des Spielers enden
+1. Crucible-Weg: nur Campsite empfohlen – der Schatz kommt kaum je in Frage, weil der Weg die Endkampf-Heiler in jedem
+   Kampf verlieren lässt und den Endkampf zu leicht rechnet.
+2. Crucible: Gegenstände über die Kämpfe des Bretts – nach dem Endkampf verfällt zu viel; Stärkung und Schaden gehen
+   dorthin, wo sie über alle anstehenden Kämpfe am meisten bringen, Synergien eingerechnet.
+3. Blaumagier: RSRs nächste Aktion beendet Apokalypsis und Chelonian Gate – Schaden und Minderung des Spielers enden
    nach einem GCD statt nach 10 s.
-2. Kegel und Ringe gegnerischer Zauber genau messen: Zauber- und Kanalbeginn nutzen RSRs Erkennung bei Kegel und Ring
+4. Kegel und Ringe gegnerischer Zauber genau messen: Zauber- und Kanalbeginn nutzen RSRs Erkennung bei Kegel und Ring
    nicht, und mehrere Leser sehen hinter einem Kegel oder im Innenkreis eines Rings eine Gefahr, die keine ist.
 
 Danach die technische Schuld, soweit ihre Auflösungsbedingung erfüllt ist. Warten auf Daten: unten.
@@ -45,6 +49,20 @@ auf jeden Schadens- und Schutzkanal gehört, den RSR nicht selbst beendet (Unive
 *Konzept:* 14, „Wo Angriff die Abwehr beendet: die Kanäle".
 
 ## Offene Arbeit
+
+### Crucible-Weg: nur Campsite empfohlen · N
+Im Kampf: Seine Meldung vom 07.11.2026, „es wird immer nur camp vorgeschlagen". Am Code: Der schwächste Endkampf-Heiler
+verliert im Weg je Kampf seinen größten Verlust je Einsatz, auch wo K11 ihn zurückhält; „sicher" verlangt zwei solche
+Verluste, ohne Rast wird jeder Weg unsicher, und unter unsicheren gewinnt die Campsite. Nächster Schritt: Loop gegen
+seine Vorgabe „sich immer auf die summe der anstehenden kämpfe ausrichten", danach erneut an seinem Log. Konzept 21,
+Weg („Seine Frage").
+
+### Crucible: Gegenstände über die Kämpfe des Bretts · N
+Im Kampf: Nach dem Endkampf verfallen Gegenstände (seine Meldung vom 07.11.2026); Stärkung geht nur im Endkampf, Schaden
+einer je Kampf davor; ein Reißzahn mit Rückstoß ging, als nur ein Gegner nahe stand. Nächster Schritt: Loop über die
+Kämpfe bis zum Endgegner (Gegner, Schwächen, Zahl aus den Blättern, Last je Kampf), welcher Gegenstand wo am meisten
+bringt, Synergien (Stärkung trägt die Reißzähne), Rückstoß; danach erneut an seinem Log. Konzept 21, K8 („Über das
+Brett").
 
 ### Kegel und Ringe gegnerischer Zauber genau messen · N
 Im Kampf: RSRs Formprüfung (`DataCenter.AreaCastReaches`) misst einen Kegel und einen Ring als vollen Kreis um den

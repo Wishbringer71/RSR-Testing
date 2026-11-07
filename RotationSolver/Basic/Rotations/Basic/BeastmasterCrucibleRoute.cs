@@ -349,9 +349,9 @@ public partial class BeastmasterRotation
 			if (node.Kind == Space.Random && node.Options.Count > 0)
 			{
 				RouteState? worst = null;
-				foreach (var (kind, _) in node.Options)
+				foreach (var (kind, battle) in node.Options)
 				{
-					var end = Continue(index, Apply(kind, index, state with { Items = true }), merged, depth);
+					var end = Continue(index, Apply(kind, battle, index, state with { Items = true }), merged, depth);
 					if (worst is not { } w || Better(w, end))
 					{
 						worst = end;
@@ -361,7 +361,7 @@ public partial class BeastmasterRotation
 				return worst ?? state;
 			}
 
-			return Continue(index, Apply(node.Kind, index, state), merged, depth);
+			return Continue(index, Apply(node.Kind, node.Battle, index, state), merged, depth);
 		}
 
 		RouteState Continue(int index, RouteState state, bool merged, int depth)
@@ -384,12 +384,12 @@ public partial class BeastmasterRotation
 			return bestEnd ?? state;
 		}
 
-		RouteState Apply(Space kind, int index, RouteState state)
+		RouteState Apply(Space kind, uint battle, int index, RouteState state)
 		{
 			switch (kind)
 			{
 				case Space.Campsite:
-					// As K10 picks: familiars rest only while the player still comes out at full HP.
+					// As K10 picks (A661): familiars rest while the player's HP after it carry the heaviest way to the next rest.
 					var limit = int.MaxValue;
 					foreach (var camp in map.Nodes[index].Camps)
 					{
@@ -400,9 +400,10 @@ public partial class BeastmasterRotation
 					}
 
 					var resting = 0;
+					var need = CrucibleRoute.WorstAhead(index, true, true, LoadNow);
 					for (var n = 1; n <= limit && n <= team; n++)
 					{
-						if (state.Player + RestShare(n) >= 1f)
+						if (Carries(state.Player + RestShare(n), need))
 						{
 							resting = n;
 						}
@@ -417,10 +418,11 @@ public partial class BeastmasterRotation
 					};
 				case Space.Shop or Space.Treasure:
 					return state with { Items = true };
+				// A661: a fight with the heaviest damage it ever dealt you; one never measured with the mean or heaviest here.
 				case Space.Enemy:
-					return state with { Player = state.Player - mean, Healer = state.Healer - loss };
+					return state with { Player = state.Player - (LoadNow(battle) ?? mean), Healer = state.Healer - loss };
 				case Space.Elite or Space.Boss:
-					return state with { Player = state.Player - heaviest, Healer = state.Healer - loss };
+					return state with { Player = state.Player - (LoadNow(battle) ?? heaviest), Healer = state.Healer - loss };
 				default:
 					return state;
 			}

@@ -32,16 +32,30 @@ What this release changes in the fight. For the whole distance from upstream, se
 - **The shop no longer recommends gear you already wear.** A shop lists it again and the game refuses the purchase; a
   piece taken from a treasure on the board counts as worn.
 - **Feed only for free feed slots, and only when it helps.** RSR reads each familiar's feed slots from the familiar
-  window whenever it shows and recommends feed for free slots only – first one per familiar of the final fight's plan,
-  healers and protectors first – and only feed that adds effective HP, or damage after those. While you feed, the
-  window names the familiar with a free slot that the feed helps most, or says that none has one.
+  window whenever it shows and recommends feed for free slots only, and only feed that adds effective HP, or damage
+  after those. Piece by piece, the healers and protectors of the final fight's plan come first, each piece where it
+  helps most; while you feed, the window names the eater by the same rule, so following the shop's list in its order
+  gives the same names there. Familiars are named with their HP as the familiar window shows them (Kolibri 374/487).
+- **The final fight's plan is the final fight's choice.** The plan the campsite and the feed prepare is now worked out
+  by the very choice the final fight's horn screen makes, again whenever HP, feed or a measured loss change, and feed
+  counts in every horn choice on a board (damage dealt, damage taken). A familiar fed for the final fight stays on its
+  horn there.
+- **More familiars rest with you at a campsite.** RSR learns, over every session, the heaviest damage each fight of a
+  board dealt you, without your gear (tab "Crucible fights"). A campsite lets familiars rest with you while your HP
+  after the rest still carry the heaviest way to the next campsite – or to the final fight on a way without one – with
+  each fight at its own load; only where a fight on those ways was never measured do you have to come out at full HP.
+  The way window and the shop's limit for healing items use the same loads, so the final fight no longer counts as
+  heavy as the heaviest fight before it.
+- **Gear and feed belong to the run.** A new run on the same board no longer inherits the gear and feed slots of the
+  last one.
 - **A familiar is healed before a first hit could fell it.** Before a familiar takes its first hit in a fight, RSR
   measures it against the largest hit any familiar took on the board so far, instead of your potion line, and gives it
   a Beast Potion when its HP do not cover that hit. Your last healing item still stays for you.
 - **The shop weighs gear and items on one scale.** Once a fight is measured, gear, healing items and protective items
   are chosen together by the share of your HP each brings over the fights to the boss, piece by piece the most per
-  token. A healing item counts only as far as you could still need it: the fights left, each as heavy as your heaviest,
-  plus what you miss now, less the healing you hold. Covers against the board's statuses that cost control or deal
+  token. A healing item counts only as far as you could still need it: the fights on the heaviest way to the boss, each
+  with its learned load (one never measured as heavy as your heaviest), plus what you miss now, less the healing you
+  hold. Covers against the board's statuses that cost control or deal
   damage over time now come before this scale.
 - **Adds that run to their boss are met, not chased.** RSR measures which enemies run to another enemy and when each
   arrives, learning from the first of a kind to vanish where its kind arrives. Of equally urgent enemies, the one nearest

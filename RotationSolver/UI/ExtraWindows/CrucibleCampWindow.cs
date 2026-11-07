@@ -49,7 +49,7 @@ internal class CrucibleCampWindow : RecommendationWindow
 		{
 			foreach (var pick in picks)
 			{
-				Line($"{pick.Pet}", $"{pick.Share:P0}", M3Severity.Info);
+				Line(BeastmasterRotation.FamiliarName(pick.Pet), $"{pick.Share:P0}", M3Severity.Info);
 				Note(pick.Why);
 			}
 

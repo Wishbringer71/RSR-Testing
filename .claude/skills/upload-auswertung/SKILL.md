@@ -17,6 +17,10 @@ Anlass: Er lädt Dateien hoch, mit oder ohne Frage dazu.
   wenn er eine bestimmte Frage dazu stellt (seine Vorgabe, 25.10.2026): erst seine Frage, dann alle übrigen Kämpfe,
   Zeilenarten und Dateien. Grund: Eine Frage zu einem Boss lässt den Rest des Abends ungeprüft.
 - Namen anderer Spieler aus seinen Dateien kommen in keine Datei des Repositorys (A364).
+- Eine Frage oder Meldung, deren Log er nachreichen will, prüfe ich sofort im vollen Loop, nicht erst mit dem Log, und
+  wenn das Log da ist, prüfe ich das Ergebnis daran erneut (seine Vorgabe, 07.11.2026: „vorab im vollen kritischen loop
+  prüfen, und auch nach einspielung der logs"). Grund: Ohne Log ruht sonst die Arbeit, und ohne zweite Prüfung bleibt
+  ungesehen, was nur das Log zeigt.
 
 ## Ablauf
 
