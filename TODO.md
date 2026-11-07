@@ -19,9 +19,11 @@ auswahl und das timing der beschwörung" – je Kampf aller fünf Bretter (Gegne
 BossMod-Module) die Rotation des Beastmasters, die Wahl der Begleiter und den Zeitpunkt ihres Aufrufs im Loop prüfen
 (Beispiel seiner Beobachtung: der Raptor gegen Feuer, bevor feueranfällige Gegner da waren; A581).
 
-1. Blaumagier: RSRs nächste Aktion beendet Apokalypsis und Chelonian Gate – Schaden und Minderung des Spielers enden
+1. Tooltips: lange Optionsbeschreibungen werden rechts abgeschnitten – gehört zu seinen Vorgaben vom 07.11.2026 zu den
+   Fenstern („ich will von dir keine nicht nutzbaren fenster bekommen") und kommt deshalb mit ihnen.
+2. Blaumagier: RSRs nächste Aktion beendet Apokalypsis und Chelonian Gate – Schaden und Minderung des Spielers enden
    nach einem GCD statt nach 10 s.
-2. Kegel und Ringe gegnerischer Zauber genau messen: Zauber- und Kanalbeginn nutzen RSRs Erkennung bei Kegel und Ring
+3. Kegel und Ringe gegnerischer Zauber genau messen: Zauber- und Kanalbeginn nutzen RSRs Erkennung bei Kegel und Ring
    nicht, und mehrere Leser sehen hinter einem Kegel oder im Innenkreis eines Rings eine Gefahr, die keine ist.
 
 Danach die technische Schuld, soweit ihre Auflösungsbedingung erfüllt ist. Warten auf Daten: unten.
@@ -32,6 +34,15 @@ der Beastmaster-Vorrang, dann jeder übrige Punkt dieser Liste, dann die Konzept
 Code-Review; was diese finden, kommt wieder hierher und in dieselbe Reihenfolge, jeder Schritt im vollständigen Loop.
 
 ## Defekte
+
+### Tooltips: lange Optionsbeschreibungen werden rechts abgeschnitten · N
+Am Bildschirm: Mit „Show setting descriptions inline" aus (ab Werk an) zeigt jede Option ihre Beschreibung als
+Tooltip, ungebrochen
+(`ImGui.BulletText`) in einem Fenster mit höchstens 1200 px Breite; 30 Beschreibungen haben Zeilen über 170 Zeichen,
+die längste 2239, und ihr Rest liegt außerhalb des Fensters. Auch wo nichts abgeschnitten wird, laufen Zeilen weit über
+die Grenze von 80 Zeichen. *Ort:* `ImguiTooltips.ShowTooltip`, `Searchable.RowTooltip`, `Searchable.ShowTooltip`.
+*Nächster Schritt:* Loop zum Umbruch beim Lesemaß für jeden Tooltip, gemessen mit `window_layout_model.py`.
+*Konzept:* 03, „Hilfsfenster".
 
 ### Blaumagier: RSRs nächste Aktion beendet Apokalypsis und Chelonian Gate · N
 Im Kampf: Drückt der Blaumagier Apokalypsis (Linie, 10 s Schaden) oder Chelonian Gate (−20 % Schaden, 10 s, danach

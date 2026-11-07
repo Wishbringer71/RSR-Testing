@@ -20,7 +20,7 @@ internal class CrucibleTreasureWindow : RecommendationWindow
 		return Svc.ClientState.IsLoggedIn && DataCenter.CurrentRotation is BeastmasterRotation && BeastmasterRotation.CrucibleTreasureOpen;
 	}
 
-	public override void Draw()
+	protected override void DrawContent()
 	{
 		var pick = BeastmasterRotation.CrucibleTreasureRecommendation;
 		using (Section("crucible_treasure", "Take", FontAwesomeIcon.Gift))

@@ -19121,6 +19121,65 @@ Löschungen").
 *Prüfgrad:* Release-API und Workflow-Lauf gelesen, Prüfskripte; die Übergabe gegen den Release-Text abgeglichen (jeder
 der 103 Einträge steht im Gesamtbild).
 
+### A654 · Empfehlungsfenster: lesbar nach den allgemeinen Regeln, größenveränderbar, Layout in Dear ImGui gemessen (07.11.2026)
+
+Sein Befund (07.11.2026): „das fenster welches für den beastmaster, crucible, brett entwickelt wurde ist zu schmal und
+kann weder in höhe noch breite angepasst werden. so nicht nutzbar". Seine Vorgaben im selben Zug: „es gibt
+allgemeingültige ui/ux regeln, wie etwas gut erkennbar und lesbar sein muss. das wurde missachtet" (Vorgabe, mit Rüge);
+„dabei ist für mich uninteressant, was upstream macht" (Präzisierung: Maßstab sind die Regeln, nicht Upstreams oder
+RebornMaterials Praxis); „ich will von dir keine nicht nutzbaren fenster bekommen" (Vorgabe). Eingetragen in
+`.claude/rules/code.md`, „Oberfläche", und Konzept 03, „Hilfsfenster".
+
+- *1 Research, Ursache:* `RecommendationWindow` (A633) setzte `ImGuiWindowFlags.AlwaysAutoResize`; RebornMaterials
+  Karte bricht ihren Text an ihrem rechten Rand um (`M3Card.PushContentWrap`, 0bd2517), also am Fensterrand. Der Inhalt
+  fordert so nie mehr Breite, als das Fenster hat; die Breite ergibt sich aus dem breitesten Element, das nicht umbricht.
+  Die Kartentitel zählen nicht dazu, weil RebornMaterial sie auf die Zeichenliste malt (kein Element). Der
+  Auto-Größenmodus sperrt zudem das Ziehen in beide Richtungen. In einer echten Dear ImGui nachgestellt
+  (imgui-bundle 1.93, headless): Teamfenster 116 × 664 px, Titel abgeschnitten („Team for t"), Begleiternamen in
+  Einzelbuchstaben, das Fenster läuft unten aus dem Bild; mit nur einem Absatz und Knopf 59 × 331 px. Die Breite hing
+  an der Statuszeile unter dem Knopf, die erst nach „Apply" Text trägt.
+- *Normen (Quellen gelesen 07.11.2026):* WCAG 2.2: 1.4.3 Kontrast 4,5:1; 1.4.4 Text bis 200 % ohne Verlust; 1.4.8
+  (AAA) Zeilen höchstens 80 Zeichen, Zeilenabstand 1,5; 1.4.11 Nicht-Text 3:1; 2.5.8 Ziel 24 × 24 px. ISO 9241-110:
+  Steuerbarkeit. Microsoft Windows UX Guide (Layout, Window Management, UX-Checkliste): Startgröße nach Inhalt, kein
+  abgeschnittener Inhalt, Mindestgröße, wo der Inhalt sonst unbrauchbar wird, Zeilen 65 (Checkliste) bzw. 80 Zeichen,
+  Zusammengehöriges eng, Getrenntes weit, „If the first thing users do is resize a window […], its size is wrong".
+  Baymard (nach Emil Ruder): 50–75 Zeichen; zu kurze Zeilen brechen den Lesefluss. Nielsen Norman Group: Gesetz der Nähe.
+- *Messung der übrigen Regeln:* Kontrast am Schema von RebornMaterial (0bd2517) nachgerechnet, sechs Akzentfarben,
+  schwarzes und weißes Spielbild unter dem zu 97 % deckenden Fenster: Fließtext ≥ 13,28:1, Gründe ≥ 10,08:1, Badge-Text
+  6,2:1, Knopf 7,69:1 – erfüllt. Verletzt: Kartentitel (TitleMedium 16 px) gleich groß wie der Fließtext (Dalamuds
+  Standardschrift Axis 12 pt = 16 px, Dalamud a7409604) – keine Hierarchie; Badge-Text 11 px, unter der kleinsten
+  Axis-Größe des Spiels (9,6 pt = 12,8 px); Empfehlung, Grund und nächste Empfehlung im selben Abstand – keine Gruppen.
+- *2–5 Optionen und Abwägung:* (a) Auto-Größe behalten, feste Umbruchbreite: Breite stimmt, Höhe nicht ziehbar – gegen
+  seine Angabe. (b) Größe frei, feste Startgröße (`DefaultSize` mit `FirstUseEver`): eine Zahl ohne Bezug zum Inhalt,
+  greift nicht bei seiner gespeicherten Altgröße. (c) Größe frei, Start- und Mindestbreite aus dem Text gemessen,
+  Höhe folgt dem Inhalt, bis er sie kürzer zieht. (c) gebaut: kein Preis außer Code; Startbreite in Zeichen des Textes
+  selbst (Breite durch Länge), daher ohne angenommene Zeichenbreite.
+- *6 Falsifikation:* Kein Defekt? Im Modell nachgestellt, siehe oben. Option falsch? Das Modell zieht die Ränder mit der
+  Maus: kürzer (bleibt, rollt), länger (stoppt am Inhalt, folgt wieder), breiter (Höhe folgt), schmaler (stoppt bei
+  50 Zeichen); 200 % Textgröße; 800 × 400 Bildschirm – alles hält. Ausgeliefert, nichts ändert sich? Seine
+  gespeicherte Altgröße (Auto-Größenmodus) würde `FirstUseEver` übergehen; deshalb ersetzt das erste Bild einer Sitzung
+  eine Breite unter der Mindestbreite durch die Startbreite – im Modell nachgestellt (116 px → 459 px).
+- *7 Umsetzung:* `RecommendationWindow` neu: ohne Auto-Größe; misst beim Zeichnen je Text und Element die nötige
+  Breite, setzt vor dem nächsten Bild Mindestbreite, Höchsthöhe und, wo fällig, die Größe (`Size`,
+  `SizeConstraints`, Dalamud skaliert beides); Titel als Element in der kleinsten Titelrolle über dem Fließtext; Chip in
+  Textgröße auf der Container-Rolle (Kontrast ≥ 7,23:1); eine Zeilenhöhe zwischen Empfehlungen. Die sechs Fenster
+  zeichnen in `DrawContent`; der Carnivale-Kopf nutzt `Title`. Feste Werte 50, 65, 75 mit Quelle in
+  `fixed_values.json`.
+- *Prüfmittel:* `window_layout_model.py` (Modell, Selbsttest gegen drei eingebaute Defekte; Bilder mit `--png`);
+  `check_window_layout.py` weist Auto-Größe mit Umbruch am eigenen Rand ab, mit Selbsttest; zugelassen mit Grund:
+  `DiagnosticsWindow` (ungebrochene Zeilen setzen die Breite) und das Rücksetz-Popup im Hauptfenster
+  (Mindestbreite 380 px × Skalierung).
+- *Klasse:* Die Fork-Fenster erhoben (`git log --diff-filter=A upstream/main..HEAD -- RotationSolver/UI`): sechs
+  Empfehlungsfenster (behoben), `DiagnosticsWindow` (Auto-Größe ohne Ziehen, ungebrochene Zeilen, nutzbar; er nutzt es
+  nicht), die Tabellenansicht der gelernten Tabellen (Tabelle im ziehbaren Hauptfenster, Spalten ziehbar). Dabei
+  gefunden: Tooltips (`ImguiTooltips`) zeigen Optionsbeschreibungen ungebrochen bis 1200 px; 30 Beschreibungen des
+  Forks haben Zeilen über 170 Zeichen und werden abgeschnitten – Defekt im TODO.
+- *Unbelegt:* der Zeilenabstand in einem umbrochenen Absatz (ImGui: Schrifthöhe; WCAG 1.4.8 misst am Geviert, das ImGui
+  für Axis nicht ausweist).
+
+*Prüfgrad:* Compile ohne Warnung; Prüfskripte; Layoutmodell in Dear ImGui 1.93 mit Ersatzschrift (nicht Dalamud, nicht
+RebornMaterials Malen, nicht Axis); Kontrast gerechnet. Im Spiel nicht beobachtet.
+
 ## B · Commit-Register (Fork vs. `upstream/main`)
 
 ### B1 · Einzelgeprüfte Fork-Commits
@@ -19444,3 +19503,4 @@ Die offene Arbeit dazu — Reihenfolge und Abbruchbedingung der Nachprüfung —
 | C169 | A595 und Konzept 03 („Bewegungssperre beim Wirken und die KI von BossMod"): „B, die Sperre weicht der KI (Empfehlung)" für die ganze Option; „Daedalus verlor so einen Heiler" | B gäbe auch die angehakten Kanäle frei (Waffengang, Flammenwerfer, Tanzimprovisation), die BossMod nicht kennt: Dort geht die KI auch zum Nachrücken, und jeder Schritt beendet den Kanal (ActionTransient 7385, 7418, 16014). Daedalus' Heiler starb an Daedalus' eigener Pause über `AI.PauseMovement`, nicht an RSRs Sperre (`CastMovementHoldService`, Daedalus c4a788f) | Konzept 03 neu gefasst: Empfehlung H (nur Zauber weichen der KI und enden mit der Antwort des Spiels) und K' für Kanäle; die Feldnotiz als Daedalus' eigener Fall geführt (A649) |
 | C170 | A650 („Status Arms Up 1176, Collective Unconscious 849, Improvisation 2695 auf Mitgliedern" als das, was ein Schutzkanal hält; „(c) KK stellt den Tank in die Fläche bleibt seine Gewichtung") und TODO („Nächster Schritt: seine Entscheidung zu H2, KK und den Häkchen") | 849 vergibt das Wirken einmal, die Minderung bleibt nach dem Abbruch; 2695 ist ein Regen – nur Arms Up endet mit seinem Kanal. Die Gewichtung von Tank gegen Gruppe entscheidet seine Regel zur Laufzeit; ein Optimum braucht keine Entscheidung (seine Vorgabe, 07.11.2026) | Gebaut ohne Vorlage (A651): Halten gegen die KI nur mit Waffengang und nur, wo die Minderung ein gefährdetes Mitglied vor einem angekündigten Treffer deckt |
 | C171 | A651 und Konzept 03 (Stand A651): „Meditieren ab Werk aus"; „Was bleibt, ist eine Grenze der Daten, kein Preis einer Wahl: die früheste Fläche ist global"; Kanal mit gehender KI gibt frei, „wenn der Treffer vor dem Ende des Kanals plus dem Weg … landet"; Kanal- und Zauberbeginn nur nach BossMods Zeichen; A651 „Eingetragen in CLAUDE.md" mit „Vorgelegt wird nur …" als Lesart, eine Entscheidung durch Wahl zu erledigen | Jede dieser Stellen erledigte eine Entscheidung durch Wahl einer Seite; seine Präzisierungen (07.11.2026) verlangen, die Lösung zu verbessern. Die Fläche je Ort ist in BossMods Hinweisen lesbar, der Spielraum des Wegs in `Hints.MaxCastTime`, das Pausenende in der Zeitleiste, und RSRs Erkennung ist für Kreis und Linie mit Gruppenvergleich sicher | Gebaut nach A652; CLAUDE.md: „Kappen ist keine Verbesserung" |
+| C172 | A633 und Konzept 03 (Stand A633): „*Nicht gebaut:* Fensterbreite mit Umbruch – feste Breiten wären Zahlen ohne Herleitung; die Fenster passen ihre Größe dem Inhalt an wie bisher"; A633, Falsifikation: „Breiten mit Umbruch bräuchten feste Zahlen – nicht gebaut" | Mit Auto-Größe und Umbruch am Kartenrand passte sich das Fenster nicht dem Inhalt an: es blieb so schmal wie sein schmalstes nicht umbrechendes Element (im Modell 116 px, Titel abgeschnitten) und ließ sich nicht ziehen. Die Breite ist aus dem Text ableitbar (Zeichen des Textes selbst, Lesemaß 50–75 Zeichen) | Gebaut nach A654 |

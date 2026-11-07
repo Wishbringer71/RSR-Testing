@@ -21,7 +21,7 @@ internal class CrucibleShopWindow : RecommendationWindow
 		return Svc.ClientState.IsLoggedIn && DataCenter.CurrentRotation is BeastmasterRotation && BeastmasterRotation.CrucibleShopOpen;
 	}
 
-	public override void Draw()
+	protected override void DrawContent()
 	{
 		var picks = BeastmasterRotation.CrucibleShopRecommendation;
 		var (tokens, left) = BeastmasterRotation.CrucibleShopTokens;

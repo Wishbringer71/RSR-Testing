@@ -1880,6 +1880,36 @@
    "status": "exception",
    "loop": "A647",
    "reason": "Masked Carnivale: an enemy weak to an element takes double damage from it (Blue Academy, 'Basics', community source; the sheets state no figure). Only a fallback: OwnHitWatch measures the factor from the player's hits on weak and on other enemies in the same stage and replaces it once both are measured."
+  },
+  {
+   "file": "RotationSolver/UI/ExtraWindows/RecommendationWindow.cs",
+   "code": "private const int ShortestLine = 50;",
+   "values": [
+    "50"
+   ],
+   "status": "exception",
+   "loop": "A654",
+   "reason": "Shortest line a recommendation text is set to, in characters of the text itself: the lower end of the readable line length (Emil Ruder, Baymard Institute: 50-75); shorter lines make the eye jump back too often. A rule of legibility, not a figure of the game; the pixel width is derived from the text at runtime (A654)."
+  },
+  {
+   "file": "RotationSolver/UI/ExtraWindows/RecommendationWindow.cs",
+   "code": "private const int LineMeasure = 65;",
+   "values": [
+    "65"
+   ],
+   "status": "exception",
+   "loop": "A654",
+   "reason": "Line length a recommendation window opens with for a longer text, in characters of the text itself: the Windows UX Guide's 65, inside 50-75 (Ruder, Baymard) and under WCAG 2.2 1.4.8's 80. A rule of legibility, not a figure of the game (A654)."
+  },
+  {
+   "file": "RotationSolver/UI/ExtraWindows/RecommendationWindow.cs",
+   "code": "private const int LongestSingleLine = 75;",
+   "values": [
+    "75"
+   ],
+   "status": "exception",
+   "loop": "A654",
+   "reason": "Longest text kept on one line when a recommendation window opens, in characters of the text itself: the upper end of the readable range (Ruder, Baymard: 50-75), so a text a little over 65 does not leave a few words on a second line. A rule of legibility, not a figure of the game (A654)."
   }
  ]
 }

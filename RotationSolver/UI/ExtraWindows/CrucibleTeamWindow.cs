@@ -21,7 +21,7 @@ internal class CrucibleTeamWindow : RecommendationWindow
 			&& BeastmasterRotation.CrucibleTeamRecommendation.Count > 0;
 	}
 
-	public override void Draw()
+	protected override void DrawContent()
 	{
 		var picks = BeastmasterRotation.CrucibleTeamRecommendation;
 		var team = BeastmasterRotation.CrucibleTeamNow();

@@ -53,6 +53,10 @@ Gelten in jeder Stufe. Eine Aussage, die eine davon verletzt, ist unbelegt.
 **Keine Funktion ohne Bedarf**
 - Was er mit einem Handgriff außerhalb des Spiels erledigt (eine Datei löschen, eine Kopie ziehen), bekommt keinen Knopf und keine Option — jede Funktion ist eine weitere Fehlerquelle (seine Vorgabe, A173).
 
+**Oberfläche**
+- Jedes Fenster, jeder Tooltip und jede Anzeige folgt den allgemeingültigen Regeln für Erkennbarkeit und Lesbarkeit – WCAG 2.2, ISO 9241-110, Windows UX Guide, Typografie; im Einzelnen Konzept 03, „Hilfsfenster" (seine Vorgabe, 07.11.2026). Maßstab sind diese Regeln, nicht was Upstream oder RebornMaterial tut (seine Präzisierung, 07.11.2026).
+- Kein Fenster, das er erst einrichten muss, um es zu nutzen (seine Vorgabe, 07.11.2026). Jedes neue oder geänderte Fenster messe ich vor der Auslieferung mit `window_layout_model.py` in Dear ImGui, weil der Build kein Layout prüft (A654).
+
 **Erkennung und Entscheidung trennen**
 - Was beantwortet, was der Fall ist, prüft keine Option, vergleicht mit keiner Schwelle und wird nicht nur unter einer bestimmten Regel geschrieben. Das Urteil gehört in den Verbraucher — sonst erbt jeder weitere Leser eine fremde Schwelle, unsichtbar.
 - Umgekehrt hänge ich einen Verbraucher mit eigener Grundlage (eigene Option, Schwelle, Zweck) nicht an eine fremde Freigabe — er erbt sonst alle ihre Gründe (Beispiel: der Heiltrank an der Heilflagge, A124, A133).
