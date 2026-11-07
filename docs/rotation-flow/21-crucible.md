@@ -179,8 +179,8 @@ Dullahan, Golem, Spriggan und Eisgolem (`XBMPet.InflictsInterrupt`).
   in diesem Gebiet (Konzept 03, „Ungemessene Gegner", A674) – die zweite Charge eines Kampfs, und jede in einem späteren
   Kampf desselben Bretts, steht damit von ihrem Erscheinen an mit der Gefahr der ersten. Die erste zählt bis dahin mit dem
   Mittel des Kampfs, nach dem Blatt gewichtet (A582), und mit ihrem Wirken, sobald sie es ankündigt. *Die Sanduhr
-  des Königs-Ahriman* (Zweites Meisterbrett, Elite 4, Zug 13 rechts) schadet erst mit ihrem Fall; Regel und Quellen:
-  K12, „Königs-Ahriman". *Gegenthesen A674:* (1) Eine Art schadet je Kampf anders. Widerlegt: Gezählt
+  des Todes beim Königs-Ahriman-Ebenbild* (Zweites Meisterbrett, Elite 4, Zug 13 rechts) schadet erst mit ihrem Fall;
+  Regel und Quellen: K12, „Königs-Ahriman-Ebenbild". *Gegenthesen A674:* (1) Eine Art schadet je Kampf anders. Widerlegt: Gezählt
   wird ihre Gefahr je Sekunde bis zum Fall, über ihre ganze Lebenszeit – genau die Größe, nach der K3 reiht –, und die
   eigene Messung ersetzt sie mit dem ersten Treffer; ein anderes Brett ist ein anderes Gebiet. (2) Ein gefallener Gegner
   verdünnte seine Art über die Zeit nach seinem Tod. Beseitigt: Seine Zeit endet, wo er zuletzt in der Gegnerliste stand
@@ -917,8 +917,8 @@ Dullahan, Golem, Spriggan und Eisgolem (`XBMPet.InflictsInterrupt`).
       verbraucht ist sie im Ereigniszustand 7 (BossModReborn, `EventState`). BossModReborn prüft mit 6 Yalm – das ist der
       Radius von Spore Spill, nicht der Pfütze. Hinein gehst du oder BossModReborn: Dessen Modul will dich in den Pfützen
       (`PersistentInvertibleVoidzone`, ab Kampfbeginn umgekehrt), die Myconiden folgen dir.
-    - *Königs-Ahriman, Zweites Meisterbrett – nur zu einer Zeit, sonst zuerst (A675):* Roulette (49418) bindet dich neben
-      eine final hourglass (14689) und setzt eine namenlose Nadel in die Mitte (BNpcBase 19738). Die Nadel zeigt nur
+    - *Königs-Ahriman-Ebenbild (14688), Zweites Meisterbrett – nur zu einer Zeit, sonst zuerst (A675):* Roulette (49418)
+      bindet dich neben eine Sanduhr des Todes (final hourglass, 14689; deutsche Namen: xivapi v2, `language=de`) und setzt eine namenlose Nadel in die Mitte (BNpcBase 19738). Die Nadel zeigt nur
       entlang der vier Achsen und rückt in festem Takt eine Vierteldrehung weiter; bricht die Sanduhr, feuert der nächste
       Takt Death (49422, Kegel, 23 Yalm laut Blatt) entlang der Nadel, und Death legt Verhängnis (5421, „Certain death
       when counter reaches zero", nicht entfernbar; xivapi v2, 07.11.2026). Ungebrochen trifft Death ebenso, wenn ihr
@@ -953,7 +953,7 @@ Dullahan, Golem, Spriggan und Eisgolem (`XBMPet.InflictsInterrupt`).
       *Im Kampf:* Roulette bindet dich östlich der Mitte, etwas nördlich der Achse; die Nadel rückt jeden Takt weiter
       (Norden, Westen, Süden, Osten). In deine Hälfte zeigen Osten und Norden. Dein erster Schlag nimmt der Sanduhr 60 %.
       Als dein nächster GCD bereit ist, wären die möglichen Takte des Bruchs „Süden, Osten": RSR schlägt sie nicht, sondern
-      den Hapalit, bis die möglichen Takte „Westen, Süden" sind – höchstens drei Takte –; dann bricht der Schlag sie, und
+      das Hapalit-Ebenbild, bis die möglichen Takte „Westen, Süden" sind – höchstens drei Takte –; dann bricht der Schlag sie, und
       Death geht ins Leere. Ohne die Regel bräche der Schlag sie sofort, und Death träfe dich beim Takt nach Osten:
       Verhängnis, nach 6 s tot, Lauf beendet.
       *Gegenthesen:* (1) Dein Begleiter bricht sie zur falschen Zeit. Er folgt deinem Ziel (meist binnen 1,7 s, Konzept
