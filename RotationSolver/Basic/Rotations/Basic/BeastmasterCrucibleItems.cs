@@ -367,7 +367,7 @@ public partial class BeastmasterRotation
 		return false;
 	}
 
-	private static string StatusName(uint statusId)
+	internal static string StatusName(uint statusId)
 	{
 		if (!_statusNames.TryGetValue(statusId, out var name))
 		{
@@ -934,6 +934,10 @@ public partial class BeastmasterRotation
 		// come at the most HP seen on them; null where a part is unknown, and the items are weighed by potency.
 		var loadLeft = CrucibleBoard.LoadLeft();
 		var poolNow = EnemyHpNow();
+
+		// A677: the kill stacks the worn gear grants, once RSR saw that a kill by an item grants one - and how many you hold.
+		var killStack = CrucibleBoard.ItemKillsStack == true ? WornKillStack() : null;
+		var stacksHeld = killStack is { } held && Player is { } self ? StacksHeld(self, held.Status) : 0;
 		_layers.Clear();
 		for (var i = 0; i < crucible->Inventory.Length; i++)
 		{
@@ -945,6 +949,7 @@ public partial class BeastmasterRotation
 			var hits = 0;
 			var worth = 0f;
 			var removed = 0d;
+			var kills = 0;
 			foreach (var hostile in DataCenter.AllHostileTargets)
 			{
 				if (hostile == null || hostile.IsDead || !hostile.InCombat() || !InReach(item, target, hostile))
@@ -960,12 +965,13 @@ public partial class BeastmasterRotation
 				// A672: at most what the enemy has left, by the measured damage per potency of the items.
 				worth += perPotency is { } dpp && dpp > 0f ? Math.Min(add, hostile.CurrentHp / dpp) : add;
 				removed += perPotency is { } hpp && hpp > 0f ? Math.Min(add * hpp, hostile.CurrentHp) : 0d;
+				kills += perPotency is { } kpp && kpp > 0f && add * kpp >= hostile.CurrentHp ? 1 : 0;
 			}
 
 			// A676: the load it spares you here, and in the best fight ahead; both or neither.
 			float? spared = loadLeft is { } left && poolNow is { } pool && pool > 0d && perPotency is > 0f
-				? (float)(left * Math.Min(1d, removed / pool)) : null;
-			var sparedAhead = spared != null && !finalFight ? AheadSpared(item, ahead, bonus) : null;
+				? StacksSpare(left, Math.Min(1d, removed / pool), kills, stacksHeld, killStack) : null;
+			var sparedAhead = spared != null && !finalFight ? AheadSpared(item, ahead, bonus, killStack) : null;
 
 			if (!ending && MoreCanCome(item, target, hits, out var coming))
 			{
@@ -1249,7 +1255,8 @@ public partial class BeastmasterRotation
 	// A676: the load a damage item spares in the best fight ahead - the fight's learned load times the share of its kinds'
 	// HP (the most seen on each) the item takes, all kinds for an item with a radius, the best one for a single target; null
 	// when a fight ahead has no learned load, a kind was never seen, or the damage per potency is unmeasured.
-	private static float? AheadSpared(CrucibleItem item, HashSet<uint>? ahead, float bonus)
+	private static float? AheadSpared(CrucibleItem item, HashSet<uint>? ahead, float bonus,
+		(string Status, float Taken, int Max)? killStack)
 	{
 		if (ahead == null || CrucibleBoard.ItemDamagePerPotency is not { } dpp || dpp <= 0f)
 		{
@@ -1266,6 +1273,7 @@ public partial class BeastmasterRotation
 
 			var pool = 0d;
 			var taken = 0d;
+			var kills = 0;
 			foreach (var enemy in CrucibleBoard.EnemiesOf(battle))
 			{
 				var hp = CrucibleBoard.MaxHpSeen(enemy.NameId);
@@ -1278,15 +1286,50 @@ public partial class BeastmasterRotation
 				var hit = Math.Min(item.Value * each * dpp, hp);
 				pool += hp;
 				taken = item.Radius > 0f ? taken + hit : Math.Max(taken, hit);
+				var killed = hit >= hp ? 1 : 0;
+				kills = item.Radius > 0f ? kills + killed : Math.Max(kills, killed);
 			}
 
 			if (pool > 0d)
 			{
-				best = Math.Max(best, (float)(load * Math.Min(1d, taken / pool)));
+				best = Math.Max(best, StacksSpare(load, Math.Min(1d, taken / pool), kills, 0, killStack));
 			}
 		}
 
 		return best;
+	}
+
+	// A676, A677: the load an item spares - the share of the enemy HP it takes of the load left, and the kill stacks it
+	// grants (one a kill, up to the most) on what is left after it, each taking its share off the damage you take.
+	private static float StacksSpare(float load, double share, int kills, int held, (string Status, float Taken, int Max)? killStack)
+	{
+		var spared = load * share;
+		if (killStack is { } stack && kills > 0)
+		{
+			var gained = Math.Min(kills, Math.Max(0, stack.Max - held));
+			spared += load * (1d - share) * stack.Taken * gained;
+		}
+
+		return (float)spared;
+	}
+
+	// A677: the stacks of the status of this English name on the character; 0 without it.
+	internal static int StacksHeld(IBattleChara chara, string status)
+	{
+		if (chara.StatusList == null)
+		{
+			return 0;
+		}
+
+		foreach (var effect in chara.StatusList)
+		{
+			if (effect != null && effect.StatusId != 0 && string.Equals(StatusName(effect.StatusId), status, StringComparison.OrdinalIgnoreCase))
+			{
+				return Math.Max(1, (int)effect.Param);
+			}
+		}
+
+		return 0;
 	}
 
 	private static readonly Dictionary<uint, float> _itemPotencyOfAction = [];

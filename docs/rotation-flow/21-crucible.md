@@ -1394,10 +1394,19 @@ on a pack once a fight, all of them in the final fight (Crucible only)".
       erlittener Schaden, +10 % Schaden, 180 s, bis vier; Tonikum-Futter für den Begleiter je −8 %, 60 s), Magnum-Wasser
       dem Begleiter Regeneration. *Bewertet (A672):* Ein Stapel ist Schutz über die Zeit nach der Tötung; Wert (13) zählt
       Potenz, Zielwahl (K3) Gefahr je Sekunde bis zum Fall – keine der beiden misst ihn. Auf Brett 1 brächten drei Milben
-      auf einmal −15 % für den Rest eines Kampfes, der 4 bis 18 % deiner LP kostete: höchstens rund 2 % je Kampf. Den Wert
-      eines Schadensgegenstands rechnet RSR seit A676 in ersparter Last (Schritt 13); die Stapel gehören in dieselbe
-      Einheit – Offen (TODO „Crucible-Wechselwirkungen, Stufe 2"): Ob die Tötung durch einen Gegenstand einen Stapel gibt
-      („upon defeating an enemy"), belegt kein Text.
+      auf einmal −15 % für den Rest eines Kampfes, der 4 bis 18 % deiner LP kostete: höchstens rund 2 % je Kampf. *Was gilt
+      (A677):* Trägst du Ausrüstung, die bei einer Tötung einen Stapel gibt, der erlittenen Schaden senkt („Grants one
+      stack of … upon defeating an enemy", Wirkung „reduces damage taken by …%", „Maximum Stacks"), zählt ein
+      Schadensgegenstand, der Gegner tötet, in ersparter Last (Schritt 13) dazu, was die Stapel dir im Rest des Kampfes
+      ersparen: je getöteter Gegner ein Stapel bis zum Höchstwert, mal der Senkung, mal der Last, die nach dem Gegenstand
+      bleibt; in einem anstehenden Kampf ebenso, ab null Stapeln. Ob die Tötung durch einen Gegenstand den Stapel gibt,
+      sagt kein Text; RSR misst es selbst: Fällt ein Gegner binnen eines GCD nach dem Treffer eines Gegenstands und
+      steigen deine Stapel binnen eines GCD danach, zählen sie ab dann; bleiben sie unter dem Höchstwert stehen, zählen sie
+      nicht. Bis zur ersten Messung der Sitzung zählen sie nicht. Futter für den Begleiter (Tonikum) senkt seinen Schaden,
+      nicht deine Last, und zählt hier nicht. *Gegenthese A677-1:* Eine andere Tötung im selben GCD – dein Schlag, dein
+      Begleiter – hebt die Stapel, und die Messung schließt zu Unrecht auf „zählt". Preis: die Stapel eines Gegenstands zu
+      Unrecht gezählt, höchstens die Senkung mal der Restlast (oben: auf Brett 1 rund 2 % je Kampf). *Ausgeliefert, und
+      nichts ändert sich?* Ohne diese Ausrüstung, ohne gelernte Last (dann gilt die Potenz) und bis zur ersten Messung.
     - *Rast und Futter:* Ein ruhender Begleiter verliert sein Futter, mit Lilien-Simulakrum nicht; mit
       Lassi-Simulakrum füllt ihn die Rast ganz. Die Campsite wählt danach (K10, „Futter an der Rast", A669). Arzneibeutel:
       ein zufälliger Bestien-Trank je Rast, auf der Skala mit dem kleinsten je sicherer Campsite (K13, A669).

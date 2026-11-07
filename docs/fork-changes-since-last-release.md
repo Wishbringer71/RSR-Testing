@@ -59,6 +59,9 @@ What this release changes in the fight. For the whole distance from upstream, se
   in progress that is its learned load less what it cost you so far; in a fight ahead its learned load. Potency on a
   harmless enemy with many HP spares nothing, so items no longer wait for the final fight by default. Without a learned
   load, the damage per potency or a kind's HP, potency decides as before.
+- **Kill stacks count once RSR has seen them.** With Demonic Armor a kill grants a stack of High Wire (5 % less damage
+  taken, up to four). A damage item that kills now also counts what its stacks spare you in the rest of the fight - but
+  only after RSR has seen, in this session, that a kill by an item grants a stack; the trace names the result.
 - **An enemy that has not hit yet counts with its kind.** Before its first hit an enemy ranked by the mean danger of the
   fight's other enemies, even when another of its kind had hit already: a second Aetheric Charge stood like an average
   enemy. It now counts with the danger its kind showed in this area - each enemy measured until it fell -; only enemies

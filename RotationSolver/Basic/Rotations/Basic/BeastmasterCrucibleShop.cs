@@ -27,7 +27,37 @@ public partial class BeastmasterRotation
 	// battle - whether it revives you, whether it inflicts a status on you, and the ailments it makes you immune to.
 	private readonly record struct CrucibleGear(string Name, float MaxHp, float DamageTaken, float PhysicalVulnerability,
 		float MagicVulnerability, float Evasion, float Movement, float Slow, float Recovery, float Curing, bool Life,
-		bool SelfHarm, List<string> Resists, string RestItem = "", float EscapeChance = 0f, int TreasureItems = 0);
+		bool SelfHarm, List<string> Resists, string RestItem = "", float EscapeChance = 0f, int TreasureItems = 0,
+		string KillStack = "", float KillStackTaken = 0f, int KillStackMax = 0);
+
+	// A677: gear that grants a stack on each kill whose effect lowers the damage you take (Demonic Armor: "Grants one stack
+	// of High Wire upon defeating an enemy. High Wire Effect: ... reduces damage taken by 5% ... Maximum Stacks: 4").
+	private static readonly Regex GearKillStack = new(
+		@"Grants one stack of (?<status>[A-Z][A-Za-z' ]*?) upon defeating an enemy\.[\s\S]*?\k<status> Effect: [^\n]*?reduces damage taken by (?<share>\d+)%[\s\S]*?Maximum Stacks: (?<max>\d+)",
+		RegexOptions.CultureInvariant);
+
+	/// <summary>
+	/// K8 "Auslöser" (A677): the stacking status the worn gear grants on a kill, the share of damage taken each stack takes
+	/// off, and the most stacks; null without such gear.
+	/// </summary>
+	internal static (string Status, float Taken, int Max)? WornKillStack()
+	{
+		if (_gearSeen is not { } seen || seen.Run != CrucibleBoard.Run)
+		{
+			return null;
+		}
+
+		var gear = CrucibleGearTable;
+		foreach (var id in seen.Gear)
+		{
+			if (gear.TryGetValue(id, out var piece) && piece.KillStack.Length > 0 && piece.KillStackMax > 0)
+			{
+				return (piece.KillStack, piece.KillStackTaken, piece.KillStackMax);
+			}
+		}
+
+		return null;
+	}
 
 	// A671: gear that offers escape from enemy spaces (Coward's Knife) and that grants more items on treasure spaces (Thief's
 	// Knife: "Grants two items on treasure spaces").
@@ -2077,13 +2107,17 @@ public partial class BeastmasterRotation
 				resists.Add(resist.Groups["ailment"].Value);
 			}
 
+			var kill = GearKillStack.Match(text);
 			gear[(ushort)row.RowId] = new CrucibleGear(row.Unknown2.ExtractText(), maxHp, taken, physical, magic, evasion, movement, slow,
 				GearRecovery.Match(text) is { Success: true } recovery ? Percent(recovery.Groups["share"].Value) : 0f,
 				GearCuring.Match(text) is { Success: true } curing ? Percent(curing.Groups["share"].Value) : 0f,
 				text.StartsWith("Revives beastmaster upon KO", StringComparison.Ordinal), GearSelfHarm.IsMatch(text), resists,
 				GearRestItem.Match(text) is { Success: true } restItem ? restItem.Groups["item"].Value : string.Empty,
 				GearEscape.Match(text) is { Success: true } escape ? Percent(escape.Groups["chance"].Value) : 0f,
-				GearTreasureItems.Match(text) is { Success: true } more ? CountOf(more.Groups["count"].Value) : 0);
+				GearTreasureItems.Match(text) is { Success: true } more ? CountOf(more.Groups["count"].Value) : 0,
+				kill.Success ? kill.Groups["status"].Value : string.Empty,
+				kill.Success ? Percent(kill.Groups["share"].Value) : 0f,
+				kill.Success ? CountOf(kill.Groups["max"].Value) : 0);
 		}
 
 		return gear;

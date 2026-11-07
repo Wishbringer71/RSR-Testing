@@ -19899,6 +19899,31 @@ Tötungsstapel).
 *Prüfgrad:* Compile ohne Warnung, Prüfskripte. Das Rechenbeispiel im Konzept ist angenommen (welche Last zum Milbenkampf
 gehört, ist nicht gemessen). Im Spiel nicht beobachtet.
 
+### A677 · Crucible: Tötungsstapel im Wert der Schadensgegenstände, mit Selbstmessung (07.11.2026)
+
+Viertes Paar aus TODO „Crucible-Wechselwirkungen, Stufe 2"; baut auf A676.
+
+- *1 Research:* Wirktexte (xivapi v2 XBMItem, 07.11.2026): Demonic Armor „Grants one stack of High Wire upon defeating
+  an enemy. High Wire Effect: Increases damage dealt by 10% and reduces damage taken by 5%, Duration: 180s, Maximum
+  Stacks: 4"; Crucible Tonic (Futter) dasselbe für den Begleiter (8 %, 60 s); Thunder Armor bei kritischem Treffer
+  (Zufall, nicht Tötung). Ob eine Tötung durch einen Gegenstand als „defeating" zählt, belegt kein Text; der Treffer
+  eines Gegenstands kommt unter einer Aktion des Spielers (A672).
+- *2 Optionen:* (0) Stapel nicht zählen; (a) annehmen, dass sie zählen; (b) zählen, sobald RSR in der Sitzung gesehen
+  hat, dass sie zählen.
+- *3 Abwägung:* (a) zählte womöglich einen Schutz, den es nicht gibt; (b) misst es mit dem ersten Gegenstand, der tötet,
+  und ist bis dahin (0). Gewählt (b).
+- *Gebaut:* `GearKillStack` liest Status, Senkung und Höchstwert; `WornKillStack`; `CrucibleBoard.ItemKillsStack` mit
+  `FollowKillStacks` (Gegner fällt binnen eines GCD nach dem Treffer eines Gegenstands, Stapel steigen binnen eines GCD
+  danach: ja; bleiben unter dem Höchstwert: nein; Spurzeile je Ergebnis); `StacksSpare` zählt zur ersparten Last je
+  Tötung einen Stapel bis zum Höchstwert mal Senkung mal der Last, die nach dem Gegenstand bleibt – jetzt ab den
+  gehaltenen Stapeln, im anstehenden Kampf ab null. Das Futter senkt den Schaden des Begleiters, nicht deine Last.
+- *6 Falsifikation:* Kein Defekt? Ein Stapel ist Schutz, und der Wert zählte ihn nicht. Option falsch? (a) setzte eine
+  unbelegte Wirkung voraus. Ausgeliefert, nichts ändert sich? Ohne Demonic Armor, ohne gelernte Last, bis zur ersten
+  Messung; eine andere Tötung im selben GCD kann die Messung zu „ja" verfälschen (Gegenthese A677-1, Preis im Konzept).
+
+*Prüfgrad:* Compile ohne Warnung, Prüfskripte; Regex an allen Rohtexten (trifft Demonic Armor und Crucible Tonic, nur
+Ausrüstung wird gelesen). Im Spiel nicht beobachtet.
+
 ## B · Commit-Register (Fork vs. `upstream/main`)
 
 ### B1 · Einzelgeprüfte Fork-Commits

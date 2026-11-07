@@ -674,6 +674,7 @@ internal static class CrucibleBoard
 	/// </summary>
 	internal static void Follow()
 	{
+		FollowKillStacks();
 		if (!DataCenter.IsInCrucible)
 		{
 			EndFight();
@@ -1023,6 +1024,12 @@ internal static class CrucibleBoard
 			_maxHpSeen[target.NameId] = Math.Max(_maxHpSeen.TryGetValue(target.NameId, out var seen) ? seen : 0u, target.MaxHp);
 		}
 
+		// A677: an item's hit, for whether a kill by an item grants a kill stack.
+		if (!byFamiliar && Rotations.Basic.BeastmasterRotation.ItemPotencyOfAction(action.RowId) > 0f)
+		{
+			_itemHits[target.GameObjectId] = DateTime.Now;
+		}
+
 		if (!byFamiliar && Rotations.Basic.BeastmasterRotation.ItemPotencyOfAction(action.RowId) is var itemPotency && itemPotency > 0f
 			&& EnemyOf(target.NameId) is { } hitEnemy)
 		{
@@ -1287,6 +1294,77 @@ internal static class CrucibleBoard
 
 	/// <summary>A672: the most HP an enemy of this name was seen with in the session; 0 before it was hit.</summary>
 	internal static uint MaxHpSeen(uint nameId) => _maxHpSeen.TryGetValue(nameId, out var hp) ? hp : 0u;
+
+	/// <summary>
+	/// K8 "Auslöser" (A677): whether a kill by a damage item grants the worn gear's kill stack - measured this session: an
+	/// enemy fell within a GCD of an item's hit, and the stacks rose within a GCD after (true) or stayed below the most
+	/// (false); null until then.
+	/// </summary>
+	internal static bool? ItemKillsStack { get; private set; }
+
+	private static readonly Dictionary<ulong, DateTime> _itemHits = [];
+	private static DateTime _itemKill = DateTime.MinValue;
+	private static int _stacksSeen;
+
+	// A677: follows the item hits to a kill and the player's kill stacks after it, every frame while the gear is worn.
+	private static void FollowKillStacks()
+	{
+		if (ItemKillsStack != null || _itemHits.Count == 0 && _itemKill == DateTime.MinValue)
+		{
+			return;
+		}
+
+		var now = DateTime.Now;
+		var gcd = DataCenter.DefaultGCDTotal;
+		if (Rotations.Basic.BeastmasterRotation.WornKillStack() is not { } stack || Player.Object is not { } player)
+		{
+			_itemHits.Clear();
+			_itemKill = DateTime.MinValue;
+			return;
+		}
+
+		var stacks = Rotations.Basic.BeastmasterRotation.StacksHeld(player, stack.Status);
+		List<ulong>? done = null;
+		foreach (var (id, at) in _itemHits)
+		{
+			var gone = Svc.Objects.SearchById(id) is not IBattleChara hit || hit.IsDead || hit.CurrentHp == 0u;
+			if (gone && _itemKill == DateTime.MinValue)
+			{
+				_itemKill = now;
+				_stacksSeen = stacks;
+			}
+
+			if (gone || (now - at).TotalSeconds > gcd)
+			{
+				(done ??= []).Add(id);
+			}
+		}
+
+		foreach (var id in done ?? [])
+		{
+			_ = _itemHits.Remove(id);
+		}
+
+		if (_itemKill == DateTime.MinValue)
+		{
+			return;
+		}
+
+		if (stacks > _stacksSeen)
+		{
+			ItemKillsStack = true;
+			DefenseTrace.Line($"crucible: a kill by an item granted {stack.Status} ({_stacksSeen} -> {stacks}) - its stacks count in the item worth");
+		}
+		else if ((now - _itemKill).TotalSeconds > gcd && _stacksSeen < stack.Max)
+		{
+			ItemKillsStack = false;
+			DefenseTrace.Line($"crucible: a kill by an item granted no {stack.Status} ({stacks} of {stack.Max}) - its stacks do not count");
+		}
+		else if ((now - _itemKill).TotalSeconds > gcd)
+		{
+			_itemKill = DateTime.MinValue;
+		}
+	}
 
 	/// <summary>
 	/// K10 shop (A570): the player's load per fight - the mean and the heaviest fight - in this area, else over every board
