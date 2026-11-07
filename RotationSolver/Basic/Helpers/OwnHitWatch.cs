@@ -28,6 +28,9 @@ internal static class OwnHitWatch
 	private static (int Level, uint Territory) _measuredAt;
 	private static double _damage;
 	private static double _potency;
+	private static double _weakDamage;
+	private static double _weakPotency;
+	private static bool _weakTraced;
 
 	private static readonly ConcurrentDictionary<uint, byte> _flatImmuneKinds = new();
 	private static readonly ConcurrentDictionary<(uint Kind, uint Status), byte> _resistedStates = new();
@@ -52,20 +55,60 @@ internal static class OwnHitWatch
 	}
 
 	/// <summary>
+	/// Until a weak hit beside a plain one has been measured: a weakness doubles the damage of its element (Blue Academy,
+	/// "Basics", a community source; the sheets state no figure). Concept 01, "Schwäche und Immunität der Stufe", A647.
+	/// </summary>
+	private const float AssumedWeaknessFactor = 2f;
+
+	/// <summary>
+	/// How much more damage per potency a hit deals on an enemy weak to it, in the Masked Carnivale: the damage per potency of
+	/// the player's plain hits on enemies weak to them over that of the rest, since the level or the area last changed; the
+	/// figure the community states (2) until both have been measured there (A647).
+	/// </summary>
+	public static float WeaknessFactor
+	{
+		get
+		{
+			lock (_gate)
+			{
+				return _potency > 0d && _weakPotency > 0d && _damage > 0d
+					&& _measuredAt == (DataCenter.PlayerSyncedLevel(), DataCenter.TerritoryID)
+					? (float)(_weakDamage / _weakPotency / (_damage / _potency))
+					: AssumedWeaknessFactor;
+			}
+		}
+	}
+
+	/// <summary>
 	/// Records one own hit on its main target. Only an action whose effect text states one potency without a condition
-	/// counts (<see cref="ActionTooltip.TryPlainPotency"/>).
+	/// counts (<see cref="ActionTooltip.TryPlainPotency"/>). In the Masked Carnivale a hit on an enemy weak to it is kept
+	/// apart for <see cref="WeaknessFactor"/>, so <see cref="DamagePerPotency"/> stays the plain figure (A647).
 	/// </summary>
 	/// <param name="actionId">The action that hit.</param>
 	/// <param name="amount">The damage it dealt to its main target.</param>
-	internal static void Hit(uint actionId, uint amount)
+	/// <param name="target">The main target, for its weakness in the Masked Carnivale; null where unknown.</param>
+	internal static void Hit(uint actionId, uint amount, IBattleChara? target = null)
 	{
 		if (amount == 0 || !ActionTooltip.TryPlainPotency(actionId, out var potency) || potency <= 0f)
 		{
 			return;
 		}
 
+		var resistance = MobResistance.Normal;
+		if (target != null && DataCenter.IsInMaskedCarnivale
+			&& Service.GetSheet<Lumina.Excel.Sheets.Action>().GetRowOrDefault(actionId) is { } row)
+		{
+			resistance = MaskedCarnivaleHelper.ResistanceTo(target.NameId, row);
+		}
+
+		if (resistance == MobResistance.Immune)
+		{
+			return;
+		}
+
 		var at = (DataCenter.PlayerSyncedLevel(), DataCenter.TerritoryID);
 		bool first;
+		bool firstFactor;
 		lock (_gate)
 		{
 			if (_measuredAt != at)
@@ -73,16 +116,37 @@ internal static class OwnHitWatch
 				_measuredAt = at;
 				_damage = 0d;
 				_potency = 0d;
+				_weakDamage = 0d;
+				_weakPotency = 0d;
+				_weakTraced = false;
 			}
 
-			first = _potency <= 0d;
-			_damage += amount;
-			_potency += potency;
+			if (resistance == MobResistance.Weak)
+			{
+				first = false;
+				_weakDamage += amount;
+				_weakPotency += potency;
+			}
+			else
+			{
+				first = _potency <= 0d;
+				_damage += amount;
+				_potency += potency;
+			}
+
+			firstFactor = !_weakTraced && _weakPotency > 0d && _potency > 0d;
+			_weakTraced |= firstFactor;
 		}
 
 		if (first)
 		{
 			DefenseTrace.Line($"damage per potency: first measure at level {at.Item1} in area {at.Item2}: action {actionId}, {amount} damage at potency {potency:F0}");
+		}
+
+		if (firstFactor)
+		{
+			DefenseTrace.Line($"weakness factor: first measure at level {at.Item1} in area {at.Item2}: {WeaknessFactor:F2}"
+				+ $" (assumed {AssumedWeaknessFactor:F0} until now)");
 		}
 	}
 

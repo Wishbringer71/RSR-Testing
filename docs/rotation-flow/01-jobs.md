@@ -629,6 +629,8 @@ statt Reihenfolge" und „Mondflöte"):
   - Steht sein verstärkender Zustand schon auf dem Ziel (Bind, Slow, Stun, Petrifikation, Deep Freeze), gilt die
     verstärkte Potenz, und er geht vor ihr.
   - Ohne Schallwelle im Set bleibt die bisherige Reihenfolge.
+  - Im Masked Carnivale zählt jede Potenz mit dem Faktor des Ziels für den Zauber (unten, „Schwäche und Immunität der
+    Stufe", A647).
   - Heiligenstrahl geht damit ab drei Gegnern (100 je Gegner gegen 210), solange RSR Untote nicht erkennt. Perpetueller
     Strahl (220 in 3 s) geht nie als Füllzauber.
 - *Verstärker (D4, D8):*
@@ -745,8 +747,9 @@ statt Reihenfolge" und „Mondflöte"):
     Akt Kampftyp und Zeile – Kampftyp 1 eine Gruppe in `AOZArrangement` (Unterzeilen mit `AOZContentBriefingBNpc`), 2 und
     3 einen Boss in `AOZBoss` (Werkzeugquelle BlueMageSetBuilder 213d3d9, dort gegen die Stufennamen geprüft). Die Wahl
     nach Widerständen hängt damit nicht an den Ids der Einweisung (`AozArrangementData.Enemies`), deren Bedeutung
-    FFXIVClientStructs nicht nennt; die Messzeile „carnivale briefing" (A511) bleibt als Gegenprobe. Gebaut ist diese
-    Wahl noch nicht (TODO „Blaumagier: Set nach den Widerständen der Stufe").
+    FFXIVClientStructs nicht nennt; die Messzeile „carnivale briefing" (A511) bleibt als Gegenprobe und nennt seit A647
+    neben den Ids der Einweisung die Gegner, die RSR aus den Blättern liest. Gebaut mit A647 (unten, „Schwäche und
+    Immunität der Stufe").
   - *Und seine Entscheidung:* Für eine Stufe wählt er sein Set selbst; seit A510 schreibt der Verbesserer nach einer
     eigenen Änderung nicht mehr hinein. Ein Satz für eine Stufe geht deshalb nur auf seinen Klick ins Set (unten).
   - *Grenze:* Die Blätter beschreiben Widerstände, nicht die Mechaniken einer Stufe (etwa Reflexion oder ein Gegner,
@@ -785,6 +788,52 @@ statt Reihenfolge" und „Mondflöte"):
     dem der Einweisung; „Apply" schreibt nur auf seinen Klick.
   - *Gegenthese 3 (ausgeliefert, und nichts ändert sich):* Er öffnet die Einweisung nicht als Blaumagier oder klickt nie.
     Dann bleibt alles wie bisher.
+- *Schwäche und Immunität der Stufe* (A647): Im Masked Carnivale zählt RSR, wogegen ein Gegner schwach oder immun ist –
+  im Kampf bei der Wahl des Füllzaubers, vor dem Kampf im Satz der Stufe.
+  - *Die Tatsache:* Das Blatt `AOZContentBriefingBNpc` führt je Gegner Schwäche (20) oder Immunität (21) gegen die sechs
+    Elemente und die Angriffsarten Hieb, Stich, Schlag und Magie; die Einweisung im Spiel zeigt dieselben Daten. Eine
+    Schwäche verdoppelt den Schaden dieses Elements (Blue Academy, „Basics", Community-Quelle; die Blätter nennen keine
+    Zahl). RSR misst den Faktor selbst (unten) und rechnet mit 2, bis er gemessen ist.
+  - *Im Kampf vorher:* Die Füllreihenfolge (D5) verglich jeden Füllzauber mit Schallwelle nach Potenz je Zeit, ohne das
+    Ziel. Stufe 3, Zipacna (schwach gegen Wasser, immun gegen Erde): Wasserkanone (200, Wasser) verlor gegen Schallwelle
+    (210, Wind), dazu verlangte die Regel auf einem Ziel keine längere Wirkzeit (2,0 gegen 1,0 s, `Action.Cast100ms`) – RSR
+    wirkte Schallwelle für 210 je GCD, wo Wasserkanone 400 traf. Stufe 2, Akt 1, Arena-Marshmallow (schwach gegen Eis,
+    immun gegen Wind): Schallwelle ging nicht (die Immunitätssperre), jeder Füllzauber verlor trotzdem den Vergleich gegen
+    ihre 210, und als Rückfall kam Wasserkanone mit einfachem Schaden statt eines Eiszaubers mit doppeltem. Die
+    Immunitätssperre („Don't use aspected actions on enemies immune to that aspect", ab Werk an) las nur das Element: Gegen
+    die Schleime der Stufe 2 (immun gegen Hieb, Stich und Schlag) und Guimauve (Stufe 9, ebenso) blieb Kobold-Faust
+    (Schlag) als letzter Rückfall erlaubt.
+  - *Im Kampf nachher:* Ein Füllzauber zählt mit seiner Potenz mal dem Faktor des Ziels für ihn – 0 bei Immunität gegen
+    sein Element oder seine Angriffsart, der gemessene Schwächefaktor bei Schwäche, sonst 1 –, Schallwelle ebenso.
+    Steht das Ziel einem Zauber schwächer gegenüber als Schallwelle (Schwäche gegen ihn, nicht gegen Wind), entfällt die
+    Bedingung der gleichen Wirkzeit: Ein doppelter Treffer wiegt den kleineren Webraum auf (Wasserkanone 400 in 2,5 s
+    gegen 210; der Preis ist eine Fähigkeit, die einen GCD später gewoben wird). Gegen Zipacna geht Wasserkanone, gegen
+    den Marshmallow ein gelernter Eiszauber im Set. Die Immunitätssperre liest jetzt auch die Angriffsart; ihr Text
+    („immune to that aspect") meint den Zweck, keine Wirkung auf einen immunen Gegner zu verschwenden.
+  - *Messung:* `OwnHitWatch` trennt im Masked Carnivale die Treffer auf ein Ziel, das gegen den Zauber schwach ist, vom
+    Schaden je Potenz und führt sie gesondert; der Schwächefaktor ist ihr Schaden je Potenz geteilt durch den der übrigen,
+    je Stufe und Gebiet wie dieser. Der Schaden je Potenz selbst bleibt so der einfache, den 1000 Nadeln und der
+    Raketenwerfer gegen den Füllzauber halten; gegen ein schwaches Ziel zählt der Füllschaden mit dem Faktor von
+    Schallwelle auf ihm.
+  - *Vor dem Kampf, der Satz der Stufe:* Die Gegner je Akt liest RSR aus den Blättern (oben). Ein Element, gegen das
+    ein Gegner der Stufe schwach ist und das kein Füllpunkt des Führers nennt, bekommt einen empfohlenen Punkt: der gelernte
+    Füllzauber dieses Elements (ohne eigene Abklingzeit, mit Potenz im Wirktext) mit der meisten Potenz je Zeit, mit dem
+    Gegner und dem Akt als Grund. Ist ein Gegner der Stufe gegen den Zauber eines Punkts immun, nennt das Fenster ihn
+    dabei; der Punkt bleibt, weil der Führer Gründe kennt, die das Blatt nicht trägt (Stufe 28: der Feuerzauber gilt den
+    Zombies, die erst im Kampf erscheinen, Durinn ist laut Blatt immun gegen Feuer). Erhebung am Blatt (07.11.2026): neue
+    Punkte bekommen Stufe 7 (Wind, Feuer, Blitz), 8 (Wind, Feuer), 11 (Wind), 12 (Feuer neben dem Wasser des Führers),
+    17 (Blitz) und 21 (Feuer); Stufe 2, 3, 4, 6, 20, 26 und 29 nennen alle Schwächen ihrer Gegner schon. Wind ist
+    Schallwelle und steht meist schon im Set.
+  - *Gegenthese 1 (kein Defekt, Schallwelle ist der Füllzauber):* Bei gleichem Faktor bleibt sie es; gegen einen
+    schwachen Gegner nennen alle Führer den Zauber seiner Schwäche (Stufe 2: „use a spell that corresponds to each slime's
+    weakness"). Widerlegt.
+  - *Gegenthese 2 (Option falsch, „Only use actions of an aspect the enemy is weak to" reicht):* Die Einstellung (ab Werk
+    aus) sperrt gegen einen Gegner mit Widerständen jeden Zauber, der nicht seine Schwäche trifft – ohne Zauber dieser
+    Schwäche im Set wirkt RSR dann gar nichts Elementares. Der Faktor wählt den besten vorhandenen und bleibt, wo nichts
+    trifft, bei Schallwelle. Die Einstellung bleibt für den, der es so will.
+  - *Gegenthese 3 (ausgeliefert, und nichts ändert sich):* Ohne einen Zauber der Schwäche im Set ändert sich im Kampf
+    nichts; dafür schlägt der Satz der Stufe ihn vor, auf seinen Klick. Ohne Einweisung und ohne Klick bleibt sein Set.
+    Ist der Faktor im Spiel nicht 2, misst RSR ihn nach dem ersten schwachen Treffer neben einem einfachen.
 
 **Stufen:**
 - *Stufe 0, Messung* (gebaut mit A506):
@@ -825,7 +874,7 @@ statt Reihenfolge" und „Mondflöte"):
     nichts. Die gelernte Immunität sperrt aber die ganze Klasse (Schluss: Eine Art, gegen die Prozentschaden nichts
     tut, ist meist auch gegen Tod immun).
 - *Stufe 3, Set* (gebaut mit A509): „Verbessern statt ersetzen" oben; der Satz je Stufe aus den Stufenführern auf
-  Klick mit A627. Offen bleibt die Wahl nach den Widerständen der Stufe.
+  Klick mit A627; Schwäche und Immunität der Stufe in Kampf und Satz mit A647.
 
 **Falsifikation:**
 - *Kein Defekt?* D1, D2 und D3 sind am Code und an den Blättern belegt. Die Rechnung zeigt D2 als Verlust auch an

@@ -1870,6 +1870,16 @@
    "status": "exception",
    "loop": "A631",
    "reason": "The game's mode of AgentXBMPetParty while a familiar is fed (FFXIVClientStructs 0adb2e5: 3 buy feed, 5 feed detail); with either seen, mode 4 is the feed result and not a campsite, and RSR clicks nothing there. The game's own definition, not a tuned value."
+  },
+  {
+   "file": "RotationSolver/Basic/Helpers/OwnHitWatch.cs",
+   "code": "private const float AssumedWeaknessFactor = 2f;",
+   "values": [
+    "2"
+   ],
+   "status": "exception",
+   "loop": "A647",
+   "reason": "Masked Carnivale: an enemy weak to an element takes double damage from it (Blue Academy, 'Basics', community source; the sheets state no figure). Only a fallback: OwnHitWatch measures the factor from the player's hits on weak and on other enemies in the same stage and replaces it once both are measured."
   }
  ]
 }

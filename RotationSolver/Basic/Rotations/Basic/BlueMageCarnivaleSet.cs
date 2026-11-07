@@ -16,6 +16,7 @@ public partial class BlueMageRotation
 	// A627 (concept 01, "Satz je Stufe aus den Stufenführern"): the spells the stage guide of Blue Academy names for the stage
 	// the Masked Carnivale briefing has chosen, and on the player's click the set that holds them.
 	private static Dictionary<uint, uint>? _spellByNumber;
+	private static readonly Dictionary<int, List<List<Lumina.Excel.Sheets.AOZContentBriefingBNpc>>> _stageEnemies = [];
 	private static List<string>? _stageNames;
 	private static int _briefedIndex = -1;
 	private static int _stageShift;
@@ -152,11 +153,180 @@ public partial class BlueMageRotation
 					text = $"not learned: {string.Join(" or ", missing)}" + (point.Example ? " (an example; another of its kind does too)" : string.Empty);
 				}
 
-				picks.Add(new CarnivalePick(required, chosen, text, chosen != 0 && Array.IndexOf(slots, chosen) >= 0));
+				picks.Add(new CarnivalePick(required, chosen, text + ImmuneNote(stage, chosen),
+					chosen != 0 && Array.IndexOf(slots, chosen) >= 0));
 			}
 		}
 
+		AddWeaknessFillers(stage, points, learned, slots, picks);
 		return picks;
+	}
+
+	// A647: an element an enemy of the stage is weak to and no filler point of the guide names gets a recommended point - the
+	// learned filler of that element (a GCD without a recast of its own, a potency in its text) with the most potency per
+	// time on one target. The guide's points come first; it knows what the sheet does not.
+	private static void AddWeaknessFillers(int stage, CarnivaleSets.Pick[] points, Dictionary<uint, IBaseAction> learned,
+		uint[] slots, List<CarnivalePick> picks)
+	{
+		var actions = Service.GetSheet<Lumina.Excel.Sheets.Action>();
+		var named = new HashSet<byte>();
+		foreach (var point in points)
+		{
+			// Only the guide's filler points name an element to fight with; Ice Spikes on stage 12 is a defence.
+			if (!point.Filler)
+			{
+				continue;
+			}
+
+			foreach (var number in point.Spells)
+			{
+				if (actions.GetRowOrDefault(SpellOf(number)) is { } row)
+				{
+					_ = named.Add(row.Aspect);
+				}
+			}
+		}
+
+		var acts = StageEnemies(stage);
+		foreach (var element in new[] { Aspect.Fire, Aspect.Ice, Aspect.Wind, Aspect.Earth, Aspect.Lightning, Aspect.Water })
+		{
+			if (named.Contains((byte)element) || WeakEnemy(acts, element) is not { } weak)
+			{
+				continue;
+			}
+
+			IBaseAction? best = null;
+			var bestRate = 0f;
+			foreach (var action in learned.Values)
+			{
+				if (action.Action.Aspect != (byte)element || !action.Info.IsGeneralGCD
+					|| action.Cooldown.RecastTimeOneChargeRaw > WeaponTotal
+					|| !ActionTooltip.TryPotencyOn(action.ID, 1, out var potency))
+				{
+					continue;
+				}
+
+				var rate = potency / SpellTime(action);
+				if (rate > bestRate)
+				{
+					best = action;
+					bestRate = rate;
+				}
+			}
+
+			var why = $"{element} filler: {weak} weak to {element.ToString().ToLowerInvariant()}";
+			picks.Add(best == null
+				? new CarnivalePick(false, 0, $"not learned: a {why}", false)
+				: new CarnivalePick(false, best.ID, $"{best.Name} - {why}{ImmuneNote(stage, best.ID)}", Array.IndexOf(slots, best.ID) >= 0));
+		}
+	}
+
+	// The first enemy of the stage weak to the element, with its act; null when none is.
+	private static string? WeakEnemy(IReadOnlyList<List<Lumina.Excel.Sheets.AOZContentBriefingBNpc>> acts, Aspect element)
+	{
+		for (var act = 0; act < acts.Count; act++)
+		{
+			foreach (var enemy in acts[act])
+			{
+				if (MaskedCarnivaleHelper.GetAspectResistance(enemy.BNpcName.RowId, element) == MobResistance.Weak)
+				{
+					return $"{EnemyName(enemy)} (act {act + 1})";
+				}
+			}
+		}
+
+		return null;
+	}
+
+	// The enemies of the stage immune to the spell, by the sheet: the guide may name it for enemies the sheet does not list
+	// (stage 28: the fire spell is for the undead that appear in the fight; Durinn is immune to fire), so it is told, not
+	// dropped (A647).
+	private static string ImmuneNote(int stage, uint spell)
+	{
+		if (spell == 0 || Service.GetSheet<Lumina.Excel.Sheets.Action>().GetRowOrDefault(spell) is not { } row)
+		{
+			return string.Empty;
+		}
+
+		var immune = new List<string>();
+		var acts = StageEnemies(stage);
+		for (var act = 0; act < acts.Count; act++)
+		{
+			foreach (var enemy in acts[act])
+			{
+				if (MaskedCarnivaleHelper.ResistanceTo(enemy.BNpcName.RowId, row) == MobResistance.Immune)
+				{
+					immune.Add($"{EnemyName(enemy)} (act {act + 1})");
+				}
+			}
+		}
+
+		return immune.Count == 0 ? string.Empty : $" - immune: {string.Join(", ", immune)}";
+	}
+
+	private static string EnemyName(Lumina.Excel.Sheets.AOZContentBriefingBNpc enemy)
+	{
+		return enemy.BNpcName.ValueNullable?.Singular.ExtractText() is { Length: > 0 } name ? name : $"enemy {enemy.BNpcName.RowId}";
+	}
+
+	/// <summary>
+	/// The enemies of each act of a Masked Carnivale stage, from the sheets (concept 01, "Die Gegner einer Stufe stehen in
+	/// den Blättern", A627, A647): the <c>AOZContent</c> row whose Order is the stage names per act a fight type and a row -
+	/// fight type 1 a group in <c>AOZArrangement</c> (its subrows), 2 and 3 a boss in <c>AOZBoss</c> (BlueMageSetBuilder
+	/// 213d3d9 checks this against the stage names: stage 3 is Zipacna, 25 Azulmagia, 32 Goldor).
+	/// </summary>
+	internal static IReadOnlyList<List<Lumina.Excel.Sheets.AOZContentBriefingBNpc>> StageEnemies(int stage)
+	{
+		if (_stageEnemies.TryGetValue(stage, out var known))
+		{
+			return known;
+		}
+
+		var acts = new List<List<Lumina.Excel.Sheets.AOZContentBriefingBNpc>>();
+		_stageEnemies[stage] = acts;
+		var arrangements = Svc.Data.GetSubrowExcelSheet<Lumina.Excel.Sheets.AOZArrangement>();
+		var bosses = Service.GetSheet<Lumina.Excel.Sheets.AOZBoss>();
+		foreach (var content in Service.GetSheet<Lumina.Excel.Sheets.AOZContent>())
+		{
+			if (content.Order != stage)
+			{
+				continue;
+			}
+
+			foreach (var (row, fightType) in new[] { (content.Act1.RowId, content.Act1FightType), (content.Act2.RowId, content.Act2FightType),
+				(content.Act3.RowId, content.Act3FightType) })
+			{
+				if (row == 0)
+				{
+					continue;
+				}
+
+				var enemies = new List<Lumina.Excel.Sheets.AOZContentBriefingBNpc>();
+				if (fightType == 1)
+				{
+					if (arrangements != null && arrangements.TryGetRow(row, out var group))
+					{
+						foreach (var member in group)
+						{
+							if (member.AOZContentBriefingBNpc.ValueNullable is { } enemy)
+							{
+								enemies.Add(enemy);
+							}
+						}
+					}
+				}
+				else if (bosses.GetRowOrDefault(row)?.Boss.ValueNullable is { } boss)
+				{
+					enemies.Add(boss);
+				}
+
+				acts.Add(enemies);
+			}
+
+			break;
+		}
+
+		return acts;
 	}
 
 	// A learned spell of the example's element and recast group, with no longer a recast; one in the set first.

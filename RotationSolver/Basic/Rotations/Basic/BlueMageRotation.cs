@@ -113,7 +113,7 @@ public partial class BlueMageRotation
 			return false;
 		}
 
-		var filler = FillerDamageOver(SpellTime(action));
+		var filler = FillerDamageOver(SpellTime(action)) * FillerFactorOn(action);
 		return !float.IsNaN(filler) && Math.Min(fixedDamage, HealthReached(action, false)) > filler;
 	}
 
@@ -131,7 +131,7 @@ public partial class BlueMageRotation
 			return false;
 		}
 
-		var filler = FillerDamageOver(SpellTime(action));
+		var filler = FillerDamageOver(SpellTime(action)) * FillerFactorOn(action);
 		return !float.IsNaN(filler) && share * HealthReached(action, true) > filler;
 	}
 
@@ -182,12 +182,47 @@ public partial class BlueMageRotation
 			return true;
 		}
 
-		if (potency / SpellTime(action) <= boom / SpellTime(SonicBoomPvE))
+		// In the Masked Carnivale each counts with what its target does to it (A647): nothing against an immune enemy, the
+		// weakness factor against a weak one. An area spell's potency over its targets counts with its main target's factor.
+		var target = action.Target.Target;
+		var factor = CarnivaleFactor(action, target);
+		var boomFactor = CarnivaleFactor(SonicBoomPvE, target);
+		if (potency * factor / SpellTime(action) <= boom * boomFactor / SpellTime(SonicBoomPvE))
 		{
 			return false;
 		}
 
-		return targets > 1 || action.Info.CastTime <= SonicBoomPvE.Info.CastTime;
+		// A target weaker to it than to Sonic Boom: the doubled hit outweighs the weaving room a longer cast costs.
+		return targets > 1 || factor > boomFactor || action.Info.CastTime <= SonicBoomPvE.Info.CastTime;
+	}
+
+	/// <summary>
+	/// What a target does to an action's damage in the Masked Carnivale, from the briefing sheet: 0 when it is immune to
+	/// the action's element or attack type, the measured <see cref="OwnHitWatch.WeaknessFactor"/> when it is weak to it,
+	/// else 1; 1 outside the Carnivale (concept 01, "Schwäche und Immunität der Stufe", A647).
+	/// </summary>
+	protected static float CarnivaleFactor(IBaseAction action, IBattleChara? target)
+	{
+		if (!DataCenter.IsInMaskedCarnivale)
+		{
+			return 1f;
+		}
+
+		return MaskedCarnivaleHelper.ResistanceTo(target, action) switch
+		{
+			MobResistance.Immune => 0f,
+			MobResistance.Weak => OwnHitWatch.WeaknessFactor,
+			_ => 1f,
+		};
+	}
+
+	// The filler's factor on the target a fixed or percentage spell would hit: Sonic Boom's or Water Cannon's; against an
+	// enemy immune to it another filler goes at the plain rate (A647).
+	private float FillerFactorOn(IBaseAction action)
+	{
+		var filler = ValueFiller;
+		var factor = filler == null ? 1f : CarnivaleFactor(filler, action.Target.Target);
+		return factor > 0f ? factor : 1f;
 	}
 
 	/// <summary>

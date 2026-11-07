@@ -115,6 +115,19 @@ internal static class BlueMageSetTrace
 			}
 		}
 
+		// A647: the enemies RSR reads from the sheets for the stage the index stands for (index + 1, a reading), beside the
+		// briefing's ids - a mismatch shows here.
+		var sheetActs = Basic.Rotations.Basic.BlueMageRotation.StageEnemies(stage + 1);
+		text.Append(" | from the sheets for stage ").Append(stage + 1).Append(':');
+		for (var i = 0; i < sheetActs.Count; i++)
+		{
+			text.Append($" act {i + 1}:");
+			foreach (var enemy in sheetActs[i])
+			{
+				text.Append($" #{enemy.RowId} {enemy.BNpcName.ValueNullable?.Singular.ExtractText()}");
+			}
+		}
+
 		DefenseTrace.Line(text.ToString());
 	}
 

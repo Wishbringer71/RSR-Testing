@@ -377,6 +377,15 @@ What this release changes in the fight. For the whole distance from upstream, se
   missing ones into your active set: free slots first, then from the last slot back the slots holding a
   spell the guide does not name. Nothing changes without the click, and the set improver leaves the set
   alone afterwards. The stage name shows beside the briefing's; two buttons switch the stage.
+- **Weaknesses and immunities of the Carnivale enemies count.** In the Masked Carnivale each filler is
+  weighed against Sonic Boom with what its target does to it, as the briefing lists it: nothing against
+  an immune enemy, double against a weak one. Against Zipacna (weak to water) RSR now casts Water Cannon
+  for 400 instead of Sonic Boom for 210; against an enemy immune to wind and weak to ice a learned ice
+  spell goes instead of Water Cannon at plain damage. The doubling is measured from your own hits once a
+  weak and a plain one have landed in the stage. `Don't use aspected actions on enemies immune to that
+  aspect` now also reads the attack type, so a physical spell no longer goes against an enemy immune to
+  it. The set window adds a filler for each element an enemy of the stage is weak to that the guide
+  does not name, and says which enemies are immune to a proposed spell.
 
 ## Beastmaster
 

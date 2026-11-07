@@ -192,7 +192,7 @@ public static class MaskedCarnivaleHelper
 
 	/// <summary>
 	/// Returns <see langword="true"/> if <b>all</b> of the action's aspects are permitted against the target,
-	/// i.e. none of the aspects are blocked by the mob's immunity.
+	/// i.e. none of the aspects are blocked by the mob's immunity - nor its attack types since A647.
 	/// </summary>
 	/// <remarks>
 	/// Use this as an <see cref="Actions.ActionSetting.ActionCheck"/> guard when inside the Masked Carnivale
@@ -205,15 +205,60 @@ public static class MaskedCarnivaleHelper
 			return true;
 		}
 
-		foreach (var aspect in action.Info.Aspects)
+		return ResistanceTo(target, action) != MobResistance.Immune;
+	}
+
+	/// <summary>
+	/// What a briefing enemy does to an action, from the <c>AOZContentBriefingBNpc</c> sheet: immune when it is immune to
+	/// one of the action's elements or attack types (slashing, piercing, blunt, magic), weak when it is weak to one, else
+	/// normal (concept 01, "Schwäche und Immunität der Stufe", A647). A Blue Mage's physical spell carries no element - the
+	/// sheet gives it the unaspected value - but its attack type, so an enemy immune to blunt is immune to Revenge Blast;
+	/// read by element alone, that went unseen. <see cref="MobResistance.Normal"/> for an enemy the sheet does not list.
+	/// </summary>
+	public static MobResistance ResistanceTo(IBattleChara? target, IBaseAction? action)
+	{
+		if (target == null || action == null)
 		{
-			if (IsImmuneToAspect(target, aspect))
-			{
-				return false;
-			}
+			return MobResistance.Normal;
 		}
 
-		return true;
+		var weak = false;
+		foreach (var aspect in action.Info.Aspects)
+		{
+			var resistance = GetAspectResistance(target.NameId, aspect);
+			if (resistance == MobResistance.Immune)
+			{
+				return MobResistance.Immune;
+			}
+
+			weak |= resistance == MobResistance.Weak;
+		}
+
+		foreach (var attackType in action.Info.AttackTypes)
+		{
+			var resistance = GetAttackTypeResistance(target.NameId, attackType);
+			if (resistance == MobResistance.Immune)
+			{
+				return MobResistance.Immune;
+			}
+
+			weak |= resistance == MobResistance.Weak;
+		}
+
+		return weak ? MobResistance.Weak : MobResistance.Normal;
+	}
+
+	/// <summary>
+	/// <see cref="ResistanceTo(IBattleChara?, IBaseAction?)"/> for an action known only by its sheet row - an own hit the
+	/// watcher sees: its one element and one attack type.
+	/// </summary>
+	public static MobResistance ResistanceTo(uint nameId, Lumina.Excel.Sheets.Action action)
+	{
+		var element = GetAspectResistance(nameId, (Aspect)action.Aspect);
+		var kind = GetAttackTypeResistance(nameId, (Data.AttackType)action.AttackType.RowId);
+		return element == MobResistance.Immune || kind == MobResistance.Immune ? MobResistance.Immune
+			: element == MobResistance.Weak || kind == MobResistance.Weak ? MobResistance.Weak
+			: MobResistance.Normal;
 	}
 
 	/// <summary>

@@ -22,9 +22,7 @@ BossMod-Module) die Rotation des Beastmasters, die Wahl der Begleiter und den Ze
 1. Bewegungssperre beim Wirken gegen das Ausweichen der BossMod-KI: Mit „Lock movement while casting" an steht die
    Figur während jedes Zaubers still, auch wenn die KI von BossMod aus einer Fläche laufen will; nur in dieser
    Kombination, dort aber mit einem Treffer, dem der Spieler nicht ausweicht.
-2. Blaumagier: Set nach den Widerständen der Stufe: Im Masked Carnivale wählt der Satz des Stufenführers Füllzauber
-   nach Beispielen; gegen welches Element die Gegner der Stufe schwach oder immun sind, zählt dabei nicht.
-3. Konzepte neu ordnen (allgemein, Rollen, Gruppen, Jobs, Inhalte): keine direkte Wirkung im Kampf; eine Regel, die
+2. Konzepte neu ordnen (allgemein, Rollen, Gruppen, Jobs, Inhalte): keine direkte Wirkung im Kampf; eine Regel, die
    im Konzept eines Jobs steht, wird für dessen Gruppe übersehen, und eine Inhaltsregel ist über mehrere Konzepte
    verteilt.
 
@@ -52,14 +50,6 @@ wenn eine Fläche mitten im Zauber erscheint. Neue Zauber startet RSR nicht, sol
 dessen Ende landet; die Optionen A, B (Empfehlung: die Sperre weicht der KI) und C stehen im Konzept. *Nächster Schritt:*
 Vorlage an ihn, gebündelt am Ende des TODO (der Optionstext bindet). *Konzept:* 03, „Bewegungssperre beim Wirken und die
 KI von BossMod".
-
-### Blaumagier: Set nach den Widerständen der Stufe · N
-Im Kampf: Der Satz je Stufe (A627) folgt dem Stufenführer; wo der Führer nur ein Beispiel nennt („Water filler spell, such
-as Water Cannon"), wählt RSR ohne Blick auf die Gegner, und ein Füllzauber, gegen den ein Gegner der Stufe immun ist,
-kann im Set landen. Die Gegner je Akt stehen in den Blättern (`AOZContent` → `AOZArrangement`/`AOZBoss` →
-`AOZContentBriefingBNpc`, A627), nicht erst in der Einweisung. *Ort:* `BlueMageCarnivaleSet.cs`. *Nächster Schritt:*
-Loop – Schwäche und Immunität der Gegner der Stufe in die Wahl der Füllzauber und ins Fenster, gegen die Messzeile
-„carnivale briefing" (A511) gegengeprüft. *Konzept:* 01 („Masked Carnivale").
 
 ### Konzepte neu ordnen: allgemein, Rollen, Gruppen, Jobs, Inhalte · N
 Sein Auftrag (05.11.2026): „generelle prüfung aller konzepte, ob eine neuorganisation nicht sinnvoll wäre: allgemein für

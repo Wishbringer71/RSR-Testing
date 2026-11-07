@@ -1351,7 +1351,7 @@ public static class Watcher
 		{
 			if (effect.TargetID == mainId && TryGetDamageEntry(effect, out var entry))
 			{
-				OwnHitWatch.Hit(action.RowId, FullAmount(entry));
+				OwnHitWatch.Hit(action.RowId, FullAmount(entry), set.Target as IBattleChara);
 				break;
 			}
 		}

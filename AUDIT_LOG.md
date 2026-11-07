@@ -18881,6 +18881,33 @@ habe den schleim bislang nicht anfreunden können."
 - *9 Dokumentation:* Konzept 03; TODO: Eintrag entfernt, Defekte leer, Reihenfolge fortgeschrieben; Release-Text
   („Each job keeps its own settings from the first time you play it").
 
+### A647 · Blaumagier: Schwäche und Immunität der Carnivale-Gegner in Kampf und Satz der Stufe (07.11.2026)
+
+- *Anlass:* TODO „Blaumagier: Set nach den Widerständen der Stufe" (A627).
+- *1 Research:* Blätter über xivapi v2 (07.11.2026): `AOZContent` (33 Zeilen, Order = Stufe, Akt mit Kampftyp),
+  `AOZArrangement` (164 Unterzeilen), `AOZBoss` (35), `AOZContentBriefingBNpc` (64; Schwäche 20, Immunität 21 je Element
+  und Angriffsart). Erhebung je Stufe: Schwächen in 2, 3, 4, 6, 7, 8, 11, 12, 17, 20, 21, 26, 29; Immunität gegen alle
+  physischen Arten in 2, 9 und 24 (Akt 1), gegen Magie in 24 (Arena-Magus). Blue Academy (0f5aaf1): jede Elementschwäche
+  verdoppelt den Schaden („Basics", Community-Quelle); die Führer nennen Füllzauber je Element nur, wo die Stufe es
+  braucht. Stufe 28 empfiehlt Feuer, das Blatt führt Durinn immun gegen Feuer – der Führer meint die Zombies, die das
+  Blatt nicht listet. Code: `OverSonicBoom` verglich nur Potenz je Zeit (Wasserkanone 200 in 2,0 s gegen Schallwelle 210
+  in 1,0 s, `Action.Cast100ms`), die Immunitätssperre (`IsActionAspectAllowed`) las nur das Element; physische Zauber
+  tragen im Blatt den Wert „unaspected" (7) und ihre Angriffsart (Revenge Blast: Schlag), also blieben sie gegen
+  physisch immune Gegner erlaubt. „Only use actions of an aspect the enemy is weak to" (ab Werk aus) sperrt statt zu
+  wägen.
+- *2–6:* im Konzept 01 („Schwäche und Immunität der Stufe"): Faktor des Ziels im Vergleich, Messung, Satz der Stufe,
+  drei Gegenthesen.
+- *7 Gebaut:* `MaskedCarnivaleHelper.ResistanceTo` (Element und Angriffsart, für Aktion und Blattzeile),
+  `IsActionAspectAllowed` darüber; `OwnHitWatch.WeaknessFactor` (Treffer auf schwache Ziele getrennt, Rückfall 2 als
+  Ausnahme in `fixed_values.json`), Ziel aus `Watcher.ObserveOwnHits`; `BlueMageRotation.CarnivaleFactor`, in
+  `OverSonicBoom` (ohne Wirkzeitbedingung, wo das Ziel dem Zauber schwächer gegenübersteht als Schallwelle) und im
+  Füllschaden gegen 1000 Nadeln und Raketenwerfer; `BlueMageRotation.StageEnemies` aus den Blättern,
+  `AddWeaknessFillers` und `ImmuneNote` im Satz der Stufe; die Messzeile „carnivale briefing" nennt die Gegner aus den
+  Blättern neben den Ids der Einweisung.
+- *8 Nachweis:* Compile (0 Warnungen), 49 Prüfschritte; Erhebung der Stufen am Blatt; im Spiel nicht gesehen. Messmittel
+  im Spiel: „weakness factor: first measure" und die erweiterte Zeile „carnivale briefing" im `DefenseTrace.log`.
+- *9 Dokumentation:* Konzept 01; TODO: Eintrag entfernt, Reihenfolge fortgeschrieben; Release-Text.
+
 ## B · Commit-Register (Fork vs. `upstream/main`)
 
 ### B1 · Einzelgeprüfte Fork-Commits
