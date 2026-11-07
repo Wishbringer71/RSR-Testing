@@ -710,7 +710,10 @@ Dullahan, Golem, Spriggan und Eisgolem (`XBMPet.InflictsInterrupt`).
     2644cbe liest 72 an derselben Stelle). RSR merkt sich das je Begleiter, sooft das Fenster steht – am Hornfenster vor
     jedem Kampf, an der Campsite, beim Füttern –, für diesen Lauf (A662: bis dahin für das Gebiet; ein neuer Lauf auf
     demselben Brett ist dasselbe Gebiet und erbte so die Plätze und die Ausrüstung des vorigen, bis das Fenster wieder
-    stand). Empfohlen wird nur für einen freien Platz, Stück für Stück (A662): das Paar aus Futter und Begleiter, das
+    stand). Ein Begleiter frisst dasselbe Futter nicht zweimal: Das Spiel lehnt
+    eine Wiederholung ab (LazyCrucible, dajoey/lalalazy cb5bf32, `DESIGN.md` §2: in ihren aufgezeichneten Futterfenstern
+    war jede Ablehnung eine Wiederholung; Werkzeugquelle) – RSR empfiehlt keinem Begleiter ein Futter, das er schon trägt
+    oder das ihm die Liste schon zuteilt (A679). Empfohlen wird nur für einen freien Platz, Stück für Stück (A662): das Paar aus Futter und Begleiter, das
     einem Heiler oder Schützer des Plans am meisten bringt, dann das, das einem der übrigen am meisten bringt, so weit die
     Marken nach der Kaufliste reichen; darüber hinaus mit Vermerk. Die Liste nennt die Reihenfolge, und beim Füttern
     nennt RSR für das Futter in der Hand nach derselben Regel den Empfänger – wer der Liste folgt, bekommt dort dieselben

@@ -19951,6 +19951,31 @@ Letztes Paar aus TODO „Crucible-Wechselwirkungen, Stufe 2"; der Punkt ist dami
 
 *Prüfgrad:* Compile ohne Warnung, Prüfskripte; Regex an den Rohtexten 142, 143. Im Spiel nicht beobachtet.
 
+### A679 · LazyCrucible ausgewertet; Futter nie zweimal (07.11.2026)
+
+Sein Auftrag vom 07.11.2026, weitere Quellen und Plugins zu suchen: Im Repository von GluttonyCombo (dajoey/lalalazy
+cb5bf32, 07.11.2026) liegt das Crucible-Plugin LazyCrucible (Auswahlfenster, Laden, Futter, Campsite, Kampfführer über
+45 Kämpfe; Fakten aus BossModReborn, Leitfäden und eigenen Aufzeichnungen, Belegmarken je Zeile). Gelesen: `DESIGN.md`,
+`Guide/CrucibleGuide.json`, die Regeln in `Policy/` nach Überschrift. Werkzeugquelle; Code nur gelesen.
+
+- *Neu und gebaut (Defekt):* „the same feed never twice ([obs] every recorded refusal was a repeat)". RSRs `BestFeed`
+  schloss kein schon gefressenes Futter aus; die Liste und die Empfängerwahl konnten einem Begleiter ein Futter nennen,
+  das das Spiel ablehnt. Jetzt nicht mehr (`AteAlready`), ebenso kein Futter, das die Liste ihm schon zuteilt.
+  Konzept 21, K10 „Futterplätze".
+- *Abgedeckt:* Rast-Anteile (Brett 1–2: 90/45/30 %, Brett 3: 100/60/40/30 %) – RSR liest den Anteil je Campsite selbst
+  (A667); Lily und Lassi an der Rast (A669); Begleiterwahl nach Unterbrechen/Bannen zuerst (K4, K11); Zusatzgegner, die
+  zum Boss laufen (A660); „töten, bevor der Zauber endet" (Selbstzerstörung, Infernal Pain) über das angekündigte
+  Wirken in K3; Tötungsreihenfolgen, über die ihre Quellen uneins sind (Ymir, Campeador, Administrator, Treant) – K3
+  ordnet nach Gefahr.
+- *Nicht übernommen:* feste Gewichte des Gegenstandswerts (2 × Schadenssenkung, 35 je Resistenz, Kaufstopp unter 12,
+  höchstens 8 Käufe, Heilreserve 2 bis 4) – RSR rechnet in Anteilen deiner LP (K13, A659); Punkte-Ziele.
+- *Zu prüfen bei Gelegenheit, ohne Befund jetzt:* „Horn demand" (wie oft ein Begleiter in den anstehenden Kämpfen
+  gewählt würde) als Gewicht für Futter und Rast – RSR plant Futter und Rast am Endkampfplan (K14) und an der Strecke
+  (A661); ein Vergleich verlangt Läufe über mehrere Bretter.
+
+*Prüfgrad:* Compile ohne Warnung, Prüfskripte. Die Regel des Spiels („nie zweimal") ist eine Beobachtung in fremden
+Aufzeichnungen; im Spiel nicht von RSR beobachtet.
+
 ## B · Commit-Register (Fork vs. `upstream/main`)
 
 ### B1 · Einzelgeprüfte Fork-Commits

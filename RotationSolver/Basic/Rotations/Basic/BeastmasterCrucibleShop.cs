@@ -1830,7 +1830,10 @@ public partial class BeastmasterRotation
 		var bestDamage = 0f;
 		foreach (var (row, item, price) in offers)
 		{
-			if (taken.Contains(row) || !feeds.TryGetValue(item, out var feed) || feed.SelfHarm || !feed.Kins.Contains(kin))
+			// A679: never a feed it already ate - the game refuses a repeat (LazyCrucible's recorded pickers: every refusal was
+			// one) -, nor one the plan already gives it.
+			if (taken.Contains(row) || !feeds.TryGetValue(item, out var feed) || feed.SelfHarm || !feed.Kins.Contains(kin)
+				|| AteAlready(eaten, feed.Name))
 			{
 				continue;
 			}
@@ -1850,6 +1853,19 @@ public partial class BeastmasterRotation
 		}
 
 		return best;
+	}
+
+	private static bool AteAlready(List<CrucibleFeed> eaten, string name)
+	{
+		foreach (var feed in eaten)
+		{
+			if (string.Equals(feed.Name, name, StringComparison.Ordinal))
+			{
+				return true;
+			}
+		}
+
+		return false;
 	}
 
 	// K14 (A631, A657): for the free feed slots of the final fight's plan, healers and protectors first, the feed on offer

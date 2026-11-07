@@ -67,6 +67,8 @@ What this release changes in the fight. For the whole distance from upstream, se
   once RSR measured on that board that they raise the damage, never once they did not. RSR compares each hit a tome
   converted with the same action in its own kind on the same enemy kind, and the trace names whether the converted hit
   keeps its element.
+- **No feed twice.** The game refuses a feed a familiar has already eaten. The feed list and the feeding hint no longer
+  name such a feed for it, nor one the list already gives it.
 - **An enemy that has not hit yet counts with its kind.** Before its first hit an enemy ranked by the mean danger of the
   fight's other enemies, even when another of its kind had hit already: a second Aetheric Charge stood like an average
   enemy. It now counts with the danger its kind showed in this area - each enemy measured until it fell -; only enemies
