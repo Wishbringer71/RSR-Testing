@@ -58,11 +58,10 @@ Konzept 21, K3 und K12; Quelle A667.
 
 ### Crucible-Wechselwirkungen, Stufe 2 · N
 Im Kampf und auf dem Brett: Tötungsstapel (Dämonische Rüstung, Stimulanztrunk-Simulakrum) zählen weder in der Zielwahl
-noch im Wert eines Flächengegenstands; Feiglingsmesser, Rauchbombe und Diebesmesser zählen auf dem Weg nicht; die
-Zauberbücher und die Ungezähmten Mittel nimmt RSR nicht; der Wert eines Schadensgegenstands zählt einen Gegner mit
-weniger LP als der Treffer voll (Milben: 522 LP, 1.304 bis 1.600 Schaden). Nächster Schritt: je Paar der Loop in der
-Reihenfolge Sicherheit vor Schaden – Flucht auf dem Weg, Tötungsstapel und Überschuss, Zauberbücher mit Messung nach dem
-Einsatz, Ungezähmte Mittel unter Schutz. Konzept 21, K8 („Wechselwirkungen", A666), K10, K14, Weg.
+noch im Wert eines Flächengegenstands; die Zauberbücher und die Ungezähmten Mittel nimmt RSR nicht; der Wert eines
+Schadensgegenstands zählt einen Gegner mit weniger LP als der Treffer voll (Milben: 522 LP, 1.304 bis 1.600 Schaden).
+Nächster Schritt: je Paar der Loop in der Reihenfolge Sicherheit vor Schaden – Tötungsstapel und Überschuss, Zauberbücher
+mit Messung nach dem Einsatz, Ungezähmte Mittel unter Schutz. Konzept 21, K8 („Wechselwirkungen", A666), K10, K14, Weg.
 
 ### Kegel und Ringe gegnerischer Zauber genau messen · N
 Im Kampf: RSRs Formprüfung (`DataCenter.AreaCastReaches`) misst einen Kegel und einen Ring als vollen Kreis um den

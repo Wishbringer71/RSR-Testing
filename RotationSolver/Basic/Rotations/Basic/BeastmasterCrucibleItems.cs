@@ -37,6 +37,7 @@ public partial class BeastmasterRotation
 		CureFamiliar,
 		MaxHp,
 		Buff,
+		Escape,
 	}
 
 	// What an item of the board does, read once from its English effect text (XBMItem): its kind; the share it heals or
@@ -128,6 +129,8 @@ public partial class BeastmasterRotation
 	// A668: a count as the item texts write it ("Grants five stacks of Blink"), its index the number - words of the language.
 	private static readonly string[] CountWords = ["zero", "one", "two", "three", "four", "five", "six", "seven", "eight", "nine", "ten"];
 
+	private const string EscapeText = "allowing escape from battle";
+
 	private static readonly Regex Deals = new(
 		@"deals (?:ranged )?(?<type>[a-z]+)(?: physical)? damage with a potency of (?<potency>[\d,]+) to target and all enemies within (?<radius>\d+) yalms",
 		RegexOptions.CultureInvariant | RegexOptions.IgnoreCase);
@@ -178,6 +181,11 @@ public partial class BeastmasterRotation
 					&& Percent(expires.Groups["reduced"].Value, out expiryWith);
 				items[id] = new CrucibleItem(CrucibleItemKind.AutoPotion, autoShare, false, name, AutoBelow: below,
 					Expires: expiry, ExpiresWith: expiryWith);
+			}
+			else if (text.Contains(EscapeText, StringComparison.Ordinal))
+			{
+				// A671: the Beastly Smokebomb - "allowing escape from battle", chosen by the player at an enemy space.
+				items[id] = new CrucibleItem(CrucibleItemKind.Escape, 0f, false, name);
 			}
 			else if (Cures.Match(text) is { Success: true } cure)
 			{

@@ -32,9 +32,9 @@ public partial class BeastmasterRotation
 	// The state a way is walked with (A663: to the final fight, included): the player's share of HP, the lowest share of the
 	// final fight's healers and that share as the final fight starts, how many spaces with items it passes (treasure, shop, a
 	// random space), whether it passes a campsite, the space it ends on (the boss; -1 the end), and whether a fight on it
-	// has no load known yet.
+	// has no load known yet; (A671) the smoke bombs left and the move of the first enemy space the way flees with one.
 	private readonly record struct RouteState(float Player, float Healer, int Items, bool Rested, int Stop, float HealerAtFinal = 1f,
-		bool Unknown = false);
+		bool Unknown = false, int Escapes = 0, int FleeMove = -1);
 
 	/// <summary>
 	/// Follows the run on the board every frame - the campsite, shop or treasure window that opens places it, a fight that ends
@@ -135,7 +135,9 @@ public partial class BeastmasterRotation
 			}
 		}
 
-		var start = new RouteState(self, healer, 0, false, -1, healer);
+		// A671: the smoke bombs held, and what the gear worn does on the way.
+		var (escapeChance, treasureItems) = WornWayEffects();
+		var start = new RouteState(self, healer, 0, false, -1, healer, Escapes: SmokeBombsHeld());
 		var options = new List<(int Next, float Turn, string Side, string Way, RouteState End)>();
 		foreach (var next in map.Next[at])
 		{
@@ -170,7 +172,8 @@ public partial class BeastmasterRotation
 			hintList.Add(new CrucibleRouteOption(options[i].Way, !weighed
 				? $"you {self:P0}, final healers {healer:P0} now"
 				: $"after {StopName(end.Stop)}: you ~{end.Player:P0} (+{potions:P0} in healing items), final healers ~{end.HealerAtFinal:P0} as it starts"
-					+ (end.Rested ? ", rested" : string.Empty) + (end.Items > 0 ? $", {end.Items} space(s) with items" : string.Empty),
+					+ (end.Rested ? ", rested" : string.Empty) + (end.Items > 0 ? $", {end.Items} item(s)" : string.Empty)
+					+ (end.FleeMove >= 0 ? $", fleeing the fight at move {end.FleeMove} with a smoke bomb" : string.Empty),
 				weighed && IsSafe(end), i == best));
 		}
 
@@ -179,7 +182,8 @@ public partial class BeastmasterRotation
 		CrucibleRouteBasis = $"From the {map.Nodes[at].Kind} at move {map.Nodes[at].Move}, after its fight; "
 			+ (!weighed
 				? "a fight ahead was never measured"
-				: "each fight with the heaviest damage it ever dealt you, all fights up to the final one");
+				: "each fight with the heaviest damage it ever dealt you, all fights up to the final one")
+			+ (escapeChance > 0f ? $"; your gear offers escape from {escapeChance:P0} of the enemy spaces - take it when it does, it spares the fight's damage" : string.Empty);
 		var traced = $"{at}:{best}";
 		if (traced != _routeTraced)
 		{
@@ -259,7 +263,8 @@ public partial class BeastmasterRotation
 				}
 			}
 
-			return $"Take the {name} way: {string.Join("; ", reasons)}.";
+			return $"Take the {name} way: {string.Join("; ", reasons)}."
+				+ (end.FleeMove >= 0 ? $" Flee the fight at move {end.FleeMove} with a smoke bomb: it is the one that spares you most on this way." : string.Empty);
 		}
 
 		// The side of a way as the board is drawn, seen from the start towards the final fight: the sign of the turn from the
@@ -374,7 +379,19 @@ public partial class BeastmasterRotation
 				return worst ?? state;
 			}
 
-			return Continue(index, Apply(node.Kind, node.Battle, index, state), merged, depth);
+			// A671: at an enemy space with a smoke bomb left, fight or flee, the better of the two ways on.
+			var fought = Continue(index, Apply(node.Kind, node.Battle, index, state), merged, depth);
+			if (node.Kind != Space.Enemy || state.Escapes <= 0)
+			{
+				return fought;
+			}
+
+			var fled = Continue(index, state with
+			{
+				Escapes = state.Escapes - 1,
+				FleeMove = state.FleeMove >= 0 ? state.FleeMove : node.Move,
+			}, merged, depth);
+			return Better(fled, fought) ? fled : fought;
 		}
 
 		RouteState Continue(int index, RouteState state, bool merged, int depth)
@@ -429,8 +446,10 @@ public partial class BeastmasterRotation
 						Healer = resting > 0 ? Math.Min(1f, state.Healer + each) : state.Healer,
 						Rested = true,
 					};
-				case Space.Shop or Space.Treasure:
+				case Space.Shop:
 					return state with { Items = state.Items + 1 };
+				case Space.Treasure:
+					return state with { Items = state.Items + treasureItems };
 				// A661: a fight with the heaviest damage it ever dealt you; one never measured with the mean or heaviest here,
 				// and with neither unknown. A663: the final fight's healer loses a use only while one would be left after it -
 				// else K11 holds it - and the final fight itself takes none from the share it starts it with.
@@ -476,6 +495,28 @@ public partial class BeastmasterRotation
 			Space.Random => $"random ({string.Join(" or ", node.Options.ConvertAll(static o => o.Kind.ToString().ToLowerInvariant()))})",
 			_ => node.Kind.ToString().ToLowerInvariant(),
 		};
+	}
+
+	// A671: the smoke bombs held in the board's inventory.
+	private static unsafe int SmokeBombsHeld()
+	{
+		var director = EventFramework.Instance() is var framework && framework != null ? framework->GetInstanceContentDirector() : null;
+		if (director == null || director->InstanceContentType != InstanceContentType.CrucibleOfTheUnbroken)
+		{
+			return 0;
+		}
+
+		var crucible = (InstanceContentCrucibleOfTheUnbroken*)director;
+		var count = 0;
+		for (var slot = 0; slot < crucible->Inventory.Length; slot++)
+		{
+			if (TryItem(crucible, slot, CrucibleItemKind.Escape, out _))
+			{
+				count++;
+			}
+		}
+
+		return count;
 	}
 
 	// The healing items held for the player, as a share of his HP (K8's reading of their effect text).

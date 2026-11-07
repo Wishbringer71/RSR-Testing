@@ -27,7 +27,34 @@ public partial class BeastmasterRotation
 	// battle - whether it revives you, whether it inflicts a status on you, and the ailments it makes you immune to.
 	private readonly record struct CrucibleGear(string Name, float MaxHp, float DamageTaken, float PhysicalVulnerability,
 		float MagicVulnerability, float Evasion, float Movement, float Slow, float Recovery, float Curing, bool Life,
-		bool SelfHarm, List<string> Resists, string RestItem = "");
+		bool SelfHarm, List<string> Resists, string RestItem = "", float EscapeChance = 0f, int TreasureItems = 0);
+
+	// A671: gear that offers escape from enemy spaces (Coward's Knife) and that grants more items on treasure spaces (Thief's
+	// Knife: "Grants two items on treasure spaces").
+	private static readonly Regex GearEscape = new(@"(?<chance>\d+)% chance to offer escape from an enemy space", RegexOptions.CultureInvariant);
+	private static readonly Regex GearTreasureItems = new(@"Grants (?<count>[a-z]+|\d+) items on treasure spaces", RegexOptions.CultureInvariant);
+
+	// A671: what the gear the run wears does on the way - the chance an enemy space offers escape, and the items a treasure
+	// space grants (1 without a piece that grants more).
+	internal static (float EscapeChance, int TreasureItems) WornWayEffects()
+	{
+		var chance = 0f;
+		var treasure = 1;
+		if (_gearSeen is { } seen && seen.Run == CrucibleBoard.Run)
+		{
+			var gear = CrucibleGearTable;
+			foreach (var id in seen.Gear)
+			{
+				if (gear.TryGetValue(id, out var piece))
+				{
+					chance = Math.Max(chance, piece.EscapeChance);
+					treasure = Math.Max(treasure, piece.TreasureItems);
+				}
+			}
+		}
+
+		return (chance, treasure);
+	}
 
 	// A669: gear that brings an item at each rest - "Procures one random beast potion upon resting at campsites".
 	private static readonly Regex GearRestItem = new(@"Procures one random (?<item>[a-z][a-z' -]*?) upon resting at campsites",
@@ -1052,6 +1079,33 @@ public partial class BeastmasterRotation
 		}
 
 		var ahead = CrucibleRoute.WorstAhead(false, battle => LoadNow(battle) ?? now.Heavy) ?? (fights * now.Heavy);
+
+		// A671: the enemy fights on the shortest way - the ones a flight spares -, heaviest first, and the smoke bombs held,
+		// which the way window spends on the heaviest of them.
+		var enemyLoads = new List<float>();
+		if (CrucibleRoute.EnemyBattlesAhead() is { } enemies)
+		{
+			foreach (var battle in enemies)
+			{
+				enemyLoads.Add(LoadNow(battle) ?? now.Mean);
+			}
+		}
+
+		enemyLoads.Sort(static (a, b) => b.CompareTo(a));
+		var bombsHeld = 0;
+		foreach (var id in heldItems)
+		{
+			if (items.TryGetValue(id, out var bomb) && bomb.Kind == CrucibleItemKind.Escape)
+			{
+				bombsHeld++;
+			}
+		}
+
+		var unspared = 0f;
+		for (var i = bombsHeld; i < enemyLoads.Count; i++)
+		{
+			unspared += enemyLoads[i];
+		}
 		var worst = ahead + (1f - (Player is { MaxHp: > 0u } player ? player.GetHealthRatio() : 1f));
 		var healable = Math.Max(0f, worst - (holding * (1f + now.Recovery)) - healedChosen);
 		foreach (var (row, id, _) in offers)
@@ -1115,7 +1169,16 @@ public partial class BeastmasterRotation
 						Math.Max(0f, healable - healingEnabled));
 				}
 
+				// A671: an offered escape the way window tells you to take spares that fight - its chance on every enemy fight on
+				// the way no smoke bomb covers.
+				var escaped = piece.EscapeChance * unspared;
+
 				var parts = new List<string>();
+				if (escaped > 0f)
+				{
+					parts.Add($"offers escape from {piece.EscapeChance:P0} of the enemy spaces: ~{escaped:P0} of your HP spared on the way");
+				}
+
 				if (prevented > 0f)
 				{
 					parts.Add($"prevents ~{prevented:P0} of your HP in the {fights} fights left");
@@ -1146,7 +1209,7 @@ public partial class BeastmasterRotation
 					parts.Add($"a {piece.RestItem} at each of the {rests} campsite(s) on every way, the weakest counted: ~{restHealing:P0}");
 				}
 
-				var value = prevented + healing + curing + healingEnabled + extended + restHealing;
+				var value = prevented + healing + curing + healingEnabled + extended + restHealing + escaped;
 				if (value <= 0f)
 				{
 					parts.Add(now.Mean <= 0f && now.Heavy <= 0f
@@ -1174,7 +1237,9 @@ public partial class BeastmasterRotation
 				var (restores, autoSeconds, expires) = item.Kind == CrucibleItemKind.AutoPotion
 					? AutoPotionValue(item, owned, heldItems, healable, now.Recovery)
 					: (0f, double.MaxValue, 0f);
-				var value = heals > 0f ? Math.Min(full, healable) : protects > 0f ? protects : restores > 0f ? restores : gives;
+				var spares = item.Kind == CrucibleItemKind.Escape && bombsHeld < enemyLoads.Count ? enemyLoads[bombsHeld] : 0f;
+				var value = heals > 0f ? Math.Min(full, healable) : protects > 0f ? protects : restores > 0f ? restores
+					: spares > 0f ? spares : gives;
 				var lasting = seconds < double.MaxValue ? $" for {seconds:0} s" : string.Empty;
 				result.Add((row, id, value, heals > 0f
 					? (value < full
@@ -1192,6 +1257,9 @@ public partial class BeastmasterRotation
 							? $"used against a boss, restores {item.Value:P0} below {item.AutoBelow:P0} of your HP for {autoSeconds:0} s, expiring with {expires:P0} each time: ~{value:P0} of the ~{healable:P0} your healing leaves"
 							: $"restores only below {item.AutoBelow:P0} of your HP, and your healing keeps you above it (~{healable:P0} left to heal)",
 						CrucibleItemKind.Buff when gives > 0f => $"used before {givesTo}, adds to it: ~{value:P0}",
+						CrucibleItemKind.Escape => spares > 0f
+							? $"flee the heaviest enemy fight on the way that no smoke bomb you hold covers (the way window names it): ~{value:P0}"
+							: "no enemy fight left on the way that the smoke bombs you hold do not cover",
 						_ => $"no HP on this scale ({item.Kind.ToString().ToLowerInvariant()})",
 					}));
 			}
@@ -1993,7 +2061,9 @@ public partial class BeastmasterRotation
 				GearRecovery.Match(text) is { Success: true } recovery ? Percent(recovery.Groups["share"].Value) : 0f,
 				GearCuring.Match(text) is { Success: true } curing ? Percent(curing.Groups["share"].Value) : 0f,
 				text.StartsWith("Revives beastmaster upon KO", StringComparison.Ordinal), GearSelfHarm.IsMatch(text), resists,
-				GearRestItem.Match(text) is { Success: true } restItem ? restItem.Groups["item"].Value : string.Empty);
+				GearRestItem.Match(text) is { Success: true } restItem ? restItem.Groups["item"].Value : string.Empty,
+				GearEscape.Match(text) is { Success: true } escape ? Percent(escape.Groups["chance"].Value) : 0f,
+				GearTreasureItems.Match(text) is { Success: true } more ? CountOf(more.Groups["count"].Value) : 0);
 		}
 
 		return gear;
@@ -2002,6 +2072,13 @@ public partial class BeastmasterRotation
 		{
 			_ = float.TryParse(digits, NumberStyles.Integer, CultureInfo.InvariantCulture, out var percent);
 			return percent / 100f;
+		}
+
+		// A671: a count as the text writes it ("two"), by the words the item texts use (CountWords).
+		static int CountOf(string count)
+		{
+			return int.TryParse(count, NumberStyles.None, CultureInfo.InvariantCulture, out var number) ? number
+				: Math.Max(Array.IndexOf(CountWords, count), 0);
 		}
 	}
 }

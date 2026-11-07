@@ -19728,6 +19728,32 @@ Drittes Paar aus TODO „Crucible-Wechselwirkungen, Stufe 2".
 
 *Prüfgrad:* Compile ohne Warnung, Prüfskripte; Textmuster am Rohtext; Beispiele nachgerechnet. Im Spiel nicht beobachtet.
 
+### A671 · Crucible-Weg: Flucht mit Rauchbombe empfohlen, Feiglingsmesser und Diebesmesser gezählt (07.11.2026)
+
+Viertes Paar aus TODO „Crucible-Wechselwirkungen, Stufe 2".
+
+- *1 Research:* Beastly Smokebomb (97): „Creates a distraction, allowing escape from battle. Ineffective against elite
+  enemies and bosses. Use by selecting 'Flee' upon an enemy space." Coward's Knife (31): „35% chance to offer escape from an
+  enemy space … Grants one stack of Guerrilla Tactics upon fleeing." Thief's Knife (57): „Grants two items on treasure
+  spaces." CrucibleSux-Recherche 01 (be66eda): Gegnerfeld „can flee", Elite „cannot flee". Kein Werkzeug liest das
+  Fluchtangebot im Spiel (CrucibleSux' Flucht gilt der offenen Welt); RSR kann die Flucht empfehlen, nicht wählen. Code:
+  Rauchbombe nicht gelesen („not read by RSR"), Messer ohne Wert, Weg und Skala ohne Flucht.
+- *2 Optionen:* (0) nichts. (a) Rauchbombe in der Sicherheit des Wegs abziehen, ohne Empfehlung – rechnet mit einer Flucht,
+  die er nicht kennt, unsicher. (b) Weg rechnet an Gegnerfeldern beide Fortsetzungen und nennt das Feld; Skala zählt
+  Bombe und Messer, weil das Fenster die Flucht empfiehlt. (c) dazu das Feiglingsmesser in der Sicherheit – Zufall,
+  verworfen (Sicherheit ohne Glück). Gewählt (b).
+- *Gebaut (Konzept 21 Weg „Flucht", K13, K8):* Lesung von Rauchbombe (Art `Escape`), Fluchtchance und Schatzgegenständen
+  der Ausrüstung; `CrucibleRoute.EnemyBattlesAhead` (Gegnerfelder auf dem kürzesten Weg); Wegfenster: Bomben im Zustand,
+  Gegnerfeld mit Bombe zweifach gerechnet, das erste Fluchtfeld im Ergebnis und im Grund; Feiglingsmesser als Hinweis
+  in der Grundlage; Schatz mit Diebesmesser zwei Gegenstände. Skala: Bombe die schwerste noch ungedeckte Gegnerlast,
+  Messer Chance mal die übrigen.
+- *6 Falsifikation:* Kein Defekt? Widerlegt am Code (nicht gelesen). Option falsch? Flieht er nicht, stimmt die Rechnung
+  ab dem Feld nicht mehr – sie läuft nach jedem Feld neu (A671-2). Ausgeliefert, nichts ändert sich? Ohne Bombe und Messer;
+  und wenn die Lasten der Gegnerfelder unbekannt sind (Weg nach der alten Regel).
+
+*Prüfgrad:* Compile ohne Warnung, Prüfskripte; Textmuster am Rohtext. Im Spiel nicht beobachtet; das Wegfenster nennt das
+Fluchtfeld.
+
 ## B · Commit-Register (Fork vs. `upstream/main`)
 
 ### B1 · Einzelgeprüfte Fork-Commits

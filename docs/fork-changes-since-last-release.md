@@ -46,6 +46,11 @@ What this release changes in the fight. For the whole distance from upstream, se
   measured, with the duration your gear gives it (Ice Shield, Hexed Hat). While you wear or choose a Crimson Ribbon, soul
   serums count as 50 % heals, and the ribbon counts the serums you hold; the Potion of Breathtaking Swiftness counts the
   three Blink it adds to a held Tome of the Impervious.
+- **The way window plans a flight.** With a Beastly Smokebomb held, the way window weighs fighting and fleeing at each
+  enemy space ahead and names the fight to flee ("Flee the fight at move 5 with a smoke bomb"); elites and bosses cannot
+  be fled. While the Coward's Knife is worn it tells you to take the escape when offered. A treasure counts two items
+  with the Thief's Knife. On the shop scale a smoke bomb counts the heaviest enemy fight on the way no bomb you hold
+  covers, the Coward's Knife its chance on the others.
 - **The Beast Potion Kit has a value on the scale.** It counted nothing before. It now counts what it restores below
   its 50 % line: of the healing your potions leave you short, the part that would take you below half, within its
   duration from the start of the heaviest fight, with the chance each restore expires. Thief's Garb counts its longer

@@ -577,6 +577,18 @@ Dullahan, Golem, Spriggan und Eisgolem (`XBMPet.InflictsInterrupt`).
       gemessenen Last eines Kampfs abzüglich deiner Heilung (`CrucibleBoard.Loads`, wie K10 Laden), Elite und Endgegner
       mit der schwersten gemessenen. Der Endkampf-Heiler verliert in einem Kampf vor dem Endkampf seinen größten Verlust
       je Einsatz nur, solange er danach noch einen übrig hätte – sonst hält K11 ihn zurück, und er verliert nichts (A663).
+    - *Flucht (A671):* Ein Gegnerfeld lässt die Flucht zu, Elite und Endgegner nicht (CrucibleSux-Recherche 01, be66eda);
+      die Bestien-Rauchbombe ermöglicht sie („Use by selecting 'Flee' upon an enemy space"), das Feiglingsmesser bietet sie
+      mit 35 % an und gibt danach Guerrilla Tactics. Fliehen kostet die Beute des Felds, keine LP. Hältst du Rauchbomben,
+      rechnet die Vorausrechnung an jedem Gegnerfeld beide Fortsetzungen – kämpfen oder mit einer Bombe fliehen – und
+      nimmt die bessere; das Fenster nennt das Feld, vor dem du fliehst („flee from the fight at move 5 with a smoke
+      bomb"), denn die Flucht wählst du im Spiel selbst. Das Feiglingsmesser zählt in der Vorausrechnung nicht: Ob es die
+      Flucht anbietet, ist Zufall, und *sicher* rechnet ohne Glück; bietet es sie an, nimm sie (das Fenster sagt es, solange
+      du es trägst) – sie spart den Schaden des Kampfs. Mit dem Diebesmesser bringt ein Schatzfeld zwei Gegenstände und
+      zählt doppelt. *Gegenthese A671-1 (Beute):* Fliehen kostet Marken, die ein späterer Laden in Heilung tauschen
+      könnte. Nicht widerlegt; was ein Laden anbietet, steht nirgends, der gesparte Schaden ist sicher – Sicherheit vor
+      Beute. *Gegenthese A671-2 (Flucht nicht genommen):* Fliehst du nicht, stimmt die Rechnung nicht mehr. Widerlegt: Nach
+      dem Feld rechnet RSR mit deinen LP neu (Vorausrechnung).
     - *Sicher* ist ein Abzweig, wenn du nach dem Endkampf mit Vorrat noch lebst – die Summe aller Kämpfe bis dorthin, jeder
       mit seiner Last, die Rasten dazwischen –, und wenn der schwächste Endkampf-Heiler vor dem Endkampf einen Einsatz
       übersteht (seine LP über seinem größten Verlust je Einsatz, wie „übersteht den Einsatz" am Hornfenster, K6).
@@ -791,7 +803,10 @@ Dullahan, Golem, Spriggan und Eisgolem (`XBMPet.InflictsInterrupt`).
   kannst. Der Arzneibeutel („Procures one random beast potion upon resting at campsites", A669) zählt je Campsite, die
   auf jedem Weg zum Endgegner liegt, den kleinsten Bestien-Trank (G1 bis G4: 10, 23, 36, 50 %, also 10 %), mit der
   Mehrheilung deiner Ausrüstung, höchstens was du noch heilen kannst: Welcher kommt, ist Zufall, und eine Campsite auf
-  nur einem Weg ist nicht sicher – die Skala unterschätzt ihn eher. *Grund (A668):* Bis dahin zählte ein Schutzgegenstand den ganzen schwersten Kampf. Auf Brett 1 dauerte ein Kampf
+  nur einem Weg ist nicht sicher – die Skala unterschätzt ihn eher. Eine Rauchbombe (A671) zählt die Last des schwersten
+  Gegnerkampfs auf dem kürzesten Weg zum Endgegner, den die gehaltenen Bomben noch nicht abdecken (die zweite Bombe den
+  zweitschwersten); das Feiglingsmesser seine Fluchtchance mal die Last aller Gegnerkämpfe auf diesem Weg – beides nur,
+  weil das Wegfenster die Flucht empfiehlt (Weg, „Flucht"). *Grund (A668):* Bis dahin zählte ein Schutzgegenstand den ganzen schwersten Kampf. Auf Brett 1 dauerte ein Kampf
   61 bis 148 s (15 Kämpfe am 07.11.2026, ACT-Mitschnitt); das beste 30-s-Fenster hielt 51 bis 100 % seines Schadens, im
   Endkampf 55 %, das beste 60-s-Fenster im Endkampf 83 %, das 90-s-Fenster 92 %; die fünf stärksten Treffer in Folge 48
   bis 100 %, im Endkampf 48 % (27 Treffer, 23 davon Auto-Angriffe; alle Werte über alle Angriffsarten, den magischen
@@ -1288,8 +1303,8 @@ on a pack once a fight, all of them in the final fight (Crucible only)".
       Lassi-Simulakrum füllt ihn die Rast ganz. Die Campsite wählt danach (K10, „Futter an der Rast", A669). Arzneibeutel:
       ein zufälliger Bestien-Trank je Rast, auf der Skala mit dem kleinsten je sicherer Campsite (K13, A669).
     - *Weg:* Feiglingsmesser (35 % Flucht von normalen Gegnerfeldern, danach Guerrilla Tactics), Bestien-Rauchbombe
-      (Flucht) senken die erwartete Last eines Feldes; Diebesmesser gibt zwei Gegenstände auf Schatzfeldern – offen
-      (Stufe 2, Weg).
+      (Flucht) und Diebesmesser (zwei Gegenstände auf Schatzfeldern) zählen im Wegfenster und auf der Skala (Weg,
+      „Flucht"; K13; A671).
     - *Zauberbücher:* Grimoire der Zauberschmiede und des Stahlstachels machen 180 s jeden Angriff magisch oder
       physisch, auch den der Begleiter. Die Abwehrstufe wirkt (derselbe Auto-Angriff traf Stufe 2 mit 57, Stufe 5 mit
       37), und unter Zauberschmiede trägt das Zaubermittel jeden Angriff. Ob die Umwandlung den Aspekt und damit die

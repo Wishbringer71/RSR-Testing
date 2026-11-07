@@ -190,6 +190,70 @@ internal static class CrucibleRoute
 	}
 
 	/// <summary>
+	/// K13 (A671): the battles of the enemy spaces - the ones a player may flee - on the shortest way from where the run stands
+	/// to the final fight, as <see cref="FightsAhead"/> takes it; the space it stands on counts while it is not done. A random
+	/// space does not count: what it becomes is chance. Null while the board or its ways are unknown.
+	/// </summary>
+	internal static List<uint>? EnemyBattlesAhead()
+	{
+		if (_lastBattle.Board == 0 || _current < 0 || !Boards.TryGetValue(_lastBattle.Board, out var route) || route.Next == null
+			|| _current >= route.Nodes.Length)
+		{
+			return null;
+		}
+
+		var memo = new Dictionary<int, (int Fights, List<uint> Enemies)>();
+		if (!_done)
+		{
+			return From(_current).Enemies;
+		}
+
+		(int Fights, List<uint> Enemies)? best = null;
+		foreach (var next in route.Next[_current])
+		{
+			var ahead = From(next);
+			if (best is not { } b || ahead.Fights < b.Fights)
+			{
+				best = ahead;
+			}
+		}
+
+		return best?.Enemies ?? [];
+
+		// The fights on the shortest way on from a space, and its enemy battles.
+		(int Fights, List<uint> Enemies) From(int index)
+		{
+			if (memo.TryGetValue(index, out var known))
+			{
+				return known;
+			}
+
+			var node = route.Nodes[index];
+			var own = node.Kind is Space.Enemy or Space.Elite or Space.Boss || node.MayBeBattle ? 1 : 0;
+			List<uint> enemies = node.Kind == Space.Enemy && node.Battle != 0 ? [node.Battle] : [];
+			memo[index] = (own, enemies);
+			if (node.Kind == Space.Boss || route.Next[index].Count == 0)
+			{
+				return (own, enemies);
+			}
+
+			(int Fights, List<uint> Enemies)? rest = null;
+			foreach (var next in route.Next[index])
+			{
+				var ahead = From(next);
+				if (rest is not { } r || ahead.Fights < r.Fights)
+				{
+					rest = ahead;
+				}
+			}
+
+			var total = rest is { } found ? (own + found.Fights, (List<uint>)[.. enemies, .. found.Enemies]) : (own, enemies);
+			memo[index] = total;
+			return total;
+		}
+	}
+
+	/// <summary>
 	/// K13 (A669): the fewest campsites on any way from where the run stands to the final fight - the campsites every way
 	/// passes; the space it stands on counts while it is not done, a random space that can become one does not. Null while
 	/// the board or its ways are unknown.
