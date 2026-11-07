@@ -51,6 +51,10 @@ What this release changes in the fight. For the whole distance from upstream, se
   the final fight's weakest healer can take one use there; RSR's reserve keeps that healer off earlier fights instead of
   counting its losses. Among safe ways the one with more spaces with items wins, so a shop every way passes no longer
   tips it to the campsite.
+- **Crucible items are spent over the whole board.** Healing beyond what the fights up to the final one can cost you is
+  used without overhealing, also above your potion line, and in the final fight all of it. A damage item goes where it
+  brings most: in this fight if it hits as much here as in the best fight ahead, else it waits; one with knockback only
+  when it hits every enemy fighting. Against a boss the Beast Tonic comes before a healing item, which then heals more.
 - **Gear and feed belong to the run.** A new run on the same board no longer inherits the gear and feed slots of the
   last one.
 - **A familiar is healed before a first hit could fell it.** Before a familiar takes its first hit in a fight, RSR

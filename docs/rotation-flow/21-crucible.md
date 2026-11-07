@@ -1043,7 +1043,9 @@ on a pack once a fight, all of them in the final fight (Crucible only)".
   Ob die Bestien-Heilmittelsammlung einen davon heilt, sagt keine Quelle („status ailment", unbelegt).
 - *Wann, einer zur Zeit, in dieser Reihenfolge* (erste Einstellung, außer 12 und 13):
   1. Im Kampf unter „Use HP potions below this HP": der Heilgegenstand, der dich mit dem kleinsten Wert wieder über die
-     Linie hebt, sonst der größte; bei gleicher Heilung der Heiltrank vor dem Pulver. Normale Heiltränke sperrt das Brett.
+     Linie hebt, sonst der größte; bei gleicher Heilung der Heiltrank vor dem Pulver. Dazu, auch über der Linie, die
+     Heilung, die keiner mehr braucht (A664, „Über das Brett"); vor beidem gegen einen Boss das Bestien-Ausdauermittel,
+     solange es nicht steht (Synergie, ebenda). Normale Heiltränke sperrt das Brett.
      Die LP liest RSR wie beim Heiltrank: jetzt und, da im Brett kein Heiler lebt, beim nächsten Webfenster einen GCD
      voraus (Konzept 03, „Die Schwelle nach der Vorhersage, wo kein Heiler lebt", A641).
   2. Im Kampf gegen Gift oder Blindheit auf dir das passende Mittel.
@@ -1112,21 +1114,48 @@ on a pack once a fight, all of them in the final fight (Crucible only)".
       Reißzähne mitträgt. Außerhalb des Endkampfs bleiben sie liegen: Ihr Wert für einen späteren Kampf ist nicht
       bekannt (K11), im Endkampf ist er null.
   13. Schaden (zweite Einstellung) auf dein Gegnerziel: im Endkampf jeder Schadensgegenstand, der wertvollste zuerst;
-     sonst einer je Kampf, sobald er mehr Gegner trifft als dein Ziel. Wert ist Potenz mal der Summe über die
+     sonst der, der hier mindestens so viel bringt wie im besten anstehenden Kampf, sobald er mehr Gegner trifft als dein
+     Ziel; einer mit Rückstoß nur, wenn er jeden trifft, der kämpft („Über das Brett", A664). Wert ist Potenz mal der Summe über die
      getroffenen Gegner aus eins plus dem gemessenen Schwächezuschlag, wo das Element ihre Schwäche ist (K1); bei
      Gleichstand der ohne Rückstoß. Ein Gegenstand, dessen Element nur die Schwäche noch kommender Gegner trifft, wartet
      auf sie (wie K2).
-- *Über das Brett (seine Vorgaben vom 07.11.2026, offen – `TODO.md`, „Crucible: Gegenstände über die Kämpfe des Bretts"):*
-  „nach dem letzten fight ist zuviel ungenutzt und verfällt. sollte besser über alle kämpfe eines bretts hinweg genutzt
-  werden, so dass möglichst das zum letzten kampf am besten passende dort genutzt wird, das andere vorher in den kämpfen,
-  wo es am ehesten passt"; „synergieeffekte der items prüfen und optimieren"; „sich immer auf die summe der anstehenden
-  kämpfe ausrichten" (Vorgaben, Kriterien für 12 und 13 und jede Regel dieses Konzepts, die einen Vorrat oder eine
-  Strecke wiegt). Stand dagegen: Stärkung nur im Endkampf (12), Schaden einer je Kampf davor (13) – beides mit der
-  Begründung, die Zahl der Kämpfe sei unbekannt; seit K14 („Der Weg aus den Blättern") kennt RSR jeden Kampf bis zum
-  Endgegner samt Gegnern, Schwächen und Zahl, die Begründung trägt nicht mehr. *Sein Hinweis (07.11.2026):* „bei
-  rückstoßeffekt wird einer der gegner ins aus geschleudert, die anderen sind vom effekt zu weit entfernt. somit war der
-  effekt wahrscheinlich zu früh" – der Reißzahn mit 15 Yalm Rückstoß (13) ging, als nur ein Gegner nahe stand; sein Log
-  folgt.
+- *Über das Brett (A664; seine Vorgaben vom 07.11.2026):* „nach dem letzten fight ist zuviel ungenutzt und verfällt.
+  sollte besser über alle kämpfe eines bretts hinweg genutzt werden, so dass möglichst das zum letzten kampf am besten
+  passende dort genutzt wird, das andere vorher in den kämpfen, wo es am ehesten passt"; „synergieeffekte der items prüfen
+  und optimieren"; „sich immer auf die summe der anstehenden kämpfe ausrichten". Was nach dem Endkampf übrig ist, ist
+  wertlos (oben). Es gilt:
+  - *Heilung, die keiner mehr braucht (zu 1):* Liegt die Heilung, die du hältst, über dem, was die anstehenden Kämpfe dich
+    kosten können – die Summe auf dem schwersten Weg bis einschließlich Endkampf, jeder Kampf mit seiner Last je Kampf
+    (K10 Campsite), ein ungelernter so schwer wie dein schwerster gemessener, dazu was dir jetzt fehlt –, ist der Rest
+    übrig. Davon geht im Kampf der größte Heilgegenstand, der dich nicht überheilt (dir fehlt mindestens, was er heilt),
+    auch über deiner Trank-Linie. Im Endkampf ist alles übrig. Grund: Ein Trank heilt früh, was er spät heilt, solange er
+    nicht überheilt; früh hält er dich höher gegen den nächsten großen Treffer, und nach dem Endkampf ist er nichts mehr.
+  - *Schaden dorthin, wo er am meisten bringt (zu 13):* Jeder Schadensgegenstand hat in jedem Kampf einen Wert –
+    Potenz mal der Summe über die getroffenen Gegner aus eins plus Schwächezuschlag. Im laufenden Kampf zählt, wen er jetzt
+    trifft; in einem anstehenden Kampf (`CrucibleRoute.BattlesAhead`, der Endkampf eingeschlossen) jede Gegnerart, die
+    das Blatt für ihn führt, einmal – mehr Gegner einer Art kennt das Blatt nicht, die Schätzung liegt eher zu tief, und
+    der Gegenstand geht eher jetzt als später. Er geht jetzt, wenn er hier mindestens so viel bringt wie im besten
+    anstehenden Kampf; im Endkampf jeder. Das ersetzt „einer je Kampf" – die Setzung stand nur, weil die Kämpfe davor
+    unbekannt waren (K14 kennt sie). So bleibt für den Endkampf, was dort am meisten bringt (ein Element, das die Schwäche
+    des Endgegners trifft), und ein Reißzahn für Rudel geht im Rudel.
+  - *Rückstoß (zu 13; sein Hinweis):* Ein Gegenstand mit Rückstoß geht nur, wenn er jeden Gegner trifft, der gerade kämpft
+    – sonst wirft er die Getroffenen aus dem Kreis, in dem Begleiter und Flächen die übrigen treffen. Bis A664 entschied
+    der Rückstoß nur bei gleichem Wert.
+  - *Synergien (geprüft):* Stärkung des magischen Schadens trägt die Reißzähne und Sternensturm („Damage is affected by
+    magic damage increase effects"), deshalb im Endkampf die Stärkung vor dem Schaden (12 vor 13, wie bisher). Das
+    Bestien-Ausdauermittel hebt die maximalen LP um 20 % bis Kampfende, und Heilgegenstände heilen einen Anteil der
+    maximalen LP: Steht es nicht und kämpft ein Gegner mit Boss-Symbol, geht es vor dem Heilgegenstand (11 vor 1). Das
+    Blutsaugerserum (10 % des Schadens als LP) bringt mehr, wo viel Schaden fällt – es bleibt bei 12. Stärkung außerhalb
+    des Endkampfs: nicht gebaut – der Endkampf nimmt jedes Mittel, sobald sein Status endet (15 bis 30 s; der Endkampf auf
+    Brett 1 dauerte 157 s), ein übriges bleibt dort selten; Gegenthese unten.
+  - *Gegenthese A664-1 (Heilung früh):* Ein früh genommener Trank fehlt, wenn ein Kampf schwerer wird als je zuvor. Nur
+    der Überschuss über die schwerste Summe geht, und nur ohne Überheilen; Preis: der Überschuss, wenn ein Kampf alle
+    früheren übertrifft. *Gegenthese A664-2 (Schätzung der Gegner):* Ein späterer Kampf mit vielen Gegnern einer Art wäre
+    der bessere Ort. Nicht widerlegt; die Schätzung irrt zu früh statt zu spät, und zu spät heißt nach dem Endkampf
+    verfallen – seine Meldung. *Gegenthese A664-3 (Stärkung früher):* Hält er mehr Mittel eines Status, als der Endkampf
+    nacheinander nimmt, verfällt der Rest. Nicht widerlegt; sein Log zeigt, ob das vorkommt. *Ausgeliefert, und nichts
+    ändert sich?* Ohne Weg aus den Blättern (dann zählt kein anstehender Kampf, und der Gegenstand geht wie im Endkampf)
+    und wo Schutz, Seren und Resistenzmittel an Anlässen hängen, die nicht kommen – die bleiben, wie bisher.
 - *Wie:* `InstanceContentCrucibleOfTheUnbroken.UseItem` (FFXIVClientStructs, in Dalamuds Fassung vorhanden) wirkt auf
   das Soft- oder Hard-Ziel. RSR setzt das Soft-Ziel kurz auf dich, deinen Begleiter oder dein Gegnerziel und stellt es
   zurück, wie BeastHelper (be40a1e, Werkzeugquelle, nur gelesen). Die Status liest RSR nach ihrem englischen Namen. Die
@@ -1151,8 +1180,8 @@ on a pack once a fight, all of them in the final fight (Crucible only)".
     Gegner greift nicht automatisch an; mehrere Gegner auf dich können Stapel kosten. Preis benannt.
   - Die Sammlung heilt den nächsten Zustand, auch einen harmlosen (Heavy). Nicht widerlegt; Preis: eine Sammlung. Das
     Serum ist für seinen Status sicher und geht deshalb vor.
-  - Ein Schadensgegenstand je Kampf vor dem Endkampf ist eine Setzung: Wie viele Kämpfe noch kommen, liefert das Spiel
-    nicht (K11). Sie folgt seinem eigenen Spiel am 04.11.2026 um 19:04, ein Reißzahn auf ein Rudel.
+  - Ein Schadensgegenstand je Kampf vor dem Endkampf war eine Setzung (Zahl der Kämpfe unbekannt); seit A664 entscheidet
+    der Wert hier gegen den besten anstehenden Kampf („Über das Brett").
   - Ausgeliefert, und nichts ändert sich: Hält er keine dieser Gegenstände, oder erkennt RSR den Kampf nicht (Zeile
     „crucible fight …" fehlt), ruhen 8, 9, 12 und 13 und der Endkampf; die Spur zeigt beides.
   - Das Resistenzmittel hilft nur, wenn der Cast das Element trägt, das er anzeigt; ein Treffer, den nur BossModReborn

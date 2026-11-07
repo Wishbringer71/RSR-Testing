@@ -59,7 +59,6 @@ public partial class BeastmasterRotation
 	// In this fight: the dangerous statuses a serum covers, the damage items used. For the session: the statuses Auto-remedy
 	// was seen not to cure, and since when each dangerous status has stood on the player under Auto-remedy.
 	private static readonly HashSet<uint> _serumCovers = [];
-	private static int _damageItemsInFight;
 	private static readonly HashSet<uint> _notCuredByRemedy = [];
 	private static readonly Dictionary<uint, DateTime> _ailmentUnderRemedySince = [];
 
@@ -244,15 +243,16 @@ public partial class BeastmasterRotation
 	/// <summary>
 	/// K8 (A551 to A553): on a board, one item at a time, used through the soft target. With <paramref name="safety"/>: in
 	/// combat below <paramref name="line"/> of his HP the healing item that lifts him back to it with the least, else the
-	/// largest; in combat a cure for the poison or blindness he carries; Reraise while none stands (once Reraise was seen to go
+	/// largest, and healing no fight ahead needs without overhealing (A664), against a boss the Beast Tonic before either;
+	/// in combat a cure for the poison or blindness he carries; Reraise while none stands (once Reraise was seen to go
 	/// without a fall, only against a boss); out of combat Sandstill while none stands; against a boss the Beast Potion Kit
 	/// while no Auto-potion stands; protection against an announced hit on him, and on his familiar when it holds no more HP
 	/// than <paramref name="familiarLossAhead"/>, what it can lose before the next weave window (in the final fight against
 	/// any); a serum, else the Beast Remedy Kit, against
 	/// the fight's dangerous statuses; the absorber of the element of a hit on him; the cure of his familiar's ailment; against
 	/// a boss more maximum HP. With <paramref name="damage"/>: in the final fight every buff, then a damage item on his
-	/// target - in the final fight any,
-	/// else one a fight on a pack. Called every frame from the update.
+	/// target - in the final fight any, else on a pack where it brings at least as much as in the best fight ahead (A664).
+	/// Called every frame from the update.
 	/// </summary>
 	internal static unsafe void UseCrucibleItems(float line, uint familiarLossAhead, bool safety, bool damage)
 	{
@@ -282,7 +282,6 @@ public partial class BeastmasterRotation
 		{
 			_crucibleSlotsRefused.Clear();
 			_serumCovers.Clear();
-			_damageItemsInFight = 0;
 		}
 
 		FollowRemedy(player);
@@ -303,11 +302,7 @@ public partial class BeastmasterRotation
 			{
 				_ = _crucibleSlotsRefused.Add(_crucibleItemUsed.Slot);
 				var refused = CrucibleItems[_crucibleItemUsed.Item];
-				if (refused.Kind == CrucibleItemKind.Damage)
-				{
-					_damageItemsInFight--;
-				}
-				else if (refused.Kind == CrucibleItemKind.ResistAilment)
+				if (refused.Kind == CrucibleItemKind.ResistAilment)
 				{
 					_ = _serumCovers.Remove(_crucibleItemUsed.Covers);
 				}
@@ -342,6 +337,27 @@ public partial class BeastmasterRotation
 		{
 			slot = BestHeal(crucible, hp, line);
 			why = $"at {hp:P0} HP (line {line:P0})";
+		}
+
+		// A664: healing no fight ahead needs - everything in the final fight -, the largest piece that does not overheal.
+		if (slot < 0 && InCombat)
+		{
+			slot = SpareHeal(crucible, player, finalFight, out why);
+		}
+
+		// A664 (synergy): against a boss, the Beast Tonic before the healing item - it raises the maximum HP the item heals a
+		// share of, and heals itself.
+		if (slot >= 0 && bossFighting)
+		{
+			for (var i = 0; i < crucible->Inventory.Length; i++)
+			{
+				if (TryItem(crucible, i, CrucibleItemKind.MaxHp, out var raise) && !PlayerHasStatusNamed(player, raise.Status))
+				{
+					slot = i;
+					why = $"against a boss, before healing: {raise.Status} raises the HP it heals";
+					break;
+				}
+			}
 		}
 
 		if (slot < 0 && InCombat && PlayerHasStatusNamed(player, "Poison"))
@@ -463,7 +479,7 @@ public partial class BeastmasterRotation
 			}
 		}
 
-		if (slot < 0 && damage && InCombat && (finalFight || _damageItemsInFight < 1)
+		if (slot < 0 && damage && InCombat
 			&& DamageItem(crucible, finalFight, out var damageSlot, out var target, out var damageWhy))
 		{
 			slot = damageSlot;
@@ -490,11 +506,7 @@ public partial class BeastmasterRotation
 		}
 
 		var item = CrucibleItems[used];
-		if (item.Kind == CrucibleItemKind.Damage)
-		{
-			_damageItemsInFight++;
-		}
-		else if (item.Kind == CrucibleItemKind.ResistAilment)
+		if (item.Kind == CrucibleItemKind.ResistAilment)
 		{
 			_ = _serumCovers.Add(covers);
 		}
@@ -691,8 +703,9 @@ public partial class BeastmasterRotation
 
 	// 13: the damage item of most worth on the player's target - its potency times the enemies within its radius of the target,
 	// each counting one plus the measured weakness bonus where the item's element is its weakness; at equal worth the one
-	// without knockback. Outside the final fight only when it hits more than the target. An item whose element is the weakness
-	// only of enemies still to come waits for them (K2).
+	// without knockback. Outside the final fight only when it hits more than the target and brings at least as much here as in
+	// the best fight ahead (A664); one with knockback only when it hits every enemy fighting. An item whose element is the
+	// weakness only of enemies still to come waits for them (K2).
 	private static unsafe bool DamageItem(InstanceContentCrucibleOfTheUnbroken* crucible, bool finalFight, out int slot,
 		out IBattleChara target, out string why)
 	{
@@ -708,6 +721,17 @@ public partial class BeastmasterRotation
 		var bestWorth = 0f;
 		var bestHits = 0;
 		var bestKnockback = false;
+		var bestAhead = 0f;
+		var fighting = 0;
+		foreach (var hostile in DataCenter.AllHostileTargets)
+		{
+			if (hostile != null && !hostile.IsDead && hostile.InCombat())
+			{
+				fighting++;
+			}
+		}
+
+		var ahead = finalFight ? null : CrucibleRoute.BattlesAhead();
 		for (var i = 0; i < crucible->Inventory.Length; i++)
 		{
 			if (!TryItem(crucible, i, CrucibleItemKind.Damage, out var item) || OnlyForEnemiesToCome(item.Element))
@@ -730,12 +754,15 @@ public partial class BeastmasterRotation
 			}
 
 			var worth = item.Value * weight;
-			if ((finalFight || hits > 1) && (worth > bestWorth || (worth == bestWorth && bestKnockback && !item.Knockback)))
+			var later = AheadWorth(item, ahead, bonus);
+			if ((finalFight || (hits > 1 && worth >= later)) && (!item.Knockback || hits >= fighting)
+				&& (worth > bestWorth || (worth == bestWorth && bestKnockback && !item.Knockback)))
 			{
 				slot = i;
 				bestWorth = worth;
 				bestHits = hits;
 				bestKnockback = item.Knockback;
+				bestAhead = later;
 			}
 		}
 
@@ -744,8 +771,88 @@ public partial class BeastmasterRotation
 			return false;
 		}
 
-		why = $"on {target.Name}, {bestHits} enemies within reach{(finalFight ? ", final fight" : string.Empty)}";
+		why = $"on {target.Name}, {bestHits} enemies within reach"
+			+ (finalFight ? ", final fight" : $", worth {bestWorth:F0} here against at most {bestAhead:F0} in a fight ahead");
 		return true;
+	}
+
+	// A664: what a damage item could bring in the best fight still ahead (the final one included) - its potency times each
+	// enemy kind the sheet lists for that fight, one plus the weakness bonus where its element is the kind's weakness; an
+	// item without a radius only the best single kind. 0 while no fight ahead is known.
+	private static float AheadWorth(CrucibleItem item, HashSet<uint>? ahead, float bonus)
+	{
+		var best = 0f;
+		if (ahead == null)
+		{
+			return best;
+		}
+
+		foreach (var battle in ahead)
+		{
+			var weight = 0f;
+			foreach (var enemy in CrucibleBoard.EnemiesOf(battle))
+			{
+				var each = 1f + (item.Element != 0 && enemy.Weakness == item.Element ? bonus : 0f);
+				weight = item.Radius > 0f ? weight + each : Math.Max(weight, each);
+			}
+
+			best = Math.Max(best, item.Value * weight);
+		}
+
+		return best;
+	}
+
+	// A664: healing no fight ahead needs - what the healing items held heal beyond the heaviest sum of the fights ahead up
+	// to the final one (each with its learned load, else the heaviest measured) and what the player misses now; in the final
+	// fight all of it. Of that, the largest item that does not overheal him.
+	private static unsafe int SpareHeal(InstanceContentCrucibleOfTheUnbroken* crucible, IBattleChara player, bool finalFight,
+		out string why)
+	{
+		why = string.Empty;
+		var missing = 1f - player.GetHealthRatio();
+		var held = 0f;
+		for (var i = 0; i < crucible->Inventory.Length; i++)
+		{
+			if (TryItem(crucible, i, CrucibleItemKind.Heal, out var heal))
+			{
+				held += heal.Value;
+			}
+		}
+
+		var spare = held;
+		if (!finalFight)
+		{
+			float? heaviest = CrucibleBoard.Loads is { } loads && player.MaxHp > 0
+				? (float)(loads.Heaviest.Damage / player.MaxHp)
+				: null;
+			if (CrucibleRoute.WorstAhead(false, battle => LoadNow(battle) ?? heaviest) is not { } need)
+			{
+				return -1;
+			}
+
+			spare = held - need - missing;
+		}
+
+		var best = -1;
+		var value = 0f;
+		for (var i = 0; i < crucible->Inventory.Length; i++)
+		{
+			if (TryItem(crucible, i, CrucibleItemKind.Heal, out var heal) && heal.Value <= missing && heal.Value <= spare
+				&& heal.Value > value)
+			{
+				best = i;
+				value = heal.Value;
+			}
+		}
+
+		if (best >= 0)
+		{
+			why = finalFight
+				? $"in the final fight, it heals {value:P0} of the {missing:P0} you miss - nothing is worth anything after it"
+				: $"it heals {value:P0} of the {missing:P0} you miss, from {spare:P0} healing no fight ahead needs";
+		}
+
+		return best;
 	}
 
 	// K2 for the damage items: the element is the weakness of an enemy still to come and of none here.

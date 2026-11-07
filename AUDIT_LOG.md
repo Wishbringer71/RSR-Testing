@@ -19493,6 +19493,41 @@ dazu seine Vorgabe vom selben Abend: „sich immer auf die summe der anstehenden
 *Prüfgrad:* Compile ohne Warnung; Prüfskripte; beide Beispiele mit dem Code von Hand nachgerechnet. Im Spiel nicht
 beobachtet; „crucible route: at move … recommends …" steht in der Spur, sein Log prüft nach.
 
+### A664 · Crucible-Gegenstände über die Kämpfe des Bretts; Synergien; Rückstoß (07.11.2026)
+
+Seine Vorgaben vom 07.11.2026 (eingeordnet als Vorgaben, Kriterien): „nach dem letzten fight ist zuviel ungenutzt und
+verfällt. sollte besser über alle kämpfe eines bretts hinweg genutzt werden, so dass möglichst das zum letzten kampf am
+besten passende dort genutzt wird, das andere vorher in den kämpfen, wo es am ehesten passt"; „synergieeffekte der items
+prüfen und optimieren"; „sich immer auf die summe der anstehenden kämpfe ausrichten". Sein Hinweis: „bei rückstoßeffekt
+wird einer der gegner ins aus geschleudert, die anderen sind vom effekt zu weit entfernt. somit war der effekt
+wahrscheinlich zu früh. kommt noch per log".
+
+- *1 Research (am Code):* Heilgegenstände nur unter der Trank-Linie (1), auch im Endkampf; nach ihm sind sie wertlos.
+  Schaden vor dem Endkampf einer je Kampf (13), begründet mit der unbekannten Zahl der Kämpfe – seit K14 bekannt. Rückstoß
+  entschied nur bei gleichem Wert. Stärkung nur im Endkampf, dort vor dem Schaden (Synergie mit den Reißzähnen, belegt
+  im Wirktext). Das Ausdauermittel (+20 % maximale LP) kam nach den Heilgegenständen, die einen Anteil der maximalen LP
+  heilen.
+- *2 Optionen:* Heilung: (0) nur an der Linie; (a) Überschuss über die schwerste Summe der anstehenden Kämpfe ohne
+  Überheilen, im Endkampf alles. Schaden: (0) einer je Kampf; (a) Wert hier gegen den besten anstehenden Kampf (Gegnerarten
+  des Blatts, Schwäche); (b) Zuordnung aller Gegenstände auf alle Kämpfe mit Kapazität. Rückstoß: (0) Gleichstand;
+  (a) nur, wenn er jeden trifft, der kämpft. Stärkung: (0) nur Endkampf; (a) mit jedem Schadensgegenstand.
+- *3–5 Abwägung im Kampf:* Heilung (a): heilt früh dieselbe Menge, hält dich höher, verfällt nicht – nur der Überschuss.
+  Schaden (a) vor (b): Ein Gegenstand je Einsatz hat keine Kapazitätsgrenze je Kampf, das beste Ziel je Gegenstand ist
+  seine Zuordnung; die Gegnerarten unterschätzen große Rudel, der Gegenstand geht eher zu früh als nach dem Endkampf
+  verloren. Rückstoß (a) nach seinem Hinweis. Stärkung (0): Der Endkampf nimmt jedes Mittel nacheinander (15 bis 30 s
+  je Status, Endkampf Brett 1 157 s), (a) nähme sie dem Endkampf für einen Teil eines Reißzahns – nicht gebaut,
+  Gegenthese benannt. Ausdauermittel vor der Heilung gegen einen Boss (Synergie).
+- *6 Falsifikation:* Kein Defekt? Widerlegt an seiner Meldung und am Code (einer je Kampf, Linie). Option falsch? Ein Kampf
+  schwerer als je zuvor nimmt den Überschuss – nur er geht, Preis benannt. Ausgeliefert, nichts ändert sich? Ohne Weg aus
+  den Blättern zählt kein anstehender Kampf; Schutz und Seren hängen an Anlässen wie bisher.
+- *7 Gebaut:* `BeastmasterCrucibleItems`: `SpareHeal`, Ausdauermittel vor Heilung, `AheadWorth`, Rückstoß-Bedingung,
+  Zähler „einer je Kampf" samt Verdrahtung entfernt.
+- *9 Dokumentation:* Konzept 21 K8 („Über das Brett", 1, 13, Gegenthesen); TODO-Eintrag entfernt, Nachprüfung an seinem
+  Log unter „Warten auf Daten".
+
+*Prüfgrad:* Compile ohne Warnung; Prüfskripte. Im Spiel nicht beobachtet; jede Wahl steht als „crucible item: …" mit
+Grund und Wert in der Spur, sein Log prüft nach.
+
 ## B · Commit-Register (Fork vs. `upstream/main`)
 
 ### B1 · Einzelgeprüfte Fork-Commits

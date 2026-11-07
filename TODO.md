@@ -19,11 +19,9 @@ auswahl und das timing der beschwörung" – je Kampf aller fünf Bretter (Gegne
 BossMod-Module) die Rotation des Beastmasters, die Wahl der Begleiter und den Zeitpunkt ihres Aufrufs im Loop prüfen
 (Beispiel seiner Beobachtung: der Raptor gegen Feuer, bevor feueranfällige Gegner da waren; A581).
 
-1. Crucible: Gegenstände über die Kämpfe des Bretts – nach dem Endkampf verfällt zu viel; Stärkung und Schaden gehen
-   dorthin, wo sie über alle anstehenden Kämpfe am meisten bringen, Synergien eingerechnet.
-2. Blaumagier: RSRs nächste Aktion beendet Apokalypsis und Chelonian Gate – Schaden und Minderung des Spielers enden
+1. Blaumagier: RSRs nächste Aktion beendet Apokalypsis und Chelonian Gate – Schaden und Minderung des Spielers enden
    nach einem GCD statt nach 10 s.
-3. Kegel und Ringe gegnerischer Zauber genau messen: Zauber- und Kanalbeginn nutzen RSRs Erkennung bei Kegel und Ring
+2. Kegel und Ringe gegnerischer Zauber genau messen: Zauber- und Kanalbeginn nutzen RSRs Erkennung bei Kegel und Ring
    nicht, und mehrere Leser sehen hinter einem Kegel oder im Innenkreis eines Rings eine Gefahr, die keine ist.
 
 Danach die technische Schuld, soweit ihre Auflösungsbedingung erfüllt ist. Warten auf Daten: unten.
@@ -47,13 +45,6 @@ auf jeden Schadens- und Schutzkanal gehört, den RSR nicht selbst beendet (Unive
 *Konzept:* 14, „Wo Angriff die Abwehr beendet: die Kanäle".
 
 ## Offene Arbeit
-
-### Crucible: Gegenstände über die Kämpfe des Bretts · N
-Im Kampf: Nach dem Endkampf verfallen Gegenstände (seine Meldung vom 07.11.2026); Stärkung geht nur im Endkampf, Schaden
-einer je Kampf davor; ein Reißzahn mit Rückstoß ging, als nur ein Gegner nahe stand. Nächster Schritt: Loop über die
-Kämpfe bis zum Endgegner (Gegner, Schwächen, Zahl aus den Blättern, Last je Kampf), welcher Gegenstand wo am meisten
-bringt, Synergien (Stärkung trägt die Reißzähne), Rückstoß; danach erneut an seinem Log. Konzept 21, K8 („Über das
-Brett").
 
 ### Kegel und Ringe gegnerischer Zauber genau messen · N
 Im Kampf: RSRs Formprüfung (`DataCenter.AreaCastReaches`) misst einen Kegel und einen Ring als vollen Kreis um den
@@ -137,6 +128,14 @@ Reborn"); beides kostet im Spiel, solange nicht beide Installationen gebraucht w
 nebeneinander braucht: neuer interner Name mit Übernahme des Ordners, angezeigter Name bleibt.
 
 ## Warten auf Daten oder Fremde
+
+- **Crucible: Lager, Weg, Endkampfplan und Gegenstände an seinem Log nachprüfen** (A661 bis A664; seine Vorgabe vom
+  07.11.2026: „vorab im vollen kritischen loop prüfen, und auch nach einspielung der logs"). Im Kampf: mehr Begleiter an
+  der Campsite, der Schatz statt der Rast, wo beide sicher sind, der Plan des Endkampfs gleich der Wahl am Endkampf,
+  übrige Heilung vor dem Endkampf, Schadensgegenstände nach Wert über die Kämpfe, Rückstoß nur auf alle. Auflösung:
+  `DefenseTrace.log` und ACT-Mitschnitt seines nächsten Laufs – die Zeilen „crucible fight …: … stored", „crucible
+  campsite", „crucible route", „Crucible final fight's plan", „crucible item" und sein Rückstoß-Fall; dann je Abweichung
+  Loop. Konzept 21, K8 („Über das Brett"), K10, K14, Weg.
 
 - **Beastmaster: Bretter 2 bis 5 am ersten Mitschnitt prüfen** (Crucible-Strategien K1 bis K14 gebaut, zuletzt A643,
   A644). Im Kampf: Tötungsregeln (Tablitauren, Lamien, Morpho und Abaddon, Myconid in der Pfütze), Gegenangriff nach
