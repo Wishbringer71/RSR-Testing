@@ -217,7 +217,7 @@ internal partial class OtherConfiguration
 	internal static Dictionary<uint, int> SleepResistantKinds = [];
 
 	/// <summary>
-	/// K4 of the Crucible (concept 01, A587): enemy kinds (BNpcName) seen casting a spell the game marks interruptible on a
+	/// K4 of the Crucible (concept 21, A587): enemy kinds (BNpcName) seen casting a spell the game marks interruptible on a
 	/// board, with in how many fights - learned in play over every session, stored like <see cref="SleepResistantKinds"/>.
 	/// Changed and read on the game thread under <see cref="InterruptibleKindsGate"/>.
 	/// </summary>

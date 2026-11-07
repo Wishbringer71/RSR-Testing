@@ -951,7 +951,7 @@ internal partial class Configs : IPluginConfiguration, IM3Settings
 	private readonly float _healthForAutoDefense = 1;
 
 	// The enemy count says a pull has come, not whether it needs the big cooldowns; the measured fall says that,
-	// net of every heal and mitigation (concept 08, "bewältigbar wird gemessen"). In the closed-loop model
+	// net of every heal and mitigation (concept 09, "Die Abwehr im Pull"). In the closed-loop model
 	// (tank_pull_defense_model.py) holding them until the fall would cross 30 % within their duration, without the old
 	// 60 s / 30 s stagger, had the fewest deaths and the least time under 30 % in every case, the opening of a big pull
 	// no worse than before (A359). On by default: the owner's rule for new rules (29.09.2026).
@@ -1696,7 +1696,7 @@ internal partial class Configs : IPluginConfiguration, IM3Settings
 	Filter = TargetConfig, Section = 1)]
 	private static readonly bool _avoidSpikedEnemies = true;
 
-	// Concept 03, "Tötungsregeln", rules 2 and 3 (A588), with the fights in concept 01, K12: enemies that must fall together,
+	// Concept 03, "Tötungsregeln", rules 2 and 3 (A588), with the fights in concept 21, K12: enemies that must fall together,
 	// after another or only in a place. On by default: a tablitaur that falls too early enrages the other (Daedalus, in the
 	// field), a morpho's death confuses you.
 	[ConditionBool, UI("Kill rules of known fights",

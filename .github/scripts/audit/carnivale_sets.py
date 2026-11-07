@@ -1,6 +1,6 @@
 #!/usr/bin/env python3
 """The spells each Masked Carnivale stage guide of Blue Academy names as required or recommended, as RSR's set proposal
-per stage (concept 01, "Satz je Stufe aus den Stufenführern", A627).
+per stage (concept 22, "Satz je Stufe aus den Stufenführern", A627).
 
 Blue Academy (RoarkGit/Blue-Academy, the source of mage.blue) writes one guide per stage with the lists "Required Spells"
 and "Recommended Spells"; each list point names one or more spells by key. The repository carries no licence, so only
@@ -110,7 +110,7 @@ def render(stages, source):
         'namespace RotationSolver.Basic.Resources;',
         '',
         '/// <summary>',
-        '/// The spells each Masked Carnivale stage guide of Blue Academy names (concept 01, "Satz je Stufe aus den',
+        '/// The spells each Masked Carnivale stage guide of Blue Academy names (concept 22, "Satz je Stufe aus den',
         '/// Stufenführern", A627): per stage the points of its required and recommended lists, each with the spellbook numbers',
         '/// it names in the guide\'s order. Facts only; the guides are at https://mage.blue/masked-carnivale/stages/.',
         '/// </summary>',

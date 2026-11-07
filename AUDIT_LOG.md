@@ -18908,6 +18908,30 @@ habe den schleim bislang nicht anfreunden können."
   im Spiel: „weakness factor: first measure" und die erweiterte Zeile „carnivale briefing" im `DefenseTrace.log`.
 - *9 Dokumentation:* Konzept 01; TODO: Eintrag entfernt, Reihenfolge fortgeschrieben; Release-Text.
 
+### A648 · Ordnung der Konzepte: Ebenen und Inhalte, drei Inhaltskonzepte, Prüfung der Code-Verweise (07.11.2026)
+
+- *Anlass:* TODO „Konzepte neu ordnen: allgemein, Rollen, Gruppen, Jobs, Inhalte", sein Auftrag vom 05.11.2026.
+- *1 Research:* Erhebung am 07.11.2026: 19 Konzepte, 18.345 Zeilen; `01-jobs.md` 3.179 (Blaumagier 492, Beastmaster
+  2.246, davon Crucible 1.062), `03-universal.md` 1.607 (Tiefe Gewölbe 158). Inhaltsthemen über bis zu zwölf Konzepte
+  verteilt. 511 Code-Kommentare „concept NN", 704 Nennungen im Archiv, 25 in `fixed_values.json`; die Prüfskripte lesen
+  `docs/rotation-flow/*.md` flach. Die Unterschiede der Nahkampfgruppe in `02` laufen quer zu seinen Paaren.
+- *2–6:* im neuen Konzept `20-concept-order.md`: Optionen 0 (nichts), A (volle Hierarchie), B (Inhaltskonzepte und
+  Index mit beiden Achsen), C (nur Index); drei Gegenthesen (kein Bedarf nach der Vorgabe vom 01.10.2026; A ist
+  richtig; nichts ändert sich). Ergebnis B: eigene Konzepte nur für Inhalte mit eigenem Regelwerk, sonst Index; die
+  Kampfantwort (`07`, `08`, `09`, `11`, `13`) bleibt nach ihrer Frage; die Ebene der Nahkampf-Paare bleibt begründet leer.
+- *7 Umgesetzt:* `21-crucible.md` (aus `01`, Beastmaster), `22-masked-carnivale.md` (aus `01`, Blaumagier),
+  `23-deep-dungeons.md` (aus `03`), Text unverändert mit Kopf; Verweise an den alten Stellen. `README.md`: Ebenen und
+  Inhalte. Verweise in `03` und `TODO.md` nachgezogen. Neue Prüfung `check_concept_refs.py` (Selbsttest, CI-Schritt):
+  jeder Code-Kommentar „concept NN, "Titel"" gegen die Überschriften und Listentitel der Datei NN. Sie fand neben den
+  umgezogenen Abschnitten 13 Verweise mit Titeln, die es so nicht gab („Glockenspiel" statt des Listentitels,
+  „bewältigbar wird gemessen" in 08 statt „Die Abwehr im Pull" in 09, „Tankwechsel von der anderen Seite" statt
+  „Tankwechsel nach einem Tankbuster", „Rösselsprünge", „Ob Analysieren die Lebenspunkte einrechnet" u. a.); berichtigt,
+  dazu die Crucible-Verweise ohne Titel („K1 of the Crucible (concept 01, …)") auf 21. `.claude/rules/konzepte.md`: wohin
+  eine Regel gehört.
+- *8 Nachweis:* 50 Prüfschritte, 244 Code-Verweise auf Abschnitte treffen; im Kampf keine Wirkung.
+- *9 Dokumentation:* Konzept 20; TODO: Eintrag entfernt; Archiv bleibt (`archive.py` findet die Konzepte eines Eintrags
+  durch Suche, auch in den neuen Dateien).
+
 ## B · Commit-Register (Fork vs. `upstream/main`)
 
 ### B1 · Einzelgeprüfte Fork-Commits

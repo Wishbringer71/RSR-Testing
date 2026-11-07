@@ -114,7 +114,7 @@ public class ActionSetting
 	/// <summary>
 	/// Marks this action as an attack of a deep dungeon transformation (Manticore, Succubus, Kuribu, Dreadnaught, Bomb,
 	/// Mudball). Such an action stands on no duty slot and carries no level or unlock of the job; the basic check asks
-	/// only whether the game allows it now, which it does for the form the player has (concept 03, "Tiefe Gewölbe:
+	/// only whether the game allows it now, which it does for the form the player has (concept 23, "Tiefe Gewölbe:
 	/// Verwandlung", A614).
 	/// </summary>
 	public bool IsTransformationAction { get; set; } = false;

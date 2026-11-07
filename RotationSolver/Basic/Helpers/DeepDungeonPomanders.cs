@@ -7,7 +7,7 @@ using FFXIVClientStructs.FFXIV.Client.Game.InstanceContent;
 namespace RotationSolver.Basic.Helpers;
 
 /// <summary>
-/// A625 (concept 03, "Tiefe Gewölbe: Pomander"): alone in a deep dungeon, the pomanders that guard against a hit or stave
+/// A625 (concept 23, "Tiefe Gewölbe: Pomander"): alone in a deep dungeon, the pomanders that guard against a hit or stave
 /// off a death, for every job. Against a boss Steel, Strength and Haste - before the pull once it stands in sight, so the
 /// lock of each use costs no GCD; in combat the critical class takes Raising, then Witching on an attacker in its radius. Never in a party: the dungeon's inventory is shared, and what a party member
 /// means to do with it is an assumption.

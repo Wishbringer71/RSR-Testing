@@ -13,7 +13,7 @@ public readonly record struct CarnivalePick(bool Required, uint Spell, string Te
 
 public partial class BlueMageRotation
 {
-	// A627 (concept 01, "Satz je Stufe aus den Stufenführern"): the spells the stage guide of Blue Academy names for the stage
+	// A627 (concept 22, "Satz je Stufe aus den Stufenführern"): the spells the stage guide of Blue Academy names for the stage
 	// the Masked Carnivale briefing has chosen, and on the player's click the set that holds them.
 	private static Dictionary<uint, uint>? _spellByNumber;
 	private static readonly Dictionary<int, List<List<Lumina.Excel.Sheets.AOZContentBriefingBNpc>>> _stageEnemies = [];
@@ -270,7 +270,7 @@ public partial class BlueMageRotation
 	}
 
 	/// <summary>
-	/// The enemies of each act of a Masked Carnivale stage, from the sheets (concept 01, "Die Gegner einer Stufe stehen in
+	/// The enemies of each act of a Masked Carnivale stage, from the sheets (concept 22, "Die Gegner einer Stufe stehen in
 	/// den Blättern", A627, A647): the <c>AOZContent</c> row whose Order is the stage names per act a fight type and a row -
 	/// fight type 1 a group in <c>AOZArrangement</c> (its subrows), 2 and 3 a boss in <c>AOZBoss</c> (BlueMageSetBuilder
 	/// 213d3d9 checks this against the stage names: stage 3 is Zipacna, 25 Azulmagia, 32 Goldor).

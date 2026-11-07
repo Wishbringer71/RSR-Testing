@@ -825,7 +825,7 @@ public sealed class BLU_Reborn : BlueMageRotation
 
 		// The Knight's Tour cycle begins with one tour at 200 against Sonic Boom's 210 and pays 400 for every one after it, as
 		// long as Bind and Slow land. It begins only against a kind not seen to resist them, and where the target lives for the
-		// opener and one payoff (concept 01, "Rösselsprünge", A507). The opener skipped the player's own status need before,
+		// opener and one payoff (concept 01, "D3, die beiden Rösselsprünge", A507). The opener skipped the player's own status need before,
 		// not the target's, and never went (D10).
 		if (KnightsTourCanBegin(BlackKnightsTourPvE, WhiteKnightsTourPvE)
 			&& BlackKnightsTourPvE.CanUse(out act, skipTargetStatusNeedCheck: true))

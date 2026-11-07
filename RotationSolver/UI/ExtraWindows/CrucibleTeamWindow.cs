@@ -6,7 +6,7 @@ using RotationSolver.Basic.Rotations.Basic;
 namespace RotationSolver.UI.ExtraWindows;
 
 /// <summary>
-/// K7 of the Crucible (concept 01, A563): while the team screen of a board is open and the beastmaster rotation runs, the
+/// K7 of the Crucible (concept 21, A563): while the team screen of a board is open and the beastmaster rotation runs, the
 /// team RSR recommends, why, and a button that makes the team that. Nothing changes without the click (decision C, A533).
 /// </summary>
 internal class CrucibleTeamWindow : RecommendationWindow

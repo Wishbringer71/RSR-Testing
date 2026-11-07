@@ -124,7 +124,7 @@ public static class ObjectHelper
 	}
 
 	/// <summary>
-	/// The setting "Take the enemy from a co-tank in danger" (concept 09, "Tankwechsel von der anderen Seite").
+	/// The setting "Take the enemy from a co-tank in danger" (concept 09, "Tankwechsel nach einem Tankbuster").
 	/// Two readings, both of the co-tank the enemy attacks:
 	/// <list type="bullet">
 	/// <item>At the HP the user set for a tank in danger, unless he rides an invulnerability (Superbolide leaves him

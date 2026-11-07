@@ -4,7 +4,7 @@ using FFXIVClientStructs.FFXIV.Client.UI.Agent;
 namespace RotationSolver.Basic.Rotations.Basic;
 
 /// <summary>
-/// K7 of the Crucible (concept 01, "Stufe 4, zweiter Teil: K7, Kader auf Wunsch", A563): with the team screen open, the
+/// K7 of the Crucible (concept 21, "Stufe 4, zweiter Teil: K7, Kader auf Wunsch", A563): with the team screen open, the
 /// team RSR recommends for the board, and on request the steps that make the team that - one TogglePet at a time.
 /// </summary>
 public partial class BeastmasterRotation

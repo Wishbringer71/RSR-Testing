@@ -79,7 +79,7 @@ internal static class BlueMageSetTrace
 
 	/// <summary>
 	/// Writes the stage the Masked Carnivale briefing shows and, per act, the enemy ids it holds with the briefing sheet's
-	/// name for each, once per stage chosen (concept 01, "Masked Carnivale", A510). What these ids are is not documented:
+	/// name for each, once per stage chosen (concept 22, "Masked Carnivale", A510). What these ids are is not documented:
 	/// FFXIVClientStructs names them enemies of an arrangement, nothing more. The line shows whether they resolve to the
 	/// stage's enemies in <c>AOZContentBriefingBNpc</c> - the condition for choosing a set per stage by their resistances.
 	/// </summary>

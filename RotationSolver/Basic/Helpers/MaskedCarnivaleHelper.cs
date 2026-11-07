@@ -211,7 +211,7 @@ public static class MaskedCarnivaleHelper
 	/// <summary>
 	/// What a briefing enemy does to an action, from the <c>AOZContentBriefingBNpc</c> sheet: immune when it is immune to
 	/// one of the action's elements or attack types (slashing, piercing, blunt, magic), weak when it is weak to one, else
-	/// normal (concept 01, "Schwäche und Immunität der Stufe", A647). A Blue Mage's physical spell carries no element - the
+	/// normal (concept 22, "Schwäche und Immunität der Stufe", A647). A Blue Mage's physical spell carries no element - the
 	/// sheet gives it the unaspected value - but its attack type, so an enemy immune to blunt is immune to Revenge Blast;
 	/// read by element alone, that went unseen. <see cref="MobResistance.Normal"/> for an enemy the sheet does not list.
 	/// </summary>

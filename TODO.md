@@ -22,9 +22,6 @@ BossMod-Module) die Rotation des Beastmasters, die Wahl der Begleiter und den Ze
 1. Bewegungssperre beim Wirken gegen das Ausweichen der BossMod-KI: Mit „Lock movement while casting" an steht die
    Figur während jedes Zaubers still, auch wenn die KI von BossMod aus einer Fläche laufen will; nur in dieser
    Kombination, dort aber mit einem Treffer, dem der Spieler nicht ausweicht.
-2. Konzepte neu ordnen (allgemein, Rollen, Gruppen, Jobs, Inhalte): keine direkte Wirkung im Kampf; eine Regel, die
-   im Konzept eines Jobs steht, wird für dessen Gruppe übersehen, und eine Inhaltsregel ist über mehrere Konzepte
-   verteilt.
 
 Danach die technische Schuld, soweit ihre Auflösungsbedingung erfüllt ist. Warten auf Daten: unten.
 
@@ -50,23 +47,6 @@ wenn eine Fläche mitten im Zauber erscheint. Neue Zauber startet RSR nicht, sol
 dessen Ende landet; die Optionen A, B (Empfehlung: die Sperre weicht der KI) und C stehen im Konzept. *Nächster Schritt:*
 Vorlage an ihn, gebündelt am Ende des TODO (der Optionstext bindet). *Konzept:* 03, „Bewegungssperre beim Wirken und die
 KI von BossMod".
-
-### Konzepte neu ordnen: allgemein, Rollen, Gruppen, Jobs, Inhalte · N
-Sein Auftrag (05.11.2026): „generelle prüfung aller konzepte, ob eine neuorganisation nicht sinnvoll wäre: allgemein für
-alle, dann nach gruppierungen heiler, tank, melee (drei sorten = monk+samurai, schnitter+dragoon, ninja+viper),
-fernkämpfer, magier. dann weiter unterteilt auf jede einzelne klasse und auch die sonderklassen wie bluemage und
-beastmaster. parallele konzepte für dungeons, endgegner, savage, occult crescent. immer da, wo bedarf besteht und mit
-querverweisen zu den anderen betroffenen konzepten. das in einem eigenen konzept im vollen kritischen loop mit antithese
-und versuch der widerlegung analysieren und bei sinnhaftigkeit planen". Im Kampf mittelbar: Was im Konzept eines Jobs
-steht (etwa die Zielart ohne Tank und Heiler für Beastmaster und Blaumagier, das Crucible im Beastmaster-Teil), sucht
-man für eine Gruppe oder einen Inhalt nicht dort; eine Regel, die so übersehen wird, fehlt dem nächsten Job. *Ort:*
-`docs/rotation-flow/` (19 Konzepte nach Leitfrage, `01-jobs.md` allein für alle Jobs), Index `README.md`,
-`check_concept_links.py`, Verweise aus Code, Archiv und TODO auf Konzeptabschnitte. *Nächster Schritt:* eigenes
-Konzept (kein bestehendes trägt die Ordnung der Konzepte; der Index ist Navigation), Loop: Ist-Erhebung (Abschnitte je
-Ebene, Doppelungen, Verweise), Optionen mit Nullvariante, je Option Antithese und Widerlegungsversuch (Verweise
-veralten, Abschnitte doppeln sich, Prüfskripte und Archiv nennen Pfade), Plan nur bei Sinnhaftigkeit. Die Stufung folgt
-seiner Vorgabe „Universell zuerst" (26.09.2026, CLAUDE.md), die bisher nur den Code ordnete: Die Stufen sind gesetzt,
-der Loop klärt, wie die Konzepte ihnen folgen und wo Inhaltskonzepte daneben stehen. *Konzept:* `README.md`, neues Konzept zur Ordnung.
 
 ## Technische Schuld
 
@@ -147,7 +127,7 @@ nebeneinander braucht: neuer interner Name mit Übernahme des Ordners, angezeigt
   Angriffsart und die Eier des Zu sind aus Blättern, BossMod-Modulen und Daedalus' Feldnotizen gebaut, aber nicht an einem
   seiner Läufe gesehen. Auflösung: `DefenseTrace.log` und ACT-Mitschnitt seines ersten Laufs auf einem der Bretter 2 bis 5
   – die Zeilen „kill rule: … held/released", „left alone", „crucible route" und die Tode; dann je Abweichung Loop.
-  Konzept 01, „Crucible of the Unbroken: Bretter, Kämpfe, Strategien".
+  Konzept 21 („Crucible of the Unbroken: Bretter, Kämpfe, Strategien").
 
 - **Teraflare bricht auf Shinryu Unreal ab: welcher Abbrecher** (seine Meldung, 06.11.2026; A629). Im Kampf: In der
   letzten Phase startet sein LB3 und bricht wieder ab, mehrfach. RSR reicht Limit Breaks unverändert ans Spiel und
@@ -160,7 +140,7 @@ nebeneinander braucht: neuer interner Name mit Übernahme des Ordners, angezeigt
   RSR Barkbalm vor dem Bosskampf und Poisonfruit in der Gefahr nur, wenn es den Platz lesen kann; das Blatt nennt dort
   keine Zuordnung, und Poisonfruit und Barkbalm teilen den Wert 5. Gelesen wird über den Statusagenten des Gewölbes, ob
   der ohne offenes Fenster gefüllt ist, ist unbelegt. Auflösung: die Zeilen „deep dungeon stones" eines Laufs in Pilgers
-  Pfad mit Weihrauch im Bestand; dann die Zuordnung fest aus Wert und Agent. Konzept 03, „Tiefe Gewölbe: Magicite,
+  Pfad mit Weihrauch im Bestand; dann die Zuordnung fest aus Wert und Agent. Konzept 23, „Tiefe Gewölbe: Magicite,
   Demiklone und Weihrauch".
 
 - **Beastmaster: Ob Analysieren die LP einrechnet** (A546). Im Kampf: Anfreunden markiert sicher, aber vielleicht früher

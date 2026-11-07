@@ -6,7 +6,7 @@ using RotationSolver.Basic.Rotations.Basic;
 namespace RotationSolver.UI.ExtraWindows;
 
 /// <summary>
-/// K13 of the Crucible (concept 01, A578): while a treasure on a board is open and the beastmaster rotation runs, the offer RSR
+/// K13 of the Crucible (concept 21, A578): while a treasure on a board is open and the beastmaster rotation runs, the offer RSR
 /// recommends, why, and a button that takes it. Nothing is taken without the click.
 /// </summary>
 internal class CrucibleTreasureWindow : RecommendationWindow

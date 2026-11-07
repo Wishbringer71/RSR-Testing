@@ -176,7 +176,7 @@ internal static class EnemyDanger
 			uncertainty = 1f / MathF.Sqrt(basis);
 		}
 
-		// K3 of the Crucible (concept 01, A549): its fall comes sooner by the weakness bonus on the share of damage hitting it.
+		// K3 of the Crucible (concept 21, A549): its fall comes sooner by the weakness bonus on the share of damage hitting it.
 		var fallsIn = Math.Max(1u, enemy.CurrentHp) / CrucibleBoard.FallSpeedup(enemy.NameId);
 		var priority = rate <= 0f ? 0f : rate / fallsIn;
 		cache[enemy.GameObjectId] = (priority, uncertainty);

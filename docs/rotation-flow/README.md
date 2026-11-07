@@ -1,6 +1,6 @@
 # Die Konzepte, nach ihrer Leitfrage
 
-Jedes Dokument beantwortet **eine** Frage. Wer die Frage kennt, muss nicht achtzehn Dateien öffnen,
+Jedes Dokument beantwortet **eine** Frage. Wer die Frage kennt, muss nicht alle Dateien öffnen,
 um zu finden, wo etwas hingehört — und wer etwas einträgt, weiß, wohin.
 
 Dieser Index ist Navigation, kein Inhalt: Er nennt keine Entscheidung und keinen Sachstand. Beides
@@ -27,6 +27,33 @@ stünde hier ein zweites Mal und würde altern.
 | [`17-machinist-reassemble-buffs.md`](17-machinist-reassemble-buffs.md) | Soll der Maschinist eine Reassemble-Ladung für die Gruppenbuffs halten, und welcher Buff zählt am meisten? |
 | [`18-settings-player-or-automatic.md`](18-settings-player-or-automatic.md) | Welche Einstellung ist eine Entscheidung des Spielers, und welche beantwortet das Spiel oder die Laufzeit besser? |
 | [`19-codebase-audit.md`](19-codebase-audit.md) | Wo weicht der Code – Upstream und Fork – von Absicht, Einstellungstext oder Konzept ab, und was ändert das im Kampf? |
+| [`20-concept-order.md`](20-concept-order.md) | Wo steht eine Regel, damit jeder, der sie für seinen Job, seine Rolle oder seinen Inhalt sucht, sie findet – und sie nur einmal steht? |
+| [`21-crucible.md`](21-crucible.md) | Wie spielt der Beastmaster die Bretter des Crucible – Kader, Hörner, Wege, Läden, Schätze, Lager, Gegenstände und den Endkampf? |
+| [`22-masked-carnivale.md`](22-masked-carnivale.md) | Mit welchem Set und welcher Wahl der Zauber geht der Blaumagier eine Stufe des Masked Carnivale an? |
+| [`23-deep-dungeons.md`](23-deep-dungeons.md) | Was tut RSR in den Tiefen Gewölben, das es nur dort gibt – Verwandlung, Pomander, Magicite, Demiklone und Weihrauch? |
+
+**Ebenen** (seine Vorgabe „Universell zuerst", Ordnung in `20`): Eine Regel steht auf der höchsten Ebene, auf der sie
+für alle gleich gilt.
+
+| Ebene | Konzept |
+|---|---|
+| Alle Jobs | `03`, dazu die Kampfantwort nach ihrer Frage: `07` Heilziel, `08` Antwort auf einen Treffer, `09` Schutz des Tanks, `11` Wiederbelebung, `13` Größe einer Fläche |
+| Rolle: Heiler, Tanks, Damage Dealer (Nahkampf, physischer Fernkampf, Magie) | `02` |
+| Nahkampf-Paare (Mönch und Samurai, Dragoon und Schnitter, Ninja und Viper) | leer: keine Regel gilt heute für genau ein Paar (`20`) |
+| Job, die begrenzten eingeschlossen | `01`, dazu `10` (Dunkelritter), `12` (Beschwörer), `17` (Maschinist) |
+
+**Inhalte**: eigene Konzepte, wo ein Inhalt ein eigenes Regelwerk trägt; sonst die Abschnitte, an denen seine Lage
+einer allgemeinen Regel steht.
+
+| Inhalt | Wo |
+|---|---|
+| Crucible of the Unbroken | `21` |
+| Masked Carnivale | `22` |
+| Tiefe Gewölbe | `23`; ihre Regenerationstränke `03` („Regenerationstränke der Sonderinhalte") |
+| Dungeon, Pull | `09` („Die Abwehr im Pull"), `02` („Feindseligkeit im Pull") |
+| Savage, High-End | `03` („Tinktur nur in schwierigen Kämpfen"), `13` (gelernte Flächen und Tankbuster) |
+| Unreal | `07` („Heilziele außerhalb der Gruppe: Figuren, die nur Einzelheilung besiegt"), `03` („Limit Break allein") |
+| Occult Crescent, Eureka, Bozja | `11` („Tote, die nur die Wiederbelebung des Inhalts aufhebt"), `05` („Bewegungsfähigkeiten", Phantomjobs), `07` (Heilungen der Inhaltsrotationen), `10` (Occult Falcon) |
 
 **Der Knoten der Kampffamilie ist `08`.** Heilung, Barriere und Minderung sind drei Antworten auf
 dieselbe Frage; die Ordnung zwischen ihnen steht dort, die Messung der Treffergröße in `13`, die
@@ -37,4 +64,5 @@ Treffer" führt die Zuständigkeiten als Tabelle.
 zuständige Dokument gekennzeichnet. `.github/scripts/audit/check_concept_links.py` listet sie je
 Konzept und meldet zugleich Verweise, die ins Leere zeigen;
 `.github/scripts/audit/check_concept_defaults.py` hält jede Angabe über eine Voreinstellung gegen den
-Code.
+Code, `.github/scripts/audit/check_concept_refs.py` jeden Code-Verweis „concept NN, "Titel"" gegen die Abschnitte der
+Datei NN.

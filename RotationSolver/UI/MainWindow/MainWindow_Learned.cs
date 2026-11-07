@@ -331,7 +331,7 @@ public partial class MainWindow
 		return new LearnedTab("Sleep kinds", ["Enemy kind", "Resisted", "Lock"], rows);
 	}
 
-	// K4 of the Crucible (concept 01, A587): enemy kinds seen casting interruptibly on a board, by name.
+	// K4 of the Crucible (concept 21, A587): enemy kinds seen casting interruptibly on a board, by name.
 	private static LearnedTab InterruptibleKindTab()
 	{
 		var rows = new List<string[]>();

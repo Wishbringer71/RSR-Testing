@@ -8,7 +8,7 @@ using FFXIVClientStructs.FFXIV.Client.UI.Agent;
 namespace RotationSolver.Basic.Helpers;
 
 /// <summary>
-/// A626 (concept 03, "Tiefe Gewölbe: Magicite, Demiklone und Weihrauch"): alone in a deep dungeon, the dungeon's stones -
+/// A626 (concept 23, "Tiefe Gewölbe: Magicite, Demiklone und Weihrauch"): alone in a deep dungeon, the dungeon's stones -
 /// magicite, demiclones, incense - for every job, after the pomanders. In the critical class a stone that kills the
 /// floor's enemies and makes the party invulnerable for 10 s; against a boss Elder Magicite or a demiclone in combat,
 /// Barkbalm before the pull once the boss stands in sight. Never Mazeroot, and never in a party.

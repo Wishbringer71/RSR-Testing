@@ -15,7 +15,7 @@ public abstract class DeepDungeonRotation : DutyRotation
 
 public partial class DutyRotation
 {
-	// The attacks of the deep dungeon forms (concept 03, "Tiefe Gewölbe: Verwandlung", A614): Manticore, Succubus and
+	// The attacks of the deep dungeon forms (concept 23, "Tiefe Gewölbe: Verwandlung", A614): Manticore, Succubus and
 	// Kuribu from the Transformation sheet, Dreadnaught, Bomb and Mudball from BossMod's deep dungeon module. Each stands on
 	// no duty slot; the game allows the one of the form the player has.
 

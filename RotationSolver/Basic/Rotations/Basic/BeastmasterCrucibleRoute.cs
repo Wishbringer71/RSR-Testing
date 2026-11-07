@@ -8,7 +8,7 @@ using Space = RotationSolver.Basic.Helpers.CrucibleRoute.Space;
 namespace RotationSolver.Basic.Rotations.Basic;
 
 /// <summary>
-/// K10 "Weg" of the Crucible (concept 01, A632; the owner's rule of 06.11.2026): at the next fork of the board, which way to
+/// K10 "Weg" of the Crucible (concept 21, A632; the owner's rule of 06.11.2026): at the next fork of the board, which way to
 /// take - from where the run stands, one stretch ahead, by the player's HP and healing items, the final fight's healers and
 /// the measured load of a fight; computed again on every space.
 /// </summary>

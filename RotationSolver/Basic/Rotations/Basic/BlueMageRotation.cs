@@ -199,7 +199,7 @@ public partial class BlueMageRotation
 	/// <summary>
 	/// What a target does to an action's damage in the Masked Carnivale, from the briefing sheet: 0 when it is immune to
 	/// the action's element or attack type, the measured <see cref="OwnHitWatch.WeaknessFactor"/> when it is weak to it,
-	/// else 1; 1 outside the Carnivale (concept 01, "Schwäche und Immunität der Stufe", A647).
+	/// else 1; 1 outside the Carnivale (concept 22, "Schwäche und Immunität der Stufe", A647).
 	/// </summary>
 	protected static float CarnivaleFactor(IBaseAction action, IBattleChara? target)
 	{

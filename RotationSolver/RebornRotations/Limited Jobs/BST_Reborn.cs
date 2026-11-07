@@ -76,7 +76,7 @@ public sealed class BST_Reborn : BeastmasterRotation
 			+ "Off: Capture and Gauge are never used.")]
 	private bool CaptureFamiliars { get; set; } = true;
 
-	// K8 of the Crucible (concept 01, A551 to A555): the board's items that keep you and your familiar alive, and its damage
+	// K8 of the Crucible (concept 21, A551 to A555): the board's items that keep you and your familiar alive, and its damage
 	// items.
 	[RotationConfig(CombatType.PvE, Name = "Use the board's items that keep you and your familiar alive (Crucible only)",
 		Tooltip = "On a Crucible board RSR uses, one at a time: when your HP fall below 'Use HP potions below this HP' in combat, "
@@ -106,7 +106,7 @@ public sealed class BST_Reborn : BeastmasterRotation
 			+ "Off: RSR uses none of these.")]
 	private bool UseCrucibleDamageItems { get; set; } = true;
 
-	// K10 of the Crucible (concept 01, Campsite, A564): who rests with you; resting stays your click.
+	// K10 of the Crucible (concept 21, Campsite, A564): who rests with you; resting stays your click.
 	[RotationConfig(CombatType.PvE, Name = "Pick who rests with you at a Crucible campsite (Crucible only)",
 		Tooltip = "With the campsite window open RSR selects who rests with you; resting or leaving stays your click. A rest "
 			+ "shares its healing (alone you recover 90% of your HP, with one familiar each 45%, with two each 30%), so "
@@ -117,7 +117,7 @@ public sealed class BST_Reborn : BeastmasterRotation
 			+ "Off: RSR selects nobody at a campsite.")]
 	private bool PickCampsiteRest { get; set; } = true;
 
-	// K10 of the Crucible (concept 01, Laden, A569): what to buy in a shop; buying stays your click.
+	// K10 of the Crucible (concept 21, Laden, A569): what to buy in a shop; buying stays your click.
 	[RotationConfig(CombatType.PvE, Name = "Recommend what to buy in a Crucible shop (Crucible only)",
 		Tooltip = "While a shop on a board is open RSR shows a window with what to buy and why, safety first, as far as your "
 			+ "tokens and slots go: a second life while you hold none; cover against each status of the board's fights that ends "
@@ -131,7 +131,7 @@ public sealed class BST_Reborn : BeastmasterRotation
 			+ "Off: no window, RSR buys nothing.")]
 	private bool RecommendCrucibleShop { get; set; } = true;
 
-	// K13 (concept 01, "K13 – Schatz", A578): his report of 05.11.2026, no recommendation at a treasure.
+	// K13 (concept 21, "K13 – Schatz", A578): his report of 05.11.2026, no recommendation at a treasure.
 	[RotationConfig(CombatType.PvE, Name = "Recommend what to take from a Crucible treasure",
 		Tooltip = "While a treasure on a Crucible board is open, a window names the offer to take and why, in the order the "
 			+ "shop recommendation uses with no price: a second life while none is held; cover against a status of the board's "
@@ -144,7 +144,7 @@ public sealed class BST_Reborn : BeastmasterRotation
 			+ "Off: no window, RSR takes nothing.")]
 	private bool RecommendCrucibleTreasure { get; set; } = true;
 
-	// K10 "Weg" (concept 01, A632): his rule of 06.11.2026 - route hints for the next step, from the run's progress.
+	// K10 "Weg" (concept 21, A632): his rule of 06.11.2026 - route hints for the next step, from the run's progress.
 	[RotationConfig(CombatType.PvE, Name = "Recommend which way to take on a Crucible board",
 		Tooltip = "Between fights on a Crucible board, at the next fork a window shows each way: where its next fight leaves "
 			+ "you and the healers of the final fight's plan, by the measured load of a fight, your own healing, your healing "
@@ -155,7 +155,7 @@ public sealed class BST_Reborn : BeastmasterRotation
 			+ "Off: no window.")]
 	private bool RecommendCrucibleRoute { get; set; } = true;
 
-	// K7 (concept 01, "Leveln", A579): his rule of 05.11.2026, the familiars that lag behind first, where they replace others adequately.
+	// K7 (concept 21, "Leveln", A579): his rule of 05.11.2026, the familiars that lag behind first, where they replace others adequately.
 	[RotationConfig(CombatType.PvE, Name = "Prefer familiars that lag behind in rank for the Crucible team",
 		Tooltip = "The team recommendation (team screen window) gives a familiar's place to the one with the lowest rank that "
 			+ "replaces it adequately - it hits every weakness of the board's fights only that familiar hits in the team, heals or "
@@ -166,7 +166,7 @@ public sealed class BST_Reborn : BeastmasterRotation
 			+ "Off: the strongest team for the board's fights, at equal worth those above the board's rank first.")]
 	private bool PreferLaggingFamiliars { get; set; } = true;
 
-	// K9 of the Crucible (concept 01, A550): on by default. Without a tank the enemies attack only you, and your fall ends the
+	// K9 of the Crucible (concept 21, A550): on by default. Without a tank the enemies attack only you, and your fall ends the
 	// run; the familiar's HP are a second store, and a fallen familiar costs that familiar, not the run.
 	[RotationConfig(CombatType.PvE, Name = "Use Snarl and Challenge based on your HP and your familiar's HP (Crucible only)",
 		Tooltip = "Off: Snarl is never used.\nOn: Snarl gives your damage to the familiar and Challenge takes it back, based on the settings below, "
@@ -305,7 +305,7 @@ public sealed class BST_Reborn : BeastmasterRotation
 	// A582: when the familiar out now appeared, for whether it has been sent off since (FamiliarLeaving).
 	private static DateTime _familiarSince = DateTime.MinValue;
 
-	// K11 (concept 01, A585): the use of the familiar out - which one, its HP when it appeared, its last HP above 0, whether
+	// K11 (concept 21, A585): the use of the familiar out - which one, its HP when it appeared, its last HP above 0, whether
 	// it fell -; per familiar the HP it last left a fight with and what the team agent showed for it then (the agent takes
 	// a fight's losses over only with the next fight, a campsite at once); the largest loss of one use on this board.
 	private static BeastmasterPet _usePet = BeastmasterPet.None;
@@ -521,7 +521,7 @@ public sealed class BST_Reborn : BeastmasterRotation
 		return stream;
 	}
 
-	// K8 item 7 (concept 01, A642): what the familiar out can lose before the next weave window - its largest hit in this
+	// K8 item 7 (concept 21, A642): what the familiar out can lose before the next weave window - its largest hit in this
 	// fight (K9), and while enemies attack it its holding rate over a GCD's lead, the larger. A hit counts once; a stream of
 	// small ones from several enemies shows only in the rate.
 	private static uint FamiliarLossAhead(IBattleChara? familiar)
@@ -1298,7 +1298,7 @@ public sealed class BST_Reborn : BeastmasterRotation
 	// against the enemies around the target first, so the best stays last; at equal value one that heals or protects
 	// stays, then the configured order. A horn without a familiar does not count (B0). Without a catalog, or with no
 	// horn ready, the configured order below decides.
-	// K2 (concept 01, A548): the first ready horn, in the configured order, whose familiar hits the weakness of an enemy that
+	// K2 (concept 21, A548): the first ready horn, in the configured order, whose familiar hits the weakness of an enemy that
 	// came after the fight began.
 	private HornOrder? FirstHornForEnemiesThatCame()
 	{
@@ -1348,7 +1348,7 @@ public sealed class BST_Reborn : BeastmasterRotation
 		}
 		else if (InCombat && FirstHornForEnemiesThatCame() is { } came)
 		{
-			// K2 (concept 01, A548): enemies that came later are here, and a ready familiar hits their weakness.
+			// K2 (concept 21, A548): enemies that came later are here, and a ready familiar hits their weakness.
 			chosen = came;
 			why = "enemies that came later are weak to it";
 		}
@@ -1591,7 +1591,7 @@ public sealed class BST_Reborn : BeastmasterRotation
 			order = order != 0 ? order : Fitting.CompareTo(other.Fitting);
 			// K4 (A587): before a fight with an enemy kind seen casting interruptibly, a Soul Crush ready to stop it.
 			order = order != 0 ? order : Interrupt.CompareTo(other.Interrupt);
-			// A637 (concept 01, K6 "Übersteht den Einsatz"): a familiar that could fall in this fight only after those that last.
+			// A637 (concept 21, K6 "Übersteht den Einsatz"): a familiar that could fall in this fight only after those that last.
 			order = order != 0 ? order : Lasting.CompareTo(other.Lasting);
 			order = order != 0 ? order : Damage.CompareTo(other.Damage);
 			order = order != 0 ? order : SafeAfterDanger.CompareTo(other.SafeAfterDanger);
@@ -2083,7 +2083,7 @@ public sealed class BST_Reborn : BeastmasterRotation
 		return new HornOption(pet, safe, fitting, damage, trickHeals, Interrupts: interrupts);
 	}
 
-	// K6 (concept 01, "Stufe 4: K6, Hörner im Hornfenster", A562): on a Crucible board the horn screen before each battle
+	// K6 (concept 21, "Stufe 4: K6, Hörner im Hornfenster", A562): on a Crucible board the horn screen before each battle
 	// (AgentXBMPetParty active in mode 2). The team in screen order with its HP (SelectedPets, PetCurrentHealth), the chosen
 	// positions in horn order (SelectedPetIds), the battle about to start (the stage list's battle entry); a click on a
 	// team member sends [1, position] to the screen and toggles it (Daedalus 74659a6, recorded 22.10.2026).
@@ -2335,7 +2335,7 @@ public sealed class BST_Reborn : BeastmasterRotation
 		return best;
 	}
 
-	// K11 (concept 01, "Stufe 1: den Endkampf versorgen", A585): before a fight that is not the board's final, the familiars
+	// K11 (concept 21, "K11 – Begleiter über das Brett planen", stage 1, A585): before a fight that is not the board's final, the familiars
 	// that heal or protect in the plan the final fight would get now - its reserve -, held off this fight when one more use
 	// as large as the largest of the board would leave less than another such use for the final; as long as without them
 	// the horns fill and as many heal or protect as this fight requires. Else the one with the most HP comes back first.
@@ -2455,7 +2455,7 @@ public sealed class BST_Reborn : BeastmasterRotation
 			}
 		}
 
-		// K11 stage 3 (concept 01, A643): the team's only Soulkin familiar - Soul Crush over Borrow, the board's only
+		// K11 stage 3 (concept 21, A643): the team's only Soulkin familiar - Soul Crush over Borrow, the board's only
 		// interrupt - when a battle still reachable has an enemy kind seen casting interruptibly and this one has none; by
 		// the same measure as the final fight's healers.
 		if (SoleInterrupterAhead(board, candidates, enemies) is { } soul && (soul.Hp < loss || soul.Hp - loss < loss)

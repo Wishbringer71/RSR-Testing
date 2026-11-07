@@ -71,7 +71,7 @@ internal static class TankSwapWatch
 	private static float _failedRatio = 1f;
 	private static DateTime _heldWritten = DateTime.MinValue;
 
-	// The other side of a swap (concept 09, "Tankwechsel von der anderen Seite"): the tankbuster each enemy last hit
+	// The other side of a swap (concept 09, "Tankwechsel nach einem Tankbuster"): the tankbuster each enemy last hit
 	// somebody with, a co-tank's Shirk on the player while an enemy still attacks him, and the take-over chosen,
 	// carried out and waiting for the enemy's next tankbuster.
 	private static readonly Dictionary<ulong, uint> _lastActionBySource = [];
@@ -573,7 +573,7 @@ internal static class TankSwapWatch
 	}
 
 	/// <summary>
-	/// The other side of a swap (concept 09, "Tankwechsel von der anderen Seite", the owner's decision of 17.10.2026):
+	/// The other side of a swap (concept 09, "Tankwechsel nach einem Tankbuster", the owner's decision of 17.10.2026):
 	/// an enemy attacking another tank of the party is to be taken from him when he shirked to the player (D), or when
 	/// BossModReborn announces the next tankbuster and he would take it still vulnerable or not survive it by his
 	/// health trend (B). Only before the hit's target is fixed: a cast at him or a marker on him can no longer be

@@ -10,7 +10,7 @@ using FFXIVClientStructs.FFXIV.Client.Game.InstanceContent;
 namespace RotationSolver.Basic.Rotations.Basic;
 
 /// <summary>
-/// K8 of the Crucible (concept 01, "Stufe 3: K8, Gegenstände des Bretts", A551 to A555): the board's items - healing below
+/// K8 of the Crucible (concept 21, "Stufe 3: K8, Gegenstände des Bretts", A551 to A555): the board's items - healing below
 /// the player's HP potion line, a cure for poison or blindness, Reraise, Sandstill before a fight, the Beast Potion Kit
 /// against a boss, protection against an announced hit on the player or on a familiar about to fall, a serum or the Beast
 /// Remedy Kit against the fight's dangerous statuses, an absorber against an elemental hit, the Crucible Needle for a

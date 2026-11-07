@@ -6,7 +6,7 @@ using RotationSolver.Basic.Rotations.Basic;
 namespace RotationSolver.UI.ExtraWindows;
 
 /// <summary>
-/// A627 (concept 01, "Satz je Stufe aus den Stufenführern"): while the Masked Carnivale briefing is open and a Blue Mage
+/// A627 (concept 22, "Satz je Stufe aus den Stufenführern"): while the Masked Carnivale briefing is open and a Blue Mage
 /// rotation runs, the spells Blue Academy's guide names for the chosen stage, and a button that puts them into the active
 /// set. Nothing changes without the click.
 /// </summary>

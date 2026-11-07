@@ -7,7 +7,7 @@ using RotationSolver.Basic.Configuration;
 namespace RotationSolver.Basic.Helpers;
 
 /// <summary>
-/// The Crucible of the Unbroken as the game's sheets and the player's hits show it (concept 01, "Crucible of the Unbroken",
+/// The Crucible of the Unbroken as the game's sheets and the player's hits show it (concept 21, "Crucible of the Unbroken",
 /// stage 1, A548, A549): the enemies of each fight with their weakness and stats, the fight in progress, the weakness each
 /// action hits, and how much more a hit on a weakness deals - measured, since no source states it.
 /// </summary>
@@ -32,7 +32,7 @@ internal static class CrucibleBoard
 	/// <summary>
 	/// The statuses BNpcResist states a resistance to, in its order (EXDSchema latest, 05.11.2026: ResistsSlow to
 	/// ResistsDeath; the built Lumina reads them as Unknown0 to Unknown10). XBMPet's InflictsSlow to InflictsDeath use the
-	/// same order (concept 01, K5, A589).
+	/// same order (concept 21, K5, A589).
 	/// </summary>
 	internal enum Ailment
 	{
@@ -996,7 +996,7 @@ internal static class CrucibleBoard
 	}
 
 	/// <summary>
-	/// A586 (concept 01, "K1 über alle Schadensquellen"): the share of familiar damage each source carries - measured over
+	/// A586 (concept 21, "K1 über alle Schadensquellen"): the share of familiar damage each source carries - measured over
 	/// every familiar's hits since RSR loaded once each source has hit, else the shares of the first board in his logs.
 	/// </summary>
 	internal static (float Auto, float Trick, float Release, float Parting) FamiliarDamageShares

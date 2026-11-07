@@ -360,7 +360,7 @@ public static class Watcher
 		}
 	}
 
-	// K1 of the Crucible (concept 01, A549): every damage of the player or an object of his on an enemy of the fight in
+	// K1 of the Crucible (concept 21, A549): every damage of the player or an object of his on an enemy of the fight in
 	// progress, for the bonus of a hit on a weakness and for the share of damage hitting each weakness.
 	private static void RecordCrucibleHits(ActionEffectSet set, IBattleChara player)
 	{

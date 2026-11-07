@@ -4,7 +4,7 @@ using Lumina.Excel;
 namespace RotationSolver.Basic.Helpers;
 
 /// <summary>
-/// K14 of the Crucible (concept 01, "Endkampf vorbereiten", A631): a board's spaces and the ways between them, from the sheets,
+/// K14 of the Crucible (concept 21, "K14 – Endkampf vorbereiten", A631): a board's spaces and the ways between them, from the sheets,
 /// and the last battle the player went into - the game keeps no current space anywhere a plugin reads.
 /// </summary>
 /// <remarks>
@@ -119,7 +119,7 @@ internal static class CrucibleRoute
 
 	/// <summary>
 	/// The battles (XBMBattleDetail rows) still reachable on the board's ways after the last battle, what a random space can
-	/// become included, the boss's too (concept 01, K11 stage 3, A643). Null while no battle is known or the ways were not read.
+	/// become included, the boss's too (concept 21, K11 stage 3, A643). Null while no battle is known or the ways were not read.
 	/// </summary>
 	internal static HashSet<uint>? BattlesAhead()
 	{

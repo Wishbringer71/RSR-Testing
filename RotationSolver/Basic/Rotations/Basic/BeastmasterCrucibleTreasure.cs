@@ -6,7 +6,7 @@ using FFXIVClientStructs.FFXIV.Component.GUI;
 namespace RotationSolver.Basic.Rotations.Basic;
 
 /// <summary>
-/// K13 of the Crucible (concept 01, "K13 – Schatz", A578): while a treasure on a board is open, which offer to take - the
+/// K13 of the Crucible (concept 21, "K13 – Schatz", A578): while a treasure on a board is open, which offer to take - the
 /// shop's order with no price and one pick - and on request that pick. Nothing is taken without the click.
 /// </summary>
 public partial class BeastmasterRotation
@@ -157,7 +157,7 @@ public partial class BeastmasterRotation
 			}
 		}
 
-		// Before the first shop on the board the slots are unknown: one free is assumed (concept 01, K13, Gegenthese 1).
+		// Before the first shop on the board the slots are unknown: one free is assumed (concept 21, K13, Gegenthese 1).
 		if (gearSlots <= owned.Count)
 		{
 			gearSlots = owned.Count + 1;

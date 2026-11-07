@@ -12,7 +12,7 @@ using FFXIVClientStructs.FFXIV.Component.GUI;
 namespace RotationSolver.Basic.Rotations.Basic;
 
 /// <summary>
-/// K10 of the Crucible (concept 01, "K10 – Zwischen den Kämpfen", Laden, A569): while a shop on a board is open, what to
+/// K10 of the Crucible (concept 21, "K10 – Zwischen den Kämpfen", Laden, A569): while a shop on a board is open, what to
 /// buy - safety first, as far as tokens and slots go - and on request the purchases one row at a time. Nothing is bought
 /// without the click.
 /// </summary>
@@ -647,7 +647,7 @@ public partial class BeastmasterRotation
 	/// K10 step 3 (A570), with <paramref name="gear"/> held: the share of his maximum HP the player comes out with from a
 	/// stretch of fights that ends with the heaviest - each fight before it costs its mean damage less his own healing and
 	/// the HP back at its end, the heaviest its damage less his healing -, and his effective HP against the heaviest fight's
-	/// mix. Pieces multiply (concept 01, K10 Laden: an assumption, as is evasion as a chance to escape a physical hit).
+	/// mix. Pieces multiply (concept 21, K10 Laden: an assumption, as is evasion as a chance to escape a physical hit).
 	/// </summary>
 	private static (float Left, float Effective) ShopValue(List<CrucibleGear> gear, ShopLoad load)
 	{

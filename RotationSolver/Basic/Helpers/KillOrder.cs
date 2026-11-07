@@ -4,7 +4,7 @@ using ECommons.DalamudServices;
 namespace RotationSolver.Basic.Helpers;
 
 /// <summary>
-/// Concept 03, "Tötungsregeln", rules 2 and 3 (A588), with the fights in concept 01, K12: enemies that must fall together,
+/// Concept 03, "Tötungsregeln", rules 2 and 3 (A588), with the fights in concept 21, K12: enemies that must fall together,
 /// after another, or only in a place. Worked out once per frame from every battle character before the target lists are
 /// built; a held enemy is no target, and where its fall itself harms, no area attack may catch it.
 /// </summary>

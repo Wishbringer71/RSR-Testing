@@ -9,7 +9,7 @@ using FFXIVClientStructs.FFXIV.Component.GUI;
 namespace RotationSolver.Basic.Rotations.Basic;
 
 /// <summary>
-/// K10 of the Crucible (concept 01, "K10 – Zwischen den Kämpfen", Campsite, A564): at a campsite RSR picks who rests with
+/// K10 of the Crucible (concept 21, "K10 – Zwischen den Kämpfen", Campsite, A564): at a campsite RSR picks who rests with
 /// the player - familiars only when he still comes out at full HP, so he never comes out worse than resting alone; the
 /// number that brings the familiars the most HP, the most hurt standing, unfed ones. Resting stays his click.
 /// </summary>

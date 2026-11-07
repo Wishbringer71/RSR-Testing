@@ -4,7 +4,7 @@
 namespace RotationSolver.Basic.Resources;
 
 /// <summary>
-/// The spells each Masked Carnivale stage guide of Blue Academy names (concept 01, "Satz je Stufe aus den
+/// The spells each Masked Carnivale stage guide of Blue Academy names (concept 22, "Satz je Stufe aus den
 /// Stufenführern", A627): per stage the points of its required and recommended lists, each with the spellbook numbers
 /// it names in the guide's order. Facts only; the guides are at https://mage.blue/masked-carnivale/stages/.
 /// </summary>

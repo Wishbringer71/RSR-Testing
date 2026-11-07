@@ -6,7 +6,7 @@ using RotationSolver.Basic.Rotations.Basic;
 namespace RotationSolver.UI.ExtraWindows;
 
 /// <summary>
-/// K10 of the Crucible (concept 01, Laden, A569; feed for the final fight, K14, A631): while a shop on a board is open and the
+/// K10 of the Crucible (concept 21, Laden, A569; feed for the final fight, K14, A631): while a shop on a board is open and the
 /// beastmaster rotation runs, what RSR recommends buying, why, what it weighs the protective gear against, a button that buys
 /// the list, and the feed for the final fight. Nothing is bought without the click (decision C, A533).
 /// </summary>

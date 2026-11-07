@@ -33,7 +33,7 @@ namespace RotationSolver.Basic.Rotations.Basic;
 /// <param name="AutoId">The action of its auto-attack (XBMPet's Action column, A586); 0 when the sheet's column could not be
 /// told.</param>
 /// <param name="ReleaseLowersAccuracy">The Tempered Release states a lower accuracy of the enemies it hits, with a figure
-/// ("Reduces targets' accuracy by 10%"; concept 01, K5 stage 2, A644).</param>
+/// ("Reduces targets' accuracy by 10%"; concept 21, K5 stage 2, A644).</param>
 public sealed record FamiliarProfile(BeastmasterPet Pet, uint TrickId, uint ReleaseId, float TrickRadius, float TrickPotency,
 	bool TrickHeals, bool ReleaseHeals, bool ReleaseProtects, bool ReleaseRetreats, bool ReleaseStops, bool ReleaseStopsByStun,
 	float ReleaseRadius, float ReleasePotency, bool ReleaseHurtsParty, bool BorrowProtects, StatusID TrickHeart, uint AutoId = 0,
@@ -207,7 +207,7 @@ public partial class BeastmasterRotation
 	{
 		var potency = profile.TrickPotency > 0f ? profile.TrickPotency : 1f;
 
-		// K1 of the Crucible (concept 01, A549, A586): a hit on the weakness of an enemy of the fight counts with the bonus on
+		// K1 of the Crucible (concept 21, A549, A586): a hit on the weakness of an enemy of the fight counts with the bonus on
 		// the share of the familiar's damage whose source strikes that weakness; 0 outside the Crucible.
 		var bonus = CrucibleBoard.WeaknessBonus;
 		float Hit(IBattleChara enemy)
@@ -250,7 +250,7 @@ public partial class BeastmasterRotation
 	/// </summary>
 	/// <summary>
 	/// Whether the lower accuracy <paramref name="profile"/>'s Tempered Release states lands on the enemies in combat: none of
-	/// them resists Blind by the sheet (concept 01, K5 stage 2, A644). Outside the Crucible no resistance is known.
+	/// them resists Blind by the sheet (concept 21, K5 stage 2, A644). Outside the Crucible no resistance is known.
 	/// </summary>
 	public static bool LowersAttackersAccuracy(FamiliarProfile profile)
 	{
@@ -317,7 +317,7 @@ public partial class BeastmasterRotation
 	}
 
 	/// <summary>
-	/// The status by which a stopping Tempered Release stops (concept 01, K5, A589): Stun, or Petrify for Petrification and
+	/// The status by which a stopping Tempered Release stops (concept 21, K5, A589): Stun, or Petrify for Petrification and
 	/// Deep Freeze - XBMPet marks the chimera, whose Release "deeply freezes", as inflicting Petrify.
 	/// </summary>
 	internal static CrucibleBoard.Ailment StopOf(FamiliarProfile profile)
@@ -482,7 +482,7 @@ public partial class BeastmasterRotation
 	private static readonly List<BeastmasterPet> _pactsDecided = [];
 	private static uint _pactArea;
 
-	// The probe of concept 01, "Ob Analysieren die Lebenspunkte einrechnet" (A546): Gauge on an enemy that would be a familiar
+	// The probe of concept 01, "Anfreunden und Analysieren" (A546): Gauge on an enemy that would be a familiar
 	// the player lacks, once when RSR first sees it in combat and once after the player's mark arrived on it; the stage the
 	// game answers with - LogMessage 11217 to 11222: no pact possible, then five stages from very difficult to very easy
 	// (xivapi v2, 05.11.2026) - and the HP it was asked at. Whether the stage moves between the two readings answers whether

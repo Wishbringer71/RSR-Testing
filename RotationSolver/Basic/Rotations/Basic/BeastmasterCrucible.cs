@@ -1,18 +1,18 @@
 ﻿namespace RotationSolver.Basic.Rotations.Basic;
 
 /// <summary>
-/// K2 of the Crucible (concept 01, "Crucible of the Unbroken", stage 1, A548): a familiar that hits only the weakness of
+/// K2 of the Crucible (concept 21, "Crucible of the Unbroken", stage 1, A548): a familiar that hits only the weakness of
 /// enemies still to come waits for them, and comes first once they appear. The fights, weaknesses and the fight in progress
 /// come from <see cref="CrucibleBoard"/>.
 /// </summary>
 public partial class BeastmasterRotation
 {
-	// K11 stage 2 (concept 01, A590): the familiars that heal or protect in the final fight's plan, as the last horn screen
+	// K11 stage 2 (concept 21, A590): the familiars that heal or protect in the final fight's plan, as the last horn screen
 	// before another fight saw it, and the largest HP a use cost on this board - written where the horns are planned.
 	internal static readonly HashSet<BeastmasterPet> FinalHealers = [];
 	internal static uint FinalLossPerUse;
 
-	// K14 (concept 01, A631): every familiar of that plan, healers and protectors first, and the final fight it was made for.
+	// K14 (concept 21, A631): every familiar of that plan, healers and protectors first, and the final fight it was made for.
 	internal static readonly List<BeastmasterPet> FinalTeam = [];
 	internal static uint FinalBattle;
 
@@ -53,7 +53,7 @@ public partial class BeastmasterRotation
 	}
 
 	/// <summary>
-	/// K1 over every source (concept 01, A586): the share of <paramref name="profile"/>'s damage whose source strikes
+	/// K1 over every source (concept 21, A586): the share of <paramref name="profile"/>'s damage whose source strikes
 	/// <paramref name="weakness"/> - its auto-attack, Trick and, on a horn that spends One with Nature on it
 	/// (<paramref name="release"/>), Tempered Release, each with its share of familiar damage (CrucibleBoard), over the
 	/// shares of the sources it has there, Parting Blow among them (it strikes no weakness). 0 for no weakness.
