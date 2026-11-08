@@ -70,10 +70,8 @@ public sealed class BST_Reborn : BeastmasterRotation
 			+ "included, or by its time to kill. Trash that falls that fast is marked with the pull, on the enemy you "
 			+ "attack anyway. No pact if it falls before the mark arrives; the lower its HP when marked, the likelier the "
 			+ "pact, so the mark comes no earlier than that. Capture shares the weaponskill timer, so it costs one "
-			+ "weaponskill per attempt, and none once you have that familiar. Gauge goes out on such an enemy in combat, in a "
-			+ "weave nothing else wants, once at first sight and once after your mark, to learn whether its answer counts "
-			+ "the HP; DefenseTrace.log notes both answers.\n"
-			+ "Off: Capture and Gauge are never used.")]
+			+ "weaponskill per attempt, and none once you have that familiar.\n"
+			+ "Off: Capture is never used.")]
 	private bool CaptureFamiliars { get; set; } = true;
 
 	// K8 of the Crucible (concept 21, A551 to A555): the board's items that keep you and your familiar alive, and its damage
@@ -842,18 +840,6 @@ public sealed class BST_Reborn : BeastmasterRotation
 			return true;
 		}
 
-		// Concept 01, "Ob Analysieren die Lebenspunkte einrechnet" (A546): Gauge last, in a weave nothing else wanted, on a
-		// beast you lack - at first sight and after your mark -, to learn whether its stage counts the HP.
-		if (CaptureFamiliars && GaugePvE.CanUse(out act))
-		{
-			if (GaugePvE.Target.Target is { } asked)
-			{
-				GaugeAsked(asked);
-			}
-
-			return true;
-		}
-
 		return base.AttackAbility(nextGCD, out act);
 	}
 
@@ -1567,7 +1553,8 @@ public sealed class BST_Reborn : BeastmasterRotation
 			return;
 		}
 
-		if (_awayFailed || !DataCenter.State || InCombat || ActiveBattlehorn == 0 || HasOneWithNature
+		// A683: not on a board - its horn screen sets the horns before every fight and the familiar out goes with it.
+		if (_awayFailed || !DataCenter.State || InCombat || IsInCrucible || ActiveBattlehorn == 0 || HasOneWithNature
 			|| !BattlehornMasteryTrait.EnoughLevel || ActiveBattlehorn == KinshipBattlehorn || BattlehornAssignmentPending
 			|| Player is not { IsDead: false } player || player.IsCasting)
 		{

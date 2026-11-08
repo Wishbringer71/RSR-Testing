@@ -129,28 +129,30 @@ nebeneinander braucht: neuer interner Name mit Übernahme des Ordners, angezeigt
 
 ## Warten auf Daten oder Fremde
 
-- **Crucible: Lager, Weg, Endkampfplan und Gegenstände an seinem Log nachprüfen** (A661 bis A665; seine Vorgabe vom
-  07.11.2026: „vorab im vollen kritischen loop prüfen, und auch nach einspielung der logs"). Sein Lauf von 18:08 lief
-  auf einem Build davor und bestätigte die Ursachen (A665). Im Kampf: mehr Begleiter an der Campsite, der Schatz statt
-  der Rast, wo beide sicher sind, der Plan des Endkampfs gleich der Wahl am Endkampf, übrige Heilung vor dem Endkampf,
-  Schadensgegenstände nach Wert über die Kämpfe und erst, wenn kein Gegner mehr in ihre Reichweite kommt, Eis vor Feuer,
-  das Zaubermittel vor dem Schaden, nichts übrig nach dem Endkampf, Schutz nach Dauer, Flucht mit
-  Rauchbombe, Schadensgegenstände nach ersparter Last, Tötungsstapel und Zauberbücher erst nach eigener Messung, kein
-  Futter doppelt (A668 bis A679). Auflösung: `DefenseTrace.log` und ACT-Mitschnitt seines nächsten Laufs ab A665 – die Zeilen „crucible
-  fight …: … stored", „crucible campsite", „crucible route", „Crucible final fight's plan", „crucible item" (auch
-  „waits", „spares … of your HP"), „crucible items at the start of/after fight", „a kill by an item granted", „a hit the
-  … tome converted"; dann je Abweichung Loop. Konzept 21, K8 („Über das Brett", „Zeitpunkt im Kampf", „Auslöser",
-  „Zauberbücher"), K10, K13, K14, Weg.
+- **Crucible: Flucht, Tötungsstapel und Zauberbücher an seinem Log nachprüfen** (A671, A677, A678; seine Vorgabe vom
+  07.11.2026: „vorab im vollen kritischen loop prüfen, und auch nach einspielung der logs"). Lager, Weg, Endkampfplan
+  und die übrigen Gegenstandsregeln liefen in seinen sechs Läufen vom 08.11.2026 (A683). Im Kampf ungesehen blieben drei
+  Regeln:
+  - die Flucht mit der Rauchbombe über das Brett;
+  - ein Tötungsstapel, den ein Gegenstand gewährt;
+  - ein Treffer, den ein Zauberbuch wandelt.
 
-- **Beastmaster: Bretter 2 bis 5 am ersten Mitschnitt prüfen** (Crucible-Strategien K1 bis K14 gebaut, zuletzt A643,
-  A644). Im Kampf: Tötungsregeln (Tablitauren, Lamien, Morpho und Abaddon, Myconid in der Pfütze, die Sanduhr des Todes
-  beim Königs-Ahriman-Ebenbild, A675), Gegenangriff nach Angriffsart, die Eier des Zu und die Gefahr je Gegnerart (A674,
-  zweite Aetheric Charge, Brett 2) sind aus Blättern, BossMod-Modulen, Daedalus' Feldnotizen und GluttonyCombos
-  Aufzeichnungen gebaut, aber nicht an einem seiner Läufe gesehen. Auflösung: `DefenseTrace.log` und
-  ACT-Mitschnitt seines ersten Laufs auf einem der Bretter 2 bis 5 – die Zeilen „kill rule: … held/released" (auch „a
-  break now could fire Death", „roulette needle"), „left alone", „crucible route" und die Tode; dann je Abweichung Loop,
-  dazu der Vergleich mit LazyCrucibles Gewicht nach Hornbedarf für Futter und Rast (A679). Konzept 21 („Crucible of the
-  Unbroken: Bretter, Kämpfe, Strategien", K3, K12).
+  Auflösung: Zeilen „a kill by an item granted", „a hit the … tome converted" und die Flucht in einem Lauf, der diese
+  Gegenstände hält; dann je Abweichung Loop. Konzept 21, K8 („Über das Brett", „Zauberbücher"), Weg.
+
+- **Beastmaster: Bretter 3 bis 5 und die Meisterbretter am ersten Mitschnitt prüfen** (Crucible-Strategien K1 bis K14,
+  zuletzt A643, A644). Brett 2 lief am 08.11.2026 (A683): Die Tablitauren fielen gemeinsam, die Aetheric Charges zählten
+  nach ihrer gemessenen Gefahr. Gebaut, aber an keinem seiner Läufe gesehen, sind diese Regeln (Quellen: Blätter,
+  BossMod-Module, Daedalus' Feldnotizen, GluttonyCombos Aufzeichnungen):
+  - Tötungsregeln für Lamien, Morpho und Abaddon, Myconid in der Pfütze und die Sanduhr des Todes beim
+    Königs-Ahriman-Ebenbild (A675);
+  - der Gegenangriff nach Angriffsart;
+  - die Eier des Zu.
+
+  Auflösung: `DefenseTrace.log` und ACT-Mitschnitt seines ersten Laufs auf einem dieser Bretter, mit den Zeilen
+  „kill rule: … held/released" (auch „a break now could fire Death", „roulette needle"), „left alone", „crucible route"
+  und den Toden; dann je Abweichung Loop. Dazu der Vergleich mit LazyCrucibles Gewicht nach Hornbedarf für Futter und
+  Rast (A679). Konzept 21 („Crucible of the Unbroken: Bretter, Kämpfe, Strategien", K3, K12).
 
 - **Teraflare bricht auf Shinryu Unreal ab: welcher Abbrecher** (seine Meldung, 06.11.2026; A629). Im Kampf: In der
   letzten Phase startet sein LB3 und bricht wieder ab, mehrfach. RSR reicht Limit Breaks unverändert ans Spiel und
@@ -165,13 +167,6 @@ nebeneinander braucht: neuer interner Name mit Übernahme des Ordners, angezeigt
   der ohne offenes Fenster gefüllt ist, ist unbelegt. Auflösung: die Zeilen „deep dungeon stones" eines Laufs in Pilgers
   Pfad mit Weihrauch im Bestand; dann die Zuordnung fest aus Wert und Agent. Konzept 23, „Tiefe Gewölbe: Magicite,
   Demiklone und Weihrauch".
-
-- **Beastmaster: Ob Analysieren die LP einrechnet** (A546). Im Kampf: Anfreunden markiert sicher, aber vielleicht früher
-  als nötig oder mit weniger Chance als möglich; jeder verlorene Pakt kostet einen weiteren Lauf (seine Vorgabe:
-  Anfreunden hat oberste Priorität). Gebaut ist die Sonde: Analysieren auf eine fehlende Bestie beim ersten Sehen und
-  nach der Markierung, Antwort und LP als Zeilen „gauge: …", dazu die Antwort des Spiels auf ein zweites Anfreunden.
-  Auflösung: Zeilen „gauge" eines Abends mit fehlenden Bestien; dann Loop, ob die Stufe oder ein zweites Anfreunden in
-  A2 eingeht. Konzept 01, „Was gilt beim Anfreunden".
 
 - **Blaumagier: 1000 Nadeln gewirkt, obwohl nicht im Set** (sein Hinweis, 03.11.2026; A506). Im Kampf: RSR wirkt
   laut ihm einen Zauber außerhalb des Sets; der Code lässt das nicht zu. Auflösung: die Zeilen „blue mage set" und

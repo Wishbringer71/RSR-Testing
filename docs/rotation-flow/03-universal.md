@@ -754,7 +754,8 @@ merklich schneller zu beenden; sie kostet Geld, und sie für einen gewöhnlichen
 - *Regenerationstränke der Sonderinhalte* (A613): Sustaining Potion (Palast der Toten), Empyrean Potion (Himmelssäule),
   Orthos Potion (Eureka Orthos), Pilgrim's Potion (Pilgerpfad) und Eurekan Potion (Eureka) – genau die Gegenstände mit der
   Aktion 8667 in Abklinggruppe 60 (Spielblätter, xivapi 06.11.2026). Sie legen Rehabilitation (Regeneration, 30 s, beim
-  Eurekan Potion 40 s) und sind nur in ihrem Inhalt nutzbar; das prüft das Spiel selbst.
+  Eurekan Potion 40 s) und sind nur in ihrem Inhalt nutzbar. Außerhalb lehnt das Spiel sie mit einem Ortsgrund ab, und
+  den liest RSR („Was das Spiel hier ablehnt", unten; A683).
   - *Was gilt:* Ein solcher Trank ist eine eigene Entscheidung neben dem gewöhnlichen, keine Wahl zwischen beiden – er
     teilt dessen Wiederverwendung nicht. Er geht unter derselben Schwelle („Use HP potions below this HP"), solange keine
     Rehabilitation auf dir liegt (erkannt am englischen Statusnamen, gleich welche Zeile des Blatts – elf, xivapi 06.11.2026); unter derselben
@@ -1124,8 +1125,11 @@ Arena räumt, oder Wiederbelebung des Gefallenen –, muss so fallen, dass der L
   nachgeführt. Du greifst eines nach dem anderen an, und das gerade angegriffene zeigt deinen Strom. Der Wert eines
   zurückgehaltenen bleibt stehen, bis seine Historie verfällt (30 s ohne Abtastung).
 - *Rücklage L = r × W / 2.* Ein Mitglied mit höchstens L LP hält RSR zurück – kein Ziel, keine Fläche –, solange ein
-  anderes angreifbares Mitglied mehr als L hat. Haben alle höchstens L, hält RSR keines mehr; die Zielart ordnet. Fällt
+  anderes lebendes Mitglied mehr als L hat. Haben alle höchstens L, hält RSR keines mehr; die Zielart ordnet. Fällt
   dann eines, hat jeder Überlebende höchstens L: Bei gleichem Strom liegt er nach W/2.
+- *Wer lebt* (für Regel 2 und 3): jeder Gegner der Objekttabelle des Spiels mit LP über null, auch wenn er gerade nicht
+  anwählbar oder unverwundbar ist (A683). Seine Aktion beim Fall eines anderen beginnt er auch dann. Die Gegnerliste von
+  RSR führt nur anwählbare Gegner und taugt dafür nicht.
 - *Warum die Hälfte:* Die andere Hälfte des Fensters bleibt für den Weg zum Überlebenden – nach dem Fall des ersten steht
   er nicht neben dir – und für einen Strom, der am Ende sinkt (Begleiter zieht sich zurück, Bewegung). Mit dem ganzen
   Fenster wäre nichts für den Weg übrig; mit weniger als der Hälfte wechselt das Ziel öfter, ohne dass die Lage am Ende
@@ -1160,8 +1164,17 @@ weiter, und das zurückgehaltene Mitglied fiele mit ihnen. (d) Der Strom als Sum
 ersten Zurückhalten fiele er auf den Verlust des anderen, das bis dahin nicht geschlagen wurde, die Rücklage auf null,
 und das zurückgehaltene fiele doch.
 
-*Gegenthese 1 – Ein Mitglied bleibt unangreifbar über L, das andere wartet ewig:* Gezählt werden nur angreifbare
-Mitglieder; ist das andere unverwundbar oder nicht anwählbar, hält RSR nichts zurück.
+*Gegenthese 1 – Ein Mitglied ist eine Weile nicht anwählbar:* Es zählt weiter (oben, „Wer lebt").
+- *Gemessen in seinem Lauf vom 08.11.2026 (Brett 2, A683):* Der Ältere Tablitaur ist für seinen Endlos-Schwung (48206,
+  5,7 s Wirkzeit, danach Treffer im Sekundentakt) 26 s nicht anwählbar.
+- *Was davor geschah:* Die frühere Fassung zählte nur angreifbare Mitglieder. Sie gab deshalb in dieser Zeit den
+  Jüngeren frei, und RSR schlug ihn von 2393 auf 176 LP. Beide fielen nur deshalb 2 s nacheinander, weil der Ältere
+  rechtzeitig zurückkam; bei RSRs Strom fehlten etwa 3 s.
+- *Was gedroht hätte:* Fällt einer, während der andere nicht anwählbar ist, läuft dessen Fenster ab, ohne dass jemand
+  ihn treffen kann.
+- *Preis:* Bleibt ein Mitglied für immer unangreifbar, wartet RSR mit dem anderen. Die Spur nennt den Halt mit Grund,
+  und von Hand geht es weiter. Ein solches Mitglied nennt keine Quelle, und sein Überlebender begänne seine Aktion
+  ohnehin.
 *Gegenthese 2 – Eine Fläche des Begleiters oder ein DoT trifft das zurückgehaltene Mitglied:* Die Flächensperre gilt für
 deine Aktionen; ein Trick deines Begleiters oder ein laufender DoT schlägt weiter. Preis: Das zurückgehaltene Mitglied
 verliert weiter LP. Reicht das bis zu seinem Fall, bevor das andere bei L steht, beginnt die Aktion des Überlebenden
@@ -1265,6 +1278,37 @@ unbelegt; sie behalten den Strahl.
 *Gegenthese 3 (ausgeliefert, und nichts ändert sich):* Spiel und Strahl stimmen immer überein. Dann kostet die Regel eine
 Frage je Ziel und 33 ms und ändert nichts; die Protokollzeile zeigt, ob es so ist, und mit ihr, ob die Gegnerliste
 denselben Weg braucht.
+
+## Was das Spiel hier ablehnt
+
+*Was gilt (A683):*
+- RSR plant keinen Gegenstand und keine Aktion, die das Spiel an diesem Ort ablehnt. Maßgeblich ist die Antwort des
+  Spiels (`ActionManager.GetActionStatus`) mit einem Ortsgrund:
+  - 593 „Cannot be used here.";
+  - 2651 „Unable to use that item in this area.";
+  - 639 „Unable to use in PvP areas.";
+  - 656 „Unable to use action outside of PvP.";
+  - 663 „Unable to use outside duels or Frontline." (LogMessage, xivapi v2, 08.11.2026).
+- Diese Gründe hängen am Gebiet, nicht am Augenblick. Gegenstände (`ConfigurationHelper.BadStatus`, für die normale und
+  die hochwertige Fassung) und Aktionen (`BadStatusAction`) lesen dieselben Codes.
+- *Messung:* Lehnt das Spiel den Einsatz eines Gegenstands trotzdem ab (`UseAction` liefert false), schreibt RSR je
+  Gegenstand und Gebiet einmal beide Codes ins `DefenseTrace.log` („item refused by the game: …").
+
+*Im Kampf (seine Läufe vom 08.11.2026):* Als Beastmaster ohne Heiler wählte RSR in Sägerschrei unter 43 % LP siebenmal den
+Wallfahrt-Trank (Pilgrim's Potion, „Only available for use in Pilgrim's Traverse"), alle 2,5 s bis zum Tod, in Mor
+Dhona sechsmal, dazu dreimal auf den Brettern des Crucible und einmal in Alexandria: 17-mal in fünf Gebieten. Die Zeile „critical class" nannte ihn bereit. Geheilt hat er nie, laut ACT-Mitschnitt lehnte das Spiel
+jeden Versuch ab. Beide Male lag der gewöhnliche Trank in seiner Abklingzeit; ein anderer Trank hätte nicht geholfen, aber
+jeder Versuch belegte ein Webfenster. Jetzt plant RSR ihn außerhalb von Pilgers Pfad nicht.
+
+*Ursache:* Die Liste `BadStatus` enthielt nur Gründe des Augenblicks – Abklingzeit, kein Gegenstand, Zustand, nicht
+gelernt –, keinen Ortsgrund. A613 verließ sich darauf, dass die Prüfung die Ablehnung des Spiels liest (C179).
+
+*Gegenthesen, mit Versuch der Widerlegung:*
+- „Das Spiel antwortet außerhalb mit 0 und lehnt erst beim Einsatz ab": Dann fängt die Liste nichts. Die Messzeile nennt
+  dann den Code, mit dem das Spiel ablehnt.
+- „Ein Ortsgrund kommt auch kurz, wo die Aktion nutzbar ist": Die fünf Meldungen nennen Gebiet, PvP oder Duell, nichts
+  Vorübergehendes. Gründe des Augenblicks (Wirken 580, Springen 1263, Interaktion 592) bleiben außen vor.
+- „Ausgeliefert, und nichts ändert sich": wenn das Spiel einen anderen Code liefert. Auch das zeigt die Messzeile.
 
 ## Tiefe Gewölbe
 

@@ -520,12 +520,21 @@ public partial class BeastmasterRotation
 		CrucibleShopRecommendation = picks;
 		CrucibleShopTokens = (budget, budget - spent);
 		RecommendFeed(offers, budget - spent);
-		var traced = string.Join(", ", picks.ConvertAll(static pick => pick.Name));
+		// A683: what the shop offered beside what RSR picked - on 08.11.2026 nothing against the Doom of board 2 was
+		// recommended, and the trace could not tell whether the shop held any.
+		var offered = new List<string>(offers.Count);
+		foreach (var (_, item, price) in offers)
+		{
+			offered.Add($"{OfferName(item)} {price}");
+		}
+
+		var traced = string.Join(", ", picks.ConvertAll(static pick => pick.Name)) + " | " + string.Join(", ", offered);
 		if (traced != _shopTraced)
 		{
 			_shopTraced = traced;
 			DefenseTrace.Line($"crucible shop: {budget} tokens, weighed against {CrucibleShopBasis} - recommends "
-				+ (picks.Count > 0 ? traced + $", {budget - spent} tokens left" : "nothing"));
+				+ (picks.Count > 0 ? string.Join(", ", picks.ConvertAll(static pick => pick.Name)) + $", {budget - spent} tokens left" : "nothing")
+				+ $"; offered: {string.Join(", ", offered)}");
 		}
 	}
 
@@ -1477,6 +1486,14 @@ public partial class BeastmasterRotation
 	{
 		var name = Svc.Data.GetExcelSheet<Lumina.Excel.Sheets.XBMItem>()?.GetRowOrDefault(id)?.Unknown2.ExtractText();
 		return string.IsNullOrEmpty(name) ? english : name;
+	}
+
+	// A683: the name of an offer of the shop, gear or item, as the client shows it.
+	private static string OfferName(ushort id)
+	{
+		return CrucibleGearTable.TryGetValue(id, out var piece) ? ClientItemName(id, piece.Name)
+			: CrucibleItems.TryGetValue(id, out var item) ? ClientItemName(id, item.Name)
+			: ClientItemName(id, $"#{id}");
 	}
 
 	private static (float Left, float Effective) ShopValue(List<CrucibleGear> gear, ShopLoad load)

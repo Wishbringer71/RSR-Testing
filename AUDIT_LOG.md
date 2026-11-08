@@ -20075,6 +20075,71 @@ fortschickt, misst die Regel zur Laufzeit selbst.
 *Prüfgrad:* Selbsttest, Aufruf mit echter Hook-Eingabe, Messung am Sitzungsprotokoll; die Abweisung im Lauf einer
 Sitzung zeigt sich beim nächsten ersten Zugriff eines Abschnitts.
 
+### A683 · Upload vom 08.11.2026: Ortsgründe, Laden, Rückzug, Verhängnis, Analysieren, Tötungsregeln (08.11.2026)
+
+- *Upload:* `d0f28040-RotationSolver.7z` und `5972bf21-fflogsarchive.7z`, beide 08.11.2026, ohne Frage dazu.
+  - `DefenseTrace.log` mit drei Sitzungen auf Build b184ee7fc: Weißmagier, Beschwörer und Beastmaster.
+  - Beim Beastmaster sechs Läufe im Crucible, fünf auf Brett 1 und einer auf Brett 2, danach Sägerschrei und Mor Dhona.
+  - Dazu die gelernten Tabellen und zwei ACT-Mitschnitte.
+- *Tode:* drei, alle als Beastmaster ohne Heiler.
+  - *Brett 2, Kampf 8 (19:01:14):* Verhängnis des Taurus. Tödlicher Strahl (48143) legt es für 25 s; geheilt wird es nur
+    auf einer Kachel. Er stand 0,5 s vor Ablauf darauf. RSR bewegt nicht.
+  - *Sägerschrei (19:29:42):* Treffer des Riesen-Tunnelwurms von 43 % auf 0 in 23 s. Der Ultratrank ging um 19:29:18;
+    danach wählte RSR alle 2,5 s den Wallfahrt-Trank.
+  - *Mor Dhona (19:35:58):* Treffer der V. Kohorte; auch hier wählte RSR den Wallfahrt-Trank.
+- *Defekt 1, Ortsgründe (alle Jobs):* RSR wählte den Wallfahrt-Trank (47102, „Only available for use in Pilgrim's
+  Traverse") 17-mal in fünf Gebieten. Geheilt hat er nie; jeder Versuch belegte ein Webfenster.
+  - Ursache: `ConfigurationHelper.BadStatus` kannte keinen Ortsgrund (C179 widerruft A613).
+  - Behoben: Gegenstände und Aktionen lesen jetzt 593, 2651, 639, 656 und 663.
+  - Messmittel: Lehnt das Spiel einen Gegenstand trotzdem ab, schreibt RSR je Gegenstand und Gebiet einmal beide Codes
+    („item refused by the game"). `BaseItem.Use` behält Upstreams Rumpf als `UseItem`, die Hülle schreibt die Zeile.
+  - Konzept 03, „Was das Spiel hier ablehnt".
+- *Defekt 2, Tötungsregeln (alle Jobs):* Die Regeln 2 und 3 lasen „lebt" aus der Liste anwählbarer Gegner.
+  - Gesehen am Älteren Tablitaur, Brett 2, Kampf 11: Für seinen Endlos-Schwung (48206) war er 26 s nicht anwählbar. Die
+    Freigabezeile sagte „it is gone", der Jüngere war frei, und RSR schlug ihn von 2393 auf 176 LP.
+  - Ausgang: Der Ältere kam zurück, als RSR den Jüngeren wieder hielt. Beide fielen 2 s nacheinander, ohne Endless Slashes
+    (48214 im Mitschnitt nicht). Bei RSRs Strom fehlten etwa 3 s bis zum Fall des Jüngeren allein.
+  - Behoben: „Lebt" heißt jetzt jeder Gegner der Objekttabelle mit LP über null, anwählbar oder nicht
+    (`KillOrder.CollectLiving`, mit `IsEnemySideFigure`; `IsEnemy` verlangt Anwählbarkeit). Das gilt für Paare, „erst
+    nach einem anderen" und den Gedankenschinder bei den Myconiden. Die Freigabezeile sagt „it is gone" nur noch, wenn er
+    nicht mehr lebt.
+  - Gegenthese 1 aus Konzept 03 („nur angreifbare Mitglieder zählen") war meine Ableitung und ist ersetzt. Preis: Ein
+    Mitglied, das für immer unangreifbar bliebe, ließe RSR mit dem anderen warten; keine Quelle kennt eines.
+- *Laden:* Die Ladenzeile nannte nur die Empfehlung, nicht das Angebot. Ob vor Brett 2 Soulreaper's Armor („Doom
+  Resistance +100%") im Angebot war, zeigt die Spur deshalb nicht. Seither nennt sie jedes Angebot mit Preis (Konzept 21,
+  „Verhängnis des Taurus").
+- *Rückzug (A681):* 30 Rückzüge mit „Lauf", 17 außerhalb der Bretter und 13 auf ihnen, nach 0,07 bis 0,45 s; zweimal
+  Status 579 im Augenblick des Kampfendes (Konzept 01, B5). Auf einem Brett setzt das Hornfenster
+  die Hörner vor jedem Kampf, und der draußen stehende Begleiter geht mit. Dort zieht RSR deshalb nicht mehr zurück
+  (`IsInCrucible`).
+- *Analysieren (A546):* Zwei Chimären antworteten bei 100 % und bei 6 und 7 % LP mit derselben Stufe („nicht einfach",
+  3 von 5).
+  - Die Stufe rechnet die LP nicht ein; sie ist eine Schwierigkeit je Bestie.
+  - Keine Regel braucht sie: Der beste Zeitpunkt zum Anfreunden ist bei jeder Stufe der letzte sichere (A2).
+  - Ein zweites Anfreunden nimmt das Spiel an (Status 0); ob es die LP neu festhält, misst RSR nicht.
+  - Die Sonde ist entfernt (`GaugeDue`, `GaugeAsked`, `GaugeAnswered`, `ModifyGaugePvE` zurück auf Upstream, die
+    Ereignisanmeldung im `Watcher`, zwei Einträge in `fixed_values.json`). Der Optionstext von „Capture familiars you do
+    not have yet" nennt Analysieren nicht mehr.
+  - Verworfen: Analysieren als Prüfung vor dem Anfreunden, weil keine paktlose Bestie beobachtet ist.
+  - Konzept 01, „Analysieren rechnet die LP nicht ein".
+- *Gesehen und richtig:*
+  - Endkampfplan gleich der Hornwahl am Endkampf in allen sechs Läufen.
+  - Lager mit zwei ruhenden Begleitern (16:05).
+  - Schatz statt Rast, wo beide sicher waren.
+  - Gegenstände im Endkampf.
+  - Die Aetheric Charges: Drei erschienen im Taurus-Kampf; trafen dich einmal mit 9 %. K3 zog sie nach ihrer gemessenen
+    Gefahr nicht vor (A674).
+- *Ungesehen:* Flucht mit der Rauchbombe (A671), Tötungsstapel (A677), wandelnde Zauberbücher (A678), die Bretter 3 bis 5
+  und die Meisterbretter. Die TODO-Einträge sind darauf eingegrenzt.
+- *Gelernte Tabellen:* gewachsen, nichts verloren (Flächen und Tankbuster je um gut zwanzig Einträge, zehn neue Lasten von
+  Crucible-Kämpfen).
+- *Universell:* Ortsgründe und Tötungsregeln sitzen für alle Jobs an einer Stelle; Rückzug, Laden und Analysieren sind
+  Beastmaster und Crucible.
+
+*Prüfgrad:* Compile ohne Warnung, alle 53 Prüfschritte; Wirkkette am Code. Die Befunde sind am `DefenseTrace.log` und am
+ACT-Mitschnitt belegt. Die Behebungen selbst sind im Spiel noch nicht beobachtet; Messmittel sind die Zeilen „item
+refused by the game" und „kill rule: … held/released" sowie die Ladenzeile mit „offered".
+
 ## B · Commit-Register (Fork vs. `upstream/main`)
 
 ### B1 · Einzelgeprüfte Fork-Commits
@@ -20405,3 +20470,4 @@ Die offene Arbeit dazu — Reihenfolge und Abbruchbedingung der Nachprüfung —
 | C176 | A660 und Konzept 21 K3 (Stand A660–A664): „Auf Brett 1 unterbricht K4 die Fanaticism der Sukkubus-Magierin (Aktion 46928; in seinem Lauf vom 07.11.2026 um 16:13:12 gestoppt)" | Ihr Tod stoppte den Cast: 351 Schaden auf 37 LP um 16:13:11,9, Abbruch 16:13:12,3, Todeszeile 2 s später; ebenso 18:11:50 und 18:46:09. Eine Unterbrechung durch einen Begleiter ist nicht belegt (A665). | A665 |
 | C177 | A664 und Konzept 21 K8 (Stand A664): „*Synergien (geprüft):*" mit der Magiesteigerung und dem Ausdauermittel | Geprüft waren zwei; die Wirktexte nennen weitere – Reißzahn des Feuers unter Deep Freeze, Ausrüstung, die Mittel verlängert oder Seren heilen lässt, Spirit of the Breathtaker, Tötungsstapel, Futter an der Rast (A665, A666). | A665 |
 | C178 | Konzept 21 K8 „Rast und Futter" (Stand A666): „Ein ruhender Begleiter verliert sein Futter, mit Lilien-Simulakrum nicht (K14, gebaut A657, A662)" | Gebaut war nur der Verlust: Die Campsite nahm keinen Gefütterten, auch keinen mit Lilie; `Preserves` wurde gelesen, aber nirgends ausgewertet. | A669 |
+| C179 | A613 und Konzept 03 „Regenerationstränke der Sonderinhalte" (Stand A613): „nur in ihrem Inhalt nutzbar; das prüft das Spiel selbst", im Code „The game refuses it outside its content, which CanUse asks" | Das Spiel lehnt ab, aber `BaseItem.CanUse` las die Ablehnung nicht: `BadStatus` enthielt keinen Ortsgrund (593, 2651). Am 08.11.2026 wählte RSR den Wallfahrt-Trank 17-mal in fünf Gebieten, 13-mal davon in Sägerschrei und Mor Dhona; geheilt hat er nie (A683). | A683 |

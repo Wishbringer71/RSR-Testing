@@ -872,8 +872,9 @@ mit ihm anfreunden kann, und das Talent dann so einsetzen, dass es wahrscheinlic
       liegt; über deiner Stufe ist kein Pakt möglich.
     - Der beste Zeitpunkt ist also der letzte vor dem tödlichen Treffer. Weil das Talent selbst nicht tötet, geht es
       auch bei 1 LP gefahrlos.
-- *Nicht belegt:* ob die Stufe von Analysieren die aktuellen LP einrechnet (die Sonde unten misst es); ob der Sieg durch
-  einen Mitspieler zählt; eine Prozentzahl; ob ein zweites Anfreunden auf eine schon markierte Bestie die LP neu festhält
+- *Gemessen:* Die Stufe von Analysieren rechnet die aktuellen LP nicht ein (unten, „Analysieren rechnet die LP nicht
+  ein").
+- *Nicht belegt:* ob der Sieg durch einen Mitspieler zählt; eine Prozentzahl; ob ein zweites Anfreunden auf eine schon markierte Bestie die LP neu festhält
   (consolegameswiki, „Beastmaster", Tipps: „use Capture again to get a better chance before finishing it off";
   Gemeinschaftsquelle, ungeprüft).
 - *Anfreunden kostet einen GCD:* Es ist zwar ein Talent, liegt aber in der Abklinggruppe 58 der Waffenfertigkeiten
@@ -990,33 +991,30 @@ mit ihm anfreunden kann, und das Talent dann so einsetzen, dass es wahrscheinlic
   GCD. Der Einbruch enthält dann den Schaden der Gruppe. Unter Stufensynchronisation zählt deine synchronisierte Stufe.
   Mehrere Bestien: eine Markierung zur Zeit. Drückt er Anfreunden selbst, markiert RSR diesen Gegner nicht mehr; der
   Pakt hängt dann an seinem Zeitpunkt.
-- *Analysieren als Sonde* (A546): A2 braucht Analysieren nicht. Ob die Stufe die LP einrechnet, misst RSR im Kampf
-  selbst. Es drückt Analysieren auf eine kämpfende Bestie, die dir fehlt, und zwar zweimal: beim ersten Sehen und nach
-  deiner Markierung, jeweils im letzten freien Webfenster. Analysieren ist ein Talent ohne Wirkzeit mit eigener
-  Abklingzeit und kostet keinen GCD. Die Antwort liest RSR als Spielmeldung (`IChatGui.LogMessage`, Zeilen 11217 bis
-  11222, unabhängig von der Sprache) und schreibt sie mit den LP der Bestie in `DefenseTrace.log` („gauge: …").
-  - Nach der zweiten Lesung urteilt die Zeile. *Stufe gewandert:* Analysieren rechnet die LP ein, und die Sonde endet für
-    die Sitzung. *Stufe gehalten:* Analysieren las die Bestie, nicht ihre LP – es sei denn, beide Lesungen liegen in einer
-    Stufe. Dieselbe Zeile nennt, was das Spiel zu einem zweiten Anfreunden auf die markierte Bestie sagt (Status 0: es
-    nähme es an).
-  - *Preis im Kampf:* zwei Webfenster je fehlender Bestie und je Lesung zwei Chatzeilen („Du setzt Analysieren ein." und
-    die Antwort). Gegner außerhalb des Kampfs fragt die Sonde nicht. Ob Analysieren Feindseligkeit erzeugt, sagt keine
-    Quelle, und eine zweite gezogene Bestie wäre ein Preis, den die Sonde nicht kosten darf. Sie läuft nur, solange
-    „Capture familiars you do not have yet" an ist.
-  - *Warum eine Sonde und keine Regel:* Ob ein Markieren bei der besten Stufe mehr Pakte bringt als A2, hängt an zwei
-    Unbekannten. Die erste ist, ob die Stufe die LP einrechnet; sie beantwortet die Sonde. Die zweite ist, wie weit die
-    Chance innerhalb einer Stufe noch steigt; sie bleibt offen, weil die Stufen grob sind. Eine Regel, die nach der Stufe
-    markiert, setzte beides voraus. Eine Nachsteuerung zur Laufzeit ist deshalb erst baubar, wenn die erste Antwort
-    vorliegt.
+- *Analysieren rechnet die LP nicht ein* (gemessen von der Sonde aus A546, sein Lauf vom 08.11.2026, Build b184ee7fc,
+  A683): Zwei Chimären antworteten beim ersten Sehen bei 100 % LP mit „nicht einfach" (3 von 5) und nach deiner
+  Markierung bei 6 und 7 % LP wieder mit „nicht einfach". Über 90 Prozentpunkte LP bewegten die Stufe in keinem der
+  beiden Kämpfe, obwohl es fünf Stufen gibt. Die Stufe ist eine Schwierigkeit je Bestie. Das passt zur Messung vom
+  04.11.2026 und zum Wiki („intrinsic").
+  - *Was daraus folgt:* Keine Regel braucht Analysieren. Die Chance hängt bei jeder Bestie gleich an ihren LP beim
+    Markieren (Wirktext von Anfreunden). Der beste Zeitpunkt ist deshalb bei jeder Stufe derselbe: der letzte sichere
+    (A2). Die Stufe ändert nur, wie viele Versuche es braucht, nicht wann markiert wird. RSR drückt Analysieren nicht mehr,
+    und die Sonde ist entfernt (A683). Sie kostete je fehlender Bestie zwei Webfenster und vier Chatzeilen.
+  - *Verworfen: Analysieren als Prüfung vor dem Anfreunden.* „Mit diesem Ziel ist ein Pakt nicht möglich" würde den GCD
+    des Anfreundens sparen. Am 04.11.2026 kam aber jede markierte Art zum Pakt, und keine Bestie der Blätter ist als
+    paktlos beobachtet. Die Prüfung kostete also an jeder fehlenden Bestie ein Webfenster und zwei Chatzeilen, für einen
+    Fall, der nicht vorkam. Tritt er auf, steht er in `DefenseTrace.log` als wiederholtes „no pact" derselben Art.
   - *Messung* (seine Mitschnitte vom 04.11.2026, Chatmeldungen): Bis zum Pakt brauchte es bei Apkallu fünf
     Markierungen, bei Coeurl vier, bei Golem drei, bei Kolibri und Drakon je zwei (beim Drakon kam eine zu spät). Bei
     Schleim, Dullahan, Riesenwurm, Morbol und Treiberameise reichte je eine. Die Fehlschläge häufen sich also bei
-    einzelnen Arten; das passt zu einer Schwierigkeit je Bestie, wie sie das Wiki nennt („intrinsic").
+    einzelnen Arten.
 - *Zweites Anfreunden* (Gemeinschaftsquelle, ungeprüft; oben): Träfe der Tipp zu, könnte RSR früh markieren und spät
   nachmarkieren. Die frühe Markierung wäre sicher, die späte brächte die Chance – A2 ohne sein Risiko. Heute schließt A1
-  markierte Bestien aus. Ob das Spiel ein zweites Anfreunden annimmt, misst die Sonde mit. Ob es die LP neu festhält,
-  misst nichts in RSR, nur die Zahl der Pakte über viele Versuche. Hielte es die erste LP fest, kostete eine frühe
-  Markierung die Chance.
+  markierte Bestien aus.
+  - *Gemessen:* Das Spiel nimmt ein zweites Anfreunden an. Am 08.11.2026 gab es für beide markierten Chimären Status 0
+    zurück (A683).
+  - *Nicht gemessen:* ob es die LP neu festhält. Das zeigte in RSR nur die Zahl der Pakte über viele Versuche. Hielte es
+    die erste LP fest, kostete eine frühe Markierung die Chance.
 - *Weg ohne Kampf* (ffxiv-offduty, Gemeinschaftsquelle, ungeprüft): Bestien, die nur in einem Inhalt vorkommen, soll
   es gegen Währung aus dem Crucible als Kornago-Kürbis geben.
 - *Gegenhypothesen:*
@@ -1137,7 +1135,13 @@ eingearbeitet werden, situationsbezogen"; A487, A488, A522):
       (`KinshipBattlehorn`): Ihr Ablauf steht still, solange er draußen ist, und sein Horn neu zu rufen nähme sie
       (BossMods BST-Rotation von xan, awgil/ffxiv_bossmod 6e410ef8b, 03.11.2026, Werkzeugquelle). Keine Zuweisung
       wartet auf den Server, er tritt nicht schon ab. Das Spiel nimmt den Befehl an
-      (`ActionManager.GetActionStatus(PetAction, 1)` ist 0).
+      (`ActionManager.GetActionStatus(PetAction, 1)` ist 0). Nicht auf einem Brett des Crucible: Dort setzt das
+      Hornfenster vor jedem Kampf die Hörner, und der Begleiter draußen geht mit ihm. Am 08.11.2026 rief RSR auf Brett 1
+      und 2 nach jedem Rückzug sofort neu, und nach dem Hornfenster kam ein zweiter Ruf; der erste brachte nichts (A683).
+    - *Gemessen (08.11.2026, Build b184ee7fc, zwei Sitzungen):* 30 Rückzüge, 17 außerhalb der Bretter (Sägerschrei,
+      Mor Dhona) und 13 auf ihnen. Der Begleiter ging nach 0,07 bis 0,45 s. Außerhalb der Bretter kam der neue Ruf vor
+      dem nächsten Pull, in einer Kette kurzer Kämpfe etwa 43 ms vor Kampfbeginn. Zweimal lehnte das Spiel im Augenblick
+      des Kampfendes ab (Status 579, „Cannot execute at this time."); der Begleiter blieb.
     - *Beleg und Selbstmessung:* Dass der Befehl einen Begleiter fortschickt, belegen nur Werkzeugquellen. BossMods
       BST-Rotation schickt ihn vor dem Pull, um One with Nature zu erneuern (ab Werk an). BeastMastr (Zinochron/BeastMastr
       c52b572, 21.09.2026) nutzt den Nachbarbefehl „Heel" (PetAction 2) für Begleiter im Kampf. RSR misst es selbst:

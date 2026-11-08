@@ -1,6 +1,6 @@
 # BST — Abhängigkeitsmatrix
 
-Erzeugt von `.github/scripts/audit/generate_action_matrix.py` am 2026-11-05; nicht von Hand bearbeiten. Methode und Grenzen: `docs/rotation-flow/14-action-dependency-matrix.md`.
+Erzeugt von `.github/scripts/audit/generate_action_matrix.py` am 2026-11-08; nicht von Hand bearbeiten. Methode und Grenzen: `docs/rotation-flow/14-action-dependency-matrix.md`.
 
 - Basisrotation: `BeastmasterRotation`
 - Rotation: `RotationSolver/RebornRotations/Limited Jobs/BST_Reborn.cs`
@@ -8,7 +8,7 @@ Erzeugt von `.github/scripts/audit/generate_action_matrix.py` am 2026-11-05; nic
 
 ## Nutzung
 
-direkt: 34 · nur gelesen: 1 · ungenutzt: 5 · über andere Aktion: 8
+direkt: 33 · nur gelesen: 1 · ungenutzt: 6 · über andere Aktion: 8
 
 | Stufe | Aktion | Id | Art | Nutzung |
 |---|---|---|---|---|
@@ -36,7 +36,7 @@ direkt: 34 · nur gelesen: 1 · ungenutzt: 5 · über andere Aktion: 8
 | Job | Cloud Skim (`CloudSkimPvE_45041`) | 45041 | Ability | ungenutzt |
 | Job | First Battlehorn (`FirstBattlehornPvE`) | 44881 | Ability | direkt |
 | Job | Gale Axe (`GaleAxePvE`) | 44889 | Weaponskill | direkt |
-| Job | Gauge (`GaugePvE`) | 44882 | Ability | direkt |
+| Job | Gauge (`GaugePvE`) | 44882 | Ability | ungenutzt |
 | Job | Hawkish Talons (`HawkishTalonsPvE`) | 44931 | Weaponskill | direkt |
 | Job | Mistral Axe (`MistralAxePvE`) | 44887 | Weaponskill | direkt |
 | Job | Parting Blow (`PartingBlowPvE`) | 44891 | Ability | direkt |
@@ -253,3 +253,4 @@ Maschinelle Liste; die Bewertung je Eintrag steht im Konzept.
 - Cloud Skim (`CloudSkimPvE_45039`, Ability): ungenutzt
 - Cloud Skim (`CloudSkimPvE_45040`, Ability): ungenutzt
 - Cloud Skim (`CloudSkimPvE_45041`, Ability): ungenutzt
+- Gauge (`GaugePvE`, Ability): ungenutzt

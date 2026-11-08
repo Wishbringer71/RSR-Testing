@@ -169,6 +169,15 @@ Dullahan, Golem, Spriggan und Eisgolem (`XBMPet.InflictsInterrupt`).
   verrauschte Messung ließe das Ziel springen – der Wechsel verlangt einen Unterschied über ihrer Unsicherheit. Nichts
   ändert sich? Im Crucible überschreibt heute A525 die Zielart; die neue Regel tritt dort an ihre Stelle, die Spur nennt
   jeden Wechsel mit Grund.
+  *Verhängnis des Taurus (A683; sein Lauf vom 08.11.2026):* Tödlicher Strahl (Mortal Ray, 48143) trifft alle und legt
+  Verhängnis (5421) für 25 s; das Blatt führt es (`XBMBattleDetailAction` Zeile 38 am Taurus-Ebenbild, Kampfzeile 8).
+  Geheilt wird es nur durch Stehen auf einer der vier Kacheln um die Mitte, die in vier Schritten zu je 2 s auflädt
+  (BMR 27be422 `TaurusPiece.Doom`: „Cleanse Doom!", Zielzonen für die KI; Werkzeugquelle). Am 08.11.2026 kam es dreimal:
+  zweimal geheilt oder mit dem Kampf beendet, einmal abgelaufen – um 19:01:12 standest du 0,5 s vor Ablauf auf der
+  Kachel, um 19:01:14 der Tod. RSR bewegt nicht. Seine Deckung ist Soulreaper's Armor („Doom Resistance +100%", XBMItem
+  29) aus Laden oder Schatz (K10, Regel 2); der Laden davor empfahl keine. Ob er sie anbot, zeigte die Spur nicht; seit
+  A683 nennt die Ladenzeile jedes Angebot. Ob Beast Remedy Kit („Automatically cures the next status ailment") Verhängnis
+  heilt, ist unbelegt; es zählt dafür nicht.
   *Gegner, die erst später schaden (A674; Quelle A667):* Auf Brett 2 setzt der Taurus mit Ray of Ignorance eine Aetheric
   Charge auf dich, die in Ringen von 6, 12 und 18 Yalm platzt, hohen Magieschaden macht und Damage Down legt (BMR
   27be422 `TaurusPiece.AethericCharge`, CrucibleSux-Recherche 12; Tekz' Modul reiht sie hinter die Ahrimane, deren Blick
@@ -898,6 +907,11 @@ Dullahan, Golem, Spriggan und Eisgolem (`XBMPet.InflictsInterrupt`).
       andere Endless Slashes (48214, 9 s Wirkzeit laut Blatt), danach trifft eine Linie von 80 × 70 Yalm die Arena
       (48216; BossModReborn: „Enrage – if one dies before the other too early"). Daedalus im Feld (25.10.2026): ein
       Stier fiel, der andere stand auf 72 %, der Überlebende tobte. Fenster 9 s, Rücklage 4,5 s des Stroms.
+      *Gesehen (sein Lauf vom 08.11.2026, Kampf 11; A683):* Der Ältere wurde bei 414 LP gehalten (Rücklage 576 LP).
+      Danach war er für seinen Endlos-Schwung 26 s nicht anwählbar. Der Jüngere wurde bei 176 LP gehalten, bis der
+      Ältere zurück war. Beide fielen 2 s nacheinander, ohne Endless Slashes. Weil RSR den Älteren in diesen 26 s nicht
+      mitzählte, war der Jüngere frei und kam dem Fall auf etwa 3 s nahe; seitdem zählt jedes lebende Mitglied (Konzept
+      03, „Tötungsregeln", Gegenthese 1).
     - *Lamien, Medusa-Kampf, Brett 5 – gemeinsam:* lamia piece (14661). Eine lebende Lamia wirkt Raise (49287, 10 s) auf
       eine tote; unterbrechbar (K4). Fenster 10 s. Daedalus (02.11.2026): „should just balance anyway".
     - *Morpho und Abaddon, Drachen-Kampf, Brett 5 – erst danach:* Ein morpho piece (14656) fällt nicht, solange ein
@@ -1116,8 +1130,9 @@ beim Betreten, ob es die Daten des Bretts gelesen hat.
 
 *Stufen* (alle gebaut): 1. Daten zur Laufzeit (Schwäche und Gegnerliste je Kampf, Schadensart je Begleiter) mit K1, K2
 und K3; 2. K11 (Bedarfsliste und LP je Begleiter) mit K9, Stufe 3 A643; 3. K8; 4. K6 und K7; danach K4, K5 (Stufe 2 A644),
-K10 (Campsite A564, Laden A569, Weghinweis A632). Offen ist nur die Prüfung der Bretter 2 bis 5 an seinem ersten Lauf
-dort (TODO, „Warten auf Daten": „Beastmaster: Bretter 2 bis 5 am ersten Mitschnitt prüfen").
+K10 (Campsite A564, Laden A569, Weghinweis A632). Brett 2 lief am 08.11.2026 (A683). Offen ist nur die Prüfung der
+Bretter 3 bis 5 und der Meisterbretter an seinem ersten Lauf dort (TODO, „Warten auf Daten": „Beastmaster: Bretter 3
+bis 5 und die Meisterbretter am ersten Mitschnitt prüfen").
 
 **Stufe 1, erster Teil: Daten und K2** (A548, gebaut; K1 und der Rest von K3 folgen):
 - *Kämpfe aus dem Blatt:* `XBMBattleDetail` hat eine Zeile je Kampf und eine Unterzeile je Gegner. Gelesen werden der

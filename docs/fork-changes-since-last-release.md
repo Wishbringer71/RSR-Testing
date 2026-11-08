@@ -17,6 +17,23 @@ What this release changes in the fight. For the whole distance from upstream, se
   descriptions inline" off) ran on in one line up to 1200 px and was cut off there; the longest have over 2000
   characters. Every tooltip text now breaks at 65 characters (up to 75 stay on one line), and the tooltip grows with
   it. The rotation tooltip in the navigation no longer wraps its description at the width of its shortest lines.
+- **The shop line names every offer.** `DefenseTrace.log` gave only what the Crucible shop recommended, not what it
+  offered, so a missing piece of gear could not be told from one that was not for sale. The line now lists each offer
+  with its price.
+
+## Every job
+
+- **Items and actions the game refuses in this place are no longer chosen.** RSR read only refusals of the moment –
+  recast, no item, a status. A potion usable only in its own content stood ready everywhere else: as a Beastmaster
+  without a healer, RSR chose the Pilgrim's Potion of Pilgrim's Traverse 17 times in five areas, every 2.5 s while your
+  HP fell, and it never healed. RSR now reads the game's refusals for a place – not usable here, only in PvP, not in PvP,
+  only in duels or Frontline – for every item and action. When the game still refuses an item, `DefenseTrace.log`
+  names the item, the area and the game's answer, once per item and area.
+- **A kill rule holds while the other enemy cannot be targeted.** Enemies that must fall together (the tablitaurs of
+  board 2, the lamias) or only after another (morpho and abaddon, the myconids while the mindflayer lives) counted only
+  while they could be targeted. The elder tablitaur cannot be targeted for 26 s of its Endless Swing; RSR let the
+  younger one go then and brought it to 176 HP before the elder came back, about 3 s from its fall and the elder's
+  enrage. Every enemy alive now counts, targetable or not; the trace says "it is gone" only when it is.
 
 ## The Beastmaster between fights
 
@@ -26,7 +43,12 @@ What this release changes in the fight. For the whole distance from upstream, se
   – and calls the next familiar with One with Nature before the pull. The pull opens with its Release or Borrow, and
   all three horns can be set for the next fight. Not for the familiar of your Kinship, and only from level 18, where a
   call grants One with Nature. If the game refuses the command or the familiar stays out, RSR writes it to
-  `DefenseTrace.log` and keeps the old order.
+  `DefenseTrace.log` and keeps the old order. Not on a Crucible board: its horn screen sets the horns before every
+  fight, and the familiar out goes with them.
+- **Gauge is no longer used.** With `Capture familiars you do not have yet` on, RSR used Gauge twice on each beast you
+  lack, to learn whether its answer counts the beast's HP. It does not: two Chimeras answered "not easy" at full HP and
+  at 6 and 7 %. The stage is the beast's own difficulty, and the best moment to mark is the last safe one at every
+  stage, so no rule needs it. Two weaves and four chat lines per beast are free again; Capture is unchanged.
 
 ## The Beastmaster on a Crucible board
 
