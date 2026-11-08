@@ -134,17 +134,23 @@ nebeneinander braucht: neuer interner Name mit Übernahme des Ordners, angezeigt
   auf einem Build davor und bestätigte die Ursachen (A665). Im Kampf: mehr Begleiter an der Campsite, der Schatz statt
   der Rast, wo beide sicher sind, der Plan des Endkampfs gleich der Wahl am Endkampf, übrige Heilung vor dem Endkampf,
   Schadensgegenstände nach Wert über die Kämpfe und erst, wenn kein Gegner mehr in ihre Reichweite kommt, Eis vor Feuer,
-  das Zaubermittel vor dem Schaden, nichts übrig nach dem Endkampf. Auflösung: `DefenseTrace.log` und ACT-Mitschnitt
-  seines nächsten Laufs ab A665 – die Zeilen „crucible fight …: … stored", „crucible campsite", „crucible route",
-  „Crucible final fight's plan", „crucible item" (auch „waits"), „crucible items at the start of/after fight"; dann je
-  Abweichung Loop. Konzept 21, K8 („Über das Brett", „Zeitpunkt im Kampf"), K10, K14, Weg.
+  das Zaubermittel vor dem Schaden, nichts übrig nach dem Endkampf; seit A668 bis A679 Schutz nach Dauer, Flucht mit
+  Rauchbombe, Schadensgegenstände nach ersparter Last, Tötungsstapel und Zauberbücher erst nach eigener Messung, kein
+  Futter doppelt. Auflösung: `DefenseTrace.log` und ACT-Mitschnitt seines nächsten Laufs ab A665 – die Zeilen „crucible
+  fight …: … stored", „crucible campsite", „crucible route", „Crucible final fight's plan", „crucible item" (auch
+  „waits", „spares … of your HP"), „crucible items at the start of/after fight", „a kill by an item granted", „a hit the
+  … tome converted"; dann je Abweichung Loop. Konzept 21, K8 („Über das Brett", „Zeitpunkt im Kampf", „Auslöser",
+  „Zauberbücher"), K10, K13, K14, Weg.
 
 - **Beastmaster: Bretter 2 bis 5 am ersten Mitschnitt prüfen** (Crucible-Strategien K1 bis K14 gebaut, zuletzt A643,
-  A644). Im Kampf: Tötungsregeln (Tablitauren, Lamien, Morpho und Abaddon, Myconid in der Pfütze), Gegenangriff nach
-  Angriffsart und die Eier des Zu sind aus Blättern, BossMod-Modulen und Daedalus' Feldnotizen gebaut, aber nicht an einem
-  seiner Läufe gesehen. Auflösung: `DefenseTrace.log` und ACT-Mitschnitt seines ersten Laufs auf einem der Bretter 2 bis 5
-  – die Zeilen „kill rule: … held/released", „left alone", „crucible route" und die Tode; dann je Abweichung Loop.
-  Konzept 21 („Crucible of the Unbroken: Bretter, Kämpfe, Strategien").
+  A644). Im Kampf: Tötungsregeln (Tablitauren, Lamien, Morpho und Abaddon, Myconid in der Pfütze, seit A675 die Sanduhr
+  des Todes beim Königs-Ahriman-Ebenbild), Gegenangriff nach Angriffsart, die Eier des Zu und seit A674 die Gefahr je
+  Gegnerart (zweite Aetheric Charge, Brett 2) sind aus Blättern, BossMod-Modulen, Daedalus' Feldnotizen und
+  GluttonyCombos Aufzeichnungen gebaut, aber nicht an einem seiner Läufe gesehen. Auflösung: `DefenseTrace.log` und
+  ACT-Mitschnitt seines ersten Laufs auf einem der Bretter 2 bis 5 – die Zeilen „kill rule: … held/released" (auch „a
+  break now could fire Death", „roulette needle"), „left alone", „crucible route" und die Tode; dann je Abweichung Loop,
+  dazu der Vergleich mit LazyCrucibles Gewicht nach Hornbedarf für Futter und Rast (A679). Konzept 21 („Crucible of the
+  Unbroken: Bretter, Kämpfe, Strategien", K3, K12).
 
 - **Teraflare bricht auf Shinryu Unreal ab: welcher Abbrecher** (seine Meldung, 06.11.2026; A629). Im Kampf: In der
   letzten Phase startet sein LB3 und bricht wieder ab, mehrfach. RSR reicht Limit Breaks unverändert ans Spiel und
