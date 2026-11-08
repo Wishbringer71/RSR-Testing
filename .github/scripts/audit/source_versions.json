@@ -99,7 +99,7 @@
   },
   {
    "repo": "LTS-FFXIV/RebornMaterial",
-   "commit": "ad45a5615226beb47bc459d8abfebb8c7ecb85eb",
+   "commit": "9a9996960",
    "date": "2026-11-08",
    "use": "Oberfläche (Hilfsfenster)"
   },
@@ -177,8 +177,8 @@
   },
   {
    "repo": "t3knical/DalamudPlugins",
-   "commit": "fe84470",
-   "date": "2026-11-07",
+   "commit": "e286400ac",
+   "date": "2026-11-08",
    "use": "Tekz-BossmodReborn-Fork (Zielvorrang je Kampf), BeastMasterHelper (A667)"
   },
   {
