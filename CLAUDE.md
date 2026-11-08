@@ -44,11 +44,11 @@ Diese Datei gilt in jeder Lage. Die übrigen Regeln stehen je genau einmal im Re
 | Neue FFXIV-Version (Patchnotes in den Lodestone-Nachrichten) | `.claude/skills/spielpatch/SKILL.md` | ebenso |
 | Archiv zu einem Bereich | `python3 .github/scripts/audit/archive.py find <Begriff>`, `show <A123>`, `recent` | nie die ganze Datei lesen; `show` nennt Widerrufe und spätere Einträge dazu, und ein Eintrag gilt nur mit ihnen |
 | Sitzungsbeginn, Kontextkomprimierung | `.github/scripts/audit/session_brief.py`, Hook in `.claude/settings.json`: Abgleich, TODO, offene Issues, Archiv | von selbst |
-| Shell-Befehl, der einen Pfad eines Anlasses nennt | dessen Regeldatei über `.github/scripts/audit/rule_inject.py` (PreToolUse-Hook) | von selbst, einmal je Sitzung |
+| Erster Shell-Befehl, Write oder Edit, der einen Pfad eines Anlasses berührt, solange dessen Regeldatei nicht geladen ist | `.github/scripts/audit/rule_inject.py` (PreToolUse-Hook) weist ihn ab und nennt eine Datei des Anlasses; sie mit Read öffnen (limit 1), dann erneut senden | von selbst, je Abschnitt zwischen zwei Komprimierungen |
 | Code unter `RotationSolver*/` mit Edit oder Write ändern | `.github/scripts/audit/concept_first.py` (PreToolUse-Hook): weist ab, solange keine Änderung unter `docs/` offen ist, außer im Merge (→ „Definition of Ready") | von selbst |
 | Zugende | `.github/scripts/audit/stop_check.py` (Stop-Hook): Ankündigung, englische Schlussmeldung | von selbst |
 
-- Regeldateien laden über Read, Edit und Write, nicht über die Shell (gemessen 27.10.2026, A423); `rule_inject.py` gibt sie einem Shell-Befehl mit, der ihren Pfad nennt. Ändert ein Skript Dateien, ohne ihren Pfad im Befehl zu nennen, oder handle ich ohne Dateizugriff nach einem Anlass – Recherche, eine Aussage aus dem Gedächtnis –, lese ich die Datei zuerst.
+- Regeldateien laden über Read, Edit und Write, nicht über die Shell (gemessen 27.10.2026, A423), und erst mit dem Ergebnis des Aufrufs, wie jeder Hook-Text (A682). Deshalb weist `rule_inject.py` den ersten Zugriff ab, der die Regel bräuchte, bis eine Datei ihres Anlasses gelesen ist. Ändert ein Skript Dateien, ohne ihren Pfad im Befehl zu nennen, oder handle ich ohne Dateizugriff nach einem Anlass – Recherche, eine Aussage aus dem Gedächtnis –, lese ich die Datei zuerst.
 - `check_rule_files.py` hält die Tabelle in der CI gegen die Dateien: jede genannt, jede Pfadregel trifft Dateien, keine Regel doppelt.
 
 # Prüfpunkte

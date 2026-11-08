@@ -289,14 +289,15 @@ jobs:
       - name: Check the session brief still finds the open TODO items
         run: python3 .github/scripts/audit/session_brief.py --no-sync
 
-      # Three hooks hold rules the text alone did not: rule_inject.py gives a rule file to a shell command that names a
-      # path of its occasion, since the shell loads none (A423); stop_check.py hands an announcement or an English
+      # Three hooks hold rules the text alone did not: rule_inject.py refuses the first shell command, Write or Edit that
+      # touches a path of an occasion until a file of it is read, since the shell loads no rule file and every load
+      # arrives after its call (A423, A682); stop_check.py hands an announcement or an English
       # final message back before the turn ends; concept_first.py refuses a code edit while no concept change is open
       # (A635). Each is tried against constructed inputs.
       - name: Check the hooks read their input without waiting on a silent pipe
         run: python3 .github/scripts/audit/hook_io.py --self-test
 
-      - name: Check the rule hook for shell commands against constructed commands
+      - name: Check the rule hook against constructed calls
         run: python3 .github/scripts/audit/rule_inject.py --self-test
 
       - name: Check the stop hook against constructed final messages

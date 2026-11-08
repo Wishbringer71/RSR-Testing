@@ -20039,6 +20039,42 @@ der Code es selbst messen kann.
 *Prüfgrad:* statisch am Code und an den Wirktexten, Compile ohne Warnung, Prüfskripte; ob der Befehl Begleiter
 fortschickt, misst die Regel zur Laufzeit selbst.
 
+### A682 · Regeldateien vor dem ersten Zugriff; Weitergabe aus KSP-MyContracts geprüft (08.11.2026)
+
+- *Weitergabe:* aus einer Sitzung von KSP-MyContracts (08.11.2026), als Prüfaufgabe, weil Issues in diesem Repository
+  abgeschaltet sind (410). Kein Wort von ihm darin; geprüft hier am Artefakt. Drei Befunde: Die Regel kommt erst nach
+  dem Zugriff, der sie auslöst; Doppelladung durch Hook und Read; Messweg und Bilanz der Aufteilung nach Anlass.
+- *Befund 1, bestätigt:* Im Protokoll dieser Sitzung steht der Hooktext (`hook_additional_context`) zwischen Aufruf und
+  Ergebnis; den Aufruf hatte ich da schon geschrieben. Was Read, Edit oder Write laden, kommt ebenso mit dem Ergebnis.
+  Ein erster schreibender Zugriff – Skript, `sed -i`, Write einer neuen Datei, Edit nach einer Komprimierung – lief so
+  ohne die Regel seines Anlasses. Nicht die Ursache von 1812ced5c (Geschichtswort im TODO): `archiv-todo.md` stand seit
+  21:47:55 des Vortags im Kontext, die letzte Komprimierung davor war 21:41:22. Der Fehler war meiner.
+- *Befund 2, gemessen an diesem Protokoll:* 50 Abschnitte seit der Aufteilung, 24.632 Aufrufe; je Komprimierung nur
+  `compact_boundary` gezählt, nicht auch `isCompactSummary` (die Falle aus der Weitergabe). In 210 von 300
+  Datei-Abschnitten stand eine Regeldatei zweimal im Kontext, als Hooktext und von Claude Code geladen, im Mittel 16.067
+  Zeichen je Abschnitt. Einmal geladen waren im Mittel 18.904 von 20.435 Zeichen Regeltext; fünf der sechs Dateien in
+  mindestens 96 % der Abschnitte, `regeldateien.md` in 50 %. Mit der Doppelladung 34.971 Zeichen je Abschnitt, mehr als
+  alle Regeldateien zusammen. Ein Teil-Read (offset, limit) lädt die Regeldatei ebenso (12 Fälle im Protokoll).
+- *Gebaut (Hilfsmittel):* `rule_inject.py` weist den ersten Bash-, Edit- oder Write-Aufruf ab, der einen Pfad eines
+  Anlasses berührt, solange dessen Regel nicht geladen ist, und nennt eine Datei des Anlasses zum Öffnen mit Read
+  (limit 1). Claude Code lädt die Regel dann einmal, vor dem erneuten Aufruf; ohne den Read wird der Aufruf wieder
+  abgewiesen. Der Hook gibt keinen Regeltext mehr, also keine Doppelladung durch ihn. Read wird nie abgewiesen; ein Read
+  der Regeldatei selbst zählt als geladen (Rückfall, wenn ein Anlass keine Datei hat). Selbsttest mit 16 Fällen, dazu
+  die Prüfung, dass jede Regeldatei dieses Repositorys eine Datei ihres Anlasses hat. CLAUDE.md „Was wann gilt"
+  (Tabellenzeile und erster Punkt darunter), Kommentar und Schrittname in `build.yaml`, Docstring in
+  `session_brief.py`. Preis: je Regeldatei und Abschnitt ein abgewiesener Aufruf und ein Read von einer Zeile.
+- *Verworfen:* ein Satz in CLAUDE.md allein (Vorschlag der Weitergabe) – Disziplin, die gerade dort versagt, wo der
+  erste Zugriff schreibt; der Regeltext im Abweisungsgrund (erste Fassung in diesem Zug) – behebt die Reihenfolge,
+  behält die Doppelladung.
+- *Befund 3, Bilanz der Aufteilung:* Die Aufteilung nach Anlass ist seine Vorgabe vom 27.10.2026 (`regeldateien.md`,
+  „Umfang folgt dem Inhalt"); KSP-MyContracts hat sie dort verworfen (deren A135). Hier spart sie ohne Doppelladung im
+  Mittel 1.531 Zeichen je Abschnitt (7,5 % des Regeltexts), weil fast jede Arbeit Code, Konzept, Prüfmittel, TODO und
+  Archiv zugleich berührt. Teurer als eine einzige CLAUDE.md machte sie hier die Doppelladung meines Hooks; die ist
+  beseitigt. Damit spricht nichts mehr gegen seine Vorgabe, und sie wird ihm nicht zur Änderung vorgelegt.
+
+*Prüfgrad:* Selbsttest, Aufruf mit echter Hook-Eingabe, Messung am Sitzungsprotokoll; die Abweisung im Lauf einer
+Sitzung zeigt sich beim nächsten ersten Zugriff eines Abschnitts.
+
 ## B · Commit-Register (Fork vs. `upstream/main`)
 
 ### B1 · Einzelgeprüfte Fork-Commits

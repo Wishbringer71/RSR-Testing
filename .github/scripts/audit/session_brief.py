@@ -3,7 +3,7 @@
 .claude/settings.json (CLAUDE.md, "Prüfpunkte"): the sync state against upstream, the open TODO items by title,
 the open issues of the repository - where his other repositories pass on what they found (his rule of 27.10.2026) -
 and the newest archive entries. Its output enters the context; the hook caps it at 10,000 characters, so it stays
-far below that. After a compaction or a clear it also clears rule_inject.py's record of the rule files it gave this
+far below that. After a compaction or a clear it also clears rule_inject.py's record of the rule files loaded in this
 session, since the context no longer holds them.
 
   session_brief.py            the brief, with the sync state (fetches origin and upstream) and the issues
