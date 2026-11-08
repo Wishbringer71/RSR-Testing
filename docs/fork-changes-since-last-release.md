@@ -18,6 +18,16 @@ What this release changes in the fight. For the whole distance from upstream, se
   characters. Every tooltip text now breaks at 65 characters (up to 75 stay on one line), and the tooltip grows with
   it. The rotation tooltip in the navigation no longer wraps its description at the width of its shortest lines.
 
+## The Beastmaster between fights
+
+- **A familiar left out after a fight goes before the next one.** A familiar that ended a fight without One with
+  Nature stayed out until the next pull, left there by Parting Blow, and only the call after it brought a Release or
+  Borrow. Out of combat, RSR now sends it away with the pet command Away – a retreat outside of combat starts no recast
+  – and calls the next familiar with One with Nature before the pull. The pull opens with its Release or Borrow, and
+  all three horns can be set for the next fight. Not for the familiar of your Kinship, and only from level 18, where a
+  call grants One with Nature. If the game refuses the command or the familiar stays out, RSR writes it to
+  `DefenseTrace.log` and keeps the old order.
+
 ## The Beastmaster on a Crucible board
 
 - **The route window says left or right, and why.** At a fork it names each way by its side as seen from the start

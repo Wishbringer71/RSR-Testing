@@ -134,19 +134,19 @@ nebeneinander braucht: neuer interner Name mit Übernahme des Ordners, angezeigt
   auf einem Build davor und bestätigte die Ursachen (A665). Im Kampf: mehr Begleiter an der Campsite, der Schatz statt
   der Rast, wo beide sicher sind, der Plan des Endkampfs gleich der Wahl am Endkampf, übrige Heilung vor dem Endkampf,
   Schadensgegenstände nach Wert über die Kämpfe und erst, wenn kein Gegner mehr in ihre Reichweite kommt, Eis vor Feuer,
-  das Zaubermittel vor dem Schaden, nichts übrig nach dem Endkampf; seit A668 bis A679 Schutz nach Dauer, Flucht mit
+  das Zaubermittel vor dem Schaden, nichts übrig nach dem Endkampf, Schutz nach Dauer, Flucht mit
   Rauchbombe, Schadensgegenstände nach ersparter Last, Tötungsstapel und Zauberbücher erst nach eigener Messung, kein
-  Futter doppelt. Auflösung: `DefenseTrace.log` und ACT-Mitschnitt seines nächsten Laufs ab A665 – die Zeilen „crucible
+  Futter doppelt (A668 bis A679). Auflösung: `DefenseTrace.log` und ACT-Mitschnitt seines nächsten Laufs ab A665 – die Zeilen „crucible
   fight …: … stored", „crucible campsite", „crucible route", „Crucible final fight's plan", „crucible item" (auch
   „waits", „spares … of your HP"), „crucible items at the start of/after fight", „a kill by an item granted", „a hit the
   … tome converted"; dann je Abweichung Loop. Konzept 21, K8 („Über das Brett", „Zeitpunkt im Kampf", „Auslöser",
   „Zauberbücher"), K10, K13, K14, Weg.
 
 - **Beastmaster: Bretter 2 bis 5 am ersten Mitschnitt prüfen** (Crucible-Strategien K1 bis K14 gebaut, zuletzt A643,
-  A644). Im Kampf: Tötungsregeln (Tablitauren, Lamien, Morpho und Abaddon, Myconid in der Pfütze, seit A675 die Sanduhr
-  des Todes beim Königs-Ahriman-Ebenbild), Gegenangriff nach Angriffsart, die Eier des Zu und seit A674 die Gefahr je
-  Gegnerart (zweite Aetheric Charge, Brett 2) sind aus Blättern, BossMod-Modulen, Daedalus' Feldnotizen und
-  GluttonyCombos Aufzeichnungen gebaut, aber nicht an einem seiner Läufe gesehen. Auflösung: `DefenseTrace.log` und
+  A644). Im Kampf: Tötungsregeln (Tablitauren, Lamien, Morpho und Abaddon, Myconid in der Pfütze, die Sanduhr des Todes
+  beim Königs-Ahriman-Ebenbild, A675), Gegenangriff nach Angriffsart, die Eier des Zu und die Gefahr je Gegnerart (A674,
+  zweite Aetheric Charge, Brett 2) sind aus Blättern, BossMod-Modulen, Daedalus' Feldnotizen und GluttonyCombos
+  Aufzeichnungen gebaut, aber nicht an einem seiner Läufe gesehen. Auflösung: `DefenseTrace.log` und
   ACT-Mitschnitt seines ersten Laufs auf einem der Bretter 2 bis 5 – die Zeilen „kill rule: … held/released" (auch „a
   break now could fire Death", „roulette needle"), „left alone", „crucible route" und die Tode; dann je Abweichung Loop,
   dazu der Vergleich mit LazyCrucibles Gewicht nach Hornbedarf für Futter und Rast (A679). Konzept 21 („Crucible of the
@@ -172,15 +172,6 @@ nebeneinander braucht: neuer interner Name mit Übernahme des Ordners, angezeigt
   nach der Markierung, Antwort und LP als Zeilen „gauge: …", dazu die Antwort des Spiels auf ein zweites Anfreunden.
   Auflösung: Zeilen „gauge" eines Abends mit fehlenden Bestien; dann Loop, ob die Stufe oder ein zweites Anfreunden in
   A2 eingeht. Konzept 01, „Was gilt beim Anfreunden".
-
-- **Beastmaster: Nach dem Kampf ohne One with Nature in den nächsten** (A543). Im Kampf: Der letzte Begleiter bleibt
-  nach einem Kampf ohne One with Nature draußen; am nächsten Pull geht er beim ersten Webfenster mit Scheidendem Schlag,
-  dann kommt der Begleiter nach Lage (vor einem Rudel der aufhaltende, A542) – etwa ein GCD und der Ruf (1 s) später, als
-  wenn er schon vor dem Pull mit One with Nature draußen stünde. Ein Ruf außerhalb des Kampfes braucht einen Rückzug ohne
-  feindliches Ziel: Scheidender Schlag geht nur im Kampf (Wirktext 44891), der einzige Kandidat ist der allgemeine
-  Begleiterbefehl „Away" (PetAction 1), keinem Begleiter zugeordnet. Auflösung: ob die Begleiterleiste des Beastmasters
-  einen Befehl zum Zurücktreten führt (im Spiel sichtbar); dann Loop zum Ruf vor dem nächsten Gegner (B5). Konzept 01,
-  „Belegung der Hörner in der Rotation".
 
 - **Blaumagier: 1000 Nadeln gewirkt, obwohl nicht im Set** (sein Hinweis, 03.11.2026; A506). Im Kampf: RSR wirkt
   laut ihm einen Zauber außerhalb des Sets; der Code lässt das nicht zu. Auflösung: die Zeilen „blue mage set" und

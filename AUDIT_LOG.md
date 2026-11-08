@@ -19998,6 +19998,41 @@ bringen" – zu seinem Auftrag, für den Beastmaster weitere Quellen und Plugins
 
 *Prüfgrad:* Selbsttest des Skripts, Messung gegen alle 35 Remotes; Prüfskripte.
 
+### A681 · Beastmaster: Rückzug vor dem nächsten Kampf mit „Lauf" (08.11.2026)
+
+Sein Auftrag (07.11.2026): TODO für den Beastmaster weiter im Loop, mit weiteren Quellen und Plugins; seine Frage
+(08.11.2026): „Ist beastmaster im todo damit fertig?". Der Wartepunkt A543 verlangte als Auflösung, ob seine
+Begleiterleiste einen Rückzug führt („im Spiel sichtbar") – eine Spielbestätigung durch ihn, ohne vorher zu prüfen, ob
+der Code es selbst messen kann.
+
+- *Belegt:* Kampfhorn 1 s Wirkzeit, 2 s Abklingzeit außerhalb; „During combat, recast timer cooldown will begin once
+  your familiar has retreated. Retreat outside of combat will not affect recast timer." (Wirktext 44881, xivapi v2,
+  08.11.2026). „Lauf" ist PetAction 1 („Du schickst dein Familiar weg", de; „Away", en). Battlehorn Mastery (Trait 692,
+  Stufe 18) gibt One with Nature beim Ruf.
+- *Werkzeugquellen:* BossMods BST-Rotation von xan (awgil/ffxiv_bossmod 6e410ef8b, 03.11.2026;
+  `BossMod.Autorotation/Standard/xan/Melee/BST.cs`, `Prep`) schickt außerhalb des Kampfes PetAction 1, um One with
+  Nature zu erneuern („Resummon pet out of combat to refresh One With Nature", ab Werk an), nicht beim Begleiter der
+  Kinship („resummoning that pet will remove the buff"). BeastMastr (Zinochron/BeastMastr c52b572, 21.09.2026) schickt
+  „Heel" (PetAction 2) an Begleiter, nach `GetActionStatus(PetAction, 2) == 0`.
+- *Widerlegt aus A543:* „was ein außerhalb des Kampfes gerufener Begleiter tut (bleibt er, zieht er Gegner)" – RSR ruft
+  schon heute außerhalb des Kampfes (B3; Konzept 01: Morbol um 17:32:24 vor dem Pull gerufen); der Rückzug fügt nur
+  den Befehl davor ein, der Ruf danach ist derselbe.
+- *Gerechnet (aus den Wirktexten, nicht gemessen):* Ohne Rückzug verbraucht der alte Begleiter den Platz seines Horns
+  in den ersten 90 s des nächsten Kampfs mit einem Scheidenden Schlag ohne Entfesseln; mit Rückzug bringt das Horn
+  einen ganzen Zyklus, das Entfesseln fällt einen GCD und den Ruf früher, B5 setzt alle drei Hörner. Preis: der
+  Scheidende Schlag des alten Begleiters (1.000).
+- *Gebaut:* `BST_Reborn.RetreatBeforeNextFight` in `UpdateInfo`, nur mit RSR an; Befehl über
+  `BeastmasterRotation.AwayStatus` und `SendAway` (intern). Selbstmessung: derselbe Begleiter einen GCD nach dem Befehl
+  noch draußen → in der Sitzung nicht mehr; Ablehnung je Status einmal in `DefenseTrace.log`. Konzept 01, B5
+  „Rückzug vor dem nächsten Kampf"; TODO-Eintrag „Beastmaster: Nach dem Kampf ohne One with Nature in den nächsten"
+  entfernt.
+- *Verworfen:* ein Ruf eines anderen Horns, während der Begleiter draußen steht (ob der Server ihn annimmt, ist nicht
+  gemessen, und das Horn des Begleiters draußen bliebe besetzt); eine Option dafür (kein Preis im Kampf, der eine Wahl
+  trüge, außer dem einen Scheidenden Schlag, den das zusätzliche Entfesseln überwiegt).
+
+*Prüfgrad:* statisch am Code und an den Wirktexten, Compile ohne Warnung, Prüfskripte; ob der Befehl Begleiter
+fortschickt, misst die Regel zur Laufzeit selbst.
+
 ## B · Commit-Register (Fork vs. `upstream/main`)
 
 ### B1 · Einzelgeprüfte Fork-Commits

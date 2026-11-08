@@ -1127,11 +1127,52 @@ eingearbeitet werden, situationsbezogen"; A487, A488, A522):
     4. nach einer Gefahr im Gebiet mehr, die heilen oder schützen;
     5. möglichst viele seiner Begleiter auf ihrem Horn;
     6. mehr, die heilen oder schützen, dann mehr, deren Dressur heilt.
-  - *Das Horn des Begleiters draußen bleibt.* Was eine Zuweisung mit dem Begleiter draußen macht, ist nicht gemessen:
-    Die Probe änderte nur Hörner ohne Begleiter draußen. Nach einem Kampf steht meist einer draußen; dann setzt RSR die
-    beiden anderen. Beim nächsten Kampf geht er mit dem Scheidenden Schlag, und die beiden gesetzten folgen; sein One
-    with Nature hat er im letzten Kampf verbraucht (offen, wartet auf einen Rückzug ohne feindliches Ziel: TODO „Beastmaster:
-    Nach dem Kampf ohne One with Nature in den nächsten", A543).
+  - *Rückzug vor dem nächsten Kampf (A681):* Steht nach einem Kampf ein Begleiter ohne One with Nature draußen, schickt
+    RSR ihn außerhalb des Kampfes mit dem Begleiterbefehl „Lauf" fort (PetAction 1, englisch „Away", „Du schickst dein
+    Familiar weg", xivapi v2 de). Danach ist kein Begleiter draußen: B5 setzt alle drei Hörner, und der Ruf außerhalb
+    des Kampfes bringt den nächsten mit One with Nature. Ein Rückzug außerhalb des Kampfes setzt keine Abklingzeit
+    („Retreat outside of combat will not affect recast timer", Wirktext 44881; Ruf 1 s, außerhalb 2 s Abklingzeit).
+    - *Bedingungen:* RSR an; nicht im Kampf; du lebst und wirkst nicht. Ein Ruf gibt One with Nature (Battlehorn
+      Mastery, Stufe 18), sonst brächte der neue Ruf nichts. Der Begleiter draußen ist nicht der deiner Kinship
+      (`KinshipBattlehorn`): Ihr Ablauf steht still, solange er draußen ist, und sein Horn neu zu rufen nähme sie
+      (BossMods BST-Rotation von xan, awgil/ffxiv_bossmod 6e410ef8b, 03.11.2026, Werkzeugquelle). Keine Zuweisung
+      wartet auf den Server, er tritt nicht schon ab. Das Spiel nimmt den Befehl an
+      (`ActionManager.GetActionStatus(PetAction, 1)` ist 0).
+    - *Beleg und Selbstmessung:* Dass der Befehl einen Begleiter fortschickt, belegen nur Werkzeugquellen. BossMods
+      BST-Rotation schickt ihn vor dem Pull, um One with Nature zu erneuern (ab Werk an). BeastMastr (Zinochron/BeastMastr
+      c52b572, 21.09.2026) nutzt den Nachbarbefehl „Heel" (PetAction 2) für Begleiter im Kampf. RSR misst es selbst:
+      Steht derselbe Begleiter einen GCD nach dem Befehl noch draußen, schickt RSR ihn in dieser Sitzung nicht mehr
+      (Zeile „beastmaster: Away did not retreat …" in `DefenseTrace.log`). Beginnt davor ein Kampf, urteilt RSR nicht:
+      Dann kann der Kampf den Begleiter gehalten haben. Lehnt das Spiel ab, nennt die Zeile
+      „beastmaster: the game refuses Away (status …)" den Grund, einmal je Sitzung. In beiden Fällen bleibt der heutige
+      Ablauf (unten, „Preis").
+    - *Was im Kampf anders wird* (aus den Wirktexten gerechnet, nicht gemessen):
+      - *Ohne Rückzug:* Der alte Begleiter geht am nächsten Pull beim ersten Webfenster mit dem Scheidenden Schlag
+        (1.000, 8 y). Sein Horn klingt ab da 90 s ab, und erst der nächste Ruf (1 s) bringt ein Entfesseln oder Borrow.
+      - *Mit Rückzug:* Der nächste Begleiter steht am Pull mit One with Nature draußen. Sein Entfesseln – vor einem Rudel
+        etwa War Cry, 750 und 15 s Betäubung (oben) – fällt einen GCD und den Ruf früher.
+      - *Über den Kampf:* Jedes Horn ruft im Kampf einmal je 90 s, denn sein Rückzug startet die Abklingzeit. Ohne
+        Rückzug verbraucht der alte Begleiter den Platz seines Horns mit einem Scheidenden Schlag ohne Entfesseln. Mit
+        Rückzug bringt dieses Horn einen ganzen Zyklus: ein Entfesseln oder Borrow mehr. Dessen Lingering Vantage (ab
+        Stufe 44) hebt den Scheidenden Schlag des neuen Begleiters auf 1.500.
+      - *Sicherheit:* Ein heilender, schützender oder aufhaltender Begleiter, den B5 für den Kampf gesetzt hat, wirkt
+        ab dem Pull.
+    - *Preis:* der Scheidende Schlag des alten Begleiters am Pull. Läufst du und kommt der Pull, bevor der Ruf gelingt,
+      ruft RSR im Kampf sofort; das Horn klingt nicht ab. Dann fehlt nur dieser Schlag, und das Entfesseln kommt eher
+      als ohne Rückzug, weil kein Scheidender Schlag davor steht. Ohne Rückzug – Kinship, unter Stufe 18, abgelehnt, RSR
+      aus – bleibt das Horn des Begleiters draußen: Was eine Zuweisung mit ihm macht, ist nicht gemessen, denn die Probe
+      änderte nur Hörner ohne Begleiter draußen. Dann setzt RSR die beiden anderen, und am Pull geht er mit dem
+      Scheidenden Schlag.
+    - *Universell zuerst:* nur beim Beastmaster. Bei keinem anderen Job gibt ein Ruf einen Vorrat, der mit dem
+      Begleiter wechselt; Beschwörer und Gelehrter rufen ohne solchen Zusatz. Die Stufen darüber bleiben leer.
+    - *Gegenthesen, mit Versuch der Widerlegung:*
+      - „Kein Defekt, der alte Begleiter schlägt ja zu": Der Schlag ersetzt kein Entfesseln; gerechnet oben.
+      - „Ein Ruf eines anderen Horns tauscht den Begleiter auch, ohne Befehl": Ob der Server einen Ruf annimmt, während
+        ein anderer Begleiter draußen ist, ist nicht gemessen. Das Horn des Begleiters draußen ließe sich so nicht neu
+        rufen, und B5 könnte es nicht setzen. Der Rückzug deckt beides.
+      - „Ausgeliefert, und nichts ändert sich": wenn das Spiel den Befehl für Begleiter nicht führt. Dann schreibt RSR
+        das einmal und bleibt beim Ablauf ohne Rückzug. Ebenso, wenn der Begleiter schon im Kampf abtrat, wenn er die
+        Kinship trägt oder unter Stufe 18.
   - *Was im Kampf anders wird* (seine Hörner vom 02.11.2026: Gespenst – sein Entfesseln Odium heilt –, Fledermaus –
     ihre Dressur heilt –, Opo-Opo; Ergebnis des Modells unten):
     - Vor einem Rudel setzt RSR Büffel und Raptor auf die beiden Hörner, die entfesseln. War Cry trifft das Rudel mit
@@ -1172,8 +1213,8 @@ eingearbeitet werden, situationsbezogen"; A487, A488, A522):
       schlechter gedeckt, bis auf 0 %; das Horn des einen heilenden Begleiters klingt dann ab.
     - Nur die Dressur werten (erster Entwurf): Er wählte Schutz statt Schaden aus Entfesseln (Pugil statt Raptor) und
       brachte die Fledermaus nicht zurück; auf den Rudeln −0,6 %, die Gefahr am Boss zu 23 % statt 100 % gedeckt.
-    - Das Horn des Begleiters draußen mit umsetzen: Was mit ihm geschieht, ist nicht gemessen; der Gewinn wäre ein Horn,
-      dessen Begleiter schon ohne One with Nature draußen steht.
+    - Das Horn des Begleiters draußen mit umsetzen: Was mit ihm geschieht, ist nicht gemessen. Der Rückzug vor dem
+      nächsten Kampf (oben, A681) macht das Horn frei, ohne darauf angewiesen zu sein.
     - Einen Heiler in der Gruppe eigens zählen: Die gemessene Gefahr enthält ihn schon.
   - *Antithesen, mit Versuch der Widerlegung:*
     - „Eine Boss-Belegung bringt keinen Schaden, jede Dressur hat 500": Für die Dressur auf ein Ziel stimmt das. Vor dem

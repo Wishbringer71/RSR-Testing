@@ -742,6 +742,17 @@ public partial class BeastmasterRotation
 	/// </summary>
 	public static unsafe bool ThirdBattleHornReady => ActionManager.Instance()->GetActionStatus(ActionType.Action, (uint)ActionID.ThirdBattlehornPvE) == 0;
 
+	// A681 (concept 01, B5 "Rückzug vor dem nächsten Kampf"): the general pet command Away (PetAction 1, German "Lauf"),
+	// which BossMod's beastmaster rotation sends to a familiar out of combat. What the game says to it now, 0 if it takes it.
+	private const uint AwayCommand = 1;
+
+	internal static unsafe uint AwayStatus => ActionManager.Instance() is var manager && manager != null
+		? manager->GetActionStatus(ActionType.PetAction, AwayCommand)
+		: uint.MaxValue;
+
+	internal static unsafe bool SendAway() => ActionManager.Instance() is var manager && manager != null
+		&& manager->UseAction(ActionType.PetAction, AwayCommand);
+
 	/// <summary>
 	///
 	/// </summary>

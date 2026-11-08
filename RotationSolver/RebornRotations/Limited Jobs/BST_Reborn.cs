@@ -1523,12 +1523,74 @@ public sealed class BST_Reborn : BeastmasterRotation
 		}
 
 		FollowFamiliarHits(FamiliarLeaving);
+		RetreatBeforeNextFight();
 		if ((UseCrucibleSafetyItems || UseCrucibleDamageItems) && DataCenter.State)
 		{
 			UseCrucibleItems(Service.Config.UseHpPotionsPercent, FamiliarLossAhead(Familiar), UseCrucibleSafetyItems,
 				UseCrucibleDamageItems);
 		}
 		CountFight();
+	}
+
+	// A681 (concept 01, B5 "Rückzug vor dem nächsten Kampf"): a familiar left out after a fight without One with Nature goes
+	// by Away out of combat - a retreat there costs no recast - and the call out of combat brings the next one with it, so
+	// the next pull opens with a Release or Borrow instead of a Parting Blow and B5 sets all three horns. Not for the
+	// familiar of your Kinship (it stands still while that one is out, and a new call of its horn takes it), not where a
+	// call gives no One with Nature. RSR measures the command itself: a familiar still out a GCD after it ends it for the
+	// session.
+	private static bool _awayFailed;
+	private static readonly HashSet<uint> _awayRefusals = [];
+	private byte _awayHorn;
+	private DateTime _awaySentAt;
+
+	private void RetreatBeforeNextFight()
+	{
+		if (_awayHorn != 0)
+		{
+			if (ActiveBattlehorn != _awayHorn)
+			{
+				TraceHorn($"beastmaster: Away retreated the familiar of {(HornOrder)_awayHorn} after {(DateTime.Now - _awaySentAt).TotalSeconds:F2} s");
+				_awayHorn = 0;
+			}
+			else if (InCombat)
+			{
+				// A pull right after the command: the fight, not the command, may have kept the familiar; no verdict.
+				_awayHorn = 0;
+			}
+			else if ((DateTime.Now - _awaySentAt).TotalSeconds >= DataCenter.DefaultGCDTotal)
+			{
+				_awayFailed = true;
+				DefenseTrace.Line($"beastmaster: Away did not retreat {CurrentPet} ({(HornOrder)_awayHorn}) within a GCD - RSR does not send it again this session; it leaves by Parting Blow at the next pull");
+				_awayHorn = 0;
+			}
+
+			return;
+		}
+
+		if (_awayFailed || !DataCenter.State || InCombat || ActiveBattlehorn == 0 || HasOneWithNature
+			|| !BattlehornMasteryTrait.EnoughLevel || ActiveBattlehorn == KinshipBattlehorn || BattlehornAssignmentPending
+			|| Player is not { IsDead: false } player || player.IsCasting)
+		{
+			return;
+		}
+
+		var status = AwayStatus;
+		if (status != 0)
+		{
+			if (_awayRefusals.Add(status))
+			{
+				DefenseTrace.Line($"beastmaster: the game refuses Away (status {status}) - {CurrentPet} stays out until Parting Blow at the next pull");
+			}
+
+			return;
+		}
+
+		if (SendAway())
+		{
+			_awayHorn = ActiveBattlehorn;
+			_awaySentAt = DateTime.Now;
+			TraceHorn($"{(HornOrder)_awayHorn} ({CurrentPet}) retreats before the next fight (Away): it has no One with Nature, a call out of combat brings it and costs no recast");
+		}
 	}
 
 	// A576: what happens between fights, RSR on or off - "Turn off after combat ends" turned RSR off 30 s after each fight,
