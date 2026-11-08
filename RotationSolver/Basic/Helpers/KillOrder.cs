@@ -60,6 +60,7 @@ internal static class KillOrder
 	private static readonly Dictionary<ulong, string> _reasons = [];
 	private static readonly Dictionary<ulong, (string Name, DateTime At)> _traced = [];
 	private static readonly List<IBattleChara> _members = [];
+	private static readonly List<IBattleChara> _living = [];
 	private static readonly List<System.Numerics.Vector3> _puddles = [];
 	private static readonly HashSet<ulong> _first = [];
 
@@ -106,8 +107,9 @@ internal static class KillOrder
 	}
 
 	/// <summary>
-	/// Works out the held enemies from every battle character in reach of the game; called once per frame by the target
-	/// update before it builds the lists of targets.
+	/// Works out the held enemies; called once per frame by the target update before it builds the lists of targets.
+	/// <paramref name="all"/> holds the targetable battle characters only; whether an enemy lives is read from the object
+	/// table instead (concept 03, "Tötungsregeln", "Wer lebt"; A683).
 	/// </summary>
 	internal static void Update(List<IBattleChara> all)
 	{
@@ -115,18 +117,24 @@ internal static class KillOrder
 		_noArea.Clear();
 		_reasons.Clear();
 		_first.Clear();
-		if (Service.Config.KillRules && !DataCenter.IsPvP && all.Count > 0)
+		var rules = Service.Config.KillRules && !DataCenter.IsPvP && all.Count > 0;
+		if (rules || _traced.Count > 0)
+		{
+			CollectLiving();
+		}
+
+		if (rules)
 		{
 			foreach (var (members, survivorAction) in FallTogether)
 			{
-				HoldTogether(all, members, survivorAction);
+				HoldTogether(members, survivorAction);
 			}
 
 			foreach (var (enemy, others, noArea) in NotBefore)
 			{
-				if (AnyLiving(all, others))
+				if (AnyLiving(others))
 				{
-					Hold(all, enemy, noArea, $"its fall harms while a {NameOf(all, others)} lives");
+					Hold(all, enemy, noArea, $"its fall harms while a {NameOf(others)} lives");
 				}
 			}
 
@@ -134,16 +142,31 @@ internal static class KillOrder
 			HoldAgainstTheNeedle(all);
 		}
 
-		Trace(all);
+		Trace();
 	}
 
-	// Rule 2: every member at or below the reserve waits while another attackable member stands above it.
-	private static void HoldTogether(List<IBattleChara> all, uint[] nameIds, uint survivorAction)
+	// A683: every enemy of the object table with HP left, targetable or not. An enemy that cannot be targeted for a while - the
+	// elder tablitaur through its Endless Swing, 26 s on 08.11.2026 - still begins its action when another falls, and the
+	// target list, which holds the targetable ones only, would count it as gone.
+	private static void CollectLiving()
+	{
+		_living.Clear();
+		foreach (var obj in Svc.Objects)
+		{
+			if (obj is IBattleChara { CurrentHp: > 0 } battleChara && battleChara.IsEnemySideFigure())
+			{
+				_living.Add(battleChara);
+			}
+		}
+	}
+
+	// Rule 2: every member at or below the reserve waits while another living member stands above it.
+	private static void HoldTogether(uint[] nameIds, uint survivorAction)
 	{
 		_members.Clear();
-		foreach (var battleChara in all)
+		foreach (var battleChara in _living)
 		{
-			if (battleChara.CurrentHp > 0 && Array.IndexOf(nameIds, battleChara.NameId) >= 0 && battleChara.IsEnemy())
+			if (Array.IndexOf(nameIds, battleChara.NameId) >= 0)
 			{
 				_members.Add(battleChara);
 			}
@@ -184,7 +207,8 @@ internal static class KillOrder
 
 			foreach (var other in _members)
 			{
-				if (other.GameObjectId != member.GameObjectId && other.CurrentHp > reserve && other.IsTargetable && !Invincible(other))
+				// A683: also while the other cannot be targeted or hit - it begins its action when this one falls all the same.
+				if (other.GameObjectId != member.GameObjectId && other.CurrentHp > reserve)
 				{
 					Add(member, true, $"must fall with {other.Name.TextValue} ({other.CurrentHp} HP): held at {member.CurrentHp} HP, "
 						+ $"reserve {reserve:F0} HP = {stream:F0} HP/s over half of {window:F1} s");
@@ -197,7 +221,7 @@ internal static class KillOrder
 	// Rule 3, a place: a myconid piece outside every live water puddle, while the mindflayer piece lives.
 	private static unsafe void HoldOutsidePuddles(List<IBattleChara> all)
 	{
-		if (!AnyLiving(all, MindflayerPiece) || !AnyLiving(all, MyconidPiece)
+		if (!AnyLiving(MindflayerPiece) || !AnyLiving(MyconidPiece)
 			|| Svc.Data.GetExcelSheet<Lumina.Excel.Sheets.Action>()?.GetRowOrDefault(VoidWaterIII) is not { } water)
 		{
 			return;
@@ -454,11 +478,11 @@ internal static class KillOrder
 		_reasons[battleChara.GameObjectId] = reason;
 	}
 
-	private static bool AnyLiving(List<IBattleChara> all, uint nameId)
+	private static bool AnyLiving(uint nameId)
 	{
-		foreach (var battleChara in all)
+		foreach (var battleChara in _living)
 		{
-			if (battleChara.NameId == nameId && battleChara.CurrentHp > 0 && battleChara.IsEnemy())
+			if (battleChara.NameId == nameId)
 			{
 				return true;
 			}
@@ -467,9 +491,9 @@ internal static class KillOrder
 		return false;
 	}
 
-	private static string NameOf(List<IBattleChara> all, uint nameId)
+	private static string NameOf(uint nameId)
 	{
-		foreach (var battleChara in all)
+		foreach (var battleChara in _living)
 		{
 			if (battleChara.NameId == nameId)
 			{
@@ -480,21 +504,8 @@ internal static class KillOrder
 		return nameId.ToString();
 	}
 
-	private static bool Invincible(IBattleChara battleChara)
-	{
-		foreach (var status in battleChara.StatusList)
-		{
-			if (status != null && status.StatusId != 0 && status.IsInvincible())
-			{
-				return true;
-			}
-		}
-
-		return false;
-	}
-
 	// One line when an enemy is held and one when it is released, at most once a GCD per enemy.
-	private static void Trace(List<IBattleChara> all)
+	private static void Trace()
 	{
 		var now = DateTime.Now;
 		foreach (var (id, reason) in _reasons)
@@ -528,9 +539,9 @@ internal static class KillOrder
 			var name = _traced[id].Name;
 			_ = _traced.Remove(id);
 			var alive = false;
-			foreach (var battleChara in all)
+			foreach (var battleChara in _living)
 			{
-				if (battleChara.GameObjectId == id && battleChara.CurrentHp > 0)
+				if (battleChara.GameObjectId == id)
 				{
 					alive = true;
 					break;
