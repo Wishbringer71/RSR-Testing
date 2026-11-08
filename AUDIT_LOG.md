@@ -20030,6 +20030,12 @@ der Code es selbst messen kann.
   gemessen, und das Horn des Begleiters draußen bliebe besetzt); eine Option dafür (kein Preis im Kampf, der eine Wahl
   trüge, außer dem einen Scheidenden Schlag, den das zusätzliche Entfesseln überwiegt).
 
+- *Quellen auf Aktualisierungen (A680, Auftragsende):* 32 von 35 auf dem ausgewerteten Stand. Bewegt und ohne Nutzen
+  für RSR, eingetragen: FFXIVClientStructs 0adb2e545 → 29e26b334 (IK- und Blickmodule der Animation, `CharacterBase`,
+  kein Spielzustand, den RSR liest); RebornMaterial 0bd2517eb → ad45a5615 („Added stuff for GBR": neue Widgets, Seiten
+  und Fenster für ein anderes Plugin; RSR bezieht das Paket 7.5.7.6, das Upstream festlegt, und seine Fenster folgen den
+  Normen aus Konzept 03); xivanalysis f532855e6 → deb22536f (nur französische Übersetzungen).
+
 *Prüfgrad:* statisch am Code und an den Wirktexten, Compile ohne Warnung, Prüfskripte; ob der Befehl Begleiter
 fortschickt, misst die Regel zur Laufzeit selbst.
 

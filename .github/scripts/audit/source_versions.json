@@ -3,8 +3,8 @@
  "sources": [
   {
    "repo": "aers/FFXIVClientStructs",
-   "commit": "0adb2e545ac53cacc9341c1d030eb1a9495af49c",
-   "date": "2026-11-06",
+   "commit": "29e26b334b9fe810c810da89d8cd2826c5f9e7aa",
+   "date": "2026-11-08",
    "use": "Client-API"
   },
   {
@@ -99,8 +99,8 @@
   },
   {
    "repo": "LTS-FFXIV/RebornMaterial",
-   "commit": "0bd2517ebf601436ecdd8c8ebc1aaac07b7694c0",
-   "date": "2026-11-01",
+   "commit": "ad45a5615226beb47bc459d8abfebb8c7ecb85eb",
+   "date": "2026-11-08",
    "use": "Oberfläche (Hilfsfenster)"
   },
   {
@@ -189,8 +189,8 @@
   },
   {
    "repo": "xivanalysis/xivanalysis",
-   "commit": "f532855e635bdfb4211cec8128d582dadfdc6a75",
-   "date": "2026-09-25",
+   "commit": "deb22536fe2b8e713ebfcd754b9ec4de4e49713e",
+   "date": "2026-11-08",
    "use": "Bewertung je Job (konzepte.md)"
   },
   {
