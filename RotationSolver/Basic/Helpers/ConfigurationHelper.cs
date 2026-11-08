@@ -41,6 +41,13 @@ internal static class ConfigurationHelper
 		ActionStatus.WrongClass,
 		ActionStatus.NotLearned,
 		ActionStatus.RequirementNotMet,
+		// A683 (concept 03, "Was das Spiel hier ablehnt"): refusals for this place, which do not change within the area -
+		// the Pilgrim's Potion outside Pilgrim's Traverse was chosen 17 times in five areas on 08.11.2026 and never healed.
+		ActionStatus.NotUsableHere,
+		ActionStatus.ItemNotUsableHere,
+		ActionStatus.NotInPvP,
+		ActionStatus.OnlyInPvP,
+		ActionStatus.OnlyInDuelsOrFrontline,
 	];
 
 	public static readonly ActionStatus[] BadStatusAction =
@@ -52,6 +59,11 @@ internal static class ConfigurationHelper
 		ActionStatus.RequirementNotMet,
 		ActionStatus.NoDutyActionCharges,
 		ActionStatus.NotInActiveSet,
+		// A683: the same refusals for this place as for items.
+		ActionStatus.NotUsableHere,
+		ActionStatus.NotInPvP,
+		ActionStatus.OnlyInPvP,
+		ActionStatus.OnlyInDuelsOrFrontline,
 	];
 
 	public static VirtualKey ToVirtual(this ConsoleModifiers modifiers)

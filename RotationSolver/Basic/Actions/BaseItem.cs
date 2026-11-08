@@ -247,7 +247,18 @@ public class BaseItem : IBaseItem
 	/// Use this item.
 	/// </summary>
 	/// <returns></returns>
-	public unsafe bool Use()
+	public bool Use()
+	{
+		var used = UseItem();
+		if (!used)
+		{
+			TraceRefusal();
+		}
+
+		return used;
+	}
+
+	private unsafe bool UseItem()
 	{
 		if (Player.Object == null)
 		{
@@ -279,6 +290,21 @@ public class BaseItem : IBaseItem
 		{
 			return ActionManager.Instance()->UseAction(ActionType.Item, ID, Player.Object.GameObjectId, A4);
 		}
+	}
+
+	// A683 (concept 03, "Was das Spiel hier ablehnt"): a use the game refused, with its answer for both qualities, once per
+	// item and area - a reason CanUse does not read yet shows here.
+	private static readonly HashSet<(uint Item, uint Area)> _refusalsTraced = [];
+
+	private unsafe void TraceRefusal()
+	{
+		if (!_refusalsTraced.Add((ID, DataCenter.TerritoryID)))
+		{
+			return;
+		}
+
+		var manager = ActionManager.Instance();
+		DefenseTrace.Line($"item refused by the game: {Name} #{ID} in area {DataCenter.TerritoryID}, status {manager->GetActionStatus(ActionType.Item, ID)} (HQ {manager->GetActionStatus(ActionType.Item, ID + 1000000)})");
 	}
 
 	/// <summary>
