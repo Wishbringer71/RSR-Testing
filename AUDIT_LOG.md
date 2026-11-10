@@ -20174,6 +20174,55 @@ Merge a83e8f746, Tag 7.5.7.16).
 *Prüfgrad:* statisch (Code, Blatt, dekompiliertes Lumina), Compile, Prüfskripte, Referenzprüfung; im Spiel nicht
 beobachtet.
 
+### A685 · Spielpatch 7.58 und sieben Quellen am Ende des Upstream-Syncs (10.11.2026)
+
+- *Anlass:* Bei der Quellenprüfung am Ende von A684 zeigten FFXIVClientStructs (80cb4a7b7, „7.58", neue Signaturen und
+  Strukturgrößen) und ffxiv-datamining (52a72b38a, „7.58") einen neuen Spielstand. Skill `spielpatch`; letzte
+  Auswertung A473 (7.5 bis 7.57).
+- *Patchnotes 7.58* (Lodestone, 10.11.2026): keine Änderung an Jobs, Aktionen oder Eigenschaften. Die Spieldaten
+  bestätigen das: In der englischen Fassung ändern sich nur eine Spalte von Unmooring Melody (48565) und eine neue
+  ItemAction-Zeile (2793). ActionTransient, XBMItem und XBMPet sind englisch unverändert. Deutsch korrigiert XBMItem
+  Namen und Texte (Zeile 53 heißt jetzt „Mithril-Sollerets"); RSR liest Namen zur Laufzeit aus dem Client, und das
+  Repository führt den alten Namen nicht.
+- *Crucible of the Unbroken, je Änderung:*
+  - *Hornbelegung beim Verlassen wiederhergestellt:* RSR hat keinen eigenen Code für das Verlassen. B5 liest die
+    Hornplätze laufend und setzt draußen vor dem nächsten Kampf wie bisher; die Wiederherstellung ändert nur den
+    Ausgangsstand. Konzept 21, Grundlagen.
+  - *Empfehlung des Spiels füllt nur freie Plätze; Teamfenster zeigt synchronisierten und ursprünglichen Rang:* RSRs
+    Kaderempfehlung (K7) ist eigen und liest den synchronisierten Rang über `GetSyncedRank` und `IsPetOverSyncedRank`.
+    Beide haben in 7.58 neue Signaturen bei gleichem Namen und gleichen Parametern; sie binden über Dalamuds
+    ClientStructs.
+  - *Sirene greift während Unmooring Melody nicht mehr an:* Upstreams Sirenen-Regel setzt das kriechende Ebenbild vor,
+    nicht die Sirene. Deren Gefahr misst K3 laufend; keine Regel ruht auf dem Fehler.
+  - *Finale Sanduhr leichter anzuvisieren:* Die Regel aus A675 liest die Sanduhr aus der Liste anwählbarer Gegner und
+    wird damit verlässlicher; sie hängt nicht an der Zielbarkeit.
+  - *Hotbar-Hilfetexte, Gamepad-Menü, Sortierung synchronisierter Begleiter:* Oberfläche, ohne Bezug zu RSR.
+- *Echo in AAC Heavyweight (Savage):* +17 % maximale LP, Schaden und Heilung ab Kampfbeginn. Gelernte Werte dort
+  sind Anteile der maximalen LP und ohne Echo höher gemessen. Nach Konzept 13 („Gelernte Tabellen über
+  Spielversionen") lösen sie in 7.58 Schutz aus, sparen aber keinen ein, bis 7.58 sie bestätigt. Der Irrtum liegt
+  damit auf der sicheren Seite: etwas mehr Minderung als nötig, bis neue Messungen da sind.
+- *Clientstrukturen:* Geändert sind unter anderem `AgentXBMPetParty` (drei Funktionssignaturen),
+  `AgentXBMMonsterNotebook` (Größe 0x128 → 0x130, eine Signatur), `AgentXBMStageDetailList` (eine Signatur) und
+  `AddonXBMMonsterNotebook` (TabController 0x6E8 → 0x708). RSR liest diese über die Typen aus Dalamud, nicht über feste
+  Abstände; seine eigene Leiste (`TempGauge`) ist nicht betroffen.
+  - Eigene Signaturen: drei von Upstream (ActorControl, ActorVfxCreate, Bewegungssperre) und eine des Forks
+    (Fallschaden, A276); diese schaltet sich bei einem Fehlschlag mit einer Logzeile ab.
+  - Ob sie in 7.58 noch treffen, ist hier nicht prüfbar: Die Spieldatei fehlt, und Dalamud muss für 7.58 nachziehen
+    (goatcorp/Dalamud seit der letzten Auswertung unverändert).
+- *Übrige Quellen:*
+  - BeirutaNa1na/RotationSolverReborn d5fb87b69: Schnitter-Optionen, Perfectio und Enshroud für Arcane Circle zu halten,
+    ab Werk aus; Schadensoptimierung in einem anderen Fork, nicht übernommen. Perfectio fällt im Normalablauf ohnehin
+    in den Burst (Schluss aus Plentiful Harvest → Communio → Perfectio, nicht gemessen).
+  - dajoey/lalalazy 1cc47b617: GluttonyCombo ohne KI-Entscheidungsschicht, Markt-Plugin; nichts zu Crucible oder
+    Beastmaster.
+  - NightmareXIV/ECommons bc38dc713: eine Hilfsfunktion für Listen.
+  - PunishXIV/WrathCombo a45783818: Ersetzen von Hotbar-Aktionen.
+  - t3knical/DalamudPlugins 8a1dd615a: Download-Zähler.
+  - Alle eingetragen (`--record`).
+
+*Prüfgrad:* Patchnotes (Lodestone, Zusammenfassung des Seitentexts), Diff der Spieldaten und der Clientstrukturen,
+Code statisch; im Spiel nicht beobachtet.
+
 ## B · Commit-Register (Fork vs. `upstream/main`)
 
 ### B1 · Einzelgeprüfte Fork-Commits

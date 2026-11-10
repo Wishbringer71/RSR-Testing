@@ -3,8 +3,8 @@
  "sources": [
   {
    "repo": "aers/FFXIVClientStructs",
-   "commit": "29e26b334b9fe810c810da89d8cd2826c5f9e7aa",
-   "date": "2026-11-08",
+   "commit": "80cb4a7b7",
+   "date": "2026-11-10",
    "use": "Client-API"
   },
   {
@@ -27,14 +27,14 @@
   },
   {
    "repo": "BeirutaNa1na/RotationSolverReborn",
-   "commit": "3d4b358f4de06293a2aad8cefb4a1911c27aca3c",
-   "date": "2026-11-02",
+   "commit": "d5fb87b69",
+   "date": "2026-11-10",
    "use": "Beiruta-Rotationen"
   },
   {
    "repo": "dajoey/lalalazy",
-   "commit": "09c6ddf67",
-   "date": "2026-11-07",
+   "commit": "1cc47b617",
+   "date": "2026-11-10",
    "use": "GluttonyCombo, LazyCrucible: Crucible-Aufzeichnungen, Sanduhr, Futter (A674, A679)"
   },
   {
@@ -105,8 +105,8 @@
   },
   {
    "repo": "NightmareXIV/ECommons",
-   "commit": "6e3524d0c6d229b854d300d949b6a315aab97ab3",
-   "date": "2026-10-30",
+   "commit": "bc38dc713",
+   "date": "2026-11-10",
    "use": "Client-API"
   },
   {
@@ -135,8 +135,8 @@
   },
   {
    "repo": "PunishXIV/WrathCombo",
-   "commit": "1e64c866c937d9c1d7d246824d80e9361fb626ce",
-   "date": "2026-11-03",
+   "commit": "a45783818",
+   "date": "2026-11-10",
    "use": "anderes Rotationswerkzeug (konzepte.md)"
   },
   {
@@ -177,8 +177,8 @@
   },
   {
    "repo": "t3knical/DalamudPlugins",
-   "commit": "e286400ac",
-   "date": "2026-11-08",
+   "commit": "8a1dd615a",
+   "date": "2026-11-10",
    "use": "Tekz-BossmodReborn-Fork (Zielvorrang je Kampf), BeastMasterHelper (A667)"
   },
   {
@@ -195,8 +195,8 @@
   },
   {
    "repo": "xivapi/ffxiv-datamining",
-   "commit": "44948e4cda5846eab0baa9872122a888fcc4f1b1",
-   "date": "2026-10-20",
+   "commit": "52a72b38a",
+   "date": "2026-11-10",
    "use": "Spieldaten"
   },
   {

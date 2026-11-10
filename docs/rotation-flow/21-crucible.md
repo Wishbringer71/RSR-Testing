@@ -24,6 +24,13 @@ beide Werkzeugquellen; sein Mitschnitt vom 04.11.2026.
   Elite, Endgegner, Campsite, Laden, Schatz, Zufall (Wiki).
 - Den Kader wählst du vor dem Betreten; je Kampf gehen drei auf die Hörner, einer ist draußen. Die Belegung gilt je
   Kampf und wird vor ihm gesetzt (Wiki; seit 7.57 automatisch nur bei höchstens drei im Team).
+- *Seit 7.58* (Patchnotes vom 10.11.2026, Lodestone):
+  - Beim Verlassen des Crucible stellt das Spiel die Hornbelegung von davor wieder her. Draußen setzt B5 (Konzept 01)
+    wie bisher vor dem nächsten Kampf.
+  - Die Empfehlung des Spiels im Teamfenster behält schon gewählte Begleiter und füllt nur freie Plätze.
+  - Das Teamfenster zeigt den synchronisierten und den ursprünglichen Rang und sortiert nach dem ursprünglichen. RSR
+    liest den synchronisierten (`GetSyncedRank`, `IsPetOverSyncedRank`, K7); beide Funktionen haben neue Signaturen
+    (FFXIVClientStructs 80cb4a7b7), gleiche Namen und Parameter.
 - Keine natürliche LP-Regeneration, für dich und die Begleiter (Wiki); deine LP bleiben von Kampf zu Kampf stehen
   (gemessen 04.11.2026). Normale Heiltränke sind gesperrt, nur Brett-Gegenstände und Essen.
 - Campsite: Du ruhst mit bis zu einem bis vier Begleitern (`XBMContentCamp.FamiliarRecoverCount`, je Lager); die Heilung
@@ -54,7 +61,8 @@ beide Werkzeugquellen; sein Mitschnitt vom 04.11.2026.
   Böse Waffe (Eis), Eufel (Erde). Endgegner Losfrox Tintenklecks (Schlag) mit Töffelchen (Wasser).
 - *Drittes Brett:* Kavalier (Feuer) mit Knochen-Bischof (Schlag); Ymir (Eis) mit Sahagin (Schlag, Dreadwash
   unterbrechbar); Montisaurus (Erde) mit Hahn und Henne (Schlag); Catblepus (Wind; Blick mit Versteinerung); Lakhamu
-  (Wasser) mit Golem (Wasser, stärkt); Sirene (Stich, ruft Gegner) mit schlurfendem und kriechendem Ebenbild (Feuer);
+  (Wasser) mit Golem (Wasser, stärkt); Sirene (Stich, ruft Gegner; greift seit 7.58 während Unmooring Melody nicht mehr
+  an) mit schlurfendem und kriechendem Ebenbild (Feuer);
   Kämpfer, Kaktor, Blütenkaktor (heilt), Soldat (Blitz) und Wächter (Eis, deckt andere). Endgegner Guttler (keine) mit
   Thanatos (Blitz).
 - *Erstes Meisterbrett:* Strix (Stich; Federn als Adds); Morbol, Keimling, Ochu (Hieb) mit Aasbrühe (Eis); Titanenwurz
@@ -932,7 +940,9 @@ Dullahan, Golem, Spriggan und Eisgolem (`XBMPet.InflictsInterrupt`).
       Radius von Spore Spill, nicht der Pfütze. Hinein gehst du oder BossModReborn: Dessen Modul will dich in den Pfützen
       (`PersistentInvertibleVoidzone`, ab Kampfbeginn umgekehrt), die Myconiden folgen dir.
     - *Königs-Ahriman-Ebenbild (14688), Zweites Meisterbrett – nur zu einer Zeit, sonst zuerst (A675):* Roulette (49418)
-      bindet dich neben eine Sanduhr des Todes (final hourglass, 14689; deutsche Namen: xivapi v2, `language=de`) und setzt eine namenlose Nadel in die Mitte (BNpcBase 19738). Die Nadel zeigt nur
+      bindet dich neben eine Sanduhr des Todes (final hourglass, 14689; deutsche Namen: xivapi v2, `language=de`) und setzt eine namenlose Nadel in die Mitte (BNpcBase 19738).
+      Dass die Sanduhr schwer anzuvisieren war, behebt 7.58 (Patchnotes); RSR liest sie aus der Liste anwählbarer
+      Gegner. Die Nadel zeigt nur
       entlang der vier Achsen und rückt in festem Takt eine Vierteldrehung weiter; bricht die Sanduhr, feuert der nächste
       Takt Death (49422, Kegel, 23 Yalm laut Blatt) entlang der Nadel, und Death legt Verhängnis (5421, „Certain death
       when counter reaches zero", nicht entfernbar; xivapi v2, 07.11.2026). Ungebrochen trifft Death ebenso, wenn ihr
