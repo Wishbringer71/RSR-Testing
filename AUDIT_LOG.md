@@ -20140,6 +20140,40 @@ Sitzung zeigt sich beim nächsten ersten Zugriff eines Abschnitts.
 ACT-Mitschnitt belegt. Die Behebungen selbst sind im Spiel noch nicht beobachtet; Messmittel sind die Zeilen „item
 refused by the game" und „kill rule: … held/released" sowie die Ladenzeile mit „offered".
 
+### A684 · Upstream 7.5.7.16 (a83e8f746) gemergt und ausgewertet (10.11.2026)
+
+Gemessen auf seinen Auftrag („upstream überprüfen", 10.11.2026): zwei neue Commits auf `upstream/main` (2ae2640f3,
+Merge a83e8f746, Tag 7.5.7.16).
+
+- *Schnitter, Perfectio:* `RPR_Reborn` ruft Perfectio jetzt mit `skipComboCheck: true`. Im Kampf ändert das nichts.
+  - Die Kombo-Prüfung in `ActionBasicInfo.BasicCheck` läuft nur für Aktionen, die die Kombo brechen
+    (`BreaksCombo = !PreservesCombo`). Perfectio bewahrt sie und hat keinen Vorgänger (Action 36973: PreservesCombo
+    true, ActionCombo 0; xivapi v2, 10.11.2026).
+  - Dalamuds Lumina liest dieselbe Spalte (`ReadPackedBool(offset + 60, 7)`, dekompiliert). Die Gegenprobe stimmt mit
+    dem Spiel: Shadow of Death bewahrt die Kombo, Slice und Waxing Slice nicht.
+  - Welche Lage Upstream behebt, sagt der Commit nicht. In `RPR_Reborn` kommt Perfectio nach den Executioner-Schlägen,
+    einem auslaufenden Kombo-Abschluss und Soulsow, vor allen übrigen GCDs außerhalb von Soul Reaver; einen weiteren
+    Blocker zeigt der Code nicht (statisch). Das Archiv kennt keinen Fall.
+- *RebornMaterial 7.5.7.6 → 7.5.7.8* (0bd2517eb..9a9996960):
+  - Neu sind Bausteine für ein anderes Plugin (Shell-, Panel- und Faltfenster, Einstellungsseite, Tabelle,
+    Plugin-Liste, Gamepad-Steuerung) und Erweiterungen (Pill mit Bild, Hotkey mit Zusatztaste allein, Navigation in
+    Schritten).
+  - Was RSR nutzt – Karten, Knöpfe, Pills, Chips, Zeilen, `M3WindowFold`, `M3Navigation.Truncate` –, ist unverändert
+    oder nur intern umgestellt (Chevron in `M3Draw`).
+  - Die neue Gamepad-Sperre hakt sich erst ein, wenn ein Plugin `M3Gamepad.EnableInputBlocking` ruft. RSR ruft es
+    nicht; der Controller bleibt beim Spiel. `M3WindowFold` meldet jetzt den Fokus, ohne Sperre ohne Wirkung.
+  - `M3Services` bezieht drei weitere Dienste von Dalamud (Gamepad, Interop, Log).
+  - Referenzprüfung (`tools/RefCheck` aus Retainer-Repricer 493584d, Selbsttest bestanden) gegen das Dalamud in
+    `~/.xlcore/dalamud/Hooks/dev`: RebornMaterial 362, ECommons 1.313, RotationSolver 1.859 Verweise, keiner fehlt.
+- *Folge für die Konzepte:* keine. Kein Konzept nennt Perfectio, und die Fenstermessung (A654) betrifft unveränderte
+  Bausteine; `check_window_layout.py` ist grün.
+- *Ablauf:* `main` (cc9f30ade) ohne Konflikt gemergt, Fork-Version auf 7.5.7.16, kompiliert ohne Warnung, 51
+  Prüfschritte grün, gepusht (eb26108e8). Danach `main` in `claude/fixes-after-7.5.7.15`, erneut kompiliert, 53
+  Prüfschritte grün, Referenzprüfung wiederholt. Der Branch heißt weiter nach dem letzten Fork-Release.
+
+*Prüfgrad:* statisch (Code, Blatt, dekompiliertes Lumina), Compile, Prüfskripte, Referenzprüfung; im Spiel nicht
+beobachtet.
+
 ## B · Commit-Register (Fork vs. `upstream/main`)
 
 ### B1 · Einzelgeprüfte Fork-Commits
