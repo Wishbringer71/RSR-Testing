@@ -52,8 +52,8 @@ beide Werkzeugquellen; sein Mitschnitt vom 04.11.2026.
     verhalten dort sammelt. die ausbeute ist nicht optimal." Dazu: „bei den brettern gibt es punktebonis wenn man
     gewisse dinge macht oder sein lässt. nicht campt, nicht isst, weniger begleiter mitnimmt etc. recherchiere dazu".
     Bis A689 waren Punkte kein Ziel einer Regel (meine Ableitung); das kappte die Entscheidung, statt das Optimum zu
-    verbessern (seine Vorgabe vom 07.11.2026). Gebaut in K15 (A689 bis A691, A695); offen sind Teamgröße und Gattung
-    (K7, TODO „Crucible: Begleiter je Kampf nicht optimal gewählt") und die Rate der Rest-LP (TODO, Warten auf Daten).
+    verbessern (seine Vorgabe vom 07.11.2026). Gebaut in K15 (A689 bis A691, A695, A697) und K7 (Teamgröße A698,
+    Gattung A699); offen ist die Rate der Rest-LP (TODO, Warten auf Daten).
   - *Was die Wertung bringt* (consolegameswiki, eorzeantavern, abgerufen 11.11.2026): Reste (faded und bright Remnants
     of Resilience) und Begleiter-EP anteilig zur Punktzahl, dazu Beastmaster-EP; neun Ränge von Apprentice bis
     Legendary, Legendary ab 17.875 Punkten auf den drei Unbroken-Brettern, ab 18.766 auf den Meisterbrettern. Die
@@ -357,8 +357,17 @@ Dullahan, Golem, Spriggan und Eisgolem (`XBMPet.InflictsInterrupt`).
     Vorrat ist ein Mittel:* Begleiter mit wenig LP fassen weniger. Preis benannt; der schwerste gemessene Lauf ist die
     pessimistische Seite. *Gegenthese 3 (ausgeliefert, und nichts ändert sich):* Er übernimmt die volle Empfehlung, weil
     noch kein Lauf gemessen ist. Der erste Lauf mit voller Größe misst den Verlust; ab dem zweiten empfiehlt RSR kleiner.
-    *Gattung (Freund der …, 750, `XBMScoreBonus` 22 bis 29):* Ein Team aus einer Gattung deckt selten alle Schwächen und
-    Pflichten; offen im TODO „Crucible: Begleiter je Kampf nicht optimal gewählt".
+  - *Team aus einer Gattung (A699):* „Freund der Biestlinge" bis „Freund der …" (`XBMScoreBonus`, je Gattung eine Zeile,
+    Bedingung „a team of only beastkin"; 750 auf jedem Brett). RSR läuft dieselbe gierige Wahl je Gattung, nur über deren
+    Begleiter, mit derselben Größenregel. Ein solches Team gilt, wenn es jede Schwäche des Bretts trifft, die das gemischte
+    trifft, mindestens so viele Heiler und Schützer hält, wie das gemischte für den Boss braucht, und den Unterbrecher,
+    wo das gemischte einen hält (nur Seelen-Begleiter unterbrechen, K4). Dann ist es so sicher wie das gemischte und
+    bringt 750 Punkte mehr, dazu die Punkte seiner Größe; unter mehreren das mit den meisten Punkten. Levelt RSR
+    nachhängende Begleiter (A579), tauscht es im Team einer Gattung nur gegen einen derselben Gattung. *Im Kampf:* Wo
+    eine Gattung die Schwächen nicht trägt, ändert sich nichts. *Gegenthese:* Gleiche Abdeckung heißt nicht gleicher
+    Schaden – ein Begleiter, der eine Schwäche nur schwach trifft, verlängert den Kampf. Die Hornwahl wägt im Kampf nach
+    gemessenem Schaden (K16); die Kaderwahl hat diese Messung je Begleiter erst nach einem Lauf. *Preis:* Ein Kampf
+    dauert länger, wenn der Begleiter der Gattung die Schwäche schwächer trifft als der gemischte.
 - *K8 – Gegenstände* (gebaut: A551 bis A555, unten „Stufe 3: K8"). Über `InstanceContentCrucibleOfTheUnbroken.UseItem(Platz, Bestie)` auf dein Ziel. Sicherheit zuerst
   (seine Regel): Bestien-Heiltrank oder -Pulver, wenn deine LP in die Gefahr fallen und keine Heilung bereit ist;
   Bestien-Gegengift und Bestien-Augentropfen gegen den passenden Zustand; Bestien-Verhärtungsmittel vor einem angekündigten
@@ -757,8 +766,8 @@ Dullahan, Golem, Spriggan und Eisgolem (`XBMPet.InflictsInterrupt`).
     behält die Schätzung, und wo sie gleichauf liegt, entscheidet die Reihenfolge wie bisher.
   - *Anzeige und Spur:* Reiter „Crucible familiars" unter den gelernten Werten (Kampf, Begleiter, bester Wert); je
     Kampfende eine Zeile „crucible fight …: familiar damage per second, best so far stored".
-  - *Offen:* die Teamgröße der Punktewertung (In Unterzahl I bis III, bis 4.250) und das Team aus einer Gattung (750) im
-    Kader (K7) – eine Frage der Sicherheit mit weniger Begleitern, die eigene Messungen braucht.
+  - *Teamgröße und Gattung:* im Kader (K7, „Teamgröße nach Punkten" A698, „Team aus einer Gattung" A699); die Größe
+    misst den Verlust der Begleiter je Brett.
 - *K15 – Punkte der Bewertung* (seine Hinweise vom 11.11.2026, Grundlagen oben; A689). *Im Kampf und auf dem Weg:* Jeder
   Lauf vom 11.11.2026 verschenkte „kein Gegenstand" (750) schon vor dem ersten Kampf mit Sand der Zeit als Versicherung,
   „keine Marken ausgegeben" (500) mit dem ersten Kauf und „keine Ausrüstung" (750) mit einem Schatz; Lauf 3 rastete
@@ -814,7 +823,8 @@ Dullahan, Golem, Spriggan und Eisgolem (`XBMPet.InflictsInterrupt`).
     Crucible-Inventar weniger geworden (benutzt, von RSR oder von Hand; auch weggeworfen, dann gibt RSR den Bonus auf,
     die sichere Seite), Marken weniger, Ausrüstung im Lauf getragen, gerastet, gefüttert. `XBMScoreBonus` führt Namen
     und Bedingungen, die Punkte je Bonus und Brett führt `XBMContent.BonusPoints`: 33 Einträge, einer je Zeile von
-    `XBMScoreBonus` (EXDSchema latest; in Lumina `Unknown0` bis `Unknown32`, das experimentelle Blatt mit dem Namen weist der Build ab;
+    `XBMScoreBonus` (EXDSchema latest; in Lumina benannt im experimentellen Blatt, dessen Diagnose `PendingExcelSchema` RSR an der einen
+    Stelle unterdrückt, im regulären als `Unknown0` bis `Unknown32`;
     Werte geprüft an ffxiv-datamining 52a72b3 vom 10.11.2026). RSR liest sie für das laufende Brett, das `XBMContent` über
     die ContentFinderCondition nennt (1088 bis 1092; A695). Die Punkte je Feld (250, 800) führt kein Blatt; sie stehen
     fest im Code, mit Quelle (A689). Spur: „crucible score: …", wenn die Gegenstände für den Bonus liegen bleiben oder
@@ -857,8 +867,8 @@ Dullahan, Golem, Spriggan und Eisgolem (`XBMPet.InflictsInterrupt`).
       Verlust entsteht nicht, nur kein Gewinn. (3) Ausgeliefert, und nichts ändert sich: Kein Heilgegenstand ist am Ende
       übrig, weil die übrige Heilung ihn vorher ohne Überheilung nahm. Die LP-Punkte sind dieselben (oben); nur die 250
       fehlen, wenn kein Gegenstand bis 100 % übrig bleibt.
-  - *Nicht hier:* Teamgröße und Gattung (bis 4.250 und 750) gehören zum Kader (K7, TODO „Crucible: Begleiter je Kampf
-    nicht optimal gewählt").
+  - *Nicht hier:* Teamgröße und Gattung (bis 4.250 und 750) gehören zum Kader (K7, „Teamgröße nach Punkten", „Team aus
+    einer Gattung").
   - *Gegenthese 1 – Die schwerste gelernte Last unterschätzt den nächsten Lauf:* Ein Kampf kann schwerer werden als je
     gesehen (anderer Begleiter, Pech bei Zuständen). Teilweise widerlegt: Die unmittelbare Gefahr im Kampf bleibt
     abgedeckt – Heilung unter der Trankschwelle, Schutz vor angekündigten Treffern –, nur die Versicherung im Voraus

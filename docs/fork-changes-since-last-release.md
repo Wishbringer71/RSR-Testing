@@ -100,6 +100,9 @@ What this release changes in the fight. For the whole distance from upstream, se
   those sizes that holds every familiar it needs for the weaknesses, healing and interrupts, and whose HP without one
   familiar still hold that loss. Until a run on the board was measured it recommends the full team; the window says
   which and why.
+- **A team of one kin where one does as much.** A team of only one kin gives 750 points ("Freund der …"). Where the
+  familiars of one kin hit every weakness of the board the mixed team hits, heal and protect as much and interrupt
+  where it does, under the same size rule, the recommendation takes that team; levelling swaps only within the kin.
 - **Ten items held count as well, and the run ends at full HP where it can.** On boards 2 to 5 ten crucible items held
   at the end give 1,000 points ("Sammelleidenschaft"); with ten in the inventory, items that guard against no present
   danger now stay there as for the no-item bonus, while your HP carry the way. Once no item bonus is at stake, the

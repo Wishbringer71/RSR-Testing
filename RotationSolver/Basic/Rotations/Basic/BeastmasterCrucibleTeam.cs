@@ -205,55 +205,9 @@ public partial class BeastmasterRotation
 			candidates.Add(new TeamCandidate(pet, ElementsOf(profile), safe, overRank, rank));
 		}
 
-		var chosen = new List<TeamCandidate>();
-		var covered = new Dictionary<uint, int>();
-		var safeTaken = 0;
-		var soulTaken = false;
-		var core = 0;
-		while (chosen.Count < size && candidates.Count > 0)
-		{
-			var needSafe = safeTaken < BossSafeFamiliars;
-			var needSoul = !needSafe && interrupting && !soulTaken && HasSoul();
-			var best = -1;
-			var bestWorth = -1f;
-			for (var i = 0; i < candidates.Count; i++)
-			{
-				var candidate = candidates[i];
-				if ((needSafe && !candidate.Safe && HasSafe()) || (needSoul && KinOf(candidate.Pet) != BeastmasterKinType.Soulkin))
-				{
-					continue;
-				}
-
-				var worth = 0f;
-				foreach (var element in candidate.Hits)
-				{
-					worth += weight.GetValueOrDefault(element) / (1f + covered.GetValueOrDefault(element));
-				}
-
-				if (best < 0 || worth > bestWorth || (worth == bestWorth && Before(candidate, candidates[best])))
-				{
-					best = i;
-					bestWorth = worth;
-				}
-			}
-
-			var pick = candidates[best];
-			candidates.RemoveAt(best);
-			chosen.Add(pick);
-			foreach (var element in pick.Hits)
-			{
-				covered[element] = covered.GetValueOrDefault(element) + 1;
-			}
-
-			safeTaken += pick.Safe ? 1 : 0;
-			soulTaken |= KinOf(pick.Pet) == BeastmasterKinType.Soulkin;
-
-			// A698: the core - up to the last pick that covers a weakness anew or is needed as a healer or interrupter.
-			if (bestWorth > 0f || needSafe || needSoul)
-			{
-				core = chosen.Count;
-			}
-		}
+		var all = new List<TeamCandidate>(candidates);
+		var chosen = ChooseTeam(candidates, size, weight, interrupting, team, out var core);
+		var covered = CoverageOf(chosen);
 
 		// A698: as few as the score's bonus for a smaller team allows with the core and the familiars' measured loss.
 		var keep = TeamSizeForScore(board, size, core, out var sizeNote);
@@ -267,6 +221,25 @@ public partial class BeastmasterRotation
 			{
 				covered[element] = covered.GetValueOrDefault(element) - 1;
 			}
+		}
+
+		// A699: a team of one kin where one holds what the mixed one holds - its bonus on top.
+		var gambitKin = BeastmasterKinType.None;
+		if (GambitTeam(all, size, weight, interrupting, team, board, chosen, keep) is { } gambit)
+		{
+			gambitKin = gambit.Kin;
+			chosen = gambit.Team;
+			covered = CoverageOf(chosen);
+			candidates = [];
+			foreach (var candidate in all)
+			{
+				if (!chosen.Contains(candidate))
+				{
+					candidates.Add(candidate);
+				}
+			}
+
+			CrucibleTeamSizeNote = gambit.Note;
 		}
 
 		// A579: leveling - a pick gives way to the lowest-ranked familiar that replaces it adequately.
@@ -300,6 +273,7 @@ public partial class BeastmasterRotation
 				{
 					var other = candidates[i];
 					if (other.OverRank || other.Rank < recommended || other.Rank >= maxRank
+						|| (gambitKin != BeastmasterKinType.None && KinOf(other.Pet) != gambitKin)
 						|| (!pick.OverRank && other.Rank >= pick.Rank) || (needsSafe && !other.Safe) || !other.Hits.IsSupersetOf(unique))
 					{
 						continue;
@@ -354,6 +328,65 @@ public partial class BeastmasterRotation
 		}
 
 		return picks;
+	}
+
+	// K7: the greedy choice over `candidates`, which loses each pick - first as many that heal or protect as B5 wants before
+	// a boss, then, where enemies cast interruptibly, a Soulkin, then one by one the familiar that hits the weakness of the
+	// most enemies not yet covered (each enemy of a weakness counts one, shared by the familiars already chosen that hit it);
+	// at equal worth one above the board's rank first, then one in the team already. `core` counts up to the last pick
+	// that covers a weakness anew or is needed as a healer or interrupter (A698).
+	private static List<TeamCandidate> ChooseTeam(List<TeamCandidate> candidates, int size, Dictionary<uint, int> weight,
+		bool interrupting, List<BeastmasterPet> team, out int core)
+	{
+		var chosen = new List<TeamCandidate>();
+		var covered = new Dictionary<uint, int>();
+		var safeTaken = 0;
+		var soulTaken = false;
+		core = 0;
+		while (chosen.Count < size && candidates.Count > 0)
+		{
+			var needSafe = safeTaken < BossSafeFamiliars;
+			var needSoul = !needSafe && interrupting && !soulTaken && HasSoul();
+			var best = -1;
+			var bestWorth = -1f;
+			for (var i = 0; i < candidates.Count; i++)
+			{
+				var candidate = candidates[i];
+				if ((needSafe && !candidate.Safe && HasSafe()) || (needSoul && KinOf(candidate.Pet) != BeastmasterKinType.Soulkin))
+				{
+					continue;
+				}
+
+				var worth = 0f;
+				foreach (var element in candidate.Hits)
+				{
+					worth += weight.GetValueOrDefault(element) / (1f + covered.GetValueOrDefault(element));
+				}
+
+				if (best < 0 || worth > bestWorth || (worth == bestWorth && Before(candidate, candidates[best])))
+				{
+					best = i;
+					bestWorth = worth;
+				}
+			}
+
+			var pick = candidates[best];
+			candidates.RemoveAt(best);
+			chosen.Add(pick);
+			foreach (var element in pick.Hits)
+			{
+				covered[element] = covered.GetValueOrDefault(element) + 1;
+			}
+
+			safeTaken += pick.Safe ? 1 : 0;
+			soulTaken |= KinOf(pick.Pet) == BeastmasterKinType.Soulkin;
+			if (bestWorth > 0f || needSafe || needSoul)
+			{
+				core = chosen.Count;
+			}
+		}
+
+		return chosen;
 
 		bool HasSafe()
 		{
@@ -384,6 +417,138 @@ public partial class BeastmasterRotation
 		// At equal worth: above the board's rank first, then one in the team already.
 		bool Before(TeamCandidate a, TeamCandidate b)
 			=> a.OverRank != b.OverRank ? a.OverRank : team.Contains(a.Pet) && !team.Contains(b.Pet);
+	}
+
+	// K7: how many of `chosen` hit each element.
+	private static Dictionary<uint, int> CoverageOf(List<TeamCandidate> chosen)
+	{
+		var covered = new Dictionary<uint, int>();
+		foreach (var pick in chosen)
+		{
+			foreach (var element in pick.Hits)
+			{
+				covered[element] = covered.GetValueOrDefault(element) + 1;
+			}
+		}
+
+		return covered;
+	}
+
+	// K7 (A699): the kin of each "team of only ..." bonus and its XBMScoreBonus row and name, read from their conditions once.
+	private static List<(BeastmasterKinType Kin, uint Row, string Name)>? _gambits;
+	private static readonly System.Text.RegularExpressions.Regex OnlyKin =
+		new(@"team of only (?<kin>\w+)\.", System.Text.RegularExpressions.RegexOptions.CultureInvariant);
+
+	private static List<(BeastmasterKinType Kin, uint Row, string Name)> Gambits()
+	{
+		if (_gambits != null)
+		{
+			return _gambits;
+		}
+
+		var gambits = new List<(BeastmasterKinType Kin, uint Row, string Name)>();
+		var sheet = Svc.Data.GetExcelSheet<Lumina.Excel.Sheets.XBMScoreBonus>(Dalamud.Game.ClientLanguage.English);
+		if (sheet != null)
+		{
+			foreach (var row in sheet)
+			{
+				if (OnlyKin.Match(row.Unknown1.ExtractText()) is { Success: true } only
+					&& Enum.TryParse<BeastmasterKinType>(only.Groups["kin"].Value, true, out var kin) && kin != BeastmasterKinType.None)
+				{
+					gambits.Add((kin, row.RowId, row.Unknown0.ExtractText()));
+				}
+			}
+		}
+
+		return _gambits = gambits;
+	}
+
+	// K7 (A698): the points of the "In Unterzahl" step a team of `count` familiars falls in; 0 for none.
+	private static int SquadPoints(int count)
+	{
+		foreach (var (min, max, bonus, _) in Squads())
+		{
+			if (count >= min && count <= max)
+			{
+				return CrucibleBoard.BonusPoints(bonus);
+			}
+		}
+
+		return 0;
+	}
+
+	private readonly record struct GambitPick(List<TeamCandidate> Team, BeastmasterKinType Kin, string Note);
+
+	// K7 (A699): the team of one kin that hits every weakness of the board the mixed team hits, holds as many that heal or
+	// protect as the mixed one needs before a boss and its interrupter, under the same size rule - the one with the most
+	// points beyond the mixed team's; null where none holds that.
+	private static GambitPick? GambitTeam(List<TeamCandidate> all, int size, Dictionary<uint, int> weight, bool interrupting,
+		List<BeastmasterPet> team, uint board, List<TeamCandidate> mixed, int mixedKeep)
+	{
+		var needed = new HashSet<uint>();
+		var safe = 0;
+		var soul = false;
+		foreach (var pick in mixed)
+		{
+			foreach (var element in pick.Hits)
+			{
+				if (weight.ContainsKey(element))
+				{
+					_ = needed.Add(element);
+				}
+			}
+
+			safe += pick.Safe ? 1 : 0;
+			soul |= KinOf(pick.Pet) == BeastmasterKinType.Soulkin;
+		}
+
+		var safeNeeded = Math.Min(safe, BossSafeFamiliars);
+		var bestPoints = mixedKeep < size ? SquadPoints(mixedKeep) : 0;
+		GambitPick? best = null;
+		foreach (var (kin, row, name) in Gambits())
+		{
+			var points = CrucibleBoard.BonusPoints(row);
+			if (points <= 0 || (soul && kin != BeastmasterKinType.Soulkin))
+			{
+				continue;
+			}
+
+			var pool = new List<TeamCandidate>();
+			foreach (var candidate in all)
+			{
+				if (KinOf(candidate.Pet) == kin)
+				{
+					pool.Add(candidate);
+				}
+			}
+
+			var picks = ChooseTeam(pool, size, weight, interrupting, team, out var core);
+			var keep = TeamSizeForScore(board, size, core, out var sizeNote);
+			if (picks.Count > keep)
+			{
+				picks.RemoveRange(keep, picks.Count - keep);
+			}
+
+			var hits = new HashSet<uint>();
+			var kinSafe = 0;
+			foreach (var pick in picks)
+			{
+				hits.UnionWith(pick.Hits);
+				kinSafe += pick.Safe ? 1 : 0;
+			}
+
+			var total = points + (keep < size ? SquadPoints(keep) : 0);
+			if (picks.Count == 0 || !hits.IsSupersetOf(needed) || kinSafe < safeNeeded || total <= bestPoints)
+			{
+				continue;
+			}
+
+			bestPoints = total;
+			best = new GambitPick(picks, kin, $"\"{name}\": a team of only {kin}, {points} points - it hits every weakness the mixed "
+				+ $"team hits, heals or protects as much and interrupts where that one does. {sizeNote}");
+		}
+
+		return best;
 	}
 
 	// K7: a familiar the team recommendation weighs - what it hits, whether it heals or protects, its rank on this board.

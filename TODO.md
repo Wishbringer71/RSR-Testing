@@ -19,11 +19,10 @@ auswahl und das timing der beschwörung" – je Kampf aller fünf Bretter (Gegne
 BossMod-Module) die Rotation des Beastmasters, die Wahl der Begleiter und den Zeitpunkt ihres Aufrufs im Loop prüfen
 (Beispiel seiner Beobachtung: der Raptor gegen Feuer, bevor feueranfällige Gegner da waren; A581).
 
-1. Crucible: Begleiter je Kampf nicht optimal gewählt (Beastmaster-Vorrang).
-2. Blaumagier: RSRs nächste Aktion beendet Apokalypsis und Chelonian Gate – Schaden und Minderung des Spielers enden
+1. Blaumagier: RSRs nächste Aktion beendet Apokalypsis und Chelonian Gate – Schaden und Minderung des Spielers enden
    nach einem GCD statt nach 10 s.
-3. Weißmagier: Surecast ohne Rückstoß – die Abklingzeit fehlt, wenn der Rückstoß kommt.
-4. Kegel und Ringe gegnerischer Zauber genau messen: Zauber- und Kanalbeginn nutzen RSRs Erkennung bei Kegel und Ring
+2. Weißmagier: Surecast ohne Rückstoß – die Abklingzeit fehlt, wenn der Rückstoß kommt.
+3. Kegel und Ringe gegnerischer Zauber genau messen: Zauber- und Kanalbeginn nutzen RSRs Erkennung bei Kegel und Ring
    nicht, und mehrere Leser sehen hinter einem Kegel oder im Innenkreis eines Rings eine Gefahr, die keine ist.
 
 Danach die technische Schuld, soweit ihre Auflösungsbedingung erfüllt ist. Warten auf Daten: unten.
@@ -34,17 +33,6 @@ der Beastmaster-Vorrang, dann jeder übrige Punkt dieser Liste, dann die Konzept
 Code-Review; was diese finden, kommt wieder hierher und in dieselbe Reihenfolge, jeder Schritt im vollständigen Loop.
 
 ## Defekte
-
-### Crucible: Begleiter je Kampf nicht optimal gewählt · N
-Im Kampf (seine Meldung, 11.11.2026: „beastmaster begleiter werden nicht optimal für die einzelnen kämpfe auf den
-brettern ausgewählt"): Die Hornwahl vor einem Kampf setzt Begleiter, die zu dessen Gegnern nicht am besten passen.
-Gemessen (A687): Derselbe Kampf auf Brett 1 lief in drei Läufen mit drei verschiedenen Hornsätzen, 64 bis 81 s; das
-Elitefeld 110 bis 135 s, der Endkampf 99 bis 146 s. RSR lernt nicht, welcher Satz einen Kampf schneller und mit
-weniger Schaden beendet. Gebaut (A692): Schaden je Sekunde je Kampf und Begleiter gemessen und in der Hornwahl gegen
-die anderen gemessenen gewogen; die Teamgröße nach In Unterzahl aus Kern und gelerntem Begleiterverlust (A698). Offen:
-das Team aus einer Gattung (Freund der …, 750). *Ort:* Kader (K7). *Nächster Schritt:* ein Team einer
-Gattung, das Kern und Vorrat der Teamgröße erfüllt, je Gattung suchen und gegen das gemischte wägen, Loop. *Konzept:* 21,
-K7, K16.
 
 ### Weißmagier: Surecast ohne Rückstoß · N
 Im Kampf (seine Meldung, 11.11.2026: „es wird antirückstoß verwendet, obwohl kein rückstoß da war (whm)"): Surecast
@@ -149,6 +137,14 @@ Reborn"); beides kostet im Spiel, solange nicht beide Installationen gebraucht w
 nebeneinander braucht: neuer interner Name mit Übernahme des Ordners, angezeigter Name bleibt.
 
 ## Warten auf Daten oder Fremde
+
+- **Crucible: Hornwahl, Teamgröße und Gattung an seinen Läufen prüfen** (A692, A698, A699; seine Meldung vom 11.11.2026:
+  „beastmaster begleiter werden nicht optimal für die einzelnen kämpfe auf den brettern ausgewählt"). Gebaut: Schaden je
+  Sekunde je Kampf und Begleiter in der Hornwahl, die Teamgröße aus Kern und gelerntem Begleiterverlust je Brett, das
+  Team aus einer Gattung bei gleicher Abdeckung. Auflösung: in seinem nächsten Upload die Reiter „Crucible familiars"
+  und „Crucible familiar loss", die Zeilen „crucible fight …: familiar damage per second" und „crucible board …: the
+  familiars lost …", dazu die Dauer derselben Kämpfe gegen die Läufe vom 11.11.2026 (A687); je Abweichung Loop. Konzept
+  21, K7, K16.
 
 - **Crucible: Rate der Rest-LP in der Bewertung** (A695). Ein Heilgegenstand am Ende des Endkampfs bringt 250 bei voller
   LP und die Punkte der geheilten LP; gegen einen erhaltenen Gegenstandsbonus (Sparsamkeit 750, Sammelleidenschaft

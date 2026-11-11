@@ -20600,6 +20600,26 @@ nicht beobachtet – das Ergebnisfenster in `DefenseTrace.log` zeigt nach dem n�
 
 *Prüfgrad:* statisch, Compile, Prüfskripte, Layoutmodell; im Spiel nicht beobachtet.
 
+### A699 · Crucible-Kader: Team aus einer Gattung bei gleicher Abdeckung (11.11.2026)
+
+- *Anlass:* TODO „Crucible: Begleiter je Kampf nicht optimal gewählt", offen nach A698: „Freund der …" (`XBMScoreBonus`,
+  je Gattung eine Zeile, 750 auf jedem Brett).
+- *Regel:* Dieselbe gierige Wahl je Gattung, nur über deren Begleiter, mit derselben Größenregel (A698). Ein Team einer
+  Gattung gilt, wenn es jede Schwäche des Bretts trifft, die das gemischte trifft, so viele Heiler und Schützer hält,
+  wie das gemischte für den Boss braucht, und den Unterbrecher, wo das gemischte einen hält; unter mehreren das mit den
+  meisten Punkten über dem gemischten. Beim Leveln (A579) tauscht es nur innerhalb der Gattung.
+- *Umgesetzt:* `ChooseTeam` (die gierige Wahl als eigene Methode, gleiches Verhalten), `CoverageOf`, `Gambits` (Gattung
+  und Zeile aus den Bedingungen „a team of only …"), `SquadPoints`, `GambitTeam`; `CrucibleBoard.BonusPoints` je Zeile
+  über Luminas experimentelles `XBMContent.BonusPoints`, Diagnose `PendingExcelSchema` an der einen Stelle unterdrückt
+  (A695 las die vier Spalten einzeln aus dem regulären Blatt). TODO-Eintrag geschlossen; die Prüfung an seinen Läufen
+  unter „Warten auf Daten". Konzept 21 K7 „Team aus einer Gattung", K15, Grundlagen.
+- *Falsifikation:* kein Defekt – die Empfehlung mischte Gattungen auch dort, wo eine allein dieselbe Abdeckung hält.
+  Option falsch: gleiche Abdeckung, schwächerer Treffer – Preis benannt, die Hornwahl wägt im Kampf nach gemessenem
+  Schaden (K16). Ausgeliefert, nichts ändert sich: Keine Gattung deckt die Schwächen eines Bretts – dann das gemischte
+  Team, wie vorher.
+
+*Prüfgrad:* statisch, Compile, Prüfskripte; im Spiel nicht beobachtet.
+
 ## B · Commit-Register (Fork vs. `upstream/main`)
 
 ### B1 · Einzelgeprüfte Fork-Commits

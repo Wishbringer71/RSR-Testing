@@ -411,29 +411,25 @@ internal static class CrucibleBoard
 
 	/// <summary>
 	/// K15 (A695): the points the board the player is on grants for <paramref name="bonus"/> - XBMContent's BonusPoints, one
-	/// per XBMScoreBonus row and the sheet's first 33 columns (EXDSchema latest; Lumina's Unknown0 to Unknown32 - its
-	/// Experimental sheet with the name is refused at build); 0 where the board grants none, outside the Crucible, or
-	/// without the row.
+	/// per XBMScoreBonus row and the sheet's first 33 columns (EXDSchema latest; Lumina's Experimental sheet names them);
+	/// 0 where the board grants none, outside the Crucible, or without the row.
 	/// </summary>
-	internal static int BonusPoints(ScoreBonus bonus)
+	internal static int BonusPoints(ScoreBonus bonus) => BonusPoints((uint)bonus);
+
+	/// <summary>
+	/// K15 (A699): the points the board the player is on grants for the XBMScoreBonus row <paramref name="bonusRow"/> - by
+	/// the row, for bonuses RSR finds by their condition (the kin of "a team of only beastkin").
+	/// </summary>
+	internal static int BonusPoints(uint bonusRow)
 	{
 		var board = CurrentBoard;
-		if (board == 0 || Svc.Data.GetExcelSheet<Lumina.Excel.Sheets.XBMContent>()?.GetRowOrDefault(board) is not { } row)
-		{
-			return 0;
-		}
-
-		return bonus switch
-		{
-			ScoreBonus.SquadI => row.Unknown4,
-			ScoreBonus.SquadII => row.Unknown5,
-			ScoreBonus.SquadIII => row.Unknown6,
-			ScoreBonus.SelfPreservation => row.Unknown7,
-			ScoreBonus.Selfless => row.Unknown8,
-			ScoreBonus.EconomicEthos => row.Unknown15,
-			ScoreBonus.HabitualHoarder => row.Unknown16,
-			_ => 0,
-		};
+#pragma warning disable PendingExcelSchema // the sheet's named BonusPoints; the regular sheet holds them as Unknown0 to Unknown32
+		return board != 0
+			&& Svc.Data.GetExcelSheet<Lumina.Excel.Sheets.Experimental.XBMContent>()?.GetRowOrDefault(board) is { } row
+			&& bonusRow < row.BonusPoints.Count
+			? row.BonusPoints[(int)bonusRow]
+			: 0;
+#pragma warning restore PendingExcelSchema
 	}
 
 	// XBMContent's recommended rank is stored two above what the board screen shows: "Take this value subtract 2. It is how
