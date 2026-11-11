@@ -20748,6 +20748,16 @@ die Messzeile ordnet jeden weiteren Fall seinem Weg zu.
 *Prüfgrad:* statisch, Compile, Prüfskripte; im Spiel nicht beobachtet – Zeile „crucible fight …: net loss …, deepest
 dip …" je Kampf.
 
+### A707 · Crucible-Ablauf, Schritt 4: Ablöse der Hörner in Lauf 1 nachgezeichnet; 10 s ohne Begleiter im Endkampf (11.11.2026)
+
+- *Folge (ACT, Lauf 1, Brett 1):* Je Ruf Entfesseln nach 2 bis 8 s; die Kurzen gehen mit Scheidendem Schlag 3 bis 9 s
+  nach ihrem Ruf, der zuletzt Gerufene bleibt – wie B3 (Konzept 01) es vorsieht.
+- *Lücke:* Endkampf, Pugil ging 15:07:45, kein Begleiter bis 15:07:57, obwohl Horn II und III bereit waren (die
+  Rufzeile 15:07:57 wählte unter mehreren). Er lief von 15:07:46 bis 15:07:56 (Positionen der eigenen Aktionszeilen);
+  die Hörner sind Fähigkeiten mit 1,0 s Wirkzeit (Action 44881, 44892, 44894, Cast100ms 10, Recast100ms 20, je eigene
+  Gruppe 4, 5, 6; xivapi v2). Im Laufen beginnt RSR keinen Wirkvorgang. Er stand bei 38 bis 52 % LP; Gegner griffen ihn an.
+- *Nächster Schritt:* TODO „Crucible: leichtes Brett erkennen …" – die Bewegungssperre für den Ruf prüfen.
+
 ## B · Commit-Register (Fork vs. `upstream/main`)
 
 ### B1 · Einzelgeprüfte Fork-Commits

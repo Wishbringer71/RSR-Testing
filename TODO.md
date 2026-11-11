@@ -75,8 +75,16 @@ dieselbe Grundlage?), der Ablauf eines Laufs Schritt für Schritt (Kader, Kampf,
 Eignung eines Begleiters über mehrere Kämpfe (Schwächen, LP, Heilung, Einsätze, K11) und die Ablöse im Kampf (K6, K16, B2).
 Nachgezeichnet (A702): fünf Läufe; die Teamgröße aus A698 überschätzt ein kleines Team. *Ort:* Konzept 21 (K6, K7, K10,
 K11, K14, K15, K16), `BST_Reborn`, `BeastmasterCrucible*`. Die Größenregel liest die Einsätze einzeln (A703); Schutzgegenstände nach der Treffergröße (A704). Der Test des Wegs
-summiert rohe Lasten ohne die Heilung der Begleiter und erkennt kein leichtes Brett (A705). Der Test des Wegs liest Nettoverlust und Senke (A706). *Nächster Schritt:* Laden, Schatz, Lager, Futter, die Eignung
-der Begleiter über mehrere Kämpfe und die Ablöse der Hörner gegen die Läufe prüfen, Loop.
+summiert rohe Lasten ohne die Heilung der Begleiter und erkennt kein leichtes Brett (A705). Der Test des Wegs liest Nettoverlust und Senke (A706). Ablöse, gemessen an Lauf 1 (ACT, 11.11.2026): Entfesseln 2
+bis 8 s nach jedem Ruf; gegen Kampfende Abschiedsschlag 3 bis 9 s nach einem Ruf (57:37 → 57:42, 03:12 → 03:21, 07:57
+→ 08:00); im Endkampf 12 s ohne Begleiter (07:45 → 07:57): Pugil ging mit Scheidendem Schlag um 15:07:45, „out None" ab 15:07:47,
+Coeurl erst 15:07:57 („the best stays last", also mehrere Hörner bereit), während Gegner ihn angriffen. Ursache (ACT, Positionen der Aktionszeilen): Er lief von 15:07:46
+bis 15:07:56; die Hörner sind Fähigkeiten mit 1,0 s Wirkzeit (Action 44881, 44892, 44894: Cast100ms 10, xivapi v2), im
+Laufen beginnt RSR keinen Wirkvorgang; um 15:07:57 stand er, und Horn III kam sofort. *Nächster Schritt:* ob die
+Bewegungssperre (Konzept 03, „Bewegungssperre beim Wirken und die KI von BossMod", A651) den Ruf eines Begleiters tragen
+soll, wenn keiner draußen ist und der Platz sicher ist – Loop; diese Folge gegen die B-Regeln
+(Konzept 01) und die Abklingzeiten der Hörner prüfen – gewollt oder Defekt –, dann Laden, Schatz, Lager, Futter und die
+Eignung der Begleiter über mehrere Kämpfe gegen die Läufe, Loop.
 *Konzept:* 21.
 
 ### Gefundene Punkte vom 11.11.2026 im vollen Loop verifizieren und optimieren · N
