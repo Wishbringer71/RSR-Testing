@@ -93,6 +93,12 @@ What this release changes in the fight. For the whole distance from upstream, se
 
 ## The Beastmaster on a Crucible board
 
+- **An easy board is recognised by what you actually lose.** Whether your HP carry the way to the final fight - the
+  test behind keeping the no-item, no-spending, no-gear, no-rest and no-feeding bonuses - summed the raw damage of each
+  fight, with none of the healing your familiars give you; on a board of five fights that sum is nearly always more than
+  your HP, so the bonuses were never kept. RSR now learns per fight what you lost after all healing and how deep you fell
+  below its start, and the way carries when your HP stay above the losses on the heaviest way plus the deepest dip of
+  the board. The first run on a board measures; from the second the bonuses are kept where the board is easy.
 - **The board's score counts.** Remnants and familiar EXP grow with the score the board gives after its final fight.
   While no item has been used in the run (the bonus "Sparsamkeit", 750 points) and your HP carry the heaviest way to the
   final fight with the loads RSR learned, items that guard against no present danger stay in the inventory: Temporal

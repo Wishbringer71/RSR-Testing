@@ -20724,6 +20724,30 @@ die Messzeile ordnet jeden weiteren Fall seinem Weg zu.
 - *Grundlage (Konzept 21, K15, „Woran ein leichtes Brett feststeht"):* je Kampf Nettoverlust und tiefste Senke lernen,
   den Weg Kampf für Kampf damit rechnen; dieselbe Prüfung für jeden Schritt. Nächster Schritt im TODO.
 
+### A706 · Crucible: Ein leichtes Brett steht an Nettoverlust und tiefster Senke je Kampf fest (11.11.2026)
+
+- *Anlass:* A705; sein Auftrag vom 11.11.2026 („sobald feststeht, dass das aktuelle brett einfach zu lösen ist …").
+- *Optionen:* (a) rohe Last lassen – erkennt nie ein leichtes Brett; (b) rohe Last weniger gelernter eigener Heilung –
+  die Heilung der Begleiter fehlt weiter; (c) die LP selbst messen: Nettoverlust (Beginn weniger Ende, nach aller
+  Heilung) und tiefste Senke (Beginn weniger niedrigste LP) je Kampf, je der größte über alle Läufe – gewählt; der Weg
+  trägt, wenn die LP über der Summe der Nettoverluste bis einschließlich Endkampf plus der tiefsten Senke des Bretts
+  liegen (vorsichtige Schranke für „Kampf für Kampf über der nächsten Senke").
+- *SWOT im Kampf:* *Stärken:* Ein Brett, dessen Begleiter den Spieler im Kampf heilen, gilt als leicht, und Sparsamkeit,
+  Geizhals, Mit leeren Händen, Schlaflose Nächte und Heilfasten bleiben erhalten (zusammen bis 4.000 Punkte auf Brett
+  1). *Schwächen:* Die Senke misst, was mit dem Kader des gemessenen Laufs geschah; ein Lauf ohne Heiler im Feld senkt
+  tiefer. *Chancen:* jeder Lauf schärft die Werte. *Bedrohungen:* Ein Kampf ändert sich (Zufallsfelder, andere Gegner) –
+  dann misst er neu und steigt.
+- *Falsifikation:* kein Defekt – widerlegt am Code (A705). Option falsch: Die Senke eines Laufs mit Heiler unterschätzt
+  einen ohne – die Hornwahl setzt im Endkampf Heiler (K11), und die unmittelbare Gefahr (Heilung unter der Trankschwelle)
+  bleibt ungeschmälert; Preis: ein Gegenstand, der in diesem Lauf doch nötig wird, kostet den Bonus erst dann.
+  Ausgeliefert, nichts ändert sich: Kein Kampf hat die neuen Werte – der erste Lauf misst, ab dem zweiten greift es.
+- *Umgesetzt:* `CrucibleBoard.FollowPlayerHp`, `LearnNetAndDip`, `NetLoad`, `DeepestDip`; Datei `CrucibleFightNet.json`
+  (Nettoverlust unter der Kampfzeile, Senke unter Zeile × `FamiliarKeyStride`), Reiter „Crucible net loss";
+  `CarriesToFinal` darauf. Konzept 21 K15, „Woran ein leichtes Brett feststeht".
+
+*Prüfgrad:* statisch, Compile, Prüfskripte; im Spiel nicht beobachtet – Zeile „crucible fight …: net loss …, deepest
+dip …" je Kampf.
+
 ## B · Commit-Register (Fork vs. `upstream/main`)
 
 ### B1 · Einzelgeprüfte Fork-Commits

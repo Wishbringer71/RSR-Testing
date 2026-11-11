@@ -227,6 +227,94 @@ internal static class CrucibleBoard
 			+ load.Other) / Math.Max(taken, float.Epsilon) / bare);
 	}
 
+	private static uint _fightStartHp;
+	private static uint _fightLowHp;
+
+	// A706 (K15): the player's HP when the fight is told and the lowest since, for its net loss and deepest dip.
+	private static void FollowPlayerHp()
+	{
+		if (_fight == 0 || Player.Object is not { MaxHp: > 0u } player)
+		{
+			_fightStartHp = 0;
+			_fightLowHp = 0;
+			return;
+		}
+
+		if (_fightStartHp == 0)
+		{
+			_fightStartHp = Math.Max(1u, player.CurrentHp);
+			_fightLowHp = player.CurrentHp;
+		}
+
+		_fightLowHp = Math.Min(_fightLowHp, player.CurrentHp);
+	}
+
+	// A706 (K15): the fight's net loss (start less end, after all healing) and its deepest dip below the start into the
+	// learned heaviest, in whole percent of his HP without gear.
+	private static void LearnNetAndDip()
+	{
+		if (_fightStartHp == 0 || Player.Object is not { MaxHp: > 0u } player)
+		{
+			return;
+		}
+
+		var end = player.IsDead ? 0u : player.CurrentHp;
+		var net = _fightStartHp > end ? _fightStartHp - end : 0u;
+		var dip = _fightStartHp > _fightLowHp ? _fightStartHp - _fightLowHp : 0u;
+		var netPercent = (int)Math.Ceiling(BareShare(new FightLoad(0d, 0d, net, 0d), player.MaxHp) * PercentScale);
+		var dipPercent = (int)Math.Ceiling(BareShare(new FightLoad(0d, 0d, dip, 0d), player.MaxHp) * PercentScale);
+		var changed = false;
+		lock (OtherConfiguration.CrucibleFightNetGate)
+		{
+			if (!OtherConfiguration.CrucibleFightNet.TryGetValue(_fight, out var knownNet) || knownNet < netPercent)
+			{
+				OtherConfiguration.CrucibleFightNet[_fight] = netPercent;
+				changed = true;
+			}
+
+			var dipKey = _fight * FamiliarKeyStride;
+			if (!OtherConfiguration.CrucibleFightNet.TryGetValue(dipKey, out var knownDip) || knownDip < dipPercent)
+			{
+				OtherConfiguration.CrucibleFightNet[dipKey] = dipPercent;
+				changed = true;
+			}
+		}
+
+		if (changed)
+		{
+			DefenseTrace.Line($"crucible fight {_fight}: net loss {netPercent} %, deepest dip {dipPercent} % of your HP without gear "
+				+ "- the heaviest so far stored");
+			_ = OtherConfiguration.SaveCrucibleFightNet();
+		}
+	}
+
+	/// <summary>K15 (A706): the most HP the player lost in <paramref name="battle"/> after all healing, as a share of his HP without gear; null before it was measured.</summary>
+	internal static float? NetLoad(uint battle)
+	{
+		lock (OtherConfiguration.CrucibleFightNetGate)
+		{
+			return OtherConfiguration.CrucibleFightNet.TryGetValue(battle, out var percent) ? percent / (float)PercentScale : null;
+		}
+	}
+
+	/// <summary>K15 (A706): the deepest a fight of <paramref name="board"/> took the player below its start, as a share of his HP without gear; null before one was measured.</summary>
+	internal static float? DeepestDip(uint board)
+	{
+		float? deepest = null;
+		lock (OtherConfiguration.CrucibleFightNetGate)
+		{
+			foreach (var fight in FightsOfBoard(board))
+			{
+				if (OtherConfiguration.CrucibleFightNet.TryGetValue(fight * FamiliarKeyStride, out var percent))
+				{
+					deepest = Math.Max(deepest ?? 0f, percent / (float)PercentScale);
+				}
+			}
+		}
+
+		return deepest;
+	}
+
 	private static float? LearnedLoad(uint battle)
 	{
 		lock (OtherConfiguration.CrucibleFightLoadsGate)
@@ -761,6 +849,7 @@ internal static class CrucibleBoard
 	internal static void Follow()
 	{
 		FollowKillStacks();
+		FollowPlayerHp();
 		if (!DataCenter.IsInCrucible)
 		{
 			EndFight();
@@ -1059,6 +1148,7 @@ internal static class CrucibleBoard
 			TraceTeamAndField($"fight {_fight} over");
 			FinishLoad();
 			LearnFamiliarDps();
+			LearnNetAndDip();
 			if (_finalFights.Contains(_fight))
 			{
 				_lossFinalOver = true;

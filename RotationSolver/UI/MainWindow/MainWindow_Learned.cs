@@ -151,6 +151,7 @@ public partial class MainWindow
 			CrucibleFightLoadTab(),
 			CrucibleFamiliarDpsTab(),
 			CrucibleFamiliarLossTab(),
+			CrucibleFightNetTab(),
 			CrucibleCampPoolTab(),
 			SleepLimitTab(game),
 			DotTab(),
@@ -443,6 +444,30 @@ public partial class MainWindow
 
 		Sort(rows);
 		return new LearnedTab("Crucible familiar loss", ["Board", "Measure", "Most lost"], rows);
+	}
+
+	// K15 of the Crucible (concept 21, A706): per fight, the most the player lost after all healing and the deepest he fell
+	// below its start; whether a board is easy rests on them.
+	private static LearnedTab CrucibleFightNetTab()
+	{
+		var rows = new List<string[]>();
+		Dictionary<uint, int> measured;
+		lock (OtherConfiguration.CrucibleFightNetGate)
+		{
+			measured = new Dictionary<uint, int>(OtherConfiguration.CrucibleFightNet);
+		}
+
+		foreach (var (key, percent) in measured)
+		{
+			var dip = key >= CrucibleBoard.FamiliarKeyStride;
+			var fight = dip ? key / CrucibleBoard.FamiliarKeyStride : key;
+			var enemies = CrucibleBoard.EnemiesOf(fight);
+			var name = enemies.Length > 0 ? CrucibleBoard.EnemyName(enemies[0].NameId) : string.Empty;
+			rows.Add([name.Length > 0 ? $"{name} (fight {fight})" : $"fight {fight}", dip ? "deepest dip" : "net loss", $"{percent} %"]);
+		}
+
+		Sort(rows);
+		return new LearnedTab("Crucible net loss", ["Fight (first enemy)", "Measure", "Most, of your HP without gear"], rows);
 	}
 
 	// K10 of the Crucible (concept 21, Campsite, A667): per board, the whole a campsite rest shares among the player and the

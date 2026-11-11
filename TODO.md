@@ -75,9 +75,8 @@ dieselbe Grundlage?), der Ablauf eines Laufs Schritt für Schritt (Kader, Kampf,
 Eignung eines Begleiters über mehrere Kämpfe (Schwächen, LP, Heilung, Einsätze, K11) und die Ablöse im Kampf (K6, K16, B2).
 Nachgezeichnet (A702): fünf Läufe; die Teamgröße aus A698 überschätzt ein kleines Team. *Ort:* Konzept 21 (K6, K7, K10,
 K11, K14, K15, K16), `BST_Reborn`, `BeastmasterCrucible*`. Die Größenregel liest die Einsätze einzeln (A703); Schutzgegenstände nach der Treffergröße (A704). Der Test des Wegs
-summiert rohe Lasten ohne die Heilung der Begleiter und erkennt kein leichtes Brett (A705). *Nächster Schritt:*
-Nettoverlust und tiefste Senke je Kampf lernen und den Test des Wegs darauf stellen (Konzept 21, K15, „Woran ein leichtes
-Brett feststeht"), dann Laden, Schatz, Lager, Futter und die Ablöse der Hörner gegen die Läufe prüfen, Loop.
+summiert rohe Lasten ohne die Heilung der Begleiter und erkennt kein leichtes Brett (A705). Der Test des Wegs liest Nettoverlust und Senke (A706). *Nächster Schritt:* Laden, Schatz, Lager, Futter, die Eignung
+der Begleiter über mehrere Kämpfe und die Ablöse der Hörner gegen die Läufe prüfen, Loop.
 *Konzept:* 21.
 
 ### Gefundene Punkte vom 11.11.2026 im vollen Loop verifizieren und optimieren · N

@@ -268,6 +268,17 @@ internal partial class OtherConfiguration
 	internal static readonly object CrucibleFamiliarLossGate = new();
 
 	/// <summary>
+	/// K15 of the Crucible (concept 21, A706: whether a board is easy): per fight (XBMBattleDetail row) the most
+	/// HP the player lost from its start to its end after all healing, and under the row times
+	/// <c>CrucibleBoard.FamiliarKeyStride</c> the deepest he fell below its start - both in whole percent of his HP without
+	/// gear, learned in play, only rising. Under <see cref="CrucibleFightNetGate"/>.
+	/// </summary>
+	internal static Dictionary<uint, int> CrucibleFightNet = [];
+
+	/// <summary>Guards <see cref="CrucibleFightNet"/> against the save on a pool thread.</summary>
+	internal static readonly object CrucibleFightNetGate = new();
+
+	/// <summary>
 	/// K10 of the Crucible (concept 21, Campsite, A667): per board (the route's board row), the whole a campsite rest shares
 	/// among the player and the familiars resting, in percent of each one's maximum HP - read from the game's rest prompt
 	/// where it is not capped at 100 %, the smallest read over every session. Changed and read on the game thread under
@@ -880,6 +891,9 @@ internal partial class OtherConfiguration
 		new LearnedFile<int>(nameof(CrucibleFamiliarLoss), CopyCrucibleFamiliarLoss,
 			v => { lock (CrucibleFamiliarLossGate) { CrucibleFamiliarLoss = v; } },
 			Math.Max, state => CrucibleFamiliarLossStoreState = state, "Crucible board(s) with a measured familiar loss per run"),
+		new LearnedFile<int>(nameof(CrucibleFightNet), CopyCrucibleFightNet,
+			v => { lock (CrucibleFightNetGate) { CrucibleFightNet = v; } },
+			Math.Max, state => CrucibleFightNetStoreState = state, "Crucible fight(s) with a measured net loss and dip"),
 		new LearnedFile<int>(nameof(CrucibleCampPools), CopyCrucibleCampPools,
 			v => { lock (CrucibleCampPoolsGate) { CrucibleCampPools = v; } },
 			Math.Min, state => CrucibleCampPoolsStoreState = state, "Crucible board(s) with a read campsite rest"),
@@ -1158,6 +1172,19 @@ internal partial class OtherConfiguration
 
 	/// <summary>What the last save and load of <see cref="CrucibleFamiliarLoss"/> did, in words.</summary>
 	internal static string CrucibleFamiliarLossStoreState { get; private set; } = "not loaded yet";
+
+	internal static Task SaveCrucibleFightNet() => SaveList(nameof(CrucibleFightNet));
+
+	private static Dictionary<uint, int> CopyCrucibleFightNet()
+	{
+		lock (CrucibleFightNetGate)
+		{
+			return new Dictionary<uint, int>(CrucibleFightNet);
+		}
+	}
+
+	/// <summary>What the last save and load of <see cref="CrucibleFightNet"/> did, in words.</summary>
+	internal static string CrucibleFightNetStoreState { get; private set; } = "not loaded yet";
 
 	private static Dictionary<uint, int> CopyCrucibleCampPools()
 	{

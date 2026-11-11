@@ -802,8 +802,13 @@ Dullahan, Golem, Spriggan und Eisgolem (`XBMPet.InflictsInterrupt`).
     seiner LP ohne Ausrüstung, je die größte über alle Läufe: der *Nettoverlust* (LP zu Beginn weniger LP am Ende, nach
     aller Heilung, auch der Begleiter) und die *tiefste Senke* (LP zu Beginn weniger die niedrigsten LP im Kampf). Der Weg
     trägt, wenn seine LP Kampf für Kampf – Beginn weniger Nettoverlust der Kämpfe davor – jeweils über der tiefsten Senke
-    des nächsten liegen; leicht ist ein Brett, dessen schwerster Weg das ohne Gegenstand, Rast und Futter erfüllt. Alle
-    Schritte – Teamgröße, Gegenstände, Laden, Schatz, Lager, Futter – lesen dieselbe Prüfung.
+    des nächsten liegen; leicht ist ein Brett, dessen schwerster Weg das ohne Gegenstand, Rast und Futter erfüllt. Gebaut
+    (A706) als vorsichtige Schranke: seine LP (mit gehaltener Heilung, wo die Regel sie zählt) über der Summe der
+    Nettoverluste auf dem schwersten Weg bis einschließlich Endkampf plus der tiefsten Senke, die ein Kampf dieses Bretts
+    je hatte – sie liegt über jeder Senke auf dem Weg, also auf der sicheren Seite. Ein Kampf auf dem Weg ohne gemessenen
+    Nettoverlust macht den Test unbekannt (sichere Seite). Das ist `CarriesToFinal`, das Sparsamkeit, Sammelleidenschaft,
+    Geizhals, Mit leeren Händen, Schlaflose Nächte und Heilfasten lesen; die Teamgröße liest die Einsätze der Begleiter
+    (K7). Die rohe Last (A661) bleibt für die Rast nach K10 und den Laden, wo sie Mittel dosiert.
   - *Kein Gegenstand (750; „Sparsamkeit", `XBMScoreBonus` 15, gebaut A689):* Unmittelbare Gefahr geht vor und bleibt ungeschmälert: Heilung unter der Trankschwelle,
     Mittel gegen Gift und Blindheit, Schutz gegen einen angekündigten Treffer, der ihn unter die Trankschwelle brächte,
     Heilung und Schutz des Begleiters, der vor dem nächsten Webfenster fiele. *Wann ein angekündigter Treffer Gefahr ist

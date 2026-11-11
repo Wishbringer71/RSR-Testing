@@ -132,9 +132,22 @@ public partial class BeastmasterRotation
 			return false;
 		}
 
-		load = CrucibleRoute.WorstAhead(false, LoadNow);
+		// A706: net losses after all healing on the heaviest way, plus the deepest dip a fight of this board ever had -
+		// above every dip on the way; with the gear worn as LoadNow takes it.
+		var net = CrucibleRoute.WorstAhead(false, NetNow);
+		var dip = CrucibleBoard.DeepestDip(CrucibleBoard.CurrentBoard);
+		load = net is { } ahead && dip is { } deepest ? ahead + WornShare(deepest) : null;
 		share = (player.CurrentHp / (float)player.MaxHp) + (withHeldHealing ? HealingHeldShare() : 0f);
 		return load is { } heaviest && share > heaviest;
+	}
+
+	// A706: a fight's net loss with the gear worn, as LoadNow takes the raw load.
+	private static float? NetNow(uint battle) => CrucibleBoard.NetLoad(battle) is { } bare ? WornShare(bare) : null;
+
+	private static float WornShare(float bare)
+	{
+		var (hp, taken, _, _) = WornFactors();
+		return bare * taken / Math.Max(hp, float.Epsilon);
 	}
 
 	private static int _scoreRestRun = -1;
