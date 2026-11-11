@@ -515,6 +515,23 @@ public partial class BeastmasterRotation
 			why = $"at {hp:P0} HP (line {line:P0})";
 		}
 
+		// A695 (K15): just before the final fight ends, the familiar out to full while every other one of the team is -
+		// "Unversehrte Bestien" -, where its points outweigh the item bonuses the use costs; before the player's own top-off,
+		// whose bonus is smaller.
+		if (slot < 0 && FinalFightEndsNow && Familiar is { IsDead: false, CurrentHp: > 0, MaxHp: > 0 } fieldPet
+			&& fieldPet.CurrentHp < fieldPet.MaxHp && OthersOfTeamAtFull(CurrentPet)
+			&& CrucibleBoard.BonusPoints(CrucibleBoard.ScoreBonus.Selfless) > ItemBonusPointsAtStake)
+		{
+			var lift = BestHeal(crucible, fieldPet.GetHealthRatio(), 1f, true);
+			if (lift >= 0 && TryItem(crucible, lift, CrucibleItemKind.Heal, out var potion) && fieldPet.GetHealthRatio() + potion.Value >= 1f)
+			{
+				slot = lift;
+				on = fieldPet;
+				why = $"for {fieldPet.Name} at {fieldPet.CurrentHp} HP, the final fight ends in {DataCenter.PackTimeToKill:F1} s "
+					+ "and every other familiar stands at full - the score's bonus for all familiars at full HP";
+			}
+		}
+
 		// A664: healing no fight ahead needs - everything in the final fight -, the largest piece that does not overheal.
 		if (slot < 0 && InCombat && !keepNoItem)
 		{
@@ -1430,7 +1447,7 @@ public partial class BeastmasterRotation
 		// A695: in the final fight, before its last enemy falls - before the next GCD by the time-to-kill forecast -, the
 		// smallest item that brings him to full: "Unversehrter Bändiger" and the HP the score counts. Overhealing costs nothing
 		// any more; earlier the order of the items does not change the HP at the end, only the last one decides the full HP.
-		if (finalFight && missing > 0f && DataCenter.IsPackTimeToKillKnown && DataCenter.PackTimeToKill <= DataCenter.DefaultGCDTotal)
+		if (finalFight && missing > 0f && FinalFightEndsNow)
 		{
 			var full = -1;
 			var least = float.MaxValue;

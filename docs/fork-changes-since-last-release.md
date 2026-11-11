@@ -98,7 +98,9 @@ What this release changes in the fight. For the whole distance from upstream, se
   at the end give 1,000 points ("Sammelleidenschaft"); with ten in the inventory, items that guard against no present
   danger now stay there as for the no-item bonus, while your HP carry the way. Once no item bonus is at stake, the
   healing left in the final fight takes, just before its last enemy falls, the smallest item that brings you to full:
-  250 points for full HP ("Unversehrter Bändiger") and the HP the score counts. The points of every bonus are read from
+  250 points for full HP ("Unversehrter Bändiger") and the HP the score counts. Before that, when every other familiar
+  of the team stands at full HP, a Beast Potion brings the familiar out to full for 1,000 points ("Unversehrte
+  Bestien"), where those outweigh the item bonuses the use costs. The points of every bonus are read from
   the game's data for the board you are on. Each Crucible window, the score at the end among them, is written to
   `DefenseTrace.log` once per run with its values.
 - **The shop and the treasure keep their bonuses too.** While nothing has been bought in the run ("Geizhals", 500) and

@@ -44,15 +44,16 @@ beide Werkzeugquellen; sein Mitschnitt vom 04.11.2026.
 - Jeder Gegner trägt eine Schwäche aus neun Arten (Hieb, Stich, Schlag, Feuer, Eis, Wasser, Wind, Erde, Blitz) oder
   keine, dazu Anfälligkeiten für Zustände (`BNpcResist`). Wie viel mehr Schaden eine Schwäche bringt, nennt keine
   Quelle (unbelegt).
-- Punkte (Wiki): Zuschläge für keine Gegenstände, keine Rast, keine Schwächung, kleine Teams, gefallene oder keine
-  gefallenen Begleiter. Sie stehen teils gegen deine Sicherheit; RSR richtet sich nach Sicherheit vor Schaden
-  („Spielweise"), Punkte sind kein Ziel einer Regel (meine Ableitung).
+- Punkte (Wiki, Spieldaten): Zuschläge für keine Gegenstände, keine Rast, keine Schwächung, kleine Teams, gefallene
+  oder keine gefallenen Begleiter, volle LP am Ende. Sie stehen teils gegen deine Sicherheit. RSR wiegt jeden Bonus, den
+  eine Handlung verwirkt, gegen ihren Sicherheitsgewinn (K15): Schutz, wo der Schaden wahrscheinlich ist, kein Schutz,
+  der ohne Gefahr Punkte kostet.
   - *Sein Hinweis (11.11.2026):* „jedes brett hat nach dem endboss eine bewertung aufgrund von punkten, die man durch das
     verhalten dort sammelt. die ausbeute ist nicht optimal." Dazu: „bei den brettern gibt es punktebonis wenn man
     gewisse dinge macht oder sein lässt. nicht campt, nicht isst, weniger begleiter mitnimmt etc. recherchiere dazu".
-    Die Ableitung oben kappt die Punkte ganz; nach seiner Vorgabe vom 07.11.2026 ist das Optimum zu verbessern, nicht
-    die Entscheidung zu kappen. In Prüfung (TODO „Crucible: Gegenstände und Brettbewertung bringen nicht die mögliche
-    Ausbeute").
+    Bis A689 waren Punkte kein Ziel einer Regel (meine Ableitung); das kappte die Entscheidung, statt das Optimum zu
+    verbessern (seine Vorgabe vom 07.11.2026). Gebaut in K15 (A689 bis A691, A695); offen sind Teamgröße und Gattung
+    (K7, TODO „Crucible: Begleiter je Kampf nicht optimal gewählt") und die Rate der Rest-LP (TODO, Warten auf Daten).
   - *Was die Wertung bringt* (consolegameswiki, eorzeantavern, abgerufen 11.11.2026): Reste (faded und bright Remnants
     of Resilience) und Begleiter-EP anteilig zur Punktzahl, dazu Beastmaster-EP; neun Ränge von Apprentice bis
     Legendary, Legendary ab 17.875 Punkten auf den drei Unbroken-Brettern, ab 18.766 auf den Meisterbrettern. Die
@@ -815,11 +816,18 @@ Dullahan, Golem, Spriggan und Eisgolem (`XBMPet.InflictsInterrupt`).
       jedes Fenster des Crucible (Name beginnt mit „XBM") beim ersten Öffnen je Lauf mit seinen Werten in
       `DefenseTrace.log` („crucible window …"), also auch die Abrechnung am Ende samt LP-Punkten. Aus ihr folgt die Rate.
       Selbst nachsteuern kann RSR erst, wenn der Aufbau dieses Fensters bekannt ist; den nennt keine Quelle.
-    - *Unversehrte Bestien (offen):* Mit den belegten Punkten lohnt ein Heilgegenstand, der den Begleiter im Feld auf
-      100 % bringt, während alle anderen voll sind, auch gegen Sparsamkeit (1.000 gegen 750), nicht zusätzlich gegen
-      Sammelleidenschaft. Dazu braucht die Regel die LP aller Begleiter des Kaders (Agent und zuletzt gesehene, K11) und
-      die Reichweite des Gegenstands auf den Begleiter; nächster Schritt im TODO „Crucible: Gegenstände und
-      Brettbewertung bringen nicht die mögliche Ausbeute".
+    - *Unversehrte Bestien (gebaut):* Fällt der letzte Gegner des Endkampfs vor dem nächsten GCD, stehen alle übrigen
+      Begleiter des Kaders bei voller LP und fehlt dem Begleiter im Feld LP, geht der kleinste Heilgegenstand „to self or
+      familiar", der ihn auf 100 % bringt, an ihn – vor dem Auffüllen des Spielers, 1.000 vor 250. Die LP der übrigen
+      liest RSR wie für die Wahl zwischen den Kämpfen (K11, A585): was ein Begleiter zuletzt mit aus dem Kampf nahm,
+      solange der Agent den Kampf nicht übernommen hat, sonst den Agenten; ein gefallener zählt mit 0. Er geht, wo die
+      Punkte des Bonus (`XBMContent`) die Gegenstandsboni übersteigen, die der Gebrauch kostet: Sparsamkeit, solange sie
+      steht, und Sammelleidenschaft, solange zehn gehalten werden. Auf jedem Brett also gegen Sparsamkeit allein (1.000
+      gegen 750), nicht gegen beide (1.000 gegen 1.750). Crucible Ash heilt „self and nearby allies" und erreicht den
+      Begleiter beim Gegner nicht (A577); es zählt hier nicht. *Wahrscheinlichkeit:* Ohne Rast trägt jeder Begleiter,
+      der kämpfte, seine Verluste bis ans Ende (K11, gemessen 04.11.2026: 25 bis 60 % bei mehreren); der Fall tritt ein,
+      wenn außer dem Begleiter im Feld keiner LP verlor oder alle wieder voll sind. Wo er nicht eintritt, kostet die
+      Regel nichts.
     - *Gegenthesen:* (1) Ein Treffer nach dem Auffüllen senkt die LP wieder. Innerhalb eines GCD vor dem Ende ist das
       möglich; dann fehlen die 250, die LP-Punkte bleiben höher als ohne die Heilung. (2) Die Restzeit-Vorhersage irrt:
       Der Gegenstand geht zu früh (wie (1)) oder gar nicht – ohne Bonus auf dem Spiel ist er nach dem Ende wertlos, ein

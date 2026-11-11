@@ -20559,6 +20559,26 @@ nicht beobachtet – das Ergebnisfenster in `DefenseTrace.log` zeigt nach dem n�
 
 *Prüfgrad:* statisch, Compile, Prüfskripte, Protokoll vom 11.11.2026; im Spiel nicht beobachtet.
 
+### A697 · Crucible-Punkte: Unversehrte Bestien vor dem letzten Schlag (11.11.2026)
+
+- *Anlass:* A695, Option (d), offen geblieben; TODO „Crucible: Gegenstände und Brettbewertung bringen nicht die mögliche
+  Ausbeute".
+- *Regel:* Fällt der letzte Gegner des Endkampfs vor dem nächsten GCD, stehen alle übrigen Begleiter des Kaders bei
+  voller LP (K11-LP: zuletzt aus dem Kampf mitgenommen, solange der Agent nachhängt, sonst der Agent) und fehlt dem
+  Begleiter im Feld LP, geht der kleinste Heilgegenstand „to self or familiar", der ihn auf 100 % bringt, an ihn – wo
+  die Punkte von Unversehrte Bestien (`XBMContent`, 1.000) die Gegenstandsboni übersteigen, die der Gebrauch kostet
+  (Sparsamkeit 750 solange sie steht, Sammelleidenschaft 1.000 solange zehn gehalten werden). Vor dem Auffüllen des
+  Spielers (250).
+- *Umgesetzt:* `PetSeenHp` und `EffectiveHealth` aus `BST_Reborn` in die Basisklasse (`BeastmasterCrucibleScore`),
+  `OthersOfTeamAtFull`, `ItemBonusPointsAtStake`, `FinalFightEndsNow`; Schritt im Gegenstandsschritt vor `SpareHeal`.
+  Konzept 21 K15 und Grundlagen; TODO-Eintrag geschlossen, die Rate der Rest-LP unter „Warten auf Daten".
+- *Falsifikation:* kein Defekt – ohne die Regel ging am Ende kein Gegenstand an den Begleiter für den Bonus. Option
+  falsch: Der Agent zeigt einen Begleiter voll, der im Endkampf schon LP verlor – `EffectiveHealth` nimmt dann das
+  zuletzt Gesehene (A585). Ausgeliefert, nichts ändert sich: Die übrigen Begleiter sind fast nie alle voll (K11,
+  gemessen 04.11.2026) – dann kostet die Regel nichts.
+
+*Prüfgrad:* statisch, Compile, Prüfskripte; im Spiel nicht beobachtet.
+
 ## B · Commit-Register (Fork vs. `upstream/main`)
 
 ### B1 · Einzelgeprüfte Fork-Commits

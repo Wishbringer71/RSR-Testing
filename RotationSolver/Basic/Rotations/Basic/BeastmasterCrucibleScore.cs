@@ -34,6 +34,65 @@ public partial class BeastmasterRotation
 	/// <summary>K15 (A695): whether a use of an item now would cost a bonus of the score - "Sparsamkeit" or "Sammelleidenschaft".</summary>
 	internal static bool ItemBonusAtStake => NoItemBonusStands || HoarderBonusAtStake;
 
+	/// <summary>K15 (A695): the points a use of an item now costs - "Sparsamkeit" while it stands, "Sammelleidenschaft" while ten are held.</summary>
+	private static int ItemBonusPointsAtStake => (NoItemBonusStands ? CrucibleBoard.BonusPoints(CrucibleBoard.ScoreBonus.EconomicEthos) : 0)
+		+ (HoarderBonusAtStake ? CrucibleBoard.BonusPoints(CrucibleBoard.ScoreBonus.HabitualHoarder) : 0);
+
+	/// <summary>
+	/// K15 (A695): the final fight's last enemy falls before the next GCD by the time-to-kill forecast - what the score counts
+	/// at the end is decided now.
+	/// </summary>
+	private static bool FinalFightEndsNow => InCombat && CrucibleBoard.IsFinalFight && DataCenter.IsPackTimeToKillKnown
+		&& DataCenter.PackTimeToKill <= DataCenter.DefaultGCDTotal;
+
+	/// <summary>
+	/// K11 (A585): what each familiar last left a fight with, beside what the team agent showed for it then; filled by the
+	/// rotation that follows the familiar out, cleared on a new area.
+	/// </summary>
+	private protected static readonly Dictionary<BeastmasterPet, (uint Hp, uint AgentHp)> PetSeenHp = [];
+
+	/// <summary>
+	/// K11 (A585): a familiar's HP - what it last left a fight with while the agent has not taken that fight over (it still
+	/// shows what it showed then), else the agent's.
+	/// </summary>
+	private protected static uint EffectiveHealth(BeastmasterPet pet, uint agentHp)
+	{
+		return PetSeenHp.TryGetValue(pet, out var seen) && seen.AgentHp == agentHp ? seen.Hp : agentHp;
+	}
+
+	/// <summary>
+	/// K15 (A695): whether every familiar of the team but <paramref name="outPet"/> stands at full HP (K11's HP; a fallen one
+	/// at 0) - with the familiar out at full too, "Unversehrte Bestien". False without the team agent.
+	/// </summary>
+	private static unsafe bool OthersOfTeamAtFull(BeastmasterPet outPet)
+	{
+		var party = AgentXBMPetParty.Instance();
+		if (party == null)
+		{
+			return false;
+		}
+
+		var team = party->SelectedPets.AsSpan();
+		var any = false;
+		for (var i = 0; i < team.Length && i < party->PetCurrentHealth.Length && i < party->PetMaxHealth.Length; i++)
+		{
+			var pet = (BeastmasterPet)team[i].PetId;
+			var max = party->PetMaxHealth[i];
+			if (pet == BeastmasterPet.None || max == 0)
+			{
+				continue;
+			}
+
+			any = true;
+			if (pet != outPet && EffectiveHealth(pet, party->PetCurrentHealth[i]) < max)
+			{
+				return false;
+			}
+		}
+
+		return any;
+	}
+
 	private static int _scoreShopRun = -1;
 	private static bool _scoreTokensSpent;
 

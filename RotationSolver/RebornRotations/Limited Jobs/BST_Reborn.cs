@@ -316,7 +316,6 @@ public sealed class BST_Reborn : BeastmasterRotation
 	private static uint _useStartHp;
 	private static uint _useLastHp;
 	private static bool _useFell;
-	private static readonly Dictionary<BeastmasterPet, (uint Hp, uint AgentHp)> _petSeenHp = [];
 	private static uint _largestLossPerUse;
 	private static uint _petSeenArea;
 
@@ -327,7 +326,7 @@ public sealed class BST_Reborn : BeastmasterRotation
 		if (_petSeenArea != DataCenter.TerritoryID)
 		{
 			_petSeenArea = DataCenter.TerritoryID;
-			_petSeenHp.Clear();
+			PetSeenHp.Clear();
 			_largestLossPerUse = 0u;
 			_familiarLargestHitOnBoard = 0u;
 			FinalHealers.Clear();
@@ -430,7 +429,7 @@ public sealed class BST_Reborn : BeastmasterRotation
 
 		if (AgentHealth(_usePet) is { } agent)
 		{
-			_petSeenHp[_usePet] = (left, agent);
+			PetSeenHp[_usePet] = (left, agent);
 		}
 
 		_usePet = BeastmasterPet.None;
@@ -456,13 +455,6 @@ public sealed class BST_Reborn : BeastmasterRotation
 		}
 
 		return null;
-	}
-
-	// K11 (A585): a familiar's HP for the choice between fights - what it last left a fight with while the agent has not
-	// taken that fight over (it still shows what it showed then), else the agent's.
-	private static uint EffectiveHealth(BeastmasterPet pet, uint agentHp)
-	{
-		return _petSeenHp.TryGetValue(pet, out var seen) && seen.AgentHp == agentHp ? seen.Hp : agentHp;
 	}
 
 	// A582: the familiar out has been sent off since it appeared - Parting Blow, or a Tempered Release it leaves after - and

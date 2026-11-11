@@ -20,12 +20,10 @@ BossMod-Module) die Rotation des Beastmasters, die Wahl der Begleiter und den Ze
 (Beispiel seiner Beobachtung: der Raptor gegen Feuer, bevor feueranfällige Gegner da waren; A581).
 
 1. Crucible: Begleiter je Kampf nicht optimal gewählt (Beastmaster-Vorrang).
-2. Crucible: Gegenstände nicht optimal, die Brettbewertung nach Punkten bringt nicht die mögliche Ausbeute
-   (Beastmaster-Vorrang).
-3. Blaumagier: RSRs nächste Aktion beendet Apokalypsis und Chelonian Gate – Schaden und Minderung des Spielers enden
+2. Blaumagier: RSRs nächste Aktion beendet Apokalypsis und Chelonian Gate – Schaden und Minderung des Spielers enden
    nach einem GCD statt nach 10 s.
-4. Weißmagier: Surecast ohne Rückstoß – die Abklingzeit fehlt, wenn der Rückstoß kommt.
-5. Kegel und Ringe gegnerischer Zauber genau messen: Zauber- und Kanalbeginn nutzen RSRs Erkennung bei Kegel und Ring
+3. Weißmagier: Surecast ohne Rückstoß – die Abklingzeit fehlt, wenn der Rückstoß kommt.
+4. Kegel und Ringe gegnerischer Zauber genau messen: Zauber- und Kanalbeginn nutzen RSRs Erkennung bei Kegel und Ring
    nicht, und mehrere Leser sehen hinter einem Kegel oder im Innenkreis eines Rings eine Gefahr, die keine ist.
 
 Danach die technische Schuld, soweit ihre Auflösungsbedingung erfüllt ist. Warten auf Daten: unten.
@@ -46,17 +44,6 @@ weniger Schaden beendet. Gebaut (A692): Schaden je Sekunde je Kampf und Begleite
 die anderen gemessenen gewogen. Offen: die Teamgröße und das Team aus einer Gattung der Punktewertung (bis 4.250 und
 750). *Ort:* Kader (K7). *Nächster Schritt:* Sicherheit eines
 kleineren Teams aus den gelernten Lasten und Begleiterwerten bestimmen, Loop. *Konzept:* 21, K7, K16.
-
-### Crucible: Gegenstände und Brettbewertung bringen nicht die mögliche Ausbeute · N
-Im Kampf (seine Meldung, 11.11.2026: „gegenstände werden nicht optimal gewählt, jedes brett hat nach dem endboss eine
-bewertung aufgrund von punkten, die man durch das verhalten dort sammelt. die ausbeute ist nicht optimal"): Kauf und
-Einsatz der Gegenstände und das Verhalten auf dem Brett lassen Punkte und damit Belohnung liegen. RSR zielt bisher auf
-keine Punkte (Konzept 21, Grundlagen; A609 meine Ableitung). Gebaut (A689): Sparsamkeit im Gegenstandsschritt, Punkte
-im Weg; Geizhals und Mit leeren Händen im Laden und Schatz (A690); Schlaflose Nächte und Heilfasten in Lager und Futter
-(A691); Sammelleidenschaft und Auffüllen bis 100 % vor dem letzten Schlag, Bonuspunkte aus den Spieldaten (A695).
-Offen: Unversehrte Bestien (1.000) – ein Heilgegenstand, der den Begleiter im Feld auf 100 % bringt, während alle
-anderen voll sind, lohnt auch gegen Sparsamkeit. *Ort:* Gegenstandsschritt im Endkampf (K8, K11). *Nächster Schritt:*
-LP aller Begleiter des Kaders und die Reichweite der Heilgegenstände auf den Begleiter belegen, Loop. *Konzept:* 21, K15.
 
 ### Weißmagier: Surecast ohne Rückstoß · N
 Im Kampf (seine Meldung, 11.11.2026: „es wird antirückstoß verwendet, obwohl kein rückstoß da war (whm)"): Surecast
@@ -161,6 +148,12 @@ Reborn"); beides kostet im Spiel, solange nicht beide Installationen gebraucht w
 nebeneinander braucht: neuer interner Name mit Übernahme des Ordners, angezeigter Name bleibt.
 
 ## Warten auf Daten oder Fremde
+
+- **Crucible: Rate der Rest-LP in der Bewertung** (A695). Ein Heilgegenstand am Ende des Endkampfs bringt 250 bei voller
+  LP und die Punkte der geheilten LP; gegen einen erhaltenen Gegenstandsbonus (Sparsamkeit 750, Sammelleidenschaft
+  1.000) bleibt er bis dahin liegen, weil die Rate keine Quelle nennt. Auflösung: die Zeilen „crucible window XBM…" am
+  Ende eines Bretts in seinem nächsten `DefenseTrace.log` – die Abrechnung samt LP-Punkten –, dann die Rate in
+  `KeepsNoItemBonus` und `SpareHeal` einrechnen, Loop. Konzept 21, K15 („Am Ende des Endkampfs").
 
 - **Crucible: Flucht, Tötungsstapel und Zauberbücher an seinem Log nachprüfen** (A671, A677, A678; seine Vorgabe vom
   07.11.2026: „vorab im vollen kritischen loop prüfen, und auch nach einspielung der logs"). Lager, Weg, Endkampfplan
