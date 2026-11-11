@@ -20713,6 +20713,17 @@ die Messzeile ordnet jeden weiteren Fall seinem Weg zu.
 
 *Prüfgrad:* statisch, Compile, Prüfskripte, Mitschnitt; im Spiel nicht beobachtet.
 
+### A705 · Crucible-Ablauf, Schritt 3: Der Test des Wegs erkennt kein leichtes Brett (11.11.2026)
+
+- *Befund am Code:* `CrucibleBoard.LearnLoad` speichert je Kampf den rohen Schaden am Spieler; `RecordHealed` zählt nur
+  seine eigene Heilung (A570), die eines heilenden Begleiters (Trick) nirgends. `CarriesToFinal` und `WorstAhead`
+  summieren diese Rohlasten über den Weg bis zum Endkampf. Auf seinen Brettern mit fünf Kämpfen übersteigt die Summe seine
+  LP; die Regeln aus A689 bis A691 (Sparsamkeit, Geizhals, Mit leeren Händen, Schlaflose Nächte, Heilfasten) halten ihre
+  Boni deshalb praktisch nie, obwohl er Brett 1 dreimal ohne Tod und ohne gefallenen Begleiter gewann. Ihr gebauter
+  Nutzen ist damit kleiner als in A689 bis A691 beschrieben.
+- *Grundlage (Konzept 21, K15, „Woran ein leichtes Brett feststeht"):* je Kampf Nettoverlust und tiefste Senke lernen,
+  den Weg Kampf für Kampf damit rechnen; dieselbe Prüfung für jeden Schritt. Nächster Schritt im TODO.
+
 ## B · Commit-Register (Fork vs. `upstream/main`)
 
 ### B1 · Einzelgeprüfte Fork-Commits

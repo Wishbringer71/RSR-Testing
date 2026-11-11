@@ -791,6 +791,19 @@ Dullahan, Golem, Spriggan und Eisgolem (`XBMPet.InflictsInterrupt`).
     Kampf auf dem Weg nie gemessen wurde, ist die Sicherheit unbekannt, und die Handlung geht wie bisher (sichere Seite).
     Das ist seine Spielweise auf die Punkte übertragen: Schutz, wo der Schaden wahrscheinlich ist, kein Schutz, der
     ohne Gefahr Punkte kostet.
+  - *Woran ein leichtes Brett feststeht (Prüfung vom 11.11.2026, A705; sein Auftrag: „sobald feststeht, dass das aktuelle
+    brett einfach zu lösen ist, können weniger begleiter mitgenommen werden, kann auf essen verzichtet werden, kann auf
+    campen verzichtet werden"):* Der Test des Wegs summiert je Kampf die gelernte Last – den rohen Schaden am Spieler
+    (`LearnLoad`: `_fightLoad.Damage`) – über alle Kämpfe bis zum Endkampf. Heilung im Kampf zieht er nicht ab: `Healed`
+    zählt nur seine eigene (Aktionen, Gegenstände; A570), der Trick eines heilenden Begleiters fehlt ganz. Auf einem Brett
+    mit fünf Kämpfen übersteigt die Summe roher Lasten seine LP fast immer, und Sparsamkeit, Geizhals, Mit leeren Händen,
+    Schlaflose Nächte und Heilfasten bleiben nie erhalten – auch auf Brett 1, das er dreimal ohne Tod und ohne gefallenen
+    Begleiter gewann. *Grundlage, die für jeden Schritt gilt (zu bauen):* je Kampf zwei gelernte Größen, beide als Anteil
+    seiner LP ohne Ausrüstung, je die größte über alle Läufe: der *Nettoverlust* (LP zu Beginn weniger LP am Ende, nach
+    aller Heilung, auch der Begleiter) und die *tiefste Senke* (LP zu Beginn weniger die niedrigsten LP im Kampf). Der Weg
+    trägt, wenn seine LP Kampf für Kampf – Beginn weniger Nettoverlust der Kämpfe davor – jeweils über der tiefsten Senke
+    des nächsten liegen; leicht ist ein Brett, dessen schwerster Weg das ohne Gegenstand, Rast und Futter erfüllt. Alle
+    Schritte – Teamgröße, Gegenstände, Laden, Schatz, Lager, Futter – lesen dieselbe Prüfung.
   - *Kein Gegenstand (750; „Sparsamkeit", `XBMScoreBonus` 15, gebaut A689):* Unmittelbare Gefahr geht vor und bleibt ungeschmälert: Heilung unter der Trankschwelle,
     Mittel gegen Gift und Blindheit, Schutz gegen einen angekündigten Treffer, der ihn unter die Trankschwelle brächte,
     Heilung und Schutz des Begleiters, der vor dem nächsten Webfenster fiele. *Wann ein angekündigter Treffer Gefahr ist
