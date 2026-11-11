@@ -79,6 +79,11 @@ What this release changes in the fight. For the whole distance from upstream, se
   at 6 and 7 %. The stage is the beast's own difficulty, and the best moment to mark is the last safe one at every
   stage, so no rule needs it. Two weaves and four chat lines per beast are free again; Capture is unchanged.
 
+- **Leaving a board is not a change of the horns by hand.** The game clears the horns after each fight on a board; RSR
+  saw the cleared horns on leaving as your change, wrote "battlehorns changed by hand to None" after every board and set
+  no familiars until the next fight ended, so a fight outside right after a board began with empty horns. RSR now
+  follows the horns on the board without judging them.
+
 ## The Beastmaster on a Crucible board
 
 - **The board's score counts.** Remnants and familiar EXP grow with the score the board gives after its final fight.

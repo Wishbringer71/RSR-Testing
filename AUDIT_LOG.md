@@ -20540,6 +20540,25 @@ Messzeile in `DefenseTrace.log` zeigt den Grund jeder weiteren Spanne.
 *Prüfgrad:* statisch, Compile, Prüfskripte, Spieldaten (ffxiv-datamining, EXDSchema, Lumina per Reflexion); im Spiel
 nicht beobachtet – das Ergebnisfenster in `DefenseTrace.log` zeigt nach dem nächsten Brett die Abrechnung.
 
+### A696 · Beastmaster: die geleerten Hörner des Crucible sind keine Handänderung (11.11.2026)
+
+- *Befund (A687, seine Läufe vom 11.11.2026):* Nach jedem Brett „battlehorns changed by hand to None, None, None - kept
+  until the next fight ends", 0,26 bis 0,6 s nach dem Gebietswechsel (fünfmal). `WatchHand` kehrte im Crucible zurück,
+  bevor es den Stand las; beim Verlassen standen die Hörner von vor dem Brett gegen die, die das Spiel nach dem Endkampf
+  geleert hatte (A580). Folge: B5 setzte bis zum Ende des nächsten Kampfes nichts; ein Kampf außerhalb direkt nach dem
+  Brett begann ohne Begleiter auf den Hörnern. In seinen Läufen betrat er das Brett jedes Mal neu, ohne Kampf dazwischen.
+- *Optionen:* (a) die Zeile umbenennen – die Wirkung auf B5 bliebe; (b) eine Frist nach dem Gebietswechsel – eine feste
+  Zahl; (c) den Stand im Crucible ohne Wertung nachführen – gewählt, kein Wert, der Stand beim Verlassen ist der zuletzt
+  gesehene.
+- *Umgesetzt:* `BST_Reborn.WatchHand` liest den Stand auch im Crucible und kehrt erst danach zurück. Konzept 01, B5,
+  „Seine Hand geht vor".
+- *Falsifikation:* kein Defekt – widerlegt an den fünf Zeilen. Option falsch: Das Spiel stellt nach dem Verlassen die
+  Hörner von vor dem Brett wieder her – im Protokoll folgte keine weitere Änderung vor dem nächsten Betreten; käme sie,
+  wäre sie eine Änderung, die RSR nicht schickte, und hielte wie bisher. Ausgeliefert, nichts ändert sich: Er setzt die
+  Hörner nach dem Brett selbst – dann ist es seine Hand, wie gewollt.
+
+*Prüfgrad:* statisch, Compile, Prüfskripte, Protokoll vom 11.11.2026; im Spiel nicht beobachtet.
+
 ## B · Commit-Register (Fork vs. `upstream/main`)
 
 ### B1 · Einzelgeprüfte Fork-Commits

@@ -1902,13 +1902,6 @@ public sealed class BST_Reborn : BeastmasterRotation
 	// A change of the horns that RSR did not send is his: it stays until the next fight ends.
 	private void WatchHand()
 	{
-		// On a board the game clears the horns after each battle and K6 sets them on the horn screen, which keeps its own
-		// watch for a change by hand; B5 does not run there (A580).
-		if (IsInCrucible)
-		{
-			return;
-		}
-
 		var slots = CurrentPets;
 		if (slots.Length < Horns.Length)
 		{
@@ -1928,6 +1921,15 @@ public sealed class BST_Reborn : BeastmasterRotation
 
 		var first = _slotsSeen.Length == 0;
 		_slotsSeen = slots[..Horns.Length].ToArray();
+
+		// On a board the game clears the horns after each battle and K6 sets them on the horn screen, which keeps its own
+		// watch for a change by hand; B5 does not run there (A580). What the horns hold there is taken without a judgement,
+		// so the board's cleared horns are not his change once he leaves it (A696).
+		if (IsInCrucible)
+		{
+			return;
+		}
+
 		if (!first && !_heldByHand && !BattlehornAssignmentPending && !HornsAsAssigned)
 		{
 			_heldByHand = true;

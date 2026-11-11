@@ -1066,7 +1066,12 @@ eingearbeitet werden, situationsbezogen"; A487, A488, A522):
     Dort stellt das Brett die Begleiter (`XBMPetParty`, BeastHelper), und ob der Server dort zuweist, ist nicht gemessen.
   - *Seine Hand geht vor:* Ändert er die Hörner selbst, gilt seine Belegung bis zum Ende des nächsten Kampfes; solange das
     Bestienbuch offen ist, plant RSR nicht. Eine Änderung zählt als seine, wenn sie nicht die ist, die RSR zuletzt
-    geschickt hat. Sonst nähme RSR ihm eine bewusste Wahl vor dem Pull im selben Augenblick wieder weg.
+    geschickt hat. Sonst nähme RSR ihm eine bewusste Wahl vor dem Pull im selben Augenblick wieder weg. Keine Hand ist
+    die Leerung der Hörner im Crucible: Dort leert das Spiel sie nach jedem Kampf (A580), und RSR übernimmt jeden Stand
+    dort ohne Wertung. Bis A696 übersprang die Beobachtung das Brett ganz; beim Verlassen sah sie die Hörner von vor dem
+    Brett gegen die geleerten und schrieb nach jedem Brett „battlehorns changed by hand to None" (seine Läufe vom
+    11.11.2026: 0,26 s nach dem Gebietswechsel). B5 setzte danach bis zum Ende des nächsten Kampfes nichts: Ein Kampf
+    außerhalb direkt nach dem Brett begann ohne Begleiter auf den Hörnern.
   - *Was als Nächstes kommt:* Der nächste Gegner ist der nächste lebende Gegner, der noch nicht kämpft, in RSRs
     Gegnerliste (48 y, in Sicht). Trägt er das Boss-Symbol (`BNpcBase.Rank` 2 oder 6, `IsBossFromIcon`), kommt ein Boss:
     ein Ziel. Sonst ein Rudel: so viele Gegner, wie im letzten Kampf in diesem Gebiet zugleich gegen ihn, seine Gruppe
