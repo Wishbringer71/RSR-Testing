@@ -20638,6 +20638,24 @@ nicht beobachtet – das Ergebnisfenster in `DefenseTrace.log` zeigt nach dem n�
   dann der Blaumagier; seine Angabe ins Nutzungsprofil (CLAUDE.md). Beim Blaumagier stand eine falsche Annahme im Raum
   (Phantom Flurry halte nichts); `BlulockCasting` hält ihn, festgehalten im TODO-Eintrag, in kein Konzept übernommen.
 
+### A701 · Rückstoßschutz nur für einen gelisteten Rückstoß, der den Spieler erreicht; Messzeile je Auslösung (11.11.2026)
+
+- *Anlass:* seine Meldung vom 11.11.2026: „es wird antirückstoß verwendet, obwohl kein rückstoß da war (whm)" (A687).
+- *Messung (Mitschnitte 10. und 11.11.2026, zwölf Surecasts, Liste und Zeitleiste je Fall):* neun erreichten ihn, drei
+  nicht – Ground and Pound (Liste, Linie, er stand nicht darin), Tornado #44395 (Liste, traf ihn nicht), Windurst (kein
+  gelisteter Zauber; Winde oder Zeitleiste, kein Protokoll). Aetherial Pull in Babil ist ein Zug auf einen Spieler
+  (BossModReborn 2087153c2, 11.11.2026, `D023Anima`: „pull 30 between centers", `knockbackImmunity: true`), dort war
+  Surecast richtig. Die Effektfelder eignen sich nicht als Maß: Surecast hebt den Rückstoß auf, der Effekt fehlt dann.
+  Widerruf C182.
+- *Optionen, Abwägung, Falsifikation:* Konzept 13, „Ein gelisteter Rückstoß zählt nur, wenn er den Spieler erreicht"
+  (Optionen a bis d mit SWOT im Kampf, Wechselwirkungen, drei Hypothesen).
+- *Umgesetzt:* `DataCenter.IsAnyHostileCastingKnockback` mit `AreaCastCanReachPlayer`, `KnockbackReachingPlayer`;
+  `StateUpdater.ShouldAddAntiKnockback` über `AntiKnockbackReason`, eine Zeile „anti-knockback: …" je Öffnen.
+  Abklingzeit von Surecast und Arm's Length 120 s (xivapi v2, Action 7559 und 7548).
+
+*Prüfgrad:* statisch, Compile, Prüfskripte, Mitschnitt-Auswertung, BossModReborn-Quelltext; im Spiel nicht beobachtet –
+die Messzeile ordnet jeden weiteren Fall seinem Weg zu.
+
 ## B · Commit-Register (Fork vs. `upstream/main`)
 
 ### B1 · Einzelgeprüfte Fork-Commits
@@ -20971,3 +20989,4 @@ Die offene Arbeit dazu — Reihenfolge und Abbruchbedingung der Nachprüfung —
 | C179 | A613 und Konzept 03 „Regenerationstränke der Sonderinhalte" (Stand A613): „nur in ihrem Inhalt nutzbar; das prüft das Spiel selbst", im Code „The game refuses it outside its content, which CanUse asks" | Das Spiel lehnt ab, aber `BaseItem.CanUse` las die Ablehnung nicht: `BadStatus` enthielt keinen Ortsgrund (593, 2651). Am 08.11.2026 wählte RSR den Wallfahrt-Trank 17-mal in fünf Gebieten, 13-mal davon in Sägerschrei und Mor Dhona; geheilt hat er nie (A683). | A683 |
 | C180 | A685 (Stand A685): „In der englischen Fassung ändern sich nur eine Spalte von Unmooring Melody (48565) und eine neue ItemAction-Zeile (2793)" | Der 7.58-Stand von ffxiv-datamining (52a72b38a) ändert englisch 42 Blätter und fünf Ereignis- und Questdateien, darunter BNpcName, BNpcBase, InstanceContent, Item und LogMessage. Nur unter den Blättern der Jobs (Action, ActionTransient, Trait, ClassJob, Status) und Gegenstandsaktionen sind es die zwei Zeilen; die übrigen, die RSR liest, ändern im Kampf nichts (A686). | A686 |
 | C181 | A689 und Konzept 21 K15 (Stand A692): „Das Spiel selbst zeigt die Boni erst am Ende; `XBMScoreBonus` führt Namen und Bedingungen, keine Punkte" | `XBMContent` führt die Punkte je Bonus und Brett in seinen ersten 33 Spalten (`BonusPoints`, einer je Zeile von `XBMScoreBonus`; EXDSchema latest, Werte an ffxiv-datamining 52a72b3 vom 10.11.2026). Gesucht hatte ich nur in `XBMScoreBonus` und `XBMScoreRank`. Die Punkte je Feld (250, 800) führt weiterhin kein Blatt. | A695 |
+| C182 | A687 (Stand A687): „zwölf Nutzungen, acht auf einen echten Rückstoß oder Zug (Flutwelle, Ätherknall, Zugstrahl, Aetherial Pull, Tornado)" | Neun erreichten ihn: Zugstrahl zweimal, #44823 bei Eald'narche, Flutwelle zweimal, Ätherknall zweimal, Aetherial Pull zweimal (in Babil auf ihn gezielt, BossModReborn `D023Anima`). Tornado #44395 traf ihn nicht; ohne Wirkung auf ihn auch Ground and Pound und ein Fall in Windurst ohne gelisteten Zauber. Die Zeitleiste von BossMod löste sechs aus, alle richtig. | A701 |

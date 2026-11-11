@@ -733,6 +733,45 @@ beantwortet RSR damit, wie der Text von „Automatically use Anti-Knockback role
 braucht, ist durch die Liste so wenig geschützt wie bei einem anvisierbaren Gegner; die Liste ist von Hand
 bearbeitbar.
 
+**Ein gelisteter Rückstoß zählt nur, wenn er den Spieler erreicht** (A701, alle Rollen: Surecast und Arm's Length,
+120 s Abklingzeit). *Sachstand bis A701:* `IsAnyHostileCastingKnockback` fragte nur, ob ein gelisteter Zauber im
+Landefenster gewirkt wird; die Flächenabwehr fragt seit A218 auch, ob seine Form den Spieler erreicht. *Seine Meldung*
+(11.11.2026): „es wird antirückstoß verwendet, obwohl kein rückstoß da war (whm)". *Gemessen* an seinen Mitschnitten vom
+10. und 11.11.2026, zwölf Surecasts: neun galten einem Rückstoß oder Zug, der ihn erreichte – Zugstrahl (zweimal),
+Eald'narches Rückstoß #44823, Flutwelle (zweimal, BossMods Zeitleiste), Ätherknall (zweimal, Zeitleiste), Aetherial
+Pull in Babil (zweimal, Zeitleiste; ein Zug von 30 y auf einen Spieler, BossModReborn `D023Anima`, 2087153c2,
+11.11.2026: „pull 30 between centers", mit dem Hinweis auf Rückstoßschutz). Drei nicht: Ground and Pound in Babil
+(#25322, Linie 6 × 40 y, er stand nicht darin) und Tornado bei Eald'narche (#44395, traf ihn nicht), beide über die
+Liste; einer in Windurst ohne gelisteten Zauber (Winde oder Zeitleiste – welcher Weg, sagt kein Protokoll).
+- *Optionen:* (a) Nullvariante. (b) Die Reichweite wie bei der Flächenabwehr (`AreaCastReaches`): Kreis und Linie
+  genau, Kegel und Ring als voller Kreis, ein auf ein Ziel gewirkter Zauber nur, wenn er auf ihn zielt. (c) Aus dem
+  letzten Ausgang lernen, ob der Zauber ihn erreichte (wie „Skip area defence for casts that missed you"). (d) Nur
+  BossMods Zeitleiste.
+- *Abwägung im Kampf:* (a) Ground and Pound nimmt Surecast für 120 s; kommt in dieser Zeit ein Rückstoß, der ihn trifft
+  – in Babil Aetherial Pull im nächsten Kampf –, fliegt er; an einem tödlichen Rand stirbt er. (b) *Stärken:* Ground and
+  Pound und jede Linie oder jeder Kreis, in dem er nicht steht, lassen Surecast stehen; Aetherial Pull auf ihn zählt
+  weiter, auf einen anderen nicht – ein Zug auf einen anderen bewegt ihn nicht. *Schwächen:* Kegel und Ring zählen als
+  voller Kreis; hinter einem Kegel oder im Innenkreis eines Rings löst er weiter aus (TODO „Kegel und Ringe gegnerischer
+  Zauber genau messen"). *Chancen:* dieselbe Prüfung, die die Flächenabwehr seit A218 trägt. *Bedrohungen:* Er tritt
+  erst nach der Prüfung in die Form; gefragt wird jedes Bild im Landefenster (letzter GCD vor dem Treffer), tritt er
+  später hinein, kommt Surecast zu spät – wie heute bei jedem Rückstoß, der erst spät angekündigt ist. (c) gelernt aus
+  einem Ausgang, der von seiner Position abhing – bei einer Linie, der er einmal auswich, bliebe Surecast beim nächsten
+  Mal aus, auch wenn er darin steht: schlechter als (b). (d) ohne Modul nichts (Regel „BossModReborn", `code.md`).
+- *Gewählt:* (b). Die Zeitleiste von BossMod bleibt daneben; sie nennt keine Getroffenen (nur die Schadensvorhersage
+  führt eine Maske), und in seinen Mitschnitten traf jeder ihrer Rückstöße ihn. *Preis:* Ein Rückstoß der Zeitleiste,
+  der ihn nicht erreicht, nimmt Surecast weiter.
+- *Wechselwirkungen:* Die Flagge öffnet neben Surecast und Arm's Length (und den Job-Ersatzaktionen) auch die
+  Sicherheitswege an einem gehaltenen Kanal (`BaseAction.SafetyMayEndAChannel`): Ein Rückstoß, der ihn nicht erreicht,
+  beendet den Flammenwerfer nicht mehr. `CastStartBlockedNow` liest den laufenden Rückstoß, nicht die Ankündigung:
+  unberührt. `IsHostileCastingKnockback` (öffentlich) bleibt die Frage „wirkt dieser Gegner einen gelisteten Rückstoß".
+- *Messmittel:* Jedes Öffnen der Flagge schreibt eine Zeile in `DefenseTrace.log` mit dem Weg – gelisteter Zauber
+  (Name, Nummer, Wirkender), BossMods Zeitleiste (in wie vielen Sekunden) oder die Winde in Windurst –, damit jeder
+  weitere Fall zuzuordnen ist.
+- *Falsifikation:* *Kein Defekt:* widerlegt an Ground and Pound. *Option falsch:* Ein Rückstoß wirkt weiter als seine
+  Schadensform – der Rückstoß ist ein Effekt der Aktion auf die Getroffenen (`ActionEffectType.Knockback` im
+  Effekteintrag des Getroffenen, `Watcher`), wer außerhalb steht, wird nicht bewegt. *Ausgeliefert, und nichts ändert
+  sich:* Der dritte Fall (Windurst) lief nicht über die Liste; die Messzeile zeigt den Weg beim nächsten Mal.
+
 **Das Zurücksetzen der Liste lässt die Werte stehen** — Vorgabe des Auftraggebers: „es wäre schade,
 wenn dann auch die Erfahrungswerte weg wären." Die kuratierte Liste zurückzusetzen kostet nichts, die
 Messungen kosten Spielzeit; sie mit dem Listen-Reset zu verwerfen hieße, nach jedem Patch bei null

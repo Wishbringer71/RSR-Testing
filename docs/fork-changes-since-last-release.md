@@ -64,6 +64,13 @@ What this release changes in the fight. For the whole distance from upstream, se
   goes out while neither Cure II nor Cure can be cast; the setting is now "If a party member's health drops below this
   percentage, the Regen healing ability will not be used on them while Cure II or Cure can be cast".
 
+- **Surecast and Arm's Length wait for a knockback that reaches you.** Any listed knockback cast in reach of RSR's
+  enemy list pressed them; in the Tower of Babil Ground and Pound took Surecast for 120 s while you stood outside its
+  line. A listed knockback now counts only when its shape reaches you - a circle or line exactly, a cone or ring as a
+  full circle, a cast aimed at one player only when aimed at you. BossMod's timeline still counts as before. Each time
+  the protection is called for, `DefenseTrace.log` names the way: the cast and its caster, BossMod's timeline, or the
+  winds in Windurst.
+
 ## The Beastmaster between fights
 
 - **A familiar left out after a fight goes before the next one.** A familiar that ended a fight without One with

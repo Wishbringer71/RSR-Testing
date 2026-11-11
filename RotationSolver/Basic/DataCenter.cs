@@ -4887,15 +4887,26 @@ internal static class DataCenter
 			&& (marked.IsParty() || marked.IsNpcPartyMember());
 	}
 
+	/// <summary>
+	/// A701: the listed knockback that opened the anti-knockback flag in this frame - its caster and action -, for the
+	/// trace line of the flag; null while none reaches the player.
+	/// </summary>
+	internal static (IBattleChara Caster, Action Action)? KnockbackReachingPlayer { get; private set; }
+
 	private static bool IsAnyHostileCastingKnockback()
 	{
 		// Over the helpers too (A303): a listed knockback resolved by an untargetable helper is the knockback
-		// "Automatically use Anti-Knockback role actions" promises to answer from the list.
+		// "Automatically use Anti-Knockback role actions" promises to answer from the list. Only one that reaches the
+		// player (A701, concept 13): the knockback is an effect on whom the action hits; Ground and Pound in a line he
+		// did not stand in took Surecast for 120 s.
+		KnockbackReachingPlayer = null;
 		var targets = AreaCasters;
 		for (var i = 0; i < targets.Count; i++)
 		{
-			if (IsHostileCastingKnockback(targets[i]))
+			var h = targets[i];
+			if (IsHostileCastingKnockback(h) && TryGetCastAction(h, out var act) && AreaCastCanReachPlayer(h, act))
 			{
+				KnockbackReachingPlayer = (h, act);
 				return true;
 			}
 		}

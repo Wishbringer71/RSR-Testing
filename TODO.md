@@ -19,10 +19,10 @@ auswahl und das timing der beschwörung" – je Kampf aller fünf Bretter (Gegne
 BossMod-Module) die Rotation des Beastmasters, die Wahl der Begleiter und den Zeitpunkt ihres Aufrufs im Loop prüfen
 (Beispiel seiner Beobachtung: der Raptor gegen Feuer, bevor feueranfällige Gegner da waren; A581).
 
-1. Weißmagier: Surecast ohne Rückstoß – die Abklingzeit fehlt, wenn der Rückstoß kommt. Vor dem Blaumagier: Er spielt
-   den Weißmagier und meldete es (11.11.2026), es betrifft die Sicherheit; den Blaumagier spielt er derzeit nicht (seine
-   Angabe, 11.11.2026), dort geht Schaden und Minderung verloren.
-2. Alle bisher gefundenen und gebauten Punkte vom 11.11.2026 im vollen Loop verifizieren und optimieren (sein Auftrag).
+1. Crucible: ein leichtes Brett erkennen und Schritt für Schritt daraus folgern – weniger Begleiter, kein Futter, keine
+   Rast –, dazu Begleiter für mehrere Kämpfe und die Ablöse zwischen den Hörnern im Kampf (Beastmaster-Vorrang); mit
+   ihm die Verifikation der Crucible-Punkte vom 11.11.2026.
+2. Die übrigen gefundenen und gebauten Punkte vom 11.11.2026 im vollen Loop verifizieren und optimieren (sein Auftrag).
 3. Blaumagier: RSRs nächste Aktion beendet Apokalypsis und Chelonian Gate – Schaden und Minderung des Spielers enden
    nach einem GCD statt nach 10 s.
 4. Kegel und Ringe gegnerischer Zauber genau messen: Zauber- und Kanalbeginn nutzen RSRs Erkennung bei Kegel und Ring
@@ -36,14 +36,6 @@ der Beastmaster-Vorrang, dann jeder übrige Punkt dieser Liste, dann die Konzept
 Code-Review; was diese finden, kommt wieder hierher und in dieselbe Reihenfolge, jeder Schritt im vollständigen Loop.
 
 ## Defekte
-
-### Weißmagier: Surecast ohne Rückstoß · N
-Im Kampf (seine Meldung, 11.11.2026: „es wird antirückstoß verwendet, obwohl kein rückstoß da war (whm)"): Surecast
-geht ohne folgenden Rückstoß; seine Abklingzeit fehlt, wenn einer kommt. Gemessen (A687): Von zwölf Surecasts trafen
-acht einen Rückstoß oder Zug; in Babil zündete er auf Ground and Pound, eine Linie, in der er nicht stand. Die Auslösung
-fragt nur, ob ein gelisteter Zauber gewirkt wird, nicht ob er den Spieler erreicht; gelernt wird aus einem Treffer,
-auch von vermeidbaren Flächen. Gilt für jede Rolle (Abtausch ebenso). *Ort:* `DataCenter.IsAnyHostileCastingKnockback`.
-*Nächster Schritt:* Reichweite wie bei der Flächenabwehr (`AreaCastCanReachPlayer`) mitfragen, Loop. *Konzept:* 03.
 
 ### Blaumagier: RSRs nächste Aktion beendet Apokalypsis und Chelonian Gate · N
 Im Kampf: Drückt der Blaumagier Apokalypsis (Linie, 10 s Schaden) oder Chelonian Gate (−20 % Schaden, 10 s, danach
@@ -72,11 +64,23 @@ Gefahr, die keine ist. *Ort:* `DataCenter.AreaCastReaches`. *Nächster Schritt:*
 aus dem Omen der Aktion (Blatt Omen, Pfadname) belegen, dann messen und die Einschränkung in `CastCertainlyDodgeable`
 aufheben. *Konzept:* 03, „Bewegungssperre beim Wirken und die KI von BossMod"; 13 (Formprüfung).
 
+### Crucible: leichtes Brett erkennen, Begleiter über mehrere Kämpfe, Ablöse zwischen den Hörnern · N
+Sein Auftrag vom 11.11.2026: „danach beastmaster brett: sobald feststeht, dass das aktuelle brett einfach zu lösen ist,
+können weniger begleiter mitgenommen werden, kann auf essen verzichtet werden, kann auf campen verzichtet werden. ein
+schritt nach dem anderen mit analyse des ablaufs. ebenfalls analyse, welche begleiter am besten für mehrere Kämpfe auf
+dem brett geeignet sind. und innerhalb der kämpfe, wie da die beste ablöse erfolgt zwischen den hörnern." Gebaut sind
+Teile davon: Rast und Futter entfallen, wenn der Spieler den Weg trägt (A691); die Teamgröße folgt dem gemessenen
+Verlust (A698). Offen: wann ein Brett als leicht feststeht (aus welchen Messungen, ab welchem Lauf, für jeden Schritt
+dieselbe Grundlage?), der Ablauf eines Laufs Schritt für Schritt (Kader, Kampf, Laden, Schatz, Lager, Endkampf), die
+Eignung eines Begleiters über mehrere Kämpfe (Schwächen, LP, Heilung, Einsätze, K11) und die Ablöse im Kampf (K6, K16, B2).
+*Ort:* Konzept 21 (K6, K7, K10, K11, K14, K15, K16), `BST_Reborn`, `BeastmasterCrucible*`. *Nächster Schritt:* den Ablauf
+eines Laufs an seinen Mitschnitten vom 11.11.2026 Schritt für Schritt nachzeichnen, je Schritt den Loop. *Konzept:* 21.
+
 ### Gefundene Punkte vom 11.11.2026 im vollen Loop verifizieren und optimieren · N
 Sein Auftrag vom 11.11.2026: „ich habe das gefühl, dass du wieder nicht zuerst an den konzepten gearbeitet hast und auch
 nicht im vollen loop. alle bislang herausgefundenen punkte verifizieren und optimieren". Betroffen: die Tötungsregel
 (A688), die Crucible-Punkte (A689 bis A691, A695, A697), die Hornwahl (A692), die Wiederbelebung (A693), Regena in
-Bewegung (A694), die Hornbeobachtung (A696), Teamgröße und Gattung (A698, A699) und die offenen Befunde aus A687. *Ort:*
+Bewegung (A694), die Hornbeobachtung (A696), Surecast (A701), Teamgröße und Gattung (A698, A699) und die offenen Befunde aus A687. *Ort:*
 Konzepte 03, 07, 11, 01 (B5), 21 (K7, K15, K16). *Nächster Schritt:* je Punkt die Stufen 2 bis 6 im Konzept ausschreiben
 – Optionen mit Nullvariante, SWOT je Option im Kampf, Wechselwirkungen mit allen Regeln derselben Zeit, Ressource und
 Stelle, die drei Falsifikationen mit Quellen –, Abweichungen im Code nachziehen. *Konzept:* jeweils das genannte.

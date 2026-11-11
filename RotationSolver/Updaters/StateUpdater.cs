@@ -609,29 +609,47 @@ internal static class StateUpdater
 
 	private static bool ShouldAddAntiKnockback()
 	{
+		var why = AntiKnockbackReason();
+		// A701 (concept 13): one trace line each time the flag opens, with the way that opened it.
+		if (why != null && _antiKnockbackWhy == null)
+		{
+			DefenseTrace.Line($"anti-knockback: {why}");
+		}
+
+		_antiKnockbackWhy = why;
+		return why != null;
+	}
+
+	private static string? _antiKnockbackWhy;
+
+	// The way that calls for the anti-knockback actions now, in words; null for none.
+	private static string? AntiKnockbackReason()
+	{
 		if (DataCenter.InCombat && DataCenter.IsInWindurst && StatusHelper.PlayerHasStatus(false, StatusID.WesterlyWinds) && StatusHelper.PlayerWillStatusEndGCD(2, 0, false, StatusID.WesterlyWinds))
 		{
-			return true;
+			return "Westerly Winds end within two GCDs (Windurst)";
 		}
 
 		if (DataCenter.InCombat && DataCenter.IsInWindurst && StatusHelper.PlayerHasStatus(false, StatusID.EasterlyWinds) && StatusHelper.PlayerWillStatusEndGCD(2, 0, false, StatusID.EasterlyWinds))
 		{
-			return true;
+			return "Easterly Winds end within two GCDs (Windurst)";
 		}
 
 		if (DataCenter.InCombat && Service.Config.UseKnockback && DataCenter.AreHostilesCastingKnockback)
 		{
-			return true;
+			return DataCenter.KnockbackReachingPlayer is { } cast
+				? $"{cast.Action.Name.ExtractText()} #{cast.Action.RowId} by {cast.Caster.Name.TextValue} reaches you, listed knockback"
+				: "a listed knockback reaches you";
 		}
 
 		if (DataCenter.InCombat && Service.Config.UseBmrTimeline
 			&& DataCenter.BMRNextKnockbackIn <= Service.Config.BMRKnockbackWindow
 			&& DataCenter.PressReachesBeforeSnapshot(DataCenter.BMRNextKnockbackIn))
 		{
-			return true;
+			return $"BossMod's timeline: a knockback in {DataCenter.BMRNextKnockbackIn:F1} s ({DataCenter.BMRActiveModuleName ?? "no module"}), whom it hits unnamed";
 		}
 
-		return false;
+		return null;
 	}
 
 	private static bool ShouldAddProvoke()
