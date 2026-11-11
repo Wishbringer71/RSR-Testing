@@ -20620,6 +20620,19 @@ nicht beobachtet – das Ergebnisfenster in `DefenseTrace.log` zeigt nach dem n�
 
 *Prüfgrad:* statisch, Compile, Prüfskripte; im Spiel nicht beobachtet.
 
+### A700 · Seine Rüge zum Verfahren seit A686: Loop verkürzt (11.11.2026)
+
+- *Seine Worte:* „ich habe das gefühl, dass du wieder nicht zuerst an den konzepten gearbeitet hast und auch nicht im
+  vollen loop. alle bislang herausgefundenen punkte verifizieren und optimieren".
+- *Am Verlauf geprüft:* Die Reihenfolge Konzept vor Code hielt je Vorhaben (der Hook `concept_first.py` weist Code ohne
+  offene Konzeptänderung ab). Der Loop war verkürzt: keine SWOT je Option im Spielgeschehen; die drei Falsifikationen
+  als Einzeiler im Archiv statt mit Quellen im Konzept; die Wechselwirkungen nicht vollständig erhoben (etwa
+  Auffüllen am Ende gegen Unversehrte Bestien, Teamgröße gegen K11 und das Leveln); zwei Konzeptstellen erst beim Bauen
+  nachgezogen (das benannte Lumina-Blatt, der Reserve-Begleiter in A698). Ursache am System: „Definition of Ready"
+  verlangt das vollständige Konzept, der Hook prüft nur, ob eine Konzeptänderung offen ist, nicht ob sie vollständig ist.
+- *Folge:* TODO „Gefundene Punkte vom 11.11.2026 im vollen Loop verifizieren und optimieren", nach dem laufenden Punkt
+  (Blaumagier-Kanäle), dieser im vollen Loop.
+
 ## B · Commit-Register (Fork vs. `upstream/main`)
 
 ### B1 · Einzelgeprüfte Fork-Commits

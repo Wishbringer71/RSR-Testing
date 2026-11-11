@@ -21,8 +21,9 @@ BossMod-Module) die Rotation des Beastmasters, die Wahl der Begleiter und den Ze
 
 1. Blaumagier: RSRs nächste Aktion beendet Apokalypsis und Chelonian Gate – Schaden und Minderung des Spielers enden
    nach einem GCD statt nach 10 s.
-2. Weißmagier: Surecast ohne Rückstoß – die Abklingzeit fehlt, wenn der Rückstoß kommt.
-3. Kegel und Ringe gegnerischer Zauber genau messen: Zauber- und Kanalbeginn nutzen RSRs Erkennung bei Kegel und Ring
+2. Alle bisher gefundenen und gebauten Punkte vom 11.11.2026 im vollen Loop verifizieren und optimieren (sein Auftrag).
+3. Weißmagier: Surecast ohne Rückstoß – die Abklingzeit fehlt, wenn der Rückstoß kommt.
+4. Kegel und Ringe gegnerischer Zauber genau messen: Zauber- und Kanalbeginn nutzen RSRs Erkennung bei Kegel und Ring
    nicht, und mehrere Leser sehen hinter einem Kegel oder im Innenkreis eines Rings eine Gefahr, die keine ist.
 
 Danach die technische Schuld, soweit ihre Auflösungsbedingung erfüllt ist. Warten auf Daten: unten.
@@ -63,6 +64,15 @@ die Leser von `RaiseProtection.FirstDodgeableWithin` (Limit Break allein, Freiga
 Gefahr, die keine ist. *Ort:* `DataCenter.AreaCastReaches`. *Nächster Schritt:* Winkel des Kegels und Innenradius des Rings
 aus dem Omen der Aktion (Blatt Omen, Pfadname) belegen, dann messen und die Einschränkung in `CastCertainlyDodgeable`
 aufheben. *Konzept:* 03, „Bewegungssperre beim Wirken und die KI von BossMod"; 13 (Formprüfung).
+
+### Gefundene Punkte vom 11.11.2026 im vollen Loop verifizieren und optimieren · N
+Sein Auftrag vom 11.11.2026: „ich habe das gefühl, dass du wieder nicht zuerst an den konzepten gearbeitet hast und auch
+nicht im vollen loop. alle bislang herausgefundenen punkte verifizieren und optimieren". Betroffen: die Tötungsregel
+(A688), die Crucible-Punkte (A689 bis A691, A695, A697), die Hornwahl (A692), die Wiederbelebung (A693), Regena in
+Bewegung (A694), die Hornbeobachtung (A696), Teamgröße und Gattung (A698, A699) und die offenen Befunde aus A687. *Ort:*
+Konzepte 03, 07, 11, 01 (B5), 21 (K7, K15, K16). *Nächster Schritt:* je Punkt die Stufen 2 bis 6 im Konzept ausschreiben
+– Optionen mit Nullvariante, SWOT je Option im Kampf, Wechselwirkungen mit allen Regeln derselben Zeit, Ressource und
+Stelle, die drei Falsifikationen mit Quellen –, Abweichungen im Code nachziehen. *Konzept:* jeweils das genannte.
 
 ## Technische Schuld
 
