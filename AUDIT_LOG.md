@@ -20279,6 +20279,72 @@ Merges ohne Konflikt.
 *Prüfgrad:* statisch (Diffs, Spielblätter, Metadaten der DLLs), Compile, Prüfskripte, Referenzprüfung; im Spiel nicht
 beobachtet.
 
+### A687 · Upload vom 11.11.2026 und seine fünf Meldungen: Wiederbelebung, Surecast, Heilung, Crucible (11.11.2026)
+
+Sein Upload ohne Frage (`RotationSolver.7z`, drei ACT-Mitschnitte vom 10. und 11.11.2026), dazu seine Meldungen vom
+selben Tag: „heiler rezzt langsamer/später als gewohnt. es wird antirückstoß verwendet, obwohl kein rückstoß da war
+(whm), heilung nicht optimal. beastmaster begleiter werden nicht optimal für die einzelnen kämpfe auf den brettern
+ausgewählt. gegenstände werden nicht optimal gewählt, jedes brett hat nach dem endboss eine bewertung aufgrund von
+punkten, die man durch das verhalten dort sammelt. die ausbeute ist nicht optimal." und „bei den brettern gibt es
+punktebonis … recherchiere dazu".
+
+- *Sitzungen:* vier, zwei auf ffe0de527 (10.11.), zwei auf 03af7190f (11.11.); Weißmagier, Beschwörer, Paladin,
+  Beastmaster, kurz fünf weitere Jobs. Die erste endet ohne „trace ended": ACT meldet um 20:09:05 „ReadProcessMemory
+  failed", der Spielprozess endete ohne Entladen der Plugins (Absturz oder Beenden, aus den Dateien nicht bestimmbar);
+  die zweite lief ab 20:10 auf demselben Build ohne Befund.
+- *Gelernte Tabellen:* Die Revisionsdatei lädt vor dem Login und liest dort keine Spielversion („NOT READABLE"); jede
+  Messung liest sie nach, und ab 18:50 laufen die Werte in die Schicht von 7.58 (2026.11.03). Am Ende 54 Flächen- und
+  12 Tankbuster-Werte in 7.58 gemessen, 40 und 10 davon sauber bestätigt, nichts ausgesondert. Kein Defekt.
+- *Wiederbelebung (seine erste Meldung):* Als Weißmagier wiederbelebte RSR selbst nach 1,7 bis 7,6 s, zweimal nach
+  14 und 19 s; die 19 s waren Reichweite (Leichnam 35,8 bis 30,8 y entfernt, sofort bei 23 y), die 14 s Heilung vor
+  der Wiederbelebung bei laufendem Minenschaden (Voreinstellung). Drei Ursachen für „später":
+  - `WHM_Reborn.EmergencyAbility` legt bei anstehender Wiederbelebung Ex Machina ins erste Webfenster nach dem GCD und
+    kehrt zurück; der zentrale Swiftcast-Zweig verlangt dasselbe Fenster (`IsLastActionGCD`, seit 05e109580) und kommt
+    erst nach dem nächsten GCD; dieser ist Schaden und verbraucht Ex Machina (M4 18:55, Yuweyawata 16:51).
+  - Swiftcast an einen Toten, den ein anderer Heiler 0,1 bis 1,1 s später sofort wiederbelebt (fünf Fälle, auch als
+    Beschwörer); Swiftcast verfällt in Steinra, Steinga, Vitra oder Rubin-Ritus. In World of Darkness folgte darauf
+    18:19:41 ein voll gewirkter Raise, 8,0 s statt rund 1 s.
+  - Cuff of the Son (11.11., 17:49): Swiftcast lief schon, ein anderer begann einen voll gewirkten Raise auf denselben
+    Toten; RSR wich aus (A293), der fremde landete 9 s später, Swiftcast verfiel in Steinga.
+  - Zweimal (Babil, M4) reagierte RSR erst 2 bis 3 s nach der Todeszeile; das Protokoll hat keine Zeile dafür.
+- *Surecast (zweite Meldung):* zwölf Nutzungen, acht auf einen echten Rückstoß oder Zug (Flutwelle, Ätherknall,
+  Zugstrahl, Aetherial Pull, Tornado). Ohne Wirkung auf ihn: Ground and Pound in Babil (#25322, Linie 6 × 40 y, er
+  stand nicht darin). Ursache: `IsAnyHostileCastingKnockback` fragt nur, ob ein gelisteter Zauber gewirkt wird, nicht
+  ob er den Spieler erreicht; RSR lernt Rückstöße aus einem Treffer (`RecordKnockbackies`), auch von vermeidbaren
+  Flächen. Gilt für Surecast und Abtausch aller Rollen.
+- *Heilung (dritte Meldung):* 31 Zeilen „critical class … ahead of" einem Schadens-GCD; keiner der Betroffenen starb
+  in 15 s, die meisten standen bei voller HP mit angekündigtem Treffer (Minderung, nicht Heilung). Befund: Ultima's
+  Bane (Stufe 50, 10.11. 20:24) – er selbst 7 s bei 5 bis 7 % im Lauf, RSR wirkte dreimal Windra; Regena, die einzige
+  GCD-Heilung ohne Wirkzeit dort, schließt `RegenHeal` (30 %) aus, Vitra geht im Lauf nicht. Third Walk 21:22: zwei
+  Mitglieder 10 s bei 13 bis 17 % trotz Afflatus Rapture, Assise, Resega und Vitaga – eine Heilungsminderung des
+  Kampfes, kein Defekt.
+- *Crucible (vierte und fünfte Meldung):* fünf Läufe als Beastmaster (dreimal Brett 1, zweimal Brett 2), alle gewonnen,
+  kein Tod.
+  - Hornwahl: Derselbe Kampf lief mit wechselnden Hornsätzen 64 bis 81 s, das Elitefeld 110 bis 135 s, der Endkampf
+    99 bis 146 s; RSR lernt nicht, welcher Satz schneller und mit weniger Last gewinnt. Die Zeilen „battlehorns
+    changed by hand to None" nach jedem Endkampf sind die Wiederherstellung beim Verlassen (seit 7.58), keine
+    Handänderung; die Beschriftung ist falsch, geschadet hat sie nicht.
+  - Punkte: Recherche in Konzept 21, Grundlagen (consolegameswiki, eorzeantavern). Reste und Begleiter-EP wachsen mit
+    der Punktzahl. Jeder Lauf verschenkte „kein Gegenstand" (750) schon vor dem ersten Kampf (Sand der Zeit als
+    Versicherung), „keine Marken ausgegeben" (500) mit dem ersten Kauf, „keine Ausrüstung" (750) mit Schätzen; Lauf 3
+    rastete (1.000). Das Team hatte 10 und 12 Begleiter, ohne Teambonus (bis 4.250).
+  - Tötungsregel: In jedem Tablitauren-Kampf hielt die Paarregel sechs unsichtbare Figuren mit 44 HP und den Namen der
+    Tablitauren – Folge von A683, die jede gegnerische Figur der Objekttabelle zählt. Die echten Haltungen stimmten. In
+    Lauf 4 fiel die Schätzung des Schadensstroms kurz vor dem Ende von 155 auf 12 HP/s; das Ältere wurde frei, das
+    Jüngere fiel 0,85 s vor dem Ende seines Endlos-Schlags (Lauf 5: 6,2 s Rest).
+  - Der Knochen-Ritter parierte in Lauf 2 sechs Angriffe des Spielers frontal (Forward Guard); Konzept 21 nennt die
+    Parade, keine Regel richtet sich danach.
+- *Eigene Tode:* M4 (19:04, Weißmagier: zwei Treffer nur auf ihn, 56 und 65 %, in einer Sekunde; Vollkommener Ablass
+  und Linderung in Abklingzeit); Shinryu Unreal (Beschwörer, drei Ätherstrahlen der Schwingen); Ultima's Bane (Wipe der
+  Gruppe durch Fusionsknall); Coil Turn 2 (ohne Treffer und Status, Umgebung). Keiner aus einer Entscheidung RSRs.
+- *Gegenstände:* Der Ultratrank wurde in vier Gebieten mit Status 583 abgelehnt („Du besitzt diesen Gegenstand
+  nicht."), obwohl `HasIt` ihn zählte; je Gebiet ein Versuch, kein GCD.
+- *Folge:* sechs TODO-Einträge (Begleiterwahl, Punkte und Gegenstände, Tötungsregel, Wiederbelebung, Heilung,
+  Surecast), Konzept 21 um die Punktewertung ergänzt.
+
+*Prüfgrad:* Laufzeitbeobachtung (DefenseTrace, ACT-Mitschnitte), Code statisch, Spielblätter (xivapi v2), Recherche;
+die Ursachen der Wiederbelebung und des Surecast am Code belegt, behoben noch nichts.
+
 ## B · Commit-Register (Fork vs. `upstream/main`)
 
 ### B1 · Einzelgeprüfte Fork-Commits

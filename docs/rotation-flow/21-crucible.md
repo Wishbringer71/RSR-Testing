@@ -47,6 +47,32 @@ beide Werkzeugquellen; sein Mitschnitt vom 04.11.2026.
 - Punkte (Wiki): Zuschläge für keine Gegenstände, keine Rast, keine Schwächung, kleine Teams, gefallene oder keine
   gefallenen Begleiter. Sie stehen teils gegen deine Sicherheit; RSR richtet sich nach Sicherheit vor Schaden
   („Spielweise"), Punkte sind kein Ziel einer Regel (meine Ableitung).
+  - *Sein Hinweis (11.11.2026):* „jedes brett hat nach dem endboss eine bewertung aufgrund von punkten, die man durch das
+    verhalten dort sammelt. die ausbeute ist nicht optimal." Dazu: „bei den brettern gibt es punktebonis wenn man
+    gewisse dinge macht oder sein lässt. nicht campt, nicht isst, weniger begleiter mitnimmt etc. recherchiere dazu".
+    Die Ableitung oben kappt die Punkte ganz; nach seiner Vorgabe vom 07.11.2026 ist das Optimum zu verbessern, nicht
+    die Entscheidung zu kappen. In Prüfung (TODO „Crucible: Gegenstände und Brettbewertung bringen nicht die mögliche
+    Ausbeute").
+  - *Was die Wertung bringt* (consolegameswiki, eorzeantavern, abgerufen 11.11.2026): Reste (faded und bright Remnants
+    of Resilience) und Begleiter-EP anteilig zur Punktzahl, dazu Beastmaster-EP; neun Ränge von Apprentice bis
+    Legendary, Legendary ab 17.875 Punkten auf den drei Unbroken-Brettern, ab 18.766 auf den Meisterbrettern. Die
+    Saisonwertung (seit 7.57) zählt nur Läufe im dritten Grad mit „Participate in rankings". Wie viele Reste je Punkt,
+    nennt keine Quelle (unbelegt).
+  - *Grundpunkte* (consolegameswiki): je Gegnerfeld 250, je Elitefeld 800 (seit 7.57, vorher 625), Endgegner 1.000,
+    Abschluss bis 5.000 (voll außer bei einem verlorenen Lauf), dazu die verbleibenden HP des Spielers absolut, nicht
+    als Anteil.
+  - *Boni* (beide Quellen gleich, wo nicht anders vermerkt): kein Begleiter gefallen 1.000 (sonst je nach Zahl der
+    Gefallenen 750, 500, 250); Team aus 6–7 Begleitern 1.250, aus 4–5 2.500, aus 1–3 4.250; Spieler am Ende bei voller
+    HP 250; alle Begleiter am Ende bei voller HP 1.000; keine Verwundbarkeit oder Schadensminderung erlitten 1.250;
+    keine Ausrüstung erworben 750, zehn Teile gehalten 500 (nicht Brett 1); kein Gegenstand benutzt 750, zehn
+    gehalten 1.000 (nicht Brett 1); nicht gefüttert 750, mindestens 20-mal gefüttert (nur drittes Brett und zweites
+    Meisterbrett; 1.500 laut consolegameswiki, 750 laut eorzeantavern); keine Marken ausgegeben 500, mindestens 2.000
+    gehalten 500 (nicht Brett 1); nicht gerastet 1.000 (seit 7.57, vorher 375); Team nur aus einer Gattung 750; erster,
+    zweiter, dritter Grad 4.000, 6.250, 9.000; Universality 5-, 10-, 15-mal (nur zweites Meisterbrett; 150/300/450 oder
+    250/500/750).
+  - *Was RSR davon bewegt:* Rast (K10), Futter (K10), Kauf und Schatz (K13), Gegenstände (K8), Weg (Gegner- und
+    Elitefelder bringen Punkte, Schatz und Lager keine), Teamvorschlag und Hornwahl (K7, K14: Teamgröße, Gattung),
+    das Überleben und die HP der Begleiter und des Spielers am Ende. Nicht: die Grade (seine Wahl beim Betreten).
 
 *Die Bretter* (`XBMContentBattle`, `XBMBattleDetail`; Schwäche in Klammern; deutsche Namen aus den Blättern):
 - *Erstes Brett:* Knochen-Ritter und -Bischof (Schlag; der Ritter wehrt mit Forward Guard Angriffe von vorn ab, nicht

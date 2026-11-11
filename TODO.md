@@ -19,9 +19,17 @@ auswahl und das timing der beschwörung" – je Kampf aller fünf Bretter (Gegne
 BossMod-Module) die Rotation des Beastmasters, die Wahl der Begleiter und den Zeitpunkt ihres Aufrufs im Loop prüfen
 (Beispiel seiner Beobachtung: der Raptor gegen Feuer, bevor feueranfällige Gegner da waren; A581).
 
-1. Blaumagier: RSRs nächste Aktion beendet Apokalypsis und Chelonian Gate – Schaden und Minderung des Spielers enden
+1. Crucible: Begleiter je Kampf nicht optimal gewählt (Beastmaster-Vorrang).
+2. Crucible: Gegenstände nicht optimal, die Brettbewertung nach Punkten bringt nicht die mögliche Ausbeute
+   (Beastmaster-Vorrang).
+3. Crucible: Tötungsregel zählt unsichtbare Helfer, Rücklage bricht ein – das Paar fiel einmal 0,85 s vor dem Wüten
+   (Beastmaster-Vorrang).
+4. Heiler: Wiederbelebung kommt später als gewohnt – ein Gefallener fehlt der Gruppe länger.
+5. Heilung nicht optimal – ein Mitglied steht länger nahe dem Tod als nötig.
+6. Blaumagier: RSRs nächste Aktion beendet Apokalypsis und Chelonian Gate – Schaden und Minderung des Spielers enden
    nach einem GCD statt nach 10 s.
-2. Kegel und Ringe gegnerischer Zauber genau messen: Zauber- und Kanalbeginn nutzen RSRs Erkennung bei Kegel und Ring
+7. Weißmagier: Surecast ohne Rückstoß – die Abklingzeit fehlt, wenn der Rückstoß kommt.
+8. Kegel und Ringe gegnerischer Zauber genau messen: Zauber- und Kanalbeginn nutzen RSRs Erkennung bei Kegel und Ring
    nicht, und mehrere Leser sehen hinter einem Kegel oder im Innenkreis eines Rings eine Gefahr, die keine ist.
 
 Danach die technische Schuld, soweit ihre Auflösungsbedingung erfüllt ist. Warten auf Daten: unten.
@@ -32,6 +40,61 @@ der Beastmaster-Vorrang, dann jeder übrige Punkt dieser Liste, dann die Konzept
 Code-Review; was diese finden, kommt wieder hierher und in dieselbe Reihenfolge, jeder Schritt im vollständigen Loop.
 
 ## Defekte
+
+### Crucible: Begleiter je Kampf nicht optimal gewählt · N
+Im Kampf (seine Meldung, 11.11.2026: „beastmaster begleiter werden nicht optimal für die einzelnen kämpfe auf den
+brettern ausgewählt"): Die Hornwahl vor einem Kampf setzt Begleiter, die zu dessen Gegnern nicht am besten passen.
+Gemessen (A687): Derselbe Kampf auf Brett 1 lief in drei Läufen mit drei verschiedenen Hornsätzen, 64 bis 81 s; das
+Elitefeld 110 bis 135 s, der Endkampf 99 bis 146 s. RSR lernt nicht, welcher Satz einen Kampf schneller und mit
+weniger Schaden beendet. *Ort:* Hornwahl (`BoardCandidates`, `BoardOption`, K7, K14). *Nächster Schritt:* Dauer und
+Last je Kampf und Hornsatz messen und der Wahl zugrunde legen, mit Teamgröße und Gattung aus der Punktewertung, Loop.
+*Konzept:* 21, K7, K14.
+
+### Crucible: Gegenstände und Brettbewertung bringen nicht die mögliche Ausbeute · N
+Im Kampf (seine Meldung, 11.11.2026: „gegenstände werden nicht optimal gewählt, jedes brett hat nach dem endboss eine
+bewertung aufgrund von punkten, die man durch das verhalten dort sammelt. die ausbeute ist nicht optimal"): Kauf und
+Einsatz der Gegenstände und das Verhalten auf dem Brett lassen Punkte und damit Belohnung liegen. RSR zielt bisher auf
+keine Punkte (Konzept 21, Grundlagen; A609 meine Ableitung). *Ort:* Laden, Schatz, Gegenstandsschritte (K8, K13).
+*Nächster Schritt:* Punktekriterien und ihre Belohnung belegen, je Kriterium im Loop: Punkte, wo sie keine Sicherheit
+kosten; wo ein Kriterium Sicherheit kostet, mit Wahrscheinlichkeit gewichtet. *Konzept:* 21, Grundlagen, K8, K13.
+
+### Crucible: Tötungsregel zählt unsichtbare Helfer, Rücklage bricht ein · N
+Im Kampf: In jedem Tablitauren-Kampf (Brett 2, 11.11.2026) hielt die Paarregel sechs unsichtbare Figuren mit 44 HP,
+die die Namen der Tablitauren tragen; sie zählt jede gegnerische Figur der Objekttabelle. In Lauf 4 fiel
+RSRs Schätzung des Schadensstroms kurz vor dem Ende von 155 auf 12 HP/s, die Rücklage von 698 auf 55 HP; das Ältere
+wurde freigegeben, das Jüngere fiel 0,85 s vor dem Ende seines Endlos-Schlags. Hält einmal ein Helfer über der
+Rücklage, bleibt ein echtes Mitglied bis zu 30 s gesperrt. *Ort:* `KillOrder.CollectLiving`, `HoldTogether`
+(Strom). *Nächster Schritt:* Mitglieder wie `EnemyDanger` nur aus Figuren, die in diesem Kampf in der Gegnerliste
+standen; den Einbruch des Stroms am Mitschnitt erklären, Loop. *Konzept:* 03, „Tötungsregeln"; 21, K12.
+
+### Heiler: Wiederbelebung kommt später als gewohnt · N
+Im Kampf (seine Meldung, 11.11.2026: „heiler rezzt langsamer/später als gewohnt"): Ein Gefallener steht länger nicht
+auf. Gemessen an seinen Mitschnitten vom 10. und 11.11.2026 (A687), drei Ursachen:
+- Der Weißmagier legt bei anstehender Wiederbelebung Ex Machina ins erste Webfenster nach dem GCD; der Swiftcast-Zweig
+  verlangt dasselbe Fenster (`IsLastActionGCD`) und kommt einen GCD später, Ex Machina verfällt im Schadens-GCD
+  dazwischen (M4, Yuweyawata: 6,6 und 7,6 s statt rund 2 s).
+- Swiftcast geht an einen Toten, den ein anderer im selben Moment sofort wiederbelebt; Swiftcast verfällt in einem
+  Schadenszauber, die nächste Wiederbelebung innerhalb der Abklingzeit wird voll gewirkt (fünf Fälle, World of
+  Darkness: 8,0 s statt rund 1 s).
+- Läuft der eigene Swiftcast schon, weicht RSR einer langsameren fremden Wiederbelebung trotzdem aus (Cuff of the Son,
+  11.11.: 9 s länger am Boden).
+Dazu zweimal 2 bis 3 s zwischen Todeszeile und erster Reaktion ohne Spur im Protokoll. *Ort:* `WHM_Reborn.EmergencyAbility`,
+`CustomRotation.EmergencyAbility` (Swiftcast-Zweig), `GetDeath` mit `DataCenter.RaisedByOthers`. *Nächster Schritt:*
+Konzept 11 fortschreiben, Loop. *Konzept:* 11.
+
+### Heilung nicht optimal · N
+Im Kampf (seine Meldung, 11.11.2026: „heilung nicht optimal"): Erster Befund: Als Weißmagier (Stufe 50, Ultima's Bane,
+10.11.2026) stand er im Lauf 7 s bei 5 bis 7 % HP; RSR wirkte dreimal Windra statt Regena, der einzigen GCD-Heilung
+ohne Wirkzeit auf Stufe 50 (Action 137, xivapi v2). *Ort:* GCD-Heilung des Weißmagiers in Bewegung. *Nächster Schritt:* alle Fälle seiner Mitschnitte mit
+niedrigen HP und Schadens-GCD, Ursache, Loop. *Konzept:* 07.
+
+### Weißmagier: Surecast ohne Rückstoß · N
+Im Kampf (seine Meldung, 11.11.2026: „es wird antirückstoß verwendet, obwohl kein rückstoß da war (whm)"): Surecast
+geht ohne folgenden Rückstoß; seine Abklingzeit fehlt, wenn einer kommt. Gemessen (A687): Von zwölf Surecasts trafen
+acht einen Rückstoß oder Zug; in Babil zündete er auf Ground and Pound, eine Linie, in der er nicht stand. Die Auslösung
+fragt nur, ob ein gelisteter Zauber gewirkt wird, nicht ob er den Spieler erreicht; gelernt wird aus einem Treffer,
+auch von vermeidbaren Flächen. Gilt für jede Rolle (Abtausch ebenso). *Ort:* `DataCenter.IsAnyHostileCastingKnockback`.
+*Nächster Schritt:* Reichweite wie bei der Flächenabwehr (`AreaCastCanReachPlayer`) mitfragen, Loop. *Konzept:* 03.
 
 ### Blaumagier: RSRs nächste Aktion beendet Apokalypsis und Chelonian Gate · N
 Im Kampf: Drückt der Blaumagier Apokalypsis (Linie, 10 s Schaden) oder Chelonian Gate (−20 % Schaden, 10 s, danach
