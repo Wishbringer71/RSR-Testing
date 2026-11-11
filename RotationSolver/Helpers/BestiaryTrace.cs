@@ -248,7 +248,7 @@ internal static class BestiaryTrace
 		}
 	}
 
-	private static unsafe string Values(AtkValue* values, uint count)
+	internal static unsafe string Values(AtkValue* values, uint count)
 	{
 		if (values == null || count == 0)
 		{

@@ -1411,7 +1411,8 @@ public partial class BeastmasterRotation
 
 	// A664: healing no fight ahead needs - what the healing items held heal beyond the heaviest sum of the fights ahead up
 	// to the final one (each with its learned load, else the heaviest measured) and what the player misses now; in the final
-	// fight all of it. Of that, the largest item that does not overheal him.
+	// fight all of it. Of that, the largest item that does not overheal him; just before the final fight ends, the smallest
+	// that brings him to full (A695).
 	private static unsafe int SpareHeal(InstanceContentCrucibleOfTheUnbroken* crucible, IBattleChara player, bool finalFight,
 		out string why)
 	{
@@ -1423,6 +1424,30 @@ public partial class BeastmasterRotation
 			if (TryItem(crucible, i, CrucibleItemKind.Heal, out var heal))
 			{
 				held += heal.Value;
+			}
+		}
+
+		// A695: in the final fight, before its last enemy falls - before the next GCD by the time-to-kill forecast -, the
+		// smallest item that brings him to full: "Unversehrter Bändiger" and the HP the score counts. Overhealing costs nothing
+		// any more; earlier the order of the items does not change the HP at the end, only the last one decides the full HP.
+		if (finalFight && missing > 0f && DataCenter.IsPackTimeToKillKnown && DataCenter.PackTimeToKill <= DataCenter.DefaultGCDTotal)
+		{
+			var full = -1;
+			var least = float.MaxValue;
+			for (var i = 0; i < crucible->Inventory.Length; i++)
+			{
+				if (TryItem(crucible, i, CrucibleItemKind.Heal, out var heal) && heal.Value >= missing && heal.Value < least)
+				{
+					full = i;
+					least = heal.Value;
+				}
+			}
+
+			if (full >= 0)
+			{
+				why = $"the final fight ends in {DataCenter.PackTimeToKill:F1} s, it brings you from {1f - missing:P0} to full "
+					+ "for the score";
+				return full;
 			}
 		}
 

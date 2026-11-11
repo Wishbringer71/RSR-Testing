@@ -20511,6 +20511,35 @@ Messzeile in `DefenseTrace.log` zeigt den Grund jeder weiteren Spanne.
 
 *Prüfgrad:* statisch, Compile, Prüfskripte; Mitschnitt-Auswertung; im Spiel nicht beobachtet.
 
+### A695 · Crucible-Punkte am Brettende: Bonuspunkte aus den Spieldaten, Sammelleidenschaft, Auffüllen vor dem letzten Schlag, Fenstermessung (11.11.2026)
+
+- *Anlass:* seine Meldung vom 11.11.2026 (A687) und TODO „Crucible: Gegenstände und Brettbewertung bringen nicht die
+  mögliche Ausbeute", nächster Schritt: ob LP am Ende Punkte bringen und wie viele.
+- *Recherche:* Rest-LP des Spielers zählen absolut (consolegameswiki „Crucible of the Unbroken", FullBoosts, MMOGah;
+  abgerufen 11.11.2026); eine Rate nennt keine Quelle. `XBMContent.BonusPoints` (EXDSchema latest) führt je Brett die
+  Punkte jedes Bonus; die Werte (ffxiv-datamining 52a72b3) bestätigen Konzept 21 und entscheiden Völlerei (1.500) und
+  Universalgenie (150/300/450). Unversehrter Bändiger 250, Unversehrte Bestien 1.000, Sammelleidenschaft 1.000 außer
+  Brett 1. FFXIVClientStructs (80cb4a7, 10.11.2026) führt kein Ergebnisfenster des Crucible. xivapi v2 liefert die
+  Felder der XBM-Blätter nicht (leer, auch mit Schema-Angabe).
+- *Optionen:* (a) Nullvariante; (b) Heilgegenstände am Ende immer, auch gegen Sparsamkeit und Sammelleidenschaft – die
+  Rate ist unbelegt, 750 und 1.000 sind belegt; (c) Sammelleidenschaft wie Sparsamkeit halten, am Ende ohne Bonus auf
+  dem Spiel bis 100 % auffüllen, die Rate über das Ergebnisfenster messen – gewählt; (d) Unversehrte Bestien mit
+  Heilgegenstand am Begleiter – lohnt mit belegten Punkten gegen Sparsamkeit, braucht LP des ganzen Kaders und die
+  Reichweite des Gegenstands, offen.
+- *Umgesetzt:* `CrucibleBoard.CurrentBoard` (Zeile von `XBMContent` über die ContentFinderCondition),
+  `CrucibleBoard.BonusPoints` (Spalten 7, 8, 15, 16; das experimentelle Lumina-Blatt mit dem Namen weist der Build ab);
+  `HoarderBonusAtStake`, `ItemBonusAtStake` in `KeepsNoItemBonus` und in der Wegwahl; `SpareHeal`: im Endkampf, wenn der
+  letzte Gegner vor dem nächsten GCD fällt, der kleinste Gegenstand bis 100 %; `CrucibleWindowTrace`: jedes Fenster
+  „XBM…" je Lauf beim ersten Aufbau und Auffrischen mit seinen Werten in `DefenseTrace.log`. Konzept 21 K15
+  („Sammelleidenschaft", „Am Ende des Endkampfs"), Grundlagen; Widerruf C181.
+- *Falsifikation:* kein Defekt – die übrige Heilung überheilt nie, 100 % am Ende erreicht sie nur zufällig; ein Lauf mit
+  zehn Gegenständen gab Sammelleidenschaft für Heilung ohne Bedarf auf. Option falsch: Die LP-Punkte könnten die
+  Boni übertreffen – unbelegt, Preis benannt, Messmittel gebaut. Ausgeliefert, nichts ändert sich: Kein Heilgegenstand
+  ist am Ende übrig – die LP-Punkte sind dieselben, nur die 250 fehlen; die Restzeit-Vorhersage fehlt – dann wie vorher.
+
+*Prüfgrad:* statisch, Compile, Prüfskripte, Spieldaten (ffxiv-datamining, EXDSchema, Lumina per Reflexion); im Spiel
+nicht beobachtet – das Ergebnisfenster in `DefenseTrace.log` zeigt nach dem nächsten Brett die Abrechnung.
+
 ## B · Commit-Register (Fork vs. `upstream/main`)
 
 ### B1 · Einzelgeprüfte Fork-Commits
@@ -20843,3 +20872,4 @@ Die offene Arbeit dazu — Reihenfolge und Abbruchbedingung der Nachprüfung —
 | C178 | Konzept 21 K8 „Rast und Futter" (Stand A666): „Ein ruhender Begleiter verliert sein Futter, mit Lilien-Simulakrum nicht (K14, gebaut A657, A662)" | Gebaut war nur der Verlust: Die Campsite nahm keinen Gefütterten, auch keinen mit Lilie; `Preserves` wurde gelesen, aber nirgends ausgewertet. | A669 |
 | C179 | A613 und Konzept 03 „Regenerationstränke der Sonderinhalte" (Stand A613): „nur in ihrem Inhalt nutzbar; das prüft das Spiel selbst", im Code „The game refuses it outside its content, which CanUse asks" | Das Spiel lehnt ab, aber `BaseItem.CanUse` las die Ablehnung nicht: `BadStatus` enthielt keinen Ortsgrund (593, 2651). Am 08.11.2026 wählte RSR den Wallfahrt-Trank 17-mal in fünf Gebieten, 13-mal davon in Sägerschrei und Mor Dhona; geheilt hat er nie (A683). | A683 |
 | C180 | A685 (Stand A685): „In der englischen Fassung ändern sich nur eine Spalte von Unmooring Melody (48565) und eine neue ItemAction-Zeile (2793)" | Der 7.58-Stand von ffxiv-datamining (52a72b38a) ändert englisch 42 Blätter und fünf Ereignis- und Questdateien, darunter BNpcName, BNpcBase, InstanceContent, Item und LogMessage. Nur unter den Blättern der Jobs (Action, ActionTransient, Trait, ClassJob, Status) und Gegenstandsaktionen sind es die zwei Zeilen; die übrigen, die RSR liest, ändern im Kampf nichts (A686). | A686 |
+| C181 | A689 und Konzept 21 K15 (Stand A692): „Das Spiel selbst zeigt die Boni erst am Ende; `XBMScoreBonus` führt Namen und Bedingungen, keine Punkte" | `XBMContent` führt die Punkte je Bonus und Brett in seinen ersten 33 Spalten (`BonusPoints`, einer je Zeile von `XBMScoreBonus`; EXDSchema latest, Werte an ffxiv-datamining 52a72b3 vom 10.11.2026). Gesucht hatte ich nur in `XBMScoreBonus` und `XBMScoreRank`. Die Punkte je Feld (250, 800) führt weiterhin kein Blatt. | A695 |

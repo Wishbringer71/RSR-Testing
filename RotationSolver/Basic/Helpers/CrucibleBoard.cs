@@ -346,6 +346,84 @@ internal static class CrucibleBoard
 			: 0;
 	}
 
+	/// <summary>
+	/// K15 (A695): rows of XBMScoreBonus that RSR's rules read; the row is also the index into XBMContent's BonusPoints.
+	/// </summary>
+	internal enum ScoreBonus : byte
+	{
+		/// <summary>"Unversehrter Bändiger" (Self-preservation): the player at 100 % HP.</summary>
+		SelfPreservation = 7,
+
+		/// <summary>"Unversehrte Bestien" (Selfless): every familiar at 100 % HP.</summary>
+		Selfless = 8,
+
+		/// <summary>"Sparsamkeit" (Economic Ethos): no crucible item used.</summary>
+		EconomicEthos = 15,
+
+		/// <summary>"Sammelleidenschaft" (Habitual Hoarder): ten crucible items held.</summary>
+		HabitualHoarder = 16,
+	}
+
+	private static uint _boardContent;
+	private static uint _board;
+
+	/// <summary>
+	/// K15 (A695): the XBMContent row of the board the player is on - the row whose ContentFinderCondition is the current
+	/// one; 0 outside the Crucible.
+	/// </summary>
+	internal static uint CurrentBoard
+	{
+		get
+		{
+			var content = DataCenter.IsInCrucible ? DataCenter.Territory?.ContentFinderConditionId ?? 0 : 0;
+			if (content == _boardContent)
+			{
+				return _board;
+			}
+
+			_boardContent = content;
+			_board = 0;
+			var sheet = content == 0 ? null : Svc.Data.GetExcelSheet<Lumina.Excel.Sheets.XBMContent>();
+			if (sheet != null)
+			{
+				foreach (var row in sheet)
+				{
+					if (row.Unknown33 == content)
+					{
+						_board = row.RowId;
+						break;
+					}
+				}
+			}
+
+			return _board;
+		}
+	}
+
+	/// <summary>
+	/// K15 (A695): the points the board the player is on grants for <paramref name="bonus"/> - XBMContent's BonusPoints, one
+	/// per XBMScoreBonus row and the sheet's first 33 columns (EXDSchema latest; Lumina's Unknown0 to Unknown32 - its
+	/// Experimental sheet with the name is refused at build); 0 where the board grants none, outside the Crucible, or
+	/// without the row.
+	/// </summary>
+	internal static int BonusPoints(ScoreBonus bonus)
+	{
+		var board = CurrentBoard;
+		if (board == 0 || Svc.Data.GetExcelSheet<Lumina.Excel.Sheets.XBMContent>()?.GetRowOrDefault(board) is not { } row)
+		{
+			return 0;
+		}
+
+		return bonus switch
+		{
+			ScoreBonus.SelfPreservation => row.Unknown7,
+			ScoreBonus.Selfless => row.Unknown8,
+			ScoreBonus.EconomicEthos => row.Unknown15,
+			ScoreBonus.HabitualHoarder => row.Unknown16,
+			_ => 0,
+		};
+	}
+
 	// XBMContent's recommended rank is stored two above what the board screen shows: "Take this value subtract 2. It is how
 	// the exe is doing it." (EXDSchema latest, XBMContent.RecommendedRank); board 2 stores 8 and shows "Recommended Beast
 	// Rank: 6 (Sync from 10)" (Daedalus 74659a6, field note). The game's own definition, not a tuned value (A579).

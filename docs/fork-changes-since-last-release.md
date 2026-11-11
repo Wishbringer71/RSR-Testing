@@ -89,6 +89,13 @@ What this release changes in the fight. For the whole distance from upstream, se
   as before, and once an item has gone everything does. Among safe ways the route takes the one with more points (an
   enemy space 250, an elite space 800), then, while the bonus stands, the one safe without items. The trace names when
   items are kept, when they go again and when the bonus falls.
+- **Ten items held count as well, and the run ends at full HP where it can.** On boards 2 to 5 ten crucible items held
+  at the end give 1,000 points ("Sammelleidenschaft"); with ten in the inventory, items that guard against no present
+  danger now stay there as for the no-item bonus, while your HP carry the way. Once no item bonus is at stake, the
+  healing left in the final fight takes, just before its last enemy falls, the smallest item that brings you to full:
+  250 points for full HP ("Unversehrter Bändiger") and the HP the score counts. The points of every bonus are read from
+  the game's data for the board you are on. Each Crucible window, the score at the end among them, is written to
+  `DefenseTrace.log` once per run with its values.
 - **The shop and the treasure keep their bonuses too.** While nothing has been bought in the run ("Geizhals", 500) and
   your HP with the healing you hold carry the heaviest way to the final fight, the shop recommends only cover against a
   status that kills whatever your HP, such as Doom on board 2. While no beast gear has come in the run ("Mit leeren

@@ -54,9 +54,10 @@ bewertung aufgrund von punkten, die man durch das verhalten dort sammelt. die au
 Einsatz der Gegenstände und das Verhalten auf dem Brett lassen Punkte und damit Belohnung liegen. RSR zielt bisher auf
 keine Punkte (Konzept 21, Grundlagen; A609 meine Ableitung). Gebaut (A689): Sparsamkeit im Gegenstandsschritt, Punkte
 im Weg; Geizhals und Mit leeren Händen im Laden und Schatz (A690); Schlaflose Nächte und Heilfasten in Lager und Futter
-(A691). Offen: Unversehrte Bestien und Unversehrter Bändiger am Ende des Endkampfs. *Ort:* Gegenstandsschritt im
-Endkampf (K8, K14). *Nächster Schritt:* ob LP am Ende Punkte bringen und wie viele, belegen; dann Heilung der Begleiter und des Spielers
-vor dem letzten Schlag gegen Sparsamkeit wägen, Loop. *Konzept:* 21, K15.
+(A691); Sammelleidenschaft und Auffüllen bis 100 % vor dem letzten Schlag, Bonuspunkte aus den Spieldaten (A695).
+Offen: Unversehrte Bestien (1.000) – ein Heilgegenstand, der den Begleiter im Feld auf 100 % bringt, während alle
+anderen voll sind, lohnt auch gegen Sparsamkeit. *Ort:* Gegenstandsschritt im Endkampf (K8, K11). *Nächster Schritt:*
+LP aller Begleiter des Kaders und die Reichweite der Heilgegenstände auf den Begleiter belegen, Loop. *Konzept:* 21, K15.
 
 ### Weißmagier: Surecast ohne Rückstoß · N
 Im Kampf (seine Meldung, 11.11.2026: „es wird antirückstoß verwendet, obwohl kein rückstoß da war (whm)"): Surecast

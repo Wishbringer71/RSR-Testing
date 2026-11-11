@@ -11,6 +11,7 @@ public partial class BeastmasterRotation
 {
 	private static int _scoreRun = -1;
 	private static int _scoreItemsHeld = -1;
+	private static int _scoreItemSlots;
 	private static bool _scoreItemUsed;
 	private static bool? _scoreKeepTraced;
 	private static bool _scoreKeep;
@@ -21,6 +22,17 @@ public partial class BeastmasterRotation
 	/// 15) still stands. A use by RSR or by hand shows as one item less in the board's inventory.
 	/// </summary>
 	internal static bool NoItemBonusStands => !_scoreItemUsed;
+
+	/// <summary>
+	/// K15 (A695): whether a use of an item would cost "Sammelleidenschaft" (Habitual Hoarder, XBMScoreBonus row 16): the
+	/// board grants it and every slot of the inventory is filled. Unlike the no-item bonus it comes back once ten are held
+	/// again.
+	/// </summary>
+	internal static bool HoarderBonusAtStake => _scoreItemSlots > 0 && _scoreItemsHeld >= _scoreItemSlots
+		&& CrucibleBoard.BonusPoints(CrucibleBoard.ScoreBonus.HabitualHoarder) > 0;
+
+	/// <summary>K15 (A695): whether a use of an item now would cost a bonus of the score - "Sparsamkeit" or "Sammelleidenschaft".</summary>
+	internal static bool ItemBonusAtStake => NoItemBonusStands || HoarderBonusAtStake;
 
 	private static int _scoreShopRun = -1;
 	private static bool _scoreTokensSpent;
@@ -192,17 +204,25 @@ public partial class BeastmasterRotation
 		}
 
 		_scoreItemsHeld = held;
+		_scoreItemSlots = crucible->Inventory.Length;
 	}
 
 	/// <summary>
 	/// K15: whether the items that guard against no present danger - insurance, damage, healing nothing needs - stay in the
-	/// inventory for the no-item bonus: it still stands, and the player's HP carry the heaviest way to the final fight,
-	/// included, without a rest (A661's learned loads with the gear worn). Unknown loads keep nothing - the safe side.
+	/// inventory for an item bonus: "Sparsamkeit" still stands or "Sammelleidenschaft" is held (A695), and the player's HP
+	/// carry the heaviest way to the final fight, included, without a rest (A661's learned loads with the gear worn). Unknown
+	/// loads keep nothing - the safe side.
 	/// </summary>
 	private static bool KeepsNoItemBonus(IBattleChara player)
 	{
-		if (_scoreItemUsed || player.MaxHp == 0)
+		if (!ItemBonusAtStake || player.MaxHp == 0)
 		{
+			// Traced again once a bonus is at stake anew - "Sammelleidenschaft" returns with ten items held.
+			if (_scoreKeepTraced == true)
+			{
+				_scoreKeepTraced = null;
+			}
+
 			return false;
 		}
 
@@ -218,8 +238,9 @@ public partial class BeastmasterRotation
 		if (_scoreKeepTraced != keep)
 		{
 			_scoreKeepTraced = keep;
+			var bonus = NoItemBonusStands ? "the no-item bonus (Sparsamkeit)" : "the bonus for ten items held (Sammelleidenschaft)";
 			DefenseTrace.Line(keep
-				? $"crucible score: items kept for the no-item bonus (Sparsamkeit) - you at {share:P0} carry the heaviest way to the final fight, {load:P0}"
+				? $"crucible score: items kept for {bonus} - you at {share:P0} carry the heaviest way to the final fight, {load:P0}"
 				: load is { } need
 					? $"crucible score: items go again - the heaviest way to the final fight, {need:P0}, is more than your {share:P0}"
 					: "crucible score: items go again - a fight on the way to the final fight was never measured");

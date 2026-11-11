@@ -208,7 +208,7 @@ public partial class BeastmasterRotation
 				return a.Points > b.Points;
 			}
 
-			if (safeA && NoItemBonusStands && IsSafeBare(a) != IsSafeBare(b))
+			if (safeA && ItemBonusAtStake && IsSafeBare(a) != IsSafeBare(b))
 			{
 				return IsSafeBare(a);
 			}
@@ -258,7 +258,7 @@ public partial class BeastmasterRotation
 					reasons.Add($"both ways are safe up to {StopName(end.Stop)}; this one scores {end.Points - other.End.Points} more "
 						+ $"points with its fights (enemy space {EnemySpacePoints}, elite space {EliteSpacePoints})");
 				}
-				else if (NoItemBonusStands && IsSafeBare(end) && !IsSafeBare(other.End))
+				else if (ItemBonusAtStake && IsSafeBare(end) && !IsSafeBare(other.End))
 				{
 					reasons.Add($"both ways are safe up to {StopName(end.Stop)}; this one is safe without using an item, which keeps "
 						+ $"the no-item bonus (Sparsamkeit), {otherName} needs the items held");

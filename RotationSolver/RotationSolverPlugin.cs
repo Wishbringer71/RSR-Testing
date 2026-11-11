@@ -189,6 +189,7 @@ public sealed class RotationSolverPlugin : IAsyncDalamudPlugin
 			ActionContextMenu.Init();
 			HotbarHighlightManager.Init();
 			BestiaryTrace.Enable();
+			CrucibleWindowTrace.Enable();
 
 			Svc.DutyState.DutyStarted += DutyState_DutyStarted;
 			Svc.DutyState.DutyWiped += DutyState_DutyWiped;
@@ -463,6 +464,7 @@ public sealed class RotationSolverPlugin : IAsyncDalamudPlugin
 		BMRPlanUpdater.Disable();
 		ActionContextMenu.Dispose();
 		BestiaryTrace.Disable();
+		CrucibleWindowTrace.Disable();
 		Svc.PluginInterface.UiBuilder.OpenConfigUi -= OnOpenConfigUi;
 		Svc.PluginInterface.UiBuilder.OpenMainUi -= OnOpenConfigUi;
 		Svc.PluginInterface.UiBuilder.Draw -= OnDraw;

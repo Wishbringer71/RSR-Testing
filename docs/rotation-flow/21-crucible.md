@@ -61,7 +61,9 @@ beide Werkzeugquellen; sein Mitschnitt vom 04.11.2026.
   - *Grundpunkte* (consolegameswiki): je Gegnerfeld 250, je Elitefeld 800 (seit 7.57, vorher 625), Endgegner 1.000,
     Abschluss bis 5.000 (voll außer bei einem verlorenen Lauf), dazu die verbleibenden HP des Spielers absolut, nicht
     als Anteil.
-  - *Boni* (beide Quellen gleich, wo nicht anders vermerkt): kein Begleiter gefallen 1.000 (sonst je nach Zahl der
+  - *Boni* (beide Quellen gleich, wo nicht anders vermerkt; die Spieldaten `XBMContent.BonusPoints` bestätigen jeden Wert
+    und entscheiden die beiden Abweichungen: Völlerei 1.500, Universalgenie 150/300/450; Wettrüsten, Sammelleidenschaft,
+    Völlerei, Talerregen und Universalgenie vergibt Brett 1 nicht, A695): kein Begleiter gefallen 1.000 (sonst je nach Zahl der
     Gefallenen 750, 500, 250); Team aus 6–7 Begleitern 1.250, aus 4–5 2.500, aus 1–3 4.250; Spieler am Ende bei voller
     HP 250; alle Begleiter am Ende bei voller HP 1.000; keine Verwundbarkeit oder Schadensminderung erlitten 1.250;
     keine Ausrüstung erworben 750, zehn Teile gehalten 500 (nicht Brett 1); kein Gegenstand benutzt 750, zehn
@@ -786,13 +788,46 @@ Dullahan, Golem, Spriggan und Eisgolem (`XBMPet.InflictsInterrupt`).
     kostet nur, wenn gerastet wird.
   - *Woher RSR weiß, was erhalten ist:* je Lauf (`CrucibleBoard.Run`) aus dem, was es sieht – Gegenstände im
     Crucible-Inventar weniger geworden (benutzt, von RSR oder von Hand; auch weggeworfen, dann gibt RSR den Bonus auf,
-    die sichere Seite), Marken weniger, Ausrüstung im Lauf getragen, gerastet, gefüttert. Das Spiel selbst zeigt die
-    Boni erst am Ende; `XBMScoreBonus` führt Namen und Bedingungen, keine Punkte. Die Punkte je Feld (250, 800) stehen
-    deshalb fest im Code, mit Quelle (A689). Spur: „crucible score: …", wenn die Gegenstände für den Bonus liegen bleiben
-    oder wieder gehen und wenn der Bonus fällt.
+    die sichere Seite), Marken weniger, Ausrüstung im Lauf getragen, gerastet, gefüttert. `XBMScoreBonus` führt Namen
+    und Bedingungen, die Punkte je Bonus und Brett führt `XBMContent.BonusPoints`: 33 Einträge, einer je Zeile von
+    `XBMScoreBonus` (EXDSchema latest; in Lumina `Unknown0` bis `Unknown32`, das experimentelle Blatt mit dem Namen weist der Build ab;
+    Werte geprüft an ffxiv-datamining 52a72b3 vom 10.11.2026). RSR liest sie für das laufende Brett, das `XBMContent` über
+    die ContentFinderCondition nennt (1088 bis 1092; A695). Die Punkte je Feld (250, 800) führt kein Blatt; sie stehen
+    fest im Code, mit Quelle (A689). Spur: „crucible score: …", wenn die Gegenstände für den Bonus liegen bleiben oder
+    wieder gehen und wenn der Bonus fällt.
+  - *Sammelleidenschaft (1.000, außer Brett 1; `XBMScoreBonus` 16; gebaut A695):* Zehn Gegenstände am Ende – alle zehn
+    Plätze des Inventars belegt. Hält der Spieler zehn auf einem Brett, das den Bonus vergibt, kostet jeder Gegenstand
+    ohne Gefahr den Bonus wie bei Sparsamkeit, und es gilt dieselbe Regel: Er bleibt liegen, solange der Spieler den Weg
+    bis einschließlich Endkampf trägt. Unmittelbare Gefahr geht vor. Anders als Sparsamkeit kehrt der Bonus zurück,
+    sobald wieder zehn Plätze belegt sind.
+  - *Am Ende des Endkampfs (A695):* Die Rest-LP des Spielers zählen absolut, nicht als Anteil (consolegameswiki,
+    FullBoosts, MMOGah; eine Rate nennt keine Quelle, unbelegt). Dazu Unversehrter Bändiger (7: Spieler bei 100 % LP)
+    250 und Unversehrte Bestien (8: alle Begleiter bei 100 % LP) 1.000 auf jedem Brett.
+    - *Auffüllen (gebaut):* Steht kein Gegenstandsbonus mehr auf dem Spiel (Sparsamkeit verwirkt, Sammelleidenschaft
+      nicht zu halten) und fällt der letzte Gegner nach der Restzeit-Vorhersage vor dem nächsten GCD
+      (`PackTimeToKill` höchstens `DefaultGCDTotal`), nimmt die übrige Heilung den kleinsten Gegenstand, der den Spieler
+      auf 100 % bringt; Überheilung kostet dort nichts mehr. Vorher wie bisher der größte ohne Überheilung: Die LP am
+      Ende sind Anfangs-LP plus jede Heilung minus jeder Schaden, solange nichts überheilt – wann ein Gegenstand geht,
+      ändert sie nicht, nur der letzte entscheidet über die 100 %.
+    - *Gegen einen erhaltenen Gegenstandsbonus:* Ein Heilgegenstand am Ende bringt 250 und die LP-Punkte seiner
+      Heilung, gegen 750 (Sparsamkeit) oder 1.000 (Sammelleidenschaft). Ohne die Rate bleibt der belegte Bonus. *Preis:*
+      Liegt die Rate über (750 − 250) je geheilten LP, verliert der Lauf Punkte. *Messmittel (gebaut):* RSR schreibt
+      jedes Fenster des Crucible (Name beginnt mit „XBM") beim ersten Öffnen je Lauf mit seinen Werten in
+      `DefenseTrace.log` („crucible window …"), also auch die Abrechnung am Ende samt LP-Punkten. Aus ihr folgt die Rate.
+      Selbst nachsteuern kann RSR erst, wenn der Aufbau dieses Fensters bekannt ist; den nennt keine Quelle.
+    - *Unversehrte Bestien (offen):* Mit den belegten Punkten lohnt ein Heilgegenstand, der den Begleiter im Feld auf
+      100 % bringt, während alle anderen voll sind, auch gegen Sparsamkeit (1.000 gegen 750), nicht zusätzlich gegen
+      Sammelleidenschaft. Dazu braucht die Regel die LP aller Begleiter des Kaders (Agent und zuletzt gesehene, K11) und
+      die Reichweite des Gegenstands auf den Begleiter; nächster Schritt im TODO „Crucible: Gegenstände und
+      Brettbewertung bringen nicht die mögliche Ausbeute".
+    - *Gegenthesen:* (1) Ein Treffer nach dem Auffüllen senkt die LP wieder. Innerhalb eines GCD vor dem Ende ist das
+      möglich; dann fehlen die 250, die LP-Punkte bleiben höher als ohne die Heilung. (2) Die Restzeit-Vorhersage irrt:
+      Der Gegenstand geht zu früh (wie (1)) oder gar nicht – ohne Bonus auf dem Spiel ist er nach dem Ende wertlos, ein
+      Verlust entsteht nicht, nur kein Gewinn. (3) Ausgeliefert, und nichts ändert sich: Kein Heilgegenstand ist am Ende
+      übrig, weil die übrige Heilung ihn vorher ohne Überheilung nahm. Die LP-Punkte sind dieselben (oben); nur die 250
+      fehlen, wenn kein Gegenstand bis 100 % übrig bleibt.
   - *Nicht hier:* Teamgröße und Gattung (bis 4.250 und 750) gehören zum Kader (K7, TODO „Crucible: Begleiter je Kampf
-    nicht optimal gewählt"); alle Begleiter bei voller LP am Ende (1.000, „Unversehrte Bestien", 8) und der Spieler bei
-    voller LP (250, „Unversehrter Bändiger", 7) zum Endkampf, offen.
+    nicht optimal gewählt").
   - *Gegenthese 1 – Die schwerste gelernte Last unterschätzt den nächsten Lauf:* Ein Kampf kann schwerer werden als je
     gesehen (anderer Begleiter, Pech bei Zuständen). Teilweise widerlegt: Die unmittelbare Gefahr im Kampf bleibt
     abgedeckt – Heilung unter der Trankschwelle, Schutz vor angekündigten Treffern –, nur die Versicherung im Voraus
