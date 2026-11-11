@@ -41,9 +41,10 @@ brettern ausgewählt"): Die Hornwahl vor einem Kampf setzt Begleiter, die zu des
 Gemessen (A687): Derselbe Kampf auf Brett 1 lief in drei Läufen mit drei verschiedenen Hornsätzen, 64 bis 81 s; das
 Elitefeld 110 bis 135 s, der Endkampf 99 bis 146 s. RSR lernt nicht, welcher Satz einen Kampf schneller und mit
 weniger Schaden beendet. Gebaut (A692): Schaden je Sekunde je Kampf und Begleiter gemessen und in der Hornwahl gegen
-die anderen gemessenen gewogen. Offen: die Teamgröße und das Team aus einer Gattung der Punktewertung (bis 4.250 und
-750). *Ort:* Kader (K7). *Nächster Schritt:* Sicherheit eines
-kleineren Teams aus den gelernten Lasten und Begleiterwerten bestimmen, Loop. *Konzept:* 21, K7, K16.
+die anderen gemessenen gewogen; die Teamgröße nach In Unterzahl aus Kern und gelerntem Begleiterverlust (A698). Offen:
+das Team aus einer Gattung (Freund der …, 750). *Ort:* Kader (K7). *Nächster Schritt:* ein Team einer
+Gattung, das Kern und Vorrat der Teamgröße erfüllt, je Gattung suchen und gegen das gemischte wägen, Loop. *Konzept:* 21,
+K7, K16.
 
 ### Weißmagier: Surecast ohne Rückstoß · N
 Im Kampf (seine Meldung, 11.11.2026: „es wird antirückstoß verwendet, obwohl kein rückstoß da war (whm)"): Surecast

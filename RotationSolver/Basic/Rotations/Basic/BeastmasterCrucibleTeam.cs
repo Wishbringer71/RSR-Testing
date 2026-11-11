@@ -18,6 +18,92 @@ public partial class BeastmasterRotation
 	/// <summary>One recommended familiar and why: what it brings to the board, and whether it is in the team already.</summary>
 	public readonly record struct CrucibleTeamPick(BeastmasterPet Pet, string Why, bool InTeam);
 
+	/// <summary>K7 team size (A698): why the recommendation holds as many familiars as it does - the score's bonus for a smaller team, or why not.</summary>
+	public static string CrucibleTeamSizeNote { get; private set; } = string.Empty;
+
+	// K7 team size (A698): the team sizes of "In Unterzahl" I to III, read from their conditions ("Clear the board with a team
+	// of 6 or 7 familiars."), once.
+	private static List<(int Min, int Max, CrucibleBoard.ScoreBonus Bonus, string Name)>? _squads;
+	private static readonly System.Text.RegularExpressions.Regex SquadSizes =
+		new(@"team of (?<min>\d+) (?:or|to) (?<max>\d+) familiars", System.Text.RegularExpressions.RegexOptions.CultureInvariant);
+
+	private static List<(int Min, int Max, CrucibleBoard.ScoreBonus Bonus, string Name)> Squads()
+	{
+		if (_squads != null)
+		{
+			return _squads;
+		}
+
+		var squads = new List<(int Min, int Max, CrucibleBoard.ScoreBonus Bonus, string Name)>();
+		var sheet = Svc.Data.GetExcelSheet<Lumina.Excel.Sheets.XBMScoreBonus>(Dalamud.Game.ClientLanguage.English);
+		foreach (var bonus in new[] { CrucibleBoard.ScoreBonus.SquadI, CrucibleBoard.ScoreBonus.SquadII, CrucibleBoard.ScoreBonus.SquadIII })
+		{
+			if (sheet?.GetRowOrDefault((uint)bonus) is { } row
+				&& SquadSizes.Match(row.Unknown1.ExtractText()) is { Success: true } size)
+			{
+				squads.Add((int.Parse(size.Groups["min"].Value, System.Globalization.CultureInfo.InvariantCulture),
+					int.Parse(size.Groups["max"].Value, System.Globalization.CultureInfo.InvariantCulture), bonus, row.Unknown0.ExtractText()));
+			}
+		}
+
+		squads.Sort((a, b) => a.Max.CompareTo(b.Max));
+		return _squads = squads;
+	}
+
+	// K7 team size (A698): the smallest size of an "In Unterzahl" step - its upper bound - that holds the core of the
+	// recommendation and whose HP without one familiar hold the most the familiars lost in one run on this board; the full
+	// size while no run there was measured. The mean HP of the familiars on the team screen stand for each (a conclusion:
+	// no sheet gives the HP of the others).
+	private static unsafe int TeamSizeForScore(uint board, int size, int core, out string note)
+	{
+		note = string.Empty;
+		var party = AgentXBMPetParty.Instance();
+		long hp = 0;
+		var counted = 0;
+		if (party != null)
+		{
+			var team = party->SelectedPets.AsSpan();
+			for (var i = 0; i < team.Length && i < party->PetMaxHealth.Length; i++)
+			{
+				if ((BeastmasterPet)team[i].PetId != BeastmasterPet.None && party->PetMaxHealth[i] > 0)
+				{
+					hp += party->PetMaxHealth[i];
+					counted++;
+				}
+			}
+		}
+
+		var loss = CrucibleBoard.FamiliarLossOf(board);
+		var mean = counted > 0 ? hp / (double)counted : 0d;
+		foreach (var (_, max, bonus, name) in Squads())
+		{
+			if (max >= size || max < core)
+			{
+				continue;
+			}
+
+			var points = CrucibleBoard.BonusPoints(bonus);
+			if (loss is not { } need || mean <= 0d)
+			{
+				note = $"Full team: a team of {max} would bring \"{name}\" ({points} points), but no run on this board has measured "
+					+ "what the familiars lose here yet.";
+				continue;
+			}
+
+			var holds = (max - 1) * mean;
+			if (holds >= need)
+			{
+				note = $"{max} familiars: \"{name}\", {points} points. The familiars lost at most {need} HP in a run here; "
+					+ $"{max - 1} of them hold about {holds:F0}, one more stands in reserve.";
+				return max;
+			}
+
+			note = $"Full team: {max - 1} familiars hold about {holds:F0} HP, less than the {need} the familiars lost in a run here.";
+		}
+
+		return size;
+	}
+
 	private static List<BeastmasterPet>? _teamWanted;
 	private static (BeastmasterPet Pet, bool Add, DateTime At)? _teamLastToggle;
 	private static readonly HashSet<BeastmasterPet> _teamRefused = [];
@@ -123,6 +209,7 @@ public partial class BeastmasterRotation
 		var covered = new Dictionary<uint, int>();
 		var safeTaken = 0;
 		var soulTaken = false;
+		var core = 0;
 		while (chosen.Count < size && candidates.Count > 0)
 		{
 			var needSafe = safeTaken < BossSafeFamiliars;
@@ -160,6 +247,26 @@ public partial class BeastmasterRotation
 
 			safeTaken += pick.Safe ? 1 : 0;
 			soulTaken |= KinOf(pick.Pet) == BeastmasterKinType.Soulkin;
+
+			// A698: the core - up to the last pick that covers a weakness anew or is needed as a healer or interrupter.
+			if (bestWorth > 0f || needSafe || needSoul)
+			{
+				core = chosen.Count;
+			}
+		}
+
+		// A698: as few as the score's bonus for a smaller team allows with the core and the familiars' measured loss.
+		var keep = TeamSizeForScore(board, size, core, out var sizeNote);
+		CrucibleTeamSizeNote = sizeNote;
+		for (var i = chosen.Count - 1; i >= keep; i--)
+		{
+			var dropped = chosen[i];
+			chosen.RemoveAt(i);
+			candidates.Add(dropped);
+			foreach (var element in dropped.Hits)
+			{
+				covered[element] = covered.GetValueOrDefault(element) - 1;
+			}
 		}
 
 		// A579: leveling - a pick gives way to the lowest-ranked familiar that replaces it adequately.

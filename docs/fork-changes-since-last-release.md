@@ -94,6 +94,12 @@ What this release changes in the fight. For the whole distance from upstream, se
   as before, and once an item has gone everything does. Among safe ways the route takes the one with more points (an
   enemy space 250, an elite space 800), then, while the bonus stands, the one safe without items. The trace names when
   items are kept, when they go again and when the bonus falls.
+- **The team recommendation takes as few familiars as the score rewards and the board allows.** A team of 6 or 7, 4 or
+  5, or 1 to 3 familiars gives 1,250, 2,500 or 4,250 points ("In Unterzahl"); the recommendation filled every board to
+  its limit. RSR now learns per board the most HP the familiars lost together in one run and recommends the smallest of
+  those sizes that holds every familiar it needs for the weaknesses, healing and interrupts, and whose HP without one
+  familiar still hold that loss. Until a run on the board was measured it recommends the full team; the window says
+  which and why.
 - **Ten items held count as well, and the run ends at full HP where it can.** On boards 2 to 5 ten crucible items held
   at the end give 1,000 points ("Sammelleidenschaft"); with ten in the inventory, items that guard against no present
   danger now stay there as for the no-item bonus, while your HP carry the way. Once no item bonus is at stake, the

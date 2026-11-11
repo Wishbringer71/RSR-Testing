@@ -20579,6 +20579,27 @@ nicht beobachtet – das Ergebnisfenster in `DefenseTrace.log` zeigt nach dem n�
 
 *Prüfgrad:* statisch, Compile, Prüfskripte; im Spiel nicht beobachtet.
 
+### A698 · Crucible-Kader: Teamgröße nach In Unterzahl aus Kern und gelerntem Begleiterverlust (11.11.2026)
+
+- *Anlass:* TODO „Crucible: Begleiter je Kampf nicht optimal gewählt", offen: die Teamgröße der Punktewertung (In
+  Unterzahl I bis III: 6 oder 7, 4 oder 5, 1 bis 3 Begleiter; 1.250, 2.500, 4.250 auf jedem Brett, `XBMContent`).
+- *Recherche:* `TeamSize` (10 bis 15) ist die Obergrenze; die Größen nennen die Bedingungen in `XBMScoreBonus` 4 bis 6
+  (Lumina `Unknown1`). Die LP eines Begleiters außerhalb des Teamfensters führt kein Blatt (`XBMPetParamGrow`:
+  Konstitution je Rang). Was die Begleiter über ein Brett verlieren, lernte RSR nicht.
+- *Optionen:* (a) volle Größe; (b) immer die kleinste Stufe – gegen die Sicherheit (K9: ohne Begleiter mit LP trägt der
+  Spieler); (c) die kleinste Stufe, die den Kern der gierigen Wahl fasst und deren LP ohne einen Begleiter den
+  schwersten gemessenen Verlust eines Laufs auf dem Brett tragen – gewählt; ohne Messung volle Größe.
+- *Umgesetzt:* `CrucibleBoard.RecordFamiliarLoss` (aus `BST_Reborn.CloseFamiliarUse`), `LearnFamiliarLoss` am Ende des
+  Endkampfs und für spätere Einsätze desselben Laufs, `FamiliarLossOf`; Datei `CrucibleFamiliarLoss.json`, Reiter
+  „Crucible familiar loss"; `RecommendCrucibleTeam`: Kern, `TeamSizeForScore`, `CrucibleTeamSizeNote` im Teamfenster.
+  Konzept 21 K7 „Teamgröße nach Punkten".
+- *Falsifikation:* kein Defekt – die Empfehlung füllte jedes Brett bis `TeamSize` und ließ 1.250 bis 4.250 liegen. Option
+  falsch: Der Verlust wächst mit weniger Begleitern – derselbe Schaden der Gegner, anders verteilt; ein gefallener fehlt,
+  deshalb zählt der Vorrat einen weniger (eingearbeitet); der Vorrat ist ein Mittel (Preis benannt). Ausgeliefert,
+  nichts ändert sich: Noch kein Lauf gemessen – der erste mit voller Größe misst.
+
+*Prüfgrad:* statisch, Compile, Prüfskripte, Layoutmodell; im Spiel nicht beobachtet.
+
 ## B · Commit-Register (Fork vs. `upstream/main`)
 
 ### B1 · Einzelgeprüfte Fork-Commits

@@ -351,6 +351,15 @@ internal static class CrucibleBoard
 	/// </summary>
 	internal enum ScoreBonus : byte
 	{
+		/// <summary>"In Unterzahl I" (Beast Squad I): a team of the sizes its condition names (6 or 7).</summary>
+		SquadI = 4,
+
+		/// <summary>"In Unterzahl II" (Beast Squad II): 4 or 5.</summary>
+		SquadII = 5,
+
+		/// <summary>"In Unterzahl III" (Beast Squad III): 1 to 3.</summary>
+		SquadIII = 6,
+
 		/// <summary>"Unversehrter Bändiger" (Self-preservation): the player at 100 % HP.</summary>
 		SelfPreservation = 7,
 
@@ -416,6 +425,9 @@ internal static class CrucibleBoard
 
 		return bonus switch
 		{
+			ScoreBonus.SquadI => row.Unknown4,
+			ScoreBonus.SquadII => row.Unknown5,
+			ScoreBonus.SquadIII => row.Unknown6,
 			ScoreBonus.SelfPreservation => row.Unknown7,
 			ScoreBonus.Selfless => row.Unknown8,
 			ScoreBonus.EconomicEthos => row.Unknown15,
@@ -1051,6 +1063,11 @@ internal static class CrucibleBoard
 			TraceTeamAndField($"fight {_fight} over");
 			FinishLoad();
 			LearnFamiliarDps();
+			if (_finalFights.Contains(_fight))
+			{
+				_lossFinalOver = true;
+				LearnFamiliarLoss();
+			}
 		}
 
 		_familiarFight.Clear();
@@ -1607,6 +1624,69 @@ internal static class CrucibleBoard
 
 	// K16 (A692): each familiar's damage per second in the fight just over, from its second to its last hit; its best in this
 	// fight over every session is kept.
+	private static int _lossRun = -1;
+	private static long _runFamiliarLoss;
+	private static bool _lossFinalOver;
+
+	/// <summary>
+	/// K7 team size (A698): HP a familiar lost in one use on a board - what it came out with less what it left with, 0 when
+	/// it fell. Summed per run; once the final fight is over, a later use (the familiar out leaves after the end) still
+	/// counts.
+	/// </summary>
+	internal static void RecordFamiliarLoss(uint loss)
+	{
+		if (!DataCenter.IsInCrucible || loss == 0)
+		{
+			return;
+		}
+
+		if (_lossRun != _run)
+		{
+			_lossRun = _run;
+			_runFamiliarLoss = 0;
+			_lossFinalOver = false;
+		}
+
+		_runFamiliarLoss += loss;
+		if (_lossFinalOver)
+		{
+			LearnFamiliarLoss();
+		}
+	}
+
+	// K7 team size (A698): the run's familiar loss into the board's learned heaviest.
+	private static void LearnFamiliarLoss()
+	{
+		var board = CurrentBoard;
+		if (board == 0 || _lossRun != _run || _runFamiliarLoss <= 0)
+		{
+			return;
+		}
+
+		var loss = (int)Math.Min(int.MaxValue, _runFamiliarLoss);
+		lock (OtherConfiguration.CrucibleFamiliarLossGate)
+		{
+			if (OtherConfiguration.CrucibleFamiliarLoss.TryGetValue(board, out var known) && known >= loss)
+			{
+				return;
+			}
+
+			OtherConfiguration.CrucibleFamiliarLoss[board] = loss;
+		}
+
+		DefenseTrace.Line($"crucible board {board}: the familiars lost {loss} HP in this run, the heaviest so far stored");
+		_ = OtherConfiguration.SaveCrucibleFamiliarLoss();
+	}
+
+	/// <summary>K7 team size (A698): the most HP the familiars lost together in one run on <paramref name="board"/>; null before one was measured.</summary>
+	internal static int? FamiliarLossOf(uint board)
+	{
+		lock (OtherConfiguration.CrucibleFamiliarLossGate)
+		{
+			return OtherConfiguration.CrucibleFamiliarLoss.TryGetValue(board, out var loss) ? loss : null;
+		}
+	}
+
 	private static void LearnFamiliarDps()
 	{
 		var learned = new List<string>();

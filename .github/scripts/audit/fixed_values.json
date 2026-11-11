@@ -2040,6 +2040,36 @@
    "status": "exception",
    "loop": "A695",
    "reason": "Row id of XBMScoreBonus and index into XBMContent's BonusPoints (EXDSchema latest): a reference into the game's sheets, not a figure; the points themselves are read from XBMContent (A695)."
+  },
+  {
+   "file": "RotationSolver/Basic/Helpers/CrucibleBoard.cs",
+   "code": "SquadI = 4,",
+   "values": [
+    "4"
+   ],
+   "status": "exception",
+   "loop": "A698",
+   "reason": "Row id of XBMScoreBonus and index into XBMContent's BonusPoints (EXDSchema latest): a reference into the game's sheets, not a figure; the team sizes are read from the row's condition text, the points from XBMContent (A698)."
+  },
+  {
+   "file": "RotationSolver/Basic/Helpers/CrucibleBoard.cs",
+   "code": "SquadII = 5,",
+   "values": [
+    "5"
+   ],
+   "status": "exception",
+   "loop": "A698",
+   "reason": "Row id of XBMScoreBonus and index into XBMContent's BonusPoints (EXDSchema latest): a reference into the game's sheets, not a figure; the team sizes are read from the row's condition text, the points from XBMContent (A698)."
+  },
+  {
+   "file": "RotationSolver/Basic/Helpers/CrucibleBoard.cs",
+   "code": "SquadIII = 6,",
+   "values": [
+    "6"
+   ],
+   "status": "exception",
+   "loop": "A698",
+   "reason": "Row id of XBMScoreBonus and index into XBMContent's BonusPoints (EXDSchema latest): a reference into the game's sheets, not a figure; the team sizes are read from the row's condition text, the points from XBMContent (A698)."
   }
  ]
 }

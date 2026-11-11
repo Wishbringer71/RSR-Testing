@@ -336,6 +336,29 @@ Dullahan, Golem, Spriggan und Eisgolem (`XBMPet.InflictsInterrupt`).
   Vorgabe kein Grund. *Ergebnis:* C, entschieden (seine Frage zeigt den Wunsch, „auf Wunsch" schließt D aus): Wahl nach
   Abdeckung der Schwächen aller Kämpfe des Bretts, gewichtet nach Zahl der Gegner, dazu ein Heiler und, wo Gegner
   unterbrechbar wirken, einer, der unterbricht.
+  - *Teamgröße nach Punkten (A698):* Ein kleineres Team bringt In Unterzahl I bis III (`XBMScoreBonus` 4 bis 6: 6 oder
+    7, 4 oder 5, 1 bis 3 Begleiter; 1.250, 2.500, 4.250 auf jedem Brett). Die Größen liest RSR aus den Bedingungen des
+    Blatts („a team of 6 or 7 familiars"), die Punkte aus `XBMContent` (K15); `TeamSize` (10 bis 15) ist die Obergrenze,
+    keine Pflicht. *Im Kampf:* Weniger Begleiter heißt mehr Einsätze je Begleiter, und LP kehren ohne Rast nicht zurück
+    (K11). Fehlt am Ende ein Begleiter mit LP, trägt der Spieler die Feindseligkeit (K9), und seine Last steigt über die
+    gelernte; fehlt eine Schwäche, dauert ein Kampf länger. *Regel:* Die gierige Wahl oben ordnet die Begleiter nach
+    ihrem Beitrag; ihre ersten n sind das beste Team der Größe n. Der *Kern* sind die Picks bis zum letzten, der eine
+    Schwäche neu abdeckt oder als Heiler oder Unterbrecher gebraucht wird. RSR empfiehlt die kleinste Größe einer Stufe
+    (ihre Obergrenze: 3, 5, 7), die (1) den Kern fasst und (2) deren LP-Vorrat ohne einen Begleiter – Größe weniger
+    eins, mal mittlere LP der Begleiter im Teamfenster (Schluss: die LP der Begleiter außerhalb des Teams zeigt kein Blatt,
+    `XBMPetParamGrow` führt nur Konstitution) – mindestens die LP fasst, die die Begleiter auf diesem Brett in einem Lauf je verloren haben (gelernt
+    je Brett, der schwerste Lauf, Datei `CrucibleFamiliarLoss.json`). Ohne gemessenen Lauf auf dem Brett bleibt die volle
+    Größe (sichere Seite). Das Fenster nennt Größe, Bonus und den Vergleich; übernehmen bleibst du (C).
+    *Gegenthese 1 – Der Verlust wächst mit weniger Begleitern:* Die Gegner teilen denselben Schaden aus, gleich wie viele
+    Begleiter ihn tragen; mehr Einsätze je Begleiter verteilen ihn nur anders. Ein Begleiter, der fällt, fehlt danach;
+    deshalb zählt der Vorrat einen weniger: Fällt einer, fassen die übrigen den schwersten gemessenen Verlust noch.
+    *Preis:* Fällt einer, verliert der Lauf Keine Verluste (1.000) und erhält Minimale Verluste (250 bis 750); gegen
+    1.250 bis 4.250 für die Größe. *Gegenthese 2 – Der
+    Vorrat ist ein Mittel:* Begleiter mit wenig LP fassen weniger. Preis benannt; der schwerste gemessene Lauf ist die
+    pessimistische Seite. *Gegenthese 3 (ausgeliefert, und nichts ändert sich):* Er übernimmt die volle Empfehlung, weil
+    noch kein Lauf gemessen ist. Der erste Lauf mit voller Größe misst den Verlust; ab dem zweiten empfiehlt RSR kleiner.
+    *Gattung (Freund der …, 750, `XBMScoreBonus` 22 bis 29):* Ein Team aus einer Gattung deckt selten alle Schwächen und
+    Pflichten; offen im TODO „Crucible: Begleiter je Kampf nicht optimal gewählt".
 - *K8 – Gegenstände* (gebaut: A551 bis A555, unten „Stufe 3: K8"). Über `InstanceContentCrucibleOfTheUnbroken.UseItem(Platz, Bestie)` auf dein Ziel. Sicherheit zuerst
   (seine Regel): Bestien-Heiltrank oder -Pulver, wenn deine LP in die Gefahr fallen und keine Heilung bereit ist;
   Bestien-Gegengift und Bestien-Augentropfen gegen den passenden Zustand; Bestien-Verhärtungsmittel vor einem angekündigten

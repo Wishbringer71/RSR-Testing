@@ -42,6 +42,11 @@ internal class CrucibleTeamWindow : RecommendationWindow
 					Line($"{member}", "leaves", M3Severity.Warning);
 				}
 			}
+
+			if (BeastmasterRotation.CrucibleTeamSizeNote.Length > 0)
+			{
+				Note(BeastmasterRotation.CrucibleTeamSizeNote);
+			}
 		}
 
 		if (Action("##crucible_team_apply", "Apply", FontAwesomeIcon.Check, picks.Count > 0))

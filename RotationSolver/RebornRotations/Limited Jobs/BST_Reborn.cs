@@ -425,6 +425,7 @@ public sealed class BST_Reborn : BeastmasterRotation
 		if (_useStartHp > left)
 		{
 			_largestLossPerUse = Math.Max(_largestLossPerUse, _useStartHp - left);
+			CrucibleBoard.RecordFamiliarLoss(_useStartHp - left);
 		}
 
 		if (AgentHealth(_usePet) is { } agent)

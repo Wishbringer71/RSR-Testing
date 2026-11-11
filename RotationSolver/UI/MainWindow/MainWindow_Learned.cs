@@ -150,6 +150,7 @@ public partial class MainWindow
 			DangerousAreaTab(),
 			CrucibleFightLoadTab(),
 			CrucibleFamiliarDpsTab(),
+			CrucibleFamiliarLossTab(),
 			CrucibleCampPoolTab(),
 			SleepLimitTab(game),
 			DotTab(),
@@ -420,6 +421,26 @@ public partial class MainWindow
 
 		Sort(rows);
 		return new LearnedTab("Crucible familiars", ["Fight (first enemy)", "Familiar", "Best damage per second"], rows);
+	}
+
+	// K7 of the Crucible (concept 21, team size, A698): per board, the most HP the familiars lost together in one run; the team
+	// recommendation holds fewer familiars where the rest of them carry it.
+	private static LearnedTab CrucibleFamiliarLossTab()
+	{
+		var rows = new List<string[]>();
+		Dictionary<uint, int> losses;
+		lock (OtherConfiguration.CrucibleFamiliarLossGate)
+		{
+			losses = new Dictionary<uint, int>(OtherConfiguration.CrucibleFamiliarLoss);
+		}
+
+		foreach (var (board, loss) in losses)
+		{
+			rows.Add([$"board {board}", $"{loss} HP"]);
+		}
+
+		Sort(rows);
+		return new LearnedTab("Crucible familiar loss", ["Board", "Familiars lost together in a run, most"], rows);
 	}
 
 	// K10 of the Crucible (concept 21, Campsite, A667): per board, the whole a campsite rest shares among the player and the
