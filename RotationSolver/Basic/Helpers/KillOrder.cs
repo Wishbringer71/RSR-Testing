@@ -64,6 +64,17 @@ internal static class KillOrder
 	private static readonly List<System.Numerics.Vector3> _puddles = [];
 	private static readonly HashSet<ulong> _first = [];
 
+	// A687: every figure that has been targetable in this area - a living enemy counts only once it has been one; the helpers
+	// that carry a group's name and cast its spells never are (six with 44 HP in each tablitaur fight on 11.11.2026).
+	private static readonly HashSet<ulong> _seenTargetable = [];
+	private static readonly HashSet<ulong> _present = [];
+	private static readonly List<ulong> _gone = [];
+	private static uint _territory;
+
+	// A687: the highest stream measured on each group of FallTogether while a member lives - a history begins anew when its
+	// enemy regains health, and a fresh fit over few samples shows almost nothing.
+	private static readonly float[] _streamPeak = new float[FallTogether.Length];
+
 	// A675: the needle as last read - its object, its heading in quarter turns, the sense and moment of its last turn - and the
 	// beat it showed; a Death seen, for how long before a turn the beat falls.
 	private static ulong _needleId;
@@ -117,6 +128,19 @@ internal static class KillOrder
 		_noArea.Clear();
 		_reasons.Clear();
 		_first.Clear();
+		var territory = (uint)Svc.ClientState.TerritoryType;
+		if (territory != _territory)
+		{
+			_territory = territory;
+			_seenTargetable.Clear();
+			Array.Clear(_streamPeak);
+		}
+
+		foreach (var battleChara in all)
+		{
+			_ = _seenTargetable.Add(battleChara.GameObjectId);
+		}
+
 		var rules = Service.Config.KillRules && !DataCenter.IsPvP && all.Count > 0;
 		if (rules || _traced.Count > 0)
 		{
@@ -125,9 +149,9 @@ internal static class KillOrder
 
 		if (rules)
 		{
-			foreach (var (members, survivorAction) in FallTogether)
+			for (var group = 0; group < FallTogether.Length; group++)
 			{
-				HoldTogether(members, survivorAction);
+				HoldTogether(group);
 			}
 
 			foreach (var (enemy, others, noArea) in NotBefore)
@@ -147,22 +171,46 @@ internal static class KillOrder
 
 	// A683: every enemy of the object table with HP left, targetable or not. An enemy that cannot be targeted for a while - the
 	// elder tablitaur through its Endless Swing, 26 s on 08.11.2026 - still begins its action when another falls, and the
-	// target list, which holds the targetable ones only, would count it as gone.
+	// target list, which holds the targetable ones only, would count it as gone. A687: only one that has been targetable in
+	// this area; a figure that never was is a helper (concept 03, "Wer lebt").
 	private static void CollectLiving()
 	{
 		_living.Clear();
+		_present.Clear();
 		foreach (var obj in Svc.Objects)
 		{
-			if (obj is IBattleChara { CurrentHp: > 0 } battleChara && battleChara.IsEnemySideFigure())
+			if (obj is not IBattleChara battleChara)
+			{
+				continue;
+			}
+
+			_ = _present.Add(battleChara.GameObjectId);
+			if (battleChara.CurrentHp > 0 && battleChara.IsEnemySideFigure() && _seenTargetable.Contains(battleChara.GameObjectId))
 			{
 				_living.Add(battleChara);
 			}
 		}
+
+		// Ids gone from the object table leave the set, so a later figure under a reused id starts unseen.
+		_gone.Clear();
+		foreach (var id in _seenTargetable)
+		{
+			if (!_present.Contains(id))
+			{
+				_gone.Add(id);
+			}
+		}
+
+		foreach (var id in _gone)
+		{
+			_ = _seenTargetable.Remove(id);
+		}
 	}
 
 	// Rule 2: every member at or below the reserve waits while another living member stands above it.
-	private static void HoldTogether(uint[] nameIds, uint survivorAction)
+	private static void HoldTogether(int group)
 	{
+		var (nameIds, survivorAction) = FallTogether[group];
 		_members.Clear();
 		foreach (var battleChara in _living)
 		{
@@ -172,26 +220,31 @@ internal static class KillOrder
 			}
 		}
 
+		if (_members.Count == 0)
+		{
+			_streamPeak[group] = 0f;
+		}
+
+		// Your stream in HP per second: the largest fall among the members, from their health history. You attack one after
+		// the other, and the one under attack shows your stream. Its highest value stands while a member lives (A687): a
+		// history begins anew when its enemy regains health, and holding one must not empty the stream - a sum over the
+		// attackable ones would, and the reserve with it.
+		foreach (var member in _members)
+		{
+			var rate = TimeToKillTracker.GetRate(member.GameObjectId);
+			if (!float.IsNaN(rate) && rate * member.MaxHp > _streamPeak[group])
+			{
+				_streamPeak[group] = rate * member.MaxHp;
+			}
+		}
+
 		if (_members.Count <= 1 || Svc.Data.GetExcelSheet<Lumina.Excel.Sheets.Action>()?.GetRowOrDefault(survivorAction) is not { } action)
 		{
 			return;
 		}
 
 		var window = action.CastSeconds();
-
-		// Your stream in HP per second: the largest fall among the members, from their health history. You attack one after
-		// the other, and the one under attack shows your stream; a held member's last value stands until its history lapses
-		// (30 s), so holding one does not empty the stream - a sum over the attackable ones would, and the reserve with it.
-		var stream = 0f;
-		foreach (var member in _members)
-		{
-			var rate = TimeToKillTracker.GetRate(member.GameObjectId);
-			if (!float.IsNaN(rate) && rate * member.MaxHp > stream)
-			{
-				stream = rate * member.MaxHp;
-			}
-		}
-
+		var stream = _streamPeak[group];
 		if (window <= 0f || stream <= 0f)
 		{
 			return;

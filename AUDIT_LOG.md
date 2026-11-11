@@ -20345,6 +20345,33 @@ punktebonis … recherchiere dazu".
 *Prüfgrad:* Laufzeitbeobachtung (DefenseTrace, ACT-Mitschnitte), Code statisch, Spielblätter (xivapi v2), Recherche;
 die Ursachen der Wiederbelebung und des Surecast am Code belegt, behoben noch nichts.
 
+### A688 · Tötungsregel: nur einmal anwählbare Figuren leben, die Rücklage hält den höchsten Strom (11.11.2026)
+
+- *Anlass:* A687 – in jedem Tablitauren-Kampf vom 11.11.2026 hielt die Paarregel sechs unsichtbare Figuren mit 44 HP,
+  und in Lauf 4 fiel die Schätzung des Stroms 0,6 s vor der Freigabe von 155 auf 12 HP/s; das Jüngere fiel 0,85 s vor
+  dem Ende seines Endlos-Schlags (8,7 s Wirkzeit im Mitschnitt).
+- *Ursache:* (1) `KillOrder.CollectLiving` nahm seit A683 jede gegnerische Figur der Objekttabelle, auch die Helfer,
+  die Zauber der Gruppe ausführen und nie anwählbar sind. (2) Der Strom war das Maximum der gefitteten Raten der
+  Mitglieder (`TimeToKillTracker`, Steigung über 30 s); eine Historie beginnt neu, sobald ihr Gegner LP zurückgewinnt,
+  und ein Fit über wenige Abtastungen zeigt fast nichts. Das Jüngere verlor in diesem Augenblick rund 570 HP/s.
+- *Optionen:* Mitglieder (a) wie bisher, (b) nur Figuren, die in diesem Gebiet schon anwählbar waren – dasselbe Merkmal
+  wie `EnemyDanger` (A674), (c) nach LP oder Modell der Helfer (kein Beleg, dass jeder Helfer so aussieht). Strom
+  (a) wie bisher, (b) Höchstwert je Gruppe, solange ein Mitglied lebt, (c) eigener Schadenszähler aus dem
+  Effekt-Handler (neuer Messweg, für die Regel nicht nötig).
+- *Gewählt:* (b) und (b). Das Ältere zählt während seines 26-s-Schwungs weiter, denn es war vorher anwählbar; die
+  Rücklage W/2 deckt einen Höchstwert bis zum Doppelten des wahren Stroms (Gegenthese 5). Lauf 4 statisch nachgerechnet:
+  Rücklage mindestens 698 HP, das Ältere (526) bleibt gehalten, bis das Jüngere ebenfalls darunter fällt; beide fallen
+  in rund 3,5 s, gut innerhalb von 8,7 s.
+- *Falsifikation:* kein Defekt – widerlegt (0,85 s Rest, Helfer gehalten); Option falsch – ein spät anwählbares echtes
+  Mitglied zählt erst ab dann (Preis im Konzept); ausgeliefert ohne Wirkung – nur wenn keine Rate je gemessen wird,
+  dann hält die Regel wie vorher nichts.
+- *Umgesetzt:* `_seenTargetable` je Gebiet (aus der Liste anwählbarer Figuren, die `Update` erhält; verschwundene Ids
+  fallen heraus), `_streamPeak` je Gruppe (null, wenn kein Mitglied lebt). Konzept 03, „Tötungsregeln" (Strom, Wer
+  lebt, Preis zu Gegenthese 1, Gegenthese 5); Release-Text.
+
+*Prüfgrad:* statisch (Code, Mitschnitt nachgerechnet), Compile, 53 Prüfschritte; im Spiel nicht beobachtet – die Spur
+nennt jeden Halt mit Rücklage und Strom.
+
 ## B · Commit-Register (Fork vs. `upstream/main`)
 
 ### B1 · Einzelgeprüfte Fork-Commits

@@ -22,14 +22,12 @@ BossMod-Module) die Rotation des Beastmasters, die Wahl der Begleiter und den Ze
 1. Crucible: Begleiter je Kampf nicht optimal gewählt (Beastmaster-Vorrang).
 2. Crucible: Gegenstände nicht optimal, die Brettbewertung nach Punkten bringt nicht die mögliche Ausbeute
    (Beastmaster-Vorrang).
-3. Crucible: Tötungsregel zählt unsichtbare Helfer, Rücklage bricht ein – das Paar fiel einmal 0,85 s vor dem Wüten
-   (Beastmaster-Vorrang).
-4. Heiler: Wiederbelebung kommt später als gewohnt – ein Gefallener fehlt der Gruppe länger.
-5. Heilung nicht optimal – ein Mitglied steht länger nahe dem Tod als nötig.
-6. Blaumagier: RSRs nächste Aktion beendet Apokalypsis und Chelonian Gate – Schaden und Minderung des Spielers enden
+3. Heiler: Wiederbelebung kommt später als gewohnt – ein Gefallener fehlt der Gruppe länger.
+4. Heilung nicht optimal – ein Mitglied steht länger nahe dem Tod als nötig.
+5. Blaumagier: RSRs nächste Aktion beendet Apokalypsis und Chelonian Gate – Schaden und Minderung des Spielers enden
    nach einem GCD statt nach 10 s.
-7. Weißmagier: Surecast ohne Rückstoß – die Abklingzeit fehlt, wenn der Rückstoß kommt.
-8. Kegel und Ringe gegnerischer Zauber genau messen: Zauber- und Kanalbeginn nutzen RSRs Erkennung bei Kegel und Ring
+6. Weißmagier: Surecast ohne Rückstoß – die Abklingzeit fehlt, wenn der Rückstoß kommt.
+7. Kegel und Ringe gegnerischer Zauber genau messen: Zauber- und Kanalbeginn nutzen RSRs Erkennung bei Kegel und Ring
    nicht, und mehrere Leser sehen hinter einem Kegel oder im Innenkreis eines Rings eine Gefahr, die keine ist.
 
 Danach die technische Schuld, soweit ihre Auflösungsbedingung erfüllt ist. Warten auf Daten: unten.
@@ -57,15 +55,6 @@ Einsatz der Gegenstände und das Verhalten auf dem Brett lassen Punkte und damit
 keine Punkte (Konzept 21, Grundlagen; A609 meine Ableitung). *Ort:* Laden, Schatz, Gegenstandsschritte (K8, K13).
 *Nächster Schritt:* Punktekriterien und ihre Belohnung belegen, je Kriterium im Loop: Punkte, wo sie keine Sicherheit
 kosten; wo ein Kriterium Sicherheit kostet, mit Wahrscheinlichkeit gewichtet. *Konzept:* 21, Grundlagen, K8, K13.
-
-### Crucible: Tötungsregel zählt unsichtbare Helfer, Rücklage bricht ein · N
-Im Kampf: In jedem Tablitauren-Kampf (Brett 2, 11.11.2026) hielt die Paarregel sechs unsichtbare Figuren mit 44 HP,
-die die Namen der Tablitauren tragen; sie zählt jede gegnerische Figur der Objekttabelle. In Lauf 4 fiel
-RSRs Schätzung des Schadensstroms kurz vor dem Ende von 155 auf 12 HP/s, die Rücklage von 698 auf 55 HP; das Ältere
-wurde freigegeben, das Jüngere fiel 0,85 s vor dem Ende seines Endlos-Schlags. Hält einmal ein Helfer über der
-Rücklage, bleibt ein echtes Mitglied bis zu 30 s gesperrt. *Ort:* `KillOrder.CollectLiving`, `HoldTogether`
-(Strom). *Nächster Schritt:* Mitglieder wie `EnemyDanger` nur aus Figuren, die in diesem Kampf in der Gegnerliste
-standen; den Einbruch des Stroms am Mitschnitt erklären, Loop. *Konzept:* 03, „Tötungsregeln"; 21, K12.
 
 ### Heiler: Wiederbelebung kommt später als gewohnt · N
 Im Kampf (seine Meldung, 11.11.2026: „heiler rezzt langsamer/später als gewohnt"): Ein Gefallener steht länger nicht

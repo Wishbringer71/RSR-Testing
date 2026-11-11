@@ -1120,16 +1120,26 @@ wenn eine Aktion ihn erreicht.
 **2 · Gemeinsam fallen.** Eine Gruppe, deren Überlebende beim Fall eines Mitglieds eine Aktion beginnen – Wut, die die
 Arena räumt, oder Wiederbelebung des Gefallenen –, muss so fallen, dass der Letzte vor dem Ende dieser Aktion liegt.
 - *Fenster W:* die Wirkzeit dieser Aktion aus dem Aktionsblatt (`Cast100ms`), zur Laufzeit gelesen.
-- *Schadensstrom r:* der größte LP-Verlust je Sekunde unter den Mitgliedern aus ihrer LP-Historie (`TimeToKillTracker`,
-  Anteil je Sekunde mal maximale LP) – dein Schaden und der deines Begleiters, gemessen und mit jedem Abtasten
-  nachgeführt. Du greifst eines nach dem anderen an, und das gerade angegriffene zeigt deinen Strom. Der Wert eines
-  zurückgehaltenen bleibt stehen, bis seine Historie verfällt (30 s ohne Abtastung).
+- *Schadensstrom r:* der größte LP-Verlust je Sekunde, den RSR in diesem Kampf an einem Mitglied der Gruppe gemessen
+  hat, aus ihrer LP-Historie (`TimeToKillTracker`, Anteil je Sekunde mal maximale LP) – dein Schaden und der deines
+  Begleiters. Du greifst eines nach dem anderen an, und das gerade angegriffene zeigt deinen Strom. Der Höchstwert
+  sinkt nicht, solange ein Mitglied lebt (A687): Die Historie eines Gegners beginnt neu, sobald er LP zurückgewinnt,
+  und ein frischer Fit über wenige Abtastungen zeigt fast nichts. In seinem Lauf vom 11.11.2026 (Brett 2, Lauf 4) fiel
+  der Wert so 0,6 s vor der Freigabe von 155 auf 12 LP/s, während das Jüngere rund 570 LP/s verlor; die Rücklage
+  schrumpfte von 698 auf 55 LP, das Ältere (526 LP) wurde frei, und das Jüngere fiel 0,85 s vor dem Ende seines
+  Endlos-Schlags. Mit dem Höchstwert hätte RSR das Ältere gehalten, bis das Jüngere ebenfalls bei 698 LP stand; beide
+  fallen dann in rund 3,5 s.
 - *Rücklage L = r × W / 2.* Ein Mitglied mit höchstens L LP hält RSR zurück – kein Ziel, keine Fläche –, solange ein
   anderes lebendes Mitglied mehr als L hat. Haben alle höchstens L, hält RSR keines mehr; die Zielart ordnet. Fällt
   dann eines, hat jeder Überlebende höchstens L: Bei gleichem Strom liegt er nach W/2.
-- *Wer lebt* (für Regel 2 und 3): jeder Gegner der Objekttabelle des Spiels mit LP über null, auch wenn er gerade nicht
-  anwählbar oder unverwundbar ist (A683). Seine Aktion beim Fall eines anderen beginnt er auch dann. Die Gegnerliste von
-  RSR führt nur anwählbare Gegner und taugt dafür nicht.
+- *Wer lebt* (für Regel 2 und 3): jeder Gegner der Objekttabelle des Spiels mit LP über null, der in diesem Gebiet
+  schon einmal anwählbar war, auch wenn er es gerade nicht ist oder unverwundbar ist (A683). Seine Aktion beim Fall
+  eines anderen beginnt er auch dann. Die Gegnerliste von RSR führt nur anwählbare Gegner und taugt allein dafür nicht.
+  Nie anwählbare Figuren zählen nicht: In jedem Tablitauren-Kampf seines Laufs vom 11.11.2026 standen sechs
+  unsichtbare Figuren mit 44 LP und den Namen der Tablitauren in der Objekttabelle (A687) – Helfer, die Zauber
+  ausführen. Gezählt hielt die Regel sie in jedem Kampf fest, und ein Helfer über einer kleinen Rücklage hätte ein
+  echtes Mitglied bis zum Verfall des Stroms gesperrt. Dasselbe Merkmal trennt in `EnemyDanger` echte Gegner von
+  Helfern (A674).
 - *Warum die Hälfte:* Die andere Hälfte des Fensters bleibt für den Weg zum Überlebenden – nach dem Fall des ersten steht
   er nicht neben dir – und für einen Strom, der am Ende sinkt (Begleiter zieht sich zurück, Bewegung). Mit dem ganzen
   Fenster wäre nichts für den Weg übrig; mit weniger als der Hälfte wechselt das Ziel öfter, ohne dass die Lage am Ende
@@ -1172,9 +1182,10 @@ und das zurückgehaltene fiele doch.
   rechtzeitig zurückkam; bei RSRs Strom fehlten etwa 3 s.
 - *Was gedroht hätte:* Fällt einer, während der andere nicht anwählbar ist, läuft dessen Fenster ab, ohne dass jemand
   ihn treffen kann.
-- *Preis:* Bleibt ein Mitglied für immer unangreifbar, wartet RSR mit dem anderen. Die Spur nennt den Halt mit Grund,
-  und von Hand geht es weiter. Ein solches Mitglied nennt keine Quelle, und sein Überlebender begänne seine Aktion
-  ohnehin.
+- *Preis:* Bleibt ein Mitglied nach seiner ersten Anwählbarkeit für immer unangreifbar, wartet RSR mit dem anderen.
+  Die Spur nennt den Halt mit Grund, und von Hand geht es weiter. Ein solches Mitglied nennt keine Quelle, und sein
+  Überlebender begänne seine Aktion ohnehin. Ein Mitglied, das nie anwählbar war, zählt nicht (oben, „Wer lebt"); ein
+  echtes, das erst spät anwählbar wird, zählt ab dann – vorher hält es kein anderes zurück.
 *Gegenthese 2 – Eine Fläche des Begleiters oder ein DoT trifft das zurückgehaltene Mitglied:* Die Flächensperre gilt für
 deine Aktionen; ein Trick deines Begleiters oder ein laufender DoT schlägt weiter. Preis: Das zurückgehaltene Mitglied
 verliert weiter LP. Reicht das bis zu seinem Fall, bevor das andere bei L steht, beginnt die Aktion des Überlebenden
@@ -1184,6 +1195,10 @@ Nicht abwendbar ohne Weg-Messung; die Spur nennt die Rücklage, und der Rest des
 *Gegenthese 4 (ausgeliefert, und nichts ändert sich):* Die Zielwahl kennt die zurückgehaltenen Gegner weiter. Widerlegt:
 Sie fehlen in der Gegnerliste (`DataCenter.AllHostileTargets`), aus der jede Aktion ihr Ziel wählt, und stehen in der
 Liste, die Flächen meiden.
+*Gegenthese 5 – Der Höchstwert überschätzt den Strom:* Ein Burst hebt den Fit über 30 s, danach sinkt der wahre Strom.
+Die Rücklage ist W/2 des Höchstwerts; der Überlebende liegt dann auch bei einem doppelt so hohen Höchstwert wie dem
+wahren Strom noch innerhalb von W. Dass sich ein Fit über 30 s durch einen Burst nicht verdoppelt, ist ein Schluss aus
+der Fensterlänge, nicht gemessen. Preis: ein früherer Halt, der den Kampf um wenige Sekunden verlängert.
 
 ## Unterbrechen, Betäuben, Provozieren: welcher Gegner
 

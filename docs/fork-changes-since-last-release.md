@@ -33,7 +33,14 @@ What this release changes in the fight. For the whole distance from upstream, se
   board 2, the lamias) or only after another (morpho and abaddon, the myconids while the mindflayer lives) counted only
   while they could be targeted. The elder tablitaur cannot be targeted for 26 s of its Endless Swing; RSR let the
   younger one go then and brought it to 176 HP before the elder came back, about 3 s from its fall and the elder's
-  enrage. Every enemy alive now counts, targetable or not; the trace says "it is gone" only when it is.
+  enrage. Every enemy alive that has been targetable in the area now counts, targetable at the moment or not; the
+  invisible helpers that carry the tablitaurs' names (six with 44 HP in each fight) never were and do not count. The
+  trace says "it is gone" only when it is.
+- **The pair's reserve keeps the highest stream measured.** The reserve a member waits at is half the survivor's
+  window times your stream, read from the enemies' health histories. A history begins anew when its enemy regains
+  health, and the stream could fall from 155 to 12 HP per second in under a second: on board 2 the elder was released
+  at 526 HP, and the younger fell 0.85 s before the end of its Endless Slashes. The stream now keeps its highest value
+  while a member of the pair lives.
 
 ## The Beastmaster between fights
 
