@@ -20435,6 +20435,29 @@ score: …").
 
 *Prüfgrad:* statisch, Compile, 53 Prüfschritte; im Spiel nicht beobachtet – die Spur nennt jeden Halt.
 
+### A692 · Hornwahl lernt aus dem Kampf: Schaden je Sekunde je Begleiter und Kampf (11.11.2026)
+
+- *Anlass:* seine Meldung vom 11.11.2026 (A687). Derselbe Kampf lief in drei Läufen mit drei Hornsätzen 64 bis 81 s;
+  gegen die schlaganfälligen Knochen (Kampf 1) setzten die Läufe 2 und 3 keinen Begleiter mit Schlag, obwohl Spriggan
+  und Karpfenkröte frei waren.
+- *Ursache:* `Option` schätzt aus Blättern (Potenz, Reichweite, Schwäche, Natur des Horns – das Entfesseln zählt nur
+  auf einem Horn mit „Tempered"); Spriggans und Karpfenkrötes Schlag liegt im Entfesseln. Auf einem anderen Horn zählt
+  ihre Schwäche nicht, die Werte gleichen sich, und die Reihenfolge entscheidet. Ob die Schätzung den Kampf trifft,
+  maß RSR an keinem Ausgang.
+- *Optionen:* (a) die Schätzung weiter verfeinern – sie bleibt eine Schätzung; (b) Dauer und Last je Hornsatz lernen –
+  drei Begleiter teilen einen Ausgang, die Zuordnung fehlt; (c) je Begleiter den gemessenen Schaden je Sekunde in
+  diesem Kampf, gegen die anderen gemessenen gewogen – gewählt, selbstnachsteuernd, die Zuordnung je Treffer besteht
+  (A586).
+- *Umgesetzt:* `CrucibleBoard.LearnFamiliarDps` (zweiter bis letzter Treffer je Begleiter, bester Wert je Kampf und
+  Begleiter, Datei `CrucibleFamiliarDps.json`), `FamiliarDpsFactor` (Verhältnis zum Mittel der gemessenen Begleiter
+  dieses Kampfs), in `BoardOption` auf die Schadenswertung; Reiter „Crucible familiars"; Spur je Kampfende.
+- *Falsifikation:* Glückslauf (Gegenthese 1, Preis benannt); Horn-Abhängigkeit (Gegenthese 2); nie gesetzte
+  Begleiter bleiben ungemessen (Gegenthese 3).
+- *Offen:* Teamgröße und Gattung der Punktewertung; die falsch beschriftete Handänderung nach dem Endkampf.
+
+*Prüfgrad:* statisch, Compile, 53 Prüfschritte; im Spiel nicht beobachtet – die Werte erscheinen im Reiter, sobald
+Kämpfe gelaufen sind.
+
 ## B · Commit-Register (Fork vs. `upstream/main`)
 
 ### B1 · Einzelgeprüfte Fork-Commits

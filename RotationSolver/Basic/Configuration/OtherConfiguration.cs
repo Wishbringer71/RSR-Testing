@@ -247,6 +247,17 @@ internal partial class OtherConfiguration
 	internal static readonly object CrucibleFightLoadsGate = new();
 
 	/// <summary>
+	/// K16 of the Crucible (concept 21, A692): per fight and familiar - the fight's XBMBattleDetail row times
+	/// <c>CrucibleBoard.FamiliarKeyStride</c> plus the familiar's pet row - the most damage per second it dealt while out,
+	/// learned in play over every session, only rising. Changed and read on the game thread under
+	/// <see cref="CrucibleFamiliarDpsGate"/>.
+	/// </summary>
+	internal static Dictionary<uint, int> CrucibleFamiliarDps = [];
+
+	/// <summary>Guards <see cref="CrucibleFamiliarDps"/> against the save on a pool thread.</summary>
+	internal static readonly object CrucibleFamiliarDpsGate = new();
+
+	/// <summary>
 	/// K10 of the Crucible (concept 21, Campsite, A667): per board (the route's board row), the whole a campsite rest shares
 	/// among the player and the familiars resting, in percent of each one's maximum HP - read from the game's rest prompt
 	/// where it is not capped at 100 %, the smallest read over every session. Changed and read on the game thread under
@@ -853,6 +864,9 @@ internal partial class OtherConfiguration
 		new LearnedFile<int>(nameof(CrucibleFightLoads), CopyCrucibleFightLoads,
 			v => { lock (CrucibleFightLoadsGate) { CrucibleFightLoads = v; } },
 			Math.Max, state => CrucibleFightLoadsStoreState = state, "Crucible fight(s) with a measured load"),
+		new LearnedFile<int>(nameof(CrucibleFamiliarDps), CopyCrucibleFamiliarDps,
+			v => { lock (CrucibleFamiliarDpsGate) { CrucibleFamiliarDps = v; } },
+			Math.Max, state => CrucibleFamiliarDpsStoreState = state, "Crucible familiar(s) with a measured damage per fight"),
 		new LearnedFile<int>(nameof(CrucibleCampPools), CopyCrucibleCampPools,
 			v => { lock (CrucibleCampPoolsGate) { CrucibleCampPools = v; } },
 			Math.Min, state => CrucibleCampPoolsStoreState = state, "Crucible board(s) with a read campsite rest"),
@@ -1105,6 +1119,19 @@ internal partial class OtherConfiguration
 	internal static Task SaveCrucibleFightLoads() => SaveList(nameof(CrucibleFightLoads));
 
 	internal static Task SaveCrucibleCampPools() => SaveList(nameof(CrucibleCampPools));
+
+	internal static Task SaveCrucibleFamiliarDps() => SaveList(nameof(CrucibleFamiliarDps));
+
+	private static Dictionary<uint, int> CopyCrucibleFamiliarDps()
+	{
+		lock (CrucibleFamiliarDpsGate)
+		{
+			return new Dictionary<uint, int>(CrucibleFamiliarDps);
+		}
+	}
+
+	/// <summary>What the last save and load of <see cref="CrucibleFamiliarDps"/> did, in words.</summary>
+	internal static string CrucibleFamiliarDpsStoreState { get; private set; } = "not loaded yet";
 
 	private static Dictionary<uint, int> CopyCrucibleCampPools()
 	{

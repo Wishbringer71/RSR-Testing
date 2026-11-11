@@ -149,6 +149,7 @@ public partial class MainWindow
 			InterruptibleKindTab(),
 			DangerousAreaTab(),
 			CrucibleFightLoadTab(),
+			CrucibleFamiliarDpsTab(),
 			CrucibleCampPoolTab(),
 			SleepLimitTab(game),
 			DotTab(),
@@ -395,6 +396,30 @@ public partial class MainWindow
 
 		Sort(rows);
 		return new LearnedTab("Crucible fights", ["Fight (first enemy)", "Heaviest, of HP without gear"], rows);
+	}
+
+	// K16 of the Crucible (concept 21, A692): per fight and familiar, the most damage per second it dealt while out; the horn
+	// choice weighs a familiar by it against the others measured in the same fight.
+	private static LearnedTab CrucibleFamiliarDpsTab()
+	{
+		var rows = new List<string[]>();
+		Dictionary<uint, int> measured;
+		lock (OtherConfiguration.CrucibleFamiliarDpsGate)
+		{
+			measured = new Dictionary<uint, int>(OtherConfiguration.CrucibleFamiliarDps);
+		}
+
+		foreach (var (key, dps) in measured)
+		{
+			var fight = key / CrucibleBoard.FamiliarKeyStride;
+			var pet = (BeastmasterPet)(key % CrucibleBoard.FamiliarKeyStride);
+			var enemies = CrucibleBoard.EnemiesOf(fight);
+			var name = enemies.Length > 0 ? CrucibleBoard.EnemyName(enemies[0].NameId) : string.Empty;
+			rows.Add([name.Length > 0 ? $"{name} (fight {fight})" : $"fight {fight}", BeastmasterRotation.FamiliarName(pet), $"{dps}/s"]);
+		}
+
+		Sort(rows);
+		return new LearnedTab("Crucible familiars", ["Fight (first enemy)", "Familiar", "Best damage per second"], rows);
 	}
 
 	// K10 of the Crucible (concept 21, Campsite, A667): per board, the whole a campsite rest shares among the player and the

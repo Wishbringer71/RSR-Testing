@@ -75,6 +75,10 @@ What this release changes in the fight. For the whole distance from upstream, se
   needs none - your HP and healing held carry the heaviest way to the final fight, and the weakest final healer has more
   than a use - the campsite window advises walking on and selects nobody. While no familiar has been fed ("Heilfasten",
   750) under the same condition, the shop recommends no feed.
+- **The horn choice learns from the fight.** RSR measures each familiar's damage per second while it is out, per fight,
+  and keeps its best. The horn screen weighs a familiar's estimate by how its measure stands against the others measured
+  in the same fight; a familiar never measured keeps its estimate. The learned values show in the tab "Crucible
+  familiars".
 - **The route window says left or right, and why.** At a fork it names each way by its side as seen from the start
   towards the final boss, with the spaces up to where the ways meet again, and weighs them up to the next campsite or
   the boss after that: your HP and your final fight's healers' HP there, and what the other way would have brought. It

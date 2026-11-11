@@ -972,7 +972,10 @@ internal static class CrucibleBoard
 		{
 			TraceTeamAndField($"fight {_fight} over");
 			FinishLoad();
+			LearnFamiliarDps();
 		}
+
+		_familiarFight.Clear();
 
 		_fight = 0;
 		_enemies = [];
@@ -1083,10 +1086,28 @@ internal static class CrucibleBoard
 		}
 	}
 
+	// K16 (A692): the key of a fight and a familiar in CrucibleFamiliarDps - the fight's XBMBattleDetail row times this stride
+	// plus the familiar's pet row; the pet rows of the familiars lie below it (Pet rows 47 to 97). An encoding, not a figure
+	// of the game.
+	internal const uint FamiliarKeyStride = 1000;
+
+	// K16 (A692): each familiar's hits in the fight under way - its damage after its first hit, and the moments of its first
+	// and last hit, which span the time it was out and striking.
+	private static readonly Dictionary<BeastmasterPet, (double Damage, DateTime First, DateTime Last, int Hits)> _familiarFight = [];
+
 	// A586: a familiar's hit by its source, the familiar out being the player's current one.
 	private static void RecordFamiliarDamage(Lumina.Excel.Sheets.Action action, uint amount)
 	{
-		var profile = BeastmasterRotation.FamiliarOf(BeastmasterRotation.CurrentPet);
+		var pet = BeastmasterRotation.CurrentPet;
+		if (pet != BeastmasterPet.None)
+		{
+			var now = DateTime.Now;
+			_familiarFight[pet] = _familiarFight.TryGetValue(pet, out var seen) && seen.Hits > 0
+				? (seen.Damage + amount, seen.First, now, seen.Hits + 1)
+				: (0d, now, now, 1);
+		}
+
+		var profile = BeastmasterRotation.FamiliarOf(pet);
 		if (action.GetActionCate() == ActionCate.Autoattack)
 		{
 			_familiarAuto += amount;
@@ -1504,6 +1525,78 @@ internal static class CrucibleBoard
 					loads.Sum.Healed + load.Healed),
 				load.Damage > loads.Heaviest.Damage ? load : loads.Heaviest);
 		}
+	}
+
+	// K16 (A692): each familiar's damage per second in the fight just over, from its second to its last hit; its best in this
+	// fight over every session is kept.
+	private static void LearnFamiliarDps()
+	{
+		var learned = new List<string>();
+		foreach (var (pet, (damage, first, last, hits)) in _familiarFight)
+		{
+			var span = (last - first).TotalSeconds;
+			if (hits <= 1 || span <= 0d)
+			{
+				continue;
+			}
+
+			var dps = (int)Math.Round(damage / span);
+			var key = (_fight * FamiliarKeyStride) + (uint)pet;
+			lock (OtherConfiguration.CrucibleFamiliarDpsGate)
+			{
+				if (OtherConfiguration.CrucibleFamiliarDps.TryGetValue(key, out var known) && known >= dps)
+				{
+					continue;
+				}
+
+				OtherConfiguration.CrucibleFamiliarDps[key] = dps;
+			}
+
+			learned.Add($"{pet} {dps}/s");
+		}
+
+		if (learned.Count > 0)
+		{
+			_ = OtherConfiguration.SaveCrucibleFamiliarDps();
+			DefenseTrace.Line($"crucible fight {_fight}: familiar damage per second, best so far stored - {string.Join(", ", learned)}");
+		}
+	}
+
+	/// <summary>
+	/// K16 (A692): how a familiar's measured damage per second in <paramref name="battle"/> stands against the mean of the
+	/// familiars measured there - 1 while it or no other was measured.
+	/// </summary>
+	internal static float FamiliarDpsFactor(uint battle, BeastmasterPet pet)
+	{
+		if (battle == 0 || pet == BeastmasterPet.None)
+		{
+			return 1f;
+		}
+
+		var low = battle * FamiliarKeyStride;
+		var high = low + FamiliarKeyStride;
+		double sum = 0d;
+		var count = 0;
+		int? own = null;
+		lock (OtherConfiguration.CrucibleFamiliarDpsGate)
+		{
+			foreach (var (key, dps) in OtherConfiguration.CrucibleFamiliarDps)
+			{
+				if (key < low || key >= high || dps <= 0)
+				{
+					continue;
+				}
+
+				sum += dps;
+				count++;
+				if (key - low == (uint)pet)
+				{
+					own = dps;
+				}
+			}
+		}
+
+		return own is { } measured && count > 1 ? (float)(measured / (sum / count)) : 1f;
 	}
 
 	// A661: the damage of the fight just over, taken back to the player without his gear - his maximum HP, the damage he

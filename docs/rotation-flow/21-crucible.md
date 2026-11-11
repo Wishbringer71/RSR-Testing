@@ -706,6 +706,33 @@ Dullahan, Golem, Spriggan und Eisgolem (`XBMPet.InflictsInterrupt`).
       auf dem Weg ohne Rast den Tod brächte – dann bleibt es bei der Campsite, und das ist richtig.
     Werkzeugquelle für die Vorlage: BeastMasterHelper (t3knical, Fork von anmili2022/Beastmaster) bevorzugt an einer
     Abzweigung die Campsite, wenn der Spieler verletzt ist, und prüft die LP des Kaders (Anleitung, 06.11.2026, A623).
+- *K16 – Hornwahl lernt aus dem Kampf* (seine Meldung vom 11.11.2026: „beastmaster begleiter werden nicht optimal für die
+  einzelnen kämpfe auf den brettern ausgewählt"; A692). *Im Kampf:* Derselbe Kampf auf Brett 1 lief in drei Läufen mit
+  drei Hornsätzen 64 bis 81 s; gegen die schlaganfälligen Knochen (Kampf 1) setzte Lauf 1 Spriggan (Entfesseln: Schlag),
+  die Läufe 2 und 3 keinen Begleiter mit Schlag, obwohl Spriggan und Karpfenkröte frei waren. Die Wertung je Begleiter
+  (`Option`) ist eine Schätzung aus Blättern – Potenz, Reichweite, Schwäche, Natur des Horns (das Entfesseln zählt nur
+  auf einem Horn mit „Tempered") –; ob sie den Kampf trifft, misst RSR an keinem Ausgang, und gleiche Werte entscheidet
+  der Zufall der Reihenfolge.
+  - *Messen:* Je Kampf (Zeile von `XBMBattleDetail`) und Begleiter der Schaden, den er austeilt, solange er draußen ist,
+    je Sekunde – seine Treffer vom zweiten bis zum letzten über die Zeit dazwischen (der erste öffnet die Spanne). RSR
+    ordnet jeden Treffer dem Begleiter zu, der gerade draußen ist (A586). Gelernt wird der beste Wert je Kampf und
+    Begleiter über alle Sitzungen (`CrucibleFamiliarDps.json`).
+  - *Nachsteuern:* Die geschätzte Schadenswertung eines Begleiters für einen Kampf wird mit dem Verhältnis seines
+    gemessenen Werts zum Mittel der in diesem Kampf gemessenen Begleiter multipliziert. Ungemessene behalten die
+    Schätzung; so kommen sie weiter zum Zug, bis sie gemessen sind. Sicherheit (übersteht einen Einsatz, heilt, schützt,
+    unterbricht) bleibt unberührt und geht wie bisher vor.
+  - *Gegenthese 1 – Der beste Wert ist ein Glückslauf:* Kritische Treffer und der Zeitpunkt des Aufrufs streuen. Teilweise
+    widerlegt: Die Streuung trifft jeden Begleiter gleich, und das Verhältnis vergleicht Begleiter desselben Kampfs.
+    Preis: Ein Begleiter mit einem glücklichen Lauf wird eine Weile vorgezogen.
+  - *Gegenthese 2 – Der Schaden hängt am Horn:* Das Entfesseln zählt nur auf einem Horn mit „Tempered"; gemessen wird,
+    was der Begleiter in diesem Kampf tat, auf welchem Horn auch immer. Preis: Ein Begleiter, der auf einem anderen Horn
+    mehr bringt, wird nach seinem gemessenen Horn bewertet.
+  - *Gegenthese 3 (ausgeliefert, und nichts ändert sich):* Ein Begleiter, den RSR nie setzt, wird nie gemessen. Er
+    behält die Schätzung, und wo sie gleichauf liegt, entscheidet die Reihenfolge wie bisher.
+  - *Anzeige und Spur:* Reiter „Crucible familiars" unter den gelernten Werten (Kampf, Begleiter, bester Wert); je
+    Kampfende eine Zeile „crucible fight …: familiar damage per second, best so far stored".
+  - *Offen:* die Teamgröße der Punktewertung (In Unterzahl I bis III, bis 4.250) und das Team aus einer Gattung (750) im
+    Kader (K7) – eine Frage der Sicherheit mit weniger Begleitern, die eigene Messungen braucht.
 - *K15 – Punkte der Bewertung* (seine Hinweise vom 11.11.2026, Grundlagen oben; A689). *Im Kampf und auf dem Weg:* Jeder
   Lauf vom 11.11.2026 verschenkte „kein Gegenstand" (750) schon vor dem ersten Kampf mit Sand der Zeit als Versicherung,
   „keine Marken ausgegeben" (500) mit dem ersten Kauf und „keine Ausrüstung" (750) mit einem Schatz; Lauf 3 rastete

@@ -1990,6 +1990,16 @@
    "status": "exception",
    "loop": "A689",
    "reason": "The board evaluation's score for clearing an elite space (625 before 7.57); no client sheet carries it (XBMScoreBonus and XBMScoreRank hold names and conditions only, ffxiv-datamining 52a72b38a), the game shows it only on the evaluation screen. Source: consolegameswiki, 'Crucible of the Unbroken', read 11.11.2026 (A689)."
+  },
+  {
+   "file": "RotationSolver/Basic/Helpers/CrucibleBoard.cs",
+   "code": "internal const uint FamiliarKeyStride = 1000;",
+   "values": [
+    "1000"
+   ],
+   "status": "exception",
+   "loop": "A692",
+   "reason": "The stride that packs a fight's XBMBattleDetail row and a familiar's Pet row into one key of the learned file CrucibleFamiliarDps; the familiars' Pet rows lie below it (47 to 97). An encoding of the store, not a figure of the game (A692)."
   }
  ]
 }

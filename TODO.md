@@ -44,9 +44,11 @@ Im Kampf (seine Meldung, 11.11.2026: „beastmaster begleiter werden nicht optim
 brettern ausgewählt"): Die Hornwahl vor einem Kampf setzt Begleiter, die zu dessen Gegnern nicht am besten passen.
 Gemessen (A687): Derselbe Kampf auf Brett 1 lief in drei Läufen mit drei verschiedenen Hornsätzen, 64 bis 81 s; das
 Elitefeld 110 bis 135 s, der Endkampf 99 bis 146 s. RSR lernt nicht, welcher Satz einen Kampf schneller und mit
-weniger Schaden beendet. *Ort:* Hornwahl (`BoardCandidates`, `BoardOption`, K7, K14). *Nächster Schritt:* Dauer und
-Last je Kampf und Hornsatz messen und der Wahl zugrunde legen, mit Teamgröße und Gattung aus der Punktewertung, Loop.
-*Konzept:* 21, K7, K14.
+weniger Schaden beendet. Gebaut (A692): Schaden je Sekunde je Kampf und Begleiter gemessen und in der Hornwahl gegen
+die anderen gemessenen gewogen. Offen: die Teamgröße und das Team aus einer Gattung der Punktewertung (bis 4.250 und
+750); die Zeile „battlehorns changed by hand to None" nach jedem Endkampf ist die Wiederherstellung beim Verlassen
+(seit 7.58), falsch beschriftet. *Ort:* Kader (K7), `BST_Reborn` (Handänderung). *Nächster Schritt:* Sicherheit eines
+kleineren Teams aus den gelernten Lasten und Begleiterwerten bestimmen, Loop. *Konzept:* 21, K7, K16.
 
 ### Crucible: Gegenstände und Brettbewertung bringen nicht die mögliche Ausbeute · N
 Im Kampf (seine Meldung, 11.11.2026: „gegenstände werden nicht optimal gewählt, jedes brett hat nach dem endboss eine

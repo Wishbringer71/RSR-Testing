@@ -2263,7 +2263,7 @@ public sealed class BST_Reborn : BeastmasterRotation
 
 			for (var h = 0; h < Horns.Length; h++)
 			{
-				options[h].Add(BoardOption(pet, Horns[h], boss, pack, enemies, hp, full, rank));
+				options[h].Add(BoardOption(pet, Horns[h], boss, pack, enemies, hp, full, rank, battle));
 			}
 		}
 
@@ -2390,13 +2390,14 @@ public sealed class BST_Reborn : BeastmasterRotation
 	// outlast the largest loss of a use on this board, and its feed: damage times (1 + its Damage Dealt), the loss times
 	// (1 - its Damage Taken). The same for the battle about to start and for the final fight's plan.
 	private HornOption BoardOption(BeastmasterPet pet, HornOrder horn, bool boss, int pack, CrucibleBoard.Enemy[] enemies,
-		uint hp, uint full, int rank)
+		uint hp, uint full, int rank, uint battle = 0)
 	{
 		var (dealt, taken) = FeedFactors(pet);
 		var option = Option(pet, horn, boss, pack, enemies);
 		return option with
 		{
-			Damage = option.Damage * dealt,
+			// K16 (A692): the estimate corrected by what the familiar measured in this fight against the others measured there.
+			Damage = option.Damage * dealt * CrucibleBoard.FamiliarDpsFactor(battle, pet),
 			Health = hp / (float)full,
 			Rank = rank,
 			Lasts = _largestLossPerUse == 0u || hp > _largestLossPerUse * taken,
@@ -2423,7 +2424,7 @@ public sealed class BST_Reborn : BeastmasterRotation
 			finalOptions[h] = [];
 			foreach (var (pet, _, hp, full, rank) in candidates)
 			{
-				var option = BoardOption(pet, Horns[h], true, 1, final, hp, full, rank);
+				var option = BoardOption(pet, Horns[h], true, 1, final, hp, full, rank, fights[0]);
 				finalOptions[h].Add(restAhead ? option with { Lasts = true } : option);
 			}
 
