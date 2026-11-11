@@ -583,8 +583,12 @@ public partial class BeastmasterRotation
 			why = "against a boss, no Auto-potion stands";
 		}
 
-		// 6: protection against an announced hit on him; in the final fight also while an enemy attacks him.
-		if (slot < 0 && InCombat && (HitAnnouncedOn(player) || (finalFight && EnemyAttacks(player))))
+		// 6: protection against an announced hit on him; in the final fight also while an enemy attacks him. While an item
+		// bonus is kept (K15), only a hit that would take him below his potion line by its measured size, or one of unknown
+		// size, and no insurance in the final fight (A704).
+		if (slot < 0 && InCombat && (keepNoItem
+			? HitAnnouncedOn(player) && AnnouncedHitThreatens(player, line)
+			: HitAnnouncedOn(player) || (finalFight && EnemyAttacks(player))))
 		{
 			slot = Protection(crucible, player, out why);
 		}
@@ -629,7 +633,8 @@ public partial class BeastmasterRotation
 		}
 
 		// 9: the absorber of the element a cast carries that is announced on him or whose area reaches him.
-		if (slot < 0 && InCombat && (HitAnnouncedOn(player) || DataCenter.AreaHitReachesPlayer))
+		if (slot < 0 && InCombat && (HitAnnouncedOn(player) || DataCenter.AreaHitReachesPlayer)
+			&& (!keepNoItem || AnnouncedHitThreatens(player, line)))
 		{
 			slot = AgainstElement(crucible, player, out why);
 		}
@@ -767,6 +772,25 @@ public partial class BeastmasterRotation
 	private static bool HitAnnouncedOn(IBattleChara player)
 	{
 		return DataCenter.IsTankbusterAimedAt(player) || TankbusterHelp.AimedHitCallsForDefence(player, out _);
+	}
+
+	// A704 (K15): whether the hit announced on him, or the area hit reaching him, would take him below `line` by its measured
+	// size - an aimed one by the table of aimed hits, an area one by its announced share; one of unknown size counts, the
+	// safe side.
+	private static bool AnnouncedHitThreatens(IBattleChara player, float line)
+	{
+		if (HitAnnouncedOn(player) && (!DataCenter.AimedHitLeaves(player, out _, out _, out var left, out _) || left < line))
+		{
+			return true;
+		}
+
+		if (DataCenter.AreaHitReachesPlayer)
+		{
+			var share = DataCenter.AnnouncedAreaShare;
+			return share <= 0f || player.GetHealthRatio() - share < line;
+		}
+
+		return false;
 	}
 
 	private static bool EnemyAttacks(IBattleChara chara)

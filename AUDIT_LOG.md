@@ -20695,6 +20695,24 @@ die Messzeile ordnet jeden weiteren Fall seinem Weg zu.
 
 *Prüfgrad:* statisch, Compile, Prüfskripte, Modell an einem Lauf; im Spiel nicht beobachtet.
 
+### A704 · Crucible-Ablauf, Schritt 2: Schutzgegenstände nur gegen einen Treffer, der unter die Trankschwelle brächte (11.11.2026)
+
+- *Befund (seine Läufe vom 11.11.2026, ACT und DefenseTrace):* Tome of the Impervious bei 78 % LP gegen den Tankbuster
+  der Terrormilbe (15:00:50, 15:28:07, Brett 1; 15:46:51, Brett 2), Wildfire Weakener bei 63 % gegen einen Feuertreffer
+  des Ogers (15:02:32, 15:15:56). Kein Treffer nahm in den fünf Läufen mehr als 17 % seiner LP. Schritt 6 (Schutz) und
+  Schritt 9 (Elementschutz) zählten jede Ankündigung als Gefahr, ohne ihre Größe; beide verwirkten Sparsamkeit.
+- *Optionen:* (a) Nullvariante; (b) beide Schritte hinter `keepNoItem` wie die Versicherungen – ein großer, gemessener
+  Treffer bliebe ungeschützt; (c) solange ein Gegenstandsbonus gehalten wird, nur gegen einen Treffer, der ihn nach
+  seiner gemessenen Größe unter die Trankschwelle brächte, oder einen ungemessenen – gewählt; ohne gehaltenen Bonus wie
+  bisher.
+- *Umgesetzt:* `AnnouncedHitThreatens` (gezielt: `AimedHitLeaves`; Fläche: `AnnouncedAreaShare`), Schritte 6 und 9 im
+  Gegenstandsschritt; der Endkampf-Schutz „während ein Gegner ihn angreift" bleibt bei gehaltenem Bonus liegen. Der
+  Beastmaster ist kein Tank (ClassJob 43, Role 2, xivapi v2), die Tabelle gezielter Treffer gilt für ihn. Konzept 21
+  K15, Sparsamkeit.
+- *Falsifikation:* siehe Konzept (Gift, unterschätzte Größe mit Preis, ungemessene Größe).
+
+*Prüfgrad:* statisch, Compile, Prüfskripte, Mitschnitt; im Spiel nicht beobachtet.
+
 ## B · Commit-Register (Fork vs. `upstream/main`)
 
 ### B1 · Einzelgeprüfte Fork-Commits

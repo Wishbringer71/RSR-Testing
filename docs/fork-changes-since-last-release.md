@@ -119,6 +119,11 @@ What this release changes in the fight. For the whole distance from upstream, se
   Bestien"), where those outweigh the item bonuses the use costs. The points of every bonus are read from
   the game's data for the board you are on. Each Crucible window, the score at the end among them, is written to
   `DefenseTrace.log` once per run with its values.
+- **Protection items only against a hit that would hurt.** While an item bonus is kept and your HP carry the way, a
+  protection or element item goes against an announced hit only when the hit, by its measured size, would take you
+  below your potion line, or when its size was never measured. On board 1 the Tome of the Impervious went at 78 % HP
+  and the Wildfire Weakener at 63 %, against hits that never took more than 17 % of your HP, and each cost the no-item
+  bonus.
 - **The shop and the treasure keep their bonuses too.** While nothing has been bought in the run ("Geizhals", 500) and
   your HP with the healing you hold carry the heaviest way to the final fight, the shop recommends only cover against a
   status that kills whatever your HP, such as Doom on board 2. While no beast gear has come in the run ("Mit leeren

@@ -792,8 +792,20 @@ Dullahan, Golem, Spriggan und Eisgolem (`XBMPet.InflictsInterrupt`).
     Das ist seine Spielweise auf die Punkte übertragen: Schutz, wo der Schaden wahrscheinlich ist, kein Schutz, der
     ohne Gefahr Punkte kostet.
   - *Kein Gegenstand (750; „Sparsamkeit", `XBMScoreBonus` 15, gebaut A689):* Unmittelbare Gefahr geht vor und bleibt ungeschmälert: Heilung unter der Trankschwelle,
-    Mittel gegen Gift und Blindheit, Schutz gegen einen angekündigten Treffer, Heilung und Schutz des Begleiters, der
-    vor dem nächsten Webfenster fiele. Die Versicherungen ohne Gefahr – Sand der Zeit, Wiederaufstehen, Auto-Trank gegen
+    Mittel gegen Gift und Blindheit, Schutz gegen einen angekündigten Treffer, der ihn unter die Trankschwelle brächte,
+    Heilung und Schutz des Begleiters, der vor dem nächsten Webfenster fiele. *Wann ein angekündigter Treffer Gefahr ist
+    (A704):* Solange ein Gegenstandsbonus auf dem Spiel steht und er den Weg trägt, gehen Schutz (Schritt 6) und
+    Elementschutz (Schritt 9) nur, wenn der Treffer nach seiner gemessenen Größe – gezielt: die Tabelle gezielter Treffer
+    (`AimedHitLeaves`, A540), Fläche: der angekündigte Anteil (`AnnouncedAreaShare`) – ihn unter die Trankschwelle
+    brächte, oder wenn seine Größe nicht gemessen ist (sichere Seite). Der Schutz im Endkampf, „während ein Gegner ihn
+    angreift", ist dann Versicherung und bleibt liegen. *Im Kampf (seine Läufe vom 11.11.2026):* Tome of the Impervious
+    ging bei 78 % LP gegen den Tankbuster der Terrormilbe, Wildfire Weakener bei 63 % gegen einen Feuertreffer des Ogers;
+    kein Treffer nahm in diesen Läufen mehr als 17 % seiner LP – beide kosteten Sparsamkeit (750), ohne dass ein Treffer
+    ihn unter 40 % gebracht hätte. *Gegenthese 1 – Gift nach dem Treffer:* Der Tankbuster der Milben legt Gift; die Last
+    des Gifts trägt das Gegenmittel gegen Gift, nicht der Schutz. *Gegenthese 2 – Die gemessene Größe unterschätzt:* Die
+    Tabelle hält je Treffer den größten gemessenen Anteil; ein größerer bringt ihn unter die Trankschwelle, dort greift
+    die Heilung, und die Tabelle lernt den größeren Anteil. *Preis:* einmal Heilung unter der Schwelle statt Schutz davor. *Gegenthese 3 (ausgeliefert, und nichts ändert sich):* Die Größe ist auf einem Brett nie
+    gemessen – dann geht der Schutz wie bisher, und die Tabelle lernt aus dem Treffer. Die Versicherungen ohne Gefahr – Sand der Zeit, Wiederaufstehen, Auto-Trank gegen
     einen Endgegner – und Schaden aus Gegenständen gehen bei erhaltenem Bonus nur, wenn der Spieler die schwerste Last
     bis einschließlich Endkampf nicht mit seinen LP trägt (`CrucibleRoute.WorstAhead` ohne Lager, mit der getragenen
     Ausrüstung). Heilung, die kein Kampf mehr braucht, bleibt im Endkampf bei erhaltenem Bonus liegen: Was verbleibende LP
