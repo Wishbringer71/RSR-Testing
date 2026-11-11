@@ -434,13 +434,15 @@ public partial class MainWindow
 			losses = new Dictionary<uint, int>(OtherConfiguration.CrucibleFamiliarLoss);
 		}
 
-		foreach (var (board, loss) in losses)
+		foreach (var (key, loss) in losses)
 		{
-			rows.Add([$"board {board}", $"{loss} HP"]);
+			rows.Add(key < CrucibleBoard.FamiliarKeyStride
+				? [$"board {key}", "all uses of a run", $"{loss} HP"]
+				: [$"board {key / CrucibleBoard.FamiliarKeyStride}", $"use {key % CrucibleBoard.FamiliarKeyStride} by size", $"{loss} HP"]);
 		}
 
 		Sort(rows);
-		return new LearnedTab("Crucible familiar loss", ["Board", "Familiars lost together in a run, most"], rows);
+		return new LearnedTab("Crucible familiar loss", ["Board", "Measure", "Most lost"], rows);
 	}
 
 	// K10 of the Crucible (concept 21, Campsite, A667): per board, the whole a campsite rest shares among the player and the

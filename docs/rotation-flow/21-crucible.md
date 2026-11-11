@@ -357,11 +357,14 @@ Dullahan, Golem, Spriggan und Eisgolem (`XBMPet.InflictsInterrupt`).
     vom 11.11.2026 – Brett 1 dreimal: Begleiterverlust 1.375 bis 1.836 LP je Lauf bei rund 600 LP je Begleiter; Brett 2
     zweimal: 3.046 bis 3.145 LP bei rund 920 – zeigen Einsätze bis 500 LP (Fliegenfalle 667 auf 167, Gigantoad 438,
     Morbol 400 im Endkampf). Ein Begleiter trägt oft nur einen schweren Einsatz; was nach ihm bleibt, reicht für den
-    nächsten nicht, und K11 hält ihn dann zurück. Die Summe der LP überschätzt das Team. *Verbesserte Regel (zu bauen):*
-    RSR lernt je Brett die Verluste der Einsätze des schwersten Laufs einzeln und legt sie für eine Größe n nach
-    absteigendem Verlust auf n weniger einen Begleiter, je mit den LP der Begleiter, die die Wahl nimmt (im Teamfenster
-    der Agent, sonst das Mittel), und keiner darf dabei auf 0 fallen. Passen alle, trägt n den gemessenen Lauf mit einem
-    in Reserve. Der Preis „Mittel" bleibt nur für Begleiter außerhalb des Teamfensters.
+    nächsten nicht, und K11 hält ihn dann zurück. Die Summe der LP überschätzt das Team. *Verbesserte Regel (gebaut,
+    A703):* RSR lernt je Brett die Verluste der Einsätze einzeln, absteigend geordnet, und hält je Rang den größten über
+    alle Läufe (der größte Einsatz je gesehen, der zweitgrößte je gesehen …) – eine Hülle, die kein Lauf übersteigt.
+    Für eine Größe n legt es diese Einsätze absteigend je auf den der n weniger einen Begleiter mit den meisten
+    verbliebenen LP, der danach noch steht; die LP sind die der Begleiter, die die Wahl nimmt (im Teamfenster der
+    Agent, sonst das Mittel des Teams). Passen alle, trägt n jeden gemessenen Lauf mit einem in Reserve; die Summe
+    bleibt als Anzeige. Der Preis „Mittel" bleibt nur für Begleiter außerhalb des Teamfensters. Die Rechnung kennt keine
+    Heilung der Begleiter (Trick, Gegenstand, Rast) – sie liegt auf der sicheren Seite.
     *Gegenthese 3 (ausgeliefert, und nichts ändert sich):* Er übernimmt die volle Empfehlung, weil
     noch kein Lauf gemessen ist. Der erste Lauf mit voller Größe misst den Verlust; ab dem zweiten empfiehlt RSR kleiner.
   - *Team aus einer Gattung (A699):* „Freund der Biestlinge" bis „Freund der …" (`XBMScoreBonus`, je Gattung eine Zeile,

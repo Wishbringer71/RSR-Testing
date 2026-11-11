@@ -1623,6 +1623,7 @@ internal static class CrucibleBoard
 	private static int _lossRun = -1;
 	private static long _runFamiliarLoss;
 	private static bool _lossFinalOver;
+	private static readonly List<uint> _runUseLosses = [];
 
 	/// <summary>
 	/// K7 team size (A698): HP a familiar lost in one use on a board - what it came out with less what it left with, 0 when
@@ -1641,16 +1642,19 @@ internal static class CrucibleBoard
 			_lossRun = _run;
 			_runFamiliarLoss = 0;
 			_lossFinalOver = false;
+			_runUseLosses.Clear();
 		}
 
 		_runFamiliarLoss += loss;
+		_runUseLosses.Add(loss);
 		if (_lossFinalOver)
 		{
 			LearnFamiliarLoss();
 		}
 	}
 
-	// K7 team size (A698): the run's familiar loss into the board's learned heaviest.
+	// K7 team size (A698, A703): the run's familiar loss into the board's learned heaviest - the whole under the board's
+	// row, each use under the board's row times FamiliarKeyStride plus its rank (largest first), each rank the largest seen.
 	private static void LearnFamiliarLoss()
 	{
 		var board = CurrentBoard;
@@ -1660,17 +1664,36 @@ internal static class CrucibleBoard
 		}
 
 		var loss = (int)Math.Min(int.MaxValue, _runFamiliarLoss);
+		var uses = new List<uint>(_runUseLosses);
+		uses.Sort((a, b) => b.CompareTo(a));
+		var changed = false;
 		lock (OtherConfiguration.CrucibleFamiliarLossGate)
 		{
-			if (OtherConfiguration.CrucibleFamiliarLoss.TryGetValue(board, out var known) && known >= loss)
+			if (!OtherConfiguration.CrucibleFamiliarLoss.TryGetValue(board, out var known) || known < loss)
 			{
-				return;
+				OtherConfiguration.CrucibleFamiliarLoss[board] = loss;
+				changed = true;
 			}
 
-			OtherConfiguration.CrucibleFamiliarLoss[board] = loss;
+			for (var i = 0; i < uses.Count && i < FamiliarKeyStride - 1; i++)
+			{
+				var key = (board * FamiliarKeyStride) + (uint)i + 1;
+				var use = (int)uses[i];
+				if (!OtherConfiguration.CrucibleFamiliarLoss.TryGetValue(key, out var seen) || seen < use)
+				{
+					OtherConfiguration.CrucibleFamiliarLoss[key] = use;
+					changed = true;
+				}
+			}
 		}
 
-		DefenseTrace.Line($"crucible board {board}: the familiars lost {loss} HP in this run, the heaviest so far stored");
+		if (!changed)
+		{
+			return;
+		}
+
+		DefenseTrace.Line($"crucible board {board}: the familiars lost {loss} HP in this run over {uses.Count} uses, "
+			+ $"{(uses.Count > 0 ? uses[0] : 0)} the largest; the heaviest so far stored");
 		_ = OtherConfiguration.SaveCrucibleFamiliarLoss();
 	}
 
@@ -1681,6 +1704,30 @@ internal static class CrucibleBoard
 		{
 			return OtherConfiguration.CrucibleFamiliarLoss.TryGetValue(board, out var loss) ? loss : null;
 		}
+	}
+
+	/// <summary>
+	/// K7 team size (A703): the losses of the familiars' uses on <paramref name="board"/>, largest first, each rank the
+	/// largest any run there had; empty before one was measured.
+	/// </summary>
+	internal static List<uint> FamiliarUseLossesOf(uint board)
+	{
+		var uses = new List<uint>();
+		lock (OtherConfiguration.CrucibleFamiliarLossGate)
+		{
+			for (var rank = 1u; rank < FamiliarKeyStride; rank++)
+			{
+				if (!OtherConfiguration.CrucibleFamiliarLoss.TryGetValue((board * FamiliarKeyStride) + rank, out var use))
+				{
+					break;
+				}
+
+				uses.Add((uint)use);
+			}
+		}
+
+		uses.Sort((a, b) => b.CompareTo(a));
+		return uses;
 	}
 
 	private static void LearnFamiliarDps()

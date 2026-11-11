@@ -20673,6 +20673,28 @@ die Messzeile ordnet jeden weiteren Fall seinem Weg zu.
   Lager, Futter, Endkampf) gegen die Läufe prüfen, was die gebauten Regeln anders entschieden hätten und ob der Lauf
   sicher geblieben wäre; die Eignung der Begleiter über mehrere Kämpfe und die Ablöse im Kampf an den Hornzeilen.
 
+### A703 · Crucible-Kader: Teamgröße aus den einzeln gelernten Einsätzen statt aus der Summe (11.11.2026)
+
+- *Anlass:* A702, Gegenthese 2 von A698 hält: Einsätze bis 500 LP bei rund 600 LP je Begleiter; die Summe überschätzt
+  ein kleines Team.
+- *Optionen:* (a) A698 lassen – empfiehlt zu klein, ein Begleiter fiele; (b) je Begleiter höchstens so viele Einsätze
+  wie seine LP durch den größten Einsatz – unterschätzt, weil die meisten Einsätze klein sind (Lauf 1: fünf von acht
+  unter 300 LP); (c) die Einsätze je Rang lernen (je Rang der größte über alle Läufe) und absteigend auf n weniger einen
+  Begleiter legen, je auf den mit den meisten verbliebenen LP – gewählt.
+- *Modell an seinem Lauf 1 (Brett 1, 11.11.2026, Verlust je Begleiter und Kampf aus den Agentenzeilen):* 500, 438, 400,
+  273, 174, 18, 18, 15 LP passen auf vier Begleiter mit 667, 667, 667 und 589 LP – fünf trügen den Lauf; ob die
+  Abdeckung der Schwächen fünf erlaubt, entscheidet der Kern.
+- *Umgesetzt:* `CrucibleBoard`: `_runUseLosses`, `LearnFamiliarLoss` je Rang unter Brett × `FamiliarKeyStride` + Rang,
+  `FamiliarUseLossesOf`; `TeamSizeForScore` verteilt die Einsätze auf die LP der Picks (Agent, sonst Mittel), Reserve
+  der Begleiter mit den wenigsten LP; Reiter „Crucible familiar loss" mit Ganzem und Rängen. Konzept 21 K7,
+  „Gegenthese 2".
+- *Falsifikation:* kein Defekt – A698 hätte bei 1.836 LP Summe und 600 LP Mittel fünf empfohlen, ohne zu prüfen, ob
+  500 und 438 auf getrennte Begleiter passen. Option falsch: Die Hülle aus den Rängen verschiedener Läufe übersteigt
+  jeden einzelnen Lauf – sie liegt auf der sicheren Seite, kostet höchstens eine Stufe. Ausgeliefert, nichts ändert
+  sich: Der Kern liegt über der kleineren Stufe – dann entscheidet die Abdeckung, wie gewollt.
+
+*Prüfgrad:* statisch, Compile, Prüfskripte, Modell an einem Lauf; im Spiel nicht beobachtet.
+
 ## B · Commit-Register (Fork vs. `upstream/main`)
 
 ### B1 · Einzelgeprüfte Fork-Commits

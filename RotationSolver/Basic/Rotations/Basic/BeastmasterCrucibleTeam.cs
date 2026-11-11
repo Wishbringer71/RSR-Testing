@@ -50,16 +50,17 @@ public partial class BeastmasterRotation
 		return _squads = squads;
 	}
 
-	// K7 team size (A698): the smallest size of an "In Unterzahl" step - its upper bound - that holds the core of the
-	// recommendation and whose HP without one familiar hold the most the familiars lost in one run on this board; the full
-	// size while no run there was measured. The mean HP of the familiars on the team screen stand for each (a conclusion:
-	// no sheet gives the HP of the others).
-	private static unsafe int TeamSizeForScore(uint board, int size, int core, out string note)
+	// K7 team size (A698, A703): the smallest size of an "In Unterzahl" step - its upper bound - that holds the core of the
+	// recommendation and on whose familiars but one every use measured on this board fits: the uses, largest first, each
+	// on the familiar with the most HP left that still stands after it. The HP are those the team agent shows for the
+	// picks, the mean of the team for one outside it (a conclusion: no sheet gives them). The full size while no run there
+	// was measured.
+	private static unsafe int TeamSizeForScore(uint board, int size, int core, List<TeamCandidate> picks, out string note)
 	{
 		note = string.Empty;
 		var party = AgentXBMPetParty.Instance();
+		var shown = new Dictionary<BeastmasterPet, uint>();
 		long hp = 0;
-		var counted = 0;
 		if (party != null)
 		{
 			var team = party->SelectedPets.AsSpan();
@@ -67,38 +68,68 @@ public partial class BeastmasterRotation
 			{
 				if ((BeastmasterPet)team[i].PetId != BeastmasterPet.None && party->PetMaxHealth[i] > 0)
 				{
+					shown[(BeastmasterPet)team[i].PetId] = party->PetMaxHealth[i];
 					hp += party->PetMaxHealth[i];
-					counted++;
 				}
 			}
 		}
 
-		var loss = CrucibleBoard.FamiliarLossOf(board);
-		var mean = counted > 0 ? hp / (double)counted : 0d;
+		var uses = CrucibleBoard.FamiliarUseLossesOf(board);
+		var mean = shown.Count > 0 ? (uint)(hp / shown.Count) : 0u;
 		foreach (var (_, max, bonus, name) in Squads())
 		{
-			if (max >= size || max < core)
+			if (max >= size || max < core || max > picks.Count)
 			{
 				continue;
 			}
 
 			var points = CrucibleBoard.BonusPoints(bonus);
-			if (loss is not { } need || mean <= 0d)
+			if (uses.Count == 0 || mean == 0)
 			{
 				note = $"Full team: a team of {max} would bring \"{name}\" ({points} points), but no run on this board has measured "
-					+ "what the familiars lose here yet.";
+					+ "what each use of a familiar costs here yet.";
 				continue;
 			}
 
-			var holds = (max - 1) * mean;
-			if (holds >= need)
+			// The familiars of the first `max` picks; the one with the fewest HP stays in reserve.
+			var left = new List<uint>();
+			for (var i = 0; i < max; i++)
 			{
-				note = $"{max} familiars: \"{name}\", {points} points. The familiars lost at most {need} HP in a run here; "
-					+ $"{max - 1} of them hold about {holds:F0}, one more stands in reserve.";
+				left.Add(shown.TryGetValue(picks[i].Pet, out var known) ? known : mean);
+			}
+
+			left.Sort();
+			left.RemoveAt(0);
+			var fits = true;
+			foreach (var use in uses)
+			{
+				var best = -1;
+				for (var i = 0; i < left.Count; i++)
+				{
+					if (left[i] > use && (best < 0 || left[i] > left[best]))
+					{
+						best = i;
+					}
+				}
+
+				if (best < 0)
+				{
+					fits = false;
+					break;
+				}
+
+				left[best] -= use;
+			}
+
+			if (fits)
+			{
+				note = $"{max} familiars: \"{name}\", {points} points. The {uses.Count} uses measured on this board, up to {uses[0]} HP "
+					+ $"each, fit on {max - 1} of them without one falling; one more stands in reserve.";
 				return max;
 			}
 
-			note = $"Full team: {max - 1} familiars hold about {holds:F0} HP, less than the {need} the familiars lost in a run here.";
+			note = $"Full team: the {uses.Count} uses measured on this board, up to {uses[0]} HP each, do not fit on {max - 1} familiars "
+				+ "without one falling.";
 		}
 
 		return size;
@@ -210,7 +241,7 @@ public partial class BeastmasterRotation
 		var covered = CoverageOf(chosen);
 
 		// A698: as few as the score's bonus for a smaller team allows with the core and the familiars' measured loss.
-		var keep = TeamSizeForScore(board, size, core, out var sizeNote);
+		var keep = TeamSizeForScore(board, size, core, chosen, out var sizeNote);
 		CrucibleTeamSizeNote = sizeNote;
 		for (var i = chosen.Count - 1; i >= keep; i--)
 		{
@@ -523,7 +554,7 @@ public partial class BeastmasterRotation
 			}
 
 			var picks = ChooseTeam(pool, size, weight, interrupting, team, out var core);
-			var keep = TeamSizeForScore(board, size, core, out var sizeNote);
+			var keep = TeamSizeForScore(board, size, core, picks, out var sizeNote);
 			if (picks.Count > keep)
 			{
 				picks.RemoveRange(keep, picks.Count - keep);
