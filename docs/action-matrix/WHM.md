@@ -1,6 +1,6 @@
 # WHM — Abhängigkeitsmatrix
 
-Erzeugt von `.github/scripts/audit/generate_action_matrix.py` am 2026-10-31; nicht von Hand bearbeiten. Methode und Grenzen: `docs/rotation-flow/14-action-dependency-matrix.md`.
+Erzeugt von `.github/scripts/audit/generate_action_matrix.py` am 2026-11-11; nicht von Hand bearbeiten. Methode und Grenzen: `docs/rotation-flow/14-action-dependency-matrix.md`.
 
 - Basisrotation: `WhiteMageRotation`
 - Rotation: `RotationSolver/RebornRotations/Healer/WHM_Reborn.cs`
@@ -87,6 +87,10 @@ direkt: 42 · ungenutzt: 2
 | Afflatus Solace | Regel prüft | Afflatus Misery |
 | Aquaveil | Regel prüft | Divine Benison |
 | Asylum | Regel sperrt vorher | Benediction |
+| Cure II | Regel prüft | Cure |
+| Cure II | Regel prüft | Regen |
+| Cure | Regel prüft | Cure II |
+| Cure | Regel prüft | Regen |
 | Dia | Regel prüft | Aero |
 | Divine Benison | Regel prüft | Aquaveil |
 | Divine Benison | Regel sperrt vorher | Benediction |
@@ -106,6 +110,8 @@ direkt: 42 · ungenutzt: 2
 | Plenary Indulgence | Regel prüft | Medica II |
 | Plenary Indulgence | Regel prüft | Medica |
 | Plenary Indulgence | Regel sperrt vorher | Temperance |
+| Regen | Regel prüft | Cure II |
+| Regen | Regel prüft | Cure |
 | Stone II | Regel prüft | Stone III |
 | Stone III | Regel prüft | Stone IV |
 | Stone IV | Regel prüft | Glare |

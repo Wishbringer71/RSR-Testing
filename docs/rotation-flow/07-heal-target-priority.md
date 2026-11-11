@@ -73,6 +73,25 @@ die Heilung landet: Synastry, Krasis, Soteria und Emergency Tactics heilen erst 
 die GCD-Heilungen und die Untergrenze der Pull-Pflege den GCD-Vorlauf, bei Schwelle und Zielwahl (A221); die übrigen
 oGCD-Schwellen den kurzen.
 
+**Eine Schwelle, die einen sofort wirkenden Heil-GCD sperrt, weil ein stärkerer mit Wirkzeit dort mehr heilt, gilt nur,
+solange der stärkere wirkbar ist** (A694, Ebene Heiler). Kann keiner der Heil-GCDs mit Wirkzeit gehen – in Bewegung,
+das Ziel außer ihrer Reichweite, zu wenig MP für sie –, nimmt der sofort wirkende das Ziel auch unter seiner Schwelle:
+Ein HoT heilt, der Schadens-GCD, der sonst kommt, nicht. Anlass: Ultima's Bane (Stufe 50, 10.11.2026, 20:24): Er selbst
+stand im Lauf 7 s bei 5 bis 7 % HP, RSR wirkte dreimal Windra; Regena, die einzige Heilung ohne Wirkzeit auf dieser
+Stufe (Afflatus Solace erst ab 52), sperrte `RegenHeal` (30 %), Vitra geht im Lauf nicht, Benediktion war seit 20:22:46
+in der Abklingzeit. Je Job:
+- *Weißmagier:* Regen unter `RegenHeal` nur noch, solange weder Cure II noch Cure wirkbar ist (gebaut). Der Optionstext
+  nennt das.
+- *Astrologe:* Aspected Benefic geht in Bewegung schon ohne Schwelle (`IsMoving ||` in `HealSingleGCD`).
+- *Gelehrter, Weiser:* Manifestation und Eukrasian Diagnosis tragen keine solche Sperre.
+
+Swiftcast für die Heilung mit Wirkzeit ist kein Ersatz; er bleibt für die Wiederbelebung (seine Vorgabe). *Preis:* Ist
+Benediktion im selben GCD für dasselbe Ziel bereit, kommt Regen dazu und kostet einen Schadens-GCD; das Ziel steht
+unter 30 %, die Wahrscheinlichkeit, dass der GCD fehlt, ist hoch. *Gegenthesen:* (1) Regen heilt zu langsam. Es heilt
+mehr als der Schadens-GCD, der sonst käme. (2) Er bleibt im nächsten Moment stehen, Cure II wäre gegangen. Die
+Entscheidung fällt je GCD; im nächsten GCD ist Cure II wieder wirkbar und hat Vorrang. (3) Regen liegt schon auf dem
+Ziel. Dann lehnt `RegenPvE.CanUse` ab, wie vorher.
+
 **Auch die Flächenschwellen lesen die Vorausschau** (A182). Der Text von „Heal ahead of incoming damage" sagt: „Every healing threshold and the heal target choice read the health a member is heading for". Die Flächenschwellen (`HealthAreaAbility`, `HealthAreaSpell`) lesen eigene, vorausberechnete Gruppenwerte (`DataCenter.ComputeForecastAreaStats`: Mittel und Streuung, bei mehr als vier Mitgliedern über die vier niedrigsten). Die bisherigen Gruppenwerte bleiben unverändert, weil sie viele Leser außerhalb der Heilkette haben, fremde Rotationen darunter. Mit ausgeschalteter Einstellung ist die Vorausschau 1 und die Werte gleich den bisherigen. Gezählt werden dieselben Mitglieder wie bei den bisherigen Werten (gültig, mit Id, lebend; A210). Im Kampf: Fällt die Gruppe schnell, kommt eine Flächenheilung per GCD etwa einen GCD früher. Die oGCD-Schwelle blickt nur bis zum Ende der Ausführungssperre voraus (A213).
 
 ## Was Gefährdung heißt

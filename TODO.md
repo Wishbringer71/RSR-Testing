@@ -22,11 +22,10 @@ BossMod-Module) die Rotation des Beastmasters, die Wahl der Begleiter und den Ze
 1. Crucible: Begleiter je Kampf nicht optimal gewählt (Beastmaster-Vorrang).
 2. Crucible: Gegenstände nicht optimal, die Brettbewertung nach Punkten bringt nicht die mögliche Ausbeute
    (Beastmaster-Vorrang).
-3. Heilung nicht optimal – ein Mitglied steht länger nahe dem Tod als nötig.
-4. Blaumagier: RSRs nächste Aktion beendet Apokalypsis und Chelonian Gate – Schaden und Minderung des Spielers enden
+3. Blaumagier: RSRs nächste Aktion beendet Apokalypsis und Chelonian Gate – Schaden und Minderung des Spielers enden
    nach einem GCD statt nach 10 s.
-5. Weißmagier: Surecast ohne Rückstoß – die Abklingzeit fehlt, wenn der Rückstoß kommt.
-6. Kegel und Ringe gegnerischer Zauber genau messen: Zauber- und Kanalbeginn nutzen RSRs Erkennung bei Kegel und Ring
+4. Weißmagier: Surecast ohne Rückstoß – die Abklingzeit fehlt, wenn der Rückstoß kommt.
+5. Kegel und Ringe gegnerischer Zauber genau messen: Zauber- und Kanalbeginn nutzen RSRs Erkennung bei Kegel und Ring
    nicht, und mehrere Leser sehen hinter einem Kegel oder im Innenkreis eines Rings eine Gefahr, die keine ist.
 
 Danach die technische Schuld, soweit ihre Auflösungsbedingung erfüllt ist. Warten auf Daten: unten.
@@ -58,12 +57,6 @@ im Weg; Geizhals und Mit leeren Händen im Laden und Schatz (A690); Schlaflose N
 (A691). Offen: Unversehrte Bestien und Unversehrter Bändiger am Ende des Endkampfs. *Ort:* Gegenstandsschritt im
 Endkampf (K8, K14). *Nächster Schritt:* ob LP am Ende Punkte bringen und wie viele, belegen; dann Heilung der Begleiter und des Spielers
 vor dem letzten Schlag gegen Sparsamkeit wägen, Loop. *Konzept:* 21, K15.
-
-### Heilung nicht optimal · N
-Im Kampf (seine Meldung, 11.11.2026: „heilung nicht optimal"): Erster Befund: Als Weißmagier (Stufe 50, Ultima's Bane,
-10.11.2026) stand er im Lauf 7 s bei 5 bis 7 % HP; RSR wirkte dreimal Windra statt Regena, der einzigen GCD-Heilung
-ohne Wirkzeit auf Stufe 50 (Action 137, xivapi v2). *Ort:* GCD-Heilung des Weißmagiers in Bewegung. *Nächster Schritt:* alle Fälle seiner Mitschnitte mit
-niedrigen HP und Schadens-GCD, Ursache, Loop. *Konzept:* 07.
 
 ### Weißmagier: Surecast ohne Rückstoß · N
 Im Kampf (seine Meldung, 11.11.2026: „es wird antirückstoß verwendet, obwohl kein rückstoß da war (whm)"): Surecast

@@ -58,6 +58,12 @@ What this release changes in the fight. For the whole distance from upstream, se
   whenever the reason changes – beyond 30 y, out of sight, not targetable, moving, left to another raise, raise denied
   – with the seconds since RSR saw it dead and the distance; "a candidate" means it is the raise target.
 
+- **A White Mage on the move heals a member under 30 % with Regen.** Below its health threshold Regen stayed away, for
+  Cure II and Benediction heal more there. On the move neither Cure II nor Cure can be cast: at level 50, with
+  Benediction on recast, you stood 7 s at 5 to 7 % HP while RSR cast Aero II three times. Below the threshold Regen now
+  goes out while neither Cure II nor Cure can be cast; the setting is now "If a party member's health drops below this
+  percentage, the Regen healing ability will not be used on them while Cure II or Cure can be cast".
+
 ## The Beastmaster between fights
 
 - **A familiar left out after a fight goes before the next one.** A familiar that ended a fight without One with

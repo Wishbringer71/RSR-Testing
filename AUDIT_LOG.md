@@ -20490,6 +20490,27 @@ Kämpfe gelaufen sind.
 *Prüfgrad:* statisch, Compile, Prüfskripte; Mitschnitt-Auswertung der Ursachen; im Spiel nicht beobachtet – die
 Messzeile in `DefenseTrace.log` zeigt den Grund jeder weiteren Spanne.
 
+### A694 · Heilung in Bewegung: Regen des Weißmagiers unter `RegenHeal`, wenn kein Heil-GCD mit Wirkzeit geht (11.11.2026)
+
+- *Anlass:* seine Meldung vom 11.11.2026: „heilung nicht optimal" (A687).
+- *Messung (Mitschnitt 10.11.2026, Ultima's Bane, Stufe 50):* 20:24:13 bis 20:24:20 er selbst bei 336 bis 404 von
+  6.894 HP (5 bis 6 %) im Lauf; RSR wirkte dreimal Windra. Regena, die einzige Heilung ohne Wirkzeit dort (Afflatus
+  Solace ab 52), sperrte `RegenHeal` (30 %), Vitra ging im Lauf nicht, Benediktion seit 20:22:46 in der Abklingzeit.
+  Die übrigen 31 Zeilen „critical class … ahead of" einem Schadens-GCD (A687): Minderungsfälle bei voller HP oder eine
+  Heilungsminderung des Kampfes, kein Defekt.
+- *Optionen:* (a) Nullvariante; (b) `RegenHeal` senken – sperrt dann oberhalb weiter und schwächt die Regel, wo Cure II
+  geht; (c) die Sperre gilt nur, solange Cure II oder Cure wirkbar ist – gewählt; (d) Swiftcast für Cure II – gegen
+  seine Vorgabe (Swiftcast bleibt für die Wiederbelebung).
+- *Ebene:* Heiler. Astrologe (Aspected Benefic geht in Bewegung ohne Schwelle), Gelehrter (Manifestation) und Weiser
+  (Eukrasian Diagnosis) tragen keine solche Sperre; gebaut nur beim Weißmagier.
+- *Umgesetzt:* `WHM_Reborn.HealSingleGCD`: Regen unter `RegenHeal`, wenn `CureIiPvE.CanUse` und `CurePvE.CanUse`
+  ablehnen; Optionstext ergänzt. Konzept 07, „Eine Schwelle, die einen sofort wirkenden Heil-GCD sperrt".
+- *Falsifikation:* kein Defekt – widerlegt am Mitschnitt. Option falsch: Regen heilt zu langsam – heilt mehr als der
+  Schadens-GCD; Benediktion im selben GCD bereit – Regen kostet dann einen Schadens-GCD (Preis). Ausgeliefert, nichts
+  ändert sich: Die Bewegungssperre ist an und der Platz sicher – dann ist Cure II wirkbar und hat Vorrang, wie gewollt.
+
+*Prüfgrad:* statisch, Compile, Prüfskripte; Mitschnitt-Auswertung; im Spiel nicht beobachtet.
+
 ## B · Commit-Register (Fork vs. `upstream/main`)
 
 ### B1 · Einzelgeprüfte Fork-Commits

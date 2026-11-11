@@ -142,7 +142,11 @@ public sealed class WHM_Reborn : WhiteMageRotation
 	public bool BenedictionNeedsThreat { get; set; } = true;
 
 	[Range(0, 1, ConfigUnitType.Percent)]
-	[RotationConfig(CombatType.PvE, Name = "If a party member's health drops below this percentage, the Regen healing ability will not be used on them")]
+	[RotationConfig(CombatType.PvE, Name = "If a party member's health drops below this percentage, the Regen healing ability will not be used on them while Cure II or Cure can be cast",
+		Tooltip = "Below this health a member gets Cure II or Cure instead of Regen: they heal more at once.\n"
+			+ "In a fight: while you move, or when the member is beyond their reach or you lack the MP for them, "
+			+ "neither can be cast. Regen then goes out under this health too - the HoT heals, the damage spell "
+			+ "that would come otherwise does not. Benediction is not affected.")]
 	public float RegenHeal { get; set; } = 0.3f;
 
 	[Range(0, 10000, ConfigUnitType.None, 100)]
@@ -613,10 +617,13 @@ public sealed class WHM_Reborn : WhiteMageRotation
 
 		// Below RegenHeal the emergency belongs to Cure II and Benediction - except under Walking
 		// Dead, where the dark knight heals himself by attacking and the owner's rule asks for a HoT
-		// as the light support (concept 09).
+		// as the light support (concept 09), and where neither Cure II nor Cure can be cast (moving,
+		// out of their reach, short of MP): a HoT heals, the damage GCD that comes otherwise does not
+		// (concept 07, A694).
 		if (RegenPvE.CanUse(out act)
 			&& (RegenPvE.Target.Target.GetForecastHealthRatio() > RegenHeal
-				|| RegenPvE.Target.Target.HasStatus(false, StatusID.WalkingDead)))
+				|| RegenPvE.Target.Target.HasStatus(false, StatusID.WalkingDead)
+				|| (!CureIiPvE.CanUse(out _) && !CurePvE.CanUse(out _))))
 		{
 			return true;
 		}
