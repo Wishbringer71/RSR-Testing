@@ -20223,6 +20223,62 @@ beobachtet.
 *Prüfgrad:* Patchnotes (Lodestone, Zusammenfassung des Seitentexts), Diff der Spieldaten und der Clientstrukturen,
 Code statisch; im Spiel nicht beobachtet.
 
+### A686 · Upstream 7.5.8.1 (60f09a12c) gemergt und ausgewertet, vier Quellen (11.11.2026)
+
+Gemessen auf seinen Auftrag („upstream prüfen", 11.11.2026): zwei neue Commits auf `upstream/main` (cd28a8d75 „Update
+for 7.58", Merge 60f09a12c, Tag 7.5.8.1). An keiner der fünf geänderten Dateien hat der Fork eigene Zeilen; beide
+Merges ohne Konflikt.
+
+- *OpCode-Tabelle für 7.58:* Aus ihr entsteht das Enum `OpCode`, das weder der Fork noch Upstream liest (Suche über
+  `RotationSolver/`). Im Kampf ändert sich nichts.
+- *Neuer Name Dreambringer* (BNpcName 14257, deutsch „Träumelein"; xivapi v2, `language=de`): neu in 7.58, in 7.57x1
+  leer. Kein Fangtier: `XBMPet` hat in 7.57x1 und 7.58 dieselben 51 Zeilen, und RSR liest die Familiars zur Laufzeit
+  aus diesem Blatt. Kein Bezug im Fork.
+- *Changelog:* Upstreams Text, ohne Code.
+- *RebornMaterial 7.5.7.8 → 7.5.8.1* (9a9996960..0d61c054c):
+  - *Escape:* `M3Dialog` und das Hotkey-Feld halten Escape fest, und ein `M3Window` schließt dann nicht. RSRs Fenster
+    erben von Dalamuds `Window`, und RSR nutzt weder Dialog noch Hotkey-Feld: keine Wirkung.
+  - *Aufklappbare Karte* (Update-Hinweise): Eine zugeklappte Karte endet jetzt an ihrem Kopf statt um den unteren
+    Kartenabstand darüber; die Versionen der Liste stehen etwas weiter auseinander. Das Layoutmodell (A654) bildet nur
+    die feste Karte nach, die unverändert ist.
+  - *Farbfeld* (Farbeinstellungen): Ein getippter Hex-Wert gilt erst ab sechs Stellen oder beim Verlassen des Felds,
+    nicht mehr nach jedem Zeichen.
+  - *Zeilen, Regler, Plugin-Liste:* Beschriftung, Kennung und Anzeigetext werden zwischengespeichert statt in jedem
+    Frame gebildet; Kennungen und Maße bleiben gleich (Reglerbreite: dieselbe Formel). Die Plugin-Liste liest Dalamud
+    nur noch bei einer Änderung der Plugins statt in jedem Frame.
+  - *`M3WindowFold`* (Steuer-, Zustands- und Hauptfenster): Ein angefordertes Minimieren greift am Anfang der Leiste
+    statt am Ende des Frames.
+  - *Neue Dalamud-Bezüge* (`ActivePluginsChanged`, `IKeyState`). Referenzprüfung (`tools/RefCheck` aus
+    Retainer-Repricer, Selbsttest bestanden) gegen Dalamud 15.0.4.0: RebornMaterial 373, ECommons 1.381,
+    RotationSolver 1.885 Verweise, keiner fehlt.
+- *Quellen am Ende* (`check_source_updates.py`), vier bewegt:
+  - goatcorp/Dalamud 43b34118b: nur ClientStructs auf 80cb4a7b7, den 7.58-Stand aus A685. Die geladene Distribution
+    15.0.4.0 (12e318c1, „patch_7.58", Zweig `rc`) trägt ihn, und RSR kompiliert dagegen ohne Warnung. A685s offener
+    Punkt, dass Dalamud für 7.58 nachziehen muss, ist damit erledigt; ob die eigenen Signaturen treffen, bleibt ohne
+    Spieldatei unprüfbar.
+  - NotAdam/Lumina 6447e12c7: Die Ausdrucks-API gibt den Ausdruckstyp als Enum statt als Byte aus – gleicher Name,
+    gleiche Parameterzahl, für RefCheck unsichtbar. Weder RSR noch ECommons noch RebornMaterial ruft sie; der einzige
+    `ExpressionType`-Verweis in `RotationSolver.dll` ist `System.Linq.Expressions` (Metadaten gelesen).
+  - dajoey/lalalazy 900c698dd: alle Plugins neu gebaut gegen Dalamud 15.0.4.0, laut Changelog ohne
+    Funktionsänderung; LazyCrucible und GluttonyCombo nur Version und Projektdatei.
+  - LTS-FFXIV/RebornMaterial 0d61c054c: oben.
+  - Alle eingetragen (`--record`).
+- *Spieldaten 7.58, nachgemessen:* Der 7.58-Stand von ffxiv-datamining (52a72b38a) ändert englisch 42 Blätter und fünf
+  Ereignis- und Questdateien, nicht nur die zwei Zeilen, die A685 nannte (C180). Unter den Blättern der Jobs (Action,
+  ActionTransient, Trait, ClassJob, Status) und Gegenstandsaktionen sind es tatsächlich nur Unmooring Melody und
+  ItemAction 2793. Was RSR sonst liest:
+  - BNpcBase 19013 (neu) und 19737 (neues Modell, Skalierung 1 → 0,7): Spalte 10 ist 0 und 7, nicht der Fangwert 5;
+    `CapturableFamiliar` erkennt keine von beiden, vorher wie nachher.
+  - InstanceContent 30155 bis 30161 (AAC Heavyweight M1 bis M4, Savage): eine Spalte 13 → 14, passend zum Echo aus
+    A685. RSR liest das Blatt nicht.
+- *Folge für die Konzepte:* keine. Kein Konzept nennt RebornMaterials Version oder A685s offenen Dalamud-Punkt.
+- *Ablauf:* `main` (d6f66d98b) ohne Konflikt gemergt, Fork-Version auf 7.5.8.1, kompiliert ohne Warnung, 51
+  Prüfschritte grün, gepusht. Danach `main` in `claude/fixes-after-7.5.7.15` (c46a2a8d2), kompiliert, 53 Prüfschritte
+  grün, gepusht, Referenzprüfung gegen diesen Build. Der Branch heißt weiter nach dem letzten Fork-Release.
+
+*Prüfgrad:* statisch (Diffs, Spielblätter, Metadaten der DLLs), Compile, Prüfskripte, Referenzprüfung; im Spiel nicht
+beobachtet.
+
 ## B · Commit-Register (Fork vs. `upstream/main`)
 
 ### B1 · Einzelgeprüfte Fork-Commits
@@ -20554,3 +20610,4 @@ Die offene Arbeit dazu — Reihenfolge und Abbruchbedingung der Nachprüfung —
 | C177 | A664 und Konzept 21 K8 (Stand A664): „*Synergien (geprüft):*" mit der Magiesteigerung und dem Ausdauermittel | Geprüft waren zwei; die Wirktexte nennen weitere – Reißzahn des Feuers unter Deep Freeze, Ausrüstung, die Mittel verlängert oder Seren heilen lässt, Spirit of the Breathtaker, Tötungsstapel, Futter an der Rast (A665, A666). | A665 |
 | C178 | Konzept 21 K8 „Rast und Futter" (Stand A666): „Ein ruhender Begleiter verliert sein Futter, mit Lilien-Simulakrum nicht (K14, gebaut A657, A662)" | Gebaut war nur der Verlust: Die Campsite nahm keinen Gefütterten, auch keinen mit Lilie; `Preserves` wurde gelesen, aber nirgends ausgewertet. | A669 |
 | C179 | A613 und Konzept 03 „Regenerationstränke der Sonderinhalte" (Stand A613): „nur in ihrem Inhalt nutzbar; das prüft das Spiel selbst", im Code „The game refuses it outside its content, which CanUse asks" | Das Spiel lehnt ab, aber `BaseItem.CanUse` las die Ablehnung nicht: `BadStatus` enthielt keinen Ortsgrund (593, 2651). Am 08.11.2026 wählte RSR den Wallfahrt-Trank 17-mal in fünf Gebieten, 13-mal davon in Sägerschrei und Mor Dhona; geheilt hat er nie (A683). | A683 |
+| C180 | A685 (Stand A685): „In der englischen Fassung ändern sich nur eine Spalte von Unmooring Melody (48565) und eine neue ItemAction-Zeile (2793)" | Der 7.58-Stand von ffxiv-datamining (52a72b38a) ändert englisch 42 Blätter und fünf Ereignis- und Questdateien, darunter BNpcName, BNpcBase, InstanceContent, Item und LogMessage. Nur unter den Blättern der Jobs (Action, ActionTransient, Trait, ClassJob, Status) und Gegenstandsaktionen sind es die zwei Zeilen; die übrigen, die RSR liest, ändern im Kampf nichts (A686). | A686 |

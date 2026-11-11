@@ -33,8 +33,8 @@
   },
   {
    "repo": "dajoey/lalalazy",
-   "commit": "1cc47b617",
-   "date": "2026-11-10",
+   "commit": "900c698dd",
+   "date": "2026-11-11",
    "use": "GluttonyCombo, LazyCrucible: Crucible-Aufzeichnungen, Sanduhr, Futter (A674, A679)"
   },
   {
@@ -51,8 +51,8 @@
   },
   {
    "repo": "goatcorp/Dalamud",
-   "commit": "a74096043b58d69b08af214ac724f3d42c3a238b",
-   "date": "2026-11-04",
+   "commit": "43b34118b",
+   "date": "2026-11-11",
    "use": "Client-API"
   },
   {
@@ -99,8 +99,8 @@
   },
   {
    "repo": "LTS-FFXIV/RebornMaterial",
-   "commit": "9a9996960",
-   "date": "2026-11-08",
+   "commit": "0d61c054c",
+   "date": "2026-11-11",
    "use": "Oberfläche (Hilfsfenster)"
   },
   {
@@ -111,8 +111,8 @@
   },
   {
    "repo": "NotAdam/Lumina",
-   "commit": "8802d66a3cb3032be2fcf998bb10e864221bdb13",
-   "date": "2026-10-27",
+   "commit": "6447e12c7",
+   "date": "2026-11-11",
    "use": "Blätter lesen"
   },
   {
