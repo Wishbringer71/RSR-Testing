@@ -516,7 +516,20 @@ public partial class BeastmasterRotation
 			}
 		}
 
-		var picks = RankOffers(offers, budget, int.MaxValue, owned, gearSlots, heldItems, itemSlots, board, out var spent);
+		// K15 (A690): while no token has been spent in this run and the player carries the way to the final fight with his HP
+		// and the healing he holds, only the cover against a status that kills whatever the HP - buying anything else ends the
+		// bonus Geizhals (500) for no danger the loads show.
+		var carries = CarriesToFinal(true, out var carried, out var heaviestWay);
+		var keepSpending = NoSpendBonusStands(boughtRows) && carries;
+		var picks = RankOffers(offers, budget, int.MaxValue, owned, gearSlots, heldItems, itemSlots, board, out var spent,
+			deathCoverOnly: keepSpending);
+		if (keepSpending)
+		{
+			DefenseTrace.Line($"crucible score: shop kept for the no-spending bonus (Geizhals) - you carry the heaviest way to the "
+				+ $"final fight with your HP and healing held ({carried:P0} against {heaviestWay:P0}); only cover against a "
+				+ "status that kills is recommended");
+		}
+
 		CrucibleShopRecommendation = picks;
 		CrucibleShopTokens = (budget, budget - spent);
 		RecommendFeed(offers, budget - spent);
@@ -544,7 +557,8 @@ public partial class BeastmasterRotation
 	/// <paramref name="heldItems"/> grow with each pick. <paramref name="spentAll"/> is what the picks cost together.
 	/// </summary>
 	private static unsafe List<CrucibleShopPick> RankOffers(List<(int Row, ushort Item, int Price)> offers, int budget, int maxPicks,
-		List<CrucibleGear> owned, int gearSlots, List<ushort> heldItems, int itemSlots, uint board, out int spentAll, bool oneScale = false)
+		List<CrucibleGear> owned, int gearSlots, List<ushort> heldItems, int itemSlots, uint board, out int spentAll, bool oneScale = false,
+		bool deathCoverOnly = false)
 	{
 		var picks = new List<CrucibleShopPick>();
 		var gear = CrucibleGearTable;
@@ -595,7 +609,7 @@ public partial class BeastmasterRotation
 
 		foreach (var (row, id, price) in offers)
 		{
-			if (life)
+			if (life || deathCoverOnly)
 			{
 				break;
 			}
@@ -615,6 +629,13 @@ public partial class BeastmasterRotation
 
 		// 2. Against each status of the board's fights that ends in death: neither HP nor mitigation help against it.
 		CoverStatuses(true);
+
+		// K15 (A690): the shop kept for the no-spending bonus recommends only that cover.
+		if (deathCoverOnly)
+		{
+			spentAll = spent;
+			return picks;
+		}
 
 		// 4 (A659: before the HP scale). Against each other status of the board's fights that costs safety - control, actions
 		// prevented, damage over time: what HP and mitigation do not stop; the scale weighs only HP.

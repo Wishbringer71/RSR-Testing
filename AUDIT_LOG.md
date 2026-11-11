@@ -20402,6 +20402,22 @@ nennt jeden Halt mit Rücklage und Strom.
 *Prüfgrad:* statisch, Compile, 53 Prüfschritte; im Spiel nicht beobachtet – die Spur nennt jeden Wechsel („crucible
 score: …").
 
+### A690 · Crucible-Punkte, Stufe 2: Geizhals im Laden, Mit leeren Händen im Schatz (11.11.2026)
+
+- *Regel (Konzept 21, K15):* Der Laden empfiehlt, solange im Lauf nichts gekauft wurde und der Spieler mit LP und
+  gehaltener Heilung die schwerste Last bis einschließlich Endkampf trägt, nur den Schutz gegen einen Zustand, der
+  unabhängig von den LP tötet (Stufe 2 von `RankOffers`). Der Schatz empfiehlt, solange im Lauf keine Ausrüstung kam
+  und der Spieler den Weg trägt, das beste Angebot ohne Ausrüstung, wenn es eines gibt.
+- *Im Kampf:* Auf Brett 1 kaufte er am 11.11.2026 in jedem Lauf ein, ohne dass eine gelernte Last es verlangte; das
+  kostete je Lauf 500 und mit Ausrüstung 750. Auf Brett 2 bleibt der Schutz gegen Verhängnis empfohlen.
+- *Optionen verworfen:* den Laden ganz sperren – Verhängnis tötet über jede LP-Rechnung hinweg; Ausrüstung im Schatz
+  ganz meiden – wo nur Ausrüstung angeboten wird, bleibt die Wahl wie bisher.
+- *Falsifikation:* ausgeliefert ohne Wirkung – im ersten Lauf ohne gemessene Lasten gilt der Weg als unbekannt, und
+  alles bleibt wie bisher; ein zweites Leben fehlt, wo ein Kampf schwerer wird als je gesehen (Preis wie A689).
+- *Offen:* Die Futterempfehlung im Laden bleibt bis zur Futterregel; ein Futterkauf beendet Geizhals weiterhin.
+
+*Prüfgrad:* statisch, Compile, 53 Prüfschritte; im Spiel nicht beobachtet – die Spur nennt jeden Halt.
+
 ## B · Commit-Register (Fork vs. `upstream/main`)
 
 ### B1 · Einzelgeprüfte Fork-Commits

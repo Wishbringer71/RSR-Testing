@@ -179,6 +179,20 @@ public partial class BeastmasterRotation
 		}
 
 		_treasureKey = key;
+
+		// K15 (A690): while no beast gear has come in this run and the player carries the way to the final fight, an offer
+		// without gear keeps the bonus Mit leeren Händen (750) - when there is one.
+		if (owned.Count == 0 && CarriesToFinal(true, out var carried, out var heaviestWay))
+		{
+			var bare = offers.FindAll(offer => !gear.ContainsKey(offer.Item));
+			if (bare.Count > 0 && bare.Count < offers.Count)
+			{
+				offers = bare;
+				DefenseTrace.Line($"crucible score: treasure without gear for the bonus Mit leeren Händen - you carry the heaviest way "
+					+ $"to the final fight ({carried:P0} against {heaviestWay:P0})");
+			}
+		}
+
 		var picks = RankOffers(offers, int.MaxValue, 1, owned, gearSlots, heldItems, itemSlots, board, out _, true);
 		CrucibleShopPick? pick = picks.Count > 0 ? picks[0] : null;
 

@@ -67,6 +67,10 @@ What this release changes in the fight. For the whole distance from upstream, se
   as before, and once an item has gone everything does. Among safe ways the route takes the one with more points (an
   enemy space 250, an elite space 800), then, while the bonus stands, the one safe without items. The trace names when
   items are kept, when they go again and when the bonus falls.
+- **The shop and the treasure keep their bonuses too.** While nothing has been bought in the run ("Geizhals", 500) and
+  your HP with the healing you hold carry the heaviest way to the final fight, the shop recommends only cover against a
+  status that kills whatever your HP, such as Doom on board 2. While no beast gear has come in the run ("Mit leeren
+  Händen", 750), the treasure recommends the best offer without gear, when there is one.
 - **The route window says left or right, and why.** At a fork it names each way by its side as seen from the start
   towards the final boss, with the spaces up to where the ways meet again, and weighs them up to the next campsite or
   the boss after that: your HP and your final fight's healers' HP there, and what the other way would have brought. It

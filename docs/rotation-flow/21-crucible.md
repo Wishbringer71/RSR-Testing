@@ -726,9 +726,21 @@ Dullahan, Golem, Spriggan und Eisgolem (`XBMPet.InflictsInterrupt`).
     bis einschließlich Endkampf nicht mit seinen LP trägt (`CrucibleRoute.WorstAhead` ohne Lager, mit der getragenen
     Ausrüstung). Heilung, die kein Kampf mehr braucht, bleibt im Endkampf bei erhaltenem Bonus liegen: Was verbleibende LP
     an Punkten bringen, nennt keine Quelle (unbelegt), die 750 sind belegt.
-  - *Keine Marken ausgegeben (500; „Geizhals", 19), keine Ausrüstung (750; „Mit leeren Händen", 13; offen):* Der Laden empfiehlt bei erhaltenem Bonus nichts, wenn der
-    Lauf ohne Kauf sicher ist; der Schatz empfiehlt dann ein Angebot ohne Ausrüstung. Die Begründung im Fenster nennt
-    den Punktpreis.
+  - *Keine Marken ausgegeben (500; „Geizhals", 19), keine Ausrüstung (750; „Mit leeren Händen", 13; gebaut A690):*
+    - *Laden:* Solange in diesem Lauf nichts gekauft wurde und der Spieler mit seinen LP und der gehaltenen Heilung die
+      schwerste Last bis einschließlich Endkampf trägt, empfiehlt der Laden nur den Schutz gegen einen Zustand der
+      kommenden Kämpfe, der unabhängig von den LP tötet (Stufe 2, etwa Verhängnis auf Brett 2): Gegen ihn hilft keine
+      LP-Rechnung. Kein zweites Leben, keine Ausrüstung, keine Heilung. Gekauft gilt, sobald der Laden eine Zeile als
+      gekauft zeigt, von RSR oder von Hand.
+    - *Schatz:* Solange in diesem Lauf keine Ausrüstung erworben ist und der Spieler den Weg trägt, empfiehlt der Schatz
+      das beste Angebot ohne Ausrüstung, wenn es eines gibt; sonst wie bisher.
+    - *Im Kampf:* Auf Brett 1 verliert er so weder 500 noch 750 für Käufe, die die gelernten Lasten nicht verlangen;
+      auf Brett 2 kauft er weiter den Schutz gegen Verhängnis, wenn der Laden ihn führt.
+    - *Gegenthese:* Ein zweites Leben schützt gegen alles. Teilweise widerlegt: Der Lasttest deckt die Kämpfe, die
+      gemessen sind; die unmittelbare Gefahr im Kampf bleibt gedeckt. Preis wie bei Sparsamkeit (Gegenthese 1).
+    - *Offen:* Die Futterempfehlung im Laden (K14) bleibt, bis die Futterregel steht (Heilfasten, unten); ein
+      Futterkauf beendet Geizhals weiterhin.
+    - *Spur:* „crucible score: shop kept …", „a purchase in this run …", „treasure without gear …".
   - *Nicht gerastet (1.000; „Schlaflose Nächte", 21), nicht gefüttert (750; „Heilfasten", 17; offen):* Lager und Futter empfehlen bei erhaltenem Bonus nur, wenn der Lauf
     ohne sie nicht sicher ist.
   - *Weg (gebaut A689):* Unter sicheren Wegen der mit mehr Punkten – Gegnerfeld 250, Elitefeld 800 –, dann der, der bei erhaltenem
