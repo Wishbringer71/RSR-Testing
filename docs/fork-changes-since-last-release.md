@@ -59,6 +59,14 @@ What this release changes in the fight. For the whole distance from upstream, se
 
 ## The Beastmaster on a Crucible board
 
+- **The board's score counts.** Remnants and familiar EXP grow with the score the board gives after its final fight.
+  While no item has been used in the run (the bonus "Sparsamkeit", 750 points) and your HP carry the heaviest way to the
+  final fight with the loads RSR learned, items that guard against no present danger stay in the inventory: Temporal
+  Sand, a Reraiser, the Auto-potion against a boss, maximum HP against a boss, damage items, tomes and buffs, healing no
+  fight needs. Healing below your potion line, cures, protection against an announced hit and the familiar's care go
+  as before, and once an item has gone everything does. Among safe ways the route takes the one with more points (an
+  enemy space 250, an elite space 800), then, while the bonus stands, the one safe without items. The trace names when
+  items are kept, when they go again and when the bonus falls.
 - **The route window says left or right, and why.** At a fork it names each way by its side as seen from the start
   towards the final boss, with the spaces up to where the ways meet again, and weighs them up to the next campsite or
   the boss after that: your HP and your final fight's healers' HP there, and what the other way would have brought. It

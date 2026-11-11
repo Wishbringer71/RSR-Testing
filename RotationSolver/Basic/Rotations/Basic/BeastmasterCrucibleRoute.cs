@@ -34,7 +34,13 @@ public partial class BeastmasterRotation
 	// random space), whether it passes a campsite, the space it ends on (the boss; -1 the end), and whether a fight on it
 	// has no load known yet; (A671) the smoke bombs left and the move of the first enemy space the way flees with one.
 	private readonly record struct RouteState(float Player, float Healer, int Items, bool Rested, int Stop, float HealerAtFinal = 1f,
-		bool Unknown = false, int Escapes = 0, int FleeMove = -1);
+		bool Unknown = false, int Escapes = 0, int FleeMove = -1, int Points = 0);
+
+	// K15 (A689): the score of a cleared space - the board's evaluation adds 250 for an enemy space and 800 for an elite one
+	// (consolegameswiki, "Crucible of the Unbroken", 11.11.2026; the elite raised from 625 in 7.57). No sheet carries them:
+	// XBMScoreBonus names the bonuses without their points. A fled fight scores nothing.
+	private const int EnemySpacePoints = 250;
+	private const int EliteSpacePoints = 800;
 
 	/// <summary>
 	/// Follows the run on the board every frame - the campsite, shop or treasure window that opens places it, a fight that ends
@@ -153,8 +159,9 @@ public partial class BeastmasterRotation
 		var weighed = options.TrueForAll(static o => !o.End.Unknown);
 
 		// Safe (A663): you live through every fight up to the final one, included, with the items held, and the final fight's
-		// weakest healer outlasts a use as it starts.
+		// weakest healer outlasts a use as it starts. K15 (A689): safe without the items too, while the no-item bonus stands.
 		bool IsSafe(RouteState end) => end.Player + potions > 0f && (loss == 0f || end.HealerAtFinal > loss);
+		bool IsSafeBare(RouteState end) => end.Player > 0f && (loss == 0f || end.HealerAtFinal > loss);
 
 		var best = -1;
 		for (var i = 0; i < options.Count; i++)
@@ -209,6 +216,18 @@ public partial class BeastmasterRotation
 				return safeA;
 			}
 
+			// K15 (A689): among safe ways the one with more points, then - while the no-item bonus stands - the one safe without
+			// items, then the one with more spaces with items.
+			if (safeA && a.Points != b.Points)
+			{
+				return a.Points > b.Points;
+			}
+
+			if (safeA && NoItemBonusStands && IsSafeBare(a) != IsSafeBare(b))
+			{
+				return IsSafeBare(a);
+			}
+
 			if (safeA && a.Items != b.Items)
 			{
 				return a.Items > b.Items;
@@ -248,6 +267,16 @@ public partial class BeastmasterRotation
 						? $"{otherName} would leave you at ~{other.End.Player:P0} after {StopName(other.End.Stop)} with {potions:P0} in items - "
 							+ "the fights up to it can cost more than you hold"
 						: $"{otherName} would bring a final healer to the final fight at ~{other.End.HealerAtFinal:P0}, under one of its losses a use");
+				}
+				else if (end.Points > other.End.Points)
+				{
+					reasons.Add($"both ways are safe up to {StopName(end.Stop)}; this one scores {end.Points - other.End.Points} more "
+						+ $"points with its fights (enemy space {EnemySpacePoints}, elite space {EliteSpacePoints})");
+				}
+				else if (NoItemBonusStands && IsSafeBare(end) && !IsSafeBare(other.End))
+				{
+					reasons.Add($"both ways are safe up to {StopName(end.Stop)}; this one is safe without using an item, which keeps "
+						+ $"the no-item bonus (Sparsamkeit), {otherName} needs the items held");
 				}
 				else if (end.Items > other.End.Items)
 				{
@@ -462,6 +491,7 @@ public partial class BeastmasterRotation
 						Player = state.Player - (cost ?? 0f),
 						Healer = fights ? state.Healer - loss : state.Healer,
 						Unknown = state.Unknown || cost == null,
+						Points = state.Points + (kind == Space.Elite ? EliteSpacePoints : kind == Space.Enemy ? EnemySpacePoints : 0),
 					};
 				default:
 					return state;

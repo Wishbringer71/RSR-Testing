@@ -448,6 +448,7 @@ public partial class BeastmasterRotation
 
 		var crucible = (InstanceContentCrucibleOfTheUnbroken*)director;
 		TraceHeldItems(crucible);
+		FollowScore(crucible);
 		if (!InCombat)
 		{
 			_crucibleSlotsRefused.Clear();
@@ -494,6 +495,11 @@ public partial class BeastmasterRotation
 		var hp = HpPotionItem.ThresholdHealthRatio();
 		var bossFighting = DataCenter.BossInCombat;
 		var finalFight = InCombat && CrucibleBoard.IsFinalFight;
+
+		// K15 (A689): while the no-item bonus stands and the player carries the way to the final fight, only items against a
+		// present danger go - healing below the line, cures, protection against an announced hit, the familiar's care.
+		var keepNoItem = KeepsNoItemBonus(player);
+		damage &= !keepNoItem;
 		var slot = -1;
 		var why = string.Empty;
 		IBattleChara on = player;
@@ -510,7 +516,7 @@ public partial class BeastmasterRotation
 		}
 
 		// A664: healing no fight ahead needs - everything in the final fight -, the largest piece that does not overheal.
-		if (slot < 0 && InCombat)
+		if (slot < 0 && InCombat && !keepNoItem)
 		{
 			slot = SpareHeal(crucible, player, finalFight, out why);
 		}
@@ -542,19 +548,19 @@ public partial class BeastmasterRotation
 			why = "against blindness";
 		}
 
-		if (slot < 0 && !_reraiseStood && (!_reraiseLostWithoutFall || bossFighting))
+		if (slot < 0 && !keepNoItem && !_reraiseStood && (!_reraiseLostWithoutFall || bossFighting))
 		{
 			slot = MostOf(crucible, CrucibleItemKind.Reraise);
 			why = _reraiseLostWithoutFall ? "against a boss, no Reraise stands" : "no Reraise stands";
 		}
 
-		if (slot < 0 && !InCombat && !PlayerHasStatusNamed(player, "Sandstill"))
+		if (slot < 0 && !keepNoItem && !InCombat && !PlayerHasStatusNamed(player, "Sandstill"))
 		{
 			slot = FirstOf(crucible, CrucibleItemKind.Sandstill);
 			why = "before the next fight, no Sandstill stands";
 		}
 
-		if (slot < 0 && InCombat && bossFighting && !PlayerHasStatusNamed(player, "Auto-potion"))
+		if (slot < 0 && !keepNoItem && InCombat && bossFighting && !PlayerHasStatusNamed(player, "Auto-potion"))
 		{
 			slot = FirstOf(crucible, CrucibleItemKind.AutoPotion);
 			why = "against a boss, no Auto-potion stands";
@@ -622,7 +628,7 @@ public partial class BeastmasterRotation
 		}
 
 		// 11: against a boss, more maximum HP while none stands.
-		if (slot < 0 && InCombat && bossFighting)
+		if (slot < 0 && !keepNoItem && InCombat && bossFighting)
 		{
 			for (var i = 0; i < crucible->Inventory.Length && slot < 0; i++)
 			{

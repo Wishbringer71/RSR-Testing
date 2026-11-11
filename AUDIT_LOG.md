@@ -20372,6 +20372,36 @@ die Ursachen der Wiederbelebung und des Surecast am Code belegt, behoben noch ni
 *Prüfgrad:* statisch (Code, Mitschnitt nachgerechnet), Compile, 53 Prüfschritte; im Spiel nicht beobachtet – die Spur
 nennt jeden Halt mit Rücklage und Strom.
 
+### A689 · Crucible-Punkte, Stufe 1: Sparsamkeit im Gegenstandsschritt, Punkte im Weg (11.11.2026)
+
+- *Anlass:* seine Meldungen vom 11.11.2026 (A687): Ausbeute nicht optimal, Punkteboni recherchieren. Recherche in Konzept
+  21, Grundlagen; Grundsatz und Regeln in K15.
+- *Loop, Optionen:* (a) Nullvariante – Punkte bleiben kein Ziel (A609, meine Ableitung, gekappte Entscheidung);
+  (b) Punkte immer vor Sicherheit – verworfen, seine Spielweise; (c) jeder Bonus wiegt gegen den Sicherheitsgewinn
+  der Handlung, die ihn verwirkt, gemessen mit dem Test des Wegs (A663) und den gelernten Lasten (A661) – gewählt;
+  (d) ein Erwartungswert aus Todeswahrscheinlichkeit und Punkten – verworfen, die Wahrscheinlichkeit eines Todes ist
+  aus den Lasten nicht schätzbar, die schwerste Last als Schranke schon.
+- *Abwägung im Kampf:* Jeder seiner fünf Läufe vom 11.11.2026 verlor Sparsamkeit (750) vor dem ersten Kampf mit Sand
+  der Zeit; der größte Treffer war 17 %, die schwerste Last 60 % im Endkampf. Mit der Regel bleiben Sand, Wiederaufstehen,
+  Auto-Trank, Max-LP, Schaden, Zauberbücher, Stärkungen und Heilung ohne Bedarf liegen, solange seine LP die schwerste
+  Last bis einschließlich Endkampf tragen; Heilung unter der Trankschwelle, Heilmittel, Schutz gegen angekündigte
+  Treffer und der Begleiter bleiben ungeschmälert. Preis (Gegenthese 1): ein Tod, den Sand aufgefangen hätte, wenn ein
+  Kampf alle LP über der Trankschwelle in einem Zug nimmt.
+- *Weg:* unter sicheren Wegen der mit mehr Punkten (Gegnerfeld 250, Elitefeld 800), dann – solange Sparsamkeit steht –
+  der ohne Gegenstände sichere, dann mehr Felder mit Gegenständen. Die Punkte stehen in keinem Blatt (`XBMScoreBonus`
+  und `XBMScoreRank` führen Namen und Bedingungen, ffxiv-datamining 52a72b38a); sie stehen als Ausnahme in
+  `fixed_values.json` mit Quelle consolegameswiki.
+- *Falsifikation:* kein Defekt – widerlegt (750 je Lauf ohne Gefahr verloren); Option falsch – die schwerste Last
+  unterschätzt einen Kampf: Die unmittelbare Gefahr bleibt gedeckt, Preis benannt; ausgeliefert ohne Wirkung – im
+  ersten Lauf eines Bretts ohne gemessene Lasten gilt der Lauf als unbekannt, und alles geht wie bisher; ab dem
+  zweiten greift die Regel.
+- *Umgesetzt:* `BeastmasterCrucibleScore.cs` (Bonusstand je Lauf aus der Zahl der Gegenstände im Inventar,
+  `KeepsNoItemBonus` je GCD neu gewogen), Sperren im Gegenstandsschritt, Punkte in `RouteState` und `Better`, Begründung
+  im Wegfenster. Offen im TODO: Laden, Schatz, Lager, Futter, die vollen LP am Ende.
+
+*Prüfgrad:* statisch, Compile, 53 Prüfschritte; im Spiel nicht beobachtet – die Spur nennt jeden Wechsel („crucible
+score: …").
+
 ## B · Commit-Register (Fork vs. `upstream/main`)
 
 ### B1 · Einzelgeprüfte Fork-Commits

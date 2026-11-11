@@ -1970,6 +1970,26 @@
    "status": "exception",
    "loop": "A675",
    "reason": "The middle of a span of one beat in which the answer does not change: geometry of the search, not a claim about the game. Concept 21, K12."
+  },
+  {
+   "file": "RotationSolver/Basic/Rotations/Basic/BeastmasterCrucibleRoute.cs",
+   "code": "private const int EnemySpacePoints = 250;",
+   "values": [
+    "250"
+   ],
+   "status": "exception",
+   "loop": "A689",
+   "reason": "The board evaluation's score for clearing an enemy space; no client sheet carries it (XBMScoreBonus and XBMScoreRank hold names and conditions only, ffxiv-datamining 52a72b38a), the game shows it only on the evaluation screen. Source: consolegameswiki, 'Crucible of the Unbroken', read 11.11.2026 (A689)."
+  },
+  {
+   "file": "RotationSolver/Basic/Rotations/Basic/BeastmasterCrucibleRoute.cs",
+   "code": "private const int EliteSpacePoints = 800;",
+   "values": [
+    "800"
+   ],
+   "status": "exception",
+   "loop": "A689",
+   "reason": "The board evaluation's score for clearing an elite space (625 before 7.57); no client sheet carries it (XBMScoreBonus and XBMScoreRank hold names and conditions only, ffxiv-datamining 52a72b38a), the game shows it only on the evaluation screen. Source: consolegameswiki, 'Crucible of the Unbroken', read 11.11.2026 (A689)."
   }
  ]
 }

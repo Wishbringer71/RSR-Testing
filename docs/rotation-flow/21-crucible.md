@@ -706,6 +706,53 @@ Dullahan, Golem, Spriggan und Eisgolem (`XBMPet.InflictsInterrupt`).
       auf dem Weg ohne Rast den Tod brächte – dann bleibt es bei der Campsite, und das ist richtig.
     Werkzeugquelle für die Vorlage: BeastMasterHelper (t3knical, Fork von anmili2022/Beastmaster) bevorzugt an einer
     Abzweigung die Campsite, wenn der Spieler verletzt ist, und prüft die LP des Kaders (Anleitung, 06.11.2026, A623).
+- *K15 – Punkte der Bewertung* (seine Hinweise vom 11.11.2026, Grundlagen oben; A689). *Im Kampf und auf dem Weg:* Jeder
+  Lauf vom 11.11.2026 verschenkte „kein Gegenstand" (750) schon vor dem ersten Kampf mit Sand der Zeit als Versicherung,
+  „keine Marken ausgegeben" (500) mit dem ersten Kauf und „keine Ausrüstung" (750) mit einem Schatz; Lauf 3 rastete
+  (1.000). Gestorben ist er dabei nie; die schwerste Last war der Endkampf mit 60 % seiner LP ohne Ausrüstung.
+  - *Grundsatz (für jeden Bonus, den eine Handlung RSRs oder eine Empfehlung verwirkt):* Ein noch erhaltener Bonus wiegt
+    gegen den Sicherheitsgewinn der Handlung. Sie geht, wo der Lauf ohne sie nicht sicher ist, sonst nicht. Ist der
+    Bonus verwirkt, kostet jede weitere gleiche Handlung nichts mehr, und sie geht wie bisher. Gemessen wird die
+    Sicherheit mit dem Test des Wegs (A663): Der Spieler übersteht jeden Kampf bis einschließlich Endkampf mit dessen
+    schwerster gelernter Last, und der schwächste Endkampfheiler übersteht einen Einsatz. Die schwerste je gesehene
+    Last ist die pessimistische Schätzung; ein Lauf, der sie trägt, ist mit hoher Wahrscheinlichkeit sicher. Wo ein
+    Kampf auf dem Weg nie gemessen wurde, ist die Sicherheit unbekannt, und die Handlung geht wie bisher (sichere Seite).
+    Das ist seine Spielweise auf die Punkte übertragen: Schutz, wo der Schaden wahrscheinlich ist, kein Schutz, der
+    ohne Gefahr Punkte kostet.
+  - *Kein Gegenstand (750; „Sparsamkeit", `XBMScoreBonus` 15, gebaut A689):* Unmittelbare Gefahr geht vor und bleibt ungeschmälert: Heilung unter der Trankschwelle,
+    Mittel gegen Gift und Blindheit, Schutz gegen einen angekündigten Treffer, Heilung und Schutz des Begleiters, der
+    vor dem nächsten Webfenster fiele. Die Versicherungen ohne Gefahr – Sand der Zeit, Wiederaufstehen, Auto-Trank gegen
+    einen Endgegner – und Schaden aus Gegenständen gehen bei erhaltenem Bonus nur, wenn der Spieler die schwerste Last
+    bis einschließlich Endkampf nicht mit seinen LP trägt (`CrucibleRoute.WorstAhead` ohne Lager, mit der getragenen
+    Ausrüstung). Heilung, die kein Kampf mehr braucht, bleibt im Endkampf bei erhaltenem Bonus liegen: Was verbleibende LP
+    an Punkten bringen, nennt keine Quelle (unbelegt), die 750 sind belegt.
+  - *Keine Marken ausgegeben (500; „Geizhals", 19), keine Ausrüstung (750; „Mit leeren Händen", 13; offen):* Der Laden empfiehlt bei erhaltenem Bonus nichts, wenn der
+    Lauf ohne Kauf sicher ist; der Schatz empfiehlt dann ein Angebot ohne Ausrüstung. Die Begründung im Fenster nennt
+    den Punktpreis.
+  - *Nicht gerastet (1.000; „Schlaflose Nächte", 21), nicht gefüttert (750; „Heilfasten", 17; offen):* Lager und Futter empfehlen bei erhaltenem Bonus nur, wenn der Lauf
+    ohne sie nicht sicher ist.
+  - *Weg (gebaut A689):* Unter sicheren Wegen der mit mehr Punkten – Gegnerfeld 250, Elitefeld 800 –, dann der, der bei erhaltenem
+    Bonus ohne Gegenstände sicher ist, dann wie bisher mehr Felder mit Gegenständen, mehr LP. Ein Lager auf dem Weg
+    kostet nur, wenn gerastet wird.
+  - *Woher RSR weiß, was erhalten ist:* je Lauf (`CrucibleBoard.Run`) aus dem, was es sieht – Gegenstände im
+    Crucible-Inventar weniger geworden (benutzt, von RSR oder von Hand; auch weggeworfen, dann gibt RSR den Bonus auf,
+    die sichere Seite), Marken weniger, Ausrüstung im Lauf getragen, gerastet, gefüttert. Das Spiel selbst zeigt die
+    Boni erst am Ende; `XBMScoreBonus` führt Namen und Bedingungen, keine Punkte. Die Punkte je Feld (250, 800) stehen
+    deshalb fest im Code, mit Quelle (A689). Spur: „crucible score: …", wenn die Gegenstände für den Bonus liegen bleiben
+    oder wieder gehen und wenn der Bonus fällt.
+  - *Nicht hier:* Teamgröße und Gattung (bis 4.250 und 750) gehören zum Kader (K7, TODO „Crucible: Begleiter je Kampf
+    nicht optimal gewählt"); alle Begleiter bei voller LP am Ende (1.000) und der Spieler bei voller LP (250) zum
+    Endkampf, offen.
+  - *Gegenthese 1 – Die schwerste gelernte Last unterschätzt den nächsten Lauf:* Ein Kampf kann schwerer werden als je
+    gesehen (anderer Begleiter, Pech bei Zuständen). Teilweise widerlegt: Die unmittelbare Gefahr im Kampf bleibt
+    abgedeckt – Heilung unter der Trankschwelle, Schutz vor angekündigten Treffern –, nur die Versicherung im Voraus
+    entfällt. Preis: Ein Tod, den Sand der Zeit aufgefangen hätte, wenn ein Kampf alle LP über der Trankschwelle in
+    einem Zug nimmt; in seinen fünf Läufen vom 11.11.2026 (Brett 1 und 2) nahm kein Treffer mehr als 17 % seiner LP
+    (Magischer Schlag des Pisco-Dämonen-Ebenbilds, `DefenseTrace.log`).
+  - *Gegenthese 2 – Er will die Punkte nicht:* Er nannte die Ausbeute selbst als Ziel; Sicherheit bleibt durch den Test
+    gewahrt.
+  - *Gegenthese 3 (ausgeliefert, und nichts ändert sich):* Ohne gemessene Lasten (erster Lauf auf einem Brett) gilt der
+    Lauf als unbekannt, und alles geht wie bisher. Ab dem zweiten Lauf greift die Regel.
 - *K14 – Endkampf vorbereiten: Lager und Futter* (A631; seine Vorschläge vom 06.11.2026: „beim letzten rasten vor dem
   endgegnern im brett wäre eine empfehlung hilfreich, welche beiden begleiter man zum heilen auswählen sollte" und „beim
   händler für essen im brett sollte nahrung für die begleiter gegen endgegner brett empfohlen werden, welche nahrung für

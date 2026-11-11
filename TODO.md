@@ -52,9 +52,11 @@ Last je Kampf und Hornsatz messen und der Wahl zugrunde legen, mit Teamgröße u
 Im Kampf (seine Meldung, 11.11.2026: „gegenstände werden nicht optimal gewählt, jedes brett hat nach dem endboss eine
 bewertung aufgrund von punkten, die man durch das verhalten dort sammelt. die ausbeute ist nicht optimal"): Kauf und
 Einsatz der Gegenstände und das Verhalten auf dem Brett lassen Punkte und damit Belohnung liegen. RSR zielt bisher auf
-keine Punkte (Konzept 21, Grundlagen; A609 meine Ableitung). *Ort:* Laden, Schatz, Gegenstandsschritte (K8, K13).
-*Nächster Schritt:* Punktekriterien und ihre Belohnung belegen, je Kriterium im Loop: Punkte, wo sie keine Sicherheit
-kosten; wo ein Kriterium Sicherheit kostet, mit Wahrscheinlichkeit gewichtet. *Konzept:* 21, Grundlagen, K8, K13.
+keine Punkte (Konzept 21, Grundlagen; A609 meine Ableitung). Gebaut (A689): Sparsamkeit im Gegenstandsschritt, Punkte
+im Weg. Offen: Geizhals und Mit leeren Händen im Laden und Schatz, Schlaflose Nächte und Heilfasten in Lager und Futter,
+Unversehrte Bestien und Unversehrter Bändiger am Ende des Endkampfs. *Ort:* Laden, Schatz, Lager, Futter (K10, K13,
+K14). *Nächster Schritt:* je Empfehlung die Sicherheit ohne sie gegen den erhaltenen Bonus, mit dem Test des Wegs
+samt Endkampfheiler, Loop. *Konzept:* 21, K15.
 
 ### Heiler: Wiederbelebung kommt später als gewohnt · N
 Im Kampf (seine Meldung, 11.11.2026: „heiler rezzt langsamer/später als gewohnt"): Ein Gefallener steht länger nicht
