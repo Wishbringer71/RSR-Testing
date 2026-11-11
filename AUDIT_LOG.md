@@ -20630,8 +20630,13 @@ nicht beobachtet – das Ergebnisfenster in `DefenseTrace.log` zeigt nach dem n�
   Auffüllen am Ende gegen Unversehrte Bestien, Teamgröße gegen K11 und das Leveln); zwei Konzeptstellen erst beim Bauen
   nachgezogen (das benannte Lumina-Blatt, der Reserve-Begleiter in A698). Ursache am System: „Definition of Ready"
   verlangt das vollständige Konzept, der Hook prüft nur, ob eine Konzeptänderung offen ist, nicht ob sie vollständig ist.
-- *Folge:* TODO „Gefundene Punkte vom 11.11.2026 im vollen Loop verifizieren und optimieren", nach dem laufenden Punkt
-  (Blaumagier-Kanäle), dieser im vollen Loop.
+- *Folge:* TODO „Gefundene Punkte vom 11.11.2026 im vollen Loop verifizieren und optimieren".
+- *Seine Frage dazu:* „komisch, ich habe gar nicht blaumagier gespielt. wie kann es sein, dass er in der priorität nach
+  oben gewandert ist?" Der Blaumagier-Punkt (A651, 07.11.2026) rückte nach, weil die Punkte über ihm geschlossen wurden;
+  falsch war schon seine Stelle vor Surecast. Seine Meldung vom 11.11.2026 (Surecast, Weißmagier, Sicherheit) kam unter
+  den älteren Eintrag, statt die Reihenfolge nach seinem Profil neu zu wägen. Neu geordnet: Surecast, die Verifikation,
+  dann der Blaumagier; seine Angabe ins Nutzungsprofil (CLAUDE.md). Beim Blaumagier stand eine falsche Annahme im Raum
+  (Phantom Flurry halte nichts); `BlulockCasting` hält ihn, festgehalten im TODO-Eintrag, in kein Konzept übernommen.
 
 ## B · Commit-Register (Fork vs. `upstream/main`)
 
