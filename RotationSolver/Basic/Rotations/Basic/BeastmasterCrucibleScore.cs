@@ -1,4 +1,5 @@
 using FFXIVClientStructs.FFXIV.Client.Game.InstanceContent;
+using FFXIVClientStructs.FFXIV.Client.UI.Agent;
 
 namespace RotationSolver.Basic.Rotations.Basic;
 
@@ -63,6 +64,104 @@ public partial class BeastmasterRotation
 		load = CrucibleRoute.WorstAhead(false, LoadNow);
 		share = (player.CurrentHp / (float)player.MaxHp) + (withHeldHealing ? HealingHeldShare() : 0f);
 		return load is { } heaviest && share > heaviest;
+	}
+
+	private static int _scoreRestRun = -1;
+	private static bool _scoreRested;
+
+	/// <summary>
+	/// K15: whether no rest has been taken in this run - the bonus "Schlaflose Nächte" (Sleepless Survival, XBMScoreBonus row
+	/// 21). A rest counts once the game offers its share, the prompt before it; cancelled there, the bonus is given up all
+	/// the same - the safe side.
+	/// </summary>
+	private static bool NoRestBonusStands
+	{
+		get
+		{
+			if (CrucibleBoard.Run != _scoreRestRun)
+			{
+				_scoreRestRun = CrucibleBoard.Run;
+				_scoreRested = false;
+			}
+
+			return !_scoreRested;
+		}
+	}
+
+	private static void NoteRestOffered()
+	{
+		if (NoRestBonusStands)
+		{
+			_scoreRested = true;
+			DefenseTrace.Line("crucible score: a rest offered in this run - the no-rest bonus (Schlaflose Nächte) is gone");
+		}
+	}
+
+	/// <summary>
+	/// K15: whether no familiar has been fed in this run - the bonus "Heilfasten" (Starve the Fever, XBMScoreBonus row 17): no
+	/// feed slot RSR read in this run is taken.
+	/// </summary>
+	private static bool NoFeedBonusStands
+	{
+		get
+		{
+			if (_feedSlotsRun != CrucibleBoard.Run)
+			{
+				return true;
+			}
+
+			foreach (var slots in _feedSlots.Values)
+			{
+				if (slots.Fed > 0)
+				{
+					return false;
+				}
+			}
+
+			return true;
+		}
+	}
+
+	/// <summary>
+	/// The final fight's healer with the least share of HP among the selected familiars, and its largest loss a use as a share
+	/// of its HP (A663); 1 and 0 without a final healer.
+	/// </summary>
+	private static unsafe void FinalHealerShare(AgentXBMPetParty* party, out float healer, out float loss)
+	{
+		healer = 1f;
+		loss = 0f;
+		if (party == null || FinalHealers.Count == 0)
+		{
+			return;
+		}
+
+		var pets = party->SelectedPets.AsSpan();
+		for (var i = 0; i < pets.Length && i < party->PetCurrentHealth.Length && i < party->PetMaxHealth.Length; i++)
+		{
+			if (FinalHealers.Contains((BeastmasterPet)pets[i].PetId) && party->PetMaxHealth[i] > 0)
+			{
+				var share = party->PetCurrentHealth[i] / (float)party->PetMaxHealth[i];
+				if (share <= healer)
+				{
+					healer = share;
+					loss = FinalLossPerUse / (float)party->PetMaxHealth[i];
+				}
+			}
+		}
+	}
+
+	/// <summary>
+	/// K15 (A691): whether the run needs no rest and no feed - the player carries the heaviest way to the final fight with his
+	/// HP and the healing he holds, and the weakest final healer has more than a use now (K11 holds it before it falls under
+	/// one, so it comes with one).
+	/// </summary>
+	private static unsafe bool NeedsNoRestOrFeed(out string why)
+	{
+		var carries = CarriesToFinal(true, out var share, out var load);
+		FinalHealerShare(AgentXBMPetParty.Instance(), out var healer, out var loss);
+		why = $"you carry the heaviest way to the final fight with your HP and healing held ({share:P0} against {load:P0})"
+			+ (loss > 0f ? $", the weakest final healer stands at {healer:P0} against {loss:P0} a use" : string.Empty);
+		return carries && (loss == 0f || healer > loss);
 	}
 
 	/// <summary>K15: follows the run's inventory; called every frame the board's director is read.</summary>

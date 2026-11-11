@@ -1920,6 +1920,16 @@ public partial class BeastmasterRotation
 			return;
 		}
 
+		// K15 (A691): while no familiar has been fed in this run and the run needs no feed, none - feeding ends the bonus
+		// Heilfasten (750).
+		if (NoFeedBonusStands && NeedsNoRestOrFeed(out var unfed))
+		{
+			CrucibleFeedRecommendation = picks;
+			CrucibleFeedNote = $"No feed recommended - {unfed}; feeding ends the bonus Heilfasten (750 points).";
+			DefenseTrace.Line($"crucible score: feed kept for the bonus Heilfasten - {unfed}");
+			return;
+		}
+
 		var context = ReadFeedContext();
 		var order = FeedOrder();
 		var slots = new Dictionary<BeastmasterPet, (int Free, List<CrucibleFeed> Eaten, bool Known, FeedSlots Slots)>();

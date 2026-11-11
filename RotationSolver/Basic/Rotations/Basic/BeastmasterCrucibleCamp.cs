@@ -139,6 +139,8 @@ public partial class BeastmasterRotation
 
 		if (ReadOfferedShare(selected.Count, filling))
 		{
+			// K15 (A691): the game offers the rest's share - the prompt before a rest.
+			NoteRestOffered();
 			return;
 		}
 
@@ -200,6 +202,22 @@ public partial class BeastmasterRotation
 		}
 
 		_campsiteSelection = selection;
+
+		// K15 (A691): while no rest has been taken in this run and the run needs none, walk on - a rest ends the bonus
+		// Schlaflose Nächte (1,000).
+		if (NoRestBonusStands && NeedsNoRestOrFeed(out var restless))
+		{
+			CrucibleCampSummary = $"RSR advises walking on without a rest - {restless}; a rest ends the bonus Schlaflose Nächte (1,000 points)";
+			CrucibleCampRecommendation = [];
+			if (_campsiteTraced != CrucibleCampSummary)
+			{
+				_campsiteTraced = CrucibleCampSummary;
+				DefenseTrace.Line($"crucible campsite: {CrucibleCampSummary}");
+			}
+
+			return;
+		}
+
 		var pets = party->SelectedPets.AsSpan();
 		var current = party->PetCurrentHealth;
 		var max = party->PetMaxHealth;

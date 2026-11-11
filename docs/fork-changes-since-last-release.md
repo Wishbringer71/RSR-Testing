@@ -71,6 +71,10 @@ What this release changes in the fight. For the whole distance from upstream, se
   your HP with the healing you hold carry the heaviest way to the final fight, the shop recommends only cover against a
   status that kills whatever your HP, such as Doom on board 2. While no beast gear has come in the run ("Mit leeren
   Händen", 750), the treasure recommends the best offer without gear, when there is one.
+- **Rest and feed only where the run needs them.** While no rest has been taken ("Schlaflose Nächte", 1,000) and the run
+  needs none - your HP and healing held carry the heaviest way to the final fight, and the weakest final healer has more
+  than a use - the campsite window advises walking on and selects nobody. While no familiar has been fed ("Heilfasten",
+  750) under the same condition, the shop recommends no feed.
 - **The route window says left or right, and why.** At a fork it names each way by its side as seen from the start
   towards the final boss, with the spaces up to where the ways meet again, and weighs them up to the next campsite or
   the boss after that: your HP and your final fight's healers' HP there, and what the other way would have brought. It

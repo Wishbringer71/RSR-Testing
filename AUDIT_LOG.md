@@ -20418,6 +20418,23 @@ score: …").
 
 *Prüfgrad:* statisch, Compile, 53 Prüfschritte; im Spiel nicht beobachtet – die Spur nennt jeden Halt.
 
+### A691 · Crucible-Punkte, Stufe 3: Schlaflose Nächte im Lager, Heilfasten im Futter (11.11.2026)
+
+- *Regel (Konzept 21, K15):* Rast und Futter sind nicht nötig, wenn der Spieler mit LP und gehaltener Heilung die
+  schwerste Last bis einschließlich Endkampf trägt und der schwächste Endkampfheiler jetzt mehr als einen Einsatz hat
+  (K11 hält ihn vorher zurück). Dann rät das Lagerfenster, solange im Lauf nicht gerastet wurde, ohne Rast weiterzugehen,
+  und wählt niemanden; der Laden empfiehlt, solange kein Begleiter gefüttert wurde, kein Futter.
+- *Im Kampf:* In Lauf 3 vom 11.11.2026 ruhten zwei Begleiter vor dem Endkampf, er kam mit 96 % heraus, der Endkampf
+  kostete höchstens 60 %; 1.000 Punkte ohne Gegenwert.
+- *Erkennung:* gerastet, sobald das Spiel den Anteil der Rast anbietet (Abfrage vor der Rast; abgebrochen gibt RSR den
+  Bonus trotzdem auf); gefüttert, sobald ein Futterplatz dieses Laufs belegt ist.
+- *Gemeinsam:* Die Heilerrechnung des Wegs ist ausgelagert (`FinalHealerShare`) und wird von Weg, Lager und Futter
+  gleich gelesen.
+- *Preis:* Begleiter, die keine Endkampfheiler sind, kämpfen mit weniger LP; fällt einer, geht „Keine Verluste" (1.000)
+  verloren, nicht der Lauf.
+
+*Prüfgrad:* statisch, Compile, 53 Prüfschritte; im Spiel nicht beobachtet – die Spur nennt jeden Halt.
+
 ## B · Commit-Register (Fork vs. `upstream/main`)
 
 ### B1 · Einzelgeprüfte Fork-Commits

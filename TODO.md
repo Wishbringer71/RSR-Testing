@@ -53,9 +53,10 @@ Im Kampf (seine Meldung, 11.11.2026: „gegenstände werden nicht optimal gewäh
 bewertung aufgrund von punkten, die man durch das verhalten dort sammelt. die ausbeute ist nicht optimal"): Kauf und
 Einsatz der Gegenstände und das Verhalten auf dem Brett lassen Punkte und damit Belohnung liegen. RSR zielt bisher auf
 keine Punkte (Konzept 21, Grundlagen; A609 meine Ableitung). Gebaut (A689): Sparsamkeit im Gegenstandsschritt, Punkte
-im Weg; Geizhals und Mit leeren Händen im Laden und Schatz (A690). Offen: Schlaflose Nächte und Heilfasten in Lager und
-Futter, Unversehrte Bestien und Unversehrter Bändiger am Ende des Endkampfs. *Ort:* Lager, Futter (K10, K14). *Nächster Schritt:* je Empfehlung die Sicherheit ohne sie gegen den erhaltenen Bonus, mit dem Test des Wegs
-samt Endkampfheiler, Loop. *Konzept:* 21, K15.
+im Weg; Geizhals und Mit leeren Händen im Laden und Schatz (A690); Schlaflose Nächte und Heilfasten in Lager und Futter
+(A691). Offen: Unversehrte Bestien und Unversehrter Bändiger am Ende des Endkampfs. *Ort:* Gegenstandsschritt im
+Endkampf (K8, K14). *Nächster Schritt:* ob LP am Ende Punkte bringen und wie viele, belegen; dann Heilung der Begleiter und des Spielers
+vor dem letzten Schlag gegen Sparsamkeit wägen, Loop. *Konzept:* 21, K15.
 
 ### Heiler: Wiederbelebung kommt später als gewohnt · N
 Im Kampf (seine Meldung, 11.11.2026: „heiler rezzt langsamer/später als gewohnt"): Ein Gefallener steht länger nicht

@@ -738,11 +738,22 @@ Dullahan, Golem, Spriggan und Eisgolem (`XBMPet.InflictsInterrupt`).
       auf Brett 2 kauft er weiter den Schutz gegen Verhängnis, wenn der Laden ihn führt.
     - *Gegenthese:* Ein zweites Leben schützt gegen alles. Teilweise widerlegt: Der Lasttest deckt die Kämpfe, die
       gemessen sind; die unmittelbare Gefahr im Kampf bleibt gedeckt. Preis wie bei Sparsamkeit (Gegenthese 1).
-    - *Offen:* Die Futterempfehlung im Laden (K14) bleibt, bis die Futterregel steht (Heilfasten, unten); ein
-      Futterkauf beendet Geizhals weiterhin.
+    - *Futter im Laden:* folgt der Futterregel (Heilfasten, unten, A691).
     - *Spur:* „crucible score: shop kept …", „a purchase in this run …", „treasure without gear …".
-  - *Nicht gerastet (1.000; „Schlaflose Nächte", 21), nicht gefüttert (750; „Heilfasten", 17; offen):* Lager und Futter empfehlen bei erhaltenem Bonus nur, wenn der Lauf
-    ohne sie nicht sicher ist.
+  - *Nicht gerastet (1.000; „Schlaflose Nächte", 21), nicht gefüttert (750; „Heilfasten", 17; gebaut A691):* Rast und
+    Futter dienen den Begleitern und dem Spieler. Nicht nötig sind sie, wenn der Spieler mit LP und gehaltener Heilung
+    die schwerste Last bis einschließlich Endkampf trägt und der schwächste Endkampfheiler jetzt mehr als einen Einsatz
+    hat – K11 hält ihn zurück, bevor er unter einen Einsatz fiele, er kommt also mit einem an. Dann:
+    - *Lager:* Solange im Lauf nicht gerastet wurde, rät das Fenster, ohne Rast weiterzugehen, nennt den Punktpreis und
+      wählt niemanden aus; die Rast bestätigt er selbst. Als gerastet gilt ein Lauf, sobald das Spiel den Anteil der
+      Rast anbietet (die Abfrage vor der Rast); bricht er dort ab, gibt RSR den Bonus trotzdem auf – die sichere Seite.
+    - *Futter:* Solange im Lauf kein Begleiter gefüttert wurde, empfiehlt der Laden kein Futter für den Endkampf.
+      Gefüttert gilt, sobald RSR an einem Begleiter belegte Futterplätze liest.
+    - *Im Kampf:* In Lauf 3 vom 11.11.2026 ruhten Raptor und Fliegenfalle vor dem Endkampf; er kam mit 96 % heraus, der
+      Endkampf kostete höchstens 60 %. Ohne Rast hätte er 1.000 Punkte behalten.
+    - *Gegenthese:* Begleiter, die nicht Endkampfheiler sind, kämpfen mit weniger LP und fallen eher („Keine
+      Verluste", 1.000). Teilweise widerlegt: Fällt einer, verliert der Lauf diesen Bonus, nicht den Sieg; Preis
+      benannt. Ein gefallener Begleiter kommt mit dem Horn der Rückkehr zurück.
   - *Weg (gebaut A689):* Unter sicheren Wegen der mit mehr Punkten – Gegnerfeld 250, Elitefeld 800 –, dann der, der bei erhaltenem
     Bonus ohne Gegenstände sicher ist, dann wie bisher mehr Felder mit Gegenständen, mehr LP. Ein Lager auf dem Weg
     kostet nur, wenn gerastet wird.
@@ -753,8 +764,8 @@ Dullahan, Golem, Spriggan und Eisgolem (`XBMPet.InflictsInterrupt`).
     deshalb fest im Code, mit Quelle (A689). Spur: „crucible score: …", wenn die Gegenstände für den Bonus liegen bleiben
     oder wieder gehen und wenn der Bonus fällt.
   - *Nicht hier:* Teamgröße und Gattung (bis 4.250 und 750) gehören zum Kader (K7, TODO „Crucible: Begleiter je Kampf
-    nicht optimal gewählt"); alle Begleiter bei voller LP am Ende (1.000) und der Spieler bei voller LP (250) zum
-    Endkampf, offen.
+    nicht optimal gewählt"); alle Begleiter bei voller LP am Ende (1.000, „Unversehrte Bestien", 8) und der Spieler bei
+    voller LP (250, „Unversehrter Bändiger", 7) zum Endkampf, offen.
   - *Gegenthese 1 – Die schwerste gelernte Last unterschätzt den nächsten Lauf:* Ein Kampf kann schwerer werden als je
     gesehen (anderer Begleiter, Pech bei Zuständen). Teilweise widerlegt: Die unmittelbare Gefahr im Kampf bleibt
     abgedeckt – Heilung unter der Trankschwelle, Schutz vor angekündigten Treffern –, nur die Versicherung im Voraus

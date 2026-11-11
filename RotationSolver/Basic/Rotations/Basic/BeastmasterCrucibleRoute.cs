@@ -91,22 +91,7 @@ public partial class BeastmasterRotation
 			team = Math.Max(1, party->SelectedPets.AsSpan().Length);
 		}
 
-		if (party != null && FinalHealers.Count > 0)
-		{
-			var pets = party->SelectedPets.AsSpan();
-			for (var i = 0; i < pets.Length && i < party->PetCurrentHealth.Length && i < party->PetMaxHealth.Length; i++)
-			{
-				if (FinalHealers.Contains((BeastmasterPet)pets[i].PetId) && party->PetMaxHealth[i] > 0)
-				{
-					var share = party->PetCurrentHealth[i] / (float)party->PetMaxHealth[i];
-					if (share <= healer)
-					{
-						healer = share;
-						loss = FinalLossPerUse / (float)party->PetMaxHealth[i];
-					}
-				}
-			}
-		}
+		FinalHealerShare(party, out healer, out loss);
 
 		var self = player.CurrentHp / (float)player.MaxHp;
 		var potions = HealingHeldShare();
