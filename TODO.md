@@ -22,12 +22,11 @@ BossMod-Module) die Rotation des Beastmasters, die Wahl der Begleiter und den Ze
 1. Crucible: Begleiter je Kampf nicht optimal gewählt (Beastmaster-Vorrang).
 2. Crucible: Gegenstände nicht optimal, die Brettbewertung nach Punkten bringt nicht die mögliche Ausbeute
    (Beastmaster-Vorrang).
-3. Heiler: Wiederbelebung kommt später als gewohnt – ein Gefallener fehlt der Gruppe länger.
-4. Heilung nicht optimal – ein Mitglied steht länger nahe dem Tod als nötig.
-5. Blaumagier: RSRs nächste Aktion beendet Apokalypsis und Chelonian Gate – Schaden und Minderung des Spielers enden
+3. Heilung nicht optimal – ein Mitglied steht länger nahe dem Tod als nötig.
+4. Blaumagier: RSRs nächste Aktion beendet Apokalypsis und Chelonian Gate – Schaden und Minderung des Spielers enden
    nach einem GCD statt nach 10 s.
-6. Weißmagier: Surecast ohne Rückstoß – die Abklingzeit fehlt, wenn der Rückstoß kommt.
-7. Kegel und Ringe gegnerischer Zauber genau messen: Zauber- und Kanalbeginn nutzen RSRs Erkennung bei Kegel und Ring
+5. Weißmagier: Surecast ohne Rückstoß – die Abklingzeit fehlt, wenn der Rückstoß kommt.
+6. Kegel und Ringe gegnerischer Zauber genau messen: Zauber- und Kanalbeginn nutzen RSRs Erkennung bei Kegel und Ring
    nicht, und mehrere Leser sehen hinter einem Kegel oder im Innenkreis eines Rings eine Gefahr, die keine ist.
 
 Danach die technische Schuld, soweit ihre Auflösungsbedingung erfüllt ist. Warten auf Daten: unten.
@@ -59,21 +58,6 @@ im Weg; Geizhals und Mit leeren Händen im Laden und Schatz (A690); Schlaflose N
 (A691). Offen: Unversehrte Bestien und Unversehrter Bändiger am Ende des Endkampfs. *Ort:* Gegenstandsschritt im
 Endkampf (K8, K14). *Nächster Schritt:* ob LP am Ende Punkte bringen und wie viele, belegen; dann Heilung der Begleiter und des Spielers
 vor dem letzten Schlag gegen Sparsamkeit wägen, Loop. *Konzept:* 21, K15.
-
-### Heiler: Wiederbelebung kommt später als gewohnt · N
-Im Kampf (seine Meldung, 11.11.2026: „heiler rezzt langsamer/später als gewohnt"): Ein Gefallener steht länger nicht
-auf. Gemessen an seinen Mitschnitten vom 10. und 11.11.2026 (A687), drei Ursachen:
-- Der Weißmagier legt bei anstehender Wiederbelebung Ex Machina ins erste Webfenster nach dem GCD; der Swiftcast-Zweig
-  verlangt dasselbe Fenster (`IsLastActionGCD`) und kommt einen GCD später, Ex Machina verfällt im Schadens-GCD
-  dazwischen (M4, Yuweyawata: 6,6 und 7,6 s statt rund 2 s).
-- Swiftcast geht an einen Toten, den ein anderer im selben Moment sofort wiederbelebt; Swiftcast verfällt in einem
-  Schadenszauber, die nächste Wiederbelebung innerhalb der Abklingzeit wird voll gewirkt (fünf Fälle, World of
-  Darkness: 8,0 s statt rund 1 s).
-- Läuft der eigene Swiftcast schon, weicht RSR einer langsameren fremden Wiederbelebung trotzdem aus (Cuff of the Son,
-  11.11.: 9 s länger am Boden).
-Dazu zweimal 2 bis 3 s zwischen Todeszeile und erster Reaktion ohne Spur im Protokoll. *Ort:* `WHM_Reborn.EmergencyAbility`,
-`CustomRotation.EmergencyAbility` (Swiftcast-Zweig), `GetDeath` mit `DataCenter.RaisedByOthers`. *Nächster Schritt:*
-Konzept 11 fortschreiben, Loop. *Konzept:* 11.
 
 ### Heilung nicht optimal · N
 Im Kampf (seine Meldung, 11.11.2026: „heilung nicht optimal"): Erster Befund: Als Weißmagier (Stufe 50, Ultima's Bane,

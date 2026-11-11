@@ -42,6 +42,22 @@ What this release changes in the fight. For the whole distance from upstream, se
   at 526 HP, and the younger fell 0.85 s before the end of its Endless Slashes. The stream now keeps its highest value
   while a member of the pair lives.
 
+- **Swiftcast for a raise comes late in the GCD, not right after it.** It waited for the first weave window after a
+  GCD; when that window went to another ability – Thin Air, which the White Mage takes there for a pending raise, or
+  Assize – Swiftcast came one GCD later, and the damage spell in between used up Thin Air (6.6 and 7.6 s from death to
+  raise instead of about 2 s). When it fell early, almost a whole GCD lay before the raise, and five times another
+  healer raised the same member instantly in that span; Swiftcast then went into a damage spell, and the next raise
+  within its recast was cast in full (8.0 s instead of about 1 s). Swiftcast now falls in the late weave window: the
+  raise comes with the next GCD as early as before, the first window stays for Thin Air, which the raise then takes,
+  and another healer's raise has at most the late window to come first.
+- **With your Swiftcast running, a slower raise by another no longer holds yours back.** RSR left a member to another
+  healer's raise in progress even with its own Swiftcast already up; that raise landed 9 s later and Swiftcast went
+  into a damage spell. With Swiftcast running, RSR raises the member itself when the other raise lands later than its
+  next GCD plus one GCD.
+- **The trace names why a dead member is not raised.** For each dead party member, `DefenseTrace.log` writes a line
+  whenever the reason changes – beyond 30 y, out of sight, not targetable, moving, left to another raise, raise denied
+  – with the seconds since RSR saw it dead and the distance; "a candidate" means it is the raise target.
+
 ## The Beastmaster between fights
 
 - **A familiar left out after a fight goes before the next one.** A familiar that ended a fight without One with

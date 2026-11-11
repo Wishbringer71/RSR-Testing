@@ -97,6 +97,35 @@ nach den allgemeinen Sperren zurückkehrt, bevor `EmergencyAbility` gefragt wird
 Notfallheilung zwischen zwei Zaubern", A479). Der Zweig kann also nur bei `WeaponRemain > 0,5 s`
 greifen — dem Einschiebefenster, in dem die Ausführungssperre nicht gilt.
 
+**Im späten Webfenster, nicht im ersten (A693).** Bis A693 verlangte der Zweig das erste Webfenster nach einem GCD
+(`IsLastActionGCD`, seit 05e109580). In seinen Mitschnitten vom 10. und 11.11.2026 kostete das zweimal Zeit:
+- *Ein anderes oGCD belegte das erste Fenster:* Der Weißmagier legt bei anstehender Wiederbelebung Ex Machina dorthin
+  (`WHM_Reborn.EmergencyAbility`), oder Assise ging dorthin. Swiftcast kam einen GCD später, und dieser GCD war Schaden,
+  der Ex Machina verbrauchte (M4 18:55, Yuweyawata 16:51: 7,6 und 6,6 s vom Tod bis zur Wiederbelebung statt rund 2 s).
+- *Swiftcast früh im GCD:* Zwischen Swiftcast und der Wiederbelebung im nächsten GCD lag fast ein ganzer GCD. Fünfmal
+  belebte in dieser Spanne ein anderer Heiler denselben Toten sofort wieder (0,1 bis 1,1 s nach RSRs Swiftcast).
+  Swiftcast verfiel dann in einem Schadenszauber, und die nächste Wiederbelebung innerhalb seiner Abklingzeit wurde voll
+  gewirkt (World of Darkness 18:19:41: 8,0 s statt rund 1 s).
+
+Der Zweig feuert jetzt im späten Webfenster (`CanLateWeave`: Rest höchstens 45 % des GCD, Webzeit reicht, keine
+Animationssperre). Die Wiederbelebung kommt mit dem nächsten GCD so früh wie vorher – wann im laufenden GCD Swiftcast
+fällt, ändert ihren Zeitpunkt nicht –, das erste Fenster bleibt für Ex Machina, das die Wiederbelebung dann mitnimmt,
+und die Spanne, in der ein anderer zuvorkommt, schrumpft von fast einem GCD auf höchstens 45 % davon. *Gegenthese:* Ein
+anderes oGCD nimmt das späte Fenster. Widerlegt: `EmergencyAbility` steht vor allen übrigen Fähigkeiten des Spielers,
+der Zweig gewinnt das erste Bild im späten Fenster. *Preis:* Ein GCD mit langer Wirkzeit lässt das späte Fenster erst
+nach dem Wirken offen; dort fällt Swiftcast sofort danach, wie vorher.
+
+**Die übrigen langen Spannen sind gewollt (A693).** In zwei Fällen seiner Mitschnitte vergingen 12,6 und 17,8 s bis
+Swiftcast. *World of Darkness 18:24:* Der Leichnam lag 31 bis 36 Yalm entfernt (Positionen der Aktionszeilen), also
+außerhalb der 30 Yalm der Wiederbelebung, bis der Spieler 1 s vor Swiftcast auf 23 Yalm herankam. *Cuff of the Son
+19:20:* Zwei lebende Mitglieder standen bei 0 % Vorhersage („critical class" im Protokoll), RSR heilte sie über
+fünf GCDs, dann folgte Swiftcast. Die Heilung eines Lebenden, der sonst stirbt, geht vor der Wiederbelebung eines
+Toten (Sicherheit der Gruppe). Damit die Ursache einer Spanne, die ein Mitschnitt nicht erklärt, sichtbar wird –
+außer Sicht, nicht anwählbar, in Bewegung, eine fremde Wiederbelebung –, schreibt `GetDeath` für jedes tote
+Gruppenmitglied bei jedem Wechsel des Grundes eine Zeile in `DefenseTrace.log`: „raise: … dead x s, y y – Grund",
+mit der Zeit seit RSR es tot sah und dem Abstand; „a candidate" heißt, es ist Ziel der Wiederbelebung. Die Zeile
+gibt es nur bei einem Wechsel, sie ist nicht an jedes Bild gebunden.
+
 **Warum er nichts verdrängt.** Nach ihm stehen in `EmergencyAbility` nur zwei Zweige, beide Second
 Wind für Nahkämpfer beziehungsweise physische Fernkämpfer bei Doom-Status. Für einen Rezzer ist dort
 nichts, was ausfallen könnte. Verbraucht wird ein Einschiebefenster, einmal je Gelegenheit.
@@ -457,7 +486,10 @@ keine Spielquelle). Für NPC-Heiler (Trust, Duty Support) ist das ein Schluss, n
 das Verhalten wie vorher. Erkannt wird die Wiederbelebung an den Spieldaten wie die eigene
 (`DeadTargetBehaviour` 1), also für jeden Job und jede Sonderaktion. Bricht der andere ab, ist der Leichnam beim nächsten
 Durchlauf wieder Kandidat; landet seine Wiederbelebung, schließt ihn der Status aus. Gilt auch mit eigener Spontanität:
-Swiftcast bleibt für einen Leichnam, den niemand versorgt. Jede Zurückstellung schreibt eine Zeile in
+Swiftcast bleibt für einen Leichnam, den niemand versorgt. *Ausnahme (A693):* Läuft der eigene Swiftcast schon, landet
+RSRs Wiederbelebung mit dem nächsten GCD; landet die fremde erst später als der nächste GCD und ein ganzer GCD danach,
+wählt RSR den Leichnam trotzdem. In Cuff of the Son (11.11.2026, 17:49) wich RSR mit laufendem Swiftcast einem
+voll gewirkten Raise aus, der 9 s später landete; Swiftcast verfiel in Steinga. Jede Zurückstellung schreibt eine Zeile in
 `DefenseTrace.log` („raise left to …", mit Ziel und Restzeit). Dieselbe Erhebung zählt fremde Esuna-Casts je Mitglied;
 die eigene Esuna nimmt nur, was nach ihnen an entfernbaren Effekten übrig bleibt.
 

@@ -968,7 +968,11 @@ public partial class CustomRotation
 		//
 		// The raise is the job's own Raise, not a list of four ids: the list had no Verraise and no
 		// Angel Whisper, the same ageing as the hand-kept raise list behind the original defect.
-		if (Service.Config.RaisePlayerBySwift && DataCenter.CanRaise() && IActionHelper.IsLastActionGCD()
+		//
+		// A693: in the late weave window, not the first. The raise comes with the next GCD all the same; the first window stays
+		// for another ability (the White Mage's Thin Air, which the raise then takes), and the span in which another healer
+		// raises the same corpse first shrinks to the late window.
+		if (Service.Config.RaisePlayerBySwift && DataCenter.CanRaise() && CanLateWeave
 			&& ((Raise != null && nextGCD.IsTheSameTo(true, Raise))
 				|| RaisePendingAndCastable()))
 		{

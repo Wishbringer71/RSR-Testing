@@ -20458,6 +20458,38 @@ score: …").
 *Prüfgrad:* statisch, Compile, 53 Prüfschritte; im Spiel nicht beobachtet – die Werte erscheinen im Reiter, sobald
 Kämpfe gelaufen sind.
 
+### A693 · Wiederbelebung: Swiftcast im späten Webfenster, eigener Swiftcast vor fremdem Hartwirken, Messzeile (11.11.2026)
+
+- *Anlass:* seine Meldung vom 11.11.2026: „heiler rezzt langsamer/später als gewohnt" (A687).
+- *Messung (Mitschnitte 10. und 11.11.2026, Zeilen 20 bis 25 mit Positionen):* drei Ursachen. (1) Ein anderes oGCD
+  belegte das erste Webfenster nach dem GCD (Ex Machina des Weißmagiers bei anstehender Wiederbelebung, Assise);
+  Swiftcast verlangte dasselbe Fenster und kam einen GCD später, der Schadens-GCD dazwischen verbrauchte Ex Machina
+  (M4 18:55 und Yuweyawata 16:51: 7,6 und 6,6 s vom Tod bis zur Wiederbelebung statt rund 2 s; Yuweyawata 16:46:
+  Swiftcast erst nach 5,1 s). (2) Swiftcast früh im GCD: fünfmal belebte
+  ein anderer Heiler denselben Toten in der Spanne bis zum nächsten GCD sofort wieder (0,1 bis 1,1 s nach RSRs
+  Swiftcast); Swiftcast verfiel in einem Schadenszauber, die nächste Wiederbelebung lief voll (World of Darkness
+  18:19: 8,0 s). (3) Mit laufendem Swiftcast wich RSR einem fremden Hartwirken aus, das 9 s später landete (Cuff of
+  the Son 17:49). Zwei lange Spannen sind gewollt: World of Darkness 18:24 (Leichnam 31 bis 36 Yalm entfernt, 17,8 s
+  bis der Spieler in Reichweite kam) und Cuff of the Son 19:20 (zwei Lebende bei 0 % Vorhersage, fünf Heil-GCDs vor
+  Swiftcast, 12,6 s).
+- *Optionen:* (a) Nullvariante; (b) Swiftcast in jedem Webfenster – fällt weiter früh, Ursache 2 bleibt; (c) im späten
+  Webfenster (`CanLateWeave`) – gewählt: die Wiederbelebung kommt mit demselben GCD, das erste Fenster bleibt frei, die
+  Spanne für einen fremden Sofort-Raise schrumpft auf höchstens 45 % des GCD; (d) Ex Machina zurückstellen – heilt nur
+  Ursache 1. Für Ursache 3: Ausnahme in der A293-Zurückstellung, wenn der eigene Swiftcast läuft und die fremde
+  Wiederbelebung später landet als `DefaultGCDRemain + DefaultGCDTotal`.
+- *Umgesetzt:* `CustomRotation.EmergencyAbility` (Swiftcast-Zweig: `CanLateWeave` statt `IsLastActionGCD`),
+  `TargetFilter.GetDeath` (Ausnahme zu `RaisedByOthers`; `NoteDeath`: je totem Gruppenmitglied eine Zeile bei jedem
+  Wechsel des Grundes, mit Zeit seit dem Tod und Abstand). Konzept 11, „Im späten Webfenster" und „Die übrigen langen
+  Spannen sind gewollt".
+- *Falsifikation:* kein Defekt – widerlegt an den fünf Fällen von Ursache 2 und den drei Fällen von Ursache 1. Option
+  falsch: Ein anderes oGCD nimmt das späte Fenster – `EmergencyAbility` steht vor den übrigen Fähigkeiten; ein langer
+  Wirk-GCD öffnet das späte Fenster erst nach dem Wirken (Preis, wie vorher). Ausgeliefert, nichts ändert sich: Der
+  Spieler wählt „Raise with Swiftcast" ab – dann greift der Zweig nicht, wie vorher; ein Toter außer Reichweite oder
+  Sicht – die Messzeile nennt den Grund.
+
+*Prüfgrad:* statisch, Compile, Prüfskripte; Mitschnitt-Auswertung der Ursachen; im Spiel nicht beobachtet – die
+Messzeile in `DefenseTrace.log` zeigt den Grund jeder weiteren Spanne.
+
 ## B · Commit-Register (Fork vs. `upstream/main`)
 
 ### B1 · Einzelgeprüfte Fork-Commits

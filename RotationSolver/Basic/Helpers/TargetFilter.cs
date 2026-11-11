@@ -68,11 +68,13 @@ public static class TargetFilter
 
 			if (!item.IsDead)
 			{
+				_ = _deathNotes.Remove(item.GameObjectId);
 				continue;
 			}
 
 			if (item.CurrentHp != 0 || !item.IsTargetable || item.IsTargetMoving() || item.IsEnemy())
 			{
+				NoteDeath(item, item.CurrentHp != 0 ? "HP above 0" : !item.IsTargetable ? "not targetable" : item.IsTargetMoving() ? "moving" : "an enemy");
 				continue;
 			}
 
@@ -94,43 +96,77 @@ public static class TargetFilter
 			}
 			if (item.DistanceToPlayer() > 30)
 			{
+				NoteDeath(item, "beyond 30 y");
 				continue;
 			}
 
 			if (!item.CanSee())
 			{
+				NoteDeath(item, "out of sight");
 				continue;
 			}
 
 			if (item.HasStatus(false, StatusHelper.RaiseStatus))
 			{
+				NoteDeath(item, "raised, not yet accepted");
 				continue;
 			}
 
 			// Raise lands as a status only once the cast is through; while another player is still
-			// casting one on him, a second raise would only race it (A293).
-			if (DataCenter.RaisedByOthers.ContainsKey(item.GameObjectId))
+			// casting one on him, a second raise would only race it (A293). A693: unless the player's own
+			// Swiftcast already runs and the other's lands later than his next GCD and a whole GCD after it.
+			if (DataCenter.RaisedByOthers.TryGetValue(item.GameObjectId, out var other)
+				&& !(StatusHelper.PlayerHasStatus(true, StatusHelper.SwiftcastStatus)
+					&& other.LandsAt > DateTime.Now.AddSeconds(DataCenter.DefaultGCDRemain + DataCenter.DefaultGCDTotal)))
 			{
+				NoteDeath(item, "left to another raise that lands first");
 				continue;
 			}
 
 			if (item.HasStatus(false, StatusID.ResurrectionDenied))
 			{
+				NoteDeath(item, "raise denied");
 				continue;
 			}
 
 			if (!Service.Config.RaiseBrinkOfDeath && item.HasStatus(false, StatusID.BrinkOfDeath))
 			{
+				NoteDeath(item, "brink of death, not raised by the setting");
 				continue;
 			}
 
 			if (!item.CanBeRaised())
 			{
+				NoteDeath(item, "the game refuses a raise on him");
 				continue;
 			}
 
+			NoteDeath(item, "a candidate");
 			yield return item;
 		}
+	}
+
+	// A693 (concept 11): for a dead party member, one trace line each time the reason it is or is not a raise target changes,
+	// with the seconds since RSR first saw it dead and its distance - the measure for the time between a death and the first
+	// raise step. Dropped once the member is seen alive.
+	private static readonly Dictionary<ulong, (DateTime Since, string Reason)> _deathNotes = [];
+
+	private static void NoteDeath(IBattleChara item, string reason)
+	{
+		if (!item.IsParty())
+		{
+			return;
+		}
+
+		var now = DateTime.Now;
+		var note = _deathNotes.TryGetValue(item.GameObjectId, out var known) ? known : (now, string.Empty);
+		if (note.Item2 == reason)
+		{
+			return;
+		}
+
+		_deathNotes[item.GameObjectId] = (note.Item1, reason);
+		DefenseTrace.Line($"raise: {item.Name.TextValue} dead {(now - note.Item1).TotalSeconds:F1} s, {item.DistanceToPlayer():F1} y - {reason}");
 	}
 
 	/// <summary>
