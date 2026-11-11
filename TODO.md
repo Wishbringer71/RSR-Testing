@@ -73,8 +73,10 @@ Teile davon: Rast und Futter entfallen, wenn der Spieler den Weg trägt (A691); 
 Verlust (A698). Offen: wann ein Brett als leicht feststeht (aus welchen Messungen, ab welchem Lauf, für jeden Schritt
 dieselbe Grundlage?), der Ablauf eines Laufs Schritt für Schritt (Kader, Kampf, Laden, Schatz, Lager, Endkampf), die
 Eignung eines Begleiters über mehrere Kämpfe (Schwächen, LP, Heilung, Einsätze, K11) und die Ablöse im Kampf (K6, K16, B2).
-*Ort:* Konzept 21 (K6, K7, K10, K11, K14, K15, K16), `BST_Reborn`, `BeastmasterCrucible*`. *Nächster Schritt:* den Ablauf
-eines Laufs an seinen Mitschnitten vom 11.11.2026 Schritt für Schritt nachzeichnen, je Schritt den Loop. *Konzept:* 21.
+Nachgezeichnet (A702): fünf Läufe; die Teamgröße aus A698 überschätzt ein kleines Team. *Ort:* Konzept 21 (K6, K7, K10,
+K11, K14, K15, K16), `BST_Reborn`, `BeastmasterCrucible*`. *Nächster Schritt:* die Größenregel mit einzeln gelernten
+Einsätzen bauen (K7, „Gegenthese 2"); dann je Schritt des Ablaufs die gebauten Regeln gegen die Läufe prüfen, Loop.
+*Konzept:* 21.
 
 ### Gefundene Punkte vom 11.11.2026 im vollen Loop verifizieren und optimieren · N
 Sein Auftrag vom 11.11.2026: „ich habe das gefühl, dass du wieder nicht zuerst an den konzepten gearbeitet hast und auch

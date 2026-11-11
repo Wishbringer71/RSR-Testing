@@ -20656,6 +20656,23 @@ nicht beobachtet – das Ergebnisfenster in `DefenseTrace.log` zeigt nach dem n�
 *Prüfgrad:* statisch, Compile, Prüfskripte, Mitschnitt-Auswertung, BossModReborn-Quelltext; im Spiel nicht beobachtet –
 die Messzeile ordnet jeden weiteren Fall seinem Weg zu.
 
+### A702 · Crucible-Ablauf, Schritt 1: seine fünf Läufe vom 11.11.2026 nachgezeichnet; A698 hält nicht (11.11.2026)
+
+- *Anlass:* sein Auftrag vom 11.11.2026 (leichtes Brett, Schritt für Schritt; Begleiter über mehrere Kämpfe; Ablöse
+  zwischen den Hörnern) und seine Rüge zum verkürzten Loop (A700).
+- *Ablauf je Lauf (DefenseTrace 11.11.2026, vor A689 gebaut):* Brett 1 dreimal – fünf Kämpfe, 64 bis 146 s, Kader 10,
+  sieben bis neun Begleiter auf Hörnern, Begleiterverlust 1.375 bis 1.836 LP, Spieler bei Gegenständen bis 38 % (Linie
+  40 %), je drei bis zehn Gegenstände, ein bis vier Käufe, zwei bis drei Schätze, dreimal gefüttert, in Lauf 3 gerastet.
+  Brett 2 zweimal – fünf Kämpfe, 73 bis 134 s, Kader 12, zehn auf Hörnern, Verlust 3.046 bis 3.145 LP bei rund 920 LP
+  je Begleiter, bis 40 %, vier und fünf Käufe, null und zweimal gefüttert. Gewonnen alle, kein Begleiter gefallen.
+- *Befund zu A698:* Einsätze kosten bis 500 LP bei rund 600 LP je Begleiter auf Brett 1; der Vorrat als Summe
+  überschätzt ein kleines Team (Gegenthese 2 hält). Verbesserung: die Einsätze des schwersten Laufs einzeln lernen und
+  auf n weniger einen Begleiter verteilen (Konzept 21 K7, „Gegenthese 2"); bis dahin empfiehlt die gebaute Regel zu
+  klein, sobald ein Lauf gemessen ist.
+- *Nächste Schritte:* die verbesserte Größenregel bauen; je Schritt des Ablaufs (Kader, Hörner je Kampf, Laden, Schatz,
+  Lager, Futter, Endkampf) gegen die Läufe prüfen, was die gebauten Regeln anders entschieden hätten und ob der Lauf
+  sicher geblieben wäre; die Eignung der Begleiter über mehrere Kämpfe und die Ablöse im Kampf an den Hornzeilen.
+
 ## B · Commit-Register (Fork vs. `upstream/main`)
 
 ### B1 · Einzelgeprüfte Fork-Commits

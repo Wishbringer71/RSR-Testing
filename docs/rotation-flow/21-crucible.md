@@ -353,9 +353,16 @@ Dullahan, Golem, Spriggan und Eisgolem (`XBMPet.InflictsInterrupt`).
     Begleiter ihn tragen; mehr Einsätze je Begleiter verteilen ihn nur anders. Ein Begleiter, der fällt, fehlt danach;
     deshalb zählt der Vorrat einen weniger: Fällt einer, fassen die übrigen den schwersten gemessenen Verlust noch.
     *Preis:* Fällt einer, verliert der Lauf Keine Verluste (1.000) und erhält Minimale Verluste (250 bis 750); gegen
-    1.250 bis 4.250 für die Größe. *Gegenthese 2 – Der
-    Vorrat ist ein Mittel:* Begleiter mit wenig LP fassen weniger. Preis benannt; der schwerste gemessene Lauf ist die
-    pessimistische Seite. *Gegenthese 3 (ausgeliefert, und nichts ändert sich):* Er übernimmt die volle Empfehlung, weil
+    1.250 bis 4.250 für die Größe. *Gegenthese 2 – Die Summe fasst nicht, was ein Einsatz kostet (hält; Prüfung vom 11.11.2026, A702):* Seine Läufe
+    vom 11.11.2026 – Brett 1 dreimal: Begleiterverlust 1.375 bis 1.836 LP je Lauf bei rund 600 LP je Begleiter; Brett 2
+    zweimal: 3.046 bis 3.145 LP bei rund 920 – zeigen Einsätze bis 500 LP (Fliegenfalle 667 auf 167, Gigantoad 438,
+    Morbol 400 im Endkampf). Ein Begleiter trägt oft nur einen schweren Einsatz; was nach ihm bleibt, reicht für den
+    nächsten nicht, und K11 hält ihn dann zurück. Die Summe der LP überschätzt das Team. *Verbesserte Regel (zu bauen):*
+    RSR lernt je Brett die Verluste der Einsätze des schwersten Laufs einzeln und legt sie für eine Größe n nach
+    absteigendem Verlust auf n weniger einen Begleiter, je mit den LP der Begleiter, die die Wahl nimmt (im Teamfenster
+    der Agent, sonst das Mittel), und keiner darf dabei auf 0 fallen. Passen alle, trägt n den gemessenen Lauf mit einem
+    in Reserve. Der Preis „Mittel" bleibt nur für Begleiter außerhalb des Teamfensters.
+    *Gegenthese 3 (ausgeliefert, und nichts ändert sich):* Er übernimmt die volle Empfehlung, weil
     noch kein Lauf gemessen ist. Der erste Lauf mit voller Größe misst den Verlust; ab dem zweiten empfiehlt RSR kleiner.
   - *Team aus einer Gattung (A699):* „Freund der Biestlinge" bis „Freund der …" (`XBMScoreBonus`, je Gattung eine Zeile,
     Bedingung „a team of only beastkin"; 750 auf jedem Brett). RSR läuft dieselbe gierige Wahl je Gattung, nur über deren
