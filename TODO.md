@@ -19,7 +19,7 @@ auswahl und das timing der beschwörung" – je Kampf aller fünf Bretter (Gegne
 BossMod-Module) die Rotation des Beastmasters, die Wahl der Begleiter und den Zeitpunkt ihres Aufrufs im Loop prüfen
 (Beispiel seiner Beobachtung: der Raptor gegen Feuer, bevor feueranfällige Gegner da waren; A581).
 
-1. Gerichtete Parade: Angriffe von der geschützten Seite eines Gegners werden pariert (A730).
+Keine offene Arbeit in Reihenfolge.
 
 Danach die technische Schuld, soweit ihre Auflösungsbedingung erfüllt ist. Warten auf Daten: unten.
 
@@ -31,16 +31,6 @@ Code-Review; was diese finden, kommt wieder hierher und in dieselbe Reihenfolge,
 ## Defekte
 
 ## Offene Arbeit
-
-### Gerichtete Parade: Angriffe von der geschützten Seite werden pariert · N
-Im Kampf: Ein Gegner mit dem Status „Gerichtete Parade" (Status 680, Directional Parry) pariert jeden Angriff des
-Spielers von der geschützten Seite; in seinem Lauf vom 11.11.2026 (Brett 1) parierte der Knochen-Ritter sechs Angriffe
-von vorn, die der Begleiter nicht. RSR kennt den Status nicht und greift weiter von dort an. *Ort:* Zielwahl
-(`TargetUpdater`), allgemein für alle Jobs. *Nächster Schritt:* Loop – Wirkung einer Parade auf den Schaden belegen,
-Kodierung der Seite im Zusatzwert des Status (BossModReborn 2087153c2, `Components/DirectionalParry.cs`: Bitmaske
-vorn/hinten/links/rechts) am Spiel prüfen, Zielwechsel ohne Bewegung (seine Vorgabe: nichts, was ihn für Schaden aus
-einer sicheren Position holt), Tanks mit gehaltener Feindseligkeit ausgenommen oder nicht. *Konzept:* 03 (Zielwahl),
-21 (Erstes Brett).
 
 ## Technische Schuld
 

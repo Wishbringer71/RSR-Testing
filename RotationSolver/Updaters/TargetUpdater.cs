@@ -344,6 +344,7 @@ internal static partial class TargetUpdater
 		List<IBattleChara> allianceMembers = new(capacity: allTargets.Count);
 		List<IBattleChara> hostileTargets = new(capacity: allTargets.Count);
 		List<IBattleChara> spikedHostiles = [];
+		List<IBattleChara> parriedHostiles = [];
 		List<IBattleChara> untouchableHostiles = [];
 		var stopTargets = Service.Config.FilterStopMark2 ? MarkingHelper.GetStopTargets() : [];
 		List<IBattleChara> outOfDutyPlayers = [];
@@ -420,6 +421,14 @@ internal static partial class TargetUpdater
 							continue;
 						}
 
+						// Concept 03, "Gegner, die deine Seite pariert" (A734): a hit from a side its Directional Parry guards
+						// deals nothing; it waits while another enemy can be attacked.
+						if (member.ParriesPlayerSide())
+						{
+							parriedHostiles.Add(member);
+							continue;
+						}
+
 						hostileTargets.Add(member);
 					}
 				}
@@ -446,6 +455,17 @@ internal static partial class TargetUpdater
 			{
 				PluginLog.Error($"Error in Updating Member Lists: {ex.Message}");
 			}
+		}
+
+		// A734: with no other enemy to attack, the one parrying your side stays a target - your familiar's or companion's
+		// attacks reach it, and holding back gains nothing.
+		if (hostileTargets.Count == 0)
+		{
+			hostileTargets.AddRange(parriedHostiles);
+		}
+		else
+		{
+			TraceParried(parriedHostiles);
 		}
 
 		DataCenter.PartyMembers = partyMembers;
@@ -1166,6 +1186,26 @@ internal static partial class TargetUpdater
 	private static readonly HashSet<ulong> _spikedTraced = [];
 
 	// A571: one line per enemy left alone for its spikes, until no spiked enemy is in reach.
+	// A734: one line when an enemy starts or stops being passed over for parrying your side.
+	private static readonly HashSet<ulong> _parriedTraced = [];
+	private static readonly HashSet<ulong> _parriedNow = [];
+
+	private static void TraceParried(List<IBattleChara> parried)
+	{
+		_parriedNow.Clear();
+		foreach (var enemy in parried)
+		{
+			_ = _parriedNow.Add(enemy.GameObjectId);
+			if (_parriedTraced.Add(enemy.GameObjectId))
+			{
+				DefenseTrace.Line($"target: {enemy.Name} passed over - its Directional Parry guards the side you stand on, "
+					+ "another enemy takes your attacks");
+			}
+		}
+
+		_ = _parriedTraced.RemoveWhere(id => !_parriedNow.Contains(id));
+	}
+
 	private static void TraceSpiked(IBattleChara enemy)
 	{
 		if (!_spikedTraced.Add(enemy.GameObjectId))

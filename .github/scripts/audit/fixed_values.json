@@ -2130,6 +2130,36 @@
    "status": "exception",
    "loop": "A731",
    "reason": "A ring's omen figures are two numbers of equal length, outer then inner (gl_sircle_2010 = 20 and 10; BossModReborn's analysis reads two digits each). The split of the figures, not a tuned value (A731)."
+  },
+  {
+   "file": "RotationSolver/Basic/Helpers/ObjectHelper.cs",
+   "code": "Back = 2,",
+   "values": [
+    "2"
+   ],
+   "status": "exception",
+   "loop": "A734",
+   "reason": "The bit of the back in the param of Directional Parry (status 680), as BossModReborn's Components/DirectionalParry decodes it (front 1, back 2, left 4, right 8; front seen as 01 in the owner's run of 11.11.2026). An encoding of the game's status, not a tuned value (A734)."
+  },
+  {
+   "file": "RotationSolver/Basic/Helpers/ObjectHelper.cs",
+   "code": "Left = 4,",
+   "values": [
+    "4"
+   ],
+   "status": "exception",
+   "loop": "A734",
+   "reason": "The bit of the one flank in the param of Directional Parry (status 680), as BossModReborn's Components/DirectionalParry decodes it (front 1, back 2, left 4, right 8; front seen as 01 in the owner's run of 11.11.2026). An encoding of the game's status, not a tuned value (A734)."
+  },
+  {
+   "file": "RotationSolver/Basic/Helpers/ObjectHelper.cs",
+   "code": "Right = 8,",
+   "values": [
+    "8"
+   ],
+   "status": "exception",
+   "loop": "A734",
+   "reason": "The bit of the the other flank in the param of Directional Parry (status 680), as BossModReborn's Components/DirectionalParry decodes it (front 1, back 2, left 4, right 8; front seen as 01 in the owner's run of 11.11.2026). An encoding of the game's status, not a tuned value (A734)."
   }
  ]
 }

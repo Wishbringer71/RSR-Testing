@@ -29,6 +29,10 @@ What this release changes in the fight. For the whole distance from upstream, se
   HP fell, and it never healed. RSR now reads the game's refusals for a place – not usable here, only in PvP, not in PvP,
   only in duels or Frontline – for every item and action. When the game still refuses an item, `DefenseTrace.log`
   names the item, the area and the game's answer, once per item and area.
+- **An enemy that parries your side waits while another can be attacked.** A hit from a side an enemy's Directional
+  Parry guards deals nothing: on the first Crucible board twelve of your attacks on the bone knight from its front came
+  to 0 in 11 s. RSR now passes such an enemy over while you stand on a guarded side and another enemy can be attacked,
+  for every job; it stays a target when it is the only one, when it targets you, and for area attacks. You are not moved.
 - **Apokalypsis and Chelonian Gate run their full channel.** When you pressed either as a Blue Mage, RSR's next action
   ended it ("Effect ends upon using another action or moving"). RSR now keeps them as it keeps the Machinist's
   Flamethrower: Apokalypsis while an enemy stands within its range before you, Chelonian Gate while it stands. Healing,

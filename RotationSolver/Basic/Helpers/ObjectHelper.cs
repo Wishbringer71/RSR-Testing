@@ -311,6 +311,55 @@ public static class ObjectHelper
 		return SpikeOf(battleChara) != null;
 	}
 
+	// A734: the sides Directional Parry guards, in the low bits of its param (BossModReborn's Components/DirectionalParry;
+	// front = 1 seen in the owner's run of 11.11.2026). Which of 4 and 8 is left is open there; both mean the flanks here.
+	[Flags]
+	private enum ParrySide : byte
+	{
+		None = 0,
+		Front = 1,
+		Back = 2,
+		Left = 4,
+		Right = 8,
+	}
+
+	private const ParrySide AllParrySides = ParrySide.Front | ParrySide.Back | ParrySide.Left | ParrySide.Right;
+
+	/// <summary>
+	/// Concept 03, "Gegner, die deine Seite pariert" (A734): whether this enemy's Directional Parry guards the quarter around
+	/// its facing the player stands in - front, back or a flank, split at the diagonals. Not while it targets the player: it
+	/// turns to him, and every side he steps to is its front.
+	/// </summary>
+	internal static bool ParriesPlayerSide(this IBattleChara enemy)
+	{
+		if (Player.Object is not { } player || enemy.TargetObjectId == player.GameObjectId)
+		{
+			return false;
+		}
+
+		foreach (var status in enemy.StatusList)
+		{
+			if (status == null || status.StatusId != (uint)StatusID.DirectionalParry)
+			{
+				continue;
+			}
+
+			var guarded = (ParrySide)status.Param & AllParrySides;
+			var facing = enemy.GetFaceVector();
+			var toPlayer = player.Position - enemy.Position;
+			facing.Y = 0;
+			toPlayer.Y = 0;
+			var along = Vector3.Dot(facing, toPlayer);
+			var across = Vector3.Cross(facing, toPlayer).Length();
+			var side = MathF.Abs(along) >= across
+				? along >= 0f ? ParrySide.Front : ParrySide.Back
+				: ParrySide.Left | ParrySide.Right;
+			return (guarded & side) != ParrySide.None;
+		}
+
+		return false;
+	}
+
 	/// <summary>
 	/// Concept 03, "Tötungsregeln", rule 1 (A588): whether the next damage kills this enemy - a status whose text says so,
 	/// Stone Curse on a petrified enemy.

@@ -1075,6 +1075,34 @@ Spieler ohne RSR schlägt weiter und kann sie ziehen; Preis: ein Treffer auf ihn
 ihn ausschließt. Widerlegt: Gegner mit Stacheln stehen in einer eigenen Liste, aus der nur Aktionen wählen, die einen
 ihrer Zustände entfernen – wie die Figuren, die nur Heilung besiegt (A516).
 
+## Gegner, die deine Seite pariert
+
+*Was gilt (A734):* Ein Gegner mit „Gerichtete Parade" (Status 680, Directional Parry), der dich nicht selbst im Visier
+hat, ist kein Ziel deiner Angriffe, solange du auf einer Seite stehst, die er schützt, und ein anderer Gegner anwählbar
+ist. Steht keiner sonst zur Wahl, bleibt er Ziel, wie bisher. Gilt für jeden Job.
+- *Die Seite:* der Viertelkreis um seine Blickrichtung, in dem du stehst – vorn, hinten oder seitlich, getrennt an den
+  Diagonalen. Welche Seiten er schützt, steht in den unteren Bits des Zusatzwerts des Status: 1 vorn, 2 hinten, 4 und 8
+  die Seiten (BossModReborn `Components/DirectionalParry`, 2087153c2, Werkzeugquelle; dort ist offen, welches Bit links
+  und welches rechts ist, RSR nimmt beide Seiten, wenn eines gesetzt ist). Belegt ist „vorn = 1" an seinem Lauf vom
+  11.11.2026 (Erstes Brett, Knochen-Ritter, Zusatzwert 01).
+- *Warum:* Eine parierte Aktion macht keinen Schaden. In seinen drei Läufen vom 11.11.2026 trafen alle Angriffe von vorn
+  während des Status mit 0 (Effektart 06), alle von hinten voll; im zweiten Lauf gingen so zwölf Angriffe in 11 s ins
+  Leere, bis er hinter dem Ritter stand. Der Status lag jeweils gut 20 s. Die Angriffe der Begleiter pariert er nicht.
+- *Im Kampf:* Statt ins Leere zu schlagen, greift RSR einen anderen Gegner an, bis der Status endet oder du auf einer
+  freien Seite stehst; dann ist er wieder Ziel. Du wirst nicht bewegt (seine Vorgabe: nichts, was dich für Schaden aus
+  einer sicheren Position holt); BossMods KI geht mit einem Modul selbst auf die freie Seite.
+- *Ausgenommen:* ein Gegner, der dich im Visier hat. Er dreht sich zu dir, jede Seite, auf die du gehst, ist vorn; der
+  Tank hält ihn so (BossModReborn gibt dort ebenso keine Hinweise). Und Flächen: Sie treffen ihn weiter, wo sie ohnehin
+  fallen – pariert wird nur dein Treffer auf ihn, die anderen Gegner trifft die Fläche voll.
+- *Gegenthese 1 – Der Zielwechsel kostet die Kombo oder einen DoT:* Ein Schlag ohne Schaden kostet mehr als ein
+  Kombo-Schritt auf einem anderen Ziel; die Zielwahl nimmt den nächsten nach ihrer Art.
+- *Gegenthese 2 – Die Tötungsregel will ihn zuerst:* Eine Regel „zuerst" (Konzept 03, „Tötungsregeln") bleibt bestehen,
+  aber ein parierter Schlag bringt seinen Fall nicht näher; mit einem anderen Ziel fällt der Rest der Gruppe früher.
+- *Gegenthese 3 (ausgeliefert, und nichts ändert sich):* Ist er der einzige Gegner, bleibt er Ziel; dann schlägt RSR
+  weiter ins Leere, und nur ein Schritt auf die freie Seite hilft – den macht BossMods KI mit Modul, sonst er selbst.
+- *Ausgeschlossen:* den Gegner ganz aus der Zielwahl nehmen wie Stacheln – der Beastmaster könnte seine Begleiter nicht
+  mehr auf ihn lenken, und deren Angriffe pariert er nicht.
+
 ## Gegner, die keine Fläche treffen darf
 
 *Was gilt (A572):* Ein Gegner, den RSR nicht angreifen darf, trifft auch keine Flächenaktion: Eine Fläche, deren

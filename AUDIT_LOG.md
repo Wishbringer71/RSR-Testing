@@ -21327,6 +21327,29 @@ weitere Aktion beendet, hält RSR, solange er nützt".
   Apokalypsis hält mit dem Kegel höchstens länger als der Strahl reicht (Schluss, Breite unbelegt).
 - *Prüfgrad:* statisch, Compile, Prüfskripte; im Spiel nicht beobachtet (er hat den Blaumagier bislang nicht gespielt).
 
+### A734 · Gerichtete Parade: ein Gegner, der deine Seite pariert, wartet, solange ein anderer angreifbar ist (12.11.2026)
+
+TODO „Gerichtete Parade: Angriffe von der geschützten Seite werden pariert" (offener Befund aus A687), im Loop. Konzept 03,
+„Gegner, die deine Seite pariert".
+
+- *Messung (Mitschnitt vom 11.11.2026, Erstes Brett, drei Läufe):* Der Knochen-Ritter legt nach Frontalabwehr (#B710)
+  „Gerichtete Parade" (Status 680, Zusatzwert 01) für gut 20 s, dazu einen verborgenen Status 2552. Jeder Angriff des
+  Spielers von vorn (innerhalb rund ±45° der Blickrichtung) traf mit 0 (Effektart 06, „9C000006"), jeder von hinten voll;
+  im zweiten Lauf zwölf Angriffe in 11 s (15:10:34 bis 15:10:45), im dritten zwei. Ohne Status gleicher Schaden von vorn.
+- *Quelle zur Kodierung:* BossModReborn `Components/DirectionalParry` (2087153c2, Werkzeugquelle): Seiten in den unteren
+  Bits (vorn 1, hinten 2, links 4, rechts 8; links und rechts dort ungeklärt), Grenzen an den Diagonalen, verbotene
+  Priorität für den Gegner, keine Hinweise, solange er den Spieler im Visier hat.
+- *Optionen:* (0) nichts; (a) ausschließen wie Stacheln – der Beastmaster könnte seine Begleiter nicht mehr auf ihn
+  lenken; (b) zurückstellen, solange ein anderer Gegner angreifbar ist – gewählt; (c) den Spieler bewegen – gegen seine
+  Vorgabe.
+- *Umgesetzt:* `ObjectHelper.ParriesPlayerSide` (beide Flanken, wenn eines der Flankenbits gesetzt ist; nicht, wenn der
+  Gegner den Spieler im Visier hat), `TargetUpdater`: eigene Liste, zurück in die Gegnerliste, wenn keiner sonst bleibt;
+  Spurzeile „target: … passed over". Drei Bits in `fixed_values.json`.
+- *Falsifikation:* (1) kein Defekt – widerlegt (zwölf Schläge mit 0); (2) Option falsch, der Zielwechsel kostet –
+  ein Schlag ohne Schaden kostet mehr; (3) ausgeliefert, nichts ändert sich – als einziger Gegner oder wenn er den Spieler
+  im Visier hat, bleibt er Ziel.
+- *Prüfgrad:* statisch, Compile, Prüfskripte, Mitschnitt-Messung; im Spiel nicht beobachtet.
+
 ## B · Commit-Register (Fork vs. `upstream/main`)
 
 ### B1 · Einzelgeprüfte Fork-Commits
