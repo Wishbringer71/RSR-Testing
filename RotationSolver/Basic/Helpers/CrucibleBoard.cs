@@ -228,29 +228,54 @@ internal static class CrucibleBoard
 	}
 
 	private static uint _fightStartHp;
-	private static uint _fightLowHp;
+	private static uint _fightPrevHp;
+	private static long _fightLowHp;
+	private static long _fightLastHp;
+	private static long _fightOwnPending;
+	private static long _fightOwnApplied;
 
-	// A706 (K15): the player's HP when the fight is told and the lowest since, for its net loss and deepest dip.
+	// A706, A709 (K15): the player's HP when the fight is told, and since then his HP without his own healing - items and
+	// his actions, taken off the moment his HP rise by it -, the lowest and the last, for the fight's net loss and deepest
+	// dip. A familiar's healing stays in.
 	private static void FollowPlayerHp()
 	{
 		if (_fight == 0 || Player.Object is not { MaxHp: > 0u } player)
 		{
 			_fightStartHp = 0;
-			_fightLowHp = 0;
+			_fightOwnPending = 0;
+			_fightOwnApplied = 0;
 			return;
 		}
 
+		var hp = player.CurrentHp;
 		if (_fightStartHp == 0)
 		{
-			_fightStartHp = Math.Max(1u, player.CurrentHp);
-			_fightLowHp = player.CurrentHp;
+			_fightStartHp = Math.Max(1u, hp);
+			_fightPrevHp = hp;
+			_fightLowHp = hp;
+			_fightOwnApplied = 0;
 		}
 
-		_fightLowHp = Math.Min(_fightLowHp, player.CurrentHp);
+		// His own healing shows as a rise of his HP after its effect was reported; what a full bar cannot take is gone.
+		if (hp > _fightPrevHp && _fightOwnPending > 0)
+		{
+			var own = Math.Min(hp - _fightPrevHp, _fightOwnPending);
+			_fightOwnApplied += own;
+			_fightOwnPending -= own;
+		}
+
+		if (hp >= player.MaxHp)
+		{
+			_fightOwnPending = 0;
+		}
+
+		_fightPrevHp = hp;
+		_fightLastHp = hp - _fightOwnApplied;
+		_fightLowHp = Math.Min(_fightLowHp, _fightLastHp);
 	}
 
-	// A706 (K15): the fight's net loss (start less end, after all healing) and its deepest dip below the start into the
-	// learned heaviest, in whole percent of his HP without gear.
+	// A706, A709 (K15): the fight's net loss (start less end) and its deepest dip below the start, both without his own
+	// healing, into the learned heaviest, in whole percent of his HP without gear.
 	private static void LearnNetAndDip()
 	{
 		if (_fightStartHp == 0 || Player.Object is not { MaxHp: > 0u } player)
@@ -258,9 +283,9 @@ internal static class CrucibleBoard
 			return;
 		}
 
-		var end = player.IsDead ? 0u : player.CurrentHp;
-		var net = _fightStartHp > end ? _fightStartHp - end : 0u;
-		var dip = _fightStartHp > _fightLowHp ? _fightStartHp - _fightLowHp : 0u;
+		var end = player.IsDead ? -_fightOwnApplied : _fightLastHp;
+		var net = Math.Max(0L, _fightStartHp - end);
+		var dip = Math.Max(0L, _fightStartHp - Math.Min(_fightLowHp, end));
 		var netPercent = (int)Math.Ceiling(BareShare(new FightLoad(0d, 0d, net, 0d), player.MaxHp) * PercentScale);
 		var dipPercent = (int)Math.Ceiling(BareShare(new FightLoad(0d, 0d, dip, 0d), player.MaxHp) * PercentScale);
 		var changed = false;
@@ -282,13 +307,13 @@ internal static class CrucibleBoard
 
 		if (changed)
 		{
-			DefenseTrace.Line($"crucible fight {_fight}: net loss {netPercent} %, deepest dip {dipPercent} % of your HP without gear "
-				+ "- the heaviest so far stored");
+			DefenseTrace.Line($"crucible fight {_fight}: net loss {netPercent} %, deepest dip {dipPercent} % of your HP without gear, "
+				+ $"your own healing of {_fightOwnApplied} HP taken off - the heaviest so far stored");
 			_ = OtherConfiguration.SaveCrucibleFightNet();
 		}
 	}
 
-	/// <summary>K15 (A706): the most HP the player lost in <paramref name="battle"/> after all healing, as a share of his HP without gear; null before it was measured.</summary>
+	/// <summary>K15 (A706, A709): the most HP the player lost in <paramref name="battle"/> from its start to its end without his own healing, as a share of his HP without gear; null before it was measured.</summary>
 	internal static float? NetLoad(uint battle)
 	{
 		lock (OtherConfiguration.CrucibleFightNetGate)
@@ -297,22 +322,15 @@ internal static class CrucibleBoard
 		}
 	}
 
-	/// <summary>K15 (A706): the deepest a fight of <paramref name="board"/> took the player below its start, as a share of his HP without gear; null before one was measured.</summary>
-	internal static float? DeepestDip(uint board)
+	/// <summary>K15 (A706, A709): the deepest <paramref name="battle"/> took the player below its start without his own healing, as a share of his HP without gear; null before it was measured.</summary>
+	internal static float? DipLoad(uint battle)
 	{
-		float? deepest = null;
 		lock (OtherConfiguration.CrucibleFightNetGate)
 		{
-			foreach (var fight in FightsOfBoard(board))
-			{
-				if (OtherConfiguration.CrucibleFightNet.TryGetValue(fight * FamiliarKeyStride, out var percent))
-				{
-					deepest = Math.Max(deepest ?? 0f, percent / (float)PercentScale);
-				}
-			}
+			return OtherConfiguration.CrucibleFightNet.TryGetValue(battle * FamiliarKeyStride, out var percent)
+				? percent / (float)PercentScale
+				: null;
 		}
-
-		return deepest;
 	}
 
 	private static float? LearnedLoad(uint battle)
@@ -1487,6 +1505,7 @@ internal static class CrucibleBoard
 		if (_fight != 0 && amount != 0)
 		{
 			_fightLoad = _fightLoad with { Healed = _fightLoad.Healed + amount };
+			_fightOwnPending += amount;
 		}
 	}
 

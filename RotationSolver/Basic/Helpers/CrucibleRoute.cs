@@ -322,6 +322,26 @@ internal static class CrucibleRoute
 	/// has no load.
 	/// </summary>
 	internal static float? WorstAhead(bool toCampsite, Func<uint, float?> load)
+		=> WorstNeedAhead(toCampsite, AsNeed(load));
+
+	/// <summary>
+	/// As <see cref="WorstAhead(bool, Func{uint, float?})"/>, from space <paramref name="from"/> of the board the run is on,
+	/// counting that space itself unless <paramref name="fromDone"/> - for the way window's look ahead.
+	/// </summary>
+	internal static float? WorstAhead(int from, bool fromDone, bool toCampsite, Func<uint, float?> load)
+		=> WorstNeedAhead(from, fromDone, toCampsite, AsNeed(load));
+
+	// A load that only adds up: what a battle takes for good is also the most it takes at any moment.
+	private static Func<uint, (float Through, float Peak)?> AsNeed(Func<uint, float?> load)
+		=> battle => load(battle) is { } all ? (all, all) : null;
+
+	/// <summary>
+	/// K15 (concept 21, A709): what the heaviest way from where the run stands demands at its worst moment - each battle
+	/// with what it takes for good (<c>Through</c>) and the most it takes at any moment (<c>Peak</c>): a battle's peak, or
+	/// what it takes for good plus the demand of the way after it, whichever is more. Ways, random spaces and unknowns as
+	/// in <see cref="WorstAhead(bool, Func{uint, float?})"/>.
+	/// </summary>
+	internal static float? WorstNeedAhead(bool toCampsite, Func<uint, (float Through, float Peak)?> load)
 	{
 		if (_lastBattle.Board == 0 || _current < 0 || !Boards.TryGetValue(_lastBattle.Board, out var route) || route.Next == null
 			|| _current >= route.Nodes.Length)
@@ -329,14 +349,10 @@ internal static class CrucibleRoute
 			return null;
 		}
 
-		return WorstAhead(_current, _done, toCampsite, load);
+		return WorstNeedAhead(_current, _done, toCampsite, load);
 	}
 
-	/// <summary>
-	/// As <see cref="WorstAhead(bool, Func{uint, float?})"/>, from space <paramref name="from"/> of the board the run is on,
-	/// counting that space itself unless <paramref name="fromDone"/> - for the way window's look ahead.
-	/// </summary>
-	internal static float? WorstAhead(int from, bool fromDone, bool toCampsite, Func<uint, float?> load)
+	private static float? WorstNeedAhead(int from, bool fromDone, bool toCampsite, Func<uint, (float Through, float Peak)?> load)
 	{
 		if (_lastBattle.Board == 0 || !Boards.TryGetValue(_lastBattle.Board, out var route) || route.Next == null
 			|| from < 0 || from >= route.Nodes.Length)
@@ -383,7 +399,7 @@ internal static class CrucibleRoute
 				return 0f;
 			}
 
-			float? own = 0f;
+			(float Through, float Peak)? own = (0f, 0f);
 			switch (node.Kind)
 			{
 				case Space.Enemy or Space.Elite or Space.Boss:
@@ -394,7 +410,9 @@ internal static class CrucibleRoute
 					{
 						if (battle != 0)
 						{
-							own = load(battle) is { } option && own is { } sofar ? Math.Max(sofar, option) : null;
+							own = load(battle) is { } option && own is { } sofar
+								? (Math.Max(sofar.Through, option.Through), Math.Max(sofar.Peak, option.Peak))
+								: null;
 						}
 					}
 
@@ -402,7 +420,7 @@ internal static class CrucibleRoute
 			}
 
 			var total = own is { } here && (node.Kind == Space.Boss || route.Next[index].Count == 0 ? 0f : Rest(index)) is { } after
-				? here + after
+				? Math.Max(here.Peak, here.Through + after)
 				: (float?)null;
 			memo[index] = total;
 			return total;

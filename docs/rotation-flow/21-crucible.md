@@ -791,24 +791,45 @@ Dullahan, Golem, Spriggan und Eisgolem (`XBMPet.InflictsInterrupt`).
     Kampf auf dem Weg nie gemessen wurde, ist die Sicherheit unbekannt, und die Handlung geht wie bisher (sichere Seite).
     Das ist seine Spielweise auf die Punkte übertragen: Schutz, wo der Schaden wahrscheinlich ist, kein Schutz, der
     ohne Gefahr Punkte kostet.
-  - *Woran ein leichtes Brett feststeht (Prüfung vom 11.11.2026, A705; sein Auftrag: „sobald feststeht, dass das aktuelle
-    brett einfach zu lösen ist, können weniger begleiter mitgenommen werden, kann auf essen verzichtet werden, kann auf
-    campen verzichtet werden"):* Der Test des Wegs summiert je Kampf die gelernte Last – den rohen Schaden am Spieler
-    (`LearnLoad`: `_fightLoad.Damage`) – über alle Kämpfe bis zum Endkampf. Heilung im Kampf zieht er nicht ab: `Healed`
-    zählt nur seine eigene (Aktionen, Gegenstände; A570), der Trick eines heilenden Begleiters fehlt ganz. Auf einem Brett
-    mit fünf Kämpfen übersteigt die Summe roher Lasten seine LP fast immer, und Sparsamkeit, Geizhals, Mit leeren Händen,
-    Schlaflose Nächte und Heilfasten bleiben nie erhalten – auch auf Brett 1, das er dreimal ohne Tod und ohne gefallenen
-    Begleiter gewann. *Grundlage, die für jeden Schritt gilt (zu bauen):* je Kampf zwei gelernte Größen, beide als Anteil
-    seiner LP ohne Ausrüstung, je die größte über alle Läufe: der *Nettoverlust* (LP zu Beginn weniger LP am Ende, nach
-    aller Heilung, auch der Begleiter) und die *tiefste Senke* (LP zu Beginn weniger die niedrigsten LP im Kampf). Der Weg
-    trägt, wenn seine LP Kampf für Kampf – Beginn weniger Nettoverlust der Kämpfe davor – jeweils über der tiefsten Senke
-    des nächsten liegen; leicht ist ein Brett, dessen schwerster Weg das ohne Gegenstand, Rast und Futter erfüllt. Gebaut
-    (A706) als vorsichtige Schranke: seine LP (mit gehaltener Heilung, wo die Regel sie zählt) über der Summe der
-    Nettoverluste auf dem schwersten Weg bis einschließlich Endkampf plus der tiefsten Senke, die ein Kampf dieses Bretts
-    je hatte – sie liegt über jeder Senke auf dem Weg, also auf der sicheren Seite. Ein Kampf auf dem Weg ohne gemessenen
-    Nettoverlust macht den Test unbekannt (sichere Seite). Das ist `CarriesToFinal`, das Sparsamkeit, Sammelleidenschaft,
-    Geizhals, Mit leeren Händen, Schlaflose Nächte und Heilfasten lesen; die Teamgröße liest die Einsätze der Begleiter
-    (K7). Die rohe Last (A661) bleibt für die Rast nach K10 und den Laden, wo sie Mittel dosiert.
+  - *Woran ein leichtes Brett feststeht (A705, A706, A709; sein Auftrag vom 11.11.2026: „sobald feststeht, dass das
+    aktuelle brett einfach zu lösen ist, können weniger begleiter mitgenommen werden, kann auf essen verzichtet werden,
+    kann auf campen verzichtet werden"):* An dem, was er auf dem Weg wirklich verliert, Kampf für Kampf, ohne die Mittel,
+    um die es geht.
+    - *Sachstand vor A706:* Der Test des Wegs summierte je Kampf den rohen Schaden am Spieler (`LearnLoad`). Die Heilung
+      eines Begleiters fehlte darin. Gelernt waren am 11.11.2026 für Brett 1 7, 22, 22, 21 und 60 % seiner LP ohne
+      Ausrüstung, zusammen 132 %, für Brett 2 zusammen 151 % (`CrucibleFightLoads.json` aus seinem Upload): Am Anfang
+      eines Bretts trug er den Weg nach dieser Rechnung nie.
+    - *Was gemessen wird:* je Kampf zwei Größen, als Anteil seiner LP ohne Ausrüstung, je die größte über alle Läufe:
+      der *Nettoverlust* (LP zu Beginn weniger LP am Ende) und die *tiefste Senke* (LP zu Beginn weniger die niedrigsten LP
+      im Kampf) – beide **ohne seine eigene Heilung** (Gegenstände, eigene Aktionen), mit der Heilung der Begleiter.
+      Die eigene Heilung zieht RSR in dem Augenblick ab, in dem seine LP um sie steigen. A706 zog sie nicht ab: Es maß,
+      was mit den Gegenständen übrig blieb, und sparte dann genau diese Gegenstände ein.
+    - *Der Test:* Der Weg verlangt so viele LP, dass er in jedem Kampf über der Trankschwelle bleibt („Use HP potions
+      below this HP") – unter ihr ginge ohnehin ein Heilgegenstand, und Sparsamkeit wäre verloren. Der Bedarf eines Wegs
+      ist, von hinten gerechnet: die Senke des Kampfs, oder sein Nettoverlust plus der Bedarf des Wegs danach, je nachdem
+      was größer ist; über Abzweigungen der schwerste Weg, an einem Zufallsfeld der schwerste Kampf. Er trägt den Weg,
+      wenn seine LP (mit gehaltener Heilung, wo die Regel sie zählt) über Bedarf plus Trankschwelle liegen. Ein Kampf
+      ohne Messung macht den Test unbekannt (sichere Seite). `CarriesToFinal` rechnet so; Sparsamkeit,
+      Sammelleidenschaft, Geizhals, Mit leeren Händen, Schlaflose Nächte und Heilfasten lesen es. Die Teamgröße liest
+      die Einsätze der Begleiter (K7). Die rohe Last (A661) bleibt für die Rast nach K10 und den Laden, wo sie Mittel
+      dosiert.
+    - *Modell an seinen fünf Läufen vom 11.11.2026* (ACT; Anteile der LP mit der Ausrüstung des jeweiligen Laufs, eigene
+      Heilung abgezogen; Nettoverlust/Senke): Brett 1 – Kampf 1 7/7, Kampf 3 23/23, Kampf 4 4/4, Kampf 5 23/43, Endkampf
+      16/36 %. Bedarf ab Brettbeginn 93 %, mit 40 % Trankschwelle 133 %: zu Beginn trägt er Brett 1 nicht. Vor dem
+      Endkampf verlangt der Weg 36 + 40 = 76 %; er stand dort bei 48 % (Lauf 1), 82 % (Lauf 2) und 83 % (Lauf 3) – in den
+      Läufen 2 und 3 trug er ihn: Die Rast in Lauf 3 und Futter und Käufe vor dem Endkampf waren dafür nicht nötig. Brett 2
+      – 12/12, 30/30, 11/33, 8/8, Endkampf 49/76 %: Der Endkampf allein verlangt 116 %; ohne gehaltene Heilung trägt er
+      Brett 2 an keiner Stelle. *Ergebnis:* Leicht ist ein Brett nicht als Ganzes, sondern ab der Stelle, von der an der
+      Rest leicht ist; RSR stellt das an jeder Entscheidung neu fest. Mit stärkeren Begleitern sinken die Verluste, die
+      gelernten Höchstwerte aber nicht (TODO „Crucible: Gelernte Lasten sinken nicht, wenn die Begleiter stärker
+      werden").
+    - *Gegenthesen:* (1) *Kein Defekt:* widerlegt – A706 lernte für den Endkampf von Brett 1 einen Nettoverlust von 0 %,
+      weil ein Bestien-Heiltrank 505 LP heilte. (2) *Option falsch – ohne die Gegenstände wären auch die Begleiter anders
+      eingesetzt worden:* Der Test misst, was mit dem Kader und der Hornwahl des gemessenen Laufs geschah; hält die
+      Vorhersage nicht, greift die Heilung unter der Trankschwelle wie bisher, und der Kampf lernt seinen höheren Wert.
+      Preis: ein Bonus, der in diesem Lauf verloren geht. (3) *Ausgeliefert, und nichts ändert sich:* Bei seinen Werten
+      trägt er Brett 2 nie und Brett 1 erst vor dem Endkampf – dort entfallen Rast, Futter und Käufe; mehr ändert sich,
+      sobald seine Begleiter den Rang des Bretts erreichen.
   - *Kein Gegenstand (750; „Sparsamkeit", `XBMScoreBonus` 15, gebaut A689):* Unmittelbare Gefahr geht vor und bleibt ungeschmälert: Heilung unter der Trankschwelle,
     Mittel gegen Gift und Blindheit, Schutz gegen einen angekündigten Treffer, der ihn unter die Trankschwelle brächte,
     Heilung und Schutz des Begleiters, der vor dem nächsten Webfenster fiele. *Wann ein angekündigter Treffer Gefahr ist

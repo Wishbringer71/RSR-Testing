@@ -269,7 +269,7 @@ internal partial class OtherConfiguration
 
 	/// <summary>
 	/// K15 of the Crucible (concept 21, A706: whether a board is easy): per fight (XBMBattleDetail row) the most
-	/// HP the player lost from its start to its end after all healing, and under the row times
+	/// HP the player lost from its start to its end without his own healing (A709), and under the row times
 	/// <c>CrucibleBoard.FamiliarKeyStride</c> the deepest he fell below its start - both in whole percent of his HP without
 	/// gear, learned in play, only rising. Under <see cref="CrucibleFightNetGate"/>.
 	/// </summary>

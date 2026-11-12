@@ -81,6 +81,15 @@ summiert rohe Lasten ohne die Heilung der Begleiter und erkennt kein leichtes Br
 Laden, Schatz, Lager, Futter und die Eignung der Begleiter über mehrere Kämpfe gegen die Läufe prüfen, Loop.
 *Konzept:* 21.
 
+### Crucible: Gelernte Lasten sinken nicht, wenn die Begleiter stärker werden · N
+Im Kampf: Die je Kampf gelernten Werte – rohe Last (A661), Nettoverlust und Senke (A706, A709), Verlust je Einsatz
+(A703) – halten je den größten über alle Läufe. Läufe mit Begleitern unter dem Rang des Bretts prägen sie; erreichen die
+Begleiter den Rang, sinken die Verluste, RSR rechnet aber weiter mit den alten Höchstwerten: ein Brett, das leicht
+geworden ist, gilt weiter als schwer (sichere Seite, kostet Punkte). *Ort:* `CrucibleBoard.LearnLoad`,
+`LearnNetAndDip`, `LearnFamiliarLoss`. *Nächster Schritt:* Loop – etwa die Werte nach dem Stand der Begleiter trennen
+(unter dem Rang des Bretts, auf ihm: dort gleicht das Spiel die Stärke an, `IsPetOverSyncedRank`), ohne feste Zahl.
+*Konzept:* 21, K15 („Woran ein leichtes Brett feststeht").
+
 ### Den eigenen Quellcode des Plugins vollständig auf Probleme prüfen · N R
 Sein Auftrag vom 12.11.2026: „weiterarbeiten, danach den eigenen quellcodes des Plugins vollständig prüfen, inwieweit
 darin probleme existieren, dann mit todo weitermachen. alles in kompletten loops". Umfang: der gesamte Quelltext unter

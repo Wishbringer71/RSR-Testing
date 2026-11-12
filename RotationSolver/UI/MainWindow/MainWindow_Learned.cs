@@ -446,8 +446,8 @@ public partial class MainWindow
 		return new LearnedTab("Crucible familiar loss", ["Board", "Measure", "Most lost"], rows);
 	}
 
-	// K15 of the Crucible (concept 21, A706): per fight, the most the player lost after all healing and the deepest he fell
-	// below its start; whether a board is easy rests on them.
+	// K15 of the Crucible (concept 21, A706, A709): per fight, the most the player lost and the deepest he fell below its
+	// start, both without his own healing; whether the way ahead is easy rests on them.
 	private static LearnedTab CrucibleFightNetTab()
 	{
 		var rows = new List<string[]>();

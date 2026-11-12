@@ -119,8 +119,9 @@ public partial class BeastmasterRotation
 
 	/// <summary>
 	/// K15: whether the player's HP now, and with <paramref name="withHeldHealing"/> the healing items held, carry the
-	/// heaviest way to the final fight, included, without a rest - the learned loads with the gear worn (A661). False while a
-	/// fight on the way was never measured: the safe side.
+	/// heaviest way to the final fight, included, without a rest: above what the way demands fight by fight - each fight's
+	/// learned net loss and deepest dip without his own healing, with the gear worn - plus his potion line (A709). False
+	/// while a fight on the way was never measured: the safe side.
 	/// </summary>
 	private static bool CarriesToFinal(bool withHeldHealing, out float share, out float? load)
 	{
@@ -132,17 +133,19 @@ public partial class BeastmasterRotation
 			return false;
 		}
 
-		// A706: net losses after all healing on the heaviest way, plus the deepest dip a fight of this board ever had -
-		// above every dip on the way; with the gear worn as LoadNow takes it.
-		var net = CrucibleRoute.WorstAhead(false, NetNow);
-		var dip = CrucibleBoard.DeepestDip(CrucibleBoard.CurrentBoard);
-		load = net is { } ahead && dip is { } deepest ? ahead + WornShare(deepest) : null;
+		// A709: what the heaviest way demands fight by fight - each fight's dip, or its net loss plus the demand after it,
+		// both without his own healing and with the gear worn as LoadNow takes it - and above that his potion line: below
+		// it a healing item goes anyway.
+		load = CrucibleRoute.WorstNeedAhead(false, NeedNow) is { } need ? need + Service.Config.UseHpPotionsPercent : null;
 		share = (player.CurrentHp / (float)player.MaxHp) + (withHeldHealing ? HealingHeldShare() : 0f);
 		return load is { } heaviest && share > heaviest;
 	}
 
-	// A706: a fight's net loss with the gear worn, as LoadNow takes the raw load.
-	private static float? NetNow(uint battle) => CrucibleBoard.NetLoad(battle) is { } bare ? WornShare(bare) : null;
+	// A709: a fight's net loss and deepest dip with the gear worn, as LoadNow takes the raw load.
+	private static (float Through, float Peak)? NeedNow(uint battle)
+		=> CrucibleBoard.NetLoad(battle) is { } net && CrucibleBoard.DipLoad(battle) is { } dip
+			? (WornShare(net), WornShare(dip))
+			: null;
 
 	private static float WornShare(float bare)
 	{

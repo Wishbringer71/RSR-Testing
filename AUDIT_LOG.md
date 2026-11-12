@@ -20780,6 +20780,29 @@ dip …" je Kampf.
 *Prüfgrad:* statisch, Compile, Prüfskripte, Mitschnitt-Auswertung; im Spiel nicht beobachtet – die Zeilen „horn relief"
 zeigen je Ablöse Abtretzeit und Lücke.
 
+### A709 · Crucible-Ablauf, Schritt 5: „leichtes Brett" am Modell seiner Läufe geprüft; Messung ohne eigene Heilung, Test Kampf für Kampf über der Trankschwelle (12.11.2026)
+
+- *Anlass:* Prüfung von Laden, Lager und Futter gegen seine Läufe (TODO „Crucible: leichtes Brett erkennen …"); dazu das
+  Modell, das A706 fehlte.
+- *Modell (ACT, fünf Läufe vom 11.11.2026; `netdip.py` im Notizordner):* je Kampf LP zu Beginn, Tiefststand und Ende,
+  die eigene Heilung (Wirkungsart 4 von ihm auf ihn) abgezogen. A706 hätte für den Endkampf von Brett 1 0 % gelernt (505
+  LP aus einem Bestien-Heiltrank); ohne eigene Heilung 16 % Nettoverlust und 36 % Senke. Zahlen im Konzept.
+- *Optionen:* (a) A706 lassen – lernt mit den Mitteln, die es einspart; (b) eigene Heilung über die Wirkungsmeldung
+  sofort abziehen – die LP steigen erst später, die Senke wäre für Augenblicke um die ganze Heilung zu tief; (c) eigene
+  Heilung abziehen, sobald die LP um sie steigen, Rest bei vollem Balken verwerfen – gewählt. Test: (d) Summe plus
+  tiefste Senke des Bretts (A706) – nimmt Senken bestandener Kämpfe; (e) Bedarf von hinten: Senke des Kampfs oder
+  Nettoverlust plus Bedarf danach – gewählt, dazu die Trankschwelle als Boden.
+- *Umgesetzt:* `CrucibleBoard.FollowPlayerHp` (eigene Heilung beim Anstieg abgezogen), `LearnNetAndDip`, `DipLoad` (je
+  Kampf, statt `DeepestDip` je Brett); `CrucibleRoute.WorstNeedAhead` (der Kern von `WorstAhead`, das mit gleichem
+  Ergebnis darauf ruht); `CarriesToFinal` mit `NeedNow` und „Use HP potions below this HP". Konzept 21 K15, „Woran ein
+  leichtes Brett feststeht"; TODO „Crucible: Gelernte Lasten sinken nicht, wenn die Begleiter stärker werden" neu.
+  Widerruf C184.
+- *Folge für A689 bis A691:* Die Boni bleiben erhalten, wo der Rest des Wegs leicht ist – nach seinen Werten vor dem
+  Endkampf von Brett 1 bei über 76 % LP; am Brettbeginn und auf Brett 2 entscheidet RSR wie vor A689.
+
+*Prüfgrad:* statisch, Compile, Prüfskripte, Modell an fünf Läufen; im Spiel nicht beobachtet – Zeile „crucible fight …:
+net loss …, deepest dip …, your own healing of … taken off".
+
 ## B · Commit-Register (Fork vs. `upstream/main`)
 
 ### B1 · Einzelgeprüfte Fork-Commits
@@ -21115,3 +21138,4 @@ Die offene Arbeit dazu — Reihenfolge und Abbruchbedingung der Nachprüfung —
 | C181 | A689 und Konzept 21 K15 (Stand A692): „Das Spiel selbst zeigt die Boni erst am Ende; `XBMScoreBonus` führt Namen und Bedingungen, keine Punkte" | `XBMContent` führt die Punkte je Bonus und Brett in seinen ersten 33 Spalten (`BonusPoints`, einer je Zeile von `XBMScoreBonus`; EXDSchema latest, Werte an ffxiv-datamining 52a72b3 vom 10.11.2026). Gesucht hatte ich nur in `XBMScoreBonus` und `XBMScoreRank`. Die Punkte je Feld (250, 800) führt weiterhin kein Blatt. | A695 |
 | C182 | A687 (Stand A687): „zwölf Nutzungen, acht auf einen echten Rückstoß oder Zug (Flutwelle, Ätherknall, Zugstrahl, Aetherial Pull, Tornado)" | Neun erreichten ihn: Zugstrahl zweimal, #44823 bei Eald'narche, Flutwelle zweimal, Ätherknall zweimal, Aetherial Pull zweimal (in Babil auf ihn gezielt, BossModReborn `D023Anima`). Tornado #44395 traf ihn nicht; ohne Wirkung auf ihn auch Ground and Pound und ein Fall in Windurst ohne gelisteten Zauber. Die Zeitleiste von BossMod löste sechs aus, alle richtig. | A701 |
 | C183 | A707 (Stand A707): „Er stand bei 38 bis 52 % LP; Gegner griffen ihn an" (Endkampf Lauf 1, 15:07:45 bis 15:07:57) | Er stand bei 83 bis 80 % LP (1.180 auf 1.136 von 1.420, ACT); zwei Gegner griffen ihn an, er verlor in den 12 s 44 LP. Die 38 % stammten vom Kampfbeginn (15:06:52). Die Lücke kostete den Schaden und die Heilung des Begleiters, kaum Sicherheit. | A708 |
+| C184 | A706 (Stand A706): Nettoverlust „nach aller Heilung", der Weg trägt über „Summe der Nettoverluste plus tiefste Senke des Bretts"; Release-Text „from the second [run] the bonuses are kept where the board is easy" | Die Messung zählte die Heilung der Gegenstände mit, die die Regel dann einspart (Endkampf Brett 1: gelernt 0 % statt 16 % Nettoverlust und 36 % Senke); die Schranke nahm die Senke auch schon bestandener Kämpfe und keine Trankschwelle. Nach seinen Läufen vom 11.11.2026 trägt er Brett 1 erst vor dem Endkampf, Brett 2 nie. | A709 |
