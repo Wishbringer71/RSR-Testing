@@ -78,7 +78,7 @@ Zeilen: gesamt / vom Fork hinzugefügt (12.11.2026). Stand: offen, in Arbeit, ge
 | `Basic/Configuration` | 24 | 6.357 | 3.309 | offen |
 | `RebornRotations/Limited Jobs` | 2 | 4.131 | 2.814 | `BST_Reborn.cs` gelesen (12.11.2026, 6ae686837; die Schleifen über `AllHostileTargets` ohne Nullprüfung sind kein Defekt, die Liste trägt konstruktionsbedingt keine leeren Einträge); `BLU_Reborn.cs` offen |
 | `Basic/Actions` | 18 | 6.939 | 1.945 | offen |
-| `Updaters` | 16 | 5.186 | 1.801 | in Arbeit: `TargetUpdater.cs` gelesen (12.11.2026, A727); offen `StateUpdater` (392 Fork-Zeilen), `CancelCastUpdater`, `UpdateCost`, `BlueMageSetTrace`, `NoFallDamageUpdater`, `BossModUpdater`, `MajorUpdater`, übrige |
+| `Updaters` | 16 | 5.186 | 1.801 | gelesen (12.11.2026): die Fork-Abschnitte von `TargetUpdater` (A727), `StateUpdater`, `CancelCastUpdater`, `BossModUpdater`, `MajorUpdater`, dazu `NoFallDamageUpdater` (A276, seine Entscheidung), `UpdateCost`; `BlueMageSetTrace` (Spur) nicht gelesen |
 | Wurzel (`Watcher`, Plugin) | 3 | 2.212 | 1.468 | `Watcher.cs` gelesen (12.11.2026, 7dc3f8237); `RotationSolverPlugin.cs` offen |
 | `Basic/Data` | 40 | 3.912 | 1.176 | offen |
 | `RebornRotations/Healer` | 4 | 3.959 | 1.161 | offen |
