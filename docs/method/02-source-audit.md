@@ -72,7 +72,7 @@ Zeilen: gesamt / vom Fork hinzugefügt (12.11.2026). Stand: offen, in Arbeit, ge
 
 | Bereich | Dateien | Zeilen | Fork | Stand |
 |---|---|---|---|---|
-| `Basic/Helpers` | 51 | 22.094 | 15.663 | gelesen bis auf die Fork-Zeilen von `StatusHelper`, `ObjectHelper`, `TargetFilter` (12.11.2026): `CrucibleBoard`, `CrucibleRoute`, `KillOrder`, `EnemyDanger`, `DotOnParty`, `TankbusterForecast`, `TankSwapWatch`, `TankbusterTable`, `SleepInterruptWatch`, `Approach` (A724), `MovementLock` (A725), `RaiseProtection`, `HealFromOthers`, `TimeToKillTracker` und die 15 Dateien von A726 |
+| `Basic/Helpers` | 51 | 22.094 | 15.663 | gelesen (12.11.2026): die Fork-Dateien ganz (A713 bis A726); in `StatusHelper`, `ObjectHelper`, `TargetFilter` die seit der Tiefenprüfung vom 29.09. neuen Abschnitte (ohne Befund; „Interrupt enemy casts" heißt im Code `InterruptibleMoreCheck` – aus bedeutet richtig „nicht unterbrechen") |
 | `Basic/Rotations` | 53 | 39.201 | 14.541 | in Arbeit: gelesen alle `BeastmasterCrucible*.cs`, `BeastmasterFamiliars.cs`, die Fork-Zeilen von `BeastmasterRotation.cs` (12.11.2026, 6ae686837) |
 | `Basic` (DataCenter u. a.) | 4 | 5.763 | 3.447 | offen |
 | `Basic/Configuration` | 24 | 6.357 | 3.309 | offen |

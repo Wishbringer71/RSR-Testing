@@ -256,7 +256,8 @@ internal static class Approach
 	}
 
 	// The gaze target (Character.LookAt, the torso's; what a recording shows as PCTargetID) is a figure that is not on
-	// the enemy's side: the player, a party member, one of their objects.
+	// the enemy's side: the player, a party member, one of their objects - or a figure of a kind enemies have that the
+	// game does not let the player attack though it can be targeted, an ally of the duty.
 	private static unsafe bool LooksAtYourSide(IBattleChara enemy)
 	{
 		var chara = (Character*)enemy.Address;
@@ -266,7 +267,8 @@ internal static class Approach
 		}
 
 		var gaze = chara->LookAt.Controller.Params[0].TargetParam.TargetId;
-		return Svc.Objects.SearchById(gaze) is IBattleChara seen && !seen.IsEnemySideFigure();
+		return Svc.Objects.SearchById(gaze) is IBattleChara seen
+			&& (!seen.IsEnemySideFigure() || (seen.IsTargetable && !seen.IsEnemy()));
 	}
 
 	// The enemy with the most HP in the list; the goal so far stays it while it lives and is in the list or cannot be
