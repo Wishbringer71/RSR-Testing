@@ -20984,6 +20984,37 @@ potency" je Kampfende.
 - *Gebaut:* Die Vormerkung verfällt einen GCD nach der letzten Meldung.
 - *Prüfgrad:* statisch, Compile ohne Warnung.
 
+### A721 · Quellcode-Prüfung, Crucible: Wegempfehlung mit Nettoverlust und Senke, tiefster Stand statt Endstand; Modell zu A709 berichtigt (12.11.2026)
+
+- *Befund 1 (`BeastmasterCrucibleRoute.cs`, Klasse F5):* Die Wegempfehlung zählte jeden Kampf mit der rohen Last
+  (A661), ohne die Heilung der Begleiter; K15 misst seit A709 Nettoverlust und Senke. Endkampf Brett 1: gelernte Last
+  60 % der LP ohne Ausrüstung, gemessener Verlust höchstens 12 % (drei Läufe). Die Vorhersage stand tief (Lauf 1,
+  14:58:07: „~-5 %" nach dem Endkampf; ohne seinen Heiltrank stand er bei 43 %), ein Abzweig mit mehr Kämpfen galt eher
+  als unsicher (15:56:00: Elitekampf „~-40 %", empfohlen der Weg mit der Rast; mit Netto 76 − 92 + 36 % Vorrat, sicher).
+- *Befund 2 (Klasse F2):* „Sicher" prüfte nur den Stand nach dem Endkampf; eine Rast spät am Weg glich einen Stand
+  unter null davor aus.
+- *Befund 3 (Modell, Klasse F1):* `netdip.py` zu A709 zog die eigene Heilung mit ihrer Meldung ab, bevor die LP
+  stiegen – die Variante, die A709 für den Code verworfen hatte. Senken zu tief: Kampf 5 43 statt 23 %, Endkampf Brett
+  1 36 statt 12 %, Kampf 10 33 statt 11 %, Endkampf Brett 2 76 statt 48 %. Der Code misst beim Anstieg. Neu gerechnet
+  (`netdip2.py`, wie der Code): Brett 1 Bedarf ab Start 68 % (nicht 93 %), vor dem Endkampf 12 + 40 = 52 % (nicht
+  76 %); Brett 2 ab Start 109 %, vor dem Endkampf 48 + 40 = 88 % – er stand dort bei 96 % und trug ihn (A709: „trägt
+  Brett 2 an keiner Stelle"). Die Schlüsse zu Brett 1 bleiben, der zu Brett 2 kehrt sich um. Widerruf C186.
+- *Abwägung der Maße je Frage:* „Überlebst du den Weg" (Wegempfehlung, K15): Nettoverlust und Senke – was geschah,
+  im schwersten gesehenen Lauf. „Wie viel Heilung ist vorzuhalten" (Rast, Laden, überzählige Heilung): die rohe Last
+  bleibt, wie A709 es begründet; sie hält eher zu viel vor, der Preis sind Marken und ungenutzte Gegenstände, nicht LP.
+  Verworfen: alles auf Netto (die Rast gäbe den Begleitern mehr und ließe ihm weniger Reserve, ohne Beleg eines Schadens
+  heute); Netto plus Trankschwelle für die Rast (oft strenger als das Brutto: vor dem Endkampf 52 gegen rund 40 %).
+- *Gebaut:* `RouteState.Low` (tiefster Stand: je Kampf seine Senke auf dem Stand davor), `Apply` mit `NeedNow`, sonst
+  roher Last, sonst Mittelwerten; `IsSafe` und `IsSafeBare` am tiefsten Stand; Text des Fensters und der Einstellung
+  „Recommend which way to take on a Crucible board" an das Verhalten seit A663 und A689 angeglichen (er nannte noch
+  „one more heaviest fight in reserve" und „one stretch ahead").
+- *Falsifikation:* Kein Defekt? Zeilen vom 14:58:07 und 15:56:00 gegen den Mitschnitt. Option falsch? Fällt die
+  Heilung der Begleiter aus, kostet der Kampf mehr als gelernt; dann greift die Heilung unter der Trankschwelle, und
+  der Kampf lernt seinen höheren Wert – der Vorrat zählt in „sicher" weiter mit. Nichts ändert sich? Bis ein Kampf mit
+  dem neuen Build gemessen ist, rechnet er mit der rohen Last wie bisher.
+- *Prüfgrad:* statisch, Compile ohne Warnung, Prüfskripte, Modell an fünf Läufen (Notizordner). Im Spiel nicht
+  beobachtet.
+
 ## B · Commit-Register (Fork vs. `upstream/main`)
 
 ### B1 · Einzelgeprüfte Fork-Commits
@@ -21321,3 +21352,4 @@ Die offene Arbeit dazu — Reihenfolge und Abbruchbedingung der Nachprüfung —
 | C183 | A707 (Stand A707): „Er stand bei 38 bis 52 % LP; Gegner griffen ihn an" (Endkampf Lauf 1, 15:07:45 bis 15:07:57) | Er stand bei 83 bis 80 % LP (1.180 auf 1.136 von 1.420, ACT); zwei Gegner griffen ihn an, er verlor in den 12 s 44 LP. Die 38 % stammten vom Kampfbeginn (15:06:52). Die Lücke kostete den Schaden und die Heilung des Begleiters, kaum Sicherheit. | A708 |
 | C184 | A706 (Stand A706): Nettoverlust „nach aller Heilung", der Weg trägt über „Summe der Nettoverluste plus tiefste Senke des Bretts"; Release-Text „from the second [run] the bonuses are kept where the board is easy" | Die Messung zählte die Heilung der Gegenstände mit, die die Regel dann einspart (Endkampf Brett 1: gelernt 0 % statt 16 % Nettoverlust und 36 % Senke); die Schranke nahm die Senke auch schon bestandener Kämpfe und keine Trankschwelle. Nach seinen Läufen vom 11.11.2026 trägt er Brett 1 erst vor dem Endkampf, Brett 2 nie. | A709 |
 | C185 | A692 und Konzept 21 K16 (Stand A692): „Schaden je Sekunde je Kampf und Begleiter … seine Treffer vom zweiten bis zum letzten über die Zeit dazwischen … der beste Wert" als Maß der Hornwahl | Das Maß hing an der Zeit draußen: Ein Begleiter, der nur für Entfesseln und Scheidenden Schlag kam, lag weit über dem, der blieb; zwei Treffer kurz nacheinander ergaben beliebig hohe Werte, und der Höchstwert hielt sie fest. Es belohnte die Rolle, nicht den Begleiter. Ersetzt durch Schaden je Potenz je Treffer gegen die Erwartung der Schätzung (`CrucibleFamiliarHits.json`); die Datei `CrucibleFamiliarDps.json` liest RSR nicht mehr. | A711 |
+| C186 | A709, Konzept 21 K15 und Release-Text (Stand A709): Brett 1 „Bedarf ab Brettbeginn 93 %", „Vor dem Endkampf verlangt der Weg 36 + 40 = 76 %", Senken Kampf 5 43 %, Endkampf 36 %; Brett 2 „11/33", „Endkampf 49/76 %", „trägt er Brett 2 an keiner Stelle"; „from about 76 % HP" | Das Modell zog die eigene Heilung mit der Meldung ab statt beim Anstieg. Wie der Code misst: Brett 1 ab Start 68 %, vor dem Endkampf 12 + 40 = 52 %; Brett 2 Kampf 10 11/11, Endkampf 48/48, vor dem Endkampf 88 % – in beiden Läufen getragen (96 %) | A721 |

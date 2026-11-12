@@ -104,8 +104,11 @@ What this release changes in the fight. For the whole distance from upstream, se
   fight, with none of the healing your familiars give you; at the start of a board that sum was always more than your
   HP. RSR now learns per fight what you lose and how deep you fall below its start, with your familiars' healing and
   without your own items, and the way carries when you would stay above "Use HP potions below this HP" in every fight
-  ahead. By your runs of 11.11 that holds before the final fight of board 1 from about 76 % HP: there rest, feed and
-  purchases are not needed. Where the way ahead is heavier, RSR decides as before.
+  ahead. By your runs of 11.11 that holds before the final fight - on board 1 from about 52 % HP, on board 2 from about
+  88 %: there rest, feed and purchases are not needed. Where the way ahead is heavier, RSR decides as before. The
+  route recommendation counts each fight the same way and asks that you live through every fight on a way, not only
+  that the sum after the final fight is above zero; a way with more fights is no longer called unsafe for damage your
+  familiars heal.
 - **A Reraiser goes in every run.** Leaving a board takes Reraise with it, and RSR read that as Reraise running out on
   its own: from the second run of a session on, it kept every Reraiser for a boss - on 11.11 from the pick-up to the
   final fight of board 2, through both elite fights. Reraise is now followed in every frame, RSR on or off ("Turn off

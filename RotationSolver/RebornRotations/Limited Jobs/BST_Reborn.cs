@@ -144,11 +144,12 @@ public sealed class BST_Reborn : BeastmasterRotation
 
 	// K10 "Weg" (concept 21, A632): his rule of 06.11.2026 - route hints for the next step, from the run's progress.
 	[RotationConfig(CombatType.PvE, Name = "Recommend which way to take on a Crucible board",
-		Tooltip = "Between fights on a Crucible board, at the next fork a window shows each way: where its next fight leaves "
-			+ "you and the healers of the final fight's plan, by the measured load of a fight, your own healing, your healing "
-			+ "items and what a campsite restores; whether that is safe (one more heaviest fight in reserve, no final healer "
-			+ "short); and recommends one - among safe ways the one with items, else the one that leaves you the most HP. "
-			+ "Computed again on every space, one stretch ahead.\n"
+		Tooltip = "Between fights on a Crucible board, at the next fork a window shows each way: where the fights up to the "
+			+ "final one, included, leave you and the healers of the final fight's plan - each fight with what RSR measured "
+			+ "it to cost you, your healing items and what a campsite restores; whether that is safe (you live through "
+			+ "every fight on it with the items you hold, and the weakest final healer outlasts one use or is full); and "
+			+ "recommends one - among safe ways the one that scores more points, then the one with more items, else the one "
+			+ "that leaves you the most HP. Computed again on every space.\n"
 			+ "In a fight: nothing.\n"
 			+ "Off: no window.")]
 	private bool RecommendCrucibleRoute { get; set; } = true;

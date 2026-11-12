@@ -698,9 +698,16 @@ Dullahan, Golem, Spriggan und Eisgolem (`XBMPet.InflictsInterrupt`).
     - *Felder:* Campsite wie K10 – Begleiter ruhen mit, solange deine LP danach die Strecke bis zur nächsten Rast tragen
       (A661), so viele, wie das Lager nimmt (`XBMContentCamp`); einen gefallenen Begleiter heilt sie nicht (Wiki, oben),
       ein toter Begleiter spricht also nicht für die Campsite. Laden, Schatz: keine LP, aber Gegenstände (vermerkt, Marken
-      genannt). Ein Kampf mit seiner Last je Kampf (K10 Campsite, A661); ein noch ungelernter Gegner mit der mittleren
-      gemessenen Last eines Kampfs abzüglich deiner Heilung (`CrucibleBoard.Loads`, wie K10 Laden), Elite und Endgegner
-      mit der schwersten gemessenen. Der Endkampf-Heiler verliert in einem Kampf vor dem Endkampf seinen größten Verlust
+      genannt). Ein Kampf mit dem, was er dich kostet (A721): sein gelernter Nettoverlust und seine tiefste Senke
+      ohne deine eigene Heilung, mit der Heilung der Begleiter (K15, „Woran ein leichtes Brett feststeht") – die Senke
+      für den tiefsten Stand im Kampf, der Nettoverlust für den Stand danach; wo beides noch nicht gemessen ist, seine
+      rohe Last je Kampf (K10 Campsite, A661); ein noch ungelernter Gegner mit der mittleren gemessenen Last eines Kampfs
+      abzüglich deiner Heilung (`CrucibleBoard.Loads`, wie K10 Laden), Elite und Endgegner mit der schwersten
+      gemessenen. Bis A721 zählte jeder Kampf mit der rohen Last, ohne die Heilung der Begleiter: im Endkampf von
+      Brett 1 gelernte 60 % der LP ohne Ausrüstung gegen einen gemessenen Verlust von höchstens 12 % (11.11.2026, drei
+      Läufe). Die Vorhersage stand entsprechend tief (Lauf 1, 14:58:07: „after the final fight: you ~-5 %"; ohne
+      seinen Heiltrank stand er nach dem Endkampf bei 43 %), und ein Abzweig mit mehr Kämpfen galt eher als unsicher: am 11.11.2026 um 15:56:00 der Elitekampf (800
+      Punkte) mit „~-40 %" gegen den Weg mit der Rast. Der Endkampf-Heiler verliert in einem Kampf vor dem Endkampf seinen größten Verlust
       je Einsatz nur, solange er danach noch einen übrig hätte – sonst hält K11 ihn zurück, und er verliert nichts (A663).
     - *Flucht (A671):* Ein Gegnerfeld lässt die Flucht zu, Elite und Endgegner nicht (CrucibleSux-Recherche 01, be66eda);
       die Bestien-Rauchbombe ermöglicht sie („Use by selecting 'Flee' upon an enemy space"), das Feiglingsmesser bietet sie
@@ -714,8 +721,10 @@ Dullahan, Golem, Spriggan und Eisgolem (`XBMPet.InflictsInterrupt`).
       könnte. Nicht widerlegt; was ein Laden anbietet, steht nirgends, der gesparte Schaden ist sicher – Sicherheit vor
       Beute. *Gegenthese A671-2 (Flucht nicht genommen):* Fliehst du nicht, stimmt die Rechnung nicht mehr. Widerlegt: Nach
       dem Feld rechnet RSR mit deinen LP neu (Vorausrechnung).
-    - *Sicher* ist ein Abzweig, wenn du nach dem Endkampf mit Vorrat noch lebst – die Summe aller Kämpfe bis dorthin, jeder
-      mit seiner Last, die Rasten dazwischen –, und wenn der schwächste Endkampf-Heiler vor dem Endkampf einen Einsatz
+    - *Sicher* ist ein Abzweig, wenn du in jedem Kampf bis einschließlich des Endkampfs mit Vorrat lebst – dein
+      tiefster Stand auf dem Weg, jeder Kampf mit seiner Senke auf dem Stand davor, die Rasten dazwischen (A721; bis
+      dahin zählte nur der Stand nach dem Endkampf, und eine Rast spät am Weg glich einen Stand unter null davor
+      rechnerisch aus) –, und wenn der schwächste Endkampf-Heiler vor dem Endkampf einen Einsatz
       übersteht (seine LP über seinem größten Verlust je Einsatz, wie „übersteht den Einsatz" am Hornfenster, K6) oder
       voll ist: Mehr als volle LP bringt ihm kein Weg, an ihm liegt es dann nicht (A716). Kostet ein Einsatz mehr, als
       der kleinste Heiler LP hat, war sonst jeder Weg unsicher – am 11.11.2026 in Lauf 3: ein Einsatz bis 522 LP, Puk hat
@@ -843,25 +852,30 @@ Dullahan, Golem, Spriggan und Eisgolem (`XBMPet.InflictsInterrupt`).
       wenn seine LP (mit gehaltener Heilung, wo die Regel sie zählt) über Bedarf plus Trankschwelle liegen. Ein Kampf
       ohne Messung macht den Test unbekannt (sichere Seite). `CarriesToFinal` rechnet so; Sparsamkeit,
       Sammelleidenschaft, Geizhals, Mit leeren Händen, Schlaflose Nächte und Heilfasten lesen es. Die Teamgröße liest
-      die Einsätze der Begleiter (K7). Die rohe Last (A661) bleibt für die Rast nach K10 und den Laden, wo sie Mittel
-      dosiert.
-    - *Modell an seinen fünf Läufen vom 11.11.2026* (ACT; Anteile der LP mit der Ausrüstung des jeweiligen Laufs, eigene
-      Heilung abgezogen; Nettoverlust/Senke): Brett 1 – Kampf 1 7/7, Kampf 3 23/23, Kampf 4 4/4, Kampf 5 23/43, Endkampf
-      16/36 %. Bedarf ab Brettbeginn 93 %, mit 40 % Trankschwelle 133 %: zu Beginn trägt er Brett 1 nicht. Vor dem
-      Endkampf verlangt der Weg 36 + 40 = 76 %; er stand dort bei 48 % (Lauf 1), 82 % (Lauf 2) und 83 % (Lauf 3) – in den
-      Läufen 2 und 3 trug er ihn: Die Rast in Lauf 3 und Futter und Käufe vor dem Endkampf waren dafür nicht nötig. Brett 2
-      – 12/12, 30/30, 11/33, 8/8, Endkampf 49/76 %: Der Endkampf allein verlangt 116 %; ohne gehaltene Heilung trägt er
-      Brett 2 an keiner Stelle. *Ergebnis:* Leicht ist ein Brett nicht als Ganzes, sondern ab der Stelle, von der an der
-      Rest leicht ist; RSR stellt das an jeder Entscheidung neu fest. Mit stärkeren Begleitern sinken die Verluste, die
-      gelernten Höchstwerte aber nicht (TODO „Crucible: Gelernte Lasten sinken nicht, wenn die Begleiter stärker
-      werden").
+      die Einsätze der Begleiter (K7). Die Wegempfehlung rechnet seit A721 mit denselben beiden Größen (K10, „Weg",
+      Felder). Die rohe Last (A661) bleibt für die Rast nach K10, den Laden und die Heilung, die kein Kampf mehr
+      braucht, wo sie Mittel dosiert: Sie rechnet ohne die Heilung der Begleiter und hält deshalb eher zu viel Heilung
+      vor als zu wenig – der Preis sind Marken und ungenutzte Heilgegenstände am Ende, nicht LP.
+    - *Modell an seinen fünf Läufen vom 11.11.2026* (ACT, gerechnet wie der Code misst: die eigene Heilung abgezogen,
+      sobald die LP um sie steigen; Anteile der LP mit der Ausrüstung des jeweiligen Laufs; Nettoverlust/Senke, je der
+      größte über die Läufe): Brett 1 – Kampf 1 7/7, Kampf 3 23/23, Kampf 4 4/4, Kampf 5 23/23, Endkampf 12/12 %. Bedarf
+      ab Brettbeginn 68 %, mit 40 % Trankschwelle 108 %: zu Beginn trägt er Brett 1 nicht. Vor dem Endkampf verlangt der
+      Weg 12 + 40 = 52 %; er stand dort bei 48 % (Lauf 1), 82 % (Lauf 2) und 83 % (Lauf 3) – in den Läufen 2 und 3 trug
+      er ihn: Die Rast in Lauf 3 und Futter und Käufe vor dem Endkampf waren dafür nicht nötig. Brett 2 – 12/12, 30/30,
+      11/11, 8/8, Endkampf 48/48 %: ab Brettbeginn 109 %, vor dem Endkampf 48 + 40 = 88 %; er stand dort in beiden
+      Läufen bei 96 % und trug ihn. Die erste Fassung dieses Modells (A709) zog die eigene Heilung schon mit ihrer
+      Meldung ab, bevor die LP stiegen, und rechnete die Senken der Kämpfe mit Heiltrank zu tief (Kampf 5 43, Endkampf
+      Brett 1 36, Kampf 10 33, Endkampf Brett 2 76 %); der Code misst seit A709 beim Anstieg (C186).
+      *Ergebnis:* Leicht ist ein Brett nicht als Ganzes, sondern ab der Stelle, von der an der Rest leicht ist; RSR
+      stellt das an jeder Entscheidung neu fest. Mit stärkeren Begleitern sinken die Verluste, die gelernten Höchstwerte
+      aber nicht (TODO „Crucible: Gelernte Lasten sinken nicht, wenn die Begleiter stärker werden").
     - *Gegenthesen:* (1) *Kein Defekt:* widerlegt – A706 lernte für den Endkampf von Brett 1 einen Nettoverlust von 0 %,
       weil ein Bestien-Heiltrank 505 LP heilte. (2) *Option falsch – ohne die Gegenstände wären auch die Begleiter anders
       eingesetzt worden:* Der Test misst, was mit dem Kader und der Hornwahl des gemessenen Laufs geschah; hält die
       Vorhersage nicht, greift die Heilung unter der Trankschwelle wie bisher, und der Kampf lernt seinen höheren Wert.
       Preis: ein Bonus, der in diesem Lauf verloren geht. (3) *Ausgeliefert, und nichts ändert sich:* Bei seinen Werten
-      trägt er Brett 2 nie und Brett 1 erst vor dem Endkampf – dort entfallen Rast, Futter und Käufe; mehr ändert sich,
-      sobald seine Begleiter den Rang des Bretts erreichen.
+      trägt er beide Bretter erst vor dem Endkampf – dort entfallen Rast, Futter und Käufe; mehr ändert sich, sobald
+      seine Begleiter den Rang des Bretts erreichen.
   - *Kein Gegenstand (750; „Sparsamkeit", `XBMScoreBonus` 15, gebaut A689):* Unmittelbare Gefahr geht vor und bleibt ungeschmälert: Heilung unter der Trankschwelle,
     Mittel gegen Gift und Blindheit, Schutz gegen einen angekündigten Treffer, der ihn unter die Trankschwelle brächte,
     Heilung und Schutz des Begleiters, der vor dem nächsten Webfenster fiele. *Wann ein angekündigter Treffer Gefahr ist

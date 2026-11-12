@@ -36,8 +36,9 @@ public partial class BeastmasterRotation
 	// final fight's healers and that share as the final fight starts, how many spaces with items it passes (treasure, shop, a
 	// random space), whether it passes a campsite, the space it ends on (the boss; -1 the end), and whether a fight on it
 	// has no load known yet; (A671) the smoke bombs left and the move of the first enemy space the way flees with one.
+	// A721: `Low` - the lowest share of HP the way takes the player to, each fight with its deepest dip on what he stands at.
 	private readonly record struct RouteState(float Player, float Healer, int Items, bool Rested, int Stop, float HealerAtFinal = 1f,
-		bool Unknown = false, int Escapes = 0, int FleeMove = -1, int Points = 0);
+		bool Unknown = false, int Escapes = 0, int FleeMove = -1, int Points = 0, float Low = 1f);
 
 	// K15 (A689): the score of a cleared space - the board's evaluation adds 250 for an enemy space and 800 for an elite one
 	// (consolegameswiki, "Crucible of the Unbroken", 11.11.2026; the elite raised from 625 in 7.57). No sheet carries them:
@@ -130,7 +131,7 @@ public partial class BeastmasterRotation
 
 		// A671: the smoke bombs held, and what the gear worn does on the way.
 		var (escapeChance, treasureItems) = WornWayEffects();
-		var start = new RouteState(self, healer, 0, false, -1, healer, Escapes: SmokeBombsHeld());
+		var start = new RouteState(self, healer, 0, false, -1, healer, Escapes: SmokeBombsHeld(), Low: self);
 		var options = new List<(int Next, float Turn, string Side, string Way, RouteState End)>();
 		foreach (var next in map.Next[at])
 		{
@@ -147,9 +148,10 @@ public partial class BeastmasterRotation
 
 		// Safe (A663): you live through every fight up to the final one, included, with the items held, and the final fight's
 		// weakest healer outlasts a use as it starts. K15 (A689): safe without the items too, while the no-item bonus stands.
-		// A716: a healer at full HP counts as outlasting it - no way brings it more.
-		bool IsSafe(RouteState end) => end.Player + potions > 0f && HealerHoldsUse(end.HealerAtFinal, loss, true);
-		bool IsSafeBare(RouteState end) => end.Player > 0f && HealerHoldsUse(end.HealerAtFinal, loss, true);
+		// A716: a healer at full HP counts as outlasting it - no way brings it more. A721: by the lowest you stand on the
+		// way, not by where you stand after it - a rest late on a way made up for a fall below zero before it.
+		bool IsSafe(RouteState end) => end.Low + potions > 0f && HealerHoldsUse(end.HealerAtFinal, loss, true);
+		bool IsSafeBare(RouteState end) => end.Low > 0f && HealerHoldsUse(end.HealerAtFinal, loss, true);
 
 		var best = -1;
 		for (var i = 0; i < options.Count; i++)
@@ -177,7 +179,8 @@ public partial class BeastmasterRotation
 		CrucibleRouteBasis = $"From the {map.Nodes[at].Kind} at move {map.Nodes[at].Move}, after its fight; "
 			+ (!weighed
 				? "a fight ahead was never measured"
-				: "each fight with the heaviest damage it ever dealt you, all fights up to the final one")
+				: "each fight with the most it ever cost you - what you lost in it and how deep it took you, with your familiars' "
+					+ "healing and without your own, else its damage -, all fights up to the final one")
 			+ (escapeChance > 0f ? $"; your gear offers escape from {escapeChance:P0} of the enemy spaces - take it when it does, it spares the fight's damage" : string.Empty);
 		var traced = $"{at}:{best}";
 		if (traced != _routeTraced)
@@ -251,8 +254,8 @@ public partial class BeastmasterRotation
 				}
 				else if (!IsSafe(other.End))
 				{
-					reasons.Add(other.End.Player + potions <= 0f
-						? $"{otherName} would leave you at ~{other.End.Player:P0} after {StopName(other.End.Stop)} with {potions:P0} in items - "
+					reasons.Add(other.End.Low + potions <= 0f
+						? $"{otherName} would take you down to ~{other.End.Low:P0} before {StopName(other.End.Stop)} is over, with {potions:P0} in items - "
 							+ "the fights up to it can cost more than you hold"
 						: $"{otherName} would bring a final healer to the final fight at ~{other.End.HealerAtFinal:P0}, not full and under one of its losses a use");
 				}
@@ -467,15 +470,20 @@ public partial class BeastmasterRotation
 					return state with { Items = state.Items + 1 };
 				case Space.Treasure:
 					return state with { Items = state.Items + treasureItems };
-				// A661: a fight with the heaviest damage it ever dealt you; one never measured with the mean or heaviest here,
-				// and with neither unknown. A663: the final fight's healer loses a use only while one would be left after it -
-				// else K11 holds it - and the final fight itself takes none from the share it starts it with.
+				// A721: a fight with what it costs you - its learned net loss for where you stand after it and its deepest dip
+				// for the lowest you stand in it, both without your own healing (K15); before those were measured its
+				// heaviest damage (A661); one never measured with the mean or heaviest here, and with neither unknown.
+				// A663: the final fight's healer loses a use only while one would be left after it - else K11 holds it -
+				// and the final fight itself takes none from the share it starts it with.
 				case Space.Enemy or Space.Elite or Space.Boss:
 					var fallback = loads == null ? (float?)null : kind == Space.Enemy ? mean : heaviest;
-					var cost = LoadNow(battle) ?? fallback;
+					var measured = NeedNow(battle);
+					var cost = measured?.Through ?? LoadNow(battle) ?? fallback;
+					var dip = measured?.Peak ?? cost;
 					var fights = kind != Space.Boss && loss > 0f && state.Healer >= loss + loss;
 					return state with
 					{
+						Low = Math.Min(state.Low, state.Player - (dip ?? 0f)),
 						Player = state.Player - (cost ?? 0f),
 						Healer = fights ? state.Healer - loss : state.Healer,
 						Unknown = state.Unknown || cost == null,

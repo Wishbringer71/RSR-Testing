@@ -20,7 +20,7 @@ BossMod-Module) die Rotation des Beastmasters, die Wahl der Begleiter und den Ze
 (Beispiel seiner Beobachtung: der Raptor gegen Feuer, bevor feueranfällige Gegner da waren; A581).
 
 1. Den eigenen Quellcode des Plugins vollständig auf Probleme prüfen (sein Auftrag, 12.11.2026, nach dem Brett-Punkt
-   und vor dem übrigen TODO); seine Befunde im Crucible zuerst: Crucible: Zwei Maße für „tragen die LP den Weg".
+   und vor dem übrigen TODO).
 2. Crucible: Gelernte Lasten sinken nicht, wenn die Begleiter stärker werden (Vorrang Crucible).
 3. Die übrigen gefundenen und gebauten Punkte vom 11.11.2026 im vollen Loop verifizieren und optimieren (sein Auftrag).
 4. Blaumagier: RSRs nächste Aktion beendet Apokalypsis und Chelonian Gate – Schaden und Minderung des Spielers enden
@@ -75,21 +75,12 @@ schwächeren Treffern von damals da. *Ort:* `CrucibleBoard.LearnLoad`, `LearnNet
 (unter dem Rang des Bretts, auf ihm: dort gleicht das Spiel die Stärke an, `IsPetOverSyncedRank`), ohne feste Zahl.
 *Konzept:* 21, K15 („Woran ein leichtes Brett feststeht").
 
-### Crucible: Zwei Maße für „tragen die LP den Weg" · N
-Im Kampf: K15 (Boni halten) rechnet je Kampf mit Nettoverlust und tiefster Senke ohne eigene Heilung (A709); die
-Wegempfehlung, die Rastwahl, der Laden und „Heilung, die kein Kampf braucht" rechnen mit dem Bruttoschaden (A661),
-also ohne die Heilung der Begleiter. Auf Brett 1 liegt das Brutto über dem Netto (A709: Bedarf ab Start 93 %, brutto
-über 100 %): Ein Weg mit mehr Kämpfen gilt eher als unsicher und verliert gegen den mit der Rast (250 und 800 Punkte
-je Feld), Begleiter ruhen seltener mit. *Ort:* `FollowCrucibleRoute.Apply`, `StretchNeed`, `SpareHeal`,
-`OfferScale`. *Nächster Schritt:* Loop – ein Maß für den Bedarf eines Wegs (Netto und Senke, wo gelernt, sonst
-Brutto), am Modell seiner Läufe vom 11.11. geprüft. *Konzept:* 21, K10 und K15.
-
 ### Den eigenen Quellcode des Plugins vollständig auf Probleme prüfen · N R
 Sein Auftrag vom 12.11.2026: „weiterarbeiten, danach den eigenen quellcodes des Plugins vollständig prüfen, inwieweit
 darin probleme existieren, dann mit todo weitermachen. alles in kompletten loops". Umfang: der gesamte Quelltext unter
 `RotationSolver*/` (nicht ECommons, RebornMaterial, Dalamud). Umfang, Verfahren, Fehlerklassen und der Stand je
 Bereich stehen in `docs/method/02-source-audit.md`; die mechanischen Durchgänge über alle Dateien sind durch (A713).
-Die Crucible- und Beastmaster-Dateien sind gelesen (A714 bis A720).
+Die Crucible- und Beastmaster-Dateien sind gelesen (A714 bis A721).
 *Nächster Schritt:* der lesende Durchgang nach der Tabelle dort, weiter mit `Basic/Helpers`, `DataCenter`, `Watcher`
 und den Updatern; jeder Befund als eigener Eintrag hier, jeder im Loop. *Konzept:* `docs/method/02-source-audit.md`.
 
