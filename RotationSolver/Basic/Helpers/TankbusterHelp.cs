@@ -75,14 +75,6 @@ internal static class TankbusterHelp
 	}
 
 	/// <summary>
-	/// Help from you for another member's measured tankbuster goes where the hit calls for it, by the size rule of the area
-	/// defence (DataCenter.AreaShareCallsForMitigation): a hit at or above what a large shield absorbs, or one that leaves
-	/// him below the health at which this rotation heals him by itself - mitigation where healing would otherwise be
-	/// needed. Below both, a White Mage spent Divine Benison and Aquaveil on a hit of 20 % of a tank's HP (his trace of
-	/// 25.10.2026, A364). Not for the player, whose own plan decides for him, not in the single defence he commands, and
-	/// not for a heal (Aurora, Heart of Corundum in the heal path) (A373).
-	/// </summary>
-	/// <summary>
 	/// Whether a measured cast aimed at <paramref name="member"/>, a member who is no tank, calls for a defence: by the same
 	/// verdict as help for a measured tankbuster (<see cref="MeasuredHitCallsForNoHelp"/>) - its share reaches a large
 	/// shield's, or it would leave him under the single heal line -, or its figure is one the running game version has not
@@ -141,6 +133,14 @@ internal static class TankbusterHelp
 		return false;
 	}
 
+	/// <summary>
+	/// Help from you for another member's measured tankbuster goes where the hit calls for it, by the size rule of the area
+	/// defence (DataCenter.AreaShareCallsForMitigation): a hit at or above what a large shield absorbs, or one that leaves
+	/// him below the health at which this rotation heals him by itself - mitigation where healing would otherwise be
+	/// needed. Below both, a White Mage spent Divine Benison and Aquaveil on a hit of 20 % of a tank's HP (his trace of
+	/// 25.10.2026, A364). Not for the player, whose own plan decides for him, not in the single defence he commands, and
+	/// not for a heal (Aurora, Heart of Corundum in the heal path) (A373).
+	/// </summary>
 	private static bool MeasuredHitCallsForNoHelp(IBattleChara t)
 	{
 		if (IBaseAction.HealPathRunning || IBaseAction.AreaDefenceRunning || IBaseAction.CommandedDefenceRunning

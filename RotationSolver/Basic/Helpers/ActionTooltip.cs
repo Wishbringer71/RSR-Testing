@@ -64,8 +64,9 @@ internal static class ActionTooltip
 			}
 			catch (Exception)
 			{
-				// A sheet or an evaluation that fails answers nothing; each reader keeps its own fallback.
-				text = string.Empty;
+				// A sheet or an evaluation that fails answers nothing; each reader keeps its own fallback. Not kept: a
+				// failure of the moment would stand for the action for the rest of the session.
+				return string.Empty;
 			}
 
 			_texts[(actionId, level)] = text;

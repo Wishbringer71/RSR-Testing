@@ -71,6 +71,11 @@ What this release changes in the fight. For the whole distance from upstream, se
   the protection is called for, `DefenseTrace.log` names the way: the cast and its caster, BossMod's timeline, or the
   winds in Windurst.
 
+- **Non-healers help with figures only healing defeats when the healers are in fact behind.** Whether the healing keeps
+  pace with the cast on such a figure - the Reiryu of Shinryu - is the HP the wave's figures have gained over the time
+  it has run. A figure healed to full left that sum, so the moment a healer finished the first and began the second,
+  the pace read as zero and every non-healer dropped damage to heal. A finished figure now stays in the sum with all
+  it had missed.
 - **The movement lock measures BossMod's AI by where the AI steers.** Whether the game's movement lock stops BossMod's AI
   is measured during a channel: the lock holds, the AI steers you to a spot, you press no movement key, and you come
   closer to that spot all the same - then it does not, and ticked channels wait while the AI walks. Being pushed by an

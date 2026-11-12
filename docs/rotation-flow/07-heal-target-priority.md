@@ -749,7 +749,10 @@ Angegriffen werden die Reiryu nicht: `ObjectHelper.IsEnemy` fragt das Spiel, ob 
   wirken nicht), Regen und die anderen HoTs, und die Schilde und Minderungen, die nur Gruppenmitglieder treffen.
 - *Flaggen:* Steht eine Figur, setzt `StateUpdater` die Einzelheilflaggen (Fähigkeit und Zauber), für Heiler immer, für
   Nichtheiler nur unter „Help heal figures only healing defeats as a non-healer" (ab Werk an) und nur, wenn die Frist
-  ohne sie nicht reicht.
+  ohne sie nicht reicht: wenn das, was die Figuren der Welle seit ihrem Beginn an LP gewonnen haben – die schon
+  vollgeheilten mit allem, was ihnen fehlte –, über die verstrichene Zeit gerechnet den Rest nicht vor dem Ende des
+  Casts deckt. Ohne die Vollgeheilten fiele die Rate in dem Augenblick, in dem ein Heiler die erste Figur fertig hat
+  und die zweite beginnt, und jeder Nichtheiler ließe seinen Schaden für eine Heilung fallen, die im Plan liegt (A726).
 - *Rangfolge* (`FindHealTarget`):
   1. ein Mitglied in Klasse 1, das gleich stirbt;
   2. die Figuren;

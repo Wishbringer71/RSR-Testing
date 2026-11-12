@@ -72,7 +72,7 @@ Zeilen: gesamt / vom Fork hinzugefügt (12.11.2026). Stand: offen, in Arbeit, ge
 
 | Bereich | Dateien | Zeilen | Fork | Stand |
 |---|---|---|---|---|
-| `Basic/Helpers` | 51 | 22.094 | 15.663 | in Arbeit: gelesen `CrucibleBoard.cs`, `CrucibleRoute.cs` (6ae686837), `KillOrder.cs`, `EnemyDanger.cs`, `DotOnParty.cs`, `TankbusterForecast.cs`, `TankSwapWatch.cs`, `TankbusterTable.cs`, `SleepInterruptWatch.cs` (12.11.2026, 7dc3f8237; ohne Befund), `Approach.cs` (A724), `RaiseProtection.cs`, `HealFromOthers.cs`, `TimeToKillTracker.cs` bis Zeile 225 (12.11.2026; ohne Befund), `MovementLock.cs` (A725); offen: `HostileMovement`, `ActionPenaltyWatch`, `ActionTooltip`, `DeepDungeon*`, `TankbusterMarkerWatch`, `HealToDefeat`, `OwnHitWatch`, `StunWatch`, Rest von `TimeToKillTracker`, `TraitDurations`, `ReportedDamage`, `HealReduction`, `TankbusterHelp`, `HitSeries`, `DefenseTrace`, die Fork-Zeilen von `StatusHelper`, `ObjectHelper`, `TargetFilter` |
+| `Basic/Helpers` | 51 | 22.094 | 15.663 | gelesen bis auf die Fork-Zeilen von `StatusHelper`, `ObjectHelper`, `TargetFilter` (12.11.2026): `CrucibleBoard`, `CrucibleRoute`, `KillOrder`, `EnemyDanger`, `DotOnParty`, `TankbusterForecast`, `TankSwapWatch`, `TankbusterTable`, `SleepInterruptWatch`, `Approach` (A724), `MovementLock` (A725), `RaiseProtection`, `HealFromOthers`, `TimeToKillTracker` und die 15 Dateien von A726 |
 | `Basic/Rotations` | 53 | 39.201 | 14.541 | in Arbeit: gelesen alle `BeastmasterCrucible*.cs`, `BeastmasterFamiliars.cs`, die Fork-Zeilen von `BeastmasterRotation.cs` (12.11.2026, 6ae686837) |
 | `Basic` (DataCenter u. a.) | 4 | 5.763 | 3.447 | offen |
 | `Basic/Configuration` | 24 | 6.357 | 3.309 | offen |
@@ -114,3 +114,6 @@ Zeilen: gesamt / vom Fork hinzugefügt (12.11.2026). Stand: offen, in Arbeit, ge
 | Gefahr je Sekunde eines Gegners ohne seinen Schaden über Zeit, entgegen Konzept 03 | F7 | `EnemyDanger`, `Watcher` | behoben, A723 |
 | „Gegner läuft zu einem anderen Gegner" traf jeden, der auf den Spieler am Hauptgegner zulief; Ziel verlangte Anvisierbarkeit; Verschwinden am Kampfende als Ankunft gelernt (vier Fehlauslösungen von Zähnefletschen am 11.11.) | F6, F7, F12, F2 | `Approach`, `BST_Reborn` K9 | behoben, A724 (Modell `approach_model.py`) |
 | „Die Sperre hält BossMods KI nicht" galt nach einer Messung für die ganze Sitzung, gemessen an `Movement.IsMoving`, das auch zurückgehaltene Zauber meldet; ein Rückstoß im Kanal zählte als Schritt der KI | F12, F4 | `MovementLock.Note` | behoben, A725 |
+| „Im Rückstand" bei Figuren, die nur Heilung besiegt: die Rate ohne die schon Vollgeheilten – Nichtheiler sprangen ein, sobald die erste Figur fertig war | F7 | `HealToDefeat.UpdateDeadline` | behoben, A726 |
+| Gelernte Trefferserien wachsen nur: nach einer kürzeren Serie gelten bis zum Ende der Glockendauer Auslösungen als ausstehend | F9 | `HitSeries` | offen, TODO „Gelernte Trefferserien sinken nicht" |
+| Fehlgeschlagene Wirktext-Auswertung für die Sitzung gemerkt; Steinnamen je Frame aus den Blättern; verrutschte Methodenbeschreibung | F4, – | `ActionTooltip.Text`, `DeepDungeonStones`, `TankbusterHelp` | behoben, A726 |

@@ -21109,6 +21109,31 @@ potency" je Kampfende.
 - *Prüfgrad:* statisch (BossModReborn-Quelltext), Compile ohne Warnung. Im Spiel nicht beobachtet; die Spurzeile
   „movement lock held for … s while BossMod's AI steered" trägt das Messergebnis.
 
+### A726 · Quellcode-Prüfung, übrige Helfer: Heilrate der Figuren ohne die Vollgeheilten; drei kleine Stellen (12.11.2026)
+
+Gelesen: `HitSeries`, `ReportedDamage`, `TankbusterHelp`, `HealReduction`, `StunWatch`, `TraitDurations`, `OwnHitWatch`,
+`HealToDefeat`, `DeepDungeonPomanders`, `DeepDungeonStones`, `TankbusterMarkerWatch`, `ActionPenaltyWatch`,
+`HostileMovement`, `ActionTooltip`, `DefenseTrace`, Rest von `TimeToKillTracker`.
+
+- *Befund (`HealToDefeat.UpdateDeadline`, Klasse F7):* „Im Rückstand" rechnet die Rate aus dem, was die Figuren der Welle
+  seit ihrem Beginn gewonnen haben, „those already healed to full included" – eine vollgeheilte Figur verlässt aber die
+  Liste, und ihr Gewinn fiel aus der Summe. Im Kampf (Reiryu, Shinryu Unreal): Hat ein Heiler die erste Figur fertig
+  und beginnt die zweite, steht die Rate bei null, „behind" gilt, und unter „Help heal figures only healing defeats as a
+  non-healer" (ab Werk an) lässt jeder Nichtheiler seinen Schaden für eine Heilung fallen, die im Plan liegt. Behoben:
+  Der Gewinn einer Figur bleibt beim Verlassen in der Welle – vor dem Ende ihres Casts gegangen, alles, was ihr fehlte;
+  sonst der letzte Stand. Konzept 07, „Heilziele außerhalb der Gruppe".
+- *Klein, im selben Zug:* `TankbusterHelp` – die Beschreibung von `MeasuredHitCallsForNoHelp` stand als zweites
+  `summary` vor `AimedHitCallsForDefence`; an ihre Methode gesetzt. `DeepDungeonStones.NameByIcon` ging je Frame und
+  Platz durch zwei Blätter und bildete die Namen neu; je Symbol einmal gelesen. `ActionTooltip.Text` merkte auch eine
+  fehlgeschlagene Auswertung für den Rest der Sitzung als „kein Text"; ein Fehlschlag wird nicht mehr gemerkt.
+- *Erfasst, nicht behoben (TODO „Gelernte Trefferserien sinken nicht"):* `HitSeries` schreibt je Aktion nur Zuwächse; nach
+  einer Serie, die kürzer ausfällt als die längste je gesehene, gelten bis zum Ende der Glockendauer noch Auslösungen
+  als ausstehend – Glockenspiel, Panhaima, Makrokosmos oder Seraphismus können dann nach dem letzten Treffer gehen
+  (Klasse F9).
+- *Ohne Befund:* die übrigen; `PlayerHeldByEnemies` und `HoldingRate` (Kandidat aus dem Beastmaster-Durchgang): die
+  Gegnerliste trägt konstruktionsbedingt keine leeren Einträge.
+- *Prüfgrad:* statisch, Compile ohne Warnung, 53 Prüfschritte. Im Spiel nicht beobachtet.
+
 ## B · Commit-Register (Fork vs. `upstream/main`)
 
 ### B1 · Einzelgeprüfte Fork-Commits

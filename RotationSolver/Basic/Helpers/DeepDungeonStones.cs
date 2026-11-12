@@ -263,25 +263,40 @@ internal static class DeepDungeonStones
 		return matches == 1 ? icon : 0;
 	}
 
+	// Read once per icon: the stones are read every frame.
+	private static readonly Dictionary<uint, string> _nameByIcon = [];
+
 	private static string NameByIcon(uint icon)
 	{
+		if (_nameByIcon.TryGetValue(icon, out var known))
+		{
+			return known;
+		}
+
+		var name = string.Empty;
 		foreach (var row in Svc.Data.GetExcelSheet<Lumina.Excel.Sheets.DeepDungeonMagicStone>(ClientLanguage.English)!)
 		{
 			if (row.Icon == icon)
 			{
-				return row.Name.ExtractText();
+				name = row.Name.ExtractText();
+				break;
 			}
 		}
 
-		foreach (var row in Svc.Data.GetExcelSheet<Lumina.Excel.Sheets.DeepDungeonDemiclone>(ClientLanguage.English)!)
+		if (name.Length == 0)
 		{
-			if (row.Icon == icon)
+			foreach (var row in Svc.Data.GetExcelSheet<Lumina.Excel.Sheets.DeepDungeonDemiclone>(ClientLanguage.English)!)
 			{
-				return row.TitleCase.ExtractText();
+				if (row.Icon == icon)
+				{
+					name = row.TitleCase.ExtractText();
+					break;
+				}
 			}
 		}
 
-		return string.Empty;
+		_nameByIcon[icon] = name;
+		return name;
 	}
 
 	private static int KindOf(string name)

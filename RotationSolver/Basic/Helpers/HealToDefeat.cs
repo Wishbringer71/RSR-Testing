@@ -40,6 +40,7 @@ internal static class HealToDefeat
 	private static DateTime _waveStart;
 	private static int _waveFigures;
 	private static int _waveHeals;
+	private static double _waveGained;
 	private static bool _behindTraced;
 
 	/// <summary>Whether the healing the figures receive does not finish them within the deadline of a cast on one.</summary>
@@ -207,11 +208,16 @@ internal static class HealToDefeat
 		foreach (var id in gone)
 		{
 			var figure = _figures[id];
-			if (figure.CastEnds != default && now >= figure.CastEnds && figure.MaxHp > 0)
+			var outlivedCast = figure.CastEnds != default && now >= figure.CastEnds;
+			if (outlivedCast && figure.MaxHp > 0)
 			{
 				(unhealed ??= []).Add($"{figure.Name} at {(float)figure.LastHp / figure.MaxHp:P0}");
 			}
 
+			// Its gain stays in the wave's rate: gone before its cast ended it was healed to full - all it missed -, else
+			// what it had gained when last seen (A726).
+			var reached = outlivedCast ? figure.LastHp : figure.MaxHp;
+			_waveGained += reached > figure.FirstHp ? reached - figure.FirstHp : 0;
 			_ = _figures.Remove(id);
 		}
 
@@ -244,7 +250,7 @@ internal static class HealToDefeat
 		}
 
 		// What the wave's figures have gained since it began, those already healed to full included.
-		double gained = 0;
+		var gained = _waveGained;
 		foreach (var figure in _figures.Values)
 		{
 			gained += figure.LastHp > figure.FirstHp ? figure.LastHp - figure.FirstHp : 0;
@@ -297,6 +303,7 @@ internal static class HealToDefeat
 	{
 		_waveFigures = 0;
 		_waveHeals = 0;
+		_waveGained = 0;
 		_behindTraced = false;
 		Behind = false;
 	}

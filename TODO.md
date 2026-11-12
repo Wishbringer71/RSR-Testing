@@ -27,6 +27,8 @@ BossMod-Module) die Rotation des Beastmasters, die Wahl der Begleiter und den Ze
    nach einem GCD statt nach 10 s.
 5. Kegel und Ringe gegnerischer Zauber genau messen: Zauber- und Kanalbeginn nutzen RSRs Erkennung bei Kegel und Ring
    nicht, und mehrere Leser sehen hinter einem Kegel oder im Innenkreis eines Rings eine Gefahr, die keine ist.
+6. Gelernte Trefferserien sinken nicht: eine lange Gruppenheilung kann nach dem letzten Treffer einer Serie gehen
+   (Befund der Quellcode-Prüfung, A726).
 
 Danach die technische Schuld, soweit ihre Auflösungsbedingung erfüllt ist. Warten auf Daten: unten.
 
@@ -75,14 +77,24 @@ schwächeren Treffern von damals da. *Ort:* `CrucibleBoard.LearnLoad`, `LearnNet
 (unter dem Rang des Bretts, auf ihm: dort gleicht das Spiel die Stärke an, `IsPetOverSyncedRank`), ohne feste Zahl.
 *Konzept:* 21, K15 („Woran ein leichtes Brett feststeht").
 
+### Gelernte Trefferserien sinken nicht · N
+Im Kampf: Je gegnerischer Aktion merkt RSR die längste je gesehene Serie von Treffern auf dich und ein weiteres Mitglied
+(`HitSeriesOnPlayer.json`, nur Zuwächse). Fällt eine Serie kürzer aus – zwei Gegner wirkten sie beim Lernen zugleich, ein
+Teil wird ausgewichen, die Phase ist eine andere –, gelten bis zum Ende der Glockendauer noch Auslösungen als
+ausstehend, und Glockenspiel, Panhaima, Makrokosmos oder Seraphismus können nach dem letzten Treffer gehen (180 s und
+120 s Abklingzeit ohne Wirkung). *Ort:* `HitSeries.Learn`, `TriggersLeft`. *Nächster Schritt:* Loop – am Mitschnitt die
+Abstände in den gelernten Serien messen und prüfen, ob eine Serie als beendet gelten kann, sobald der Abstand seit dem
+letzten Treffer ihren bisher größten übersteigt; die Schichten von Konzept 13 für die Datei. *Konzept:* 08
+(„Glockenspiel"), 13.
+
 ### Den eigenen Quellcode des Plugins vollständig auf Probleme prüfen · N R
 Sein Auftrag vom 12.11.2026: „weiterarbeiten, danach den eigenen quellcodes des Plugins vollständig prüfen, inwieweit
 darin probleme existieren, dann mit todo weitermachen. alles in kompletten loops". Umfang: der gesamte Quelltext unter
 `RotationSolver*/` (nicht ECommons, RebornMaterial, Dalamud). Umfang, Verfahren, Fehlerklassen und der Stand je
 Bereich stehen in `docs/method/02-source-audit.md`; die mechanischen Durchgänge über alle Dateien sind durch (A713).
-Die Crucible- und Beastmaster-Dateien sind gelesen (A714 bis A721).
-*Nächster Schritt:* der lesende Durchgang nach der Tabelle dort, weiter mit `Basic/Helpers`, `DataCenter`, `Watcher`
-und den Updatern; jeder Befund als eigener Eintrag hier, jeder im Loop. *Konzept:* `docs/method/02-source-audit.md`.
+Die Crucible- und Beastmaster-Dateien und `Basic/Helpers` bis auf drei Upstream-Dateien sind gelesen (A714 bis A726).
+*Nächster Schritt:* der lesende Durchgang nach der Tabelle dort, weiter mit den Fork-Zeilen von `StatusHelper`,
+`ObjectHelper`, `TargetFilter`, dann `DataCenter` und den Updatern; jeder Befund als eigener Eintrag hier, jeder im Loop. *Konzept:* `docs/method/02-source-audit.md`.
 
 ### Gefundene Punkte vom 11.11.2026 im vollen Loop verifizieren und optimieren · N
 Sein Auftrag vom 11.11.2026: „ich habe das gefühl, dass du wieder nicht zuerst an den konzepten gearbeitet hast und auch
