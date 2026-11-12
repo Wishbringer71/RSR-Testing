@@ -205,7 +205,7 @@ public partial class BeastmasterRotation
 
 		// K15 (A691): while no rest has been taken in this run and the run needs none, walk on - a rest ends the bonus
 		// Schlaflose Nächte (1,000).
-		if (NoRestBonusStands && NeedsNoRestOrFeed(out var restless))
+		if (NoRestBonusStands && NeedsNoRestOrFeed(true, out var restless))
 		{
 			CrucibleCampSummary = $"RSR advises walking on without a rest - {restless}; a rest ends the bonus Schlaflose Nächte (1,000 points)";
 			CrucibleCampRecommendation = [];

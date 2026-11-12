@@ -233,6 +233,7 @@ internal static class CrucibleBoard
 	private static long _fightLastHp;
 	private static long _fightOwnPending;
 	private static long _fightOwnApplied;
+	private static DateTime _fightOwnReported = DateTime.MinValue;
 
 	// A706, A709 (K15): the player's HP when the fight is told, and since then his HP without his own healing - items and
 	// his actions, taken off the moment his HP rise by it -, the lowest and the last, for the fight's net loss and deepest
@@ -254,6 +255,13 @@ internal static class CrucibleBoard
 			_fightPrevHp = hp;
 			_fightLowHp = hp;
 			_fightOwnApplied = 0;
+		}
+
+		// A720: what did not show as a rise within a GCD of its report - a hit at the same moment took it - is gone; kept,
+		// it took a familiar's later healing for his own.
+		if (_fightOwnPending > 0 && (DateTime.Now - _fightOwnReported).TotalSeconds > DataCenter.DefaultGCDTotal)
+		{
+			_fightOwnPending = 0;
 		}
 
 		// His own healing shows as a rise of his HP after its effect was reported; what a full bar cannot take is gone.
@@ -731,6 +739,9 @@ internal static class CrucibleBoard
 			|| text.Contains("damage over time", StringComparison.OrdinalIgnoreCase);
 	}
 
+	/// <summary>A718: counted up each time a hit teaches an action's elements anew - for whoever keeps what it read of them.</summary>
+	internal static int ElementsLearned { get; private set; }
+
 	/// <summary>
 	/// The weakness (XBMElement row) an action hits: once a hit of it was seen in a Crucible fight, what that hit carried
 	/// (A582); before, by the action sheet - its element (Fire to Water), else its physical attack type (Slashing, Piercing,
@@ -1159,6 +1170,11 @@ internal static class CrucibleBoard
 		return 0;
 	}
 
+	private static int _finalOverRun = -1;
+
+	/// <summary>A714: whether the final fight of the run in progress is over - the board is done, nothing after it counts for the run.</summary>
+	internal static bool FinalFightOver => _finalOverRun == _run;
+
 	private static void EndFight()
 	{
 		if (_fight != 0)
@@ -1169,6 +1185,7 @@ internal static class CrucibleBoard
 			LearnNetAndDip();
 			if (_finalFights.Contains(_fight))
 			{
+				_finalOverRun = _run;
 				_lossFinalOver = true;
 				LearnFamiliarLoss();
 			}
@@ -1215,9 +1232,11 @@ internal static class CrucibleBoard
 
 		// A678: a hit a tome converted measures the tome, and does not teach the elements of its action.
 		var converted = MeasureTome(action, target, entry, amount, elements);
-		if (!converted && (elements.Count > 0 || _elementNames.Count > 0))
+		if (!converted && (elements.Count > 0 || _elementNames.Count > 0)
+			&& (!_actionElementsSeen.TryGetValue(action.RowId, out var before) || !before.SetEquals(elements)))
 		{
 			_actionElementsSeen[action.RowId] = elements;
+			ElementsLearned++;
 		}
 
 		_ownDamage += amount;
@@ -1534,6 +1553,7 @@ internal static class CrucibleBoard
 		{
 			_fightLoad = _fightLoad with { Healed = _fightLoad.Healed + amount };
 			_fightOwnPending += amount;
+			_fightOwnReported = DateTime.Now;
 		}
 	}
 
@@ -1635,11 +1655,15 @@ internal static class CrucibleBoard
 	private static DateTime _itemKill = DateTime.MinValue;
 	private static int _stacksSeen;
 
+	// A719: the stacks the frame before, while the watch runs.
+	private static int? _stacksBefore;
+
 	// A677: follows the item hits to a kill and the player's kill stacks after it, every frame while the gear is worn.
 	private static void FollowKillStacks()
 	{
 		if (ItemKillsStack != null || _itemHits.Count == 0 && _itemKill == DateTime.MinValue)
 		{
+			_stacksBefore = null;
 			return;
 		}
 
@@ -1649,10 +1673,14 @@ internal static class CrucibleBoard
 		{
 			_itemHits.Clear();
 			_itemKill = DateTime.MinValue;
+			_stacksBefore = null;
 			return;
 		}
 
+		// A719: the fall is held against the stacks of the frame before it was seen - the stack may come in the same frame.
 		var stacks = Rotations.Basic.BeastmasterRotation.StacksHeld(player, stack.Status);
+		var before = _stacksBefore ?? stacks;
+		_stacksBefore = stacks;
 		List<ulong>? done = null;
 		foreach (var (id, at) in _itemHits)
 		{
@@ -1660,7 +1688,7 @@ internal static class CrucibleBoard
 			if (gone && _itemKill == DateTime.MinValue)
 			{
 				_itemKill = now;
-				_stacksSeen = stacks;
+				_stacksSeen = before;
 			}
 
 			if (gone || (now - at).TotalSeconds > gcd)

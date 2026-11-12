@@ -30,6 +30,7 @@ public partial class BeastmasterRotation
 
 	// The weaknesses each familiar's Trick and Release hit, by familiar; what K2 has traced in this fight.
 	private static readonly Dictionary<BeastmasterPet, HashSet<uint>> _familiarElements = [];
+	private static int _familiarElementsAt;
 	private static readonly HashSet<BeastmasterPet> _crucibleHeldTraced = [];
 	private static uint _crucibleHeldFight;
 
@@ -39,6 +40,14 @@ public partial class BeastmasterRotation
 	/// </summary>
 	internal static HashSet<uint> ElementsOf(FamiliarProfile profile)
 	{
+		// A718: read anew once a hit taught an action's elements - kept for good, K2 and the team choice read the sheet's
+		// answer after a hit had corrected it.
+		if (_familiarElementsAt != CrucibleBoard.ElementsLearned)
+		{
+			_familiarElementsAt = CrucibleBoard.ElementsLearned;
+			_familiarElements.Clear();
+		}
+
 		if (_familiarElements.TryGetValue(profile.Pet, out var known))
 		{
 			return known;

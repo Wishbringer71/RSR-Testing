@@ -20,11 +20,12 @@ BossMod-Module) die Rotation des Beastmasters, die Wahl der Begleiter und den Ze
 (Beispiel seiner Beobachtung: der Raptor gegen Feuer, bevor feueranfällige Gegner da waren; A581).
 
 1. Den eigenen Quellcode des Plugins vollständig auf Probleme prüfen (sein Auftrag, 12.11.2026, nach dem Brett-Punkt
-   und vor dem übrigen TODO).
-2. Die übrigen gefundenen und gebauten Punkte vom 11.11.2026 im vollen Loop verifizieren und optimieren (sein Auftrag).
-3. Blaumagier: RSRs nächste Aktion beendet Apokalypsis und Chelonian Gate – Schaden und Minderung des Spielers enden
+   und vor dem übrigen TODO); seine Befunde im Crucible zuerst: Crucible: Zwei Maße für „tragen die LP den Weg".
+2. Crucible: Gelernte Lasten sinken nicht, wenn die Begleiter stärker werden (Vorrang Crucible).
+3. Die übrigen gefundenen und gebauten Punkte vom 11.11.2026 im vollen Loop verifizieren und optimieren (sein Auftrag).
+4. Blaumagier: RSRs nächste Aktion beendet Apokalypsis und Chelonian Gate – Schaden und Minderung des Spielers enden
    nach einem GCD statt nach 10 s.
-4. Kegel und Ringe gegnerischer Zauber genau messen: Zauber- und Kanalbeginn nutzen RSRs Erkennung bei Kegel und Ring
+5. Kegel und Ringe gegnerischer Zauber genau messen: Zauber- und Kanalbeginn nutzen RSRs Erkennung bei Kegel und Ring
    nicht, und mehrere Leser sehen hinter einem Kegel oder im Innenkreis eines Rings eine Gefahr, die keine ist.
 
 Danach die technische Schuld, soweit ihre Auflösungsbedingung erfüllt ist. Warten auf Daten: unten.
@@ -67,18 +68,30 @@ aufheben. *Konzept:* 03, „Bewegungssperre beim Wirken und die KI von BossMod";
 Im Kampf: Die je Kampf gelernten Werte – rohe Last (A661), Nettoverlust und Senke (A706, A709), Verlust je Einsatz
 (A703) – halten je den größten über alle Läufe. Läufe mit Begleitern unter dem Rang des Bretts prägen sie; erreichen die
 Begleiter den Rang, sinken die Verluste, RSR rechnet aber weiter mit den alten Höchstwerten: ein Brett, das leicht
-geworden ist, gilt weiter als schwer (sichere Seite, kostet Punkte). *Ort:* `CrucibleBoard.LearnLoad`,
-`LearnNetAndDip`, `LearnFamiliarLoss`. *Nächster Schritt:* Loop – etwa die Werte nach dem Stand der Begleiter trennen
+geworden ist, gilt weiter als schwer (sichere Seite, kostet Punkte). Ebenso die Treffer der Begleiter für die Hornwahl
+(K16): Schaden und Potenz summieren über alle Sitzungen, ein Begleiter, der seither im Rang stieg, steht mit seinen
+schwächeren Treffern von damals da. *Ort:* `CrucibleBoard.LearnLoad`, `LearnNetAndDip`, `LearnFamiliarLoss`,
+`LearnFamiliarHits`. *Nächster Schritt:* Loop – etwa die Werte nach dem Stand der Begleiter trennen
 (unter dem Rang des Bretts, auf ihm: dort gleicht das Spiel die Stärke an, `IsPetOverSyncedRank`), ohne feste Zahl.
 *Konzept:* 21, K15 („Woran ein leichtes Brett feststeht").
+
+### Crucible: Zwei Maße für „tragen die LP den Weg" · N
+Im Kampf: K15 (Boni halten) rechnet je Kampf mit Nettoverlust und tiefster Senke ohne eigene Heilung (A709); die
+Wegempfehlung, die Rastwahl, der Laden und „Heilung, die kein Kampf braucht" rechnen mit dem Bruttoschaden (A661),
+also ohne die Heilung der Begleiter. Auf Brett 1 liegt das Brutto über dem Netto (A709: Bedarf ab Start 93 %, brutto
+über 100 %): Ein Weg mit mehr Kämpfen gilt eher als unsicher und verliert gegen den mit der Rast (250 und 800 Punkte
+je Feld), Begleiter ruhen seltener mit. *Ort:* `FollowCrucibleRoute.Apply`, `StretchNeed`, `SpareHeal`,
+`OfferScale`. *Nächster Schritt:* Loop – ein Maß für den Bedarf eines Wegs (Netto und Senke, wo gelernt, sonst
+Brutto), am Modell seiner Läufe vom 11.11. geprüft. *Konzept:* 21, K10 und K15.
 
 ### Den eigenen Quellcode des Plugins vollständig auf Probleme prüfen · N R
 Sein Auftrag vom 12.11.2026: „weiterarbeiten, danach den eigenen quellcodes des Plugins vollständig prüfen, inwieweit
 darin probleme existieren, dann mit todo weitermachen. alles in kompletten loops". Umfang: der gesamte Quelltext unter
 `RotationSolver*/` (nicht ECommons, RebornMaterial, Dalamud). Umfang, Verfahren, Fehlerklassen und der Stand je
 Bereich stehen in `docs/method/02-source-audit.md`; die mechanischen Durchgänge über alle Dateien sind durch (A713).
-*Nächster Schritt:* der lesende Durchgang nach der Tabelle dort, zuerst die Crucible-Dateien des Beastmasters, dann
-`Basic/Helpers`; jeder Befund als eigener Eintrag hier, jeder im Loop. *Konzept:* `docs/method/02-source-audit.md`.
+Die Crucible- und Beastmaster-Dateien sind gelesen (A714 bis A720).
+*Nächster Schritt:* der lesende Durchgang nach der Tabelle dort, weiter mit `Basic/Helpers`, `DataCenter`, `Watcher`
+und den Updatern; jeder Befund als eigener Eintrag hier, jeder im Loop. *Konzept:* `docs/method/02-source-audit.md`.
 
 ### Gefundene Punkte vom 11.11.2026 im vollen Loop verifizieren und optimieren · N
 Sein Auftrag vom 11.11.2026: „ich habe das gefühl, dass du wieder nicht zuerst an den konzepten gearbeitet hast und auch

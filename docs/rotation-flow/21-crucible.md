@@ -641,9 +641,25 @@ Dullahan, Golem, Spriggan und Eisgolem (`XBMPet.InflictsInterrupt`).
     dahin gebracht hat, einen oder wenige Züge voraus und nach jedem Feld neu – kein Plan fürs ganze Brett. Gebaut wird der Hinweis für die nächste Gabelung, nicht das Laufen: Das Brett wird gelaufen, nicht
     geklickt (Daedalus läuft es mit vnavmesh ab), und danach hat er nicht gefragt. Die Felder und Wege liest RSR seit A631
     aus den Blättern (K14, „Der Weg aus den Blättern").
-    *Wo du stehst (A632):* Am Hornfenster das Feld des Kampfs (K14). Öffnet danach das Fenster einer Campsite, eines Ladens
-    oder eines Schatzes, ist es das Feld dieser Art – oder ein Zufallsfeld, das sie werden kann – unter den nächsten Feldern.
-    Gibt es dort keins, bleibt das letzte bekannte Feld. So folgt RSR dem Lauf Feld für Feld, ohne Position.
+    *Wo du stehst (A632, A715):* Am Hornfenster das Feld des Kampfs (K14) – ein Feld mit diesem Kampf oder ein
+    Zufallsfeld, das er werden kann: Die Kämpfe der Zufallsfelder stehen in den Blättern nur als deren Möglichkeit
+    (Bretter 2 bis 5, neun Felder; ffxiv-datamining 52a72b3). Öffnet danach das Fenster einer Campsite, eines Ladens
+    oder eines Schatzes, ist es auf den Wegen voraus das erste Feld, das diese Art ist oder als Zufallsfeld werden
+    kann – über Felder hinweg, deren Fenster RSR nicht sah, aber nie über einen festen Kampf: den hätte das Hornfenster
+    genannt. Steht der Lauf schon auf einem Feld dieser Art, bewegt ihn nur ein Fenster, das neu aufgeht, und nur auf
+    das unmittelbar nächste Feld (Brett 3: Schatz, dann Zufallsfeld mit Schatz). Passen mehrere Felder – eine
+    Gabelung, deren Abzweige beide mit dieser Art beginnen (Brett 4 nach dem ersten Elitegegner: Schatz oder
+    Zufallsfeld mit Schatz; Brett 5 nach dem ersten und dem letzten Laden) –, sagt das Fenster nicht, welches: Der
+    Lauf bleibt auf der Gabelung stehen, bis der nächste Kampf ihn setzt; gerechnet wird solange über beide Abzweige,
+    die schwerere Seite zählt. Gibt es kein solches Feld voraus, bleibt das letzte bekannte. So folgt RSR dem Lauf
+    Feld für Feld, ohne Position.
+    Bis A715 suchte ein Kampf nur unter den festen Kampffeldern und ein Fenster nur unter den unmittelbar nächsten
+    Feldern, das erste passende. Ein Zufallskampf ließ den Lauf auf dem Feld davor stehen – er zählte weiter als
+    bevorstehend, eine Rast als noch möglich –, und an den drei Gabelungen mit Schatz auf beiden Seiten stand der
+    Lauf je nach Abzweig auf dem falschen. Das Modell `crucible_route_model.py` geht jeden Weg jedes Bretts mit jedem
+    Ausgang jedes Zufallsfelds: Die alte Regel stand auf den Brettern 2 bis 5 in 271 Fällen hinter einem schon
+    geschlagenen Kampf und in 162 auf einem Feld, auf das der Lauf nie kam; die neue in keinem – sie steht auf den
+    Brettern 4 und 5 an den mehrdeutigen Gabelungen zurück (207 Fälle), nie hinter einem Kampf (gerechnet 12.11.2026).
     *Was gilt (A632, A656; seine Vorgaben vom 07.11.2026 zu seinem Screenshot von Brett 1: „da wäre eine empfehlung
     hilfreich. eher links oder rechts gehen" und „solche empfehlungen gehören auch ingame rein"; seine Frage dazu: „aktuell
     bei fast vollen hp und keinen toten begleiter also eher die truhe als das camp. oder ist das camp besser?"):* Hat das
@@ -674,7 +690,11 @@ Dullahan, Golem, Spriggan und Eisgolem (`XBMPet.InflictsInterrupt`).
       der Endkampf mit 35 % –, sah sie nicht.
     - *Zustand:* deine LP-Anteil jetzt; dein Vorrat an Heilgegenständen als Anteil deiner LP (K8, nur die für dich); der
       niedrigste LP-Anteil der Heiler und Schützer aus dem Endkampfplan (K11, K14) und deren größter Verlust je Einsatz
-      (`FinalLossPerUse`).
+      (`FinalLossPerUse`). Die LP der Heiler sind die gemessenen (K11, „Die LP des Kaders hängen einen Kampf nach"):
+      Die Empfehlung fällt gleich nach einem Kampf, und das Teamfenster des Spiels zeigt dann noch die LP von davor;
+      bis A716 las sie diese (am 11.11.2026 zeigte das Teamfenster um 15:11:03, gleich nach Kampf 1, Morbol mit 667 und
+      Raptor mit 589 LP, mit der Meldung des nächsten Kampfs um 15:11:34 dann mit 480 und 555). Dasselbe gilt für die
+      Futterempfehlung im Laden und „keine Rast nötig" (K15).
     - *Felder:* Campsite wie K10 – Begleiter ruhen mit, solange deine LP danach die Strecke bis zur nächsten Rast tragen
       (A661), so viele, wie das Lager nimmt (`XBMContentCamp`); einen gefallenen Begleiter heilt sie nicht (Wiki, oben),
       ein toter Begleiter spricht also nicht für die Campsite. Laden, Schatz: keine LP, aber Gegenstände (vermerkt, Marken
@@ -696,7 +716,11 @@ Dullahan, Golem, Spriggan und Eisgolem (`XBMPet.InflictsInterrupt`).
       dem Feld rechnet RSR mit deinen LP neu (Vorausrechnung).
     - *Sicher* ist ein Abzweig, wenn du nach dem Endkampf mit Vorrat noch lebst – die Summe aller Kämpfe bis dorthin, jeder
       mit seiner Last, die Rasten dazwischen –, und wenn der schwächste Endkampf-Heiler vor dem Endkampf einen Einsatz
-      übersteht (seine LP über seinem größten Verlust je Einsatz, wie „übersteht den Einsatz" am Hornfenster, K6).
+      übersteht (seine LP über seinem größten Verlust je Einsatz, wie „übersteht den Einsatz" am Hornfenster, K6) oder
+      voll ist: Mehr als volle LP bringt ihm kein Weg, an ihm liegt es dann nicht (A716). Kostet ein Einsatz mehr, als
+      der kleinste Heiler LP hat, war sonst jeder Weg unsicher – am 11.11.2026 in Lauf 3: ein Einsatz bis 522 LP, Puk hat
+      521, „no way is safe" bei 26 % eigenen LP nach dem Endkampf, empfohlen die Rast statt des Schatzes; derselbe
+      Ausfall wie vor A663 mit zwei Verlusten.
       Empfohlen wird unter den sicheren der mit den meisten Feldern, die Gegenstände bringen (Schatz, Laden; ein
       Zufallsfeld nur, wenn schon seine schlechteste Möglichkeit einer ist), sonst der mit den meisten LP danach; ist
       keiner sicher, der, nach dem du mit Vorrat am höchsten stehst, bei Gleichstand der mit den gesünderen
@@ -742,8 +766,9 @@ Dullahan, Golem, Spriggan und Eisgolem (`XBMPet.InflictsInterrupt`).
       Strecke):* Bis zum Endkampf zu rechnen lässt eine spätere Rast mitzählen, die du vielleicht nicht nimmst. Nicht so
       gebaut: An einer Gabelung zählt die bessere Fortsetzung, die du dort selbst wählst und die RSR dir dann wieder
       empfiehlt. *Gegenthese 2:* RSR verliert die Spur (ein Fenster, das es
-      nicht liest; ein Zufallsfeld, das ein anderes Fenster öffnet). Dann rechnet es vom letzten bekannten Feld und zeigt
-      Abzweige, die schon hinter dir liegen; das Fenster nennt das Feld, von dem es rechnet. *Gegenthese 3:* Gegenstände
+      nicht liest). Dann rechnet es vom letzten bekannten Feld und zeigt Abzweige, die schon hinter dir liegen, bis das
+      nächste Fenster oder Hornfenster es wieder auf das nächste passende Feld voraus setzt („Wo du stehst"); das Fenster
+      nennt das Feld, von dem es rechnet. *Gegenthese 3:* Gegenstände
       aus Schatz und Laden sind nicht bezifferbar, bevor man sie sieht. Nicht widerlegt: Sie zählen nur als Vorzug unter
       sicheren Abzweigen. *Gegenthese 4 (Kamera):* Blickt er vom Endgegner zurück, sind links und rechts vertauscht.
       Teilweise widerlegt: Das Feld steht neben der Richtung. *Ausgeliefert, und nichts ändert sich?* Ohne Hornfenster im
@@ -807,8 +832,10 @@ Dullahan, Golem, Spriggan und Eisgolem (`XBMPet.InflictsInterrupt`).
     - *Was gemessen wird:* je Kampf zwei Größen, als Anteil seiner LP ohne Ausrüstung, je die größte über alle Läufe:
       der *Nettoverlust* (LP zu Beginn weniger LP am Ende) und die *tiefste Senke* (LP zu Beginn weniger die niedrigsten LP
       im Kampf) – beide **ohne seine eigene Heilung** (Gegenstände, eigene Aktionen), mit der Heilung der Begleiter.
-      Die eigene Heilung zieht RSR in dem Augenblick ab, in dem seine LP um sie steigen. A706 zog sie nicht ab: Es maß,
-      was mit den Gegenständen übrig blieb, und sparte dann genau diese Gegenstände ein.
+      Die eigene Heilung zieht RSR in dem Augenblick ab, in dem seine LP um sie steigen, längstens einen GCD nach
+      ihrer Meldung (A720): Was bis dahin nicht als Anstieg ankam – ein Treffer im selben Augenblick nahm es –, verfällt,
+      statt später die Heilung eines Begleiters als eigene abzuziehen und den Kampf schwerer zu schreiben, als er war.
+      A706 zog sie nicht ab: Es maß, was mit den Gegenständen übrig blieb, und sparte dann genau diese Gegenstände ein.
     - *Der Test:* Der Weg verlangt so viele LP, dass er in jedem Kampf über der Trankschwelle bleibt („Use HP potions
       below this HP") – unter ihr ginge ohnehin ein Heilgegenstand, und Sparsamkeit wäre verloren. Der Bedarf eines Wegs
       ist, von hinten gerechnet: die Senke des Kampfs, oder sein Nettoverlust plus der Bedarf des Wegs danach, je nachdem
@@ -871,7 +898,9 @@ Dullahan, Golem, Spriggan und Eisgolem (`XBMPet.InflictsInterrupt`).
   - *Nicht gerastet (1.000; „Schlaflose Nächte", 21), nicht gefüttert (750; „Heilfasten", 17; gebaut A691):* Rast und
     Futter dienen den Begleitern und dem Spieler. Nicht nötig sind sie, wenn der Spieler mit LP und gehaltener Heilung
     die schwerste Last bis einschließlich Endkampf trägt und der schwächste Endkampfheiler jetzt mehr als einen Einsatz
-    hat – K11 hält ihn zurück, bevor er unter einen Einsatz fiele, er kommt also mit einem an. Dann:
+    hat – K11 hält ihn zurück, bevor er unter einen Einsatz fiele, er kommt also mit einem an. Für die Rast genügt
+    auch ein voller Heiler: Eine Rast hebt ihn nicht über volle LP (A716). Für das Futter nicht: Futter hebt sein
+    Maximum und senkt, was er nimmt, und kann ihm den Einsatz erst tragen. Dann:
     - *Lager:* Solange im Lauf nicht gerastet wurde, rät das Fenster, ohne Rast weiterzugehen, nennt den Punktpreis und
       wählt niemanden aus; die Rast bestätigt er selbst. Als gerastet gilt ein Lauf, sobald das Spiel den Anteil der
       Rast anbietet (die Abfrage vor der Rast); bricht er dort ab, gibt RSR den Bonus trotzdem auf – die sichere Seite.
@@ -1527,13 +1556,23 @@ on a pack once a fight, all of them in the final fight (Crucible only)".
   1. Im Kampf unter „Use HP potions below this HP": der Heilgegenstand, der dich mit dem kleinsten Wert wieder über die
      Linie hebt, sonst der größte; bei gleicher Heilung der Heiltrank vor dem Pulver. Dazu, auch über der Linie, die
      Heilung, die keiner mehr braucht (A664, „Über das Brett"); vor beidem gegen einen Boss das Bestien-Ausdauermittel,
-     solange es nicht steht (Synergie, ebenda). Normale Heiltränke sperrt das Brett.
+     solange es nicht steht (Synergie, ebenda) – nur vor Heilung für dich, und nicht mehr, wenn der Endkampf vor dem
+     nächsten GCD endet (A717): Es zahlt sich über den Rest des Kampfs aus, und am Ende hebt es das Maximum, zu dem
+     die Heilung gerade auffüllen soll. Bis A717 trat es auch an die Stelle der Heilung für den Begleiter („Unversehrte
+     Bestien", K15) und ging auf ihn – sein Maximum stieg, er war nicht voll, der Gegenstandsbonus trotzdem weg.
+     Normale Heiltränke sperrt das Brett.
      Die LP liest RSR wie beim Heiltrank: jetzt und, da im Brett kein Heiler lebt, beim nächsten Webfenster einen GCD
      voraus (Konzept 03, „Die Schwelle nach der Vorhersage, wo kein Heiler lebt", A641).
   2. Im Kampf gegen Gift oder Blindheit auf dir das passende Mittel.
   3. Steht kein Reraise, die stärkere Bestien-Lebensfeder, im Kampf und außerhalb. Ihr Wirktext nennt keine Dauer, also
      gilt sie bis zu einem Fall. Geht Reraise, ohne dass du fielst, schreibt die Spur das, und von da an kommt eine
-     Lebensfeder nur noch gegen einen Boss.
+     Lebensfeder nur noch gegen einen Boss. Als gegangen zählt nur, was RSR im selben Lauf lückenlos gesehen hat
+     (A714): RSR folgt dem Status in jedem Bild, an oder aus – „Turn off when you die" schaltet RSR mit dem Fall ab, und
+     der Fall darf dabei nicht ungesehen bleiben –, und urteilt nicht über eine Unterbrechung hinweg: nicht beim
+     Verlassen des Bretts (dort nimmt das Spiel jeden Status), nicht in einem neuen Lauf, nicht nach einer Pause der
+     Beobachtung von mehr als einem GCD (Ladebild), nicht nach dem Endkampf. Am 11.11.2026 schrieb RSR „Reraise went
+     without a fall", als er nach Lauf 1 das Brett neu betrat, und hielt danach jede Lebensfeder bis zu einem Boss – auf
+     Brett 2 vom Aufheben bis zum Endkampf, durch beide Elitekämpfe.
   4. Außerhalb des Kampfes, solange kein Sandstill steht, der Sand der Zeit.
   5. Gegen einen Gegner mit Boss-Symbol, solange kein Auto-potion steht, die Bestien-Heiltranksammlung.
   6. Schutz für dich gegen einen angekündigten Treffer auf dich: ein bekannter Tankbuster (Liste, gelernte Tabelle,
@@ -1728,7 +1767,10 @@ on a pack once a fight, all of them in the final fight (Crucible only)".
       bleibt; in einem anstehenden Kampf ebenso, ab null Stapeln. Ob die Tötung durch einen Gegenstand den Stapel gibt,
       sagt kein Text; RSR misst es selbst: Fällt ein Gegner binnen eines GCD nach dem Treffer eines Gegenstands und
       steigen deine Stapel binnen eines GCD danach, zählen sie ab dann; bleiben sie unter dem Höchstwert stehen, zählen sie
-      nicht. Bis zur ersten Messung der Sitzung zählen sie nicht. Futter für den Begleiter (Tonikum) senkt seinen Schaden,
+      nicht. Verglichen wird mit den Stapeln im Bild, bevor der Gegner als gefallen gesehen wurde (A719): Kommt der
+      Stapel im selben Bild wie der Fall – in welcher Reihenfolge das Spiel beides meldet, sagt keine Quelle –, stand er
+      sonst schon im Vergleichswert, und die Messung schloss für die ganze Sitzung auf „zählt nicht". Bis zur ersten
+      Messung der Sitzung zählen sie nicht. Futter für den Begleiter (Tonikum) senkt seinen Schaden,
       nicht deine Last, und zählt hier nicht. *Gegenthese A677-1:* Eine andere Tötung im selben GCD – dein Schlag, dein
       Begleiter – hebt die Stapel, und die Messung schließt zu Unrecht auf „zählt". Preis: die Stapel eines Gegenstands zu
       Unrecht gezählt, höchstens die Senkung mal der Restlast (oben: auf Brett 1 rund 2 % je Kampf). *Ausgeliefert, und
@@ -1958,6 +2000,11 @@ on a pack once a fight, all of them in the final fight (Crucible only)".
   Spielbetrieb; RSR ruft sie nur auf Knopfdruck und nur bei offenem Teamfenster.
 
 **Stufe 1, zweiter Teil: K1 und der Rest von K3** (A549, gebaut; Daten in `CrucibleBoard`):
+- *Elemente eines Begleiters* (A718): Welche Schwächen Trick, Release und Auto-Angriff eines Begleiters treffen, liest
+  RSR aus dem Aktionsblatt und, sobald ein Treffer der Aktion gesehen wurde, aus dem Treffer (A582). K2 und die
+  Teamempfehlung lesen das je Begleiter zusammengefasst und neu, sobald ein Treffer die Elemente einer Aktion anders
+  gelehrt hat; bis A718 blieb die erste Zusammenfassung der Sitzung stehen. Für die Begleiter nennt das Blatt Aspekt
+  und Angriffsart (alle 50 Auto-Angriffe, ffxiv-datamining 52a72b3), der Fall ist also selten.
 - *K1, Zuschlag gemessen* (A549, neu gefasst A582): Keine Quelle nennt ihn; consolegameswiki, Eorzean Tavern,
   fullboosts und mmogah sagen nur, dass Schwächen zählen (05.11.2026). RSR misst ihn an jedem Treffer von dir und deinen
   Begleitern auf einen Gegner des laufenden Kampfs, je Aktion und Brett.

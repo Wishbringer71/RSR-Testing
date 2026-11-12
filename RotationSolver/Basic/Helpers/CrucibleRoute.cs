@@ -54,6 +54,10 @@ internal static class CrucibleRoute
 	private static bool _done;
 	private static bool _fighting;
 
+	// A715: what the space the run stands on was noted as - a fight, or the kind of the window that opened on it; a random
+	// space carries what it became.
+	private static Space _standsAs = Space.None;
+
 	/// <summary>The space RSR follows the run on: the last battle, or a campsite, shop or treasure opened after it; -1 unknown.</summary>
 	internal static int Current => _current;
 
@@ -88,31 +92,119 @@ internal static class CrucibleRoute
 		_current = -1;
 		_done = false;
 		_fighting = false;
+		_standsAs = Space.None;
+		_severalTraced = (-1, Space.None);
 	}
 
 	/// <summary>
-	/// A window of <paramref name="kind"/> opened (campsite, shop, treasure): the run stands on the next space of that kind - or a
-	/// random space that can be it - after the space it stood on. Nothing changes when none is next.
+	/// A window of <paramref name="kind"/> shows (campsite, shop, treasure; <paramref name="opened"/>: it was not there
+	/// the frame before): the run stands on the space ahead that is of that kind or, a random space, can become it - the
+	/// first such space on the ways on, over spaces whose window RSR did not see, never over a fixed fight, which the horn
+	/// screen would have named. Standing on a space of that kind already, only a window that opened anew moves it, and only
+	/// to the very next space. Where the ways on hold several such spaces - a fork whose ways both begin with that kind -
+	/// the window does not tell which: the run stays where it stands, both ways ahead, until the next fight tells (A715).
+	/// Nothing changes when there is no such space.
 	/// </summary>
-	internal static void NoteSpace(Space kind)
+	internal static void NoteSpace(Space kind, bool opened)
 	{
 		if (_lastBattle.Board == 0 || _current < 0 || !Boards.TryGetValue(_lastBattle.Board, out var route) || route.Next == null
-			|| route.Nodes[_current].Kind == kind)
+			|| _current >= route.Nodes.Length)
 		{
 			return;
 		}
 
-		foreach (var next in route.Next[_current])
+		List<int> found;
+		if (_standsAs != kind)
 		{
-			var node = route.Nodes[next];
-			if (node.Kind == kind || (node.Kind == Space.Random && node.Options.Exists(o => o.Kind == kind)))
+			found = FirstAhead(route, _current, node => CanBe(node, kind));
+		}
+		else if (opened)
+		{
+			found = [];
+			foreach (var successor in route.Next[_current])
 			{
-				_current = next;
-				_done = true;
-				DefenseTrace.Line($"crucible route: on the {kind} at move {node.Move}");
-				return;
+				if (CanBe(route.Nodes[successor], kind) && !found.Contains(successor))
+				{
+					found.Add(successor);
+				}
 			}
 		}
+		else
+		{
+			return;
+		}
+
+		if (found.Count == 0)
+		{
+			return;
+		}
+
+		if (found.Count > 1)
+		{
+			// Not on a space of a known kind any more: the next window is looked for on every way on.
+			_standsAs = Space.None;
+			var fits = (_current, kind);
+			if (_severalTraced != fits)
+			{
+				_severalTraced = fits;
+				DefenseTrace.Line($"crucible route: the {kind} fits {found.Count} spaces after move {route.Nodes[_current].Move} - "
+					+ "the run stays there, every way ahead counted, until the next fight tells");
+			}
+
+			return;
+		}
+
+		var next = found[0];
+		_current = next;
+		_standsAs = kind;
+		_done = true;
+		DefenseTrace.Line($"crucible route: on the {kind} at move {route.Nodes[next].Move}"
+			+ (route.Nodes[next].Kind == Space.Random ? " (a random space)" : string.Empty));
+	}
+
+	private static (int Node, Space Kind) _severalTraced = (-1, Space.None);
+
+	private static bool CanBe(Node node, Space kind) => node.Kind == kind || (node.Kind == Space.Random && node.Options.Exists(o => o.Kind == kind));
+
+	// A715: whether a space holds this battle - its own, or one a random space can become (the sheets list those only as
+	// the random space's option).
+	private static bool HoldsBattle(Node node, uint battle)
+		=> node.Battle == battle || (node.Kind == Space.Random && node.Options.Exists(o => o.Battle == battle));
+
+	// A715: on every way on from `from`, the first space that `wanted` holds for; empty for none. A fixed fight ends a
+	// way: the run cannot have passed it unnoticed.
+	private static List<int> FirstAhead(Board route, int from, Func<Node, bool> wanted)
+	{
+		var found = new List<int>();
+		var seen = new HashSet<int>();
+		var queue = new Queue<int>(route.Next![from]);
+		while (queue.Count > 0)
+		{
+			var index = queue.Dequeue();
+			if (index < 0 || index >= route.Nodes.Length || !seen.Add(index))
+			{
+				continue;
+			}
+
+			var node = route.Nodes[index];
+			if (wanted(node))
+			{
+				found.Add(index);
+				continue;
+			}
+
+			if (node.Kind is Space.Enemy or Space.Elite or Space.Boss)
+			{
+				continue;
+			}
+
+			foreach (var next in route.Next[index])
+			{
+				queue.Enqueue(next);
+			}
+		}
+
+		return found;
 	}
 
 	/// <summary>The spaces of the board the run is on, the ways between them and where each is drawn; null while none is known.</summary>
@@ -427,7 +519,11 @@ internal static class CrucibleRoute
 		}
 	}
 
-	/// <summary>The horn screen named <paramref name="battleDetail"/> (an XBMBattleDetail row): the space it stands on.</summary>
+	/// <summary>
+	/// The horn screen named <paramref name="battleDetail"/> (an XBMBattleDetail row): the space it stands on - one with
+	/// that battle, or a random space that can become it (A715); the first such space on the ways on from where the run
+	/// stands, else the first on any board.
+	/// </summary>
 	internal static void NoteBattle(uint battleDetail)
 	{
 		if (battleDetail == _lastNoted)
@@ -436,21 +532,34 @@ internal static class CrucibleRoute
 		}
 
 		_lastNoted = battleDetail;
+		if (_lastBattle.Board != 0 && _current >= 0 && Boards.TryGetValue(_lastBattle.Board, out var here) && here.Next != null
+			&& _current < here.Nodes.Length && FirstAhead(here, _current, node => HoldsBattle(node, battleDetail)) is { Count: > 0 } ahead)
+		{
+			Stand(_lastBattle.Board, here, ahead[0]);
+			return;
+		}
+
 		foreach (var (board, route) in Boards)
 		{
 			for (var i = 0; i < route.Nodes.Length; i++)
 			{
-				if (route.Nodes[i].Battle == battleDetail && (_lastBattle.Board != board || _lastBattle.Node != i))
+				if (HoldsBattle(route.Nodes[i], battleDetail) && (_lastBattle.Board != board || _lastBattle.Node != i))
 				{
-					_lastBattle = (board, i);
-					_current = i;
-					_done = false;
-					_fighting = false;
-					DefenseTrace.Line($"crucible route: battle {battleDetail} is board {board}, move {route.Nodes[i].Move} "
-						+ $"({route.Nodes[i].Kind}) - {(route.Next == null ? "the board's ways are unread" : "ways read")}");
+					Stand(board, route, i);
 					return;
 				}
 			}
+		}
+
+		void Stand(uint board, Board route, int node)
+		{
+			_lastBattle = (board, node);
+			_current = node;
+			_standsAs = Space.Enemy;
+			_done = false;
+			_fighting = false;
+			DefenseTrace.Line($"crucible route: battle {battleDetail} is board {board}, move {route.Nodes[node].Move} "
+				+ $"({route.Nodes[node].Kind}) - {(route.Next == null ? "the board's ways are unread" : "ways read")}");
 		}
 	}
 

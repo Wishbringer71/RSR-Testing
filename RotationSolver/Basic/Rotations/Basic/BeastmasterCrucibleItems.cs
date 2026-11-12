@@ -432,8 +432,14 @@ public partial class BeastmasterRotation
 			return;
 		}
 
-		FollowReraise(player);
 		if (player.IsDead)
+		{
+			return;
+		}
+
+		// A714: the run is over once its final fight is - what is left is lost with the board, and a use now could only
+		// cost a bonus of the score.
+		if (CrucibleBoard.FinalFightOver && !InCombat)
 		{
 			return;
 		}
@@ -539,8 +545,10 @@ public partial class BeastmasterRotation
 		}
 
 		// A664 (synergy): against a boss, the Beast Tonic before the healing item - it raises the maximum HP the item heals a
-		// share of, and heals itself.
-		if (slot >= 0 && bossFighting)
+		// share of, and heals itself. A717: before healing for him only, and not once the final fight ends within a GCD - it
+		// pays over the rest of the fight, and at its end it raises the maximum the heal is to fill (on the familiar, in
+		// place of the heal for "Unversehrte Bestien", it cost that bonus and the item bonus both).
+		if (slot >= 0 && bossFighting && ReferenceEquals(on, player) && !FinalFightEndsNow)
 		{
 			for (var i = 0; i < crucible->Inventory.Length; i++)
 			{
@@ -1676,13 +1684,36 @@ public partial class BeastmasterRotation
 		return false;
 	}
 
-	// Reraise is assumed to stand until a fall, since its text names no duration. Seen to go while the player lives, it is
-	// kept for the fights against a boss from then on.
-	private static void FollowReraise(IBattleChara player)
+	// A714: the run the watch of Reraise belongs to, and when it last looked.
+	private static int _reraiseRun = -1;
+	private static DateTime _reraiseWatched = DateTime.MinValue;
+
+	/// <summary>
+	/// K8 step 3: Reraise is assumed to stand until a fall, since its text names no duration. Seen to go while the player
+	/// lives, it is kept for the fights against a boss from then on. A714: followed every frame, RSR on or off - "Turn off
+	/// when you die" turns RSR off with the fall, which must not go unseen -, and never judged across an interruption:
+	/// off a board (the game takes every status there), in a new run, after the final fight, or after a pause of the
+	/// watch longer than a GCD. The watch then starts anew with what stands.
+	/// </summary>
+	internal static void FollowReraise()
 	{
-		var stands = PlayerHasStatusNamed(player, "Reraise");
-		_fellUnderReraise |= _reraiseStood && player.IsDead;
-		if (_reraiseStood && !stands && !player.IsDead)
+		var player = Player;
+		var now = DateTime.Now;
+		var watching = DataCenter.IsInCrucible && player != null && !CrucibleBoard.FinalFightOver;
+		var stands = DataCenter.IsInCrucible && player != null && PlayerHasStatusNamed(player, "Reraise");
+		if (!watching || _reraiseRun != CrucibleBoard.Run || (now - _reraiseWatched).TotalSeconds > DataCenter.DefaultGCDTotal)
+		{
+			_reraiseRun = CrucibleBoard.Run;
+			_reraiseWatched = watching ? now : DateTime.MinValue;
+			_reraiseStood = stands;
+			_fellUnderReraise = false;
+			return;
+		}
+
+		_reraiseWatched = now;
+		var dead = player!.IsDead;
+		_fellUnderReraise |= _reraiseStood && dead;
+		if (_reraiseStood && !stands && !dead)
 		{
 			if (!_fellUnderReraise && !_reraiseLostWithoutFall)
 			{
@@ -1693,6 +1724,6 @@ public partial class BeastmasterRotation
 			_fellUnderReraise = false;
 		}
 
-		_reraiseStood = stands || (_reraiseStood && player.IsDead);
+		_reraiseStood = stands || (_reraiseStood && dead);
 	}
 }

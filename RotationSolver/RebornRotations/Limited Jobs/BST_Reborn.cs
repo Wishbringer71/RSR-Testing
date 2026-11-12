@@ -1690,6 +1690,9 @@ public sealed class BST_Reborn : BeastmasterRotation
 			RecordFight();
 		}
 
+		// K8 step 3 (A714): Reraise, followed whether RSR is on or off.
+		FollowReraise();
+
 		// A change by hand, then, out of combat, the horns for the next fight; B5 reads the next enemy from the hostile list.
 		WatchHand();
 		if (HornsBetweenFights)

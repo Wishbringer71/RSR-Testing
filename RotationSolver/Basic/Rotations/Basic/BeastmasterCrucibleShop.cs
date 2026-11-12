@@ -1757,8 +1757,11 @@ public partial class BeastmasterRotation
 			{
 				if (party->PetMaxHealth[i] > 0)
 				{
-					shares[(BeastmasterPet)pets[i].PetId] = party->PetCurrentHealth[i] / (float)party->PetMaxHealth[i];
-					health[(BeastmasterPet)pets[i].PetId] = $"{party->PetCurrentHealth[i]}/{party->PetMaxHealth[i]}";
+					// A716: the HP as K11 measures them - the agent shows a fight's losses only with the next fight.
+					var pet = (BeastmasterPet)pets[i].PetId;
+					var hp = EffectiveHealth(pet, party->PetCurrentHealth[i]);
+					shares[pet] = hp / (float)party->PetMaxHealth[i];
+					health[pet] = $"{hp}/{party->PetMaxHealth[i]}";
 				}
 			}
 		}
@@ -1922,7 +1925,7 @@ public partial class BeastmasterRotation
 
 		// K15 (A691): while no familiar has been fed in this run and the run needs no feed, none - feeding ends the bonus
 		// Heilfasten (750).
-		if (NoFeedBonusStands && NeedsNoRestOrFeed(out var unfed))
+		if (NoFeedBonusStands && NeedsNoRestOrFeed(false, out var unfed))
 		{
 			CrucibleFeedRecommendation = picks;
 			CrucibleFeedNote = $"No feed recommended - {unfed}; feeding ends the bonus Heilfasten (750 points).";

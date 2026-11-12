@@ -106,6 +106,25 @@ What this release changes in the fight. For the whole distance from upstream, se
   without your own items, and the way carries when you would stay above "Use HP potions below this HP" in every fight
   ahead. By your runs of 11.11 that holds before the final fight of board 1 from about 76 % HP: there rest, feed and
   purchases are not needed. Where the way ahead is heavier, RSR decides as before.
+- **A Reraiser goes in every run.** Leaving a board takes Reraise with it, and RSR read that as Reraise running out on
+  its own: from the second run of a session on, it kept every Reraiser for a boss - on 11.11 from the pick-up to the
+  final fight of board 2, through both elite fights. Reraise is now followed in every frame, RSR on or off ("Turn off
+  when you die" must not hide the fall), and judged only within one run and without a break. Once the final fight is
+  over RSR uses no item any more.
+- **The route knows where you stand after a random space.** A fight on a random space is listed in the game's data only
+  as what that space can become; RSR did not find it and went on counting from the space before - the fight still
+  ahead, a campsite still possible - until the next fixed fight. Windows are now placed on the first fitting space on
+  the ways ahead, also past a space whose window RSR did not see. Where a fork begins with a treasure on both sides
+  (board 4 once, board 5 twice) the window cannot tell which way you took: RSR stays on the fork and counts the heavier
+  side until the next fight tells.
+- **A way is not unsafe for a healer that is full.** "Safe" asks that the weakest healer of the final fight's plan
+  outlasts one use. When a use cost more than the smallest healer holds (522 against 521 HP on 11.11) no way could be
+  safe, and the route fell back to the campsite. A full healer now counts: no way brings it more. The same holds for
+  the advice to walk on without a rest; feed is still recommended then, since it raises what the healer holds. The
+  healers' HP are the measured ones - the game's team window shows a fight's losses only when the next fight starts.
+- **The maximum-HP potion does not replace the last heal.** Against a boss the Potion of Tempered Constitution goes
+  before a healing item. Not any more before the heal for your familiar, and not once the final fight ends within a
+  GCD: there it raised the maximum the heal was to fill, and the bonus for full HP was lost with the item bonus.
 - **The board's score counts.** Remnants and familiar EXP grow with the score the board gives after its final fight.
   While no item has been used in the run (the bonus "Sparsamkeit", 750 points) and your HP carry the heaviest way to the
   final fight with the loads RSR learned, items that guard against no present danger stay in the inventory: Temporal

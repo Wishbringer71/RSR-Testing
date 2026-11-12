@@ -29,6 +29,9 @@ public partial class BeastmasterRotation
 
 	private static string _routeTraced = string.Empty;
 
+	// A715: the space window that showed in the frame before.
+	private static Space _routeWindow = Space.None;
+
 	// The state a way is walked with (A663: to the final fight, included): the player's share of HP, the lowest share of the
 	// final fight's healers and that share as the final fight starts, how many spaces with items it passes (treasure, shop, a
 	// random space), whether it passes a campsite, the space it ends on (the boss; -1 the end), and whether a fight on it
@@ -50,28 +53,27 @@ public partial class BeastmasterRotation
 	{
 		if (!DataCenter.IsInCrucible)
 		{
+			_routeWindow = Space.None;
 			ClearRouteHint();
 			return;
 		}
 
 		CrucibleRoute.NoteCombat(InCombat);
-		if (!InCombat)
+
+		// The window that shows, read here and not from the campsite pick, so that turning that pick off does not lose the
+		// run's space. A715: and whether it opened in this frame - a second space of the same kind shows only so.
+		var window = InCombat ? Space.None
+			: Visible("XBMContentsItemShop") ? Space.Shop
+			: Visible("XBMContentsTreasure") ? Space.Treasure
+			: AgentXBMPetParty.Instance() is var pets && pets != null && ((AgentInterface*)pets)->IsAgentActive()
+				&& pets->Mode == CampsiteMode && !_feedFlow && Visible("XBMPetParty") ? Space.Campsite
+			: Space.None;
+		if (window != Space.None)
 		{
-			if (Visible("XBMContentsItemShop"))
-			{
-				CrucibleRoute.NoteSpace(Space.Shop);
-			}
-			else if (Visible("XBMContentsTreasure"))
-			{
-				CrucibleRoute.NoteSpace(Space.Treasure);
-			}
-			else if (AgentXBMPetParty.Instance() is var pets && pets != null && ((AgentInterface*)pets)->IsAgentActive()
-				&& pets->Mode == CampsiteMode && !_feedFlow && Visible("XBMPetParty"))
-			{
-				// Read here, not from the campsite pick, so that turning that pick off does not lose the run's space.
-				CrucibleRoute.NoteSpace(Space.Campsite);
-			}
+			CrucibleRoute.NoteSpace(window, window != _routeWindow);
 		}
+
+		_routeWindow = window;
 
 		// The way is chosen after the space's fight, with the HP that fight left (his rule of 07.11.2026).
 		var at = CrucibleRoute.Current;
@@ -145,8 +147,9 @@ public partial class BeastmasterRotation
 
 		// Safe (A663): you live through every fight up to the final one, included, with the items held, and the final fight's
 		// weakest healer outlasts a use as it starts. K15 (A689): safe without the items too, while the no-item bonus stands.
-		bool IsSafe(RouteState end) => end.Player + potions > 0f && (loss == 0f || end.HealerAtFinal > loss);
-		bool IsSafeBare(RouteState end) => end.Player > 0f && (loss == 0f || end.HealerAtFinal > loss);
+		// A716: a healer at full HP counts as outlasting it - no way brings it more.
+		bool IsSafe(RouteState end) => end.Player + potions > 0f && HealerHoldsUse(end.HealerAtFinal, loss, true);
+		bool IsSafeBare(RouteState end) => end.Player > 0f && HealerHoldsUse(end.HealerAtFinal, loss, true);
 
 		var best = -1;
 		for (var i = 0; i < options.Count; i++)
@@ -251,7 +254,7 @@ public partial class BeastmasterRotation
 					reasons.Add(other.End.Player + potions <= 0f
 						? $"{otherName} would leave you at ~{other.End.Player:P0} after {StopName(other.End.Stop)} with {potions:P0} in items - "
 							+ "the fights up to it can cost more than you hold"
-						: $"{otherName} would bring a final healer to the final fight at ~{other.End.HealerAtFinal:P0}, under one of its losses a use");
+						: $"{otherName} would bring a final healer to the final fight at ~{other.End.HealerAtFinal:P0}, not full and under one of its losses a use");
 				}
 				else if (end.Points > other.End.Points)
 				{

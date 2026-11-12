@@ -20872,6 +20872,118 @@ potency" je Kampfende.
 
 *Prüfgrad:* Compiler-Analyse und Musterdurchgänge über 100 % der Dateien; lesend erst die geprüften Regeln.
 
+### A714 · Quellcode-Prüfung, Crucible: Reraise „ging ohne Sturz" durch das Verlassen des Bretts (12.11.2026)
+
+- *Befund (lesender Durchgang, `BeastmasterCrucibleItems.cs`, Klasse F4):* `FollowReraise` hielt „Reraise stand" über
+  das Ende eines Laufs. Beim nächsten Betreten des Bretts fehlte der Status – das Spiel nimmt beim Verlassen jeden –,
+  und RSR schrieb „Reraise went without a fall": von da an eine Lebensfeder nur noch gegen einen Boss, die ganze
+  Sitzung. Am Protokoll vom 11.11.2026: 15:08:51 Brett verlassen, 15:09:22 die Zeile beim Wiederbetreten; danach die
+  Lebensfeder um 15:27:47 und 15:50:33 je „against a boss", auf Brett 2 vom Aufheben bis zum Endkampf gehalten, durch
+  beide Elitekämpfe.
+- *Zweiter Weg am Code:* „Turn off when you die" schaltet RSR mit dem Fall ab, `UpdateInfo` und damit die Beobachtung
+  laufen dann nicht; hebt Reraise ihn auf, schaltet „Turn back on when you are raised in combat" RSR wieder an, der
+  Fall blieb ungesehen und der Status ist weg – dasselbe Fehlurteil mitten im Lauf. Im Protokoll nicht vorgekommen.
+- *Optionen:* nichts tun (Defekt bleibt); nur am Laufwechsel zurücksetzen (lässt den zweiten Weg offen); die Regel
+  „nur gegen einen Boss" streichen (verbrauchte jede Lebensfeder neu, liefe Reraise doch ab); **gebaut:** die
+  Beobachtung in jedem Bild über `UpdateServices` (an oder aus), und kein Urteil über eine Unterbrechung hinweg –
+  außerhalb des Bretts, neuer Lauf (`CrucibleBoard.Run`), nach dem Endkampf (`CrucibleBoard.FinalFightOver`), Pause der
+  Beobachtung über einen GCD.
+- *Dazu, am Code hergeleitet:* Nach dem Endkampf nutzt RSR außerhalb des Kampfs keinen Gegenstand mehr (Sand der Zeit
+  „before the next fight" und eine Lebensfeder wären sonst gegangen; es kostete nur noch Boni). In seinen vier
+  Endkämpfen vom 11.11. hielt er danach keinen solchen Gegenstand.
+- *Falsifikation:* Kein Defekt? Die Zeile fällt 31 s nach dem Verlassen, und die Lebensfedern danach gehen nur gegen
+  einen Boss. Option falsch? Läuft Reraise wirklich von selbst ab, sieht die lückenlose Beobachtung es weiter. Nichts
+  ändert sich? Solange ein Gegenstandsbonus gehalten wird (K15), bleibt die Lebensfeder ohnehin liegen.
+- *Prüfgrad:* statisch, Compile ohne Warnung, Prüfskripte; der Defekt am Protokoll belegt. Im Spiel nicht beobachtet.
+
+### A715 · Quellcode-Prüfung, Crucible: Wo der Lauf auf dem Brett steht – Zufallskämpfe und Gabelungen (12.11.2026)
+
+- *Befund (`CrucibleRoute.cs`, Klasse F4):* `NoteBattle` suchte den Kampf des Hornfensters nur unter den festen
+  Kampffeldern. Die Kämpfe der Zufallsfelder nennen die Blätter nur als deren Möglichkeit (Bretter 2 bis 5, neun
+  Felder, jeder nur dort; ffxiv-datamining 52a72b3, 10.11.2026). Wurde ein Zufallsfeld ein Kampf, blieb der Lauf auf
+  dem Feld davor: der Kampf zählte weiter als bevorstehend (`WorstAhead`, `BattlesAhead`), eine Rast als noch möglich
+  (`CampsiteAhead`, damit K14 und die Reserve), das Fenster danach fand sein Feld nicht – bis zum nächsten festen Kampf.
+  In seinen Läufen vom 11.11. nahm er auf Brett 2 den Schatz statt des Zufallsfelds; der Fall kam nicht vor.
+- *Zweiter Befund, vom Modell:* `NoteSpace` nahm das erste passende unter den unmittelbar nächsten Feldern. An drei
+  Gabelungen beginnen beide Abzweige mit einem Schatz (Brett 4 nach dem ersten Elitegegner, Brett 5 nach dem ersten und
+  dem letzten Laden); je nach Abzweig stand der Lauf auf dem falschen Feld. Mein erster Entwurf (nächstes passendes
+  Feld voraus) riet dort ebenso; das Modell zeigte es, bevor er ausgeliefert war.
+- *Gebaut:* ein Kampf ist das erste Feld auf den Wegen voraus, das ihn hält (eigener Kampf oder Möglichkeit eines
+  Zufallsfelds), sonst das erste auf irgendeinem Brett; ein Fenster ist das erste Feld auf den Wegen voraus, das die Art
+  ist oder werden kann, über ungesehene Felder hinweg, nie über einen festen Kampf; auf einem Feld derselben Art
+  bewegt nur ein neu aufgehendes Fenster, und nur aufs unmittelbar nächste Feld; passen mehrere Felder, bleibt der Lauf
+  auf der Gabelung, bis der nächste Kampf ihn setzt (`_standsAs`, `FirstAhead`, die Fensterkante aus
+  `FollowCrucibleRoute`).
+- *Modell:* `crucible_route_model.py` (in der CI, wenn es sich ändert) geht jeden Weg jedes Bretts mit jedem Ausgang
+  jedes Zufallsfelds, alt gegen neu, auch mit je einem ungesehenen Fenster. Alt: 271-mal hinter einem geschlagenen
+  Kampf, 162-mal auf einem Feld, auf das der Lauf nie kam. Neu: beides nie; 207-mal auf der mehrdeutigen Gabelung
+  zurück (Bretter 4 und 5), wo über beide Abzweige gerechnet wird.
+- *Verworfen:* die Seite aus der Spielerposition (die Weltkoordinaten der Felder sind nicht belegt, Daedalus führt
+  vertauschte Gabelungen); an der Gabelung den schwereren Abzweig annehmen (rät ebenfalls); den Schatzinhalt als
+  Kennzeichen (sagt nichts über das Feld).
+- *Rest, mit Preis:* An den drei Gabelungen zeigt das Wegfenster bis zum nächsten Kampf noch einmal die Gabelung, und
+  der Bedarf zählt den schwereren Abzweig – die sichere Seite. Ein Fenster, das auf demselben Feld zu- und wieder
+  aufgeht, wo das nächste Feld dieselbe Art sein kann (drei Schatzstellen), rückt den Lauf ein Feld vor; der nächste
+  Kampf setzt ihn.
+- *Prüfgrad:* Modell über alle Wege, Compile ohne Warnung, Prüfskripte. Im Spiel nicht beobachtet.
+
+### A716 · Quellcode-Prüfung, Crucible: Heiler-Kriterium unerfüllbar; LP der Heiler aus dem nachhängenden Teamfenster (12.11.2026)
+
+- *Befund 1 (`BeastmasterCrucibleRoute.cs`, `…Score.cs`, Klasse F3):* „Sicher" und „keine Rast nötig" verlangen, dass
+  der schwächste Endkampf-Heiler mehr LP hat, als ein Einsatz kostet. Kostet ein Einsatz mehr, als er voll hat, erfüllt
+  das kein Weg: am 11.11.2026, 15:31:20, ein Einsatz bis 522 LP, Puk 521 – „no way is safe" bei 26 % eigenen LP nach
+  dem Endkampf, empfohlen die Rast statt des Schatzes. Derselbe Ausfall wie vor A663 (zwei Verluste), seine
+  Beobachtung damals: „es wird immer nur camp vorgeschlagen".
+- *Befund 2 (Klasse F4):* `FinalHealerShare` und die Futterempfehlung (`ReadFeedContext`) lasen die LP aus
+  `AgentXBMPetParty`, das die Verluste eines Kampfs erst mit der Meldung des nächsten zeigt (A585; am 11.11. um 15:11:03
+  nach Kampf 1 Morbol 667 und Raptor 589, um 15:11:34 dann 480 und 555). Die Wegempfehlung fällt genau dazwischen.
+- *Gebaut:* `HealerHoldsUse` – über dem Verlust je Einsatz, oder voll, wo die Wahl ihn nicht über voll hebt (Weg, Rast);
+  für das Futter zählt voll nicht, es hebt sein Maximum. Die LP über `EffectiveHealth` (K11).
+- *Verworfen:* den Verlust je Einsatz je Begleiter lernen (der kleine Heiler stünde mit seinem ersten, vielleicht
+  harmlosen Einsatz da und käme zu früh aus der Reserve – die unsichere Seite); das Kriterium streichen (ein
+  verletzter Heiler spräche nicht mehr für die Rast).
+- *Falsifikation:* Kein Defekt? Die Zeile vom 15:31:20. Option falsch? Bei 60 % LP und einem Verlust von 105 % gilt
+  der Weg mit Rast (voll) als sicher, der ohne nicht – die Regel unterscheidet wieder. Nichts ändert sich? Solange ein
+  Einsatz weniger kostet, als der kleinste Heiler hat.
+- *Prüfgrad:* statisch, Compile ohne Warnung, Prüfskripte; Befund 1 am Protokoll belegt. Im Spiel nicht beobachtet.
+
+### A717 · Quellcode-Prüfung, Crucible: Ausdauermittel statt der Heilung am Ende des Endkampfs (12.11.2026)
+
+- *Befund (`UseCrucibleItems`, Klasse F11):* Der Schritt „gegen einen Boss das Ausdauermittel vor der Heilung" (A664)
+  griff für jede gewählte Heilung, auch für die auf den Begleiter am Ende des Endkampfs („Unversehrte Bestien", A695):
+  Der Gegenstand wechselte, das Ziel blieb der Begleiter – sein Maximum stieg, er war nicht voll, der Gegenstandsbonus
+  trotzdem weg. Möglich, wenn das Ausdauermittel bis dahin liegt, also während ein Gegenstandsbonus gehalten wird.
+- *Gebaut:* nur vor Heilung für den Spieler und nicht, wenn der Endkampf vor dem nächsten GCD endet.
+- *Prüfgrad:* statisch am Code hergeleitet, Compile ohne Warnung. In seinen Läufen nicht vorgekommen.
+
+### A718 · Quellcode-Prüfung, Crucible: Elemente eines Begleiters einmal je Sitzung gemerkt (12.11.2026)
+
+- *Befund (`BeastmasterCrucible.cs`, Klasse F4):* `ElementsOf(FamiliarProfile)` merkte die Elemente je Begleiter für die
+  Sitzung, während `CrucibleBoard.ElementsOf` sie je Aktion aus Treffern nachlernt (A582). K2 und die Teamempfehlung
+  lasen die erste Fassung weiter.
+- *Gewicht:* gering – für alle 50 Auto-Angriffe der Begleiter nennt das Aktionsblatt Aspekt und Angriffsart
+  (ffxiv-datamining 52a72b3); A582 betraf die Äxte des Spielers.
+- *Gebaut:* `CrucibleBoard.ElementsLearned` zählt jedes Nachlernen, die Zusammenfassung wird dann neu gelesen.
+- *Prüfgrad:* statisch, Compile ohne Warnung.
+
+### A719 · Quellcode-Prüfung, Crucible: Tötungsstapel gegen die Stapel vor dem Fall gemessen (12.11.2026)
+
+- *Befund (`CrucibleBoard.FollowKillStacks`, Klasse F12):* Die Messung „gibt die Tötung durch einen Gegenstand den
+  Stapel" (A677) las den Vergleichswert im Bild, in dem der Gegner als gefallen gesehen wurde. Meldet das Spiel Fall und
+  Stapel im selben Bild, stand der Stapel schon darin, und die Messung schloss für die Sitzung auf „zählt nicht". Die
+  Reihenfolge nennt keine Quelle; die Regel trug die Annahme „erst der Fall, dann der Stapel".
+- *Gebaut:* Vergleich mit den Stapeln des Bilds davor; die Messung gilt in beiden Reihenfolgen.
+- *Prüfgrad:* statisch; in seinen Läufen fiel kein Gegner durch einen Gegenstand unter solcher Ausrüstung.
+
+### A720 · Quellcode-Prüfung, Crucible: Vorgemerkte eigene Heilung verfällt nach einem GCD (12.11.2026)
+
+- *Befund (`CrucibleBoard.FollowPlayerHp`, Klasse F4):* Gemeldete eigene Heilung (A709) blieb vorgemerkt, bis die LP
+  um sie stiegen oder voll waren. Nahm ein Treffer im selben Augenblick den Anstieg, blieb der Rest stehen und zog
+  später die Heilung eines Begleiters als eigene ab: Nettoverlust und Senke des Kampfs zu hoch, die sichere Seite, aber
+  falsch gemessen.
+- *Gebaut:* Die Vormerkung verfällt einen GCD nach der letzten Meldung.
+- *Prüfgrad:* statisch, Compile ohne Warnung.
+
 ## B · Commit-Register (Fork vs. `upstream/main`)
 
 ### B1 · Einzelgeprüfte Fork-Commits

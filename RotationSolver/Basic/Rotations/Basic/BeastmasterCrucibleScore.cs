@@ -211,7 +211,8 @@ public partial class BeastmasterRotation
 
 	/// <summary>
 	/// The final fight's healer with the least share of HP among the selected familiars, and its largest loss a use as a share
-	/// of its HP (A663); 1 and 0 without a final healer.
+	/// of its HP (A663); 1 and 0 without a final healer. A716: its HP as K11 measures them - the team agent shows a
+	/// fight's losses only once the next fight is told, and this is asked right after a fight.
 	/// </summary>
 	private static unsafe void FinalHealerShare(AgentXBMPetParty* party, out float healer, out float loss)
 	{
@@ -227,7 +228,7 @@ public partial class BeastmasterRotation
 		{
 			if (FinalHealers.Contains((BeastmasterPet)pets[i].PetId) && party->PetMaxHealth[i] > 0)
 			{
-				var share = party->PetCurrentHealth[i] / (float)party->PetMaxHealth[i];
+				var share = EffectiveHealth((BeastmasterPet)pets[i].PetId, party->PetCurrentHealth[i]) / (float)party->PetMaxHealth[i];
 				if (share <= healer)
 				{
 					healer = share;
@@ -238,17 +239,29 @@ public partial class BeastmasterRotation
 	}
 
 	/// <summary>
-	/// K15 (A691): whether the run needs no rest and no feed - the player carries the heaviest way to the final fight with his
-	/// HP and the healing he holds, and the weakest final healer has more than a use now (K11 holds it before it falls under
-	/// one, so it comes with one).
+	/// A716: whether the weakest final healer comes to the final fight with a use - its share of HP above its largest loss
+	/// a use, or, with <paramref name="fullCounts"/>, full: where nothing the choice at hand brings lifts it above full HP
+	/// (a way, a rest), it does not turn on that choice. A use that costs more than the smallest healer holds made every
+	/// way unsafe otherwise (11.11.2026: 522 against 521 HP).
 	/// </summary>
-	private static unsafe bool NeedsNoRestOrFeed(out string why)
+	private static bool HealerHoldsUse(float healer, float loss, bool fullCounts)
+	{
+		return loss == 0f || healer > loss || (fullCounts && healer >= 1f);
+	}
+
+	/// <summary>
+	/// K15 (A691): whether the run needs no rest (<paramref name="rest"/>) or no feed - the player carries the heaviest way
+	/// to the final fight with his HP and the healing he holds, and the weakest final healer has more than a use now (K11
+	/// holds it before it falls under one, so it comes with one). A716: for a rest a full healer counts too - a rest lifts
+	/// it no higher; not for feed, which raises its maximum and lowers what it takes.
+	/// </summary>
+	private static unsafe bool NeedsNoRestOrFeed(bool rest, out string why)
 	{
 		var carries = CarriesToFinal(true, out var share, out var load);
 		FinalHealerShare(AgentXBMPetParty.Instance(), out var healer, out var loss);
 		why = $"you carry the heaviest way to the final fight with your HP and healing held ({share:P0} against {load:P0})"
 			+ (loss > 0f ? $", the weakest final healer stands at {healer:P0} against {loss:P0} a use" : string.Empty);
-		return carries && (loss == 0f || healer > loss);
+		return carries && HealerHoldsUse(healer, loss, rest);
 	}
 
 	/// <summary>K15: follows the run's inventory; called every frame the board's director is read.</summary>
