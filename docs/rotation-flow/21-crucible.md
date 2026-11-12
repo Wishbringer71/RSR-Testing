@@ -184,15 +184,35 @@ Dullahan, Golem, Spriggan und Eisgolem (`XBMPet.InflictsInterrupt`).
   05., 06. und 07.11.2026: Ankunft 9 bis 25 s nach dem Erscheinen; in fünf Oger-Kämpfen starb kein Irrlicht. Am
   07.11. sprang RSRs Ziel 30 s lang zwischen ihnen (Spur 16:03:25 bis 16:03:55), jedes traf es einmal, und der Oger
   stand währenddessen unangreifbar bei 4532 LP.
-  *Was gilt:* RSR misst je Gegner, ob er auf einen anderen Gegner zuläuft – sein Abstand zum Gegner mit den meisten
-  LP sinkt seit seinem Erscheinen – und daraus seine Ankunft: verbleibender Weg geteilt durch die gemessene
-  Annäherung. Den Abstand, bei dem einer seiner Art ohne Tod verschwindet, lernt RSR beim ersten Verschwinden (je
-  Gegnerart, im Lauf); vorher gilt der Rand der Trefferkreise. Damit: (1) Unter gleich dringlichen Gegnern – gleiche
+  *Was gilt:* Ein Gegner läuft zu einem anderen Gegner, wenn er mit euch im Kampf steht (er hat ein Ziel seiner
+  Feindseligkeit), keinen von euch ansieht und dem Hauptgegner näher kommt – um mehr als seine eigene Größe, und länger als
+  einen GCD so beobachtet. Das Blickziel trennt ihn vom gewöhnlichen Angreifer, der auf dich zuläuft, während du am
+  Hauptgegner stehst: Wer einen von euch angreift, sieht ihn an, sobald er losläuft; wer einem Skript folgt, sieht
+  keinen von euch an. Gemessen an seinem Mitschnitt vom 11.11.2026: alle 24 Irrlichter aus drei Oger-Kämpfen ohne Blickziel, vom
+  Erscheinen an mit dir oder dem deckenden Begleiter als Ziel der Feindseligkeit; alle 17 Gegnerarten, die an dem Tag
+  im Crucible auf jemanden zuliefen und ihn angriffen, mit Blickziel spätestens eine Abfrage (unter 1 s) nach dem
+  ersten Schritt, die Schattenmilben 5 s davor (`Character.LookAt`, FFXIVClientStructs 80cb4a7; im Mitschnitt das Feld
+  PCTargetID, OverlayPlugin 43afdd5; Werkzeugquellen). Wer einmal einen von euch angesehen hat, gilt für den Rest
+  des Kampfs als Angreifer. Der Hauptgegner ist der mit den meisten LP, der in diesem Kampf angreifbar war; er bleibt es,
+  solange er lebt, auch unanvisierbar – der Oger steht unter Burning Ward unanvisierbar in der Mitte, und nur die
+  Irrlichter sind anvisierbar. Wechselt der Hauptgegner, beginnt die Messung neu. Die Ankunft: verbleibender Weg
+  geteilt durch die Annäherung der letzten ein bis zwei GCD – nicht seit dem Erscheinen, denn ein Irrlicht steht erst
+  rund 2 s und läuft dann mit 1 y je Sekunde, und der Schnitt seit dem Erscheinen meldete die Ankunft rund 0,3 s zu
+  spät. Wo der Weg endet und was dort geschieht, zeigt die erste Aktion eines Laufenden: ihr Abstand zum Hauptgegner
+  gilt für seine Art (Irrlichter am 11.11.2026: viermal 3,83 bis 3,85 y von der Mitte, die Trefferkreise berührten
+  sich erst bei 2,88 y), und sie zeigt, ob die Ankunft einen von euch trifft – dich, ein Gruppenmitglied oder deinen
+  Begleiter unter Deckung. Gelernt je Gegnerart, solange du im Gebiet bleibst. Damit: (1) Unter gleich dringlichen Gegnern – gleiche
   Gefahr je LP, wie sechs gleiche Irrlichter – kommt der dir nächste zuerst, denn Laufweg ist verlorener Schaden; bei
   laufenden Gegnern holt so jeder Schlag einen, der dir entgegenkommt, statt dich zu einem zu schicken, der vorher
   ankommt. (2) Steht die erste Ankunft binnen der Zeit bevor, die Zähnefletschen braucht, bis die Deckung steht (ein
   GCD), und deckt dich der Begleiter nicht, kommt Zähnefletschen, sofern K9 es nicht verbietet (der Begleiter fiele):
-  Die Explosion und ihre Verwundbarkeit treffen dann ihn, nicht dich. (3) Flächen: Die vorhandenen Regeln zählen die
+  Die Explosion und ihre Verwundbarkeit treffen dann ihn, nicht dich. Ist der Ankunftsabstand der Art noch nicht
+  gelernt, kommt Zähnefletschen, sobald der Gegner als laufend erkannt ist: Wie nah er heran muss, weiß bis zur
+  ersten Ankunft niemand, und die Deckung hält 45 s, länger als der Marsch beider Wellen (Ankunft bis 25 s nach dem
+  Erscheinen, die zweite Welle 16 s nach der ersten). Eine Art, deren Ankunft keinen von euch traf, löst kein
+  Zähnefletschen mehr aus – das Pheromon der Manticore etwa schwebt 14 s und zerplatzt dann für sich
+  (Sphärensplitterung, 15:22:26); trifft eine spätere Ankunft doch, gilt die Art wieder als treffend und bleibt es.
+  (3) Flächen: Die vorhandenen Regeln zählen die
   laufenden Gegner wie alle; aus vier Richtungen liegen sie erst nahe der Mitte beisammen, und dorthin führt (1).
   *Nicht gebaut, mit Grund:* eine Fläche zurückhalten, bis mehr Irrlichter in Reichweite kommen – wie viele noch kommen
   und wann, sagt die Annäherung je Gegner nur für die schon sichtbaren, und eine gehaltene Fläche, die keinen weiteren
@@ -200,8 +220,21 @@ Dullahan, Golem, Spriggan und Eisgolem (`XBMPet.InflictsInterrupt`).
   angekommen, und der Schlag ist verloren. Teilweise widerlegt: Er kommt dir entgegen und ist in Reichweite, ein
   Irrlicht fällt in einem Schlag (171 LP); ein Riesen-Irrlicht braucht mehrere, und kommt es vorher an, war jeder
   andere Weg länger. *Gegenthese 2:* Zähnefletschen schickt den Begleiter in die Explosion. Gewollt: Seine LP sind ein
-  Horn, deine der Lauf (K11), und K9 verbietet es, wenn ihn der nächste Verlust fällen würde. *Ausgeliefert, und nichts
-  ändert sich?* Wenn du selbst woanders stehst (RSR bewegt dich nicht) oder kein Begleiter draußen ist.
+  Horn, deine der Lauf (K11), und K9 verbietet es, wenn ihn der nächste Verlust fällen würde. *Gegenthese 3:* Das
+  Blickziel fehlt auch einem Angreifer einen Augenblick lang. Deshalb zählt ein Gegner erst nach einem GCD ohne
+  Blickziel als laufend; die Irrlichter marschieren 19 s. *Gegenthese 4:* Ein laufender Gegner, dessen Ankunft nur dem
+  Hauptgegner nützt, löst beim ersten Mal Zähnefletschen aus – die Käfer des Administrators auf Brett 4 stärken und
+  heilen ihn (BossModReborn 2087153c2, `AdministratorPiece`: Aktion 48734 auf den Administrator, Damage Up und
+  Rehabilitation). Preis: einmal je Art und Besuch hält der Begleiter ein Fenster lang statt dir; danach nicht mehr.
+  Ob die Käfer ein Ziel der Feindseligkeit tragen, ist nicht gemessen (kein Mitschnitt von Brett 4); ohne eines
+  erkennt RSR sie nicht als laufend, und Zähnefletschen bleibt aus, was dort stimmt. *Ausgeliefert, und nichts
+  ändert sich?* Wenn du selbst woanders stehst (RSR bewegt dich nicht) oder kein Begleiter draußen ist. *Warum das
+  Blickziel nötig ist (11.11.2026):* In Kampf 4 (Schattenmilben), Kampf 8 (Ahrimane) und Kampf 10 (Zombie) kamen
+  gewöhnliche Angreifer dem Hauptgegner näher, weil du an ihm standst; ohne das Blickziel sähen sie aus wie
+  Irrlichter, und Zähnefletschen käme ohne Anlass (viermal an dem Tag). Ein Verschwinden ohne Tod ist keine Ankunft:
+  Am Kampfende verschwinden alle Gerufenen mit vollem Leben. In den drei Oger-Kämpfen des Tages stand die Deckung bei
+  allen vier Explosionen schon durch K9 (A724; `approach_model.py` spielt Irrlichter, Milben, Ahrimane und Zombie
+  gegen die Erkennung).
   *Falsifikation:* Kein Unterschied zu „wenigste LP"? Im Atomos-, Medusa- und Oger-Kampf doch. Option falsch? Eine
   verrauschte Messung ließe das Ziel springen – der Wechsel verlangt einen Unterschied über ihrer Unsicherheit. Nichts
   ändert sich? Im Crucible überschreibt heute A525 die Zielart; die neue Regel tritt dort an ihre Stelle, die Spur nennt

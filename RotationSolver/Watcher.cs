@@ -405,8 +405,7 @@ public static class Watcher
 			if (TryGetDamageEntry(effect, out var damage))
 			{
 				// A582: and on the player's own objects - the beastmaster's familiar takes the hits meant for him under Snarl.
-				if (effect.TargetID == player.GameObjectId || IsPartyMemberId(effect.TargetID)
-					|| StatusHelper.IsPlayerOrOwned(effect.TargetID, player.GameObjectId))
+				if (IsOnYourSide(effect.TargetID, player))
 				{
 					EnemyDanger.RecordHit(source.GameObjectId, FullAmount(damage));
 				}
@@ -424,20 +423,40 @@ public static class Watcher
 				EnemyDanger.RecordHeal(source.GameObjectId, healed, FullAmount(heal));
 			}
 		}
+	}
 
-		static bool IsPartyMemberId(ulong id)
+	// The player, a party member, or an object the player owns.
+	private static bool IsOnYourSide(ulong id, IBattleChara player)
+	{
+		if (StatusHelper.IsPlayerOrOwned(id, player.GameObjectId))
 		{
-			var party = DataCenter.PartyMembers;
-			for (var i = 0; i < party.Count; i++)
-			{
-				if (party[i]?.GameObjectId == id)
-				{
-					return true;
-				}
-			}
-
-			return false;
+			return true;
 		}
+
+		var party = DataCenter.PartyMembers;
+		for (var i = 0; i < party.Count; i++)
+		{
+			if (party[i]?.GameObjectId == id)
+			{
+				return true;
+			}
+		}
+
+		return false;
+	}
+
+	// Whether the action reached the player, a party member or an object of the player's.
+	private static bool ReachedYourSide(ActionEffectSet set, IBattleChara player)
+	{
+		foreach (var effect in set.TargetEffects)
+		{
+			if (ReachedTarget(effect) && IsOnYourSide(effect.TargetID, player))
+			{
+				return true;
+			}
+		}
+
+		return false;
 	}
 
 	private static bool TryGetDamageEntry(TargetEffect effect, out EffectEntry entry)
@@ -889,6 +908,9 @@ public static class Watcher
 
 				// How dangerous it is: its damage on the party, and its heals on other enemies (concept 03, A541).
 				RecordEnemyDanger(set, striker, playerObject);
+
+				// Concept 21, K3 (A724): the first action of an enemy that runs to another is its arrival there.
+				Approach.ObserveAction(striker, ReachedYourSide(set, playerObject));
 			}
 
 			// The first auto-attack after a swap Shirk shows whom the enemy attacks now.

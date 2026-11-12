@@ -290,8 +290,11 @@ What this release changes in the fight. For the whole distance from upstream, se
   with its learned load (one never measured as heavy as your heaviest), plus what you miss now, less the healing you
   hold. Covers against the board's statuses that cost control or deal
   damage over time now come before this scale.
-- **Adds that run to their boss are met, not chased.** RSR measures which enemies run to another enemy and when each
-  arrives, learning from the first of a kind to vanish where its kind arrives. Of equally urgent enemies, the one nearest
-  to you comes first, so you meet the Ogre's wisps instead of running after the one that arrives next. Just before the
-  first of them arrives and blows up, the Beastmaster snarls so the familiar's Cover takes the blast and its Vulnerability
-  Up, unless the next loss would fell the familiar.
+- **Adds that run to their boss are met, not chased.** RSR recognises enemies that run to another enemy: in combat with
+  you, looking at none of you and closing in on the main enemy - which stays the main enemy while it cannot be targeted,
+  as the Ogre while its wisps march. An attacker running at you looks at you and is not taken for one. Where a kind
+  arrives and whether its arrival hits you, RSR learns from the first one that gets there. Of equally urgent enemies, the
+  one nearest to you comes first, so you meet the Ogre's wisps instead of running after the one that arrives next. Before
+  the first of them arrives and blows up - a GCD ahead once its kind's arrival is learned, as soon as it is seen running
+  before that - the Beastmaster snarls so the familiar's Cover takes the blast and its Vulnerability Up, unless the next
+  loss would fell the familiar.

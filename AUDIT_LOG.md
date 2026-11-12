@@ -21040,6 +21040,55 @@ potency" je Kampfende.
   Als Rate über die Zeit gezählt, stimmt das für wiederholtes Legen und überschätzt den, der einmal legt.
 - *Prüfgrad:* statisch, Compile ohne Warnung. Im Spiel nicht beobachtet.
 
+### A724 · Quellcode-Prüfung: „Gegner läuft zu einem anderen Gegner" traf jeden, der auf den Spieler zulief (12.11.2026)
+
+- *Befund (`Approach`, `BST_Reborn` K9; Klassen F6, F7, F12, F2):* Am 11.11.2026 löste „Snarl - an enemy running to
+  another arrives" viermal aus, jedes Mal zu Unrecht: Kampf 4 (Schattenmilben, 15:01:33 und 15:21:07), Kampf 8
+  (Ahrimane, 15:42:17), Kampf 10 (Zombie, 15:59:54) – gewöhnliche Angreifer, die auf den Spieler oder den Begleiter
+  zuliefen, während er am Hauptgegner stand. In den drei Oger-Kämpfen löste sie nicht aus; die Deckung stand bei allen
+  vier Explosionen durch K9. Vier Ursachen: (1) Als laufend galt, wer dem Gegner mit den meisten LP um mehr als seine
+  Größe näher kam. (2) Das Ziel wählte `Goal()` über `IsEnemy()`, das Anvisierbarkeit verlangt – während der Ward war
+  es das Riesen-Irrlicht, nach dessen Fall ein Irrlicht, entgegen Kommentar und Konzept („auch unanvisierbar"). (3) Als
+  Ankunft galt jedes Verschwinden ohne Tod: das Ende des Kampfs (Milben mit 522/522 LP entfernt, „vanished 13,9 y"),
+  der Wechsel des Ziels (das neue Ziel verließ die eigene Liste, „vanished 17,1 y"); der gelernte Abstand machte die
+  Ankunft im nächsten Lauf zu „0,0 s". (4) Die Annäherung wurde seit dem Erscheinen gemittelt; ein Irrlicht steht erst
+  rund 2 s, die Ankunft kam im Modell 0,3 s zu spät. Dazu 90 Spurzeilen „approach: kind … vanished" außerhalb des
+  Crucible (Dungeons, offene Welt).
+- *Research:* ACT-Mitschnitt vom 11.11. (Zeile 261, OverlayPlugin 43afdd5): PCTargetID liegt bei 0xDD0 =
+  `Character.LookAt.Controller.Params[0].TargetParam.TargetId` (Blickziel), NPCTargetID bei 0x2308 =
+  `Character.TargetId` (FFXIVClientStructs 80cb4a7; Dalamud 43b34118: `BattleNpc.TargetObjectId`). Alle 24 Irrlichter
+  (18 kleine, 6 Riesen) trugen vom Erscheinen an ein Ziel der Feindseligkeit (Spieler oder deckender Begleiter) und nie
+  ein Blickziel; alle 17 angreifenden Arten des Tages im Crucible nahmen ein Blickziel spätestens eine Abfrage nach dem
+  ersten Schritt (Zombie 0,66 s, Milben 5 s davor). Die vier Explosionen (46919) fielen 3,83 bis 3,85 y von der Mitte;
+  das Irrlicht wird 44 ms davor unanvisierbar. BossModReborn 2087153c2: zweiter Fall dieser Art auf Brett 4
+  (`AdministratorPiece`, Käfer mit Leine zum Boss, Aktion 48734 auf ihn, Damage Up und Rehabilitation) – die Ankunft
+  trifft dort niemanden von uns. Pheromon (Manticore) schwebt 14 s und zerplatzt für sich.
+- *Optionen:* Nullvariante; Rückbau der Regel (nimmt den Schutz, wo K9 dem Spieler das Halten lässt); Ziel und
+  Verschwinden berichtigen, Erkennung lassen (Milben, Ahrimane, Zombie blieben laufend); Richtung des Wegs prüfen
+  (unentscheidbar, wenn der Spieler am Hauptgegner steht); Ziel unanvisierbar als Bedingung (träfe jede Add-Phase eines
+  abwesenden Bosses, verfehlte die Käfer); Blätter (XBMBattleDetailAction nennt Ziel und Form, nicht „bei Ankunft");
+  Blickziel mit Ziel der Feindseligkeit, Ankunft aus der ersten Aktion gelernt – gewählt.
+- *Gebaut:* `Approach` neu: Hauptgegner aus der Gegnerliste, gehalten solange er lebt und gelistet oder unanvisierbar
+  ist; laufend = Ziel der Feindseligkeit, kein Blick auf einen von uns seit dem ersten Sehen, mehr als die eigene Größe
+  näher, länger als ein GCD beobachtet; Annäherung der letzten ein bis zwei GCD; `ObserveAction` (aus
+  `Watcher.ActionFromEnemy`): erste Aktion eines Laufenden = Ankunftsabstand der Art und ob sie einen von uns traf;
+  unanvisierbar Gewordene bleiben verfolgt. `TryNextArrival` ersetzt `SoonestArrival`; `Eta(IBattleChara)` hatte keinen
+  Aufrufer und entfällt. K9: Zähnefletschen binnen eines GCD vor der gelernten Ankunft, bei ungelerntem Abstand sobald
+  laufend erkannt (Deckung 45 s gegen 41 s Marsch beider Wellen); Arten, deren Ankunft keinen traf, lösen nicht aus.
+- *Falsifikation:* Kein Defekt – widerlegt (vier Fehlauslösungen, falsches Ziel). Option falsch – ein Angreifer ohne
+  Blickziel gälte als laufend und löste einmal je Ankunft Zähnefletschen aus; unter 17 Arten keiner. Ein Laufender mit
+  Blick auf den Hauptgegner zählt weiter (nur der Blick auf einen von uns macht den Angreifer). Ausgeliefert, nichts
+  ändert sich – wo K9 ohnehin Zähnefletschen wählt (wie am 11.11.), ohne Begleiter, oder trüge ein Laufender kein Ziel
+  der Feindseligkeit (für die Käfer nicht gemessen; dort wäre das Ausbleiben richtig).
+- *Modell:* `approach_model.py` spielt Oger-Welle, Milben (zweimal), Ahrimane und Zombie aus dem Mitschnitt gegen ALT und
+  NEU. ALT: Ziel ab 8,7 s nicht der Oger, Zähnefletschen bei Milben (zweiter Lauf, 12,9 s), Ahrimanen (26,7 s; Spur
+  15:42:17) und Zombie (8,1 s) – wie in seiner Spur. NEU: nur die acht Irrlichter laufen, Zähnefletschen 2,6 s nach
+  ihrem Erscheinen, 17 s vor der ersten Explosion; gelernter Marsch: Auslösung 2,5 s vor der Ankunft (ALT 2,2 s).
+  Selbsttest: ohne Blickziel, ohne gehaltenes Ziel, ohne Wartezeit schlägt je eine Prüfung an.
+- *Prüfgrad:* Modell an seinem Mitschnitt; Compile ohne Warnung (das Blickziel-Feld besteht in der ClientStructs-Fassung
+  von Dalamud); 53 Prüfschritte. Im Spiel nicht beobachtet; „approach: kind … acted … y" und die Snarl-Zeile stehen in
+  der Spur.
+
 ## B · Commit-Register (Fork vs. `upstream/main`)
 
 ### B1 · Einzelgeprüfte Fork-Commits
@@ -21378,3 +21427,4 @@ Die offene Arbeit dazu — Reihenfolge und Abbruchbedingung der Nachprüfung —
 | C184 | A706 (Stand A706): Nettoverlust „nach aller Heilung", der Weg trägt über „Summe der Nettoverluste plus tiefste Senke des Bretts"; Release-Text „from the second [run] the bonuses are kept where the board is easy" | Die Messung zählte die Heilung der Gegenstände mit, die die Regel dann einspart (Endkampf Brett 1: gelernt 0 % statt 16 % Nettoverlust und 36 % Senke); die Schranke nahm die Senke auch schon bestandener Kämpfe und keine Trankschwelle. Nach seinen Läufen vom 11.11.2026 trägt er Brett 1 erst vor dem Endkampf, Brett 2 nie. | A709 |
 | C185 | A692 und Konzept 21 K16 (Stand A692): „Schaden je Sekunde je Kampf und Begleiter … seine Treffer vom zweiten bis zum letzten über die Zeit dazwischen … der beste Wert" als Maß der Hornwahl | Das Maß hing an der Zeit draußen: Ein Begleiter, der nur für Entfesseln und Scheidenden Schlag kam, lag weit über dem, der blieb; zwei Treffer kurz nacheinander ergaben beliebig hohe Werte, und der Höchstwert hielt sie fest. Es belohnte die Rolle, nicht den Begleiter. Ersetzt durch Schaden je Potenz je Treffer gegen die Erwartung der Schätzung (`CrucibleFamiliarHits.json`); die Datei `CrucibleFamiliarDps.json` liest RSR nicht mehr. | A711 |
 | C186 | A709, Konzept 21 K15 und Release-Text (Stand A709): Brett 1 „Bedarf ab Brettbeginn 93 %", „Vor dem Endkampf verlangt der Weg 36 + 40 = 76 %", Senken Kampf 5 43 %, Endkampf 36 %; Brett 2 „11/33", „Endkampf 49/76 %", „trägt er Brett 2 an keiner Stelle"; „from about 76 % HP" | Das Modell zog die eigene Heilung mit der Meldung ab statt beim Anstieg. Wie der Code misst: Brett 1 ab Start 68 %, vor dem Endkampf 12 + 40 = 52 %; Brett 2 Kampf 10 11/11, Endkampf 48/48, vor dem Endkampf 88 % – in beiden Läufen getragen (96 %) | A721 |
+| C187 | A660 und Konzept 21 K3 (Stand A660–A723): „Ziel = Gegner mit den meisten LP, auch unanvisierbar"; „Den Abstand, bei dem einer seiner Art ohne Tod verschwindet, lernt RSR beim ersten Verschwinden"; laufend = „sein Abstand zum Gegner mit den meisten LP sinkt seit seinem Erscheinen" | Das Ziel verlangte Anvisierbarkeit (während der Ward das Riesen-Irrlicht); Verschwinden ohne Tod ist auch Kampfende und Zielwechsel; dem Hauptgegner kommt jeder näher, der auf den Spieler dort zuläuft – vier Fehlauslösungen am 11.11.2026. Ersetzt: Blickziel, gehaltenes Ziel, Ankunft aus der ersten Aktion | A724 |

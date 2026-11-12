@@ -128,6 +128,12 @@
    "use": "Mitschnittformat, Zeitleisten"
   },
   {
+   "repo": "OverlayPlugin/OverlayPlugin",
+   "commit": "43afdd5956d06d689eb5cb723f86203b19a3ebae",
+   "date": "2026-11-10",
+   "use": "Mitschnittzeile 261: Speicherstellen von PCTargetID (Blickziel) und NPCTargetID (A724)"
+  },
+  {
    "repo": "PunishXIV/Orbwalker",
    "commit": "fcfdb56bcb520f1d6480b89ac9725d7ee70fc9aa",
    "date": "2026-09-16",

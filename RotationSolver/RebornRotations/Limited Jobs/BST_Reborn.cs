@@ -586,18 +586,21 @@ public sealed class BST_Reborn : BeastmasterRotation
 			shouldChallenge = false;
 		}
 
-		// A660 (concept 21, K3): an enemy running to another arrives within a GCD and blows up there (the Ogre's wisps) - with
-		// the familiar's Cover up, the blast and its Vulnerability Up land on the familiar, not on you. Not onto a familiar
-		// the next loss would fell.
-		if (!shouldSnarl && !nextHitFells && !IsCoveredByFamiliar && Approach.SoonestArrival is { } arrival
-			&& arrival <= DataCenter.DefaultGCDTotal)
+		// A660, A724 (concept 21, K3): an enemy running to another arrives within a GCD and blows up there (the Ogre's
+		// wisps) - with the familiar's Cover up, the blast and its Vulnerability Up land on the familiar, not on you. While
+		// it is not learned yet where its kind arrives, as soon as it is seen running: Cover outlasts the march. Not onto a
+		// familiar the next loss would fell.
+		if (!shouldSnarl && !nextHitFells && !IsCoveredByFamiliar && Approach.TryNextArrival(out var arrival, out var learned)
+			&& (!learned || arrival <= DataCenter.DefaultGCDTotal))
 		{
 			shouldSnarl = true;
 			shouldChallenge = false;
 			if (_snarlForArrival != CrucibleBoard.Fight)
 			{
 				_snarlForArrival = CrucibleBoard.Fight;
-				DefenseTrace.Line($"beastmaster: Snarl - an enemy running to another arrives in {arrival:F1} s; the familiar's Cover takes it");
+				DefenseTrace.Line(learned
+					? $"beastmaster: Snarl - an enemy running to another arrives in {arrival:F1} s; the familiar's Cover takes it"
+					: "beastmaster: Snarl - an enemy runs to another, where its kind arrives is not learned yet; the familiar's Cover takes it");
 			}
 		}
 
