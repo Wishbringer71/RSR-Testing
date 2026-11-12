@@ -72,7 +72,7 @@ Zeilen: gesamt / vom Fork hinzugefügt (12.11.2026). Stand: offen, in Arbeit, ge
 
 | Bereich | Dateien | Zeilen | Fork | Stand |
 |---|---|---|---|---|
-| `Basic/Helpers` | 51 | 22.094 | 15.663 | in Arbeit: gelesen `CrucibleBoard.cs`, `CrucibleRoute.cs` (6ae686837), `KillOrder.cs`, `EnemyDanger.cs`, `DotOnParty.cs` (12.11.2026, 7dc3f8237) |
+| `Basic/Helpers` | 51 | 22.094 | 15.663 | in Arbeit: gelesen `CrucibleBoard.cs`, `CrucibleRoute.cs` (6ae686837), `KillOrder.cs`, `EnemyDanger.cs`, `DotOnParty.cs`, `TankbusterForecast.cs`, `TankSwapWatch.cs` (12.11.2026, 7dc3f8237); offen: `TankbusterTable`, `SleepInterruptWatch`, `MovementLock`, `HostileMovement`, `ActionPenaltyWatch`, `ActionTooltip`, `DeepDungeon*`, `TankbusterMarkerWatch`, `HealToDefeat`, `OwnHitWatch`, `StunWatch`, `TimeToKillTracker`, `RaiseProtection`, `TraitDurations`, `ReportedDamage`, `HealReduction`, `TankbusterHelp`, `Approach`, `HitSeries`, `HealFromOthers`, `DefenseTrace`, die Fork-Zeilen von `StatusHelper`, `ObjectHelper`, `TargetFilter` |
 | `Basic/Rotations` | 53 | 39.201 | 14.541 | in Arbeit: gelesen alle `BeastmasterCrucible*.cs`, `BeastmasterFamiliars.cs`, die Fork-Zeilen von `BeastmasterRotation.cs` (12.11.2026, 6ae686837) |
 | `Basic` (DataCenter u. a.) | 4 | 5.763 | 3.447 | offen |
 | `Basic/Configuration` | 24 | 6.357 | 3.309 | offen |
