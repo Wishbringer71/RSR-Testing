@@ -21350,6 +21350,24 @@ TODO „Gerichtete Parade: Angriffe von der geschützten Seite werden pariert" (
   im Visier hat, bleibt er Ziel.
 - *Prüfgrad:* statisch, Compile, Prüfskripte, Mitschnitt-Messung; im Spiel nicht beobachtet.
 
+### A735 · Auftragsende 12.11.2026: Upstream-Sync und sechs Quellen ausgewertet (12.11.2026)
+
+- *Upstream:* `check_sync_state.py` – `HEAD` 0 hinter `upstream/main`, `main` und der Arbeits-Branch gleich ihrem Remote;
+  nichts zu mergen.
+- *Quellen (`check_source_updates.py`, 36 gelistet, 6 bewegt), je ausgewertet:*
+  - BossModReborn 27be42256 → 2087153c2: nur „Update for 7.58" (Projektdatei, Fenster, Paketsperre); ohne Wirkung auf RSR.
+    Den Stand 2087153c2 nutzten A731 (Formen, `AbilityInfo.DescribeShape`) und A734 (`Components/DirectionalParry`).
+  - BossMod (Original) 6e410ef8b → 8c971eead: Rotationen und Umbenennungen, in den Crucible-Modulen (Brett 2, Erstes
+    Meisterbrett) keine neue Mechanik. `Components/DirectionalParry` legt die freie Seite als Kegel von 45° je Seite
+    (`InCone(…, 45°)`) – stützt die Viertel-Lesart von A734.
+  - Beiruta RotationSolverReborn d5fb87b69 → 27bf5d181: im Fork Reaper-Optionen für Schaden (Shroud für Arcane Circle
+    aufheben, Perfectio halten, Zeitpunkt im Opener). Nicht übernommen: Beiruta reicht seine Arbeit an Upstream weiter, und
+    eine Übernahme aus dem Fork müsste später gegen Upstream gemergt werden; kommt sie dort an, wertet der Upstream-Sync sie
+    aus. Keine Sicherheitsfrage berührt.
+  - cactbot e79ea7f16 → 1a21226f0: Zonen für 7.58, Übersetzungen der Tests; das Mitschnittformat (LogGuide) unverändert.
+  - t3knical DalamudPlugins: nur Download-Zahlen. Henchman 4.0: Automatisierung, außerhalb von RSRs Aufgabe.
+- *Eingetragen:* `source_versions.json` (`--record` je Quelle).
+
 ## B · Commit-Register (Fork vs. `upstream/main`)
 
 ### B1 · Einzelgeprüfte Fork-Commits

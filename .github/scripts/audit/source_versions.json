@@ -21,14 +21,14 @@
   },
   {
    "repo": "awgil/ffxiv_bossmod",
-   "commit": "6e410ef8bb912fc70e3c1f97eedfb77a7dc4dfc0",
-   "date": "2026-11-03",
+   "commit": "8c971eead",
+   "date": "2026-11-12",
    "use": "BossMod (Original)"
   },
   {
    "repo": "BeirutaNa1na/RotationSolverReborn",
-   "commit": "d5fb87b69",
-   "date": "2026-11-10",
+   "commit": "27bf5d181",
+   "date": "2026-11-12",
    "use": "Beiruta-Rotationen"
   },
   {
@@ -39,8 +39,8 @@
   },
   {
    "repo": "FFXIV-CombatReborn/BossmodReborn",
-   "commit": "27be422560eb801893b093d9157323585eeae0eb",
-   "date": "2026-11-05",
+   "commit": "2087153c2",
+   "date": "2026-11-12",
    "use": "Crucible-Module, Mechaniken, Vertrag mit RSR (Konzept 21, Code.md)"
   },
   {
@@ -63,8 +63,8 @@
   },
   {
    "repo": "Knightmore/Henchman",
-   "commit": "c5fa50e60d6e86acbac70ca255b29956fd9275ea",
-   "date": "2026-10-29",
+   "commit": "7330c6362",
+   "date": "2026-11-12",
    "use": "Automatisierung (A160)"
   },
   {
@@ -123,8 +123,8 @@
   },
   {
    "repo": "OverlayPlugin/cactbot",
-   "commit": "e79ea7f16093be5b80cda0e2d5bc8eb899d6fb4b",
-   "date": "2026-10-08",
+   "commit": "1a21226f0",
+   "date": "2026-11-12",
    "use": "Mitschnittformat, Zeitleisten"
   },
   {
@@ -183,8 +183,8 @@
   },
   {
    "repo": "t3knical/DalamudPlugins",
-   "commit": "8a1dd615a",
-   "date": "2026-11-10",
+   "commit": "11d4e89c5",
+   "date": "2026-11-12",
    "use": "Tekz-BossmodReborn-Fork (Zielvorrang je Kampf), BeastMasterHelper (A667)"
   },
   {
