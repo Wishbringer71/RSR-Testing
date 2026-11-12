@@ -20856,6 +20856,22 @@ potency" je Kampfende.
 
 *Prüfgrad:* statisch, Compile, Prüfskripte.
 
+### A713 · Prüfung des eigenen Quellcodes, Schritt 1: Umfang, Verfahren, mechanische Durchgänge (12.11.2026)
+
+- *Anlass:* sein Auftrag vom 12.11.2026 („den eigenen quellcodes des Plugins vollständig prüfen, inwieweit darin
+  probleme existieren … alles in kompletten loops").
+- *Umfang:* 407 Dateien, 161.370 Zeilen unter `RotationSolver*/`, davon 53.526 vom Fork hinzugefügt. Vorige
+  Tiefenprüfung: A220 bis A224 (29.09.2026, Stand ad73a6a5c).
+- *Verfahren:* `docs/method/02-source-audit.md` – mechanische Durchgänge über jede Datei, lesender Durchgang über den
+  Fork-Code nach Risiko gegen zwölf Fehlerklassen (aus den Befunden der Loops), Stand je Bereich in der Tabelle dort.
+- *Mechanisch, über alle Dateien, ohne Defekt:* Compiler mit allen Analysen (rund 1.500 Meldungen, fast nur Stil; tote
+  Bedingungen, Freigaben, ungenutzte Felder, Parsen einzeln geprüft); Musterdurchgänge für verschluckte Ausnahmen (12),
+  Division durch `MaxHp` ohne Schutz (6), in der eigenen Aufzählung geänderte Sammlungen (1, falsch positiv), nie
+  abbestellte Ereignisse (0).
+- *Lesend:* begonnen mit den Crucible-Regeln (Befunde A709 bis A712); der Durchgang Zeile für Zeile steht aus.
+
+*Prüfgrad:* Compiler-Analyse und Musterdurchgänge über 100 % der Dateien; lesend erst die geprüften Regeln.
+
 ## B · Commit-Register (Fork vs. `upstream/main`)
 
 ### B1 · Einzelgeprüfte Fork-Commits
