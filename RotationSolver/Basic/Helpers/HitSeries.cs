@@ -48,6 +48,7 @@ internal static class HitSeries
 		{
 			if ((now - series.LastCounted).TotalSeconds >= TriggerSpacingSeconds)
 			{
+				LearnGap(actionId, now - series.LastCounted);
 				series.Counted++;
 				series.LastCounted = now;
 				Learn(actionId, series.Counted);
@@ -93,6 +94,31 @@ internal static class HitSeries
 		_ = OtherConfiguration.SaveHitSeriesOnPlayer();
 	}
 
+	// A732: the longest time between two counted hits of one action, only an increase written.
+	private static void LearnGap(uint actionId, TimeSpan gap)
+	{
+		var milliseconds = (int)Math.Ceiling(gap.TotalMilliseconds);
+		lock (OtherConfiguration.HitSeriesGate)
+		{
+			if (OtherConfiguration.HitSeriesGapOnPlayer.TryGetValue(actionId, out var known) && known >= milliseconds)
+			{
+				return;
+			}
+
+			OtherConfiguration.HitSeriesGapOnPlayer[actionId] = milliseconds;
+		}
+
+		_ = OtherConfiguration.SaveHitSeriesGapOnPlayer();
+	}
+
+	// A732 (concept 08, "Wann eine Serie vorbei ist"): a series whose last counted hit lies further back than the longest
+	// gap ever measured for its action is over. Caller holds HitSeriesGate.
+	private static bool Over(uint actionId, Series series, DateTime now)
+	{
+		return OtherConfiguration.HitSeriesGapOnPlayer.TryGetValue(actionId, out var gap)
+			&& now - series.LastCounted > TimeSpan.FromMilliseconds(gap);
+	}
+
 	/// <summary>
 	/// The triggers a Liturgy of the Bell laid now would still collect from a learned series on the player - the most
 	/// of them; 0 when none runs or is announced:
@@ -134,7 +160,7 @@ internal static class HitSeries
 
 			foreach (var (id, series) in _open)
 			{
-				if ((now - series.First).TotalSeconds <= window && learnedSeries.TryGetValue(id, out var learned))
+				if ((now - series.First).TotalSeconds <= window && !Over(id, series, now) && learnedSeries.TryGetValue(id, out var learned))
 				{
 					left = Math.Max(left, learned - series.Counted);
 				}
@@ -146,7 +172,8 @@ internal static class HitSeries
 				var caster = casters[i];
 				if (caster == null || !caster.IsValid() || !caster.IsCasting
 					|| !learnedSeries.TryGetValue(caster.CastActionId, out var learned)
-					|| (_open.TryGetValue(caster.CastActionId, out var running) && (now - running.First).TotalSeconds <= window))
+					|| (_open.TryGetValue(caster.CastActionId, out var running) && (now - running.First).TotalSeconds <= window
+						&& !Over(caster.CastActionId, running, now)))
 				{
 					continue;
 				}

@@ -315,6 +315,21 @@ gewählten Trank mit dem Zweig, der ihn freigab, und den HP.
     derselben Aktion abzuleiten. Ob solche Casts zusammen genommen werden (Türme) oder einzeln auszuweichen sind
     (nacheinander fallende Flächen), zeigt der Cast nicht, und eine Glocke vor einer ausgewichenen Folge heilt niemanden,
     bei 180 s Abklingzeit. Gelernt wird nur, was ihn und die Gruppe tatsächlich getroffen hat.
+  - *Wann eine Serie vorbei ist (A732):* sobald seit ihrem letzten gezählten Treffer mehr Zeit vergangen ist als der
+    größte Abstand zwischen zwei gezählten Treffern, den RSR bei dieser Aktion je gemessen hat
+    (`HitSeriesGapOnPlayer.json`, nur steigend). Bis dahin gilt sie bis zum Ende der Glockendauer. Grund: Die gelernte
+    Zahl ist der Höchstwert über alle Treffen. Fällt eine Serie kürzer aus – ein Teil wurde ausgewichen, zwei Gegner
+    wirkten sie beim Lernen zugleich, eine andere Phase –, galten bis zum Ende der 20 s noch Auslösungen als ausstehend,
+    und Glockenspiel, Panhaima, Makrokosmos oder Seraphismus konnten nach dem letzten Treffer gehen, 120 bis 180 s
+    Abklingzeit ohne Wirkung. Seine Mitschnitte vom 11.11.2026 zeigen echte Serien im festen Takt (1,1 s, 3,0 s, 3,1 s
+    zwischen den Treffern) und gelernte Zweierserien mit 7 bis 10 s Abstand, wiederkehrende Einzelzauber in der
+    Glockendauer; für beide endet die Serie jetzt nach ihrem eigenen Takt. *Gegenthese 1 – Ein Treffer kommt etwas später
+    als je gesehen (Verzögerung des Servers):* Dann gilt die Serie kurz als vorbei, und eine Heilung, die auf sie wartet,
+    geht in diesem Augenblick nicht; der nächste Treffer zählt in dieselbe Serie, sie gilt wieder als laufend, und der
+    größere Abstand ist gelernt. *Gegenthese 2 – Die Zahl selbst sinkt nicht:* Für eine angekündigte Serie (Wirken vor
+    dem ersten Treffer) zählt weiter der Höchstwert; die Glocke schätzt ihren Wert dort zu hoch, nicht ihren Zeitpunkt.
+    *Gegenthese 3 (ausgeliefert, und nichts ändert sich):* Für Serien, die vor A732 gelernt wurden, fehlt der Abstand bis
+    zum nächsten Treffen; bis dahin gilt die Glockendauer wie bisher.
   - *Was die Ergänzungen in seinen Kämpfen ändern* (Protokolle 18.–23.10.2026, A348; vorher fiel die Glocke zweimal,
     beide Male auf einen Mehrfach-Sammelmarker, einmal im Moment des Bosstods):
     - *Allianzraid Stufe 100, 22.10.2026, Alexander der Wiedererweckte:* Mehrfach-Sammelmarker auf ihm, die Glocke

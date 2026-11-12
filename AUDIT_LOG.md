@@ -21282,6 +21282,28 @@ Form so gemessen wird"; Konzept 03, „sicher erreicht".
 - *Prüfgrad:* statisch, Compile, Prüfskripte, Abgleich der Blätter gegen BossModReborn; im Spiel nicht beobachtet – die
   Zeilen der Abwehr nennen je Zauber „reaches you" und „reaches the party".
 
+### A732 · Trefferserien enden nach ihrem eigenen Takt (12.11.2026)
+
+TODO „Gelernte Trefferserien sinken nicht" (Befund F9 der Quellcode-Prüfung, A726), im Loop. Konzept 08, „Wann eine
+Serie vorbei ist".
+
+- *Befund:* `HitSeries.TriggersLeft` hielt eine laufende Serie bis zum Ende der Glockendauer (20 s) offen und rechnete
+  mit dem gelernten Höchstwert. Endete eine Serie früher, galten Auslösungen als ausstehend; Glockenspiel, Panhaima,
+  Makrokosmos oder Seraphismus konnten nach dem letzten Treffer gehen.
+- *Messung (Mitschnitte vom 11.11.2026, seine `HitSeriesOnPlayer.json`, 58 Aktionen):* echte Serien im festen Takt –
+  #32133 und #44399 je 1,1 s, #44303 und #48882 je 3,0 s, #43547 3,1 s –; Zweierserien mit 7 bis 10 s Abstand
+  (#2362 10,1 s, #40618 9,2 s, #981 6,7 und 8,3 s), wiederkehrende Einzelzauber in der Glockendauer.
+- *Optionen:* (0) nichts; (a) die Zahl je Treffen ersetzen statt Höchstwert – ein ausgewichenes Treffen senkte sie für das
+  nächste, volle; (b) Schichten wie Konzept 13 – ändert die Zahl, nicht das Ende einer kürzeren Serie; (c) Serie vorbei,
+  sobald seit dem letzten Treffer mehr Zeit vergangen ist als der größte je gemessene Abstand dieser Aktion – gewählt.
+- *Umgesetzt:* `OtherConfiguration.HitSeriesGapOnPlayer` (ms, nur steigend, Reiter „Hit series gap"),
+  `HitSeries.LearnGap`, `HitSeries.Over` in beiden Zweigen von `TriggersLeft`.
+- *Falsifikation:* (1) kein Defekt – widerlegt: Die Serie galt bis 20 s nach dem ersten Treffer als laufend. (2) Option
+  falsch, ein Treffer kommt später als je gesehen – die Serie gilt kurz als vorbei, der nächste Treffer öffnet sie wieder
+  und lehrt den Abstand. (3) ausgeliefert, nichts ändert sich – vor A732 gelernte Serien haben keinen Abstand bis zum
+  nächsten Treffen.
+- *Prüfgrad:* statisch, Compile, Prüfskripte, Mitschnitt-Messung; im Spiel nicht beobachtet.
+
 ## B · Commit-Register (Fork vs. `upstream/main`)
 
 ### B1 · Einzelgeprüfte Fork-Commits

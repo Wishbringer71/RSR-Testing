@@ -46,7 +46,7 @@ Aus den Befunden der bisherigen Loops; jede mit dem Fall, an dem sie auffiel.
 | F6 | Erkennung ohne Reichweite oder Lage | Trifft das Erkannte den, für den gehandelt wird? | A701: Rückstoß in einer Linie, in der er nicht stand |
 | F7 | Text und Code weichen ab | Tut der Code, was Einstellungstext, Kommentar oder Konzept sagen? | A712: Auffüllen gegen einen stehenden Bonus |
 | F8 | Schlüssel und Kodierungen | Können zwei Bedeutungen denselben Schlüssel treffen; passt der Wertebereich? | A710: Kampfzeilen neben Brettzeilen in einer Datei |
-| F9 | Gelernte Höchstwerte altern nicht | Was geschieht, wenn die Wirklichkeit leichter wird? | behoben A729 (Crucible); Trefferserien: TODO „Gelernte Trefferserien sinken nicht" |
+| F9 | Gelernte Höchstwerte altern nicht | Was geschieht, wenn die Wirklichkeit leichter wird? | behoben A729 (Crucible), A732 (Trefferserien) |
 | F10 | Nebenläufigkeit | Wird eine Sammlung vom Spiel-Thread und von einem Pool-Thread berührt, ohne Sperre? | A224 |
 | F11 | Reihenfolge der Zweige | Verdrängt ein früher Zweig einen späteren, der wichtiger ist; läuft ein Pfad nie? | A693: Swiftcast hinter einem anderen oGCD |
 | F12 | Annahme über das Spiel ohne Beleg | Welche Spielmechanik setzt die Stelle voraus, und wo ist sie belegt? | A707/C183 |
@@ -117,6 +117,6 @@ Zeilen: gesamt / vom Fork hinzugefügt (12.11.2026). Stand: offen, in Arbeit, ge
 | „Gegner läuft zu einem anderen Gegner" traf jeden, der auf den Spieler am Hauptgegner zulief; Ziel verlangte Anvisierbarkeit; Verschwinden am Kampfende als Ankunft gelernt (vier Fehlauslösungen von Zähnefletschen am 11.11.) | F6, F7, F12, F2 | `Approach`, `BST_Reborn` K9 | behoben, A724 (Modell `approach_model.py`) |
 | „Die Sperre hält BossMods KI nicht" galt nach einer Messung für die ganze Sitzung, gemessen an `Movement.IsMoving`, das auch zurückgehaltene Zauber meldet; ein Rückstoß im Kanal zählte als Schritt der KI | F12, F4 | `MovementLock.Note` | behoben, A725 |
 | „Im Rückstand" bei Figuren, die nur Heilung besiegt: die Rate ohne die schon Vollgeheilten – Nichtheiler sprangen ein, sobald die erste Figur fertig war | F7 | `HealToDefeat.UpdateDeadline` | behoben, A726 |
-| Gelernte Trefferserien wachsen nur: nach einer kürzeren Serie gelten bis zum Ende der Glockendauer Auslösungen als ausstehend | F9 | `HitSeries` | offen, TODO „Gelernte Trefferserien sinken nicht" |
+| Gelernte Trefferserien wachsen nur: nach einer kürzeren Serie gelten bis zum Ende der Glockendauer Auslösungen als ausstehend | F9 | `HitSeries` | behoben, A732 |
 | Schadensrate der Gruppe nur aufgezeichnet, solange anvisierbare Gegner da sind: in einer Phase ohne sie sah die vorausschauende Heilung niemanden fallen | F6 | `TargetUpdater.UpdateTimeToKill` | behoben, A727 |
 | Fehlgeschlagene Wirktext-Auswertung für die Sitzung gemerkt; Steinnamen je Frame aus den Blättern; verrutschte Methodenbeschreibung | F4, – | `ActionTooltip.Text`, `DeepDungeonStones`, `TankbusterHelp` | behoben, A726 |

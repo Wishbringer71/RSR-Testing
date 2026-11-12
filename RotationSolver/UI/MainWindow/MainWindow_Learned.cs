@@ -144,6 +144,8 @@ public partial class MainWindow
 			AimedHitTab(game),
 			SimpleActionTab("Area series", "Series span", CopyAreaSeriesSpan(), span => $"{span:F1} s"),
 			SimpleActionTab("Hit series", "Hits in a row", CopyHitSeries(), hits => hits.ToString()),
+			SimpleActionTab("Hit series gap", "Longest gap between hits", CopyHitSeriesGaps(),
+				gap => $"{TimeSpan.FromMilliseconds(gap).TotalSeconds:F1} s"),
 			SleepOutcomeTab(game),
 			SleepKindTab(game),
 			InterruptibleKindTab(),
@@ -285,6 +287,15 @@ public partial class MainWindow
 		lock (OtherConfiguration.HitSeriesGate)
 		{
 			return new Dictionary<uint, int>(OtherConfiguration.HitSeriesOnPlayer);
+		}
+	}
+
+	// A732: the longest gap between two counted hits of a series, per action.
+	private static Dictionary<uint, int> CopyHitSeriesGaps()
+	{
+		lock (OtherConfiguration.HitSeriesGate)
+		{
+			return new Dictionary<uint, int>(OtherConfiguration.HitSeriesGapOnPlayer);
 		}
 	}
 

@@ -19,11 +19,9 @@ auswahl und das timing der beschwörung" – je Kampf aller fünf Bretter (Gegne
 BossMod-Module) die Rotation des Beastmasters, die Wahl der Begleiter und den Zeitpunkt ihres Aufrufs im Loop prüfen
 (Beispiel seiner Beobachtung: der Raptor gegen Feuer, bevor feueranfällige Gegner da waren; A581).
 
-1. Gelernte Trefferserien sinken nicht: eine lange Gruppenheilung kann nach dem letzten Treffer einer Serie gehen
-   (Befund der Quellcode-Prüfung, A726).
-2. Blaumagier: RSRs nächste Aktion beendet Apokalypsis und Chelonian Gate – Schaden und Minderung des Spielers enden
+1. Blaumagier: RSRs nächste Aktion beendet Apokalypsis und Chelonian Gate – Schaden und Minderung des Spielers enden
    nach einem GCD statt nach 10 s (gespielt hat er ihn bislang nicht, seine Angabe vom 11.11.2026).
-3. Gerichtete Parade: Angriffe von der geschützten Seite eines Gegners werden pariert (A730).
+2. Gerichtete Parade: Angriffe von der geschützten Seite eines Gegners werden pariert (A730).
 
 Danach die technische Schuld, soweit ihre Auflösungsbedingung erfüllt ist. Warten auf Daten: unten.
 
@@ -51,16 +49,6 @@ nichts. Divine Cataract ist die Folgeaktion von Chelonian Gate (Auspicious Tranc
 dem Tor). *Konzept:* 14, „Wo Angriff die Abwehr beendet: die Kanäle".
 
 ## Offene Arbeit
-
-### Gelernte Trefferserien sinken nicht · N
-Im Kampf: Je gegnerischer Aktion merkt RSR die längste je gesehene Serie von Treffern auf dich und ein weiteres Mitglied
-(`HitSeriesOnPlayer.json`, nur Zuwächse). Fällt eine Serie kürzer aus – zwei Gegner wirkten sie beim Lernen zugleich, ein
-Teil wird ausgewichen, die Phase ist eine andere –, gelten bis zum Ende der Glockendauer noch Auslösungen als
-ausstehend, und Glockenspiel, Panhaima, Makrokosmos oder Seraphismus können nach dem letzten Treffer gehen (180 s und
-120 s Abklingzeit ohne Wirkung). *Ort:* `HitSeries.Learn`, `TriggersLeft`. *Nächster Schritt:* Loop – am Mitschnitt die
-Abstände in den gelernten Serien messen und prüfen, ob eine Serie als beendet gelten kann, sobald der Abstand seit dem
-letzten Treffer ihren bisher größten übersteigt; die Schichten von Konzept 13 für die Datei. *Konzept:* 08
-(„Glockenspiel"), 13.
 
 ### Gerichtete Parade: Angriffe von der geschützten Seite werden pariert · N
 Im Kampf: Ein Gegner mit dem Status „Gerichtete Parade" (Status 680, Directional Parry) pariert jeden Angriff des

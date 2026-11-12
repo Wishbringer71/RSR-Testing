@@ -352,6 +352,15 @@ internal partial class OtherConfiguration
 	internal static readonly object HitSeriesGate = new();
 
 	/// <summary>
+	/// A732 (concept 08, "Wann eine Serie vorbei ist"): per enemy action, the longest time between two counted hits of a
+	/// series on the player, in milliseconds - learned in play, only rising. Under <see cref="HitSeriesGate"/>.
+	/// </summary>
+	internal static Dictionary<uint, int> HitSeriesGapOnPlayer = [];
+
+	/// <summary>What the last save and load of <see cref="HitSeriesGapOnPlayer"/> did, in words.</summary>
+	internal static string HitSeriesGapStoreState { get; private set; } = "not loaded yet";
+
+	/// <summary>
 	/// What enemy damage over time on party members was seen to do, by area (territory id) and status - learned in play
 	/// over every session (concept 08, "Schaden über Zeit: HoT gegen DoT", A432).
 	/// </summary>
@@ -938,6 +947,9 @@ internal partial class OtherConfiguration
 		new LearnedFile<int>(nameof(HitSeriesOnPlayer), CopyHitSeries,
 			v => { lock (HitSeriesGate) { HitSeriesOnPlayer = v; } },
 			Math.Max, state => HitSeriesStoreState = state, "enemy action(s) hitting in series"),
+		new LearnedFile<int>(nameof(HitSeriesGapOnPlayer), () => CopyUnder(HitSeriesGate, HitSeriesGapOnPlayer),
+			v => { lock (HitSeriesGate) { HitSeriesGapOnPlayer = v; } },
+			Math.Max, state => HitSeriesGapStoreState = state, "enemy action(s) with a gap between series hits"),
 		new LearnedFile<DotArea>(nameof(DotOnParty), CopyDotStore,
 			v => { lock (DotStoreGate) { DotOnParty = v; } },
 			DotArea.Merge, state => DotStoreState = state, "area(s) with learned damage over time"),
@@ -1220,6 +1232,8 @@ internal partial class OtherConfiguration
 
 	/// <summary>What the last save and load of <see cref="CrucibleFightNet"/> did, in words.</summary>
 	internal static string CrucibleFightNetStoreState { get; private set; } = "not loaded yet";
+
+	internal static Task SaveHitSeriesGapOnPlayer() => SaveList(nameof(HitSeriesGapOnPlayer));
 
 	internal static Task SaveCrucibleFightLoadsByRank() => SaveList(nameof(CrucibleFightLoadsByRank));
 
