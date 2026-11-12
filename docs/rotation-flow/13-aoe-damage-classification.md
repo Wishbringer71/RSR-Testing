@@ -165,12 +165,42 @@ Tengentsu, Third Eye). Gemessen wird ein Flag an den Pfaden, die es öffnet (CLA
   Clawful 37693).
 - Linie (`CastType` 4 und 12, mit Breite): Rechteck vom Wirkenden zum Ziel, ohne Ziel in Blickrichtung;
   `XAxisModifier` ist die volle Breite (Heavy Blast Cannon 37345: Spieldaten Breite 8, BossModReborn „width 8
-  rect", halbe Breite 4).
-- Kreis und Kegel um den Wirkenden: Abstand vom **Mittelpunkt** des Wirkenden, ohne dessen Trefferkreis.
-  BossModReborn setzt keine seiner 3494 Kreisformen um den Trefferkreis des Wirkenden größer
-  (BossModReborn `AOEShapeCircle`, geprüft 29.09.2026); gemessen am Trefferkreis verlängerte ein großer Boss jeden
-  Rundumschlag um seinen Trefferkreis — 10 y reichten bei 8 y Trefferkreis bis 18 y. Der Kegel ohne Winkel
-  (steht in keinem Blatt) zählt wie ein Kreis.
+  rect", halbe Breite 4). Art 4 reicht um den Trefferkreis des Wirkenden weiter, Art 12 nicht (unten, A731).
+- Kreis um den Wirkenden: Art 2 vom **Mittelpunkt** des Wirkenden, Art 5 um seinen Trefferkreis weiter (A731).
+- Kegel (Art 3 und 13): Winkel aus dem Omen der Aktion, Reichweite wie beim Kreis – Art 3 um den Trefferkreis des
+  Wirkenden weiter, Art 13 nicht –, Richtung zum Ziel des Zaubers, ohne Ziel die Blickrichtung des Wirkenden (A731).
+  Ohne Winkel im Omen zählt der Kegel wie ein Kreis.
+- Ring (Art 10): Außenradius die Effektreichweite, Innenradius aus dem Omen; wer ganz im Innenkreis steht, mit seinem
+  Trefferkreis, bleibt unberührt (A731). Ein Ring mit Kegelwinkel im Omen zählt als Kegel ohne Innenkreis, ein Ring
+  ohne Innenradius im Omen als Kreis.
+
+**Warum die Form so gemessen wird (A731).** Welche Form um den Trefferkreis des Wirkenden weiter reicht, sagt die Art:
+BossModReborns Analysewerkzeug beschreibt Art 3, 4 und 5 als „range X+R", Art 2, 12 und 13 als „range X"
+(`Replay/Analysis/AbilityInfo.DescribeShape`, 2087153c2, Werkzeugquelle), und seine Module bauen die Formen danach:
+Wing Cutter (#331, Art 3, Reichweite 6, Trefferkreis 0,9) als Kegel von 6,9 y und 60° (`D260NorthernBateleur`).
+Kegelwinkel und Innenradius stehen im Pfad des Omens (Blatt `Omen`): `gl_fan060_1bf` ist ein Kegel von 60°,
+`gl_sircle_2010bf` ein Ring mit den Zahlen 20 und 10. Abgeglichen an allen Aktionen, deren Form BossModReborn im
+Kommentar nennt (ffxiv-datamining 52a72b3, 12.11.2026): Bei 945 von 953 Kegeln stimmen Winkel und Reichweite; die acht
+übrigen nennen eine Reichweite mit eingerechnetem Trefferkreis oder einen halben Winkel bei einem Omen `er_gl_fan…`.
+Beim Ring ist nicht einheitlich, wie die Zahlen gelten: Wo der Pfad dieselbe Außenreichweite nennt wie das Blatt,
+stimmen 221 Ringe; wo nicht, passt 32-mal der Innenradius im Verhältnis (Zahl mal Reichweite durch Pfadreichweite) und
+10-mal die Zahl selbst, auch beim selben Omen (`gl_sircle_1005bf`: #32841 innen 6, #46903 innen 5). RSR nimmt den
+kleineren der beiden: Er zählt mehr Mitglieder als getroffen, der Fehler liegt auf der Seite des Schutzes. Ebenso
+zählt der größere Winkel bei `er_gl_fan…`.
+- *Im Kampf:* Wer hinter einem Frontalkegel oder im Innenkreis eines Rings steht, gilt nicht mehr als getroffen. Die
+  Flächenabwehr, der Selbstschutz (Radiant Aegis, Tengentsu, Third Eye), Surecast und Abtausch (A701) und die Heilung
+  vor dem Treffer gehen dort nicht mehr; ein Zauber- oder Kanalbeginn wird für einen solchen Zauber gesperrt, wenn er
+  den Spieler sicher erreicht und ein Schritt hinausführt (`CastCertainlyDodgeable`). Wer vor einem Kegel der Art 3, an
+  einer Linie der Art 4 oder in einem Kreis der Art 5 steht, gilt jetzt auch im Saum des Trefferkreises als getroffen;
+  dort fehlte bisher der Schutz.
+- *Gegenthese 1 – Das Omen zeigt nicht die Trefferform:* Die Anzeige und der Treffer des Servers können abweichen.
+  Teilweise widerlegt: Der Abgleich mit BossModReborn, dessen Module aus Mitschnitten gebaut sind, stimmt bei fast allen
+  Kegeln; beim Ring nimmt RSR den kleineren Innenradius. *Preis:* Wo der Server weiter trifft als das Omen, fehlt der
+  Schutz für den Rand; dort bleibt der gelernte Treffer (`HitSeries`, die Flächentabelle) unberührt.
+- *Gegenthese 2 – Der Kegel dreht sich mit dem Wirkenden:* Ein Gegner kann sich während des Wirkens drehen. Gefragt wird
+  jedes Bild mit der Richtung dieses Bildes, wie bei der Linie.
+- *Gegenthese 3 (ausgeliefert, und nichts ändert sich):* Viele Kegel tragen kein Omen (904 der Art 3, 1.242 der Art
+  13); sie zählen weiter als Kreis. Ein Ring ohne Zahlen im Omen ebenso.
 - Bodenkreise (`TargetArea`): Ihr Mittelpunkt steht nur in den nativen Castdaten; weiter Abstand zum Wirkenden
   mit beiden Trefferkreisen, also eher zu weit.
 - Ansturm (`CastType` 8, Effektreichweite 0): erreicht jeden.
@@ -751,8 +781,7 @@ Liste; einer in Windurst ohne gelisteten Zauber (Winde oder Zeitleiste – welch
   – in Babil Aetherial Pull im nächsten Kampf –, fliegt er; an einem tödlichen Rand stirbt er. (b) *Stärken:* Ground and
   Pound und jede Linie oder jeder Kreis, in dem er nicht steht, lassen Surecast stehen; Aetherial Pull auf ihn zählt
   weiter, auf einen anderen nicht – ein Zug auf einen anderen bewegt ihn nicht. *Schwächen:* Kegel und Ring zählen als
-  voller Kreis; hinter einem Kegel oder im Innenkreis eines Rings löst er weiter aus (TODO „Kegel und Ringe gegnerischer
-  Zauber genau messen"). *Chancen:* dieselbe Prüfung, die die Flächenabwehr seit A218 trägt. *Bedrohungen:* Er tritt
+  voller Kreis – seit A731 gemessen, soweit das Omen Winkel und Innenradius nennt (oben, „Wen die Form erreicht"). *Chancen:* dieselbe Prüfung, die die Flächenabwehr seit A218 trägt. *Bedrohungen:* Er tritt
   erst nach der Prüfung in die Form; gefragt wird jedes Bild im Landefenster (letzter GCD vor dem Treffer), tritt er
   später hinein, kommt Surecast zu spät – wie heute bei jedem Rückstoß, der erst spät angekündigt ist. (c) gelernt aus
   einem Ausgang, der von seiner Position abhing – bei einer Linie, der er einmal auswich, bliebe Surecast beim nächsten

@@ -1613,7 +1613,8 @@ party member in danger before an announced hit." Die Entscheidung fällt je Bild
   dich sicher erreicht, landet innerhalb seines Zwecks – Waffengang bis zum Gruppentreffer, für den er gewirkt wird,
   sonst seine Dauer (`DefensiveValues.DurationByActionId`) –, oder BossMods KI geht und muss sofort weiter (Spielraum
   null) oder wird von der Sperre des Spiels nachweislich nicht angehalten (in der Sitzung gemessen: die Figur ging,
-  während die Sperre hielt und BossMod gehen wollte). Sicher erreicht heißt: ein Kreis oder eine Linie, nicht auf dich
+  während die Sperre hielt und BossMod gehen wollte). Sicher erreicht heißt: ein Kreis, eine Linie, ein Kegel mit
+  Winkel oder ein Ring mit Innenradius aus dem Omen (Konzept 13, „Wen die Form erreicht", A731), nicht auf dich
   gezielt, die dich erreicht und ein lebendes Mitglied auslässt – dem entgeht ein Schritt; ein Zauber, der alle erreicht,
   ist ein Raidwide, und vor ihm beginnt Waffengang gerade. Waffengang für einen Raidwide in 3 s beginnt also auch, wenn
   unter dem Paladin eine Fläche in 8 s folgt. Numinosum beginnt immer: Seine Minderung bleibt nach dem Abbruch.

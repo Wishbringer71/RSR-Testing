@@ -19,13 +19,11 @@ auswahl und das timing der beschwörung" – je Kampf aller fünf Bretter (Gegne
 BossMod-Module) die Rotation des Beastmasters, die Wahl der Begleiter und den Zeitpunkt ihres Aufrufs im Loop prüfen
 (Beispiel seiner Beobachtung: der Raptor gegen Feuer, bevor feueranfällige Gegner da waren; A581).
 
-1. Kegel und Ringe gegnerischer Zauber genau messen: Zauber- und Kanalbeginn nutzen RSRs Erkennung bei Kegel und Ring
-   nicht, und mehrere Leser sehen hinter einem Kegel oder im Innenkreis eines Rings eine Gefahr, die keine ist.
-2. Gelernte Trefferserien sinken nicht: eine lange Gruppenheilung kann nach dem letzten Treffer einer Serie gehen
+1. Gelernte Trefferserien sinken nicht: eine lange Gruppenheilung kann nach dem letzten Treffer einer Serie gehen
    (Befund der Quellcode-Prüfung, A726).
-3. Blaumagier: RSRs nächste Aktion beendet Apokalypsis und Chelonian Gate – Schaden und Minderung des Spielers enden
+2. Blaumagier: RSRs nächste Aktion beendet Apokalypsis und Chelonian Gate – Schaden und Minderung des Spielers enden
    nach einem GCD statt nach 10 s (gespielt hat er ihn bislang nicht, seine Angabe vom 11.11.2026).
-4. Gerichtete Parade: Angriffe von der geschützten Seite eines Gegners werden pariert (A730).
+3. Gerichtete Parade: Angriffe von der geschützten Seite eines Gegners werden pariert (A730).
 
 Danach die technische Schuld, soweit ihre Auflösungsbedingung erfüllt ist. Warten auf Daten: unten.
 
@@ -53,15 +51,6 @@ nichts. Divine Cataract ist die Folgeaktion von Chelonian Gate (Auspicious Tranc
 dem Tor). *Konzept:* 14, „Wo Angriff die Abwehr beendet: die Kanäle".
 
 ## Offene Arbeit
-
-### Kegel und Ringe gegnerischer Zauber genau messen · N
-Im Kampf: RSRs Formprüfung (`DataCenter.AreaCastReaches`) misst einen Kegel und einen Ring als vollen Kreis um den
-Gegner; wer hinter einem Frontalkegel oder im sicheren Innenkreis eines Rings steht, zählt als getroffen. Deshalb sperrt
-ein solcher Zauber keinen Zauber- und Kanalbeginn (`DataCenter.CastCertainlyDodgeable` nimmt nur Kreis und Linie), und
-die Leser von `RaiseProtection.FirstDodgeableWithin` (Limit Break allein, Freigabe der Bewegungssperre) sehen dort eine
-Gefahr, die keine ist. *Ort:* `DataCenter.AreaCastReaches`. *Nächster Schritt:* Winkel des Kegels und Innenradius des Rings
-aus dem Omen der Aktion (Blatt Omen, Pfadname) belegen, dann messen und die Einschränkung in `CastCertainlyDodgeable`
-aufheben. *Konzept:* 03, „Bewegungssperre beim Wirken und die KI von BossMod"; 13 (Formprüfung).
 
 ### Gelernte Trefferserien sinken nicht · N
 Im Kampf: Je gegnerischer Aktion merkt RSR die längste je gesehene Serie von Treffern auf dich und ein weiteres Mitglied

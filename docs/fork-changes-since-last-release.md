@@ -29,6 +29,13 @@ What this release changes in the fight. For the whole distance from upstream, se
   HP fell, and it never healed. RSR now reads the game's refusals for a place – not usable here, only in PvP, not in PvP,
   only in duels or Frontline – for every item and action. When the game still refuses an item, `DefenseTrace.log`
   names the item, the area and the game's answer, once per item and area.
+- **Cones and rings are measured.** RSR counted an enemy cone or ring as a full circle, so standing behind a frontal
+  cone or inside a ring's safe centre counted as hit: party and personal mitigations, Surecast and Arm's Length and
+  healing ahead of the hit went there, and such a cast barred no cast start. The angle of a cone and the inner radius of
+  a ring now come from the action's omen (as BossModReborn's analysis reads them; of a ring's two readings the smaller
+  inner radius), towards the cast's target or the caster's facing. Shapes whose omen names neither stay circles. Lines
+  of type 4, circles of type 5 and cones of type 3 now also reach past the caster's hitbox, as the game's shapes do;
+  until now RSR measured them short.
 - **An item counts as refused when the game refuses the quality RSR sends.** RSR blocked an item only when the game
   refused both its normal and its high quality. An Ultra-Potion refused as normal ("You do not have that item.") passed
   on the answer for a high quality you did not hold, and RSR chose it again in the same area – each try took a weave a

@@ -21252,6 +21252,36 @@ dagegen.
   gespielt, seine Angabe vom 11.11.2026), Gerichtete Parade.
 - *Prüfgrad:* statisch, Compile, Prüfskripte; Mitschnitte vom 11.11.2026 für die Ablehnung; im Spiel nicht beobachtet.
 
+### A731 · Kegel und Ringe gegnerischer Zauber aus dem Omen gemessen; Trefferkreis des Wirkenden bei den Formarten 3, 4 und 5 (12.11.2026)
+
+TODO „Kegel und Ringe gegnerischer Zauber genau messen", im Loop. Konzept 13, „Wen die Form erreicht" und „Warum die
+Form so gemessen wird"; Konzept 03, „sicher erreicht".
+
+- *Befund:* `AreaCastReaches` maß Kegel und Ring als vollen Kreis; wer hinter einem Frontalkegel oder im Innenkreis
+  stand, zählte als getroffen – Flächenabwehr, Selbstschutz, Surecast, Heilung vor dem Treffer gingen dort, und
+  `CastCertainlyDodgeable` sperrte für diese Formen keinen Zauberbeginn. Zweiter Befund beim Belegen: Formarten 3, 4 und
+  5 reichen um den Trefferkreis des Wirkenden weiter; RSR maß Linien der Art 4 und Kreise der Art 5 ohne ihn, zu kurz.
+- *Quellen:* Blatt `Omen` (Pfad `gl_fan060_1bf`, `gl_sircle_2010bf`), BossModReborns Analysewerkzeug
+  (`Replay/Analysis/AbilityInfo.DescribeShape`, `DetermineConeAngle`, `DetermineDonutInner`, 2087153c2, Werkzeugquelle):
+  Kegelwinkel aus „fan" und drei Ziffern, Innenradius aus „sircle_" und den Ziffern danach, „+R" für Art 3, 4, 5.
+  Modul Wing Cutter (#331): `AOEShapeCone(6.9, 30°)` bei Reichweite 6 und Trefferkreis 0,9.
+- *Abgleich (ffxiv-datamining 52a72b3 gegen die Kommentare aller BossModReborn-Module):* Kegel 945 von 953 gleich in Winkel
+  und Reichweite. Ringe: 221 mit gleicher Pfad- und Blattreichweite stimmen; sonst passt 32-mal der Innenradius als
+  Anteil der Reichweite, 10-mal als Zahl, auch beim selben Omen. Gewählt der kleinere (mehr Getroffene, sichere Seite).
+- *Optionen:* (0) nichts; (a) Formen aus BossModReborns Modulen übernehmen – nur mit Modul, und RSR liest keine Formen über
+  IPC; (b) aus dem Omen, unbekannte Formen weiter als Kreis – gewählt; (c) aus dem Treffer lernen, wer getroffen wurde –
+  hängt an der Position im gelernten Lauf (wie A701 (c)).
+- *Umgesetzt:* `DataCenter.OmenShape` (Winkel, Innenradius, je Aktion zwischengespeichert), `InCone`,
+  `ConeFromCentreCastType` (13), Trefferkreis des Wirkenden für Art 3, 4, 5 in Linie, Kegel und Kreis,
+  `CastCertainlyDodgeable` nimmt Kegel und Ringe mit Omen und Kreise der Art 5. Drei Zahlen in `fixed_values.json`.
+- *Falsifikation:* (1) kein Defekt – widerlegt an der Geometrie: Wer hinter einem Kegel steht, zählte als getroffen.
+  (2) Option falsch, das Omen zeigt nicht den Treffer – teilweise widerlegt durch den Abgleich; Preis im Konzept.
+  (3) ausgeliefert, nichts ändert sich – Kegel und Ringe ohne Omen (904 der Art 3, 1.242 der Art 13) zählen weiter als
+  Kreis.
+- *Widerruf:* C188.
+- *Prüfgrad:* statisch, Compile, Prüfskripte, Abgleich der Blätter gegen BossModReborn; im Spiel nicht beobachtet – die
+  Zeilen der Abwehr nennen je Zauber „reaches you" und „reaches the party".
+
 ## B · Commit-Register (Fork vs. `upstream/main`)
 
 ### B1 · Einzelgeprüfte Fork-Commits
@@ -21591,3 +21621,4 @@ Die offene Arbeit dazu — Reihenfolge und Abbruchbedingung der Nachprüfung —
 | C185 | A692 und Konzept 21 K16 (Stand A692): „Schaden je Sekunde je Kampf und Begleiter … seine Treffer vom zweiten bis zum letzten über die Zeit dazwischen … der beste Wert" als Maß der Hornwahl | Das Maß hing an der Zeit draußen: Ein Begleiter, der nur für Entfesseln und Scheidenden Schlag kam, lag weit über dem, der blieb; zwei Treffer kurz nacheinander ergaben beliebig hohe Werte, und der Höchstwert hielt sie fest. Es belohnte die Rolle, nicht den Begleiter. Ersetzt durch Schaden je Potenz je Treffer gegen die Erwartung der Schätzung (`CrucibleFamiliarHits.json`); die Datei `CrucibleFamiliarDps.json` liest RSR nicht mehr. | A711 |
 | C186 | A709, Konzept 21 K15 und Release-Text (Stand A709): Brett 1 „Bedarf ab Brettbeginn 93 %", „Vor dem Endkampf verlangt der Weg 36 + 40 = 76 %", Senken Kampf 5 43 %, Endkampf 36 %; Brett 2 „11/33", „Endkampf 49/76 %", „trägt er Brett 2 an keiner Stelle"; „from about 76 % HP" | Das Modell zog die eigene Heilung mit der Meldung ab statt beim Anstieg. Wie der Code misst: Brett 1 ab Start 68 %, vor dem Endkampf 12 + 40 = 52 %; Brett 2 Kampf 10 11/11, Endkampf 48/48, vor dem Endkampf 88 % – in beiden Läufen getragen (96 %) | A721 |
 | C187 | A660 und Konzept 21 K3 (Stand A660–A723): „Ziel = Gegner mit den meisten LP, auch unanvisierbar"; „Den Abstand, bei dem einer seiner Art ohne Tod verschwindet, lernt RSR beim ersten Verschwinden"; laufend = „sein Abstand zum Gegner mit den meisten LP sinkt seit seinem Erscheinen" | Das Ziel verlangte Anvisierbarkeit (während der Ward das Riesen-Irrlicht); Verschwinden ohne Tod ist auch Kampfende und Zielwechsel; dem Hauptgegner kommt jeder näher, der auf den Spieler dort zuläuft – vier Fehlauslösungen am 11.11.2026. Ersetzt: Blickziel, gehaltenes Ziel, Ankunft aus der ersten Aktion | A724 |
+| C188 | A218 und Konzept 13 (Stand A218): „BossModReborn setzt keine seiner 3494 Kreisformen um den Trefferkreis des Wirkenden größer", daraus „Kreis und Kegel um den Wirkenden: Abstand vom Mittelpunkt" | Die Klasse `AOEShapeCircle` rechnet keinen Trefferkreis ein, die Module tun es in der Zahl: BossModReborns Analyse beschreibt die Formarten 3, 4 und 5 als „range X+R" (447 Kreise, 351 Kegel), etwa Wing Cutter als Kegel von 6,9 bei Reichweite 6. Für Art 2 gilt der Mittelpunkt weiter; Art 3, 4 und 5 reichen um den Trefferkreis des Wirkenden weiter. | A731 |

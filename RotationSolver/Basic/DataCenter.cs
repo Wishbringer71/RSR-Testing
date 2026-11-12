@@ -4633,8 +4633,8 @@ internal static class DataCenter
 
 	/// <summary>
 	/// Whether an enemy cast certainly reaches the player and a step avoids it: not aimed at him, of a shape measured exactly
-	/// here (a circle or a line - a cone and a ring count as a full circle in <see cref="AreaCastReaches"/>, and someone
-	/// behind the cone or inside the ring would count as hit), and leaving a living party member other than him outside -
+	/// here (a circle or a line, and a cone or a ring whose omen names its angle or inner circle - without, they count as a
+	/// full circle in <see cref="AreaCastReaches"/>; A731), and leaving a living party member other than him outside -
 	/// unlike a raidwide, which reaches everyone. False without such a member to compare (concept 03, "Bewegungssperre beim
 	/// Wirken und die KI von BossMod", A652).
 	/// </summary>
@@ -4647,7 +4647,12 @@ internal static class DataCenter
 			return false;
 		}
 
-		var measured = (CastType)act.CastType is CastType.Circle or CastType.StraightLine || act.CastType == LineFromCasterCastType;
+		// A731: a cone with its angle and a ring with its inner circle in the omen are measured too, and the circle of type 5.
+		var (degrees, inner) = OmenShape(act);
+		var measured = (CastType)act.CastType is CastType.Circle or CastType.StraightLine or CastType.Unknown5
+			|| act.CastType == LineFromCasterCastType
+			|| (IsConeCastType(act.CastType) && degrees > 0f)
+			|| ((CastType)act.CastType == CastType.Donut && (degrees > 0f || inner > 0f));
 		if (!measured || !AreaCastReaches(h, act, player))
 		{
 			return false;
@@ -4676,7 +4681,8 @@ internal static class DataCenter
 	/// point-blank cast by its hitbox - ten yalms reached eighteen (A218). The member's own hitbox counts
 	/// in favour of the hit everywhere.</para>
 	/// <para>Ground-placed circles keep the old measure: their centre is only in the native cast data.
-	/// A cone counts as a circle; its angle is in no sheet.</para>
+	/// A cone takes the angle its omen names and a ring its inner circle (<see cref="OmenShape"/>); without, both count as a
+	/// circle. Types 3, 4 and 5 reach past the caster's hitbox (A731).</para>
 	/// </remarks>
 	private static bool AreaCastReaches(IBattleChara h, Action act, IBattleChara member)
 	{
@@ -4703,6 +4709,9 @@ internal static class DataCenter
 			return HorizontalDistance(member.Position, aimedAt.Position) - member.HitboxRadius - aimedAt.HitboxRadius <= act.EffectRange;
 		}
 
+		// A731: types 3, 4 and 5 reach past the caster's hitbox, 2, 12 and 13 do not (BossModReborn's analysis, "range X+R").
+		var casterRadius = (CastType)act.CastType is CastType.Cone or CastType.StraightLine or CastType.Unknown5 ? h.HitboxRadius : 0f;
+
 		if (act.CastType is (byte)CastType.StraightLine or LineFromCasterCastType && act.XAxisModifier > 0)
 		{
 			var direction = aimedAt != null ? aimedAt.Position - h.Position : h.GetFaceVector();
@@ -4715,7 +4724,7 @@ internal static class DataCenter
 				var along = Vector3.Dot(direction, toMember);
 				var across = Vector3.Cross(direction, toMember).Length();
 				return along >= -member.HitboxRadius
-					&& along <= act.EffectRange + member.HitboxRadius
+					&& along <= act.EffectRange + casterRadius + member.HitboxRadius
 					&& across <= (act.XAxisModifier / 2f) + member.HitboxRadius;
 			}
 		}
@@ -4725,7 +4734,110 @@ internal static class DataCenter
 			return HorizontalDistance(member.Position, h.Position) - member.HitboxRadius - h.HitboxRadius <= act.EffectRange;
 		}
 
-		return HorizontalDistance(member.Position, h.Position) - member.HitboxRadius <= act.EffectRange;
+		// A731: a cone by the angle its omen names, towards the cast's target or the caster's facing; a ring with a sector in
+		// its omen counts as that cone without its inner circle.
+		var (degrees, inner) = OmenShape(act);
+		if ((IsConeCastType(act.CastType) || (CastType)act.CastType == CastType.Donut) && degrees > 0f)
+		{
+			var direction = aimedAt != null ? aimedAt.Position - h.Position : h.GetFaceVector();
+			return InCone(h.Position, direction, act.EffectRange + casterRadius, degrees, member);
+		}
+
+		// A731: a ring spares who stands wholly inside its inner circle.
+		if ((CastType)act.CastType == CastType.Donut && inner > 0f)
+		{
+			var centre = act.Range > 0 && !act.CanTargetSelf && aimedAt != null ? aimedAt.Position : h.Position;
+			var distance = HorizontalDistance(member.Position, centre);
+			return distance - member.HitboxRadius <= act.EffectRange && distance + member.HitboxRadius >= inner;
+		}
+
+		return HorizontalDistance(member.Position, h.Position) - member.HitboxRadius <= act.EffectRange + casterRadius;
+	}
+
+	// A731: cast type 13 is a cone like type 3 (Cone), which the enum does not name, measured from the caster's centre.
+	private const byte ConeFromCentreCastType = 13;
+
+	private static bool IsConeCastType(byte castType) => castType == (byte)CastType.Cone || castType == ConeFromCentreCastType;
+
+	// A731: whether <member> stands in a cone from <origin> towards <direction> - within its reach and its angle, its hitbox
+	// in favour of the hit.
+	private static bool InCone(Vector3 origin, Vector3 direction, float reach, float degrees, IBattleChara member)
+	{
+		var toMember = member.Position - origin;
+		toMember.Y = 0;
+		var distance = toMember.Length();
+		if (distance - member.HitboxRadius > reach)
+		{
+			return false;
+		}
+
+		direction.Y = 0;
+		if (distance <= member.HitboxRadius || direction.LengthSquared() <= 0f)
+		{
+			return true;
+		}
+
+		var cosine = Math.Clamp(Vector3.Dot(Vector3.Normalize(direction), toMember / distance), -1f, 1f);
+		var allowance = MathF.Asin(Math.Min(1f, member.HitboxRadius / distance));
+		return MathF.Acos(cosine) <= float.DegreesToRadians(degrees / 2f) + allowance;
+	}
+
+	// A731: per action, the cone angle and the ring's inner radius its omen names (0 for none).
+	private static readonly ConcurrentDictionary<uint, (float Degrees, float Inner)> _omenShapes = new();
+
+	/// <summary>
+	/// A731 (concept 13, "Wen die Form erreicht"): the angle of a cone and the inner radius of a ring as the action's omen
+	/// names them - "gl_fan060_1bf" a cone of 60 degrees, "gl_sircle_2010bf" a ring with the figures 20 and 10, as
+	/// BossModReborn's analysis reads them. The ring's figures hold as the inner radius itself or as its share of the sheet's
+	/// range, unevenly even for one omen; the smaller is taken, so more count as hit. 0 for what the omen does not name.
+	/// </summary>
+	internal static (float Degrees, float Inner) OmenShape(Action act)
+	{
+		return _omenShapes.GetOrAdd(act.RowId, _ =>
+		{
+			var path = act.Omen.ValueNullable?.Path.ExtractText() ?? string.Empty;
+			var degrees = DigitsAfter(path, "fan", out var angle) ? angle : 0;
+			var inner = 0f;
+			foreach (var key in RingKeys)
+			{
+				if (DigitsAfter(path, key, out var figures) && figures > 0)
+				{
+					var digits = figures.ToString(System.Globalization.CultureInfo.InvariantCulture);
+					var half = digits.Length / 2;
+					if (half > 0 && int.TryParse(digits.AsSpan(0, digits.Length - half), out var outer) && int.TryParse(digits.AsSpan(digits.Length - half), out var innerFigure))
+					{
+						inner = outer > 0 ? Math.Min(innerFigure, act.EffectRange * innerFigure / (float)outer) : innerFigure;
+					}
+
+					break;
+				}
+			}
+
+			return (degrees, inner);
+		});
+	}
+
+	// A731: the omen names in which a ring's figures follow, as BossModReborn's analysis reads them.
+	private static readonly string[] RingKeys = ["sircle_", "sicle_", "circle"];
+
+	// The number that follows <key> in <path>, digits only.
+	private static bool DigitsAfter(string path, string key, out int number)
+	{
+		number = 0;
+		var start = path.IndexOf(key, StringComparison.Ordinal);
+		if (start < 0)
+		{
+			return false;
+		}
+
+		start += key.Length;
+		var end = start;
+		while (end < path.Length && char.IsAsciiDigit(path[end]))
+		{
+			end++;
+		}
+
+		return end > start && int.TryParse(path.AsSpan(start, end - start), System.Globalization.NumberStyles.None, System.Globalization.CultureInfo.InvariantCulture, out number);
 	}
 
 	// Cast type 12 is a rectangle from the caster like type 4 (StraightLine), which the enum does not

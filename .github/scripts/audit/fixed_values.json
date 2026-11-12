@@ -2100,6 +2100,36 @@
    "status": "exception",
    "loop": "A730",
    "reason": "The client's offset for the high-quality form of an item id, as in PhoenixDownItem (A340) and upstream's BaseItem.UseItem: CanUse asks the game about the form UseItem sends. A convention of the game client, stated in no sheet (A730)."
+  },
+  {
+   "file": "RotationSolver/Basic/DataCenter.cs",
+   "code": "private const byte ConeFromCentreCastType = 13;",
+   "values": [
+    "13"
+   ],
+   "status": "exception",
+   "loop": "A731",
+   "reason": "The game's cast type 13, a cone measured from the caster's centre, which the CastType enum does not name; its cones carry fan omens like type 3 (1,966 rows with a fan omen, ffxiv-datamining 52a72b3) and BossModReborn's analysis describes it as 'range X N-degree cone'. An id of the game's data (A731)."
+  },
+  {
+   "file": "RotationSolver/Basic/DataCenter.cs",
+   "code": "return MathF.Acos(cosine) <= float.DegreesToRadians(degrees / 2f) + allowance;",
+   "values": [
+    "2"
+   ],
+   "status": "exception",
+   "loop": "A731",
+   "reason": "Half the cone's angle: the omen names the full angle (gl_fan060 = 60 degrees, BossModReborn AOEShapeCone(6.9, 30 degrees) for Wing Cutter), the test measures from the cone's axis. Geometry, not a tuned value (A731)."
+  },
+  {
+   "file": "RotationSolver/Basic/DataCenter.cs",
+   "code": "var half = digits.Length / 2;",
+   "values": [
+    "2"
+   ],
+   "status": "exception",
+   "loop": "A731",
+   "reason": "A ring's omen figures are two numbers of equal length, outer then inner (gl_sircle_2010 = 20 and 10; BossModReborn's analysis reads two digits each). The split of the figures, not a tuned value (A731)."
   }
  ]
 }
