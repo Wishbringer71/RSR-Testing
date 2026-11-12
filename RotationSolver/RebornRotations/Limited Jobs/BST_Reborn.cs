@@ -604,14 +604,15 @@ public sealed class BST_Reborn : BeastmasterRotation
 		// would not keep a loss for it - under Snarl it takes all that was yours, and only items and the campsite give it
 		// back; your HP its Tricks heal again there. Unless your HP are at the floor.
 		if (shouldSnarl && !playerCritical && IsInCrucible && CrucibleBoard.Fight != 0
-			&& !CrucibleBoard.IsFinalBattle(CrucibleBoard.Fight) && ShortForFinal(CurrentPet, familiar!.CurrentHp))
+			&& !CrucibleBoard.IsFinalBattle(CrucibleBoard.Fight)
+			&& ShortForFinal(CurrentPet, familiar!.CurrentHp, LossPerUse(CrucibleBoard.Fight)))
 		{
 			shouldSnarl = false;
 			if (_sparedForFinal != (CrucibleBoard.Fight, CurrentPet))
 			{
 				_sparedForFinal = (CrucibleBoard.Fight, CurrentPet);
 				DefenseTrace.Line($"beastmaster: no Snarl on {CurrentPet} at {familiar.CurrentHp} HP - the final fight needs it to "
-					+ $"heal or protect, and a use costs up to {FinalLossPerUse} HP on this board");
+					+ $"heal or protect; a use costs up to {LossPerUse(CrucibleBoard.Fight)} HP here and {FinalLossPerUse} there");
 			}
 		}
 
@@ -2348,7 +2349,7 @@ public sealed class BST_Reborn : BeastmasterRotation
 			position[candidate.Pet] = candidate.Position;
 		}
 
-		var held = boss ? [] : HeldForFinal(party->ContentId, candidates, boss, pack, enemies, required, none);
+		var held = boss ? [] : HeldForFinal(party->ContentId, candidates, boss, pack, enemies, required, none, battle);
 		foreach (var (pet, _, hp, full, rank) in candidates)
 		{
 			if (held.Contains(pet))
@@ -2402,7 +2403,7 @@ public sealed class BST_Reborn : BeastmasterRotation
 				_hornScreenTraced = plan;
 				TraceHorn($"Crucible horn screen: horns set for battle {battle} ({(boss ? "final fight" : $"{enemies.Length} enemies")}, "
 					+ $"{required} that heal or protect): {best[0].Pet}, {best[1].Pet}, {best[2].Pet}"
-					+ (held.Count > 0 ? $"; held for the final fight, a use costing up to {_largestLossPerUse} HP: {string.Join(", ", held)}" : string.Empty)
+					+ (held.Count > 0 ? $"; held for the final fight, a use costing up to {LossPerUse(battle)} HP here and {FinalLossPerUse} there: {string.Join(", ", held)}" : string.Empty)
 					+ (InterrupterHeld.Overlaps(held) ? $" (for a later battle's interrupt: {string.Join(", ", InterrupterHeld)})" : string.Empty));
 			}
 
@@ -2491,12 +2492,31 @@ public sealed class BST_Reborn : BeastmasterRotation
 		var option = Option(pet, horn, boss, pack, enemies);
 		return option with
 		{
-			// K16 (A692): the estimate corrected by what the familiar measured in this fight against the others measured there.
-			Damage = option.Damage * dealt * CrucibleBoard.FamiliarDpsFactor(battle, pet),
+			// K16 (A711): the estimate corrected by the familiar's measured damage per potency in this fight against what the
+			// estimate expects of it, over the same ratio of the others measured there.
+			Damage = option.Damage * dealt * CrucibleBoard.FamiliarHitFactor(battle, pet, familiar => ExpectedPerPotency(familiar, enemies)),
 			Health = hp / (float)full,
 			Rank = rank,
-			Lasts = _largestLossPerUse == 0u || hp > _largestLossPerUse * taken,
+			Lasts = LossPerUse(battle) is var loss && (loss == 0u || hp > loss * taken),
 		};
+	}
+
+	// K16 (A711): the factor the estimate lays on a familiar's potency against these enemies - the weakness bonus on the
+	// share of its damage that strikes each enemy's weakness, as Option counts it with its Release.
+	private static float ExpectedPerPotency(BeastmasterPet pet, CrucibleBoard.Enemy[] enemies)
+	{
+		if (FamiliarOf(pet) is not { } familiar || enemies.Length == 0)
+		{
+			return 1f;
+		}
+
+		var weak = 0f;
+		foreach (var enemy in enemies)
+		{
+			weak += WeakShare(familiar, enemy.Weakness, true);
+		}
+
+		return 1f + (CrucibleBoard.WeaknessBonus * weak / enemies.Length);
 	}
 
 	// K14 (A631, A662): the final fight's plan from these candidates - the choice its horn screen makes with them - for the
@@ -2531,7 +2551,7 @@ public sealed class BST_Reborn : BeastmasterRotation
 
 		FinalHealers.Clear();
 		FinalTeam.Clear();
-		FinalLossPerUse = _largestLossPerUse;
+		FinalLossPerUse = LossPerUse(fights[0]);
 		FinalBattle = fights[0];
 		foreach (var option in BestPlan(finalOptions, new BeastmasterPet[Horns.Length], BossSafeFamiliars + (_dangerInArea ? 1 : 0), none))
 		{
@@ -2566,6 +2586,7 @@ public sealed class BST_Reborn : BeastmasterRotation
 		var key = new HashCode();
 		key.Add(party->ContentId);
 		key.Add(_largestLossPerUse);
+		key.Add(CrucibleBoard.FightsOfBoard(party->ContentId) is { Count: > 0 } ofBoard ? LossPerUse(ofBoard[0]) : 0u);
 		key.Add(_dangerInArea);
 		key.Add(FeedSlotsSeen);
 		key.Add(CrucibleRoute.CampsiteAhead());
@@ -2690,12 +2711,16 @@ public sealed class BST_Reborn : BeastmasterRotation
 		return null;
 	}
 
+	// K11 (A710): what a use costs a familiar in `battle` - the most learned for that fight, without a measure there the
+	// largest of any use on this board in this session; 0 before any.
+	private static uint LossPerUse(uint battle) => CrucibleBoard.UseLossIn(battle) ?? _largestLossPerUse;
+
 	private HashSet<BeastmasterPet> HeldForFinal(uint board, List<(BeastmasterPet Pet, int Position, uint Hp, uint Full, int Rank)> candidates,
-		bool boss, int pack, CrucibleBoard.Enemy[] enemies, int required, HornOption none)
+		bool boss, int pack, CrucibleBoard.Enemy[] enemies, int required, HornOption none, uint battle)
 	{
 		var held = new HashSet<BeastmasterPet>();
 		InterrupterHeld.Clear();
-		var loss = _largestLossPerUse;
+		var loss = LossPerUse(battle);
 		if (!PlanFinal(board, candidates, none))
 		{
 			return held;
@@ -2711,7 +2736,7 @@ public sealed class BST_Reborn : BeastmasterRotation
 
 		foreach (var candidate in candidates)
 		{
-			if (ShortForFinal(candidate.Pet, candidate.Hp))
+			if (ShortForFinal(candidate.Pet, candidate.Hp, loss))
 			{
 				reserve.Add((candidate.Pet, candidate.Hp));
 			}
@@ -2720,7 +2745,9 @@ public sealed class BST_Reborn : BeastmasterRotation
 		// K11 stage 3 (concept 21, A643): the team's only Soulkin familiar - Soul Crush over Borrow, the board's only
 		// interrupt - when a battle still reachable has an enemy kind seen casting interruptibly and this one has none; by
 		// the same measure as the final fight's healers.
-		if (SoleInterrupterAhead(board, candidates, enemies) is { } soul && (soul.Hp < loss || soul.Hp - loss < loss)
+		// The later battle is not known by its row: the largest loss of this session's uses stands for it.
+		if (SoleInterrupterAhead(board, candidates, enemies) is { } soul
+			&& (soul.Hp < loss || soul.Hp - loss < Math.Max(loss, _largestLossPerUse))
 			&& !reserve.Exists(r => r.Pet == soul.Pet))
 		{
 			reserve.Add(soul);

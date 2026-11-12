@@ -149,7 +149,7 @@ public partial class MainWindow
 			InterruptibleKindTab(),
 			DangerousAreaTab(),
 			CrucibleFightLoadTab(),
-			CrucibleFamiliarDpsTab(),
+			CrucibleFamiliarHitsTab(),
 			CrucibleFamiliarLossTab(),
 			CrucibleFightNetTab(),
 			CrucibleCampPoolTab(),
@@ -400,28 +400,34 @@ public partial class MainWindow
 		return new LearnedTab("Crucible fights", ["Fight (first enemy)", "Heaviest, of HP without gear"], rows);
 	}
 
-	// K16 of the Crucible (concept 21, A692): per fight and familiar, the most damage per second it dealt while out; the horn
-	// choice weighs a familiar by it against the others measured in the same fight.
-	private static LearnedTab CrucibleFamiliarDpsTab()
+	// K16 of the Crucible (concept 21, A711): per fight and familiar, the damage per potency of its Trick and Release hits,
+	// summed over the sessions; the horn choice weighs a familiar by it against the others measured in the same fight.
+	private static LearnedTab CrucibleFamiliarHitsTab()
 	{
 		var rows = new List<string[]>();
 		Dictionary<uint, int> measured;
-		lock (OtherConfiguration.CrucibleFamiliarDpsGate)
+		lock (OtherConfiguration.CrucibleFamiliarHitsGate)
 		{
-			measured = new Dictionary<uint, int>(OtherConfiguration.CrucibleFamiliarDps);
+			measured = new Dictionary<uint, int>(OtherConfiguration.CrucibleFamiliarHits);
 		}
 
-		foreach (var (key, dps) in measured)
+		foreach (var (key, damage) in measured)
 		{
-			var fight = key / CrucibleBoard.FamiliarKeyStride;
-			var pet = (BeastmasterPet)(key % CrucibleBoard.FamiliarKeyStride);
+			var (fight, pet, slot) = CrucibleBoard.HitOf(key);
+			if (slot != CrucibleBoard.HitSlot.Damage || !measured.TryGetValue(key + (uint)CrucibleBoard.HitSlot.Potency, out var potency)
+				|| potency <= 0)
+			{
+				continue;
+			}
+
 			var enemies = CrucibleBoard.EnemiesOf(fight);
 			var name = enemies.Length > 0 ? CrucibleBoard.EnemyName(enemies[0].NameId) : string.Empty;
-			rows.Add([name.Length > 0 ? $"{name} (fight {fight})" : $"fight {fight}", BeastmasterRotation.FamiliarName(pet), $"{dps}/s"]);
+			rows.Add([name.Length > 0 ? $"{name} (fight {fight})" : $"fight {fight}", BeastmasterRotation.FamiliarName(pet),
+				$"{damage / (double)potency:F2}", potency.ToString()]);
 		}
 
 		Sort(rows);
-		return new LearnedTab("Crucible familiars", ["Fight (first enemy)", "Familiar", "Best damage per second"], rows);
+		return new LearnedTab("Crucible familiars", ["Fight (first enemy)", "Familiar", "Damage per potency", "Potency measured"], rows);
 	}
 
 	// K7 of the Crucible (concept 21, team size, A698): per board, the most HP the familiars lost together in one run; the team
@@ -437,13 +443,15 @@ public partial class MainWindow
 
 		foreach (var (key, loss) in losses)
 		{
-			rows.Add(key < CrucibleBoard.FamiliarKeyStride
-				? [$"board {key}", "all uses of a run", $"{loss} HP"]
-				: [$"board {key / CrucibleBoard.FamiliarKeyStride}", $"use {key % CrucibleBoard.FamiliarKeyStride} by size", $"{loss} HP"]);
+			rows.Add(CrucibleBoard.IsUseLossKey(key, out var fight)
+				? [$"fight {fight}", "a use, most", $"{loss} HP"]
+				: key < CrucibleBoard.FamiliarKeyStride
+					? [$"board {key}", "all uses of a run", $"{loss} HP"]
+					: [$"board {key / CrucibleBoard.FamiliarKeyStride}", $"use {key % CrucibleBoard.FamiliarKeyStride} by size", $"{loss} HP"]);
 		}
 
 		Sort(rows);
-		return new LearnedTab("Crucible familiar loss", ["Board", "Measure", "Most lost"], rows);
+		return new LearnedTab("Crucible familiar loss", ["Board or fight", "Measure", "Most lost"], rows);
 	}
 
 	// K15 of the Crucible (concept 21, A706, A709): per fight, the most the player lost and the deepest he fell below its

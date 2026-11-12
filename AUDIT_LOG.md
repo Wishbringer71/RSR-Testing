@@ -20803,6 +20803,46 @@ zeigen je Ablöse Abtretzeit und Lücke.
 *Prüfgrad:* statisch, Compile, Prüfskripte, Modell an fünf Läufen; im Spiel nicht beobachtet – Zeile „crucible fight …:
 net loss …, deepest dip …, your own healing of … taken off".
 
+### A710 · Crucible-Ablauf, Schritt 6: Begleiter über mehrere Kämpfe; die Reserve für den Endkampf misst je Kampf (12.11.2026)
+
+- *Anlass:* sein Auftrag vom 11.11.2026 („analyse, welche begleiter am besten für mehrere Kämpfe auf dem brett geeignet
+  sind"); Gegenthese 2 der Reserve (K11, Stufe 1), bis dahin „nicht widerlegt".
+- *Messung (fünf Läufe vom 11.11.2026; `famuse.py` im Notizordner: Hornfenster und Kader-LP je Kampf):* Verlust je
+  Einsatz folgt Kampf und Rolle, kaum dem Begleiter – Brett 1: Kampf 1 bis 187, Kampf 3 bis 273, Kampf 4 bis 500, Kampf 5
+  bis 522 LP; Raptor zwölf Einsätze, 882 LP; Fliegenfalle vier, 1.209. In 17 von 25 Hornfenstern hielt RSR Begleiter
+  für den Endkampf zurück, ab dem zweiten Lauf schon vor Kampf 1 mit dem Maß 500.
+- *Optionen, Abwägung, Falsifikation:* Konzept 21, K11, „Das Maß je Kampf statt je Brett".
+- *Umgesetzt:* `CrucibleBoard.LearnUseLoss`, `UseLossIn` (Schlüssel Kampf × `FamiliarKeyStride`² in
+  `CrucibleFamiliarLoss.json`), `_lastFight` für den Einsatz, der nach dem Kampf schließt; `BST_Reborn.LossPerUse` in
+  `BoardOption.Lasts`, `PlanFinal`, `HeldForFinal`, im Halt von Zähnefletschen; `ShortForFinal` mit dem Verlust des
+  anstehenden Kampfs; Reiter und Spurtexte.
+
+*Prüfgrad:* statisch, Compile, Prüfskripte, Auswertung der fünf Läufe; im Spiel nicht beobachtet – Zeile „crucible fight
+…: a use cost a familiar … HP" und das Hornfenster nennen beide Maße.
+
+### A711 · Crucible-Verifikation: Hornwahl-Messung (A692) widerrufen und ersetzt – Schaden je Potenz je Treffer (12.11.2026)
+
+- *Anlass:* sein Auftrag, die Punkte vom 11.11.2026 im vollen Loop zu verifizieren; A710 zeigte, dass die Rolle im Kampf
+  (wer bleibt, wer kurz kommt) die Messgrößen eines Begleiters bestimmt.
+- *Befund am Code:* `LearnFamiliarDps` teilte den Schaden eines Begleiters durch die Spanne zwischen erstem und letztem
+  Treffer und hielt den Höchstwert. Kurze Einsätze (Entfesseln, Scheidender Schlag, 3 bis 9 s) lagen systematisch über
+  dem langen Einsatz; die Hornwahl hätte danach den Begleiter mit der besten Dressur (er bleibt, B3) abgewertet.
+- *Optionen:* (a) A692 lassen; (b) den Faktor entfernen – die Schätzung bleibt ohne Rückmeldung aus dem Kampf; (c)
+  Schaden je Sekunde Anwesenheit – weiter rollenabhängig; (d) Gesamtschaden je Kampf – ebenso; (e) Schaden je Potenz je
+  Treffer von Dressur und Entfesseln, Summe über alle Sitzungen, als Verhältnis zur Erwartung der Schätzung (Zuschlag für
+  die Schwäche) und zum Mittel dieses Verhältnisses im Kampf – gewählt: unabhängig von Dauer und Rolle, ohne doppelte
+  Zählung der Schwäche, und ein Begleiter unter dem Rang des Bretts fällt von selbst.
+- *Umgesetzt:* `CrucibleBoard.RecordFamiliarDamage` (Potenz je Treffer aus dem Profil), `LearnFamiliarHits`,
+  `FamiliarHitFactor`, `HitSlot`, `HitKey`, `HitOf`; `OtherConfiguration.CrucibleFamiliarHits` (statt
+  `CrucibleFamiliarDps`); `BST_Reborn.ExpectedPerPotency`, `BoardOption`; Reiter „Crucible familiars". Konzept 21 K16.
+  Widerruf C185.
+- *Dabei:* Beim Umbau schnitt ein Skript den Block der Verlustmessung (A703, A710) mit aus; der Compiler meldete es, der
+  Block ist aus dem Commit wiederhergestellt und am Diff gegengeprüft.
+- *Falsifikation:* siehe Konzept (Streuung mit Preis, Auto-Angriff, nie gesetzte Begleiter).
+
+*Prüfgrad:* statisch, Compile, Prüfskripte; im Spiel nicht beobachtet – Zeile „crucible fight …: familiar damage per
+potency" je Kampfende.
+
 ## B · Commit-Register (Fork vs. `upstream/main`)
 
 ### B1 · Einzelgeprüfte Fork-Commits
@@ -21139,3 +21179,4 @@ Die offene Arbeit dazu — Reihenfolge und Abbruchbedingung der Nachprüfung —
 | C182 | A687 (Stand A687): „zwölf Nutzungen, acht auf einen echten Rückstoß oder Zug (Flutwelle, Ätherknall, Zugstrahl, Aetherial Pull, Tornado)" | Neun erreichten ihn: Zugstrahl zweimal, #44823 bei Eald'narche, Flutwelle zweimal, Ätherknall zweimal, Aetherial Pull zweimal (in Babil auf ihn gezielt, BossModReborn `D023Anima`). Tornado #44395 traf ihn nicht; ohne Wirkung auf ihn auch Ground and Pound und ein Fall in Windurst ohne gelisteten Zauber. Die Zeitleiste von BossMod löste sechs aus, alle richtig. | A701 |
 | C183 | A707 (Stand A707): „Er stand bei 38 bis 52 % LP; Gegner griffen ihn an" (Endkampf Lauf 1, 15:07:45 bis 15:07:57) | Er stand bei 83 bis 80 % LP (1.180 auf 1.136 von 1.420, ACT); zwei Gegner griffen ihn an, er verlor in den 12 s 44 LP. Die 38 % stammten vom Kampfbeginn (15:06:52). Die Lücke kostete den Schaden und die Heilung des Begleiters, kaum Sicherheit. | A708 |
 | C184 | A706 (Stand A706): Nettoverlust „nach aller Heilung", der Weg trägt über „Summe der Nettoverluste plus tiefste Senke des Bretts"; Release-Text „from the second [run] the bonuses are kept where the board is easy" | Die Messung zählte die Heilung der Gegenstände mit, die die Regel dann einspart (Endkampf Brett 1: gelernt 0 % statt 16 % Nettoverlust und 36 % Senke); die Schranke nahm die Senke auch schon bestandener Kämpfe und keine Trankschwelle. Nach seinen Läufen vom 11.11.2026 trägt er Brett 1 erst vor dem Endkampf, Brett 2 nie. | A709 |
+| C185 | A692 und Konzept 21 K16 (Stand A692): „Schaden je Sekunde je Kampf und Begleiter … seine Treffer vom zweiten bis zum letzten über die Zeit dazwischen … der beste Wert" als Maß der Hornwahl | Das Maß hing an der Zeit draußen: Ein Begleiter, der nur für Entfesseln und Scheidenden Schlag kam, lag weit über dem, der blieb; zwei Treffer kurz nacheinander ergaben beliebig hohe Werte, und der Höchstwert hielt sie fest. Es belohnte die Rolle, nicht den Begleiter. Ersetzt durch Schaden je Potenz je Treffer gegen die Erwartung der Schätzung (`CrucibleFamiliarHits.json`); die Datei `CrucibleFamiliarDps.json` liest RSR nicht mehr. | A711 |

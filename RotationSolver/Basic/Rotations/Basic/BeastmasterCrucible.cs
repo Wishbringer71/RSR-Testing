@@ -8,7 +8,8 @@
 public partial class BeastmasterRotation
 {
 	// K11 stage 2 (concept 21, A590): the familiars that heal or protect in the final fight's plan, as the last horn screen
-	// before another fight saw it, and the largest HP a use cost on this board - written where the horns are planned.
+	// before another fight saw it, and the largest HP a use cost in the final fight, without a measure there on this board
+	// (A710) - written where the horns are planned.
 	internal static readonly HashSet<BeastmasterPet> FinalHealers = [];
 	internal static uint FinalLossPerUse;
 
@@ -17,12 +18,14 @@ public partial class BeastmasterRotation
 	internal static uint FinalBattle;
 
 	/// <summary>
-	/// K11 (A585, A590): whether <paramref name="pet"/>, one the final fight needs to heal or protect, would keep less than
-	/// one more loss as large as the board's largest after another such loss. No before the first measured loss.
+	/// K11 (A585, A590, A710): whether <paramref name="pet"/>, one the final fight needs to heal or protect, would keep less
+	/// than a use in the final fight costs after a use that costs <paramref name="lossHere"/> - the fight at hand; without
+	/// one (the campsite) a use as large as the final fight's. No before the first measured loss.
 	/// </summary>
-	internal static bool ShortForFinal(BeastmasterPet pet, uint hp)
+	internal static bool ShortForFinal(BeastmasterPet pet, uint hp, uint lossHere = 0u)
 	{
-		return FinalLossPerUse > 0u && FinalHealers.Contains(pet) && (hp < FinalLossPerUse || hp - FinalLossPerUse < FinalLossPerUse);
+		var here = lossHere != 0u ? lossHere : FinalLossPerUse;
+		return FinalLossPerUse > 0u && FinalHealers.Contains(pet) && (hp < here || hp - here < FinalLossPerUse);
 	}
 
 	// The weaknesses each familiar's Trick and Release hit, by familiar; what K2 has traced in this fight.

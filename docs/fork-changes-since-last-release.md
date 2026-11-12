@@ -123,6 +123,11 @@ What this release changes in the fight. For the whole distance from upstream, se
 - **A team of one kin where one does as much.** A team of only one kin gives 750 points ("Freund der …"). Where the
   familiars of one kin hit every weakness of the board the mixed team hits, heal and protect as much and interrupt
   where it does, under the same size rule, the recommendation takes that team; levelling swaps only within the kin.
+- **Healers are held back for the final fight by what the fight at hand costs.** The reserve measured with the largest
+  loss of any use on the board - 500 HP after one run - and from then on kept the final fight's healers off the horns
+  from the first fight, which costs a familiar 187 HP at most; in 17 of 25 horn screens familiars were held. RSR now
+  learns per fight the most a use cost a familiar there: a healer goes on a horn when, after a use in the fight at hand,
+  it still holds a use in the final fight.
 - **Ten items held count as well, and the run ends at full HP where it can.** On boards 2 to 5 ten crucible items held
   at the end give 1,000 points ("Sammelleidenschaft"); with ten in the inventory, items that guard against no present
   danger now stay there as for the no-item bonus, while your HP carry the way. Once no item bonus is at stake, the
@@ -145,10 +150,12 @@ What this release changes in the fight. For the whole distance from upstream, se
   needs none - your HP and healing held carry the heaviest way to the final fight, and the weakest final healer has more
   than a use - the campsite window advises walking on and selects nobody. While no familiar has been fed ("Heilfasten",
   750) under the same condition, the shop recommends no feed.
-- **The horn choice learns from the fight.** RSR measures each familiar's damage per second while it is out, per fight,
-  and keeps its best. The horn screen weighs a familiar's estimate by how its measure stands against the others measured
-  in the same fight; a familiar never measured keeps its estimate. The learned values show in the tab "Crucible
-  familiars".
+- **The horn choice learns from the fight.** RSR measures per fight and familiar the damage of its Trick and Release
+  hits against their potency, summed over every session - per hit, so it does not matter how long a familiar was out.
+  The horn screen corrects a familiar's estimate by how that measure stands against what the estimate expects of it,
+  compared with the others measured in the same fight: a familiar that strikes a weakness the estimate does not credit
+  it with rises, one below the board's rank falls. A familiar never measured keeps its estimate. The learned values
+  show in the tab "Crucible familiars".
 - **The route window says left or right, and why.** At a fork it names each way by its side as seen from the start
   towards the final boss, with the spaces up to where the ways meet again, and weighs them up to the next campsite or
   the boss after that: your HP and your final fight's healers' HP there, and what the other way would have brought. It

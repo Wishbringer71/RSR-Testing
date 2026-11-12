@@ -19,15 +19,12 @@ auswahl und das timing der beschwörung" – je Kampf aller fünf Bretter (Gegne
 BossMod-Module) die Rotation des Beastmasters, die Wahl der Begleiter und den Zeitpunkt ihres Aufrufs im Loop prüfen
 (Beispiel seiner Beobachtung: der Raptor gegen Feuer, bevor feueranfällige Gegner da waren; A581).
 
-1. Crucible: ein leichtes Brett erkennen und Schritt für Schritt daraus folgern – weniger Begleiter, kein Futter, keine
-   Rast –, dazu Begleiter für mehrere Kämpfe und die Ablöse zwischen den Hörnern im Kampf (Beastmaster-Vorrang); mit
-   ihm die Verifikation der Crucible-Punkte vom 11.11.2026.
-2. Den eigenen Quellcode des Plugins vollständig auf Probleme prüfen (sein Auftrag, 12.11.2026, nach dem Brett-Punkt
+1. Den eigenen Quellcode des Plugins vollständig auf Probleme prüfen (sein Auftrag, 12.11.2026, nach dem Brett-Punkt
    und vor dem übrigen TODO).
-3. Die übrigen gefundenen und gebauten Punkte vom 11.11.2026 im vollen Loop verifizieren und optimieren (sein Auftrag).
-4. Blaumagier: RSRs nächste Aktion beendet Apokalypsis und Chelonian Gate – Schaden und Minderung des Spielers enden
+2. Die übrigen gefundenen und gebauten Punkte vom 11.11.2026 im vollen Loop verifizieren und optimieren (sein Auftrag).
+3. Blaumagier: RSRs nächste Aktion beendet Apokalypsis und Chelonian Gate – Schaden und Minderung des Spielers enden
    nach einem GCD statt nach 10 s.
-5. Kegel und Ringe gegnerischer Zauber genau messen: Zauber- und Kanalbeginn nutzen RSRs Erkennung bei Kegel und Ring
+4. Kegel und Ringe gegnerischer Zauber genau messen: Zauber- und Kanalbeginn nutzen RSRs Erkennung bei Kegel und Ring
    nicht, und mehrere Leser sehen hinter einem Kegel oder im Innenkreis eines Rings eine Gefahr, die keine ist.
 
 Danach die technische Schuld, soweit ihre Auflösungsbedingung erfüllt ist. Warten auf Daten: unten.
@@ -65,21 +62,6 @@ die Leser von `RaiseProtection.FirstDodgeableWithin` (Limit Break allein, Freiga
 Gefahr, die keine ist. *Ort:* `DataCenter.AreaCastReaches`. *Nächster Schritt:* Winkel des Kegels und Innenradius des Rings
 aus dem Omen der Aktion (Blatt Omen, Pfadname) belegen, dann messen und die Einschränkung in `CastCertainlyDodgeable`
 aufheben. *Konzept:* 03, „Bewegungssperre beim Wirken und die KI von BossMod"; 13 (Formprüfung).
-
-### Crucible: leichtes Brett erkennen, Begleiter über mehrere Kämpfe, Ablöse zwischen den Hörnern · N
-Sein Auftrag vom 11.11.2026: „danach beastmaster brett: sobald feststeht, dass das aktuelle brett einfach zu lösen ist,
-können weniger begleiter mitgenommen werden, kann auf essen verzichtet werden, kann auf campen verzichtet werden. ein
-schritt nach dem anderen mit analyse des ablaufs. ebenfalls analyse, welche begleiter am besten für mehrere Kämpfe auf
-dem brett geeignet sind. und innerhalb der kämpfe, wie da die beste ablöse erfolgt zwischen den hörnern." Gebaut sind
-Teile davon: Rast und Futter entfallen, wenn der Spieler den Weg trägt (A691); die Teamgröße folgt dem gemessenen
-Verlust (A698). Offen: wann ein Brett als leicht feststeht (aus welchen Messungen, ab welchem Lauf, für jeden Schritt
-dieselbe Grundlage?), der Ablauf eines Laufs Schritt für Schritt (Kader, Kampf, Laden, Schatz, Lager, Endkampf), die
-Eignung eines Begleiters über mehrere Kämpfe (Schwächen, LP, Heilung, Einsätze, K11) und die Ablöse im Kampf (K6, K16, B2).
-Nachgezeichnet (A702): fünf Läufe; die Teamgröße aus A698 überschätzt ein kleines Team. *Ort:* Konzept 21 (K6, K7, K10,
-K11, K14, K15, K16), `BST_Reborn`, `BeastmasterCrucible*`. Die Größenregel liest die Einsätze einzeln (A703); Schutzgegenstände nach der Treffergröße (A704). Der Test des Wegs
-summiert rohe Lasten ohne die Heilung der Begleiter und erkennt kein leichtes Brett (A705). Der Test des Wegs liest Nettoverlust und Senke (A706). Die Ablöse der Hörner hält den Schlag, bis der Nachfolger folgen kann (A708, Konzept 01, B6). *Nächster Schritt:*
-Laden, Schatz, Lager, Futter und die Eignung der Begleiter über mehrere Kämpfe gegen die Läufe prüfen, Loop.
-*Konzept:* 21.
 
 ### Crucible: Gelernte Lasten sinken nicht, wenn die Begleiter stärker werden · N
 Im Kampf: Die je Kampf gelernten Werte – rohe Last (A661), Nettoverlust und Senke (A706, A709), Verlust je Einsatz
@@ -180,13 +162,13 @@ nebeneinander braucht: neuer interner Name mit Übernahme des Ordners, angezeigt
 
 ## Warten auf Daten oder Fremde
 
-- **Crucible: Hornwahl, Teamgröße und Gattung an seinen Läufen prüfen** (A692, A698, A699; seine Meldung vom 11.11.2026:
-  „beastmaster begleiter werden nicht optimal für die einzelnen kämpfe auf den brettern ausgewählt"). Gebaut: Schaden je
-  Sekunde je Kampf und Begleiter in der Hornwahl, die Teamgröße aus Kern und gelerntem Begleiterverlust je Brett, das
-  Team aus einer Gattung bei gleicher Abdeckung. Auflösung: in seinem nächsten Upload die Reiter „Crucible familiars"
-  und „Crucible familiar loss", die Zeilen „crucible fight …: familiar damage per second" und „crucible board …: the
-  familiars lost …", dazu die Dauer derselben Kämpfe gegen die Läufe vom 11.11.2026 (A687); je Abweichung Loop. Konzept
-  21, K7, K16.
+- **Crucible: die Regeln vom 11. und 12.11.2026 an seinen nächsten Läufen prüfen** (A703, A704, A708 bis A711, A699;
+  seine Meldung vom 11.11.2026 und sein Auftrag zum leichten Brett). Gebaut: Teamgröße aus den Einsätzen je Brett, Team
+  einer Gattung, Schutzgegenstände nach Treffergröße, die Ablöse der Hörner, der Test des Wegs ohne eigene Heilung, die
+  Reserve je Kampf, die Hornwahl nach Schaden je Potenz. Auflösung: in seinem nächsten Upload die Zeilen „horn relief",
+  „crucible fight …: net loss", „… a use cost a familiar", „… familiar damage per potency", „crucible score", die Reiter
+  „Crucible familiars", „Crucible familiar loss", „Crucible net loss", und die Dauer derselben Kämpfe gegen die Läufe vom
+  11.11.2026 (A687); je Abweichung Loop. Konzept 21 (K7, K11, K15, K16), Konzept 01 (B6).
 
 - **Crucible: Rate der Rest-LP in der Bewertung** (A695). Ein Heilgegenstand am Ende des Endkampfs bringt 250 bei voller
   LP und die Punkte der geheilten LP; gegen einen erhaltenen Gegenstandsbonus (Sparsamkeit 750, Sammelleidenschaft

@@ -247,19 +247,22 @@ internal partial class OtherConfiguration
 	internal static readonly object CrucibleFightLoadsGate = new();
 
 	/// <summary>
-	/// K16 of the Crucible (concept 21, A692): per fight and familiar - the fight's XBMBattleDetail row times
-	/// <c>CrucibleBoard.FamiliarKeyStride</c> plus the familiar's pet row - the most damage per second it dealt while out,
-	/// learned in play over every session, only rising. Changed and read on the game thread under
-	/// <see cref="CrucibleFamiliarDpsGate"/>.
+	/// K16 of the Crucible (concept 21, A711): per fight and familiar - the fight's XBMBattleDetail row times
+	/// <c>CrucibleBoard.FamiliarKeyStride</c> plus the familiar's pet row, times the slots of
+	/// <c>CrucibleBoard.HitSlot</c> plus the slot - the damage of its Trick and Release hits there and the potency of
+	/// those hits, both summed over every session. Changed and read on the game thread under
+	/// <see cref="CrucibleFamiliarHitsGate"/>.
 	/// </summary>
-	internal static Dictionary<uint, int> CrucibleFamiliarDps = [];
+	internal static Dictionary<uint, int> CrucibleFamiliarHits = [];
 
-	/// <summary>Guards <see cref="CrucibleFamiliarDps"/> against the save on a pool thread.</summary>
-	internal static readonly object CrucibleFamiliarDpsGate = new();
+	/// <summary>Guards <see cref="CrucibleFamiliarHits"/> against the save on a pool thread.</summary>
+	internal static readonly object CrucibleFamiliarHitsGate = new();
 
 	/// <summary>
 	/// K7 of the Crucible (concept 21, team size, A698): per board (XBMContent row), the most HP the familiars lost together
-	/// in one run there, learned in play over every session, only rising. Changed and read on the game thread under
+	/// in one run there; under the row times <c>CrucibleBoard.FamiliarKeyStride</c> plus a rank, the losses of its uses by
+	/// size (A703); under a fight's row times that stride twice, the most a use cost a familiar in that fight (K11, A710).
+	/// Learned in play over every session, only rising. Changed and read on the game thread under
 	/// <see cref="CrucibleFamiliarLossGate"/>.
 	/// </summary>
 	internal static Dictionary<uint, int> CrucibleFamiliarLoss = [];
@@ -885,9 +888,9 @@ internal partial class OtherConfiguration
 		new LearnedFile<int>(nameof(CrucibleFightLoads), CopyCrucibleFightLoads,
 			v => { lock (CrucibleFightLoadsGate) { CrucibleFightLoads = v; } },
 			Math.Max, state => CrucibleFightLoadsStoreState = state, "Crucible fight(s) with a measured load"),
-		new LearnedFile<int>(nameof(CrucibleFamiliarDps), CopyCrucibleFamiliarDps,
-			v => { lock (CrucibleFamiliarDpsGate) { CrucibleFamiliarDps = v; } },
-			Math.Max, state => CrucibleFamiliarDpsStoreState = state, "Crucible familiar(s) with a measured damage per fight"),
+		new LearnedFile<int>(nameof(CrucibleFamiliarHits), CopyCrucibleFamiliarHits,
+			v => { lock (CrucibleFamiliarHitsGate) { CrucibleFamiliarHits = v; } },
+			Math.Max, state => CrucibleFamiliarHitsStoreState = state, "Crucible familiar value(s) of measured hits per fight"),
 		new LearnedFile<int>(nameof(CrucibleFamiliarLoss), CopyCrucibleFamiliarLoss,
 			v => { lock (CrucibleFamiliarLossGate) { CrucibleFamiliarLoss = v; } },
 			Math.Max, state => CrucibleFamiliarLossStoreState = state, "Crucible board(s) with a measured familiar loss per run"),
@@ -1147,18 +1150,18 @@ internal partial class OtherConfiguration
 
 	internal static Task SaveCrucibleCampPools() => SaveList(nameof(CrucibleCampPools));
 
-	internal static Task SaveCrucibleFamiliarDps() => SaveList(nameof(CrucibleFamiliarDps));
+	internal static Task SaveCrucibleFamiliarHits() => SaveList(nameof(CrucibleFamiliarHits));
 
-	private static Dictionary<uint, int> CopyCrucibleFamiliarDps()
+	private static Dictionary<uint, int> CopyCrucibleFamiliarHits()
 	{
-		lock (CrucibleFamiliarDpsGate)
+		lock (CrucibleFamiliarHitsGate)
 		{
-			return new Dictionary<uint, int>(CrucibleFamiliarDps);
+			return new Dictionary<uint, int>(CrucibleFamiliarHits);
 		}
 	}
 
-	/// <summary>What the last save and load of <see cref="CrucibleFamiliarDps"/> did, in words.</summary>
-	internal static string CrucibleFamiliarDpsStoreState { get; private set; } = "not loaded yet";
+	/// <summary>What the last save and load of <see cref="CrucibleFamiliarHits"/> did, in words.</summary>
+	internal static string CrucibleFamiliarHitsStoreState { get; private set; } = "not loaded yet";
 
 	internal static Task SaveCrucibleFamiliarLoss() => SaveList(nameof(CrucibleFamiliarLoss));
 

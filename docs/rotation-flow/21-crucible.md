@@ -758,24 +758,29 @@ Dullahan, Golem, Spriggan und Eisgolem (`XBMPet.InflictsInterrupt`).
   (`Option`) ist eine Schätzung aus Blättern – Potenz, Reichweite, Schwäche, Natur des Horns (das Entfesseln zählt nur
   auf einem Horn mit „Tempered") –; ob sie den Kampf trifft, misst RSR an keinem Ausgang, und gleiche Werte entscheidet
   der Zufall der Reihenfolge.
-  - *Messen:* Je Kampf (Zeile von `XBMBattleDetail`) und Begleiter der Schaden, den er austeilt, solange er draußen ist,
-    je Sekunde – seine Treffer vom zweiten bis zum letzten über die Zeit dazwischen (der erste öffnet die Spanne). RSR
-    ordnet jeden Treffer dem Begleiter zu, der gerade draußen ist (A586). Gelernt wird der beste Wert je Kampf und
-    Begleiter über alle Sitzungen (`CrucibleFamiliarDps.json`).
-  - *Nachsteuern:* Die geschätzte Schadenswertung eines Begleiters für einen Kampf wird mit dem Verhältnis seines
-    gemessenen Werts zum Mittel der in diesem Kampf gemessenen Begleiter multipliziert. Ungemessene behalten die
-    Schätzung; so kommen sie weiter zum Zug, bis sie gemessen sind. Sicherheit (übersteht einen Einsatz, heilt, schützt,
-    unterbricht) bleibt unberührt und geht wie bisher vor.
-  - *Gegenthese 1 – Der beste Wert ist ein Glückslauf:* Kritische Treffer und der Zeitpunkt des Aufrufs streuen. Teilweise
-    widerlegt: Die Streuung trifft jeden Begleiter gleich, und das Verhältnis vergleicht Begleiter desselben Kampfs.
-    Preis: Ein Begleiter mit einem glücklichen Lauf wird eine Weile vorgezogen.
-  - *Gegenthese 2 – Der Schaden hängt am Horn:* Das Entfesseln zählt nur auf einem Horn mit „Tempered"; gemessen wird,
-    was der Begleiter in diesem Kampf tat, auf welchem Horn auch immer. Preis: Ein Begleiter, der auf einem anderen Horn
-    mehr bringt, wird nach seinem gemessenen Horn bewertet.
+  - *Messen (A711; die Fassung aus A692 ist widerrufen, C185):* Je Kampf (Zeile von `XBMBattleDetail`) und Begleiter der
+    Schaden je Potenz seiner Treffer mit Dressur und Entfesseln: Summe des Schadens über Summe der Potenzen der Blätter,
+    über alle Sitzungen aufaddiert (`CrucibleFamiliarHits.json`). Je Treffer gemessen, hängt der Wert nicht daran, wie
+    lange der Begleiter draußen war und welche Rolle er im Kampf hatte. A692 teilte den Schaden durch die Zeit zwischen
+    erstem und letztem Treffer und hielt den besten Wert: Ein Begleiter, der nur für Entfesseln und Scheidenden Schlag
+    kam, lag weit über dem, der blieb, und zwei Treffer kurz nacheinander ergaben beliebig hohe Werte – das Maß
+    belohnte die Rolle, die B3 dem Begleiter mit der schwächeren Dressur gibt.
+  - *Nachsteuern:* Die Schätzung rechnet je Begleiter Potenz mal einem Zuschlag für die Schwäche. Für jeden im Kampf
+    gemessenen Begleiter bildet RSR das Verhältnis gemessen zu geschätzt (Schaden je Potenz über dem Zuschlag der
+    Schätzung) und multipliziert die Schadenswertung eines Begleiters mit seinem Verhältnis über dem Mittel der
+    Verhältnisse aller dort gemessenen. Trifft die Schätzung, ist der Faktor 1; trifft ein Begleiter eine Schwäche, die
+    sie ihm nicht anrechnet, oder steht er unter dem Rang des Bretts, weicht er ab. Ungemessene behalten die Schätzung,
+    ebenso ein Kampf mit nur einem gemessenen Begleiter. Sicherheit (übersteht einen Einsatz, heilt, schützt,
+    unterbricht) bleibt unberührt und geht vor.
+  - *Gegenthese 1 – Streuung:* Kritische Treffer streuen. Die Summe über alle Treffer und Läufe mittelt sie; nach wenigen
+    Treffern schwankt der Faktor noch. Preis: In den ersten Läufen kann ein Begleiter mit Glück vorn liegen; jeder
+    weitere Treffer zieht den Wert zum Mittel.
+  - *Gegenthese 2 – Der Auto-Angriff fehlt:* Er hat keine Potenz im Blatt und zählt in der Schätzung der Hornwahl nicht;
+    gemessen und geschätzt decken dieselben Quellen.
   - *Gegenthese 3 (ausgeliefert, und nichts ändert sich):* Ein Begleiter, den RSR nie setzt, wird nie gemessen. Er
     behält die Schätzung, und wo sie gleichauf liegt, entscheidet die Reihenfolge wie bisher.
-  - *Anzeige und Spur:* Reiter „Crucible familiars" unter den gelernten Werten (Kampf, Begleiter, bester Wert); je
-    Kampfende eine Zeile „crucible fight …: familiar damage per second, best so far stored".
+  - *Anzeige und Spur:* Reiter „Crucible familiars" unter den gelernten Werten (Kampf, Begleiter, Schaden je Potenz,
+    gemessene Potenz); je Kampfende eine Zeile „crucible fight …: familiar damage per potency".
   - *Teamgröße und Gattung:* im Kader (K7, „Teamgröße nach Punkten" A698, „Team aus einer Gattung" A699); die Größe
     misst den Verlust der Begleiter je Brett.
 - *K15 – Punkte der Bewertung* (seine Hinweise vom 11.11.2026, Grundlagen oben; A689). *Im Kampf und auf dem Weg:* Jeder
@@ -1340,6 +1345,37 @@ Dullahan, Golem, Spriggan und Eisgolem (`XBMPet.InflictsInterrupt`).
     Verlangt der Kampf heilende oder schützende Begleiter, bleiben sie; nur Schaden geht verloren.
   - *Ausgeliefert, und nichts ändert sich?* Wenn die Reserve genug LP für zwei Verluste hat, oder vor der ersten Messung,
     oder wenn er die Hörner von Hand setzt.
+  *Das Maß je Kampf statt je Brett (A710; sein Auftrag vom 11.11.2026: „analyse, welche begleiter am besten für mehrere
+  Kämpfe auf dem brett geeignet sind").*
+  - *Gemessen (fünf Läufe vom 11.11.2026, Hornfenster und Kader-LP im Protokoll; der Agent hängt einen Kampf nach, der
+    Endkampf fehlt deshalb):* Was ein Einsatz kostet, hängt am Kampf und an der Rolle im Kampf, kaum am Begleiter. In
+    jedem Kampf stehen drei Begleiter auf den Hörnern, und meist verliert einer fast alles: der, der zuletzt gerufen
+    bleibt und unter Zähnefletschen trägt. Brett 1: Kampf 1 kostete je Einsatz höchstens 187 LP, Kampf 3 273, Kampf 4
+    500, Kampf 5 522; Raptor stand zwölfmal auf einem Horn und verlor zusammen 882 LP, die Fliegenfalle viermal und
+    verlor 1.209. Brett 2: bis 728 LP je Einsatz bei rund 1.000 LP je Begleiter. Für mehrere Kämpfe taugt also, wer in
+    vielen Kämpfen eine Schwäche trifft (K7 zählt das) und dort nicht der ist, der bleibt; wer bleibt, taugt für einen
+    schweren Kampf oder zwei leichte.
+  - *Defekt:* Die Reserve (Stufe 1 und 2) maß mit dem größten Verlust irgendeines Einsatzes auf dem Brett. Nach dem
+    ersten Lauf hieß es vor Kampf 1: „held for the final fight, a use costing up to 500 HP: Puk, Pugil" – Pugil mit 667
+    LP galt als knapp (667 unter zweimal 500), obwohl Kampf 1 höchstens 187 LP je Einsatz kostete; in 17 von 25
+    Hornfenstern hielt RSR Begleiter zurück. Die Heiler fehlten in frühen Kämpfen, die sie kaum etwas gekostet hätten.
+  - *Optionen:* (a) Nullvariante. (b) Verlust je Begleiter lernen – er folgt der Rolle, nicht dem Begleiter (oben).
+    (c) Verlust je Kampf: der größte eines Einsatzes in diesem Kampf, über die Sitzungen gelernt; für den anstehenden
+    Kampf sein Wert, für den Endkampf seiner, ohne Messung der größte des Bretts wie bisher. (d) Dazu je Rolle (wer
+    bleibt, wer kurz kommt) – die Rolle fällt erst im Kampf (B3), das Hornfenster kennt sie nicht.
+  - *Abwägung im Kampf:* (c) *Stärken:* Ein Heiler des Endkampfs kommt in einem leichten Kampf auf ein Horn, wenn ihm
+    danach noch ein Einsatz im Endkampf bleibt: Pugil mit 667 LP vor Kampf 1 (187) und einem Endkampf, dessen Einsatz
+    gemessen ist. Die frühen Kämpfe haben einen heilenden Begleiter mehr zur Wahl. *Schwächen:* Der Wert eines Kampfs ist
+    der des Begleiters, der dort blieb; ein kurz gerufener verliert weniger – das Maß hält weiter eher zu oft zurück.
+    *Bedrohungen:* Ein Kampf wird schwerer als gemessen (anderer Begleiter bleibt); dann lernt er den höheren Wert, und
+    Stufe 2 nimmt dem knappen Heiler das Zähnefletschen. *Chancen:* Dieselbe Größe sagt der Teamgröße (K7), was ein
+    Einsatz je Kampf kostet.
+  - *Gewählt:* (c). Knapp ist ein Endkampf-Heiler, dem nach einem Einsatz im anstehenden Kampf weniger als ein Einsatz
+    im Endkampf bliebe. Am Lager, wo kein Kampf ansteht, gilt der Endkampf-Wert für beides.
+  - *Falsifikation:* *Kein Defekt:* widerlegt an Pugil vor Kampf 1. *Option falsch:* Der Verlust im Endkampf ist nie
+    gemessen, weil der Begleiter erst nach dem Kampf abtritt – der Einsatz schließt beim Rückzug nach dem Kampf und
+    zählt für den zuletzt geführten Kampf. *Ausgeliefert, und nichts ändert sich:* Vor der ersten Messung eines Kampfs
+    gilt der größte Wert des Bretts wie bisher.
   *Stufe 2, gebaut (A590): Zähnefletschen und Campsite nach Bedarf.* Endkampf-Heiler heißen die Begleiter, die in der
   Wahl für den Endkampf heilen oder schützen (Stufe 1; seit A662 neu gerechnet, sobald sich LP, Futter oder Hörner
   ändern, mit der Rechnung des Hornfensters, K14 „Der Plan des Endkampfs"); knapp ist
