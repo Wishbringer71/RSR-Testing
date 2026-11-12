@@ -77,7 +77,7 @@ Zeilen: gesamt / vom Fork hinzugefügt (12.11.2026). Stand: offen, in Arbeit, ge
 | `Basic` (DataCenter u. a.) | 4 | 5.763 | 3.447 | offen |
 | `Basic/Configuration` | 24 | 6.357 | 3.309 | offen |
 | `RebornRotations/Limited Jobs` | 2 | 4.131 | 2.814 | `BST_Reborn.cs` gelesen (12.11.2026, 6ae686837; die Schleifen über `AllHostileTargets` ohne Nullprüfung sind kein Defekt, die Liste trägt konstruktionsbedingt keine leeren Einträge); `BLU_Reborn.cs` offen |
-| `Basic/Actions` | 18 | 6.939 | 1.945 | offen |
+| `Basic/Actions` | 18 | 6.939 | 1.945 | in Arbeit: gelesen `PhoenixDownItem.cs`, in `ActionTargetInfo.cs` die Abschnitte 1121–1262 und 2685–3045 (12.11.2026, ohne Befund); offen die übrigen Fork-Abschnitte von `ActionTargetInfo` (ab Zeile 120, 546, 602, 644, 737, 830, 918, 1060, 1095, 1303, 1729, 1781, 1959, 2311, 2460, 2590, 2638, 3108, 3150, 3244, 3350), `ActionBasicInfo`, `BaseAction`, `HpPotionItem`, `BaseItem`, `IBaseAction`, `ActionSetting` |
 | `Updaters` | 16 | 5.186 | 1.801 | gelesen (12.11.2026): die Fork-Abschnitte von `TargetUpdater` (A727), `StateUpdater`, `CancelCastUpdater`, `BossModUpdater`, `MajorUpdater`, dazu `NoFallDamageUpdater` (A276, seine Entscheidung), `UpdateCost`; `BlueMageSetTrace` (Spur) nicht gelesen |
 | Wurzel (`Watcher`, Plugin) | 3 | 2.212 | 1.468 | `Watcher.cs` gelesen (12.11.2026, 7dc3f8237); `RotationSolverPlugin.cs` offen |
 | `Basic/Data` | 40 | 3.912 | 1.176 | offen |
