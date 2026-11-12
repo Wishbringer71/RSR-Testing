@@ -107,6 +107,18 @@ public static class Watcher
 			{
 				DotTickTracker.RecordTick(entityId, Environment.TickCount64);
 				DotOnParty.RecordDotTick(entityId, p1, p2);
+
+				// Concept 03 (A723): the tick of the one damage over time a member carries is its layer's damage on the party.
+				if (p1 == 0 && p2 != 0 && DotOnParty.TryOnlySource(entityId, out var layer))
+				{
+					EnemyDanger.RecordHit(layer, p2);
+				}
+
+				// K10 of the Crucible (A722): damage over time on the player belongs to what a fight costs him.
+				if (DataCenter.IsInCrucible && entityId == Player.Object?.EntityId)
+				{
+					CrucibleBoard.RecordTakenOverTime(p2);
+				}
 			}
 			else if (category == HotTickCategory)
 			{

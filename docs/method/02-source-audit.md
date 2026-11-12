@@ -72,14 +72,14 @@ Zeilen: gesamt / vom Fork hinzugefügt (12.11.2026). Stand: offen, in Arbeit, ge
 
 | Bereich | Dateien | Zeilen | Fork | Stand |
 |---|---|---|---|---|
-| `Basic/Helpers` | 51 | 22.094 | 15.663 | in Arbeit: `CrucibleBoard.cs`, `CrucibleRoute.cs` gelesen (12.11.2026, 6ae686837) |
+| `Basic/Helpers` | 51 | 22.094 | 15.663 | in Arbeit: gelesen `CrucibleBoard.cs`, `CrucibleRoute.cs` (6ae686837), `KillOrder.cs`, `EnemyDanger.cs`, `DotOnParty.cs` (12.11.2026, 7dc3f8237) |
 | `Basic/Rotations` | 53 | 39.201 | 14.541 | in Arbeit: gelesen alle `BeastmasterCrucible*.cs`, `BeastmasterFamiliars.cs`, die Fork-Zeilen von `BeastmasterRotation.cs` (12.11.2026, 6ae686837) |
 | `Basic` (DataCenter u. a.) | 4 | 5.763 | 3.447 | offen |
 | `Basic/Configuration` | 24 | 6.357 | 3.309 | offen |
 | `RebornRotations/Limited Jobs` | 2 | 4.131 | 2.814 | `BST_Reborn.cs` gelesen (12.11.2026, 6ae686837); `BLU_Reborn.cs` offen |
 | `Basic/Actions` | 18 | 6.939 | 1.945 | offen |
 | `Updaters` | 16 | 5.186 | 1.801 | offen |
-| Wurzel (`Watcher`, Plugin) | 3 | 2.212 | 1.468 | offen |
+| Wurzel (`Watcher`, Plugin) | 3 | 2.212 | 1.468 | `Watcher.cs` gelesen (12.11.2026, 7dc3f8237); `RotationSolverPlugin.cs` offen |
 | `Basic/Data` | 40 | 3.912 | 1.176 | offen |
 | `RebornRotations/Healer` | 4 | 3.959 | 1.161 | offen |
 | `RebornRotations/Tank` | 4 | 2.880 | 1.111 | offen |
@@ -110,3 +110,5 @@ Zeilen: gesamt / vom Fork hinzugefügt (12.11.2026). Stand: offen, in Arbeit, ge
 | Tötungsstapel einer Gegenstandstötung: Stapel im Bild des Falls gelesen, die Gewährung kann schon darin stehen | F12 | `CrucibleBoard.FollowKillStacks` | behoben, A719 |
 | Gemeldete eigene Heilung blieb ohne Ablauf vorgemerkt und nahm später fremde Heilung mit | F4 | `CrucibleBoard.FollowPlayerHp` | behoben, A720 |
 | Treffer der Begleiter über Sitzungen summiert, gegen die Erwartung von heute gehalten | F9 | `CrucibleBoard.LearnFamiliarHits` | offen, TODO „Crucible: Gelernte Lasten sinken nicht, wenn die Begleiter stärker werden" |
+| Last je Kampf im Crucible zählte nur Treffer, nicht die Ticks von Schaden über Zeit (Elitekampf Brett 1: rund die Hälfte fehlte) | F2 | `Watcher.ActorControlDetour`, `CrucibleBoard.RecordTaken` | behoben, A722 |
+| Gefahr je Sekunde eines Gegners ohne seinen Schaden über Zeit, entgegen Konzept 03 | F7 | `EnemyDanger`, `Watcher` | behoben, A723 |

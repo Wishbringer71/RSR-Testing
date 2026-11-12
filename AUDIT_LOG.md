@@ -21015,6 +21015,31 @@ potency" je Kampfende.
 - *Prüfgrad:* statisch, Compile ohne Warnung, Prüfskripte, Modell an fünf Läufen (Notizordner). Im Spiel nicht
   beobachtet.
 
+### A722 · Quellcode-Prüfung: Last je Kampf im Crucible ohne den Schaden über Zeit (12.11.2026)
+
+- *Befund (`Watcher.cs`, `CrucibleBoard.RecordTaken`, Klasse F2):* Die gelernte Last je Kampf (A661) summierte die
+  Treffer aus dem Effekt-Handler. Ticks von Schaden über Zeit meldet das Spiel getrennt (ActorControl 0x605); sie
+  fehlten. Im Elitekampf von Brett 1 am 11.11.2026 (ACT): Lauf 1 147 LP aus Treffern, 138 aus Gift; Lauf 3 57 und 145.
+  Die Last dosiert die Rast, den Laden und die überzählige Heilung (A721) und steht für Kämpfe ohne gemessenen
+  Nettoverlust in der Wegempfehlung – dort stand ein Kampf mit Gift mit etwa der Hälfte.
+- *Gebaut:* `CrucibleBoard.RecordTakenOverTime` aus dem Tick auf den Spieler, in die Last, nicht in die Trefferfolge
+  (was ein Schutz abfängt und was zu Kampfbeginn fällt, rechnet über Treffer). Nettoverlust und Senke (A709) lesen die
+  LP und enthielten den Schaden über Zeit schon.
+- *Prüfgrad:* statisch, Compile ohne Warnung; der Anteil am Mitschnitt gemessen. Im Spiel nicht beobachtet.
+
+### A723 · Quellcode-Prüfung: Gefahr je Sekunde eines Gegners ohne seinen Schaden über Zeit (12.11.2026)
+
+- *Befund (`EnemyDanger`, Klasse F7):* Konzept 03 nennt die Gefahr je Sekunde „den Schaden, den er der Gruppe zugefügt
+  hat"; gezählt wurden die Treffer. Ein Gegner, der vergiftet, stand mit einem Bruchteil in der Reihenfolge „Zielart
+  ohne Tank und Heiler" (Beleg wie A722).
+- *Gebaut:* Trägt ein Mitglied genau einen gegnerischen Schaden über Zeit, zählt dessen Tick für den Gegner, der ihn
+  legte (`DotOnParty.TryOnlySource`); bei mehreren ist der gemeinsame Tick keinem zuzuordnen und bleibt weg.
+- *Verworfen:* den gemeinsamen Tick nach gelernter Stärke aufteilen (die Stärken sind je Gebiet gelernt und oft noch
+  leer; die Regel hinge an einer zweiten Messung).
+- *Rest:* Ein gelegter Schaden über Zeit läuft nach dem Fall des Gegners weiter; sein Fall verhindert nur den nächsten.
+  Als Rate über die Zeit gezählt, stimmt das für wiederholtes Legen und überschätzt den, der einmal legt.
+- *Prüfgrad:* statisch, Compile ohne Warnung. Im Spiel nicht beobachtet.
+
 ## B · Commit-Register (Fork vs. `upstream/main`)
 
 ### B1 · Einzelgeprüfte Fork-Commits

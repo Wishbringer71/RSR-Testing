@@ -442,7 +442,10 @@ Dullahan, Golem, Spriggan und Eisgolem (`XBMPet.InflictsInterrupt`).
     Prozent aufgerundet, nur steigend, über alle Sitzungen (gelernte Datei `CrucibleFightLoads.json`, Reiter
     „Crucible fights"). Gelesen wird er mit der Ausrüstung von jetzt: mal (1 − erlittener Schaden), geteilt durch
     (1 + maximale LP). Die Verwundbarkeiten nach Art lässt die Lesung weg, weil die Datei die Art nicht trägt; sie
-    überschätzt dann, nie unter. Deine eigene Heilung zieht sie nicht ab. Grund: Die Kämpfe liegen fest auf ihren
+    überschätzt dann, nie unter. Deine eigene Heilung zieht sie nicht ab. Zum Schaden zählen die Treffer und die Ticks
+    von Schaden über Zeit auf dir (A722; das Spiel meldet die Ticks getrennt von den Treffern, bis dahin fehlten sie:
+    im Elitekampf von Brett 1 am 11.11.2026, Lauf 1, 147 LP aus Treffern und 138 aus Gift, Lauf 3 57 und 145). Was ein
+    Schutz abfängt (K13) und was zu Kampfbeginn fällt, rechnet weiter nur über die Treffer. Grund: Die Kämpfe liegen fest auf ihren
     Feldern (K14, „Der Weg aus den Blättern"), und der Endkampf ist schwerer als jeder davor – Brett 1 am 07.11.2026
     (ACT-Mitschnitt, Schaden auf dich je Kampf durch deine maximalen LP): 4, 18, 3 und 17 % (Elite), der Endkampf 35 %.
     Der schwerste bisherige Kampf hätte ihn halbiert, ein Mittel noch mehr.

@@ -1468,6 +1468,19 @@ internal static class CrucibleBoard
 	}
 
 	/// <summary>
+	/// K10 (A722): a tick of damage over time on the player in a fight of the Crucible - the game reports it apart from the
+	/// hits (ActorControl 0x605), and without it a fight's load left out its poison. Into the load only: what a protection
+	/// catches is counted over the hits. Game thread.
+	/// </summary>
+	internal static void RecordTakenOverTime(uint amount)
+	{
+		if (_fight != 0 && amount != 0)
+		{
+			_fightLoad = _fightLoad with { Other = _fightLoad.Other + amount };
+		}
+	}
+
+	/// <summary>
 	/// K13 (A668): of the damage of <paramref name="kind"/> (every kind with null) the heaviest fight dealt the player - in
 	/// this area, else over every board, as <see cref="Loads"/> -, the largest share that falls within
 	/// <paramref name="seconds"/> of one of its hits, counting at most <paramref name="hits"/> hits of that kind in a row (0:

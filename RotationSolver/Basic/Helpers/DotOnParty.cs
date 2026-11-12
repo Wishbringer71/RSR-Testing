@@ -443,6 +443,23 @@ internal static class DotOnParty
 			&& StatusHelper.IsDamageOverTime([(StatusID)status.StatusId]);
 	}
 
+	/// <summary>
+	/// Concept 03, "Zielart ohne Tank und Heiler" (A723): the enemy that laid the one enemy damage over time
+	/// <paramref name="entityId"/> carries - the one an aggregated tick on him belongs to; false for a member with none or
+	/// several, whose tick cannot be told apart.
+	/// </summary>
+	internal static bool TryOnlySource(uint entityId, out uint source)
+	{
+		source = 0;
+		if (!_party.Contains(entityId) || !TryOnlyInstance(entityId, out var instance))
+		{
+			return false;
+		}
+
+		source = instance.Source;
+		return source != 0;
+	}
+
 	// The one enemy damage over time instance on him, false where there are none or more.
 	private static bool TryOnlyInstance(uint entityId, out Instance instance)
 	{

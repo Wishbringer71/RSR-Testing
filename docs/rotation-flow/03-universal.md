@@ -884,6 +884,11 @@ Seine eingestellte Zielart gilt dann nicht, auch ohne Option.
   erreicht, mit seiner gelernten Größe (Tabelle gezielter Treffer, Flächentabelle), verteilt auf die Restzeit des
   Zaubers; bei einem Gegner, der andere Gegner heilt, dazu der Schaden, den die Geheilten in der gewonnenen Zeit machen:
   geheilte LP je Sekunde mal ihrer Restzeit je LP (`GetCorrectedTTK`) mal ihrer Gefahr je Sekunde.
+  - *Schaden über Zeit zählt mit* (A723): Das Spiel meldet die Ticks getrennt von den Treffern, je Träger als einen
+    Wert für alle seine Schäden über Zeit. Trägt ein Mitglied genau einen gegnerischen Schaden über Zeit, gehört der
+    Tick dem Gegner, der ihn gelegt hat; bei mehreren ist er keinem zuzuordnen und bleibt weg. Bis A723 fehlte er: im
+    Elitekampf von Brett 1 am 11.11.2026 nahm er in Lauf 3 57 LP aus Treffern und 145 aus Gift – der Gegner, der
+    vergiftet, stand mit einem Bruchteil seiner Gefahr in der Reihenfolge.
   - *Der Begleiter zählt mit* (A582): Im Crucible nimmt er nach Zähnefletschen alles, was dir galt (dein Status
     „Gedeckt"), und auch sonst greifen Gegner ihn an. Gezählt waren nur Treffer auf ihn und die Mitglieder; unter der
     Deckung sah RSR die Gefahr der Gegner kaum – im Endkampf von Brett 1 (05.11.2026) stand die Seelenlose nach 55 s mit
