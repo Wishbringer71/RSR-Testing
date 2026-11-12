@@ -524,6 +524,13 @@ public readonly struct ActionBasicInfo
 			&& !MovementLock.ChannelStartBarred(AdjustedID);
 	}
 
+	/// <summary>
+	/// Whether a cast of this action could begin now as far as its cast time decides: the player is not walking without the
+	/// movement lock, no danger forbids the spot under it, BossMod's cast limit and a landing penalty allow it. For a rule
+	/// that asks before the action itself can be used (the Beastmaster's relief, concept 01, B6).
+	/// </summary>
+	internal bool CastCouldStartNow => !NeedsCasting(false);
+
 	private bool NeedsCasting(bool skipCastingCheck)
 	{
 		if (Player.Object == null)

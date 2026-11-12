@@ -1846,6 +1846,58 @@ kurzen Einsätze der anderen (Entfesseln, Scheidender Schlag).
 - Für Fläche mitten im Einsatz wechseln: kostet den Rest des laufenden und 90 s Horn.
 - Eine feste Drei als Schwelle (sein Vorschlag): Die Dressur trifft je Gegner gleich stark; schon ab zwei Gegnern im
   Wirkradius bringt die Flächendressur mehr. Die Drei bleibt als sein Beispiel.
+- *B6 – Die Ablöse: Der Begleiter geht erst, wenn der Nachfolger folgen kann* (A708; sein Auftrag vom 11.11.2026:
+  „innerhalb der kämpfe, wie da die beste ablöse erfolgt zwischen den hörnern").
+  - *Mechanik:* Nach dem Scheidenden Schlag braucht der Begleiter rund 2,25 s, bis er fort ist (gemessen 11.11.2026 an drei
+    Ablösen: Schlag im Mitschnitt, „out None" im Protokoll 2,25 bis 2,28 s später). Erst dann nimmt das Spiel den Ruf des
+    nächsten Horns, eine Fähigkeit mit 1,0 s Wirkzeit (Action 44881, 44892, 44894: Cast100ms 10, xivapi v2). RSR beginnt
+    sie nur, wo ihr Ende vor dem Fenster liegt, das vor dem GCD frei bleibt (W1, A486: GCD-Rest weniger Wirkzeit über
+    `ActionHelper.AbilityClipWindow`), und nur, wo ein Wirkvorgang beginnen kann – nicht im Laufen ohne Bewegungssperre.
+    Ein Ruf eines anderen Horns, solange ein Begleiter draußen ist, kommt in seinen Mitschnitten nicht vor (0 von 77
+    Rufen am 11.11.2026); ob der Server ihn annimmt, ist unbelegt.
+  - *Gemessen (seine fünf Läufe vom 11.11.2026, 51 Ablösen des Zyklus):* Fiel der Schlag höchstens 1,0 s nach einem GCD,
+    kam der Ruf im Stand 2,5 s später (Median, 21 Fälle); fiel er später im GCD, erst 4,1 s später (9 Fälle im Stand):
+    Der Begleiter war fort, als das Ruffenster dieses GCD schon zu war, und der Ruf wartete auf den nächsten. Lief er
+    zwischen Schlag und Ruf (21 von 51), dauerte es im Median 4,0 bis 4,4 s, im Endkampf von Lauf 1 12 s (15:07:45 bis
+    15:07:57): Pugil, der Heiler, ging, er lief 10 s, und kein Horn konnte gewirkt werden. Er stand dabei bei 83 bis 80 %
+    LP; in den 12 s griffen ihn zwei Gegner an, und er verlor 44 von 1.420 LP. Gekostet hat die Lücke vor allem den
+    Schaden und die Heilung des Begleiters.
+  - *Optionen:* (a) Nullvariante. (b) Der Schlag des Zyklus fällt nur, wenn der Begleiter fort ist, bevor das Ruffenster
+    des nächsten GCD schließt; sonst nach dem nächsten GCD. (c) Der Schlag des Zyklus wartet, solange der Ruf jetzt nicht
+    beginnen könnte (Laufen ohne Sperre, Gefahr am Platz unter der Sperre, BossMods Wirkgrenze). (d) Die Bewegungssperre
+    für den Ruf: trägt ihn schon, wo „Lock movement while casting" an ist (der Ruf ist ein Wirkvorgang); ab Werk aus,
+    seine Entscheidung (A651). (e) Ruf eines anderen Horns ohne Schlag: unbelegt, und er verschenkte den Schlag (1.000
+    Potenz auf Ziel und Umstehende). (f) Der Ruf im späten Fenster des GCD: schiebt den nächsten GCD (W1).
+  - *Abwägung im Kampf:* (b) *Stärken:* Der Ruf kommt zum selben Zeitpunkt wie ohne die Regel (der nächste GCD plus sein
+    Fenster), der Begleiter draußen bleibt bis dahin rund 1,6 s länger und schlägt weiter zu; die Zeit ohne Begleiter
+    sinkt in 35 % der Ablösen von 4,1 auf 2,5 s. *Schwächen:* Sein Horn beginnt die Erholung bis zu einen GCD später (sie
+    beginnt mit dem Abtreten); über einen Kampf von 60 bis 130 s ein bis drei Ablösen, je bis 2,4 s. *Bedrohungen:* Die
+    Zeit bis zum Abtreten schwankt (Entfernung, Animation); RSR misst sie je Abtreten selbst und rechnet mit der längsten
+    der Sitzung – zu lang gemessen heißt einen GCD später schlagen, nie eine längere Lücke. Die Regel hält höchstens
+    einen GCD: Passt auch das erste Fenster des nächsten GCD nicht (ein kürzerer GCD unter Tempo, etwa Hasty Spirit des
+    Bestien-Aufbrausmittels), bringt Warten nichts, und der Schlag fällt. Rollt kein GCD (kein Ziel in Reichweite), gilt
+    sie nicht: Dann nimmt das Spiel den Ruf, sobald der Begleiter fort ist. (c) *Stärken:* Wer läuft,
+    behält den Begleiter, der zuschlägt, die Feindseligkeit hält und heilt; der Schlag geht nicht verloren, er fällt,
+    sobald er steht. Der Fall vom Endkampf (Schlag 1,2 s nach dem GCD, dann 10 s Lauf) fällt mit (b) und (c) weg: (b)
+    hält den Schlag bis nach dem nächsten GCD, da läuft er schon, und Pugil bleibt. *Schwächen:* Wer dauernd läuft,
+    wechselt nicht; der Nachfolger könnte dann ohnehin nicht kommen. *Bedrohungen:* Er bleibt nach dem Schlag doch
+    stehen oder läuft erst danach los – wie heute. (d) hängt an seiner Einstellung, die RSR nicht ändert. (e), (f) oben.
+  - *Gewählt:* (b) und (c) zusammen, für jeden Rückzug des Zyklus: den Scheidenden Schlag und das Entfesseln, nach dem
+    der Begleiter geht (Final Sting, R1). *Nicht* für die Ablösung in der Gefahr (B2): Dort zählt, wann der Heiler kommt;
+    der Schlag im Laufen bringt ihn 2,25 s früher, sobald er steht, und eine zu lang gemessene Abtretzeit käme ihn
+    einen GCD kosten. *Nicht* für das Entfesseln vor dem Fall des Rudels im Endkampf (A624): Dort folgt keiner.
+  - *Wechselwirkungen:* B3 (der zuletzt Gerufene bleibt) und R1 (nur mit bereitem Ersatzhorn) bleiben Vorbedingung; A530
+    (Deckung nach Zähnefletschen) und B2/A636 (heilender Begleiter in der Gefahr) halten wie bisher und gehen vor. K11
+    (LP der Begleiter): ein GCD länger draußen ist ein GCD länger im Schaden – wo ein Begleiter fiele, hält K9 ihn
+    ohnehin nicht im Feld. Kreszentia, Maskenkarneval: keine Hörner. Außerhalb des Crucible gilt dieselbe Regel.
+  - *Ebene:* nur der Beastmaster ruft Begleiter mit einer Fähigkeit mit Wirkzeit; die Stufen darüber bleiben leer.
+  - *Falsifikation:* *Kein Defekt:* widerlegt an 18 von 51 späten Schlägen mit 1,6 s mehr Lücke und an den 12 s im
+    Endkampf. *Option falsch:* Das Halten kostet Schaden – der Schlag fällt mit gleicher Potenz einen GCD später, der
+    Ruf zur selben Zeit; es kostet nur die spätere Erholung des Horns. Die Messung der Abtretzeit trügt – sie steuert
+    selbst nach, in die sichere Richtung. *Ausgeliefert, und nichts ändert sich:* Er steht fast immer und RSRs Schlag
+    fiel schon früh im GCD – dann bleibt es bei 2,5 s; die kann nur ein Ruf ohne Abtreten kürzen (unbelegt).
+  - *Messmittel:* Je Abtreten des Zyklus schreibt RSR, wie lange der Begleiter bis zum Verschwinden brauchte und wie
+    lange danach kein Begleiter draußen war; hält die Regel den Schlag, eine Zeile mit dem Grund, einmal je Halt.
 - *B4, Schwächung oder Stärkung zuerst* (Entfesseln, das die Dressur eines anderen trifft oder dich stärkt): gerechnet
   zwischen −1,8 % (ein Gegner) und +1,3 %. Die geänderte Reihenfolge verschiebt den Zyklus der Hörner mehr, als die 20 % auf
   eine Dressur bringen.

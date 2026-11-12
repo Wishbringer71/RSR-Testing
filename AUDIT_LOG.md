@@ -20758,6 +20758,28 @@ dip …" je Kampf.
   Gruppe 4, 5, 6; xivapi v2). Im Laufen beginnt RSR keinen Wirkvorgang. Er stand bei 38 bis 52 % LP; Gegner griffen ihn an.
 - *Nächster Schritt:* TODO „Crucible: leichtes Brett erkennen …" – die Bewegungssperre für den Ruf prüfen.
 
+### A708 · Beastmaster B6: Der Begleiter geht erst, wenn der Nachfolger folgen kann (12.11.2026)
+
+- *Anlass:* sein Auftrag vom 11.11.2026 („innerhalb der kämpfe, wie da die beste ablöse erfolgt zwischen den hörnern");
+  A707.
+- *Messung (fünf Läufe vom 11.11.2026, ACT und DefenseTrace, 51 Ablösen des Zyklus):* Abtreten 2,25 bis 2,28 s nach dem
+  Scheidenden Schlag. Schlag höchstens 1,0 s nach einem GCD: Ruf im Stand 2,5 s später (Median, 21 Fälle); später im
+  GCD: 4,1 s (9 Fälle im Stand; 18 von 51 Schlägen fielen spät). Mit Bewegung zwischen Schlag und Ruf (21 von 51) 4,0 bis
+  4,4 s, einmal 12 s. Kein GCD ging durch einen Ruf verloren (Median der GCD-Abstände um einen Ruf 2,45 s wie sonst).
+  Kein Ruf bei stehendem Begleiter (0 von 77). Ursache am Code: Der Ruf beginnt nur, solange GCD-Rest weniger Wirkzeit
+  über `AbilityClipWindow` liegt (A486), bei 2,44 s GCD also bis 0,94 s nach dem GCD.
+- *Optionen, Abwägung, Wechselwirkungen, Falsifikation:* Konzept 01, B6 (sechs Optionen, SWOT, drei Hypothesen).
+- *Umgesetzt:* `BST_Reborn.FollowRelief` (misst Abtretzeit und Zeit ohne Begleiter, je Ablöse eine Zeile „horn relief: …"),
+  `ReliefCanFollow` vor dem Scheidenden Schlag des Zyklus und dem Entfesseln mit Rückzug (R1): hält, solange ein Ruf
+  nicht beginnen könnte (`ActionBasicInfo.CastCouldStartNow`), und höchstens einen GCD, wenn der Begleiter erst nach dem
+  Ruffenster des nächsten GCD fort wäre. Nicht in der Gefahr (B2) und nicht vor dem Fall des Rudels (A624).
+- *Bei der Gegenprüfung am Code gefunden und behoben:* ohne rollenden GCD hätte die Fensterregel dauernd gehalten; unter
+  Tempo (kürzerer GCD) ebenso – jetzt nur bei rollendem GCD und höchstens einen GCD lang.
+- *Widerruf:* C183 (LP im Endkampf).
+
+*Prüfgrad:* statisch, Compile, Prüfskripte, Mitschnitt-Auswertung; im Spiel nicht beobachtet – die Zeilen „horn relief"
+zeigen je Ablöse Abtretzeit und Lücke.
+
 ## B · Commit-Register (Fork vs. `upstream/main`)
 
 ### B1 · Einzelgeprüfte Fork-Commits
@@ -21092,3 +21114,4 @@ Die offene Arbeit dazu — Reihenfolge und Abbruchbedingung der Nachprüfung —
 | C180 | A685 (Stand A685): „In der englischen Fassung ändern sich nur eine Spalte von Unmooring Melody (48565) und eine neue ItemAction-Zeile (2793)" | Der 7.58-Stand von ffxiv-datamining (52a72b38a) ändert englisch 42 Blätter und fünf Ereignis- und Questdateien, darunter BNpcName, BNpcBase, InstanceContent, Item und LogMessage. Nur unter den Blättern der Jobs (Action, ActionTransient, Trait, ClassJob, Status) und Gegenstandsaktionen sind es die zwei Zeilen; die übrigen, die RSR liest, ändern im Kampf nichts (A686). | A686 |
 | C181 | A689 und Konzept 21 K15 (Stand A692): „Das Spiel selbst zeigt die Boni erst am Ende; `XBMScoreBonus` führt Namen und Bedingungen, keine Punkte" | `XBMContent` führt die Punkte je Bonus und Brett in seinen ersten 33 Spalten (`BonusPoints`, einer je Zeile von `XBMScoreBonus`; EXDSchema latest, Werte an ffxiv-datamining 52a72b3 vom 10.11.2026). Gesucht hatte ich nur in `XBMScoreBonus` und `XBMScoreRank`. Die Punkte je Feld (250, 800) führt weiterhin kein Blatt. | A695 |
 | C182 | A687 (Stand A687): „zwölf Nutzungen, acht auf einen echten Rückstoß oder Zug (Flutwelle, Ätherknall, Zugstrahl, Aetherial Pull, Tornado)" | Neun erreichten ihn: Zugstrahl zweimal, #44823 bei Eald'narche, Flutwelle zweimal, Ätherknall zweimal, Aetherial Pull zweimal (in Babil auf ihn gezielt, BossModReborn `D023Anima`). Tornado #44395 traf ihn nicht; ohne Wirkung auf ihn auch Ground and Pound und ein Fall in Windurst ohne gelisteten Zauber. Die Zeitleiste von BossMod löste sechs aus, alle richtig. | A701 |
+| C183 | A707 (Stand A707): „Er stand bei 38 bis 52 % LP; Gegner griffen ihn an" (Endkampf Lauf 1, 15:07:45 bis 15:07:57) | Er stand bei 83 bis 80 % LP (1.180 auf 1.136 von 1.420, ACT); zwei Gegner griffen ihn an, er verlor in den 12 s 44 LP. Die 38 % stammten vom Kampfbeginn (15:06:52). Die Lücke kostete den Schaden und die Heilung des Begleiters, kaum Sicherheit. | A708 |

@@ -767,7 +767,8 @@ public sealed class BST_Reborn : BeastmasterRotation
 		var releaseBeforeFall = ReleaseRetreatsFamiliar && InCombat && IsInCrucible && CrucibleBoard.IsFinalFight
 			&& DataCenter.IsPackTimeToKillKnown && !ReplacementHornReadyWithin(DataCenter.PackTimeToKill);
 		if (nature == OneWithNatureOrder.Tempered
-			&& (!ReleaseRetreatsFamiliar || ((ReplacementHornReady || releaseBeforeFall) && !IsCoveredByFamiliar))
+			&& (!ReleaseRetreatsFamiliar
+				|| (((ReplacementHornReady && ReliefCanFollow()) || releaseBeforeFall) && !IsCoveredByFamiliar))
 			&& !(HornBySituation && InDanger && ReleaseHurtsPartyFamiliar) && TemperedReleaseNow(out act))
 		{
 			if (releaseBeforeFall && !ReplacementHornReady)
@@ -809,7 +810,9 @@ public sealed class BST_Reborn : BeastmasterRotation
 		if (!waitsForNature && !keepForDanger && !keepForCover)
 		{
 			// R1: only with another horn's familiar ready to follow - not the horn of the familiar out.
-			if (ReplacementHornReady && ((!IsLastAction(true, TrickPvE) && TrickPvE.Cooldown.HasOneCharge) || !TrickPvE.EnoughLevel))
+			// B6 (A708): only when the familiar to follow can be called as soon as this one is gone.
+			if (ReplacementHornReady && ((!IsLastAction(true, TrickPvE) && TrickPvE.Cooldown.HasOneCharge) || !TrickPvE.EnoughLevel)
+				&& ReliefCanFollow())
 			{
 				if (PartingBlowPvE.CanUse(out act))
 				{
@@ -1439,6 +1442,102 @@ public sealed class BST_Reborn : BeastmasterRotation
 
 	private const string DangerReason = "you are in danger, it heals, protects or stops your attackers";
 
+	// B6 (concept 01, A708): how long a familiar sent off took to be gone - the longest of this session -, when the one
+	// out was sent off, and since when none has been out in this fight.
+	private static float _leaveSeconds;
+	private static DateTime _sentOffAt = DateTime.MinValue;
+	private static DateTime _noneOutSince = DateTime.MinValue;
+	private static bool _wasLeaving;
+	private static string _reliefHold = string.Empty;
+	private static DateTime _windowHoldSince = DateTime.MinValue;
+
+	// B6: measures each retreat - from the sending action until no familiar is out - and the time without a familiar
+	// until the next one is called; one trace line per relief.
+	private void FollowRelief()
+	{
+		var now = DateTime.Now;
+		var leaving = ActiveBattlehorn != 0 && FamiliarLeaving;
+		if (leaving && !_wasLeaving)
+		{
+			_sentOffAt = now;
+		}
+
+		_wasLeaving = leaving;
+		if (ActiveBattlehorn == 0)
+		{
+			if (_sentOffAt != DateTime.MinValue)
+			{
+				var took = (float)(now - _sentOffAt).TotalSeconds;
+
+				// A retreat seen within a few GCDs; beyond that the familiar fell or the fight ended meanwhile.
+				if (took < DataCenter.DefaultGCDTotal + DataCenter.DefaultGCDTotal)
+				{
+					_leaveSeconds = Math.Max(_leaveSeconds, took);
+				}
+
+				_sentOffAt = DateTime.MinValue;
+				_noneOutSince = InCombat ? now : DateTime.MinValue;
+				if (InCombat)
+				{
+					DefenseTrace.Line($"horn relief: the familiar was gone {took:F2} s after it was sent off (longest {_leaveSeconds:F2} s)");
+				}
+			}
+
+			return;
+		}
+
+		if (_noneOutSince != DateTime.MinValue)
+		{
+			if (InCombat)
+			{
+				DefenseTrace.Line($"horn relief: {(now - _noneOutSince).TotalSeconds:F1} s without a familiar until "
+					+ $"{(HornOrder)ActiveBattlehorn} ({CurrentPet}) came");
+			}
+
+			_noneOutSince = DateTime.MinValue;
+		}
+	}
+
+	// B6: whether the familiar that follows can be called as soon as the one out is gone - the retreat ends before the
+	// call window of the next GCD closes (the GCD's rest, a whole GCD, less the horn's cast time and the window kept free
+	// ahead of the GCD), and a cast could begin now. Asked for the cycle's retreats only, never in danger. The window
+	// holds only while a GCD rolls - without one the horn is called whenever the familiar is gone - and for one GCD at
+	// most: where the next GCD's first window does not fit either (a shorter GCD under haste), waiting gains nothing.
+	private bool ReliefCanFollow()
+	{
+		var horn = FirstBattlehornPvE;
+		var why = string.Empty;
+		var now = DateTime.Now;
+		var missesWindow = _leaveSeconds > 0f && WeaponRemain > 0f
+			&& _leaveSeconds > WeaponRemain + WeaponTotal - horn.Info.CastTime - ActionHelper.AbilityClipWindow;
+		if (!missesWindow)
+		{
+			_windowHoldSince = DateTime.MinValue;
+		}
+		else if (_windowHoldSince == DateTime.MinValue)
+		{
+			_windowHoldSince = now;
+		}
+
+		if (!horn.Info.CastCouldStartNow)
+		{
+			why = "a horn's cast cannot begin now (you are moving, or your spot is in danger)";
+		}
+		else if (missesWindow && (now - _windowHoldSince).TotalSeconds <= WeaponTotal)
+		{
+			why = $"it would be gone in {_leaveSeconds:F2} s, after the call window of the next GCD - after that GCD the "
+				+ "next familiar comes as early and this one fights on until then";
+		}
+
+		if (why.Length > 0 && why != _reliefHold)
+		{
+			TraceHorn($"{(HornOrder)ActiveBattlehorn} ({CurrentPet}) is not sent off yet: {why}");
+		}
+
+		_reliefHold = why;
+		return why.Length == 0;
+	}
+
 	// One line per decision: the choice is asked every frame until the familiar is out.
 	private static void TraceHorn(string line)
 	{
@@ -1502,6 +1601,7 @@ public sealed class BST_Reborn : BeastmasterRotation
 		}
 
 		FollowFamiliarHits(FamiliarLeaving);
+		FollowRelief();
 		RetreatBeforeNextFight();
 		if ((UseCrucibleSafetyItems || UseCrucibleDamageItems) && DataCenter.State)
 		{

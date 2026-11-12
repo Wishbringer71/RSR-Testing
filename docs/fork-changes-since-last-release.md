@@ -91,6 +91,12 @@ What this release changes in the fight. For the whole distance from upstream, se
   no familiars until the next fight ended, so a fight outside right after a board began with empty horns. RSR now
   follows the horns on the board without judging them.
 
+- **A familiar leaves only when the next one can follow.** After Parting Blow a familiar takes about 2.3 s to be gone, and
+  the next horn - a 1 s cast - can only begin early in a GCD and while you stand. A blow late in a GCD left you 4.1 s
+  without a familiar instead of 2.5 s, and when you walked after it, up to 12 s. In the cycle RSR now sends a familiar
+  off only while a horn's cast could begin, and, for one GCD at most, waits for the moment from which the next familiar
+  comes as early; until then the one out fights on. In danger nothing changes. The trace names each relief's length.
+
 ## The Beastmaster on a Crucible board
 
 - **An easy board is recognised by what you actually lose.** Whether your HP carry the way to the final fight - the

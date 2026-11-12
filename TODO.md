@@ -22,10 +22,12 @@ BossMod-Module) die Rotation des Beastmasters, die Wahl der Begleiter und den Ze
 1. Crucible: ein leichtes Brett erkennen und Schritt für Schritt daraus folgern – weniger Begleiter, kein Futter, keine
    Rast –, dazu Begleiter für mehrere Kämpfe und die Ablöse zwischen den Hörnern im Kampf (Beastmaster-Vorrang); mit
    ihm die Verifikation der Crucible-Punkte vom 11.11.2026.
-2. Die übrigen gefundenen und gebauten Punkte vom 11.11.2026 im vollen Loop verifizieren und optimieren (sein Auftrag).
-3. Blaumagier: RSRs nächste Aktion beendet Apokalypsis und Chelonian Gate – Schaden und Minderung des Spielers enden
+2. Den eigenen Quellcode des Plugins vollständig auf Probleme prüfen (sein Auftrag, 12.11.2026, nach dem Brett-Punkt
+   und vor dem übrigen TODO).
+3. Die übrigen gefundenen und gebauten Punkte vom 11.11.2026 im vollen Loop verifizieren und optimieren (sein Auftrag).
+4. Blaumagier: RSRs nächste Aktion beendet Apokalypsis und Chelonian Gate – Schaden und Minderung des Spielers enden
    nach einem GCD statt nach 10 s.
-4. Kegel und Ringe gegnerischer Zauber genau messen: Zauber- und Kanalbeginn nutzen RSRs Erkennung bei Kegel und Ring
+5. Kegel und Ringe gegnerischer Zauber genau messen: Zauber- und Kanalbeginn nutzen RSRs Erkennung bei Kegel und Ring
    nicht, und mehrere Leser sehen hinter einem Kegel oder im Innenkreis eines Rings eine Gefahr, die keine ist.
 
 Danach die technische Schuld, soweit ihre Auflösungsbedingung erfüllt ist. Warten auf Daten: unten.
@@ -75,17 +77,16 @@ dieselbe Grundlage?), der Ablauf eines Laufs Schritt für Schritt (Kader, Kampf,
 Eignung eines Begleiters über mehrere Kämpfe (Schwächen, LP, Heilung, Einsätze, K11) und die Ablöse im Kampf (K6, K16, B2).
 Nachgezeichnet (A702): fünf Läufe; die Teamgröße aus A698 überschätzt ein kleines Team. *Ort:* Konzept 21 (K6, K7, K10,
 K11, K14, K15, K16), `BST_Reborn`, `BeastmasterCrucible*`. Die Größenregel liest die Einsätze einzeln (A703); Schutzgegenstände nach der Treffergröße (A704). Der Test des Wegs
-summiert rohe Lasten ohne die Heilung der Begleiter und erkennt kein leichtes Brett (A705). Der Test des Wegs liest Nettoverlust und Senke (A706). Ablöse, gemessen an Lauf 1 (ACT, 11.11.2026): Entfesseln 2
-bis 8 s nach jedem Ruf; gegen Kampfende Abschiedsschlag 3 bis 9 s nach einem Ruf (57:37 → 57:42, 03:12 → 03:21, 07:57
-→ 08:00); im Endkampf 12 s ohne Begleiter (07:45 → 07:57): Pugil ging mit Scheidendem Schlag um 15:07:45, „out None" ab 15:07:47,
-Coeurl erst 15:07:57 („the best stays last", also mehrere Hörner bereit), während Gegner ihn angriffen. Ursache (ACT, Positionen der Aktionszeilen): Er lief von 15:07:46
-bis 15:07:56; die Hörner sind Fähigkeiten mit 1,0 s Wirkzeit (Action 44881, 44892, 44894: Cast100ms 10, xivapi v2), im
-Laufen beginnt RSR keinen Wirkvorgang; um 15:07:57 stand er, und Horn III kam sofort. *Nächster Schritt:* ob die
-Bewegungssperre (Konzept 03, „Bewegungssperre beim Wirken und die KI von BossMod", A651) den Ruf eines Begleiters tragen
-soll, wenn keiner draußen ist und der Platz sicher ist – Loop; diese Folge gegen die B-Regeln
-(Konzept 01) und die Abklingzeiten der Hörner prüfen – gewollt oder Defekt –, dann Laden, Schatz, Lager, Futter und die
-Eignung der Begleiter über mehrere Kämpfe gegen die Läufe, Loop.
+summiert rohe Lasten ohne die Heilung der Begleiter und erkennt kein leichtes Brett (A705). Der Test des Wegs liest Nettoverlust und Senke (A706). Die Ablöse der Hörner hält den Schlag, bis der Nachfolger folgen kann (A708, Konzept 01, B6). *Nächster Schritt:*
+Laden, Schatz, Lager, Futter und die Eignung der Begleiter über mehrere Kämpfe gegen die Läufe prüfen, Loop.
 *Konzept:* 21.
+
+### Den eigenen Quellcode des Plugins vollständig auf Probleme prüfen · N R
+Sein Auftrag vom 12.11.2026: „weiterarbeiten, danach den eigenen quellcodes des Plugins vollständig prüfen, inwieweit
+darin probleme existieren, dann mit todo weitermachen. alles in kompletten loops". Umfang: der gesamte Quelltext unter
+`RotationSolver*/` (nicht ECommons, RebornMaterial, Dalamud). *Nächster Schritt:* Umfang messen (Dateien, Zeilen je
+Bereich), Verfahren mit Deckungsnachweis festlegen (je Datei geprüft oder nicht, je Fehlerklasse ein Durchgang), dann
+Bereich für Bereich; jeder Befund als eigener Eintrag hier, jeder im Loop. *Konzept:* `docs/method/`.
 
 ### Gefundene Punkte vom 11.11.2026 im vollen Loop verifizieren und optimieren · N
 Sein Auftrag vom 11.11.2026: „ich habe das gefühl, dass du wieder nicht zuerst an den konzepten gearbeitet hast und auch
