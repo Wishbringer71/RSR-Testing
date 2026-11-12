@@ -378,26 +378,44 @@ public partial class MainWindow
 		return new LearnedTab("Dangerous areas", ["Area (territory id)", "Up to level"], rows);
 	}
 
+	// A729: the column of the Crucible tables that names the runs a value comes from - all of them, or those at a rank.
+	private const string AllRuns = "all runs";
+
+	private static string RankRuns(int rank, int runs) => $"{rank} ({runs} run{(runs == 1 ? string.Empty : "s")})";
+
+	private static string CrucibleFightName(uint fight)
+	{
+		var enemies = CrucibleBoard.EnemiesOf(fight);
+		var name = enemies.Length > 0 ? CrucibleBoard.EnemyName(enemies[0].NameId) : string.Empty;
+		return name.Length > 0 ? $"{name} (fight {fight})" : $"fight {fight}";
+	}
+
 	// K10 of the Crucible (concept 21, Campsite, A661): per fight, the heaviest damage the player took in it, in percent of
 	// his maximum HP without his Crucible gear; the fight by its first enemy.
 	private static LearnedTab CrucibleFightLoadTab()
 	{
 		var rows = new List<string[]>();
 		Dictionary<uint, int> loads;
+		Dictionary<uint, int> byRank;
 		lock (OtherConfiguration.CrucibleFightLoadsGate)
 		{
 			loads = new Dictionary<uint, int>(OtherConfiguration.CrucibleFightLoads);
+			byRank = new Dictionary<uint, int>(OtherConfiguration.CrucibleFightLoadsByRank);
 		}
 
 		foreach (var (fight, percent) in loads)
 		{
-			var enemies = CrucibleBoard.EnemiesOf(fight);
-			var name = enemies.Length > 0 ? CrucibleBoard.EnemyName(enemies[0].NameId) : string.Empty;
-			rows.Add([name.Length > 0 ? $"{name} (fight {fight})" : $"fight {fight}", $"{percent} %"]);
+			rows.Add([CrucibleFightName(fight), AllRuns, $"{percent} %"]);
+		}
+
+		// A729: the same per rank step of the team.
+		foreach (var (fight, rank, percent, runs) in CrucibleBoard.ByRankEntries(byRank))
+		{
+			rows.Add([CrucibleFightName(fight), RankRuns(rank, runs), $"{percent} %"]);
 		}
 
 		Sort(rows);
-		return new LearnedTab("Crucible fights", ["Fight (first enemy)", "Heaviest, of HP without gear"], rows);
+		return new LearnedTab("Crucible fights", ["Fight (first enemy)", "Team rank", "Heaviest, of HP without gear"], rows);
 	}
 
 	// K16 of the Crucible (concept 21, A711): per fight and familiar, the damage per potency of its Trick and Release hits,
@@ -406,9 +424,11 @@ public partial class MainWindow
 	{
 		var rows = new List<string[]>();
 		Dictionary<uint, int> measured;
+		Dictionary<uint, int> byRank;
 		lock (OtherConfiguration.CrucibleFamiliarHitsGate)
 		{
 			measured = new Dictionary<uint, int>(OtherConfiguration.CrucibleFamiliarHits);
+			byRank = new Dictionary<uint, int>(OtherConfiguration.CrucibleFamiliarHitsByRank);
 		}
 
 		foreach (var (key, damage) in measured)
@@ -420,14 +440,27 @@ public partial class MainWindow
 				continue;
 			}
 
-			var enemies = CrucibleBoard.EnemiesOf(fight);
-			var name = enemies.Length > 0 ? CrucibleBoard.EnemyName(enemies[0].NameId) : string.Empty;
-			rows.Add([name.Length > 0 ? $"{name} (fight {fight})" : $"fight {fight}", BeastmasterRotation.FamiliarName(pet),
+			rows.Add([CrucibleFightName(fight), BeastmasterRotation.FamiliarName(pet), "all ranks",
+				$"{damage / (double)potency:F2}", potency.ToString()]);
+		}
+
+		// A729: the same per rank of the familiar.
+		foreach (var (code, damage) in byRank)
+		{
+			var (key, rank) = CrucibleBoard.HitRankOf(code);
+			var (fight, pet, slot) = CrucibleBoard.HitOf(key);
+			if (slot != CrucibleBoard.HitSlot.Damage
+				|| !byRank.TryGetValue(code + ((uint)CrucibleBoard.HitSlot.Potency * CrucibleBoard.RankStride), out var potency) || potency <= 0)
+			{
+				continue;
+			}
+
+			rows.Add([CrucibleFightName(fight), BeastmasterRotation.FamiliarName(pet), rank.ToString(),
 				$"{damage / (double)potency:F2}", potency.ToString()]);
 		}
 
 		Sort(rows);
-		return new LearnedTab("Crucible familiars", ["Fight (first enemy)", "Familiar", "Damage per potency", "Potency measured"], rows);
+		return new LearnedTab("Crucible familiars", ["Fight (first enemy)", "Familiar", "Familiar rank", "Damage per potency", "Potency measured"], rows);
 	}
 
 	// K7 of the Crucible (concept 21, team size, A698): per board, the most HP the familiars lost together in one run; the team
@@ -436,22 +469,35 @@ public partial class MainWindow
 	{
 		var rows = new List<string[]>();
 		Dictionary<uint, int> losses;
+		Dictionary<uint, int> byRank;
 		lock (OtherConfiguration.CrucibleFamiliarLossGate)
 		{
 			losses = new Dictionary<uint, int>(OtherConfiguration.CrucibleFamiliarLoss);
+			byRank = new Dictionary<uint, int>(OtherConfiguration.CrucibleFamiliarLossByRank);
 		}
 
 		foreach (var (key, loss) in losses)
 		{
-			rows.Add(CrucibleBoard.IsUseLossKey(key, out var fight)
-				? [$"fight {fight}", "a use, most", $"{loss} HP"]
-				: key < CrucibleBoard.FamiliarKeyStride
-					? [$"board {key}", "all uses of a run", $"{loss} HP"]
-					: [$"board {key / CrucibleBoard.FamiliarKeyStride}", $"use {key % CrucibleBoard.FamiliarKeyStride} by size", $"{loss} HP"]);
+			rows.Add(FamiliarLossRow(key, AllRuns, loss));
+		}
+
+		// A729: the same per rank step of the team.
+		foreach (var (key, rank, loss, runs) in CrucibleBoard.ByRankEntries(byRank))
+		{
+			rows.Add(FamiliarLossRow(key, RankRuns(rank, runs), loss));
 		}
 
 		Sort(rows);
-		return new LearnedTab("Crucible familiar loss", ["Board or fight", "Measure", "Most lost"], rows);
+		return new LearnedTab("Crucible familiar loss", ["Board or fight", "Measure", "Team rank", "Most lost"], rows);
+	}
+
+	private static string[] FamiliarLossRow(uint key, string runs, int loss)
+	{
+		return CrucibleBoard.IsUseLossKey(key, out var fight)
+			? [$"fight {fight}", "a use, most", runs, $"{loss} HP"]
+			: key < CrucibleBoard.FamiliarKeyStride
+				? [$"board {key}", "all uses of a run", runs, $"{loss} HP"]
+				: [$"board {key / CrucibleBoard.FamiliarKeyStride}", $"use {key % CrucibleBoard.FamiliarKeyStride} by size", runs, $"{loss} HP"];
 	}
 
 	// K15 of the Crucible (concept 21, A706, A709): per fight, the most the player lost and the deepest he fell below its
@@ -460,22 +506,33 @@ public partial class MainWindow
 	{
 		var rows = new List<string[]>();
 		Dictionary<uint, int> measured;
+		Dictionary<uint, int> byRank;
 		lock (OtherConfiguration.CrucibleFightNetGate)
 		{
 			measured = new Dictionary<uint, int>(OtherConfiguration.CrucibleFightNet);
+			byRank = new Dictionary<uint, int>(OtherConfiguration.CrucibleFightNetByRank);
 		}
 
 		foreach (var (key, percent) in measured)
 		{
-			var dip = key >= CrucibleBoard.FamiliarKeyStride;
-			var fight = dip ? key / CrucibleBoard.FamiliarKeyStride : key;
-			var enemies = CrucibleBoard.EnemiesOf(fight);
-			var name = enemies.Length > 0 ? CrucibleBoard.EnemyName(enemies[0].NameId) : string.Empty;
-			rows.Add([name.Length > 0 ? $"{name} (fight {fight})" : $"fight {fight}", dip ? "deepest dip" : "net loss", $"{percent} %"]);
+			rows.Add(FightNetRow(key, AllRuns, percent));
+		}
+
+		// A729: the same per rank step of the team; the runs are counted with the net loss.
+		foreach (var (key, rank, percent, runs) in CrucibleBoard.ByRankEntries(byRank))
+		{
+			rows.Add(FightNetRow(key, key >= CrucibleBoard.FamiliarKeyStride ? rank.ToString() : RankRuns(rank, runs), percent));
 		}
 
 		Sort(rows);
-		return new LearnedTab("Crucible net loss", ["Fight (first enemy)", "Measure", "Most, of your HP without gear"], rows);
+		return new LearnedTab("Crucible net loss", ["Fight (first enemy)", "Measure", "Team rank", "Most, of your HP without gear"], rows);
+	}
+
+	private static string[] FightNetRow(uint key, string runs, int percent)
+	{
+		var dip = key >= CrucibleBoard.FamiliarKeyStride;
+		var fight = dip ? key / CrucibleBoard.FamiliarKeyStride : key;
+		return [CrucibleFightName(fight), dip ? "deepest dip" : "net loss", runs, $"{percent} %"];
 	}
 
 	// K10 of the Crucible (concept 21, Campsite, A667): per board, the whole a campsite rest shares among the player and the

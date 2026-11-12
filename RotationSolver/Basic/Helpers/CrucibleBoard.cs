@@ -297,6 +297,7 @@ internal static class CrucibleBoard
 		var netPercent = (int)Math.Ceiling(BareShare(new FightLoad(0d, 0d, net, 0d), player.MaxHp) * PercentScale);
 		var dipPercent = (int)Math.Ceiling(BareShare(new FightLoad(0d, 0d, dip, 0d), player.MaxHp) * PercentScale);
 		var changed = false;
+		var byRank = false;
 		lock (OtherConfiguration.CrucibleFightNetGate)
 		{
 			if (!OtherConfiguration.CrucibleFightNet.TryGetValue(_fight, out var knownNet) || knownNet < netPercent)
@@ -311,6 +312,10 @@ internal static class CrucibleBoard
 				OtherConfiguration.CrucibleFightNet[dipKey] = dipPercent;
 				changed = true;
 			}
+
+			// A729: and at the team's rank, the run counted with the net loss.
+			byRank = LearnByRank(OtherConfiguration.CrucibleFightNetByRank, _fight, _teamRank, netPercent, true);
+			byRank |= LearnByRank(OtherConfiguration.CrucibleFightNetByRank, dipKey, _teamRank, dipPercent, false);
 		}
 
 		if (changed)
@@ -319,6 +324,11 @@ internal static class CrucibleBoard
 				+ $"your own healing of {_fightOwnApplied} HP taken off - the heaviest so far stored");
 			_ = OtherConfiguration.SaveCrucibleFightNet();
 		}
+
+		if (byRank)
+		{
+			_ = OtherConfiguration.SaveCrucibleFightNetByRank();
+		}
 	}
 
 	/// <summary>K15 (A706, A709): the most HP the player lost in <paramref name="battle"/> from its start to its end without his own healing, as a share of his HP without gear; null before it was measured.</summary>
@@ -326,7 +336,9 @@ internal static class CrucibleBoard
 	{
 		lock (OtherConfiguration.CrucibleFightNetGate)
 		{
-			return OtherConfiguration.CrucibleFightNet.TryGetValue(battle, out var percent) ? percent / (float)PercentScale : null;
+			return ReadByRank(OtherConfiguration.CrucibleFightNet, OtherConfiguration.CrucibleFightNetByRank, battle, _teamRank) is { } percent
+				? percent / (float)PercentScale
+				: null;
 		}
 	}
 
@@ -335,8 +347,13 @@ internal static class CrucibleBoard
 	{
 		lock (OtherConfiguration.CrucibleFightNetGate)
 		{
-			return OtherConfiguration.CrucibleFightNet.TryGetValue(battle * FamiliarKeyStride, out var percent)
-				? percent / (float)PercentScale
+			// A729: the dip at the ranks the net loss is read at - both from the same runs.
+			var dip = _teamRank > 0 && RanksToRead(OtherConfiguration.CrucibleFightNetByRank, battle, _teamRank) is { } ranks
+				? HeaviestAt(OtherConfiguration.CrucibleFightNetByRank, battle * FamiliarKeyStride, ranks)
+				: null;
+			return (dip ?? (OtherConfiguration.CrucibleFightNet.TryGetValue(battle * FamiliarKeyStride, out var percent) ? percent : null))
+				is { } read
+				? read / (float)PercentScale
 				: null;
 		}
 	}
@@ -345,7 +362,9 @@ internal static class CrucibleBoard
 	{
 		lock (OtherConfiguration.CrucibleFightLoadsGate)
 		{
-			return OtherConfiguration.CrucibleFightLoads.TryGetValue(battle, out var percent) ? percent / (float)PercentScale : null;
+			return ReadByRank(OtherConfiguration.CrucibleFightLoads, OtherConfiguration.CrucibleFightLoadsByRank, battle, _teamRank) is { } percent
+				? percent / (float)PercentScale
+				: null;
 		}
 	}
 
@@ -895,6 +914,9 @@ internal static class CrucibleBoard
 			EndFight();
 			EndStretch();
 			_run++;
+			_teamRank = 0;
+			_petRanks.Clear();
+			_useRunCounted.Clear();
 			_upcoming = 0;
 			CrucibleRoute.Reset();
 			_tracedArea = DataCenter.TerritoryID;
@@ -911,6 +933,7 @@ internal static class CrucibleBoard
 					+ $"first enemy {EnemyName(probe.NameId)}, weak to {ElementName(probe.Weakness)}, strength {probe.Strength}, "
 					+ $"intelligence {probe.Intelligence}");
 			TraceTeamAndField("entering the board");
+			ReadTeamRank();
 		}
 
 		FollowHornScreen();
@@ -1134,6 +1157,7 @@ internal static class CrucibleBoard
 			if (mode == HornScreenMode)
 			{
 				TraceTeamAndField("horn screen open");
+				ReadTeamRank();
 			}
 			else if (mode == BeastmasterRotation.CampsiteMode)
 			{
@@ -1312,6 +1336,232 @@ internal static class CrucibleBoard
 	// plus the familiar's pet row; the pet rows of the familiars lie below it (Pet rows 47 to 97). An encoding, not a figure
 	// of the game.
 	internal const uint FamiliarKeyStride = 1000;
+
+	// A729 (concept 21, "Gelernte Werte und der Rang der Begleiter"): the stride of a rank in the stores by rank - a key of
+	// the store it extends times this stride plus the rank. XBMPetParamGrow holds 30 ranks per familiar (subrows 0 to 29), so
+	// every rank fits below it; an encoding, not a figure of the game. The largest key it extends, a fight's use loss
+	// (UseLossKey), stays within a uint up to fight row 67 with the two slots; XBMBattleDetail ends at row 45.
+	internal const uint RankStride = 32;
+
+	// A729: the fewest runs that show a spread - the same threshold as for lowering a layer (concept 13, rule 5, A475). A
+	// value by rank stands only on at least as many runs at or below the team's rank; with fewer, the heaviest over all runs.
+	private const int SpreadRuns = 2;
+
+	/// <summary>A729: the two values kept per key and rank in the stores by rank but the hits.</summary>
+	internal enum RankSlot : uint
+	{
+		/// <summary>The heaviest value at this rank.</summary>
+		Value,
+
+		/// <summary>The runs measured at this rank.</summary>
+		Runs,
+	}
+
+	private static readonly uint RankSlots = (uint)Enum.GetValues<RankSlot>().Length;
+
+	// A729: the key of a value or of its runs at a rank in a store by rank; null where it leaves a uint.
+	private static uint? RankKey(uint key, int rank, RankSlot slot)
+	{
+		var wide = ((((ulong)key * RankStride) + (ulong)rank) * RankSlots) + (uint)slot;
+		return wide <= uint.MaxValue ? (uint)wide : null;
+	}
+
+	/// <summary>
+	/// A729: the values of a store by rank as the learned tables show them - the key of the store it extends, the rank, the
+	/// value and the runs counted there.
+	/// </summary>
+	internal static List<(uint Key, int Rank, int Value, int Runs)> ByRankEntries(Dictionary<uint, int> byRank)
+	{
+		var entries = new List<(uint Key, int Rank, int Value, int Runs)>();
+		foreach (var (code, value) in byRank)
+		{
+			if (code % RankSlots != (uint)RankSlot.Value)
+			{
+				continue;
+			}
+
+			var keyAndRank = code / RankSlots;
+			var key = keyAndRank / RankStride;
+			var rank = (int)(keyAndRank % RankStride);
+			var runs = RankKey(key, rank, RankSlot.Runs) is { } counted ? byRank.GetValueOrDefault(counted) : 0;
+			entries.Add((key, rank, value, runs));
+		}
+
+		return entries;
+	}
+
+	/// <summary>A729: the hit key and the familiar's rank a key of CrucibleFamiliarHitsByRank names.</summary>
+	internal static (uint HitKey, int Rank) HitRankOf(uint key) => (key / RankStride, (int)(key % RankStride));
+
+	// A729: the key of a familiar's hit sum at its rank (CrucibleFamiliarHitsByRank).
+	private static uint? HitRankKey(uint hitKey, int rank)
+	{
+		var wide = ((ulong)hitKey * RankStride) + (ulong)rank;
+		return wide <= uint.MaxValue ? (uint)wide : null;
+	}
+
+	// A729: a value into its rank's heaviest, and a run counted there. The caller holds the store's gate.
+	private static bool LearnByRank(Dictionary<uint, int> store, uint key, int rank, int value, bool countRun)
+	{
+		if (rank <= 0 || RankKey(key, rank, RankSlot.Value) is not { } at || RankKey(key, rank, RankSlot.Runs) is not { } runs)
+		{
+			return false;
+		}
+
+		var changed = false;
+		if (!store.TryGetValue(at, out var known) || known < value)
+		{
+			store[at] = value;
+			changed = true;
+		}
+
+		if (countRun)
+		{
+			store[runs] = store.GetValueOrDefault(runs) + 1;
+			changed = true;
+		}
+
+		return changed;
+	}
+
+	// A729: the ranks to read for a team at <rank> - the measured ones at or below it, nearest first, until they count the
+	// runs that show a spread; null with fewer, and then the heaviest over all runs holds. The caller holds the store's gate.
+	private static List<int>? RanksToRead(Dictionary<uint, int> store, uint key, int rank)
+	{
+		var ranks = new List<int>();
+		var runs = 0;
+		for (var r = Math.Min(rank, (int)RankStride - 1); r > 0; r--)
+		{
+			if (RankKey(key, r, RankSlot.Value) is not { } at || !store.ContainsKey(at))
+			{
+				continue;
+			}
+
+			ranks.Add(r);
+			runs += RankKey(key, r, RankSlot.Runs) is { } counted ? store.GetValueOrDefault(counted) : 0;
+			if (runs >= SpreadRuns)
+			{
+				return ranks;
+			}
+		}
+
+		return null;
+	}
+
+	// A729: the heaviest value of <key> over <ranks>; null where none holds it. The caller holds the store's gate.
+	private static int? HeaviestAt(Dictionary<uint, int> store, uint key, List<int> ranks)
+	{
+		int? heaviest = null;
+		foreach (var rank in ranks)
+		{
+			if (RankKey(key, rank, RankSlot.Value) is { } at && store.TryGetValue(at, out var value)
+				&& (heaviest is not { } before || value > before))
+			{
+				heaviest = value;
+			}
+		}
+
+		return heaviest;
+	}
+
+	// A729: <key> of a store read for the team at <rank> - by rank where enough runs stand at or below it, else the heaviest
+	// over all runs. The caller holds the gate both stores share.
+	private static int? ReadByRank(Dictionary<uint, int> all, Dictionary<uint, int> byRank, uint key, int rank)
+	{
+		return rank > 0 && RanksToRead(byRank, key, rank) is { } ranks && HeaviestAt(byRank, key, ranks) is { } value
+			? value
+			: all.TryGetValue(key, out var heaviest) ? heaviest : null;
+	}
+
+	// A729: the rank step of the run's team (0 unknown) and each familiar's rank, read where the team window shows the board.
+	private static int _teamRank;
+	private static readonly Dictionary<BeastmasterPet, int> _petRanks = [];
+
+	/// <summary>
+	/// A729: the rank step of the run's team - the mean of its familiars' ranks rounded down, each its synced rank, at most
+	/// the board's sync rank and that when it stands above it; 0 while the team window did not show the board in this run.
+	/// </summary>
+	internal static int TeamRank => _teamRank;
+
+	/// <summary>A729: a familiar's rank on this board as last read in this run; 0 when not read.</summary>
+	internal static int RankOf(BeastmasterPet pet) => _petRanks.GetValueOrDefault(pet);
+
+	/// <summary>A729: the sync rank of <paramref name="board"/> (XBMContent's SyncRank, Lumina's Unknown36); 0 when the row is missing.</summary>
+	internal static int SyncRank(uint board)
+	{
+		return Svc.Data.GetExcelSheet<Lumina.Excel.Sheets.XBMContent>()?.GetRowOrDefault(board) is { } content ? content.Unknown36 : 0;
+	}
+
+	/// <summary>
+	/// A729: a familiar's rank as it fights on a board of sync rank <paramref name="sync"/> - its synced rank, at most the
+	/// sync rank, and that when it stands above it.
+	/// </summary>
+	internal static int FightingRank(int synced, bool overRank, int sync)
+	{
+		return sync <= 0 ? synced : overRank ? sync : Math.Min(synced, sync);
+	}
+
+	/// <summary>A729: the rank step of a team - the mean of its fighting ranks, rounded down; 0 for none.</summary>
+	internal static int RankStep(long sum, int count) => count > 0 ? (int)(sum / count) : 0;
+
+	// A729: the team's ranks, where the team window shows the board of this run.
+	private static unsafe void ReadTeamRank()
+	{
+		var party = AgentXBMPetParty.Instance();
+		var board = CurrentBoard;
+		if (party == null || board == 0 || party->ContentId != board)
+		{
+			return;
+		}
+
+		var sync = SyncRank(board);
+		long sum = 0;
+		var count = 0;
+		var ranks = new Dictionary<BeastmasterPet, int>();
+		foreach (var member in party->SelectedPets.AsSpan())
+		{
+			if (member.PetId == 0 || member.PetId > byte.MaxValue)
+			{
+				continue;
+			}
+
+			var rank = FightingRank((int)party->GetSyncedRank(member.PetId), party->IsPetOverSyncedRank(member.PetId), sync);
+			if (rank <= 0)
+			{
+				continue;
+			}
+
+			ranks[(BeastmasterPet)member.PetId] = rank;
+			sum += rank;
+			count++;
+		}
+
+		var step = RankStep(sum, count);
+		if (step <= 0)
+		{
+			return;
+		}
+
+		_petRanks.Clear();
+		var named = new List<string>();
+		foreach (var (pet, rank) in ranks)
+		{
+			_petRanks[pet] = rank;
+			named.Add($"{pet} {rank}");
+		}
+
+		if (step == _teamRank)
+		{
+			return;
+		}
+
+		_teamRank = step;
+		DefenseTrace.Line($"crucible team rank {step} on board {board} (sync rank {sync}): {string.Join(", ", named)} - "
+			+ "the learned values are read for this rank");
+	}
+
+	// A729: once per run and fight - a fight's use loss counts its run once.
+	private static readonly HashSet<uint> _useRunCounted = [];
 
 	// K16 (A711): each familiar's Trick and Release hits in the fight under way - their damage and the potency of those hits.
 	private static readonly Dictionary<BeastmasterPet, (double Damage, double Potency)> _familiarFight = [];
@@ -1846,14 +2096,30 @@ internal static class CrucibleBoard
 		}
 
 		var key = UseLossKey(battle);
+		var value = (int)Math.Min(int.MaxValue, loss);
+		bool heaviest;
+		bool byRank;
 		lock (OtherConfiguration.CrucibleFamiliarLossGate)
 		{
-			if (OtherConfiguration.CrucibleFamiliarLoss.TryGetValue(key, out var known) && known >= loss)
+			heaviest = !OtherConfiguration.CrucibleFamiliarLoss.TryGetValue(key, out var known) || known < loss;
+			if (heaviest)
 			{
-				return;
+				OtherConfiguration.CrucibleFamiliarLoss[key] = value;
 			}
 
-			OtherConfiguration.CrucibleFamiliarLoss[key] = (int)Math.Min(int.MaxValue, loss);
+			// A729: and at the team's rank, the run counted once per fight.
+			byRank = LearnByRank(OtherConfiguration.CrucibleFamiliarLossByRank, key, _teamRank, value,
+				_teamRank > 0 && _useRunCounted.Add(battle));
+		}
+
+		if (byRank)
+		{
+			_ = OtherConfiguration.SaveCrucibleFamiliarLossByRank();
+		}
+
+		if (!heaviest)
+		{
+			return;
 		}
 
 		DefenseTrace.Line($"crucible fight {battle}: a use cost a familiar {loss} HP, the most in this fight so far - stored");
@@ -1868,7 +2134,10 @@ internal static class CrucibleBoard
 	{
 		lock (OtherConfiguration.CrucibleFamiliarLossGate)
 		{
-			return battle != 0 && OtherConfiguration.CrucibleFamiliarLoss.TryGetValue(UseLossKey(battle), out var loss) ? (uint)loss : null;
+			return battle != 0 && ReadByRank(OtherConfiguration.CrucibleFamiliarLoss, OtherConfiguration.CrucibleFamiliarLossByRank,
+				UseLossKey(battle), _teamRank) is { } loss
+				? (uint)loss
+				: null;
 		}
 	}
 
@@ -1893,6 +2162,7 @@ internal static class CrucibleBoard
 		var uses = new List<uint>(_runUseLosses);
 		uses.Sort((a, b) => b.CompareTo(a));
 		var changed = false;
+		var byRank = false;
 		lock (OtherConfiguration.CrucibleFamiliarLossGate)
 		{
 			if (!OtherConfiguration.CrucibleFamiliarLoss.TryGetValue(board, out var known) || known < loss)
@@ -1910,7 +2180,18 @@ internal static class CrucibleBoard
 					OtherConfiguration.CrucibleFamiliarLoss[key] = use;
 					changed = true;
 				}
+
+				byRank |= LearnByRank(OtherConfiguration.CrucibleFamiliarLossByRank, key, _teamRank, use, false);
 			}
+
+			// A729: the run at the team's rank, counted once: the final fight's end closes it, a later use only adds to it.
+			byRank |= LearnByRank(OtherConfiguration.CrucibleFamiliarLossByRank, board, _teamRank, loss, _rankRunLearned != _run);
+			_rankRunLearned = _run;
+		}
+
+		if (byRank)
+		{
+			_ = OtherConfiguration.SaveCrucibleFamiliarLossByRank();
 		}
 
 		if (!changed)
@@ -1922,6 +2203,9 @@ internal static class CrucibleBoard
 			+ $"{(uses.Count > 0 ? uses[0] : 0)} the largest; the heaviest so far stored");
 		_ = OtherConfiguration.SaveCrucibleFamiliarLoss();
 	}
+
+	// A729: the run whose loss was last counted at its rank.
+	private static int _rankRunLearned = -1;
 
 	/// <summary>K7 team size (A698): the most HP the familiars lost together in one run on <paramref name="board"/>; null before one was measured.</summary>
 	internal static int? FamiliarLossOf(uint board)
@@ -1936,19 +2220,25 @@ internal static class CrucibleBoard
 	/// K7 team size (A703): the losses of the familiars' uses on <paramref name="board"/>, largest first, each rank the
 	/// largest any run there had; empty before one was measured.
 	/// </summary>
-	internal static List<uint> FamiliarUseLossesOf(uint board)
+	internal static List<uint> FamiliarUseLossesOf(uint board, int teamRank)
 	{
 		var uses = new List<uint>();
 		lock (OtherConfiguration.CrucibleFamiliarLossGate)
 		{
+			// A729: the uses of the runs at or below the team's rank where enough stand there, else of every run.
+			var ranks = teamRank > 0 ? RanksToRead(OtherConfiguration.CrucibleFamiliarLossByRank, board, teamRank) : null;
 			for (var rank = 1u; rank < FamiliarKeyStride; rank++)
 			{
-				if (!OtherConfiguration.CrucibleFamiliarLoss.TryGetValue((board * FamiliarKeyStride) + rank, out var use))
+				var key = (board * FamiliarKeyStride) + rank;
+				int? use = ranks != null
+					? HeaviestAt(OtherConfiguration.CrucibleFamiliarLossByRank, key, ranks)
+					: OtherConfiguration.CrucibleFamiliarLoss.TryGetValue(key, out var all) ? all : null;
+				if (use is not { } loss)
 				{
 					break;
 				}
 
-				uses.Add((uint)use);
+				uses.Add((uint)loss);
 			}
 		}
 
@@ -1960,6 +2250,7 @@ internal static class CrucibleBoard
 	private static void LearnFamiliarHits()
 	{
 		var learned = new List<string>();
+		var byRank = false;
 		lock (OtherConfiguration.CrucibleFamiliarHitsGate)
 		{
 			foreach (var (pet, (damage, potency)) in _familiarFight)
@@ -1981,7 +2272,26 @@ internal static class CrucibleBoard
 				OtherConfiguration.CrucibleFamiliarHits[damageKey] = (int)allDamage;
 				OtherConfiguration.CrucibleFamiliarHits[potencyKey] = (int)allPotency;
 				learned.Add($"{pet} {allDamage / (double)allPotency:F2} over {allPotency} potency");
+
+				// A729: and at the familiar's own rank.
+				var rank = RankOf(pet);
+				if (rank > 0 && HitRankKey(damageKey, rank) is { } damageAt && HitRankKey(potencyKey, rank) is { } potencyAt)
+				{
+					var rankDamage = OtherConfiguration.CrucibleFamiliarHitsByRank.GetValueOrDefault(damageAt) + (long)Math.Round(damage);
+					var rankPotency = OtherConfiguration.CrucibleFamiliarHitsByRank.GetValueOrDefault(potencyAt) + (long)Math.Round(potency);
+					if (rankDamage <= int.MaxValue && rankPotency <= int.MaxValue)
+					{
+						OtherConfiguration.CrucibleFamiliarHitsByRank[damageAt] = (int)rankDamage;
+						OtherConfiguration.CrucibleFamiliarHitsByRank[potencyAt] = (int)rankPotency;
+						byRank = true;
+					}
+				}
 			}
+		}
+
+		if (byRank)
+		{
+			_ = OtherConfiguration.SaveCrucibleFamiliarHitsByRank();
 		}
 
 		if (learned.Count > 0)
@@ -2016,6 +2326,22 @@ internal static class CrucibleBoard
 
 				var seen = measured.GetValueOrDefault(familiar);
 				measured[familiar] = slot == HitSlot.Damage ? (sum, seen.Potency) : (seen.Damage, sum);
+			}
+
+			// A729: a familiar whose rank is read counts its hits at that rank, else at the nearest measured below it.
+			foreach (var familiar in new List<BeastmasterPet>(measured.Keys))
+			{
+				for (var rank = Math.Min(RankOf(familiar), (int)RankStride - 1); rank > 0; rank--)
+				{
+					if (HitRankKey(HitKey(battle, familiar, HitSlot.Damage), rank) is { } damageAt
+						&& HitRankKey(HitKey(battle, familiar, HitSlot.Potency), rank) is { } potencyAt
+						&& OtherConfiguration.CrucibleFamiliarHitsByRank.GetValueOrDefault(damageAt) is var rankDamage and > 0
+						&& OtherConfiguration.CrucibleFamiliarHitsByRank.GetValueOrDefault(potencyAt) is var rankPotency and > 0)
+					{
+						measured[familiar] = (rankDamage, rankPotency);
+						break;
+					}
+				}
 			}
 		}
 
@@ -2053,14 +2379,28 @@ internal static class CrucibleBoard
 
 		var share = BareShare(_fightLoad, player.MaxHp);
 		var percent = (int)Math.Ceiling(share * PercentScale);
+		bool heaviest;
+		bool byRank;
 		lock (OtherConfiguration.CrucibleFightLoadsGate)
 		{
-			if (OtherConfiguration.CrucibleFightLoads.TryGetValue(_fight, out var known) && known >= percent)
+			heaviest = !OtherConfiguration.CrucibleFightLoads.TryGetValue(_fight, out var known) || known < percent;
+			if (heaviest)
 			{
-				return;
+				OtherConfiguration.CrucibleFightLoads[_fight] = percent;
 			}
 
-			OtherConfiguration.CrucibleFightLoads[_fight] = percent;
+			// A729: and at the team's rank, the run counted.
+			byRank = LearnByRank(OtherConfiguration.CrucibleFightLoadsByRank, _fight, _teamRank, percent, true);
+		}
+
+		if (byRank)
+		{
+			_ = OtherConfiguration.SaveCrucibleFightLoadsByRank();
+		}
+
+		if (!heaviest)
+		{
+			return;
 		}
 
 		_ = OtherConfiguration.SaveCrucibleFightLoads();

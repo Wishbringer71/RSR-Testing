@@ -21182,6 +21182,40 @@ dann mit todo weitermachen". Verfahren, Fehlerklassen und Stand je Bereich: `doc
 - *Prüfgrad:* statisch (gelesen), Compile ohne Warnung, 53 Prüfschritte, die Modelle `crucible_route_model.py` und
   `approach_model.py` an seinen Daten.
 
+### A729 · Crucible: gelernte Werte je Rangstufe der Begleiter (12.11.2026)
+
+TODO „Crucible: Gelernte Lasten sinken nicht, wenn die Begleiter stärker werden" (Befund F9 der Quellcode-Prüfung,
+A728), im Loop. Konzept 21, „Gelernte Werte und der Rang der Begleiter".
+
+- *Befund:* `LearnLoad`, `LearnNetAndDip`, `LearnUseLoss`, `LearnFamiliarLoss` hielten je den größten Wert über alle
+  Läufe, `LearnFamiliarHits` summierte über alle Sitzungen. Die Werte eines Begleiters steigen je Rang
+  (`XBMPetParamGrow`, ffxiv-datamining 52a72b3: Zeile 2 Stärke 50 auf Rang 1, 130 auf Rang 5), und das Spiel gleicht
+  nur nach unten an (`GetSyncedRank`, `IsPetOverSyncedRank`; FFXIVClientStructs 80cb4a7). Deshalb blieb jeder Wert bei
+  dem schwächsten Kader stehen, mit dem ein Brett je lief. Rast, Laden, Weg, „leichtes Brett", Teamgröße und Hornwahl
+  rechneten mit ihm.
+- *Optionen:* (0) nichts; (1) Höchstwert verfallen lassen oder bei Rangaufstieg löschen; (2) Umrechnen nach den Werten
+  im Blatt; (3) je Rangstufe lernen, die nächste gemessene Stufe auf oder unter der des Kaders lesen; (3a) die Stufe nach
+  den Begleitern auf den Hörnern statt nach dem Kader. Verworfen: (1) verwirft die schweren Läufe, die noch gelten;
+  (2) braucht eine Schadensformel, die keine Quelle nennt; (3a) ist vor dem Kampf nicht lesbar (Weg, Rast).
+- *Gebaut (3):* Rangstufe = abgerundetes Mittel der Kampfränge des Kaders, je Begleiter `GetSyncedRank`, höchstens der
+  Synchronrang des Bretts (`XBMContent.Unknown36`), genau dieser über ihm. Gelesen, wenn `AgentXBMPetParty.ContentId`
+  das Brett zeigt: beim Betreten und mit jedem Hornfenster, je Lauf neu. Für die Teamgröße vor dem Brett gilt die Stufe
+  der gewählten Begleiter, für die Treffer der Rang des Begleiters. Vier neue Dateien `…ByRank.json` (Wert und
+  gezählte Läufe je Schlüssel und Stufe, `RankKey`); die alten Dateien lernen weiter den Höchstwert über alle Läufe und
+  bleiben der Rückfall. Lesen: die Stufen auf oder unter der des Kaders, die nächste zuerst, den größten Wert über
+  sie, bis sie zwei Läufe zählen (Schwelle wie Konzept 13, Regel 5, A475); sonst der Höchstwert über alle Läufe. Ein
+  Lauf zählt je Kampf einmal, bei den Einsatzverlusten einmal je Kampf und Lauf. Neue feste Werte: `RankStride = 32`
+  (Kodierung), `SpreadRuns = 2`, beide in `fixed_values.json` mit Grund. Spur: „crucible team rank …". Reiter der
+  gelernten Werte zeigen eine Spalte für den Rang (`check_learned_display.py`).
+- *Falsifikation:* (1) kein Defekt – widerlegt am Blatt; (2) Mittel des Kaders misst nicht, wer kämpft – teilweise
+  widerlegt, Preis im Konzept: ein Lauf schwerer als seine Stufe kostet die Rast oder den Kauf, die der alte Höchstwert
+  verlangt hätte, Heilung im Kampf und Trankschwelle unberührt; (3) ausgeliefert, nichts ändert sich – Rang nicht
+  lesbar, Kader schwächer als jeder gemessene: dann gilt der Höchstwert über alle Läufe wie bisher.
+- *Kein Modell:* Seine Mitschnitte enthalten keine Rangangaben; ein Modell an erfundenen Läufen prüfte nur die eigene
+  Leseregel. Die Spurzeile liefert die Ränge mit dem nächsten Upload. Das Layoutmodell (`window_layout_model.py`) misst
+  die Empfehlungsfenster, nicht die Tabellen der gelernten Werte; diese haben eine Spalte mehr.
+- *Prüfgrad:* statisch, Compile ohne Warnung, 53 Prüfschritte.
+
 ## B · Commit-Register (Fork vs. `upstream/main`)
 
 ### B1 · Einzelgeprüfte Fork-Commits

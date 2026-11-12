@@ -2070,6 +2070,26 @@
    "status": "exception",
    "loop": "A698",
    "reason": "Row id of XBMScoreBonus and index into XBMContent's BonusPoints (EXDSchema latest): a reference into the game's sheets, not a figure; the team sizes are read from the row's condition text, the points from XBMContent (A698)."
+  },
+  {
+   "file": "RotationSolver/Basic/Helpers/CrucibleBoard.cs",
+   "code": "internal const uint RankStride = 32;",
+   "values": [
+    "32"
+   ],
+   "status": "exception",
+   "loop": "A729",
+   "reason": "The stride of a rank in the Crucible stores by rank: a key of the store it extends times this stride plus the rank. XBMPetParamGrow holds 30 ranks per familiar, so every rank fits below it; with the two slots the largest extended key (a fight's use loss) stays within a uint up to fight row 67, XBMBattleDetail ends at 45. An encoding of the store, not a figure of the game (A729)."
+  },
+  {
+   "file": "RotationSolver/Basic/Helpers/CrucibleBoard.cs",
+   "code": "private const int SpreadRuns = 2;",
+   "values": [
+    "2"
+   ],
+   "status": "exception",
+   "loop": "A729",
+   "reason": "The fewest runs that show a spread: a Crucible value by rank stands only on as many runs at or below the team's rank, else the heaviest over all runs holds. The same threshold as for lowering a learned layer (concept 13, rule 5, A475); a count by definition, not a tuned value (A729)."
   }
  ]
 }

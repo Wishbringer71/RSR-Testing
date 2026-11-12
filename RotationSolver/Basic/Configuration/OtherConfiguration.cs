@@ -282,6 +282,26 @@ internal partial class OtherConfiguration
 	internal static readonly object CrucibleFightNetGate = new();
 
 	/// <summary>
+	/// The Crucible's learned values by the rank of the familiars (concept 21, "Gelernte Werte und der Rang der Begleiter",
+	/// A729): the keys of <see cref="CrucibleFightLoads"/>, <see cref="CrucibleFightNet"/>, <see cref="CrucibleFamiliarLoss"/>
+	/// and <see cref="CrucibleFamiliarHits"/>, each with the rank step of the team (the familiar's own rank for the hits) and,
+	/// but for the hits, the runs counted there - <c>CrucibleBoard.RankKey</c>. Each under the gate of its store.
+	/// </summary>
+	internal static Dictionary<uint, int> CrucibleFightLoadsByRank = [];
+
+	/// <inheritdoc cref="CrucibleFightLoadsByRank"/>
+	internal static Dictionary<uint, int> CrucibleFightNetByRank = [];
+
+	/// <inheritdoc cref="CrucibleFightLoadsByRank"/>
+	internal static Dictionary<uint, int> CrucibleFamiliarLossByRank = [];
+
+	/// <inheritdoc cref="CrucibleFightLoadsByRank"/>
+	internal static Dictionary<uint, int> CrucibleFamiliarHitsByRank = [];
+
+	/// <summary>What the last save and load of each store by rank (<see cref="CrucibleFightLoadsByRank"/>) did, in words.</summary>
+	internal static readonly System.Collections.Concurrent.ConcurrentDictionary<string, string> CrucibleByRankStoreState = new();
+
+	/// <summary>
 	/// K10 of the Crucible (concept 21, Campsite, A667): per board (the route's board row), the whole a campsite rest shares
 	/// among the player and the familiars resting, in percent of each one's maximum HP - read from the game's rest prompt
 	/// where it is not capped at 100 %, the smallest read over every session. Changed and read on the game thread under
@@ -897,6 +917,18 @@ internal partial class OtherConfiguration
 		new LearnedFile<int>(nameof(CrucibleFightNet), CopyCrucibleFightNet,
 			v => { lock (CrucibleFightNetGate) { CrucibleFightNet = v; } },
 			Math.Max, state => CrucibleFightNetStoreState = state, "Crucible fight(s) with a measured net loss and dip"),
+		new LearnedFile<int>(nameof(CrucibleFightLoadsByRank), () => CopyUnder(CrucibleFightLoadsGate, CrucibleFightLoadsByRank),
+			v => { lock (CrucibleFightLoadsGate) { CrucibleFightLoadsByRank = v; } },
+			Math.Max, state => CrucibleByRankStoreState[nameof(CrucibleFightLoadsByRank)] = state, "Crucible load value(s) by rank"),
+		new LearnedFile<int>(nameof(CrucibleFightNetByRank), () => CopyUnder(CrucibleFightNetGate, CrucibleFightNetByRank),
+			v => { lock (CrucibleFightNetGate) { CrucibleFightNetByRank = v; } },
+			Math.Max, state => CrucibleByRankStoreState[nameof(CrucibleFightNetByRank)] = state, "Crucible net loss value(s) by rank"),
+		new LearnedFile<int>(nameof(CrucibleFamiliarLossByRank), () => CopyUnder(CrucibleFamiliarLossGate, CrucibleFamiliarLossByRank),
+			v => { lock (CrucibleFamiliarLossGate) { CrucibleFamiliarLossByRank = v; } },
+			Math.Max, state => CrucibleByRankStoreState[nameof(CrucibleFamiliarLossByRank)] = state, "Crucible familiar loss value(s) by rank"),
+		new LearnedFile<int>(nameof(CrucibleFamiliarHitsByRank), () => CopyUnder(CrucibleFamiliarHitsGate, CrucibleFamiliarHitsByRank),
+			v => { lock (CrucibleFamiliarHitsGate) { CrucibleFamiliarHitsByRank = v; } },
+			Math.Max, state => CrucibleByRankStoreState[nameof(CrucibleFamiliarHitsByRank)] = state, "Crucible familiar hit value(s) by rank"),
 		new LearnedFile<int>(nameof(CrucibleCampPools), CopyCrucibleCampPools,
 			v => { lock (CrucibleCampPoolsGate) { CrucibleCampPools = v; } },
 			Math.Min, state => CrucibleCampPoolsStoreState = state, "Crucible board(s) with a read campsite rest"),
@@ -1188,6 +1220,22 @@ internal partial class OtherConfiguration
 
 	/// <summary>What the last save and load of <see cref="CrucibleFightNet"/> did, in words.</summary>
 	internal static string CrucibleFightNetStoreState { get; private set; } = "not loaded yet";
+
+	internal static Task SaveCrucibleFightLoadsByRank() => SaveList(nameof(CrucibleFightLoadsByRank));
+
+	internal static Task SaveCrucibleFightNetByRank() => SaveList(nameof(CrucibleFightNetByRank));
+
+	internal static Task SaveCrucibleFamiliarLossByRank() => SaveList(nameof(CrucibleFamiliarLossByRank));
+
+	internal static Task SaveCrucibleFamiliarHitsByRank() => SaveList(nameof(CrucibleFamiliarHitsByRank));
+
+	private static Dictionary<uint, int> CopyUnder(object gate, Dictionary<uint, int> store)
+	{
+		lock (gate)
+		{
+			return new Dictionary<uint, int>(store);
+		}
+	}
 
 	private static Dictionary<uint, int> CopyCrucibleCampPools()
 	{

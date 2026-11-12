@@ -46,7 +46,7 @@ Aus den Befunden der bisherigen Loops; jede mit dem Fall, an dem sie auffiel.
 | F6 | Erkennung ohne Reichweite oder Lage | Trifft das Erkannte den, für den gehandelt wird? | A701: Rückstoß in einer Linie, in der er nicht stand |
 | F7 | Text und Code weichen ab | Tut der Code, was Einstellungstext, Kommentar oder Konzept sagen? | A712: Auffüllen gegen einen stehenden Bonus |
 | F8 | Schlüssel und Kodierungen | Können zwei Bedeutungen denselben Schlüssel treffen; passt der Wertebereich? | A710: Kampfzeilen neben Brettzeilen in einer Datei |
-| F9 | Gelernte Höchstwerte altern nicht | Was geschieht, wenn die Wirklichkeit leichter wird? | TODO „Crucible: Gelernte Lasten sinken nicht …" |
+| F9 | Gelernte Höchstwerte altern nicht | Was geschieht, wenn die Wirklichkeit leichter wird? | behoben A729 (Crucible); Trefferserien: TODO „Gelernte Trefferserien sinken nicht" |
 | F10 | Nebenläufigkeit | Wird eine Sammlung vom Spiel-Thread und von einem Pool-Thread berührt, ohne Sperre? | A224 |
 | F11 | Reihenfolge der Zweige | Verdrängt ein früher Zweig einen späteren, der wichtiger ist; läuft ein Pfad nie? | A693: Swiftcast hinter einem anderen oGCD |
 | F12 | Annahme über das Spiel ohne Beleg | Welche Spielmechanik setzt die Stelle voraus, und wo ist sie belegt? | A707/C183 |
@@ -100,7 +100,7 @@ Zeilen: gesamt / vom Fork hinzugefügt (12.11.2026). Stand: offen, in Arbeit, ge
 | Wegtest lernt mit den Mitteln, die er einspart | F1, F5 | `CrucibleBoard.LearnNetAndDip`, `CarriesToFinal` | behoben, A709 |
 | Auffüllen gegen einen stehenden Gegenstandsbonus | F7 | `BeastmasterCrucibleItems.SpareHeal` | behoben, A712 |
 | Reserve misst mit dem größten Verlust des Bretts | F2 | `BST_Reborn.HeldForFinal`, `ShortForFinal` | behoben, A710 |
-| Gelernte Lasten sinken nicht | F9 | `CrucibleBoard.Learn*` | offen, TODO |
+| Gelernte Lasten sinken nicht | F9 | `CrucibleBoard.Learn*` | behoben, A729 |
 | Zufallsfeld wird Kampf: die Brettposition blieb auf dem vorigen Feld; an drei Gabelungen mit Schatz auf beiden Seiten stand sie auf dem falschen Abzweig | F4 | `CrucibleRoute.NoteBattle`, `NoteSpace` | behoben, A715 (Modell `crucible_route_model.py`) |
 | Zwei Maße für dieselbe Frage „tragen die LP den Weg": K15 misst Nettoverlust und Senke (A709), die Wegempfehlung zählte den Bruttoschaden und nur den Stand nach dem Endkampf | F5 | `FollowCrucibleRoute.Apply`, `IsSafe` | behoben, A721; Rast, Laden und überzählige Heilung bleiben beim Brutto (dosieren Mittel, A709) |
 | Modell zu A709 zog die eigene Heilung mit der Meldung ab: Senken der Kämpfe mit Heiltrank zu tief, Zahlen in Konzept, Archiv und Release-Text falsch (der Code maß richtig) | F1 | `netdip.py` (Notizordner) | berichtigt, A721, C186 |
@@ -111,7 +111,7 @@ Zeilen: gesamt / vom Fork hinzugefügt (12.11.2026). Stand: offen, in Arbeit, ge
 | Elemente eines Begleiters einmal je Sitzung gemerkt | F4 | `BeastmasterRotation.ElementsOf(FamiliarProfile)` | behoben, A718 |
 | Tötungsstapel einer Gegenstandstötung: Stapel im Bild des Falls gelesen, die Gewährung kann schon darin stehen | F12 | `CrucibleBoard.FollowKillStacks` | behoben, A719 |
 | Gemeldete eigene Heilung blieb ohne Ablauf vorgemerkt und nahm später fremde Heilung mit | F4 | `CrucibleBoard.FollowPlayerHp` | behoben, A720 |
-| Treffer der Begleiter über Sitzungen summiert, gegen die Erwartung von heute gehalten | F9 | `CrucibleBoard.LearnFamiliarHits` | offen, TODO „Crucible: Gelernte Lasten sinken nicht, wenn die Begleiter stärker werden" |
+| Treffer der Begleiter über Sitzungen summiert, gegen die Erwartung von heute gehalten | F9 | `CrucibleBoard.LearnFamiliarHits` | behoben, A729 |
 | Last je Kampf im Crucible zählte nur Treffer, nicht die Ticks von Schaden über Zeit (Elitekampf Brett 1: rund die Hälfte fehlte) | F2 | `Watcher.ActorControlDetour`, `CrucibleBoard.RecordTaken` | behoben, A722 |
 | Gefahr je Sekunde eines Gegners ohne seinen Schaden über Zeit, entgegen Konzept 03 | F7 | `EnemyDanger`, `Watcher` | behoben, A723 |
 | „Gegner läuft zu einem anderen Gegner" traf jeden, der auf den Spieler am Hauptgegner zulief; Ziel verlangte Anvisierbarkeit; Verschwinden am Kampfende als Ankunft gelernt (vier Fehlauslösungen von Zähnefletschen am 11.11.) | F6, F7, F12, F2 | `Approach`, `BST_Reborn` K9 | behoben, A724 (Modell `approach_model.py`) |

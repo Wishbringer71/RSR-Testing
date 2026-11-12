@@ -193,6 +193,14 @@ What this release changes in the fight. For the whole distance from upstream, se
   compared with the others measured in the same fight: a familiar that strikes a weakness the estimate does not credit
   it with rises, one below the board's rank falls. A familiar never measured keeps its estimate. The learned values
   show in the tab "Crucible familiars".
+- **Learned Crucible values follow the familiars' rank.** Your load per fight, your net loss and deepest dip, the
+  familiars' loss per run, use and fight, and each familiar's damage per potency are also learned per rank step: the
+  team's mean rank, each familiar at its synced rank and at most the board's sync rank, read from the team window on
+  entering a board and before every fight (line "crucible team rank" in `DefenseTrace.log`). RSR reads the nearest
+  measured steps at or below your team's, until they hold two runs; with fewer, or with the rank unread, it reads the
+  heaviest over all runs as before. Once your familiars are stronger, a board they made easier stops counting as hard:
+  rests, purchases and familiars that only the runs with the weaker team needed drop away. The horn choice weighs each
+  familiar by its hits at its current rank. The learned tables show a column for the rank.
 - **The route window says left or right, and why.** At a fork it names each way by its side as seen from the start
   towards the final boss, with the spaces up to where the ways meet again, and weighs them up to the next campsite or
   the boss after that: your HP and your final fight's healers' HP there, and what the other way would have brought. It

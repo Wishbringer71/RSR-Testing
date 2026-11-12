@@ -74,14 +74,23 @@ public partial class BeastmasterRotation
 			}
 		}
 
-		var uses = CrucibleBoard.FamiliarUseLossesOf(board);
 		var mean = shown.Count > 0 ? (uint)(hp / shown.Count) : 0u;
+		var sync = CrucibleBoard.SyncRank(board);
 		foreach (var (_, max, bonus, name) in Squads())
 		{
 			if (max >= size || max < core || max > picks.Count)
 			{
 				continue;
 			}
+
+			// A729: the uses measured with a team as strong as these picks, or weaker.
+			long ranks = 0;
+			for (var i = 0; i < max; i++)
+			{
+				ranks += CrucibleBoard.FightingRank(picks[i].Rank, picks[i].OverRank, sync);
+			}
+
+			var uses = CrucibleBoard.FamiliarUseLossesOf(board, CrucibleBoard.RankStep(ranks, max));
 
 			var points = CrucibleBoard.BonusPoints(bonus);
 			if (uses.Count == 0 || mean == 0)

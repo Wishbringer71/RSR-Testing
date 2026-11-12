@@ -839,7 +839,8 @@ Dullahan, Golem, Spriggan und Eisgolem (`XBMPet.InflictsInterrupt`).
     gemessenen Begleiter bildet RSR das Verhältnis gemessen zu geschätzt (Schaden je Potenz über dem Zuschlag der
     Schätzung) und multipliziert die Schadenswertung eines Begleiters mit seinem Verhältnis über dem Mittel der
     Verhältnisse aller dort gemessenen. Trifft die Schätzung, ist der Faktor 1; trifft ein Begleiter eine Schwäche, die
-    sie ihm nicht anrechnet, oder steht er unter dem Rang des Bretts, weicht er ab. Ungemessene behalten die Schätzung,
+    sie ihm nicht anrechnet, oder steht er unter dem Rang des Bretts, weicht er ab. Je Begleiter zählen die Treffer
+    seines jetzigen Rangs, sonst die des nächsten darunter (unten, „Gelernte Werte und der Rang der Begleiter"). Ungemessene behalten die Schätzung,
     ebenso ein Kampf mit nur einem gemessenen Begleiter. Sicherheit (übersteht einen Einsatz, heilt, schützt,
     unterbricht) bleibt unberührt und geht vor.
   - *Gegenthese 1 – Streuung:* Kritische Treffer streuen. Die Summe über alle Treffer und Läufe mittelt sie; nach wenigen
@@ -853,6 +854,54 @@ Dullahan, Golem, Spriggan und Eisgolem (`XBMPet.InflictsInterrupt`).
     gemessene Potenz); je Kampfende eine Zeile „crucible fight …: familiar damage per potency".
   - *Teamgröße und Gattung:* im Kader (K7, „Teamgröße nach Punkten" A698, „Team aus einer Gattung" A699); die Größe
     misst den Verlust der Begleiter je Brett.
+- *Gelernte Werte und der Rang der Begleiter* (A729; Befund der Quellcode-Prüfung, A728). *Was gilt:* Jeder im Crucible
+  gelernte Wert – deine rohe Last je Kampf (`CrucibleFightLoads`), Nettoverlust und Senke (`CrucibleFightNet`), der
+  Verlust der Begleiter je Lauf, je Einsatz und je Kampf (`CrucibleFamiliarLoss`), der Schaden je Potenz der Begleiter
+  (`CrucibleFamiliarHits`) – wird zusätzlich je **Rangstufe** gelernt (Dateien `…ByRank.json`) und aus der Stufe
+  gelesen, die zum Kader des Laufs passt.
+  - *Rangstufe des Laufs:* das abgerundete Mittel der Ränge des Kaders, je Begleiter der synchronisierte Rang
+    (`GetSyncedRank`), höchstens der Synchronrang des Bretts (`XBMContent.SyncRank`) und genau dieser, wenn der Begleiter
+    über ihm steht (`IsPetOverSyncedRank`). Gelesen, wenn das Teamfenster das Brett zeigt (`AgentXBMPetParty.ContentId`):
+    beim Betreten und mit jedem Hornfenster vor einem Kampf; die Spur nennt sie („crucible team rank …"). Vor dem Brett
+    (Teamgröße, K7) gilt die Stufe der gewählten Begleiter. Für den Schaden je Potenz zählt der Rang des Begleiters
+    selbst: Seine Werte stehen je Rang im Blatt.
+  - *Lesen:* RSR nimmt die gemessenen Stufen auf oder unter der des Kaders, die nächste zuerst, und hält den größten Wert
+    über sie, bis sie zusammen mindestens zwei Läufe zählen (die wenigsten, die eine Streuung zeigen; dieselbe Schwelle
+    wie für das Senken einer Schicht, Konzept 13, Regel 5). Zählen sie weniger, gilt der Höchstwert über alle Läufe wie
+    bisher. Der Schaden je Potenz liest die Summen der nächsten gemessenen Stufe auf oder unter dem Rang des Begleiters,
+    sonst die über alle Ränge. Ist die Stufe nicht lesbar, gilt der Höchstwert über alle Läufe.
+  - *Warum:* Stärke kommt im Crucible aus dem Rang. `XBMPetParamGrow` führt die Werte je Begleiter und Rang (Zeile 2:
+    Stärke 50 auf Rang 1, 130 auf Rang 5; xivapi/ffxiv-datamining 52a72b3), und das Spiel gleicht nur nach unten an:
+    Wer über dem Synchronrang steht, kämpft mit dessen Werten, wer darunter steht, mit seinen eigenen. Stärkere Begleiter
+    beenden einen Kampf früher und verlieren weniger LP. Wie stark der Rang den Schaden hebt, rechnet kein Blatt vor
+    (Schluss, unbelegt), aber die Richtung steht fest: Die Werte steigen mit jedem Rang. Ein Höchstwert über alle Läufe
+    bleibt deshalb bei dem schwächsten Kader stehen, mit dem ein Brett je lief.
+  - *Im Kampf:* Sobald zwei Läufe mit dem stärkeren Kader gemessen sind, rechnen Rast (K10), Laden, Weg, „leichtes Brett"
+    (K15) und Teamgröße (K7) mit den Lasten dieses Kaders. Eine Rast, ein Kauf oder ein Begleiter, den nur die Läufe mit
+    den schwachen Begleitern verlangten, entfällt. Damit bleiben Sparsamkeit (750) und In Unterzahl (1.250 bis 4.250)
+    öfter erreichbar. Die Hornwahl (K16) misst jeden Begleiter an seinem jetzigen Rang statt an seinen schwächeren
+    Treffern von früher.
+  - *Gegenthese 1 – Kein Defekt, der Rang ändert die Last kaum:* widerlegt durch das Blatt. Die Werte steigen je Rang
+    deutlich (oben). Ob ein Lauf leichter war, entscheidet ohnehin die Messung: Ist die stärkere Stufe nicht leichter,
+    liest RSR dieselben Werte wie vorher.
+  - *Gegenthese 2 – Option falsch, das Mittel des Kaders misst nicht, wer kämpft:* Auf die Hörner kommen drei aus dem
+    Kader, und K6 wählt sie je Kampf. Zwei Kader mit gleichem Mittel können verschieden kämpfen, etwa einer mit zwei
+    schwachen Begleitern zum Leveln (A579). Teilweise widerlegt: Gelernt und gelesen wird mit demselben Maß, und jede
+    Stufe hält den Höchstwert ihrer Läufe. Erst zwei Läufe senken einen Wert, und jeder Lauf hebt den Wert seiner Stufe,
+    wenn er schwerer war. Die bessere Messung, nach den Begleitern auf den Hörnern, scheitert am Lesen: Vor dem Kampf,
+    für den Weg und die Rast, steht nicht fest, wer auf die Hörner kommt. *Preis:* Ein Lauf, der schwerer wird als seine
+    Stufe, kostet höchstens die Rast oder den Kauf, die der alte Höchstwert verlangt hätte. Die Heilung im Kampf und die
+    Trankschwelle lesen keinen dieser Werte und bleiben unberührt. Was ein Kampf über seinen Wert hinaus kostet, zeigt
+    `LoadLeft` als unbekannt, und RSR rechnet für den Rest auf der sicheren Seite.
+  - *Gegenthese 3 – Ausgeliefert, und nichts ändert sich:* (a) Ist der Rang im Teamfenster nicht lesbar, ist die Stufe
+    unbekannt, und es gilt der Höchstwert über alle Läufe wie bisher. Die Spur zeigt das an der Zeile „crucible team rank".
+    (b) Stehen alle Begleiter schon über dem Synchronrang, lernen die neuen Läufe auf der obersten Stufe. Die alten Läufe
+    mit schwächeren Begleitern stehen nur im Höchstwert über alle Läufe, und nach zwei neuen Läufen gilt die oberste
+    Stufe. (c) Ein Kader, der schwächer ist als jeder gemessene, findet keine Stufe unter sich. Dann gilt der Höchstwert
+    über alle Läufe, also dasselbe wie bisher.
+  - *Ausgeschlossen:* (1) Den Höchstwert verfallen lassen oder nach jedem Rangaufstieg löschen. Das verwirft auch die
+    schweren Läufe, die noch gelten, und jeder Aufstieg begänne mit einem Brett ohne Messung. (2) Die Last nach dem
+    Verhältnis der Werte im Blatt umrechnen. Das braucht eine Schadensformel der Begleiter, und die nennt keine Quelle.
 - *K15 – Punkte der Bewertung* (seine Hinweise vom 11.11.2026, Grundlagen oben; A689). *Im Kampf und auf dem Weg:* Jeder
   Lauf vom 11.11.2026 verschenkte „kein Gegenstand" (750) schon vor dem ersten Kampf mit Sand der Zeit als Versicherung,
   „keine Marken ausgegeben" (500) mit dem ersten Kauf und „keine Ausrüstung" (750) mit einem Schatz; Lauf 3 rastete
@@ -903,8 +952,8 @@ Dullahan, Golem, Spriggan und Eisgolem (`XBMPet.InflictsInterrupt`).
       Meldung ab, bevor die LP stiegen, und rechnete die Senken der Kämpfe mit Heiltrank zu tief (Kampf 5 43, Endkampf
       Brett 1 36, Kampf 10 33, Endkampf Brett 2 76 %); der Code misst seit A709 beim Anstieg (C186).
       *Ergebnis:* Leicht ist ein Brett nicht als Ganzes, sondern ab der Stelle, von der an der Rest leicht ist; RSR
-      stellt das an jeder Entscheidung neu fest. Mit stärkeren Begleitern sinken die Verluste, die gelernten Höchstwerte
-      aber nicht (TODO „Crucible: Gelernte Lasten sinken nicht, wenn die Begleiter stärker werden").
+      stellt das an jeder Entscheidung neu fest. Mit stärkeren Begleitern sinken die Verluste, und die gelernten Werte
+      folgen ihnen je Rangstufe („Gelernte Werte und der Rang der Begleiter", A729).
     - *Gegenthesen:* (1) *Kein Defekt:* widerlegt – A706 lernte für den Endkampf von Brett 1 einen Nettoverlust von 0 %,
       weil ein Bestien-Heiltrank 505 LP heilte. (2) *Option falsch – ohne die Gegenstände wären auch die Begleiter anders
       eingesetzt worden:* Der Test misst, was mit dem Kader und der Hornwahl des gemessenen Laufs geschah; hält die

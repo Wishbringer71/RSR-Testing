@@ -19,13 +19,12 @@ auswahl und das timing der beschwörung" – je Kampf aller fünf Bretter (Gegne
 BossMod-Module) die Rotation des Beastmasters, die Wahl der Begleiter und den Zeitpunkt ihres Aufrufs im Loop prüfen
 (Beispiel seiner Beobachtung: der Raptor gegen Feuer, bevor feueranfällige Gegner da waren; A581).
 
-1. Crucible: Gelernte Lasten sinken nicht, wenn die Begleiter stärker werden (Vorrang Crucible).
-2. Die übrigen gefundenen und gebauten Punkte vom 11.11.2026 im vollen Loop verifizieren und optimieren (sein Auftrag).
-3. Blaumagier: RSRs nächste Aktion beendet Apokalypsis und Chelonian Gate – Schaden und Minderung des Spielers enden
+1. Die übrigen gefundenen und gebauten Punkte vom 11.11.2026 im vollen Loop verifizieren und optimieren (sein Auftrag).
+2. Blaumagier: RSRs nächste Aktion beendet Apokalypsis und Chelonian Gate – Schaden und Minderung des Spielers enden
    nach einem GCD statt nach 10 s.
-4. Kegel und Ringe gegnerischer Zauber genau messen: Zauber- und Kanalbeginn nutzen RSRs Erkennung bei Kegel und Ring
+3. Kegel und Ringe gegnerischer Zauber genau messen: Zauber- und Kanalbeginn nutzen RSRs Erkennung bei Kegel und Ring
    nicht, und mehrere Leser sehen hinter einem Kegel oder im Innenkreis eines Rings eine Gefahr, die keine ist.
-5. Gelernte Trefferserien sinken nicht: eine lange Gruppenheilung kann nach dem letzten Treffer einer Serie gehen
+4. Gelernte Trefferserien sinken nicht: eine lange Gruppenheilung kann nach dem letzten Treffer einer Serie gehen
    (Befund der Quellcode-Prüfung, A726).
 
 Danach die technische Schuld, soweit ihre Auflösungsbedingung erfüllt ist. Warten auf Daten: unten.
@@ -63,17 +62,6 @@ die Leser von `RaiseProtection.FirstDodgeableWithin` (Limit Break allein, Freiga
 Gefahr, die keine ist. *Ort:* `DataCenter.AreaCastReaches`. *Nächster Schritt:* Winkel des Kegels und Innenradius des Rings
 aus dem Omen der Aktion (Blatt Omen, Pfadname) belegen, dann messen und die Einschränkung in `CastCertainlyDodgeable`
 aufheben. *Konzept:* 03, „Bewegungssperre beim Wirken und die KI von BossMod"; 13 (Formprüfung).
-
-### Crucible: Gelernte Lasten sinken nicht, wenn die Begleiter stärker werden · N
-Im Kampf: Die je Kampf gelernten Werte – rohe Last (A661), Nettoverlust und Senke (A706, A709), Verlust je Einsatz
-(A703) – halten je den größten über alle Läufe. Läufe mit Begleitern unter dem Rang des Bretts prägen sie; erreichen die
-Begleiter den Rang, sinken die Verluste, RSR rechnet aber weiter mit den alten Höchstwerten: ein Brett, das leicht
-geworden ist, gilt weiter als schwer (sichere Seite, kostet Punkte). Ebenso die Treffer der Begleiter für die Hornwahl
-(K16): Schaden und Potenz summieren über alle Sitzungen, ein Begleiter, der seither im Rang stieg, steht mit seinen
-schwächeren Treffern von damals da. *Ort:* `CrucibleBoard.LearnLoad`, `LearnNetAndDip`, `LearnFamiliarLoss`,
-`LearnFamiliarHits`. *Nächster Schritt:* Loop – etwa die Werte nach dem Stand der Begleiter trennen
-(unter dem Rang des Bretts, auf ihm: dort gleicht das Spiel die Stärke an, `IsPetOverSyncedRank`), ohne feste Zahl.
-*Konzept:* 21, K15 („Woran ein leichtes Brett feststeht").
 
 ### Gelernte Trefferserien sinken nicht · N
 Im Kampf: Je gegnerischer Aktion merkt RSR die längste je gesehene Serie von Treffern auf dich und ein weiteres Mitglied
