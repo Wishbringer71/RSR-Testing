@@ -410,7 +410,12 @@ Dullahan, Golem, Spriggan und Eisgolem (`XBMPet.InflictsInterrupt`).
     eine Gattung die Schwächen nicht trägt, ändert sich nichts. *Gegenthese:* Gleiche Abdeckung heißt nicht gleicher
     Schaden – ein Begleiter, der eine Schwäche nur schwach trifft, verlängert den Kampf. Die Hornwahl wägt im Kampf nach
     gemessenem Schaden (K16); die Kaderwahl hat diese Messung je Begleiter erst nach einem Lauf. *Preis:* Ein Kampf
-    dauert länger, wenn der Begleiter der Gattung die Schwäche schwächer trifft als der gemischte.
+    dauert länger, wenn der Begleiter der Gattung die Schwäche schwächer trifft als der gemischte. Ein längerer Kampf hebt
+    die gelernte Last dieses Laufs, und der Lasttest (K15) wägt den nächsten Lauf danach. *Gegenthese (ausgeliefert, und
+    nichts ändert sich):* Trägt keine Gattung alle Schwächen des Bretts, bleibt das gemischte Team; die Empfehlung nennt
+    dann keine Gattung. *Ausgeschlossen:* ein Team einer Gattung auch ohne volle Abdeckung – eine fehlende Schwäche
+    verlängert einen Kampf sicher, die 750 Punkte wiegen das nur, wo der Lasttest es trägt, und den rechnet die Kaderwahl
+    vor dem Brett nicht.
 - *K8 – Gegenstände* (gebaut: A551 bis A555, unten „Stufe 3: K8"). Über `InstanceContentCrucibleOfTheUnbroken.UseItem(Platz, Bestie)` auf dein Ziel. Sicherheit zuerst
   (seine Regel): Bestien-Heiltrank oder -Pulver, wenn deine LP in die Gefahr fallen und keine Heilung bereit ist;
   Bestien-Gegengift und Bestien-Augentropfen gegen den passenden Zustand; Bestien-Verhärtungsmittel vor einem angekündigten
@@ -1066,7 +1071,9 @@ Dullahan, Golem, Spriggan und Eisgolem (`XBMPet.InflictsInterrupt`).
   - *Nicht hier:* Teamgröße und Gattung (bis 4.250 und 750) gehören zum Kader (K7, „Teamgröße nach Punkten", „Team aus
     einer Gattung").
   - *Gegenthese 1 – Die schwerste gelernte Last unterschätzt den nächsten Lauf:* Ein Kampf kann schwerer werden als je
-    gesehen (anderer Begleiter, Pech bei Zuständen). Teilweise widerlegt: Die unmittelbare Gefahr im Kampf bleibt
+    gesehen (anderer Begleiter, Pech bei Zuständen). Seit A729 liest RSR die Lasten der Läufe mit einem gleich starken
+    oder schwächeren Kader, mindestens zwei Läufe, und nicht mehr den Höchstwert über alle; die gelesene Last liegt
+    dadurch näher am Lauf („Gelernte Werte und der Rang der Begleiter"). Teilweise widerlegt: Die unmittelbare Gefahr im Kampf bleibt
     abgedeckt – Heilung unter der Trankschwelle, Schutz vor angekündigten Treffern –, nur die Versicherung im Voraus
     entfällt. Preis: Ein Tod, den Sand der Zeit aufgefangen hätte, wenn ein Kampf alle LP über der Trankschwelle in
     einem Zug nimmt; in seinen fünf Läufen vom 11.11.2026 (Brett 1 und 2) nahm kein Treffer mehr als 17 % seiner LP

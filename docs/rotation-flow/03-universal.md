@@ -1134,9 +1134,20 @@ Arena räumt, oder Wiederbelebung des Gefallenen –, muss so fallen, dass der L
   schrumpfte von 698 auf 55 LP, das Ältere (526 LP) wurde frei, und das Jüngere fiel 0,85 s vor dem Ende seines
   Endlos-Schlags. Mit dem Höchstwert hätte RSR das Ältere gehalten, bis das Jüngere ebenfalls bei 698 LP stand; beide
   fallen dann in rund 3,5 s.
-- *Rücklage L = r × W / 2.* Ein Mitglied mit höchstens L LP hält RSR zurück – kein Ziel, keine Fläche –, solange ein
-  anderes lebendes Mitglied mehr als L hat. Haben alle höchstens L, hält RSR keines mehr; die Zielart ordnet. Fällt
-  dann eines, hat jeder Überlebende höchstens L: Bei gleichem Strom liegt er nach W/2.
+- *Rücklage L = r × (W − T) / 2, je Paar.* Ein Mitglied mit höchstens L LP hält RSR zurück – kein Ziel, keine Fläche –,
+  solange ein anderes lebendes Mitglied mehr als die L dieses Paars hat. Haben alle höchstens L, hält RSR keines mehr;
+  die Zielart ordnet. Fällt dann eines, hat jeder Überlebende höchstens L: Bei gleichem Strom liegt er nach dem Weg
+  T und (W − T)/2.
+- *Weg T (A730):* die Zeit, die du vom Gefallenen zum Überlebenden brauchst – ihr Abstand, weniger der Reichweite
+  deines Jobs (`DataCenter.JobRange`) und des Trefferkreises des Überlebenden, geteilt durch deine Laufgeschwindigkeit;
+  0, wo der Überlebende schon in Reichweite steht, also für Fernkämpfer fast immer. Die Geschwindigkeit liefert
+  BossModReborn (`AI.PlayerSpeed`: Grundgeschwindigkeit mal Zuschlägen, `WorldStateGameSync`, 2087153c2); ohne
+  BossModReborn misst RSR sie an deiner letzten Bewegung von mindestens einem GCD, als gelaufener Weg über die Zeit.
+  Sprint hebt diese Messung, und eine zu hohe Geschwindigkeit verkürzt den Weg: Der Fehler führt zur Rücklage ohne Weg
+  wie vor A730, nie dazu, dass RSR gar nicht hält. Eine gerade Strecke über die Zeit wäre falsch: Kurven drückten sie,
+  und ein zu langer Weg über W schaltete das Halten ab. Ohne beide Werte bleibt T bei 0, wie vor A730. Ist T
+  mindestens W, erreichst du den Überlebenden nicht vor dem Ende seiner Aktion; dann hält RSR ihn nicht, denn Warten
+  ändert daran nichts.
 - *Wer lebt* (für Regel 2 und 3): jeder Gegner der Objekttabelle des Spiels mit LP über null, der in diesem Gebiet
   schon einmal anwählbar war, auch wenn er es gerade nicht ist oder unverwundbar ist (A683). Seine Aktion beim Fall
   eines anderen beginnt er auch dann. Die Gegnerliste von RSR führt nur anwählbare Gegner und taugt allein dafür nicht.
@@ -1195,8 +1206,11 @@ und das zurückgehaltene fiele doch.
 deine Aktionen; ein Trick deines Begleiters oder ein laufender DoT schlägt weiter. Preis: Das zurückgehaltene Mitglied
 verliert weiter LP. Reicht das bis zu seinem Fall, bevor das andere bei L steht, beginnt die Aktion des Überlebenden
 doch – so selten wie ein Begleiter, der eine Rücklage von W/2 des ganzen Stroms allein abträgt.
-*Gegenthese 3 – Die Gruppe steht weit auseinander:* Liegt der Weg zum Überlebenden über W/2, reicht die Rücklage nicht.
-Nicht abwendbar ohne Weg-Messung; die Spur nennt die Rücklage, und der Rest des Fensters zeigt sich am Kampfausgang.
+*Gegenthese 3 – Die Gruppe steht weit auseinander:* Liegt der Weg zum Überlebenden über W/2, reichte eine Rücklage von
+r × W / 2 nicht. Behoben mit dem Weg T (oben, A730): Die Rücklage schrumpft um den Weg, und beide fallen näher
+beieinander. *Preis:* Eine kleinere Rücklage hält früher, und der Kampf dauert um die Zeit länger, in der du ein Mitglied
+nicht angreifst. Wo der Gefallene liegt, schätzt RSR mit seinem jetzigen Ort; wechselst du vorher das Ziel, ist der Weg
+kürzer als gerechnet, und RSR hält nur früher als nötig.
 *Gegenthese 4 (ausgeliefert, und nichts ändert sich):* Die Zielwahl kennt die zurückgehaltenen Gegner weiter. Widerlegt:
 Sie fehlen in der Gegnerliste (`DataCenter.AllHostileTargets`), aus der jede Aktion ihr Ziel wählt, und stehen in der
 Liste, die Flächen meiden.
@@ -1313,6 +1327,16 @@ denselben Weg braucht.
   die hochwertige Fassung) und Aktionen (`BadStatusAction`) lesen dieselben Codes.
 - *Messung:* Lehnt das Spiel den Einsatz eines Gegenstands trotzdem ab (`UseAction` liefert false), schreibt RSR je
   Gegenstand und Gebiet einmal beide Codes ins `DefenseTrace.log` („item refused by the game: …").
+- *Die Fassung, die RSR schickt (A730):* Ein Gegenstand gilt als abgelehnt, wenn das Spiel die Fassung ablehnt, die
+  `UseAction` schicken wird: die hochwertige, wenn du sie besitzt, sonst die normale. Bis A730 sperrte RSR ihn nur, wenn
+  das Spiel beide Fassungen ablehnte. Seine Mitschnitte vom 11.11.2026 zeigen die Folge: Die Ultra-Potion (#47701)
+  wurde in zwei Gebieten abgelehnt, mit 583 „You do not have that item." für die normale Fassung und 0 für die
+  hochwertige, die er nicht besaß. RSR zählte sie als vorhanden (`HasIt` zählt den Bestand, den das Spiel dort nicht
+  anbietet) und wählte sie unter der Trankschwelle im selben Gebiet erneut (19:39 und 19:41, A687). Jeder Versuch
+  belegte ein Webfenster, in dem ein anderer Trank oder eine Abwehr hätte gehen können. Jetzt sperrt die Antwort für
+  die geschickte Fassung, und ein anderer Trank rückt nach. *Gegenthese:* 583 ist ein Grund des Augenblicks, der
+  Gegenstand kommt gleich wieder. Dann liest die nächste Prüfung 0, und er geht wieder; gesperrt ist nur, was das
+  Spiel in diesem Augenblick ablehnt.
 
 *Im Kampf (seine Läufe vom 08.11.2026):* Als Beastmaster ohne Heiler wählte RSR in Sägerschrei unter 43 % LP siebenmal den
 Wallfahrt-Trank (Pilgrim's Potion, „Only available for use in Pilgrim's Traverse"), alle 2,5 s bis zum Tod, in Mor

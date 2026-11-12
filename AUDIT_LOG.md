@@ -21216,6 +21216,42 @@ A728), im Loop. Konzept 21, „Gelernte Werte und der Rang der Begleiter".
   die Empfehlungsfenster, nicht die Tabellen der gelernten Werte; diese haben eine Spalte mehr.
 - *Prüfgrad:* statisch, Compile ohne Warnung, 53 Prüfschritte.
 
+### A730 · Verifikation der Punkte vom 11.11.2026 abgeschlossen: Weg in der Rücklage, Hörner nach dem Brett, abgelehnte Fassung eines Gegenstands (12.11.2026)
+
+Sein Auftrag vom 11.11.2026 (A700): „alle bislang herausgefundenen punkte verifizieren und optimieren". Je Punkt die
+Konzeptstelle gegen Befund, Regel, Wechselwirkungen, Verworfenes und die drei Gegenthesen gelesen und ergänzt, der Code
+dagegen.
+
+- *Schon im Loop ersetzt:* A698 durch A703, A706 durch A709, A692 durch A711, A695 berichtigt in A712; A701 trägt
+  Optionen mit SWOT und drei Hypothesen in Konzept 13; K15 (A689 bis A691, A697) trägt die Gegenthesen je Bonus und
+  die drei allgemeinen.
+- *Wiederbelebung (A693, Konzept 11):* Wechselwirkungen ergänzt – Ex Machina behält das erste Fenster; belegen zwei
+  frühe Fähigkeiten das späte Fenster mit ihrer Sperre, setzt `RaiseSpell` Swiftcast bei höchstens 0,5 s Rest selbst,
+  mit Versatz statt einem GCD Verlust. Gegenthesen 1 und 3, Verworfenes (Swiftcast in jedem Fenster, Ex Machina
+  zurückstellen, laufenden Swiftcast für einen weiteren Toten halten). Die zwei Fälle „2 bis 3 s nach der Todeszeile"
+  (A687) passen zur alten Regel: Ein Tod nach dem ersten Fenster wartete bis zum ersten Fenster nach dem nächsten GCD
+  (Schluss).
+- *Tötungsregel (A688, Konzept 03):* Gegenthese 3 („Gruppe weit auseinander, nicht abwendbar ohne Weg-Messung") war
+  eine gekappte Entscheidung: Der Weg ist messbar. Rücklage je Paar jetzt r × (W − T) / 2, T = Abstand weniger
+  `DataCenter.JobRange` und Trefferkreis des Überlebenden, über die Geschwindigkeit – BossModReborn `AI.PlayerSpeed`
+  (`WorldStateGameSync`: `ControlEx.BaseMoveSpeed` mal Zuschlägen, 2087153c2), sonst gemessen als gelaufener Weg über
+  die Zeit der letzten Bewegung von mindestens einem GCD. Erster Entwurf maß die gerade Strecke; verworfen, weil Kurven
+  die Geschwindigkeit drücken und ein Weg über W das Halten abschaltete. Ist T ≥ W, hält RSR nicht.
+- *Regen in Bewegung (A694, Konzept 07):* Gegenthese 3 und Verworfenes ergänzt (Afflatus Solace geht ab 52 vor).
+- *Hörner nach dem Brett (A696, Konzept 01 B5):* Seit 7.58 stellt das Spiel beim Verlassen die Hörner von vorher
+  wieder her (Patchnotes 10.11.2026). `WatchHand` hätte das als Hand gezählt und B5 bis zum Ende des nächsten Kampfes
+  angehalten. Jetzt: die erste Änderung nach dem Brett, die genau die Belegung vor dem Brett zeigt, ohne Wertung.
+- *Team aus einer Gattung (A699, K7):* Gegenthese 3 und Verworfenes ergänzt.
+- *Offene Befunde aus A687:* (1) Ultratrank #47701 abgelehnt mit 583 („You do not have that item.") für die normale
+  Fassung, 0 für die hochwertige; `BaseItem.CanUse` sperrte nur, wenn beide abgelehnt waren, und RSR wählte ihn im selben
+  Gebiet erneut (19:39, 19:41). Jetzt die Antwort für die Fassung, die `UseItem` schickt (wie `PhoenixDownItem`, A340);
+  gilt für jeden Gegenstand, die Tinktur im selben Gebiet eingeschlossen. Konzept 03, „Was das Spiel hier ablehnt".
+  (2) Die Parade des Knochen-Ritters ist Status 680 „Gerichtete Parade" (ACT, 11.11.2026; BossModReborn
+  `Components/DirectionalParry.cs`, `BoneBishop.cs`): neue Regel, TODO „Gerichtete Parade".
+- *TODO:* Punkt geschlossen; Reihenfolge nach seinem Profil neu: Kegel und Ringe, Trefferserien, Blaumagier (nicht
+  gespielt, seine Angabe vom 11.11.2026), Gerichtete Parade.
+- *Prüfgrad:* statisch, Compile, Prüfskripte; Mitschnitte vom 11.11.2026 für die Ablehnung; im Spiel nicht beobachtet.
+
 ## B · Commit-Register (Fork vs. `upstream/main`)
 
 ### B1 · Einzelgeprüfte Fork-Commits

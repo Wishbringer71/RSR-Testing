@@ -114,6 +114,25 @@ und die Spanne, in der ein anderer zuvorkommt, schrumpft von fast einem GCD auf 
 anderes oGCD nimmt das späte Fenster. Widerlegt: `EmergencyAbility` steht vor allen übrigen Fähigkeiten des Spielers,
 der Zweig gewinnt das erste Bild im späten Fenster. *Preis:* Ein GCD mit langer Wirkzeit lässt das späte Fenster erst
 nach dem Wirken offen; dort fällt Swiftcast sofort danach, wie vorher.
+- *Wechselwirkungen:* Ex Machina des Weißmagiers (`WHM_Reborn`, erstes Fenster bei anstehender Wiederbelebung) und jede
+  andere Fähigkeit behalten das erste Fenster; die Wiederbelebung nimmt Ex Machina mit. Belegen zwei frühe Fähigkeiten
+  das Fenster so, dass die Animationssperre der zweiten über das späte Fenster reicht, setzt der GCD-Pfad Swiftcast
+  selbst, sobald höchstens 0,5 s des GCD übrig sind (`RaiseSpell`), und die Wiederbelebung folgt mit einem kurzen
+  Versatz statt einen GCD später. Beim Rotmagier geht Dualcast vor Swiftcast und
+  berührt den Zweig nicht.
+- *Gegenthese 1 – kein Defekt:* widerlegt an den drei Fällen mit belegtem erstem Fenster und den fünf fremden
+  Sofort-Wiederbelebungen in der Spanne bis zum nächsten GCD (Mitschnitte vom 10. und 11.11.2026, oben). Zweimal (Babil,
+  M4) begann RSR erst 2 bis 3 s nach der Todeszeile, ohne Zeile im Protokoll. Das passt zur alten Regel (Schluss, nicht
+  gemessen): Ein Tod nach dem ersten Webfenster wartete auf das erste Fenster nach dem nächsten GCD, also bis zu einem
+  GCD. Das späte Fenster liegt im selben GCD; seither nennt die Zeile „raise: …" die Zeit je Toten.
+- *Gegenthese 3 – ausgeliefert, und nichts ändert sich:* Mit „Raise with Swiftcast or Dualcast" aus greift der Zweig
+  nicht, wie vorher und gewollt. Kommt ein anderer Heiler im späten Fenster zuvor, verfällt Swiftcast weiter im nächsten
+  Zauber; die Spanne dafür ist nur kürzer. Was bleibt, zeigt die Zeile „raise: …" je Toten.
+- *Ausgeschlossen:* Swiftcast in jedem Webfenster – er fällt dann weiter früh, und ein anderer Heiler hat fast einen GCD,
+  um zuvorzukommen. Ex Machina zurückstellen – das behebt nur den Fall mit belegtem erstem Fenster und kostet dem
+  Weißmagier die Mana-Ersparnis der Wiederbelebung. Swiftcast bei laufendem Status zurückhalten, bis ein weiterer Toter
+  kommt – der nächste Zauber mit Wirkzeit verbraucht ihn, und RSR müsste dafür GCDs auslassen; ein weiterer Tod in den
+  10 s des Status ist selten, der Ausfall von bis zu vier GCDs sicher.
 
 **Die übrigen langen Spannen sind gewollt (A693).** In zwei Fällen seiner Mitschnitte vergingen 12,6 und 17,8 s bis
 Swiftcast. *World of Darkness 18:24:* Der Leichnam lag 31 bis 36 Yalm entfernt (Positionen der Aktionszeilen), also

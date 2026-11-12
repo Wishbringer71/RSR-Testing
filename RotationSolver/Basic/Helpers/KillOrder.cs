@@ -55,6 +55,68 @@ internal static class KillOrder
 	// (concept 03, "Tötungsregeln", rule 2).
 	private const float ReserveShareOfWindow = 0.5f;
 
+	// A730: the player's speed measured on his last movement of at least a GCD - the path walked over its time; 0 before
+	// one. Sprint raises it, and a higher speed shortens the way: the error leans to the reserve without a way, never to
+	// none.
+	private static float _measuredSpeed;
+	private static Vector3? _lastPosition;
+	private static DateTime _lastSeen;
+	private static float _path;
+	private static float _pathSeconds;
+
+	private static void MeasureOwnSpeed()
+	{
+		var now = DateTime.Now;
+		if (Player.Object is not { } player)
+		{
+			_lastPosition = null;
+			_path = 0f;
+			_pathSeconds = 0f;
+			return;
+		}
+
+		var position = player.Position;
+		if (_lastPosition is { } last)
+		{
+			var step = Vector2.Distance(new(last.X, last.Z), new(position.X, position.Z));
+			if (step > 0f)
+			{
+				_path += step;
+				_pathSeconds += (float)(now - _lastSeen).TotalSeconds;
+			}
+			else
+			{
+				if (_pathSeconds >= DataCenter.DefaultGCDTotal)
+				{
+					_measuredSpeed = _path / _pathSeconds;
+				}
+
+				_path = 0f;
+				_pathSeconds = 0f;
+			}
+		}
+
+		_lastPosition = position;
+		_lastSeen = now;
+	}
+
+	/// <summary>
+	/// A730: the seconds from <paramref name="fallen"/> to within reach of <paramref name="survivor"/> - their distance less
+	/// the job's range and the survivor's hitbox, over the player's speed (BossModReborn's, else measured); 0 within reach
+	/// or with no speed known.
+	/// </summary>
+	private static float WaySeconds(IBattleChara fallen, IBattleChara survivor)
+	{
+		var speed = DataCenter.BMRPlayerSpeed > 0f ? DataCenter.BMRPlayerSpeed : _measuredSpeed;
+		if (speed <= 0f)
+		{
+			return 0f;
+		}
+
+		var apart = Vector2.Distance(new(fallen.Position.X, fallen.Position.Z), new(survivor.Position.X, survivor.Position.Z));
+		return Math.Max(0f, apart - survivor.HitboxRadius - DataCenter.JobRange) / speed;
+	}
+
 	private static readonly HashSet<ulong> _held = [];
 	private static readonly HashSet<ulong> _noArea = [];
 	private static readonly Dictionary<ulong, string> _reasons = [];
@@ -124,6 +186,7 @@ internal static class KillOrder
 	/// </summary>
 	internal static void Update(List<IBattleChara> all)
 	{
+		MeasureOwnSpeed();
 		_held.Clear();
 		_noArea.Clear();
 		_reasons.Clear();
@@ -250,21 +313,29 @@ internal static class KillOrder
 			return;
 		}
 
-		var reserve = stream * window * ReserveShareOfWindow;
 		foreach (var member in _members)
 		{
-			if (member.CurrentHp > reserve)
-			{
-				continue;
-			}
-
 			foreach (var other in _members)
 			{
+				if (other.GameObjectId == member.GameObjectId)
+				{
+					continue;
+				}
+
+				// A730: the way from the fallen to the survivor comes off the window; beyond it, holding changes nothing.
+				var way = WaySeconds(member, other);
+				var left = window - way;
+				var reserve = stream * left * ReserveShareOfWindow;
+				if (left <= 0f || member.CurrentHp > reserve)
+				{
+					continue;
+				}
+
 				// A683: also while the other cannot be targeted or hit - it begins its action when this one falls all the same.
-				if (other.GameObjectId != member.GameObjectId && other.CurrentHp > reserve)
+				if (other.CurrentHp > reserve)
 				{
 					Add(member, true, $"must fall with {other.Name.TextValue} ({other.CurrentHp} HP): held at {member.CurrentHp} HP, "
-						+ $"reserve {reserve:F0} HP = {stream:F0} HP/s over half of {window:F1} s");
+						+ $"reserve {reserve:F0} HP = {stream:F0} HP/s over half of {window:F1} s less a way of {way:F1} s");
 					break;
 				}
 			}

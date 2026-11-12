@@ -29,6 +29,10 @@ What this release changes in the fight. For the whole distance from upstream, se
   HP fell, and it never healed. RSR now reads the game's refusals for a place – not usable here, only in PvP, not in PvP,
   only in duels or Frontline – for every item and action. When the game still refuses an item, `DefenseTrace.log`
   names the item, the area and the game's answer, once per item and area.
+- **An item counts as refused when the game refuses the quality RSR sends.** RSR blocked an item only when the game
+  refused both its normal and its high quality. An Ultra-Potion refused as normal ("You do not have that item.") passed
+  on the answer for a high quality you did not hold, and RSR chose it again in the same area – each try took a weave a
+  defence or another potion could have had. RSR now asks about the quality it sends, as for the Phoenix Down.
 - **A kill rule holds while the other enemy cannot be targeted.** Enemies that must fall together (the tablitaurs of
   board 2, the lamias) or only after another (morpho and abaddon, the myconids while the mindflayer lives) counted only
   while they could be targeted. The elder tablitaur cannot be targeted for 26 s of its Endless Swing; RSR let the
@@ -41,6 +45,10 @@ What this release changes in the fight. For the whole distance from upstream, se
   health, and the stream could fall from 155 to 12 HP per second in under a second: on board 2 the elder was released
   at 526 HP, and the younger fell 0.85 s before the end of its Endless Slashes. The stream now keeps its highest value
   while a member of the pair lives.
+- **The pair's reserve allows for the way to the survivor.** With the pair standing apart, the time to reach the
+  survivor came out of its window and the reserve did not cover it. The reserve is now your stream over half of what
+  is left of the window after the way: the distance less your job's range and the survivor's hitbox, at your speed –
+  BossModReborn's, else measured on your last movement of at least a GCD. A ranged job in reach has no way.
 
 - **Swiftcast for a raise comes late in the GCD, not right after it.** It waited for the first weave window after a
   GCD; when that window went to another ability – Thin Air, which the White Mage takes there for a pending raise, or
@@ -104,7 +112,8 @@ What this release changes in the fight. For the whole distance from upstream, se
 - **Leaving a board is not a change of the horns by hand.** The game clears the horns after each fight on a board; RSR
   saw the cleared horns on leaving as your change, wrote "battlehorns changed by hand to None" after every board and set
   no familiars until the next fight ended, so a fight outside right after a board began with empty horns. RSR now
-  follows the horns on the board without judging them.
+  follows the horns on the board without judging them.  Since 7.58 the game puts the horns from before the board
+  back when you leave; that first change shows exactly them and is not taken as yours either.
 
 - **A familiar leaves only when the next one can follow.** After Parting Blow a familiar takes about 2.3 s to be gone, and
   the next horn - a 1 s cast - can only begin early in a GCD and while you stand. A blow late in a GCD left you 4.1 s

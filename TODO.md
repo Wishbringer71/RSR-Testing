@@ -19,13 +19,13 @@ auswahl und das timing der beschwörung" – je Kampf aller fünf Bretter (Gegne
 BossMod-Module) die Rotation des Beastmasters, die Wahl der Begleiter und den Zeitpunkt ihres Aufrufs im Loop prüfen
 (Beispiel seiner Beobachtung: der Raptor gegen Feuer, bevor feueranfällige Gegner da waren; A581).
 
-1. Die übrigen gefundenen und gebauten Punkte vom 11.11.2026 im vollen Loop verifizieren und optimieren (sein Auftrag).
-2. Blaumagier: RSRs nächste Aktion beendet Apokalypsis und Chelonian Gate – Schaden und Minderung des Spielers enden
-   nach einem GCD statt nach 10 s.
-3. Kegel und Ringe gegnerischer Zauber genau messen: Zauber- und Kanalbeginn nutzen RSRs Erkennung bei Kegel und Ring
+1. Kegel und Ringe gegnerischer Zauber genau messen: Zauber- und Kanalbeginn nutzen RSRs Erkennung bei Kegel und Ring
    nicht, und mehrere Leser sehen hinter einem Kegel oder im Innenkreis eines Rings eine Gefahr, die keine ist.
-4. Gelernte Trefferserien sinken nicht: eine lange Gruppenheilung kann nach dem letzten Treffer einer Serie gehen
+2. Gelernte Trefferserien sinken nicht: eine lange Gruppenheilung kann nach dem letzten Treffer einer Serie gehen
    (Befund der Quellcode-Prüfung, A726).
+3. Blaumagier: RSRs nächste Aktion beendet Apokalypsis und Chelonian Gate – Schaden und Minderung des Spielers enden
+   nach einem GCD statt nach 10 s (gespielt hat er ihn bislang nicht, seine Angabe vom 11.11.2026).
+4. Gerichtete Parade: Angriffe von der geschützten Seite eines Gegners werden pariert (A730).
 
 Danach die technische Schuld, soweit ihre Auflösungsbedingung erfüllt ist. Warten auf Daten: unten.
 
@@ -73,14 +73,15 @@ Abstände in den gelernten Serien messen und prüfen, ob eine Serie als beendet 
 letzten Treffer ihren bisher größten übersteigt; die Schichten von Konzept 13 für die Datei. *Konzept:* 08
 („Glockenspiel"), 13.
 
-### Gefundene Punkte vom 11.11.2026 im vollen Loop verifizieren und optimieren · N
-Sein Auftrag vom 11.11.2026: „ich habe das gefühl, dass du wieder nicht zuerst an den konzepten gearbeitet hast und auch
-nicht im vollen loop. alle bislang herausgefundenen punkte verifizieren und optimieren". Betroffen: die Tötungsregel
-(A688), die Crucible-Punkte (A689 bis A691, A695, A697), die Hornwahl (A692), die Wiederbelebung (A693), Regena in
-Bewegung (A694), die Hornbeobachtung (A696), Surecast (A701), Teamgröße und Gattung (A698, A699) und die offenen Befunde aus A687. *Ort:*
-Konzepte 03, 07, 11, 01 (B5), 21 (K7, K15, K16). *Nächster Schritt:* je Punkt die Stufen 2 bis 6 im Konzept ausschreiben
-– Optionen mit Nullvariante, SWOT je Option im Kampf, Wechselwirkungen mit allen Regeln derselben Zeit, Ressource und
-Stelle, die drei Falsifikationen mit Quellen –, Abweichungen im Code nachziehen. *Konzept:* jeweils das genannte.
+### Gerichtete Parade: Angriffe von der geschützten Seite werden pariert · N
+Im Kampf: Ein Gegner mit dem Status „Gerichtete Parade" (Status 680, Directional Parry) pariert jeden Angriff des
+Spielers von der geschützten Seite; in seinem Lauf vom 11.11.2026 (Brett 1) parierte der Knochen-Ritter sechs Angriffe
+von vorn, die der Begleiter nicht. RSR kennt den Status nicht und greift weiter von dort an. *Ort:* Zielwahl
+(`TargetUpdater`), allgemein für alle Jobs. *Nächster Schritt:* Loop – Wirkung einer Parade auf den Schaden belegen,
+Kodierung der Seite im Zusatzwert des Status (BossModReborn 2087153c2, `Components/DirectionalParry.cs`: Bitmaske
+vorn/hinten/links/rechts) am Spiel prüfen, Zielwechsel ohne Bewegung (seine Vorgabe: nichts, was ihn für Schaden aus
+einer sicheren Position holt), Tanks mit gehaltener Feindseligkeit ausgenommen oder nicht. *Konzept:* 03 (Zielwahl),
+21 (Erstes Brett).
 
 ## Technische Schuld
 

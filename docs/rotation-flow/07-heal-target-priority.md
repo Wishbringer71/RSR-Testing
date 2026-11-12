@@ -90,7 +90,11 @@ Benediktion im selben GCD für dasselbe Ziel bereit, kommt Regen dazu und kostet
 unter 30 %, die Wahrscheinlichkeit, dass der GCD fehlt, ist hoch. *Gegenthesen:* (1) Regen heilt zu langsam. Es heilt
 mehr als der Schadens-GCD, der sonst käme. (2) Er bleibt im nächsten Moment stehen, Cure II wäre gegangen. Die
 Entscheidung fällt je GCD; im nächsten GCD ist Cure II wieder wirkbar und hat Vorrang. (3) Regen liegt schon auf dem
-Ziel. Dann lehnt `RegenPvE.CanUse` ab, wie vorher.
+Ziel. Dann lehnt `RegenPvE.CanUse` ab, wie vorher. (4) *Ausgeliefert, und nichts ändert sich:* Hält die
+Bewegungssperre ihn auf einem sicheren Platz, ist Cure II wirkbar und geht vor, wie gewollt; nur wer läuft oder außer
+Reichweite steht, bekommt Regen. Ab Stufe 52 geht Afflatus Solace vor beiden, solange eine Lilie da ist. *Ausgeschlossen:*
+`RegenHeal` ab Werk senken – Regen nähme dann auch Ziele, für die Cure II geht und mehr heilt, und unter der neuen
+Schwelle bliebe dieselbe Sperre im Lauf. Swiftcast für Cure II – gegen seine Vorgabe (oben).
 
 **Auch die Flächenschwellen lesen die Vorausschau** (A182). Der Text von „Heal ahead of incoming damage" sagt: „Every healing threshold and the heal target choice read the health a member is heading for". Die Flächenschwellen (`HealthAreaAbility`, `HealthAreaSpell`) lesen eigene, vorausberechnete Gruppenwerte (`DataCenter.ComputeForecastAreaStats`: Mittel und Streuung, bei mehr als vier Mitgliedern über die vier niedrigsten). Die bisherigen Gruppenwerte bleiben unverändert, weil sie viele Leser außerhalb der Heilkette haben, fremde Rotationen darunter. Mit ausgeschalteter Einstellung ist die Vorausschau 1 und die Werte gleich den bisherigen. Gezählt werden dieselben Mitglieder wie bei den bisherigen Werten (gültig, mit Id, lebend; A210). Im Kampf: Fällt die Gruppe schnell, kommt eine Flächenheilung per GCD etwa einen GCD früher. Die oGCD-Schwelle blickt nur bis zum Ende der Ausführungssperre voraus (A213).
 

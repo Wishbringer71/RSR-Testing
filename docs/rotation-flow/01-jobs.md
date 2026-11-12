@@ -1072,6 +1072,13 @@ eingearbeitet werden, situationsbezogen"; A487, A488, A522):
     Brett gegen die geleerten und schrieb nach jedem Brett „battlehorns changed by hand to None" (seine Läufe vom
     11.11.2026: 0,26 s nach dem Gebietswechsel). B5 setzte danach bis zum Ende des nächsten Kampfes nichts: Ein Kampf
     außerhalb direkt nach dem Brett begann ohne Begleiter auf den Hörnern.
+    Keine Hand ist auch die Wiederherstellung beim Verlassen: Seit 7.58 setzt das Spiel die Hörner von vor dem Brett
+    zurück (Patchnotes vom 10.11.2026, Konzept 21, Grundlagen). Die erste Änderung nach dem Brett, die genau diese
+    Belegung zeigt, übernimmt RSR ohne Wertung (A730); als Hand gezählt, hätte sie B5 bis zum Ende des nächsten Kampfes
+    angehalten. Eine andere erste Änderung bleibt seine Hand. *Gegenthese:* Er stellt nach dem Brett von Hand genau die
+    alte Belegung her. Dann übernimmt RSR sie ebenso, und B5 plant vor dem nächsten Kampf; seine Belegung war dieselbe,
+    die B5 vor dem Brett gesetzt oder er gewählt hatte. *Ausgeschlossen:* eine Frist nach dem Gebietswechsel – eine
+    feste Zahl ohne Bezug zum Spiel.
   - *Was als Nächstes kommt:* Der nächste Gegner ist der nächste lebende Gegner, der noch nicht kämpft, in RSRs
     Gegnerliste (48 y, in Sicht). Trägt er das Boss-Symbol (`BNpcBase.Rank` 2 oder 6, `IsBossFromIcon`), kommt ein Boss:
     ein Ziel. Sonst ein Rudel: so viele Gegner, wie im letzten Kampf in diesem Gebiet zugleich gegen ihn, seine Gruppe

@@ -2090,6 +2090,16 @@
    "status": "exception",
    "loop": "A729",
    "reason": "The fewest runs that show a spread: a Crucible value by rank stands only on as many runs at or below the team's rank, else the heaviest over all runs holds. The same threshold as for lowering a learned layer (concept 13, rule 5, A475); a count by definition, not a tuned value (A729)."
+  },
+  {
+   "file": "RotationSolver/Basic/Actions/BaseItem.cs",
+   "code": "var sent = InventoryManager.Instance()->GetInventoryItemCount(ID, true) > 0 ? ID + 1000000 : ID;",
+   "values": [
+    "1000000"
+   ],
+   "status": "exception",
+   "loop": "A730",
+   "reason": "The client's offset for the high-quality form of an item id, as in PhoenixDownItem (A340) and upstream's BaseItem.UseItem: CanUse asks the game about the form UseItem sends. A convention of the game client, stated in no sheet (A730)."
   }
  ]
 }

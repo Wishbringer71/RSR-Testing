@@ -1740,6 +1740,10 @@ public sealed class BST_Reborn : BeastmasterRotation
 	private bool _dangerKnownChecked;
 	private bool _heldByHand;
 	private byte[] _slotsSeen = [];
+
+	// A730: the horns before the board he is on or last left, until the first change after it; and whether he was on one.
+	private byte[]? _hornsBeforeBoard;
+	private bool _wasInCrucible;
 	private HornPlanKey? _planKey;
 	private string _planTraced = string.Empty;
 	private readonly List<BeastmasterPet> _candidates = [];
@@ -2009,6 +2013,14 @@ public sealed class BST_Reborn : BeastmasterRotation
 			return;
 		}
 
+		// A730: the horns as they stood before a board; since 7.58 the game puts them back when he leaves it.
+		if (IsInCrucible && !_wasInCrucible)
+		{
+			_hornsBeforeBoard = _slotsSeen.Length == Horns.Length ? (byte[])_slotsSeen.Clone() : null;
+		}
+
+		_wasInCrucible = IsInCrucible;
+
 		var changed = _slotsSeen.Length != Horns.Length;
 		for (var i = 0; !changed && i < Horns.Length; i++)
 		{
@@ -2028,6 +2040,15 @@ public sealed class BST_Reborn : BeastmasterRotation
 		// so the board's cleared horns are not his change once he leaves it (A696).
 		if (IsInCrucible)
 		{
+			return;
+		}
+
+		// A730: the first change after a board that shows the horns from before it is the game's, not his.
+		var restored = _hornsBeforeBoard is { } before && before.AsSpan().SequenceEqual(_slotsSeen);
+		_hornsBeforeBoard = null;
+		if (restored)
+		{
+			DefenseTrace.Line("battlehorns put back by the game after the board - taken without a judgement");
 			return;
 		}
 

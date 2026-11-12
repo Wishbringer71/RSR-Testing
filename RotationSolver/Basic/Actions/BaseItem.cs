@@ -232,8 +232,11 @@ public class BaseItem : IBaseItem
 			return false;
 		}
 
-		if (ConfigurationHelper.BadStatus.Contains((ActionStatus)ActionManager.Instance()->GetActionStatus(ActionType.Item, ID))
-			&& ConfigurationHelper.BadStatus.Contains((ActionStatus)ActionManager.Instance()->GetActionStatus(ActionType.Item, ID + 1000000)))
+		// A730 (concept 03, "Was das Spiel hier ablehnt"): the game's answer for the quality UseItem sends - high quality when
+		// held, else normal. Asked for both at once, an item refused as normal ("You do not have that item.", 583) passed on the
+		// 0 the game gave for a high quality the player did not hold, and was chosen again in the same area (11.11.2026).
+		var sent = InventoryManager.Instance()->GetInventoryItemCount(ID, true) > 0 ? ID + 1000000 : ID;
+		if (ConfigurationHelper.BadStatus.Contains((ActionStatus)ActionManager.Instance()->GetActionStatus(ActionType.Item, sent)))
 		{
 			return false;
 		}
