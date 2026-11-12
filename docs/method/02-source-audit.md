@@ -73,7 +73,7 @@ Zeilen: gesamt / vom Fork hinzugefügt (12.11.2026). Stand: offen, in Arbeit, ge
 | Bereich | Dateien | Zeilen | Fork | Stand |
 |---|---|---|---|---|
 | `Basic/Helpers` | 51 | 22.094 | 15.663 | in Arbeit: `CrucibleBoard.cs`, `CrucibleRoute.cs` gelesen (12.11.2026, 6ae686837) |
-| `Basic/Rotations` | 53 | 39.201 | 14.541 | in Arbeit: gelesen `BeastmasterCrucible.cs`, `…Route.cs`, `…Score.cs`, `…Camp.cs`, `…Items.cs` (12.11.2026, 6ae686837) |
+| `Basic/Rotations` | 53 | 39.201 | 14.541 | in Arbeit: gelesen alle `BeastmasterCrucible*.cs`, `BeastmasterFamiliars.cs`, die Fork-Zeilen von `BeastmasterRotation.cs` (12.11.2026, 6ae686837) |
 | `Basic` (DataCenter u. a.) | 4 | 5.763 | 3.447 | offen |
 | `Basic/Configuration` | 24 | 6.357 | 3.309 | offen |
 | `RebornRotations/Limited Jobs` | 2 | 4.131 | 2.814 | in Arbeit (wie oben) |
