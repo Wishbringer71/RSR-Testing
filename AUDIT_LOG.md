@@ -21158,6 +21158,30 @@ Listen, Wiederbelebungs- und Reinigungsziel, Lebenszeit).
   (`GetAllTargets`, `UpdateCastsByOthers`, `UpdateAreaCasters`, die Mengen in `UpdateLists`).
 - *Prüfgrad:* statisch, Compile ohne Warnung. Im Spiel nicht beobachtet.
 
+### A728 · Quellcode-Prüfung abgeschlossen: lesender Durchgang über alle Bereiche (12.11.2026)
+
+Sein Auftrag vom 12.11.2026: „den eigenen quellcodes des Plugins vollständig prüfen, inwieweit darin probleme existieren,
+dann mit todo weitermachen". Verfahren, Fehlerklassen und Stand je Bereich: `docs/method/02-source-audit.md`.
+
+- *Mechanisch (A713):* Compiler mit allen Analysen, verschluckte Ausnahmen, Division durch `MaxHp`, Änderung in der
+  eigenen Aufzählung, Ereignisse ohne Abmeldung – über alle 407 Dateien, ohne Defekt.
+- *Lesend:* der Code des Forks Bereich für Bereich – `Basic/Helpers`, `Basic/Rotations`, `DataCenter`, `Basic/Actions`,
+  `Updaters`, `Basic/Configuration`, `Basic/Data`, `Watcher`, Plugin-Einstieg, alle Reborn-Rotationen samt Beastmaster
+  und Blaumagier, Oberfläche (auf zustandsändernde Wege), `Helpers`, Befehle, IPC.
+- *Befunde, im Loop behoben:* A709 bis A712, A714 bis A727 (Crucible-Maße und -Lage, Reraise, Heilerkriterium,
+  Begleiter-Elemente, Tötungsstapel, Heilmeldung, Schaden über Zeit in Last und Gefahr, „Gegner läuft zu einem anderen"
+  mit Blickziel, Messung der Bewegungssperre, Heilrate der Figuren, Schadensrate der Gruppe ohne anvisierbaren Gegner).
+- *Befunde im TODO:* „Crucible: Gelernte Lasten sinken nicht, wenn die Begleiter stärker werden" (F9, samt
+  `LearnFamiliarHits`), „Gelernte Trefferserien sinken nicht" (F9).
+- *Gelesen ohne Befund, mit Begründung:* `HostileOutputPercent` nimmt bei Addle den physischen Anteil (der Strom eines
+  Packs sind Auto-Angriffe); `ClosingSpeed` wird je Bild einmal gelesen; die Pfad-Merker der Abwehr setzt `Invoke` vor
+  jedem Durchlauf zurück; „Interrupt enemy casts" heißt im Code `InterruptibleMoreCheck`, aus bedeutet richtig „nicht
+  unterbrechen"; `NoFallDamage` ab Werk aus nach A276.
+- *Grenze:* Ein lesender Durchgang findet, was an der Stelle sichtbar ist; Wechselwirkungen, die erst im Kampf auffallen,
+  findet er nicht. Was davon in seinen Mitschnitten liegt, ist gegen sie geprüft (A715, A721, A722, A724).
+- *Prüfgrad:* statisch (gelesen), Compile ohne Warnung, 53 Prüfschritte, die Modelle `crucible_route_model.py` und
+  `approach_model.py` an seinen Daten.
+
 ## B · Commit-Register (Fork vs. `upstream/main`)
 
 ### B1 · Einzelgeprüfte Fork-Commits

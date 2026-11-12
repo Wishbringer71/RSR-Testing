@@ -19,15 +19,13 @@ auswahl und das timing der beschwörung" – je Kampf aller fünf Bretter (Gegne
 BossMod-Module) die Rotation des Beastmasters, die Wahl der Begleiter und den Zeitpunkt ihres Aufrufs im Loop prüfen
 (Beispiel seiner Beobachtung: der Raptor gegen Feuer, bevor feueranfällige Gegner da waren; A581).
 
-1. Den eigenen Quellcode des Plugins vollständig auf Probleme prüfen (sein Auftrag, 12.11.2026, nach dem Brett-Punkt
-   und vor dem übrigen TODO).
-2. Crucible: Gelernte Lasten sinken nicht, wenn die Begleiter stärker werden (Vorrang Crucible).
-3. Die übrigen gefundenen und gebauten Punkte vom 11.11.2026 im vollen Loop verifizieren und optimieren (sein Auftrag).
-4. Blaumagier: RSRs nächste Aktion beendet Apokalypsis und Chelonian Gate – Schaden und Minderung des Spielers enden
+1. Crucible: Gelernte Lasten sinken nicht, wenn die Begleiter stärker werden (Vorrang Crucible).
+2. Die übrigen gefundenen und gebauten Punkte vom 11.11.2026 im vollen Loop verifizieren und optimieren (sein Auftrag).
+3. Blaumagier: RSRs nächste Aktion beendet Apokalypsis und Chelonian Gate – Schaden und Minderung des Spielers enden
    nach einem GCD statt nach 10 s.
-5. Kegel und Ringe gegnerischer Zauber genau messen: Zauber- und Kanalbeginn nutzen RSRs Erkennung bei Kegel und Ring
+4. Kegel und Ringe gegnerischer Zauber genau messen: Zauber- und Kanalbeginn nutzen RSRs Erkennung bei Kegel und Ring
    nicht, und mehrere Leser sehen hinter einem Kegel oder im Innenkreis eines Rings eine Gefahr, die keine ist.
-6. Gelernte Trefferserien sinken nicht: eine lange Gruppenheilung kann nach dem letzten Treffer einer Serie gehen
+5. Gelernte Trefferserien sinken nicht: eine lange Gruppenheilung kann nach dem letzten Treffer einer Serie gehen
    (Befund der Quellcode-Prüfung, A726).
 
 Danach die technische Schuld, soweit ihre Auflösungsbedingung erfüllt ist. Warten auf Daten: unten.
@@ -86,15 +84,6 @@ ausstehend, und Glockenspiel, Panhaima, Makrokosmos oder Seraphismus können nac
 Abstände in den gelernten Serien messen und prüfen, ob eine Serie als beendet gelten kann, sobald der Abstand seit dem
 letzten Treffer ihren bisher größten übersteigt; die Schichten von Konzept 13 für die Datei. *Konzept:* 08
 („Glockenspiel"), 13.
-
-### Den eigenen Quellcode des Plugins vollständig auf Probleme prüfen · N R
-Sein Auftrag vom 12.11.2026: „weiterarbeiten, danach den eigenen quellcodes des Plugins vollständig prüfen, inwieweit
-darin probleme existieren, dann mit todo weitermachen. alles in kompletten loops". Umfang: der gesamte Quelltext unter
-`RotationSolver*/` (nicht ECommons, RebornMaterial, Dalamud). Umfang, Verfahren, Fehlerklassen und der Stand je
-Bereich stehen in `docs/method/02-source-audit.md`; die mechanischen Durchgänge über alle Dateien sind durch (A713).
-Die Crucible- und Beastmaster-Dateien und `Basic/Helpers` bis auf drei Upstream-Dateien sind gelesen (A714 bis A726).
-*Nächster Schritt:* der lesende Durchgang nach der Tabelle dort, weiter mit den Fork-Zeilen von `StatusHelper`,
-`ObjectHelper`, `TargetFilter`, dann `DataCenter` und den Updatern; jeder Befund als eigener Eintrag hier, jeder im Loop. *Konzept:* `docs/method/02-source-audit.md`.
 
 ### Gefundene Punkte vom 11.11.2026 im vollen Loop verifizieren und optimieren · N
 Sein Auftrag vom 11.11.2026: „ich habe das gefühl, dass du wieder nicht zuerst an den konzepten gearbeitet hast und auch
