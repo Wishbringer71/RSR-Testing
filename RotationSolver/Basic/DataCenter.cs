@@ -5290,7 +5290,9 @@ internal static class DataCenter
 	public static bool BMRMoveRequested { get; set; }
 
 	/// <summary>
-	/// True if BossMod is moving.
+	/// True while BossMod wants a movement of the player or holds casts (<c>Movement.IsMoving</c>:
+	/// <c>hints.ForcedMovement != null || hints.HoldCasts</c>, BossModReborn 2087153c2) - also while its AI does not walk.
+	/// Whether the AI steers the player is <see cref="BMRIsNavigating"/> (A725).
 	/// </summary>
 	public static bool BMRIsMoving { get; set; }
 
