@@ -50,6 +50,12 @@ What this release changes in the fight. For the whole distance from upstream, se
   inner radius), towards the cast's target or the caster's facing. Shapes whose omen names neither stay circles. Lines
   of type 4, circles of type 5 and cones of type 3 now also reach past the caster's hitbox, as the game's shapes do;
   until now RSR measured them short.
+- **Deep dungeon stones are read by their place in the dungeon's list.** A slot's value names the kind counted from 1 in
+  the dungeon's list of stones, not a row of a sheet. In Pilgrim's Traverse every slot read as nothing, so no incense was
+  ever burned when alone; in Heaven-on-High and Eureka Orthos the old reading matched only because their lists start
+  at 1. Pilgrim's Traverse: 1 Barkbalm, 2 Mazeroot, 3 Poisonfruit, measured in the owner's run.
+- **The trace names every item pressed.** "item pressed: …" with its quality, beside the potion line that names only the
+  choice.
 - **An item counts as refused when the game refuses the quality RSR sends.** RSR blocked an item only when the game
   refused both its normal and its high quality. An Ultra-Potion refused as normal ("You do not have that item.") passed
   on the answer for a high quality you did not hold, and RSR chose it again in the same area – each try took a weave a

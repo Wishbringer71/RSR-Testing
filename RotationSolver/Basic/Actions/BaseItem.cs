@@ -257,6 +257,11 @@ public class BaseItem : IBaseItem
 		{
 			TraceRefusal();
 		}
+		else
+		{
+			// A737 (concept 03, "Gedrückt, nicht nur gewählt"): the press itself, beside the choice the potion line names.
+			TracePress();
+		}
 
 		return used;
 	}
@@ -293,6 +298,12 @@ public class BaseItem : IBaseItem
 		{
 			return ActionManager.Instance()->UseAction(ActionType.Item, ID, Player.Object.GameObjectId, A4);
 		}
+	}
+
+	private unsafe void TracePress()
+	{
+		var hq = InventoryManager.Instance()->GetInventoryItemCount(ID, true) > 0;
+		DefenseTrace.Line($"item pressed: {Name} #{ID} ({(hq ? "high quality" : "normal")}) in area {DataCenter.TerritoryID}");
 	}
 
 	// A683 (concept 03, "Was das Spiel hier ablehnt"): a use the game refused, with its answer for both qualities, once per

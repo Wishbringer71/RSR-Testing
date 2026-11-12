@@ -21392,6 +21392,37 @@ Repository.
 - *Folge:* TODO, Warten auf Daten: „Absturz einer zweiten Installation am 11.11.2026, 21:18".
 - *Prüfgrad:* Laufzeitbeobachtung (`DefenseTrace.log`), Versionsgeschichte; die Ursache des Absturzes unbestimmt.
 
+### A737 · Upload vom 12.11.2026: Wallfahrtstrank, Steinplätze in Pilgers Pfad, zwei Tode durch Kegel nach hinten (12.11.2026)
+
+Sein Upload (`RotationSolver.7z` bis 12.11.2026, 20:44; ACT-Mitschnitte vom 11.11. ab 18:43 und vom 12.11.) mit seiner Frage
+„wird wallfahrtstrank in pilgerpfad vor allen anderen tränken genutzt?". Beide neuen Sitzungen liefen auf 03af7190f
+(11.11.2026), ohne die Änderungen vom 12.11.
+
+- *Seine Frage:* Nein. Unter der Trankschwelle geht ein gewöhnlicher Trank zuerst, der Wallfahrtstrank im nächsten
+  Fenster, solange keine Rehabilitation liegt (Konzept 03, A613). Gewöhnliche Tränke gehen in Pilgers Pfad (consolegameswiki
+  „Pilgrim's Traverse": „Normal items such as potions can still be used"; Bronzetruhen geben Ultra-Potions). Blattwerte:
+  Ultra-Potion sofort 25 % (HQ, höchstens 39.500), 75 s; Wallfahrtstrank 30 s Rehabilitation, 15 s, eigene Gruppe. Beide
+  gehen unter der Schwelle innerhalb eines GCD; zuerst die Sofortheilung, weil sie den Absturz abfängt.
+- *Gemessen um 19:20 (Stockwerk 78):* LP 27 bis 39 %, Vorhersage 4 bis 15 %. Laut Chat ein Ultratrank um 19:20:10 (Sekunde
+  ohne Bruchteil), RSR wählte ihn um 19:20:10,889 und wurde 4 ms später mit 583 abgewiesen – der letzte, schon verbraucht.
+  Danach wählte RSR fünfmal in 46 s den Wallfahrtstrank; der Mitschnitt zeigt keinen, und der erste dieses Abends kam laut
+  Chat erst um 19:23. Ob er nicht im Inventar lag oder nicht gedrückt wurde, sagte das Protokoll nicht: Es schrieb nur die
+  Wahl. *Gebaut:* „item pressed: …" je angenommenem Gegenstand (`BaseItem.Use`), Konzept 03, „Gedrückt, nicht nur gewählt".
+- *Steinplätze in Pilgers Pfad (Defekt aus A626):* Alle Ablesungen „nothing". Der Wert eines Platzes nennt die Sorte ab 1 in
+  der Liste `MagiciteSlot`, nicht eine Zeilennummer; benutzte Steine rücken nach vorn. Belegt an 29 Stockwerken und an den
+  drei Einsätzen, nach denen Titania erschien (jeweils verschwand eine 1): Wert 1 Barkbalm (Demiklon-Blatt 5), 2 Mazeroot
+  (Demiklon 4), 3 Poisonfruit (Magicite 5). BossModReborn benutzt einen Stein über die Platznummer
+  (`ActionManagerEx.UseStoneDetour`). Das Blatt der Liste nach `DeepDungeonType` (EXDSchema: 1 Magicite, 2 Demiklone; 3
+  gemessen). Der Statusagent lieferte sinnlose Einträge und wird nicht mehr gelesen. In Himmelssäule und Orthos traf die alte
+  Lesart nur, weil ihre Liste mit 1, 2, 3 beginnt. Gilt nur allein; in der Gruppe setzt RSR keine Steine.
+- *Tode (Weißmagier, Gruppe zu dritt):* 20:13:36 Claw and Tail der Wallfahrt-Cama (#43131, Kegel Art 13, 10 y, ohne Omen, nach
+  dem angekündigten vorderen Teil #43132) mit 262 %; 20:53:25 Tail Drive des gerufenen Dahak (#44507, Kegel Art 13, 30 y,
+  ohne Zauberbalken) mit 418 %. Beide aus vollen LP, nur durch den Standort vermeidbar; BossModReborn hat für beide kein
+  Modul, RSR bewegt nicht. Kein Trank und keine Heilung hätten etwas geändert.
+- *Übrig (11.11. ab 18:40, 12.11.):* kein weiterer eigener Tod; Ladezustände der Tabellen ohne Fehler.
+- *Prüfgrad:* Laufzeitbeobachtung (Protokoll, Mitschnitte), Blätter, Wiki (Werkzeugquelle); Compile, Prüfskripte. Die neue
+  Lesung der Steine ist an seinem Lauf nachgerechnet, im Spiel nicht beobachtet.
+
 ## B · Commit-Register (Fork vs. `upstream/main`)
 
 ### B1 · Einzelgeprüfte Fork-Commits

@@ -126,17 +126,22 @@ when alone", ab Werk an.
   Description) führen Erzählung, keine Wirkung; die Wirkungen stehen in consolegameswiki (Heaven-on-High, Eureka Orthos,
   Pilgrim's Traverse, 06.11.2026; Werkzeugquelle). RSR erkennt einen Stein deshalb an seinem englischen Namen im Blatt,
   nicht an einem Wirktext.
-- **Welcher Stein auf welchem Platz:** Jeder Platz trägt einen Wert, 0 heißt leer – abgeleitet, nicht belegt: BossMod
-  öffnet keine Silbertruhe mehr, sobald alle drei Werte über 0 liegen (27be422), und man hält höchstens drei Steine.
-  Gelesen wird zuerst der Statusagent des Gewölbes (`AgentDeepDungeonStatus.Data->Magicite`: je Eintrag Gegenstand und
-  Symbol): der Eintrag am selben Platz mit demselben Gegenstand, sonst der einzige Eintrag mit diesem Gegenstand; sein
-  Symbol (27966 bis 27975, je Stein verschieden) bestimmt die Zeile in einem der beiden Blätter. Sonst der Wert als Zeile
-  des Blatts, das die Spalte MagiciteSlot des Gewölbes nennt (Himmelssäule: `DeepDungeonMagicStone`, Eureka Orthos:
-  `DeepDungeonDemiclone`). Pilgers Pfad nennt keine Spalte, und Poisonfruit (Magicite-Blatt 5) und Barkbalm
-  (Demiklon-Blatt 5) teilen den Wert 5 – dort trägt nur das Symbol. Ob der Agent ohne offenes Statusfenster gefüllt ist,
-  ist unbelegt; ein Platz, den keine Lesart bestimmt, bleibt unberührt.
-- **Spur:** Je Stockwerk eine Zeile im `DefenseTrace.log` mit den drei Werten, den Einträgen des Agenten und der Lesart je
-  Platz – ein Upload aus Pilgers Pfad belegt die Zuordnung –, dazu eine Zeile je Einsatz und je Abweisung.
+- **Welcher Stein auf welchem Platz (A737):** Die Struktur hat drei Plätze (`InstanceContentDeepDungeon.Magicite`,
+  FFXIVClientStructs 80cb4a7). Der Wert eines Platzes nennt die Sorte, gezählt ab 1 in der Liste `MagiciteSlot` des
+  Gewölbes im Blatt `DeepDungeon`; 0 heißt leer. Wird ein Stein benutzt, rücken die übrigen nach vorn. Die Liste nennt Zeilen
+  eines Steinblatts, und welches, sagt `DeepDungeonType` (EXDSchema): 1 `DeepDungeonMagicStone` (Himmelssäule, Liste
+  1, 2, 3, 4: Inferno, Crag, Vortex, Elder), 2 `DeepDungeonDemiclone` (Eureka Orthos, Liste 1, 2, 3: Unei, Doga, Onion
+  Knight). Für Pilgers Pfad (Typ 3, Liste 5, 4, 5) nennt EXDSchema kein Blatt, und die 5 steht in beiden. Gemessen in
+  seinem Lauf vom 12.11.2026 (Stockwerke 71 bis 99, in der Gruppe): Wert 1 ist Barkbalm-Weihrauch (Demiklon-Blatt 5) – bei
+  jedem der drei Einsätze, nach denen Titania erschien, verschwand eine 1 aus der Liste –, Wert 2 Mazeroot (Demiklon-Blatt
+  4), Wert 3 Poisonfruit (Magicite-Blatt 5). Alle 29 Ablesungen gehen in dieser Lesart auf: Jeder Wechsel ist ein
+  benutzter Stein und das Aufrücken, dazu neue Funde.
+  - *Warum nicht mehr wie bisher:* A626 las den Wert als Zeilennummer im Blatt. In Himmelssäule und Orthos stimmen Wert und
+    Zeile überein, weil die Liste dort mit 1, 2, 3 beginnt; in Pilgers Pfad trug keine Ablesung („nothing" auf allen
+    Plätzen), und keine Regel konnte einen Weihrauch setzen. Den Statusagenten (`AgentDeepDungeonStatus`), den A626 zuerst
+    las, zeigte derselbe Lauf mit sinnlosen Einträgen; RSR liest ihn nicht mehr.
+- **Spur:** Je Stockwerk eine Zeile im `DefenseTrace.log` mit den drei Werten und der Sorte je Platz, dazu eine Zeile je
+  Einsatz und je Abweisung.
 - **Einsatz wie bei den Pomandern:** einmal je Bild, solange RSR läuft, ohne Animationssperre und ohne Wirken; gilt, bis
   der Platz einen anderen Wert zeigt, höchstens einen GCD; ein abgewiesener Platz erst nach dem Kampf oder auf dem
   nächsten Stockwerk wieder. Je Anlass einer: eine Rettung erst wieder, nachdem du die kritische Klasse verlassen hast

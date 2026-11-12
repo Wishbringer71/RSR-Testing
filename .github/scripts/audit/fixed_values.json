@@ -2160,6 +2160,26 @@
    "status": "exception",
    "loop": "A734",
    "reason": "The bit of the the other flank in the param of Directional Parry (status 680), as BossModReborn's Components/DirectionalParry decodes it (front 1, back 2, left 4, right 8; front seen as 01 in the owner's run of 11.11.2026). An encoding of the game's status, not a tuned value (A734)."
+  },
+  {
+   "file": "RotationSolver/Basic/Helpers/DeepDungeonStones.cs",
+   "code": "2 => StoneSheet.Demiclone,",
+   "values": [
+    "2"
+   ],
+   "status": "exception",
+   "loop": "A737",
+   "reason": "DeepDungeonType 2 (Eureka Orthos) of the DeepDungeon sheet, for which EXDSchema switches MagiciteSlot to DeepDungeonDemiclone. An id of the game's data (A737)."
+  },
+  {
+   "file": "RotationSolver/Basic/Helpers/DeepDungeonStones.cs",
+   "code": "3 when index < PilgrimsTraverseSheets.Length => PilgrimsTraverseSheets[index],",
+   "values": [
+    "3"
+   ],
+   "status": "exception",
+   "loop": "A737",
+   "reason": "DeepDungeonType 3 (Pilgrim's Traverse) of the DeepDungeon sheet, for which EXDSchema names no sheet; the sheets per entry are measured (A737). An id of the game's data."
   }
  ]
 }

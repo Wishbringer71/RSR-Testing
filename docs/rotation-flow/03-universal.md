@@ -1355,6 +1355,11 @@ denselben Weg braucht.
   die hochwertige Fassung) und Aktionen (`BadStatusAction`) lesen dieselben Codes.
 - *Messung:* Lehnt das Spiel den Einsatz eines Gegenstands trotzdem ab (`UseAction` liefert false), schreibt RSR je
   Gegenstand und Gebiet einmal beide Codes ins `DefenseTrace.log` („item refused by the game: …").
+- *Gedrückt, nicht nur gewählt (A737):* Jeder Gegenstand, den das Spiel annimmt, schreibt „item pressed: …" mit seiner
+  Fassung. Die Zeile „HP potion -> …" nennt nur die Wahl: RSR wählt in jedem Bild neu und drückt eine Fähigkeit erst im
+  Webfenster nach der Klickverzögerung; steigen die LP vorher über die Schwelle, geht eine andere. In seinem Lauf im
+  Pilgerpfad (12.11.2026, 19:20) wählte RSR den Wallfahrtstrank fünfmal in 46 s, der Mitschnitt zeigt keinen; ob er nicht
+  gedrückt wurde oder nicht im Inventar lag (der erste dieses Abends kam laut Chat um 19:23), sagte das Protokoll nicht.
 - *Die Fassung, die RSR schickt (A730):* Ein Gegenstand gilt als abgelehnt, wenn das Spiel die Fassung ablehnt, die
   `UseAction` schicken wird: die hochwertige, wenn du sie besitzt, sonst die normale. Bis A730 sperrte RSR ihn nur, wenn
   das Spiel beide Fassungen ablehnte. Seine Mitschnitte vom 11.11.2026 zeigen die Folge: Die Ultra-Potion (#47701)
