@@ -76,18 +76,18 @@ Zeilen: gesamt / vom Fork hinzugefügt (12.11.2026). Stand: offen, in Arbeit, ge
 | `Basic/Rotations` | 53 | 39.201 | 14.541 | gelesen (12.11.2026): alle Fork-Zeilen – die Beastmaster- und Crucible-Dateien (A714 bis A721), die Rotationsbasis `CustomRotation_*` (Tankbuster, Abwehr-Zurückhalten, OtherInfo, Fähigkeit, GCD, Limit Break, Gegenstände, Aufruf, Grundinfos), die Job-Grundlagen (Beschwörer, Blaumagier samt Carnivale-Set, Maschinist, Ninja, Tänzer, Weißmagier, Weiser, Mönch, Schwarzmagier) und `DeepDungeonRotation`; ohne weiteren Befund (`HostileOutputPercent` nimmt bei Addle den physischen Anteil – gewollt, der Strom eines Packs sind Auto-Angriffe) |
 | `Basic` (DataCenter u. a.) | 4 | 5.763 | 3.447 | `DataCenter.cs` gelesen: alle 1.902 Fork-Zeilen ohne Kommentare (12.11.2026, ohne Befund; `ClosingSpeed` ergäbe bei zwei Lesungen im selben Bild null, wird aber je Bild einmal gelesen; die Beschreibung von `BMRIsMoving` auf BossModReborns Bedeutung gebracht); offen `Service.cs` und die zwei übrigen Dateien |
 | `Basic/Configuration` | 24 | 6.357 | 3.309 | offen |
-| `RebornRotations/Limited Jobs` | 2 | 4.131 | 2.814 | `BST_Reborn.cs` gelesen (12.11.2026, 6ae686837; die Schleifen über `AllHostileTargets` ohne Nullprüfung sind kein Defekt, die Liste trägt konstruktionsbedingt keine leeren Einträge); `BLU_Reborn.cs` offen |
+| `RebornRotations/Limited Jobs` | 2 | 4.131 | 2.814 | `BST_Reborn.cs` gelesen (12.11.2026, 6ae686837; die Schleifen über `AllHostileTargets` ohne Nullprüfung sind kein Defekt, die Liste trägt konstruktionsbedingt keine leeren Einträge), `BLU_Reborn.cs` gelesen (12.11.2026, ohne Befund); dazu `Duty/DeepDungeonDefault`, `PhantomDefault`, `MonsterHunterDefault` |
 | `Basic/Actions` | 18 | 6.939 | 1.945 | gelesen (12.11.2026, ohne Befund): die Fork-Zeilen von `ActionTargetInfo` (bis Zeile 430 der kommentarlosen Fassung von 683; Rest Heilzielwahl gesondert gelesen), `ActionBasicInfo`, `BaseAction`, `HpPotionItem`, `BaseItem`, `PhoenixDownItem`; `IBaseAction`, `ActionSetting` sind Deklarationen |
 | `Updaters` | 16 | 5.186 | 1.801 | gelesen (12.11.2026): die Fork-Abschnitte von `TargetUpdater` (A727), `StateUpdater`, `CancelCastUpdater`, `BossModUpdater`, `MajorUpdater`, dazu `NoFallDamageUpdater` (A276, seine Entscheidung), `UpdateCost`; `BlueMageSetTrace` (Spur) nicht gelesen |
 | Wurzel (`Watcher`, Plugin) | 3 | 2.212 | 1.468 | `Watcher.cs` gelesen (12.11.2026, 7dc3f8237); `RotationSolverPlugin.cs` offen |
 | `Basic/Data` | 40 | 3.912 | 1.176 | offen |
-| `RebornRotations/Healer` | 4 | 3.959 | 1.161 | offen |
-| `RebornRotations/Tank` | 4 | 2.880 | 1.111 | offen |
-| `RebornRotations/Magical` | 5 | 3.899 | 1.032 | offen |
+| `RebornRotations/Healer` | 4 | 3.959 | 1.161 | gelesen (12.11.2026, ohne Befund) |
+| `RebornRotations/Tank` | 4 | 2.880 | 1.111 | gelesen (12.11.2026, ohne Befund) |
+| `RebornRotations/Magical` | 5 | 3.899 | 1.032 | gelesen (12.11.2026, ohne Befund) |
 | `UI/MainWindow` | 20 | 6.448 | 1.024 | offen |
 | `UI/ExtraWindows` | 18 | 5.894 | 663 | offen |
 | `Helpers` | 4 | 544 | 447 | offen |
-| `RebornRotations/Melee` | 6 | 4.560 | 447 | offen |
+| `RebornRotations/Melee` | 6 | 4.560 | 447 | gelesen (12.11.2026, ohne Befund; dazu die Fork-Zeilen von `Ranged/MCH`, `BRD`, `DNC`) |
 | übrige (je unter 300 Fork-Zeilen) | 138 | 37.391 | 1.477 | offen |
 
 ### Befunde
