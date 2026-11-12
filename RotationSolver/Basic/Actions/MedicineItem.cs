@@ -61,5 +61,5 @@ internal class MedicineItem : BaseItem
 	public override bool SwitchForAllJobs => true;
 
 	// A tincture is used like an action and would end a running Flamethrower channel (A380).
-	protected override bool CanUseThis => !DataCenter.FlamethrowerChannelRunning && CustomRotation.TinctureAllowedHere;
+	protected override bool CanUseThis => !DataCenter.KeptChannelRunning && CustomRotation.TinctureAllowedHere;
 }

@@ -19,9 +19,7 @@ auswahl und das timing der beschwörung" – je Kampf aller fünf Bretter (Gegne
 BossMod-Module) die Rotation des Beastmasters, die Wahl der Begleiter und den Zeitpunkt ihres Aufrufs im Loop prüfen
 (Beispiel seiner Beobachtung: der Raptor gegen Feuer, bevor feueranfällige Gegner da waren; A581).
 
-1. Blaumagier: RSRs nächste Aktion beendet Apokalypsis und Chelonian Gate – Schaden und Minderung des Spielers enden
-   nach einem GCD statt nach 10 s (gespielt hat er ihn bislang nicht, seine Angabe vom 11.11.2026).
-2. Gerichtete Parade: Angriffe von der geschützten Seite eines Gegners werden pariert (A730).
+1. Gerichtete Parade: Angriffe von der geschützten Seite eines Gegners werden pariert (A730).
 
 Danach die technische Schuld, soweit ihre Auflösungsbedingung erfüllt ist. Warten auf Daten: unten.
 
@@ -31,22 +29,6 @@ der Beastmaster-Vorrang, dann jeder übrige Punkt dieser Liste, dann die Konzept
 Code-Review; was diese finden, kommt wieder hierher und in dieselbe Reihenfolge, jeder Schritt im vollständigen Loop.
 
 ## Defekte
-
-### Blaumagier: RSRs nächste Aktion beendet Apokalypsis und Chelonian Gate · N
-Im Kampf: Drückt der Blaumagier Apokalypsis (Linie, 10 s Schaden) oder Chelonian Gate (−20 % Schaden, 10 s, danach
-Auspicious Trance), beendet RSRs nächste Aktion den Kanal („Effect ends upon using another action or moving"); RSR wirkt
-beide nicht selbst, und keine Aktionssperre hält sie. Beim Flammenwerfer hält RSR dagegen jede Aktion außer den
-Sicherheitswegen zurück (`DataCenter.FlamethrowerChannelRunning`, `BaseAction.CanUse`, „KeepsTheFlamethrowerChannel");
-die Regel sitzt beim einen Job statt bei allen Kanälen, die ein Spieler laufen lässt. Die Bewegungssperre hält diese
-Kanäle; ohne Aktionssperre endet ihr Nutzen mit RSRs nächster Aktion. *Ort:* `DataCenter.FlamethrowerChannelRunning`,
-`BaseAction.CanUse`, `MedicineItem.CanUseThis`, `MovementLock.Channels`. *Nächster Schritt:* Loop, ob die Flammenwerfer-Regel
-auf jeden Schadens- und Schutzkanal gehört, den RSR nicht selbst beendet (Universell zuerst), mit den Sicherheitswegen.
-Erhoben (11.11.2026): Kanäle im Spiel laut ActionTransient sind Passage of Arms, Collective Unconscious, Improvisation,
-Meditate, Flamethrower, Phantom Flurry, Apokalypsis, Chelonian Gate, dazu Banner of Solemn Clarity und Fixed Sign aus
-Bozja (außerhalb seines Profils, nur erfasst). Phantom Flurry hält schon `BlulockCasting` (`CustomRotation_Ability`,
-`CustomRotation_GCD`), wie `PldlockCasting` und `AstlockCasting` je einen Kanal; Apokalypsis und Chelonian Gate hält
-nichts. Divine Cataract ist die Folgeaktion von Chelonian Gate (Auspicious Trance nach 30 % der LP Schaden, endet mit
-dem Tor). *Konzept:* 14, „Wo Angriff die Abwehr beendet: die Kanäle".
 
 ## Offene Arbeit
 

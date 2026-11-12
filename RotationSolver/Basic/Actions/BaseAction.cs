@@ -288,12 +288,13 @@ public class BaseAction : IBaseAction
 			return ActionTracer.Reject(this, "NoTankbusterHereNeedsIt");
 		}
 
-		// While the Flamethrower channel runs, any other action ends it (effect text). What a safety path asks for - a
-		// heal, the defence, an interrupt, a cleanse, a raise, a provoke, a knockback guard - and what the player presses
-		// still go: the channel is damage, and safety comes first (A380).
-		if (DataCenter.FlamethrowerChannelRunning && !IBaseAction.ForceEnable && !SafetyMayEndAChannel(ID))
+		// While a kept channel runs - Flamethrower, Apokalypsis, Chelonian Gate - any other action ends it (effect texts). What
+		// a safety path asks for - a heal, the defence, an interrupt, a cleanse, a raise, a provoke, a knockback guard -, the
+		// channel's follow-up and what the player presses still go: safety comes first (A380, A733).
+		if (DataCenter.KeptChannelRunning && !IBaseAction.ForceEnable && !SafetyMayEndAChannel(ID)
+			&& !DataCenter.IsFollowUpOfKeptChannel(ID))
 		{
-			return ActionTracer.Reject(this, "KeepsTheFlamethrowerChannel");
+			return ActionTracer.Reject(this, "KeepsTheChannel");
 		}
 
 		// While the tankbuster plan or an invulnerability makes it unneeded, no rated defence aimed at the

@@ -29,6 +29,11 @@ What this release changes in the fight. For the whole distance from upstream, se
   HP fell, and it never healed. RSR now reads the game's refusals for a place – not usable here, only in PvP, not in PvP,
   only in duels or Frontline – for every item and action. When the game still refuses an item, `DefenseTrace.log`
   names the item, the area and the game's answer, once per item and area.
+- **Apokalypsis and Chelonian Gate run their full channel.** When you pressed either as a Blue Mage, RSR's next action
+  ended it ("Effect ends upon using another action or moving"). RSR now keeps them as it keeps the Machinist's
+  Flamethrower: Apokalypsis while an enemy stands within its range before you, Chelonian Gate while it stands. Healing,
+  defence, interrupts, cleanses, raises, provokes, knockback guards, Divine Cataract out of the gate and whatever you
+  press still go. Each such channel's end is written to `DefenseTrace.log` with how long it ran.
 - **A series of hits ends with its own rhythm.** RSR learns how often an enemy action hits you and the party in a row
   and kept a series open for the whole duration of Liturgy of the Bell. A series that ended early – part of it dodged,
   another phase – still counted hits to come, and Liturgy of the Bell, Panhaima, Macrocosmos or Seraphism could go after

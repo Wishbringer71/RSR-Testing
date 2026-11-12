@@ -177,19 +177,37 @@ beendet es seinen eigenen Kanal also mit dem nächsten GCD oder der nächsten F�
   Stapel eine Wette. Die Wahrscheinlichkeit, dass die Regel einen Tod verhindert, ist nicht messbar und nach der
   Rechnung klein; die Kosten fallen sicher an.
 
-**Umgekehrt, Abwehr beendet Angriff:** Flamethrower (Machinist) ist ebenfalls ein Kanal, einer für Schaden (Einsatzregel:
-„Vergleich mit The Balance", Maschinist). Solange er läuft – sein Status liegt, der Maschinist steht und ein Gegner steht im
-Kegel vor ihm (`DataCenter.FlamethrowerChannelRunning`) –, verweigert `BaseAction.CanUse` jede andere Aktion
-(„KeepsTheFlamethrowerChannel"), einen Trank ebenso (`MedicineItem`). Durch geht, was ein Sicherheitsweg verlangt –
-Heilung, Flächen- und Einzelabwehr, Unterbrechung, Reinigung, Wiederbelebung, Provokation, Schutz gegen Rückstoß – und was
-der Spieler drückt. Sicherheit vor Schaden: Der Kanal ist Schaden, und ein Treffer wiegt mehr als die restlichen Ticks.
+**Ein Kanal, den eine weitere Aktion beendet, hält RSR, solange er nützt (A380, für alle Kanäle A733).** Gilt für
+jeden Kanal, der mit einer weiteren Aktion endet und dessen Nutzen bis zu seinem Ende anhält, gleich wer ihn gedrückt hat:
+- *Flamethrower (Maschinist)* und *Apokalypsis (Blaumagier)*, Kanäle für Schaden: solange ihr Status liegt, du stehst und
+  ein Gegner in ihrer Reichweite im Kegel vor dir steht (`ActionTargetInfo.HostileInFacingCone`). Für Apokalypsis, eine
+  Linie, ist der Kegel weiter als der Strahl (Schluss: der Wirktext nennt keine Breite); ein Gegner schräg neben dem
+  Strahl hält dann länger als nötig, nie kürzer.
+- *Chelonian Gate (Blaumagier)*, ein Schutzkanal (−20 % erlittener Schaden, 10 s): solange sein Status liegt und du
+  stehst. Seine Folgeaktion Divine Cataract (nach Auspicious Trance) geht durch: Sie ist der Ertrag des Tors.
+Solange einer läuft (`DataCenter.KeptChannelRunning`), verweigert `BaseAction.CanUse` jede andere Aktion
+(„KeepsTheChannel"), einen Trank ebenso (`MedicineItem`). Durch geht, was ein Sicherheitsweg verlangt – Heilung,
+Flächen- und Einzelabwehr, Unterbrechung, Reinigung, Wiederbelebung, Provokation, Schutz gegen Rückstoß –, die
+Folgeaktion des Kanals und was der Spieler drückt. Sicherheit vor dem Kanal: Ein Treffer wiegt mehr als die restlichen
+Ticks oder Sekunden Minderung.
+- *Im Kampf:* Drückt der Blaumagier Apokalypsis, trifft der Strahl die vollen 10 s, statt mit RSRs nächster Aktion nach
+  höchstens einem GCD zu enden. Drückt er Chelonian Gate, bleibt die Minderung 10 s und kann zu Auspicious Trance werden.
+  Bisher beendete RSRs nächste Aktion beide.
+- *Nicht hier:* Kanäle mit eigener Regel. Passage of Arms und Collective Unconscious hält RSR bis zum angekündigten
+  Treffer (`PldlockCasting`, `AstlockCasting`, oben), Phantom Flurry mit „Don't break Phantom Flurry" (`BlulockCasting`,
+  ab Werk an) – wer sie ausschaltet, will, dass RSR weiter handelt. Improvisation schließt `DNC_Reborn` sofort ab, und
+  Meditate wirkt RSR nur in der Pause, wo die nächste Aktion ihn absichtlich beendet (unten).
+- *Gegenthese 1 – Er wollte den Kanal abbrechen:* Er bricht ihn mit einer Bewegung oder einer eigenen Aktion ab; was er
+  drückt, geht durch.
+- *Gegenthese 2 – RSR steht 10 s still:* Für Chelonian Gate ohne Gegner im Strahl hält RSR nichts zurück, was die
+  Gruppe schützt; liegen bleiben nur Schaden und Unterstützung ohne Sicherheitsweg. Das wählte er mit dem Druck.
+- *Gegenthese 3 (ausgeliefert, und nichts ändert sich):* RSR wirkt beide nicht selbst; wer sie nie drückt, merkt nichts.
+- *Messung:* `DefenseTrace.log` schreibt bei jedem Ende eines solchen Kanals, wie lange er lief, die letzte Aktion und ob
+  der Spieler sich bewegte.
+
 Bewegt sich der Spieler, endet der Kanal ohnehin; RSR sperrt seine Bewegung nur mit „Lock movement while casting" (ab
-Werk aus) und dem Haken bei Flamethrower (ab Werk an; wann sie nachgibt: Konzept 03, „Bewegungssperre beim Wirken und
-die KI von BossMod"). Steht kein Gegner mehr im Kegel, gibt die Sperre frei, und die nächste
-Aktion beendet den leeren Kanal. `DefenseTrace.log` schreibt bei jedem Ende, wie lange er lief, die letzte Aktion und
-ob der Spieler sich bewegte. Apokalypsis (Blaumagier) ist derselbe Kanal als Linie, Chelonian Gate ein
-Schutzkanal (−20 %, 10 s); RSR wirkt beide nicht selbst, und drückt sie der Spieler, beendet RSRs nächste Aktion sie –
-keine Aktionssperre hält sie (offen: TODO „Blaumagier: RSRs nächste Aktion beendet Apokalypsis und Chelonian Gate"). Meditate (Samurai) wirkt RSR nur in der Pause. Dort beendet ihn jede Abwehr oder Heilung, die
+Werk aus) und dem Haken beim jeweiligen Kanal (ab Werk an; wann sie nachgibt: Konzept 03, „Bewegungssperre beim Wirken und
+die KI von BossMod"). Meditate (Samurai) wirkt RSR nur in der Pause. Dort beendet ihn jede Abwehr oder Heilung, die
 ohne Gegner in Reichweite fällt: die eigene Heilung (Second Wind, Bloodbath), Tengentsu und Third Eye
 bei angekündigtem Treffer auf ihn oder eigener niedriger Gesundheit. Sicherheit vor Kenki — so gewollt.
 Die Rückhaltung von Abwehr im Burst steht in Konzept 08, „Die Abwehrsperren".

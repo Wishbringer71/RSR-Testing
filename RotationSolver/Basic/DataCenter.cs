@@ -3585,48 +3585,71 @@ internal static class DataCenter
 	}
 
 	/// <summary>
-	/// Whether the player's Flamethrower channel runs and still reaches an enemy: its status stands on him, he stands
-	/// still, and a hostile is within the action's range in the cone before him. "Effect ends upon using another action or moving (including
-	/// facing a different direction)" (its effect text), so whatever reads this keeps other actions back (A380).
+	/// Whether a channel of the player runs that another action would end and that is still of use (concept 14, "Ein Kanal,
+	/// den eine weitere Aktion beendet", A380, A733): Flamethrower and Apokalypsis while their status stands, he stands
+	/// still and a hostile is within the action's range in the cone before him; Chelonian Gate while its status stands and
+	/// he stands still. "Effect ends upon using another action or moving" (their effect texts), so whatever reads this keeps
+	/// other actions back.
 	/// </summary>
 	/// <remarks>
-	/// Recognition only. Read by every action's check, so computed once per frame. Writes one trace line when a channel
+	/// Recognition only. Read by every action's check, so computed once per frame. Writes one trace line when such a channel
 	/// ends, with how long it ran and the last action, so a channel cut short shows.
 	/// </remarks>
-	internal static bool FlamethrowerChannelRunning => _flamethrowerChannelRunning.Value;
+	internal static bool KeptChannelRunning => _keptChannelRunning.Value;
 
-	private static readonly FrameCached<bool> _flamethrowerChannelRunning = new(ReadFlamethrowerChannel);
-
-	private static bool ReadFlamethrowerChannel()
+	/// <summary>A733: the follow-up a kept channel lets go - Divine Cataract out of Chelonian Gate's Auspicious Trance.</summary>
+	internal static bool IsFollowUpOfKeptChannel(uint actionId)
 	{
-		var channel = Player.Object != null && StatusHelper.PlayerHasStatus(true, StatusID.Flamethrower);
-		var now = DateTime.Now;
-		if (channel)
-		{
-			if (_flamethrowerSince == DateTime.MinValue)
-			{
-				_flamethrowerSince = now;
-			}
-
-			_flamethrowerSeen = now;
-		}
-		else if (_flamethrowerSince != DateTime.MinValue)
-		{
-			DefenseTrace.Line($"flamethrower ended after {(_flamethrowerSeen - _flamethrowerSince).TotalSeconds:F1} s | last action {LastAction} | moving {IsMoving}");
-			_flamethrowerSince = DateTime.MinValue;
-		}
-
-		if (!channel || IsMoving)
-		{
-			return false;
-		}
-
-		var range = Service.GetSheet<Action>().GetRowOrDefault((uint)ActionID.FlamethrowerPvE)?.EffectRange ?? 0;
-		return ActionTargetInfo.HostileInFacingCone(range);
+		return actionId == (uint)ActionID.DivineCataractPvE && StatusHelper.PlayerHasStatus(true, StatusID.ChelonianGate);
 	}
 
-	private static DateTime _flamethrowerSince = DateTime.MinValue;
-	private static DateTime _flamethrowerSeen = DateTime.MinValue;
+	private static readonly FrameCached<bool> _keptChannelRunning = new(ReadKeptChannel);
+
+	// A733: the kept channels - the action, its status, and whether it is of use only while an enemy stands before him.
+	private static readonly (ActionID Action, StatusID Status, bool NeedsEnemyBefore)[] KeptChannels =
+	[
+		(ActionID.FlamethrowerPvE, StatusID.Flamethrower, true),
+		(ActionID.ApokalypsisPvE, StatusID.Apokalypsis, true),
+		(ActionID.ChelonianGatePvE, StatusID.ChelonianGate, false),
+	];
+
+	private static readonly DateTime[] _channelSince = new DateTime[KeptChannels.Length];
+	private static readonly DateTime[] _channelSeen = new DateTime[KeptChannels.Length];
+
+	private static bool ReadKeptChannel()
+	{
+		var now = DateTime.Now;
+		var kept = false;
+		for (var i = 0; i < KeptChannels.Length; i++)
+		{
+			var (action, status, needsEnemyBefore) = KeptChannels[i];
+			var channel = Player.Object != null && StatusHelper.PlayerHasStatus(true, status);
+			if (channel)
+			{
+				if (_channelSince[i] == DateTime.MinValue)
+				{
+					_channelSince[i] = now;
+				}
+
+				_channelSeen[i] = now;
+			}
+			else if (_channelSince[i] != DateTime.MinValue)
+			{
+				DefenseTrace.Line($"{action} ended after {(_channelSeen[i] - _channelSince[i]).TotalSeconds:F1} s | last action {LastAction} | moving {IsMoving}");
+				_channelSince[i] = DateTime.MinValue;
+			}
+
+			if (!channel || IsMoving)
+			{
+				continue;
+			}
+
+			var range = Service.GetSheet<Action>().GetRowOrDefault((uint)action)?.EffectRange ?? 0;
+			kept |= !needsEnemyBefore || ActionTargetInfo.HostileInFacingCone(range);
+		}
+
+		return kept;
+	}
 
 	/// <summary>
 	/// What the one tankbuster aimed at <paramref name="member"/> takes and leaves him, by the tankbuster table, as shares

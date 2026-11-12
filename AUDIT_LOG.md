@@ -21304,6 +21304,29 @@ Serie vorbei ist".
   nächsten Treffen.
 - *Prüfgrad:* statisch, Compile, Prüfskripte, Mitschnitt-Messung; im Spiel nicht beobachtet.
 
+### A733 · Kanäle, die eine weitere Aktion beendet: die Flammenwerfer-Regel für Apokalypsis und Chelonian Gate (12.11.2026)
+
+TODO „Blaumagier: RSRs nächste Aktion beendet Apokalypsis und Chelonian Gate", im Loop. Konzept 14, „Ein Kanal, den eine
+weitere Aktion beendet, hält RSR, solange er nützt".
+
+- *Befund:* Beide Kanäle enden mit jeder weiteren Aktion („Effect ends upon using another action or moving"); RSR wirkt
+  sie nicht selbst, und keine Aktionssperre hielt sie. Drückte der Spieler sie, endete der Strahl oder das Tor mit RSRs
+  nächster Aktion, spätestens nach einem GCD. Die Regel dafür stand nur beim Flammenwerfer (A380).
+- *Erhoben (ActionTransient, 11.11.2026):* Passage of Arms, Collective Unconscious, Improvisation, Meditate, Flamethrower,
+  Phantom Flurry, Apokalypsis, Chelonian Gate (Bozja-Kanäle nur erfasst). Eigene Regeln haben Passage of Arms und
+  Collective Unconscious (bis zum Treffer), Phantom Flurry (Option, ab Werk an), Improvisation (sofort abgeschlossen),
+  Meditate (nur in der Pause, Ende gewollt).
+- *Optionen:* (0) nichts; (a) je Kanal eine Option wie Phantom Flurry – eine Option für ein Verhalten, das der Spieler mit
+  dem Druck schon gewählt hat; (b) die Flammenwerfer-Regel allgemein für Kanäle ohne eigene Regel – gewählt; (c) auch die
+  Kanäle mit eigener Regel darunter – ihre Optionen und Bedingungen (bis zum Treffer) würden überstimmt.
+- *Umgesetzt:* `DataCenter.KeptChannelRunning` (vorher `FlamethrowerChannelRunning`) über eine Liste: Flamethrower und
+  Apokalypsis mit Gegner im Kegel vor dem Spieler, Chelonian Gate ohne; `IsFollowUpOfKeptChannel` (Divine Cataract);
+  `BaseAction.CanUse` („KeepsTheChannel"), `MedicineItem`. Die Spur schreibt das Ende jedes dieser Kanäle.
+- *Falsifikation:* (1) kein Defekt – widerlegt am Wirktext und am Code (keine Sperre); (2) Option falsch, er wollte
+  abbrechen – Bewegung und eigener Druck gehen durch; (3) ausgeliefert, nichts ändert sich – wer sie nie drückt;
+  Apokalypsis hält mit dem Kegel höchstens länger als der Strahl reicht (Schluss, Breite unbelegt).
+- *Prüfgrad:* statisch, Compile, Prüfskripte; im Spiel nicht beobachtet (er hat den Blaumagier bislang nicht gespielt).
+
 ## B · Commit-Register (Fork vs. `upstream/main`)
 
 ### B1 · Einzelgeprüfte Fork-Commits
