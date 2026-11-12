@@ -21089,6 +21089,26 @@ potency" je Kampfende.
   von Dalamud); 53 Prüfschritte. Im Spiel nicht beobachtet; „approach: kind … acted … y" und die Snarl-Zeile stehen in
   der Spur.
 
+### A725 · Quellcode-Prüfung: Messung „die Sperre hält BossMods KI nicht" hing an einer Größe, die anderes meldet (12.11.2026)
+
+- *Befund (`MovementLock.Note`, Klassen F12, F4):* Gemessen wurde „die Figur bewegt sich ohne Taste, während die Sperre
+  hält und `BMRIsMoving` gilt"; ein Treffer setzte `LockFailsAgainstAi` für den Rest der Sitzung, und danach beginnt kein
+  getickter Kanal, solange die KI navigiert. `BMRIsMoving` ist BossModReborns `Movement.IsMoving` =
+  `hints.ForcedMovement != null || hints.HoldCasts` (2087153c2, `IPCProvider.cs`) – eine gewünschte Bewegung oder
+  zurückgehaltene Zauber, auch wenn die KI nicht geht. Im Zauber gibt die Sperre bei `BMRIsMoving` nach
+  (`CastYields`), gemessen wurde also nur im Kanal: Ein Rückstoß im Kanal bei zurückgehaltenen Zaubern zählte als Schritt
+  der KI. In seiner Spur vom 11.11.2026 kommt die Messzeile nicht vor (keine Messung an dem Tag).
+- *Optionen:* Nullvariante (seltene, aber sitzungslange Fehlstellung); Messung streichen (dann bräche die KI jeden
+  Kanal, wo die Sperre sie nicht hält); Rückstoß erkennen (kein Signal dafür an dieser Stelle); an der Steuerung der KI
+  messen und die jüngste Messung gelten lassen – gewählt.
+- *Gebaut:* Gemessen wird, während die Sperre hält, die KI navigiert (`AI.IsNavigating`) und ein Ziel nennt
+  (`AI.NaviTargetPos`): Die Figur bewegt sich ohne Taste und kommt dem Ziel näher. Am Ende des Halts gilt „hält nicht"
+  sofort, „hält" nach mehr als einem GCD Stillstand unter Steuerung; die Zeile nennt die Dauer.
+- *Rest:* Ein Rückstoß in Richtung des KI-Ziels zählt weiter als Schritt; die nächste saubere Messung stellt es richtig.
+  Ob die Spielsperre die KI anhält, bleibt ohne Quelle (A652) – die Regel misst es.
+- *Prüfgrad:* statisch (BossModReborn-Quelltext), Compile ohne Warnung. Im Spiel nicht beobachtet; die Spurzeile
+  „movement lock held for … s while BossMod's AI steered" trägt das Messergebnis.
+
 ## B · Commit-Register (Fork vs. `upstream/main`)
 
 ### B1 · Einzelgeprüfte Fork-Commits

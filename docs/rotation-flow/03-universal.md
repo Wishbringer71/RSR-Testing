@@ -1635,7 +1635,12 @@ for proactive mitigation" (Upstream f72a0a93e).
   eine Bewegungstaste drückt (`AIHintsBuilder.Update`).
 - Ob die Sperre des Spiels auch BossMods Gehen anhält, steht in keiner Quelle. Abgeleitet: BossMod ersetzt die Eingabe des
   Spielers in der Gehfunktion (`MovementOverride`), und dieselbe Sperre hält diese Eingabe an (Schluss, nicht gemessen; die
-  Spurzeile misst es).
+  Spurzeile misst es). Gemessen wird im Kanal: Steuert BossMods KI die Figur zu einem Ziel (`AI.IsNavigating`,
+  `AI.NaviTargetPos`), hält die Sperre, drückt der Spieler keine Bewegungstaste und kommt die Figur dem Ziel der KI dennoch
+  näher, dann hält die Sperre die KI nicht an. Stand sie dagegen länger als einen GCD still, während die KI steuerte, hält
+  sie; die jüngste Messung gilt. `Movement.IsMoving` taugt dafür nicht: BossModReborn meldet damit eine gewünschte
+  Bewegung oder zurückgehaltene Zauber (`hints.ForcedMovement != null || hints.HoldCasts`, 2087153c2), auch wenn die KI
+  nicht geht, und eine Verschiebung durch den Gegner – ein Rückstoß im Kanal – ist kein Schritt der KI (A725).
 
 **Was ohne diese Regel im Kampf geschah, mit Option und KI:**
 1. *Treffer mitten im Zauber.* Ein Weißmagier ohne Spontaneität beginnt Wiederbeleben (8 s, Aktion 125); nach 3 s

@@ -43,8 +43,8 @@ internal static class MovementLock
 	];
 
 	/// <summary>
-	/// Measured in this session: the character moved while the lock held it and BossMod's AI wanted to move. Then the game's
-	/// lock does not stop the AI, and a channel started while the AI walks ends at once.
+	/// The latest measurement in this session: the character came closer to the spot BossMod's AI steered it to while the
+	/// lock held it. Then the game's lock does not stop the AI, and a channel started while the AI walks ends at once.
 	/// </summary>
 	internal static bool LockFailsAgainstAi { get; private set; }
 
@@ -413,32 +413,52 @@ internal static class MovementLock
 		return _certain;
 	}
 
-	// The trace: one line per release, and once per hold whether the character moved while BossMod wanted to move.
+	// The trace: one line per release, and once per hold whether the character came closer to where BossMod's AI steered it.
 	private static string _lastRelease = string.Empty;
-	private static bool _heldWhileBossModMoved;
+	private static DateTime _steeredSince = DateTime.MinValue;
+	private static DateTime _steeredUntil = DateTime.MinValue;
+	private static float _wayLeft;
 	private static bool _movedWhileHeld;
 
 	/// <summary>
-	/// Notes what the lock did this frame for the trace, and measures whether the game's lock stops BossMod's AI.
+	/// Notes what the lock did this frame for the trace, and measures whether the game's lock stops BossMod's AI: while
+	/// the lock holds, the AI steers the character to a spot and the player presses no movement key, the character comes
+	/// closer to that spot - then it does not. Standing for longer than a GCD under the AI's steering says it does; the
+	/// latest measurement stands. BossMod's "Movement.IsMoving" is no measure of it - a wanted movement or held casts,
+	/// also while the AI does not walk -, and being pushed by an enemy is no step of the AI (concept 03, A725).
 	/// <paramref name="lockWanted"/>: the lock would hold without its releases; <paramref name="held"/>: it holds.
 	/// </summary>
 	internal static void Note(bool lockWanted, bool held, string reason, string what)
 	{
-		if (held && DataCenter.BMRIsMoving)
+		if (held && DataCenter.BMRIsNavigating && DataCenter.BMRNaviTargetPos is { } spot && Player.Object is { } player)
 		{
-			_heldWhileBossModMoved = true;
-			_movedWhileHeld |= Player.IsMoving && !DataCenter.BMRMoveRequested;
-		}
-		else if (_heldWhileBossModMoved && !held)
-		{
-			DefenseTrace.Line($"movement lock held while BossMod wanted to move; the character moved: {(_movedWhileHeld ? "yes" : "no")}");
-			if (_movedWhileHeld && !LockFailsAgainstAi)
+			var now = DateTime.Now;
+			var way = Vector3.Distance(player.Position, spot);
+			if (_steeredSince == DateTime.MinValue)
 			{
-				LockFailsAgainstAi = true;
-				DefenseTrace.Line("the game's movement lock does not stop BossMod's AI: ticked channels wait while it walks");
+				_steeredSince = now;
+			}
+			else
+			{
+				_movedWhileHeld |= Player.IsMoving && !DataCenter.BMRMoveRequested && way < _wayLeft;
 			}
 
-			_heldWhileBossModMoved = false;
+			_wayLeft = way;
+			_steeredUntil = now;
+		}
+		else if (_steeredSince != DateTime.MinValue && !held)
+		{
+			var seconds = (_steeredUntil - _steeredSince).TotalSeconds;
+			DefenseTrace.Line($"movement lock held for {seconds:F1} s while BossMod's AI steered; the character came closer to its spot: {(_movedWhileHeld ? "yes" : "no")}");
+			if (_movedWhileHeld != LockFailsAgainstAi && (_movedWhileHeld || seconds > DataCenter.DefaultGCDTotal))
+			{
+				LockFailsAgainstAi = _movedWhileHeld;
+				DefenseTrace.Line(_movedWhileHeld
+					? "the game's movement lock does not stop BossMod's AI: ticked channels wait while it walks"
+					: "the game's movement lock stops BossMod's AI: ticked channels start while it walks");
+			}
+
+			_steeredSince = DateTime.MinValue;
 			_movedWhileHeld = false;
 		}
 

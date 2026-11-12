@@ -71,6 +71,12 @@ What this release changes in the fight. For the whole distance from upstream, se
   the protection is called for, `DefenseTrace.log` names the way: the cast and its caster, BossMod's timeline, or the
   winds in Windurst.
 
+- **The movement lock measures BossMod's AI by where the AI steers.** Whether the game's movement lock stops BossMod's AI
+  is measured during a channel: the lock holds, the AI steers you to a spot, you press no movement key, and you come
+  closer to that spot all the same - then it does not, and ticked channels wait while the AI walks. Being pushed by an
+  enemy during a channel no longer counts as a step of the AI, and a later channel in which you stood for longer than a
+  GCD under the AI's steering sets the answer right again.
+
 ## The Beastmaster between fights
 
 - **A familiar left out after a fight goes before the next one.** A familiar that ended a fight without One with

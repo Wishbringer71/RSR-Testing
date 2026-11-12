@@ -72,11 +72,11 @@ Zeilen: gesamt / vom Fork hinzugefügt (12.11.2026). Stand: offen, in Arbeit, ge
 
 | Bereich | Dateien | Zeilen | Fork | Stand |
 |---|---|---|---|---|
-| `Basic/Helpers` | 51 | 22.094 | 15.663 | in Arbeit: gelesen `CrucibleBoard.cs`, `CrucibleRoute.cs` (6ae686837), `KillOrder.cs`, `EnemyDanger.cs`, `DotOnParty.cs`, `TankbusterForecast.cs`, `TankSwapWatch.cs`, `TankbusterTable.cs`, `SleepInterruptWatch.cs` (12.11.2026, 7dc3f8237; ohne Befund), `Approach.cs` (A724), `RaiseProtection.cs`, `HealFromOthers.cs`, `TimeToKillTracker.cs` bis Zeile 225 (12.11.2026; ohne Befund), `MovementLock.cs` (Kandidat unten); offen: `HostileMovement`, `ActionPenaltyWatch`, `ActionTooltip`, `DeepDungeon*`, `TankbusterMarkerWatch`, `HealToDefeat`, `OwnHitWatch`, `StunWatch`, Rest von `TimeToKillTracker`, `TraitDurations`, `ReportedDamage`, `HealReduction`, `TankbusterHelp`, `HitSeries`, `DefenseTrace`, die Fork-Zeilen von `StatusHelper`, `ObjectHelper`, `TargetFilter` |
+| `Basic/Helpers` | 51 | 22.094 | 15.663 | in Arbeit: gelesen `CrucibleBoard.cs`, `CrucibleRoute.cs` (6ae686837), `KillOrder.cs`, `EnemyDanger.cs`, `DotOnParty.cs`, `TankbusterForecast.cs`, `TankSwapWatch.cs`, `TankbusterTable.cs`, `SleepInterruptWatch.cs` (12.11.2026, 7dc3f8237; ohne Befund), `Approach.cs` (A724), `RaiseProtection.cs`, `HealFromOthers.cs`, `TimeToKillTracker.cs` bis Zeile 225 (12.11.2026; ohne Befund), `MovementLock.cs` (A725); offen: `HostileMovement`, `ActionPenaltyWatch`, `ActionTooltip`, `DeepDungeon*`, `TankbusterMarkerWatch`, `HealToDefeat`, `OwnHitWatch`, `StunWatch`, Rest von `TimeToKillTracker`, `TraitDurations`, `ReportedDamage`, `HealReduction`, `TankbusterHelp`, `HitSeries`, `DefenseTrace`, die Fork-Zeilen von `StatusHelper`, `ObjectHelper`, `TargetFilter` |
 | `Basic/Rotations` | 53 | 39.201 | 14.541 | in Arbeit: gelesen alle `BeastmasterCrucible*.cs`, `BeastmasterFamiliars.cs`, die Fork-Zeilen von `BeastmasterRotation.cs` (12.11.2026, 6ae686837) |
 | `Basic` (DataCenter u. a.) | 4 | 5.763 | 3.447 | offen |
 | `Basic/Configuration` | 24 | 6.357 | 3.309 | offen |
-| `RebornRotations/Limited Jobs` | 2 | 4.131 | 2.814 | `BST_Reborn.cs` gelesen (12.11.2026, 6ae686837); `BLU_Reborn.cs` offen |
+| `RebornRotations/Limited Jobs` | 2 | 4.131 | 2.814 | `BST_Reborn.cs` gelesen (12.11.2026, 6ae686837; die Schleifen über `AllHostileTargets` ohne Nullprüfung sind kein Defekt, die Liste trägt konstruktionsbedingt keine leeren Einträge); `BLU_Reborn.cs` offen |
 | `Basic/Actions` | 18 | 6.939 | 1.945 | offen |
 | `Updaters` | 16 | 5.186 | 1.801 | offen |
 | Wurzel (`Watcher`, Plugin) | 3 | 2.212 | 1.468 | `Watcher.cs` gelesen (12.11.2026, 7dc3f8237); `RotationSolverPlugin.cs` offen |
@@ -113,5 +113,4 @@ Zeilen: gesamt / vom Fork hinzugefügt (12.11.2026). Stand: offen, in Arbeit, ge
 | Last je Kampf im Crucible zählte nur Treffer, nicht die Ticks von Schaden über Zeit (Elitekampf Brett 1: rund die Hälfte fehlte) | F2 | `Watcher.ActorControlDetour`, `CrucibleBoard.RecordTaken` | behoben, A722 |
 | Gefahr je Sekunde eines Gegners ohne seinen Schaden über Zeit, entgegen Konzept 03 | F7 | `EnemyDanger`, `Watcher` | behoben, A723 |
 | „Gegner läuft zu einem anderen Gegner" traf jeden, der auf den Spieler am Hauptgegner zulief; Ziel verlangte Anvisierbarkeit; Verschwinden am Kampfende als Ankunft gelernt (vier Fehlauslösungen von Zähnefletschen am 11.11.) | F6, F7, F12, F2 | `Approach`, `BST_Reborn` K9 | behoben, A724 (Modell `approach_model.py`) |
-| Kandidat: `LockFailsAgainstAi` gilt nach einer einzigen Messung für die ganze Sitzung; ein Rückstoß während der Sperre könnte sie setzen | F4 | `MovementLock` | zu prüfen |
-| Kandidat: `PlayerHeldByEnemies`, `HoldingRate` gehen `AllHostileTargets` ohne Nullprüfung durch | – | `BST_Reborn` | zu prüfen |
+| „Die Sperre hält BossMods KI nicht" galt nach einer Messung für die ganze Sitzung, gemessen an `Movement.IsMoving`, das auch zurückgehaltene Zauber meldet; ein Rückstoß im Kanal zählte als Schritt der KI | F12, F4 | `MovementLock.Note` | behoben, A725 |
