@@ -72,8 +72,8 @@ Zeilen: gesamt / vom Fork hinzugefügt (12.11.2026). Stand: offen, in Arbeit, ge
 
 | Bereich | Dateien | Zeilen | Fork | Stand |
 |---|---|---|---|---|
-| `Basic/Helpers` | 51 | 22.094 | 15.663 | offen |
-| `Basic/Rotations` | 53 | 39.201 | 14.541 | in Arbeit: die Crucible-Dateien des Beastmasters wurden am 11. und 12.11.2026 je Regel gegen seine Läufe geprüft (A702 bis A712), nicht Zeile für Zeile |
+| `Basic/Helpers` | 51 | 22.094 | 15.663 | in Arbeit: `CrucibleBoard.cs`, `CrucibleRoute.cs` gelesen (12.11.2026, 6ae686837) |
+| `Basic/Rotations` | 53 | 39.201 | 14.541 | in Arbeit: gelesen `BeastmasterCrucible.cs`, `…Route.cs`, `…Score.cs`, `…Camp.cs`, `…Items.cs` (12.11.2026, 6ae686837) |
 | `Basic` (DataCenter u. a.) | 4 | 5.763 | 3.447 | offen |
 | `Basic/Configuration` | 24 | 6.357 | 3.309 | offen |
 | `RebornRotations/Limited Jobs` | 2 | 4.131 | 2.814 | in Arbeit (wie oben) |
@@ -99,3 +99,13 @@ Zeilen: gesamt / vom Fork hinzugefügt (12.11.2026). Stand: offen, in Arbeit, ge
 | Auffüllen gegen einen stehenden Gegenstandsbonus | F7 | `BeastmasterCrucibleItems.SpareHeal` | behoben, A712 |
 | Reserve misst mit dem größten Verlust des Bretts | F2 | `BST_Reborn.HeldForFinal`, `ShortForFinal` | behoben, A710 |
 | Gelernte Lasten sinken nicht | F9 | `CrucibleBoard.Learn*` | offen, TODO |
+| Zufallsfeld wird Kampf: die Brettposition bleibt auf dem vorigen Feld, bis ein fester Kampf folgt (der Kampf steht in den Blättern nur als Option des Zufallsfelds; Bretter 2 bis 5) | F4 | `CrucibleRoute.NoteBattle` | belegt an den Blättern, Loop offen |
+| Zwei Maße für dieselbe Frage „tragen die LP den Weg": K15 misst Nettoverlust und Senke ohne eigene Heilung (A709), Wegempfehlung, Rastwahl, Laden und „Heilung, die kein Kampf braucht" den Bruttoschaden (A661) | F5 | `FollowCrucibleRoute.Apply`, `StretchNeed`, `SpareHeal`, Laden | belegt am Code, Loop offen |
+| Heiler-Kriterium der Wegempfehlung und von „keine Rast nötig" unerfüllbar, sobald ein Einsatz mehr kostet, als der kleinste Endkampf-Heiler LP hat: „kein Weg ist sicher" bei 26 % eigenen LP (Lauf 3, 15:31:20; 522 gegen Puk 521) | F3, F2 | `FollowCrucibleRoute.IsSafe`, `NeedsNoRestOrFeed`, `FinalHealerShare` | belegt am Protokoll, Loop offen |
+| LP der Endkampf-Heiler aus dem Teamfenster gelesen, das einen Kampf nachhängt (A585): die Wegempfehlung nach einem Kampf rechnet mit den LP von davor | F4 | `FinalHealerShare`, Laden (`BeastmasterCrucibleShop` 1629, 1756) | belegt am Protokoll, Loop offen |
+| Reraise „ging ohne Sturz", weil er das Brett verließ: danach nimmt RSR einen Reraiser nur noch gegen einen Boss, die ganze Sitzung (15:09:22; am 11.11. bis zum Endkampf gehalten) | F4 | `BeastmasterRotation.FollowReraise` | belegt am Protokoll, Loop offen |
+| Am Ende des Endkampfs ersetzt das Beast Tonic die Heilung für den Begleiter („Unversehrte Bestien") und geht auf ihn: sein Maximum steigt, er ist nicht voll, beide Boni weg | F11 | `UseCrucibleItems`, Schritt „Tonic vor der Heilung" | belegt am Code, Loop offen |
+| Elemente eines Begleiters einmal je Sitzung gemerkt, die Elemente seiner Aktionen lernen aber aus Treffern nach | F4 | `BeastmasterRotation.ElementsOf(FamiliarProfile)` | belegt am Code, gering (das Blatt nennt sie für Begleiter), Loop offen |
+| Tötungsstapel einer Gegenstandstötung: Stapel im Frame des Todes gelesen, die Gewährung kann schon darin stehen | F12 | `CrucibleBoard.FollowKillStacks` | Kandidat, zu prüfen |
+| Gemeldete eigene Heilung bleibt ohne Ablauf vorgemerkt und nimmt später fremde Heilung mit | F4 | `CrucibleBoard.FollowPlayerHp` | Kandidat, gering |
+| Treffer der Begleiter über Sitzungen summiert, gegen die Erwartung von heute gehalten | F9 | `CrucibleBoard.LearnFamiliarHits`, `FamiliarHitFactor` | Kandidat, zu prüfen |
