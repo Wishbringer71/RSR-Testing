@@ -21368,6 +21368,30 @@ TODO „Gerichtete Parade: Angriffe von der geschützten Seite werden pariert" (
   - t3knical DalamudPlugins: nur Download-Zahlen. Henchman 4.0: Automatisierung, außerhalb von RSRs Aufgabe.
 - *Eingetragen:* `source_versions.json` (`--record` je Quelle).
 
+### A736 · Upload vom 12.11.2026: Absturz einer zweiten Installation am 11.11.2026, 21:18 (12.11.2026)
+
+Sein Upload ohne Frage (`RotationSolver_Absturz_….7z`: `DefenseTrace.log`, gelernte Tabellen, `BestiaryTrace.log`; kein
+ACT-Mitschnitt, kein Dalamud-Protokoll). Ein anderer Charakter als in seinen übrigen Uploads; Namen bleiben aus dem
+Repository.
+
+- *Sitzungen:* sieben seit 04.11.2026. Die vom 11.11.2026 ab 18:16:59 lief auf Build b184ee7fc (08.11.2026, vor 7.58
+  gebaut) und endet ohne „effect handler unhooked" und „trace ended": letzte Zeile „combat started" um 21:18:58 als
+  Dunkelritter in der Azim-Steppe, 0,5 s nach der ersten Schadensmessung des Kampfes. Neustart um 21:20:31 auf 03af7190f,
+  normal beendet um 21:21:46.
+- *Befund zum Absturz:* Das Spiel endete, ohne die Plugins zu entladen (wie A687 am 10.11.2026). Eine Ausnahme nur in
+  RSR beendet das Spiel nicht, und die Spur liefe weiter; das Protokoll nennt keinen Fehler. Dieselbe Folge – erste
+  Messung, Kampfbeginn als Dunkelritter, allein – lief vier Minuten zuvor in Azys Lla ohne Fehler. Ob RSR beteiligt war,
+  zeigen diese Dateien nicht. Fehlend: das Dalamud-Protokoll der Minuten 21:18 bis 21:20 und ein Bericht des
+  Absturzbehandlers, falls einer geschrieben wurde.
+- *Übriger Abend (18:16 bis 21:18):* Paladin, Dunkelritter, Barde, Rotmagier, Weiser; PvP in Wolfshöhlen-Pier und Onsal
+  Hakair, Nebeltrift, Alexandria, Richtfeuer von Ridorana, Brüllvolx' Langrast, Shinryu. Keine Zeile zu einem Tod.
+  Zehnmal plante RSR in Onsal Hakair (PvP, außerhalb seines Profils, nur erfasst) die Ultra-Potion; b184ee7fc kannte die
+  Ortssperren von A683 (71fed3643, darunter „nicht im PvP") noch nicht; der heutige Stand sperrt sie dort, und seit A730
+  zählt die Antwort für die geschickte Fassung.
+- *Gelernte Tabellen:* ohne Lade- oder Speicherfehler, keine `.corrupt`-Datei.
+- *Folge:* TODO, Warten auf Daten: „Absturz einer zweiten Installation am 11.11.2026, 21:18".
+- *Prüfgrad:* Laufzeitbeobachtung (`DefenseTrace.log`), Versionsgeschichte; die Ursache des Absturzes unbestimmt.
+
 ## B · Commit-Register (Fork vs. `upstream/main`)
 
 ### B1 · Einzelgeprüfte Fork-Commits

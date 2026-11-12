@@ -106,6 +106,11 @@ nebeneinander braucht: neuer interner Name mit Übernahme des Ordners, angezeigt
 
 ## Warten auf Daten oder Fremde
 
+- **Absturz einer zweiten Installation am 11.11.2026, 21:18** (A736). Das Spiel endete als Dunkelritter in der
+  Azim-Steppe 0,5 s nach Kampfbeginn, ohne die Plugins zu entladen; Build b184ee7fc (08.11.2026). Das `DefenseTrace.log`
+  nennt keinen Fehler. Auflösung: das Dalamud-Protokoll dieser Minuten (und ein Bericht des Absturzbehandlers, falls
+  vorhanden) – zeigt es eine Ausnahme aus RSR, Loop an der Stelle; sonst Punkt schließen.
+
 - **Crucible: die Regeln vom 11. und 12.11.2026 an seinen nächsten Läufen prüfen** (A703, A704, A708 bis A711, A699;
   seine Meldung vom 11.11.2026 und sein Auftrag zum leichten Brett). Gebaut: Teamgröße aus den Einsätzen je Brett, Team
   einer Gattung, Schutzgegenstände nach Treffergröße, die Ablöse der Hörner, der Test des Wegs ohne eigene Heilung, die
