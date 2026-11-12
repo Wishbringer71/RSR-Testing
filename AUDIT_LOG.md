@@ -20843,6 +20843,19 @@ net loss …, deepest dip …, your own healing of … taken off".
 *Prüfgrad:* statisch, Compile, Prüfskripte; im Spiel nicht beobachtet – Zeile „crucible fight …: familiar damage per
 potency" je Kampfende.
 
+### A712 · Crucible-Verifikation: Auffüllen am Ende nie gegen einen stehenden Gegenstandsbonus; übrige Punkte gegengelesen (12.11.2026)
+
+- *Befund:* Das Auffüllen vor dem letzten Schlag (A695) lief unter `!keepNoItem`. Stand Sparsamkeit noch, galt der Weg
+  aber als nicht getragen (der Test rechnet den ganzen Endkampf, auch 2 s vor seinem Ende), ging ein Heilgegenstand für
+  250 Punkte und kostete 750 – gegen das Konzept („steht kein Gegenstandsbonus mehr auf dem Spiel"). Behoben in
+  `SpareHeal`: im letzten GCD des Endkampfs geht mit einem Bonus auf dem Spiel keine übrige Heilung.
+- *Gegengelesen ohne Befund:* Unversehrte Bestien (A697: eigener Punktevergleich), Sammelleidenschaft (A695), Team einer
+  Gattung (A699: Abdeckung, Heiler, Unterbrecher), Hornbeobachtung (A696), Schutz nach Treffergröße (A704: ungemessen gilt
+  als Gefahr).
+- *Stand der Crucible-Verifikation:* A698 ersetzt durch A703, A706 durch A709, A692 durch A711; A695 berichtigt (hier).
+
+*Prüfgrad:* statisch, Compile, Prüfskripte.
+
 ## B · Commit-Register (Fork vs. `upstream/main`)
 
 ### B1 · Einzelgeprüfte Fork-Commits

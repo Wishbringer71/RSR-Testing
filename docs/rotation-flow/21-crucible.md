@@ -906,7 +906,9 @@ Dullahan, Golem, Spriggan und Eisgolem (`XBMPet.InflictsInterrupt`).
     - *Auffüllen (gebaut):* Steht kein Gegenstandsbonus mehr auf dem Spiel (Sparsamkeit verwirkt, Sammelleidenschaft
       nicht zu halten) und fällt der letzte Gegner nach der Restzeit-Vorhersage vor dem nächsten GCD
       (`PackTimeToKill` höchstens `DefaultGCDTotal`), nimmt die übrige Heilung den kleinsten Gegenstand, der den Spieler
-      auf 100 % bringt; Überheilung kostet dort nichts mehr. Vorher wie bisher der größte ohne Überheilung: Die LP am
+      auf 100 % bringt; Überheilung kostet dort nichts mehr. Steht noch ein Gegenstandsbonus auf dem Spiel, geht in
+      diesem letzten GCD gar keine übrige Heilung mehr, auch wenn der Weg vorher als nicht getragen galt (A712): Der
+      Kampf endet, und der Bonus wiegt mehr als die 250. Vorher wie bisher der größte ohne Überheilung: Die LP am
       Ende sind Anfangs-LP plus jede Heilung minus jeder Schaden, solange nichts überheilt – wann ein Gegenstand geht,
       ändert sie nicht, nur der letzte entscheidet über die 100 %.
     - *Gegen einen erhaltenen Gegenstandsbonus:* Ein Heilgegenstand am Ende bringt 250 und die LP-Punkte seiner

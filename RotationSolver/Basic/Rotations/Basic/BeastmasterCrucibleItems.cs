@@ -1471,8 +1471,15 @@ public partial class BeastmasterRotation
 		// A695: in the final fight, before its last enemy falls - before the next GCD by the time-to-kill forecast -, the
 		// smallest item that brings him to full: "Unversehrter Bändiger" and the HP the score counts. Overhealing costs nothing
 		// any more; earlier the order of the items does not change the HP at the end, only the last one decides the full HP.
-		if (finalFight && missing > 0f && FinalFightEndsNow)
+		if (finalFight && FinalFightEndsNow)
 		{
+			// A712: with an item bonus still at stake nothing goes in this last GCD - the fight ends, and the bonus
+			// outweighs the points of full HP, whatever the way test said before.
+			if (ItemBonusAtStake || missing <= 0f)
+			{
+				return -1;
+			}
+
 			var full = -1;
 			var least = float.MaxValue;
 			for (var i = 0; i < crucible->Inventory.Length; i++)
