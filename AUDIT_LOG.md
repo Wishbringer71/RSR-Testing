@@ -21134,6 +21134,30 @@ Gelesen: `HitSeries`, `ReportedDamage`, `TankbusterHelp`, `HealReduction`, `Stun
   Gegnerliste trägt konstruktionsbedingt keine leeren Einträge.
 - *Prüfgrad:* statisch, Compile ohne Warnung, 53 Prüfschritte. Im Spiel nicht beobachtet.
 
+### A727 · Quellcode-Prüfung, Zielaktualisierung: die Schadensrate der Gruppe riss ohne anvisierbaren Gegner ab (12.11.2026)
+
+Gelesen: die Fork-Abschnitte von `TargetUpdater.cs` (Provokation und Unterbrechung, wirkende Helfer, Zauber anderer,
+Listen, Wiederbelebungs- und Reinigungsziel, Lebenszeit).
+
+- *Befund (`TargetUpdater.UpdateTimeToKill`, Klasse F6; Rückwärtskausalität nach `code.md`):* Die Gesundheitshistorie der
+  Gruppe (`RecordedHP`, A91) wurde nur geschrieben, solange `AllHostileTargets` nicht leer war. Die Bedingung stammt aus
+  Upstreams Fassung, in der die Historie die Gegner führte (1b9a5b1a8, 19.09.2025); seit A91 führt sie die Gruppe, die
+  Bedingung blieb. Die Gegnerliste hält nur Anvisierbares (`GetAllTargets`). Im Kampf: Verschwindet der Boss für einen
+  Übergang und läuft Schaden weiter, gibt es keine Proben; nach 3 s ist jede Vorhersage veraltet
+  (`ForecastFreshness`), `GetCorrectedTTK` antwortet NaN, `GetForecastSurvivingShare` 1 und
+  `AnyPartyMemberFallingWithinHealWindow` falsch – die vorausschauende Heilung sieht niemanden fallen, bis wieder ein
+  Gegner anvisierbar ist. Die Heilung nach Schwellen blieb davon unberührt.
+- *Optionen:* Nullvariante; untargetbare Gegner in die Gegnerliste (ändert jede Zielregel); im Kampf immer aufzeichnen –
+  gewählt, kleinster Eingriff.
+- *Gebaut:* Aufgezeichnet wird, solange gekämpft wird oder Gegner in der Liste stehen; die Bewertung der Vorhersagen der
+  Gegner läuft über die vorhandenen. Konzept 07, „Die Rate steht".
+- *Falsifikation:* Kein Defekt – die Proben fehlen nachweislich (Bedingung vor dem Schreiben). Option falsch – Proben
+  außerhalb des Kampfs kommen nicht hinzu; im Kampf ohne Gegner zählen sie wie alle (ein Wert von 100 % wird beim Lesen
+  übergangen). Nichts ändert sich – wo in solchen Phasen niemand Schaden nimmt, oder „Heal ahead of damage" aus ist.
+- *Ohne Befund:* die übrigen Abschnitte. Beobachtet, kein Defekt: je Bild mehrere kleine Listen und Mengen neu angelegt
+  (`GetAllTargets`, `UpdateCastsByOthers`, `UpdateAreaCasters`, die Mengen in `UpdateLists`).
+- *Prüfgrad:* statisch, Compile ohne Warnung. Im Spiel nicht beobachtet.
+
 ## B · Commit-Register (Fork vs. `upstream/main`)
 
 ### B1 · Einzelgeprüfte Fork-Commits

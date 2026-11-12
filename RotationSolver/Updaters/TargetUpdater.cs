@@ -1038,9 +1038,12 @@ internal static partial class TargetUpdater
 		_lastUpdateTimeToKill = now;
 		TimeToKillTracker.Record(DataCenter.AllHostileTargets, now);
 
-		// The party's own history (A91, A341): upstream's tracker above keeps hostiles only.
+		// The party's own history (A91, A341): upstream's tracker above keeps hostiles only. Recorded while the fight runs
+		// as well as while enemies stand in the list: with no enemy to target - a boss gone for a transition - the damage
+		// goes on, and without samples every forecast was stale after three seconds (A727).
 		var hostiles = DataCenter.AllHostileTargets;
-		if (hostiles == null || hostiles.Count == 0)
+		var enemies = hostiles?.Count ?? 0;
+		if (enemies == 0 && !DataCenter.InCombat)
 		{
 			return;
 		}
@@ -1104,9 +1107,9 @@ internal static partial class TargetUpdater
 		// weaponskill on a target, a Scholar's Bio (A463). Their rate is upstream's tracker above, a 30 s fit that lags
 		// behind a burst, which is the gap the bias measures. Scored for the party alone, no forecast was ever filed
 		// for an enemy, and GetCorrectedTTK answered NaN for every one.
-		for (var i = 0; i < hostiles.Count; i++)
+		for (var i = 0; i < enemies; i++)
 		{
-			hostiles[i]?.ScoreTtkForecast();
+			hostiles![i]?.ScoreTtkForecast();
 		}
 
 		ObjectHelper.ForgetStaleTtkForecasts();

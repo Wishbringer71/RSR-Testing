@@ -367,6 +367,11 @@ für jede Gruppen-Id, `ScoreTtkForecast` korrigiert die Schätzung gegen ihren e
 und `GetForecastSurvivingShare` macht daraus die Größe, die alle Heilentscheidungen lesen (A93). Sie
 ist kein Ordnungsmerkmal innerhalb von Klasse 2, sondern die vorausberechnete Gesundheit selbst —
 siehe „Die Rate geht über die vorausberechnete Gesundheit ein".
+Aufgezeichnet wird die Gruppe jede Sekunde, solange gekämpft wird oder Gegner in der Liste stehen – auch in
+einer Phase ohne anvisierbaren Gegner, etwa wenn der Boss für einen Übergang verschwindet und Schaden weiterläuft. Die
+Bedingung „nur mit Gegnern in der Liste" stammte aus der Zeit, als die Historie die Gegner führte; mit ihr riss die
+Aufzeichnung in solchen Phasen ab, nach 3 s galt jede Vorhersage als veraltet, und die vorausschauende Heilung sah
+niemanden fallen, bis wieder ein Gegner anvisierbar war (A727).
 
 **Die schwächere Alternative ist verworfen und bleibt es:** `DataCenter.DPSTaken` misst die Gruppe
 als Ganzes, `DamageRec` trägt Zeitpunkt und Anteil, **kein Ziel**. Ihr Fenster umfasst seit upstream 7.5.7.5

@@ -78,7 +78,7 @@ Zeilen: gesamt / vom Fork hinzugefügt (12.11.2026). Stand: offen, in Arbeit, ge
 | `Basic/Configuration` | 24 | 6.357 | 3.309 | offen |
 | `RebornRotations/Limited Jobs` | 2 | 4.131 | 2.814 | `BST_Reborn.cs` gelesen (12.11.2026, 6ae686837; die Schleifen über `AllHostileTargets` ohne Nullprüfung sind kein Defekt, die Liste trägt konstruktionsbedingt keine leeren Einträge); `BLU_Reborn.cs` offen |
 | `Basic/Actions` | 18 | 6.939 | 1.945 | offen |
-| `Updaters` | 16 | 5.186 | 1.801 | offen |
+| `Updaters` | 16 | 5.186 | 1.801 | in Arbeit: `TargetUpdater.cs` gelesen (12.11.2026, A727); offen `StateUpdater` (392 Fork-Zeilen), `CancelCastUpdater`, `UpdateCost`, `BlueMageSetTrace`, `NoFallDamageUpdater`, `BossModUpdater`, `MajorUpdater`, übrige |
 | Wurzel (`Watcher`, Plugin) | 3 | 2.212 | 1.468 | `Watcher.cs` gelesen (12.11.2026, 7dc3f8237); `RotationSolverPlugin.cs` offen |
 | `Basic/Data` | 40 | 3.912 | 1.176 | offen |
 | `RebornRotations/Healer` | 4 | 3.959 | 1.161 | offen |
@@ -116,4 +116,5 @@ Zeilen: gesamt / vom Fork hinzugefügt (12.11.2026). Stand: offen, in Arbeit, ge
 | „Die Sperre hält BossMods KI nicht" galt nach einer Messung für die ganze Sitzung, gemessen an `Movement.IsMoving`, das auch zurückgehaltene Zauber meldet; ein Rückstoß im Kanal zählte als Schritt der KI | F12, F4 | `MovementLock.Note` | behoben, A725 |
 | „Im Rückstand" bei Figuren, die nur Heilung besiegt: die Rate ohne die schon Vollgeheilten – Nichtheiler sprangen ein, sobald die erste Figur fertig war | F7 | `HealToDefeat.UpdateDeadline` | behoben, A726 |
 | Gelernte Trefferserien wachsen nur: nach einer kürzeren Serie gelten bis zum Ende der Glockendauer Auslösungen als ausstehend | F9 | `HitSeries` | offen, TODO „Gelernte Trefferserien sinken nicht" |
+| Schadensrate der Gruppe nur aufgezeichnet, solange anvisierbare Gegner da sind: in einer Phase ohne sie sah die vorausschauende Heilung niemanden fallen | F6 | `TargetUpdater.UpdateTimeToKill` | behoben, A727 |
 | Fehlgeschlagene Wirktext-Auswertung für die Sitzung gemerkt; Steinnamen je Frame aus den Blättern; verrutschte Methodenbeschreibung | F4, – | `ActionTooltip.Text`, `DeepDungeonStones`, `TankbusterHelp` | behoben, A726 |

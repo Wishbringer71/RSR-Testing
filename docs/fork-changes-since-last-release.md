@@ -71,6 +71,10 @@ What this release changes in the fight. For the whole distance from upstream, se
   the protection is called for, `DefenseTrace.log` names the way: the cast and its caster, BossMod's timeline, or the
   winds in Windurst.
 
+- **Healing ahead of damage keeps watching while no enemy can be targeted.** The party's damage rate was sampled only
+  while a targetable enemy stood in the list. When a boss left for a transition and the damage went on, the samples
+  stopped, every forecast was stale after three seconds, and healing ahead saw nobody falling until an enemy could be
+  targeted again. The party is now sampled for as long as the fight runs.
 - **Non-healers help with figures only healing defeats when the healers are in fact behind.** Whether the healing keeps
   pace with the cast on such a figure - the Reiryu of Shinryu - is the HP the wave's figures have gained over the time
   it has run. A figure healed to full left that sum, so the moment a healer finished the first and began the second,
