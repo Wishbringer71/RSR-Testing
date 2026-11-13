@@ -1467,7 +1467,10 @@ Cast, dessen Form sie erreicht und der nicht auf sie zielt (`RaiseProtection.Fir
 Flächen-Cast zählt hier nur, wenn seine gemessene Form sie erreicht und ein lebendes Mitglied draußen lässt
 (`CastCertainlyDodgeable`, dieselbe Frage wie die Sperre vor einem Zauberbeginn). Ein Raidwide erreicht alle und sperrt
 nicht. Die Flächenliste nimmt auf, was die ganze Gruppe traf; ob sich die Fläche verlassen lässt, entscheidet erst die
-Form im Moment (Konzept 13, „Raidwide oder ausweichbare Fläche“, A750).
+Form im Moment (Konzept 13, „Raidwide oder ausweichbare Fläche“, A750). Ein ungelisteter Cast zählt schon, wenn seine
+Form sie erreicht. Die Formfrage sähe nur ein Mitglied draußen, und stehen alle in der Fläche, hielte sie sie für
+unausweichlich. Für ungelistete Flächen ist das die falsche Vermutung: Hätten sie die ganze Gruppe getroffen, stünden
+sie in der Liste. Für gelistete ist es die richtige, denn 60 seiner 63 aufgenommenen Ids sind Gruppentreffer.
 - *Im Kampf:* Steht der Heiler im gelisteten Kreis der Hunde in Dun Scaith und ein anderes Mitglied draußen, startet er
   kein Limit Break und keinen langen Kanal. Ohne Modul von BossMod stand er bisher bis zu 10 s darin, der Tank bis zu 4 s.
 - *Preis:* Erreicht ein Raidwide ein lebendes Mitglied nicht, etwa einen Fernkämpfer jenseits von Reichweite 30, wartet

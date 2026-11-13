@@ -21856,6 +21856,29 @@ nichts Neues). Viele ihrer Regeln seit dem 01.11. stammen aus RSR. Gesucht war d
 - *Prüfgrad:* Selbsttest der Identitätsprüfung samt Hooks, alle 54 CI-Schritte lokal; Regeldateien auf Zählungen,
   Verweise und Widersprüche gelesen (`check_rule_files.py` grün).
 
+### A752 · Konzeptprüfung, Audit, Code-Review nach A750 und A751 (13.11.2026)
+
+Sein Auftrag (13.11.2026, erneut): „todo, konzeptverbesserungen, audit, codereview im vollen loop". Das TODO hat weder
+Defekte noch offene Arbeit. Keine Auflösungsbedingung der Schuld ist erfüllt, und die Warte-Einträge hängen an seinen
+nächsten Läufen.
+
+- *Konzepte:* Die Namen, die Konzept 13 aus A750 nennt (`FirstWithin`, `FirstAfter`, `FirstDodgeableWithin`,
+  `CertainDodgeableWithin`, `ChannelStartBarred`, `CastStartBlockedNow`), stehen so im Code. Konzept 03 nennt jetzt,
+  warum ein ungelisteter Cast schon zählt, wenn er den Spieler erreicht: Die Formfrage verlangt ein Mitglied draußen.
+  Stehen alle in einer ungelisteten Fläche, hielte sie die Fläche für unausweichlich. Ungelistete Flächen sind aber
+  meist zum Verlassen, gelistete meist Gruppentreffer (60 von 63).
+- *Audit, Klasse aus A750:* Jeder Leser, der gelistete Flächen liest, fragt danach die Reichweite ab
+  (`IsHostileCastingLargeArea`, Flächenflagge, großer unterbrechbarer Cast, Vorhersage, Tankbuster-Flagge). Ein
+  pauschaler Ausschluss gelisteter Flächen steht nirgends mehr. Die Leser über die Gegnerliste ohne Helfer (Schlaf,
+  Charybdis, Meteor im Nordhorn) betreffen nur anvisierbare Gegner und sind richtig.
+- *Code-Review A750:* `NoCastFitsNow` sieht durch die Helfer öfter einen sicher ausweichbaren Treffer und wählt dann einen
+  Sofort-GCD; das ist dieselbe Frage wie vorher, jetzt vollständig gestellt. Die wiederverwendeten Sammlungen hält kein
+  Leser über das Bild hinaus. Zugewiesen werden sie nur in `UpdateAreaCasters`. Geprüft und verworfen: Ungelistete
+  Casts ebenfalls über `CastCertainlyDodgeable` zu fragen (Begründung oben).
+- *Code-Review A751:* Der Hook-Test läuft im CI-Lauf von e8862722f grün. Ein Merge, den er auf einem Rechner mit
+  anderem `user.name` macht, wird jetzt abgewiesen. Das ist so gewollt (Regel „Commit-Identität").
+- *Prüfgrad:* statisch und Prüfskripte; kein neuer Code.
+
 ## B · Commit-Register (Fork vs. `upstream/main`)
 
 ### B1 · Einzelgeprüfte Fork-Commits
