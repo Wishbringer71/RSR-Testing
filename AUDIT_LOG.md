@@ -22352,6 +22352,19 @@ Nach dem TODO der Schritt „Audit, Code-Review" aus seinem Ablauf vom 05.11.202
   je Gegner für seine KI (`EnemyBehavior.tsv`) und Aufräumen in Modulen. RSR bewegt nicht und liest sie nicht; ohne Folge.
 - *Prüfgrad:* statisch, Compile, alle CI-Schritte lokal.
 
+### A769 · Seine Frage: Kollidiert die Formprüfung mit Blickangriffen? (13.11.2026)
+
+Seine Frage (13.11.2026): „Interferiert das nicht mit dem Risiko, wenn ein Gegner einen [Blick] castet, wo man nicht
+hinsehen darf?“ Einordnung: Frage zu einem Risiko der Änderungen A765, A766 und A768.
+- *Antwort:* Nein. Die Formprüfung entscheidet nur, ob eine Fläche ihn erreicht. Kein Pfad, der sie liest, dreht die
+  Figur oder drückt etwas auf den Wirkenden. Die Sperre beim Wirken hält nur Zauber zurück. Konzept 13, „Blickangriffe
+  und die Form“.
+- *Erhoben:* BossModReborn 8ad17f97f erkennt Blicke am Blatt (`VFX` = 25) und dreht weg, ab Werk an. Es sperrt
+  Zauber und Angriffe, auch die von RSR, wenn das Ziel nur mit Blick zu treffen ist. RSR hat nur Upstreams Liste
+  „Gaze/Stop“ mit vier Ids, ab Werk aus.
+- *Neu im TODO:* „Blickangriffe ohne BossModReborn“.
+- *Prüfgrad:* statisch an RSR und BossModReborn.
+
 ## B · Commit-Register (Fork vs. `upstream/main`)
 
 ### B1 · Einzelgeprüfte Fork-Commits

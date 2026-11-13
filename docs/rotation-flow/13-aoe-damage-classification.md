@@ -198,6 +198,24 @@ weiterwirken; die Sperre zum Ausweichen griff nicht.
   Ein Treffer ganz ohne Wirken, etwa „Tail Drive“ des Dahak am selben Abend (418 %), kündigt sich nicht an; dagegen
   hilft nur der Stand.
 
+**Blickangriffe und die Form** (seine Frage, 13.11.2026, A769: ob die Formprüfung mit einem Blick kollidiert, bei
+dem man nicht hinsehen darf).
+- *Was ein Blick ist:* Er trifft, wer zum Wirkenden blickt, wenn er landet. Gefährlich wird eine eigene Aktion, weil
+  das Spiel die Figur beim Drücken zum Ziel dreht, wenn die Aktion das verlangt (`NeedToFaceTarget`). Wo man steht,
+  zählt nur über die Reichweite des Blicks.
+- *Keine Wechselwirkung mit A765, A766 und A768:* Die Formprüfung beantwortet nur, ob eine Fläche den Spieler
+  erreicht. Danach richten sich Flächenabwehr, Selbstschutz und die Sperre beim Wirken. Keiner dieser Pfade dreht die
+  Figur, und keiner drückt eine Aktion auf den Wirkenden. Die Sperre hält nur einen Zauberbeginn zurück. Ein Blick
+  mit großem Kreis erreicht die ganze Gruppe, deshalb ist er nicht „sicher ausweichbar“, und die Sperre greift nicht.
+- *Was heute schützt:* BossModReborn erkennt einen Blick am Spielblatt (`Action.VFX` = 25, auch ohne Modul,
+  `AIHintsBuilder`), und „Smart character orientation“ mit „Automatically avoid gazes“ (ab Werk an) dreht die Figur
+  ab 0,5 s vor dem Blick weg. Lässt sich das Ziel nicht treffen, ohne hinzusehen, sperrt es Zauber und Angriffe. Das
+  gilt auch für Aktionen, die RSR drückt (`SmartRotationTweak`, `ActionManagerEx`; 8ad17f97f, Werkzeugquelle). RSR
+  selbst hat nur Upstreams Liste „Gaze/Stop“ mit vier Aktionen hinter „Stop acting while an enemy casts a Gaze/Stop
+  action“ (ab Werk aus), und sie sperrt nur Zauber.
+- *Lücke:* Ohne BossModReborn oder mit abgeschalteter Ausrichtung schützt RSR fast nicht. Ein Sofortangriff auf den
+  Wirkenden dreht die Figur hin. TODO: „Blickangriffe ohne BossModReborn".
+
 **Warum die Form so gemessen wird (A731).** Welche Form um den Trefferkreis des Wirkenden weiter reicht, sagt die Art:
 BossModReborns Analysewerkzeug beschreibt Art 3, 4 und 5 als „range X+R", Art 2, 12 und 13 als „range X"
 (`Replay/Analysis/AbilityInfo.DescribeShape`, 2087153c2, Werkzeugquelle), und seine Module bauen die Formen danach:

@@ -19,7 +19,7 @@ auswahl und das timing der beschwörung" – je Kampf aller fünf Bretter (Gegne
 BossMod-Module) die Rotation des Beastmasters, die Wahl der Begleiter und den Zeitpunkt ihres Aufrufs im Loop prüfen
 (Beispiel seiner Beobachtung: der Raptor gegen Feuer, bevor feueranfällige Gegner da waren; A581).
 
-Keine offene Arbeit in Reihenfolge.
+Offene Arbeit: „Blickangriffe ohne BossModReborn" (Sicherheit).
 
 Danach die technische Schuld, soweit ihre Auflösungsbedingung erfüllt ist. Warten auf Daten: unten.
 
@@ -31,6 +31,13 @@ Code-Review; was diese finden, kommt wieder hierher und in dieselbe Reihenfolge,
 ## Defekte
 
 ## Offene Arbeit
+
+### Blickangriffe ohne BossModReborn · N
+Im Kampf: Ohne BossModReborn, oder mit abgeschalteter „Smart character orientation“, dreht eine Aktion auf den
+Wirkenden eines Blicks die Figur zu ihm hin. Dann trifft der Blick (Versteinerung, Tod). RSR kennt Blicke nur aus vier
+Ids der Liste „Gaze/Stop“, ab Werk aus, und sperrt dort nur Zauber. Nächster Schritt: Loop in Konzept 13, „Blickangriffe
+und die Form“. Zu klären: Erkennung am Blatt (`Action.VFX` = 25, wie BossMod), in den letzten Augenblicken keine Aktion,
+die zum Wirkenden dreht (`NeedToFaceTarget`), und kein Doppel zu BossModReborn, wenn es läuft (A769).
 
 ## Technische Schuld
 
