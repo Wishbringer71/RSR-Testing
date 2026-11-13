@@ -228,6 +228,12 @@
    "commit": "3f4b377",
    "date": "2026-04-29",
    "use": "Animationssperre: simulierte Laufzeit, Sperre je Aktion, Clipping-Zählung (A753)"
+  },
+  {
+   "repo": "priestkos/FrontlineAdvisor",
+   "commit": "301a95e",
+   "date": "2026-11-13",
+   "use": "PvP: Frontline-Strategie (Konzept 25, Quellen)"
   }
  ]
 }

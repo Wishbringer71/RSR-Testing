@@ -286,6 +286,8 @@ Job-Guide (`na.finalfantasyxiv.com/jobguide/<job>/`, PvP-Abschnitte, abgerufen 1
 (Aktionen mit `IsPvP`, Status); consolegameswiki „PvP" (1 Potenz = 1 LP). Werkzeugquellen, je Commit:
 WrathCombo a457838 (09.11.2026, PvP aller Jobs, rechnet noch mit Recuperate 15.000 und 2500 MP), BossModReborn 8ad17f97f
 (`RolePvPUtility`: Guard nach Zahl der Angreifer, Guard früh beenden; vier PvP-Rotationen). Gefunden, ohne Regel für
-RSR: XeldarAlz/FFXIV-AutoPVPLimitBreak (Ziel mit der niedrigsten effektiven Gesundheit, auslassen, was ohnehin fällt),
-priestkos/FrontlineAdvisor (Fokusziele in Frontline), wrath16/PvpStats, Petra105/PvPTopPlates, exatrines/AutoFrontline
-(Automatisierung ohne Spieler; nicht übernommen).
+RSR: priestkos/FrontlineAdvisor 301a95e (12.11.2026; „Fokus" ist dort die Großkompanie, die in Frontline zuerst
+aufzuhalten ist, eine Strategieanzeige, keine Zielwahl je Aktion); nur nach ihrer Beschreibung erfasst: wrath16/PvpStats
+(Statistik), Petra105/PvPTopPlates (Anzeige), exatrines/AutoFrontline (Automatisierung ohne Spieler; nicht übernommen).
+*Unbelegt:* XeldarAlz/FFXIV-AutoPVPLimitBreak – eine Websuche beschrieb Zielwahl nach niedrigster effektiver
+Gesundheit; das Repository war am 13.11.2026 nicht erreichbar (Klon abgewiesen, Seite 404).

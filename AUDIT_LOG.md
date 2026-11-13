@@ -22121,6 +22121,9 @@ jede Ebene und nicht die Gruppe.
   Guard verbraucht die Leiste für einen Notfall, den Guard allein überstünde; er geht nur, wo Guard fällig ist, und
   schützt bei Phalanx und Mesotes die Gruppe mit. „Ausgeliefert, und nichts ändert sich": wenn der Wirktext im Client
   anders lautet; RSR liest den englischen Text des Clients, wie für die Potenz.
+- *Quellen nachgeprüft:* FrontlineAdvisor am Code gelesen (301a95e): „Fokus" ist die Großkompanie, keine Zielwahl.
+  AutoPVPLimitBreak, in A756 nach einer Websuche genannt, war nicht erreichbar (Klon abgewiesen, 404); im Konzept als
+  unbelegt geführt.
 - *Prüfgrad:* Compile; alle 54 CI-Schritte lokal. In PvP nicht beobachtet.
 
 ## B · Commit-Register (Fork vs. `upstream/main`)
