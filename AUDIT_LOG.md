@@ -21719,6 +21719,39 @@ hängen an seinen Läufen.
   den Vertrag mit RSR (`check_bmr_contract.py` grün) oder eine Regel.
 - Beide eingetragen (`--record`).
 
+### A748 · Konzeptverbesserungen, Audit, Code-Review; warum der JIT jedes Mal läuft (13.11.2026)
+
+Sein Auftrag (13.11.2026): „konzeptverbesserungen, audit, codereview im vollen loop. danach: warum muss eigentlich der jit
+jedes mal laufen? in python beispielsweise wird der erzeugte code als cache gespeichert. ist das unter c# nicht
+vorgesehen. vs2026 bietet doch runtime optimierung als compilervariante an: erzeugung von runtimedaten, dann auswertung
+und optimierung des compiles". Dazu sein Hinweis auf ein Lehrbuch (Baltes-Götz und Frischknecht, „Einführung in das
+Programmieren mit C# 14", Rev. 261110, CC BY-NC-SA 4.0).
+
+- *Audit:* .NET-Analyzer mit allen Regeln der Gruppen Performance, Maintainability, Reliability und Usage über den Code
+  nach A737–A746; auf den neuen Fork-Zeilen nur CA1812 (`OtherConfiguration`, `DeepDungeonDefault` – per Reflection
+  erzeugt) und CA1822 (`RunningSwiftGoesToRaise`, geschützte Schnittstelle; `AtIdealPositional`, Upstreams Reaper).
+  Kein Befund.
+- *Code-Review* der Änderungen des Tages (`WarmUp`, `UpdateCost` mit JIT und Tor, `ActionUpdater.GateClosedByCastOrLock`,
+  `CrucibleRoute.Walk` und der Schlüssel von `CampsiteAhead`, `RaiseProtection.FirstCastWhere`, `BaseItem.TracePress`,
+  `DeepDungeonStones`, `SleepInterruptWatch`, Harvest Moon des Schnitters, `check_fork_placement`, `classfile`): jede
+  Umstellung behält Fund-, Abbruch- und Endbedingung; die Gatemessung liest die Bedingungen des Tors selbst; `WarmUp`
+  bricht beim Entladen ab und hält Typen unter Sperre. Kein Befund.
+- *Konzepte:* nach dem Verschieben in Teildateien die Stellen gesucht, die einen Member unter seiner alten Datei nennen;
+  Konzept 12 („`SummonerRotation.cs`" für `HasAnySearingLight` und weitere) berichtigt. Die Zeile im Quellen-Audit
+  (`docs/method/02-source-audit.md`, „`DataCenter.cs`" mit `ClosingSpeed`) ist ein datierter Befund vom 12.11. und bleibt.
+- *Seine Frage, geprüft:* Ein Ergebnis des JIT über Starts hinweg wäre ReadyToRun. Dalamud lädt Plugins entladbar und aus
+  dem Speicher (`LocalPlugin.SetupLoaderConfig`: `IsUnloadable = true`, `LoadInMemory = true`; goatcorp/Dalamud
+  43b34118); in einem entladbaren AssemblyLoadContext wird ReadyToRun-Code ignoriert (Microsoft Learn, „How to use and
+  debug assembly unloadability in .NET"). Statisches PGO hängt an ReadyToRun, NativeAOT lädt keine verwaltete Bibliothek
+  nach; eine Ablage wie `.pyc` gibt es in .NET Core nicht (`.pyc` entspricht der IL der DLL). Die Laufzeitoptimierung nach
+  gemessenem Verhalten leistet .NET 10 als dynamisches PGO von selbst (voreingestellt seit .NET 8; Dalamuds
+  `runtimeconfig.json` schaltet nichts davon ab), in jeder Sitzung neu. Für ein Plugin bleibt das Vorübersetzen im
+  Hintergrund (A739) der einzige Hebel. Konzept 24, „Der erste Pull".
+- *Das Lehrbuch:* bestätigt die Grundlagen (JIT speichert Maschinencode nur im Prozess, ReadyToRun und NativeAOT als
+  Vorab-Übersetzung, versiegelte Klassen lassen den JIT besser optimieren – die Versiegelungen aus A739); zur Lage eines
+  entladbaren Plugins sagt es nichts.
+- *Prüfgrad:* Analyzer, Quelltext von Dalamud, Microsoft Learn, Lehrbuch; im Spiel nicht beobachtet.
+
 ## B · Commit-Register (Fork vs. `upstream/main`)
 
 ### B1 · Einzelgeprüfte Fork-Commits

@@ -87,8 +87,19 @@ entscheidet sein nächster Upload, welcher Anteil eines Rucklers Übersetzung is
 
 *Optionen:* (0) nichts; (1) Vorübersetzen im Hintergrund; (2) ReadyToRun, also vorübersetzte Bibliotheken; (3) die
 gestufte Übersetzung abschalten. *Abwägung im Kampf:* (0) lässt den Ruckler am Pull, der genau dann fällt, wenn der
-Tank zieht und der erste GCD zählt. (2) entfernt ihn ganz, aber Dalamud lädt die Plugin-Bibliothek selbst und baut sie
-mit seinem Packager; ob ein ReadyToRun-Abbild dort angenommen wird, ist ungeprüft und hier nicht prüfbar. (3) übersetzt
+Tank zieht und der erste GCD zählt. (2) scheidet aus, geprüft am 13.11.2026 (A748): Dalamud lädt jedes Plugin in einen
+entladbaren AssemblyLoadContext und aus dem Speicher (`LocalPlugin.SetupLoaderConfig`: `IsUnloadable = true`,
+`LoadInMemory = true`, `ManagedLoadContext.LoadAssemblyFromFilePath` dann über `LoadFromStream`; goatcorp/Dalamud
+43b34118, 10.11.2026), und in einem entladbaren Kontext „ReadyToRun generated code will be ignored" (Microsoft Learn,
+„How to use and debug assembly unloadability in .NET"). Damit fällt auch statisches PGO weg, das seine Profile über
+ReadyToRun mitliefert. NativeAOT kennt keine nachgeladene verwaltete Bibliothek. Eine Ablage des Maschinencodes über
+Starts hinweg, wie Python ihren Bytecode als `.pyc` ablegt, gibt es in .NET Core nicht – das Gegenstück zu `.pyc` ist die
+IL der DLL, die der Build schon erzeugt; den Maschinencode legte nur `ngen.exe` des alten .NET Framework ab
+(Baltes-Götz und Frischknecht, „Einführung in das Programmieren mit C# 14", Abschnitt 2.5). Die Optimierung zur
+Laufzeit nach gemessenem Verhalten – das, was Visual Studio für C++ als profilgesteuerte Optimierung anbietet – macht
+.NET 10 von selbst: Dynamisches PGO ist seit .NET 8 voreingestellt, und Dalamuds Laufzeitkonfiguration
+(`Dalamud.runtimeconfig.json`) schaltet weder die gestufte Übersetzung noch PGO ab; es misst und übersetzt in jeder
+Sitzung neu, im Hintergrund. (3) übersetzt
 jede Methode beim ersten Aufruf voll optimiert – teurer, der Ruckler würde länger. (1) übersetzt beim Laden auf einem
 Hintergrundthread jede Methode des Kerns (alles außer Oberfläche und Rotationen) und beim Wechsel der Rotation deren
 Klasse samt Basisklassen; der Spielthread findet sie fertig vor. *Gewählt:* (1). *Gemessen* an der gebauten Bibliothek

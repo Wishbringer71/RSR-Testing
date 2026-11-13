@@ -303,7 +303,7 @@ führen nicht zu mehr Überschreibungen, sondern zu mehr genutzten Lücken.
 
 | Ort | Was dort steht |
 |---|---|
-| `SummonerRotation.cs` | `HasAnySearingLight` (Buff gleich welcher Herkunft), `AnotherSummonerInParty`, `NextBigSummonIsBurst` (nächste große Beschwörung ist die Burst-Demi: Jobanzeige, dann Beschwörungstaste, dann Reihenfolge, jede gegen die gekommene Demi gehalten, `CheckDemiNames`), Phasenbuch (`UpdateSearingPhaseBook`, `AllSearingPhasesHeld`, `BookSlot`), Beobachtung des Burst-Fensters (`BurstPhaseHeldByAnother`, in `UpdateSearingPhaseBook` fortgeschrieben) |
+| `SummonerRotation.cs` mit den Teildateien `.SearingLight.cs` und `.Universal.cs` (A746) | `HasAnySearingLight` (Buff gleich welcher Herkunft), `AnotherSummonerInParty`, `NextBigSummonIsBurst` (nächste große Beschwörung ist die Burst-Demi: Jobanzeige, dann Beschwörungstaste, dann Reihenfolge, jede gegen die gekommene Demi gehalten, `CheckDemiNames`), Phasenbuch (`UpdateSearingPhaseBook`, `AllSearingPhasesHeld`, `BookSlot`), Beobachtung des Burst-Fensters (`BurstPhaseHeldByAnother`, in `UpdateSearingPhaseBook` fortgeschrieben) |
 | `SMN_Reborn.AttackAbility` | Zündfenster, Platz vor der Beschwörung (`burstAboutToStart`), Schild vor der Demi, Rückhalt vor Wiederbelebung und Heilung (`higherGcdFirst`), Aetherflow-Ausgaben unter `HasAnySearingLight` |
 | `SMN_Reborn.UseSummonsAndTrances` | Warten der Beschwörung (`searingSettled`, `RadiantAegisDueBeforeDemi`) |
 
