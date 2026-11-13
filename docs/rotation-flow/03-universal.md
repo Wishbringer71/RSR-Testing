@@ -1637,6 +1637,9 @@ verlangen keinen Mindestabstand.
   - Der Anteil abgelehnter Anfragen pendelt sich so bei r ein. Dort wiegt der Verlust einer Ablehnung, eine neue
     Drücksperre, den Gewinn eines Frames Schnitt auf. Eine verspätete Antwort ist kein Verlust, denn der Server hat die
     Anfrage zurückgehalten und trotzdem verarbeitet; sie zählt nicht.
+  - Als Ablehnung zählt nur eine Sofortaktion ohne Antwort. Ein Zauber, den Bewegung abbricht, bekommt ebenfalls keine
+    Antwort mit Wirkung, hat aber mit der Sperre nichts zu tun. Zählte er mit, kürzte der Regler bei jedem Wirker, der
+    im Gehen abbricht, unnötig weniger.
   - Der Schnitt steigt höchstens bis zur größten Verzögerung des Gebiets; mehr lässt sich nicht abziehen. Ohne diese
     Grenze wüchse der Zuschlag bei einem Server, der nichts ablehnt, unbegrenzt. Lehnte der Server dann später doch ab,
     etwa auf einer anderen Route im selben Gebiet, bräuchte der Regler viele Ablehnungen, um wieder herunterzukommen.
@@ -1644,7 +1647,8 @@ verlangen keinen Mindestabstand.
 - *Verzug durch die Bildrate* („Remove framerate-induced cooldown delay“, ab Werk an): Löst das Spiel eine eingereihte
   Aktion erst einen Frame nach dem Ende von Sperre oder Abklingzeit aus, schreibt RSR den Überhang der nächsten
   Abklingzeit und Sperre gut. Gutgeschrieben wird höchstens eine mittlere Frame-Zeit des Gebiets; einen Ruckler darüber
-  kennt der Server nicht. Das Verfahren stammt von BossModReborn, die feste Obergrenze von 100 ms entfällt.
+  kennt der Server nicht. Das Verfahren stammt von BossModReborn, die feste Obergrenze von 100 ms entfällt. Auch das gilt
+  nur in PvE, aus demselben Grund wie die Verkürzung; beide sitzen unter derselben Regel.
 - *Webregel* (`ActionHelper.AbilityClipWindow`, `AbilityWindowFor`): Eine Fähigkeit beginnt nur, wenn ihre Sperre samt
   erwartetem Rest endet, bevor der GCD frei wird.
   - Der erwartete Rest ist das, was der aktuelle Schnitt von den Verzögerungen des Gebiets übrig lässt, als Mittel plus
@@ -1661,6 +1665,9 @@ verlangen keinen Mindestabstand.
   - Bei NoClippy geht es nur mit `/noclippy off` und `/noclippy on`; das speichert NoClippys Einstellung. RSR liest
     deshalb vorher NoClippys gespeicherten Wert (`EnableAnimLockComp` in `pluginConfigs/NoClippy.json`). Übernommen und
     später wieder eingeschaltet wird nur, was an war; hattest du es aus, bleibt es aus.
+  - RSR prüft bei jedem Gebietswechsel den tatsächlichen Zustand und schaltet erneut ab, was wieder an ist. Das betrifft
+    etwa ein neu geladenes BossMod, das seinen gespeicherten Wert wieder trägt, oder ein von Hand wieder eingeschaltetes
+    NoClippy. Den Wert, den es dem Spieler zurückgibt, merkt es sich beim ersten Abschalten.
   - XivAlexander lässt sich aus Dalamud nicht schalten. Läuft es, ruht RSRs Verkürzung, und die Webregel webt nach dem,
     was XivAlexander übrig lässt.
   - Ändert ein Plugin die Sperre zwischen Paket und Spiel, ruht die Verkürzung bis zum nächsten Gebiet. Die Einstellung
@@ -1766,8 +1773,11 @@ ist.
 
 **Ort und Kosten:** Gemessen wird in den vorhandenen Hooks (`ActionManagerEx`), einmal je Antwort. Dabei geht RSR einmal
 über die Verzögerungen des Gebiets, eine Liste mit einem Eintrag je Antwort. Die Zählung des Clippings und der Frame-Zeit
-läuft einmal je Frame mit wenigen Feldern des `ActionManager`. Die Webregel ist eine Addition je Frage. Je Frame wird
-nichts angelegt.
+läuft einmal je Frame mit wenigen Feldern des `ActionManager`. Der Rest unter dem aktuellen Schnitt wird je Antwort
+über die Verzögerungen des Gebiets neu gerechnet und dazwischen behalten. Beim Lesen wählt die Webregel nur, ob RSR
+gerade kürzt. So folgt sie dem Umschalten der Option, einer Sperre im Gebiet und dem Wechsel nach PvP sofort, nicht erst
+mit der nächsten Antwort. Rotationen fragen die Webregel viele Male je Frame; jede Frage ist ein Vergleich und eine
+Addition. Je Frame wird nichts angelegt.
 
 ## Bewegungssperre beim Wirken und die KI von BossMod
 

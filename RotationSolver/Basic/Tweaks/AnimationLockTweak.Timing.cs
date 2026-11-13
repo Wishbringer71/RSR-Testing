@@ -92,6 +92,7 @@ public sealed unsafe partial class AnimationLockTweak
 		_delayMean = _delayDeviation = _delayLeast = _delayMost = _keptMean = _keptDeviation = _frameMean = 0f;
 		_extra = _keptByCut = 0f;
 		_delays.Clear();
+		_castSequences.Clear();
 		_missing = _heldInZone = false;
 
 		TakeOverOtherTools();
@@ -110,7 +111,8 @@ public sealed unsafe partial class AnimationLockTweak
 	{
 		try
 		{
-			foreach (System.Diagnostics.ProcessModule module in System.Diagnostics.Process.GetCurrentProcess().Modules)
+			using var process = System.Diagnostics.Process.GetCurrentProcess();
+			foreach (System.Diagnostics.ProcessModule module in process.Modules)
 			{
 				if (module.ModuleName.Contains("XivAlexander", StringComparison.OrdinalIgnoreCase))
 				{
@@ -272,8 +274,8 @@ public sealed unsafe partial class AnimationLockTweak
 
 		try
 		{
-			if (_bossModTakenOver.Count == 0 && BMRInfo_IPCSubscriber.IsEnabled && BMRInfo_IPCSubscriber.Configuration != null
-				&& BMRInfo_IPCSubscriber.SetTransient != null)
+			// Read as it is now, every time: a BossMod loaded again carries its saved value again (A754).
+			if (BMRInfo_IPCSubscriber.IsEnabled && BMRInfo_IPCSubscriber.Configuration != null && BMRInfo_IPCSubscriber.SetTransient != null)
 			{
 				foreach (var field in (ReadOnlySpan<string>)["RemoveAnimationLockDelay", "RemoveCooldownDelay"])
 				{
@@ -281,15 +283,19 @@ public sealed unsafe partial class AnimationLockTweak
 					if (current is [var value] && bool.TryParse(value, out var on) && on)
 					{
 						_ = BMRInfo_IPCSubscriber.SetTransient(["ActionTweaksConfig", field, "false"]);
-						_bossModTakenOver.Add((field, value));
+						if (!HasTakenOver(field))
+						{
+							_bossModTakenOver.Add((field, value));
+						}
+
 						DefenseTrace.Line($"took over BossModReborn's {field}: off for the session, its setting kept");
 					}
 				}
 			}
 
-			// Only what NoClippy has on: "/noclippy on" afterwards must not switch on what the player had off.
-			if (!_noClippyTakenOver && DataCenter.IsPluginLoaded("NoClippy", "NoClippy") && NoClippyCompensationOn()
-				&& Svc.Commands.ProcessCommand("/noclippy off"))
+			// Only what NoClippy has on: "/noclippy on" afterwards must not switch on what the player had off. Read again
+			// every time, so a compensation switched on by hand is taken over again.
+			if (DataCenter.IsPluginLoaded("NoClippy", "NoClippy") && NoClippyCompensationOn() && Svc.Commands.ProcessCommand("/noclippy off"))
 			{
 				_noClippyTakenOver = true;
 				DefenseTrace.Line("took over NoClippy's animation lock compensation: off until RSR's is off or the plugin unloads");
@@ -299,6 +305,19 @@ public sealed unsafe partial class AnimationLockTweak
 		{
 			DefenseTrace.Line($"taking over the other lock tools failed: {ex.Message}");
 		}
+	}
+
+	private bool HasTakenOver(string field)
+	{
+		foreach (var (taken, _) in _bossModTakenOver)
+		{
+			if (taken == field)
+			{
+				return true;
+			}
+		}
+
+		return false;
 	}
 
 	// NoClippy's saved switch for its compensation (EnableAnimLockComp in its configuration file beside RSR's); on when the
@@ -377,6 +396,11 @@ public sealed unsafe partial class AnimationLockTweak
 		var isCast = manager->CastSpellId != 0;
 		var isGcd = manager->GetRecastGroup((int)actionType, actionId) == ActionHelper.GCDCooldownGroup - 1;
 		_lastRequestAbility = !isCast && !isGcd;
+		if (isCast)
+		{
+			// A cast that movement breaks gets no answer with an effect either; it says nothing about the lock (A754).
+			_castSequences.Add((ushort)manager->LastUsedActionSequence);
+		}
 		if (!DataCenter.InCombat || isCast && !isGcd)
 		{
 			return;
@@ -397,15 +421,39 @@ public sealed unsafe partial class AnimationLockTweak
 	{
 		if (_lastAnswered != 0 && sequence > _lastAnswered + 1)
 		{
-			_missing = true;
-			if (DataCenter.InCombat)
+			// Only an instant without an answer counts; a cast's sequence in the gap was broken, not refused (A754).
+			var unanswered = 0;
+			for (var skipped = _lastAnswered + 1; skipped < sequence; skipped++)
 			{
-				_fight.Unanswered += sequence - _lastAnswered - 1;
+				if (!_castSequences.Remove((ushort)skipped))
+				{
+					unanswered++;
+				}
+			}
+
+			if (unanswered > 0)
+			{
+				_missing = true;
+				if (DataCenter.InCombat)
+				{
+					_fight.Unanswered += unanswered;
+				}
+			}
+		}
+
+		// The answered cast and any older ones are done with.
+		for (var i = _castSequences.Count - 1; i >= 0; i--)
+		{
+			if (_castSequences[i] <= sequence)
+			{
+				_castSequences.RemoveAt(i);
 			}
 		}
 
 		_lastAnswered = sequence;
 	}
+
+	private readonly List<ushort> _castSequences = [];
 
 	/// <summary>Once per frame from the action manager's update: frame time, clipping, GCD time with nothing queued, the fight's end.</summary>
 	internal void Frame(ActionManager* manager, float delta)

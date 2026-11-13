@@ -21956,6 +21956,50 @@ Seine Fragen: Warum wird mit dreifachem Weben geworben, wenn es fast nicht machb
     angepasst.
   - Im Spiel nicht beobachtet. Das Messmittel ist die Zeile „action timing over the fight“ (Warte-Eintrag im TODO).
 
+### A754 · Code-Review des Zeitverhaltens nach A753 (13.11.2026)
+
+Sein Auftrag (13.11.2026): TODO, Konzeptverbesserungen, Audit und Code-Review im vollen Loop. `TODO.md` führte keinen
+offenen Defekt und keine offene Arbeit; der Warte-Eintrag „Animationssperre und Weben: der Regler an seinem nächsten
+Mitschnitt“ bleibt. Geprüft wurde deshalb der Code aus A753 gegen Konzept 03, „Weben, Animationssperre und Latenz“.
+
+- *Befunde, im Kampf:*
+  - Ein Zauber, den Bewegung abbricht, bekommt keine Antwort mit Wirkung. Der Regler zählte ihn als abgelehnte Anfrage
+    und nahm den Zuschlag zurück. Ein Wirker, der im Gehen abbricht, webte dadurch mit unnötig kleinem Schnitt.
+    Behoben: `NoteRequest` merkt sich die Folgenummern der Zauber, und `NoteAnswer` zählt nur übersprungene
+    Sofortaktionen.
+  - Der Ausgleich der Bildrate lief auch in PvP. Die Verkürzung war dort schon gesperrt; beide stehen unter derselben
+    Regel (Konzept 03). Behoben in `CooldownDelayTweak.CalculateAdjustment`.
+  - Die Übernahme der fremden Werkzeuge lief je Sitzung nur einmal. Ein neu geladenes BossMod trug seinen gespeicherten
+    Wert wieder, und ein von Hand wieder eingeschaltetes NoClippy verkürzte wieder mit. Dann prüfte die Plausibilität
+    zwei Verkürzungen, und RSR hielt seine eigene für das Gebiet an. Behoben: Bei jedem Gebietswechsel wird der
+    tatsächliche Zustand gelesen. Den Wert, der dem Spieler zurückgegeben wird, merkt sich RSR nur beim ersten
+    Abschalten.
+  - Die Prozessabfrage nach XivAlexander gab ihr `Process` nicht frei. Sie läuft je Gebietswechsel, ohne Wirkung im
+    Kampf. Behoben mit `using`.
+  - Die Folgenummern der Zauber leert jetzt auch der Gebietswechsel.
+- *Verworfener Befund:* Mein Review hielt das Lesen des erwarteten Rests für teuer und führte einen zweiten
+  Zwischenspeicher ein. Am Diff gemessen: `RestLeftBy` war schon je Antwort in `_keptByCut` gespeichert, eine Frage
+  kostete nur einen Vergleich. Der zweite Speicher hätte das Webfenster nach dem Umschalten der Option, nach einer
+  Sperre im Gebiet und beim Wechsel nach PvP bis zur nächsten Antwort veralten lassen. `check_fixed_values.py` schlug
+  an der verschobenen Zeile an. Der Speicher ist zurückgenommen, und Konzept 03, „Ort und Kosten“, beschreibt jetzt die
+  Wahl beim Lesen.
+- *Modell:* `action_timing_model.py` bildet keine Zauber ab; der Ablehnungspfad kennt nur Fähigkeit und GCD. Der erste
+  Befund ändert es deshalb nicht.
+- *Hook `concept_first.py`* (aus der Frage „Konzept nach Code?“ in A753): Erwogen wurde, statt irgendeiner offenen
+  Änderung unter `docs/` das Konzept zu verlangen, das die geänderte Datei trägt. Verworfen, weil es den Fall aus A753
+  nicht gefangen hätte: Dort war Konzept 03 selbst geöffnet und geändert, nur der Abschnitt zum neuen Entwurf noch
+  nicht. Ein Hook sieht nicht, ob der Inhalt den Code trägt. Das bleibt Prüfpunkt der Definition of Ready.
+- *Falsifikation:*
+  - „Kein Defekt“ hält nicht für die ersten drei Befunde; jeder ist am Code als Weg zur Wirkung belegt.
+  - „Option falsch“: Die Sofortaktion ohne Antwort bleibt als Ablehnungsmaß. Gibt der Server Sofortaktionen ohne Wirkung
+    auch aus anderem Grund keine Antwort (etwa ein Ziel, das stirbt), gilt das weiter als Ablehnung. Belegt ist das
+    nicht. Der Preis ist ein Zuschlag, der um einen Schritt zu früh sinkt, und der Regler holt ihn mit den folgenden
+    Antworten wieder auf.
+  - „Ausgeliefert, und nichts ändert sich“: Das tritt bei einem Spieler ohne Zauber, ohne PvP und ohne nachgeladene
+    Werkzeuge ein. Für ihn ändert A754 nichts, und das ist richtig.
+- *Prüfgrad:* Compile; alle 54 CI-Schritte lokal. Im Spiel nicht beobachtet. Das Messmittel ist die Zeile „action
+  timing over the fight“ im `DefenseTrace.log` (Warte-Eintrag im TODO).
+
 ## B · Commit-Register (Fork vs. `upstream/main`)
 
 ### B1 · Einzelgeprüfte Fork-Commits
