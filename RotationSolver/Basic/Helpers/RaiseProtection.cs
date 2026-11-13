@@ -116,34 +116,9 @@ internal static class RaiseProtection
 			return new("a stack or hit series marker on you", 0f);
 		}
 
-		var player = Player.Object;
-		var hostiles = DataCenter.AllHostileTargets;
-		if (player == null || hostiles == null)
-		{
-			return null;
-		}
-
-		for (var i = 0; i < hostiles.Count; i++)
-		{
-			var h = hostiles[i];
-			if (h == null || !h.IsValid() || !h.IsCasting || h.CastTargetObjectId == player.GameObjectId
-				|| OtherConfiguration.HostileCastingArea.Contains(h.CastActionId) || !DataCenter.CastReachesPlayer(h))
-			{
-				continue;
-			}
-
-			var left = Math.Max(0f, h.TotalCastTime - h.CurrentCastTime);
-			if (left > remaining)
-			{
-				continue;
-			}
-
-			var action = Service.GetSheet<Action>().GetRowOrDefault(h.CastActionId);
-			var name = action.HasValue ? action.Value.Name.ExtractText() : string.Empty;
-			return new($"{name} #{h.CastActionId} from {h.Name.TextValue}", left);
-		}
-
-		return null;
+		// The shared walk over the casters (A739, concept 24): a static condition with its values as state, no allocation.
+		return FirstCastWhere(remaining, static (h, player, left, remaining) => left <= remaining && h.CastTargetObjectId != player
+			&& !OtherConfiguration.HostileCastingArea.Contains(h.CastActionId) && DataCenter.CastReachesPlayer(h));
 	}
 
 	// Unless the prediction names whom it hits and leaves him out (A273).
@@ -158,6 +133,13 @@ internal static class RaiseProtection
 	// protection would be gone when it lands, which is the costly side of the doubt.
 	private static AnnouncedHitOnPlayer? FirstCast(float remaining, bool within)
 	{
+		return FirstCastWhere((remaining, within), static (h, player, left, s) => (left <= s.remaining) == s.within
+			&& (h.CastTargetObjectId == player || DataCenter.CastReachesPlayer(h)));
+	}
+
+	// The first enemy cast `wanted` takes - given the caster, the player's id and the seconds left - named for the trace.
+	private static AnnouncedHitOnPlayer? FirstCastWhere<T>(T state, Func<IBattleChara, ulong, float, T, bool> wanted)
+	{
 		var player = Player.Object;
 		var hostiles = DataCenter.AllHostileTargets;
 		if (player == null || hostiles == null)
@@ -168,14 +150,13 @@ internal static class RaiseProtection
 		for (var i = 0; i < hostiles.Count; i++)
 		{
 			var h = hostiles[i];
-			if (h == null || !h.IsValid() || !h.IsCasting
-				|| (h.CastTargetObjectId != player.GameObjectId && !DataCenter.CastReachesPlayer(h)))
+			if (h == null || !h.IsValid() || !h.IsCasting)
 			{
 				continue;
 			}
 
 			var left = Math.Max(0f, h.TotalCastTime - h.CurrentCastTime);
-			if ((left <= remaining) != within)
+			if (!wanted(h, player.GameObjectId, left, state))
 			{
 				continue;
 			}

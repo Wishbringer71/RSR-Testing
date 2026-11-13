@@ -6,7 +6,7 @@ using RotationSolver.Basic.Resources;
 
 namespace RotationSolver.Basic.Configuration;
 
-internal partial class OtherConfiguration
+internal sealed partial class OtherConfiguration
 {
 	/// <markdown file="List" name="AoE" section="Actions">
 	///

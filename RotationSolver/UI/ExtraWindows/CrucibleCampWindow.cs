@@ -10,7 +10,7 @@ namespace RotationSolver.UI.ExtraWindows;
 /// selects to rest and why, and at the last campsite before the final fight whom to rest for it, with a button that selects
 /// them; while a familiar is to be fed, whom the feed is meant for. Resting and feeding stay the player's clicks.
 /// </summary>
-internal class CrucibleCampWindow : RecommendationWindow
+internal sealed class CrucibleCampWindow : RecommendationWindow
 {
 	public CrucibleCampWindow() : base("RSR - Crucible campsite")
 	{

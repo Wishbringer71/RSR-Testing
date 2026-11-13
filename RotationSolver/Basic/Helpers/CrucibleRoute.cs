@@ -176,6 +176,36 @@ internal static class CrucibleRoute
 	private static List<int> FirstAhead(Board route, int from, Func<Node, bool> wanted)
 	{
 		var found = new List<int>();
+		Walk(route, from, (index, node) =>
+		{
+			if (wanted(node))
+			{
+				found.Add(index);
+				return Visit.Skip;
+			}
+
+			return node.Kind is Space.Enemy or Space.Elite or Space.Boss ? Visit.Skip : Visit.Expand;
+		});
+		return found;
+	}
+
+	/// <summary>What a search over the board does after a space (A739, concept 24, "Eine Suche, austauschbare Bedingungen").</summary>
+	private enum Visit : byte
+	{
+		/// <summary>Go on to the spaces after it.</summary>
+		Expand,
+
+		/// <summary>Not past this space; the other ways go on.</summary>
+		Skip,
+
+		/// <summary>The search is done.</summary>
+		Stop,
+	}
+
+	// A739: the one breadth-first search over the ways on from `from` (its own space not included), each space once; `visit`
+	// says per space whether the search goes past it. It stood in five copies, each with its own conditions.
+	private static void Walk(Board route, int from, Func<int, Node, Visit> visit)
+	{
 		var seen = new HashSet<int>();
 		var queue = new Queue<int>(route.Next![from]);
 		while (queue.Count > 0)
@@ -186,16 +216,12 @@ internal static class CrucibleRoute
 				continue;
 			}
 
-			var node = route.Nodes[index];
-			if (wanted(node))
+			switch (visit(index, route.Nodes[index]))
 			{
-				found.Add(index);
-				continue;
-			}
-
-			if (node.Kind is Space.Enemy or Space.Elite or Space.Boss)
-			{
-				continue;
+				case Visit.Stop:
+					return;
+				case Visit.Skip:
+					continue;
 			}
 
 			foreach (var next in route.Next[index])
@@ -203,8 +229,6 @@ internal static class CrucibleRoute
 				queue.Enqueue(next);
 			}
 		}
-
-		return found;
 	}
 
 	/// <summary>The spaces of the board the run is on, the ways between them and where each is drawn; null while none is known.</summary>
@@ -575,17 +599,8 @@ internal static class CrucibleRoute
 		}
 
 		var battles = new HashSet<uint>();
-		var seen = new HashSet<int>();
-		var queue = new Queue<int>(route.Next[start]);
-		while (queue.Count > 0)
+		Walk(route, start, (index, node) =>
 		{
-			var index = queue.Dequeue();
-			if (index < 0 || index >= route.Nodes.Length || !seen.Add(index))
-			{
-				continue;
-			}
-
-			var node = route.Nodes[index];
 			if (node.Battle != 0)
 			{
 				_ = battles.Add(node.Battle);
@@ -599,12 +614,8 @@ internal static class CrucibleRoute
 				}
 			}
 
-			foreach (var next in route.Next[index])
-			{
-				queue.Enqueue(next);
-			}
-		}
-
+			return Visit.Expand;
+		});
 		return battles;
 	}
 
@@ -670,32 +681,15 @@ internal static class CrucibleRoute
 
 		// The shops of this stretch: reached from the last battle without passing another.
 		var shops = new List<int>();
-		var seen = new HashSet<int>();
-		var queue = new Queue<int>(route.Next[start]);
-		while (queue.Count > 0)
+		Walk(route, start, (index, node) =>
 		{
-			var index = queue.Dequeue();
-			if (index < 0 || index >= route.Nodes.Length || !seen.Add(index))
-			{
-				continue;
-			}
-
-			var node = route.Nodes[index];
 			if (node.Kind == Space.Shop)
 			{
 				shops.Add(index);
 			}
 
-			if (node.MayBeBattle || node.Kind == Space.Boss)
-			{
-				continue;
-			}
-
-			foreach (var next in route.Next[index])
-			{
-				queue.Enqueue(next);
-			}
-		}
+			return StretchEnds(node) ? Visit.Skip : Visit.Expand;
+		});
 
 		foreach (var shop in shops)
 		{
@@ -720,17 +714,8 @@ internal static class CrucibleRoute
 		}
 
 		int? fewest = null;
-		var seen = new HashSet<int>();
-		var queue = new Queue<int>(route.Next[start]);
-		while (queue.Count > 0)
+		Walk(route, start, (_, node) =>
 		{
-			var index = queue.Dequeue();
-			if (index < 0 || index >= route.Nodes.Length || !seen.Add(index))
-			{
-				continue;
-			}
-
-			var node = route.Nodes[index];
 			foreach (var camp in node.Camps)
 			{
 				if (camp >= 0 && camp < route.Camps.Count)
@@ -739,17 +724,8 @@ internal static class CrucibleRoute
 				}
 			}
 
-			if (node.MayBeBattle || node.Kind == Space.Boss)
-			{
-				continue;
-			}
-
-			foreach (var next in route.Next[index])
-			{
-				queue.Enqueue(next);
-			}
-		}
-
+			return StretchEnds(node) ? Visit.Skip : Visit.Expand;
+		});
 		return fewest;
 	}
 
@@ -766,34 +742,31 @@ internal static class CrucibleRoute
 			return true;
 		}
 
-		return (!_done && route.Nodes[_current].MayBeCampsite) || CampsiteReachable(route, _current);
+		// A739 (concept 24, "Ein Ergebnis gilt, bis sich seine Grundlage ändert"): asked every frame out of combat for the final
+		// plan's key; the answer holds while the board, the space and whether it is done stay the same.
+		if (!ReferenceEquals(_campsiteAhead.Route, route) || _campsiteAhead.Current != _current || _campsiteAhead.Done != _done)
+		{
+			_campsiteAhead = (route, _current, _done, (!_done && route.Nodes[_current].MayBeCampsite) || CampsiteReachable(route, _current));
+		}
+
+		return _campsiteAhead.Answer;
 	}
+
+	private static (Board? Route, int Current, bool Done, bool Answer) _campsiteAhead;
 
 	private static bool CampsiteReachable(Board route, int from)
 	{
-		var seen = new HashSet<int>();
-		var queue = new Queue<int>(route.Next![from]);
-		while (queue.Count > 0)
+		var reachable = false;
+		Walk(route, from, (_, node) =>
 		{
-			var index = queue.Dequeue();
-			if (index < 0 || index >= route.Nodes.Length || !seen.Add(index))
-			{
-				continue;
-			}
-
-			if (route.Nodes[index].MayBeCampsite)
-			{
-				return true;
-			}
-
-			foreach (var next in route.Next[index])
-			{
-				queue.Enqueue(next);
-			}
-		}
-
-		return false;
+			reachable = node.MayBeCampsite;
+			return reachable ? Visit.Stop : Visit.Expand;
+		});
+		return reachable;
 	}
+
+	// The stretch from the last battle ends at a space that may be a fight or the boss.
+	private static bool StretchEnds(Node node) => node.MayBeBattle || node.Kind == Space.Boss;
 
 	private static bool TryStart(out Board route, out int start)
 	{

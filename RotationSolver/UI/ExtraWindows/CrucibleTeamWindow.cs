@@ -9,7 +9,7 @@ namespace RotationSolver.UI.ExtraWindows;
 /// K7 of the Crucible (concept 21, A563): while the team screen of a board is open and the beastmaster rotation runs, the
 /// team RSR recommends, why, and a button that makes the team that. Nothing changes without the click (decision C, A533).
 /// </summary>
-internal class CrucibleTeamWindow : RecommendationWindow
+internal sealed class CrucibleTeamWindow : RecommendationWindow
 {
 	public CrucibleTeamWindow() : base("RSR - Crucible team")
 	{

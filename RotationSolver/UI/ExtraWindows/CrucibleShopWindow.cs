@@ -10,7 +10,7 @@ namespace RotationSolver.UI.ExtraWindows;
 /// beastmaster rotation runs, what RSR recommends buying, why, what it weighs the protective gear against, a button that buys
 /// the list, and the feed for the final fight. Nothing is bought without the click (decision C, A533).
 /// </summary>
-internal class CrucibleShopWindow : RecommendationWindow
+internal sealed class CrucibleShopWindow : RecommendationWindow
 {
 	public CrucibleShopWindow() : base("RSR - Crucible shop")
 	{

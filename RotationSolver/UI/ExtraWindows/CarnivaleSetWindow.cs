@@ -10,7 +10,7 @@ namespace RotationSolver.UI.ExtraWindows;
 /// rotation runs, the spells Blue Academy's guide names for the chosen stage, and a button that puts them into the active
 /// set. Nothing changes without the click.
 /// </summary>
-internal class CarnivaleSetWindow : RecommendationWindow
+internal sealed class CarnivaleSetWindow : RecommendationWindow
 {
 	public CarnivaleSetWindow() : base("RSR - Masked Carnivale set")
 	{

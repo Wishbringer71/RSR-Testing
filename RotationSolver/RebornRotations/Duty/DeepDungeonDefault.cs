@@ -5,7 +5,7 @@ namespace RotationSolver.RebornRotations.Duty;
 
 [Rotation("Deep Dungeon", CombatType.PvE)]
 
-internal class DeepDungeonDefault : DeepDungeonRotation
+internal sealed class DeepDungeonDefault : DeepDungeonRotation
 {
 	private static HashSet<uint>? _transfigurationIds;
 	private bool _wasTransformed;

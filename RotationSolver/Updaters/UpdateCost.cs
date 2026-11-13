@@ -35,6 +35,14 @@ internal static class UpdateCost
 	private static string? _phase;
 	private static long _phaseStart;
 	private static int _collectionsAtBegin;
+
+	// A739 (concept 24, "Der erste Pull"): the time the JIT spent compiling methods on this thread, per cycle and per fight.
+	// A method is compiled on its first call; the stalls of up to 64 ms fell into the first fight of a session or onto a new
+	// path, never with a garbage collection. This tells compiling from any other first-time cost.
+	private static TimeSpan _jitAtBegin;
+	private static long _jitMethodsAtBegin;
+	private static TimeSpan _jitFight;
+	private static long _jitMethodsFight;
 	private static readonly Dictionary<string, double> _cycle = [];
 	private static readonly Dictionary<string, (double Total, double Max)> _fight = [];
 	private static string _slowest = string.Empty;
@@ -46,6 +54,8 @@ internal static class UpdateCost
 		_phase = null;
 		_cycle.Clear();
 		_collectionsAtBegin = GC.CollectionCount(0);
+		_jitAtBegin = System.Runtime.JitInfo.GetCompilationTime(currentThread: true);
+		_jitMethodsAtBegin = System.Runtime.JitInfo.GetCompiledMethodCount(currentThread: true);
 	}
 
 	/// <summary>
@@ -93,6 +103,10 @@ internal static class UpdateCost
 		var inCombat = DataCenter.InCombat;
 		if (inCombat)
 		{
+			var jit = System.Runtime.JitInfo.GetCompilationTime(currentThread: true) - _jitAtBegin;
+			var jitMethods = System.Runtime.JitInfo.GetCompiledMethodCount(currentThread: true) - _jitMethodsAtBegin;
+			_jitFight += jit;
+			_jitMethodsFight += jitMethods;
 			_cycles++;
 			_totalMs += elapsed;
 			_frameMs += framework.UpdateDelta.TotalMilliseconds;
@@ -107,7 +121,8 @@ internal static class UpdateCost
 			{
 				var collections = GC.CollectionCount(0) - _collectionsAtBegin;
 				_slowest = $"slowest cycle {elapsed:F1} ms: {Steps(_cycle, s => s, 1)}"
-					+ (collections > 0 ? $", {collections} garbage collection(s) during it" : ", no garbage collection during it");
+					+ (collections > 0 ? $", {collections} garbage collection(s) during it" : ", no garbage collection during it")
+					+ $", JIT {jit.TotalMilliseconds:F1} ms for {jitMethods} method(s)";
 			}
 
 			_maxMs = Math.Max(_maxMs, elapsed);
@@ -118,11 +133,13 @@ internal static class UpdateCost
 			// entries only from a party of four or more, which a trace of a fight alone could not show (A299).
 			var share = _frameMs > 0 ? _totalMs / _frameMs : 0;
 			DefenseTrace.Line($"update cost over the fight: {_cycles} cycles, mean {_totalMs / _cycles:F2} ms, "
-				+ $"max {_maxMs:F2} ms, {share:P1} of the frame time, party of {_party}");
+				+ $"max {_maxMs:F2} ms, {share:P1} of the frame time, party of {_party}, JIT {_jitFight.TotalMilliseconds:F1} ms for {_jitMethodsFight} method(s)");
 			DefenseTrace.Line($"update cost by step, mean/max ms: {Steps(_fight, s => s.Total, _cycles, s => s.Max)}; {_slowest}");
 			_cycles = 0;
 			_totalMs = _maxMs = _frameMs = 0;
 			_party = 0;
+			_jitFight = TimeSpan.Zero;
+			_jitMethodsFight = 0;
 			_fight.Clear();
 			_slowest = string.Empty;
 		}

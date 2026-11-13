@@ -474,6 +474,9 @@ internal static class RotationUpdater
 			+ $" for {rotation.Job} ({rotation.GetAttributes()?.Type})");
 		DataCenter.CurrentRotation = rotation;
 		CurrentRotationActions = DataCenter.CurrentRotation?.AllActions ?? [];
+
+		// A739 (concept 24): the chosen rotation compiled ahead, off the game's thread.
+		WarmUp.Rotation(rotation.GetType());
 	}
 
 	private static ICustomRotation? GetRotation(Type? t)

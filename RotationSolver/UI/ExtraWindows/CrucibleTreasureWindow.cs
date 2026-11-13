@@ -9,7 +9,7 @@ namespace RotationSolver.UI.ExtraWindows;
 /// K13 of the Crucible (concept 21, A578): while a treasure on a board is open and the beastmaster rotation runs, the offer RSR
 /// recommends, why, and a button that takes it. Nothing is taken without the click.
 /// </summary>
-internal class CrucibleTreasureWindow : RecommendationWindow
+internal sealed class CrucibleTreasureWindow : RecommendationWindow
 {
 	public CrucibleTreasureWindow() : base("RSR - Crucible treasure")
 	{

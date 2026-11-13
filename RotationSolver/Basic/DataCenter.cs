@@ -3834,6 +3834,17 @@ internal static class DataCenter
 		}
 
 		_tankbusterHelpHeld[key] = now;
+
+		// A739 (concept 24, "Speicher"): an entry is read only within a GCD; the older ones go when a new hit is written,
+		// so the store holds the hits of the last moments, not every enemy and action of the session.
+		foreach (var (heldKey, at) in _tankbusterHelpHeld)
+		{
+			if ((now - at).TotalSeconds > DefaultGCDTotal)
+			{
+				_ = _tankbusterHelpHeld.TryRemove(heldKey, out _);
+			}
+		}
+
 		var name = Service.GetSheet<Action>().GetRowOrDefault(actionId)?.Name.ExtractText() ?? "?";
 		DefenseTrace.Line($"tankbuster help held: {name} #{actionId} on {member.Name.TextValue} takes {share:P0} of max HP"
 			+ $" and leaves {left:P0}, above the single heal line {line:P0} and under a large shield");

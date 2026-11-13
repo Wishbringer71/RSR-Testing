@@ -190,6 +190,8 @@ public sealed class RotationSolverPlugin : IAsyncDalamudPlugin
 			HotbarHighlightManager.Init();
 			BestiaryTrace.Enable();
 			CrucibleWindowTrace.Enable();
+			// A739 (concept 24): the core compiled ahead, off the game's thread, before the first fight calls it.
+			WarmUp.Core();
 
 			Svc.DutyState.DutyStarted += DutyState_DutyStarted;
 			Svc.DutyState.DutyWiped += DutyState_DutyWiped;
@@ -443,6 +445,7 @@ public sealed class RotationSolverPlugin : IAsyncDalamudPlugin
 	public async ValueTask DisposeAsync()
 	{
 		MajorUpdater.Dispose();
+		WarmUp.Dispose();
 
 		ActionTracer.Shutdown();
 

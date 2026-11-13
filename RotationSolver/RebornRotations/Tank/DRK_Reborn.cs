@@ -311,7 +311,7 @@ public sealed class DRK_Reborn : DarkKnightRotation
 	/// shown the enemies immune (StunWatch) there is no headroom left and the hold ends by itself.
 	/// </para>
 	/// </summary>
-	private bool GroupStunRunning()
+	private static bool GroupStunRunning()
 	{
 		var inRange = SurveyStuns(DataCenter.JobRange, out var stunned, out _, out var headroom);
 		if (inRange == 0)

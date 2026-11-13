@@ -9,7 +9,7 @@ namespace RotationSolver.UI.ExtraWindows;
 /// K10 "Weg" of the Crucible (concept 21, A632): between fights on a board and with a fork ahead, each way with where its next
 /// fight leaves the player and the final fight's healers, and the way RSR recommends. Walking stays the player's.
 /// </summary>
-internal class CrucibleRouteWindow : RecommendationWindow
+internal sealed class CrucibleRouteWindow : RecommendationWindow
 {
 	public CrucibleRouteWindow() : base("RSR - Crucible route")
 	{

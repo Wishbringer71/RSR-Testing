@@ -199,7 +199,7 @@ internal static class ActionTooltip
 	{
 		potency = 0f;
 		var text = Text(actionId);
-		return text.Length > 0 && PotencyWord.Matches(text).Count == 1 && !ConditionalWording.IsMatch(text)
+		return text.Length > 0 && PotencyWord.Count(text) == 1 && !ConditionalWording.IsMatch(text)
 			&& TryStated(actionId, StatedPotency, out potency);
 	}
 

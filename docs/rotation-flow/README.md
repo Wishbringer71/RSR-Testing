@@ -31,6 +31,7 @@ stünde hier ein zweites Mal und würde altern.
 | [`21-crucible.md`](21-crucible.md) | Wie spielt der Beastmaster die Bretter des Crucible – Kader, Hörner, Wege, Läden, Schätze, Lager, Gegenstände und den Endkampf? |
 | [`22-masked-carnivale.md`](22-masked-carnivale.md) | Mit welchem Set und welcher Wahl der Zauber geht der Blaumagier eine Stufe des Masked Carnivale an? |
 | [`23-deep-dungeons.md`](23-deep-dungeons.md) | Was tut RSR in den Tiefen Gewölben, das es nur dort gibt – Verwandlung, Pomander, Magicite, Demiklone und Weihrauch? |
+| [`24-code-structure-and-cost.md`](24-code-structure-and-cost.md) | Wo kann der Code modularer, allgemeiner und sparsamer an Rechenzeit und Speicher werden, ohne dass sich im Kampf etwas verschlechtert – und woran wird das gemessen? |
 
 **Ebenen** (seine Vorgabe „Universell zuerst", Ordnung in `20`): Eine Regel steht auf der höchsten Ebene, auf der sie
 für alle gleich gilt.

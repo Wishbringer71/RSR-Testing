@@ -482,7 +482,8 @@ public partial class MainWindow
 				}
 			}
 
-			GAction? skippedAction = Service.GetSheet<GAction>().GetRow(newestId);
+			// GetRow throws for an id the sheet does not hold; the null test after it never held (A739, CA1508).
+			GAction? skippedAction = Service.GetSheet<GAction>().GetRowOrDefault(newestId);
 			var skippedName = skippedAction == null ? $"{newestId}" : $"{skippedAction.Value.Name} ({newestId})";
 			var measuredShare = OtherConfiguration.HostileCastingAreaPotential.TryGetValue(newestId, out var lastShare)
 				? $"{lastShare * 100f:F0}%"

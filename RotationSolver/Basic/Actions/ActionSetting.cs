@@ -117,7 +117,7 @@ public class ActionSetting
 	/// only whether the game allows it now, which it does for the form the player has (concept 23, "Tiefe Gewölbe:
 	/// Verwandlung", A614).
 	/// </summary>
-	public bool IsTransformationAction { get; set; } = false;
+	public bool IsTransformationAction { get; set; }
 
 	/// <summary>
 	/// The override of the <see cref="ActionBasicInfo.MPNeed"/>.
@@ -149,7 +149,7 @@ public class ActionSetting
 	/// <see cref="SpecialActionType.FixedDistanceMoveForward"/> and <see cref="SpecialActionType.FixedDistanceMoveBackward"/>
 	/// actions the distance along the facing, likewise (A313); unset there, the landing point is unknown.
 	/// </summary>
-	public float BackstepDistance { get; set; } = 0;
+	public float BackstepDistance { get; set; }
 
 	/// <summary>
 	/// Is this status only ever added by the caster/player. 

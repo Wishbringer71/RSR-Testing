@@ -3,7 +3,7 @@ using Lumina.Excel.Sheets;
 
 namespace RotationSolver.Basic.Actions;
 
-internal class PhoenixDownItem : BaseItem
+internal sealed class PhoenixDownItem : BaseItem
 {
 	// The feather's cast from the Item sheet: 8 s (CastTimeSeconds of item 4570, read 26.10.2026). Since patch 7.3 it can be
 	// thrown in combat in four-player content, and for that whole cast nothing else of the player's goes out (A372).

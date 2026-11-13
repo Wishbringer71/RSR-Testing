@@ -104,7 +104,10 @@ wenn es gebraucht wird:
 Jeder Frame rechnet die ganze Entscheidung neu: Ziele, Flags, die GCD-Kette und im Einschiebefenster die
 Fähigkeitenkette, je `CanUse` die Zielsuche über alle Kandidaten. Gemessen sind im Mittel 1,55 bis 3,63 ms je
 Durchlauf, 7 bis 15 % der Framezeit, Spitzen bis 70 ms in einem Critical Engagement (Protokolle 16. und 17.10.2026,
-A286, A299). Was davon trägt, sagt seit A310 die Kostenzeile je Schritt nach jedem Kampf.
+A286, A299). Was davon trägt, sagt seit A310 die Kostenzeile je Schritt nach jedem Kampf. Seit A739 nennt sie die Zeit, die die
+Übersetzung neuer Methoden (JIT) im Spielthread kostete, und RSR übersetzt den Kern beim Laden und jede Rotation bei
+ihrem Wechsel vorab auf einem Hintergrundthread: Die Ruckler bis 64 ms fielen in den ersten Kampf einer Sitzung oder
+auf einen neuen Pfad, nie mit einer Speicherbereinigung (Konzept 24, „Der erste Pull").
 
 Drei Regeln halten die Kosten eines Frames unabhängig davon, wie oft eine Frage gestellt wird (A325):
 - **Keine Suche in der Objekttabelle pro Eintrag oder pro Lesen.** `SearchById` und `Status.SourceObject` laufen

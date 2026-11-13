@@ -14,7 +14,7 @@ namespace RotationSolver.UI;
 /// when the fight is over is the later evaluation the owner ruled out; this window shows the same
 /// lines while the decision is being made.
 /// </summary>
-internal class DiagnosticsWindow : Window
+internal sealed class DiagnosticsWindow : Window
 {
 	private const ImGuiWindowFlags BaseFlags = FullCtrlWindow.BaseFlags
 		| ImGuiWindowFlags.AlwaysAutoResize

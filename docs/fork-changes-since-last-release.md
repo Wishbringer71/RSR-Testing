@@ -54,6 +54,15 @@ What this release changes in the fight. For the whole distance from upstream, se
   the dungeon's list of stones, not a row of a sheet. In Pilgrim's Traverse every slot read as nothing, so no incense was
   ever burned when alone; in Heaven-on-High and Eureka Orthos the old reading matched only because their lists start
   at 1. Pilgrim's Traverse: 1 Barkbalm, 2 Mazeroot, 3 Poisonfruit, measured in the owner's run.
+- **Less stutter on the first pull of a session.** The first fight of a session held single frames for 21 to 64 ms,
+  never with a garbage collection: .NET compiles each method on its first call, on the game's thread. RSR now compiles
+  its core ahead after loading, and each rotation with its base classes when it is chosen, on a low-priority background
+  thread (about 7,000 methods in half a second, measured on the built library). The fight's cost line names the compile
+  time left on the game's thread.
+- **Code structure.** One breadth-first search over a Crucible board replaces five copies; the campsite question asked
+  every frame out of combat keeps its answer while board, space and progress stay the same. One walk over enemy casts
+  serves both raise-protection checks. A store of held tankbuster help no longer grows over a session. The debug window
+  no longer throws for an action id the sheet does not hold.
 - **A sleep that did not go out names the first reason.** "sleep not cast …" names the first reason the rule gave
   after the sleep was chosen, and the last when it differs; "the cast ended" follows every lapsed sleep and no longer
   hides the reason the GCD went elsewhere.

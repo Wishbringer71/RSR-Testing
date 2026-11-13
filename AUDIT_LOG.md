@@ -21456,6 +21456,53 @@ ohne erfüllte Auflösungsbedingung; die Warte-Einträge hatte ich gegen den Upl
   bis 170 ms an" ist nicht erfüllt.
 - *Prüfgrad:* Laufzeitbeobachtung (Protokoll, ACT-Mitschnitt), statisch am Code, Compile ohne Warnung, Prüfskripte.
 
+### A739 · Code: Struktur und Rechenkosten – Maßstab, Messung, erste Umsetzung (13.11.2026)
+
+Sein Auftrag (13.11.2026): den Code im vollen kritischen Loop auf Optimierung prüfen, ohne den Funktionsumfang zu
+verschlechtern – objektorientiert, modular, redundanter Code, allgemeine Funktionen mit austauschbaren Parametern,
+weniger CPU und Speicher; Programmierrichtlinien und Standards recherchieren, ein umfassendes Konzept, Audit,
+Code-Review, Fehlerbeseitigung. Neues Konzept 24, „Code: Struktur und Rechenkosten"; Index und Konzept 03.
+
+- *Recherche:* ISO/IEC 25010 (über SonarSource und TMAP; Normtext nicht vorliegend), Microsoft Learn („Reduce memory
+  allocations", „Writing Large, Responsive .NET Framework Apps", Code-Qualitätsregeln, `JitInfo`, `PrepareMethod`,
+  gestufte Übersetzung), Framework Design Guidelines, Fowlers Refactoring-Katalog, Unity und Dalamud zur Spielschleife
+  (Werkzeugquellen).
+- *Laufzeit (759 Kämpfe seiner Protokolle):* 0,35 ms je Durchlauf, Median 3,8 % der Framezeit. Zehn Durchläufe über
+  16,7 ms (21 bis 64 ms), acht im ersten Kampf einer Sitzung, zwei beim ersten Mal auf einem neuen Pfad, keiner mit
+  Speicherbereinigung; die 451 langsamsten Durchläufe mit Bereinigung höchstens 15,1 ms. Werkzeug:
+  `opt/cost.py` im Notizordner (Kostenzeilen nach Schritt, langsamster Durchlauf mit und ohne Bereinigung).
+- *Statisch:* .NET-Analyzer mit `-p:AnalysisModePerformance=All -p:AnalysisModeMaintainability=All`: 643 Befunde, 64
+  auf Fork-Zeilen. jscpd 4.0.5 (`--min-tokens 70`, ohne `ExtraRotations`): 1,2 % doppelter Code, Fork-Anteil in
+  `CrucibleRoute`, `RaiseProtection`, `DiagnosticsWindow`, `PCT_Reborn`. Ganze Fork-Member in Dateien von Upstream:
+  `DataCenter` 2.873 Zeilen, `ObjectHelper` 974, `CustomRotation_OtherInfo` 1.070, `StatusHelper` 931,
+  `ActionTargetInfo` 164. 40 statische Sammlungen mit Objekt-Id als Schlüssel, eine aus dem Fork ohne Räumung.
+- *Gebaut:*
+  - Kostenzeile: Übersetzungszeit (JIT) und Zahl übersetzter Methoden im Spielthread, je Kampf und im langsamsten
+    Durchlauf (`UpdateCost`, `System.Runtime.JitInfo` je Thread).
+  - `WarmUp`: übersetzt den Kern (ohne Oberfläche und Rotationen) nach dem Laden und jede gewählte Rotation samt
+    Basisklassen auf einem Hintergrundthread niedriger Priorität vorab (`RuntimeHelpers.PrepareMethod`); Abbruch beim
+    Entladen; Zeile „warm-up of …". Gemessen an der gebauten Bibliothek (Testprogramm, Linux): Kern 6.959 Methoden in
+    0,5 s, Weißmagier 1.083 in 70 ms, keine abgelehnt.
+  - `CrucibleRoute.Walk`: eine Breitensuche mit Besucher (weiter, nicht weiter, fertig) statt fünf Kopien;
+    `CampsiteAhead` behält seine Antwort, solange Brett, Feld und Erledigt gleich bleiben.
+  - `RaiseProtection.FirstCastWhere`: eine Schleife über die Wirkenden mit statischer Bedingung und Zustand.
+  - `_tankbusterHelpHeld`: alte Einträge gehen beim Schreiben eines neuen.
+  - `MainWindow_Debug`: `GetRowOrDefault` statt `GetRow`, das für eine unbekannte Id wirft.
+  - Analyzer auf Fork-Zeilen: zehn Klassen versiegelt, `GroupStunRunning` statisch, `Regex.Count`, elf Vorbelegungen
+    entfernt.
+- *Nicht gebaut, mit Grund (Konzept 24):* ReadyToRun (ungeprüft unter Dalamuds Laden), gestufte Übersetzung abschalten
+  (längere Ruckler), Merken der Erkennungsabfragen ohne Messung (A310 bleibt), Befunde auf Upstream-Zeilen und Klone in
+  Upstreams PvP-Rotationen (Merge-Logistik, außerhalb seines Profils), CA1802 in `Configs` (Muster des Source
+  Generators), CA1819/CA1822 an öffentlicher oder geschützter Schnittstelle, Analyzer-Prüfung in der CI.
+- *Offen in Reihenfolge:* die Fork-Member in Teildateien (Konzept 24, „Fork-Code in eigenen Teildateien"); TODO.
+- *Falsifikation:* Kein Defekt? Ein Bild steht am ersten Pull bis 64 ms, achtmal belegt. Option falsch? Ist es nicht
+  Übersetzung, zeigt die neue Kostenzeile wenig JIT im langsamsten Durchlauf. Ausgeliefert, und nichts ändert sich?
+  Wenn der Kampf vor dem Ende des Vorübersetzens beginnt oder der Ruckler in fremden Bibliotheken liegt – die Zeilen
+  „warm-up" und „JIT … ms" zeigen beides. Die Umstellungen von `CrucibleRoute` und `RaiseProtection` ändern keine
+  Antwort: jede Suche hat dieselbe Fund-, Abbruch- und Endbedingung wie vorher.
+- *Prüfgrad:* Laufzeitmessung an seinen Protokollen, Testprogramm an der gebauten Bibliothek, Analyzer, Klonsuche,
+  Compile ohne Warnung, Prüfskripte; im Spiel nicht beobachtet.
+
 ## B · Commit-Register (Fork vs. `upstream/main`)
 
 ### B1 · Einzelgeprüfte Fork-Commits
