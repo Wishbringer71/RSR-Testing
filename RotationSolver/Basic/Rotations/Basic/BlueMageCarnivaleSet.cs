@@ -170,12 +170,13 @@ public partial class BlueMageRotation
 	private static void AddCoverageFillers(int stage, Dictionary<uint, IBaseAction> learned, uint[] slots, List<CarnivalePick> picks)
 	{
 		var acts = StageEnemies(stage);
+		var told = new HashSet<uint>();
 		for (var act = 0; act < acts.Count; act++)
 		{
 			foreach (var enemy in acts[act])
 			{
 				var nameId = enemy.BNpcName.RowId;
-				if (Hurts(nameId, picks, slots))
+				if (!told.Add(nameId) || Hurts(nameId, picks, slots))
 				{
 					continue;
 				}

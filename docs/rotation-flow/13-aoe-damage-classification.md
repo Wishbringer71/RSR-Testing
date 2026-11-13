@@ -181,8 +181,9 @@ nach vorn, 2,7 s). Getroffen hat #43131, gleichnamig, Art 13, Kegel 10 Yalm, ohn
 maximalen LP aus, und der Weißmagier starb. RSR las nur die Linie, schrieb „area hit reaches you False“ und ließ ihn
 weiterwirken; die Sperre zum Ausweichen griff nicht.
 - *Jetzt:* Erreicht die Form der gewirkten Aktion ein Mitglied nicht, fragt `AreaCastReaches` die Formen der
-  gleichnamigen Zeilen ohne Wirkzeit, die im Blatt lückenlos an sie anschließen. Ein Kegel ohne Winkel im Omen zählt
-  dort wie überall als Kreis (oben).
+  gleichnamigen Zeilen ohne Wirkzeit und mit Effektreichweite, die im Blatt lückenlos an sie anschließen. Ein Kegel
+  ohne Winkel im Omen zählt dort wie überall als Kreis (oben). Eine Zeile ohne Effektreichweite zählt nicht: Für sich
+  gelesen hieße sie „erreicht jeden“, und jedes Wirken mit einer solchen Anzeige-Zeile gälte für die ganze Gruppe.
 - *Im Kampf:* Wer im Bereich eines solchen zweiten Treffers steht, gilt als getroffen. Die Sperre beim Wirken hält
   einen Zauberbeginn zurück, damit er hinausgehen kann. Selbstschutz und Flächenabwehr gehen wie bei jedem Treffer, der
   ihn erreicht.

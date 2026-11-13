@@ -542,7 +542,8 @@ internal static partial class DataCenter
 						break;
 					}
 
-					if (other.Cast100ms == 0)
+					// A row without an effect range draws no area; read alone it would reach everyone.
+					if (other.Cast100ms == 0 && other.EffectRange > 0)
 					{
 						parts.Add(other);
 					}

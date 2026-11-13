@@ -22333,6 +22333,23 @@ Durchläufe im gesperrten Tor).
   Messzeile bleibt.
 - *Prüfgrad:* statisch am Code.
 
+### A768 · Code-Review der Änderungen A762 bis A767 (13.11.2026)
+
+Nach dem TODO der Schritt „Audit, Code-Review" aus seinem Ablauf vom 05.11.2026; geprüft: der Code seit aef46fb5f.
+- *Defekt aus A765:* `SameAttackHits` nahm gleichnamige Nachbarzeilen ohne Effektreichweite auf. `AreaShapeReaches`
+  liest eine solche Zeile als „erreicht jeden“. Gemessen am Aktionsblatt (xivapi v2, 51.500 Zeilen, 13.11.2026): Von
+  28.374 gegnerischen Wirken haben 1.057 einen solchen Nachbarn, etwa Charybdis, Magitek Missiles und Bluefire. Seit
+  eb079f69a galt jedes davon für die ganze Gruppe. Folgen: Flächenabwehr, Selbstschutz und die Sperre beim Wirken bei
+  jedem solchen Wirken. Behoben: Nur Nachbarn mit Effektreichweite zählen. 1.549 Wirken haben einen Nachbarn mit
+  Fläche; sie nutzen die Regel wie gedacht. Ursache am System: Die Nachbarzeile lief durch dieselbe Formprüfung wie
+  ein eigenes Wirken, deren Zweig „ohne Reichweite“ für das gewirkte Ziel gebaut ist.
+- *Kleiner Befund:* Die Abdeckungspunkte des Carnivale nannten einen Gegner, der in zwei Akten steht und gegen den
+  nichts gelernt ist, doppelt. Behoben.
+- *Ohne Befund:* Wirkrichtung und Bodenort (A766), Totenwahl (A765), Zeile je Anfrage ohne Antwort, sicheres Lesen
+  der Fenstertexte (A764), Ladenleser, Carnivale-Sperren und Set (A762). Die Folgenummern der Anfragen laufen über
+  65.536 hinaus wie die der Zauber seit A754; nach einem Überlauf bleiben alte Einträge bis zum nächsten liegen.
+- *Prüfgrad:* statisch, Compile, alle CI-Schritte lokal.
+
 ## B · Commit-Register (Fork vs. `upstream/main`)
 
 ### B1 · Einzelgeprüfte Fork-Commits
