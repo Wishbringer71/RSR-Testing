@@ -22430,6 +22430,35 @@ und Hinweis (zweiter Satz).
   „Starren“, „Honigsüße Front/Linke/Rechte“ und „Vielsagender Glanz“ sind Flächen mit Omen und Schaden, keine Blicke.
 - *Prüfgrad:* am Mitschnitt und am Blatt; im Spiel nicht beobachtet.
 
+### A774 · Seine Frage: andere Plugins, die wegdrehen; RSR dreht selbst weg, Vorlauf aus der Messung (13.11.2026)
+
+Seine Frage (13.11.2026): „Gibt es noch andere Plugins, die solche Gegner erkennen und den Spieler wegdrehen um ihn zu
+schützen. Analysiere deren Verhalten und Code und optimiere den eigenen“. Einordnung: Frage mit Auftrag.
+- *Erhebung:* BossModReborn 8ad17f97f (`SmartRotationTweak`): Es kennt Blicke aus Modulen und `VFX` 25 und dreht ab
+  0,5 s vor dem Blick in die breiteste sichere Lücke nahe der Zielrichtung. Es sperrt Zauber und Angriffe, wenn das Ziel
+  nicht ohne Blick zu treffen ist, erlaubt 75° für einen Zauber im Gang und dreht über `AutoFaceTargetPosition` mit
+  kurz eingeschalteter Spieloption „Auto face target“. BossMod (Original) 6a8f5f304 hat denselben Kern. „Don't Look Back“
+  (Atomoxide 1.1.0.0, nur gebaut) dreht nach jeder Aktion zur Kamera und kennt keine Blicke.
+- *Befund an A770:* RSR hielt Aktionen zum Wirkenden das ganze Wirken zurück, bei Beatrice bis 8 s.
+- *Umgesetzt (Konzept 13, „Zeitraum und Wegdrehen“):*
+  - Vorlauf L ist die größte gemessene Verzögerung bis zur Antwort im Gebiet plus ein Bild (`AnimationLockTweak.DelayMost`).
+  - Bis L kämpft RSR weiter; ab L hält es drehende Aktionen in Blickrichtung zurück und dreht die Figur in die Mitte der
+    nächstgelegenen sicheren Lücke (`GazeWatch.TurnAway`, je Bild aus `MajorUpdater`).
+  - Neue Option „Turn away from gaze attacks“, ab Werk an. Ohne Messung oder abgeschaltet gilt das ganze Wirken wie in
+    A770.
+  - Verworfen: feste 0,5 s wie BossModReborn, weil ein fester Wert bei großer Verzögerung zu spät dreht und bei kleiner
+    früher sperrt als nötig.
+- *Eigener Defekt im Review gefunden und behoben:* Berühren sich zwei gesperrte Bögen, lag die Mitte der Lücke ohne
+  Breite auf einer Grenze. Jede Mitte wird jetzt gegen alle Blicke geprüft.
+- *Lückenmitte als Festwert-Ausnahme:* `0.5f` ist Geometrie, keine Spielgröße. 2π schreibt sich als `MathF.Tau`.
+- *Modell:* Die Winkelrechnung ist in Python nachgerechnet.
+  - Ein Blick aus Ost: die Figur schaut nach West.
+  - Blicke aus West und Ost: nach Nord oder Süd, je nachdem, was näher liegt.
+  - Ein umgekehrter Blick aus Ost: nach Ost.
+  - Blicke von vier Seiten: diagonal.
+- *Prüfgrad:* Compile, Prüfskripte, Winkelmodell; im Spiel nicht beobachtet. Messmittel sind die Zeilen „gaze: turned …“
+  und „gaze: holding …“ im `DefenseTrace.log`.
+
 ## B · Commit-Register (Fork vs. `upstream/main`)
 
 ### B1 · Einzelgeprüfte Fork-Commits

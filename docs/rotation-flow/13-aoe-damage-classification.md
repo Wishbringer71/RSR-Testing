@@ -241,11 +241,55 @@ drehen müsste.
 - *In den Blick drehen:* Liegt der Wirkende vom Spieler aus innerhalb von 45° zur Richtung des Ziels, blickt die
   gedrehte Figur ihn an. Die 45° sind BossMods halbe Breite einer verbotenen Richtung (`AIHintsBuilder`,
   `ForbiddenDirections`; Werkzeugquelle). Das Spiel nennt keinen Winkel.
-- *Zeitraum:* vom ersten Bild des Wirkens bis zu seinem Ende. Die Figur hält ihre Richtung nach einer Aktion bei. Eine
-  Aktion zum Wirkenden früh im Wirken lässt sie am Ende noch hinsehen.
-- *Im Kampf:* Während der 4,5 s von #3499 drückt RSR nichts auf Angra Mainyu und nichts auf ein Ziel in seiner Richtung.
-  Der Heiler heilt weiter, denn Heilungen drehen nicht. Ein Ziel in einer anderen Richtung bleibt wählbar. Nahkämpfer
-  setzen ein bis zwei GCDs aus, wie es die Mechanik von Spielern verlangt.
+- *Zeitraum und Wegdrehen* (A774, seine Frage vom 13.11.2026 nach anderen Plugins, die wegdrehen): RSR dreht die Figur
+  selbst weg und hält Aktionen nur im letzten Stück zurück.
+  - *Vorlauf L:* die größte Verzögerung bis zur Antwort des Servers im Gebiet plus ein Bild (gemessen von der
+    Animationssperre, A753). Bis L vor dem Blick handelt RSR wie sonst, auch auf den Wirkenden. Ab L vor dem Blick
+    nimmt eine Aktion, die dreht, kein Ziel mehr in Richtung des Blicks. Zeigt die Figur hinein, dreht RSR sie in
+    die Mitte der nächstgelegenen sicheren Lücke. Bei einem Blick heißt das genau weg vom Wirkenden; bei Blicken aus
+    West und Ost nach Nord oder Süd; bei einem umgekehrten Blick zum Wirkenden hin.
+  - *Zauber mit Wirkzeit:* Während des Wirkens schaut die Figur zum Ziel. Ein Zauber zum Wirkenden des Blicks beginnt
+    nur, wenn er vor L vor dem Blick endet.
+  - *Ohne Messung:* Solange im Gebiet keine Antwort gemessen ist, gilt das ganze Wirken als Zeitraum, wie vor A774.
+    Ebenso, wenn er „Turn away from gaze attacks“ abschaltet. Dann dreht RSR nicht, und eine frühe Aktion ließe ihn am
+    Ende noch hinsehen.
+  - *Drehen:* über die Spielfunktion, die eine Aktion zum Ziel dreht (`ActionManager.AutoFaceTargetPosition`), mit der
+    Spieloption „Auto face target“ für diesen Aufruf eingeschaltet und danach zurückgesetzt, wie BossModReborn
+    (`ActionManagerEx.FaceDirection`). Ein Wirken im Gang bricht dabei womöglich ab. Gewogen gegen Versteinerung oder
+    Verhängnis ist das der kleinere Preis. Gedreht wird nur im Kampf mit eingeschaltetem RSR. Die Position ändert sich
+    nicht; das ist keine Bewegung im Sinn seiner Vorgabe.
+  - *Erhebung fremder Werkzeuge (13.11.2026):*
+    - BossModReborn 8ad17f97f (`SmartRotationTweak`, ab Werk an): Es kennt Blicke nur aus Modulen und `VFX` 25. Es dreht
+      ab 0,5 s vor dem Blick in die breiteste sichere Lücke nahe der Zielrichtung und sperrt Zauber und Angriffe, wenn
+      das Ziel nicht ohne Blick zu treffen ist. Für einen Zauber im Gang erlaubt es 75° statt 45° (empirisch).
+    - BossMod (Original) 6a8f5f304: derselbe Kern.
+    - „Don't Look Back“ (Atomoxide 1.1.0.0, nur gebaut, kein Quelltext; gelesen aus den Metadaten): Es dreht die Figur
+      nach jeder eigenen Aktion auf die Kamerarichtung zurück (`GameObject.SetRotation`, Kamera-Matrix) und kennt
+      keine Blicke. Man schaltet es von Hand ein. Verworfen als Vorbild: Es dreht auch ohne Blick und richtet sich
+      nach der Kamera, nicht nach den Wirkenden.
+  - *Optionen:* (0) A770 lassen: Es hält Aktionen auf den Wirkenden das ganze Wirken zurück, bei Beatrice bis 8 s, also
+    zwei bis drei GCDs. (1) Wie BossModReborn mit festen 0,5 s. (2) Vorlauf aus der Messung, Drehen in die
+    nächstgelegene Lücke. *Gewählt:* (2). Es spart gegen (0) fast den ganzen Ausfall, braucht keinen festen Wert und
+    dreht bei einer Verbindung mit großer Verzögerung früher.
+  - *Gegenthese 1 (Option falsch, der Server sieht die Drehung zu spät):* L ist die größte gemessene Verzögerung bis
+    zur Antwort, also Hin- und Rückweg. Die Drehung braucht nur den Hinweg. Mit Schwankungen größer als alles Gemessene
+    bleibt ein Rest. Den hält die Zeile „gaze: …“ fest, und das Verhängnis zeigt sich im Mitschnitt.
+  - *Gegenthese 2 (Doppel mit BossModReborn):* Beide drehen nur, solange die Richtung unsicher ist. Wer zuerst dreht,
+    lässt dem anderen eine sichere Richtung, und keiner dreht zurück.
+  - *Gegenthese 3 (ausgeliefert, und nichts ändert sich):* mit abgeschalteter Option oder ohne Messung. Dann gilt das
+    Zurückhalten über das ganze Wirken.
+  - *Lauf im Vorlauf:* Läuft er im Vorlauf, dreht das Spiel die Figur in die Laufrichtung, Bild für Bild. Läuft er vom
+    Wirkenden weg, ist die Richtung sicher, und RSR tut nichts. Läuft er auf ihn zu, dreht RSR ihn jedes Bild weg, und
+    das Spiel dreht ihn mit dem nächsten Schritt zurück. RSR greift nicht in die Bewegung ein; BossModReborn tut es
+    (`PlayerMove`). Das wäre Bewegung im Sinn seiner Vorgabe. Der Preis ist ein Flackern der Figur für höchstens L.
+    Ein Blick, auf den er zuläuft, trifft ihn, wie ohne RSR.
+  - *Lücke ohne Breite:* Berühren sich zwei gesperrte Bögen, liegt die Mitte der Lücke auf einer Grenze und sieht noch
+    hinein. RSR prüft jede Mitte gegen alle Blicke, bevor es dreht; gibt es keine, dreht es nicht.
+- *Im Kampf:* Während der 4,5 s von #3499 kämpft RSR bis L vor dem Blick weiter, auch auf Angra Mainyu. Ab dann drückt
+  es nichts mehr auf ihn und nichts auf ein Ziel in seiner Richtung, und es dreht die Figur von ihm weg. Der Ausfall schrumpft so von zwei GCDs auf
+  die gemessene Verzögerung plus ein Bild. Der Heiler heilt weiter, denn Heilungen
+  drehen nicht. Ein Ziel in einer anderen Richtung bleibt wählbar. Ohne Messung im Gebiet hält RSR das ganze Wirken
+  zurück; dann setzen Nahkämpfer ein bis zwei GCDs aus, wie es die Mechanik von Spielern verlangt.
 - *Mehrere Blicke zugleich* (sein Hinweis, 13.11.2026: auf dem zweiten Crucible-Brett „von den Seiten Ringe …
   mehrere Punkte, von denen man sich wegdrehen muss“). Am Mitschnitt vom 11.11.2026 (15:42 und 15:58):
   - Der Taurus ruft zwei Ahriman-Ebenbilder an die Ränder, bei x 502 und 538 (der Mittelpunkt liegt bei 520), also

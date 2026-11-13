@@ -175,7 +175,14 @@ public struct ActionTargetInfo(IBaseAction action)
 		// (concept 13, "Nicht in einen Blick drehen").
 		if (action.Info.NeedToFaceTarget && action.Action.Range > 0 && validTargets.Count > 0)
 		{
-			_ = validTargets.RemoveAll(static t => GazeWatch.TurnsIntoGaze(t.Position));
+			var castTime = action.Info.CastTime;
+			for (var i = validTargets.Count - 1; i >= 0; i--)
+			{
+				if (GazeWatch.TurnsIntoGaze(validTargets[i].Position, castTime))
+				{
+					validTargets.RemoveAt(i);
+				}
+			}
 		}
 
 		return validTargets;

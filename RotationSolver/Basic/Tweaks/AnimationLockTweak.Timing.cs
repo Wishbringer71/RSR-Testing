@@ -56,6 +56,12 @@ public sealed unsafe partial class AnimationLockTweak
 	/// <summary>The mean frame time measured in this zone; 0 before the first frame.</summary>
 	internal static float MeanFrameTime { get; private set; }
 
+	/// <summary>
+	/// The longest delay to the server's answer measured in this zone, in seconds; 0 before the first. The lead with which
+	/// RSR turns away from a gaze (concept 13, "Zeitraum und Wegdrehen", A774).
+	/// </summary>
+	internal float DelayMost => _delayCount > 0 ? _delayMost : 0f;
+
 	/// <summary>Whether the answer <see cref="Apply"/> saw last belonged to the request recorded before it.</summary>
 	internal bool LastMatched { get; private set; }
 
