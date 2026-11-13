@@ -28,6 +28,9 @@ internal static class ActionTooltip
 	private static readonly Regex DealsWithGuard = new(@"Ignores the effects of Guard|Removes (?:target's )?Guard|Removes Guard from|defensive bonus of Guard",
 		RegexOptions.Compiled);
 	private static readonly Dictionary<uint, bool> _handlesGuard = [];
+	private static readonly Regex SetsCrowdControl = new(@"Additional Effect: (?:Stun|Bind|Heavy|Silence|Deep Freeze)\b|Forcibly transforms target",
+		RegexOptions.Compiled);
+	private static readonly Dictionary<uint, bool> _appliesCrowdControl = [];
 	private static readonly HashSet<(uint ActionId, int Level)> _unreadPotency = [];
 	private static readonly Regex StatedFalloff = new(@"(?<value>\d{1,2})% less for all remaining enemies", RegexOptions.Compiled);
 	private const string DamageAreaText = "enemies who enter";
@@ -155,6 +158,34 @@ internal static class ActionTooltip
 		}
 
 		return handles;
+	}
+
+	/// <summary>
+	/// Whether the tooltip of <paramref name="actionId"/> says it sets a crowd control Purify lifts on its target ("Additional
+	/// Effect: Stun", Bind, Heavy, Silence, Deep Freeze, or Miracle of Nature's "Forcibly transforms target") - which a
+	/// target under Resilience, Guard or a like state nullifies (concept 25, "PvP: Wechselwirkungen und Synergien", A757).
+	/// </summary>
+	public static bool AppliesCrowdControl(uint actionId)
+	{
+		lock (_gate)
+		{
+			if (_appliesCrowdControl.TryGetValue(actionId, out var known))
+			{
+				return known;
+			}
+		}
+
+		var text = Text(actionId);
+		var applies = SetsCrowdControl.IsMatch(text);
+		if (text.Length > 0)
+		{
+			lock (_gate)
+			{
+				_appliesCrowdControl[actionId] = applies;
+			}
+		}
+
+		return applies;
 	}
 
 	/// <summary>

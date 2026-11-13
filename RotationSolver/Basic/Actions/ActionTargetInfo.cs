@@ -151,6 +151,26 @@ public struct ActionTargetInfo(IBaseAction action)
 			}
 		}
 
+		// In PvP an action whose text sets a crowd control prefers a target that does not nullify it; with none left it
+		// still hits an immune one for its damage (concept 25, "PvP: Wechselwirkungen und Synergien", A757).
+		if (DataCenter.IsPvP && !action.Setting.IsFriendly && validTargets.Count > 1 && ActionTooltip.AppliesCrowdControl(action.Info.ID))
+		{
+			var anyOpen = false;
+			foreach (var target in validTargets)
+			{
+				if (!target.IsCrowdControlImmune())
+				{
+					anyOpen = true;
+					break;
+				}
+			}
+
+			if (anyOpen)
+			{
+				_ = validTargets.RemoveAll(static t => t.IsCrowdControlImmune());
+			}
+		}
+
 		return validTargets;
 	}
 

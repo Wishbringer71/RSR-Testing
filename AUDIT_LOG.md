@@ -22126,6 +22126,25 @@ jede Ebene und nicht die Gruppe.
   unbelegt geführt.
 - *Prüfgrad:* Compile; alle 54 CI-Schritte lokal. In PvP nicht beobachtet.
 
+### A758 · PvP: Bannzustände bevorzugt auf Ziele ohne Immunität (13.11.2026)
+
+TODO „PvP: Bannzustände auf Ziele, die immun sind" (aus A756), im Rahmen seines Auftrags, das TODO abzuarbeiten.
+
+- *Erhoben:* 42 PvP-Aktionen setzen laut Job-Guide einen Bannzustand oder Rückstoß; bis auf Miracle of Nature verursachen
+  alle zugleich Schaden. Ein Zurückhalten verlöre ihren Schaden. Immunität tragen Guard (3054, 3673), Resilience, Swift,
+  Inner Release und Hardened Scales; ihre Statustexte nennen „nullified" oder „immunity" mit Stun oder Purify.
+- *Optionen:* (a) Nullvariante; (b) Aktion gegen ein immunes Ziel zurückhalten (verliert Schaden); (c) unter den
+  Kandidaten ein nicht immunes Ziel vorziehen, sonst das immune für den Schaden. Gewählt (c): Sie bringt den Bann, wo
+  er wirkt, und den Schaden überall.
+- *Umsetzung:* `ActionTooltip.AppliesCrowdControl` (Wirktext), `StatusHelper.NullifiesCrowdControl` und
+  `IsCrowdControlImmune` (Statustext, ohne Liste), Vorliebe am Ende von `ActionTargetInfo.GetCanTargets`, nur in PvP.
+  Knockback und Heranziehen zählen nicht mit: Sie sind bei den meisten Aktionen Nebenwirkung.
+- *Falsifikation:* „Option falsch": Die Vorliebe kann ein Ziel mit weniger LP gegen eines mit mehr tauschen. Gewichtet:
+  Ein Stun hält den Gegner 2 s von jeder Aktion ab, auch von Guard und Purify; die Zielart gilt unter den übrigen
+  Kandidaten weiter. „Ausgeliefert, und nichts ändert sich": mit nur einem Kandidaten, dann gilt der bisherige Weg.
+- *Prüfgrad:* Compile; alle 54 CI-Schritte lokal; das Statusmuster an den sechs Zuständen gegen xivapi v2 geprüft.
+  In PvP nicht beobachtet.
+
 ## B · Commit-Register (Fork vs. `upstream/main`)
 
 ### B1 · Einzelgeprüfte Fork-Commits

@@ -30,4 +30,54 @@ public static partial class StatusHelper
 		StatusID.Unguarded,
 		StatusID.Mounted,
 	];
+
+	private static readonly System.Collections.Concurrent.ConcurrentDictionary<uint, bool> _nullifiesCrowdControl = new();
+
+	private static readonly System.Text.RegularExpressions.Regex Nullifies = new(@"nullif|immun",
+		System.Text.RegularExpressions.RegexOptions.IgnoreCase | System.Text.RegularExpressions.RegexOptions.CultureInvariant);
+
+	private static readonly System.Text.RegularExpressions.Regex CrowdControlNamed = new(@"\bStun\b|Purify",
+		System.Text.RegularExpressions.RegexOptions.CultureInvariant);
+
+	/// <summary>
+	/// Whether the status nullifies the crowd control Purify lifts, read from its English text: Guard and Swift ("All Stun,
+	/// Heavy, Bind, Silence ... are nullified"), Resilience ("Nullifying status afflictions that can be removed by Purify"),
+	/// Inner Release, Hardened Scales and any later state worded alike (concept 25, "PvP: Wechselwirkungen und Synergien",
+	/// A757).
+	/// </summary>
+	internal static bool NullifiesCrowdControl(uint statusId)
+	{
+		return _nullifiesCrowdControl.GetOrAdd(statusId, static key =>
+		{
+			try
+			{
+				var sheet = ECommons.DalamudServices.Svc.Data.GetExcelSheet<Lumina.Excel.Sheets.Status>(Dalamud.Game.ClientLanguage.English);
+				if (sheet == null || !sheet.TryGetRow(key, out var row))
+				{
+					return false;
+				}
+
+				var text = row.Description.ExtractText();
+				return Nullifies.IsMatch(text) && CrowdControlNamed.IsMatch(text);
+			}
+			catch (Exception)
+			{
+				return false;
+			}
+		});
+	}
+
+	/// <summary>Whether the character carries a status that nullifies the crowd control Purify lifts.</summary>
+	internal static bool IsCrowdControlImmune(this IBattleChara battleChara)
+	{
+		foreach (var status in battleChara.StatusList)
+		{
+			if (status != null && status.StatusId != 0 && NullifiesCrowdControl(status.StatusId))
+			{
+				return true;
+			}
+		}
+
+		return false;
+	}
 }
