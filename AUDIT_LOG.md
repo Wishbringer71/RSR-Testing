@@ -22145,6 +22145,22 @@ TODO „PvP: Bannzustände auf Ziele, die immun sind" (aus A756), im Rahmen sein
 - *Prüfgrad:* Compile; alle 54 CI-Schritte lokal; das Statusmuster an den sechs Zuständen gegen xivapi v2 geprüft.
   In PvP nicht beobachtet.
 
+### A759 · PvP: Hinrichtungen nach gemessenem Schaden je Potenz (13.11.2026)
+
+TODO „PvP: Hinrichtungen nach gemessenem Schaden statt nach Potenz" (aus A756).
+
+- *Möglichkeitssinn:* `OwnHitWatch.DamagePerPotency` misst seit A507 für jeden Job den Schaden je Potenz der eigenen
+  schlichten Treffer im Gebiet (Haupt-Ziel, eine Potenz ohne Bedingung im Wirktext). Er lag ungenutzt neben der
+  Hinrichtung.
+- *Umsetzung:* Marksman's Spite und Meteodrive verrechnen ihre Potenz mit diesem Faktor, vor dem ersten Treffer mit
+  1 (1 Potenz = 1 LP). Treffer auf ein Ziel unter Guard zählen in PvP nicht in den Faktor.
+- *Falsifikation:* „Option falsch": Der Faktor mittelt über alle Ziele; ein Ziel mit eigener Minderung überlebt. Dann
+  trifft die Hinrichtung trotzdem mit voller Potenz; das Ziel ohne Minderung, das nach Potenz allein nicht getötet
+  schien, fällt jetzt sicher früher. „Ausgeliefert, und nichts ändert sich": ohne schlichte Treffer im Gebiet; dann gilt
+  1, wie bisher.
+- *Prüfgrad:* Compile; alle 54 CI-Schritte lokal. In PvP nicht beobachtet. Die Regel steuert sich selbst nach: Der
+  Faktor wächst mit jedem Treffer des Gebiets mit; die erste Messung je Gebiet steht im `DefenseTrace.log`.
+
 ## B · Commit-Register (Fork vs. `upstream/main`)
 
 ### B1 · Einzelgeprüfte Fork-Commits

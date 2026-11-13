@@ -19,7 +19,7 @@ auswahl und das timing der beschwörung" – je Kampf aller fünf Bretter (Gegne
 BossMod-Module) die Rotation des Beastmasters, die Wahl der Begleiter und den Zeitpunkt ihres Aufrufs im Loop prüfen
 (Beispiel seiner Beobachtung: der Raptor gegen Feuer, bevor feueranfällige Gegner da waren; A581).
 
-1. PvP: Hinrichtungen nach gemessenem Schaden statt nach Potenz.
+Keine offene Arbeit in Reihenfolge.
 
 Danach die technische Schuld, soweit ihre Auflösungsbedingung erfüllt ist. Warten auf Daten: unten.
 
@@ -31,12 +31,6 @@ Code-Review; was diese finden, kommt wieder hierher und in dieselbe Reihenfolge,
 ## Defekte
 
 ## Offene Arbeit
-
-### PvP: Hinrichtungen nach gemessenem Schaden statt nach Potenz · N
-Marksman's Spite und Meteodrive warten, bis ihre Potenz die LP des Ziels deckt; Minderungen des Ziels und eigene
-Verstärkungen fehlen der Rechnung. Ort: `CustomRotation_LimitBreak.PvP.cs`. *Nächster Schritt:* das Verhältnis von
-Schaden zu Potenz an den eigenen Treffern des Gebiets messen (Effekt-Handler) und die Bedingung damit nachsteuern.
-*Konzept:* 25, „PvP: Limit Break".
 
 ## Technische Schuld
 

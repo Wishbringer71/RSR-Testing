@@ -188,10 +188,12 @@ Rotationen schon.
 der Verlust des stärksten Knopfs. Gewählt: (c). Drückt er ihn selbst, fängt RSR ihn nicht ab (Upstreams Sperre für
 Limit Breaks im Abfangen, A629).
 
-*Preis:* Eine Hinrichtung, die knapp nicht tötet, weil Minderungen des Ziels der Potenz fehlen, geht trotzdem; eine, die
-das Ziel wegen eigener Verstärkung schon getötet hätte, wartet. RSR liest die Potenz, nicht den Schaden nach allen
-Faktoren. *Offen* (TODO „PvP: Hinrichtungen nach gemessenem Schaden statt nach Potenz"): das Verhältnis von Schaden zu Potenz
-an den eigenen Treffern des Gebiets messen und die Bedingung damit nachsteuern.
+*Gemessen statt angenommen (A759):* Die Potenz einer Hinrichtung wird mit dem Schaden je Potenz verrechnet, den deine
+eigenen schlichten Treffer im Gebiet gezeigt haben (`OwnHitWatch.DamagePerPotency`, gemessen für jeden Job seit A507).
+Darin stecken die Minderungen der Gegner und deine Verstärkungen. Treffer auf ein Ziel unter Guard zählen in PvP nicht
+mit: 99 % weniger für 4 s sind kein Maß für die übrigen Ziele. Vor dem ersten gemessenen Treffer gilt 1 Potenz = 1 LP.
+*Preis:* Der Faktor ist ein Mittel über alle Ziele des Gebiets; ein Ziel mit eigener starker Minderung (Rampart −50 %)
+überlebt eine Hinrichtung, die nach dem Mittel tötet. Die Hinrichtung geht dann trotzdem und trifft mit voller Potenz.
 
 ## PvP: Abfangen eigener Tastendrücke
 

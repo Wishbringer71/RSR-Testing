@@ -94,6 +94,13 @@ internal static class OwnHitWatch
 			return;
 		}
 
+		// A PvP target under Guard takes 99 % less for 4 s; such a hit says nothing about the other targets (concept 25,
+		// "PvP: Limit Break", A759).
+		if (DataCenter.IsPvP && target != null && target.HasStatus(false, StatusHelper.PvPGuardStatuses))
+		{
+			return;
+		}
+
 		var resistance = MobResistance.Normal;
 		if (target != null && DataCenter.IsInMaskedCarnivale
 			&& Service.GetSheet<Lumina.Excel.Sheets.Action>().GetRowOrDefault(actionId) is { } row)

@@ -40,9 +40,13 @@ public partial class CustomRotation
 		{
 			case PvPLimitBreakRow.MarksmansSpite:
 			case PvPLimitBreakRow.Meteodrive:
+				// The potency in damage as the player's own plain hits in this area showed it; one HP a potency before the first
+				// (concept 25, "PvP: Limit Break", A759).
+				var perPotency = OwnHitWatch.DamagePerPotency;
 				return ActionTooltip.TryStatedTotalPotency(limitBreak.ID, out var potency)
 					&& limitBreak.CanUse(out act, skipAoeCheck: true, targetOverride: TargetType.LowHP)
-					&& limitBreak.Target.Target is { } target && target.GetEffectiveHp() <= potency;
+					&& limitBreak.Target.Target is { } target
+					&& target.GetEffectiveHp() <= potency * (float.IsNaN(perPotency) ? 1f : perPotency);
 
 			case PvPLimitBreakRow.SeitonTenchu:
 				return ActionTooltip.TryStatedHealthBelow(limitBreak.ID, out var below)
