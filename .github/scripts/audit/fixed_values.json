@@ -2332,6 +2332,16 @@
    "status": "exception",
    "loop": "A756",
    "reason": "A row number of the Action sheet (an identity, not a quantity), named as the job bases create these Limit Breaks: `(ActionID)<row>`, since the generated ActionID names none of them."
+  },
+  {
+   "file": "RotationSolver/Basic/Rotations/CustomRotation_LimitBreak.PvP.cs",
+   "code": "public const uint Eventide = 29097;",
+   "values": [
+    "29097"
+   ],
+   "status": "exception",
+   "loop": "A761",
+   "reason": "A row number of the Action sheet (an identity, not a quantity), named as the job bases create these Limit Breaks: `(ActionID)<row>`, since the generated ActionID names none of them."
   }
  ]
 }

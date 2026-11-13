@@ -57,8 +57,8 @@ public partial class CustomRotation
 					&& limitBreak.Target.Target is { } low && low.GetHealthRatio() < below;
 
 			case PvPLimitBreakRow.Zantetsuken:
-				return limitBreak.CanUse(out act, skipAoeCheck: true)
-					&& limitBreak.Target.Target is { } marked && marked.HasStatus(false, StatusID.Kuzushi);
+				// The job's base gives it Kuzushi as the status its target needs (SamuraiRotation.PvP.cs, A761).
+				return limitBreak.CanUse(out act, skipAoeCheck: true);
 
 			case PvPLimitBreakRow.Phalanx:
 			case PvPLimitBreakRow.Mesotes:
@@ -88,7 +88,9 @@ public partial class CustomRotation
 	/// The job's shielding Limit Break where Guard is due (concept 25, "PvP: Wechselwirkungen und Synergien", A757):
 	/// Phalanx (10 s impervious, the party 33 % less damage), Mesotes (damage from outside its zone negated) and Sky High
 	/// (4 s out of reach, then a 24,000 barrier with Sky Shatter) hold longer or cover more than Guard's 4 s on the player
-	/// alone; Guard afterwards would end them, and `GuardWastedStatuses` keeps it off under Hallowed Ground and Sky High.
+	/// alone; so does Eventide, whose Undead Redemption keeps the HP above 1 against most attacks for 10 s and heals with every
+	/// weaponskill (A761, a reading of its text). Guard afterwards would end them, and `GuardWastedStatuses` keeps it off under
+	/// Hallowed Ground, Sky High and Undead Redemption.
 	/// </summary>
 	private bool PvPShieldLimitBreak(out IAction? act)
 	{
@@ -96,6 +98,7 @@ public partial class CustomRotation
 		var limitBreak = LimitBreakPvP;
 		return DataCenter.IsPvP && limitBreak != null && IsGaugeLimitBreak(limitBreak)
 			&& limitBreak.ID is PvPLimitBreakRow.Phalanx or PvPLimitBreakRow.Mesotes or PvPLimitBreakRow.SkyHigh
+				or PvPLimitBreakRow.Eventide
 			&& limitBreak.CanUse(out act, skipAoeCheck: true);
 	}
 
@@ -130,5 +133,6 @@ public partial class CustomRotation
 		public const uint Mesotes = 29266;
 		public const uint SkyHigh = 29497;
 		public const uint SkyShatter = 29498;
+		public const uint Eventide = 29097;
 	}
 }

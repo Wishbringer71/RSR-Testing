@@ -22181,6 +22181,25 @@ PvP-Codes.
   Abfrage beim Spiel, wie der Code sie stellt.
 - *Prüfgrad:* Compile; alle 54 CI-Schritte lokal. In PvP nicht beobachtet.
 
+### A761 · PvP: Limit Break des Samurai und des Dunkelritters im Zusammenspiel (13.11.2026)
+
+Sein Auftrag (13.11.2026): „weiter zu pvp recherchieren, konzept im loop verbessern, audit, codereview,
+fehlerbeseitigung". Geprüft: wo eine Rotation die Voraussetzung eines automatischen Limit Breaks schafft.
+
+- *Samurai:* Kuzushi trägt der Gegner, der dich unter Hissatsu: Chiten trifft; Mineuchi verlängert es (bis 6 s) und
+  betäubt; Zantetsuken tötet ein Ziel mit Kuzushi (Job-Guide). Bis A761 prüfte RSR Kuzushi am Ziel der Zielart; trug ein
+  anderer Gegner Kuzushi, blieb der sichere Kill aus. Jetzt wählt Zantetsuken unter den Gegnern mit Kuzushi
+  (`ModifyZantetsukenPvP` in `SamuraiRotation.PvP.cs`, `TargetStatusNeed`).
+- *Dunkelritter:* Eventide setzt die LP auf 1 und gibt 10 s Undead Redemption („Most attacks cannot reduce your HP to
+  less than 1", Heilung mit jeder Waffenfertigkeit). Aufgenommen in die Schutz-Limit-Breaks, die vor Guard gehen, wo
+  Guard fällig ist. *Meine Ableitung:* WrathCombo a457838 löst Eventide nie selbst aus (nur Disesteem unter Scorn);
+  BossModReborn hat keine PvP-Rotation des Dunkelritters. *Preis:* „Most attacks" schließt einzelne Angriffe aus, die
+  der Text nicht nennt; nach 10 s steht er bei den LP, die seine Treffer bis dahin geheilt haben.
+- *Falsifikation:* „Option falsch" für Eventide: Guard (99 % für 4 s) hält einen Burst sicherer als 1 LP unter Undead
+  Redemption, wenn ein Angriff zu den Ausnahmen gehört. Gewichtet: Undead Redemption hält 10 s statt 4, heilt und lässt
+  ihn handeln; Guard geht danach wieder, sobald Undead Redemption endet.
+- *Prüfgrad:* Compile; alle 54 CI-Schritte lokal. In PvP nicht beobachtet.
+
 ## B · Commit-Register (Fork vs. `upstream/main`)
 
 ### B1 · Einzelgeprüfte Fork-Commits

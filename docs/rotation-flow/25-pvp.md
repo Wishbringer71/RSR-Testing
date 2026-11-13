@@ -169,9 +169,12 @@ voll ist (das Spiel lässt ihn vorher nicht zu), mit einer Bedingung je Art:
 - *Hinrichtung eines Ziels:* Marksman's Spite (40.000), Meteodrive (12.000 und 12.000 nach 3 s): nur, wenn die Potenz das
   Ziel tötet, gemessen an seinen LP samt Barriere; die Potenz aus dem Wirktext des Clients. Seiton Tenchu: auf ein Ziel
   unter 50 % LP („incapacitating foes whose HP is below 50%"). Zantetsuken: auf ein Ziel mit Kuzushi („deals damage equal
-  to 100% of their maximum HP"), sonst nicht.
+  to 100% of their maximum HP"), sonst nicht. Kuzushi trägt der Gegner, der dich unter Hissatsu: Chiten trifft;
+  Mineuchi verlängert es auf bis zu 6 s und betäubt. Zantetsuken wählt sein Ziel unter den Gegnern mit Kuzushi
+  (`TargetStatusNeed`, A761), nicht das Ziel der Zielart, das Kuzushi oft nicht trägt: Bis A761 prüfte RSR Kuzushi erst
+  an diesem Ziel und ließ den sicheren Kill an einem anderen aus.
 - *Auf ein Ziel gerichtet* (das Blatt erlaubt ein feindliches Ziel mit Reichweite): World-swallower, Afflatus
-  Purgation, Southern Cross, Primal Scream, Zantetsuken ohne Kuzushi nicht: auf ein Ziel, das sie in jedem Fall trifft.
+  Purgation, Southern Cross, Primal Scream: auf ein Ziel, das sie in jedem Fall trifft.
 - *Kreis um dich:* Relentless Rush (6 y), Tenebrae Lemurum (10 y), Contradance (15 y), Celestial River (15 y),
   Seraphism (30 y), Sky High (über Sky Shatter, 10 y): wenn ein Gegner im Radius des Blatts steht.
 - *Linie, Kegel oder Ort am Boden von dir aus:* Eventide (Linie 30 y; die LP fallen auf 1, Undead Redemption hält sie
@@ -237,7 +240,7 @@ Ziel. Erhoben an den Wirktexten aller 21 Jobs (Job-Guide) und den PvP-Rotationen
 |---|---|---|
 | MP: Recuperate, Purify, Haelan (je 2000) | Ein Heilen bis zum letzten MP lässt einen Stun ohne Purify | Recuperate und Haelan lassen das MP für ein Purify, außer in der kritischen Klasse (Haelan: des Ziels) |
 | Guard endet mit jeder Aktion | Jede Aktion, auch Recuperate, ein Limit Break oder ein abgefangener Tastendruck, beendet ihn | „PvP Guard control" hält alles; Guard steht vor Recuperate |
-| Guard und Schutz-Limit-Break | Phalanx (10 s unverwundbar, Gruppe −33 %), Mesotes (Schaden aus der Zone genullt), Sky High (4 s unerreichbar, dann 24.000 Barriere) schützen länger oder mehr als Guard (4 s, nur du) | Wo Guard fällig ist (oben), geht ein bereiter Schutz-Limit-Break vor Guard; Phalanx und Mesotes gehen außerdem in der kritischen Klasse; danach lässt die Liste `GuardWastedStatuses` Guard unter Hallowed Ground und Sky High aus |
+| Guard und Schutz-Limit-Break | Phalanx (10 s unverwundbar, Gruppe −33 %), Mesotes (Schaden aus der Zone genullt), Sky High (4 s unerreichbar, dann 24.000 Barriere) und Eventide (10 s Undead Redemption: „Most attacks cannot reduce your HP to less than 1", jede Waffenfertigkeit heilt ihren Schaden; meine Ableitung, keine Quelle nutzt es so, A761) schützen länger oder mehr als Guard (4 s, nur du) | Wo Guard fällig ist (oben), geht ein bereiter Schutz-Limit-Break vor Guard; Phalanx und Mesotes gehen außerdem in der kritischen Klasse; danach lässt die Liste `GuardWastedStatuses` Guard unter Hallowed Ground, Sky High und Undead Redemption aus |
 | Guard am Ziel und Aktionen, die ihn übergehen, entfernen oder halbieren | Seiton Tenchu, Zantetsuken, Smite, Eagle Eye Shot, Drill übergehen ihn; Full Swing und Meteodrive entfernen ihn; Shield Smite und Chain Stratagem halbieren ihn | Ob eine Aktion ein Ziel unter Guard wählen darf, liest RSR aus ihrem Wirktext („Ignores the effects of Guard", „Removes … Guard", „defensive bonus of Guard"); bisher nur über ein Flag je Aktion, das Seiton Tenchu, Zantetsuken, Meteodrive und Shield Smite fehlte |
 | Resilience, Guard und andere Immunität am Ziel gegen Bannzustände | Ein Stun verpufft, der Schaden der Aktion nicht | Eine Aktion, deren Wirktext einen Bannzustand setzt („Additional Effect: Stun/Bind/Heavy/Silence/Deep Freeze", Miracle of Nature), wählt unter ihren Kandidaten zuerst einen ohne Immunität; nur ohne ihn trifft sie ein immunes Ziel für ihren Schaden (A757). Immun ist ein Ziel unter einem Zustand, dessen Text die Bannzustände aufhebt („nullified", „immunity" zu Stun oder zu den Zuständen von Purify): Resilience, Guard, Inner Release, Hardened Scales, Swift und weitere, ohne Liste |
 | Unverwundbarkeit am Ziel (Hallowed Ground, Undead Redemption) | Schaden geht ins Leere | „Ignore invincibility in PvP" (ab Werk aus): RSR lässt solche Ziele aus |
