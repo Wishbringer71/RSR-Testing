@@ -22348,6 +22348,8 @@ Nach dem TODO der Schritt „Audit, Code-Review" aus seinem Ablauf vom 05.11.202
 - *Ohne Befund:* Wirkrichtung und Bodenort (A766), Totenwahl (A765), Zeile je Anfrage ohne Antwort, sicheres Lesen
   der Fenstertexte (A764), Ladenleser, Carnivale-Sperren und Set (A762). Die Folgenummern der Anfragen laufen über
   65.536 hinaus wie die der Zauber seit A754; nach einem Überlauf bleiben alte Einträge bis zum nächsten liegen.
+- *Quellen am Ende:* Upstream unverändert. BossMod (Original) 93b0afd30 → 6a8f5f304: die Tabelle zum Abstand des Tanks
+  je Gegner für seine KI (`EnemyBehavior.tsv`) und Aufräumen in Modulen. RSR bewegt nicht und liest sie nicht; ohne Folge.
 - *Prüfgrad:* statisch, Compile, alle CI-Schritte lokal.
 
 ## B · Commit-Register (Fork vs. `upstream/main`)
