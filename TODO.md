@@ -88,7 +88,7 @@ Ordinalvertrag. `AutodutyUpdateState` dupliziert `UpdateState` und löst sich mi
 `samurai_balance_model.py` und `monk_balance_model.py` weiter die alte Regel, und Konzept 14 nennt ihre Ergebnisse. *Auflösung:* jede solche Änderung trägt im selben Commit die Anpassung des Modells. *Konzept:* 14.
 
 ### Fork-Member in Dateien von Upstream · U
-314 Member (`fork_placement.json`; 563 bei A742, 390 nach A746, 314 nach A749), vor allem statische Felder mit Startwert
+313 Member (`fork_placement.json`; 563 bei A742, 390 nach A746, 314 nach A749, 313 nach A753), vor allem statische Felder mit Startwert
 und Einstellungen, die stehen bleiben müssen, dazu Structs, Interfaces und kleinere Dateien. *Kosten:* Ein Sync, der neben ihnen ändert, kann einen
 Konflikt bringen. *Auflösung:* Ein Member zieht beim nächsten Eingriff in ihn in die Teildatei seiner Klasse
 (`code.md`, „Struktur und Kosten"); neue lässt `check_fork_placement.py` nicht zu. *Konzept:* 24.
@@ -100,6 +100,13 @@ Reborn"); beides kostet im Spiel, solange nicht beide Installationen gebraucht w
 nebeneinander braucht: neuer interner Name mit Übernahme des Ordners, angezeigter Name bleibt.
 
 ## Warten auf Daten oder Fremde
+
+- **Animationssperre und Weben: der Regler an seinem nächsten Mitschnitt** (A753; seine Vorgaben vom 13.11.2026). Im
+  Kampf: Eine Fähigkeit hält die nächste kürzer zurück. Es wird gewebt, solange es vor den GCD passt, und kein GCD kommt
+  später. Auflösung: die Zeilen „action timing over the fight“ seines nächsten `DefenseTrace.log` und die Abstände der
+  eigenen Aktionen im ACT-Mitschnitt, gegen den Mitschnitt vom 11.11.2026. Zu prüfen sind GCDs, die eine Sperre
+  zurückhielt; Anfragen ohne Antwort (bleiben sie nahe r, lehnt der Server ab); Schnitt und Zuschlag; dreifaches Weben.
+  Je Abweichung Loop. Konzept 03, „Weben, Animationssperre und Latenz“.
 
 - **Ruckler am ersten Pull einer Sitzung** (A739). Im Kampf: Ein erster Pull hielt einzelne Frames 21 bis 64 ms an; RSR
   übersetzt seinen Kern beim Laden und jede Rotation bei ihrem Wechsel vorab. Auflösung: die Zeilen „warm-up of …" und

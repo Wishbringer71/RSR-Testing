@@ -298,7 +298,9 @@ public partial class CustomRotation
 
 			if (gcdAction != null)
 			{
-				if (!ActionHelper.CanUseGCD)
+				// An ability goes while the GCD is not yet due, and after the action lead while the measured window still
+				// ends before the GCD (concept 03, "Weben, Animationssperre und Latenz", A753).
+				if (!ActionHelper.CanUseGCD || ActionHelper.AbilityStillFits)
 				{
 					return Ability(gcdAction, out var ability) ? ability : gcdAction;
 				}

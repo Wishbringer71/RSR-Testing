@@ -927,14 +927,14 @@
    "reason": "Two of the shortest gaps between tankbusters on the player in this fight without one: the fight has moved on (a phase without them), and nothing is kept for one any more. One gap overdue still counts as one due now - a late tankbuster is the likelier reading. The game states no spacing of an encounter's tankbusters; the count of gaps is the rule's own threshold, its cost named in A361: after a phase change the auto-attacks meet held mitigation for at most one more gap."
   },
   {
-   "file": "RotationSolver/Basic/Helpers/ActionHelper.cs",
-   "code": "internal const float AbilityClipWindow = 0.5f;",
+   "file": "RotationSolver/Basic/Helpers/ActionHelper.Timing.cs",
+   "code": "private const float FixedAbilityClipWindow = 0.5f;",
    "values": [
     "0.5"
    ],
    "status": "exception",
-   "loop": "A486",
-   "reason": "Upstream's anti-clipping window before the GCD, unchanged in value, named once for its three readers (the ability path, the two checks in RSCommands) and the cast-time check of A486. The window answers how long an ability's animation lock may run into the GCD, which the client gives for the ability only once it is pressed (A388)."
+   "loop": "A486, A753",
+   "reason": "Upstream's anti-clipping window before the GCD, unchanged in value, named once for its three readers (the ability path, the two checks in RSCommands) and the cast-time check of A486. The window answers how long an ability's animation lock may run into the GCD, which the client gives for the ability only once it is pressed (A388). Since A753 only before the first measurement in a zone; then the window is the lock plus the measured rest (concept 03, \"Weben, Animationssperre und Latenz\")."
   },
   {
    "file": "RotationSolver/Watcher.cs",
@@ -2180,6 +2180,38 @@
    "status": "exception",
    "loop": "A737",
    "reason": "DeepDungeonType 3 (Pilgrim's Traverse) of the DeepDungeon sheet, for which EXDSchema names no sheet; the sheets per entry are measured (A737). An id of the game's data."
+  },
+  {
+   "file": "RotationSolver/Basic/Tweaks/AnimationLockTweak.cs",
+   "code": "&& (packetOriginalAnimLock % 0.01f) is <= 0.0005f or >= 0.0095f)",
+   "values": [
+    "0.01",
+    "0.0005",
+    "0.0095"
+   ],
+   "status": "exception",
+   "loop": "A753",
+   "reason": "Upstream's packet check, from BossModReborn, its line reworded in A753 to add the game-lock condition: the server sends animation locks in steps of 10 ms, so a value off that grid was changed by another tool (NoClippy uses the same test to find XivAlexander). The format of the packet, not a game value the client could read elsewhere."
+  },
+  {
+   "file": "RotationSolver/Basic/Tweaks/AnimationLockTweak.Timing.cs",
+   "code": "if (_delayCount >= 2 && _lastReqInitialAnimLock > 0f)",
+   "values": [
+    "2"
+   ],
+   "status": "exception",
+   "loop": "A753",
+   "reason": "The least number of answers a mean deviation can be taken from: with one answer the deviation is zero by definition, and the envelope (least delay less deviation) would cut the whole delay of a single sample. A condition of the statistics, not a game value."
+  },
+  {
+   "file": "RotationSolver/Basic/Tweaks/AnimationLockTweak.Timing.cs",
+   "code": "internal float KeptEstimate => ReductionAllowed && _delayCount >= 2",
+   "values": [
+    "2"
+   ],
+   "status": "exception",
+   "loop": "A753",
+   "reason": "The least number of answers a mean deviation can be taken from: with one answer the deviation is zero by definition, and the envelope (least delay less deviation) would cut the whole delay of a single sample. A condition of the statistics, not a game value."
   }
  ]
 }

@@ -1647,7 +1647,7 @@ internal partial class Configs : IPluginConfiguration, IM3Settings
 
 	[JobConfig, Range(0.05f, 0.4f, ConfigUnitType.Percent)]
 	[UI("Action ahead", Filter = BasicTimer,
-	Description = "How much of the GCD is left when RSR starts queuing the next GCD. This controls how many oGCDs RSR tries to fit in a GCD window: lower values fit more oGCDs, but can clip the GCD.")]
+	Description = "How much of the GCD is left when RSR starts queuing the next GCD. Whether an oGCD still fits before it RSR measures: the action's animation lock plus the delay to the server's answer, as it is in this zone.")]
 	private readonly float _action6head = 0.25f;
 
 	// Henchman's "No Fall Damage" hack (A276). Off by default: it hooks a game function, and nobody should run
@@ -1657,29 +1657,22 @@ internal partial class Configs : IPluginConfiguration, IM3Settings
 	Filter = Extra)]
 	private static readonly bool _noFallDamage = false;
 
-	[ConditionBool, UI("Remove lag-induced animation lock delay from instant casts (read tooltip!)",
-	Description = "Do NOT use with XivAlexander, BMR tweaks enabled, or NoClippy - this should automatically disable itself if they are detected, but double check first!",
+	// Concept 03, "Weben, Animationssperre und Latenz" (A753): measured, no set value. On by default, his requirement being
+	// that RSR replaces XivAlexander, NoClippy and BossMod's action tweaks.
+	[ConditionBool, UI("Remove lag-induced animation lock delay from instant casts",
+	Description = "After each instant action the game waits for the server's answer before the next one, and adds the network round trip to the animation lock. RSR measures that round trip in every zone and takes it off; the wait for the server's tick stays, so the next action reaches the server as its lock ends. When a request goes without an answer, RSR cuts less. Nothing to set.\nIn a fight: an oGCD frees the next action sooner, so two oGCDs fit between GCDs more often and three where the GCD leaves room, without pushing the GCD back.\nPvE only. Held while XivAlexander runs, or while NoClippy runs and is not taken over (below).",
 	Filter = Extra, Section = 1)]
-	private static readonly bool _removeAnimationLockDelay = false;
+	private static readonly bool _removeAnimationLockDelay = true;
 
-	[UI("Max simulated animation lock delay (ms) (read tooltip!)",
-	Description = "Configures the maximum simulated delay in milliseconds when using animation lock removal - this is required and cannot be reduced to zero. Setting this to 20ms will enable triple-weaving when using autorotation. The minimum setting to remove triple-weaving is 26ms. The minimum of 20ms has been accepted by FFLogs and should not cause issues with your logs.",
+	[ConditionBool, UI("Take over BossMod's and NoClippy's animation lock functions",
+	Description = "While RSR's lock functions are on, BossModReborn's \"Remove extra lag-induced animation lock delay\" and \"Remove extra framerate-induced cooldown delay\" are switched off for the session (your BossMod setting is kept and comes back when RSR's are off or RSR unloads), and NoClippy's compensation is switched off with /noclippy off and back on the same way. XivAlexander cannot be switched from here: while it runs, RSR leaves the lock to it and weaves on what it leaves.\nIn a fight: only RSR shortens the lock, so it is not cut twice and no action reaches the server before the game allows it.",
 	Parent = nameof(RemoveAnimationLockDelay))]
-	[Range(20, 50, ConfigUnitType.None, 1f)]
-	public int AnimationLockDelayMax2 { get; set; } = 26;
-
-	[UI("Delay smoothing factor", Parent = nameof(RemoveAnimationLockDelay))]
-	[Range(0.3f, 0.95f, ConfigUnitType.None, 0.01f)]
-	public float AnimLockDelaySmoothing { get; set; } = 0.3f;
+	private static readonly bool _takeOverOtherLockTools = true;
 
 	[ConditionBool, UI("Remove framerate-induced cooldown delay",
-	Description = "Dynamically adjusts cooldown and animation locks to ensure queued actions resolve immediately regardless of framerate limitations.",
+	Description = "The game fires a queued action only on a frame, a little after its cooldown or lock ended. RSR credits that rest back to the next cooldown and lock, up to one mean frame of the zone. Nothing to set.",
 	Filter = Extra, Section = 1)]
-	private static readonly bool _removeCooldownDelay = false;
-
-	[UI("Max cooldown adjustment (ms)", Parent = nameof(RemoveCooldownDelay))]
-	[Range(10, 150, ConfigUnitType.None, 1f)]
-	public int CooldownAdjustMaxMs { get; set; } = 100;
+	private static readonly bool _removeCooldownDelay = true;
 
 	[UI("Highlight color", Parent = nameof(TeachingMode))]
 	public Vector4 TeachingModeColor { get; set; } = new(0f, 1f, 0f, 1f);

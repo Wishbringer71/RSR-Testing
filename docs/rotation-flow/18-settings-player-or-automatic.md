@@ -318,9 +318,11 @@ Konzept 07) urteilen selbst und sind ab Werk an; ihr Schalter ist Notausschalter
 
 ### Takt
 
-„Countdown lead time" und „Action ahead" hängen an der Latenz, die Einstellungen der Animationssperre sind Teil eines
-Schalters, der ab Werk aus ist. Eine Selbststeuerung aus gemessener Latenz wäre denkbar; kein Fehlverhalten im Kampf
-belegt. Seine Einstellung, nicht geändert.
+„Countdown lead time" bleibt seine Einstellung. Ob eine Fähigkeit noch vor den GCD passt, beantwortet seit A753 die
+Laufzeit, nicht „Action ahead“: Seine Mitschnitte vom 11.11.2026 zeigen, dass ein spätes Weben unter der festen Grenze
+den nächsten GCD bis 0,46 s verzögerte. „Action ahead“ bleibt der Vorlauf, ab dem RSR den GCD meldet. Die Verkürzung der
+Sperre und der Ausgleich der Bildrate stehen nach seiner Vorgabe, die anderen Werkzeuge zu ersetzen, ab Werk an (Konzept
+03, „Weben, Animationssperre und Latenz“).
 
 ### Kampflogik je Inhalt
 

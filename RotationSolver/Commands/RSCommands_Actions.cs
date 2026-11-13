@@ -71,7 +71,8 @@ namespace RotationSolver.Commands
 
 			if (nextAction is BaseAction baseAct)
 			{
-				if (baseAct.Info.IsAbility && !baseAct.Setting.IsMudra && DataCenter.DefaultGCDRemain <= ActionHelper.AbilityClipWindow && DataCenter.DefaultGCDRemain > 0f)
+				// Against this action's own lock where the server has given it (A753).
+				if (baseAct.Info.IsAbility && !baseAct.Setting.IsMudra && DataCenter.DefaultGCDRemain <= ActionHelper.AbilityWindowFor(baseAct.AdjustedID) && DataCenter.DefaultGCDRemain > 0f)
 				{
 					return;
 				}

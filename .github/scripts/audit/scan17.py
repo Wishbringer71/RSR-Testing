@@ -29,14 +29,20 @@ import os
 import re
 import sys
 
+sys.path.insert(0, os.path.dirname(os.path.abspath(__file__)))
+import classfile  # noqa: E402
+
 GCD_PATH = 'RotationSolver/Basic/Rotations/CustomRotation_GCD.cs'
 GATE_PATH = 'RotationSolver/Commands/RSCommands_Actions.cs'
 ABILITY_PATH = 'RotationSolver/Basic/Rotations/CustomRotation_Ability.cs'
 HELPER_PATH = 'RotationSolver/Basic/Helpers/ActionHelper.cs'
 
-# The window as a figure, or as the constant that names it once (A486): `ActionHelper.AbilityClipWindow`.
-VALUE = r'([0-9.]+f|ActionHelper\.AbilityClipWindow)'
-CONST_RE = re.compile(r'const\s+float\s+AbilityClipWindow\s*=\s*([0-9.]+)f')
+# The window as a figure, or as the name of it (A486): `ActionHelper.AbilityClipWindow`, or since A753 the measured
+# window of one action, `ActionHelper.AbilityWindowFor(...)`. A measured window is read as the fixed window it starts
+# from before the first measurement (`FixedAbilityClipWindow`) - the least it can be, the measured one is a lock plus
+# a rest and lies above it, so a pick under the fixed window is under the measured one too.
+VALUE = r'([0-9.]+f|ActionHelper\.AbilityClipWindow|ActionHelper\.AbilityWindowFor\([^)]*\))'
+CONST_RE = re.compile(r'const\s+float\s+(?:Fixed)?AbilityClipWindow\s*=\s*([0-9.]+)f')
 
 # The gate: `baseAct.Info.IsAbility && ... && DataCenter.DefaultGCDRemain <= X && ... > 0f`
 GATE_RE = re.compile(
@@ -48,8 +54,8 @@ PICK_RE = re.compile(r'\b([A-Za-z0-9_]+PvE)\.CanUse\s*\(\s*out\s+act\b')
 
 
 def read(path):
-    with open(path, encoding='utf-8-sig') as fh:
-        return fh.read()
+    # A class with its parts (pruefmittel.md): the fixed window stands in ActionHelper.Timing.cs since A753.
+    return classfile.read(path)
 
 
 def figure(value, constant):
@@ -108,6 +114,9 @@ def self_test():
     assert gate_window(named, None) is None, 'an undeclared constant must not read as a window'
     assert len(offenders('if (WeaponRemain <= ActionHelper.AbilityClipWindow && SwiftcastPvE.CanUse(out act))',
                          0.5, 0.5)) == 1, 'a pick under the named window is caught as under the figure'
+    measured = 'if (baseAct.Info.IsAbility && !x && DataCenter.DefaultGCDRemain <= ActionHelper.AbilityWindowFor(baseAct.AdjustedID) && y)'
+    assert declared_window('private const float FixedAbilityClipWindow = 0.5f;') == 0.5, 'the fixed window is read'
+    assert gate_window(measured, 0.5) == 0.5, 'a measured window reads as the fixed window it starts from'
     print('self-test ok: gate parsed, broken form caught, fixed form and wide window accepted\n')
 
 

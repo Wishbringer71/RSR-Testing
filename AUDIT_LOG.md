@@ -21879,6 +21879,83 @@ nächsten Läufen.
   anderem `user.name` macht, wird jetzt abgewiesen. Das ist so gewollt (Regel „Commit-Identität").
 - *Prüfgrad:* statisch und Prüfskripte; kein neuer Code.
 
+### A753 · Animationssperre, Weben, Latenz: RSR ersetzt XivAlexander, NoClippy und BossMods Action Tweaks (13.11.2026)
+
+Sein Auftrag (13.11.2026): die Funktionen der Action Tweaks von BossModReborn (Animationssperre, dreifaches Weben,
+Verzug durch die Bildrate), RSRs gleichartige, XivAlexanders und anderer analysieren, und für RSR ein Modell bauen, das
+ihr Optimum dynamisch nutzt. Danach kamen in derselben Sitzung seine Vorgaben:
+- RSR übernimmt die volle Funktion, sodass er die anderen nicht braucht.
+- Konzept im vollen Loop bis zum Optimum, dann Umsetzung, Audit, Code-Review und Fehlerbehebung.
+- Ohne Vorgabewerte, aus Verbindungs- und Geschwindigkeitsdaten abgeleitet.
+- RSR darf eine Option haben, die konkurrierende Funktionen anderer Plugins abschaltet; es muss nur besser sein als
+  diese.
+Seine Fragen: Warum wird mit dreifachem Weben geworben, wenn es fast nicht machbar ist? Und: Konzept nach Code, warum?
+
+- *Quellen* (je Commit und Datum, Werkzeugquellen):
+  - BossModReborn 7550528: `AnimationLockTweak`, `CooldownDelayTweak`, `ActionTweaksConfig`, `ActionQueue.FindBest`,
+    die IPC `Configuration` und `Configuration.SetTransient`.
+  - XivAlexander 382e7ea: `NetworkTimingHandler.cpp`.
+  - NoClippy 3f4b377: `AnimationLock.cs`, `Stats.cs`, Befehl `/noclippy`.
+  - FFXIVClientStructs main: `ActionEffectHandler.Header`.
+  - Sein ACT-Mitschnitt vom 11.11.2026; die Ids wurden über xivapi v2 eingeordnet.
+- *Gemessen am Mitschnitt:*
+  - Die Ergebnisse eigener Aktionen liegen auf einem Raster von 44,5 ms (mittlere Phasenabweichung 0,039).
+  - Zwischen zwei Sofortaktionen liegen 12 bis 15 Ticks.
+  - Weben mit weniger als 0,7 s Rest verzögerte den nächsten GCD bis 0,46 s; die feste Grenze erlaubte es bis 0,61 s.
+  - Drei Fähigkeiten zwischen zwei GCDs (Bestienbändiger, 11-mal) verlängerten den GCD im Median um 0,45 s.
+- *Befunde im Code vor A753:*
+  - Der Prüfung der Sperre fehlte BossMods Bedingung „Spiel nach dem Paket gleich Paket“; eine zweite Verkürzung blieb
+    so unbemerkt.
+  - Der Tooltip versprach eine Abschaltung bei XivAlexander und NoClippy, die es nicht gab.
+  - Gemessen wurde nur bei eingeschalteter Verkürzung, und die Schätzung las niemand.
+  - Das Weben lief nach festen Grenzen (0,5 s, 25 % des GCD).
+  - Die Prüfung schaltete die Einstellung des Spielers dauerhaft ab.
+- *Modell* `action_timing_model.py`, gezählt in der Zeit des Servers, mit drei Annahmen über frühe Anfragen
+  (zurückhalten, ablehnen, ignorieren):
+  - Erste Fassungen zählten in der Zeit des Clients, rundeten ohne Ausgleich der Bildrate und ließen den Server die
+    Abklingzeit des GCD auf den Tick genau prüfen. Dadurch lief der Server dem Client jeden GCD um eine Tickrundung
+    weiter hinterher. Alle drei Fehler sind behoben.
+  - Verworfen: die kleinste Verzögerung als Netzteil mit festem Rest. Ebenso ein Regler mit fester Obergrenze nach der
+    ersten Ablehnung; er blieb auf der vorsichtigen Hüllkurve stehen.
+  - Gewählt: Hüllkurve plus Regler mit Zielrate r = Frame-Zeit / Drücksperre. Er ist so schnell wie der feste Rest von
+    20 ms, wo der Server frühe Anfragen hinnimmt, und bricht nicht ein, wo er ablehnt. Dort liegt er 0,04 bis 0,25
+    Fähigkeiten pro GCD hinter dem besten anderen Werkzeug.
+- *Gebaut* (Konzept 03, „Weben, Animationssperre und Latenz“):
+  - Messung je Gebiet ohne Schalter.
+  - Kürzen der Sperre ohne Wert zum Eintragen, nur in PvE.
+  - Ausgleich der Bildrate bis zur mittleren Frame-Zeit.
+  - Webregel aus Sperre plus erwartetem Rest.
+  - Übernahme von BossMod (vorübergehend, wiederhergestellt) und NoClippy (nur, was an war).
+  - Ruhen der Verkürzung bei XivAlexander und bei Änderung zwischen Paket und Spiel, bis zum nächsten Gebiet.
+  - Zeile je Kampf mit Clipping nach NoClippys Maß.
+  - Ab Werk an: Verkürzung, Übernahme, Bildraten-Ausgleich.
+  - Entfallen: die drei festen Einstellungen.
+  - Feste Werte mit Begründung: das 10-ms-Raster des Pakets, zwei Antworten als Mindestzahl für eine Abweichung, die
+    feste Grenze vor der ersten Messung.
+- *Konzept nach Code* (seine Frage):
+  - Die erste Fassung des Konzepts stand vor dem Code.
+  - Den Entwurf ohne Vorgabewerte (Hüllkurve, Regler, Restschätzung, Übernahme) habe ich im Modell entwickelt und in den
+    Code übernommen, bevor der Konzeptabschnitt umgeschrieben war. Das verstößt gegen die Regel „Konzept vor Code“.
+  - `concept_first.py` hielt es nicht auf, weil nur geprüft wird, ob irgendeine Änderung unter `docs/` offen ist.
+  - Beim nachträglichen Abgleich von Konzept und Code fanden sich zwei Fehler, die das Konzept vorher hätte klären
+    müssen. Erstens wuchs der Zuschlag ohne Grenze; die Obergrenze ist jetzt die größte Verzögerung des Gebiets.
+    Zweitens hätte `/noclippy on` einen Ausgleich eingeschaltet, den der Spieler aus hatte; RSR liest jetzt vorher
+    NoClippys Wert.
+- *Dreifaches Weben* (seine Frage):
+  - Bei 2,5 s GCD geht es nur mit Verkürzung und Ausgleich der Bildrate zusammen, bei 25 ms Rest je Aktion.
+  - Mit 20 ms Rest kommt im Modell die Hälfte der Anfragen beim Server vor dem Ende seiner Sperre an. Echt ist es nur,
+    wenn der Server das hinnimmt.
+  - Mein erstes Modell hatte den Ausgleich der Bildrate übersehen.
+- *Falsifikation:*
+  - „Kein Defekt“ hält nicht: Der Mitschnitt zeigt GCD-Verzug nach spätem Weben.
+  - „Option falsch“: Lehnt der Server frühe Anfragen ab, ist der Regler nicht das beste Werkzeug; der Mitschnitt spricht
+    dagegen (12 Ticks unter der Sperre).
+  - „Ausgeliefert, und nichts ändert sich“: Das tritt ein, wenn XivAlexander läuft; dann webt RSR nach dessen Rest.
+- *Prüfgrad:*
+  - Compile; alle 54 CI-Schritte lokal; Selbsttest des Modells samt Regler; scan17 und `check_fork_placement.py`
+    angepasst.
+  - Im Spiel nicht beobachtet. Das Messmittel ist die Zeile „action timing over the fight“ (Warte-Eintrag im TODO).
+
 ## B · Commit-Register (Fork vs. `upstream/main`)
 
 ### B1 · Einzelgeprüfte Fork-Commits
@@ -22220,3 +22297,4 @@ Die offene Arbeit dazu — Reihenfolge und Abbruchbedingung der Nachprüfung —
 | C187 | A660 und Konzept 21 K3 (Stand A660–A723): „Ziel = Gegner mit den meisten LP, auch unanvisierbar"; „Den Abstand, bei dem einer seiner Art ohne Tod verschwindet, lernt RSR beim ersten Verschwinden"; laufend = „sein Abstand zum Gegner mit den meisten LP sinkt seit seinem Erscheinen" | Das Ziel verlangte Anvisierbarkeit (während der Ward das Riesen-Irrlicht); Verschwinden ohne Tod ist auch Kampfende und Zielwechsel; dem Hauptgegner kommt jeder näher, der auf den Spieler dort zuläuft – vier Fehlauslösungen am 11.11.2026. Ersetzt: Blickziel, gehaltenes Ziel, Ankunft aus der ersten Aktion | A724 |
 | C188 | A218 und Konzept 13 (Stand A218): „BossModReborn setzt keine seiner 3494 Kreisformen um den Trefferkreis des Wirkenden größer", daraus „Kreis und Kegel um den Wirkenden: Abstand vom Mittelpunkt" | Die Klasse `AOEShapeCircle` rechnet keinen Trefferkreis ein, die Module tun es in der Zahl: BossModReborns Analyse beschreibt die Formarten 3, 4 und 5 als „range X+R" (447 Kreise, 351 Kegel), etwa Wing Cutter als Kegel von 6,9 bei Reichweite 6. Für Art 2 gilt der Mittelpunkt weiter; Art 3, 4 und 5 reichen um den Trefferkreis des Wirkenden weiter. | A731 |
 | C189 | TODO.md und Konzept 03, „Ausweichen in der Sperre“ (Stand A630–A749): Raidwide und ausweichbare Fläche trenne man durch ein Merkmal aus den Spieldaten (`CastType`, `EffectRange`) bei der Aufnahme; eine gelistete Fläche gelte in den Sperren als unausweichlich | An seinen 63 aufgenommenen Ids trennt das Merkmal falsch herum: Omen und kleine Reichweiten sind Gruppentreffer, die drei ausweichbaren tragen keins. Die Form im Moment trennt (`CastCertainlyDodgeable`); die Sperren lesen jetzt auch Helfer (A750). |
+| C190 | Konzept 18, „Takt“ (Stand A748): „Countdown lead time“ und „Action ahead“ hingen an der Latenz; „eine Selbststeuerung aus gemessener Latenz wäre denkbar; kein Fehlverhalten im Kampf belegt“ | Sein Mitschnitt vom 11.11.2026 belegt es: Weben mit weniger als 0,7 s Rest verzögerte den nächsten GCD bis 0,46 s, die feste Grenze erlaubte es bis 0,61 s. Seit A753 rechnet die Webregel mit Sperre und gemessenem Rest. |

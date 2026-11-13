@@ -14,7 +14,9 @@ public sealed class CooldownDelayTweak
 	/// If > 0 while using an action, cooldown/animation lock will be reduced by this amount as if action was used a bit in the past
 	/// </summary>
 	public float Adjustment { get; private set; }
-	private static float MaxCooldownAdjust => Math.Clamp(Service.Config.CooldownAdjustMaxMs, 10, 150) * 0.001f;
+	// At most one mean frame of the zone: what a frame costs is credited back, a hitch beyond it is not, as the server knows
+	// nothing of it (A753, measured instead of a set maximum).
+	private static float MaxCooldownAdjust => AnimationLockTweak.MeanFrameTime;
 
 	/// <summary>
 	/// Start adjustment calculation based on previous conditions

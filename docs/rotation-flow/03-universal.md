@@ -1610,6 +1610,165 @@ Absatzes. ImGui setzt Zeilen im Abstand der Schrifthöhe, wie die Voreinstellung
 Schriftgröße von WCAG 1.4.8 (AAA) misst am Geviert, das ImGui für Axis nicht ausweist; AA und der Windows UX Guide
 verlangen keinen Mindestabstand.
 
+## Weben, Animationssperre und Latenz
+
+**Seine Vorgaben (13.11.2026):**
+- RSR übernimmt bei Animationssperre, Weben und Clipping die volle Funktion von XivAlexander, NoClippy und den Action
+  Tweaks von BossModReborn, sodass er sie nicht braucht. Dazu nutzt es das Optimum dieser Funktionen dynamisch, um im
+  Spiel schnellstmöglich zu handeln.
+- Ohne Vorgabewerte: keine 20 ms oder ähnliches zum Eintragen, sondern aus Verbindungs- und Geschwindigkeitsdaten
+  gemessen, abgeleitet und situationsbezogen optimiert. Das ist seine Regel „keine festen Werte“, auf diesen Fall angewandt.
+- RSR darf eine Option haben, die die konkurrierenden Funktionen der anderen Plugins abschaltet. Es muss nur besser sein
+  als diese.
+
+**Geltender Stand (A753).** Er gilt für jede Aktion und jeden Job (Ebene „alle“); kein Job hat eine eigene Regel dazu.
+- *Messen, immer, ohne Schalter* (`AnimationLockTweak`, `ActionManagerEx`): Zu jeder eigenen Sofortaktion mit Sequenz
+  misst RSR die Verzögerung von der Anfrage bis zur Antwort. Ebenso misst es die Sperre, die der Server der Aktion gibt,
+  und wie lange sie die nächste tatsächlich zurückhielt. Die Statistik gilt je Gebiet: Anzahl, Mittel, mittlere
+  Abweichung, kleinster Wert und alle Verzögerungen. Mit dem Gebiet ändert sich die Route; deshalb beginnt sie neu.
+  Dazu misst RSR die mittlere Frame-Zeit des Gebiets.
+- *Sperre verkürzen* („Remove lag-induced animation lock delay“, ab Werk an, ohne Wert zum Eintragen): Die nächste
+  Anfrage darf den Server frühestens erreichen, wenn seine Sperre für die vorige endet. Abziehen darf RSR also die
+  Netzlaufzeit hin und zurück; die Wartezeit auf den Tick des Servers bleibt.
+  - Sicher ist die untere Hüllkurve: die kleinste Verzögerung des Gebiets abzüglich ihrer mittleren Abweichung. Wer mehr
+    abzieht als die kürzeste Laufzeit, schickt die nächste Anfrage bei schneller Verbindung zu früh.
+  - Darüber hinaus lernt ein Regler einen Zuschlag. Jede Antwort hebt ihn um r Frames, jede Anfrage ohne Antwort senkt
+    ihn um (1 − r) Frames. r ist die gemessene Frame-Zeit geteilt durch die Sperre beim Drücken.
+  - Der Anteil abgelehnter Anfragen pendelt sich so bei r ein. Dort wiegt der Verlust einer Ablehnung, eine neue
+    Drücksperre, den Gewinn eines Frames Schnitt auf. Eine verspätete Antwort ist kein Verlust, denn der Server hat die
+    Anfrage zurückgehalten und trotzdem verarbeitet; sie zählt nicht.
+  - Der Schnitt steigt höchstens bis zur größten Verzögerung des Gebiets; mehr lässt sich nicht abziehen. Ohne diese
+    Grenze wüchse der Zuschlag bei einem Server, der nichts ablehnt, unbegrenzt. Lehnte der Server dann später doch ab,
+    etwa auf einer anderen Route im selben Gebiet, bräuchte der Regler viele Ablehnungen, um wieder herunterzukommen.
+  - Nur in PvE (meine Ableitung): In PvP wäre eine kürzere Sperre ein Vorteil gegen andere Spieler.
+- *Verzug durch die Bildrate* („Remove framerate-induced cooldown delay“, ab Werk an): Löst das Spiel eine eingereihte
+  Aktion erst einen Frame nach dem Ende von Sperre oder Abklingzeit aus, schreibt RSR den Überhang der nächsten
+  Abklingzeit und Sperre gut. Gutgeschrieben wird höchstens eine mittlere Frame-Zeit des Gebiets; einen Ruckler darüber
+  kennt der Server nicht. Das Verfahren stammt von BossModReborn, die feste Obergrenze von 100 ms entfällt.
+- *Webregel* (`ActionHelper.AbilityClipWindow`, `AbilityWindowFor`): Eine Fähigkeit beginnt nur, wenn ihre Sperre samt
+  erwartetem Rest endet, bevor der GCD frei wird.
+  - Der erwartete Rest ist das, was der aktuelle Schnitt von den Verzögerungen des Gebiets übrig lässt, als Mittel plus
+    mittlere Abweichung. Kürzt ein anderes Werkzeug, ist es der gemessene Rest nach allen Werkzeugen.
+  - Die eigene Sperre der Fähigkeit zählt, sobald der Server sie einmal gegeben hat. Vor der ersten Messung gelten die
+    bisherigen festen Grenzen.
+  - „Action ahead“ bleibt der Vorlauf, ab dem RSR den GCD meldet. Eine Fähigkeit, die nach der Messung noch passt, geht
+    auch danach. Dreifach webt RSR also genau dann, wenn es passt.
+- *Andere Werkzeuge* („Take over BossMod's and NoClippy's animation lock functions“, ab Werk an): Solange RSRs Verkürzung
+  an ist, schaltet RSR zwei Werkzeuge ab.
+  - Bei BossModReborn sind es „Remove extra lag-induced animation lock delay“ und „Remove extra framerate-induced cooldown
+    delay“, nur für die Sitzung (`BossMod.Configuration.SetTransient`). Den Wert des Spielers stellt RSR für dieses Feld
+    wieder her, ohne zu speichern, sobald seine Verkürzung aus ist oder RSR entladen wird.
+  - Bei NoClippy geht es nur mit `/noclippy off` und `/noclippy on`; das speichert NoClippys Einstellung. RSR liest
+    deshalb vorher NoClippys gespeicherten Wert (`EnableAnimLockComp` in `pluginConfigs/NoClippy.json`). Übernommen und
+    später wieder eingeschaltet wird nur, was an war; hattest du es aus, bleibt es aus.
+  - XivAlexander lässt sich aus Dalamud nicht schalten. Läuft es, ruht RSRs Verkürzung, und die Webregel webt nach dem,
+    was XivAlexander übrig lässt.
+  - Ändert ein Plugin die Sperre zwischen Paket und Spiel, ruht die Verkürzung bis zum nächsten Gebiet. Die Einstellung
+    des Spielers bleibt dabei unberührt (bis A753 schaltete RSR sie dauerhaft ab).
+- *Messmittel* (`DefenseTrace.log`, eine Zeile je Kampf): Verzögerung bis zur Antwort (Mittel; im Gebiet kleinster Wert
+  und Abweichung), Rest nach der Sperre, Zustand der Verkürzung, Schnitt und Zuschlag des Reglers, verkürzte Sperren,
+  Webfenster und Frame-Zeit. Dazu kommen GCDs und Fähigkeiten je GCD, GCDs, die eine Sperre zurückhielt (Anzahl, Summe),
+  freie GCD-Zeit ohne eingereihte Aktion und Anfragen ohne Antwort. Gezählt wird das Clipping wie bei NoClippy: Ist der GCD
+  frei und steht noch die Sperre einer Fähigkeit, zählt ihr Rest einmal je Aktion.
+
+**Was die Werkzeuge tun** (Werkzeugquellen, je Commit und Datum):
+- *Spiel:* Eine Sofortaktion setzt beim Drücken eine Sperre von 0,5 s. Die Antwort des Servers ersetzt sie durch die
+  Sperre der Aktion, meist 0,6 s, gezählt ab Eintreffen. Die nächste Aktion wartet also Sperre plus Verzögerung. Bei
+  Zaubern läuft die Sperre erst nach der Wirkzeit; dort entsteht kein Verzug (Kommentar in BossModReborn
+  `AnimationLockTweak`, 7550528, 13.11.2026).
+- *BossModReborn* (7550528, 13.11.2026): Verkürzt auf einen festen Rest, ab Werk 20 ms. Laut Tooltip ermöglichen 20 ms
+  dreifaches Weben und 26 ms verhindern es; dass FFLogs 20 ms annimmt, steht dort ohne Beleg. Es gleicht den Verzug
+  durch die Bildrate bis 100 ms aus. Das Weben plant es über eine Frist (`ActionQueue.FindBest`). Es schaltet sich ab,
+  wenn der Paketwert nicht auf ganze 10 ms fällt oder das Spiel nach dem Paket einen anderen Wert hat.
+- *XivAlexander* (382e7ea, 12.11.2026, `NetworkTimingHandler.cpp`): Misst die Netzlaufzeit am Socket. Ab Werk zieht es
+  sie ab und behält die geschätzte Verarbeitungszeit des Servers. Es stapelt offene Anfragen, wenn der Server länger als
+  500 ms schweigt.
+- *NoClippy* (3f4b377, 29.04.2026): Simuliert 40 ms Laufzeit und schlägt bei Schwankung über dem Mittel einen Anteil auf.
+  Es merkt sich die Sperre je Aktion. Hält dreifaches Weben bei 2,5 s ohne Clipping für unmöglich.
+- *RSR vor A753:* Port von BossModReborns Verkürzung und Ausgleich der Bildrate, ab Werk aus, mit festem Rest 26 ms und
+  Obergrenze 100 ms.
+  - Der Prüfung fehlte die Bedingung „Spiel nach dem Paket gleich Paket“; eine zweite Verkürzung durch BossMod blieb so
+    unbemerkt.
+  - Der Tooltip versprach, sich bei XivAlexander oder NoClippy abzuschalten, und tat es nicht.
+  - Gemessen wurde nur bei eingeschalteter Verkürzung, und die Schätzung las niemand.
+  - Das Weben folgte festen Grenzen: 0,5 s und 25 % des GCD.
+
+**Gemessen an seinem Mitschnitt vom 11.11.2026** (ACT; 5629 eigene Aktionen als Weißmagier, Bestienbändiger und Druide):
+- Die Ergebnisse eigener Aktionen kommen auf einem Raster von 44,5 ms an. Die mittlere Phasenabweichung ist 0,039 eines
+  Ticks; zufällig wären es 0,25. Der Server löst also im Takt auf (Schluss aus dem Raster).
+- Zwischen zwei Sofortaktionen lagen mindestens 0,53 s (12 Ticks), im Median 0,625 s (14 Ticks). 12 Ticks sind kürzer
+  als die Sperre von 0,6 s. Der Server verarbeitete also zwei Aktionen schneller nacheinander, als die Sperre vorgibt. Er
+  lehnt eine frühe Anfrage demnach nicht ab (Schluss; offen bleibt, ob er sie zurückhält oder die Sperre ignoriert).
+- Webte RSR mit weniger als etwa 0,7 s Rest, kam der nächste GCD später: bei rund 0,60 s Rest im Median 0,23 s, im
+  oberen Zehntel 0,46 s; bei 0,65 s Rest im oberen Zehntel 0,45 s. Ab 0,70 s Rest gab es keinen Verzug. Drei Fähigkeiten
+  zwischen zwei GCDs (Bestienbändiger, 11-mal) verlängerten den GCD im Median um 0,45 s. Die feste Grenze erlaubte Weben
+  bis 0,61 s Rest (25 % von 2,44 s).
+
+**Modell** (`action_timing_model.py`, gezählt in der Zeit des Servers; Annahmen dort genannt): Es vergleicht das Spiel,
+den festen Rest von 20 ms, XivAlexander, NoClippy, die rein gemessene Hüllkurve und den Regler, jeweils mit fester und
+dynamischer Webregel. Durchgerechnet wird bei 60 und 144 Bildern je Sekunde und für drei Verhaltensweisen des Servers
+bei zu früher Anfrage: zurückhalten, ablehnen, ignorieren.
+- Die dynamische Webregel lässt in keiner Lage einen GCD wesentlich später kommen. Die feste kommt ohne Verkürzung bei
+  2,5 s GCD und 0,1 s Laufzeit auf 5,9 ms Verzug je GCD.
+- Mischfall (die Hälfte der Fähigkeiten sofort bereit), 2,5 s GCD, 60 Bilder je Sekunde, 0,1 s Laufzeit, Fähigkeiten je
+  GCD beim Server: Spiel 1,20; fester Rest 1,54 (lehnt der Server ab: 1,16 und 5,8 ms GCD-Verzug); XivAlexander 1,42;
+  NoClippy 1,37; Regler 1,58 (lehnt der Server ab: 1,30).
+- Burst (jede Fähigkeit bereit), 2,5 s, 144 Bilder je Sekunde, 0,03 s Laufzeit: fester Rest 3,00 (abgelehnt 1,99);
+  XivAlexander 2,38; NoClippy 2,00; Regler 2,98 (abgelehnt 2,16).
+- Bilanz: Hält der Server zurück oder ignoriert er die Sperre, ist der Regler gleichauf mit dem festen Rest und vor
+  XivAlexander und NoClippy. Lehnt er ab, liegt der Regler je nach Lage 0,04 bis 0,25 Fähigkeiten hinter dem besten
+  anderen, das dort NoClippy oder XivAlexander ist; der feste Rest bricht dort am stärksten ein. Sein Mitschnitt spricht
+  gegen das Ablehnen (oben).
+
+**Warum mit dreifachem Weben geworben wird, und was davon stimmt** (seine Frage, 13.11.2026):
+- Rechnerisch geht es: Bei 2,5 s GCD brauchen GCD und drei Fähigkeiten viermal Sperre plus Rest. Mit 0,6 s Sperre bleiben
+  25 ms Rest je Aktion. Das schaffen nur Verkürzung und Ausgleich der Bildrate zusammen. Ohne den Ausgleich kostet
+  jede Aktion bei 60 Bildern je Sekunde bis 17 ms Rundung; bei 144 Bildern bleibt sie klein.
+- Was die Werbung verschweigt: Mit 20 ms Rest kommt im Modell die Hälfte der Anfragen beim Server vor dem Ende seiner
+  Sperre an. Dreifaches Weben ist nur dann echt, wenn der Server das hinnimmt. Hält er sie zurück, webt man dreifach am
+  Bildschirm, beim Server kommen die Aktionen nacheinander, und der GCD kommt dort später: 10 ms je GCD im Burst bei
+  0,1 s Laufzeit. Lehnt er sie ab, gehen Aktionen verloren.
+- Mein erstes Modell (vor A753 verworfen) zählte in der Zeit des Clients und rundete jede Aktion auf ganze Frames ohne
+  Ausgleich der Bildrate. Es fand deshalb kein dreifaches Weben; der Ausgleich war übersehen.
+
+**Optionen und Bilanz im Kampf:**
+- *Nullvariante* (fest, Verkürzung aus): In seinem Mitschnitt kam ein GCD nach spätem Weben bis 0,46 s später. Ein
+  Heiler, der in der Not eine Fähigkeit einwebt, bekommt den nächsten Heil-GCD um diesen Betrag später.
+- *Fester Rest* (BossMod, RSR vor A753): am schnellsten, wenn der Server frühe Anfragen hinnimmt; am schlechtesten, wenn
+  er sie ablehnt. Den Wert muss der Spieler kennen.
+- *XivAlexander-Prinzip:* RSR kommt aus Dalamud nicht an die Laufzeit des Sockets.
+- *Nur gemessene Hüllkurve:* nie zu früh, aber langsamer. Die kleinste Verzögerung liegt unter der Laufzeit der meisten
+  Anfragen, also bleibt mehr Rest stehen (Burst, 2,0 s GCD, 0,1 s Laufzeit: 1,16 bis 1,34 statt 2,00 Fähigkeiten).
+- *Hüllkurve plus Regler (gewählt):* findet die Grenze des Servers an seiner Verbindung selbst. Ohne Wert zum Eintragen
+  ist er so schnell wie der feste Rest, wo der Server frühe Anfragen hinnimmt, und bricht nicht ein, wo er ablehnt.
+  Zusammen mit der dynamischen Webregel kommt kein GCD später. In der Not passen eine Minderung und eine Heilfähigkeit
+  zwischen zwei Heil-GCDs, ohne den nächsten Heil-GCD zu verschieben; das dient der Sicherheit der Gruppe.
+- *Verworfen, ein Regler mit fester Obergrenze nach der ersten Ablehnung:* Eine frühe Ablehnung legte ihn auf die
+  vorsichtige Hüllkurve fest (Burst, 2,0 s: 1,12 statt 1,63).
+
+**Gegenthesen:**
+- *Der Server lehnt doch ab:* Dann senkt der Regler den Schnitt, bis höchstens der Anteil r der Anfragen ohne Antwort
+  bleibt. Die Zeile je Kampf nennt die Anfragen ohne Antwort.
+- *Eine fehlende Antwort hat andere Gründe* (Paketverlust, Aktion ohne Wirkung): Der Regler sinkt kurz und steigt danach
+  wieder; der Preis ist ein Frame Schnitt für eine Weile.
+- *Ein fremdes Werkzeug kürzt weiter:* BossMod und NoClippy schaltet RSR ab; XivAlexander und jede Änderung zwischen Paket
+  und Spiel lassen die Verkürzung ruhen, die Webregel misst weiter.
+- *Ausgeliefert, und nichts ändert sich:* wenn XivAlexander läuft. Dann misst RSR dessen Rest und webt danach.
+- *Die Statistik eines Gebiets ist zu Beginn dünn:* Vor der zweiten Antwort kürzt RSR nichts, und die Hüllkurve zieht
+  die Abweichung ab, solange es wenige Antworten gibt. Der Regler beginnt bei null.
+
+**Betroffene:** Alle Jobs und Rotationen, auch die fremden unter `ExtraRotations`. Die öffentlichen Eigenschaften
+`EnoughWeaveTime` und `CanWeave` rechnen jetzt mit der gemessenen Grenze statt mit „Action ahead“. `DelayEstimate` und
+`DelayAverage` von `AnimationLockTweak` nennen den erwarteten Rest und die mittlere Verzögerung des Gebiets. Die
+Einstellungen „Max simulated animation lock delay“, „Delay smoothing factor“ und „Max cooldown adjustment“ entfallen;
+ein gespeicherter Wert wird nicht mehr gelesen. BossModReborn und NoClippy werden umgeschaltet, solange die Übernahme an
+ist.
+
+**Ort und Kosten:** Gemessen wird in den vorhandenen Hooks (`ActionManagerEx`), einmal je Antwort. Dabei geht RSR einmal
+über die Verzögerungen des Gebiets, eine Liste mit einem Eintrag je Antwort. Die Zählung des Clippings und der Frame-Zeit
+läuft einmal je Frame mit wenigen Feldern des `ActionManager`. Die Webregel ist eine Addition je Frage. Je Frame wird
+nichts angelegt.
+
 ## Bewegungssperre beim Wirken und die KI von BossMod
 
 **Geltender Stand** (A649–A652): „Lock movement while casting" (ab Werk aus) hält die Figur, damit Bewegung keinen Zauber

@@ -16,25 +16,22 @@ namespace RotationSolver.Basic.Tweaks;
 ///   this tweak does nothing for casts, since they already work correctly
 /// The tweak also allows predicting the delay based on history (using exponential average).
 /// </summary>
-public sealed unsafe class AnimationLockTweak
+public sealed unsafe partial class AnimationLockTweak
 {
 	private float _lastReqInitialAnimLock;
 	private uint _lastReqSequence = uint.MaxValue;
 
-	private static float DelayMax => Math.Max(Service.Config.AnimationLockDelayMax2, 20) * 0.001f;
-	private static float DelaySmoothing => Math.Clamp(Service.Config.AnimLockDelaySmoothing, 0.3f, 0.95f); // Exponential smoothing factor
+	/// <summary>
+	/// Gets the mean delay between client request and server response in the current zone (A753: measured, no set value).
+	/// </summary>
+	public float DelayAverage { get; private set; }
 
 	/// <summary>
-	/// Gets the smoothed delay between client request and server response.
+	/// Gets the rest an instant action is expected to keep after its lock now: what remains of the delay after the
+	/// reduction, mean plus mean deviation; 0 before the first measurement (concept 03, "Weben, Animationssperre und
+	/// Latenz", A753).
 	/// </summary>
-	public float DelayAverage { get; private set; } = 0.1f; // Smoothed delay between client request and server response
-
-	/// <summary>
-	/// Gets a conservative estimate of the delay to use for animation lock reduction.
-	/// Returns <see cref="DelayMax"/> if animation lock delay removal is enabled; otherwise,
-	/// returns 1.5 times the smoothed delay average, clamped to a maximum of 0.1 seconds.
-	/// </summary>
-	public float DelayEstimate => Service.Config.RemoveAnimationLockDelay ? DelayMax : Math.Min(DelayAverage * 1.5f, 0.1f); // Conservative estimate
+	public float DelayEstimate => KeptEstimate;
 
 	/// <summary>
 	/// Record initial animation lock after action request
@@ -71,12 +68,16 @@ public sealed unsafe class AnimationLockTweak
 
 		float reduction = 0;
 
-		if (_lastReqSequence == sequence && _lastReqInitialAnimLock > 0)
+		// Whether this answer belongs to the request recorded last: only then is the delay measured (A753).
+		LastMatched = _lastReqSequence == sequence && _lastReqInitialAnimLock > 0;
+		if (LastMatched)
 		{
 			SanityCheck(packetPrevAnimLock, packetCurrAnimLock, gameCurrAnimLock);
-			DelayAverage = Math.Clamp(delay * (1 - DelaySmoothing) + DelayAverage * DelaySmoothing, 0f, 0.5f);
+			// The controller's cut for this answer, from the zone's earlier answers, then this one learned (A753).
+			var cut = Learn(delay);
+			DelayAverage = _delayMean;
 
-			reduction = Service.Config.RemoveAnimationLockDelay ? Math.Clamp(delay - DelayMax, 0, gameCurrAnimLock) : 0;
+			reduction = ReductionAllowed ? Math.Clamp(Math.Min(cut, delay), 0, gameCurrAnimLock) : 0;
 		}
 
 		_lastReqInitialAnimLock = 0;
@@ -84,25 +85,27 @@ public sealed unsafe class AnimationLockTweak
 		return reduction;
 	}
 
-	private static void SanityCheck(float packetOriginalAnimLock, float packetModifiedAnimLock, float gameCurrAnimLock)
+	private void SanityCheck(float packetOriginalAnimLock, float packetModifiedAnimLock, float gameCurrAnimLock)
 	{
-		if (!Service.Config.RemoveAnimationLockDelay)
+		if (!Service.Config.RemoveAnimationLockDelay || _heldInZone)
 		{
 			return;
 		}
 
-		if (packetOriginalAnimLock == packetModifiedAnimLock && (packetOriginalAnimLock % 0.01f) is <= 0.0005f or >= 0.0095f)
+		// The game's lock after the packet must equal the packet's too, as in BossModReborn: a plugin that shortens the
+		// lock between the two (BossMod's own tweak, NoClippy) left it unseen, and the lock was cut twice (A753).
+		if (packetOriginalAnimLock == packetModifiedAnimLock && packetOriginalAnimLock == gameCurrAnimLock
+			&& (packetOriginalAnimLock % 0.01f) is <= 0.0005f or >= 0.0095f)
 		{
 			return;
 		}
 
-		PluginLog.Warning($"[AnimLockTweak] Unexpected animation lock {packetOriginalAnimLock:f6} -> {packetModifiedAnimLock:f6} -> {gameCurrAnimLock:f6}, disabling animation lock tweak feature");
+		PluginLog.Warning($"[AnimLockTweak] Unexpected animation lock {packetOriginalAnimLock:f6} -> {packetModifiedAnimLock:f6} -> {gameCurrAnimLock:f6}, holding the animation lock reduction in this zone");
+		DefenseTrace.Line($"animation lock reduction held in this zone: the lock was {packetOriginalAnimLock:F3} s in the packet,"
+			+ $" {packetModifiedAnimLock:F3} s after it and {gameCurrAnimLock:F3} s in the game - another tool changes it");
 
-		if (Service.Config.InDebug)
-		{
-			PluginLog.Debug($"[RSR] Unexpected animation lock detected! Disabling animation lock reduction feature.");
-		}
-
-		Service.Config.RemoveAnimationLockDelay.Value = false;
+		// Held until the next zone, the player's setting untouched: the cause may be gone then, as BossModReborn keeps it
+		// unsaved for the same reason (A753).
+		_heldInZone = true;
 	}
 }
