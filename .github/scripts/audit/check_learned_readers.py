@@ -71,17 +71,31 @@ def body_of(text, method):
     return None
 
 
+def class_file(path):
+    """A partial part `Name.Topic.cs` stands for its class file `Name.cs` (A740, concept 24)."""
+    folder, _, name = path.rpartition('/')
+    stem = name.split('.', 1)[0]
+    return (folder + '/' if folder else '') + stem + '.cs'
+
+
+def class_text(files, path):
+    """The text of a class file with its partial parts; None if the class file is absent."""
+    if path not in files:
+        return None
+    return '\n'.join(text for part, text in sorted(files.items()) if class_file(part) == path)
+
+
 def check(files):
     """files: {relative path: text}. Returns the findings."""
     found = []
     for path, text in files.items():
-        if path in READING_FILES:
+        if class_file(path) in READING_FILES:
             continue
         for number, code in code_lines(text):
             if TABLE.search(code):
                 found.append(f'{path}:{number}: reads a learned table outside the sorted readers: {code.strip()}')
     for path, method, token in SAVERS:
-        text = files.get(path)
+        text = class_text(files, path)
         body = body_of(text, method) if text is not None else None
         if body is None:
             found.append(f'{path}: the saving reader {method} is not there - moved or renamed? Update SAVERS and the '
@@ -121,6 +135,10 @@ def tree(**overrides):
 
 def self_test():
     assert check(tree()) == [], check(tree())
+    # A saver moved into a partial part of its class is still found there, and the part reads as its class file (A740).
+    moved = tree(**{'RotationSolver/Basic/DataCenter.cs': 'var x = OtherConfiguration.HostileCastingAreaPotential;\n',
+                    'RotationSolver/Basic/DataCenter.AreaDamage.cs': tree()['RotationSolver/Basic/DataCenter.cs']})
+    assert check(moved) == [], check(moved)
     # A saver without its question is found.
     bad = tree(**{'RotationSolver/Basic/Helpers/TankbusterHelp.cs':
                   'private static bool MeasuredHitCallsForNoHelp(IBattleChara t)\n{\n return share < line;\n}\n'})

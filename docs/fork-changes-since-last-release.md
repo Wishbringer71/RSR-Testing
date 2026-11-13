@@ -63,6 +63,9 @@ What this release changes in the fight. For the whole distance from upstream, se
   every frame out of combat keeps its answer while board, space and progress stay the same. One walk over enemy casts
   serves both raise-protection checks. A store of held tankbuster help no longer grows over a session. The debug window
   no longer throws for an action id the sheet does not hold.
+  The fork's own members of DataCenter, ObjectHelper, StatusHelper and CustomRotation_OtherInfo moved into partial files
+  per concept (for example `DataCenter.AreaDamage.cs`); no signature changed. Fork lines inside those upstream files went
+  from 7,088 to 1,431.
 - **A sleep that did not go out names the first reason.** "sleep not cast …" names the first reason the rule gave
   after the sleep was chosen, and the last when it differs; "the cast ended" follows every lapsed sleep and no longer
   hides the reason the GCD went elsewhere.

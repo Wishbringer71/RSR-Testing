@@ -33,10 +33,10 @@ NEGATED = re.compile(r"!\s*[\w?.()\[\]]*?\b(?:Player)?(?:CanBeHealed|NoNeedHeali
 ACCEPTED = [
     ("RotationSolver/Basic/DataCenter.cs", "unprotectedOnly && !member.IsUnprotectedForHealing()",
      "skips the protected when only the unprotected are asked for"),
-    ("RotationSolver/Basic/DataCenter.cs", "member.MaxHp == 0 || !member.IsUnprotectedForHealing()",
+    ("RotationSolver/Basic/DataCenter.HitResponse.cs", "member.MaxHp == 0 || !member.IsUnprotectedForHealing()",
      "AnnouncedHitKills: an invulnerable member does not die of the raidwide, so it is not counted; Living Dead "
      "with its hold off counts, since its fall to zero is Walking Dead (A306)"),
-    ("RotationSolver/Basic/Rotations/CustomRotation_OtherInfo.cs", "player == null || !player.CanBeHealed()",
+    ("RotationSolver/Basic/Rotations/CustomRotation_OtherInfo.Channels.cs", "player == null || !player.CanBeHealed()",
      "TankbusterOnMeWithin: no own cooldown for a tankbuster while an invulnerability covers the player"),
     ("RotationSolver/Basic/Helpers/TankSwapWatch.cs", "asked ? !holder.CanBeHealed()",
      "TakeOverHeld: the enemy is not taken from a co-tank an invulnerability protects (A321)"),

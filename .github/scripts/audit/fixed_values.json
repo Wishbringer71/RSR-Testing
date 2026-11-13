@@ -113,7 +113,7 @@
    "reason": "Unit conversion, not a game value: GetEffectiveHpPercent answers in percent and HealthForDyingTanks is a share, as in the critical class beside it (A154, A340)."
   },
   {
-   "file": "RotationSolver/Basic/Helpers/ObjectHelper.cs",
+   "file": "RotationSolver/Basic/Helpers/ObjectHelper.HealTarget.cs",
    "code": "_ttkBias[id] = Math.Clamp(smoothed, 0.25f, 4f);",
    "values": [
     "0.25",
@@ -134,7 +134,7 @@
    "reason": "Tolerance counted in rounds of upstream's 1 Hz health history (TargetUpdater.TimeToKillUpdateIntervalMs): two missed rounds before a forecast counts as stale. A cadence of the plugin's own sampling; the exact test 'filed in the latest round' would still need a bound for when sampling stops (A340)."
   },
   {
-   "file": "RotationSolver/Basic/Helpers/ObjectHelper.cs",
+   "file": "RotationSolver/Basic/Helpers/ObjectHelper.HealTarget.cs",
    "code": "var smoothed = (previous * 3f + sample) / 4f;",
    "values": [
     "3",
@@ -145,7 +145,7 @@
    "reason": "Weight of the TTK self-correction's moving average (a sample counts a quarter), so one spike does not take over; it sets how fast the bias learns, not what it learns. No figure of the game (A340)."
   },
   {
-   "file": "RotationSolver/Basic/Helpers/StatusHelper.cs",
+   "file": "RotationSolver/Basic/Helpers/StatusHelper.HealTarget.cs",
    "code": "private const uint DeathTriggerLeadGCDs = 2;",
    "values": [
     "2"
@@ -179,7 +179,7 @@
    "reason": "Upstream's Item sheet filter group of the ordinary HP potions, as the neighbouring lines read 6 for medicines and 9 for MP potions; a sheet category, not a figure of the game. The line changed only in its second half (A613)."
   },
   {
-   "file": "RotationSolver/Basic/Rotations/CustomRotation_OtherInfo.cs",
+   "file": "RotationSolver/Basic/Rotations/CustomRotation_OtherInfo.Universal.cs",
    "code": "return (int)Math.Round(factor * 100f);",
    "values": [
     "100"
@@ -434,7 +434,7 @@
    "reason": "Default of the owner's pull size for The Blackest Night; its text decides when a pull is big enough, and the measured stream now checks it in a fight (A340). No sheet says how many enemies make a pull, the reasoning of A184."
   },
   {
-   "file": "RotationSolver/Basic/Rotations/CustomRotation_OtherInfo.cs",
+   "file": "RotationSolver/Basic/Rotations/CustomRotation_OtherInfo.Channels.cs",
    "code": "return inRange > 0 && slowed >= 2 && slowed * 2 >= inRange;",
    "values": [
     "2",
@@ -516,7 +516,7 @@
    "reason": "Unit conversion, not a game value: the ItemAction sheet states the potion's share of maximum HP in percent, and the HQ line beside it (upstream) divides the same way."
   },
   {
-   "file": "RotationSolver/Basic/Helpers/StatusHelper.cs",
+   "file": "RotationSolver/Basic/Helpers/StatusHelper.HealTarget.cs",
    "code": "|| (PlayerHasStatus(false, StatusID.ShackledHealing) && DataCenter.NumberOfPartyMembersInRangeOf(21) != 1);",
    "values": [
     "21"
@@ -536,7 +536,7 @@
    "reason": "Upstream's lead for Lux Solaris before Refulgent Lux runs out; the fork reordered the block around it. Upstream's rule, derived nowhere else (A340)."
   },
   {
-   "file": "RotationSolver/Basic/Helpers/ObjectHelper.cs",
+   "file": "RotationSolver/Basic/Helpers/ObjectHelper.HealTarget.cs",
    "code": "&& battleChara.GetForecastEffectiveHpPercent() <= Service.Config.HealthForDyingTanks * 100f;",
    "values": [
     "100"
@@ -566,7 +566,7 @@
    "reason": "Troubadour, Tactician and Shield Samba: the job guide states 15% for each (read 2026-09-27); the effect texts in ActionId.resx leave the figure blank, so the generated DefensiveValues cannot carry it"
   },
   {
-   "file": "RotationSolver/Basic/DataCenter.cs",
+   "file": "RotationSolver/Basic/DataCenter.Universal.cs",
    "code": "internal const int LightPartySize = 4;",
    "values": [
     "4"
@@ -656,7 +656,7 @@
    "reason": "Addersgall's maximum of three stacks (job guide, 'Maximum Stacks: 3'; The Balance). The gauge does not expose its maximum"
   },
   {
-   "file": "RotationSolver/Basic/DataCenter.cs",
+   "file": "RotationSolver/Basic/DataCenter.Universal.cs",
    "code": "&& across <= (act.XAxisModifier / 2f) + member.HitboxRadius;",
    "values": [
     "2"
@@ -666,7 +666,7 @@
    "reason": "XAxisModifier is a line's full width (the player-side line check in ActionTargetInfo reads it the same way); half of it is the distance to either edge, geometry rather than a claim about the game"
   },
   {
-   "file": "RotationSolver/Basic/DataCenter.cs",
+   "file": "RotationSolver/Basic/DataCenter.Universal.cs",
    "code": "private const byte LineFromCasterCastType = 12;",
    "values": [
     "12"
@@ -687,7 +687,7 @@
    "reason": "Same quantor as the stun condition beside it (A48), for the enemies a party member's Holy will reach; no figure of the game (A340)."
   },
   {
-   "file": "RotationSolver/Basic/DataCenter.cs",
+   "file": "RotationSolver/Basic/DataCenter.AreaDamage.cs",
    "code": "if (member != null && !member.IsDead && AreaCastReaches(h, act, member) && ++reached >= 2)",
    "values": [
     "2"
@@ -757,7 +757,7 @@
    "reason": "The setting's own condition, \"Auto provoke when there is another tank in party\": another tank besides the player means two; a count named by the option text, not a tunable. Moved unchanged from StateUpdater.ShouldAddProvoke (upstream line); counts the party since upstream 7.5.7.5 (A331)"
   },
   {
-   "file": "RotationSolver/Basic/Helpers/ObjectHelper.cs",
+   "file": "RotationSolver/Basic/Helpers/ObjectHelper.Jobs.cs",
    "code": "private const BattleNpcSubKind HelperSubKind = (BattleNpcSubKind)11;",
    "values": [
     "11"
@@ -767,7 +767,7 @@
    "reason": "The game's battle NPC sub kind of a boss's invisible helpers, read from the object as a byte and compared; FFXIVClientStructs names no member for it, BossModReborn calls it Helper (ActorType 0x20B). A kind of the game, not a tunable"
   },
   {
-   "file": "RotationSolver/Basic/Rotations/CustomRotation_OtherInfo.cs",
+   "file": "RotationSolver/Basic/Rotations/CustomRotation_OtherInfo.Universal.cs",
    "code": "return percent / 100f;",
    "values": [
     "100"
@@ -777,7 +777,7 @@
    "reason": "Percent to share: the effect text states the slow in percent and the reader needs a share; the divisor is the definition of the unit, as for the trait texts (A290, A340)."
   },
   {
-   "file": "RotationSolver/Basic/DataCenter.cs",
+   "file": "RotationSolver/Basic/DataCenter.AreaDamage.cs",
    "code": "public const int HP_RECORD_TIME = 240;",
    "values": [
     "240"
@@ -797,7 +797,7 @@
    "reason": "Least span of a member's fall before a trend is read: three samples of the 1 Hz history, the same minimum upstream's TimeToKillTracker sets (MinSamples = 3); with two, one hit would be read as a rate. Upstream's former figure, fork-owned since 3c6ce9ee2. A statistical guard of the plugin's own estimate, no figure of the game; a GCD would match it only by chance (A341)."
   },
   {
-   "file": "RotationSolver/Basic/Helpers/ObjectHelper.cs",
+   "file": "RotationSolver/Basic/Helpers/ObjectHelper.Universal.cs",
    "code": "const int movingAverageWindow = 5;",
    "values": [
     "5"
@@ -847,7 +847,7 @@
    "reason": "Default AoE count of Hellfrog Medium and Deathfrog Medium, the least that lets the potency comparison speak: on two enemies 250 (400) each out-damages Bhavacakra's 400 (Zesho Meppo's 700) at level 100 (job guide, 7.5). The decision above it is HellfrogOutdamagesBhavacakra, read from the tooltips; the count stays his setting's lower bound (A345)."
   },
   {
-   "file": "RotationSolver/Basic/Rotations/CustomRotation_OtherInfo.cs",
+   "file": "RotationSolver/Basic/Rotations/CustomRotation_OtherInfo.HitResponse.cs",
    "code": "private const float PullDashLead = 0.5f;",
    "values": [
     "0.5"
@@ -1320,7 +1320,7 @@
    "reason": "Percent to share: the gear's effect text states its figures in percent; the divisor is the definition of the unit, as for the item texts and the rest prompt (A551, A564)."
   },
   {
-   "file": "RotationSolver/Basic/Helpers/ObjectHelper.cs",
+   "file": "RotationSolver/Basic/Helpers/ObjectHelper.Jobs.cs",
    "code": "private const uint ZuPieceNameId = 14572;",
    "values": [
     "14572"
@@ -1434,7 +1434,7 @@
    "reason": "The share of familiar damage per source as measured on the first board in his ACT logs of 04 and 05.11.2026: all familiars together dealt 74,200 damage, 23,449 by auto-attacks, 13,041 by Tricks, 14,205 by Tempered Releases, 23,387 by Parting Blow's Aetheric Burst. A fallback from measurement until every source has hit since RSR loaded (FamiliarDamageShares), not a game value."
   },
   {
-   "file": "RotationSolver/Basic/Helpers/ObjectHelper.cs",
+   "file": "RotationSolver/Basic/Helpers/ObjectHelper.Universal.cs",
    "code": "private const uint DisciplesOfMagic = 31;",
    "values": [
     "31"
@@ -1444,7 +1444,7 @@
    "reason": "The ClassJobCategory row of the disciples of magic in the game's ClassJob sheet (xivapi v2, 05.11.2026: WHM, BLM, RDM, PCT, BLU carry 31); an identifier of the game, not a tuned value. Concept 03, \"Gegner mit Stacheln\": a disciple of magic attacks with magic."
   },
   {
-   "file": "RotationSolver/Basic/Helpers/ObjectHelper.cs",
+   "file": "RotationSolver/Basic/Helpers/ObjectHelper.Universal.cs",
    "code": "private const byte RangedRole = 3;",
    "values": [
     "3"
@@ -1454,7 +1454,7 @@
    "reason": "The ClassJob sheet's Role of the ranged jobs (xivapi v2, 05.11.2026: BRD, BLM, RDM, PCT, BLU carry 3; JobRole's own ordinal 3 is the unused \"Ranged\"); an identifier of the game. Concept 03, \"Gegner mit Stacheln\": they attack from range."
   },
   {
-   "file": "RotationSolver/Basic/Helpers/ObjectHelper.cs",
+   "file": "RotationSolver/Basic/Helpers/ObjectHelper.Universal.cs",
    "code": "private const byte HealerRole = 4;",
    "values": [
     "4"
@@ -1569,7 +1569,7 @@
    "reason": "Share of the survivor's window kept as the reserve (concept 03, \"Tötungsregeln\", rule 2, A588): with the reserve at the stream times the whole window nothing is left for the way to the survivor after the first falls; with half, the other half holds the way and a stream that sinks at the end; less than half adds switches without making the end safer, which depends on the reserve alone. Not a figure of the game; derived in the loop of A588."
   },
   {
-   "file": "RotationSolver/Basic/Helpers/ObjectHelper.cs",
+   "file": "RotationSolver/Basic/Helpers/ObjectHelper.Universal.cs",
    "code": "private const uint DisciplesOfWar = 30;",
    "values": [
     "30"
@@ -2102,7 +2102,7 @@
    "reason": "The client's offset for the high-quality form of an item id, as in PhoenixDownItem (A340) and upstream's BaseItem.UseItem: CanUse asks the game about the form UseItem sends. A convention of the game client, stated in no sheet (A730)."
   },
   {
-   "file": "RotationSolver/Basic/DataCenter.cs",
+   "file": "RotationSolver/Basic/DataCenter.Universal.cs",
    "code": "private const byte ConeFromCentreCastType = 13;",
    "values": [
     "13"
@@ -2112,7 +2112,7 @@
    "reason": "The game's cast type 13, a cone measured from the caster's centre, which the CastType enum does not name; its cones carry fan omens like type 3 (1,966 rows with a fan omen, ffxiv-datamining 52a72b3) and BossModReborn's analysis describes it as 'range X N-degree cone'. An id of the game's data (A731)."
   },
   {
-   "file": "RotationSolver/Basic/DataCenter.cs",
+   "file": "RotationSolver/Basic/DataCenter.Universal.cs",
    "code": "return MathF.Acos(cosine) <= float.DegreesToRadians(degrees / 2f) + allowance;",
    "values": [
     "2"
@@ -2132,7 +2132,7 @@
    "reason": "A ring's omen figures are two numbers of equal length, outer then inner (gl_sircle_2010 = 20 and 10; BossModReborn's analysis reads two digits each). The split of the figures, not a tuned value (A731)."
   },
   {
-   "file": "RotationSolver/Basic/Helpers/ObjectHelper.cs",
+   "file": "RotationSolver/Basic/Helpers/ObjectHelper.Universal.cs",
    "code": "Back = 2,",
    "values": [
     "2"
@@ -2142,7 +2142,7 @@
    "reason": "The bit of the back in the param of Directional Parry (status 680), as BossModReborn's Components/DirectionalParry decodes it (front 1, back 2, left 4, right 8; front seen as 01 in the owner's run of 11.11.2026). An encoding of the game's status, not a tuned value (A734)."
   },
   {
-   "file": "RotationSolver/Basic/Helpers/ObjectHelper.cs",
+   "file": "RotationSolver/Basic/Helpers/ObjectHelper.Universal.cs",
    "code": "Left = 4,",
    "values": [
     "4"
@@ -2152,7 +2152,7 @@
    "reason": "The bit of the one flank in the param of Directional Parry (status 680), as BossModReborn's Components/DirectionalParry decodes it (front 1, back 2, left 4, right 8; front seen as 01 in the owner's run of 11.11.2026). An encoding of the game's status, not a tuned value (A734)."
   },
   {
-   "file": "RotationSolver/Basic/Helpers/ObjectHelper.cs",
+   "file": "RotationSolver/Basic/Helpers/ObjectHelper.Universal.cs",
    "code": "Right = 8,",
    "values": [
     "8"

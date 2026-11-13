@@ -11,7 +11,7 @@ namespace RotationSolver.Basic.Helpers;
 /// <summary>
 /// The helper for the status.
 /// </summary>
-public static class StatusHelper
+public static partial class StatusHelper
 {
 	/// <summary>
 	/// 
@@ -238,56 +238,6 @@ public static class StatusHelper
 
 	private static readonly System.Collections.Concurrent.ConcurrentDictionary<uint, bool> _restrictsResurrection = new();
 
-	/// <summary>
-	/// Concept 11, "Tote, die nur die Wiederbelebung des Inhalts aufhebt" (A616): whether this status lets only the duty's
-	/// own means raise its bearer, by its text in the English status sheet - "making resurrection by certain means
-	/// impossible" (1755), "Resurrection by certain means is impossible." (2449, 3380), "Resurrection can only be attempted
-	/// by certain means." (4262); xivapi, 06.11.2026. A sheet that cannot be read answers no.
-	/// </summary>
-	internal static bool RestrictsResurrection(uint statusId)
-	{
-		return _restrictsResurrection.GetOrAdd(statusId, static key =>
-		{
-			try
-			{
-				var sheet = Svc.Data.GetExcelSheet<Lumina.Excel.Sheets.Status>(Dalamud.Game.ClientLanguage.English);
-				if (sheet == null || !sheet.TryGetRow(key, out var row))
-				{
-					return false;
-				}
-
-				var text = row.Description.ExtractText();
-				return text.Contains("resurrection", StringComparison.OrdinalIgnoreCase)
-					&& text.Contains("by certain means", StringComparison.OrdinalIgnoreCase);
-			}
-			catch (Exception)
-			{
-				return false;
-			}
-		});
-	}
-
-	/// <summary>
-	/// Concept 07, "Reinigung oder Heilung" (A574): whether this status turns into something worse when it runs out, by its
-	/// own text in the English status sheet - a Deep Freeze, a Sleep, a detonation. A status that ends in death answers no
-	/// here; <see cref="EndsInDeath"/> holds it. A sheet that cannot be read answers no.
-	/// </summary>
-	internal static bool TurnsWorseOnExpiry(StatusID statusId)
-	{
-		return !EndsInDeath(statusId) && _turnsWorse.GetOrAdd((uint)statusId, static key =>
-		{
-			try
-			{
-				var sheet = Svc.Data.GetExcelSheet<Lumina.Excel.Sheets.Status>(Dalamud.Game.ClientLanguage.English);
-				return sheet != null && sheet.TryGetRow(key, out var row) && WorseOnExpiry.IsMatch(row.Description.ExtractText());
-			}
-			catch (Exception)
-			{
-				return false;
-			}
-		});
-	}
-
 	// Concept 03, "Gegner mit Stacheln" (A571, A588), the English status texts (xivapi, 05.11.2026): spikes "dealing fire
 	// damage to attackers", "dealing ice damage to and slowing down attackers"; counters "Countering any physical attacks",
 	// "Damage taken is reduced while countering attacks", "Delivering counter damage every time an attack is suffered";
@@ -303,199 +253,7 @@ public static class StatusHelper
 	private static readonly System.Text.RegularExpressions.Regex ReflectsAttacks = new(@"attack|magic|caster|dealer",
 		System.Text.RegularExpressions.RegexOptions.IgnoreCase | System.Text.RegularExpressions.RegexOptions.CultureInvariant);
 
-	/// <summary>
-	/// Which attacks this status turns back on whoever makes them, by its own text in the English status sheet: spikes,
-	/// counters and reflections (concept 03, "Gegner mit Stacheln", A571, A588). "physical" in the text narrows it to
-	/// physical attacks, "magic" or "-aspected" to magic ones, "ranged" to attacks from range; otherwise every attack. None
-	/// for any other status, and when the sheet cannot be read.
-	/// </summary>
-	internal static AttackKinds CounteredAttacks(uint statusId)
-	{
-		return _counteredAttacks.GetOrAdd(statusId, static key =>
-		{
-			try
-			{
-				var sheet = Svc.Data.GetExcelSheet<Lumina.Excel.Sheets.Status>(Dalamud.Game.ClientLanguage.English);
-				if (sheet == null || !sheet.TryGetRow(key, out var row))
-				{
-					return AttackKinds.None;
-				}
-
-				var text = row.Description.ExtractText();
-				if (!HitsAttackers.IsMatch(text) && !(Reflects.IsMatch(text) && ReflectsAttacks.IsMatch(text)))
-				{
-					return AttackKinds.None;
-				}
-
-				var kinds = AttackKinds.None;
-				if (text.Contains("physical", StringComparison.OrdinalIgnoreCase))
-				{
-					kinds |= AttackKinds.Physical;
-				}
-
-				if (text.Contains("magic", StringComparison.OrdinalIgnoreCase) || text.Contains("-aspected", StringComparison.OrdinalIgnoreCase))
-				{
-					kinds |= AttackKinds.Magic;
-				}
-
-				if (text.Contains("ranged", StringComparison.OrdinalIgnoreCase))
-				{
-					kinds |= AttackKinds.Ranged;
-				}
-
-				return kinds == AttackKinds.None ? AttackKinds.Any : kinds;
-			}
-			catch (Exception)
-			{
-				return AttackKinds.None;
-			}
-		});
-	}
-
-	/// <summary>
-	/// Whether the next damage kills the bearer of this status, by its own text in the English status sheet: "Turned into
-	/// stone. Taking damage results in instant death." (Stone Curse 437, 1417, 4537, 5058; xivapi, 05.11.2026). Concept 03,
-	/// "Tötungsregeln" (A588). A sheet that cannot be read answers no.
-	/// </summary>
-	internal static bool DiesToAnyHit(uint statusId)
-	{
-		return _diesToAnyHit.GetOrAdd(statusId, static key =>
-		{
-			try
-			{
-				var sheet = Svc.Data.GetExcelSheet<Lumina.Excel.Sheets.Status>(Dalamud.Game.ClientLanguage.English);
-				return sheet != null && sheet.TryGetRow(key, out var row)
-					&& row.Description.ExtractText().Contains("Taking damage results in instant death", StringComparison.OrdinalIgnoreCase);
-			}
-			catch (Exception)
-			{
-				return false;
-			}
-		});
-	}
-
-	/// <summary>
-	/// Whether this status kills its bearer when it runs out, by its own text in the English status sheet: "Certain death
-	/// when counter reaches zero." (Doom, six rows), "... decay will result in KO." (Necrosis), "KO is imminent."
-	/// (Throttle) - the cleansable statuses that say so (xivapi, 05.11.2026). A cleanse of one of these saves a life;
-	/// concept 07, "Reinigung oder Heilung" (A565). A sheet that cannot be read answers no.
-	/// </summary>
-	internal static bool EndsInDeath(StatusID statusId)
-	{
-		return _endsInDeath.GetOrAdd((uint)statusId, static key =>
-		{
-			try
-			{
-				var sheet = Svc.Data.GetExcelSheet<Lumina.Excel.Sheets.Status>(Dalamud.Game.ClientLanguage.English);
-				if (sheet == null || !sheet.TryGetRow(key, out var row))
-				{
-					return false;
-				}
-
-				// "KO" as the game writes it, in capitals; "death" in any case.
-				var text = row.Description.ExtractText();
-				return text.Contains("KO", StringComparison.Ordinal) || text.Contains("death", StringComparison.OrdinalIgnoreCase);
-			}
-			catch (Exception)
-			{
-				return false;
-			}
-		});
-	}
 	private static readonly System.Collections.Concurrent.ConcurrentDictionary<uint, bool> _healOverTime = new();
-
-	/// <summary>
-	/// Whether any of these statuses deals damage over time, by its own text in the English status sheet
-	/// ("Sustaining damage over time.", "Toxins are causing damage over time.", "Sustaining lightning damage over
-	/// time."). Read from the game, so every job's damage over time counts, including those no rotation flags
-	/// (A295). A sheet that cannot be read answers no.
-	/// </summary>
-	internal static bool IsDamageOverTime(ReadOnlySpan<StatusID> statusIDs)
-	{
-		foreach (var id in statusIDs)
-		{
-			if (TextSays(_damageOverTime, id, "damage over time"))
-			{
-				return true;
-			}
-		}
-
-		return false;
-	}
-
-	/// <summary>
-	/// Whether this status heals over time, by its own text in the English status sheet ("Regenerating HP over time.",
-	/// "Self and nearby party members are regenerating HP over time.") - 84 statuses of every job, the healers' and the
-	/// tanks' own (xivapi, 27.10.2026; A432). A sheet that cannot be read answers no.
-	/// </summary>
-	internal static bool IsHealOverTime(StatusID statusId)
-	{
-		return TextSays(_healOverTime, statusId, "regenerating HP over time");
-	}
-
-	/// <summary>
-	/// Whether this status heals over time for the heal thresholds: by its own text (<see cref="IsHealOverTime"/>), or
-	/// as one of <see cref="AreaHots"/> and <see cref="SingleHots"/> - kept as the fallback for a status whose text says
-	/// it another way and for a sheet that cannot be read.
-	/// </summary>
-	internal static bool IsAnyHealOverTime(StatusID statusId)
-	{
-		return IsHealOverTime(statusId) || Array.IndexOf(AreaHots, statusId) >= 0 || Array.IndexOf(SingleHots, statusId) >= 0;
-	}
-
-	/// <summary>
-	/// How long the heal over time running longest on <paramref name="battleChara"/> lasts, from any source - the healer's,
-	/// the co-healer's, a tank's own (Aurora), a ground effect's (Kerachole); <see cref="float.MaxValue"/> while an action
-	/// that lays one is on its way to it, or for one without an end; 0 when none runs.
-	/// </summary>
-	/// <remarks>
-	/// The lists alone left out Kerachole's and Celestial Opposition's regeneration and the tanks' own, and the heal
-	/// thresholds treated a member under them as if nothing ticked (A442). The longest, not the earliest to end: a member
-	/// keeps regenerating for as long as one still runs.
-	/// </remarks>
-	internal static float HealOverTimeLeft(this IBattleChara battleChara)
-	{
-		if (DataCenter.InEffectTime && DataCenter.ApplyStatus.TryGetValue(battleChara.GameObjectId, out var pending)
-			&& IsAnyHealOverTime((StatusID)pending))
-		{
-			return float.MaxValue;
-		}
-
-		if (!TryGetStatusList(battleChara, out var statusList))
-		{
-			return 0f;
-		}
-
-		var longest = 0f;
-		for (var i = 0; i < statusList!.Length; i++)
-		{
-			var status = statusList[i];
-			if (status != null && status.StatusId != 0 && IsAnyHealOverTime((StatusID)status.StatusId))
-			{
-				longest = Math.Max(longest, status.RemainingTime == 0f ? float.MaxValue : status.RemainingTime);
-			}
-		}
-
-		return longest;
-	}
-
-	// Whether the status's own text in the English sheet holds the phrase, once per status and phrase.
-	private static bool TextSays(System.Collections.Concurrent.ConcurrentDictionary<uint, bool> known, StatusID statusId, string phrase)
-	{
-		return known.GetOrAdd((uint)statusId, static (key, phrase) =>
-		{
-			try
-			{
-				var sheet = Svc.Data.GetExcelSheet<Lumina.Excel.Sheets.Status>(Dalamud.Game.ClientLanguage.English);
-				return sheet != null && sheet.TryGetRow(key, out var row)
-					&& row.Description.ExtractText().Contains(phrase, StringComparison.OrdinalIgnoreCase);
-			}
-			catch (Exception)
-			{
-				return false;
-			}
-		}, phrase);
-	}
 
 	/// <summary>
 	/// What a body carries once a raise has landed on it: "Raise" under two ids with the same name and text
@@ -881,17 +639,6 @@ public static class StatusHelper
 	internal static StatusID[] InvulnerabilityStatus { get; } = [.. NoNeedHealingStatus, StatusID.WalkingDead];
 
 	/// <summary>
-	/// Whether <paramref name="battleChara"/> stands under an <see cref="InvulnerabilityStatus"/> that is
-	/// still up in <paramref name="seconds"/>. The earliest expiry across the list counts, so a short
-	/// second status beside a long one errs towards "not covered".
-	/// </summary>
-	internal static bool InvulnerableThrough(this IBattleChara battleChara, float seconds)
-	{
-		return battleChara.HasStatus(false, InvulnerabilityStatus)
-			&& !battleChara.WillStatusEnd(seconds, false, InvulnerabilityStatus);
-	}
-
-	/// <summary>
 	/// The subset of <see cref="NoNeedHealingStatus"/> under which a hit does no damage at all - the
 	/// status texts read "Impervious to most attacks" (Hallowed Ground, Superbolide). Holmgang, Living
 	/// Dead, Walking Dead and Undead Rebirth are not in it: under them a hit still takes HP, down to 1,
@@ -903,16 +650,6 @@ public static class StatusHelper
 		StatusID.HallowedGround,
 		StatusID.HallowedGround_1302,
 	];
-
-	/// <summary>
-	/// Whether <paramref name="battleChara"/> stands under an <see cref="ImperviousStatus"/> that is
-	/// still up in <paramref name="seconds"/>.
-	/// </summary>
-	internal static bool ImperviousThrough(this IBattleChara battleChara, float seconds)
-	{
-		return battleChara.HasStatus(false, ImperviousStatus)
-			&& !battleChara.WillStatusEnd(seconds, false, ImperviousStatus);
-	}
 
 	/// <summary>
 	/// The subset of <see cref="NoNeedHealingStatus"/> whose trigger is the bearer's own death.
@@ -940,194 +677,6 @@ public static class StatusHelper
 	/// </summary>
 	internal static StatusID[] NoNeedHealingStatusBesidesDeathTrigger { get; } = Without(NoNeedHealingStatus, DeathTriggeredStatus);
 
-	private static StatusID[] Without(StatusID[] list, StatusID[] removed)
-	{
-		List<StatusID> kept = [];
-		foreach (var status in list)
-		{
-			if (Array.IndexOf(removed, status) < 0)
-			{
-				kept.Add(status);
-			}
-		}
-
-		return [.. kept];
-	}
-
-	/// <summary>
-	/// Whether <paramref name="battleChara"/> is inside a death-triggered window that still has room
-	/// for the death to arrive - that is, <see cref="DeathTriggeredStatus"/> is up and not about to
-	/// expire.
-	/// <para>
-	/// The clock has to be read on this list alone. <see cref="CanBeHealed"/> measures the
-	/// *earliest* expiry across all of <see cref="NoNeedHealingStatus"/>, so an unrelated short
-	/// invulnerability on the same target - a Phantom Oracle's, say - would report the window as
-	/// ending while Living Dead still had most of its duration left.
-	/// </para>
-	/// <para>
-	/// Two GCDs of lead time, and they are measured to the *decision*, not to the heal landing:
-	/// worst case the current GCD has to run out and a cast has to finish on top of it, which is two
-	/// GCDs on its own, so anything shorter lands the heal after the window has already closed and
-	/// the bearer is mortal again. Against Living Dead's ten seconds (ActionId.resx, action 3638:
-	/// "Living Dead Duration: 10s") that is roughly half the window. The GCD itself is the player's
-	/// real one - <see cref="DataCenter.DefaultGCDTotal"/> reads the recast the game reports, so
-	/// spell speed shortens both the lead time and the runway it buys.
-	/// </para>
-	/// <para>
-	/// The lead time is suspended while the death is still reachable, see
-	/// <see cref="DeathStillLikely"/>. Without that, the runway is bought with the very outcome the
-	/// hold exists to produce: a bearer deep enough to fall would be healed back over the line and
-	/// Living Dead would lapse unused, having cost the tank his invulnerability for nothing.
-	/// </para>
-	/// <para>
-	/// An instant heal would land immediately and make a shorter lead time safe, but which heal is
-	/// about to be cast is a rotation decision that this layer cannot see, let alone enforce.
-	/// </para>
-	/// </summary>
-	public static bool InDeathTriggerWindow(this IBattleChara battleChara)
-	{
-		return battleChara.HasStatus(false, DeathTriggeredStatus)
-			&& (DeathStillLikely(battleChara.GetHealthRatio())
-				|| !battleChara.WillStatusEndGCD(DeathTriggerLeadGCDs, 0, false, DeathTriggeredStatus));
-	}
-
-	/// <inheritdoc cref="InDeathTriggerWindow(IBattleChara)"/>
-	public static bool PlayerInDeathTriggerWindow()
-	{
-		return PlayerHasStatus(false, DeathTriggeredStatus)
-			&& (DeathStillLikely(ObjectHelper.GetPlayerHealthRatio())
-				|| !PlayerWillStatusEndGCD(DeathTriggerLeadGCDs, 0, false, DeathTriggeredStatus));
-	}
-
-	/// <summary>
-	/// Whether a heal from the player would be punished or wasted right now: Scalebound (1495:
-	/// "unable to heal wounds via any method save mega potions"), or Shackled Healing (4564: "Use of
-	/// HP-restoring actions will inflict Shackles of Penitence on those nearby") while anyone else is
-	/// near. The same test the heal dispatch in CustomRotation_Ability and CustomRotation_GCD applies,
-	/// including its 21 yalms; here so that a heal asked from outside that dispatch - Lux Solaris,
-	/// Rekindle - obeys it too.
-	/// </summary>
-	internal static bool PlayerHealingPunished()
-	{
-		return PlayerHasStatus(false, StatusID.Scalebound)
-			|| (PlayerHasStatus(false, StatusID.ShackledHealing) && DataCenter.NumberOfPartyMembersInRangeOf(21) != 1);
-	}
-
-	/// <summary>How early the death-trigger hold releases; see <see cref="InDeathTriggerWindow"/>.</summary>
-	private const uint DeathTriggerLeadGCDs = 2;
-
-	/// <summary>
-	/// Whether a Walking Dead bearer is still carried by his own attacks, and if not, why.
-	/// <para>
-	/// Owner's rule (concept 09): under Walking Dead the dark knight does not fall below 1 HP from
-	/// most attacks, every weaponskill or spell he lands restores HP, and only if the restored total
-	/// has not reached his maximum HP when the timer runs out is he KO'd (Living Dead's effect text,
-	/// ActionId.resx 3638). So at first the party trusts him to heal himself by fighting and supports
-	/// him only lightly, with a HoT. Full support comes once the timer is running out, or once it is
-	/// clear he will not make it in the time left - no enemy in reach, or an event ahead during which
-	/// he cannot attack.
-	/// </para>
-	/// <para>
-	/// Every condition comes from the game or from the fight, none from a number of its own:
-	/// <list type="bullet">
-	/// <item>The lead time is the Living Dead hold's, for the same reason: a full heal decided now
-	/// must still land before the window closes.</item>
-	/// <item>Reach is the game's range for Hard Slash, his basic weaponskill, hitbox to hitbox.</item>
-	/// <item>The event is BossModReborn's next downtime. Without a module it reads as none, and an
-	/// untargetable phase is seen only once it has begun, through the reach check.</item>
-	/// <item>A tank limit break on the party releases too: "most attacks" leaves room for hits that
-	/// do take him below 1 HP, and by the owner's reading those are the rare raidwides that need one.</item>
-	/// <item>The course is his health since the window was first seen, carried forward over the
-	/// time left. Health is net of the damage he takes, so it understates what he has restored and
-	/// the release comes early rather than late. For the first GCD there is nothing to measure yet,
-	/// and he is trusted, as the rule says.</item>
-	/// </list>
-	/// </para>
-	/// </summary>
-	internal static bool WalkingDeadCarriedBySelfHeal(this IBattleChara battleChara, out string why)
-	{
-		var id = battleChara.GameObjectId;
-		if (!battleChara.HasStatus(false, StatusID.WalkingDead))
-		{
-			_ = WalkingDeadSeen.Remove(id);
-			why = "not under Walking Dead";
-			return false;
-		}
-
-		var now = DateTime.Now;
-		var remaining = battleChara.StatusTime(false, StatusID.WalkingDead);
-		var ratio = battleChara.GetHealthRatio();
-
-		// A later window reads more time left than the one on record: start over.
-		if (!WalkingDeadSeen.TryGetValue(id, out var seen) || remaining > seen.Remaining)
-		{
-			seen = (now, ratio, remaining);
-			WalkingDeadSeen[id] = seen;
-		}
-
-		if (battleChara.WillStatusEndGCD(DeathTriggerLeadGCDs, 0, false, StatusID.WalkingDead))
-		{
-			why = "the timer is running out - full support";
-			return false;
-		}
-
-		var reach = FFXIVClientStructs.FFXIV.Client.Game.ActionManager.GetActionRange((uint)ActionID.HardSlashPvE);
-		var enemyInReach = false;
-		foreach (var hostile in DataCenter.AllHostileTargets)
-		{
-			if (hostile != null && EdgeDistance(battleChara, hostile) <= reach)
-			{
-				enemyInReach = true;
-				break;
-			}
-		}
-
-		if (!enemyInReach)
-		{
-			why = "no enemy in reach of his weaponskills - full support";
-			return false;
-		}
-
-		if (DataCenter.BMRNextDowntimeIn < remaining)
-		{
-			why = "a downtime is announced before the timer ends - full support";
-			return false;
-		}
-
-		// "Most attacks" will not lower him below 1 HP - not all. The owner's reading: the exception
-		// is the rare raidwide the party only survives with a tank's limit break (his examples: the
-		// Alexander raids, the Warrior of Light trial). Those are few, so an ordinary raidwide must
-		// not release the hold - that would undo the trust the rule asks for at every one of them.
-		// The mark of the rare one is the limit break itself: once a tank's limit break status is up
-		// on the party, the hit it was used for is coming, and at 1 HP he would stand in front of it
-		// unprotected. Read from the party's statuses, so it needs no BossModReborn.
-		foreach (var member in DataCenter.PartyMembers)
-		{
-			if (member != null && member.HasStatus(false, TankLimitBreakStatus))
-			{
-				why = "a tank limit break is up - full support before the hit it was used for";
-				return false;
-			}
-		}
-
-		var span = (float)(now - seen.At).TotalSeconds;
-		if (span < DataCenter.DefaultGCDTotal)
-		{
-			why = "just started, nothing to measure yet - HoT only";
-			return true;
-		}
-
-		var projected = ratio + ((ratio - seen.Ratio) / span * remaining);
-		if (projected < 1f)
-		{
-			why = $"his own course reaches {projected:P0} by the end - full support";
-			return false;
-		}
-
-		why = $"carried by his own attacks, course {projected:P0} - HoT only";
-		return true;
-	}
-
 	/// <summary>The four tanks' level 3 limit breaks (Status.resx: "Damage taken is reduced").</summary>
 	private static readonly StatusID[] TankLimitBreakStatus =
 	[
@@ -1136,42 +685,6 @@ public static class StatusHelper
 		StatusID.DarkForce,
 		StatusID.GunmetalSoul,
 	];
-
-	/// <summary>When each bearer's Walking Dead was first seen, with his health and the time left then.</summary>
-	private static readonly Dictionary<ulong, (DateTime At, float Ratio, float Remaining)> WalkingDeadSeen = [];
-
-	/// <summary>Hitbox-to-hitbox distance on the ground plane, as the game measures action range.</summary>
-	private static float EdgeDistance(IBattleChara a, IBattleChara b)
-	{
-		var dx = a.Position.X - b.Position.X;
-		var dz = a.Position.Z - b.Position.Z;
-		return MathF.Max(0f, MathF.Sqrt((dx * dx) + (dz * dz)) - a.HitboxRadius - b.HitboxRadius);
-	}
-
-	/// <summary>
-	/// Is the fall to zero still the likely continuation for a bearer at this health?
-	///
-	/// The lead time above buys the heal enough runway to land, and it pays for that with the one
-	/// thing the hold exists to protect: it can cancel a death that would still have arrived inside
-	/// the window. That price is only acceptable where the death was not coming anyway, and the
-	/// user's requirement is exactly that - the lead time must never heal the bearer out of a death
-	/// he was going to reach.
-	///
-	/// So the lead time is suspended while the bearer stands at or below
-	/// <c>HealthForDyingTanks</c>: that is the tree's own expression of "this tank is about to fall"
-	/// - the value at which the tank rotations fire the invulnerability in the first place - and at
-	/// that depth under a running stream the zero arrives before the window closes. Above it the
-	/// death is not coming, the buff is going to lapse unused, and the heal should be under way
-	/// before the bearer is mortal again.
-	///
-	/// Nothing is lost in the suspended case: once Living Dead does lapse, the hold is gone with it
-	/// and the bearer is an ordinary heal target again. What he cannot do is be healed over the
-	/// threshold while the trigger is still reachable.
-	/// </summary>
-	private static bool DeathStillLikely(float healthRatio)
-	{
-		return Service.Config != null && healthRatio <= Service.Config.HealthForDyingTanks;
-	}
 
 	/// <summary>
 	/// Statuses under which a heal lands for nothing at all, as opposed to merely being less urgent.
@@ -1466,146 +979,6 @@ public static class StatusHelper
 		return PlayerWillStatusEndGCD(2, 0, false, NoNeedHealingStatus);
 	}
 
-	private static HashSet<uint>? _amnesiaIds;
-
-	/// <summary>
-	/// Whether the player can use no ability right now, and for how much longer: a status whose row in the
-	/// client's status sheet locks actions (a stun, sleep, petrification and some 260 others), or Amnesia, which
-	/// blocks every ability without that flag ("Unable to use abilities"; rows 5, 1092 and 4210, recognised by the
-	/// generator's names from the English sheet, so the client language does not matter).
-	/// <paramref name="rest"/> is the longest remaining time among them, 0 when none names an end. Recognition
-	/// only: the readers decide (concept 09, "Spielerweite Sperre und Frist").
-	/// </summary>
-	internal static bool PlayerAbilitiesLocked(out float rest)
-	{
-		rest = 0f;
-		var list = Player.Object?.StatusList;
-		if (list == null)
-		{
-			return false;
-		}
-
-		_amnesiaIds ??= IdsByNamePrefix("Amnesia");
-		var locked = false;
-		foreach (var status in list)
-		{
-			if (status == null || status.StatusId == 0)
-			{
-				continue;
-			}
-
-			if (_amnesiaIds.Contains(status.StatusId) || (status.GameData.ValueNullable?.LockActions ?? false))
-			{
-				locked = true;
-				rest = Math.Max(rest, status.RemainingTime);
-			}
-		}
-
-		return locked;
-	}
-
-	private static HashSet<uint>? _vulnerabilityUpIds;
-
-	/// <summary>
-	/// The game's "damage taken is increased" debuffs, recognised by the names the generator gives them
-	/// from the status sheet (Vulnerability Up, Physical and Magic Vulnerability Up) rather than by a
-	/// hand-kept id list. The names are the English sheet names, so the client language does not matter.
-	/// </summary>
-	internal static bool IsVulnerabilityUp(uint statusId)
-	{
-		_vulnerabilityUpIds ??= IdsByNamePrefix("VulnerabilityUp", "PhysicalVulnerabilityUp", "MagicVulnerabilityUp");
-		return _vulnerabilityUpIds.Contains(statusId);
-	}
-
-	private static HashSet<uint> IdsByNamePrefix(params string[] prefixes)
-	{
-		HashSet<uint> ids = [];
-		foreach (var value in Enum.GetValues<StatusID>())
-		{
-			var name = value.ToString();
-			foreach (var prefix in prefixes)
-			{
-				if (name.StartsWith(prefix, StringComparison.Ordinal))
-				{
-					_ = ids.Add((uint)value);
-					break;
-				}
-			}
-		}
-
-		return ids;
-	}
-
-	/// <summary>Whether <paramref name="battleChara"/> carries any vulnerability debuff.</summary>
-	internal static bool CarriesVulnerabilityUp(this IBattleChara battleChara)
-	{
-		return Carries(battleChara, IsVulnerabilityUp);
-	}
-
-	/// <summary>
-	/// Seconds the longest vulnerability debuff on <paramref name="battleChara"/> still runs: 0 without one,
-	/// <see cref="float.MaxValue"/> for one that names no end.
-	/// </summary>
-	internal static float VulnerabilityUpRemaining(this IBattleChara battleChara)
-	{
-		var statuses = battleChara.StatusList;
-		if (statuses == null)
-		{
-			return 0f;
-		}
-
-		var longest = 0f;
-		foreach (var status in statuses)
-		{
-			if (status == null || status.StatusId == 0 || !IsVulnerabilityUp(status.StatusId))
-			{
-				continue;
-			}
-
-			longest = Math.Max(longest, status.RemainingTime > 0f ? status.RemainingTime : float.MaxValue);
-		}
-
-		return longest;
-	}
-
-	private static HashSet<uint>? _damageUpIds;
-
-	/// <summary>
-	/// The game's "damage dealt is increased" statuses - Damage Up, Physical and Magic Damage Up - by the
-	/// generator's names from the status sheet, as <see cref="IsVulnerabilityUp"/> does for the debuffs.
-	/// </summary>
-	internal static bool IsDamageUp(uint statusId)
-	{
-		_damageUpIds ??= IdsByNamePrefix("DamageUp", "PhysicalDamageUp", "MagicDamageUp");
-		return _damageUpIds.Contains(statusId);
-	}
-
-	/// <summary>Whether <paramref name="battleChara"/> carries any damage-up status.</summary>
-	internal static bool CarriesDamageUp(this IBattleChara battleChara)
-	{
-		return Carries(battleChara, IsDamageUp);
-	}
-
-	private static bool Carries(IBattleChara battleChara, Func<uint, bool> isOfKind)
-	{
-		var statuses = battleChara.StatusList;
-		if (statuses == null)
-		{
-			return false;
-		}
-
-		foreach (var status in statuses)
-		{
-			if (status != null && status.StatusId != 0 && isOfKind(status.StatusId))
-			{
-				return true;
-			}
-		}
-
-		return false;
-	}
-
-
 	/// <summary>
 	/// True when the target has no <see cref="NoNeedHealingStatus"/> (an invulnerability) lasting beyond 2 GCDs. The
 	/// list holds genuine invulnerabilities only; what blocks healing outright is <see cref="HealingIneffectiveStatus"/>,
@@ -1631,28 +1004,6 @@ public static class StatusHelper
 	}
 
 	private static readonly System.Collections.Concurrent.ConcurrentDictionary<uint, bool> _endsWhenFullyHealed = new();
-
-	/// <summary>
-	/// Concept 07, "Reinigung oder Heilung" (A573): whether this status ends only once its bearer is fully healed, by its
-	/// own text in the English status sheet ("Effect dissipates once fully healed": Doom 1769 and 5473, Gradual
-	/// Petrification 1628, Accretion 1604; xivapi, 05.11.2026). A sheet that cannot be read answers no.
-	/// </summary>
-	internal static bool EndsWhenFullyHealed(uint statusId)
-	{
-		return _endsWhenFullyHealed.GetOrAdd(statusId, static key =>
-		{
-			try
-			{
-				var sheet = Svc.Data.GetExcelSheet<Lumina.Excel.Sheets.Status>(Dalamud.Game.ClientLanguage.English);
-				return sheet != null && sheet.TryGetRow(key, out var row)
-					&& row.Description.ExtractText().Contains("dissipates once fully healed", StringComparison.OrdinalIgnoreCase);
-			}
-			catch (Exception)
-			{
-				return false;
-			}
-		});
-	}
 
 	// A573: whether the character carries a status that ends only at full HP.
 	private static bool HasStatusEndedByFullHealing(IBattleChara character)
@@ -1787,16 +1138,6 @@ public static class StatusHelper
 
 		var statusTime = battleChara.StatusTime(isFromSelf, statusIDs);
 		return (statusTime >= 0f || !battleChara.HasStatus(isFromSelf, statusIDs)) && statusTime <= time;
-	}
-
-	/// <summary>
-	/// Whether <paramref name="battleChara"/> has an active shield (see <see cref="ShieldStatus"/>) that will
-	/// still be up in <paramref name="horizon"/> seconds. A shield about to expire shouldn't be credited toward
-	/// the target's effective health, since it won't be there to absorb the damage that matters.
-	/// </summary>
-	public static bool HasSurvivingShield(this IBattleChara battleChara, float horizon)
-	{
-		return battleChara.GetObjectShield() > 0 && !battleChara.WillStatusEnd(horizon, false, ShieldStatus);
 	}
 
 	/// <summary>
@@ -2159,8 +1500,6 @@ public static class StatusHelper
 	// player's.
 	private static readonly HashSet<ulong> _playerOwned = [];
 	private static long _playerOwnedTick = long.MinValue;
-	private static ulong _playerOwnedFor;
-	private static uint _playerOwnedIn;
 
 	/// <summary>
 	/// Whether <paramref name="status"/> comes from the player or from an object the player owns or has owned in this area - the
@@ -2170,26 +1509,6 @@ public static class StatusHelper
 	private static bool IsFromPlayer(IStatus status, ulong playerId)
 	{
 		return IsPlayerOrOwned(status.SourceId, playerId);
-	}
-
-	/// <summary>
-	/// Whether <paramref name="objectId"/> is the player or an object the player owns or has owned in this area - pet,
-	/// summons, companions -, read from the same ids as the "from self" test of the statuses.
-	/// </summary>
-	internal static bool IsPlayerOrOwned(ulong objectId, ulong playerId)
-	{
-		if (objectId == playerId)
-		{
-			return true;
-		}
-
-		if (_playerOwnedTick == long.MinValue || Environment.TickCount64 - _playerOwnedTick >= DataCenter.FrameCacheMs
-			|| _playerOwnedFor != playerId || _playerOwnedIn != DataCenter.TerritoryID)
-		{
-			NoteOwnedObjects();
-		}
-
-		return _playerOwned.Contains(objectId);
 	}
 
 	/// <summary>
@@ -2290,7 +1609,6 @@ public static class StatusHelper
 		}
 		return min;
 	}
-
 
 	/// <summary>
 	/// Check if the status is invincible.

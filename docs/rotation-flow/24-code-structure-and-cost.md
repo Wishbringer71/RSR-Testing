@@ -140,8 +140,18 @@ Upstream bleibt ein Wort Fork-Änderung je Klasse (`partial`) neben den Änderun
 der Startwerte über Teildateien ist nicht festgelegt (C#-Spezifikation, „Static field initialization"); ein Feld, das
 dabei `null` läse, wäre ein Absturz beim Laden.
 *Preis:* ein großer, rein verschiebender Commit; ein Sync, der zeitgleich neben einem verschobenen Block ändert, kann
-einmal einen Konflikt bringen. *Reihenfolge:* nach den kleinen Punkten, je Datei ein Commit, jeweils kompiliert und mit
-allen Prüfungen.
+einmal einen Konflikt bringen.
+*Umgesetzt (A740):* `DataCenter` in `DataCenter.AreaDamage.cs` (13), `.BlackestNight.cs` (10), `.Channels.cs` (14),
+`.HitResponse.cs` (08), `.TankProtection.cs` (09), `.Universal.cs` (03 und ohne Verweis); `ObjectHelper` in `.HealTarget`,
+`.HitResponse`, `.Jobs`, `.Raise`, `.Universal`; `StatusHelper` in `.HealTarget`, `.Raise`, `.TankProtection`, `.Universal`;
+`CustomRotation_OtherInfo` in `.Channels`, `.HitResponse`, `.Roles`, `.Universal`. Das Thema eines Members ist das Konzept,
+das sein Kommentar am häufigsten nennt; ohne Nennung das des Members davor. Fork-Zeilen in den vier Dateien von
+Upstream: vorher 7.088, danach 1.431 – der Rest sind Änderungen in Upstreams eigenen Membern und die stehen gebliebenen
+statischen Felder mit Startwert. Nachgewiesen: jede Codezeile steht danach genau einmal da (Vergleich der Zeilenmengen
+vor und nach), Compile ohne Warnung, alle Prüfungen. Prüfskripte, die eine Klasse lesen, lesen sie samt Teildateien
+(`check_learned_readers`, `check_emergency_heal_threat`); `check_invuln_polarity` und `fixed_values.json` nennen die
+Teildatei. `ActionTargetInfo` bleibt: Dort sind nur 164 Zeilen ganze Fork-Member, 956 Fork-Zeilen stehen in Upstreams
+eigenen Membern.
 
 ### Speicher
 

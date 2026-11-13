@@ -472,7 +472,9 @@ def main():
         if not path.exists():
             print('%s not found - run from the repository root' % path)
             return 1
-        problems += checker(path.read_text(encoding='utf-8'))
+        # A class with its partial parts `Name.Topic.cs` (A740, concept 24).
+        parts = [path] + sorted(path.parent.glob(path.stem + '.*.cs'))
+        problems += checker('\n'.join(part.read_text(encoding='utf-8') for part in parts))
 
     if problems:
         print('the emergency heal is no longer tied to actual danger:')

@@ -21503,6 +21503,28 @@ Code-Review, Fehlerbeseitigung. Neues Konzept 24, „Code: Struktur und Rechenko
 - *Prüfgrad:* Laufzeitmessung an seinen Protokollen, Testprogramm an der gebauten Bibliothek, Analyzer, Klonsuche,
   Compile ohne Warnung, Prüfskripte; im Spiel nicht beobachtet.
 
+### A740 · Fork-Member in Teildateien je Thema (13.11.2026)
+
+Konzept 24, „Fork-Code in eigenen Teildateien", aus A739 in Reihenfolge.
+
+- *Gebaut:* `DataCenter`, `ObjectHelper`, `StatusHelper` sind `partial`; ganze Fork-Member dieser drei und von
+  `CustomRotation_OtherInfo` stehen in Teildateien `Name.Thema.cs` (Thema: das Konzept, das ihr Kommentar am häufigsten
+  nennt). Werkzeug: `opt/split.py` und `opt/split2.py` im Notizordner – ein Member auf Klassenebene reicht von seiner
+  ersten Kommentar- oder Codezeile bis zur Zeile, die auf `}` oder `;` endet und die Klassentiefe wieder erreicht; als
+  Fork gilt er, wenn jede seiner Zeilen in `git diff -U0 upstream/main...HEAD` hinzugefügt ist; `#region` wandert nie.
+- *Nicht verschoben:* statische Felder und Eigenschaften mit Startwert (C#-Spezifikation: Die Reihenfolge der
+  Startwerte über Teildateien ist nicht festgelegt), statische Konstruktoren. 517 Zeilen bleiben so stehen.
+- *Gemessen:* Fork-Zeilen in den vier Dateien von Upstream 7.088 → 1.431. Jede Codezeile steht danach genau einmal da
+  (Zeilenmengen vor und nach, ohne `using`, `namespace`, Klassenkopf und Klammern).
+- *Prüfskripte:* `check_learned_readers` und `check_emergency_heal_threat` lesen eine Klasse samt Teildateien (Selbsttest
+  um eine verschobene Fassung ergänzt); `check_invuln_polarity` und 26 Einträge von `fixed_values.json` nennen die
+  Teildatei.
+- *Falsifikation:* Kein Nutzen? Jeder künftige Sync trifft in diesen Dateien auf ein Fünftel der Fork-Zeilen. Option
+  falsch? Ein Laufzeitfehler aus der Reihenfolge statischer Startwerte ist ausgeschlossen, weil keiner wanderte.
+  Ausgeliefert, und nichts ändert sich? Im Kampf nichts – so gewollt; die Wirkung liegt im Sync und im Auffinden einer
+  Regel nach ihrem Konzept.
+- *Prüfgrad:* Compile ohne Warnung, verlustfreie Verschiebung mechanisch nachgewiesen, alle Prüfskripte.
+
 ## B · Commit-Register (Fork vs. `upstream/main`)
 
 ### B1 · Einzelgeprüfte Fork-Commits
