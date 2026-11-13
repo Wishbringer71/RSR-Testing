@@ -351,7 +351,19 @@ public partial class BeastmasterRotation
 
 		CrucibleShopOpen = true;
 		var reader = new ReaderXBMContentsItemShop(shop);
-		var stock = reader.StockEntries;
+		List<ReaderXBMContentsItemShop.StockEntry> stock;
+		try
+		{
+			stock = reader.StockEntries;
+		}
+		catch (Exception ex) when (ex is InvalidCastException or ArgumentOutOfRangeException)
+		{
+			// The window is open before the game has filled its values: ECommons' reader throws, and until A764 that ended
+			// the Beastmaster's services for the frame - treasure and route included (five times on 08.11.2026). The next
+			// frame reads it filled.
+			return;
+		}
+
 		var prompt = (AddonSelectYesno*)Svc.GameGui.GetAddonByName("SelectYesno").Address;
 		if (_shopWanted is { } wanted)
 		{
@@ -371,7 +383,14 @@ public partial class BeastmasterRotation
 			}
 		}
 
-		RecommendPurchases(reader, stock);
+		try
+		{
+			RecommendPurchases(reader, stock);
+		}
+		catch (Exception ex) when (ex is InvalidCastException or ArgumentOutOfRangeException)
+		{
+			// Coins and owned pieces are values of the same window, filled as late as the stock (above).
+		}
 	}
 
 	private static unsafe void BuyNext(AtkUnitBase* shop, List<ReaderXBMContentsItemShop.StockEntry> stock, List<int> wanted)

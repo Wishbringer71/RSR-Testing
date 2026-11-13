@@ -269,13 +269,48 @@ internal static class BestiaryTrace
 				AtkValueType.Int64 => text.Append("int64 ").Append(value.Int64),
 				AtkValueType.UInt64 => text.Append("uint64 ").Append(value.UInt64),
 				AtkValueType.String or AtkValueType.ConstString or AtkValueType.ManagedString => text.Append("text \"")
-					.Append(value.String.HasValue ? new ReadOnlySeStringSpan(value.String.AsSpan()).ExtractText() : string.Empty)
+					.Append(Text(value.String.Value))
 					.Append('"'),
 				_ => text.Append(value.Type),
 			};
 		}
 
 		return text.ToString();
+	}
+
+	/// <summary>
+	/// The text a window value points to, read through Dalamud's <see cref="Dalamud.SafeMemory"/> one page at a time up to
+	/// its null byte; "unreadable" where a page cannot be read. A window's values may hold a text pointer into memory the
+	/// game no longer maps: read directly, that raised an <see cref="AccessViolationException"/>, which .NET cannot catch,
+	/// and the game closed when a Crucible window opened (13.11.2026, A764; concept 21, "K15 – Punkte der Bewertung").
+	/// </summary>
+	private static unsafe string Text(byte* pointer)
+	{
+		if (pointer == null)
+		{
+			return string.Empty;
+		}
+
+		var page = Environment.SystemPageSize;
+		var bytes = new List<byte>();
+		var address = (nint)pointer;
+		while (true)
+		{
+			var chunk = page - (int)(address % page);
+			if (!Dalamud.SafeMemory.ReadBytes(address, chunk, out var read))
+			{
+				return bytes.Count == 0 ? "unreadable" : $"{new ReadOnlySeStringSpan(bytes.ToArray()).ExtractText()}... unreadable";
+			}
+
+			var end = Array.IndexOf(read, (byte)0);
+			bytes.AddRange(end < 0 ? read : read.AsSpan(0, end).ToArray());
+			if (end >= 0)
+			{
+				return new ReadOnlySeStringSpan(bytes.ToArray()).ExtractText();
+			}
+
+			address += chunk;
+		}
 	}
 
 	private static void Line(string text)

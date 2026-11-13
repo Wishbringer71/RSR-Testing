@@ -22242,6 +22242,27 @@ fehlerbeseitigung. rotas, bretter, ablaufplanung".
   `if (IsInCrucible) return;` steht vor dem Löschen.
 - *Prüfgrad:* statisch und Compile; alle CI-Schritte lokal grün.
 
+### A764 · Spielabsturz beim Öffnen eines Crucible-Fensters; Ladenleser vor gefüllten Werten (13.11.2026)
+
+- *Upload (13.11.2026):* `7741e8b7-XIVLauncher.7z` (Absturzprotokoll und Speicherabbild 13.11.2026, 18:50 Ortszeit),
+  `bd2b7c26-XIVLauncher1.zip` (Dalamud-Protokolle), `486b4493-ffxiv_dx11.7z` (Spiel-exe, nur in dieser Sitzung zur
+  Einordnung; Spielversion laut Dalamud 2026.10.16).
+- *Absturz:* `System.AccessViolationException` in `BestiaryTrace.Values` ← `CrucibleWindowTrace.OnWindow` ←
+  `AddonLifecycle` (PostSetup) ← `AtkUnitManager.Update`. Ein Wert eines Crucible-Fensters vom Typ Text zeigte auf
+  Speicher, den das Spiel nicht abbildet. RSR las ihn ungeprüft bis zum Nullbyte. .NET fängt eine Zugriffsverletzung
+  nicht ab, und das Spiel endete. Davor: das Fenster des Teams (`XBMPetParty`, Setup und Refresh) um 18:50:04, der Absturz
+  0,8 s später beim Setup des nächsten Fensters. Ursache am System: Die Messzeile (A695) traute den Werten eines
+  Fensters wie einem Zeiger des eigenen Codes.
+- *Behoben:* `BestiaryTrace.Text` liest den Text über Dalamuds `SafeMemory.ReadBytes` seitenweise bis zum Nullbyte;
+  unlesbar steht als „unreadable“ in der Zeile. Erhoben: Keine andere Stelle in RSR liest eine Spielzeichenkette über
+  einen Zeiger aus Fensterwerten (Suche nach `.String.`, `CreateReadOnlySpanFromNullTerminated`, `MemoryHelper.Read`).
+- *Nebenbefund (Dalamud-Protokoll vom 08.11.2026):* `BST_Reborn.UpdateServices failed: ArgumentOutOfRangeException`
+  in `FollowCrucibleShop`, fünfmal: ECommons' Ladenleser warf, solange das Fenster noch leer war. Damit fielen für
+  den Frame auch Schatz und Route aus. Jetzt wartet der Laden einen Frame, wie das Futter seit 7e039f8d0. Reihenfolge:
+  Hier stand der Code vor der Konzeptzeile (Konzept 21, „Noch leeres Fenster“), im selben Zug nachgezogen.
+- *Prüfgrad:* Compile; alle CI-Schritte lokal. Der Absturz ist nicht nachgestellt: Welcher Wert welches Fensters auf
+  unlesbaren Speicher zeigt, nennt das Protokoll nicht.
+
 ## B · Commit-Register (Fork vs. `upstream/main`)
 
 ### B1 · Einzelgeprüfte Fork-Commits
