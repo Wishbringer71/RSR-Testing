@@ -140,7 +140,7 @@ public partial class CustomRotation
 
 	static partial void ModifyRecuperatePvP(ref ActionSetting setting)
 	{
-		setting.ActionCheck = () => (Player?.MaxHp - Player?.CurrentHp) >= 15000 && Player?.TimeAlive() > 5f;
+		setting.ActionCheck = () => RecuperatePvPAllowed() && Player?.TimeAlive() > 5f;
 		setting.IsFriendly = true;
 		setting.TargetType = TargetType.Self;
 	}

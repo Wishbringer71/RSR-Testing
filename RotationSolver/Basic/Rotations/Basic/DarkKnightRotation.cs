@@ -494,7 +494,10 @@ public partial class DarkKnightRotation
 	}
 	static partial void ModifyPlungePvP(ref ActionSetting setting)
 	{
-		//setting.SpecialType = SpecialActionType.MovingForward;
+		// "Rushes target" (effect text): a jump onto the target, held by the gap closer limit as in PvE (concept 25, "PvP: Bewegung", A756).
+		setting.SpecialType = SpecialActionType.HostileMovingAttack;
+		// Within the reach the player allows damaging gap closers, as Intervene in PvE (A358; concept 25, A756).
+		setting.CanTarget = static t => GapCloserAllowed(t, pressed: ActionID.PlungePvP);
 	}
 
 	static partial void ModifyScarletDeliriumPvP(ref ActionSetting setting)

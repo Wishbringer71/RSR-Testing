@@ -417,7 +417,10 @@ public partial class DragoonRotation
 
 	static partial void ModifyHighJumpPvP(ref ActionSetting setting)
 	{
-		//setting.SpecialType = SpecialActionType.MovingForward;
+		// "Delivers a jumping attack" (effect text): a jump onto the target, held by the gap closer limit as in PvE (concept 25, "PvP: Bewegung", A756).
+		setting.SpecialType = SpecialActionType.HostileMovingAttack;
+		// Within the reach the player allows damaging gap closers, as Intervene in PvE (A358; concept 25, A756).
+		setting.CanTarget = static t => GapCloserAllowed(t, pressed: ActionID.HighJumpPvP);
 	}
 
 	static partial void ModifyElusiveJumpPvP(ref ActionSetting setting)

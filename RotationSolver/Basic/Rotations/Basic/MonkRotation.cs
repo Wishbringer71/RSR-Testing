@@ -686,7 +686,8 @@ public partial class MonkRotation
 
 	static partial void ModifyThunderclapPvP(ref ActionSetting setting)
 	{
-		//setting.SpecialType = SpecialActionType.MovingForward;
+		// "Rush to a target's side" (effect text), an enemy or a party member (concept 25, "PvP: Bewegung", A756).
+		setting.SpecialType = SpecialActionType.HostileFriendlyMovingForward;
 	}
 
 

@@ -751,15 +751,17 @@ public partial class RedMageRotation
 
 	static partial void ModifyEnchantedZwerchhauPvP(ref ActionSetting setting)
 	{
+		// No status check: 3238 is the damage over time on the target, never a state of the player, so the former
+		// StatusProvide never held; on the target it would stall the combo while the last one's damage still runs (scan11;
+		// concept 25, "PvP: Jobs", A756).
 		setting.ActionCheck = () => IsLastComboAction(ActionID.EnchantedRipostePvP);
-		setting.StatusProvide = [StatusID.EnchantedZwerchhau_3238];
 		setting.IgnoreGuard = true;
 	}
 
 	static partial void ModifyEnchantedRedoublementPvP(ref ActionSetting setting)
 	{
+		// As Enchanted Zwerchhau: 3239 is the damage over time on the target (concept 25, "PvP: Jobs", A756).
 		setting.ActionCheck = () => IsLastComboAction(ActionID.EnchantedZwerchhauPvP);
-		setting.StatusProvide = [StatusID.EnchantedRedoublement_3239];
 		setting.IgnoreGuard = true;
 	}
 
@@ -799,6 +801,9 @@ public partial class RedMageRotation
 	static partial void ModifyDisplacementPvP(ref ActionSetting setting)
 	{
 		setting.StatusProvide = [StatusID.Displacement_3243];
+		// "Additional Effect: 15-yalm backstep" (effect text; concept 25, "PvP: Bewegung", A756).
+		setting.SpecialType = SpecialActionType.HostileAttackBackstep;
+		setting.BackstepDistance = 15;
 	}
 
 	static partial void ModifyFortePvP(ref ActionSetting setting)

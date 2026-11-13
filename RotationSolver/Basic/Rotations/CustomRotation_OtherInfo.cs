@@ -75,7 +75,7 @@ public partial class CustomRotation
 	/// <summary>
 	/// 
 	/// </summary>
-	public static bool HasPVPGuard => StatusHelper.PlayerHasStatus(true, StatusID.Guard) || (IsLastAction(ActionID.GuardPvP) && TimeSinceLastActionCapped < 0.5f);
+	public static bool HasPVPGuard => StatusHelper.PlayerHasStatus(true, StatusHelper.PvPGuardStatuses) || (IsLastAction(ActionID.GuardPvP) && TimeSinceLastActionCapped < 0.5f);
 
 	/// <summary>
 	/// Check the player is moving, such as running, walking or jumping.

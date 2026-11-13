@@ -519,6 +519,8 @@ public partial class PaladinRotation
 	static partial void ModifyIntervenePvP(ref ActionSetting setting)
 	{
 		setting.SpecialType = SpecialActionType.HostileMovingAttack;
+		// Within the reach the player allows damaging gap closers, as Intervene in PvE (A358; concept 25, A756).
+		setting.CanTarget = static t => GapCloserAllowed(t, pressed: ActionID.IntervenePvP);
 	}
 
 	static partial void ModifyBladeOfFaithPvP(ref ActionSetting setting)
@@ -554,6 +556,8 @@ public partial class PaladinRotation
 		setting.StatusNeed = [StatusID.HallowedGround_1302];
 		setting.TargetType = TargetType.LowHP;
 		setting.IsFriendly = true;
+		// "Rush to a target party member's side" (effect text; concept 25, "PvP: Bewegung", A756).
+		setting.SpecialType = SpecialActionType.FriendlyMovingForward;
 	}
 	#endregion
 }

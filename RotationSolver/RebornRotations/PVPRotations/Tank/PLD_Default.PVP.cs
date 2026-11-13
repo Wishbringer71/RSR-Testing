@@ -67,6 +67,13 @@ public sealed class PLD_DefaultPvP : PaladinRotation
 
 	protected override bool AttackAbility(IAction nextGCD, out IAction? action)
 	{
+		// Either end pays: absorbed, the barrier took a hit; left standing, it bursts on nearby enemies and grants Sword
+		// Oath. Until A756 it went only when RSR asked for defence (concept 25, "PvP: Jobs").
+		if (InCombat && HasHostilesInRange && HolySheltronPvP.CanUse(out action))
+		{
+			return true;
+		}
+
 		if (RampagePvP.CanUse(out action))
 		{
 			return true;

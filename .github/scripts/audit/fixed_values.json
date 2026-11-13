@@ -2212,6 +2212,126 @@
    "status": "exception",
    "loop": "A753",
    "reason": "The least number of answers a mean deviation can be taken from: with one answer the deviation is zero by definition, and the envelope (least delay less deviation) would cut the whole delay of a single sample. A condition of the statistics, not a game value."
+  },
+  {
+   "file": "RotationSolver/Basic/Helpers/ActionTooltip.cs",
+   "code": "ratio = percent / 100f;",
+   "values": [
+    "100"
+   ],
+   "status": "exception",
+   "loop": "A756",
+   "reason": "Percent to ratio: the unit of the stated figure (\"below 50%\"), not a value of the game or a threshold."
+  },
+  {
+   "file": "RotationSolver/Basic/Rotations/CustomRotation_Actions.cs",
+   "code": "setting.ActionCheck = () => RecuperatePvPAllowed() && Player?.TimeAlive() > 5f;",
+   "values": [
+    "5"
+   ],
+   "status": "exception",
+   "loop": "A756",
+   "reason": "Upstream's wait after a respawn before Recuperate, unchanged in A756 (only the healing and MP condition beside it changed). A respawn in PvP restores full HP, so the wait never holds a heal that is due; derived from no game figure, kept as upstream set it."
+  },
+  {
+   "file": "RotationSolver/Basic/Rotations/CustomRotation_GCD.cs",
+   "code": "if (Player != null && DataCenter.IsPvP && Service.Config.PvpGcdLockControl && Player.GetEffectiveHpPercent() < 50f",
+   "values": [
+    "50"
+   ],
+   "status": "exception",
+   "loop": "A756",
+   "reason": "The text of the setting \"Hold GCDs for heals below 50% HP\" names the figure, and the text binds (code.md, \"Kausalität\"). A756 changed only the MP condition beside it."
+  },
+  {
+   "file": "RotationSolver/Basic/Rotations/CustomRotation_OtherInfo.cs",
+   "code": "public static bool HasPVPGuard => StatusHelper.PlayerHasStatus(true, StatusHelper.PvPGuardStatuses) || (IsLastAction(ActionID.GuardPvP) && TimeSinceLastActionCapped < 0.5f);",
+   "values": [
+    "0.5"
+   ],
+   "status": "exception",
+   "loop": "A756",
+   "reason": "Upstream's bridge between pressing Guard and its status arriving, unchanged in A756 (only the status list beside it changed). In the fight it holds actions half a second after the press; Guard holds them for its 4 s once it lands, so a longer bridge than the round trip costs nothing that Guard would not cost."
+  },
+  {
+   "file": "RotationSolver/Basic/Rotations/CustomRotation_LimitBreak.PvP.cs",
+   "code": "public const uint MarksmansSpite = 29415;",
+   "values": [
+    "29415"
+   ],
+   "status": "exception",
+   "loop": "A756",
+   "reason": "A row number of the Action sheet (an identity, not a quantity), named as the job bases create these Limit Breaks: `(ActionID)<row>`, since the generated ActionID names none of them."
+  },
+  {
+   "file": "RotationSolver/Basic/Rotations/CustomRotation_LimitBreak.PvP.cs",
+   "code": "public const uint Meteodrive = 29485;",
+   "values": [
+    "29485"
+   ],
+   "status": "exception",
+   "loop": "A756",
+   "reason": "A row number of the Action sheet (an identity, not a quantity), named as the job bases create these Limit Breaks: `(ActionID)<row>`, since the generated ActionID names none of them."
+  },
+  {
+   "file": "RotationSolver/Basic/Rotations/CustomRotation_LimitBreak.PvP.cs",
+   "code": "public const uint SeitonTenchu = 29515;",
+   "values": [
+    "29515"
+   ],
+   "status": "exception",
+   "loop": "A756",
+   "reason": "A row number of the Action sheet (an identity, not a quantity), named as the job bases create these Limit Breaks: `(ActionID)<row>`, since the generated ActionID names none of them."
+  },
+  {
+   "file": "RotationSolver/Basic/Rotations/CustomRotation_LimitBreak.PvP.cs",
+   "code": "public const uint Zantetsuken = 29537;",
+   "values": [
+    "29537"
+   ],
+   "status": "exception",
+   "loop": "A756",
+   "reason": "A row number of the Action sheet (an identity, not a quantity), named as the job bases create these Limit Breaks: `(ActionID)<row>`, since the generated ActionID names none of them."
+  },
+  {
+   "file": "RotationSolver/Basic/Rotations/CustomRotation_LimitBreak.PvP.cs",
+   "code": "public const uint Phalanx = 29069;",
+   "values": [
+    "29069"
+   ],
+   "status": "exception",
+   "loop": "A756",
+   "reason": "A row number of the Action sheet (an identity, not a quantity), named as the job bases create these Limit Breaks: `(ActionID)<row>`, since the generated ActionID names none of them."
+  },
+  {
+   "file": "RotationSolver/Basic/Rotations/CustomRotation_LimitBreak.PvP.cs",
+   "code": "public const uint Mesotes = 29266;",
+   "values": [
+    "29266"
+   ],
+   "status": "exception",
+   "loop": "A756",
+   "reason": "A row number of the Action sheet (an identity, not a quantity), named as the job bases create these Limit Breaks: `(ActionID)<row>`, since the generated ActionID names none of them."
+  },
+  {
+   "file": "RotationSolver/Basic/Rotations/CustomRotation_LimitBreak.PvP.cs",
+   "code": "public const uint SkyHigh = 29497;",
+   "values": [
+    "29497"
+   ],
+   "status": "exception",
+   "loop": "A756",
+   "reason": "A row number of the Action sheet (an identity, not a quantity), named as the job bases create these Limit Breaks: `(ActionID)<row>`, since the generated ActionID names none of them."
+  },
+  {
+   "file": "RotationSolver/Basic/Rotations/CustomRotation_LimitBreak.PvP.cs",
+   "code": "public const uint SkyShatter = 29498;",
+   "values": [
+    "29498"
+   ],
+   "status": "exception",
+   "loop": "A756",
+   "reason": "A row number of the Action sheet (an identity, not a quantity), named as the job bases create these Limit Breaks: `(ActionID)<row>`, since the generated ActionID names none of them."
   }
  ]
 }

@@ -473,6 +473,8 @@ public partial class WhiteMageRotation
 		{
 			AoeCount = 1,
 		};
+		// Within the reach the player allows damaging gap closers, as Intervene in PvE (A358; concept 25, A756).
+		setting.CanTarget = static t => GapCloserAllowed(t, pressed: ActionID.SeraphStrikePvP);
 	}
 
 	static partial void ModifyGlareIvPvP(ref ActionSetting setting)

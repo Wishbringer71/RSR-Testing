@@ -26,10 +26,11 @@ effect ("In a fight: ...") or, for a value, what moving it does ("Lower: ... Hig
 sentence can satisfy that and still be wrong; only reading the code establishes correctness. The
 check catches the failure that actually recurs: a tooltip that restates its own label.
 
-SCOPE, by the project's priority rule: settings outside the user's profile - PvP, Bozja and
-comparable limited content - are reported as recorded rather than demanded. A survey leading there
-is its purpose, not a work order. The Blue Mage is in his profile since 03.11.2026 (CLAUDE.md,
-"Nutzungsprofil"; A519), and so is Occult Crescent, which this filter never named.
+SCOPE, by the project's priority rule: settings outside the user's profile - Bozja and comparable
+limited content - are reported as recorded rather than demanded. A survey leading there is its
+purpose, not a work order. The Blue Mage is in his profile since 03.11.2026 (CLAUDE.md,
+"Nutzungsprofil"; A519), and so is Occult Crescent, which this filter never named; PvP since
+13.11.2026 (A756, concept 25, "PvP: Prüfmittel").
 
 The self-test carries constructed defects, because a silent pass is otherwise indistinguishable
 from a clean tree.
@@ -71,7 +72,7 @@ EFFECT = re.compile(r'In a fight\s*:', re.IGNORECASE)
 VALUE_EFFECT = re.compile(r'(?:^|\n)\s*(?:Lower|Higher|Raising|Lowering|On|Off)\s*:', re.IGNORECASE)
 
 # Outside the user's profile: recorded, not demanded.
-OUT_OF_PROFILE = re.compile(r'(?:PVPRotations|\.PVP\.cs$|Bozja)', re.IGNORECASE)
+OUT_OF_PROFILE = re.compile(r'Bozja', re.IGNORECASE)
 
 
 def joined(match):

@@ -592,7 +592,8 @@ public partial class SageRotation
 
 	static partial void ModifyIcarusPvP(ref ActionSetting setting)
 	{
-		//setting.SpecialType = SpecialActionType.MovingForward;
+		// "Rush to a target's side" (effect text), an enemy or a party member (concept 25, "PvP: Bewegung", A756).
+		setting.SpecialType = SpecialActionType.HostileFriendlyMovingForward;
 	}
 
 	static partial void ModifyToxikonPvP(ref ActionSetting setting)

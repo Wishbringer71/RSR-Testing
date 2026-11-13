@@ -566,7 +566,9 @@ public struct ActionTargetInfo(IBaseAction action)
 		{
 			if (DataCenter.IsPvP && !action.Setting.IgnoreGuard)
 			{
-				if (battleChara.HasStatus(false, StatusID.Guard) && !battleChara.WillStatusEnd((float)action.Info.CastTime, false, StatusID.Guard))
+				// Both rows of Guard (concept 25, "PvP: Ziele unter Guard und Unverwundbarkeit", A756).
+				if (battleChara.HasStatus(false, StatusHelper.PvPGuardStatuses)
+					&& !battleChara.WillStatusEnd((float)action.Info.CastTime, false, StatusHelper.PvPGuardStatuses))
 				{
 					return false;
 				}

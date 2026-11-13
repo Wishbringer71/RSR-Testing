@@ -19,7 +19,8 @@ auswahl und das timing der beschwörung" – je Kampf aller fünf Bretter (Gegne
 BossMod-Module) die Rotation des Beastmasters, die Wahl der Begleiter und den Zeitpunkt ihres Aufrufs im Loop prüfen
 (Beispiel seiner Beobachtung: der Raptor gegen Feuer, bevor feueranfällige Gegner da waren; A581).
 
-Keine offene Arbeit in Reihenfolge.
+1. PvP: Bannzustände auf Ziele, die immun sind (ein verpuffter Stun lässt den Gegner handeln).
+2. PvP: Hinrichtungen nach gemessenem Schaden statt nach Potenz.
 
 Danach die technische Schuld, soweit ihre Auflösungsbedingung erfüllt ist. Warten auf Daten: unten.
 
@@ -32,6 +33,17 @@ Code-Review; was diese finden, kommt wieder hierher und in dieselbe Reihenfolge,
 
 ## Offene Arbeit
 
+### PvP: Hinrichtungen nach gemessenem Schaden statt nach Potenz · N
+Marksman's Spite und Meteodrive warten, bis ihre Potenz die LP des Ziels deckt; Minderungen des Ziels und eigene
+Verstärkungen fehlen der Rechnung. Ort: `CustomRotation_LimitBreak.PvP.cs`. *Nächster Schritt:* das Verhältnis von
+Schaden zu Potenz an den eigenen Treffern des Gebiets messen (Effekt-Handler) und die Bedingung damit nachsteuern.
+*Konzept:* 25, „PvP: Limit Break".
+
+### PvP: Bannzustände auf Ziele, die immun sind · N
+Ein Stun, Bind oder Miracle of Nature auf ein Ziel unter Resilience oder Guard verpufft; die PvP-Rotationen prüfen das
+nicht. *Nächster Schritt:* je Aktion den Bannzustand erheben, den sie setzt (Wirktext), und das Ziel dagegen prüfen.
+*Konzept:* 25, „PvP: Jobs".
+
 ## Technische Schuld
 
 Ohne Wirkung im Kampf oder bewusst eingegangen; je Kosten und Auflösungsbedingung.
@@ -42,8 +54,8 @@ rechnet `searing_light_coverage.py` weiter die alte Regel, und Konzept 12 argume
 jede solche Änderung trägt im selben Commit die Anpassung des Modus „plugin". *Konzept:* 12.
 
 ### Status-Einstellungen auf der falschen Seite der Aktion · N, U
-Vier Fundstellen in PvP und Bozja (`scan11.py`), außerhalb seines Profils; je eine Richtungsentscheidung, die eine
-Beobachtung im Inhalt verlangt. *Auflösung:* erst, wenn er diese Inhalte nennt.
+Fundstellen in Bozja (`scan11.py`), außerhalb seines Profils; je eine Richtungsentscheidung, die eine Beobachtung im
+Inhalt verlangt. *Auflösung:* erst, wenn er Bozja nennt.
 
 ### Die Beiruta-Heiler lesen das Ziel des letzten Erfolgs · N, R
 BeirutaAST, BeirutaWHM und BeirutaSGE lesen `X.Target.Target` vor `X.CanUse`, an 17 Stellen, und prüfen so das Ziel des

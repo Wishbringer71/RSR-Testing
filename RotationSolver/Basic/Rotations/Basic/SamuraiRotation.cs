@@ -685,6 +685,8 @@ public partial class SamuraiRotation
 	static partial void ModifyHissatsuSotenPvP(ref ActionSetting setting)
 	{
 		setting.StatusProvide = [StatusID.Kaiten_3201];
+		// "Swiftly charges forward, dealing damage ... to targets in your path" (effect text): a jump onto the target, held by the gap closer limit as in PvE (concept 25, "PvP: Bewegung", A756).
+		setting.SpecialType = SpecialActionType.HostileMovingAttack;
 		setting.CreateConfig = () => new ActionConfig()
 		{
 			AoeCount = 1,

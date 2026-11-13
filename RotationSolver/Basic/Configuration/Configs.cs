@@ -359,7 +359,7 @@ internal partial class Configs : IPluginConfiguration, IM3Settings
 	private static readonly bool _pvpPurifyBind = false;
 
 	[ConditionBool, UI("Hold GCDs for heals below 50% HP (Experimental)",
-		Description = "Stops the GCD rotation while you're below 50% HP and have over 2000 MP, so the MP goes to heals.",
+		Description = "Stops the GCD rotation while you're below 50% HP and Recuperate can go, so the MP goes to heals.\nIn a fight: Recuperate keeps the MP for one Purify unless you are about to die, and the GCDs are held only while it can heal.",
 		Filter = DutySpecificPvP)]
 	private static readonly bool _pvpGCDLockControl = true;
 
@@ -374,8 +374,8 @@ internal partial class Configs : IPluginConfiguration, IM3Settings
 	Parent = nameof(InterceptAction3), Order = 1)]
 	private static readonly bool _bmrSafetyCheckIntercept = false;
 
-	[ConditionBool, UI("Intercept your action presses (PvE only)",
-	Description = "Actions you press are queued, and RSR uses them at the right moment in its rotation.",
+	[ConditionBool, UI("Intercept your action presses",
+	Description = "Actions you press are queued, and RSR uses them at the right moment in its rotation.\nIn a fight: a job action you press goes at the next fitting moment, in PvE and PvP; in PvP Guard, Purify, Recuperate, the Elixir and Sprint go at once, as pressed.",
 	Filter = AutoIntercept)]
 	private static readonly bool _interceptAction3 = true;
 

@@ -368,11 +368,14 @@ public partial class WarriorRotation
 
 	static partial void ModifyPrimalRendPvP(ref ActionSetting setting)
 	{
-		//setting.SpecialType = SpecialActionType.MovingForward;
+		// "a jumping physical attack to target" (effect text): a jump onto the target, held by the gap closer limit as in PvE (concept 25, "PvP: Bewegung", A756).
+		setting.SpecialType = SpecialActionType.HostileMovingAttack;
 		setting.CreateConfig = () => new ActionConfig()
 		{
 			AoeCount = 1,
 		};
+		// Within the reach the player allows damaging gap closers, as Intervene in PvE (A358; concept 25, A756).
+		setting.CanTarget = static t => GapCloserAllowed(t, pressed: ActionID.PrimalRendPvP);
 	}
 
 	static partial void ModifyPrimalRuinationPvP(ref ActionSetting setting)
@@ -392,7 +395,10 @@ public partial class WarriorRotation
 
 	static partial void ModifyOnslaughtPvP(ref ActionSetting setting)
 	{
-		//setting.SpecialType = SpecialActionType.MovingForward;
+		// "Rushes target" (effect text): a jump onto the target, held by the gap closer limit as in PvE (concept 25, "PvP: Bewegung", A756).
+		setting.SpecialType = SpecialActionType.HostileMovingAttack;
+		// Within the reach the player allows damaging gap closers, as Intervene in PvE (A358; concept 25, A756).
+		setting.CanTarget = static t => GapCloserAllowed(t, pressed: ActionID.OnslaughtPvP);
 	}
 
 	static partial void ModifyFellCleavePvP(ref ActionSetting setting)

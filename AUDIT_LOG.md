@@ -22049,6 +22049,53 @@ Eingetragen in CLAUDE.md („Nutzungsprofil“: PvP genannt, Optimum wie in PvE)
   - „Ausgeliefert, und nichts ändert sich“: Für ihn, der PvP selten spielt, im Alltag ja. In PvP-Partien wirkt es sofort.
 - *Prüfgrad:* Compile; alle 54 CI-Schritte lokal. In PvP nicht beobachtet.
 
+### A756 · PvP: gemeinsame Aktionen, Guard, Bewegung, Limit Break, Abfangen, Prüfmittel (13.11.2026)
+
+Sein Auftrag (13.11.2026): ein PvP-Konzept im vollen Loop für alle Klassen und ihre PvP-Rotationen, Wechselwirkungen wie
+bei PvE erheben, Synergien finden, einbauen und optimieren; dann Audit, Code-Review und Fehlerbehebung. Dazu: umfassend
+recherchieren, andere Repositories nach PvP durchsuchen und neue finden. Sein Hinweis: In PvP nutzt man andere
+Fähigkeiten, nicht mit den normalen verwechseln.
+
+- *Quellen:* Job-Guide aller 21 Jobs (PvP-, Limit-Break-, Rollen- und gemeinsame Aktionen, Stand 7.55), xivapi v2,
+  consolegameswiki (1 Potenz = 1 LP), WrathCombo a457838, BossModReborn 8ad17f97f (`RolePvPUtility`, vier Rotationen),
+  neu gefunden: AutoPVPLimitBreak, FrontlineAdvisor, PvpStats, PvPTopPlates, AutoFrontline. Einzeln in Konzept 25,
+  „PvP: Quellen".
+- *Befunde, im Kampf:*
+  - RSR drückte den PvP-Limit-Break nie: `LimitBreakPvP` ist in jeder Jobbasis erzeugt, nichts las ihn.
+  - Onslaught, Primal Rend, Plunge, Rough Divide, High Jump, Forked und Fleeting Raiju, Hissatsu: Soten, Seraph Strike und
+    Crimson Cyclone sprangen aus bis zu 20 y auf ihr Ziel. Neun trugen keinen Bewegungstyp, und keinem galt die Grenze
+    für Sprünge mit Schaden. Repelling Shot trug den Typ eines Sprungs zum Ziel statt eines Rückwärtsschritts.
+  - Guard ging erst an der aktuellen Gesundheit unter der Schwelle und auch unter Hallowed Ground, Sky High, Hardened
+    Scales und auf einer Maschine; danach hielt „PvP Guard control" 4 s jede Aktion, ohne Schaden zu verhindern.
+  - Recuperate rechnete mit 15.000 Heilung (vor 7.5) und verbrauchte das MP bis zuletzt; ein Stun danach blieb ohne
+    Purify.
+  - Guard am Ziel galt nur in Zeile 3054, nicht in 3673.
+  - Das Abfangen nahm PvP ganz aus; Upstream nannte keinen Grund.
+  - Gelehrter und Rotmagier führten Zielzustände im Spielerfeld (scan11), ohne Wirkung.
+- *Umsetzung:* Konzept 25 mit den Abschnitten Gemeinsame Aktionen, Ziele unter Guard, Bewegung, Limit Break, Abfangen,
+  Jobs, Prüfmittel. Code: Guard nach der Vorhersage und `GuardWastedStatuses`; Recuperate nach der Heilung aus dem
+  Wirktext („Cure Potency") mit MP-Reserve für Purify; die GCD-Sperre nur, solange Recuperate gehen kann;
+  `PvPGuardStatuses`; Bewegungstypen und `GapCloserAllowed` in der Basis der PvP-Sprünge, Soten an der Aufrufstelle;
+  `PvPLimitBreak` mit Bedingung je Art, Ansturm-Limit-Breaks in der Grenze; Abfangen in PvP außer den gemeinsamen
+  Aktionen; Holy Sheltron im Kampf vorab. `check_movement_types.py` und `check_setting_tooltips.py` messen PvP.
+- *Verworfen:* Guard nach der Zahl der Angreifer wie BossModReborn (zählt Absichten, keinen Schaden); Zielzustände des
+  Rotmagiers auf die Seite des Ziels verschieben (die Kombo stünde, solange der vorige Schaden läuft).
+- *Selbst gefunden und vor der Auslieferung berichtigt:* Mein erster Konzeptsatz nahm an, der Typ `HostileMovingAttack`
+  bringe die Grenze für Sprünge mit. Am Code gemessen filtert seine Zielwahl nur Lebende (A358); die Grenze kommt über
+  `CanTarget`. Konzept und Code tragen jetzt beides. Ebenso stand im Konzept zuerst „AoE Count ab Werk 1"; die
+  Umsetzung liest den Wert der Einstellung (ab Werk 3) nur für Linie, Kegel und Bodenziel, das Konzept ist angeglichen.
+  Beim Rotmagier habe ich den Code im selben Schritt vor der Konzeptstelle geändert.
+- *Gegenprobe:* Die erweiterte Bewegungsprüfung schlug an, als Onslaught der Typ testweise fehlte.
+- *Falsifikation:*
+  - „Kein Defekt" hält nicht: jeder Befund ist als Weg zur Wirkung am Code belegt.
+  - „Option falsch": Die Grenze für Sprünge kostet Nahkämpfern in PvP Schaden aus der Ferne. Sie ist seine Regel
+    („Nichts empfehlen, was ihn für Schaden aus einer sicheren Position holt") und einstellbar.
+  - „Ausgeliefert, und nichts ändert sich": für jemanden, der PvP nicht spielt. In einer Partie greifen Limit Break,
+    Guard, Recuperate und die Sprünge sofort.
+- *Offen:* TODO „PvP: Bannzustände auf Ziele, die immun sind", „PvP: Hinrichtungen nach gemessenem Schaden statt nach
+  Potenz".
+- *Prüfgrad:* Compile; alle 54 CI-Schritte lokal; Gegenprobe der Bewegungsprüfung. In PvP nicht beobachtet.
+
 ## B · Commit-Register (Fork vs. `upstream/main`)
 
 ### B1 · Einzelgeprüfte Fork-Commits

@@ -58,7 +58,7 @@ internal static partial class CancelCastUpdater
 		var tarHasGuard = DataCenter.IsPvP && Service.Config.PvpGuardCancel
 			&& castTarget != null
 			&& castTarget.IsEnemy()
-			&& castTarget.HasStatus(false, StatusID.Guard)
+			&& castTarget.HasStatus(false, StatusHelper.PvPGuardStatuses)
 			&& ((ActionID)player.CastActionId).GetActionFromID(true, RotationUpdater.CurrentRotationActions)
 				is IBaseAction { Setting.IgnoreGuard: false };
 

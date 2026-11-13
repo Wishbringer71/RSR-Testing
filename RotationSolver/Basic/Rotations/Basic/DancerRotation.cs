@@ -651,7 +651,10 @@ public partial class DancerRotation
 
 	static partial void ModifyEnAvantPvP(ref ActionSetting setting)
 	{
-		//setting.SpecialType = SpecialActionType.MovingForward;
+		// "Quickly dash 10 yalms forward" (effect text), as En Avant in PvE (A498; concept 25, A756).
+		setting.TargetType = TargetType.Move;
+		setting.SpecialType = SpecialActionType.FixedDistanceMoveForward;
+		setting.BackstepDistance = 10;
 		setting.IsFriendly = true;
 		setting.StatusProvide = [StatusID.EnAvant];
 		setting.CreateConfig = () => new ActionConfig()

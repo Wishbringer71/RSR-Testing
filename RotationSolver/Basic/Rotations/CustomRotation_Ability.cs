@@ -739,6 +739,12 @@ public partial class CustomRotation
 			return true;
 		}
 
+		// The job's own Limit Break in PvP (concept 25, "PvP: Limit Break", A756).
+		if (PvPLimitBreak(out act))
+		{
+			return true;
+		}
+
 		// A long cast takes Swiftcast - the job's own raise only where "Raise with Swiftcast or Dualcast" allows it, whose
 		// text promises that off, RSR never presses Swiftcast for a raise; Resurrection and Verraise are long casts (A402). Any
 		// other long cast is damage - Verthunder III and Veraero III on Red Mage - and takes Swiftcast only where it is
@@ -828,8 +834,10 @@ public partial class CustomRotation
 			return true;
 		}
 
-		if (GuardPvP.CanUse(out act) && Player?.GetHealthRatio() <= Service.Config.HealthForGuard
-			&& !StatusHelper.PlayerHasStatus(true, StatusID.UndeadRedemption) && !StatusHelper.PlayerHasStatus(true, StatusID.InnerRelease_1303))
+		// Health forecast to the landing of an action begun now, as for the heal targets; no Guard where it is wasted or
+		// cannot go (concept 25, "PvP: Gemeinsame Aktionen", A756).
+		if (GuardPvP.CanUse(out act) && ObjectHelper.GetForecastPlayerHealthRatio() <= Service.Config.HealthForGuard
+			&& !StatusHelper.PlayerHasStatus(false, StatusHelper.GuardWastedStatuses))
 		{
 			return true;
 		}

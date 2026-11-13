@@ -23,6 +23,8 @@ internal static class ActionTooltip
 	private static readonly object _gate = new();
 
 	private static readonly Regex StatedPotency = new(@"potency of (?<value>\d[\d,]*)", RegexOptions.Compiled);
+	private static readonly Regex StatedCurePotency = new(@"Cure Potency: (?<value>\d[\d,]*)", RegexOptions.Compiled);
+	private static readonly Regex StatedHealthBelow = new(@"HP is below (?<value>\d{1,3})%", RegexOptions.Compiled);
 	private static readonly HashSet<(uint ActionId, int Level)> _unreadPotency = [];
 	private static readonly Regex StatedFalloff = new(@"(?<value>\d{1,2})% less for all remaining enemies", RegexOptions.Compiled);
 	private const string DamageAreaText = "enemies who enter";
@@ -93,6 +95,45 @@ internal static class ActionTooltip
 	public static bool TryStatedPotency(uint actionId, out float potency)
 	{
 		return TryStated(actionId, StatedPotency, out potency);
+	}
+
+	/// <summary>
+	/// The healing the tooltip of <paramref name="actionId"/> first states ("Cure Potency: 16,000"); in PvP one potency is
+	/// one HP (concept 25, "PvP: Gemeinsame Aktionen", A756).
+	/// </summary>
+	public static bool TryStatedCurePotency(uint actionId, out float potency)
+	{
+		return TryStated(actionId, StatedCurePotency, out potency);
+	}
+
+	/// <summary>
+	/// Every damage potency the tooltip of <paramref name="actionId"/> states, added up: an attack and the additional damage
+	/// it deals after it, as Meteodrive's two hits of 12,000 (concept 25, "PvP: Limit Break", A756). False when it states none.
+	/// </summary>
+	public static bool TryStatedTotalPotency(uint actionId, out float total)
+	{
+		total = 0f;
+		foreach (Match match in StatedPotency.Matches(Text(actionId)))
+		{
+			if (float.TryParse(match.Groups["value"].Value.Replace(",", string.Empty), NumberStyles.Float,
+				CultureInfo.InvariantCulture, out var value))
+			{
+				total += value;
+			}
+		}
+
+		return total > 0f;
+	}
+
+	/// <summary>
+	/// The share of its HP below which the tooltip of <paramref name="actionId"/> says it defeats a target ("incapacitating
+	/// foes whose HP is below 50%"), as a ratio; false when it states none (concept 25, "PvP: Limit Break", A756).
+	/// </summary>
+	public static bool TryStatedHealthBelow(uint actionId, out float ratio)
+	{
+		var stated = TryStated(actionId, StatedHealthBelow, out var percent);
+		ratio = percent / 100f;
+		return stated;
 	}
 
 	/// <summary>

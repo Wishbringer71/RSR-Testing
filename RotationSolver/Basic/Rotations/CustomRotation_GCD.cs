@@ -68,7 +68,10 @@ public partial class CustomRotation
 			return null;
 		}
 
-		if (Player != null && DataCenter.IsPvP && Service.Config.PvpGcdLockControl && Player.CurrentMp >= 2000 && Player.GetEffectiveHpPercent() < 50f)
+		// Only while Recuperate can go: with its MP reserve for Purify a GCD held without it would wait for nothing (concept 25,
+		// "PvP: Gemeinsame Aktionen", A756).
+		if (Player != null && DataCenter.IsPvP && Service.Config.PvpGcdLockControl && Player.GetEffectiveHpPercent() < 50f
+			&& RecuperatePvPAllowed())
 		{
 			return null;
 		}

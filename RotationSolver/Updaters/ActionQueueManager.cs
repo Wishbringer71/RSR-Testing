@@ -99,7 +99,7 @@ namespace RotationSolver.Updaters
 
 		private static unsafe bool UseActionDetour(ActionManager* actionManager, uint actionType, uint actionID, ulong targetObjectID, uint param, uint useType, int pvp, bool* isGroundTarget)
 		{
-			if (Player.Available && Service.Config.InterceptAction3 && DataCenter.State && DataCenter.InCombat && !DataCenter.IsPvP)
+			if (Player.Available && Service.Config.InterceptAction3 && DataCenter.State && DataCenter.InCombat)
 			{
 				try
 				{
@@ -227,6 +227,14 @@ namespace RotationSolver.Updaters
 			}
 
 			if (type == ActionCate.Autoattack)
+			{
+				return false;
+			}
+
+			// PvP's common actions go as pressed: queued, a Guard against an announced burst waited for the next weave
+			// window. Upstream left PvP out as a whole (concept 25, "PvP: Abfangen eigener Tastendrücke", A756).
+			if ((ActionID)actionId is ActionID.GuardPvP or ActionID.PurifyPvP or ActionID.RecuperatePvP
+				or ActionID.StandardissueElixirPvP or ActionID.SprintPvP)
 			{
 				return false;
 			}

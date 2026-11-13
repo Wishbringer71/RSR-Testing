@@ -522,8 +522,9 @@ public partial class ScholarRotation
 			AoeCount = 1,
 		};
 		setting.IsFriendly = false;
+		// Biolysis on the target is what the spread needs; the former StatusProvide named it on the player, where it never
+		// stands, and held nothing (scan11; concept 25, "PvP: Jobs", A756).
 		setting.TargetStatusNeed = [StatusID.Biolysis_3089];
-		setting.StatusProvide = [StatusID.Biolysis_3089];
 	}
 
 	static partial void ModifyExpedientPvP(ref ActionSetting setting)

@@ -73,7 +73,9 @@ public sealed class SAM_DefaultPvP : SamuraiRotation
 
 	protected override bool AttackAbility(IAction nextGCD, out IAction? action)
 	{
-		if (HissatsuSotenPvP.CanUse(out action, usedUp: true))
+		// A charge onto the target, so within the reach the player allows damaging gap closers; "Allow Hissatsu Soten to be
+		// used on any target regardless of distance" keeps its own path (concept 25, "PvP: Bewegung", A756).
+		if (HissatsuSotenPvP.CanUse(out action, usedUp: true) && GapCloserAllowed(HissatsuSotenPvP.Target.Target, pressed: ActionID.HissatsuSotenPvP))
 		{
 			if (nextGCD.IsTheSameTo(false, ActionID.YukikazePvP, ActionID.GekkoPvP, ActionID.KashaPvP))
 			{
