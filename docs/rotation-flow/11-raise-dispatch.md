@@ -145,6 +145,16 @@ Gruppenmitglied bei jedem Wechsel des Grundes eine Zeile in `DefenseTrace.log`: 
 mit der Zeit seit RSR es tot sah und dem Abstand; „a candidate" heißt, es ist Ziel der Wiederbelebung. Die Zeile
 gibt es nur bei einem Wechsel, sie ist nicht an jedes Bild gebunden.
 
+**Ein totes Mitglied ist kein Gegner** (A765). Upstream (bd9c156b0) schließt einen Toten aus, den `IsEnemy` als Gegner
+meldet: Das Spiel ließe Blizzard auf ihn zu (`CanUseActionOnTarget`). Für tote Allianzmitglieder flackert diese
+Antwort. Welt der Dunkelheit, 13.11.2026, 18:27 bis 18:28: In 76 s wechselten sechs Tote 15-mal von „a candidate“ zu
+„an enemy“, ein Toter in 26 Yalm dreimal binnen 0,5 s. In jedem Bild mit „an enemy“ fällt der Tote aus der Wahl, und
+ein anderer oder keiner wird Ziel der Wiederbelebung. Ob jemand zur eigenen Gruppe oder Allianz gehört, liefert das
+Spiel als Tatsache. Ein solches Mitglied ist nie Gegner, und `GetDeath` fragt `IsEnemy` nur noch für andere. Gegenthese
+(kein Defekt, die Antwort stimmt): Ein Allianzmitglied ist im PvE nicht angreifbar. Das Flackern bei demselben Toten am
+selben Ort zeigt eine Antwort ohne Bedeutung für ihn. *Preis:* keiner. Ein Gegner, der zugleich Mitglied ist, kommt
+im PvE nicht vor.
+
 **Warum er nichts verdrängt.** Nach ihm stehen in `EmergencyAbility` nur zwei Zweige, beide Second
 Wind für Nahkämpfer beziehungsweise physische Fernkämpfer bei Doom-Status. Für einen Rezzer ist dort
 nichts, was ausfallen könnte. Verbraucht wird ein Einschiebefenster, einmal je Gelegenheit.
@@ -482,7 +492,7 @@ Drei Zeitpunkte sind zu unterscheiden, und nur der mittlere ist für die Auswahl
 | Zeitpunkt | Was RSR sieht | Folge für die Zielmenge |
 |---|---|---|
 | Wirken beginnt | den Cast des Wirkenden samt Ziel (`CastTargetObjectId`) | `GetDeath` schließt das Ziel aus, solange ein anderer Spieler den Cast führt (A293) |
-| Wirkung landet | das Ziel trägt `Raise` (148 oder 1140, `StatusHelper.RaiseStatus`) | `GetDeath` schließt es aus (`TargetFilter.cs:105`) |
+| Wirkung landet | das Ziel trägt `Raise` (148 oder 1140, `StatusHelper.RaiseStatus`) | `GetDeath` schließt es aus (`TargetFilter.cs:112`) |
 | Der Tote nimmt an | keine eigene Meldung nötig | schon vorher ausgeschlossen |
 
 Die Zeit bis zur Annahme durch den Gefallenen ist für die Entscheidung damit ohne Bedeutung: Der

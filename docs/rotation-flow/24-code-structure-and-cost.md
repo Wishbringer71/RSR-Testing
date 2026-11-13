@@ -53,8 +53,7 @@ Gemessen am 13.11.2026.
 Was das im Kampf heißt: Im Dauerbetrieb kostet RSR weniger als ein Zwanzigstel eines Frames, die
 Speicherbereinigung läuft oft mit und bleibt unter einem Frame. Spürbar ist nur der erste Pull einer Sitzung: Ein
 Durchlauf von bis zu 64 ms hält das Bild für bis zu vier Frames an (Thok ast Thok, 11.11.2026, 45 ms davon im Schritt
-der Rotation). Seit A739 gebaut (Abschnitt „Der erste Pull"); die Bestätigung im Spiel steht im TODO als „Ruckler am
-ersten Pull einer Sitzung".
+der Rotation). Seit A739 gebaut (Abschnitt „Der erste Pull"), im Spiel bestätigt am 13.11.2026 (A765).
 
 **Statisch**, am Quelltext (Stand b0ab17a15):
 
@@ -115,6 +114,12 @@ Ist der Ruckler das Laden eines Blatts, nicht Übersetzung, zeigt die neue Koste
 Durchlauf; dann ist der nächste Schritt das Vorladen der Blätter. Ausgeliefert, und nichts ändert sich? Möglich, wenn
 der Kampf vor dem Ende des Vorübersetzens beginnt oder der Ruckler in Bibliotheken liegt, die RSR nicht übersetzt
 (ECommons, Dalamud); beides zeigen die Zeilen „warm-up" und die JIT-Zahl des langsamsten Durchlaufs.
+*Im Spiel bestätigt* (13.11.2026, A765): Auf seinem Rechner übersetzte das Vorübersetzen 10.561 und 10.584 Methoden des
+Kerns in 13 bis 15 s im Hintergrund, die Rotation in 0,05 bis 0,5 s, keine abgelehnt. Im ersten Kampf danach kostete
+der teuerste Frame 8,8 und 6,8 ms (25 ms Übersetzung über 800 und 3.000 Durchläufe verteilt). Am 12.11.2026, Build
+ohne Vorübersetzen, waren es 27,2 ms. Kein Frame des ersten Kampfes überschreitet mehr die Hälfte eines Bilds bei 60
+Bildern. Die 13 bis 15 s statt der 0,5 s im Container sind seine Maschine unter dem laufenden Spiel; der Kampf
+begann jeweils Minuten danach.
 
 ### Ein Ergebnis gilt, bis sich seine Grundlage ändert
 
@@ -163,6 +168,11 @@ Frame rechnet (Ziele, Zustand), und die Entscheidung nur liest – die Regel „
 Rotationsschritts das Tor ohnehin sperrte. *Entscheidung danach:* Trägt dieser Anteil die Hälfte des Rotationsschritts
 oder mehr, folgt der Loop: zuerst die Beobachtungen aus dem Entscheidungspfad lösen, Member für Member, dann
 überspringen; bleibt er klein, lohnt der Umbau nicht, und die Trennung bleibt eine Frage der Entwurfsregel.
+*Gemessen (13.11.2026, A765; Weißmagier und Beschwörer, Builds f16ff5976 und dca6fb8e8, 40 Kämpfe):* In 50 bis 55 % der
+Durchläufe sperrte das Tor ohnehin, und sie tragen 50 bis 55 % der Zeit des Rotationsschritts. Der Schritt kostet im
+Mittel 0,21 bis 0,39 ms je Frame; der Gewinn läge bei 0,1 bis 0,2 ms je Frame, rund 1 % der Framezeit bei 60 Bildern.
+Die Bedingung „die Hälfte oder mehr“ ist erfüllt. Der Loop folgt im TODO als offene Arbeit: zuerst die Beobachtungen
+Member für Member aus dem Entscheidungspfad lösen.
 *Falsifikation des Vorschlags:* Kein Gewinn? Möglich – die Zeile zeigt es. Falsche Option? Überspringen ohne die
 Trennung verschöbe Fristen; deshalb nicht gebaut. Ausgeliefert, und nichts ändert sich? Mit dem Messmittel allein so
 gewollt.

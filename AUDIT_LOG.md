@@ -22263,6 +22263,38 @@ fehlerbeseitigung. rotas, bretter, ablaufplanung".
 - *Prüfgrad:* Compile; alle CI-Schritte lokal. Der Absturz ist nicht nachgestellt: Welcher Wert welches Fensters auf
   unlesbaren Speicher zeigt, nennt das Protokoll nicht.
 
+### A765 · Upload vom 13.11.2026: Regler am Weißmagier, erster Pull, Tode im Pilgerpfad, Wiederbelebung in der Allianz (13.11.2026)
+
+- *Upload:* `82c458e5-RotationSolver.7z` (`DefenseTrace.log` mit drei neuen Sitzungen: 12.11. Build 03af7190f,
+  Beschwörer und Weißmagier im Pilgerpfad; 13.11. f16ff5976, Weißmagier im Totenacker Tam-Tara; 13.11. dca6fb8e8,
+  Weißmagier in Nebeltrift und Welt der Dunkelheit, dann Beastmaster auf Brett 2 bis zum Absturz, A764), gelernte
+  Tabellen, `BestiaryTrace.log`; `74c38643-fflogsarchive.7z` (vier ACT-Mitschnitte vom 11. bis 13.11.). Ohne Frage dazu.
+- *Regler der Animationssperre (A753, Sitzung dca6fb8e8, 16 Kämpfe):* Eine Sperre hielt in 637 GCDs einen GCD zurück,
+  0,00 s. Im ACT-Mitschnitt (GCDs über die Abklinggruppe des Blatts) kommt ein GCD nach ein oder zwei Fähigkeiten nicht
+  später als ohne, wie am 11. und 12.11. 33 Anfragen ohne Antwort (8 % bei r um 2,5 %) halten den Schnitt bei 1 bis
+  34 ms. Neu: die Zeile „request without an answer“ mit Aktion, Abstand zur vorigen Antwort und deren Sperre. Sie zeigt,
+  ob es Ablehnungen sind. TODO-Punkt fortgeschrieben. Konzept 03.
+- *Erster Pull (A739):* Mit dem Vorübersetzen kostete der teuerste Frame im ersten Kampf 8,8 und 6,8 ms; am 12.11. ohne
+  Vorübersetzen 27,2 ms. Punkt geschlossen. Konzept 24.
+- *Entscheiden erst, wenn gedrückt werden kann (A744):* 50 bis 55 % der Durchläufe und der Zeit des Rotationsschritts
+  fallen in Frames, in denen das Tor ohnehin sperrt. Die Bedingung ist erfüllt; der Punkt steht jetzt als offene Arbeit
+  im TODO. Konzept 24.
+- *Tode (12.11., Pilgerpfad, Weißmagier):* (1) 20:13:33 „Tritt und Schwanz“ des Wallfahrt-Cama, 262 % der LP. Gewirkt
+  wurde #43132 als Linie nach vorn, getroffen hat #43131 als Kegel. RSR las nur die Linie („area hit reaches you
+  False“), und die Sperre beim Wirken hielt nichts frei. Behoben: `AreaCastReaches` fragt auch die gleichnamigen
+  Nachbarzeilen ohne Wirkzeit (`SameAttackHits`). Konzept 13, „Mehrteilige Angriffe“. (2) 20:53:22 „Tail Drive“ des
+  Dahak, 418 %, ohne Wirken. Dagegen hilft nur der Stand; RSR bewegt nicht.
+- *Wiederbelebung (13.11., Welt der Dunkelheit):* Tote Allianzmitglieder wechselten 15-mal zwischen „a candidate“ und
+  „an enemy“: Upstreams `IsEnemy` (Blizzard auf das Ziel, bd9c156b0) flackert bei Toten. Jetzt fragt `GetDeath` es nur
+  für Nichtmitglieder. Konzept 11, „Ein totes Mitglied ist kein Gegner“.
+- *Übrige Zeilenarten:* Schlaf zweimal gewählt, keine Zeile „sleep not cast“; die Messzeilen zu Holy, Göttlichem Segen,
+  Abwehr und Kosten ohne Auffälligkeit. Tabellen: Fläche 358, Tankbuster 102, gezielte Treffer 16 Einträge in der
+  laufenden Schicht. `BestiaryTrace.log` ohne neue Einträge seit 13.11., 16:24.
+- *Nicht lösbar mit diesem Upload:* der Absturz der zweiten Installation vom 11.11. (A736; das Dalamud-Protokoll
+  umfasst den 08. und 13.11.), die Crucible-Punkte (kein Kampf auf Brett 2 vor dem Absturz).
+- *Prüfgrad:* Compile; alle CI-Schritte lokal; Messungen am Protokoll und am Mitschnitt. Die Behebungen sind im
+  Spiel nicht beobachtet.
+
 ## B · Commit-Register (Fork vs. `upstream/main`)
 
 ### B1 · Einzelgeprüfte Fork-Commits

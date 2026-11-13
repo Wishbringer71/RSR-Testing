@@ -174,6 +174,29 @@ Tengentsu, Third Eye). Gemessen wird ein Flag an den Pfaden, die es öffnet (CLA
   Trefferkreis, bleibt unberührt (A731). Ein Ring mit Kegelwinkel im Omen zählt als Kegel ohne Innenkreis, ein Ring
   ohne Innenradius im Omen als Kreis.
 
+**Mehrteilige Angriffe: die gleichnamigen Treffer zählen mit** (A765). Manche Gegner wirken eine Aktion und treffen
+mit einer zweiten, gleichnamigen Aktion ohne Wirkzeit, die das Blatt direkt daneben führt. Ihre Form kann eine andere
+sein. Pilgerpfad, 12.11.2026, 20:13: Der Wallfahrt-Cama wirkt „Tritt und Schwanz“ (#43132, Art 12, Linie 8 × 3 Yalm
+nach vorn, 2,7 s). Getroffen hat #43131, gleichnamig, Art 13, Kegel 10 Yalm, ohne Omen. Der Treffer machte 262 % der
+maximalen LP aus, und der Weißmagier starb. RSR las nur die Linie, schrieb „area hit reaches you False“ und ließ ihn
+weiterwirken; die Sperre zum Ausweichen griff nicht.
+- *Jetzt:* Erreicht die Form der gewirkten Aktion ein Mitglied nicht, fragt `AreaCastReaches` die Formen der
+  gleichnamigen Zeilen ohne Wirkzeit, die im Blatt lückenlos an sie anschließen. Ein Kegel ohne Winkel im Omen zählt
+  dort wie überall als Kreis (oben).
+- *Im Kampf:* Wer im Bereich eines solchen zweiten Treffers steht, gilt als getroffen. Die Sperre beim Wirken hält
+  einen Zauberbeginn zurück, damit er hinausgehen kann. Selbstschutz und Flächenabwehr gehen wie bei jedem Treffer, der
+  ihn erreicht.
+- *Preis:* Ohne Winkel im Omen zählt der Kegel als Kreis. Wer seitlich oder vorn außerhalb der Linie in 10 Yalm steht,
+  gilt ebenfalls als getroffen und verliert für bis zu 2,7 s einen Zauberbeginn. Gewichtet mit einem Treffer über
+  100 % der LP wiegt das wenig.
+- *Gegenthese 1 (kein Defekt, er stand einfach falsch):* RSR bewegt ihn nicht. Aber die Sperre beim Wirken soll ihm
+  den Schritt freihalten. Mit „reaches you False“ hielt sie nichts frei.
+- *Gegenthese 2 (falsche Option, alle Aktionen eines Gegners zusammenfassen):* Ein Gegner hat viele Aktionen mit
+  verschiedenen Wirkungen. Gleicher Name in lückenloser Folge trennt den Teil eines Angriffs von einem anderen Angriff.
+- *Gegenthese 3 (ausgeliefert, und nichts ändert sich):* Ohne gleichnamige Nachbarzeile bleibt alles wie bisher.
+  Ein Treffer ganz ohne Wirken, etwa „Tail Drive“ des Dahak am selben Abend (418 %), kündigt sich nicht an; dagegen
+  hilft nur der Stand.
+
 **Warum die Form so gemessen wird (A731).** Welche Form um den Trefferkreis des Wirkenden weiter reicht, sagt die Art:
 BossModReborns Analysewerkzeug beschreibt Art 3, 4 und 5 als „range X+R", Art 2, 12 und 13 als „range X"
 (`Replay/Analysis/AbilityInfo.DescribeShape`, 2087153c2, Werkzeugquelle), und seine Module bauen die Formen danach:

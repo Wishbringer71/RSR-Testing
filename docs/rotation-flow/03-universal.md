@@ -1773,6 +1773,17 @@ bei zu früher Anfrage: zurückhalten, ablehnen, ignorieren.
   bleibt. Die Zeile je Kampf nennt die Anfragen ohne Antwort.
 - *Eine fehlende Antwort hat andere Gründe* (Paketverlust, Aktion ohne Wirkung): Der Regler sinkt kurz und steigt danach
   wieder; der Preis ist ein Frame Schnitt für eine Weile.
+  - *Gemessen am 13.11.2026* (A765; Weißmagier, Build dca6fb8e8, 16 Kämpfe): 33 Anfragen ohne Antwort bei 366 Antworten.
+    Das sind 8 %, bei r um 2,5 %. Der Schnitt blieb bei 1 bis 34 ms, und der Rest nach der Sperre lag im Mittel bei rund
+    100 ms. Im Kampf kostete das nichts Sichtbares: Eine Sperre hielt in 637 GCDs einen GCD zurück, 0,00 s. Im
+    ACT-Mitschnitt kommt ein GCD nach ein oder zwei Fähigkeiten nicht später als ohne (90 % unter +0,1 s; am 11. und 12.11.
+    ebenso). Ein Heiler webt aber wenig (0,15 Fähigkeiten je GCD). Ob die 8 % Ablehnungen sind oder andere Gründe haben,
+    entscheidet, ob ein Job mit doppeltem Weben Schnitt verschenkt.
+  - *Messmittel:* je Anfrage ohne Antwort im Kampf eine Zeile „request without an answer“. Sie nennt die Aktion, ob GCD
+    oder Fähigkeit, die Zeit von der vorigen Antwort bis zur Anfrage und die Sperre jener Antwort. Liegt die Zeit
+    meist knapp über der Sperre, lehnt der Server zu frühe Anfragen ab, und der kleine Schnitt ist richtig. Liegt sie
+    weit darüber oder nennt sie eine Aktion auf ein Ziel, das gerade fiel, hat die fehlende Antwort andere Gründe. Dann
+    ist der nächste Schritt, solche Fälle nicht mehr als Ablehnung zu zählen.
 - *Ein fremdes Werkzeug kürzt weiter:* BossMod und NoClippy schaltet RSR ab; XivAlexander und jede Änderung zwischen Paket
   und Spiel lassen die Verkürzung ruhen, die Webregel misst weiter.
 - *Ausgeliefert, und nichts ändert sich:* wenn XivAlexander läuft. Dann misst RSR dessen Rest und webt danach.

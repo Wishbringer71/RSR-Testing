@@ -401,6 +401,12 @@ public sealed unsafe partial class AnimationLockTweak
 			// A cast that movement breaks gets no answer with an effect either; it says nothing about the lock (A754).
 			_castSequences.Add((ushort)manager->LastUsedActionSequence);
 		}
+		else
+		{
+			// A765: what went, and how long after the last answer, for the line of a request without an answer.
+			_instantRequests.Add(((ushort)manager->LastUsedActionSequence, actionId, isGcd,
+				(float)(DateTime.Now - _lastAnswerAt).TotalSeconds));
+		}
 		if (!DataCenter.InCombat || isCast && !isGcd)
 		{
 			return;
@@ -428,6 +434,7 @@ public sealed unsafe partial class AnimationLockTweak
 				if (!_castSequences.Remove((ushort)skipped))
 				{
 					unanswered++;
+					TraceUnanswered((ushort)skipped);
 				}
 			}
 
@@ -450,10 +457,43 @@ public sealed unsafe partial class AnimationLockTweak
 			}
 		}
 
+		for (var i = _instantRequests.Count - 1; i >= 0; i--)
+		{
+			if (_instantRequests[i].Sequence <= sequence)
+			{
+				_instantRequests.RemoveAt(i);
+			}
+		}
+
 		_lastAnswered = sequence;
+		_lastAnswerAt = DateTime.Now;
 	}
 
 	private readonly List<ushort> _castSequences = [];
+	private readonly List<(ushort Sequence, uint Action, bool Gcd, float SinceAnswer)> _instantRequests = [];
+	private DateTime _lastAnswerAt = DateTime.MinValue;
+
+	// A765 (concept 03, "Weben, Animationssperre und Latenz"): an instant request without an answer, with what it was and
+	// how long after the previous answer it left, against that answer's lock - whether the server refused it as early.
+	private void TraceUnanswered(ushort sequence)
+	{
+		if (!DataCenter.InCombat)
+		{
+			return;
+		}
+
+		foreach (var request in _instantRequests)
+		{
+			if (request.Sequence == sequence)
+			{
+				DefenseTrace.Line($"request without an answer: {(request.Gcd ? "GCD" : "ability")} #{request.Action}, "
+					+ $"{request.SinceAnswer * 1000:F0} ms after the previous answer (its lock {_lastLock * 1000:F0} ms), cut {_lastCut * 1000:F0} ms");
+				return;
+			}
+		}
+
+		DefenseTrace.Line($"request without an answer: sequence {sequence} not seen as a request");
+	}
 
 	/// <summary>Once per frame from the action manager's update: frame time, clipping, GCD time with nothing queued, the fight's end.</summary>
 	internal void Frame(ActionManager* manager, float delta)

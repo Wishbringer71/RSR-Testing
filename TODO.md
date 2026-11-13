@@ -19,7 +19,7 @@ auswahl und das timing der beschwörung" – je Kampf aller fünf Bretter (Gegne
 BossMod-Module) die Rotation des Beastmasters, die Wahl der Begleiter und den Zeitpunkt ihres Aufrufs im Loop prüfen
 (Beispiel seiner Beobachtung: der Raptor gegen Feuer, bevor feueranfällige Gegner da waren; A581).
 
-Keine offene Arbeit in Reihenfolge.
+Offene Arbeit: „Entscheiden erst, wenn gedrückt werden kann" (Rechenzeit, ohne Wirkung auf die Aktionen).
 
 Danach die technische Schuld, soweit ihre Auflösungsbedingung erfüllt ist. Warten auf Daten: unten.
 
@@ -31,6 +31,12 @@ Code-Review; was diese finden, kommt wieder hierher und in dieselbe Reihenfolge,
 ## Defekte
 
 ## Offene Arbeit
+
+### Entscheiden erst, wenn gedrückt werden kann · N, R
+Im Kampf: 0,1 bis 0,2 ms weniger Rechenzeit je Frame, keine andere Aktion. Gemessen am 13.11.2026 (A765): In 50 bis 55 %
+der Durchläufe sperrte das Tor ohnehin. Nächster Schritt: die Beobachtungen Member für Member aus dem Entscheidungspfad
+lösen (29 Zeitstempel in Rotationen, 58 in Hilfsklassen), dann überspringen. Konzept 24, „Entscheiden erst, wenn
+gedrückt werden kann".
 
 ## Technische Schuld
 
@@ -106,17 +112,9 @@ nebeneinander braucht: neuer interner Name mit Übernahme des Ordners, angezeigt
   später. Auflösung: die Zeilen „action timing over the fight“ seines nächsten `DefenseTrace.log` und die Abstände der
   eigenen Aktionen im ACT-Mitschnitt, gegen den Mitschnitt vom 11.11.2026. Zu prüfen sind GCDs, die eine Sperre
   zurückhielt; Anfragen ohne Antwort (bleiben sie nahe r, lehnt der Server ab); Schnitt und Zuschlag; dreifaches Weben.
-  Je Abweichung Loop. Konzept 03, „Weben, Animationssperre und Latenz“.
-
-- **Ruckler am ersten Pull einer Sitzung** (A739). Im Kampf: Ein erster Pull hielt einzelne Frames 21 bis 64 ms an; RSR
-  übersetzt seinen Kern beim Laden und jede Rotation bei ihrem Wechsel vorab. Auflösung: die Zeilen „warm-up of …" und
-  „JIT … ms" seines nächsten Uploads; bleibt im langsamsten Durchlauf eines ersten Kampfes wenig Übersetzungszeit und
-  trotzdem ein Ruckler, ist das Laden der Blätter der nächste Verdacht. Konzept 24, „Der erste Pull".
-
-- **Entscheiden erst, wenn gedrückt werden kann** (sein Vorschlag, 13.11.2026; A744). Im Kampf: weniger Rechenzeit je
-  Frame, keine andere Aktion. Auflösung: die Zeile „rotation step while the gate would not press" seines nächsten
-  Uploads; trägt dieser Anteil die Hälfte des Rotationsschritts oder mehr, Loop: zuerst die Beobachtungen aus dem
-  Entscheidungspfad lösen (29 Zeitstempel in Rotationen, 58 in Hilfsklassen), dann überspringen. Konzept 24, „Entscheiden erst, wenn gedrückt werden kann".
+  Je Abweichung Loop. Weißmagier am 13.11.2026 geprüft (A765): kein GCD später, aber 8 % Anfragen ohne Antwort und ein
+  Schnitt von 1 bis 34 ms. Offen: ein Job mit doppeltem Weben und die Zeilen „request without an answer“, ob die 8 %
+  Ablehnungen sind. Konzept 03, „Weben, Animationssperre und Latenz“.
 
 - **Absturz einer zweiten Installation am 11.11.2026, 21:18** (A736). Das Spiel endete als Dunkelritter in der
   Azim-Steppe 0,5 s nach Kampfbeginn, ohne die Plugins zu entladen; Build b184ee7fc (08.11.2026). Das `DefenseTrace.log`

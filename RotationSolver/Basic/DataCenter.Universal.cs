@@ -500,6 +500,61 @@ internal static partial class DataCenter
 	/// </remarks>
 	private static bool AreaCastReaches(IBattleChara h, Action act, IBattleChara member)
 	{
+		if (AreaShapeReaches(h, act, member))
+		{
+			return true;
+		}
+
+		// A765: the same attack's hits without a cast of their own, in the rows next to it (concept 13, "Mehrteilige Angriffe").
+		foreach (var part in SameAttackHits(act))
+		{
+			if (AreaShapeReaches(h, part, member))
+			{
+				return true;
+			}
+		}
+
+		return false;
+	}
+
+	private static readonly ConcurrentDictionary<uint, Action[]> _sameAttackHits = new();
+
+	// A765: the rows that adjoin <act> without a gap, carry its name and have no cast time - the hits of a cast that lands as
+	// another action, such as Claw and Tail (#43132 cast as a line, #43131 hitting as a cone behind).
+	private static Action[] SameAttackHits(Action act)
+	{
+		return _sameAttackHits.GetOrAdd(act.RowId, static (id, cast) =>
+		{
+			var name = cast.Name.ExtractText();
+			if (string.IsNullOrEmpty(name))
+			{
+				return [];
+			}
+
+			var sheet = Service.GetSheet<Action>();
+			var parts = new List<Action>();
+			foreach (var step in new[] { -1, 1 })
+			{
+				for (var row = (long)id + step; row > 0 && row <= uint.MaxValue; row += step)
+				{
+					if (sheet.GetRowOrDefault((uint)row) is not { } other || other.Name.ExtractText() != name)
+					{
+						break;
+					}
+
+					if (other.Cast100ms == 0)
+					{
+						parts.Add(other);
+					}
+				}
+			}
+
+			return [.. parts];
+		}, act);
+	}
+
+	private static bool AreaShapeReaches(IBattleChara h, Action act, IBattleChara member)
+	{
 		if ((CastType)act.CastType == CastType.Targeted && act.Range > 0)
 		{
 			return h.CastTargetObjectId == member.GameObjectId;
