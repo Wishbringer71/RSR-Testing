@@ -23,6 +23,14 @@ are not reconstructed here.
 
 ## Unreleased
 
+## 7.5.8.2+wsh1
+
+### Addition to RotationSolver: what the Crucible windows read
+
+New public members of `BeastmasterRotation`: `CrucibleTreasureOffers`, each treasure offer as a `CrucibleOfferVerdict`
+(sheet row, name, verdict, whether it is recommended); `CrucibleTeamSizeNote`, why the team has the size it has; and
+`CrucibleRouteWhy`, the reason for the recommended way at a fork. No signature changed or went away.
+
 ## 7.5.7.15+wsh1
 
 ### Addition to RotationSolver: deep dungeon transformations

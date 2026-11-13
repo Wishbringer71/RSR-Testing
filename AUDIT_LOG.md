@@ -21650,6 +21650,39 @@ Hybrid sinnvoll wäre; im Loop.
   gewollt – im Kampf ändert sich nichts, die Zeile entscheidet den nächsten Schritt.
 - *Prüfgrad:* statisch am Code, Compile, Prüfskripte.
 
+### A745 · Release 7.5.8.2+wsh1 veröffentlicht, Release-Text übergeben, neuer Zweig (13.11.2026)
+
+Sein Auftrag (13.11.2026): „branch zu main, compile, release, neuer branch, dann todo weitermachen im vollen loop" – die
+Freigabe (`CLAUDE.md`, „Grenzen und Löschungen").
+
+- *Vorher gemessen:* Upstream abgeglichen (0 ausstehend, Tag 7.5.8.2 im Verlauf); `main` (93e941007) Vorfahr des
+  Arbeitszweigs, 106 Commits voraus; Tag `7.5.8.2+wsh1` frei auf `origin`; Versionsangaben auf 7.5.8.2+wsh1; CI auf
+  cea13c2e1 grün; Release-Text 38.444 Zeichen.
+- *Zweig zu `main`:* `main` auf `claude/fixes-after-7.5.7.15` (cea13c2e1) vorgespult und gepusht. Kompiliert ohne
+  Warnung und Fehler.
+- *Release:* `publish.yaml` per `workflow_dispatch` auf `main` mit `7.5.8.2+wsh1`, Lauf 43410290454 erfolgreich.
+  Release auf cea13c2e1, `latest.zip` 3 643 521 Bytes, Digest sha256:e3a9c3eb…d184e, Text mit allen 74 Einträgen des
+  Release-Texts.
+- *Übergabe:* `fork-changes-in-play.md` steht auf Upstream 7.5.8.2; die 74 Einträge sind in die Themen eingearbeitet:
+  die Fenster, die Spur der Ladenangebote und gedrückten Gegenstände bei „Seeing what the rules decide"; Gegenstände und
+  Aktionen, die das Spiel am Ort ablehnt, die parierte Seite, die Kanäle des Blaumagiers, die Steine der Tiefen
+  Gewölbe, Harvest Moon des Schnitters, die Tötungsregeln und der Beastmaster zwischen den Kämpfen und im Crucible bei
+  „Damage and rotation"; die Trefferserie bei „The learned lists"; Kegel und Ringe bei „Party mitigation answers
+  raidwides"; das Vorübersetzen, die Codestruktur und die Kostenzeile bei „Frame time"; der Grund eines verfallenen
+  Schlafs bei „Mitigation and defensives"; Swiftcast und die Spur der Toten bei „Raising"; Regen in Bewegung und die
+  Schadensrate bei „Healing — when it lands"; die Hilfe gegen Figuren, die nur Heilung besiegt, bei „Healing — who it
+  picks"; Surecast und Arm's Length und die Bewegungssperre bei „Movement safety". `fork-changes-since-last-release.md`
+  beginnt mit „Changes since 7.5.8.2+wsh1". `CHANGELOG.md`: Abschnitt 7.5.8.2+wsh1 mit vier neuen Membern des
+  `BeastmasterRotation` (`CrucibleOfferVerdict`, `CrucibleTreasureOffers`, `CrucibleTeamSizeNote`, `CrucibleRouteWhy`),
+  erhoben als Vergleich der öffentlichen Signaturen von `RotationSolver/Basic` zwischen den Tags – der Diff allein hätte
+  die in Teildateien verschobenen Member als neu gezeigt.
+- *Zweige:* `claude/fixes-after-7.5.8.2` von `main` nach seiner Namensvorgabe, die Übergabe darauf.
+  `claude/fixes-after-7.5.7.15` ist vollständig gemergt und ein Löschfall auf `origin` (Ref-Löschungen sind der
+  Sitzung gesperrt).
+
+*Prüfgrad:* Workflow-Lauf und Release-API gelesen, Prüfskripte; die Übergabe gegen den Release-Text abgeglichen (jeder
+der 74 Einträge steht im Gesamtbild).
+
 ## B · Commit-Register (Fork vs. `upstream/main`)
 
 ### B1 · Einzelgeprüfte Fork-Commits
