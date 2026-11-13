@@ -422,113 +422,116 @@ public struct ActionTargetInfo(IBaseAction action)
 			return false;
 		}
 
+		// A762: each block holds only an enemy the briefing lists as immune; an interrupt goes all the same while the game
+		// reports the target's cast interruptible (concept 22, "Die Kontrollfelder bedeuten Immunität").
 		if (DataCenter.Job == Job.BLU && DataCenter.IsInMaskedCarnivale)
 		{
 			if (Service.Config.BlockflatdamagedeathimmuneBlu && action.Setting.IsFlatDamageDeath
-			&& !MaskedCarnivaleHelper.IsVulnerableToFlatOrDeath(battleChara))
+			&& MaskedCarnivaleHelper.IsImmuneTo(battleChara, CarnivaleControl.FlatOrDeath))
 			{
 				if (Service.Config.InDebug)
 				{
-					PluginLog.Debug($"[CheckResistance] {battleChara.Name} is not vulnerable to flat/death — skipping {action.Info.Name}.");
+					PluginLog.Debug($"[CheckResistance] {battleChara.Name} is immune to flat/death — skipping {action.Info.Name}.");
 				}
 
 				return false;
 			}
 
 			if (Service.Config.BlockslowimmuneBlu && action.Setting.IsSlowSpell
-			&& !MaskedCarnivaleHelper.IsVulnerableToSlow(battleChara))
+			&& MaskedCarnivaleHelper.IsImmuneTo(battleChara, CarnivaleControl.Slow))
 			{
 				if (Service.Config.InDebug)
 				{
-					PluginLog.Debug($"[CheckResistance] {battleChara.Name} is not vulnerable to slow — skipping {action.Info.Name}.");
+					PluginLog.Debug($"[CheckResistance] {battleChara.Name} is immune to slow — skipping {action.Info.Name}.");
 				}
 
 				return false;
 			}
 
 			if (Service.Config.BlockpetrificationimmuneBlu && action.Setting.IsPetrificationSpell
-				&& !MaskedCarnivaleHelper.IsVulnerableToPetrification(battleChara))
+				&& MaskedCarnivaleHelper.IsImmuneTo(battleChara, CarnivaleControl.Petrification))
 			{
 				if (Service.Config.InDebug)
 				{
-					PluginLog.Debug($"[CheckResistance] {battleChara.Name} is not vulnerable to petrification — skipping {action.Info.Name}.");
+					PluginLog.Debug($"[CheckResistance] {battleChara.Name} is immune to petrification — skipping {action.Info.Name}.");
 				}
 
 				return false;
 			}
 
 			if (Service.Config.BlockparalysisimmuneBlu && action.Setting.IsParalysisSpell
-				&& !MaskedCarnivaleHelper.IsVulnerableToParalysis(battleChara))
+				&& MaskedCarnivaleHelper.IsImmuneTo(battleChara, CarnivaleControl.Paralysis))
 			{
 				if (Service.Config.InDebug)
 				{
-					PluginLog.Debug($"[CheckResistance] {battleChara.Name} is not vulnerable to paralysis — skipping {action.Info.Name}.");
+					PluginLog.Debug($"[CheckResistance] {battleChara.Name} is immune to paralysis — skipping {action.Info.Name}.");
 				}
 
 				return false;
 			}
 
 			if (Service.Config.BlockinterruptimmuneBlu && action.Setting.IsInterruptSpell
-			&& !MaskedCarnivaleHelper.IsVulnerableToInterruption(battleChara))
+			&& MaskedCarnivaleHelper.IsImmuneTo(battleChara, CarnivaleControl.Interruption)
+			&& !(battleChara.IsCasting && battleChara.IsCastInterruptible))
 			{
 				if (Service.Config.InDebug)
 				{
-					PluginLog.Debug($"[CheckResistance] {battleChara.Name} is not vulnerable to interruption — skipping {action.Info.Name}.");
+					PluginLog.Debug($"[CheckResistance] {battleChara.Name} is immune to interruption — skipping {action.Info.Name}.");
 				}
 
 				return false;
 			}
 
 			if (Service.Config.BlockblindimmuneBlu && action.Setting.IsBlindSpell
-				&& !MaskedCarnivaleHelper.IsVulnerableToBlind(battleChara))
+				&& MaskedCarnivaleHelper.IsImmuneTo(battleChara, CarnivaleControl.Blind))
 			{
 				if (Service.Config.InDebug)
 				{
-					PluginLog.Debug($"[CheckResistance] {battleChara.Name} is not vulnerable to blind — skipping {action.Info.Name}.");
+					PluginLog.Debug($"[CheckResistance] {battleChara.Name} is immune to blind — skipping {action.Info.Name}.");
 				}
 
 				return false;
 			}
 
 			if (Service.Config.BlockstunimmuneBlu && action.Setting.IsStunSpell
-				&& !MaskedCarnivaleHelper.IsVulnerableToStun(battleChara))
+				&& MaskedCarnivaleHelper.IsImmuneTo(battleChara, CarnivaleControl.Stun))
 			{
 				if (Service.Config.InDebug)
 				{
-					PluginLog.Debug($"[CheckResistance] {battleChara.Name} is not vulnerable to stun — skipping {action.Info.Name}.");
+					PluginLog.Debug($"[CheckResistance] {battleChara.Name} is immune to stun — skipping {action.Info.Name}.");
 				}
 
 				return false;
 			}
 
 			if (Service.Config.BlocksleepimmuneBlu && action.Setting.IsSleepSpell
-				&& !MaskedCarnivaleHelper.IsVulnerableToSleep(battleChara))
+				&& MaskedCarnivaleHelper.IsImmuneTo(battleChara, CarnivaleControl.Sleep))
 			{
 				if (Service.Config.InDebug)
 				{
-					PluginLog.Debug($"[CheckResistance] {battleChara.Name} is not vulnerable to sleep — skipping {action.Info.Name}.");
+					PluginLog.Debug($"[CheckResistance] {battleChara.Name} is immune to sleep — skipping {action.Info.Name}.");
 				}
 
 				return false;
 			}
 
 			if (Service.Config.BlockbindimmuneBlu && action.Setting.IsBindSpell
-				&& !MaskedCarnivaleHelper.IsVulnerableToBind(battleChara))
+				&& MaskedCarnivaleHelper.IsImmuneTo(battleChara, CarnivaleControl.Bind))
 			{
 				if (Service.Config.InDebug)
 				{
-					PluginLog.Debug($"[CheckResistance] {battleChara.Name} is not vulnerable to bind — skipping {action.Info.Name}.");
+					PluginLog.Debug($"[CheckResistance] {battleChara.Name} is immune to bind — skipping {action.Info.Name}.");
 				}
 
 				return false;
 			}
 
 			if (Service.Config.BlockheavyimmuneBlu && action.Setting.IsHeavySpell
-				&& !MaskedCarnivaleHelper.IsVulnerableToHeavy(battleChara))
+				&& MaskedCarnivaleHelper.IsImmuneTo(battleChara, CarnivaleControl.Heavy))
 			{
 				if (Service.Config.InDebug)
 				{
-					PluginLog.Debug($"[CheckResistance] {battleChara.Name} is not vulnerable to heavy — skipping {action.Info.Name}.");
+					PluginLog.Debug($"[CheckResistance] {battleChara.Name} is immune to heavy — skipping {action.Info.Name}.");
 				}
 
 				return false;

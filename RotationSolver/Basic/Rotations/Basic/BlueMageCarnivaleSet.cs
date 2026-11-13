@@ -159,7 +159,96 @@ public partial class BlueMageRotation
 		}
 
 		AddWeaknessFillers(stage, points, learned, slots, picks);
+		AddCoverageFillers(stage, learned, slots, picks);
 		return picks;
+	}
+
+	// A762 (concept 22, "Jeder Gegner braucht einen Zauber, der ihn trifft"): an enemy of the stage immune to every damaging
+	// spell of the proposal and the set - stage 24, the Magus immune to magic beside the Viking immune to physical spells -
+	// gets a recommended point: the learned filler with the most damage per time on it. The weakness points' rule, for
+	// immunity.
+	private static void AddCoverageFillers(int stage, Dictionary<uint, IBaseAction> learned, uint[] slots, List<CarnivalePick> picks)
+	{
+		var acts = StageEnemies(stage);
+		for (var act = 0; act < acts.Count; act++)
+		{
+			foreach (var enemy in acts[act])
+			{
+				var nameId = enemy.BNpcName.RowId;
+				if (Hurts(nameId, picks, slots))
+				{
+					continue;
+				}
+
+				var best = BestFiller(learned, null, nameId);
+				var why = $"hurts {EnemyName(enemy)} (act {act + 1}), immune to every damaging spell of the set";
+				picks.Add(best == null
+					? new CarnivalePick(false, 0, $"not learned: a spell that {why}", false)
+					: new CarnivalePick(false, best.ID, $"{best.Name} - {why}", Array.IndexOf(slots, best.ID) >= 0));
+			}
+		}
+	}
+
+	// Whether a damaging spell of the proposal or the set is not one the enemy is immune to.
+	private static bool Hurts(uint nameId, List<CarnivalePick> picks, uint[] slots)
+	{
+		foreach (var pick in picks)
+		{
+			if (pick.Spell != 0 && HurtsWith(nameId, pick.Spell))
+			{
+				return true;
+			}
+		}
+
+		foreach (var spell in slots)
+		{
+			if (spell != 0 && HurtsWith(nameId, spell))
+			{
+				return true;
+			}
+		}
+
+		return false;
+	}
+
+	private static bool HurtsWith(uint nameId, uint spell)
+	{
+		return ActionTooltip.TryPotencyOn(spell, 1, out var potency) && potency > 0f
+			&& Service.GetSheet<Lumina.Excel.Sheets.Action>().GetRowOrDefault(spell) is { } row
+			&& MaskedCarnivaleHelper.ResistanceTo(nameId, row) != MobResistance.Immune;
+	}
+
+	// The learned filler - a GCD without a recast of its own, with a potency in its text - with the most potency per time
+	// times its factor on the enemy (none when immune, the weakness factor when weak; an enemy of 0 is no enemy, factor 1),
+	// of the element when one is given.
+	private static IBaseAction? BestFiller(Dictionary<uint, IBaseAction> learned, Aspect? element, uint nameId)
+	{
+		IBaseAction? best = null;
+		var bestRate = 0f;
+		foreach (var action in learned.Values)
+		{
+			if ((element is { } aspect && action.Action.Aspect != (byte)aspect) || !action.Info.IsGeneralGCD
+				|| action.Cooldown.RecastTimeOneChargeRaw > WeaponTotal
+				|| !ActionTooltip.TryPotencyOn(action.ID, 1, out var potency))
+			{
+				continue;
+			}
+
+			var factor = MaskedCarnivaleHelper.ResistanceTo(nameId, action.Action) switch
+			{
+				MobResistance.Immune => 0f,
+				MobResistance.Weak => OwnHitWatch.WeaknessFactor,
+				_ => 1f,
+			};
+			var rate = potency * factor / SpellTime(action);
+			if (rate > bestRate)
+			{
+				best = action;
+				bestRate = rate;
+			}
+		}
+
+		return best;
 	}
 
 	// A647: an element an enemy of the stage is weak to and no filler point of the guide names gets a recommended point - the
@@ -195,25 +284,7 @@ public partial class BlueMageRotation
 				continue;
 			}
 
-			IBaseAction? best = null;
-			var bestRate = 0f;
-			foreach (var action in learned.Values)
-			{
-				if (action.Action.Aspect != (byte)element || !action.Info.IsGeneralGCD
-					|| action.Cooldown.RecastTimeOneChargeRaw > WeaponTotal
-					|| !ActionTooltip.TryPotencyOn(action.ID, 1, out var potency))
-				{
-					continue;
-				}
-
-				var rate = potency / SpellTime(action);
-				if (rate > bestRate)
-				{
-					best = action;
-					bestRate = rate;
-				}
-			}
-
+			var best = BestFiller(learned, element, 0);
 			var why = $"{element} filler: {weak} weak to {element.ToString().ToLowerInvariant()}";
 			picks.Add(best == null
 				? new CarnivalePick(false, 0, $"not learned: a {why}", false)

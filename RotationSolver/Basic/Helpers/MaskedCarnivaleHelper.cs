@@ -29,7 +29,7 @@ public enum MobResistance : byte
 /// Provides per-mob elemental/physical resistance and status-vulnerability data sourced from the
 /// <c>AOZContentBriefingBNpc</c> game sheet, used in the Masked Carnivale (AOZ) content.
 /// </summary>
-public static class MaskedCarnivaleHelper
+public static partial class MaskedCarnivaleHelper
 {
 	private sealed record MobData(
 		byte Fire, byte Ice, byte Wind, byte Earth, byte Thunder, byte Water,
@@ -287,55 +287,55 @@ public static class MaskedCarnivaleHelper
 	/// Returns <see langword="true"/> if the target mob is vulnerable to <b>Slow</b> in the Masked Carnivale.
 	/// </summary>
 	public static bool IsVulnerableToSlow(IBattleChara target)
-		=> target != null && MobDataByNameId.TryGetValue(target.NameId, out var d) && d.SlowVuln;
+		=> IsListedAndNotImmune(target, CarnivaleControl.Slow);
 
 	/// <summary>
 	/// Returns <see langword="true"/> if the target mob is vulnerable to <b>Petrification</b>.
 	/// </summary>
 	public static bool IsVulnerableToPetrification(IBattleChara target)
-		=> target != null && MobDataByNameId.TryGetValue(target.NameId, out var d) && d.PetrificationVuln;
+		=> IsListedAndNotImmune(target, CarnivaleControl.Petrification);
 
 	/// <summary>
 	/// Returns <see langword="true"/> if the target mob is vulnerable to <b>Paralysis</b>.
 	/// </summary>
 	public static bool IsVulnerableToParalysis(IBattleChara target)
-		=> target != null && MobDataByNameId.TryGetValue(target.NameId, out var d) && d.ParalysisVuln;
+		=> IsListedAndNotImmune(target, CarnivaleControl.Paralysis);
 
 	/// <summary>
 	/// Returns <see langword="true"/> if the target mob can be <b>Interrupted</b>.
 	/// </summary>
 	public static bool IsVulnerableToInterruption(IBattleChara target)
-		=> target != null && MobDataByNameId.TryGetValue(target.NameId, out var d) && d.InterruptionVuln;
+		=> IsListedAndNotImmune(target, CarnivaleControl.Interruption);
 
 	/// <summary>
 	/// Returns <see langword="true"/> if the target mob is vulnerable to <b>Blind</b>.
 	/// </summary>
 	public static bool IsVulnerableToBlind(IBattleChara target)
-		=> target != null && MobDataByNameId.TryGetValue(target.NameId, out var d) && d.BlindVuln;
+		=> IsListedAndNotImmune(target, CarnivaleControl.Blind);
 
 	/// <summary>
 	/// Returns <see langword="true"/> if the target mob is vulnerable to <b>Stun</b>.
 	/// </summary>
 	public static bool IsVulnerableToStun(IBattleChara target)
-		=> target != null && MobDataByNameId.TryGetValue(target.NameId, out var d) && d.StunVuln;
+		=> IsListedAndNotImmune(target, CarnivaleControl.Stun);
 
 	/// <summary>
 	/// Returns <see langword="true"/> if the target mob is vulnerable to <b>Sleep</b>.
 	/// </summary>
 	public static bool IsVulnerableToSleep(IBattleChara target)
-		=> target != null && MobDataByNameId.TryGetValue(target.NameId, out var d) && d.SleepVuln;
+		=> IsListedAndNotImmune(target, CarnivaleControl.Sleep);
 
 	/// <summary>
 	/// Returns <see langword="true"/> if the target mob is vulnerable to <b>Bind</b>.
 	/// </summary>
 	public static bool IsVulnerableToBind(IBattleChara target)
-		=> target != null && MobDataByNameId.TryGetValue(target.NameId, out var d) && d.BindVuln;
+		=> IsListedAndNotImmune(target, CarnivaleControl.Bind);
 
 	/// <summary>
 	/// Returns <see langword="true"/> if the target mob is vulnerable to <b>Heavy</b>.
 	/// </summary>
 	public static bool IsVulnerableToHeavy(IBattleChara target)
-		=> target != null && MobDataByNameId.TryGetValue(target.NameId, out var d) && d.HeavyVuln;
+		=> IsListedAndNotImmune(target, CarnivaleControl.Heavy);
 
 	/// <summary>
 	/// Returns <see langword="true"/> if the target mob is vulnerable to flat-damage or instant-death
@@ -343,5 +343,5 @@ public static class MaskedCarnivaleHelper
 	/// <see cref="ActionID.Level5DeathPvE"/>).
 	/// </summary>
 	public static bool IsVulnerableToFlatOrDeath(IBattleChara target)
-		=> target != null && MobDataByNameId.TryGetValue(target.NameId, out var d) && d.FlatOrDeathVuln;
+		=> IsListedAndNotImmune(target, CarnivaleControl.FlatOrDeath);
 }

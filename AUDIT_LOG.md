@@ -22200,6 +22200,48 @@ fehlerbeseitigung". Geprüft: wo eine Rotation die Voraussetzung eines automatis
   ihn handeln; Guard geht danach wieder, sobald Undead Redemption endet.
 - *Prüfgrad:* Compile; alle 54 CI-Schritte lokal. In PvP nicht beobachtet.
 
+### A762 · Masked Carnivale: Kontrollfelder bedeuten Immunität; Mechanikzauber aus dem Führertext; jeder Gegner getroffen (13.11.2026)
+
+Sein Auftrag (13.11.2026): „danach weiter zu bluemage recherchieren, konzept im loop verbessern, audit, codereview,
+fehlerbeseitung. zusätzlich masket carnival mit allen kämpfen analysieren und ebenfalls schauen, was aus dem vorhandenen
+sprücherepertoire die beste kombination für die einzelnen arenen des carnivals sind".
+
+- *Erhebung:* alle 32 Stufen aus den Blättern (`AOZContent`, `AOZArrangement`, `AOZBoss`, `AOZContentBriefingBNpc`,
+  xivapi v2), dazu alle Führer von Blue Academy (0f5aaf1, 03.11.2026) mit Listen und Fließtext, die Grundlagenseite
+  samt Grundset (Mimikry Heiler, Heilung, magischer und physischer Füllzauber, Stimme des Widders und Ultravibration,
+  Schadenszauber), EXDSchema (latest a1e24a0), BlueMageSetBuilder (213d3d9) und Auric's Guide (astralflamesblog,
+  Community-Quelle). Übersicht je Stufe im Konzept 22, „Übersicht der Stufen“.
+- *Defekt (Upstream a09dc9257):* Die zehn Felder `…Vuln` bedeuten Immunität. Belege: Spucksardine-Stellen der Führer
+  17 zu 1 (Ausnahme Carmilla), Auric 19 zu 0. RSRs zehn Sperren „Don't use … actions on immune enemies“ (ab Werk aus)
+  sperrten, eingeschaltet, die anfälligen Gegner – etwa die nötigen Unterbrechungen der Stufen 24, 29 und 32 – und
+  dazu jeden Gegner außerhalb des Blatts (Shabti, Stufe 15). Behoben: `MaskedCarnivaleHelper.IsImmuneTo`
+  (Teildatei `.Immunity.cs`), die Sperren greifen nur bei bekannter Immunität, die Unterbrechung nicht gegen einen
+  Zauber, den das Spiel als unterbrechbar meldet; `IsVulnerableTo…` meldet bekannte Gegner ohne Immunität.
+  Betroffen: Autoren abgeleiteter Rotationen, die `IsVulnerableTo…` lesen (keine Rotation im Repository tut es).
+- *Satz der Stufe:* Der Generator liest aus dem Text der Akte Spucksardine-Unterbrechungen und den Vibe Check (Widder,
+  Ultravibration): 32 neue Punkte, die 8 Stufen ohne Liste haben jetzt Punkte (1, 8, 10, 13, 15, 17, 18, 21). Neu im
+  Fenster: ein Punkt für jeden Gegner, gegen den kein schädigender Zauber im Vorschlag und im Set wirkt (Stufe 24, Magus
+  gegen Magie immun); dieselbe Füllzauberwahl wie die Schwächepunkte (`BestFiller`).
+- *Verworfen:* Kontrollketten (Rösselsprünge, Rakete) im Satz: Kein Gegner einer Stufe ist zugleich für Bind und Slow
+  oder für Tod anfällig, außer Begleitgegnern. Vibe Check aus dem Blatt abgeleitet: Die Ultravibration hängt am
+  Gefrieren, das das Blatt nicht führt (Kreios: todesimmun, Vibe Check wirkt). Nahkampf-Füllzauber nach hinten: nur
+  Stufe 32 nennt Goblin Punch, als nötig für die Strategie des Führers.
+- *Falsifikation:* im Konzept 22 je Teil; „ausgeliefert, nichts ändert sich“ gilt, solange alle Sperren aus sind und er
+  nicht auf „Apply“ klickt.
+- *Prüfgrad:* Compile; Generator-Selbsttest und `--check` gegen `AozActionTransient`; neue Punkte gegen die Übersicht
+  (0 Abweichungen); alle 54 CI-Schritte lokal. Im Carnivale nicht beobachtet.
+
+### A763 · Beastmaster: Quellen, Konzept 21 und Code seit A728 geprüft, ohne Defekt (13.11.2026)
+
+Sein Auftrag (13.11.2026): „danach weiter zu beastmaster recherchieren, konzept im loop verbessern, audit, codereview,
+fehlerbeseitigung. rotas, bretter, ablaufplanung".
+
+- *Quellen:* Die neuen Stände (7.57: Sleepless Survival 1000, Punktzahlen) decken sich mit Konzept 21.
+- *Code-Review* des Diffs def657360..HEAD (Rangstufen in `BeastmasterCrucibleTeam`, Sicherung der Hörner vor dem Brett
+  in BST_Reborn): kein Defekt. Der Verdacht, die Sicherung werde im Crucible gelöscht, ist widerlegt:
+  `if (IsInCrucible) return;` steht vor dem Löschen.
+- *Prüfgrad:* statisch und Compile; alle CI-Schritte lokal grün.
+
 ## B · Commit-Register (Fork vs. `upstream/main`)
 
 ### B1 · Einzelgeprüfte Fork-Commits
@@ -22542,3 +22584,4 @@ Die offene Arbeit dazu — Reihenfolge und Abbruchbedingung der Nachprüfung —
 | C188 | A218 und Konzept 13 (Stand A218): „BossModReborn setzt keine seiner 3494 Kreisformen um den Trefferkreis des Wirkenden größer", daraus „Kreis und Kegel um den Wirkenden: Abstand vom Mittelpunkt" | Die Klasse `AOEShapeCircle` rechnet keinen Trefferkreis ein, die Module tun es in der Zahl: BossModReborns Analyse beschreibt die Formarten 3, 4 und 5 als „range X+R" (447 Kreise, 351 Kegel), etwa Wing Cutter als Kegel von 6,9 bei Reichweite 6. Für Art 2 gilt der Mittelpunkt weiter; Art 3, 4 und 5 reichen um den Trefferkreis des Wirkenden weiter. | A731 |
 | C189 | TODO.md und Konzept 03, „Ausweichen in der Sperre“ (Stand A630–A749): Raidwide und ausweichbare Fläche trenne man durch ein Merkmal aus den Spieldaten (`CastType`, `EffectRange`) bei der Aufnahme; eine gelistete Fläche gelte in den Sperren als unausweichlich | An seinen 63 aufgenommenen Ids trennt das Merkmal falsch herum: Omen und kleine Reichweiten sind Gruppentreffer, die drei ausweichbaren tragen keins. Die Form im Moment trennt (`CastCertainlyDodgeable`); die Sperren lesen jetzt auch Helfer (A750). |
 | C190 | Konzept 18, „Takt“ (Stand A748): „Countdown lead time“ und „Action ahead“ hingen an der Latenz; „eine Selbststeuerung aus gemessener Latenz wäre denkbar; kein Fehlverhalten im Kampf belegt“ | Sein Mitschnitt vom 11.11.2026 belegt es: Weben mit weniger als 0,7 s Rest verzögerte den nächsten GCD bis 0,46 s, die feste Grenze erlaubte es bis 0,61 s. Seit A753 rechnet die Webregel mit Sperre und gemessenem Rest. |
+| C191 | A506 und Konzept 22 (Stand A506–A647): `AOZContentBriefingBNpc` führe „Verwundbarkeiten“ je Gegner, Slow bis Tod/fest | Die zehn Felder bedeuten Immunität: Spucksardine-Stellen der Führer 17 zu 1, Auric's Guide 19 zu 0; die Sperren lesen sie so (A762). |

@@ -29,6 +29,9 @@ API = 'https://v2.xivapi.com/api'
 SECTION = re.compile(r'^###\s+(Required|Recommended) Spells\s*$')
 HEADING = re.compile(r'^#{2,3}\s')
 SPELL = re.compile(r'\{\{<\s*spell\s+([A-Za-z0-9_-]+)[^>]*>\}\}')
+SENTENCE = re.compile(r'(?<=[.!?])\s+')
+NOT_INTERRUPTIBLE = re.compile(r'cannot be interrupted', re.I)
+ONLY_NOT_VIBE = re.compile(r'^[^,]*cannot be Vibe Checked\.?$')
 SPELL_ID = re.compile(r'^- id:\s*(\S+)\s*$')
 SPELL_NUMBER = re.compile(r'^\s+number:\s*(\d+)\s*$')
 PICK = re.compile(r'new\((true|false), (true|false), (true|false), \[([0-9, ]*)\]\)')
@@ -88,7 +91,47 @@ def read_guide(text, numbers):
         elif point is not None and line.startswith(' '):
             point += ' ' + line.strip()
     close()
+    listed = {n for pick in picks for n in pick[3]}
+    for key in mechanic_keys(text):
+        if key not in numbers:
+            unknown.append(key)
+        elif numbers[key] not in listed:
+            listed.add(numbers[key])
+            picks.append((False, False, False, [numbers[key]]))
     return picks, unknown
+
+
+def mechanic_keys(text):
+    """The spells the text of a guide's acts names for a mechanic of the stage, in order (concept 22, "Zauber für die
+    Mechanik aus dem Fließtext der Führer", A762): Flying Sardine where a sentence interrupts a cast with it (not where it
+    "cannot be interrupted"), and the Ram's Voice and Ultravibration where enemies "can be Vibe Checked" (the basics page
+    names the Vibe Check as these two spells). Lists and achievement notes are no act text; every other spell named in
+    it is a choice, a negation or an action outside the set."""
+    keys, section, paragraph = [], None, []
+
+    def flush():
+        sentences = SENTENCE.split(' '.join(' '.join(paragraph).split()))
+        for sentence in sentences:
+            spells = SPELL.findall(sentence)
+            if ('flying_sardine' in spells and 'interrupt' in sentence.lower()
+                    and not NOT_INTERRUPTIBLE.search(sentence)):
+                found = ['flying_sardine']
+            elif 'Vibe Checked' in sentence and not ONLY_NOT_VIBE.match(sentence):
+                found = ['the_rams_voice', 'ultravibration']
+            else:
+                continue
+            keys.extend(k for k in found if k not in keys)
+        paragraph.clear()
+
+    for line in text.splitlines():
+        if HEADING.match(line):
+            flush()
+            section = line.lstrip('#').strip()
+            continue
+        if section is not None and section.startswith('Act'):
+            paragraph.append(line)
+    flush()
+    return keys
 
 
 def collect(academy, data):
@@ -201,6 +244,18 @@ def self_test():
     picks, unknown = read_guide(guide, numbers)
     assert picks == [(False, True, True, [1]), (True, False, False, [36, 42]), (True, False, False, [50])], picks
     assert unknown == ['unknown_one'], unknown
+    numbers.update({'flying_sardine': 24, 'the_rams_voice': 33, 'ultravibration': 92})
+    acts = ('---\ntitle: Y\n---\n\n### Required Spells\n\n- {{< spell the_rams_voice >}}\n\n### Act 1\n\n'
+            'Burst cannot be interrupted with {{< spell flying_sardine >}}. The Catoblepas cannot be Vibe Checked.\n\n'
+            '### Act 2\n\nIt casts Doom, which we can\ninterrupt with {{< spell flying_sardine >}}. The Imps can be Vibe\n'
+            'Checked.\n\n### Achievement Info\n\nInterrupt it with {{< spell flying_sardine >}} and use {{< spell doom >}}.\n')
+    assert mechanic_keys(acts) == ['flying_sardine', 'the_rams_voice', 'ultravibration'], mechanic_keys(acts)
+    picks2, _ = read_guide(acts, numbers)
+    assert picks2 == [(True, False, False, [33]), (False, False, False, [24]), (False, False, False, [92])], picks2
+    none = '---\nt: Z\n---\n\n### Act 1\n\nBurst cannot be interrupted with {{< spell flying_sardine >}}.\nThe Catoblepas cannot be Vibe Checked.\n'
+    assert mechanic_keys(none) == [], mechanic_keys(none)
+    six = '---\nt: Z\n---\n\n### Act 2\n\nThe Catoblepas cannot be Vibe Checked, but the other enemies can.\n'
+    assert mechanic_keys(six) == ['the_rams_voice', 'ultravibration'], mechanic_keys(six)
     text = render({2: picks, 5: [(True, False, False, [36])]}, 'test')
     assert parse_generated(text) == {2: picks, 5: [(True, False, False, [36])]}, parse_generated(text)
     assert problems({5: [(True, False, False, [36])], 2: picks}, None) == ['stages not ascending']
@@ -208,7 +263,8 @@ def self_test():
     assert problems({2: [(True, False, False, [99])]}, {1, 36}) == ['stage 2, point 1: 99 is no spell number of AozActionTransient']
     print('self-test ok: spell numbers are read; list points of both sections become picks with their spells in order, '
           'required, example and filler flags, continuation lines joined, repeated and unknown keys handled, walkthrough '
-          'text left out; the file round-trips; disorder, empty points and unknown numbers are reported')
+          'text left out; act text yields Flying Sardine for an interrupt and the Vibe Check spells, not for a negation, '
+          'an achievement note or a listed spell; the file round-trips; disorder, empty points and unknown numbers are reported')
     return 0
 
 
