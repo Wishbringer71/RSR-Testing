@@ -213,8 +213,44 @@ dem man nicht hinsehen darf).
   gilt auch für Aktionen, die RSR drückt (`SmartRotationTweak`, `ActionManagerEx`; 8ad17f97f, Werkzeugquelle). RSR
   selbst hat nur Upstreams Liste „Gaze/Stop“ mit vier Aktionen hinter „Stop acting while an enemy casts a Gaze/Stop
   action“ (ab Werk aus), und sie sperrt nur Zauber.
-- *Lücke:* Ohne BossModReborn oder mit abgeschalteter Ausrichtung schützt RSR fast nicht. Ein Sofortangriff auf den
-  Wirkenden dreht die Figur hin. TODO: „Blickangriffe ohne BossModReborn".
+- *Lücke, auch mit BossModReborn* (sein Hinweis, 13.11.2026: „In Welt der Dunkelheit besteht das Risiko Doom zu
+  bekommen … bmr hat da anscheinend auch keinen Schutz“). Belegt an seinem Mitschnitt vom 13.11.2026, 18:26 bis
+  18:28: Angra Mainyu wirkt „Tödlicher Blick“ zweimal zugleich.
+  - #3281 dauert 3 s und trägt das Blick-Kennzeichen (`VFX` 25). Ein Helfer wirkt #3499, 4,5 s, ohne Kennzeichen.
+  - Verhängnis (#210, 10 s) kam beide Male 0,6 s nach #3499, zuerst auf 2, dann auf 9 Spieler.
+  - BossModReborns Modul (`A31AngraMainyu`, Stand ef3da084b) kennt nur #3281, seine Automatik erkennt #3499 nicht.
+  - Nach #3281 dreht BossModReborn nicht mehr weg. Eine Aktion auf den Boss dreht die Figur in den zweiten Blick.
+  - Verhängnis lässt sich hier nur auf einer leuchtenden Glyphe aufheben (consolegameswiki, „Doom (Status Effect)“),
+    also durch Bewegung, und Esuna wirkt nicht (`CanDispel` false). RSR bewegt nicht; schützen kann nur das Nicht-Hinsehen.
+
+**Nicht in einen Blick drehen** (A770, alle Jobs). Solange ein Gegner einen Blick wirkt, der den Spieler erreicht, wählt
+eine Aktion, die zum Ziel dreht (`NeedToFaceTarget`, Reichweite über 0), kein Ziel, zu dem sich der Spieler in den Blick
+drehen müsste.
+- *Was ein Blick ist:* eine Aktion mit dem Blick-Kennzeichen des Blatts (`VFX` 25, wie BossMod) oder eine gegnerische
+  Aktion mit demselben Namen wie eine solche. Am Blatt gemessen (xivapi v2, 13.11.2026): 230 Aktionen tragen das
+  Kennzeichen, keine davon eine Spieleraktion. 77 gegnerische Wirken heißen gleich und tragen es nicht, darunter die
+  Helferfassungen von „Mortal Gaze“, „Hex Eye“, „Petrifaction“ und „Evil Eye“. Die Namen liest RSR einmal im
+  Hintergrund; bis dahin zählt das Kennzeichen.
+- *In den Blick drehen:* Liegt der Wirkende vom Spieler aus innerhalb von 45° zur Richtung des Ziels, blickt die
+  gedrehte Figur ihn an. Die 45° sind BossMods halbe Breite einer verbotenen Richtung (`AIHintsBuilder`,
+  `ForbiddenDirections`; Werkzeugquelle). Das Spiel nennt keinen Winkel.
+- *Zeitraum:* vom ersten Bild des Wirkens bis zu seinem Ende. Die Figur hält ihre Richtung nach einer Aktion bei. Eine
+  Aktion zum Wirkenden früh im Wirken lässt sie am Ende noch hinsehen.
+- *Im Kampf:* Während der 4,5 s von #3499 drückt RSR nichts auf Angra Mainyu und nichts auf ein Ziel in seiner Richtung.
+  Der Heiler heilt weiter, denn Heilungen drehen nicht. Ein Ziel in einer anderen Richtung bleibt wählbar. Nahkämpfer
+  setzen ein bis zwei GCDs aus, wie es die Mechanik von Spielern verlangt.
+- *Optionen:* (0) nichts. (1) Upstreams Liste „Gaze/Stop“ füllen: eine Id je Kampf, und sie sperrt nur Zauber.
+  (2) BossModReborn fragen: Seine verbotenen Richtungen gibt es nicht heraus (A575), und #3499 kennt es nicht. (3) Die
+  Regel oben. *Gewählt:* (3). Sie deckt jeden Kampf aus dem Blatt, auch ohne BossModReborn, und mit ihm wirkt sie in
+  dieselbe Richtung, ohne Doppel.
+- *Gegenthese 1 (kein Defekt, er dreht sich selbst weg):* Das tut er, und RSR drehte ihn mit der nächsten Aktion
+  zurück. Am Mitschnitt: Das Verhängnis traf 9 von 24, alle nach #3499.
+- *Gegenthese 2 (Option falsch, gleicher Name ist kein Blick):* Einige der 77 könnten Begleitaktionen ohne Blick sein.
+  *Preis:* Für ein Wirken hält RSR Aktionen in einer Richtung zurück, ein bis zwei GCDs. Gewogen gegen Versteinerung
+  oder Verhängnis wiegt das wenig.
+- *Gegenthese 3 (ausgeliefert, und nichts ändert sich):* Steht er schon mit Blick zum Wirkenden still, dreht RSR ihn
+  nicht weg; das kann nur er oder BossModReborn. Bodenzauber drehen zum Ort, nicht zum Ziel, und bleiben hier
+  ungeprüft.
 
 **Warum die Form so gemessen wird (A731).** Welche Form um den Trefferkreis des Wirkenden weiter reicht, sagt die Art:
 BossModReborns Analysewerkzeug beschreibt Art 3, 4 und 5 als „range X+R", Art 2, 12 und 13 als „range X"

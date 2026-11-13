@@ -2342,6 +2342,26 @@
    "status": "exception",
    "loop": "A761",
    "reason": "A row number of the Action sheet (an identity, not a quantity), named as the job bases create these Limit Breaks: `(ActionID)<row>`, since the generated ActionID names none of them."
+  },
+  {
+   "file": "RotationSolver/Basic/Helpers/GazeWatch.cs",
+   "code": "private const float DangerHalfAngleDegrees = 45f;",
+   "values": [
+    "45"
+   ],
+   "status": "exception",
+   "loop": "A770",
+   "reason": "Half width of the facing that looks into a gaze. The game data names no angle; BossMod uses 45 degrees for every gaze's forbidden direction (AIHintsBuilder, ForbiddenDirections), built from its recordings."
+  },
+  {
+   "file": "RotationSolver/Basic/Helpers/GazeWatch.cs",
+   "code": "private const uint GazeCastVfx = 25;",
+   "values": [
+    "25"
+   ],
+   "status": "exception",
+   "loop": "A770",
+   "reason": "A row of the ActionCastVFX sheet (an identity, not a quantity): the cast effect of a gaze, as BossMod and BossModReborn read it (Action.VFX == 25); 230 enemy actions carry it, no player action."
   }
  ]
 }

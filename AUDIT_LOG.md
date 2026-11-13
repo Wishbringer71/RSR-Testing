@@ -22365,6 +22365,26 @@ hinsehen darf?“ Einordnung: Frage zu einem Risiko der Änderungen A765, A766 u
 - *Neu im TODO:* „Blickangriffe ohne BossModReborn“.
 - *Prüfgrad:* statisch an RSR und BossModReborn.
 
+### A770 · Nicht in einen Blick drehen; Tödlicher Blick in Welt der Dunkelheit (13.11.2026)
+
+Sein Hinweis (13.11.2026): „In Welt der Dunkelheit besteht das Risiko Doom zu bekommen. Da hat Rest auf jedem Fall keinen
+vorhandenen Schutz Und bmr hat da anscheinend auch keinen Schutz“. Einordnung: Hinweis auf eine Spielmechanik, mit dem
+Befund, dass beide Werkzeuge nicht schützen.
+- *Am Mitschnitt vom 13.11.2026 belegt:* Angra Mainyu wirkt „Tödlicher Blick“ zweimal zugleich, #3281 (3 s, `VFX` 25)
+  und #3499 von einem Helfer (4,5 s, ohne Kennzeichen). Verhängnis (#210) kam 0,6 s nach #3499, um 18:27 auf 2 und um
+  18:28 auf 9 Spieler. BossModReborn ef3da084b (`A31AngraMainyu`) führt nur #3281 als Blick, seine Automatik prüft nur
+  `VFX` 25. Verhängnis entfernt hier nur die Glyphe (consolegameswiki), nicht Esuna (`CanDispel` false).
+- *Gebaut:* `GazeWatch`. Ein Blick ist eine Aktion mit `VFX` 25 oder eine gegnerische Aktion mit dem Namen einer
+  solchen. Am Blatt gezählt: 230 mit Kennzeichen, 77 gleichnamige ohne. Die Namen liest RSR im Hintergrund. Solange
+  ein Blick wirkt, der den Spieler erreicht, verwirft `GetCanTargets` für eine Aktion, die zum Ziel dreht, jedes Ziel
+  innerhalb von 45° zur Richtung des Wirkenden. Eine Zeile „gaze: holding actions …“ je Wirken. Für alle Jobs.
+- *Loop zu den festen Werten:* 45° ist BossMods halbe Breite der verbotenen Richtung bei Blicken; das Spiel nennt
+  keinen Winkel. 25 ist die Zeile des Blattes `ActionCastVFX` für Blicke, eine Kennung.
+- *Abwägung und Gegenthesen:* Konzept 13, „Nicht in einen Blick drehen“. TODO-Punkt „Blickangriffe ohne
+  BossModReborn“ geschlossen.
+- *Prüfgrad:* Compile; alle CI-Schritte lokal; Messungen am Mitschnitt und am Blatt. Im Spiel nicht beobachtet; die
+  Zeile „gaze: …“ zeigt jedes Halten.
+
 ## B · Commit-Register (Fork vs. `upstream/main`)
 
 ### B1 · Einzelgeprüfte Fork-Commits

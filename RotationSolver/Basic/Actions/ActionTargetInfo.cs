@@ -171,6 +171,13 @@ public struct ActionTargetInfo(IBaseAction action)
 			}
 		}
 
+		// A770: an action that turns the player to its target takes no target that would turn him into a gaze reaching him
+		// (concept 13, "Nicht in einen Blick drehen").
+		if (action.Info.NeedToFaceTarget && action.Action.Range > 0 && validTargets.Count > 0)
+		{
+			_ = validTargets.RemoveAll(static t => GazeWatch.TurnsIntoGaze(t.Position));
+		}
+
 		return validTargets;
 	}
 
