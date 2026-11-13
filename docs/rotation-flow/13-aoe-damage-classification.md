@@ -163,12 +163,12 @@ Tengentsu, Third Eye). Gemessen wird ein Flag an den Pfaden, die es öffnet (CLA
 - Kreis auf ein Ziel (`CastType` 2, `Range` > 0, nicht auf sich selbst, nicht auf den Boden): um das Ziel.
   BossModReborn beschreibt dieselben Aktionen als „Boss->players, range 6 circle, stack" (Pyric Blast 25742,
   Clawful 37693).
-- Linie (`CastType` 4 und 12, mit Breite): Rechteck vom Wirkenden zum Ziel, ohne Ziel in Blickrichtung;
+- Linie (`CastType` 4 und 12, mit Breite): Rechteck vom Wirkenden in Wirkrichtung (`Character.CastRotation`, A766);
   `XAxisModifier` ist die volle Breite (Heavy Blast Cannon 37345: Spieldaten Breite 8, BossModReborn „width 8
   rect", halbe Breite 4). Art 4 reicht um den Trefferkreis des Wirkenden weiter, Art 12 nicht (unten, A731).
 - Kreis um den Wirkenden: Art 2 vom **Mittelpunkt** des Wirkenden, Art 5 um seinen Trefferkreis weiter (A731).
 - Kegel (Art 3 und 13): Winkel aus dem Omen der Aktion, Reichweite wie beim Kreis – Art 3 um den Trefferkreis des
-  Wirkenden weiter, Art 13 nicht –, Richtung zum Ziel des Zaubers, ohne Ziel die Blickrichtung des Wirkenden (A731).
+  Wirkenden weiter, Art 13 nicht –, in Wirkrichtung (`Character.CastRotation`, A766; bis dahin zum Ziel des Zaubers).
   Ohne Winkel im Omen zählt der Kegel wie ein Kreis.
 - Ring (Art 10): Außenradius die Effektreichweite, Innenradius aus dem Omen; wer ganz im Innenkreis steht, mit seinem
   Trefferkreis, bleibt unberührt (A731). Ein Ring mit Kegelwinkel im Omen zählt als Kegel ohne Innenkreis, ein Ring
@@ -224,8 +224,40 @@ zählt der größere Winkel bei `er_gl_fan…`.
   jedes Bild mit der Richtung dieses Bildes, wie bei der Linie.
 - *Gegenthese 3 (ausgeliefert, und nichts ändert sich):* Viele Kegel tragen kein Omen (904 der Art 3, 1.242 der Art
   13); sie zählen weiter als Kreis. Ein Ring ohne Zahlen im Omen ebenso.
-- Bodenkreise (`TargetArea`): Ihr Mittelpunkt steht nur in den nativen Castdaten; weiter Abstand zum Wirkenden
-  mit beiden Trefferkreisen, also eher zu weit.
+- Bodenkreise (`TargetArea`): um den Ort, den das Spiel für das Wirken führt (`CastInfo.TargetLocation`, A766).
+  Fehlt er, gilt wie bisher der Abstand zum Wirkenden mit beiden Trefferkreisen, also eher zu weit.
+- Ein Kegel oder eine Linie gilt nicht schon deshalb als treffend, weil das Mitglied das genannte Ziel ist. Es zählt
+  allein die Form in Wirkrichtung (A766). Ein Kreis oder Ring auf ein Ziel trifft sein Ziel wie bisher.
+
+**Wirkrichtung und Ort aus dem Spiel** (A766; TODO-Punkt „Kegel und Linien nach der Wirkrichtung des Spiels
+ausrichten“, Anlass BossMod 93b0afd30).
+- *Befund:* RSR richtete Kegel und Linien zum Ziel des Zaubers aus und rechnete jedes Bild neu. Ein Ziel, das während
+  des Wirkens aus dem Kegel läuft, zog den Kegel mit. Das Omen und der Treffer folgen ihm nicht. Wer das Ziel war,
+  galt außerdem immer als getroffen. „Wooly Inspiration“ (#12218, Kegel 60 Yalm) nennt den Spieler als Ziel, trifft aber
+  in Wirkrichtung; BossMod führt die Aktion deshalb einzeln als täuschend. Bodenkreise maß RSR vom Wirkenden aus, weil
+  der Ort im Blatt fehlt.
+- *Quelle:* Der Client führt je Figur die Wirkrichtung (`Character.CastRotation`) und für Bodenzauber den Ort
+  (`CastInfo.TargetLocation`; FFXIVClientStructs der Dalamud-Version, gemessen am 13.11.2026). BossMod baut daraus jede
+  automatische Form (`WorldStateGameSync`: `Rotation = chr->CastRotation`, `Location` aus dem Paket, sonst
+  `TargetLocation`; `AIHintsBuilder`: jede Form in dieser Richtung; awgil 93b0afd30, Werkzeugquelle).
+- *Optionen:* (0) nichts. (1) Wie BossMod #12218 einzeln als täuschend führen. (2) Richtung immer aus `CastRotation`,
+  Ort des Bodenkreises aus `TargetLocation`, und das genannte Ziel zählt bei Kegel und Linie nicht als Beweis.
+- *Abwägung im Kampf:* (0) lässt den Kegel dem fliehenden Ziel folgen. Wer schon draußen steht, gilt als getroffen:
+  Selbstschutz und Flächenabwehr gehen umsonst, und die Sperre beim Wirken hält einen Zauber zurück, ohne dass es nötig
+  ist. Wer im wahren Kegel steht und nicht Ziel ist, kann als sicher gelten, etwa hinter dem Ziel aus Sicht des
+  Wirkenden, wenn das Ziel seitlich ausweicht. (1) hilft nur bei dieser einen Aktion und veraltet mit jedem Patch. (2)
+  misst, was das Spiel zeichnet, für jede Aktion. Ein Bodenkreis trifft dann, wer in ihm steht, nicht jeder nahe am
+  Wirkenden: Weniger Abwehr geht ins Leere, und wer im Kreis steht, aber weit vom Wirkenden, gilt jetzt als getroffen.
+  *Gewählt:* (2).
+- *Gegenthese 1 (kein Defekt, ein Kegel auf ein Ziel dreht sich mit):* Ein Wirkender ist beim Wirken festgelegt; das
+  Omen zeigt in eine feste Richtung. BossMods automatische Formen, gebaut aus Mitschnitten, rechnen genau so, und
+  Module, die einem Ziel folgen, führen das eigens. Wo eine Aktion am Ende doch zum Ziel schnappt, lernt die
+  Flächentabelle den Treffer weiter.
+- *Gegenthese 2 (falsche Option, ein Ziel im Kegel ist immer getroffen):* Läuft das Ziel hinaus, trifft der Kegel es
+  nicht mehr; so war es gemeint, als das Ziel auswich. Steht es darin, liefert die Form dasselbe Urteil wie vorher.
+- *Gegenthese 3 (ausgeliefert, und nichts ändert sich):* Ohne Bewegung des Ziels und ohne Bodenkreis zeigen Richtung zum
+  Ziel und Wirkrichtung dasselbe. Liefert das Spiel keinen Ort (0), bleibt der Bodenkreis beim alten Maß.
+- *Preis:* keiner im Kampf. Beim Lesen kosten Richtung und Ort einen Zugriff auf die Figur je Prüfung.
 - Ansturm (`CastType` 8, Effektreichweite 0): erreicht jeden.
 
 Der Trefferkreis des Mitglieds zählt überall zugunsten des Treffers.

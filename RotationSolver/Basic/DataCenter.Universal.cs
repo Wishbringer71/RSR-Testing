@@ -560,7 +560,11 @@ internal static partial class DataCenter
 			return h.CastTargetObjectId == member.GameObjectId;
 		}
 
-		if (act.EffectRange == 0 || h.CastTargetObjectId == member.GameObjectId)
+		// A766: a cone or a line hits where it points, not whom it names; a circle or ring on a target hits its target.
+		var (degrees, inner) = OmenShape(act);
+		var directional = (act.CastType is (byte)CastType.StraightLine or LineFromCasterCastType && act.XAxisModifier > 0)
+			|| ((IsConeCastType(act.CastType) || (CastType)act.CastType == CastType.Donut) && degrees > 0f);
+		if (act.EffectRange == 0 || (h.CastTargetObjectId == member.GameObjectId && !directional))
 		{
 			return true;
 		}
@@ -583,8 +587,7 @@ internal static partial class DataCenter
 
 		if (act.CastType is (byte)CastType.StraightLine or LineFromCasterCastType && act.XAxisModifier > 0)
 		{
-			var direction = aimedAt != null ? aimedAt.Position - h.Position : h.GetFaceVector();
-			direction.Y = 0;
+			var direction = CastDirection(h);
 			if (direction.LengthSquared() > 0f)
 			{
 				direction = Vector3.Normalize(direction);
@@ -600,16 +603,17 @@ internal static partial class DataCenter
 
 		if (act.TargetArea)
 		{
-			return HorizontalDistance(member.Position, h.Position) - member.HitboxRadius - h.HitboxRadius <= act.EffectRange;
+			// A766: around the place the game keeps for the cast; without one, from the caster with both hitboxes.
+			return CastLocation(h) is { } place
+				? HorizontalDistance(member.Position, place) - member.HitboxRadius <= act.EffectRange
+				: HorizontalDistance(member.Position, h.Position) - member.HitboxRadius - h.HitboxRadius <= act.EffectRange;
 		}
 
-		// A731: a cone by the angle its omen names, towards the cast's target or the caster's facing; a ring with a sector in
-		// its omen counts as that cone without its inner circle.
-		var (degrees, inner) = OmenShape(act);
+		// A731: a cone by the angle its omen names, in the cast's direction (A766); a ring with a sector in its omen counts as
+		// that cone without its inner circle.
 		if ((IsConeCastType(act.CastType) || (CastType)act.CastType == CastType.Donut) && degrees > 0f)
 		{
-			var direction = aimedAt != null ? aimedAt.Position - h.Position : h.GetFaceVector();
-			return InCone(h.Position, direction, act.EffectRange + casterRadius, degrees, member);
+			return InCone(h.Position, CastDirection(h), act.EffectRange + casterRadius, degrees, member);
 		}
 
 		// A731: a ring spares who stands wholly inside its inner circle.
@@ -621,6 +625,37 @@ internal static partial class DataCenter
 		}
 
 		return HorizontalDistance(member.Position, h.Position) - member.HitboxRadius <= act.EffectRange + casterRadius;
+	}
+
+	// A766 (concept 13, "Wirkrichtung und Ort aus dem Spiel"): the direction the game keeps for the cast, as BossMod reads
+	// it (Character.CastRotation); the omen and the hit keep it while the target moves. The caster's facing without one.
+	private static unsafe Vector3 CastDirection(IBattleChara h)
+	{
+		if (h.Address == nint.Zero || !h.IsCasting)
+		{
+			return h.GetFaceVector();
+		}
+
+		var rotation = ((FFXIVClientStructs.FFXIV.Client.Game.Character.Character*)h.Address)->CastRotation;
+		return new Vector3(MathF.Sin(rotation), 0f, MathF.Cos(rotation));
+	}
+
+	// A766: the place of a ground-targeted cast as the game keeps it (CastInfo.TargetLocation); null while it gives none.
+	private static unsafe Vector3? CastLocation(IBattleChara h)
+	{
+		if (h.Address == nint.Zero || !h.IsCasting)
+		{
+			return null;
+		}
+
+		var info = ((FFXIVClientStructs.FFXIV.Client.Game.Character.Character*)h.Address)->GetCastInfo();
+		if (info == null)
+		{
+			return null;
+		}
+
+		var place = new Vector3(info->TargetLocation.X, info->TargetLocation.Y, info->TargetLocation.Z);
+		return place.LengthSquared() > 0f ? place : null;
 	}
 
 	// A731: cast type 13 is a cone like type 3 (Cone), which the enum does not name, measured from the caster's centre.

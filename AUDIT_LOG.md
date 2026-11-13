@@ -22300,6 +22300,24 @@ fehlerbeseitigung. rotas, bretter, ablaufplanung".
 - *Prüfgrad:* Compile; alle CI-Schritte lokal; Messungen am Protokoll und am Mitschnitt. Die Behebungen sind im
   Spiel nicht beobachtet.
 
+### A766 · Kegel, Linien und Bodenkreise nach Richtung und Ort, die das Spiel für das Wirken führt (13.11.2026)
+
+Sein Auftrag (13.11.2026): „Todo weiter im vollen Loop abarbeiten". TODO-Punkt „Kegel und Linien nach der Wirkrichtung
+des Spiels ausrichten" (A765).
+- *Befund:* `AreaShapeReaches` richtete Kegel und Linien zum Ziel des Zaubers aus, jedes Bild neu, und hielt das
+  genannte Ziel immer für getroffen. Bodenkreise maß es vom Wirkenden mit beiden Trefferkreisen.
+- *Quelle:* `Character.CastRotation` und `CastInfo.TargetLocation` (FFXIVClientStructs der Dalamud-Version, am
+  13.11.2026 aus der Bibliothek gelesen); BossMod baut seine automatischen Formen daraus (awgil 93b0afd30,
+  `WorldStateGameSync`, `AIHintsBuilder`; Werkzeugquelle).
+- *Gebaut:* `CastDirection` und `CastLocation`; ein Kegel oder eine Linie trifft ihr Ziel nur, wenn es in der Form
+  steht. Ein Kreis oder Ring auf ein Ziel trifft es weiter. Kein Fall außer #12218 nötig: Ein Wirken, das sein Ziel
+  falsch nennt, misst sich jetzt wie jedes andere.
+- *Erhoben:* Die übrigen Leser einer Blickrichtung messen die Körperrichtung eines Gegners (Positionale, Parade), nicht
+  ein Wirken; sie bleiben.
+- *Optionen, Abwägung, Gegenthesen:* Konzept 13, „Wirkrichtung und Ort aus dem Spiel“.
+- *Prüfgrad:* Compile; alle 54 CI-Schritte lokal. Im Spiel nicht beobachtet; jede Prüfung, die eine Form misst
+  (Flächenabwehr, Selbstschutz, Sperre beim Wirken, Rückstoß), liest die neue Richtung.
+
 ## B · Commit-Register (Fork vs. `upstream/main`)
 
 ### B1 · Einzelgeprüfte Fork-Commits
