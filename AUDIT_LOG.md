@@ -21525,6 +21525,16 @@ Konzept 24, „Fork-Code in eigenen Teildateien", aus A739 in Reihenfolge.
   Regel nach ihrem Konzept.
 - *Prüfgrad:* Compile ohne Warnung, verlustfreie Verschiebung mechanisch nachgewiesen, alle Prüfskripte.
 
+### A741 · Auftragsende 13.11.2026: Upstream und zwei Quellen (13.11.2026)
+
+- *Upstream:* 0 ausstehende Commits gegen `upstream/main` nach A738 bis A740.
+- *awgil/ffxiv_bossmod* 8c971eead → 09026c552 (11. und 12.11.2026): Wegfindung (`Pathfinding/Map`, `NavigationDecision`),
+  Rückstoß bis zur Wand (`Knockback.CalculateDistance`), `Sdf`, zwei Module (Crucible-Brett 2 Voidmancer, Bhima in der
+  Himmelssäule). Alles in BossMods eigener KI und Bewegung; RSR liest BossModReborn über IPC, nicht diese Quelle, und
+  bewegt nicht. Ohne Wirkung auf eine Regel von RSR.
+- *OverlayPlugin/cactbot* 1a21226f0 → 009c78d38: Versionsnummer 0.37.6, das Mitschnittformat unverändert.
+- Beide eingetragen (`--record`).
+
 ## B · Commit-Register (Fork vs. `upstream/main`)
 
 ### B1 · Einzelgeprüfte Fork-Commits

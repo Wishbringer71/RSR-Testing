@@ -21,8 +21,8 @@
   },
   {
    "repo": "awgil/ffxiv_bossmod",
-   "commit": "8c971eead",
-   "date": "2026-11-12",
+   "commit": "09026c552",
+   "date": "2026-11-13",
    "use": "BossMod (Original)"
   },
   {
@@ -123,8 +123,8 @@
   },
   {
    "repo": "OverlayPlugin/cactbot",
-   "commit": "1a21226f0",
-   "date": "2026-11-12",
+   "commit": "009c78d38",
+   "date": "2026-11-13",
    "use": "Mitschnittformat, Zeitleisten"
   },
   {
