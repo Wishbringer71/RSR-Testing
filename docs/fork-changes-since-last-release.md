@@ -66,6 +66,9 @@ What this release changes in the fight. For the whole distance from upstream, se
   The fork's own members of DataCenter, ObjectHelper, StatusHelper and CustomRotation_OtherInfo moved into partial files
   per concept (for example `DataCenter.AreaDamage.cs`); no signature changed. Fork lines inside those upstream files went
   from 7,088 to 1,431.
+- **Reaper: Harvest Moon out of melee reach without Death's Design.** Upstream's new "Only use Harvest Moon on a target
+  with Death's Design" now holds only in melee reach. Out of it Harvest Moon is the ranged GCD of a Reaper who has to
+  keep away, and it no longer waits for a debuff that can only be applied in melee.
 - **A sleep that did not go out names the first reason.** "sleep not cast …" names the first reason the rule gave
   after the sleep was chosen, and the last when it differs; "the cast ended" follows every lapsed sleep and no longer
   hides the reason the GCD went elsewhere.

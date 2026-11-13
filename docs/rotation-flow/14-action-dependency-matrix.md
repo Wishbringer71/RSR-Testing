@@ -435,6 +435,14 @@ seltener — holt diese Jobs in die Bearbeitung (A162).
   between each pull and downtime!" Harvest Moon trifft mit 800 Potenz und gibt 10 Soul (Job-Guide); RSR wirkt es, wenn
   der Schnitter nicht im Nahkampf zuschlagen kann. Mit Modul fällt Soulsow nur, wenn die Wirkzeit vor dem vorhergesagten
   Ende der Pause fertig ist (`BMRDowntimeEndIn`); ohne Modul ist die Länge der Pause unbekannt, und es fällt.
+  Upstreams Schalter „Prepare Harvest Moon (Soulsow) when out of combat or with no target" (5c51295bf, 13.11.2026) liegt
+  darüber: Er schaltet die Pause ab, die Prüfung auf die Wirkzeit bleibt (beide müssen zustimmen). Upstreams Schalter
+  „Only use Harvest Moon on a target with Death's Design" (ab Werk an) gilt nur, solange das Ziel in Nahkampfreichweite
+  ist (A743): Harvest Moon steht im Pfad hinter der Nahkampf-Kombo, er kommt also fast nur dran, wenn der Schnitter vom
+  Ziel weg muss – und genau dort hielt die Bedingung ihn zurück, wenn Death's Design ausgelaufen oder das Ziel neu war.
+  The Balance, Intermediate Guide (13.11.2026): „using it at any point in the fight will always be a gain"; Basic Guide:
+  „whenever you have to disengage from an enemy for longer than global cooldown". Im Nahkampf bleibt die Bedingung: Dort
+  hält der Schnitter Death's Design ohnehin, und die 10 % bekommt Harvest Moon dann mit.
 - **Machinist:** Rook/Queen Overdrive im letzten GCD vor einer vorhergesagten Pause, wenn die Königin
   sonst erst in der Pause endet. Ihr Wirktext: Ungewirkt fällt der Abschluss „automatically immediately
   before shutting down" — in der Pause trifft er nichts. Nur mit Modul; ohne Vorhersage ist die Pause

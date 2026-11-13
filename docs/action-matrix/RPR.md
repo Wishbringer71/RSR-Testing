@@ -151,6 +151,7 @@ direkt: 42 · über andere Aktion: 3
 | Gluttony | Regel prüft | Plentiful Harvest |
 | Grim Swathe | Regel prüft | Gluttony |
 | Harpe | Regel prüft | Slice |
+| Harvest Moon | Regel prüft | Shadow of Death |
 | Infernal Slice | Regel prüft | Slice |
 | Infernal Slice | Regel prüft | Waxing Slice |
 | Shadow of Death | Regel prüft | Arcane Circle |

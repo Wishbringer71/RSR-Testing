@@ -674,7 +674,11 @@ public sealed class RPR_Reborn : ReaperRotation
 			}
 		}
 
-		if (InCombat && !HasSoulReaver && HarvestMoonPvE.CanUse(out act, skipAoeCheck: true) && (!HarvestMoonNeedsDD || (HarvestMoonPvE.Target.Target?.HasStatus(true, StatusID.DeathsDesign) ?? false)))
+		// A743 (concept 14, "Schnitter"): Death's Design is asked for only in melee reach. Out of it Harvest Moon is the
+		// ranged GCD of a Reaper who has to keep away, and holding it for a debuff he cannot apply from there loses it.
+		if (InCombat && !HasSoulReaver && HarvestMoonPvE.CanUse(out act, skipAoeCheck: true)
+			&& (!HarvestMoonNeedsDD || (HarvestMoonPvE.Target.Target?.HasStatus(true, StatusID.DeathsDesign) ?? false)
+				|| (HarvestMoonPvE.Target.Target is { } moonTarget && moonTarget.DistanceToPlayer() > ShadowOfDeathPvE.Info.Range)))
 		{
 			return true;
 		}

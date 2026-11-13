@@ -21566,6 +21566,58 @@ Umsetzung.
   verschwindet, schlägt an.
 - *Prüfgrad:* Selbsttest, Probe am Baum, alle Prüfskripte.
 
+### A743 · Upstream 5c51295bf und 7.5.8.2: Schnitter, Soulsow, Searing Light – besser, schlechter, Hybrid? (13.11.2026)
+
+Sync vor dem Ende des Auftrags aus A742: drei neue Upstream-Commits (Beiruta, 09. bis 12.11.2026), Tag 7.5.8.2. In `main`
+gemergt (8f55af1fd), Fork-Version 7.5.8.2 (93e941007), in den Arbeits-Branch. Seine Frage dazu (13.11.2026): ob die
+Änderungen inhaltlich besser oder schlechter fürs Spiel sind, ob die Ideen dahinter das eigene Konzept verbessern, ob ein
+Hybrid sinnvoll wäre; im Loop.
+
+- *Soulsow in der Kampfpause* (`ReaperRotation`, Konflikt): Upstream wirkt Soulsow, sobald kein Gegner in Reichweite ist.
+  Der Fork tut das seit A271 und prüft zusätzlich, ob die 5 s Wirkzeit vor dem von BossModReborn vorhergesagten Ende
+  der Pause fertig sind. Im Kampf: Upstreams Fassung beginnt den Zauber auch, wenn der Boss in 2 s zurückkommt, und der
+  erste GCD danach fällt bis zu 5 s später. *Fork-Fassung behalten.* Upstreams neuer Schalter „Prepare Harvest Moon
+  (Soulsow) when out of combat or with no target" in `RPR_Reborn` liegt darüber; da `CanUse` die Prüfung des Forks
+  fragt, müssen beide zustimmen – der Hybrid entsteht ohne Eingriff.
+- *Searing Light vor der großen Beschwörung* (`SMN_Reborn`, Konflikt): Upstream hält Searing Light eine Sekunde vor
+  Bahamut oder Solar zurück, aber nur im Zweig des Schalters „Restrict Searing Light with (Solar) Bahamut". Diesen Zweig
+  hat der Fork durch die Bindung an die Lage ersetzt (Konzept 12, „Antwort": im Einschiebeplatz vor der
+  Burst-Beschwörung; Upstreams Schalter dort mit Grund verworfen). Die Idee – Searing Light nicht kurz vor einer
+  Beschwörung verschenken, die nicht der Burst ist – deckt der Fork schon: Er zündet nur vor der Burst-Beschwörung oder
+  nach den Regeln für mehrere Beschwörer. *Fork-Fassung behalten, kein Hybrid:* Er brächte keinen Fall, den Konzept 12
+  nicht regelt.
+- *Schnitter* (`RPR_Reborn`, ohne Konflikt übernommen, wirkt jetzt im Fork): gegen The Balance (Basic und Intermediate
+  Guide, 13.11.2026) geprüft.
+  - Shroud sparen für zwei Enshroud im Burst (Schalter „Pool Shroud", ab Werk „Invasive"; Fenster
+    `EnshroudArcaneCircleWindow + 9 s`): Intermediate Guide „When Arcane Circle hits 9s left on its cooldown, do two more
+    non-Enshroud GCDs, then use Enshroud". *Besser.* Dazu dort: „dying with this gauge is way more of a loss" – sparen
+    lohnt nicht, wenn man vor dem Burst stirbt. Ein Hybrid mit den Gefahrenvorhersagen des Forks (nicht sparen bei
+    vorhergesagtem eigenem Tod) ist denkbar, nicht gebaut: Er gewönne nur im Fall des eigenen Todes, den die
+    Sicherheitsregeln ohnehin selten machen, und der Schnitter liegt am Rand seines Profils.
+  - Death's Design vor Arcane Circle erneuern (ab Werk an): „You must enter the first enshroud with ~30s on Death's
+    Design". *Besser.*
+  - Trank 3 s vor Arcane Circle (bei „Invasive" und erneuertem Death's Design): „use the potion in the weave slot before
+    Arcane Circle"; ab 4 min nennt der Guide Arcane Circle zuerst – eine kleine Abweichung. Die Arznei geht weiter über
+    `UseBurstMedicine`, also mit den Regeln des Forks (A433, b7361dae4). *Gleichwertig.*
+  - Perfectio zurückhalten (ab Werk aus): „Perfectio can and should be held if needed as a ranged GCD to cover melee
+    downtime". *Sinnvoll*; die Freigabe unter fremden Buffs ist eine Annahme über andere und bleibt sein Schalter.
+  - Harvest Moon nur auf ein Ziel mit Death's Design (ab Werk an): *schlechter* dort, wo er zählt. Harvest Moon steht
+    hinter der Nahkampf-Kombo und kommt fast nur dran, wenn der Schnitter vom Ziel weg muss; mit ausgelaufenem Death's
+    Design oder neuem Ziel hielt die Bedingung ihn zurück, und der Schnitter verlor seinen Fernkampf-GCD oder lief für
+    Shadow of Death ans Ziel. The Balance: „using it at any point in the fight will always be a gain", „whenever you
+    have to disengage". *Hybrid gebaut:* Death's Design wird nur in Nahkampfreichweite verlangt (Reichweite von Shadow
+    of Death aus dem Spiel), außerhalb geht Harvest Moon immer. Konzept 14, „Schnitter".
+  - Auf die Position warten vor Blood Stalk (aus), Opener-Zeitpunkt (Balance), Enshroud am sterbenden Boss (aus):
+    Schalter von Upstream, ab Werk ohne Wirkung oder wie The Balance; „Warten auf die Position" holt ihn nicht aus einer
+    sicheren Stelle, solange er aus bleibt.
+- *Prüfungen:* Aktionsmatrix des Schnitters neu erzeugt; `check_setting_tooltips` schlug vor dem Merge an, weil die Basis
+  `upstream/main` weiter war – nach dem Merge grün.
+- *Falsifikation:* Kein Defekt bei Harvest Moon? Der Pfad zeigt ihn nur außer Reichweite, und dort hielt ihn die
+  Bedingung. Option falsch? Im Nahkampf bleibt Upstreams Regel unverändert. Ausgeliefert, und nichts ändert sich? Wenn
+  Death's Design beim Weglaufen fast immer noch liegt (60 s Höchstdauer) – dann greift der Hybrid selten, schadet aber
+  nicht.
+- *Prüfgrad:* statisch am Code und an The Balance, Compile, Prüfskripte; im Spiel nicht beobachtet.
+
 ## B · Commit-Register (Fork vs. `upstream/main`)
 
 ### B1 · Einzelgeprüfte Fork-Commits
