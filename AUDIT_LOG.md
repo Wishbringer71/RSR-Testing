@@ -21997,6 +21997,15 @@ Mitschnitt“ bleibt. Geprüft wurde deshalb der Code aus A753 gegen Konzept 03,
     Antworten wieder auf.
   - „Ausgeliefert, und nichts ändert sich“: Das tritt bei einem Spieler ohne Zauber, ohne PvP und ohne nachgeladene
     Werkzeuge ein. Für ihn ändert A754 nichts, und das ist richtig.
+- *Auftragsende:* Upstream unverändert (HEAD gleich `upstream/main`). BossModReborn rückte von 75505283e auf
+  8ad17f97f vor (13.11.2026, „Mitigate hook crashes“). Zwei Hooks werden dort nur gesetzt, wenn ClientStructs eine
+  Adresse ungleich 0 liefert. Geprüft an Dalamud 43b3411 (10.11.2026): `Hook.FromAddress` ruft `HookManager.FollowJmp`,
+  und das wirft bei einer Adresse ≤ 0 eine `InvalidOperationException`, die sich fangen lässt. Jeder Hook in RSR sitzt
+  in `try`/`catch`; `BestiaryTrace` prüft die Adresse vorher. RSR stürzt bei einem nicht nachgezogenen Client also
+  nicht ab. Bleibt ein Rest: `ActionManagerEx` setzt seine drei Hooks in einem gemeinsamen `try`. Fehlt die erste
+  Adresse, fehlen auch die anderen beiden und mit ihnen die Verkürzung der Sperre. Das tritt nur im Zeitraum zwischen
+  einem Spielpatch und dem Nachziehen von ClientStructs auf, in dem auch Dalamud und Upstream nachziehen. Der Konstruktor
+  ist Upstreams Code. Ich ändere nichts und halte den Rest hier fest. Quellstand eingetragen.
 - *Prüfgrad:* Compile; alle 54 CI-Schritte lokal. Im Spiel nicht beobachtet. Das Messmittel ist die Zeile „action
   timing over the fight“ im `DefenseTrace.log` (Warte-Eintrag im TODO).
 
