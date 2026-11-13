@@ -239,6 +239,17 @@ drehen müsste.
 - *Im Kampf:* Während der 4,5 s von #3499 drückt RSR nichts auf Angra Mainyu und nichts auf ein Ziel in seiner Richtung.
   Der Heiler heilt weiter, denn Heilungen drehen nicht. Ein Ziel in einer anderen Richtung bleibt wählbar. Nahkämpfer
   setzen ein bis zwei GCDs aus, wie es die Mechanik von Spielern verlangt.
+- *Mehrere Blicke zugleich* (sein Hinweis, 13.11.2026: auf dem zweiten Crucible-Brett „von den Seiten Ringe …
+  mehrere Punkte, von denen man sich wegdrehen muss“). Am Mitschnitt vom 11.11.2026 (15:42 und 15:58):
+  - Der Taurus ruft zwei Ahriman-Ebenbilder an die Ränder, bei x 502 und 538 (der Mittelpunkt liegt bei 520), also
+    West und Ost.
+  - Jedes wirkt „Tödlicher Blick“ selbst (#48152, ohne Fläche) und über einen Helfer an derselben Stelle (#48153,
+    Kreis 50 Yalm), je 4,5 bis 5 s. Zwei solche Wellen folgen 4 s nacheinander.
+  - Keine der beiden Aktionen trägt das Blick-Kennzeichen; beide heißen wie #3281 und zählen deshalb als Blick.
+  - Jeder Wirkende sperrt seine eigene Richtung. Mit Blicken aus West und Ost bleiben Ziele nach Nord und Süd wählbar,
+    je 90°. Steht der Spieler westlich der Mitte, liegt der Taurus im Osten und bleibt bis zum Ende beider Wellen
+    gesperrt. Sperren die Blicke jede Richtung, drückt RSR keine Aktion, die dreht.
+  - BossModReborn führt #48153 im Modul (`TaurusPiece`, `CastGaze`, höchstens zwei).
 - *Optionen:* (0) nichts. (1) Upstreams Liste „Gaze/Stop“ füllen: eine Id je Kampf, und sie sperrt nur Zauber.
   (2) BossModReborn fragen: Seine verbotenen Richtungen gibt es nicht heraus (A575), und #3499 kennt es nicht. (3) Die
   Regel oben. *Gewählt:* (3). Sie deckt jeden Kampf aus dem Blatt, auch ohne BossModReborn, und mit ihm wirkt sie in

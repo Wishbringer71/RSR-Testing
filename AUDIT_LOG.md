@@ -22385,6 +22385,19 @@ Befund, dass beide Werkzeuge nicht schützen.
 - *Prüfgrad:* Compile; alle CI-Schritte lokal; Messungen am Mitschnitt und am Blatt. Im Spiel nicht beobachtet; die
   Zeile „gaze: …“ zeigt jedes Halten.
 
+### A771 · Sein Hinweis: mehrere Blicke zugleich auf dem zweiten Crucible-Brett (13.11.2026)
+
+Sein Hinweis (13.11.2026): „Auf dem zweiten crucible Brett gibt es auch Gegner, wo von den Seiten Ringe ausgehen, wo man
+wegschauen muss. Da sind es sogar mehrere Punkte von denen man sich wegdrehen muss und sie gleichzeitig beachten muss“.
+Einordnung: Hinweis auf eine Mechanik; geprüft gegen A770.
+- *Am Mitschnitt vom 11.11.2026:* Zwei Ahriman-Ebenbilder des Taurus stehen bei x 502 und 538 (West und Ost). Sie
+  wirken „Tödlicher Blick“ selbst (#48152) und über einen Helfer an derselben Stelle (#48153), je 4,5 bis 5 s.
+  Zwei Wellen folgen 4 s nacheinander. Beide Ids tragen kein Blick-Kennzeichen (`VFX` 0).
+- *Ergebnis:* A770 deckt den Fall ohne Änderung. Beide Ids zählen über den Namen als Blick, und jeder Wirkende sperrt
+  seine Richtung. Mit Blicken aus West und Ost bleiben Ziele im Norden und Süden wählbar. Konzept 13, „Mehrere Blicke
+  zugleich“.
+- *Prüfgrad:* statisch am Code und am Mitschnitt; im Spiel nicht beobachtet.
+
 ## B · Commit-Register (Fork vs. `upstream/main`)
 
 ### B1 · Einzelgeprüfte Fork-Commits
