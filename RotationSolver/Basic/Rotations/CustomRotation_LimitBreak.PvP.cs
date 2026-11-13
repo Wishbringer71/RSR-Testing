@@ -77,6 +77,21 @@ public partial class CustomRotation
 			&& limitBreak.CanUse(out act, skipAoeCheck: true);
 	}
 
+	/// <summary>
+	/// The job's shielding Limit Break where Guard is due (concept 25, "PvP: Wechselwirkungen und Synergien", A757):
+	/// Phalanx (10 s impervious, the party 33 % less damage), Mesotes (damage from outside its zone negated) and Sky High
+	/// (4 s out of reach, then a 24,000 barrier with Sky Shatter) hold longer or cover more than Guard's 4 s on the player
+	/// alone; Guard afterwards would end them, and `GuardWastedStatuses` keeps it off under Hallowed Ground and Sky High.
+	/// </summary>
+	private bool PvPShieldLimitBreak(out IAction? act)
+	{
+		act = null;
+		var limitBreak = LimitBreakPvP;
+		return DataCenter.IsPvP && limitBreak != null
+			&& limitBreak.ID is PvPLimitBreakRow.Phalanx or PvPLimitBreakRow.Mesotes or PvPLimitBreakRow.SkyHigh
+			&& limitBreak.CanUse(out act, skipAoeCheck: true);
+	}
+
 	private static float EffectRangeOf(uint row)
 	{
 		var sheet = Svc.Data.GetExcelSheet<Lumina.Excel.Sheets.Action>();

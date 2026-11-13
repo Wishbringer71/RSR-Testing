@@ -566,9 +566,11 @@ public struct ActionTargetInfo(IBaseAction action)
 		{
 			if (DataCenter.IsPvP && !action.Setting.IgnoreGuard)
 			{
-				// Both rows of Guard (concept 25, "PvP: Ziele unter Guard und Unverwundbarkeit", A756).
+				// Both rows of Guard (A756); an action whose text says it ignores, removes or halves Guard may choose the target
+				// (concept 25, "PvP: Ziele unter Guard und Unverwundbarkeit", A757).
 				if (battleChara.HasStatus(false, StatusHelper.PvPGuardStatuses)
-					&& !battleChara.WillStatusEnd((float)action.Info.CastTime, false, StatusHelper.PvPGuardStatuses))
+					&& !battleChara.WillStatusEnd((float)action.Info.CastTime, false, StatusHelper.PvPGuardStatuses)
+					&& !ActionTooltip.HandlesGuard(action.Info.ID))
 				{
 					return false;
 				}

@@ -118,9 +118,12 @@ liest den Gesundheitsverlauf, der in PvP genauso entsteht, und rechnet ihren Feh
 target gains Guard" bricht ein Wirken auf ihn ab. Guard hat zwei Zeilen im Statusblatt, 3054 und 3673, beide
 „Guard" mit demselben Text. RSR prüfte nur 3054. Jetzt gelten beide.
 
-Aktionen, die Guard halbieren statt Schaden zu erhöhen (Shield Smite, Chain Stratagem: „Halves the defensive bonus of
-Guard instead"), oder ihn entfernen (Full Swing, Meteodrive), bleiben, wie die Rotation sie setzt. Der Gelehrte wirkt
-Chain Stratagem schon nur auf ein Ziel unter Guard.
+Ein Ziel unter Guard darf eine Aktion wählen, deren Wirktext sagt, dass sie mit Guard umgeht: „Ignores the effects
+of Guard" (Smite, Eagle Eye Shot, Drill, Seiton Tenchu, Zantetsuken …), „Removes … Guard" (Full Swing, Meteodrive) oder
+„defensive bonus of Guard" (Shield Smite, Chain Stratagem halbieren ihn). RSR liest das aus dem englischen Text des
+Clients (A757); das Flag `IgnoreGuard` je Aktion gilt daneben weiter. Bisher fehlte es Seiton Tenchu, Zantetsuken,
+Meteodrive und Shield Smite: RSR ließ für sie gerade die Ziele aus, gegen die sie am meisten bringen. Der Gelehrte wirkt
+Chain Stratagem nur auf ein Ziel unter Guard.
 
 *Unbelegt:* wann das Spiel 3673 statt 3054 vergibt. *Preis, wenn 3673 schwächer schützt:* RSR hielte einen Angriff auf
 ein Ziel zurück, das ihn größtenteils nähme. Der Text beider Zeilen ist gleich; ohne Beleg für einen Unterschied
@@ -218,11 +221,55 @@ Prioritätslisten von Upstream; was hier nicht steht, ist geprüft und ohne Befu
   value when the target has 25% HP or less"), keine eigene Zahl. Swift geht bei Bereitschaft (4 s Immunität und Tempo);
   ohne Beleg für einen besseren Zeitpunkt unverändert.
 
-*Wechselwirkungen, erhoben:* Recuperate und Purify teilen das MP (oben). Guard endet mit jeder Aktion, auch mit
-Recuperate; deshalb steht Guard vor Recuperate, und „PvP Guard control" hält während Guard alles. Resilience (2 s nach
-Purify) und Guard machen immun gegen die Bannzustände, die Purify löst: Ein Stun, Bind oder Miracle of Nature auf ein
-solches Ziel verpufft. *Offen:* Die Rotationen prüfen das nicht; eine allgemeine Prüfung braucht je Aktion den
-Bannzustand, den sie setzt (TODO „PvP: Bannzustände auf Ziele, die immun sind").
+## PvP: Wechselwirkungen und Synergien
+
+*Was gilt (A757):* Die Wechselwirkungen sind je Ebene erhoben (`CLAUDE.md`, „Universell zuerst"): alle Jobs, Rolle,
+Untergruppe, Job, dazu zwischen den Spielern einer Gruppe. Je Paar: dieselbe Ressource, derselbe Zeitpunkt, dasselbe
+Ziel. Erhoben an den Wirktexten aller 21 Jobs (Job-Guide) und den PvP-Rotationen; die Spalte „Stand" sagt, was RSR tut.
+
+*Alle Jobs*
+| Wechselwirkung | Wirkung im Kampf | Stand |
+|---|---|---|
+| MP: Recuperate, Purify, Haelan (je 2000) | Ein Heilen bis zum letzten MP lässt einen Stun ohne Purify | Recuperate und Haelan lassen das MP für ein Purify, außer in der kritischen Klasse (Haelan: des Ziels) |
+| Guard endet mit jeder Aktion | Jede Aktion, auch Recuperate, ein Limit Break oder ein abgefangener Tastendruck, beendet ihn | „PvP Guard control" hält alles; Guard steht vor Recuperate |
+| Guard und Schutz-Limit-Break | Phalanx (10 s unverwundbar, Gruppe −33 %), Mesotes (Schaden aus der Zone genullt), Sky High (4 s unerreichbar, dann 24.000 Barriere) schützen länger oder mehr als Guard (4 s, nur du) | Wo Guard fällig ist (oben), geht ein bereiter Schutz-Limit-Break vor Guard; Phalanx und Mesotes gehen außerdem in der kritischen Klasse; danach lässt die Liste `GuardWastedStatuses` Guard unter Hallowed Ground und Sky High aus |
+| Guard am Ziel und Aktionen, die ihn übergehen, entfernen oder halbieren | Seiton Tenchu, Zantetsuken, Smite, Eagle Eye Shot, Drill übergehen ihn; Full Swing und Meteodrive entfernen ihn; Shield Smite und Chain Stratagem halbieren ihn | Ob eine Aktion ein Ziel unter Guard wählen darf, liest RSR aus ihrem Wirktext („Ignores the effects of Guard", „Removes … Guard", „defensive bonus of Guard"); bisher nur über ein Flag je Aktion, das Seiton Tenchu, Zantetsuken, Meteodrive und Shield Smite fehlte |
+| Resilience und Guard am Ziel gegen Bannzustände | Ein Stun verpufft | offen (TODO „PvP: Bannzustände auf Ziele, die immun sind") |
+| Unverwundbarkeit am Ziel (Hallowed Ground, Undead Redemption) | Schaden geht ins Leere | „Ignore invincibility in PvP" (ab Werk aus): RSR lässt solche Ziele aus |
+| Rückgabe am Ziel (Nebula) | 4.000 je Angriff zurück | Gegner mit Stacheln, `03-universal.md` |
+| Hinrichtung und Tötung | Smite lädt nach einem Kill neu, Seiton Tenchu darf erneut, Sole Survivor gibt 15 % LP und MP | Das Spiel lässt die Aktion wieder zu; RSR prüft sie jeden Frame und drückt sie, sobald sie geht |
+| Sprint und Hidden enden mit jeder Aktion | Der Spieler verliert Tempo oder Tarnung | Sprint geht außerhalb des Kampfes oder ohne Ziel („Sprint with no target"); die Ninja-Rotation drückt unter Hidden nur Assassinate |
+
+*Rolle*
+- *Tanks:* Rampage (+25 % Schaden genommen, 10 s, um dich) und Full Swing (entfernt Guard) bereiten den Schaden der Gruppe
+  vor; beide stehen früh in der Fähigkeitsreihe jeder Tank-Rotation. Full Swing darf jetzt ein Ziel unter Guard wählen (oben).
+- *Heiler:* Haelan teilt das MP mit Purify und Recuperate (oben). Diabrosis (−33 % Heilung am Ziel) und Stoneskin II
+  (Barriere für die Gruppe) ohne Wechselwirkung mit einer anderen Regel.
+- *Nahkampf:* Smite übergeht Guard und lädt nach Kill oder Assist neu. Die Sprünge stehen unter der Grenze für Sprünge
+  (oben, „PvP: Bewegung").
+- *Physischer Fernkampf:* Bravery geht auf dich (`TargetType.Self`); auf ein anderes Mitglied brächte es dessen Schaden,
+  nicht deinen (seine Vorgabe: eigener Vorteil). Eagle Eye Shot übergeht Guard.
+- *Magie:* Phantom Dart (+25 % Schaden genommen, 5 s) geht als zweite Fähigkeit nach Rust, vor den übrigen; Rust (−33 % Schaden und Heilung des
+  Ziels) ohne Wechselwirkung.
+
+*Untergruppen:* Keine Regel gilt für genau eine Untergruppe. Was Nahkämpfer teilen (Sprünge), steht bei der Rolle.
+
+*Zwischen den Spielern einer Gruppe:* Schutz und Heilung, die auch auf ein Mitglied gehen (Heart of Corundum, The
+Blackest Night, Aquaveil, Haelan, Adloquium, Aspected Benefic, Cure II), wählen ihr Ziel über die allgemeine Zielwahl
+wie in PvE: Heilungen das Mitglied mit dem größten Bedarf (`07-heal-target-priority.md`), Schutz das Mitglied, das Gegner
+angreifen (`FindBeAttackedTarget`), Aquaveil das Mitglied mit einem Bannzustand. Keine PvP-eigene Regel nötig.
+
+Die feindliche Zielwahl folgt in PvP der Zielart des Spielers („Targeting Type", ab Werk
+zuerst die wenigsten LP). Geprüft und nicht geändert: ein eigener PvP-Fokus nach effektiver Gesundheit und Verwundbarkeit.
+*Gründe:* Die Einstellung bindet; die Voreinstellung wählt schon das Ziel, das am schnellsten fällt; die Verwundbarkeit
+nennt das Statusblatt ohne Zahl („Damage taken is increased"), ein Gewicht wäre erfunden. Ein Ziel unter Guard wählen
+Aktionen, die ihn nicht übergehen, ohnehin nicht.
+
+*Falsifikation:* „Ausgeliefert, und nichts ändert sich": für Guard-Aktionen, wenn der Text im Client anders lautet als im
+Job-Guide. RSR liest den englischen Text des Clients, wie für die Potenz; die Gegenprobe ist die Liste der Aktionen mit
+Flag, die alle den Satz tragen. „Option falsch": Ein Schutz-Limit-Break vor Guard verbraucht die Leiste für einen
+Notfall, den Guard allein überstünde. Gewichtet: Er geht nur in der kritischen Klasse, wo die Vorhersage den Tod zeigt,
+und schützt bei Phalanx und Mesotes die Gruppe mit.
 
 ## PvP: Prüfmittel
 

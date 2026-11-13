@@ -835,9 +835,16 @@ public partial class CustomRotation
 		}
 
 		// Health forecast to the landing of an action begun now, as for the heal targets; no Guard where it is wasted or
-		// cannot go (concept 25, "PvP: Gemeinsame Aktionen", A756).
-		if (GuardPvP.CanUse(out act) && ObjectHelper.GetForecastPlayerHealthRatio() <= Service.Config.HealthForGuard
-			&& !StatusHelper.PlayerHasStatus(false, StatusHelper.GuardWastedStatuses))
+		// cannot go (concept 25, "PvP: Gemeinsame Aktionen", A756). Where Guard is due, a ready shielding Limit Break goes
+		// first: it holds longer or covers the party too, and Guard would end it (A757).
+		var guardDue = ObjectHelper.GetForecastPlayerHealthRatio() <= Service.Config.HealthForGuard
+			&& !StatusHelper.PlayerHasStatus(false, StatusHelper.GuardWastedStatuses);
+		if (guardDue && PvPShieldLimitBreak(out act))
+		{
+			return true;
+		}
+
+		if (guardDue && GuardPvP.CanUse(out act))
 		{
 			return true;
 		}

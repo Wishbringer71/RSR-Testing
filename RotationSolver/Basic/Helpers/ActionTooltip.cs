@@ -25,6 +25,9 @@ internal static class ActionTooltip
 	private static readonly Regex StatedPotency = new(@"potency of (?<value>\d[\d,]*)", RegexOptions.Compiled);
 	private static readonly Regex StatedCurePotency = new(@"Cure Potency: (?<value>\d[\d,]*)", RegexOptions.Compiled);
 	private static readonly Regex StatedHealthBelow = new(@"HP is below (?<value>\d{1,3})%", RegexOptions.Compiled);
+	private static readonly Regex DealsWithGuard = new(@"Ignores the effects of Guard|Removes (?:target's )?Guard|Removes Guard from|defensive bonus of Guard",
+		RegexOptions.Compiled);
+	private static readonly Dictionary<uint, bool> _handlesGuard = [];
 	private static readonly HashSet<(uint ActionId, int Level)> _unreadPotency = [];
 	private static readonly Regex StatedFalloff = new(@"(?<value>\d{1,2})% less for all remaining enemies", RegexOptions.Compiled);
 	private const string DamageAreaText = "enemies who enter";
@@ -123,6 +126,35 @@ internal static class ActionTooltip
 		}
 
 		return total > 0f;
+	}
+
+	/// <summary>
+	/// Whether the tooltip of <paramref name="actionId"/> says it deals with Guard in PvP: it ignores it ("Ignores the
+	/// effects of Guard"), removes it ("Removes target's Guard", "Removes Guard from enemies") or halves it ("Halves the
+	/// defensive bonus of Guard"). Such an action may choose a target under Guard (concept 25, "PvP: Ziele unter Guard und
+	/// Unverwundbarkeit", A757). Kept per action: the text does not change within a session.
+	/// </summary>
+	public static bool HandlesGuard(uint actionId)
+	{
+		lock (_gate)
+		{
+			if (_handlesGuard.TryGetValue(actionId, out var known))
+			{
+				return known;
+			}
+		}
+
+		var text = Text(actionId);
+		var handles = DealsWithGuard.IsMatch(text);
+		if (text.Length > 0)
+		{
+			lock (_gate)
+			{
+				_handlesGuard[actionId] = handles;
+			}
+		}
+
+		return handles;
 	}
 
 	/// <summary>

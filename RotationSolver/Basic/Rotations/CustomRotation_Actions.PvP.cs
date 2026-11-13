@@ -11,7 +11,7 @@ public partial class CustomRotation
 	/// Recuperate spent the MP to the last, and a stun after it could no longer be purified. Without a readable text the
 	/// heal is unknown, and Recuperate goes only in the critical class.
 	/// </summary>
-	private static unsafe bool RecuperatePvPAllowed()
+	private static bool RecuperatePvPAllowed()
 	{
 		var player = Player;
 		if (player == null || player.MaxHp == 0)
@@ -19,24 +19,35 @@ public partial class CustomRotation
 			return false;
 		}
 
-		var critical = player.IsInCriticalClass();
 		if (!ActionTooltip.TryStatedCurePotency((uint)ActionID.RecuperatePvP, out var heal))
 		{
-			return critical;
+			return player.IsInCriticalClass();
 		}
 
-		if (player.MaxHp - player.CurrentHp < heal)
+		return player.MaxHp - player.CurrentHp >= heal && PvPMpLeavesPurify((uint)ActionID.RecuperatePvP, player);
+	}
+
+	/// <summary>
+	/// Whether spending MP on <paramref name="actionId"/> for <paramref name="target"/> leaves enough for one Purify: in PvP
+	/// Recuperate, Purify and Haelan draw on the same MP, and a heal spent to the last MP leaves a stun that nothing lifts
+	/// (concept 25, "PvP: Wechselwirkungen und Synergien", A757). A target in the critical class goes first: its death is
+	/// certain, the stun only possible. Both costs come from the game.
+	/// </summary>
+	private static unsafe bool PvPMpLeavesPurify(uint actionId, IBattleChara? target)
+	{
+		var player = Player;
+		if (player == null)
 		{
 			return false;
 		}
 
-		if (critical)
+		if (target != null && target.IsInCriticalClass())
 		{
 			return true;
 		}
 
-		var recuperate = ActionManager.GetActionCost(ActionType.Action, (uint)ActionID.RecuperatePvP, 0, 0, 0, 0);
+		var cost = ActionManager.GetActionCost(ActionType.Action, actionId, 0, 0, 0, 0);
 		var purify = ActionManager.GetActionCost(ActionType.Action, (uint)ActionID.PurifyPvP, 0, 0, 0, 0);
-		return player.CurrentMp >= recuperate + purify;
+		return player.CurrentMp >= cost + purify;
 	}
 }

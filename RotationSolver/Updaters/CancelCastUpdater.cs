@@ -60,7 +60,7 @@ internal static partial class CancelCastUpdater
 			&& castTarget.IsEnemy()
 			&& castTarget.HasStatus(false, StatusHelper.PvPGuardStatuses)
 			&& ((ActionID)player.CastActionId).GetActionFromID(true, RotationUpdater.CurrentRotationActions)
-				is IBaseAction { Setting.IgnoreGuard: false };
+				is IBaseAction { Setting.IgnoreGuard: false } casting && !ActionTooltip.HandlesGuard(casting.ID);
 
 		var bmrForceCancelCast = Service.Config.UseBmrTimeline
 			&& (DataCenter.BMRForceCancelCast || DataCenter.BMRForceCancelCastAI);

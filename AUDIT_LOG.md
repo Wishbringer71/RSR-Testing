@@ -22096,6 +22096,33 @@ Fähigkeiten, nicht mit den normalen verwechseln.
   Potenz".
 - *Prüfgrad:* Compile; alle 54 CI-Schritte lokal; Gegenprobe der Bewegungsprüfung. In PvP nicht beobachtet.
 
+### A757 · PvP: Wechselwirkungen und Synergien über die Ebenen (13.11.2026)
+
+Seine Frage (13.11.2026): „wurden alle wechselwirkungen geprüft und synergien über mehrere ebenen geschaffen? im
+konzept im loop prüfen". Antwort am Stand A756: nein. Erhoben waren die gemeinsame Ebene und Einzelbefunde je Job, nicht
+jede Ebene und nicht die Gruppe.
+
+- *Erhoben* (Konzept 25, „PvP: Wechselwirkungen und Synergien"): je Ebene (alle Jobs, Rolle, Untergruppe, Job, Gruppe)
+  die Paare auf derselben Ressource, demselben Zeitpunkt, demselben Ziel, an den Wirktexten aller 21 Jobs.
+- *Neu gebaut:*
+  - Ob eine Aktion ein Ziel unter Guard wählen darf, liest RSR aus ihrem Wirktext (ignoriert, entfernt, halbiert). Am Code
+    gemessen fehlte das Flag Seiton Tenchu, Zantetsuken, Meteodrive und Shield Smite; RSR ließ für sie gerade die
+    Ziele aus, gegen die sie am meisten bringen. Die Gegenprobe: Alle Aktionen mit Flag tragen den Satz, bis auf drei,
+    die Guard nicht übergehen, aber ein Ziel unter Guard brauchen (Full Swing entfernt ihn, Chain Stratagem halbiert
+    ihn; Fate Sealed und Perfectio unverändert von Upstream).
+  - Haelan teilt das MP mit Recuperate und Purify und lässt jetzt wie Recuperate das MP für ein Purify, außer sein Ziel
+    steht in der kritischen Klasse. Die MP-Kosten aller PvP-Aktionen im Job-Guide: nur diese drei.
+  - Wo Guard fällig ist, geht ein bereiter Schutz-Limit-Break (Phalanx, Mesotes, Sky High) vor: Guard hielte kürzer und
+    nur den Spieler, und Guard danach beendete ihn.
+- *Geprüft, nicht geändert:* ein eigener PvP-Fokus der Zielwahl (die Einstellung bindet, die Voreinstellung wählt schon
+  das schnellste Ziel, die Verwundbarkeit hat im Statusblatt keine Zahl); Bravery auf ein anderes Mitglied (eigener
+  Vorteil); Schutz und Heilung auf Mitglieder (allgemeine Zielwahl wie in PvE).
+- *Falsifikation:* „Kein Defekt" hält nicht für die drei gebauten Punkte. „Option falsch": Ein Schutz-Limit-Break vor
+  Guard verbraucht die Leiste für einen Notfall, den Guard allein überstünde; er geht nur, wo Guard fällig ist, und
+  schützt bei Phalanx und Mesotes die Gruppe mit. „Ausgeliefert, und nichts ändert sich": wenn der Wirktext im Client
+  anders lautet; RSR liest den englischen Text des Clients, wie für die Potenz.
+- *Prüfgrad:* Compile; alle 54 CI-Schritte lokal. In PvP nicht beobachtet.
+
 ## B · Commit-Register (Fork vs. `upstream/main`)
 
 ### B1 · Einzelgeprüfte Fork-Commits

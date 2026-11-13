@@ -236,6 +236,7 @@ public partial class CustomRotation
 	static partial void ModifyHaelanPvP(ref ActionSetting setting)
 	{
 		setting.StatusNeed = [StatusID.PvPRoleActionHaelan];
+		setting.CanTarget = static t => PvPMpLeavesPurify((uint)ActionID.HaelanPvP, t);
 	}
 
 	static partial void ModifyStoneskinIiPvP(ref ActionSetting setting)
