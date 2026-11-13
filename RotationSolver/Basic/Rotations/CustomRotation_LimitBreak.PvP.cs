@@ -31,7 +31,10 @@ public partial class CustomRotation
 	{
 		act = null;
 		var limitBreak = LimitBreakPvP;
-		if (!DataCenter.IsPvP || !DataCenter.InCombat || limitBreak == null || Player == null)
+		// Only the Limit Break itself, not the action its button turns into after it (Terminal Trigger, Sky Shatter, Oracle
+		// ...): those end the Limit Break's effect early, the rotations cast them, and most fire on their own at its end
+		// (concept 25, "PvP: Limit Break", A760).
+		if (!DataCenter.IsPvP || !DataCenter.InCombat || limitBreak == null || Player == null || !IsGaugeLimitBreak(limitBreak))
 		{
 			return false;
 		}
@@ -91,9 +94,20 @@ public partial class CustomRotation
 	{
 		act = null;
 		var limitBreak = LimitBreakPvP;
-		return DataCenter.IsPvP && limitBreak != null
+		return DataCenter.IsPvP && limitBreak != null && IsGaugeLimitBreak(limitBreak)
 			&& limitBreak.ID is PvPLimitBreakRow.Phalanx or PvPLimitBreakRow.Mesotes or PvPLimitBreakRow.SkyHigh
 			&& limitBreak.CanUse(out act, skipAoeCheck: true);
+	}
+
+	/// <summary>
+	/// Whether the Limit Break button holds a Limit Break of the gauge: its own action, or one it turns into that its text
+	/// names by the full gauge - Summon Phoenix after Summon Bahamut. Not a follow-up such as Sky Shatter or Terminal
+	/// Trigger, whose text names the Limit Break's effect instead (concept 25, "PvP: Limit Break", A760).
+	/// </summary>
+	private static bool IsGaugeLimitBreak(IBaseAction limitBreak)
+	{
+		return limitBreak.AdjustedID == limitBreak.ID
+			|| ActionTooltip.Text(limitBreak.AdjustedID).Contains("limit gauge is full", StringComparison.Ordinal);
 	}
 
 	private static float EffectRangeOf(uint row)

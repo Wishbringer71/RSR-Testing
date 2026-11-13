@@ -90,7 +90,7 @@ Purify, dann Guard, dann Recuperate oder Elixier. Weißmagier und Barde lösen B
   danach 4 s lang jede Aktion zurück („PvP Guard control"), ohne Schaden zu verhindern.
 - *Recuperate* heilt 16.000 LP (Job-Guide, seit 7.5; 1 Potenz ist in PvP 1 LP) für 2000 MP. Es geht, wenn dir mindestens
   seine Heilung fehlt; die Menge liest RSR aus dem Wirktext des Clients („Cure Potency"), nicht aus einer Zahl im Code.
-  Bisher stand dort 15.000, die Heilung vor 7.5. Es lässt das MP für ein Purify übrig (beide Kosten aus dem Aktionsblatt),
+  Bisher stand dort 15.000, die Heilung vor 7.5. Es lässt das MP für ein Purify übrig (beide Kosten fragt RSR beim Spiel ab),
   außer du stehst in der kritischen Klasse. Bisher verbrauchte Recuperate das MP bis zuletzt. Ein Stun danach ließ sich
   nicht mehr lösen, und ein Spieler ohne Purify stirbt im Stun.
 - *„Hold GCDs for heals below 50% HP"* hält die GCDs nur, solange Recuperate auch gehen kann. Mit der Reserve wäre
@@ -181,7 +181,10 @@ voll ist (das Spiel lässt ihn vorher nicht zu), mit einer Bedingung je Art:
   Reichweite der Rotation.
 - *Schutz:* Phalanx, Mesotes: wenn du in der kritischen Klasse stehst (oben, Guard).
 Die Aktionen, die ein Limit Break freischaltet (Blade of Faith, Disesteem, Star Prism, Flare Star …), führen die
-Rotationen schon.
+Rotationen schon. Der Limit-Break-Pfad greift deshalb nur, solange der Knopf einen Limit Break der Leiste trägt: den eigenen oder einen,
+dessen Wirktext die volle Leiste verlangt (Summon Phoenix nach Summon Bahamut), nicht eine Folgeaktion (A760). Sonst drückte er Terminal Trigger sofort nach Relentless Rush (Ende der Schadensminderung und des
+Schadens über Zeit nach weniger als 4 s) oder Sky Shatter mitten in Sky High (Ende der Unerreichbarkeit, gerade wenn
+sie als Flucht diente); beide lösen sich am Ende von selbst aus.
 
 *Optionen:* (a) Nullvariante, der Spieler drückt ihn selbst; (b) sobald bereit, ohne Bedingung; (c) Bedingung je Art.
 (b) verschwendet die Hinrichtungen auf volle Ziele und die Flächen ins Leere. (a) ist für ihn, der PvP selten spielt,

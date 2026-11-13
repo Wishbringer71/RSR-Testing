@@ -22161,6 +22161,26 @@ TODO „PvP: Hinrichtungen nach gemessenem Schaden statt nach Potenz" (aus A756)
 - *Prüfgrad:* Compile; alle 54 CI-Schritte lokal. In PvP nicht beobachtet. Die Regel steuert sich selbst nach: Der
   Faktor wächst mit jedem Treffer des Gebiets mit; die erste Messung je Gebiet steht im `DefenseTrace.log`.
 
+### A760 · Code-Review des PvP-Codes aus A755 bis A759 (13.11.2026)
+
+Sein Auftrag (13.11.2026): „todo weiter im loop". `TODO.md` führte weder Defekte noch offene Arbeit; keine technische
+Schuld hatte ihre Auflösungsbedingung erfüllt. Nach der Reihenfolge des TODO folgten Code-Review und Audit des
+PvP-Codes.
+
+- *Befund, im Kampf:* Nach dem Auslösen trägt der Limit-Break-Knopf seine Folgeaktion (Terminal Trigger, Sky Shatter,
+  Oracle …). Der Limit-Break-Pfad prüfte sie mit der Bedingung des Limit Breaks: Terminal Trigger wäre sofort nach
+  Relentless Rush gegangen (Ende von Schadensminderung und Schaden über Zeit nach weniger als 4 s), Sky Shatter mitten in
+  Sky High (Ende der Unerreichbarkeit, auch als Flucht). Behoben: Der Pfad greift nur, solange der Knopf einen Limit
+  Break der Leiste trägt.
+- *Gegenthese geprüft:* Die Kategorie im Aktionsblatt trennt die Fälle nicht; Sky Shatter und Terminal Trigger stehen dort
+  als „Limit Break". Der Wirktext trennt sie: „limit gauge is full" bei Summon Phoenix und bei beiden Zeilen von Seiton
+  Tenchu (zweite Ausführung nach einem Kill), nicht bei den Folgeaktionen (xivapi v2, `ActionTransient`).
+- *Ohne Befund geprüft:* Die Vorliebe für nicht immune Ziele ändert nur die Liste der Hauptziele (`GetCanTargets`); die
+  Flächenzählung nutzt `GetCanAffects` und zählt immune Gegner weiter. Die Grundprüfungen in `CanUse` sperren den
+  PvP-Limit-Break nicht (eigene Kategorie, Platz über PvP und PvE). Das Konzept nennt die MP-Kosten jetzt als
+  Abfrage beim Spiel, wie der Code sie stellt.
+- *Prüfgrad:* Compile; alle 54 CI-Schritte lokal. In PvP nicht beobachtet.
+
 ## B · Commit-Register (Fork vs. `upstream/main`)
 
 ### B1 · Einzelgeprüfte Fork-Commits
