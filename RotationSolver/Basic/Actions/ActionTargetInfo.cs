@@ -3057,7 +3057,7 @@ public struct ActionTargetInfo(IBaseAction action)
 				return null;
 			}
 
-			if (Service.Config.FilterStopMark2 && !DataCenter.IsPvP)
+			if (Service.Config.FilterStopMark2)
 			{
 				var filteredCharacters = MarkingHelper.FilterStopCharacters(battleChara);
 				var filteredHasAny = false;

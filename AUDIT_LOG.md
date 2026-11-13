@@ -22009,6 +22009,46 @@ Mitschnitt“ bleibt. Geprüft wurde deshalb der Code aus A753 gegen Konzept 03,
 - *Prüfgrad:* Compile; alle 54 CI-Schritte lokal. Im Spiel nicht beobachtet. Das Messmittel ist die Zeile „action
   timing over the fight“ im `DefenseTrace.log` (Warte-Eintrag im TODO).
 
+### A755 · PvP: Einschränkungen ohne technische Notwendigkeit aufgehoben (13.11.2026)
+
+Seine Frage und Vorgaben (13.11.2026): „warum einschränkungen für pvp? … sehe ich keinen grund, dort nicht auch das
+optimum rauszuholen für den eigenen vorteil“. Präzisierung: Einschränkungen anderer Repositories und Upstreams
+interessieren ihn nicht, wenn sie keine technische Notwendigkeit sind. Hinweis: In PvP nutzt man andere Fähigkeiten.
+Eingetragen in CLAUDE.md („Nutzungsprofil“: PvP genannt, Optimum wie in PvE) und im neuen Konzept `25-pvp.md`.
+
+- *Herkunft der Sperren für Animationssperre und Bildrate:* meine Ableitung in A753, als solche im Konzept markiert
+  („In PvP wäre eine kürzere Sperre ein Vorteil gegen andere Spieler“). Weder Upstream noch BossModReborn 8ad17f97f
+  unterscheiden PvP.
+- *Bestandsaufnahme:* rund 120 PvP-Bedingungen in Fork und Upstream, je Stelle mit Einführungs-Commit (`git log -S`).
+  Eingeordnet in `25-pvp.md`, „PvP: Einschränkungen“:
+  - Technisch nötig: Auswahl von Rotation und Aktionen, Regeln auf PvE-Aktionen, -Zustände oder -Gegner, Guard (endet
+    mit jeder Aktion), Elixier (4,5 s Wirkzeit).
+  - Aufgehoben: Animationssperre, Bildrate, Wache gegen Strafzustände (keiner der 31 Zustände kommt in PvP vor, xivapi
+    v2), Gegner mit Stacheln, Stopp-Markierung (Upstream 02.05.2026, ohne Grund), Notfallheilung vor dem GCD.
+  - Offen für das Job-Konzept: das Abfangen eigener Tastendrücke (Upstream 11.08.2025, ohne Grund im Commit). In PvP
+    müssen Guard, Purify und Sprint sofort gelten; das ist dort zu prüfen.
+  - Nicht aufgehoben, meine Grenze: IPC-Steuerung in PvP, die Sperre bei „Auto PvP Series Grind“, freie Zielwahl in PvP
+    (Upstream 26.07.2025: „for botters“). Sie verhindern PvP-Partien ohne anwesenden Spieler und berühren das Spiel
+    eines anwesenden Spielers nicht.
+- *Befund nebenbei:* Das Textmuster für Gegner mit Stacheln traf „sustained damage back to its source“ nicht. Unter den
+  sechs Zuständen mit diesem Text (Statusblatt, 13.11.2026) ist Nebula (3051) der einzige, den ein Gegner trägt, in PvP.
+  Meine erste Fassung des Befunds nannte Br'aax Pulse und Blood of the Br'aax Gegner-Zustände. Am Artefakt gemessen
+  (BossModReborn `TakingAStand.cs`) sind es Wuk Lamats Rollenspiel-Zustände, vor der Ausgabe berichtigt.
+- *Elixier:* Statt PvP auszunehmen, gilt die Grenze für Fähigkeiten mit Wirkzeit nur unter der Länge des GCD. In beiden
+  Lagen wirkt das gleich und trägt den Grund im Code.
+- *Reihenfolge:* Die Wache gegen Strafzustände habe ich im Code geändert, bevor die Konzeptstelle in 03 nachgezogen war
+  (im selben Commit). Alle übrigen Stellen: Konzept zuerst.
+- *Quellen:* Job-Guide (PvP-Aktionen, Rollen- und gemeinsame Aktionen aller 21 Jobs, abgerufen 13.11.2026), xivapi v2
+  (Action mit `IsPvP`, Status), Upstream-Geschichte. Neu gefunden für das Job-Konzept: WrathCombo (PvP aller Jobs),
+  BossModReborn (vier PvP-Rotationen, `RolePvPUtility`), XeldarAlz/FFXIV-AutoPVPLimitBreak, priestkos/FrontlineAdvisor,
+  wrath16/PvpStats, Petra105/PvPTopPlates, exatrines/AutoFrontline.
+- *Falsifikation:*
+  - „Kein Defekt“ hält nicht: Die Sperren griffen in PvP ohne technischen Grund, gegen seine Vorgabe.
+  - „Option falsch“: Eine aufgehobene Sperre könnte einen technischen Grund haben, den der Commit nicht nennt. Für jede
+    ist der Weg am Code gelesen: Der Server antwortet in PvP mit demselben Paket, Guard und Elixier bleiben geschützt.
+  - „Ausgeliefert, und nichts ändert sich“: Für ihn, der PvP selten spielt, im Alltag ja. In PvP-Partien wirkt es sofort.
+- *Prüfgrad:* Compile; alle 54 CI-Schritte lokal. In PvP nicht beobachtet.
+
 ## B · Commit-Register (Fork vs. `upstream/main`)
 
 ### B1 · Einzelgeprüfte Fork-Commits

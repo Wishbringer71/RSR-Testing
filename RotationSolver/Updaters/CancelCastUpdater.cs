@@ -49,7 +49,7 @@ internal static partial class CancelCastUpdater
 			&& (damagesEveryAction || noCastingRemaining < NoCastingStatusHelper.ResolveWindow);
 
 		// Cancel a cast that would still be under way when a status that damages every action lands on the player (A439).
-		var castMeetsPenalty = !DataCenter.IsPvP && ActionPenaltyWatch.WouldMeetLanding(player.TotalCastTime - player.CurrentCastTime);
+		var castMeetsPenalty = ActionPenaltyWatch.WouldMeetLanding(player.TotalCastTime - player.CurrentCastTime);
 		if (castMeetsPenalty)
 		{
 			ActionPenaltyWatch.NoteHold("own cast cancelled");

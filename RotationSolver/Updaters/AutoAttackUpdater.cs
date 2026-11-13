@@ -91,7 +91,7 @@ namespace RotationSolver.Updaters
 				}
 
 				// An auto-attack is an action too; none in the last moment before such a status lands (A439).
-				if (!DataCenter.IsPvP && ActionPenaltyWatch.WouldMeetLanding(0f))
+				if (ActionPenaltyWatch.WouldMeetLanding(0f))
 				{
 					return true;
 				}

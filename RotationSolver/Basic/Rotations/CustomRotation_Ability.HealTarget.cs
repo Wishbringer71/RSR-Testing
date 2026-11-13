@@ -18,11 +18,6 @@ public partial class CustomRotation
 	private bool EmergencyHealAheadOfGcd(IAction nextGCD, out IAction? act)
 	{
 		act = null;
-		if (DataCenter.IsPvP)
-		{
-			return false;
-		}
-
 		_criticalMembers.Clear();
 		foreach (var member in DataCenter.PartyMembers)
 		{

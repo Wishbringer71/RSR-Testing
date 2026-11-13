@@ -29,7 +29,7 @@ public static partial class ObjectHelper
 	internal static bool MustNotBeHit(this IBattleChara battleChara, ICollection<long> stopTargets)
 	{
 		return battleChara.HasSpikes() || battleChara.IsGuardedZuEgg() || KillOrder.MustNotBeHit(battleChara)
-			|| (Service.Config.FilterStopMark2 && !DataCenter.IsPvP && stopTargets.Contains((long)battleChara.GameObjectId));
+			|| (Service.Config.FilterStopMark2 && stopTargets.Contains((long)battleChara.GameObjectId));
 	}
 
 	/// <summary>
@@ -111,7 +111,7 @@ public static partial class ObjectHelper
 	/// <summary>The status by which <see cref="HasSpikes"/> leaves this enemy alone, or null.</summary>
 	internal static Dalamud.Game.ClientState.Statuses.IStatus? SpikeOf(IBattleChara battleChara)
 	{
-		if (!Service.Config.AvoidSpikedEnemies || DataCenter.IsPvP)
+		if (!Service.Config.AvoidSpikedEnemies)
 		{
 			return null;
 		}

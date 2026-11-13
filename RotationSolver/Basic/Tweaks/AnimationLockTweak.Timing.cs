@@ -60,10 +60,10 @@ public sealed unsafe partial class AnimationLockTweak
 	internal bool LastMatched { get; private set; }
 
 	/// <summary>
-	/// Whether the lock may be shortened now: the setting is on, the fight is no PvP (a shorter lock there is an edge over
-	/// other players), no other tool shortens it, and the packet check has not found one in this zone.
+	/// Whether the lock may be shortened now: the setting is on, no other tool shortens it, and the packet check has not
+	/// found one in this zone. PvP as PvE (concept 03, A755).
 	/// </summary>
-	internal bool ReductionAllowed => Service.Config.RemoveAnimationLockDelay && !DataCenter.IsPvP && !_heldInZone
+	internal bool ReductionAllowed => Service.Config.RemoveAnimationLockDelay && !_heldInZone
 		&& ConflictingTool == null;
 
 	/// <summary>
@@ -506,7 +506,7 @@ public sealed unsafe partial class AnimationLockTweak
 
 		var window = AbilityWindow(0);
 		var state = ConflictingTool is { } tool ? $"held, {tool} shortens it"
-			: !Service.Config.RemoveAnimationLockDelay ? "off" : DataCenter.IsPvP ? "held in PvP" : _heldInZone ? "held in this zone" : "on";
+			: !Service.Config.RemoveAnimationLockDelay ? "off" : _heldInZone ? "held in this zone" : "on";
 		DefenseTrace.Line($"action timing over the fight: {f.Answers} answers, delay to the answer mean"
 			+ $" {(f.Answers > 0 ? f.Delay / f.Answers * 1000 : 0):F0} ms (zone: least {_delayLeast * 1000:F0}, deviation"
 			+ $" {_delayDeviation * 1000:F0} ms), rest kept after the lock mean {(f.Answers > 0 ? f.Kept / f.Answers * 1000 : 0):F0} ms"

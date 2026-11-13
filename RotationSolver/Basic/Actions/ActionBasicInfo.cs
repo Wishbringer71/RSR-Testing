@@ -555,7 +555,7 @@ public readonly struct ActionBasicInfo
 
 		if (CastStartBlockedNow(skipCastingCheck)
 			// A cast still under way when a status that damages every action lands kills (A439).
-			|| (!DataCenter.IsPvP && ActionPenaltyWatch.WouldMeetLanding(CastTime))
+			|| ActionPenaltyWatch.WouldMeetLanding(CastTime)
 			// BossMod must move the player before a longer cast could end; its own rotation skips such casts too (A649).
 			|| ExceedsBossModCastLimit(CastTime, Name)
 			// Under the movement lock RSR casts while the player walks and holds the player - not on a walk out of danger (A651).
@@ -618,7 +618,7 @@ public readonly struct ActionBasicInfo
 	internal static bool NoCastFitsNow()
 	{
 		var limited = DataCenter.BMRMaxCastTime < float.MaxValue && !DataCenter.BMRMoveRequested;
-		var landing = !DataCenter.IsPvP && ActionPenaltyWatch.LandsOnPlayerIn() < float.MaxValue;
+		var landing = ActionPenaltyWatch.LandsOnPlayerIn() < float.MaxValue;
 		var walkingLocked = !DataCenter.NoPoslock && DataCenter.IsMoving;
 		var certainHit = MovementLock.CertainDodgeableWithin(float.MaxValue);
 		if (!limited && !landing && !walkingLocked && certainHit is null)

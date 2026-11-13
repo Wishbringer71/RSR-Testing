@@ -322,7 +322,10 @@ unter Pyretic bis 3 s vor dem Ende weiter, unter Causality und den Fassungen ohn
 
 **Vor der Landung** (A439). Ein Status, der jede Aktion bestraft, kommt mit dem Treffer, und eine Aktion, die in diesem
 Augenblick noch läuft, nimmt den Schaden sofort; die Sperren oben lesen den liegenden Status und kommen dafür zu spät.
-`ActionPenaltyWatch` beantwortet die Zeit davor, für alle Jobs, außer im PvP:
+`ActionPenaltyWatch` beantwortet die Zeit davor, für alle Jobs, in PvE und PvP. Die frühere PvP-Ausnahme war von
+Upstreams Sperre für liegende Status übernommen. Keiner der 31 Status der Liste kommt in PvP vor (alle aus
+PvE-Bosskämpfen, xivapi v2 am 13.11.2026), die Ausnahme schränkte also nichts ein und hatte keinen technischen Grund
+(A755):
 - *Lernen:* Legt die Landung eines Wirkens einem Gruppenmitglied oder ihm einen solchen Status der Liste an (Effektart
   „Status auf Ziel“ mit der Status-Id, erkannt wie oben über `DamagesEveryAction`), ist das Wirken gelernt, gleich auf
   wen es fiel. `ActionPenaltyCasts.json` hält je Aktion den gelegten Status, über alle Sitzungen, gespeichert wie die
@@ -1015,8 +1018,9 @@ die Spurzeile nennt, ob die Regel gilt.
 *Was gilt (A571, A588):* Ein Gegner mit einem Zustand, dessen englischer Wirktext seine Angreifer treffen lässt, ist kein
 Ziel eines Angriffs, den der Zustand trifft, solange er steht. Der Text nennt beides:
 - *Dass er trifft:* „damage to attackers" (auch „damage to and slowing down attackers", Stacheln), „countering … attacks"
-  und „counter damage" (Gegenangriff), „reflected back" oder „Reflecting …" mit „attacks", „magic", „caster" oder
-  „dealer" (Rückwurf). „Doom … counter reaches zero" ist kein Gegenangriff und zählt nicht.
+  und „counter damage" (Gegenangriff), „sustained damage back to its source" (Rückgabe), „reflected back" oder
+  „Reflecting …" mit „attacks", „magic", „caster" oder „dealer" (Rückwurf). „Doom … counter reaches zero" ist kein
+  Gegenangriff und zählt nicht.
 - *Welche Angriffe:* Nennt der Satz „physical", trifft er physische Angriffe; „magic" oder „-aspected" magische;
   „ranged" Angriffe aus der Ferne; sonst jeden.
 - *Welche Angriffe du führst*, sagt das Jobblatt (`ClassJob`): Kriegerdisziplinen (`ClassJobCategory` 30, auch der
@@ -1027,7 +1031,15 @@ Eine Aktion, die genau diesen Zustand entfernt (`TargetStatusNeed`: Quelling Wav
 Needles Out), darf ihn wählen; Bannen geht vor Meiden, weil es die Stacheln für alle beendet. Seine Zauber zählen weiter
 für Flächen und Tankbuster (A566). RSR schreibt je Gegner und Zustand eine Zeile ins `DefenseTrace.log`, wenn es ihn
 meidet. Einstellung „Do not attack enemies whose spikes damage their attackers", ab Werk an; aus greift RSR ihn an wie
-jeden Gegner. Die Liste unverwundbarer Zustände bleibt daneben bestehen und editierbar.
+jeden Gegner. Die Liste unverwundbarer Zustände bleibt daneben bestehen und editierbar. Die Regel gilt in PvE und PvP
+gleich (A755, `25-pvp.md`): In PvP gibt Nebula des Revolverklingen-Kämpfers (3051) jedem Angreifer 4.000 Potenz zurück.
+
+*Rückgabe (A755):* „Inflicting a portion of sustained damage back to its source" trägt als Zustand eines Gegners heute
+nur Nebula in PvP (3051, Revolverklingen-Kämpfer, 8 s). Dieselbe Formulierung führen Spielerzustände in PvE (Vengeance
+89, Damnation 3832), Wuk Lamats Rollenspiel-Zustände Br'aax Pulse (3784) und Blood of the Br'aax (4170, BossModReborn
+`TakingAStand.cs`) und Schiltron (3631, Herkunft unbelegt). Bis A755 traf das Textmuster sie nicht; gegen Nebula schlug RSR in PvP weiter
+und nahm je Angriff 4.000 Potenz zurück. Welche Angriffe sie trifft, nennt der Text nicht; sie zählt deshalb für jeden.
+Statusblatt, xivapi v2, 13.11.2026.
 
 *Im Kampf (A588):* Im Drachen-Kampf von Brett 5 legt sich der barbmole piece „Needles Out" an („Damage taken is reduced
 while countering physical attacks"; BossModReborn 27be42256: „reflect with a stacking bleed when attacked"). Bis A588
@@ -1115,7 +1127,7 @@ Gegner sind:
 - Gegner mit Stacheln (oben, A571): Eine Fläche löst den Rückwurf so sicher aus wie ein Einzelschlag.
 - Gegner mit Stopp-Markierung, solange „Never attack targets with stop markers" an ist: Der Text der Einstellung bindet,
   und eine Fläche, die einen markierten Gegner trifft, greift ihn an (Upstream schloss ihn nur als Ziel aus; die Fläche
-  weckte etwa einen Schlafenden).
+  weckte etwa einen Schlafenden). Das gilt auch in PvP; Upstream nahm PvP ohne technischen Grund aus (A755).
 - Im Crucible die Eier des Zu, solange der Zu lebt (Konzept 21, K12).
 - Gegner, die eine Tötungsregel zurückhält (unten, „Tötungsregeln"), wo die Regel es sagt: Eine Fläche ließe sie zu
   früh oder am falschen Ort fallen.
@@ -1643,12 +1655,15 @@ verlangen keinen Mindestabstand.
   - Der Schnitt steigt höchstens bis zur größten Verzögerung des Gebiets; mehr lässt sich nicht abziehen. Ohne diese
     Grenze wüchse der Zuschlag bei einem Server, der nichts ablehnt, unbegrenzt. Lehnte der Server dann später doch ab,
     etwa auf einer anderen Route im selben Gebiet, bräuchte der Regler viele Ablehnungen, um wieder herunterzukommen.
-  - Nur in PvE (meine Ableitung): In PvP wäre eine kürzere Sperre ein Vorteil gegen andere Spieler.
+  - Gilt in PvE und PvP gleich (seine Vorgabe, 13.11.2026: in PvP dasselbe Optimum zum eigenen Vorteil). Die frühere
+    Sperre für PvP war meine Ableitung aus Fairness und keine technische Notwendigkeit: Der Server antwortet in PvP mit
+    demselben Paket samt Sperre, und weder BossModReborn noch XivAlexander oder NoClippy unterscheiden PvP. Im Kampf
+    ist in PvP nach jeder Sofortaktion die nächste Aktion um den gekürzten Netzrest früher frei, wie in PvE.
 - *Verzug durch die Bildrate* („Remove framerate-induced cooldown delay“, ab Werk an): Löst das Spiel eine eingereihte
   Aktion erst einen Frame nach dem Ende von Sperre oder Abklingzeit aus, schreibt RSR den Überhang der nächsten
   Abklingzeit und Sperre gut. Gutgeschrieben wird höchstens eine mittlere Frame-Zeit des Gebiets; einen Ruckler darüber
-  kennt der Server nicht. Das Verfahren stammt von BossModReborn, die feste Obergrenze von 100 ms entfällt. Auch das gilt
-  nur in PvE, aus demselben Grund wie die Verkürzung; beide sitzen unter derselben Regel.
+  kennt der Server nicht. Das Verfahren stammt von BossModReborn, die feste Obergrenze von 100 ms entfällt. Es gilt wie die
+  Verkürzung in PvE und PvP.
 - *Webregel* (`ActionHelper.AbilityClipWindow`, `AbilityWindowFor`): Eine Fähigkeit beginnt nur, wenn ihre Sperre samt
   erwartetem Rest endet, bevor der GCD frei wird.
   - Der erwartete Rest ist das, was der aktuelle Schnitt von den Verzögerungen des Gebiets übrig lässt, als Mittel plus
@@ -1775,7 +1790,7 @@ ist.
 über die Verzögerungen des Gebiets, eine Liste mit einem Eintrag je Antwort. Die Zählung des Clippings und der Frame-Zeit
 läuft einmal je Frame mit wenigen Feldern des `ActionManager`. Der Rest unter dem aktuellen Schnitt wird je Antwort
 über die Verzögerungen des Gebiets neu gerechnet und dazwischen behalten. Beim Lesen wählt die Webregel nur, ob RSR
-gerade kürzt. So folgt sie dem Umschalten der Option, einer Sperre im Gebiet und dem Wechsel nach PvP sofort, nicht erst
+gerade kürzt. So folgt sie dem Umschalten der Option, und einer Sperre im Gebiet sofort, nicht erst
 mit der nächsten Antwort. Rotationen fragen die Webregel viele Male je Frame; jede Frage ist ein Vergleich und eine
 Addition. Je Frame wird nichts angelegt.
 

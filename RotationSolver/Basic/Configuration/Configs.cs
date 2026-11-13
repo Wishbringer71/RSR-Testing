@@ -1660,7 +1660,7 @@ internal partial class Configs : IPluginConfiguration, IM3Settings
 	// Concept 03, "Weben, Animationssperre und Latenz" (A753): measured, no set value. On by default, his requirement being
 	// that RSR replaces XivAlexander, NoClippy and BossMod's action tweaks.
 	[ConditionBool, UI("Remove lag-induced animation lock delay from instant casts",
-	Description = "After each instant action the game waits for the server's answer before the next one, and adds the network round trip to the animation lock. RSR measures that round trip in every zone and takes it off; the wait for the server's tick stays, so the next action reaches the server as its lock ends. When a request goes without an answer, RSR cuts less. Nothing to set.\nIn a fight: an oGCD frees the next action sooner, so two oGCDs fit between GCDs more often and three where the GCD leaves room, without pushing the GCD back.\nPvE only. Held while XivAlexander runs, or while NoClippy runs and is not taken over (below).",
+	Description = "After each instant action the game waits for the server's answer before the next one, and adds the network round trip to the animation lock. RSR measures that round trip in every zone and takes it off; the wait for the server's tick stays, so the next action reaches the server as its lock ends. When a request goes without an answer, RSR cuts less. Nothing to set.\nIn a fight: an oGCD frees the next action sooner, so two oGCDs fit between GCDs more often and three where the GCD leaves room, without pushing the GCD back.\nIn PvE and PvP. Held while XivAlexander runs, or while NoClippy runs and is not taken over (below).",
 	Filter = Extra, Section = 1)]
 	private static readonly bool _removeAnimationLockDelay = true;
 

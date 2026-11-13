@@ -34,8 +34,7 @@ public sealed class CooldownDelayTweak
 
 	private static float CalculateAdjustment(float prevAnimLock, float prevRemainingCooldown, float deltaTime)
 	{
-		// PvE only, as the lock reduction: in PvP it would be an edge over other players (concept 03, A754).
-		if (!Service.Config.RemoveCooldownDelay || DataCenter.IsPvP)
+		if (!Service.Config.RemoveCooldownDelay)
 		{
 			return 0;
 		}
