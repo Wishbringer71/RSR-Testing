@@ -4,7 +4,7 @@ using ECommons.GameHelpers;
 
 namespace RotationSolver.Updaters;
 
-internal static class StateUpdater
+internal static partial class StateUpdater
 {
 	private static bool CanUseHealAction =>
 		DataCenter.IsPvP
@@ -369,40 +369,6 @@ internal static class StateUpdater
 		return false;
 	}
 
-	/// <summary>
-	/// Whether every member a tankbuster is now being cast at stands under Hallowed Ground or
-	/// Superbolide past the hit. False when no target is known, and whenever a tankbuster marker
-	/// stands: a marker states no landing time, so whether the invulnerability outlasts it is unknown.
-	/// </summary>
-	private static bool TankbusterTargetsAllImpervious()
-	{
-		if (DataCenter.IsCastingTankVfx())
-		{
-			return false;
-		}
-
-		var any = false;
-		foreach (var hostile in DataCenter.AllHostileTargets)
-		{
-			if (hostile == null || !hostile.IsCasting || !DataCenter.IsHostileCastingTank(hostile))
-			{
-				continue;
-			}
-
-			// One GCD on top of the cast for the hit to arrive, as everywhere a cast's hit is timed.
-			var hitIn = hostile.TotalCastTime - hostile.CurrentCastTime + DataCenter.DefaultGCDTotal;
-			if (Svc.Objects.SearchById(hostile.CastTargetObjectId) is not IBattleChara target
-				|| !target.ImperviousThrough(hitIn))
-			{
-				return false;
-			}
-
-			any = true;
-		}
-
-		return any;
-	}
-
 	private static bool NonHealerHealLogic()
 	{
 		if (Service.Config.OnlyHealAsNonHealIfNoHealers && DataCenter.Role != JobRole.Healer && DataCenter.AnyLivingHealer(false))
@@ -410,57 +376,6 @@ internal static class StateUpdater
 			return false;
 		}
 		return true;
-	}
-
-	// Owner's rule, second stage: "die aktuelle hp liegt unter dem schadenswert. dann wäre aber eine
-	// heilung sinnvoll bis max maxhp."
-	//
-	// Every threshold below reads the health a member HAS. None of them reads the health he will
-	// have once the cast already on screen lands, so the hit counts for nothing until it has landed:
-	// a member at 55% in front of a 45% raidwide is left at ten percent before any threshold sees it.
-	// The size of that cast is measured (concept 13) and decides whether to MITIGATE; this is the
-	// other half of the same figure.
-	//
-	// Asked where the hit would leave somebody in danger (DataCenter.AnnouncedHitCallsForHealFirst),
-	// not where it would cross a heal threshold: that question fired on a full party before every
-	// raidwide big enough, and a heal landing on full health heals nobody (A292). Where nothing is
-	// announced or its size has not been measured, the answer is false and the flags behave exactly
-	// as before.
-	private static bool AnnouncedAreaCastIsUpForHealing()
-	{
-		if (!Service.Config.HealAheadOfAnnouncedHit)
-		{
-			return false;
-		}
-
-		// Asked here rather than read from whatever ran before: walking the casting enemies is what
-		// establishes the size in the first place. Reading the recorded share on its own would make
-		// this rule depend on the defensive branch having run earlier in the same frame - and that
-		// branch is itself behind UseAoeDefense, so with area defence switched off the size would
-		// never be established and this rule would silently never fire.
-		//
-		// Asked of the UNRATED recognitions, not of IsHostileCastingAOE. That one has the mitigation
-		// verdict built into it - a cast leaving everybody above HealthAreaSpell is dropped - and
-		// this rule makes its own judgement of the hit; it must not inherit the mitigation's
-		// threshold and the setting behind it (CLAUDE.md, "Erkennung und Entscheidung trennen").
-		//
-		// Both are asked because they see different casts: the first drops anything interruptible,
-		// the second takes those back up when their measured share is large. Healing comes before
-		// mitigation, so it must not see less than the defence does.
-		return DataCenter.IsHostileCastingAreaUnrated || DataCenter.IsHostileCastingLargeArea;
-	}
-
-	// The announced action the last "heal ahead" trace line was written for; 0 once the rule stops firing.
-	private static uint _healAheadTraced;
-
-	// Figures only healing defeats (concept 07, A516): a reason to heal of their own, apart from the party's health and
-	// from the settings that let a non-healer heal the party - a healer whenever one stands, anyone else when the option
-	// and the deadline call for it (HealToDefeat.CallsForPlayer). "Auto heal" switches it off as it does every heal.
-	private static AutoStatus StatusFromHealToDefeat()
-	{
-		return Service.Config.AutoHeal && HealToDefeat.CallsForPlayer
-			? AutoStatus.HealSingleAbility | AutoStatus.HealSingleSpell
-			: AutoStatus.None;
 	}
 
 	private static AutoStatus StatusFromHealing()
@@ -619,8 +534,6 @@ internal static class StateUpdater
 		_antiKnockbackWhy = why;
 		return why != null;
 	}
-
-	private static string? _antiKnockbackWhy;
 
 	// The way that calls for the anti-knockback actions now, in words; null for none.
 	private static string? AntiKnockbackReason()
@@ -781,16 +694,6 @@ internal static class StateUpdater
 		return h < threshold;
 	}
 
-	/// <summary>
-	/// Whether <paramref name="member"/> calls for a single-target heal spell, by the decision that sets
-	/// <see cref="AutoStatus.HealSingleSpell"/> for him - for a reader that weighs one cast against its target.
-	/// </summary>
-	internal static bool NeedsSingleHealSpell(IBattleChara member)
-	{
-		return ShouldHealSingle(member, Service.Config.HealthSingleSpell,
-			Service.Config.HealthSingleSpellHot, false);
-	}
-
 	// restorable: counted for the area heal, with the deficit healing can close on him (concept 07, A544); a single heal
 	// counts his true deficit.
 	private static bool ShouldHealSingle(IBattleChara target, float healSingle, float healSingleHot, bool instant,
@@ -880,7 +783,6 @@ internal static class StateUpdater
 			SpecialCommandType.Intercepting => AutoStatus.Intercepting,
 			_ => AutoStatus.None,
 		};
-
 
 		if (!status.HasFlag(AutoStatus.Burst) && Service.Config.AutoBurst)
 		{

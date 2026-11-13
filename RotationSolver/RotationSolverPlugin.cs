@@ -24,7 +24,7 @@ using Player = ECommons.GameHelpers.Player;
 
 namespace RotationSolver;
 
-public sealed class RotationSolverPlugin : IAsyncDalamudPlugin
+public sealed partial class RotationSolverPlugin : IAsyncDalamudPlugin
 {
 	private readonly WindowSystem windowSystem;
 
@@ -34,14 +34,7 @@ public sealed class RotationSolverPlugin : IAsyncDalamudPlugin
 	private static InterceptedActionWindow? _interceptedActionWindow;
 	private static ActionTimelineWindow? _actionTimelineWindow;
 	private static OverlayWindow? _overlayWindow;
-	private static DiagnosticsWindow? _diagnosticsWindow;
 	private static StateControlWindow? _stateControlWindow;
-	private static CrucibleTeamWindow? _crucibleTeamWindow;
-	private static CrucibleShopWindow? _crucibleShopWindow;
-	private static CrucibleCampWindow? _crucibleCampWindow;
-	private static CrucibleRouteWindow? _crucibleRouteWindow;
-	private static CarnivaleSetWindow? _carnivaleSetWindow;
-	private static CrucibleTreasureWindow? _crucibleTreasureWindow;
 	private static EasterEggWindow? _easterEggWindow;
 	private static FirstStartTutorialWindow? _firstStartTutorialWindow;
 	private static UpdateNotesWindow? _updateNotesWindow;

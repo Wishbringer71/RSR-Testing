@@ -209,6 +209,11 @@ Basisklassen; eine gewanderte Eigenschaft ändert sie nicht. In `fork_placement.
 *Prüfmittel:* Der Matrix-Generator las nur die Hauptdatei und hätte beim Beschwörer Addle als ungenutzt geführt;
 `check_marker_lists`, `check_set_lookups`, `check_heal_target_order` und `scan13` hätten still weniger geprüft. Alle
 lesen eine Klasse jetzt samt Teildateien (`classfile.read`, Selbsttest), und die Regel steht in `pruefmittel.md`.
+*Dritte Runde (A749):* 15 weitere Klassen (darunter `StateUpdater`, `TimeToKillTracker`, `CancelCastUpdater`,
+`HpPotionItem`, `BaseItem`, `RotationSolverPlugin` und die Basisklassen von Maschinist, Weißmagier und Tänzer), 857
+Zeilen; `fork_placement.json` 390 → 314. Eine Datei, die mit einer Bytefolge (BOM) vor `namespace` beginnt, gab dem
+Werkzeug keinen Namensraum mit – die Teildatei lag im globalen Namensraum, und der Build schlug an; das Werkzeug liest die
+Zeile jetzt auch hinter einer BOM, und jede Teildatei trägt ihren Namensraum.
 
 ### Speicher
 

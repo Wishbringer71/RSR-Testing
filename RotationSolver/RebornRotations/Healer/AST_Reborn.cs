@@ -5,7 +5,7 @@ namespace RotationSolver.RebornRotations.Healer;
 [Rotation("Reborn", CombatType.PvE, GameVersion = "7.57", RotationType = RotationType.Reborn)]
 [SourceCode(Path = "main/RebornRotations/Healer/AST_Reborn.cs")]
 
-public sealed class AST_Reborn : AstrologianRotation
+public sealed partial class AST_Reborn : AstrologianRotation
 {
 	#region Config Options
 	[RotationConfig(CombatType.PvE, Name = "Limit Macrocosmos to multihit party stacks")]
@@ -27,12 +27,6 @@ public sealed class AST_Reborn : AstrologianRotation
 
 	[RotationConfig(CombatType.PvE, Name = "Enable Swiftcast Restriction Logic to attempt to prevent actions other than Raise when you have swiftcast")]
 	public bool SwiftLogic { get; set; } = true;
-
-	/// <summary>A raise is pending with Swiftcast up for it, so no GCD method spends the cast - only while the raise takes
-	/// the running Swiftcast; otherwise the next spell spends it, and it does not run out unused (A504).</summary>
-	private bool SwiftRaisePending =>
-		(HasSwift || IsLastAction(ActionID.SwiftcastPvE)) && SwiftLogic && MergedStatus.HasFlag(AutoStatus.Raise)
-		&& RunningSwiftGoesToRaise;
 
 	[RotationConfig(CombatType.PvE, Name = "Use both stacks of Lightspeed while moving")]
 	public bool LightspeedMove { get; set; } = true;
@@ -532,20 +526,6 @@ public sealed class AST_Reborn : AstrologianRotation
 	#endregion
 
 	#region GCD Logic
-	/// <summary>
-	/// Proactive wall-to-wall sustain: keep Aspected Benefic up on the tank as they commit to a pull.
-	/// Called from GeneralGCD, HealSingleGCD and HealAreaGCD alike - the outer dispatch reaches the two
-	/// heal methods first, so a raised heal-need flag would otherwise starve the check in GeneralGCD
-	/// for a whole pull. Never fires at or below <see cref="AspectedBeneficHeal"/>, leaving a genuine
-	/// emergency to Benefic II / Benefic. The rule itself is the healers' shared one, TryPullUpkeepOnTank.
-	/// </summary>
-	private bool TrySustainAspectedBeneficOnTank(out IAction? act)
-	{
-		act = null;
-		return UsePreAspectedBenefic
-			&& TryPullUpkeepOnTank(AspectedBeneficPvE, PreAspectedBeneficMinHostiles, PreAspectedBeneficMinWallToWallHostiles,
-				AspectedBeneficHeal, AscendPvE, null, out act);
-	}
 
 	protected override bool DefenseSingleGCD(out IAction? act)
 	{
@@ -772,7 +752,5 @@ public sealed class AST_Reborn : AstrologianRotation
 	#endregion
 
 	#region Extra Methods
-	public override bool CanHealSingleSpell => base.CanHealSingleSpell && GcdHealsAllowed(GCDHeal);
-	public override bool CanHealAreaSpell => base.CanHealAreaSpell && GcdHealsAllowed(GCDHeal);
 	#endregion
 }

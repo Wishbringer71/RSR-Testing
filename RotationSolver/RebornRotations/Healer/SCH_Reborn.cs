@@ -5,7 +5,7 @@ namespace RotationSolver.RebornRotations.Healer;
 [Rotation("Reborn", CombatType.PvE, GameVersion = "7.57", RotationType = RotationType.Reborn)]
 [SourceCode(Path = "main/RebornRotations/Healer/SCH_Reborn.cs")]
 
-public sealed class SCH_Reborn : ScholarRotation
+public sealed partial class SCH_Reborn : ScholarRotation
 {
 	#region Config Options
 	[RotationConfig(CombatType.PvE, Name = "Limit Seraphism to multihit party stacks")]
@@ -88,12 +88,6 @@ public sealed class SCH_Reborn : ScholarRotation
 
 	[RotationConfig(CombatType.PvE, Name = "Enable Swiftcast restriction: only allow Raise while Swiftcast is active")]
 	public bool SwiftLogic { get; set; } = true;
-
-	/// <summary>A raise is pending with Swiftcast up for it, so no GCD method spends the cast - only while the raise takes
-	/// the running Swiftcast; otherwise the next spell spends it, and it does not run out unused (A504).</summary>
-	private bool SwiftRaisePending =>
-		(HasSwift || IsLastAction(ActionID.SwiftcastPvE)) && SwiftLogic && MergedStatus.HasFlag(AutoStatus.Raise)
-		&& RunningSwiftGoesToRaise;
 
 	[RotationConfig(CombatType.PvE, Name = "Use GCDs to heal. (Ignored if you are the only healer in party, or while a party member is about to fall)",
 		Tooltip = "Off: while another healer is alive your GCD heals are left to them and you deal damage instead, with "
@@ -525,19 +519,6 @@ public sealed class SCH_Reborn : ScholarRotation
 		return base.SpeedAbility(nextGCD, out act);
 	}
 
-	protected override bool GeneralAbility(IAction nextGCD, out IAction? act)
-	{
-		// Into a learned series also outside the area-defence flag: most series are instant attacks without a cast
-		// (concept 08, A468). The alternation with Summon Seraph stays as in the area-defence path.
-		if (MultiHitRestrict && SeraphismOnSeries && HitSeriesHitsLeft > 0
-			&& (SummonSeraphPvE.Cooldown.IsCoolingDown || CurrentMp <= EmergencyHealingMPThreshold) && SeraphismPvE.CanUse(out act))
-		{
-			return true;
-		}
-
-		return base.GeneralAbility(nextGCD, out act);
-	}
-
 	[RotationDesc(ActionID.ChainStratagemPvE, ActionID.EnergyDrainPvE, ActionID.BanefulImpactionPvE, ActionID.AetherflowPvE, ActionID.DissipationPvE)]
 	protected override bool AttackAbility(IAction nextGCD, out IAction? act)
 	{
@@ -879,12 +860,6 @@ public sealed class SCH_Reborn : ScholarRotation
 		return base.GeneralGCD(out act);
 	}
 
-	// The ballpark estimate stands in only while no time to kill is measured for the target; a measured one the targeting
-	// already weighs against the action's own time to kill (A387).
-	private static bool BallparkAllows(IBattleChara? target, float expectedHp)
-	{
-		return target != null && (IsTimeToKillMeasured(target) || target.CurrentHp >= expectedHp);
-	}
 	#endregion
 
 	#region Extra Methods
@@ -985,7 +960,5 @@ public sealed class SCH_Reborn : ScholarRotation
 		return targets;
 	}
 
-	public override bool CanHealSingleSpell => base.CanHealSingleSpell && GcdHealsAllowed(GCDHeal);
-	public override bool CanHealAreaSpell => base.CanHealAreaSpell && GcdHealsAllowed(GCDHeal);
 	#endregion
 }

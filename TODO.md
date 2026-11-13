@@ -92,8 +92,8 @@ den Spieldaten (`CastType`, `EffectRange`), hinter eigener Option. *Konzept:* 13
 `samurai_balance_model.py` und `monk_balance_model.py` weiter die alte Regel, und Konzept 14 nennt ihre Ergebnisse. *Auflösung:* jede solche Änderung trägt im selben Commit die Anpassung des Modells. *Konzept:* 14.
 
 ### Fork-Member in Dateien von Upstream · U
-390 Member (`fork_placement.json`; 563 bei A742, zwölf Dateien in A746 zerlegt), vor allem statische Felder mit Startwert
-und Einstellungen, die stehen bleiben müssen, dazu kleinere Dateien. *Kosten:* Ein Sync, der neben ihnen ändert, kann einen
+314 Member (`fork_placement.json`; 563 bei A742, 390 nach A746, 314 nach A749), vor allem statische Felder mit Startwert
+und Einstellungen, die stehen bleiben müssen, dazu Structs, Interfaces und kleinere Dateien. *Kosten:* Ein Sync, der neben ihnen ändert, kann einen
 Konflikt bringen. *Auflösung:* Ein Member zieht beim nächsten Eingriff in ihn in die Teildatei seiner Klasse
 (`code.md`, „Struktur und Kosten"); neue lässt `check_fork_placement.py` nicht zu. *Konzept:* 24.
 

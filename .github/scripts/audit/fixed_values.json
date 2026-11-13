@@ -977,7 +977,7 @@
    "reason": "Upstream's charge check (both charges within a GCD), unchanged; the fork only added the pack guard in front (A471)."
   },
   {
-   "file": "RotationSolver/RebornRotations/Tank/GNB_Reborn.cs",
+   "file": "RotationSolver/RebornRotations/Tank/GNB_Reborn.Universal.cs",
    "code": "if (pack < 3)",
    "values": [
     "3"
@@ -987,7 +987,7 @@
    "reason": "Reference rule: The Balance, Gunbreaker Basic Guide (31.10.2026), Sonic Break at 3 targets only for half its duration, below that always (A471)."
   },
   {
-   "file": "RotationSolver/RebornRotations/Tank/GNB_Reborn.cs",
+   "file": "RotationSolver/RebornRotations/Tank/GNB_Reborn.Universal.cs",
    "code": "if (pack > 5)",
    "values": [
     "5"
@@ -997,7 +997,7 @@
    "reason": "Reference rule: The Balance, Gunbreaker Basic Guide (31.10.2026), 'Use Sonic Break on up to 5 targets' (A471)."
   },
   {
-   "file": "RotationSolver/RebornRotations/Tank/GNB_Reborn.cs",
+   "file": "RotationSolver/RebornRotations/Tank/GNB_Reborn.Universal.cs",
    "code": "return ttk >= (pack == 3 ? duration / 2f : duration);",
    "values": [
     "3",

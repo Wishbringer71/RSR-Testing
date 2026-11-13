@@ -21752,6 +21752,27 @@ Programmieren mit C# 14", Rev. 261110, CC BY-NC-SA 4.0).
   entladbaren Plugins sagt es nichts.
 - *Prüfgrad:* Analyzer, Quelltext von Dalamud, Microsoft Learn, Lehrbuch; im Spiel nicht beobachtet.
 
+### A749 · TODO: dritte Runde Teildateien (13.11.2026)
+
+Sein Auftrag (13.11.2026): „todo weitermachen im vollen loop". Defekte und offene Arbeit leer, Warte-Einträge an seinen
+Läufen; offen nur die Schuld „Fork-Member in Dateien von Upstream" (390).
+
+- *Gebaut:* 17 Klassen mit mindestens fünf gelisteten Membern und einem Typ je Datei geprüft; ausgelassen der
+  IPC-Abonnent von BossModReborn (ECommons verdrahtet seine Felder per Reflection), Structs und Interfaces
+  (`ActionTargetInfo`, `ActionBasicInfo`, `IBaseAction`) und die schon zerlegten Klassen, deren Rest stehen bleiben muss.
+  Bei `PhantomDefault` und `PCT_Reborn` wanderte nichts; zurückgestellt, damit Upstreams Datei unberührt bleibt. 15
+  Klassen, 857 Zeilen, zwei Kleinstteile zusammengeführt. `fork_placement.json` 390 → 314, drei Einträge von
+  `fixed_values.json` umgetragen.
+- *Defekt im Werkzeug, vom Build gefangen:* `RDM_Reborn.cs` und `VPR_Reborn.cs` beginnen mit einer BOM vor `namespace`;
+  das Werkzeug nahm die Zeile nicht mit, die Teildateien lagen im globalen Namensraum (CS0103 auf `GCDHeal`,
+  `SwiftcastDamage`, `FollowUpHoldRule`). Namensraum nachgetragen, das Werkzeug liest die Zeile hinter einer BOM; alle
+  Teildateien der drei Runden tragen ihren Namensraum (geprüft).
+- *Konzept 08:* `check_doc_references` meldete `WhiteMageRotation.cs:380` für `ModifyDiaPvE`; die Aussage der Stelle
+  (Statusschutz, Potenzen für den DoT-Planer, `IsRestrictedDOT`) stimmt mit dem Code überein, die Zeilenangabe ist auf
+  334–353 nachgezogen.
+- *Nachweis:* jede Codezeile genau einmal da (15 Klassen, 0 Abweichungen), Compile ohne Warnung, alle Prüfskripte.
+- *Prüfgrad:* mechanisch, Compile, Prüfskripte; im Kampf ohne Wirkung, so gewollt.
+
 ## B · Commit-Register (Fork vs. `upstream/main`)
 
 ### B1 · Einzelgeprüfte Fork-Commits

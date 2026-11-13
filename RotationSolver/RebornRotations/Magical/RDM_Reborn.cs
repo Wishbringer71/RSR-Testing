@@ -3,7 +3,7 @@
 [Rotation("Reborn", CombatType.PvE, GameVersion = "7.57", RotationType = RotationType.Reborn)]
 [SourceCode(Path = "main/RebornRotations/Magical/RDM_Reborn.cs")]
 
-public sealed class RDM_Reborn : RedMageRotation
+public sealed partial class RDM_Reborn : RedMageRotation
 {
 	#region Config Options
 	[RotationConfig(CombatType.PvE, Name = "Use GCDs to heal. (Ignored if there are no healers alive in party, or while a party member is about to fall)",
@@ -38,9 +38,6 @@ public sealed class RDM_Reborn : RedMageRotation
 			+ "little more damage of your own, and Verraise comes with Dualcast: at once or one GCD later standing, not "
 			+ "while you keep moving.")]
 	public bool SwiftcastDamage { get; set; } = false;
-
-	/// <inheritdoc/>
-	protected override bool SwiftcastForDamage => SwiftcastDamage || base.SwiftcastForDamage;
 
 	[RotationConfig(CombatType.PvE, Name = "Use Vercure for Dualcast when out of combat.")]
 	public bool UseVercure { get; set; } = false;
@@ -118,23 +115,6 @@ public sealed class RDM_Reborn : RedMageRotation
 		}
 
 		return base.DefenseAreaAbility(nextGCD, out act);
-	}
-
-	[RotationDesc(ActionID.AddlePvE)]
-	protected override bool DefenseSingleAbility(IAction nextGCD, out IAction? act)
-	{
-		if (ShouldSustainMitigationDebuff(StatusID.Addle)
-			&& AddlePvE.CanUse(out act, skipStatusProvideCheck: true))
-		{
-			return true;
-		}
-
-		if (AddlePvE.CanUse(out act))
-		{
-			return true;
-		}
-
-		return base.DefenseSingleAbility(nextGCD, out act);
 	}
 
 	protected override bool EmergencyAbility(IAction nextGCD, out IAction? act)
@@ -720,5 +700,4 @@ public sealed class RDM_Reborn : RedMageRotation
 	}
 	#endregion
 
-	public override bool CanHealSingleSpell => base.CanHealSingleSpell && GcdHealsAllowed(GCDHeal);
 }
