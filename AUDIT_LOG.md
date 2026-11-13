@@ -22398,6 +22398,25 @@ Einordnung: Hinweis auf eine Mechanik; geprüft gegen A770.
   zugleich“.
 - *Prüfgrad:* statisch am Code und am Mitschnitt; im Spiel nicht beobachtet.
 
+### A772 · Sein Hinweis: Beatrice aus Troia; Blicke ohne Kennzeichen aus BossModReborns Modulen, umgekehrte Blicke (13.11.2026)
+
+Sein Hinweis (13.11.2026): „Einen ähnlichen Effekt hatte beatrice aus Troja“. Einordnung: Hinweis auf eine Mechanik;
+geprüft gegen A770.
+- *Befund (Defekt in A770):* „Tödliche Vorsehung“ (#29821, #29828; danach Verhängnis #3364, mit Esuna lösbar) trägt
+  nicht das Blick-Kennzeichen 25, sondern die Wirk-Effekte 295 und 319. Ihr Name steht bei keiner Aktion mit dem
+  Kennzeichen. A770 erkannte diesen Blick nicht. Das Blatt markiert Blicke nicht einheitlich.
+- *Gebaut:* `gaze_actions.py` liest aus BossModReborn 8ad17f97f (BSD-3) die Ids der `CastGaze`- und
+  `CastGazes`-Aufrufe und ob sie umgekehrt sind, nach `GazeActions.g.cs`. Das sind 78 Blicke, 22 davon ohne
+  Kennzeichen, 14 auch ohne gleichnamige gekennzeichnete Aktion, und 3 umgekehrte. Die CI prüft den Selbsttest und
+  jede Id gegen das Aktionsblatt. `GazeWatch` nimmt Kennzeichen, Liste und Namen beider. Ein umgekehrter Blick sperrt
+  jedes Ziel außerhalb von 45° um den Wirkenden. Die Liste der umgekehrten Blicke gilt vor dem Kennzeichen, denn
+  #27369 „Avert Your Eyes“ trägt die 25. Ihre Namen fallen aus der Namensregel, weil „Cat's Eye“ auch ein normaler
+  Blick ist.
+- *Grenze:* Blicke, die ein Modul selbst baut (`GenericGaze`, 24 Stellen), nennen keine Id im Aufruf und fehlen. Für sie
+  gelten nur Kennzeichen und Name.
+- *Prüfgrad:* Compile; Generator-Selbsttest und `--check` gegen das Blatt; alle CI-Schritte lokal. Im Spiel nicht
+  beobachtet.
+
 ## B · Commit-Register (Fork vs. `upstream/main`)
 
 ### B1 · Einzelgeprüfte Fork-Commits

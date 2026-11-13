@@ -226,8 +226,9 @@ dem man nicht hinsehen darf).
 **Nicht in einen Blick drehen** (A770, alle Jobs). Solange ein Gegner einen Blick wirkt, der den Spieler erreicht, wählt
 eine Aktion, die zum Ziel dreht (`NeedToFaceTarget`, Reichweite über 0), kein Ziel, zu dem sich der Spieler in den Blick
 drehen müsste.
-- *Was ein Blick ist:* eine Aktion mit dem Blick-Kennzeichen des Blatts (`VFX` 25, wie BossMod) oder eine gegnerische
-  Aktion mit demselben Namen wie eine solche. Am Blatt gemessen (xivapi v2, 13.11.2026): 230 Aktionen tragen das
+- *Was ein Blick ist:* eine Aktion mit dem Blick-Kennzeichen des Blatts (`VFX` 25, wie BossMod), eine Aktion, die
+  BossModReborns Kampfmodule als Blick führen (A772, unten), oder eine gegnerische Aktion mit demselben Namen wie eine
+  dieser beiden. Am Blatt gemessen (xivapi v2, 13.11.2026): 230 Aktionen tragen das
   Kennzeichen, keine davon eine Spieleraktion. 77 gegnerische Wirken heißen gleich und tragen es nicht, darunter die
   Helferfassungen von „Mortal Gaze“, „Hex Eye“, „Petrifaction“ und „Evil Eye“. Die Namen liest RSR einmal im
   Hintergrund; bis dahin zählt das Kennzeichen.
@@ -250,6 +251,21 @@ drehen müsste.
     je 90°. Steht der Spieler westlich der Mitte, liegt der Taurus im Osten und bleibt bis zum Ende beider Wellen
     gesperrt. Sperren die Blicke jede Richtung, drückt RSR keine Aktion, die dreht.
   - BossModReborn führt #48153 im Modul (`TaurusPiece`, `CastGaze`, höchstens zwei).
+- *Blicke ohne Kennzeichen, aus BossModReborns Modulen* (A772; sein Hinweis, 13.11.2026: „Einen ähnlichen Effekt hatte
+  beatrice aus Troja“).
+  - Beatrice (Fell Court of Troia) wirkt „Tödliche Vorsehung“ über Helfer: #29821 (5 s, ein Blick) und #29828 (8 s,
+    zwei zugleich). Danach folgt Verhängnis #3364; Esuna wirkt hier (`CanDispel` true).
+  - Beide tragen nicht das Kennzeichen 25, sondern die Wirk-Effekte 295 und 319 (`z5d1_magannoganko`, nur dieser Kampf).
+    Das Blatt markiert Blicke also nicht einheitlich. Das Kennzeichen und der Name hätten beide übersehen.
+  - BossModReborn führt Blicke je Kampf in seinen Modulen (`Components.CastGaze`, `CastGazes`; 80 Stellen in
+    8ad17f97f, BSD-3, Werkzeugquelle). `gaze_actions.py` liest daraus nur die Ids und ob der Blick umgekehrt ist
+    (`inverted`). Es schreibt sie nach `GazeActions.g.cs` und prüft sie in der CI gegen das Aktionsblatt. Eigene
+    Blickformen eines Moduls (`GenericGaze`, 24 Stellen) bleiben außen vor; ihre Ids stehen nicht im Aufruf.
+  - *Umgekehrter Blick:* Dort trifft, wer wegsieht. Für diese Ids gilt die Regel umgekehrt. Eine Aktion, die dreht,
+    nimmt kein Ziel außerhalb von 45° um die Richtung des Wirkenden. Die gleichnamige Erweiterung gilt nicht für
+    umgekehrte Blicke, weil ein Name dort zwei Bedeutungen haben kann.
+  - *Gegenthese (veraltet):* Ein neuer Kampf kommt erst mit dem nächsten Lauf des Generators. Bis dahin gelten das
+    Kennzeichen und der Name.
 - *Optionen:* (0) nichts. (1) Upstreams Liste „Gaze/Stop“ füllen: eine Id je Kampf, und sie sperrt nur Zauber.
   (2) BossModReborn fragen: Seine verbotenen Richtungen gibt es nicht heraus (A575), und #3499 kennt es nicht. (3) Die
   Regel oben. *Gewählt:* (3). Sie deckt jeden Kampf aus dem Blatt, auch ohne BossModReborn, und mit ihm wirkt sie in

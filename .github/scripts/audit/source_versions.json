@@ -41,7 +41,7 @@
    "repo": "FFXIV-CombatReborn/BossmodReborn",
    "commit": "8ad17f97f",
    "date": "2026-11-13",
-   "use": "Crucible-Module, Mechaniken, Vertrag mit RSR (Konzept 21, Code.md)"
+   "use": "Crucible-Module, Mechaniken, Vertrag mit RSR (Konzept 21, Code.md), Blickliste GazeActions.g.cs (Konzept 13)"
   },
   {
    "repo": "getsetmind/dalamudmcp",
