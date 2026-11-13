@@ -1,6 +1,6 @@
 # RPR — Abhängigkeitsmatrix
 
-Erzeugt von `.github/scripts/audit/generate_action_matrix.py` am 2026-11-06; nicht von Hand bearbeiten. Methode und Grenzen: `docs/rotation-flow/14-action-dependency-matrix.md`.
+Erzeugt von `.github/scripts/audit/generate_action_matrix.py` am 2026-11-13; nicht von Hand bearbeiten. Methode und Grenzen: `docs/rotation-flow/14-action-dependency-matrix.md`.
 
 - Basisrotation: `ReaperRotation`
 - Rotation: `RotationSolver/RebornRotations/Melee/RPR_Reborn.cs`
@@ -133,8 +133,10 @@ direkt: 42 · über andere Aktion: 3
 | Aktion | Beziehung | zu |
 |---|---|---|
 | Blood Stalk | Regel prüft | Gluttony |
+| Enshroud | Regel prüft | Communio |
 | Enshroud | Regel prüft | Feint |
 | Enshroud | Regel prüft | Gluttony |
+| Enshroud | Regel prüft | Plentiful Harvest |
 | Executioner's Gallows | Regel prüft | Blood Stalk |
 | Executioner's Gallows | Regel prüft | Gluttony |
 | Executioner's Gibbet | Regel prüft | Blood Stalk |
@@ -143,6 +145,7 @@ direkt: 42 · über andere Aktion: 3
 | Executioner's Guillotine | Regel prüft | Gluttony |
 | Feint | Regel prüft | Enshroud |
 | Feint | Regel prüft | Gluttony |
+| Gluttony | Regel prüft | Communio |
 | Gluttony | Regel prüft | Enshroud |
 | Gluttony | Regel prüft | Feint |
 | Gluttony | Regel prüft | Plentiful Harvest |
@@ -200,6 +203,7 @@ Jeder Aufruf der Aktion trägt eine eigene Bedingung; hält sie an, verfällt da
 - Harvest Moon: 1 Aufruf(e), **ohne Rückfall vor Ablauf**
 - Perfectio: 1 Aufruf(e), **ohne Rückfall vor Ablauf**
 - Plentiful Harvest: 1 Aufruf(e), **ohne Rückfall vor Ablauf**
+- Sacrificium: 1 Aufruf(e), **ohne Rückfall vor Ablauf**
 
 ### Unvollständige Beschreibungen
 
