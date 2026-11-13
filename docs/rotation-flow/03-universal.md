@@ -1463,12 +1463,18 @@ level 3"). Es geht,
 
 **Ausweichen in der Sperre (Tank, Heiler):** Für sie ist ein Raidwide oder ein Tankbuster auf sie gerade der Grund, also
 sperrt er nicht. Gesperrt wird, was sie nur durch Gehen vermeiden: ein Stapel- oder Serienmarker auf ihnen, oder ein
-Cast, dessen Form sie erreicht, der nicht auf sie zielt und kein gelisteter Flächen-Cast ist
-(`RaiseProtection.FirstDodgeableWithin`). *Preis:* Die Flächenliste trennt Raidwide und ausweichbare Fläche nicht
-(TODO „Die Aufnahme in die AoE-Liste trennt Raidwide und ausweichbare Fläche nicht"); eine gelistete Fläche, der man
-ausweichen kann, gilt hier als unausweichlich. Mit einem Modul von BossMod fängt dessen Wurfzeitgrenze sie ab; ohne Modul
-steht der Tank bis zu 4 s, der Heiler bis zu 10 s darin – dieselbe Einordnung, auf die schon die Gruppenminderungen des
-Jobs antworten, nur mit längerer Sperre.
+Cast, dessen Form sie erreicht und der nicht auf sie zielt (`RaiseProtection.FirstDodgeableWithin`). Ein gelisteter
+Flächen-Cast zählt hier nur, wenn seine gemessene Form sie erreicht und ein lebendes Mitglied draußen lässt
+(`CastCertainlyDodgeable`, dieselbe Frage wie die Sperre vor einem Zauberbeginn). Ein Raidwide erreicht alle und sperrt
+nicht. Die Flächenliste nimmt auf, was die ganze Gruppe traf; ob sich die Fläche verlassen lässt, entscheidet erst die
+Form im Moment (Konzept 13, „Raidwide oder ausweichbare Fläche“, A750).
+- *Im Kampf:* Steht der Heiler im gelisteten Kreis der Hunde in Dun Scaith und ein anderes Mitglied draußen, startet er
+  kein Limit Break und keinen langen Kanal. Ohne Modul von BossMod stand er bisher bis zu 10 s darin, der Tank bis zu 4 s.
+- *Preis:* Erreicht ein Raidwide ein lebendes Mitglied nicht, etwa einen Fernkämpfer jenseits von Reichweite 30, wartet
+  das Limit Break bis nach dem Treffer. So geht RSR schon heute mit jedem ungelisteten Cast um, der den Spieler erreicht.
+  Dasselbe gilt für einen gelisteten Stack auf einem anderen Mitglied, in dem er schon steht, solange ein Drittes noch
+  draußen ist: Das Limit Break wartet einen Stack ab, so wie heute bei einem ungelisteten Stack-Cast und einem
+  Stack-Marker auf ihm. Allein, ohne zweites Mitglied, bleibt eine gelistete Fläche unausweichlich wie bisher.
 
 **Von Hand gedrückt** (A629, seine Meldung vom 06.11.2026: Teraflare auf Shinryu Unreal startet und bricht ab, „wie ein
 Stottern"): RSR fängt ein Limit Break nicht ab (`ActionQueueManager.ShouldInterceptAction`); der Druck geht mit seinem
@@ -1613,7 +1619,8 @@ party member in danger before an announced hit." Die Entscheidung fällt je Bild
 - *Zauber:* Die Sperre hält, bis das Spiel die Antwort auf den Zauber hat (`CastInfo.ResponseSourceSequence` gleich
   `SourceSequence`, Beginn des Gleitfensters), und hält nicht, solange BossMod dich bewegt (`Movement.IsMoving`) oder dein
   Ort in Gefahr ist: BossMod legt eine Fläche darauf, oder RSR sieht einen Treffer, dem nur ein Schritt entgeht, vor dem
-  Ende des Zaubers (`RaiseProtection.FirstDodgeableWithin`). Vor einem Zauber ebenso; gehst du dann in der Gefahr,
+  Ende des Zaubers (`RaiseProtection.FirstDodgeableWithin`). RSR liest dafür jeden wirkenden Gegner, unanvisierbare
+  Helfer und ungelistete Casts eingeschlossen (`DataCenter.CastingEnemies`, Konzept 13, A750). Vor einem Zauber ebenso; gehst du dann in der Gefahr,
   beginnt RSR keinen Zauber (`ActionBasicInfo.CastStartBlockedNow`, `NeedsCasting`), stehst du, wirkt RSR.
 - *Kanäle* (alle acht angehakt ab Werk; Waffengang, Numinosum, Tanzimprovisation, Flammenwerfer, Meditieren, Phantom
   Flurry, Apokalypsis, Chelonian Gate): Die Sperre hält gegen das Nachrücken der KI. Eine weitere Aktion beendet den Kanal

@@ -105,10 +105,12 @@ internal static class RaiseProtection
 
 	/// <summary>
 	/// The first announced hit within <paramref name="remaining"/> seconds the player could only avoid by moving: a stack or hit
-	/// series marker on him, or an enemy cast whose shape reaches him, that is not aimed at him and is no listed area cast. A
-	/// raidwide or a cast at him is no such hit - no step avoids it. Null when none (concept 03, "Limit Break allein", A630).
+	/// series marker on him, or an enemy cast whose shape reaches him and that is not aimed at him. A raidwide or a cast at him
+	/// is no such hit - no step avoids it. Null when none (concept 03, "Limit Break allein", A630).
 	/// </summary>
-	/// <remarks>The area list does not tell a raidwide from an area one can leave (concept 13); a listed one counts as unavoidable.</remarks>
+	/// <remarks>The area list holds what hit the whole party, raidwides and stacks alike; whether a step leaves a listed cast is
+	/// asked of its shape now, as before a spell begins: it reaches him and leaves a living member outside
+	/// (<see cref="DataCenter.CastCertainlyDodgeable"/>; concept 13, "Raidwide oder ausweichbare Fläche", A750).</remarks>
 	internal static AnnouncedHitOnPlayer? FirstDodgeableWithin(float remaining)
 	{
 		if (DataCenter.IsAreaVfxReachingPlayer())
@@ -118,7 +120,9 @@ internal static class RaiseProtection
 
 		// The shared walk over the casters (A739, concept 24): a static condition with its values as state, no allocation.
 		return FirstCastWhere(remaining, static (h, player, left, remaining) => left <= remaining && h.CastTargetObjectId != player
-			&& !OtherConfiguration.HostileCastingArea.Contains(h.CastActionId) && DataCenter.CastReachesPlayer(h));
+			&& (OtherConfiguration.HostileCastingArea.Contains(h.CastActionId)
+				? DataCenter.CastCertainlyDodgeable(h)
+				: DataCenter.CastReachesPlayer(h)));
 	}
 
 	// Unless the prediction names whom it hits and leaves him out (A273).
@@ -138,10 +142,11 @@ internal static class RaiseProtection
 	}
 
 	// The first enemy cast `wanted` takes - given the caster, the player's id and the seconds left - named for the trace.
+	// Over every caster of the enemy side, helpers and unlisted casts included (A750).
 	private static AnnouncedHitOnPlayer? FirstCastWhere<T>(T state, Func<IBattleChara, ulong, float, T, bool> wanted)
 	{
 		var player = Player.Object;
-		var hostiles = DataCenter.AllHostileTargets;
+		var hostiles = DataCenter.CastingEnemies;
 		if (player == null || hostiles == null)
 		{
 			return null;

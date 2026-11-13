@@ -219,7 +219,9 @@ Zeile jetzt auch hinter einer BOM, und jede Teildatei trägt ihren Namensraum.
 
 `_tankbusterHelpHeld` (Fork) behält je Gegner und Aktion einen Zeitpunkt, gelesen nur innerhalb eines GCD; ältere
 Einträge räumt jetzt jeder neue. `_lastHp` (Upstream) wächst um ein Mitglied je gesehenem Mitglied, einige KB über
-eine lange Sitzung: unverändert, kein Nutzen im Kampf gegen eine Zeile Merge-Logistik.
+eine lange Sitzung: unverändert, kein Nutzen im Kampf gegen eine Zeile Merge-Logistik. Die Sammlungen der wirkenden
+Gegner (`TargetUpdater.UpdateAreaCasters`: `AreaCasters`, `AreaCastHelperIds`, `CastingEnemies`) werden je Bild geleert
+und neu gefüllt, nicht neu angelegt (A750). Ihre Leser lesen sie nur im selben Bild.
 
 ### Analyzer auf Fork-Zeilen
 

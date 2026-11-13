@@ -75,10 +75,6 @@ den Spieldaten des Gebiets.
 zwei Zustände. *Auflösung:* erst mit Laufzeitbeobachtung des Zustandsautomaten; `DTRType` und `CycleType` sind
 Ordinalvertrag. `AutodutyUpdateState` dupliziert `UpdateState` und löst sich mit. *Konzept:* 03.
 
-### Die Aufnahme in die AoE-Liste trennt Raidwide und ausweichbare Fläche nicht · N
-Die Aufnahme in die Liste bleibt grob; Bewertung und Reichweite trennen schon (Konzept 13). *Auflösung:* ein Unterscheidungsmerkmal aus
-den Spieldaten (`CastType`, `EffectRange`), hinter eigener Option. *Konzept:* 13.
-
 ### Zwei Werte des Dunkelritters hängen nicht an ihrer Strategie · N
 `BlackestNightMinHostiles` und `BlackestNightHealthRatio` erscheinen ohne `Parent`; `ParentValue` kennt nur einen Wert.
 *Auflösung:* beim Tooltip belassen, solange kein zweiter Fall auftritt. *Konzept:* 10.

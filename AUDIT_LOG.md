@@ -21773,6 +21773,51 @@ Läufen; offen nur die Schuld „Fork-Member in Dateien von Upstream" (390).
 - *Nachweis:* jede Codezeile genau einmal da (15 Klassen, 0 Abweichungen), Compile ohne Warnung, alle Prüfskripte.
 - *Prüfgrad:* mechanisch, Compile, Prüfskripte; im Kampf ohne Wirkung, so gewollt.
 
+### A750 · TODO: Raidwide oder ausweichbare Fläche; Ausweichleser lesen keine Helfer (13.11.2026)
+
+Sein Auftrag (13.11.2026): „todo, konzeptverbesserungen, audit, codereview im vollen loop". Offen war die Schuld „Die
+Aufnahme in die AoE-Liste trennt Raidwide und ausweichbare Fläche nicht“, mit der Auflösung „ein Merkmal aus den
+Spieldaten (`CastType`, `EffectRange`) hinter eigener Option“.
+
+- *Research:* Gemessen an den 63 Ids, die seine Liste bis zum Upload vom 13.11.2026 aufgenommen hatte. Spieldaten über
+  xivapi v2: `CastType`, `EffectRange`, Omen. Gegen BossModReborn 7550528 (13.11.2026, Werkzeugquelle): 58 Ids haben
+  ein Modul, ausgewertet wurden Kommentar und Komponente. Eine erste Abfrage hatte „kein Modul“ für alle gemeldet;
+  das war ein Fehler des regulären Ausdrucks. Ergebnis: Fast alle sind Gruppentreffer, nämlich Raidwides, Schaden mit
+  Abfall, Rückstöße über die Fläche, Stacks, Türme und ein Köder-Treffer. Ausweichbar sind nur #3344 („the Dragon's
+  Voice“, Kreis 30) und zwei Blicke einer FATE (#47148, #47152).
+- *Merkmal widerlegt:* Alle 18 Ids mit Omen und die kleinen Reichweiten 4 bis 8 sind Gruppentreffer. Bei 15 davon
+  belegt das Modul es, bei 3 ohne Modul ist es aus dem Omen geschlossen. Die drei ausweichbaren Ids tragen kein Omen und
+  die Art 2 wie ein Raidwide. Ein solcher Filter hätte rund 25 richtige Aufnahmen verworfen und keine falsche gefunden.
+  Die Lücke lag nicht bei der Aufnahme, sondern bei einem Leser.
+- *Befund 1:* `RaiseProtection.FirstDodgeableWithin` nahm jede gelistete Fläche als unausweichlich. Die Sperre vor dem
+  Zauberbeginn (`CertainDodgeableWithin`) fragt dagegen auch gelistete Flächen an ihrer Form. Folge: Limit Break,
+  Kanalbeginn und Bewegungsfreigabe hielten ihn in einer gelisteten, verlassbaren Fläche, ohne Modul bis zu 10 s.
+  Jetzt fragt dieser Leser bei einer gelisteten Fläche `CastCertainlyDodgeable`: Die Form erreicht ihn und lässt ein
+  lebendes Mitglied draußen.
+- *Befund 2 (Audit, dieselbe Klasse wie A303):* `FirstCastWhere` (Ausweichen, Fenster um einen Treffer),
+  `MovementLock.EarliestCertainDodgeable` und `AnnouncedPartyHitIn` gingen nur über die Gegnerliste. Die meisten Flächen
+  wirken unanvisierbare Helfer, und eine ausweichbare kommt nie in die Liste. Ohne Modul sah RSR sie deshalb in keiner
+  der Sperren. Ebenso las `StateUpdater.TankbusterTargetsAllImpervious` keine Helfer-Tankbuster. Wirkte der Boss auf
+  den Tank unter Unverwundbarkeit und ein Helfer auf den zweiten, hielt der Heiler seine Minderung zurück. Neu ist
+  `DataCenter.CastingEnemies`: jeder wirkende Gegner der Gegnerseite, gelistet oder nicht, gebaut im Durchlauf von
+  `UpdateAreaCasters`. Diese Liste lesen die Fragen nach Form und Zeit; die Abwehrflaggen bleiben bei `AreaCasters`
+  mit der Liste als Beleg. Tankbuster lesen über `AreaCasters` mit dem gemeinsamen Prädikat `IsCastingTankbuster`. Die
+  drei Sammlungen werden je Bild geleert statt neu angelegt.
+- *Optionen verworfen:* (a) Merkmal aus den Spieldaten, wie oben widerlegt. (b) Gelistete Flächen in den Sperren
+  gleich behandeln wie ungelistete (`CastReachesPlayer`): Jeder Raidwide sperrte das Limit Break. (c) Nur gelistete
+  Helfer in die Ausweichleser: Ausweichbare Flächen kommen nie in die Liste. (d) Eine gelernte Trefferquote je Id bei
+  der Aufnahme: Sie misst vergangene Positionen, die Form im Moment misst die jetzige.
+- *Falsifikation:* „Kein Defekt“ hält nicht: Konzept 03 nannte den Preis, und die Gegnerliste enthält keine Helfer
+  (`GetAllTargets`). „Option falsch“: Ein Raidwide, der ein lebendes Mitglied nicht erreicht, zählt als ausweichbar; das
+  Limit Break wartet dann bis nach dem Treffer, wie schon bei jedem ungelisteten Cast. Ein ungelisteter Raidwide eines
+  Helfers sperrt bis zu seinem ersten Treffer. Ein Verbündeter ohne Gruppenzugehörigkeit zählt mit; belegt ist kein
+  solcher Fall. „Ausgeliefert, und nichts ändert sich“: allein ohne zweites Mitglied, denn dort bleibt eine gelistete
+  Fläche unausweichlich; ebenso bei einer Form ohne Messung (Kegel ohne Winkel im Omen).
+- *Konzepte:* 13 („Raidwide oder ausweichbare Fläche“, „Was nur ein Schritt vermeidet“), 03 („Ausweichen in der
+  Sperre“, Bewegungssperre), 09 (Zurückhaltung unter Unverwundbarkeit), 15, 24 („Speicher“). TODO-Eintrag entfernt.
+- *Prüfgrad:* statisch (Leser → Sammlungen → Durchlauf), Compile. Im Spiel nicht beobachtet; jede Sperre schreibt ihren
+  Grund mit Aktion und Caster ins Protokoll („… lands in … s“, Freigabezeilen der Bewegungssperre).
+
 ## B · Commit-Register (Fork vs. `upstream/main`)
 
 ### B1 · Einzelgeprüfte Fork-Commits
@@ -22113,3 +22158,4 @@ Die offene Arbeit dazu — Reihenfolge und Abbruchbedingung der Nachprüfung —
 | C186 | A709, Konzept 21 K15 und Release-Text (Stand A709): Brett 1 „Bedarf ab Brettbeginn 93 %", „Vor dem Endkampf verlangt der Weg 36 + 40 = 76 %", Senken Kampf 5 43 %, Endkampf 36 %; Brett 2 „11/33", „Endkampf 49/76 %", „trägt er Brett 2 an keiner Stelle"; „from about 76 % HP" | Das Modell zog die eigene Heilung mit der Meldung ab statt beim Anstieg. Wie der Code misst: Brett 1 ab Start 68 %, vor dem Endkampf 12 + 40 = 52 %; Brett 2 Kampf 10 11/11, Endkampf 48/48, vor dem Endkampf 88 % – in beiden Läufen getragen (96 %) | A721 |
 | C187 | A660 und Konzept 21 K3 (Stand A660–A723): „Ziel = Gegner mit den meisten LP, auch unanvisierbar"; „Den Abstand, bei dem einer seiner Art ohne Tod verschwindet, lernt RSR beim ersten Verschwinden"; laufend = „sein Abstand zum Gegner mit den meisten LP sinkt seit seinem Erscheinen" | Das Ziel verlangte Anvisierbarkeit (während der Ward das Riesen-Irrlicht); Verschwinden ohne Tod ist auch Kampfende und Zielwechsel; dem Hauptgegner kommt jeder näher, der auf den Spieler dort zuläuft – vier Fehlauslösungen am 11.11.2026. Ersetzt: Blickziel, gehaltenes Ziel, Ankunft aus der ersten Aktion | A724 |
 | C188 | A218 und Konzept 13 (Stand A218): „BossModReborn setzt keine seiner 3494 Kreisformen um den Trefferkreis des Wirkenden größer", daraus „Kreis und Kegel um den Wirkenden: Abstand vom Mittelpunkt" | Die Klasse `AOEShapeCircle` rechnet keinen Trefferkreis ein, die Module tun es in der Zahl: BossModReborns Analyse beschreibt die Formarten 3, 4 und 5 als „range X+R" (447 Kreise, 351 Kegel), etwa Wing Cutter als Kegel von 6,9 bei Reichweite 6. Für Art 2 gilt der Mittelpunkt weiter; Art 3, 4 und 5 reichen um den Trefferkreis des Wirkenden weiter. | A731 |
+| C189 | TODO.md und Konzept 03, „Ausweichen in der Sperre“ (Stand A630–A749): Raidwide und ausweichbare Fläche trenne man durch ein Merkmal aus den Spieldaten (`CastType`, `EffectRange`) bei der Aufnahme; eine gelistete Fläche gelte in den Sperren als unausweichlich | An seinen 63 aufgenommenen Ids trennt das Merkmal falsch herum: Omen und kleine Reichweiten sind Gruppentreffer, die drei ausweichbaren tragen keins. Die Form im Moment trennt (`CastCertainlyDodgeable`); die Sperren lesen jetzt auch Helfer (A750). |

@@ -30,10 +30,23 @@ internal static partial class TargetUpdater
 	/// </remarks>
 	private static void UpdateAreaCasters()
 	{
+		// Emptied and refilled, not made anew each frame (concept 24, "Speicher"); every reader reads them within the frame.
 		var hostiles = DataCenter.AllHostileTargets;
-		List<IBattleChara> casters = new(capacity: hostiles.Count);
+		var casters = DataCenter.AreaCasters;
+		var helperIds = DataCenter.AreaCastHelperIds;
+		var casting = DataCenter.CastingEnemies;
+		casters.Clear();
+		helperIds.Clear();
+		casting.Clear();
 		casters.AddRange(hostiles);
-		HashSet<ulong> helperIds = [];
+		for (var i = 0; i < hostiles.Count; i++)
+		{
+			if (hostiles[i] is { IsCasting: true } hostile)
+			{
+				casting.Add(hostile);
+			}
+		}
+
 		var longestHelperCast = 0f;
 
 		foreach (var obj in Svc.Objects)
@@ -48,17 +61,23 @@ internal static partial class TargetUpdater
 			// "No hostile names" - is no target, but its listed cast hits the party all the same (concept 13, A566).
 			if (caster.IsTargetable)
 			{
-				if (caster.IsEnemy() && !hostiles.Contains(caster) && DataCenter.IsListedHostileCast(caster.CastActionId))
+				if (caster.IsEnemy() && !hostiles.Contains(caster))
 				{
-					casters.Add(caster);
+					casting.Add(caster);
+					if (DataCenter.IsListedHostileCast(caster.CastActionId))
+					{
+						casters.Add(caster);
+					}
 				}
 
 				continue;
 			}
 
 			// Every helper's cast, listed or not: the tankbuster marker watch waits for the casts that run while a
-			// marker stands, and a helper casting the hit after it is the common case, its action not yet listed.
+			// marker stands, and a helper casting the hit after it is the common case, its action not yet listed. What a
+			// step avoids is asked of its shape alone, without the list as evidence (concept 13, A750).
 			longestHelperCast = Math.Max(longestHelperCast, caster.TotalCastTime - caster.CurrentCastTime);
+			casting.Add(caster);
 
 			if (!DataCenter.IsListedHostileCast(caster.CastActionId))
 			{
@@ -71,8 +90,6 @@ internal static partial class TargetUpdater
 			}
 		}
 
-		DataCenter.AreaCastHelperIds = helperIds;
-		DataCenter.AreaCasters = casters;
 		DataCenter.LongestHelperCastRemaining = longestHelperCast;
 	}
 

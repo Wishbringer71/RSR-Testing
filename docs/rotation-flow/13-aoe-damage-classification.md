@@ -605,6 +605,40 @@ Fortschreibung bei **bekannten** Ids: `HashSet.Add` fasst eine vorhandene Id nic
 diesen Zusatz bekäme kein Alteintrag je ein Potential — die ganze hybride Form wäre für die 850
 vorhandenen Einträge wirkungslos.
 
+**Raidwide oder ausweichbare Fläche: Die Aufnahme trennt nicht, die Anwendung trennt (A750).** Aufgenommen wird, was
+die ganze Gruppe getroffen hat. Dazu gehören neben Raidwides auch Stack, Turm, Streuung, Rückstoß über die ganze Fläche
+und Schaden mit Abfall zum Rand, denn diese Treffer erreichen alle, und eine Gruppenminderung hilft dort wie beim
+Raidwide. Ob eine gelistete Fläche im laufenden Kampf jemanden erreicht und ob ein Schritt hinausführt, entscheidet
+jeder Leser erst im Moment des Drückens, an der Form und den Positionen:
+- Die Flächenflagge und der Selbstschutz prüfen die Reichweite erst im letzten GCD vor dem Treffer (`IsHostileCastingBase`,
+  `AreaCastReachesParty`, `AreaCastCanReachPlayer`). Wer bis dahin hinausgegangen ist, bekommt keine Minderung mehr.
+- Die Sperre vor einem Zauberbeginn (`CertainDodgeableWithin`) und die Sperre vor Limit Break, langem Kanal und KI-Weg
+  (`FirstDodgeableWithin`, Konzept 03, „Ausweichen in der Sperre") lassen eine gelistete Fläche als ausweichbar gelten,
+  wenn ihre gemessene Form den Spieler erreicht und ein lebendes Mitglied draußen lässt (`CastCertainlyDodgeable`). Ein
+  Raidwide erreicht alle und bleibt unausweichlich.
+
+*Gemessen an seinen 63 aufgenommenen Ids (Upload vom 13.11.2026):* BossModReborn (7550528, 13.11.2026) führt 58 davon
+in einem Modul (Werkzeugquelle, aus Mitschnitten gebaut); die Einordnung steht in dessen Kommentaren und Komponenten. Danach sind es Raidwides, Schaden mit Abfall,
+Rückstöße, Stacks (Reichweite 6 auf einem Spieler), Türme (4 und 8) und ein Köder-Treffer
+(#49966, im Blatt Kreis 40 um das Ziel). Ausweichbar sind nach den Modulen nur der Kreis „the
+Dragon's Voice" (#3344, `SimpleAOEs` 30) und zwei Blicke in einer FATE (#47148, #47152, `CastGaze`).
+
+*Verworfen, ein Merkmal aus den Spieldaten bei der Aufnahme (`CastType`, `EffectRange`, Omen):* An diesen 63 Ids
+trennt es falsch herum. 18 haben ein Omen. 15 davon sind nach ihrem Modul Gruppentreffer: Abfall-Kreise, Rückstöße
+über die Fläche, Türme. Die drei ohne Modul tragen dieselben Omen (27 wie die Abfall-Kreise, 348 wie der Rückstoß
+„Leaping Cleave“); dass auch sie Gruppentreffer sind, ist daraus geschlossen und nicht belegt. Die kleinen Reichweiten (4 bis 8) sind Stacks und Türme. Ein Filter „Omen" oder „kleine Reichweite" hätte also
+rund 25 richtige Aufnahmen verworfen, mit ihnen die Gruppenminderung vor diesen Treffern. Die drei ausweichbaren Ids
+dagegen hat er nicht erkannt: Kreis 30 ohne Omen, Blicke Kreis 30 und 50 ohne Omen, alle der Art 2 wie die
+Raidwides. Was ein Blick ist, steht in keinem Feld der Aktion; BossModReborn erkennt ihn am Modul.
+- *Im Kampf:* Vor dem Kreis der Hunde in Dun Scaith geht eine Gruppenminderung nur, wenn im letzten GCD der Spieler
+  oder zwei Mitglieder darin stehen. Steht der Heiler darin, startet er dort kein Limit Break mehr, solange ein anderes Mitglied
+  draußen steht. Vor einem Blick bleibt die Minderung: Seine Form erreicht alle. Wer hinsieht, wird getroffen, und ob
+  jemand hinsieht, weiß RSR nicht.
+- *Preis:* Ein Raidwide, dessen Form ein lebendes Mitglied nicht erreicht, etwa einen Fernkämpfer jenseits von
+  Reichweite 30, gilt in den Sperren als ausweichbar. Limit Break und langer Kanal warten dann bis nach dem Treffer, so
+  wie heute schon bei jedem ungelisteten Cast, der den Spieler erreicht. Unwahrscheinlich, denn Raidwides reichen 30 bis
+  100 Yalm und eine Arena selten über 20.
+
 ## Der Maßstab: der gemessene Anteil, mit belegter Obergrenze
 
 **Ab einem Anteil von 0,25 der Maximalgesundheit ist die Fläche groß, unabhängig vom Zustand der
@@ -762,6 +796,32 @@ beantwortet RSR damit, wie der Text von „Automatically use Anti-Knockback role
 über BossModReborn tat das für angekündigte Rückstöße von Helfern schon vorher. Ein Rückstoß, den die Mechanik
 braucht, ist durch die Liste so wenig geschützt wie bei einem anvisierbaren Gegner; die Liste ist von Hand
 bearbeitbar.
+
+**Was nur ein Schritt vermeidet, liest jeden wirkenden Gegner, gelistet oder nicht** (A750). Neben `AreaCasters` führt
+`TargetUpdater.UpdateAreaCasters` im selben Durchlauf `DataCenter.CastingEnemies`: jeden Gegner der Gegnerliste, der
+wirkt, und jede andere wirkende Figur der Gegnerseite (`IsEnemySideFigure`), anvisierbar oder nicht, ohne die Liste als
+Beleg. Darüber lesen die Fragen, die nur die Form und den Zeitpunkt eines Casts brauchen: der Treffer, dem ein Schritt
+entgeht, vor Limit Break, Kanal und KI-Weg (`RaiseProtection.FirstDodgeableWithin`) und vor einem Zauberbeginn
+(`MovementLock.CertainDodgeableWithin`), und das Fenster um einen Treffer auf ihn (`RaiseProtection.FirstWithin`,
+`FirstAfter`). Bis A750 gingen sie nur über die Gegnerliste. Die meisten Flächen eines Bosskampfs wirken aber
+Helfer, und ausweichbare kommen nie in die Liste, weil ihnen jemand ausweicht. Ohne Modul von BossMod blieben sie
+deshalb allen vier Fragen unsichtbar.
+- *Im Kampf:* Ein Heiler, der ohne Modul allein in der Kreisfläche eines Helfers steht, startet dort kein Limit Break
+  mehr. Mit „Lock movement while casting" hält RSR ihn dort nicht mehr fest. Ein Zauber, den ein Schritt aus der
+  Fläche bräche, beginnt nicht, solange er geht.
+- *Warum ohne Listenbeleg:* Hier entscheidet die Asymmetrie anders als bei der Abwehr. Ein Helfer-Cast, den RSR
+  fälschlich liest, verzögert ein Limit Break oder einen Kanal bis nach dem Treffer, oder er gibt die Bewegung frei.
+  Ein übersehener lässt den Spieler in der Fläche stehen. Die Abwehrflaggen bleiben bei `AreaCasters`: Dort kostet
+  ein Fehlgriff eine Minderung, die später fehlt.
+- *Preis:* Eine Figur der Gegnerseite ohne Gruppenzugehörigkeit, deren Cast den Spieler erreicht, aber nicht trifft,
+  etwa ein Verbündeter in einer Soloinstanz, zählt mit. Das Limit Break wartet dann bis zum Ende ihres Casts. Belegt
+  ist kein solcher Fall.
+- *Gegenthese – ein ungelisteter Raidwide eines Helfers sperrt das Limit Break:* Das gilt bis zu seinem ersten
+  Treffer. Für einen ungelisteten Cast eines anvisierbaren Bosses gilt es heute schon. Danach steht er in der Liste,
+  und die Form sagt „erreicht alle“; er sperrt nicht mehr (Abschnitt „Raidwide oder ausweichbare Fläche“).
+- *Kosten:* Der Durchlauf über die Objekttabelle läuft schon jedes Bild. Neu ist ein Eintrag je wirkender Figur. Die
+  drei Sammlungen (`AreaCasters`, `AreaCastHelperIds`, `CastingEnemies`) werden je Bild geleert und wiederverwendet;
+  bis A750 legte der Durchlauf zwei davon jedes Bild neu an (Konzept 24, „Speicher“).
 
 **Ein gelisteter Rückstoß zählt nur, wenn er den Spieler erreicht** (A701, alle Rollen: Surecast und Arm's Length,
 120 s Abklingzeit). *Sachstand bis A701:* `IsAnyHostileCastingKnockback` fragte nur, ob ein gelisteter Zauber im

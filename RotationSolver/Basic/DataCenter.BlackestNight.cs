@@ -351,14 +351,20 @@ internal static partial class DataCenter
 
 		for (var i = 0; i < casters.Count; i++)
 		{
-			var h = casters[i];
-			if (AreaCastHelperIds.Contains(h.GameObjectId) ? IsHostileCastingListedTank(h) : IsHostileCastingTank(h))
+			if (IsCastingTankbuster(casters[i]))
 			{
 				return true;
 			}
 		}
 		return false;
 	}
+
+	/// <summary>
+	/// Whether a caster of <see cref="AreaCasters"/> is casting a tankbuster: a listed one for an untargetable helper, for a
+	/// targetable enemy also one cast at its own target (A303).
+	/// </summary>
+	internal static bool IsCastingTankbuster(IBattleChara h)
+		=> AreaCastHelperIds.Contains(h.GameObjectId) ? IsHostileCastingListedTank(h) : IsHostileCastingTank(h);
 
 	/// <summary>
 	/// True if a hostile is casting a tankbuster at the player specifically, whatever their role.

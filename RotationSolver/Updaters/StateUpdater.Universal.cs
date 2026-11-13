@@ -18,10 +18,12 @@ internal static partial class StateUpdater
 			return false;
 		}
 
+		// Over the same casters as the tankbuster flag, helpers included: a helper's tankbuster at a member who is not
+		// covered must keep the mitigation (concept 09, A750).
 		var any = false;
-		foreach (var hostile in DataCenter.AllHostileTargets)
+		foreach (var hostile in DataCenter.AreaCasters)
 		{
-			if (hostile == null || !hostile.IsCasting || !DataCenter.IsHostileCastingTank(hostile))
+			if (hostile == null || !hostile.IsCasting || !DataCenter.IsCastingTankbuster(hostile))
 			{
 				continue;
 			}
