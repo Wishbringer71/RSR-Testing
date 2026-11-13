@@ -8,7 +8,7 @@ using RotationSolver.Commands;
 
 namespace RotationSolver.Updaters;
 
-internal static class ActionUpdater
+internal static partial class ActionUpdater
 {
 	internal static DateTime AutoCancelTime { get; set; } = DateTime.MinValue;
 

@@ -39,6 +39,15 @@ internal static class UpdateCost
 	// A739 (concept 24, "Der erste Pull"): the time the JIT spent compiling methods on this thread, per cycle and per fight.
 	// A method is compiled on its first call; the stalls of up to 64 ms fell into the first fight of a session or onto a new
 	// path, never with a garbage collection. This tells compiling from any other first-time cost.
+	// A744 (concept 24, "Entscheiden erst, wenn gedrückt werden kann"): the rotation step's time in cycles where the gate
+	// would not press anyway - a cast running past the lead, or the animation lock. The owner's thought (13.11.2026): the
+	// decision is computed and thrown away there; this measures how much of the step that is.
+	private const string RotationStep = "next action (rotation)";
+	private static bool _gateClosed;
+	private static int _gateClosedCycles;
+	private static double _gateClosedMs;
+	private static double _rotationMs;
+
 	private static TimeSpan _jitAtBegin;
 	private static long _jitMethodsAtBegin;
 	private static TimeSpan _jitFight;
@@ -87,6 +96,12 @@ internal static class UpdateCost
 		_phase = null;
 	}
 
+	/// <summary>
+	/// Before the rotation step: whether the gate that presses would refuse this cycle anyway (a cast running past the
+	/// lead, or the animation lock), read the way <c>ActionUpdater.CanDoAction</c> reads it.
+	/// </summary>
+	public static void NoteGateClosed(bool closed) => _gateClosed = closed;
+
 	/// <summary>Called when the same cycle ends.</summary>
 	public static void End(IFramework framework)
 	{
@@ -107,6 +122,16 @@ internal static class UpdateCost
 			var jitMethods = System.Runtime.JitInfo.GetCompiledMethodCount(currentThread: true) - _jitMethodsAtBegin;
 			_jitFight += jit;
 			_jitMethodsFight += jitMethods;
+			if (_cycle.TryGetValue(RotationStep, out var rotationMs))
+			{
+				_rotationMs += rotationMs;
+				if (_gateClosed)
+				{
+					_gateClosedCycles++;
+					_gateClosedMs += rotationMs;
+				}
+			}
+
 			_cycles++;
 			_totalMs += elapsed;
 			_frameMs += framework.UpdateDelta.TotalMilliseconds;
@@ -134,12 +159,16 @@ internal static class UpdateCost
 			var share = _frameMs > 0 ? _totalMs / _frameMs : 0;
 			DefenseTrace.Line($"update cost over the fight: {_cycles} cycles, mean {_totalMs / _cycles:F2} ms, "
 				+ $"max {_maxMs:F2} ms, {share:P1} of the frame time, party of {_party}, JIT {_jitFight.TotalMilliseconds:F1} ms for {_jitMethodsFight} method(s)");
+			DefenseTrace.Line($"rotation step while the gate would not press (cast past the lead, animation lock): {_gateClosedCycles} of"
+				+ $" {_cycles} cycles, {_gateClosedMs:F1} of {_rotationMs:F1} ms ({(_rotationMs > 0 ? _gateClosedMs / _rotationMs : 0):P0})");
 			DefenseTrace.Line($"update cost by step, mean/max ms: {Steps(_fight, s => s.Total, _cycles, s => s.Max)}; {_slowest}");
 			_cycles = 0;
 			_totalMs = _maxMs = _frameMs = 0;
 			_party = 0;
 			_jitFight = TimeSpan.Zero;
 			_jitMethodsFight = 0;
+			_gateClosedCycles = 0;
+			_gateClosedMs = _rotationMs = 0;
 			_fight.Clear();
 			_slowest = string.Empty;
 		}

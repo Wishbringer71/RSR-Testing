@@ -190,6 +190,8 @@ internal static class MajorUpdater
 		UpdateCost.Step("state");
 		Run("(RSRActivatedCore): StateUpdater.UpdateState", StateUpdater.UpdateState);
 		Run("(RSRActivatedCore): AutoAttackUpdater.Update", AutoAttackUpdater.Update);
+		// A744 (concept 24): whether the gate below would press at all this cycle, for the cost line.
+		UpdateCost.NoteGateClosed(ActionUpdater.GateClosedByCastOrLock());
 		UpdateCost.Step("next action (rotation)");
 		Run("(RSRActivatedCore): ActionUpdater.UpdateNextAction", ActionUpdater.UpdateNextAction);
 

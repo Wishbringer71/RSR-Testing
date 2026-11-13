@@ -119,6 +119,42 @@ sich einer ändert.
 umgestellt"): Ohne Messung, welcher Teil trägt, bleibt A310. Die Kostenzeile mit Übersetzungszeit trennt jetzt den
 einmaligen vom dauernden Anteil; ein dauernder Anteil über einem Frame wäre der Beleg.
 
+### Entscheiden erst, wenn gedrückt werden kann
+
+*Sein Vorschlag (13.11.2026, „nur ein gedankenspiel"):* Wenn bekannt ist, wann der nächste GCD und die nächste Fähigkeit
+gehen, genügt es, kurz davor zu entscheiden – unter Beachtung der Rechen- und Entscheidungszeit; jeden Frame zu rechnen,
+was verworfen wird, weil noch nichts gedrückt werden kann, ist Arbeit ohne Ergebnis.
+*Am Code:* `ActionUpdater.UpdateNextAction` ruft jeden Frame die ganze Entscheidung (`TryInvoke`, Schritt „next action
+(rotation)", im Mittel 0,25 ms der 0,35 ms eines Durchlaufs). Erst danach prüft `CanDoAction`, ob gedrückt werden darf:
+nicht während eines Zaubers, der länger läuft als der Vorlauf (`CalculatedActionAhead`), und nicht in der
+Animationssperre. In diesen Frames wird die Entscheidung gerechnet und verworfen. Fähigkeiten gehen in beiden Lagen
+nicht, das Spiel lässt sie nicht zu – es geht also keine Aktion verloren, wenn dort nicht entschieden wird.
+*Was gegen das Überspringen spricht:* (1) Die Anzeige der nächsten Aktion (Leiste, Fenster) stünde in diesen Frames still –
+im Kampf ohne Wirkung. (2) Regeln, die beim Entscheiden Zustand schreiben (Protokollzeilen einer Wahl, der Grund eines
+verfallenen Schlafs, Phasenbücher), sähen weniger Frames; welche das sind, ist vor einem Umbau Member für Member zu
+erheben. (3) Der Gewinn ist der Anteil dieser Frames am Rotationsschritt: bei Zauberern mit 1,5 bis 2,5 s Wirkzeit je
+2,5 s GCD vermutlich mehr als die Hälfte, bei Nahkämpfern die Animationssperre von etwa 0,6 s je Aktion – geschätzt
+0,1 bis 0,15 ms je Frame, 1 bis 2 % der Framezeit (Schluss aus Wirkzeiten, nicht gemessen). Die Ruckler am ersten Pull
+(Übersetzung) berührt es nicht.
+*Entscheidungszeit:* Der Klickverzug zählt ab dem letzten Klick, nicht ab der Entscheidung
+(`RSCommands.CanDoAnAction`), und der Rotationsschritt läuft im selben Durchlauf vor dem Schritt, der drückt. Wer erst
+im Frame entscheidet, in dem das Tor aufgeht, drückt also im selben Frame wie heute; einen Vorlauf für die Rechenzeit
+braucht es nicht, solange ein Durchlauf unter einem Frame bleibt (Median 3,8 %).
+*Die eigentliche Bedingung – Beobachten und Entscheiden getrennt:* Im Entscheidungspfad stehen 29 Zeitstempel in 16
+Dateien der Rotationen und 58 in Hilfsklassen, dazu 186 Protokollaufrufe (Zählung 13.11.2026). Ein Teil davon merkt sich,
+seit wann eine Lage besteht, etwa das Zurückhalten einer Abwehr (`CustomRotation_DefenseHold`). Würde während eines
+Zaubers nicht entschieden, begänne eine solche Frist erst nach ihm, und die Regel ließe im Kampf später los – das
+Überspringen wäre keine reine Optimierung. Voraussetzung ist deshalb, dass jede Beobachtung im Schritt läuft, der jeden
+Frame rechnet (Ziele, Zustand), und die Entscheidung nur liest – die Regel „Erkennung und Entscheidung trennen"
+(`code.md`) verlangt das ohnehin. Erst danach ist Überspringen ohne Wirkung auf den Kampf.
+*Gebaut zuerst: das Messmittel* (A744). Die Kostenzeile nennt, wie viele Durchläufe und welchen Anteil der Zeit des
+Rotationsschritts das Tor ohnehin sperrte. *Entscheidung danach:* Trägt dieser Anteil die Hälfte des Rotationsschritts
+oder mehr, folgt der Loop: zuerst die Beobachtungen aus dem Entscheidungspfad lösen, Member für Member, dann
+überspringen; bleibt er klein, lohnt der Umbau nicht, und die Trennung bleibt eine Frage der Entwurfsregel.
+*Falsifikation des Vorschlags:* Kein Gewinn? Möglich – die Zeile zeigt es. Falsche Option? Überspringen ohne die
+Trennung verschöbe Fristen; deshalb nicht gebaut. Ausgeliefert, und nichts ändert sich? Mit dem Messmittel allein so
+gewollt.
+
 ### Eine Suche, austauschbare Bedingungen
 
 `CrucibleRoute` durchlief das Brett in sechs Fassungen derselben Breitensuche, je mit eigener Fund- und

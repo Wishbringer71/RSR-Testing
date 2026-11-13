@@ -21618,6 +21618,38 @@ Hybrid sinnvoll wäre; im Loop.
   nicht.
 - *Prüfgrad:* statisch am Code und an The Balance, Compile, Prüfskripte; im Spiel nicht beobachtet.
 
+### A744 · Seine Fragen vom 13.11.2026: Quellen für andere Jobs; entscheiden erst, wenn gedrückt werden kann (13.11.2026)
+
+- *Seine Frage:* ob die Repositories, die für Crucible, Blaumagier, Kreszentia und anderes geprüft wurden, auch für
+  andere Jobs sinnvoll zu prüfen sind. *Erhebung:* 36 Quellen in `source_versions.json`. Jobübergreifend und schon für
+  alle Jobs ausgewertet: BossMods Jobmodule von xan, akechi und veyn (A619), die übrigen Rotationswerkzeuge – XIVdrg,
+  Beirutas Fork, Orbwalker, XelsCombatAI – (A606, A608, A652), WrathCombo und xivanalysis (Konzepte 15, 16),
+  Kampfauswertung (A620), Spieldaten und Bibliotheken samt Sapphire (A622), Automatisierung (A623). Inhaltsgebunden
+  sind die elf Beastmaster- und Crucible-Werkzeuge und die vier zum Blaumagier: Sie lesen Blätter und Fenster, die es
+  nur dort gibt. Was sich daraus verallgemeinern ließ, ist verallgemeinert (Tötungsregeln für alle Jobs, Gefahr je
+  Gegnerart, Stoppen eines Wirkens mit Schlaf, die Suche nach Querverweisen in Wirktexten). Jede Quelle wird bei jeder
+  Recherche und am Auftragsende auf neue Stände gemessen und ausgewertet (`check_source_updates.py`). *Ergebnis:* keine
+  Lücke; eine erneute Vollprüfung brächte nichts, was die Messung neuer Stände nicht schon bringt.
+- *Sein Vorschlag (Gedankenspiel):* erst kurz vor dem Fenster entscheiden, statt jeden Frame zu rechnen und zu
+  verwerfen. *Am Code bestätigt:* `UpdateNextAction` ruft `TryInvoke` jeden Frame; `CanDoAction` sperrt danach während
+  eines Zaubers über dem Vorlauf und in der Animationssperre. In diesen Frames geht keine Aktion verloren, wenn nicht
+  entschieden wird. *Optionen:* (0) nichts; (1) überspringen, solange das Tor sperrt; (2) zuerst messen, welchen Anteil
+  das trägt. *Abwägung:* (1) spart geschätzt 1 bis 2 % der Framezeit (Schluss aus Wirkzeiten), berührt aber Regeln, die
+  beim Entscheiden Zustand schreiben – vor einem Umbau Member für Member zu erheben – und nicht die Ruckler am ersten
+  Pull. *Gewählt:* (2): `UpdateCost.NoteGateClosed`, `ActionUpdater.GateClosedByCastOrLock` (mit den Bedingungen des
+  Tors) und eine Zeile je Kampf, „rotation step while the gate would not press". TODO, Warten auf Daten. Konzept 24.
+  *Sein Hinweis dazu:* „da es nur eine unbelegte idee war, muss besodere sorgfalt bei prüfung und konzeptionierung
+  erfolgen." Vertieft: Der Klickverzug zählt ab dem letzten Klick, eine Entscheidung im Frame, in dem das Tor aufgeht,
+  drückt im selben Frame – keine Verzögerung. Die eigentliche Bedingung: 29 Zeitstempel in 16 Rotationsdateien und 58
+  in Hilfsklassen merken sich beim Entscheiden, seit wann eine Lage besteht (etwa `CustomRotation_DefenseHold`); ohne
+  Entscheidung während eines Zaubers begänne eine Frist später, und eine Regel ließe später los. Überspringen erst,
+  wenn diese Beobachtungen im Schritt laufen, der jeden Frame rechnet (`code.md`, „Erkennung und Entscheidung
+  trennen").
+- *Falsifikation:* Kein Defekt? Arbeit ohne Ergebnis ist am Code belegt; ob sie zählt, misst die Zeile. Option falsch?
+  Die Zeile liest die Bedingungen des Tors selbst, nicht eine eigene Fassung. Ausgeliefert, und nichts ändert sich? So
+  gewollt – im Kampf ändert sich nichts, die Zeile entscheidet den nächsten Schritt.
+- *Prüfgrad:* statisch am Code, Compile, Prüfskripte.
+
 ## B · Commit-Register (Fork vs. `upstream/main`)
 
 ### B1 · Einzelgeprüfte Fork-Commits

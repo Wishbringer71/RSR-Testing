@@ -69,6 +69,8 @@ What this release changes in the fight. For the whole distance from upstream, se
 - **Reaper: Harvest Moon out of melee reach without Death's Design.** Upstream's new "Only use Harvest Moon on a target
   with Death's Design" now holds only in melee reach. Out of it Harvest Moon is the ranged GCD of a Reaper who has to
   keep away, and it no longer waits for a debuff that can only be applied in melee.
+- **The cost line names the decision work the gate throws away.** After each fight: how many cycles, and how much of the
+  rotation step's time, fell where nothing could be pressed anyway (a cast past the lead, the animation lock).
 - **A sleep that did not go out names the first reason.** "sleep not cast …" names the first reason the rule gave
   after the sleep was chosen, and the last when it differs; "the cast ended" follows every lapsed sleep and no longer
   hides the reason the GCD went elsewhere.

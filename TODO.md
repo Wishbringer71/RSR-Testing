@@ -111,6 +111,11 @@ nebeneinander braucht: neuer interner Name mit Übernahme des Ordners, angezeigt
 
 ## Warten auf Daten oder Fremde
 
+- **Entscheiden erst, wenn gedrückt werden kann** (sein Vorschlag, 13.11.2026; A744). Im Kampf: weniger Rechenzeit je
+  Frame, keine andere Aktion. Auflösung: die Zeile „rotation step while the gate would not press" seines nächsten
+  Uploads; trägt dieser Anteil die Hälfte des Rotationsschritts oder mehr, Loop: zuerst die Beobachtungen aus dem
+  Entscheidungspfad lösen (29 Zeitstempel in Rotationen, 58 in Hilfsklassen), dann überspringen. Konzept 24, „Entscheiden erst, wenn gedrückt werden kann".
+
 - **Absturz einer zweiten Installation am 11.11.2026, 21:18** (A736). Das Spiel endete als Dunkelritter in der
   Azim-Steppe 0,5 s nach Kampfbeginn, ohne die Plugins zu entladen; Build b184ee7fc (08.11.2026). Das `DefenseTrace.log`
   nennt keinen Fehler. Auflösung: das Dalamud-Protokoll dieser Minuten (und ein Bericht des Absturzbehandlers, falls
