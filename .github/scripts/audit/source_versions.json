@@ -27,8 +27,8 @@
   },
   {
    "repo": "BeirutaNa1na/RotationSolverReborn",
-   "commit": "27bf5d181",
-   "date": "2026-11-12",
+   "commit": "aa03eb9e2",
+   "date": "2026-11-13",
    "use": "Beiruta-Rotationen"
   },
   {
@@ -39,8 +39,8 @@
   },
   {
    "repo": "FFXIV-CombatReborn/BossmodReborn",
-   "commit": "2087153c2",
-   "date": "2026-11-12",
+   "commit": "75505283e",
+   "date": "2026-11-13",
    "use": "Crucible-Module, Mechaniken, Vertrag mit RSR (Konzept 21, Code.md)"
   },
   {

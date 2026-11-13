@@ -21707,6 +21707,18 @@ hängen an seinen Läufen.
   Start bleibt. Ausgeliefert, und nichts ändert sich? Im Kampf so gewollt.
 - *Prüfgrad:* verlustfreie Verschiebung mechanisch nachgewiesen, Compile, alle Prüfskripte, Matrix unverändert.
 
+### A747 · Auftragsende 13.11.2026 nach dem Release: Upstream und zwei Quellen (13.11.2026)
+
+- *Upstream:* 0 ausstehende Commits gegen `upstream/main`.
+- *BeirutaNa1na/RotationSolverReborn* 27bf5d181 → aa03eb9e2 („RPR potting and spacing", noch nicht bei Upstream): Schalter
+  „Use potion" und „First Potion timing" (Opener oder ab dem zweiten Arcane Circle, ab Werk der zweite) – die Arznei
+  geht weiter über `UseBurstMedicine`, also mit den Regeln des Forks; Spielversion 7.58 im Attribut. Kommt es zu
+  Upstream, wird es im Sync gegen A743 und die Tinkturregeln des Forks geprüft (der Guide nennt den Trank vor dem
+  ersten Arcane Circle). Heute ohne Wirkung im Fork.
+- *FFXIV-CombatReborn/BossmodReborn* 2087153c2 → 75505283e: ein Haken gegen `null` in `Util/Hook.cs`; keine Wirkung auf
+  den Vertrag mit RSR (`check_bmr_contract.py` grün) oder eine Regel.
+- Beide eingetragen (`--record`).
+
 ## B · Commit-Register (Fork vs. `upstream/main`)
 
 ### B1 · Einzelgeprüfte Fork-Commits
