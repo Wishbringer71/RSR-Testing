@@ -50,6 +50,28 @@ Gelten in jeder Stufe. Eine Aussage, die eine davon verletzt, ist unbelegt.
 
 **Universell zuerst** gilt für Code und Konzepte gleich und steht deshalb in CLAUDE.md („Universell zuerst").
 
+**Struktur und Kosten** (sein Auftrag, 13.11.2026; Maßstab, Messung und Befehle: Konzept 24)
+- Eine Kostenfrage beantworte ich mit Messung, nicht mit Vermutung: die Kostenzeile je Schritt mit Übersetzungszeit
+  (`UpdateCost`), ein Testprogramm gegen die gebaute Bibliothek, Analyzer und Klonsuche. Umgebaut wird nur, was je
+  Frame im Kampf läuft oder messbar trägt (A310). Grund: Leistungsarbeit abseits des heißen Pfads kostet Code und
+  bringt nichts.
+- Bevor ich eine Schleife, Suche oder Abfrage schreibe, suche ich die bestehende allgemeine; weicht nur die Bedingung
+  ab, wird sie ihr Parameter (Besucher, Prädikat), keine zweite Fassung. Grund: Eine Korrektur gilt sonst nur für eine
+  Kopie.
+- Ein Ergebnis behalte ich, solange sich nicht ändert, wovon es abhängt, und genau das ist sein Schlüssel: der Frame
+  für den Zustand der Figuren (`DataCenter.FrameCacheMs`), die Fassung eines Ereignisses (Feld, Kampf, Plan) für alles,
+  was nur daran hängt. Eine längere Zeitspanne nur als bewusste Drosselung einer teuren Spielabfrage, mit ihrem Preis
+  im Kommentar (die Sichtlinie gilt 33 ms, `ObjectHelper.LosTtlMs`). Grund: Eine Zeitspanne liefert eine Antwort aus
+  einem anderen Zustand.
+- Was jeden Frame im Kampf läuft, legt nichts an, was eine wiederverwendete Sammlung oder eine statische Bedingung mit
+  Zustand ersetzen kann – kein Abschluss je Aufruf; LINQ ist gesperrt (`BannedSymbols.txt`). Grund: Jede Anlage kostet
+  Speicherbereinigung im Spielthread.
+- Ein Member, den der Fork einer Klasse von Upstream hinzufügt, steht in ihrer Teildatei `Name.Thema.cs` (Thema: das
+  Konzept, das ihn trägt); in Upstreams Datei nur Änderungen an Upstreams Membern sowie statische Felder mit Startwert
+  und statische Konstruktoren, deren Reihenfolge über Teildateien nicht festgelegt ist. Ändere ich einen Member, den
+  `fork_placement.json` noch in Upstreams Datei führt, zieht er im selben Zug um. `check_fork_placement.py` hält das
+  in der CI. Grund: Jede Fork-Zeile in Upstreams Datei ist Merge-Logistik (Skill `upstream-sync`).
+
 **Keine Funktion ohne Bedarf**
 - Was er mit einem Handgriff außerhalb des Spiels erledigt (eine Datei löschen, eine Kopie ziehen), bekommt keinen Knopf und keine Option — jede Funktion ist eine weitere Fehlerquelle (seine Vorgabe, A173).
 

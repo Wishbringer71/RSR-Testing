@@ -98,6 +98,11 @@ Ruckler am ersten Pull je Sitzung. *Auflösung:* Loop, sobald er einen Ruckler a
 messbar später kommt; erster Schritt: die Teilschritte der Rotation in diesem Durchlauf messen. *Konzept:* 03, „Was ein
 Frame kostet".
 
+### Fork-Member in Dateien von Upstream · U
+563 Member in 75 Dateien (`fork_placement.json`, A742). *Kosten:* Ein Sync, der neben ihnen ändert, kann einen
+Konflikt bringen. *Auflösung:* Ein Member zieht beim nächsten Eingriff in ihn in die Teildatei seiner Klasse
+(`code.md`, „Struktur und Kosten"); neue lässt `check_fork_placement.py` nicht zu. *Konzept:* 24.
+
 ### Plugin-Identität ist die des Upstreams · N
 `manifest.json` unverändert (`InternalName`, URLs). Ein eigener interner Name verlegt den Ordner mit Einstellungen und
 gelernten Tabellen, ein eigener angezeigter Name nimmt BossModReborn die Verbindung (es erkennt RSR an „Rotation Solver

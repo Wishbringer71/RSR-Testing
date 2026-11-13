@@ -21535,6 +21535,37 @@ Konzept 24, „Fork-Code in eigenen Teildateien", aus A739 in Reihenfolge.
 - *OverlayPlugin/cactbot* 1a21226f0 → 009c78d38: Versionsnummer 0.37.6, das Mitschnittformat unverändert.
 - Beide eingetragen (`--record`).
 
+### A742 · Struktur und Kosten als Arbeitsregel, schon im Konzept; Prüfung der Fork-Member (13.11.2026)
+
+Seine Frage (13.11.2026): ob sich die Vorgaben aus Konzept 24 allgemein in CLAUDE.md oder den übrigen Vorgaben
+unterbringen lassen, so dass sie künftig schon bei der Konzeption beachtet werden; im kritischen Loop prüfen, Audit,
+Umsetzung.
+
+- *Erhebung:* Konzept 24 lädt nur, wer das Thema Code-Struktur liest; `code.md` lädt erst beim ersten Zugriff auf Code,
+  also nach dem Konzept. Bei der Konzeption galt davon nichts, und nichts hinderte einen neuen Fork-Member, wieder in
+  einer Datei von Upstream zu landen: 704 ganze Fork-Member in 75 Dateien von Upstream nach A740 (Diff-Zählung).
+- *Optionen:* (0) nur Konzept 24; (1) alles in CLAUDE.md; (2) die Regeln in `code.md`, in CLAUDE.md nur ein Haken in der
+  Definition of Ready; (3) dazu eine Prüfung in der CI. (1) widerspricht „jede Regel genau einmal, an ihrem Anlass"
+  (`regeldateien.md`) und verdrängt mit Ballast die übrigen; (0) ändert nichts. *Gewählt:* (2) und (3).
+- *Gebaut:* `code.md`, „Struktur und Kosten": messen statt vermuten; bestehende allgemeine Funktion vor einer neuen,
+  abweichende Bedingung als Parameter; Ergebnis mit seiner Grundlage als Schlüssel, Zeitspanne nur als Drosselung mit
+  Preis; im heißen Pfad nichts anlegen; Fork-Member in Teildateien, ein gelisteter zieht beim nächsten Eingriff um.
+  CLAUDE.md, „Definition of Ready": für Code Ort und Kosten. `check_fork_placement.py` mit `fork_placement.json` (563
+  Member) und Selbsttest (neuer Member, Blocknamensraum, verschachtelter Typ, Änderung im Member, geänderte Signatur,
+  statischer Startwert, `#region`, gelistet, veraltet), in `build.yaml`; Probe am echten Baum: eine eingesetzte Methode
+  in `DataCenter.cs` schlägt an. TODO, technische Schuld „Fork-Member in Dateien von Upstream".
+- *Audit der Regeldateien:* keine Doppelung (LINQ steht nur hier und in `BannedSymbols.txt`); `code.md`,
+  „Gesamtheitlichkeit" („Wird dieselbe Aufgabe an zwei Stellen geführt …") erhebt eine bestehende Doppelung, die neue
+  Regel verhindert eine neue – ergänzend. Widerspruch gefunden und aufgelöst: Die erste Fassung verbot jede Zeitspanne,
+  der Code drosselt aber bewusst (Sichtlinie 33 ms, `LosTtlMs`; Frame-Annäherung `FrameCacheMs`, 15 ms); jetzt als
+  Drosselung mit Preis erlaubt. `check_rule_files.py`: 6 Regeldateien, 3 Skills in der Lesetabelle.
+- *Falsifikation:* Kein Bedarf? Ohne Haken im Konzept und ohne Prüfung landet der nächste Member dort, wo die Klasse
+  steht – so entstanden die 7.088 Zeilen. Option falsch? Eine geänderte Signatur hielte die Prüfung für neu; der
+  Namensvergleich nimmt sie aus, Preis: eine neue Überladung geht durch. Ausgeliefert, und nichts ändert sich? Möglich,
+  wenn die Basisliste neue Member aufnimmt; sie wird nur mit `--write-baseline` geschrieben, und jeder Eintrag, der
+  verschwindet, schlägt an.
+- *Prüfgrad:* Selbsttest, Probe am Baum, alle Prüfskripte.
+
 ## B · Commit-Register (Fork vs. `upstream/main`)
 
 ### B1 · Einzelgeprüfte Fork-Commits

@@ -177,6 +177,16 @@ eine lange Sitzung: unverändert, kein Nutzen im Kampf gegen eine Zeile Merge-Lo
 
 ## Wie es gemessen bleibt
 
+- Die Arbeitsregeln daraus stehen in `.claude/rules/code.md`, „Struktur und Kosten", und greifen schon im Konzept: Die
+  Definition of Ready verlangt für Code seinen Ort und, läuft er je Frame, seine Kosten (CLAUDE.md, A742).
+- `check_fork_placement.py` (CI) lehnt einen neuen Fork-Member in einer Datei von Upstream ab. Fork-Member erkennt
+  es an ihrer Signatur: Weder die Merge-Basis noch `upstream/main` führen sie in dieser Datei, und Upstream kennt keinen
+  Member dieses Namens (eine geänderte Signatur bleibt Upstreams Member; Preis: eine neue Überladung einer Methode von
+  Upstream geht unbemerkt durch). Die 563 Member, die am 13.11.2026 in 75 Dateien von Upstream standen, führt
+  `fork_placement.json`; die Liste wird nur kürzer, weil ein Member beim nächsten Eingriff in seine Teildatei zieht.
+  Ausgenommen: fremde Rotationen und `Configs.cs` (alle Einstellungen in einer Klasse, das Muster von Upstream, das der
+  Source Generator liest).
+
 - Nach jedem Kampf die Kostenzeile mit Übersetzungszeit; nach dem Laden und jedem Rotationswechsel die Zeile
   „warm-up". Ein langsamster Durchlauf über einem Frame mit wenig Übersetzungszeit ist der nächste Befund.
 - Analyzer und Klonsuche wie oben (Befehle im Archiv, A739), bei jedem Audit neu.

@@ -156,6 +156,11 @@ jobs:
       - name: Check no fixed value entered without a loop
         run: python3 .github/scripts/audit/check_fixed_values.py
 
+      # A member the fork adds to a class of upstream goes into a partial file of its own; the list of members that
+      # stood in upstream's files before only shrinks (code.md, "Struktur und Kosten"; concept 24).
+      - name: Check fork members stay out of upstream's files
+        run: python3 .github/scripts/audit/check_fork_placement.py
+
       # ---- 2. Generated files and game data: what the code takes from the game sheets and from upstream's lists.
 
       # What a defensive action takes off a hit is stated in its own effect text and generated into
