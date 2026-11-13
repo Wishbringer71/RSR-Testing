@@ -54,6 +54,9 @@ What this release changes in the fight. For the whole distance from upstream, se
   the dungeon's list of stones, not a row of a sheet. In Pilgrim's Traverse every slot read as nothing, so no incense was
   ever burned when alone; in Heaven-on-High and Eureka Orthos the old reading matched only because their lists start
   at 1. Pilgrim's Traverse: 1 Barkbalm, 2 Mazeroot, 3 Poisonfruit, measured in the owner's run.
+- **A sleep that did not go out names the first reason.** "sleep not cast …" names the first reason the rule gave
+  after the sleep was chosen, and the last when it differs; "the cast ended" follows every lapsed sleep and no longer
+  hides the reason the GCD went elsewhere.
 - **The trace names every item pressed.** "item pressed: …" with its quality, beside the potion line that names only the
   choice.
 - **An item counts as refused when the game refuses the quality RSR sends.** RSR blocked an item only when the game

@@ -1717,7 +1717,7 @@ Wirken zur Wirkung hängt an der Verbindung und wird in jeder Sitzung neu gemess
 |---|---|
 | Stopper des Jobs gewählt | „stop a cast -> Sanctga …" |
 | Schlaf gewählt | „sleep to stop a cast -> …" (Gegner, Art, Aktion, Restzeit, Unterbrechbarkeit, benötigte Zeit) |
-| gewählt, aber nicht gewirkt | „sleep not cast on …", mit dem Grund, aus dem die Regel den Schlaf zuletzt nicht mehr wählte: in Bewegung oder sonst nicht wirkbar, ein Mitglied in der kritischen Klasse, zu wenig Zeit (Rest gegen Bedarf), der Stopper des Jobs, Swiftcast, das Wirken beendet; ohne Grund kam ein GCD davor im Pfad |
+| gewählt, aber nicht gewirkt | „sleep not cast on …", mit dem ersten Grund, aus dem die Regel den Schlaf nach der Wahl nicht mehr wählte, und dem letzten, wenn er abweicht: in Bewegung oder sonst nicht wirkbar, ein Mitglied in der kritischen Klasse, zu wenig Zeit (Rest gegen Bedarf), der Stopper des Jobs, Swiftcast, das Wirken beendet; ohne Grund kam ein GCD davor im Pfad. Der erste entscheidet: Er fiel, als der GCD anders ging; „das Wirken beendet" folgt jedem verfallenen Schlaf und überschrieb ihn bis A738 |
 | widerstanden | „sleep resisted by …: immune, its kind is stored" bzw. „… after N sleep(s) in this fight: worn down" |
 | unverwundbar | „sleep did not reach …" (nur für die Sitzung) |
 | Wirken bricht ab: der Zauberbalken endet früher als Laufzeit einer Anfrage und ein Bild, und binnen eines GCD folgt keine Wirkung | „sleep stopped …" mit der Zeit seit der Landung |
@@ -1758,7 +1758,9 @@ Wirken zur Wirkung hängt an der Verbindung und wird in jeder Sitzung neu gemess
   geht im Dispatch immer vor, und Fähigkeiten ruhen in den letzten 0,5 s vor ihm (`CustomRotation.Ability`). Siebenmal
   an zwei Abenden ging ein gewählter Schlaf nicht hinaus (A453, A457); in einem Fall webte RSR 0,9 s nach der Wahl eine
   Fähigkeit, obwohl der GCD nach höchstens 0,3 s bereit war – der Schlaf war da schon nicht mehr der gewählte GCD.
-  Welcher Grund es war, zeigt das Protokoll erst mit der Grundangabe.
+  Am 11.11.2026 (A738) war es Bewegung: Schlummer gewählt bei 6,7 s Rest und 5,7 s Bedarf; als der GCD 1,4 s später
+  frei wurde, lief er (8 y in 3 s laut ACT-Positionen), und das sofort wirkende Windra ging. Die Zeile nannte „the cast
+  ended", weil dieser Grund jeden früheren überschrieb; seitdem steht der erste Grund nach der Wahl darin.
 - *Vierer-Instanz:* die Hauptlage. *Allianzraid:* gezählt wird die eigene Gruppe.
 - *Stufensynchron:* Schlaf ab Stufe 10, Schlummer ab 8, Sanctus ab 45, Sanctga ab 82 (`EnoughLevel`).
 - *Zwei Rechner:* Beide Tabellen werden beim Speichern mit der Datei zusammengeführt; gleichzeitig laufende Spiele

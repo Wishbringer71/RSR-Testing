@@ -21423,6 +21423,39 @@ Sein Upload (`RotationSolver.7z` bis 12.11.2026, 20:44; ACT-Mitschnitte vom 11.1
 - *Prüfgrad:* Laufzeitbeobachtung (Protokoll, Mitschnitte), Blätter, Wiki (Werkzeugquelle); Compile, Prüfskripte. Die neue
   Lesung der Steine ist an seinem Lauf nachgerechnet, im Spiel nicht beobachtet.
 
+### A738 · Warte-Einträge gegen den Upload vom 12.11.2026: Steinplätze geschlossen, der verfallene Schlaf war Bewegung (13.11.2026)
+
+Auf seine Frage „ist todo erledigt, oder warum stoppst du?": Defekte und offene Arbeit waren leer, die technische Schuld
+ohne erfüllte Auflösungsbedingung; die Warte-Einträge hatte ich gegen den Upload vom 12.11. nicht geprüft.
+
+- *Steinplätze in Pilgers Pfad:* Der Eintrag „Tiefe Gewölbe: welcher Weihrauch auf welchem Platz in Pilgers Pfad" war
+  mit A737 gelöst (Zuordnung aus 29 Stockwerken und den Titania-Einsätzen) und stand noch im TODO; entfernt. Kein Konzept
+  nannte ihn offen.
+- *Ein gewählter Schlaf geht nicht hinaus:* zwei Fälle im Upload, 10.11. 21:14 (Speichermedium, Leere Saat) und 11.11.
+  19:58 (Automat Nr. 7, Zermahlen), beide mit dem Grund „the cast ended or was stopped". Am Code: `NoteLapse` behielt
+  nur den letzten Grund, und nach dem Ende des Wirkens fragt der GCD-Pfad die Regel weiter, die „the cast ended" setzt –
+  jeder frühere Grund ging so verloren. Der Grund aus A459 konnte die Auflösung des Eintrags nie liefern.
+  Am ACT-Mitschnitt des 11.11.: Wahl um 19:58:05,56 bei 6,7 s Rest und 5,7 s Bedarf (der laufende GCD mitgezählt), ein
+  Steinka lief bis 05,53, der nächste GCD um 06,99 ging an Windra; die Positionen der Zeilen 21 und 261 zeigen ihn von
+  05,5 bis 08,8 um 8 y laufend. Schlummer war in Bewegung nicht wirkbar – gewollt (A459). Bei 06,99 hätte die Zeit
+  gereicht (5,4 s Rest gegen 4,2 s Bedarf ohne GCD-Rest): kein Defekt der Bedarfsrechnung. Der Fall vom 10.11. hat
+  keinen Mitschnitt.
+  *Optionen:* Nullvariante (der Eintrag wartet weiter auf einen Grund, den die Zeile nie liefert); den ersten Grund seit
+  der letzten Wahl halten und den letzten anhängen, wenn er abweicht; jeden Grund mit Zeit schreiben (eine Zeile je
+  Frame, zu viel). *Gewählt:* erster und letzter Grund. Im Kampf ändert sich nichts. *Falsifikation:* Kein Defekt? Die
+  zwei Zeilen zeigen das Gegenteil. Option falsch? Wählt die Regel denselben Schlaf erneut, beginnt der erste Grund neu
+  – er gehört dann zur letzten Wahl, die verfiel. Ausgeliefert, und nichts ändert sich? Dann nennt die Zeile weiter nur
+  „the cast ended": das hieße, die Regel wurde bis zum Ende gar nicht anders gefragt – nicht möglich, solange der GCD
+  frei wird, bevor das Wirken endet.
+  Konzept 08 („Protokoll", „Gewählt, aber nicht gewirkt") vor dem Code; `SleepInterruptWatch` (`_lastLapse`).
+- *Übrige Warte-Einträge:* Der Upload enthält keinen Crucible-Lauf, kein Shinryu Unreal, keinen Blaumagier und keinen
+  Samurai; ihre Bedingungen bleiben offen. Die Kopfzeile „GAME VERSION NOT READABLE" ist bekannt (A475, A687): Die
+  Revisionsdatei lädt vor dem Login, jede Messung liest die Version nach; die Datei vom 12.11. führt 108 Flächeneinträge
+  in der Schicht von 7.58. Der langsamste Durchlauf des ersten Kampfes am 12.11. lag bei 27 ms, davon 21 ms im Schritt
+  „state", nicht in der Rotation; die Auflösungsbedingung der Schuld „Der erste Kampf einer Sitzung hält einen Durchlauf
+  bis 170 ms an" ist nicht erfüllt.
+- *Prüfgrad:* Laufzeitbeobachtung (Protokoll, ACT-Mitschnitt), statisch am Code, Compile ohne Warnung, Prüfskripte.
+
 ## B · Commit-Register (Fork vs. `upstream/main`)
 
 ### B1 · Einzelgeprüfte Fork-Commits

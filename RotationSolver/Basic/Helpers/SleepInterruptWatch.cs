@@ -74,8 +74,11 @@ public static class SleepInterruptWatch
 
 	private static Aim? _aim;
 
-	// Why the rule last did not choose the sleep for the aim it had chosen it for; null while it still chooses it.
+	// Why the rule did not choose the sleep for the aim it had chosen it for: the first reason since it last chose it, and
+	// the last one. The first fell when the GCD went elsewhere; "the cast ended" follows every lapsed sleep and, kept alone,
+	// hid it (A738). Null while the rule still chooses it.
 	private static string? _lapse;
+	private static string? _lastLapse;
 
 	private static Watch? _watch;
 	private static uint _pressedAction;
@@ -448,6 +451,7 @@ public static class SleepInterruptWatch
 		if (_aim is { } aim && aim.EnemyId == enemy.GameObjectId && aim.ActionId == actionId)
 		{
 			_lapse = null;
+			_lastLapse = null;
 			if (!aim.Cast)
 			{
 				_aim = aim with { Tries = [.. tries] };
@@ -469,6 +473,7 @@ public static class SleepInterruptWatch
 
 		TraceNotCast(_aim);
 		_lapse = null;
+		_lastLapse = null;
 		var name = Service.GetSheet<Lumina.Excel.Sheets.Action>().GetRowOrDefault(actionId)?.Name.ExtractText() ?? "?";
 		_aim = new Aim(enemy.GameObjectId, enemy.Name.TextValue, enemy.BaseId, actionId, name, DateTime.Now.AddSeconds(remaining),
 			enemy.IsCastInterruptible) { Tries = [.. tries] };
@@ -712,6 +717,7 @@ public static class SleepInterruptWatch
 					TraceNotCast(aim);
 					_aim = null;
 					_lapse = null;
+					_lastLapse = null;
 				}
 			}
 
@@ -835,14 +841,15 @@ public static class SleepInterruptWatch
 
 	/// <summary>
 	/// The rule did not choose the sleep this time, for <paramref name="reason"/>: kept for the aim it had chosen it for,
-	/// so a choice that lapses says why (concept 08, "Protokoll"). <paramref name="enemy"/> null for a reason that holds
+	/// the first since the choice and the last, so a choice that lapses says why (concept 08, "Protokoll"). <paramref name="enemy"/> null for a reason that holds
 	/// for every cast.
 	/// </summary>
 	internal static void NoteLapse(IBattleChara? enemy, string reason)
 	{
 		if (_aim is { Cast: false } aim && (enemy == null || (aim.EnemyId == enemy.GameObjectId && aim.ActionId == enemy.CastActionId)))
 		{
-			_lapse = reason;
+			_lapse ??= reason;
+			_lastLapse = reason;
 		}
 	}
 
@@ -855,7 +862,8 @@ public static class SleepInterruptWatch
 		if (aim is { Cast: false })
 		{
 			DefenseTrace.Line($"sleep not cast on {aim.EnemyName}: chosen for {aim.ActionName} #{aim.ActionId}, but no sleep went out for it - "
-				+ (_lapse ?? "the rule was not asked again: a GCD ahead of it in the path"));
+				+ (_lapse ?? "the rule was not asked again: a GCD ahead of it in the path")
+				+ (_lastLapse != null && _lastLapse != _lapse ? $"; last: {_lastLapse}" : string.Empty));
 		}
 	}
 }
