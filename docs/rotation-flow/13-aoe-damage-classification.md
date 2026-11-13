@@ -223,7 +223,13 @@ dem man nicht hinsehen darf).
   - Verhängnis lässt sich hier nur auf einer leuchtenden Glyphe aufheben (consolegameswiki, „Doom (Status Effect)“),
     also durch Bewegung, und Esuna wirkt nicht (`CanDispel` false). RSR bewegt nicht; schützen kann nur das Nicht-Hinsehen.
 
-**Nicht in einen Blick drehen** (A770, alle Jobs). Solange ein Gegner einen Blick wirkt, der den Spieler erreicht, wählt
+**Nicht in einen Blick drehen** (A770, alle Jobs; seine Vorgabe, 13.11.2026: „Die Rsr Funktion soll wirken, wenn bmr
+nicht aktiv ist oder selbst Fehlern bei der Beachtung hat“). Die Regel liest BossModReborn zur Laufzeit nicht. Sie
+wirkt mit ihm, ohne ihn und dort, wo er einen Blick nicht kennt; die Liste aus seinen Modulen ist nur eine Datenquelle
+neben Blatt und Name. Pilgerpfad, 12.11.2026: Für die gerufenen Gegner hat BossModReborn kein Modul. Der einzige Blick
+war „Tödlicher Blick“ des Gerufenen Destrudo (#44355, 9 Wirken, Kennzeichen 25). Er traf zweimal einen Spieler mit
+Verhängnis und blieb 14-mal ohne Wirkung. „Starren“ (#44354), „Honigsüße Front/Linke/Rechte“ (#44356 bis #44358, Kegel
+30 Yalm) und „Vielsagender Glanz“ (#44783, Kreis 6 Yalm) sind Flächen mit Omen, keine Blicke (A773). Solange ein Gegner einen Blick wirkt, der den Spieler erreicht, wählt
 eine Aktion, die zum Ziel dreht (`NeedToFaceTarget`, Reichweite über 0), kein Ziel, zu dem sich der Spieler in den Blick
 drehen müsste.
 - *Was ein Blick ist:* eine Aktion mit dem Blick-Kennzeichen des Blatts (`VFX` 25, wie BossMod), eine Aktion, die

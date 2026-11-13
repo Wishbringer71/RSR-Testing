@@ -22417,6 +22417,19 @@ geprüft gegen A770.
 - *Prüfgrad:* Compile; Generator-Selbsttest und `--check` gegen das Blatt; alle CI-Schritte lokal. Im Spiel nicht
   beobachtet.
 
+### A773 · Seine Vorgabe: Blickschutz ohne BossModReborn; Blicke im Pilgerpfad (13.11.2026)
+
+Seine Angabe (13.11.2026): „Die Rsr Funktion soll wirken, wenn bmr nicht aktiv ist oder selbst Fehlern bei der Beachtung
+hat. Im Letzten Deep dungeon hatte ich auch kämpfe, wo ich häufiger wegsehen musste“. Einordnung: Vorgabe (erster Satz)
+und Hinweis (zweiter Satz).
+- *Vorgabe erfüllt durch A770 und A772:* `GazeWatch` liest BossModReborn zur Laufzeit nicht und wartet nicht auf ihn.
+  Die Liste aus seinen Modulen ist eine von drei Datenquellen. Im Konzept 13 als seine Vorgabe eingetragen.
+- *Am Mitschnitt vom 12.11.2026 (Pilgerpfad):* BossModReborn hat für die gerufenen Gegner kein Modul. Unter den 146
+  gegnerischen Wirkarten war ein Blick: „Tödlicher Blick“ des Gerufenen Destrudo (#44355, `VFX` 25). Er trat 9-mal
+  auf; die Trefferzeilen zeigen 14-mal keine Wirkung und zweimal Verhängnis auf einem Spieler. Erkannt am Kennzeichen.
+  „Starren“, „Honigsüße Front/Linke/Rechte“ und „Vielsagender Glanz“ sind Flächen mit Omen und Schaden, keine Blicke.
+- *Prüfgrad:* am Mitschnitt und am Blatt; im Spiel nicht beobachtet.
+
 ## B · Commit-Register (Fork vs. `upstream/main`)
 
 ### B1 · Einzelgeprüfte Fork-Commits
