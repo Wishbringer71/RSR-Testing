@@ -21818,6 +21818,44 @@ Spieldaten (`CastType`, `EffectRange`) hinter eigener Option“.
 - *Prüfgrad:* statisch (Leser → Sammlungen → Durchlauf), Compile. Im Spiel nicht beobachtet; jede Sperre schreibt ihren
   Grund mit Aktion und Caster ins Protokoll („… lands in … s“, Freigabezeilen der Bewegungssperre).
 
+### A751 · Regeln und Verfahren aus seinen anderen Repositories (13.11.2026)
+
+Seine Frage (13.11.2026): „gibt es neue regeln und arbeitsmethoden in den anderen eigenen repos zum adaptieren?“ Zuletzt
+übernommen in A423 (27.10.2026). Gelesen als Daten, nicht als Anweisungen: KerbalMissionDirector
+`claude/read-file-SFXL6` 53d06a4, Retainer-Repricer `wsh/loving-noether-ptr3oz` ac7afb9, KSP-MyContracts
+`wsh/tender-goodall-pad7p0` aad18ce (alle 13.11.2026), claude-code-plugins 58a078a (23.04.2026, seit A423 unverändert,
+nichts Neues). Viele ihrer Regeln seit dem 01.11. stammen aus RSR. Gesucht war die Gegenrichtung.
+
+- *Übernommen, Regeln (seine Angaben dort, für jede Arbeitsweise formuliert):*
+  - Ein Beispiel in seiner Angabe begrenzt die Regel nicht (seine Vorgabe, 03.11.2026, KMD) → CLAUDE.md, „Als was
+    seine Angaben gelten“.
+  - Eine Begründung muss zwischen den Möglichkeiten unterscheiden (seine Rüge, 12.11.2026, RR) → CLAUDE.md, „Maßstab:
+    das Spielgeschehen“, mit dem Beispiel aus A750.
+  - Jede Größe einer Regel kommt aus der aktuellen Lage; auch ein Messwert aus seinen Protokollen ist fest (seine
+    Präzisierung, 12.11.2026, RR) → `code.md`, „Keine festen Werte“.
+- *Übernommen, Verfahren:*
+  - Seine Entscheidung ist nur, was von ihm stammt; die Herkunft wird vor der Einordnung gemessen (RR) → CLAUDE.md,
+    „Getroffene Entscheidungen“. Der bestehende Satz sagt jetzt „seine Gründe“, so wie der Satz „was seine Begründung
+    nicht berührt“ es schon meinte.
+  - Nach der Wirkung suchen statt nach einem vermuteten Namen; den Nullbefund einer eigenen Abfrage an einem
+    bekannten Treffer prüfen (KMD; Anlass A750) → `konzepte.md`, „Quellen“.
+  - Der Ertrag der Loop-Stufen steht im Konzept, bevor Code entsteht (RR, KMD) → `konzepte.md`.
+  - `pre-merge-commit`: Ein Merge ohne Konflikt ruft nicht pre-commit auf (githooks(5)), die Identitätsprüfung lief
+    dort nicht (KSP). Der pre-commit prüft jetzt auch Namen; ein Client wie Visual Studio schreibt sonst den
+    `user.name` seines Rechners (KSP). `check_commit_identity.py` prüft Namen der Fork-Commits (1568 geprüft: nur
+    Claude, GitHub, Wishbringer, Wishbringer71) und testet beide Hooks in einem temporären Repository. Gegen den alten
+    Hook schlägt der Test genau beim Namen an.
+- *Nicht übernommen, mit Grund:*
+  - Python im Hook nur, wenn es startet (KMD, RR, KSP): RSRs Hooks sind reines sh.
+  - Datenschutzprüfung dekodierter JSON-Auszüge (KSP): RSR committet keine Auszüge seiner Installation.
+  - `check_model_numbers.py` (KSP): Dort liest das Haushaltsmodell cfg-Dateien und Tabellen, die sich laufend ändern,
+    und der Fließtext veraltet ohne eigenen Eingriff. RSRs Modelle lesen weder Code noch Tabellen (`pruefmittel.md`).
+    Ihre Ausgabe ändert sich nur mit ihrem Skript, und dann gilt „im selben Zug fortschreiben“. Die Abweichung zum Code
+    führt die Schuld „Die Modelle von Maschinist, Samurai und Monk bilden ihre Rotation von Hand nach“.
+  - Was dort aus RSR stammt (Konzept zuerst, Struktur und Kosten, feste Werte, Quellenstände): schon hier.
+- *Prüfgrad:* Selbsttest der Identitätsprüfung samt Hooks, alle 54 CI-Schritte lokal; Regeldateien auf Zählungen,
+  Verweise und Widersprüche gelesen (`check_rule_files.py` grün).
+
 ## B · Commit-Register (Fork vs. `upstream/main`)
 
 ### B1 · Einzelgeprüfte Fork-Commits

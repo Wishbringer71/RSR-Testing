@@ -11,6 +11,7 @@ Lädt mit dem ersten Zugriff auf eine Datei unter `docs/`. Gilt für jede Aussag
 
 - Quellen ausschöpfen, bevor ich eine Grenze behaupte; Zugang pfadweise messen, nicht pauschal.
 - Eine Fundstelle, die ich nicht finde, ist nicht unerreichbar — weitere Pfade versuchen.
+- Ich suche nach der Wirkung, die ich brauche, nicht nach einem vermuteten Namen (Verfahren aus KerbalMissionDirector). Einen Nullbefund einer eigenen Abfrage prüfe ich an einem Fall, dessen Treffer bekannt ist, bevor ich ihn verwende. Grund (A750): Ein regulärer Ausdruck meldete für 63 Ids „kein Modul in BossModReborn“; die direkte Suche fand 58.
 - Ein Werkzeug sage ich erst zu, wenn eine Probe es belegt. Zur Vorlage gehört der Preis des Wegs: Was er mit einem Handgriff erledigt, ist keine Aufgabe für diese Umgebung.
 - Einen fremden Schutzmechanismus führe ich erst als Begründung an, wenn ich geprüft habe, was er abdeckt.
 - Wechselwirkungen (Synergien) erhebe ich zu Beginn vollständig, bevor ich eine Regel zu einem Spielelement baue: alle Wirktexte seiner Gattung und der angrenzenden (Gegenstände, Ausrüstung, Futter, Fähigkeiten, Status) auf Querverweise – „When carrying …", „suffering from …", „affected by … increase effects", jeder Statusname, den ein anderer Text nennt –, dazu Internetquellen; nicht erst, wenn eine einzelne Wirkung auffällt (seine Rüge, 07.11.2026, A665). Grund: Ein Querverweis, den keiner liest, bleibt ungenutzt.
@@ -29,4 +30,4 @@ Lädt mit dem ersten Zugriff auf eine Datei unter `docs/`. Gilt für jede Aussag
 - Urteilsstil: geltender Sachstand zuerst, Begründung danach, Ausgeschlossenes mit Grund. Keine Chronik der eigenen Fassungen, keine Nachträge; Änderungen einarbeiten.
 - Prüfkriterium: Wer einen Abschnitt allein liest, erhält keinen überholten Stand.
 - Die Geschichte des Gegenstands bleibt Inhalt; die des Dokuments steht im Archiv. Vor dem Entfernen prüfen, dass sie dort steht.
-- Die Loop-Stufen sind Arbeitsverfahren, keine Gliederung eines Konzepts.
+- Die Loop-Stufen sind Arbeitsverfahren, keine Gliederung eines Konzepts. Ihr Ertrag steht darin, bevor Code entsteht: die Optionen samt Nullvariante und SWOT, die erhobenen Wechselwirkungen, Gegenthesen und Falsifikationen mit Quelle (so in Retainer-Repricer und KerbalMissionDirector).

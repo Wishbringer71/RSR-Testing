@@ -1,0 +1,4 @@
+#!/bin/sh
+# A merge without conflicts runs this hook, not pre-commit (githooks(5)), so the identity check would not run for it
+# (procedure from KSP-MyContracts, 13.11.2026). Run the same check.
+exec "$(dirname "$0")/pre-commit" "$@"

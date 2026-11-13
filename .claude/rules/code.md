@@ -44,7 +44,7 @@ Gelten in jeder Stufe. Eine Aussage, die eine davon verletzt, ist unbelegt.
 
 **Keine festen Werte**
 - Dauern, Schwellen, Stufen, Abstände, GCD-Zahlen und Anteile leite ich aus dem Spiel ab: Aktionsdaten (`Level`, `EnoughLevel`, Wirkzeit, Abklingzeit, Ladungen), Statusrestzeiten, Wirktexte über den Generator, GCD-Länge, Vorlauf, Ausführungssperre, Gruppenzusammensetzung, Messungen im Kampf.
-- Eine Ausnahme erst nach einem Loop zu genau diesem Wert, mit Beleg im Archiv. Das gilt auch für eine Zahl, die eine seiner Regeln wiedergibt, und für jede bestehende Zahl, die ich anfasse.
+- Eine Ausnahme erst nach einem Loop zu genau diesem Wert, mit Beleg im Archiv. Das gilt auch für eine Zahl, die eine seiner Regeln wiedergibt, für einen Messwert aus seinen Protokollen, der als Zahl im Code steht, und für jede bestehende Zahl, die ich anfasse (seine Präzisierung, 12.11.2026, in Retainer-Repricer: jede Größe einer Regel aus der aktuellen Lage).
 - `check_fixed_values.py` hält das in der CI fest.
 - Was das Spiel zur Laufzeit liefert, hat Vorrang (seine Vorgabe, 12.10.2026): Blätter des Clients (sprachunabhängig über die englische Fassung), Status, Abklingzeiten, Stufe. Vorrang ist Gewichtung, kein Ausschluss (seine Präzisierung): Erzeugte oder von außen abgerufene Werte bleiben als zweite Quelle – Rückfall, wo das Spiel nichts liefert, und Gegenprobe; bei Widerspruch wiegt das Spiel schwerer, weil es den laufenden Patch zeigt.
 

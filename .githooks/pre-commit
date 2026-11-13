@@ -18,8 +18,26 @@
 # noreply@github.com is GitHub itself, which signs as committer on a merge done on the web.
 allowed='^(noreply@anthropic\.com|noreply@github\.com|[0-9]+\+[A-Za-z0-9_-]+@users\.noreply\.github\.com)$'
 
+# Names as well: a local client (Visual Studio, the git command line) writes the user.name of that machine into the
+# commit, whatever the address is (procedure from KSP-MyContracts, 13.11.2026). Keep this list in step with
+# ALLOWED_NAMES in .github/scripts/audit/check_commit_identity.py, which tests this hook.
+allowed_names='Claude
+GitHub
+Wishbringer
+Wishbringer71'
+
 author=$(git var GIT_AUTHOR_IDENT | sed -n 's/.*<\(.*\)>.*/\1/p')
 committer=$(git var GIT_COMMITTER_IDENT | sed -n 's/.*<\(.*\)>.*/\1/p')
+author_name=$(git var GIT_AUTHOR_IDENT | sed -n 's/^\(.*\) <.*/\1/p')
+committer_name=$(git var GIT_COMMITTER_IDENT | sed -n 's/^\(.*\) <.*/\1/p')
+
+for name in "$author_name" "$committer_name"; do
+    if ! printf '%s\n' "$allowed_names" | grep -Fxq -- "$name"; then
+        echo "pre-commit: refusing this commit - user.name is not a name this repository publishes under." >&2
+        echo "  allowed:  Claude, or the GitHub account name (git config user.name)" >&2
+        exit 1
+    fi
+done
 
 for address in "$author" "$committer"; do
     if ! printf '%s' "$address" | grep -Eq "$allowed"; then

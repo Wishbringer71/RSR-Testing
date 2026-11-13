@@ -134,6 +134,7 @@ Gilt für jede Regel, im Code wie im Konzept (seine Vorgabe, 26.09.2026; für di
 - Eine Spielgröße kläre ich in ihrer Bedeutung, bevor ich sie verrechne: Ein Schild verhindert Schaden und heilt nicht; Unverwundbarkeit verhindert den Tod und heilt nicht; ein Debuff drosselt den Schadensstrom und beendet ihn nicht.
 - Befunde formuliere ich als Wirkung: „die Beschwörung kommt einen GCD später und mit ihr jede weitere Demi", nicht „`searingSettled` liest die Bedingung nicht".
 - Das Verhalten anderer Spieler ist eine Annahme, nie ein tragender Grund. Ein einzelner Beschwörer setzt seinen Burst selbst.
+- Eine Begründung muss zwischen den Möglichkeiten unterscheiden: Was in jedem Fall gilt, belegt nichts (seine Rüge, 12.11.2026, in Retainer-Repricer). Beispiel A750: „Jedes Mitglied getroffen“ gilt für Raidwide und Stack gleich und trennt sie nicht.
 - Das Spielerlebnis im Spiel in seiner Gesamtheit hat Vorrang vor der Schwierigkeit der Umsetzung, sofern die Aufgabe überhaupt lösbar ist (seine Vorgabe, 05.11.2026). Aufwand entscheidet nur zwischen Lösungen, die im Kampf gleich gut sind; „zu aufwendig“ verwirft oder vertagt keine bessere.
 - Seine Mitschnitte belegen Einzelfälle aus wenigen Instanzen, nicht das Spiel (seine Vorgabe, 27.10.2026). Eine Regel beurteile ich über alle Inhalte, in denen sie greift – Spielblätter, BossMod-Module, Guides –; die Mitschnitte eichen und widerlegen, sie begrenzen nicht. Grund: „Kommt in seinen Logs nicht vor" sagt nichts über Savage, Extreme oder einen Inhalt, den er noch nicht hochgeladen hat.
 
@@ -162,6 +163,7 @@ Gilt für jede Regel, im Code wie im Konzept (seine Vorgabe, 26.09.2026; für di
 - *Hinweis* — eine Tatsache des Spiels, die ich übersehen habe. Am Artefakt prüfen, im Konzept als Hinweis mit Beleg führen; auch ein „muss" darin beschreibt Mechanik.
 - Die Einordnung entscheidet, was ich ohne ihn ändern darf — deshalb nie raten.
 - Er nennt Bedingungen, keine festen Zeiten. Eine Zahl belege ich am Artefakt (`ActionId.resx`).
+- Ein Beispiel in seiner Angabe veranschaulicht die Regel, es begrenzt sie nicht: Ich wende sie auf alle gleichartigen Fälle an (Jobs, Rollen, Inhalte, Lagen) und verenge sie nie auf den genannten (seine Vorgabe, 03.11.2026, in KerbalMissionDirector: „gilt für alle Jobs, Piloten waren Beispiel“).
 - Eine Regel, die nicht in dieser Datei steht, ist meine Ableitung. Ich halte sie ihm nicht als seine vor.
 
 **Wohin seine Angaben gehören**
@@ -169,7 +171,8 @@ Gilt für jede Regel, im Code wie im Konzept (seine Vorgabe, 26.09.2026; für di
 - Vor jeder Aussage zu einem Thema lese ich dessen Konzept, nicht nur `TODO.md` und `AUDIT_LOG.md`.
 
 **Getroffene Entscheidungen**
-- Nennt ein Konzept oder Archiveintrag die Gründe einer Stelle, stelle ich sie nicht erneut zur Wahl und ändere sie nicht ohne ihn.
+- Nennt ein Konzept oder Archiveintrag seine Gründe für eine Stelle, stelle ich sie nicht erneut zur Wahl und ändere sie nicht ohne ihn.
+- Seine Entscheidung ist nur, was von ihm stammt: Vorgabe, Freigabe, seine dokumentierte Wahl. Vor der Einordnung messe ich die Herkunft (Archiv, `git log -S`, sein Wortlaut). Eine Stelle, die ich gesetzt habe, korrigiere ich selbst, statt sie ihm als seine vorzulegen (so in Retainer-Repricer, 12.11.2026). Beispiel A750: Die gelistete Fläche als „unausweichlich“ in der Sperre war meine Ableitung (A630); ich habe sie korrigiert.
 - Eine Änderung lege ich ihm vor: was dort steht, was dagegen spricht, und die Frage, ob er seine Meinung geändert hat.
 - Eine neue Angabe von ihm hebt die alte nicht automatisch auf — sie kann Präzisierung, Ausnahme oder andere Lage sein. Das weiß nur er.
 - Eine Beobachtung aus dem Spiel zeigt, dass etwas nicht wirkt, nicht welche Entscheidung fallen soll.
@@ -229,7 +232,7 @@ Gilt für jede Regel, im Code wie im Konzept (seine Vorgabe, 26.09.2026; für di
 - Klein geschnitten, zeitnah gepusht; ein eigener Branch je Vorhaben ist nicht nötig.
 - Vollständig gemergte Branches sind Löschfälle; ich melde sie ihm.
 - Bleibt ein CI-Lauf aus: zuerst `mergeable_state` messen und die Basis mergen.
-- Commit-Identität nicht überschreiben (`user.name = Claude`, `user.email = noreply@anthropic.com`; kein `git -c user.name=… -c user.email=…`). Sein Klarname und seine private Adresse gehören in keinen Commit; `.githooks/pre-commit` und `check_commit_identity.py` sperren fremde Adressen; `core.hooksPath` setzt der Sitzungsbrief.
+- Commit-Identität nicht überschreiben (`user.name = Claude`, `user.email = noreply@anthropic.com`; kein `git -c user.name=… -c user.email=…`). Sein Klarname und seine private Adresse gehören in keinen Commit; `.githooks/pre-commit` (für Merges ohne Konflikt über `pre-merge-commit`) und `check_commit_identity.py` sperren fremde Adressen und Namen; `core.hooksPath` setzt der Sitzungsbrief.
 
 **Grenzen und Löschungen**
 - Tag-Pushes, Ref-Löschungen und das Bearbeiten von Releases sind dieser Sitzungsart gesperrt (403, beim Release „not permitted for this session type", 22.10.2026; Tag-Push am 25.10.2026 von der Rechteprüfung der Sitzung abgewiesen). Ein Release erzeuge ich deshalb über `publish.yaml` per `workflow_dispatch`, sobald er es aufträgt (seine Vorgabe, 26.10.2026: „ich habe dich angewiesen, zu compilieren und zu releasen"); sein Auftrag ist die Freigabe, ich stelle sie nicht erneut zur Wahl. Ohne seinen Auftrag erzeuge ich kein Release.
