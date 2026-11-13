@@ -370,10 +370,18 @@ MOVE_LOCK = re.compile(r"Action = ActionID\.(\w+PvE),[^\]]*?Parent = nameof\(Pos
                        r"public bool (\w+) \{ get; set; \} = (true|false);")
 
 
+def with_parts(path):
+    """A class file with its partial parts `Name.Topic.cs` (A740, A746): a member moved into a part is still the class's."""
+    if not path.exists():
+        return ""
+    parts = [path] + sorted(path.parent.glob(path.stem + ".*.cs"))
+    return "\n".join(p.read_text(encoding="utf-8") for p in parts)
+
+
 @functools.lru_cache(maxsize=None)
 def central_channel_locks():
-    return channel_locks((CENTRAL / "CustomRotation_GCD.cs").read_text(encoding="utf-8"),
-                         (CENTRAL / "CustomRotation_Ability.cs").read_text(encoding="utf-8"),
+    return channel_locks(with_parts(CENTRAL / "CustomRotation_GCD.cs"),
+                         with_parts(CENTRAL / "CustomRotation_Ability.cs"),
                          (ROOT / "RotationSolver" / "Basic" / "Configuration" / "Configs.cs").read_text(encoding="utf-8"))
 
 
@@ -696,7 +704,7 @@ def analyse(job, actions, job_actions, traits, general_actions, central, central
         return result
 
     base_path = BASIC / f"{class_name}.cs"
-    base_code = strip_code(base_path.read_text(encoding="utf-8")) if base_path.exists() else ""
+    base_code = strip_code(with_parts(base_path))
     bodies = modify_bodies(base_code)
     # What the base rotation casts outside its Modify methods. A CanUse inside a Modify body is part
     # of another action's ActionCheck - a condition, not a use - and is read as such below.
@@ -705,7 +713,7 @@ def analyse(job, actions, job_actions, traits, general_actions, central, central
         base_outside = base_outside[:start] + base_outside[end:]
 
     files = [REBORN / f for f in ROTATION_FILES.get(job, [])]
-    rotation_code = "\n".join(strip_code(p.read_text(encoding="utf-8")) for p in files if p.exists())
+    rotation_code = "\n".join(strip_code(with_parts(p)) for p in files if p.exists())
 
     direct = set(CAST.findall(rotation_code)) | set(CAST.findall(base_outside))
     direct |= set(RETURNED.findall(rotation_code)) | set(RETURNED.findall(base_outside))
@@ -1099,6 +1107,12 @@ def render_csv(result, actions):
 
 
 def self_test():
+    import tempfile
+    with tempfile.TemporaryDirectory() as folder:
+        part_root = Path(folder)
+        (part_root / "Foo.cs").write_text("AddlePvE.CanUse", encoding="utf-8")
+        (part_root / "Foo.Topic.cs").write_text("LucidDreamingPvE.CanUse", encoding="utf-8")
+        assert "LucidDreamingPvE" in with_parts(part_root / "Foo.cs"), "a partial part is read with its class (A746)"
     text = ("Delivers an attack with a potency of 620. Combo Action: Hard Slash or Unleash Combo Potency: "
             "Can only be executed while under the effect of Delirium. ※Bloodspiller changes to Scarlet "
             "Delirium while under the effect of Delirium. Shares a recast timer with Edge of Shadow. "

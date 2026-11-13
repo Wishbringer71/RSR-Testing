@@ -529,148 +529,7 @@ public partial class CustomRotation
 		return false;
 	}
 
-	/// <summary>
-	/// The automatic area heal abilities, the duty's before the job's, with the heal target order and the need filter.
-	/// The caller has set the heal path's target override.
-	/// </summary>
-	private bool AutoHealAreaAbility(IAction nextGCD, out IAction? act)
-	{
-		act = null;
-		if (!DataCenter.AutoStatus.HasFlag(AutoStatus.HealAreaAbility) || !(CanHealAreaAbility || DataCenter.IsInOccultCrescentOp))
-		{
-			return false;
-		}
-
-		IBaseAction.AutoHealCheck = true;
-		if (ActiveDutyRotation?.HealAreaAbility(nextGCD, out act) == true)
-		{
-			return true;
-		}
-		if (CanCastHeals && HealAreaAbility(nextGCD, out act))
-		{
-			return true;
-		}
-		IBaseAction.AutoHealCheck = false;
-		return false;
-	}
-
-	/// <summary>
-	/// The automatic single heal abilities, the duty's before the job's, with the heal target order and the need
-	/// filter. The caller has set the heal path's target override.
-	/// </summary>
-	private bool AutoHealSingleAbility(IAction nextGCD, out IAction? act)
-	{
-		act = null;
-		if (!DataCenter.AutoStatus.HasFlag(AutoStatus.HealSingleAbility) || !(CanHealSingleAbility || DataCenter.IsInOccultCrescentOp))
-		{
-			return false;
-		}
-
-		IBaseAction.AutoHealCheck = true;
-		if (ActiveDutyRotation?.HealSingleAbility(nextGCD, out act) == true)
-		{
-			return true;
-		}
-		if (CanCastHeals && HealSingleAbility(nextGCD, out act))
-		{
-			return true;
-		}
-		IBaseAction.AutoHealCheck = false;
-		return false;
-	}
-
-	/// <summary>
-	/// A heal ability ahead of a due GCD for a party member in the critical class (concept 07, "Die Notfallheilung
-	/// zwischen zwei Zaubern"). After a hard cast the time left to the GCD is its recast less its cast, at most half a
-	/// second for every 2.0-s heal at any spell speed, and the locks in Ability and DoAction keep that half second free:
-	/// a healer chaining Cure II never reached Benediction while the tank fell to 43 HP (01.11.2026, A478). Reported
-	/// instead of the GCD, the ability is pressed the moment the GCD comes free - DoAction lets abilities go at none
-	/// left - and the GCD follows after its animation lock. Which ability and on whom stays with the job's heal paths
-	/// and their own conditions; it goes ahead only if it reaches a member in the critical class, because the delayed
-	/// GCD is worth it only for the one who would otherwise fall.
-	/// </summary>
-	private bool EmergencyHealAheadOfGcd(IAction nextGCD, out IAction? act)
-	{
-		act = null;
-		if (DataCenter.IsPvP)
-		{
-			return false;
-		}
-
-		_criticalMembers.Clear();
-		foreach (var member in DataCenter.PartyMembers)
-		{
-			if (member != null && !member.IsDead && member.MaxHp > 0 && member.IsInCriticalClass())
-			{
-				_criticalMembers.Add(member);
-			}
-		}
-
-		if (_criticalMembers.Count == 0)
-		{
-			return false;
-		}
-
-		IBaseAction.TargetOverride = TargetType.Heal;
-		IBaseAction.HealPathRunning = true;
-		try
-		{
-			// The area heal first, as in the heal path; one that misses the member leaves the single heal its turn.
-			if ((AutoHealAreaAbility(nextGCD, out act) && act is IBaseAction area && ReachedCriticalMember(area) is { } byArea
-					&& TraceEmergencyHeal(area, byArea, nextGCD))
-				|| (AutoHealSingleAbility(nextGCD, out act) && act is IBaseAction single && ReachedCriticalMember(single) is { } bySingle
-					&& TraceEmergencyHeal(single, bySingle, nextGCD)))
-			{
-				return true;
-			}
-		}
-		finally
-		{
-			IBaseAction.TargetOverride = null;
-			IBaseAction.HealPathRunning = false;
-			IBaseAction.AutoHealCheck = false;
-		}
-
-		act = null;
-		foreach (var member in _criticalMembers)
-		{
-			// A531: for the player, what each potion in the bag waits for - the configuration the upload lacks.
-			TraceEmergencyHeal(null, member, nextGCD, member.GameObjectId == Player?.GameObjectId ? DescribeHpPotionsHeld() : null);
-		}
-		return false;
-	}
-
 	private static readonly List<IBattleChara> _criticalMembers = [];
-
-	/// <summary>
-	/// The member in the critical class this heal reaches, as its target or among those an area heal covers.
-	/// </summary>
-	private static IBattleChara? ReachedCriticalMember(IBaseAction heal)
-	{
-		var result = heal.Target;
-		foreach (var member in _criticalMembers)
-		{
-			if (result.Target?.GameObjectId == member.GameObjectId)
-			{
-				return member;
-			}
-
-			if (result.AffectedTargets == null)
-			{
-				continue;
-			}
-
-			foreach (var affected in result.AffectedTargets)
-			{
-				if (affected?.GameObjectId == member.GameObjectId)
-				{
-					return member;
-				}
-			}
-		}
-
-		return null;
-	}
 
 	/// <summary>
 	/// One trace line per heal and target, or per member left without one, and GCD: the emergency heal reported ahead
@@ -713,9 +572,6 @@ public partial class CustomRotation
 		return true;
 	}
 
-	private static readonly Dictionary<(uint Action, ulong Target), DateTime> _emergencyHealTraced = [];
-	private static readonly List<(uint Action, ulong Target)> _staleTraceKeys = [];
-
 	/// <summary>
 	/// Determines if an interrupt ability can be used.
 	/// </summary>
@@ -727,14 +583,6 @@ public partial class CustomRotation
 		act = null;
 		return false;
 	}
-
-	/// <summary>
-	/// Whether this job's <see cref="InterruptAbility"/> override already gates the same shared
-	/// role-fallback interrupt action (e.g. LegSweep) with its own combo-safety condition. When true,
-	/// <see cref="MyInterruptAbility"/> skips its generic per-role fallback for that action instead of
-	/// retrying it ungated after the job's own gate declined it.
-	/// </summary>
-	protected virtual bool HasOwnInterruptGate => false;
 
 	/// <summary>
 	/// Determines if an interrupt ability can be used.
@@ -812,22 +660,6 @@ public partial class CustomRotation
 	}
 
 	/// <summary>
-	/// Whether this job's <see cref="AntiKnockbackAbility"/> override already gates the same shared
-	/// role-fallback anti-knockback action (e.g. Arm's Length) with its own combo-safety condition.
-	/// When true, <see cref="AntiKnockback"/> skips its generic per-role fallback for that action
-	/// instead of retrying it ungated after the job's own gate declined it.
-	/// </summary>
-	protected virtual bool HasOwnAntiKnockbackGate => false;
-
-	/// <summary>
-	/// Whether this rotation's <see cref="DefenseSingleAbility"/> already runs
-	/// <see cref="ArmsLengthSlowsPull"/> with its own option and holds. When true, the single defence
-	/// does not retry Arm's Length as its last resort, which would cast it past a declined option or a
-	/// hold such as the Dark Knight's barrier.
-	/// </summary>
-	protected virtual bool HasOwnArmsLengthPullRule => false;
-
-	/// <summary>
 	/// Determines if a provoke ability can be used.
 	/// </summary>
 	/// <param name="nextGCD">The next GCD action.</param>
@@ -893,21 +725,6 @@ public partial class CustomRotation
 		}
 		return false;
 	}
-
-
-	/// <summary>
-	/// Swiftcast is held for this job's raise: the raise and Swiftcast are learned at the current level, and the player
-	/// raises with Swiftcast ("Raise with Swiftcast or Dualcast"). The owner's rule (A503): damage comes far more often
-	/// than a raise, so a Swiftcast spent on damage is rarely there when someone dies.
-	/// </summary>
-	protected bool SwiftcastKeptForRaise => Service.Config.RaisePlayerBySwift && Raise is { EnoughLevel: true } && SwiftcastPvE.EnoughLevel;
-
-	/// <summary>
-	/// Whether damage may take Swiftcast: where nothing is held for a raise, or where the player chose it explicitly.
-	/// A rotation with its own damage switch for Swiftcast adds that switch here; every damage use of Swiftcast asks
-	/// this, not <see cref="SwiftcastKeptForRaise"/> (A503).
-	/// </summary>
-	protected virtual bool SwiftcastForDamage => !SwiftcastKeptForRaise;
 
 	/// <summary>
 	/// Determines if an emergency ability can be used.
@@ -1018,39 +835,6 @@ public partial class CustomRotation
 		}
 
 		return RecuperatePvP.CanUse(out act) || StandardissueElixirPvP.CanUse(out act);
-	}
-
-	/// <summary>
-	/// Is a raise waiting, and would it actually go out once the cast time is gone?
-	///
-	/// Both halves matter. Without the pending check Swiftcast would be spent whenever it happens
-	/// to be ready; without the castable check it would be spent on a raise that then fails on MP,
-	/// range or level, and the charge is gone for nothing.
-	///
-	/// The target override is not decoration. Raise actions declare no target type of their own -
-	/// they are merely IsFriendly - and their target comes from TargetType.Death, which only the
-	/// GCD path sets. Asking CanUse here without it would search the wrong set, and CanUse assigns
-	/// Target as a side effect, so a stray call would also leave the action pointing somewhere
-	/// else. The previous value is restored rather than cleared, because this runs inside the
-	/// ability dispatcher, which sets overrides of its own around its branches.
-	/// </summary>
-	private bool RaisePendingAndCastable()
-	{
-		if (Raise == null || !DataCenter.MergedStatus.HasFlag(AutoStatus.Raise) || HasSwift)
-		{
-			return false;
-		}
-
-		var previousOverride = IBaseAction.TargetOverride;
-		IBaseAction.TargetOverride = TargetType.Death;
-		try
-		{
-			return Raise.CanUse(out _);
-		}
-		finally
-		{
-			IBaseAction.TargetOverride = previousOverride;
-		}
 	}
 
 	/// <summary>
@@ -1190,149 +974,4 @@ public partial class CustomRotation
 		return false;
 	}
 
-	/// <summary>
-	/// The tank's own invulnerability - Hallowed Ground, Holmgang, Living Dead, Superbolide - for the
-	/// rules that need to know whether it can still save him. Null for every other job.
-	/// </summary>
-	protected virtual IBaseAction? Invulnerability => null;
-
-	/// <summary>
-	/// The owner's proposal of 04.10.2026 (concept 09, "Tankwechsel nach einem Tankbuster"): after a
-	/// tankbuster that leaves the player in danger of dying to the next one, and with his
-	/// invulnerability not available, Shirk goes to the tank <see cref="TankSwapWatch"/> names - the
-	/// one that will then hold the enemy.
-	/// </summary>
-	/// <remarks>
-	/// The invulnerability counts as available only when RSR would use it for any next hit
-	/// (<see cref="InvulnerabilityUsable"/>: at its threshold) and it is off cooldown. The tankbuster plan
-	/// draws it ahead of a measured cast as well, but not for every next hit, so it does not count here.
-	/// </remarks>
-	private bool TankSwapAbility(out IAction? act)
-	{
-		act = null;
-		var danger = TankSwapWatch.Danger;
-		if (danger.Length == 0)
-		{
-			return false;
-		}
-
-		if (InvulnerabilityUsable(out var invulnerability) && invulnerability!.Cooldown.HasOneCharge)
-		{
-			TankSwapWatch.TraceHeld($"{invulnerability.Name} is ready");
-			return false;
-		}
-
-		var receiver = TankSwapWatch.Target;
-		if (receiver == null)
-		{
-			TankSwapWatch.TraceHeld(TankSwapWatch.Detail);
-			return false;
-		}
-
-		var previous = IBaseAction.TargetOverride;
-		IBaseAction.TargetOverride = TargetType.TankSwap;
-		try
-		{
-			if (!ShirkPvE.CanUse(out act))
-			{
-				TankSwapWatch.TraceHeld(ShirkPvE.Cooldown.HasOneCharge
-					? $"Shirk cannot reach {receiver.Name.TextValue}"
-					: "Shirk is on cooldown");
-				act = null;
-				return false;
-			}
-		}
-		finally
-		{
-			IBaseAction.TargetOverride = previous;
-		}
-
-		TankSwapWatch.PlanSwapShirk(TankSwapWatch.DangerSource, receiver, TankSwapWatch.Ratio);
-		DefenseTrace.Decision($"tank swap ({danger}; {TankSwapWatch.Detail})", act);
-		return true;
-	}
-
-	/// <summary>
-	/// Concept 09, "Ein gemeldeter Treffer, der tötet" (A617): the damage the game has reported on the tank and not yet
-	/// taken (<see cref="ReportedDamage"/>) reaches his HP and barrier - his invulnerability goes now, in the moment between
-	/// the report and the damage, ahead of every other emergency action. Heals on their way are not counted: a heal that
-	/// lands after the hit saves nobody.
-	/// </summary>
-	private bool InvulnerabilityAgainstReportedDeath(out IAction? act)
-	{
-		act = null;
-		if (!Service.Config.InvulnerabilityAgainstReportedDeath || DataCenter.Role != JobRole.Tank || Invulnerability is not { } invulnerability
-			|| Player is not { } player || player.IsDead)
-		{
-			return false;
-		}
-
-		var reported = ReportedDamage.Pending;
-		var barrier = player.GetObjectShield();
-		if (reported == 0 || reported < player.CurrentHp + barrier || !invulnerability.CanUse(out act))
-		{
-			return false;
-		}
-
-		DefenseTrace.Decision($"reported damage {reported} reaches your {player.CurrentHp} HP and {barrier} barrier before it lands", act);
-		return true;
-	}
-
-	/// <summary>
-	/// Whether RSR would use the tank's invulnerability for the next hit whatever it is: it exists for the
-	/// job, is learned at the current level, enabled, and its threshold (HealthForDyingTanks) is above zero.
-	/// The tankbuster plan does not count here: it draws the invulnerability only for a measured cast that
-	/// nothing less survives, not for a marker, a BossModReborn prediction or an unmeasured action
-	/// (review of A261).
-	/// </summary>
-	private bool InvulnerabilityUsable(out IBaseAction? invulnerability)
-	{
-		invulnerability = Invulnerability;
-		return invulnerability != null && invulnerability.Config.IsEnabled && invulnerability.EnoughLevel
-			&& HealthForDyingTanks > 0f;
-	}
-
-	/// <summary>
-	/// The other half of the swap (the owner's rule of 04.10.2026): the enemy the swap handed to the
-	/// co-tank is provoked back only after the co-tank has taken its next tankbuster (his question,
-	/// accepted), once the debuff and the critical state are over - and, his precision, once the
-	/// invulnerability is ready again. Where RSR would not use an invulnerability at
-	/// all (not learned at this level, disabled, threshold zero) there is nothing to wait for.
-	/// </summary>
-	private bool TankSwapBackAbility(out IAction? act)
-	{
-		act = null;
-		var source = TankSwapWatch.ReclaimSource;
-		if (source == null)
-		{
-			return false;
-		}
-
-		if (InvulnerabilityUsable(out var invulnerability) && !invulnerability!.Cooldown.HasOneCharge)
-		{
-			TankSwapWatch.TraceReclaimHeld($"{invulnerability.Name} is not ready yet");
-			return false;
-		}
-
-		var previous = IBaseAction.TargetOverride;
-		IBaseAction.TargetOverride = TargetType.TankSwap;
-		try
-		{
-			if (!ProvokePvE.CanUse(out act))
-			{
-				TankSwapWatch.TraceReclaimHeld(ProvokePvE.Cooldown.HasOneCharge
-					? $"Provoke cannot reach {source.Name.TextValue}"
-					: "Provoke is on cooldown");
-				act = null;
-				return false;
-			}
-		}
-		finally
-		{
-			IBaseAction.TargetOverride = previous;
-		}
-
-		DefenseTrace.Decision($"tank swap back (the co-tank took the next tankbuster, your debuff and danger are over) on {source.Name.TextValue}", act);
-		return true;
-	}
 }

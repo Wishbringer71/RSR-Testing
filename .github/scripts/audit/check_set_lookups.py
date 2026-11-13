@@ -24,6 +24,7 @@ membership.
 import re
 import sys
 from pathlib import Path
+import classfile
 
 # Both files that ask these lists whether they hold an id. The first survey stopped at DataCenter and
 # missed the site in Watcher, which is why this is a list rather than a single path.
@@ -109,13 +110,14 @@ def self_test():
 
 def main():
     self_test()
+    classfile.self_test()
 
     problems = []
     for path in TARGETS:
         if not path.exists():
             print('%s not found - run from the repository root' % path)
             return 1
-        problems += ['%s %s' % (path, p) for p in check(path.read_text(encoding='utf-8'))]
+        problems += ['%s %s' % (path, p) for p in check(classfile.read(path))]
 
     if problems:
         print('a stored action list is searched instead of looked up:')

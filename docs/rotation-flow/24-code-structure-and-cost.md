@@ -53,7 +53,8 @@ Gemessen am 13.11.2026.
 Was das im Kampf heißt: Im Dauerbetrieb kostet RSR weniger als ein Zwanzigstel eines Frames, die
 Speicherbereinigung läuft oft mit und bleibt unter einem Frame. Spürbar ist nur der erste Pull einer Sitzung: Ein
 Durchlauf von bis zu 64 ms hält das Bild für bis zu vier Frames an (Thok ast Thok, 11.11.2026, 45 ms davon im Schritt
-der Rotation). Das ist die technische Schuld „Der erste Kampf einer Sitzung hält einen Durchlauf bis 170 ms an".
+der Rotation). Seit A739 gebaut (Abschnitt „Der erste Pull"); die Bestätigung im Spiel steht im TODO als „Ruckler am
+ersten Pull einer Sitzung".
 
 **Statisch**, am Quelltext (Stand b0ab17a15):
 
@@ -188,6 +189,15 @@ vor und nach), Compile ohne Warnung, alle Prüfungen. Prüfskripte, die eine Kla
 (`check_learned_readers`, `check_emergency_heal_threat`); `check_invuln_polarity` und `fixed_values.json` nennen die
 Teildatei. `ActionTargetInfo` bleibt: Dort sind nur 164 Zeilen ganze Fork-Member, 956 Fork-Zeilen stehen in Upstreams
 eigenen Membern.
+*Zweite Runde (A746):* `Watcher`, `TargetUpdater`, `CustomRotation_GCD`, `CustomRotation_Ability`, `SummonerRotation`,
+`BlueMageRotation` und die Rotationen `WHM_Reborn`, `SMN_Reborn`, `DRK_Reborn`, `WAR_Reborn`, `SGE_Reborn`, `SAM_Reborn`,
+3.708 Zeilen in 30 Teildateien. Dazu zwei Grenzen mehr: Kein Startwert wandert, auch kein Instanzfeld (ihre Reihenfolge
+über Teildateien ist ebenso offen), und keine Einstellung (`RotationConfig`, `UI`), weil das Einstellungsfenster sie in
+der Reihenfolge ihrer Deklaration zeigt. Die Aktionsliste einer Rotation erzeugt der Source Generator aus den
+Basisklassen; eine gewanderte Eigenschaft ändert sie nicht. In `fork_placement.json` stehen danach 390 Member.
+*Prüfmittel:* Der Matrix-Generator las nur die Hauptdatei und hätte beim Beschwörer Addle als ungenutzt geführt;
+`check_marker_lists`, `check_set_lookups`, `check_heal_target_order` und `scan13` hätten still weniger geprüft. Alle
+lesen eine Klasse jetzt samt Teildateien (`classfile.read`, Selbsttest), und die Regel steht in `pruefmittel.md`.
 
 ### Speicher
 

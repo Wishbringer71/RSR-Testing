@@ -5,7 +5,7 @@ namespace RotationSolver.RebornRotations.Tank;
 [Rotation("Reborn", CombatType.PvE, GameVersion = "7.57", RotationType = RotationType.Reborn)]
 [SourceCode(Path = "main/RebornRotations/Tank/DRK_Reborn.cs")]
 
-public sealed class DRK_Reborn : DarkKnightRotation
+public sealed partial class DRK_Reborn : DarkKnightRotation
 {
 	#region Config Options
 	[RotationConfig(CombatType.PvE, Name = "Use provoke in opening if tank stance is on")]
@@ -58,18 +58,6 @@ public sealed class DRK_Reborn : DarkKnightRotation
 			+ "narrower options, the health threshold only to the last one.")]
 	public BlackestNightStrategy BlackestNightUsage { get; set; } = BlackestNightStrategy.TankbusterHeavyPullOrLowHealth;
 
-	public enum BlackestNightStrategy : byte
-	{
-		[Description("Whenever single-target defences open")]
-		WheneverDefensesOpen,
-
-		[Description("Tankbuster, or a big pull with no other mitigation running")]
-		TankbusterOrHeavyPull,
-
-		[Description("As above, plus below the health threshold")]
-		TankbusterHeavyPullOrLowHealth,
-	}
-
 	[Range(1, 8, ConfigUnitType.None, 1)]
 	[RotationConfig(CombatType.PvE, Name = "Hostiles that make a pull big enough for The Blackest Night",
 		Tooltip = "How many enemies have to be in range before a pull counts as big enough to spend the "
@@ -103,8 +91,6 @@ public sealed class DRK_Reborn : DarkKnightRotation
 			+ "In a fight: a pack that hits too softly to break the barrier no longer gets it, and keeps the MP for "
 			+ "Edge of Shadow; a pack that does hit that hard gets it as before, a few seconds into the pull.")]
 	private bool BlackestNightWaitsForStream { get; set; } = true;
-
-	protected override bool HasOwnArmsLengthPullRule => true;
 
 	[Range(0, 1, ConfigUnitType.Percent)]
 	[RotationConfig(CombatType.PvE, Name = "Health threshold for The Blackest Night",
@@ -386,53 +372,6 @@ public sealed class DRK_Reborn : DarkKnightRotation
 		return stuns;
 	}
 
-	/// <summary>
-	/// Hold a damage mitigation because a barrier is waiting to be spent - group pulls only.
-	/// </summary>
-	/// <remarks>
-	/// The Blackest Night absorbs 25% of maximum HP over 7s and grants Dark Arts only when that
-	/// barrier is broken; a barrier that expires unbroken has cost 3000 MP and returned nothing but
-	/// the absorption. What decides it is the size of the incoming stream, so every mitigation cast
-	/// while the barrier stands works against it: Reprisal takes 10% off every enemy's damage,
-	/// Arm's Length slows every physical attacker by 20% for 15s. The user's instruction is to hold
-	/// both while the barrier is up.
-	///
-	/// <para>
-	/// <b>Group pulls only, by the user's own qualification - in a boss fight the rule does not
-	/// apply.</b> There the incoming damage arrives as scripted single hits rather than as a stream
-	/// of auto-attacks: a tankbuster breaks the barrier on its own whatever Reprisal does, so
-	/// holding the mitigation would give up real damage reduction for a reward that is not at risk.
-	/// The pull is recognised by the same hostile count the barrier itself requires
-	/// (<see cref="BlackestNightMinHostiles"/>) rather than a second number that could drift away
-	/// from it.
-	/// </para>
-	///
-	/// <para>
-	/// Healing is deliberately not part of this. A barrier absorbs damage before it reaches HP, so
-	/// the bearer's health does not change how fast it is spent - the only coupling runs the other
-	/// way, since a bearer who dies first gets no Dark Arts at all.
-	/// </para>
-	///
-	/// <para>
-	/// The whole party is asked, not just the player: the barrier can be placed on any member
-	/// (<c>"self or target party member"</c>), and Reprisal thins the stream for whoever is being
-	/// hit. <c>isFromSelf: false</c> for the same reason - a second dark knight's barrier is just
-	/// as real as this one's. The one-GCD lead releases the hold before the barrier lapses, so a
-	/// mitigation that can no longer affect the outcome is not held back for nothing.
-	/// </para>
-	///
-	/// <para>
-	/// The hold is a Dark Arts question, rung two of concept 09, and yields on the universal layer
-	/// when a member is in danger (<see cref="CustomRotation.HoldAreaDefense"/>).
-	/// </para>
-	/// </remarks>
-	private bool HoldMitigationForBarrier(bool area)
-	{
-		return area
-			? HoldAreaDefense(BarrierWaitsToBeSpent(), "Dark Knight: a barrier waits to be spent")
-			: HoldSingleDefense(BarrierWaitsToBeSpent(), "Dark Knight: a barrier waits to be spent");
-	}
-
 	private bool BarrierWaitsToBeSpent()
 	{
 		if (NumberOfHostilesInRange < BlackestNightMinHostiles)
@@ -461,107 +400,6 @@ public sealed class DRK_Reborn : DarkKnightRotation
 		}
 
 		return false;
-	}
-
-	/// <summary>
-	/// Whether Arm's Length is worth spending on the pull rather than kept for a knockback.
-	/// </summary>
-	/// <remarks>
-	/// The action has two effects and the plugin read only one of them: it nullifies knockback, and
-	/// it afflicts every physical attacker with Slow +20% for 15s. The slow raises auto-attack delay
-	/// as well as cast and recast time, and trash enemies deal most of their damage by auto-attack,
-	/// so on a standing pack it throttles the incoming stream by about the size of the debuff - the
-	/// same order as Rampart, for nothing but a 120s cooldown.
-	///
-	/// The obvious objection - it is the job's only knockback protection - does not hold where this
-	/// rule fires: knockback is a boss mechanic, and a wall-to-wall pull has none. The hostile-count
-	/// condition is what keeps the two apart, so it uses the same threshold as the barrier rather
-	/// than a second number that could drift away from it.
-	/// </remarks>
-	private bool ShouldUseArmsLengthOnPull()
-		=> ArmsLengthSlowsPull(UseArmsLengthOnPull, BlackestNightMinHostiles)
-			// The slow is the point of casting it here, and it is exactly what a barrier waiting to
-			// be spent cannot afford. Only this branch is held: the central anti-knockback uses of
-			// Arm's Length stay untouched, because being thrown off a platform is not a damage
-			// question.
-			&& !HoldMitigationForBarrier(false);
-
-	// The barrier breaks, and grants Dark Arts, only when it absorbs its share of maximum HP within its duration (effect
-	// text: 25 % in 7 s). What the player took over the last such span answers whether this pull's stream does that,
-	// after whatever mitigation already stood - which is what the barrier would meet. It replaces the assumption that
-	// enough enemies reach that rate, which nothing checked (concept 10, A340). Without a figure from the game it does
-	// not hold the barrier back.
-	private bool StreamWouldBreakBarrier()
-	{
-		var share = DefensiveValues.For(TheBlackestNightPvE.ID).Barrier;
-		var lasts = DefensiveValues.DurationOf(TheBlackestNightPvE.ID);
-		return share <= 0f || lasts <= 0f || DataCenter.DamageTakenWithin(lasts) >= share;
-	}
-
-	private bool _barrierOnSelf;
-	private bool _darkArtsBeforeBarrier;
-	private float _streamBeforeBarrier;
-
-	// Whether the player's own barrier broke: Dark Arts comes with the break, so it is read when the barrier goes. One
-	// line per barrier in DefenseTrace.log, with the stream that came before it - the check on the rule above, without
-	// a reading by the owner as part of it.
-	protected override void UpdateInfo()
-	{
-		base.UpdateInfo();
-		var on = Player != null && Player.HasStatus(true, StatusHelper.FullAbsorbRewardStatus);
-		var lasts = DefensiveValues.DurationOf(TheBlackestNightPvE.ID);
-		if (on && !_barrierOnSelf)
-		{
-			_darkArtsBeforeBarrier = HasDarkArts;
-			_streamBeforeBarrier = DataCenter.DamageTakenWithin(lasts);
-		}
-		else if (!on && _barrierOnSelf && DataCenter.InCombat)
-		{
-			DefenseTrace.Line("The Blackest Night on you "
-				+ (_darkArtsBeforeBarrier ? "ended, Dark Arts was already held" : HasDarkArts ? "broke (Dark Arts)" : "ran out unbroken")
-				+ $"; {_streamBeforeBarrier:P0} of max HP taken in the {lasts:F0} s before it, {NumberOfHostilesInRange} enemies in range");
-		}
-
-		_barrierOnSelf = on;
-	}
-
-	private bool ShouldUseBlackestNightOnSelf()
-	{
-		// The free mitigations first. Both cost nothing but their cooldown and sit at or near the
-		// end of this path, so while The Blackest Night is off cooldown every opportunity goes to
-		// the 3000 MP action and the cheap ones only land once it happens to be unavailable. In a
-		// pull that ordering is backwards; against a tankbuster it does not matter, which is why
-		// this only gates the pull branch.
-		var reprisalDone = !ReprisalPvE.EnoughLevel
-			|| ReprisalPvE.Cooldown.IsCoolingDown
-			|| (HostileTarget?.HasStatus(false, StatusHelper.ReprisalStatus) ?? false);
-
-		// Arm's Length is the second one. "Done" means the same thing: either it cannot be cast, or
-		// it already is - a cooling-down Arm's Length is one that has been spent on this pull.
-		var armsLengthDone = !UseArmsLengthOnPull
-			|| !ArmsLengthPvE.EnoughLevel
-			|| ArmsLengthPvE.Cooldown.IsCoolingDown;
-
-		// In a pull the barrier has to stand on its own: a big mitigation running alongside drops
-		// the damage stream below the rate that spends it, a stun chain stops the stream outright,
-		// and a slowed pack thins it for as long as the debuff lasts.
-		var staggeredHeavyPull = NumberOfHostilesInRange >= BlackestNightMinHostiles
-			&& !HasMajorMitigation
-			&& !GroupStunRunning()
-			&& !PackSlowed()
-			&& reprisalDone
-			&& armsLengthDone
-			&& (!BlackestNightWaitsForStream || StreamWouldBreakBarrier());
-
-		return BlackestNightUsage switch
-		{
-			BlackestNightStrategy.TankbusterOrHeavyPull => TankbusterOnMe || staggeredHeavyPull,
-			// Low health is an emergency, so it deliberately skips the stagger condition.
-			BlackestNightStrategy.TankbusterHeavyPullOrLowHealth =>
-				TankbusterOnMe || staggeredHeavyPull
-				|| Player?.GetHealthRatio() <= BlackestNightHealthRatio,
-			_ => true,
-		};
 	}
 
 	[RotationDesc(ActionID.OblationPvE, ActionID.ArmsLengthPvE, ActionID.TheBlackestNightPvE, ActionID.DarkMindPvE, ActionID.ShadowWallPvE, ActionID.ShadowedVigilPvE, ActionID.RampartPvE, ActionID.ReprisalPvE)]
@@ -849,42 +687,8 @@ public sealed class DRK_Reborn : DarkKnightRotation
 	// reason: Delirium grants three stacks of Blood Weapon, each adding 10 Blood (A197).
 	private const byte BloodPoolLimit = 70;
 
-	/// <summary>
-	/// Whether Bloodspiller or Quietus may spend Blood now: inside the burst, or where the Blood
-	/// would not fit into the next Delirium. Outside it the Blood is pooled for the burst.
-	/// </summary>
-	/// <remarks>
-	/// The Balance: "Use Bloodspiller under raid buffs, or to prevent overcapping on blood", and
-	/// Bloodspiller "can be delayed without loss, as long as ... Blood Gauge do[es] not overcap". The
-	/// property stood here unread since the rotation rework, built around a Blood cost of Living
-	/// Shadow the action no longer has; Bloodspiller went out at 50 Blood whenever it could (A197).
-	/// Under Delirium the two actions cost nothing (their own check lets them through then).
-	/// </remarks>
-	private bool UseBlood
-	{
-		get
-		{
-			if (!DeliriumPvE.EnoughLevel || DeliriumStacks > 0 || LowDeliriumStacks > 0)
-			{
-				return true;
-			}
-
-			if (StatusHelper.PlayerHasStatus(true, StatusID.Delirium_1972, StatusID.Delirium_3836) || InTwoMIsBurst)
-			{
-				return true;
-			}
-
-			return Blood > BloodPoolLimit;
-		}
-	}
 	// Determines if currently in a burst phase based on cooldowns of key abilities.
 	private bool InTwoMIsBurst => BloodWeaponPvE.Cooldown.IsCoolingDown && DeliriumPvE.Cooldown.IsCoolingDown && ((LivingShadowPvE.Cooldown.IsCoolingDown && !LivingShadowPvE.Cooldown.ElapsedAfter(15)) || !LivingShadowPvE.EnoughLevel);
-
-	// "Keep at least 3000 MP" keeps what The Blackest Night costs: Edge or Flood spends only what lies above it, both
-	// costs read from the game. Darkside running out spent the reserve too, and the barrier was missing for the next
-	// tankbuster (A406).
-	private bool EdgeKeepsBlackestNightMp => !TheBlackestNight || HasDarkArts
-		|| CurrentMp >= TheBlackestNightPvE.Info.MPNeed + EdgeOfDarknessPvE.Info.MPNeed;
 
 	// Manages DarkSide ability based on several conditions.
 	private bool CheckDarkSide
@@ -912,25 +716,4 @@ public sealed class DRK_Reborn : DarkKnightRotation
 	}
 	#endregion
 
-	// "Use ... on lowest HP party member" with its health threshold: the lowest by points among the members under the
-	// threshold. The pick used to come first and the threshold after it, so when the member with the fewest points stood
-	// above it - a damage dealer with a small pool, barely hurt - the barrier went to nobody, although another member
-	// was under the threshold (A283). The points measure stays: against one hit, a hit is an absolute number (concept 07).
-	// The target filter is swapped in for this call only and restored afterwards, as Nascent Flash does for the Warrior.
-	private static bool CanUseOnLowestBelow(IBaseAction action, float ratio, bool usedUp, out IAction? act)
-	{
-		var setting = action.Setting;
-		var canTarget = setting.CanTarget;
-		setting.CanTarget = t => canTarget(t)
-			&& !t.HasStatus(false, StatusID.Transcendent)
-			&& t.GetHealthRatio() <= ratio;
-		try
-		{
-			return action.CanUse(out act, usedUp: usedUp, targetOverride: TargetType.LowHP);
-		}
-		finally
-		{
-			setting.CanTarget = canTarget;
-		}
-	}
 }

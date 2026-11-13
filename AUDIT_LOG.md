@@ -21683,6 +21683,30 @@ Freigabe (`CLAUDE.md`, „Grenzen und Löschungen").
 *Prüfgrad:* Workflow-Lauf und Release-API gelesen, Prüfskripte; die Übergabe gegen den Release-Text abgeglichen (jeder
 der 74 Einträge steht im Gesamtbild).
 
+### A746 · TODO nach dem Release: erster Pull als Warte-Eintrag, zweite Runde Teildateien (13.11.2026)
+
+Sein Auftrag (13.11.2026): „dann todo weitermachen im vollen loop". Defekte und offene Arbeit leer; Warte-Einträge
+hängen an seinen Läufen.
+
+- *Nachgezogen:* Die Schuld „Der erste Kampf einer Sitzung hält einen Durchlauf bis 170 ms an" war seit A739 bearbeitet
+  und stand noch als offen; jetzt Warte-Eintrag „Ruckler am ersten Pull einer Sitzung" (Bestätigung über die Zeilen
+  „warm-up" und „JIT"). Konzept 24 nachgezogen.
+- *Schuld „Fork-Member in Dateien von Upstream" abgebaut:* zwölf Dateien mit den meisten gelisteten Membern zerlegt
+  (Konzept 24, „Fork-Code in eigenen Teildateien", zweite Runde), 3.708 Zeilen in 30 Teildateien, zwei Kleinstteile
+  zusammengeführt. Grenzen: kein Startwert (statisch oder Instanz), keine Einstellung (Reihenfolge im Fenster). Geprüft:
+  jede Codezeile genau einmal da, Compile ohne Warnung; gewandert ist eine einzige Eigenschaft vom Typ `IBaseAction`
+  (`SGE_Reborn.EukrasianDosisAtLevel`, privat, wählt unter vorhandenen Aktionen), die Aktionsliste erzeugt der Source
+  Generator aus den Basisklassen. `fork_placement.json` 563 → 390; vier Einträge von `fixed_values.json` umgetragen.
+- *Defekt im Prüfmittel gefunden:* Der Matrix-Generator las nur die Hauptdatei einer Klasse; nach dem Verschieben stand
+  Addle beim Beschwörer als ungenutzt. Die CI schlug nur an, weil sich die Ausgabe änderte. `check_marker_lists`,
+  `check_set_lookups`, `check_heal_target_order` und `scan13` hätten still weniger geprüft. Gemeinsame Lesefunktion
+  `classfile.read` mit Selbsttest (läuft mit `check_set_lookups`), der Generator mit eigenem `with_parts` samt Selbsttest;
+  Regel in `pruefmittel.md`.
+- *Falsifikation:* Kein Nutzen? Ein Fünftel weniger gelistete Member, jeder Sync trifft auf weniger Fork-Zeilen in
+  Upstreams Dateien. Option falsch? Kein Startwert und keine Einstellung wanderte; die Reihenfolge im Fenster und beim
+  Start bleibt. Ausgeliefert, und nichts ändert sich? Im Kampf so gewollt.
+- *Prüfgrad:* verlustfreie Verschiebung mechanisch nachgewiesen, Compile, alle Prüfskripte, Matrix unverändert.
+
 ## B · Commit-Register (Fork vs. `upstream/main`)
 
 ### B1 · Einzelgeprüfte Fork-Commits

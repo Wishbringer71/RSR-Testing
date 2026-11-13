@@ -46,6 +46,7 @@ Usage: python3 .github/scripts/audit/scan13.py
 import re
 import sys
 from collections import defaultdict
+import classfile
 
 RESX = 'RotationSolver.SourceGenerators/Properties/Status.resx'
 ACTION_RESX = 'RotationSolver.SourceGenerators/Properties/ActionId.resx'
@@ -86,7 +87,7 @@ def parse_status_enum(path):
 
 
 def listed_shields(path):
-    src = open(path, encoding='utf-8').read()
+    src = classfile.read(path)
     m = re.search(r'ShieldStatus\s*\{\s*get;\s*\}\s*=\s*\[(.*?)\];', src, re.S)
     if not m:
         return set()

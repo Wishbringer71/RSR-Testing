@@ -291,7 +291,7 @@
    "reason": "Slider bounds of two enemy counts the owner sets - the slowed minimum of his Holy rule and the group pull for holding Holy under The Blackest Night; bounds of a setting, not a figure of the game (A340)."
   },
   {
-   "file": "RotationSolver/RebornRotations/Healer/WHM_Reborn.cs",
+   "file": "RotationSolver/RebornRotations/Healer/WHM_Reborn.HitResponse.cs",
    "code": "if (slowed * 2 <= inRange)",
    "values": [
     "2"
@@ -697,7 +697,7 @@
    "reason": "More than one member reached is what separates an area hit from a single-target one - the definition the flag needs, not a tunable value; half of the party was rejected because a cleave on the tank and two melee is three of eight"
   },
   {
-   "file": "RotationSolver/RebornRotations/Tank/WAR_Reborn.cs",
+   "file": "RotationSolver/RebornRotations/Tank/WAR_Reborn.TankProtection.cs",
    "code": "private bool BloodwhettingForDefense => SoloIntuition || NumberOfHostilesInRange > 2;",
    "values": [
     "2"
@@ -1218,7 +1218,7 @@
    "reason": "Unit conversion, not a game value: the effect text states the share in percent and the method answers a fraction (A507)."
   },
   {
-   "file": "RotationSolver/Basic/Rotations/Basic/BlueMageRotation.cs",
+   "file": "RotationSolver/Basic/Rotations/Basic/BlueMageRotation.HealTarget.cs",
    "code": "return left <= HealthForDyingTanks * 100f;",
    "values": [
     "100"
@@ -1228,7 +1228,7 @@
    "reason": "Unit conversion, not a game value: GetEffectiveHpPercent answers in percent and HealthForDyingTanks is a share, as in the critical class (A154, A340, A507)."
   },
   {
-   "file": "RotationSolver/Basic/Rotations/Basic/BlueMageRotation.cs",
+   "file": "RotationSolver/Basic/Rotations/Basic/BlueMageRotation.Jobs.cs",
    "code": "var gain = damageUp / 100f * (burst + (filler * fillers));",
    "values": [
     "100"
