@@ -22318,6 +22318,21 @@ des Spiels ausrichten" (A765).
 - *Prüfgrad:* Compile; alle 54 CI-Schritte lokal. Im Spiel nicht beobachtet; jede Prüfung, die eine Form misst
   (Flächenabwehr, Selbstschutz, Sperre beim Wirken, Rückstoß), liest die neue Richtung.
 
+### A767 · Entscheiden erst, wenn gedrückt werden kann: nicht gebaut, die Prämisse hält nicht (13.11.2026)
+
+Sein Auftrag (13.11.2026): „Todo weiter im vollen Loop abarbeiten". TODO-Punkt aus A744 und A765 (50 bis 55 % der
+Durchläufe im gesperrten Tor).
+- *Erhoben:* Wer `ActionUpdater.NextAction` und `NextGCDAction` in Frames liest, in denen das Tor sperrt. Das sind das
+  Abfangen eines Tastendrucks (`ActionQueueManager`, `ShouldInterceptAction`), der Zielwechsel nach der nächsten Aktion
+  („Target only“, Lehrmodus), das Fenster „Next Action“ und die Markierung im Lehrmodus sowie True North
+  (`StateUpdater.ShouldAddPositional`).
+- *Falsifikation „Option falsch“ hält:* Überspringen änderte das Abfangen gerade dann, wenn er den nächsten GCD während
+  eines Zaubers drückt. Mit den Zeitstempeln im Entscheidungspfad (A744) zahlt jede Variante mit Verhalten oder mit
+  einem Umbau an 87 Stellen, für 1 % der Framezeit.
+- *Entscheidung:* Option 0. Ich habe den Punkt aus dem TODO genommen und die Abwägung in Konzept 24 eingetragen. Die
+  Messzeile bleibt.
+- *Prüfgrad:* statisch am Code.
+
 ## B · Commit-Register (Fork vs. `upstream/main`)
 
 ### B1 · Einzelgeprüfte Fork-Commits

@@ -19,7 +19,7 @@ auswahl und das timing der beschwörung" – je Kampf aller fünf Bretter (Gegne
 BossMod-Module) die Rotation des Beastmasters, die Wahl der Begleiter und den Zeitpunkt ihres Aufrufs im Loop prüfen
 (Beispiel seiner Beobachtung: der Raptor gegen Feuer, bevor feueranfällige Gegner da waren; A581).
 
-Offene Arbeit: „Entscheiden erst, wenn gedrückt werden kann" (Rechenzeit, ohne Wirkung auf die Aktionen).
+Keine offene Arbeit in Reihenfolge.
 
 Danach die technische Schuld, soweit ihre Auflösungsbedingung erfüllt ist. Warten auf Daten: unten.
 
@@ -31,12 +31,6 @@ Code-Review; was diese finden, kommt wieder hierher und in dieselbe Reihenfolge,
 ## Defekte
 
 ## Offene Arbeit
-
-### Entscheiden erst, wenn gedrückt werden kann · N, R
-Im Kampf: 0,1 bis 0,2 ms weniger Rechenzeit je Frame, keine andere Aktion. Gemessen am 13.11.2026 (A765): In 50 bis 55 %
-der Durchläufe sperrte das Tor ohnehin. Nächster Schritt: die Beobachtungen Member für Member aus dem Entscheidungspfad
-lösen (29 Zeitstempel in Rotationen, 58 in Hilfsklassen), dann überspringen. Konzept 24, „Entscheiden erst, wenn
-gedrückt werden kann".
 
 ## Technische Schuld
 

@@ -171,8 +171,22 @@ oder mehr, folgt der Loop: zuerst die Beobachtungen aus dem Entscheidungspfad l�
 *Gemessen (13.11.2026, A765; Weißmagier und Beschwörer, Builds f16ff5976 und dca6fb8e8, 40 Kämpfe):* In 50 bis 55 % der
 Durchläufe sperrte das Tor ohnehin, und sie tragen 50 bis 55 % der Zeit des Rotationsschritts. Der Schritt kostet im
 Mittel 0,21 bis 0,39 ms je Frame; der Gewinn läge bei 0,1 bis 0,2 ms je Frame, rund 1 % der Framezeit bei 60 Bildern.
-Die Bedingung „die Hälfte oder mehr“ ist erfüllt. Der Loop folgt im TODO als offene Arbeit: zuerst die Beobachtungen
-Member für Member aus dem Entscheidungspfad lösen.
+Die Bedingung „die Hälfte oder mehr“ ist erfüllt.
+*Loop danach (A767): nicht gebaut.* Die Prämisse „in diesen Frames geht keine Aktion verloren, wenn nicht entschieden
+wird“ hält nicht. In gesperrten Frames lesen andere Stellen die frisch entschiedene Aktion:
+- Das Abfangen eines eigenen Tastendrucks (`ActionQueueManager`) vergleicht den gedrückten Knopf mit
+  `ActionUpdater.NextAction`. Gedrückt wird gerade während eines Zaubers, für den nächsten GCD. Mit der Aktion von
+  vor dem Zauber fiele der Vergleich anders aus: Ein Druck, der zur neuen Entscheidung passt, würde abgefangen.
+- Der Zielwechsel nach der nächsten Aktion (`UpdateTargetFromNextAction`, Modus „Target only“ und Lehrmodus).
+- Das Fenster „Next Action“ und die Markierung im Lehrmodus. Er sieht sie.
+- True North für Nahkämpfer (`StateUpdater.ShouldAddPositional`) liest den nächsten GCD.
+*Optionen danach:* (a) überspringen und diese Leser in Kauf nehmen: verworfen, ändert das Abfangen im Kampf. (b) Nur auf
+Anfrage entscheiden, wenn ein Leser fragt: Das Fenster fragt jedes Bild, und die 29 plus 58 Zeitstempel im
+Entscheidungspfad müssten trotzdem erst heraus. (c) In gesperrten Frames seltener entscheiden: Ein Leser sieht eine
+Aktion, die ein Bild älter ist, und die Beobachtungen werden gröber; es spart die Hälfte von 0,1 bis 0,2 ms und
+braucht eine neue feste Rate. *Bilanz:* Jede Variante zahlt mit Verhalten oder mit einem Umbau an 87 Stellen. Der
+Gewinn ist 1 % der Framezeit, im Kampf nicht zu sehen. Option 0 bleibt. Die Messzeile „rotation step while the gate
+would not press“ bleibt: Steigt der Anteil oder der Rotationsschritt deutlich, ist das neu zu prüfen.
 *Falsifikation des Vorschlags:* Kein Gewinn? Möglich – die Zeile zeigt es. Falsche Option? Überspringen ohne die
 Trennung verschöbe Fristen; deshalb nicht gebaut. Ausgeliefert, und nichts ändert sich? Mit dem Messmittel allein so
 gewollt.
