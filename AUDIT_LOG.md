@@ -22292,6 +22292,11 @@ fehlerbeseitigung. rotas, bretter, ablaufplanung".
   laufenden Schicht. `BestiaryTrace.log` ohne neue Einträge seit 13.11., 16:24.
 - *Nicht lösbar mit diesem Upload:* der Absturz der zweiten Installation vom 11.11. (A736; das Dalamud-Protokoll
   umfasst den 08. und 13.11.), die Crucible-Punkte (kein Kampf auf Brett 2 vor dem Absturz).
+- *Quellen am Auftragsende:* Upstream unverändert. BossMod (Original) 09026c552 → 93b0afd30: Tiefe Gewölbe
+  (Wegfindung, AutoClear), eine Vereinigung von Punktformen und #12218 als Wirken, das sein Ziel falsch nennt.
+  Daraus der TODO-Punkt „Kegel und Linien nach der Wirkrichtung des Spiels ausrichten“: Der Client führt die
+  Richtung (`Character.CastRotation`, gemessen an FFXIVClientStructs der Dalamud-Version). Übrige 38 Quellen
+  unverändert.
 - *Prüfgrad:* Compile; alle CI-Schritte lokal; Messungen am Protokoll und am Mitschnitt. Die Behebungen sind im
   Spiel nicht beobachtet.
 

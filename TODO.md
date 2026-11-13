@@ -19,7 +19,8 @@ auswahl und das timing der beschwörung" – je Kampf aller fünf Bretter (Gegne
 BossMod-Module) die Rotation des Beastmasters, die Wahl der Begleiter und den Zeitpunkt ihres Aufrufs im Loop prüfen
 (Beispiel seiner Beobachtung: der Raptor gegen Feuer, bevor feueranfällige Gegner da waren; A581).
 
-Offene Arbeit: „Entscheiden erst, wenn gedrückt werden kann" (Rechenzeit, ohne Wirkung auf die Aktionen).
+Offene Arbeit, nach Wirkung im Kampf: „Kegel und Linien nach der Wirkrichtung des Spiels ausrichten" (Ausweichen),
+dann „Entscheiden erst, wenn gedrückt werden kann" (Rechenzeit, ohne Wirkung auf die Aktionen).
 
 Danach die technische Schuld, soweit ihre Auflösungsbedingung erfüllt ist. Warten auf Daten: unten.
 
@@ -37,6 +38,15 @@ Im Kampf: 0,1 bis 0,2 ms weniger Rechenzeit je Frame, keine andere Aktion. Gemes
 der Durchläufe sperrte das Tor ohnehin. Nächster Schritt: die Beobachtungen Member für Member aus dem Entscheidungspfad
 lösen (29 Zeitstempel in Rotationen, 58 in Hilfsklassen), dann überspringen. Konzept 24, „Entscheiden erst, wenn
 gedrückt werden kann".
+
+### Kegel und Linien nach der Wirkrichtung des Spiels ausrichten · N
+Im Kampf: Ein Kegel oder eine Linie gilt dort als treffend, wohin das Omen zeigt, auch wenn das Ziel während des
+Wirkens weiterläuft. Heute richtet RSR sie zum Ziel des Zaubers aus und dreht mit, das Omen nicht. „Wooly Inspiration“
+(#12218, Kegel 60 Yalm) nennt den Spieler als Ziel und trifft in Wirkrichtung; RSR hält ihn für sicher treffend und
+hält deshalb keinen Zauberbeginn zum Ausweichen zurück. Der Client führt die Richtung (`Character.CastRotation`,
+FFXIVClientStructs); BossMod (Original) richtet jede Form danach aus und kennzeichnet #12218 als täuschend (awgil
+93b0afd30, A765). Nächster Schritt: Loop in Konzept 13, „Wen die Form erreicht“ – Richtung aus `CastRotation`, ein
+Wirken, dessen Richtung nicht auf sein Ziel zeigt, gilt nicht als auf das Ziel gewirkt.
 
 ## Technische Schuld
 
