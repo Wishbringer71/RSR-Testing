@@ -286,6 +286,40 @@ drehen müsste.
     Ein Blick, auf den er zuläuft, trifft ihn, wie ohne RSR.
   - *Lücke ohne Breite:* Berühren sich zwei gesperrte Bögen, liegt die Mitte der Lücke auf einer Grenze und sieht noch
     hinein. RSR prüft jede Mitte gegen alle Blicke, bevor es dreht; gibt es keine, dreht es nicht.
+- *Richtig stehen und weiter treffen* (A777; seine Vorgabe vom 14.11.2026: „wenn man bereits richtig rum steht, den
+  Gegner trifft, braucht nicht gedreht werden und der Kampf angehalten“). Einordnung: Vorgabe.
+  - *Sachlage:*
+    - Steht die Figur sicher, dreht RSR nicht (`TurnAway` dreht nur aus einer unsicheren Richtung). Ein Ziel in sicherer
+      Richtung bleibt wählbar.
+    - Eine Sofortaktion trifft nur, wenn das Ziel innerhalb von 45° vor der Figur liegt. BossModReborn
+      (`ActionManagerEx`, empirisch, Werkzeugquelle) nennt dafür denselben Winkel wie den Blickkegel. Den Wirkenden eines
+      normalen Blicks trifft eine Sofortaktion also nur mit Blick in den Blick. Dort bleibt die Sperre im Vorlauf.
+    - Ein Zauber mit Wirkzeit bricht erst ab, wenn das Ziel zu Beginn des Slidecast-Fensters mehr als 75° seitlich liegt
+      (BossModReborn, empirisch). Ab der Antwort des Spiels (`CastInfo.ResponseSourceSequence`, wie `MovementLock`) zählt
+      die Richtung nicht mehr.
+  - *Befund an A774:* RSR drehte im Vorlauf in die Mitte der nächsten Lücke, bei einem Blick vom Ziel aus also um 180°.
+    Ein eigener Zauber auf den Wirkenden brach dabei ab. Zauber, deren Ende nach dem Blick liegt, hielt RSR zurück,
+    obwohl sie bei 45° bis 75° durchlaufen.
+  - *Regel:*
+    - Läuft ein eigener Zauber mit Richtung und hat das Spiel ihn noch nicht, dreht RSR im Vorlauf in die Mitte des
+      breitesten sicheren Stücks innerhalb von 75° um das Ziel des Zaubers. Gibt es dort keines, dreht es wie bisher;
+      Sicherheit geht vor dem Zauber.
+    - Ein Zauber, der über den Blick hinaus wirkt, ist frei, wenn es innerhalb von 75° um sein Ziel eine Richtung gibt,
+      die vor allen Blicken bis zu seinem Ende sicher ist. RSR dreht dann im Vorlauf dorthin. Ohne „Turn away from gaze
+      attacks“ oder ohne Messung bleibt die Sperre über das ganze Wirken.
+    - Sofortaktionen: unverändert.
+  - *Optionen:* (0) A774 lassen. (1) Wie BossModReborn, mit festen 0,5 s Vorlauf. (2) Die Regel oben mit dem gemessenen
+    Vorlauf. *Gewählt:* (2).
+  - *Im Kampf:* Ein Zauberer wirkt einen Zauber von 2,5 s auf Angra Mainyu, und „Mortal Gaze“ landet nach 1,5 s. Bisher
+    hielt RSR den Zauber zurück. Lief er schon, drehte RSR die Figur kurz vorher um 180°, und der Zauber brach ab. Jetzt
+    beginnt der Zauber, und kurz vor dem Blick dreht RSR die Figur um 60° (Mitte von 45° bis 75°). Der Zauber trifft,
+    der Blick nicht.
+  - *Gegenthese 1 (die 75° gelten nicht):* Der Wert ist empirisch. Bricht der Zauber doch ab, kostet das den Zauber,
+    nicht den Spieler: Die Richtung ist in jedem Fall sicher.
+  - *Gegenthese 2 (zwei Blicke):* Sperren zwei Blicke die 75° um das Ziel, gibt es kein sicheres Stück. Dann gilt die
+    Sperre wie bisher.
+  - *Gegenthese 3 (ausgeliefert, und nichts ändert sich):* bei Sofortaktionen auf den Wirkenden. Dort trennt keine
+    Richtung Treffen und Blick.
 - *Im Kampf:* Während der 4,5 s von #3499 kämpft RSR bis L vor dem Blick weiter, auch auf Angra Mainyu. Ab dann drückt
   es nichts mehr auf ihn und nichts auf ein Ziel in seiner Richtung, und es dreht die Figur von ihm weg. Der Ausfall schrumpft so von zwei GCDs auf
   die gemessene Verzögerung plus ein Bild. Der Heiler heilt weiter, denn Heilungen

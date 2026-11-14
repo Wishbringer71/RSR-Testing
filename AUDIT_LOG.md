@@ -22517,6 +22517,30 @@ Einordnung: Hinweise.
     900c698dd.
   - Upstream unverändert seit A775.
 
+### A777 · Seine Vorgabe: richtig stehen und weiter treffen; Zauber laufen durch den Blick (14.11.2026)
+
+Seine Angabe (14.11.2026): „Wichtig: wenn man bereits richtig rum steht, den Gegner trifft, braucht nicht gedreht werden
+und der Kampf angehalten. Machbar?“ Einordnung: Vorgabe.
+- *Sachlage:*
+  - Steht die Figur sicher, dreht RSR seit A774 nicht, und Ziele in sicherer Richtung bleiben wählbar.
+  - Eine Sofortaktion braucht das Ziel innerhalb von 45° (BossModReborn `ActionManagerEx`, empirisch), also im
+    Blickkegel. Den Wirkenden eines normalen Blicks trifft sie nur mit Blick in den Blick. Diesen Teil seiner Vorgabe
+    erfüllt keine Richtung; dort bleibt die Sperre für den Vorlauf.
+  - Ein Zauber bricht erst ab, wenn sein Ziel zu Beginn des Slidecast-Fensters mehr als 75° seitlich liegt (ebenda).
+- *Befund an A774:* Im Vorlauf drehte RSR bis zu 180° und brach so einen eigenen Zauber auf den Wirkenden ab. Zauber,
+  die über den Blick hinaus wirken, hielt es zurück.
+- *Umgesetzt (Konzept 13, „Richtig stehen und weiter treffen“):*
+  - Bei einem laufenden Zauber, den das Spiel noch nicht hat, dreht RSR in das breiteste sichere Stück innerhalb von 75°
+    um sein Ziel (`SafeNear`, `CastAim`).
+  - Ein Zauber darf beginnen, wenn es dort eine bis zu seinem Ende sichere Richtung gibt.
+  - Der Optionstext nennt beides. Die 75° stehen als Festwert-Ausnahme.
+- *Modell:*
+  - Ein Blick vom Ziel aus: Drehung um 60° statt 180°.
+  - Blicke bei −50° und +50°: Die Figur bleibt aufs Ziel gerichtet (sicher).
+  - Ein umgekehrter Blick: zum Ziel.
+- *Prüfgrad:* Compile, Prüfskripte, Winkelmodell; im Spiel nicht beobachtet. Messmittel: die Zeile „gaze: turned …“
+  nennt den Winkel; ein abgebrochener Zauber zeigt sich im Mitschnitt.
+
 ## B · Commit-Register (Fork vs. `upstream/main`)
 
 ### B1 · Einzelgeprüfte Fork-Commits

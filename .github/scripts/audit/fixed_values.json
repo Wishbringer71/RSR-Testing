@@ -2372,6 +2372,16 @@
    "status": "exception",
    "loop": "A774",
    "reason": "The middle of a safe gap between two forbidden arcs (geometry, not a quantity of the game): the facing furthest from both gazes, so a small turn or a late update of the caster's position does not tip it into either."
+  },
+  {
+   "file": "RotationSolver/Basic/Helpers/GazeWatch.cs",
+   "code": "private const float CastHalfAngleDegrees = 75f;",
+   "values": [
+    "75"
+   ],
+   "status": "exception",
+   "loop": "A777",
+   "reason": "How far a running cast's target may lie off the facing before the game has the spell. The game data names no angle; BossModReborn measured it (ActionManagerEx, \"empirical\") and turns casters within it. If it is too wide, the cast breaks, while the gaze still misses: the facing is safe either way."
   }
  ]
 }

@@ -37,6 +37,10 @@ internal static partial class GazeWatch
 	// The sheet's cast VFX of a gaze (ActionCastVFX 25), as BossMod and BossModReborn read it.
 	private const uint GazeCastVfx = 25;
 
+	// How far a running cast's target may lie off the facing until the game has the spell (BossModReborn,
+	// ActionManagerEx, empirical; A777). Between this and the gaze's half width the cast lands and the gaze misses.
+	private const float CastHalfAngleDegrees = 75f;
+
 	private enum Kind : byte
 	{
 		None,
@@ -127,10 +131,20 @@ internal static partial class GazeWatch
 
 		var lead = Lead();
 		var rotation = MathF.Atan2(facing.X, facing.Z);
+		bool? castCanTurn = null;
 		foreach (var gazer in gazers)
 		{
 			// An instant turns the player now, and RSR turns the player away at the lead; a cast holds the heading to its end.
 			if (gazer.Left - Math.Max(0f, castTime) > lead || !Unsafe(rotation, player, gazer))
+			{
+				continue;
+			}
+
+			// A777: a cast may begin when a direction within its limit around the target stays safe from every gaze that
+			// lands before the game has it; RSR turns there at the lead. Without turning or a measure it is held as before.
+			castCanTurn ??= castTime > 0f && !float.IsInfinity(lead)
+				&& SafeNear(player, rotation, float.DegreesToRadians(CastHalfAngleDegrees), castTime + lead) != null;
+			if (castCanTurn == true)
 			{
 				continue;
 			}
@@ -180,7 +194,15 @@ internal static partial class GazeWatch
 			unsafeNow |= Unsafe(current, player, gazer);
 		}
 
-		if (!anyDue || !unsafeNow || SafeRotation(player, current, lead) is not { } target)
+		if (!anyDue || !unsafeNow)
+		{
+			return;
+		}
+
+		// A777: a running cast the game does not have yet keeps going when the new facing stays within its limit around
+		// the cast's target; only where no safe direction is left there does the turn break it.
+		var near = CastAim(player, out var aim) ? SafeNear(player, aim, float.DegreesToRadians(CastHalfAngleDegrees), lead) : null;
+		if ((near ?? SafeRotation(player, current, lead)) is not { } target)
 		{
 			return;
 		}
@@ -290,6 +312,98 @@ internal static partial class GazeWatch
 		}
 
 		return best;
+	}
+
+	// The middle of the widest safe stretch within <half> around <center>, against the gazes landing within <maxLeft>;
+	// null when the stretch holds none. Arcs are laid out around <center> + π, so the stretch never wraps.
+	private static float? SafeNear(IBattleChara player, float center, float half, float maxLeft)
+	{
+		var gazeHalf = float.DegreesToRadians(DangerHalfAngleDegrees);
+		_forbidden.Clear();
+		foreach (var gazer in _gazers)
+		{
+			if (gazer.Left > maxLeft)
+			{
+				continue;
+			}
+
+			var toEye = gazer.Eye - player.Position;
+			toEye.Y = 0;
+			var at = Difference(MathF.Atan2(toEye.X, toEye.Z), center) + MathF.PI;
+			if (gazer.Inverted)
+			{
+				AddArc(at + gazeHalf, at + MathF.Tau - gazeHalf);
+			}
+			else
+			{
+				AddArc(at - gazeHalf, at + gazeHalf);
+			}
+		}
+
+		_forbidden.Sort(static (a, b) => a.Start.CompareTo(b.Start));
+		float? best = null;
+		var bestWidth = 0f;
+		var end = MathF.PI - half;
+		var stop = MathF.PI + half;
+		for (var i = 0; i <= _forbidden.Count; i++)
+		{
+			var next = i < _forbidden.Count ? Math.Min(_forbidden[i].Start, stop) : stop;
+			if (next > end)
+			{
+				var middle = 0.5f * (end + next);
+				var rotation = center + middle - MathF.PI;
+				if (next - end > bestWidth && SafeFor(rotation, player, maxLeft))
+				{
+					best = rotation;
+					bestWidth = next - end;
+				}
+			}
+
+			if (i < _forbidden.Count)
+			{
+				end = Math.Max(end, _forbidden[i].End);
+			}
+		}
+
+		return best;
+	}
+
+	// The direction of the player's own cast while it still needs it: an oriented spell the game has not taken yet
+	// (ResponseSourceSequence, as MovementLock reads it), towards its target or its place.
+	private static unsafe bool CastAim(IBattleChara player, out float aim)
+	{
+		aim = 0f;
+		var info = ((FFXIVClientStructs.FFXIV.Client.Game.Character.Character*)player.Address)->GetCastInfo();
+		if (info == null || !info->IsCasting || (ActionType)info->ActionType != ActionType.Action
+			|| (info->SourceSequence != 0 && info->ResponseSourceSequence == info->SourceSequence)
+			|| Service.GetSheet<Lumina.Excel.Sheets.Action>().GetRowOrDefault(info->ActionId) is not { NeedToFaceTarget: true, Range: > 0 } action)
+		{
+			return false;
+		}
+
+		Vector3 towards;
+		if (action.TargetArea)
+		{
+			towards = new Vector3(info->TargetLocation.X, info->TargetLocation.Y, info->TargetLocation.Z);
+		}
+		else if ((ulong)info->TargetId is var id && id != player.GameObjectId && Svc.Objects.SearchById(id) is { } target)
+		{
+			towards = target.Position;
+		}
+		else
+		{
+			return false;
+		}
+
+		var facing = towards - player.Position;
+		facing.Y = 0;
+		if (facing.LengthSquared() <= 0f)
+		{
+			return false;
+		}
+
+		aim = MathF.Atan2(facing.X, facing.Z);
+		return true;
 	}
 
 	private static bool SafeFor(float rotation, IBattleChara player, float lead)
