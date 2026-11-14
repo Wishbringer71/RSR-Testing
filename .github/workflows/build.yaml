@@ -327,6 +327,11 @@ jobs:
       - name: Check the concept-first hook against constructed edits in a constructed repository
         run: python3 .github/scripts/audit/concept_first.py --self-test
 
+      # review_once.py counts the independent review rounds per concept and its written requirements and refuses a
+      # second round for the same requirements (A815): nine rounds on the gaze watch, under a text rule misread once.
+      - name: Check the review-round hook against constructed agent calls
+        run: python3 .github/scripts/audit/review_once.py --self-test
+
       # The sources the concepts were checked against stand at the commit last evaluated (source_versions.json); the
       # script that measures them against their remotes is tried on constructed local repositories, without network.
       - name: Check the source update check against constructed repositories

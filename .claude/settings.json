@@ -32,6 +32,16 @@
             "timeout": 10
           }
         ]
+      },
+      {
+        "matcher": "Agent",
+        "hooks": [
+          {
+            "type": "command",
+            "command": "python3 \"${CLAUDE_PROJECT_DIR}/.github/scripts/audit/review_once.py\"",
+            "timeout": 10
+          }
+        ]
       }
     ],
     "Stop": [

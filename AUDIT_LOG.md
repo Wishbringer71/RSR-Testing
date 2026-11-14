@@ -23766,6 +23766,25 @@ sie selbst neu (`CLAUDE.md`, „Vorlagen an ihn": Hilfsmittel stehen nicht zur A
   Bestätigung kommt aus seinen Uploads (Vorhersagen A783, A786, A809).
 - *Prüfgrad:* CI (Regeldateien).
 
+### A815 · Seine Frage: ist sichergestellt, dass keine Endlosschleife von Prüfrunden mehr entsteht? – Hook `review_once.py` (14.11.2026)
+
+Seine Frage (14.11.2026): „Ist sichergestellt, dass du nicht wieder in endlosloops bei prüfrunden endest?" Antwort: Mit
+der Textregel aus A814 allein nicht – die Textregel davor habe ich schon einmal falsch gelesen (A812, C201).
+- *Anforderung (wogegen, für wen, Schaden ohne):* Gegen eine zweite LLM-Prüfrunde für dasselbe Konzept bei
+  unveränderten Anforderungen. Für ihn: Ohne Sperre kostete die Blickwache neun Runden und zwei Rügen; jede Runde fand
+  Neues, jede Korrektur zog die nächste Runde nach sich, statt dass seine Aufträge vorankamen.
+- *Bauart, wie `concept_first.py` (A635):* PreToolUse-Hook auf `Agent`. Ein Auftrag mit „review", „Prüfer", „Prüfung"
+  oder „Prüfrunde" muss sein Konzept unter `docs/rotation-flow/` nennen; gezählt wird je Konzept mit einem Fingerabdruck
+  seiner Anforderungstabelle (Zeilen unter der Überschrift „*Anforderungen …"). Ein Konzept ohne schriftliche
+  Anforderungen wird nicht geprüft, eine zweite Runde für denselben Fingerabdruck abgewiesen. Korrekturen nach einer
+  Runde ändern die Anforderungen nicht, also geht keine Runde zur Prüfung eigener Korrekturen durch. Register:
+  `review_rounds.json`, versioniert, über Sitzungen hinweg. Eingetragen: die Runden an Konzept 13 (Blickwache) und 21
+  (Crucible) vom 14.11.2026.
+- *Grenze:* Ändere ich die Anforderungstabelle, öffnet das eine Runde; das steht im Diff. Eine Prüfung, die keines der
+  Wörter nennt, erkennt der Hook nicht; ein Auftrag ohne Konzeptpfad wird bei jedem dieser Wörter abgewiesen.
+- *Prüfgrad:* Selbsttest gegen konstruierte Aufrufe (neun Fälle), Probe gegen das echte Register (Konzept 13 abgewiesen,
+  Exit 2), CI.
+
 ## B · Commit-Register (Fork vs. `upstream/main`)
 
 ### B1 · Einzelgeprüfte Fork-Commits
