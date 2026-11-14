@@ -1950,8 +1950,9 @@ gilt für jeden Job.
 - *W1 – Kampfhorn verschiebt den GCD.* Das Fenster misst den Beginn einer Fähigkeit, nicht ihr Ende. Ein Horn, 0,6 s vor
   dem GCD gerufen, wirkt 1 s und verschiebt den GCD um rund eine halbe Sekunde; das widerspricht dem Zweck des Fensters
   („so an ability does not clip it"). *Gilt:* Eine Fähigkeit mit Wirkzeit geht zwischen zwei GCDs nur, wenn ihre
-  Wirkzeit vor dem freien Fenster endet; zentral für jede Aktion im PvE, heute nur die Hörner (im PvP hat nur das
-  Elixier Wirkzeit, 4,5 s, und bleibt, wie es war). Läuft kein GCD, oder fand RSR keinen (das Fenster gilt dann ohnehin
+  Wirkzeit vor dem freien Fenster endet; zentral für jede Aktion in PvE und PvP, heute nur die Hörner. Eine Wirkzeit
+  ab der Länge des GCD endet nie vor dem Fenster; die Grenze hielte sie für immer zurück und gilt für sie nicht. Das
+  betrifft heute nur das Elixier in PvP (4,5 s, A755). Läuft kein GCD, oder fand RSR keinen (das Fenster gilt dann ohnehin
   nicht), gilt die Grenze nicht. *Ausnahme:* Ruft B2 in der Gefahr ein Horn, das heilt oder schützt, darf es in den GCD
   laufen – Sicherheit vor Schaden: eine Drittelsekunde GCD gegen bis zu einen GCD früher Heilung. *Preis:* Ein Horn, das im zweiten Webfenster
   fällig wird, kommt nach dem nächsten GCD, der Begleiter bis zu einem GCD später. Ob der Begleiter in dieser Zeit mehr

@@ -151,6 +151,44 @@ public struct ActionTargetInfo(IBaseAction action)
 			}
 		}
 
+		// In PvP an action whose text sets a crowd control prefers a target that does not nullify it; with none left it
+		// still hits an immune one for its damage (concept 25, "PvP: Wechselwirkungen und Synergien", A757).
+		if (DataCenter.IsPvP && !action.Setting.IsFriendly && validTargets.Count > 1 && ActionTooltip.AppliesCrowdControl(action.Info.ID))
+		{
+			var anyOpen = false;
+			foreach (var target in validTargets)
+			{
+				if (!target.IsCrowdControlImmune())
+				{
+					anyOpen = true;
+					break;
+				}
+			}
+
+			if (anyOpen)
+			{
+				_ = validTargets.RemoveAll(static t => t.IsCrowdControlImmune());
+			}
+		}
+
+		// A770: an action that turns the player to its target takes no target that would turn him into a gaze reaching him
+		// (concept 13, "Nicht in einen Blick drehen").
+		if (action.Info.NeedToFaceTarget && action.Action.Range > 0 && validTargets.Count > 0)
+		{
+			// A786: counted from when the game runs it; an action that moves the player keeps its facing until it lands.
+			var castTime = action.Action.AffectsPosition
+				? Math.Max(action.Info.CastTime, ActionManagerEx.CurrentLockTweak?.AbilityWindow(action.ID) ?? 0f)
+				: action.Info.CastTime;
+			var startsIn = GazeWatch.StartsIn(action.Info.IsRealGCD);
+			for (var i = validTargets.Count - 1; i >= 0; i--)
+			{
+				if (GazeWatch.TurnsIntoGaze(validTargets[i].Position, castTime, startsIn))
+				{
+					validTargets.RemoveAt(i);
+				}
+			}
+		}
+
 		return validTargets;
 	}
 
@@ -402,113 +440,116 @@ public struct ActionTargetInfo(IBaseAction action)
 			return false;
 		}
 
+		// A762: each block holds only an enemy the briefing lists as immune; an interrupt goes all the same while the game
+		// reports the target's cast interruptible (concept 22, "Die Kontrollfelder bedeuten Immunität").
 		if (DataCenter.Job == Job.BLU && DataCenter.IsInMaskedCarnivale)
 		{
 			if (Service.Config.BlockflatdamagedeathimmuneBlu && action.Setting.IsFlatDamageDeath
-			&& !MaskedCarnivaleHelper.IsVulnerableToFlatOrDeath(battleChara))
+			&& MaskedCarnivaleHelper.IsImmuneTo(battleChara, CarnivaleControl.FlatOrDeath))
 			{
 				if (Service.Config.InDebug)
 				{
-					PluginLog.Debug($"[CheckResistance] {battleChara.Name} is not vulnerable to flat/death — skipping {action.Info.Name}.");
+					PluginLog.Debug($"[CheckResistance] {battleChara.Name} is immune to flat/death — skipping {action.Info.Name}.");
 				}
 
 				return false;
 			}
 
 			if (Service.Config.BlockslowimmuneBlu && action.Setting.IsSlowSpell
-			&& !MaskedCarnivaleHelper.IsVulnerableToSlow(battleChara))
+			&& MaskedCarnivaleHelper.IsImmuneTo(battleChara, CarnivaleControl.Slow))
 			{
 				if (Service.Config.InDebug)
 				{
-					PluginLog.Debug($"[CheckResistance] {battleChara.Name} is not vulnerable to slow — skipping {action.Info.Name}.");
+					PluginLog.Debug($"[CheckResistance] {battleChara.Name} is immune to slow — skipping {action.Info.Name}.");
 				}
 
 				return false;
 			}
 
 			if (Service.Config.BlockpetrificationimmuneBlu && action.Setting.IsPetrificationSpell
-				&& !MaskedCarnivaleHelper.IsVulnerableToPetrification(battleChara))
+				&& MaskedCarnivaleHelper.IsImmuneTo(battleChara, CarnivaleControl.Petrification))
 			{
 				if (Service.Config.InDebug)
 				{
-					PluginLog.Debug($"[CheckResistance] {battleChara.Name} is not vulnerable to petrification — skipping {action.Info.Name}.");
+					PluginLog.Debug($"[CheckResistance] {battleChara.Name} is immune to petrification — skipping {action.Info.Name}.");
 				}
 
 				return false;
 			}
 
 			if (Service.Config.BlockparalysisimmuneBlu && action.Setting.IsParalysisSpell
-				&& !MaskedCarnivaleHelper.IsVulnerableToParalysis(battleChara))
+				&& MaskedCarnivaleHelper.IsImmuneTo(battleChara, CarnivaleControl.Paralysis))
 			{
 				if (Service.Config.InDebug)
 				{
-					PluginLog.Debug($"[CheckResistance] {battleChara.Name} is not vulnerable to paralysis — skipping {action.Info.Name}.");
+					PluginLog.Debug($"[CheckResistance] {battleChara.Name} is immune to paralysis — skipping {action.Info.Name}.");
 				}
 
 				return false;
 			}
 
 			if (Service.Config.BlockinterruptimmuneBlu && action.Setting.IsInterruptSpell
-			&& !MaskedCarnivaleHelper.IsVulnerableToInterruption(battleChara))
+			&& MaskedCarnivaleHelper.IsImmuneTo(battleChara, CarnivaleControl.Interruption)
+			&& !(battleChara.IsCasting && battleChara.IsCastInterruptible))
 			{
 				if (Service.Config.InDebug)
 				{
-					PluginLog.Debug($"[CheckResistance] {battleChara.Name} is not vulnerable to interruption — skipping {action.Info.Name}.");
+					PluginLog.Debug($"[CheckResistance] {battleChara.Name} is immune to interruption — skipping {action.Info.Name}.");
 				}
 
 				return false;
 			}
 
 			if (Service.Config.BlockblindimmuneBlu && action.Setting.IsBlindSpell
-				&& !MaskedCarnivaleHelper.IsVulnerableToBlind(battleChara))
+				&& MaskedCarnivaleHelper.IsImmuneTo(battleChara, CarnivaleControl.Blind))
 			{
 				if (Service.Config.InDebug)
 				{
-					PluginLog.Debug($"[CheckResistance] {battleChara.Name} is not vulnerable to blind — skipping {action.Info.Name}.");
+					PluginLog.Debug($"[CheckResistance] {battleChara.Name} is immune to blind — skipping {action.Info.Name}.");
 				}
 
 				return false;
 			}
 
 			if (Service.Config.BlockstunimmuneBlu && action.Setting.IsStunSpell
-				&& !MaskedCarnivaleHelper.IsVulnerableToStun(battleChara))
+				&& MaskedCarnivaleHelper.IsImmuneTo(battleChara, CarnivaleControl.Stun))
 			{
 				if (Service.Config.InDebug)
 				{
-					PluginLog.Debug($"[CheckResistance] {battleChara.Name} is not vulnerable to stun — skipping {action.Info.Name}.");
+					PluginLog.Debug($"[CheckResistance] {battleChara.Name} is immune to stun — skipping {action.Info.Name}.");
 				}
 
 				return false;
 			}
 
 			if (Service.Config.BlocksleepimmuneBlu && action.Setting.IsSleepSpell
-				&& !MaskedCarnivaleHelper.IsVulnerableToSleep(battleChara))
+				&& MaskedCarnivaleHelper.IsImmuneTo(battleChara, CarnivaleControl.Sleep))
 			{
 				if (Service.Config.InDebug)
 				{
-					PluginLog.Debug($"[CheckResistance] {battleChara.Name} is not vulnerable to sleep — skipping {action.Info.Name}.");
+					PluginLog.Debug($"[CheckResistance] {battleChara.Name} is immune to sleep — skipping {action.Info.Name}.");
 				}
 
 				return false;
 			}
 
 			if (Service.Config.BlockbindimmuneBlu && action.Setting.IsBindSpell
-				&& !MaskedCarnivaleHelper.IsVulnerableToBind(battleChara))
+				&& MaskedCarnivaleHelper.IsImmuneTo(battleChara, CarnivaleControl.Bind))
 			{
 				if (Service.Config.InDebug)
 				{
-					PluginLog.Debug($"[CheckResistance] {battleChara.Name} is not vulnerable to bind — skipping {action.Info.Name}.");
+					PluginLog.Debug($"[CheckResistance] {battleChara.Name} is immune to bind — skipping {action.Info.Name}.");
 				}
 
 				return false;
 			}
 
 			if (Service.Config.BlockheavyimmuneBlu && action.Setting.IsHeavySpell
-				&& !MaskedCarnivaleHelper.IsVulnerableToHeavy(battleChara))
+				&& MaskedCarnivaleHelper.IsImmuneTo(battleChara, CarnivaleControl.Heavy))
 			{
 				if (Service.Config.InDebug)
 				{
-					PluginLog.Debug($"[CheckResistance] {battleChara.Name} is not vulnerable to heavy — skipping {action.Info.Name}.");
+					PluginLog.Debug($"[CheckResistance] {battleChara.Name} is immune to heavy — skipping {action.Info.Name}.");
 				}
 
 				return false;
@@ -566,7 +607,11 @@ public struct ActionTargetInfo(IBaseAction action)
 		{
 			if (DataCenter.IsPvP && !action.Setting.IgnoreGuard)
 			{
-				if (battleChara.HasStatus(false, StatusID.Guard) && !battleChara.WillStatusEnd((float)action.Info.CastTime, false, StatusID.Guard))
+				// Both rows of Guard (A756); an action whose text says it ignores, removes or halves Guard may choose the target
+				// (concept 25, "PvP: Ziele unter Guard und Unverwundbarkeit", A757).
+				if (battleChara.HasStatus(false, StatusHelper.PvPGuardStatuses)
+					&& !battleChara.WillStatusEnd((float)action.Info.CastTime, false, StatusHelper.PvPGuardStatuses)
+					&& !ActionTooltip.HandlesGuard(action.Info.ID))
 				{
 					return false;
 				}
@@ -3057,7 +3102,7 @@ public struct ActionTargetInfo(IBaseAction action)
 				return null;
 			}
 
-			if (Service.Config.FilterStopMark2 && !DataCenter.IsPvP)
+			if (Service.Config.FilterStopMark2)
 			{
 				var filteredCharacters = MarkingHelper.FilterStopCharacters(battleChara);
 				var filteredHasAny = false;

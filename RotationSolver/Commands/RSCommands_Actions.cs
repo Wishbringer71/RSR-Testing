@@ -71,7 +71,8 @@ namespace RotationSolver.Commands
 
 			if (nextAction is BaseAction baseAct)
 			{
-				if (baseAct.Info.IsAbility && !baseAct.Setting.IsMudra && DataCenter.DefaultGCDRemain <= ActionHelper.AbilityClipWindow && DataCenter.DefaultGCDRemain > 0f)
+				// Against this action's own lock where the server has given it (A753).
+				if (baseAct.Info.IsAbility && !baseAct.Setting.IsMudra && DataCenter.DefaultGCDRemain <= ActionHelper.AbilityWindowFor(baseAct.AdjustedID) && DataCenter.DefaultGCDRemain > 0f)
 				{
 					return;
 				}
@@ -96,7 +97,7 @@ namespace RotationSolver.Commands
 
 			// Nor when the action would still be under way as such a status lands: a GCD is chosen ahead of its press, and the
 			// landing has come closer since (A439).
-			if (player != null && !DataCenter.IsPvP
+			if (player != null
 				&& ActionPenaltyWatch.WouldMeetLanding(nextAction is IBaseAction pressed ? pressed.Info.CastTime : 0f))
 			{
 				ActionPenaltyWatch.NoteHold($"no press of {nextAction.Name}");

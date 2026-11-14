@@ -42,8 +42,8 @@ rechnet `searing_light_coverage.py` weiter die alte Regel, und Konzept 12 argume
 jede solche Änderung trägt im selben Commit die Anpassung des Modus „plugin". *Konzept:* 12.
 
 ### Status-Einstellungen auf der falschen Seite der Aktion · N, U
-Vier Fundstellen in PvP und Bozja (`scan11.py`), außerhalb seines Profils; je eine Richtungsentscheidung, die eine
-Beobachtung im Inhalt verlangt. *Auflösung:* erst, wenn er diese Inhalte nennt.
+Fundstellen in Bozja (`scan11.py`), außerhalb seines Profils; je eine Richtungsentscheidung, die eine Beobachtung im
+Inhalt verlangt. *Auflösung:* erst, wenn er Bozja nennt.
 
 ### Die Beiruta-Heiler lesen das Ziel des letzten Erfolgs · N, R
 BeirutaAST, BeirutaWHM und BeirutaSGE lesen `X.Target.Target` vor `X.CanUse`, an 17 Stellen, und prüfen so das Ziel des
@@ -75,10 +75,6 @@ den Spieldaten des Gebiets.
 zwei Zustände. *Auflösung:* erst mit Laufzeitbeobachtung des Zustandsautomaten; `DTRType` und `CycleType` sind
 Ordinalvertrag. `AutodutyUpdateState` dupliziert `UpdateState` und löst sich mit. *Konzept:* 03.
 
-### Die Aufnahme in die AoE-Liste trennt Raidwide und ausweichbare Fläche nicht · N
-Die Aufnahme in die Liste bleibt grob; Bewertung und Reichweite trennen schon (Konzept 13). *Auflösung:* ein Unterscheidungsmerkmal aus
-den Spieldaten (`CastType`, `EffectRange`), hinter eigener Option. *Konzept:* 13.
-
 ### Zwei Werte des Dunkelritters hängen nicht an ihrer Strategie · N
 `BlackestNightMinHostiles` und `BlackestNightHealthRatio` erscheinen ohne `Parent`; `ParentValue` kennt nur einen Wert.
 *Auflösung:* beim Tooltip belassen, solange kein zweiter Fall auftritt. *Konzept:* 10.
@@ -91,15 +87,9 @@ den Spieldaten (`CastType`, `EffectRange`), hinter eigener Option. *Konzept:* 13
 `SAM_Reborn`, Perfect Balance, die Buffs oder die GCD-Folge in `MNK_Reborn`, rechnen `machinist_balance_model.py`,
 `samurai_balance_model.py` und `monk_balance_model.py` weiter die alte Regel, und Konzept 14 nennt ihre Ergebnisse. *Auflösung:* jede solche Änderung trägt im selben Commit die Anpassung des Modells. *Konzept:* 14.
 
-### Der erste Kampf einer Sitzung hält einen Durchlauf bis 170 ms an · N
-In jedem Upload vom 01. bis 04.11.2026 und bei jedem Job: der langsamste Durchlauf des ersten Kampfes nach dem Start
-20 bis 170 ms, fast ganz im Schritt „next action (rotation)", ohne Speicherbereinigung; danach unter 10 ms. *Kosten:* ein
-Ruckler am ersten Pull je Sitzung. *Auflösung:* Loop, sobald er einen Ruckler am Pull bemerkt oder die erste Aktion
-messbar später kommt; erster Schritt: die Teilschritte der Rotation in diesem Durchlauf messen. *Konzept:* 03, „Was ein
-Frame kostet".
-
 ### Fork-Member in Dateien von Upstream · U
-563 Member in 75 Dateien (`fork_placement.json`, A742). *Kosten:* Ein Sync, der neben ihnen ändert, kann einen
+313 Member (`fork_placement.json`; 563 bei A742, 390 nach A746, 314 nach A749, 313 nach A753), vor allem statische Felder mit Startwert
+und Einstellungen, die stehen bleiben müssen, dazu Structs, Interfaces und kleinere Dateien. *Kosten:* Ein Sync, der neben ihnen ändert, kann einen
 Konflikt bringen. *Auflösung:* Ein Member zieht beim nächsten Eingriff in ihn in die Teildatei seiner Klasse
 (`code.md`, „Struktur und Kosten"); neue lässt `check_fork_placement.py` nicht zu. *Konzept:* 24.
 
@@ -111,10 +101,14 @@ nebeneinander braucht: neuer interner Name mit Übernahme des Ordners, angezeigt
 
 ## Warten auf Daten oder Fremde
 
-- **Entscheiden erst, wenn gedrückt werden kann** (sein Vorschlag, 13.11.2026; A744). Im Kampf: weniger Rechenzeit je
-  Frame, keine andere Aktion. Auflösung: die Zeile „rotation step while the gate would not press" seines nächsten
-  Uploads; trägt dieser Anteil die Hälfte des Rotationsschritts oder mehr, Loop: zuerst die Beobachtungen aus dem
-  Entscheidungspfad lösen (29 Zeitstempel in Rotationen, 58 in Hilfsklassen), dann überspringen. Konzept 24, „Entscheiden erst, wenn gedrückt werden kann".
+- **Animationssperre und Weben: der Regler an seinem nächsten Mitschnitt** (A753; seine Vorgaben vom 13.11.2026). Im
+  Kampf: Eine Fähigkeit hält die nächste kürzer zurück. Es wird gewebt, solange es vor den GCD passt, und kein GCD kommt
+  später. Auflösung: die Zeilen „action timing over the fight“ seines nächsten `DefenseTrace.log` und die Abstände der
+  eigenen Aktionen im ACT-Mitschnitt, gegen den Mitschnitt vom 11.11.2026. Zu prüfen sind GCDs, die eine Sperre
+  zurückhielt; Anfragen ohne Antwort (bleiben sie nahe r, lehnt der Server ab); Schnitt und Zuschlag; dreifaches Weben.
+  Je Abweichung Loop. Weißmagier am 13.11.2026 geprüft (A765): kein GCD später, aber 8 % Anfragen ohne Antwort und ein
+  Schnitt von 1 bis 34 ms. Offen: ein Job mit doppeltem Weben und die Zeilen „request without an answer“, ob die 8 %
+  Ablehnungen sind. Konzept 03, „Weben, Animationssperre und Latenz“.
 
 - **Absturz einer zweiten Installation am 11.11.2026, 21:18** (A736). Das Spiel endete als Dunkelritter in der
   Azim-Steppe 0,5 s nach Kampfbeginn, ohne die Plugins zu entladen; Build b184ee7fc (08.11.2026). Das `DefenseTrace.log`

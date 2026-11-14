@@ -238,13 +238,13 @@ Arten von Daten. Ergebnis je Art:
 | Art | Ableitbar im Spiel? | RSR | Folge |
 |---|---|---|---|
 | Raidwide-Ids | **ja**, aus dem Treffer: trifft eine Aktion jedes Gruppenmitglied, ist sie eine Gruppenaktion | die Flächenliste lernt so (unter „Record enemy AoE actions"), die Schadenstabelle misst die Größe (A177, A185) | keine Übernahme nötig. Beleg: zwei Ids aus WrathCombos Liste für The Clyteum (48896, 48920) stehen in RSRs Liste und in seiner Schadenstabelle |
-| Tankbuster-Ids | **teilweise**: ein Zauber mit Wirkzeit auf ein Gruppenmitglied, der nur dieses trifft | kuratierte Liste (31 Einträge), dazu für Tanks die Regel „Zauber auf das aktuelle Ziel"; Marker (V2) | Lernen im Spiel wäre möglich, braucht aber eine Größenschwelle für „Tankbuster" — dieselbe offene Frage wie „Raidwide oder ausweichbare Fläche" (`TODO.md`); nicht gebaut |
-| zu ignorierende Raidwides (Blicke) | **teilweise**: eine gelistete Flächenaktion, die landet und niemandem Schaden zufügt | bleibt unbewertet und gilt damit als „lohnt Minderung" | Ableitbar über „landet ohne Schadenseintrag". Gegenrisiko: Eine ausweichbare Fläche, der alle ausgewichen sind, sähe genauso aus; hängt an derselben offenen Frage wie oben |
+| Tankbuster-Ids | **teilweise**: ein Zauber mit Wirkzeit auf ein Gruppenmitglied, der nur dieses trifft | kuratierte Liste (31 Einträge), dazu für Tanks die Regel „Zauber auf das aktuelle Ziel"; Marker (V2) | Lernen im Spiel wäre möglich, braucht aber eine Größenschwelle für „Tankbuster"; nicht gebaut |
+| zu ignorierende Raidwides (Blicke) | **teilweise**: eine gelistete Flächenaktion, die landet und niemandem Schaden zufügt | bleibt unbewertet und gilt damit als „lohnt Minderung" | Ableitbar über „landet ohne Schadenseintrag". Gegenrisiko: Eine ausweichbare Fläche, der alle ausgewichen sind, sähe genauso aus. Ein Blick steht in keinem Feld der Aktion (Konzept 13, „Raidwide oder ausweichbare Fläche", A750); nicht gebaut |
 | Pausen (Blicke, Scanner) | **nein**: begegnungsspezifische Skripte (Blickrichtung, Position eines Helfers) | keine; BossModReborn deckt das im eigenen Modul | nicht übertragbar |
 | Unverwundbarkeit je Begegnung | **nein** allgemein: Plattform- oder Farbzuordnung je Kampf | Statusliste `InvincibleStatus` | nicht übertragbar |
 
-**Folge:** Keine Datenübernahme — damit entfällt auch der Lizenzhinweis. Was ableitbar ist, leitet RSR schon ab
-oder hängt an der offenen Unterscheidung „Raidwide oder ausweichbare Fläche".
+**Folge:** Keine Datenübernahme — damit entfällt auch der Lizenzhinweis. Was ableitbar ist, leitet RSR schon ab.
+Raidwide und ausweichbare Fläche trennt die Form im Moment des Drückens, nicht die Aufnahme (Konzept 13, A750).
 
 ## V4: Meditate erst nach Stillstand
 

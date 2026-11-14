@@ -163,16 +163,394 @@ Tengentsu, Third Eye). Gemessen wird ein Flag an den Pfaden, die es öffnet (CLA
 - Kreis auf ein Ziel (`CastType` 2, `Range` > 0, nicht auf sich selbst, nicht auf den Boden): um das Ziel.
   BossModReborn beschreibt dieselben Aktionen als „Boss->players, range 6 circle, stack" (Pyric Blast 25742,
   Clawful 37693).
-- Linie (`CastType` 4 und 12, mit Breite): Rechteck vom Wirkenden zum Ziel, ohne Ziel in Blickrichtung;
+- Linie (`CastType` 4 und 12, mit Breite): Rechteck vom Wirkenden in Wirkrichtung (`Character.CastRotation`, A766);
   `XAxisModifier` ist die volle Breite (Heavy Blast Cannon 37345: Spieldaten Breite 8, BossModReborn „width 8
   rect", halbe Breite 4). Art 4 reicht um den Trefferkreis des Wirkenden weiter, Art 12 nicht (unten, A731).
 - Kreis um den Wirkenden: Art 2 vom **Mittelpunkt** des Wirkenden, Art 5 um seinen Trefferkreis weiter (A731).
 - Kegel (Art 3 und 13): Winkel aus dem Omen der Aktion, Reichweite wie beim Kreis – Art 3 um den Trefferkreis des
-  Wirkenden weiter, Art 13 nicht –, Richtung zum Ziel des Zaubers, ohne Ziel die Blickrichtung des Wirkenden (A731).
+  Wirkenden weiter, Art 13 nicht –, in Wirkrichtung (`Character.CastRotation`, A766; bis dahin zum Ziel des Zaubers).
   Ohne Winkel im Omen zählt der Kegel wie ein Kreis.
 - Ring (Art 10): Außenradius die Effektreichweite, Innenradius aus dem Omen; wer ganz im Innenkreis steht, mit seinem
   Trefferkreis, bleibt unberührt (A731). Ein Ring mit Kegelwinkel im Omen zählt als Kegel ohne Innenkreis, ein Ring
   ohne Innenradius im Omen als Kreis.
+
+**Mehrteilige Angriffe: die gleichnamigen Treffer zählen mit** (A765). Manche Gegner wirken eine Aktion und treffen
+mit einer zweiten, gleichnamigen Aktion ohne Wirkzeit, die das Blatt direkt daneben führt. Ihre Form kann eine andere
+sein. Pilgerpfad, 12.11.2026, 20:13: Der Wallfahrt-Cama wirkt „Tritt und Schwanz“ (#43132, Art 12, Linie 8 × 3 Yalm
+nach vorn, 2,7 s). Getroffen hat #43131, gleichnamig, Art 13, Kegel 10 Yalm, ohne Omen. Der Treffer machte 262 % der
+maximalen LP aus, und der Weißmagier starb. RSR las nur die Linie, schrieb „area hit reaches you False“ und ließ ihn
+weiterwirken; die Sperre zum Ausweichen griff nicht.
+- *Jetzt:* Erreicht die Form der gewirkten Aktion ein Mitglied nicht, fragt `AreaCastReaches` die Formen der
+  gleichnamigen Zeilen ohne Wirkzeit und mit Effektreichweite, die im Blatt lückenlos an sie anschließen. Ein Kegel
+  ohne Winkel im Omen zählt dort wie überall als Kreis (oben). Eine Zeile ohne Effektreichweite zählt nicht: Für sich
+  gelesen hieße sie „erreicht jeden“, und jedes Wirken mit einer solchen Anzeige-Zeile gälte für die ganze Gruppe.
+- *Im Kampf:* Wer im Bereich eines solchen zweiten Treffers steht, gilt als getroffen. Die Sperre beim Wirken hält
+  einen Zauberbeginn zurück, damit er hinausgehen kann. Selbstschutz und Flächenabwehr gehen wie bei jedem Treffer, der
+  ihn erreicht.
+- *Preis:* Ohne Winkel im Omen zählt der Kegel als Kreis. Wer seitlich oder vorn außerhalb der Linie in 10 Yalm steht,
+  gilt ebenfalls als getroffen und verliert für bis zu 2,7 s einen Zauberbeginn. Gewichtet mit einem Treffer über
+  100 % der LP wiegt das wenig.
+- *Gegenthese 1 (kein Defekt, er stand einfach falsch):* RSR bewegt ihn nicht. Aber die Sperre beim Wirken soll ihm
+  den Schritt freihalten. Mit „reaches you False“ hielt sie nichts frei.
+- *Gegenthese 2 (falsche Option, alle Aktionen eines Gegners zusammenfassen):* Ein Gegner hat viele Aktionen mit
+  verschiedenen Wirkungen. Gleicher Name in lückenloser Folge trennt den Teil eines Angriffs von einem anderen Angriff.
+- *Gegenthese 3 (ausgeliefert, und nichts ändert sich):* Ohne gleichnamige Nachbarzeile bleibt alles wie bisher.
+  Ein Treffer ganz ohne Wirken, etwa „Tail Drive“ des Dahak am selben Abend (418 %), kündigt sich nicht an; dagegen
+  hilft nur der Stand.
+
+**Blickangriffe und die Form** (seine Frage, 13.11.2026, A769: ob die Formprüfung mit einem Blick kollidiert, bei
+dem man nicht hinsehen darf).
+- *Was ein Blick ist:* Er trifft, wer zum Wirkenden blickt, wenn er landet. Gefährlich wird eine eigene Aktion, weil
+  das Spiel die Figur beim Drücken zum Ziel dreht, wenn die Aktion das verlangt (`NeedToFaceTarget`). Wo man steht,
+  zählt nur über die Reichweite des Blicks.
+- *Keine Wechselwirkung mit A765, A766 und A768:* Die Formprüfung beantwortet nur, ob eine Fläche den Spieler
+  erreicht. Danach richten sich Flächenabwehr, Selbstschutz und die Sperre beim Wirken. Keiner dieser Pfade dreht die
+  Figur, und keiner drückt eine Aktion auf den Wirkenden. Die Sperre hält nur einen Zauberbeginn zurück. Ein Blick
+  mit großem Kreis erreicht die ganze Gruppe, deshalb ist er nicht „sicher ausweichbar“, und die Sperre greift nicht.
+- *Was heute schützt:* BossModReborn erkennt einen Blick am Spielblatt (`Action.VFX` = 25, auch ohne Modul,
+  `AIHintsBuilder`), und „Smart character orientation“ mit „Automatically avoid gazes“ (ab Werk an) dreht die Figur
+  ab 0,5 s vor dem Blick weg. Lässt sich das Ziel nicht treffen, ohne hinzusehen, sperrt es Zauber und Angriffe. Die
+  Spieloption „Auto face target“ schaltet es nur für Aktionen aus seiner eigenen Warteschlange ab. Eine Aktion aus der
+  Warteschlange des Spiels läuft in `_updateHook.Original` mit der Option, wie der Spieler sie gesetzt hat, und dreht
+  genau aufs Ziel (`UpdateDetour`; 35a908ad7, 13.11.2026, Werkzeugquelle). RSR
+  selbst hat nur Upstreams Liste „Gaze/Stop“ mit vier Aktionen hinter „Stop acting while an enemy casts a Gaze/Stop
+  action“ (ab Werk aus), und sie sperrt nur Zauber.
+- *Lücke, auch mit BossModReborn* (sein Hinweis, 13.11.2026: „In Welt der Dunkelheit besteht das Risiko Doom zu
+  bekommen … bmr hat da anscheinend auch keinen Schutz“). Belegt an seinem Mitschnitt vom 13.11.2026, 18:26 bis
+  18:28: Angra Mainyu wirkt „Tödlicher Blick“ zweimal zugleich.
+  - #3281 dauert 3 s und trägt das Blick-Kennzeichen (`VFX` 25). Ein Helfer wirkt #3499, 4,5 s, ohne Kennzeichen.
+  - Verhängnis (#210, 10 s) kam beide Male 0,6 s nach #3499, zuerst auf 2, dann auf 9 Spieler.
+  - BossModReborns Modul (`A31AngraMainyu`, Stand ef3da084b) kennt nur #3281, seine Automatik erkennt #3499 nicht.
+  - Nach #3281 dreht BossModReborn nicht mehr weg. Eine Aktion auf den Boss dreht die Figur in den zweiten Blick.
+  - Verhängnis lässt sich hier nur auf einer leuchtenden Glyphe aufheben (consolegameswiki, „Doom (Status Effect)“),
+    also durch Bewegung, und Esuna wirkt nicht (`CanDispel` false). RSR bewegt nicht; schützen kann nur das Nicht-Hinsehen.
+
+**Nicht in einen Blick drehen** (A770, alle Jobs; seine Vorgabe, 13.11.2026: „Die Rsr Funktion soll wirken, wenn bmr
+nicht aktiv ist oder selbst Fehlern bei der Beachtung hat“). Die Regel liest BossModReborn zur Laufzeit nicht. Sie
+wirkt mit ihm, ohne ihn und dort, wo er einen Blick nicht kennt; die Liste aus seinen Modulen ist nur eine Datenquelle
+neben Blatt und Name. Pilgerpfad, 12.11.2026: Für die gerufenen Gegner hat BossModReborn kein Modul. Der einzige Blick
+war „Tödlicher Blick“ des Gerufenen Destrudo (#44355, 9 Wirken, Kennzeichen 25). Er traf zweimal einen Spieler mit
+Verhängnis und blieb 14-mal ohne Wirkung. „Starren“ (#44354), „Honigsüße Front/Linke/Rechte“ (#44356 bis #44358, Kegel
+30 Yalm) und „Vielsagender Glanz“ (#44783, Kreis 6 Yalm) sind Flächen mit Omen, keine Blicke (A773). Solange ein Gegner einen Blick wirkt, der den Spieler erreicht, wählt
+eine Aktion, die zum Ziel dreht (`NeedToFaceTarget`, Reichweite über 0), kein Ziel, zu dem sich der Spieler in den Blick
+drehen müsste.
+- *Was ein Blick ist:* eine Aktion mit dem Blick-Kennzeichen des Blatts (`VFX` 25, wie BossMod), eine Aktion, die
+  BossModReborns Kampfmodule als Blick führen (A772, unten), oder eine gegnerische Aktion mit demselben Namen wie eine
+  dieser beiden. Am Blatt gemessen (xivapi v2, 13.11.2026): 230 Aktionen tragen das
+  Kennzeichen, keine davon eine Spieleraktion. 77 gegnerische Wirken heißen gleich und tragen es nicht, darunter die
+  Helferfassungen von „Mortal Gaze“, „Hex Eye“, „Petrifaction“ und „Evil Eye“. Die Namen liest RSR einmal im
+  Hintergrund, am englischen Blatt; bis dahin zählt das Kennzeichen. Scheitert das Lesen, versucht RSR es beim nächsten
+  Bedarf erneut, statt die Sitzung ohne Namen zu bleiben. Was BossModReborn nur in selbst gebauten Blicken führt, zählt nicht;
+  Status, Kopfmarker und umgekehrte Namen ergänzen die Quellen (A776, „Umkehrung und Auge zur Laufzeit“).
+- *In den Blick drehen:* Mit „Auto face target“ dreht das Spiel die Figur beim Auslösen genau aufs Ziel. Liegt das Auge
+  dann innerhalb von 45°, blickt die Figur es an. Mit „Turn away from gaze attacks“ ersetzt RSR dieses Drehen im
+  Vorlauf durch eine sichere Richtung im Kegel der Aktion („Richtig stehen und weiter treffen“, A778). Das Auge eines
+  Wirkens liegt bei einem Bodenziel an dessen Ort, sonst beim Wirkenden (A776, A786). Die 45° sind BossMods halbe Breite einer verbotenen Richtung (`AIHintsBuilder`,
+  `ForbiddenDirections`; Werkzeugquelle). Das Spiel nennt keinen Winkel.
+- *Zeitraum und Wegdrehen* (A774, seine Frage vom 13.11.2026 nach anderen Plugins, die wegdrehen): RSR dreht die Figur
+  selbst weg und hält Aktionen nur im letzten Stück zurück.
+  - *Vorlauf L:* die größte Verzögerung bis zur Antwort des Servers im Gebiet plus ein Bild (gemessen von der
+    Animationssperre, A753). Bis L vor dem Blick handelt RSR wie sonst, auch auf den Wirkenden. Ab L vor dem Blick
+    nimmt eine Aktion, die dreht, kein Ziel mehr in Richtung des Blicks. Zeigt die Figur hinein, dreht RSR sie in
+    die Mitte der nächstgelegenen sicheren Lücke. Bei einem Blick heißt das genau weg vom Wirkenden; bei Blicken aus
+    West und Ost nach Nord oder Süd; bei einem umgekehrten Blick zum Wirkenden hin.
+  - *Zauber mit Wirkzeit:* Während des Wirkens schaut die Figur zum Ziel. Ein Zauber zum Wirkenden des Blicks beginnt
+    nur, wenn er vor L vor dem Blick endet.
+  - *Ohne Messung:* Solange im Gebiet keine Antwort gemessen ist, gilt das ganze Wirken als Zeitraum, wie vor A774.
+    Ebenso, wenn er „Turn away from gaze attacks“ abschaltet. Dann dreht RSR weder im Vorlauf noch beim Auslösen, und
+    eine frühe Aktion ließe ihn am Ende noch hinsehen. Bis A786 drehte RSR ohne Messung das ganze Wirken und lernte
+    dabei nichts; das widersprach diesem Satz.
+  - *Ende des Blicks:* Der Server löst ein Wirken etwa 0,3 s nach dem Ende des Balkens auf. Gemessen an seinen
+    Mitschnitten vom 11. bis 13.11.2026, 6863 gegnerische Wirken: Das Effekt-Paket kam in 99 % der Fälle 0,26 bis
+    0,30 s nach dem Balkenende, in Ausreißern bis 1,6 s (A786; BossModReborn führt dafür `NPCFinishDelay = 0.3f`).
+    Bis A786 verschwand ein Blick für RSR mit dem Balken. In diesen 0,3 s war eine Aktion auf das Auge wieder frei.
+    Jetzt bleibt ein Blick fällig, bis sein Effekt-Paket kommt: vom selben Wirkenden mit derselben Aktion. Kommt keines,
+    endet er mit der größten im Gebiet gemessenen Verzögerung vom Balkenende bis zum Effekt plus Vorlauf. Ein
+    abgebrochenes Wirken endet sofort. Das erkennt RSR am Rest des Balkens beim letzten Bild: mehr als ein Bild.
+  - *Drehen:* über die Spielfunktion, die eine Aktion zum Ziel dreht (`ActionManager.AutoFaceTargetPosition`), mit der
+    Spieloption „Auto face target“ für diesen Aufruf eingeschaltet und danach zurückgesetzt, wie BossModReborn
+    (`ActionManagerEx.FaceDirection`). BossModReborn setzt dazu `DesiredRotation` einer laufenden Drehung, sonst drehe
+    das Spiel die Figur im nächsten Bild zurück. Das Feld führt FFXIVClientStructs nicht, BossModReborn schreibt es über
+    eigene Offsets. RSR schreibt dort nicht: Verschiebt ein Patch das Feld, überschriebe RSR fremden Speicher. RSR
+    misst stattdessen im nächsten Bild, ob die Richtung noch steht, und schreibt sonst „gaze: turn undone …“. Es dreht
+    in jedem Bild neu, solange der Blick fällig ist. Ein Wirken im Gang bricht dabei womöglich ab. Gewogen gegen Versteinerung oder
+    Verhängnis ist das der kleinere Preis. Gedreht wird nur im Kampf mit eingeschaltetem RSR. Die Position ändert sich
+    nicht; das ist keine Bewegung im Sinn seiner Vorgabe.
+  - *Erhebung fremder Werkzeuge (13.11.2026):*
+    - BossModReborn 8ad17f97f (`SmartRotationTweak`, ab Werk an): Es kennt Blicke nur aus Modulen und `VFX` 25. Es dreht
+      ab 0,5 s vor dem Blick in die breiteste sichere Lücke nahe der Zielrichtung und sperrt Zauber und Angriffe, wenn
+      das Ziel nicht ohne Blick zu treffen ist. Für einen Zauber im Gang erlaubt es 75° statt 45° (empirisch).
+    - BossMod (Original) 6a8f5f304: derselbe Kern.
+    - „Don't Look Back“ (Atomoxide 1.1.0.0, nur gebaut, kein Quelltext; gelesen aus den Metadaten): Es dreht die Figur
+      nach jeder eigenen Aktion auf die Kamerarichtung zurück (`GameObject.SetRotation`, Kamera-Matrix) und kennt
+      keine Blicke. Man schaltet es von Hand ein. Verworfen als Vorbild: Es dreht auch ohne Blick und richtet sich
+      nach der Kamera, nicht nach den Wirkenden.
+  - *Optionen:* (0) A770 lassen: Es hält Aktionen auf den Wirkenden das ganze Wirken zurück, bei Beatrice bis 8 s, also
+    zwei bis drei GCDs. (1) Wie BossModReborn mit festen 0,5 s. (2) Vorlauf aus der Messung, Drehen in die
+    nächstgelegene Lücke. *Gewählt:* (2). Es spart gegen (0) fast den ganzen Ausfall, braucht keinen festen Wert und
+    dreht bei einer Verbindung mit großer Verzögerung früher.
+  - *Gegenthese 1 (Option falsch, der Server sieht die Drehung zu spät):* L ist die größte gemessene Verzögerung bis
+    zur Antwort, also Hin- und Rückweg. Die Drehung braucht nur den Hinweg. Der Client sieht das Balkenende aber selbst
+    erst nach einem Rückweg. Den Rest deckt, dass der Blick bis zu seinem Effekt-Paket fällig bleibt, gemessen 0,26 s
+    und mehr nach dem Balken. Mit Schwankungen größer als alles Gemessene bleibt ein Rest. Den hält die Zeile „gaze: …“
+    fest, und ein Treffer zeigt sich im Effekt-Paket („Im Spiel auswerten und lernen“).
+  - *Gegenthese 2 (Doppel mit BossModReborn):* Beide drehen nur, solange die Richtung unsicher ist. Wer zuerst dreht,
+    lässt dem anderen eine sichere Richtung, und keiner dreht zurück.
+  - *Gegenthese 3 (ausgeliefert, und nichts ändert sich):* mit abgeschalteter Option oder ohne Messung. Dann gilt das
+    Zurückhalten über das ganze Wirken.
+  - *Lauf im Vorlauf:* Läuft er im Vorlauf, dreht das Spiel die Figur in die Laufrichtung, Bild für Bild. Läuft er vom
+    Wirkenden weg, ist die Richtung sicher, und RSR tut nichts. Läuft er auf ihn zu, dreht RSR ihn jedes Bild weg, und
+    das Spiel dreht ihn mit dem nächsten Schritt zurück. RSR greift nicht in die Bewegung ein; BossModReborn tut es
+    (`PlayerMove`). Das wäre Bewegung im Sinn seiner Vorgabe. Der Preis ist ein Flackern der Figur für höchstens L.
+    Ein Blick, auf den er zuläuft, trifft ihn, wie ohne RSR.
+  - *Lücke ohne Breite:* Berühren sich zwei gesperrte Bögen, liegt die Mitte der Lücke auf einer Grenze und sieht noch
+    hinein. RSR prüft jede Mitte gegen alle Blicke, bevor es dreht; gibt es keine, dreht es nicht.
+  - *Welche Lücke:* Ohne Ziel im Kegel dreht RSR in die Mitte der breitesten Lücke, wie BossModReborn, nicht der
+    nächsten. Grund: Die Mitte der breitesten hält den größten Abstand zu jedem Blick, wenn der Kegel des Servers
+    breiter ist als 45° oder ein Auge sich bewegt. Bis A786 nahm RSR die nächste, um wenig zu drehen; ohne Ziel bringt
+    wenig Drehen nichts.
+- *Richtig stehen und weiter treffen* (A777, A778; seine Vorgabe vom 14.11.2026: „wenn man bereits richtig rum steht, den
+  Gegner trifft, braucht nicht gedreht werden und der Kampf angehalten“; sein Hinweis dazu: „Spieler selbst kennen ja
+  die Kämpfe auch und können sich selbst ja so positionieren, dass sie bedenkenlos weiter kämpfen können“; seine Rüge:
+  die BossModReborn-Mechanik nicht ganz angesehen). Einordnung: Vorgabe und Hinweis.
+  - *Spielmechanik (BossModReborn `ActionManagerEx`, empirisch, Werkzeugquelle):*
+    - Eine Aktion mit Richtung geht nur, wenn ihr Ziel innerhalb von 45° vor der Figur liegt.
+    - Ein Zauber bricht erst ab, wenn sein Ziel zu Beginn des Slidecast-Fensters mehr als 75° seitlich liegt.
+      BossModReborn prüft dafür `CurrentCastTime + 0.5 < TotalCastTime`. RSR nimmt die Antwort des Spiels
+      (`CastInfo.ResponseSourceSequence`, wie `MovementLock`), ab der die Richtung nicht mehr zähle. *Unbelegt:* was
+      das Feld genau bedeutet. Irrt RSR hier, dreht es einen Zauber außerhalb der 75° und bricht ihn ab. Das kostet
+      Schaden, kein Leben.
+    - Mit der Spieloption „Auto face target“ dreht das Spiel die Figur beim Auslösen genau aufs Ziel.
+  - *Was BossModReborn tut (`SmartRotationTweak`, ab Werk an):* Es ersetzt dieses Drehen. Beim Auslösen schaltet es die
+    Spieloption ab und dreht nur, wenn das Ziel nicht im Kegel vor der Figur liegt oder die Richtung in einen Blick
+    sieht. Dann dreht es in das breiteste sichere Stück innerhalb des Kegels um das Ziel: 45° beim Auslösen, 75° während
+    eines Zaubers. Gibt es dort keines, sperrt es.
+  - *Befunde an RSR:*
+    - A770–A776: RSR ließ das Spiel genau aufs Ziel drehen. Deshalb sperrte es jedes Ziel, in dessen genauer Richtung ein
+      Auge lag, auch wenn eine Richtung innerhalb von 45° um das Ziel sicher war. Wer sich so stellte, dass das Ziel vorn
+      und das Auge seitlich liegt, wurde trotzdem angehalten oder vom Spiel ins Auge gedreht. Ein Beispiel sind die
+      Ahriman-Ebenbilder am Rand des zweiten Crucible-Bretts.
+    - A774: Im Vorlauf drehte RSR in die Mitte der nächsten Lücke, bis zu 180°, also oft weg vom Ziel.
+  - *Regel (A777, A778):*
+    - *Beim Auslösen* einer Aktion mit Richtung, während ein Blick im Vorlauf liegt (`GazeWatch.PrepareFacing`):
+      - Liegt das Ziel im 45°-Kegel vor der Figur und sieht sie in keinen Blick, bleibt die Richtung.
+      - Sonst dreht RSR in die Mitte des breitesten sicheren Stücks innerhalb von 45° um das Ziel.
+      - Gibt es dort keines, dreht RSR nicht. Liegt das Ziel außerhalb des Kegels, lehnt das Spiel die Aktion ab.
+      - In allen Fällen ist „Auto face target“ für diesen Aufruf aus und danach wieder wie zuvor.
+    - *Wo das wirkt:* im Aufruf, mit dem das Spiel eine Aktion ausführt (`UseActionLocation`, RSRs `ActionManagerEx`).
+      Dort kommt jede Aktion durch: die RSR drückt, die das Spiel aus seiner Warteschlange nachholt, und die der Spieler
+      selbst drückt, solange RSR an ist und gekämpft wird. Bis A786 wirkte es nur um RSRs eigenen Druck (`BaseAction.Use`).
+      RSR drückt einen GCD aber, solange der Recast noch läuft. Das Spiel legt ihn dann in seine Warteschlange und führt
+      ihn bis zu einer Animationssperre später aus, mit „Auto face target“, wie der Spieler die Option gesetzt hat. Dann
+      dreht es genau aufs Ziel; liegt ein Auge 30° daneben, sieht die Figur hinein.
+    - *Sperre:* Eine Aktion wartet nur, wenn es innerhalb von 45° um ihr Ziel keine sichere Richtung gibt. Für einen
+      Zauber gilt zusätzlich: innerhalb von 75° bis zu seinem Ende plus Vorlauf. Das trifft vor allem den Wirkenden selbst,
+      wenn sein Auge bei ihm liegt: Dort trennt keine Richtung Treffen und Blick. Gezählt wird ab dem Zeitpunkt, an dem
+      das Spiel die Aktion ausführt: jetzt plus der Rest der Animationssperre, bei einem GCD auch der Rest des GCD. Bei
+      einer Aktion, die den Spieler bewegt (`AffectsPosition`: Sprung, Ansturm), gilt ihre gemessene Sperre als
+      Wirkzeit, denn bis zur Landung kann RSR die Figur nicht drehen (BossModReborn: „movement abilities … can take
+      multiple frames until they allow changing facing“).
+    - *Wegdrehen im Vorlauf:*
+      - Läuft ein eigener Zauber, den das Spiel noch nicht hat, dreht RSR innerhalb von 75° um dessen Ziel.
+      - Sonst dreht es innerhalb von 45° um das aktuelle Ziel des Spielers, damit der Kampf weiterläuft.
+      - Erst wenn dort nichts sicher ist, dreht es in die nächste Lücke. Sicherheit geht vor dem Treffer.
+    - Ohne „Turn away from gaze attacks“ oder ohne Messung gilt die Sperre über das ganze Wirken, und RSR dreht nicht.
+  - *Optionen:* (0) A776 lassen. (1) Wie BossModReborn mit festen 0,5 s. (2) Die Regel oben mit dem gemessenen Vorlauf.
+    *Gewählt:* (2).
+  - *Im Kampf:*
+    - *Crucible, zweites Brett:* Die Ebenbilder blicken von West und Ost, der Taurus steht nördlich. RSR greift den Taurus
+      ohne Pause an, denn er liegt im Kegel und kein Auge davor. Bisher hätte das Spiel bei jedem Druck genau zum Taurus
+      gedreht; RSR sperrte nur, wenn ein Ebenbild in dieser genauen Richtung stand.
+    - *Ein Auge 30° neben dem Ziel:* Bisher wartete jede Sofortaktion auf das Ziel. Jetzt dreht RSR 30° zur anderen Seite:
+      Das Ziel liegt im Kegel, das Auge 60° seitlich.
+    - *Angra Mainyu, Zauber von 2,5 s, Blick nach 1,5 s:* Der Zauber beginnt; kurz vor dem Blick dreht RSR 60° weg. Er
+      trifft, der Blick nicht.
+    - *Sofortaktion auf den Wirkenden selbst, Auge bei ihm:* Sie wartet im Vorlauf, die gemessene Antwortzeit plus ein
+      Bild lang.
+  - *Gegenthese 1 (kein Defekt, er stellt sich selbst):* Gerade dann drehte das Spiel ihn beim nächsten Druck genau aufs
+    Ziel. Nur RSR kann das beim Auslösen verhindern, und BossModReborn tut es nur für Aktionen aus seiner eigenen
+    Warteschlange.
+  - *Gegenthese 2 (die 45° oder 75° gelten nicht):* Beide Werte sind empirisch. Ist der Aktionskegel enger, lehnt das
+    Spiel den Druck ab, und RSR versucht es im nächsten Bild; die Richtung ist sicher. Ist der Blickkegel des Servers
+    breiter als 45°, liegt die gewählte Richtung womöglich darin, am ehesten bei einem schmalen Stück: Auge 5° neben dem
+    Ziel, Richtung 42,5° auf der anderen Seite, Abstand zur Grenze 2,5°. *Preis:* ein Treffer. Das erkennt RSR am
+    Effekt-Paket und greift bei diesem Blick im Gebiet nur noch mit der Sperre ein („Im Spiel auswerten und lernen“).
+    Einen Mindestabstand wie BossModReborns 5° (`_minWindow`) setzt RSR nicht. Das Spiel nennt keinen Winkel, und eine
+    feste Zahl stünde ohne Beleg.
+  - *Gegenthese 3 (ausgeliefert, und nichts ändert sich):* Ist RSR aus oder außerhalb des Kampfes, dreht das Spiel ihn
+    beim eigenen Druck wie immer. Im Kampf mit RSR an fängt RSR auch seine eigenen Drücke ab (seit A786).
+  - *Preis:* Während eines Vorlaufs schaut die Figur bis zu 45° neben das Ziel. Bei Angriffen von hinten oder der Seite
+    zählt der Standort, nicht die Blickrichtung; Positionals ändern sich nicht.
+- *Im Spiel auswerten und lernen* (A783; seine Vorgabe vom 14.11.2026: „bei testumsetzung darf bloß nicht der supergau
+  entstehen, dass durch die neue regel sofort und immer bis zum fix gestorben wird … ingame auswertung und ingame daraus
+  lernen“; dazu: „ziel ist es doch erst einmal ein tragfähiges theoretisches konzept zu haben. dass wird dann entweder
+  durch interne tests untermauert, oder durch externe logs widerlegt oder auch untermauert“). Einordnung: Vorgabe.
+  - *Was zählt als Eingriff:* Im Vorlauf hat RSR gedreht (`TurnAway`, `PrepareFacing`) oder eine Richtung beim Auslösen
+    gewählt. Eine reine Sperre zählt nicht, denn sie dreht nicht; dort dreht der Spieler oder BossModReborn.
+  - *Woran RSR es erkennt* (A786, an seinem Mitschnitt vom 13.11.2026, Angra Mainyu): Der Server schickt zu jedem
+    Wirken ein Effekt-Paket an alle Ziele in Reichweite. Bei #3499 standen alle 24 Spieler darin. Wer getroffen wurde,
+    trug den Effekt „Status setzen“ (0x0E) mit Verhängnis (210), die übrigen „verfehlt“ (1). Das Paket entscheidet:
+    - *Wirken:* Das Paket kommt vom Wirkenden des Blicks mit dessen Aktion. Trägt es auf dem Spieler Schaden oder einen
+      schädlichen Status (`StatusCategory` schädlich), ist es ein Fehlschlag. Sonst ist der Blick vermieden, auch wenn
+      der Spieler nicht im Paket steht.
+    - *Helferfassung:* Ein Paket mit dem Namen des Blicks, das den Spieler schädigt, gilt als Fehlschlag desselben
+      Blicks (#3499 zu #3281, die Strafaktion in Windurst).
+    - *Marker:* Als Auge gilt ein wirkender Gegner, dessen Wirken mit dem Marker endet (Rest des Balkens und Rest des
+      Markers höchstens den Vorlauf auseinander); unter mehreren der mit dem größten Trefferkreis. Das Paket dieses
+      Wirkens entscheidet wie oben. Gibt es kein solches Wirken, gilt der Marker nicht als Blick, und RSR tut nichts.
+      Bis A786 galt der größte Wirkende, gleich was er wirkte.
+    - *Status auf dem Spieler, Mitglied als Auge:* Ein Paket des Gegners, der das Auge ist, mit Schaden oder schädlichem
+      Status auf dem Spieler, bis zum Ende der Frist unten.
+    - Automatische Angriffe (`ActionCategory` 1) zählen nie. Bis A786 zählte bei Markern jeder Schaden jedes Gegners.
+      Für einen Tank reichte ein automatischer Angriff, und der Marker galt im Gebiet als misstraut.
+    - *Frist ohne Paket:* die größte im Gebiet gemessene Verzögerung vom Balkenende bis zum Effekt-Paket plus Vorlauf.
+      Danach schreibt RSR „gaze: unknown …“, nicht „avoided“. Bis A786 schloss RSR nach Vorlauf plus Antwortzeit als
+      vermieden. Das waren 0,2 bis 0,4 s nach dem Balken, vor dem Paket, das 0,26 bis 0,30 s danach kommt. Ein Treffer
+      blieb so unerkannt.
+  - *Folge eines Fehlschlags:* Für diesen Blick dreht RSR im Gebiet nicht mehr und wählt keine Richtung mehr. Es hält
+    aber Aktionen über das ganze Wirken zurück, die genau ins Auge drehen würden, wie A770. Bis A786 entfiel auch diese
+    Sperre. Dann drehte jede Aktion auf Angra Mainyu die Figur wieder in #3499, das ursprüngliche Fehlerbild. Der
+    Schlüssel ist der Name des Wirkens, bei Markern die Marker-Art, bei Status die Status-Id. Ein Gebietswechsel setzt
+    das zurück: Ein neuer Stand nach einem Fix soll sich wieder beweisen. Die Zeile „gaze: hit despite …“ steht im
+    `DefenseTrace.log`.
+  - *Messmittel für Richtung und Auge:* Zu jedem Paket eines Blicks schreibt RSR einmal, wie viele Spieler im Paket
+    getroffen wurden und wie viele davon nach RSRs Annahme zum Auge sahen, ebenso für die Verschonten („gaze: landed
+    …“). Widerspricht das der Annahme, etwa „getroffen, sah weg“, ist die Richtung oder der Ort des Auges falsch. Das
+    belegt seine nächste Aufnahme, ohne dass er stirbt. *Vorhersage* (A786): Bei Angra Mainyu, #3499, zeigt die Zeile
+    getroffene Spieler, die zum Auge sahen, und keine getroffenen, die wegsahen. Getroffene, die wegsahen, widerlegen
+    den Ort.
+  - *Gegenthese 1 (falscher Fehlschlag):* Eine gleichzeitige andere Wirkung mit demselben Namen, oder bei Status und
+    Mitglied ein Angriff des Auges, kann als Fehlschlag zählen. *Preis:* RSR dreht bei diesem Blick in diesem Gebiet
+    nicht mehr und sperrt nur noch. Das kostet Schaden, kein Leben.
+  - *Gegenthese 2 (Fehlschlag ohne Eingriff):* Hat RSR nur gesperrt, lernt es nichts. Dort drehte RSR nicht, also kann
+    seine Regel den Tod nicht verursacht haben.
+  - *Gegenthese 3 (ausgeliefert, und nichts ändert sich):* Ein Status, den der Server ohne das Paket des Blicks setzt,
+    etwa über eine andersnamige Aktion, erkennt RSR nicht. Bei Angra Mainyu steht Verhängnis im Paket (oben). Für
+    andere Kämpfe entscheidet die Zeile „gaze: landed …“.
+- *Im Kampf:* Während der 4,5 s von #3499 kämpft RSR bis L vor dem Blick weiter, auch auf Angra Mainyu. Ab dann drückt
+  es nichts mehr auf ihn und nichts auf ein Ziel in seiner Richtung, und es dreht die Figur von ihm weg. Der Ausfall schrumpft so von zwei GCDs auf
+  die gemessene Verzögerung plus ein Bild. Der Heiler heilt weiter, denn Heilungen
+  drehen nicht. Ein Ziel in einer anderen Richtung bleibt wählbar. Ohne Messung im Gebiet hält RSR das ganze Wirken
+  zurück; dann setzen Nahkämpfer ein bis zwei GCDs aus, wie es die Mechanik von Spielern verlangt.
+- *Mehrere Blicke zugleich* (sein Hinweis, 13.11.2026: auf dem zweiten Crucible-Brett „von den Seiten Ringe …
+  mehrere Punkte, von denen man sich wegdrehen muss“). Am Mitschnitt vom 11.11.2026 (15:42 und 15:58):
+  - Der Taurus ruft zwei Ahriman-Ebenbilder an die Ränder, bei x 502 und 538 (der Mittelpunkt liegt bei 520), also
+    West und Ost.
+  - Jedes wirkt „Tödlicher Blick“ selbst (#48152, ohne Fläche) und über einen Helfer an derselben Stelle (#48153,
+    Kreis 50 Yalm), je 4,5 bis 5 s. Zwei solche Wellen folgen 4 s nacheinander.
+  - Keine der beiden Aktionen trägt das Blick-Kennzeichen; beide heißen wie #3281 und zählen deshalb als Blick.
+  - Jeder Wirkende sperrt seine eigene Richtung. Mit Blicken aus West und Ost bleiben Ziele nach Nord und Süd wählbar,
+    je 90°. Steht der Spieler westlich der Mitte, liegt der Taurus im Osten und bleibt bis zum Ende beider Wellen
+    gesperrt. Sperren die Blicke jede Richtung, drückt RSR keine Aktion, die dreht.
+  - BossModReborn führt #48153 im Modul (`TaurusPiece`, `CastGaze`, höchstens zwei).
+- *Blicke ohne Kennzeichen, aus BossModReborns Modulen* (A772; sein Hinweis, 13.11.2026: „Einen ähnlichen Effekt hatte
+  beatrice aus Troja“).
+  - Beatrice (Fell Court of Troia) wirkt „Tödliche Vorsehung“ über Helfer: #29821 (5 s, ein Blick) und #29828 (8 s,
+    zwei zugleich). Danach folgt Verhängnis #3364; Esuna wirkt hier (`CanDispel` true).
+  - Beide tragen nicht das Kennzeichen 25, sondern die Wirk-Effekte 295 und 319 (`z5d1_magannoganko`, nur dieser Kampf).
+    Das Blatt markiert Blicke also nicht einheitlich. Das Kennzeichen und der Name hätten beide übersehen.
+  - BossModReborn führt Blicke je Kampf in seinen Modulen (`Components.CastGaze`, `CastGazes`; 80 Stellen in
+    8ad17f97f, BSD-3, Werkzeugquelle). `gaze_actions.py` liest daraus nur die Ids und ob der Blick umgekehrt ist
+    (`inverted`). Es schreibt sie nach `GazeActions.g.cs` und prüft sie in der CI gegen das Aktionsblatt. Eigene
+    Blickformen eines Moduls (`GenericGaze`, 24 Stellen) bleiben außen vor; ihre Ids stehen nicht im Aufruf.
+  - *Umgekehrter Blick:* Dort trifft, wer wegsieht. Für diese Ids gilt die Regel umgekehrt. Eine Aktion, die dreht,
+    nimmt kein Ziel außerhalb von 45° um die Richtung des Wirkenden. Die gleichnamige Erweiterung gilt nicht für
+    umgekehrte Blicke, weil ein Name dort zwei Bedeutungen haben kann.
+  - *Gegenthese (veraltet):* Ein neuer Kampf kommt erst mit dem nächsten Lauf des Generators. Bis dahin gelten das
+    Kennzeichen und der Name.
+- *Optionen:* (0) nichts. (1) Upstreams Liste „Gaze/Stop“ füllen: eine Id je Kampf, und sie sperrt nur Zauber.
+  (2) BossModReborn fragen: Seine verbotenen Richtungen gibt es nicht heraus (A575), und #3499 kennt es nicht. (3) Die
+  Regel oben. *Gewählt:* (3). Sie deckt jeden Kampf aus dem Blatt, auch ohne BossModReborn, und mit ihm wirkt sie in
+  dieselbe Richtung, ohne Doppel.
+- *Gegenthese 1 (kein Defekt, er dreht sich selbst weg):* Das tut er, und RSR drehte ihn mit der nächsten Aktion
+  zurück. Am Mitschnitt: Das Verhängnis traf 9 von 24, alle nach #3499.
+- *Gegenthese 2 (Option falsch, gleicher Name ist kein Blick):* Einige der 77 könnten Begleitaktionen ohne Blick sein.
+  *Preis:* Für ein Wirken hält RSR Aktionen in einer Richtung zurück, ein bis zwei GCDs. Gewogen gegen Versteinerung
+  oder Verhängnis wiegt das wenig.
+- *Gegenthese 3 (ausgeliefert, und nichts ändert sich):* Steht er schon mit Blick zum Wirkenden still, dreht RSR ihn
+  nicht weg; das kann nur er oder BossModReborn. Bodenzauber drehen zum Ort, nicht zum Ziel, und bleiben hier
+  ungeprüft.
+
+- *Umkehrung und Auge zur Laufzeit* (A776; seine Hinweise vom 13. und 14.11.2026: „Bei kefka … wird ein Fragezeichen
+  beigepackt. Hinsehen ist da dann wegsehen und umgekehrt. Solche Sonderfälle gibt es auch woanders“; „beim endboss des
+  letzten ally raids windurst scheint bmr einige Dinge falsch zu interpretieren“). Einordnung: Hinweise.
+  - *Erhebung:* BossModReborn 8ad17f97f, alle 24 Klassen, die einen Blick selbst bauen (`GenericGaze`), dazu die Blätter
+    `Lockon` (726 Zeilen) und `Status` (5.851 Zeilen, englisch). Auslöser und Ort des Auges:
+    - *Eigene Aktion für die Täuschung:* Kefka in O8S wirkt „Indolent Will“ (#10468, lila Auge, wegsehen) oder „Ave
+      Maria“ (#10467, gelbes Auge mit Fragezeichen, hinsehen; consolegameswiki, O8S). Das Fragezeichen ist eine eigene
+      Aktion. Bisher galt #10467 als kein Blick: Sein Name war entfernt, weil O8Ns „Ave Maria“ (#10539) umgekehrt ist.
+    - *Kopfmarker:* Der Windurst-Endboss (BossModReborn `A35ShinryuParadox`) setzt je Spieler „Look“ (`Lockon` 681,
+      `z6r3_b4_lock_lk_7s_c0k2`) oder „No Look“ (680, `…_no_lk_7s…`). Aufgelöst wird beides mit einem Wirken von 7 s:
+      in Phase 1 von Shinryu (#49121), in Phase 2 vom Hollow King (#49161). BossModReborn setzt das Auge in beiden
+      Phasen auf Shinryu (`PrimaryActor`). In Phase 2 wirkt aber der Hollow King. *Unbelegt, Schluss:* Das ist der
+      Fehler, den er sieht. Im ganzen Blatt tragen nur diese zwei Marker „lk“ im Namen.
+    - *Status auf dem Spieler:* „Arcane Attraction“ (3385) und „Attraction Reversed“ (3386) bei Althyk und Nymeia
+      (Euphrosyne). Der Text sagt es selbst: „Seduced if gazing at Nymeia“ und „… if looking away from Nymeia when this
+      effect expires“. Sonst trägt kein Status diese Form.
+    - *Ein Mitglied wird zum Auge:* „Glassy-eyed“ (3511, Lapis Manalis: „unleash a petrifying attack in all
+      directions“). Wer den Status trägt, wird beim Ablauf zum Auge für alle anderen. „Spell-in-Waiting: Shadoweye“
+      (1812, 2456) sagt nur „Designated target of Shadoweye“; Shadoweye trägt weder das Kennzeichen noch den Namen
+      eines Blicks, und die Id im Ultimate führt BossModReborn nur im selbst gebauten Blick.
+    - *Auge woanders als beim Wirkenden:* BossModReborns `CastGaze` setzt das Auge an den Ort des Wirkens
+      (`spell.LocXZ`). Den liest es aus dem Paket des Zauberbeginns (`ProcessPacketActorCastDetour`), mit dem Kommentar
+      „unfortunately, game only saves cast location for area-targeted spells“. RSR nahm den Wirkenden. Bei Thordan (#5257, `VFX` 25) liegt das
+      Auge am Ort; bei Merciful Moon (#23212, `VFX` 25) an einer erzeugten Kugel; in P8S (#31019, gleichnamig) bei den
+      Gorgonen.
+    - *Umkehrung, die RSR nicht lesen kann:* Kefkas Statuen im Ultimate (Animation einer Figur), Nier „Distortion“
+      (Animation), Owain (Verbindung), „Cursed Shriek“ im Ultimate (echt oder falsch nach einem Status des Bosses mit
+      Zusatzwert), Bozja CE34 (das Wirken des Bosses kehrt die Augen um). Ebenso Lala (Ausrichtung aus mehreren Status)
+      und das Erosive Eye (Reihenfolge der Wirken). Shadoweye (siehe oben) und „petrifying light upon those nearby“
+      („Crown of the Gorgon“, „Authority's Gaze“): Der Text sagt Nähe, nicht Blick, und trennt beides nicht.
+  - *Regel:* RSR führt jeden Blick als Auge mit Ort, Richtung (normal oder umgekehrt) und Restzeit. Geprüft an allen
+    Zeilen (14.11.2026): Die Statusregel trifft genau 3385 und 3386, die Markerregel genau 680 und 681, die Regel für
+    ein Mitglied genau 3511. Die Quellen:
+    - Wirken: wie bisher; dazu gilt ein Name, den nur umgekehrte Blicke tragen, als umgekehrt (#10467). Ein Name, den
+      beide Arten tragen, zählt nicht. Das Kennzeichen `VFX` 25 zählt nicht für eine Aktion, deren Name ein umgekehrter
+      Blick trägt: Es sagt nicht, in welche Richtung der Blick wirkt. #27363 und #27369 heißen „Avert Your Eyes“, tragen
+      beide das Kennzeichen, und #27369 ist umgekehrt (xivapi, 14.11.2026). Namen vergleicht RSR am englischen Blatt,
+      wie die Zählung der 77; im deutschen Client trennen die Namen anders.
+    - *Ort des Auges:* Bei einer Aktion mit Bodenziel (`TargetArea`) der Ort des Wirkens, sonst der Wirkende. Der Client
+      hält den Ort nur bei Bodenzielen (BossModReborns Kommentar oben); bei anderen Aktionen kann dort ein alter Ort
+      stehen. Am Mitschnitt vom 13.11.2026: Der Helfer von #3499 stand beim Zauberbeginn noch 4,7 Yalm neben Angra
+      Mainyu; der Ort im Paket (ACT-Zeile 263) war Angra Mainyus Position, und beim zweiten Wirken stand der Helfer dort.
+      Von 291 Blick-Zeilen tragen 10 ein Bodenziel. Bis A786 las RSR den Ort bei jeder Aktion.
+    - Status auf dem Spieler nach seinem Text: „if gazing at / looking at <Name> when this effect expires“ ist ein Blick,
+      „if looking away from <Name> …“ ein umgekehrter. Das Auge ist der nächste Gegner mit diesem englischen Namen,
+      die Restzeit die des Status.
+    - Kopfmarker auf dem Spieler, deren Effektpfad „_no_lk_“ (wegsehen) oder „_lk_“ (hinsehen) trägt, mit der Dauer
+      aus dem Pfad („7s“). Augen sind die wirkenden Gegner mit dem größten Trefferkreis: in Phase 1 Shinryu und sein
+      Teil „ShinryuGroin“ (beide 25 y, beide wirken #49121/#49122), in Phase 2 der Hollow King (25 y). Liegen zwei
+      Augen in verschiedenen Richtungen, gilt jedes; bei „Look“ bleibt nur eine Richtung, die beide ansieht.
+      *Schluss, unbelegt am Mitschnitt:* Die Zeile „gaze: marker …“ nennt die gewählten Augen.
+    - Mitglied als Auge nach dem Statustext („petrifying attack in all directions“), ein normaler Blick vom Träger aus,
+      solange der Träger nicht der Spieler ist und lebt.
+    - *Unsicher:* Ids, die BossModReborn nur in selbst gebauten Blicken führt, zählen nicht als Blick, auch mit
+      Kennzeichen oder Namen. Ausgenommen sind Klassen ohne Umkehrung, die das Auge beim Wirken an dessen Ort setzen,
+      ohne Einstellung des Moduls (Thordan, Cloud of Darkness „Break IV“). Diese Ids führt `gaze_actions.py` als Blick.
+  - *Optionen:* (0) nichts: RSR dreht bei Ave Maria in O8S und bei „Look“ in Windurst in den Tod, wo es angreift, und
+    bei Merciful Moon und P8S vom falschen Punkt weg. (1) Nur die unsicheren Ids herausnehmen: Das beseitigt die falsche
+    Richtung, schützt aber bei Kefka, Nymeia und Windurst nicht. (2) Die Regel oben. *Gewählt:* (2).
+  - *Gegenthese 1 (kein Defekt, BossModReborn regelt es):* Er will Schutz ohne BossModReborn (A773). Und in Windurst,
+    Phase 2, irrt BossModReborn nach seinem Modul.
+  - *Gegenthese 2 (Option falsch, der größte Wirkende ist nicht das Auge):* Wirkt beim Marker ein größerer Gegner etwas
+    anderes, dreht RSR vom falschen Punkt. Bei „Look“ heißt das: weg vom echten Auge, also in den Tod. Deshalb zählt
+    seit A786 nur ein Wirkender, dessen Wirken mit dem Marker endet („Im Spiel auswerten und lernen“). In Windurst haben neben Shinryu, seinem Teil und dem Hollow King nur Helfer
+    (0,5 y), Sphären (1 y), Gulool Ja Ja (5 y) und eine unbenannte Figur (2 y) einen Kreis. *Preis:* in einem anderen Kampf mit Marker eine falsche Richtung für höchstens die Markerdauer. Bisher gibt es nur
+    diesen einen Kampf.
+  - *Gegenthese 3 (ausgeliefert, und nichts ändert sich):* Kefkas Statuen, Distortion und Owain sieht RSR nicht. Dort
+    tut RSR nichts, wie ohne die Regel, und der Spieler oder BossModReborn dreht.
+  - *Gegenthese 5 (das Kennzeichen sagt die Richtung nicht):* Von den 230 Zeilen mit `VFX` 25 stehen 60 in BossModReborns
+    Listen; darunter ist eine umgekehrt (#27369). Die übrigen 170 zählen als normaler Blick. Ist einer davon umgekehrt,
+    dreht RSR vom Auge weg, das man ansehen muss. So hält es BossModReborns Automatik ohne Modul auch. *Preis:* ein
+    Treffer je Gebiet, dann nur noch die Sperre. Nur zu sperren statt zu drehen, nähme den Schutz bei den Blicken, für
+    die es gebaut ist: Destrudo im Pilgerpfad (#44355) steht in keiner Liste.
+  - *Gegenthese 4 (falsche Zuordnung des Namens):* Ein Gegner mit dem Namen aus dem Statustext muss nicht das Auge
+    sein, wenn mehrere so heißen. Gewählt wird der nächste. Bei Nymeia gibt es eine.
+  - *Im Kampf:*
+    - O8S, Ave Maria: RSR dreht im Vorlauf zur Statue hin und nimmt kein Ziel mehr, das ihn wegdreht.
+    - Windurst mit „Look“: Er schaut den Boss an. RSR greift weiter an, denn der Angriff dreht zum Boss.
+    - Windurst mit „No Look“: RSR dreht ihn im Vorlauf weg.
+    - Euphrosyne: Mit „Attraction Reversed“ hält RSR Ziele, die von Nymeia wegdrehen, und dreht zu ihr.
 
 **Warum die Form so gemessen wird (A731).** Welche Form um den Trefferkreis des Wirkenden weiter reicht, sagt die Art:
 BossModReborns Analysewerkzeug beschreibt Art 3, 4 und 5 als „range X+R", Art 2, 12 und 13 als „range X"
@@ -201,8 +579,40 @@ zählt der größere Winkel bei `er_gl_fan…`.
   jedes Bild mit der Richtung dieses Bildes, wie bei der Linie.
 - *Gegenthese 3 (ausgeliefert, und nichts ändert sich):* Viele Kegel tragen kein Omen (904 der Art 3, 1.242 der Art
   13); sie zählen weiter als Kreis. Ein Ring ohne Zahlen im Omen ebenso.
-- Bodenkreise (`TargetArea`): Ihr Mittelpunkt steht nur in den nativen Castdaten; weiter Abstand zum Wirkenden
-  mit beiden Trefferkreisen, also eher zu weit.
+- Bodenkreise (`TargetArea`): um den Ort, den das Spiel für das Wirken führt (`CastInfo.TargetLocation`, A766).
+  Fehlt er, gilt wie bisher der Abstand zum Wirkenden mit beiden Trefferkreisen, also eher zu weit.
+- Ein Kegel oder eine Linie gilt nicht schon deshalb als treffend, weil das Mitglied das genannte Ziel ist. Es zählt
+  allein die Form in Wirkrichtung (A766). Ein Kreis oder Ring auf ein Ziel trifft sein Ziel wie bisher.
+
+**Wirkrichtung und Ort aus dem Spiel** (A766; TODO-Punkt „Kegel und Linien nach der Wirkrichtung des Spiels
+ausrichten“, Anlass BossMod 93b0afd30).
+- *Befund:* RSR richtete Kegel und Linien zum Ziel des Zaubers aus und rechnete jedes Bild neu. Ein Ziel, das während
+  des Wirkens aus dem Kegel läuft, zog den Kegel mit. Das Omen und der Treffer folgen ihm nicht. Wer das Ziel war,
+  galt außerdem immer als getroffen. „Wooly Inspiration“ (#12218, Kegel 60 Yalm) nennt den Spieler als Ziel, trifft aber
+  in Wirkrichtung; BossMod führt die Aktion deshalb einzeln als täuschend. Bodenkreise maß RSR vom Wirkenden aus, weil
+  der Ort im Blatt fehlt.
+- *Quelle:* Der Client führt je Figur die Wirkrichtung (`Character.CastRotation`) und für Bodenzauber den Ort
+  (`CastInfo.TargetLocation`; FFXIVClientStructs der Dalamud-Version, gemessen am 13.11.2026). BossMod baut daraus jede
+  automatische Form (`WorldStateGameSync`: `Rotation = chr->CastRotation`, `Location` aus dem Paket, sonst
+  `TargetLocation`; `AIHintsBuilder`: jede Form in dieser Richtung; awgil 93b0afd30, Werkzeugquelle).
+- *Optionen:* (0) nichts. (1) Wie BossMod #12218 einzeln als täuschend führen. (2) Richtung immer aus `CastRotation`,
+  Ort des Bodenkreises aus `TargetLocation`, und das genannte Ziel zählt bei Kegel und Linie nicht als Beweis.
+- *Abwägung im Kampf:* (0) lässt den Kegel dem fliehenden Ziel folgen. Wer schon draußen steht, gilt als getroffen:
+  Selbstschutz und Flächenabwehr gehen umsonst, und die Sperre beim Wirken hält einen Zauber zurück, ohne dass es nötig
+  ist. Wer im wahren Kegel steht und nicht Ziel ist, kann als sicher gelten, etwa hinter dem Ziel aus Sicht des
+  Wirkenden, wenn das Ziel seitlich ausweicht. (1) hilft nur bei dieser einen Aktion und veraltet mit jedem Patch. (2)
+  misst, was das Spiel zeichnet, für jede Aktion. Ein Bodenkreis trifft dann, wer in ihm steht, nicht jeder nahe am
+  Wirkenden: Weniger Abwehr geht ins Leere, und wer im Kreis steht, aber weit vom Wirkenden, gilt jetzt als getroffen.
+  *Gewählt:* (2).
+- *Gegenthese 1 (kein Defekt, ein Kegel auf ein Ziel dreht sich mit):* Ein Wirkender ist beim Wirken festgelegt; das
+  Omen zeigt in eine feste Richtung. BossMods automatische Formen, gebaut aus Mitschnitten, rechnen genau so, und
+  Module, die einem Ziel folgen, führen das eigens. Wo eine Aktion am Ende doch zum Ziel schnappt, lernt die
+  Flächentabelle den Treffer weiter.
+- *Gegenthese 2 (falsche Option, ein Ziel im Kegel ist immer getroffen):* Läuft das Ziel hinaus, trifft der Kegel es
+  nicht mehr; so war es gemeint, als das Ziel auswich. Steht es darin, liefert die Form dasselbe Urteil wie vorher.
+- *Gegenthese 3 (ausgeliefert, und nichts ändert sich):* Ohne Bewegung des Ziels und ohne Bodenkreis zeigen Richtung zum
+  Ziel und Wirkrichtung dasselbe. Liefert das Spiel keinen Ort (0), bleibt der Bodenkreis beim alten Maß.
+- *Preis:* keiner im Kampf. Beim Lesen kosten Richtung und Ort einen Zugriff auf die Figur je Prüfung.
 - Ansturm (`CastType` 8, Effektreichweite 0): erreicht jeden.
 
 Der Trefferkreis des Mitglieds zählt überall zugunsten des Treffers.
@@ -605,6 +1015,40 @@ Fortschreibung bei **bekannten** Ids: `HashSet.Add` fasst eine vorhandene Id nic
 diesen Zusatz bekäme kein Alteintrag je ein Potential — die ganze hybride Form wäre für die 850
 vorhandenen Einträge wirkungslos.
 
+**Raidwide oder ausweichbare Fläche: Die Aufnahme trennt nicht, die Anwendung trennt (A750).** Aufgenommen wird, was
+die ganze Gruppe getroffen hat. Dazu gehören neben Raidwides auch Stack, Turm, Streuung, Rückstoß über die ganze Fläche
+und Schaden mit Abfall zum Rand, denn diese Treffer erreichen alle, und eine Gruppenminderung hilft dort wie beim
+Raidwide. Ob eine gelistete Fläche im laufenden Kampf jemanden erreicht und ob ein Schritt hinausführt, entscheidet
+jeder Leser erst im Moment des Drückens, an der Form und den Positionen:
+- Die Flächenflagge und der Selbstschutz prüfen die Reichweite erst im letzten GCD vor dem Treffer (`IsHostileCastingBase`,
+  `AreaCastReachesParty`, `AreaCastCanReachPlayer`). Wer bis dahin hinausgegangen ist, bekommt keine Minderung mehr.
+- Die Sperre vor einem Zauberbeginn (`CertainDodgeableWithin`) und die Sperre vor Limit Break, langem Kanal und KI-Weg
+  (`FirstDodgeableWithin`, Konzept 03, „Ausweichen in der Sperre") lassen eine gelistete Fläche als ausweichbar gelten,
+  wenn ihre gemessene Form den Spieler erreicht und ein lebendes Mitglied draußen lässt (`CastCertainlyDodgeable`). Ein
+  Raidwide erreicht alle und bleibt unausweichlich.
+
+*Gemessen an seinen 63 aufgenommenen Ids (Upload vom 13.11.2026):* BossModReborn (7550528, 13.11.2026) führt 58 davon
+in einem Modul (Werkzeugquelle, aus Mitschnitten gebaut); die Einordnung steht in dessen Kommentaren und Komponenten. Danach sind es Raidwides, Schaden mit Abfall,
+Rückstöße, Stacks (Reichweite 6 auf einem Spieler), Türme (4 und 8) und ein Köder-Treffer
+(#49966, im Blatt Kreis 40 um das Ziel). Ausweichbar sind nach den Modulen nur der Kreis „the
+Dragon's Voice" (#3344, `SimpleAOEs` 30) und zwei Blicke in einer FATE (#47148, #47152, `CastGaze`).
+
+*Verworfen, ein Merkmal aus den Spieldaten bei der Aufnahme (`CastType`, `EffectRange`, Omen):* An diesen 63 Ids
+trennt es falsch herum. 18 haben ein Omen. 15 davon sind nach ihrem Modul Gruppentreffer: Abfall-Kreise, Rückstöße
+über die Fläche, Türme. Die drei ohne Modul tragen dieselben Omen (27 wie die Abfall-Kreise, 348 wie der Rückstoß
+„Leaping Cleave“); dass auch sie Gruppentreffer sind, ist daraus geschlossen und nicht belegt. Die kleinen Reichweiten (4 bis 8) sind Stacks und Türme. Ein Filter „Omen" oder „kleine Reichweite" hätte also
+rund 25 richtige Aufnahmen verworfen, mit ihnen die Gruppenminderung vor diesen Treffern. Die drei ausweichbaren Ids
+dagegen hat er nicht erkannt: Kreis 30 ohne Omen, Blicke Kreis 30 und 50 ohne Omen, alle der Art 2 wie die
+Raidwides. Was ein Blick ist, steht in keinem Feld der Aktion; BossModReborn erkennt ihn am Modul.
+- *Im Kampf:* Vor dem Kreis der Hunde in Dun Scaith geht eine Gruppenminderung nur, wenn im letzten GCD der Spieler
+  oder zwei Mitglieder darin stehen. Steht der Heiler darin, startet er dort kein Limit Break mehr, solange ein anderes Mitglied
+  draußen steht. Vor einem Blick bleibt die Minderung: Seine Form erreicht alle. Wer hinsieht, wird getroffen, und ob
+  jemand hinsieht, weiß RSR nicht.
+- *Preis:* Ein Raidwide, dessen Form ein lebendes Mitglied nicht erreicht, etwa einen Fernkämpfer jenseits von
+  Reichweite 30, gilt in den Sperren als ausweichbar. Limit Break und langer Kanal warten dann bis nach dem Treffer, so
+  wie heute schon bei jedem ungelisteten Cast, der den Spieler erreicht. Unwahrscheinlich, denn Raidwides reichen 30 bis
+  100 Yalm und eine Arena selten über 20.
+
 ## Der Maßstab: der gemessene Anteil, mit belegter Obergrenze
 
 **Ab einem Anteil von 0,25 der Maximalgesundheit ist die Fläche groß, unabhängig vom Zustand der
@@ -762,6 +1206,32 @@ beantwortet RSR damit, wie der Text von „Automatically use Anti-Knockback role
 über BossModReborn tat das für angekündigte Rückstöße von Helfern schon vorher. Ein Rückstoß, den die Mechanik
 braucht, ist durch die Liste so wenig geschützt wie bei einem anvisierbaren Gegner; die Liste ist von Hand
 bearbeitbar.
+
+**Was nur ein Schritt vermeidet, liest jeden wirkenden Gegner, gelistet oder nicht** (A750). Neben `AreaCasters` führt
+`TargetUpdater.UpdateAreaCasters` im selben Durchlauf `DataCenter.CastingEnemies`: jeden Gegner der Gegnerliste, der
+wirkt, und jede andere wirkende Figur der Gegnerseite (`IsEnemySideFigure`), anvisierbar oder nicht, ohne die Liste als
+Beleg. Darüber lesen die Fragen, die nur die Form und den Zeitpunkt eines Casts brauchen: der Treffer, dem ein Schritt
+entgeht, vor Limit Break, Kanal und KI-Weg (`RaiseProtection.FirstDodgeableWithin`) und vor einem Zauberbeginn
+(`MovementLock.CertainDodgeableWithin`), und das Fenster um einen Treffer auf ihn (`RaiseProtection.FirstWithin`,
+`FirstAfter`). Bis A750 gingen sie nur über die Gegnerliste. Die meisten Flächen eines Bosskampfs wirken aber
+Helfer, und ausweichbare kommen nie in die Liste, weil ihnen jemand ausweicht. Ohne Modul von BossMod blieben sie
+deshalb allen vier Fragen unsichtbar.
+- *Im Kampf:* Ein Heiler, der ohne Modul allein in der Kreisfläche eines Helfers steht, startet dort kein Limit Break
+  mehr. Mit „Lock movement while casting" hält RSR ihn dort nicht mehr fest. Ein Zauber, den ein Schritt aus der
+  Fläche bräche, beginnt nicht, solange er geht.
+- *Warum ohne Listenbeleg:* Hier entscheidet die Asymmetrie anders als bei der Abwehr. Ein Helfer-Cast, den RSR
+  fälschlich liest, verzögert ein Limit Break oder einen Kanal bis nach dem Treffer, oder er gibt die Bewegung frei.
+  Ein übersehener lässt den Spieler in der Fläche stehen. Die Abwehrflaggen bleiben bei `AreaCasters`: Dort kostet
+  ein Fehlgriff eine Minderung, die später fehlt.
+- *Preis:* Eine Figur der Gegnerseite ohne Gruppenzugehörigkeit, deren Cast den Spieler erreicht, aber nicht trifft,
+  etwa ein Verbündeter in einer Soloinstanz, zählt mit. Das Limit Break wartet dann bis zum Ende ihres Casts. Belegt
+  ist kein solcher Fall.
+- *Gegenthese – ein ungelisteter Raidwide eines Helfers sperrt das Limit Break:* Das gilt bis zu seinem ersten
+  Treffer. Für einen ungelisteten Cast eines anvisierbaren Bosses gilt es heute schon. Danach steht er in der Liste,
+  und die Form sagt „erreicht alle“; er sperrt nicht mehr (Abschnitt „Raidwide oder ausweichbare Fläche“).
+- *Kosten:* Der Durchlauf über die Objekttabelle läuft schon jedes Bild. Neu ist ein Eintrag je wirkender Figur. Die
+  drei Sammlungen (`AreaCasters`, `AreaCastHelperIds`, `CastingEnemies`) werden je Bild geleert und wiederverwendet;
+  bis A750 legte der Durchlauf zwei davon jedes Bild neu an (Konzept 24, „Speicher“).
 
 **Ein gelisteter Rückstoß zählt nur, wenn er den Spieler erreicht** (A701, alle Rollen: Surecast und Arm's Length,
 120 s Abklingzeit). *Sachstand bis A701:* `IsAnyHostileCastingKnockback` fragte nur, ob ein gelisteter Zauber im

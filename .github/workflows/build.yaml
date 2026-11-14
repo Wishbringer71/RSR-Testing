@@ -211,6 +211,12 @@ jobs:
         run: python3 .github/scripts/audit/carnivale_sets.py --self-test
       - name: Check the Masked Carnivale spell numbers against AozActionTransient
         run: python3 .github/scripts/audit/carnivale_sets.py --check
+      # The gaze list RSR reads besides the sheet's gaze mark comes from BossModReborn's fight modules (concept 13, A772);
+      # this holds the module reading and every id against the Action sheet, skipping the sheet part when xivapi is down.
+      - name: Check the gaze actions taken from BossModReborn
+        run: python3 .github/scripts/audit/gaze_actions.py --self-test
+      - name: Check the gaze actions against the Action sheet
+        run: python3 .github/scripts/audit/gaze_actions.py --check
 
       # The movement safety check runs only for an action with a moving SpecialType; which actions move is the Action
       # sheet's AffectsPosition. Four dashes went out unchecked without a type until A498. Skips when xivapi is down.
@@ -366,7 +372,7 @@ jobs:
       - name: Run the models whose script changed
         shell: bash
         run: |
-          MODELS="smn_phase_potency searing_light_coverage tankbuster_model machinist_balance_model samurai_balance_model monk_balance_model melee_gapcloser_model damage_area_model party_ttk_model tank_pull_defense_model dot_hot_model learned_revision_model learned_store_model heal_policy_model filler_heal_model emergency_weave_model area_series_model learned_oldfile_model bst_horn_model bst_compass_model bst_control_model bst_assign_model bst_capture_model window_layout_model roulette_needle_model crucible_route_model approach_model"
+          MODELS="smn_phase_potency searing_light_coverage tankbuster_model machinist_balance_model samurai_balance_model monk_balance_model melee_gapcloser_model damage_area_model party_ttk_model tank_pull_defense_model dot_hot_model learned_revision_model learned_store_model heal_policy_model filler_heal_model emergency_weave_model area_series_model learned_oldfile_model bst_horn_model bst_compass_model bst_control_model bst_assign_model bst_capture_model window_layout_model roulette_needle_model crucible_route_model approach_model action_timing_model"
           before="${{ github.event.before }}"
           after="${{ github.event.pull_request.head.sha || github.sha }}"
           if [ "${{ github.event_name }}" != "pull_request" ] || [ -z "$before" ] || ! git cat-file -e "$before^{commit}" 2>/dev/null; then

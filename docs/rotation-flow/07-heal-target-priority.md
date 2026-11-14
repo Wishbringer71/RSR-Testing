@@ -463,7 +463,8 @@ Succor (Gelehrter), Prognosis (Weiser). Nach 1,5 s Wirkzeit – Benefic II, Heli
 Diagnosis (Weiser), Glare III und Holy III – bleibt rund eine Sekunde, abzüglich der Sperre ein Fenster von 0,27 bis
 0,5 s je nach Tempo (`emergency_weave_model.py`).
 
-**Was gilt** (A479). Steht ein ungeschütztes Mitglied der Gruppe in Klasse 1 – seine vorausberechnete effektive Gesundheit
+**Was gilt** (A479; in PvE und PvP, A755: die PvP-Rotationen von Astrologe, Gelehrtem und Tänzer haben
+Heilfähigkeiten). Steht ein ungeschütztes Mitglied der Gruppe in Klasse 1 – seine vorausberechnete effektive Gesundheit
 bei oder unter `HealthForDyingTanks`, ab Werk 15 % –, fragt `Invoke` die automatischen Heilfähigkeiten des Jobs auch dann,
 wenn der GCD schon ansteht, und meldet eine, die hinausgehen kann, vor dem GCD. Gedrückt wird sie, sobald der GCD frei
 ist (die Sperre in `DoAction` bleibt; bei 0 s Rest lässt sie Fähigkeiten zu), und der nächste GCD folgt nach ihrer

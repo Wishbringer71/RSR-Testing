@@ -2555,7 +2555,7 @@ internal static partial class DataCenter
 
 	public static bool AutoPvpSeriesGrindEnabled => _autoPvpSeriesGrindEnabled.Value;
 
-	private static bool IsPluginLoaded(string name, string internalName)
+	internal static bool IsPluginLoaded(string name, string internalName)
 	{
 		foreach (var x in Svc.PluginInterface.InstalledPlugins)
 		{

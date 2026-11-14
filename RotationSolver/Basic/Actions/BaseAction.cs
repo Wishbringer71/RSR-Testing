@@ -237,9 +237,10 @@ public class BaseAction : IBaseAction
 
 		// An ability with a cast time ends its cast before the window kept free ahead of the GCD, as that window keeps
 		// every other ability's start: a battlehorn (1 s) called late between two GCDs ran into the next one and pushed it
-		// back. Without a GCD to clip (IgnoreClipping) it goes as before, and in PvP, where only the Elixir has a cast time
-		// (concept 01, W1, A486).
-		if (!IBaseAction.IgnoreClipping && !DataCenter.IsPvP && !Info.IsRealGCD && Info.CastTime > 0f && DataCenter.DefaultGCDRemain > 0f
+		// back. Without a GCD to clip (IgnoreClipping) it goes as before, and so does a cast as long as the GCD or longer,
+		// which would never end before the window: the Elixir in PvP, 4.5 s (concept 01, W1, A486, A755).
+		if (!IBaseAction.IgnoreClipping && !Info.IsRealGCD && Info.CastTime > 0f && Info.CastTime < DataCenter.DefaultGCDTotal
+			&& DataCenter.DefaultGCDRemain > 0f
 			&& DataCenter.DefaultGCDRemain - Info.CastTime <= ActionHelper.AbilityClipWindow)
 		{
 			return ActionTracer.Reject(this, "CastRunsIntoGCD");

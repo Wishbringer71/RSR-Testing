@@ -23,6 +23,20 @@ are not reconstructed here.
 
 ## Unreleased
 
+### Addition to RotationSolver: whether the duty is cleared
+
+New public members of `CustomRotation`: `InClearedDuty`, whether the player has cleared the instanced duty they are in,
+as the game keeps it (`UIState.IsInstanceContentCompleted`), false outside an instanced duty; and `LastPullTime`, the
+seconds the last combat in this territory lasted, 0 when it was elsewhere. Nothing existing changes.
+
+## 7.5.8.2+wsh1
+
+### Addition to RotationSolver: what the Crucible windows read
+
+New public members of `BeastmasterRotation`: `CrucibleTreasureOffers`, each treasure offer as a `CrucibleOfferVerdict`
+(sheet row, name, verdict, whether it is recommended); `CrucibleTeamSizeNote`, why the team has the size it has; and
+`CrucibleRouteWhy`, the reason for the recommended way at a fork. No signature changed or went away.
+
 ## 7.5.7.15+wsh1
 
 ### Addition to RotationSolver: deep dungeon transformations

@@ -13,7 +13,7 @@ namespace RotationSolver.Basic.Helpers;
 /// <summary>
 /// Applies the animation lock and cooldown delay tweaks to every action the client sends, whether RSR or the player used it.
 /// </summary>
-public sealed unsafe class ActionManagerEx : IDisposable
+public sealed unsafe partial class ActionManagerEx : IDisposable
 {
 	private static ActionManagerEx? _instance;
 
@@ -79,6 +79,8 @@ public sealed unsafe class ActionManagerEx : IDisposable
 		try
 		{
 			_updateHook!.Original(self);
+			// Clipping, GCD time with nothing queued and the fight's line (concept 03, A753).
+			AnimationLockTweak.Frame(self, Framework.Instance()->FrameDeltaTime);
 		}
 		finally
 		{
@@ -89,7 +91,19 @@ public sealed unsafe class ActionManagerEx : IDisposable
 	private bool UseActionLocationDetour(ActionManager* self, ActionType actionType, uint actionId, ulong targetId, Vector3* location, uint extraParam, byte comboRouteId)
 	{
 		var prevSequence = self->LastUsedActionSequence;
-		var result = _useActionLocationHook!.Original(self, actionType, actionId, targetId, location, extraParam, comboRouteId);
+
+		// A786 (concept 13, "Richtig stehen und weiter treffen"): every action the game runs passes here - RSR's press, the
+		// game's queue and the player's own press - so a gaze due gets a safe facing instead of the game's turn at the target.
+		var facing = actionType == ActionType.Action && DataCenter.IsActivated() ? GazeWatch.PrepareFacingFor(actionId, targetId, location) : null;
+		bool result;
+		try
+		{
+			result = _useActionLocationHook!.Original(self, actionType, actionId, targetId, location, extraParam, comboRouteId);
+		}
+		finally
+		{
+			GazeWatch.RestoreFacing(facing);
+		}
 
 		if (self->LastUsedActionSequence == prevSequence)
 		{
@@ -122,10 +136,9 @@ public sealed unsafe class ActionManagerEx : IDisposable
 				}
 			}
 
-			if (Service.Config.RemoveAnimationLockDelay)
-			{
-				AnimationLockTweak.RecordRequest(self->LastUsedActionSequence, self->AnimationLock);
-			}
+			// Recorded with the setting off too: the weave window counts with the delay measured on it (A753).
+			AnimationLockTweak.RecordRequest(self->LastUsedActionSequence, self->AnimationLock);
+			AnimationLockTweak.NoteRequest(self, actionType, actionId);
 		}
 		catch (Exception ex)
 		{
@@ -148,23 +161,30 @@ public sealed unsafe class ActionManagerEx : IDisposable
 			TankbusterForecast.RecordRequestAnswered(header->SourceSequence);
 		}
 
-		if (!Service.Config.RemoveAnimationLockDelay || actionManager == null || header->SourceSequence == 0
-			|| casterEntityId != Player.Object?.EntityId)
+		// Measured with the setting off too; only the reduction asks it (A753).
+		if (actionManager == null || header->SourceSequence == 0 || casterEntityId != Player.Object?.EntityId)
 		{
 			return;
 		}
 
 		try
 		{
+			AnimationLockTweak.NoteAnswer(header->SourceSequence);
 			var reduction = AnimationLockTweak.Apply(header->SourceSequence, prevAnimLock, actionManager->AnimationLock,
 				packetAnimLock, header->AnimationLock, out var delay);
 			if (reduction > 0)
 			{
 				actionManager->AnimationLock = Math.Max(0, actionManager->AnimationLock - reduction);
+				AnimationLockTweak.NoteReduction(reduction);
 				if (Service.Config.InDebug)
 				{
 					PluginLog.Debug($"[ActionManagerEx] Reduced animation lock by {reduction:f3}s (delay: {delay:f3}s)");
 				}
+			}
+
+			if (AnimationLockTweak.LastMatched)
+			{
+				AnimationLockTweak.Observe(header->ActionId, packetAnimLock, delay, actionManager->AnimationLock);
 			}
 		}
 		catch (Exception ex)
@@ -218,5 +238,7 @@ public sealed unsafe class ActionManagerEx : IDisposable
 		_useActionLocationHook?.Dispose();
 		_receiveActionEffectHook?.Dispose();
 		CooldownDelayTweak.StopAdjustment();
+		// BossMod's and NoClippy's lock functions come back as RSR's go (A753).
+		AnimationLockTweak.GiveBackOtherTools();
 	}
 }

@@ -1361,6 +1361,12 @@ ein Schadensausteiler, ausgeschaltete Einzelabwehr oder eine vorher greifende Pu
 - Unter „Spend only the mitigation a measured tankbuster needs" fällt ein Mitglied heraus, das jeden auf es
   gerichteten Tankbuster unter Heiligem Boden oder Meteoritenfall nimmt (sein Vorschlag vom 04.10.2026). Bei einem
   Marker oder einer Vorhersage gilt das nicht, beide nennen hier keine Einschlagszeit.
+- Ebenso hält der Heiler unter „Hold mitigation under invulnerability" seine Minderung nur zurück, wenn jedes Mitglied,
+  auf das ein Tankbuster gewirkt wird, darunter steht (`StateUpdater.TankbusterTargetsAllImpervious`). Gezählt werden
+  dieselben Wirkenden wie in der Tankbuster-Flagge, Helfer mit gelistetem Tankbuster eingeschlossen (`AreaCasters`,
+  A750); bis dahin las die Prüfung nur die Gegnerliste. *Im Kampf:* Wirkt der Boss auf den Tank unter Heiligem Boden und
+  zugleich ein Helfer auf den zweiten Tank, hielt der Heiler zurück, und der zweite Tank bekam keine Minderung. Wirkt
+  nur ein Helfer auf den Geschützten, gab er sie umsonst.
 - Unter derselben Option fällt ein anderes Mitglied heraus, dessen gemessener Tankbuster keine Hilfe braucht (A373):
   Er nimmt weniger, als ein großer Schild auffängt (The Blackest Night, 25 % laut Wirktext, `LargestStatedBarrierShare`),
   und lässt ihm mit dem, was beim Einschlag steht, mindestens die Schwelle, ab der deine Rotation ihn mit einem

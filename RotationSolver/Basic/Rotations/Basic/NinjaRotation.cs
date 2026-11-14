@@ -724,12 +724,20 @@ public partial class NinjaRotation
 		setting.ActionCheck = () => Service.GetAdjustedActionId(ActionID.SpinningEdgePvP) == ActionID.ForkedRaijuPvP &&
 									!StatusHelper.PlayerHasStatus(true, StatusID.SealedForkedRaiju);
 		setting.MPOverride = () => 0;
+		// "Rushes target" (effect text): a jump onto the target, held by the gap closer limit as in PvE (concept 25, "PvP: Bewegung", A756).
+		setting.SpecialType = SpecialActionType.HostileMovingAttack;
+		// Within the reach the player allows damaging gap closers, as Intervene in PvE (A358; concept 25, A756).
+		setting.CanTarget = static t => GapCloserAllowed(t, pressed: ActionID.ForkedRaijuPvP);
 	}
 
 	static partial void ModifyFleetingRaijuPvP(ref ActionSetting setting)
 	{
 		setting.ActionCheck = () => Service.GetAdjustedActionId(ActionID.SpinningEdgePvP) == ActionID.FleetingRaijuPvP;
 		setting.MPOverride = () => 0;
+		// "Rushes target" (effect text): a jump onto the target, held by the gap closer limit as in PvE (concept 25, "PvP: Bewegung", A756).
+		setting.SpecialType = SpecialActionType.HostileMovingAttack;
+		// Within the reach the player allows damaging gap closers, as Intervene in PvE (A358; concept 25, A756).
+		setting.CanTarget = static t => GapCloserAllowed(t, pressed: ActionID.FleetingRaijuPvP);
 	}
 
 	static partial void ModifyHyoshoRanryuPvP(ref ActionSetting setting)
@@ -782,7 +790,9 @@ public partial class NinjaRotation
 
 	static partial void ModifyShukuchiPvP(ref ActionSetting setting)
 	{
-		//setting.SpecialType = SpecialActionType.MovingForward;
+		// "Move quickly to the specified location" (effect text), as Shukuchi in PvE (concept 05, A520; concept 25, A756).
+		setting.TargetType = TargetType.Move;
+		setting.SpecialType = SpecialActionType.GroundTargetMove;
 	}
 	#endregion
 

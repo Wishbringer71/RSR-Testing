@@ -38,7 +38,11 @@ from pathlib import Path
 ROOT = Path(__file__).resolve().parents[3]
 LIST = Path(__file__).with_name("fixed_values.json")
 
-NUMBER = re.compile(r"(?<![\w.])(\d+(?:\.\d+)?)[fFdDmMuUlL]?(?![\w.])")
+# A literal with digit separators (5_400), a leading point (.5f) or an exponent (2.5e-3f) is one number: an
+# earlier pattern stopped at the "_", the "." or the "e" and let each pass unseen (KSP-MyContracts, passed on in
+# KerbalMissionDirector #5 and Retainer-Repricer #4, 14.11.2026). The end of a range (..5) is a number too.
+NUMBER = re.compile(r"(?:(?<![\w.])|(?<=\.\.))(\d[\d_]*(?:\.\d[\d_]*)?(?:[eE][-+]?\d[\d_]*)?|\.\d[\d_]*(?:[eE][-+]?\d[\d_]*)?)"
+                    r"(?:[fFdDmM]|[uU][lL]?|[lL][uU]?)?(?![\w.])")
 # Hexadecimal literals: NUMBER stops at the "0" of "0x40", which is followed by a letter, so a bit
 # mask passed unseen until it was checked for by hand.
 HEX = re.compile(r"(?<![\w.])(0[xX][0-9a-fA-F]+)[uUlL]*(?![\w.])")
@@ -58,7 +62,9 @@ def literals(code):
         return []
     code = STRING.sub('""', code)
     code = code.split("//")[0]
-    return [n for n in NUMBER.findall(code) + HEX.findall(code) if n not in TRIVIAL]
+    numbers = [n.replace("_", "") for n in NUMBER.findall(code)]
+    numbers = ["0" + n if n.startswith(".") else n for n in numbers]
+    return [n for n in numbers + HEX.findall(code) if n not in TRIVIAL]
 
 
 def added_lines(base):
@@ -165,6 +171,12 @@ def self_test():
         ("new int[Enum.GetValues<SearingPhase>().Length]", []),
         ("BMRShouldRefreshBefore(BMRRaidwideIn, 30f, true)", ["30"]),
         ("=> (entry.flags & 0x40) != 0 ? entry.Damage : entry.value;", ["0x40"]),
+        ("var energy = 5_400.0;", ["5400.0"]),
+        ("var half = .5f;", ["0.5"]),
+        ("var small = 2.5e-3f;", ["2.5e-3"]),
+        ("var big = 1e6;", ["1e6"]),
+        ("var last = list[..5];", ["5"]),
+        ("var ticks = 30UL;", ["30"]),
     ]
     for code, expected in cases:
         got = literals(code)

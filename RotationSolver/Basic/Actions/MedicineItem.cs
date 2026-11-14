@@ -38,7 +38,7 @@ public enum MedicineType : byte
 	Mind,
 }
 
-internal class MedicineItem : BaseItem
+internal partial class MedicineItem : BaseItem
 {
 	public MedicineType Type { get; }
 

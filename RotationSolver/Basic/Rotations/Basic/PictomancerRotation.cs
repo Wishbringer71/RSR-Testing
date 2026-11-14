@@ -768,6 +768,9 @@ public partial class PictomancerRotation
 
 	static partial void ModifySmudgePvP(ref ActionSetting setting)
 	{
+		// "Quickly dash 15 yalms forward" (effect text), as Smudge in PvE (concept 25, "PvP: Bewegung", A756).
+		setting.SpecialType = SpecialActionType.FixedDistanceMoveForward;
+		setting.BackstepDistance = 15;
 		setting.StatusProvide = [StatusID.Smudge_4113, StatusID.QuickSketch];
 		setting.CreateConfig = () => new ActionConfig()
 		{

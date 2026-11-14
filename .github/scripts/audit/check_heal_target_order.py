@@ -17,6 +17,7 @@ Both are checked here at the source, which is the only place they can be checked
 import re
 import sys
 from pathlib import Path
+import classfile
 
 TARGET = Path('RotationSolver/Basic/Actions/ActionTargetInfo.cs')
 # The critical class is one definition shared by every reader (A159). GeneralHealTarget may call it
@@ -377,10 +378,10 @@ def main():
     if not TARGET.exists():
         print('%s not found - run from the repository root' % TARGET)
         return 1
-    text = TARGET.read_text(encoding='utf-8')
+    text = classfile.read(TARGET)
     problems = check(text) + check_forecast(text) + check_time_to_kill(text)
     if CLASS_CALL.search(body_of(text, METHOD) or ''):
-        problems += check_helper(HELPER.read_text(encoding='utf-8'))
+        problems += check_helper(classfile.read(HELPER))
     if problems:
         print('heal target order is broken:')
         for p in problems:

@@ -219,11 +219,12 @@ internal static class MovementLock
 	private static float PurposeLeft(in Channel channel, float left)
 		=> channel.Party is not null ? Math.Min(left, AnnouncedPartyHitIn()) : left;
 
-	// Seconds until the next announced hit on the party: BossMod's raidwide, or a listed area cast under way.
+	// Seconds until the next announced hit on the party: BossMod's raidwide, or a listed area cast under way - a helper's
+	// too (A750).
 	private static float AnnouncedPartyHitIn()
 	{
 		var earliest = Service.Config.UseBmrTimeline && DataCenter.BMRNextRaidwideIn > 0f ? DataCenter.BMRNextRaidwideIn : float.MaxValue;
-		var hostiles = DataCenter.AllHostileTargets;
+		var hostiles = DataCenter.AreaCasters;
 		for (var i = 0; hostiles != null && i < hostiles.Count; i++)
 		{
 			var h = hostiles[i];
@@ -389,7 +390,8 @@ internal static class MovementLock
 
 		_certainFrame = frame;
 		_certain = null;
-		var hostiles = DataCenter.AllHostileTargets;
+		// Every caster of the enemy side: most areas of a boss fight are cast by helpers (A750).
+		var hostiles = DataCenter.CastingEnemies;
 		if (hostiles == null)
 		{
 			return null;

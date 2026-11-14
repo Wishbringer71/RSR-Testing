@@ -17,6 +17,7 @@ Exit code 1 when a path matches two kinds, or a list is not found.
 import re
 import sys
 from pathlib import Path
+import classfile
 
 SOURCE = Path('RotationSolver/Basic/DataCenter.cs')
 KINDS = {
@@ -95,7 +96,7 @@ def main():
     self_test()
     path = Path(sys.argv[1]) if len(sys.argv) > 1 else SOURCE
     try:
-        found = overlaps(path.read_text(encoding='utf-8-sig'))
+        found = overlaps(classfile.read(path, encoding='utf-8-sig'))
     except ValueError as error:
         print(f'{path}: {error}')
         return 1

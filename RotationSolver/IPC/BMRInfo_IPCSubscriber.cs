@@ -4,7 +4,7 @@
 
 namespace RotationSolver.IPC;
 
-internal static class BMRInfo_IPCSubscriber
+internal static partial class BMRInfo_IPCSubscriber
 {
 	private static readonly EzIPCDisposalToken[] _disposalTokens =
 		EzIPC.Init(typeof(BMRInfo_IPCSubscriber), "BossMod", SafeWrapper.AnyException);

@@ -322,7 +322,10 @@ unter Pyretic bis 3 s vor dem Ende weiter, unter Causality und den Fassungen ohn
 
 **Vor der Landung** (A439). Ein Status, der jede Aktion bestraft, kommt mit dem Treffer, und eine Aktion, die in diesem
 Augenblick noch läuft, nimmt den Schaden sofort; die Sperren oben lesen den liegenden Status und kommen dafür zu spät.
-`ActionPenaltyWatch` beantwortet die Zeit davor, für alle Jobs, außer im PvP:
+`ActionPenaltyWatch` beantwortet die Zeit davor, für alle Jobs, in PvE und PvP. Die frühere PvP-Ausnahme war von
+Upstreams Sperre für liegende Status übernommen. Keiner der 31 Status der Liste kommt in PvP vor (alle aus
+PvE-Bosskämpfen, xivapi v2 am 13.11.2026), die Ausnahme schränkte also nichts ein und hatte keinen technischen Grund
+(A755):
 - *Lernen:* Legt die Landung eines Wirkens einem Gruppenmitglied oder ihm einen solchen Status der Liste an (Effektart
   „Status auf Ziel“ mit der Status-Id, erkannt wie oben über `DamagesEveryAction`), ist das Wirken gelernt, gleich auf
   wen es fiel. `ActionPenaltyCasts.json` hält je Aktion den gelegten Status, über alle Sitzungen, gespeichert wie die
@@ -557,6 +560,51 @@ merklich schneller zu beenden; sie kostet Geld, und sie für einen gewöhnlichen
   acht bis zehn Minuten sind das zwei Tinkturen (Pull und sechste Minute; Wiederverwendung 300 s). Revolverklinge,
   Dunkelritter und Barde tranken dort nur die im Countdown, die zweite nie; Maschinist und Viper tranken gar keine, weil
   ihr eigener Schalter ab Werk aus stand. Gerade dort, wo die Tinktur ihr Geld wert ist, fehlte sie also.
+- *Opener oder später, alle Jobs* (seine Präzisierung vom 14.11.2026: „Generalisierung vor Spezialisierung solange keine
+  Nachteile. Der trinkzeitpunkt richtet sich nach Schaden, da prozentuale Erhöhung“; seine Rüge dazu: „Es geht nicht
+  darum, was die Mehrheit macht, sondern was belegt am sinnvollsten ist“; A780, A781).
+  - *Wirkung:* Eine Tinktur hebt den Hauptwert für 30 s um 10 %, höchstens um 461 (`ItemAction.Data`, `ItemFood` 686).
+    Nach der Schadensformel der Community ist das bei Ausrüstung dieser Stufe höchstens etwa 11 % mehr eigener Schaden.
+    *Werkzeugquelle, nicht aus dem Spiel.* Die Tinktur gehört also in die 30-s-Fenster mit dem meisten eigenen Schaden.
+  - *Gemessen (FFLogs, 14.11.2026, `tincture_windows.py`):*
+    - Grundlage: je 4 beste Kämpfe aller 21 Jobs an drei Savage-Bossen (AAC Heavyweight 101, 103, 104; 6:08 bis 11:00).
+    - Gemessen ist der eigene Schaden je Sekunde, Begleiter eingeschlossen, im besten 30-s-Fenster um jeden Burst.
+    - Die Tinktur ist einmal mit 0 % und einmal mit 11 % Wirkung herausgerechnet. Nur ein Ergebnis, das bei beiden gilt,
+      ist belegt.
+  - *Ergebnis:*
+    - Bei Schnitter, Viper, Barde, Dragoon und Tänzer ist der 2-Minuten-Burst stärker als der Opener: Opener durch
+      2 min 0,82 bis 0,96, mit zwei Tränken (0 + 6) durch (2 + 8) 0,89 bis 1,00.
+    - Bei Krieger, Mönch und Ninja ist der Opener stärker (1,02 bis 1,16).
+    - Bei den übrigen 13 Jobs schließen die Grenzen beide Seiten ein; dort entscheidet nur die Zahl der Tränke.
+  - *Zahl der Tränke:* Wiederverwendung 300 s (`Item.Cooldowns`). Aus dem Opener folgen Tränke bei 0, 6, 12 min, aus
+    dem 2-Minuten-Burst bei 2, 8, 14 min. Je nach Kampflänge bringt der Opener einen Trank mehr. Ein ganzer Trank wiegt
+    mehr als jeder gemessene Unterschied zwischen zwei Fenstern.
+  - *Regel* (`UseBurstMedicine`, für alle Jobs; nur die Liste der Jobs ist je Job):
+    - Bei einem Job mit stärkerem 2-Minuten-Burst wartet die Tinktur des ersten Bursts, wenn beide Pläne bei der zu
+      erwartenden Kampflänge gleich viele Tränke bringen.
+    - Die Kampflänge ist der letzte Zug im Gebiet (`LastPullTime`). Der Burst-Takt ist der je Gebiet gemessene zweite
+      Burst. Wiederverwendung und Wirkdauer kommen aus dem Gegenstand.
+    - Ohne diese Werte, im ersten Zug, trinkt der Job im Opener, denn der Opener bringt nie weniger Tränke.
+  - *Im Kampf:*
+    - Schnitter, Kampf von 11 min: Tränke bei 2 und 8 statt 0 und 6 min, beide im stärkeren Fenster.
+    - Schnitter, Kampf von 7 min: Trank im Opener. Er trinkt dann bei 0 und 6, statt nur einmal bei 2 min.
+  - *Grenzen:*
+    - Gemessen sind Spitzenkämpfe dieser drei Bosse. Kämpfe mit Pausen verschieben Fenster.
+    - Dunkelritter und Beschwörer liegen je in einem der beiden Fälle unter 1, im anderen nicht. Sie bleiben im
+      Opener, bis eine Messung beide Fälle trennt.
+- *In der Lernphase* (A780, aus A779 verallgemeinert):
+  - Jeder Wipe vor dem zweiten Burst kostet die Opener-Tinktur ohne Nutzen (seine Regel A501). Ein Zug, der den
+    zweiten Burst erreicht, verbraucht in beiden Fällen eine.
+  - *Regel* (`UseBurstMedicine`, für alle Jobs): In einem Kampf, den der Spieler noch nicht geschafft hat
+    (`InClearedDuty`, aus dem Spiel), wartet die Tinktur im ersten Burst des Zugs. Das ist der Countdown und die
+    Kampfzeit, solange ein Opener-Trank noch wirken würde (seine Dauer aus `ItemAction.Data`).
+  - *Ausnahme:* Der letzte Zug im selben Gebiet (`LastPullTime`) reichte bis zur zweiten Gelegenheit. Diese misst RSR je
+    Gebiet selbst als den ersten Aufruf nach dieser Wartezeit. Dann kommen Wipes spät, die Tinktur kostet im Opener
+    nichts mehr, und der Schadenscheck zählt.
+  - *Im Kampf:* Erster Zug eines neuen Savage: keine Tinktur im Opener, die erste im 2-Minuten-Burst. Hat ein Zug den
+    2-Minuten-Burst erreicht, trinkt der nächste im Opener. Im geschafften Kampf trinkt jeder Zug im Opener.
+  - Der Schnitter verlor dafür seine eigenen Schalter „Use potion“ und „First Potion timing“ (Upstream 6462f8a90), wie
+    die anderen Schalter unten. Sie stellten dieselbe Frage ein zweites Mal.
 - *Entfernt* sind die Schalter der Rotationen, die dieselbe Frage ein zweites Mal stellten: beim Beschwörer „Use potion",
   „Potion timing" und „Only use potion during a big summon" (Upstream 444388102), beim Weißmagier „Use Tincture/Gemdraught
   when about to use Presence of Mind", bei der Viper „Experimental Pot Usage", beim Maschinisten „Use burst medicine in
@@ -1015,8 +1063,9 @@ die Spurzeile nennt, ob die Regel gilt.
 *Was gilt (A571, A588):* Ein Gegner mit einem Zustand, dessen englischer Wirktext seine Angreifer treffen lässt, ist kein
 Ziel eines Angriffs, den der Zustand trifft, solange er steht. Der Text nennt beides:
 - *Dass er trifft:* „damage to attackers" (auch „damage to and slowing down attackers", Stacheln), „countering … attacks"
-  und „counter damage" (Gegenangriff), „reflected back" oder „Reflecting …" mit „attacks", „magic", „caster" oder
-  „dealer" (Rückwurf). „Doom … counter reaches zero" ist kein Gegenangriff und zählt nicht.
+  und „counter damage" (Gegenangriff), „sustained damage back to its source" (Rückgabe), „reflected back" oder
+  „Reflecting …" mit „attacks", „magic", „caster" oder „dealer" (Rückwurf). „Doom … counter reaches zero" ist kein
+  Gegenangriff und zählt nicht.
 - *Welche Angriffe:* Nennt der Satz „physical", trifft er physische Angriffe; „magic" oder „-aspected" magische;
   „ranged" Angriffe aus der Ferne; sonst jeden.
 - *Welche Angriffe du führst*, sagt das Jobblatt (`ClassJob`): Kriegerdisziplinen (`ClassJobCategory` 30, auch der
@@ -1027,7 +1076,15 @@ Eine Aktion, die genau diesen Zustand entfernt (`TargetStatusNeed`: Quelling Wav
 Needles Out), darf ihn wählen; Bannen geht vor Meiden, weil es die Stacheln für alle beendet. Seine Zauber zählen weiter
 für Flächen und Tankbuster (A566). RSR schreibt je Gegner und Zustand eine Zeile ins `DefenseTrace.log`, wenn es ihn
 meidet. Einstellung „Do not attack enemies whose spikes damage their attackers", ab Werk an; aus greift RSR ihn an wie
-jeden Gegner. Die Liste unverwundbarer Zustände bleibt daneben bestehen und editierbar.
+jeden Gegner. Die Liste unverwundbarer Zustände bleibt daneben bestehen und editierbar. Die Regel gilt in PvE und PvP
+gleich (A755, `25-pvp.md`): In PvP gibt Nebula des Revolverklingen-Kämpfers (3051) jedem Angreifer 4.000 Potenz zurück.
+
+*Rückgabe (A755):* „Inflicting a portion of sustained damage back to its source" trägt als Zustand eines Gegners heute
+nur Nebula in PvP (3051, Revolverklingen-Kämpfer, 8 s). Dieselbe Formulierung führen Spielerzustände in PvE (Vengeance
+89, Damnation 3832), Wuk Lamats Rollenspiel-Zustände Br'aax Pulse (3784) und Blood of the Br'aax (4170, BossModReborn
+`TakingAStand.cs`) und Schiltron (3631, Herkunft unbelegt). Bis A755 traf das Textmuster sie nicht; gegen Nebula schlug RSR in PvP weiter
+und nahm je Angriff 4.000 Potenz zurück. Welche Angriffe sie trifft, nennt der Text nicht; sie zählt deshalb für jeden.
+Statusblatt, xivapi v2, 13.11.2026.
 
 *Im Kampf (A588):* Im Drachen-Kampf von Brett 5 legt sich der barbmole piece „Needles Out" an („Damage taken is reduced
 while countering physical attacks"; BossModReborn 27be42256: „reflect with a stacking bleed when attacked"). Bis A588
@@ -1115,7 +1172,7 @@ Gegner sind:
 - Gegner mit Stacheln (oben, A571): Eine Fläche löst den Rückwurf so sicher aus wie ein Einzelschlag.
 - Gegner mit Stopp-Markierung, solange „Never attack targets with stop markers" an ist: Der Text der Einstellung bindet,
   und eine Fläche, die einen markierten Gegner trifft, greift ihn an (Upstream schloss ihn nur als Ziel aus; die Fläche
-  weckte etwa einen Schlafenden).
+  weckte etwa einen Schlafenden). Das gilt auch in PvP; Upstream nahm PvP ohne technischen Grund aus (A755).
 - Im Crucible die Eier des Zu, solange der Zu lebt (Konzept 21, K12).
 - Gegner, die eine Tötungsregel zurückhält (unten, „Tötungsregeln"), wo die Regel es sagt: Eine Fläche ließe sie zu
   früh oder am falschen Ort fallen.
@@ -1463,12 +1520,21 @@ level 3"). Es geht,
 
 **Ausweichen in der Sperre (Tank, Heiler):** Für sie ist ein Raidwide oder ein Tankbuster auf sie gerade der Grund, also
 sperrt er nicht. Gesperrt wird, was sie nur durch Gehen vermeiden: ein Stapel- oder Serienmarker auf ihnen, oder ein
-Cast, dessen Form sie erreicht, der nicht auf sie zielt und kein gelisteter Flächen-Cast ist
-(`RaiseProtection.FirstDodgeableWithin`). *Preis:* Die Flächenliste trennt Raidwide und ausweichbare Fläche nicht
-(TODO „Die Aufnahme in die AoE-Liste trennt Raidwide und ausweichbare Fläche nicht"); eine gelistete Fläche, der man
-ausweichen kann, gilt hier als unausweichlich. Mit einem Modul von BossMod fängt dessen Wurfzeitgrenze sie ab; ohne Modul
-steht der Tank bis zu 4 s, der Heiler bis zu 10 s darin – dieselbe Einordnung, auf die schon die Gruppenminderungen des
-Jobs antworten, nur mit längerer Sperre.
+Cast, dessen Form sie erreicht und der nicht auf sie zielt (`RaiseProtection.FirstDodgeableWithin`). Ein gelisteter
+Flächen-Cast zählt hier nur, wenn seine gemessene Form sie erreicht und ein lebendes Mitglied draußen lässt
+(`CastCertainlyDodgeable`, dieselbe Frage wie die Sperre vor einem Zauberbeginn). Ein Raidwide erreicht alle und sperrt
+nicht. Die Flächenliste nimmt auf, was die ganze Gruppe traf; ob sich die Fläche verlassen lässt, entscheidet erst die
+Form im Moment (Konzept 13, „Raidwide oder ausweichbare Fläche“, A750). Ein ungelisteter Cast zählt schon, wenn seine
+Form sie erreicht. Die Formfrage sähe nur ein Mitglied draußen, und stehen alle in der Fläche, hielte sie sie für
+unausweichlich. Für ungelistete Flächen ist das die falsche Vermutung: Hätten sie die ganze Gruppe getroffen, stünden
+sie in der Liste. Für gelistete ist es die richtige, denn 60 seiner 63 aufgenommenen Ids sind Gruppentreffer.
+- *Im Kampf:* Steht der Heiler im gelisteten Kreis der Hunde in Dun Scaith und ein anderes Mitglied draußen, startet er
+  kein Limit Break und keinen langen Kanal. Ohne Modul von BossMod stand er bisher bis zu 10 s darin, der Tank bis zu 4 s.
+- *Preis:* Erreicht ein Raidwide ein lebendes Mitglied nicht, etwa einen Fernkämpfer jenseits von Reichweite 30, wartet
+  das Limit Break bis nach dem Treffer. So geht RSR schon heute mit jedem ungelisteten Cast um, der den Spieler erreicht.
+  Dasselbe gilt für einen gelisteten Stack auf einem anderen Mitglied, in dem er schon steht, solange ein Drittes noch
+  draußen ist: Das Limit Break wartet einen Stack ab, so wie heute bei einem ungelisteten Stack-Cast und einem
+  Stack-Marker auf ihm. Allein, ohne zweites Mitglied, bleibt eine gelistete Fläche unausweichlich wie bisher.
 
 **Von Hand gedrückt** (A629, seine Meldung vom 06.11.2026: Teraflare auf Shinryu Unreal startet und bricht ab, „wie ein
 Stottern"): RSR fängt ein Limit Break nicht ab (`ActionQueueManager.ShouldInterceptAction`); der Druck geht mit seinem
@@ -1601,6 +1667,189 @@ Absatzes. ImGui setzt Zeilen im Abstand der Schrifthöhe, wie die Voreinstellung
 Schriftgröße von WCAG 1.4.8 (AAA) misst am Geviert, das ImGui für Axis nicht ausweist; AA und der Windows UX Guide
 verlangen keinen Mindestabstand.
 
+## Weben, Animationssperre und Latenz
+
+**Seine Vorgaben (13.11.2026):**
+- RSR übernimmt bei Animationssperre, Weben und Clipping die volle Funktion von XivAlexander, NoClippy und den Action
+  Tweaks von BossModReborn, sodass er sie nicht braucht. Dazu nutzt es das Optimum dieser Funktionen dynamisch, um im
+  Spiel schnellstmöglich zu handeln.
+- Ohne Vorgabewerte: keine 20 ms oder ähnliches zum Eintragen, sondern aus Verbindungs- und Geschwindigkeitsdaten
+  gemessen, abgeleitet und situationsbezogen optimiert. Das ist seine Regel „keine festen Werte“, auf diesen Fall angewandt.
+- RSR darf eine Option haben, die die konkurrierenden Funktionen der anderen Plugins abschaltet. Es muss nur besser sein
+  als diese.
+
+**Geltender Stand (A753).** Er gilt für jede Aktion und jeden Job (Ebene „alle“); kein Job hat eine eigene Regel dazu.
+- *Messen, immer, ohne Schalter* (`AnimationLockTweak`, `ActionManagerEx`): Zu jeder eigenen Sofortaktion mit Sequenz
+  misst RSR die Verzögerung von der Anfrage bis zur Antwort. Ebenso misst es die Sperre, die der Server der Aktion gibt,
+  und wie lange sie die nächste tatsächlich zurückhielt. Die Statistik gilt je Gebiet: Anzahl, Mittel, mittlere
+  Abweichung, kleinster Wert und alle Verzögerungen. Mit dem Gebiet ändert sich die Route; deshalb beginnt sie neu.
+  Dazu misst RSR die mittlere Frame-Zeit des Gebiets.
+- *Sperre verkürzen* („Remove lag-induced animation lock delay“, ab Werk an, ohne Wert zum Eintragen): Die nächste
+  Anfrage darf den Server frühestens erreichen, wenn seine Sperre für die vorige endet. Abziehen darf RSR also die
+  Netzlaufzeit hin und zurück; die Wartezeit auf den Tick des Servers bleibt.
+  - Sicher ist die untere Hüllkurve: die kleinste Verzögerung des Gebiets abzüglich ihrer mittleren Abweichung. Wer mehr
+    abzieht als die kürzeste Laufzeit, schickt die nächste Anfrage bei schneller Verbindung zu früh.
+  - Darüber hinaus lernt ein Regler einen Zuschlag. Jede Antwort hebt ihn um r Frames, jede Anfrage ohne Antwort senkt
+    ihn um (1 − r) Frames. r ist die gemessene Frame-Zeit geteilt durch die Sperre beim Drücken.
+  - Der Anteil abgelehnter Anfragen pendelt sich so bei r ein. Dort wiegt der Verlust einer Ablehnung, eine neue
+    Drücksperre, den Gewinn eines Frames Schnitt auf. Eine verspätete Antwort ist kein Verlust, denn der Server hat die
+    Anfrage zurückgehalten und trotzdem verarbeitet; sie zählt nicht.
+  - Als Ablehnung zählt nur eine Sofortaktion ohne Antwort. Ein Zauber, den Bewegung abbricht, bekommt ebenfalls keine
+    Antwort mit Wirkung, hat aber mit der Sperre nichts zu tun. Zählte er mit, kürzte der Regler bei jedem Wirker, der
+    im Gehen abbricht, unnötig weniger.
+  - Der Schnitt steigt höchstens bis zur größten Verzögerung des Gebiets; mehr lässt sich nicht abziehen. Ohne diese
+    Grenze wüchse der Zuschlag bei einem Server, der nichts ablehnt, unbegrenzt. Lehnte der Server dann später doch ab,
+    etwa auf einer anderen Route im selben Gebiet, bräuchte der Regler viele Ablehnungen, um wieder herunterzukommen.
+  - Gilt in PvE und PvP gleich (seine Vorgabe, 13.11.2026: in PvP dasselbe Optimum zum eigenen Vorteil). Die frühere
+    Sperre für PvP war meine Ableitung aus Fairness und keine technische Notwendigkeit: Der Server antwortet in PvP mit
+    demselben Paket samt Sperre, und weder BossModReborn noch XivAlexander oder NoClippy unterscheiden PvP. Im Kampf
+    ist in PvP nach jeder Sofortaktion die nächste Aktion um den gekürzten Netzrest früher frei, wie in PvE.
+- *Verzug durch die Bildrate* („Remove framerate-induced cooldown delay“, ab Werk an): Löst das Spiel eine eingereihte
+  Aktion erst einen Frame nach dem Ende von Sperre oder Abklingzeit aus, schreibt RSR den Überhang der nächsten
+  Abklingzeit und Sperre gut. Gutgeschrieben wird höchstens eine mittlere Frame-Zeit des Gebiets; einen Ruckler darüber
+  kennt der Server nicht. Das Verfahren stammt von BossModReborn, die feste Obergrenze von 100 ms entfällt. Es gilt wie die
+  Verkürzung in PvE und PvP.
+- *Webregel* (`ActionHelper.AbilityClipWindow`, `AbilityWindowFor`): Eine Fähigkeit beginnt nur, wenn ihre Sperre samt
+  erwartetem Rest endet, bevor der GCD frei wird.
+  - Der erwartete Rest ist das, was der aktuelle Schnitt von den Verzögerungen des Gebiets übrig lässt, als Mittel plus
+    mittlere Abweichung. Kürzt ein anderes Werkzeug, ist es der gemessene Rest nach allen Werkzeugen.
+  - Die eigene Sperre der Fähigkeit zählt, sobald der Server sie einmal gegeben hat. Vor der ersten Messung gelten die
+    bisherigen festen Grenzen.
+  - „Action ahead“ bleibt der Vorlauf, ab dem RSR den GCD meldet. Eine Fähigkeit, die nach der Messung noch passt, geht
+    auch danach. Dreifach webt RSR also genau dann, wenn es passt.
+- *Andere Werkzeuge* („Take over BossMod's and NoClippy's animation lock functions“, ab Werk an): Solange RSRs Verkürzung
+  an ist, schaltet RSR zwei Werkzeuge ab.
+  - Bei BossModReborn sind es „Remove extra lag-induced animation lock delay“ und „Remove extra framerate-induced cooldown
+    delay“, nur für die Sitzung (`BossMod.Configuration.SetTransient`). Den Wert des Spielers stellt RSR für dieses Feld
+    wieder her, ohne zu speichern, sobald seine Verkürzung aus ist oder RSR entladen wird.
+  - Bei NoClippy geht es nur mit `/noclippy off` und `/noclippy on`; das speichert NoClippys Einstellung. RSR liest
+    deshalb vorher NoClippys gespeicherten Wert (`EnableAnimLockComp` in `pluginConfigs/NoClippy.json`). Übernommen und
+    später wieder eingeschaltet wird nur, was an war; hattest du es aus, bleibt es aus.
+  - RSR prüft bei jedem Gebietswechsel den tatsächlichen Zustand und schaltet erneut ab, was wieder an ist. Das betrifft
+    etwa ein neu geladenes BossMod, das seinen gespeicherten Wert wieder trägt, oder ein von Hand wieder eingeschaltetes
+    NoClippy. Den Wert, den es dem Spieler zurückgibt, merkt es sich beim ersten Abschalten.
+  - XivAlexander lässt sich aus Dalamud nicht schalten. Läuft es, ruht RSRs Verkürzung, und die Webregel webt nach dem,
+    was XivAlexander übrig lässt.
+  - Ändert ein Plugin die Sperre zwischen Paket und Spiel, ruht die Verkürzung bis zum nächsten Gebiet. Die Einstellung
+    des Spielers bleibt dabei unberührt (bis A753 schaltete RSR sie dauerhaft ab).
+- *Messmittel* (`DefenseTrace.log`, eine Zeile je Kampf): Verzögerung bis zur Antwort (Mittel; im Gebiet kleinster Wert
+  und Abweichung), Rest nach der Sperre, Zustand der Verkürzung, Schnitt und Zuschlag des Reglers, verkürzte Sperren,
+  Webfenster und Frame-Zeit. Dazu kommen GCDs und Fähigkeiten je GCD, GCDs, die eine Sperre zurückhielt (Anzahl, Summe),
+  freie GCD-Zeit ohne eingereihte Aktion und Anfragen ohne Antwort. Gezählt wird das Clipping wie bei NoClippy: Ist der GCD
+  frei und steht noch die Sperre einer Fähigkeit, zählt ihr Rest einmal je Aktion.
+
+**Was die Werkzeuge tun** (Werkzeugquellen, je Commit und Datum):
+- *Spiel:* Eine Sofortaktion setzt beim Drücken eine Sperre von 0,5 s. Die Antwort des Servers ersetzt sie durch die
+  Sperre der Aktion, meist 0,6 s, gezählt ab Eintreffen. Die nächste Aktion wartet also Sperre plus Verzögerung. Bei
+  Zaubern läuft die Sperre erst nach der Wirkzeit; dort entsteht kein Verzug (Kommentar in BossModReborn
+  `AnimationLockTweak`, 7550528, 13.11.2026).
+- *BossModReborn* (7550528, 13.11.2026): Verkürzt auf einen festen Rest, ab Werk 20 ms. Laut Tooltip ermöglichen 20 ms
+  dreifaches Weben und 26 ms verhindern es; dass FFLogs 20 ms annimmt, steht dort ohne Beleg. Es gleicht den Verzug
+  durch die Bildrate bis 100 ms aus. Das Weben plant es über eine Frist (`ActionQueue.FindBest`). Es schaltet sich ab,
+  wenn der Paketwert nicht auf ganze 10 ms fällt oder das Spiel nach dem Paket einen anderen Wert hat.
+- *XivAlexander* (382e7ea, 12.11.2026, `NetworkTimingHandler.cpp`): Misst die Netzlaufzeit am Socket. Ab Werk zieht es
+  sie ab und behält die geschätzte Verarbeitungszeit des Servers. Es stapelt offene Anfragen, wenn der Server länger als
+  500 ms schweigt.
+- *NoClippy* (3f4b377, 29.04.2026): Simuliert 40 ms Laufzeit und schlägt bei Schwankung über dem Mittel einen Anteil auf.
+  Es merkt sich die Sperre je Aktion. Hält dreifaches Weben bei 2,5 s ohne Clipping für unmöglich.
+- *RSR vor A753:* Port von BossModReborns Verkürzung und Ausgleich der Bildrate, ab Werk aus, mit festem Rest 26 ms und
+  Obergrenze 100 ms.
+  - Der Prüfung fehlte die Bedingung „Spiel nach dem Paket gleich Paket“; eine zweite Verkürzung durch BossMod blieb so
+    unbemerkt.
+  - Der Tooltip versprach, sich bei XivAlexander oder NoClippy abzuschalten, und tat es nicht.
+  - Gemessen wurde nur bei eingeschalteter Verkürzung, und die Schätzung las niemand.
+  - Das Weben folgte festen Grenzen: 0,5 s und 25 % des GCD.
+
+**Gemessen an seinem Mitschnitt vom 11.11.2026** (ACT; 5629 eigene Aktionen als Weißmagier, Bestienbändiger und Druide):
+- Die Ergebnisse eigener Aktionen kommen auf einem Raster von 44,5 ms an. Die mittlere Phasenabweichung ist 0,039 eines
+  Ticks; zufällig wären es 0,25. Der Server löst also im Takt auf (Schluss aus dem Raster).
+- Zwischen zwei Sofortaktionen lagen mindestens 0,53 s (12 Ticks), im Median 0,625 s (14 Ticks). 12 Ticks sind kürzer
+  als die Sperre von 0,6 s. Der Server verarbeitete also zwei Aktionen schneller nacheinander, als die Sperre vorgibt. Er
+  lehnt eine frühe Anfrage demnach nicht ab (Schluss; offen bleibt, ob er sie zurückhält oder die Sperre ignoriert).
+- Webte RSR mit weniger als etwa 0,7 s Rest, kam der nächste GCD später: bei rund 0,60 s Rest im Median 0,23 s, im
+  oberen Zehntel 0,46 s; bei 0,65 s Rest im oberen Zehntel 0,45 s. Ab 0,70 s Rest gab es keinen Verzug. Drei Fähigkeiten
+  zwischen zwei GCDs (Bestienbändiger, 11-mal) verlängerten den GCD im Median um 0,45 s. Die feste Grenze erlaubte Weben
+  bis 0,61 s Rest (25 % von 2,44 s).
+
+**Modell** (`action_timing_model.py`, gezählt in der Zeit des Servers; Annahmen dort genannt): Es vergleicht das Spiel,
+den festen Rest von 20 ms, XivAlexander, NoClippy, die rein gemessene Hüllkurve und den Regler, jeweils mit fester und
+dynamischer Webregel. Durchgerechnet wird bei 60 und 144 Bildern je Sekunde und für drei Verhaltensweisen des Servers
+bei zu früher Anfrage: zurückhalten, ablehnen, ignorieren.
+- Die dynamische Webregel lässt in keiner Lage einen GCD wesentlich später kommen. Die feste kommt ohne Verkürzung bei
+  2,5 s GCD und 0,1 s Laufzeit auf 5,9 ms Verzug je GCD.
+- Mischfall (die Hälfte der Fähigkeiten sofort bereit), 2,5 s GCD, 60 Bilder je Sekunde, 0,1 s Laufzeit, Fähigkeiten je
+  GCD beim Server: Spiel 1,20; fester Rest 1,54 (lehnt der Server ab: 1,16 und 5,8 ms GCD-Verzug); XivAlexander 1,42;
+  NoClippy 1,37; Regler 1,58 (lehnt der Server ab: 1,30).
+- Burst (jede Fähigkeit bereit), 2,5 s, 144 Bilder je Sekunde, 0,03 s Laufzeit: fester Rest 3,00 (abgelehnt 1,99);
+  XivAlexander 2,38; NoClippy 2,00; Regler 2,98 (abgelehnt 2,16).
+- Bilanz: Hält der Server zurück oder ignoriert er die Sperre, ist der Regler gleichauf mit dem festen Rest und vor
+  XivAlexander und NoClippy. Lehnt er ab, liegt der Regler je nach Lage 0,04 bis 0,25 Fähigkeiten hinter dem besten
+  anderen, das dort NoClippy oder XivAlexander ist; der feste Rest bricht dort am stärksten ein. Sein Mitschnitt spricht
+  gegen das Ablehnen (oben).
+
+**Warum mit dreifachem Weben geworben wird, und was davon stimmt** (seine Frage, 13.11.2026):
+- Rechnerisch geht es: Bei 2,5 s GCD brauchen GCD und drei Fähigkeiten viermal Sperre plus Rest. Mit 0,6 s Sperre bleiben
+  25 ms Rest je Aktion. Das schaffen nur Verkürzung und Ausgleich der Bildrate zusammen. Ohne den Ausgleich kostet
+  jede Aktion bei 60 Bildern je Sekunde bis 17 ms Rundung; bei 144 Bildern bleibt sie klein.
+- Was die Werbung verschweigt: Mit 20 ms Rest kommt im Modell die Hälfte der Anfragen beim Server vor dem Ende seiner
+  Sperre an. Dreifaches Weben ist nur dann echt, wenn der Server das hinnimmt. Hält er sie zurück, webt man dreifach am
+  Bildschirm, beim Server kommen die Aktionen nacheinander, und der GCD kommt dort später: 10 ms je GCD im Burst bei
+  0,1 s Laufzeit. Lehnt er sie ab, gehen Aktionen verloren.
+- Mein erstes Modell (vor A753 verworfen) zählte in der Zeit des Clients und rundete jede Aktion auf ganze Frames ohne
+  Ausgleich der Bildrate. Es fand deshalb kein dreifaches Weben; der Ausgleich war übersehen.
+
+**Optionen und Bilanz im Kampf:**
+- *Nullvariante* (fest, Verkürzung aus): In seinem Mitschnitt kam ein GCD nach spätem Weben bis 0,46 s später. Ein
+  Heiler, der in der Not eine Fähigkeit einwebt, bekommt den nächsten Heil-GCD um diesen Betrag später.
+- *Fester Rest* (BossMod, RSR vor A753): am schnellsten, wenn der Server frühe Anfragen hinnimmt; am schlechtesten, wenn
+  er sie ablehnt. Den Wert muss der Spieler kennen.
+- *XivAlexander-Prinzip:* RSR kommt aus Dalamud nicht an die Laufzeit des Sockets.
+- *Nur gemessene Hüllkurve:* nie zu früh, aber langsamer. Die kleinste Verzögerung liegt unter der Laufzeit der meisten
+  Anfragen, also bleibt mehr Rest stehen (Burst, 2,0 s GCD, 0,1 s Laufzeit: 1,16 bis 1,34 statt 2,00 Fähigkeiten).
+- *Hüllkurve plus Regler (gewählt):* findet die Grenze des Servers an seiner Verbindung selbst. Ohne Wert zum Eintragen
+  ist er so schnell wie der feste Rest, wo der Server frühe Anfragen hinnimmt, und bricht nicht ein, wo er ablehnt.
+  Zusammen mit der dynamischen Webregel kommt kein GCD später. In der Not passen eine Minderung und eine Heilfähigkeit
+  zwischen zwei Heil-GCDs, ohne den nächsten Heil-GCD zu verschieben; das dient der Sicherheit der Gruppe.
+- *Verworfen, ein Regler mit fester Obergrenze nach der ersten Ablehnung:* Eine frühe Ablehnung legte ihn auf die
+  vorsichtige Hüllkurve fest (Burst, 2,0 s: 1,12 statt 1,63).
+
+**Gegenthesen:**
+- *Der Server lehnt doch ab:* Dann senkt der Regler den Schnitt, bis höchstens der Anteil r der Anfragen ohne Antwort
+  bleibt. Die Zeile je Kampf nennt die Anfragen ohne Antwort.
+- *Eine fehlende Antwort hat andere Gründe* (Paketverlust, Aktion ohne Wirkung): Der Regler sinkt kurz und steigt danach
+  wieder; der Preis ist ein Frame Schnitt für eine Weile.
+  - *Gemessen am 13.11.2026* (A765; Weißmagier, Build dca6fb8e8, 16 Kämpfe): 33 Anfragen ohne Antwort bei 366 Antworten.
+    Das sind 8 %, bei r um 2,5 %. Der Schnitt blieb bei 1 bis 34 ms, und der Rest nach der Sperre lag im Mittel bei rund
+    100 ms. Im Kampf kostete das nichts Sichtbares: Eine Sperre hielt in 637 GCDs einen GCD zurück, 0,00 s. Im
+    ACT-Mitschnitt kommt ein GCD nach ein oder zwei Fähigkeiten nicht später als ohne (90 % unter +0,1 s; am 11. und 12.11.
+    ebenso). Ein Heiler webt aber wenig (0,15 Fähigkeiten je GCD). Ob die 8 % Ablehnungen sind oder andere Gründe haben,
+    entscheidet, ob ein Job mit doppeltem Weben Schnitt verschenkt.
+  - *Messmittel:* je Anfrage ohne Antwort im Kampf eine Zeile „request without an answer“. Sie nennt die Aktion, ob GCD
+    oder Fähigkeit, die Zeit von der vorigen Antwort bis zur Anfrage und die Sperre jener Antwort. Liegt die Zeit
+    meist knapp über der Sperre, lehnt der Server zu frühe Anfragen ab, und der kleine Schnitt ist richtig. Liegt sie
+    weit darüber oder nennt sie eine Aktion auf ein Ziel, das gerade fiel, hat die fehlende Antwort andere Gründe. Dann
+    ist der nächste Schritt, solche Fälle nicht mehr als Ablehnung zu zählen.
+- *Ein fremdes Werkzeug kürzt weiter:* BossMod und NoClippy schaltet RSR ab; XivAlexander und jede Änderung zwischen Paket
+  und Spiel lassen die Verkürzung ruhen, die Webregel misst weiter.
+- *Ausgeliefert, und nichts ändert sich:* wenn XivAlexander läuft. Dann misst RSR dessen Rest und webt danach.
+- *Die Statistik eines Gebiets ist zu Beginn dünn:* Vor der zweiten Antwort kürzt RSR nichts, und die Hüllkurve zieht
+  die Abweichung ab, solange es wenige Antworten gibt. Der Regler beginnt bei null.
+
+**Betroffene:** Alle Jobs und Rotationen, auch die fremden unter `ExtraRotations`. Die öffentlichen Eigenschaften
+`EnoughWeaveTime` und `CanWeave` rechnen jetzt mit der gemessenen Grenze statt mit „Action ahead“. `DelayEstimate` und
+`DelayAverage` von `AnimationLockTweak` nennen den erwarteten Rest und die mittlere Verzögerung des Gebiets. Die
+Einstellungen „Max simulated animation lock delay“, „Delay smoothing factor“ und „Max cooldown adjustment“ entfallen;
+ein gespeicherter Wert wird nicht mehr gelesen. BossModReborn und NoClippy werden umgeschaltet, solange die Übernahme an
+ist.
+
+**Ort und Kosten:** Gemessen wird in den vorhandenen Hooks (`ActionManagerEx`), einmal je Antwort. Dabei geht RSR einmal
+über die Verzögerungen des Gebiets, eine Liste mit einem Eintrag je Antwort. Die Zählung des Clippings und der Frame-Zeit
+läuft einmal je Frame mit wenigen Feldern des `ActionManager`. Der Rest unter dem aktuellen Schnitt wird je Antwort
+über die Verzögerungen des Gebiets neu gerechnet und dazwischen behalten. Beim Lesen wählt die Webregel nur, ob RSR
+gerade kürzt. So folgt sie dem Umschalten der Option, und einer Sperre im Gebiet sofort, nicht erst
+mit der nächsten Antwort. Rotationen fragen die Webregel viele Male je Frame; jede Frage ist ein Vergleich und eine
+Addition. Je Frame wird nichts angelegt.
+
 ## Bewegungssperre beim Wirken und die KI von BossMod
 
 **Geltender Stand** (A649–A652): „Lock movement while casting" (ab Werk aus) hält die Figur, damit Bewegung keinen Zauber
@@ -1613,7 +1862,8 @@ party member in danger before an announced hit." Die Entscheidung fällt je Bild
 - *Zauber:* Die Sperre hält, bis das Spiel die Antwort auf den Zauber hat (`CastInfo.ResponseSourceSequence` gleich
   `SourceSequence`, Beginn des Gleitfensters), und hält nicht, solange BossMod dich bewegt (`Movement.IsMoving`) oder dein
   Ort in Gefahr ist: BossMod legt eine Fläche darauf, oder RSR sieht einen Treffer, dem nur ein Schritt entgeht, vor dem
-  Ende des Zaubers (`RaiseProtection.FirstDodgeableWithin`). Vor einem Zauber ebenso; gehst du dann in der Gefahr,
+  Ende des Zaubers (`RaiseProtection.FirstDodgeableWithin`). RSR liest dafür jeden wirkenden Gegner, unanvisierbare
+  Helfer und ungelistete Casts eingeschlossen (`DataCenter.CastingEnemies`, Konzept 13, A750). Vor einem Zauber ebenso; gehst du dann in der Gefahr,
   beginnt RSR keinen Zauber (`ActionBasicInfo.CastStartBlockedNow`, `NeedsCasting`), stehst du, wirkt RSR.
 - *Kanäle* (alle acht angehakt ab Werk; Waffengang, Numinosum, Tanzimprovisation, Flammenwerfer, Meditieren, Phantom
   Flurry, Apokalypsis, Chelonian Gate): Die Sperre hält gegen das Nachrücken der KI. Eine weitere Aktion beendet den Kanal

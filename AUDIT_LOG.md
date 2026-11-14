@@ -21650,6 +21650,1188 @@ Hybrid sinnvoll wäre; im Loop.
   gewollt – im Kampf ändert sich nichts, die Zeile entscheidet den nächsten Schritt.
 - *Prüfgrad:* statisch am Code, Compile, Prüfskripte.
 
+### A745 · Release 7.5.8.2+wsh1 veröffentlicht, Release-Text übergeben, neuer Zweig (13.11.2026)
+
+Sein Auftrag (13.11.2026): „branch zu main, compile, release, neuer branch, dann todo weitermachen im vollen loop" – die
+Freigabe (`CLAUDE.md`, „Grenzen und Löschungen").
+
+- *Vorher gemessen:* Upstream abgeglichen (0 ausstehend, Tag 7.5.8.2 im Verlauf); `main` (93e941007) Vorfahr des
+  Arbeitszweigs, 106 Commits voraus; Tag `7.5.8.2+wsh1` frei auf `origin`; Versionsangaben auf 7.5.8.2+wsh1; CI auf
+  cea13c2e1 grün; Release-Text 38.444 Zeichen.
+- *Zweig zu `main`:* `main` auf `claude/fixes-after-7.5.7.15` (cea13c2e1) vorgespult und gepusht. Kompiliert ohne
+  Warnung und Fehler.
+- *Release:* `publish.yaml` per `workflow_dispatch` auf `main` mit `7.5.8.2+wsh1`, Lauf 43410290454 erfolgreich.
+  Release auf cea13c2e1, `latest.zip` 3 643 521 Bytes, Digest sha256:e3a9c3eb…d184e, Text mit allen 74 Einträgen des
+  Release-Texts.
+- *Übergabe:* `fork-changes-in-play.md` steht auf Upstream 7.5.8.2; die 74 Einträge sind in die Themen eingearbeitet:
+  die Fenster, die Spur der Ladenangebote und gedrückten Gegenstände bei „Seeing what the rules decide"; Gegenstände und
+  Aktionen, die das Spiel am Ort ablehnt, die parierte Seite, die Kanäle des Blaumagiers, die Steine der Tiefen
+  Gewölbe, Harvest Moon des Schnitters, die Tötungsregeln und der Beastmaster zwischen den Kämpfen und im Crucible bei
+  „Damage and rotation"; die Trefferserie bei „The learned lists"; Kegel und Ringe bei „Party mitigation answers
+  raidwides"; das Vorübersetzen, die Codestruktur und die Kostenzeile bei „Frame time"; der Grund eines verfallenen
+  Schlafs bei „Mitigation and defensives"; Swiftcast und die Spur der Toten bei „Raising"; Regen in Bewegung und die
+  Schadensrate bei „Healing — when it lands"; die Hilfe gegen Figuren, die nur Heilung besiegt, bei „Healing — who it
+  picks"; Surecast und Arm's Length und die Bewegungssperre bei „Movement safety". `fork-changes-since-last-release.md`
+  beginnt mit „Changes since 7.5.8.2+wsh1". `CHANGELOG.md`: Abschnitt 7.5.8.2+wsh1 mit vier neuen Membern des
+  `BeastmasterRotation` (`CrucibleOfferVerdict`, `CrucibleTreasureOffers`, `CrucibleTeamSizeNote`, `CrucibleRouteWhy`),
+  erhoben als Vergleich der öffentlichen Signaturen von `RotationSolver/Basic` zwischen den Tags – der Diff allein hätte
+  die in Teildateien verschobenen Member als neu gezeigt.
+- *Zweige:* `claude/fixes-after-7.5.8.2` von `main` nach seiner Namensvorgabe, die Übergabe darauf.
+  `claude/fixes-after-7.5.7.15` ist vollständig gemergt und ein Löschfall auf `origin` (Ref-Löschungen sind der
+  Sitzung gesperrt).
+
+*Prüfgrad:* Workflow-Lauf und Release-API gelesen, Prüfskripte; die Übergabe gegen den Release-Text abgeglichen (jeder
+der 74 Einträge steht im Gesamtbild).
+
+### A746 · TODO nach dem Release: erster Pull als Warte-Eintrag, zweite Runde Teildateien (13.11.2026)
+
+Sein Auftrag (13.11.2026): „dann todo weitermachen im vollen loop". Defekte und offene Arbeit leer; Warte-Einträge
+hängen an seinen Läufen.
+
+- *Nachgezogen:* Die Schuld „Der erste Kampf einer Sitzung hält einen Durchlauf bis 170 ms an" war seit A739 bearbeitet
+  und stand noch als offen; jetzt Warte-Eintrag „Ruckler am ersten Pull einer Sitzung" (Bestätigung über die Zeilen
+  „warm-up" und „JIT"). Konzept 24 nachgezogen.
+- *Schuld „Fork-Member in Dateien von Upstream" abgebaut:* zwölf Dateien mit den meisten gelisteten Membern zerlegt
+  (Konzept 24, „Fork-Code in eigenen Teildateien", zweite Runde), 3.708 Zeilen in 30 Teildateien, zwei Kleinstteile
+  zusammengeführt. Grenzen: kein Startwert (statisch oder Instanz), keine Einstellung (Reihenfolge im Fenster). Geprüft:
+  jede Codezeile genau einmal da, Compile ohne Warnung; gewandert ist eine einzige Eigenschaft vom Typ `IBaseAction`
+  (`SGE_Reborn.EukrasianDosisAtLevel`, privat, wählt unter vorhandenen Aktionen), die Aktionsliste erzeugt der Source
+  Generator aus den Basisklassen. `fork_placement.json` 563 → 390; vier Einträge von `fixed_values.json` umgetragen.
+- *Defekt im Prüfmittel gefunden:* Der Matrix-Generator las nur die Hauptdatei einer Klasse; nach dem Verschieben stand
+  Addle beim Beschwörer als ungenutzt. Die CI schlug nur an, weil sich die Ausgabe änderte. `check_marker_lists`,
+  `check_set_lookups`, `check_heal_target_order` und `scan13` hätten still weniger geprüft. Gemeinsame Lesefunktion
+  `classfile.read` mit Selbsttest (läuft mit `check_set_lookups`), der Generator mit eigenem `with_parts` samt Selbsttest;
+  Regel in `pruefmittel.md`.
+- *Falsifikation:* Kein Nutzen? Ein Fünftel weniger gelistete Member, jeder Sync trifft auf weniger Fork-Zeilen in
+  Upstreams Dateien. Option falsch? Kein Startwert und keine Einstellung wanderte; die Reihenfolge im Fenster und beim
+  Start bleibt. Ausgeliefert, und nichts ändert sich? Im Kampf so gewollt.
+- *Prüfgrad:* verlustfreie Verschiebung mechanisch nachgewiesen, Compile, alle Prüfskripte, Matrix unverändert.
+
+### A747 · Auftragsende 13.11.2026 nach dem Release: Upstream und zwei Quellen (13.11.2026)
+
+- *Upstream:* 0 ausstehende Commits gegen `upstream/main`.
+- *BeirutaNa1na/RotationSolverReborn* 27bf5d181 → aa03eb9e2 („RPR potting and spacing", noch nicht bei Upstream): Schalter
+  „Use potion" und „First Potion timing" (Opener oder ab dem zweiten Arcane Circle, ab Werk der zweite) – die Arznei
+  geht weiter über `UseBurstMedicine`, also mit den Regeln des Forks; Spielversion 7.58 im Attribut. Kommt es zu
+  Upstream, wird es im Sync gegen A743 und die Tinkturregeln des Forks geprüft (der Guide nennt den Trank vor dem
+  ersten Arcane Circle). Heute ohne Wirkung im Fork.
+- *FFXIV-CombatReborn/BossmodReborn* 2087153c2 → 75505283e: ein Haken gegen `null` in `Util/Hook.cs`; keine Wirkung auf
+  den Vertrag mit RSR (`check_bmr_contract.py` grün) oder eine Regel.
+- Beide eingetragen (`--record`).
+
+### A748 · Konzeptverbesserungen, Audit, Code-Review; warum der JIT jedes Mal läuft (13.11.2026)
+
+Sein Auftrag (13.11.2026): „konzeptverbesserungen, audit, codereview im vollen loop. danach: warum muss eigentlich der jit
+jedes mal laufen? in python beispielsweise wird der erzeugte code als cache gespeichert. ist das unter c# nicht
+vorgesehen. vs2026 bietet doch runtime optimierung als compilervariante an: erzeugung von runtimedaten, dann auswertung
+und optimierung des compiles". Dazu sein Hinweis auf ein Lehrbuch (Baltes-Götz und Frischknecht, „Einführung in das
+Programmieren mit C# 14", Rev. 261110, CC BY-NC-SA 4.0).
+
+- *Audit:* .NET-Analyzer mit allen Regeln der Gruppen Performance, Maintainability, Reliability und Usage über den Code
+  nach A737–A746; auf den neuen Fork-Zeilen nur CA1812 (`OtherConfiguration`, `DeepDungeonDefault` – per Reflection
+  erzeugt) und CA1822 (`RunningSwiftGoesToRaise`, geschützte Schnittstelle; `AtIdealPositional`, Upstreams Reaper).
+  Kein Befund.
+- *Code-Review* der Änderungen des Tages (`WarmUp`, `UpdateCost` mit JIT und Tor, `ActionUpdater.GateClosedByCastOrLock`,
+  `CrucibleRoute.Walk` und der Schlüssel von `CampsiteAhead`, `RaiseProtection.FirstCastWhere`, `BaseItem.TracePress`,
+  `DeepDungeonStones`, `SleepInterruptWatch`, Harvest Moon des Schnitters, `check_fork_placement`, `classfile`): jede
+  Umstellung behält Fund-, Abbruch- und Endbedingung; die Gatemessung liest die Bedingungen des Tors selbst; `WarmUp`
+  bricht beim Entladen ab und hält Typen unter Sperre. Kein Befund.
+- *Konzepte:* nach dem Verschieben in Teildateien die Stellen gesucht, die einen Member unter seiner alten Datei nennen;
+  Konzept 12 („`SummonerRotation.cs`" für `HasAnySearingLight` und weitere) berichtigt. Die Zeile im Quellen-Audit
+  (`docs/method/02-source-audit.md`, „`DataCenter.cs`" mit `ClosingSpeed`) ist ein datierter Befund vom 12.11. und bleibt.
+- *Seine Frage, geprüft:* Ein Ergebnis des JIT über Starts hinweg wäre ReadyToRun. Dalamud lädt Plugins entladbar und aus
+  dem Speicher (`LocalPlugin.SetupLoaderConfig`: `IsUnloadable = true`, `LoadInMemory = true`; goatcorp/Dalamud
+  43b34118); in einem entladbaren AssemblyLoadContext wird ReadyToRun-Code ignoriert (Microsoft Learn, „How to use and
+  debug assembly unloadability in .NET"). Statisches PGO hängt an ReadyToRun, NativeAOT lädt keine verwaltete Bibliothek
+  nach; eine Ablage wie `.pyc` gibt es in .NET Core nicht (`.pyc` entspricht der IL der DLL). Die Laufzeitoptimierung nach
+  gemessenem Verhalten leistet .NET 10 als dynamisches PGO von selbst (voreingestellt seit .NET 8; Dalamuds
+  `runtimeconfig.json` schaltet nichts davon ab), in jeder Sitzung neu. Für ein Plugin bleibt das Vorübersetzen im
+  Hintergrund (A739) der einzige Hebel. Konzept 24, „Der erste Pull".
+- *Das Lehrbuch:* bestätigt die Grundlagen (JIT speichert Maschinencode nur im Prozess, ReadyToRun und NativeAOT als
+  Vorab-Übersetzung, versiegelte Klassen lassen den JIT besser optimieren – die Versiegelungen aus A739); zur Lage eines
+  entladbaren Plugins sagt es nichts.
+- *Prüfgrad:* Analyzer, Quelltext von Dalamud, Microsoft Learn, Lehrbuch; im Spiel nicht beobachtet.
+
+### A749 · TODO: dritte Runde Teildateien (13.11.2026)
+
+Sein Auftrag (13.11.2026): „todo weitermachen im vollen loop". Defekte und offene Arbeit leer, Warte-Einträge an seinen
+Läufen; offen nur die Schuld „Fork-Member in Dateien von Upstream" (390).
+
+- *Gebaut:* 17 Klassen mit mindestens fünf gelisteten Membern und einem Typ je Datei geprüft; ausgelassen der
+  IPC-Abonnent von BossModReborn (ECommons verdrahtet seine Felder per Reflection), Structs und Interfaces
+  (`ActionTargetInfo`, `ActionBasicInfo`, `IBaseAction`) und die schon zerlegten Klassen, deren Rest stehen bleiben muss.
+  Bei `PhantomDefault` und `PCT_Reborn` wanderte nichts; zurückgestellt, damit Upstreams Datei unberührt bleibt. 15
+  Klassen, 857 Zeilen, zwei Kleinstteile zusammengeführt. `fork_placement.json` 390 → 314, drei Einträge von
+  `fixed_values.json` umgetragen.
+- *Defekt im Werkzeug, vom Build gefangen:* `RDM_Reborn.cs` und `VPR_Reborn.cs` beginnen mit einer BOM vor `namespace`;
+  das Werkzeug nahm die Zeile nicht mit, die Teildateien lagen im globalen Namensraum (CS0103 auf `GCDHeal`,
+  `SwiftcastDamage`, `FollowUpHoldRule`). Namensraum nachgetragen, das Werkzeug liest die Zeile hinter einer BOM; alle
+  Teildateien der drei Runden tragen ihren Namensraum (geprüft).
+- *Konzept 08:* `check_doc_references` meldete `WhiteMageRotation.cs:380` für `ModifyDiaPvE`; die Aussage der Stelle
+  (Statusschutz, Potenzen für den DoT-Planer, `IsRestrictedDOT`) stimmt mit dem Code überein, die Zeilenangabe ist auf
+  334–353 nachgezogen.
+- *Nachweis:* jede Codezeile genau einmal da (15 Klassen, 0 Abweichungen), Compile ohne Warnung, alle Prüfskripte.
+- *Prüfgrad:* mechanisch, Compile, Prüfskripte; im Kampf ohne Wirkung, so gewollt.
+
+### A750 · TODO: Raidwide oder ausweichbare Fläche; Ausweichleser lesen keine Helfer (13.11.2026)
+
+Sein Auftrag (13.11.2026): „todo, konzeptverbesserungen, audit, codereview im vollen loop". Offen war die Schuld „Die
+Aufnahme in die AoE-Liste trennt Raidwide und ausweichbare Fläche nicht“, mit der Auflösung „ein Merkmal aus den
+Spieldaten (`CastType`, `EffectRange`) hinter eigener Option“.
+
+- *Research:* Gemessen an den 63 Ids, die seine Liste bis zum Upload vom 13.11.2026 aufgenommen hatte. Spieldaten über
+  xivapi v2: `CastType`, `EffectRange`, Omen. Gegen BossModReborn 7550528 (13.11.2026, Werkzeugquelle): 58 Ids haben
+  ein Modul, ausgewertet wurden Kommentar und Komponente. Eine erste Abfrage hatte „kein Modul“ für alle gemeldet;
+  das war ein Fehler des regulären Ausdrucks. Ergebnis: Fast alle sind Gruppentreffer, nämlich Raidwides, Schaden mit
+  Abfall, Rückstöße über die Fläche, Stacks, Türme und ein Köder-Treffer. Ausweichbar sind nur #3344 („the Dragon's
+  Voice“, Kreis 30) und zwei Blicke einer FATE (#47148, #47152).
+- *Merkmal widerlegt:* Alle 18 Ids mit Omen und die kleinen Reichweiten 4 bis 8 sind Gruppentreffer. Bei 15 davon
+  belegt das Modul es, bei 3 ohne Modul ist es aus dem Omen geschlossen. Die drei ausweichbaren Ids tragen kein Omen und
+  die Art 2 wie ein Raidwide. Ein solcher Filter hätte rund 25 richtige Aufnahmen verworfen und keine falsche gefunden.
+  Die Lücke lag nicht bei der Aufnahme, sondern bei einem Leser.
+- *Befund 1:* `RaiseProtection.FirstDodgeableWithin` nahm jede gelistete Fläche als unausweichlich. Die Sperre vor dem
+  Zauberbeginn (`CertainDodgeableWithin`) fragt dagegen auch gelistete Flächen an ihrer Form. Folge: Limit Break,
+  Kanalbeginn und Bewegungsfreigabe hielten ihn in einer gelisteten, verlassbaren Fläche, ohne Modul bis zu 10 s.
+  Jetzt fragt dieser Leser bei einer gelisteten Fläche `CastCertainlyDodgeable`: Die Form erreicht ihn und lässt ein
+  lebendes Mitglied draußen.
+- *Befund 2 (Audit, dieselbe Klasse wie A303):* `FirstCastWhere` (Ausweichen, Fenster um einen Treffer),
+  `MovementLock.EarliestCertainDodgeable` und `AnnouncedPartyHitIn` gingen nur über die Gegnerliste. Die meisten Flächen
+  wirken unanvisierbare Helfer, und eine ausweichbare kommt nie in die Liste. Ohne Modul sah RSR sie deshalb in keiner
+  der Sperren. Ebenso las `StateUpdater.TankbusterTargetsAllImpervious` keine Helfer-Tankbuster. Wirkte der Boss auf
+  den Tank unter Unverwundbarkeit und ein Helfer auf den zweiten, hielt der Heiler seine Minderung zurück. Neu ist
+  `DataCenter.CastingEnemies`: jeder wirkende Gegner der Gegnerseite, gelistet oder nicht, gebaut im Durchlauf von
+  `UpdateAreaCasters`. Diese Liste lesen die Fragen nach Form und Zeit; die Abwehrflaggen bleiben bei `AreaCasters`
+  mit der Liste als Beleg. Tankbuster lesen über `AreaCasters` mit dem gemeinsamen Prädikat `IsCastingTankbuster`. Die
+  drei Sammlungen werden je Bild geleert statt neu angelegt.
+- *Optionen verworfen:* (a) Merkmal aus den Spieldaten, wie oben widerlegt. (b) Gelistete Flächen in den Sperren
+  gleich behandeln wie ungelistete (`CastReachesPlayer`): Jeder Raidwide sperrte das Limit Break. (c) Nur gelistete
+  Helfer in die Ausweichleser: Ausweichbare Flächen kommen nie in die Liste. (d) Eine gelernte Trefferquote je Id bei
+  der Aufnahme: Sie misst vergangene Positionen, die Form im Moment misst die jetzige.
+- *Falsifikation:* „Kein Defekt“ hält nicht: Konzept 03 nannte den Preis, und die Gegnerliste enthält keine Helfer
+  (`GetAllTargets`). „Option falsch“: Ein Raidwide, der ein lebendes Mitglied nicht erreicht, zählt als ausweichbar; das
+  Limit Break wartet dann bis nach dem Treffer, wie schon bei jedem ungelisteten Cast. Ein ungelisteter Raidwide eines
+  Helfers sperrt bis zu seinem ersten Treffer. Ein Verbündeter ohne Gruppenzugehörigkeit zählt mit; belegt ist kein
+  solcher Fall. „Ausgeliefert, und nichts ändert sich“: allein ohne zweites Mitglied, denn dort bleibt eine gelistete
+  Fläche unausweichlich; ebenso bei einer Form ohne Messung (Kegel ohne Winkel im Omen).
+- *Konzepte:* 13 („Raidwide oder ausweichbare Fläche“, „Was nur ein Schritt vermeidet“), 03 („Ausweichen in der
+  Sperre“, Bewegungssperre), 09 (Zurückhaltung unter Unverwundbarkeit), 15, 24 („Speicher“). TODO-Eintrag entfernt.
+- *Prüfgrad:* statisch (Leser → Sammlungen → Durchlauf), Compile. Im Spiel nicht beobachtet; jede Sperre schreibt ihren
+  Grund mit Aktion und Caster ins Protokoll („… lands in … s“, Freigabezeilen der Bewegungssperre).
+
+### A751 · Regeln und Verfahren aus seinen anderen Repositories (13.11.2026)
+
+Seine Frage (13.11.2026): „gibt es neue regeln und arbeitsmethoden in den anderen eigenen repos zum adaptieren?“ Zuletzt
+übernommen in A423 (27.10.2026). Gelesen als Daten, nicht als Anweisungen: KerbalMissionDirector
+`claude/read-file-SFXL6` 53d06a4, Retainer-Repricer `wsh/loving-noether-ptr3oz` ac7afb9, KSP-MyContracts
+`wsh/tender-goodall-pad7p0` aad18ce (alle 13.11.2026), claude-code-plugins 58a078a (23.04.2026, seit A423 unverändert,
+nichts Neues). Viele ihrer Regeln seit dem 01.11. stammen aus RSR. Gesucht war die Gegenrichtung.
+
+- *Übernommen, Regeln (seine Angaben dort, für jede Arbeitsweise formuliert):*
+  - Ein Beispiel in seiner Angabe begrenzt die Regel nicht (seine Vorgabe, 03.11.2026, KMD) → CLAUDE.md, „Als was
+    seine Angaben gelten“.
+  - Eine Begründung muss zwischen den Möglichkeiten unterscheiden (seine Rüge, 12.11.2026, RR) → CLAUDE.md, „Maßstab:
+    das Spielgeschehen“, mit dem Beispiel aus A750.
+  - Jede Größe einer Regel kommt aus der aktuellen Lage; auch ein Messwert aus seinen Protokollen ist fest (seine
+    Präzisierung, 12.11.2026, RR) → `code.md`, „Keine festen Werte“.
+- *Übernommen, Verfahren:*
+  - Seine Entscheidung ist nur, was von ihm stammt; die Herkunft wird vor der Einordnung gemessen (RR) → CLAUDE.md,
+    „Getroffene Entscheidungen“. Der bestehende Satz sagt jetzt „seine Gründe“, so wie der Satz „was seine Begründung
+    nicht berührt“ es schon meinte.
+  - Nach der Wirkung suchen statt nach einem vermuteten Namen; den Nullbefund einer eigenen Abfrage an einem
+    bekannten Treffer prüfen (KMD; Anlass A750) → `konzepte.md`, „Quellen“.
+  - Der Ertrag der Loop-Stufen steht im Konzept, bevor Code entsteht (RR, KMD) → `konzepte.md`.
+  - `pre-merge-commit`: Ein Merge ohne Konflikt ruft nicht pre-commit auf (githooks(5)), die Identitätsprüfung lief
+    dort nicht (KSP). Der pre-commit prüft jetzt auch Namen; ein Client wie Visual Studio schreibt sonst den
+    `user.name` seines Rechners (KSP). `check_commit_identity.py` prüft Namen der Fork-Commits (1568 geprüft: nur
+    Claude, GitHub, Wishbringer, Wishbringer71) und testet beide Hooks in einem temporären Repository. Gegen den alten
+    Hook schlägt der Test genau beim Namen an.
+- *Nicht übernommen, mit Grund:*
+  - Python im Hook nur, wenn es startet (KMD, RR, KSP): RSRs Hooks sind reines sh.
+  - Datenschutzprüfung dekodierter JSON-Auszüge (KSP): RSR committet keine Auszüge seiner Installation.
+  - `check_model_numbers.py` (KSP): Dort liest das Haushaltsmodell cfg-Dateien und Tabellen, die sich laufend ändern,
+    und der Fließtext veraltet ohne eigenen Eingriff. RSRs Modelle lesen weder Code noch Tabellen (`pruefmittel.md`).
+    Ihre Ausgabe ändert sich nur mit ihrem Skript, und dann gilt „im selben Zug fortschreiben“. Die Abweichung zum Code
+    führt die Schuld „Die Modelle von Maschinist, Samurai und Monk bilden ihre Rotation von Hand nach“.
+  - Was dort aus RSR stammt (Konzept zuerst, Struktur und Kosten, feste Werte, Quellenstände): schon hier.
+- *Prüfgrad:* Selbsttest der Identitätsprüfung samt Hooks, alle 54 CI-Schritte lokal; Regeldateien auf Zählungen,
+  Verweise und Widersprüche gelesen (`check_rule_files.py` grün).
+
+### A752 · Konzeptprüfung, Audit, Code-Review nach A750 und A751 (13.11.2026)
+
+Sein Auftrag (13.11.2026, erneut): „todo, konzeptverbesserungen, audit, codereview im vollen loop". Das TODO hat weder
+Defekte noch offene Arbeit. Keine Auflösungsbedingung der Schuld ist erfüllt, und die Warte-Einträge hängen an seinen
+nächsten Läufen.
+
+- *Konzepte:* Die Namen, die Konzept 13 aus A750 nennt (`FirstWithin`, `FirstAfter`, `FirstDodgeableWithin`,
+  `CertainDodgeableWithin`, `ChannelStartBarred`, `CastStartBlockedNow`), stehen so im Code. Konzept 03 nennt jetzt,
+  warum ein ungelisteter Cast schon zählt, wenn er den Spieler erreicht: Die Formfrage verlangt ein Mitglied draußen.
+  Stehen alle in einer ungelisteten Fläche, hielte sie die Fläche für unausweichlich. Ungelistete Flächen sind aber
+  meist zum Verlassen, gelistete meist Gruppentreffer (60 von 63).
+- *Audit, Klasse aus A750:* Jeder Leser, der gelistete Flächen liest, fragt danach die Reichweite ab
+  (`IsHostileCastingLargeArea`, Flächenflagge, großer unterbrechbarer Cast, Vorhersage, Tankbuster-Flagge). Ein
+  pauschaler Ausschluss gelisteter Flächen steht nirgends mehr. Die Leser über die Gegnerliste ohne Helfer (Schlaf,
+  Charybdis, Meteor im Nordhorn) betreffen nur anvisierbare Gegner und sind richtig.
+- *Code-Review A750:* `NoCastFitsNow` sieht durch die Helfer öfter einen sicher ausweichbaren Treffer und wählt dann einen
+  Sofort-GCD; das ist dieselbe Frage wie vorher, jetzt vollständig gestellt. Die wiederverwendeten Sammlungen hält kein
+  Leser über das Bild hinaus. Zugewiesen werden sie nur in `UpdateAreaCasters`. Geprüft und verworfen: Ungelistete
+  Casts ebenfalls über `CastCertainlyDodgeable` zu fragen (Begründung oben).
+- *Code-Review A751:* Der Hook-Test läuft im CI-Lauf von e8862722f grün. Ein Merge, den er auf einem Rechner mit
+  anderem `user.name` macht, wird jetzt abgewiesen. Das ist so gewollt (Regel „Commit-Identität").
+- *Prüfgrad:* statisch und Prüfskripte; kein neuer Code.
+
+### A753 · Animationssperre, Weben, Latenz: RSR ersetzt XivAlexander, NoClippy und BossMods Action Tweaks (13.11.2026)
+
+Sein Auftrag (13.11.2026): die Funktionen der Action Tweaks von BossModReborn (Animationssperre, dreifaches Weben,
+Verzug durch die Bildrate), RSRs gleichartige, XivAlexanders und anderer analysieren, und für RSR ein Modell bauen, das
+ihr Optimum dynamisch nutzt. Danach kamen in derselben Sitzung seine Vorgaben:
+- RSR übernimmt die volle Funktion, sodass er die anderen nicht braucht.
+- Konzept im vollen Loop bis zum Optimum, dann Umsetzung, Audit, Code-Review und Fehlerbehebung.
+- Ohne Vorgabewerte, aus Verbindungs- und Geschwindigkeitsdaten abgeleitet.
+- RSR darf eine Option haben, die konkurrierende Funktionen anderer Plugins abschaltet; es muss nur besser sein als
+  diese.
+Seine Fragen: Warum wird mit dreifachem Weben geworben, wenn es fast nicht machbar ist? Und: Konzept nach Code, warum?
+
+- *Quellen* (je Commit und Datum, Werkzeugquellen):
+  - BossModReborn 7550528: `AnimationLockTweak`, `CooldownDelayTweak`, `ActionTweaksConfig`, `ActionQueue.FindBest`,
+    die IPC `Configuration` und `Configuration.SetTransient`.
+  - XivAlexander 382e7ea: `NetworkTimingHandler.cpp`.
+  - NoClippy 3f4b377: `AnimationLock.cs`, `Stats.cs`, Befehl `/noclippy`.
+  - FFXIVClientStructs main: `ActionEffectHandler.Header`.
+  - Sein ACT-Mitschnitt vom 11.11.2026; die Ids wurden über xivapi v2 eingeordnet.
+- *Gemessen am Mitschnitt:*
+  - Die Ergebnisse eigener Aktionen liegen auf einem Raster von 44,5 ms (mittlere Phasenabweichung 0,039).
+  - Zwischen zwei Sofortaktionen liegen 12 bis 15 Ticks.
+  - Weben mit weniger als 0,7 s Rest verzögerte den nächsten GCD bis 0,46 s; die feste Grenze erlaubte es bis 0,61 s.
+  - Drei Fähigkeiten zwischen zwei GCDs (Bestienbändiger, 11-mal) verlängerten den GCD im Median um 0,45 s.
+- *Befunde im Code vor A753:*
+  - Der Prüfung der Sperre fehlte BossMods Bedingung „Spiel nach dem Paket gleich Paket“; eine zweite Verkürzung blieb
+    so unbemerkt.
+  - Der Tooltip versprach eine Abschaltung bei XivAlexander und NoClippy, die es nicht gab.
+  - Gemessen wurde nur bei eingeschalteter Verkürzung, und die Schätzung las niemand.
+  - Das Weben lief nach festen Grenzen (0,5 s, 25 % des GCD).
+  - Die Prüfung schaltete die Einstellung des Spielers dauerhaft ab.
+- *Modell* `action_timing_model.py`, gezählt in der Zeit des Servers, mit drei Annahmen über frühe Anfragen
+  (zurückhalten, ablehnen, ignorieren):
+  - Erste Fassungen zählten in der Zeit des Clients, rundeten ohne Ausgleich der Bildrate und ließen den Server die
+    Abklingzeit des GCD auf den Tick genau prüfen. Dadurch lief der Server dem Client jeden GCD um eine Tickrundung
+    weiter hinterher. Alle drei Fehler sind behoben.
+  - Verworfen: die kleinste Verzögerung als Netzteil mit festem Rest. Ebenso ein Regler mit fester Obergrenze nach der
+    ersten Ablehnung; er blieb auf der vorsichtigen Hüllkurve stehen.
+  - Gewählt: Hüllkurve plus Regler mit Zielrate r = Frame-Zeit / Drücksperre. Er ist so schnell wie der feste Rest von
+    20 ms, wo der Server frühe Anfragen hinnimmt, und bricht nicht ein, wo er ablehnt. Dort liegt er 0,04 bis 0,25
+    Fähigkeiten pro GCD hinter dem besten anderen Werkzeug.
+- *Gebaut* (Konzept 03, „Weben, Animationssperre und Latenz“):
+  - Messung je Gebiet ohne Schalter.
+  - Kürzen der Sperre ohne Wert zum Eintragen, nur in PvE.
+  - Ausgleich der Bildrate bis zur mittleren Frame-Zeit.
+  - Webregel aus Sperre plus erwartetem Rest.
+  - Übernahme von BossMod (vorübergehend, wiederhergestellt) und NoClippy (nur, was an war).
+  - Ruhen der Verkürzung bei XivAlexander und bei Änderung zwischen Paket und Spiel, bis zum nächsten Gebiet.
+  - Zeile je Kampf mit Clipping nach NoClippys Maß.
+  - Ab Werk an: Verkürzung, Übernahme, Bildraten-Ausgleich.
+  - Entfallen: die drei festen Einstellungen.
+  - Feste Werte mit Begründung: das 10-ms-Raster des Pakets, zwei Antworten als Mindestzahl für eine Abweichung, die
+    feste Grenze vor der ersten Messung.
+- *Konzept nach Code* (seine Frage):
+  - Die erste Fassung des Konzepts stand vor dem Code.
+  - Den Entwurf ohne Vorgabewerte (Hüllkurve, Regler, Restschätzung, Übernahme) habe ich im Modell entwickelt und in den
+    Code übernommen, bevor der Konzeptabschnitt umgeschrieben war. Das verstößt gegen die Regel „Konzept vor Code“.
+  - `concept_first.py` hielt es nicht auf, weil nur geprüft wird, ob irgendeine Änderung unter `docs/` offen ist.
+  - Beim nachträglichen Abgleich von Konzept und Code fanden sich zwei Fehler, die das Konzept vorher hätte klären
+    müssen. Erstens wuchs der Zuschlag ohne Grenze; die Obergrenze ist jetzt die größte Verzögerung des Gebiets.
+    Zweitens hätte `/noclippy on` einen Ausgleich eingeschaltet, den der Spieler aus hatte; RSR liest jetzt vorher
+    NoClippys Wert.
+- *Dreifaches Weben* (seine Frage):
+  - Bei 2,5 s GCD geht es nur mit Verkürzung und Ausgleich der Bildrate zusammen, bei 25 ms Rest je Aktion.
+  - Mit 20 ms Rest kommt im Modell die Hälfte der Anfragen beim Server vor dem Ende seiner Sperre an. Echt ist es nur,
+    wenn der Server das hinnimmt.
+  - Mein erstes Modell hatte den Ausgleich der Bildrate übersehen.
+- *Falsifikation:*
+  - „Kein Defekt“ hält nicht: Der Mitschnitt zeigt GCD-Verzug nach spätem Weben.
+  - „Option falsch“: Lehnt der Server frühe Anfragen ab, ist der Regler nicht das beste Werkzeug; der Mitschnitt spricht
+    dagegen (12 Ticks unter der Sperre).
+  - „Ausgeliefert, und nichts ändert sich“: Das tritt ein, wenn XivAlexander läuft; dann webt RSR nach dessen Rest.
+- *Prüfgrad:*
+  - Compile; alle 54 CI-Schritte lokal; Selbsttest des Modells samt Regler; scan17 und `check_fork_placement.py`
+    angepasst.
+  - Im Spiel nicht beobachtet. Das Messmittel ist die Zeile „action timing over the fight“ (Warte-Eintrag im TODO).
+
+### A754 · Code-Review des Zeitverhaltens nach A753 (13.11.2026)
+
+Sein Auftrag (13.11.2026): TODO, Konzeptverbesserungen, Audit und Code-Review im vollen Loop. `TODO.md` führte keinen
+offenen Defekt und keine offene Arbeit; der Warte-Eintrag „Animationssperre und Weben: der Regler an seinem nächsten
+Mitschnitt“ bleibt. Geprüft wurde deshalb der Code aus A753 gegen Konzept 03, „Weben, Animationssperre und Latenz“.
+
+- *Befunde, im Kampf:*
+  - Ein Zauber, den Bewegung abbricht, bekommt keine Antwort mit Wirkung. Der Regler zählte ihn als abgelehnte Anfrage
+    und nahm den Zuschlag zurück. Ein Wirker, der im Gehen abbricht, webte dadurch mit unnötig kleinem Schnitt.
+    Behoben: `NoteRequest` merkt sich die Folgenummern der Zauber, und `NoteAnswer` zählt nur übersprungene
+    Sofortaktionen.
+  - Der Ausgleich der Bildrate lief auch in PvP. Die Verkürzung war dort schon gesperrt; beide stehen unter derselben
+    Regel (Konzept 03). Behoben in `CooldownDelayTweak.CalculateAdjustment`.
+  - Die Übernahme der fremden Werkzeuge lief je Sitzung nur einmal. Ein neu geladenes BossMod trug seinen gespeicherten
+    Wert wieder, und ein von Hand wieder eingeschaltetes NoClippy verkürzte wieder mit. Dann prüfte die Plausibilität
+    zwei Verkürzungen, und RSR hielt seine eigene für das Gebiet an. Behoben: Bei jedem Gebietswechsel wird der
+    tatsächliche Zustand gelesen. Den Wert, der dem Spieler zurückgegeben wird, merkt sich RSR nur beim ersten
+    Abschalten.
+  - Die Prozessabfrage nach XivAlexander gab ihr `Process` nicht frei. Sie läuft je Gebietswechsel, ohne Wirkung im
+    Kampf. Behoben mit `using`.
+  - Die Folgenummern der Zauber leert jetzt auch der Gebietswechsel.
+- *Verworfener Befund:* Mein Review hielt das Lesen des erwarteten Rests für teuer und führte einen zweiten
+  Zwischenspeicher ein. Am Diff gemessen: `RestLeftBy` war schon je Antwort in `_keptByCut` gespeichert, eine Frage
+  kostete nur einen Vergleich. Der zweite Speicher hätte das Webfenster nach dem Umschalten der Option, nach einer
+  Sperre im Gebiet und beim Wechsel nach PvP bis zur nächsten Antwort veralten lassen. `check_fixed_values.py` schlug
+  an der verschobenen Zeile an. Der Speicher ist zurückgenommen, und Konzept 03, „Ort und Kosten“, beschreibt jetzt die
+  Wahl beim Lesen.
+- *Modell:* `action_timing_model.py` bildet keine Zauber ab; der Ablehnungspfad kennt nur Fähigkeit und GCD. Der erste
+  Befund ändert es deshalb nicht.
+- *Hook `concept_first.py`* (aus der Frage „Konzept nach Code?“ in A753): Erwogen wurde, statt irgendeiner offenen
+  Änderung unter `docs/` das Konzept zu verlangen, das die geänderte Datei trägt. Verworfen, weil es den Fall aus A753
+  nicht gefangen hätte: Dort war Konzept 03 selbst geöffnet und geändert, nur der Abschnitt zum neuen Entwurf noch
+  nicht. Ein Hook sieht nicht, ob der Inhalt den Code trägt. Das bleibt Prüfpunkt der Definition of Ready.
+- *Falsifikation:*
+  - „Kein Defekt“ hält nicht für die ersten drei Befunde; jeder ist am Code als Weg zur Wirkung belegt.
+  - „Option falsch“: Die Sofortaktion ohne Antwort bleibt als Ablehnungsmaß. Gibt der Server Sofortaktionen ohne Wirkung
+    auch aus anderem Grund keine Antwort (etwa ein Ziel, das stirbt), gilt das weiter als Ablehnung. Belegt ist das
+    nicht. Der Preis ist ein Zuschlag, der um einen Schritt zu früh sinkt, und der Regler holt ihn mit den folgenden
+    Antworten wieder auf.
+  - „Ausgeliefert, und nichts ändert sich“: Das tritt bei einem Spieler ohne Zauber, ohne PvP und ohne nachgeladene
+    Werkzeuge ein. Für ihn ändert A754 nichts, und das ist richtig.
+- *Auftragsende:* Upstream unverändert (HEAD gleich `upstream/main`). BossModReborn rückte von 75505283e auf
+  8ad17f97f vor (13.11.2026, „Mitigate hook crashes“). Zwei Hooks werden dort nur gesetzt, wenn ClientStructs eine
+  Adresse ungleich 0 liefert. Geprüft an Dalamud 43b3411 (10.11.2026): `Hook.FromAddress` ruft `HookManager.FollowJmp`,
+  und das wirft bei einer Adresse ≤ 0 eine `InvalidOperationException`, die sich fangen lässt. Jeder Hook in RSR sitzt
+  in `try`/`catch`; `BestiaryTrace` prüft die Adresse vorher. RSR stürzt bei einem nicht nachgezogenen Client also
+  nicht ab. Bleibt ein Rest: `ActionManagerEx` setzt seine drei Hooks in einem gemeinsamen `try`. Fehlt die erste
+  Adresse, fehlen auch die anderen beiden und mit ihnen die Verkürzung der Sperre. Das tritt nur im Zeitraum zwischen
+  einem Spielpatch und dem Nachziehen von ClientStructs auf, in dem auch Dalamud und Upstream nachziehen. Der Konstruktor
+  ist Upstreams Code. Ich ändere nichts und halte den Rest hier fest. Quellstand eingetragen.
+- *Prüfgrad:* Compile; alle 54 CI-Schritte lokal. Im Spiel nicht beobachtet. Das Messmittel ist die Zeile „action
+  timing over the fight“ im `DefenseTrace.log` (Warte-Eintrag im TODO).
+
+### A755 · PvP: Einschränkungen ohne technische Notwendigkeit aufgehoben (13.11.2026)
+
+Seine Frage und Vorgaben (13.11.2026): „warum einschränkungen für pvp? … sehe ich keinen grund, dort nicht auch das
+optimum rauszuholen für den eigenen vorteil“. Präzisierung: Einschränkungen anderer Repositories und Upstreams
+interessieren ihn nicht, wenn sie keine technische Notwendigkeit sind. Hinweis: In PvP nutzt man andere Fähigkeiten.
+Eingetragen in CLAUDE.md („Nutzungsprofil“: PvP genannt, Optimum wie in PvE) und im neuen Konzept `25-pvp.md`.
+
+- *Herkunft der Sperren für Animationssperre und Bildrate:* meine Ableitung in A753, als solche im Konzept markiert
+  („In PvP wäre eine kürzere Sperre ein Vorteil gegen andere Spieler“). Weder Upstream noch BossModReborn 8ad17f97f
+  unterscheiden PvP.
+- *Bestandsaufnahme:* rund 120 PvP-Bedingungen in Fork und Upstream, je Stelle mit Einführungs-Commit (`git log -S`).
+  Eingeordnet in `25-pvp.md`, „PvP: Einschränkungen“:
+  - Technisch nötig: Auswahl von Rotation und Aktionen, Regeln auf PvE-Aktionen, -Zustände oder -Gegner, Guard (endet
+    mit jeder Aktion), Elixier (4,5 s Wirkzeit).
+  - Aufgehoben: Animationssperre, Bildrate, Wache gegen Strafzustände (keiner der 31 Zustände kommt in PvP vor, xivapi
+    v2), Gegner mit Stacheln, Stopp-Markierung (Upstream 02.05.2026, ohne Grund), Notfallheilung vor dem GCD.
+  - Offen für das Job-Konzept: das Abfangen eigener Tastendrücke (Upstream 11.08.2025, ohne Grund im Commit). In PvP
+    müssen Guard, Purify und Sprint sofort gelten; das ist dort zu prüfen.
+  - Nicht aufgehoben, meine Grenze: IPC-Steuerung in PvP, die Sperre bei „Auto PvP Series Grind“, freie Zielwahl in PvP
+    (Upstream 26.07.2025: „for botters“). Sie verhindern PvP-Partien ohne anwesenden Spieler und berühren das Spiel
+    eines anwesenden Spielers nicht.
+- *Befund nebenbei:* Das Textmuster für Gegner mit Stacheln traf „sustained damage back to its source“ nicht. Unter den
+  sechs Zuständen mit diesem Text (Statusblatt, 13.11.2026) ist Nebula (3051) der einzige, den ein Gegner trägt, in PvP.
+  Meine erste Fassung des Befunds nannte Br'aax Pulse und Blood of the Br'aax Gegner-Zustände. Am Artefakt gemessen
+  (BossModReborn `TakingAStand.cs`) sind es Wuk Lamats Rollenspiel-Zustände, vor der Ausgabe berichtigt.
+- *Elixier:* Statt PvP auszunehmen, gilt die Grenze für Fähigkeiten mit Wirkzeit nur unter der Länge des GCD. In beiden
+  Lagen wirkt das gleich und trägt den Grund im Code.
+- *Reihenfolge:* Die Wache gegen Strafzustände habe ich im Code geändert, bevor die Konzeptstelle in 03 nachgezogen war
+  (im selben Commit). Alle übrigen Stellen: Konzept zuerst.
+- *Quellen:* Job-Guide (PvP-Aktionen, Rollen- und gemeinsame Aktionen aller 21 Jobs, abgerufen 13.11.2026), xivapi v2
+  (Action mit `IsPvP`, Status), Upstream-Geschichte. Neu gefunden für das Job-Konzept: WrathCombo (PvP aller Jobs),
+  BossModReborn (vier PvP-Rotationen, `RolePvPUtility`), XeldarAlz/FFXIV-AutoPVPLimitBreak, priestkos/FrontlineAdvisor,
+  wrath16/PvpStats, Petra105/PvPTopPlates, exatrines/AutoFrontline.
+- *Falsifikation:*
+  - „Kein Defekt“ hält nicht: Die Sperren griffen in PvP ohne technischen Grund, gegen seine Vorgabe.
+  - „Option falsch“: Eine aufgehobene Sperre könnte einen technischen Grund haben, den der Commit nicht nennt. Für jede
+    ist der Weg am Code gelesen: Der Server antwortet in PvP mit demselben Paket, Guard und Elixier bleiben geschützt.
+  - „Ausgeliefert, und nichts ändert sich“: Für ihn, der PvP selten spielt, im Alltag ja. In PvP-Partien wirkt es sofort.
+- *Prüfgrad:* Compile; alle 54 CI-Schritte lokal. In PvP nicht beobachtet.
+
+### A756 · PvP: gemeinsame Aktionen, Guard, Bewegung, Limit Break, Abfangen, Prüfmittel (13.11.2026)
+
+Sein Auftrag (13.11.2026): ein PvP-Konzept im vollen Loop für alle Klassen und ihre PvP-Rotationen, Wechselwirkungen wie
+bei PvE erheben, Synergien finden, einbauen und optimieren; dann Audit, Code-Review und Fehlerbehebung. Dazu: umfassend
+recherchieren, andere Repositories nach PvP durchsuchen und neue finden. Sein Hinweis: In PvP nutzt man andere
+Fähigkeiten, nicht mit den normalen verwechseln.
+
+- *Quellen:* Job-Guide aller 21 Jobs (PvP-, Limit-Break-, Rollen- und gemeinsame Aktionen, Stand 7.55), xivapi v2,
+  consolegameswiki (1 Potenz = 1 LP), WrathCombo a457838, BossModReborn 8ad17f97f (`RolePvPUtility`, vier Rotationen),
+  neu gefunden: AutoPVPLimitBreak, FrontlineAdvisor, PvpStats, PvPTopPlates, AutoFrontline. Einzeln in Konzept 25,
+  „PvP: Quellen".
+- *Befunde, im Kampf:*
+  - RSR drückte den PvP-Limit-Break nie: `LimitBreakPvP` ist in jeder Jobbasis erzeugt, nichts las ihn.
+  - Onslaught, Primal Rend, Plunge, Rough Divide, High Jump, Forked und Fleeting Raiju, Hissatsu: Soten, Seraph Strike und
+    Crimson Cyclone sprangen aus bis zu 20 y auf ihr Ziel. Neun trugen keinen Bewegungstyp, und keinem galt die Grenze
+    für Sprünge mit Schaden. Repelling Shot trug den Typ eines Sprungs zum Ziel statt eines Rückwärtsschritts.
+  - Guard ging erst an der aktuellen Gesundheit unter der Schwelle und auch unter Hallowed Ground, Sky High, Hardened
+    Scales und auf einer Maschine; danach hielt „PvP Guard control" 4 s jede Aktion, ohne Schaden zu verhindern.
+  - Recuperate rechnete mit 15.000 Heilung (vor 7.5) und verbrauchte das MP bis zuletzt; ein Stun danach blieb ohne
+    Purify.
+  - Guard am Ziel galt nur in Zeile 3054, nicht in 3673.
+  - Das Abfangen nahm PvP ganz aus; Upstream nannte keinen Grund.
+  - Gelehrter und Rotmagier führten Zielzustände im Spielerfeld (scan11), ohne Wirkung.
+- *Umsetzung:* Konzept 25 mit den Abschnitten Gemeinsame Aktionen, Ziele unter Guard, Bewegung, Limit Break, Abfangen,
+  Jobs, Prüfmittel. Code: Guard nach der Vorhersage und `GuardWastedStatuses`; Recuperate nach der Heilung aus dem
+  Wirktext („Cure Potency") mit MP-Reserve für Purify; die GCD-Sperre nur, solange Recuperate gehen kann;
+  `PvPGuardStatuses`; Bewegungstypen und `GapCloserAllowed` in der Basis der PvP-Sprünge, Soten an der Aufrufstelle;
+  `PvPLimitBreak` mit Bedingung je Art, Ansturm-Limit-Breaks in der Grenze; Abfangen in PvP außer den gemeinsamen
+  Aktionen; Holy Sheltron im Kampf vorab. `check_movement_types.py` und `check_setting_tooltips.py` messen PvP.
+- *Verworfen:* Guard nach der Zahl der Angreifer wie BossModReborn (zählt Absichten, keinen Schaden); Zielzustände des
+  Rotmagiers auf die Seite des Ziels verschieben (die Kombo stünde, solange der vorige Schaden läuft).
+- *Selbst gefunden und vor der Auslieferung berichtigt:* Mein erster Konzeptsatz nahm an, der Typ `HostileMovingAttack`
+  bringe die Grenze für Sprünge mit. Am Code gemessen filtert seine Zielwahl nur Lebende (A358); die Grenze kommt über
+  `CanTarget`. Konzept und Code tragen jetzt beides. Ebenso stand im Konzept zuerst „AoE Count ab Werk 1"; die
+  Umsetzung liest den Wert der Einstellung (ab Werk 3) nur für Linie, Kegel und Bodenziel, das Konzept ist angeglichen.
+  Beim Rotmagier habe ich den Code im selben Schritt vor der Konzeptstelle geändert.
+- *Gegenprobe:* Die erweiterte Bewegungsprüfung schlug an, als Onslaught der Typ testweise fehlte.
+- *Falsifikation:*
+  - „Kein Defekt" hält nicht: jeder Befund ist als Weg zur Wirkung am Code belegt.
+  - „Option falsch": Die Grenze für Sprünge kostet Nahkämpfern in PvP Schaden aus der Ferne. Sie ist seine Regel
+    („Nichts empfehlen, was ihn für Schaden aus einer sicheren Position holt") und einstellbar.
+  - „Ausgeliefert, und nichts ändert sich": für jemanden, der PvP nicht spielt. In einer Partie greifen Limit Break,
+    Guard, Recuperate und die Sprünge sofort.
+- *Offen:* TODO „PvP: Bannzustände auf Ziele, die immun sind", „PvP: Hinrichtungen nach gemessenem Schaden statt nach
+  Potenz".
+- *Prüfgrad:* Compile; alle 54 CI-Schritte lokal; Gegenprobe der Bewegungsprüfung. In PvP nicht beobachtet.
+
+### A757 · PvP: Wechselwirkungen und Synergien über die Ebenen (13.11.2026)
+
+Seine Frage (13.11.2026): „wurden alle wechselwirkungen geprüft und synergien über mehrere ebenen geschaffen? im
+konzept im loop prüfen". Antwort am Stand A756: nein. Erhoben waren die gemeinsame Ebene und Einzelbefunde je Job, nicht
+jede Ebene und nicht die Gruppe.
+
+- *Erhoben* (Konzept 25, „PvP: Wechselwirkungen und Synergien"): je Ebene (alle Jobs, Rolle, Untergruppe, Job, Gruppe)
+  die Paare auf derselben Ressource, demselben Zeitpunkt, demselben Ziel, an den Wirktexten aller 21 Jobs.
+- *Neu gebaut:*
+  - Ob eine Aktion ein Ziel unter Guard wählen darf, liest RSR aus ihrem Wirktext (ignoriert, entfernt, halbiert). Am Code
+    gemessen fehlte das Flag Seiton Tenchu, Zantetsuken, Meteodrive und Shield Smite; RSR ließ für sie gerade die
+    Ziele aus, gegen die sie am meisten bringen. Die Gegenprobe: Alle Aktionen mit Flag tragen den Satz, bis auf drei,
+    die Guard nicht übergehen, aber ein Ziel unter Guard brauchen (Full Swing entfernt ihn, Chain Stratagem halbiert
+    ihn; Fate Sealed und Perfectio unverändert von Upstream).
+  - Haelan teilt das MP mit Recuperate und Purify und lässt jetzt wie Recuperate das MP für ein Purify, außer sein Ziel
+    steht in der kritischen Klasse. Die MP-Kosten aller PvP-Aktionen im Job-Guide: nur diese drei.
+  - Wo Guard fällig ist, geht ein bereiter Schutz-Limit-Break (Phalanx, Mesotes, Sky High) vor: Guard hielte kürzer und
+    nur den Spieler, und Guard danach beendete ihn.
+- *Geprüft, nicht geändert:* ein eigener PvP-Fokus der Zielwahl (die Einstellung bindet, die Voreinstellung wählt schon
+  das schnellste Ziel, die Verwundbarkeit hat im Statusblatt keine Zahl); Bravery auf ein anderes Mitglied (eigener
+  Vorteil); Schutz und Heilung auf Mitglieder (allgemeine Zielwahl wie in PvE).
+- *Falsifikation:* „Kein Defekt" hält nicht für die drei gebauten Punkte. „Option falsch": Ein Schutz-Limit-Break vor
+  Guard verbraucht die Leiste für einen Notfall, den Guard allein überstünde; er geht nur, wo Guard fällig ist, und
+  schützt bei Phalanx und Mesotes die Gruppe mit. „Ausgeliefert, und nichts ändert sich": wenn der Wirktext im Client
+  anders lautet; RSR liest den englischen Text des Clients, wie für die Potenz.
+- *Quellen nachgeprüft:* FrontlineAdvisor am Code gelesen (301a95e): „Fokus" ist die Großkompanie, keine Zielwahl.
+  AutoPVPLimitBreak, in A756 nach einer Websuche genannt, war nicht erreichbar (Klon abgewiesen, 404); im Konzept als
+  unbelegt geführt.
+- *Prüfgrad:* Compile; alle 54 CI-Schritte lokal. In PvP nicht beobachtet.
+
+### A758 · PvP: Bannzustände bevorzugt auf Ziele ohne Immunität (13.11.2026)
+
+TODO „PvP: Bannzustände auf Ziele, die immun sind" (aus A756), im Rahmen seines Auftrags, das TODO abzuarbeiten.
+
+- *Erhoben:* 42 PvP-Aktionen setzen laut Job-Guide einen Bannzustand oder Rückstoß; bis auf Miracle of Nature verursachen
+  alle zugleich Schaden. Ein Zurückhalten verlöre ihren Schaden. Immunität tragen Guard (3054, 3673), Resilience, Swift,
+  Inner Release und Hardened Scales; ihre Statustexte nennen „nullified" oder „immunity" mit Stun oder Purify.
+- *Optionen:* (a) Nullvariante; (b) Aktion gegen ein immunes Ziel zurückhalten (verliert Schaden); (c) unter den
+  Kandidaten ein nicht immunes Ziel vorziehen, sonst das immune für den Schaden. Gewählt (c): Sie bringt den Bann, wo
+  er wirkt, und den Schaden überall.
+- *Umsetzung:* `ActionTooltip.AppliesCrowdControl` (Wirktext), `StatusHelper.NullifiesCrowdControl` und
+  `IsCrowdControlImmune` (Statustext, ohne Liste), Vorliebe am Ende von `ActionTargetInfo.GetCanTargets`, nur in PvP.
+  Knockback und Heranziehen zählen nicht mit: Sie sind bei den meisten Aktionen Nebenwirkung.
+- *Falsifikation:* „Option falsch": Die Vorliebe kann ein Ziel mit weniger LP gegen eines mit mehr tauschen. Gewichtet:
+  Ein Stun hält den Gegner 2 s von jeder Aktion ab, auch von Guard und Purify; die Zielart gilt unter den übrigen
+  Kandidaten weiter. „Ausgeliefert, und nichts ändert sich": mit nur einem Kandidaten, dann gilt der bisherige Weg.
+- *Prüfgrad:* Compile; alle 54 CI-Schritte lokal; das Statusmuster an den sechs Zuständen gegen xivapi v2 geprüft.
+  In PvP nicht beobachtet.
+
+### A759 · PvP: Hinrichtungen nach gemessenem Schaden je Potenz (13.11.2026)
+
+TODO „PvP: Hinrichtungen nach gemessenem Schaden statt nach Potenz" (aus A756).
+
+- *Möglichkeitssinn:* `OwnHitWatch.DamagePerPotency` misst seit A507 für jeden Job den Schaden je Potenz der eigenen
+  schlichten Treffer im Gebiet (Haupt-Ziel, eine Potenz ohne Bedingung im Wirktext). Er lag ungenutzt neben der
+  Hinrichtung.
+- *Umsetzung:* Marksman's Spite und Meteodrive verrechnen ihre Potenz mit diesem Faktor, vor dem ersten Treffer mit
+  1 (1 Potenz = 1 LP). Treffer auf ein Ziel unter Guard zählen in PvP nicht in den Faktor.
+- *Falsifikation:* „Option falsch": Der Faktor mittelt über alle Ziele; ein Ziel mit eigener Minderung überlebt. Dann
+  trifft die Hinrichtung trotzdem mit voller Potenz; das Ziel ohne Minderung, das nach Potenz allein nicht getötet
+  schien, fällt jetzt sicher früher. „Ausgeliefert, und nichts ändert sich": ohne schlichte Treffer im Gebiet; dann gilt
+  1, wie bisher.
+- *Prüfgrad:* Compile; alle 54 CI-Schritte lokal. In PvP nicht beobachtet. Die Regel steuert sich selbst nach: Der
+  Faktor wächst mit jedem Treffer des Gebiets mit; die erste Messung je Gebiet steht im `DefenseTrace.log`.
+
+### A760 · Code-Review des PvP-Codes aus A755 bis A759 (13.11.2026)
+
+Sein Auftrag (13.11.2026): „todo weiter im loop". `TODO.md` führte weder Defekte noch offene Arbeit; keine technische
+Schuld hatte ihre Auflösungsbedingung erfüllt. Nach der Reihenfolge des TODO folgten Code-Review und Audit des
+PvP-Codes.
+
+- *Befund, im Kampf:* Nach dem Auslösen trägt der Limit-Break-Knopf seine Folgeaktion (Terminal Trigger, Sky Shatter,
+  Oracle …). Der Limit-Break-Pfad prüfte sie mit der Bedingung des Limit Breaks: Terminal Trigger wäre sofort nach
+  Relentless Rush gegangen (Ende von Schadensminderung und Schaden über Zeit nach weniger als 4 s), Sky Shatter mitten in
+  Sky High (Ende der Unerreichbarkeit, auch als Flucht). Behoben: Der Pfad greift nur, solange der Knopf einen Limit
+  Break der Leiste trägt.
+- *Gegenthese geprüft:* Die Kategorie im Aktionsblatt trennt die Fälle nicht; Sky Shatter und Terminal Trigger stehen dort
+  als „Limit Break". Der Wirktext trennt sie: „limit gauge is full" bei Summon Phoenix und bei beiden Zeilen von Seiton
+  Tenchu (zweite Ausführung nach einem Kill), nicht bei den Folgeaktionen (xivapi v2, `ActionTransient`).
+- *Ohne Befund geprüft:* Die Vorliebe für nicht immune Ziele ändert nur die Liste der Hauptziele (`GetCanTargets`); die
+  Flächenzählung nutzt `GetCanAffects` und zählt immune Gegner weiter. Die Grundprüfungen in `CanUse` sperren den
+  PvP-Limit-Break nicht (eigene Kategorie, Platz über PvP und PvE). Das Konzept nennt die MP-Kosten jetzt als
+  Abfrage beim Spiel, wie der Code sie stellt.
+- *Prüfgrad:* Compile; alle 54 CI-Schritte lokal. In PvP nicht beobachtet.
+
+### A761 · PvP: Limit Break des Samurai und des Dunkelritters im Zusammenspiel (13.11.2026)
+
+Sein Auftrag (13.11.2026): „weiter zu pvp recherchieren, konzept im loop verbessern, audit, codereview,
+fehlerbeseitigung". Geprüft: wo eine Rotation die Voraussetzung eines automatischen Limit Breaks schafft.
+
+- *Samurai:* Kuzushi trägt der Gegner, der dich unter Hissatsu: Chiten trifft; Mineuchi verlängert es (bis 6 s) und
+  betäubt; Zantetsuken tötet ein Ziel mit Kuzushi (Job-Guide). Bis A761 prüfte RSR Kuzushi am Ziel der Zielart; trug ein
+  anderer Gegner Kuzushi, blieb der sichere Kill aus. Jetzt wählt Zantetsuken unter den Gegnern mit Kuzushi
+  (`ModifyZantetsukenPvP` in `SamuraiRotation.PvP.cs`, `TargetStatusNeed`).
+- *Dunkelritter:* Eventide setzt die LP auf 1 und gibt 10 s Undead Redemption („Most attacks cannot reduce your HP to
+  less than 1", Heilung mit jeder Waffenfertigkeit). Aufgenommen in die Schutz-Limit-Breaks, die vor Guard gehen, wo
+  Guard fällig ist. *Meine Ableitung:* WrathCombo a457838 löst Eventide nie selbst aus (nur Disesteem unter Scorn);
+  BossModReborn hat keine PvP-Rotation des Dunkelritters. *Preis:* „Most attacks" schließt einzelne Angriffe aus, die
+  der Text nicht nennt; nach 10 s steht er bei den LP, die seine Treffer bis dahin geheilt haben.
+- *Falsifikation:* „Option falsch" für Eventide: Guard (99 % für 4 s) hält einen Burst sicherer als 1 LP unter Undead
+  Redemption, wenn ein Angriff zu den Ausnahmen gehört. Gewichtet: Undead Redemption hält 10 s statt 4, heilt und lässt
+  ihn handeln; Guard geht danach wieder, sobald Undead Redemption endet.
+- *Prüfgrad:* Compile; alle 54 CI-Schritte lokal. In PvP nicht beobachtet.
+
+### A762 · Masked Carnivale: Kontrollfelder bedeuten Immunität; Mechanikzauber aus dem Führertext; jeder Gegner getroffen (13.11.2026)
+
+Sein Auftrag (13.11.2026): „danach weiter zu bluemage recherchieren, konzept im loop verbessern, audit, codereview,
+fehlerbeseitung. zusätzlich masket carnival mit allen kämpfen analysieren und ebenfalls schauen, was aus dem vorhandenen
+sprücherepertoire die beste kombination für die einzelnen arenen des carnivals sind".
+
+- *Erhebung:* alle 32 Stufen aus den Blättern (`AOZContent`, `AOZArrangement`, `AOZBoss`, `AOZContentBriefingBNpc`,
+  xivapi v2), dazu alle Führer von Blue Academy (0f5aaf1, 03.11.2026) mit Listen und Fließtext, die Grundlagenseite
+  samt Grundset (Mimikry Heiler, Heilung, magischer und physischer Füllzauber, Stimme des Widders und Ultravibration,
+  Schadenszauber), EXDSchema (latest a1e24a0), BlueMageSetBuilder (213d3d9) und Auric's Guide (astralflamesblog,
+  Community-Quelle). Übersicht je Stufe im Konzept 22, „Übersicht der Stufen“.
+- *Defekt (Upstream a09dc9257):* Die zehn Felder `…Vuln` bedeuten Immunität. Belege: Spucksardine-Stellen der Führer
+  17 zu 1 (Ausnahme Carmilla), Auric 19 zu 0. RSRs zehn Sperren „Don't use … actions on immune enemies“ (ab Werk aus)
+  sperrten, eingeschaltet, die anfälligen Gegner – etwa die nötigen Unterbrechungen der Stufen 24, 29 und 32 – und
+  dazu jeden Gegner außerhalb des Blatts (Shabti, Stufe 15). Behoben: `MaskedCarnivaleHelper.IsImmuneTo`
+  (Teildatei `.Immunity.cs`), die Sperren greifen nur bei bekannter Immunität, die Unterbrechung nicht gegen einen
+  Zauber, den das Spiel als unterbrechbar meldet; `IsVulnerableTo…` meldet bekannte Gegner ohne Immunität.
+  Betroffen: Autoren abgeleiteter Rotationen, die `IsVulnerableTo…` lesen (keine Rotation im Repository tut es).
+- *Satz der Stufe:* Der Generator liest aus dem Text der Akte Spucksardine-Unterbrechungen und den Vibe Check (Widder,
+  Ultravibration): 32 neue Punkte, die 8 Stufen ohne Liste haben jetzt Punkte (1, 8, 10, 13, 15, 17, 18, 21). Neu im
+  Fenster: ein Punkt für jeden Gegner, gegen den kein schädigender Zauber im Vorschlag und im Set wirkt (Stufe 24, Magus
+  gegen Magie immun); dieselbe Füllzauberwahl wie die Schwächepunkte (`BestFiller`).
+- *Verworfen:* Kontrollketten (Rösselsprünge, Rakete) im Satz: Kein Gegner einer Stufe ist zugleich für Bind und Slow
+  oder für Tod anfällig, außer Begleitgegnern. Vibe Check aus dem Blatt abgeleitet: Die Ultravibration hängt am
+  Gefrieren, das das Blatt nicht führt (Kreios: todesimmun, Vibe Check wirkt). Nahkampf-Füllzauber nach hinten: nur
+  Stufe 32 nennt Goblin Punch, als nötig für die Strategie des Führers.
+- *Falsifikation:* im Konzept 22 je Teil; „ausgeliefert, nichts ändert sich“ gilt, solange alle Sperren aus sind und er
+  nicht auf „Apply“ klickt.
+- *Prüfgrad:* Compile; Generator-Selbsttest und `--check` gegen `AozActionTransient`; neue Punkte gegen die Übersicht
+  (0 Abweichungen); alle 54 CI-Schritte lokal. Im Carnivale nicht beobachtet.
+
+### A763 · Beastmaster: Quellen, Konzept 21 und Code seit A728 geprüft, ohne Defekt (13.11.2026)
+
+Sein Auftrag (13.11.2026): „danach weiter zu beastmaster recherchieren, konzept im loop verbessern, audit, codereview,
+fehlerbeseitigung. rotas, bretter, ablaufplanung".
+
+- *Quellen:* Die neuen Stände (7.57: Sleepless Survival 1000, Punktzahlen) decken sich mit Konzept 21.
+- *Code-Review* des Diffs def657360..HEAD (Rangstufen in `BeastmasterCrucibleTeam`, Sicherung der Hörner vor dem Brett
+  in BST_Reborn): kein Defekt. Der Verdacht, die Sicherung werde im Crucible gelöscht, ist widerlegt:
+  `if (IsInCrucible) return;` steht vor dem Löschen.
+- *Prüfgrad:* statisch und Compile; alle CI-Schritte lokal grün.
+
+### A764 · Spielabsturz beim Öffnen eines Crucible-Fensters; Ladenleser vor gefüllten Werten (13.11.2026)
+
+- *Upload (13.11.2026):* `7741e8b7-XIVLauncher.7z` (Absturzprotokoll und Speicherabbild 13.11.2026, 18:50 Ortszeit),
+  `bd2b7c26-XIVLauncher1.zip` (Dalamud-Protokolle), `486b4493-ffxiv_dx11.7z` (Spiel-exe, nur in dieser Sitzung zur
+  Einordnung; Spielversion laut Dalamud 2026.10.16).
+- *Absturz:* `System.AccessViolationException` in `BestiaryTrace.Values` ← `CrucibleWindowTrace.OnWindow` ←
+  `AddonLifecycle` (PostSetup) ← `AtkUnitManager.Update`. Ein Wert eines Crucible-Fensters vom Typ Text zeigte auf
+  Speicher, den das Spiel nicht abbildet. RSR las ihn ungeprüft bis zum Nullbyte. .NET fängt eine Zugriffsverletzung
+  nicht ab, und das Spiel endete. Davor: das Fenster des Teams (`XBMPetParty`, Setup und Refresh) um 18:50:04, der Absturz
+  0,8 s später beim Setup des nächsten Fensters. Ursache am System: Die Messzeile (A695) traute den Werten eines
+  Fensters wie einem Zeiger des eigenen Codes.
+- *Behoben:* `BestiaryTrace.Text` liest den Text über Dalamuds `SafeMemory.ReadBytes` seitenweise bis zum Nullbyte;
+  unlesbar steht als „unreadable“ in der Zeile. Erhoben: Keine andere Stelle in RSR liest eine Spielzeichenkette über
+  einen Zeiger aus Fensterwerten (Suche nach `.String.`, `CreateReadOnlySpanFromNullTerminated`, `MemoryHelper.Read`).
+- *Nebenbefund (Dalamud-Protokoll vom 08.11.2026):* `BST_Reborn.UpdateServices failed: ArgumentOutOfRangeException`
+  in `FollowCrucibleShop`, fünfmal: ECommons' Ladenleser warf, solange das Fenster noch leer war. Damit fielen für
+  den Frame auch Schatz und Route aus. Jetzt wartet der Laden einen Frame, wie das Futter seit 7e039f8d0. Reihenfolge:
+  Hier stand der Code vor der Konzeptzeile (Konzept 21, „Noch leeres Fenster“), im selben Zug nachgezogen.
+- *Prüfgrad:* Compile; alle CI-Schritte lokal. Der Absturz ist nicht nachgestellt: Welcher Wert welches Fensters auf
+  unlesbaren Speicher zeigt, nennt das Protokoll nicht.
+
+### A765 · Upload vom 13.11.2026: Regler am Weißmagier, erster Pull, Tode im Pilgerpfad, Wiederbelebung in der Allianz (13.11.2026)
+
+- *Upload:* `82c458e5-RotationSolver.7z` (`DefenseTrace.log` mit drei neuen Sitzungen: 12.11. Build 03af7190f,
+  Beschwörer und Weißmagier im Pilgerpfad; 13.11. f16ff5976, Weißmagier im Totenacker Tam-Tara; 13.11. dca6fb8e8,
+  Weißmagier in Nebeltrift und Welt der Dunkelheit, dann Beastmaster auf Brett 2 bis zum Absturz, A764), gelernte
+  Tabellen, `BestiaryTrace.log`; `74c38643-fflogsarchive.7z` (vier ACT-Mitschnitte vom 11. bis 13.11.). Ohne Frage dazu.
+- *Regler der Animationssperre (A753, Sitzung dca6fb8e8, 16 Kämpfe):* Eine Sperre hielt in 637 GCDs einen GCD zurück,
+  0,00 s. Im ACT-Mitschnitt (GCDs über die Abklinggruppe des Blatts) kommt ein GCD nach ein oder zwei Fähigkeiten nicht
+  später als ohne, wie am 11. und 12.11. 33 Anfragen ohne Antwort (8 % bei r um 2,5 %) halten den Schnitt bei 1 bis
+  34 ms. Neu: die Zeile „request without an answer“ mit Aktion, Abstand zur vorigen Antwort und deren Sperre. Sie zeigt,
+  ob es Ablehnungen sind. TODO-Punkt fortgeschrieben. Konzept 03.
+- *Erster Pull (A739):* Mit dem Vorübersetzen kostete der teuerste Frame im ersten Kampf 8,8 und 6,8 ms; am 12.11. ohne
+  Vorübersetzen 27,2 ms. Punkt geschlossen. Konzept 24.
+- *Entscheiden erst, wenn gedrückt werden kann (A744):* 50 bis 55 % der Durchläufe und der Zeit des Rotationsschritts
+  fallen in Frames, in denen das Tor ohnehin sperrt. Die Bedingung ist erfüllt; der Punkt steht jetzt als offene Arbeit
+  im TODO. Konzept 24.
+- *Tode (12.11., Pilgerpfad, Weißmagier):* (1) 20:13:33 „Tritt und Schwanz“ des Wallfahrt-Cama, 262 % der LP. Gewirkt
+  wurde #43132 als Linie nach vorn, getroffen hat #43131 als Kegel. RSR las nur die Linie („area hit reaches you
+  False“), und die Sperre beim Wirken hielt nichts frei. Behoben: `AreaCastReaches` fragt auch die gleichnamigen
+  Nachbarzeilen ohne Wirkzeit (`SameAttackHits`). Konzept 13, „Mehrteilige Angriffe“. (2) 20:53:22 „Tail Drive“ des
+  Dahak, 418 %, ohne Wirken. Dagegen hilft nur der Stand; RSR bewegt nicht.
+- *Wiederbelebung (13.11., Welt der Dunkelheit):* Tote Allianzmitglieder wechselten 15-mal zwischen „a candidate“ und
+  „an enemy“: Upstreams `IsEnemy` (Blizzard auf das Ziel, bd9c156b0) flackert bei Toten. Jetzt fragt `GetDeath` es nur
+  für Nichtmitglieder. Konzept 11, „Ein totes Mitglied ist kein Gegner“.
+- *Übrige Zeilenarten:* Schlaf zweimal gewählt, keine Zeile „sleep not cast“; die Messzeilen zu Holy, Göttlichem Segen,
+  Abwehr und Kosten ohne Auffälligkeit. Tabellen: Fläche 358, Tankbuster 102, gezielte Treffer 16 Einträge in der
+  laufenden Schicht. `BestiaryTrace.log` ohne neue Einträge seit 13.11., 16:24.
+- *Nicht lösbar mit diesem Upload:* der Absturz der zweiten Installation vom 11.11. (A736; das Dalamud-Protokoll
+  umfasst den 08. und 13.11.), die Crucible-Punkte (kein Kampf auf Brett 2 vor dem Absturz).
+- *Quellen am Auftragsende:* Upstream unverändert. BossMod (Original) 09026c552 → 93b0afd30: Tiefe Gewölbe
+  (Wegfindung, AutoClear), eine Vereinigung von Punktformen und #12218 als Wirken, das sein Ziel falsch nennt.
+  Daraus der TODO-Punkt „Kegel und Linien nach der Wirkrichtung des Spiels ausrichten“: Der Client führt die
+  Richtung (`Character.CastRotation`, gemessen an FFXIVClientStructs der Dalamud-Version). Übrige 38 Quellen
+  unverändert.
+- *Prüfgrad:* Compile; alle CI-Schritte lokal; Messungen am Protokoll und am Mitschnitt. Die Behebungen sind im
+  Spiel nicht beobachtet.
+
+### A766 · Kegel, Linien und Bodenkreise nach Richtung und Ort, die das Spiel für das Wirken führt (13.11.2026)
+
+Sein Auftrag (13.11.2026): „Todo weiter im vollen Loop abarbeiten". TODO-Punkt „Kegel und Linien nach der Wirkrichtung
+des Spiels ausrichten" (A765).
+- *Befund:* `AreaShapeReaches` richtete Kegel und Linien zum Ziel des Zaubers aus, jedes Bild neu, und hielt das
+  genannte Ziel immer für getroffen. Bodenkreise maß es vom Wirkenden mit beiden Trefferkreisen.
+- *Quelle:* `Character.CastRotation` und `CastInfo.TargetLocation` (FFXIVClientStructs der Dalamud-Version, am
+  13.11.2026 aus der Bibliothek gelesen); BossMod baut seine automatischen Formen daraus (awgil 93b0afd30,
+  `WorldStateGameSync`, `AIHintsBuilder`; Werkzeugquelle).
+- *Gebaut:* `CastDirection` und `CastLocation`; ein Kegel oder eine Linie trifft ihr Ziel nur, wenn es in der Form
+  steht. Ein Kreis oder Ring auf ein Ziel trifft es weiter. Kein Fall außer #12218 nötig: Ein Wirken, das sein Ziel
+  falsch nennt, misst sich jetzt wie jedes andere.
+- *Erhoben:* Die übrigen Leser einer Blickrichtung messen die Körperrichtung eines Gegners (Positionale, Parade), nicht
+  ein Wirken; sie bleiben.
+- *Optionen, Abwägung, Gegenthesen:* Konzept 13, „Wirkrichtung und Ort aus dem Spiel“.
+- *Prüfgrad:* Compile; alle 54 CI-Schritte lokal. Im Spiel nicht beobachtet; jede Prüfung, die eine Form misst
+  (Flächenabwehr, Selbstschutz, Sperre beim Wirken, Rückstoß), liest die neue Richtung.
+
+### A767 · Entscheiden erst, wenn gedrückt werden kann: nicht gebaut, die Prämisse hält nicht (13.11.2026)
+
+Sein Auftrag (13.11.2026): „Todo weiter im vollen Loop abarbeiten". TODO-Punkt aus A744 und A765 (50 bis 55 % der
+Durchläufe im gesperrten Tor).
+- *Erhoben:* Wer `ActionUpdater.NextAction` und `NextGCDAction` in Frames liest, in denen das Tor sperrt. Das sind das
+  Abfangen eines Tastendrucks (`ActionQueueManager`, `ShouldInterceptAction`), der Zielwechsel nach der nächsten Aktion
+  („Target only“, Lehrmodus), das Fenster „Next Action“ und die Markierung im Lehrmodus sowie True North
+  (`StateUpdater.ShouldAddPositional`).
+- *Falsifikation „Option falsch“ hält:* Überspringen änderte das Abfangen gerade dann, wenn er den nächsten GCD während
+  eines Zaubers drückt. Mit den Zeitstempeln im Entscheidungspfad (A744) zahlt jede Variante mit Verhalten oder mit
+  einem Umbau an 87 Stellen, für 1 % der Framezeit.
+- *Entscheidung:* Option 0. Ich habe den Punkt aus dem TODO genommen und die Abwägung in Konzept 24 eingetragen. Die
+  Messzeile bleibt.
+- *Prüfgrad:* statisch am Code.
+
+### A768 · Code-Review der Änderungen A762 bis A767 (13.11.2026)
+
+Nach dem TODO der Schritt „Audit, Code-Review" aus seinem Ablauf vom 05.11.2026; geprüft: der Code seit aef46fb5f.
+- *Defekt aus A765:* `SameAttackHits` nahm gleichnamige Nachbarzeilen ohne Effektreichweite auf. `AreaShapeReaches`
+  liest eine solche Zeile als „erreicht jeden“. Gemessen am Aktionsblatt (xivapi v2, 51.500 Zeilen, 13.11.2026): Von
+  28.374 gegnerischen Wirken haben 1.057 einen solchen Nachbarn, etwa Charybdis, Magitek Missiles und Bluefire. Seit
+  eb079f69a galt jedes davon für die ganze Gruppe. Folgen: Flächenabwehr, Selbstschutz und die Sperre beim Wirken bei
+  jedem solchen Wirken. Behoben: Nur Nachbarn mit Effektreichweite zählen. 1.549 Wirken haben einen Nachbarn mit
+  Fläche; sie nutzen die Regel wie gedacht. Ursache am System: Die Nachbarzeile lief durch dieselbe Formprüfung wie
+  ein eigenes Wirken, deren Zweig „ohne Reichweite“ für das gewirkte Ziel gebaut ist.
+- *Kleiner Befund:* Die Abdeckungspunkte des Carnivale nannten einen Gegner, der in zwei Akten steht und gegen den
+  nichts gelernt ist, doppelt. Behoben.
+- *Ohne Befund:* Wirkrichtung und Bodenort (A766), Totenwahl (A765), Zeile je Anfrage ohne Antwort, sicheres Lesen
+  der Fenstertexte (A764), Ladenleser, Carnivale-Sperren und Set (A762). Die Folgenummern der Anfragen laufen über
+  65.536 hinaus wie die der Zauber seit A754; nach einem Überlauf bleiben alte Einträge bis zum nächsten liegen.
+- *Quellen am Ende:* Upstream unverändert. BossMod (Original) 93b0afd30 → 6a8f5f304: die Tabelle zum Abstand des Tanks
+  je Gegner für seine KI (`EnemyBehavior.tsv`) und Aufräumen in Modulen. RSR bewegt nicht und liest sie nicht; ohne Folge.
+- *Prüfgrad:* statisch, Compile, alle CI-Schritte lokal.
+
+### A769 · Seine Frage: Kollidiert die Formprüfung mit Blickangriffen? (13.11.2026)
+
+Seine Frage (13.11.2026): „Interferiert das nicht mit dem Risiko, wenn ein Gegner einen [Blick] castet, wo man nicht
+hinsehen darf?“ Einordnung: Frage zu einem Risiko der Änderungen A765, A766 und A768.
+- *Antwort:* Nein. Die Formprüfung entscheidet nur, ob eine Fläche ihn erreicht. Kein Pfad, der sie liest, dreht die
+  Figur oder drückt etwas auf den Wirkenden. Die Sperre beim Wirken hält nur Zauber zurück. Konzept 13, „Blickangriffe
+  und die Form“.
+- *Erhoben:* BossModReborn 8ad17f97f erkennt Blicke am Blatt (`VFX` = 25) und dreht weg, ab Werk an. Es sperrt
+  Zauber und Angriffe, auch die von RSR, wenn das Ziel nur mit Blick zu treffen ist. RSR hat nur Upstreams Liste
+  „Gaze/Stop“ mit vier Ids, ab Werk aus.
+- *Neu im TODO:* „Blickangriffe ohne BossModReborn“.
+- *Prüfgrad:* statisch an RSR und BossModReborn.
+
+### A770 · Nicht in einen Blick drehen; Tödlicher Blick in Welt der Dunkelheit (13.11.2026)
+
+Sein Hinweis (13.11.2026): „In Welt der Dunkelheit besteht das Risiko Doom zu bekommen. Da hat Rest auf jedem Fall keinen
+vorhandenen Schutz Und bmr hat da anscheinend auch keinen Schutz“. Einordnung: Hinweis auf eine Spielmechanik, mit dem
+Befund, dass beide Werkzeuge nicht schützen.
+- *Am Mitschnitt vom 13.11.2026 belegt:* Angra Mainyu wirkt „Tödlicher Blick“ zweimal zugleich, #3281 (3 s, `VFX` 25)
+  und #3499 von einem Helfer (4,5 s, ohne Kennzeichen). Verhängnis (#210) kam 0,6 s nach #3499, um 18:27 auf 2 und um
+  18:28 auf 9 Spieler. BossModReborn ef3da084b (`A31AngraMainyu`) führt nur #3281 als Blick, seine Automatik prüft nur
+  `VFX` 25. Verhängnis entfernt hier nur die Glyphe (consolegameswiki), nicht Esuna (`CanDispel` false).
+- *Gebaut:* `GazeWatch`. Ein Blick ist eine Aktion mit `VFX` 25 oder eine gegnerische Aktion mit dem Namen einer
+  solchen. Am Blatt gezählt: 230 mit Kennzeichen, 77 gleichnamige ohne. Die Namen liest RSR im Hintergrund. Solange
+  ein Blick wirkt, der den Spieler erreicht, verwirft `GetCanTargets` für eine Aktion, die zum Ziel dreht, jedes Ziel
+  innerhalb von 45° zur Richtung des Wirkenden. Eine Zeile „gaze: holding actions …“ je Wirken. Für alle Jobs.
+- *Loop zu den festen Werten:* 45° ist BossMods halbe Breite der verbotenen Richtung bei Blicken; das Spiel nennt
+  keinen Winkel. 25 ist die Zeile des Blattes `ActionCastVFX` für Blicke, eine Kennung.
+- *Abwägung und Gegenthesen:* Konzept 13, „Nicht in einen Blick drehen“. TODO-Punkt „Blickangriffe ohne
+  BossModReborn“ geschlossen.
+- *Prüfgrad:* Compile; alle CI-Schritte lokal; Messungen am Mitschnitt und am Blatt. Im Spiel nicht beobachtet; die
+  Zeile „gaze: …“ zeigt jedes Halten.
+
+### A771 · Sein Hinweis: mehrere Blicke zugleich auf dem zweiten Crucible-Brett (13.11.2026)
+
+Sein Hinweis (13.11.2026): „Auf dem zweiten crucible Brett gibt es auch Gegner, wo von den Seiten Ringe ausgehen, wo man
+wegschauen muss. Da sind es sogar mehrere Punkte von denen man sich wegdrehen muss und sie gleichzeitig beachten muss“.
+Einordnung: Hinweis auf eine Mechanik; geprüft gegen A770.
+- *Am Mitschnitt vom 11.11.2026:* Zwei Ahriman-Ebenbilder des Taurus stehen bei x 502 und 538 (West und Ost). Sie
+  wirken „Tödlicher Blick“ selbst (#48152) und über einen Helfer an derselben Stelle (#48153), je 4,5 bis 5 s.
+  Zwei Wellen folgen 4 s nacheinander. Beide Ids tragen kein Blick-Kennzeichen (`VFX` 0).
+- *Ergebnis:* A770 deckt den Fall ohne Änderung. Beide Ids zählen über den Namen als Blick, und jeder Wirkende sperrt
+  seine Richtung. Mit Blicken aus West und Ost bleiben Ziele im Norden und Süden wählbar. Konzept 13, „Mehrere Blicke
+  zugleich“.
+- *Prüfgrad:* statisch am Code und am Mitschnitt; im Spiel nicht beobachtet.
+
+### A772 · Sein Hinweis: Beatrice aus Troia; Blicke ohne Kennzeichen aus BossModReborns Modulen, umgekehrte Blicke (13.11.2026)
+
+Sein Hinweis (13.11.2026): „Einen ähnlichen Effekt hatte beatrice aus Troja“. Einordnung: Hinweis auf eine Mechanik;
+geprüft gegen A770.
+- *Befund (Defekt in A770):* „Tödliche Vorsehung“ (#29821, #29828; danach Verhängnis #3364, mit Esuna lösbar) trägt
+  nicht das Blick-Kennzeichen 25, sondern die Wirk-Effekte 295 und 319. Ihr Name steht bei keiner Aktion mit dem
+  Kennzeichen. A770 erkannte diesen Blick nicht. Das Blatt markiert Blicke nicht einheitlich.
+- *Gebaut:* `gaze_actions.py` liest aus BossModReborn 8ad17f97f (BSD-3) die Ids der `CastGaze`- und
+  `CastGazes`-Aufrufe und ob sie umgekehrt sind, nach `GazeActions.g.cs`. Das sind 78 Blicke, 22 davon ohne
+  Kennzeichen, 14 auch ohne gleichnamige gekennzeichnete Aktion, und 3 umgekehrte. Die CI prüft den Selbsttest und
+  jede Id gegen das Aktionsblatt. `GazeWatch` nimmt Kennzeichen, Liste und Namen beider. Ein umgekehrter Blick sperrt
+  jedes Ziel außerhalb von 45° um den Wirkenden. Die Liste der umgekehrten Blicke gilt vor dem Kennzeichen, denn
+  #27369 „Avert Your Eyes“ trägt die 25. Ihre Namen fallen aus der Namensregel, weil „Cat's Eye“ auch ein normaler
+  Blick ist.
+- *Grenze:* Blicke, die ein Modul selbst baut (`GenericGaze`, 24 Stellen), nennen keine Id im Aufruf und fehlen. Für sie
+  gelten nur Kennzeichen und Name.
+- *Prüfgrad:* Compile; Generator-Selbsttest und `--check` gegen das Blatt; alle CI-Schritte lokal. Im Spiel nicht
+  beobachtet.
+
+### A773 · Seine Vorgabe: Blickschutz ohne BossModReborn; Blicke im Pilgerpfad (13.11.2026)
+
+Seine Angabe (13.11.2026): „Die Rsr Funktion soll wirken, wenn bmr nicht aktiv ist oder selbst Fehlern bei der Beachtung
+hat. Im Letzten Deep dungeon hatte ich auch kämpfe, wo ich häufiger wegsehen musste“. Einordnung: Vorgabe (erster Satz)
+und Hinweis (zweiter Satz).
+- *Vorgabe erfüllt durch A770 und A772:* `GazeWatch` liest BossModReborn zur Laufzeit nicht und wartet nicht auf ihn.
+  Die Liste aus seinen Modulen ist eine von drei Datenquellen. Im Konzept 13 als seine Vorgabe eingetragen.
+- *Am Mitschnitt vom 12.11.2026 (Pilgerpfad):* BossModReborn hat für die gerufenen Gegner kein Modul. Unter den 146
+  gegnerischen Wirkarten war ein Blick: „Tödlicher Blick“ des Gerufenen Destrudo (#44355, `VFX` 25). Er trat 9-mal
+  auf; die Trefferzeilen zeigen 14-mal keine Wirkung und zweimal Verhängnis auf einem Spieler. Erkannt am Kennzeichen.
+  „Starren“, „Honigsüße Front/Linke/Rechte“ und „Vielsagender Glanz“ sind Flächen mit Omen und Schaden, keine Blicke.
+- *Prüfgrad:* am Mitschnitt und am Blatt; im Spiel nicht beobachtet.
+
+### A774 · Seine Frage: andere Plugins, die wegdrehen; RSR dreht selbst weg, Vorlauf aus der Messung (13.11.2026)
+
+Seine Frage (13.11.2026): „Gibt es noch andere Plugins, die solche Gegner erkennen und den Spieler wegdrehen um ihn zu
+schützen. Analysiere deren Verhalten und Code und optimiere den eigenen“. Einordnung: Frage mit Auftrag.
+- *Erhebung:* BossModReborn 8ad17f97f (`SmartRotationTweak`): Es kennt Blicke aus Modulen und `VFX` 25 und dreht ab
+  0,5 s vor dem Blick in die breiteste sichere Lücke nahe der Zielrichtung. Es sperrt Zauber und Angriffe, wenn das Ziel
+  nicht ohne Blick zu treffen ist, erlaubt 75° für einen Zauber im Gang und dreht über `AutoFaceTargetPosition` mit
+  kurz eingeschalteter Spieloption „Auto face target“. BossMod (Original) 6a8f5f304 hat denselben Kern. „Don't Look Back“
+  (Atomoxide 1.1.0.0, nur gebaut) dreht nach jeder Aktion zur Kamera und kennt keine Blicke.
+- *Befund an A770:* RSR hielt Aktionen zum Wirkenden das ganze Wirken zurück, bei Beatrice bis 8 s.
+- *Umgesetzt (Konzept 13, „Zeitraum und Wegdrehen“):*
+  - Vorlauf L ist die größte gemessene Verzögerung bis zur Antwort im Gebiet plus ein Bild (`AnimationLockTweak.DelayMost`).
+  - Bis L kämpft RSR weiter; ab L hält es drehende Aktionen in Blickrichtung zurück und dreht die Figur in die Mitte der
+    nächstgelegenen sicheren Lücke (`GazeWatch.TurnAway`, je Bild aus `MajorUpdater`).
+  - Neue Option „Turn away from gaze attacks“, ab Werk an. Ohne Messung oder abgeschaltet gilt das ganze Wirken wie in
+    A770.
+  - Verworfen: feste 0,5 s wie BossModReborn, weil ein fester Wert bei großer Verzögerung zu spät dreht und bei kleiner
+    früher sperrt als nötig.
+- *Eigener Defekt im Review gefunden und behoben:* Berühren sich zwei gesperrte Bögen, lag die Mitte der Lücke ohne
+  Breite auf einer Grenze. Jede Mitte wird jetzt gegen alle Blicke geprüft.
+- *Lückenmitte als Festwert-Ausnahme:* `0.5f` ist Geometrie, keine Spielgröße. 2π schreibt sich als `MathF.Tau`.
+- *Modell:* Die Winkelrechnung ist in Python nachgerechnet.
+  - Ein Blick aus Ost: die Figur schaut nach West.
+  - Blicke aus West und Ost: nach Nord oder Süd, je nachdem, was näher liegt.
+  - Ein umgekehrter Blick aus Ost: nach Ost.
+  - Blicke von vier Seiten: diagonal.
+- *Prüfgrad:* Compile, Prüfskripte, Winkelmodell; im Spiel nicht beobachtet. Messmittel sind die Zeilen „gaze: turned …“
+  und „gaze: holding …“ im `DefenseTrace.log`.
+
+### A775 · Upstream-Sync 6462f8a90: Schnitter-Trank, Fork-Version 7.5.8.3 (14.11.2026)
+
+- *Upstream:* aa03eb9e2 (PR #1422) formatiert `RPR_Reborn` neu und führt „Use potion“ und „First Potion timing“ ein.
+  Ab Werk trinkt der Schnitter erst ab dem zweiten Arcane Circle (`CombatTime > 30`). Dazu kommt das Upstream-Tag
+  7.5.8.3.
+- *Konflikt:* nur am Harvest-Moon-Block, den der Fork in A743 erweitert hat; Upstream hat ihn nur umformatiert. Die
+  Fork-Fassung bleibt.
+- *Auswertung im Kampf:* The Balance führt den Trank im Opener, nach Shadow of Death (Reaper Basic Guide, abgerufen
+  14.11.2026). Mit Upstreams Voreinstellung fehlt er im ersten Burst. In einem Kampf von 7 min trinkt der Schnitter
+  dann einmal (2 min) statt zweimal (0 und 6 min). Die Voreinstellung steht deshalb auf „Opener“ (Konzept 14,
+  „Schnitter“). Der neue Schalter „Use potion“ wirkt neben dem allgemeinen Tinktur-Schalter je Job (A645); beide
+  müssen zulassen. Eine Doppelung, die nur einen Schalter mehr zeigt; sie ändert kein Verhalten.
+- *Fork-Version:* `Directory.Build.props` auf 7.5.8.3 (eigener Commit auf `main`).
+- *Prüfgrad:* Compile, Prüfskripte; im Spiel nicht beobachtet.
+
+### A776 · Seine Hinweise: Kefkas Fragezeichen, Windurst-Endboss; Umkehrung und Auge zur Laufzeit (14.11.2026)
+
+Seine Angaben (13. und 14.11.2026): „Bei kefka und anderen Gegnern gibt es eine Kombination mit Umkehrung. Bei kefka
+wird ein Fragezeichen beigepackt. Hinsehen ist da dann wegsehen und umgekehrt. Solche Sonderfälle gibt es auch woanders.
+Endboss allyraid …“; „beim endboss des letzten ally raids windurst scheint bmr einige Dinge falsch zu interpretieren“.
+Einordnung: Hinweise.
+- *Erhebung:* alle 24 selbst gebauten Blicke in BossModReborn 8ad17f97f, `Lockon` und `Status` (englisch) vollständig,
+  O8S an consolegameswiki. Ergebnis im Konzept 13, „Umkehrung und Auge zur Laufzeit“.
+- *Befunde an A770–A774:*
+  - O8S „Ave Maria“ (#10467, hinsehen) galt als kein Blick.
+  - In Windurst (`A35ShinryuParadox`) hielt RSR „Look“ und „No Look“ nicht. Ein Angriff auf den Boss drehte einen
+    Spieler mit „No Look“ zurück in den Blick.
+  - Bei Merciful Moon, P8S und CE34 legte RSR das Auge auf den Wirkenden oder erkannte einen Blick am Namen, dessen Auge
+    oder Richtung zur Laufzeit woanders entsteht. Bei CE34 zählte der Wirk des Bosses selbst als Blick.
+  - BossModReborns `CastGaze` setzt das Auge an den Ort des Wirkens, RSR an den Wirkenden.
+- *BossModReborn in Windurst:* Das Modul setzt das Auge in beiden Phasen auf Shinryu (`PrimaryActor`); in Phase 2
+  wirkt der Hollow King. *Schluss, unbelegt am Mitschnitt:* Das ist einer der Fehler, die er sieht.
+- *Umgesetzt:*
+  - `gaze_actions.py` führt die Liste `Unsure` (34 Ids) und nimmt Thordans Drachenblick und „Break IV“ als Blick mit
+    Auge am Ort auf (84 Blicke).
+  - `GazeWatch` führt jeden Blick als Auge mit Ort, Richtung und Restzeit, aus vier Quellen: Wirken mit dem Auge am Ort
+    und umgekehrten Namen, Status auf dem Spieler nach seinem Text, Kopfmarker „lk“/„no_lk“, und ein Mitglied als Auge
+    nach dem Text.
+  - Aus dem Review: Texte je Auge, ein Abschluss je Bild und Aufzählungen der Statuslisten entfernt, damit je Bild
+    nichts angelegt wird.
+- *Verworfen:* „Spell-in-Waiting: Shadoweye“ als Mitglied-Auge. Keine Quelle führt Shadoweye als Blick; der Zweig
+  hätte nichts getroffen.
+- *Nicht lesbar für RSR:* Animationen (Kefkas Statuen im Ultimate, Nier), Verbindungen (Owain), der Zusatzwert am Status
+  des Bosses (Cursed Shriek im Ultimate). Dort tut RSR nichts.
+- *Modell:* Regeln an allen Zeilen nachgerechnet.
+  - Die Statusregel trifft 3385/3386 (Nymeia), die Markerregel 680/681 (je 7 s), die Mitgliedsregel 3511.
+  - #10467 wird umgekehrt, #10468 bleibt Blick, #47795 ist unsicher.
+  - „Cat's Eye“ und „Avert Your Eyes“ tragen beide Arten und zählen als keines.
+- *Prüfgrad:* Compile, Prüfskripte samt Selbsttest des Generators, Modell an den Blättern; im Spiel nicht beobachtet.
+  Messmittel sind die Zeilen „gaze: …“ mit Herkunft des Auges im `DefenseTrace.log`.
+- *Quellen am Auftragsende:*
+  - BossModReborn 35a908ad7: neue Criterion- und Variant-Module, kein Blick und nicht Windurst. Die Liste ist
+    inhaltlich gleich, neu erzeugt.
+  - BossMod c50e67f37: Kommentare an der Unverwundbarkeitsliste.
+  - lalalazy 289e9bb82: nur Oberfläche; die Beastmaster-Einträge im Changelog von GluttonyCombo standen schon in
+    900c698dd.
+  - Upstream unverändert seit A775.
+
+### A777 · Seine Vorgabe: richtig stehen und weiter treffen; Zauber laufen durch den Blick (14.11.2026)
+
+Seine Angabe (14.11.2026): „Wichtig: wenn man bereits richtig rum steht, den Gegner trifft, braucht nicht gedreht werden
+und der Kampf angehalten. Machbar?“ Einordnung: Vorgabe.
+- *Sachlage:*
+  - Steht die Figur sicher, dreht RSR seit A774 nicht, und Ziele in sicherer Richtung bleiben wählbar.
+  - Eine Sofortaktion braucht das Ziel innerhalb von 45° (BossModReborn `ActionManagerEx`, empirisch), also im
+    Blickkegel. Den Wirkenden eines normalen Blicks trifft sie nur mit Blick in den Blick. Diesen Teil seiner Vorgabe
+    erfüllt keine Richtung; dort bleibt die Sperre für den Vorlauf.
+  - Ein Zauber bricht erst ab, wenn sein Ziel zu Beginn des Slidecast-Fensters mehr als 75° seitlich liegt (ebenda).
+- *Befund an A774:* Im Vorlauf drehte RSR bis zu 180° und brach so einen eigenen Zauber auf den Wirkenden ab. Zauber,
+  die über den Blick hinaus wirken, hielt es zurück.
+- *Umgesetzt (Konzept 13, „Richtig stehen und weiter treffen“):*
+  - Bei einem laufenden Zauber, den das Spiel noch nicht hat, dreht RSR in das breiteste sichere Stück innerhalb von 75°
+    um sein Ziel (`SafeNear`, `CastAim`).
+  - Ein Zauber darf beginnen, wenn es dort eine bis zu seinem Ende sichere Richtung gibt.
+  - Der Optionstext nennt beides. Die 75° stehen als Festwert-Ausnahme.
+- *Modell:*
+  - Ein Blick vom Ziel aus: Drehung um 60° statt 180°.
+  - Blicke bei −50° und +50°: Die Figur bleibt aufs Ziel gerichtet (sicher).
+  - Ein umgekehrter Blick: zum Ziel.
+- *Prüfgrad:* Compile, Prüfskripte, Winkelmodell; im Spiel nicht beobachtet. Messmittel: die Zeile „gaze: turned …“
+  nennt den Winkel; ein abgebrochener Zauber zeigt sich im Mitschnitt.
+
+### A778 · Seine Rüge: BossModReborns Blickrichtung beim Auslösen nicht angesehen; RSR dreht beim Auslösen selbst (14.11.2026)
+
+Seine Angaben (14.11.2026): „Spieler selbst kennen ja die Kämpfe auch und können sich selbst ja so positionieren, dass
+sie bedenkenlos weiter kämpfen können. Also hast du das Konzept nicht optimal genug gedacht. Sonst wäre dir das bei bmr
+vorher aufgefallen. Mangelhaft. Hast du dir die gesamte Bar Mechanik dazu angesehen oder hast du Scheuklappen?“
+Einordnung: Hinweis und Rüge.
+- *Ursache am System:* In A774 und A777 habe ich aus BossModReborn nur `SmartRotationTweak.GetSafeRotation` und die
+  Winkel gelesen, nicht seinen Aufrufer `ActionManagerEx.UpdateDetour`. Dort schaltet BossModReborn beim Auslösen die
+  Spieloption „Auto face target“ ab und dreht nur, wenn das Ziel nicht im 45°-Kegel liegt oder die Richtung in einen
+  Blick sieht. RSR ließ das Spiel genau aufs Ziel drehen.
+- *Wirkung im Kampf bis jetzt:* Stand das Ziel vorn und das Auge seitlich, aber innerhalb von 45° zur genauen
+  Zielrichtung, wartete jede Aktion auf dieses Ziel im Vorlauf. Ohne Messung wartete sie das ganze Wirken. Auch eine
+  richtige Aufstellung half nicht. Im Vorlauf drehte RSR in die Mitte der nächsten Lücke, oft weg vom Ziel.
+- *Konzept neu geprüft:* Konzept 13, „Richtig stehen und weiter treffen“, als Ganzes neu geschrieben; dazu „In den Blick
+  drehen“ berichtigt.
+- *Umgesetzt:*
+  - `GazeWatch.PrepareFacing` und `RestoreFacing` um jeden Druck in `BaseAction.Use`, solange ein Blick im Vorlauf liegt:
+    die Richtung bleibt, wenn das Ziel im Kegel liegt und sie sicher ist, sonst die Mitte des breitesten sicheren
+    Stücks im Kegel; „Auto face target“ ist für den Aufruf aus.
+  - Die Sperre greift nur ohne sichere Richtung im Kegel, bei Zaubern zusätzlich ohne eine im 75°-Bereich.
+  - Ohne Zauber dreht `TurnAway` innerhalb von 45° um das Ziel des Spielers.
+  - Die 45° stehen als Festwert-Ausnahme.
+- *Modell:*
+  - Auge 30° neben dem Ziel: 30° zur anderen Seite.
+  - Auge beim Ziel: Sperre.
+  - Crucible, Augen West und Ost, Ziel Nord: die Richtung bleibt.
+  - Auge 10° neben dem Ziel: 40° zur anderen Seite.
+- *Prüfgrad:* Compile, Prüfskripte, Winkelmodell; im Spiel nicht beobachtet. Messmittel: die Zeile „gaze: turned … for
+  an action, … off its target“.
+
+### A779 · Seine Frage: war die Änderung am Schnitter-Trank sinnvoll? Abwägung nachgeholt, Voreinstellung „Automatic“ (14.11.2026)
+
+Seine Frage (14.11.2026): „War denn die Änderung am trank Schnitter sinnvoll?“ Einordnung: Frage.
+- *Befund an A775:* Begründet war die Änderung mit The Balance und mit der Zahl der Tränke in einem Kampf, der zum Sieg
+  führt. Nicht gewogen war seine Regel A501, nach der Tinkturen Geld kosten. In der Lernphase verschwendet jeder Wipe vor
+  zwei Minuten den Opener-Trank. Upstreams Voreinstellung schützte genau davor. Der Fork schaltet Tinkturen ab Werk nur
+  in High-End-Kämpfen frei, also genau dort, wo gelernt wird.
+- *Abwägung:*
+  - Opener: mehr Schaden im ersten Burst, ein Trank mehr in Kämpfen von 6 bis 8 min, aber ein verlorener Trank je
+    frühem Wipe.
+  - Ab dem zweiten Burst: kein Verlust bei frühen Wipes, aber kein Trank im ersten Burst. In später Lernphase fehlt er
+    beim Schadenscheck.
+- *Lösung ohne Preis:* Voreinstellung „Automatic“. Der Trank kommt in den Opener, wenn der Kampf schon geschafft ist
+  (`UIState.IsInstanceContentCompleted`, neu `CustomRotation.InClearedDuty`). Ebenso, wenn der letzte Zug im selben Gebiet
+  länger als eine Abklingzeit von Arcane Circle lief (neu `CustomRotation.LastPullTime`, gesetzt am Kampfende). Sonst
+  kommt er ab dem zweiten Arcane Circle. Upstreams Zeile bleibt unverändert; die neue Bedingung steht daneben.
+  CHANGELOG nennt die beiden neuen öffentlichen Member.
+- *Im Kampf:*
+  - Erster Zug in einem neuen Savage: kein Opener-Trank; erst bei 2:00, wenn der Zug so lange hält.
+  - Nach einem Zug, der über 2:00 kam: Trank im Opener.
+  - Im Farm (geschafft): immer im Opener.
+- *Offen, als Klasse:* Andere Jobs trinken im Opener ohne diese Abwägung. Die Regel gehört auf die allgemeine Ebene
+  (TODO).
+- *Prüfgrad:* Compile, Prüfskripte; im Spiel nicht beobachtet.
+
+### A780 · Seine Präzisierung: Trinkzeitpunkt nach Schaden, Generalisierung; Opener für alle Jobs gemessen, Lernphase allgemein (14.11.2026)
+
+Seine Angabe (14.11.2026): „Gut erkannt, Generalisierung vor Spezialisierung solange keine Nachteile. Der trinkzeitpunkt
+richtet sich nach Schaden, da prozentuale Erhöhung. Also ist die Frage, ob bei allen Rotationen aller Klassen, der
+schadenshöhepunkt über trankwirkzeit wirklich beim opener ist.“ Einordnung: Präzisierung (Generalisierung) und Frage.
+- *Messung (FFLogs v2, 14.11.2026):* je 8 beste Kämpfe aller 21 Jobs an drei Savage-Bossen der laufenden Stufe (AAC
+  Heavyweight 101, 103, 104). Der erste Trank fällt in 441 von 504 Kämpfen in die ersten 15 s, bei jedem Job in mindestens
+  zwei Dritteln; in 8 Kämpfen gab es keinen. Abweichungen hängen am Kampf: Viper beim ersten Boss 5 von 8 bei 2 min,
+  Maschinist beim vierten 4 von 8 bei 6 min. Namen der Spieler sind nicht erfasst.
+- *The Balance (Opener-Seiten, 14.11.2026):*
+  - Im Text belegt sind nur der Maschinist („much prefer a 2 minute pot if possible“, Patch 7.3) und der Weißmagier
+    (Tinktur nach dem Pull, 7.4).
+  - Die übrigen Seiten zeigen den Trank nur in Grafiken.
+- *Antwort:* Ja. Der Höhepunkt über 30 s liegt bei allen Jobs im Opener; Abweichungen kommen aus dem Kampf, nicht aus dem
+  Job.
+- *Rotationen:* Alle lösen die Tinktur im Countdown oder in ihrem Burst-Fenster aus. Die Fenster sind verschieden lang:
+  Der Krieger fragt bis etwa 37 s, der Tänzer im Kampf erst bei 2 min.
+- *Umgesetzt (Konzept 03, „In der Lernphase“):*
+  - `TinctureWaitsWhileLearning` in `UseBurstMedicine` für alle Jobs. Im noch nicht geschafften Kampf wartet die Tinktur
+    im ersten Burst des Zugs.
+  - Ein späterer Burst beginnt, wenn die Rotation nach einer Pause, länger als die Tinktur wirkt, wieder fragt. Die Dauer
+    kommt aus `ItemAction.Data`, Spalte als Festwert-Ausnahme.
+  - Ausnahme: Der letzte Zug im Gebiet erreichte den je Gebiet gemessenen zweiten Burst.
+  - Der Schnitter verliert „Use potion“ und „First Potion timing“ (Upstream 6462f8a90) und damit die Sonderregel aus
+    A779. `InClearedDuty` und `LastPullTime` bleiben als allgemeine Tatsachen.
+- *Benannt, nicht gebaut:* Kampfabhängige Verschiebungen (Phasen, Pausen) brauchen Kampfwissen, das RSR ohne Modul nicht
+  hat.
+- *Prüfgrad:* Compile, Prüfskripte; Messung an FFLogs; im Spiel nicht beobachtet.
+- *Quellen am Auftragsende:* lalalazy 078f80b4c bringt nur Fensterumbauten (LazySkywardTracker, LazyRetainerLive,
+  LazyFoodBuff), nichts zu Crucible oder Kampf. Upstream unverändert.
+
+### A781 · Seine Rüge: nicht die Mehrheit, sondern der Beleg; Trankfenster nach gemessenem Schaden (14.11.2026)
+
+Seine Angabe (14.11.2026): „Es geht nicht darum, was die Mehrheit macht, sondern was belegt am sinnvollsten ist. Spruch
+für Kinder: wenn alle von der Brücke springen, springst du dann hinterher?“ Einordnung: Rüge, Vorgabe für die Belegart.
+- *Befund an A780:* Ich hatte aus dem Trinkzeitpunkt der besten Spieler geschlossen, der Schadenshöhepunkt liege im
+  Opener. Das belegt nur, was sie tun, nicht was mehr Schaden bringt.
+- *Messung (`tincture_windows.py`, versioniert, mit Selbsttest):*
+  - Grundlage: je 4 beste Kämpfe aller 21 Jobs an AAC Heavyweight 101, 103 und 104.
+  - Gemessen: der eigene Schaden je Sekunde, Begleiter eingeschlossen, im besten 30-s-Fenster um jeden Burst.
+  - Die Tinktur ist mit 0 % und mit der Obergrenze 11 % herausgerechnet; beide Grenzen müssen dasselbe sagen.
+- *Ergebnis:*
+  - Der 2-Minuten-Burst ist stärker bei Schnitter (Opener durch 2 min 0,82 bis 0,89), Viper, Barde, Dragoon und Tänzer.
+  - Der Opener ist stärker bei Krieger, Mönch und Ninja.
+  - 13 Jobs sind offen.
+  - Der Schnitter widerspricht damit A775 und A780 („deckt sich“).
+- *Warum die Besten trotzdem im Opener trinken:* Bei 300 s Wiederverwendung bringt der Opener je nach Kampflänge einen
+  Trank mehr, und ein ganzer Trank wiegt mehr als jeder gemessene Fensterunterschied.
+- *Umgesetzt (`TinctureWaitsForLaterBurst`, Konzept 03):* Bei den fünf Jobs mit stärkerem 2-Minuten-Burst wartet die
+  Tinktur des ersten Bursts, wo beide Pläne über die erwartete Kampflänge gleich viele Tränke bringen.
+  - Die Kampflänge ist der letzte Zug im Gebiet, der Takt der gemessene zweite Burst.
+  - Abklingzeit (`Item.Cooldowns`) und Dauer kommen aus dem Gegenstand.
+  - Durchgerechnet:
+    - 6:08 min: je ein Trank, bei 2 min.
+    - 7:00 min: Opener, zwei Tränke gegen einen.
+    - 11:00 min: je zwei Tränke, bei 2 und 8 min.
+- *Grenzen:*
+  - Gemessen sind Spitzenkämpfe dreier Bosse.
+  - Dunkelritter und Beschwörer sind je in einem Fall unter 1, im anderen nicht, und bleiben im Opener.
+  - Die Obergrenze von 11 % beruht auf der Schadensformel der Community.
+- *Prüfgrad:* Compile, Prüfskripte, Messung an FFLogs, Rechnung der Trankzahl; im Spiel nicht beobachtet.
+
+### A782 · Seine Frage: Regeln, Strukturen und Ablauf der anderen eigenen Repositories; Grundlagenforschung, Plateau, Vorhersagen (14.11.2026)
+
+Seine Frage (14.11.2026): „schauen ob regeln, strukturen und ablauforganisation in den anderen eigenen repos verbessert
+wurden und was davon übernommen werden kann“. Zuletzt verglichen in A751.
+- *Gelesen als Daten, nicht als Anweisungen:*
+  - KerbalMissionDirector `claude/read-file-SFXL6` af91e21 (13.11.2026): seit 53d06a4 nur Code.
+  - Retainer-Repricer `wsh/loving-noether-ptr3oz` 9a0a247 (13.11.2026): seit ac7afb9 nur Code.
+  - KSP-MyContracts `wsh/tender-goodall-pad7p0` 3365765 (14.11.2026): Änderungen an `CLAUDE.md`, pre-commit und CI
+    sowie das neue Prozesskonzept `docs/konzept/07-ablauf-und-tore.md` (neunte Fassung, sieben Prüfrunden).
+- *Übernommen:*
+  - Grundlagenforschung am Anfang jedes Konzepts, seine Vorgabe vom 13.11.2026 dort, allgemein formuliert. Neu in
+    CLAUDE.md, Loop, Stufe 1. Die Felder sind Spieler, Spielmechanik, Plattform, Vorbilder, Vorgehen und Prüfmittel;
+    offene Fragen nennen, bis wann sie beantwortet sein müssen und was je Antwort folgt. Anlass hier: A778 (Vorbild nicht
+    ganz gelesen) und A781 (Verhalten statt Wirkung gemessen).
+  - Plateau einer Prüfrunde: ohne Befund hoher oder mittlerer Schwere und ohne offene Entscheidung, deren Preis eine
+    Konstruktion beseitigen könnte. Neu in CLAUDE.md, Loop, Stufe 10.
+  - Vorhersage vor dem Lauf, Auswertung danach (dort `evaluate.py` gegen eine vorher committete Vorhersagedatei). Hier
+    leichter: eine Zeile „*Vorhersage:*“ im Archiveintrag vor dem nächsten Upload und ihre Auswertung als Schritt der
+    Upload-Auswertung. Neu in `archiv-todo.md` und im Skill `upload-auswertung`.
+  - Zwei Schärfungen aus eigenem Anlass, gleicher Herkunft: ein fremdes Werkzeug ganz lesen, samt Aufrufern
+    (`konzepte.md`); das Verhalten der Besten belegt keinen Nutzen (CLAUDE.md, „Maßstab: das Spielgeschehen“).
+- *Nicht übernommen, mit Grund:*
+  - Einfrierprüfung und Tortabelle (`freeze_check.py`, `gates.json`): Dort halten sie 33 Vertragstypen fest, die nie
+    geladen wurden. Hier läuft jeder Stand des Branches bei ihm im Spiel, und die Prüfungen sind Selbsttests und CI.
+  - R6, ein begrenztes Review vor dem ersten Spielkontakt: dort seine Entscheidung zu seinem Paket, hier ohne Gegenstück.
+  - Rauchtest und Profile: dort für eine Mod-Installation; hier lädt das Plugin bei jedem Start.
+- *Offen, seine Entscheidung (Umfang und Reihenfolge der Arbeit):*
+  - Eine Grenze für ungeprüfte Arbeit (dort R2 und R5): Neue Arbeit baute nicht weiter auf im Spiel ungesehenen
+    Änderungen auf. Der Fall liegt hier vor: A770 bis A778 bauen aufeinander auf, keine Stufe im Spiel gesehen.
+  - Unabhängige Prüfrunden durch einen getrennten Prüfer (dort sieben Runden): Hier dürfen Hilfsagenten nur auf seinen
+    ausdrücklichen Wunsch laufen.
+- *Vorhersagen für seinen nächsten Upload* (Build ab 9e855169f):
+  - *Blicke (A774–A778), Inhalt mit Blick:* Welt der Dunkelheit (Angra Mainyu), zweites Crucible-Brett (Ahrimane),
+    Pilgerpfad (Destrudo) oder Windurst-Endboss. Wirkt:
+    - `DefenseTrace.log` zeigt „gaze: turned …“ oder „gaze: turned … for an action, … off its target“ mit höchstens der
+      gemessenen Antwortzeit plus einem Bild vor dem Treffer.
+    - Im ACT-Mitschnitt trifft kein Verhängnis und keine Versteinerung aus diesem Blick den Spieler.
+    - In Windurst zeigt eine Zeile „by a marker to look …“ den Hollow King als Auge in Phase 2.
+    Wirkt nicht:
+    - „lead the whole cast“, nachdem im Gebiet schon Aktionen beantwortet wurden.
+    - Ein Verhängnis oder eine Versteinerung des Spielers nach einem solchen Blick.
+    - Eine Aktion, die nach „gaze: turned … for an action“ nicht ausgelöst wird (Kegel zu eng).
+  - *Tinkturen (A780, A781), High-End-Kampf:*
+    - Wirkt: In einem noch nicht geschafften Kampf fällt im ersten Zug kein „Medicated“ (ACT-Zeile 26, Status 49) in die
+      ersten 30 s. Bei Schnitter, Viper, Barde, Dragoon oder Tänzer in einem geschafften Kampf mit gleicher Trankzahl
+      kommt der erste bei etwa 2 min.
+    - Wirkt nicht: „Medicated“ in den ersten 30 s des ersten Zugs eines nicht geschafften Kampfs, oder gar keiner im
+      2-Minuten-Burst eines Zugs, der ihn erreicht.
+- *Prüfgrad:* Regeldateien geprüft (`check_rule_files.py`), alle CI-Schritte lokal.
+
+### A783 · Seine Vorgabe: im Spiel auswerten und lernen, kein Supergau; Blickwache erkennt ihren Fehlschlag (14.11.2026)
+
+Seine Angabe (14.11.2026): „windurst spiele ich wenigstens einmal pro woche. ziel ist es doch erst einmal ein
+tragfähiges theoretisches konzept zu haben. dass wird dann entweder durch interne tests untermauert, oder durch externe
+logs widerlegt oder auch untermauert. bei testumsetzung darf bloß nicht der supergau entstehen, dass durch die neue regel
+sofort und immer bis zum fix gestorben wird. daher kommt von mir auch immer die vorgabe: ingame auswertung und ingame
+daraus lernen.“ Einordnung: Antwort auf Frage 1 aus A782 und Vorgabe.
+- *Frage 1 aus A782 beantwortet:* keine harte Grenze für ungeprüfte Arbeit. Zuerst ein tragfähiges Konzept, dann
+  Bestätigung oder Widerlegung durch Tests oder Logs. Windurst kommt wöchentlich in seinen Logs vor.
+- *Frage 2 (unabhängige Prüfrunden durch Hilfsagenten):* nicht beantwortet, bleibt offen.
+- *Vorgabe eingetragen:* `code.md`, „Entscheidung zur Laufzeit“. Eine neue Regel, die ins Spielgeschehen eingreift,
+  erkennt im Spiel, ob ihr Eingriff gewirkt hat. Nach dem ersten Fehlschlag fällt sie für diesen Fall auf das Verhalten
+  ohne sie zurück, mit Protokollzeile; Erfolge schreibt sie ebenso.
+- *Angewandt auf die Blickwache (Konzept 13, „Im Spiel auswerten und lernen“):*
+  - Jeder Blick, für den RSR gedreht oder die Richtung gewählt hat, wartet bis Landung plus Vorlauf plus gemessener
+    Antwortzeit (`GazeWatch.Watch`).
+  - Trifft den Spieler bis dahin ein schädlicher Status oder Schaden aus diesem Blick, gilt das als Fehlschlag
+    (`GazeWatch.ObserveLanding`, aus `Watcher.ActionFromEnemy`). Aus dem Blick heißt: bei Wirken der gleiche Name, bei
+    Marker oder Status ein Gegner. Dann greift RSR bei diesem Blick im Gebiet nicht mehr ein, also weder Drehen noch
+    Richtung noch Sperre; die Zeile lautet „gaze: hit despite …“.
+  - Sonst schreibt RSR „gaze: avoided …“.
+  - Ein Gebietswechsel setzt das Gelernte zurück.
+- *Klasse:* Die Vorgabe gilt für neue eingreifende Regeln. Die Blickwache ist die einzige neue Regel dieses Branches,
+  die die Figur dreht. Die Tinkturregeln greifen nicht in Leben und Tod ein.
+- *Vorhersage, Ergänzung zu A782:* Wirkt: Nach jeder Zeile „gaze: turned …“ folgt „gaze: avoided …“ für denselben Blick.
+  Wirkt nicht: „gaze: hit despite …“. Danach stehen für diesen Blick im Gebiet keine Zeilen „gaze: turned“ mehr.
+- *Prüfgrad:* Compile, alle CI-Schritte lokal; im Spiel nicht beobachtet.
+
+### A784 · Seine Vorgabe: im Loop entscheiden; unabhängige Prüfrunden für Konzepte über Leben und Tod (14.11.2026)
+
+Seine Angabe (14.11.2026): „im loop entscheiden, was am sinnvollsten wäre. antithese und versuch der widerlegung“, zur
+offenen Frage 2 aus A782. Einordnung: Vorgabe, die die Entscheidung an mich gibt.
+- *Optionen:*
+  - (0) Keine Prüfrunden: Eigenkontrolle, CI und das Lernen im Spiel aus A783.
+  - (1) Ein unabhängiger Prüfer für jedes Konzept.
+  - (2) Ein unabhängiger Prüfer nur für Konzepte, die über Leben und Tod eingreifen.
+  - (3) Ein streng gegliederter eigener Gegenlauf.
+- *Beleg:* Die drei Fehler, die er in dieser Sitzung fand, lagen in Prämissen, nicht im Code: A778 (Aufrufer nicht
+  gelesen), A779 (Kosten nicht gewogen), A781 (Verhalten statt Wirkung). Prüfskripte und Eigenkontrolle fanden sie
+  nicht. In KSP-MyContracts fanden unabhängige Runden nach sorgfältiger Arbeit 8, 5 und 4 Befunde hoher Schwere
+  (Konzept 07 dort).
+- *Antithesen:*
+  1. Die neuen Regeln aus A782 und A783 genügen. Widerlegt: Sie decken bekannte Klassen ab, die drei Fehler waren
+     unbekannt.
+  2. Ein Prüfer ohne Vorwissen liefert Rauschen und kostet. Nur teilweise widerlegt: Er bekommt Konzept, Code und
+     Quellen, die Befunde sind nach Schwere geordnet, und es gilt das Plateau. Die Kosten bleiben; deshalb (2) statt (1).
+  3. Dasselbe Modell hat dieselben blinden Flecken. Nur teilweise widerlegt: Ohne meinen Zwischenstand und mit dem
+     Auftrag zum Angriff ist er unvoreingenommen. Gemeinsame blinde Flecken bleiben möglich; als letzte Sicherung bleibt
+     das Lernen im Spiel.
+  4. Hilfsagenten nur auf seinen ausdrücklichen Auftrag. Seine Vorgabe, im Loop zu entscheiden, gilt als dieser
+     Auftrag für diese Klasse.
+- *Entscheidung:* (2), eingetragen in CLAUDE.md, „Prüfgrad“. Sofort angewandt auf die Blickwache (A770–A783); das
+  Ergebnis der ersten Runde folgt im nächsten Eintrag.
+
+### A785 · Seine Vorgabe: Issues der anderen eigenen Repositories beachten; Zahlprüfer, pre-push, Hook-Umgebung (14.11.2026)
+
+Seine Angabe (14.11.2026): „gemeldete issues anderer eigener repos sind zu beachten.“ Einordnung: Vorgabe, eingetragen
+in CLAUDE.md, „Wenn er etwas sagt“. Der Sitzungsbrief nennt die Repositories, denn ihre Issues sind privat und für
+seinen Abruf ohne Anmeldung nicht lesbar.
+- *Gelesen (14.11.2026):* KerbalMissionDirector #5 und Retainer-Repricer #4, beide Weitergaben aus KSP-MyContracts
+  (dort A183). Die übrigen Issues dort sind geschlossen, hier keines offen.
+- *Klassen, hier an `.github/scripts/audit/` gemessen:*
+  1. `check_fixed_values.py` hatte dasselbe Zahlmuster: `5_400.0`, `.5f`, `2.5e-3f` und das Ende eines Bereichs (`..5`)
+     entgingen ihm. Im Fork-Code stand keine solche Zahl (`git diff` gegen die Merge-Basis), die Lücke war latent.
+     Behoben: ein Muster für alle vier Formen, Trenner entfernt, führender Punkt als „0.“; sechs Fälle im Selbsttest.
+     Danach unverändert 232 Zeilen, alle gelistet.
+  2. Kein pre-push-Hook: Ein Commit, der pre-commit umgeht (`cherry-pick`, `--no-verify`), landete mit fremdem Namen
+     auf origin, bevor die CI ihn meldet. Behoben: `.githooks/pre-push` mit `check_commit_identity.py --pre-push` für
+     jeden ausgehenden Commit; der Selbsttest pusht gegen ein Wegwerf-Remote und erwartet die Abweisung.
+  3. Der Hook-Test übernahm `os.environ` samt `GIT_*`: Aus einem Hook aufgerufen, hätten seine git-Aufrufe auf dieses
+     Repository gewirkt. Behoben: Umgebung ohne `GIT_*`.
+  4. Die Bindung einer Vorhersage an die Commit-Zeit: Hier gibt es kein Auswertungsskript für Vorhersagen; die Zeile
+     „*Vorhersage:*“ (archiv-todo.md) wird von Hand ausgewertet. Nicht anwendbar, solange kein solches Skript besteht.
+
+### A786 · Blickwache: erste unabhängige Prüfrunde (A784), Befunde eingearbeitet (14.11.2026)
+
+Ein frischer Hilfsagent ohne meinen Zwischenstand griff Konzept 13 und `GazeWatch` an (Werkzeugquelle BossModReborn
+35a908ad7, Blätter über xivapi, 14.11.2026). Fünf Befunde hoher, sechs mittlerer, neun niedriger Schwere. Jeden habe
+ich am Artefakt geprüft, bevor ich ihn übernahm. Das Konzept steht in 13, „Nicht in einen Blick drehen“ bis „Umkehrung
+und Auge zur Laufzeit“.
+- *H1, bestätigt:* RSR drückt einen GCD, solange der Recast läuft. Das Spiel legt ihn in seine Warteschlange und führt
+  ihn in `ActionManager.Update` aus. `PrepareFacing` wirkte nur um RSRs Druck, die Option war da schon zurück, und das
+  Spiel drehte genau aufs Ziel. BossModReborn hat dieselbe Lücke: Es schaltet die Option nur für seine eigene
+  Warteschlange ab (`UpdateDetour`). Behoben im Aufruf, durch den jede Aktion läuft (`UseActionLocationDetour`). Die
+  Sperre zählt ab der Ausführung (Rest von Sperre und GCD).
+- *H2, bestätigt am Mitschnitt vom 13.11.2026:* Verhängnis steht im Effekt-Paket von #3499 selbst (0x0E, Status 210).
+  Auch wer nicht getroffen wird, steht darin („verfehlt“). Das Paket kam bei 6863 gegnerischen Wirken in 99 % der
+  Fälle 0,26 bis 0,30 s nach dem Balkenende, in Ausreißern bis 1,6 s. Das Lernfenster endete 0,2 bis 0,4 s danach und
+  schrieb „avoided“, bevor der Treffer kam. Behoben: Das eigene Paket des Blicks entscheidet. Ohne Paket gilt die im
+  Gebiet gemessene größte Verzögerung als Frist, danach „unknown“.
+- *M6, bestätigt mit H2:* Der Blick verschwand für RSR mit dem Balken, 0,3 s vor seiner Auflösung. Behoben: Er bleibt
+  fällig bis zu seinem Paket.
+- *H3, bestätigt:* Ein Fehlschlag strich den Blick ganz, auch die Sperre aus A770, und stellte das ursprüngliche
+  Fehlerbild wieder her. Behoben: Danach gilt die Sperre über das ganze Wirken, ohne Drehen.
+- *H4, teilweise:* Das Kennzeichen `VFX` 25 sagt die Richtung nicht (#27363/#27369). Behoben für Namen, die ein
+  umgekehrter Blick trägt. Für die 170 Zeilen ohne Liste bleibt der Preis ein Treffer je Gebiet (Konzept 13,
+  Gegenthese 5). Nur zu sperren nähme den Schutz bei Destrudo (#44355), für den die Regel gebaut ist.
+- *H5, bestätigt im Kern:* Den Ort hält der Client nur bei Bodenzielen (BossModReborns Kommentar); am Mitschnitt stand
+  der Helfer von #3499 zu Beginn 4,7 Yalm daneben, der Ort im Paket war der Boss. Behoben: Ort nur bei `TargetArea`,
+  sonst der Wirkende. Das Konzept zitierte BossModReborn falsch („aus `CastInfo.TargetLocation`“); korrigiert.
+- *M1, nicht übernommen, Messmittel statt dessen:* `DesiredRotation` führt FFXIVClientStructs nicht; BossModReborn
+  schreibt es über eigene Offsets. Nach einem Patch schriebe RSR in fremden Speicher. RSR misst, ob das Spiel die
+  Drehung im nächsten Bild zurücknimmt („gaze: turn undone …“), und dreht je Bild neu.
+- *M2, teilweise:* Ohne Ziel jetzt die breiteste Lücke statt der nächsten. Einen Mindestabstand wie BossModReborns 5°
+  setze ich nicht: ohne Beleg eine feste Zahl. Der Preis eines zu schmalen Stücks ist ein Treffer, den das Paket zeigt.
+- *M3, bestätigt:* Ohne Messung drehte RSR das ganze Wirken und lernte nichts, entgegen dem Konzept. Behoben.
+- *M4, bestätigt:* Bei Markern zählte jeder Schaden jedes Gegners, auch ein automatischer Angriff, und das Auge war der
+  größte Wirkende, gleich was er wirkte. Behoben: Auge ist ein Wirkender, dessen Wirken mit dem Marker endet;
+  automatische Angriffe zählen nie.
+- *M5, bestätigt:* Sprung und Ansturm halten die Richtung bis zur Landung. Behoben: ihre gemessene Sperre gilt als
+  Wirkzeit der Sperre.
+- *Niedrig:* L1 (Bedeutung von `ResponseSourceSequence`) als unbelegt markiert. L2 behoben: Ohne sichere Richtung bleibt
+  die Option trotzdem aus, das Spiel lehnt ein Ziel außerhalb des Kegels ab. L3: Widersprüche im Konzept beseitigt. L4:
+  Namen am englischen Blatt. L5: Lesefehler wird nach dem nächsten Gebietswechsel wiederholt. L7: Optionstext nennt
+  Rückfall und eigene Drücke. L6 (Masked Carnivale, Blind) und L8 (Kosten) ohne Änderung: L6 kostet nur Schaden, L8
+  legt nichts je Bild an. L9 (BossModReborns Warteschlange) wirkt jetzt mit, denn auch seine Ausführung läuft durch
+  den Aufruf.
+- *Messmittel:* „gaze: landed …“ zählt je Paket eines Blicks die Getroffenen und Verschonten und wie viele davon nach
+  RSRs Auge in die falsche Richtung sahen.
+- *Vorhersage:* In seinem nächsten `DefenseTrace.log` aus Welt der Dunkelheit (Angra Mainyu) zeigt die Zeile „gaze:
+  landed #3499 …“ Getroffene, die nach RSRs Auge falsch sahen, und keine Getroffenen, die richtig sahen; „gaze: hit
+  despite …“ fehlt, „gaze: avoided #3499 …“ steht da. Eine Zeile „gaze: turn undone …“ belegt M1, ihr Fehlen bei
+  „turned …“-Zeilen widerlegt es. Getroffene, die richtig sahen, widerlegen den Ort oder den Winkel.
+
 ## B · Commit-Register (Fork vs. `upstream/main`)
 
 ### B1 · Einzelgeprüfte Fork-Commits
@@ -21990,3 +23172,9 @@ Die offene Arbeit dazu — Reihenfolge und Abbruchbedingung der Nachprüfung —
 | C186 | A709, Konzept 21 K15 und Release-Text (Stand A709): Brett 1 „Bedarf ab Brettbeginn 93 %", „Vor dem Endkampf verlangt der Weg 36 + 40 = 76 %", Senken Kampf 5 43 %, Endkampf 36 %; Brett 2 „11/33", „Endkampf 49/76 %", „trägt er Brett 2 an keiner Stelle"; „from about 76 % HP" | Das Modell zog die eigene Heilung mit der Meldung ab statt beim Anstieg. Wie der Code misst: Brett 1 ab Start 68 %, vor dem Endkampf 12 + 40 = 52 %; Brett 2 Kampf 10 11/11, Endkampf 48/48, vor dem Endkampf 88 % – in beiden Läufen getragen (96 %) | A721 |
 | C187 | A660 und Konzept 21 K3 (Stand A660–A723): „Ziel = Gegner mit den meisten LP, auch unanvisierbar"; „Den Abstand, bei dem einer seiner Art ohne Tod verschwindet, lernt RSR beim ersten Verschwinden"; laufend = „sein Abstand zum Gegner mit den meisten LP sinkt seit seinem Erscheinen" | Das Ziel verlangte Anvisierbarkeit (während der Ward das Riesen-Irrlicht); Verschwinden ohne Tod ist auch Kampfende und Zielwechsel; dem Hauptgegner kommt jeder näher, der auf den Spieler dort zuläuft – vier Fehlauslösungen am 11.11.2026. Ersetzt: Blickziel, gehaltenes Ziel, Ankunft aus der ersten Aktion | A724 |
 | C188 | A218 und Konzept 13 (Stand A218): „BossModReborn setzt keine seiner 3494 Kreisformen um den Trefferkreis des Wirkenden größer", daraus „Kreis und Kegel um den Wirkenden: Abstand vom Mittelpunkt" | Die Klasse `AOEShapeCircle` rechnet keinen Trefferkreis ein, die Module tun es in der Zahl: BossModReborns Analyse beschreibt die Formarten 3, 4 und 5 als „range X+R" (447 Kreise, 351 Kegel), etwa Wing Cutter als Kegel von 6,9 bei Reichweite 6. Für Art 2 gilt der Mittelpunkt weiter; Art 3, 4 und 5 reichen um den Trefferkreis des Wirkenden weiter. | A731 |
+| C189 | TODO.md und Konzept 03, „Ausweichen in der Sperre“ (Stand A630–A749): Raidwide und ausweichbare Fläche trenne man durch ein Merkmal aus den Spieldaten (`CastType`, `EffectRange`) bei der Aufnahme; eine gelistete Fläche gelte in den Sperren als unausweichlich | An seinen 63 aufgenommenen Ids trennt das Merkmal falsch herum: Omen und kleine Reichweiten sind Gruppentreffer, die drei ausweichbaren tragen keins. Die Form im Moment trennt (`CastCertainlyDodgeable`); die Sperren lesen jetzt auch Helfer (A750). |
+| C190 | Konzept 18, „Takt“ (Stand A748): „Countdown lead time“ und „Action ahead“ hingen an der Latenz; „eine Selbststeuerung aus gemessener Latenz wäre denkbar; kein Fehlverhalten im Kampf belegt“ | Sein Mitschnitt vom 11.11.2026 belegt es: Weben mit weniger als 0,7 s Rest verzögerte den nächsten GCD bis 0,46 s, die feste Grenze erlaubte es bis 0,61 s. Seit A753 rechnet die Webregel mit Sperre und gemessenem Rest. |
+| C191 | A506 und Konzept 22 (Stand A506–A647): `AOZContentBriefingBNpc` führe „Verwundbarkeiten“ je Gegner, Slow bis Tod/fest | Die zehn Felder bedeuten Immunität: Spucksardine-Stellen der Führer 17 zu 1, Auric's Guide 19 zu 0; die Sperren lesen sie so (A762). |
+| C192 | A777 und Konzept 13, „Richtig stehen und weiter treffen“ (Stand A777): Sofortaktionen „unverändert“; eine Sofortaktion auf den Wirkenden treffe nur mit Blick in den Blick, dort bleibe die Sperre | Das gilt nur, wenn das Auge beim Ziel liegt. Liegt es daneben, gibt es innerhalb des 45°-Kegels der Aktion eine sichere Richtung; RSR dreht dorthin und schaltet das Drehen des Spiels für den Druck ab (A778). |
+| C193 | A775 und Konzept 14, „Schnitter“ (Stand A775): Trank ab Werk im Opener, weil The Balance es so führt und ein Kampf von 7 min damit zwei Tränke trägt | Der Preis war nicht gewogen: In der Lernphase verschwendet jeder Wipe vor zwei Minuten den Opener-Trank (seine Regel A501). Voreinstellung jetzt „Automatic“ nach Abschluss des Kampfs und Dauer des letzten Zugs (A779). |
+| C194 | A780 und Konzept 03/14 (Stand A780): Der Schadenshöhepunkt über 30 s liege bei allen Jobs im Opener, belegt durch den Trinkzeitpunkt der Besten; Schnitter „deckt sich“ | Der Trinkzeitpunkt belegt nur Verhalten. Gemessen am Schaden (A781) ist der 2-Minuten-Burst bei Schnitter, Viper, Barde, Dragoon und Tänzer stärker; die Besten trinken im Opener wegen der Zahl der Tränke. |

@@ -359,7 +359,7 @@ internal partial class Configs : IPluginConfiguration, IM3Settings
 	private static readonly bool _pvpPurifyBind = false;
 
 	[ConditionBool, UI("Hold GCDs for heals below 50% HP (Experimental)",
-		Description = "Stops the GCD rotation while you're below 50% HP and have over 2000 MP, so the MP goes to heals.",
+		Description = "Stops the GCD rotation while you're below 50% HP and Recuperate can go, so the MP goes to heals.\nIn a fight: Recuperate keeps the MP for one Purify unless you are about to die, and the GCDs are held only while it can heal.",
 		Filter = DutySpecificPvP)]
 	private static readonly bool _pvpGCDLockControl = true;
 
@@ -374,8 +374,8 @@ internal partial class Configs : IPluginConfiguration, IM3Settings
 	Parent = nameof(InterceptAction3), Order = 1)]
 	private static readonly bool _bmrSafetyCheckIntercept = false;
 
-	[ConditionBool, UI("Intercept your action presses (PvE only)",
-	Description = "Actions you press are queued, and RSR uses them at the right moment in its rotation.",
+	[ConditionBool, UI("Intercept your action presses",
+	Description = "Actions you press are queued, and RSR uses them at the right moment in its rotation.\nIn a fight: a job action you press goes at the next fitting moment, in PvE and PvP; in PvP Guard, Purify, Recuperate, the Elixir and Sprint go at once, as pressed.",
 	Filter = AutoIntercept)]
 	private static readonly bool _interceptAction3 = true;
 
@@ -895,6 +895,11 @@ internal partial class Configs : IPluginConfiguration, IM3Settings
 		Description = "Confirms each action that a /rotation DoAction command adds to the queue.",
 		Filter = BasicCommands, Section = 2)]
 	private static readonly bool _showToastsAboutDoAction = false;
+
+	[ConditionBool, UI("Turn away from gaze attacks",
+		Description = "While an enemy casts a gaze that reaches you, RSR turns you away just before it lands and holds actions that would turn you back into it. It knows a gaze from the game data, from BossModReborn's fight modules, by name, and from markers and statuses that tell you to look at or away from someone, without BossModReborn running.\nIn a fight: you keep attacking the caster until just before the gaze, then face away from it; an inverted gaze turns you to face it. If you already face a safe way with your target in front, nothing turns and you keep attacking: just before a gaze, RSR replaces the game's \"Auto face target\" with a safe facing that still reaches the target. A spell on the caster keeps casting: RSR turns you only as far as the spell still lands. Only an action whose target sits right behind the eye waits. This covers actions the game runs from its queue and the ones you press yourself while RSR is on. If a gaze hits you despite RSR's facing, RSR stops turning for that gaze until you change zones and only holds actions that would face into it; DefenseTrace.log notes each case. Off: actions that turn you into the gaze are held for the whole cast, and you turn yourself.",
+		Filter = AutoActionUsage, Section = 3)]
+	private static readonly bool _turnAwayFromGazes = true;
 
 	[ConditionBool, UI("Stop acting while an enemy casts a Gaze/Stop action (Experimental)",
 		Description = "Uses the actions on the Gaze/Stop list.",
@@ -1647,7 +1652,7 @@ internal partial class Configs : IPluginConfiguration, IM3Settings
 
 	[JobConfig, Range(0.05f, 0.4f, ConfigUnitType.Percent)]
 	[UI("Action ahead", Filter = BasicTimer,
-	Description = "How much of the GCD is left when RSR starts queuing the next GCD. This controls how many oGCDs RSR tries to fit in a GCD window: lower values fit more oGCDs, but can clip the GCD.")]
+	Description = "How much of the GCD is left when RSR starts queuing the next GCD. Whether an oGCD still fits before it RSR measures: the action's animation lock plus the delay to the server's answer, as it is in this zone.")]
 	private readonly float _action6head = 0.25f;
 
 	// Henchman's "No Fall Damage" hack (A276). Off by default: it hooks a game function, and nobody should run
@@ -1657,29 +1662,22 @@ internal partial class Configs : IPluginConfiguration, IM3Settings
 	Filter = Extra)]
 	private static readonly bool _noFallDamage = false;
 
-	[ConditionBool, UI("Remove lag-induced animation lock delay from instant casts (read tooltip!)",
-	Description = "Do NOT use with XivAlexander, BMR tweaks enabled, or NoClippy - this should automatically disable itself if they are detected, but double check first!",
+	// Concept 03, "Weben, Animationssperre und Latenz" (A753): measured, no set value. On by default, his requirement being
+	// that RSR replaces XivAlexander, NoClippy and BossMod's action tweaks.
+	[ConditionBool, UI("Remove lag-induced animation lock delay from instant casts",
+	Description = "After each instant action the game waits for the server's answer before the next one, and adds the network round trip to the animation lock. RSR measures that round trip in every zone and takes it off; the wait for the server's tick stays, so the next action reaches the server as its lock ends. When a request goes without an answer, RSR cuts less. Nothing to set.\nIn a fight: an oGCD frees the next action sooner, so two oGCDs fit between GCDs more often and three where the GCD leaves room, without pushing the GCD back.\nIn PvE and PvP. Held while XivAlexander runs, or while NoClippy runs and is not taken over (below).",
 	Filter = Extra, Section = 1)]
-	private static readonly bool _removeAnimationLockDelay = false;
+	private static readonly bool _removeAnimationLockDelay = true;
 
-	[UI("Max simulated animation lock delay (ms) (read tooltip!)",
-	Description = "Configures the maximum simulated delay in milliseconds when using animation lock removal - this is required and cannot be reduced to zero. Setting this to 20ms will enable triple-weaving when using autorotation. The minimum setting to remove triple-weaving is 26ms. The minimum of 20ms has been accepted by FFLogs and should not cause issues with your logs.",
+	[ConditionBool, UI("Take over BossMod's and NoClippy's animation lock functions",
+	Description = "While RSR's lock functions are on, BossModReborn's \"Remove extra lag-induced animation lock delay\" and \"Remove extra framerate-induced cooldown delay\" are switched off for the session (your BossMod setting is kept and comes back when RSR's are off or RSR unloads), and NoClippy's compensation is switched off with /noclippy off and back on the same way. XivAlexander cannot be switched from here: while it runs, RSR leaves the lock to it and weaves on what it leaves.\nIn a fight: only RSR shortens the lock, so it is not cut twice and no action reaches the server before the game allows it.",
 	Parent = nameof(RemoveAnimationLockDelay))]
-	[Range(20, 50, ConfigUnitType.None, 1f)]
-	public int AnimationLockDelayMax2 { get; set; } = 26;
-
-	[UI("Delay smoothing factor", Parent = nameof(RemoveAnimationLockDelay))]
-	[Range(0.3f, 0.95f, ConfigUnitType.None, 0.01f)]
-	public float AnimLockDelaySmoothing { get; set; } = 0.3f;
+	private static readonly bool _takeOverOtherLockTools = true;
 
 	[ConditionBool, UI("Remove framerate-induced cooldown delay",
-	Description = "Dynamically adjusts cooldown and animation locks to ensure queued actions resolve immediately regardless of framerate limitations.",
+	Description = "The game fires a queued action only on a frame, a little after its cooldown or lock ended. RSR credits that rest back to the next cooldown and lock, up to one mean frame of the zone. Nothing to set.",
 	Filter = Extra, Section = 1)]
-	private static readonly bool _removeCooldownDelay = false;
-
-	[UI("Max cooldown adjustment (ms)", Parent = nameof(RemoveCooldownDelay))]
-	[Range(10, 150, ConfigUnitType.None, 1f)]
-	public int CooldownAdjustMaxMs { get; set; } = 100;
+	private static readonly bool _removeCooldownDelay = true;
 
 	[UI("Highlight color", Parent = nameof(TeachingMode))]
 	public Vector4 TeachingModeColor { get; set; } = new(0f, 1f, 0f, 1f);

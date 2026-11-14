@@ -44,7 +44,7 @@ Gelten in jeder Stufe. Eine Aussage, die eine davon verletzt, ist unbelegt.
 
 **Keine festen Werte**
 - Dauern, Schwellen, Stufen, Abstände, GCD-Zahlen und Anteile leite ich aus dem Spiel ab: Aktionsdaten (`Level`, `EnoughLevel`, Wirkzeit, Abklingzeit, Ladungen), Statusrestzeiten, Wirktexte über den Generator, GCD-Länge, Vorlauf, Ausführungssperre, Gruppenzusammensetzung, Messungen im Kampf.
-- Eine Ausnahme erst nach einem Loop zu genau diesem Wert, mit Beleg im Archiv. Das gilt auch für eine Zahl, die eine seiner Regeln wiedergibt, und für jede bestehende Zahl, die ich anfasse.
+- Eine Ausnahme erst nach einem Loop zu genau diesem Wert, mit Beleg im Archiv. Das gilt auch für eine Zahl, die eine seiner Regeln wiedergibt, für einen Messwert aus seinen Protokollen, der als Zahl im Code steht, und für jede bestehende Zahl, die ich anfasse (seine Präzisierung, 12.11.2026, in Retainer-Repricer: jede Größe einer Regel aus der aktuellen Lage).
 - `check_fixed_values.py` hält das in der CI fest.
 - Was das Spiel zur Laufzeit liefert, hat Vorrang (seine Vorgabe, 12.10.2026): Blätter des Clients (sprachunabhängig über die englische Fassung), Status, Abklingzeiten, Stufe. Vorrang ist Gewichtung, kein Ausschluss (seine Präzisierung): Erzeugte oder von außen abgerufene Werte bleiben als zweite Quelle – Rückfall, wo das Spiel nichts liefert, und Gegenprobe; bei Widerspruch wiegt das Spiel schwerer, weil es den laufenden Patch zeigt.
 
@@ -107,5 +107,6 @@ Gelten in jeder Stufe. Eine Aussage, die eine davon verletzt, ist unbelegt.
 **Entscheidung zur Laufzeit**
 - Eine Sonde sitzt dort, wo die Regel entscheidet, und urteilt sofort.
 - Zulässig ist nur, was sich selbst nachsteuert: Die Regel hält ihre Vorhersage gegen den Verlauf und rechnet den Fehler heraus (wie `ScoreTtkForecast`, `GetCorrectedTTK`).
+- Eine neue Regel, die ins Spielgeschehen eingreift (drehen, bewegen, Schutz zurückhalten), erkennt im Spiel, ob ihr Eingriff gewirkt hat. Nach dem ersten Fehlschlag fällt sie für diesen Fall auf das Verhalten ohne sie zurück, mit einer Zeile in der Protokolldatei. Jeden Erfolg schreibt sie dort ebenso. Seine Vorgabe (14.11.2026): „bei testumsetzung darf bloß nicht der supergau entstehen, dass durch die neue regel sofort und immer bis zum fix gestorben wird. daher kommt von mir auch immer die vorgabe: ingame auswertung und ingame daraus lernen.“ Grund: Ein theoretisch tragfähiges Konzept wird erst durch Tests oder Logs bestätigt oder widerlegt; bis dahin darf ein Irrtum einmal kosten, nicht jedes Mal.
 - Keine Datensammlung, die auf seine Ablesung und meine spätere Auswertung wartet — das macht ihn zum Teil des Regelkreises. Ist Selbstkorrektur nicht baubar, sage ich das.
 - Das Messmittel der REGEL ist in erster Linie die Selbstnachsteuerung; eine Protokolldatei ergänzt sie, wo ein Defekt nur zur Laufzeit zu finden ist, und ersetzt sie nicht.

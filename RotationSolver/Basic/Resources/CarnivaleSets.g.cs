@@ -15,6 +15,11 @@ internal static class CarnivaleSets
 
 	internal static readonly Dictionary<int, Pick[]> Stages = new()
 	{
+		[1] =
+		[
+			new(false, false, false, [33]),
+			new(false, false, false, [92]),
+		],
 		[2] =
 		[
 			new(false, true, true, [1]),
@@ -23,27 +28,43 @@ internal static class CarnivaleSets
 			new(false, true, true, [53]),
 			new(false, true, true, [19]),
 			new(false, true, true, [52]),
+			new(false, false, false, [24]),
+			new(false, false, false, [33]),
+			new(false, false, false, [92]),
 		],
 		[3] =
 		[
 			new(false, true, true, [1]),
+			new(false, false, false, [24]),
 		],
 		[4] =
 		[
 			new(false, true, true, [53]),
 			new(false, true, true, [19]),
+			new(false, false, false, [33]),
+			new(false, false, false, [92]),
 		],
 		[5] =
 		[
 			new(true, false, false, [36, 42]),
+			new(false, false, false, [33]),
+			new(false, false, false, [92]),
 		],
 		[6] =
 		[
 			new(false, false, true, [53]),
+			new(false, false, false, [33]),
+			new(false, false, false, [92]),
 		],
 		[7] =
 		[
 			new(true, false, false, [31]),
+		],
+		[8] =
+		[
+			new(false, false, false, [24]),
+			new(false, false, false, [33]),
+			new(false, false, false, [92]),
 		],
 		[9] =
 		[
@@ -53,6 +74,11 @@ internal static class CarnivaleSets
 			new(false, true, true, [53]),
 			new(false, true, true, [19]),
 			new(false, true, true, [52]),
+			new(false, false, false, [24]),
+		],
+		[10] =
+		[
+			new(false, false, false, [24]),
 		],
 		[11] =
 		[
@@ -64,17 +90,39 @@ internal static class CarnivaleSets
 			new(true, false, false, [16, 107]),
 			new(true, true, false, [23]),
 		],
+		[13] =
+		[
+			new(false, false, false, [24]),
+			new(false, false, false, [33]),
+			new(false, false, false, [92]),
+		],
 		[14] =
 		[
 			new(true, false, false, [7]),
+		],
+		[15] =
+		[
+			new(false, false, false, [24]),
 		],
 		[16] =
 		[
 			new(false, false, false, [29]),
 		],
+		[17] =
+		[
+			new(false, false, false, [24]),
+			new(false, false, false, [33]),
+			new(false, false, false, [92]),
+		],
+		[18] =
+		[
+			new(false, false, false, [33]),
+			new(false, false, false, [92]),
+		],
 		[19] =
 		[
 			new(false, false, false, [37]),
+			new(false, false, false, [24]),
 		],
 		[20] =
 		[
@@ -84,6 +132,13 @@ internal static class CarnivaleSets
 			new(false, false, false, [39]),
 			new(false, false, false, [20]),
 			new(true, false, false, [29]),
+			new(false, false, false, [24]),
+		],
+		[21] =
+		[
+			new(false, false, false, [24]),
+			new(false, false, false, [33]),
+			new(false, false, false, [92]),
 		],
 		[22] =
 		[
@@ -96,6 +151,7 @@ internal static class CarnivaleSets
 		[24] =
 		[
 			new(false, false, false, [29, 73]),
+			new(false, false, false, [24]),
 		],
 		[25] =
 		[
@@ -106,6 +162,7 @@ internal static class CarnivaleSets
 			new(false, true, true, [11]),
 			new(true, false, false, [73]),
 			new(true, false, false, [57]),
+			new(false, false, false, [24]),
 		],
 		[27] =
 		[
@@ -117,6 +174,7 @@ internal static class CarnivaleSets
 		[
 			new(false, true, true, [86, 19]),
 			new(true, true, false, [73, 58]),
+			new(false, false, false, [24]),
 		],
 		[29] =
 		[
@@ -125,6 +183,7 @@ internal static class CarnivaleSets
 			new(false, false, false, [47]),
 			new(true, false, false, [29]),
 			new(true, false, false, [73]),
+			new(false, false, false, [24]),
 		],
 		[30] =
 		[
@@ -138,6 +197,7 @@ internal static class CarnivaleSets
 			new(true, false, false, [29]),
 			new(true, false, false, [73]),
 			new(true, false, false, [57]),
+			new(false, false, false, [24]),
 		],
 		[32] =
 		[

@@ -3,7 +3,7 @@
 [Rotation("Reborn", CombatType.PvE, GameVersion = "7.57", RotationType = RotationType.Reborn)]
 [SourceCode(Path = "main/RebornRotations/Melee/VPR_Reborn.cs")]
 
-public sealed class VPR_Reborn : ViperRotation
+public sealed partial class VPR_Reborn : ViperRotation
 {
 	#region Config Options
 
@@ -37,11 +37,6 @@ public sealed class VPR_Reborn : ViperRotation
 	#endregion
 
 	#region Countdown Logic
-	// The Balance's opener dashes with Slither at -0.5 s; only from beyond melee range (A347).
-	protected override IAction? CountDownAction(float remainTime)
-	{
-		return PullGapCloser(remainTime, SlitherPvE, SteelFangsPvE, out var act) ? act : base.CountDownAction(remainTime);
-	}
 	#endregion
 
 	#region Tracking Properties
@@ -268,30 +263,7 @@ public sealed class VPR_Reborn : ViperRotation
 		return base.DefenseAreaAbility(nextGCD, out act);
 	}
 
-	[RotationDesc]
-	protected override bool DefenseSingleAbility(IAction nextGCD, out IAction? act)
-	{
-		// EnoughWeaveTime is a clip-risk check; the Serpent's Ire slot-guard is a burst hold on the
-		// universal layer and gives way when the player or a tank is in the critical class.
-		if (EnoughWeaveTime
-			&& !HoldSingleDefense(IsBurst && SerpentsIrePvE.CanUse(out _), "Viper: Serpent's Ire slot in burst")
-			&& ShouldSustainMitigationDebuff(StatusID.Feint)
-			&& FeintPvE.CanUse(out act, skipStatusProvideCheck: true))
-		{
-			return true;
-		}
-
-		if (!HoldSingleDefense(!NoAbilityReady, FollowUpHoldRule) && FeintPvE.CanUse(out act))
-		{
-			return true;
-		}
-
-		return base.DefenseSingleAbility(nextGCD, out act);
-	}
-
 	private const string FollowUpHoldRule = "Viper: a follow-up ability is ready";
-
-	protected override bool HasOwnAntiKnockbackGate => true;
 
 	// A knockback and an interruptible cast are timed threats: they wait for a weave that does not clip, not for the
 	// follow-up abilities to be spent (A409). The same check as the timed Feint above.
@@ -305,8 +277,6 @@ public sealed class VPR_Reborn : ViperRotation
 
 		return base.AntiKnockbackAbility(nextGCD, out act);
 	}
-
-	protected override bool HasOwnInterruptGate => true;
 
 	[RotationDesc]
 	protected sealed override bool InterruptAbility(IAction nextGCD, out IAction? act)

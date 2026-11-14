@@ -1,6 +1,6 @@
 #!/usr/bin/env python3
-"""Refuse fork commits whose author or committer address is not one this repository publishes
-under.
+"""Refuse fork commits whose author or committer address or name is not one this repository
+publishes under, and test the commit hooks that refuse them first.
 
 Why this exists, and why it is not enough on its own
 ----------------------------------------------------
@@ -22,6 +22,11 @@ fact, which is late - a commit is public and permanent, and a history rewrite do
 commits GitHub keeps for a pull request. Late is still better than never, because it names the
 commits that need cleaning while the number is small.
 
+Names are checked as well (procedure from KSP-MyContracts, 13.11.2026): a local client such as
+Visual Studio writes the user.name of its machine into a commit, whatever the address is. The
+hooks are tested here against constructed commits, in a temporary repository: a check of the
+hooks is a check like any other and fails silently without one (A750).
+
 Scope
 -----
 Only the fork's own commits, `upstream/main..HEAD`. Everything reachable from upstream carries the
@@ -40,6 +45,8 @@ ALLOWED = re.compile(
     r"|[0-9]+\+[A-Za-z0-9_-]+@users\.noreply\.github\.com)$"
 )
 
+ALLOWED_NAMES = {"Claude", "GitHub", "Wishbringer", "Wishbringer71"}  # in step with .githooks/pre-commit
+
 SEPARATOR = "\x1f"
 
 
@@ -53,12 +60,81 @@ def git(*args: str) -> str:
 
 
 def offending_addresses(line: str) -> list[str]:
-    """Return the addresses on this log line that are not allowed."""
+    """Return the addresses and names on this log line that are not allowed."""
     parts = line.split(SEPARATOR)
-    if len(parts) != 4:
+    if len(parts) == 4:
+        parts = [parts[0], "Claude", parts[1], "Claude", parts[2], parts[3]]
+    if len(parts) != 6:
         return []
-    _, author_mail, committer_mail, _ = parts
-    return [a for a in {author_mail, committer_mail} if a and not ALLOWED.match(a)]
+    _, author_name, author_mail, committer_name, committer_mail, _ = parts
+    found = [a for a in {author_mail, committer_mail} if a and not ALLOWED.match(a)]
+    found += [n for n in {author_name, committer_name} if n and n not in ALLOWED_NAMES]
+    return found
+
+
+def hook_refuses(name: str, mail: str, merge: bool) -> bool:
+    """Run .githooks/pre-commit (or pre-merge-commit) in a temporary repository for a commit by this identity."""
+    import os
+    import pathlib
+    import tempfile
+    hooks = pathlib.Path(__file__).resolve().parents[3] / ".githooks"
+    with tempfile.TemporaryDirectory() as tmp:
+        subprocess.run(["git", "init", "-q", tmp], check=True, capture_output=True)
+        env = dict(clean_environment(), GIT_AUTHOR_NAME=name, GIT_AUTHOR_EMAIL=mail, GIT_COMMITTER_NAME=name,
+                   GIT_COMMITTER_EMAIL=mail)
+        hook = hooks / ("pre-merge-commit" if merge else "pre-commit")
+        return subprocess.run(["sh", str(hook)], cwd=tmp, env=env, capture_output=True).returncode != 0
+
+
+def clean_environment() -> dict:
+    """The environment without git's own variables. Run from a git hook or with git -c, GIT_DIR, GIT_INDEX_FILE and
+    GIT_CONFIG_PARAMETERS would point the test's git calls at the outer repository (KSP-MyContracts, passed on in
+    KerbalMissionDirector #5, 14.11.2026)."""
+    import os
+    return {k: v for k, v in os.environ.items() if not k.startswith("GIT_")}
+
+
+def outgoing_offenders(updates: str) -> list[str]:
+    """The commits a push sends, from the lines git gives pre-push on stdin (local ref, local sha, remote ref,
+    remote sha), each checked as the CI checks it. A cherry-pick and --no-verify pass pre-commit; this is the last
+    point before a name or an address reaches origin (from Retainer-Repricer, passed on in KerbalMissionDirector #5)."""
+    zero = "0" * 40
+    found = []
+    for update in updates.splitlines():
+        parts = update.split()
+        if len(parts) != 4 or parts[1] == zero:
+            continue
+        local, remote = parts[1], parts[3]
+        span = [local, "--not", "--remotes"] if remote == zero else [f"{remote}..{local}"]
+        log = git("log", f"--format=%h{SEPARATOR}%an{SEPARATOR}%ae{SEPARATOR}%cn{SEPARATOR}%ce{SEPARATOR}%s", *span)
+        for line in log.splitlines():
+            found += [f"{line.split(SEPARATOR)[0]} {o}" for o in offending_addresses(line)]
+    return found
+
+
+def push_refused(name: str, mail: str) -> bool:
+    """Push a commit by this identity to a throwaway remote through .githooks/pre-push; True when refused."""
+    import pathlib
+    import tempfile
+    hooks = pathlib.Path(__file__).resolve().parents[3] / ".githooks"
+    with tempfile.TemporaryDirectory() as tmp:
+        remote, work = f"{tmp}/remote.git", f"{tmp}/work"
+        env = clean_environment()
+        def run(*args, cwd=None, **extra):
+            return subprocess.run(["git", *args], cwd=cwd, env=dict(env, **extra), capture_output=True)
+        run("init", "-q", "--bare", remote)
+        run("init", "-q", work)
+        run("config", "core.hooksPath", str(hooks), cwd=work)
+        good = dict(GIT_AUTHOR_NAME="Claude", GIT_AUTHOR_EMAIL="noreply@anthropic.com",
+                    GIT_COMMITTER_NAME="Claude", GIT_COMMITTER_EMAIL="noreply@anthropic.com")
+        run("commit", "-q", "--allow-empty", "-m", "base", cwd=work, **good)
+        run("remote", "add", "origin", remote, cwd=work)
+        if run("push", "-q", "origin", "HEAD:refs/heads/main", cwd=work).returncode != 0:
+            raise RuntimeError("the clean base commit was refused")
+        # --no-verify stands for every way past pre-commit, cherry-pick among them.
+        run("commit", "-q", "--allow-empty", "--no-verify", "-m", "next", cwd=work,
+            GIT_AUTHOR_NAME=name, GIT_AUTHOR_EMAIL=mail, GIT_COMMITTER_NAME=name, GIT_COMMITTER_EMAIL=mail)
+        return run("push", "-q", "origin", "HEAD:refs/heads/main", cwd=work).returncode != 0
 
 
 def self_test() -> None:
@@ -84,20 +160,53 @@ def self_test() -> None:
         (f"abc123{SEPARATOR}noreply@anthropic.com.evil.example{SEPARATOR}"
          f"noreply@anthropic.com{SEPARATOR}msg",
          ["noreply@anthropic.com.evil.example"], "an address that merely starts with an allowed one"),
+        (f"abc123{SEPARATOR}Real Person{SEPARATOR}noreply@anthropic.com{SEPARATOR}Claude"
+         f"{SEPARATOR}noreply@anthropic.com{SEPARATOR}msg",
+         ["Real Person"], "a machine's user.name with a published address"),
+        (f"abc123{SEPARATOR}Wishbringer71{SEPARATOR}64041682+Wishbringer71@users.noreply.github.com"
+         f"{SEPARATOR}GitHub{SEPARATOR}noreply@github.com{SEPARATOR}msg",
+         [], "the account name and GitHub as web committer"),
     ]
     for line, expected, what in cases:
         found = sorted(offending_addresses(line))
         if found != sorted(expected):
             print(f"SELF-TEST FAILED on {what}: expected {expected}, got {found}")
             sys.exit(2)
+    hook_cases = [
+        ("Claude", "noreply@anthropic.com", False, False, "the published identity"),
+        ("Claude", "private.person@example.com", True, False, "a private address"),
+        ("Real Person", "noreply@anthropic.com", True, False, "a machine's user.name"),
+        ("Real Person", "noreply@anthropic.com", True, True, "a machine's user.name in a merge without conflict"),
+        ("Wishbringer71", "64041682+Wishbringer71@users.noreply.github.com", False, True, "the account in a merge"),
+    ]
+    for name, mail, refused, merge, what in hook_cases:
+        if hook_refuses(name, mail, merge) != refused:
+            print(f"SELF-TEST FAILED on the hook, {what}: expected {'refused' if refused else 'accepted'}")
+            sys.exit(2)
+    for name, mail, refused, what in [
+        ("Claude", "noreply@anthropic.com", False, "the published identity"),
+        ("Claude", "private.person@example.com", True, "a private address past pre-commit"),
+        ("Real Person", "noreply@anthropic.com", True, "a machine's user.name past pre-commit"),
+    ]:
+        if push_refused(name, mail) != refused:
+            print(f"SELF-TEST FAILED on pre-push, {what}: expected {'refused' if refused else 'accepted'}")
+            sys.exit(2)
     print(
         "self-test ok: the published identities and GitHub's own merge committer are accepted;\n"
-        "  a leaking author, a leaking committer, the address that actually leaked, and one\n"
-        "  that merely starts with an allowed address are each caught"
+        "  a leaking author, a leaking committer, the address that actually leaked, one that\n"
+        "  merely starts with an allowed address and a machine's user.name are each caught;\n"
+        "  the hooks refuse the same for a commit and for a merge without conflict, and pre-push refuses\n"
+        "  it in a real push of a commit that went past pre-commit"
     )
 
 
 def main() -> int:
+    if sys.argv[1:] == ["--pre-push"]:
+        offenders = outgoing_offenders(sys.stdin.read())
+        for offender in offenders:
+            print(f"pre-push: refusing - {offender} is not a name or address this repository publishes under.",
+                  file=sys.stderr)
+        return 1 if offenders else 0
     self_test()
     print()
 
@@ -111,7 +220,7 @@ def main() -> int:
 
     log = git(
         "log",
-        f"--format=%h{SEPARATOR}%ae{SEPARATOR}%ce{SEPARATOR}%s",
+        f"--format=%h{SEPARATOR}%an{SEPARATOR}%ae{SEPARATOR}%cn{SEPARATOR}%ce{SEPARATOR}%s",
         "upstream/main..HEAD",
     )
     lines = [line for line in log.splitlines() if line.strip()]
@@ -120,12 +229,12 @@ def main() -> int:
     for line in lines:
         offenders = offending_addresses(line)
         if offenders:
-            sha, _, _, subject = line.split(SEPARATOR)
+            sha, subject = line.split(SEPARATOR)[0], line.split(SEPARATOR)[-1]
             for address in sorted(offenders):
                 findings.append((sha, address, subject))
 
     if findings:
-        print(f"{len(findings)} commit address(es) that this repository does not publish under:")
+        print(f"{len(findings)} commit address(es) or name(s) that this repository does not publish under:")
         print()
         for sha, address, subject in findings:
             print(f"  {sha}  {address}")
@@ -137,7 +246,7 @@ def main() -> int:
         return 1
 
     print(f"{len(lines)} fork commit(s) checked against upstream/main.")
-    print("Every author and committer address is one this repository publishes under.")
+    print("Every author and committer address and name is one this repository publishes under.")
     return 0
 
 

@@ -528,7 +528,10 @@ public partial class BardRotation
 
 	static partial void ModifyRepellingShotPvP(ref ActionSetting setting)
 	{
-		setting.SpecialType = SpecialActionType.HostileMovingAttack;
+		// "Additional Effect: 10-yalm backstep" (effect text): a step back from the target, not a jump onto it; until A756 its
+		// landing was checked at the target (concept 25, "PvP: Bewegung").
+		setting.SpecialType = SpecialActionType.HostileAttackBackstep;
+		setting.BackstepDistance = 10;
 	}
 
 	static partial void ModifyEncoreOfLightPvP(ref ActionSetting setting)

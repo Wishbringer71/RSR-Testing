@@ -75,7 +75,7 @@ public partial class CustomRotation
 	/// <summary>
 	/// 
 	/// </summary>
-	public static bool HasPVPGuard => StatusHelper.PlayerHasStatus(true, StatusID.Guard) || (IsLastAction(ActionID.GuardPvP) && TimeSinceLastActionCapped < 0.5f);
+	public static bool HasPVPGuard => StatusHelper.PlayerHasStatus(true, StatusHelper.PvPGuardStatuses) || (IsLastAction(ActionID.GuardPvP) && TimeSinceLastActionCapped < 0.5f);
 
 	/// <summary>
 	/// Check the player is moving, such as running, walking or jumping.
@@ -1263,7 +1263,9 @@ public partial class CustomRotation
 	/// <summary>
 	/// Checks if there is enough remaining time in the current GCD to execute an off-global action without clipping.
 	/// </summary>
-	public static bool EnoughWeaveTime => WeaponRemain < WeaponTotal && WeaponRemain > Math.Max(DataCenter.CalculatedActionAhead, AnimationLock);
+	/// <remarks>The least time left is the measured weave window - the lock plus the rest after it in this zone - and "Action
+	/// ahead" only before the first measurement (concept 03, "Weben, Animationssperre und Latenz", A753).</remarks>
+	public static bool EnoughWeaveTime => WeaponRemain < WeaponTotal && WeaponRemain > Math.Max(ActionHelper.WeaveLimit, AnimationLock);
 
 	/// <summary>
 	/// Indicates whether the player can currently execute a late weave.

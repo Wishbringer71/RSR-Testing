@@ -32,6 +32,7 @@ stünde hier ein zweites Mal und würde altern.
 | [`22-masked-carnivale.md`](22-masked-carnivale.md) | Mit welchem Set und welcher Wahl der Zauber geht der Blaumagier eine Stufe des Masked Carnivale an? |
 | [`23-deep-dungeons.md`](23-deep-dungeons.md) | Was tut RSR in den Tiefen Gewölben, das es nur dort gibt – Verwandlung, Pomander, Magicite, Demiklone und Weihrauch? |
 | [`24-code-structure-and-cost.md`](24-code-structure-and-cost.md) | Wo kann der Code modularer, allgemeiner und sparsamer an Rechenzeit und Speicher werden, ohne dass sich im Kampf etwas verschlechtert – und woran wird das gemessen? |
+| [`25-pvp.md`](25-pvp.md) | Was tut RSR in PvP, wo PvP eigene Aktionen, eigene Zustände und andere Gegner hat, und wo holt es dort dasselbe Optimum heraus wie in PvE? |
 
 **Ebenen** (seine Vorgabe „Universell zuerst", Ordnung in `20`): Eine Regel steht auf der höchsten Ebene, auf der sie
 für alle gleich gilt.
@@ -51,6 +52,7 @@ einer allgemeinen Regel steht.
 | Crucible of the Unbroken | `21` |
 | Masked Carnivale | `22` |
 | Tiefe Gewölbe | `23`; ihre Regenerationstränke `03` („Regenerationstränke der Sonderinhalte") |
+| PvP | `25`; Abweichungen von den Regeln für alle Jobs dort, die Regeln selbst in `03` |
 | Dungeon, Pull | `09` („Die Abwehr im Pull"), `02` („Feindseligkeit im Pull") |
 | Savage, High-End | `03` („Tinktur nur in schwierigen Kämpfen"), `13` (gelernte Flächen und Tankbuster) |
 | Unreal | `07` („Heilziele außerhalb der Gruppe: Figuren, die nur Einzelheilung besiegt"), `03` („Limit Break allein") |

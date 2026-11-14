@@ -12,7 +12,7 @@ public class SCH_DefaultPVP : ScholarRotation
 	#region oGCDs
 	protected override bool EmergencyAbility(IAction nextGCD, out IAction? action)
 	{
-		if (ChainStratagemPvP.CanUse(out action) && Target.HasStatus(false, StatusID.Guard))
+		if (ChainStratagemPvP.CanUse(out action) && Target.HasStatus(false, StatusHelper.PvPGuardStatuses))
 		{
 			return true;
 		}

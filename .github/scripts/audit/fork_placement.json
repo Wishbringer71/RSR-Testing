@@ -135,59 +135,7 @@
   },
   {
    "file": "RotationSolver/Basic/Actions/BaseItem.cs",
-   "member": "public virtual bool SwitchForAllJobs => false;"
-  },
-  {
-   "file": "RotationSolver/Basic/Actions/BaseItem.cs",
    "member": "private unsafe bool UseItem()"
-  },
-  {
-   "file": "RotationSolver/Basic/Actions/BaseItem.cs",
-   "member": "private unsafe void TracePress()"
-  },
-  {
-   "file": "RotationSolver/Basic/Actions/BaseItem.cs",
-   "member": "private static readonly HashSet<(uint Item, uint Area)> _refusalsTraced = [];"
-  },
-  {
-   "file": "RotationSolver/Basic/Actions/BaseItem.cs",
-   "member": "private unsafe void TraceRefusal()"
-  },
-  {
-   "file": "RotationSolver/Basic/Actions/HpPotionItem.cs",
-   "member": "private readonly float _percentNq;"
-  },
-  {
-   "file": "RotationSolver/Basic/Actions/HpPotionItem.cs",
-   "member": "private readonly uint _maxHpNq;"
-  },
-  {
-   "file": "RotationSolver/Basic/Actions/HpPotionItem.cs",
-   "member": "private unsafe bool HasHq => InventoryManager.Instance()->GetInventoryItemCount(ID, true) > 0;"
-  },
-  {
-   "file": "RotationSolver/Basic/Actions/HpPotionItem.cs",
-   "member": "public uint ItemLevel => _item.LevelItem.RowId;"
-  },
-  {
-   "file": "RotationSolver/Basic/Actions/HpPotionItem.cs",
-   "member": "public override bool SwitchForAllJobs => true;"
-  },
-  {
-   "file": "RotationSolver/Basic/Actions/HpPotionItem.cs",
-   "member": "internal static bool IsContentRegenerationId(uint id)"
-  },
-  {
-   "file": "RotationSolver/Basic/Actions/HpPotionItem.cs",
-   "member": "public bool IsContentRegeneration { get; }"
-  },
-  {
-   "file": "RotationSolver/Basic/Actions/HpPotionItem.cs",
-   "member": "internal static float ThresholdHealthRatio()"
-  },
-  {
-   "file": "RotationSolver/Basic/Actions/HpPotionItem.cs",
-   "member": "public string DescribeBlock()"
   },
   {
    "file": "RotationSolver/Basic/Actions/HpPotionItem.cs",
@@ -502,10 +450,6 @@
    "member": "internal static float CastSeconds(this Action action) => action.Cast100ms / CastUnitsPerSecond;"
   },
   {
-   "file": "RotationSolver/Basic/Helpers/ActionHelper.cs",
-   "member": "internal const float AbilityClipWindow = 0.5f;"
-  },
-  {
    "file": "RotationSolver/Basic/Helpers/ActionManagerHelper.cs",
    "member": "public static float GetDefaultAdjustedRecastTime()"
   },
@@ -543,35 +487,7 @@
   },
   {
    "file": "RotationSolver/Basic/Helpers/TimeToKillTracker.cs",
-   "member": "private static uint _areaTerritory;"
-  },
-  {
-   "file": "RotationSolver/Basic/Helpers/TimeToKillTracker.cs",
-   "member": "private static long _sampleGap;"
-  },
-  {
-   "file": "RotationSolver/Basic/Helpers/TimeToKillTracker.cs",
-   "member": "private static void LearnFall(History history, long now, float ratio)"
-  },
-  {
-   "file": "RotationSolver/Basic/Helpers/TimeToKillTracker.cs",
-   "member": "private static void LearnDeath(ulong id, long now)"
-  },
-  {
-   "file": "RotationSolver/Basic/Helpers/TimeToKillTracker.cs",
-   "member": "private static void LearnAreaFall(long distance, float fall)"
-  },
-  {
-   "file": "RotationSolver/Basic/Helpers/TimeToKillTracker.cs",
    "member": "internal static float AreaFall(float span)"
-  },
-  {
-   "file": "RotationSolver/Basic/Helpers/TimeToKillTracker.cs",
-   "member": "private static readonly List<(long Tick, float Ratio)> _points = [];"
-  },
-  {
-   "file": "RotationSolver/Basic/Helpers/TimeToKillTracker.cs",
-   "member": "internal static float LargestFall(ulong id, float span, float held)"
   },
   {
    "file": "RotationSolver/Basic/Rotations/Basic/AstrologianRotation.cs",
@@ -606,126 +522,6 @@
    "member": "protected bool PolyglotWhileCastBlocked(out IAction? act)"
   },
   {
-   "file": "RotationSolver/Basic/Rotations/Basic/BlueMageRotation.cs",
-   "member": "protected IBaseAction? ValueFiller"
-  },
-  {
-   "file": "RotationSolver/Basic/Rotations/Basic/BlueMageRotation.cs",
-   "member": "protected static float SpellTime(IBaseAction action)"
-  },
-  {
-   "file": "RotationSolver/Basic/Rotations/Basic/BlueMageRotation.cs",
-   "member": "protected bool TryFiller(out float potency, out float time)"
-  },
-  {
-   "file": "RotationSolver/Basic/Rotations/Basic/BlueMageRotation.cs",
-   "member": "protected float FillerDamageOver(float seconds)"
-  },
-  {
-   "file": "RotationSolver/Basic/Rotations/Basic/BlueMageRotation.cs",
-   "member": "protected bool FixedDamageBeatsFiller(IBaseAction action)"
-  },
-  {
-   "file": "RotationSolver/Basic/Rotations/Basic/BlueMageRotation.cs",
-   "member": "protected bool HealthShareBeatsFiller(IBaseAction action)"
-  },
-  {
-   "file": "RotationSolver/Basic/Rotations/Basic/BlueMageRotation.cs",
-   "member": "private static float HealthReached(IBaseAction action, bool onlyAffected)"
-  },
-  {
-   "file": "RotationSolver/Basic/Rotations/Basic/BlueMageRotation.cs",
-   "member": "protected bool OverSonicBoom(IBaseAction action)"
-  },
-  {
-   "file": "RotationSolver/Basic/Rotations/Basic/BlueMageRotation.cs",
-   "member": "protected static float CarnivaleFactor(IBaseAction action, IBattleChara? target)"
-  },
-  {
-   "file": "RotationSolver/Basic/Rotations/Basic/BlueMageRotation.cs",
-   "member": "private float FillerFactorOn(IBaseAction action)"
-  },
-  {
-   "file": "RotationSolver/Basic/Rotations/Basic/BlueMageRotation.cs",
-   "member": "protected static bool PlayerFallsWithin(float seconds)"
-  },
-  {
-   "file": "RotationSolver/Basic/Rotations/Basic/BlueMageRotation.cs",
-   "member": "protected bool TryMoonFluteText(out float damageUp, out float waxing, out float waning)"
-  },
-  {
-   "file": "RotationSolver/Basic/Rotations/Basic/BlueMageRotation.cs",
-   "member": "private readonly Dictionary<byte, (float Potency, int Gcds)> _windowGroups = [];"
-  },
-  {
-   "file": "RotationSolver/Basic/Rotations/Basic/BlueMageRotation.cs",
-   "member": "protected bool MoonFluteWindowWorth(out string why, out float net)"
-  },
-  {
-   "file": "RotationSolver/Basic/Rotations/Basic/BlueMageRotation.cs",
-   "member": "protected float BurstHoldCostPerSecond()"
-  },
-  {
-   "file": "RotationSolver/Basic/Rotations/Basic/BlueMageRotation.cs",
-   "member": "protected bool MoonFluteSafe(out string why)"
-  },
-  {
-   "file": "RotationSolver/Basic/Rotations/Basic/BlueMageRotation.cs",
-   "member": "private static uint _setWrittenId;"
-  },
-  {
-   "file": "RotationSolver/Basic/Rotations/Basic/BlueMageRotation.cs",
-   "member": "private static uint _setWrittenIn;"
-  },
-  {
-   "file": "RotationSolver/Basic/Rotations/Basic/BlueMageRotation.cs",
-   "member": "private static uint[]? _setSeen;"
-  },
-  {
-   "file": "RotationSolver/Basic/Rotations/Basic/BlueMageRotation.cs",
-   "member": "private static bool _setEditedByPlayer;"
-  },
-  {
-   "file": "RotationSolver/Basic/Rotations/Basic/BlueMageRotation.cs",
-   "member": "protected unsafe void ImproveActiveSet()"
-  },
-  {
-   "file": "RotationSolver/Basic/Rotations/Basic/BlueMageRotation.cs",
-   "member": "private bool TryPlanSetChange(uint[] slots, out int slot, out IBaseAction add, out string why)"
-  },
-  {
-   "file": "RotationSolver/Basic/Rotations/Basic/BlueMageRotation.cs",
-   "member": "private static bool IsPlainFiller(IBaseAction action)"
-  },
-  {
-   "file": "RotationSolver/Basic/Rotations/Basic/BlueMageRotation.cs",
-   "member": "private static float CooldownValue(IBaseAction action)"
-  },
-  {
-   "file": "RotationSolver/Basic/Rotations/Basic/BlueMageRotation.cs",
-   "member": "protected bool PlayerFallsInWaning"
-  },
-  {
-   "file": "RotationSolver/Basic/Rotations/Basic/DancerRotation.cs",
-   "member": "private static bool IsHamperedPartner(IBattleChara member)"
-  },
-  {
-   "file": "RotationSolver/Basic/Rotations/Basic/DancerRotation.cs",
-   "member": "private static bool IsAvailablePartner(IBattleChara member, float range)"
-  },
-  {
-   "file": "RotationSolver/Basic/Rotations/Basic/DancerRotation.cs",
-   "member": "private static int DancePartnerRank(IBattleChara member)"
-  },
-  {
-   "file": "RotationSolver/Basic/Rotations/Basic/DancerRotation.cs",
-   "member": "private static IBattleChara? OwnDancePartner()"
-  },
-  {
-   "file": "RotationSolver/Basic/Rotations/Basic/DancerRotation.cs",
-   "member": "protected bool DancePartnerNeedsChange(string namedPartner)"
-  },
-  {
    "file": "RotationSolver/Basic/Rotations/Basic/DarkKnightRotation.cs",
    "member": "protected override IBaseAction? Invulnerability => LivingDeadPvE;"
   },
@@ -735,39 +531,7 @@
   },
   {
    "file": "RotationSolver/Basic/Rotations/Basic/MachinistRotation.cs",
-   "member": "private static bool? _batteryKept;"
-  },
-  {
-   "file": "RotationSolver/Basic/Rotations/Basic/MachinistRotation.cs",
-   "member": "private static bool _batteryWasInCombat;"
-  },
-  {
-   "file": "RotationSolver/Basic/Rotations/Basic/MachinistRotation.cs",
-   "member": "private static byte _batteryAtEnd;"
-  },
-  {
-   "file": "RotationSolver/Basic/Rotations/Basic/MachinistRotation.cs",
-   "member": "private static uint _batteryArea;"
-  },
-  {
-   "file": "RotationSolver/Basic/Rotations/Basic/MachinistRotation.cs",
-   "member": "public static bool BatteryKeptBetweenFights => _batteryKept == true;"
-  },
-  {
-   "file": "RotationSolver/Basic/Rotations/Basic/MachinistRotation.cs",
-   "member": "protected override void UpdateServices()"
-  },
-  {
-   "file": "RotationSolver/Basic/Rotations/Basic/MachinistRotation.cs",
-   "member": "protected bool FlamethrowerFits(bool wildfireHeld = false)"
-  },
-  {
-   "file": "RotationSolver/Basic/Rotations/Basic/MachinistRotation.cs",
    "member": "private int _crossbowTracedLevel = -1;"
-  },
-  {
-   "file": "RotationSolver/Basic/Rotations/Basic/MachinistRotation.cs",
-   "member": "protected bool AutoCrossbowOutdamagesBlazingShot(int coneTargets)"
   },
   {
    "file": "RotationSolver/Basic/Rotations/Basic/MonkRotation.cs",
@@ -819,18 +583,6 @@
   },
   {
    "file": "RotationSolver/Basic/Rotations/Basic/SummonerRotation.cs",
-   "member": "public static bool HasAnySearingLight => StatusHelper.PlayerHasStatus(false, StatusID.SearingLight);"
-  },
-  {
-   "file": "RotationSolver/Basic/Rotations/Basic/SummonerRotation.cs",
-   "member": "protected enum SearingPhase"
-  },
-  {
-   "file": "RotationSolver/Basic/Rotations/Basic/SummonerRotation.cs",
-   "member": "protected static SearingPhase CurrentSearingPhase =>"
-  },
-  {
-   "file": "RotationSolver/Basic/Rotations/Basic/SummonerRotation.cs",
    "member": "private readonly bool[] _searingPhaseSeen = new bool[Enum.GetValues<SearingPhase>().Length];"
   },
   {
@@ -840,54 +592,6 @@
   {
    "file": "RotationSolver/Basic/Rotations/Basic/SummonerRotation.cs",
    "member": "private SearingPhase _lastSearingPhase = SearingPhase.None;"
-  },
-  {
-   "file": "RotationSolver/Basic/Rotations/Basic/SummonerRotation.cs",
-   "member": "private bool _searingPhaseBooked;"
-  },
-  {
-   "file": "RotationSolver/Basic/Rotations/Basic/SummonerRotation.cs",
-   "member": "private bool _inBurstWindow;"
-  },
-  {
-   "file": "RotationSolver/Basic/Rotations/Basic/SummonerRotation.cs",
-   "member": "private bool _burstHeldThisWindow;"
-  },
-  {
-   "file": "RotationSolver/Basic/Rotations/Basic/SummonerRotation.cs",
-   "member": "private bool _burstHeldLastWindow;"
-  },
-  {
-   "file": "RotationSolver/Basic/Rotations/Basic/SummonerRotation.cs",
-   "member": "protected bool BurstPhaseHeldByAnother => _burstHeldLastWindow || _burstHeldThisWindow;"
-  },
-  {
-   "file": "RotationSolver/Basic/Rotations/Basic/SummonerRotation.cs",
-   "member": "protected bool AllSearingPhasesHeld"
-  },
-  {
-   "file": "RotationSolver/Basic/Rotations/Basic/SummonerRotation.cs",
-   "member": "protected bool SearingPhaseHeld(SearingPhase phase) => _searingPhaseHeld[(int)BookSlot(phase)];"
-  },
-  {
-   "file": "RotationSolver/Basic/Rotations/Basic/SummonerRotation.cs",
-   "member": "protected bool SearingPhaseSeen(SearingPhase phase) => _searingPhaseSeen[(int)BookSlot(phase)];"
-  },
-  {
-   "file": "RotationSolver/Basic/Rotations/Basic/SummonerRotation.cs",
-   "member": "private SearingPhase BookSlot(SearingPhase phase) =>"
-  },
-  {
-   "file": "RotationSolver/Basic/Rotations/Basic/SummonerRotation.cs",
-   "member": "protected void UpdateSearingPhaseBook()"
-  },
-  {
-   "file": "RotationSolver/Basic/Rotations/Basic/SummonerRotation.cs",
-   "member": "protected override void UpdateInfo()"
-  },
-  {
-   "file": "RotationSolver/Basic/Rotations/Basic/SummonerRotation.cs",
-   "member": "protected bool AnotherSummonerInParty"
   },
   {
    "file": "RotationSolver/Basic/Rotations/Basic/SummonerRotation.cs",
@@ -906,132 +610,12 @@
    "member": "private SearingPhase _buttonNamed = SearingPhase.None;"
   },
   {
-   "file": "RotationSolver/Basic/Rotations/Basic/SummonerRotation.cs",
-   "member": "private bool _demiNamesTaken;"
-  },
-  {
-   "file": "RotationSolver/Basic/Rotations/Basic/SummonerRotation.cs",
-   "member": "private static bool _gaugeMisnamedDemi;"
-  },
-  {
-   "file": "RotationSolver/Basic/Rotations/Basic/SummonerRotation.cs",
-   "member": "private static bool _buttonMisnamedDemi;"
-  },
-  {
-   "file": "RotationSolver/Basic/Rotations/Basic/SummonerRotation.cs",
-   "member": "private SearingPhase BigSummonOnGauge =>"
-  },
-  {
-   "file": "RotationSolver/Basic/Rotations/Basic/SummonerRotation.cs",
-   "member": "private static SearingPhase BigSummonOnButton => Service.GetAdjustedActionId(ActionID.SummonBahamutPvE) switch"
-  },
-  {
-   "file": "RotationSolver/Basic/Rotations/Basic/SummonerRotation.cs",
-   "member": "private void CheckDemiNames(SearingPhase phase)"
-  },
-  {
    "file": "RotationSolver/Basic/Rotations/Basic/WarriorRotation.cs",
    "member": "protected override IBaseAction? Invulnerability => HolmgangPvE;"
   },
   {
-   "file": "RotationSolver/Basic/Rotations/Basic/WhiteMageRotation.cs",
-   "member": "protected override bool HotAgainstDotByJob(out IAction? act)"
-  },
-  {
-   "file": "RotationSolver/Basic/Rotations/Basic/WhiteMageRotation.cs",
-   "member": "internal override bool HasGroupHealOverTime => MedicaIiPvE.EnoughLevel || MedicaIiiPvE.EnoughLevel;"
-  },
-  {
-   "file": "RotationSolver/Basic/Rotations/Basic/WhiteMageRotation.cs",
-   "member": "protected override bool StopEnemyCastByJob(IBattleChara enemy, float left, float lag, out IAction? act)"
-  },
-  {
-   "file": "RotationSolver/Basic/Rotations/Basic/WhiteMageRotation.cs",
-   "member": "static partial void ModifyLiturgyOfTheBellPvE_28509(ref ActionSetting setting)"
-  },
-  {
-   "file": "RotationSolver/Basic/Rotations/Basic/WhiteMageRotation.cs",
-   "member": "private static byte LiturgyMaxStacks => _liturgyMaxStacks ??="
-  },
-  {
-   "file": "RotationSolver/Basic/Rotations/Basic/WhiteMageRotation.cs",
-   "member": "private static byte? _liturgyMaxStacks;"
-  },
-  {
-   "file": "RotationSolver/Basic/Rotations/Basic/WhiteMageRotation.cs",
-   "member": "protected static int LiturgyTriggersLeft => HitSeries.TriggersLeft();"
-  },
-  {
-   "file": "RotationSolver/Basic/Rotations/CustomRotation_Ability.cs",
-   "member": "private bool AutoHealAreaAbility(IAction nextGCD, out IAction? act)"
-  },
-  {
-   "file": "RotationSolver/Basic/Rotations/CustomRotation_Ability.cs",
-   "member": "private bool AutoHealSingleAbility(IAction nextGCD, out IAction? act)"
-  },
-  {
-   "file": "RotationSolver/Basic/Rotations/CustomRotation_Ability.cs",
-   "member": "private bool EmergencyHealAheadOfGcd(IAction nextGCD, out IAction? act)"
-  },
-  {
-   "file": "RotationSolver/Basic/Rotations/CustomRotation_Ability.cs",
-   "member": "private static IBattleChara? ReachedCriticalMember(IBaseAction heal)"
-  },
-  {
    "file": "RotationSolver/Basic/Rotations/CustomRotation_Ability.cs",
    "member": "private static bool TraceEmergencyHeal(IBaseAction? heal, IBattleChara critical, IAction nextGCD, string? potions = null)"
-  },
-  {
-   "file": "RotationSolver/Basic/Rotations/CustomRotation_Ability.cs",
-   "member": "private static readonly Dictionary<(uint Action, ulong Target), DateTime> _emergencyHealTraced = [];"
-  },
-  {
-   "file": "RotationSolver/Basic/Rotations/CustomRotation_Ability.cs",
-   "member": "private static readonly List<(uint Action, ulong Target)> _staleTraceKeys = [];"
-  },
-  {
-   "file": "RotationSolver/Basic/Rotations/CustomRotation_Ability.cs",
-   "member": "protected virtual bool HasOwnInterruptGate => false;"
-  },
-  {
-   "file": "RotationSolver/Basic/Rotations/CustomRotation_Ability.cs",
-   "member": "protected virtual bool HasOwnAntiKnockbackGate => false;"
-  },
-  {
-   "file": "RotationSolver/Basic/Rotations/CustomRotation_Ability.cs",
-   "member": "protected virtual bool HasOwnArmsLengthPullRule => false;"
-  },
-  {
-   "file": "RotationSolver/Basic/Rotations/CustomRotation_Ability.cs",
-   "member": "protected bool SwiftcastKeptForRaise => Service.Config.RaisePlayerBySwift && Raise is { EnoughLevel: true } && SwiftcastPvE.EnoughLevel;"
-  },
-  {
-   "file": "RotationSolver/Basic/Rotations/CustomRotation_Ability.cs",
-   "member": "protected virtual bool SwiftcastForDamage => !SwiftcastKeptForRaise;"
-  },
-  {
-   "file": "RotationSolver/Basic/Rotations/CustomRotation_Ability.cs",
-   "member": "private bool RaisePendingAndCastable()"
-  },
-  {
-   "file": "RotationSolver/Basic/Rotations/CustomRotation_Ability.cs",
-   "member": "protected virtual IBaseAction? Invulnerability => null;"
-  },
-  {
-   "file": "RotationSolver/Basic/Rotations/CustomRotation_Ability.cs",
-   "member": "private bool TankSwapAbility(out IAction? act)"
-  },
-  {
-   "file": "RotationSolver/Basic/Rotations/CustomRotation_Ability.cs",
-   "member": "private bool InvulnerabilityAgainstReportedDeath(out IAction? act)"
-  },
-  {
-   "file": "RotationSolver/Basic/Rotations/CustomRotation_Ability.cs",
-   "member": "private bool InvulnerabilityUsable(out IBaseAction? invulnerability)"
-  },
-  {
-   "file": "RotationSolver/Basic/Rotations/CustomRotation_Ability.cs",
-   "member": "private bool TankSwapBackAbility(out IAction? act)"
   },
   {
    "file": "RotationSolver/Basic/Rotations/CustomRotation_Actions.cs",
@@ -1055,91 +639,11 @@
   },
   {
    "file": "RotationSolver/Basic/Rotations/CustomRotation_GCD.cs",
-   "member": "private static IAction? TraceDowntimeHeal(IAction? act, float line)"
-  },
-  {
-   "file": "RotationSolver/Basic/Rotations/CustomRotation_GCD.cs",
-   "member": "private static (uint Action, ulong Target) _downtimeHealTraced;"
-  },
-  {
-   "file": "RotationSolver/Basic/Rotations/CustomRotation_GCD.cs",
    "member": "private static bool AnyOtherLivingRaiser()"
   },
   {
    "file": "RotationSolver/Basic/Rotations/CustomRotation_GCD.cs",
-   "member": "private bool SwiftcastComingForRaise =>"
-  },
-  {
-   "file": "RotationSolver/Basic/Rotations/CustomRotation_GCD.cs",
-   "member": "private bool HardCastBeatsWaitingForSwiftcast =>"
-  },
-  {
-   "file": "RotationSolver/Basic/Rotations/CustomRotation_GCD.cs",
-   "member": "protected bool RunningSwiftGoesToRaise => Service.Config.RaisePlayerBySwift"
-  },
-  {
-   "file": "RotationSolver/Basic/Rotations/CustomRotation_GCD.cs",
-   "member": "private bool HotAgainstDot(out IAction? act)"
-  },
-  {
-   "file": "RotationSolver/Basic/Rotations/CustomRotation_GCD.cs",
-   "member": "protected virtual bool HotAgainstDotByJob(out IAction? act)"
-  },
-  {
-   "file": "RotationSolver/Basic/Rotations/CustomRotation_GCD.cs",
-   "member": "internal virtual bool HasGroupHealOverTime => false;"
-  },
-  {
-   "file": "RotationSolver/Basic/Rotations/CustomRotation_GCD.cs",
-   "member": "protected bool TryHotAgainstDot(IBaseAction single, IBaseAction? group, out IAction? act)"
-  },
-  {
-   "file": "RotationSolver/Basic/Rotations/CustomRotation_GCD.cs",
-   "member": "private static (uint Action, ulong Target, DateTime At) _hotAgainstDotTraced;"
-  },
-  {
-   "file": "RotationSolver/Basic/Rotations/CustomRotation_GCD.cs",
-   "member": "private static void NeedHotAgainstDot(float hotSeconds, float range)"
-  },
-  {
-   "file": "RotationSolver/Basic/Rotations/CustomRotation_GCD.cs",
-   "member": "private static void TraceHotAgainstDot(IBaseAction action, IBattleChara? target)"
-  },
-  {
-   "file": "RotationSolver/Basic/Rotations/CustomRotation_GCD.cs",
-   "member": "private bool StopEnemyCast(out IAction? act)"
-  },
-  {
-   "file": "RotationSolver/Basic/Rotations/CustomRotation_GCD.cs",
    "member": "private readonly List<SleepLockKey> _sleepTries = [];"
-  },
-  {
-   "file": "RotationSolver/Basic/Rotations/CustomRotation_GCD.cs",
-   "member": "private static bool SleepTryAllowed(out string busy)"
-  },
-  {
-   "file": "RotationSolver/Basic/Rotations/CustomRotation_GCD.cs",
-   "member": "protected virtual bool StopEnemyCastByJob(IBattleChara enemy, float left, float lag, out IAction? act)"
-  },
-  {
-   "file": "RotationSolver/Basic/Rotations/CustomRotation_GCD.cs",
-   "member": "protected static bool AreaReachesNewMob(IBattleChara center, float radius)"
-  },
-  {
-   "file": "RotationSolver/Basic/Rotations/CustomRotation_Items.cs",
-   "member": "internal static bool TinctureAllowedHere => DataCenter.CurrentTinctureUseType switch"
-  },
-  {
-   "file": "RotationSolver/Basic/Rotations/CustomRotation_Items.cs",
-   "member": "private bool _asksForTinctureInCombat;"
-  },
-  {
-   "file": "RotationSolver/Basic/Rotations/CustomRotation_Items.cs",
-   "member": "private bool PotionsWaitForTincture()"
-  },
-  {
-   "file": "RotationSolver/Basic/Rotations/CustomRotation_Items.cs",
-   "member": "private static HashSet<uint>? _rehabilitationIds;"
   },
   {
    "file": "RotationSolver/Basic/Rotations/CustomRotation_Items.cs",
@@ -1247,10 +751,6 @@
   },
   {
    "file": "RotationSolver/RebornRotations/Healer/AST_Reborn.cs",
-   "member": "private bool SwiftRaisePending =>"
-  },
-  {
-   "file": "RotationSolver/RebornRotations/Healer/AST_Reborn.cs",
    "member": "Tooltip = \"Off: while another healer is alive your GCD heals are left to them and you deal damage instead, with \""
   },
   {
@@ -1270,10 +770,6 @@
    "member": "Tooltip = \"The last charge of Essential Dignity needs a reason beyond low health: the target is being attacked or cast at, an area cast is announced, \""
   },
   {
-   "file": "RotationSolver/RebornRotations/Healer/AST_Reborn.cs",
-   "member": "private bool TrySustainAspectedBeneficOnTank(out IAction? act)"
-  },
-  {
    "file": "RotationSolver/RebornRotations/Healer/SCH_Reborn.cs",
    "member": "Tooltip = \"With the limit to multihit party stacks on, Seraphism also goes before an announced area hit that, by its \""
   },
@@ -1287,23 +783,11 @@
   },
   {
    "file": "RotationSolver/RebornRotations/Healer/SCH_Reborn.cs",
-   "member": "private bool SwiftRaisePending =>"
-  },
-  {
-   "file": "RotationSolver/RebornRotations/Healer/SCH_Reborn.cs",
    "member": "Tooltip = \"Off: while another healer is alive your GCD heals are left to them and you deal damage instead, with \""
   },
   {
    "file": "RotationSolver/RebornRotations/Healer/SCH_Reborn.cs",
    "member": "Tooltip = \"In a fight: until a time to kill is measured for the enemy, Bio waits while the enemy has less health than the party would deal in 12 seconds at the percentage set above; once one is measured, the action's own time to kill decides. Off: Bio goes by the action's time to kill alone.\")]"
-  },
-  {
-   "file": "RotationSolver/RebornRotations/Healer/SCH_Reborn.cs",
-   "member": "protected override bool GeneralAbility(IAction nextGCD, out IAction? act)"
-  },
-  {
-   "file": "RotationSolver/RebornRotations/Healer/SCH_Reborn.cs",
-   "member": "private static bool BallparkAllows(IBattleChara? target, float expectedHp)"
   },
   {
    "file": "RotationSolver/RebornRotations/Healer/SGE_Reborn.cs",
@@ -1316,10 +800,6 @@
   {
    "file": "RotationSolver/RebornRotations/Healer/SGE_Reborn.cs",
    "member": "Tooltip = \"Off: while another healer is alive your GCD heals are left to them and you deal damage instead, with \""
-  },
-  {
-   "file": "RotationSolver/RebornRotations/Healer/SGE_Reborn.cs",
-   "member": "private bool SwiftRaisePending =>"
   },
   {
    "file": "RotationSolver/RebornRotations/Healer/SGE_Reborn.cs",
@@ -1338,26 +818,6 @@
    "member": "Tooltip = \"The same count, but during combat: how many enemies have to remain around the tank \""
   },
   {
-   "file": "RotationSolver/RebornRotations/Healer/SGE_Reborn.cs",
-   "member": "private bool _eukrasiaDiagnosisForTank;"
-  },
-  {
-   "file": "RotationSolver/RebornRotations/Healer/SGE_Reborn.cs",
-   "member": "private bool _eukrasiaDotWhileCastBlocked;"
-  },
-  {
-   "file": "RotationSolver/RebornRotations/Healer/SGE_Reborn.cs",
-   "member": "private IBaseAction EukrasianDosisAtLevel => EukrasianDosisIiiPvE.EnoughLevel ? EukrasianDosisIiiPvE"
-  },
-  {
-   "file": "RotationSolver/RebornRotations/Healer/SGE_Reborn.cs",
-   "member": "private bool DosisWhileCastBlocked()"
-  },
-  {
-   "file": "RotationSolver/RebornRotations/Healer/SGE_Reborn.cs",
-   "member": "private bool PullBarrierDue() =>"
-  },
-  {
    "file": "RotationSolver/RebornRotations/Healer/WHM_Reborn.cs",
    "member": "Tooltip = \"With the limit to multihit party stacks on, the bell also goes before an announced area hit that, by its \""
   },
@@ -1368,10 +828,6 @@
   {
    "file": "RotationSolver/RebornRotations/Healer/WHM_Reborn.cs",
    "member": "Tooltip = \"While the bell still holds stacks, its second press heals with every stack left at once; otherwise \""
-  },
-  {
-   "file": "RotationSolver/RebornRotations/Healer/WHM_Reborn.cs",
-   "member": "private bool SwiftRaisePending =>"
   },
   {
    "file": "RotationSolver/RebornRotations/Healer/WHM_Reborn.cs",
@@ -1427,26 +883,6 @@
   },
   {
    "file": "RotationSolver/RebornRotations/Healer/WHM_Reborn.cs",
-   "member": "protected override bool MoveForwardAbility(IAction nextGCD, out IAction? act)"
-  },
-  {
-   "file": "RotationSolver/RebornRotations/Healer/WHM_Reborn.cs",
-   "member": "private bool UnderMpPressure =>"
-  },
-  {
-   "file": "RotationSolver/RebornRotations/Healer/WHM_Reborn.cs",
-   "member": "private bool TrySustainRegenOnTank(out IAction? act)"
-  },
-  {
-   "file": "RotationSolver/RebornRotations/Healer/WHM_Reborn.cs",
-   "member": "private bool ShouldStretchHolyStun()"
-  },
-  {
-   "file": "RotationSolver/RebornRotations/Healer/WHM_Reborn.cs",
-   "member": "private static float LongestStunInRadius(float radius, out int application)"
-  },
-  {
-   "file": "RotationSolver/RebornRotations/Healer/WHM_Reborn.cs",
    "member": "private string _lastStretchTrace = string.Empty;"
   },
   {
@@ -1455,23 +891,7 @@
   },
   {
    "file": "RotationSolver/RebornRotations/Healer/WHM_Reborn.cs",
-   "member": "private void TraceStretch(string outcome)"
-  },
-  {
-   "file": "RotationSolver/RebornRotations/Healer/WHM_Reborn.cs",
-   "member": "private bool ShouldHoldHolyWhilePackSlowed()"
-  },
-  {
-   "file": "RotationSolver/RebornRotations/Healer/WHM_Reborn.cs",
    "member": "private string _holySlowHold = \"no decision yet\";"
-  },
-  {
-   "file": "RotationSolver/RebornRotations/Healer/WHM_Reborn.cs",
-   "member": "public override void DisplayRotationStatus()"
-  },
-  {
-   "file": "RotationSolver/RebornRotations/Healer/WHM_Reborn.cs",
-   "member": "private bool ShouldHoldHolyForBarrier()"
   },
   {
    "file": "RotationSolver/RebornRotations/Magical/PCT_Reborn.cs",
@@ -1518,14 +938,6 @@
    "member": "Tooltip = \"Off: while Verraise is learned and \\\"Raise with Swiftcast or Dualcast\\\" is on, Swiftcast stays ready for \""
   },
   {
-   "file": "RotationSolver/RebornRotations/Magical/RDM_Reborn.cs",
-   "member": "protected override bool SwiftcastForDamage => SwiftcastDamage || base.SwiftcastForDamage;"
-  },
-  {
-   "file": "RotationSolver/RebornRotations/Magical/RDM_Reborn.cs",
-   "member": "protected override bool DefenseSingleAbility(IAction nextGCD, out IAction? act)"
-  },
-  {
    "file": "RotationSolver/RebornRotations/Magical/SMN_Reborn.cs",
    "member": "Tooltip = \"Off: your GCD heals go only when no healer is alive, or while a party member is in the critical class, \""
   },
@@ -1539,10 +951,6 @@
   },
   {
    "file": "RotationSolver/RebornRotations/Magical/SMN_Reborn.cs",
-   "member": "private string PhaseBookText(SearingPhase phase) =>"
-  },
-  {
-   "file": "RotationSolver/RebornRotations/Magical/SMN_Reborn.cs",
    "member": "private static string SearingLightAgainstSummon()"
   },
   {
@@ -1551,19 +959,11 @@
   },
   {
    "file": "RotationSolver/RebornRotations/Magical/SMN_Reborn.cs",
-   "member": "private double _summonHeldSeconds;"
-  },
-  {
-   "file": "RotationSolver/RebornRotations/Magical/SMN_Reborn.cs",
    "member": "private DateTime _summonHeldSince = DateTime.MinValue;"
   },
   {
    "file": "RotationSolver/RebornRotations/Magical/SMN_Reborn.cs",
    "member": "private void NoteSummonHold(string reason)"
-  },
-  {
-   "file": "RotationSolver/RebornRotations/Magical/SMN_Reborn.cs",
-   "member": "private double SummonHeldSecondsNow => _summonHeldSeconds"
   },
   {
    "file": "RotationSolver/RebornRotations/Magical/SMN_Reborn.cs",
@@ -1584,30 +984,6 @@
   {
    "file": "RotationSolver/RebornRotations/Magical/SMN_Reborn.cs",
    "member": "private bool LuxSolarisDecision(bool manual, out string why)"
-  },
-  {
-   "file": "RotationSolver/RebornRotations/Magical/SMN_Reborn.cs",
-   "member": "private static uint Missing(IBattleChara member) =>"
-  },
-  {
-   "file": "RotationSolver/RebornRotations/Magical/SMN_Reborn.cs",
-   "member": "private static bool StatusEndsBefore(StatusID status, float seconds)"
-  },
-  {
-   "file": "RotationSolver/RebornRotations/Magical/SMN_Reborn.cs",
-   "member": "protected override bool DefenseSingleAbility(IAction nextGCD, out IAction? act)"
-  },
-  {
-   "file": "RotationSolver/RebornRotations/Magical/SMN_Reborn.cs",
-   "member": "private bool TryAddleBeforeDamage(out IAction? act)"
-  },
-  {
-   "file": "RotationSolver/RebornRotations/Magical/SMN_Reborn.cs",
-   "member": "private bool RadiantAegisAheadOfRaidwide =>"
-  },
-  {
-   "file": "RotationSolver/RebornRotations/Magical/SMN_Reborn.cs",
-   "member": "private bool RadiantAegisDueBeforeDemi =>"
   },
   {
    "file": "RotationSolver/RebornRotations/Magical/SMN_Reborn.cs",
@@ -1667,31 +1043,11 @@
   },
   {
    "file": "RotationSolver/RebornRotations/Melee/SAM_Reborn.cs",
-   "member": "protected override bool MoveBackAbility(IAction nextGCD, out IAction? act)"
-  },
-  {
-   "file": "RotationSolver/RebornRotations/Melee/SAM_Reborn.cs",
-   "member": "protected override bool HealSingleAbility(IAction nextGCD, out IAction? act)"
-  },
-  {
-   "file": "RotationSolver/RebornRotations/Melee/SAM_Reborn.cs",
-   "member": "protected override bool DefenseSingleAbility(IAction nextGCD, out IAction? act)"
-  },
-  {
-   "file": "RotationSolver/RebornRotations/Melee/SAM_Reborn.cs",
    "member": "private const string ZanshinHoldRule = \"Samurai: Zanshin ready\";"
   },
   {
    "file": "RotationSolver/RebornRotations/Melee/SAM_Reborn.cs",
-   "member": "private bool UseMeditateInPause(out IAction? act)"
-  },
-  {
-   "file": "RotationSolver/RebornRotations/Melee/SAM_Reborn.cs",
    "member": "private bool UseOgiAndHiganbana(out IAction? act)"
-  },
-  {
-   "file": "RotationSolver/RebornRotations/Melee/SAM_Reborn.cs",
-   "member": "private bool AoeComboReaches"
   },
   {
    "file": "RotationSolver/RebornRotations/Melee/SAM_Reborn.cs",
@@ -1719,23 +1075,7 @@
   },
   {
    "file": "RotationSolver/RebornRotations/Melee/VPR_Reborn.cs",
-   "member": "protected override IAction? CountDownAction(float remainTime)"
-  },
-  {
-   "file": "RotationSolver/RebornRotations/Melee/VPR_Reborn.cs",
-   "member": "protected override bool DefenseSingleAbility(IAction nextGCD, out IAction? act)"
-  },
-  {
-   "file": "RotationSolver/RebornRotations/Melee/VPR_Reborn.cs",
    "member": "private const string FollowUpHoldRule = \"Viper: a follow-up ability is ready\";"
-  },
-  {
-   "file": "RotationSolver/RebornRotations/Melee/VPR_Reborn.cs",
-   "member": "protected override bool HasOwnAntiKnockbackGate => true;"
-  },
-  {
-   "file": "RotationSolver/RebornRotations/Melee/VPR_Reborn.cs",
-   "member": "protected override bool HasOwnInterruptGate => true;"
   },
   {
    "file": "RotationSolver/RebornRotations/Ranged/BRD_Reborn.cs",
@@ -1799,10 +1139,6 @@
   },
   {
    "file": "RotationSolver/RebornRotations/Tank/DRK_Reborn.cs",
-   "member": "protected override bool HasOwnArmsLengthPullRule => true;"
-  },
-  {
-   "file": "RotationSolver/RebornRotations/Tank/DRK_Reborn.cs",
    "member": "Tooltip = \"Only used by the last option of the Blackest Night setting above: below this share \""
   },
   {
@@ -1819,75 +1155,15 @@
   },
   {
    "file": "RotationSolver/RebornRotations/Tank/DRK_Reborn.cs",
-   "member": "private bool HoldMitigationForBarrier(bool area)"
-  },
-  {
-   "file": "RotationSolver/RebornRotations/Tank/DRK_Reborn.cs",
    "member": "private bool BarrierWaitsToBeSpent()"
-  },
-  {
-   "file": "RotationSolver/RebornRotations/Tank/DRK_Reborn.cs",
-   "member": "private bool ShouldUseArmsLengthOnPull()"
-  },
-  {
-   "file": "RotationSolver/RebornRotations/Tank/DRK_Reborn.cs",
-   "member": "private bool StreamWouldBreakBarrier()"
-  },
-  {
-   "file": "RotationSolver/RebornRotations/Tank/DRK_Reborn.cs",
-   "member": "private bool _barrierOnSelf;"
-  },
-  {
-   "file": "RotationSolver/RebornRotations/Tank/DRK_Reborn.cs",
-   "member": "private bool _darkArtsBeforeBarrier;"
-  },
-  {
-   "file": "RotationSolver/RebornRotations/Tank/DRK_Reborn.cs",
-   "member": "private float _streamBeforeBarrier;"
-  },
-  {
-   "file": "RotationSolver/RebornRotations/Tank/DRK_Reborn.cs",
-   "member": "protected override void UpdateInfo()"
-  },
-  {
-   "file": "RotationSolver/RebornRotations/Tank/DRK_Reborn.cs",
-   "member": "private bool ShouldUseBlackestNightOnSelf()"
   },
   {
    "file": "RotationSolver/RebornRotations/Tank/DRK_Reborn.cs",
    "member": "private const byte BloodPoolLimit = 70;"
   },
   {
-   "file": "RotationSolver/RebornRotations/Tank/DRK_Reborn.cs",
-   "member": "private bool UseBlood"
-  },
-  {
-   "file": "RotationSolver/RebornRotations/Tank/DRK_Reborn.cs",
-   "member": "private bool EdgeKeepsBlackestNightMp => !TheBlackestNight || HasDarkArts"
-  },
-  {
-   "file": "RotationSolver/RebornRotations/Tank/DRK_Reborn.cs",
-   "member": "private static bool CanUseOnLowestBelow(IBaseAction action, float ratio, bool usedUp, out IAction? act)"
-  },
-  {
    "file": "RotationSolver/RebornRotations/Tank/GNB_Reborn.cs",
    "member": "Tooltip = \"Arm's Length is used on a group pull for its Slow, not only as knockback \""
-  },
-  {
-   "file": "RotationSolver/RebornRotations/Tank/GNB_Reborn.cs",
-   "member": "protected override bool HasOwnArmsLengthPullRule => true;"
-  },
-  {
-   "file": "RotationSolver/RebornRotations/Tank/GNB_Reborn.cs",
-   "member": "private int EnemiesAroundMe()"
-  },
-  {
-   "file": "RotationSolver/RebornRotations/Tank/GNB_Reborn.cs",
-   "member": "private bool CartridgeSpender(out IAction? act)"
-  },
-  {
-   "file": "RotationSolver/RebornRotations/Tank/GNB_Reborn.cs",
-   "member": "private bool SonicBreakWorthIn(int pack)"
   },
   {
    "file": "RotationSolver/RebornRotations/Tank/PLD_Reborn.cs",
@@ -1919,10 +1195,6 @@
   },
   {
    "file": "RotationSolver/RebornRotations/Tank/WAR_Reborn.cs",
-   "member": "protected override bool HasOwnArmsLengthPullRule => true;"
-  },
-  {
-   "file": "RotationSolver/RebornRotations/Tank/WAR_Reborn.cs",
    "member": "Tooltip = \"The single-target defence casts Bloodwhetting (Raw Intuition before level 82) also \""
   },
   {
@@ -1934,62 +1206,6 @@
    "member": "Tooltip = \"Thrill of Battle goes out as soon as your health, falling at the rate measured over the \""
   },
   {
-   "file": "RotationSolver/RebornRotations/Tank/WAR_Reborn.cs",
-   "member": "private bool BloodwhettingForDefense => SoloIntuition || NumberOfHostilesInRange > 2;"
-  },
-  {
-   "file": "RotationSolver/RebornRotations/Tank/WAR_Reborn.cs",
-   "member": "private bool HoldShakeItOffInHeal()"
-  },
-  {
-   "file": "RotationSolver/RebornRotations/Tank/WAR_Reborn.cs",
-   "member": "private bool ShakeItOffTakesNeeded()"
-  },
-  {
-   "file": "RotationSolver/RebornRotations/Tank/WAR_Reborn.cs",
-   "member": "private bool HoldShakeItOffForTankbuster()"
-  },
-  {
-   "file": "RotationSolver/RebornRotations/Tank/WAR_Reborn.cs",
-   "member": "private bool NeedsBloodwhettingHimself(out bool aboutToDie)"
-  },
-  {
-   "file": "RotationSolver/RebornRotations/Tank/WAR_Reborn.cs",
-   "member": "private static bool WinsTriageOverWarrior(IBattleChara member, bool warriorAboutToDie)"
-  },
-  {
-   "file": "RotationSolver/RebornRotations/Tank/WAR_Reborn.cs",
-   "member": "private bool NascentFlashForTankbuster(out IAction? act)"
-  },
-  {
-   "file": "RotationSolver/RotationSolverPlugin.cs",
-   "member": "private static DiagnosticsWindow? _diagnosticsWindow;"
-  },
-  {
-   "file": "RotationSolver/RotationSolverPlugin.cs",
-   "member": "private static CrucibleTeamWindow? _crucibleTeamWindow;"
-  },
-  {
-   "file": "RotationSolver/RotationSolverPlugin.cs",
-   "member": "private static CrucibleShopWindow? _crucibleShopWindow;"
-  },
-  {
-   "file": "RotationSolver/RotationSolverPlugin.cs",
-   "member": "private static CrucibleCampWindow? _crucibleCampWindow;"
-  },
-  {
-   "file": "RotationSolver/RotationSolverPlugin.cs",
-   "member": "private static CrucibleRouteWindow? _crucibleRouteWindow;"
-  },
-  {
-   "file": "RotationSolver/RotationSolverPlugin.cs",
-   "member": "private static CarnivaleSetWindow? _carnivaleSetWindow;"
-  },
-  {
-   "file": "RotationSolver/RotationSolverPlugin.cs",
-   "member": "private static CrucibleTreasureWindow? _crucibleTreasureWindow;"
-  },
-  {
    "file": "RotationSolver/UI/SearchableConfigs/Searchable.cs",
    "member": "private static void Bulleted(string description)"
   },
@@ -1999,23 +1215,7 @@
   },
   {
    "file": "RotationSolver/Updaters/CancelCastUpdater.cs",
-   "member": "private static (uint Action, ulong Target, float Total) _raiseStopTraced;"
-  },
-  {
-   "file": "RotationSolver/Updaters/CancelCastUpdater.cs",
-   "member": "private static (uint Action, ulong Target, float Elapsed, bool NeededAtStart, uint HpAtStart, DateTime Start, bool Traced,"
-  },
-  {
-   "file": "RotationSolver/Updaters/CancelCastUpdater.cs",
-   "member": "private static (uint Action, DateTime At) _cancelTraced = (0, DateTime.MinValue);"
-  },
-  {
-   "file": "RotationSolver/Updaters/CancelCastUpdater.cs",
    "member": "private static void TraceCancel(IBattleChara player, string reason)"
-  },
-  {
-   "file": "RotationSolver/Updaters/CancelCastUpdater.cs",
-   "member": "private static bool RaiseLandsFirstElsewhere(IPlayerCharacter player, IBattleChara? castTarget)"
   },
   {
    "file": "RotationSolver/Updaters/MajorUpdater.cs",
@@ -2031,26 +1231,6 @@
   },
   {
    "file": "RotationSolver/Updaters/StateUpdater.cs",
-   "member": "private static bool TankbusterTargetsAllImpervious()"
-  },
-  {
-   "file": "RotationSolver/Updaters/StateUpdater.cs",
-   "member": "private static bool AnnouncedAreaCastIsUpForHealing()"
-  },
-  {
-   "file": "RotationSolver/Updaters/StateUpdater.cs",
-   "member": "private static uint _healAheadTraced;"
-  },
-  {
-   "file": "RotationSolver/Updaters/StateUpdater.cs",
-   "member": "private static AutoStatus StatusFromHealToDefeat()"
-  },
-  {
-   "file": "RotationSolver/Updaters/StateUpdater.cs",
-   "member": "private static string? _antiKnockbackWhy;"
-  },
-  {
-   "file": "RotationSolver/Updaters/StateUpdater.cs",
    "member": "private static string? AntiKnockbackReason()"
   },
   {
@@ -2058,64 +1238,12 @@
    "member": "private static float PartyHealingOfTimeRatio()"
   },
   {
-   "file": "RotationSolver/Updaters/StateUpdater.cs",
-   "member": "internal static bool NeedsSingleHealSpell(IBattleChara member)"
-  },
-  {
-   "file": "RotationSolver/Updaters/TargetUpdater.cs",
-   "member": "private static readonly Dictionary<ulong, (ulong Member, DateTime Since)> _provokeTurns = [];"
-  },
-  {
-   "file": "RotationSolver/Updaters/TargetUpdater.cs",
-   "member": "private static bool ProvokeCannotWait(IBattleChara enemy)"
-  },
-  {
-   "file": "RotationSolver/Updaters/TargetUpdater.cs",
-   "member": "private static void ForgetProvokeTurns()"
-  },
-  {
-   "file": "RotationSolver/Updaters/TargetUpdater.cs",
-   "member": "private static void FillReady(List<IBattleChara> ready, List<IBattleChara> qualified, bool delayRunOut,"
-  },
-  {
-   "file": "RotationSolver/Updaters/TargetUpdater.cs",
-   "member": "private static void UpdateAreaCasters()"
-  },
-  {
-   "file": "RotationSolver/Updaters/TargetUpdater.cs",
-   "member": "private static void UpdateCastsByOthers()"
-  },
-  {
    "file": "RotationSolver/Updaters/TargetUpdater.cs",
    "member": "private static void CollectHostileTargets(List<IBattleChara> into, Func<IBattleChara, bool> predicate)"
   },
   {
    "file": "RotationSolver/Updaters/TargetUpdater.cs",
-   "member": "private static ulong _dutyOnlyCorpse;"
-  },
-  {
-   "file": "RotationSolver/Updaters/TargetUpdater.cs",
-   "member": "private static bool _dutyRestrictionSeen;"
-  },
-  {
-   "file": "RotationSolver/Updaters/TargetUpdater.cs",
    "member": "private static void TraceDutyOnlyRaise()"
-  },
-  {
-   "file": "RotationSolver/Updaters/TargetUpdater.cs",
-   "member": "private static bool DangerousStatusEndsWithin(IBattleChara person, float seconds)"
-  },
-  {
-   "file": "RotationSolver/Updaters/TargetUpdater.cs",
-   "member": "private static IBattleChara? HealerDispelTarget(List<IBattleChara> candidates, bool nothingAsked)"
-  },
-  {
-   "file": "RotationSolver/Updaters/TargetUpdater.cs",
-   "member": "private static void TraceParried(List<IBattleChara> parried)"
-  },
-  {
-   "file": "RotationSolver/Updaters/TargetUpdater.cs",
-   "member": "private static void TraceSpiked(IBattleChara enemy)"
   },
   {
    "file": "RotationSolver/Watcher.cs",
@@ -2123,135 +1251,7 @@
   },
   {
    "file": "RotationSolver/Watcher.cs",
-   "member": "private static int MarkerLocksRunning()"
-  },
-  {
-   "file": "RotationSolver/Watcher.cs",
-   "member": "private static string SourceCommit()"
-  },
-  {
-   "file": "RotationSolver/Watcher.cs",
-   "member": "private static uint FullAmount(EffectEntry entry)"
-  },
-  {
-   "file": "RotationSolver/Watcher.cs",
-   "member": "private static bool TryAreaShare(uint amount, IBattleChara member, uint actionId, IBattleChara? caster, out float share)"
-  },
-  {
-   "file": "RotationSolver/Watcher.cs",
-   "member": "private static void MarkMeasuredUnmitigated(uint actionId)"
-  },
-  {
-   "file": "RotationSolver/Watcher.cs",
-   "member": "private static void RecordAreaSeriesSpan(uint actionId, float span)"
-  },
-  {
-   "file": "RotationSolver/Watcher.cs",
-   "member": "private static bool IsCleanAreaReading(IBattleChara? caster, bool vulnerableMeasured)"
-  },
-  {
-   "file": "RotationSolver/Watcher.cs",
-   "member": "private sealed class AreaSeries"
-  },
-  {
-   "file": "RotationSolver/Watcher.cs",
-   "member": "private static float SeriesShare(uint listed, Dictionary<ulong, float> shares, IGameObject? caster, out float span)"
-  },
-  {
-   "file": "RotationSolver/Watcher.cs",
-   "member": "private static readonly List<(ulong Target, uint Amount)> _ownHeals = [];"
-  },
-  {
-   "file": "RotationSolver/Watcher.cs",
-   "member": "private static Dictionary<ulong, uint> AmountsByTarget(ActionEffectSet set, ActionEffectType type)"
-  },
-  {
-   "file": "RotationSolver/Watcher.cs",
-   "member": "private static ActionType ActionTypeOf(ActionEffectSet set) => (ActionType)(byte)set.Header.ActionType;"
-  },
-  {
-   "file": "RotationSolver/Watcher.cs",
-   "member": "private static bool IsDamageEntry(ActionEffectType type)"
-  },
-  {
-   "file": "RotationSolver/Watcher.cs",
-   "member": "private static void RecordHealsByOthers(ActionEffectSet set, IBattleChara player)"
-  },
-  {
-   "file": "RotationSolver/Watcher.cs",
-   "member": "private static void RecordCrucibleHits(ActionEffectSet set, IBattleChara player)"
-  },
-  {
-   "file": "RotationSolver/Watcher.cs",
-   "member": "private static void RecordEnemyDanger(ActionEffectSet set, IBattleChara source, IBattleChara player)"
-  },
-  {
-   "file": "RotationSolver/Watcher.cs",
-   "member": "private static bool IsOnYourSide(ulong id, IBattleChara player)"
-  },
-  {
-   "file": "RotationSolver/Watcher.cs",
-   "member": "private static bool ReachedYourSide(ActionEffectSet set, IBattleChara player)"
-  },
-  {
-   "file": "RotationSolver/Watcher.cs",
-   "member": "private static bool TryGetDamageEntry(TargetEffect effect, out EffectEntry entry)"
-  },
-  {
-   "file": "RotationSolver/Watcher.cs",
-   "member": "private static bool ReachedTarget(TargetEffect effect)"
-  },
-  {
-   "file": "RotationSolver/Watcher.cs",
-   "member": "private static bool IsHostileSource(ActionEffectSet set)"
-  },
-  {
-   "file": "RotationSolver/Watcher.cs",
-   "member": "private static int ReachedTargets(ActionEffectSet set)"
-  },
-  {
-   "file": "RotationSolver/Watcher.cs",
-   "member": "private static int DamagedPartyMembers(ActionEffectSet set)"
-  },
-  {
-   "file": "RotationSolver/Watcher.cs",
-   "member": "private static void ObserveStuns(ActionEffectSet set)"
-  },
-  {
-   "file": "RotationSolver/Watcher.cs",
-   "member": "private static void ObserveSleep(ActionEffectSet set, ulong playerId)"
-  },
-  {
-   "file": "RotationSolver/Watcher.cs",
-   "member": "private static bool IsStun(uint statusId)"
-  },
-  {
-   "file": "RotationSolver/Watcher.cs",
-   "member": "private static void RecordFollowUpOfEmptyLanding(ActionEffectSet set, Lumina.Excel.Sheets.Action action,"
-  },
-  {
-   "file": "RotationSolver/Watcher.cs",
-   "member": "private static float DamageShareOn(ActionEffectSet set, ulong targetId, uint denom)"
-  },
-  {
-   "file": "RotationSolver/Watcher.cs",
-   "member": "private static List<uint> StatusesAppliedTo(ActionEffectSet set, ulong targetId)"
-  },
-  {
-   "file": "RotationSolver/Watcher.cs",
    "member": "private static void TraceHitFromUnreadSource(ActionEffectSet set, IBattleChara player)"
-  },
-  {
-   "file": "RotationSolver/Watcher.cs",
-   "member": "private static void ObserveOwnHits(ActionEffectSet set, Lumina.Excel.Sheets.Action action)"
-  },
-  {
-   "file": "RotationSolver/Watcher.cs",
-   "member": "private static bool HasInvincibility(IBattleChara target)"
-  },
-  {
-   "file": "RotationSolver/Watcher.cs",
-   "member": "private static List<uint> PromisedTargetStatuses(uint actionId)"
   }
  ]
 }

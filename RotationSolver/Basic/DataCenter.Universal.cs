@@ -25,6 +25,12 @@ namespace RotationSolver.Basic;
 
 internal static partial class DataCenter
 {
+	// A779: the length of the last combat and the territory it was fought in, so a rotation can tell whether the pull
+	// before this one here reached a later burst (set by ActionUpdater when combat ends).
+	internal static float LastPullSeconds { get; set; }
+
+	internal static uint LastPullTerritoryId { get; set; }
+
 	/// <summary>
 	/// The party's first living tank, or null if there is none.
 	/// </summary>
@@ -500,12 +506,72 @@ internal static partial class DataCenter
 	/// </remarks>
 	private static bool AreaCastReaches(IBattleChara h, Action act, IBattleChara member)
 	{
+		if (AreaShapeReaches(h, act, member))
+		{
+			return true;
+		}
+
+		// A765: the same attack's hits without a cast of their own, in the rows next to it (concept 13, "Mehrteilige Angriffe").
+		foreach (var part in SameAttackHits(act))
+		{
+			if (AreaShapeReaches(h, part, member))
+			{
+				return true;
+			}
+		}
+
+		return false;
+	}
+
+	private static readonly ConcurrentDictionary<uint, Action[]> _sameAttackHits = new();
+
+	// A765: the rows that adjoin <act> without a gap, carry its name and have no cast time - the hits of a cast that lands as
+	// another action, such as Claw and Tail (#43132 cast as a line, #43131 hitting as a cone behind).
+	private static Action[] SameAttackHits(Action act)
+	{
+		return _sameAttackHits.GetOrAdd(act.RowId, static (id, cast) =>
+		{
+			var name = cast.Name.ExtractText();
+			if (string.IsNullOrEmpty(name))
+			{
+				return [];
+			}
+
+			var sheet = Service.GetSheet<Action>();
+			var parts = new List<Action>();
+			foreach (var step in new[] { -1, 1 })
+			{
+				for (var row = (long)id + step; row > 0 && row <= uint.MaxValue; row += step)
+				{
+					if (sheet.GetRowOrDefault((uint)row) is not { } other || other.Name.ExtractText() != name)
+					{
+						break;
+					}
+
+					// A row without an effect range draws no area; read alone it would reach everyone.
+					if (other.Cast100ms == 0 && other.EffectRange > 0)
+					{
+						parts.Add(other);
+					}
+				}
+			}
+
+			return [.. parts];
+		}, act);
+	}
+
+	private static bool AreaShapeReaches(IBattleChara h, Action act, IBattleChara member)
+	{
 		if ((CastType)act.CastType == CastType.Targeted && act.Range > 0)
 		{
 			return h.CastTargetObjectId == member.GameObjectId;
 		}
 
-		if (act.EffectRange == 0 || h.CastTargetObjectId == member.GameObjectId)
+		// A766: a cone or a line hits where it points, not whom it names; a circle or ring on a target hits its target.
+		var (degrees, inner) = OmenShape(act);
+		var directional = (act.CastType is (byte)CastType.StraightLine or LineFromCasterCastType && act.XAxisModifier > 0)
+			|| ((IsConeCastType(act.CastType) || (CastType)act.CastType == CastType.Donut) && degrees > 0f);
+		if (act.EffectRange == 0 || (h.CastTargetObjectId == member.GameObjectId && !directional))
 		{
 			return true;
 		}
@@ -528,8 +594,7 @@ internal static partial class DataCenter
 
 		if (act.CastType is (byte)CastType.StraightLine or LineFromCasterCastType && act.XAxisModifier > 0)
 		{
-			var direction = aimedAt != null ? aimedAt.Position - h.Position : h.GetFaceVector();
-			direction.Y = 0;
+			var direction = CastDirection(h);
 			if (direction.LengthSquared() > 0f)
 			{
 				direction = Vector3.Normalize(direction);
@@ -545,16 +610,17 @@ internal static partial class DataCenter
 
 		if (act.TargetArea)
 		{
-			return HorizontalDistance(member.Position, h.Position) - member.HitboxRadius - h.HitboxRadius <= act.EffectRange;
+			// A766: around the place the game keeps for the cast; without one, from the caster with both hitboxes.
+			return CastLocation(h) is { } place
+				? HorizontalDistance(member.Position, place) - member.HitboxRadius <= act.EffectRange
+				: HorizontalDistance(member.Position, h.Position) - member.HitboxRadius - h.HitboxRadius <= act.EffectRange;
 		}
 
-		// A731: a cone by the angle its omen names, towards the cast's target or the caster's facing; a ring with a sector in
-		// its omen counts as that cone without its inner circle.
-		var (degrees, inner) = OmenShape(act);
+		// A731: a cone by the angle its omen names, in the cast's direction (A766); a ring with a sector in its omen counts as
+		// that cone without its inner circle.
 		if ((IsConeCastType(act.CastType) || (CastType)act.CastType == CastType.Donut) && degrees > 0f)
 		{
-			var direction = aimedAt != null ? aimedAt.Position - h.Position : h.GetFaceVector();
-			return InCone(h.Position, direction, act.EffectRange + casterRadius, degrees, member);
+			return InCone(h.Position, CastDirection(h), act.EffectRange + casterRadius, degrees, member);
 		}
 
 		// A731: a ring spares who stands wholly inside its inner circle.
@@ -566,6 +632,37 @@ internal static partial class DataCenter
 		}
 
 		return HorizontalDistance(member.Position, h.Position) - member.HitboxRadius <= act.EffectRange + casterRadius;
+	}
+
+	// A766 (concept 13, "Wirkrichtung und Ort aus dem Spiel"): the direction the game keeps for the cast, as BossMod reads
+	// it (Character.CastRotation); the omen and the hit keep it while the target moves. The caster's facing without one.
+	private static unsafe Vector3 CastDirection(IBattleChara h)
+	{
+		if (h.Address == nint.Zero || !h.IsCasting)
+		{
+			return h.GetFaceVector();
+		}
+
+		var rotation = ((FFXIVClientStructs.FFXIV.Client.Game.Character.Character*)h.Address)->CastRotation;
+		return new Vector3(MathF.Sin(rotation), 0f, MathF.Cos(rotation));
+	}
+
+	// A766: the place of a ground-targeted cast as the game keeps it (CastInfo.TargetLocation); null while it gives none.
+	internal static unsafe Vector3? CastLocation(IBattleChara h)
+	{
+		if (h.Address == nint.Zero || !h.IsCasting)
+		{
+			return null;
+		}
+
+		var info = ((FFXIVClientStructs.FFXIV.Client.Game.Character.Character*)h.Address)->GetCastInfo();
+		if (info == null)
+		{
+			return null;
+		}
+
+		var place = new Vector3(info->TargetLocation.X, info->TargetLocation.Y, info->TargetLocation.Z);
+		return place.LengthSquared() > 0f ? place : null;
 	}
 
 	// A731: cast type 13 is a cone like type 3 (Cone), which the enum does not name, measured from the caster's centre.

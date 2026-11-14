@@ -53,7 +53,7 @@ Gemessen am 13.11.2026.
 Was das im Kampf heißt: Im Dauerbetrieb kostet RSR weniger als ein Zwanzigstel eines Frames, die
 Speicherbereinigung läuft oft mit und bleibt unter einem Frame. Spürbar ist nur der erste Pull einer Sitzung: Ein
 Durchlauf von bis zu 64 ms hält das Bild für bis zu vier Frames an (Thok ast Thok, 11.11.2026, 45 ms davon im Schritt
-der Rotation). Das ist die technische Schuld „Der erste Kampf einer Sitzung hält einen Durchlauf bis 170 ms an".
+der Rotation). Seit A739 gebaut (Abschnitt „Der erste Pull"), im Spiel bestätigt am 13.11.2026 (A765).
 
 **Statisch**, am Quelltext (Stand b0ab17a15):
 
@@ -86,8 +86,19 @@ entscheidet sein nächster Upload, welcher Anteil eines Rucklers Übersetzung is
 
 *Optionen:* (0) nichts; (1) Vorübersetzen im Hintergrund; (2) ReadyToRun, also vorübersetzte Bibliotheken; (3) die
 gestufte Übersetzung abschalten. *Abwägung im Kampf:* (0) lässt den Ruckler am Pull, der genau dann fällt, wenn der
-Tank zieht und der erste GCD zählt. (2) entfernt ihn ganz, aber Dalamud lädt die Plugin-Bibliothek selbst und baut sie
-mit seinem Packager; ob ein ReadyToRun-Abbild dort angenommen wird, ist ungeprüft und hier nicht prüfbar. (3) übersetzt
+Tank zieht und der erste GCD zählt. (2) scheidet aus, geprüft am 13.11.2026 (A748): Dalamud lädt jedes Plugin in einen
+entladbaren AssemblyLoadContext und aus dem Speicher (`LocalPlugin.SetupLoaderConfig`: `IsUnloadable = true`,
+`LoadInMemory = true`, `ManagedLoadContext.LoadAssemblyFromFilePath` dann über `LoadFromStream`; goatcorp/Dalamud
+43b34118, 10.11.2026), und in einem entladbaren Kontext „ReadyToRun generated code will be ignored" (Microsoft Learn,
+„How to use and debug assembly unloadability in .NET"). Damit fällt auch statisches PGO weg, das seine Profile über
+ReadyToRun mitliefert. NativeAOT kennt keine nachgeladene verwaltete Bibliothek. Eine Ablage des Maschinencodes über
+Starts hinweg, wie Python ihren Bytecode als `.pyc` ablegt, gibt es in .NET Core nicht – das Gegenstück zu `.pyc` ist die
+IL der DLL, die der Build schon erzeugt; den Maschinencode legte nur `ngen.exe` des alten .NET Framework ab
+(Baltes-Götz und Frischknecht, „Einführung in das Programmieren mit C# 14", Abschnitt 2.5). Die Optimierung zur
+Laufzeit nach gemessenem Verhalten – das, was Visual Studio für C++ als profilgesteuerte Optimierung anbietet – macht
+.NET 10 von selbst: Dynamisches PGO ist seit .NET 8 voreingestellt, und Dalamuds Laufzeitkonfiguration
+(`Dalamud.runtimeconfig.json`) schaltet weder die gestufte Übersetzung noch PGO ab; es misst und übersetzt in jeder
+Sitzung neu, im Hintergrund. (3) übersetzt
 jede Methode beim ersten Aufruf voll optimiert – teurer, der Ruckler würde länger. (1) übersetzt beim Laden auf einem
 Hintergrundthread jede Methode des Kerns (alles außer Oberfläche und Rotationen) und beim Wechsel der Rotation deren
 Klasse samt Basisklassen; der Spielthread findet sie fertig vor. *Gewählt:* (1). *Gemessen* an der gebauten Bibliothek
@@ -103,6 +114,12 @@ Ist der Ruckler das Laden eines Blatts, nicht Übersetzung, zeigt die neue Koste
 Durchlauf; dann ist der nächste Schritt das Vorladen der Blätter. Ausgeliefert, und nichts ändert sich? Möglich, wenn
 der Kampf vor dem Ende des Vorübersetzens beginnt oder der Ruckler in Bibliotheken liegt, die RSR nicht übersetzt
 (ECommons, Dalamud); beides zeigen die Zeilen „warm-up" und die JIT-Zahl des langsamsten Durchlaufs.
+*Im Spiel bestätigt* (13.11.2026, A765): Auf seinem Rechner übersetzte das Vorübersetzen 10.561 und 10.584 Methoden des
+Kerns in 13 bis 15 s im Hintergrund, die Rotation in 0,05 bis 0,5 s, keine abgelehnt. Im ersten Kampf danach kostete
+der teuerste Frame 8,8 und 6,8 ms (25 ms Übersetzung über 800 und 3.000 Durchläufe verteilt). Am 12.11.2026, Build
+ohne Vorübersetzen, waren es 27,2 ms. Kein Frame des ersten Kampfes überschreitet mehr die Hälfte eines Bilds bei 60
+Bildern. Die 13 bis 15 s statt der 0,5 s im Container sind seine Maschine unter dem laufenden Spiel; der Kampf
+begann jeweils Minuten danach.
 
 ### Ein Ergebnis gilt, bis sich seine Grundlage ändert
 
@@ -151,6 +168,25 @@ Frame rechnet (Ziele, Zustand), und die Entscheidung nur liest – die Regel „
 Rotationsschritts das Tor ohnehin sperrte. *Entscheidung danach:* Trägt dieser Anteil die Hälfte des Rotationsschritts
 oder mehr, folgt der Loop: zuerst die Beobachtungen aus dem Entscheidungspfad lösen, Member für Member, dann
 überspringen; bleibt er klein, lohnt der Umbau nicht, und die Trennung bleibt eine Frage der Entwurfsregel.
+*Gemessen (13.11.2026, A765; Weißmagier und Beschwörer, Builds f16ff5976 und dca6fb8e8, 40 Kämpfe):* In 50 bis 55 % der
+Durchläufe sperrte das Tor ohnehin, und sie tragen 50 bis 55 % der Zeit des Rotationsschritts. Der Schritt kostet im
+Mittel 0,21 bis 0,39 ms je Frame; der Gewinn läge bei 0,1 bis 0,2 ms je Frame, rund 1 % der Framezeit bei 60 Bildern.
+Die Bedingung „die Hälfte oder mehr“ ist erfüllt.
+*Loop danach (A767): nicht gebaut.* Die Prämisse „in diesen Frames geht keine Aktion verloren, wenn nicht entschieden
+wird“ hält nicht. In gesperrten Frames lesen andere Stellen die frisch entschiedene Aktion:
+- Das Abfangen eines eigenen Tastendrucks (`ActionQueueManager`) vergleicht den gedrückten Knopf mit
+  `ActionUpdater.NextAction`. Gedrückt wird gerade während eines Zaubers, für den nächsten GCD. Mit der Aktion von
+  vor dem Zauber fiele der Vergleich anders aus: Ein Druck, der zur neuen Entscheidung passt, würde abgefangen.
+- Der Zielwechsel nach der nächsten Aktion (`UpdateTargetFromNextAction`, Modus „Target only“ und Lehrmodus).
+- Das Fenster „Next Action“ und die Markierung im Lehrmodus. Er sieht sie.
+- True North für Nahkämpfer (`StateUpdater.ShouldAddPositional`) liest den nächsten GCD.
+*Optionen danach:* (a) überspringen und diese Leser in Kauf nehmen: verworfen, ändert das Abfangen im Kampf. (b) Nur auf
+Anfrage entscheiden, wenn ein Leser fragt: Das Fenster fragt jedes Bild, und die 29 plus 58 Zeitstempel im
+Entscheidungspfad müssten trotzdem erst heraus. (c) In gesperrten Frames seltener entscheiden: Ein Leser sieht eine
+Aktion, die ein Bild älter ist, und die Beobachtungen werden gröber; es spart die Hälfte von 0,1 bis 0,2 ms und
+braucht eine neue feste Rate. *Bilanz:* Jede Variante zahlt mit Verhalten oder mit einem Umbau an 87 Stellen. Der
+Gewinn ist 1 % der Framezeit, im Kampf nicht zu sehen. Option 0 bleibt. Die Messzeile „rotation step while the gate
+would not press“ bleibt: Steigt der Anteil oder der Rotationsschritt deutlich, ist das neu zu prüfen.
 *Falsifikation des Vorschlags:* Kein Gewinn? Möglich – die Zeile zeigt es. Falsche Option? Überspringen ohne die
 Trennung verschöbe Fristen; deshalb nicht gebaut. Ausgeliefert, und nichts ändert sich? Mit dem Messmittel allein so
 gewollt.
@@ -188,12 +224,28 @@ vor und nach), Compile ohne Warnung, alle Prüfungen. Prüfskripte, die eine Kla
 (`check_learned_readers`, `check_emergency_heal_threat`); `check_invuln_polarity` und `fixed_values.json` nennen die
 Teildatei. `ActionTargetInfo` bleibt: Dort sind nur 164 Zeilen ganze Fork-Member, 956 Fork-Zeilen stehen in Upstreams
 eigenen Membern.
+*Zweite Runde (A746):* `Watcher`, `TargetUpdater`, `CustomRotation_GCD`, `CustomRotation_Ability`, `SummonerRotation`,
+`BlueMageRotation` und die Rotationen `WHM_Reborn`, `SMN_Reborn`, `DRK_Reborn`, `WAR_Reborn`, `SGE_Reborn`, `SAM_Reborn`,
+3.708 Zeilen in 30 Teildateien. Dazu zwei Grenzen mehr: Kein Startwert wandert, auch kein Instanzfeld (ihre Reihenfolge
+über Teildateien ist ebenso offen), und keine Einstellung (`RotationConfig`, `UI`), weil das Einstellungsfenster sie in
+der Reihenfolge ihrer Deklaration zeigt. Die Aktionsliste einer Rotation erzeugt der Source Generator aus den
+Basisklassen; eine gewanderte Eigenschaft ändert sie nicht. In `fork_placement.json` stehen danach 390 Member.
+*Prüfmittel:* Der Matrix-Generator las nur die Hauptdatei und hätte beim Beschwörer Addle als ungenutzt geführt;
+`check_marker_lists`, `check_set_lookups`, `check_heal_target_order` und `scan13` hätten still weniger geprüft. Alle
+lesen eine Klasse jetzt samt Teildateien (`classfile.read`, Selbsttest), und die Regel steht in `pruefmittel.md`.
+*Dritte Runde (A749):* 15 weitere Klassen (darunter `StateUpdater`, `TimeToKillTracker`, `CancelCastUpdater`,
+`HpPotionItem`, `BaseItem`, `RotationSolverPlugin` und die Basisklassen von Maschinist, Weißmagier und Tänzer), 857
+Zeilen; `fork_placement.json` 390 → 314. Eine Datei, die mit einer Bytefolge (BOM) vor `namespace` beginnt, gab dem
+Werkzeug keinen Namensraum mit – die Teildatei lag im globalen Namensraum, und der Build schlug an; das Werkzeug liest die
+Zeile jetzt auch hinter einer BOM, und jede Teildatei trägt ihren Namensraum.
 
 ### Speicher
 
 `_tankbusterHelpHeld` (Fork) behält je Gegner und Aktion einen Zeitpunkt, gelesen nur innerhalb eines GCD; ältere
 Einträge räumt jetzt jeder neue. `_lastHp` (Upstream) wächst um ein Mitglied je gesehenem Mitglied, einige KB über
-eine lange Sitzung: unverändert, kein Nutzen im Kampf gegen eine Zeile Merge-Logistik.
+eine lange Sitzung: unverändert, kein Nutzen im Kampf gegen eine Zeile Merge-Logistik. Die Sammlungen der wirkenden
+Gegner (`TargetUpdater.UpdateAreaCasters`: `AreaCasters`, `AreaCastHelperIds`, `CastingEnemies`) werden je Bild geleert
+und neu gefüllt, nicht neu angelegt (A750). Ihre Leser lesen sie nur im selben Bild.
 
 ### Analyzer auf Fork-Zeilen
 

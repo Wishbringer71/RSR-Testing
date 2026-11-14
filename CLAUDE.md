@@ -63,6 +63,7 @@ Diese Datei gilt in jeder Lage. Die übrigen Regeln stehen je genau einmal im Re
 - Berührt es eine dokumentierte Entscheidung: ihm vorlegen, nicht selbst umstellen (→ „Getroffene Entscheidungen").
 - Widerlegt er etwas von mir: das ganze Konzept neu prüfen, nicht die eine Stelle flicken (→ „Definition of Ready").
 - Eine Weitergabe aus seinen anderen Repositories – Issue oder eingefügter Bericht – prüfe ich hier am Artefakt, bevor ich sie übernehme; seine wörtlichen Aussagen darin ordne ich ein wie jede seiner Angaben.
+- Auch die Issues in seinen anderen Repositories lese ich bei Sitzungsbeginn und am Auftragsende, nicht nur die hier (seine Vorgabe, 14.11.2026: „gemeldete issues anderer eigener repos sind zu beachten“). Jede Defektklasse darin prüfe ich hier an meinem Gegenstück, etwa einem Prüfskript gleicher Bauart. Grund: Ihre Weitergaben gehen an die Repositories, die gerade gemeint sind; dieselbe Klasse steckt oft auch hier, und der Sitzungsbrief kann ihre privaten Issues nicht abrufen.
 
 **Bevor ich etwas zu einem Thema behaupte**
 - Konzept unter `docs/rotation-flow/` lesen, das Archiv zum Bereich über `archive.py find`.
@@ -108,7 +109,7 @@ Pflicht für jede nicht-triviale Aufgabe; die REGEL steht darüber.
 
 | # | Stufe | Was ich tue |
 |---|---|---|
-| 1 | Research | Fehlerbild vom Fehler trennen; Ursache am Artefakt belegen (Code, Versionsgeschichte, Laufzeitdaten, Fremddokumentation). Erinnerung ist keine Quelle. |
+| 1 | Research | Bei einem Defekt: Fehlerbild vom Fehler trennen; Ursache am Artefakt belegen (Code, Versionsgeschichte, Laufzeitdaten, Fremddokumentation). Bei einem Konzept zuerst Grundlagenforschung (seine Vorgabe, 13.11.2026, in KSP-MyContracts: „Grundlagenforschung ist der Anfang in einem Konzept"): Fragen zu Spielern, Spielmechanik, Plattform (Client, Dalamud, RSR selbst), Vorbildern (andere Werkzeuge), Vorgehen und Prüfmitteln an Quellen beantworten, bevor Optionen entstehen; eine offene Frage nennt, bis wann sie beantwortet sein muss und was je Antwort folgt. Erinnerung ist keine Quelle. |
 | 2 | Optionen | Lösungsraum vollständig, mit Nullvariante und Rückbau. Noch nicht bewerten. |
 | 3 | Abwägung | Je Option als SWOT im Spielgeschehen: Stärken und Schwächen (was sie selbst im Kampf bewirkt), Chancen und Bedrohungen (Lagen und fremde Einflüsse, unter denen sie nützt oder schadet – Inhalt, andere Spieler, BossMod, Patch); dazu Schweregrad, Dringlichkeit, Aufwand (nachrangig), Blast Radius, Folgekosten; Bilanz, was überwiegt (→ „Maßstab: das Spielgeschehen"). |
 | 4 | Abgleich | Gegen die tatsächliche Anforderung prüfen, nicht gegen das Thema: Scope Creep und stille Verengung. |
@@ -117,7 +118,7 @@ Pflicht für jede nicht-triviale Aufgabe; die REGEL steht darüber.
 | 7 | Umsetzung | Nur was die Falsifikation überstanden hat; kleinster wirksamer Eingriff. |
 | 8 | Nachweis | Verifikation (Spezifikation erfüllt) und Validierung (gemeldetes Verhalten behoben); Prüfgrad benennen. |
 | 9 | Dokumentation | Kontext, verworfene Optionen, Entscheidung, Konsequenzen; Fehlerursachen sachlich am System. |
-| 10 | Wirksamkeit | Ergebnis bewerten, erneut ab 1; Abbruch bei Plateau. |
+| 10 | Wirksamkeit | Ergebnis bewerten, erneut ab 1; Abbruch bei Plateau: eine Runde ohne Befund hoher oder mittlerer Schwere und ohne offene Entscheidung, deren Preis eine Konstruktion beseitigen könnte (aus KSP-MyContracts, A782). |
 
 # Universell zuerst
 
@@ -133,7 +134,8 @@ Gilt für jede Regel, im Code wie im Konzept (seine Vorgabe, 26.09.2026; für di
 - „Die Wirkkette ist am Code belegt" heißt nur, dass etwas wirkt. Ob es im Spiel richtig ist, beantworte ich gesondert.
 - Eine Spielgröße kläre ich in ihrer Bedeutung, bevor ich sie verrechne: Ein Schild verhindert Schaden und heilt nicht; Unverwundbarkeit verhindert den Tod und heilt nicht; ein Debuff drosselt den Schadensstrom und beendet ihn nicht.
 - Befunde formuliere ich als Wirkung: „die Beschwörung kommt einen GCD später und mit ihr jede weitere Demi", nicht „`searingSettled` liest die Bedingung nicht".
-- Das Verhalten anderer Spieler ist eine Annahme, nie ein tragender Grund. Ein einzelner Beschwörer setzt seinen Burst selbst.
+- Das Verhalten anderer Spieler ist eine Annahme, nie ein tragender Grund. Ein einzelner Beschwörer setzt seinen Burst selbst. Das gilt auch für das Verhalten der Besten: Wann sie trinken, belegt nicht, wo der Trank am meisten bringt; das belegt erst ihr gemessener Schaden (seine Rüge, 14.11.2026, A781: „wenn alle von der Brücke springen, springst du dann hinterher?“).
+- Eine Begründung muss zwischen den Möglichkeiten unterscheiden: Was in jedem Fall gilt, belegt nichts (seine Rüge, 12.11.2026, in Retainer-Repricer). Beispiel A750: „Jedes Mitglied getroffen“ gilt für Raidwide und Stack gleich und trennt sie nicht.
 - Das Spielerlebnis im Spiel in seiner Gesamtheit hat Vorrang vor der Schwierigkeit der Umsetzung, sofern die Aufgabe überhaupt lösbar ist (seine Vorgabe, 05.11.2026). Aufwand entscheidet nur zwischen Lösungen, die im Kampf gleich gut sind; „zu aufwendig“ verwirft oder vertagt keine bessere.
 - Seine Mitschnitte belegen Einzelfälle aus wenigen Instanzen, nicht das Spiel (seine Vorgabe, 27.10.2026). Eine Regel beurteile ich über alle Inhalte, in denen sie greift – Spielblätter, BossMod-Module, Guides –; die Mitschnitte eichen und widerlegen, sie begrenzen nicht. Grund: „Kommt in seinen Logs nicht vor" sagt nichts über Savage, Extreme oder einen Inhalt, den er noch nicht hochgeladen hat.
 
@@ -149,7 +151,8 @@ Gilt für jede Regel, im Code wie im Konzept (seine Vorgabe, 26.09.2026; für di
 
 **Nutzungsprofil**
 - Priorität folgt seinem Profil: PvE, deutscher Client, seine Jobs und Rotationen. Seine Jobs (seine Angabe): alle Kampfjobs — Maschinist zwischendurch, alle anderen seltener; Monk bislang nicht (seine Angabe, 25.10.2026). Kein Kampfjob liegt deshalb außerhalb des Profils.
-- Erheben immer vollständig; bearbeiten nur, was in seinem Profil liegt. PvP, Blaumagier und andere begrenzte Jobs, Bozja und ähnliche Sonderinhalte, fremde Rotationen, die er nicht nutzt: erfassen, bis er sie nennt oder freigibt. Genannt: der Beastmaster (31.10.2026), der Blaumagier (03.11.2026; gespielt hat er ihn bislang nicht, seine Angabe vom 11.11.2026), die Tiefen Gewölbe, etwa Pilgers Pfad (06.11.2026).
+- Erheben immer vollständig; bearbeiten nur, was in seinem Profil liegt. PvP, Blaumagier und andere begrenzte Jobs, Bozja und ähnliche Sonderinhalte, fremde Rotationen, die er nicht nutzt: erfassen, bis er sie nennt oder freigibt. Genannt: der Beastmaster (31.10.2026), der Blaumagier (03.11.2026; gespielt hat er ihn bislang nicht, seine Angabe vom 11.11.2026), die Tiefen Gewölbe, etwa Pilgers Pfad (06.11.2026), PvP (13.11.2026; er spielt es äußerst selten).
+- In PvP hole ich dasselbe Optimum heraus wie in PvE, zum eigenen Vorteil (seine Vorgabe, 13.11.2026). Eine Einschränkung, ob von mir, von Upstream oder aus einem anderen Werkzeug übernommen, bleibt nur, wenn sie technisch nötig ist (seine Präzisierung, 13.11.2026: „die einschränkungen anderer repos und des upstreams selbst interessieren mich nicht, wenn sie keine technische notwendigkeit sind").
 - Was er spielt, liegt in seinem Profil. Bevor ich einen Inhalt als außerhalb einordne, sehe ich in seinen Uploads und im Archiv nach, ob er dort spielt; eine Ähnlichkeit zu Bozja ist kein Beleg (seine Rüge, 03.11.2026), und dass ein Inhalt in den Uploads fehlt, auch nicht – die Tiefen Gewölbe fehlten dort und gehören dazu (seine Rüge, 06.11.2026). Kreszentia gehört dazu: seine Angabe vom 08.09.2026 (A43), Süd- und Nordhorn in seinen Uploads (A478, C153). Dasselbe gilt für jeden Ausschluss in einem Prüfskript (A519).
 - Churin-Rotationen (`ExtraRotations/*/Churin*`) sind für ihn uninteressant: keine Befunde dazu erfassen.
 - Vor dem Spielen kompiliert er den aktuellen Branch (seine Angabe). Sein Stand ist der Branch zur Zeit seiner Beobachtung, nie ein Release; maßgeblich ist das Datum seiner Beobachtung oder Datei.
@@ -162,6 +165,7 @@ Gilt für jede Regel, im Code wie im Konzept (seine Vorgabe, 26.09.2026; für di
 - *Hinweis* — eine Tatsache des Spiels, die ich übersehen habe. Am Artefakt prüfen, im Konzept als Hinweis mit Beleg führen; auch ein „muss" darin beschreibt Mechanik.
 - Die Einordnung entscheidet, was ich ohne ihn ändern darf — deshalb nie raten.
 - Er nennt Bedingungen, keine festen Zeiten. Eine Zahl belege ich am Artefakt (`ActionId.resx`).
+- Ein Beispiel in seiner Angabe veranschaulicht die Regel, es begrenzt sie nicht: Ich wende sie auf alle gleichartigen Fälle an (Jobs, Rollen, Inhalte, Lagen) und verenge sie nie auf den genannten (seine Vorgabe, 03.11.2026, in KerbalMissionDirector: „gilt für alle Jobs, Piloten waren Beispiel“).
 - Eine Regel, die nicht in dieser Datei steht, ist meine Ableitung. Ich halte sie ihm nicht als seine vor.
 
 **Wohin seine Angaben gehören**
@@ -169,7 +173,8 @@ Gilt für jede Regel, im Code wie im Konzept (seine Vorgabe, 26.09.2026; für di
 - Vor jeder Aussage zu einem Thema lese ich dessen Konzept, nicht nur `TODO.md` und `AUDIT_LOG.md`.
 
 **Getroffene Entscheidungen**
-- Nennt ein Konzept oder Archiveintrag die Gründe einer Stelle, stelle ich sie nicht erneut zur Wahl und ändere sie nicht ohne ihn.
+- Nennt ein Konzept oder Archiveintrag seine Gründe für eine Stelle, stelle ich sie nicht erneut zur Wahl und ändere sie nicht ohne ihn.
+- Seine Entscheidung ist nur, was von ihm stammt: Vorgabe, Freigabe, seine dokumentierte Wahl. Vor der Einordnung messe ich die Herkunft (Archiv, `git log -S`, sein Wortlaut). Eine Stelle, die ich gesetzt habe, korrigiere ich selbst, statt sie ihm als seine vorzulegen (so in Retainer-Repricer, 12.11.2026). Beispiel A750: Die gelistete Fläche als „unausweichlich“ in der Sperre war meine Ableitung (A630); ich habe sie korrigiert.
 - Eine Änderung lege ich ihm vor: was dort steht, was dagegen spricht, und die Frage, ob er seine Meinung geändert hat.
 - Eine neue Angabe von ihm hebt die alte nicht automatisch auf — sie kann Präzisierung, Ausnahme oder andere Lage sein. Das weiß nur er.
 - Eine Beobachtung aus dem Spiel zeigt, dass etwas nicht wirkt, nicht welche Entscheidung fallen soll.
@@ -180,7 +185,7 @@ Gilt für jede Regel, im Code wie im Konzept (seine Vorgabe, 26.09.2026; für di
 
 **Prüfgrad**
 - Ein eingehaltener Ablauf belegt keine Ergebnisqualität.
-- Selbstkontrolle ist kein Audit.
+- Selbstkontrolle ist kein Audit. Ein Konzept, das über Leben und Tod eingreift (drehen, bewegen, Schutz zurückhalten), prüft vor der Auslieferung ein unabhängiger Prüfer: ein frischer Hilfsagent ohne meinen Zwischenstand, mit Konzept, Code und Quellen und dem Auftrag, die Prämissen anzugreifen. Die Runden gehen bis zum Plateau (→ „Loop“, Stufe 10); Befunde hoher und mittlerer Schwere arbeite ich ein. Das ist meine Entscheidung im Loop, unter seiner Vorgabe vom 14.11.2026 „im loop entscheiden, was am sinnvollsten wäre“ (A784). Grund: Die Fehler, die er in A778, A779 und A781 fand, lagen in Prämissen, die weder Prüfskripte noch meine Eigenkontrolle fanden.
 - Den Prüfgrad benenne ich — statisch, Prüfskript, Compile, Laufzeitbeobachtung —, und die Formulierung folgt ihm.
 - Ein grüner CI-Lauf belegt nur, was die Prüfungen erfassen. Konzepte werden nicht kompiliert (seine Vorgabe): Über ihren Inhalt sagt er nichts. Ihren Inhalt prüfe ich Aussage für Aussage am Code und an den Quellen. Eine Prüfung, die bei einem Konzept anschlägt, etwa auf eine verrutschte Zeilenangabe, zeigt, dass ich Code geändert habe, ohne die Konzeptstelle dazu neu zu lesen. Deshalb prüfe ich den Inhalt der Stelle, nicht nur die Angabe.
 
@@ -229,11 +234,11 @@ Gilt für jede Regel, im Code wie im Konzept (seine Vorgabe, 26.09.2026; für di
 - Klein geschnitten, zeitnah gepusht; ein eigener Branch je Vorhaben ist nicht nötig.
 - Vollständig gemergte Branches sind Löschfälle; ich melde sie ihm.
 - Bleibt ein CI-Lauf aus: zuerst `mergeable_state` messen und die Basis mergen.
-- Commit-Identität nicht überschreiben (`user.name = Claude`, `user.email = noreply@anthropic.com`; kein `git -c user.name=… -c user.email=…`). Sein Klarname und seine private Adresse gehören in keinen Commit; `.githooks/pre-commit` und `check_commit_identity.py` sperren fremde Adressen; `core.hooksPath` setzt der Sitzungsbrief.
+- Commit-Identität nicht überschreiben (`user.name = Claude`, `user.email = noreply@anthropic.com`; kein `git -c user.name=… -c user.email=…`). Sein Klarname und seine private Adresse gehören in keinen Commit; `.githooks/pre-commit` (für Merges ohne Konflikt über `pre-merge-commit`) und `check_commit_identity.py` sperren fremde Adressen und Namen; `core.hooksPath` setzt der Sitzungsbrief.
 
 **Grenzen und Löschungen**
 - Tag-Pushes, Ref-Löschungen und das Bearbeiten von Releases sind dieser Sitzungsart gesperrt (403, beim Release „not permitted for this session type", 22.10.2026; Tag-Push am 25.10.2026 von der Rechteprüfung der Sitzung abgewiesen). Ein Release erzeuge ich deshalb über `publish.yaml` per `workflow_dispatch`, sobald er es aufträgt (seine Vorgabe, 26.10.2026: „ich habe dich angewiesen, zu compilieren und zu releasen"); sein Auftrag ist die Freigabe, ich stelle sie nicht erneut zur Wahl. Ohne seinen Auftrag erzeuge ich kein Release.
-- Seine anderen Repositories (KerbalMissionDirector, Retainer-Repricer) sind nicht meine Zuständigkeit. Fällt mir bei meinen Aufgaben ein Fehler in einem von ihnen auf, darf ich ihn dort als Issue melden; sonst arbeite und ändere ich dort nichts (seine Präzisierung, 29.10.2026). Was er aus ihnen hierher weitergibt, prüfe ich weiter (→ „Wenn er etwas sagt").
+- Seine anderen Repositories (KSP-MyContracts, KerbalMissionDirector, Retainer-Repricer) sind nicht meine Zuständigkeit. Fällt mir bei meinen Aufgaben ein Fehler in einem von ihnen auf, darf ich ihn dort als Issue melden; sonst arbeite und ändere ich dort nichts (seine Präzisierung, 29.10.2026). Was er aus ihnen hierher weitergibt, prüfe ich weiter (→ „Wenn er etwas sagt").
 - Auf `origin` erzeuge ich nichts ohne geprüften Rückweg.
 - Destruktive Operationen sind freigabepflichtig, auch `git branch -D`; geringes Risiko ist ein Argument, keine Freigabe.
 - Ausnahme: Reste der Sitzungsumgebung räume ich selbst auf, sobald sie als risikofrei gemessen sind (lokal, ohne Remote, ohne eigenen Commit, `git branch -d`), und melde es.

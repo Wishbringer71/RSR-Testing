@@ -546,6 +546,9 @@ Dullahan, Golem, Spriggan und Eisgolem (`XBMPet.InflictsInterrupt`).
     zehn Plätze), Ausrüstung ebenso (zehn Plätze im Fenster; Daedalus: das Spiel lehnt ein elftes Stück ab).
     Ausrüstung wirkt ohne Zutun bis zum Ende des Laufs, Gegenstände verbraucht K8. Die Art steht im Blatt
     (`XBMItemType`: „Beast Gear", „Crucible Item", Futter).
+    *Noch leeres Fenster:* Öffnet sich der Laden, bevor das Spiel seine Werte gefüllt hat, wirft ECommons' Leser
+    `ArgumentOutOfRangeException`. Bis A764 brach das die Dienste des Beastmasters für den Frame ab, Schatz und Route
+    eingeschlossen (am 08.11.2026 fünfmal). Jetzt wartet RSR einen Frame auf die gefüllten Werte, wie beim Futter.
     *Marken und Preise* stehen als Text im Fenster, mit dem Tausendertrenner der Client-Sprache: „1.421" im deutschen,
     „1,421" im englischen Client. RSR liest die Ziffern der ersten Zahl, gleich welcher Trenner zwischen ihren
     Dreiergruppen steht (A657). Grund: ECommons' `FirstNumber` kennt nur das Komma und las „1.421" als 1; im deutschen
@@ -1049,7 +1052,11 @@ Dullahan, Golem, Spriggan und Eisgolem (`XBMPet.InflictsInterrupt`).
       Liegt die Rate über (750 − 250) je geheilten LP, verliert der Lauf Punkte. *Messmittel (gebaut):* RSR schreibt
       jedes Fenster des Crucible (Name beginnt mit „XBM") beim ersten Öffnen je Lauf mit seinen Werten in
       `DefenseTrace.log` („crucible window …"), also auch die Abrechnung am Ende samt LP-Punkten. Aus ihr folgt die Rate.
-      Selbst nachsteuern kann RSR erst, wenn der Aufbau dieses Fensters bekannt ist; den nennt keine Quelle.
+      Selbst nachsteuern kann RSR erst, wenn der Aufbau dieses Fensters bekannt ist; den nennt keine Quelle. Einen Text
+      unter den Werten liest RSR über Dalamuds `SafeMemory`, Seite für Seite bis zum Nullbyte. Ein Zeiger auf
+      unlesbaren Speicher steht als „unreadable“ in der Zeile. Bis A764 las RSR den Text ungeprüft. Am 13.11.2026 um
+      18:50 traf das beim Öffnen eines Crucible-Fensters einen solchen Zeiger, und das Spiel stürzte ab
+      (`AccessViolationException` in `BestiaryTrace.Values`; .NET kann sie nicht abfangen).
     - *Unversehrte Bestien (gebaut):* Fällt der letzte Gegner des Endkampfs vor dem nächsten GCD, stehen alle übrigen
       Begleiter des Kaders bei voller LP und fehlt dem Begleiter im Feld LP, geht der kleinste Heilgegenstand „to self or
       familiar", der ihn auf 100 % bringt, an ihn – vor dem Auffüllen des Spielers, 1.000 vor 250. Die LP der übrigen

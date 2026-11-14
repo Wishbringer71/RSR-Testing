@@ -244,7 +244,7 @@ public static partial class StatusHelper
 	// reflections "All physical attacks are reflected back at the dealer", "Reflecting magic back on its caster",
 	// "Magic attacks are being absorbed and reflected". "Certain death when counter reaches zero" (Doom) is none of them.
 	private static readonly System.Text.RegularExpressions.Regex HitsAttackers = new(
-		@"damage to (?:and [^.]*?)?attackers|\bcountering\b|\bcounter damage\b",
+		@"damage to (?:and [^.]*?)?attackers|\bcountering\b|\bcounter damage\b|damage back to its source",
 		System.Text.RegularExpressions.RegexOptions.IgnoreCase | System.Text.RegularExpressions.RegexOptions.CultureInvariant);
 
 	private static readonly System.Text.RegularExpressions.Regex Reflects = new(@"\breflect",

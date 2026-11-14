@@ -291,7 +291,7 @@
    "reason": "Slider bounds of two enemy counts the owner sets - the slowed minimum of his Holy rule and the group pull for holding Holy under The Blackest Night; bounds of a setting, not a figure of the game (A340)."
   },
   {
-   "file": "RotationSolver/RebornRotations/Healer/WHM_Reborn.cs",
+   "file": "RotationSolver/RebornRotations/Healer/WHM_Reborn.HitResponse.cs",
    "code": "if (slowed * 2 <= inRange)",
    "values": [
     "2"
@@ -697,7 +697,7 @@
    "reason": "More than one member reached is what separates an area hit from a single-target one - the definition the flag needs, not a tunable value; half of the party was rejected because a cleave on the tank and two melee is three of eight"
   },
   {
-   "file": "RotationSolver/RebornRotations/Tank/WAR_Reborn.cs",
+   "file": "RotationSolver/RebornRotations/Tank/WAR_Reborn.TankProtection.cs",
    "code": "private bool BloodwhettingForDefense => SoloIntuition || NumberOfHostilesInRange > 2;",
    "values": [
     "2"
@@ -927,14 +927,14 @@
    "reason": "Two of the shortest gaps between tankbusters on the player in this fight without one: the fight has moved on (a phase without them), and nothing is kept for one any more. One gap overdue still counts as one due now - a late tankbuster is the likelier reading. The game states no spacing of an encounter's tankbusters; the count of gaps is the rule's own threshold, its cost named in A361: after a phase change the auto-attacks meet held mitigation for at most one more gap."
   },
   {
-   "file": "RotationSolver/Basic/Helpers/ActionHelper.cs",
-   "code": "internal const float AbilityClipWindow = 0.5f;",
+   "file": "RotationSolver/Basic/Helpers/ActionHelper.Timing.cs",
+   "code": "private const float FixedAbilityClipWindow = 0.5f;",
    "values": [
     "0.5"
    ],
    "status": "exception",
-   "loop": "A486",
-   "reason": "Upstream's anti-clipping window before the GCD, unchanged in value, named once for its three readers (the ability path, the two checks in RSCommands) and the cast-time check of A486. The window answers how long an ability's animation lock may run into the GCD, which the client gives for the ability only once it is pressed (A388)."
+   "loop": "A486, A753",
+   "reason": "Upstream's anti-clipping window before the GCD, unchanged in value, named once for its three readers (the ability path, the two checks in RSCommands) and the cast-time check of A486. The window answers how long an ability's animation lock may run into the GCD, which the client gives for the ability only once it is pressed (A388). Since A753 only before the first measurement in a zone; then the window is the lock plus the measured rest (concept 03, \"Weben, Animationssperre und Latenz\")."
   },
   {
    "file": "RotationSolver/Watcher.cs",
@@ -977,7 +977,7 @@
    "reason": "Upstream's charge check (both charges within a GCD), unchanged; the fork only added the pack guard in front (A471)."
   },
   {
-   "file": "RotationSolver/RebornRotations/Tank/GNB_Reborn.cs",
+   "file": "RotationSolver/RebornRotations/Tank/GNB_Reborn.Universal.cs",
    "code": "if (pack < 3)",
    "values": [
     "3"
@@ -987,7 +987,7 @@
    "reason": "Reference rule: The Balance, Gunbreaker Basic Guide (31.10.2026), Sonic Break at 3 targets only for half its duration, below that always (A471)."
   },
   {
-   "file": "RotationSolver/RebornRotations/Tank/GNB_Reborn.cs",
+   "file": "RotationSolver/RebornRotations/Tank/GNB_Reborn.Universal.cs",
    "code": "if (pack > 5)",
    "values": [
     "5"
@@ -997,7 +997,7 @@
    "reason": "Reference rule: The Balance, Gunbreaker Basic Guide (31.10.2026), 'Use Sonic Break on up to 5 targets' (A471)."
   },
   {
-   "file": "RotationSolver/RebornRotations/Tank/GNB_Reborn.cs",
+   "file": "RotationSolver/RebornRotations/Tank/GNB_Reborn.Universal.cs",
    "code": "return ttk >= (pack == 3 ? duration / 2f : duration);",
    "values": [
     "3",
@@ -1218,7 +1218,7 @@
    "reason": "Unit conversion, not a game value: the effect text states the share in percent and the method answers a fraction (A507)."
   },
   {
-   "file": "RotationSolver/Basic/Rotations/Basic/BlueMageRotation.cs",
+   "file": "RotationSolver/Basic/Rotations/Basic/BlueMageRotation.HealTarget.cs",
    "code": "return left <= HealthForDyingTanks * 100f;",
    "values": [
     "100"
@@ -1228,7 +1228,7 @@
    "reason": "Unit conversion, not a game value: GetEffectiveHpPercent answers in percent and HealthForDyingTanks is a share, as in the critical class (A154, A340, A507)."
   },
   {
-   "file": "RotationSolver/Basic/Rotations/Basic/BlueMageRotation.cs",
+   "file": "RotationSolver/Basic/Rotations/Basic/BlueMageRotation.Jobs.cs",
    "code": "var gain = damageUp / 100f * (burst + (filler * fillers));",
    "values": [
     "100"
@@ -2180,6 +2180,228 @@
    "status": "exception",
    "loop": "A737",
    "reason": "DeepDungeonType 3 (Pilgrim's Traverse) of the DeepDungeon sheet, for which EXDSchema names no sheet; the sheets per entry are measured (A737). An id of the game's data."
+  },
+  {
+   "file": "RotationSolver/Basic/Tweaks/AnimationLockTweak.cs",
+   "code": "&& (packetOriginalAnimLock % 0.01f) is <= 0.0005f or >= 0.0095f)",
+   "values": [
+    "0.01",
+    "0.0005",
+    "0.0095"
+   ],
+   "status": "exception",
+   "loop": "A753",
+   "reason": "Upstream's packet check, from BossModReborn, its line reworded in A753 to add the game-lock condition: the server sends animation locks in steps of 10 ms, so a value off that grid was changed by another tool (NoClippy uses the same test to find XivAlexander). The format of the packet, not a game value the client could read elsewhere."
+  },
+  {
+   "file": "RotationSolver/Basic/Tweaks/AnimationLockTweak.Timing.cs",
+   "code": "if (_delayCount >= 2 && _lastReqInitialAnimLock > 0f)",
+   "values": [
+    "2"
+   ],
+   "status": "exception",
+   "loop": "A753",
+   "reason": "The least number of answers a mean deviation can be taken from: with one answer the deviation is zero by definition, and the envelope (least delay less deviation) would cut the whole delay of a single sample. A condition of the statistics, not a game value."
+  },
+  {
+   "file": "RotationSolver/Basic/Tweaks/AnimationLockTweak.Timing.cs",
+   "code": "internal float KeptEstimate => ReductionAllowed && _delayCount >= 2",
+   "values": [
+    "2"
+   ],
+   "status": "exception",
+   "loop": "A753",
+   "reason": "The least number of answers a mean deviation can be taken from: with one answer the deviation is zero by definition, and the envelope (least delay less deviation) would cut the whole delay of a single sample. A condition of the statistics, not a game value."
+  },
+  {
+   "file": "RotationSolver/Basic/Helpers/ActionTooltip.cs",
+   "code": "ratio = percent / 100f;",
+   "values": [
+    "100"
+   ],
+   "status": "exception",
+   "loop": "A756",
+   "reason": "Percent to ratio: the unit of the stated figure (\"below 50%\"), not a value of the game or a threshold."
+  },
+  {
+   "file": "RotationSolver/Basic/Rotations/CustomRotation_Actions.cs",
+   "code": "setting.ActionCheck = () => RecuperatePvPAllowed() && Player?.TimeAlive() > 5f;",
+   "values": [
+    "5"
+   ],
+   "status": "exception",
+   "loop": "A756",
+   "reason": "Upstream's wait after a respawn before Recuperate, unchanged in A756 (only the healing and MP condition beside it changed). A respawn in PvP restores full HP, so the wait never holds a heal that is due; derived from no game figure, kept as upstream set it."
+  },
+  {
+   "file": "RotationSolver/Basic/Rotations/CustomRotation_GCD.cs",
+   "code": "if (Player != null && DataCenter.IsPvP && Service.Config.PvpGcdLockControl && Player.GetEffectiveHpPercent() < 50f",
+   "values": [
+    "50"
+   ],
+   "status": "exception",
+   "loop": "A756",
+   "reason": "The text of the setting \"Hold GCDs for heals below 50% HP\" names the figure, and the text binds (code.md, \"Kausalität\"). A756 changed only the MP condition beside it."
+  },
+  {
+   "file": "RotationSolver/Basic/Rotations/CustomRotation_OtherInfo.cs",
+   "code": "public static bool HasPVPGuard => StatusHelper.PlayerHasStatus(true, StatusHelper.PvPGuardStatuses) || (IsLastAction(ActionID.GuardPvP) && TimeSinceLastActionCapped < 0.5f);",
+   "values": [
+    "0.5"
+   ],
+   "status": "exception",
+   "loop": "A756",
+   "reason": "Upstream's bridge between pressing Guard and its status arriving, unchanged in A756 (only the status list beside it changed). In the fight it holds actions half a second after the press; Guard holds them for its 4 s once it lands, so a longer bridge than the round trip costs nothing that Guard would not cost."
+  },
+  {
+   "file": "RotationSolver/Basic/Rotations/CustomRotation_LimitBreak.PvP.cs",
+   "code": "public const uint MarksmansSpite = 29415;",
+   "values": [
+    "29415"
+   ],
+   "status": "exception",
+   "loop": "A756",
+   "reason": "A row number of the Action sheet (an identity, not a quantity), named as the job bases create these Limit Breaks: `(ActionID)<row>`, since the generated ActionID names none of them."
+  },
+  {
+   "file": "RotationSolver/Basic/Rotations/CustomRotation_LimitBreak.PvP.cs",
+   "code": "public const uint Meteodrive = 29485;",
+   "values": [
+    "29485"
+   ],
+   "status": "exception",
+   "loop": "A756",
+   "reason": "A row number of the Action sheet (an identity, not a quantity), named as the job bases create these Limit Breaks: `(ActionID)<row>`, since the generated ActionID names none of them."
+  },
+  {
+   "file": "RotationSolver/Basic/Rotations/CustomRotation_LimitBreak.PvP.cs",
+   "code": "public const uint SeitonTenchu = 29515;",
+   "values": [
+    "29515"
+   ],
+   "status": "exception",
+   "loop": "A756",
+   "reason": "A row number of the Action sheet (an identity, not a quantity), named as the job bases create these Limit Breaks: `(ActionID)<row>`, since the generated ActionID names none of them."
+  },
+  {
+   "file": "RotationSolver/Basic/Rotations/CustomRotation_LimitBreak.PvP.cs",
+   "code": "public const uint Zantetsuken = 29537;",
+   "values": [
+    "29537"
+   ],
+   "status": "exception",
+   "loop": "A756",
+   "reason": "A row number of the Action sheet (an identity, not a quantity), named as the job bases create these Limit Breaks: `(ActionID)<row>`, since the generated ActionID names none of them."
+  },
+  {
+   "file": "RotationSolver/Basic/Rotations/CustomRotation_LimitBreak.PvP.cs",
+   "code": "public const uint Phalanx = 29069;",
+   "values": [
+    "29069"
+   ],
+   "status": "exception",
+   "loop": "A756",
+   "reason": "A row number of the Action sheet (an identity, not a quantity), named as the job bases create these Limit Breaks: `(ActionID)<row>`, since the generated ActionID names none of them."
+  },
+  {
+   "file": "RotationSolver/Basic/Rotations/CustomRotation_LimitBreak.PvP.cs",
+   "code": "public const uint Mesotes = 29266;",
+   "values": [
+    "29266"
+   ],
+   "status": "exception",
+   "loop": "A756",
+   "reason": "A row number of the Action sheet (an identity, not a quantity), named as the job bases create these Limit Breaks: `(ActionID)<row>`, since the generated ActionID names none of them."
+  },
+  {
+   "file": "RotationSolver/Basic/Rotations/CustomRotation_LimitBreak.PvP.cs",
+   "code": "public const uint SkyHigh = 29497;",
+   "values": [
+    "29497"
+   ],
+   "status": "exception",
+   "loop": "A756",
+   "reason": "A row number of the Action sheet (an identity, not a quantity), named as the job bases create these Limit Breaks: `(ActionID)<row>`, since the generated ActionID names none of them."
+  },
+  {
+   "file": "RotationSolver/Basic/Rotations/CustomRotation_LimitBreak.PvP.cs",
+   "code": "public const uint SkyShatter = 29498;",
+   "values": [
+    "29498"
+   ],
+   "status": "exception",
+   "loop": "A756",
+   "reason": "A row number of the Action sheet (an identity, not a quantity), named as the job bases create these Limit Breaks: `(ActionID)<row>`, since the generated ActionID names none of them."
+  },
+  {
+   "file": "RotationSolver/Basic/Rotations/CustomRotation_LimitBreak.PvP.cs",
+   "code": "public const uint Eventide = 29097;",
+   "values": [
+    "29097"
+   ],
+   "status": "exception",
+   "loop": "A761",
+   "reason": "A row number of the Action sheet (an identity, not a quantity), named as the job bases create these Limit Breaks: `(ActionID)<row>`, since the generated ActionID names none of them."
+  },
+  {
+   "file": "RotationSolver/Basic/Helpers/GazeWatch.cs",
+   "code": "private const float DangerHalfAngleDegrees = 45f;",
+   "values": [
+    "45"
+   ],
+   "status": "exception",
+   "loop": "A770",
+   "reason": "Half width of the facing that looks into a gaze. The game data names no angle; BossMod uses 45 degrees for every gaze's forbidden direction (AIHintsBuilder, ForbiddenDirections), built from its recordings."
+  },
+  {
+   "file": "RotationSolver/Basic/Helpers/GazeWatch.cs",
+   "code": "private const uint GazeCastVfx = 25;",
+   "values": [
+    "25"
+   ],
+   "status": "exception",
+   "loop": "A770",
+   "reason": "A row of the ActionCastVFX sheet (an identity, not a quantity): the cast effect of a gaze, as BossMod and BossModReborn read it (Action.VFX == 25); 230 enemy actions carry it, no player action."
+  },
+  {
+   "file": "RotationSolver/Basic/Helpers/GazeWatch.cs",
+   "code": "var middle = 0.5f * (end + next);",
+   "values": [
+    "0.5"
+   ],
+   "status": "exception",
+   "loop": "A774",
+   "reason": "The middle of a safe gap between two forbidden arcs (geometry, not a quantity of the game): the facing furthest from both gazes, so a small turn or a late update of the caster's position does not tip it into either."
+  },
+  {
+   "file": "RotationSolver/Basic/Helpers/GazeWatch.cs",
+   "code": "private const float CastHalfAngleDegrees = 75f;",
+   "values": [
+    "75"
+   ],
+   "status": "exception",
+   "loop": "A777",
+   "reason": "How far a running cast's target may lie off the facing before the game has the spell. The game data names no angle; BossModReborn measured it (ActionManagerEx, \"empirical\") and turns casters within it. If it is too wide, the cast breaks, while the gaze still misses: the facing is safe either way."
+  },
+  {
+   "file": "RotationSolver/Basic/Helpers/GazeWatch.cs",
+   "code": "private const float ActionHalfAngleDegrees = 45f;",
+   "values": [
+    "45"
+   ],
+   "status": "exception",
+   "loop": "A778",
+   "reason": "How far an oriented action's target may lie off the facing for the action to go off. The game data names no angle; BossModReborn measured it (ActionManagerEx: \"target has to be within 45 degrees of character orientation\") and turns within it. If it is narrower, the action is refused and tried again, while the facing stays safe."
+  },
+  {
+   "file": "RotationSolver/Basic/Actions/MedicineItem.Tincture.cs",
+   "code": "private const int EffectSecondsColumn = 2;",
+   "values": [
+    "2"
+   ],
+   "status": "exception",
+   "loop": "A780",
+   "reason": "A column of the ItemAction sheet (an identity, not a quantity): for the gemdraughts Data holds the status (49), its value and the seconds (xivapi v2, items 44157, 44162, 45995: [49, 644|662|686, 30]). The seconds themselves come from the sheet."
   }
  ]
 }

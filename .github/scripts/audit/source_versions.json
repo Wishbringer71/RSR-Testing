@@ -21,27 +21,27 @@
   },
   {
    "repo": "awgil/ffxiv_bossmod",
-   "commit": "09026c552",
-   "date": "2026-11-13",
+   "commit": "c50e67f37",
+   "date": "2026-11-14",
    "use": "BossMod (Original)"
   },
   {
    "repo": "BeirutaNa1na/RotationSolverReborn",
-   "commit": "27bf5d181",
-   "date": "2026-11-12",
+   "commit": "aa03eb9e2",
+   "date": "2026-11-13",
    "use": "Beiruta-Rotationen"
   },
   {
    "repo": "dajoey/lalalazy",
-   "commit": "900c698dd",
-   "date": "2026-11-11",
+   "commit": "078f80b4c",
+   "date": "2026-11-14",
    "use": "GluttonyCombo, LazyCrucible: Crucible-Aufzeichnungen, Sanduhr, Futter (A674, A679)"
   },
   {
    "repo": "FFXIV-CombatReborn/BossmodReborn",
-   "commit": "2087153c2",
-   "date": "2026-11-12",
-   "use": "Crucible-Module, Mechaniken, Vertrag mit RSR (Konzept 21, Code.md)"
+   "commit": "35a908ad7",
+   "date": "2026-11-14",
+   "use": "Crucible-Module, Mechaniken, Vertrag mit RSR (Konzept 21, Code.md), Blickliste GazeActions.g.cs (Konzept 13)"
   },
   {
    "repo": "getsetmind/dalamudmcp",
@@ -183,8 +183,8 @@
   },
   {
    "repo": "t3knical/DalamudPlugins",
-   "commit": "11d4e89c5",
-   "date": "2026-11-12",
+   "commit": "d03f1f005",
+   "date": "2026-11-13",
    "use": "Tekz-BossmodReborn-Fork (Zielvorrang je Kampf), BeastMasterHelper (A667)"
   },
   {
@@ -216,6 +216,24 @@
    "commit": "c52b572",
    "date": "2026-09-21",
    "use": "Beastmaster-Datenansicht (A667)"
+  },
+  {
+   "repo": "Soreepeong/XivAlexander",
+   "commit": "382e7ea",
+   "date": "2026-11-12",
+   "use": "Animationssperre: Netzlaufzeit am Socket, Serveranteil (A753)"
+  },
+  {
+   "repo": "UnknownX7/NoClippy",
+   "commit": "3f4b377",
+   "date": "2026-04-29",
+   "use": "Animationssperre: simulierte Laufzeit, Sperre je Aktion, Clipping-Zählung (A753)"
+  },
+  {
+   "repo": "priestkos/FrontlineAdvisor",
+   "commit": "301a95e",
+   "date": "2026-11-13",
+   "use": "PvP: Frontline-Strategie (Konzept 25, Quellen)"
   }
  ]
 }

@@ -43,6 +43,10 @@ def todo_open(text):
     return out
 
 
+# His other repositories, whose issues pass on what they found (his rule of 14.11.2026, CLAUDE.md).
+OTHER_REPOSITORIES = ("KSP-MyContracts", "KerbalMissionDirector", "Retainer-Repricer")
+
+
 def open_issues(timeout=15):
     """The open issues of origin's repository by number and title; pull requests left out."""
     url = run(["git", "remote", "get-url", "origin"], 10)[0]
@@ -95,6 +99,10 @@ def main(argv):
         lines += [" " + l for l in git_guards()]
         lines.append("Offene Issues (Weitergaben aus seinen anderen Repositories kommen hier an):")
         lines += [" " + l for l in open_issues()]
+        # His rule of 14.11.2026: the issues of his other repositories count too. They are private, so this
+        # unauthenticated call cannot read them; the line names where to look with the GitHub tools.
+        lines.append("Issues seiner anderen Repositories (privat, hier nicht abrufbar; mit list_issues lesen): "
+                     + ", ".join(OTHER_REPOSITORIES))
     todo = ROOT / "TODO.md"
     lines.append("TODO.md, offen:")
     lines += [" " + l for l in todo_open(todo.read_text(encoding="utf-8"))] if todo.exists() else [" TODO.md fehlt"]

@@ -26,6 +26,15 @@ namespace RotationSolver.Basic;
 internal static partial class DataCenter
 {
 	/// <summary>
+	/// Every figure of the enemy side casting now, listed or not: the casters of the hostile list, a targetable enemy the
+	/// list leaves out, and every untargetable figure of the enemy side - the helpers that cast most areas of a boss fight.
+	/// Rebuilt each frame with <see cref="AreaCasters"/> in <c>TargetUpdater</c> and read within that frame. For the questions
+	/// a cast's shape and time answer - what a step avoids, when a hit lands on the player -, not for the defence flags,
+	/// which need the list as evidence of hostility (concept 13, "Was nur ein Schritt vermeidet", A750).
+	/// </summary>
+	public static List<IBattleChara> CastingEnemies { get; } = [];
+
+	/// <summary>
 	/// Whether the player stands above the level the current content syncs to - an unrestricted party in older content.
 	/// A hit taken there is a smaller share than in sync, and every learned size - area, tankbuster, damage over time -
 	/// would rate the action too small for the next synced run, where a saving decision reads it (concept 13, his test

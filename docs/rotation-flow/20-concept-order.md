@@ -34,7 +34,8 @@ Zwei Achsen, und jede Regel steht an genau einer Stelle:
 - **Inhalt, wo sie gilt** – parallel zu den Ebenen: Eine Regel, die nur in einem Inhalt greift, steht im Konzept dieses
   Inhalts, wenn der Inhalt ein eigenes Regelwerk trägt; sonst an ihrer Ebene, und der Index führt sie unter dem Inhalt.
   - *Eigenes Konzept:* das Crucible (`21-crucible.md`, nur Beastmaster), das Masked Carnivale (`22-masked-carnivale.md`,
-    nur Blaumagier), die Tiefen Gewölbe (`23-deep-dungeons.md`, alle Jobs). Jedes trägt Bretter, Stufen oder Böden,
+    nur Blaumagier), die Tiefen Gewölbe (`23-deep-dungeons.md`, alle Jobs), PvP (`25-pvp.md`, alle Jobs mit PvP: eigene
+    Aktionen je Job, eigene Zustände, Spieler als Gegner). Jedes trägt Bretter, Stufen oder Böden,
     Gegenstände und Fenster, die es nur dort gibt, auf hunderten Zeilen.
   - *Nur im Index:* Dungeons, Endgegner, Savage und High-End, Unreal, Occult Crescent, Eureka und Bozja. Ihre Regeln
     sind Lagen einer allgemeinen Regel (der Pull in `09`, die Tinktur in High-End-Inhalten in `03`, Phantom-Aktionen in

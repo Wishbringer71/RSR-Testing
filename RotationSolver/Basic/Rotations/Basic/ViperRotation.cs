@@ -911,7 +911,8 @@ public partial class ViperRotation
 
 	static partial void ModifySlitherPvP(ref ActionSetting setting)
 	{
-
+		// "Rush to a target's side" (effect text), an enemy or a party member (concept 25, "PvP: Bewegung", A756).
+		setting.SpecialType = SpecialActionType.HostileFriendlyMovingForward;
 	}
 
 	static partial void ModifySnakeScalesPvP(ref ActionSetting setting)
