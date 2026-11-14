@@ -406,7 +406,7 @@ Dullahan, Golem, Spriggan und Eisgolem (`XBMPet.InflictsInterrupt`).
     Bedingung „a team of only beastkin"; 750 auf jedem Brett). RSR läuft dieselbe gierige Wahl je Gattung, nur über deren
     Begleiter, mit derselben Größenregel. Ein solches Team gilt, wenn es jede Schwäche des Bretts trifft, die das gemischte
     trifft, mindestens so viele Heiler und Schützer hält, wie das gemischte für den Boss braucht, und den Unterbrecher,
-    wo das gemischte einen hält (nur Seelen-Begleiter unterbrechen, K4). Dann ist es so sicher wie das gemischte und
+    wo das Brett einen verlangt und das gemischte einen hält (nur Seelen-Begleiter unterbrechen, K4). Dann ist es so sicher wie das gemischte und
     bringt 750 Punkte mehr, dazu die Punkte seiner Größe; unter mehreren das mit den meisten Punkten. Unter dem Ziel
     „Level" gilt es erst, wenn kein Begleiter mehr zurückliegt; unter „Safe win" nie (K7, „Ziel des Laufs", A804). *Im Kampf:* Wo
     eine Gattung die Schwächen nicht trägt, ändert sich nichts. *Gegenthese:* Gleiche Abdeckung heißt nicht gleicher
@@ -2109,12 +2109,13 @@ on a pack once a fight, all of them in the final fight (Crucible only)".
   `CrucibleRosterLoader` prüft das Brett ebenso wenig.
 - *Empfehlung:* so viele Begleiter, wie das Brett fasst (`XBMContent.Unknown34`, EXDSchema TeamSize: 10, 12, 14, 12,
   15). Zuerst so viele, die heilen oder schützen (Trick heilt, Tempered Release heilt oder schützt, Borrow schützt), wie
-  B5 vor einem Boss verlangt (zwei, `BossSafeFamiliars`); dann der Reihe nach der, der die meisten noch schwach
+  B5 vor einem Boss verlangt (zwei, `BossSafeFamiliars`; solange einer verfügbar ist, A805); wo Gegner des Bretts
+  unterbrechbar zaubern, ein Seelen-Begleiter für Soul Crush (K4, A587); dann der Reihe nach der, der die meisten noch schwach
   abgedeckten Gegner trifft: Gewicht je Schwäche ist die Zahl der Gegner aller Kämpfe des Bretts mit ihr
   (`XBMContentBattle` → `XBMBattleDetail`), und jeder schon gewählte Begleiter mit derselben Schwäche teilt es
   (Gewicht durch eins plus die Zahl der schon Gewählten, die sie treffen). Bei Gleichstand zuerst, wer über dem Rang des
   Bretts steht (`IsPetOverSyncedRank`), dann darunter der höhere Rang (der höhere aus Spiel und Abrechnung; über dem
-  Synchronrang kämpfen beide gleich stark, A804), dann wer schon im Kader ist. Ein Seelen-Begleiter für Soul Crush (K4) wartet darauf, dass RSR weiß, welche Kämpfe unterbrechbar zaubern.
+  Synchronrang kämpfen beide gleich stark, A804), dann wer schon im Kader ist.
 - *Leveln (seine Vorgabe, 05.11.2026, A579; seine Hinweise vom 14.11.2026, A796):* „zum leveln der begleiter sollten die
   begleiter bei der anfangsauswahl des brettes bevorzugt werden, die hinter den anderen hinterherleveln. ausnahme: sie
   sind kein adäquater ersatz für die kämpfe aufgrund falscher eigenschaften." Am 14.11.2026: „die begleiter werden nicht

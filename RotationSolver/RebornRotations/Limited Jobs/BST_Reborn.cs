@@ -159,7 +159,8 @@ public sealed class BST_Reborn : BeastmasterRotation
 	// carries over as Score.
 	[RotationConfig(CombatType.PvE, Name = "Goal of a Crucible run (also the three buttons of the team window)",
 		Tooltip = "Level: every familiar in the team earns experience, on a horn or not. The familiars the board's fights need - "
-			+ "each weakness, healing and protection for the boss, the reserve the measured losses ask for - are themselves the "
+			+ "each weakness, healing and protection for the boss, an interrupter where enemies cast interruptibly, the reserve the "
+			+ "measured losses ask for - are themselves the "
 			+ "lowest in true rank at or above the rank the game recommends; one higher only where none lower carries a weakness, "
 			+ "or to fill, one below that rank only where none at it carries the role or weakness. Every other place goes to the familiars lowest in true rank, of every kin, in turns, up to the "
 			+ "board's size. Once none lags behind, as Score. On the board the "

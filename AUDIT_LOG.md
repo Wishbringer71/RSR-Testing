@@ -23409,6 +23409,12 @@ Vorgabe (zum Leveln keine Begleiter ab Rang 10, außer zum Auffüllen der Reserv
   keine Schwäche mehr, unter jedem Ziel wurde der Unterbrecher nie erzwungen und der Kern war der ganze Kader (keine
   Verkleinerung unter Score; der Teil älter). `needSafe` gilt jetzt nur, solange einer verfügbar ist. Niedrig: Optionstext
   nennt den Begleiter unter dem empfohlenen Rang; Rückfall des Wegs (Mittel eines gewöhnlichen Kampfs) richtig beschrieben.
+- *Plateauprüfung der Kaderwahl (b0521d395, alle Ziele, Randfälle):* kein Befund hoher oder mittlerer Schwere – Plateau.
+  Eingearbeitet aus den niedrigen: Das Team einer Gattung sperrt andere Gattungen wegen eines Seelen-Begleiters nur, wo
+  das Brett einen Unterbrecher verlangt (unter Score sonst 750 Punkte verschenkt); der überflüssige Aufruf `HasSafe`
+  in der Heilerphase entfällt; Konzept „Empfehlung" und Optionstext nennen Heiler-Verfügbarkeit und Unterbrecher. Nicht
+  geändert (niedrig): Unter Level wird `chosen` vor `LevelingTeam` auf die Größe nach Punkten gekürzt; bei
+  widersprüchlichen Rangdaten zählt der gelesene Rang.
 - *Prüfgrad:* Bildbefund, Compile, CI; Laufzeit nicht beobachtet.
 - *Vorhersage:* `predictions/2026-11-14.json`, „level-core-low": Fordert er unter Level auf Brett 2 den Kader an, nennt
   „crucible team: goal Level - requested …" mindestens drei Begleiter auf Rang 6 bis 9 aus dem Spiel.

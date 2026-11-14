@@ -691,7 +691,7 @@ public partial class BeastmasterRotation
 			for (var i = 0; i < candidates.Count; i++)
 			{
 				var candidate = candidates[i];
-				if ((needSafe && !candidate.Safe && HasSafe()) || (needSoul && KinOf(candidate.Pet) != BeastmasterKinType.Soulkin))
+				if ((needSafe && !candidate.Safe) || (needSoul && KinOf(candidate.Pet) != BeastmasterKinType.Soulkin))
 				{
 					continue;
 				}
@@ -860,7 +860,8 @@ public partial class BeastmasterRotation
 		foreach (var (kin, row, name) in Gambits())
 		{
 			var points = CrucibleBoard.BonusPoints(row);
-			if (points <= 0 || (soul && kin != BeastmasterKinType.Soulkin))
+			// Its interrupter only where the board asks for one - a Soulkin in the mixed team by chance bars no other kin.
+			if (points <= 0 || (soul && interrupting && kin != BeastmasterKinType.Soulkin))
 			{
 				continue;
 			}
