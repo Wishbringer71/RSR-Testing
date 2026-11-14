@@ -23351,6 +23351,13 @@ audit, codereview und fehlerbeseitigung".
   jede Entscheidung, als gäbe es keinen Bonus, außer was der letzte GCD des Endkampfs kauft – Punkte gegen Punkte
   unter jedem Ziel; der Laden folgt dem, was K8 und der Weg unter dem Ziel tun. Dazu: Hornwahl und Laststufe lesen den
   höheren aus Spiel- und gelerntem Rang (`TrueRankOf`); ohne jeden bekannten Rang kürzt Safe win nicht nach Rang.
+- *Fünfte Prüfrunde (gegen die geschlossene Regel, Klasse unabhängig neu erhoben):* kein Befund hoher Schwere; die Klasse
+  stimmt bis auf eine Stelle. (Mittel) Der Laden kappte Heilgegenstände unter jedem Ziel an der Trankschwelle, mit der
+  Begründung „K8 heilt nur dort" – ohne Gegenstandsbonus trinkt K8 im Endkampf aber jede Heilung, die nicht überheilt
+  (A664); dort zählt sie jetzt bis zum ganzen Bedarf des Wegs, mit Bonus auf dem Spiel wie bisher unter der Schwelle.
+  (Niedrig) Unter Level und Score gingen Schadensgegenstände im letzten GCD, wenn erst dort feststand, dass der Weg
+  nicht getragen wird; die Ausnahme des letzten GCD gilt jetzt unter jedem Ziel in einem Ausdruck. Texte: Weg, Fenster,
+  Größenhinweis, Konzepttabelle und K15 „Weg" nennen die Regel.
 
 ## B · Commit-Register (Fork vs. `upstream/main`)
 

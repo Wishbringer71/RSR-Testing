@@ -25,7 +25,7 @@ internal sealed class CrucibleTeamWindow : RecommendationWindow
 	private static readonly M3Segment[] Goals =
 	[
 		new("Level", Tooltip: "Familiars that lag behind in rank fill the team; once none does, as Score."),
-		new("Safe win", Tooltip: "The full team, below the recommended rank only to fill it; on the board every choice as if there were no score bonus - items, purchases, treasures, rests, feeds, the way."),
+		new("Safe win", Tooltip: "The full team, below the recommended rank only to fill it; on the board every choice as if there were no score bonus - items, purchases, treasures, rests, feeds, the way - but what the final fight's last GCD buys only points."),
 		new("Score", Tooltip: "A smaller team and a team of one kin where the measured losses allow it; bonuses kept while the way is safe without."),
 	];
 

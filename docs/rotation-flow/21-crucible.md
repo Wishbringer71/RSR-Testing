@@ -625,7 +625,8 @@ Dullahan, Golem, Spriggan und Eisgolem (`XBMPet.InflictsInterrupt`).
     Ende. Für Schutzgegenstände gilt die Grenze nur, solange ein Gegenstandsbonus auf dem Spiel steht
     (`ItemBonusAtStake`): Ohne ihn – verwirkt, oder unter dem Ziel „Safe win" – nimmt K8 Schutz gegen jeden angekündigten
     Treffer, und er zählt wieder voll. Für Rauchbomben gilt sie außer unter Safe win: Nur dort flieht der Weg unter
-    sicheren Wegen für LP (A804). Für Heilgegenstände gilt sie unter jedem Ziel. Was du über der Schwelle hast, zieht RSR vom Bedarf ab: max(0, Bedarf − (deine LP jetzt − Schwelle) − gehaltene
+    sicheren Wegen für LP (A804). Für Heilgegenstände gilt sie, solange ein Gegenstandsbonus auf dem Spiel steht; ohne
+    ihn trinkt K8 im Endkampf jede Heilung, die nicht überheilt (A664), und sie zählt bis zum ganzen Bedarf des Wegs. Was du über der Schwelle hast, zieht RSR vom Bedarf ab: max(0, Bedarf − (deine LP jetzt − Schwelle) − gehaltene
     Heilung). Ausrüstung wirkt ohne Zutun und bleibt auf der Skala wie bisher; damit geht bleibende Ausrüstung vor
     Verbrauchsmitteln, wo der Weg dich nicht unter die Schwelle bringt. *Im Kampf (14.11.2026, Brett 2, erster Laden):*
     Ein Kampf kostete dich 4 %, sieben lagen vor dir; RSR empfahl Bestien-Heiltrank II, Bestien-Pulver II und ein Grimoire,
@@ -1046,7 +1047,8 @@ Dullahan, Golem, Spriggan und Eisgolem (`XBMPet.InflictsInterrupt`).
       Verluste", 1.000). Teilweise widerlegt: Fällt einer, verliert der Lauf diesen Bonus, nicht den Sieg; Preis
       benannt. Ein gefallener Begleiter kommt mit dem Horn der Rückkehr zurück.
   - *Weg (gebaut A689):* Unter sicheren Wegen der mit mehr Punkten – Gegnerfeld 250, Elitefeld 800 –, dann der, der bei erhaltenem
-    Bonus ohne Gegenstände sicher ist, dann wie bisher mehr Felder mit Gegenständen, mehr LP. Ein Lager auf dem Weg
+    Bonus ohne Gegenstände sicher ist, dann wie bisher mehr Felder mit Gegenständen, mehr LP. Unter dem Ziel „Safe win"
+    (A804) zählen weder Punkte noch Bonus: mehr Felder mit Gegenständen, dann mehr LP. Ein Lager auf dem Weg
     kostet nur, wenn gerastet wird.
   - *Woher RSR weiß, was erhalten ist:* je Lauf (`CrucibleBoard.Run`) aus dem, was es sieht – Gegenstände im
     Crucible-Inventar weniger geworden (benutzt, von RSR oder von Hand; auch weggeworfen, dann gibt RSR den Bonus auf,
@@ -1066,8 +1068,8 @@ Dullahan, Golem, Spriggan und Eisgolem (`XBMPet.InflictsInterrupt`).
   - *Am Ende des Endkampfs (A695):* Die Rest-LP des Spielers zählen absolut, nicht als Anteil (consolegameswiki,
     FullBoosts, MMOGah; eine Rate nennt keine Quelle, unbelegt). Dazu Unversehrter Bändiger (7: Spieler bei 100 % LP)
     250 und Unversehrte Bestien (8: alle Begleiter bei 100 % LP) 1.000 auf jedem Brett.
-    - *Auffüllen (gebaut):* Steht kein Gegenstandsbonus mehr auf dem Spiel (Sparsamkeit verwirkt, Sammelleidenschaft
-      nicht zu halten) und fällt der letzte Gegner nach der Restzeit-Vorhersage vor dem nächsten GCD
+    - *Auffüllen (gebaut):* Steht kein Gegenstandsbonus mehr (Sparsamkeit verwirkt, Sammelleidenschaft nicht zu halten;
+      unter jedem Ziel, A804) und fällt der letzte Gegner nach der Restzeit-Vorhersage vor dem nächsten GCD
       (`PackTimeToKill` höchstens `DefaultGCDTotal`), nimmt die übrige Heilung den kleinsten Gegenstand, der den Spieler
       auf 100 % bringt; Überheilung kostet dort nichts mehr. Steht noch ein Gegenstandsbonus auf dem Spiel, geht in
       diesem letzten GCD gar keine übrige Heilung mehr, auch wenn der Weg vorher als nicht getragen galt (A712): Der
@@ -2202,17 +2204,18 @@ on a pack once a fight, all of them in the final fight (Crucible only)".
   | Ziel | Kader (K7) | Im Brett (K15 und was daran hängt) |
   |---|---|---|
   | Level | Kämpfer und Lernende aus allen Gattungen (oben); ohne Nachzügler wie „Score" (seine Vorgabe vom 14.11.2026, „Nach dem Höchstrang") | Boni gewogen wie unter „Score": Die Begleiter-EP folgen der Punktzahl |
-  | Safe win | volle Größe, gierig nach Schwächen; unter dem empfohlenen Rang (oder ohne bekannten Rang, solange überhaupt einer bekannt ist) nur so viele, wie zum Füllen fehlen, die ranghöchsten; keine Verkleinerung, keine Gattung, keine Lernenden | kein Bonus hält zurück, was eine Sicherheitsregel verlangt: Schutz- und Heilgegenstände, Kauf (Schutz zählt im Laden voll), Schatz, Rast und Futter gehen wie ohne K15 (K8, K10, K13); unter sicheren Wegen entscheiden nicht die Punkte der Felder, sondern mehr Gegenstandsfelder, dann deine LP und die der Endkampfheiler |
+  | Safe win | volle Größe, gierig nach Schwächen; unter dem empfohlenen Rang (oder ohne bekannten Rang, solange überhaupt einer bekannt ist) nur so viele, wie zum Füllen fehlen, die ranghöchsten; keine Verkleinerung, keine Gattung, keine Lernenden | jede Entscheidung, als gäbe es keinen Bonus – Gegenstände, Kauf, Schatz, Rast, Futter wie ohne K15 (K8, K10, K13), unter sicheren Wegen mehr Gegenstandsfelder, dann LP, nicht Punkte; nur was der letzte GCD des Endkampfs kauft, wiegt Punkte (unten) |
   | Score | Größe nach Punkten (A698) und Gattung (A699), keine Lernenden | K15 wie gebaut: ein Bonus bleibt, solange der Weg ohne die Handlung sicher ist |
   *Die Regel unter Safe win, geschlossen (nach vier Prüfrunden, A804):* Jede Entscheidung fällt, als gäbe es keinen
   Punktebonus – Kader, Gegenstände, Laden, Schatz, Rast, Futter, Weg. Ausgenommen ist nur, was keine Sicherheit bringen
   kann, weil der Endkampf vor dem nächsten GCD endet (`FinalFightEndsNow`): Das wiegt Punkte gegen Punkte unter jedem
   Ziel – die Heilung auf volle LP (A712), die für „Unversehrte Bestien" (A695) und Schadens-, TP- und
   Stärkungsgegenstände, solange ein Gegenstandsbonus steht. Vorher kürzen diese den Kampf und sparen Last (A676); sie
-  gehen. Der Laden folgt dem, was K8 und der Weg unter dem Ziel tun: Heilgegenstände zählen unter jedem Ziel nur unter
-  der Trankschwelle (K8 heilt nur dort); Schutzgegenstände voll, sobald kein Gegenstandsbonus auf dem Spiel steht (K8
-  schützt dann gegen jeden angekündigten Treffer); Rauchbomben voll nur unter Safe win (nur dort flieht der Weg unter
-  sicheren Wegen für LP, unter Level und Score kämpft er für die Punkte). Die Wahl gilt ab dem Klick,
+  gehen. Der Laden folgt dem, was K8 und der Weg unter dem Ziel tun: Heilgegenstände zählen, solange ein
+  Gegenstandsbonus auf dem Spiel steht, nur unter der Trankschwelle (K8 heilt nur dort), sonst bis zum ganzen Bedarf
+  des Wegs (im Endkampf trinkt K8 jede Heilung, die nicht überheilt, A664); Schutzgegenstände voll, sobald kein
+  Gegenstandsbonus auf dem Spiel steht (K8 schützt dann gegen jeden angekündigten Treffer); Rauchbomben voll nur unter
+  Safe win (nur dort flieht der Weg unter sicheren Wegen für LP, unter Level und Score kämpft er für die Punkte). Die Wahl gilt ab dem Klick,
   auch mitten im Lauf über die Einstellung, und für alle folgenden Läufe; ein schon verlorener Bonus bleibt verloren. Die
   Spur nennt das Ziel mit dem angeforderten Kader („crucible team: goal Level - requested …"). Unter Level gilt das Team
   einer Gattung (A699) erst, wenn kein Begleiter mehr zurückliegt – auch keiner im Kern: Vorher schlösse es Nachzügler

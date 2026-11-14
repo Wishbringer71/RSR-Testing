@@ -148,8 +148,8 @@ public sealed class BST_Reborn : BeastmasterRotation
 			+ "final one, included, leave you and the healers of the final fight's plan - each fight with what RSR measured "
 			+ "it to cost you, your healing items and what a campsite restores; whether that is safe (you live through "
 			+ "every fight on it with the items you hold, and the weakest final healer outlasts one use or is full); and "
-			+ "recommends one - among safe ways the one that scores more points, then the one with more items, else the one "
-			+ "that leaves you the most HP. Computed again on every space.\n"
+			+ "recommends one - among safe ways the one that scores more points (not under the Crucible goal Safe win), then "
+			+ "the one with more items, else the one that leaves you the most HP. Computed again on every space.\n"
 			+ "In a fight: nothing.\n"
 			+ "Off: no window.")]
 	private bool RecommendCrucibleRoute { get; set; } = true;

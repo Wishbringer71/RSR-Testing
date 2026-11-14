@@ -571,8 +571,9 @@ public partial class BeastmasterRotation
 
 		// A698: as few as the score's bonus for a smaller team allows with the core and the familiars' measured loss - not
 		// under the goal Safe win (A804).
-		var sizeNote = "Safe win: the full team for the board's fights, the stronger at equal worth; no score bonus holds back "
-			+ "what safety asks for - an item, a purchase, a treasure's gear, a rest or a feed.";
+		var sizeNote = "Safe win: the full team for the board's fights, the stronger at equal worth; on the board every choice "
+			+ "as if there were no score bonus - items, purchases, treasures, rests, feeds, the way - but what the final "
+			+ "fight's last GCD buys only points.";
 		var keep = safeWin ? size : TeamSizeForScore(board, size, core, chosen, out sizeNote);
 		CrucibleTeamSizeNote = sizeNote;
 		if (chosen.Count > keep)

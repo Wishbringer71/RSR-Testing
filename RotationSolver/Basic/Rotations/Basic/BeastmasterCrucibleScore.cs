@@ -25,9 +25,8 @@ public partial class BeastmasterRotation
 	/// without a bonus - they shorten the fight and spare load (A676) - except once the final fight ends within a GCD: then
 	/// they buy nothing but points, and weigh them while an item bonus stands.
 	/// </summary>
-	private static bool NonSafetyItemsGo(IBattleChara player) => WeighsScore
-		? !KeepsNoItemBonus(player) && (!ItemBonusAtStake || _scoreShortKnown)
-		: !ItemBonusStands || !FinalFightEndsNow;
+	private static bool NonSafetyItemsGo(IBattleChara player) => !(ItemBonusStands && FinalFightEndsNow)
+		&& (!WeighsScore || (!KeepsNoItemBonus(player) && (!ItemBonusAtStake || _scoreShortKnown)));
 	private static DateTime _scoreKeepAt = DateTime.MinValue;
 
 	/// <summary>
