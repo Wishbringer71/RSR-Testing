@@ -1515,6 +1515,32 @@ internal static class CrucibleBoard
 		return character == 0 ? 0u : ((uint)(character % (uint.MaxValue / PetSpan)) * PetSpan) + (uint)pet;
 	}
 
+	/// <summary>
+	/// K7 (A803): a familiar's true rank as the game holds it - the rank above a board's sync too; 0 when the game gives
+	/// none. ClientStructs declares the game function behind <c>GetSyncedRank</c> with the pet alone; it takes two flags
+	/// more - clamp to the board, and read the content's pet data - and the game passes both at each of its 15 calls (its
+	/// binary of 13.11.2026). Without them they hold whatever the registers held, and on 14.11.2026 every rank read 0. This
+	/// passes clamp off and the agent's own content flag, as <c>IsPetOverSyncedRank</c> does inside before it compares the
+	/// same rank with the board's limit.
+	/// </summary>
+	internal static unsafe int PetRank(AgentXBMPetParty* party, BeastmasterPet pet)
+	{
+		if (party == null || pet == BeastmasterPet.None)
+		{
+			return 0;
+		}
+
+		var address = AgentXBMPetParty.Addresses.GetSyncedRank.Value;
+		if (address == 0)
+		{
+			return 0;
+		}
+
+		var rank = ((delegate* unmanaged<AgentXBMPetParty*, uint, byte, byte, uint>)(void*)address)(party, (uint)pet, 0,
+			party->UsesContentPetData ? (byte)1 : (byte)0);
+		return rank <= int.MaxValue ? (int)rank : 0;
+	}
+
 	/// <summary>K7 (A799): a familiar's true rank as the last board's result window showed it for this character; 0 unknown.</summary>
 	internal static int KnownRank(BeastmasterPet pet)
 	{
@@ -1596,7 +1622,7 @@ internal static class CrucibleBoard
 				continue;
 			}
 
-			var rank = FightingRank((int)party->GetSyncedRank(member.PetId), party->IsPetOverSyncedRank(member.PetId), sync);
+			var rank = FightingRank(PetRank(party, (BeastmasterPet)member.PetId), party->IsPetOverSyncedRank(member.PetId), sync);
 			if (rank <= 0)
 			{
 				continue;

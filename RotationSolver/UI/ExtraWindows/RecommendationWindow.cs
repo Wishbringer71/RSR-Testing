@@ -208,6 +208,19 @@ internal abstract class RecommendationWindow : Window
 	}
 
 	/// <summary>The window's action: a filled Material button.</summary>
+	/// <summary>
+	/// One of a few choices as Material segmented buttons, the chosen one marked (A804); the index picked this frame, else
+	/// -1. As wide as its labels need, at most the room left; the window keeps room for all of it.
+	/// </summary>
+	protected int Choice(string id, M3Segment[] segments, int current)
+	{
+		var width = MathF.Min(M3Widgets.SegmentedWidth(segments), MathF.Max(1f, ImGui.GetContentRegionAvail().X));
+		var picked = M3Widgets.SegmentedButtons(id, segments, current, width);
+		Extent();
+		_lastWasLine = false;
+		return picked;
+	}
+
 	protected bool Action(string id, string label, FontAwesomeIcon icon, bool enabled = true)
 	{
 		var pressed = M3Widgets.Button(id, label, M3ButtonStyle.Filled, icon, enabled: enabled);

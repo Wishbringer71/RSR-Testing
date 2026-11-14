@@ -336,6 +336,16 @@ class Recommendation:
         self.card_has_item = self.in_card
         self.last_was_line = False
 
+    def choice(self, labels):
+        """RecommendationWindow.Choice (A804): Material segmented buttons in one row, as wide as their labels, at most the
+        room left; the window keeps room for all of it. RebornMaterial's painting is left out, its width modelled as each
+        label with a button's side padding."""
+        need = sum(imgui.calc_text_size(label).x + BUTTON_SIDE * 2 * self.scale for label in labels)
+        width = min(need, max(1.0, imgui.get_content_region_avail().x))
+        imgui.button("##choice", imgui.ImVec2(width, max(BUTTON_HEIGHT * self.scale, imgui.get_frame_height())))
+        self.extent()
+        self.last_was_line = False
+
     def action(self, label):
         width = max((BUTTON_SIDE * 2 + ICON) * self.scale + imgui.calc_text_size(label).x, BUTTON_MIN_WIDTH * self.scale)
         imgui.button(label, imgui.ImVec2(width, max(BUTTON_HEIGHT * self.scale, imgui.get_frame_height())))
@@ -389,6 +399,9 @@ PICKS = [
 def team_content(picks, status="Team set: 3 familiars. Confirm it on the screen."):
     """The status line is empty until the player presses Apply - the state in which the window first appears."""
     def content(w):
+        with w.section("Goal of this run", "The team and the board's play follow it"):
+            w.choice(["Level", "Safe win", "Score"])
+            w.note("Familiars that lag behind in rank fill the team; once none does, as Score.")
         with w.section("Team for this board", f"{len(picks)} familiars"):
             for pet, chip, why in picks:
                 w.line(pet, chip)

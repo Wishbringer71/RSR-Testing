@@ -381,8 +381,9 @@ Dullahan, Golem, Spriggan und Eisgolem (`XBMPet.InflictsInterrupt`).
     eins, mal mittlere LP der Begleiter im Teamfenster (Schluss: die LP der Begleiter außerhalb des Teams zeigt kein Blatt,
     `XBMPetParamGrow` führt nur Konstitution) – mindestens die LP fasst, die die Begleiter auf diesem Brett in einem Lauf je verloren haben (gelernt
     je Brett, der schwerste Lauf, Datei `CrucibleFamiliarLoss.json`). Ohne gemessenen Lauf auf dem Brett bleibt die volle
-    Größe (sichere Seite). Mit „Prefer familiars that lag behind in rank" füllen Nachzügler die
-    Plätze über den Kämpfern, solange es sie gibt (K7, „Leveln", A796); die Stufe gilt dann, wo die Größe sie trifft. Das Fenster nennt Größe, Bonus und den Vergleich; übernehmen bleibst du (C).
+    Größe (sichere Seite). Unter dem Ziel „Level" füllen Nachzügler die Plätze über den Kämpfern, solange es sie gibt
+    (K7, „Leveln", A796); die Stufe gilt dann, wo die Größe sie trifft. Unter „Safe win" bleibt die volle Größe (K7,
+    „Ziel des Laufs", A804). Das Fenster nennt Größe, Bonus und den Vergleich; übernehmen bleibst du (C).
     *Gegenthese 1 – Der Verlust wächst mit weniger Begleitern:* Die Gegner teilen denselben Schaden aus, gleich wie viele
     Begleiter ihn tragen; mehr Einsätze je Begleiter verteilen ihn nur anders. Ein Begleiter, der fällt, fehlt danach;
     deshalb zählt der Vorrat einen weniger: Fällt einer, fassen die übrigen den schwersten gemessenen Verlust noch.
@@ -934,7 +935,8 @@ Dullahan, Golem, Spriggan und Eisgolem (`XBMPet.InflictsInterrupt`).
     Last ist die pessimistische Schätzung; ein Lauf, der sie trägt, ist mit hoher Wahrscheinlichkeit sicher. Wo ein
     Kampf auf dem Weg nie gemessen wurde, ist die Sicherheit unbekannt, und die Handlung geht wie bisher (sichere Seite).
     Das ist seine Spielweise auf die Punkte übertragen: Schutz, wo der Schaden wahrscheinlich ist, kein Schutz, der
-    ohne Gefahr Punkte kostet.
+    ohne Gefahr Punkte kostet. Unter dem Ziel „Safe win" (K7, „Ziel des Laufs", A804) wiegt kein Bonus: Jede Handlung
+    geht, wo ihre Sicherheitsregel sie verlangt, wie ohne K15. Die Heilung, die im Endkampf nur Punkte bringt, bleibt.
   - *Woran ein leichtes Brett feststeht (A705, A706, A709; sein Auftrag vom 11.11.2026: „sobald feststeht, dass das
     aktuelle brett einfach zu lösen ist, können weniger begleiter mitgenommen werden, kann auf essen verzichtet werden,
     kann auf campen verzichtet werden"):* An dem, was er auf dem Weg wirklich verliert, Kampf für Kampf, ohne die Mittel,
@@ -2112,8 +2114,18 @@ on a pack once a fight, all of them in the final fight (Crucible only)".
   Begleiter-EP folgen der Punktzahl des Laufs (consolegameswiki), höchstens 255 je Begleiter und Brett (CrucibleSux,
   nach dem Wiki zu 7.56, Werkzeugquelle), 100 je Rang (Daedalus, Bestiarium „21/100"); der Rang reicht bis 25. Das Spiel
   gleicht nur nach unten an: Wer über dem Synchronrang des Bretts steht (`IsPetOverSyncedRank`), kämpft mit ihm, wer
-  darunter steht, mit dem eigenen (`GetSyncedRank` liefert dann den echten Rang). Den echten Rang über dem Synchronrang
-  zeigt das Spiel am Brett nicht, auch das Bestiarium nicht (Daedalus, Feldnotiz 31.10.2026); das Brett nennt
+  darunter steht, mit dem eigenen. *Woher der echte Rang kommt (A803):* aus der Spielfunktion, die ClientStructs als
+  `GetSyncedRank(petId)` führt (Disassemblierung seiner Spielbinärdatei vom 13.11.2026; Adresse 0x140AA52B0 wie in
+  ClientStructs' `data.yml`). Sie nimmt vier Argumente – Agent, Begleiter, *angleichen* und *Daten des Inhalts* –,
+  ClientStructs deklariert nur die ersten zwei. Das Spiel ruft sie an 15 Stellen mit beiden Schaltern (*angleichen* 1
+  für den Rang im Brett, 0 für den echten; *Daten des Inhalts* aus dem Agenten, `UsesContentPetData`), und
+  `IsPetOverSyncedRank` liest intern genau den echten Rang und vergleicht ihn mit der Grenze des Bretts (`XBMContent`
+  der Agentenzeile, Byte 0x46). Ohne die beiden Argumente stehen Zufallswerte aus den Registern darin. RSR ruft die
+  Funktion deshalb selbst mit allen vier (`CrucibleBoard.PetRank`): für den Kader echt, für Hornwahl und Laststufe
+  angeglichen. Auch das Bestiarium zeigt den echten Rang (sein Hinweis vom 14.11.2026, sein Bild: Cu Sith „RANG 11",
+  Schaudermilbe „RANG 6"); die Feldnotiz von Daedalus vom 31.10.2026, es zeige ihn nicht, ist damit widerlegt. Das
+  Teamfenster zeigt auf Brett 2 je Begleiter nur den angeglichenen Rang („ 10", Wert 6 + 77 je Begleiter in seiner
+  Fensterspur vom 14.11.2026). Das Brett nennt
   Synchronrang und empfohlenen Rang (`XBMContent`, Spalten 36 und 35, der empfohlene ist der Wert minus 2: erstes Brett
   1 und 5, zweites 6 und 10, drittes 11 und 15, Erstes Meisterbrett 16 und 20, Zweites 21 und 25).
   *Was falsch war (A796):* (1) Der *Kern* der gierigen Wahl sollte bis zum letzten Begleiter reichen, der eine Schwäche
@@ -2126,12 +2138,11 @@ on a pack once a fight, all of them in the final fight (Crucible only)".
   - *Kämpfer:* der Kern (jeder, der eine Schwäche neu abdeckt, die Heiler und Schützer, die B5 vor dem Boss verlangt,
     der Unterbrecher) und die Reserve bis zu der Zahl, die die gemessenen Verluste dieses Bretts mit einem Begleiter in
     Reserve trägt (A703, je Größe gerechnet, nicht nur auf den Stufen von In Unterzahl); ohne Messung die volle Größe.
-    Auf den Reserveplätzen gehen *Nachzügler* vor, die adäquat ersetzen – Rang unter 25, mindestens der empfohlene Rang
-    des Bretts, im Team einer Gattung von dieser Gattung –, der niedrigste zuerst; danach die gierige Wahl. Ein
-    Begleiter über dem Synchronrang zählt als Nachzügler, bis ein Brett mit Synchronrang 25 ihn auf 25 zeigt (seine
-    Vorgabe vom 14.11.2026: „am besten alle reihum bis zum höchstlevel aufsteigen lassen"); unter gleichem Rang gehen
-    die vor, die nicht im Kader des letzten Laufs standen – so kommen sie reihum. Eine Schwäche geht auf diesen Plätzen nicht verloren: Der Kern trifft jede, die
-    ein Begleiter treffen kann.
+    Auf den Reserveplätzen gehen *Nachzügler* vor, die adäquat ersetzen – echter Rang unter 25, mindestens der
+    empfohlene Rang des Bretts, im Team einer Gattung von dieser Gattung –, der niedrigste zuerst; danach die gierige
+    Wahl (seine Vorgabe vom 14.11.2026: „am besten alle reihum bis zum höchstlevel aufsteigen lassen"). Unter gleichem
+    Rang gehen die vor, die nicht im Kader des letzten Laufs standen – so kommen sie reihum. Eine Schwäche geht auf
+    diesen Plätzen nicht verloren: Der Kern trifft jede, die ein Begleiter treffen kann.
   - *Lernende:* Die übrigen Plätze bis zur Größe des Bretts bekommen die übrigen Nachzügler, auch unter dem empfohlenen
     Rang, der niedrigste zuerst. Sie kämpfen nur, wenn weniger andere leben als Hörner da sind (K6, unverändert).
   Der Kader ist so groß wie Kämpfer plus Lernende; gibt es keine Nachzügler mehr, bleibt er bei den Kämpfern und bringt
@@ -2140,8 +2151,7 @@ on a pack once a fight, all of them in the final fight (Crucible only)".
   Punkten bringt ein Begleiter mehr bei sieben (1/7 = 14 %) mehr als die Stufe (1.250/15.000 = 8 %), bei fünf (20 % gegen
   17 %) und drei (33 % gegen 28 %) ebenso; erst unter rund 12.500 Punkten bei fünf gewinnt die Stufe. Darum füllen
   Nachzügler, solange es sie gibt (seine Wertung: „viele begleiter mitnehmen lohnt für das leveln").
-  *Einstellung:* „Prefer familiars that lag behind in rank for the Crucible team", ab Werk an. Aus: der Kader nach
-  Schwächen und Punkten wie bisher (A698, A699), ohne Nachzügler.
+  *Einstellung:* das Ziel des Laufs „Level" (unten), ab Werk. Die anderen Ziele bilden den Kader ohne Nachzügler.
   *Gegenthese 1 (schwächer im Kampf):* Ein Nachzügler auf einem Reserveplatz hat weniger Werte als der Begleiter, den die
   gierige Wahl dort hätte. Teilweise widerlegt: Er steht mindestens auf der Empfehlung des Spiels, die Schwächen trägt der
   Kern, und K6 wählt je Kampf nach gemessenem Schaden. Es bleibt: weniger LP in Reserve – Preis: ein Begleiter fällt
@@ -2152,24 +2162,67 @@ on a pack once a fight, all of them in the final fight (Crucible only)".
   begleitern geringere punktzahl zu bekommen, oder dass diese durch essen gebufft werden müssen." Ohne Nachzügler gilt
   die Größe nach Punkten (A698): die kleinste Stufe von In Unterzahl, deren Begleiter jeden gemessenen Verlust des
   Bretts ohne Rast, Gegenstand und Futter tragen (die Rechnung kennt keine Heilung, A703), mit einem in Reserve.
-  *Der echte Rang aus der Abrechnung (A799):* Das Abrechnungsfenster am Ende eines Brett-Laufs (`XBMResult`) führt je
-  Begleiter des Kaders seinen Rang vor und nach dem Lauf, ungesynct, und seine Erfahrung (gelesen in seiner Spur vom
+  *Der echte Rang (A803, A799):* Die Spielfunktion liefert ihn, oben, und RSR liest ihn je Kandidat beim Öffnen des
+  Teamfensters. Zweite Quelle und Gegenprobe ist das Abrechnungsfenster am Ende eines Brett-Laufs (`XBMResult`): Es führt
+  je Begleiter des Kaders seinen Rang vor und nach dem Lauf, ungesynct, und seine Erfahrung (gelesen in seiner Spur vom
   14.11.2026, Brett 2: Wert 72 die Zahl der Begleiter, ab 73 ihre Symbole – 242000 plus Bestiariumsnummer –, ab 89 die
   Erfahrung davor, ab 105 danach, ab 121 der Rang davor, ab 137 danach, je 16 Plätze; zwölf Begleiter, Rang 9 bis 11
-  davor, 10 bis 12 danach, jeder 121 Erfahrung, ob auf einem Horn oder nicht). RSR liest den Rang danach je Begleiter
-  und hält ihn je Charakter in einer gelernten Datei, die nur steigt (`CrucibleFamiliarRank`); geprüft wird jeder Wert:
-  Symbol im Bereich der Begleiter, Ränge 1 bis 25, danach nicht unter davor – sonst wird die Abrechnung verworfen und
-  die Spur sagt es. Für einen Begleiter über dem Synchronrang gilt der gelernte Rang, wo er den Synchronrang übersteigt;
-  steht er auf 25, ist er kein Nachzügler mehr. *Gegenthese 3 (Rang über dem Synchronrang unbekannt):* Ein Begleiter,
-  der nie in einem Lauf mit RSR war, hat keinen gelernten Rang; er zählt als Nachzügler, bis die erste Abrechnung ihn
-  zeigt. *Preis:* bis dahin ein voller Kader, wo alle schon auf 25 stehen. Steigt ein Begleiter außerhalb von RSR, ist
-  der gelernte Rang zu niedrig – er bleibt Nachzügler, bis die nächste Abrechnung ihn hebt. Seit 7.58 zeigt auch das
-  Teamfenster den ursprünglichen Rang (Patchnotes); die Fensterspur schreibt es vor dem Brett mit. *Ausgeschlossen:* den Rang über das Umsetzen des Bretts im Agenten zu erfragen (`ContentId` umschreiben und
-  `GetSyncedRank` rufen) – ein Schreiben in Spielspeicher ohne Beleg, was die Funktion liest.
-  *Ausgeliefert, und nichts ändert sich:* Er übernimmt die Empfehlung nicht („Apply"), die Einstellung ist aus, oder er
-  spielt einen Build vor A796. *Im Kampf (14.11.2026, sein Bild vom Teamfenster auf Brett 2):* zwölf Begleiter, keiner
-  mit „levels", keine Zeile zur Teilung – die Regel lief nicht. Das Fenster nennt den Zustand jetzt selbst: „Leveling is
-  off …" oder „No familiar lags behind in rank …" (A802). Die Spur nennt je Begleiter Rang und Rolle („crucible team: requested Puk 10, … Lamb 6 levels").
+  davor, 10 bis 12 danach, jeder 121 Erfahrung, ob auf einem Horn oder nicht). RSR hält ihn je Charakter in einer
+  gelernten Datei, die nur steigt (`CrucibleFamiliarRank`); geprüft wird jeder Wert: Symbol im Bereich der Begleiter,
+  Ränge 1 bis 25, danach nicht unter davor – sonst wird die Abrechnung verworfen und die Spur sagt es. Es gilt der
+  höhere der beiden; ein Begleiter auf 25 ist kein Nachzügler. *Gegenthese 3 (die Spielfunktion liefert 0):* Das tat
+  sie am 14.11.2026, mit falschen Argumenten. Liefert sie mit den richtigen für einen freigeschalteten Begleiter 0 –
+  etwa weil das Spiel seine Daten noch nicht geladen hat –, gilt der gelernte Rang, und ohne ihn zählt ein Begleiter
+  über dem Synchronrang als Nachzügler mit unbekanntem Rang, einer darunter gar nicht (ohne Rang kein Platz); die Spur
+  nennt je Begleiter Rang und Quelle. *Preis:* bis zur ersten Abrechnung ein voller Kader, wo alle schon auf 25 stehen.
+  *Verworfen:* den Rang aus dem Bestiarium zu lesen (sein Hinweis) – er braucht das geöffnete Buch und je Begleiter
+  einen Klick; die Spielfunktion liest dieselbe Quelle ohne beides. Den Rang über das Umsetzen des Bretts im Agenten
+  zu erfragen (`ContentId` umschreiben) – ein Schreiben in Spielspeicher, das der richtige Aufruf überflüssig macht.
+  *Ausgeliefert, und nichts ändert sich:* Er übernimmt die Empfehlung nicht („Apply"), wählt ein anderes Ziel (unten),
+  oder er spielt einen Build vor A803. *Im Kampf:* Am 14.11.2026 (Bild vom Teamfenster auf Brett 2, Build vor A796)
+  zwölf Begleiter, keiner mit „levels"; um 15:37 (Build 13e4a15d0, mit A796) lief die Regel, las aber jeden Rang als 0
+  („crucible team: requested Chimera 0, Treant 0+, …") und fand keinen Nachzügler. Das Fenster nennt den Zustand
+  selbst (A802); die Spur nennt je Begleiter Rang, Quelle und Rolle („crucible team: requested Puk 14 game, … Lamb 6
+  game levels").
+- *Ziel des Laufs (sein Vorschlag vom 14.11.2026, A804):* „bei der begleiterauswahl am anfang des brettes wären optionen
+  wie: leveln, sicherer sieg und bonusmaximierung evtl. sinnvoll. einen von drei buttons auswählen, und
+  begleiterauswahl basiert darauf, und die strategie innerhalb des brettes genauso." Geprüft im Loop, umgesetzt.
+  *Regel:* Das Kaderfenster trägt drei Knöpfe, „Level", „Safe win" und „Score"; der gewählte ist hervorgehoben und
+  bleibt gespeichert (Einstellung „Goal of a Crucible run (also the three buttons of the team window)", ab Werk „Level"). Kader und Verhalten im Brett folgen ihm:
+  | Ziel | Kader (K7) | Im Brett (K15 und was daran hängt) |
+  |---|---|---|
+  | Level | Kämpfer und Lernende (oben); ohne Nachzügler wie „Score" (seine Vorgabe vom 14.11.2026, „Nach dem Höchstrang") | Boni gewogen wie unter „Score": Die Begleiter-EP folgen der Punktzahl |
+  | Safe win | volle Größe, gierig nach Schwächen, bei Gleichstand der höhere echte Rang; keine Verkleinerung, keine Gattung, keine Lernenden | kein Bonus wiegt: Gegenstände, Kauf, Schatz, Rast und Futter gehen, wo ihre Sicherheitsregel sie verlangt (K8, K10, K13 ohne K15) |
+  | Score | Größe nach Punkten (A698) und Gattung (A699), keine Lernenden | K15 wie gebaut: ein Bonus bleibt, solange der Weg ohne die Handlung sicher ist |
+  Die Wahl gilt ab dem Klick, auch mitten im Lauf über die Einstellung; ein schon verlorener Bonus bleibt verloren. Die
+  Spur nennt das Ziel mit dem angeforderten Kader („crucible team: goal Level - requested …").
+  *Warum eine Wahl und kein Optimum (Nachweis, dass jede Lösung einen Preis hat, den keine Konstruktion beseitigt):*
+  (1) Level gegen Score: Die Plätze des Kaders sind dieselben. In Unterzahl bringt 1.250 bis 4.250 Punkte nur mit
+  höchstens sieben Begleitern; jeder Begleiter mehr im Kader bekommt EP (sein Hinweis), höchstens 255 je Brett
+  (CrucibleSux, Werkzeugquelle). Mehr Punkte heben die EP jedes Mitgenommenen nur bis zu dieser Grenze; Reste (die
+  Belohnung) folgen der Punktzahl ohne Grenze (consolegameswiki). Wer zwölf Begleiter auf 25 bringen will, braucht die
+  Plätze; wer Reste will, die Stufe. Beides zugleich gibt kein Kader her. (2) Safe win gegen Score: K15 hält einen Bonus
+  nur, solange der Spieler den Weg mit der schwersten *gelernten* Last trägt; eine schwerere ungesehene Last – neuer
+  Grad, wenige Läufe auf dem Brett, andere Begleiter – fängt erst die Heilung unter der Trankschwelle. Diese
+  Restgefahr gegen 500 bis 1.000 Punkte je Bonus zu tauschen, ist die Abwägung, die er Spielern überlässt (seine
+  Präzisierung vom 03.11.2026: „andere Spieler können anders entscheiden") – die Wahl wird eine Option mit seiner
+  Regel als Voreinstellung.
+  *Optionen:* (0) Nullvariante: eine Automatik – Level, solange ein Begleiter zurückliegt, danach Score (sein Wunsch
+  vom 14.11.2026). Sie bleibt als Verhalten von „Level". (1) Drei Knöpfe im Kaderfenster, gespeichert (gewählt). (2)
+  Je Teilregel ein Schalter (Leveln, Größe, Gattung, je Bonus) – Stellungen, die einander widersprechen können
+  (Lernende auffüllen und zugleich auf In Unterzahl verkleinern). (3) Das Ziel aus der Messlage ableiten (unbekannte
+  Last → Safe win) – das tut K15 schon je Entscheidung (unbekannt ist die sichere Seite) und ersetzt die Vorliebe nicht.
+  *SWOT (1):* Stärke – eine Entscheidung an der Stelle, an der der Kader entsteht, und alle Teilregeln folgen ihr
+  widerspruchsfrei. Schwäche – ein vergessener Knopf gilt im nächsten Lauf weiter; das Fenster zeigt das Ziel bei jedem
+  Öffnen. Chance – ein neuer Grad oder ein ungemessenes Brett: Safe win spart die Rast nicht und verliert den Lauf
+  seltener. Bedrohung – Safe win kostet bis zu 4.750 Punkte aus Gegenstand, zehn Gegenständen, Kauf, Schatz, Rast und
+  Futter, dazu In Unterzahl; die EP aller Begleiter sinken mit (in jedem Lauf unter Safe win; Preis benannt).
+  *Gegenthese 1 (kein Bedarf, K15 ist schon sicher):* widerlegt für eine ungesehene Last, oben (2). *Gegenthese 2
+  (Option falsch – Leveln und Punkte widersprechen sich nicht, weil EP den Punkten folgen):* widerlegt durch die
+  Grenze von 255 je Begleiter und Brett und die Plätze, oben (1). *Gegenthese 3 (ausgeliefert, und nichts ändert
+  sich):* Er klickt keinen Knopf – dann gilt Level wie bisher; der Rang wird falsch gelesen – dann findet Level keinen
+  Nachzügler, die Spur nennt je Begleiter Rang und Quelle (A803). Er sieht im Kaderfenster das Ziel und je Begleiter,
+  ob er levelt.
 - *Umsetzen:* erst die Abgänge, dann die Zugänge, je ein `TogglePet`; danach wartet RSR, bis der Kader sich ändert,
   höchstens einen GCD. Nimmt das Spiel einen Zugang nicht, fällt er für diese Sitzung aus der Empfehlung, und es geht
   weiter; geht ein Abgang nicht, hört RSR auf. Jede Stufe steht in der Spur („crucible team: …"); bestätigen und

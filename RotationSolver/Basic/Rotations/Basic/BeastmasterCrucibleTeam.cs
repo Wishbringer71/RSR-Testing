@@ -4,6 +4,25 @@ using FFXIVClientStructs.FFXIV.Client.UI.Agent;
 namespace RotationSolver.Basic.Rotations.Basic;
 
 /// <summary>
+/// K7, "Ziel des Laufs" (concept 21, A804; his proposal of 14.11.2026): what a Crucible run plays for - the team RSR
+/// recommends and the score bonuses it weighs on the board follow it. Stored by name in the rotation's settings.
+/// </summary>
+public enum CrucibleGoal : byte
+{
+	/// <summary>Familiars that lag behind in rank fill the team; without any, as <see cref="Score"/>. Bonuses weighed.</summary>
+	[Description("Level")]
+	Level,
+
+	/// <summary>The full team, the stronger at equal worth; no score bonus holds back an item, a purchase, a rest or a feed.</summary>
+	[Description("Safe win")]
+	SafeWin,
+
+	/// <summary>A smaller team and a team of one kin where the measured losses allow it; bonuses weighed.</summary>
+	[Description("Score")]
+	Score,
+}
+
+/// <summary>
 /// K7 of the Crucible (concept 21, "Stufe 4, zweiter Teil: K7, Kader auf Wunsch", A563): with the team screen open, the
 /// team RSR recommends for the board, and on request the steps that make the team that - one TogglePet at a time.
 /// </summary>
@@ -17,6 +36,43 @@ public partial class BeastmasterRotation
 
 	/// <summary>One recommended familiar and why: what it brings to the board, and whether it is in the team already.</summary>
 	public readonly record struct CrucibleTeamPick(BeastmasterPet Pet, string Why, bool InTeam);
+
+	/// <summary>The name of the rotation setting that holds the goal of a Crucible run (A804).</summary>
+	public const string CrucibleGoalSetting = "CrucibleGoal";
+
+	/// <summary>K7, "Ziel des Laufs" (A804): the goal of the run, as the rotation's setting holds it; set every frame.</summary>
+	public static CrucibleGoal CrucibleGoalNow { get; private protected set; } = CrucibleGoal.Level;
+
+	/// <summary>
+	/// K15 under the goal (A804): whether the score's bonuses are weighed against the safety of an action - not under
+	/// <see cref="CrucibleGoal.SafeWin"/>, where every action goes as its safety rule asks.
+	/// </summary>
+	private protected static bool WeighsScore => CrucibleGoalNow != CrucibleGoal.SafeWin;
+
+	/// <summary>
+	/// K7 (A804): sets the goal of a Crucible run in <paramref name="rotation"/>'s setting, as the settings window would;
+	/// false when the rotation has no such setting.
+	/// </summary>
+	public static bool ChooseCrucibleGoal(ICustomRotation rotation, CrucibleGoal goal)
+	{
+		foreach (var config in rotation.Configs)
+		{
+			if (config.Name == CrucibleGoalSetting)
+			{
+				config.Value = typeof(CrucibleGoal).GetField(goal.ToString())?.GetCustomAttribute<DescriptionAttribute>()?.Description
+					?? goal.ToString();
+				if (CrucibleGoalNow != goal)
+				{
+					DefenseTrace.Line($"crucible team: goal {goal} (was {CrucibleGoalNow})");
+				}
+
+				CrucibleGoalNow = goal;
+				return true;
+			}
+		}
+
+		return false;
+	}
 
 	/// <summary>K7 team size (A698): why the recommendation holds as many familiars as it does - the score's bonus for a smaller team, or why not.</summary>
 	public static string CrucibleTeamSizeNote { get; private set; } = string.Empty;
@@ -178,11 +234,9 @@ public partial class BeastmasterRotation
 		note = string.Empty;
 		var maxRank = CrucibleBoard.MaxRank;
 		var recommended = CrucibleBoard.RecommendedRank(board);
-		// Below the board's sync the game gives the true rank; above it only the sync, so such a familiar counts as lagging
-		// behind until a board of the highest sync shows it at the highest rank (his order of 14.11.2026: all up to the highest
-		// rank first; concept 21, K7 "Leveln", Gegenthese 3).
-		// A799: above the sync the rank the last result window showed counts where it is higher; without one the familiar
-		// stands at the sync, unknown.
+		// A803: the game gives the true rank, above the board's sync too; the rank the last result window showed counts where
+		// it is higher (A799). Without either a familiar above the sync stands at the sync, unknown, and lags behind (his order
+		// of 14.11.2026: all up to the highest rank first; concept 21, K7 "Leveln", Gegenthese 3).
 		var sync = CrucibleBoard.SyncRank(board);
 		var lagging = new List<TeamCandidate>();
 		var known = new Dictionary<BeastmasterPet, bool>();
@@ -191,7 +245,7 @@ public partial class BeastmasterRotation
 			var rank = TrueRank(candidate, sync, out var isKnown);
 			known[candidate.Pet] = isKnown;
 			var behind = isKnown ? rank < maxRank : sync < maxRank;
-			if (candidate.Rank > 0 && behind && (kin == BeastmasterKinType.None || KinOf(candidate.Pet) == kin))
+			if (rank > 0 && behind && (kin == BeastmasterKinType.None || KinOf(candidate.Pet) == kin))
 			{
 				lagging.Add(candidate with { Rank = rank });
 			}
@@ -299,19 +353,20 @@ public partial class BeastmasterRotation
 		return fighters;
 	}
 
-	// K7 (A799): a familiar's true rank - the synced one below the board's sync, above it the rank the last result window
-	// showed where that is higher; `known` false when it stands above the sync and no result window showed more.
+	// K7 (A803, A799): a familiar's true rank - the higher of the game's and the last result window's; `known` false when
+	// neither gives one, or one that contradicts the game's flag above the sync - then a familiar above the sync stands at
+	// the sync, one below it at 0 (no place without a rank).
 	private static int TrueRank(TeamCandidate candidate, int sync, out bool known)
 	{
-		if (!candidate.OverRank)
+		var rank = Math.Max(candidate.Rank, CrucibleBoard.KnownRank(candidate.Pet));
+		if (candidate.OverRank && rank <= sync)
 		{
-			known = true;
-			return candidate.Rank;
+			known = false;
+			return Math.Max(sync, 0);
 		}
 
-		var learned = CrucibleBoard.KnownRank(candidate.Pet);
-		known = learned > sync;
-		return known ? learned : candidate.Rank;
+		known = rank > 0;
+		return rank;
 	}
 
 	// K7: the core of a team in its greedy order - up to the last pick that covers a weakness anew, or heals or protects while
@@ -358,6 +413,9 @@ public partial class BeastmasterRotation
 
 	// K7: rank and role of each familiar of the last recommendation, for the trace line of a requested team.
 	private static readonly Dictionary<BeastmasterPet, string> _teamRanks = [];
+
+	// K7 (A803): where each candidate's rank came from - the game, the last result window, or neither.
+	private static readonly Dictionary<BeastmasterPet, string> _rankSources = [];
 
 	private static List<BeastmasterPet>? _teamWanted;
 	private static (BeastmasterPet Pet, bool Add, DateTime At)? _teamLastToggle;
@@ -415,12 +473,12 @@ public partial class BeastmasterRotation
 	/// K7: the team RSR recommends for <paramref name="board"/> - as many as it holds; first as many that heal or protect as
 	/// B5 wants before a boss, then one by one the familiar that hits the weakness of the most enemies of the board's fights
 	/// not yet covered (each enemy of a weakness counts one, shared by the familiars already chosen that hit it); at equal
-	/// worth one above the board's rank first, then one in the team already. With <paramref name="levelLagging"/> (his rule
-	/// of 05.11.2026, A579) each pick, from the highest rank down, gives way to the lowest-ranked familiar outside the team
-	/// that replaces it adequately: it hits every weakness only that pick hits in the team, heals or protects where that is
-	/// still needed, stands at least at the board's recommended rank, and ranks below the pick and below the highest rank.
+	/// worth one above the board's rank first, then the higher true rank, then one in the team already. The
+	/// <paramref name="goal"/> (A804) decides the rest: under <see cref="CrucibleGoal.Level"/> familiars that lag behind
+	/// fill the team (A796), under <see cref="CrucibleGoal.Score"/> it shrinks for the score where the measured losses allow
+	/// it (A698, A699), under <see cref="CrucibleGoal.SafeWin"/> it stays at the board's size.
 	/// </summary>
-	internal static unsafe List<CrucibleTeamPick> RecommendCrucibleTeam(uint board, bool levelLagging)
+	internal static unsafe List<CrucibleTeamPick> RecommendCrucibleTeam(uint board, CrucibleGoal goal)
 	{
 		var picks = new List<CrucibleTeamPick>();
 		var size = CrucibleBoard.TeamSize(board);
@@ -448,6 +506,7 @@ public partial class BeastmasterRotation
 		var party = AgentXBMPetParty.Instance();
 		var candidates = new List<TeamCandidate>();
 		_teamRanks.Clear();
+		_rankSources.Clear();
 		foreach (var pet in Enum.GetValues<BeastmasterPet>())
 		{
 			if (pet == BeastmasterPet.None || _teamRefused.Contains(pet) || FamiliarUnlocked(pet) != true || FamiliarOf(pet) is not { } profile)
@@ -457,7 +516,8 @@ public partial class BeastmasterRotation
 
 			var safe = profile.TrickHeals || profile.ReleaseHeals || profile.ReleaseProtects || profile.BorrowProtects;
 			var overRank = party != null && party->IsPetOverSyncedRank((uint)pet);
-			var rank = party != null ? (int)party->GetSyncedRank((uint)pet) : 0;
+			var rank = CrucibleBoard.PetRank(party, pet);
+			_rankSources[pet] = rank > 0 ? "game" : CrucibleBoard.KnownRank(pet) > 0 ? "learned" : "unknown";
 			candidates.Add(new TeamCandidate(pet, ElementsOf(profile), safe, overRank, rank));
 		}
 
@@ -465,8 +525,12 @@ public partial class BeastmasterRotation
 		var chosen = ChooseTeam(candidates, size, weight, interrupting, team, out var core);
 		var covered = CoverageOf(chosen);
 
-		// A698: as few as the score's bonus for a smaller team allows with the core and the familiars' measured loss.
-		var keep = TeamSizeForScore(board, size, core, chosen, out var sizeNote);
+		// A698: as few as the score's bonus for a smaller team allows with the core and the familiars' measured loss - not
+		// under the goal Safe win (A804).
+		var safeWin = goal == CrucibleGoal.SafeWin;
+		var sizeNote = "Safe win: the full team for the board's fights, the stronger at equal worth; no score bonus holds back "
+			+ "an item, a purchase, a rest or a feed.";
+		var keep = safeWin ? size : TeamSizeForScore(board, size, core, chosen, out sizeNote);
 		CrucibleTeamSizeNote = sizeNote;
 		for (var i = chosen.Count - 1; i >= keep; i--)
 		{
@@ -481,7 +545,7 @@ public partial class BeastmasterRotation
 
 		// A699: a team of one kin where one holds what the mixed one holds - its bonus on top.
 		var gambitKin = BeastmasterKinType.None;
-		if (GambitTeam(all, size, weight, interrupting, team, board, chosen, keep) is { } gambit)
+		if (!safeWin && GambitTeam(all, size, weight, interrupting, team, board, chosen, keep) is { } gambit)
 		{
 			gambitKin = gambit.Kin;
 			chosen = gambit.Team;
@@ -502,7 +566,7 @@ public partial class BeastmasterRotation
 		// core and the reserve the measured losses ask for - take familiars that lag behind first where they replace adequately;
 		// the places left up to the board's size go to the other familiars that lag behind, lowest rank first.
 		var learning = new Dictionary<BeastmasterPet, bool>();
-		if (levelLagging && party != null)
+		if (goal == CrucibleGoal.Level && party != null)
 		{
 			chosen = LevelingTeam(board, size, chosen, all, weight, interrupting, team, gambitKin, learning, out var levelNote);
 			if (levelNote.Length > 0)
@@ -510,11 +574,11 @@ public partial class BeastmasterRotation
 				CrucibleTeamSizeNote = levelNote;
 			}
 		}
-		else
+		else if (goal == CrucibleGoal.Score)
 		{
 			// A802: the state shows in the window, so a team without leveling is not read as a fault of the rule.
 			CrucibleTeamSizeNote = (CrucibleTeamSizeNote.Length > 0 ? CrucibleTeamSizeNote + " " : string.Empty)
-				+ "Leveling is off (\"Prefer familiars that lag behind in rank for the Crucible team\").";
+				+ "Score: no familiar joins only to level.";
 		}
 
 		foreach (var pick in chosen)
@@ -535,7 +599,8 @@ public partial class BeastmasterRotation
 					? learns ? $"; levels, rank {pick.Rank}" : $"; levels in reserve, rank {pick.Rank}"
 					: string.Empty);
 			picks.Add(new CrucibleTeamPick(pick.Pet, why, team.Contains(pick.Pet)));
-			_teamRanks[pick.Pet] = $"{(pick.OverRank ? $"{pick.Rank}+" : pick.Rank.ToString())}{(learning.ContainsKey(pick.Pet) ? " levels" : string.Empty)}";
+			_teamRanks[pick.Pet] = $"{pick.Rank}{(pick.OverRank ? "+" : string.Empty)} {_rankSources.GetValueOrDefault(pick.Pet, "unknown")}"
+				+ (learning.ContainsKey(pick.Pet) ? " levels" : string.Empty);
 		}
 
 		return picks;
@@ -630,9 +695,11 @@ public partial class BeastmasterRotation
 			return false;
 		}
 
-		// At equal worth: above the board's rank first, then one in the team already.
+		// At equal worth: above the board's rank first, then the higher true rank (A804), then one in the team already.
 		bool Before(TeamCandidate a, TeamCandidate b)
-			=> a.OverRank != b.OverRank ? a.OverRank : team.Contains(a.Pet) && !team.Contains(b.Pet);
+			=> a.OverRank != b.OverRank ? a.OverRank
+				: a.Rank != b.Rank ? a.Rank > b.Rank
+				: team.Contains(a.Pet) && !team.Contains(b.Pet);
 	}
 
 	// K7: how many of `chosen` hit each element.
@@ -782,14 +849,14 @@ public partial class BeastmasterRotation
 			named.Add(_teamRanks.TryGetValue(pet, out var rank) ? $"{pet} {rank}" : pet.ToString());
 		}
 
-		DefenseTrace.Line($"crucible team: requested {string.Join(", ", named)}");
+		DefenseTrace.Line($"crucible team: goal {CrucibleGoalNow} - requested {string.Join(", ", named)}");
 	}
 
 	// K7: one step of a requested change each time the team has taken the last one, at most one GCD after it; a joiner the
 	// game does not take leaves the recommendation for this session, a leaver it does not take ends the change.
-	internal static void FollowTeamRequest(bool levelLagging)
+	internal static void FollowTeamRequest(CrucibleGoal goal)
 	{
-		CrucibleTeamRecommendation = CrucibleTeamScreenOpen(out var board) ? RecommendCrucibleTeam(board, levelLagging) : [];
+		CrucibleTeamRecommendation = CrucibleTeamScreenOpen(out var board) ? RecommendCrucibleTeam(board, goal) : [];
 		if (_teamWanted == null)
 		{
 			return;

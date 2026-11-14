@@ -40,8 +40,11 @@ public partial class BeastmasterRotation
 	internal static bool HoarderBonusAtStake => _scoreItemSlots > 0 && _scoreItemsHeld >= _scoreItemSlots
 		&& CrucibleBoard.BonusPoints(CrucibleBoard.ScoreBonus.HabitualHoarder) > 0;
 
-	/// <summary>K15 (A695): whether a use of an item now would cost a bonus of the score - "Sparsamkeit" or "Sammelleidenschaft".</summary>
-	internal static bool ItemBonusAtStake => NoItemBonusStands || HoarderBonusAtStake;
+	/// <summary>
+	/// K15 (A695): whether a use of an item now would cost a bonus of the score - "Sparsamkeit" or "Sammelleidenschaft" - that
+	/// the goal of the run weighs (A804: not under Safe win).
+	/// </summary>
+	internal static bool ItemBonusAtStake => WeighsScore && (NoItemBonusStands || HoarderBonusAtStake);
 
 	/// <summary>K15 (A695): the points a use of an item now costs - "Sparsamkeit" while it stands, "Sammelleidenschaft" while ten are held.</summary>
 	private static int ItemBonusPointsAtStake => (NoItemBonusStands ? CrucibleBoard.BonusPoints(CrucibleBoard.ScoreBonus.EconomicEthos) : 0)

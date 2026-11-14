@@ -23097,7 +23097,8 @@ geringere punktzahl zu bekommen, oder dass diese durch essen gebufft werden müs
   schreibt das Teamfenster jetzt auch vor dem Brett. Preis bis dahin: auf den ersten vier Brettern stets voller Kader.
 - *Konzept:* 21, K7 „Leveln", „Teamgröße nach Punkten".
 - *Vorhersage:* `predictions/2026-11-14.json`, „team-levels": Fordert er auf Brett 2 den empfohlenen Kader an, nennt die
-  Zeile „crucible team: requested …" mindestens einen Begleiter mit „levels".
+  Zeile „crucible team: requested …" mindestens einen Begleiter mit „levels". *Widerlegt (14.11.2026, Build
+  13e4a15d0, Brett 2, 15:37):* zwölf Begleiter, keiner mit „levels" – jeder Rang las 0 (A803).
 - *Prüfgrad:* Compile, CI; Laufzeit nicht beobachtet.
 
 ### A797 · Upload vom 14.11.2026, 15:02: Brett 2 ohne Absturz; Laden und Gegenstände nach seiner Vorgabe (14.11.2026)
@@ -23249,6 +23250,62 @@ fehler besteht weiterhin", mit Bildern des Bestienbuchs (Cu Sith Rang 11, Schaud
   Abrechnung: folgt (A803).
 - *Seine Boni-Bilder:* dieselben Namen, Bedingungen und Punkte, die RSR aus `XBMScoreBonus` und `XBMContent` liest (A695).
 - *Prüfgrad:* Bildbefund, Compile, CI.
+
+### A803 · Crucible-Kader: Der Rang las 0 – die Spielfunktion nimmt vier Argumente, ClientStructs nennt zwei (14.11.2026)
+
+Seine Meldung (14.11.2026): „es werden wieder nur begleiter >= 10 ausgewählt für brett 2. fehler besteht weiterhin";
+sein Hinweis: „wenn man das bestienbuch konsultiert, kann man das level der bestien sehen". Upload
+`RotationSolver.7z` (DefenseTrace Build 13e4a15d0, 15:36 bis 15:44).
+- *Fehlerbild:* Auf Brett 2 kein Nachzügler im Kader, obwohl er Begleiter auf Rang 6 bis 8 hat.
+- *Fehler, am Artefakt:* Die Spur nennt „crucible team: requested Chimera 0, Treant 0+, … Golem 0+" – für jeden
+  Begleiter Rang 0. `LevelingTeam` verlangt einen Rang über 0 und fand keinen Nachzügler; der Kader blieb der gierige.
+  `CrucibleFamiliarRank.json` ist leer: Kein Lauf endete mit RSR an der Abrechnung, die zweite Quelle hatte nichts.
+- *Ursache, am Artefakt (Disassemblierung seiner `ffxiv_dx11.exe` vom 13.11.2026, capstone):* Die Funktion an
+  0x140AA52B0 (ClientStructs `data.yml`: `GetSyncedRank`) liest `rdx` (Begleiter), `r8b` (angleichen) und `r9b` (Daten
+  des Inhalts). Mit `r9b` 0 liest sie den Rang aus den Begleiterdaten des Spielers, mit 1 über den Index des Agenten aus
+  denen des Inhalts; mit `r8b` 1 kappt sie ihn auf `XBMContent`-Byte 0x46 der Agentenzeile und gibt 0 außerhalb der
+  Zeilen 1 bis 5. Das Spiel ruft sie an 15 Stellen, immer mit beiden Schaltern (`r9` aus Agent+0x6C,
+  `UsesContentPetData`; `r8` 1 oder 0). `IsPetOverSyncedRank` (0x140AA5380) enthält dieselbe Folge mit Agent+0x6C und
+  vergleicht den ungekappten Rang mit Byte 0x46 – darum stimmte „+", während der Rang 0 las. ClientStructs (aers,
+  80cb4a7, 10.11.2026) deklariert `GetSyncedRank(uint petId)`: `r8b` und `r9b` tragen, was zuvor in den Registern
+  stand. Seit wann, war nicht nötig: Jede Fassung mit zwei Argumenten liest undefiniert.
+- *Behebung:* `CrucibleBoard.PetRank` ruft die Funktion über `AgentXBMPetParty.Addresses.GetSyncedRank` mit allen vier
+  Argumenten (angleichen 0, Daten des Inhalts aus dem Agenten). Alle drei Leser stellen um: Kader (echter Rang), Laststufe
+  der Begleiter (`FightingRank` aus echtem Rang und „+"), Hornwahl (`BoardCandidates`, ebenso). Der echte Rang gilt
+  zusammen mit dem gelernten aus der Abrechnung (A799), der höhere. Die Spur nennt je Begleiter Rang und Quelle
+  („Puk 14+ game", „… learned", „… unknown").
+- *Sein Hinweis, geprüft:* Das Bestiarium zeigt den echten Rang (seine Bilder); die Feldnotiz von Daedalus, es zeige ihn
+  nicht, steht widerlegt in Konzept 21. Gelesen wird es nicht: Die Spielfunktion liefert dieselbe Größe ohne Fenster.
+- *Klasse:* Jede Spielfunktion, die RSR über ClientStructs ruft, trägt dieselbe Gefahr, wenn die Deklaration Argumente
+  auslässt. Geprüft an der Binärdatei alle, die der Crucible-Code ruft: `IsPetOverSyncedRank` (liest nur `rcx`, `rdx`),
+  `TogglePet` und `XBMManager.IsPetUnlocked` (schreiben `r8` vor jedem Lesen), `UseItem(slot, beastId)` (liest `r8d`,
+  deklariert) – die Deklarationen stimmen; nur `GetSyncedRank` lässt zwei aus.
+- *Prüfgrad:* Disassemblierung, Compile, CI; Laufzeit nicht beobachtet.
+- *Vorhersage:* `predictions/2026-11-14.json`, „team-true-ranks": Öffnet er auf Brett 2 das Teamfenster und fordert den
+  Kader an, nennt „crucible team: goal … - requested …" mindestens einen Begleiter mit Rang und „game"; „team-ranks-not-zero":
+  keiner mit „0 unknown". Unter dem Ziel Level stehen dann Begleiter auf Rang 6 bis 8 mit „levels" darin.
+
+### A804 · Crucible: Ziel des Laufs – Level, Safe win, Score (14.11.2026)
+
+Sein Vorschlag (14.11.2026): „bei der begleiterauswahl am anfang des brettes wären optionen wie: leveln, sicherer sieg
+und bonusmaximierung evtl. sinnvoll. einen von drei buttons auswählen, und begleiterauswahl basiert darauf, und die
+strategie innerhalb des brettes genauso. kritischer loop und bei bestehen in konzept einarbeiten im weiteren loop. dann
+audit, codereview und fehlerbeseitigung".
+- *Loop:* Konzept 21, K7 „Ziel des Laufs": Optionen (Automatik, drei Knöpfe, je Teilregel ein Schalter, Ableitung aus
+  der Messlage), SWOT, drei Gegenthesen, und der Nachweis, dass die Wahl eine Vorliebe ist, die keine Konstruktion
+  beseitigt: Die Plätze des Kaders gehen an In Unterzahl oder an Nachzügler (EP höchstens 255 je Begleiter und Brett),
+  und die Restgefahr einer ungesehenen Last gegen die Boni zu tauschen, überlässt seine Präzisierung vom 03.11.2026 dem
+  Spieler. Bestanden.
+- *Gebaut:* Einstellung „Goal of a Crucible run (also the three buttons of the team window)", ab Werk Level; drei
+  segmentierte Knöpfe im Kaderfenster. Level: Kämpfer und Lernende, ohne Nachzügler wie Score. Safe win: volle Größe,
+  gierig, bei Gleichstand der höhere echte Rang; kein K15-Bonus hält Gegenstand, Kauf, Schatz, Rast oder Futter zurück
+  (`WeighsScore` an `ItemBonusAtStake`, Laden, Futter, Lager, Schatz). Score: Größe nach Punkten und Gattung, keine
+  Lernenden. Die alte Einstellung „Prefer familiars that lag behind in rank" geht beim ersten Frame: aus wird Score.
+- *Fenster:* `window_layout_model.py` mit der Zielwahl: 545 × 508 px beim Öffnen, nichts abgeschnitten, auf 800 × 400
+  bei 340 px Höhe.
+- *Prüfgrad:* Compile, CI, Layoutmodell; Laufzeit nicht beobachtet.
+- *Vorhersage:* Die Spur nennt bei jeder Anforderung das Ziel („crucible team: goal Level - requested …"); unter Safe
+  win fehlt jede Zeile „crucible score: … kept for …".
 
 ## B · Commit-Register (Fork vs. `upstream/main`)
 
@@ -23598,3 +23655,4 @@ Die offene Arbeit dazu — Reihenfolge und Abbruchbedingung der Nachprüfung —
 | C194 | A780 und Konzept 03/14 (Stand A780): Der Schadenshöhepunkt über 30 s liege bei allen Jobs im Opener, belegt durch den Trinkzeitpunkt der Besten; Schnitter „deckt sich“ | Der Trinkzeitpunkt belegt nur Verhalten. Gemessen am Schaden (A781) ist der 2-Minuten-Burst bei Schnitter, Viper, Barde, Dragoon und Tänzer stärker; die Besten trinken im Opener wegen der Zahl der Tränke. |
 | C195 | A765 und Konzept 11, „Ein totes Mitglied ist kein Gegner“ (Stand A765): Das Flackern zwischen „a candidate“ und „an enemy“ am 13.11.2026 sei die Antwort von `IsEnemy` auf tote Allianzmitglieder | Nicht belegt. Die Begründung der Zeile fragte `IsTargetMoving` ein zweites Mal und schrieb für einen Toten in Bewegung „an enemy“; am 14.11.2026 stand das bei Gruppenmitgliedern, für die `IsEnemy` nicht mehr gefragt wird (A788). Die Behebung aus A765 bleibt ohne Preis. |
 | C196 | A793 (Stand A793): Die Hooks von Upstream (AutoAttack, UseAction) berühre der Fork nicht; Fork-Code in den Hooks sei mit den drei Absicherungen geschützt | Der Fork erreicht sie über ihre Aufgerufenen: `UpdateDetour` rief vor seinem `try` `CooldownDelayTweak.StartAdjustment` mit Fork-Grenze (A753), `SetAutoAttackStateDetour` `PlayerHasNoCastingStatus` mit Fork-Code (A439). Behoben als Klasse in A794 (14.11.2026) |
+| C197 | A802 (Stand A802): Die Leveln-Regel sei am 14.11.2026 nicht gelaufen – Einstellung aus oder Build vor c4824c253 | Sie lief im Build 13e4a15d0 und las jeden Rang als 0, weil die Spielfunktion vier Argumente nimmt und ClientStructs zwei deklariert (A803); die Spur „crucible team: requested Chimera 0, Treant 0+, …" zeigt es |

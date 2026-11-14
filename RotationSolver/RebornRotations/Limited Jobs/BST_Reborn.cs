@@ -154,16 +154,24 @@ public sealed class BST_Reborn : BeastmasterRotation
 			+ "Off: no window.")]
 	private bool RecommendCrucibleRoute { get; set; } = true;
 
-	// K7 (concept 21, "Leveln", A579): his rule of 05.11.2026, the familiars that lag behind first, where they replace others adequately.
-	[RotationConfig(CombatType.PvE, Name = "Prefer familiars that lag behind in rank for the Crucible team",
-		Tooltip = "Every familiar in the team earns experience, on a horn or not. The team recommendation (team screen window) "
-			+ "keeps the familiars the board's fights need - each weakness, healing and protection for the boss, the reserve the "
-			+ "measured losses ask for - and fills every other place with the familiars lowest in rank, in turns, up to the board's "
-			+ "size. On a reserve place only one at least at the rank the game recommends. Above the board's sync the true rank "
-			+ "comes from the last board's result; one at the highest rank no longer lags behind.\n"
-			+ "In a fight: a familiar below the recommended rank goes on a horn only when fewer others live than horns.\n"
-			+ "Off: the team for the board's fights and the score (a smaller team where the measured losses allow it).")]
-	private bool PreferLaggingFamiliars { get; set; } = true;
+	// K7, "Ziel des Laufs" (concept 21, A804): his proposal of 14.11.2026 - three goals, chosen in the team window; the team and
+	// the score bonuses on the board follow. It replaces "Prefer familiars that lag behind in rank" (A579, A796), whose "off"
+	// carries over as Score.
+	[RotationConfig(CombatType.PvE, Name = "Goal of a Crucible run (also the three buttons of the team window)",
+		Tooltip = "Level: every familiar in the team earns experience, on a horn or not. The team keeps the familiars the board's "
+			+ "fights need - each weakness, healing and protection for the boss, the reserve the measured losses ask for - and "
+			+ "fills every other place with the familiars lowest in true rank, in turns, up to the board's size; on a reserve "
+			+ "place only one at least at the rank the game recommends. Once none lags behind, as Score. On the board the "
+			+ "score bonuses are weighed as under Score - the experience follows the score.\n"
+			+ "Safe win: the full team for the board's fights, at equal worth the higher rank; on the board no score bonus "
+			+ "holds back an item, a purchase, a treasure's gear, a rest or a feed - each goes where its safety rule asks.\n"
+			+ "Score: a smaller team and a team of one kin where the measured losses allow it; on the board a bonus stays while "
+			+ "the way to the final fight is safe without the action that would cost it.\n"
+			+ "In a fight: a familiar below the recommended rank goes on a horn only when fewer others live than horns.")]
+	private CrucibleGoal CrucibleGoal { get; set; } = CrucibleGoal.Level;
+
+	// A804: "Prefer familiars that lag behind in rank" set off carries over as the goal Score, once.
+	private const string LaggingSettingBefore = "PreferLaggingFamiliars";
 
 	// K9 of the Crucible (concept 21, A550): on by default. Without a tank the enemies attack only you, and your fall ends the
 	// run; the familiar's HP are a second store, and a fallen familiar costs that familiar, not the run.
@@ -1704,6 +1712,17 @@ public sealed class BST_Reborn : BeastmasterRotation
 	{
 		base.UpdateServices();
 
+		// A804: the goal of the run, read by the team, the items, the shop, the treasure, the campsite and the route.
+		// The old setting is removed on the first frame of this build, before any button could set the goal; the combo of
+		// the new one has stored its default by then, so its presence tells nothing.
+		if (Service.Config.RotationConfigurations.Remove(LaggingSettingBefore, out var lagging)
+			&& string.Equals(lagging, bool.FalseString, StringComparison.OrdinalIgnoreCase))
+		{
+			_ = ChooseCrucibleGoal(this, CrucibleGoal.Score);
+		}
+
+		CrucibleGoalNow = CrucibleGoal;
+
 		// B5 (A522): the judgement of a sent assignment every frame, in combat or not.
 		_ = BattlehornAssignmentPending;
 		// Stage 1 of the Crucible (A548) and what the fights here showed (B5): in a fight they read the hostile list, which
@@ -1730,7 +1749,7 @@ public sealed class BST_Reborn : BeastmasterRotation
 			RefreshFinalPlan();
 		}
 
-		FollowTeamRequest(PreferLaggingFamiliars);
+		FollowTeamRequest(CrucibleGoal);
 		FollowCampsite(PickCampsiteRest);
 		FollowCrucibleShop(RecommendCrucibleShop);
 		FollowCrucibleTreasure(RecommendCrucibleTreasure);
@@ -2500,7 +2519,7 @@ public sealed class BST_Reborn : BeastmasterRotation
 		{
 			var pet = (BeastmasterPet)team[i].PetId;
 			if (i < current.Length && EffectiveHealth(pet, current[i]) > 0
-				&& (party->IsPetOverSyncedRank((uint)pet) || party->GetSyncedRank((uint)pet) >= recommended))
+				&& (party->IsPetOverSyncedRank((uint)pet) || CrucibleBoard.PetRank(party, pet) >= recommended))
 			{
 				adequateLiving++;
 			}
@@ -2518,7 +2537,9 @@ public sealed class BST_Reborn : BeastmasterRotation
 				continue;
 			}
 
-			var rank = (int)party->GetSyncedRank((uint)pet);
+			// A803: the rank it fights with here - the true one, at most the board's sync.
+			var rank = CrucibleBoard.FightingRank(CrucibleBoard.PetRank(party, pet), party->IsPetOverSyncedRank((uint)pet),
+				CrucibleBoard.SyncRank(party->ContentId));
 			if (adequateLiving >= Horns.Length && !party->IsPetOverSyncedRank((uint)pet) && rank < recommended)
 			{
 				continue;

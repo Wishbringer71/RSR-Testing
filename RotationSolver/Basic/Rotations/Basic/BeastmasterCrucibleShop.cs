@@ -535,11 +535,11 @@ public partial class BeastmasterRotation
 			}
 		}
 
-		// K15 (A690): while no token has been spent in this run and the player carries the way to the final fight with his HP
+		// K15 (A690; not under the goal Safe win, A804): while no token has been spent in this run and the player carries the way to the final fight with his HP
 		// and the healing he holds, only the cover against a status that kills whatever the HP - buying anything else ends the
 		// bonus Geizhals (500) for no danger the loads show.
 		var carries = CarriesToFinal(true, out var carried, out var heaviestWay);
-		var keepSpending = NoSpendBonusStands(boughtRows) && carries;
+		var keepSpending = NoSpendBonusStands(boughtRows) && WeighsScore && carries;
 		var picks = RankOffers(offers, budget, int.MaxValue, owned, gearSlots, heldItems, itemSlots, board, out var spent,
 			deathCoverOnly: keepSpending);
 		if (keepSpending)
@@ -1947,9 +1947,9 @@ public partial class BeastmasterRotation
 			return;
 		}
 
-		// K15 (A691): while no familiar has been fed in this run and the run needs no feed, none - feeding ends the bonus
+		// K15 (A691; not under the goal Safe win, A804): while no familiar has been fed in this run and the run needs no feed, none - feeding ends the bonus
 		// Heilfasten (750).
-		if (NoFeedBonusStands && NeedsNoRestOrFeed(false, out var unfed))
+		if (WeighsScore && NoFeedBonusStands && NeedsNoRestOrFeed(false, out var unfed))
 		{
 			CrucibleFeedRecommendation = picks;
 			CrucibleFeedNote = $"No feed recommended - {unfed}; feeding ends the bonus Heilfasten (750 points).";
