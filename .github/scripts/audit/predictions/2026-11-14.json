@@ -1,0 +1,10 @@
+[
+  {"id": "gaze-3499-landed-model", "archive": "A786",
+   "kind": "each", "situation": "gaze: landed #3499 ", "match": "\\(0 looking the safe way by RSR's eye\\)"},
+  {"id": "gaze-3499-avoided", "archive": "A786",
+   "kind": "present", "situation": "gaze: turned .*#3499 ", "match": "gaze: avoided #3499 "},
+  {"id": "gaze-no-hit-after-turn", "archive": "A783",
+   "kind": "absent", "situation": "gaze: turned ", "match": "gaze: hit despite "},
+  {"id": "raise-no-enemy-label", "archive": "A788",
+   "kind": "absent", "situation": "raise: .* dead ", "match": "raise: .* - an enemy$"}
+]

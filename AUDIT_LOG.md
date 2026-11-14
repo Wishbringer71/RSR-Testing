@@ -22955,6 +22955,41 @@ Mitschnitte vom 11. bis 14.11.2026. Zwei Befunde hoher, fünf mittlerer, sieben 
   Nach einem Fehlschlag folgt „… does not refute …“ oder „others it hit faced away …“; ein zweiter Treffer schreibt
   „hit again … while RSR only held actions“.
 
+### A792 · Sein Auftrag: erneut aus den anderen eigenen Repositories lernen; Vorhersagen deterministisch, Anforderungen zuerst (14.11.2026)
+
+Sein Auftrag (14.11.2026): „und wieder schauen, ob du aus den anpassungen der anderen eigenen repos etwas lernen bzw.
+ableiten kannst. regeln, arbeitsweisen, deterministische helfer, blocker etc. im vollen kritischen loop prüfen“.
+Gelesen als Daten, nicht als Anweisungen, seit A782: KSP-MyContracts `wsh/tender-goodall-pad7p0` 3365765..adae972
+(14 Commits), KerbalMissionDirector `claude/read-file-SFXL6` af91e21..c2d471c (3), Retainer-Repricer
+`wsh/loving-noether-ptr3oz` 9a0a247..435bd31 (7). Hinweis zum Werkzeug: Ein einfaches `git fetch --all` holte die
+Arbeitszweige nicht; erst ein Fetch mit ausdrücklicher Refspec. Die Stände in A782 waren dennoch richtig.
+- *Übernommen:*
+  - *Blocker:* Mein pre-push von A785 rief `python3` direkt. Unter Windows fehlt das oder ist ein Platzhalter, und der Push
+    scheiterte aus falschem Grund. Jetzt `.githooks/python.sh` (Verfahren aus Retainer-Repricer): das erste Python, das
+    startet; ohne eines geht der Push mit Meldung durch, die CI prüft ohnehin. Selbsttest: mit und ohne Python im Pfad.
+  - *Deterministischer Helfer:* `evaluate_predictions.py` und `predictions/*.json`. Arten `present`, `absent`, `each`
+    mit Lage; gezählt wird eine Sitzung nur, wenn die Vorhersage mit genau diesem Inhalt im Commit stand, den die
+    Kopfzeile des Trace nennt (Bindung nach Inhalt, nicht nach Zeit; die Schwäche der Zeitbindung meldeten
+    KerbalMissionDirector #5 und Retainer-Repricer #4). Eigener Code, nur das Verfahren übernommen; Retainer-Repricer
+    steht unter AGPL. Probelauf am Upload vom 14.11.: UNBOUND, richtig, denn 57f3f5455 trug die Datei nicht.
+  - *Regeln:* Issues der anderen Repositories bei einer neuen Aufgabe und vor jedem Abgleich lesen, nicht regelmäßig (seine
+    Präzisierung in KSP-MyContracts); der Hinweis im Sitzungsbrief entfällt. Ein neuer Mechanismus nur gegen eine
+    schriftliche Anforderung, auch nicht als Antwort auf einen Prüfer (seine Rüge dort). Neue Befunde hoher Schwere nach
+    einer sauberen Runde, oder in der dritten Runde in Folge (meine Ableitung aus A791), sind ein Befund am Vorgehen.
+    Eine Falsifikation mit nur einem Messweg ist eine tragende Annahme mit Lauf; ein eingreifendes Konzept führt
+    Anforderungen und Annahmen in einem Abschnitt (aus KSP-MyContracts, Konzept 08).
+- *Sofort angewandt:* Die Blickwache hatte drei Runden in Folge mit Befunden hoher Schwere. Statt einer vierten
+  Flickrunde steht in Konzept 13 „Blickwache: Anforderungen und tragende Annahmen“: sechs Vorgaben mit Kriterium, jede
+  Mechanik mit Anforderung und Preis, neun tragende Annahmen mit Lauf und Vorhersage. Zwei Mechaniken (Abstand aus
+  Bewegung, Rückdrehung) waren Antworten auf Prüfbefunde ohne Anforderung; sie bleiben, weil sie im Stand nichts kosten,
+  und sind Kandidaten zum Rückbau, wenn die nächste Aufnahme sie nicht braucht. Die vierte Runde, schon gestartet, fließt
+  in diesen Abschnitt ein.
+- *Nicht übernommen, mit Grund:* Einfrierliste und Tore aus KSP-MyContracts (A782, unverändert); Erlebnisziele aus der
+  Spielerforschung (dort ist das Paket für andere Spieler, hier sein Profil maßgeblich); Dalamuds „Plugin Statistics“
+  statt eigener Kostenzeile (aus Retainer-Repricer: RSR hat `UpdateCost`, und er nutzt Diagnosefenster nicht); das
+  Verbot, in anderen Repositories zu arbeiten (steht hier schon, „Grenzen und Löschungen“).
+- *Vorhersage:* `.github/scripts/audit/predictions/2026-11-14.json`, vier Einträge zu A783, A786, A788.
+
 ## B · Commit-Register (Fork vs. `upstream/main`)
 
 ### B1 · Einzelgeprüfte Fork-Commits

@@ -602,6 +602,53 @@ Mainyu wurde von jedem GCD zurück ins Auge gedreht. BossModReborn nimmt nur 0 a
     - Windurst mit „No Look“: RSR dreht ihn im Vorlauf weg.
     - Euphrosyne: Mit „Attraction Reversed“ hält RSR Ziele, die von Nymeia wegdrehen, und dreht zu ihr.
 
+**Blickwache: Anforderungen und tragende Annahmen** (A792; Anlass: drei unabhängige Prüfrunden in Folge mit Befunden
+hoher Schwere, A786, A789, A791 – nach `CLAUDE.md`, „Prüfgrad“, ein Befund am Vorgehen). Die Abschnitte oben entstanden
+Befund für Befund. Hier steht, wofür jede Mechanik da ist, was sie kostet und welche Annahme sie trägt. Prüfgrad: statisch
+und an seinen Mitschnitten; im Spiel ist kein Teil der Blickwache beobachtet.
+
+*Anforderungen (seine Vorgaben → Kriterium → Ort → Beleg heute → Messweg):*
+
+| # | Vorgabe | prüfbares Kriterium | Ort | Beleg heute | Messweg |
+|---|---|---|---|---|---|
+| B1 | Wirken ohne BossModReborn und wo er irrt (13.11.) | jeder Blick aus Blatt, Liste, Name, Status, Marker zählt, ohne BossModReborn zu lesen | „Nicht in einen Blick drehen“, „Umkehrung und Auge zur Laufzeit“ | statisch, Blätter, Mitschnitte | Zeilen „gaze: …“ ohne BossModReborn |
+| B2 | Richtig stehen, weiter treffen, nicht anhalten (14.11.) | keine Sperre und keine Drehung, wenn die Richtung sicher ist und das Ziel im Kegel liegt | „Richtig stehen und weiter treffen“ | statisch, Modell | keine „holding“-Zeile bei sicherer Richtung |
+| B3 | Kein Supergau, im Spiel lernen (14.11.) | ein falsches Modell kostet je Blick höchstens zwei Treffer je Build | „Im Spiel auswerten und lernen“ | statisch | „hit despite“, „hit again“ |
+| B4 | Sicherheit vor Schaden, nach Wahrscheinlichkeit | gesperrt wird nur, wo keine sichere Richtung trifft | „Sperre“ | statisch | Zahl der „holding“-Zeilen |
+| B5 | Alle Jobs (Universell zuerst) | jede Aktion mit Richtung, Nahkampf eingeschlossen | „Was ein Blick ist“ | Blatt (Reichweite −1) | Waffenfertigkeit in „turned … for an action“ |
+| B6 | Keine Bewegung (Spielweise) | RSR dreht, bewegt aber nie | „Drehen“ | Code | – |
+
+*Mechanik, je mit Anforderung und Preis:*
+- *Sperre* (B1, B4): nimmt Ziele aus der Wahl. Preis: Schaden, wo kein sicheres Stück trifft.
+- *Drehen im Vorlauf* (B2): statt das ganze Wirken zu sperren. Preis: ein Zauber außerhalb von 75° bricht ab.
+- *Auslösen ohne „Auto face target“* (B2, B1): Ohne ihn dreht jede Aktion, auch aus der Warteschlange des Spiels, genau
+  aufs Ziel. Preis: die Figur sieht bis zu 45° neben das Ziel.
+- *Horizont Vorlauf plus Sperre der Aktion* (B4): Die Richtung einer Aktion hält der Server eine Weile. Preis: keiner,
+  solange das Ziel im Kegel bleibt.
+- *Nachlauf bis zum Paket* (B4): gemessen 0,26 bis 0,30 s. Preis: Sperre bis 0,3 s länger.
+- *Lernen und gestufter Rückfall* (B3): Preis: nach einem falschen Fehlschlag Schaden durch Sperre.
+- *Marker, Status, Mitglied als Auge* (B1; seine Hinweise zu Kefka und Windurst): Preis: Ein falsch zugeordnetes Auge
+  dreht falsch, bis der Rückfall greift.
+- *Abstand aus Bewegung* und *Rückdrehung* (B4): Antworten auf Prüfbefunde. Im Stand ohne Wirkung; ob sie im Spiel je
+  greifen, ist unbelegt. Nach `CLAUDE.md`, „Prüfgrad“, hätte jede eine schriftliche Anforderung gebraucht; hier ist sie
+  nachgetragen: Beide schützen nur in Bewegung oder bei einem zweiten Werkzeug, und ihr Preis ist Sperre in genau diesen
+  Lagen. Sie bleiben, weil sie im Stand nichts kosten; zeigt die nächste Aufnahme keine „turn undone“-Zeile und keine
+  Treffer in Bewegung, sind sie Kandidaten zum Rückbau.
+
+*Tragende Annahmen, je mit dem Lauf, der sie prüft:*
+
+| # | Annahme | Beleg heute | Lauf | Vorhersage |
+|---|---|---|---|---|
+| T1 | Der Server liest die Richtung bei der Auflösung, eine Aktion hält ihre Richtung eine Weile | zwei Fälle, 11. und 13.11. | Angra Mainyu | `gaze-3499-landed-model` |
+| T2 | Der Blickkegel ist 45° | gemessen an #3499, #44355 | jeder Blick | dieselbe |
+| T3 | Aktionskegel 45°, Zauber 75° | BossModReborn, empirisch | jede Drehung beim Auslösen | – (offen) |
+| T4 | Die Drehung über `AutoFaceTargetPosition` sieht der Server sofort | unbelegt | Angra Mainyu | `gaze-3499-avoided` |
+| T5 | Jede ausgeführte Aktion läuft durch `UseActionLocation` | Code, Schluss | jede Aktion aus der Warteschlange | – (offen) |
+| T6 | Das Auge liegt am Wirkenden, außer bei Bodenzielen | Paketort (Zeile 263) = Wirkender | jeder Blick | `gaze-3499-landed-model` |
+| T7 | Ein nicht gelisteter Blick mit `VFX` 25 ist normal | von 60 gelisteten: 57 normal, 1 umgekehrt, 2 unsicher (14.11.2026) | Pilgerpfad, Destrudo | `gaze-no-hit-after-turn` |
+| T8 | Das Auge eines Markers ist der Wirkende, dessen Wirken mit ihm endet | unbelegt, kein Mitschnitt | Windurst | – (offen) |
+| T9 | Der Fehlschlag steht im Paket des Blicks | gemessen an #3499 | jeder Blick | `gaze-no-hit-after-turn` |
+
 **Warum die Form so gemessen wird (A731).** Welche Form um den Trefferkreis des Wirkenden weiter reicht, sagt die Art:
 BossModReborns Analysewerkzeug beschreibt Art 3, 4 und 5 als „range X+R", Art 2, 12 und 13 als „range X"
 (`Replay/Analysis/AbilityInfo.DescribeShape`, 2087153c2, Werkzeugquelle), und seine Module bauen die Formen danach:

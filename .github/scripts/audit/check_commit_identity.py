@@ -37,6 +37,7 @@ a clean tree, and this class is exactly the one where that difference matters.
 
 import re
 import subprocess
+import os
 import sys
 
 ALLOWED = re.compile(
@@ -183,6 +184,15 @@ def self_test() -> None:
         if hook_refuses(name, mail, merge) != refused:
             print(f"SELF-TEST FAILED on the hook, {what}: expected {'refused' if refused else 'accepted'}")
             sys.exit(2)
+    import pathlib
+    chooser = pathlib.Path(__file__).resolve().parents[3] / ".githooks" / "python.sh"
+    def chosen(path):
+        env = dict(clean_environment(), PATH=path)
+        out = subprocess.run(["/bin/sh", "-c", f'. "{chooser}"; printf %s "$PYTHON"'], env=env, capture_output=True, text=True)
+        return out.stdout
+    if chosen("/nonexistent") != "" or chosen(os.environ.get("PATH", "")) == "":
+        print("SELF-TEST FAILED on .githooks/python.sh: it must find a working Python on the PATH and none without one")
+        sys.exit(2)
     for name, mail, refused, what in [
         ("Claude", "noreply@anthropic.com", False, "the published identity"),
         ("Claude", "private.person@example.com", True, "a private address past pre-commit"),
@@ -196,7 +206,8 @@ def self_test() -> None:
         "  a leaking author, a leaking committer, the address that actually leaked, one that\n"
         "  merely starts with an allowed address and a machine's user.name are each caught;\n"
         "  the hooks refuse the same for a commit and for a merge without conflict, and pre-push refuses\n"
-        "  it in a real push of a commit that went past pre-commit"
+        "  it in a real push of a commit that went past pre-commit; the hook's Python choice finds one\n"
+        "  that starts and none without one"
     )
 
 
