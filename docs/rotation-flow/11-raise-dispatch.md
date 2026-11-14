@@ -146,14 +146,29 @@ mit der Zeit seit RSR es tot sah und dem Abstand; „a candidate" heißt, es ist
 gibt es nur bei einem Wechsel, sie ist nicht an jedes Bild gebunden.
 
 **Ein totes Mitglied ist kein Gegner** (A765). Upstream (bd9c156b0) schließt einen Toten aus, den `IsEnemy` als Gegner
-meldet: Das Spiel ließe Blizzard auf ihn zu (`CanUseActionOnTarget`). Für tote Allianzmitglieder flackert diese
-Antwort. Welt der Dunkelheit, 13.11.2026, 18:27 bis 18:28: In 76 s wechselten sechs Tote 15-mal von „a candidate“ zu
-„an enemy“, ein Toter in 26 Yalm dreimal binnen 0,5 s. In jedem Bild mit „an enemy“ fällt der Tote aus der Wahl, und
-ein anderer oder keiner wird Ziel der Wiederbelebung. Ob jemand zur eigenen Gruppe oder Allianz gehört, liefert das
-Spiel als Tatsache. Ein solches Mitglied ist nie Gegner, und `GetDeath` fragt `IsEnemy` nur noch für andere. Gegenthese
-(kein Defekt, die Antwort stimmt): Ein Allianzmitglied ist im PvE nicht angreifbar. Das Flackern bei demselben Toten am
-selben Ort zeigt eine Antwort ohne Bedeutung für ihn. *Preis:* keiner. Ein Gegner, der zugleich Mitglied ist, kommt
-im PvE nicht vor.
+meldet: Das Spiel ließe Blizzard auf ihn zu (`CanUseActionOnTarget`). Ob jemand zur eigenen Gruppe oder Allianz
+gehört, liefert das Spiel als Tatsache. Ein solches Mitglied ist nie Gegner, und `GetDeath` fragt `IsEnemy` nur noch
+für andere. *Preis:* keiner. Ein Gegner, der zugleich Mitglied ist, kommt im PvE nicht vor.
+
+**Ein Toter in Bewegung, einmal je Bild** (A788). `GetDeath` schließt einen Toten aus, der sich noch bewegt
+(`IsTargetMoving`, Upstream). Diese Prüfung vergleicht die Position mit der beim letzten Aufruf und speichert sie
+dabei. `GetDeath` läuft je Bild mehrmals: für die Gruppe, die Allianz, die Spieler außerhalb von Inhalten und die
+Zielwahl der Wiederbelebung (`TargetType.Death`). Nur der erste Aufruf im Bild sah die Bewegung; jeder weitere
+verglich mit der Position, die der erste gerade gespeichert hatte, und sah Stillstand. Die Zeile im Protokoll fragte
+die Prüfung für ihre Begründung ein zweites Mal und schrieb deshalb „an enemy“ statt „moving“.
+- *Am Protokoll vom 14.11.2026 (Stand 57f3f5455, mit A765):* In Goldklamm und Fülle des Todes stand „an enemy“
+  15-mal bei Toten der eigenen Gruppe, den Spieler selbst eingeschlossen, für die `GetDeath` `IsEnemy` gar nicht mehr fragt. Bei einem Toten wechselte
+  es binnen 0,7 s nach dem Tod viermal mit „a candidate“: der Körper glitt noch.
+- *Widerruf (C195):* Das Flackern vom 13.11.2026, das A765 als Antwort von `IsEnemy` las, ist so nicht belegt. Es kann
+  ebenso diese Bewegung gewesen sein. Die Behebung aus A765 bleibt, weil sie ohne Preis ist; ihr Beleg entfällt.
+- *Regel:* Die Prüfung antwortet je Bild einmal (`DataCenter.FrameCacheMs`) und vergleicht mit der Position aus einem
+  früheren Bild. `GetDeath` wertet jede Bedingung einmal aus und begründet mit demselben Wert.
+- *Im Kampf:* Ein Toter, dessen Körper noch gleitet, ist in allen Wegen des Bildes gleich ausgeschlossen; die
+  Wiederbelebung beginnt, sobald er liegt. Bisher konnte die Zielwahl ihn im selben Bild als Ziel nehmen, während die
+  Gruppenliste ihn ausschloss. Die Zeile nennt den wahren Grund.
+- *Gegenthese (ausgeliefert, und nichts ändert sich):* Gleitet ein Körper nur Bruchteile einer Sekunde, verschiebt das
+  die Wiederbelebung höchstens um diese Zeit. Dafür trägt die Zeile jetzt den richtigen Grund, und eine längere
+  Bewegung wird erkennbar.
 
 **Warum er nichts verdrängt.** Nach ihm stehen in `EmergencyAbility` nur zwei Zweige, beide Second
 Wind für Nahkämpfer beziehungsweise physische Fernkämpfer bei Doom-Status. Für einen Rezzer ist dort

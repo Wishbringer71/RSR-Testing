@@ -2120,7 +2120,9 @@ public static partial class ObjectHelper
 		return battleChara != null && battleChara.Struct() != null && battleChara.Struct()->Character.InCombat;
 	}
 
-	private static readonly Dictionary<ulong, Vector3> LastPositions = [];
+	// A788 (concept 11, "Ein Toter in Bewegung, einmal je Bild"): the answer is kept for the frame, so every caller in it
+	// gets the same one; before, each call stored the position and a second call in the frame saw no movement.
+	private static readonly Dictionary<ulong, (Vector3 Position, long Tick, bool Moving)> LastPositions = [];
 	internal static bool IsTargetMoving(this IBattleChara battleChara)
 	{
 		if (battleChara == null)
@@ -2135,15 +2137,22 @@ public static partial class ObjectHelper
 
 		var id = battleChara.GameObjectId;
 		var currentPos = battleChara.Position;
-		if (LastPositions.TryGetValue(id, out var lastPos))
+		var now = Environment.TickCount64;
+		if (LastPositions.TryGetValue(id, out var last))
 		{
+			if (now - last.Tick < DataCenter.FrameCacheMs)
+			{
+				return last.Moving;
+			}
+
+			var lastPos = last.Position;
 			var isMoving = Vector3.Distance(currentPos, lastPos) > 0.01f;
-			LastPositions[id] = currentPos;
+			LastPositions[id] = (currentPos, now, isMoving);
 			return isMoving;
 		}
 		else
 		{
-			LastPositions[id] = currentPos;
+			LastPositions[id] = (currentPos, now, false);
 			return false;
 		}
 	}

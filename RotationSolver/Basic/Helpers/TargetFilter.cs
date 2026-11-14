@@ -74,10 +74,16 @@ public static class TargetFilter
 
 			// A765: a member of the party or alliance is never an enemy; for a dead one the game's answer to Blizzard
 			// flickers (concept 11, "Ein totes Mitglied ist kein Gegner").
-			if (item.CurrentHp != 0 || !item.IsTargetable || item.IsTargetMoving()
-				|| (!item.IsParty() && !item.IsAllianceMember() && item.IsEnemy()))
+			// A788: each condition asked once, and the line names the one that held; asked again, the movement check
+			// answered differently and the line said "an enemy" for a body still moving.
+			var excluded = item.CurrentHp != 0 ? "HP above 0"
+				: !item.IsTargetable ? "not targetable"
+				: item.IsTargetMoving() ? "moving"
+				: !item.IsParty() && !item.IsAllianceMember() && item.IsEnemy() ? "an enemy"
+				: null;
+			if (excluded != null)
 			{
-				NoteDeath(item, item.CurrentHp != 0 ? "HP above 0" : !item.IsTargetable ? "not targetable" : item.IsTargetMoving() ? "moving" : "an enemy");
+				NoteDeath(item, excluded);
 				continue;
 			}
 

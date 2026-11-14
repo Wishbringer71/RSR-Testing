@@ -22851,6 +22851,22 @@ Upload vom 14.11.2026 (zwei Absturzberichte, `DefenseTrace.log` auf 57f3f5455).
 - *Vorhersage:* In seinem nächsten Crucible-Lauf öffnet jedes Fenster ohne Absturz. Steht dabei „unreadable“ oder
   „not one the game knows“ in einer Zeile „crucible window …“, hat der Fix genau den Fall abgefangen.
 
+### A788 · Upload vom 14.11.2026: Tote „an enemy“ waren Tote in Bewegung; die Prüfung antwortete je Aufruf (14.11.2026)
+
+`DefenseTrace.log` auf 57f3f5455 (mit A765). Konzept 11, „Ein Toter in Bewegung, einmal je Bild“.
+- *Befund:* 15 Zeilen „raise: … - an enemy“ bei Toten der eigenen Gruppe in Goldklamm und Fülle des Todes, den Spieler
+  selbst eingeschlossen. Für sie fragt `GetDeath` seit A765 `IsEnemy` nicht mehr; „an enemy“ war also nicht der Grund.
+- *Ursache:* `IsTargetMoving` (Upstream) speichert bei jedem Aufruf die Position. `GetDeath` läuft je Bild für Gruppe,
+  Allianz, Spieler außerhalb von Inhalten und die Zielwahl; nur der erste Aufruf sah die Bewegung. Die Begründung der
+  Zeile fragte die Prüfung ein zweites Mal, sah Stillstand und fiel auf „an enemy“.
+- *Im Kampf:* Ein Toter, dessen Körper noch glitt, war in der Gruppenliste ausgeschlossen und in der Zielwahl desselben
+  Bildes womöglich Ziel. Bei einem Toten wechselte die Zeile binnen 0,7 s nach dem Tod viermal.
+- *Behoben:* Die Prüfung antwortet je Bild einmal; `GetDeath` wertet jede Bedingung einmal aus und begründet mit
+  demselben Wert. Upstreams Schwelle bleibt unverändert.
+- *Widerruf:* C195 zu A765.
+- *Vorhersage:* In seinem nächsten Protokoll steht bei Toten der eigenen Gruppe oder Allianz kein „an enemy“ mehr;
+  wo ein Körper gleitet, steht „moving“, und es wechselt nicht Bild für Bild mit „a candidate“.
+
 ## B · Commit-Register (Fork vs. `upstream/main`)
 
 ### B1 · Einzelgeprüfte Fork-Commits
@@ -23197,3 +23213,4 @@ Die offene Arbeit dazu — Reihenfolge und Abbruchbedingung der Nachprüfung —
 | C192 | A777 und Konzept 13, „Richtig stehen und weiter treffen“ (Stand A777): Sofortaktionen „unverändert“; eine Sofortaktion auf den Wirkenden treffe nur mit Blick in den Blick, dort bleibe die Sperre | Das gilt nur, wenn das Auge beim Ziel liegt. Liegt es daneben, gibt es innerhalb des 45°-Kegels der Aktion eine sichere Richtung; RSR dreht dorthin und schaltet das Drehen des Spiels für den Druck ab (A778). |
 | C193 | A775 und Konzept 14, „Schnitter“ (Stand A775): Trank ab Werk im Opener, weil The Balance es so führt und ein Kampf von 7 min damit zwei Tränke trägt | Der Preis war nicht gewogen: In der Lernphase verschwendet jeder Wipe vor zwei Minuten den Opener-Trank (seine Regel A501). Voreinstellung jetzt „Automatic“ nach Abschluss des Kampfs und Dauer des letzten Zugs (A779). |
 | C194 | A780 und Konzept 03/14 (Stand A780): Der Schadenshöhepunkt über 30 s liege bei allen Jobs im Opener, belegt durch den Trinkzeitpunkt der Besten; Schnitter „deckt sich“ | Der Trinkzeitpunkt belegt nur Verhalten. Gemessen am Schaden (A781) ist der 2-Minuten-Burst bei Schnitter, Viper, Barde, Dragoon und Tänzer stärker; die Besten trinken im Opener wegen der Zahl der Tränke. |
+| C195 | A765 und Konzept 11, „Ein totes Mitglied ist kein Gegner“ (Stand A765): Das Flackern zwischen „a candidate“ und „an enemy“ am 13.11.2026 sei die Antwort von `IsEnemy` auf tote Allianzmitglieder | Nicht belegt. Die Begründung der Zeile fragte `IsTargetMoving` ein zweites Mal und schrieb für einen Toten in Bewegung „an enemy“; am 14.11.2026 stand das bei Gruppenmitgliedern, für die `IsEnemy` nicht mehr gefragt wird (A788). Die Behebung aus A765 bleibt ohne Preis. |
