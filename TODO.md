@@ -111,8 +111,8 @@ nebeneinander braucht: neuer interner Name mit Übernahme des Ordners, angezeigt
   eigenen Aktionen im ACT-Mitschnitt, gegen den Mitschnitt vom 11.11.2026. Zu prüfen sind GCDs, die eine Sperre
   zurückhielt; Anfragen ohne Antwort (bleiben sie nahe r, lehnt der Server ab); Schnitt und Zuschlag; dreifaches Weben.
   Je Abweichung Loop. Weißmagier am 13.11.2026 geprüft (A765): kein GCD später, aber 8 % Anfragen ohne Antwort und ein
-  Schnitt von 1 bis 34 ms. Offen: ein Job mit doppeltem Weben und die Zeilen „request without an answer“, ob die 8 %
-  Ablehnungen sind. Beastmaster am 14.11.2026 (A800): Alle 50 Lücken waren Nummern, die nie als Anfrage liefen, und
+  Schnitt von 1 bis 34 ms. Offen: ein Job mit doppeltem Weben – Beschwörer oder Schnitter reichen (doppelt in 10 und 8 % der GCD-Lücken, FFLogs
+  14.11.2026) – und die Zeilen „request without an answer“, ob die 8 % Ablehnungen sind. Beastmaster am 14.11.2026 (A800): Alle 50 Lücken waren Nummern, die nie als Anfrage liefen, und
   drückten den Schnitt auf 0 ms; sie zählen nicht mehr. Offen: der Schnitt danach. Konzept 03, „Weben, Animationssperre
   und Latenz“.
 

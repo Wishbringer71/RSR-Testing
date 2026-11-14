@@ -1847,6 +1847,13 @@ bei zu früher Anfrage: zurückhalten, ablehnen, ignorieren.
     ACT-Mitschnitt kommt ein GCD nach ein oder zwei Fähigkeiten nicht später als ohne (90 % unter +0,1 s; am 11. und 12.11.
     ebenso). Ein Heiler webt aber wenig (0,15 Fähigkeiten je GCD). Ob die 8 % Ablehnungen sind oder andere Gründe haben,
     entscheidet, ob ein Job mit doppeltem Weben Schnitt verschenkt.
+  - *Welche Jobs doppelt und dreifach weben* (seine Frage, 14.11.2026; gemessen an FFLogs, AAC Heavyweight M1, die
+    besten ein bis zwei Pulls je Job, Fähigkeiten zwischen zwei GCDs, GCD nach Abklinggruppe 58; Community-Quelle, kein
+    Spielblatt): Doppelt in 8 bis 20 % der GCD-Lücken bei Dragoon 20, Barde 19, Paladin 17, Revolverklinge 17, Viper 17,
+    Dunkelritter 15, Maschinist 13, Tänzer 13, Rotmagier 12, Beschwörer 10, Astrologe 8, Schnitter 8 %; selten bei
+    Mönch, Gelehrtem, Schwarzmagier und Ninja (3–4 %; beim Ninja zählen die Mudras als Fähigkeit), Weißmagier 1 %.
+    Dreifach nur vereinzelt: Viper 3 %, Revolverklinge und Barde 1 %, sonst unter 1 %. Krieger, Weise, Samurai und
+    Piktomant lieferte die Abfrage nicht. Für die offene Frage reicht also ein Mitschnitt als Beschwörer oder Schnitter.
   - *Messmittel:* je Anfrage ohne Antwort im Kampf eine Zeile „request without an answer“. Sie nennt die Aktion, ob GCD
     oder Fähigkeit, die Zeit von der vorigen Antwort bis zur Anfrage und die Sperre jener Antwort. Liegt die Zeit
     meist knapp über der Sperre, lehnt der Server zu frühe Anfragen ab, und der kleine Schnitt ist richtig. Liegt sie
